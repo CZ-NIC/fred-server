@@ -6,7 +6,7 @@ CXXFLAGS = -O2  -Wall -DDEBUG
 OBJECTS = 
 LDFLAGS=  -L/usr/local/pgsql/lib/
 LIBS=  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread
-CPPFLAGS =  -I/usr/local/pgsql/include/ -I.
+CPPFLAGS =  -I/usr/local/pgsql/include/ -I.  -Wno-deprecated
 SERVER_OBJECTS=ccRegSK.o  ccReg_epp.o  ccReg_server.o   pqsql.o
 CLIENT_OBJECTS=ccRegSK.o epp_client.o
 all: server client
