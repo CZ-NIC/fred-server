@@ -13,15 +13,17 @@ public:
   virtual ~ccReg_EPP_i();
 
   // methods corresponding to defined IDL attributes and operations
-  ccReg::Response Login(const char* clientID, const char* pass, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out
-svTRID);
+  ccReg::Response Login(const char* clientID, const char* pass, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID);
   ccReg::Response Logout(const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID);
   ccReg::Response ContactCheck(const char* roid, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID);
   ccReg::Response ContactInfo(const char* roid, const char* clTRID, ccReg::Contact_out c, CORBA::String_out errMsg, CORBA::String_out svTRID);
   ccReg::Response ContactDelete(const char* roid, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID);
   ccReg::Response ContactUpdate(const ccReg::Contact& c, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID);
   ccReg::Response ContactCreate(const ccReg::Contact& c, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID);
-  char* clientID();
 
+
+private:
+int loginID;
+int sessionID;
 };
 

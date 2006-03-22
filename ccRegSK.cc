@@ -707,59 +707,6 @@ ccReg::Response ccReg::_objref_EPP::ContactCreate(const Contact& c, const char* 
 
 
 }
-// Proxy call descriptor class. Mangled signature:
-//  _cstring
-class _0RL_cd_728B2C0DC8F0283E_c0000000
-  : public omniCallDescriptor
-{
-public:
-  inline _0RL_cd_728B2C0DC8F0283E_c0000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
-     omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
-  {
-    
-  }
-  
-  
-  void unmarshalReturnedValues(cdrStream&);
-  void marshalReturnedValues(cdrStream&);
-  
-  
-  CORBA::String_var result;
-};
-
-void _0RL_cd_728B2C0DC8F0283E_c0000000::marshalReturnedValues(cdrStream& _n)
-{
-  _n.marshalString(result,0);
-
-}
-
-void _0RL_cd_728B2C0DC8F0283E_c0000000::unmarshalReturnedValues(cdrStream& _n)
-{
-  result = _n.unmarshalString(0);
-
-}
-
-// Local call call-back function.
-static void
-_0RL_lcfn_728B2C0DC8F0283E_d0000000(omniCallDescriptor* cd, omniServant* svnt)
-{
-  _0RL_cd_728B2C0DC8F0283E_c0000000* tcd = (_0RL_cd_728B2C0DC8F0283E_c0000000*)cd;
-  ccReg::_impl_EPP* impl = (ccReg::_impl_EPP*) svnt->_ptrToInterface(ccReg::EPP::_PD_repoId);
-  tcd->result = impl->clientID();
-
-
-}
-
-char* ccReg::_objref_EPP::clientID()
-{
-  _0RL_cd_728B2C0DC8F0283E_c0000000 _call_desc(_0RL_lcfn_728B2C0DC8F0283E_d0000000, "_get_clientID", 14);
-
-
-  _invoke(_call_desc);
-  return _call_desc.result._retn();
-
-
-}
 ccReg::_pof_EPP::~_pof_EPP() {}
 
 
@@ -840,14 +787,6 @@ ccReg::_impl_EPP::_dispatch(omniCallHandle& _handle)
   if( omni::strMatch(op, "ContactCreate") ) {
 
     _0RL_cd_728B2C0DC8F0283E_90000000 _call_desc(_0RL_lcfn_728B2C0DC8F0283E_b0000000, "ContactCreate", 14, 1);
-    
-    _handle.upcall(this,_call_desc);
-    return 1;
-  }
-
-  if( omni::strMatch(op, "_get_clientID") ) {
-
-    _0RL_cd_728B2C0DC8F0283E_c0000000 _call_desc(_0RL_lcfn_728B2C0DC8F0283E_d0000000, "_get_clientID", 14, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -1011,11 +950,11 @@ ccReg::_objref_Whois::_ptrToObjRef(const char* id)
 
 // Proxy call descriptor class. Mangled signature:
 //  _cccReg_mDomainWhois_i_cstring
-class _0RL_cd_728B2C0DC8F0283E_e0000000
+class _0RL_cd_728B2C0DC8F0283E_c0000000
   : public omniCallDescriptor
 {
 public:
-  inline _0RL_cd_728B2C0DC8F0283E_e0000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
+  inline _0RL_cd_728B2C0DC8F0283E_c0000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
      omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
   {
     
@@ -1033,26 +972,26 @@ public:
   ccReg::DomainWhois_var result;
 };
 
-void _0RL_cd_728B2C0DC8F0283E_e0000000::marshalArguments(cdrStream& _n)
+void _0RL_cd_728B2C0DC8F0283E_c0000000::marshalArguments(cdrStream& _n)
 {
   _n.marshalString(arg_0,0);
 
 }
 
-void _0RL_cd_728B2C0DC8F0283E_e0000000::unmarshalArguments(cdrStream& _n)
+void _0RL_cd_728B2C0DC8F0283E_c0000000::unmarshalArguments(cdrStream& _n)
 {
   arg_0_ = _n.unmarshalString(0);
   arg_0 = arg_0_.in();
 
 }
 
-void _0RL_cd_728B2C0DC8F0283E_e0000000::marshalReturnedValues(cdrStream& _n)
+void _0RL_cd_728B2C0DC8F0283E_c0000000::marshalReturnedValues(cdrStream& _n)
 {
   (const ccReg::DomainWhois&) result >>= _n;
 
 }
 
-void _0RL_cd_728B2C0DC8F0283E_e0000000::unmarshalReturnedValues(cdrStream& _n)
+void _0RL_cd_728B2C0DC8F0283E_c0000000::unmarshalReturnedValues(cdrStream& _n)
 {
   result = new ccReg::DomainWhois;
   (ccReg::DomainWhois&)result <<= _n;
@@ -1061,9 +1000,9 @@ void _0RL_cd_728B2C0DC8F0283E_e0000000::unmarshalReturnedValues(cdrStream& _n)
 
 // Local call call-back function.
 static void
-_0RL_lcfn_728B2C0DC8F0283E_f0000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_728B2C0DC8F0283E_d0000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_728B2C0DC8F0283E_e0000000* tcd = (_0RL_cd_728B2C0DC8F0283E_e0000000*)cd;
+  _0RL_cd_728B2C0DC8F0283E_c0000000* tcd = (_0RL_cd_728B2C0DC8F0283E_c0000000*)cd;
   ccReg::_impl_Whois* impl = (ccReg::_impl_Whois*) svnt->_ptrToInterface(ccReg::Whois::_PD_repoId);
   tcd->result = impl->Domain(tcd->arg_0);
 
@@ -1072,7 +1011,7 @@ _0RL_lcfn_728B2C0DC8F0283E_f0000000(omniCallDescriptor* cd, omniServant* svnt)
 
 ccReg::DomainWhois* ccReg::_objref_Whois::Domain(const char* name)
 {
-  _0RL_cd_728B2C0DC8F0283E_e0000000 _call_desc(_0RL_lcfn_728B2C0DC8F0283E_f0000000, "Domain", 7);
+  _0RL_cd_728B2C0DC8F0283E_c0000000 _call_desc(_0RL_lcfn_728B2C0DC8F0283E_d0000000, "Domain", 7);
   _call_desc.arg_0 = name;
 
   _invoke(_call_desc);
@@ -1111,7 +1050,7 @@ ccReg::_impl_Whois::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "Domain") ) {
 
-    _0RL_cd_728B2C0DC8F0283E_e0000000 _call_desc(_0RL_lcfn_728B2C0DC8F0283E_f0000000, "Domain", 7, 1);
+    _0RL_cd_728B2C0DC8F0283E_c0000000 _call_desc(_0RL_lcfn_728B2C0DC8F0283E_d0000000, "Domain", 7, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
