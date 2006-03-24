@@ -64,7 +64,7 @@ bool PQ::ExecSelect(char *sqlString)
 
         if (PQresultStatus(result) != PGRES_TUPLES_OK)
         {
-            debug( "SELECT failed: %s", PQerrorMessage(connection));
+            debug( "SELECT [%s]\nfailed: %s", sqlString , PQerrorMessage(connection));
             PQclear(result);
             return -1;
         }
