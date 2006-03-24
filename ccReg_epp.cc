@@ -11,6 +11,9 @@
 // funkce pro praci s postgres
 #include "pqsql.h"
 
+// konverze casu
+#include "timestamp.h"
+
 
 
 //
@@ -98,10 +101,9 @@ if( PQsql.OpenDatabase() )
         upid = atoi( PQsql.GetFieldValueName("UpID" , 0 ) ); 
         debug("roid %s\n" , roid );
 	c->ROID=CORBA::string_dup( roid);           
-        
-	c->CrDate=0; // datum a cas vytvoreni
-	c->UpDate=0; // datum a cas zmeny
-	c->TrDate=0;  // datum a cas transferu
+	c->CrDate= get_gmt_time( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
+	c->UpDate= get_gmt_time( PQsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
+	c->TrDate= get_gmt_time (PQsql.GetFieldValueName("TrDate" , 0 ) );  // datum a cas transferu
 	c->Name=CORBA::string_dup( PQsql.GetFieldValueName("Name" , 0 )  ); // jmeno nebo nazev kontaktu
 	c->Organization=CORBA::string_dup( PQsql.GetFieldValueName("Organization" , 0 )); // nazev organizace
 	c->Street1=CORBA::string_dup( PQsql.GetFieldValueName("Street1" , 0 ) ); // adresa
@@ -210,16 +212,39 @@ ccReg::Response ccReg_EPP_i::ContactCreate(const ccReg::Contact& c, const char* 
 PQ PQsql;
 char sqlString[4096];
 ccReg::Response ret=0;
+int clid=0 , crid =0;
 
 // cislo transakce
 svTRID = CORBA::string_alloc( 16);
 svTRID = CORBA::string_dup("SV_12345" );
 errMsg = CORBA::string_alloc( 32);
 
-sprintf( sqlString , "INSERT INTO CONTACT ( ROID , Name ) VALUES ( \'%s\' , \'%s\'  ); " ,  CORBA::string_dup(c.ROID ) , CORBA::string_dup(c.ROID ) , CORBA::string_dup(c.Name )  );
 
 if( PQsql.OpenDatabase() )
 {
+
+
+    sprintf( sqlString , "SELECT  id FROM REGISTRAR WHERE roid= \'%s\';" ,  CORBA::string_dup(c.ClID) );
+  
+   if(  PQsql.ExecSelect( sqlString ) )
+     {
+        // id registratora clienta
+        clid = atoi( PQsql.GetFieldValue( 0 , 0 ) );
+        PQsql.FreeSelect();
+     }
+
+
+   sprintf( sqlString , "SELECT  id FROM REGISTRAR WHERE roid= \'%s\';" ,  CORBA::string_dup(c.CrID) );
+   if(  PQsql.ExecSelect( sqlString ) )
+     {
+        // id registratora clienta
+        crid = atoi( PQsql.GetFieldValue( 0 , 0 ) );
+        PQsql.FreeSelect();
+     }
+
+    sprintf( sqlString , "INSERT INTO CONTACT ( ROID , Name , crID , clID  ) VALUES ( \'%s\' , \'%s\' , %d , %d  ); " , 
+      CORBA::string_dup(c.ROID ) , CORBA::string_dup(c.ROID ) ,  clid , crid );
+
    PQsql.ExecSQL( sqlString );
   
    ret= 1000;
