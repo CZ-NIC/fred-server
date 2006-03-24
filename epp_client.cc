@@ -6,6 +6,7 @@
 #include <iostream.h>
 #include <ccReg.hh>
 
+#include "time.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -19,6 +20,7 @@ int main(int argc, char** argv)
     CORBA::Object_var obj ;
     CORBA::String_var errMsg , svTR;
     int i;
+    time_t t;
     filebuf *pbuf;
     char *buffer;
     char name[64] , roid[32];
@@ -65,35 +67,42 @@ int main(int argc, char** argv)
   // cc = CORBA::string_dup("CLIENT_AAA");
 
 
-    EPP->Login( "REG-CT" , "passwd" , "CLIENT_LGID"  , errMsg , svTR );
+    //EPP->Login( "REG-CT" , "passwd" , "CLIENT_LGID"  , errMsg , svTR );
 
-    cout << errMsg << svTR << endl;
+   // cout << errMsg << svTR << endl;
 
 
-    EPP->ContactInfo("MAPET",  "XY-1234" , contact , errMsg , svTR );
+    EPP->ContactInfo("XPET",  "XY-1234" , contact , errMsg , svTR );
 
     cout <<  contact->Name << contact->Email <<  endl;
 
+    t = (time_t )  contact->CrDate;
+    cout << asctime( gmtime( &t) ) << endl;
+/*
 //    cc = new ccReg::Contact;
           cc.ROID =  CORBA::string_alloc( 32 );
           cc.Name =  CORBA::string_alloc( 64 );
+          cc.CrID =  CORBA::string_alloc( 32 );
+          cc.ClID =  CORBA::string_alloc( 32 );
 
-    for( i = 0 ; i < 100 ; i ++) 
+    for( i = 0 ; i < 10000 ; i ++) 
        {
            sprintf( name, "NAME-%06d" , i+1 );
            sprintf( roid , "ID-%06d" , i+1 );
            cc.ROID = CORBA::string_dup(  roid );  
            cc.Name = CORBA::string_dup( name );
+           cc.CrID = CORBA::string_dup( "REG-WEB4U" );
+           cc.ClID = CORBA::string_dup( "REG-WEB4U" );
            cout << "Create: " << cc.ROID <<   cc.Name << endl;  
            EPP->ContactCreate( cc , "XY-1234" , errMsg , svTR );
        } 
     CORBA::string_free(cc.ROID); 
     CORBA::string_free(cc.Name); 
-
+*/
 //   printf("zeme %c%c [%s] \n" , contact->Country[0] ,  contact->Country[1] , contact->AuthInfoPw);
 
 
-    EPP->Logout( "CLIENT_TRID" ,  errMsg , svTR );
+  //  EPP->Logout( "CLIENT_TRID" ,  errMsg , svTR );
 
     
     orb->destroy();
