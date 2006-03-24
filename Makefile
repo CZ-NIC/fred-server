@@ -39,6 +39,6 @@ ccRegSK.cc ccRegSK.h:
 
 
 clean:
-	rm -rf *.o *_server *_client ccRegSK.cc ccRegSK.h
+	rm -rf *.o *_server *_client ccRegSK.cc ccRegSK.h ccReg.hh
 
 
