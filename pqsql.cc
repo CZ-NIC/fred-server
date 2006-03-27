@@ -7,7 +7,7 @@
 #include "pqsql.h"
 
 
-bool PQ::OpenDatabase()
+bool PQ::OpenDatabase(char *conninfo)
 {
 
 connection = PQconnectdb(conninfo);
@@ -59,6 +59,8 @@ else { debug("NOT FOUND return NULL\n" ); return  "NULL"; }
 // spusti select a vrati pocet radek
 bool PQ::ExecSelect(char *sqlString)
 {
+nRows = -1;
+nCols = -1;
 
         result = PQexec(connection, sqlString );
 

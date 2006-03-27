@@ -7,9 +7,9 @@
 class PQ{
 public:
 // constructor nastaveni spojeni conninfo
-PQ() { conninfo = "dbname = ccReg" ; nRows = -1 ; nCols = -1; }; 
+PQ(){};
 // pripoji databazi s nastavenim conninfo
-bool OpenDatabase(); 
+bool OpenDatabase(char *conninfo); 
 // provede sqlString 
 bool ExecSQL(char *sqlString);
 // odpojeni od databaze 
@@ -27,7 +27,7 @@ bool CommitTransaction()
 // spusti select a vrati pocet radek
 bool ExecSelect(char *sqlString);
 // vyprazdni result selectu a nastavi zpet pocet radku a sloupcu
-void  FreeSelect(){  PQclear(result);  nRows = -1 ; nCols = -1; };
+void  FreeSelect(){  PQclear(result);  };
 // vraci hodnotu
 char * GetFieldValueName(char *fname , int row );
 // vraci retezec hodnoty
@@ -38,7 +38,6 @@ int GetSelectRows(){ return nRows;};
 int GetSelectCols(){ return nCols;};
 
 private:
-const char *conninfo;
 PGconn     *connection;
 PGresult   *result;
 int nRows , nCols; // pocet radek pri selectu
