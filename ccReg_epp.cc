@@ -15,6 +15,8 @@
 #include "timestamp.h"
 
 
+// definice pripojeno na databazi
+#define DATABASE "dbname=ccreg user=ccreg password=Eeh5ahSi"
 
 //
 // Example implementational code for IDL interface ccReg::EPP
@@ -40,7 +42,7 @@ svTRID = CORBA::string_dup("SV_LOGIN" );
 errMsg =  CORBA::string_alloc( 64);
 errMsg =  CORBA::string_dup("Client Login" );
 
-if( PQsql.OpenDatabase() )
+if( PQsql.OpenDatabase( DATABASE ) )
 {
   if( PQsql.ExecSelect( sqlString ) )
   {
@@ -90,7 +92,7 @@ c = new ccReg::Contact;
 
 sprintf( sqlString , "SELECT * FROM CONTACT WHERE roid=\'%s\'" , roid);
 
-if( PQsql.OpenDatabase() )
+if( PQsql.OpenDatabase( DATABASE ) )
 {
   if( PQsql.ExecSelect( sqlString ) )
   {
@@ -220,7 +222,7 @@ svTRID = CORBA::string_dup("SV_12345" );
 errMsg = CORBA::string_alloc( 32);
 
 
-if( PQsql.OpenDatabase() )
+if( PQsql.OpenDatabase( DATABASE ) )
 {
 
 
