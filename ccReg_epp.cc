@@ -16,7 +16,8 @@
 
 
 // definice pripojeno na databazi
-#define DATABASE "dbname=ccreg user=ccreg password=Eeh5ahSi"
+// #define DATABASE "dbname=ccreg user=ccreg password=Eeh5ahSi"
+#define DATABASE "dbname=ccReg user=pblaha"
 
 //
 // Example implementational code for IDL interface ccReg::EPP
@@ -118,9 +119,9 @@ if( PQsql.OpenDatabase( DATABASE ) )
 	c->Fax=CORBA::string_dup(PQsql.GetFieldValueName("Fax" , 0 ));
 	c->Email=CORBA::string_dup(PQsql.GetFieldValueName("Email" , 0 ));
 	c->NotifyEmail=CORBA::string_dup(PQsql.GetFieldValueName("NotifyEmail" , 0 )); // upozornovaci email
+	c->Country=CORBA::string_dup(PQsql.GetFieldValueName("Country" , 0 )); // Zeme
 	c->VAT=CORBA::string_dup(PQsql.GetFieldValueName("VAT" , 0 )); // DIC
-        strncpy( (char * )  c->Country , PQsql.GetFieldValueName("Country" , 0 ) , 2 ); // zeme
-        strncpy( (char * ) c->AuthInfoPw  , PQsql.GetFieldValueName("authinfopw" , 0 ) , 32 ); // passwd
+	c->SSN=CORBA::string_dup(PQsql.GetFieldValueName("SSN" , 0 )); // SSN
 
 	ret= 1000;
 	errMsg =  CORBA::string_dup("Contact found" );
@@ -186,6 +187,9 @@ c->Fax=CORBA::string_dup("");
 c->Email=CORBA::string_dup("");
 c->NotifyEmail=CORBA::string_dup(""); // upozornovaci email
 c->VAT=CORBA::string_dup(""); // DIC
+c->Country=CORBA::string_dup(""); // zeme
+c->AuthInfoPw=CORBA::string_dup(""); // autentifikace
+c->SSN=CORBA::string_dup(""); // SSN
 
 errMsg = CORBA::string_dup("Contact not found");
 
@@ -198,21 +202,95 @@ debug("return %d " ,  ret );
 return ret;
 }
 
-ccReg::Response ccReg_EPP_i::ContactDelete(const char* roid, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID){
-  // insert code here and remove the warning
-//  #warning "Code missing in function <ccReg::Response ccReg_EPP_i::ContactDelete(const char* roid, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID)>"
+ccReg::Response ccReg_EPP_i::ContactDelete(const char* roid, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID)
+{
+ccReg::Response ret=0;
+PQ PQsql;
+char sqlString[1024];
+
+// cislo transakce
+svTRID = CORBA::string_alloc( 16);
+svTRID = CORBA::string_dup("SV_12345" );
+errMsg = CORBA::string_alloc( 32);
+
+sprintf(  sqlString , "DELETE FROM Contact WHERE roid=\'%s\' " , roid );
+
+if( PQsql.OpenDatabase( DATABASE ) )
+{
+
+   PQsql.ExecSQL( sqlString );
+
+   ret= 1000;
+   errMsg =  CORBA::string_dup("Contact delete" );
+
+   PQsql.Disconnect();
 }
 
-ccReg::Response ccReg_EPP_i::ContactUpdate(const ccReg::Contact& c, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID){
-  // insert code here and remove the warning
-  //#warning "Code missing in function <ccReg::Response ccReg_EPP_i::ContactUpdate(const ccReg::Contact& c, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID)>"
+return ret;
+}
+
+
+
+
+ccReg::Response ccReg_EPP_i::ContactUpdate(const ccReg::Contact& c, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID)
+{
+ccReg::Response ret=0;
+PQ PQsql;
+char sqlString[4096] , buf[1024];
+int len;
+strcpy( sqlString , "UPDATE Contact SET " );
+
+
+// cislo transakce
+svTRID = CORBA::string_alloc( 16);
+svTRID = CORBA::string_dup("SV_12345" );
+errMsg = CORBA::string_alloc( 32);
+
+
+// jmeno nebo nazev
+if( strlen(CORBA::string_dup(c.Name) ) ) {  sprintf( buf , "name=\'%s\' ," , CORBA::string_dup(c.Name) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.Organization) ) ) {  sprintf( buf , "Organization=\'%s\' ," , CORBA::string_dup(c.Name) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.Street1) ) ) {  sprintf( buf , "Street1=\'%s\' ," , CORBA::string_dup(c.Street1) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.Street2) ) ) {  sprintf( buf , "Street2=\'%s\' ," , CORBA::string_dup(c.Street2) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.Street3) ) ) {  sprintf( buf , "Street3=\'%s\' ," , CORBA::string_dup(c.Street3) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.City) ) ) {  sprintf( buf , "City=\'%s\' ," , CORBA::string_dup(c.City) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.StateOrProvince) ) ) {  sprintf( buf , "StateOrProvince=\'%s\' ," , CORBA::string_dup(c.StateOrProvince) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.PostalCode) ) ) {  sprintf( buf , "PostalCode=\'%s\' ," , CORBA::string_dup(c.PostalCode)  ) ; strcat( sqlString , buf ); }// PSC
+if( strlen(CORBA::string_dup(c.Telephone) ) ) {  sprintf( buf, "Telephone=\'%s\' ," , CORBA::string_dup(c.Telephone) ) ; strcat( sqlString , buf ); } 
+if( strlen(CORBA::string_dup(c.Fax) ) ) {  sprintf( buf , "Fax=\'%s\' ," , CORBA::string_dup(c.Fax) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.Email) ) ) {  sprintf( buf , "Email=\'%s\' ," , CORBA::string_dup(c.Email) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.NotifyEmail) ) ) {  sprintf( buf, "NotifyEmail=\'%s\' ," , CORBA::string_dup(c.NotifyEmail) ) ; strcat( sqlString , buf ); } // upozornovaci email
+if( strlen(CORBA::string_dup(c.VAT) ) ) {  sprintf( buf , "VAT=\'%s\' ," , CORBA::string_dup(c.VAT) ) ; strcat( sqlString , buf ); } // DIC
+if( strlen(CORBA::string_dup(c.Country) ) ) {  sprintf( buf , "Country=\'%s\' ," , CORBA::string_dup(c.Country) ) ; strcat( sqlString , buf ); } // DIC
+if( strlen(CORBA::string_dup(c.SSN) ) ) {  sprintf( buf , "SSN=\'%s\' ," , CORBA::string_dup(c.SSN) ) ; strcat( sqlString , buf ); } // SSN
+
+
+// datum a cas updatu 
+strcat(  sqlString ,  " UpDate=\'now\'" );
+// dej na konec
+sprintf( buf , " WHERE roid=\'%s\' " , CORBA::string_dup(c.ROID) );
+
+strcat( sqlString , buf );
+
+if( PQsql.OpenDatabase( DATABASE ) )
+{
+
+   PQsql.ExecSQL( sqlString );
+
+   ret= 1000;
+   errMsg =  CORBA::string_dup("Contact update" );
+
+   PQsql.Disconnect();
+}
+
+return ret;
 }
 
 ccReg::Response ccReg_EPP_i::ContactCreate(const ccReg::Contact& c, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID)
 {
 
 PQ PQsql;
-char sqlString[4096];
+char sqlString[4096] , buf[1024];
 ccReg::Response ret=0;
 int clid=0 , crid =0;
 
@@ -244,8 +322,50 @@ if( PQsql.OpenDatabase( DATABASE ) )
         PQsql.FreeSelect();
      }
 
-    sprintf( sqlString , "INSERT INTO CONTACT ( ROID , Name , crID , clID  ) VALUES ( \'%s\' , \'%s\' , %d , %d  ); " , 
-      CORBA::string_dup(c.ROID ) , CORBA::string_dup(c.ROID ) ,  clid , crid );
+strcpy( sqlString , "INSERT INTO CONTACT ( ROID , Handle , ClID , CrID, " );
+
+if( strlen(CORBA::string_dup(c.Name) ) ) strcat( sqlString , " Name, " );
+if( strlen(CORBA::string_dup(c.Organization) ) ) strcat( sqlString , "Organization," );
+if( strlen(CORBA::string_dup(c.Street1) ) ) strcat( sqlString , " Street1, ");
+if( strlen(CORBA::string_dup(c.Street2) ) ) strcat( sqlString , " Street2, ");
+if( strlen(CORBA::string_dup(c.Street3) ) ) strcat( sqlString , " Street3, ");
+
+if( strlen(CORBA::string_dup(c.City) ) ) strcat( sqlString ,  " City, " );
+if( strlen(CORBA::string_dup(c.StateOrProvince) ) ) strcat( sqlString , " StateOrProvince," ); 
+if( strlen(CORBA::string_dup(c.Fax) ) ) strcat( sqlString , " Fax, " );
+if( strlen(CORBA::string_dup(c.Email) ) ) strcat( sqlString , " Email," ); 
+if( strlen(CORBA::string_dup(c.NotifyEmail) ) ) strcat( sqlString , " NotifyEmail, ");
+if( strlen(CORBA::string_dup(c.Country) ) ) strcat( sqlString , " Country," );
+if( strlen(CORBA::string_dup(c.VAT) ) ) strcat( sqlString , " VAT," );
+if( strlen(CORBA::string_dup(c.SSN) ) ) strcat( sqlString , " SSN," );
+
+// datum a cas vytvoreni
+strcat(  sqlString ,  " CrDate " );
+
+sprintf( buf  , " )  VALUES ( \'%s\' ,  \'%s\' , %d , %d ,  " , CORBA::string_dup(c.ROID) ,  CORBA::string_dup(c.ROID) ,  clid  ,  crid ) ;
+strcat( sqlString , buf );
+
+if( strlen(CORBA::string_dup(c.Name) ) ) {  sprintf( buf , " \'%s\' , " , CORBA::string_dup(c.Name) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.Organization) ) ) {  sprintf( buf , " \'%s\', " , CORBA::string_dup(c.Name) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.Street1) ) ) {  sprintf( buf , " \'%s\' ," , CORBA::string_dup(c.Street1) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.Street2) ) ) {  sprintf( buf , " \'%s\' ," , CORBA::string_dup(c.Street2) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.Street3) ) ) {  sprintf( buf , " \'%s\' ," , CORBA::string_dup(c.Street3) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.City) ) ) {  sprintf( buf , " \'%s\' ," , CORBA::string_dup(c.City) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.StateOrProvince) ) ) {  sprintf( buf , " \'%s\' ," , CORBA::string_dup(c.StateOrProvince) ) ; strcat( sqlString ,  buf ); }
+if( strlen(CORBA::string_dup(c.PostalCode) ) ) {  sprintf( buf , " \'%s\' ," , CORBA::string_dup(c.PostalCode)  ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.Telephone) ) ) {  sprintf( buf, " \'%s\' ," , CORBA::string_dup(c.Telephone) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.Fax) ) ) {  sprintf( buf , " \'%s\' ," , CORBA::string_dup(c.Fax) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.Email) ) ) {  sprintf( buf , " \'%s\' ," , CORBA::string_dup(c.Email) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.NotifyEmail) ) ) {  sprintf( buf, " \'%s\' ," , CORBA::string_dup(c.NotifyEmail) ) ; strcat( sqlString , buf ); } 
+if( strlen(CORBA::string_dup(c.Country) ) ) {  sprintf( buf, " \'%s\' ," , CORBA::string_dup(c.Country) ) ; strcat( sqlString , buf ); }
+if( strlen(CORBA::string_dup(c.VAT) ) ) {  sprintf( buf , " \'%s\' ," , CORBA::string_dup(c.SSN) ) ; strcat( sqlString , buf ); } // VAT
+if( strlen(CORBA::string_dup(c.SSN) ) ) {  sprintf( buf , " \'%s\' ," , CORBA::string_dup(c.SSN) ) ; strcat( sqlString , buf ); } // SSN
+
+
+// datum a cas vytvoreni
+strcat(  sqlString ,  " \'now\' ) " );
+
+
 
    PQsql.ExecSQL( sqlString );
   
