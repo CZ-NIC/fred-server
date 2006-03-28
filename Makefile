@@ -16,7 +16,7 @@ all: ccWhois_server ccReg_server epp_client whois_client
 .SUFFIXES:  .o
 
 ccReg_server: $(CCREG_SERVER_OBJECTS)
-	$(CXX) -o ccReg_server $(WHOIS_SERVER_OBJECTS) $(LDFLAGS) $(LIBS) -lpq
+	$(CXX) -o ccReg_server $(CCREG_SERVER_OBJECTS) $(LDFLAGS) $(LIBS) -lpq
 
 
 ccWhois_server: $(WHOIS_SERVER_OBJECTS)
