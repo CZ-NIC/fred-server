@@ -15,7 +15,7 @@ int main(int argc, char** argv)
   try {
 //     CORBA::String_var clID, pass , cc ; 
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);    
-    ccReg::Contact *contact , cc;
+    ccReg::Contact *contact , *cc;
     CORBA::Short err;
     CORBA::Object_var obj ;
     CORBA::String_var errMsg , svTR;
@@ -23,8 +23,8 @@ int main(int argc, char** argv)
     time_t t;
     filebuf *pbuf;
     char *buffer;
-    char name[64] , roid[32];
-    long size;
+    char name[64] , roid[32] , email[32];
+    long size , max = 100 ;
     ifstream fd ("/tmp/ccReg.ref");
     // get pointer to associated buffer object
      pbuf=fd.rdbuf();
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     //EPP->Login( "REG-CT" , "passwd" , "CLIENT_LGID"  , errMsg , svTR );
 
    // cout << errMsg << svTR << endl;
-
+/*
 
     EPP->ContactInfo("XPET",  "XY-1234" , contact , errMsg , svTR );
 
@@ -78,27 +78,74 @@ int main(int argc, char** argv)
 
     t = (time_t )  contact->CrDate;
     cout << asctime( gmtime( &t) ) << endl;
-/*
-//    cc = new ccReg::Contact;
-          cc.ROID =  CORBA::string_alloc( 32 );
-          cc.Name =  CORBA::string_alloc( 64 );
-          cc.CrID =  CORBA::string_alloc( 32 );
-          cc.ClID =  CORBA::string_alloc( 32 );
 
-    for( i = 0 ; i < 10000 ; i ++) 
+
+cc = new ccReg::Contact;
+ 
+    cc->ROID =  CORBA::string_dup( "XPET" );
+    cc->Fax  =  CORBA::string_dup( "1234567890" );
+
+    cout << "ContactUpdate" <<  cc->ROID   << endl;
+    
+    EPP->ContactUpdate( *cc , "XX-1223" ,  errMsg , svTR );
+
+
+delete cc;
+    EPP->ContactDelete( "XPET",  "ZZ-aaaa" ,  errMsg , svTR );
+*/
+
+    cc = new ccReg::Contact;
+/*
+          cc->ROID =  CORBA::string_alloc( 32 );
+          cc->Name =  CORBA::string_alloc( 64 );
+          cc->Email =  CORBA::string_alloc( 64 );
+          cc->Country =  CORBA::string_alloc( 3 );
+          cc->CrID =  CORBA::string_alloc( 32 );
+          cc->ClID =  CORBA::string_alloc( 32 );
+*/
+    for( i = 0 ; i < max ; i ++) 
        {
            sprintf( name, "NAME-%06d" , i+1 );
            sprintf( roid , "ID-%06d" , i+1 );
-           cc.ROID = CORBA::string_dup(  roid );  
-           cc.Name = CORBA::string_dup( name );
-           cc.CrID = CORBA::string_dup( "REG-WEB4U" );
-           cc.ClID = CORBA::string_dup( "REG-WEB4U" );
-           cout << "Create: " << cc.ROID <<   cc.Name << endl;  
-           EPP->ContactCreate( cc , "XY-1234" , errMsg , svTR );
+
+           cc->ROID = CORBA::string_dup(  roid );  
+           cc->Name = CORBA::string_dup( name );
+           cc->Country = CORBA::string_dup( "CZ" );
+           cc->CrID = CORBA::string_dup( "REG-WEB4U" );
+           cc->ClID = CORBA::string_dup( "REG-WEB4U" );
+           cout << "Create: " << cc->ROID <<   cc->Name << endl;  
+           EPP->ContactCreate( *cc , "XY-1234" , errMsg , svTR );
        } 
-    CORBA::string_free(cc.ROID); 
-    CORBA::string_free(cc.Name); 
-*/
+
+
+    for( i = 0 ; i < max ; i ++)
+       {
+           sprintf( roid , "ID-%06d" , i+1 );
+ 
+           cout << "Info: " << roid  << endl;
+
+           EPP->ContactInfo(  roid , "XY-1234" , contact , errMsg , svTR );
+
+           sprintf( email, "%06d@neco.cz" , i+1 );
+           contact->Email =  CORBA::string_dup( email );
+           cout << "Update: " << cc->ROID <<   cc->Email << endl;
+
+           EPP->ContactUpdate( *contact ,      "XY-1234" ,  errMsg , svTR );
+       }
+
+
+
+    for( i = 0 ; i < max ; i ++)
+       {
+               sprintf( roid , "ID-%06d" , i+1 );
+
+
+               cout << "Delete: " << roid  << endl;
+               EPP->ContactDelete( roid ,  "ZZ-aaaa" ,  errMsg , svTR );
+       }
+
+   delete cc;
+
 //   printf("zeme %c%c [%s] \n" , contact->Country[0] ,  contact->Country[1] , contact->AuthInfoPw);
 
 
