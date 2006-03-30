@@ -57,12 +57,17 @@ int main(int argc, char** argv)
     ccReg::DomainWhois *dm;
 
 
-    dm =  Whois->Domain("neco" );
+    dm =  Whois->Domain("neco.cz" );
 
     cout <<  dm->name << "NameServers: " << dm->NameServers <<  endl;
+    cout <<"Registrator: " << dm->registrarName << "url: " << dm->registrarUrl <<  endl;
 
-    t = (time_t )  dm->registered;
+    t = (time_t )  dm->created;
     cout << "registered: "  << asctime( gmtime( &t) ) << endl;
+
+
+    t = (time_t )  dm->expired;
+    cout << "expired: "  << asctime( gmtime( &t) ) << endl;
 
     
     orb->destroy();

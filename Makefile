@@ -8,7 +8,7 @@ LDFLAGS=  -L/usr/local/pgsql/lib/
 LIBS=  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread
 CPPFLAGS =  -I/usr/local/pgsql/include/ -I.  -Wno-deprecated
 CCREG_SERVER_OBJECTS=ccRegSK.o  ccReg_epp.o  ccReg_server.o   pqsql.o timestamp.o
-WHOIS_SERVER_OBJECTS=ccRegSK.o  ccReg_whois.o  whois_server.o 
+WHOIS_SERVER_OBJECTS=ccRegSK.o  ccReg_whois.o  whois_server.o  pqsql.o timestamp.o
 EPP_CLIENT_OBJECTS=ccRegSK.o epp_client.o
 WHOIS_CLIENT_OBJECTS=ccRegSK.o whois_client.o
 
@@ -20,7 +20,7 @@ ccReg_server: $(CCREG_SERVER_OBJECTS)
 
 
 ccWhois_server: $(WHOIS_SERVER_OBJECTS)
-	$(CXX) -o ccWhois_server $(WHOIS_SERVER_OBJECTS) $(LDFLAGS) $(LIBS) 
+	$(CXX) -o ccWhois_server $(WHOIS_SERVER_OBJECTS) $(LDFLAGS) $(LIBS)   -lpq
 
 
 epp_client: $(EPP_CLIENT_OBJECTS)
