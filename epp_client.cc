@@ -16,6 +16,9 @@ int main(int argc, char** argv)
 //     CORBA::String_var clID, pass , cc ; 
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);    
     ccReg::Contact *contact , *cc;
+    ccReg::Response *ret;
+    ccReg::Host *host;
+    ccReg::Domain *domain;
     CORBA::Short err;
     CORBA::Object_var obj ;
     CORBA::String_var errMsg , svTR;
@@ -60,25 +63,40 @@ int main(int argc, char** argv)
       {
         return 1;
       }
+
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
-  // clID = CORBA::string_dup("REG-CT");
-  // pass = CORBA::string_dup("pass");
-  // cc = CORBA::string_dup("CLIENT_AAA");
+
+    ret =  EPP->ClientLogin( "REG-LRR"   );
+
+    cout << "err code " <<  ret->errCode  <<  ret->errMsg  << endl;
 
 
-    //EPP->Login( "REG-CT" , "passwd" , "CLIENT_LGID"  , errMsg , svTR );
+    ret =  EPP->ContactInfo( "XPET",  cc );
+    cout << "err code " << ret->errCode  <<  ret->errMsg  << endl;
 
-   // cout << errMsg << svTR << endl;
+    cout << "info "  << cc->Name  <<  endl;
+ 
+//    cout <<  contact->Name << contact->Email <<  endl;
+
+  //  t = (time_t )  contact->CrDate;
+   // cout << asctime( gmtime( &t) ) << endl;
+
+    ret =  EPP->HostInfo( "dns.test.cz",  host );
+    cout << "err code " << ret->errCode  <<  ret->errMsg  << endl;
+
+     cout << "host "  << host->name  << host->domain << endl;
+
+     for( i = 0 ; i < host->inet.length() ; i ++ ) cout << "InetAddress: " <<  host->inet[i]  << endl ; 
+
+
+    ret =  EPP->DomainInfo( "test.cz",  domain );
+    cout << "err code " << ret->errCode  <<  ret->errMsg  << endl;
+
+     cout << "domain "  << domain->name  << domain->ROID << endl;
+
+     for( i = 0 ; i < domain->ns.length() ; i ++ ) cout << "DNS: " <<  domain->ns[i]  << endl ; 
 /*
-
-    EPP->ContactInfo("XPET",  "XY-1234" , contact , errMsg , svTR );
-
-    cout <<  contact->Name << contact->Email <<  endl;
-
-    t = (time_t )  contact->CrDate;
-    cout << asctime( gmtime( &t) ) << endl;
-
 
 cc = new ccReg::Contact;
  
@@ -94,15 +112,9 @@ delete cc;
     EPP->ContactDelete( "XPET",  "ZZ-aaaa" ,  errMsg , svTR );
 */
 
-    cc = new ccReg::Contact;
 /*
-          cc->ROID =  CORBA::string_alloc( 32 );
-          cc->Name =  CORBA::string_alloc( 64 );
-          cc->Email =  CORBA::string_alloc( 64 );
-          cc->Country =  CORBA::string_alloc( 3 );
-          cc->CrID =  CORBA::string_alloc( 32 );
-          cc->ClID =  CORBA::string_alloc( 32 );
-*/
+    cc = new ccReg::Contact;
+
     for( i = 0 ; i < max ; i ++) 
        {
            sprintf( name, "NAME-%06d" , i+1 );
@@ -145,13 +157,14 @@ delete cc;
        }
 
    delete cc;
-
+*/
 //   printf("zeme %c%c [%s] \n" , contact->Country[0] ,  contact->Country[1] , contact->AuthInfoPw);
 
 
-  //  EPP->Logout( "CLIENT_TRID" ,  errMsg , svTR );
-
-    
+   ret =  EPP->ClientLogout();
+   cout  << "client logout "<< endl;
+    cout << "err code " << ret->errCode  <<  ret->errMsg  << endl;
+     
     orb->destroy();
   }
   catch(CORBA::TRANSIENT&) {
