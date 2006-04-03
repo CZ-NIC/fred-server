@@ -7,8 +7,8 @@ IDLFILE = ../idl/ccReg.idl
 LDFLAGS=  -L/usr/local/pgsql/lib/
 LIBS=  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread
 CPPFLAGS =  -I/usr/local/pgsql/include/ -I.  -Wno-deprecated
-CCREG_SERVER_OBJECTS=ccRegSK.o  ccReg_epp.o  ccReg_server.o   pqsql.o timestamp.o
-WHOIS_SERVER_OBJECTS=ccRegSK.o  ccReg_whois.o  whois_server.o  pqsql.o timestamp.o
+CCREG_SERVER_OBJECTS=ccRegSK.o  ccReg_epp.o  ccReg_server.o   pqsql.o util.o
+WHOIS_SERVER_OBJECTS=ccRegSK.o  ccReg_whois.o  whois_server.o  pqsql.o util.o
 EPP_CLIENT_OBJECTS=ccRegSK.o epp_client.o
 WHOIS_CLIENT_OBJECTS=ccRegSK.o whois_client.o
 
