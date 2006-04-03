@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     CORBA::Short err;
     CORBA::Object_var obj ;
     CORBA::String_var errMsg , svTR;
-    int i;
+    int i , n;
     time_t t;
     filebuf *pbuf;
     char *buffer;
@@ -56,11 +56,16 @@ int main(int argc, char** argv)
     ccReg::Whois_var Whois = ccReg::Whois::_narrow (obj);
     ccReg::DomainWhois *dm;
 
+for( i = 0 ; i < 5 ; i ++ )
+{
+    
+    dm =  Whois->Domain("test.cz" );
 
-    dm =  Whois->Domain("neco.cz" );
+    for( n = 0 ; n < dm->ns.length() ; n ++ )
+    cout <<  dm->name << "NameServers: " << dm->ns[n] <<  endl;
 
-    cout <<  dm->name << "NameServers: " << dm->NameServers <<  endl;
     cout <<"Registrator: " << dm->registrarName << "url: " << dm->registrarUrl <<  endl;
+
 
     t = (time_t )  dm->created;
     cout << "registered: "  << asctime( gmtime( &t) ) << endl;
@@ -68,7 +73,9 @@ int main(int argc, char** argv)
 
     t = (time_t )  dm->expired;
     cout << "expired: "  << asctime( gmtime( &t) ) << endl;
-
+   
+   delete dm ;
+}
     
     orb->destroy();
   }
