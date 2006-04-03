@@ -2,6 +2,7 @@
 //
 // Example class implementing IDL interface ccReg::EPP
 //
+
 class ccReg_EPP_i: public POA_ccReg::EPP {
 private:
   // Make sure all instances are built on the heap by making the
@@ -13,17 +14,26 @@ public:
   virtual ~ccReg_EPP_i();
 
   // methods corresponding to defined IDL attributes and operations
-  ccReg::Response Login(const char* clientID, const char* pass, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID);
-  ccReg::Response Logout(const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID);
-  ccReg::Response ContactCheck(const char* roid, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID);
-  ccReg::Response ContactInfo(const char* roid, const char* clTRID, ccReg::Contact_out c, CORBA::String_out errMsg, CORBA::String_out svTRID);
-  ccReg::Response ContactDelete(const char* roid, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID);
-  ccReg::Response ContactUpdate(const ccReg::Contact& c, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID);
-  ccReg::Response ContactCreate(const ccReg::Contact& c, const char* clTRID, CORBA::String_out errMsg, CORBA::String_out svTRID);
+  ccReg::Response* ClientLogin(const char* ClID);
+  ccReg::Response* ClientLogout();
+  ccReg::Response* ContactCheck(const char* roid);
+  ccReg::Response* ContactInfo(const char* roid, ccReg::Contact_out c);
+  ccReg::Response* ContactDelete(const char* roid);
+  ccReg::Response* ContactUpdate(const ccReg::Contact& c);
+  ccReg::Response* ContactCreate(const ccReg::Contact& c);
+  ccReg::Response* HostCheck(const char* name);
+  ccReg::Response* HostInfo(const char* name, ccReg::Host_out h);
+  ccReg::Response* HostDelete(const char* name);
+  ccReg::Response* HostCreate(const ccReg::Host& h);
+  ccReg::Response* HostUpdate(const ccReg::Host& h);
+  ccReg::Response* DomainCheck(const char* name);
+  ccReg::Response* DomainInfo(const char* name, ccReg::Domain_out d);
+  ccReg::Response* DomainDelete(const char* name);
+  ccReg::Response* DomainUpdate(const ccReg::Domain& d);
+  ccReg::Response* DomainCreate(const ccReg::Domain& d);
 
 
 private:
-int loginID;
-int sessionID;
+int clientID; // id prihlaseneho registratora
 };
 
