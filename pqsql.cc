@@ -36,7 +36,7 @@ int col;
 
 col = PQfnumber(result, fname);
 
-if( col == -1 ) return "NULL"; 
+if( col == -1 ) return ""; 
 else return  GetFieldValue( row , col );
 }
 
@@ -46,14 +46,14 @@ char * PQ::GetFieldValue( int row , int col )
 if( row < nRows && col < nCols )
   {
    
-   if( PQgetisnull( result , row , col ) ){ debug("RETURN [%d,%d] NULL\n" , row, col ); return "NULL" ; }
+   if( PQgetisnull( result , row , col ) ){ debug("RETURN [%d,%d] NULL\n" , row, col ); return "" ; }
    else  
      { 
        debug("RETURN [%d,%d] , %s\n" , row , col , PQgetvalue(result, row, col ) );
        return PQgetvalue(result, row, col ); 
      }
   }
-else { debug("NOT FOUND return NULL\n" ); return  "NULL"; } 
+else { debug("NOT FOUND return NULL\n" ); return  ""; } 
 }
 
 // spusti select a vrati pocet radek
@@ -90,6 +90,8 @@ debug("result [%s]\n %s %s\n", sqlString ,   PQresStatus( PQresultStatus(res) ) 
 
 if( PQresultStatus(res) == PGRES_COMMAND_OK )
   {
+
+     debug( "PQcmdTuples: %s\n" ,  PQcmdTuples( res) );
     PQclear(res);
     return true;
   }
