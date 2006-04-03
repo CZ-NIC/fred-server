@@ -13,7 +13,7 @@
 #include "pqsql.h"
 
 // konverze casu
-#include "timestamp.h"
+#include "util.h"
 
 
 // definice pripojeno na databazi
@@ -37,8 +37,8 @@ PQ PQsql;
 char sqlString[1024];
 ccReg::DomainWhois *dm;
 int clid , did ;
-char  ns[256];
-int i;
+char  dns[1024] , ns[128];
+int i , len;
 
 
 dm = new ccReg::DomainWhois;
@@ -52,13 +52,14 @@ if( PQsql.OpenDatabase( DATABASE ) )
   {
    dm->name= CORBA::string_dup(  PQsql.GetFieldValueName("fqdn" , 0 ) )  ; // plnohodnotne jmeno domeny
 
-   dm->status = 0; // TODO
    dm->created =  get_gmt_time( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas  vytvoreni domeny
    dm->expired =  get_gmt_time( PQsql.GetFieldValueName("ExDate" , 0 ) )  ; // datum expirace
 
    clid = atoi(  PQsql.GetFieldValueName("clid" , 0 ) ); // client registrator
    did = atoi(  PQsql.GetFieldValueName("id" , 0 ) ); // id domeny
 
+      // pole dns servru
+      strcpy( dns , PQsql.GetFieldValueName("nameserver" , 0 ) );
 
 
      // free select
@@ -74,22 +75,18 @@ if( PQsql.OpenDatabase( DATABASE ) )
       }
 
     // dotaz na nameservry
-       sprintf( sqlString , "SELECT fqdn  FROM  HOST WHERE domainid=%d;" , did ) ;
 
-       memset( ns , 256 ,0 );
 
-    if( PQsql.ExecSelect( sqlString ) )
-      {
+      len =  get_array_length( dns );
+      dm->ns.length(len); // sequence DNS servru
+      for( i = 0 ; i < len ; i ++)
+       {
+           get_array_value( dns , ns , i );
+           dm->ns[i] =CORBA::string_dup( ns );
+       }
 
-        for( i = 0 ; i <  PQsql.GetSelectRows() ; i ++ )   
-           {
-               if( i > 0 ) strcat( ns , "\t" );
-               strcat( ns ,  PQsql.GetFieldValueName("fqdn" , i ) );
-           }
 
-         dm->NameServers  =  CORBA::string_dup( ns ); // uloz nameservry
-        PQsql.FreeSelect();
-      }
+
  
    }
 
