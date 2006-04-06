@@ -10,6 +10,18 @@
 
 //////////////////////////////////////////////////////////////////////
 
+
+void random_string(char *str , int len)
+{
+int i , j ;
+for( i = 0 ; i < len ; i ++ )
+{
+     j=1+(int) (25.0*rand()/(RAND_MAX+1.0));
+    str[i] = 'a' + j ;
+}
+ str[i] = 0 ; // ukocit
+}
+
 int main(int argc, char** argv)
 {
   try {
@@ -22,12 +34,13 @@ int main(int argc, char** argv)
     CORBA::Short err;
     CORBA::Object_var obj ;
     CORBA::String_var errMsg , svTR;
-    int i;
+    int i , len , max = 512, d;
+    short loginID;
     time_t t;
     filebuf *pbuf;
     char *buffer;
-    char name[64] , roid[32] , email[32];
-    long size , max = 100 ;
+    char name[64] , roid[32] , email[32] ;
+    long size  ;
     ifstream fd ("/tmp/ccReg.ref");
     // get pointer to associated buffer object
      pbuf=fd.rdbuf();
@@ -67,10 +80,10 @@ int main(int argc, char** argv)
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
 
-    ret =  EPP->ClientLogin( "REG-LRR"   );
+    ret =  EPP->ClientLogin( "REG-LRR"  ,  "XXXX" , loginID );
 
-    cout << "err code " <<  ret->errCode  <<  ret->errMsg  << endl;
-
+    cout << "err code " <<  ret->errCode    << endl;
+/*
 
     ret =  EPP->ContactInfo( "XPET",  cc );
     cout << "err code " << ret->errCode  <<  ret->errMsg  << endl;
@@ -89,13 +102,57 @@ int main(int argc, char** argv)
 
      for( i = 0 ; i < host->inet.length() ; i ++ ) cout << "InetAddress: " <<  host->inet[i]  << endl ; 
 
+*/
+/*
+  domain = new ccReg::Domain;
 
-    ret =  EPP->DomainInfo( "test.cz",  domain );
-    cout << "err code " << ret->errCode  <<  ret->errMsg  << endl;
 
-     cout << "domain "  << domain->name  << domain->ROID << endl;
+for( i = 0 ; i < max ; i ++ )
+{
 
-     for( i = 0 ; i < domain->ns.length() ; i ++ ) cout << "DNS: " <<  domain->ns[i]  << endl ; 
+
+     len =2+(int) (18.0*rand()/(RAND_MAX+1.0));
+
+
+
+     random_string( name , len);
+
+     domain->ROID =  CORBA::string_dup( name );
+     strcat( name , ".cz" );
+     domain->name =  CORBA::string_dup( name );
+     domain->Registrant =  CORBA::string_dup( "XPET" );
+     domain->CrID =  CORBA::string_dup( "REG-IPEX" );
+     domain->ClID =  CORBA::string_dup( "REG-IPEX" );
+
+    cout << "domain " << i  <<  name    << endl;
+
+    ret =  EPP->DomainCreate(  *domain , loginID , "XX-create" );
+
+    cout << "err code " << ret->errCode   << endl;
+
+} 
+delete domain;
+*/
+
+ for( d = 0 ; d < max ; d ++ )
+ {
+     random_string( name , 3 );
+     strcat( name , ".cz" );
+
+  //  t = (time_t )  contact->CrDate;
+   // cout << asctime( gmtime( &t) ) << endl;
+   t = time(NULL);
+   cout << "info: " <<  d <<  " " <<   asctime( gmtime( &t) ) << name  << endl;
+   ret =  EPP->DomainInfo(  name ,  domain , loginID , "XXX-info" );
+   cout << "err code " << ret->errCode   << endl;
+
+   cout << "domain "  << domain->name << "client: " << domain->ClID << endl;
+
+    for( i = 0 ; i < domain->ns.length() ; i ++ ) cout << "DNS: " <<  domain->ns[i]  << endl ; 
+
+ delete domain;
+}
+
 /*
 
 cc = new ccReg::Contact;
@@ -117,19 +174,20 @@ delete cc;
 
     for( i = 0 ; i < max ; i ++) 
        {
-           sprintf( name, "NAME-%06d" , i+1 );
-           sprintf( roid , "ID-%06d" , i+1 );
+     random_string( name , 10 );
+
+           sprintf( roid , "ID-%s" , name );
 
            cc->ROID = CORBA::string_dup(  roid );  
            cc->Name = CORBA::string_dup( name );
            cc->Country = CORBA::string_dup( "CZ" );
            cc->CrID = CORBA::string_dup( "REG-WEB4U" );
            cc->ClID = CORBA::string_dup( "REG-WEB4U" );
-           cout << "Create: " << cc->ROID <<   cc->Name << endl;  
-           EPP->ContactCreate( *cc , "XY-1234" , errMsg , svTR );
+           cout << "Create: "  << i  << cc->ROID <<   cc->Name << endl;  
+           EPP->ContactCreate( *cc ,loginID ,  "CREATE" );
        } 
-
-
+*/
+/*
     for( i = 0 ; i < max ; i ++)
        {
            sprintf( roid , "ID-%06d" , i+1 );
@@ -161,9 +219,9 @@ delete cc;
 //   printf("zeme %c%c [%s] \n" , contact->Country[0] ,  contact->Country[1] , contact->AuthInfoPw);
 
 
-   ret =  EPP->ClientLogout();
+   ret =  EPP->ClientLogout( loginID , "XXXX" );
    cout  << "client logout "<< endl;
-    cout << "err code " << ret->errCode  <<  ret->errMsg  << endl;
+    cout << "err code " <<  ret->errCode  << endl;
      
     orb->destroy();
   }
