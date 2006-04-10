@@ -24,8 +24,20 @@ dt.tm_year = dt.tm_year - 1900;
 return mktime(&dt);
 }
 
-#include <string.h>
 
+
+void get_timestamp( time_t t , char *string)
+{
+struct tm *dt;
+
+// preved cas
+dt =   gmtime(  &t );
+
+sprintf(string ,  "%4d-%02d-%02d %02d:%02d:%02d" ,
+                  dt->tm_year+1900 ,  dt->tm_mon +1, dt->tm_mday ,
+                  dt->tm_hour,   dt->tm_min , dt->tm_sec);
+
+}
 
 // vraci pocet prvku v poli
 int get_array_length(char *array)

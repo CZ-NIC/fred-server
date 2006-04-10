@@ -1,6 +1,9 @@
 
 // vraci cat v time_t GMT
 time_t get_gmt_time(char *string );
+// prevede time_t do retezce pro SQL
+void get_timestamp( time_t t , char *string);
+
 // zjisti velikost pole z retezce
 int get_array_length(char *array);
 // vrati prvek pole
