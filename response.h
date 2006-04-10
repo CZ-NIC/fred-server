@@ -1,5 +1,6 @@
 #define    COMMAND_OK     1000
 #define    COMMAND_FAILED 2400
+#define COMMAND_OBJECT_NOT_FOUND 2303
 /*
 #define   EPP_MSG_1000    "Command completed successfully"
            1001    "Command completed successfully; action pending"

@@ -35,7 +35,7 @@ int main(int argc, char** argv)
     CORBA::Object_var obj ;
     CORBA::String_var errMsg , svTR;
     int i , len , max = 512, d;
-    short loginID;
+    long loginID;
     time_t t;
     filebuf *pbuf;
     char *buffer;
@@ -133,10 +133,10 @@ for( i = 0 ; i < max ; i ++ )
 } 
 delete domain;
 */
-
+max =0;
  for( d = 0 ; d < max ; d ++ )
  {
-     random_string( name , 3 );
+     random_string( name , 2 );
      strcat( name , ".cz" );
 
   //  t = (time_t )  contact->CrDate;
