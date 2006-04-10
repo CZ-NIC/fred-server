@@ -46,10 +46,22 @@ dm = new ccReg::DomainWhois;
 // dotaz na domenu
 sprintf( sqlString , "SELECT * FROM DOMAIN WHERE fqdn=\'%s\'" , domain_name );
 
+// free
+dm->name= CORBA::string_dup( "" );
+dm->created =  0 ;
+dm->expired =  0 ;
+dm->status = 0 ;
+dm->registrarName = CORBA::string_dup( "" );
+dm->registrarUrl  = CORBA::string_dup( "" );
+dm->ns.length(0); // nulova sekvence
+
 if( PQsql.OpenDatabase( DATABASE ) )
 {
   if( PQsql.ExecSelect( sqlString ) )
   {
+  if( PQsql.GetSelectRows() == 1 )
+    {
+ 
    dm->name= CORBA::string_dup(  PQsql.GetFieldValueName("fqdn" , 0 ) )  ; // plnohodnotne jmeno domeny
 
    dm->created =  get_gmt_time( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas  vytvoreni domeny
@@ -58,8 +70,10 @@ if( PQsql.OpenDatabase( DATABASE ) )
    clid = atoi(  PQsql.GetFieldValueName("clid" , 0 ) ); // client registrator
    did = atoi(  PQsql.GetFieldValueName("id" , 0 ) ); // id domeny
 
+   dm->status = 1;
+
       // pole dns servru
-      strcpy( dns , PQsql.GetFieldValueName("nameserver" , 0 ) );
+    strcpy( dns , PQsql.GetFieldValueName("nameserver" , 0 ) );
 
 
      // free select
@@ -89,7 +103,10 @@ if( PQsql.OpenDatabase( DATABASE ) )
 
  
    }
-
+ 
+  }
+ 
+ 
  PQsql.Disconnect();
 }
 
