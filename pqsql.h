@@ -24,10 +24,14 @@ bool RollbackTransaction()
 bool CommitTransaction()
 {return ExecSQL("COMMIT TRANSACTION");};
 
+// zpracovani action 
+bool BeginAction(int clientID , int action ,char *clTRID );
+bool EndAction(int response , char *svrTRID );
+
 // spusti select a vrati pocet radek
 bool ExecSelect(char *sqlString);
 // vyprazdni result selectu a nastavi zpet pocet radku a sloupcu
-void  FreeSelect(){  PQclear(result);  };
+bool  FreeSelect(){  PQclear(result);  };
 // vraci hodnotu
 char * GetFieldValueName(char *fname , int row );
 // vraci retezec hodnoty
@@ -37,8 +41,11 @@ char * GetFieldValue( int row , int col );
 int GetSelectRows(){ return nRows;};
 int GetSelectCols(){ return nCols;};
 
+
+
 private:
 PGconn     *connection;
 PGresult   *result;
 int nRows , nCols; // pocet radek pri selectu
+int actionID;
 };

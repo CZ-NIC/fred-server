@@ -103,3 +103,39 @@ else
 
 } 
 
+
+// action
+// zpracovani action
+bool  PQ::BeginAction(int clientID , int action ,char *clTRID )
+{
+char sqlString[512];
+
+// actionID pro logovani
+    if( ExecSelect("SELECT NEXTVAL('action_id_seq');" ) )
+     {
+      actionID = atoi( GetFieldValue( 0 , 0 ) );
+      debug("action id = %d\n" , actionID  );
+      FreeSelect();
+     }
+
+  // zapis do action tabulky
+   sprintf( sqlString , "INSERT INTO ACTION ( id , clientid , action ,  clienttrid   )  VALUES ( %d , %ld , %d , \'%s\' );" ,
+                  actionID , clientID  , action  , clTRID);
+
+return ExecSQL( sqlString );
+
+}
+
+bool PQ:: EndAction(int response , char *svrTRID )
+{
+char sqlString[512];
+// cislo transakce co vraci server
+sprintf( svrTRID , "ccReg-%010d" , actionID );
+
+sprintf( sqlString , "UPDATE Action SET response=%d , enddate='now()' , servertrid=\'%s\' WHERE id=%d;" ,  response  , svrTRID , actionID );
+
+// update tabulky
+actionID=0;
+return ExecSQL(  sqlString );
+}
+
