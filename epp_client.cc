@@ -35,7 +35,7 @@ int main(int argc, char** argv)
     CORBA::Object_var obj ;
     CORBA::String_var errMsg , svTR;
     int i , len , max = 512, d;
-    long loginID;
+    CORBA::Long loginID;
     struct tm dt;
     time_t t;
     filebuf *pbuf;
@@ -81,7 +81,8 @@ int main(int argc, char** argv)
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
 
-    ret =  EPP->ClientLogin( "REG-LRR"  ,  "XXXX" , loginID );
+
+    ret =  EPP->ClientLogin(  "REG-LRR"  ,    "XX-login" , loginID );
 
     cout << "err code " <<  ret->errCode    << endl;
 
