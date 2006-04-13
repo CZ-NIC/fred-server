@@ -6,7 +6,7 @@
 #include <iostream.h>
 #include <ccReg.hh>
 
-#include "time.h"
+#include <time.h>
 
 //////////////////////////////////////////////////////////////////////
 
@@ -36,10 +36,11 @@ int main(int argc, char** argv)
     CORBA::String_var errMsg , svTR;
     int i , len , max = 512, d;
     long loginID;
+    struct tm dt;
     time_t t;
     filebuf *pbuf;
     char *buffer;
-    char name[64] , roid[32] , email[32] ;
+    char name[64] , roid[32] , email[32] , clTRID[32];
     long size  ;
     ifstream fd ("/tmp/ccReg.ref");
     // get pointer to associated buffer object
@@ -83,10 +84,11 @@ int main(int argc, char** argv)
     ret =  EPP->ClientLogin( "REG-LRR"  ,  "XXXX" , loginID );
 
     cout << "err code " <<  ret->errCode    << endl;
+
 /*
 
-    ret =  EPP->ContactInfo( "XPET",  cc );
-    cout << "err code " << ret->errCode  <<  ret->errMsg  << endl;
+    ret =  EPP->ContactInfo( "XPET",  cc , loginID , "XPET_info" );
+    cout << "err code " << ret->errCode << " serverTRID " <<  ret->svTRID  << endl;
 
     cout << "info "  << cc->Name  <<  endl;
  
@@ -133,7 +135,39 @@ for( i = 0 ; i < max ; i ++ )
 } 
 delete domain;
 */
-max =0;
+
+/*
+  domain = new ccReg::Domain;
+ 
+dt.tm_sec = 0;
+dt.tm_hour = 0;
+dt.tm_min = 0;
+dt.tm_mday = 31;        
+dt.tm_mon = 0;        
+tm_year = 108;       
+
+strcpy( name , "superweb" );
+
+     domain->ROID =  CORBA::string_dup( name );
+     strcat( name , ".cz" );
+     domain->name =  CORBA::string_dup( name );
+     domain->Registrant =  CORBA::string_dup( "XPET" );
+     domain->CrID =  CORBA::string_dup( "REG-CT" );
+     domain->ClID =  CORBA::string_dup( "REG-CT" );
+     domain->ExDate = mktime( &dt );
+     domain->ns.length( 3 );
+     domain->ns[0] = CORBA::string_dup( "dns.web.net" );
+     domain->ns[1] = CORBA::string_dup( "dns.searsch.net" );
+     domain->ns[2] = CORBA::string_dup( "dns.superWWW.net" );
+
+     cout << "domain " << i  <<  name    << endl;
+
+    ret =  EPP->DomainCreate( name ,  *domain , loginID , "XX-create" );
+
+    cout << "err code " << ret->errCode   << endl;
+
+*/
+max =1000;
  for( d = 0 ; d < max ; d ++ )
  {
      random_string( name , 2 );
@@ -143,7 +177,9 @@ max =0;
    // cout << asctime( gmtime( &t) ) << endl;
    t = time(NULL);
    cout << "info: " <<  d <<  " " <<   asctime( gmtime( &t) ) << name  << endl;
-   ret =  EPP->DomainInfo(  name ,  domain , loginID , "XXX-info" );
+
+   sprintf( clTRID , "%06d-%06d" , loginID , d ); 
+   ret =  EPP->DomainInfo(  name ,  domain , loginID , clTRID );
    cout << "err code " << ret->errCode   << endl;
 
    cout << "domain "  << domain->name << "client: " << domain->ClID << endl;
@@ -152,6 +188,7 @@ max =0;
 
  delete domain;
 }
+
 
 /*
 
