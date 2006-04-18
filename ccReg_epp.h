@@ -1,18 +1,19 @@
-
 //
-// Example class implementing IDL interface ccReg::EPP
+//  class implementing IDL interface ccReg::EPP
 //
-
 class ccReg_EPP_i: public POA_ccReg::EPP {
-
+private:
+  // Make sure all instances are built on the heap by making the
+  // destructor non-public
+  //virtual ~ccReg_EPP_i();
 public:
   // standard constructor
   ccReg_EPP_i();
   virtual ~ccReg_EPP_i();
 
-
   // methods corresponding to defined IDL attributes and operations
-  ccReg::Response* ClientLogin(const char* ClID, const char* clTRID, CORBA::Long& clientID);
+  ccReg::Response* GetTransaction(CORBA::Long clientID, const char* clTRID, CORBA::Short errCode);
+  ccReg::Response* ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, CORBA::Long& clientID);
   ccReg::Response* ClientLogout(CORBA::Long clientID, const char* clTRID);
   ccReg::Response* ContactCheck(const char* handle, CORBA::Boolean& avial, CORBA::Long clientID, const char* clTRID);
   ccReg::Response* ContactInfo(const char* handle, ccReg::Contact_out c, CORBA::Long clientID, const char* clTRID);
@@ -24,14 +25,15 @@ public:
   ccReg::Response* HostDelete(const char* name, CORBA::Long clientID, const char* clTRID);
   ccReg::Response* HostCreate(const char* name, const ccReg::Host& h, CORBA::Long clientID, const char* clTRID);
   ccReg::Response* HostUpdate(const char* name, const ccReg::Host& h, CORBA::Long clientID, const char* clTRID);
+  ccReg::Response* NSSetCheck(const char* handle, CORBA::Boolean& avial, CORBA::Long clientID, const char* clTRID);
+  ccReg::Response* NSSetInfo(const char* handle, ccReg::NSSet_out n, CORBA::Long clientID, const char* clTRID);
+  ccReg::Response* NSSetDelete(const char* handle, CORBA::Long clientID, const char* clTRID);
+  ccReg::Response* NSSetCreate(const char* handle, const ccReg::NSSet& n, CORBA::Long clientID, const char* clTRID);
+  ccReg::Response* NSSetUpdate(const char* handle, const ccReg::NSSet& n, CORBA::Long clientID, const char* clTRID);
   ccReg::Response* DomainCheck(const char* fqdn, CORBA::Boolean& avial, CORBA::Long clientID, const char* clTRID);
   ccReg::Response* DomainInfo(const char* fqdn, ccReg::Domain_out d, CORBA::Long clientID, const char* clTRID);
   ccReg::Response* DomainDelete(const char* fqdn, CORBA::Long clientID, const char* clTRID);
   ccReg::Response* DomainUpdate(const char* fqdn, const ccReg::Domain& d, CORBA::Long clientID, const char* clTRID);
   ccReg::Response* DomainCreate(const char* fqdn, const ccReg::Domain& d, CORBA::Long clientID, const char* clTRID);
 
-
-private:
-
 };
-
