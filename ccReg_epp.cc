@@ -127,7 +127,7 @@ if( roid )
 {
 
    // kontrola hesla
-  sprintf( sqlString , "SELECT password FROM REGISTRARACL WHERE id=\'%s\'" , roid);
+  sprintf( sqlString , "SELECT password FROM REGISTRARACL WHERE registrarid=%d;" , roid);
 
   if( PQsql.ExecSelect( sqlString ) )
   {
