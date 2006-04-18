@@ -2,6 +2,7 @@
 #define    COMMAND_FAILED 2400
 #define COMMAND_OBJECT_NOT_EXIST 2303
 #define COMMAND_OBJECT_EXIST    2302
+#define COMMAND_AUTH_ERROR    2501
 /*
 #define   EPP_MSG_1000    "Command completed successfully"
            1001    "Command completed successfully; action pending"
