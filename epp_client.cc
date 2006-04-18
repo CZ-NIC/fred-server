@@ -82,9 +82,22 @@ int main(int argc, char** argv)
 
 
 
-    ret =  EPP->ClientLogin(  "REG-LRR"  ,    "XX-login" , loginID );
+    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "heslo" , "" ,     "X2-login" , loginID );
 
     cout << "err code " <<  ret->errCode    << endl;
+
+    ret =  EPP->HostInfo( "modry.neco.cz",  host  , loginID ,  "XX-host"  );
+    cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
+
+     cout << "host "  << host->fqdn << " nsset "  << host->nsset << endl;
+
+     for( i = 0 ; i < host->inet.length() ; i ++ ) cout << "InetAddress: " <<  host->inet[i]  << endl ; 
+
+
+     ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
+
+    cout << "get Transaction code " << ret->errCode  <<  ret->svTRID  << endl;
+
 
 /*
 
@@ -98,15 +111,9 @@ int main(int argc, char** argv)
   //  t = (time_t )  contact->CrDate;
    // cout << asctime( gmtime( &t) ) << endl;
 
-    ret =  EPP->HostInfo( "dns.test.cz",  host );
-    cout << "err code " << ret->errCode  <<  ret->errMsg  << endl;
 
-     cout << "host "  << host->name  << host->domain << endl;
 
-     for( i = 0 ; i < host->inet.length() ; i ++ ) cout << "InetAddress: " <<  host->inet[i]  << endl ; 
 
-*/
-/*
   domain = new ccReg::Domain;
 
 
@@ -167,7 +174,7 @@ strcpy( name , "superweb" );
 
     cout << "err code " << ret->errCode   << endl;
 
-*/
+
 max =1000;
  for( d = 0 ; d < max ; d ++ )
  {
@@ -191,7 +198,7 @@ max =1000;
 }
 
 
-/*
+
 
 cc = new ccReg::Contact;
  
