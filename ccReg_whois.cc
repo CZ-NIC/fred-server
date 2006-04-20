@@ -18,7 +18,7 @@
 
 // definice pripojeno na databazi
 // #define DATABASE "dbname=ccreg user=ccreg password=Eeh5ahSi"
-#define DATABASE "dbname=ccReg user=pblaha"
+// #define DATABASE "dbname=ccReg user=pblaha"
 
 
 //
@@ -36,7 +36,7 @@ ccReg::DomainWhois* ccReg_Whois_i::Domain(const char* domain_name)
 PQ PQsql;
 char sqlString[1024];
 ccReg::DomainWhois *dm;
-int clid , did ;
+int clid , did ,nssetid ;
 char  dns[1024] , ns[128];
 int i , len;
 
@@ -69,11 +69,10 @@ if( PQsql.OpenDatabase( DATABASE ) )
 
    clid = atoi(  PQsql.GetFieldValueName("clid" , 0 ) ); // client registrator
    did = atoi(  PQsql.GetFieldValueName("id" , 0 ) ); // id domeny
+   nssetid = atoi(  PQsql.GetFieldValueName("nsset" , 0 ) ); // id nsset
 
    dm->status = 1;
 
-      // pole dns servru
-    strcpy( dns , PQsql.GetFieldValueName("nameserver" , 0 ) );
 
 
      // free select
@@ -88,17 +87,23 @@ if( PQsql.OpenDatabase( DATABASE ) )
         PQsql.FreeSelect();
       }
 
-    // dotaz na nameservry
+    // dotaz na hosty z nssetu
+    sprintf( sqlString , "SELECT fqdn FROM HOST WHERE nssetid=%d;" , nssetid ) ;
+ 
 
 
-      len =  get_array_length( dns );
-      dm->ns.length(len); // sequence DNS servru
-      for( i = 0 ; i < len ; i ++)
-       {
-           get_array_value( dns , ns , i );
-           dm->ns[i] =CORBA::string_dup( ns );
-       }
+    if( PQsql.ExecSelect( sqlString ) )
+      {
+    
+         len =  PQsql.GetSelectRows(); // pocet DNS servru
+         dm->ns.length(len); // sequence DNS servru
+         for( i = 0 ; i < len ; i ++)
+            {
+              dm->ns[i] = CORBA::string_dup( PQsql.GetFieldValue( i , 0 )  );
+            }
 
+        PQsql.FreeSelect(); 
+     } else dm->ns.length(0); // zadne DNS servry
 
 
  
