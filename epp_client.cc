@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 
 
 
-    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "heslo" , "" ,     "LRR-login" , loginID );
+    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789" , "" ,     "LRR-login" , loginID );
 
     cout << "err code " <<  ret->errCode    << endl;
 
@@ -117,6 +117,7 @@ int main(int argc, char** argv)
    t = (time_t )  nsset->CrDate;
  
      cout << "nsset "  <<  nsset->handle << " created " <<  asctime( gmtime( &t) ) << endl;
+     cout << "clID "  <<  nsset->ClID << " crID " << nsset->CrID<< " upID " << nsset->UpID  << endl;
 
       for( i = 0 ; i < nsset->tech.length() ; i ++ ) cout << "tech contact: " <<  nsset->tech[i] << endl ;
 
@@ -126,7 +127,16 @@ int main(int argc, char** argv)
              for( j = 0 ; j < nsset->dns[i].inet.length() ; j ++ ) cout << "ipadres : "  <<  nsset->dns[i].inet[j] <<  endl ; 
          }
 
-   cout << "delete nsset" << endl;
+   nsset->handle =CORBA::string_dup(  "NSSET" );
+   nsset->ROID =CORBA::string_dup(  "NSSET" );
+
+
+    ret =  EPP->NSSetCreate( "NSSET" , *nsset ,  loginID ,  "XX-nsset-create" );
+    cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
+
+    cout << "delete nsset" << endl;
+
+
    delete nsset;
 
 /*

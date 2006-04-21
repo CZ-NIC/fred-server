@@ -126,16 +126,107 @@ return ExecSQL( sqlString );
 
 }
 
-bool PQ:: EndAction(int response , char *svrTRID )
+char * PQ:: EndAction(int response )
 {
 char sqlString[512];
+char svrTRID[32];
+char *svr;
+int id;
+
 // cislo transakce co vraci server
 sprintf( svrTRID , "ccReg-%010d" , actionID );
 
 sprintf( sqlString , "UPDATE Action SET response=%d , enddate='now()' , servertrid=\'%s\' WHERE id=%d;" ,  response  , svrTRID , actionID );
 
 // update tabulky
-actionID=0;
-return ExecSQL(  sqlString );
+id  =  actionID;
+actionID = 0 ; 
+
+if( ExecSQL(  sqlString ) ) 
+ {
+   sprintf( sqlString , "SELECT  servertrid FROM Action  WHERE id=%d;"  , id );
+   if( ExecSelect( sqlString ) )
+    {
+      svr =  GetFieldValue( 0 , 0 );
+      debug("GetsvrTRID %s\n" , svr );   
+      FreeSelect();
+    }
+  return svr;
+ }
+
+else return "svrTRID ERROR";
+}
+
+
+
+
+char * PQ::GetHandleFrom( char *table , int id )
+{
+char sqlString[128];
+char *handle;
+
+  sprintf( sqlString , "SELECT  handle FROM %s WHERE id=%d;" , table , id );
+
+if( ExecSelect( sqlString ) )
+  {
+      handle = GetFieldValue( 0 , 0 );
+     debug("GetHandleFrom \'%s\' ID %d handle %s \n" , table , id ,  handle );
+      FreeSelect();
+   }
+
+if( handle == NULL ) return "NULL HANDLE";
+else return handle;
+}
+
+int PQ::GetIDFrom( char *table , char *handle)
+{
+char sqlString[128];
+int id=0;
+
+sprintf( sqlString , "SELECT  id FROM %s WHERE roid= \'%s\';" ,  table , handle );
+
+if( ExecSelect( sqlString ) )
+  {
+     id = atoi(  GetFieldValue( 0 , 0 )  );
+     debug("GetIDFrom \'%s\' handle %s ID %d\n" , table , handle , id );
+     FreeSelect();
+   }
+
+return id;
+}
+
+int PQ::GetSequenceID( char *sequence )
+{
+char sqlString[128];
+int id=0;
+
+sprintf(  sqlString , "SELECT  NEXTVAL( \'%s\'  );" , sequence );
+
+if( ExecSelect( sqlString ) )
+  {
+     id = atoi(  GetFieldValue( 0 , 0 )  );
+     debug("Sequence \'%s\' -> ID %d\n" , sequence , id );
+     FreeSelect();
+   }
+
+return id;
+}
+
+
+
+int PQ::GetLoginRegistrarID(int clientID)
+{
+char sqlString[128];
+int id=0;
+// get  registrator ID
+sprintf(  sqlString , "SELECT registrarid FROM Login WHERE id=%d ; " , clientID );
+
+if( ExecSelect( sqlString ) )
+  {
+     id = atoi(  GetFieldValue( 0 , 0 )  );
+       FreeSelect();
+   }
+ 
+return id;
 }
 

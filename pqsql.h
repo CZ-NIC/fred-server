@@ -26,8 +26,17 @@ bool CommitTransaction()
 
 // zpracovani action 
 bool BeginAction(int clientID , int action ,char *clTRID );
-bool EndAction(int response , char *svrTRID );
+char * EndAction(int response  );
 
+// vraci handle nebo id tabulky
+char * GetHandleFrom( char *table , int id );
+int GetIDFrom( char *table , char *handle);
+int GetSequenceID( char *sequence ); // id ze sequnce
+
+
+
+int  GetLoginRegistrarID(int clientID);
+ 
 // spusti select a vrati pocet radek
 bool ExecSelect(char *sqlString);
 // vyprazdni result selectu a nastavi zpet pocet radku a sloupcu
