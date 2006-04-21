@@ -30,12 +30,14 @@ int main(int argc, char** argv)
     ccReg::Contact *contact , *cc;
     ccReg::Response *ret;
     ccReg::Host *host;
+    ccReg::NSSet *nsset;
     ccReg::Domain *domain;
     CORBA::Short err;
     CORBA::Object_var obj ;
     CORBA::String_var errMsg , svTR;
-    int i , len , max = 512, d;
+    int i , len , max = 512, d , j ;
     CORBA::Long loginID;
+    bool avial;
     struct tm dt;
     time_t t;
     filebuf *pbuf;
@@ -82,7 +84,7 @@ int main(int argc, char** argv)
 
 
 
-    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "heslo" , "" ,     "X2-login" , loginID );
+    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "heslo" , "" ,     "LRR-login" , loginID );
 
     cout << "err code " <<  ret->errCode    << endl;
 
@@ -94,10 +96,38 @@ int main(int argc, char** argv)
      for( i = 0 ; i < host->inet.length() ; i ++ ) cout << "InetAddress: " <<  host->inet[i]  << endl ; 
 
 
+    delete host;
+
      ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
 
     cout << "get Transaction code " << ret->errCode  <<  ret->svTRID  << endl;
 
+
+    ret =  EPP->NSSetCheck( "NECOCZ" , avial,   loginID ,  "XX-nsset" );
+    cout << "avial " << avial  << " err code " << ret->errCode  <<  ret->svTRID  << endl;
+
+
+    ret =  EPP->NSSetCheck( "NIC" , avial,   loginID ,  "XX-nsset" );
+    cout << "avial " << avial  << " err code " << ret->errCode  <<  ret->svTRID  << endl;
+ 
+
+    ret =  EPP->NSSetInfo( "NECOCZ" , nsset ,  loginID ,  "XX-nsset" );
+    cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
+
+   t = (time_t )  nsset->CrDate;
+ 
+     cout << "nsset "  <<  nsset->handle << " created " <<  asctime( gmtime( &t) ) << endl;
+
+      for( i = 0 ; i < nsset->tech.length() ; i ++ ) cout << "tech contact: " <<  nsset->tech[i] << endl ;
+
+      for( i = 0 ; i < nsset->dns.length() ; i ++ ) 
+         {
+             cout << "dns: " <<  nsset->dns[i].fqdn << endl;
+             for( j = 0 ; j < nsset->dns[i].inet.length() ; j ++ ) cout << "ipadres : "  <<  nsset->dns[i].inet[j] <<  endl ; 
+         }
+
+   cout << "delete nsset" << endl;
+   delete nsset;
 
 /*
 
@@ -263,11 +293,12 @@ delete cc;
 */
 //   printf("zeme %c%c [%s] \n" , contact->Country[0] ,  contact->Country[1] , contact->AuthInfoPw);
 
+/*
+      cout  << "client logout "<< endl;
 
    ret =  EPP->ClientLogout( loginID , "XXXX" );
-   cout  << "client logout "<< endl;
     cout << "err code " <<  ret->errCode  << endl;
-     
+  */   
     orb->destroy();
   }
   catch(CORBA::TRANSIENT&) {
