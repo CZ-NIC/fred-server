@@ -23,7 +23,7 @@
 
 // definice pripojeno na databazi
 // #define DATABASE "dbname=ccreg user=ccreg password=Eeh5ahSi"
-#define DATABASE "dbname=cc_reg user=pblaha host=petr"
+// #define DATABASE "dbname=cc_reg user=pblaha host=petr"
 
 //
 // Example implementational code for IDL interface ccReg::EPP
@@ -74,6 +74,9 @@ ccReg::Response* ccReg_EPP_i::ClientLogout(CORBA::Long clientID, const char* clT
 PQ  PQsql;
 char sqlString[512];
 ccReg::Response *ret;
+
+cout << "Logout:  " << clientID << endl; 
+
 ret = new ccReg::Response;
 // default
 ret->errCode=COMMAND_FAILED; // chyba
@@ -685,14 +688,219 @@ return ret;
 
 ccReg::Response* ccReg_EPP_i::NSSetCheck(const char* handle, CORBA::Boolean& avial, CORBA::Long clientID, const char* clTRID)
 {
-  // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::NSSetCheck(const char* handle, CORBA::Boolean& avial, CORBA::Long clientID, const char* clTRID)>"
+PQ PQsql;
+char sqlString[1024];
+ccReg::Response *ret;
+char svrTrID[32];
+int i;
+
+cout  << "NSSetCheck: " << handle  << endl;
+
+ret = new ccReg::Response;
+
+
+// default
+ret->errCode=COMMAND_FAILED;
+ret->svTRID = CORBA::string_alloc(32); //  server transaction
+ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+
+
+
+if( PQsql.OpenDatabase( DATABASE ) )
+{
+
+if( PQsql.BeginAction( clientID , EPP_NSsetCheck , (char * ) clTRID  ) )
+ {
+
+  sprintf( sqlString , "SELECT * FROM NSSET WHERE handle=\'%s\'" , handle);
+
+  if( PQsql.ExecSelect( sqlString ) )
+  {
+  if( PQsql.GetSelectRows() == 1 ) avial=false;
+  else avial = true;
+
+  // free select
+  PQsql.FreeSelect();
+  ret->errCode=COMMAND_OK;
+  }
+
+
+  // zapis na konec action
+ PQsql.EndAction( ret->errCode ,  svrTrID );
+ ret->svTRID = CORBA::string_dup( svrTrID );
+ }
+
+ PQsql.Disconnect();
+}
+
+return ret;
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetInfo(const char* handle, ccReg::NSSet_out n, CORBA::Long clientID, const char* clTRID)
 {
-  // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::NSSetInfo(const char* handle, ccReg::NSSet_out n, CORBA::Long clientID, const char* clTRID)>"
+PQ PQsql;
+char sqlString[1024] ,  adres[1042] , adr[128];
+ccReg::Response *ret;
+char svrTrID[32];
+int clid , crid , upid , nssetid;
+int i , j  ,ilen , len;
+
+cout  << "NSSetInfo: " << handle  << endl;
+
+ret = new ccReg::Response;
+n = new ccReg::NSSet;
+
+// default
+ret->errCode=COMMAND_FAILED;
+ret->svTRID = CORBA::string_alloc(32); //  server transaction
+ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+
+
+
+if( PQsql.OpenDatabase( DATABASE ) )
+{
+
+//if( PQsql.BeginAction( clientID , EPP_NSsetInfo , (char * ) clTRID  ) )
+ {
+
+  sprintf( sqlString , "SELECT * FROM NSSET WHERE handle=\'%s\'" , handle);
+
+
+  if( PQsql.ExecSelect( sqlString ) )
+  {
+  if( PQsql.GetSelectRows() == 1 )
+    {
+ 
+
+
+        nssetid = atoi( PQsql.GetFieldValueName("ID" , 0 ) );
+        clid = atoi( PQsql.GetFieldValueName("ClID" , 0 ) );
+        crid = atoi( PQsql.GetFieldValueName("CrID" , 0 ) );
+        upid = atoi( PQsql.GetFieldValueName("UpID" , 0 ) );
+
+        n->stat = 0 ; // status
+
+        n->ROID=CORBA::string_dup( PQsql.GetFieldValueName("ROID" , 0 ) ); // ROID
+        n->handle=CORBA::string_dup( PQsql.GetFieldValueName("handle" , 0 ) ); // ROID
+        n->CrDate= get_gmt_time( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
+        n->UpDate= get_gmt_time( PQsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
+        n->ExDate= get_gmt_time (PQsql.GetFieldValueName("ExDate" , 0 ) );  // datum a cas expirace
+
+        n->AuthInfoPw = CORBA::string_dup( PQsql.GetFieldValueName("AuthInfoPw" , 0 ) ); // autentifikace
+
+        ret->errCode=COMMAND_OK;
+
+
+        // free select
+        PQsql.FreeSelect();
+
+
+        // dotaz na DNS servry 
+// n->dns.length(0);
+
+        sprintf( sqlString , "SELECT fqdn , ipaddr FROM HOST  WHERE nssetid=%d" , nssetid);
+
+        if(  PQsql.ExecSelect( sqlString ) )
+          {  
+             len =  PQsql.GetSelectRows();
+             
+
+               
+             n->dns.length(len);
+ 
+             for( i = 0 ; i < len ; i ++)   
+                {
+                     
+                   // fqdn DNS servru nazev  
+                   n->dns[i].fqdn = CORBA::string_dup(  PQsql.GetFieldValueName("fqdn" , i ) );
+ 
+                   // pole adres
+                   strcpy( adres , PQsql.GetFieldValueName("ipaddr" , i ) );
+
+                   // zpracuj pole adres
+                   ilen =  get_array_length( adres );
+                   n->dns[i].inet.length(ilen); // sequence ip adres
+                   for( j = 0 ; j < ilen ; j ++)
+                      {
+                        get_array_value( adres , adr , j );
+                        n->dns[i].inet[j] =CORBA::string_dup( adr );
+                      }
+
+
+                }
+
+             PQsql.FreeSelect();
+          }
+
+
+        // dotaz na technicke kontakty
+        sprintf( sqlString , "SELECT  handle FROM CONTACT  JOIN  nsset_contact_map ON nsset_contact_map.contactid=contact.id WHERE nsset_contact_map.nssetid=%d;" , nssetid );
+        if(  PQsql.ExecSelect( sqlString ) )
+          {
+               len =  PQsql.GetSelectRows(); // pocet technickych kontaktu
+               n->tech.length(len); // technicke kontaktry handle
+               for( i = 0 ; i < len ; i ++) n->tech[i] = CORBA::string_dup( PQsql.GetFieldValue( i , 0 )  );
+
+               PQsql.FreeSelect();
+          }
+
+
+     }
+   else
+    {
+     // free select
+    PQsql.FreeSelect();
+    ret->errCode=COMMAND_OBJECT_NOT_EXIST;
+    }
+
+   }
+
+
+       
+ 
+
+  // zapis na konec action
+// PQsql.EndAction( ret->errCode ,  svrTrID );
+// ret->svTRID = CORBA::string_dup( svrTrID );
+ }
+
+ PQsql.Disconnect();
+}
+
+
+// vyprazdni
+if( ret->errCode != COMMAND_OK )
+{
+n->ROID =  CORBA::string_dup( "" ); // fqdn nazev domeny
+n->handle =  CORBA::string_dup( "" ); // handle nssetu
+n->stat=0; // status sequence
+n->CrDate=0; // datum vytvoreni
+n->UpDate=0; // datum zmeny
+n->ExDate=0;
+n->AuthInfoPw=  CORBA::string_dup( "" ); 
+n->dns.length(0);
+n->tech.length(0);
+}
+
+
+cout << "return  " << endl;
+
+return ret;
+
+/*
+string ROID;
+string handle;
+Status stat; // status sequence
+string ClID;    // identifikator registratora ktery ma pravo na zemnu
+string CrID;    // identifikator registratora ktery zaznam vytvoril
+string UpID;    // identifikator registratora ktery zmenil zaznam
+timestamp CrDate; // datum a cas vytvoreni
+timestamp ExDate; // taum a cas expirace domeny
+timestamp UpDate;  // datum a cas update
+string AuthInfoPw ; // autentifikace
+DNSHost dns;   // sequence DNS hosty fqd plus InetAddress
+TechContact tech; // sequence handle na technicke kontakty
+*/
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetDelete(const char* handle, CORBA::Long clientID, const char* clTRID)
@@ -1146,7 +1354,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(const char* fqdn, ccReg::Domain_out d ,
 PQ PQsql;
 char sqlString[1024] , dns[1042]  , ns[128] ;
 ccReg::Response *ret;
-int id , clid , crid ,  upid , regid;
+int id , clid , crid ,  upid , regid ,nssetid;
 int i , len;
 char svrTrID[32];
 
@@ -1186,7 +1394,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
         crid = atoi( PQsql.GetFieldValueName("CrID" , 0 ) ); 
         upid = atoi( PQsql.GetFieldValueName("UpID" , 0 ) ); 
         regid = atoi( PQsql.GetFieldValueName("registrant" , 0 ) ); 
-
+        nssetid = atoi( PQsql.GetFieldValueName("nsset" , 0 ) );  
 
         d->stat = 0 ; // status
 
@@ -1243,14 +1451,16 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
              PQsql.FreeSelect(); 
           }
 
-      len =  get_array_length( dns );
-      d->ns.length(len); // sequence DNS servru
-      for( i = 0 ; i < len ; i ++)
-       {
-           get_array_value( dns , ns , i );
-           d->ns[i] =CORBA::string_dup( ns );
-       }
-
+      // dotaz na handle na nsset
+        sprintf( sqlString , "SELECT  handle FROM NSSET WHERE id=%d;" , nssetid );
+        if(  PQsql.ExecSelect( sqlString ) )
+          {
+             // identifikator kontaktu
+             d->nsset=CORBA::string_dup(PQsql.GetFieldValueName("handle" , 0 ));
+             PQsql.FreeSelect();
+          }
+ 
+         
 
      }
    else
@@ -1279,6 +1489,7 @@ debug("vyprazdneni");
 // vyprazdni
 d->ROID =  CORBA::string_dup( "" ); // domena do ktere patri host
 d->name=  CORBA::string_dup( "" ); // fqdn nazev domeny
+d->nsset = CORBA::string_dup( "" ); // nsset
 d->stat=0; // status sequence
 d->CrDate=0; // datum vytvoreni
 d->TrDate=0; // datum zmeny
@@ -1287,7 +1498,6 @@ d->Registrant=CORBA::string_dup( "" );
 d->ClID=  CORBA::string_dup( "" );    // identifikator registratora ktery vytvoril host
 d->UpID=  CORBA::string_dup( "" );    // identifikator registratora ktery zmenil zaznam
 d->CrID=  CORBA::string_dup( "" );    // identifikator registratora ktery zmenil zaznam
-d->ns.length(0); // sequence ip adres 
 
 //ret->errMsg = CORBA::string_dup("Host not found");
 }
@@ -1396,7 +1606,7 @@ char sqlString[4096] , buf[1024];
 char exDate[24] , nsArray[512];
 char svrTrID[32];
 ccReg::Response *ret;
-int clid=0 , crid =0 , regid;
+int clid=0 , crid =0 , regid , nssetid;
 bool notFound=false;
 int i;
 
@@ -1433,6 +1643,15 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
 // pokud domena nexistuje
 if( notFound )
 {
+    sprintf( sqlString , "SELECT  id FROM NSSET WHERE roid= \'%s\';" ,  CORBA::string_dup(d.nsset) );
+  
+   if(  PQsql.ExecSelect( sqlString ) )
+     {
+        // id registratora clienta
+        nssetid = atoi( PQsql.GetFieldValue( 0 , 0 ) );
+        PQsql.FreeSelect();
+     }
+
     sprintf( sqlString , "SELECT  id FROM CONTACT WHERE roid= \'%s\';" ,  CORBA::string_dup(d.Registrant) );
   
    if(  PQsql.ExecSelect( sqlString ) )
@@ -1461,27 +1680,15 @@ if( notFound )
      }
 
 
-
-
-  strcpy( sqlString , "INSERT INTO DOMAIN ( zone , Status , ClID , CrID,  Registrant , ROID , fqdn  , crdate , update , exdate , authinfopw , nameserver ) VALUES ( 3 , \'{0}\' , " );
-
-
   // preved datum a cas expirace
   get_timestamp( d.ExDate , exDate );
 
-  // preved pole nameswervru
-  strcat( nsArray , " { " );
-  for( i = 0 ; i < d.ns.length() ; i ++ )
-  {
-   if( i > 0 ) strcat( nsArray , " , " );
-   strcat( nsArray ,  d.ns[i] );
-   }
 
-    strcat( nsArray , " } " );
+  sprintf( sqlString , "INSERT INTO DOMAIN ( zone , Status , ClID , CrID,  Registrant , ROID , fqdn  , crdate , update , exdate , authinfopw , nsset ) VALUES ( 3 , \'{0}\' , %d , %d , %d ,  \'%s\' ,    \'%s\' , 'now' , \'now\' , \'%s\' ,   \'%s\'  , %d " , 
+          clid  ,  crid , regid ,  CORBA::string_dup(d.ROID) ,  CORBA::string_dup(d.name)  ,  exDate  ,  CORBA::string_dup(d.AuthInfoPw ) , nssetid );
 
-    sprintf( buf  , "  %d , %d , %d ,  \'%s\' ,    \'%s\' , 'now' , \'now\' , \'%s\' ,   \'%s\'  ,  \'%s\' ); " ,   
-    clid  ,  crid , regid ,  CORBA::string_dup(d.ROID) ,  CORBA::string_dup(d.name)  ,  exDate  ,  CORBA::string_dup(d.AuthInfoPw ) ,  nsArray ) ;
-    strcat( sqlString , buf );
+
+
 
 
    // pokud se insertovalo do tabulky
