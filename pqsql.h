@@ -29,14 +29,18 @@ bool BeginAction(int clientID , int action ,char *clTRID );
 char * EndAction(int response  );
 
 // vraci handle nebo id tabulky
-char * GetHandleFrom( char *table , int id );
-int GetIDFrom( char *table , char *handle);
+int GetNumericFromTable( char *table , char *vname ,  char *fname ,  char *value);
+int GetNumericFromTable( char *table , char *vname ,  char *fname ,  int numeric);
+char * GetValueFromTable( char *table , char *vname ,  char *fname ,  char *value);
+char * GetValueFromTable( char *table , char *vname ,  char *fname ,  int numeric);
 int GetSequenceID( char *sequence ); // id ze sequnce
 
 
 
-int  GetLoginRegistrarID(int clientID);
- 
+int GetLoginRegistrarID(int id) { return GetNumericFromTable( "LOGIN" , "registrarid" , "id" , id ); };
+int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "id" , "handle" , handle ); };
+char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "handle" , "id" , id ); };
+
 // spusti select a vrati pocet radek
 bool ExecSelect(char *sqlString);
 // vyprazdni result selectu a nastavi zpet pocet radku a sloupcu

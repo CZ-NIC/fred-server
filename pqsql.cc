@@ -5,7 +5,7 @@
 // #include <libpq-fe.h>
 
 #include "pqsql.h"
-
+#include "util.h"
 
 bool PQ::OpenDatabase(char *conninfo)
 {
@@ -160,45 +160,54 @@ else return "svrTRID ERROR";
 
 
 
-char * PQ::GetHandleFrom( char *table , int id )
+char *  PQ::GetValueFromTable( char *table , char *vname , char *fname , char *value)
 {
 char sqlString[128];
 char *handle;
 
-  sprintf( sqlString , "SELECT  handle FROM %s WHERE id=%d;" , table , id );
+sprintf( sqlString , "SELECT  %s FROM %s WHERE %s=\'%s\';" , vname ,  table  ,  fname , value );
 
 if( ExecSelect( sqlString ) )
-  {
+ {
       handle = GetFieldValue( 0 , 0 );
-     debug("GetHandleFrom \'%s\' ID %d handle %s \n" , table , id ,  handle );
+      debug("GetValueFromTable \'%s\' field %s  value  %s ->  %s\n" , table ,  fname , value  , handle );
       FreeSelect();
-   }
+  }
 
-if( handle == NULL ) return "NULL HANDLE";
+if( handle == NULL ) return "";
 else return handle;
 }
 
-int PQ::GetIDFrom( char *table , char *handle)
+char * PQ::GetValueFromTable( char *table , char *vname ,  char *fname ,  int numeric)
 {
-char sqlString[128];
-int id=0;
+char value[16];
 
-sprintf( sqlString , "SELECT  id FROM %s WHERE roid= \'%s\';" ,  table , handle );
+sprintf( value , "%d" ,  numeric );
 
-if( ExecSelect( sqlString ) )
-  {
-     id = atoi(  GetFieldValue( 0 , 0 )  );
-     debug("GetIDFrom \'%s\' handle %s ID %d\n" , table , handle , id );
-     FreeSelect();
-   }
-
-return id;
+return GetValueFromTable( table , vname , fname , value );
 }
+
+int PQ::GetNumericFromTable( char *table , char *vname , char *fname , char *value)
+{
+return atoi( GetValueFromTable( table , vname , fname , value )  );
+}
+
+int  PQ::GetNumericFromTable( char *table , char *vname ,  char *fname ,  int numeric)
+{
+char value[16];
+
+sprintf( value , "%d" ,  numeric );
+
+return  GetNumericFromTable( table , vname , fname , value  );
+}
+
+
 
 int PQ::GetSequenceID( char *sequence )
 {
 char sqlString[128];
 int id=0;
+
 
 sprintf(  sqlString , "SELECT  NEXTVAL( \'%s\'  );" , sequence );
 
@@ -212,21 +221,4 @@ if( ExecSelect( sqlString ) )
 return id;
 }
 
-
-
-int PQ::GetLoginRegistrarID(int clientID)
-{
-char sqlString[128];
-int id=0;
-// get  registrator ID
-sprintf(  sqlString , "SELECT registrarid FROM Login WHERE id=%d ; " , clientID );
-
-if( ExecSelect( sqlString ) )
-  {
-     id = atoi(  GetFieldValue( 0 , 0 )  );
-       FreeSelect();
-   }
- 
-return id;
-}
 
