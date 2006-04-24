@@ -6,11 +6,14 @@ OBJECTS =
 IDLFILE = ../idl/ccReg.idl
 LDFLAGS=  -L/usr/local/pgsql/lib/
 LIBS=  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread
-CPPFLAGS =  -I/usr/local/pgsql/include/ -I.  -Wno-deprecated
+CPPFLAGS =  -I/usr/local/pgsql/include/   -I/usr/include/postgresql/  -I.  -Wno-deprecated
 CCREG_SERVER_OBJECTS=ccRegSK.o  ccReg_epp.o  ccReg_server.o   pqsql.o util.o
 WHOIS_SERVER_OBJECTS=ccRegSK.o  ccReg_whois.o  whois_server.o  pqsql.o util.o
 EPP_CLIENT_OBJECTS=ccRegSK.o epp_client.o
 WHOIS_CLIENT_OBJECTS=ccRegSK.o whois_client.o
+
+#definice pripojeni database
+DATABASE="dbname=ccreg user=ccreg password=Eeh5ahSi host=curlew"
 
 all: ccWhois_server ccReg_server epp_client whois_client
 .SUFFIXES:  .o
@@ -34,7 +37,7 @@ ccRegSK.cc ccRegSK.h:
 	omniidl -bcxx $(IDLFILE)
 
 %.o: %.cc 
-	$(CXX) $(CPPFLAGS) -c $<
+	$(CXX) $(CPPFLAGS) -DDATABASE=\"$(DATABASE)\"   -c -g $<
 
 
 
