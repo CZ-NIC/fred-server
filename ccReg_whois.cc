@@ -16,10 +16,6 @@
 #include "util.h"
 
 
-// definice pripojeno na databazi
-// #define DATABASE "dbname=ccreg user=ccreg password=Eeh5ahSi"
-// #define DATABASE "dbname=ccReg user=pblaha"
-
 
 //
 // Example implementational code for IDL interface ccReg::Whois
@@ -36,7 +32,7 @@ ccReg::DomainWhois* ccReg_Whois_i::Domain(const char* domain_name)
 PQ PQsql;
 char sqlString[1024];
 ccReg::DomainWhois *dm;
-int clid , did ,nssetid ;
+int clid , did ,nssetid , id  ;
 char  dns[1024] , ns[128];
 int i , len;
 
@@ -53,7 +49,10 @@ dm->expired =  0 ;
 dm->status = 0 ;
 dm->registrarName = CORBA::string_dup( "" );
 dm->registrarUrl  = CORBA::string_dup( "" );
+dm->nsset  = CORBA::string_dup( "" );
 dm->ns.length(0); // nulova sekvence
+dm->tech.length(0); // nulova sekvence
+dm->admin.length(0); // nulova sekvence
 
 if( PQsql.OpenDatabase( DATABASE ) )
 {
@@ -64,12 +63,13 @@ if( PQsql.OpenDatabase( DATABASE ) )
  
    dm->name= CORBA::string_dup(  PQsql.GetFieldValueName("fqdn" , 0 ) )  ; // plnohodnotne jmeno domeny
 
-   dm->created =  get_gmt_time( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas  vytvoreni domeny
-   dm->expired =  get_gmt_time( PQsql.GetFieldValueName("ExDate" , 0 ) )  ; // datum expirace
+   dm->created =  get_time_t( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas  vytvoreni domeny
+   dm->expired =  get_time_t( PQsql.GetFieldValueName("ExDate" , 0 ) )  ; // datum expirace
 
    clid = atoi(  PQsql.GetFieldValueName("clid" , 0 ) ); // client registrator
    did = atoi(  PQsql.GetFieldValueName("id" , 0 ) ); // id domeny
    nssetid = atoi(  PQsql.GetFieldValueName("nsset" , 0 ) ); // id nsset
+   id = atoi(  PQsql.GetFieldValueName("id" , 0 ) ); // id nsset
 
    dm->status = 1;
 
@@ -91,7 +91,6 @@ if( PQsql.OpenDatabase( DATABASE ) )
     sprintf( sqlString , "SELECT fqdn FROM HOST WHERE nssetid=%d;" , nssetid ) ;
  
 
-
     if( PQsql.ExecSelect( sqlString ) )
       {
     
@@ -106,6 +105,34 @@ if( PQsql.OpenDatabase( DATABASE ) )
      } else dm->ns.length(0); // zadne DNS servry
 
 
+    // dotaz na NSSET
+     //  handle na nsset
+     dm->nsset=CORBA::string_dup( PQsql.GetValueFromTable( "NSSET" , "handle", "id" , nssetid ) );
+
+    // dotaz na technicke kontakty
+     sprintf( sqlString , "SELECT  handle FROM CONTACT  JOIN  nsset_contact_map ON nsset_contact_map.contactid=contact.id WHERE nsset_contact_map.nssetid=%d;" , nssetid  );
+
+     if( PQsql.ExecSelect( sqlString ) )
+          {
+               len =  PQsql.GetSelectRows(); // pocet technickych kontaktu
+               dm->tech.length(len); // technicke kontaktry handle
+               for( i = 0 ; i < len ; i ++) dm->tech[i] = CORBA::string_dup( PQsql.GetFieldValue( i , 0 )  );
+               PQsql.FreeSelect();
+          }
+
+      // dotaz na admin kontakty
+     sprintf( sqlString , "SELECT  handle FROM CONTACT  JOIN  domain_contact_map ON domain_contact_map.contactid=contact.id WHERE domain_contact_map.domainid=%d;" , id  );
+
+     if( PQsql.ExecSelect( sqlString ) )
+          {
+               len =  PQsql.GetSelectRows(); // pocet technickych kontaktu
+               dm->admin.length(len); // technicke kontaktry handle
+               for( i = 0 ; i < len ; i ++) dm->admin[i] = CORBA::string_dup( PQsql.GetFieldValue( i , 0 )  );
+               PQsql.FreeSelect();
+          }
+
+
+   
  
    }
  

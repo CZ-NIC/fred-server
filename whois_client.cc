@@ -56,10 +56,8 @@ int main(int argc, char** argv)
     ccReg::Whois_var Whois = ccReg::Whois::_narrow (obj);
     ccReg::DomainWhois *dm;
 
-for( i = 0 ; i < 5 ; i ++ )
-{
     
-    dm =  Whois->Domain("test.cz" );
+    dm =  Whois->Domain("neco.cz" );
 
     for( n = 0 ; n < dm->ns.length() ; n ++ )
     cout <<  dm->name << "NameServers: " << dm->ns[n] <<  endl;
@@ -73,9 +71,15 @@ for( i = 0 ; i < 5 ; i ++ )
 
     t = (time_t )  dm->expired;
     cout << "expired: "  << asctime( gmtime( &t) ) << endl;
+
+    for( n = 0 ; n < dm->tech.length() ; n ++ )
+    cout <<  dm->name << "Tech contact: " << dm->tech[n] <<  endl;
+
+
+    for( n = 0 ; n < dm->admin.length() ; n ++ )
+    cout <<  dm->name << "Admin contact: " << dm->admin[n] <<  endl;
    
    delete dm ;
-}
     
     orb->destroy();
   }
