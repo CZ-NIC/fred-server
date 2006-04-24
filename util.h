@@ -1,6 +1,6 @@
 
-// vraci cat v time_t GMT
-time_t get_gmt_time(char *string );
+// vraci cas v time_t  pevede SQL retezec
+time_t get_time_t(char *string );
 // prevede time_t do retezce pro SQL
 void get_timestamp( time_t t , char *string);
 
@@ -9,3 +9,5 @@ int get_array_length(char *array);
 // vrati prvek pole
 void get_array_value(char *array ,  char *value , int field );
 
+void add_field_value( char *string , char *fname , char *value );
+ 

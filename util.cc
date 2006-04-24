@@ -4,7 +4,7 @@
 #include<string.h>
 
 // preveadi cas timestamp na unix time
-time_t get_gmt_time(char *string )
+time_t get_time_t(char *string )
 {
 struct tm dt;
 double sec;
@@ -83,6 +83,20 @@ if( array[0] == '{' )
                }
       }
 }
+
+}
+
+
+// pridavani retezce pri update
+void add_field_value( char *string , char *fname , char *value )
+{
+char buf[1024];
+
+if( strlen( value ) )
+ {
+   sprintf(buf , " %s=\'%s\' ," ,  fname , value );
+   strcat( string , buf );  
+ }
 
 }
 
