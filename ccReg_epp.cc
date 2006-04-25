@@ -111,8 +111,8 @@ if(  PQsql.OpenDatabase( DATABASE ) )
   // dotaz na ID registratora 
   roid  = PQsql.GetNumericFromTable( "REGISTRAR" , "id" , "handle" ,  (char * ) ClID);   
 
-  if( roid )
-  {
+if( roid )
+{
 
    // kontrola hesla
   sprintf( sqlString , "SELECT password FROM REGISTRARACL WHERE registrarid=%d;" , roid);
@@ -157,9 +157,10 @@ if(  PQsql.OpenDatabase( DATABASE ) )
      ret->errCode= COMMAND_OK; 
     }   
 
-    // probehne action pro svrTrID 
-    if( clientID )
-    {
+
+  }
+
+    // probehne action pro svrTrID     
      if( PQsql.BeginAction( clientID , EPP_ClientLogin , (char * ) clTRID  ) )
       {
          // zapis na konec action
@@ -167,9 +168,6 @@ if(  PQsql.OpenDatabase( DATABASE ) )
       } 
 
 
-    }
-
-  }
 } 
  
 
