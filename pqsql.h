@@ -24,6 +24,8 @@ bool RollbackTransaction()
 bool CommitTransaction()
 {return ExecSQL("COMMIT TRANSACTION");};
 
+bool DeleteFromTable(char *table , char *fname , int id );
+
 // zpracovani action 
 bool BeginAction(int clientID , int action ,char *clTRID );
 char * EndAction(int response  );
@@ -36,10 +38,14 @@ char * GetValueFromTable( char *table , char *vname ,  char *fname ,  int numeri
 int GetSequenceID( char *sequence ); // id ze sequnce
 
 
-
+// vyssi funkce na vraceni value
 int GetLoginRegistrarID(int id) { return GetNumericFromTable( "LOGIN" , "registrarid" , "id" , id ); };
 int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "id" , "handle" , handle ); };
 char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "handle" , "id" , id ); };
+
+// funkce na ulozeni obsahu radku ID tabluky  do 
+int MakeHistory(); // zapise do tabulky history
+bool SaveHistory(char *table , char *fname ,  int id ); // ulozi radek tabulky
 
 // spusti select a vrati pocet radek
 bool ExecSelect(char *sqlString);
@@ -49,16 +55,23 @@ bool  FreeSelect(){  PQclear(result);  };
 char * GetFieldValueName(char *fname , int row );
 // vraci retezec hodnoty
 char * GetFieldValue( int row , int col );
+// jmeno pole
+char *  GetFieldName( int col );
+// jestli neni null
+bool IsNotNull( int row , int col );
+
 
 // vraci pocet radku
 int GetSelectRows(){ return nRows;};
 int GetSelectCols(){ return nCols;};
 
+int GetActionID() { return actionID; } // vraci odkaz do tabulky action ID
 
 
 private:
 PGconn     *connection;
 PGresult   *result;
 int nRows , nCols; // pocet radek pri selectu
-int actionID;
+int actionID; // id tabulky akce
+int historyID; // id tabulky historie
 };

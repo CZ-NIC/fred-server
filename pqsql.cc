@@ -40,6 +40,20 @@ if( col == -1 ) return "";
 else return  GetFieldValue( row , col );
 }
 
+// jmeno pole
+char *  PQ::GetFieldName( int col )
+{
+if( PQfname(result, col) == NULL  ) return "";
+else return PQfname(result, col);
+}
+
+// jestli neni null
+bool  PQ::IsNotNull( int row , int col )
+{ 
+   if( PQgetisnull( result , row , col ) ) return false;
+   else return true; // neni NULL 
+}
+
 // vraci retezec hodnoty
 char * PQ::GetFieldValue( int row , int col )
 {
@@ -201,7 +215,15 @@ sprintf( value , "%d" ,  numeric );
 return  GetNumericFromTable( table , vname , fname , value  );
 }
 
+// vymaz data z tabulky
+bool  PQ::DeleteFromTable(char *table , char *fname , int id )
+{
+char sqlString[128];
 
+sprintf(  sqlString , "DELETE FROM %s  WHERE %s=%d;" , table , fname , id );
+return ExecSQL( sqlString );
+}
+ 
 
 int PQ::GetSequenceID( char *sequence )
 {
@@ -209,7 +231,7 @@ char sqlString[128];
 int id=0;
 
 
-sprintf(  sqlString , "SELECT  NEXTVAL( \'%s\'  );" , sequence );
+sprintf(  sqlString , "SELECT  NEXTVAL( \'%s_id_seq\'  );" , sequence );
 
 if( ExecSelect( sqlString ) )
   {
@@ -222,3 +244,78 @@ return id;
 }
 
 
+int PQ::MakeHistory() // zapise do tabulky history
+{
+char sqlString[128];
+
+historyID = 0 ;
+
+if( actionID )
+ {
+   debug("MAkeHistory\n");
+   historyID = GetSequenceID( "HISTORY" );
+   if( historyID )
+    {
+     sprintf(  sqlString , "INSERT INTO HISTORY ( id , action ) VALUES ( %d  , %d );" , historyID , actionID );
+     if( ExecSQL(  sqlString ) ) return historyID;
+    }
+ }
+
+// default
+return 0;
+}
+
+
+// ulozi radek tabulky s id
+bool PQ::SaveHistory(char *table , char *fname , int id )
+{
+char sqlString[4096] , buf[256] ;
+int i ,  row ;
+bool ret= true; // default
+
+
+if( historyID )
+{
+    sprintf(  sqlString , "SELECT * FROM %s WHERE %s=%d\n" , table , fname ,  id );
+
+    if( ExecSelect( sqlString ) )
+    {
+     for( row = 0 ; row <  GetSelectRows() ; row ++ )
+     {
+
+      sprintf( sqlString , "INSERT INTO %s_history ( HISTORYID   " ,  table );
+
+       for( i = 0 ; i <  GetSelectCols() ; i ++ )
+          {
+           if( IsNotNull( row , i ) )
+             {
+              strcat( sqlString , " , " );  
+              strcat( sqlString ,  GetFieldName( i ) );
+             }
+          }
+
+       sprintf( buf , " ) VALUES ( %d "  ,  historyID );
+       strcat( sqlString , buf ); 
+ 
+      for( i = 0 ; i <  GetSelectCols() ; i ++ )
+      {
+        if( IsNotNull( row , i ) )
+          {  
+            sprintf( buf , " , \'%s\'" , GetFieldValue( row  , i ) );
+            strcat(  sqlString , buf );
+          }
+       }
+      strcat(  sqlString , " );" );
+
+      if( ExecSQL(  sqlString ) == false) { ret = false ; break;  } // pokud nastane chyba
+      }
+
+     FreeSelect();
+   }
+
+}
+
+// default 
+
+return ret;
+}
