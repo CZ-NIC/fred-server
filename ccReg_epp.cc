@@ -145,7 +145,7 @@ if(  PQsql.OpenDatabase( DATABASE ) )
         PQsql.ExecSQL( sqlString ); // uloz do tabulky
     }
 
-  id =  PQsql.GetSequenceID( "login_id_seq" );   
+  id =  PQsql.GetSequenceID( "login" );   
    
 // zapis do logovaci tabulky 
   sprintf( sqlString , "INSERT INTO  Login ( id , registrarid , logintrid ) VALUES ( %d , %d , \'%s\' );" , id ,  roid ,  clTRID );
@@ -361,6 +361,8 @@ if( PQsql.OpenDatabase( DATABASE ) )
 
  if( PQsql.BeginAction( clientID , EPP_ContactDelete , (char * ) clTRID  ) )
  {
+  if( PQsql.BeginTransaction() )
+  {
 
   if( ( id = PQsql.GetNumericFromTable(  "CONTACT"  , "id" , "handle" , (char * ) handle ) ) )
   {
@@ -372,12 +374,25 @@ if( PQsql.OpenDatabase( DATABASE ) )
 
    if(  clID == regID ) // pokud je klient je registratorem
      {
-         sprintf(  sqlString , "DELETE FROM Contact WHERE id=%d;" , id );         
-         if(  PQsql.ExecSQL( sqlString ) ) ret->errCode =COMMAND_OK ; // pokud usmesne smazal
+         //  uloz do historie
+         if( PQsql.MakeHistory() ) 
+           {
+            if( PQsql.SaveHistory( "Contact" , "id" , id ) ) // uloz zaznam
+              {
+                 if(  PQsql.DeleteFromTable("CONTACT" , "id" , id  ) ) ret->errCode =COMMAND_OK ; // pokud usmesne smazal
+              }
+           }
+          
+                      
      } 
 
   } 
   else ret->errCode=COMMAND_OBJECT_NOT_EXIST; // pokud objekt neexistuje
+
+         // pokud vse proslo
+  if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspesne nainsertovalo commitni zmeny
+  else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
+  }
  
    // zapis na konec action
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
@@ -763,7 +778,6 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(const char* handle, CORBA::Long client
 {
 ccReg::Response *ret;
 PQ PQsql;
-char sqlString[1024];
 int regID , id , clID = 0;
 
 ret = new ccReg::Response;
@@ -780,6 +794,8 @@ if( PQsql.OpenDatabase( DATABASE ) )
 
  if( PQsql.BeginAction( clientID , EPP_NSsetDelete , (char * ) clTRID  ) )
  {
+  if(  PQsql.BeginTransaction() )  // zahajeni transakce
+  {
 
  // pokud NSSET existuje 
    if(  (id =  PQsql.GetNumericFromTable( "NSSET" , "id" ,  "handle" ,  (char * )  handle) )   )
@@ -790,28 +806,41 @@ if( PQsql.OpenDatabase( DATABASE ) )
 
    if( clID == regID ) // pokud je client registaratorem
      {
-         // na zacatku vymaz technicke kontakty
-       sprintf(  sqlString , "DELETE FROM nsset_contact_map  WHERE nssetid=%d; " , id );
-       if(  PQsql.ExecSQL( sqlString ) )
-       {
-         // vymaz nejdrive podrizene hosty
-         sprintf(  sqlString , "DELETE FROM HOST  WHERE nssetid=%d; " , id );
-
-         if(  PQsql.ExecSQL( sqlString ) )
+       //  uloz do historie
+       if( PQsql.MakeHistory() )
          {
-         // vymaz NSSET nakonec
-         sprintf(  sqlString , "DELETE FROM NSSET WHERE id=%d ; " , id );         
-         if(  PQsql.ExecSQL( sqlString ) ) ret->errCode =COMMAND_OK ; // pokud usmesne smazal
-         }
-       }
+          if( PQsql.SaveHistory( "nsset_contact_map" , "nssetid" , id ) ) // historie tech kontakty
+            {
+               // na zacatku vymaz technicke kontakty
+	       if(  PQsql.DeleteFromTable( "nsset_contact_map" , "nssetid" , id  ) )
+	         {
+                   
+                   if( PQsql.SaveHistory( "HOST" , "nssetid" , id ) )
+                     {  
+   	               // vymaz nejdrive podrizene hosty
+        	      if(  PQsql.DeleteFromTable( "HOST" ,  "nssetid" , id  ) )
+                        {
+                           if( PQsql.SaveHistory( "NSSET" , "id" , id ) )
+                             {     
+	                       // vymaz NSSET nakonec
+          	              if(  PQsql.DeleteFromTable( "NSSET" , "id" , id ) ) ret->errCode =COMMAND_OK ; // pokud vse uspesne proslo
+                             }
+	                }
+	             }
+                 }
+            }
+         } // konec histo
 
-     } 
+     }
+   }
+   else ret->errCode =COMMAND_OBJECT_NOT_EXIST; 
 
    
-  }
-  else ret->errCode =COMMAND_OBJECT_NOT_EXIST; 
 
-
+   // pokud vse proslo 
+   if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspesne nainsertovalo commitni zmeny
+   else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
+   } 
  
  
    // zapis na konec action
@@ -852,11 +881,9 @@ if( PQsql.OpenDatabase( DATABASE ) )
 if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
  {
  
-
     // prvni test zdali domena uz existuje
  if(  PQsql.GetNumericFromTable( "NSSET" , "id",   "handle" , (char * )  handle ) )  ret->errCode=COMMAND_OBJECT_EXIST; // nsset uz zalozen ID existuje
- else  // pokud nexistuje
- {
+ else  // pokud nexistuje 
  if( PQsql.BeginTransaction() )  // zahaj transakci
    { 
 
@@ -871,7 +898,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
 
 
     // ID je cislo ze sequence
-    nssetid =  PQsql.GetSequenceID( "nsset_id_seq" );
+    nssetid =  PQsql.GetSequenceID( "nsset" );
 
     sprintf( sqlString , "INSERT INTO NSSET ( id ,  Status , ClID , CrID, UpID,   ROID , handle  , crdate , update , exdate , authinfopw  ) \
                            VALUES ( %d ,  \'{0}\' , %d , %d ,   \'%s\' ,    \'%s\' , 'now' , \'now\' , \'%s\' ,   \'%s\'  );" , 
@@ -934,23 +961,18 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
        }
  
 
-       // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
-       if(  ret->errCode == COMMAND_OK )     // pokud uspesne nainsertovalo
-         {
-            if( PQsql.CommitTransaction() == false ) ret->errCode = COMMAND_FAILED ;  // potvrd transakci pokud vse v poradku
-         }
-      else PQsql.RollbackTransaction(); // zrus trasakci
-       
-    } else { PQsql.RollbackTransaction();  ret->errCode = COMMAND_FAILED ;} // zrus tranaskci neuspesne
+    }
+       // pokud vse proslo
+       if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspesne nainsertovalo commitni zmeny
+       else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
+   }
 
-  }
-
- }
+ 
+ 
 
    // zapis na konec action
-   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
+  ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
  }
-
 PQsql.Disconnect();
 }
 
@@ -1433,6 +1455,8 @@ if( PQsql.OpenDatabase( DATABASE ) )
 if( PQsql.BeginAction( clientID , EPP_DomainDelete , (char * ) clTRID  ) )
  {
 
+ if( PQsql.BeginTransaction() )
+ {
   if( ( id =  PQsql.GetNumericFromTable( "DOMAIN" , "id" ,  "fqdn" , (char * )  fqdn) ) )
   {
 
@@ -1441,17 +1465,30 @@ if( PQsql.BeginAction( clientID , EPP_DomainDelete , (char * ) clTRID  ) )
 
    if( regID == clID )       
      {
-         sprintf(  sqlString , "DELETE FROM DOMAIN WHERE id=\'%d\';" , id  );
-         if(  PQsql.ExecSQL( sqlString ) )
-           {
-               sprintf(  sqlString , "DELETE FROM domain_contact_map WHERE domainID=%d;" , id );
-               if(  PQsql.ExecSQL( sqlString ) )  ret->errCode =COMMAND_OK ; // pokud usmesne smazal
-           }
+      //  uloz do historie
+       if( PQsql.MakeHistory() )
+         {
+            if( PQsql.SaveHistory( "domain_contact_map" , "domainID" , id ) )
+               { 
+                    if(  PQsql.DeleteFromTable( "domain_contact_map" , "domainID" , id )  )
+                      { 
+                          if( PQsql.SaveHistory(  "DOMAIN" , "id" , id  ) )
+                            { 
+                              if(  PQsql.DeleteFromTable( "DOMAIN" , "id" , id  ) )  ret->errCode =COMMAND_OK ; // pokud usmesne smazal
+                            }
+                      }
+               }
+         }
      }
 
 
    }
   else  ret->errCode =COMMAND_OBJECT_NOT_EXIST;
+
+   // pokud vse proslo
+ if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspesne nainsertovalo commitni zmeny
+ else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
+ }
 
 
    // zapis na konec action
@@ -1507,7 +1544,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
   // zahaj transakci
   if( PQsql.BeginTransaction() )
   {
-   id =  PQsql.GetSequenceID( "domain_id_seq" ); // id domeny
+   id =  PQsql.GetSequenceID( "domain" ); // id domeny
 
    nssetid =  PQsql.GetNumericFromTable("NSSET" , "id" , "handle" , CORBA::string_dup(d.nsset) );
    regid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(d.Registrant) );
@@ -1550,12 +1587,9 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
  
 
        // pokud nebyla chyba pri insertovani do tabulky domain_contact_map 
-       if(  ret->errCode == COMMAND_OK )     // pokud uspesne nainsertovalo
-         {
-            if( PQsql.CommitTransaction() == false ) ret->errCode = COMMAND_FAILED ;  // potvrd transakci pokud vse v poradku
-         }
+       if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
+       else PQsql.RollbackTransaction();   
      }
-    else { PQsql.RollbackTransaction();  ret->errCode = COMMAND_FAILED ;} // zrus tranaskci neuspesne
 
    }
  }
