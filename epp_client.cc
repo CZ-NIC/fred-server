@@ -84,10 +84,10 @@ int main(int argc, char** argv)
 
 
 
-    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789" , "" ,     "LRR-login" , loginID );
+    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "123456789" , "" ,     "GR-login" , loginID );
 
     cout << "err code " <<  ret->errCode    << endl;
-
+/*
     ret =  EPP->HostInfo( "modry.neco.cz",  host  , loginID ,  "XX-host"  );
     cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
 
@@ -97,12 +97,12 @@ int main(int argc, char** argv)
 
 
     delete host;
-
+*/
      ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
 
     cout << "get Transaction code " << ret->errCode  <<  ret->svTRID  << endl;
 
-
+/*
     ret =  EPP->NSSetCheck( "NECOCZ" , avial,   loginID ,  "XX-nsset" );
     cout << "avial " << avial  << " err code " << ret->errCode  <<  ret->svTRID  << endl;
 
@@ -127,17 +127,16 @@ int main(int argc, char** argv)
              for( j = 0 ; j < nsset->dns[i].inet.length() ; j ++ ) cout << "ipadres : "  <<  nsset->dns[i].inet[j] <<  endl ; 
          }
 
-   nsset->handle =CORBA::string_dup(  "NSSET" );
-   nsset->ROID =CORBA::string_dup(  "NSSET" );
-
-
-    ret =  EPP->NSSetCreate( "NSSET" , *nsset ,  loginID ,  "XX-nsset-create" );
-    cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
-
-    cout << "delete nsset" << endl;
-
 
    delete nsset;
+
+*/
+
+    ret =  EPP->NSSetDelete( "NECOCZ" ,  loginID ,  "XX-nsset-delete" );
+    cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
+
+
+
 
 /*
 
