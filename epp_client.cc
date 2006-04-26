@@ -1,4 +1,4 @@
-//                      This is the client.
+//                      This is the client.118
 //
 // Usage: client <object reference>
 //
@@ -32,12 +32,14 @@ int main(int argc, char** argv)
     ccReg::Host *host;
     ccReg::NSSet *nsset;
     ccReg::Domain *domain;
+    ccReg::Check_var check;
+    ccReg::Check dcheck(2);
     CORBA::Short err;
     CORBA::Object_var obj ;
     CORBA::String_var errMsg , svTR;
-    int i , len , max = 512, d , j ;
+    int i , len , max = 512, d , j , a;
     CORBA::Long loginID;
-    bool avial;
+    ccReg::Avail_var av;
     struct tm dt;
     time_t t;
     filebuf *pbuf;
@@ -82,11 +84,9 @@ int main(int argc, char** argv)
 
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
+    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "__DELETE__123456789" , "" ,     "GR-login" , loginID );
 
-
-    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "123456789" , "" ,     "GR-login" , loginID );
-
-    cout << "err code " <<  ret->errCode    << endl;
+    cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
 /*
     ret =  EPP->HostInfo( "modry.neco.cz",  host  , loginID ,  "XX-host"  );
     cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
@@ -98,9 +98,39 @@ int main(int argc, char** argv)
 
     delete host;
 */
-     ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
+//     ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
 
-    cout << "get Transaction code " << ret->errCode  <<  ret->svTRID  << endl;
+  //  cout << "get Transaction code " << ret->errCode  <<  ret->svTRID  << endl;
+
+
+
+//     check = new ccReg::Check(3);
+     check = new ccReg::Check;
+     check->length(3);
+     check[0] = CORBA::string_dup(  "NECOCZ-PETR" );
+     check[1] = CORBA::string_dup(  "NECOCZ-XXX" );
+     check[2] = CORBA::string_dup(  "NECOCZ-ADMIN" );
+ 
+     ret =  EPP->ContactCheck( check , av,   loginID ,  "check-neco" );
+     cout <<  " err code " << ret->errCode  <<  ret->svTRID  << endl;
+ 
+    for( i = 0 ; i <  av->length() ; i ++ )
+      {
+         cout << i << check[i] << " avail " << av[i] << endl;
+      }
+
+
+     dcheck.length(2);
+     dcheck[0] = CORBA::string_dup(  "NECO.cz" );
+     dcheck[1] = CORBA::string_dup(  "nic.cz" );
+     ret =  EPP->DomainCheck( dcheck , av,   loginID ,  "domain-neco" );
+     cout <<  " err code " << ret->errCode  <<  ret->svTRID  << endl;
+ 
+    for( i = 0 ; i <  av->length() ; i ++ )
+      {
+         cout << i << dcheck[i] << " avail " << av[i] << endl;
+      }
+
 
 /*
     ret =  EPP->NSSetCheck( "NECOCZ" , avial,   loginID ,  "XX-nsset" );
@@ -132,8 +162,8 @@ int main(int argc, char** argv)
 
 */
 
-    ret =  EPP->NSSetDelete( "NECOCZ" ,  loginID ,  "XX-nsset-delete" );
-    cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
+//    ret =  EPP->NSSetDelete( "NECOCZ" ,  loginID ,  "XX-nsset-delete" );
+  //  cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
 
 
 
