@@ -179,14 +179,21 @@ return ret;
 }
 
 
-ccReg::Response* ccReg_EPP_i::ContactCheck(const char* handle, CORBA::Boolean& avail, CORBA::Long clientID, const char* clTRID)
+
+ccReg::Response* ccReg_EPP_i::ContactCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
 ccReg::Response *ret;
-
+int  len , av ;
+long unsigned int i;
 ret = new ccReg::Response;
 
+a = new ccReg::Avail;
 
+len = handle.length();
+a->length(len);
+
+cout << "ContactCheck length " << len << endl;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
@@ -194,18 +201,23 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 if( PQsql.OpenDatabase( DATABASE ) )
 {
 
-if( PQsql.BeginAction( clientID , EPP_ContactCheck , (char * ) clTRID  ) )
-{
+  if( PQsql.BeginAction( clientID , EPP_ContactCheck , (char * ) clTRID  ) )
+  {
+ 
+    for( i = 0 ; i < len ; i ++ )
+     { 
+      cout << " test " <<  CORBA::string_dup(  handle[i] ) << endl;
+      if( PQsql.GetNumericFromTable( "CONTACT" , "id" , "handle" , CORBA::string_dup(  handle[i] ) ) ) a[i] =  1;
+      else   a[i]= 0;     
+     }
+    
+      // comand OK
+      ret->errCode=COMMAND_OK;
 
-   if( PQsql.GetNumericFromTable( "CONTACT" , "id" , "handle" , (char * )  handle ) ) avail=false; // existuje
-   else avail = true; // neexistuje
-
-    // comand OK
-    ret->errCode=COMMAND_OK;
-
-   // zapis na konec action
-   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
-}
+      // zapis na konec action
+      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
+    
+  }
  
  PQsql.Disconnect();
 }
@@ -579,42 +591,42 @@ return ret;
 
 }
 
-
-ccReg::Response* ccReg_EPP_i::NSSetCheck(const char* handle, CORBA::Boolean& avail, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::NSSetCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
 ccReg::Response *ret;
-int i;
-
-
+int  len , av ;
+long unsigned int i;
 ret = new ccReg::Response;
 
+a = new ccReg::Avail;
 
-// default
+len = handle.length();
+a->length(len);
+
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
-
-
 if( PQsql.OpenDatabase( DATABASE ) )
 {
 
-if( PQsql.BeginAction( clientID , EPP_NSsetCheck , (char * ) clTRID  ) )
- {
+  if( PQsql.BeginAction( clientID , EPP_NSsetCheck , (char * ) clTRID  ) )
+  {
 
+    for( i = 0 ; i < len ; i ++ )
+     {
+       if( PQsql.GetNumericFromTable( "NSSET" , "id" ,  "handle" , CORBA::string_dup(  handle[i] ) ) ) a[i]=1; // existuje
+       else a[i] =0; // neexistuje
+     }
 
-   if( PQsql.GetNumericFromTable( "NSSET" , "id" ,  "handle" , (char * ) handle ) ) avail=false; // existuje
-   else avail = true; // neexistuje
+      // comand OK
+      ret->errCode=COMMAND_OK;
 
-    // comand OK
-    ret->errCode=COMMAND_OK;
+      // zapis na konec action
+      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
 
-
-
-   // zapis na konec action
-   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
- }
+  }
 
  PQsql.Disconnect();
 }
@@ -987,35 +999,41 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle, const ccReg::NSSet
   #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle, const ccReg::NSSet& n, CORBA::Long clientID, const char* clTRID)>"
 }
 
-
-ccReg::Response* ccReg_EPP_i::HostCheck(const char* name , CORBA::Boolean& avail ,  CORBA::Long clientID, const char* clTRID)
+ccReg::Response*  ccReg_EPP_i::HostCheck(const ccReg::Check& name, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
 ccReg::Response *ret;
-
+int  len , av ;
+long unsigned int i;
 ret = new ccReg::Response;
+
+a = new ccReg::Avail;
+
+len = name.length();
+a->length(len);
 
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
-
-
 if( PQsql.OpenDatabase( DATABASE ) )
 {
 
-if( PQsql.BeginAction( clientID , EPP_HostCheck , (char * ) clTRID  ) )
- {
-   if( PQsql.GetNumericFromTable( "HOST" , "id" ,  "handle" , (char * )  name ) ) avail=false; // existuje
-   else avail = true; // neexistuje
+  if( PQsql.BeginAction( clientID , EPP_HostCheck , (char * ) clTRID  ) )
+  {
 
-    // comand OK
-    ret->errCode=COMMAND_OK;
+    for( i = 0 ; i < len ; i ++ )
+     {
+      if( PQsql.GetNumericFromTable( "HOST" , "id" ,  "handle" ,    CORBA::string_dup(name[i]) ) ) a[i]=1; // existuje
+      else a[i] = 0 ; // neexistuje
 
+     }
 
- 
-   // zapis na konec action
-   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
+      // comand OK
+      ret->errCode=COMMAND_OK;
+
+      // zapis na konec action
+      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
 
   }
 
@@ -1266,38 +1284,42 @@ ccReg::Response* ccReg_EPP_i::HostUpdate(const char* name , const ccReg::Host& h
   #warning "Code missing in function <ccReg::Response** ccReg_EPP_i::HostUpdate(const ccReg::Host& h)>"
 }
 
-ccReg::Response* ccReg_EPP_i::DomainCheck(const char* fqdn , CORBA::Boolean& avail , CORBA::Long clientID, const char* clTRID)
+ccReg::Response*  ccReg_EPP_i::DomainCheck(const ccReg::Check& fqdn, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
 ccReg::Response *ret;
-int i;
-
+int  len , av ;
+long unsigned int i;
 ret = new ccReg::Response;
 
+a = new ccReg::Avail;
 
-// default
+len = fqdn.length();
+a->length(len);
+
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
-
-
 if( PQsql.OpenDatabase( DATABASE ) )
 {
 
-if( PQsql.BeginAction( clientID , EPP_DomainCheck , (char * ) clTRID  ) )
- {
+  if( PQsql.BeginAction( clientID , EPP_DomainCheck , (char * ) clTRID  ) )
+  {
 
-   if( PQsql.GetNumericFromTable( "DOMAIN" , "id" , "fqdn" , (char * ) fqdn ) ) avail=false; // existuje 
-   else avail = true; // neexistuje 
+    for( i = 0 ; i < len ; i ++ )
+     {
+       if( PQsql.GetNumericFromTable( "DOMAIN" , "id" , "fqdn" ,   CORBA::string_dup(fqdn[i]) )  ) a[i]=1; // existuje
+       else a[i] =0; // neexistuje
+     }
 
-   ret->errCode=COMMAND_OK;  
-  
+      // comand OK
+      ret->errCode=COMMAND_OK;
 
+      // zapis na konec action
+      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
 
-    // zapis na konec action
-    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
- }
+  }
 
  PQsql.Disconnect();
 }
