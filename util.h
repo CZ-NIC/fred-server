@@ -4,6 +4,9 @@ time_t get_time_t(char *string );
 // prevede time_t do retezce pro SQL
 void get_timestamp( time_t t , char *string);
 
+// spocita cas expirace ze zadaneho casu plus period mesice
+time_t expiry_time( time_t extime ,  int period );
+
 // zjisti velikost pole z retezce
 int get_array_length(char *array);
 // vrati prvek pole

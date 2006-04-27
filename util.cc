@@ -39,6 +39,26 @@ sprintf(string ,  "%4d-%02d-%02d %02d:%02d:%02d" ,
 
 }
 
+// spocita cas expirace ze zadaneho casu plus period mesice
+time_t expiry_time( time_t extime ,  int period )
+{
+struct tm dt;
+int mon;
+
+
+// preved cas
+dt =   *gmtime(  &extime );
+
+mon =  dt.tm_mon + period;
+printf("year %d  mon %d \n" ,  dt.tm_year +1900 , dt.tm_mon +1);
+dt.tm_year = dt.tm_year + (mon / 12 );
+dt.tm_mon = mon % 12;
+printf("mktime 0x%x\n" , mktime(&dt) );
+
+return mktime(&dt);
+}
+
+
 // vraci pocet prvku v poli
 int get_array_length(char *array)
 {
