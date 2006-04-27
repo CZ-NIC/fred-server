@@ -70,6 +70,24 @@ if( row < nRows && col < nCols )
 else { debug("NOT FOUND return NULL\n" ); return  ""; } 
 }
 
+
+
+// vraci boolean hodnoty
+bool PQ::GetFieldBooleanValueName(char *fname , int row )
+{
+char *val;
+val = GetFieldValueName( fname , row );
+if( val[0] == 't' ) return true;
+else return false;
+}
+// vraci integer hodnoty
+bool PQ::GetFieldNumericValueName(char *fname , int row )
+{
+return atoi( GetFieldValueName( fname , row ) );
+}
+
+
+
 // spusti select a vrati pocet radek
 bool PQ::ExecSelect(char *sqlString)
 {
