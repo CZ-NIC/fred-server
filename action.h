@@ -32,6 +32,7 @@
 #define EPP_DomainUpdate        503  
 #define EPP_DomainCreate        504  
 #define EPP_DomainTransfer      505 
+#define EPP_DomainRenew         506 
 
 // dalsi funkce
 #define EPP_UnknowAction       1000
