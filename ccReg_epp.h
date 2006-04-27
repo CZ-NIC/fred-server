@@ -35,5 +35,6 @@ public:
   ccReg::Response* DomainDelete(const char* fqdn, CORBA::Long clientID, const char* clTRID);
   ccReg::Response* DomainUpdate(const char* fqdn, const ccReg::Domain& d, CORBA::Long clientID, const char* clTRID);
   ccReg::Response* DomainCreate(const char* fqdn, const ccReg::Domain& d, CORBA::Long clientID, const char* clTRID);
-
+  ccReg::Response* DomainRenew(const char* fqdn, const ccReg::Domain& d, CORBA::Short period, CORBA::Long clientID, const char* clTRID);
+ 
 };

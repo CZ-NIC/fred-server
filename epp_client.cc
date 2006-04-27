@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
-    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "__DELETE__123456789" , "" ,     "GR-login" , loginID );
+    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "123456789" , "" ,     "GR-login" , loginID );
 
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
 /*
@@ -103,7 +103,7 @@ int main(int argc, char** argv)
   //  cout << "get Transaction code " << ret->errCode  <<  ret->svTRID  << endl;
 
 
-
+/*
 //     check = new ccReg::Check(3);
      check = new ccReg::Check;
      check->length(3);
@@ -130,7 +130,7 @@ int main(int argc, char** argv)
       {
          cout << i << dcheck[i] << " avail " << av[i] << endl;
       }
-
+*/
 
 /*
     ret =  EPP->NSSetCheck( "NECOCZ" , avial,   loginID ,  "XX-nsset" );
@@ -162,27 +162,37 @@ int main(int argc, char** argv)
 
 */
 
-//    ret =  EPP->NSSetDelete( "NECOCZ" ,  loginID ,  "XX-nsset-delete" );
-  //  cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
+//    ret =  EPP->ContactDelete( "TEST-USER" ,  loginID ,  "XX-nsset-delete" );
+  //   cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
 
 
 
 
-/*
 
-    ret =  EPP->ContactInfo( "XPET",  cc , loginID , "XPET_info" );
+
+    ret =  EPP->ContactInfo( "NECOCZ-SUPERUSER",  cc , loginID , "XPET_info" );
     cout << "err code " << ret->errCode << " serverTRID " <<  ret->svTRID  << endl;
 
     cout << "info "  << cc->Name  <<  endl;
  
-//    cout <<  contact->Name << contact->Email <<  endl;
+    cout <<  cc->Name << cc->Email << cc->DiscloseEmail <<  cc->Country << endl;
 
   //  t = (time_t )  contact->CrDate;
    // cout << asctime( gmtime( &t) ) << endl;
 
 
+   ret =  EPP->DomainInfo(  "neco.cz" ,  domain , loginID , clTRID );
+   cout << "err code " << ret->errCode   << endl;
+
+   cout << "domain "  << domain->name << "client: " << domain->ClID << endl;
+
+   ret =  EPP->DomainRenew(  "neco.cz" ,  *domain , 15 ,  loginID , clTRID );
+   cout << "err code " << ret->errCode   << endl;
+
+ 
 
 
+/*
   domain = new ccReg::Domain;
 
 

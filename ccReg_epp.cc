@@ -193,7 +193,6 @@ a = new ccReg::Avail;
 len = handle.length();
 a->length(len);
 
-cout << "ContactCheck length " << len << endl;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
@@ -206,7 +205,6 @@ if( PQsql.OpenDatabase( DATABASE ) )
  
     for( i = 0 ; i < len ; i ++ )
      { 
-      cout << " test " <<  CORBA::string_dup(  handle[i] ) << endl;
       if( PQsql.GetNumericFromTable( "CONTACT" , "id" , "handle" , CORBA::string_dup(  handle[i] ) ) ) a[i] =  1;
       else   a[i]= 0;     
      }
@@ -231,6 +229,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(const char* handle, ccReg::Contact_out
 PQ PQsql;
 char sqlString[1024];
 ccReg::Response *ret;
+char *cc;
 int id , clid , crid , upid;
 int actionID=0;
 c = new ccReg::Contact;
@@ -277,11 +276,20 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
 	c->Fax=CORBA::string_dup(PQsql.GetFieldValueName("Fax" , 0 ));
 	c->Email=CORBA::string_dup(PQsql.GetFieldValueName("Email" , 0 ));
 	c->NotifyEmail=CORBA::string_dup(PQsql.GetFieldValueName("NotifyEmail" , 0 )); // upozornovaci email
-	c->Country=CORBA::string_dup(PQsql.GetFieldValueName("Country" , 0 )); // Zeme
+        cc = PQsql.GetFieldValueName("Country" , 0 ); // kod zeme
+
 	c->AuthInfoPw=CORBA::string_dup(PQsql.GetFieldValueName("AuthInfoPw" , 0 )); // Zeme
 	c->VAT=CORBA::string_dup(PQsql.GetFieldValueName("VAT" , 0 )); // DIC
 	c->SSN=CORBA::string_dup(PQsql.GetFieldValueName("SSN" , 0 )); // SSN
 	c->AuthInfoPw=CORBA::string_dup(PQsql.GetFieldValueName("authinfopw" , 0 )); // autentifikace
+
+        
+        c->DiscloseName = PQsql.GetFieldBooleanValueName( "DiscloseName" , 0 );
+        c->DiscloseOrganization = PQsql.GetFieldBooleanValueName( "DiscloseOrganization" , 0 );
+        c->DiscloseAddress = PQsql.GetFieldBooleanValueName( "DiscloseAddress" , 0 );
+        c->DiscloseTelephone = PQsql.GetFieldBooleanValueName( "DiscloseTelephone" , 0 );
+        c->DiscloseFax  = PQsql.GetFieldBooleanValueName( "DiscloseFax" , 0 );
+        c->DiscloseEmail = PQsql.GetFieldBooleanValueName( "DiscloseEmail" , 0 );
 
  
     
@@ -294,6 +302,8 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
         c->ClID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( clid ) );
         c->CrID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( crid ) );
         c->UpID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( upid ) );
+
+	c->Country=CORBA::string_dup( PQsql.GetValueFromTable("enum_country" , "country" , "id" ,  cc ) ); // uplny nazev zeme
 
      }
     else 
@@ -1399,7 +1409,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
          
 
         // dotaz na admin kontakty
-        sprintf( sqlString , "SELECT  handle FROM CONTACT  JOIN  domain_contact_map ON domain_contact_map.contactid=contact.id WHERE domain_contact_map.nssetid=%d;" ,  nssetid );       
+        sprintf( sqlString , "SELECT  handle FROM CONTACT  JOIN  domain_contact_map ON domain_contact_map.contactid=contact.id WHERE domain_contact_map.domainid=%d;" ,  id );       
 
         if( PQsql.ExecSelect( sqlString ) )
           {
@@ -1628,3 +1638,82 @@ return ret;
 
 
 
+ccReg::Response*  ccReg_EPP_i::DomainRenew(const char* fqdn, const ccReg::Domain& d, CORBA::Short period, CORBA::Long clientID, const char* clTRID)
+{
+PQ PQsql;
+char sqlString[4096];
+char exDate[24];
+ccReg::Response *ret;
+int clid , regID , id ;
+int i , len;
+time_t ex=0 ;
+ret = new ccReg::Response;
+
+
+// default
+
+
+// default
+ret->errCode=COMMAND_FAILED;
+ret->svTRID = CORBA::string_alloc(32); //  server transaction
+ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+
+
+
+if( PQsql.OpenDatabase( DATABASE ) )
+{
+
+if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
+ {
+ 
+  regID = PQsql.GetLoginRegistrarID( clientID ); // aktivni registrator
+
+// prvni test zdali domena uz existuje
+ if(  ( id = PQsql.GetNumericFromTable("DOMAIN" , "id" ,  "fqdn" , (char * ) fqdn )  ) )
+  {
+      // zahaj transakci
+      if( PQsql.BeginTransaction() )
+        {
+ 
+           sprintf( sqlString , "SELECT * FROM DOMAIN WHERE id=\'%d\'" , id);
+
+           if( PQsql.ExecSelect( sqlString ) )
+             {
+
+                 clid = atoi( PQsql.GetFieldValueName("ClID" , 0 ) );
+                 ex = get_time_t( PQsql.GetFieldValueName("ExDate" , 0 ) ); // datum a cas  expirace domeny
+                 PQsql.FreeSelect();
+              }     
+
+           if( clid == regID && ex > 0 )
+             {
+
+                  // preved datum a cas expirace prodluz tim cas platnosti domeny
+                  get_timestamp( expiry_time( ex  , period ) ,  exDate );
+                  sprintf( sqlString , "UPDATE DOMAIN SET ExDate=\'%s\' WHERE id=%d;" , exDate , id );
+                  if(   PQsql.ExecSQL( sqlString ) ) ret->errCode = COMMAND_OK;
+             }             
+        
+ 
+
+       // pokud nebyla chyba pri insertovani do tabulky domain_contact_map 
+       if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
+       else PQsql.RollbackTransaction();   
+     }
+
+ 
+ } 
+ else ret->errCode == COMMAND_OBJECT_NOT_EXIST; // domena neexistujea
+
+
+   // zapis na konec action
+   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
+}
+
+PQsql.Disconnect();
+}
+
+
+return ret;
+}
+ 
