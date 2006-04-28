@@ -1,7 +1,12 @@
 // definice kodu EPP v ccReg
+
 // prihlasovani
 #define EPP_ClientLogin         100
 #define EPP_ClientLogout        101
+
+// poll funkce
+#define EPP_PollAcknowledgement  120 
+#define EPP_PollResponse         121
 
 // funkce pro praci s kontakty
 #define EPP_ContactCheck        200
@@ -33,6 +38,7 @@
 #define EPP_DomainCreate        504  
 #define EPP_DomainTransfer      505 
 #define EPP_DomainRenew         506 
+
 
 // dalsi funkce
 #define EPP_UnknowAction       1000
