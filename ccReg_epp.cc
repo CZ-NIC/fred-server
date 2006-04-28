@@ -64,6 +64,83 @@ PQsql.Disconnect();
 return ret;
 }
 
+ccReg::Response* ccReg_EPP_i::PollAcknowledgement(CORBA::Long msgID, CORBA::Short& count, CORBA::Long newmsgID, CORBA::Long clientID, const char* clTRID)
+{
+PQ PQsql;
+ccReg::Response *ret;
+ret = new ccReg::Response;
+
+
+ret->errCode=COMMAND_FAILED;
+ret->svTRID = CORBA::string_alloc(32); //  server transaction
+ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+
+count = 0 ;
+newmsgID = 0 ;
+if( PQsql.OpenDatabase( DATABASE ) )
+{
+
+  if( PQsql.BeginAction( clientID , EPP_PollAcknowledgement , (char * ) clTRID  ) )
+  {
+ 
+// TODO   
+    
+      // comand OK
+      ret->errCode=COMMAND_OK;
+
+      // zapis na konec action
+      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
+    
+  }
+ 
+ PQsql.Disconnect();
+}
+ 
+return ret;
+
+}
+ccReg::Response* ccReg_EPP_i::PollResponse(CORBA::Long msgID, ccReg::Poll_out p, CORBA::Long clientID, const char* clTRID)
+{
+PQ PQsql;
+ccReg::Response *ret;
+ret = new ccReg::Response;
+
+p = new ccReg::Poll;
+
+//vyprazdni
+p->qDate = 0 ;
+p->count = 0;
+p->msgID = 0;
+p->mesg = CORBA::string_dup(""); // prazdna hodnota
+
+ret->errCode=COMMAND_FAILED;
+ret->svTRID = CORBA::string_alloc(32); //  server transaction
+ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+
+if( PQsql.OpenDatabase( DATABASE ) )
+{
+
+  if( PQsql.BeginAction( clientID , EPP_PollAcknowledgement , (char * ) clTRID  ) )
+  {
+
+// TODO
+
+      // comand OK
+      ret->errCode=COMMAND_OK;
+
+      // zapis na konec action
+      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
+
+  }
+
+ PQsql.Disconnect();
+}
+
+return ret;
+
+
+}
+ 
 ccReg::Response* ccReg_EPP_i::ClientLogout(CORBA::Long clientID, const char* clTRID)
 {
 PQ  PQsql;

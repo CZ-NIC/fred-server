@@ -13,6 +13,8 @@ public:
 
   // methods corresponding to defined IDL attributes and operations
   ccReg::Response* GetTransaction(CORBA::Long clientID, const char* clTRID, CORBA::Short errCode);
+  ccReg::Response* PollAcknowledgement(CORBA::Long msgID, CORBA::Short& count, CORBA::Long newmsgID, CORBA::Long clientID, const char* clTRID);
+  ccReg::Response* PollResponse(CORBA::Long msgID, ccReg::Poll_out p, CORBA::Long clientID, const char* clTRID);
   ccReg::Response* ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, CORBA::Long& clientID);
   ccReg::Response* ClientLogout(CORBA::Long clientID, const char* clTRID);
   ccReg::Response* ContactCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID);
