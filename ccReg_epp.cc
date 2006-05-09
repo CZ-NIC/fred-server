@@ -334,7 +334,8 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
         crid =  atoi( PQsql.GetFieldValueName("CrID" , 0 ) ); 
         upid =  atoi( PQsql.GetFieldValueName("UpID" , 0 ) ); 
 
-        c->stat = 0 ; // status
+        c->stat.length(1); // status
+        c->stat[0] = CORBA::string_dup( "OK" );
 
 	c->ROID=CORBA::string_dup( PQsql.GetFieldValueName("ROID" , 0 ) ); // ROID     
 	c->CrDate= get_time_t( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
@@ -413,7 +414,7 @@ c->UpID=CORBA::string_dup("");    // identifikator registratora ktery provedl zm
 c->CrDate=0; // datum a cas vytvoreni
 c->UpDate=0; // datum a cas zmeny
 c->TrDate=0;  // datum a cas transferu
-c->stat = 0 ; // status
+c->stat.length(0); // status
 c->Name=CORBA::string_dup(""); // jmeno nebo nazev kontaktu
 c->Organization=CORBA::string_dup(""); // nazev organizace
 c->Street1=CORBA::string_dup(""); // adresa
@@ -762,7 +763,9 @@ if( PQsql.BeginAction( clientID , EPP_NSsetInfo , (char * ) clTRID  ) )
         crid = atoi( PQsql.GetFieldValueName("CrID" , 0 ) );
         upid = atoi( PQsql.GetFieldValueName("UpID" , 0 ) );
 
-        n->stat = 0 ; // status
+        n->stat.length(1);  // status
+        n->stat[0] = CORBA::string_dup( "OK" );
+
 
         n->ROID=CORBA::string_dup( PQsql.GetFieldValueName("ROID" , 0 ) ); // ROID
         n->handle=CORBA::string_dup( PQsql.GetFieldValueName("handle" , 0 ) ); // ROID
@@ -856,7 +859,7 @@ if( ret->errCode != COMMAND_OK )
 {
 n->ROID =  CORBA::string_dup( "" ); // fqdn nazev domeny
 n->handle =  CORBA::string_dup( "" ); // handle nssetu
-n->stat=0; // status sequence
+n->stat.length(0); // status sequence
 n->CrDate=0; // datum vytvoreni
 n->UpDate=0; // datum zmeny
 n->ExDate=0;
@@ -1170,7 +1173,9 @@ if( PQsql.BeginAction( clientID , EPP_HostInfo , (char * ) clTRID  ) )
         nssetid = atoi( PQsql.GetFieldValueName("NSSETID" , 0 ) );
  
 
-        h->stat = 0 ; // status
+        h->stat.length(1) ; // status
+        h->stat[0] = CORBA::string_dup( "OK" );
+
 
 	h->CrDate= get_time_t( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
 	h->UpDate= get_time_t( PQsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
@@ -1228,7 +1233,7 @@ if( ret->errCode != COMMAND_OK )
 {
 h->fqdn =  CORBA::string_dup( "" ); // fqdn nazev domeny
 h->nsset =  CORBA::string_dup( "" ); // handle nssetu
-h->stat=0; // status sequence
+h->stat.length(0); // status sequence
 h->CrDate=0; // datum vytvoreni
 h->UpDate=0; // datum zmeny
 h->ClID=  CORBA::string_dup( "" );    // identifikator registratora ktery vytvoril host
@@ -1456,8 +1461,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
         regid = atoi( PQsql.GetFieldValueName("registrant" , 0 ) ); 
         nssetid = atoi( PQsql.GetFieldValueName("nsset" , 0 ) );  
 
-        d->stat = 0 ; // status
-
+        d->stat.length(1) ; // status
+        d->stat[0] = CORBA::string_dup( "OK" ); 
 	d->CrDate= get_time_t( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
 	d->TrDate= get_time_t( PQsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
 	d->ExDate= get_time_t( PQsql.GetFieldValueName("ExDate" , 0 ) ); //  expirace
@@ -1524,7 +1529,7 @@ debug("vyprazdneni");
 d->ROID =  CORBA::string_dup( "" ); // domena do ktere patri host
 d->name=  CORBA::string_dup( "" ); // fqdn nazev domeny
 d->nsset = CORBA::string_dup( "" ); // nsset
-d->stat=0; // status sequence
+d->stat.length(0); // status sequence
 d->CrDate=0; // datum vytvoreni
 d->TrDate=0; // datum zmeny
 d->ExDate=0; // datum zmeny
