@@ -309,6 +309,9 @@ ccReg::Response *ret;
 char *cc;
 int id , clid , crid , upid;
 int actionID=0;
+char status[64];
+int len , i  , s ;
+
 c = new ccReg::Contact;
 ret = new ccReg::Response;
 
@@ -334,8 +337,10 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
         crid =  atoi( PQsql.GetFieldValueName("CrID" , 0 ) ); 
         upid =  atoi( PQsql.GetFieldValueName("UpID" , 0 ) ); 
 
-        c->stat.length(1); // status
-        c->stat[0] = CORBA::string_dup( "OK" );
+
+        // pole ststusu
+        strcpy( status , PQsql.GetFieldValueName("status" , 0 ) );
+
 
 	c->ROID=CORBA::string_dup( PQsql.GetFieldValueName("ROID" , 0 ) ); // ROID     
 	c->CrDate= get_time_t( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
@@ -375,6 +380,18 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
     
         // free select
 	PQsql.FreeSelect();
+
+        // zpracuj pole statusu
+        len =  get_array_length( status );
+        c->stat.length(len); // status
+       
+        for( i = 0 ; i < len ; i ++)
+           {
+            s =  get_array_numeric( status , i );
+            c->stat[i] = CORBA::string_dup( PQsql.GetStatusString( s ) );
+           }
+
+       
         
         // identifikator registratora
         c->ClID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( clid ) );
@@ -725,12 +742,10 @@ return ret;
 ccReg::Response* ccReg_EPP_i::NSSetInfo(const char* handle, ccReg::NSSet_out n, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
-char sqlString[1024] ,  adres[1042] , adr[128];
+char sqlString[1024] ,  adres[1042] , adr[128] , status[64];
 ccReg::Response *ret;
 int clid , crid , upid , nssetid;
-int i , j  ,ilen , len;
-
-cout  << "NSSetInfo: " << handle  << endl;
+int i , j  ,ilen , len , s ;
 
 ret = new ccReg::Response;
 n = new ccReg::NSSet;
@@ -763,9 +778,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetInfo , (char * ) clTRID  ) )
         crid = atoi( PQsql.GetFieldValueName("CrID" , 0 ) );
         upid = atoi( PQsql.GetFieldValueName("UpID" , 0 ) );
 
-        n->stat.length(1);  // status
-        n->stat[0] = CORBA::string_dup( "OK" );
-
+        strcpy( status ,  PQsql.GetFieldValueName("status" , 0 ) ); 
 
         n->ROID=CORBA::string_dup( PQsql.GetFieldValueName("ROID" , 0 ) ); // ROID
         n->handle=CORBA::string_dup( PQsql.GetFieldValueName("handle" , 0 ) ); // ROID
@@ -780,6 +793,16 @@ if( PQsql.BeginAction( clientID , EPP_NSsetInfo , (char * ) clTRID  ) )
 
         // free select
         PQsql.FreeSelect();
+
+        // zpracuj pole statusu
+        len =  get_array_length( status );
+        n->stat.length(len); // status
+       
+        for( i = 0 ; i < len ; i ++)
+           {
+            s =  get_array_numeric( status , i );
+            n->stat[i] = CORBA::string_dup( PQsql.GetStatusString( s ) );
+           }
 
         n->ClID =  CORBA::string_dup( PQsql.GetRegistrarHandle( clid ) );
         n->CrID =  CORBA::string_dup( PQsql.GetRegistrarHandle( upid ) );
@@ -1136,10 +1159,10 @@ return ret;
 ccReg::Response* ccReg_EPP_i::HostInfo(const char* name, ccReg::Host_out h , CORBA::Long clientID, const char* clTRID )
 {
 PQ PQsql;
-char sqlString[1024] , adres[1042] , adr[128]  ;
+char sqlString[1024] , adres[1042] , adr[128]  , status[64]  ;
 ccReg::Response *ret;
 int nssetid , clid , upid ;
-int len , i;
+int len , i , s ;
 
 h = new ccReg::Host;
 ret = new ccReg::Response;
@@ -1173,15 +1196,16 @@ if( PQsql.BeginAction( clientID , EPP_HostInfo , (char * ) clTRID  ) )
         nssetid = atoi( PQsql.GetFieldValueName("NSSETID" , 0 ) );
  
 
-        h->stat.length(1) ; // status
-        h->stat[0] = CORBA::string_dup( "OK" );
+
+        // pole ststusu
+        strcpy( status , PQsql.GetFieldValueName("status" , 0 ) );
+ 
 
 
 	h->CrDate= get_time_t( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
 	h->UpDate= get_time_t( PQsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
 
 	h->fqdn=CORBA::string_dup( PQsql.GetFieldValueName("fqdn" , 0 )  ); // jmeno nebo nazev kontaktu
-
 
     
         ret->errCode=COMMAND_OK;
@@ -1191,6 +1215,19 @@ if( PQsql.BeginAction( clientID , EPP_HostInfo , (char * ) clTRID  ) )
     
         // free select
 	PQsql.FreeSelect();
+
+
+        // zpracuj pole statusu
+        len =  get_array_length( status );
+        h->stat.length(len); // status
+
+        for( i = 0 ; i < len ; i ++)
+           {
+            s =  get_array_numeric( status , i );
+            h->stat[i] = CORBA::string_dup( PQsql.GetStatusString( s ) );
+           }
+
+
 
         h->nsset=CORBA::string_dup(  PQsql.GetValueFromTable( "NSSET" , "handle" , "id" ,  nssetid ) );
          
@@ -1422,10 +1459,10 @@ return ret;
 ccReg::Response* ccReg_EPP_i::DomainInfo(const char* fqdn, ccReg::Domain_out d , CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
-char sqlString[1024] , dns[1042]  , ns[128] ;
+char sqlString[1024] , dns[1042]  , ns[128] , status[64];
 ccReg::Response *ret;
 int id , clid , crid ,  upid , regid ,nssetid;
-int i , len;
+int i , len , s ;
 
 d = new ccReg::Domain;
 ret = new ccReg::Response;
@@ -1461,8 +1498,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
         regid = atoi( PQsql.GetFieldValueName("registrant" , 0 ) ); 
         nssetid = atoi( PQsql.GetFieldValueName("nsset" , 0 ) );  
 
-        d->stat.length(1) ; // status
-        d->stat[0] = CORBA::string_dup( "OK" ); 
+        strcpy(status , PQsql.GetFieldValueName("status" , 0 ) ) ; // status
+
 	d->CrDate= get_time_t( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
 	d->TrDate= get_time_t( PQsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
 	d->ExDate= get_time_t( PQsql.GetFieldValueName("ExDate" , 0 ) ); //  expirace
@@ -1478,6 +1515,17 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
         // free select
 	PQsql.FreeSelect();
         
+        // zpracuj pole statusu
+        len =  get_array_length( status );
+        d->stat.length(len); // status
+
+        for( i = 0 ; i < len ; i ++)
+           {
+            s =  get_array_numeric( status , i );
+            d->stat[i] = CORBA::string_dup( PQsql.GetStatusString( s ) );
+           }
+
+
         d->ClID = CORBA::string_dup( PQsql.GetRegistrarHandle( clid ) );
         d->CrID = CORBA::string_dup( PQsql.GetRegistrarHandle( crid ) );
         d->UpID = CORBA::string_dup( PQsql.GetRegistrarHandle( upid ) );
