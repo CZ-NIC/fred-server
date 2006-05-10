@@ -170,13 +170,17 @@ int main(int argc, char** argv)
 
 
 
-    ret =  EPP->ContactInfo( "NECOCZ-SUPERUSER",  cc , loginID , "XPET_info" );
+    ret =  EPP->ContactInfo( "NECOCZ-ROBERT",  cc , loginID , "XPET_info" );
     cout << "err code " << ret->errCode << " serverTRID " <<  ret->svTRID  << endl;
 
     cout << "info "  << cc->Name  <<  endl;
  
     cout <<  cc->Name << cc->Email << cc->DiscloseEmail <<  cc->Country << endl;
 
+      for( i = 0 ; i < cc->stat.length() ; i ++ )
+         {
+            cout << "status: " <<  cc->stat[i] << endl;
+         }
   //  t = (time_t )  contact->CrDate;
    // cout << asctime( gmtime( &t) ) << endl;
 
@@ -189,6 +193,17 @@ int main(int argc, char** argv)
    ret =  EPP->DomainRenew(  "neco.cz" ,  *domain , 15 ,  loginID , clTRID );
    cout << "err code " << ret->errCode   << endl;
 
+
+   domain->nsset = CORBA::string_dup( "NSSET" );
+
+
+   cout << "domain update nsset:" <<  domain->nsset   << endl;
+
+ 
+   ret =  EPP->DomainUpdate(  "neco.cz" ,  *domain , loginID , clTRID );
+
+   cout << "err code " << ret->errCode   << endl;
+ 
  
 
 
