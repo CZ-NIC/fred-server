@@ -47,6 +47,9 @@ char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "han
 int MakeHistory(); // zapise do tabulky history
 bool SaveHistory(char *table , char *fname ,  int id ); // ulozi radek tabulky
 
+// funkce co vraci z enum_status string 
+char *  PQ::GetStatusString( int status );
+
 // spusti select a vrati pocet radek
 bool ExecSelect(char *sqlString);
 // vyprazdni result selectu a nastavi zpet pocet radku a sloupcu

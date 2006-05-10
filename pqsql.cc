@@ -191,6 +191,24 @@ else return "svrTRID ERROR";
 
 
 
+char *  PQ::GetStatusString( int status )
+{
+char sqlString[128];
+char *handle;
+
+sprintf( sqlString , "SELECT  status  FROM enum_status  WHERE id=%d;" , status );
+
+if( ExecSelect( sqlString ) )
+ {
+      handle = GetFieldValue( 0 , 0 );
+      debug("GetStaus \'%s\'  ->  %d\n" ,  handle , status );
+      FreeSelect();
+ }
+
+if( handle == NULL ) return "";
+else return handle;
+}
+  
 
 char *  PQ::GetValueFromTable( char *table , char *vname , char *fname , char *value)
 {
