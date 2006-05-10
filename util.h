@@ -11,6 +11,8 @@ time_t expiry_time( time_t extime ,  int period );
 int get_array_length(char *array);
 // vrati prvek pole
 void get_array_value(char *array ,  char *value , int field );
+// vraci numericky prvek pole
+int get_array_numeric(char *array , int field );
 
 void add_field_value( char *string , char *fname , char *value );
  

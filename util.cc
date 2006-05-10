@@ -1,5 +1,5 @@
-#include<time.h>
 #include<stdio.h>
+#include<stdlib.h>
 #include<time.h>
 #include<string.h>
 
@@ -98,6 +98,36 @@ if( array[0] == '{' )
                       strncpy( value , array+from , i - from ); // zkopiruj retezec
                       value[i - from] = 0 ; // zakoncit
                       break;
+                   }
+                 else { num ++ ; from = i + 1; }
+               }
+      }
+}
+
+}
+
+
+// vraci numericky prvek pole
+int get_array_numeric(char *array , int field )
+{
+int i , num , from;
+char value[32];
+
+// default value
+strcpy( value , "" );
+
+if( array[0] == '{' )
+{
+
+   for( i = 1 , num = 0 , from = 1 ; i < strlen ( array ) ; i ++ )
+      {
+            if(  array[i] == ',' ||  array[i] ==  '}' )
+              {
+                 if( num == field )
+                   {
+                      strncpy( value , array+from , i - from ); // zkopiruj retezec
+                      value[i - from] = 0 ; // zakoncit
+                      return atoi( value );
                    }
                  else { num ++ ; from = i + 1; }
                }
