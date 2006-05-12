@@ -143,19 +143,17 @@ bool  PQ::BeginAction(int clientID , int action ,char *clTRID )
 char sqlString[512];
 
 // actionID pro logovani
-    if( ExecSelect("SELECT NEXTVAL('action_id_seq');" ) )
-     {
-      actionID = atoi( GetFieldValue( 0 , 0 ) );
-      debug("action id = %d\n" , actionID  );
-      FreeSelect();
-     }
+actionID = GetSequenceID("action");
 
+if( actionID ) 
+  {
   // zapis do action tabulky
    sprintf( sqlString , "INSERT INTO ACTION ( id , clientid , action ,  clienttrid   )  VALUES ( %d , %ld , %d , \'%s\' );" ,
                   actionID , clientID  , action  , clTRID);
 
-return ExecSQL( sqlString );
-
+   return ExecSQL( sqlString );
+  }
+else return false;
 }
 
 char * PQ:: EndAction(int response )
@@ -201,12 +199,32 @@ sprintf( sqlString , "SELECT  status  FROM enum_status  WHERE id=%d;" , status )
 if( ExecSelect( sqlString ) )
  {
       handle = GetFieldValue( 0 , 0 );
-      debug("GetStaus \'%s\'  ->  %d\n" ,  handle , status );
+      debug("GetStatustring \'%s\'  ->  %d\n" ,  handle , status );
       FreeSelect();
  }
 
 if( handle == NULL ) return "";
 else return handle;
+}
+
+
+int  PQ::GetStatusNumber( char  *status )
+{
+char sqlString[128];
+char *handle;
+int id =0;
+
+sprintf( sqlString , "SELECT  id  FROM enum_status  WHERE status=\'%s\';" , status );
+
+if( ExecSelect( sqlString ) )
+ {
+      handle = GetFieldValue( 0 , 0 );
+      id = atoi( handle );
+      debug("GetStatusNumeric \'%s\'  ->  (%s) %d\n" ,   status , handle  , id  );
+      FreeSelect();
+ }
+
+return id;
 }
   
 

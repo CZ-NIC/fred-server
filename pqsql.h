@@ -42,6 +42,7 @@ int GetSequenceID( char *sequence ); // id ze sequnce
 int GetLoginRegistrarID(int id) { return GetNumericFromTable( "LOGIN" , "registrarid" , "id" , id ); };
 int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "id" , "handle" , handle ); };
 char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "handle" , "id" , id ); };
+char * GetStatusFromTable( char *table , int id ) {  return GetValueFromTable( table , "status" , "id" , id ); };
 
 // funkce na ulozeni obsahu radku ID tabluky  do 
 int MakeHistory(); // zapise do tabulky history
@@ -49,6 +50,8 @@ bool SaveHistory(char *table , char *fname ,  int id ); // ulozi radek tabulky
 
 // funkce co vraci z enum_status string 
 char *  PQ::GetStatusString( int status );
+// funkce vracejici id statusu
+int  PQ::GetStatusNumber( char  *status );
 
 // spusti select a vrati pocet radek
 bool ExecSelect(char *sqlString);
