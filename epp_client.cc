@@ -40,6 +40,7 @@ int main(int argc, char** argv)
     int i , len , max = 512, d , j , a;
     CORBA::Long loginID;
     ccReg::Avail_var av;
+    ccReg::Status_var add , rem;
     struct tm dt;
     time_t t;
     filebuf *pbuf;
@@ -169,7 +170,7 @@ int main(int argc, char** argv)
 
 
 
-
+/*
     ret =  EPP->ContactInfo( "NECOCZ-ROBERT",  cc , loginID , "XPET_info" );
     cout << "err code " << ret->errCode << " serverTRID " <<  ret->svTRID  << endl;
 
@@ -181,6 +182,24 @@ int main(int argc, char** argv)
          {
             cout << "status: " <<  cc->stat[i] << endl;
          }
+     
+
+      contact = new ccReg::Contact;
+
+     add = new ccReg::Status;
+     add->length(0);
+  //   add[0] = CORBA::string_dup(  "clientHold" );
+//     add[1] = CORBA::string_dup(  "clientTransferProhibited" );
+ 
+     rem = new ccReg::Status;
+     rem->length(1);
+     rem[0] = CORBA::string_dup(  "clientUpdateProhibited" );
+
+     ret =  EPP->ContactUpdate( "NECOCZ-ROBERT",  *contact , add , rem  , loginID , "XPET_info" );
+     cout << "err code " << ret->errCode << " serverTRID " <<  ret->svTRID  << endl;
+*/
+
+/*
   //  t = (time_t )  contact->CrDate;
    // cout << asctime( gmtime( &t) ) << endl;
 
@@ -200,14 +219,13 @@ int main(int argc, char** argv)
    cout << "domain update nsset:" <<  domain->nsset   << endl;
 
  
-   ret =  EPP->DomainUpdate(  "neco.cz" ,  *domain , loginID , clTRID );
+//   ret =  EPP->DomainUpdate(  "neco.cz" ,  *domain , loginID , clTRID );
 
-   cout << "err code " << ret->errCode   << endl;
+  // cout << "err code " << ret->errCode   << endl;
  
  
 
 
-/*
   domain = new ccReg::Domain;
 
 
@@ -310,23 +328,26 @@ delete cc;
 
 /*
     cc = new ccReg::Contact;
-
+     max = 10;
     for( i = 0 ; i < max ; i ++) 
        {
-     random_string( name , 10 );
+        random_string( name , 10 );
 
            sprintf( roid , "ID-%s" , name );
 
            cc->ROID = CORBA::string_dup(  roid );  
+//           cc->handle = CORBA::string_dup(  roid );  
            cc->Name = CORBA::string_dup( name );
            cc->Country = CORBA::string_dup( "CZ" );
+           cc->stat.length(1);
+           cc->stat[0] = CORBA::string_dup( "ok" );  
            cc->CrID = CORBA::string_dup( "REG-WEB4U" );
            cc->ClID = CORBA::string_dup( "REG-WEB4U" );
            cout << "Create: "  << i  << cc->ROID <<   cc->Name << endl;  
-           EPP->ContactCreate( *cc ,loginID ,  "CREATE" );
+           EPP->ContactCreate( roid ,  *cc ,loginID ,  "CREATE-contact" );
        } 
-*/
-/*
+
+
     for( i = 0 ; i < max ; i ++)
        {
            sprintf( roid , "ID-%06d" , i+1 );
@@ -357,12 +378,13 @@ delete cc;
 */
 //   printf("zeme %c%c [%s] \n" , contact->Country[0] ,  contact->Country[1] , contact->AuthInfoPw);
 
-/*
+
       cout  << "client logout "<< endl;
 
-   ret =  EPP->ClientLogout( loginID , "XXXX" );
-    cout << "err code " <<  ret->errCode  << endl;
-  */   
+    ret =  EPP->ClientLogout( loginID , "XXXX-logout" );
+
+    cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
+     
     orb->destroy();
   }
   catch(CORBA::TRANSIENT&) {
