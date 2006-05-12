@@ -148,15 +148,25 @@ ccReg::Response *ret;
 cout << "Logout:  " << clientID << endl; 
 
 ret = new ccReg::Response;
-// default
-ret->errCode=COMMAND_FAILED; // chyba
+ret->errCode=COMMAND_FAILED;
+ret->svTRID = CORBA::string_alloc(32); //  server transaction
+ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+
+
 
 if(  PQsql.OpenDatabase( DATABASE ) )
 {
+  if( PQsql.BeginAction( clientID , EPP_ClientLogout , (char * ) clTRID  ) )
+  {
 
-sprintf( sqlString , "UPDATE Login set logoutdate='now' , logouttrid=\'%s\' where id=%d;" , clTRID , clientID );
+    sprintf( sqlString , "UPDATE Login set logoutdate='now' , logouttrid=\'%s\' where id=%d;" , clTRID , clientID );
 
-if(  PQsql.ExecSQL( sqlString ) ) ret->errCode= COMMAND_OK; // uspesne oddlaseni
+   if(  PQsql.ExecSQL( sqlString ) ) ret->errCode= COMMAND_OK; // uspesne oddlaseni
+
+    // zapis na konec action
+    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
+  }
+
 PQsql.Disconnect();
 }
 
