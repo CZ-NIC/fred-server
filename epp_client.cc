@@ -40,6 +40,8 @@ int main(int argc, char** argv)
     int i , len , max = 512, d , j , a;
     CORBA::Long loginID;
     ccReg::Avail_var av;
+    ccReg::DNSHost_var dns_chg ,  dns_add , dns_rem;
+    ccReg::TechContact_var tech_add , tech_rem;
     ccReg::Status_var add , rem;
     struct tm dt;
     time_t t;
@@ -377,6 +379,36 @@ delete cc;
    delete cc;
 */
 //   printf("zeme %c%c [%s] \n" , contact->Country[0] ,  contact->Country[1] , contact->AuthInfoPw);
+
+    add = new ccReg::Status;
+    add->length(0);
+    rem = new ccReg::Status;
+    rem->length(0);
+
+//    dns_chg = new ccReg::DNSHost;
+  //  dns_chg->length(1);
+    //dns_chg[0].inet.length(2);
+    //dns_chg[0].fqdn = CORBA::string_dup( "zeleny.neco.cz" );      
+    //dns_chg[0].inet[0] = CORBA::string_dup( "216.31.200.1" );
+    //dns_chg[0].inet[1] = CORBA::string_dup( "216.31.200.10" );
+    dns_add = new ccReg::DNSHost;
+    dns_add->length(0);
+    dns_rem = new ccReg::DNSHost;
+    dns_rem->length(0);
+
+    tech_rem = new ccReg::TechContact;
+    tech_rem->length(1);
+    tech_rem[0] = CORBA::string_dup( "NECOCZ-ADMIN" );
+    
+
+    tech_add = new ccReg::TechContact;
+    tech_add->length(1);
+    tech_add[0] = CORBA::string_dup( "NECOCZ-SUPERUSER" );
+     
+    ret =  EPP->NSSetUpdate(  "NECOCZ" , "" ,  dns_rem ,  dns_add , dns_add , tech_add , tech_rem , add , rem ,  loginID , "nsset-update" );
+
+    cout << "err code " << ret->errCode   << endl;
+
 
 
       cout  << "client logout "<< endl;
