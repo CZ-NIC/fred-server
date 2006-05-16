@@ -399,8 +399,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
             c->stat[i] = CORBA::string_dup( PQsql.GetStatusString( s ) );
            }
 
-       
-        
+              
         // identifikator registratora
         c->ClID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( clid ) );
         c->CrID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( crid ) );
@@ -713,7 +712,6 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
 
 
-
 if( PQsql.OpenDatabase( DATABASE ) )
 {
 
@@ -918,8 +916,9 @@ if( PQsql.BeginAction( clientID , EPP_NSsetInfo , (char * ) clTRID  ) )
         n->CrID =  CORBA::string_dup( PQsql.GetRegistrarHandle( upid ) );
         n->UpID =  CORBA::string_dup( PQsql.GetRegistrarHandle( crid ) );
 
-        // dotaz na DNS servry 
-        sprintf( sqlString , "SELECT fqdn , ipaddr FROM HOST  WHERE nssetid=%d" , nssetid);
+        // dotaz na DNS servry  pres tabulku nsset_host_map
+        sprintf( sqlString , "SELECT  fqdn , ipaddr FROM HOST   WHERE  nssetid=%d;" , nssetid);
+
 
         if(  PQsql.ExecSelect( sqlString ) )
           {  
@@ -1087,6 +1086,7 @@ PQsql.Disconnect();
 return ret;
 }
 
+
 ccReg::Response* ccReg_EPP_i::NSSetCreate(const char* handle, const ccReg::NSSet& n, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
@@ -1195,10 +1195,9 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
 
             strcat( Array , " } " );
 
-              
-             sprintf( sqlString , "INSERT INTO HOST ( nssetid , fqdn , clid, upid , crdate  , update, status , ipaddr ) \
-                                        VALUES ( %d , \'%s\'  , %d , %d ,  'now' , \'now\'  , '{0}' ,  \'%s\' );" ,
-                                           nssetid , CORBA::string_dup( n.dns[i].fqdn ) ,  clid  ,  clid , Array );
+             // HOST informace poouze ipaddr a fqdn 
+             sprintf( sqlString , "INSERT INTO HOST ( nssetid , fqdn  , ipaddr )    VALUES ( %d , \'%s\'  ,  \'%s\' );" ,
+                                           nssetid , CORBA::string_dup( n.dns[i].fqdn )  , Array );
 
 
               if( PQsql.ExecSQL( sqlString ) == false )  // pokud se nepodarilo pridat do tabulky
@@ -1232,19 +1231,29 @@ return ret;
 
 
 
-ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg, const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem,const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg, const ccReg::DNSHost& dns_chg, const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem, const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID)
 {
 ccReg::Response *ret;
 PQ PQsql;
-char sqlString[4096] , buf[256] , Array[512];
+char sqlString[4096] , buf[256] , Array[512] , numStr[16] , status[64];;
 int regID=0 , clID=0 , id ,nssetid , contactid , techid ;
-int i , j ,  len;
+int i , j ,  len , slen , s[16] , stat , hostID;
 
 ret = new ccReg::Response;
 
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+
+ // zmena DNS HOSTU
+ len = dns_chg.length();
+ for( i = 0 ; i < len ; i ++ )
+   {
+      cout << "fqdn_chg: " <<  CORBA::string_dup( dns_chg[i].fqdn )  << endl;
+      slen = dns_chg[i].inet.length();
+      for( j = 0 ; j < slen ; j ++ )  cout << "\tadres: " <<  dns_chg[i].inet[j] << endl;  
+   }
+ 
 
 
 if( PQsql.OpenDatabase( DATABASE ) )
@@ -1271,99 +1280,186 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
             if( PQsql.SaveHistory( "NSSET" , "id" , id ) ) // uloz zaznam
               {
 
-/*                
+
+ 
+                // zpracuj pole statusu
+                slen =  get_array_length( status );
+
+                // stavajici status
+                for( i = 0 ; i < slen ; i ++ ) s[i] = get_array_numeric( status , i );
+                  
+                // pridany status
+                len  =   status_add.length();
+                
+                for( i = 0 ; i < len ; i ++)
+                   {
+                      stat =  PQsql.GetStatusNumber( CORBA::string_dup( status_add[i] ) );
+
+                      for( j = 0 ; j < slen ; j ++ ) 
+                         {
+                            if( s[j] == stat ) { stat = 0 ; break;} // pokud status existuje uz ho nepridavej
+                         }
+                       if( stat ) {  s[slen]  = stat ; slen ++ ;  } // pridej na konec
+                   }
+
+                   
+                // zrus status flagy
+                len  =   status_rem.length();
+
+                for( i = 0 ; i < len ; i ++)
+                   {
+                      stat =  PQsql.GetStatusNumber( CORBA::string_dup( status_rem[i] ) );
+                      for( j = 0 ; j < slen ; j ++ )
+                         {
+                            if( s[j] == stat ) { s[j]  = 0 ;  break;} // pokud status existuje tak ho smaz
+                         }                       
+                  }
+                 
+
+                //  vygeneruj  novy status string  retezec pole
+                strcpy( status , " { " ); 
+                for( j = 0 ; j < slen ; j ++ )
+                   {
+                      if( s[j] > 0   ) 
+                        {
+                            sprintf( numStr , " %d ,", s[j] );  
+                            strcat( status ,  numStr );
+                        }
+                   } 
+                // zrus posledni carku
+                j = strlen( status );
+                status[j-1] = 0 ; 
+                strcat( status , " } " );
+
 
                 // zmenit zaznam o domene
-                sprintf( sqlString , "UPDATE NSSET SET UpDate=\'now\' , UpID=%d " , regID  );
-
-                if( strlen( CORBA::string_dup(n.AuthInfoPw)  ) )
-                  { sprintf( buf , "  , AuthInfoPw=\'%s\'  " , CORBA::string_dup(n.AuthInfoPw)  ); strcat( sqlString , buf ); } 
+                sprintf( sqlString , "UPDATE NSSET SET UpDate=\'now\' , upid=%d , status=\'%s\' " , regID , status   );
+                if( strlen( CORBA::string_dup(authInfo_chg)  ) ) { sprintf( buf , " ,  AuthInfoPw=\'%s\' " , CORBA::string_dup(authInfo_chg)  ); strcat( sqlString , buf ); } 
  
                 sprintf( buf , " WHERE id=%d;" , id );
                 strcat( sqlString , buf ); 
 
 
-                if(   PQsql.ExecSQL( sqlString ) )
-                  {
-                     ret->errCode = COMMAND_OK; // nastavit uspesne
-
-                      // zapis admin kontakty
-                      len = n.tech.length();
-                      if( len > 0 )
-                      {  
-                      if( PQsql.SaveHistory( "nsset_contact_map" , "nssetID" , id ) ) // uloz do historie admin kontakty
+                   if(   PQsql.ExecSQL( sqlString ) )
+                     {  
+                       ret->errCode = COMMAND_OK; // nastavit uspesne
+        
+                        if( PQsql.SaveHistory( "nsset_contact_map" , "nssetID" , id ) ) // uloz do historie tech kontakty
                         {
-                           if(  PQsql.DeleteFromTable( "nsset_contact_map" , "nssetID" , id )  ) // vymaz stavajici admin kontakty
-                             {
-                               for( i = 0 ; i < len ; i ++ )
-                                 {
-                                   techid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(n.tech[i]) );
-                                   sprintf( sqlString , "INSERT INTO nsset_contact_map VALUES ( %d , %d );"  , id , techid );
-
-                                   if( PQsql.ExecSQL( sqlString ) == false )  // pokud se nepodarilo pridat do tabulky
-                                     {
-                                       ret->errCode = COMMAND_FAILED;
-                                       break;
-                                     }
-                                 }
-
-                             }
-                        
-                        }
-                      }
-
-                      // update DNS hostu 
-                      if( ret->errCode == COMMAND_OK ) 
-                        {
-          
-                          len = n.dns.length();
-                          if( len > 0 )
-                           {
-                             if( PQsql.SaveHistory( "host" , "nssetID" , id ) ) // uloz do historie stavajici hosty 
+                         // pridat tech kontakty
+                         len = tech_add.length(); 
+                         for( i = 0 ; i < len ; i ++ )
+                          { 
+                            techid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(tech_add[i]) );
+                             cout << "add techid: "  << techid <<  CORBA::string_dup(tech_add[i]) << endl;
+                             if( techid )
                                {
-                                  if(  PQsql.DeleteFromTable( "host" , "nssetID" , id )  ) // vymaz stavajici  hosty
+                                  if(  PQsql.CheckContactMap( "nsset" , id , techid ) == false ) // pokud kontak jeste neexistuje tak ho pridej
                                     {
-                                                                        
-                                      for( i = 0 ; i < len ; i ++ )
-                                         {
-                                           // ip adresa DNS hostu
-                                           // preved sequenci adres
-                                           strcat( Array , " { " );
-                                           for( j = 0 ; j < n.dns[i].inet.length() ; j ++ )
-                                              {
-                                                if( j > 0 ) strcat( Array , " , " );
-                                                strcat( Array ,  CORBA::string_dup( n.dns[i].inet[j]  ));
-                                               }
-                                           strcat( Array , " } " );
-
-                                            sprintf( sqlString , "INSERT INTO HOST ( nssetid , fqdn , clid, upid , crdate  , update, status , ipaddr ) \
-                                                       VALUES ( %d , \'%s\'  , %d , %d ,  'now' , \'now\'  , '{0}' ,  \'%s\' );" ,
-                                            id , CORBA::string_dup( n.dns[i].fqdn ) ,  clID  ,  clID , Array );
-  
-
-                                          if( PQsql.ExecSQL( sqlString ) == false )  // pokud se nepodarilo pridat do tabulky
-                                            {
-                                               ret->errCode = COMMAND_FAILED;
-                                               break;
-                                             }
-
-                                        }
+                                      sprintf( sqlString , "INSERT INTO nsset_contact_map VALUES ( %d , %d );"  , id , techid );
+                                      if(   PQsql.ExecSQL( sqlString ) == false ) { ret->errCode=COMMAND_FAILED; break; } 
                                     }
                                }
-                            }
-                        } 
 
-                      // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
+                           }
+
+                         // vymaz  tech kontakty
+                        len = tech_rem.length();   
+                        for( i = 0 ; i < len ; i ++ )
+                          {
+
+                             techid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(tech_rem[i]) );
+                             cout << "rem techid: "  << techid <<  CORBA::string_dup(tech_rem[i]) << endl;
+           
+                             if( techid )
+                              {  
+                                if(  PQsql.CheckContactMap( "nsset" , id , techid ) )
+                                  { 
+                                    sprintf( sqlString , "DELETE FROM domain_contact_map WHERE  domainid=%d and contactid=%d;" , id , techid );
+                                    if(   PQsql.ExecSQL( sqlString ) == false ) { ret->errCode=COMMAND_FAILED; break; }
+                                  }
+                              
+                              }
+                          }
+ 
+                        }
+     
+                      if( PQsql.SaveHistory( "host" , "nssetID" , id ) ) // uloz do historie hosty
+                       {
+                            // zmena DNS HOSTU     
+                            len = dns_chg.length();
+                            for( i = 0 ; i < len ; i ++ )
+                            {
+                               // zjisti host.id pro zmenu 
+                               sprintf( sqlString , "SELECT id FROM HOST WHERE nssetid=%d AND fqdn=\'%s\';" , id ,  CORBA::string_dup( dns_chg[i].fqdn )  );
+                               if( PQsql.ExecSelect( sqlString ) )                    
+                                 {
+                                   hostID = atoi( PQsql.GetFieldValue( 0 , 0 ) );  
+                                   PQsql.FreeSelect(); 
+                                 }
+
+                               cout << "hostID " << hostID << endl ;   
+                               if( hostID ) // pokud nasel zmen jenom glue ipadresu hosta
+                                 {
+                                    // vytvor pole inet adres
+                                    slen =  dns_chg[i].inet.length();
+                                    strcpy(  Array , "{ " ); 
+                                    for( j = 0 ; j  < slen; j ++ )
+                                       {
+                                          if( j > 0 ) strcat( Array , " , " );
+                                          strcat( Array ,  CORBA::string_dup( dns_chg[i].inet[j] ) );
+                                       }
+                                    strcat( Array , " } " );
+                                    sprintf( sqlString , "UPDATE HOST SET  ipaddr = \'%s\' WHERE id=%d;" , Array  , hostID );   
+                                    if(   PQsql.ExecSQL( sqlString ) == false ) { ret->errCode=COMMAND_FAILED; break; }                             
+                                 }  
+
+                            }
+                            // pridat DNS HOSTY
+                            len = dns_add.length();
+                            for( i = 0 ; i < len ; i ++ )
+                               {
+                                                                    
+                                    // vytvor pole inet adres
+                                    slen =  dns_add[i].inet.length() ;
+                                    strcpy(  Array , "{ " );
+                                    for( j = 0 ; j  < slen; j ++ )
+                                       {
+                                          if( j > 0 ) strcat( Array , " , " );
+                                          strcat( Array ,  CORBA::string_dup( dns_add[i].inet[j] ) );
+                                       }
+                                    strcat( Array , " } " ) ;
+
+              
+                                    sprintf( sqlString , "INSERT INTO  HOST ( nssetid , fqdn  , ipaddr ) VALUES ( %d , \'%s\', \'%s\' );", 
+                                                 id ,   CORBA::string_dup( dns_add[i].fqdn ) , Array );
+                                    if(  PQsql.ExecSQL( sqlString ) == false ) { ret->errCode == COMMAND_FAILED; break ;}
+                               
+                               }
+
+                            // smazat DNS HOSTY
+                            len = dns_rem.length();
+                            for( i = 0 ; i < len ; i ++ )
+                               {
+                                 sprintf( sqlString , "DELETE FROM HOST WHERE nssetid=%d AND fqdn=\'%s\';" , id ,  CORBA::string_dup(   dns_rem[i].fqdn ) );   
+                                 if(  PQsql.ExecSQL( sqlString ) == false ) { ret->errCode == COMMAND_FAILED; break ;}   
+                               }
+
+                       }
+
+
+                     }
+
+                       // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
                       if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
                       else  PQsql.RollbackTransaction();
 
-                  }
+                  
+               }
 
-*/
-              }
+
+              
            }
-
-
        }
 
    }
@@ -1641,6 +1737,7 @@ if( PQsql.BeginAction( clientID , EPP_HostCreate , (char * ) clTRID  ) )
   else 
 // pokud host nexistuje
   {
+
 
     // preved sequenci adres
      strcat( Array , " { " );
@@ -1971,14 +2068,12 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
           if( PQsql.SaveHistory( "Domain" , "id" , id ) ) // uloz zaznam
            {
 
-
                 
                 nssetid =  PQsql.GetNumericFromTable("NSSET" , "id" , "handle" , CORBA::string_dup(nsset_chg) );
                 contactid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(registrant_chg) );
  
                 // zpracuj pole statusu
                 slen =  get_array_length( status );
-
 
                 // stavajici status
                 for( i = 0 ; i < slen ; i ++ ) s[i] = get_array_numeric( status , i );
