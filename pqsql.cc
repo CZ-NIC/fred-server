@@ -226,6 +226,22 @@ if( ExecSelect( sqlString ) )
 
 return id;
 }
+
+bool  PQ::CheckContactMap(char * table , int id , int contactid )
+{
+bool ret = false;
+char sqlString[128];
+
+sprintf( sqlString , "SELECT * FROM %s_contact_map WHERE %sid=%d and contactid=%d" , table , table , id , contactid );
+
+if( ExecSelect( sqlString ) )
+ {
+    if(  GetSelectRows() == 1  ) ret=true; // kontakt existuje
+    FreeSelect();
+  }
+
+return ret;
+}
   
 
 char *  PQ::GetValueFromTable( char *table , char *vname , char *fname , char *value)

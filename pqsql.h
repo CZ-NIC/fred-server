@@ -36,6 +36,8 @@ int GetNumericFromTable( char *table , char *vname ,  char *fname ,  int numeric
 char * GetValueFromTable( char *table , char *vname ,  char *fname ,  char *value);
 char * GetValueFromTable( char *table , char *vname ,  char *fname ,  int numeric);
 int GetSequenceID( char *sequence ); // id ze sequnce
+// kontroluje jestli je contactid pro dane id v tabulce nsset_contact_map nebo domain_contact_map 
+bool CheckContactMap(char * table , int id , int contactid );
 
 
 // vyssi funkce na vraceni value
