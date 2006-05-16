@@ -88,7 +88,7 @@ if( PQsql.OpenDatabase( DATABASE ) )
       }
 
     // dotaz na hosty z nssetu
-    sprintf( sqlString , "SELECT fqdn FROM HOST WHERE nssetid=%d;" , nssetid ) ;
+    sprintf( sqlString , "SELECT  fqdn , ipaddr FROM HOST  JOIN  nsset_host_map  ON nsset_host_map.hostid=host.id WHERE  nsset_host_map.nssetid=%d;" , nssetid);
  
 
     if( PQsql.ExecSelect( sqlString ) )
