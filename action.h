@@ -38,6 +38,7 @@
 #define EPP_DomainCreate        504  
 #define EPP_DomainTransfer      505 
 #define EPP_DomainRenew         506 
+#define EPP_DomainTrade         507 
 
 
 // dalsi funkce
