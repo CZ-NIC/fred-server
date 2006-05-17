@@ -2405,8 +2405,87 @@ ccReg::Response* ccReg_EPP_i::DomainTransferRequest(const char* fqdn, const char
 
 ccReg::Response* ccReg_EPP_i::DomainTrade(const char* fqdn, const char* old_registrant, const char* new_registrant, const char* authInfo, CORBA::Long clientID, const char* clTRID)
 {
-  // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::DomainTrade"
+ccReg::Response *ret;
+PQ PQsql;
+char sqlString[1024];
+char *pass;
+bool auth;
+int regID=0 , clID=0 , id , newid , oldid   , registrantid ;
+
+ret = new ccReg::Response;
+
+ret->errCode=COMMAND_FAILED;
+ret->svTRID = CORBA::string_alloc(32); //  server transaction
+ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+
+
+if( PQsql.OpenDatabase( DATABASE ) )
+{
+
+if( PQsql.BeginAction( clientID , EPP_DomainTrade , (char * ) clTRID  ) )
+ {
+
+   // pokud domena existuje
+  if( (id = PQsql.GetNumericFromTable(  "DOMAIN"  , "id" , "fqdn" , (char * ) fqdn ) ) == 0 ) ret->errCode= COMMAND_OBJECT_NOT_EXIST;
+  else
+  if( PQsql.BeginTransaction() )  
+  {
+   // get  registrator ID
+   regID =   PQsql.GetLoginRegistrarID( clientID);
+   // client contaktu
+   clID  =  PQsql.GetNumericFromTable(  "DOMAIN"  , "clID" , "id" , id );
+
+   // drzitel domeny
+   registrantid = PQsql.GetNumericFromTable(  "DOMAIN"  , "registrant" , "id" , id );
+  // stavajici drzitel                    
+   oldid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(old_registrant) );
+
+   pass = PQsql.GetValueFromTable(  "DOMAIN"  , "authinfopw" , "id" , id ); // ulozene heslo
+   // autentifikace
+   if( strlen(  CORBA::string_dup(authInfo) )  )  
+     {
+        if( strcmp( pass ,  CORBA::string_dup(authInfo) ) == 0 ) auth = true; // OK
+        else auth = false; // neplatne heslo  
+     }
+    else auth = true; // neni pozadovana autentifikace
+
+   if( clID == regID && oldid == registrantid  && auth ) // pokud je registrator clientem kontaktu a zaroven je soucasny drzitel drzitelem domeny
+     {
+         //  uloz do historie
+       if( PQsql.MakeHistory() )
+        {
+          if( PQsql.SaveHistory( "Domain" , "id" , id ) ) // uloz zaznam
+           {
+
+                      // budouci drzitel
+                      newid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(new_registrant) );
+
+ 
+                      // zmenit zaznam o domene
+                      sprintf( sqlString , "UPDATE DOMAIN SET UpDate=\'now\' , upid=%d ,  registrant=%d  WHERE id=%d;" , regID , newid  , id );
+
+
+                      if(   PQsql.ExecSQL( sqlString ) )  ret->errCode = COMMAND_OK; // nastavit uspesne
+
+                      // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
+                      if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
+                      else  PQsql.RollbackTransaction();
+                                 
+           }
+       }
+
+    }
+   
+   }
+   // zapis na konec action
+   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
+}
+
+
+PQsql.Disconnect();
+}
+
+return ret;
 }
 
 
