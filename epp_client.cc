@@ -379,7 +379,7 @@ delete cc;
    delete cc;
 */
 //   printf("zeme %c%c [%s] \n" , contact->Country[0] ,  contact->Country[1] , contact->AuthInfoPw);
-
+/*
     add = new ccReg::Status;
     add->length(0);
     rem = new ccReg::Status;
@@ -409,9 +409,10 @@ delete cc;
 
     cout << "err code " << ret->errCode   << endl;
 
+*/
 
-
-      cout  << "client logout "<< endl;
+    ret = EPP->DomainTrade("neco.cz", "NECOCZ-ROBERT"  , "NECOCZ-PETR" , "" ,  loginID , "domain-trade" );
+    cout  << "client logout "<< endl;
 
     ret =  EPP->ClientLogout( loginID , "XXXX-logout" );
 
