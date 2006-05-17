@@ -804,6 +804,19 @@ return ret;
 
 }
 
+ccReg::Response* ccReg_EPP_i::ContactTransferQuery(const char* handle, const char* authInfo, ccReg::Transfer_out trn, CORBA::Long clientID, const char* clTRID)
+{ 
+  // insert code here and remove the warning
+  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::ContactTransferQuery(const char* handle, const char* authInfo, ccReg::Transfer_out trn, CORBA::Long clientID, const char* clTRID)>"
+}
+
+ccReg::Response* ccReg_EPP_i::ContactTransferRequest(const char* handle, const char* authInfo, ccReg::Transfer_out trn, CORBA::Long clientID, const char* clTRID)
+{
+  // insert code here and remove the warning
+  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::ContactTransferRequest(const char* handle, const char* authInfo, ccReg::Transfer_out trn, CORBA::Long clientID, const char* clTRID)>"
+}
+
+
 ccReg::Response* ccReg_EPP_i::NSSetCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
@@ -2377,3 +2390,24 @@ PQsql.Disconnect();
 return ret;
 }
  
+
+ccReg::Response* ccReg_EPP_i::DomainTransferQuery(const char* fqdn, const char* registrant, const char* authInfo, ccReg::Transfer_out trn, CORBA::Long clientID, const char* clTRID)
+{
+  // insert code here and remove the warning
+  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::DomainTransferQuery"
+}
+
+ccReg::Response* ccReg_EPP_i::DomainTransferRequest(const char* fqdn, const char* registrant, const char* authInfo, ccReg::Transfer_out trn, CORBA::Long clientID, const char* clTRID)
+{
+  // insert code here and remove the warning
+  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::DomainTransferRequest"
+}
+
+ccReg::Response* ccReg_EPP_i::DomainTrade(const char* fqdn, const char* old_registrant, const char* new_registrant, const char* authInfo, CORBA::Long clientID, const char* clTRID)
+{
+  // insert code here and remove the warning
+  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::DomainTrade"
+}
+
+
+
