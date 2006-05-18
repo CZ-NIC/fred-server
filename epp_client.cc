@@ -87,7 +87,7 @@ int main(int argc, char** argv)
 
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
-    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "123456789" , "" ,     "GR-login" , loginID );
+    ret =  EPP->ClientLogin(  "REG-WEB4U"  ,  "123456789" , "" ,     "GR-login" , loginID );
 
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
 /*
@@ -411,7 +411,10 @@ delete cc;
 
 */
 
-    ret = EPP->DomainTrade("neco.cz", "NECOCZ-ROBERT"  , "NECOCZ-PETR" , "" ,  loginID , "domain-trade" );
+//    ret = EPP->DomainTrade("neco.cz", "NECOCZ-ROBERT"  , "NECOCZ-PETR" , "" ,  loginID , "domain-trade" );
+    cout  << "nsset transfer" << endl;
+//    ret = EPP->DomainTransfer("neco.cz",   "NECOCZ-PETR" , "heslo" ,  loginID , "domain-transfer" );
+    ret = EPP->NSSetTransfer( "NECOCZ",   "heslo" ,  loginID , "nsset-transfer" );
     cout  << "client logout "<< endl;
 
     ret =  EPP->ClientLogout( loginID , "XXXX-logout" );
