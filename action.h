@@ -14,7 +14,7 @@
 #define EPP_ContactDelete       202  
 #define EPP_ContactUpdate       203 
 #define EPP_ContactCreate       204
-#define EPP_ContactTransfer     205
+
 // funkce pro hosty
 #define EPP_HostCheck           300
 #define EPP_HostInfo            301 
@@ -28,7 +28,7 @@
 #define EPP_NSsetDelete          402
 #define EPP_NSsetUpdate          403
 #define EPP_NSsetCreate          404
-
+#define EPP_NSsetTransfer        405 
 
 // funkce pro domeny
 #define EPP_DomainCheck         500
