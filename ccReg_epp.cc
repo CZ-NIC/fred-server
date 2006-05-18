@@ -804,17 +804,7 @@ return ret;
 
 }
 
-ccReg::Response* ccReg_EPP_i::ContactTransferQuery(const char* handle, const char* authInfo, ccReg::Transfer_out trn, CORBA::Long clientID, const char* clTRID)
-{ 
-  // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::ContactTransferQuery(const char* handle, const char* authInfo, ccReg::Transfer_out trn, CORBA::Long clientID, const char* clTRID)>"
-}
 
-ccReg::Response* ccReg_EPP_i::ContactTransferRequest(const char* handle, const char* authInfo, ccReg::Transfer_out trn, CORBA::Long clientID, const char* clTRID)
-{
-  // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::ContactTransferRequest(const char* handle, const char* authInfo, ccReg::Transfer_out trn, CORBA::Long clientID, const char* clTRID)>"
-}
 
 
 ccReg::Response* ccReg_EPP_i::NSSetCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
@@ -1488,6 +1478,79 @@ PQsql.Disconnect();
 return ret;
 }
 
+ccReg::Response* ccReg_EPP_i::NSSetTransfer(const char* handle, const char* authInfo, CORBA::Long clientID, const char* clTRID)
+{
+ccReg::Response *ret;
+PQ PQsql;
+char sqlString[1024];
+char *pass;
+bool auth;
+int regID=0 , clID=0 , id , contactid;
+
+ret = new ccReg::Response;
+
+ret->errCode=COMMAND_FAILED;
+ret->svTRID = CORBA::string_alloc(32); //  server transaction
+ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+
+
+if( PQsql.OpenDatabase( DATABASE ) )
+{
+
+if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
+ {
+
+   // pokud domena existuje
+  if( (id = PQsql.GetNumericFromTable(  "NSSET"  , "id" , "handle" , (char * ) handle ) ) == 0 ) ret->errCode= COMMAND_OBJECT_NOT_EXIST;
+  else
+  if( PQsql.BeginTransaction() )  
+  {
+   // get  registrator ID
+   regID =   PQsql.GetLoginRegistrarID( clientID);
+   // client contaktu
+   clID  =  PQsql.GetNumericFromTable(  "NSSET"  , "clID" , "id" , id );
+
+   
+   pass = PQsql.GetValueFromTable(  "NSSET"  , "authinfopw" , "id" , id ); // ulozene heslo
+   // autentifikace
+   if( strlen(  CORBA::string_dup(authInfo) )  )  
+     {
+        if( strcmp( pass ,  CORBA::string_dup(authInfo) ) == 0 ) auth = true; // OK
+        else auth = false; // neplatne heslo  
+     }
+    else auth = false; //  autentifikace je nitna
+
+   if(  auth  ) // pokud prosla autentifikace 
+     {
+         //  uloz do historie
+       if( PQsql.MakeHistory() )
+        {
+          if( PQsql.SaveHistory( "NSSET" , "id" , id ) ) // uloz zaznam
+           { 
+                      // zmena registratora
+                      sprintf( sqlString , "UPDATE NSSET SET TrDate=\'now\' , clid=%d  WHERE id=%d;" , regID , id );
+                      if(   PQsql.ExecSQL( sqlString ) )  ret->errCode = COMMAND_OK; // nastavit OK                                  
+           }
+       }
+
+    }
+  
+   // pokud nebyla chyba pri insertovani do tabulky 
+   if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
+   else PQsql.RollbackTransaction(); 
+   }
+   // zapis na konec action
+   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
+}
+
+
+PQsql.Disconnect();
+}
+
+return ret;
+}
+
+/*
 ccReg::Response*  ccReg_EPP_i::HostCheck(const ccReg::Check& name, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
@@ -1789,6 +1852,7 @@ ccReg::Response* ccReg_EPP_i::HostUpdate(const char* name , const ccReg::Host& h
   // insert code here and remove the warning
   #warning "Code missing in function <ccReg::Response** ccReg_EPP_i::HostUpdate(const ccReg::Host& h)>"
 }
+*/
 
 ccReg::Response*  ccReg_EPP_i::DomainCheck(const ccReg::Check& fqdn, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
 {
@@ -1832,6 +1896,8 @@ if( PQsql.OpenDatabase( DATABASE ) )
 
 return ret;
 }
+
+
 
 ccReg::Response* ccReg_EPP_i::DomainInfo(const char* fqdn, ccReg::Domain_out d , CORBA::Long clientID, const char* clTRID)
 {
@@ -2391,17 +2457,84 @@ return ret;
 }
  
 
-ccReg::Response* ccReg_EPP_i::DomainTransferQuery(const char* fqdn, const char* registrant, const char* authInfo, ccReg::Transfer_out trn, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::DomainTransfer(const char* fqdn, const char* registrant, const char* authInfo, CORBA::Long clientID, const char* clTRID)
 {
-  // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::DomainTransferQuery"
+ccReg::Response *ret;
+PQ PQsql;
+char sqlString[1024];
+char *pass;
+bool auth;
+int regID=0 , clID=0 , id , registrantid , contactid;
+
+ret = new ccReg::Response;
+
+ret->errCode=COMMAND_FAILED;
+ret->svTRID = CORBA::string_alloc(32); //  server transaction
+ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+
+
+if( PQsql.OpenDatabase( DATABASE ) )
+{
+
+if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
+ {
+
+   // pokud domena existuje
+  if( (id = PQsql.GetNumericFromTable(  "DOMAIN"  , "id" , "fqdn" , (char * ) fqdn ) ) == 0 ) ret->errCode= COMMAND_OBJECT_NOT_EXIST;
+  else
+  if( PQsql.BeginTransaction() )  
+  {
+   // get  registrator ID
+   regID =   PQsql.GetLoginRegistrarID( clientID);
+   // client contaktu
+   clID  =  PQsql.GetNumericFromTable(  "DOMAIN"  , "clID" , "id" , id );
+
+   // drzitel domeny
+   registrantid = PQsql.GetNumericFromTable(  "DOMAIN"  , "registrant" , "id" , id );
+
+  // drzitel zadajici prevod
+   contactid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(registrant) );
+
+   
+   pass = PQsql.GetValueFromTable(  "DOMAIN"  , "authinfopw" , "id" , id ); // ulozene heslo
+   // autentifikace
+   if( strlen(  CORBA::string_dup(authInfo) )  )  
+     {
+        if( strcmp( pass ,  CORBA::string_dup(authInfo) ) == 0 ) auth = true; // OK
+        else auth = false; // neplatne heslo  
+     }
+    else auth = false; //  autentifikace je nitna
+
+   if(  auth && registrantid == contactid ) // pokud prosla autentifikace  a je drzitelem domeny
+     {
+         //  uloz do historie
+       if( PQsql.MakeHistory() )
+        {
+          if( PQsql.SaveHistory( "Domain" , "id" , id ) ) // uloz zaznam
+           { 
+                      // zmena registratora
+                      sprintf( sqlString , "UPDATE DOMAIN SET TrDate=\'now\' ,  clid=%d  WHERE id=%d;" , regID , id );
+                      if(   PQsql.ExecSQL( sqlString ) )  ret->errCode = COMMAND_OK; // nastavit OK                                  
+           }
+       }
+
+    }
+  
+   // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
+   if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
+   else PQsql.RollbackTransaction(); 
+   }
+   // zapis na konec action
+   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
 }
 
-ccReg::Response* ccReg_EPP_i::DomainTransferRequest(const char* fqdn, const char* registrant, const char* authInfo, ccReg::Transfer_out trn, CORBA::Long clientID, const char* clTRID)
-{
-  // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::DomainTransferRequest"
+
+PQsql.Disconnect();
 }
+
+return ret;
+}
+
 
 ccReg::Response* ccReg_EPP_i::DomainTrade(const char* fqdn, const char* old_registrant, const char* new_registrant, const char* authInfo, CORBA::Long clientID, const char* clTRID)
 {
@@ -2460,21 +2593,17 @@ if( PQsql.BeginAction( clientID , EPP_DomainTrade , (char * ) clTRID  ) )
                       // budouci drzitel
                       newid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(new_registrant) );
 
- 
                       // zmenit zaznam o domene
                       sprintf( sqlString , "UPDATE DOMAIN SET UpDate=\'now\' , upid=%d ,  registrant=%d  WHERE id=%d;" , regID , newid  , id );
-
-
-                      if(   PQsql.ExecSQL( sqlString ) )  ret->errCode = COMMAND_OK; // nastavit uspesne
-
-                      // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
-                      if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
-                      else  PQsql.RollbackTransaction();
-                                 
+                      if(   PQsql.ExecSQL( sqlString ) ) ret->errCode = COMMAND_OK; // nastavit uspesne                                 
            }
        }
 
     }
+
+   // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
+   if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
+   else PQsql.RollbackTransaction();
    
    }
    // zapis na konec action
