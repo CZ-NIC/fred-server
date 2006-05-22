@@ -144,7 +144,8 @@ char buf[1024];
 
 if( strlen( value ) )
  {
-   sprintf(buf , " %s=\'%s\' ," ,  fname , value );
+   if( value[0] == 0x8 ) sprintf(buf , " %s=NULL ," ,  fname ); // vymaz polozku pri updatu
+   else    sprintf(buf , " %s=\'%s\' ," ,  fname , value );
    strcat( string , buf );  
  }
 

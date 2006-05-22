@@ -656,7 +656,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
                 add_field_value( sqlString , "NotifyEmail" ,  CORBA::string_dup(c.NotifyEmail)  ) ;
                 add_field_value( sqlString , "AuthInfoPw" ,  CORBA::string_dup(c.AuthInfoPw)  ) ;
                 add_field_value( sqlString , "VAT" ,  CORBA::string_dup(c.VAT)  ) ;
-               add_field_value( sqlString , "SSN" ,  CORBA::string_dup(c.SSN)  ) ;
+                add_field_value( sqlString , "SSN" ,  CORBA::string_dup(c.SSN)  ) ;
        // todo Disclose
 
 
@@ -1238,7 +1238,7 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authIn
 {
 ccReg::Response *ret;
 PQ PQsql;
-char sqlString[4096] , buf[256] , Array[512] , numStr[16] , status[64];;
+char sqlString[4096] , buf[256] , Array[512] , numStr[16] , status[64] , auth[64];
 int regID=0 , clID=0 , id ,nssetid , contactid , techid ;
 int i , j ,  len , slen , s[16] , stat , hostID;
 
@@ -1337,8 +1337,10 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
 
                 // zmenit zaznam o domene
                 sprintf( sqlString , "UPDATE NSSET SET UpDate=\'now\' , upid=%d , status=\'%s\' " , regID , status   );
-                if( strlen( CORBA::string_dup(authInfo_chg)  ) ) { sprintf( buf , " ,  AuthInfoPw=\'%s\' " , CORBA::string_dup(authInfo_chg)  ); strcat( sqlString , buf ); } 
- 
+
+                // zmena autentifikace   
+                add_field_value( sqlString , "AuthInfoPw" ,  CORBA::string_dup(authInfo_chg)  ) ;
+
                 sprintf( buf , " WHERE id=%d;" , id );
                 strcat( sqlString , buf ); 
 
@@ -2203,9 +2205,13 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
 
                 // zmenit zaznam o domene
                 sprintf( sqlString , "UPDATE DOMAIN SET UpDate=\'now\' , upid=%d , status=\'%s\' " , regID , status   );
+                // zmena nssetu
                 if( nssetid ) { sprintf( buf , " ,  nsset=%d " , nssetid ); strcat( sqlString , buf ); } 
+                // zmena drzitele domeny 
                 if( contactid ) { sprintf( buf , " ,  registrant=%d " , contactid); strcat( sqlString , buf ); } 
-                if( strlen( CORBA::string_dup(authInfo_chg)  ) ) { sprintf( buf , " ,  AuthInfoPw=\'%s\' " , CORBA::string_dup(authInfo_chg)  ); strcat( sqlString , buf ); } 
+                // zmena autentifikace
+                add_field_value( sqlString , "AuthInfoPw" ,  CORBA::string_dup(authInfo_chg)  ) ;
+
  
                 sprintf( buf , " WHERE id=%d;" , id );
                 strcat( sqlString , buf ); 
