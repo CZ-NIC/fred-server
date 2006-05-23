@@ -40,7 +40,7 @@ ccRegSK.cc ccRegSK.h:
 	$(CXX) $(CPPFLAGS) -DDATABASE=\"$(DATABASE)\"   -c -g $<
 
 
-install
+install:
 	install ccReg_server /usr/local/bin/ccReg
 
 clean:
