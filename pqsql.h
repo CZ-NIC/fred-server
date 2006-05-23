@@ -51,9 +51,9 @@ int MakeHistory(); // zapise do tabulky history
 bool SaveHistory(char *table , char *fname ,  int id ); // ulozi radek tabulky
 
 // funkce co vraci z enum_status string 
-char *  PQ::GetStatusString( int status );
+char * GetStatusString( int status );
 // funkce vracejici id statusu
-int  PQ::GetStatusNumber( char  *status );
+int  GetStatusNumber( char  *status );
 
 // spusti select a vrati pocet radek
 bool ExecSelect(char *sqlString);
