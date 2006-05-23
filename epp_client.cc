@@ -29,7 +29,6 @@ int main(int argc, char** argv)
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);    
     ccReg::Contact *contact , *cc;
     ccReg::Response *ret;
-    ccReg::Host *host;
     ccReg::NSSet *nsset;
     ccReg::Domain *domain;
     ccReg::Check_var check;
