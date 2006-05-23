@@ -151,3 +151,28 @@ if( strlen( value ) )
 
 }
 
+
+// pridavani nazvu pole pri create
+void create_field_fname( char *string , char *fname , char *value )
+{
+char buf[1024];
+
+if( strlen( value ) )
+ {
+     sprintf(buf , " ,  \'%s\' " , fname );
+     strcat( string , buf );
+ }
+}
+
+
+
+void create_field_value( char *string , char *fname , char *value )
+{
+char buf[1024];
+
+if( strlen( value ) )
+ {
+     sprintf(buf , " ,  \'%s\' " , value );
+     strcat( string , buf );
+ }
+}
