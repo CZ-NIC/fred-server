@@ -1,6 +1,6 @@
 
-// Example code for implementing IDL interfaces in file ccReg.idl
-//
+//  implementing IDL interfaces for file ccReg.idl
+// autor Petr Blaha petr.blaha@nic.cz
 
 #include <fstream.h>
 #include <iostream.h>
@@ -14,13 +14,14 @@
 // funkce pro praci s postgres servrem
 #include "pqsql.h"
 
-// konverze casu
+// pmocne funkce
 #include "util.h"
 
 #include "action.h"    // kody funkci do ccReg
 #include "response.h"  // vracene chybove kody
 		
-
+// prace se status flagy
+#include "status.h"
 
 //
 // Example implementational code for IDL interface ccReg::EPP
@@ -35,6 +36,21 @@ ccReg_EPP_i::~ccReg_EPP_i(){
 // PQsql.Disconnect();
 }
 
+/***********************************************************************
+ *
+ * FUNCTION:	GetTransaction
+ *
+ * DESCRIPTION: vraci pro klienta ze zadaneho clTRID
+ *              vygenerovane  server transaction ID
+ *
+ * PARAMETERS:  clTRID - cislo transakce klienta
+ *              clientID - identifikace klienta
+ *              errCode - chybove hlaseni z klienta uklada se do tabulky action
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
+
 
 ccReg::Response* ccReg_EPP_i::GetTransaction(CORBA::Long clientID, const char* clTRID, CORBA::Short errCode)
 {
@@ -48,9 +64,7 @@ ret->errCode=COMMAND_FAILED; // chyba
 if(  PQsql.OpenDatabase( DATABASE ) )
 {
    if( PQsql.BeginAction( clientID ,  EPP_UnknowAction , (char * ) clTRID  ) )
-   {
-
-       
+   {     
     // chybove hlaseni bere z clienta 
     ret->errCode = errCode;
     // zapis na konec action
@@ -63,6 +77,20 @@ PQsql.Disconnect();
 
 return ret;
 }
+
+/***********************************************************************
+ *
+ * FUNCTION:    PollAcknowledgement
+ *
+ * DESCRIPTION: vraci pro klienta ze zadaneho clTRID server transaction ID
+ *
+ * PARAMETERS:  clTRID - cislo transakce klienta
+ *              clientID - identifikace klienta
+ *              errCode - chybove hlaseni z klienta uklada se do tabulky action
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
 
 ccReg::Response* ccReg_EPP_i::PollAcknowledgement(CORBA::Long msgID, CORBA::Short& count, CORBA::Long& newmsgID, CORBA::Long clientID, const char* clTRID)
 {
@@ -467,9 +495,10 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(const char* handle , CORBA::Long cli
 {
 ccReg::Response *ret;
 PQ PQsql;
+Status status;
 char sqlString[1024];
 int regID=0 , id , clID = 0 ;
-bool found=false;
+bool stat;
 
 ret = new ccReg::Response;
 
@@ -494,9 +523,16 @@ if( PQsql.OpenDatabase( DATABASE ) )
    regID =  PQsql.GetLoginRegistrarID( clientID);
    // client contaktu 
    clID  =  PQsql.GetNumericFromTable(  "CONTACT"  , "clID" , "handle" , (char * ) handle );
+
+    // zpracuj  pole statusu
+   status.Make( PQsql.GetStatusFromTable( "CONTACT" , id ) );
+
+   if( status.Test( STATUS_clientDeleteProhibited ) || status.Test( STATUS_serverDeleteProhibited )  ) stat = false;
+   else stat = true; // status je OK
+
   
 
-   if(  clID == regID ) // pokud je klient je registratorem
+   if(  clID == regID && stat ==true ) // pokud je klient je registratorem a zaroven je status OK
      {
          //  uloz do historie
          if( PQsql.MakeHistory() ) 
@@ -536,10 +572,11 @@ ccReg::Response* ccReg_EPP_i::ContactUpdate(const char* handle , const ccReg::Co
 ccReg::Response *ret;
 PQ PQsql;
 char sqlString[4096] , buf[1024]  ;
-char status[64] , numStr[16];
+char statusString[128] ;
 int regID=0 , clID=0 , id;
-bool found;
-int len , slen , s[16] , stat , j  , i ;
+bool stat;
+int len , i ; 
+Status status;
 
 ret = new ccReg::Response;
 
@@ -575,10 +612,13 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
   regID =   PQsql.GetLoginRegistrarID( clientID);
   // client contaktu
   clID  =  PQsql.GetNumericFromTable(  "CONTACT"  , "clID" , "handle" , (char * ) handle );
-  // pole statusu
-  strcpy( status ,  PQsql.GetStatusFromTable( "CONTACT" , id ) ); 
- 
-    if( clID == regID ) // pokud je registrator clientem kontaktu
+  // zpracuj  pole statusu
+  status.Make( PQsql.GetStatusFromTable( "CONTACT" , id ) );
+
+   if( status.Test( STATUS_clientUpdateProhibited ) || status.Test( STATUS_serverUpdateProhibited )  ) stat = false;
+   else stat = true; // status je OK
+
+    if( clID == regID && stat ) // pokud je registrator clientem kontaktu a je status v poradku
       {
          //  uloz do historie
          if( PQsql.MakeHistory() )
@@ -586,63 +626,21 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
             if( PQsql.SaveHistory( "Contact" , "id" , id ) ) // uloz zaznam
               {
  
-  
-                // zpracuj pole statusu
-                slen =  get_array_length( status );
-
-
-                // stavajici status
-                for( i = 0 ; i < slen ; i ++) s[i] = get_array_numeric( status , i );
-                  
                 // pridany status
-                len  =   status_add.length();
-                
-                for( i = 0 ; i < len ; i ++)
-                   {
-                      stat =  PQsql.GetStatusNumber( CORBA::string_dup( status_add[i] ) );
-
-                      for( j = 0 ; j < slen ; j ++ ) 
-                         {
-                            if( s[j] == stat ) { stat = 0 ; break;} // pokud status existuje uz ho nepridavej
-                         }
-                       if( stat ) {  s[slen]  = stat ;   slen ++ ;  } // pridej na konec
-                   }
+                len  =   status_add.length();                             
+                for( i = 0 ; i < len ; i ++) status.Add(  PQsql.GetStatusNumber( CORBA::string_dup( status_add[i] ) )  );
 
                    
-                // zrus status flagy
+                // zruseny status flagy
                 len  =   status_rem.length();
-
-                for( i = 0 ; i < len ; i ++)
-                   {
-                      stat =  PQsql.GetStatusNumber( CORBA::string_dup( status_rem[i] ) );
-                      for( j = 0 ; j < slen ; j ++ )
-                         {
-                            if( s[j] == stat ) { s[j]  = 0 ;  break;} // pokud status existuje tak ho smaz
-                         }                       
-                  }
-                 
+                for( i = 0 ; i < len ; i ++) status.Rem( PQsql.GetStatusNumber( CORBA::string_dup( status_rem[i] ) )); 
 
 
+                //  vygeneruj  novy status string array
+                status.Array( statusString );
 
-                //  vygeneruj  novy status string  retezec pole
-                strcpy( status , " { " ); 
-                for( j = 0 ; j < slen ; j ++ )
-                   {
-                      if( s[j] > 0   ) 
-                        {
-                            sprintf( numStr , " %d ,", s[j] );  
-                            strcat( status ,  numStr );
-                        }
-                   } 
-                // zrus posledni carku
-                j = strlen( status );
-                status[j-1] = 0 ; 
-                strcat( status , " } " );
-                   
-
-
+                  
                 strcpy( sqlString , "UPDATE Contact SET " );    
-
 
                 // pridat zmenene polozky
                 add_field_value( sqlString , "Name" ,  CORBA::string_dup(c.Name)  ) ;
@@ -663,22 +661,15 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
                 add_field_value( sqlString , "AuthInfoPw" ,  CORBA::string_dup(c.AuthInfoPw)  ) ;
 
                 //  Disclose parametry
- 
-                if(  c.DiscloseName ) strcat( sqlString , " DiscloseName='t', " );
-                else strcat( sqlString , "  DiscloseName='f', " ); 
-                if(  c.DiscloseOrganization ) strcat( sqlString , " , DiscloseOrganization='t' ," );
-                else strcat( sqlString , " DiscloseOrganization='f' ,  " );
-                if(  c.DiscloseAddress  ) strcat( sqlString , " DiscloseAddress='t' ,  " );
-                else strcat( sqlString , " DiscloseAddress='f' ,  " );
-                if(  c.DiscloseTelephone ) strcat( sqlString , " DiscloseTelephone='t' , " );
-                else strcat( sqlString , " DiscloseTelephone='f' , " ); 
-                if(  c.DiscloseFax ) strcat( sqlString , " DiscloseFax ='t'  , " );
-                else strcat( sqlString , " DiscloseFax ='f'  , " );
-                if(  c.DiscloseEmail ) strcat( sqlString , "  DiscloseEmail='t', " );
-                else strcat( sqlString , "  DiscloseEmail='f', " );
+                add_field_bool( sqlString , "DiscloseName" , c.DiscloseName );
+                add_field_bool( sqlString , "DiscloseOrganization" , c.DiscloseOrganization );
+                add_field_bool( sqlString , "DiscloseAddress" , c.DiscloseAddress );
+                add_field_bool( sqlString , "DiscloseTelephone" , c.DiscloseTelephone );
+                add_field_bool( sqlString , "DiscloseFax" , c.DiscloseFax );
+                add_field_bool( sqlString , "DiscloseEmail" , c.DiscloseEmail );
 
                 // datum a cas updatu  plus kdo zmenil zanzma na konec
-                sprintf( buf , " UpDate=\'now\' ,   UpID=%d  , status=\'%s' WHERE id=%d  " , regID , status  , id );
+                sprintf( buf , " UpDate=\'now\' ,   UpID=%d  , status=\'%s' WHERE id=%d  " , regID , statusString  , id );
                 strcat(  sqlString ,  buf );
 
                 if(   PQsql.ExecSQL( sqlString ) )  
@@ -929,7 +920,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetInfo , (char * ) clTRID  ) )
         n->CrID =  CORBA::string_dup( PQsql.GetRegistrarHandle( upid ) );
         n->UpID =  CORBA::string_dup( PQsql.GetRegistrarHandle( crid ) );
 
-        // dotaz na DNS servry  pres tabulku nsset_host_map
+        // dotaz na DNS servry  na tabulky host
         sprintf( sqlString , "SELECT  fqdn , ipaddr FROM HOST   WHERE  nssetid=%d;" , nssetid);
 
 
@@ -1023,7 +1014,9 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(const char* handle, CORBA::Long client
 {
 ccReg::Response *ret;
 PQ PQsql;
+Status status;
 int regID , id , clID = 0;
+bool stat;
 
 ret = new ccReg::Response;
 
@@ -1048,6 +1041,13 @@ if( PQsql.OpenDatabase( DATABASE ) )
    // get  registrator ID
    regID = PQsql.GetLoginRegistrarID( clientID );
    clID =  PQsql.GetNumericFromTable( "NSSET" ,"ClID" , "id" , id );
+
+    // zpracuj  pole statusu
+   status.Make( PQsql.GetStatusFromTable( "NSSET" , id ) );
+
+   if( status.Test( STATUS_clientDeleteProhibited ) || status.Test( STATUS_serverDeleteProhibited )  ) stat = false;
+   else stat = true; // status je OK
+
 
    if( clID == regID ) // pokud je client registaratorem
      {
@@ -1074,7 +1074,7 @@ if( PQsql.OpenDatabase( DATABASE ) )
 	             }
                  }
             }
-         } // konec histo
+         } // konec historie
 
      }
    }
@@ -1219,13 +1219,16 @@ return ret;
 
 
 
-ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg, const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem, const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle,  const char* authInfo , const char* authInfo_chg, const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem, const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID)
 {
 ccReg::Response *ret;
 PQ PQsql;
-char sqlString[4096] , buf[256] , Array[512] , numStr[16] , status[64] , auth[64];
+Status status;
+bool auth , stat;
+char *pass;
+char sqlString[4096] , buf[256] , Array[512] ,  statusString[128] ;
 int regID=0 , clID=0 , id ,nssetid , contactid , techid ;
-int i , j ,  len , slen , s[16] , stat , hostID;
+int i , j ,  len  , slen , hostID;
 
 ret = new ccReg::Response;
 
@@ -1261,7 +1264,22 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
    // client contaktu
    clID  =  PQsql.GetNumericFromTable(  "NSSET"  , "clID" , "id" , id );
 
-   if( clID == regID ) // pokud je registrator clientem kontaktu
+  // zpracuj  pole statusu
+  status.Make( PQsql.GetStatusFromTable( "NSSET" , id ) );
+
+   if( status.Test( STATUS_clientUpdateProhibited ) || status.Test( STATUS_serverUpdateProhibited )  ) stat = false;
+   else stat = true; // status je OK
+
+   // autentifikace
+   if( strlen(  CORBA::string_dup(authInfo) )  )
+     {
+        if( strcmp( pass ,  CORBA::string_dup(authInfo) ) == 0 ) auth = true; // OK
+        else auth = false; // neplatne heslo
+     }
+    else auth = true; //  autentifikace neni potreba pokud se nezadala
+
+
+   if( clID == regID && auth  && stat ) // pokud je registrator clientem kontaktu a status je v poradku
      {
          //  uloz do historie
          if( PQsql.MakeHistory() )
@@ -1269,60 +1287,23 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
             if( PQsql.SaveHistory( "NSSET" , "id" , id ) ) // uloz zaznam
               {
 
-
- 
-                // zpracuj pole statusu
-                slen =  get_array_length( status );
-
-                // stavajici status
-                for( i = 0 ; i < slen ; i ++ ) s[i] = get_array_numeric( status , i );
-                  
                 // pridany status
                 len  =   status_add.length();
-                
-                for( i = 0 ; i < len ; i ++)
-                   {
-                      stat =  PQsql.GetStatusNumber( CORBA::string_dup( status_add[i] ) );
+                for( i = 0 ; i < len ; i ++) status.Add(  PQsql.GetStatusNumber( CORBA::string_dup( status_add[i] ) )  );
 
-                      for( j = 0 ; j < slen ; j ++ ) 
-                         {
-                            if( s[j] == stat ) { stat = 0 ; break;} // pokud status existuje uz ho nepridavej
-                         }
-                       if( stat ) {  s[slen]  = stat ; slen ++ ;  } // pridej na konec
-                   }
 
-                   
-                // zrus status flagy
+                // zruseny status flagy
                 len  =   status_rem.length();
+                for( i = 0 ; i < len ; i ++) status.Rem( PQsql.GetStatusNumber( CORBA::string_dup( status_rem[i] ) ));
 
-                for( i = 0 ; i < len ; i ++)
-                   {
-                      stat =  PQsql.GetStatusNumber( CORBA::string_dup( status_rem[i] ) );
-                      for( j = 0 ; j < slen ; j ++ )
-                         {
-                            if( s[j] == stat ) { s[j]  = 0 ;  break;} // pokud status existuje tak ho smaz
-                         }                       
-                  }
-                 
 
-                //  vygeneruj  novy status string  retezec pole
-                strcpy( status , " { " ); 
-                for( j = 0 ; j < slen ; j ++ )
-                   {
-                      if( s[j] > 0   ) 
-                        {
-                            sprintf( numStr , " %d ,", s[j] );  
-                            strcat( status ,  numStr );
-                        }
-                   } 
-                // zrus posledni carku
-                j = strlen( status );
-                status[j-1] = 0 ; 
-                strcat( status , " } " );
+                //  vygeneruj  novy status string array
+                status.Array( statusString );
+
 
 
                 // zmenit zaznam o domene
-                sprintf( sqlString , "UPDATE NSSET SET UpDate=\'now\' , upid=%d , status=\'%s\' " , regID , status   );
+                sprintf( sqlString , "UPDATE NSSET SET UpDate=\'now\' , upid=%d , status=\'%s\' " , regID , statusString   );
 
                 // zmena autentifikace   
                 add_field_value( sqlString , "AuthInfoPw" ,  CORBA::string_dup(authInfo_chg)  ) ;
@@ -2031,8 +2012,10 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(const char* fqdn , CORBA::Long client
 {
 ccReg::Response *ret;
 PQ PQsql;
+Status status;
 char sqlString[1024];
 int regID , clID , id;
+bool stat;
 ret = new ccReg::Response;
 
 
@@ -2057,7 +2040,13 @@ if( PQsql.BeginAction( clientID , EPP_DomainDelete , (char * ) clTRID  ) )
    regID = PQsql.GetLoginRegistrarID( clientID ); // aktivni registrator
    clID =  PQsql.GetNumericFromTable( "DOMAIN" , "ClID" , "id" , id );  // client objektu
 
-   if( regID == clID )       
+    // zpracuj  pole statusu
+   status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
+
+   if( status.Test( STATUS_clientDeleteProhibited ) || status.Test( STATUS_serverDeleteProhibited )  ) stat = false;
+   else stat = true; // status je OK
+
+   if( regID == clID && stat == true ) // pokud je registrator klientem a status je OK      
      {
       //  uloz do historie
        if( PQsql.MakeHistory() )
@@ -2095,13 +2084,16 @@ PQsql.Disconnect();
 return ret;
 }
 
-ccReg::Response* ccReg_EPP_i::DomainUpdate(const char* fqdn, const char* registrant_chg, const char* authInfo_chg, const char* nsset_chg, const ccReg::AdminContact& admin_add, const ccReg::AdminContact& admin_rem, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::DomainUpdate(const char* fqdn, const char* registrant_chg, const char* authInfo , const char* authInfo_chg, const char* nsset_chg, const ccReg::AdminContact& admin_add, const ccReg::AdminContact& admin_rem, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID)
 {
 ccReg::Response *ret;
 PQ PQsql;
-char sqlString[4096] , buf[256] , status[64] , numStr[16];
+Status status;
+char *pass;
+bool auth , stat;
+char sqlString[4096] , buf[256] , statusString[128] ;
 int regID=0 , clID=0 , id ,nssetid , contactid , adminid ;
-int i , len , slen , j , s[16] , stat ;
+int i , len , slen , j  ;
 
 ret = new ccReg::Response;
 
@@ -2126,10 +2118,23 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
    // client contaktu
    clID  =  PQsql.GetNumericFromTable(  "DOMAIN"  , "clID" , "id" , id );
 
- // pole statusu
-  strcpy( status ,  PQsql.GetStatusFromTable( "CONTACT" , id ) );
+  // zpracuj  pole statusu
+  status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
 
-   if( clID == regID ) // pokud je registrator clientem kontaktu
+   if( status.Test( STATUS_clientUpdateProhibited ) || status.Test( STATUS_serverUpdateProhibited )  ) stat = false;
+   else stat = true; // status je OK
+
+
+   pass = PQsql.GetValueFromTable(  "DOMAIN"  , "authinfopw" , "id" , id ); // ulozene heslo
+   // autentifikace
+   if( strlen(  CORBA::string_dup(authInfo) )  )
+     {
+        if( strcmp( pass ,  CORBA::string_dup(authInfo) ) == 0 ) auth = true; // OK
+        else auth = false; // neplatne heslo
+     }
+    else auth = true; //  autentifikace neni potreba pokud se nezadala
+
+   if( clID == regID && auth && stat ) // pokud je registrator clientem kontaktu a probehla autentifikace a vyhovuje status flagy
      {
          //  uloz do historie
        if( PQsql.MakeHistory() )
@@ -2140,59 +2145,23 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
                 
                 nssetid =  PQsql.GetNumericFromTable("NSSET" , "id" , "handle" , CORBA::string_dup(nsset_chg) );
                 contactid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(registrant_chg) );
- 
-                // zpracuj pole statusu
-                slen =  get_array_length( status );
 
-                // stavajici status
-                for( i = 0 ; i < slen ; i ++ ) s[i] = get_array_numeric( status , i );
-                  
                 // pridany status
                 len  =   status_add.length();
-                
-                for( i = 0 ; i < len ; i ++)
-                   {
-                      stat =  PQsql.GetStatusNumber( CORBA::string_dup( status_add[i] ) );
+                for( i = 0 ; i < len ; i ++) status.Add(  PQsql.GetStatusNumber( CORBA::string_dup( status_add[i] ) )  );
 
-                      for( j = 0 ; j < slen ; j ++ ) 
-                         {
-                            if( s[j] == stat ) { stat = 0 ; break;} // pokud status existuje uz ho nepridavej
-                         }
-                       if( stat ) {  s[slen]  = stat ;   slen ++ ;  } // pridej na konec
-                   }
 
-                   
-                // zrus status flagy
+                // zruseny status flagy
                 len  =   status_rem.length();
+                for( i = 0 ; i < len ; i ++) status.Rem( PQsql.GetStatusNumber( CORBA::string_dup( status_rem[i] ) ));
 
-                for( i = 0 ; i < len ; i ++)
-                   {
-                      stat =  PQsql.GetStatusNumber( CORBA::string_dup( status_rem[i] ) );
-                      for( j = 0 ; j < slen ; j ++ )
-                         {
-                            if( s[j] == stat ) { s[j]  = 0 ;  break;} // pokud status existuje tak ho smaz
-                         }                       
-                  }
-                 
 
-                //  vygeneruj  novy status string  retezec pole
-                strcpy( status , " { " ); 
-                for( j = 0 ; j < slen ; j ++ )
-                   {
-                      if( s[j] > 0   ) 
-                        {
-                            sprintf( numStr , " %d ,", s[j] );  
-                            strcat( status ,  numStr );
-                        }
-                   } 
-                // zrus posledni carku
-                j = strlen( status );
-                status[j-1] = 0 ; 
-                strcat( status , " } " );
-
+                //  vygeneruj  novy status string array
+                status.Array( statusString );
+ 
 
                 // zmenit zaznam o domene
-                sprintf( sqlString , "UPDATE DOMAIN SET UpDate=\'now\' , upid=%d , status=\'%s\' " , regID , status   );
+                sprintf( sqlString , "UPDATE DOMAIN SET UpDate=\'now\' , upid=%d , status=\'%s\' " , regID , statusString   );
                 // zmena nssetu
                 if( nssetid ) { sprintf( buf , " ,  nsset=%d " , nssetid ); strcat( sqlString , buf ); } 
                 // zmena drzitele domeny 
@@ -2298,10 +2267,13 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
    contactid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(Registrant) );
 
 
+   if( period )
+   {
    t = time(NULL);
    // preved datum a cas expirace prodluz tim cas platnosti domeny
    get_timestamp( expiry_time( t  , period ) ,  exDate );
-
+   } 
+   
    sprintf( sqlString , "INSERT INTO DOMAIN ( zone ,  crdate , id , fqdn , ClID , CrID,  Registrant  , exdate , authinfopw , nsset ) \
               VALUES ( 3 , 'now' ,  %d ,   \'%s\' ,  %d , %d  , %d ,  \'%s\' ,  \'%s\'  , %d " , 
                id,  CORBA::string_dup(fqdn) ,   regID  ,  regID , contactid , exDate ,  CORBA::string_dup(AuthInfoPw),   nssetid );
@@ -2349,13 +2321,15 @@ return ret;
 
 
 
-ccReg::Response*  ccReg_EPP_i::DomainRenew(const char* fqdn, CORBA::Short period, CORBA::Long clientID, const char* clTRID)
+ccReg::Response*  ccReg_EPP_i::DomainRenew(const char* fqdn, ccReg::timestamp curExpDate,  CORBA::Short period, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
+Status status;
 char sqlString[4096];
 char exDate[24];
 ccReg::Response *ret;
 int clid , regID , id ;
+bool stat;
 int i , len;
 time_t ex=0 ;
 ret = new ccReg::Response;
@@ -2396,7 +2370,15 @@ if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
                  PQsql.FreeSelect();
               }     
 
-           if( clid == regID && ex > 0 )
+          // zpracuj  pole statusu
+           status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
+
+           if( status.Test( STATUS_clientRenewProhibited ) || status.Test( STATUS_serverRenewProhibited )  ) stat = false;
+           else stat = true; // status je OK
+ 
+
+
+           if( clid == regID && ex == curExpDate  && stat )
              {
 
                   // preved datum a cas expirace prodluz tim cas platnosti domeny
@@ -2433,9 +2415,10 @@ ccReg::Response* ccReg_EPP_i::DomainTransfer(const char* fqdn, const char* regis
 {
 ccReg::Response *ret;
 PQ PQsql;
+Status status;
 char sqlString[1024];
 char *pass;
-bool auth;
+bool auth , stat ;
 int regID=0 , clID=0 , id , registrantid , contactid;
 
 ret = new ccReg::Response;
@@ -2467,6 +2450,12 @@ if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
   // drzitel zadajici prevod
    contactid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(registrant) );
 
+    // zpracuj  pole statusu
+    status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
+
+    if( status.Test( STATUS_clientTransferProhibited ) || status.Test( STATUS_serverTransferProhibited )  ) stat = false;
+    else stat = true; // status je OK
+
    
    pass = PQsql.GetValueFromTable(  "DOMAIN"  , "authinfopw" , "id" , id ); // ulozene heslo
    // autentifikace
@@ -2477,7 +2466,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
      }
     else auth = false; //  autentifikace je nitna
 
-   if(  auth && registrantid == contactid ) // pokud prosla autentifikace  a je drzitelem domeny
+   if(  auth && registrantid == contactid && stat ) // pokud prosla autentifikace  a je drzitelem domeny a status OK 
      {
          //  uloz do historie
        if( PQsql.MakeHistory() )
