@@ -50,10 +50,13 @@ int mon;
 dt =   *gmtime(  &extime );
 
 mon =  dt.tm_mon + period;
-printf("year %d  mon %d \n" ,  dt.tm_year +1900 , dt.tm_mon +1);
+// printf("year %d  mon %d \n" ,  dt.tm_year +1900 , dt.tm_mon +1);
 dt.tm_year = dt.tm_year + (mon / 12 );
 dt.tm_mon = mon % 12;
-printf("mktime 0x%x\n" , mktime(&dt) );
+dt.tm_hour = 0;
+dt.tm_min = 0;
+dt.tm_sec = 0;
+//printf("mktime 0x%x\n" , mktime(&dt) );
 
 return mktime(&dt);
 }
@@ -152,6 +155,20 @@ if( strlen( value ) )
 }
 
 
+// pri update nastaveni bool hodnot
+void add_field_bool(  char *string , char *fname , bool value )
+{
+char tf[2] = { 'f' , 't' };
+int v;
+char buf[128];
+
+//  nastaveni hodnoty
+if( value ) v = 1 ;
+else v = 0 ;
+
+sprintf( buf , "  %s=\'%c\' , " , fname  , tf[v] );
+strcat( string , buf );
+}
 // pridavani nazvu pole pri create
 void create_field_fname( char *string , char *fname , char *value )
 {
@@ -176,3 +193,4 @@ if( strlen( value ) )
      strcat( string , buf );
  }
 }
+
