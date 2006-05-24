@@ -89,6 +89,13 @@ int main(int argc, char** argv)
     ret =  EPP->ClientLogin(  "REG-WEB4U"  ,  "123456789" , "" ,     "GR-login" , loginID );
 
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
+
+
+   ret =  EPP->DomainInfo(  "neco.cz" ,  domain , loginID , "info-cpp" );
+   for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
+   cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
+   cout << "err code " << ret->errCode   << endl;
+ 
 /*
     ret =  EPP->HostInfo( "modry.neco.cz",  host  , loginID ,  "XX-host"  );
     cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
@@ -408,14 +415,14 @@ delete cc;
 
     cout << "err code " << ret->errCode   << endl;
 
-*/
+
 
 //    ret = EPP->DomainTrade("neco.cz", "NECOCZ-ROBERT"  , "NECOCZ-PETR" , "" ,  loginID , "domain-trade" );
     cout  << "nsset transfer" << endl;
 //    ret = EPP->DomainTransfer("neco.cz",   "NECOCZ-PETR" , "heslo" ,  loginID , "domain-transfer" );
     ret = EPP->NSSetTransfer( "NECOCZ",   "heslo" ,  loginID , "nsset-transfer" );
     cout  << "client logout "<< endl;
-
+*/
     ret =  EPP->ClientLogout( loginID , "XXXX-logout" );
 
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
