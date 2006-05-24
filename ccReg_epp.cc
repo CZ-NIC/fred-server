@@ -2274,9 +2274,10 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
    get_timestamp( expiry_time( t  , period ) ,  exDate );
    } 
    
-   sprintf( sqlString , "INSERT INTO DOMAIN ( zone ,  crdate , id , fqdn , ClID , CrID,  Registrant  , exdate , authinfopw , nsset ) \
-              VALUES ( 3 , 'now' ,  %d ,   \'%s\' ,  %d , %d  , %d ,  \'%s\' ,  \'%s\'  , %d " , 
-               id,  CORBA::string_dup(fqdn) ,   regID  ,  regID , contactid , exDate ,  CORBA::string_dup(AuthInfoPw),   nssetid );
+   sprintf( sqlString , "INSERT INTO DOMAIN ( zone , crdate , update , id , roid , fqdn , ClID , CrID,  Registrant  , exdate , authinfopw , nsset ) \
+              VALUES ( 3 , 'now()' , 'now()' ,  %d ,   \'%s\' , \'%s\'  ,  %d , %d  , %d ,  \'%s\' ,  \'%s\'  , %d );" , 
+              id,  CORBA::string_dup(fqdn) ,  CORBA::string_dup(fqdn) ,  regID  ,  regID , contactid , exDate ,  CORBA::string_dup(AuthInfoPw),   
+nssetid );
  
 
 
