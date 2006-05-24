@@ -434,7 +434,8 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
         c->CrID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( crid ) );
         c->UpID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( upid ) );
 
-	c->Country=CORBA::string_dup( PQsql.GetValueFromTable("enum_country" , "country" , "id" ,  cc ) ); // uplny nazev zeme
+//	c->Country=CORBA::string_dup( PQsql.GetValueFromTable("enum_country" , "country" , "id" ,  cc ) ); // uplny nazev zeme
+        c->Country=CORBA::string_dup( cc ); // kod zeme
 
      }
     else 
@@ -757,7 +758,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         if(  c.DiscloseFax ) strcat( sqlString , " , DiscloseFax  " );
         if(  c.DiscloseEmail ) strcat( sqlString , " , DiscloseEmail " );
 
-	sprintf( buf  , " )  VALUES ( \'%s\' , \'%s\'  'now()' ,   %d , %d   " ,  (char * ) handle ,   (char * ) handle ,   regID , regID ); 
+	sprintf( buf  , " )  VALUES ( \'%s\' , \'%s\' ,  'now()' ,   %d , %d   " ,  (char * ) handle ,   (char * ) handle ,   regID , regID ); 
 
 	strcat( sqlString , buf );
 
@@ -1905,7 +1906,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
   {
   if( PQsql.GetSelectRows() == 1 )
     {
-
+        id = atoi( PQsql.GetFieldValueName("id" , 0 ) );
         clid = atoi( PQsql.GetFieldValueName("ClID" , 0 ) ); 
         crid = atoi( PQsql.GetFieldValueName("CrID" , 0 ) ); 
         upid = atoi( PQsql.GetFieldValueName("UpID" , 0 ) ); 
