@@ -176,7 +176,7 @@ char buf[1024];
 
 if( strlen( value ) )
  {
-     sprintf(buf , " ,  \'%s\' " , fname );
+     sprintf(buf , " , %s " , fname );
      strcat( string , buf );
  }
 }
@@ -189,7 +189,7 @@ char buf[1024];
 
 if( strlen( value ) )
  {
-     sprintf(buf , " ,  \'%s\' " , value );
+     sprintf(buf , " , \'%s\' " , value );
      strcat( string , buf );
  }
 }
