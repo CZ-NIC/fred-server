@@ -39,11 +39,16 @@ ccRegSK.cc ccRegSK.h:
 %.o: %.cc 
 	$(CXX) $(CPPFLAGS) -DDATABASE=\"$(DATABASE)\"   -c -g $<
 
+ccReg_idl.py:
+	omniidl -bpython $(IDLFILE)
+
+test: ccReg_idl.py
+	python test.py
 
 install:
 	install ccReg_server /usr/local/bin/ccReg
 
 clean:
-	rm -rf *.o *_server *_client ccRegSK.cc ccRegSK.h ccReg.hh ccReg_i.cc
+	rm -rf *.o *_server *_client ccRegSK.cc ccRegSK.h ccReg.hh ccReg_i.cc *idl.py* ccReg__POA/ ccReg/
 
 
