@@ -318,8 +318,8 @@ if( PQsql.OpenDatabase( DATABASE ) )
  
     for( i = 0 ; i < len ; i ++ )
      { 
-      if( PQsql.GetNumericFromTable( "CONTACT" , "id" , "handle" , CORBA::string_dup(  handle[i] ) ) ) a[i] =  1;
-      else   a[i]= 0;     
+      if( PQsql.GetNumericFromTable( "CONTACT" , "id" , "handle" , CORBA::string_dup(  handle[i] ) ) ) a[i] =  0;
+      else   a[i]= 1;    // kontak je volny 
      }
     
       // comand OK
@@ -834,8 +834,8 @@ if( PQsql.OpenDatabase( DATABASE ) )
 
     for( i = 0 ; i < len ; i ++ )
      {
-       if( PQsql.GetNumericFromTable( "NSSET" , "id" ,  "handle" , CORBA::string_dup(  handle[i] ) ) ) a[i]=1; // existuje
-       else a[i] =0; // neexistuje
+       if( PQsql.GetNumericFromTable( "NSSET" , "id" ,  "handle" , CORBA::string_dup(  handle[i] ) ) ) a[i]=0; // existuje
+       else a[i] =1; // je volny
      }
 
       // comand OK
@@ -1225,8 +1225,7 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle,  const char* authI
 ccReg::Response *ret;
 PQ PQsql;
 Status status;
-bool auth , stat;
-char *pass;
+bool  stat;
 char sqlString[4096] , buf[256] , Array[512] ,  statusString[128] ;
 int regID=0 , clID=0 , id ,nssetid , contactid , techid ;
 int i , j ,  len  , slen , hostID;
@@ -1271,16 +1270,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
    if( status.Test( STATUS_clientUpdateProhibited ) || status.Test( STATUS_serverUpdateProhibited )  ) stat = false;
    else stat = true; // status je OK
 
-   // autentifikace
-   if( strlen(  CORBA::string_dup(authInfo) )  )
-     {
-        if( strcmp( pass ,  CORBA::string_dup(authInfo) ) == 0 ) auth = true; // OK
-        else auth = false; // neplatne heslo
-     }
-    else auth = true; //  autentifikace neni potreba pokud se nezadala
-
-
-   if( clID == regID && auth  && stat ) // pokud je registrator clientem kontaktu a status je v poradku
+   if( clID == regID   && stat ) // pokud je registrator clientem kontaktu a status je v poradku
      {
          //  uloz do historie
          if( PQsql.MakeHistory() )
@@ -1522,309 +1512,6 @@ PQsql.Disconnect();
 return ret;
 }
 
-/*
-ccReg::Response*  ccReg_EPP_i::HostCheck(const ccReg::Check& name, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
-{
-PQ PQsql;
-ccReg::Response *ret;
-int  len , av ;
-long unsigned int i;
-ret = new ccReg::Response;
-
-a = new ccReg::Avail;
-
-len = name.length();
-a->length(len);
-
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-
-if( PQsql.OpenDatabase( DATABASE ) )
-{
-
-  if( PQsql.BeginAction( clientID , EPP_HostCheck , (char * ) clTRID  ) )
-  {
-
-    for( i = 0 ; i < len ; i ++ )
-     {
-      if( PQsql.GetNumericFromTable( "HOST" , "id" ,  "handle" ,    CORBA::string_dup(name[i]) ) ) a[i]=1; // existuje
-      else a[i] = 0 ; // neexistuje
-
-     }
-
-      // comand OK
-      ret->errCode=COMMAND_OK;
-
-      // zapis na konec action
-      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
-
-  }
-
- PQsql.Disconnect();
-}
-
-return ret;
-}
-
-ccReg::Response* ccReg_EPP_i::HostInfo(const char* name, ccReg::Host_out h , CORBA::Long clientID, const char* clTRID )
-{
-PQ PQsql;
-char sqlString[1024] , adres[1042] , adr[128]  , status[64]  ;
-ccReg::Response *ret;
-int nssetid , clid , upid ;
-int len , i , s ;
-
-h = new ccReg::Host;
-ret = new ccReg::Response;
-
-
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-
-
-
-
-
-if( PQsql.OpenDatabase( DATABASE ) )
-{
-
-if( PQsql.BeginAction( clientID , EPP_HostInfo , (char * ) clTRID  ) )
- {
-
-   sprintf( sqlString , "SELECT * FROM HOST WHERE fqdn=\'%s\'" , name);
-
-
-  if( PQsql.ExecSelect( sqlString ) )
-  {
-  if( PQsql.GetSelectRows() == 1 )
-    {
-
-
-        clid = atoi( PQsql.GetFieldValueName("ClID" , 0 ) ); 
-        upid = atoi( PQsql.GetFieldValueName("UpID" , 0 ) ); 
-        nssetid = atoi( PQsql.GetFieldValueName("NSSETID" , 0 ) );
- 
-
-
-        // pole ststusu
-        strcpy( status , PQsql.GetFieldValueName("status" , 0 ) );
- 
-
-
-	h->CrDate= get_time_t( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
-	h->UpDate= get_time_t( PQsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
-
-	h->fqdn=CORBA::string_dup( PQsql.GetFieldValueName("fqdn" , 0 )  ); // jmeno nebo nazev kontaktu
-
-    
-        ret->errCode=COMMAND_OK;
-
-        // pole adres
-        strcpy( adres , PQsql.GetFieldValueName("ipaddr" , 0 ) );       
-    
-        // free select
-	PQsql.FreeSelect();
-
-
-        // zpracuj pole statusu
-        len =  get_array_length( status );
-        h->stat.length(len); // status
-
-        for( i = 0 ; i < len ; i ++)
-           {
-            s =  get_array_numeric( status , i );
-            h->stat[i] = CORBA::string_dup( PQsql.GetStatusString( s ) );
-           }
-
-
-
-        h->nsset=CORBA::string_dup(  PQsql.GetValueFromTable( "NSSET" , "handle" , "id" ,  nssetid ) );
-         
-
-        // registrator handle
-        h->ClID= CORBA::string_dup( PQsql.GetRegistrarHandle( clid ) ); 
-        h->UpID= CORBA::string_dup( PQsql.GetRegistrarHandle( upid ) ); 
-
-
-
- 
-      len =  get_array_length( adres );
-      h->inet.length(len); // sequence ip adres
-      for( i = 0 ; i < len ; i ++) 
-       {
-           get_array_value( adres , adr , i );
-           h->inet[i] =CORBA::string_dup( adr );
-       }
-
-    }
-  else 
-    {
-      PQsql.FreeSelect();
-      ret->errCode =  COMMAND_OBJECT_NOT_EXIST;
-    }
-  
-   }
-
-  }
-   // zapis na konec action
-   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
-
- PQsql.Disconnect();
-}
-
-
-
-// vyprazdni
-if( ret->errCode != COMMAND_OK )
-{
-h->fqdn =  CORBA::string_dup( "" ); // fqdn nazev domeny
-h->nsset =  CORBA::string_dup( "" ); // handle nssetu
-h->stat.length(0); // status sequence
-h->CrDate=0; // datum vytvoreni
-h->UpDate=0; // datum zmeny
-h->ClID=  CORBA::string_dup( "" );    // identifikator registratora ktery vytvoril host
-h->UpID=  CORBA::string_dup( "" );    // identifikator registratora ktery zmenil zaznam
-h->inet.length(0); // sequence ip adres 
-}
-
-
-
-
-return ret;
-}
-
-ccReg::Response* ccReg_EPP_i::HostDelete(const char* name , CORBA::Long clientID, const char* clTRID)
-{
-ccReg::Response *ret;
-PQ PQsql;
-char sqlString[1024];
-int regID , id , clID  ;
-bool found= false;
-
-ret = new ccReg::Response;
-
-
-
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-
-
-
-if( PQsql.OpenDatabase( DATABASE ) )
-{
-
- if( PQsql.BeginAction( clientID , EPP_HostDelete , (char * ) clTRID  ) )
- {
-   if( ( id = PQsql.GetNumericFromTable( "HOST" , "id" ,  "fqdn" , (char *)name ) ) )
-   {
-
-   // get  registrator ID
-   regID = PQsql.GetLoginRegistrarID(  clientID );
-   clID =  PQsql.GetNumericFromTable( "HOST" , "clID" , "id" , id );
-
-
-    if( clID > 0 && clID == regID ) // pokud naslo clienta (objekt existuje) a je registratorem
-      {
-         sprintf(  sqlString , "DELETE FROM HOST WHERE id=%d; " , id );         
-         if(  PQsql.ExecSQL( sqlString ) ) ret->errCode =COMMAND_OK ; // pokud usmesne smazal
-      }
-    
-
-   }
-  else  ret->errCode = COMMAND_OBJECT_NOT_EXIST;
-
-   // zapis na konec action
-   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
- }
-
-
-PQsql.Disconnect();
-}
-
-return ret;
-}
-
-ccReg::Response* ccReg_EPP_i::HostCreate(const char* name , const ccReg::Host& h , CORBA::Long clientID, const char* clTRID)
-{
-PQ PQsql;
-char sqlString[4096];
-char  Array[512] ;
-char *domainStr;
-ccReg::Response *ret;
-int clid=0  , nssetid=0;
-bool notFound=false;
-int i;
-
-ret = new ccReg::Response;
-
-
-// default
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-
-
-
-if( PQsql.OpenDatabase( DATABASE ) )
-{
-
-if( PQsql.BeginAction( clientID , EPP_HostCreate , (char * ) clTRID  ) )
- {
-
-   nssetid =  PQsql.GetNumericFromTable( "NSSET" , "id" , "handle" , CORBA::string_dup(h.nsset)  );
-
-   // client registrator
-   clid = PQsql.GetRegistrarID(  CORBA::string_dup(h.ClID) ) ;
-
-
-// prvni test zdali id hostu uz existuje
-  if( PQsql.GetNumericFromTable( "HOST" , "id" ,  "fqdn" , (char * ) name ) ) ret->errCode=COMMAND_OBJECT_EXIST; // je uz zalozen
-  else 
-// pokud host nexistuje
-  {
-
-
-    // preved sequenci adres
-     strcat( Array , " { " );
-    for( i = 0 ; i < h.inet.length() ; i ++ )
-      {
-        if( i > 0 ) strcat( Array , " , " );
-         strcat( Array ,  h.inet[i] );
-      }
-
-      strcat( Array , " } " );
-
-
-     sprintf( sqlString , "INSERT INTO HOST (status , nssetid , fqdn , clid , upid , crdate , update , ipaddr ) VALUES (  \'{0}\' ,  %d , \'%s\' , %d  , %d , 'now' , \'now\' ,  \'%s\' );" , 
-     nssetid ,  CORBA::string_dup(h.fqdn) , clid , clid , Array);
-
-
-   // pokud se insertovalo do tabulky
-   if(  PQsql.ExecSQL( sqlString ) )  ret->errCode = COMMAND_OK;   
-  }
-
-
-   // zapis na konec action
-   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
- }
- 
-PQsql.Disconnect();
-}
-
-
-return ret;
-
-}
-
-ccReg::Response* ccReg_EPP_i::HostUpdate(const char* name , const ccReg::Host& h, CORBA::Long clientID, const char* clTRID)
-{
-  // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response** ccReg_EPP_i::HostUpdate(const ccReg::Host& h)>"
-}
-*/
 
 ccReg::Response*  ccReg_EPP_i::DomainCheck(const ccReg::Check& fqdn, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
 {
@@ -1851,8 +1538,8 @@ if( PQsql.OpenDatabase( DATABASE ) )
 
     for( i = 0 ; i < len ; i ++ )
      {
-       if( PQsql.GetNumericFromTable( "DOMAIN" , "id" , "fqdn" ,   CORBA::string_dup(fqdn[i]) )  ) a[i]=1; // existuje
-       else a[i] =0; // neexistuje
+       if( PQsql.GetNumericFromTable( "DOMAIN" , "id" , "fqdn" ,   CORBA::string_dup(fqdn[i]) )  ) a[i]=0; // existuje
+       else a[i] =1; // neexistuje domena je volna
      }
 
       // comand OK
@@ -2090,8 +1777,7 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(const char* fqdn, const char* registr
 ccReg::Response *ret;
 PQ PQsql;
 Status status;
-char *pass;
-bool auth , stat;
+bool stat;
 char sqlString[4096] , buf[256] , statusString[128] ;
 int regID=0 , clID=0 , id ,nssetid , contactid , adminid ;
 int i , len , slen , j  ;
@@ -2126,16 +1812,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
    else stat = true; // status je OK
 
 
-   pass = PQsql.GetValueFromTable(  "DOMAIN"  , "authinfopw" , "id" , id ); // ulozene heslo
-   // autentifikace
-   if( strlen(  CORBA::string_dup(authInfo) )  )
-     {
-        if( strcmp( pass ,  CORBA::string_dup(authInfo) ) == 0 ) auth = true; // OK
-        else auth = false; // neplatne heslo
-     }
-    else auth = true; //  autentifikace neni potreba pokud se nezadala
 
-   if( clID == regID && auth && stat ) // pokud je registrator clientem kontaktu a probehla autentifikace a vyhovuje status flagy
+   if( clID == regID  && stat ) // pokud je registrator clientem kontaktu a probehla autentifikace a vyhovuje status flagy
      {
          //  uloz do historie
        if( PQsql.MakeHistory() )
