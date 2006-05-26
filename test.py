@@ -50,7 +50,7 @@ print "ContactDelete  svrTRID '%s' err '%d' " % ( result.svTRID ,result.errCode 
  
 
  
-result =epp.DomainInfo( 'neco.cz' , loginID , "python-dinfo" );
+result =epp.DomainInfo( 'neco.cz' , loginID , "python-info-neco" );
 domain = result[1]
 
 print "domain info: " , domain.name , domain.nsset,  domain.Registrant ,  domain.ClID,    domain.admin  , domain.stat
@@ -77,10 +77,10 @@ print "DomainCheck  svrTRID '%s' err '%d' loginID '%d'" % ( result[0].svTRID ,re
 print "avial " , av
 
 
-result =  epp.DomainUpdate( 'temp.cz', "NECOCZ-ROBERT" ,  "heslo1234" , "" , "" , [   'NECOCZ-PETR' ] , [ 'NECOCZ-ADMIN'  ] , [ "clientTransferProhibited" ]  ,  [ "clientDeleteProhibited"  ] , loginID , "python-update" );
+result =  epp.DomainUpdate( 'temp.cz', "NECOCZ-ROBERT" ,   "heslo321" , "" , [   'NECOCZ-PETR' ] , [ 'NECOCZ-ADMIN'  ] , [ "clientTransferProhibited" ]  ,  [ "clientDeleteProhibited"  ] , loginID , "python-update" );
 print "DomainUpdate  svrTRID '%s' err '%d' " % ( result.svTRID ,result.errCode );
 
-result =epp.DomainInfo( 'temp.cz' , loginID , "python-info" );
+result =epp.DomainInfo( 'temp.cz' , loginID , "python-info-temp" );
 domain = result[1]
 
 print "domain info: " 
