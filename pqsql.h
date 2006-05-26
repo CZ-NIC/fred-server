@@ -7,7 +7,9 @@
 class PQ{
 public:
 // constructor nastaveni spojeni conninfo
-PQ(){};
+PQ(){ nRows=-1 , nCols=-1; }; // neni vybran zadny select
+~PQ() { FreeSelect(); } // uvolni select pokud je nejaky nastaven
+
 // pripoji databazi s nastavenim conninfo
 bool OpenDatabase(char *conninfo); 
 // provede sqlString 
@@ -57,8 +59,8 @@ int  GetStatusNumber( char  *status );
 
 // spusti select a vrati pocet radek
 bool ExecSelect(char *sqlString);
-// vyprazdni result selectu a nastavi zpet pocet radku a sloupcu
-bool  FreeSelect(){  PQclear(result);  };
+// vyprazdni result selectu a nastav pocet radku a sloupcu na -1
+void  FreeSelect();
 // vraci hodnotu
 char * GetFieldValueName(char *fname , int row );
 // vraci retezec hodnoty

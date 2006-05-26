@@ -91,8 +91,15 @@ return atoi( GetFieldValueName( fname , row ) );
 // spusti select a vrati pocet radek
 bool PQ::ExecSelect(char *sqlString)
 {
-nRows = -1;
-nCols = -1;
+
+// pokud je nejaky predchozi select allokoval pamet tak ji uvolni
+if( nRows >= 0 || nCols >= 0 )  
+ {
+   debug("Clear select\n" ) ;
+   PQclear(result); 
+   nRows = -1;
+   nCols = -1;
+  } 
 
         result = PQexec(connection, sqlString );
 
@@ -109,6 +116,19 @@ nCols = PQnfields(result);
 
 debug("Select [%s]\nnumber of rows (tuples) %d and nfields %d\n" , sqlString , nRows , nCols );
 
+
+}
+
+// uvolneni pameti po selectu
+void   PQ::FreeSelect()
+{
+
+ if( nRows >= 0 || nCols >= 0  ) 
+  { 
+     debug("Free  select\n" ) ; 
+     PQclear(result);
+     nRows = -1; nCols = -1;  
+  }
 
 }
 
@@ -179,7 +199,7 @@ if( ExecSQL(  sqlString ) )
     {
       svr =  GetFieldValue( 0 , 0 );
       debug("GetsvrTRID %s\n" , svr );   
-      FreeSelect();
+     //  FreeSelect();
     }
   return svr;
  }
@@ -200,7 +220,7 @@ if( ExecSelect( sqlString ) )
  {
       handle = GetFieldValue( 0 , 0 );
       debug("GetStatustring \'%s\'  ->  %d\n" ,  handle , status );
-      FreeSelect();
+      // FreeSelect();
  }
 
 if( handle == NULL ) return "";
@@ -221,7 +241,7 @@ if( ExecSelect( sqlString ) )
       handle = GetFieldValue( 0 , 0 );
       id = atoi( handle );
       debug("GetStatusNumeric \'%s\'  ->  (%s) %d\n" ,   status , handle  , id  );
-      FreeSelect();
+      // FreeSelect();
  }
 
 return id;
@@ -237,7 +257,7 @@ sprintf( sqlString , "SELECT * FROM %s_contact_map WHERE %sid=%d and contactid=%
 if( ExecSelect( sqlString ) )
  {
     if(  GetSelectRows() == 1  ) ret=true; // kontakt existuje
-    FreeSelect();
+    // FreeSelect();
   }
 
 return ret;
@@ -255,7 +275,7 @@ if( ExecSelect( sqlString ) )
  {
       handle = GetFieldValue( 0 , 0 );
       debug("GetValueFromTable \'%s\' field %s  value  %s ->  %s\n" , table ,  fname , value  , handle );
-      FreeSelect();
+      // FreeSelect();
   }
 
 if( handle == NULL ) return "";
@@ -307,7 +327,7 @@ if( ExecSelect( sqlString ) )
   {
      id = atoi(  GetFieldValue( 0 , 0 )  );
      debug("Sequence \'%s\' -> ID %d\n" , sequence , id );
-     FreeSelect();
+     // FreeSelect();
    }
 
 return id;
@@ -380,7 +400,7 @@ if( historyID )
       if( ExecSQL(  sqlString ) == false) { ret = false ; break;  } // pokud nastane chyba
       }
 
-     FreeSelect();
+     // FreeSelect();
    }
 
 }
