@@ -752,12 +752,12 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         create_field_fname(sqlString , "SSN" , CORBA::string_dup(c.SSN) );
         create_field_fname(sqlString , "AuthInfoPw" , CORBA::string_dup(c.AuthInfoPw) );
 
-        if(  c.DiscloseName ) strcat( sqlString , " , DiscloseName " );
-        if(  c.DiscloseOrganization ) strcat( sqlString , " , DiscloseOrganization " );
-        if(  c.DiscloseAddress  ) strcat( sqlString , " , DiscloseAddress  " );
-        if(  c.DiscloseTelephone ) strcat( sqlString , " , DiscloseTelephone " );
-        if(  c.DiscloseFax ) strcat( sqlString , " , DiscloseFax  " );
-        if(  c.DiscloseEmail ) strcat( sqlString , " , DiscloseEmail " );
+        if(  c.DiscloseName > 0 ) strcat( sqlString , " , DiscloseName " );
+        if(  c.DiscloseOrganization > 0  ) strcat( sqlString , " , DiscloseOrganization " );
+        if(  c.DiscloseAddress  > 0 ) strcat( sqlString , " , DiscloseAddress  " );
+        if(  c.DiscloseTelephone > 0 ) strcat( sqlString , " , DiscloseTelephone " );
+        if(  c.DiscloseFax > 0  ) strcat( sqlString , " , DiscloseFax  " );
+        if(  c.DiscloseEmail > 0  ) strcat( sqlString , " , DiscloseEmail " );
 
 	sprintf( buf  , " )  VALUES ( \'%s\' , \'%s\' ,  'now()' ,   %d , %d   " ,  (char * ) handle ,   (char * ) handle ,   regID , regID ); 
 
@@ -780,12 +780,12 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         create_field_value(sqlString , "SSN" , CORBA::string_dup(c.SSN) );
         create_field_value(sqlString , "AuthInfoPw" , CORBA::string_dup(c.AuthInfoPw) );
  
-        if(  c.DiscloseName ) strcat( sqlString , " , 't' " );
-        if(  c.DiscloseOrganization ) strcat( sqlString , ", 't' " );
-        if(  c.DiscloseAddress  ) strcat( sqlString ,  " , 't' " );
-        if(  c.DiscloseTelephone ) strcat( sqlString , " , 't' " );
-        if(  c.DiscloseFax ) strcat( sqlString ,      "  , 't' " );
-        if(  c.DiscloseEmail ) strcat( sqlString     , " , 't' " );
+        if(  c.DiscloseName > 0 ) strcat( sqlString , " , 't' " );
+        if(  c.DiscloseOrganization > 0  ) strcat( sqlString , ", 't' " );
+        if(  c.DiscloseAddress > 0  ) strcat( sqlString ,  " , 't' " );
+        if(  c.DiscloseTelephone > 0 ) strcat( sqlString , " , 't' " );
+        if(  c.DiscloseFax > 0 ) strcat( sqlString ,      "  , 't' " );
+        if(  c.DiscloseEmail > 0 ) strcat( sqlString     , " , 't' " );
  
        
 
