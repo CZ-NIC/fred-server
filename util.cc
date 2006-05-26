@@ -156,18 +156,24 @@ if( strlen( value ) )
 
 
 // pri update nastaveni bool hodnot
-void add_field_bool(  char *string , char *fname , bool value )
+void add_field_bool(  char *string , char *fname , int value )
 {
-char tf[2] = { 'f' , 't' };
-int v;
-char buf[128];
+char buf[64];
 
-//  nastaveni hodnoty
-if( value ) v = 1 ;
-else v = 0 ;
 
-sprintf( buf , "  %s=\'%c\' , " , fname  , tf[v] );
-strcat( string , buf );
+if( value  == 1 )  // hodota je true
+{
+  sprintf( buf , "  %s=\'t\' , " , fname   );
+  strcat( string , buf );
+}
+
+
+if( value  == 0 )  // hodota je false
+{
+  sprintf( buf , "  %s=\'t\' , " , fname   );
+  strcat( string , buf );
+}
+
 }
 // pridavani nazvu pole pri create
 void create_field_fname( char *string , char *fname , char *value )

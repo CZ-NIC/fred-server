@@ -15,7 +15,7 @@ void get_array_value(char *array ,  char *value , int field );
 int get_array_numeric(char *array , int field );
 
 void add_field_value( char *string , char *fname , char *value );
-void add_field_bool(  char *string , char *fname , bool value );
+void add_field_bool(  char *string , char *fname , int value );
 // pridavani nazvu pole pri create
 void create_field_fname( char *string , char *fname , char *value );
 
