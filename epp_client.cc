@@ -91,11 +91,19 @@ int main(int argc, char** argv)
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
 
 
-   ret =  EPP->DomainInfo(  "neco.cz" ,  domain , loginID , "info-cpp" );
+ 
+   ret =  EPP->DomainInfo(  "temp.cz" ,  domain , loginID , "info-cpp-temp" );
    for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
    cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
    cout << "err code " << ret->errCode   << endl;
- 
+   delete domain;
+
+   ret =  EPP->DomainInfo(  "neco.cz" ,  domain , loginID , "info-cpp-neco" );
+   for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
+   cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
+   cout << "err code " << ret->errCode   << endl;
+   delete domain;
+  
 /*
     ret =  EPP->HostInfo( "modry.neco.cz",  host  , loginID ,  "XX-host"  );
     cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
