@@ -7,8 +7,8 @@
 class PQ{
 public:
 // constructor nastaveni spojeni conninfo
-PQ(){ nRows=-1 , nCols=-1; }; // neni vybran zadny select
-~PQ() { FreeSelect(); } // uvolni select pokud je nejaky nastaven
+PQ(){  }; // neni vybran zadny select
+~PQ() {  } 
 
 // pripoji databazi s nastavenim conninfo
 bool OpenDatabase(char *conninfo); 
@@ -25,6 +25,11 @@ bool RollbackTransaction()
 {return ExecSQL("ROLLBACK TRANSACTION");};
 bool CommitTransaction()
 {return ExecSQL("COMMIT TRANSACTION");};
+
+// vraci velikost 
+int  PQ::GetValueLength(int row  , int col);
+
+
 
 bool DeleteFromTable(char *table , char *fname , int id );
 

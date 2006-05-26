@@ -7,6 +7,7 @@
 #include "pqsql.h"
 #include "util.h"
 
+
 bool PQ::OpenDatabase(char *conninfo)
 {
 
@@ -29,6 +30,7 @@ else
  }
 
 }
+
 // vraci retezec hodnoty podle nazvu 
 char * PQ::GetFieldValueName(char *fname , int row )
 {
@@ -87,11 +89,18 @@ return atoi( GetFieldValueName( fname , row ) );
 }
 
 
+// vraci velikost aktualniho prvku 
+int  PQ::GetValueLength(int row  , int col)
+{
+return PQgetlength( result , row , col );
+}
+
 
 // spusti select a vrati pocet radek
 bool PQ::ExecSelect(char *sqlString)
 {
 
+/*
 // pokud je nejaky predchozi select allokoval pamet tak ji uvolni
 if( nRows >= 0 || nCols >= 0 )  
  {
@@ -100,7 +109,7 @@ if( nRows >= 0 || nCols >= 0 )
    nRows = -1;
    nCols = -1;
   } 
-
+*/
         result = PQexec(connection, sqlString );
 
         if (PQresultStatus(result) != PGRES_TUPLES_OK)
@@ -122,14 +131,18 @@ debug("Select [%s]\nnumber of rows (tuples) %d and nfields %d\n" , sqlString , n
 // uvolneni pameti po selectu
 void   PQ::FreeSelect()
 {
+     debug("Free  select\n" ) ;
+     PQclear(result);
 
+
+/*
  if( nRows >= 0 || nCols >= 0  ) 
   { 
      debug("Free  select\n" ) ; 
      PQclear(result);
      nRows = -1; nCols = -1;  
   }
-
+*/
 }
 
 bool PQ::ExecSQL(char *sqlString)
@@ -144,7 +157,7 @@ if( PQresultStatus(res) == PGRES_COMMAND_OK )
   {
 
      debug( "PQcmdTuples: %s\n" ,  PQcmdTuples( res) );
-    PQclear(res);
+     PQclear(res);
     return true;
   }
 else
@@ -179,9 +192,11 @@ else return false;
 char * PQ:: EndAction(int response )
 {
 char sqlString[512];
-char svrTRID[32];
-char *svr;
+// char svrTRID[32];
+char *svrTRID;
 int id;
+
+svrTRID= new char[32] ; 
 
 // cislo transakce co vraci server
 sprintf( svrTRID , "ccReg-%010d" , actionID );
@@ -192,17 +207,19 @@ sprintf( sqlString , "UPDATE Action SET response=%d , enddate='now()' , servertr
 id  =  actionID;
 actionID = 0 ; 
 
-if( ExecSQL(  sqlString ) ) 
- {
+if( ExecSQL(  sqlString ) ) return   svrTRID;
+/* {
+
    sprintf( sqlString , "SELECT  servertrid FROM Action  WHERE id=%d;"  , id );
    if( ExecSelect( sqlString ) )
     {
       svr =  GetFieldValue( 0 , 0 );
       debug("GetsvrTRID %s\n" , svr );   
-     //  FreeSelect();
+     //  FreeSelect(); 
     }
   return svr;
  }
+*/
 
 else return "svrTRID ERROR";
 }
@@ -212,19 +229,21 @@ else return "svrTRID ERROR";
 char *  PQ::GetStatusString( int status )
 {
 char sqlString[128];
-char *handle;
+char *str;
+
+str = new char[128];
 
 sprintf( sqlString , "SELECT  status  FROM enum_status  WHERE id=%d;" , status );
 
 if( ExecSelect( sqlString ) )
  {
-      handle = GetFieldValue( 0 , 0 );
-      debug("GetStatustring \'%s\'  ->  %d\n" ,  handle , status );
-      // FreeSelect();
+      strcpy( str ,  GetFieldValue( 0 , 0 ) ) ;
+      debug("GetStatustring \'%s\'  ->  %d\n" ,  str , status );
+      FreeSelect(); 
+      return str;
  }
+else return "{ }" ; // prazdny status string pole
 
-if( handle == NULL ) return "";
-else return handle;
 }
 
 
@@ -241,7 +260,7 @@ if( ExecSelect( sqlString ) )
       handle = GetFieldValue( 0 , 0 );
       id = atoi( handle );
       debug("GetStatusNumeric \'%s\'  ->  (%s) %d\n" ,   status , handle  , id  );
-      // FreeSelect();
+      FreeSelect();
  }
 
 return id;
@@ -257,7 +276,7 @@ sprintf( sqlString , "SELECT * FROM %s_contact_map WHERE %sid=%d and contactid=%
 if( ExecSelect( sqlString ) )
  {
     if(  GetSelectRows() == 1  ) ret=true; // kontakt existuje
-    // FreeSelect();
+    FreeSelect();
   }
 
 return ret;
@@ -267,19 +286,23 @@ return ret;
 char *  PQ::GetValueFromTable( char *table , char *vname , char *fname , char *value)
 {
 char sqlString[128];
+int size;
 char *handle;
 
 sprintf( sqlString , "SELECT  %s FROM %s WHERE %s=\'%s\';" , vname ,  table  ,  fname , value );
 
 if( ExecSelect( sqlString ) )
  {
-      handle = GetFieldValue( 0 , 0 );
+      size = GetValueLength( 0 , 0 );
+      handle = new char[size]; 
+      strcpy( handle , GetFieldValue( 0 , 0 ) );
       debug("GetValueFromTable \'%s\' field %s  value  %s ->  %s\n" , table ,  fname , value  , handle );
-      // FreeSelect();
+      FreeSelect();
+      // a je po PROBLEMu 
+      return handle;
   }
+else return "";
 
-if( handle == NULL ) return "";
-else return handle;
 }
 
 char * PQ::GetValueFromTable( char *table , char *vname ,  char *fname ,  int numeric)
@@ -327,7 +350,7 @@ if( ExecSelect( sqlString ) )
   {
      id = atoi(  GetFieldValue( 0 , 0 )  );
      debug("Sequence \'%s\' -> ID %d\n" , sequence , id );
-     // FreeSelect();
+     FreeSelect();
    }
 
 return id;
@@ -400,7 +423,7 @@ if( historyID )
       if( ExecSQL(  sqlString ) == false) { ret = false ; break;  } // pokud nastane chyba
       }
 
-     // FreeSelect();
+     FreeSelect();
    }
 
 }
