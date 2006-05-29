@@ -281,7 +281,26 @@ if( ExecSelect( sqlString ) )
 
 return ret;
 }
-  
+
+// vraci id registratora z domeny
+int PQ::GetClientDomainRegistrant( int clID , int contactID )
+{
+int regID=0;
+char sqlString[128];
+
+sprintf( sqlString , "SELECT  clID FROM DOMAIN WHERE Registrant=%d AND clID=%d\n" , contactID , clID );
+if( ExecSelect( sqlString ) )
+ {
+   if( GetSelectRows() > 0   )
+     {
+       regID = atoi(  GetFieldValue( 0 , 0 )  );
+       debug("Get ClientDomainRegistrant  contactID \'%d\' -> regID %d\n" , contactID , regID );
+       FreeSelect();
+     }
+   }
+
+return regID;  
+}  
 
 char *  PQ::GetValueFromTable( char *table , char *vname , char *fname , char *value)
 {

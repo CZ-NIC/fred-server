@@ -53,6 +53,9 @@ int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "i
 char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "handle" , "id" , id ); };
 char * GetStatusFromTable( char *table , int id ) {  return GetValueFromTable( table , "status" , "id" , id ); };
 
+// vraci id registratora z domeny
+int GetClientDomainRegistrant( int clID , int contactID );
+
 // funkce na ulozeni obsahu radku ID tabluky  do 
 int MakeHistory(); // zapise do tabulky history
 bool SaveHistory(char *table , char *fname ,  int id ); // ulozi radek tabulky
