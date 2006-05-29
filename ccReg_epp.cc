@@ -422,7 +422,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
         // zpracuj pole statusu
         len =  status.Length();
         c->stat.length(len);
-        cout << " status length: "  << len  << endl ;
+        cout << " status length: "  << len  << endl ;        
         for( i = 0 ; i < len  ; i ++)
            {
               c->stat[i] = CORBA::string_dup( PQsql.GetStatusString(  status.Get(i)  ) );
@@ -633,12 +633,15 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
               {
  
                 // pridany status
-                len  =   status_add.length();                             
+                len  =   status_add.length();
+                cout << " status length ADD: "  << len  << endl ;
+                             
                 for( i = 0 ; i < len ; i ++) status.Add(  PQsql.GetStatusNumber( CORBA::string_dup( status_add[i] ) )  );
 
                    
                 // zruseny status flagy
                 len  =   status_rem.length();
+                cout << " status length REM: "  << len  << endl ;
                 for( i = 0 ; i < len ; i ++) status.Rem( PQsql.GetStatusNumber( CORBA::string_dup( status_rem[i] ) )); 
 
 
@@ -763,7 +766,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         if(  c.DiscloseFax > 0  ) strcat( sqlString , " , DiscloseFax  " );
         if(  c.DiscloseEmail > 0  ) strcat( sqlString , " , DiscloseEmail " );
 
-	sprintf( buf  , " )  VALUES ( \'%s\' , \'%s\' ,  'now()' ,   %d , %d   " ,  (char * ) handle ,   (char * ) handle ,   regID ); 
+	sprintf( buf  , " )  VALUES ( \'%s\' , \'%s\' ,  'now()' ,  %d    " ,  (char * ) handle ,   (char * ) handle ,   regID ); 
 
 	strcat( sqlString , buf );
 
