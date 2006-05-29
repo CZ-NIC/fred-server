@@ -370,7 +370,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
   if( PQsql.GetSelectRows() == 1 )
     {
 
-        clid =  atoi( PQsql.GetFieldValueName("ClID" , 0 ) ); 
+//        clid =  atoi( PQsql.GetFieldValueName("ClID" , 0 ) ); 
         crid =  atoi( PQsql.GetFieldValueName("CrID" , 0 ) ); 
         upid =  atoi( PQsql.GetFieldValueName("UpID" , 0 ) ); 
 
@@ -383,7 +383,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
 	c->ROID=CORBA::string_dup( PQsql.GetFieldValueName("ROID" , 0 ) ); // ROID     
 	c->CrDate= get_time_t( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
 	c->UpDate= get_time_t( PQsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
-	c->TrDate= get_time_t( PQsql.GetFieldValueName("TrDate" , 0 ) );  // datum a cas transferu
+//	c->TrDate= get_time_t( PQsql.GetFieldValueName("TrDate" , 0 ) );  // datum a cas transferu
 	c->Name=CORBA::string_dup( PQsql.GetFieldValueName("Name" , 0 )  ); // jmeno nebo nazev kontaktu
 	c->Organization=CORBA::string_dup( PQsql.GetFieldValueName("Organization" , 0 )); // nazev organizace
 	c->Street1=CORBA::string_dup( PQsql.GetFieldValueName("Street1" , 0 ) ); // adresa
@@ -399,10 +399,9 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
 	c->NotifyEmail=CORBA::string_dup(PQsql.GetFieldValueName("NotifyEmail" , 0 )); // upozornovaci email
         cc = PQsql.GetFieldValueName("Country" , 0 ); // kod zeme
 
-	c->AuthInfoPw=CORBA::string_dup(PQsql.GetFieldValueName("AuthInfoPw" , 0 )); // Zeme
 	c->VAT=CORBA::string_dup(PQsql.GetFieldValueName("VAT" , 0 )); // DIC
 	c->SSN=CORBA::string_dup(PQsql.GetFieldValueName("SSN" , 0 )); // SSN
-	c->AuthInfoPw=CORBA::string_dup(PQsql.GetFieldValueName("authinfopw" , 0 )); // autentifikace
+//	c->AuthInfoPw=CORBA::string_dup(PQsql.GetFieldValueName("authinfopw" , 0 )); // autentifikace
 
         
         c->DiscloseName = PQsql.GetFieldBooleanValueName( "DiscloseName" , 0 );
@@ -431,7 +430,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
 
               
         // identifikator registratora
-        c->ClID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( clid ) );
+//        c->ClID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( clid ) );
         c->CrID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( crid ) );
         c->UpID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( upid ) );
 
@@ -464,12 +463,12 @@ if( ret->errCode != COMMAND_OK )
 {
 c->handle=CORBA::string_dup("");
 c->ROID=CORBA::string_dup("");   
-c->ClID=CORBA::string_dup("");    // identifikator registratora ktery ma pravo na zmeny
+//c->ClID=CORBA::string_dup("");    // identifikator registratora ktery ma pravo na zmeny
 c->CrID=CORBA::string_dup("");    // identifikator registratora ktery vytvoril kontak
 c->UpID=CORBA::string_dup("");    // identifikator registratora ktery provedl zmeny
 c->CrDate=0; // datum a cas vytvoreni
 c->UpDate=0; // datum a cas zmeny
-c->TrDate=0;  // datum a cas transferu
+//c->TrDate=0;  // datum a cas transferu
 c->stat.length(0); // status
 c->Name=CORBA::string_dup(""); // jmeno nebo nazev kontaktu
 c->Organization=CORBA::string_dup(""); // nazev organizace
@@ -486,7 +485,7 @@ c->Email=CORBA::string_dup("");
 c->NotifyEmail=CORBA::string_dup(""); // upozornovaci email
 c->VAT=CORBA::string_dup(""); // DIC
 c->SSN=CORBA::string_dup(""); // SSN
-c->AuthInfoPw=CORBA::string_dup(""); // autentifikace
+//c->AuthInfoPw=CORBA::string_dup(""); // autentifikace
 }
 
 
@@ -499,7 +498,7 @@ ccReg::Response *ret;
 PQ PQsql;
 Status status;
 char sqlString[1024];
-int regID=0 , id , clID = 0 ;
+int regID=0 , id , clID = 0 , crID =0  ;
 bool stat;
 
 ret = new ccReg::Response;
@@ -523,8 +522,11 @@ if( PQsql.OpenDatabase( DATABASE ) )
   {
    // get  registrator ID
    regID =  PQsql.GetLoginRegistrarID( clientID);
-   // client contaktu 
-   clID  =  PQsql.GetNumericFromTable(  "CONTACT"  , "clID" , "handle" , (char * ) handle );
+   // zjistit kontak u domeny
+   clID  = PQsql.GetClientDomainRegistrant( regID , clientID );
+   // client contaktu ktery ho vytvoril
+   crID  =  PQsql.GetNumericFromTable(  "CONTACT"  , "crID" , "handle" , (char * ) handle );
+
 
     // zpracuj  pole statusu
    status.Make( PQsql.GetStatusFromTable( "CONTACT" , id ) );
@@ -534,7 +536,7 @@ if( PQsql.OpenDatabase( DATABASE ) )
 
   
 
-   if(  clID == regID && stat ==true ) // pokud je klient je registratorem a zaroven je status OK
+   if(  ( clID == regID || crID == regID ) && stat ==true ) // pokud je klient je registratorem a zaroven je status OK
      {
          //  uloz do historie
          if( PQsql.MakeHistory() ) 
@@ -575,7 +577,7 @@ ccReg::Response *ret;
 PQ PQsql;
 char sqlString[4096] , buf[1024]  ;
 char statusString[128] ;
-int regID=0 , clID=0 , id;
+int regID=0 , crID=0 , clID = 0 , id;
 bool stat;
 int len , i ; 
 Status status;
@@ -611,16 +613,18 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
   else // pokud kontakt existuje 
   {
   // get  registrator ID
-  regID =   PQsql.GetLoginRegistrarID( clientID);
-  // client contaktu
-  clID  =  PQsql.GetNumericFromTable(  "CONTACT"  , "clID" , "handle" , (char * ) handle );
+  regID = PQsql.GetLoginRegistrarID( clientID);
+  // zjistit kontak u domeny            
+  clID  = PQsql.GetClientDomainRegistrant( regID , clientID );
+  // client contaktu ktery ho vytvoril
+  crID  =  PQsql.GetNumericFromTable(  "CONTACT"  , "crID" , "handle" , (char * ) handle );
   // zpracuj  pole statusu
   status.Make( PQsql.GetStatusFromTable( "CONTACT" , id ) );
 
    if( status.Test( STATUS_clientUpdateProhibited ) || status.Test( STATUS_serverUpdateProhibited )  ) stat = false;
    else stat = true; // status je OK
 
-    if( clID == regID && stat ) // pokud je registrator clientem kontaktu a je status v poradku
+    if(  ( crID == regID || clID == regID  ) && stat ) // pokud je registrator clientem kontaktu a je status v poradku
       {
          //  uloz do historie
          if( PQsql.MakeHistory() )
@@ -660,7 +664,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
                 add_field_value( sqlString , "NotifyEmail" ,  CORBA::string_dup(c.NotifyEmail)  ) ;
                 add_field_value( sqlString , "VAT" ,  CORBA::string_dup(c.VAT)  ) ;
                 add_field_value( sqlString , "SSN" ,  CORBA::string_dup(c.SSN)  ) ;
-                add_field_value( sqlString , "AuthInfoPw" ,  CORBA::string_dup(c.AuthInfoPw)  ) ;
+              //  add_field_value( sqlString , "AuthInfoPw" ,  CORBA::string_dup(c.AuthInfoPw)  ) ;
 
                 //  Disclose parametry
                 add_field_bool( sqlString , "DiscloseName" , c.DiscloseName );
@@ -734,7 +738,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         regID =   PQsql.GetLoginRegistrarID( clientID);
 
       
-	strcpy( sqlString , "INSERT INTO CONTACT ( handle , ROID ,  CrDate ,  ClID , CrID   " );
+	strcpy( sqlString , "INSERT INTO CONTACT ( handle , ROID ,  CrDate ,   CrID   " );
         create_field_fname(sqlString , "Name" , CORBA::string_dup(c.Name) );
         create_field_fname(sqlString , "Organization" , CORBA::string_dup(c.Organization) );
         create_field_fname(sqlString , "Street1" , CORBA::string_dup(c.Street1) );
@@ -750,7 +754,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         create_field_fname(sqlString , "NotifyEmail" , CORBA::string_dup(c.NotifyEmail) );
         create_field_fname(sqlString , "VAT" , CORBA::string_dup(c.VAT) );
         create_field_fname(sqlString , "SSN" , CORBA::string_dup(c.SSN) );
-        create_field_fname(sqlString , "AuthInfoPw" , CORBA::string_dup(c.AuthInfoPw) );
+//        create_field_fname(sqlString , "AuthInfoPw" , CORBA::string_dup(c.AuthInfoPw) );
 
         if(  c.DiscloseName > 0 ) strcat( sqlString , " , DiscloseName " );
         if(  c.DiscloseOrganization > 0  ) strcat( sqlString , " , DiscloseOrganization " );
@@ -759,7 +763,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         if(  c.DiscloseFax > 0  ) strcat( sqlString , " , DiscloseFax  " );
         if(  c.DiscloseEmail > 0  ) strcat( sqlString , " , DiscloseEmail " );
 
-	sprintf( buf  , " )  VALUES ( \'%s\' , \'%s\' ,  'now()' ,   %d , %d   " ,  (char * ) handle ,   (char * ) handle ,   regID , regID ); 
+	sprintf( buf  , " )  VALUES ( \'%s\' , \'%s\' ,  'now()' ,   %d , %d   " ,  (char * ) handle ,   (char * ) handle ,   regID ); 
 
 	strcat( sqlString , buf );
 
@@ -778,7 +782,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         create_field_value(sqlString , "NotifyEmail" , CORBA::string_dup(c.NotifyEmail) );
         create_field_value(sqlString , "VAT" , CORBA::string_dup(c.VAT) );
         create_field_value(sqlString , "SSN" , CORBA::string_dup(c.SSN) );
-        create_field_value(sqlString , "AuthInfoPw" , CORBA::string_dup(c.AuthInfoPw) );
+//        create_field_value(sqlString , "AuthInfoPw" , CORBA::string_dup(c.AuthInfoPw) );
  
         if(  c.DiscloseName > 0 ) strcat( sqlString , " , 't' " );
         if(  c.DiscloseOrganization > 0  ) strcat( sqlString , ", 't' " );
