@@ -312,6 +312,8 @@ sprintf( sqlString , "SELECT  %s FROM %s WHERE %s=\'%s\';" , vname ,  table  ,  
 
 if( ExecSelect( sqlString ) )
  {
+   if( GetSelectRows() == 1   ) // pokud je vracen prave jeden zaznam
+     {
       size = GetValueLength( 0 , 0 );
       handle = new char[size]; 
       strcpy( handle , GetFieldValue( 0 , 0 ) );
@@ -319,6 +321,8 @@ if( ExecSelect( sqlString ) )
       FreeSelect();
       // a je po PROBLEMu 
       return handle;
+     }
+   else  return "";
   }
 else return "";
 
