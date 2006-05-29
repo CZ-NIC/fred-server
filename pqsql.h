@@ -56,6 +56,11 @@ char * GetStatusFromTable( char *table , int id ) {  return GetValueFromTable( t
 // vraci id registratora z domeny
 int GetClientDomainRegistrant( int clID , int contactID );
 
+// test na vazu mezi tabulkami pro kontakt a nsset
+bool PQ::TestNSSetRelations(int id );
+bool PQ::TestContactRelations(int id );
+
+
 // funkce na ulozeni obsahu radku ID tabluky  do 
 int MakeHistory(); // zapise do tabulky history
 bool SaveHistory(char *table , char *fname ,  int id ); // ulozi radek tabulky

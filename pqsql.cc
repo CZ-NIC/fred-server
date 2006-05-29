@@ -282,6 +282,51 @@ if( ExecSelect( sqlString ) )
 return ret;
 }
 
+
+bool PQ::TestNSSetRelations(int id )
+{
+bool ret = false;
+char sqlString[128];
+
+sprintf( sqlString , "SELECT id from DOMAIN WHERE nsset=%d;" , id );
+if( ExecSelect( sqlString ) )
+  {
+     if(  GetSelectRows() > 0 ) ret=true;  // jestli ma domena definovany nsset 
+     FreeSelect();
+  }
+
+return ret;
+}
+
+bool PQ::TestContactRelations(int id )
+{
+bool ret = false;
+char sqlString[128];
+
+sprintf( sqlString , "SELECT id from DOMAIN WHERE Registrant=%d;" , id );
+if( ExecSelect( sqlString ) ) 
+  {
+     if(  GetSelectRows() > 0 ) ret=true;  // nejaka domena kterou ma kontakt registrovany
+     FreeSelect();
+  }
+
+sprintf( sqlString , "SELECT * from DOMAIN_CONTACT_MAP WHERE contactid=%d;" , id );
+if( ExecSelect( sqlString ) )
+  {
+     if(  GetSelectRows() > 0 ) ret=true; // kontakt je admin kontakt nejake domeny 
+     FreeSelect();
+  }
+
+sprintf( sqlString , "SELECT * from NSSET_CONTACT_MAP WHERE contactid=%d;" , id );
+if( ExecSelect( sqlString ) )
+  {
+     if(  GetSelectRows() > 0 ) ret=true; // kontakt je tech kontakt nejakeho nssetu
+     FreeSelect();
+  }
+
+
+return ret;
+}
 // vraci id registratora z domeny
 int PQ::GetClientDomainRegistrant( int clID , int contactID )
 {
