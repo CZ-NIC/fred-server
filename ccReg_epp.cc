@@ -499,7 +499,7 @@ PQ PQsql;
 Status status;
 char sqlString[1024];
 int regID=0 , id , clID = 0 , crID =0  ;
-bool stat;
+bool stat , del ;
 
 ret = new ccReg::Response;
 
@@ -533,10 +533,11 @@ if( PQsql.OpenDatabase( DATABASE ) )
 
    if( status.Test( STATUS_clientDeleteProhibited ) || status.Test( STATUS_serverDeleteProhibited )  ) stat = false;
    else stat = true; // status je OK
+   // test na vazbu do tabulky domain domain_contact_map a nsset_contact_map
+   if( PQsql.TestContactRelations( id ) == false ) del = true; // kontakt muze byt smazan
+   else { del = false;   ret->errCode = COMMAND_PROHIBITS_OPERATION ; }
 
-  
-
-   if(  ( clID == regID || crID == regID ) && stat ==true ) // pokud je klient je registratorem a zaroven je status OK
+   if(  ( clID == regID || crID == regID ) && stat ==true && del == true ) // pokud je klient je registratorem a zaroven je status OK
      {
          //  uloz do historie
          if( PQsql.MakeHistory() ) 
@@ -1025,7 +1026,7 @@ ccReg::Response *ret;
 PQ PQsql;
 Status status;
 int regID , id , clID = 0;
-bool stat;
+bool stat , del;
 
 ret = new ccReg::Response;
 
@@ -1058,7 +1059,12 @@ if( PQsql.OpenDatabase( DATABASE ) )
    else stat = true; // status je OK
 
 
-   if( clID == regID ) // pokud je client registaratorem
+   // test na vazbu do tabulky domain jestli existuji vazby na  nsset
+   if( PQsql.TestNSSetRelations( id ) == false ) del = true; //  muze byt smazan
+   else { del = false;   ret->errCode = COMMAND_PROHIBITS_OPERATION ; }
+ 
+
+   if( clID == regID && stat == true && del == true ) // pokud je client registaratorem
      {
        //  uloz do historie
        if( PQsql.MakeHistory() )
