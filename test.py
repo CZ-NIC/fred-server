@@ -24,15 +24,36 @@ result =  epp.GetTransaction( 1203 , "unknwo act" , 2104);
 
 print "Get transaction  svrTRID '%s' err '%d'" % ( result.svTRID ,result.errCode )
 
-result = epp.ClientLogin( "REG-WEB4U" , "123456789" , "", "python-login"  );
+result = epp.ClientLogin( "REG-GENERAL-REGISTRY" , "123456789" , "", "python-login"  );
 # nelze pouzivat out parametry vraci se jako navratova hodnota
 loginID = result[1]
 
 print "Login  svrTRID '%s' err '%d' loginID '%d'" % ( result[0].svTRID ,result[0].errCode , loginID  );
 
+result =epp.DomainInfo( 'nic.cz' , loginID , "python-info-neco" );
+domain = result[1]
+
+print "domain info: " , domain.name , domain.nsset,  domain.Registrant ,  domain.ClID,    domain.admin  , domain.stat
+print domain.admin
+
+print "DomainInfo  svrTRID '%s' err '%d' " % ( result[0].svTRID ,result[0].errCode  )
+
+
+result = epp. ContactInfo(  'YY-PETR' , loginID , "contact-info-yy-petr" );
+contact =  result[1]
+print "Contact Info  '%s' err '%d' name  '%s' " % ( result[0].svTRID ,result[0].errCode , contact.Name  ) ;
+
+
+
+result = epp.ContactDelete( 'YY-Petr'  ,   loginID , "yy-petr-delete" );
+print "ContactDelete  svrTRID '%s' err '%d' " % ( result.svTRID ,result.errCode );
+
+sys.exit(1)
+
+
 result = epp. ContactInfo(  'NECOCZ-PETR' , loginID , "pcontact-info" );
 contact =  result[1]
-print "Conact Info  '%s' err '%d' name  '%s' " % ( result[0].svTRID ,result[0].errCode , contact.Name  ) ;
+print "Contact Info  '%s' err '%d' name  '%s' " % ( result[0].svTRID ,result[0].errCode , contact.Name  ) ;
 
 contact.Name = "David Pospisilik"
 contact.City = "Karlovy Vary"
@@ -41,7 +62,7 @@ result = epp.ContactCreate( 'NECOCZ-DAVID'  , contact ,  loginID , "david-create
 print "ContactCreate  svrTRID '%s' err '%d' " % ( result.svTRID ,result.errCode );
 
 contact.Email = "david@neco.cz"
-result = epp.ContactUpdate( 'NECOCZ-DAVID'  , contact , [""] ,  [""] ,  loginID , "david-update" );
+result = epp.ContactUpdate( 'NECOCZ-DAVID'  , contact , [ "  " ] ,  [ "  " , "   " ] ,  loginID , "david-update" );
 print "ContactUpdate  svrTRID '%s' err '%d' " % ( result.svTRID ,result.errCode );
 
 
@@ -50,14 +71,13 @@ print "ContactDelete  svrTRID '%s' err '%d' " % ( result.svTRID ,result.errCode 
  
 
  
-result =epp.DomainInfo( 'neco.cz' , loginID , "python-info-neco" );
+result =epp.DomainInfo( 'nic.cz' , loginID , "python-info-neco" );
 domain = result[1]
 
 print "domain info: " , domain.name , domain.nsset,  domain.Registrant ,  domain.ClID,    domain.admin  , domain.stat
 print domain.admin
 
 print "DomainInfo  svrTRID '%s' err '%d' " % ( result[0].svTRID ,result[0].errCode  )
-
 
 result =epp.NSSetInfo( domain.nsset , loginID , "nsset-info" );
 nsset = result[1]
