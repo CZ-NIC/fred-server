@@ -207,6 +207,8 @@ sprintf( sqlString , "UPDATE Action SET response=%d , enddate='now()' , servertr
 id  =  actionID;
 actionID = 0 ; 
 
+debug( "EndAction svrTRID: %s\n" ,  svrTRID );
+
 if( ExecSQL(  sqlString ) ) return   svrTRID;
 /* {
 
@@ -360,11 +362,10 @@ if( ExecSelect( sqlString ) )
    if( GetSelectRows() == 1   ) // pokud je vracen prave jeden zaznam
      {
       size = GetValueLength( 0 , 0 );
-      handle = new char[size]; 
+      handle = new char[size+1];  // alokace pameti pro retezec
       strcpy( handle , GetFieldValue( 0 , 0 ) );
       debug("GetValueFromTable \'%s\' field %s  value  %s ->  %s\n" , table ,  fname , value  , handle );
-      FreeSelect();
-      // a je po PROBLEMu 
+      FreeSelect();      
       return handle;
      }
    else  return "";
