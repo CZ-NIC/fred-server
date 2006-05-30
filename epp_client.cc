@@ -91,6 +91,7 @@ int main(int argc, char** argv)
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
 
 
+
  
    ret =  EPP->DomainInfo(  "temp.cz" ,  domain , loginID , "info-cpp-temp" );
    for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
@@ -103,7 +104,7 @@ int main(int argc, char** argv)
    cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
    cout << "err code " << ret->errCode   << endl;
    delete domain;
-  
+ 
 /*
     ret =  EPP->HostInfo( "modry.neco.cz",  host  , loginID ,  "XX-host"  );
     cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
@@ -154,7 +155,7 @@ int main(int argc, char** argv)
  dcheck[1] = CORBA::string_dup(  "TEMP" );
  dcheck[2] = CORBA::string_dup(  "NSSET" );
 
-    ret =  EPP->NSSetCheck(  dcheck , av,   loginID ,  "XX-nsset" );
+    ret =  EPP->NSSetCheck(  dcheck , av,   loginID ,  "XX-nsset-check" );
 
   for( i = 0 ; i <  av->length() ; i ++ )
       {
@@ -163,10 +164,10 @@ int main(int argc, char** argv)
 
  
 
-    ret =  EPP->NSSetInfo( "NECOCZ" , nsset ,  loginID ,  "XX-nsset" );
+    ret =  EPP->NSSetInfo( "NECOCZ" , nsset ,  loginID ,  "XX-nsset-info-necocz" );
     cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
 
-    t = (time_t )  nsset->CrDate;
+     t = (time_t )  nsset->CrDate;
  
      cout << "nsset "  <<  nsset->handle << " created " <<  asctime( gmtime( &t) ) << endl;
      cout << "clID "  <<  nsset->ClID << " crID " << nsset->CrID<< " upID " << nsset->UpID  << endl;
@@ -180,12 +181,14 @@ int main(int argc, char** argv)
          }
 
 
+
     ret =  EPP->NSSetCreate( "NEWNSSET" , "heslo" ,  nsset->tech ,  nsset->dns ,  loginID ,  "new-nsset-create" );
-    cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
+    cout << "NSSetCreate err code " << ret->errCode  <<  ret->svTRID  << endl;
 
 
-
-   delete nsset;
+    ret =  EPP->NSSetDelete( "NEWNSSET" ,  loginID ,  "new-nsset-delete" );
+    cout << "NSSetDelete err code " << ret->errCode  <<  ret->svTRID  << endl;
+//   delete nsset;
 
 
 
