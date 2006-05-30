@@ -328,16 +328,21 @@ if( roid )
 
   }
 
+
+
+} 
+else
+{
+            cout  << "bad username"  << endl;
+            ret->errCode= COMMAND_AUTH_ERROR;
+} 
+
     // probehne action pro svrTrID     
      if( PQsql.BeginAction( clientID , EPP_ClientLogin , (char * ) clTRID  ) )
       {
          // zapis na konec action
          ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
       } 
-
-
-} 
- 
 
 
 PQsql.Disconnect();
