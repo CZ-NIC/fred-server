@@ -2455,7 +2455,7 @@ return ret;
  * DESCRIPTION: prevod domeny  ze stavajiciho na noveho registratora
  *              a ulozeni zmen do historie
  * PARAMETERS:  fqdn - plnohodnotny nazev domeny
- *              registrant - vlastnik domeny 
+ *             //  registrant - vlastnik domeny 
  *              authInfo - autentifikace heslem 
  *              clientID - id pripojeneho klienta 
  *              clTRID - cislo transakce klienta
@@ -2464,7 +2464,7 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::DomainTransfer(const char* fqdn , const char* authInfo, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::DomainTransfer(const char* fqdn, /* const char* registrant, */ const char* authInfo, CORBA::Long clientID, const char* clTRID)
 {
 ccReg::Response *ret;
 PQ PQsql;
@@ -2472,7 +2472,7 @@ Status status;
 char sqlString[1024];
 char *pass;
 bool auth , stat ;
-int regID=0 , clID=0 , id ; //  registrantid , contactid;
+int regID=0 , clID=0 , id ; //   registrantid , contactid;
 
 ret = new ccReg::Response;
 
@@ -2496,13 +2496,13 @@ if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
    regID =   PQsql.GetLoginRegistrarID( clientID);
    // client contaktu
    clID  =  PQsql.GetNumericFromTable(  "DOMAIN"  , "clID" , "id" , id );
-
+/*
    // drzitel domeny
-//   registrantid = PQsql.GetNumericFromTable(  "DOMAIN"  , "registrant" , "id" , id );
+   registrantid = PQsql.GetNumericFromTable(  "DOMAIN"  , "registrant" , "id" , id );
 
-  // drzitel zadajici prevod
-  // contactid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(registrant) );
-
+    // drzitel zadajici prevod
+     contactid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(registrant) );
+*/
     // zpracuj  pole statusu
     status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
 
@@ -2519,7 +2519,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
      }
     else auth = false; //  autentifikace je nitna
 
-   if(  auth /* && registrantid == contactid */ && stat ) // pokud prosla autentifikace  a je drzitelem domeny a status OK 
+   if(  auth && /* registrantid == contactid && */ stat ) // pokud prosla autentifikace  a je drzitelem domeny a status OK 
      {
          //  uloz do historie
        if( PQsql.MakeHistory() )
