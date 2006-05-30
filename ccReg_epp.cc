@@ -225,10 +225,11 @@ if(  PQsql.OpenDatabase( DATABASE ) )
   if( PQsql.BeginAction( clientID , EPP_ClientLogout , (char * ) clTRID  ) )
   {
 
-    sprintf( sqlString , "UPDATE Login set logoutdate='now' , logouttrid=\'%s\' where id=%d;" , clTRID , clientID );
+    sprintf( sqlString , "UPDATE Login SET logoutdate='now' , logouttrid=\'%s\' WHERE id=%d;" , clTRID , clientID );
 
    if(  PQsql.ExecSQL( sqlString ) ) ret->errCode= COMMAND_LOGOUT; // uspesne oddlaseni
 
+     
     // zapis na konec action
     ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
   }
@@ -1344,15 +1345,14 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
    { 
      // get  registrator ID
      regID = PQsql.GetLoginRegistrarID( clientID );
-
+     cout << "clientID " << clientID << "regID " << regID << endl;
 
 
      // ID je cislo ze sequence
      id =  PQsql.GetSequenceID( "nsset" );
 
-        sprintf( sqlString , "INSERT INTO NSSET ( id , crdate ,  handle , ClID , CrID,  authinfopw  ) \
-                           VALUES ( %d ,  'now'  , \'%s\' ,  %d , %d ,    \'%s\'  );" , 
-                           id ,   CORBA::string_dup(handle) , regID , regID  ,  CORBA::string_dup(authInfoPw) );
+    sprintf( sqlString , "INSERT INTO NSSET ( id , crdate , update ,  handle , roid , ClID , CrID,  authinfopw  )   VALUES ( %d ,   'now'  ,  'now'  ,   \'%s\'  ,  \'%s\' ,  %d , %d ,    \'%s\'  );" , 
+                           id ,  CORBA::string_dup(handle) ,  CORBA::string_dup(handle) , regID , regID  ,  CORBA::string_dup(authInfoPw) );
 
 
 
@@ -1386,17 +1386,17 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
 
 
            // preved sequenci adres
-           strcat( Array , " { " );
+           strcpy( Array , " { " );
            for( j = 0 ; j < dns[i].inet.length() ; j ++ )
            {
               if( j > 0 ) strcat( Array , " , " );
               strcat( Array ,  CORBA::string_dup( dns[i].inet[j]  ));
             }
-
             strcat( Array , " } " );
 
+             cout << "Array:" << Array << endl;  
              // HOST informace poouze ipaddr a fqdn 
-             sprintf( sqlString , "INSERT INTO HOST ( nssetid , fqdn  , ipaddr )    VALUES ( %d , \'%s\'  ,  \'%s\' );" ,
+             sprintf( sqlString , "INSERT INTO HOST ( nssetid , fqdn  , ipaddr )    VALUES ( %d , \'%s\' , \'%s\' );" ,
                                            id , CORBA::string_dup( dns[i].fqdn )  , Array );
 
 
@@ -1895,6 +1895,9 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
 	d->name=CORBA::string_dup( PQsql.GetFieldValueName("fqdn" , 0 )  ); // jmeno nebo nazev kontaktu
 
 
+        d->AuthInfoPw = CORBA::string_dup( PQsql.GetFieldValueName("AuthInfoPw" , 0 )  ); // autentifikace
+
+
     
         ret->errCode=COMMAND_OK;
 
@@ -1923,7 +1926,6 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
         //  handle na nsset
         d->nsset=CORBA::string_dup( PQsql.GetValueFromTable( "NSSET" , "handle", "id" , nssetid ) );
     
-        d->admin.length(0); // zadne admin kontakty       
 
         // dotaz na admin kontakty
         sprintf( sqlString , "SELECT  handle FROM CONTACT  JOIN  domain_contact_map ON domain_contact_map.contactid=contact.id WHERE domain_contact_map.domainid=%d;" ,  id );       
@@ -1966,6 +1968,7 @@ if( ret->errCode !=  COMMAND_OK )
 d->ROID =  CORBA::string_dup( "" ); // domena do ktere patri host
 d->name=  CORBA::string_dup( "" ); // fqdn nazev domeny
 d->nsset = CORBA::string_dup( "" ); // nsset
+d->AuthInfoPw  = CORBA::string_dup( "" ); //  autentifikace
 d->stat.length(0); // status sequence
 d->CrDate=0; // datum vytvoreni
 d->TrDate=0; // datum zmeny
@@ -2461,7 +2464,7 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::DomainTransfer(const char* fqdn, const char* registrant, const char* authInfo, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::DomainTransfer(const char* fqdn , const char* authInfo, CORBA::Long clientID, const char* clTRID)
 {
 ccReg::Response *ret;
 PQ PQsql;
@@ -2469,7 +2472,7 @@ Status status;
 char sqlString[1024];
 char *pass;
 bool auth , stat ;
-int regID=0 , clID=0 , id , registrantid , contactid;
+int regID=0 , clID=0 , id ; //  registrantid , contactid;
 
 ret = new ccReg::Response;
 
@@ -2495,10 +2498,10 @@ if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
    clID  =  PQsql.GetNumericFromTable(  "DOMAIN"  , "clID" , "id" , id );
 
    // drzitel domeny
-   registrantid = PQsql.GetNumericFromTable(  "DOMAIN"  , "registrant" , "id" , id );
+//   registrantid = PQsql.GetNumericFromTable(  "DOMAIN"  , "registrant" , "id" , id );
 
   // drzitel zadajici prevod
-   contactid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(registrant) );
+  // contactid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(registrant) );
 
     // zpracuj  pole statusu
     status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
@@ -2516,7 +2519,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
      }
     else auth = false; //  autentifikace je nitna
 
-   if(  auth && registrantid == contactid && stat ) // pokud prosla autentifikace  a je drzitelem domeny a status OK 
+   if(  auth /* && registrantid == contactid */ && stat ) // pokud prosla autentifikace  a je drzitelem domeny a status OK 
      {
          //  uloz do historie
        if( PQsql.MakeHistory() )
