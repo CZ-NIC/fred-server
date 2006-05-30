@@ -83,11 +83,15 @@ return ret;
  *
  * FUNCTION:    PollAcknowledgement
  *
- * DESCRIPTION: vraci pro klienta ze zadaneho clTRID server transaction ID
+ * DESCRIPTION: potvrezeni prijeti zpravy msgID 
+ *              vraci pocet zbyvajicich zprav count 
+ *              a dalsi zpravu newmsgID
  *
- * PARAMETERS:  clTRID - cislo transakce klienta
+ * PARAMETERS:  msgID - cislo zpravy ve fronte
+ *              VRACI: count -  pocet zprav
+ *              clTRID - cislo transakce klienta
  *              clientID - identifikace klienta
- *              errCode - chybove hlaseni z klienta uklada se do tabulky action
+ * 
  * RETURNED:    svTRID a errCode
  *
  ***********************************************************************/
@@ -129,6 +133,25 @@ return ret;
 
 }
 
+
+/***********************************************************************
+ *
+ * FUNCTION:    PollAcknowledgement
+ *
+ * DESCRIPTION: ziskani zpravy msgID z fronty 
+ *              vraci pocet zprav ve fronte a obsah zpravy        
+ *
+ * PARAMETERS:  msgID - cislo zpozadovane pravy ve fronte
+ *        OUT:  count -  pocet 
+ *        OUT:  qDate - datum a cas zpravy
+ *        OUT:  mesg  - obsah zpravy  
+ *              clTRID - cislo transakce klienta
+ *              clientID - identifikace klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
 ccReg::Response* ccReg_EPP_i::PollRequest(CORBA::Long& msgID, CORBA::Short& count, ccReg::timestamp& qDate, CORBA::String_out mesg, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
@@ -167,6 +190,20 @@ if( PQsql.OpenDatabase( DATABASE ) )
 
 return ret;
 }
+
+
+/***********************************************************************
+ *
+ * FUNCTION:    ClientLogout
+ *
+ * DESCRIPTION: odhlaseni clienta za zapis do tabulky login
+ *              o datu odhlaseni
+ * PARAMETERS:  clientID - id pripojeneho klienta
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
  
 ccReg::Response* ccReg_EPP_i::ClientLogout(CORBA::Long clientID, const char* clTRID)
 {
@@ -202,7 +239,23 @@ PQsql.Disconnect();
 return ret;
 }
 
-//   Methods corresponding to IDL attributes and operations
+/***********************************************************************
+ *
+ * FUNCTION:    ClientLogin
+ *
+ * DESCRIPTION: prihlaseni clienta ziskani clientID  z tabulky login
+ *              prihlaseni pres heslo registratora a jeho mozna zmena
+ *              
+ * PARAMETERS:  ClID - identifikator registratora
+ *              passwd - stavajici heslo 
+ *              newpasswd - nove heslo pro zmenu
+ *        OUT:  clientID - id pripojeneho klienta
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
 ccReg::Response* ccReg_EPP_i::ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, CORBA::Long& clientID)
 {
 PQ  PQsql;
@@ -293,6 +346,21 @@ return ret;
 }
 
 
+/***********************************************************************
+ *
+ * FUNCTION:    ContactCheck
+ *
+ * DESCRIPTION: kontrola existence kontaktu 
+ *              
+ * PARAMETERS:  handle - sequence kontaktu typu  Check 
+ *        OUT:  a - (1) kontakt neexistuje a je volny 
+ *                  (0) kontak uz je zalozen
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::ContactCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
 {
@@ -337,6 +405,21 @@ if( PQsql.OpenDatabase( DATABASE ) )
 return ret;
 }
 
+
+/***********************************************************************
+ *
+ * FUNCTION:    ContactInfo
+ *
+ * DESCRIPTION: vraci detailni informace o  kontaktu 
+ *              prazdnou hodnotu pokud kontakt neexistuje              
+ * PARAMETERS:  handle - identifikator kontaktu
+ *        OUT:  c - struktura Contact detailni popis
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::ContactInfo(const char* handle, ccReg::Contact_out c , CORBA::Long clientID, const char* clTRID)
 {
@@ -492,13 +575,30 @@ c->SSN=CORBA::string_dup(""); // SSN
 return ret;
 }
 
+
+/***********************************************************************
+ *
+ * FUNCTION:    ContactDelete
+ *
+ * DESCRIPTION: maze kontakt z tabulky Contact a uklada je do historie
+ *              vraci bud kontakt nenalezen nebo kontakt ma jeste vazby
+ *              na dalsi tabulky a nemuze byt smazan
+ *              SMAZAT kontakt smi jen registrator ktery ho vytvoril
+ * PARAMETERS:  handle - identifikator kontaktu
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
 ccReg::Response* ccReg_EPP_i::ContactDelete(const char* handle , CORBA::Long clientID, const char* clTRID )
 {
 ccReg::Response *ret;
 PQ PQsql;
 Status status;
 char sqlString[1024];
-int regID=0 , id , clID = 0 , crID =0  ;
+int regID=0 , id ,  crID =0  ;
 bool stat , del ;
 
 ret = new ccReg::Response;
@@ -522,8 +622,6 @@ if( PQsql.OpenDatabase( DATABASE ) )
   {
    // get  registrator ID
    regID =  PQsql.GetLoginRegistrarID( clientID);
-   // zjistit kontak u domeny
-   clID  = PQsql.GetClientDomainRegistrant( regID , clientID );
    // client contaktu ktery ho vytvoril
    crID  =  PQsql.GetNumericFromTable(  "CONTACT"  , "crID" , "handle" , (char * ) handle );
 
@@ -537,7 +635,7 @@ if( PQsql.OpenDatabase( DATABASE ) )
    if( PQsql.TestContactRelations( id ) == false ) del = true; // kontakt muze byt smazan
    else { del = false;   ret->errCode = COMMAND_PROHIBITS_OPERATION ; }
 
-   if(  ( clID == regID || crID == regID ) && stat ==true && del == true ) // pokud je klient je registratorem a zaroven je status OK
+   if(   crID == regID  && stat ==true && del == true ) // pokud je klient je registratorem a zaroven je status OK
      {
          //  uloz do historie
          if( PQsql.MakeHistory() ) 
@@ -570,6 +668,24 @@ PQsql.Disconnect();
 return ret;
 }
 
+
+/***********************************************************************
+ *
+ * FUNCTION:    ContactUpdate
+ *
+ * DESCRIPTION: zmena informaci u  kontaktu a ulozeni do historie
+ *              ZMENIT kontakt smi jen registrator ktery ho vytvoril
+ *              nebo ten ktery kontaktu vede nejakou domenu
+ * PARAMETERS:  handle - identifikator kontaktu
+ *              c      - ContactChange  zmenene informace o kontaktu
+ *              status_add - pridane status priznaky 
+ *              status_rem - status priznaky na zruseni
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
 
 
 ccReg::Response* ccReg_EPP_i::ContactUpdate(const char* handle , const ccReg::ContactChange& c, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID)
@@ -710,6 +826,21 @@ PQsql.Disconnect();
 return ret;
 }
 
+/***********************************************************************
+ *
+ * FUNCTION:    ContactCreate
+ *
+ * DESCRIPTION: vytvoreni kontaktu 
+ *
+ * PARAMETERS:  handle - identifikator kontaktu
+ *              c      - ContactChange informace o kontaktu
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
 ccReg::Response* ccReg_EPP_i::ContactCreate(const char* handle , const ccReg::ContactChange& c, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
@@ -817,6 +948,21 @@ return ret;
 
 
 
+/***********************************************************************
+ *
+ * FUNCTION:    NSSetCheck
+ *
+ * DESCRIPTION: kontrola existence vice nssetu 
+ *              
+ * PARAMETERS:  handle - sequence nssetu typu  Check 
+ *        OUT:  a - (1) nsset neexistuje a je volny 
+ *                  (0) nsset uz je zalozen
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::NSSetCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
 {
@@ -860,6 +1006,23 @@ if( PQsql.OpenDatabase( DATABASE ) )
 
 return ret;
 }
+
+/***********************************************************************
+ *
+ * FUNCTION:    NSSetInfo
+ *
+ * DESCRIPTION: vraci detailni informace o nssetu a
+ *              podrizenych hostech DNS 
+ *              prazdnou hodnotu pokud kontakt neexistuje              
+ *              
+ * PARAMETERS:  handle - identifikator kontaktu
+ *        OUT:  n - struktura NSSet detailni popis
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::NSSetInfo(const char* handle, ccReg::NSSet_out n, CORBA::Long clientID, const char* clTRID)
 {
@@ -1020,6 +1183,22 @@ cout << "return  " << endl;
 return ret;
 }
 
+/***********************************************************************
+ *
+ * FUNCTION:    NSSetDelete
+ *
+ * DESCRIPTION: vymazani NSSetu a ulozeni do historie
+ *              SMAZAT muze pouze registrator ktery ho vytvoril 
+ *              nebo ten ktery ho spravuje 
+ *              nelze smazat nsset pokud ma vazbu v tabulce domain
+ * PARAMETERS:  handle - identifikator nssetu
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
 ccReg::Response* ccReg_EPP_i::NSSetDelete(const char* handle, CORBA::Long clientID, const char* clTRID)
 {
 ccReg::Response *ret;
@@ -1113,6 +1292,24 @@ PQsql.Disconnect();
 
 return ret;
 }
+
+
+/***********************************************************************
+ *
+ * FUNCTION:    NSSetCreate
+ *
+ * DESCRIPTION: vytvoreni NSSetu a  podrizenych DNS hostu
+ *
+ * PARAMETERS:  handle - identifikator nssetu
+ *              authInfoPw - autentifikace 
+ *              tech - sequence technickych kontaktu
+ *              dns - sequence DNS zaznamu  
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
 
 
 ccReg::Response* ccReg_EPP_i::NSSetCreate(const char* handle, const char* authInfoPw, const ccReg::TechContact& tech, const ccReg::DNSHost& dns, CORBA::Long clientID, const char* clTRID)
@@ -1234,6 +1431,29 @@ return ret;
 
 
 
+/***********************************************************************
+ *
+ * FUNCTION:    NSSetUpdate
+ *
+ * DESCRIPTION: zmena NSSetu a  podrizenych DNS hostu a tech kontaktu
+ *              a ulozeni zmen do historie
+ * PARAMETERS:  handle - identifikator nssetu
+ *              authInfo_chg - zmena autentifikace 
+ *              dns_add - sequence  pridanych DNS zaznamu  
+ *              dns_rem - sequence   DNS zaznamu   pro smazani
+ *              tech_add - sequence pridannych technickych kontaktu
+ *              tech_rem - sequence technickych kontaktu na smazani
+ *              status_add - pridane status flagy
+ *              status_rem - status flagy na smazani
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
+
+
 ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle , const char* authInfo_chg, const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem, const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID)
 {
 ccReg::Response *ret;
@@ -1250,7 +1470,7 @@ ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
- // zmena DNS HOSTU
+ // zmena DNS HOSTU zruseno
 /*
  len = dns_chg.length();
  for( i = 0 ; i < len ; i ++ )
@@ -1363,7 +1583,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
      
                       if( PQsql.SaveHistory( "host" , "nssetID" , id ) ) // uloz do historie hosty
                        {
-                            // zmena DNS HOSTU     
+                            // zmena DNS HOSTU    zruseno lze jenom pridavat nebo mazat  
                           /*
                             len = dns_chg.length();
                             for( i = 0 ; i < len ; i ++ )
@@ -1454,6 +1674,23 @@ PQsql.Disconnect();
 return ret;
 }
 
+
+/***********************************************************************
+ *
+ * FUNCTION:    NSSetTransfer
+ *
+ * DESCRIPTION: prevod NSSetu ze stavajiciho na noveho registratora
+ *              a ulozeni zmen do historie
+ * PARAMETERS:  handle - identifikator nssetu
+ *              authInfo - autentifikace heslem
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ *
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
+
 ccReg::Response* ccReg_EPP_i::NSSetTransfer(const char* handle, const char* authInfo, CORBA::Long clientID, const char* clTRID)
 {
 ccReg::Response *ret;
@@ -1527,6 +1764,22 @@ return ret;
 }
 
 
+/***********************************************************************
+ *
+ * FUNCTION:    DomainCheck
+ *
+ * DESCRIPTION: kontrola existence domen 
+ *              
+ * PARAMETERS:  fqdn - sequence domenovych jmen  typu  Check 
+ *        OUT:  a - (1) domena neexistuje a je tedy volna
+ *                  (0) domana je uz  zalozena
+ *              clTRID - cislo transakce klienta
+ *              clientID - id klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
 ccReg::Response*  ccReg_EPP_i::DomainCheck(const ccReg::Check& fqdn, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
@@ -1571,6 +1824,22 @@ return ret;
 }
 
 
+
+
+/***********************************************************************
+ *
+ * FUNCTION:    DomainInfo
+ *
+ * DESCRIPTION: vraci detailni informace o  kontaktu 
+ *              prazdnou hodnotu pokud kontakt neexistuje              
+ * PARAMETERS:  fqdn - identifikator domeny jeji nazev 
+ *        OUT:  d - struktura Domain  detailni popis
+ *              clientID - id klienta
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::DomainInfo(const char* fqdn, ccReg::Domain_out d , CORBA::Long clientID, const char* clTRID)
 {
@@ -1711,6 +1980,20 @@ d->CrID=  CORBA::string_dup( "" );    // identifikator registratora ktery zmenil
 return ret;
 }
 
+/***********************************************************************
+ *
+ * FUNCTION:    DomainDelete
+ *
+ * DESCRIPTION: smazani domeny a ulozeni do historie
+ *
+ * PARAMETERS:  fqdn - identifikator domeny jeji nazev 
+ *              clientID - id klienta
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
 ccReg::Response* ccReg_EPP_i::DomainDelete(const char* fqdn , CORBA::Long clientID, const char* clTRID)
 {
 ccReg::Response *ret;
@@ -1786,6 +2069,27 @@ PQsql.Disconnect();
 
 return ret;
 }
+
+/***********************************************************************
+ *
+ * FUNCTION:    DomainUpdate
+ *
+ * DESCRIPTION: zmena informaci o domene a ulozeni do historie
+ *
+ * PARAMETERS:  fqdn - identifikator domeny jeji nazev 
+ *              registrant_chg - zmena vlastnika domeny
+ *              authInfo_chg  - zmena hesla
+ *              nsset_chg - zmena nssetu 
+ *              admin_add - sequence pridanych admin kontaktu
+ *              admin_rem - sequence smazanych admin kontaktu
+ *              status_add - pridane status flagy
+ *              status_rem - status flagy na smazani
+ *              clientID - id klienta
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::DomainUpdate(const char* fqdn, const char* registrant_chg , const char* authInfo_chg, const char* nsset_chg, const ccReg::AdminContact& admin_add, const ccReg::AdminContact& admin_rem, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID)
 {
@@ -1916,6 +2220,25 @@ PQsql.Disconnect();
 return ret;
 }
 
+/***********************************************************************
+ *
+ * FUNCTION:    DomainCreate
+ *
+ * DESCRIPTION: vytvoreni zaznamu o domene
+ *
+ * PARAMETERS:  fqdn - identifikator domeny jeji nazev 
+ *              registrant -  vlastnik domeny
+ *              nsset -  identifikator nssetu  
+ *              period - doba platnosti domeny v mesicich
+ *              AuthInfoPw  -  heslo
+ *              admin - sequence  admin kontaktu
+ *              clientID - id klienta
+ *              clTRID - cislo transakce klienta
+ * 
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
 ccReg::Response* ccReg_EPP_i::DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char* AuthInfoPw , CORBA::Short period , const ccReg::AdminContact& admin, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
@@ -2015,6 +2338,22 @@ return ret;
 }
 
 
+/***********************************************************************
+ *
+ * FUNCTION:    DomainRenew
+ *
+ * DESCRIPTION: prodlouzeni platnosti domeny o  periodu
+ *              a ulozeni zmen do historie
+ * PARAMETERS:  fqdn - nazev domeny nssetu
+ *              curExpDate - datum vyprseni domeny pred prodlouzenim
+ *              period - doba prodlouzeni v mesicich
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ *
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
 
 ccReg::Response*  ccReg_EPP_i::DomainRenew(const char* fqdn, ccReg::timestamp curExpDate,  CORBA::Short period, CORBA::Long clientID, const char* clTRID)
 {
@@ -2106,6 +2445,22 @@ return ret;
 }
  
 
+/***********************************************************************
+ *
+ * FUNCTION:    DomainTransfer
+ *
+ * DESCRIPTION: prevod domeny  ze stavajiciho na noveho registratora
+ *              a ulozeni zmen do historie
+ * PARAMETERS:  fqdn - plnohodnotny nazev domeny
+ *              registrant - vlastnik domeny 
+ *              authInfo - autentifikace heslem 
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ *
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
 ccReg::Response* ccReg_EPP_i::DomainTransfer(const char* fqdn, const char* registrant, const char* authInfo, CORBA::Long clientID, const char* clTRID)
 {
 ccReg::Response *ret;
@@ -2191,6 +2546,23 @@ PQsql.Disconnect();
 return ret;
 }
 
+
+/***********************************************************************
+ *
+ * FUNCTION:    DomainTransfer
+ *
+ * DESCRIPTION: prevod domeny z puvodniho vlastnika na noveho
+ *              a ulozeni zmen do historie
+ * PARAMETERS:  fqdn - plnohodnotny nazev domeny
+ *              old_registrant - puvodni vlastnik domeny 
+ *              new_registrant - novy vlastnik domeny 
+ *              authInfo - autentifikace heslem 
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ *
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::DomainTrade(const char* fqdn, const char* old_registrant, const char* new_registrant, const char* authInfo, CORBA::Long clientID, const char* clTRID)
 {
