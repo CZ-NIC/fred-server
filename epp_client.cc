@@ -149,19 +149,24 @@ int main(int argc, char** argv)
       }
 */
 
-/*
-    ret =  EPP->NSSetCheck( "NECOCZ" , avial,   loginID ,  "XX-nsset" );
-    cout << "avial " << avial  << " err code " << ret->errCode  <<  ret->svTRID  << endl;
+ dcheck.length(3);
+ dcheck[0] = CORBA::string_dup(  "NECOCZ" );
+ dcheck[1] = CORBA::string_dup(  "TEMP" );
+ dcheck[2] = CORBA::string_dup(  "NSSET" );
 
+    ret =  EPP->NSSetCheck(  dcheck , av,   loginID ,  "XX-nsset" );
 
-    ret =  EPP->NSSetCheck( "NIC" , avial,   loginID ,  "XX-nsset" );
-    cout << "avial " << avial  << " err code " << ret->errCode  <<  ret->svTRID  << endl;
+  for( i = 0 ; i <  av->length() ; i ++ )
+      {
+         cout << i << dcheck[i] << " avail " << av[i] << endl;
+      }
+
  
 
     ret =  EPP->NSSetInfo( "NECOCZ" , nsset ,  loginID ,  "XX-nsset" );
     cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
 
-   t = (time_t )  nsset->CrDate;
+    t = (time_t )  nsset->CrDate;
  
      cout << "nsset "  <<  nsset->handle << " created " <<  asctime( gmtime( &t) ) << endl;
      cout << "clID "  <<  nsset->ClID << " crID " << nsset->CrID<< " upID " << nsset->UpID  << endl;
@@ -175,9 +180,14 @@ int main(int argc, char** argv)
          }
 
 
+    ret =  EPP->NSSetCreate( "NEWNSSET" , "heslo" ,  nsset->tech ,  nsset->dns ,  loginID ,  "new-nsset-create" );
+    cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
+
+
+
    delete nsset;
 
-*/
+
 
 //    ret =  EPP->ContactDelete( "TEST-USER" ,  loginID ,  "XX-nsset-delete" );
   //   cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
