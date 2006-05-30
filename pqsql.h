@@ -27,7 +27,7 @@ bool CommitTransaction()
 {return ExecSQL("COMMIT TRANSACTION");};
 
 // vraci velikost 
-int  PQ::GetValueLength(int row  , int col);
+int  GetValueLength(int row  , int col);
 
 
 
@@ -57,8 +57,8 @@ char * GetStatusFromTable( char *table , int id ) {  return GetValueFromTable( t
 int GetClientDomainRegistrant( int clID , int contactID );
 
 // test na vazu mezi tabulkami pro kontakt a nsset
-bool PQ::TestNSSetRelations(int id );
-bool PQ::TestContactRelations(int id );
+bool TestNSSetRelations(int id );
+bool TestContactRelations(int id );
 
 
 // funkce na ulozeni obsahu radku ID tabluky  do 
