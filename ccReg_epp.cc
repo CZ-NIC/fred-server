@@ -840,6 +840,7 @@ return ret;
  *
  * PARAMETERS:  handle - identifikator kontaktu
  *              c      - ContactChange informace o kontaktu
+ *        OUT:  crDate - datum vytvoreni objektu
  *              clientID - id pripojeneho klienta 
  *              clTRID - cislo transakce klienta
  * 
@@ -847,13 +848,14 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::ContactCreate(const char* handle , const ccReg::ContactChange& c, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::ContactCreate(const char* handle , const ccReg::ContactChange& c, ccReg::timestamp& crDate, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
 char sqlString[4096] , buf[1024] ;
+char  createDate[32];
 ccReg::Response *ret;
 int regID;
-
+time_t now;
 
 ret = new ccReg::Response;
  
@@ -862,7 +864,7 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-
+crDate = 0;
 
 if( PQsql.OpenDatabase( DATABASE ) )
 {
@@ -875,10 +877,15 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
  else
 // pokud kontakt nexistuje
  {
+        // datum vytvoreni kontaktu
+        now = time(NULL);
+        crDate = now; 
+        get_timestamp( now , createDate );
+
         // get  registrator ID
         regID =   PQsql.GetLoginRegistrarID( clientID);
 
-      
+       
 	strcpy( sqlString , "INSERT INTO CONTACT ( handle , ROID ,  CrDate ,   CrID   " );
         create_field_fname(sqlString , "Name" , CORBA::string_dup(c.Name) );
         create_field_fname(sqlString , "Organization" , CORBA::string_dup(c.Organization) );
@@ -904,7 +911,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         if(  c.DiscloseFax > 0  ) strcat( sqlString , " , DiscloseFax  " );
         if(  c.DiscloseEmail > 0  ) strcat( sqlString , " , DiscloseEmail " );
 
-	sprintf( buf  , " )  VALUES ( \'%s\' , \'%s\' ,  'now()' ,  %d    " ,  (char * ) handle ,   (char * ) handle ,   regID ); 
+	sprintf( buf  , " )  VALUES ( \'%s\' , \'%s\' ,   \'%s\' ,  %d    " ,  (char * ) handle ,   (char * ) handle ,  createDate ,  regID ); 
 
 	strcat( sqlString , buf );
 
@@ -1310,6 +1317,7 @@ return ret;
  *              authInfoPw - autentifikace 
  *              tech - sequence technickych kontaktu
  *              dns - sequence DNS zaznamu  
+ *        OUT:  crDate - datum vytvoreni objektu
  *              clientID - id pripojeneho klienta 
  *              clTRID - cislo transakce klienta
  * 
@@ -1318,14 +1326,16 @@ return ret;
  ***********************************************************************/
 
 
-ccReg::Response* ccReg_EPP_i::NSSetCreate(const char* handle, const char* authInfoPw, const ccReg::TechContact& tech, const ccReg::DNSHost& dns, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::NSSetCreate(const char* handle, const char* authInfoPw, const ccReg::TechContact& tech, const ccReg::DNSHost& dns,ccReg::timestamp& crDate,  CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
 char sqlString[1024];
 char Array[512];
+char createDate[32];
 ccReg::Response *ret;
 int regID ,  id , techid;
 int i , len , j ;
+time_t now;
 ret = new ccReg::Response;
 
 
@@ -1334,7 +1344,7 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-
+crDate=0;
 
 
 if( PQsql.OpenDatabase( DATABASE ) )
@@ -1348,6 +1358,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
  else  // pokud nexistuje 
  if( PQsql.BeginTransaction() )  // zahaj transakci
    { 
+     
      // get  registrator ID
      regID = PQsql.GetLoginRegistrarID( clientID );
      cout << "clientID " << clientID << "regID " << regID << endl;
@@ -1355,9 +1366,14 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
 
      // ID je cislo ze sequence
      id =  PQsql.GetSequenceID( "nsset" );
+   
+    // datum a cas vytvoreni
+    now = time(NULL);
+    crDate = now;
+    get_timestamp( now , createDate );    
 
-    sprintf( sqlString , "INSERT INTO NSSET ( id , crdate , update ,  handle , roid , ClID , CrID,  authinfopw  )   VALUES ( %d ,   'now'  ,  'now'  ,   \'%s\'  ,  \'%s\' ,  %d , %d ,    \'%s\'  );" , 
-                           id ,  CORBA::string_dup(handle) ,  CORBA::string_dup(handle) , regID , regID  ,  CORBA::string_dup(authInfoPw) );
+    sprintf( sqlString , "INSERT INTO NSSET ( id , crdate ,  handle , roid , ClID , CrID,  authinfopw  )   VALUES ( %d ,   \'%s\'  ,   \'%s\'  ,  \'%s\' ,  %d , %d ,    \'%s\'  );" , 
+                           id , createDate ,  CORBA::string_dup(handle) ,  CORBA::string_dup(handle) , regID , regID  ,  CORBA::string_dup(authInfoPw) );
 
 
 
@@ -2240,6 +2256,8 @@ return ret;
  *              period - doba platnosti domeny v mesicich
  *              AuthInfoPw  -  heslo
  *              admin - sequence  admin kontaktu
+ *        OUT:  crDate - datum vytvoreni objektu
+ *        OUT:  exDate - datum expirace objektu 
  *              clientID - id klienta
  *              clTRID - cislo transakce klienta
  * 
@@ -2247,10 +2265,11 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char* AuthInfoPw , CORBA::Short period , const ccReg::AdminContact& admin, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char* AuthInfoPw , CORBA::Short period , const ccReg::AdminContact& admin, ccReg::timestamp& crDate, ccReg::timestamp& exDate,  CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
-char sqlString[1024] , exDate[32];
+char sqlString[2048] ;
+char expiryDate[32] , createDate[32];
 ccReg::Response *ret;
 int contactid , regID , nssetid , adminid , id;
 int i , len , s ;
@@ -2266,7 +2285,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-
+crDate = 0 ;
+exDate = 0 ;
 
 
 if( PQsql.OpenDatabase( DATABASE ) )
@@ -2292,17 +2312,17 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
    contactid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(Registrant) );
 
 
-   if( period )
-   {
    t = time(NULL);
+   crDate = t; // datum a cas vytvoreni objektu
+   exDate = expiry_time( t  , period ); // datum a cas expirace o pulnoci
    // preved datum a cas expirace prodluz tim cas platnosti domeny
-   get_timestamp( expiry_time( t  , period ) ,  exDate );
-   } 
+   get_timestamp( exDate ,  expiryDate );
+   get_timestamp( crDate , createDate );
    
-   sprintf( sqlString , "INSERT INTO DOMAIN ( zone , crdate , update , id , roid , fqdn , ClID , CrID,  Registrant  , exdate , authinfopw , nsset ) \
-              VALUES ( 3 , 'now()' , 'now()' ,  %d ,   \'%s\' , \'%s\'  ,  %d , %d  , %d ,  \'%s\' ,  \'%s\'  , %d );" , 
-              id,  CORBA::string_dup(fqdn) ,  CORBA::string_dup(fqdn) ,  regID  ,  regID , contactid , exDate ,  CORBA::string_dup(AuthInfoPw),   
-nssetid );
+   
+   sprintf( sqlString , "INSERT INTO DOMAIN ( zone , crdate  , id , roid , fqdn , ClID , CrID,  Registrant  , exdate , authinfopw , nsset ) \
+              VALUES ( 3 , \'%s\'  ,  %d ,   \'%s\' , \'%s\'  ,  %d , %d  , %d ,  \'%s\' ,  \'%s\'  , %d );" ,  createDate , 
+              id,  CORBA::string_dup(fqdn) ,  CORBA::string_dup(fqdn) ,  regID  ,  regID , contactid , expiryDate ,  CORBA::string_dup(AuthInfoPw),  nssetid );
  
 
 
