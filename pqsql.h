@@ -33,6 +33,8 @@ int  GetValueLength(int row  , int col);
 
 bool DeleteFromTable(char *table , char *fname , int id );
 
+// zapocteni creditu za operace domain create a domain renew
+bool Credit( int registrarID , int domainID , int period , bool create );
 // zpracovani action 
 bool BeginAction(int clientID , int action ,char *clTRID );
 char * EndAction(int response  );

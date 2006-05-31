@@ -167,6 +167,21 @@ else
 }
 
 } 
+// zpracovani creditu
+bool PQ::Credit( int registrarID , int domainID , int period , bool create )
+{
+char sqlString[256];
+char b;
+
+// true false pro create
+if(  create ) b = 't' ;
+else b = 'f' ;
+
+sprintf( sqlString , "INSERT INTO CREDIT (  registrarID ,  domainID , date , domaincreate , period ) VALUES ( %d , %d , 'now' , \'%c\' ,  %d );" ,  registrarID  ,  domainID , b ,  period );
+
+if( ExecSQL( sqlString ) ) return true;      
+else return false;
+}
 
 
 // action

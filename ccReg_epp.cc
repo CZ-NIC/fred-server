@@ -2348,6 +2348,11 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
                 }
             }
 
+         // zapocteni kreditu  
+         if(  ret->errCode ==  COMMAND_OK )
+           {
+             if(  PQsql.Credit( regID , id , period , true ) == false )  ret->errCode = COMMAND_FAILED;
+           } 
         } 
 
        // pokud nebyla chyba pri insertovani do tabulky domain_contact_map 
@@ -2421,7 +2426,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
 // prvni test zdali domena uz existuje
  if(  ( id = PQsql.GetNumericFromTable("DOMAIN" , "id" ,  "fqdn" , (char * ) fqdn )  ) )
   {
-      // zahaj transakci
+       // zahaj transakci
       if( PQsql.BeginTransaction() )
         {
  
@@ -2449,7 +2454,11 @@ if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
                   // preved datum a cas expirace prodluz tim cas platnosti domeny
                   get_timestamp( expiry_time( ex  , period ) ,  exDate );
                   sprintf( sqlString , "UPDATE DOMAIN SET ExDate=\'%s\' WHERE id=%d;" , exDate , id );
-                  if(   PQsql.ExecSQL( sqlString ) ) ret->errCode = COMMAND_OK;
+                  if(   PQsql.ExecSQL( sqlString ) )
+                    {
+                        // zapocteni kreditu  
+                      if(  PQsql.Credit( regID , id , period , false ) ) ret->errCode = COMMAND_OK;
+                     }
              }             
         
  
