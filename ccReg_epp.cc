@@ -2273,7 +2273,7 @@ char sqlString[2048] ;
 char expiryDate[32] , createDate[32];
 ccReg::Response *ret;
 int contactid , regID , nssetid , adminid , id;
-int i , len , s ;
+int i , len , s , zone ;
 time_t t;
 
 ret = new ccReg::Response;
@@ -2306,6 +2306,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
   {
    id =  PQsql.GetSequenceID( "domain" ); // id domeny
 
+   zone = get_zone( (char * ) fqdn ); // kontrola nazvu domeny a automaticke zarazeni do zony
+
    // get  registrator ID
    regID =   PQsql.GetLoginRegistrarID( clientID);
 
@@ -2322,7 +2324,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
    
    
    sprintf( sqlString , "INSERT INTO DOMAIN ( zone , crdate  , id , roid , fqdn , ClID , CrID,  Registrant  , exdate , authinfopw , nsset ) \
-              VALUES ( 3 , \'%s\'  ,  %d ,   \'%s\' , \'%s\'  ,  %d , %d  , %d ,  \'%s\' ,  \'%s\'  , %d );" ,  createDate , 
+              VALUES ( %d  , \'%s\'  ,  %d ,   \'%s\' , \'%s\'  ,  %d , %d  , %d ,  \'%s\' ,  \'%s\'  , %d );" , zone ,  createDate , 
               id,  CORBA::string_dup(fqdn) ,  CORBA::string_dup(fqdn) ,  regID  ,  regID , contactid , expiryDate ,  CORBA::string_dup(AuthInfoPw),  nssetid );
  
 

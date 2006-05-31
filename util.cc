@@ -3,6 +3,29 @@
 #include<time.h>
 #include<string.h>
 
+
+
+// zarazeni do zony a kontrola nazvu domeny
+int get_zone( char * fqdn )
+{
+char zoneStr[3][32] = { "0.2.4.e164.arpa" , "0.2.4.c.e164.arpa" , "cz" };
+int i , len  , slen , l ;
+
+len = strlen( fqdn );
+for(  i = 0 ; i < 3 ; i ++ )
+   {
+        slen = strlen(  zoneStr[i] );
+        l = len - slen ;
+        if( l > 0 )
+         {
+          if( fqdn[l-1] == '.' )
+             if(  strncmp(  fqdn+l ,  zoneStr[i] , slen ) == 0 ) return i +1; // zaradi do zony
+         }
+
+   }
+return 0;
+}
+
 // preveadi cas timestamp na unix time
 time_t get_time_t(char *string )
 {

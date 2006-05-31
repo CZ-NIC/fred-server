@@ -1,4 +1,6 @@
 
+// zarazeni do zony a kontrola nazvu domeny 
+int get_zone( char * fqdn );
 // vraci cas v time_t  pevede SQL retezec
 time_t get_time_t(char *string );
 // prevede time_t do retezce pro SQL
