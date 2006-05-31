@@ -2189,7 +2189,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
                 // zmena drzitele domeny 
                 if( contactid ) { sprintf( buf , " ,  registrant=%d " , contactid); strcat( sqlString , buf ); } 
                 // zmena autentifikace
-                add_field_value( sqlString , "AuthInfoPw" ,  CORBA::string_dup(authInfo_chg)  ) ;
+                if( strlen( CORBA::string_dup(authInfo_chg)  ) )
+                 { sprintf( buf , " , AuthInfoPw='\%s\' " , CORBA::string_dup(authInfo_chg)  );  strcat( sqlString , buf ); }  
 
  
                 sprintf( buf , " WHERE id=%d;" , id );
