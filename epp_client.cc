@@ -42,6 +42,7 @@ int main(int argc, char** argv)
     ccReg::DNSHost_var dns_chg ,  dns_add , dns_rem;
     ccReg::TechContact_var tech_add , tech_rem;
     ccReg::Status_var add , rem;
+    ccReg::timestamp crDate;
     struct tm dt;
     time_t t;
     filebuf *pbuf;
@@ -182,12 +183,12 @@ int main(int argc, char** argv)
 
 
 
-    ret =  EPP->NSSetCreate( "NEWNSSET" , "heslo" ,  nsset->tech ,  nsset->dns ,  loginID ,  "new-nsset-create" );
-    cout << "NSSetCreate err code " << ret->errCode  <<  ret->svTRID  << endl;
+    ret =  EPP->NSSetCreate( "NEWNSSET" , "heslo" ,  nsset->tech ,  nsset->dns , crDate ,   loginID , "new-nsset-create" );
+    cout << "NSSetCreate err code " << ret->errCode  <<  ret->svTRID << "crDate: " << crDate << endl;
 
 
-    ret =  EPP->NSSetDelete( "NEWNSSET" ,  loginID ,  "new-nsset-delete" );
-    cout << "NSSetDelete err code " << ret->errCode  <<  ret->svTRID  << endl;
+//    ret =  EPP->NSSetDelete( "NEWNSSET" ,  loginID ,  "new-nsset-delete" );
+//    cout << "NSSetDelete err code " << ret->errCode  <<  ret->svTRID  << endl;
 //   delete nsset;
 
 
