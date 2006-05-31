@@ -39,6 +39,10 @@ print domain.admin
 print "DomainInfo  svrTRID '%s' err '%d' " % ( result[0].svTRID ,result[0].errCode  )
 
 
+result = epp.DomainUpdate(  'nic.cz' ,'', '' , '' ,  [ "YY-Petr" ] , [""] , [ "" ] ,  [ " " ] , loginID , "nic.cz-update" )
+print "DomainUpdate  svrTRID '%s' err '%d' " % ( result.svTRID , result.errCode  )
+
+
 result = epp. ContactInfo(  'YY-PETR' , loginID , "contact-info-yy-petr" );
 contact =  result[1]
 print "Contact Info  '%s' err '%d' name  '%s' " % ( result[0].svTRID ,result[0].errCode , contact.Name  ) ;
@@ -48,7 +52,8 @@ print "Contact Info  '%s' err '%d' name  '%s' " % ( result[0].svTRID ,result[0].
 result = epp.ContactDelete( 'YY-Petr'  ,   loginID , "yy-petr-delete" );
 print "ContactDelete  svrTRID '%s' err '%d' " % ( result.svTRID ,result.errCode );
 
-sys.exit(1)
+
+
 
 
 result = epp. ContactInfo(  'NECOCZ-PETR' , loginID , "pcontact-info" );
@@ -59,7 +64,9 @@ contact.Name = "David Pospisilik"
 contact.City = "Karlovy Vary"
 result = epp.ContactCreate( 'NECOCZ-DAVID'  , contact ,  loginID , "david-create" );
 
-print "ContactCreate  svrTRID '%s' err '%d' " % ( result.svTRID ,result.errCode );
+crDate = result[1]
+print "ContactCreate  svrTRID '%s' err '%d' " % ( result[0].svTRID ,result[0].errCode );
+print "CrDate " , crDate 
 
 contact.Email = "david@neco.cz"
 result = epp.ContactUpdate( 'NECOCZ-DAVID'  , contact , [ "  " ] ,  [ "  " , "   " ] ,  loginID , "david-update" );
@@ -88,7 +95,9 @@ print "nsset info: " , nsset.handle , nsset.dns ,  nsset.tech
 
 result =  epp.DomainCreate( 'temp.cz', 'NECOCZ-PETR' , 'NECOCZ' , "heslo1234" , 12 , [   'NECOCZ-ADMIN' ,   'NECOCZ-ROBERT' ] , loginID , "python-create" );
 
-print "DomainCreate  svrTRID '%s' err '%d' " % ( result.svTRID ,result.errCode );
+crDate = result[1]
+print "CrDate " , crDate
+print "DomainCreate  svrTRID '%s' err '%d' " % ( result[0].svTRID ,result[0].errCode );
 
 
 result =  epp.DomainCheck( [  'temp.cz' , 'neco.cz' , 'xxx.cz' ], loginID , "python-domaincheck" )
