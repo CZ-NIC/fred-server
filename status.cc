@@ -75,6 +75,9 @@ int Status::Make(char *array)
 int i, num , from , p ;
 char value[16];
 
+
+printf("Array: [%s]\n" , array );
+
 // nulova velikost pole
 
 if( array[0] != '{' ) return -1; // neni pole
@@ -126,3 +129,13 @@ for( i = 0 ; i < slen ; i ++ )
 return false;
 }
 
+
+void  Status::Debug()
+{
+int i;
+
+printf("STATUS: { ");
+for( i = 0 ; i < slen ; i ++ )  printf(" %d " ,  stat[i] ); 
+printf("}\n");
+
+}
