@@ -2559,7 +2559,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
      }
     else auth = false; //  autentifikace je nitna
 
-   if(  auth && /* registrantid == contactid && */ stat ) // pokud prosla autentifikace  a je drzitelem domeny a status OK 
+   // pokud je reguistrator jinny nez klient nejde udelat transfer v ramci u jednoho registratora
+   if(  auth && /* registrantid == contactid && */ stat  && regID != clID ) // pokud prosla autentifikace  a je drzitelem domeny a status OK 
      {
          //  uloz do historie
        if( PQsql.MakeHistory() )
