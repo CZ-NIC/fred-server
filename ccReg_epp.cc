@@ -1717,7 +1717,6 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(const char* handle, const char* auth
 ccReg::Response *ret;
 PQ PQsql;
 char sqlString[1024];
-char *pass;
 bool auth;
 int regID=0 , clID=0 , id , contactid;
 
@@ -1727,6 +1726,7 @@ ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
+cout << "auth: " << authInfo << endl;
 
 if( PQsql.OpenDatabase( DATABASE ) )
 {
@@ -1744,15 +1744,11 @@ if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
    // client contaktu
    clID  =  PQsql.GetNumericFromTable(  "NSSET"  , "clID" , "id" , id );
 
-   
-   pass = PQsql.GetValueFromTable(  "NSSET"  , "authinfopw" , "id" , id ); // ulozene heslo
-   // autentifikace
-   if( strlen(  CORBA::string_dup(authInfo) )  )  
-     {
-        if( strcmp( pass ,  CORBA::string_dup(authInfo) ) == 0 ) auth = true; // OK
-        else auth = false; // neplatne heslo  
-     }
-    else auth = false; //  autentifikace je nitna
+
+
+    // autentifikace
+   if( (auth = PQsql.AuthTable(  "DOMAIN"  , (char *)authInfo , id ) ) == false ) ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
+
 
    if(  auth  ) // pokud prosla autentifikace 
      {
@@ -1767,7 +1763,8 @@ if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
            }
        }
 
-    }
+    }else   ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
+
   
    // pokud nebyla chyba pri insertovani do tabulky 
    if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
@@ -2509,8 +2506,7 @@ ccReg::Response* ccReg_EPP_i::DomainTransfer(const char* fqdn, /* const char* re
 ccReg::Response *ret;
 PQ PQsql;
 Status status;
-char sqlString[1024];
-char *pass;
+char sqlString[2048];
 bool auth , stat ;
 int regID=0 , clID=0 , id ; //   registrantid , contactid;
 
@@ -2549,15 +2545,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
     if( status.Test( STATUS_clientTransferProhibited ) || status.Test( STATUS_serverTransferProhibited )  ) stat = false;
     else stat = true; // status je OK
 
-   
-   pass = PQsql.GetValueFromTable(  "DOMAIN"  , "authinfopw" , "id" , id ); // ulozene heslo
-   // autentifikace
-   if( strlen(  CORBA::string_dup(authInfo) )  )  
-     {
-        if( strcmp( pass ,  CORBA::string_dup(authInfo) ) == 0 ) auth = true; // OK
-        else auth = false; // neplatne heslo  
-     }
-    else auth = false; //  autentifikace je nitna
+    // autentifikace
+    if( (auth = PQsql.AuthTable(  "DOMAIN"  , (char *) authInfo , id ) ) == false ) ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
 
    // pokud je reguistrator jinny nez klient nejde udelat transfer v ramci u jednoho registratora
    if(  auth && /* registrantid == contactid && */ stat  && regID != clID ) // pokud prosla autentifikace  a je drzitelem domeny a status OK 
@@ -2593,7 +2582,7 @@ return ret;
 
 /***********************************************************************
  *
- * FUNCTION:    DomainTransfer
+ * FUNCTION:    DomainTrade
  *
  * DESCRIPTION: prevod domeny z puvodniho vlastnika na noveho
  *              a ulozeni zmen do historie
