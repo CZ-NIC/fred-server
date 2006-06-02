@@ -2348,10 +2348,12 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
             }
 
          // zapocteni kreditu  
+/*
          if(  ret->errCode ==  COMMAND_OK )
            {
              if(  PQsql.Credit( regID , id , period , true ) == false )  ret->errCode = COMMAND_FAILED;
            } 
+*/
         } 
 
      }
@@ -2401,18 +2403,20 @@ ccReg::Response *ret;
 int clid , regID , id ;
 bool stat;
 int i , len;
-time_t ex=0 ;
+time_t ex=0 ,t ;
 ret = new ccReg::Response;
 
 
 // default
-
+t =  curExpDate;
 
 // default
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
+
+ cout << "curExpDate: " <<  ctime( &t ) << endl;
 
 
 if( PQsql.OpenDatabase( DATABASE ) )
@@ -2445,20 +2449,17 @@ if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
 
            if( status.Test( STATUS_clientRenewProhibited ) || status.Test( STATUS_serverRenewProhibited )  ) stat = false;
            else stat = true; // status je OK
- 
 
 
            if( clid == regID && ex == curExpDate  && stat )
              {
-
                   // preved datum a cas expirace prodluz tim cas platnosti domeny
                   get_timestamp( expiry_time( ex  , period ) ,  exDate );
+
                   sprintf( sqlString , "UPDATE DOMAIN SET ExDate=\'%s\' WHERE id=%d;" , exDate , id );
-                  if(   PQsql.ExecSQL( sqlString ) )
-                    {
+                  if(   PQsql.ExecSQL( sqlString ) ) ret->errCode = COMMAND_OK;
                         // zapocteni kreditu  
-                      if(  PQsql.Credit( regID , id , period , false ) ) ret->errCode = COMMAND_OK;
-                     }
+                   // TODO    if(  PQsql.Credit( regID , id , period , false ) ) ret->errCode = COMMAND_OK;                    
              }             
         
  
@@ -2549,7 +2550,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
     if( (auth = PQsql.AuthTable(  "DOMAIN"  , (char *) authInfo , id ) ) == false ) ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
 
    // pokud je reguistrator jinny nez klient nejde udelat transfer v ramci u jednoho registratora
-   if(  auth && /* registrantid == contactid && */ stat  && regID != clID ) // pokud prosla autentifikace  a je drzitelem domeny a status OK 
+   if(  auth && stat  && regID != clID ) // pokud prosla autentifikace  a je drzitelem domeny a status OK 
      {
          //  uloz do historie
        if( PQsql.MakeHistory() )
