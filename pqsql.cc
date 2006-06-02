@@ -344,6 +344,30 @@ if( ExecSelect( sqlString ) )
 
 return ret;
 }
+
+// potvrzeni hesla authinfopw v tabulce 
+bool  PQ::AuthTable(  char *table , char *auth , int id )
+{
+bool ret=false;
+char *pass;
+char sqlString[128];
+
+sprintf( sqlString , "SELECT authinfopw from %s WHERE id=%d\n" , table  , id );
+
+if( ExecSelect( sqlString ) )
+  {
+    if( GetSelectRows() == 1 )
+      {
+           pass = GetFieldValue( 0 , 0 );
+           if( strcmp( pass , auth  ) == 0 )  ret = true;
+      }
+  
+   FreeSelect();
+  }
+
+return ret;
+}
+ 
 // vraci id registratora z domeny
 int PQ::GetClientDomainRegistrant( int clID , int contactID )
 {

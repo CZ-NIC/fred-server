@@ -62,6 +62,8 @@ int GetClientDomainRegistrant( int clID , int contactID );
 bool TestNSSetRelations(int id );
 bool TestContactRelations(int id );
 
+bool AuthTable(  char *table , char *auth , int id );
+
 
 // funkce na ulozeni obsahu radku ID tabluky  do 
 int MakeHistory(); // zapise do tabulky history
