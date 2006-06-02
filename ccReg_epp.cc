@@ -1365,7 +1365,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
 
 
      // ID je cislo ze sequence
-     id =  PQsql.GetSequenceID( "nsset" );
+    id =  PQsql.GetSequenceID( "nsset" );
    
     // datum a cas vytvoreni
     now = time(NULL);
@@ -2323,14 +2323,16 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
    get_timestamp( crDate , createDate );
    
    
-   sprintf( sqlString , "INSERT INTO DOMAIN ( zone , crdate  , id , roid , fqdn , ClID , CrID,  Registrant  , exdate , authinfopw , nsset ) \
+    if( nssetid > 0 && contactid > 0 ) // existuje nsset a kontakt
+    {
+         sprintf( sqlString , "INSERT INTO DOMAIN ( zone , crdate  , id , roid , fqdn , ClID , CrID,  Registrant  , exdate , authinfopw , nsset ) \
               VALUES ( %d  , \'%s\'  ,  %d ,   \'%s\' , \'%s\'  ,  %d , %d  , %d ,  \'%s\' ,  \'%s\'  , %d );" , zone ,  createDate , 
               id,  CORBA::string_dup(fqdn) ,  CORBA::string_dup(fqdn) ,  regID  ,  regID , contactid , expiryDate ,  CORBA::string_dup(AuthInfoPw),  nssetid );
  
 
 
    // pokud se insertovalo do tabulky
-        if(    PQsql.ExecSQL( sqlString ) )
+        if(  PQsql.ExecSQL( sqlString ) )
          {
           ret->errCode = COMMAND_OK; // nastavit uspesne
           // zapis admin kontakty
@@ -2355,6 +2357,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
            } 
         } 
 
+     }
        // pokud nebyla chyba pri insertovani do tabulky domain_contact_map 
        if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
        else PQsql.RollbackTransaction();   
