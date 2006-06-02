@@ -87,13 +87,25 @@ int main(int argc, char** argv)
 
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
-    ret =  EPP->ClientLogin(  "REG-WEB4U"  ,  "123456789" , "" ,     "GR-login" , loginID );
+    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789" , "" ,     "GR-login" , loginID );
+    cout << loginID  << endl;
 
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
 
 
 
- 
+   ret =  EPP->DomainInfo(  "example.cz" ,  domain , loginID , "info-cpp-temp" );
+   for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
+   cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
+   t = domain->ExDate;
+   cout << "ExpDate: " << ctime( &t )  << endl;
+   cout << "err code " << ret->errCode   << endl;
+   delete domain;
+
+    ret =  EPP->DomainRenew(  "example.cz" ,  t  , 12 , loginID , "renew-cpp-example.cz" ); 
+    cout << "Domain renew" << "err code " << ret->errCode   << endl;
+
+/*
    ret =  EPP->DomainInfo(  "temp.cz" ,  domain , loginID , "info-cpp-temp" );
    for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
    cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
@@ -105,7 +117,7 @@ int main(int argc, char** argv)
    cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
    cout << "err code " << ret->errCode   << endl;
    delete domain;
- 
+ */
 /*
     ret =  EPP->HostInfo( "modry.neco.cz",  host  , loginID ,  "XX-host"  );
     cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
@@ -149,7 +161,7 @@ int main(int argc, char** argv)
       {
          cout << i << dcheck[i] << " avail " << av[i] << endl;
       }
-*/
+
 
  dcheck.length(3);
  dcheck[0] = CORBA::string_dup(  "NECOCZ" );
@@ -200,7 +212,7 @@ int main(int argc, char** argv)
 
 
 
-/*
+
     ret =  EPP->ContactInfo( "NECOCZ-ROBERT",  cc , loginID , "XPET_info" );
     cout << "err code " << ret->errCode << " serverTRID " <<  ret->svTRID  << endl;
 
