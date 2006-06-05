@@ -35,14 +35,15 @@ int main(int argc, char** argv)
     ccReg::Check dcheck(2);
     CORBA::Short err;
     CORBA::Object_var obj ;
-    CORBA::String_var errMsg , svTR;
+    CORBA::String_var errMsg , svTR , mesg ;
     int i , len , max = 512, d , j , a;
-    CORBA::Long loginID;
+    CORBA::Long loginID , msgID , newmsgID;
     ccReg::Avail_var av;
     ccReg::DNSHost_var dns_chg ,  dns_add , dns_rem;
     ccReg::TechContact_var tech_add , tech_rem;
     ccReg::Status_var add , rem;
-    ccReg::timestamp crDate;
+    CORBA::Short count;
+    ccReg::timestamp crDate , qDate;
     struct tm dt;
     time_t t;
     filebuf *pbuf;
@@ -87,7 +88,7 @@ int main(int argc, char** argv)
 
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
-    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789" , "" ,     "GR-login" , loginID );
+    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "123456789" , "" ,     "GR-login" , loginID );
     cout << loginID  << endl;
 
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
@@ -102,10 +103,21 @@ int main(int argc, char** argv)
    cout << "err code " << ret->errCode   << endl;
    delete domain;
 
+  ret =  EPP->PollRequest( msgID ,  count ,  qDate , mesg ,  loginID ,  "poll-request" );
+  cout << "PollRequest: "  << ret->errCode  << endl ; 
+  t = qDate;
+  cout << "count " << count << " qDate: " <<  ctime( &t )  <<  endl;
+  cout << msgID << mesg << endl ;
+
+  ret =  EPP->PollAcknowledgement( msgID ,  count , newmsgID , loginID ,  "poll-acknowledgement" );
+  cout << "PollRAcknowledgement: "  << ret->errCode  << endl;
+  cout << "count " << count << "newmsgID: " << newmsgID << endl;
+
+/*
     ret =  EPP->DomainRenew(  "example.cz" ,  t  , 12 , loginID , "renew-cpp-example.cz" ); 
     cout << "Domain renew" << "err code " << ret->errCode   << endl;
 
-/*
+
    ret =  EPP->DomainInfo(  "temp.cz" ,  domain , loginID , "info-cpp-temp" );
    for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
    cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
