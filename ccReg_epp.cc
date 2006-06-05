@@ -101,7 +101,10 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(CORBA::Long msgID, CORBA::Shor
 {
 PQ PQsql;
 ccReg::Response *ret;
+char sqlString[1024];
+int regID , rows;
 ret = new ccReg::Response;
+
 
 
 ret->errCode=COMMAND_FAILED;
@@ -113,17 +116,35 @@ newmsgID = 0 ;
 if( PQsql.OpenDatabase( DATABASE ) )
 {
 
-  if( PQsql.BeginAction( clientID , EPP_PollAcknowledgement , (char * ) clTRID  ) )
-  {
- 
-// TODO   
-    
-      // comand OK
-      ret->errCode=COMMAND_NO_MESG;
+// get  registrator ID
+regID =  PQsql.GetLoginRegistrarID( clientID);
 
+if( PQsql.BeginAction( clientID , EPP_PollAcknowledgement , (char * ) clTRID  ) )
+  {
+
+      // oznac zpravu jako prectenou  
+       sprintf( sqlString , "UPDATE MESSAGE SET seen='t' WHERE id=%d AND clID=%d;" , msgID , regID );
+       if(  PQsql.ExecSQL( sqlString ) )
+         {
+                // zjisteni dalsi ID zpravy ve fronte
+          sprintf( sqlString , "SELECT id  FROM MESSAGE  WHERE clID=%d AND seen='f' AND exDate > 'now()' ;" , regID );
+         if( PQsql.ExecSelect( sqlString ) )
+           {
+ 
+            rows =  PQsql.GetSelectRows(); // pocet zprav
+            if( rows > 0 ) // pokud jsou nejake zpravy ve fronte
+                  {
+                     count = rows; // pocet dalsich zprav
+                     newmsgID = atoi(  PQsql.GetFieldValue( 0  , 0 ) );
+                     ret->errCode= COMMAND_ACK_MESG; // zpravy jsou ve fronte
+                  } else  ret->errCode=COMMAND_NO_MESG; // zadne zpravy ve fronte
+
+           PQsql.FreeSelect();
+           }
+        }
+ 
       // zapis na konec action
-      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
-    
+      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;   
   }
  
  PQsql.Disconnect();
@@ -155,7 +176,10 @@ return ret;
 ccReg::Response* ccReg_EPP_i::PollRequest(CORBA::Long& msgID, CORBA::Short& count, ccReg::timestamp& qDate, CORBA::String_out mesg, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
+char sqlString[1024];
 ccReg::Response *ret;
+int regID;
+int rows;
 ret = new ccReg::Response;
 
 
@@ -172,14 +196,31 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 if( PQsql.OpenDatabase( DATABASE ) )
 {
 
+   // get  registrator ID
+   regID =  PQsql.GetLoginRegistrarID( clientID);
+
+ 
   if( PQsql.BeginAction( clientID , EPP_PollAcknowledgement , (char * ) clTRID  ) )
   {
+    
+    // vypsani zprav z fronty
+    sprintf( sqlString , "SELECT *  FROM MESSAGE  WHERE clID=%d AND seen='f' AND exDate > 'now()' ;" , regID );
 
-      // TODO
+    if( PQsql.ExecSelect( sqlString ) )
+      {
+         rows =  PQsql.GetSelectRows(); // pocet zprav 
 
-      // comand OK
-      ret->errCode=COMMAND_NO_MESG;
+          if( rows > 0 ) // pokud jsou nejake zpravy ve fronte
+           {
+             count =  rows;
+             qDate = get_time_t( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; 
+             msgID = atoi(  PQsql.GetFieldValueName("ID" , 0 ) );
+             mesg = CORBA::string_dup(PQsql.GetFieldValueName("message" , 0 )); 
+             ret->errCode= COMMAND_ACK_MESG; // zpravy jsou ve fronte
+           } else  ret->errCode=COMMAND_NO_MESG; // zadne zpravy ve fronte
 
+        PQsql.FreeSelect();      
+      }
       // zapis na konec action
       ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
 
