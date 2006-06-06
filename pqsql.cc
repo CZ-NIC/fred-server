@@ -7,6 +7,7 @@
 #include "pqsql.h"
 #include "util.h"
 
+#include "status.h"
 
 bool PQ::OpenDatabase(char *conninfo)
 {
@@ -208,10 +209,13 @@ char * PQ:: EndAction(int response )
 {
 char sqlString[512];
 // char svrTRID[32];
-char *svrTRID;
 int id;
 
-svrTRID= new char[32] ; 
+if( svrTRID == NULL ) 
+ {
+  debug("alloc svrTRID\n");
+  svrTRID= new char[32] ; 
+ }
 
 // cislo transakce co vraci server
 sprintf( svrTRID , "ccReg-%010d" , actionID );
@@ -245,6 +249,7 @@ else return "svrTRID ERROR";
 
 char *  PQ::GetStatusString( int status )
 {
+/*
 char sqlString[128];
 char *str;
 
@@ -260,7 +265,41 @@ if( ExecSelect( sqlString ) )
       return str;
  }
 else return "{ }" ; // prazdny status string pole
+*/
 
+switch( status )
+{
+   case STATUS_ok:
+           return "ok";
+   case STATUS_inactive:
+           return "inactive";
+   case STATUS_linked:
+           return "linked";
+   case STATUS_clientDeleteProhibited:
+           return "clientDeleteProhibited";
+   case STATUS_serverDeleteProhibited:
+           return "serverDeleteProhibited";
+   case STATUS_clientHold:
+           return "clientHold";
+   case STATUS_serverHold:
+           return "serverHold";
+   case STATUS_clientRenewProhibited:
+           return "clientRenewProhibited";
+   case STATUS_serverRenewProhibited:
+           return "serverRenewProhibited";
+   case STATUS_clientTransferProhibited:
+           return "clientTransferProhibited";
+   case STATUS_serverTransferProhibited:
+           return "serverTransferProhibited";
+   case STATUS_clientUpdateProhibited:
+           return "clientUpdateProhibited";
+   case STATUS_serverUpdateProhibited:
+           return "serverUpdateProhibited";
+   default:
+           return "";
+}         
+
+return "";
 }
 
 
@@ -392,7 +431,7 @@ char *  PQ::GetValueFromTable( char *table , char *vname , char *fname , char *v
 {
 char sqlString[128];
 int size;
-char *handle;
+// char *handle;
 
 sprintf( sqlString , "SELECT  %s FROM %s WHERE %s=\'%s\';" , vname ,  table  ,  fname , value );
 
@@ -401,11 +440,20 @@ if( ExecSelect( sqlString ) )
    if( GetSelectRows() == 1   ) // pokud je vracen prave jeden zaznam
      {
       size = GetValueLength( 0 , 0 );
-      handle = new char[size+1];  // alokace pameti pro retezec
-      strcpy( handle , GetFieldValue( 0 , 0 ) );
-      debug("GetValueFromTable \'%s\' field %s  value  %s ->  %s\n" , table ,  fname , value  , handle );
+//      handle = new char[size+1];  // alokace pameti pro retezec
+
+      if( memHandle )
+       {
+          delete memHandle;
+          debug("re-alloc memHandle\n");
+          memHandle = new char[size+1];   
+        }
+       else { debug("alloc memHandle\n");  memHandle = new char[size+1]; } 
+ 
+      strcpy( memHandle , GetFieldValue( 0 , 0 ) );
+      debug("GetValueFromTable \'%s\' field %s  value  %s ->  %s\n" , table ,  fname , value  , memHandle );
       FreeSelect();      
-      return handle;
+      return memHandle;
      }
    else  return "";
   }

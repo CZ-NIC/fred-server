@@ -7,8 +7,12 @@
 class PQ{
 public:
 // constructor nastaveni spojeni conninfo
-PQ(){  }; // neni vybran zadny select
-~PQ() {  } 
+PQ(){ svrTRID = NULL;memHandle=NULL;  }; // neni vybran zadny select
+~PQ()
+ { 
+   if( svrTRID ) { debug("delete svrTRID\n"); delete svrTRID; } 
+   if( memHandle ) { debug("delete memHandle\n"); delete memHandle; } 
+ } 
 
 // pripoji databazi s nastavenim conninfo
 bool OpenDatabase(char *conninfo); 
@@ -105,6 +109,8 @@ int GetActionID() { return actionID; } // vraci odkaz do tabulky action ID
 private:
 PGconn     *connection;
 PGresult   *result;
+char *memHandle;
+char *svrTRID;
 int nRows , nCols; // pocet radek pri selectu
 int actionID; // id tabulky akce
 int historyID; // id tabulky historie
