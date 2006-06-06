@@ -117,8 +117,10 @@ print "name: " ,  domain.name  ,   "NSSET: "  , domain.nsset ,  "reg:" ,  domain
 print "status: " , domain.stat  , "ADMIN: " ,  domain.admin , "auth: "  , domain.AuthInfoPw
 print "DomainInfo  svrTRID '%s' err '%d' " % ( result[0].svTRID ,result[0].errCode  )
 
-result =  epp.DomainRenew( 'temp.cz' , domain.ExDate , 24 , loginID , "python-renew" );  
-print "DomainReNew  svrTRID '%s' err '%d' " % ( result.svTRID ,result.errCode );
+result =  epp.DomainRenew( 'temp.cz' , domain.ExDate , 24  , loginID , "python-renew" );  
+exDate  = result[1]
+print "DomainReNew  svrTRID '%s' err '%d' " % ( result[0].svTRID ,result[0].errCode );
+print "DomainReNew curExpDate expDate " ,  domain.ExDate , exDate  ;
 
 result =  epp.DomainDelete( 'temp.cz',  loginID , "python-delete" );
 print "DomainDelete  svrTRID '%s' err '%d' " % ( result.svTRID ,result.errCode );
