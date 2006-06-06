@@ -2426,6 +2426,7 @@ return ret;
  * PARAMETERS:  fqdn - nazev domeny nssetu
  *              curExpDate - datum vyprseni domeny pred prodlouzenim
  *              period - doba prodlouzeni v mesicich
+ *        OUT:  exDate - datum a cas nove expirace domeny   
  *              clientID - id pripojeneho klienta 
  *              clTRID - cislo transakce klienta
  *
@@ -2434,12 +2435,12 @@ return ret;
  ***********************************************************************/
 
 
-ccReg::Response*  ccReg_EPP_i::DomainRenew(const char* fqdn, ccReg::timestamp curExpDate,  CORBA::Short period, CORBA::Long clientID, const char* clTRID)
+ccReg::Response*  ccReg_EPP_i::DomainRenew(const char* fqdn, ccReg::timestamp curExpDate, CORBA::Short period,   ccReg::timestamp& exDate,  CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
 Status status;
 char sqlString[4096];
-char exDate[24];
+char exDateStr[24];
 ccReg::Response *ret;
 int clid , regID , id ;
 bool stat;
@@ -2456,6 +2457,7 @@ ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
+exDate=0;
 
  cout << "curExpDate: " <<  ctime( &t ) << endl;
 
@@ -2495,7 +2497,9 @@ if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
            if( clid == regID && ex == curExpDate  && stat )
              {
                   // preved datum a cas expirace prodluz tim cas platnosti domeny
-                  get_timestamp( expiry_time( ex  , period ) ,  exDate );
+                  t = expiry_time( ex  , period );
+                  exDate = t; // datum a cas prodlouzeni domeny
+                  get_timestamp( t ,  exDateStr );
 
                   sprintf( sqlString , "UPDATE DOMAIN SET ExDate=\'%s\' WHERE id=%d;" , exDate , id );
                   if(   PQsql.ExecSQL( sqlString ) ) ret->errCode = COMMAND_OK;
