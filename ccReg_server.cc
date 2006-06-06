@@ -22,6 +22,15 @@ int main(int argc, char** argv)
     // Obtain a reference to the root POA.
     CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
     PortableServer::POA_var poa = PortableServer::POA::_narrow(obj);
+  
+    // create POA for persistent references
+    PortableServer::POAManager_var mgr = poa->the_POAManager();
+    CORBA::PolicyList pols;
+    pols.length(2);
+    pols[0] = poa->create_lifespan_policy(PortableServer::PERSISTENT);
+    pols[1] = poa->create_id_assignment_policy(PortableServer::USER_ID);
+    poa = poa->create_POA("ccRegPOA",mgr.in(),pols);
+    mgr->activate();
 
     // We allocate the objects on the heap.  Since these are reference
     // counted objects, they will be deleted by the POA when they are no
@@ -33,7 +42,8 @@ int main(int argc, char** argv)
 
     // Activate the objects.  This tells the POA that the objects are
     // ready to accept requests.
-    PortableServer::ObjectId_var myccReg_EPP_iid = poa->activate_object(myccReg_EPP_i);
+    PortableServer::ObjectId_var myccReg_EPP_iid = PortableServer::string_to_ObjectId("ccReg");
+    poa->activate_object_with_id(myccReg_EPP_iid,myccReg_EPP_i);
  //   PortableServer::ObjectId_var myccReg_Whois_iid = poa->activate_object(myccReg_Whois_i);
    // PortableServer::ObjectId_var myccReg_Admin_iid = poa->activate_object(myccReg_Admin_i);
 
@@ -42,7 +52,8 @@ int main(int argc, char** argv)
     // IOR to stdout
     {
       // IDL interface: ccReg::EPP
-      CORBA::Object_var ref = myccReg_EPP_i->_this();
+//      CORBA::Object_var ref = myccReg_EPP_i->_this();
+      CORBA::Object_var ref = poa->id_to_reference(myccReg_EPP_iid);
       CORBA::String_var sior(orb->object_to_string(ref));
       std::cout << "IDL object ccReg::EPP IOR = '" << (char*)sior << "'" << std::endl;
 
