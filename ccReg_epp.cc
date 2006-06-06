@@ -2501,7 +2501,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
                   exDate = t; // datum a cas prodlouzeni domeny
                   get_timestamp( t ,  exDateStr );
 
-                  sprintf( sqlString , "UPDATE DOMAIN SET ExDate=\'%s\' WHERE id=%d;" , exDate , id );
+                  sprintf( sqlString , "UPDATE DOMAIN SET ExDate=\'%s\' WHERE id=%d;" , exDateStr , id );
                   if(   PQsql.ExecSQL( sqlString ) ) ret->errCode = COMMAND_OK;
                         // zapocteni kreditu  
                    // TODO    if(  PQsql.Credit( regID , id , period , false ) ) ret->errCode = COMMAND_OK;                    
