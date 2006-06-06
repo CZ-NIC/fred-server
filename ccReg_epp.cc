@@ -895,7 +895,7 @@ PQ PQsql;
 char sqlString[4096] , buf[1024] ;
 char  createDate[32];
 ccReg::Response *ret;
-int regID;
+int regID, id;
 time_t now;
 
 ret = new ccReg::Response;
@@ -923,11 +923,12 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         crDate = now; 
         get_timestamp( now , createDate );
 
+        id = PQsql.GetSequenceID( "contact" );
         // get  registrator ID
         regID =   PQsql.GetLoginRegistrarID( clientID);
 
        
-	strcpy( sqlString , "INSERT INTO CONTACT ( handle , ROID ,  CrDate ,   CrID   " );
+	strcpy( sqlString , "INSERT INTO CONTACT ( id , handle , ROID ,  CrDate ,   CrID   " );
         create_field_fname(sqlString , "Name" , CORBA::string_dup(c.Name) );
         create_field_fname(sqlString , "Organization" , CORBA::string_dup(c.Organization) );
         create_field_fname(sqlString , "Street1" , CORBA::string_dup(c.Street1) );
@@ -952,7 +953,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         if(  c.DiscloseFax > 0  ) strcat( sqlString , " , DiscloseFax  " );
         if(  c.DiscloseEmail > 0  ) strcat( sqlString , " , DiscloseEmail " );
 
-	sprintf( buf  , " )  VALUES ( \'%s\' , \'%s\' ,   \'%s\' ,  %d    " ,  (char * ) handle ,   (char * ) handle ,  createDate ,  regID ); 
+	sprintf( buf  , " )  VALUES ( %d , \'%s\' , \'%s\' ,   \'%s\' ,  %d    " ,  id ,  (char * ) handle ,   (char * ) handle ,  createDate ,  regID ); 
 
 	strcat( sqlString , buf );
 
@@ -987,8 +988,17 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
 	
 
 	  // pokud se podarilo insertovat
-	  if(  PQsql.ExecSQL( sqlString ) )   ret->errCode = COMMAND_OK;
-        }    
+          if(  PQsql.ExecSQL( sqlString ) )  //   ret->errCode = COMMAND_OK;
+          {         //  uloz do historie
+            if( PQsql.MakeHistory() )
+              {
+              if( PQsql.SaveHistory( "Contact" , "id" , id ) )  // uloz zaznam
+                {
+                     ret->errCode =COMMAND_OK ; // pokud se ulozilo do Historie
+                }
+           }
+        }
+     }    
    // zapis na konec action
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
  }
@@ -1473,6 +1483,31 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
  
 
     }
+
+
+       //  uloz do historie
+      if(  ret->errCode == COMMAND_OK ) 
+      {
+       if( PQsql.MakeHistory() )
+         {
+          if( PQsql.SaveHistory( "nsset_contact_map" , "nssetid" , id ) ) // historie tech kontakty
+            {
+
+                   if( PQsql.SaveHistory( "HOST" , "nssetid" , id ) )
+                     {
+                       // vymaz nejdrive podrizene hosty
+                           if( PQsql.SaveHistory( "NSSET" , "id" , id ) )
+                             {
+                                   // pokud vse proslo
+                                   if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspesne nainsertovalo commitni zmeny
+                                   else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
+                             }
+                        
+                     }                 
+            }
+         } // konec historie
+       }
+
        // pokud vse proslo
        if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspesne nainsertovalo commitni zmeny
        else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
@@ -2398,9 +2433,24 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
         } 
 
      }
-       // pokud nebyla chyba pri insertovani do tabulky domain_contact_map 
-       if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
-       else PQsql.RollbackTransaction();   
+
+       if(  ret->errCode == COMMAND_OK )
+       {
+      //  uloz do historie
+       if( PQsql.MakeHistory() )
+         {
+            if( PQsql.SaveHistory( "domain_contact_map" , "domainID" , id ) )
+               {
+                   if( PQsql.SaveHistory(  "DOMAIN" , "id" , id  ) )
+                     {
+                         // pokud nebyla chyba pri insertovani do tabulky domain_contact_map 
+                        if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
+                        else PQsql.RollbackTransaction();   
+                     }
+                     
+               }
+         }
+       }
   }
  }
 
