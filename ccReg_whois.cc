@@ -11,7 +11,7 @@
 
 // funkce pro praci s postgres
 #include "pqsql.h"
-#define DATABASE
+#define DATABASE ""
 
 // konverze casu
 #include "util.h"
