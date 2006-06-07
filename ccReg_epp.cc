@@ -13,6 +13,7 @@
 
 // funkce pro praci s postgres servrem
 #include "pqsql.h"
+#define DATABASE
 
 // pmocne funkce
 #include "util.h"
