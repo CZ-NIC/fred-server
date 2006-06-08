@@ -10,8 +10,8 @@ public:
 PQ(){ svrTRID = NULL;memHandle=NULL;  }; // neni vybran zadny select
 ~PQ()
  { 
-   if( svrTRID ) { debug("delete svrTRID\n"); delete svrTRID; } 
-   if( memHandle ) { debug("delete memHandle\n"); delete memHandle; } 
+   if( svrTRID ) { debug("delete svrTRID\n"); delete[] svrTRID; } 
+   if( memHandle ) { debug("delete memHandle\n"); delete[] memHandle; } 
  } 
 
 // pripoji databazi s nastavenim conninfo
