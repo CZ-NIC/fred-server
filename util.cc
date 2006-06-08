@@ -31,7 +31,7 @@ time_t get_time_t(char *string )
 {
 struct tm dt;
 memset(&dt,0,sizeof(dt));
-double sec;
+double sec = 0;
 
 sscanf(string , "%4d-%02d-%02d %02d:%02d:%lf" ,
                 &dt.tm_year ,  &dt.tm_mon , &dt.tm_mday ,
