@@ -44,10 +44,10 @@ bool BeginAction(int clientID , int action ,char *clTRID );
 char * EndAction(int response  );
 
 // vraci handle nebo id tabulky
-int GetNumericFromTable( char *table , char *vname ,  char *fname ,  char *value);
-int GetNumericFromTable( char *table , char *vname ,  char *fname ,  int numeric);
-char * GetValueFromTable( char *table , char *vname ,  char *fname ,  char *value);
-char * GetValueFromTable( char *table , char *vname ,  char *fname ,  int numeric);
+int GetNumericFromTable( const char *table , const char *vname ,  const char *fname ,  const char *value);
+int GetNumericFromTable( const char *table , const char *vname ,  const char *fname ,  int numeric);
+char * GetValueFromTable( const char *table , const char *vname ,  const char *fname ,  const char *value);
+char * GetValueFromTable( const char *table , const char *vname ,  const char *fname ,  int numeric);
 int GetSequenceID( char *sequence ); // id ze sequnce
 // kontroluje jestli je contactid pro dane id v tabulce nsset_contact_map nebo domain_contact_map 
 bool CheckContactMap(char * table , int id , int contactid );
