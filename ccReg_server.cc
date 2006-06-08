@@ -8,8 +8,13 @@
 
 #include "ccReg.hh"
 #include "ccReg_epp.h"
+#include <signal.h>
 
-
+static CORBA::ORB_ptr orbToShutdown = NULL;
+static void signalHandler(int signal)
+{
+	if (orbToShutdown) orbToShutdown->shutdown(0);
+}
 // spusteni ccReg servru
 
 // End of example implementational code
@@ -18,6 +23,8 @@ int main(int argc, char** argv)
   try {
     // Initialise the ORB.
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
+    orbToShutdown = orb;
+    signal(SIGINT,signalHandler);
 
     // Obtain a reference to the root POA.
     CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
@@ -44,6 +51,8 @@ int main(int argc, char** argv)
     // ready to accept requests.
     PortableServer::ObjectId_var myccReg_EPP_iid = PortableServer::string_to_ObjectId("ccReg");
     poa->activate_object_with_id(myccReg_EPP_iid,myccReg_EPP_i);
+    // to delete implementaion on POA destruction
+    myccReg_EPP_i->_remove_ref();
  //   PortableServer::ObjectId_var myccReg_Whois_iid = poa->activate_object(myccReg_Whois_i);
    // PortableServer::ObjectId_var myccReg_Admin_iid = poa->activate_object(myccReg_Admin_i);
 
@@ -59,7 +68,7 @@ int main(int argc, char** argv)
 
      ofstream fout ("/tmp/ccReg.ref");
 //     of "IOR='" << (char*)sior << "'"  << endl;
-     fout <<  orb->object_to_string(ref)  ; //  (char*)sior ;
+     fout << (char*)sior ; // orb->object_to_string(ref)  ; //  
      fout.close ();
 
     }
