@@ -1,7 +1,8 @@
 //
 //  class implementing IDL interface ccReg::EPP
 //
-class ccReg_EPP_i: public POA_ccReg::EPP {
+class ccReg_EPP_i: public POA_ccReg::EPP,
+                   public PortableServer::RefCountServantBase {
 private:
   // Make sure all instances are built on the heap by making the
   // destructor non-public
