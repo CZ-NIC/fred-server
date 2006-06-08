@@ -427,7 +427,7 @@ if( ExecSelect( sqlString ) )
 return regID;  
 }  
 
-char *  PQ::GetValueFromTable( char *table , char *vname , char *fname , char *value)
+char *  PQ::GetValueFromTable( const char *table , const char *vname , const char *fname , const char *value)
 {
 char sqlString[128];
 int size;
@@ -444,7 +444,7 @@ if( ExecSelect( sqlString ) )
 
       if( memHandle )
        {
-          delete memHandle;
+          delete[] memHandle;
           debug("re-alloc memHandle\n");
           memHandle = new char[size+1];   
         }
@@ -455,13 +455,16 @@ if( ExecSelect( sqlString ) )
       FreeSelect();      
       return memHandle;
      }
-   else  return "";
+   else {
+     FreeSelect();         	
+   	 return "";
+   }
   }
 else return "";
 
 }
 
-char * PQ::GetValueFromTable( char *table , char *vname ,  char *fname ,  int numeric)
+char * PQ::GetValueFromTable( const char *table , const char *vname ,  const char *fname ,  int numeric)
 {
 char value[16];
 
@@ -470,12 +473,12 @@ sprintf( value , "%d" ,  numeric );
 return GetValueFromTable( table , vname , fname , value );
 }
 
-int PQ::GetNumericFromTable( char *table , char *vname , char *fname , char *value)
+int PQ::GetNumericFromTable( const char *table , const char *vname , const char *fname , const char *value)
 {
 return atoi( GetValueFromTable( table , vname , fname , value )  );
 }
 
-int  PQ::GetNumericFromTable( char *table , char *vname ,  char *fname ,  int numeric)
+int  PQ::GetNumericFromTable( const char *table , const char *vname ,  const char *fname ,  int numeric)
 {
 char value[16];
 
