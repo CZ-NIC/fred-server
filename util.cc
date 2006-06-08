@@ -30,6 +30,7 @@ return 0;
 time_t get_time_t(char *string )
 {
 struct tm dt;
+memset(&dt,0,sizeof(dt));
 double sec;
 
 sscanf(string , "%4d-%02d-%02d %02d:%02d:%lf" ,
