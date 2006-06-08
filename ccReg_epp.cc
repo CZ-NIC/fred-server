@@ -13,7 +13,7 @@
 
 // funkce pro praci s postgres servrem
 #include "pqsql.h"
-#define DATABASE ""
+#define DATABASE "dbname=ccreg user=ccreg password=Eeh5ahSi host=curlew" 
 
 // pmocne funkce
 #include "util.h"
