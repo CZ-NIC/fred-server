@@ -475,7 +475,7 @@ PQ PQsql;
 Status status;
 char sqlString[1024];
 ccReg::Response *ret;
-char *cc;
+char countryCode[3];
 int id , clid , crid , upid;
 int actionID=0;
 int len , i  , s ;
@@ -528,7 +528,9 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
 	c->Fax=CORBA::string_dup(PQsql.GetFieldValueName("Fax" , 0 ));
 	c->Email=CORBA::string_dup(PQsql.GetFieldValueName("Email" , 0 ));
 	c->NotifyEmail=CORBA::string_dup(PQsql.GetFieldValueName("NotifyEmail" , 0 )); // upozornovaci email
-        cc = PQsql.GetFieldValueName("Country" , 0 ); // kod zeme
+        strncpy( countryCode ,  PQsql.GetFieldValueName("Country" , 0 ) , 2 ); // 2 mistny ISO kod zeme
+        countryCode[2] = 0;
+        cout << "country code " << countryCode << endl;
 
 	c->VAT=CORBA::string_dup(PQsql.GetFieldValueName("VAT" , 0 )); // DIC
 	c->SSN=CORBA::string_dup(PQsql.GetFieldValueName("SSN" , 0 )); // SSN
@@ -565,8 +567,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
         c->CrID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( crid ) );
         c->UpID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( upid ) );
 
-//	c->Country=CORBA::string_dup( PQsql.GetValueFromTable("enum_country" , "country" , "id" ,  cc ) ); // uplny nazev zeme
-        c->Country=CORBA::string_dup( cc ); // kod zeme
+	c->Country=CORBA::string_dup( PQsql.GetValueFromTable("enum_country" , "country" , "id" ,  countryCode ) ); // uplny nazev zeme
 
      }
     else 
