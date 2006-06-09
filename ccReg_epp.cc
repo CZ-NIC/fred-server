@@ -260,7 +260,7 @@ return ret;
  *
  ***********************************************************************/
  
-ccReg::Response* ccReg_EPP_i::ClientLogout(CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::ClientLogout(CORBA::Long clientID, const char* clTRID )
 {
 PQ  PQsql;
 char sqlString[512];
@@ -308,12 +308,13 @@ return ret;
  *              newpasswd - nove heslo pro zmenu
  *        OUT:  clientID - id pripojeneho klienta
  *              clTRID - cislo transakce klienta
+ *               certID - fingerprint certifikatu 
  * 
  * RETURNED:    svTRID a errCode
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, CORBA::Long& clientID)
+ccReg::Response* ccReg_EPP_i::ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, CORBA::Long& clientID , const char* certID )
 {
 PQ  PQsql;
 char sqlString[1024];
@@ -331,7 +332,7 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 clientID = 0;
 
 
-LOG( NOTICE_LOG ,  "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s] " , ClID, clTRID  , passwd , newpass );
+LOG( NOTICE_LOG ,  "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s]  certID [%s] " , ClID, clTRID  , passwd , newpass  ,  certID);
 
 if(  PQsql.OpenDatabase( DATABASE ) )
 {
