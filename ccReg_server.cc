@@ -10,6 +10,11 @@
 #include "ccReg_epp.h"
 #include <signal.h>
 
+// pouzivani LOGu 
+#include "log.h"
+
+static char DATABASE[128];
+
 static CORBA::ORB_ptr orbToShutdown = NULL;
 static void signalHandler(int signal)
 {
@@ -21,6 +26,8 @@ static void signalHandler(int signal)
 int main(int argc, char** argv)
 {
   try {
+     char *db = "dbname=ccreg user=ccreg password=Eeh5ahSi host=curlew" ;
+
     // Initialise the ORB.
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
     orbToShutdown = orb;
@@ -42,7 +49,10 @@ int main(int argc, char** argv)
     // We allocate the objects on the heap.  Since these are reference
     // counted objects, they will be deleted by the POA when they are no
     // longer needed.
-    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i();
+    // nastaveni databaze
+     std::cout << "DATABASE: "  << db << endl;
+     ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i( db );
+
 //    ccReg_Whois_i* myccReg_Whois_i = new ccReg_Whois_i();
   //  ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i();
 
@@ -55,6 +65,15 @@ int main(int argc, char** argv)
     myccReg_EPP_i->_remove_ref();
  //   PortableServer::ObjectId_var myccReg_Whois_iid = poa->activate_object(myccReg_Whois_i);
    // PortableServer::ObjectId_var myccReg_Admin_iid = poa->activate_object(myccReg_Admin_i);
+
+
+     // SYSLOG 
+     // TODO konfigurace
+#ifdef SYSLOG
+    cout << "start syslog" << endl;
+    setlogmask ( LOG_UPTO( SQL_LOG )   );
+    openlog ("ccReg", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1 );
+#endif
 
 
     // Obtain a reference to each object and output the stringified
@@ -114,6 +133,10 @@ int main(int argc, char** argv)
     cerr << "  line: " << fe.line() << endl;
     cerr << "  mesg: " << fe.errmsg() << endl;
   }
+
+#ifdef SYSLOG
+   closelog ();
+#endif
   return 0;
 }
 
