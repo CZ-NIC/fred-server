@@ -1,0 +1,3 @@
+soubor valgrindsuppressions.txt obsahuje chyby ktere detekuje valgrind v systemovych knihovnach a ktere nebude vypisovat. 
+pouziti:
+valgrind --suppressions=debug/valgrindsuppressions.txt --leak-check=full ./ccReg_server  -ORBendPoint giop:tcp:localhost:22222
