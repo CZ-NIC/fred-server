@@ -9,7 +9,7 @@ private:
   //virtual ~ccReg_EPP_i();
 public:
   // standard constructor
-  ccReg_EPP_i();
+  ccReg_EPP_i( char *db );
   virtual ~ccReg_EPP_i();
 
   // methods corresponding to defined IDL attributes and operations
@@ -37,5 +37,7 @@ public:
   ccReg::Response* DomainRenew(const char* fqdn, ccReg::timestamp curExpDate, CORBA::Short period, ccReg::timestamp& exDate, CORBA::Long clientID, const char* clTRID);
   ccReg::Response* DomainTransfer(const char* fqdn, /* const char* registrant, */ const char* authInfo, CORBA::Long clientID, const char* clTRID);
   ccReg::Response* DomainTrade(const char* fqdn, const char* old_registrant, const char* new_registrant, const char* authInfo, CORBA::Long clientID, const char* clTRID);
- 
+
+private:
+char DATABASE[128]; // nazev spojeni na databazi
 };
