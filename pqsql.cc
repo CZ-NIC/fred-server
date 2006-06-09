@@ -9,6 +9,33 @@
 
 #include "status.h"
 
+#include "log.h"
+
+// constructor 
+PQ::PQ()
+{ 
+// nastav memory buffry
+svrTRID = NULL;
+memHandle=NULL;  
+}
+
+// uvolni memory buffry
+PQ::~PQ()
+{
+if( svrTRID ) 
+  {
+     LOG( NOTICE_LOG , "delete svrTRID"); 
+     delete[] svrTRID; 
+   }
+
+if( memHandle ) 
+  { 
+     LOG( NOTICE_LOG , "delete memHandle");
+     delete[] memHandle;
+  }
+
+}
+
 bool PQ::OpenDatabase(char *conninfo)
 {
 
@@ -17,14 +44,14 @@ connection = PQconnectdb(conninfo);
 // Check to see that the backend connection was successfully made 
 if (PQstatus(connection) != CONNECTION_OK)
    {
-     fprintf(stderr, "Connection to database failed: %s\n",  
+     LOG( ERROR_LOG ,  "Connection to database failed: %s",  
                        PQerrorMessage(connection));
      PQfinish(connection);
      return false;   
    }
 else 
  {
-  debug("Connection OK user %s host %s port %s DB %s\n" , 
+  LOG( NOTICE_LOG , "Database connection OK user %s host %s port %s DB %s" , 
          PQuser(connection), PQhost(connection),
           PQport(connection), PQdb(connection)); 
   return true;
@@ -63,14 +90,14 @@ char * PQ::GetFieldValue( int row , int col )
 if( row < nRows && col < nCols )
   {
    
-   if( PQgetisnull( result , row , col ) ){ debug("RETURN [%d,%d] NULL\n" , row, col ); return "" ; }
+   if( PQgetisnull( result , row , col ) ){ LOG( SQL_LOG , "RETURN [%d,%d] NULL" , row, col ); return "" ; }
    else  
      { 
-       debug("RETURN [%d,%d] , %s\n" , row , col , PQgetvalue(result, row, col ) );
+       LOG( SQL_LOG , "RETURN [%d,%d] , %s" , row , col , PQgetvalue(result, row, col ) );
        return PQgetvalue(result, row, col ); 
      }
   }
-else { debug("NOT FOUND return NULL\n" ); return  ""; } 
+else { LOG( ERROR_LOG , "NOT FOUND return NULL" ); return  ""; } 
 }
 
 
@@ -105,41 +132,42 @@ bool PQ::ExecSelect(char *sqlString)
 // pokud je nejaky predchozi select allokoval pamet tak ji uvolni
 if( nRows >= 0 || nCols >= 0 )  
  {
-   debug("Clear select\n" ) ;
+   LOG( SQL_LOG , "Clear select" ) ;
    PQclear(result); 
    nRows = -1;
    nCols = -1;
   } 
 */
+LOG( SQL_LOG , "SELECT: [%s]" , sqlString );
         result = PQexec(connection, sqlString );
 
         if (PQresultStatus(result) != PGRES_TUPLES_OK)
         {
-            debug( "SELECT [%s]\nfailed: %s", sqlString , PQerrorMessage(connection));
+            LOG( ERROR_LOG ,  "SELECT [%s]failed: %s", sqlString , PQerrorMessage(connection));
             PQclear(result);
-            return -1;
+            return false;
         }
 
 
 nRows = PQntuples( result );
 nCols = PQnfields(result);
 
-debug("Select [%s]\nnumber of rows (tuples) %d and nfields %d\n" , sqlString , nRows , nCols );
+LOG( SQL_LOG , "result number of rows (tuples) %d and nfields %d" , nRows , nCols );
 
-
+return true;
 }
 
 // uvolneni pameti po selectu
 void   PQ::FreeSelect()
 {
-     debug("Free  select\n" ) ;
+     LOG( SQL_LOG , "Free  select" ) ;
      PQclear(result);
 
 
 /*
  if( nRows >= 0 || nCols >= 0  ) 
   { 
-     debug("Free  select\n" ) ; 
+     LOG( SQL_LOG , "Free  select" ) ; 
      PQclear(result);
      nRows = -1; nCols = -1;  
   }
@@ -150,19 +178,21 @@ bool PQ::ExecSQL(char *sqlString)
 {
 PGresult   *res;
 
+LOG( SQL_LOG , "ExecSQL: [%s]" , sqlString );
 res =  PQexec( connection , sqlString);
 
-debug("result [%s]\n %s %s\n", sqlString ,   PQresStatus( PQresultStatus(res) ) ,PQcmdStatus( res ) );
+LOG( SQL_LOG , "result:  %s %s" ,  PQresStatus( PQresultStatus(res) ) ,PQcmdStatus( res ) );
 
 if( PQresultStatus(res) == PGRES_COMMAND_OK )
   {
 
-     debug( "PQcmdTuples: %s\n" ,  PQcmdTuples( res) );
+     LOG( SQL_LOG ,  "PQcmdTuples: %s" ,  PQcmdTuples( res) );
      PQclear(res);
     return true;
   }
 else
 {
+   LOG( ERROR_LOG ,  "ExecSQL error");
    PQclear(res);
    return false;
 }
@@ -197,7 +227,7 @@ actionID = GetSequenceID("action");
 if( actionID ) 
   {
   // zapis do action tabulky
-   sprintf( sqlString , "INSERT INTO ACTION ( id , clientid , action ,  clienttrid   )  VALUES ( %d , %ld , %d , \'%s\' );" ,
+   sprintf( sqlString , "INSERT INTO ACTION ( id , clientid , action ,  clienttrid   )  VALUES ( %d , %d , %d , \'%s\' );" ,
                   actionID , clientID  , action  , clTRID);
 
    return ExecSQL( sqlString );
@@ -213,7 +243,7 @@ int id;
 
 if( svrTRID == NULL ) 
  {
-  debug("alloc svrTRID\n");
+  LOG( SQL_LOG , "alloc svrTRID");
   svrTRID= new char[32] ; 
  }
 
@@ -226,7 +256,7 @@ sprintf( sqlString , "UPDATE Action SET response=%d , enddate='now()' , servertr
 id  =  actionID;
 actionID = 0 ; 
 
-debug( "EndAction svrTRID: %s\n" ,  svrTRID );
+LOG( SQL_LOG ,  "EndAction svrTRID: %s" ,  svrTRID );
 
 if( ExecSQL(  sqlString ) ) return   svrTRID;
 /* {
@@ -235,7 +265,7 @@ if( ExecSQL(  sqlString ) ) return   svrTRID;
    if( ExecSelect( sqlString ) )
     {
       svr =  GetFieldValue( 0 , 0 );
-      debug("GetsvrTRID %s\n" , svr );   
+      LOG( SQL_LOG , "GetsvrTRID %s" , svr );   
      //  FreeSelect(); 
     }
   return svr;
@@ -246,10 +276,10 @@ else return "svrTRID ERROR";
 }
 
 
-
+/*
 char *  PQ::GetStatusString( int status )
 {
-/*
+
 char sqlString[128];
 char *str;
 
@@ -260,12 +290,13 @@ sprintf( sqlString , "SELECT  status  FROM enum_status  WHERE id=%d;" , status )
 if( ExecSelect( sqlString ) )
  {
       strcpy( str ,  GetFieldValue( 0 , 0 ) ) ;
-      debug("GetStatustring \'%s\'  ->  %d\n" ,  str , status );
+      LOG( SQL_LOG , "GetStatustring \'%s\'  ->  %d" ,  str , status );
       FreeSelect(); 
       return str;
  }
 else return "{ }" ; // prazdny status string pole
-*/
+}
+
 
 switch( status )
 {
@@ -315,12 +346,14 @@ if( ExecSelect( sqlString ) )
  {
       handle = GetFieldValue( 0 , 0 );
       id = atoi( handle );
-      debug("GetStatusNumeric \'%s\'  ->  (%s) %d\n" ,   status , handle  , id  );
+      LOG( SQL_LOG , "GetStatusNumeric \'%s\'  ->  (%s) %d" ,   status , handle  , id  );
       FreeSelect();
  }
 
 return id;
 }
+
+*/
 
 bool  PQ::CheckContactMap(char * table , int id , int contactid )
 {
@@ -391,7 +424,7 @@ bool ret=false;
 char *pass;
 char sqlString[128];
 
-sprintf( sqlString , "SELECT authinfopw from %s WHERE id=%d\n" , table  , id );
+sprintf( sqlString , "SELECT authinfopw from %s WHERE id=%d" , table  , id );
 
 if( ExecSelect( sqlString ) )
   {
@@ -413,13 +446,13 @@ int PQ::GetClientDomainRegistrant( int clID , int contactID )
 int regID=0;
 char sqlString[128];
 
-sprintf( sqlString , "SELECT  clID FROM DOMAIN WHERE Registrant=%d AND clID=%d\n" , contactID , clID );
+sprintf( sqlString , "SELECT  clID FROM DOMAIN WHERE Registrant=%d AND clID=%d" , contactID , clID );
 if( ExecSelect( sqlString ) )
  {
    if( GetSelectRows() > 0   )
      {
        regID = atoi(  GetFieldValue( 0 , 0 )  );
-       debug("Get ClientDomainRegistrant  contactID \'%d\' -> regID %d\n" , contactID , regID );
+       LOG( SQL_LOG , "Get ClientDomainRegistrant  contactID \'%d\' -> regID %d" , contactID , regID );
        FreeSelect();
      }
    }
@@ -445,13 +478,13 @@ if( ExecSelect( sqlString ) )
       if( memHandle )
        {
           delete[] memHandle;
-          debug("re-alloc memHandle\n");
+          LOG( SQL_LOG , "re-alloc memHandle");
           memHandle = new char[size+1];   
         }
-       else { debug("alloc memHandle\n");  memHandle = new char[size+1]; } 
+       else { LOG( SQL_LOG , "alloc memHandle");  memHandle = new char[size+1]; } 
  
       strcpy( memHandle , GetFieldValue( 0 , 0 ) );
-      debug("GetValueFromTable \'%s\' field %s  value  %s ->  %s\n" , table ,  fname , value  , memHandle );
+      LOG( SQL_LOG , "GetValueFromTable \'%s\' field %s  value  %s ->  %s" , table ,  fname , value  , memHandle );
       FreeSelect();      
       return memHandle;
      }
@@ -492,6 +525,8 @@ bool  PQ::DeleteFromTable(char *table , char *fname , int id )
 {
 char sqlString[128];
 
+LOG( SQL_LOG , "DeleteFromTable %s fname %s id -> %d\n" , table , fname  , id );
+
 sprintf(  sqlString , "DELETE FROM %s  WHERE %s=%d;" , table , fname , id );
 return ExecSQL( sqlString );
 }
@@ -508,7 +543,7 @@ sprintf(  sqlString , "SELECT  NEXTVAL( \'%s_id_seq\'  );" , sequence );
 if( ExecSelect( sqlString ) )
   {
      id = atoi(  GetFieldValue( 0 , 0 )  );
-     debug("Sequence \'%s\' -> ID %d\n" , sequence , id );
+     LOG( SQL_LOG , "GetSequence \'%s\' -> ID %d" , sequence , id );
      FreeSelect();
    }
 
@@ -523,11 +558,12 @@ char sqlString[128];
 historyID = 0 ;
 
 if( actionID )
- {
-   debug("MAkeHistory\n");
+ {   
+   LOG( SQL_LOG , "MakeHistory actionID -> %d " , actionID);
    historyID = GetSequenceID( "HISTORY" );
    if( historyID )
     {
+     LOG( SQL_LOG , "MakeHistory actionID -> %d " , actionID); 
      sprintf(  sqlString , "INSERT INTO HISTORY ( id , action ) VALUES ( %d  , %d );" , historyID , actionID );
      if( ExecSQL(  sqlString ) ) return historyID;
     }
@@ -548,7 +584,8 @@ bool ret= true; // default
 
 if( historyID )
 {
-    sprintf(  sqlString , "SELECT * FROM %s WHERE %s=%d\n" , table , fname ,  id );
+    LOG( SQL_LOG , "SaveHistory historyID - > %d" , historyID ); 
+    sprintf(  sqlString , "SELECT * FROM %s WHERE %s=%d;" , table , fname ,  id );
 
     if( ExecSelect( sqlString ) )
     {

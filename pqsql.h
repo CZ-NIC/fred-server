@@ -1,18 +1,13 @@
 #include <libpq-fe.h>
 
-#define debug printf
 
 
 
 class PQ{
 public:
-// constructor nastaveni spojeni conninfo
-PQ(){ svrTRID = NULL;memHandle=NULL;  }; // neni vybran zadny select
-~PQ()
- { 
-   if( svrTRID ) { debug("delete svrTRID\n"); delete[] svrTRID; } 
-   if( memHandle ) { debug("delete memHandle\n"); delete[] memHandle; } 
- } 
+// constructor a destruktor
+PQ();
+~PQ();
 
 // pripoji databazi s nastavenim conninfo
 bool OpenDatabase(char *conninfo); 
@@ -73,10 +68,6 @@ bool AuthTable(  char *table , char *auth , int id );
 int MakeHistory(); // zapise do tabulky history
 bool SaveHistory(char *table , char *fname ,  int id ); // ulozi radek tabulky
 
-// funkce co vraci z enum_status string 
-char * GetStatusString( int status );
-// funkce vracejici id statusu
-int  GetStatusNumber( char  *status );
 
 // spusti select a vrati pocet radek
 bool ExecSelect(char *sqlString);
