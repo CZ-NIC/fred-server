@@ -1628,8 +1628,11 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
                 // zmenit zaznam o domene
                 sprintf( sqlString , "UPDATE NSSET SET UpDate=\'now\' , upid=%d , status=\'%s\' " , regID , statusString   );
 
-                // zmena autentifikace   
-                add_field_value( sqlString , "AuthInfoPw" ,  CORBA::string_dup(authInfo_chg)  ) ;
+
+                // zmena autentifikace
+                if( strlen( CORBA::string_dup(authInfo_chg)  ) )
+                 { sprintf( buf , " , AuthInfoPw='\%s\' " , CORBA::string_dup(authInfo_chg)  );  strcat( sqlString , buf ); }  
+
 
                 sprintf( buf , " WHERE id=%d;" , id );
                 strcat( sqlString , buf ); 
