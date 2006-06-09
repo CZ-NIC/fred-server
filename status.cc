@@ -76,7 +76,6 @@ int i, num , from , p ;
 char value[16];
 
 
-printf("Array: [%s]\n" , array );
 
 // nulova velikost pole
 
@@ -129,7 +128,7 @@ for( i = 0 ; i < slen ; i ++ )
 return false;
 }
 
-
+/*
 void  Status::Debug()
 {
 int i;
@@ -139,3 +138,63 @@ for( i = 0 ; i < slen ; i ++ )  printf(" %d " ,  stat[i] );
 printf("}\n");
 
 }
+*/
+
+char * Status::GetStatusString( int status )
+{
+
+switch( status )
+{
+   case STATUS_ok:
+           return "ok";
+   case STATUS_inactive:
+           return "inactive";
+   case STATUS_linked:
+           return "linked";
+   case STATUS_clientDeleteProhibited:
+           return "clientDeleteProhibited";
+   case STATUS_serverDeleteProhibited:
+           return "serverDeleteProhibited";
+   case STATUS_clientHold:
+           return "clientHold";
+   case STATUS_serverHold:
+           return "serverHold";
+   case STATUS_clientRenewProhibited:
+           return "clientRenewProhibited";
+   case STATUS_serverRenewProhibited:
+           return "serverRenewProhibited";
+   case STATUS_clientTransferProhibited:
+           return "clientTransferProhibited";
+   case STATUS_serverTransferProhibited:
+           return "serverTransferProhibited";
+   case STATUS_clientUpdateProhibited:
+           return "clientUpdateProhibited";
+   case STATUS_serverUpdateProhibited:
+           return "serverUpdateProhibited";
+   default:
+           return "";
+}
+
+return "";
+}
+
+int Status::GetStatusNumber(const char  *status )
+{
+     if( strcmp( status , "ok" ) == 0 ) return STATUS_ok;
+     if( strcmp( status , "inactive" ) == 0 ) return STATUS_inactive;
+     if( strcmp( status , "linked" ) == 0 ) return STATUS_linked;
+     if( strcmp( status , "clientDeleteProhibited" ) == 0 ) return  STATUS_clientDeleteProhibited;
+     if( strcmp( status , "serverDeleteProhibited" ) == 0 ) return  STATUS_serverDeleteProhibited;
+     if( strcmp( status , "clientHold" ) == 0 ) return STATUS_clientHold;
+     if( strcmp( status , "serverHold" ) == 0 ) return  STATUS_serverHold;
+     if( strcmp( status , "clientRenewProhibited" ) == 0 ) return   STATUS_clientRenewProhibited;
+     if( strcmp( status , "serverRenewProhibited" ) == 0 ) return   STATUS_serverRenewProhibited;
+     if( strcmp( status , "clientTransferProhibited" ) == 0 ) return   STATUS_clientTransferProhibited;
+     if( strcmp( status , "serverTransferProhibited" ) == 0 ) return   STATUS_serverTransferProhibited;
+     if( strcmp( status , "clientUpdateProhibited" ) == 0 ) return   STATUS_clientUpdateProhibited;
+     if( strcmp( status , "serverUpdateProhibited" ) == 0 ) return   STATUS_serverUpdateProhibited;
+
+// default
+return 0;
+}
+

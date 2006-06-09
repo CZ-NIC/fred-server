@@ -37,7 +37,12 @@ bool Rem( int status );
 // int Set(int p , int s )
  int Get(int p) { if( p < slen ) return stat[p] ; else return 0 ; } ;
 int Length() { return slen ;}
-void Debug();
+// void Debug();
+// vraci nazev status flagu
+char * GetStatusString( int status ); 
+// funkce vracejici id statusu
+int  GetStatusNumber( const char  *status );
+
 private:
 int stat[MAX_STATUS]; // pole status flagu
 int slen; // delka status pole
