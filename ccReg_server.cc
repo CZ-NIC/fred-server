@@ -13,6 +13,13 @@
 // pouzivani LOGu 
 #include "log.h"
 
+// nacitani config souboru
+#include "conf.h"
+
+#ifndef CONFIG_FILE
+#define CONFIG_FILE "ccReg.conf"
+#endif
+
 static char DATABASE[128];
 
 static CORBA::ORB_ptr orbToShutdown = NULL;
@@ -26,7 +33,8 @@ static void signalHandler(int signal)
 int main(int argc, char** argv)
 {
   try {
-     char *db = "dbname=ccreg user=ccreg password=Eeh5ahSi host=curlew" ;
+     char db[256];
+  // OLD    char *db = "dbname=ccreg user=ccreg password=Eeh5ahSi host=curlew" ;
 
     // Initialise the ORB.
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
@@ -50,8 +58,12 @@ int main(int argc, char** argv)
     // counted objects, they will be deleted by the POA when they are no
     // longer needed.
     // nastaveni databaze
-     std::cout << "DATABASE: "  << db << endl;
-     ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i( db );
+    Conf config; // READ CONFIG  file
+    config.ReadConfigFile(  CONFIG_FILE );
+    strcpy( db , config.GetDBconninfo() );
+
+    std::cout << "DATABASE: "  << db << endl;
+    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i( db );
 
 //    ccReg_Whois_i* myccReg_Whois_i = new ccReg_Whois_i();
   //  ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i();
