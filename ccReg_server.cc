@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 
 
 #ifdef SYSLOG
-         cout << "start syslog at  level " <<  config.GetSYSLOGlevel()   << endl;
+         cout << "start syslog at level " <<  config.GetSYSLOGlevel()   << endl;
          setlogmask ( LOG_UPTO(  config.GetSYSLOGlevel()  )   );
          openlog ("ccReg", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL0+  config.GetSYSLOGlocal()  );
 #endif
@@ -131,25 +131,30 @@ int main(int argc, char** argv)
     // requests on its objects.
     PortableServer::POAManager_var pman = poa->the_POAManager();
     pman->activate();
-
+    LOG( EMERG_LOG , "Starting ccReg_server");
     orb->run();
     orb->destroy();
   }
   catch(CORBA::TRANSIENT&) {
-    cerr << "Caught system exception TRANSIENT -- unable to contact the "
-         << "server." << endl;
+     LOG( EMERG_LOG ,  "Caught system exception TRANSIENT -- unable to contact the server." );
   }
   catch(CORBA::SystemException& ex) {
-    cerr << "Caught a CORBA::" << ex._name() << endl;
+    //  cerr << "Caught a CORBA::" << ex._name() << endl;
+     LOG( EMERG_LOG ,  "Caught a CORBA:: %s " , ex._name() );
   }
   catch(CORBA::Exception& ex) {
-    cerr << "Caught CORBA::Exception: " << ex._name() << endl;
+  //  cerr << "Caught CORBA::Exception: " << ex._name() << endl;
+     LOG(  EMERG_LOG , "Caught CORBA::Exception: %s " , ex._name() );
+
   }
   catch(omniORB::fatalException& fe) {
-    cerr << "Caught omniORB::fatalException:" << endl;
-    cerr << "  file: " << fe.file() << endl;
-    cerr << "  line: " << fe.line() << endl;
-    cerr << "  mesg: " << fe.errmsg() << endl;
+    LOG(  EMERG_LOG , "Caught  omniORB::fatalException: %s line: %d mesg: %s" , fe.file()  , fe.line()  , fe.errmsg() );
+
+//    cerr << "Caught omniORB::fatalException:" << endl;
+  //  cerr << "  file: " << fe.file() << endl;
+    //cerr << "  line: " << fe.line() << endl;
+//    cerr << "  mesg: " << fe.errmsg() << endl;
+    
   }
 
 #ifdef SYSLOG
