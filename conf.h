@@ -1,3 +1,8 @@
+#ifdef XMLCONF
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+#endif
+
 #define KEY_dbname      1
 #define KEY_user        2
 #define KEY_pass        3  
@@ -12,22 +17,40 @@
 class Conf {
 public:
 
-Conf() { port[0]=0; host[0] = 0 ; user[0]=0 ; password[0] = 0 ; host[0]=0; log_mask = 0 ; conninfo[0] =0 ; }; // empty
+Conf() { port[0]=0; host[0] = 0 ; user[0]=0 ; password[0] = 0 ; host[0]=0; log_level = 0 ; conninfo[0] =0 ; log_local=0; }; // empty
 ~Conf(){}; // empty
 
-bool ReadConfigFile(const char *filename );
+bool  ReadConfigFile(const char *filename )
+{
+#ifdef XMLCONF
+return  ReadConfigFileXML( filename );
+#else
+return ReadConfigFileTXT( filename );
+#endif
+};
+
+#ifdef XMLCONF
+void Conf::get_element_names(xmlNode * a_node);
+bool  ReadConfigFileXML(const char *filename );
+#endif
+bool  ReadConfigFileTXT(const char *filename );
+
+
 
 char * GetDBhost(){ if( host[0] == 0 ) return NULL ; else  return host; };
 char * GetDBname(){ if( dbname[0] == 0 ) return NULL ; else  return dbname; };
 char * GetDBuser(){ if( user[0] == 0 ) return NULL ; else return user; };
 char * GetDBpass(){ if( password[0] == 0 ) return NULL ; else return password; };
 char * GetDBport(){ if(port[0] == 0 ) return NULL ; else  return port; };
-char * GetDBconninfo(){ return  conninfo; } ;
+char * GetDBconninfo();
 
-/*
-int GetLOGmask(){ return log_mask; );
-int GetLOGLocal(){ return 1; };
-*/
+
+int GetSYSLOGlevel(){ return log_level; };
+int GetSYSLOGlocal(){ return log_local; };
+
+int GetLocal(char *value);
+int GetLevel(char *value);
+
 private:
 char dbname[32];
 char user[32];
@@ -35,6 +58,7 @@ char password[32];
 char host[64];
 char port[16];
 char conninfo[256];
-int log_mask;
+int log_level;
+int log_local;
 };
 
