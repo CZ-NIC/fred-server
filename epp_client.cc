@@ -88,13 +88,20 @@ int main(int argc, char** argv)
 
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
-    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "123456789" , "" ,     "GR-login" , loginID );
+    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789" , "" ,     "GR-login" , loginID , "otisk" );
     cout << loginID  << endl;
 
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
 
+    ret =  EPP->ContactInfo( "jouda",  cc , loginID , "jouda_info" );
+    cout << "err code " << ret->errCode << " serverTRID " <<  ret->svTRID  << endl;
+
+    cout << "info "  << cc->Name  <<  endl;
+ 
+    cout <<  cc->Name << cc->Email << cc->DiscloseEmail <<  cc->Country << endl;
 
 
+/*
    ret =  EPP->DomainInfo(  "example.cz" ,  domain , loginID , "info-cpp-temp" );
    for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
    cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
@@ -113,6 +120,34 @@ int main(int argc, char** argv)
   cout << "PollRAcknowledgement: "  << ret->errCode  << endl;
   cout << "count " << count << "newmsgID: " << newmsgID << endl;
 
+*/
+/*
+   add = new ccReg::Status;
+     add->length(0);
+
+    tech_rem = new ccReg::TechContact;
+    tech_rem->length(0);
+
+     dns_rem = new ccReg::DNSHost;
+     dns_rem->length(1);
+     dns_rem[0].inet.length(0);
+     dns_rem[0].fqdn = CORBA::string_dup( "ns1.bazmek.net" );
+
+     dns_add = new ccReg::DNSHost;
+     dns_add->length(1);
+     dns_add[0].inet.length(1);
+     dns_add[0].inet[0] = CORBA::string_dup( "194.23.54.1" );
+     dns_add[0].fqdn = CORBA::string_dup( "ns99.bazmek.net" );
+    
+
+   //dns_chg[0].inet.length(2);
+    //dns_chg[0].fqdn = CORBA::string_dup( "zeleny.neco.cz" );      
+
+     
+    ret =  EPP->NSSetUpdate(  "exampleNsset" , "" ,  dns_add ,  dns_rem , tech_rem , tech_rem , add , add ,  loginID , "nsset-update-xxx" );
+
+    cout << "err code " << ret->errCode   << endl;
+*/
 /*
     ret =  EPP->DomainRenew(  "example.cz" ,  t  , 12 , loginID , "renew-cpp-example.cz" ); 
     cout << "Domain renew" << "err code " << ret->errCode   << endl;
@@ -225,7 +260,7 @@ int main(int argc, char** argv)
 
 
 
-    ret =  EPP->ContactInfo( "NECOCZ-ROBERT",  cc , loginID , "XPET_info" );
+    ret =  EPP->ContactInfo( "jouda",  cc , loginID , "jouda_info" );
     cout << "err code " << ret->errCode << " serverTRID " <<  ret->svTRID  << endl;
 
     cout << "info "  << cc->Name  <<  endl;
