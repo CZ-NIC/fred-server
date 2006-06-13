@@ -59,10 +59,17 @@ int main(int argc, char** argv)
     // longer needed.
     // nastaveni databaze
     Conf config; // READ CONFIG  file
-    config.ReadConfigFile(  CONFIG_FILE );
-    strcpy( db , config.GetDBconninfo() );
+ 
+    // read confif file
+    if(  config.ReadConfigFile(  CONFIG_FILE ) )
+      {
+        strcpy( db , config.GetDBconninfo() );
+        std::cout << "DATABASE: "  << db << endl;
 
-    std::cout << "DATABASE: "  << db << endl;
+     // SYSLOG 
+     // TODO konfigurace
+      }
+
     ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i( db );
 
 //    ccReg_Whois_i* myccReg_Whois_i = new ccReg_Whois_i();
@@ -79,12 +86,11 @@ int main(int argc, char** argv)
    // PortableServer::ObjectId_var myccReg_Admin_iid = poa->activate_object(myccReg_Admin_i);
 
 
-     // SYSLOG 
-     // TODO konfigurace
+
 #ifdef SYSLOG
-    cout << "start syslog" << endl;
-    setlogmask ( LOG_UPTO( SQL_LOG )   );
-    openlog ("ccReg", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1 );
+         cout << "start syslog at  level " <<  config.GetSYSLOGlevel()   << endl;
+         setlogmask ( LOG_UPTO(  config.GetSYSLOGlevel()  )   );
+         openlog ("ccReg", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL0+  config.GetSYSLOGlocal()  );
 #endif
 
 
