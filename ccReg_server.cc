@@ -34,7 +34,6 @@ int main(int argc, char** argv)
 {
   try {
      char db[256];
-  // OLD    char *db = "dbname=ccreg user=ccreg password=Eeh5ahSi host=curlew" ;
 
     // Initialise the ORB.
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
@@ -60,20 +59,16 @@ int main(int argc, char** argv)
     // nastaveni databaze
     Conf config; // READ CONFIG  file
  
-    // read confif file
-    if(  config.ReadConfigFile(  CONFIG_FILE ) )
-      {
+  // read config file
+  if(  config.ReadConfigFile(  CONFIG_FILE ) )
+  {
         strcpy( db , config.GetDBconninfo() );
         std::cout << "DATABASE: "  << db << endl;
 
-     // SYSLOG 
-     // TODO konfigurace
-      }
+      
 
-    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i( db );
+      ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i( db );
 
-//    ccReg_Whois_i* myccReg_Whois_i = new ccReg_Whois_i();
-  //  ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i();
 
 
     // Activate the objects.  This tells the POA that the objects are
@@ -82,8 +77,6 @@ int main(int argc, char** argv)
     poa->activate_object_with_id(myccReg_EPP_iid,myccReg_EPP_i);
     // to delete implementaion on POA destruction
     myccReg_EPP_i->_remove_ref();
- //   PortableServer::ObjectId_var myccReg_Whois_iid = poa->activate_object(myccReg_Whois_i);
-   // PortableServer::ObjectId_var myccReg_Admin_iid = poa->activate_object(myccReg_Admin_i);
 
 
 
@@ -94,38 +87,17 @@ int main(int argc, char** argv)
 #endif
 
 
-    // Obtain a reference to each object and output the stringified
-    // IOR to stdout
-    {
       // IDL interface: ccReg::EPP
-//      CORBA::Object_var ref = myccReg_EPP_i->_this();
       CORBA::Object_var ref = poa->id_to_reference(myccReg_EPP_iid);
       CORBA::String_var sior(orb->object_to_string(ref));
       std::cout << "IDL object ccReg::EPP IOR = '" << (char*)sior << "'" << std::endl;
 
      ofstream fout ("/tmp/ccReg.ref");
-//     of "IOR='" << (char*)sior << "'"  << endl;
      fout << (char*)sior ; // orb->object_to_string(ref)  ; //  
      fout.close ();
 
-    }
+ 
 
-/*
-    {
-      // IDL interface: ccReg::Whois
-      CORBA::Object_var ref = myccReg_Whois_i->_this();
-      CORBA::String_var sior(orb->object_to_string(ref));
-      std::cout << "IDL object ccReg::Whois IOR = '" << (char*)sior << "'" << std::endl;
-    }
-
-    {
-      // IDL interface: ccReg::Admin
-      CORBA::Object_var ref = myccReg_Admin_i->_this();
-      CORBA::String_var sior(orb->object_to_string(ref));
-      std::cout << "IDL object ccReg::Admin IOR = '" << (char*)sior << "'" << std::endl;
-    }
-
-*/
 
     // Obtain a POAManager, and tell the POA to start accepting
     // requests on its objects.
@@ -134,6 +106,7 @@ int main(int argc, char** argv)
     LOG( EMERG_LOG , "Starting ccReg_server");
     orb->run();
     orb->destroy();
+   }
   }
   catch(CORBA::TRANSIENT&) {
      LOG( EMERG_LOG ,  "Caught system exception TRANSIENT -- unable to contact the server." );
