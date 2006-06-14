@@ -10,7 +10,7 @@
 #define STATUS_clientTransferProhibited  104
 #define STATUS_clientUpdateProhibited    105
 #define STATUS_serverDeleteProhibited    201
-// #define STATUS_serverHold                202
+#define STATUS_serverHold                202
 #define STATUS_serverRenewProhibited     203
 #define STATUS_serverTransferProhibited  204
 #define STATUS_serverUpdateProhibited    205
@@ -22,6 +22,12 @@
 #define STATUS_pendingUpdate             305
 */
 
+#define STATUS_DELETE        1
+#define STATUS_HOLD          2
+#define STATUS_RENEW         3
+#define STATUS_TRANSFER      4
+#define STATUS_UPDATE        5
+   
 #define SERVER_STATUS 200
 #define CLIENT_STATUS 100 
  
@@ -37,7 +43,7 @@ Status(){slen=0;}; // empty
 
 int  Make(char *array);
 void Array(char *string);
-bool Test( int status );
+bool Test( int status_flag ); // moznosti STATUS_ DEL TRANSFER UPD nebo RENEW
 bool Add( int status );
 bool Rem( int status );
 // int Set(int p , int s )
