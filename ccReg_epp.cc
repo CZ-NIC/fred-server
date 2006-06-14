@@ -708,7 +708,7 @@ if( PQsql.OpenDatabase( DATABASE ) )
     // zpracuj  pole statusu
    status.Make( PQsql.GetStatusFromTable( "CONTACT" , id ) );
 
-   if( status.Test( STATUS_clientDeleteProhibited ) || status.Test( STATUS_serverDeleteProhibited )  )
+   if( status.Test( STATUS_DELETE )  )
     {
       LOG( WARNING_LOG  ,  "status DeleteProhibited");
       stat = false;
@@ -835,9 +835,9 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
   // zpracuj  pole statusu
   status.Make( PQsql.GetStatusFromTable( "CONTACT" , id ) );
 
-   if( status.Test( STATUS_clientUpdateProhibited ) || status.Test( STATUS_serverUpdateProhibited )  ) 
+   if( status.Test( STATUS_UPDATE )  ) 
      {
-         LOG( WARNING_LOG  ,  "status UpdateProhibited");
+        LOG( WARNING_LOG  ,  "status UpdateProhibited");
         stat = false;
       }
    else stat = true; // status je OK
@@ -1365,7 +1365,7 @@ if( PQsql.OpenDatabase( DATABASE ) )
     // zpracuj  pole statusu
    status.Make( PQsql.GetStatusFromTable( "NSSET" , id ) );
 
-   if( status.Test( STATUS_clientDeleteProhibited ) || status.Test( STATUS_serverDeleteProhibited )  ) stat = false;
+   if( status.Test( STATUS_DELETE ) ) stat = false;
    else stat = true; // status je OK
 
 
@@ -1656,7 +1656,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
   // zpracuj  pole statusu
   status.Make( PQsql.GetStatusFromTable( "NSSET" , id ) );
 
-   if( status.Test( STATUS_clientUpdateProhibited ) || status.Test( STATUS_serverUpdateProhibited )  ) stat = false;
+   if( status.Test( STATUS_UPDATE  ) ) stat = false;
    else stat = true; // status je OK
 
    if( clID == regID   && stat ) // pokud je registrator clientem kontaktu a status je v poradku
@@ -2170,7 +2170,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainDelete , (char * ) clTRID  ) )
     // zpracuj  pole statusu
    status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
 
-   if( status.Test( STATUS_clientDeleteProhibited ) || status.Test( STATUS_serverDeleteProhibited )  ) stat = false;
+   if( status.Test( STATUS_DELETE )  ) stat = false;
    else stat = true; // status je OK
 
    if( regID == clID && stat == true ) // pokud je registrator klientem a status je OK      
@@ -2268,7 +2268,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
   // zpracuj  pole statusu
   status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
 
-   if( status.Test( STATUS_clientUpdateProhibited ) || status.Test( STATUS_serverUpdateProhibited )  ) stat = false;
+   if( status.Test( STATUS_UPDATE )  ) stat = false;
    else stat = true; // status je OK
 
 
@@ -2582,7 +2582,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
           // zpracuj  pole statusu
            status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
 
-           if( status.Test( STATUS_clientRenewProhibited ) || status.Test( STATUS_serverRenewProhibited )  ) stat = false;
+           if( status.Test( STATUS_RENEW ) ) stat = false;
            else stat = true; // status je OK
 
 
@@ -2680,7 +2680,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
     // zpracuj  pole statusu
     status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
 
-    if( status.Test( STATUS_clientTransferProhibited ) || status.Test( STATUS_serverTransferProhibited )  ) stat = false;
+    if( status.Test( STATUS_TRANSFER )  ) stat = false;
     else stat = true; // status je OK
 
     // autentifikace

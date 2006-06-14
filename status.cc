@@ -8,6 +8,7 @@ bool Status::Add( int status )
 {
 int j;
 
+
 // projdi pole prvku a pokud uz tamje tak nepridavej
 for( j = 0  ; j < slen ; j ++ )
    {     
@@ -30,6 +31,7 @@ return false;
 bool Status::Rem( int status )
 {
 int i ,  j;
+
 
 // projdi pole prvku a pokud uz tamje tak nepridavej
 for( j = 0  ; j < slen ; j ++ )
@@ -116,15 +118,27 @@ slen = num;
 return slen;
 }
 
-bool Status::Test( int status )
+bool Status::Test( int status_flag )
 {
 int i;
 
 for( i = 0 ; i < slen ; i ++ ) 
 { 
-  if( stat[i] == status ) return true; // nasel status flag
+  switch( status_flag )
+        {
+            case STATUS_DELETE:
+                 if( IsDeleteStatus(  stat[i] ) ) return true;
+            case STATUS_UPDATE:
+                 if( IsUpdateStatus(  stat[i] ) ) return true;
+            case STATUS_RENEW:
+                 if( IsRenewStatus(  stat[i] ) ) return true;
+            case STATUS_TRANSFER:
+                 if( IsTransferStatus(  stat[i] ) ) return true;
+        }            
+
 }
 
+// default nenasel status flag
 return false;
 }
 
@@ -147,8 +161,8 @@ switch( status )
 {
    case STATUS_ok:
            return "ok";
-   case STATUS_inactive:
-           return "inactive";
+//   case STATUS_inactive:
+//           return "inactive";
    case STATUS_linked:
            return "linked";
    case STATUS_clientDeleteProhibited:
@@ -181,7 +195,7 @@ return "";
 int Status::GetStatusNumber(const char  *status )
 {
      if( strcmp( status , "ok" ) == 0 ) return STATUS_ok;
-     if( strcmp( status , "inactive" ) == 0 ) return STATUS_inactive;
+//     if( strcmp( status , "inactive" ) == 0 ) return STATUS_inactive;
      if( strcmp( status , "linked" ) == 0 ) return STATUS_linked;
      if( strcmp( status , "clientDeleteProhibited" ) == 0 ) return  STATUS_clientDeleteProhibited;
      if( strcmp( status , "serverDeleteProhibited" ) == 0 ) return  STATUS_serverDeleteProhibited;
