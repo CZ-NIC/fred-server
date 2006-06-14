@@ -711,6 +711,7 @@ if( PQsql.OpenDatabase( DATABASE ) )
    if( status.Test( STATUS_DELETE )  )
     {
       LOG( WARNING_LOG  ,  "status DeleteProhibited");
+      ret->errCode =  COMMAND_STATUS_PROHIBITS_OPERATION;
       stat = false;
     }
    else stat = true; // status je OK
@@ -838,9 +839,32 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
    if( status.Test( STATUS_UPDATE )  ) 
      {
         LOG( WARNING_LOG  ,  "status UpdateProhibited");
+        ret->errCode =  COMMAND_STATUS_PROHIBITS_OPERATION;
         stat = false;
       }
    else stat = true; // status je OK
+
+   // TEST add a rem statusu flagu jestli nejsou server flag
+    len  =   status_add.length();
+    for( i = 0 ; i < len ; i ++)
+       {
+         if( status.IsServerStatus(  status.GetStatusNumber(  status_add[i]  )  ) )
+           {
+               LOG( WARNING_LOG  ,  "add status SERVER %s" , CORBA::string_dup( status_add[i] ) );
+               stat = false;
+           }
+        }
+
+    len  =   status_rem.length();
+    for( i = 0 ; i < len ; i ++)  
+       {
+         if( status.IsServerStatus(  status.GetStatusNumber(  status_rem[i]  )  ) ) 
+           {
+               LOG( WARNING_LOG  ,  "rem status SERVER: %s" ,   CORBA::string_dup( status_rem[i] ) ); 
+               stat = false; 
+           }
+        }
+ 
 
     if(  ( crID == regID || clID == regID  ) && stat ) // pokud je registrator clientem kontaktu a je status v poradku
       {
@@ -896,10 +920,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
                 sprintf( buf , " UpDate=\'now\' ,   UpID=%d  , status=\'%s' WHERE id=%d  " , regID , statusString  , id );
                 strcat(  sqlString ,  buf );
 
-                if(   PQsql.ExecSQL( sqlString ) )  
-                   {
-                       if( PQsql.CommitTransaction() ) ret->errCode= COMMAND_OK; // comit transakce
-                   }
+                if(   PQsql.ExecSQL( sqlString ) )   ret->errCode= COMMAND_OK;
 
               }
            }
@@ -910,7 +931,9 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
   
    } 
 
-
+    // pokud vse proslo
+    if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspes$
+    else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
   }
 
    // zapis na konec action
@@ -1336,6 +1359,8 @@ Status status;
 int regID , id , clID = 0;
 bool stat , del;
 
+LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
+
 ret = new ccReg::Response;
 
 
@@ -1365,14 +1390,23 @@ if( PQsql.OpenDatabase( DATABASE ) )
     // zpracuj  pole statusu
    status.Make( PQsql.GetStatusFromTable( "NSSET" , id ) );
 
-   if( status.Test( STATUS_DELETE ) ) stat = false;
+   if( status.Test( STATUS_DELETE )  )
+    {
+      LOG( WARNING_LOG  ,  "status DeleteProhibited");
+      ret->errCode =  COMMAND_STATUS_PROHIBITS_OPERATION;
+      stat = false;
+    }
    else stat = true; // status je OK
 
 
    // test na vazbu do tabulky domain jestli existuji vazby na  nsset
    if( PQsql.TestNSSetRelations( id ) == false ) del = true; //  muze byt smazan
-   else { del = false;   ret->errCode = COMMAND_PROHIBITS_OPERATION ; }
- 
+   else 
+     { 
+      LOG( WARNING_LOG  ,  "database relations");
+      ret->errCode = COMMAND_PROHIBITS_OPERATION;
+      del = false;
+      }  
 
    if( clID == regID && stat == true && del == true ) // pokud je client registaratorem
      {
@@ -1656,8 +1690,34 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
   // zpracuj  pole statusu
   status.Make( PQsql.GetStatusFromTable( "NSSET" , id ) );
 
-   if( status.Test( STATUS_UPDATE  ) ) stat = false;
+   if( status.Test( STATUS_UPDATE  ) ) 
+    {
+      LOG( WARNING_LOG  ,  "status UpdateProhibited");
+      ret->errCode =  COMMAND_STATUS_PROHIBITS_OPERATION;
+      stat = false;
+    }
    else stat = true; // status je OK
+
+   // TEST add a rem statusu flagu jestli nejsou server flag
+    len  =   status_add.length();
+    for( i = 0 ; i < len ; i ++)
+       {
+         if( status.IsServerStatus(  status.GetStatusNumber(  status_add[i]  )  ) )
+           {
+               LOG( WARNING_LOG  ,  "add status SERVER %s" , CORBA::string_dup( status_add[i] ) );
+               stat = false;
+           }
+        }
+
+    len  =   status_rem.length();
+    for( i = 0 ; i < len ; i ++)
+       {
+         if( status.IsServerStatus(  status.GetStatusNumber(  status_rem[i]  )  ) )
+           {
+               LOG( WARNING_LOG  ,  "rem status SERVER: %s" ,   CORBA::string_dup( status_rem[i] ) );
+               stat = false;
+           }
+        }
 
    if( clID == regID   && stat ) // pokud je registrator clientem kontaktu a status je v poradku
      {
@@ -2170,7 +2230,12 @@ if( PQsql.BeginAction( clientID , EPP_DomainDelete , (char * ) clTRID  ) )
     // zpracuj  pole statusu
    status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
 
-   if( status.Test( STATUS_DELETE )  ) stat = false;
+   if( status.Test( STATUS_DELETE )  )     
+     {
+        LOG( WARNING_LOG  ,  "status DeleteProhibited");
+        ret->errCode =  COMMAND_STATUS_PROHIBITS_OPERATION;
+        stat = false;
+      }
    else stat = true; // status je OK
 
    if( regID == clID && stat == true ) // pokud je registrator klientem a status je OK      
@@ -2268,8 +2333,35 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
   // zpracuj  pole statusu
   status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
 
-   if( status.Test( STATUS_UPDATE )  ) stat = false;
-   else stat = true; // status je OK
+   if( status.Test( STATUS_UPDATE )  )
+     {
+        LOG( WARNING_LOG  ,  "status UpdateProhibited");
+        ret->errCode =  COMMAND_STATUS_PROHIBITS_OPERATION;
+        stat = false;
+     }
+    else stat = true; // status je OK
+
+   // TEST add a rem statusu flagu jestli nejsou server flag
+    len  =   status_add.length();
+    for( i = 0 ; i < len ; i ++)
+       {
+         if( status.IsServerStatus(  status.GetStatusNumber(  status_add[i]  )  ) )
+           {
+               LOG( WARNING_LOG  ,  "add status SERVER %s" , CORBA::string_dup( status_add[i] ) );
+               stat = false;
+           }
+        }
+
+    len  =   status_rem.length();
+    for( i = 0 ; i < len ; i ++)
+       {
+         if( status.IsServerStatus(  status.GetStatusNumber(  status_rem[i]  )  ) )
+           {
+               LOG( WARNING_LOG  ,  "rem status SERVER: %s" ,   CORBA::string_dup( status_rem[i] ) );
+               stat = false;
+           }
+        }
+
 
 
 
@@ -2582,7 +2674,12 @@ if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
           // zpracuj  pole statusu
            status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
 
-           if( status.Test( STATUS_RENEW ) ) stat = false;
+           if( status.Test( STATUS_RENEW ) )
+             {
+                LOG( WARNING_LOG  ,  "status RenewProhibited");
+                ret->errCode =  COMMAND_STATUS_PROHIBITS_OPERATION;
+                stat = false;
+             }
            else stat = true; // status je OK
 
 
@@ -2680,7 +2777,12 @@ if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
     // zpracuj  pole statusu
     status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
 
-    if( status.Test( STATUS_TRANSFER )  ) stat = false;
+    if( status.Test( STATUS_TRANSFER )  ) 
+     {
+        LOG( WARNING_LOG  ,  "status TransferProhibited");
+        ret->errCode =  COMMAND_STATUS_PROHIBITS_OPERATION;
+        stat = false;
+     }
     else stat = true; // status je OK
 
     // autentifikace

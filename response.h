@@ -9,4 +9,5 @@
 #define COMMAND_NO_MESG  1300 // nejsou zadne zpravi vraci poll 
 #define COMMAND_ACK_MESG 1301 // zpravy jsou ve fronte vraci poll
 
+#define COMMAND_STATUS_PROHIBITS_OPERATION 2304
 #define COMMAND_PROHIBITS_OPERATION 2305
