@@ -85,7 +85,7 @@ bool Conf::ReadConfigFileXML(const char *filename )
 {
   xmlDoc *doc = NULL;
   xmlNode *root_element = NULL;
-
+  bool ret;
  //parse the file and get the DOM 
     doc = xmlReadFile(filename , NULL, 0);
 
@@ -93,6 +93,7 @@ bool Conf::ReadConfigFileXML(const char *filename )
         fprintf(stderr , "error: could not parse file %s\n", filename );
         return false;
     }
+  else   fprintf( stderr , "open  XML config file %s\n" , filename);
 
 
   //Get the root element node 
@@ -100,8 +101,16 @@ bool Conf::ReadConfigFileXML(const char *filename )
 
     debug("ROOT Element, name: %s\n", root_element->name);
 
-    get_element_names(root_element);
-
+    if( compare(  root_element->name , "ccReg" ) == 0 ) 
+      { 
+         get_element_names(root_element);
+         ret =true;
+      }
+    else 
+     {
+        fprintf(stderr , "error: bad root element  %s\n", root_element->name  );
+         ret = false; 
+     }
     //free the document 
     xmlFreeDoc(doc);
 
@@ -111,7 +120,7 @@ bool Conf::ReadConfigFileXML(const char *filename )
      
     xmlCleanupParser();
 
-return true;
+return ret;
 }
 #else 
 
@@ -163,7 +172,7 @@ int i , k , l , len , line ;
 
 if( ( f = fopen( filename ,  "r" ) ) != NULL ) 
   {
-   fprintf( stderr , "open config file %s\n" , filename);
+   fprintf( stderr , "open TXT config file %s\n" , filename);
 
     for(line=0 ;; line ++)
     {
