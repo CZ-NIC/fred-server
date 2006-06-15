@@ -19,7 +19,7 @@
 #ifndef CONFIG_FILE
 #define CONFIG_FILE "ccReg.conf"
 #endif
-*/
+
 static char database[128];
 
 static CORBA::ORB_ptr orbToShutdown = NULL;
