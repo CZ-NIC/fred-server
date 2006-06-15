@@ -1779,15 +1779,21 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
                          for( i = 0 ; i < len ; i ++ )
                           { 
                             techid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(tech_add[i]) );
-                            LOG( NOTICE_LOG ,  "add techid ->%d [%s]" ,  techid ,  CORBA::string_dup( tech_add[i]) );
                              if( techid )
                                {
+                                  LOG( NOTICE_LOG ,  "add techid ->%d [%s]" ,  techid ,  CORBA::string_dup( tech_add[i]) );
                                   if(  PQsql.CheckContactMap( "nsset" , id , techid ) == false ) // pokud kontak jeste neexistuje tak ho pridej
                                     {
                                       sprintf( sqlString , "INSERT INTO nsset_contact_map VALUES ( %d , %d );"  , id , techid );
                                       if(   PQsql.ExecSQL( sqlString ) == false ) { ret->errCode=COMMAND_FAILED; break; } 
                                     }
                                }
+                            else
+                              {
+                                   LOG( WARNING_LOG , "Tech contact [%s] not exist" , CORBA::string_dup(tech_rem[i]) );
+                                   ret->errCode=COMMAND_FAILED;
+                                   break;
+                              }
 
                            }
 
@@ -1797,17 +1803,23 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
                           {
 
                              techid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(tech_rem[i]) );
-                             LOG( NOTICE_LOG ,  "rem techid ->%d [%s]" ,  techid , CORBA::string_dup(tech_rem[i] ) );
 
            
                              if( techid )
                               {  
+                                 LOG( NOTICE_LOG ,  "rem techid ->%d [%s]" ,  techid , CORBA::string_dup(tech_rem[i] ) ); 
                                 if(  PQsql.CheckContactMap( "nsset" , id , techid ) )
                                   { 
                                     sprintf( sqlString , "DELETE FROM domain_contact_map WHERE  domainid=%d and contactid=%d;" , id , techid );
                                     if(   PQsql.ExecSQL( sqlString ) == false ) { ret->errCode=COMMAND_FAILED; break; }
                                   }
                               
+                              }
+                            else
+                              {
+                                   LOG( WARNING_LOG , "Tech contact [%s] not exist" , CORBA::string_dup(tech_rem[i]) );
+                                   ret->errCode=COMMAND_FAILED; 
+                                   break;
                               }
                           }
  
