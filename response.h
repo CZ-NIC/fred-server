@@ -9,5 +9,6 @@
 #define COMMAND_NO_MESG  1300 // nejsou zadne zpravi vraci poll 
 #define COMMAND_ACK_MESG 1301 // zpravy jsou ve fronte vraci poll
 
-#define COMMAND_STATUS_PROHIBITS_OPERATION 2304
+#define COMMAND_PARAMETR_VALUE_POLICY_ERROR 2306 // spatna hodnota napriklad status flag server od klienta
+#define COMMAND_STATUS_PROHIBITS_OPERATION 2304 // nevyhovuje stavajici status flag
 #define COMMAND_PROHIBITS_OPERATION 2305
