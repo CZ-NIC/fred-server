@@ -39,5 +39,5 @@ public:
   ccReg::Response* DomainTrade(const char* fqdn, const char* old_registrant, const char* new_registrant, const char* authInfo, CORBA::Long clientID, const char* clTRID);
 
 private:
-char DATABASE[128]; // nazev spojeni na databazi
+char database[128]; // nazev spojeni na databazi
 };

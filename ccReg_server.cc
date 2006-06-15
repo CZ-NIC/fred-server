@@ -19,8 +19,8 @@
 #ifndef CONFIG_FILE
 #define CONFIG_FILE "ccReg.conf"
 #endif
-
-static char DATABASE[128];
+*/
+static char database[128];
 
 static CORBA::ORB_ptr orbToShutdown = NULL;
 static void signalHandler(int signal)

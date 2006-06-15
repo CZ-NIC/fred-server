@@ -31,7 +31,7 @@
 ccReg_EPP_i::ccReg_EPP_i(char *db){
 
 // zkopiruj pri vytvoreni instance
-strcpy( DATABASE , db ); // retezec na  pripojeni k Postgres SQL
+strcpy( database , db ); // retezec na  pripojeni k Postgres SQL
 
 
 }
@@ -66,7 +66,7 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED; // chyba
 
 LOG( NOTICE_LOG ,  "GetTransaction: clientID -> %d clTRID [%s]" , clientID, clTRID );
-if(  PQsql.OpenDatabase( DATABASE ) )
+if(  PQsql.OpenDatabase( database ) )
 {
    if( PQsql.BeginAction( clientID ,  EPP_UnknowAction , (char * ) clTRID  ) )
    {     
@@ -122,7 +122,7 @@ newmsgID = 0 ;
 
 LOG( NOTICE_LOG ,  "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d" , clientID, clTRID , msgID );
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 // get  registrator ID
@@ -206,7 +206,7 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
 LOG( NOTICE_LOG ,  "PollRequest: clientID -> %d clTRID [%s]" , clientID, clTRID , msgID );
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
    // get  registrator ID
@@ -276,7 +276,7 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 LOG( NOTICE_LOG ,  "ClientLogout: clientID -> %d clTRID [%s]" , clientID, clTRID );
 
 
-if(  PQsql.OpenDatabase( DATABASE ) )
+if(  PQsql.OpenDatabase( database ) )
 {
   if( PQsql.BeginAction( clientID , EPP_ClientLogout , (char * ) clTRID  ) )
   {
@@ -334,7 +334,7 @@ clientID = 0;
 
 LOG( NOTICE_LOG ,  "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s]  certID [%s] " , ClID, clTRID  , passwd , newpass  ,  certID);
 
-if(  PQsql.OpenDatabase( DATABASE ) )
+if(  PQsql.OpenDatabase( database ) )
 {
   // dotaz na ID registratora 
   roid  = PQsql.GetNumericFromTable( "REGISTRAR" , "id" , "handle" ,  (char * ) ClID);   
@@ -449,7 +449,7 @@ ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
   if( PQsql.BeginAction( clientID , EPP_ContactCheck , (char * ) clTRID  ) )
@@ -514,7 +514,7 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
 LOG( NOTICE_LOG ,  "ContactInfo: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
  
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
   
@@ -689,7 +689,7 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
 
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
  if( PQsql.BeginAction( clientID , EPP_ContactDelete , (char * ) clTRID  ) )
@@ -810,7 +810,7 @@ for( i = 0 ; i < len ; i ++ ) LOG( NOTICE_LOG ,  "status_rem [%s] " ,    CORBA::
 
 // konec
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
@@ -984,7 +984,7 @@ crDate = 0;
 
 LOG( NOTICE_LOG ,  "ContactCreate: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
  
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
@@ -1130,7 +1130,7 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
 LOG( NOTICE_LOG ,  "NSSetCheck: clientID -> %d clTRID [%s] " , clientID , clTRID );
  
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
   if( PQsql.BeginAction( clientID , EPP_NSsetCheck , (char * ) clTRID  ) )
@@ -1196,7 +1196,7 @@ LOG( NOTICE_LOG ,  "NSSetInfo: clientID -> %d clTRID [%s] handle [%s] " , client
  
 
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 if( PQsql.BeginAction( clientID , EPP_NSsetInfo , (char * ) clTRID  ) )
@@ -1372,7 +1372,7 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
 
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
  if( PQsql.BeginAction( clientID , EPP_NSsetDelete , (char * ) clTRID  ) )
@@ -1501,7 +1501,7 @@ crDate=0;
 LOG( NOTICE_LOG ,  "NSSetCreate: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
 
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
@@ -1671,7 +1671,7 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 LOG( NOTICE_LOG ,  "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
 
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
@@ -1903,7 +1903,7 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 LOG( NOTICE_LOG ,  "NSSetTransfer: clientID -> %d clTRID [%s] handle [%s] authInfo [%s] " , clientID , clTRID , handle , authInfo );
  
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
@@ -1995,7 +1995,7 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
 LOG( NOTICE_LOG ,  "DomainCheck: clientID -> %d clTRID [%s] " , clientID , clTRID );
  
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
   if( PQsql.BeginAction( clientID , EPP_DomainCheck , (char * ) clTRID  ) )
@@ -2063,7 +2063,7 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
 
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
@@ -2213,7 +2213,7 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
 
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 if( PQsql.BeginAction( clientID , EPP_DomainDelete , (char * ) clTRID  ) )
@@ -2314,7 +2314,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
@@ -2499,7 +2499,7 @@ crDate = 0 ;
 exDate = 0 ;
 
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
@@ -2646,7 +2646,7 @@ exDate=0;
 
 
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
@@ -2752,7 +2752,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
@@ -2853,7 +2853,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 
 
-if( PQsql.OpenDatabase( DATABASE ) )
+if( PQsql.OpenDatabase( database ) )
 {
 
 if( PQsql.BeginAction( clientID , EPP_DomainTrade , (char * ) clTRID  ) )
