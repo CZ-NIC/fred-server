@@ -901,7 +901,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
                 add_field_value( sqlString , "City" ,  CORBA::string_dup(c.City)  ) ;
                 add_field_value( sqlString , "StateOrProvince" ,  CORBA::string_dup(c.StateOrProvince)  ) ;
                 add_field_value( sqlString , "PostalCode" ,  CORBA::string_dup(c.PostalCode)  ) ;
-                add_field_value( sqlString , "Country" , CORBA::string_dup(c.Country) );
+                add_field_value( sqlString , "Country" , CORBA::string_dup(c.cc) );
                 add_field_value( sqlString , "Telephone" ,  CORBA::string_dup(c.Telephone)  ) ;
                 add_field_value( sqlString , "Fax" ,  CORBA::string_dup(c.Fax)  ) ;
                 add_field_value( sqlString , "Email" ,  CORBA::string_dup(c.Email)  ) ;
@@ -1022,7 +1022,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         create_field_fname(sqlString , "City" , CORBA::string_dup(c.City) );
         create_field_fname(sqlString , "StateOrProvince" , CORBA::string_dup(c.StateOrProvince) );
         create_field_fname(sqlString , "PostalCode" , CORBA::string_dup(c.PostalCode) );
-        create_field_fname(sqlString , "Country" , CORBA::string_dup(c.Country) );
+        create_field_fname(sqlString , "Country" , CORBA::string_dup(c.cc) );
         create_field_fname(sqlString , "Telephone" , CORBA::string_dup(c.Telephone) );
         create_field_fname(sqlString , "Fax" , CORBA::string_dup(c.Fax) );
         create_field_fname(sqlString , "Email" , CORBA::string_dup(c.Email) );
@@ -1050,7 +1050,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         create_field_value(sqlString , "City" , CORBA::string_dup(c.City) );
         create_field_value(sqlString , "StateOrProvince" , CORBA::string_dup(c.StateOrProvince) );
         create_field_value(sqlString , "PostalCode" , CORBA::string_dup(c.PostalCode) );
-        create_field_value(sqlString , "Country" , CORBA::string_dup(c.Country) );
+        create_field_value(sqlString , "Country" , CORBA::string_dup(c.cc) );
         create_field_value(sqlString , "Telephone" , CORBA::string_dup(c.Telephone) );
         create_field_value(sqlString , "Fax" , CORBA::string_dup(c.Fax) );
         create_field_value(sqlString , "Email" , CORBA::string_dup(c.Email) );
@@ -2450,8 +2450,9 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
                       len = admin_add.length(); 
                        for( i = 0 ; i < len ; i ++ )
                           { 
-                                   adminid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(admin_add[i]) );
-
+                              adminid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(admin_add[i]) );
+                              if( adminid )
+                                {  
                                     LOG( NOTICE_LOG ,  "ADD admin contact id %d [%s]  " , adminid , CORBA::string_dup(admin_add[i])  );
                                     sprintf( sqlString , "INSERT INTO domain_contact_map VALUES ( %d , %d );"  , id , adminid );
                                     if(   PQsql.ExecSQL( sqlString ) == false ) 
@@ -2460,6 +2461,13 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
                                         ret->errCode=COMMAND_FAILED; 
                                         break; 
                                       } 
+                                }
+                              else 
+                               {
+                                  LOG( WARNING_LOG ,  "admin_contact  [%s] not exist " ,  CORBA::string_dup(admin_add[i])  );
+                                  ret->errCode=COMMAND_FAILED;
+                                  break;
+                               }
   
                            }
 
@@ -2467,15 +2475,25 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
                        len = admin_rem.length();   
                        for( i = 0 ; i < len ; i ++ )
                           {
-                                   adminid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(admin_rem[i]) );
-                                   LOG( NOTICE_LOG ,  "DEL admin contact id %d [%s]  " , adminid , CORBA::string_dup(admin_add[i])  );
-                                   sprintf( sqlString , "DELETE FROM domain_contact_map WHERE  domainid=%d and contactid=%d;" , id , adminid );
+                           adminid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(admin_rem[i]) );
+                           if( adminid )
+                             {
+                              LOG( NOTICE_LOG ,  "DEL admin contact id %d [%s]  " , adminid , CORBA::string_dup(admin_add[i])  );
+                              sprintf( sqlString , "DELETE FROM domain_contact_map WHERE  domainid=%d and contactid=%d;" , id , adminid );
                                     if(   PQsql.ExecSQL( sqlString ) == false ) 
                                       { 
                                         LOG( WARNING_LOG ,  "can not delte admin_contact id %d [%s] " ,  adminid , CORBA::string_dup(admin_add[i])  );
                                         ret->errCode=COMMAND_FAILED; 
                                         break; 
                                       } 
+                              }
+                              else
+                               {
+                                  LOG( WARNING_LOG ,  "admin_contact  [%s] not exist " ,  CORBA::string_dup(admin_add[i])  );
+                                  ret->errCode=COMMAND_FAILED;
+                                  break;
+                               }
+     
                           }
  
                         }     
