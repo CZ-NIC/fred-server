@@ -30,7 +30,7 @@ return ReadConfigFileTXT( filename );
 };
 
 #ifdef XMLCONF
-void Conf::get_element_names(xmlNode * a_node);
+void get_element_names(xmlNode * a_node);
 bool  ReadConfigFileXML(const char *filename );
 #endif
 bool  ReadConfigFileTXT(const char *filename );
