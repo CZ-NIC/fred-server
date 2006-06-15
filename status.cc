@@ -169,10 +169,10 @@ switch( status )
            return "clientDeleteProhibited";
    case STATUS_serverDeleteProhibited:
            return "serverDeleteProhibited";
-   case STATUS_clientHold:
-           return "clientHold";
-   case STATUS_serverHold:
-           return "serverHold";
+//   case STATUS_clientHold:
+//           return "clientHold";
+//   case STATUS_serverHold:
+//           return "serverHold";
    case STATUS_clientRenewProhibited:
            return "clientRenewProhibited";
    case STATUS_serverRenewProhibited:
@@ -199,8 +199,8 @@ int Status::GetStatusNumber(const char  *status )
      if( strcmp( status , "linked" ) == 0 ) return STATUS_linked;
      if( strcmp( status , "clientDeleteProhibited" ) == 0 ) return  STATUS_clientDeleteProhibited;
      if( strcmp( status , "serverDeleteProhibited" ) == 0 ) return  STATUS_serverDeleteProhibited;
-     if( strcmp( status , "clientHold" ) == 0 ) return STATUS_clientHold;
-     if( strcmp( status , "serverHold" ) == 0 ) return  STATUS_serverHold;
+//     if( strcmp( status , "clientHold" ) == 0 ) return STATUS_clientHold;
+//     if( strcmp( status , "serverHold" ) == 0 ) return  STATUS_serverHold;
      if( strcmp( status , "clientRenewProhibited" ) == 0 ) return   STATUS_clientRenewProhibited;
      if( strcmp( status , "serverRenewProhibited" ) == 0 ) return   STATUS_serverRenewProhibited;
      if( strcmp( status , "clientTransferProhibited" ) == 0 ) return   STATUS_clientTransferProhibited;

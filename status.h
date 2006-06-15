@@ -5,12 +5,12 @@
 #define STATUS_linked                      3
 
 #define STATUS_clientDeleteProhibited    101
-#define STATUS_clientHold                102
+// #define STATUS_clientHold                102
 #define STATUS_clientRenewProhibited     103
 #define STATUS_clientTransferProhibited  104
 #define STATUS_clientUpdateProhibited    105
 #define STATUS_serverDeleteProhibited    201
-#define STATUS_serverHold                202
+// #define STATUS_serverHold                202
 #define STATUS_serverRenewProhibited     203
 #define STATUS_serverTransferProhibited  204
 #define STATUS_serverUpdateProhibited    205
@@ -23,7 +23,7 @@
 */
 
 #define STATUS_DELETE        1
-#define STATUS_HOLD          2
+// #define STATUS_HOLD          2
 #define STATUS_RENEW         3
 #define STATUS_TRANSFER      4
 #define STATUS_UPDATE        5
