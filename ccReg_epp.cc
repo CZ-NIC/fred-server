@@ -1684,7 +1684,11 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
  {
 
    // pokud domena existuje
-  if( (id = PQsql.GetNumericFromTable(  "NSSET"  , "id" , "handle" , (char * ) handle ) ) == 0 ) ret->errCode= COMMAND_OBJECT_NOT_EXIST;
+  if( (id = PQsql.GetNumericFromTable(  "NSSET"  , "id" , "handle" , (char * ) handle ) ) == 0 )
+  {
+    LOG( WARNING_LOG  ,  "object [%s] NOT_EXIST" ,  handle );
+    ret->errCode= COMMAND_OBJECT_NOT_EXIST;
+  }
   else
   if( PQsql.BeginTransaction() )  
   {
@@ -1865,9 +1869,6 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
 
                      }
 
-                       // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
-                      if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
-                      else  PQsql.RollbackTransaction();
 
                   
                }
@@ -1875,13 +1876,19 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
 
               
            }
+
+
+
        }
 
-   }
+    // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
+   if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
+   else  PQsql.RollbackTransaction();
+  }
 
    // zapis na konec action
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
-}
+ }
 
 
 PQsql.Disconnect();
@@ -2297,13 +2304,13 @@ if( PQsql.BeginAction( clientID , EPP_DomainDelete , (char * ) clTRID  ) )
     }
 
    // pokud vse proslo
- if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspesne nainsertovalo commitni zmeny
- else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
- }
+   if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspesne nainsertovalo commitni zmeny
+   else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
+   }
 
 
-   // zapis na konec action
-   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
+ // zapis na konec action
+ ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
  }
 
 PQsql.Disconnect();
@@ -2511,20 +2518,20 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
                         }     
                      }
 
-                      // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
-                      if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
-                      else  PQsql.RollbackTransaction();
 
                   
                }
            }
        }
 
-   }
+  // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
+  if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
+  else  PQsql.RollbackTransaction();
+  }
 
-   // zapis na konec action
-   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
-}
+ // zapis na konec action
+ ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
+ }
 
 
 PQsql.Disconnect();
@@ -2562,6 +2569,7 @@ char expiryDate[32] , createDate[32];
 ccReg::Response *ret;
 int contactid , regID , nssetid , adminid , id;
 int i , len , s , zone ;
+bool admin_insert;
 time_t t;
 
 ret = new ccReg::Response;
@@ -2589,14 +2597,13 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
  {
  
 // prvni test zdali domena uz existuje
- if(  PQsql.GetNumericFromTable("DOMAIN" , "id" ,  "fqdn" , (char * ) fqdn ) ) 
-    {
+if(  PQsql.GetNumericFromTable("DOMAIN" , "id" ,  "fqdn" , (char * ) fqdn ) ) 
+  {
        ret->errCode=COMMAND_OBJECT_EXIST; // je uz zalozena
        LOG( WARNING_LOG  ,  "domain  [%s] EXIST" , fqdn );
-    }
- else
-// pokud domena nexistuje
- {
+  }
+  else
+// pokud domena nexistuje 
   // zahaj transakci
   if( PQsql.BeginTransaction() )
   {
@@ -2632,8 +2639,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
 
    // pokud se insertovalo do tabulky
         if(  PQsql.ExecSQL( sqlString ) )
-         {
-          ret->errCode = COMMAND_OK; // nastavit uspesne
+        {
+          admin_insert=true;
           // zapis admin kontakty
           len = admin.length();
           for( i = 0 ; i < len ; i ++ )
@@ -2642,41 +2649,32 @@ if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
 
               sprintf( sqlString , "INSERT INTO domain_contact_map VALUES ( %d , %d );"  , id , adminid );
 
-              if( PQsql.ExecSQL( sqlString ) == false )  // pokud se nepodarilo pridat do tabulky
-                {
-	            ret->errCode = COMMAND_FAILED;                     
-                    break;
-                }
+              if( PQsql.ExecSQL( sqlString ) == false ) { admin_insert=false; break;}  // pokud se nepodarilo pridat do tabulky                
             }
 
+          if( admin_insert ) // pokud se ulozili admin kontakty uloz vse do historie
+            {
 
+                  if( PQsql.SaveHistory( "domain_contact_map" , "domainID" , id ) )
+                    {
+                      if( PQsql.SaveHistory(  "DOMAIN" , "id" , id  ) )  ret->errCode == COMMAND_OK; // vse probejlo uspesne
+                    }
+            }  
+        
         } 
-
+        
+        
      }
 
-       if(  ret->errCode == COMMAND_OK )
-       {
-      //  uloz do historie
-       if( PQsql.MakeHistory() )
-         {
-            if( PQsql.SaveHistory( "domain_contact_map" , "domainID" , id ) )
-               {
-                   if( PQsql.SaveHistory(  "DOMAIN" , "id" , id  ) )
-                     {
-                         // pokud nebyla chyba pri insertovani do tabulky domain_contact_map 
-                        if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
-                        else PQsql.RollbackTransaction();   
-                     }
-                     
-               }
-         }
-       }
+
+
+  // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
+  if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
+  else  PQsql.RollbackTransaction();
   }
- }
 
-
-   // zapis na konec action
-   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
+ // zapis na konec action
+ ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
  }
 
 PQsql.Disconnect();
@@ -2739,13 +2737,17 @@ if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
  {
  
   regID = PQsql.GetLoginRegistrarID( clientID ); // aktivni registrator
-
-// prvni test zdali domena uz existuje
- if(  ( id = PQsql.GetNumericFromTable("DOMAIN" , "id" ,  "fqdn" , (char * ) fqdn )  ) )
+  id = PQsql.GetNumericFromTable("DOMAIN" , "id" ,  "fqdn" , (char * ) fqdn );
+  // prvni test zdali domena  neexistuje 
+ if( id == 0  )
   {
-       // zahaj transakci
-      if( PQsql.BeginTransaction() )
-        {
+      ret->errCode == COMMAND_OBJECT_NOT_EXIST; // domena neexistujea
+      LOG( WARNING_LOG  ,  "domain  [%s] NOT_EXIST" , fqdn );
+  }
+  else
+   // zahaj transakci
+  if( PQsql.BeginTransaction() )
+    {
  
            sprintf( sqlString , "SELECT * FROM DOMAIN WHERE id=\'%d\'" , id);
 
@@ -2791,23 +2793,15 @@ if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
         
  
 
-       // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
-       if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
-       else PQsql.RollbackTransaction();   
-     }
-
- 
- } 
- else
-  {
-    ret->errCode == COMMAND_OBJECT_NOT_EXIST; // domena neexistujea
-      LOG( WARNING_LOG  ,  "domain  [%s] NOT_EXIST" , fqdn );
+     // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
+     if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
+     else PQsql.RollbackTransaction();   
   }
 
-
+ 
    // zapis na konec action
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
-}
+ }
 
 PQsql.Disconnect();
 }
