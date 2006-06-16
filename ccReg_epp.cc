@@ -39,6 +39,24 @@ ccReg_EPP_i::~ccReg_EPP_i(){
   // add extra destructor code here
 // PQsql.Disconnect();
 }
+// test spojeni na databazi
+bool ccReg_EPP_i::TestDatabaseConnect()
+{
+PQ  PQsql;
+
+if(  PQsql.OpenDatabase( database ) )
+{
+LOG( NOTICE_LOG ,  "succefuly connect to:  [%s]" , database );
+PQsql.Disconnect();
+return true;
+}
+else
+{
+LOG( ERROR_LOG , "can not connect to database: [%s]" , database );
+return false;
+}
+
+}
 
 /***********************************************************************
  *

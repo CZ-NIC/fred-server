@@ -67,8 +67,11 @@ int main(int argc, char** argv)
 
       
 
-      ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i( db );
-
+    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i( db );
+     
+    // pokud projde uspesne test na pripojeni k databazi
+    if( myccReg_EPP_i->TestDatabaseConnect() ) 
+    {
 
 
     // Activate the objects.  This tells the POA that the objects are
@@ -106,6 +109,9 @@ int main(int argc, char** argv)
     LOG( EMERG_LOG , "Starting ccReg_server");
     orb->run();
     orb->destroy();
+
+    }
+
    }
   }
   catch(CORBA::TRANSIENT&) {

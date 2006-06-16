@@ -12,6 +12,9 @@ public:
   ccReg_EPP_i( char *db );
   virtual ~ccReg_EPP_i();
 
+// test spojeni na databazi
+bool ccReg_EPP_i::TestDatabaseConnect();
+
   // methods corresponding to defined IDL attributes and operations
   ccReg::Response* GetTransaction(CORBA::Long clientID, const char* clTRID, CORBA::Short errCode);
   ccReg::Response* PollAcknowledgement(CORBA::Long msgID, CORBA::Short& count, CORBA::Long& newmsgID, CORBA::Long clientID, const char* clTRID);
