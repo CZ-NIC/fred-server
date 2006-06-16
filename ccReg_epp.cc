@@ -919,7 +919,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
                 add_field_value( sqlString , "City" ,  CORBA::string_dup(c.City)  ) ;
                 add_field_value( sqlString , "StateOrProvince" ,  CORBA::string_dup(c.StateOrProvince)  ) ;
                 add_field_value( sqlString , "PostalCode" ,  CORBA::string_dup(c.PostalCode)  ) ;
-                add_field_value( sqlString , "Country" , CORBA::string_dup(c.cc) );
+                add_field_value( sqlString , "Country" , CORBA::string_dup(c.CC) );
                 add_field_value( sqlString , "Telephone" ,  CORBA::string_dup(c.Telephone)  ) ;
                 add_field_value( sqlString , "Fax" ,  CORBA::string_dup(c.Fax)  ) ;
                 add_field_value( sqlString , "Email" ,  CORBA::string_dup(c.Email)  ) ;
@@ -1040,7 +1040,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         create_field_fname(sqlString , "City" , CORBA::string_dup(c.City) );
         create_field_fname(sqlString , "StateOrProvince" , CORBA::string_dup(c.StateOrProvince) );
         create_field_fname(sqlString , "PostalCode" , CORBA::string_dup(c.PostalCode) );
-        create_field_fname(sqlString , "Country" , CORBA::string_dup(c.cc) );
+        create_field_fname(sqlString , "Country" , CORBA::string_dup(c.CC) );
         create_field_fname(sqlString , "Telephone" , CORBA::string_dup(c.Telephone) );
         create_field_fname(sqlString , "Fax" , CORBA::string_dup(c.Fax) );
         create_field_fname(sqlString , "Email" , CORBA::string_dup(c.Email) );
@@ -1068,7 +1068,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         create_field_value(sqlString , "City" , CORBA::string_dup(c.City) );
         create_field_value(sqlString , "StateOrProvince" , CORBA::string_dup(c.StateOrProvince) );
         create_field_value(sqlString , "PostalCode" , CORBA::string_dup(c.PostalCode) );
-        create_field_value(sqlString , "Country" , CORBA::string_dup(c.cc) );
+        create_field_value(sqlString , "Country" , CORBA::string_dup(c.CC) );
         create_field_value(sqlString , "Telephone" , CORBA::string_dup(c.Telephone) );
         create_field_value(sqlString , "Fax" , CORBA::string_dup(c.Fax) );
         create_field_value(sqlString , "Email" , CORBA::string_dup(c.Email) );
@@ -2115,6 +2115,7 @@ ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 LOG( NOTICE_LOG ,  "DomainInfo: clientID -> %d clTRID [%s] fqdn  [%s] " , clientID , clTRID  , fqdn );
 
 
+d->ext.length(0); // extension
 if( PQsql.OpenDatabase( database ) )
 {
 
@@ -2353,12 +2354,13 @@ return ret;
  *              status_rem - status flagy na smazani
  *              clientID - id klienta
  *              clTRID - cislo transakce klienta
+ *              ext - ExtensionList
  * 
  * RETURNED:    svTRID a errCode
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::DomainUpdate(const char* fqdn, const char* registrant_chg , const char* authInfo_chg, const char* nsset_chg, const ccReg::AdminContact& admin_add, const ccReg::AdminContact& admin_rem, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::DomainUpdate(const char* fqdn, const char* registrant_chg , const char* authInfo_chg, const char* nsset_chg, const ccReg::AdminContact& admin_add, const ccReg::AdminContact& admin_rem, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID , const ccReg::ExtensionList& ext)
 {
 ccReg::Response *ret;
 PQ PQsql;
@@ -2574,12 +2576,13 @@ return ret;
  *        OUT:  exDate - datum expirace objektu 
  *              clientID - id klienta
  *              clTRID - cislo transakce klienta
+ *              ext - ExtensionList
  * 
  * RETURNED:    svTRID a errCode
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char* AuthInfoPw , CORBA::Short period , const ccReg::AdminContact& admin, ccReg::timestamp& crDate, ccReg::timestamp& exDate,  CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char* AuthInfoPw , CORBA::Short period , const ccReg::AdminContact& admin, ccReg::timestamp& crDate, ccReg::timestamp& exDate,  CORBA::Long clientID, const char* clTRID , const ccReg::ExtensionList& ext )
 {
 PQ PQsql;
 char sqlString[2048] ;
@@ -2715,13 +2718,14 @@ return ret;
  *        OUT:  exDate - datum a cas nove expirace domeny   
  *              clientID - id pripojeneho klienta 
  *              clTRID - cislo transakce klienta
+ *              ext - ExtensionList 
  *
  * RETURNED:    svTRID a errCode
  *
  ***********************************************************************/
 
 
-ccReg::Response*  ccReg_EPP_i::DomainRenew(const char* fqdn, ccReg::timestamp curExpDate, CORBA::Short period,   ccReg::timestamp& exDate,  CORBA::Long clientID, const char* clTRID)
+ccReg::Response*  ccReg_EPP_i::DomainRenew(const char* fqdn, ccReg::timestamp curExpDate, CORBA::Short period,   ccReg::timestamp& exDate,  CORBA::Long clientID, const char* clTRID , const ccReg::ExtensionList& ext )
 {
 PQ PQsql;
 Status status;
@@ -2840,12 +2844,13 @@ return ret;
  *              authInfo - autentifikace heslem 
  *              clientID - id pripojeneho klienta 
  *              clTRID - cislo transakce klienta
+ *              ext - ExtensionList
  *
  * RETURNED:    svTRID a errCode
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::DomainTransfer(const char* fqdn, /* const char* registrant, */ const char* authInfo, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::DomainTransfer(const char* fqdn, /* const char* registrant, */ const char* authInfo, CORBA::Long clientID, const char* clTRID , const ccReg::ExtensionList& ext )
 {
 ccReg::Response *ret;
 PQ PQsql;
