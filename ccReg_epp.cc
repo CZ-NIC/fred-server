@@ -58,6 +58,8 @@ return false;
 
 }
 
+
+
 /***********************************************************************
  *
  * FUNCTION:	GetTransaction
@@ -68,13 +70,14 @@ return false;
  * PARAMETERS:  clTRID - cislo transakce klienta
  *              clientID - identifikace klienta
  *              errCode - chybove hlaseni z klienta uklada se do tabulky action
- * RETURNED:    svTRID a errCode
+ *          
+ * RETURNED:    svTRID a errCode errMsg
  *
  ***********************************************************************/
 
 
 
-ccReg::Response* ccReg_EPP_i::GetTransaction(CORBA::Long clientID, const char* clTRID, CORBA::Short errCode)
+ccReg::Response* ccReg_EPP_i::GetTransaction(CORBA::Long clientID, const char* clTRID, CORBA::Short errCode )
 {
 PQ  PQsql;
 
@@ -82,8 +85,14 @@ ccReg::Response *ret;
 ret = new ccReg::Response;
 // default
 ret->errCode=COMMAND_FAILED; // chyba
+ret->svTRID = CORBA::string_alloc(32); //  server transaction
+ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
-LOG( NOTICE_LOG ,  "GetTransaction: clientID -> %d clTRID [%s]" , clientID, clTRID );
+LOG( NOTICE_LOG ,  "GetTransaction: clientID -> %d clTRID [%s] " , clientID, clTRID  );
 if(  PQsql.OpenDatabase( database ) )
 {
    if( PQsql.BeginAction( clientID ,  EPP_UnknowAction , (char * ) clTRID  ) )
@@ -93,8 +102,12 @@ if(  PQsql.OpenDatabase( database ) )
     // zapis na konec action
     // zapis na konec action
     ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
-    LOG( NOTICE_LOG , "GetTransaction: svTRID [%s] errCode -> %d " , (char * )   ret->svTRID  ,  ret->errCode ); 
+    ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
+    LOG( NOTICE_LOG , "GetTransaction: svTRID [%s] errCode -> %d msg [%s] " , (char * )   ret->svTRID  ,  ret->errCode  , CORBA::string_dup( ret->errMsg  )); 
    }
+
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
 
 PQsql.Disconnect();
 }
@@ -134,6 +147,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 count = 0 ;
 newmsgID = 0 ;
@@ -175,7 +190,10 @@ if( PQsql.BeginAction( clientID , EPP_PollAcknowledgement , (char * ) clTRID  ) 
       ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;   
   }
  
- PQsql.Disconnect();
+
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
+PQsql.Disconnect();
 }
  
 return ret;
@@ -221,6 +239,8 @@ mesg = CORBA::string_dup(""); // prazdna hodnota
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 LOG( NOTICE_LOG ,  "PollRequest: clientID -> %d clTRID [%s]" , clientID, clTRID , msgID );
 
@@ -258,7 +278,9 @@ if( PQsql.OpenDatabase( database ) )
 
   }
 
- PQsql.Disconnect();
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
+PQsql.Disconnect();
 }
 
 return ret;
@@ -289,6 +311,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 
 LOG( NOTICE_LOG ,  "ClientLogout: clientID -> %d clTRID [%s]" , clientID, clTRID );
@@ -308,6 +332,8 @@ if(  PQsql.OpenDatabase( database ) )
     ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
   }
 
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
 PQsql.Disconnect();
 }
 
@@ -326,13 +352,14 @@ return ret;
  *              newpasswd - nove heslo pro zmenu
  *        OUT:  clientID - id pripojeneho klienta
  *              clTRID - cislo transakce klienta
- *               certID - fingerprint certifikatu 
+ *              certID - fingerprint certifikatu 
+ *              lang - komunikacni jazyk klienta  en nebo cs prazdna hodnota = en
  * 
  * RETURNED:    svTRID a errCode
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, CORBA::Long& clientID , const char* certID )
+ccReg::Response* ccReg_EPP_i::ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, CORBA::Long& clientID , const char* certID  ,  const char*  lang )
 {
 PQ  PQsql;
 char sqlString[1024];
@@ -346,11 +373,14 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED; // chyba
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
- 
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
+
 clientID = 0;
 
 
-LOG( NOTICE_LOG ,  "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s]  certID [%s] " , ClID, clTRID  , passwd , newpass  ,  certID);
+LOG( NOTICE_LOG ,  "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s] " , ClID, clTRID  , passwd , newpass );
+LOG( NOTICE_LOG ,  "ClientLogin:  certID  [%s] lang  [%s] " , certID , lang );
 
 if(  PQsql.OpenDatabase( database ) )
 {
@@ -401,7 +431,14 @@ if( roid )
     {
      clientID = id;
      LOG( NOTICE_LOG ,  "get clientID  -> %d" , clientID );
-     ret->errCode= COMMAND_OK; 
+
+    // zmena jazyka pouze na cestinu
+    if( strcmp( lang , "cs" ) == 0 ) 
+      {
+         sprintf( sqlString , "UPDATE login SET  lang=\'cs\' where id=%d;" , clientID );
+         if(  PQsql.ExecSQL( sqlString ) ) ret->errCode= COMMAND_OK;          
+      }
+     else   ret->errCode= COMMAND_OK; 
     }   
 
 
@@ -423,6 +460,8 @@ else
          ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
       } 
 
+
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
 
 PQsql.Disconnect();
 }
@@ -466,6 +505,8 @@ LOG( NOTICE_LOG ,  "ContactCheck: clientID -> %d clTRID [%s] " , clientID , clTR
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 if( PQsql.OpenDatabase( database ) )
 {
@@ -489,8 +530,10 @@ if( PQsql.OpenDatabase( database ) )
       ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
     
   }
+
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
  
- PQsql.Disconnect();
+PQsql.Disconnect();
 }
  
 return ret;
@@ -529,6 +572,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32);
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 LOG( NOTICE_LOG ,  "ContactInfo: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
  
@@ -612,7 +657,9 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
         c->CrID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( crid ) );
         c->UpID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( upid ) );
 
-	c->Country=CORBA::string_dup( PQsql.GetValueFromTable("enum_country" , "country" , "id" ,  countryCode ) ); // uplny nazev zeme
+                                                    // kod zeme cesky
+        if( PQsql.GetClientLanguage() == LANG_CS )  c->Country=CORBA::string_dup( PQsql.GetValueFromTable("enum_country" , "country_cs" , "id" ,  countryCode ) );
+	else c->Country=CORBA::string_dup( PQsql.GetValueFromTable("enum_country" , "country" , "id" ,  countryCode ) ); // uplny nazev zeme
 
      }
     else 
@@ -630,7 +677,9 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
 
 }
 
- PQsql.Disconnect();
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) );
+
+PQsql.Disconnect();
 }
 
 
@@ -702,6 +751,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 
 LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
@@ -773,6 +824,8 @@ if( PQsql.OpenDatabase( database ) )
   }
 
  
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
 PQsql.Disconnect();
 }
 
@@ -815,6 +868,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 
 LOG( NOTICE_LOG ,  "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
@@ -961,6 +1016,8 @@ if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
 }
 
  
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
 PQsql.Disconnect();
 }
 
@@ -999,6 +1056,9 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
+
 crDate = 0;
 
 
@@ -1110,6 +1170,8 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
    // zapis na konec action
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
  }
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
 PQsql.Disconnect();
 }
 
@@ -1153,6 +1215,8 @@ a->length(len);
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 
 LOG( NOTICE_LOG ,  "NSSetCheck: clientID -> %d clTRID [%s] " , clientID , clTRID );
@@ -1179,7 +1243,9 @@ if( PQsql.OpenDatabase( database ) )
 
   }
 
- PQsql.Disconnect();
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
+PQsql.Disconnect();
 }
 
 return ret;
@@ -1218,6 +1284,8 @@ n = new ccReg::NSSet;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 LOG( NOTICE_LOG ,  "NSSetInfo: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
  
@@ -1339,7 +1407,9 @@ if( PQsql.BeginAction( clientID , EPP_NSsetInfo , (char * ) clTRID  ) )
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
  }
 
- PQsql.Disconnect();
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
+PQsql.Disconnect();
 }
 
 
@@ -1393,6 +1463,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 
 LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
@@ -1477,6 +1549,7 @@ if( PQsql.OpenDatabase( database ) )
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
   }
 
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
  
 PQsql.Disconnect();
 }
@@ -1523,6 +1596,9 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
+
 crDate=0;
 
 LOG( NOTICE_LOG ,  "NSSetCreate: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
@@ -1643,6 +1719,9 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
    // zapis na konec action
   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
  }
+
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
 PQsql.Disconnect();
 }
 
@@ -1690,6 +1769,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 LOG( NOTICE_LOG ,  "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
 LOG( NOTICE_LOG ,  "NSSetUpdate: authInfo_chg [%s] ", authInfo_chg );
@@ -1909,6 +1990,8 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
  }
 
 
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
 PQsql.Disconnect();
 }
 
@@ -1945,6 +2028,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 LOG( NOTICE_LOG ,  "NSSetTransfer: clientID -> %d clTRID [%s] handle [%s] authInfo [%s] " , clientID , clTRID , handle , authInfo );
 LOG( NOTICE_LOG ,  "NSSetTransfer: authInfo [%s]" , authInfo ); 
@@ -2003,6 +2088,8 @@ if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
 }
 
 
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
 PQsql.Disconnect();
 }
 
@@ -2042,6 +2129,8 @@ a->length(len);
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 LOG( NOTICE_LOG ,  "DomainCheck: clientID -> %d clTRID [%s] " , clientID , clTRID );
  
@@ -2066,7 +2155,9 @@ if( PQsql.OpenDatabase( database ) )
 
   }
 
- PQsql.Disconnect();
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
+PQsql.Disconnect();
 }
 
 return ret;
@@ -2110,6 +2201,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 
 LOG( NOTICE_LOG ,  "DomainInfo: clientID -> %d clTRID [%s] fqdn  [%s] " , clientID , clTRID  , fqdn );
@@ -2210,7 +2303,10 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) );
 
  }
- PQsql.Disconnect();
+
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
+PQsql.Disconnect();
 }
 
 
@@ -2265,6 +2361,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 
 
@@ -2332,6 +2430,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainDelete , (char * ) clTRID  ) )
  ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
  }
 
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
 PQsql.Disconnect();
 }
 
@@ -2375,6 +2475,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 
 
@@ -2554,6 +2656,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
  }
 
 
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
 PQsql.Disconnect();
 }
 
@@ -2603,6 +2707,9 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
+
 crDate = 0 ;
 exDate = 0 ;
 
@@ -2698,6 +2805,8 @@ if(  PQsql.GetNumericFromTable("DOMAIN" , "id" ,  "fqdn" , (char * ) fqdn ) )
  ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
  }
 
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
 PQsql.Disconnect();
 }
 
@@ -2745,6 +2854,8 @@ t =  curExpDate;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 exDate=0;
 
@@ -2825,6 +2936,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
  }
 
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
 PQsql.Disconnect();
 }
 
@@ -2864,6 +2977,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 LOG( NOTICE_LOG ,  "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  " , clientID , clTRID  , fqdn  );
 
@@ -2940,6 +3055,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainTransfer , (char * ) clTRID  ) )
 }
 
 
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+
 PQsql.Disconnect();
 }
 
@@ -2978,6 +3095,8 @@ ret = new ccReg::Response;
 ret->errCode=COMMAND_FAILED;
 ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+ret->errMsg = CORBA::string_alloc(64);
+ret->errMsg = CORBA::string_dup("");
 
 
 if( PQsql.OpenDatabase( database ) )
@@ -3042,6 +3161,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainTrade , (char * ) clTRID  ) )
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
 }
 
+
+ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
 
 PQsql.Disconnect();
 }
