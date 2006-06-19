@@ -28,21 +28,17 @@
 //
 // Example implementational code for IDL interface ccReg::EPP
 //
-ccReg_EPP_i::ccReg_EPP_i(char *db){
+ccReg_EPP_i::ccReg_EPP_i(){
+}
+ccReg_EPP_i::~ccReg_EPP_i(){
+}
+// test spojeni na databazi
+bool ccReg_EPP_i::TestDatabaseConnect(char *db)
+{
+PQ  PQsql;
 
 // zkopiruj pri vytvoreni instance
 strcpy( database , db ); // retezec na  pripojeni k Postgres SQL
-
-
-}
-ccReg_EPP_i::~ccReg_EPP_i(){
-  // add extra destructor code here
-// PQsql.Disconnect();
-}
-// test spojeni na databazi
-bool ccReg_EPP_i::TestDatabaseConnect()
-{
-PQ  PQsql;
 
 if(  PQsql.OpenDatabase( database ) )
 {

@@ -9,11 +9,11 @@ private:
   //virtual ~ccReg_EPP_i();
 public:
   // standard constructor
-  ccReg_EPP_i( char *db );
+  ccReg_EPP_i( );
   virtual ~ccReg_EPP_i();
 
 // test spojeni na databazi
-bool ccReg_EPP_i::TestDatabaseConnect();
+bool ccReg_EPP_i::TestDatabaseConnect(char *db);
 
   // methods corresponding to defined IDL attributes and operations
   ccReg::Response* GetTransaction(CORBA::Long clientID, const char* clTRID, CORBA::Short errCode );
