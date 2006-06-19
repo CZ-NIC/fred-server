@@ -67,10 +67,10 @@ int main(int argc, char** argv)
 
       
 
-    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i( db );
+    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i;
      
     // pokud projde uspesne test na pripojeni k databazi
-    if( myccReg_EPP_i->TestDatabaseConnect() ) 
+    if( myccReg_EPP_i->TestDatabaseConnect( db) ) 
     {
 
 
