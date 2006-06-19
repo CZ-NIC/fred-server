@@ -12,8 +12,8 @@ public:
   ccReg_EPP_i( );
   virtual ~ccReg_EPP_i();
 
-// test spojeni na databazi
-bool ccReg_EPP_i::TestDatabaseConnect(char *db);
+  // test spojeni na databazi
+  bool TestDatabaseConnect(char *db);
 
   // methods corresponding to defined IDL attributes and operations
   ccReg::Response* GetTransaction(CORBA::Long clientID, const char* clTRID, CORBA::Short errCode );
