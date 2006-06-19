@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
-    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789" , "" ,     "GR-login" , loginID , "otisk" );
+    ret =  EPP->ClientLogin( "REG-LRR" , "123456789" , "" , "GR-login" , loginID , "otisk", "cz" );
     cout << loginID  << endl;
 
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
