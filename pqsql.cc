@@ -17,6 +17,8 @@ PQ::PQ()
 // nastav memory buffry
 svrTRID = NULL;
 memHandle=NULL;  
+actionID = 0 ;
+loginID = 0;
 }
 
 // uvolni memory buffry
@@ -54,6 +56,8 @@ else
   LOG( NOTICE_LOG , "Database connection OK user %s host %s port %s DB %s" , 
          PQuser(connection), PQhost(connection),
           PQport(connection), PQdb(connection)); 
+
+  SetEncoding( "LATIN2" );
   return true;
  }
 
@@ -223,6 +227,7 @@ char sqlString[512];
 
 // actionID pro logovani
 actionID = GetSequenceID("action");
+loginID = clientID; // id klienta
 
 if( actionID ) 
   {
@@ -255,7 +260,6 @@ sprintf( sqlString , "UPDATE Action SET response=%d , enddate='now()' , servertr
 // update tabulky
 id  =  actionID;
 actionID = 0 ; 
-
 LOG( SQL_LOG ,  "EndAction svrTRID: %s" ,  svrTRID );
 
 if( ExecSQL(  sqlString ) ) return   svrTRID;
@@ -275,6 +279,32 @@ if( ExecSQL(  sqlString ) ) return   svrTRID;
 else return "svrTRID ERROR";
 }
 
+
+// vraci chybovou zpravu podle jazyka
+char * PQ::GetErrorMessage(int err )
+{
+
+if( GetClientLanguage() == LANG_CS ) return GetErrorMessageCS( err );
+else return GetErrorMessageEN( err );
+
+}
+
+// vraci jazyk klienta
+int PQ::GetClientLanguage()
+{
+int lang = LANG_EN;
+char sqlString[128];
+
+sprintf( sqlString , "SELECT  lang  FROM  login  WHERE id=%d;" , loginID );
+
+if( ExecSelect( sqlString ) )
+ {
+     if(  strcmp(   GetFieldValue( 0 , 0 ) , "cs" ) == 0 ) lang =LANG_CS;
+     FreeSelect();
+ }
+
+return lang;
+}
 
 /*
 char *  PQ::GetStatusString( int status )

@@ -1,6 +1,8 @@
 #include <libpq-fe.h>
 
 
+#define LANG_EN 0
+#define LANG_CS 1
 
 
 class PQ{
@@ -25,6 +27,8 @@ bool RollbackTransaction()
 bool CommitTransaction()
 {return ExecSQL("COMMIT TRANSACTION");};
 
+// nastaveni kodovani 
+void  SetEncoding(  const char *encoding) {  PQsetClientEncoding( connection , encoding ); };
 // vraci velikost 
 int  GetValueLength(int row  , int col);
 
@@ -37,6 +41,9 @@ bool Credit( int registrarID , int domainID , int period , bool create );
 // zpracovani action 
 bool BeginAction(int clientID , int action ,char *clTRID );
 char * EndAction(int response  );
+
+// vraci jazyk klienta
+int GetClientLanguage();
 
 // vraci handle nebo id tabulky
 int GetNumericFromTable( const char *table , const char *vname ,  const char *fname ,  const char *value);
@@ -54,8 +61,15 @@ int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "i
 char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "handle" , "id" , id ); };
 char * GetStatusFromTable( char *table , int id ) {  return GetValueFromTable( table , "status" , "id" , id ); };
 
+
 // vraci id registratora z domeny
 int GetClientDomainRegistrant( int clID , int contactID );
+
+// vraci chybovou zpravu z enum_error
+char * GetErrorMessageEN(int err ) {  return GetValueFromTable( "enum_error", "status" , "id" , err ); };
+char * GetErrorMessageCS(int err ) {  return GetValueFromTable( "enum_error", "status_cs" , "id" , err ); };
+char * GetErrorMessage( int err ); // test na jazyk klienta
+
 
 // test na vazu mezi tabulkami pro kontakt a nsset
 bool TestNSSetRelations(int id );
@@ -95,7 +109,7 @@ int GetSelectRows(){ return nRows;};
 int GetSelectCols(){ return nCols;};
 
 int GetActionID() { return actionID; } // vraci odkaz do tabulky action ID
-
+int GetLoginID() { return loginID; } // vraci id klienta
 
 private:
 PGconn     *connection;
@@ -105,4 +119,5 @@ char *svrTRID;
 int nRows , nCols; // pocet radek pri selectu
 int actionID; // id tabulky akce
 int historyID; // id tabulky historie
+int loginID; // id klienta
 };
