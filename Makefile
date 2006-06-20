@@ -1,15 +1,15 @@
 
 CXX = g++
 
-CXXFLAGS = -O2  -DSYSLOG -DCONFIG_FILE=\"ccReg.xml\" -DXMLCONF
+CXXFLAGS = -O2 -DSYSLOG    -DCONFIG_FILE=\"/etc/ccReg.conf\"
 OBJECTS = 
 IDLFILE = ../idl/ccReg.idl
 LDFLAGS=  -L/usr/local/pgsql/lib/
-LIBS=  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread -lxml2
-CPPFLAGS =  -I/usr/local/pgsql/include/   -I/usr/include/postgresql/  -I.  -Wno-deprecated -I/usr/include/libxml2/
-CCREG_SERVER_OBJECTS=ccRegSK.o  ccReg_epp.o  ccReg_server.o   pqsql.o util.o status.o conf.o
-WHOIS_SERVER_OBJECTS=ccRegSK.o  ccReg_whois.o  whois_server.o  pqsql.o util.o
-EPP_CLIENT_OBJECTS=ccRegSK.o epp_client.o
+LIBS=  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread
+CPPFLAGS =  -I/usr/local/pgsql/include/   -I/usr/include/postgresql/  -I.  -Wno-deprecated
+CCREG_SERVER_OBJECTS=ccRegSK.o ccRegDynSK.o ccReg_epp.o  ccReg_server.o   pqsql.o util.o status.o conf.o log.o
+WHOIS_SERVER_OBJECTS=ccRegSK.o  ccReg_whois.o  whois_server.o  pqsql.o util.o log.o
+EPP_CLIENT_OBJECTS=ccRegSK.o ccRegDynSK.o  epp_client.o
 WHOIS_CLIENT_OBJECTS=ccRegSK.o whois_client.o
 
 
@@ -31,8 +31,8 @@ whois_client: $(WHOIS_CLIENT_OBJECTS)
 	$(CXX) -o whois_client $(WHOIS_CLIENT_OBJECTS) $(LDFLAGS) $(LIBS)
 
 
-ccRegSK.cc ccRegSK.h:
-	omniidl -bcxx $(IDLFILE)
+ccRegSK.cc ccRegDynSK.cc ccRegSK.h:
+	omniidl -bcxx -Wba $(IDLFILE)
 
 %.o: %.cc 
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS)  -c -g $<
@@ -47,6 +47,6 @@ install:
 	install ccReg_server /usr/local/bin/ccReg
 
 clean:
-	rm -rf *.o *_server *_client ccRegSK.cc ccRegSK.h ccReg.hh ccReg_i.cc *idl.py* ccReg__POA/ ccReg/
+	rm -rf *.o *_server *_client ccRegDynSK.cc  ccRegSK.cc ccRegSK.h ccReg.hh ccReg_i.cc *idl.py* ccReg__POA/ ccReg/
 
 
