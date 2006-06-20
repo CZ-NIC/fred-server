@@ -42,9 +42,12 @@ int main(int argc, char** argv)
     ccReg::Avail_var av;
     ccReg::DNSHost_var dns_chg ,  dns_add , dns_rem;
     ccReg::TechContact_var tech_add , tech_rem;
+    ccReg::AdminContact_var admin;
     ccReg::Status_var add , rem;
     CORBA::Short count;
-    ccReg::timestamp crDate , qDate;
+    ccReg::timestamp crDate , qDate , exDate ;
+    ccReg::ENUMValidationExtension *enumVal;
+    ccReg::ExtensionList ext;
     struct tm dt;
     time_t t;
     filebuf *pbuf;
@@ -134,6 +137,23 @@ int main(int argc, char** argv)
    cout << "ExpDate: " << ctime( &t )  << endl;
    cout << "err code " << ret->errCode   << endl;
    delete domain;
+
+   t = time(NULL); 
+   enumVal = new  ccReg::ENUMValidationExtension;  
+   enumVal->valExDate = t ; 
+   cout << " valExDate " <<  enumVal->valExDate << endl;
+
+    ext.length(1);
+    ext[0] <<= enumVal;
+
+    admin = new ccReg::AdminContact;
+    admin->length(1);
+    admin[0] = CORBA::string_dup( "NECOCZ-ADMIN" );
+    
+
+   ret =  EPP->DomainCreate( "super.cz" , "NECOCZ-PETR" , "NECOCZ" , "heslicko" , 12 , admin , crDate , exDate ,    loginID , "domain-create"  , ext );
+   cout << "domain create err code " << ret->errCode  <<  ret->errMsg <<  ret->svTRID << "crDate: " << crDate << "exDate" << exDate << endl;
+
 /*
   ret =  EPP->PollRequest( msgID ,  count ,  qDate , mesg ,  loginID ,  "poll-request" );
   cout << "PollRequest: "  << ret->errCode  << endl ; 
