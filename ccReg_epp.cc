@@ -2688,17 +2688,18 @@ ccReg::Response* ccReg_EPP_i::DomainCreate(const char* fqdn, const char* Registr
 PQ PQsql;
 const ccReg::ENUMValidationExtension *enumVal;
 char sqlString[2048] ;
-char expiryDate[32] , createDate[32];
+char expiryDate[32] , valexpiryDate[32] , createDate[32];
 ccReg::Response *ret;
 int contactid , regID , nssetid , adminid , id;
 int i , len , s , zone ;
-bool admin_insert;
+bool insert=true;
 time_t t ,  valExpDate ;
 
 ret = new ccReg::Response;
 
 
 // default
+valExpDate=0;
 
 
 // default
@@ -2789,27 +2790,41 @@ if(  PQsql.GetNumericFromTable("DOMAIN" , "id" ,  "fqdn" , (char * ) fqdn ) )
    // pokud se insertovalo do tabulky
         if(  PQsql.ExecSQL( sqlString ) )
         {
-          admin_insert=true;
+
+         // uloz extension
+        if(   valExpDate )
+         {    
+             get_timestamp(   valExpDate ,  valexpiryDate );
+             sprintf( sqlString , "INSERT INTO  enumval  VALUES ( %d ,  \'%s\' ); " , id , valexpiryDate );  
+             if( PQsql.ExecSQL( sqlString ) == false )  insert=false;
+         }
+
           // zapis admin kontakty
-          len = admin.length();
+        len = admin.length();
+        if( len>  0 && insert== true )
+        {
           for( i = 0 ; i < len ; i ++ )
             {
               adminid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(admin[i]) );
 
               sprintf( sqlString , "INSERT INTO domain_contact_map VALUES ( %d , %d );"  , id , adminid );
 
-              if( PQsql.ExecSQL( sqlString ) == false ) { admin_insert=false; break;}  // pokud se nepodarilo pridat do tabulky                
+              if( PQsql.ExecSQL( sqlString ) == false ) { insert=false; break;}  // pokud se nepodarilo pridat do tabulky                
             }
+         }
 
-          if( admin_insert ) // pokud se ulozili admin kontakty uloz vse do historie
+          if( insert ) // pokud se ulozili admin kontakty uloz vse do historie
             {
-                  //  uloz do historie
+
+              //  uloz do historie
               if( PQsql.MakeHistory() )
                 {
-     
-                  if( PQsql.SaveHistory( "domain_contact_map" , "domainID" , id ) )
+                  if( PQsql.SaveHistory(  "enumval" , "domainID"   , id ) )
                     {
-                      if( PQsql.SaveHistory(  "DOMAIN" , "id" , id  ) )  ret->errCode = COMMAND_OK; // vse probejlo uspesne
+                    if( PQsql.SaveHistory( "domain_contact_map" , "domainID" , id ) )
+                      {
+                        if( PQsql.SaveHistory(  "DOMAIN" , "id" , id  ) )  ret->errCode = COMMAND_OK; 
+                      }
                     }
                 }
             }  
