@@ -28,6 +28,7 @@ int main(int argc, char** argv)
 //     CORBA::String_var clID, pass , cc ; 
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);    
     ccReg::Contact *contact , *cc;
+    ccReg::ContactChange *ch;
     ccReg::Response *ret;
     ccReg::NSSet *nsset;
     ccReg::Domain *domain;
@@ -88,28 +89,52 @@ int main(int argc, char** argv)
 
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
-    ret =  EPP->ClientLogin( "REG-LRR" , "123456789" , "" , "GR-login" , loginID , "otisk", "cz" );
+    loginID = 4000;
+    ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
+
+    cout << "get Transaction code " << ret->errCode << ret->errMsg  <<  ret->svTRID  << endl;
+
+
+    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "123456789" , "" ,     "GR-login" , loginID , "otisk palce" , "cs" );
+
     cout << loginID  << endl;
 
-    cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
+    cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
     ret =  EPP->ContactInfo( "jouda",  cc , loginID , "jouda_info" );
-    cout << "err code " << ret->errCode << " serverTRID " <<  ret->svTRID  << endl;
+    cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
     cout << "info "  << cc->Name  <<  endl;
  
     cout <<  cc->Name << cc->Email << cc->DiscloseEmail <<  cc->Country << endl;
 
-
 /*
-   ret =  EPP->DomainInfo(  "example.cz" ,  domain , loginID , "info-cpp-temp" );
+      ch = new ccReg::ContactChange;
+
+     add = new ccReg::Status;
+     add->length(2);
+     add[0] = CORBA::string_dup(  "clientDeleteProhibited" );
+     add[1] = CORBA::string_dup(  "serverDeleteProhibited" );
+ 
+     rem = new ccReg::Status;
+     rem->length(1);
+     rem[0] = CORBA::string_dup(  "clientUpdateProhibited" );
+
+     ret =  EPP->ContactUpdate( "NECOCZ-PETR",  *ch , add , rem  , loginID , "NECOCZ-ROBERT-update status" );
+     cout << "err code " << ret->errCode << " serverTRID " <<  ret->svTRID  << endl;
+
+
+*/
+   ret =  EPP->DomainInfo(  "neco.cz" ,  domain , loginID , "info-cpp-temp" );
+    cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
+
    for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
    cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
    t = domain->ExDate;
    cout << "ExpDate: " << ctime( &t )  << endl;
    cout << "err code " << ret->errCode   << endl;
    delete domain;
-
+/*
   ret =  EPP->PollRequest( msgID ,  count ,  qDate , mesg ,  loginID ,  "poll-request" );
   cout << "PollRequest: "  << ret->errCode  << endl ; 
   t = qDate;
@@ -119,6 +144,7 @@ int main(int argc, char** argv)
   ret =  EPP->PollAcknowledgement( msgID ,  count , newmsgID , loginID ,  "poll-acknowledgement" );
   cout << "PollRAcknowledgement: "  << ret->errCode  << endl;
   cout << "count " << count << "newmsgID: " << newmsgID << endl;
+
 
 */
 /*
@@ -271,22 +297,9 @@ int main(int argc, char** argv)
          {
             cout << "status: " <<  cc->stat[i] << endl;
          }
-     
+*/     
 
-      contact = new ccReg::Contact;
 
-     add = new ccReg::Status;
-     add->length(0);
-  //   add[0] = CORBA::string_dup(  "clientHold" );
-//     add[1] = CORBA::string_dup(  "clientTransferProhibited" );
- 
-     rem = new ccReg::Status;
-     rem->length(1);
-     rem[0] = CORBA::string_dup(  "clientUpdateProhibited" );
-
-     ret =  EPP->ContactUpdate( "NECOCZ-ROBERT",  *contact , add , rem  , loginID , "XPET_info" );
-     cout << "err code " << ret->errCode << " serverTRID " <<  ret->svTRID  << endl;
-*/
 
 /*
   //  t = (time_t )  contact->CrDate;
@@ -504,9 +517,9 @@ delete cc;
     ret = EPP->NSSetTransfer( "NECOCZ",   "heslo" ,  loginID , "nsset-transfer" );
     cout  << "client logout "<< endl;
 */
-    ret =  EPP->ClientLogout( loginID , "XXXX-logout" );
+  //  ret =  EPP->ClientLogout( loginID , "XXXX-logout" );
 
-    cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
+   // cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
      
     orb->destroy();
   }
