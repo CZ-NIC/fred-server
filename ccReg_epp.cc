@@ -355,7 +355,7 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, CORBA::Long& clientID , const char* certID  ,  ccReg::lang language)
+ccReg::Response* ccReg_EPP_i::ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, CORBA::Long& clientID , const char* certID , ccReg::Languages lang )
 {
 PQ  PQsql;
 char sqlString[1024];
@@ -376,7 +376,7 @@ clientID = 0;
 
 
 LOG( NOTICE_LOG ,  "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s] " , ClID, clTRID  , passwd , newpass );
-LOG( NOTICE_LOG ,  "ClientLogin:  certID  [%s] language  [%d] " , certID , language );
+LOG( NOTICE_LOG ,  "ClientLogin:  certID  [%s] language  [%d] " , certID , lang );
 
 if(  PQsql.OpenDatabase( database ) )
 {
@@ -429,7 +429,7 @@ if( roid )
      LOG( NOTICE_LOG ,  "get clientID  -> %d" , clientID );
 
     // zmena jazyka pouze na cestinu
-    if( language == 1  ) 
+    if( lang == ccReg::CS  ) 
       {
          sprintf( sqlString , "UPDATE login SET  lang=\'cs\' where id=%d;" , clientID );
          if(  PQsql.ExecSQL( sqlString ) ) ret->errCode= COMMAND_OK;          
