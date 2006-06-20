@@ -1697,7 +1697,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
                    if( PQsql.SaveHistory( "HOST" , "nssetid" , id ) )
                      {
                        //  uloz podrizene hosty
-                           if( PQsql.SaveHistory( "NSSET" , "id" , id ) ) ret->errCode == COMMAND_OK ;
+                           if( PQsql.SaveHistory( "NSSET" , "id" , id ) ) ret->errCode = COMMAND_OK ;
                         
                      }                 
             }
@@ -2205,6 +2205,7 @@ LOG( NOTICE_LOG ,  "DomainInfo: clientID -> %d clTRID [%s] fqdn  [%s] " , client
 
 
 d->ext.length(0); // extension
+
 if( PQsql.OpenDatabase( database ) )
 {
 
@@ -2685,13 +2686,14 @@ return ret;
 ccReg::Response* ccReg_EPP_i::DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char* AuthInfoPw , CORBA::Short period , const ccReg::AdminContact& admin, ccReg::timestamp& crDate, ccReg::timestamp& exDate,  CORBA::Long clientID, const char* clTRID , const ccReg::ExtensionList& ext )
 {
 PQ PQsql;
+const ccReg::ENUMValidationExtension *enumVal;
 char sqlString[2048] ;
 char expiryDate[32] , createDate[32];
 ccReg::Response *ret;
 int contactid , regID , nssetid , adminid , id;
 int i , len , s , zone ;
 bool admin_insert;
-time_t t;
+time_t t ,  valExpDate ;
 
 ret = new ccReg::Response;
 
@@ -2713,6 +2715,29 @@ exDate = 0 ;
 
 LOG( NOTICE_LOG ,  "DomainCreate: clientID -> %d clTRID [%s] fqdn  [%s] " , clientID , clTRID  , fqdn );
 LOG( NOTICE_LOG ,  "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] period %d" , Registrant , nsset , AuthInfoPw ,period );
+
+len =  ext.length();
+
+if( len > 0 )
+{
+  LOG( NOTICE_LOG , "extension length %d" ,  ext.length() );
+  for( i = 0 ; i < len ; i ++ )
+  {
+  if(  ext[i] >>= enumVal   ) 
+    {
+       valExpDate = enumVal->valExDate ; 
+       LOG( NOTICE_LOG , "enumVal %d " ,  enumVal->valExDate ); 
+    }
+  else 
+    {
+      LOG( ERROR_LOG , "Unknown value extension[%d]" , i );
+      break;  
+    }
+
+ }
+}
+
+
 
 if( PQsql.OpenDatabase( database ) )
 {
@@ -2778,11 +2803,15 @@ if(  PQsql.GetNumericFromTable("DOMAIN" , "id" ,  "fqdn" , (char * ) fqdn ) )
 
           if( admin_insert ) // pokud se ulozili admin kontakty uloz vse do historie
             {
-
+                  //  uloz do historie
+              if( PQsql.MakeHistory() )
+                {
+     
                   if( PQsql.SaveHistory( "domain_contact_map" , "domainID" , id ) )
                     {
-                      if( PQsql.SaveHistory(  "DOMAIN" , "id" , id  ) )  ret->errCode == COMMAND_OK; // vse probejlo uspesne
+                      if( PQsql.SaveHistory(  "DOMAIN" , "id" , id  ) )  ret->errCode = COMMAND_OK; // vse probejlo uspesne
                     }
+                }
             }  
         
         } 
