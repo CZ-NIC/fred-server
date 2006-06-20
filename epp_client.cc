@@ -95,7 +95,7 @@ int main(int argc, char** argv)
     cout << "get Transaction code " << ret->errCode << ret->errMsg  <<  ret->svTRID  << endl;
 
 
-    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "123456789" , "" ,     "GR-login" , loginID , "otisk palce" , "cs" );
+    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "123456789" , "" ,     "GR-login" , loginID , "otisk palce" , ccReg::CS );
 
     cout << loginID  << endl;
 

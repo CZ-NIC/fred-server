@@ -349,13 +349,13 @@ return ret;
  *        OUT:  clientID - id pripojeneho klienta
  *              clTRID - cislo transakce klienta
  *              certID - fingerprint certifikatu 
- *              lang - komunikacni jazyk klienta  en nebo cs prazdna hodnota = en
+ *              language - komunikacni jazyk klienta  en nebo cs prazdna hodnota = en
  * 
  * RETURNED:    svTRID a errCode
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, CORBA::Long& clientID , const char* certID  ,  const char*  lang )
+ccReg::Response* ccReg_EPP_i::ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, CORBA::Long& clientID , const char* certID  ,  ccReg::lang language)
 {
 PQ  PQsql;
 char sqlString[1024];
@@ -376,7 +376,7 @@ clientID = 0;
 
 
 LOG( NOTICE_LOG ,  "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s] " , ClID, clTRID  , passwd , newpass );
-LOG( NOTICE_LOG ,  "ClientLogin:  certID  [%s] lang  [%s] " , certID , lang );
+LOG( NOTICE_LOG ,  "ClientLogin:  certID  [%s] language  [%d] " , certID , language );
 
 if(  PQsql.OpenDatabase( database ) )
 {
@@ -429,7 +429,7 @@ if( roid )
      LOG( NOTICE_LOG ,  "get clientID  -> %d" , clientID );
 
     // zmena jazyka pouze na cestinu
-    if( strcmp( lang , "cs" ) == 0 ) 
+    if( language == 1  ) 
       {
          sprintf( sqlString , "UPDATE login SET  lang=\'cs\' where id=%d;" , clientID );
          if(  PQsql.ExecSQL( sqlString ) ) ret->errCode= COMMAND_OK;          
