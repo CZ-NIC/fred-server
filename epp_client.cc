@@ -158,6 +158,16 @@ int main(int argc, char** argv)
    ret =  EPP->DomainCreate( "super.cz" , "NECOCZ-PETR" , "NECOCZ" , "heslicko" , 12 , admin , crDate , exDate ,    loginID , "domain-create"  , ext );
    cout << "domain create err code " << ret->errCode  <<  ret->errMsg <<  ret->svTRID << "crDate: " << crDate << "exDate" << exDate << endl;
 
+    add = new ccReg::Status;
+    add->length(0);
+    rem = new ccReg::Status;
+    rem->length(0);
+ 
+  admin[0] = CORBA::string_dup( "NECOCZ-ROBERT" );
+ ret =  EPP->DomainUpdate(  "super.cz" , "NECOCZ-ROBERT" , "" , "" ,  admin  , admin ,   add , rem ,  loginID , "domain-update" , ext );
+
+   cout << "domain update err code " << ret->errCode  <<  ret->errMsg <<  ret->svTRID <<  endl;
+
 /*
   ret =  EPP->PollRequest( msgID ,  count ,  qDate , mesg ,  loginID ,  "poll-request" );
   cout << "PollRequest: "  << ret->errCode  << endl ; 
