@@ -57,7 +57,10 @@ else
          PQuser(connection), PQhost(connection),
           PQport(connection), PQdb(connection)); 
 
-  SetEncoding( "LATIN2" );
+#ifdef ENCODING
+    SetEncoding( "LATIN2" );
+    LOG( NOTICE_LOG , "Database set client encoding %s" , ENCODING );
+#endif 
   return true;
  }
 
