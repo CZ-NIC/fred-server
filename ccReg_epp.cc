@@ -2398,6 +2398,8 @@ if( PQsql.BeginAction( clientID , EPP_DomainDelete , (char * ) clTRID  ) )
          {
             if( PQsql.SaveHistory( "domain_contact_map" , "domainID" , id ) )
                { 
+                if(  PQsql.DeleteFromTable( "enumval" , "domainID" , id )  ) // enumval extension
+                  {
                     if(  PQsql.DeleteFromTable( "domain_contact_map" , "domainID" , id )  )
                       { 
                           if( PQsql.SaveHistory(  "DOMAIN" , "id" , id  ) )
@@ -2405,6 +2407,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainDelete , (char * ) clTRID  ) )
                               if(  PQsql.DeleteFromTable( "DOMAIN" , "id" , id  ) )  ret->errCode =COMMAND_OK ; // pokud usmesne smazal
                             }
                       }
+                  }
                }
          }
      }
@@ -2462,10 +2465,13 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(const char* fqdn, const char* registr
 ccReg::Response *ret;
 PQ PQsql;
 Status status;
+const ccReg::ENUMValidationExtension *enumVal;
 bool stat;
+char  valexpiryDate[32] ;
 char sqlString[4096] , buf[256] , statusString[128] ;
 int regID=0 , clID=0 , id ,nssetid , contactid , adminid ;
 int i , len , slen , j  ;
+time_t valExpDate=0 ;
 
 ret = new ccReg::Response;
 
@@ -2479,6 +2485,29 @@ ret->errMsg = CORBA::string_dup("");
 
 LOG( NOTICE_LOG ,  "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] " , clientID , clTRID  , fqdn );
 LOG( NOTICE_LOG ,  "DomainUpdate: registrant_chg  [%s] authInfo_chg [%s]  nsset_chg [%s] " , registrant_chg , authInfo_chg , nsset_chg );
+
+// parse extension
+len =  ext.length();
+
+if( len > 0 )
+{
+  LOG( NOTICE_LOG , "extension length %d" ,  ext.length() );
+  for( i = 0 ; i < len ; i ++ )
+  {
+  if(  ext[i] >>= enumVal   )
+    {
+       valExpDate = enumVal->valExDate ;
+       LOG( NOTICE_LOG , "enumVal %d " ,  enumVal->valExDate );
+    }
+  else
+    {
+      LOG( ERROR_LOG , "Unknown value extension[%d]" , i );
+      break;
+    }
+
+ }
+}
+
 
 if( PQsql.OpenDatabase( database ) )
 {
@@ -2581,9 +2610,26 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
                    if(   PQsql.ExecSQL( sqlString ) )
                      {  
                        ret->errCode = COMMAND_OK; // nastavit uspesne
+
+                      if( PQsql.SaveHistory( "enumval" , "domainID" , id ) ) // uloz do historie 
+                       {
+                             // zmena extension
+                            if(   valExpDate )
+                             {
+                                get_timestamp(   valExpDate ,  valexpiryDate );
+                                LOG( NOTICE_LOG ,  "change valExpDate %s " , valexpiryDate ); 
+
+                                sprintf( sqlString , "UPDATE  enumval set  exdate=\'%s\' WHERE domainID=%d; " , valexpiryDate , id );
+                                if( PQsql.ExecSQL( sqlString ) == false )  ret->errCode=COMMAND_FAILED;
+                              }
+                       }     
         
                       if( PQsql.SaveHistory( "domain_contact_map" , "domainID" , id ) ) // uloz do historie admin kontakty
                       {
+
+
+
+
                        // pridat admin kontakty
                       len = admin_add.length(); 
                        for( i = 0 ; i < len ; i ++ )
@@ -2878,12 +2924,13 @@ ccReg::Response*  ccReg_EPP_i::DomainRenew(const char* fqdn, ccReg::timestamp cu
 {
 PQ PQsql;
 Status status;
+const ccReg::ENUMValidationExtension *enumVal;
 char sqlString[4096];
-char exDateStr[24];
+char exDateStr[24] ,  valexpiryDate[32]  ;
 ccReg::Response *ret;
-int clid , regID , id ;
+int clid , regID , id , len , i ;
 bool stat;
-time_t ex=0 ,t ;
+time_t ex=0 ,t  , valExpDate=0;
 ret = new ccReg::Response;
 
 
@@ -2901,6 +2948,29 @@ exDate=0;
 
 
 LOG( NOTICE_LOG ,  "DomainRenew: clientID -> %d clTRID [%s] fqdn  [%s] period %d " , clientID , clTRID  , fqdn  , period );
+
+
+len =  ext.length();
+
+if( len > 0 )
+{
+  LOG( NOTICE_LOG , "extension length %d" ,  ext.length() );
+  for( i = 0 ; i < len ; i ++ )
+  {
+  if(  ext[i] >>= enumVal   )
+    {
+       valExpDate = enumVal->valExDate ;
+       LOG( NOTICE_LOG , "enumVal %d " ,  enumVal->valExDate );
+    }
+  else
+    {
+      LOG( ERROR_LOG , "Unknown value extension[%d]" , i );
+      break;
+    }
+
+ }
+}
+
 
 
 if( PQsql.OpenDatabase( database ) )
@@ -2954,12 +3024,36 @@ if( PQsql.BeginAction( clientID , EPP_DomainRenew , (char * ) clTRID  ) )
                    //  uloz do historie
                  if( PQsql.MakeHistory() )
                    {
-                     if( PQsql.SaveHistory( "Domain" , "id" , id ) ) // uloz zaznam
-                       {
-                         // zmena platnosti domeny
-                         sprintf( sqlString , "UPDATE DOMAIN SET ExDate=\'%s\' WHERE id=%d;" , exDateStr , id );
-                         if(   PQsql.ExecSQL( sqlString ) ) ret->errCode = COMMAND_OK;
-                       }
+                       
+                      
+                       if( PQsql.SaveHistory( "domain_contact_map" , "domainID" , id ) ) // uloz kontakty
+                         {
+                          if( PQsql.SaveHistory( "Domain" , "id" , id ) ) // uloz zaznam
+                            {
+                              // zmena platnosti domeny
+                               sprintf( sqlString , "UPDATE DOMAIN SET ExDate=\'%s\' WHERE id=%d;" , exDateStr , id );
+                              if(   PQsql.ExecSQL( sqlString ) ) ret->errCode = COMMAND_OK;
+                             }
+                          }
+
+                        if( ret->errCode == COMMAND_OK )
+                          {
+                           if( PQsql.SaveHistory( "enumval" , "domainID" , id ) ) 
+                             {                                              
+                              if(   valExpDate ) // zmena extension
+                                {
+                                  get_timestamp(   valExpDate ,  valexpiryDate );
+                                  LOG( NOTICE_LOG ,  "change valExpDate %s " , valexpiryDate );
+   
+                                  sprintf( sqlString , "UPDATE  enumval set  exdate=\'%s\' WHERE domainID=%d; " , valexpiryDate , id );
+                                  if( PQsql.ExecSQL( sqlString ) == false )  ret->errCode=COMMAND_FAILED;
+                                }
+
+                             }
+                           }
+
+                     
+
                    }
                      
              }             
@@ -2997,13 +3091,12 @@ return ret;
  *              authInfo - autentifikace heslem 
  *              clientID - id pripojeneho klienta 
  *              clTRID - cislo transakce klienta
- *              ext - ExtensionList
  *
  * RETURNED:    svTRID a errCode
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::DomainTransfer(const char* fqdn, /* const char* registrant, */ const char* authInfo, CORBA::Long clientID, const char* clTRID , const ccReg::ExtensionList& ext )
+ccReg::Response* ccReg_EPP_i::DomainTransfer(const char* fqdn,  const char* authInfo, CORBA::Long clientID, const char* clTRID  )
 {
 ccReg::Response *ret;
 PQ PQsql;
