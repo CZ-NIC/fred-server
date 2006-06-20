@@ -128,7 +128,7 @@ int main(int argc, char** argv)
 
 
 */
-   ret =  EPP->DomainInfo(  "neco.cz" ,  domain , loginID , "info-cpp-temp" );
+   ret =  EPP->DomainInfo(  "super.cz" ,  domain , loginID , "info-cpp-temp" );
     cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
    for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
@@ -137,6 +137,10 @@ int main(int argc, char** argv)
    cout << "ExpDate: " << ctime( &t )  << endl;
    cout << "err code " << ret->errCode   << endl;
    delete domain;
+
+
+   ret =  EPP->DomainDelete(  "super.cz"  , loginID , "delete-cpp-super" );
+   cout << "Delete err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
    t = time(NULL); 
    enumVal = new  ccReg::ENUMValidationExtension;  
