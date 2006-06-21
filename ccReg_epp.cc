@@ -2189,6 +2189,8 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(const char* fqdn, ccReg::Domain_out d ,
 {
 PQ PQsql;
 Status status;
+ccReg::timestamp valexDate;
+ccReg::ENUMValidationExtension *enumVal;
 char sqlString[1024];
 ccReg::Response *ret;
 int id , clid , crid ,  upid , regid ,nssetid;
@@ -2289,7 +2291,26 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
                    d->admin[i] = CORBA::string_dup( PQsql.GetFieldValue( i , 0 )  );
                  }
                PQsql.FreeSelect();
-           }
+           }else ret->errCode=COMMAND_FAILED;
+
+
+       // uloz extension pokud existuje
+        sprintf( sqlString , "SELECT   *  FROM enumval  WHERE domainID=%d;" ,  id );       
+        if( PQsql.ExecSelect( sqlString ) )
+          {    
+            if( PQsql.GetSelectRows() == 1 )
+              {
+                valexDate =  get_time_t( PQsql.GetFieldValueName("ExDate" , 0 ) );
+
+                enumVal = new ccReg::ENUMValidationExtension;
+                enumVal->valExDate = valexDate ;
+                d->ext.length(1); // preved na  extension
+                d->ext[0] <<= enumVal;
+                LOG( NOTICE_LOG , "enumValExtension ExDate %d" ,   valexDate );
+              }
+
+           PQsql.FreeSelect();
+         } else ret->errCode=COMMAND_FAILED;
    
 
      }
