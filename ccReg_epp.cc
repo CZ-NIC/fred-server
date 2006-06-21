@@ -1041,6 +1041,7 @@ ccReg::Response* ccReg_EPP_i::ContactCreate(const char* handle , const ccReg::Co
 PQ PQsql;
 char sqlString[4096] , buf[1024] ;
 char  createDate[32];
+char roid[64];
 ccReg::Response *ret;
 int regID, id;
 time_t now;
@@ -1086,6 +1087,8 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         // get  registrator ID
         regID =   PQsql.GetLoginRegistrarID( clientID);
 
+        // vytvor roid kontaktu
+        get_roid( roid , "C" , id );
        
 	strcpy( sqlString , "INSERT INTO CONTACT ( id , handle , ROID ,  CrDate ,   CrID   " );
         create_field_fname(sqlString , "Name" , CORBA::string_dup(c.Name) );
@@ -1112,7 +1115,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         if(  c.DiscloseFax > 0  ) strcat( sqlString , " , DiscloseFax  " );
         if(  c.DiscloseEmail > 0  ) strcat( sqlString , " , DiscloseEmail " );
 
-	sprintf( buf  , " )  VALUES ( %d , \'%s\' , \'%s\' ,   \'%s\' ,  %d    " ,  id ,  (char * ) handle ,   (char * ) handle ,  createDate ,  regID ); 
+	sprintf( buf  , " )  VALUES ( %d , \'%s\' , \'%s\' ,   \'%s\' ,  %d    " ,  id ,  roid ,   (char * ) handle ,  createDate ,  regID ); 
 
 	strcat( sqlString , buf );
 
@@ -1579,6 +1582,7 @@ PQ PQsql;
 char sqlString[1024];
 char Array[512];
 char createDate[32];
+char roid[64];
 ccReg::Response *ret;
 int regID ,  id , techid;
 int i , len , j ;
@@ -1619,13 +1623,16 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
      // ID je cislo ze sequence
     id =  PQsql.GetSequenceID( "nsset" );
    
+    // vytvor roid nssetu
+    get_roid( roid , "N" , id );
+
     // datum a cas vytvoreni
     now = time(NULL);
     crDate = now;
     get_timestamp( now , createDate );    
 
-    sprintf( sqlString , "INSERT INTO NSSET ( id , crdate ,  handle , roid , ClID , CrID,  authinfopw  )   VALUES ( %d ,   \'%s\'  ,   \'%s\'  ,  \'%s\' ,  %d , %d ,    \'%s\'  );" , 
-                           id , createDate ,  CORBA::string_dup(handle) ,  CORBA::string_dup(handle) , regID , regID  ,  CORBA::string_dup(authInfoPw) );
+    sprintf( sqlString , "INSERT INTO NSSET ( id , crdate ,  roid , handle  , ClID , CrID,  authinfopw  )   VALUES ( %d ,   \'%s\'  ,   \'%s\'  ,  \'%s\' ,  %d , %d ,    \'%s\'  );" , 
+                           id , createDate ,  roid,  CORBA::string_dup(handle) , regID , regID  ,  CORBA::string_dup(authInfoPw) );
 
 
 
@@ -2735,6 +2742,7 @@ PQ PQsql;
 const ccReg::ENUMValidationExtension *enumVal;
 char sqlString[2048] ;
 char expiryDate[32] , valexpiryDate[32] , createDate[32];
+char roid[64];
 ccReg::Response *ret;
 int contactid , regID , nssetid , adminid , id;
 int i , len , s , zone ;
@@ -2805,6 +2813,9 @@ if(  PQsql.GetNumericFromTable("DOMAIN" , "id" ,  "fqdn" , (char * ) fqdn ) )
   {
    id =  PQsql.GetSequenceID( "domain" ); // id domeny
 
+   // vytvor roid domeny
+   get_roid( roid , "D" , id );
+
    zone = get_zone( (char * ) fqdn ); // kontrola nazvu domeny a automaticke zarazeni do zony
 
    if( zone == 0 )LOG( WARNING_LOG , "can not get zone for domain  [%s] " , fqdn );
@@ -2829,7 +2840,7 @@ if(  PQsql.GetNumericFromTable("DOMAIN" , "id" ,  "fqdn" , (char * ) fqdn ) )
     {
          sprintf( sqlString , "INSERT INTO DOMAIN ( zone , crdate  , id , roid , fqdn , ClID , CrID,  Registrant  , exdate , authinfopw , nsset ) \
               VALUES ( %d  , \'%s\'  ,  %d ,   \'%s\' , \'%s\'  ,  %d , %d  , %d ,  \'%s\' ,  \'%s\'  , %d );" , zone ,  createDate , 
-              id,  CORBA::string_dup(fqdn) ,  CORBA::string_dup(fqdn) ,  regID  ,  regID , contactid , expiryDate ,  CORBA::string_dup(AuthInfoPw),  nssetid );
+              id,  roid ,  CORBA::string_dup(fqdn) ,  regID  ,  regID , contactid , expiryDate ,  CORBA::string_dup(AuthInfoPw),  nssetid );
  
 
 

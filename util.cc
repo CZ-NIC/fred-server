@@ -4,6 +4,11 @@
 #include<string.h>
 
 
+// vytvoreni roid
+void get_roid( char *roid , char *prefix , int id )
+{
+sprintf(roid , "CZNIC-%s%12d" , id );
+}
 
 // zarazeni do zony a kontrola nazvu domeny
 int get_zone( char * fqdn )

@@ -1,4 +1,7 @@
 
+// vytvoreni roid
+void get_roid( char *roid , char *prefix , int id );
+
 // zarazeni do zony a kontrola nazvu domeny 
 int get_zone( char * fqdn );
 // vraci cas v time_t  pevede SQL retezec
