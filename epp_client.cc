@@ -45,8 +45,9 @@ int main(int argc, char** argv)
     ccReg::AdminContact_var admin;
     ccReg::Status_var add , rem;
     CORBA::Short count;
-    ccReg::timestamp crDate , qDate , exDate ;
+    ccReg::timestamp crDate , qDate , exDate , exvalDate ;
     ccReg::ENUMValidationExtension *enumVal;
+    ccReg::ENUMValidationExtension_var ev;
     ccReg::ExtensionList ext;
     struct tm dt;
     time_t t;
@@ -98,21 +99,27 @@ int main(int argc, char** argv)
     cout << "get Transaction code " << ret->errCode << ret->errMsg  <<  ret->svTRID  << endl;
 
 
-    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "123456789" , "" ,     "GR-login" , loginID , "otisk palce" , ccReg::CS );
+    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "123456789" , "" ,     "GR-login" , loginID , "otisk palce" ,  ccReg::CS  );
 
     cout << loginID  << endl;
 
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
+/*
     ret =  EPP->ContactInfo( "jouda",  cc , loginID , "jouda_info" );
     cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
     cout << "info "  << cc->Name  <<  endl;
  
     cout <<  cc->Name << cc->Email << cc->DiscloseEmail <<  cc->Country << endl;
-
+*/
 /*
       ch = new ccReg::ContactChange;
+
+<<<<<<< .mine
+
+   ret =  EPP->DomainInfo(  "nic.cz" ,  domain , loginID , "info-cpp-nic" );
+=======
 
      add = new ccReg::Status;
      add->length(2);
@@ -126,19 +133,35 @@ int main(int argc, char** argv)
      ret =  EPP->ContactUpdate( "NECOCZ-PETR",  *ch , add , rem  , loginID , "NECOCZ-ROBERT-update status" );
      cout << "err code " << ret->errCode << " serverTRID " <<  ret->svTRID  << endl;
 
-
 */
+
    ret =  EPP->DomainInfo(  "super.cz" ,  domain , loginID , "info-cpp-temp" );
-    cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
+   cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
    for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
    cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
    t = domain->ExDate;
    cout << "ExpDate: " << ctime( &t )  << endl;
    cout << "err code " << ret->errCode   << endl;
+   cout << "ext length " <<   domain->ext.length() << endl ;
+//   enumVal = new  ccReg::ENUMValidationExtension;
+  
+  
+    if(  domain->ext.length() == 1 )
+     {
+       if(  domain->ext[0] >>= enumVal   ) 
+        {
+          exvalDate  = enumVal->valExDate ; 
+
+         cout << "valExpDate" <<   exvalDate  << endl;
+        }
+       else cout << "Unknown value extension" << endl;
+     }
+
+  // delete  enumVal;    
    delete domain;
 
-
+/*
    ret =  EPP->DomainDelete(  "super.cz"  , loginID , "delete-cpp-super" );
    cout << "Delete err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
@@ -167,6 +190,7 @@ int main(int argc, char** argv)
  ret =  EPP->DomainUpdate(  "super.cz" , "NECOCZ-ROBERT" , "" , "" ,  admin  , admin ,   add , rem ,  loginID , "domain-update" , ext );
 
    cout << "domain update err code " << ret->errCode  <<  ret->errMsg <<  ret->svTRID <<  endl;
+*/
 
 /*
   ret =  EPP->PollRequest( msgID ,  count ,  qDate , mesg ,  loginID ,  "poll-request" );
@@ -241,13 +265,13 @@ int main(int argc, char** argv)
   //  cout << "get Transaction code " << ret->errCode  <<  ret->svTRID  << endl;
 
 
-/*
-//     check = new ccReg::Check(3);
+
      check = new ccReg::Check;
-     check->length(3);
+     check->length(4);
      check[0] = CORBA::string_dup(  "NECOCZ-PETR" );
-     check[1] = CORBA::string_dup(  "NECOCZ-XXX" );
+     check[1] = CORBA::string_dup(  "NECOCZ-Petr" );
      check[2] = CORBA::string_dup(  "NECOCZ-ADMIN" );
+     check[3] = CORBA::string_dup(  "NECOCZ-NIKDO" );
  
      ret =  EPP->ContactCheck( check , av,   loginID ,  "check-neco" );
      cout <<  " err code " << ret->errCode  <<  ret->svTRID  << endl;
@@ -258,9 +282,11 @@ int main(int argc, char** argv)
       }
 
 
-     dcheck.length(2);
-     dcheck[0] = CORBA::string_dup(  "NECO.cz" );
-     dcheck[1] = CORBA::string_dup(  "nic.cz" );
+     dcheck.length(3);
+     dcheck[0] = CORBA::string_dup(  "example.cz" );
+     dcheck[1] = CORBA::string_dup(  "Example.cz" );
+     dcheck[2] = CORBA::string_dup(  "EXAMPLE.CZ" );
+
      ret =  EPP->DomainCheck( dcheck , av,   loginID ,  "domain-neco" );
      cout <<  " err code " << ret->errCode  <<  ret->svTRID  << endl;
  
@@ -272,7 +298,7 @@ int main(int argc, char** argv)
 
  dcheck.length(3);
  dcheck[0] = CORBA::string_dup(  "NECOCZ" );
- dcheck[1] = CORBA::string_dup(  "TEMP" );
+ dcheck[1] = CORBA::string_dup(  "necocz" );
  dcheck[2] = CORBA::string_dup(  "NSSET" );
 
     ret =  EPP->NSSetCheck(  dcheck , av,   loginID ,  "XX-nsset-check" );
@@ -282,7 +308,7 @@ int main(int argc, char** argv)
          cout << i << dcheck[i] << " avail " << av[i] << endl;
       }
 
- 
+ /*
 
     ret =  EPP->NSSetInfo( "NECOCZ" , nsset ,  loginID ,  "XX-nsset-info-necocz" );
     cout << "err code " << ret->errCode  <<  ret->svTRID  << endl;
