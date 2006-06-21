@@ -404,6 +404,24 @@ if( ExecSelect( sqlString ) )
 return ret;
 }
 
+// test pri Check funkci case insensitiv
+bool PQ::CheckObject( const char *table ,   const char *fname ,  const char *value )
+{
+bool ret = false;
+char sqlString[128];
+
+sprintf( sqlString , "SELECT id FROM %s  WHERE %s  ILIKE \'%s\'" , table , fname , value );
+
+if( ExecSelect( sqlString ) )
+ {
+    if(  GetSelectRows() == 1  ) ret=true; // objekt existuje
+    FreeSelect();
+  }
+
+return ret;
+}
+
+
 
 bool PQ::TestNSSetRelations(int id )
 {

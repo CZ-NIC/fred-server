@@ -54,6 +54,8 @@ int GetSequenceID( char *sequence ); // id ze sequnce
 // kontroluje jestli je contactid pro dane id v tabulce nsset_contact_map nebo domain_contact_map 
 bool CheckContactMap(char * table , int id , int contactid );
 
+// teck pri Check funkcih case insensitiv
+bool CheckObject( const char *table ,  const char *fname ,  const char *value);
 
 // vyssi funkce na vraceni value
 int GetLoginRegistrarID(int id) { return GetNumericFromTable( "LOGIN" , "registrarid" , "id" , id ); };

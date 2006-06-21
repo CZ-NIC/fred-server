@@ -512,7 +512,8 @@ if( PQsql.OpenDatabase( database ) )
  
     for( i = 0 ; i < len ; i ++ )
      { 
-      if( PQsql.GetNumericFromTable( "CONTACT" , "id" , "handle" , handle[i] ) ) a[i] =  0;
+       
+      if( PQsql.CheckObject( "CONTACT"  , "handle" , handle[i] ) ) a[i] =  0;
       else   a[i]= 1;    // kontak je volny 
 
       LOG( NOTICE_LOG ,  "check %d handle [%s] get -> %d "  ,  i ,  CORBA::string_dup(  handle[i] ) , a[i]  );
@@ -1228,7 +1229,7 @@ if( PQsql.OpenDatabase( database ) )
 
     for( i = 0 ; i < len ; i ++ )
      {
-       if( PQsql.GetNumericFromTable( "NSSET" , "id" ,  "handle" , handle[i] ) ) a[i]=0; // existuje
+       if( PQsql.CheckObject( "NSSET" ,  "handle" , handle[i] ) ) a[i]=0; // existuje
        else a[i] =1; // je volny
 
        LOG( NOTICE_LOG ,  "check %d handle [%s] get -> %d "  ,  i ,    CORBA::string_dup( handle[i] ) ,   a[i]  );
@@ -2145,7 +2146,7 @@ if( PQsql.OpenDatabase( database ) )
 
     for( i = 0 ; i < len ; i ++ )
      {
-       if( PQsql.GetNumericFromTable( "DOMAIN" , "id" , "fqdn" ,   fqdn[i] )  ) a[i]=0; // existuje
+       if( PQsql.CheckObject( "DOMAIN"  , "fqdn" ,   fqdn[i] )  ) a[i]=0; // existuje
        else a[i] =1; // neexistuje domena je volna
        LOG( NOTICE_LOG ,  "check %d fqdn [%s] get -> %d "  ,  i ,   CORBA::string_dup( fqdn[i] )  , a[i]  );
      }
