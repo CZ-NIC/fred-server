@@ -7,7 +7,7 @@
 // vytvoreni roid
 void get_roid( char *roid , char *prefix , int id )
 {
-sprintf(roid , "CZNIC-%s%12d" , id );
+sprintf(roid , "CZNIC-%s%010d" , prefix ,  id );
 }
 
 // zarazeni do zony a kontrola nazvu domeny
