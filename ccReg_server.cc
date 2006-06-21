@@ -85,6 +85,7 @@ int main(int argc, char** argv)
 
 #ifdef SYSLOG
          cout << "start syslog at level " <<  config.GetSYSLOGlevel()   << endl;
+         cout << "start syslog facility local" <<  config.GetSYSLOGlocal()   << endl;
          setlogmask ( LOG_UPTO(  config.GetSYSLOGlevel()  )   );
          openlog ("ccReg", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL0+  config.GetSYSLOGlocal()  );
 #endif
