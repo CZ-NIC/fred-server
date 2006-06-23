@@ -2349,9 +2349,10 @@ d->name=  CORBA::string_dup( "" ); // fqdn nazev domeny
 d->nsset = CORBA::string_dup( "" ); // nsset
 d->AuthInfoPw  = CORBA::string_dup( "" ); //  autentifikace
 d->stat.length(0); // status sequence
+d->UpDate=0; // datuum zmeny
 d->CrDate=0; // datum vytvoreni
-d->TrDate=0; // datum zmeny
-d->ExDate=0; // datum zmeny
+d->TrDate=0; // datum transferu
+d->ExDate=0; // datum vyprseni
 d->Registrant=CORBA::string_dup( "" ); 
 d->ClID=  CORBA::string_dup( "" );    // identifikator registratora ktery vytvoril host
 d->UpID=  CORBA::string_dup( "" );    // identifikator registratora ktery zmenil zaznam
