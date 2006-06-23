@@ -1763,7 +1763,7 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle , const char* authI
 ccReg::Response *ret;
 PQ PQsql;
 Status status;
-bool  stat;
+bool  stat , check;
 char sqlString[4096] , buf[256] , Array[512] ,  statusString[128] ;
 int regID=0 , clID=0 , id ,nssetid , contactid , techid ;
 int i , j ,  len  , slen , hostID;
@@ -1886,7 +1886,12 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
                          for( i = 0 ; i < len ; i ++ )
                           { 
                             techid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(tech_add[i]) );
-                             if( techid )
+                            check = PQsql.CheckContactMap( "nsset" ,  id , techid );
+                            if( techid == 0 ) LOG( WARNING_LOG , "contact handle [%s] not exist" , CORBA::string_dup(tech_rem[i]) );
+
+                            if( check  ) LOG( WARNING_LOG , "Tech contact [%s]  exist" , CORBA::string_dup(tech_rem[i]) );
+
+                             if( techid && !check )
                                {
                                   LOG( NOTICE_LOG ,  "add techid ->%d [%s]" ,  techid ,  CORBA::string_dup( tech_add[i]) );
                                   if(  PQsql.CheckContactMap( "nsset" , id , techid ) == false ) // pokud kontak jeste neexistuje tak ho pridej
@@ -1897,7 +1902,6 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
                                }
                             else
                               {
-                                   LOG( WARNING_LOG , "Tech contact [%s] not exist" , CORBA::string_dup(tech_rem[i]) );
                                    ret->errCode=COMMAND_FAILED;
                                    break;
                               }
@@ -1908,11 +1912,12 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
                         len = tech_rem.length();   
                         for( i = 0 ; i < len ; i ++ )
                           {
-
                              techid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(tech_rem[i]) );
+                             check = PQsql.CheckContactMap( "nsset" ,  id , techid );
+                             if( techid == 0 ) LOG( WARNING_LOG , "contact handle [%s] not exist" , CORBA::string_dup(tech_rem[i]) );
+                             if( !check  ) LOG( WARNING_LOG , "Tech contact [%s]  not exist" , CORBA::string_dup(tech_rem[i]) );
 
-           
-                             if( techid )
+                             if( techid && check )
                               {  
                                  LOG( NOTICE_LOG ,  "rem techid ->%d [%s]" ,  techid , CORBA::string_dup(tech_rem[i] ) ); 
                                 if(  PQsql.CheckContactMap( "nsset" , id , techid ) )
@@ -1924,7 +1929,6 @@ if( PQsql.BeginAction( clientID , EPP_NSsetUpdate , (char * ) clTRID  ) )
                               }
                             else
                               {
-                                   LOG( WARNING_LOG , "Tech contact [%s] not exist" , CORBA::string_dup(tech_rem[i]) );
                                    ret->errCode=COMMAND_FAILED; 
                                    break;
                               }
@@ -2495,7 +2499,7 @@ ccReg::Response *ret;
 PQ PQsql;
 Status status;
 const ccReg::ENUMValidationExtension *enumVal;
-bool stat;
+bool stat , check;
 char  valexpiryDate[32] ;
 char sqlString[4096] , buf[256] , statusString[128] ;
 int regID=0 , clID=0 , id ,nssetid , contactid , adminid ;
@@ -2664,20 +2668,24 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
                        for( i = 0 ; i < len ; i ++ )
                           { 
                               adminid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(admin_add[i]) );
-                              if( adminid )
+                              check = PQsql.CheckContactMap( "domain" ,  id , adminid );
+
+                             if(  check ) LOG( WARNING_LOG ,  "ADMIN contact [%s] exist in table " ,  CORBA::string_dup(admin_add[i])  );
+                             if( adminid  == 0 ) LOG( WARNING_LOG ,  "contact  handle  [%s] not exist " ,  CORBA::string_dup(admin_add[i])  );
+
+                              if( adminid && !check)
                                 {  
                                     LOG( NOTICE_LOG ,  "ADD admin contact id %d [%s]  " , adminid , CORBA::string_dup(admin_add[i])  );
                                     sprintf( sqlString , "INSERT INTO domain_contact_map VALUES ( %d , %d );"  , id , adminid );
                                     if(   PQsql.ExecSQL( sqlString ) == false ) 
                                       { 
-                                        LOG( WARNING_LOG ,  "can not insert admin_contact id %d [%s] " ,  adminid , CORBA::string_dup(admin_add[i])  );
+                                        LOG( WARNING_LOG ,  "can not insert admin_contact id %d [%s]" ,  adminid , CORBA::string_dup(admin_add[i]) );
                                         ret->errCode=COMMAND_FAILED; 
                                         break; 
                                       } 
                                 }
                               else 
                                {
-                                  LOG( WARNING_LOG ,  "admin_contact  [%s] not exist " ,  CORBA::string_dup(admin_add[i])  );
                                   ret->errCode=COMMAND_FAILED;
                                   break;
                                }
@@ -2689,7 +2697,12 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
                        for( i = 0 ; i < len ; i ++ )
                           {
                            adminid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(admin_rem[i]) );
-                           if( adminid )
+                           check = PQsql.CheckContactMap( "domain" ,  id , adminid );
+
+                           if(  adminid == 0 ) LOG( WARNING_LOG ,  "contact  handle  [%s] not exist " ,  CORBA::string_dup(admin_add[i])  );
+                           if(  !check ) LOG( WARNING_LOG ,  "ADMIN contact [%s] not exist in table " ,  CORBA::string_dup(admin_add[i])  );
+                           // pokud kontakt existuje a je v tabulce domain_contact_map
+                           if( adminid && check )
                              {
                               LOG( NOTICE_LOG ,  "DEL admin contact id %d [%s]  " , adminid , CORBA::string_dup(admin_add[i])  );
                               sprintf( sqlString , "DELETE FROM domain_contact_map WHERE  domainid=%d and contactid=%d;" , id , adminid );
@@ -2701,8 +2714,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainUpdate , (char * ) clTRID  ) )
                                       } 
                               }
                               else
-                               {
-                                  LOG( WARNING_LOG ,  "admin_contact  [%s] not exist " ,  CORBA::string_dup(admin_add[i])  );
+                               {                                   
                                   ret->errCode=COMMAND_FAILED;
                                   break;
                                }
