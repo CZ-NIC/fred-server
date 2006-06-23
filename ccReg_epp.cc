@@ -1091,7 +1091,7 @@ if( PQsql.BeginAction( clientID , EPP_ContactCreate , (char * ) clTRID  ) )
         // vytvor roid kontaktu
         get_roid( roid , "C" , id );
        
-	strcpy( sqlString , "INSERT INTO CONTACT ( id , handle , ROID ,  CrDate ,   CrID   " );
+	strcpy( sqlString , "INSERT INTO CONTACT ( id , roid , handle ,  CrDate ,   CrID   " );
         create_field_fname(sqlString , "Name" , CORBA::string_dup(c.Name) );
         create_field_fname(sqlString , "Organization" , CORBA::string_dup(c.Organization) );
         create_field_fname(sqlString , "Street1" , CORBA::string_dup(c.Street1) );
