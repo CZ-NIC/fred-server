@@ -100,10 +100,10 @@ if(  PQsql.OpenDatabase( database ) )
     ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
     ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
 
-    LOG( NOTICE_LOG , "GetTransaction: svTRID [%s] errCode -> %d msg [%s] " , (char * )   ret->svTRID  ,  ret->errCode  , CORBA::string_dup( ret->errMsg  )); 
+    LOG( NOTICE_LOG , "GetTransaction: svTRID [%s] errCode -> %d msg [%s] " , (char * )   ret->svTRID  ,  ret->errCode  ,  (char * )   ret->errMsg  ); 
    }
 
-ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+// ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
 
 PQsql.Disconnect();
 }
