@@ -9,7 +9,7 @@ test -f /usr/local/bin/ccReg || exit 0
 case "$1" in
 start|force-reload)
   log_begin_msg "Star central registry CORBA server ccReg..."
-  /usr/local/bin/ccReg -ORBendPoint giop:tcp:curlew:22222 &
+  /usr/local/bin/ccReg -ORBnativeCharCodeSet UTF-8  -ORBendPoint giop:tcp:curlew:22222 &
   log_end_msg $?
   ;;
 restart|reload)
