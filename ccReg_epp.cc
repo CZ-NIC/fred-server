@@ -87,6 +87,7 @@ ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
+ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "GetTransaction: clientID -> %d clTRID [%s] " , clientID, clTRID  );
 if(  PQsql.OpenDatabase( database ) )
@@ -145,7 +146,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 count = 0 ;
 newmsgID = 0 ;
 
@@ -237,6 +238,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
+ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "PollRequest: clientID -> %d clTRID [%s]" , clientID, clTRID , msgID );
 
@@ -309,7 +311,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "ClientLogout: clientID -> %d clTRID [%s]" , clientID, clTRID );
 
@@ -371,9 +373,9 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
+ret->errors.length(0);
 
 clientID = 0;
-
 
 LOG( NOTICE_LOG ,  "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s] " , ClID, clTRID  , passwd , newpass );
 LOG( NOTICE_LOG ,  "ClientLogin:  certID  [%s] language  [%d] " , certID , lang );
@@ -503,6 +505,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
+ret->errors.length(0);
 
 if( PQsql.OpenDatabase( database ) )
 {
@@ -571,6 +574,7 @@ ret->svTRID = CORBA::string_alloc(32);
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
+ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "ContactInfo: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
  
@@ -750,7 +754,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
 
@@ -867,7 +871,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
  
@@ -1056,7 +1060,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 crDate = 0;
 
 
@@ -1217,7 +1221,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "NSSetCheck: clientID -> %d clTRID [%s] " , clientID , clTRID );
  
@@ -1286,7 +1290,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 LOG( NOTICE_LOG ,  "NSSetInfo: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
  
 
@@ -1465,7 +1469,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
 
@@ -1599,7 +1603,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 crDate=0;
 
 LOG( NOTICE_LOG ,  "NSSetCreate: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
@@ -1775,6 +1779,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
+ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
 LOG( NOTICE_LOG ,  "NSSetUpdate: authInfo_chg [%s] ", authInfo_chg );
@@ -2038,7 +2043,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 LOG( NOTICE_LOG ,  "NSSetTransfer: clientID -> %d clTRID [%s] handle [%s] authInfo [%s] " , clientID , clTRID , handle , authInfo );
 LOG( NOTICE_LOG ,  "NSSetTransfer: authInfo [%s]" , authInfo ); 
 
@@ -2139,6 +2144,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
+ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "DomainCheck: clientID -> %d clTRID [%s] " , clientID , clTRID );
  
@@ -2213,6 +2219,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
+ret->errors.length(0);
 
 
 LOG( NOTICE_LOG ,  "DomainInfo: clientID -> %d clTRID [%s] fqdn  [%s] " , clientID , clTRID  , fqdn );
@@ -2394,7 +2401,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 
 
 LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , clientID , clTRID  , fqdn );
@@ -2514,6 +2521,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
+ret->errors.length(0);
 
 
 
@@ -2797,7 +2805,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 crDate = 0 ;
 exDate = 0 ;
 
@@ -2989,7 +2997,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 exDate=0;
 
 
@@ -3158,7 +3166,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 LOG( NOTICE_LOG ,  "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  " , clientID , clTRID  , fqdn  );
 
 
@@ -3276,7 +3284,7 @@ ret->svTRID = CORBA::string_alloc(32); //  server transaction
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
-
+ret->errors.length(0);
 
 if( PQsql.OpenDatabase( database ) )
 {
