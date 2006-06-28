@@ -760,6 +760,7 @@ return ret;
  *
  ***********************************************************************/
 
+
 ccReg::Response* ccReg_EPP_i::ContactDelete(const char* handle , CORBA::Long clientID, const char* clTRID )
 {
 ccReg::Response *ret;
@@ -767,7 +768,6 @@ PQ PQsql;
 Status status;
 char sqlString[1024];
 int regID=0 , id ,  crID =0  ;
-bool stat , del ;
 
 ret = new ccReg::Response;
 
@@ -782,79 +782,90 @@ ret->errors.length(0);
 LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
 
 
-if( PQsql.OpenDatabase( database ) )
-{
 
- if( PQsql.BeginAction( clientID , EPP_ContactDelete , (char * ) clTRID  ) )
- {
-  if( PQsql.BeginTransaction() )
-  {
-
-  if( ( id = PQsql.GetNumericFromTable(  "CONTACT"  , "id" , "handle" , (char * ) handle ) ) )
-  {
-   // get  registrator ID
-   regID =  PQsql.GetLoginRegistrarID( clientID);
-   // client contaktu ktery ho vytvoril
-   crID  =  PQsql.GetNumericFromTable(  "CONTACT"  , "crID" , "handle" , (char * ) handle );
-
-
-    // zpracuj  pole statusu
-   status.Make( PQsql.GetStatusFromTable( "CONTACT" , id ) );
-
-   if( status.Test( STATUS_DELETE )  )
+  if( PQsql.OpenDatabase( database ) )
     {
-      LOG( WARNING_LOG  ,  "status DeleteProhibited");
-      ret->errCode =  COMMAND_STATUS_PROHIBITS_OPERATION;
-      stat = false;
+
+      if( PQsql.BeginAction( clientID, EPP_ContactDelete, ( char * ) clTRID ) )
+        {
+          if( PQsql.BeginTransaction() )
+            {
+
+              if( ( id = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", ( char * ) handle ) ) == 0 )
+                {
+                  LOG( WARNING_LOG, "object handle [%s] NOT_EXIST", handle );
+                  ret->errCode = COMMAND_OBJECT_NOT_EXIST;      // pokud objekt neexistuje
+                }
+              else 
+                {
+                  // get  registrator ID
+                  regID = PQsql.GetLoginRegistrarID( clientID );
+                  // client contaktu ktery ho vytvoril
+                  crID = PQsql.GetNumericFromTable( "CONTACT", "crID", "handle", ( char * ) handle );
+
+
+                  if( regID != crID )   // pokud neni tvurcem kontaktu 
+                    {
+                      LOG( WARNING_LOG, "bad autorization not  creator of handle [%s]", handle );
+                      ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
+                    }                               
+                  else                                                                                           
+                    {
+                      // zpracuj  pole statusu
+                      status.Make( PQsql.GetStatusFromTable( "CONTACT", id ) );
+
+                      if( status.Test( STATUS_DELETE ) )
+                        {
+                          LOG( WARNING_LOG, "status DeleteProhibited" );
+                          ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
+                        }
+                      else // status je OK
+                        {
+                          // test na vazbu do tabulky domain domain_contact_map a nsset_contact_map
+                          if( PQsql.TestContactRelations( id ) )        // kontakt nemuze byt smazan ma vazby  
+                            {
+                              LOG( WARNING_LOG, "test contact handle [%s] relations: PROHIBITS_OPERATION", handle );
+                              ret->errCode = COMMAND_PROHIBITS_OPERATION;
+                            }
+                          else
+                            {
+                              //  uloz do historie
+                              if( PQsql.MakeHistory() )
+                                {
+                                  if( PQsql.SaveHistory( "Contact", "id", id ) ) // uloz zaznam
+                                    {
+                                      if( PQsql.DeleteFromTable( "CONTACT", "id", id ) ) ret->errCode = COMMAND_OK;      // pokud usmesne smazal
+                                    }
+                                }
+
+
+                            }
+
+                        }
+
+                    }
+
+
+                }
+
+              // pokud vse proslo
+              if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo commitni zmeny
+              else PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
+            }
+
+          // zapis na konec action
+          ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
+        }
+
+
+      ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );
+
+      PQsql.Disconnect();
     }
-   else stat = true; // status je OK
-   // test na vazbu do tabulky domain domain_contact_map a nsset_contact_map
-   if( PQsql.TestContactRelations( id ) == false ) del = true; // kontakt muze byt smazan
-   else 
-   { 
-     LOG( WARNING_LOG  ,  "test contact handle [%s] relations: PROHIBITS_OPERATION" , handle );
-     del = false;
-     ret->errCode = COMMAND_PROHIBITS_OPERATION ;
-    }
 
-   if(   crID == regID  && stat ==true && del == true ) // pokud je klient je registratorem a zaroven je status OK
-     {
-         //  uloz do historie
-         if( PQsql.MakeHistory() ) 
-           {
-            if( PQsql.SaveHistory( "Contact" , "id" , id ) ) // uloz zaznam
-              {
-                 if(  PQsql.DeleteFromTable("CONTACT" , "id" , id  ) ) ret->errCode =COMMAND_OK ; // pokud usmesne smazal
-              }
-           }
-          
-                      
-     } 
-
-  } 
-  else
-  {
-     LOG( WARNING_LOG  ,  "object handle [%s] NOT_EXIST" , handle );
-     ret->errCode=COMMAND_OBJECT_NOT_EXIST; // pokud objekt neexistuje
-  }
-
-         // pokud vse proslo
-  if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspesne nainsertovalo commitni zmeny
-  else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
-  }
- 
-   // zapis na konec action
-   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
-  }
-
- 
-ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
-
-PQsql.Disconnect();
+  return ret;
 }
 
-return ret;
-}
 
 
 /***********************************************************************
