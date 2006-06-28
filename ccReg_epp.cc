@@ -1508,92 +1508,103 @@ ret->errors.length(0);
 LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
 
 
-if( PQsql.OpenDatabase( database ) )
-{
-
- if( PQsql.BeginAction( clientID , EPP_NSsetDelete , (char * ) clTRID  ) )
- {
-  if(  PQsql.BeginTransaction() )  // zahajeni transakce
-  {
-
- // pokud NSSET existuje 
-   if(  (id =  PQsql.GetNumericFromTable( "NSSET" , "id" ,  "handle" ,  (char * )  handle) )   )
-   {
-   // get  registrator ID
-   regID = PQsql.GetLoginRegistrarID( clientID );
-   clID =  PQsql.GetNumericFromTable( "NSSET" ,"ClID" , "id" , id );
-
-    // zpracuj  pole statusu
-   status.Make( PQsql.GetStatusFromTable( "NSSET" , id ) );
-
-   if( status.Test( STATUS_DELETE )  )
+  if( PQsql.OpenDatabase( database ) )
     {
-      LOG( WARNING_LOG  ,  "status DeleteProhibited");
-      ret->errCode =  COMMAND_STATUS_PROHIBITS_OPERATION;
-      stat = false;
-    }
-   else stat = true; // status je OK
 
-
-   // test na vazbu do tabulky domain jestli existuji vazby na  nsset
-   if( PQsql.TestNSSetRelations( id ) == false ) del = true; //  muze byt smazan
-   else 
-     { 
-      LOG( WARNING_LOG  ,  "database relations");
-      ret->errCode = COMMAND_PROHIBITS_OPERATION;
-      del = false;
-      }  
-
-   if( clID == regID && stat == true && del == true ) // pokud je client registaratorem
-     {
-       //  uloz do historie
-       if( PQsql.MakeHistory() )
-         {
-          if( PQsql.SaveHistory( "nsset_contact_map" , "nssetid" , id ) ) // historie tech kontakty
+      if( PQsql.BeginAction( clientID, EPP_NSsetDelete, ( char * ) clTRID ) )
+        {
+          if( PQsql.BeginTransaction() )      // zahajeni transakce
             {
-               // na zacatku vymaz technicke kontakty
-	       if(  PQsql.DeleteFromTable( "nsset_contact_map" , "nssetid" , id  ) )
-	         {
-                   
-                   if( PQsql.SaveHistory( "HOST" , "nssetid" , id ) )
-                     {  
-   	               // vymaz nejdrive podrizene hosty
-        	      if(  PQsql.DeleteFromTable( "HOST" ,  "nssetid" , id  ) )
+
+              // pokud NSSET existuje 
+              if( ( id = PQsql.GetNumericFromTable( "NSSET", "id", "handle", ( char * ) handle ) ) == 0 )
+                {
+                  LOG( WARNING_LOG, "object handle [%s] NOT_EXIST", handle );
+                  ret->errCode = COMMAND_OBJECT_NOT_EXIST;      // pokud objekt neexistuje
+                }
+              else
+                {
+                  // get  registrator ID
+                  regID = PQsql.GetLoginRegistrarID( clientID );
+                  clID = PQsql.GetNumericFromTable( "NSSET", "ClID", "id", id );
+
+                  if( regID != clID )   // pokud neni klientem 
+                    {
+                      LOG( WARNING_LOG, "bad autorization not client of nsset [%s]", handle );
+                      ret->errCode = COMMAND_AUTOR_ERROR;       // spatna autorizace
+                    }
+                  else
+                    {
+                      // zpracuj  pole statusu
+                      status.Make( PQsql.GetStatusFromTable( "NSSET", id ) );
+
+                      if( status.Test( STATUS_DELETE ) )
                         {
-                           if( PQsql.SaveHistory( "NSSET" , "id" , id ) )
-                             {     
-	                       // vymaz NSSET nakonec
-          	              if(  PQsql.DeleteFromTable( "NSSET" , "id" , id ) ) ret->errCode =COMMAND_OK ; // pokud vse uspesne proslo
-                             }
-	                }
-	             }
-                 }
+                          LOG( WARNING_LOG, "status DeleteProhibited" );
+                          ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
+                          stat = false;
+                        }
+                      else      // status je OK
+                        {
+                          // test na vazbu do tabulky domain jestli existuji vazby na  nsset
+                          if( PQsql.TestNSSetRelations( id ) )  //  nemuze byt smazan
+
+                            {
+                              LOG( WARNING_LOG, "database relations" );
+                              ret->errCode = COMMAND_PROHIBITS_OPERATION;
+                              del = false;
+                            }
+                          else
+                            {
+                              //  uloz do historie
+                              if( PQsql.MakeHistory() )
+                                {
+                                  if( PQsql.SaveHistory( "nsset_contact_map", "nssetid", id ) ) // historie tech kontakty
+                                    {
+                                      // na zacatku vymaz technicke kontakty
+                                      if( PQsql.DeleteFromTable( "nsset_contact_map", "nssetid", id ) )
+                                        {
+
+                                          if( PQsql.SaveHistory( "HOST", "nssetid", id ) )
+                                            {
+                                              // vymaz nejdrive podrizene hosty
+                                              if( PQsql.DeleteFromTable( "HOST", "nssetid", id ) )
+                                                {
+                                                  if( PQsql.SaveHistory( "NSSET", "id", id ) )
+                                                    {
+                                                      // vymaz NSSET nakonec
+                                                      if( PQsql.DeleteFromTable( "NSSET", "id", id ) ) ret->errCode = COMMAND_OK;   // pokud vse OK
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }      
+
+                            }
+                        }
+
+                    }
+                }
+
+              // pokud vse proslo 
+              if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo commitni zmeny
+              else  PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
             }
-         } // konec historie
 
-     }
-   }
-   else ret->errCode =COMMAND_OBJECT_NOT_EXIST; 
 
-   
+          // zapis na konec action
+          ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
+        }
 
-   // pokud vse proslo 
-   if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspesne nainsertovalo commitni zmeny
-   else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
-   } 
- 
- 
-   // zapis na konec action
-   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
-  }
+      ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );
 
-ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
- 
-PQsql.Disconnect();
+      PQsql.Disconnect();
+    }
+
+  return ret;
 }
 
-return ret;
-}
 
 
 /***********************************************************************
