@@ -135,7 +135,7 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(CORBA::Long msgID, CORBA::Shor
 {
 PQ PQsql;
 ccReg::Response *ret;
-char sqlString[1024];
+char sqlString[1024] , str[64];
 int regID , rows;
 ret = new ccReg::Response;
 
@@ -161,6 +161,28 @@ regID =  PQsql.GetLoginRegistrarID( clientID);
 if( PQsql.BeginAction( clientID , EPP_PollAcknowledgement , (char * ) clTRID  ) )
   {
 
+          // test msg ID
+          sprintf (sqlString, "SELECT * FROM MESSAGE WHERE id=%d;", msgID);
+          if (PQsql.ExecSelect (sqlString))
+            {
+              rows = PQsql.GetSelectRows ();
+              if (rows == 0)
+                {
+                  LOG (ERROR_LOG, "unknow msgID %d", msgID);
+                  ret->errors.length (1);
+                  ret->errors[0].code = ccReg::pollAck_msgID;   // spatna msg ID
+                  ret->errors[0].value = CORBA::string_alloc (32);      // hodnota zadana klientem, ktera zpusobila chybu
+                  ret->errors[0].reason = CORBA::string_alloc (64);
+                  sprintf (str, "%d", msgID);
+                  ret->errors[0].value = CORBA::string_dup (str);
+                  sprintf (str, "unknow msgID %d", msgID);
+                  ret->errors[0].reason = CORBA::string_dup (str);
+                }
+              PQsql.FreeSelect ();
+            }
+
+   if (rows == 1)        // pokud tam ta zprava je
+     {
       // oznac zpravu jako prectenou  
        sprintf( sqlString , "UPDATE MESSAGE SET seen='t' WHERE id=%d AND clID=%d;" , msgID , regID );
        if(  PQsql.ExecSQL( sqlString ) )
@@ -183,6 +205,7 @@ if( PQsql.BeginAction( clientID , EPP_PollAcknowledgement , (char * ) clTRID  ) 
            }
         }
  
+    }
       // zapis na konec action
       ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;   
   }
