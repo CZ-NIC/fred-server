@@ -2452,77 +2452,84 @@ ret->errors.length(0);
 LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , clientID , clTRID  , fqdn );
 
 
-if( PQsql.OpenDatabase( database ) )
-{
+  if( PQsql.OpenDatabase( database ) )
+    {
 
-if( PQsql.BeginAction( clientID , EPP_DomainDelete , (char * ) clTRID  ) )
- {
+      if( PQsql.BeginAction( clientID, EPP_DomainDelete, ( char * ) clTRID ) )
+        {
 
- if( PQsql.BeginTransaction() )
- {
-  if( ( id =  PQsql.GetNumericFromTable( "DOMAIN" , "id" ,  "fqdn" , (char * )  fqdn) ) )
-  {
+          if( PQsql.BeginTransaction() )
+            {
+              if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) fqdn ) ) == 0 )
+                {
+                  LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
+                  ret->errCode = COMMAND_OBJECT_NOT_EXIST;
+                }
+              else
+                {
 
-   regID = PQsql.GetLoginRegistrarID( clientID ); // aktivni registrator
-   clID =  PQsql.GetNumericFromTable( "DOMAIN" , "ClID" , "id" , id );  // client objektu
+                  regID = PQsql.GetLoginRegistrarID( clientID );        // aktivni registrator
+                  clID = PQsql.GetNumericFromTable( "DOMAIN", "ClID", "id", id );       // client objektu
 
-    // zpracuj  pole statusu
-   status.Make( PQsql.GetStatusFromTable( "DOMAIN" , id ) );
+                  if( regID != clID )
+                    {
+                      LOG( WARNING_LOG, "bad autorization not client of fqdn [%s]", fqdn );
+                      ret->errCode = COMMAND_AUTOR_ERROR;       // spatna autorizace
+                    }
+                  else
+                    {
+                      // zpracuj  pole statusu
+                      status.Make( PQsql.GetStatusFromTable( "DOMAIN", id ) );
 
-   if( status.Test( STATUS_DELETE )  )     
-     {
-        LOG( WARNING_LOG  ,  "status DeleteProhibited");
-        ret->errCode =  COMMAND_STATUS_PROHIBITS_OPERATION;
-        stat = false;
-      }
-   else stat = true; // status je OK
-
-   if( regID == clID && stat == true ) // pokud je registrator klientem a status je OK      
-     {
-      //  uloz do historie
-       if( PQsql.MakeHistory() )
-         {
-            if( PQsql.SaveHistory( "domain_contact_map" , "domainID" , id ) )
-               { 
-                if(  PQsql.DeleteFromTable( "enumval" , "domainID" , id )  ) // enumval extension
-                  {
-                    if(  PQsql.DeleteFromTable( "domain_contact_map" , "domainID" , id )  )
-                      { 
-                          if( PQsql.SaveHistory(  "DOMAIN" , "id" , id  ) )
-                            { 
-                              if(  PQsql.DeleteFromTable( "DOMAIN" , "id" , id  ) )  ret->errCode =COMMAND_OK ; // pokud usmesne smazal
+                      if( status.Test( STATUS_DELETE ) )
+                        {
+                          LOG( WARNING_LOG, "status DeleteProhibited" );
+                          ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
+                          stat = false;
+                        }
+                      else      // status je OK
+                        {
+                          //  uloz do historie
+                          if( PQsql.MakeHistory() )
+                            {
+                              if( PQsql.SaveHistory( "domain_contact_map", "domainID", id ) )
+                                {
+                                  if( PQsql.DeleteFromTable( "enumval", "domainID", id ) )      // enumval extension
+                                    {
+                                      if( PQsql.DeleteFromTable( "domain_contact_map", "domainID", id ) )
+                                        {
+                                          if( PQsql.SaveHistory( "DOMAIN", "id", id ) )
+                                            {
+                                              if( PQsql.DeleteFromTable( "DOMAIN", "id", id ) )  ret->errCode = COMMAND_OK; // pokud usmesne smazal
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                      }
-                  }
-               }
-         }
-     }
+                        }
+                    }
+
+                }
+
+              // pokud vse proslo
+              if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo commitni zmeny
+              else  PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
+            }
 
 
-   }
-  else 
-   {
-      LOG( WARNING_LOG  ,  "domain  [%s] NOT_EXIST" , fqdn );
-      ret->errCode =COMMAND_OBJECT_NOT_EXIST;
+          // zapis na konec action
+          ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
+        }
+
+      ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );
+
+      PQsql.Disconnect();
     }
 
-   // pokud vse proslo
-   if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspesne nainsertovalo commitni zmeny
-   else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
-   }
-
-
- // zapis na konec action
- ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
- }
-
-ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
-
-PQsql.Disconnect();
+  return ret;
 }
 
-return ret;
-}
+
 
 /***********************************************************************
  *
