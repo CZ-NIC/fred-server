@@ -151,6 +151,7 @@ LOG( SQL_LOG , "SELECT: [%s]" , sqlString );
         if (PQresultStatus(result) != PGRES_TUPLES_OK)
         {
             LOG( ERROR_LOG ,  "SELECT [%s]failed: %s", sqlString , PQerrorMessage(connection));
+            LOG( ERROR_LOG ,  "SQL ERROR: %s" , PQresultErrorMessage(result) );
             PQclear(result);
             return false;
         }
@@ -200,6 +201,7 @@ if( PQresultStatus(res) == PGRES_COMMAND_OK )
 else
 {
    LOG( ERROR_LOG ,  "ExecSQL error");
+   LOG( ERROR_LOG ,  "SQL ERROR: %s" , PQresultErrorMessage(result) );
    PQclear(res);
    return false;
 }
@@ -405,16 +407,27 @@ return ret;
 }
 
 // test pri Check funkci case insensitiv
-bool PQ::CheckObject( const char *table ,   const char *fname ,  const char *value )
+// vracena hodnota: -1 chyba 0 objekt eexistuje 1 onbjekt existuje
+int PQ::CheckObject( const char *table ,   const char *fname ,  const char *value )
 {
-bool ret = false;
 char sqlString[128];
+int ret -1; // defult chyba
 
 sprintf( sqlString , "SELECT id FROM %s  WHERE %s  ILIKE \'%s\'" , table , fname , value );
 
 if( ExecSelect( sqlString ) )
  {
-    if(  GetSelectRows() == 1  ) ret=true; // objekt existuje
+   switch( GetSelectRows() )
+        {
+          case 1:
+                    ret = 1; //  objekt nalezen
+                    break;
+          case 0:
+                    ret = 0; //  objekt nenalezen 
+                    break;
+             
+        }
+
     FreeSelect();
   }
 

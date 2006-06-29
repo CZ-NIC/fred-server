@@ -55,7 +55,7 @@ int GetSequenceID( char *sequence ); // id ze sequnce
 bool CheckContactMap(char * table , int id , int contactid );
 
 // teck pri Check funkcih case insensitiv
-bool CheckObject( const char *table ,  const char *fname ,  const char *value);
+int CheckObject( const char *table ,  const char *fname ,  const char *value);
 
 // vyssi funkce na vraceni value
 int GetLoginRegistrarID(int id) { return GetNumericFromTable( "LOGIN" , "registrarid" , "id" , id ); };
