@@ -73,41 +73,45 @@ return false;
 
 
 
-ccReg::Response* ccReg_EPP_i::GetTransaction(CORBA::Long clientID, const char* clTRID, CORBA::Short errCode )
-{
-PQ  PQsql;
 
-ccReg::Response *ret;
+ccReg::Response * ccReg_EPP_i::GetTransaction( CORBA::Long clientID, const char *clTRID, CORBA::Short errCode )
+{
+PQ PQsql;
+ccReg::Response * ret;
 ret = new ccReg::Response;
+
 // default
-ret->errCode=COMMAND_FAILED; // chyba
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-ret->errMsg = CORBA::string_alloc(64);
-ret->errMsg = CORBA::string_dup("");
-ret->errMsg = CORBA::string_alloc(64);
-ret->errMsg = CORBA::string_dup("");
-ret->errors.length(0);
+ret->errCode = 0;
 
-LOG( NOTICE_LOG ,  "GetTransaction: clientID -> %d clTRID [%s] " , clientID, clTRID  );
-if(  PQsql.OpenDatabase( database ) )
-{
-   if( PQsql.BeginAction( clientID ,  EPP_UnknowAction , (char * ) clTRID  ) )
-   {     
-    // chybove hlaseni bere z clienta 
-    ret->errCode = errCode;
-    // zapis na konec action
-    // zapis na konec action
-    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
-    ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+LOG( NOTICE_LOG, "GetTransaction: clientID -> %d clTRID [%s] ", clientID, clTRID );
 
-    LOG( NOTICE_LOG , "GetTransaction: svTRID [%s] errCode -> %d msg [%s] " , (char * )   ret->svTRID  ,  ret->errCode  ,  (char * )   ret->errMsg  ); 
-   }
+  if( PQsql.OpenDatabase( database ) )
+    {
+      if( errCode > 0 )
+        {
+          if( PQsql.BeginAction( clientID, EPP_UnknowAction, ( char * ) clTRID ) )
+            {
+              // chybove hlaseni bere z clienta 
+              ret->errCode = errCode;
+              // zapis na konec action
+              // zapis na konec action
+              ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
+              ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );
 
-// ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+              LOG( NOTICE_LOG, "GetTransaction: svTRID [%s] errCode -> %d msg [%s] ", ( char * ) ret->svTRID, ret->errCode, ( char * ) ret->errMsg );
+            }
+        }
 
-PQsql.Disconnect();
-}
+      PQsql.Disconnect();
+    }
+
+  if( ret->errCode == 0 )
+    {
+      ret->errCode = 0;         // obecna chyba
+      ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+      ret->errMsg = CORBA::string_dup( "" );
+      ret->errors.length( 0 );
+    }
 
 return ret;
 }
@@ -131,93 +135,107 @@ return ret;
  ***********************************************************************/
 
 
-ccReg::Response* ccReg_EPP_i::PollAcknowledgement(CORBA::Long msgID, CORBA::Short& count, CORBA::Long& newmsgID, CORBA::Long clientID, const char* clTRID)
+ccReg::Response * ccReg_EPP_i::PollAcknowledgement( CORBA::Long msgID, CORBA::Short & count, CORBA::Long & newmsgID, CORBA::Long clientID, const char *clTRID )
 {
 PQ PQsql;
-ccReg::Response *ret;
-char sqlString[1024] , str[64];
-int regID , rows;
+ccReg::Response * ret;
+char sqlString[1024], str[64];
+int regID, rows;
+
 ret = new ccReg::Response;
+ret->errCode = 0;
+ret->errors.length( 0 );
+count = 0;
+newmsgID = 0;
 
+LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", clientID, clTRID, msgID );
 
+  if( PQsql.OpenDatabase( database ) )
+    {
 
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-ret->errMsg = CORBA::string_alloc(64);
-ret->errMsg = CORBA::string_dup("");
-ret->errors.length(0);
-count = 0 ;
-newmsgID = 0 ;
+      // get  registrator ID
+      regID = PQsql.GetLoginRegistrarID( clientID );
 
-LOG( NOTICE_LOG ,  "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d" , clientID, clTRID , msgID );
-
-if( PQsql.OpenDatabase( database ) )
-{
-
-// get  registrator ID
-regID =  PQsql.GetLoginRegistrarID( clientID);
-
-if( PQsql.BeginAction( clientID , EPP_PollAcknowledgement , (char * ) clTRID  ) )
-  {
+      if( PQsql.BeginAction( clientID, EPP_PollAcknowledgement, ( char * ) clTRID ) )
+        {
 
           // test msg ID
-          sprintf (sqlString, "SELECT * FROM MESSAGE WHERE id=%d;", msgID);
-          if (PQsql.ExecSelect (sqlString))
+          sprintf( sqlString, "SELECT * FROM MESSAGE WHERE id=%d;", msgID );
+          rows = 0;
+          if( PQsql.ExecSelect( sqlString ) )
             {
-              rows = PQsql.GetSelectRows ();
-              if (rows == 0)
+              rows = PQsql.GetSelectRows();
+              if( rows == 0 )
                 {
-                  LOG (ERROR_LOG, "unknow msgID %d", msgID);
-                  ret->errors.length (1);
+                  LOG( ERROR_LOG, "unknow msgID %d", msgID );
+                  ret->errors.length( 1 );
                   ret->errors[0].code = ccReg::pollAck_msgID;   // spatna msg ID
-                  ret->errors[0].value = CORBA::string_alloc (32);      // hodnota zadana klientem, ktera zpusobila chybu
-                  ret->errors[0].reason = CORBA::string_alloc (64);
-                  sprintf (str, "%d", msgID);
-                  ret->errors[0].value = CORBA::string_dup (str);
-                  sprintf (str, "unknow msgID %d", msgID);
-                  ret->errors[0].reason = CORBA::string_dup (str);
+                  ret->errors[0].value = CORBA::string_alloc( 32 );     // hodnota zadana klientem, ktera zpusobila chybu
+                  ret->errors[0].reason = CORBA::string_alloc( 64 );
+                  sprintf( str, "%d", msgID );
+                  ret->errors[0].value = CORBA::string_dup( str );
+                  sprintf( str, "unknow msgID %d", msgID );
+                  ret->errors[0].reason = CORBA::string_dup( str );
                 }
-              PQsql.FreeSelect ();
+              PQsql.FreeSelect();
             }
+          else
+            ret->errCode = COMMAND_FAILED;
 
-   if (rows == 1)        // pokud tam ta zprava je
-     {
-      // oznac zpravu jako prectenou  
-       sprintf( sqlString , "UPDATE MESSAGE SET seen='t' WHERE id=%d AND clID=%d;" , msgID , regID );
-       if(  PQsql.ExecSQL( sqlString ) )
-         {
-                // zjisteni dalsi ID zpravy ve fronte
-          sprintf( sqlString , "SELECT id  FROM MESSAGE  WHERE clID=%d AND seen='f' AND exDate > 'now()' ;" , regID );
-         if( PQsql.ExecSelect( sqlString ) )
-           {
- 
-            rows =  PQsql.GetSelectRows(); // pocet zprav
-            if( rows > 0 ) // pokud jsou nejake zpravy ve fronte
-                  {
-                     count = rows; // pocet dalsich zprav
-                     newmsgID = atoi(  PQsql.GetFieldValue( 0  , 0 ) );
-                     ret->errCode= COMMAND_ACK_MESG; // zpravy jsou ve fronte
-                     LOG( NOTICE_LOG ,  "PollAcknowledgement: newmsgID -> %d count -> %d" , newmsgID , count ); 
-                  } else  ret->errCode=COMMAND_NO_MESG; // zadne zpravy ve fronte
+          if( rows == 1 )       // pokud tam ta zprava existuje
+            {
+              // oznac zpravu jako prectenou  
+              sprintf( sqlString, "UPDATE MESSAGE SET seen='t' WHERE id=%d AND clID=%d;", msgID, regID );
+              if( PQsql.ExecSQL( sqlString ) )
+                {
+                  // zjisteni dalsi ID zpravy ve fronte
+                  sprintf( sqlString, "SELECT id  FROM MESSAGE  WHERE clID=%d AND seen='f' AND exDate > 'now()' ;", regID );
+                  if( PQsql.ExecSelect( sqlString ) )
+                    {
 
-           PQsql.FreeSelect();
-           }
+                      rows = PQsql.GetSelectRows();   // pocet zprav
+                      if( rows > 0 )    // pokud jsou nejake zpravy ve fronte
+                        {
+                          count = rows; // pocet dalsich zprav
+                          newmsgID = atoi( PQsql.GetFieldValue( 0, 0 ) );
+                          ret->errCode = COMMAND_ACK_MESG;      // zpravy jsou ve fronte
+                          LOG( NOTICE_LOG, "PollAcknowledgement: newmsgID -> %d count -> %d", newmsgID, count );
+                        }
+                      else
+                        ret->errCode = COMMAND_NO_MESG; // zadne zpravy ve fronte
+
+                      PQsql.FreeSelect();
+                    }
+                  else
+                    ret->errCode = COMMAND_FAILED;
+
+                }
+              else
+                ret->errCode = COMMAND_FAILED;
+
+            }
+          else
+            ret->errCode = COMMAND_FAILED;
+          // zapis na konec action
+          ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
         }
- 
+      else
+        ret->errCode = COMMAND_FAILED;
+
+      ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );
+
+      PQsql.Disconnect();
     }
-      // zapis na konec action
-      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;   
-  }
- 
 
-ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+  if( ret->errCode == 0 )
+    {
+      ret->errCode = COMMAND_FAILED;    // obecna chyba
+      ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+      ret->errMsg = CORBA::string_dup( "" );
+    }
 
-PQsql.Disconnect();
-}
- 
-return ret;
 
+  return ret;
 }
 
 
@@ -240,72 +258,86 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::PollRequest(CORBA::Long& msgID, CORBA::Short& count, ccReg::timestamp& qDate, CORBA::String_out mesg, CORBA::Long clientID, const char* clTRID)
+ccReg::Response * ccReg_EPP_i::PollRequest( CORBA::Long & msgID, CORBA::Short & count, ccReg::timestamp & qDate, CORBA::String_out mesg, CORBA::Long clientID, const char *clTRID )
 {
 PQ PQsql;
 char sqlString[1024];
-ccReg::Response *ret;
+ccReg::Response * ret;
 int regID;
 int rows;
+
 ret = new ccReg::Response;
 
 
 //vyprazdni
-qDate = 0 ;
+qDate = 0;
 count = 0;
 msgID = 0;
-mesg = CORBA::string_dup(""); // prazdna hodnota
+mesg = CORBA::string_dup( "" );       // prazdna hodnota
 
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-ret->errMsg = CORBA::string_alloc(64);
-ret->errMsg = CORBA::string_dup("");
-ret->errors.length(0);
+ret->errCode = 0;
+ret->errors.length( 0 );
 
-LOG( NOTICE_LOG ,  "PollRequest: clientID -> %d clTRID [%s]" , clientID, clTRID , msgID );
 
-if( PQsql.OpenDatabase( database ) )
-{
+LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s]", clientID, clTRID, msgID );
 
-   // get  registrator ID
-   regID =  PQsql.GetLoginRegistrarID( clientID);
+  if( PQsql.OpenDatabase( database ) )
+    {
 
- 
-  if( PQsql.BeginAction( clientID , EPP_PollAcknowledgement , (char * ) clTRID  ) )
+      // get  registrator ID
+      regID = PQsql.GetLoginRegistrarID( clientID );
+
+
+      if( PQsql.BeginAction( clientID, EPP_PollAcknowledgement, ( char * ) clTRID ) )
+        {
+
+          // vypsani zprav z fronty
+          sprintf( sqlString, "SELECT *  FROM MESSAGE  WHERE clID=%d AND seen='f' AND exDate > 'now()' ;", regID );
+
+          if( PQsql.ExecSelect( sqlString ) )
+            {
+              rows = PQsql.GetSelectRows();   // pocet zprav 
+
+              if( rows > 0 )    // pokud jsou nejake zpravy ve fronte
+                {
+                  count = rows;
+                  qDate = get_time_t( PQsql.GetFieldValueName( "CrDate", 0 ) );
+                  msgID = atoi( PQsql.GetFieldValueName( "ID", 0 ) );
+                  mesg = CORBA::string_dup( PQsql.GetFieldValueName( "message", 0 ) );
+                  ret->errCode = COMMAND_ACK_MESG;      // zpravy jsou ve fronte
+                  LOG( NOTICE_LOG, "PollRequest: msgID -> %d count -> %d mesg [%s]", msgID, count, CORBA::string_dup( mesg ) );
+                }
+              else
+                ret->errCode = COMMAND_NO_MESG; // zadne zpravy ve fronte
+
+              PQsql.FreeSelect();
+            }
+          else
+            ret->errCode = COMMAND_FAILED;
+
+          // zapis na konec action
+          ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
+
+        }
+      else
+        ret->errCode = COMMAND_FAILED;
+
+
+      ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );
+
+      PQsql.Disconnect();
+    }
+
+if( ret->errCode == 0 )
   {
-    
-    // vypsani zprav z fronty
-    sprintf( sqlString , "SELECT *  FROM MESSAGE  WHERE clID=%d AND seen='f' AND exDate > 'now()' ;" , regID );
-
-    if( PQsql.ExecSelect( sqlString ) )
-      {
-         rows =  PQsql.GetSelectRows(); // pocet zprav 
-
-          if( rows > 0 ) // pokud jsou nejake zpravy ve fronte
-           {
-             count =  rows;
-             qDate = get_time_t( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; 
-             msgID = atoi(  PQsql.GetFieldValueName("ID" , 0 ) );
-             mesg = CORBA::string_dup(PQsql.GetFieldValueName("message" , 0 )); 
-             ret->errCode= COMMAND_ACK_MESG; // zpravy jsou ve fronte
-             LOG( NOTICE_LOG ,  "PollRequest: msgID -> %d count -> %d mesg [%s]" , msgID , count ,CORBA::string_dup(  mesg ) );
-           } else  ret->errCode=COMMAND_NO_MESG; // zadne zpravy ve fronte
-
-        PQsql.FreeSelect();      
-      }
-      // zapis na konec action
-      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
-
+    ret->errCode = COMMAND_FAILED;    // obecna chyba
+    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+    ret->errMsg = CORBA::string_dup( "" );
   }
-
-ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
-
-PQsql.Disconnect();
-}
 
 return ret;
 }
+
 
 
 /***********************************************************************
@@ -320,43 +352,53 @@ return ret;
  * RETURNED:    svTRID a errCode
  *
  ***********************************************************************/
- 
-ccReg::Response* ccReg_EPP_i::ClientLogout(CORBA::Long clientID, const char* clTRID )
+
+ccReg::Response * ccReg_EPP_i::ClientLogout( CORBA::Long clientID, const char *clTRID )
 {
-PQ  PQsql;
+PQ PQsql;
 char sqlString[512];
-ccReg::Response *ret;
+ccReg::Response * ret;
 
 
 ret = new ccReg::Response;
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-ret->errMsg = CORBA::string_alloc(64);
-ret->errMsg = CORBA::string_dup("");
-ret->errors.length(0);
+ret->errCode = 0;
+ret->errors.length( 0 );
 
-LOG( NOTICE_LOG ,  "ClientLogout: clientID -> %d clTRID [%s]" , clientID, clTRID );
+LOG( NOTICE_LOG, "ClientLogout: clientID -> %d clTRID [%s]", clientID, clTRID );
 
 
-if(  PQsql.OpenDatabase( database ) )
-{
-  if( PQsql.BeginAction( clientID , EPP_ClientLogout , (char * ) clTRID  ) )
+  if( PQsql.OpenDatabase( database ) )
+    {
+      if( PQsql.BeginAction( clientID, EPP_ClientLogout, ( char * ) clTRID ) )
+        {
+
+          sprintf( sqlString, "UPDATE Login SET logoutdate='now' , logouttrid=\'%s\' WHERE id=%d;", clTRID, clientID );
+
+          if( PQsql.ExecSQL( sqlString ) )
+            ret->errCode = COMMAND_LOGOUT;      // uspesne oddlaseni
+          else
+            ret->errCode = COMMAND_FAILED;
+
+
+          // zapis na konec action
+          ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
+        }
+      else
+        ret->errCode = COMMAND_FAILED;
+
+
+      ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );
+
+      PQsql.Disconnect();
+    }
+
+
+if( ret->errCode == 0 )
   {
-
-    sprintf( sqlString , "UPDATE Login SET logoutdate='now' , logouttrid=\'%s\' WHERE id=%d;" , clTRID , clientID );
-
-   if(  PQsql.ExecSQL( sqlString ) ) ret->errCode= COMMAND_LOGOUT; // uspesne oddlaseni
-
-     
-    // zapis na konec action
-    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
+    ret->errCode = COMMAND_FAILED;    // obecna chyba
+    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+    ret->errMsg = CORBA::string_dup( "" );
   }
-
-ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
-
-PQsql.Disconnect();
-}
 
 return ret;
 }
@@ -380,115 +422,133 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, CORBA::Long& clientID , const char* certID , ccReg::Languages lang )
-{
-PQ  PQsql;
-char sqlString[1024];
-int roid , id , i ;
-bool pass=false;
-ccReg::Response *ret;
 
+ccReg::Response * ccReg_EPP_i::ClientLogin( const char *ClID, const char *passwd, const char *newpass, const char *clTRID, CORBA::Long & clientID, const char *certID, ccReg::Languages lang )
+{
+PQ PQsql;
+char sqlString[1024] , password[64];;
+int roid, id, i;
+bool change=true;
+ccReg::Response * ret;
 ret = new ccReg::Response;
 
 // default
-ret->errCode=COMMAND_FAILED; // chyba
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-ret->errMsg = CORBA::string_alloc(64);
-ret->errMsg = CORBA::string_dup("");
-ret->errors.length(0);
-
+ret->errCode = 0;
+ret->errors.length( 0 );
 clientID = 0;
 
-LOG( NOTICE_LOG ,  "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s] " , ClID, clTRID  , passwd , newpass );
-LOG( NOTICE_LOG ,  "ClientLogin:  certID  [%s] language  [%d] " , certID , lang );
+LOG( NOTICE_LOG, "ClientLogin: username-> [%s] clTRID [%s] passwd [%s]  newpass [%s] ", ClID, clTRID, passwd, newpass );
+LOG( NOTICE_LOG, "ClientLogin:  certID  [%s] language  [%d] ", certID, lang );
 
-if(  PQsql.OpenDatabase( database ) )
-{
-  // dotaz na ID registratora 
-  roid  = PQsql.GetNumericFromTable( "REGISTRAR" , "id" , "handle" ,  (char * ) ClID);   
 
-if( roid )
-{
-
-   // kontrola hesla
-  sprintf( sqlString , "SELECT password FROM REGISTRARACL WHERE registrarid=%d;" , roid);
-
-  if( PQsql.ExecSelect( sqlString ) )
+if( PQsql.OpenDatabase( database ) )
   {
-     if( strcmp(  PQsql.GetFieldValue( 0 , 0 ) , passwd ) == 0   ) 
-       {
-         LOG( NOTICE_LOG ,  "password [%s] accept"  , passwd );  
-         pass = true;           
-       }
-      else {
-            LOG( NOTICE_LOG ,  "bad password [%s] accept"  , passwd );  
-            ret->errCode= COMMAND_AUTH_ERROR; 
-            pass=false; 
-           } 
-     PQsql.FreeSelect();
-   }
 
-
-
-
-  if( pass ) // pokud je heslo spravne
-  {
- 
-  // zmena hesla pokud je nejake nastaveno
-  if( strlen( newpass ) )
-    {
-        LOG( NOTICE_LOG ,  "change password  [%s]  to  newpass [%s] " , passwd , newpass );
-        sprintf( sqlString , "UPDATE REGISTRARACL SET password='%s' WHERE registrarid=%d;" , newpass  , roid );
-        PQsql.ExecSQL( sqlString ); // uloz do tabulky
-    }
-
-  id =  PQsql.GetSequenceID( "login" );   
-   
-// zapis do logovaci tabulky 
-  sprintf( sqlString , "INSERT INTO  Login ( id , registrarid , logintrid ) VALUES ( %d , %d , \'%s\' );" , id ,  roid ,  clTRID );
-
-  if(  PQsql.ExecSQL( sqlString ) ) // pokud se podarilo zapsat do tabulky
-    {
-     clientID = id;
-     LOG( NOTICE_LOG ,  "get clientID  -> %d" , clientID );
-
-    // zmena jazyka pouze na cestinu
-    if( lang == ccReg::CS  ) 
+    if( PQsql.BeginTransaction() )
       {
-         sprintf( sqlString , "UPDATE login SET  lang=\'cs\' where id=%d;" , clientID );
-         if(  PQsql.ExecSQL( sqlString ) ) ret->errCode= COMMAND_OK;          
+
+        // dotaz na ID registratora 
+        if( ( roid = PQsql.GetNumericFromTable( "REGISTRAR", "id", "handle", ( char * ) ClID ) ) == 0 )
+          {
+            LOG( NOTICE_LOG, "bad username [%s]", ClID ); // spatne username 
+            ret->errCode = COMMAND_AUTH_ERROR;
+          }
+        else
+          {
+
+            // ziskej heslo z databaze
+            sprintf( sqlString, "SELECT password FROM REGISTRARACL WHERE registrarid=%d;", roid );
+              
+            if( PQsql.ExecSelect( sqlString ) )
+              {
+                strcpy( password, PQsql.GetFieldValue( 0, 0 ) ); // zkopiruj
+                PQsql.FreeSelect();
+              }
+            else  ret->errCode = COMMAND_FAILED;
+
+
+             // provnej heslo a pokud neni spravne vyhod chybu
+            if( strcmp( password, passwd )  )
+              {
+                LOG( NOTICE_LOG, "bad password [%s] accept", passwd );
+                ret->errCode = COMMAND_AUTH_ERROR;
+              }
+            else
+              {
+                LOG( NOTICE_LOG, "password [%s] accept", passwd );
+
+                // zmena hesla pokud je nejake nastaveno
+                if( strlen( newpass ) )
+                  {
+                    LOG( NOTICE_LOG, "change password  [%s]  to  newpass [%s] ", passwd, newpass );
+                    sprintf( sqlString, "UPDATE REGISTRARACL SET password='%s' WHERE registrarid=%d;", newpass, roid );
+                    if( PQsql.ExecSQL( sqlString ) == false )
+                      {
+                        ret->errCode = COMMAND_FAILED;
+                        change = false;
+                      }
+                  }
+
+                if( change ) // pokud projde zmena defaulte je nastava true
+                  {
+                    id = PQsql.GetSequenceID( "login" ); // ziskani id jako sequence
+
+                    // zapis do logovaci tabulky 
+                    sprintf( sqlString, "INSERT INTO  Login ( id , registrarid , logintrid ) VALUES ( %d , %d , \'%s\' );", id, roid, clTRID );
+
+                    if( PQsql.ExecSQL( sqlString ) )    // pokud se podarilo zapsat do tabulky
+                      {
+                        clientID = id;
+                        LOG( NOTICE_LOG, "GET clientID  -> %d", clientID );
+
+                        ret->errCode = COMMAND_OK; // zikano clinetID OK
+
+                        // nankonec zmena komunikacniho  jazyka pouze na cestinu
+                        if( lang == ccReg::CS )
+                          {
+                            LOG( NOTICE_LOG, "SET LANG to CS" ); 
+                            sprintf( sqlString, "UPDATE login SET  lang=\'cs\' where id=%d;", clientID );
+                            if( PQsql.ExecSQL( sqlString ) == false ) ret->errCode = COMMAND_FAILED;    // pokud se nezdarilo
+                          }
+
+                      }
+                    else ret->errCode = COMMAND_FAILED;
+
+                  }
+
+              }
+
+          }
+
+        // probehne action pro svrTrID   musi byt az na mkonci pokud zna clientID
+        if( PQsql.BeginAction( clientID, EPP_ClientLogin, ( char * ) clTRID ) )
+          {
+            // zapis na konec action
+            ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
+          }
+
+
+        ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );
+
+        // pokud vse proslo
+        if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();  // pokud uspesne
+        else PQsql.RollbackTransaction();        // pokud nejake chyba zrus trasakci
+
       }
-     else   ret->errCode= COMMAND_OK; 
-    }   
 
-
+    PQsql.Disconnect();
   }
 
+if( ret->errCode == 0 )
+  {
+    ret->errCode = COMMAND_FAILED;    // obecna chyba
+    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+    ret->errMsg = CORBA::string_dup( "" );
+  }
 
-
-} 
-else
-{
-      LOG( NOTICE_LOG ,  "bad username [%s]"  , ClID );
-      ret->errCode= COMMAND_AUTH_ERROR;
-} 
-
-    // probehne action pro svrTrID     
-     if( PQsql.BeginAction( clientID , EPP_ClientLogin , (char * ) clTRID  ) )
-      {
-         // zapis na konec action
-         ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
-      } 
-
-
-ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
-
-PQsql.Disconnect();
+return ret;
 }
 
-return ret;  
-}
 
 
 /***********************************************************************
@@ -550,14 +610,14 @@ if( PQsql.OpenDatabase( database ) )
       ret->errCode=COMMAND_OK;
 
       // zapis na konec action
-      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
-    
+      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;    
   }
 
 ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
  
 PQsql.Disconnect();
 }
+
  
 return ret;
 }
