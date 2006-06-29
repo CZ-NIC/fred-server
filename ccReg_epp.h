@@ -15,6 +15,9 @@ public:
   // test spojeni na databazi
   bool TestDatabaseConnect(char *db);
 
+  // obecna check funkce
+  ccReg::Response*  ObjectCheck( short act , char * table , char *fname , const ccReg::Check& chck , ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID);
+
   // methods corresponding to defined IDL attributes and operations
   ccReg::Response* GetTransaction(CORBA::Long clientID, const char* clTRID, CORBA::Short errCode );
   ccReg::Response* PollAcknowledgement(CORBA::Long msgID, CORBA::Short& count, CORBA::Long& newmsgID, CORBA::Long clientID, const char* clTRID);

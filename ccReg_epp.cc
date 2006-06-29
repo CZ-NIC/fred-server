@@ -550,16 +550,19 @@ return ret;
 }
 
 
-
 /***********************************************************************
  *
- * FUNCTION:    ContactCheck
+ * FUNCTION:    ObjectCheck
  *
- * DESCRIPTION: kontrola existence kontaktu 
+ * DESCRIPTION: obecna kontrola objektu nsset domain nebo kontakt
  *              
- * PARAMETERS:  handle - sequence kontaktu typu  Check 
- *        OUT:  a - (1) kontakt neexistuje a je volny 
- *                  (0) kontak uz je zalozen
+ * PARAMETERS:  
+ *              act - typ akce check 
+ *              table - jmeno tabulky CONTACT NSSET ci DOMAIN
+ *              fname - nazev pole v databazi HANDLE ci FQDN
+ *              chck - sequence stringu objektu typu  Check 
+ *        OUT:  a - (1) objekt neexistuje a je volny 
+ *                  (0) objekt uz je zalozen
  *              clientID - id pripojeneho klienta 
  *              clTRID - cislo transakce klienta
  * 
@@ -567,7 +570,8 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::ContactCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
+
+ccReg::Response* ccReg_EPP_i::ObjectCheck( short act , char * table , char *fname , const ccReg::Check& chck , ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
 ccReg::Response *ret;
@@ -576,19 +580,14 @@ long unsigned int i;
 ret = new ccReg::Response;
 
 a = new ccReg::Avail;
+ret->errCode=0;
+ret->errors.length(0);
 
-len = handle.length();
+len = chck.length();
 a->length(len);
 
-LOG( NOTICE_LOG ,  "ContactCheck: clientID -> %d clTRID [%s] " , clientID , clTRID );
+LOG( NOTICE_LOG ,  "OBJECT %d  Check: clientID -> %d clTRID [%s] " , act  , clientID , clTRID );
  
-
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-ret->errMsg = CORBA::string_alloc(64);
-ret->errMsg = CORBA::string_dup("");
-ret->errors.length(0);
 
 if( PQsql.OpenDatabase( database ) )
 {
@@ -599,15 +598,26 @@ if( PQsql.OpenDatabase( database ) )
     for( i = 0 ; i < len ; i ++ )
      { 
        
-      if( PQsql.CheckObject( "CONTACT"  , "handle" , handle[i] ) ) a[i] =  0;
-      else   a[i]= 1;    // kontak je volny 
-
-      LOG( NOTICE_LOG ,  "check %d handle [%s] get -> %d "  ,  i ,  CORBA::string_dup(  handle[i] ) , a[i]  );
- 
+      switch( PQsql.CheckObject( table , fname , chck[i] ) )
+           {
+             case 1:
+                       a[i]= 0;    // objekt existuje
+                       //LOG( NOTICE_LOG ,  "object %s exist not Avail" , (char * ) chck[i] );
+                       break;
+             case 0:
+                       a[i]= 1;    // objekt existuje
+                       //LOG( NOTICE_LOG ,  "object %s not exist  Avail" ,(char * ) chck[i] );
+                       break; 
+             default: // error
+                      ret->errCode=COMMAND_FAILED;
+                      break;             
+            }
+  
      }
     
+     
       // comand OK
-      ret->errCode=COMMAND_OK;
+     if( ret->errCode == 0 ) ret->errCode=COMMAND_OK; // vse proslo OK zadna chyba 
 
       // zapis na konec action
       ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;    
@@ -618,9 +628,38 @@ ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
 PQsql.Disconnect();
 }
 
+
+if( ret->errCode == 0 )
+  {
+    ret->errCode = COMMAND_FAILED;    // obecna chyba
+    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+    ret->errMsg = CORBA::string_dup( "" );
+  }
+
+
  
 return ret;
 }
+
+
+ccReg::Response* ccReg_EPP_i::ContactCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
+{
+return ObjectCheck( EPP_ContactCheck , "CONTACT"  , "handle" , handle , a , clientID , clTRID);
+}
+
+ccReg::Response* ccReg_EPP_i::NSSetCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
+{
+return ObjectCheck( EPP_NSsetCheck ,  "NSSET"  , "handle" , handle , a ,  clientID , clTRID );
+}
+
+
+ccReg::Response*  ccReg_EPP_i::DomainCheck(const ccReg::Check& fqdn, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
+{
+return ObjectCheck(  EPP_DomainCheck , "DOMAIN"  , "fqdn" ,   fqdn , a ,  clientID , clTRID );
+}
+
+
+
 
 
 /***********************************************************************
@@ -1279,75 +1318,6 @@ return ret;
 }
 
 
-
-/***********************************************************************
- *
- * FUNCTION:    NSSetCheck
- *
- * DESCRIPTION: kontrola existence vice nssetu 
- *              
- * PARAMETERS:  handle - sequence nssetu typu  Check 
- *        OUT:  a - (1) nsset neexistuje a je volny 
- *                  (0) nsset uz je zalozen
- *              clientID - id pripojeneho klienta 
- *              clTRID - cislo transakce klienta
- * 
- * RETURNED:    svTRID a errCode
- *
- ***********************************************************************/
-
-ccReg::Response* ccReg_EPP_i::NSSetCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
-{
-PQ PQsql;
-ccReg::Response *ret;
-int  len , av ;
-long unsigned int i;
-ret = new ccReg::Response;
-
-a = new ccReg::Avail;
-
-
-len = handle.length();
-a->length(len);
-
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-ret->errMsg = CORBA::string_alloc(64);
-ret->errMsg = CORBA::string_dup("");
-ret->errors.length(0);
-
-LOG( NOTICE_LOG ,  "NSSetCheck: clientID -> %d clTRID [%s] " , clientID , clTRID );
- 
-if( PQsql.OpenDatabase( database ) )
-{
-
-  if( PQsql.BeginAction( clientID , EPP_NSsetCheck , (char * ) clTRID  ) )
-  {
-
-    for( i = 0 ; i < len ; i ++ )
-     {
-       if( PQsql.CheckObject( "NSSET" ,  "handle" , handle[i] ) ) a[i]=0; // existuje
-       else a[i] =1; // je volny
-
-       LOG( NOTICE_LOG ,  "check %d handle [%s] get -> %d "  ,  i ,    CORBA::string_dup( handle[i] ) ,   a[i]  );
-     }
-
-      // comand OK
-      ret->errCode=COMMAND_OK;
-
-      // zapis na konec action
-      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
-
-  }
-
-ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
-
-PQsql.Disconnect();
-}
-
-return ret;
-}
 
 /***********************************************************************
  *
@@ -2215,72 +2185,6 @@ return ret;
 }
 
 
-/***********************************************************************
- *
- * FUNCTION:    DomainCheck
- *
- * DESCRIPTION: kontrola existence domen 
- *              
- * PARAMETERS:  fqdn - sequence domenovych jmen  typu  Check 
- *        OUT:  a - (1) domena neexistuje a je tedy volna
- *                  (0) domana je uz  zalozena
- *              clTRID - cislo transakce klienta
- *              clientID - id klienta
- * 
- * RETURNED:    svTRID a errCode
- *
- ***********************************************************************/
-
-ccReg::Response*  ccReg_EPP_i::DomainCheck(const ccReg::Check& fqdn, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
-{
-PQ PQsql;
-ccReg::Response *ret;
-int  len , av ;
-long unsigned int i;
-ret = new ccReg::Response;
-
-a = new ccReg::Avail;
-
-len = fqdn.length();
-a->length(len);
-
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-ret->errMsg = CORBA::string_alloc(64);
-ret->errMsg = CORBA::string_dup("");
-ret->errors.length(0);
-
-LOG( NOTICE_LOG ,  "DomainCheck: clientID -> %d clTRID [%s] " , clientID , clTRID );
- 
-if( PQsql.OpenDatabase( database ) )
-{
-
-  if( PQsql.BeginAction( clientID , EPP_DomainCheck , (char * ) clTRID  ) )
-  {
-
-    for( i = 0 ; i < len ; i ++ )
-     {
-       if( PQsql.CheckObject( "DOMAIN"  , "fqdn" ,   fqdn[i] )  ) a[i]=0; // existuje
-       else a[i] =1; // neexistuje domena je volna
-       LOG( NOTICE_LOG ,  "check %d fqdn [%s] get -> %d "  ,  i ,   CORBA::string_dup( fqdn[i] )  , a[i]  );
-     }
-
-      // comand OK
-      ret->errCode=COMMAND_OK;
-
-      // zapis na konec action
-      ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
-
-  }
-
-ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
-
-PQsql.Disconnect();
-}
-
-return ret;
-}
 
 
 
