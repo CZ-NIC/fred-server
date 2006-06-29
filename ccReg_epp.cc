@@ -1,4 +1,4 @@
-
+// *INDENT-OFF*
 //  implementing IDL interfaces for file ccReg.idl
 // autor Petr Blaha petr.blaha@nic.cz
 
@@ -988,172 +988,172 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , cl
 
 ccReg::Response* ccReg_EPP_i::ContactUpdate(const char* handle , const ccReg::ContactChange& c, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID)
 {
-ccReg::Response *ret;
+ccReg::Response * ret;
 PQ PQsql;
-char sqlString[4096] , buf[1024]  ;
-char statusString[128] ;
-int regID=0 , crID=0 , clID = 0 , id;
-bool stat;
-int len , i ; 
+char sqlString[4096], buf[1024];
+char statusString[128];
+int regID = 0, crID = 0, clID = 0, id;
+bool policy_error = false;
+int len, i;
 Status status;
 
 ret = new ccReg::Response;
+ret->errCode = 0;
+ret->errors.length( 0 );
 
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-ret->errMsg = CORBA::string_alloc(64);
-ret->errMsg = CORBA::string_dup("");
-ret->errors.length(0);
+LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clientID, clTRID, handle );
 
-LOG( NOTICE_LOG ,  "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
- 
-// NEMAZAT vypis status parametru
-len =   status_add.length() ;
-for( i = 0 ; i < len ; i ++ ) LOG( NOTICE_LOG ,  "status_add [%s] " ,    CORBA::string_dup( status_add[i] ));
+// test status flagu pokud nejsou typu server 
+len = status_add.length();
+for( i = 0; i < len; i++ )
+   {
+      LOG( NOTICE_LOG, "status_add [%s] ", CORBA::string_dup( status_add[i] ) );
+      if( status.IsServerStatus( status.GetStatusNumber( status_add[i] ) ) ) policy_error = true;
+   }
 
-len =   status_rem.length() ;
-for( i = 0 ; i < len ; i ++ ) LOG( NOTICE_LOG ,  "status_rem [%s] " ,    CORBA::string_dup( status_rem[i] ) );
-
-// konec
-
-if( PQsql.OpenDatabase( database ) )
-{
-
-if( PQsql.BeginAction( clientID , EPP_ContactUpdate , (char * ) clTRID  ) )
- {
-  if(  PQsql.BeginTransaction() )  // zahajeni transakce
-  {
-  id = PQsql.GetNumericFromTable(  "CONTACT"  , "id" , "handle" , (char * ) handle );
+len = status_rem.length();
+for( i = 0; i < len; i++ )
+   {
+      LOG( NOTICE_LOG, "status_rem [%s] ", CORBA::string_dup( status_rem[i] ) );
+      if( status.IsServerStatus( status.GetStatusNumber( status_rem[i] ) ) ) policy_error = true;
+   }
 
 
-  if( id == 0 ) 
+
+
+  if( PQsql.OpenDatabase( database ) )
     {
-       LOG( WARNING_LOG  ,  "object handle [%s] NOT_EXIST" , handle );
-       ret->errCode= COMMAND_OBJECT_NOT_EXIST;
+
+      if( PQsql.BeginAction( clientID, EPP_ContactUpdate, ( char * ) clTRID ) )
+        {
+          if( PQsql.BeginTransaction() )      // zahajeni transakce
+            {
+              if( ( id = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", ( char * ) handle ) ) == 0 )
+                {
+                  LOG( WARNING_LOG, "object handle [%s] NOT_EXIST", handle );
+                  ret->errCode = COMMAND_OBJECT_NOT_EXIST;
+                }
+              // pokud kontakt existuje 
+              else 
+                {
+                  // get  registrator ID
+                  regID = PQsql.GetLoginRegistrarID( clientID );
+                  // zjistit kontak u domeny            
+                  clID = PQsql.GetClientDomainRegistrant( regID, clientID );
+                  // client contaktu ktery ho vytvoril
+                  crID = PQsql.GetNumericFromTable( "CONTACT", "crID", "handle", ( char * ) handle );
+                  // klient spravuje nejakou domenu kontaktu nebo je jeho tvurcem   
+                  if( crID == regID || clID == regID )  
+                    {
+                      // zjisti  pole statusu
+                      status.Make( PQsql.GetStatusFromTable( "CONTACT", id ) );
+
+                      if( status.Test( STATUS_UPDATE ) )
+                        {
+                          LOG( WARNING_LOG, "status UpdateProhibited" );
+                          ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
+                        }
+                      else  // status je OK
+                        {
+                          if( policy_error )
+                            {
+                              LOG( WARNING_LOG, "status flag policy" );
+                              ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
+                            }
+                          else  // zadny PARAMETR_VALUE_POLICY_ERROR u add ci rem  status flagu
+                            {
+                              //  uloz do historie
+                              if( PQsql.MakeHistory() )
+                                {
+                                  if( PQsql.SaveHistory( "Contact", "id", id ) )        // uloz zaznam
+                                    {
+
+                                      // pridany status
+                                      for( i = 0; i <   status_add.length() ; i++ )
+                                        status.Add( status.GetStatusNumber( status_add[i] ) );
+
+
+                                      // zruseny status flagy
+                                      for( i = 0; i <  status_rem.length() ; i++ )
+                                        status.Rem( status.GetStatusNumber( status_rem[i] ) );
+
+
+                                      //  vygeneruj  novy status string array
+                                      status.Array( statusString );
+
+
+                                      strcpy( sqlString, "UPDATE Contact SET " );
+
+                                      // pridat zmenene polozky
+                                      add_field_value( sqlString, "Name", CORBA::string_dup( c.Name ) );
+                                      add_field_value( sqlString, "Organization", CORBA::string_dup( c.Organization ) );
+                                      add_field_value( sqlString, "Street1", CORBA::string_dup( c.Street1 ) );
+                                      add_field_value( sqlString, "Street2", CORBA::string_dup( c.Street2 ) );
+                                      add_field_value( sqlString, "Street3", CORBA::string_dup( c.Street3 ) );
+                                      add_field_value( sqlString, "City", CORBA::string_dup( c.City ) );
+                                      add_field_value( sqlString, "StateOrProvince", CORBA::string_dup( c.StateOrProvince ) );
+                                      add_field_value( sqlString, "PostalCode", CORBA::string_dup( c.PostalCode ) );
+                                      add_field_value( sqlString, "Country", CORBA::string_dup( c.CC ) );
+                                      add_field_value( sqlString, "Telephone", CORBA::string_dup( c.Telephone ) );
+                                      add_field_value( sqlString, "Fax", CORBA::string_dup( c.Fax ) );
+                                      add_field_value( sqlString, "Email", CORBA::string_dup( c.Email ) );
+                                      add_field_value( sqlString, "NotifyEmail", CORBA::string_dup( c.NotifyEmail ) );
+                                      add_field_value( sqlString, "VAT", CORBA::string_dup( c.VAT ) );
+                                      add_field_value( sqlString, "SSN", CORBA::string_dup( c.SSN ) );
+
+                                      //  Disclose parametry
+                                      add_field_bool( sqlString, "DiscloseName", c.DiscloseName );
+                                      add_field_bool( sqlString, "DiscloseOrganization", c.DiscloseOrganization );
+                                      add_field_bool( sqlString, "DiscloseAddress", c.DiscloseAddress );
+                                      add_field_bool( sqlString, "DiscloseTelephone", c.DiscloseTelephone );
+                                      add_field_bool( sqlString, "DiscloseFax", c.DiscloseFax );
+                                      add_field_bool( sqlString, "DiscloseEmail", c.DiscloseEmail );
+
+                                      // datum a cas updatu  plus kdo zmenil zanzma na konec
+                                      sprintf( buf, " UpDate=\'now\' ,   UpID=%d  , status=\'%s' WHERE id=%d  ", regID, statusString, id );
+                                      strcat( sqlString, buf );
+
+                                      if( PQsql.ExecSQL( sqlString ) ) ret->errCode = COMMAND_OK;
+                                      else ret->errCode = COMMAND_FAILED;
+                                    }
+                                }
+
+                            }
+
+                        }
+
+                    }
+                  else // client neni tvurcem kontaktu ani nespravuje zadnou jeho domenu
+                    {
+                      LOG( WARNING_LOG, "bad autorization of handle [%s]", handle );
+                      ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
+                    }
+
+
+                }
+
+              // pokud vse proslo
+              if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne
+              else PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
+            }
+
+          // zapis na konec action
+          ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
+        }
+
+
+      ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );
+
+      PQsql.Disconnect();
     }
-  else // pokud kontakt existuje 
+
+
+if( ret->errCode == 0 )
   {
-  // get  registrator ID
-  regID = PQsql.GetLoginRegistrarID( clientID);
-  // zjistit kontak u domeny            
-  clID  = PQsql.GetClientDomainRegistrant( regID , clientID );
-  // client contaktu ktery ho vytvoril
-  crID  =  PQsql.GetNumericFromTable(  "CONTACT"  , "crID" , "handle" , (char * ) handle );
-  // zpracuj  pole statusu
-  status.Make( PQsql.GetStatusFromTable( "CONTACT" , id ) );
-
-   if( status.Test( STATUS_UPDATE )  ) 
-     {
-        LOG( WARNING_LOG  ,  "status UpdateProhibited");
-        ret->errCode =  COMMAND_STATUS_PROHIBITS_OPERATION;
-        stat = false;
-      }
-   else stat = true; // status je OK
-
-   // TEST add a rem statusu flagu jestli nejsou server flag
-    len  =   status_add.length();
-    for( i = 0 ; i < len ; i ++)
-       {
-         if( status.IsServerStatus(  status.GetStatusNumber(  status_add[i]  )  ) )
-           {
-               LOG( WARNING_LOG  ,  "add status flag policy error  %s" , CORBA::string_dup( status_add[i] ) );
-               ret->errCode =  COMMAND_PARAMETR_VALUE_POLICY_ERROR;
-               stat = false;
-           }
-        }
-
-    len  =   status_rem.length();
-    for( i = 0 ; i < len ; i ++)  
-       {
-         if( status.IsServerStatus(  status.GetStatusNumber(  status_rem[i]  )  ) ) 
-           {
-               LOG( WARNING_LOG  ,  "rem status flag policy error  %s" , CORBA::string_dup( status_rem[i] ) );
-               ret->errCode =  COMMAND_PARAMETR_VALUE_POLICY_ERROR;
-               stat = false; 
-           }
-        }
- 
-
-    if(  ( crID == regID || clID == regID  ) && stat ) // pokud je registrator clientem kontaktu a je status v poradku
-      {
-         //  uloz do historie
-         if( PQsql.MakeHistory() )
-           {
-            if( PQsql.SaveHistory( "Contact" , "id" , id ) ) // uloz zaznam
-              {
- 
-                // pridany status
-                len  =   status_add.length();                             
-                for( i = 0 ; i < len ; i ++) status.Add(  status.GetStatusNumber(  status_add[i]  )  );
-
-                   
-                // zruseny status flagy
-                len  =   status_rem.length();
-                for( i = 0 ; i < len ; i ++) status.Rem( status.GetStatusNumber(  status_rem[i]  )); 
-
-
-                //  vygeneruj  novy status string array
-                status.Array( statusString );
-
-                  
-                strcpy( sqlString , "UPDATE Contact SET " );    
-
-                // pridat zmenene polozky
-                add_field_value( sqlString , "Name" ,  CORBA::string_dup(c.Name)  ) ;
-                add_field_value( sqlString , "Organization" ,  CORBA::string_dup(c.Organization)  ) ;
-                add_field_value( sqlString , "Street1" ,  CORBA::string_dup(c.Street1)  ) ;
-                add_field_value( sqlString , "Street2" ,  CORBA::string_dup(c.Street2)  ) ;
-                add_field_value( sqlString , "Street3" ,  CORBA::string_dup(c.Street3)  ) ;
-                add_field_value( sqlString , "City" ,  CORBA::string_dup(c.City)  ) ;
-                add_field_value( sqlString , "StateOrProvince" ,  CORBA::string_dup(c.StateOrProvince)  ) ;
-                add_field_value( sqlString , "PostalCode" ,  CORBA::string_dup(c.PostalCode)  ) ;
-                add_field_value( sqlString , "Country" , CORBA::string_dup(c.CC) );
-                add_field_value( sqlString , "Telephone" ,  CORBA::string_dup(c.Telephone)  ) ;
-                add_field_value( sqlString , "Fax" ,  CORBA::string_dup(c.Fax)  ) ;
-                add_field_value( sqlString , "Email" ,  CORBA::string_dup(c.Email)  ) ;
-                add_field_value( sqlString , "NotifyEmail" ,  CORBA::string_dup(c.NotifyEmail)  ) ;
-                add_field_value( sqlString , "VAT" ,  CORBA::string_dup(c.VAT)  ) ;
-                add_field_value( sqlString , "SSN" ,  CORBA::string_dup(c.SSN)  ) ;
-              //  add_field_value( sqlString , "AuthInfoPw" ,  CORBA::string_dup(c.AuthInfoPw)  ) ;
-
-                //  Disclose parametry
-                add_field_bool( sqlString , "DiscloseName" , c.DiscloseName );
-                add_field_bool( sqlString , "DiscloseOrganization" , c.DiscloseOrganization );
-                add_field_bool( sqlString , "DiscloseAddress" , c.DiscloseAddress );
-                add_field_bool( sqlString , "DiscloseTelephone" , c.DiscloseTelephone );
-                add_field_bool( sqlString , "DiscloseFax" , c.DiscloseFax );
-                add_field_bool( sqlString , "DiscloseEmail" , c.DiscloseEmail );
-
-                // datum a cas updatu  plus kdo zmenil zanzma na konec
-                sprintf( buf , " UpDate=\'now\' ,   UpID=%d  , status=\'%s' WHERE id=%d  " , regID , statusString  , id );
-                strcat(  sqlString ,  buf );
-
-                if(   PQsql.ExecSQL( sqlString ) )   ret->errCode= COMMAND_OK;
-
-              }
-           }
-
-
-       }
-
-  
-   } 
-
-    // pokud vse proslo
-    if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspes$
-    else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
+    ret->errCode = COMMAND_FAILED;    // obecna chyba
+    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+    ret->errMsg = CORBA::string_dup( "" );
   }
-
-   // zapis na konec action
-   ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
-}
-
- 
-ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
-
-PQsql.Disconnect();
-}
 
 return ret;
 }
