@@ -411,7 +411,7 @@ return ret;
 int PQ::CheckObject( const char *table ,   const char *fname ,  const char *value )
 {
 char sqlString[128];
-int ret -1; // defult chyba
+int ret = -1; // defult chyba
 
 sprintf( sqlString , "SELECT id FROM %s  WHERE %s  ILIKE \'%s\'" , table , fname , value );
 
