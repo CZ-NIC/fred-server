@@ -106,6 +106,25 @@ char *  GetFieldName( int col );
 bool IsNotNull( int row , int col );
 
 
+// SQL UPDATE funkce
+void UPDATE( const  char * table );
+void SET( const  char *fname , const  char * value );
+void SET( const  char *fname , int   value );
+void SET( const  char *fname , bool  value );
+void WHERE( const  char *fname , const  char * value );
+void WHERE( const  char *fname , int   value );
+void WHEREID( int id ) { WHERE( "id" , id ); };
+//  SQL INSERT funkce
+void INSERT( const  char * table );
+void INTO(const  char *fname);
+void INTOVAL(const  char *fname , const char * value );
+void VAL( const  char * value);
+void VALUE( const  char * value );
+void VALUE( int  value );
+void VALUE( bool value );
+
+bool EXEC();
+
 // vraci pocet radku
 int GetSelectRows(){ return nRows;};
 int GetSelectCols(){ return nCols;};
@@ -118,6 +137,7 @@ PGconn     *connection;
 PGresult   *result;
 char *memHandle;
 char *svrTRID;
+char *sqlBuffer;
 int nRows , nCols; // pocet radek pri selectu
 int actionID; // id tabulky akce
 int historyID; // id tabulky historie

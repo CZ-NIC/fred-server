@@ -692,3 +692,176 @@ if( historyID )
 
 return ret;
 }
+
+// UPDATE funkce
+// SQL UPDATE funkce
+void PQ::UPDATE( const char * table )
+{
+sqlBuffer = new char[4096];
+
+sprintf( sqlBuffer ,  "UPDATE %s SET  " , table );
+}
+
+void PQ::SET( const char *fname , const char * value )
+{
+strcat( sqlBuffer ,"  ");
+strcat( sqlBuffer , fname );
+strcat( sqlBuffer , "=" );
+
+if( strlen( value ) )
+ {
+   if( value[0] == 0x8 ) // specialne vymazani pri UPDATE
+   {
+     strcat( sqlBuffer , "NULL" );           
+   }
+   else 
+   {
+     strcat( sqlBuffer , "'" );
+     strcat( sqlBuffer ,  value );
+     strcat( sqlBuffer , "'" );
+   }
+
+  strcat( sqlBuffer , " ," ); // carka na konec
+ }
+
+
+}
+
+void PQ::SET( const char *fname , int value )
+{
+char numStr[16];
+
+strcat( sqlBuffer ,"  ");
+strcat( sqlBuffer , fname );
+strcat( sqlBuffer , "=" );
+strcat( sqlBuffer , numStr );
+sprintf( numStr , "%d" ,  value  );
+strcat( sqlBuffer , " ," );
+}
+
+void PQ::SET( const char *fname , bool  value )
+{
+
+strcat( sqlBuffer ,"  "); 
+strcat( sqlBuffer , fname );
+strcat( sqlBuffer , "=" );
+
+if( value )  strcat( sqlBuffer , "\'t\'");
+else  strcat( sqlBuffer , "\'f\'");
+
+strcat( sqlBuffer , " ," );
+}
+
+void PQ::WHERE(const char *fname , const char * value )
+{
+int len;
+
+
+  len = strlen( sqlBuffer );
+  if(  sqlBuffer[len-1]  == ',' )  sqlBuffer[len-1]  = 0; // vymaz posledni carku 
+
+  strcat( sqlBuffer ,"  WHERE " );
+  strcat( sqlBuffer , fname );
+  strcat( sqlBuffer , "='" );
+  strcat( sqlBuffer , value );
+  strcat( sqlBuffer , "' ;" );
+
+}
+
+void PQ::WHERE( const  char *fname , int value )
+{
+char numStr[16];
+sprintf( numStr , "%d" ,  value );
+WHERE( fname , numStr ); 
+}
+// INSERT INTO funkce
+
+void PQ::INSERT( const char * table )
+{
+sqlBuffer = new char[4096];
+
+sprintf( sqlBuffer ,  "INSERT INTO  %s  " , table );
+}
+
+void PQ::INTO(const char *fname)
+{
+int len;
+len = strlen( sqlBuffer );
+
+ 
+// zacni zavorkou
+if(  sqlBuffer[len-1]  == ' ' ) strcat ( sqlBuffer , " ( " ); // zavorka
+
+strcat( sqlBuffer , fname );
+strcat( sqlBuffer , " ," );
+
+}
+
+void PQ::INTOVAL( const char *fname , const char * value )
+{
+// pokud josu nejaka data
+if( strlen( value ) ) INTO( fname );
+}
+
+void PQ::VAL(  const char * value)
+{
+if( strlen( value ) ) VALUE( value );
+}
+
+void PQ::VALUE( const char * value )
+{
+int len;
+len = strlen( sqlBuffer );
+
+
+if(  sqlBuffer[len-1] == ';' ) // ukonceni 
+{
+sqlBuffer[len-1]  = 0;
+sqlBuffer[len-2]  = ',';
+} 
+else
+{
+
+ if(  sqlBuffer[len-1]  == ',' )  
+ {
+   sqlBuffer[len-1]  = 0; // vymaz carku
+   strcat ( sqlBuffer , " ) " ); // uzavri zavorku 
+  }
+
+  strcat ( sqlBuffer , " VALUES ( " );
+
+}
+
+strcat( sqlBuffer , " '" );
+strcat( sqlBuffer ,  value );
+strcat( sqlBuffer , "' );" ); // vzdy ukoncit
+ 
+
+}
+
+void PQ::VALUE( int  value )
+{
+char numStr[16];
+sprintf( numStr , "%d" ,  value );
+VALUE( numStr );
+}
+
+void PQ::VALUE( bool  value )
+{
+if( value ) VALUE( "t" );
+else VALUE( "f" );
+}
+
+
+bool PQ::EXEC()
+{
+bool ret;
+// proved SQL prikaz
+ret =  ExecSQL( sqlBuffer );
+
+// uvolni pamet
+delete sqlBuffer;
+// vrat vysledek
+return ret;
+}
+
