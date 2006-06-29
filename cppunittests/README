@@ -1,0 +1,20 @@
+Testy ktere musi projit:
+
+Session
+-------
+
+Zalogovani se spravnym heslem
+! Zalogovani se spravnym otiskem certifikatu
+! Zalogovani se spatnym otiskem certifikatu
+Zalogovani se spatnym heslem
+Zmena hesla tam a zpatky s kontrolnim zalogovanim
+
+Contact
+-------
+Check na seznam dvou neexistujicich kontaktu
+Pokus o Info na neexistujici kontakt
+Zalozeni neexistujiciho noveho kontaktu
+Pokus o zalozeni existujiciho kontaktu
+Check na seznam existujiciho a neexistujicich kontaktu
+Info na existujici kontakt
+
