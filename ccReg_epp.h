@@ -42,7 +42,6 @@ public:
   ccReg::Response* DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char* AuthInfoPw, CORBA::Short period, const ccReg::AdminContact& admin,  ccReg::timestamp& crDate, ccReg::timestamp& exDate,  CORBA::Long clientID, const char* clTRID , const ccReg::ExtensionList& ext );
   ccReg::Response* DomainRenew(const char* fqdn, ccReg::timestamp curExpDate, CORBA::Short period, ccReg::timestamp& exDate, CORBA::Long clientID, const char* clTRID , const ccReg::ExtensionList& ext );
   ccReg::Response* DomainTransfer(const char* fqdn,  const char* authInfo, CORBA::Long clientID, const char* clTRID  );
-  ccReg::Response* DomainTrade(const char* fqdn, const char* old_registrant, const char* new_registrant, const char* authInfo, CORBA::Long clientID, const char* clTRID);
 
 private:
 char database[128]; // nazev spojeni na databazi
