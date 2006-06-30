@@ -170,8 +170,6 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
                   LOG( ERROR_LOG, "unknow msgID %d", msgID );
                   ret->errors.length( 1 );
                   ret->errors[0].code = ccReg::pollAck_msgID;   // spatna msg ID
-                  ret->errors[0].value = CORBA::string_alloc( 32 );     // hodnota zadana klientem, ktera zpusobila chybu
-                  ret->errors[0].reason = CORBA::string_alloc( 64 );
                   sprintf( str, "%d", msgID );
                   ret->errors[0].value = CORBA::string_dup( str );
                   sprintf( str, "unknow msgID %d", msgID );
@@ -785,10 +783,8 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
         c->UpID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( upid ) );
 
          // kod zeme cesky
-        if( PQsql.GetClientLanguage() == LANG_CS ) 
-            c->Country=CORBA::string_dup( PQsql.GetValueFromTable("enum_country" , "country_cs" , "id" ,  countryCode ) );
-	else
-            c->Country=CORBA::string_dup( PQsql.GetValueFromTable("enum_country" , "country" , "id" ,  countryCode ) ); // uplny nazev zeme
+        if( PQsql.GetClientLanguage() == LANG_CS ) c->Country=CORBA::string_dup( PQsql.GetCountryNameCS( countryCode ) );
+	else c->Country=CORBA::string_dup( PQsql.GetCountryNameEN( countryCode ) );
 
      }
     else 
@@ -1210,6 +1206,11 @@ LOG( NOTICE_LOG ,  "ContactCreate: clientID -> %d clTRID [%s] handle [%s] " , cl
                 }
               else // pokud kontakt nexistuje
                 {
+                // test zdali country code je existujici zeme
+                 
+
+                if( PQsql.TestCountryCode( c.CC )   )
+                 {                
                   // datum vytvoreni kontaktu
                   now = time( NULL );
                   crDate = now;
@@ -1302,7 +1303,19 @@ LOG( NOTICE_LOG ,  "ContactCreate: clientID -> %d clTRID [%s] handle [%s] " , cl
                       else  ret->errCode = COMMAND_FAILED;
                     }
                   else  ret->errCode = COMMAND_FAILED;
-                }
+
+                }               
+               else // neplatny kod zeme  
+                  {
+                    ret->errCode = COMMAND_FAILED;
+                    LOG( WARNING_LOG,  "unknow country code" );
+                    ret->errors.length( 1 );
+                    ret->errors[0].code = ccReg::pollAck_msgID;   // nutno pridat spatny country code
+                    ret->errors[0].value = CORBA::string_dup(  c.CC  );
+                    ret->errors[0].reason = CORBA::string_dup(  "unknow country code" );
+                  }
+               }               
+
 
               // pokud vse proslo
               if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne
