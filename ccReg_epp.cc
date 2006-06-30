@@ -688,7 +688,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(const char* handle, ccReg::Contact_out
 PQ PQsql;
 Status status;
 ccReg::Response *ret;
-// char countryCode[3];
+char HANDLE[64]; // handle na velka pismena
 int id , clid , crid , upid;
 int actionID=0;
 int len , i  , s ;
@@ -708,7 +708,9 @@ if( PQsql.OpenDatabase( database ) )
 if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
   {
 
-  if( PQsql.SELECT( "CONTACT" , "HANDLE" , handle )  )
+ if( get_HANDLE( HANDLE , handle ) ) // preved a otestuj na velka pismena
+ {
+  if( PQsql.SELECT( "CONTACT" , "HANDLE" , HANDLE )  )
   {
   if( PQsql.GetSelectRows() == 1 )
     {
@@ -794,6 +796,8 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
 
    }
 
+  }
+  else ret->errCode =  COMMAND_OBJECT_NOT_EXIST; // spatny handle
  
    // zapis na konec action
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
@@ -1204,8 +1208,10 @@ ccReg::Response * ccReg_EPP_i::ContactCreate( const char *handle, const ccReg::C
 PQ PQsql;
 char createDate[32];
 char roid[64];
+char HANDLE[64]; // handle na velka pismena
 ccReg::Response * ret;
 int regID, id;
+int i , len;
 time_t now;
 // default
 ret = new ccReg::Response;
@@ -1215,19 +1221,37 @@ ret->errors.length( 0 );
 crDate = 0;
 
 
-LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s] ", clientID, clTRID, handle );
+LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s] %s ", clientID, clTRID, handle , HANDLE );
+
 
 
   if( PQsql.OpenDatabase( database ) )
     {
       if( PQsql.BeginAction( clientID, EPP_ContactCreate, ( char * ) clTRID ) )
         {
+
+       // preved handle na velka pismena
+       if( get_HANDLE( HANDLE , handle ) == false )  // spatny format handlu
+         {
+
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format  of handle[%s]" , handle );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::contactCreate_handle; 
+            ret->errors[0].value = CORBA::string_dup( handle );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of handle" );
+        }
+        else 
+        {
           if( PQsql.BeginTransaction() )      // zahajeni transakce
             {
+
+
+
               // test zdali kontakt uz existuje
-              if( PQsql.GetNumericFromTable( "CONTACT", "id", "handle", ( char * ) handle ) )
+              if( PQsql.GetNumericFromTable( "CONTACT", "id", "handle", HANDLE  ) )
                 {
-                  LOG( WARNING_LOG, "object handle [%s] EXIST", handle );
+                  LOG( WARNING_LOG, "object handle [%s] EXIST", HANDLE  );
                   ret->errCode = COMMAND_OBJECT_EXIST;  // je uz zalozena
                 }
               else              // pokud kontakt nexistuje
@@ -1281,7 +1305,7 @@ LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s] ", clien
 
                       PQsql.VALUE( id );
                       PQsql.VALUE( roid );
-                      PQsql.VALUE( handle );
+                      PQsql.VALUE( HANDLE );
                       PQsql.VALUE( createDate );
                       PQsql.VALUE( regID );
                       PQsql.VALUE( "{ 1 }" );   // OK status
@@ -1340,18 +1364,17 @@ LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s] ", clien
 
 
               // pokud vse proslo OK
-              if( ret->errCode == COMMAND_OK )
-                PQsql.CommitTransaction();    // pokud uspesne
-              else
-                PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
+              if( ret->errCode == COMMAND_OK )               PQsql.CommitTransaction();    // pokud uspesne
+              else               PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
             }
+          }
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
         }
-      ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );
 
+      ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );      
       PQsql.Disconnect();
-    }
+   }
 
 
 if( ret->errCode == 0 )
@@ -1389,6 +1412,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(const char* handle, ccReg::NSSet_out n, 
 {
 PQ PQsql;
 Status status;
+char HANDLE[64];
 char  adres[1042] , adr[128] ;
 ccReg::Response *ret;
 int clid , crid , upid , nssetid , regID;
@@ -1410,11 +1434,14 @@ if( PQsql.OpenDatabase( database ) )
 if( PQsql.BeginAction( clientID , EPP_NSsetInfo , (char * ) clTRID  ) )
  {
 
+
+if( get_HANDLE( HANDLE , handle ) ) 
+ {
+
    // get  registrator ID
    regID = PQsql.GetLoginRegistrarID( clientID );
 
-
-  if(  PQsql.SELECT( "NSSET" , "HANDLE" , handle ) )
+  if(  PQsql.SELECT( "NSSET" , "HANDLE" , HANDLE ) )
   {
   if( PQsql.GetSelectRows() == 1 )
     {
@@ -1516,7 +1543,8 @@ if( PQsql.BeginAction( clientID , EPP_NSsetInfo , (char * ) clTRID  ) )
 
 
        
- 
+  } 
+ else ret->errCode=COMMAND_OBJECT_NOT_EXIST;
 
    // zapis na konec action
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
@@ -1718,6 +1746,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
 PQ PQsql;
 char Array[512];
 char createDate[32];
+char HANDLE[64]; // handle na velka pismena
 char roid[64];
 ccReg::Response * ret;
 int regID, id, techid;
@@ -1730,6 +1759,8 @@ ret->errCode = 0;
 ret->errors.length( 0 );
 crDate = 0;
 
+get_HANDLE( HANDLE ,  handle );
+
 LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", clientID, clTRID, handle , authInfoPw  );
 
   if( PQsql.OpenDatabase( database ) )
@@ -1738,13 +1769,27 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
       if( PQsql.BeginAction( clientID, EPP_NSsetCreate, ( char * ) clTRID ) )
         {
 
-          // prvni test zdali nsset uz existuje          
-          if( PQsql.GetNumericFromTable( "NSSET", "id", "handle", ( char * ) handle ) )
-            {
-               LOG( WARNING_LOG, "nsset handle [%s] EXIST", handle );
+       // preved handle na velka pismena
+       if( get_HANDLE( HANDLE , handle ) == false )  // spatny format handlu
+         {
+
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of handle[%s]" ,  handle);
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::nssetCreate_handle;
+            ret->errors[0].value = CORBA::string_dup( handle );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of handle" );
+        }
+        else
+     {
+        // prvni test zdali nsset uz existuje          
+        if( PQsql.GetNumericFromTable( "NSSET", "id", "handle",  HANDLE ) )
+         {
+               LOG( WARNING_LOG, "nsset handle [%s] EXIST", HANDLE );
                ret->errCode = COMMAND_OBJECT_EXIST;  // je uz zalozen
-           }
-          else                  // pokud nexistuje 
+        }
+        else                  // pokud nexistuje 
+       {
           if( PQsql.BeginTransaction() )      // zahaj transakci
             {
 
@@ -1777,7 +1822,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
 
               PQsql.VALUE( id );
               PQsql.VALUE( roid );
-              PQsql.VALUE( handle );
+              PQsql.VALUE( HANDLE  );
               PQsql.VALUE( createDate );
               PQsql.VALUE( regID );
               PQsql.VALUE( regID );
@@ -1865,8 +1910,8 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
             }
 
 
-
-
+            }
+            }
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
         }
