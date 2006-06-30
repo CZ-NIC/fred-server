@@ -72,6 +72,10 @@ char * GetErrorMessageEN(int err ) {  return GetValueFromTable( "enum_error", "s
 char * GetErrorMessageCS(int err ) {  return GetValueFromTable( "enum_error", "status_cs" , "id" , err ); };
 char * GetErrorMessage( int err ); // test na jazyk klienta
 
+// test kodu zemo
+bool TestCountryCode(const char *cc);
+char * GetCountryNameEN( const char *cc ) { return GetValueFromTable("enum_country" , "country" , "id" , cc ); };
+char * GetCountryNameCS( const char *cc ) { return  GetValueFromTable("enum_country" , "country_cs" , "id" , cc ); };
 
 // test na vazu mezi tabulkami pro kontakt a nsset
 bool TestNSSetRelations(int id );

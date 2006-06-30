@@ -503,7 +503,24 @@ if( ExecSelect( sqlString ) )
 
 return ret;
 }
+
+
+// test kodu zemo
+bool PQ::TestCountryCode(const char *cc)
+{
+char sqlString[128];
+bool ret = false;
+
+sprintf( sqlString , "SELECT id FROM enum_country WHERE id=\'%s\';" , cc );
+if( ExecSelect( sqlString ) )
+ {
+   if( GetSelectRows() == 1   ) ret = true;
+    FreeSelect();
+ } 
  
+return ret;
+}
+
 // vraci id registratora z domeny
 int PQ::GetClientDomainRegistrant( int clID , int contactID )
 {
