@@ -12,3 +12,6 @@
 #define COMMAND_PARAMETR_VALUE_POLICY_ERROR 2306 // spatna hodnota napriklad status flag server od klienta
 #define COMMAND_STATUS_PROHIBITS_OPERATION 2304 // nevyhovuje stavajici status flag
 #define COMMAND_PROHIBITS_OPERATION 2305
+
+#define COMMAND_PARAMETR_ERROR 2005 // Parameter value syntax error
+
