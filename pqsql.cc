@@ -511,13 +511,15 @@ bool PQ::TestCountryCode(const char *cc)
 char sqlString[128];
 bool ret = false;
 
+if( strlen( cc )  == 0 ) return true; // test neni potreba vysledek je true
+
 sprintf( sqlString , "SELECT id FROM enum_country WHERE id=\'%s\';" , cc );
 if( ExecSelect( sqlString ) )
  {
    if( GetSelectRows() == 1   ) ret = true;
     FreeSelect();
  } 
- 
+
 return ret;
 }
 
