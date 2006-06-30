@@ -129,6 +129,7 @@ void VALUE( int  value );
 void VALUE( bool value );
 
 bool EXEC();
+bool SELECT(const char *table  const char *fname , const char * value )
 
 // vraci pocet radku
 int GetSelectRows(){ return nRows;};
