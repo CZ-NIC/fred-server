@@ -1391,7 +1391,7 @@ PQ PQsql;
 Status status;
 char  adres[1042] , adr[128] ;
 ccReg::Response *ret;
-int clid , crid , upid , nssetid;
+int clid , crid , upid , nssetid , regID;
 int i , j  ,ilen , len , s ;
 
 ret = new ccReg::Response;
@@ -1410,6 +1410,8 @@ if( PQsql.OpenDatabase( database ) )
 if( PQsql.BeginAction( clientID , EPP_NSsetInfo , (char * ) clTRID  ) )
  {
 
+   // get  registrator ID
+   regID = PQsql.GetLoginRegistrarID( clientID );
 
 
   if(  PQsql.SELECT( "NSSET" , "HANDLE" , handle ) )
@@ -1430,7 +1432,9 @@ if( PQsql.BeginAction( clientID , EPP_NSsetInfo , (char * ) clTRID  ) )
         n->UpDate= get_time_t( PQsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
         n->TrDate= get_time_t(PQsql.GetFieldValueName("TrDate" , 0 ) );  // datum a cas transferu
 
-        n->AuthInfoPw = CORBA::string_dup( PQsql.GetFieldValueName("AuthInfoPw" , 0 ) ); // autentifikace
+        if( regID == clid ) // pokud je registrator clientem obdrzi autentifikaci
+           n->AuthInfoPw = CORBA::string_dup( PQsql.GetFieldValueName("AuthInfoPw" , 0 ) ); // autentifikace
+         else  n->AuthInfoPw = CORBA::string_dup( "" ); // jinak prazdny retezec
 
         ret->errCode=COMMAND_OK;
 
@@ -2290,7 +2294,7 @@ Status status;
 ccReg::timestamp valexDate;
 ccReg::ENUMValidationExtension *enumVal;
 ccReg::Response *ret;
-int id , clid , crid ,  upid , regid ,nssetid;
+int id , clid , crid ,  upid , regid ,nssetid , regID;
 int i , len ;
 
 d = new ccReg::Domain;
@@ -2315,6 +2319,8 @@ if( PQsql.OpenDatabase( database ) )
 if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
  {
 
+   // get  registrator ID
+   regID = PQsql.GetLoginRegistrarID( clientID );
 
 
   if(  PQsql.SELECT( "CONTACT" , "fqdn" , fqdn )  )
@@ -2339,7 +2345,10 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
 	d->name=CORBA::string_dup( PQsql.GetFieldValueName("fqdn" , 0 )  ); // jmeno nebo nazev kontaktu
 
 
-        d->AuthInfoPw = CORBA::string_dup( PQsql.GetFieldValueName("AuthInfoPw" , 0 )  ); // autentifikace
+        if( regID == clid ) // pokud je registrator clientem obdrzi autentifikaci
+           d->AuthInfoPw = CORBA::string_dup( PQsql.GetFieldValueName("AuthInfoPw" , 0 ) ); // autentifikace
+         else  d->AuthInfoPw = CORBA::string_dup( "" ); // jinak prazdny retezec
+ 
 
 
     
