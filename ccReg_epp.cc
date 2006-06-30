@@ -2323,7 +2323,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
    regID = PQsql.GetLoginRegistrarID( clientID );
 
 
-  if(  PQsql.SELECT( "CONTACT" , "fqdn" , fqdn )  )
+  if(  PQsql.SELECT( "DOMAIN" , "fqdn" , fqdn )  )
   {
   if( PQsql.GetSelectRows() == 1 )
     {
@@ -2338,7 +2338,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
 
 	d->CrDate= get_time_t( PQsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
 	d->UpDate= get_time_t( PQsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
-	d->TrDate= get_time_t( PQsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas transferu
+	d->TrDate= get_time_t( PQsql.GetFieldValueName("TrDate" , 0 ) ); // datum a cas transferu
 	d->ExDate= get_time_t( PQsql.GetFieldValueName("ExDate" , 0 ) ); //  datum a cas expirace
 
 	d->ROID=CORBA::string_dup( PQsql.GetFieldValueName("roid" , 0 )  ); // jmeno nebo nazev kontaktu
