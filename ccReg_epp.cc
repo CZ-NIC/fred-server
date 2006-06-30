@@ -169,6 +169,7 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
                 {
                   LOG( ERROR_LOG, "unknow msgID %d", msgID );
                   ret->errors.length( 1 );
+                  ret->errCode = COMMAND_PARAMETR_ERROR;
                   ret->errors[0].code = ccReg::pollAck_msgID;   // spatna msg ID
                   sprintf( str, "%d", msgID );
                   ret->errors[0].value = CORBA::string_dup( str );
@@ -989,7 +990,6 @@ ccReg::Response* ccReg_EPP_i::ContactUpdate(const char* handle , const ccReg::Co
 {
 ccReg::Response * ret;
 PQ PQsql;
-char sqlString[4096], buf[1024];
 char statusString[128];
 int regID = 0, crID = 0, clID = 0, id;
 bool policy_error = false;
@@ -1079,40 +1079,44 @@ for( i = 0; i < len; i++ )
 
                                       //  vygeneruj  novy status string array
                                       status.Array( statusString );
+                                     
+                                      // zahaj update
+                                      PQsql.UPDATE( "Contact" );
 
-
-                                      strcpy( sqlString, "UPDATE Contact SET " );
-
-                                      // pridat zmenene polozky
-                                      add_field_value( sqlString, "Name", CORBA::string_dup( c.Name ) );
-                                      add_field_value( sqlString, "Organization", CORBA::string_dup( c.Organization ) );
-                                      add_field_value( sqlString, "Street1", CORBA::string_dup( c.Street1 ) );
-                                      add_field_value( sqlString, "Street2", CORBA::string_dup( c.Street2 ) );
-                                      add_field_value( sqlString, "Street3", CORBA::string_dup( c.Street3 ) );
-                                      add_field_value( sqlString, "City", CORBA::string_dup( c.City ) );
-                                      add_field_value( sqlString, "StateOrProvince", CORBA::string_dup( c.StateOrProvince ) );
-                                      add_field_value( sqlString, "PostalCode", CORBA::string_dup( c.PostalCode ) );
-                                      add_field_value( sqlString, "Country", CORBA::string_dup( c.CC ) );
-                                      add_field_value( sqlString, "Telephone", CORBA::string_dup( c.Telephone ) );
-                                      add_field_value( sqlString, "Fax", CORBA::string_dup( c.Fax ) );
-                                      add_field_value( sqlString, "Email", CORBA::string_dup( c.Email ) );
-                                      add_field_value( sqlString, "NotifyEmail", CORBA::string_dup( c.NotifyEmail ) );
-                                      add_field_value( sqlString, "VAT", CORBA::string_dup( c.VAT ) );
-                                      add_field_value( sqlString, "SSN", CORBA::string_dup( c.SSN ) );
+                                      // pridat zmenene polozky 
+                                      PQsql.SET( "Name", c.Name );
+                                      PQsql.SET( "Organization", c.Organization );
+                                      PQsql.SET( "Street1", c.Street1 );
+                                      PQsql.SET( "Street2", c.Street2 );
+                                      PQsql.SET( "Street3", c.Street3 );
+                                      PQsql.SET( "City", c.City );
+                                      PQsql.SET( "StateOrProvince", c.StateOrProvince );
+                                      PQsql.SET( "PostalCode", c.PostalCode );
+                                      PQsql.SET( "Country", c.CC );
+                                      PQsql.SET( "Telephone", c.Telephone );
+                                      PQsql.SET( "Fax", c.Fax );
+                                      PQsql.SET( "Email", c.Email );
+                                      PQsql.SET( "NotifyEmail", c.NotifyEmail );
+                                      PQsql.SET( "VAT", c.VAT );
+                                      PQsql.SET( "SSN", c.SSN );
 
                                       //  Disclose parametry
-                                      add_field_bool( sqlString, "DiscloseName", c.DiscloseName );
-                                      add_field_bool( sqlString, "DiscloseOrganization", c.DiscloseOrganization );
-                                      add_field_bool( sqlString, "DiscloseAddress", c.DiscloseAddress );
-                                      add_field_bool( sqlString, "DiscloseTelephone", c.DiscloseTelephone );
-                                      add_field_bool( sqlString, "DiscloseFax", c.DiscloseFax );
-                                      add_field_bool( sqlString, "DiscloseEmail", c.DiscloseEmail );
+                                      PQsql.SETBOOL( "DiscloseName", c.DiscloseName );
+                                      PQsql.SETBOOL( "DiscloseOrganization", c.DiscloseOrganization );
+                                      PQsql.SETBOOL( "DiscloseAddress", c.DiscloseAddress );
+                                      PQsql.SETBOOL( "DiscloseTelephone", c.DiscloseTelephone );
+                                      PQsql.SETBOOL( "DiscloseFax", c.DiscloseFax );
+                                      PQsql.SETBOOL( "DiscloseEmail", c.DiscloseEmail );
 
                                       // datum a cas updatu  plus kdo zmenil zanzma na konec
-                                      sprintf( buf, " UpDate=\'now\' ,   UpID=%d  , status=\'%s' WHERE id=%d  ", regID, statusString, id );
-                                      strcat( sqlString, buf );
+                                      PQsql.SET( "UpDate" , "now" );
+                                      PQsql.SET( "UpID" ,  regID );
+                                      PQsql.SET( "status" , statusString );
+                          
+                                      // podminka na konec 
+                                      PQsql.WHEREID( id );
 
-                                      if( PQsql.ExecSQL( sqlString ) ) ret->errCode = COMMAND_OK;
+                                      if( PQsql.EXEC() ) ret->errCode = COMMAND_OK;
                                       else ret->errCode = COMMAND_FAILED;
                                     }
                                 }
@@ -1229,9 +1233,9 @@ LOG( NOTICE_LOG ,  "ContactCreate: clientID -> %d clTRID [%s] handle [%s] " , cl
                   PQsql.INTO( "handle" );
                   PQsql.INTO( "CrDate" );
                   PQsql.INTO( "CrID" );
+                  PQsql.INTO( "status" );
 
                   PQsql.INTOVAL( "Name", c.Name );
-
                   PQsql.INTOVAL( "Organization", c.Organization );
                   PQsql.INTOVAL( "Street1", c.Street1 );
                   PQsql.INTOVAL( "Street2", c.Street2 );
@@ -1260,6 +1264,7 @@ LOG( NOTICE_LOG ,  "ContactCreate: clientID -> %d clTRID [%s] handle [%s] " , cl
                   PQsql.VALUE( handle );
                   PQsql.VALUE( createDate );
                   PQsql.VALUE( regID );
+                  PQsql.VALUE( "{ 1 }" ); // OK status
 
 
                   PQsql.VAL( c.Name );
@@ -1307,10 +1312,10 @@ LOG( NOTICE_LOG ,  "ContactCreate: clientID -> %d clTRID [%s] handle [%s] " , cl
                 }               
                else // neplatny kod zeme  
                   {
-                    ret->errCode = COMMAND_FAILED;
+                    ret->errCode = COMMAND_PARAMETR_ERROR;
                     LOG( WARNING_LOG,  "unknow country code" );
                     ret->errors.length( 1 );
-                    ret->errors[0].code = ccReg::pollAck_msgID;   // nutno pridat spatny country code
+                    ret->errors[0].code = ccReg::contactCreate_cc;  // spatne zadany neznamy country code
                     ret->errors[0].value = CORBA::string_dup(  c.CC  );
                     ret->errors[0].reason = CORBA::string_dup(  "unknow country code" );
                   }
@@ -1735,6 +1740,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
     crDate = now;
     get_timestamp( now , createDate );    
 
+     
     sprintf( sqlString , "INSERT INTO NSSET ( id , crdate ,  roid , handle  , ClID , CrID,  authinfopw  )   VALUES ( %d ,   \'%s\'  ,   \'%s\'  ,  \'%s\' ,  %d , %d ,    \'%s\'  );" , 
                            id , createDate ,  roid,  CORBA::string_dup(handle) , regID , regID  ,  CORBA::string_dup(authInfoPw) );
 
