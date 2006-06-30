@@ -1688,25 +1688,19 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , clie
 ccReg::Response* ccReg_EPP_i::NSSetCreate(const char* handle, const char* authInfoPw, const ccReg::TechContact& tech, const ccReg::DNSHost& dns,ccReg::timestamp& crDate,  CORBA::Long clientID, const char* clTRID)
 {
 PQ PQsql;
-char sqlString[1024];
 char Array[512];
 char createDate[32];
 char roid[64];
 ccReg::Response *ret;
 int regID ,  id , techid;
 int i , len , j ;
-bool host_insert= false ,  tech_insert=false;
 time_t now;
 ret = new ccReg::Response;
 
 
 
 // default
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-ret->errMsg = CORBA::string_alloc(64);
-ret->errMsg = CORBA::string_dup("");
+ret->errCode=0;
 ret->errors.length(0);
 crDate=0;
 
@@ -1741,35 +1735,59 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
     get_timestamp( now , createDate );    
 
      
-    sprintf( sqlString , "INSERT INTO NSSET ( id , crdate ,  roid , handle  , ClID , CrID,  authinfopw  )   VALUES ( %d ,   \'%s\'  ,   \'%s\'  ,  \'%s\' ,  %d , %d ,    \'%s\'  );" , 
-                           id , createDate ,  roid,  CORBA::string_dup(handle) , regID , regID  ,  CORBA::string_dup(authInfoPw) );
 
+   PQsql.INSERT( "NSSET" );
+   PQsql.INTO( "id" );
+   PQsql.INTO( "roid" );
+   PQsql.INTO( "handle" );
+   PQsql.INTO( "CrDate" );
+   PQsql.INTO( "CrID" );
+   PQsql.INTO( "ClID" );
+   PQsql.INTO( "status" );
+   PQsql.INTOVAL( "authinfopw"  , authInfoPw );
 
+   PQsql.VALUE( id );
+   PQsql.VALUE( roid );
+   PQsql.VALUE( handle );
+   PQsql.VALUE( createDate );
+   PQsql.VALUE( regID );
+   PQsql.VALUE( regID );
+   PQsql.VALUE( "{ 1 }"  ); // status OK
+   PQsql.VAL(  authInfoPw );
 
     // zapis nejdrive nsset 
-    if( PQsql.ExecSQL( sqlString ) )
+    if( PQsql.EXEC() )
     {
 
 
       // zapis technicke kontakty 
       len = tech.length();
-      tech_insert = true; 
       for( i = 0 ; i < len ; i ++ )
          {
-             techid =  PQsql.GetNumericFromTable( "Contact" , "id" ,  "handle" , CORBA::string_dup(tech[i]) );              
-             sprintf( sqlString , "INSERT INTO nsset_contact_map VALUES ( %d , %d );"  , id , techid );
-             LOG( NOTICE_LOG ,  "NSSetCreate: tech Contact id %d  [%s] ",  techid , CORBA::string_dup( tech[i] )  );
-              if( PQsql.ExecSQL( sqlString ) == false )  // pokud se nepodarilo pridat do tabulky
+             techid =  PQsql.GetNumericFromTable( "Contact" , "id" ,  "handle" , tech[i] );
+             if( techid )
+             {
+             PQsql.INSERT( "nsset_contact_map" );
+             PQsql.VALUE( id ); 
+             PQsql.VALUE( techid ); 
+          
+              if( PQsql.EXEC() == false )  // pokud se nepodarilo pridat do tabulky
                 {
-                    tech_insert = false;
-                    LOG( WARNING_LOG ,  "can not insert tech_contact id %d [%s] " ,  techid , CORBA::string_dup( tech[i] )  );
+                    LOG( WARNING_LOG ,  "can not insert into  host " );
+                    ret->errCode = COMMAND_FAILED;
                     break;
                 }
+             }
+             else 
+             {
+                LOG( WARNING_LOG ,  "NSSetCreate: unknow tech Contact "  );
+                // TODO error value 
+                ret->errCode = COMMAND_PARAMETR_ERROR;                 
+              }
          } 
      
        // zapis do tabulky hostu
        len = dns.length();
-       host_insert=true;
        for( i = 0 ; i < len ; i ++ )
           {
            // ip adresa DNS hostu
@@ -1784,17 +1802,21 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
             }
             strcat( Array , " } " );
 
-            LOG( NOTICE_LOG ,  "NSSetCreate: DNS Host %s [%s] ",  CORBA::string_dup( dns[i].fqdn )  , Array    );
+             // LOG( NOTICE_LOG ,  "NSSetCreate: DNS Host %s [%s] ",  CORBA::string_dup( dns[i].fqdn )  , Array    );
 
-             // HOST informace poouze ipaddr a fqdn 
-             sprintf( sqlString , "INSERT INTO HOST ( nssetid , fqdn  , ipaddr )    VALUES ( %d , \'%s\' , \'%s\' );" ,
-                                           id , CORBA::string_dup( dns[i].fqdn )  , Array );
-
-
-              if( PQsql.ExecSQL( sqlString ) == false )  // pokud se nepodarilo pridat do tabulky
+             // HOST informace pouze ipaddr a fqdn 
+              PQsql.INSERT("HOST");
+              PQsql.INTO( "NSSETID" ); 
+              PQsql.INTO( "fqdn" ); 
+              PQsql.INTO( "ipaddr" ); 
+              PQsql.VALUE( id );  
+              PQsql.VALUE( dns[i].fqdn );  
+              PQsql.VALUE( Array );  
+                   
+              if( PQsql.EXEC() == false )  // pokud se nepodarilo pridat do tabulky
                 {
-                    host_insert= false;
-                    LOG( WARNING_LOG ,  "can not insert host %s [%s] " ,  CORBA::string_dup( dns[i].fqdn )  , Array  );
+                    LOG( WARNING_LOG ,  "can not insert into  host " );
+                    ret->errCode = COMMAND_FAILED;
                     break;
                 }          
          }
@@ -1804,7 +1826,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
 
 
        //  uloz do historie
-      if(  host_insert && tech_insert  )  // pokud se uspesne insertovaly host a tech kontakt
+      if(  ret->errCode ==0   )  // pokud zatim neni zadna chyba 
       {
        if( PQsql.MakeHistory() )
          {
@@ -1819,6 +1841,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
                      }                 
             }
          } // konec historie
+       
        }
 
        // pokud vse proslo
@@ -1838,6 +1861,14 @@ ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
 PQsql.Disconnect();
 }
 
+if( ret->errCode== 0 )
+  {
+    ret->errCode=COMMAND_FAILED;
+    ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
+    ret->errMsg = CORBA::string_dup("");
+    ret->errors.length(0);
+  }
+ 
 
 return ret;
 }
