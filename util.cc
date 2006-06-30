@@ -4,6 +4,8 @@
 #include<string.h>
 
 
+#include "log.h"
+
 // vytvoreni roid
 void get_roid( char *roid , char *prefix , int id )
 {
@@ -35,8 +37,13 @@ return 0;
 time_t get_time_t(char *string )
 {
 struct tm dt;
+time_t t;
 memset(&dt,0,sizeof(dt));
 double sec = 0;
+
+if( strcmp( string , "NULL" ) == 0 )  return 0;
+else
+{
 
 sscanf(string , "%4d-%02d-%02d %02d:%02d:%lf" ,
                 &dt.tm_year ,  &dt.tm_mon , &dt.tm_mday ,
@@ -49,8 +56,14 @@ dt.tm_mon = dt.tm_mon -1;
 // rok - 1900
 dt.tm_year = dt.tm_year - 1900;
 
+t = mktime(&dt);
+if( t < 0 ) return 0; // fix na velek roky
 
-return mktime(&dt);
+LOG( LOG_DEBUG , "get_time_t from [%s] = %ld" , string , t );
+return t;
+}
+
+
 }
 
 
