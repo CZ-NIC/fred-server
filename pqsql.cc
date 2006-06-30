@@ -769,6 +769,24 @@ else  strcat( sqlBuffer , "\'f\'");
 strcat( sqlBuffer , " ," );
 }
 
+
+void PQ::SETBOOL( const char *fname , int  value )
+{
+// jedna jako tru 0 jako false -1 nic nemenit
+if( value == 1 || value == 0 )
+{
+strcat( sqlBuffer ,"  "); 
+strcat( sqlBuffer , fname );
+strcat( sqlBuffer , "=" );
+
+if( value )  strcat( sqlBuffer , "\'t\'");
+else  strcat( sqlBuffer , "\'f\'");
+
+strcat( sqlBuffer , " ," );
+}
+
+}
+
 void PQ::WHERE(const char *fname , const char * value )
 {
 int len;

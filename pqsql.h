@@ -115,6 +115,7 @@ void UPDATE( const  char * table );
 void SET( const  char *fname , const  char * value );
 void SET( const  char *fname , int   value );
 void SET( const  char *fname , bool  value );
+void SETBOOL( const char *fname , int  value );
 void WHERE( const  char *fname , const  char * value );
 void WHERE( const  char *fname , int   value );
 void WHEREID( int id ) { WHERE( "id" , id ); };
