@@ -7,7 +7,7 @@
 // vytvoreni roid
 void get_roid( char *roid , char *prefix , int id )
 {
-sprintf(roid , "CZNIC-%s%010d" , prefix ,  id );
+sprintf(roid , "%s%010d-CZ" , prefix ,  id );
 }
 
 // zarazeni do zony a kontrola nazvu domeny
@@ -199,7 +199,7 @@ if( value  == 1 )  // hodota je true
 
 if( value  == 0 )  // hodota je false
 {
-  sprintf( buf , "  %s=\'t\' , " , fname   );
+  sprintf( buf , "  %s=\'f\' , " , fname   );
   strcat( string , buf );
 }
 
