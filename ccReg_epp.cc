@@ -688,9 +688,8 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(const char* handle, ccReg::Contact_out
 {
 PQ PQsql;
 Status status;
-char sqlString[1024];
 ccReg::Response *ret;
-char countryCode[3];
+// char countryCode[3];
 int id , clid , crid , upid;
 int actionID=0;
 int len , i  , s ;
@@ -698,7 +697,7 @@ int len , i  , s ;
 c = new ccReg::Contact;
 ret = new ccReg::Response;
 
-ret->errCode=COMMAND_FAILED;
+ret->errCode=0;
 ret->svTRID = CORBA::string_alloc(32);
 ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
 ret->errMsg = CORBA::string_alloc(64);
@@ -714,9 +713,7 @@ if( PQsql.OpenDatabase( database ) )
 if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
   {
 
-  sprintf( sqlString , "SELECT * FROM CONTACT WHERE handle=\'%s\'" , handle);
-
-  if( PQsql.ExecSelect( sqlString ) )
+  if( PQsql.SELECT( "CONTACT" , "HANDLE" , handle )  )
   {
   if( PQsql.GetSelectRows() == 1 )
     {
@@ -746,8 +743,9 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
 	c->Fax=CORBA::string_dup(PQsql.GetFieldValueName("Fax" , 0 ));
 	c->Email=CORBA::string_dup(PQsql.GetFieldValueName("Email" , 0 ));
 	c->NotifyEmail=CORBA::string_dup(PQsql.GetFieldValueName("NotifyEmail" , 0 )); // upozornovaci email
-        strncpy( countryCode ,  PQsql.GetFieldValueName("Country" , 0 ) , 2 ); // 2 mistny ISO kod zeme
-        countryCode[2] = 0;
+  //      strncpy( countryCode ,  PQsql.GetFieldValueName("Country" , 0 ) , 2 ); // 2 mistny ISO kod zeme
+    //    countryCode[2] = 0;
+        c->CountryCode=CORBA::string_dup(  PQsql.GetFieldValueName("Country" , 0 )  ); // vracet pouze ISO kod
 
 
 	c->VAT=CORBA::string_dup(PQsql.GetFieldValueName("VAT" , 0 )); // DIC
@@ -763,7 +761,6 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
 
  
     
-        ret->errCode=COMMAND_OK;
     
         // free select
 	PQsql.FreeSelect();
@@ -783,9 +780,14 @@ if( PQsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
         c->CrID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( crid ) );
         c->UpID =  CORBA::string_dup(  PQsql.GetRegistrarHandle( upid ) );
 
+        ret->errCode=COMMAND_OK; // VASE OK
+
+
+/*
          // kod zeme cesky
         if( PQsql.GetClientLanguage() == LANG_CS ) c->Country=CORBA::string_dup( PQsql.GetCountryNameCS( countryCode ) );
 	else c->Country=CORBA::string_dup( PQsql.GetCountryNameEN( countryCode ) );
+*/
 
      }
     else 
@@ -812,8 +814,11 @@ PQsql.Disconnect();
 
 
 // vyprazdni kontakt pro navratovou hodnotu
-if( ret->errCode != COMMAND_OK )
+if( ret->errCode == 0 )
 {
+ret->errCode = COMMAND_FAILED;    // obecna chyba
+ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+ret->errMsg = CORBA::string_dup( "" );
 c->handle=CORBA::string_dup("");
 c->ROID=CORBA::string_dup("");   
 c->CrID=CORBA::string_dup("");    // identifikator registratora ktery vytvoril kontak
@@ -829,7 +834,7 @@ c->Street3=CORBA::string_dup(""); // adresa
 c->City=CORBA::string_dup("");  // obec
 c->StateOrProvince=CORBA::string_dup("");
 c->PostalCode=CORBA::string_dup(""); // PSC
-c->Country=CORBA::string_dup(""); // zeme
+c->CountryCode=CORBA::string_dup(""); // zeme
 c->Telephone=CORBA::string_dup("");
 c->Fax=CORBA::string_dup("");
 c->Email=CORBA::string_dup("");
