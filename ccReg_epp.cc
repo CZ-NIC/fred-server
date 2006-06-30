@@ -986,7 +986,9 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , cl
  ***********************************************************************/
 
 
-ccReg::Response* ccReg_EPP_i::ContactUpdate(const char* handle , const ccReg::ContactChange& c, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID)
+ccReg::Response * ccReg_EPP_i::ContactUpdate( const char *handle, const ccReg::ContactChange & c, 
+                                              const ccReg::Status & status_add, const ccReg::Status & status_rem,
+                                              CORBA::Long clientID, const char *clTRID )
 {
 ccReg::Response * ret;
 PQ PQsql;
@@ -1002,20 +1004,22 @@ ret->errors.length( 0 );
 
 LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clientID, clTRID, handle );
 
-// test status flagu pokud nejsou typu server 
-len = status_add.length();
-for( i = 0; i < len; i++ )
-   {
+  // test status flagu pokud nejsou typu server 
+  len = status_add.length();
+  for( i = 0; i < len; i++ )
+    {
       LOG( NOTICE_LOG, "status_add [%s] ", CORBA::string_dup( status_add[i] ) );
-      if( status.IsServerStatus( status.GetStatusNumber( status_add[i] ) ) ) policy_error = true;
-   }
+      if( status.IsServerStatus( status.GetStatusNumber( status_add[i] ) ) )
+        policy_error = true;
+    }
 
-len = status_rem.length();
-for( i = 0; i < len; i++ )
-   {
+  len = status_rem.length();
+  for( i = 0; i < len; i++ )
+    {
       LOG( NOTICE_LOG, "status_rem [%s] ", CORBA::string_dup( status_rem[i] ) );
-      if( status.IsServerStatus( status.GetStatusNumber( status_rem[i] ) ) ) policy_error = true;
-   }
+      if( status.IsServerStatus( status.GetStatusNumber( status_rem[i] ) ) )
+        policy_error = true;
+    }
 
 
 
@@ -1033,7 +1037,7 @@ for( i = 0; i < len; i++ )
                   ret->errCode = COMMAND_OBJECT_NOT_EXIST;
                 }
               // pokud kontakt existuje 
-              else 
+              else
                 {
                   // get  registrator ID
                   regID = PQsql.GetLoginRegistrarID( clientID );
@@ -1042,102 +1046,117 @@ for( i = 0; i < len; i++ )
                   // client contaktu ktery ho vytvoril
                   crID = PQsql.GetNumericFromTable( "CONTACT", "crID", "handle", ( char * ) handle );
                   // klient spravuje nejakou domenu kontaktu nebo je jeho tvurcem   
-                  if( crID == regID || clID == regID )  
+                  if( crID == regID || clID == regID )
                     {
-                      // zjisti  pole statusu
-                      status.Make( PQsql.GetStatusFromTable( "CONTACT", id ) );
+                      if( PQsql.TestCountryCode( c.CC ) )       // test kodu zeme pokud je nastavena
+                        {
 
-                      if( status.Test( STATUS_UPDATE ) )
-                        {
-                          LOG( WARNING_LOG, "status UpdateProhibited" );
-                          ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
-                        }
-                      else  // status je OK
-                        {
-                          if( policy_error )
+                          // zjisti  pole statusu
+                          status.Make( PQsql.GetStatusFromTable( "CONTACT", id ) );
+
+                          if( status.Test( STATUS_UPDATE ) )
                             {
-                              LOG( WARNING_LOG, "status flag policy" );
-                              ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
+                              LOG( WARNING_LOG, "status UpdateProhibited" );
+                              ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
                             }
-                          else  // zadny PARAMETR_VALUE_POLICY_ERROR u add ci rem  status flagu
+                          else  // status je OK
                             {
-                              //  uloz do historie
-                              if( PQsql.MakeHistory() )
+                              if( policy_error )
                                 {
-                                  if( PQsql.SaveHistory( "Contact", "id", id ) )        // uloz zaznam
+                                  LOG( WARNING_LOG, "status flag policy" );
+                                  ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
+                                }
+                              else      // zadny PARAMETR_VALUE_POLICY_ERROR u add ci rem  status flagu
+                                {
+                                  //  uloz do historie
+                                  if( PQsql.MakeHistory() )
                                     {
+                                      if( PQsql.SaveHistory( "Contact", "id", id ) )    // uloz zaznam
+                                        {
 
-                                      // pridany status
-                                      for( i = 0; i <   status_add.length() ; i++ )
-                                        status.Add( status.GetStatusNumber( status_add[i] ) );
-
-
-                                      // zruseny status flagy
-                                      for( i = 0; i <  status_rem.length() ; i++ )
-                                        status.Rem( status.GetStatusNumber( status_rem[i] ) );
+                                          // pridany status
+                                          for( i = 0; i < status_add.length(); i++ )
+                                            status.Add( status.GetStatusNumber( status_add[i] ) );
 
 
-                                      //  vygeneruj  novy status string array
-                                      status.Array( statusString );
-                                     
-                                      // zahaj update
-                                      PQsql.UPDATE( "Contact" );
+                                          // zruseny status flagy
+                                          for( i = 0; i < status_rem.length(); i++ )
+                                            status.Rem( status.GetStatusNumber( status_rem[i] ) );
 
-                                      // pridat zmenene polozky 
-                                      PQsql.SET( "Name", c.Name );
-                                      PQsql.SET( "Organization", c.Organization );
-                                      PQsql.SET( "Street1", c.Street1 );
-                                      PQsql.SET( "Street2", c.Street2 );
-                                      PQsql.SET( "Street3", c.Street3 );
-                                      PQsql.SET( "City", c.City );
-                                      PQsql.SET( "StateOrProvince", c.StateOrProvince );
-                                      PQsql.SET( "PostalCode", c.PostalCode );
-                                      PQsql.SET( "Country", c.CC );
-                                      PQsql.SET( "Telephone", c.Telephone );
-                                      PQsql.SET( "Fax", c.Fax );
-                                      PQsql.SET( "Email", c.Email );
-                                      PQsql.SET( "NotifyEmail", c.NotifyEmail );
-                                      PQsql.SET( "VAT", c.VAT );
-                                      PQsql.SET( "SSN", c.SSN );
 
-                                      //  Disclose parametry
-                                      PQsql.SETBOOL( "DiscloseName", c.DiscloseName );
-                                      PQsql.SETBOOL( "DiscloseOrganization", c.DiscloseOrganization );
-                                      PQsql.SETBOOL( "DiscloseAddress", c.DiscloseAddress );
-                                      PQsql.SETBOOL( "DiscloseTelephone", c.DiscloseTelephone );
-                                      PQsql.SETBOOL( "DiscloseFax", c.DiscloseFax );
-                                      PQsql.SETBOOL( "DiscloseEmail", c.DiscloseEmail );
+                                          //  vygeneruj  novy status string array
+                                          status.Array( statusString );
 
-                                      // datum a cas updatu  plus kdo zmenil zanzma na konec
-                                      PQsql.SET( "UpDate" , "now" );
-                                      PQsql.SET( "UpID" ,  regID );
-                                      PQsql.SET( "status" , statusString );
-                          
-                                      // podminka na konec 
-                                      PQsql.WHEREID( id );
+                                          // zahaj update
+                                          PQsql.UPDATE( "Contact" );
 
-                                      if( PQsql.EXEC() ) ret->errCode = COMMAND_OK;
-                                      else ret->errCode = COMMAND_FAILED;
+                                          // pridat zmenene polozky 
+                                          PQsql.SET( "Name", c.Name );
+                                          PQsql.SET( "Organization", c.Organization );
+                                          PQsql.SET( "Street1", c.Street1 );
+                                          PQsql.SET( "Street2", c.Street2 );
+                                          PQsql.SET( "Street3", c.Street3 );
+                                          PQsql.SET( "City", c.City );
+                                          PQsql.SET( "StateOrProvince", c.StateOrProvince );
+                                          PQsql.SET( "PostalCode", c.PostalCode );
+                                          PQsql.SET( "Country", c.CC );
+                                          PQsql.SET( "Telephone", c.Telephone );
+                                          PQsql.SET( "Fax", c.Fax );
+                                          PQsql.SET( "Email", c.Email );
+                                          PQsql.SET( "NotifyEmail", c.NotifyEmail );
+                                          PQsql.SET( "VAT", c.VAT );
+                                          PQsql.SET( "SSN", c.SSN );
+
+                                          //  Disclose parametry
+                                          PQsql.SETBOOL( "DiscloseName", c.DiscloseName );
+                                          PQsql.SETBOOL( "DiscloseOrganization", c.DiscloseOrganization );
+                                          PQsql.SETBOOL( "DiscloseAddress", c.DiscloseAddress );
+                                          PQsql.SETBOOL( "DiscloseTelephone", c.DiscloseTelephone );
+                                          PQsql.SETBOOL( "DiscloseFax", c.DiscloseFax );
+                                          PQsql.SETBOOL( "DiscloseEmail", c.DiscloseEmail );
+
+                                          // datum a cas updatu  plus kdo zmenil zanzma na konec
+                                          PQsql.SET( "UpDate", "now" );
+                                          PQsql.SET( "UpID", regID );
+                                          PQsql.SET( "status", statusString );
+
+                                          // podminka na konec 
+                                          PQsql.WHEREID( id );
+
+                                          if( PQsql.EXEC() ) ret->errCode = COMMAND_OK;
+                                          else ret->errCode = COMMAND_FAILED;
+                                        }
                                     }
+
                                 }
 
                             }
-
+                        }
+                      else      // neplatny kod zeme
+                        {
+                          ret->errCode = COMMAND_PARAMETR_ERROR;
+                          LOG( WARNING_LOG, "unknow country code" );
+                          ret->errors.length( 1 );
+                          ret->errors[0].code = ccReg::contactUpdate_cc;        // spatne zadany neznamy country code
+                          ret->errors[0].value = CORBA::string_dup( c.CC );
+                          ret->errors[0].reason = CORBA::string_dup( "unknow country code" );
                         }
 
                     }
-                  else // client neni tvurcem kontaktu ani nespravuje zadnou jeho domenu
+                  else          // client neni tvurcem kontaktu ani nespravuje zadnou jeho domenu
                     {
                       LOG( WARNING_LOG, "bad autorization of handle [%s]", handle );
-                      ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
+                      ret->errCode = COMMAND_AUTOR_ERROR;       // spatna autorizace
                     }
 
 
                 }
 
               // pokud vse proslo
-              if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne
-              else PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
+              if( ret->errCode == COMMAND_OK )
+                PQsql.CommitTransaction();    // pokud uspesne
+              else
+                PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
             }
 
           // zapis na konec action
@@ -1161,6 +1180,8 @@ if( ret->errCode == 0 )
 return ret;
 }
 
+
+
 /***********************************************************************
  *
  * FUNCTION:    ContactCreate
@@ -1178,26 +1199,26 @@ return ret;
  ***********************************************************************/
 
 
-ccReg::Response* ccReg_EPP_i::ContactCreate(const char* handle , const ccReg::ContactChange& c, ccReg::timestamp& crDate, CORBA::Long clientID, const char* clTRID)
+ccReg::Response * ccReg_EPP_i::ContactCreate( const char *handle, const ccReg::ContactChange & c, 
+                                              ccReg::timestamp & crDate, CORBA::Long clientID, const char *clTRID )
 {
 PQ PQsql;
-char  createDate[32];
+char createDate[32];
 char roid[64];
-ccReg::Response *ret;
+ccReg::Response * ret;
 int regID, id;
 time_t now;
-
+// default
 ret = new ccReg::Response;
-ret->errCode=0;
+ret->errCode = 0;
 crDate = 0;
 
 
-LOG( NOTICE_LOG ,  "ContactCreate: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
+LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s] ", clientID, clTRID, handle );
 
- 
+
   if( PQsql.OpenDatabase( database ) )
     {
-
       if( PQsql.BeginAction( clientID, EPP_ContactCreate, ( char * ) clTRID ) )
         {
           if( PQsql.BeginTransaction() )      // zahajeni transakce
@@ -1208,123 +1229,120 @@ LOG( NOTICE_LOG ,  "ContactCreate: clientID -> %d clTRID [%s] handle [%s] " , cl
                   LOG( WARNING_LOG, "object handle [%s] EXIST", handle );
                   ret->errCode = COMMAND_OBJECT_EXIST;  // je uz zalozena
                 }
-              else // pokud kontakt nexistuje
+              else              // pokud kontakt nexistuje
                 {
-                // test zdali country code je existujici zeme
-                 
+                  // test zdali country code je existujici zeme
+                  if( PQsql.TestCountryCode( c.CC ) )
+                    {
+                      // datum vytvoreni kontaktu
+                      now = time( NULL );
+                      crDate = now;
+                      get_timestamp( now, createDate );
 
-                if( PQsql.TestCountryCode( c.CC )   )
-                 {                
-                  // datum vytvoreni kontaktu
-                  now = time( NULL );
-                  crDate = now;
-                  get_timestamp( now, createDate );
+                      id = PQsql.GetSequenceID( "contact" );
+                      // get  registrator ID
+                      regID = PQsql.GetLoginRegistrarID( clientID );
 
-                  id = PQsql.GetSequenceID( "contact" );
-                  // get  registrator ID
-                  regID = PQsql.GetLoginRegistrarID( clientID );
+                      // vytvor roid kontaktu
+                      get_roid( roid, "C", id );
 
-                  // vytvor roid kontaktu
-                  get_roid( roid, "C", id );
+                      PQsql.INSERT( "CONTACT" );
+                      PQsql.INTO( "id" );
+                      PQsql.INTO( "roid" );
+                      PQsql.INTO( "handle" );
+                      PQsql.INTO( "CrDate" );
+                      PQsql.INTO( "CrID" );
+                      PQsql.INTO( "status" );
 
-                  PQsql.INSERT( "CONTACT" );
-                  PQsql.INTO( "id" );
-                  PQsql.INTO( "roid" );
-                  PQsql.INTO( "handle" );
-                  PQsql.INTO( "CrDate" );
-                  PQsql.INTO( "CrID" );
-                  PQsql.INTO( "status" );
-
-                  PQsql.INTOVAL( "Name", c.Name );
-                  PQsql.INTOVAL( "Organization", c.Organization );
-                  PQsql.INTOVAL( "Street1", c.Street1 );
-                  PQsql.INTOVAL( "Street2", c.Street2 );
-                  PQsql.INTOVAL( "Street3", c.Street3 );
-                  PQsql.INTOVAL( "City", c.City );
-                  PQsql.INTOVAL( "StateOrProvince", c.StateOrProvince );
-                  PQsql.INTOVAL( "PostalCode", c.PostalCode );
-                  PQsql.INTOVAL( "Country", c.CC );
-                  PQsql.INTOVAL( "Telephone", c.Telephone );
-                  PQsql.INTOVAL( "Fax", c.Fax );
-                  PQsql.INTOVAL( "Email", c.Email );
-                  PQsql.INTOVAL( "NotifyEmail", c.NotifyEmail );
-                  PQsql.INTOVAL( "VAT", c.VAT );
-                  PQsql.INTOVAL( "SSN", c.SSN );
+                      PQsql.INTOVAL( "Name", c.Name );
+                      PQsql.INTOVAL( "Organization", c.Organization );
+                      PQsql.INTOVAL( "Street1", c.Street1 );
+                      PQsql.INTOVAL( "Street2", c.Street2 );
+                      PQsql.INTOVAL( "Street3", c.Street3 );
+                      PQsql.INTOVAL( "City", c.City );
+                      PQsql.INTOVAL( "StateOrProvince", c.StateOrProvince );
+                      PQsql.INTOVAL( "PostalCode", c.PostalCode );
+                      PQsql.INTOVAL( "Country", c.CC );
+                      PQsql.INTOVAL( "Telephone", c.Telephone );
+                      PQsql.INTOVAL( "Fax", c.Fax );
+                      PQsql.INTOVAL( "Email", c.Email );
+                      PQsql.INTOVAL( "NotifyEmail", c.NotifyEmail );
+                      PQsql.INTOVAL( "VAT", c.VAT );
+                      PQsql.INTOVAL( "SSN", c.SSN );
 
 
-                  if( c.DiscloseName > 0 ) PQsql.INTO( "DiscloseName" );
-                  if( c.DiscloseOrganization > 0 ) PQsql.INTO( "DiscloseOrganization" );
-                  if( c.DiscloseAddress > 0 ) PQsql.INTO( "DiscloseAddress" );
-                  if( c.DiscloseTelephone > 0 ) PQsql.INTO( "DiscloseTelephone" );
-                  if( c.DiscloseFax > 0 ) PQsql.INTO( "DiscloseFax" );
-                  if( c.DiscloseEmail > 0 ) PQsql.INTO( "DiscloseEmail" );
+                      if( c.DiscloseName > 0 ) PQsql.INTO( "DiscloseName" );
+                      if( c.DiscloseOrganization > 0 ) PQsql.INTO( "DiscloseOrganization" );
+                      if( c.DiscloseAddress > 0 ) PQsql.INTO( "DiscloseAddress" );
+                      if( c.DiscloseTelephone > 0 ) PQsql.INTO( "DiscloseTelephone" );
+                      if( c.DiscloseFax > 0 ) PQsql.INTO( "DiscloseFax" );
+                      if( c.DiscloseEmail > 0 )PQsql.INTO( "DiscloseEmail" );
 
-                  PQsql.VALUE( id );
-                  PQsql.VALUE( roid );
-                  PQsql.VALUE( handle );
-                  PQsql.VALUE( createDate );
-                  PQsql.VALUE( regID );
-                  PQsql.VALUE( "{ 1 }" ); // OK status
-
-
-                  PQsql.VAL( c.Name );
-                  PQsql.VAL( c.Organization );
-                  PQsql.VAL( c.Street1 );
-                  PQsql.VAL( c.Street2 );
-                  PQsql.VAL( c.Street3 );
-                  PQsql.VAL( c.City );
-                  PQsql.VAL( c.StateOrProvince );
-                  PQsql.VAL( c.PostalCode );
-                  PQsql.VAL( c.CC );
-                  PQsql.VAL( c.Telephone );
-                  PQsql.VAL( c.Fax );
-                  PQsql.VAL( c.Email );
-                  PQsql.VAL( c.NotifyEmail );
-                  PQsql.VAL( c.VAT );
-                  PQsql.VAL( c.SSN );
+                      PQsql.VALUE( id );
+                      PQsql.VALUE( roid );
+                      PQsql.VALUE( handle );
+                      PQsql.VALUE( createDate );
+                      PQsql.VALUE( regID );
+                      PQsql.VALUE( "{ 1 }" );   // OK status
 
 
-                  if( c.DiscloseName > 0 ) PQsql.VALUE( "t" );
-                  if( c.DiscloseOrganization > 0 ) PQsql.VALUE( "t" );
-                  if( c.DiscloseAddress > 0 ) PQsql.VALUE( "t" );
-                  if( c.DiscloseTelephone > 0 ) PQsql.VALUE( "t" );
-                  if( c.DiscloseFax > 0 ) PQsql.VALUE( "t" );
-                  if( c.DiscloseEmail > 0 ) PQsql.VALUE( "t" );
+                      PQsql.VAL( c.Name );
+                      PQsql.VAL( c.Organization );
+                      PQsql.VAL( c.Street1 );
+                      PQsql.VAL( c.Street2 );
+                      PQsql.VAL( c.Street3 );
+                      PQsql.VAL( c.City );
+                      PQsql.VAL( c.StateOrProvince );
+                      PQsql.VAL( c.PostalCode );
+                      PQsql.VAL( c.CC );
+                      PQsql.VAL( c.Telephone );
+                      PQsql.VAL( c.Fax );
+                      PQsql.VAL( c.Email );
+                      PQsql.VAL( c.NotifyEmail );
+                      PQsql.VAL( c.VAT );
+                      PQsql.VAL( c.SSN );
+
+
+                      if( c.DiscloseName > 0 ) PQsql.VALUE( "t" );
+                      if( c.DiscloseOrganization > 0 ) PQsql.VALUE( "t" );
+                      if( c.DiscloseAddress > 0 ) PQsql.VALUE( "t" );
+                      if( c.DiscloseTelephone > 0 ) PQsql.VALUE( "t" );
+                      if( c.DiscloseFax > 0 ) PQsql.VALUE( "t" );
+                      if( c.DiscloseEmail > 0 ) PQsql.VALUE( "t" );
 
 
 
 
-                  // pokud se podarilo insertovat
-                  if( PQsql.EXEC() )  //   ret->errCode = COMMAND_OK;
-                    {           //  uloz do historie
-                      if( PQsql.MakeHistory() )
-                        {
-                          if( PQsql.SaveHistory( "Contact", "id", id ) )        // uloz zaznam
+                      // pokud se podarilo insertovat
+                      if( PQsql.EXEC() )      //   ret->errCode = COMMAND_OK;
+                        {       //  uloz do historie
+                          if( PQsql.MakeHistory() )
                             {
-                              ret->errCode = COMMAND_OK;        // pokud se ulozilo do Historie
+                              if( PQsql.SaveHistory( "Contact", "id", id ) )    // uloz zaznam
+                                {
+                                  ret->errCode = COMMAND_OK;    // pokud se ulozilo do Historie
+                                }
                             }
-                          else ret->errCode = COMMAND_FAILED;
                         }
-                      else  ret->errCode = COMMAND_FAILED;
+
                     }
-                  else  ret->errCode = COMMAND_FAILED;
-
-                }               
-               else // neplatny kod zeme  
-                  {
-                    ret->errCode = COMMAND_PARAMETR_ERROR;
-                    LOG( WARNING_LOG,  "unknow country code" );
-                    ret->errors.length( 1 );
-                    ret->errors[0].code = ccReg::contactCreate_cc;  // spatne zadany neznamy country code
-                    ret->errors[0].value = CORBA::string_dup(  c.CC  );
-                    ret->errors[0].reason = CORBA::string_dup(  "unknow country code" );
-                  }
-               }               
+                  else          // neplatny kod zeme  
+                    {
+                      ret->errCode = COMMAND_PARAMETR_ERROR;
+                      LOG( WARNING_LOG, "unknow country code" );
+                      ret->errors.length( 1 );
+                      ret->errors[0].code = ccReg::contactCreate_cc;    // spatne zadany neznamy country code
+                      ret->errors[0].value = CORBA::string_dup( c.CC );
+                      ret->errors[0].reason = CORBA::string_dup( "unknow country code" );
+                    }
+                }
 
 
-              // pokud vse proslo
-              if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne
-              else  PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
+              // pokud vse proslo OK
+              if( ret->errCode == COMMAND_OK )
+                PQsql.CommitTransaction();    // pokud uspesne
+              else
+                PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
             }
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
@@ -1333,18 +1351,20 @@ LOG( NOTICE_LOG ,  "ContactCreate: clientID -> %d clTRID [%s] handle [%s] " , cl
 
       PQsql.Disconnect();
     }
-    
 
-if( ret->errCode== 0 )
+
+if( ret->errCode == 0 )
   {
-    ret->errCode=COMMAND_FAILED;
-    ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-    ret->errMsg = CORBA::string_dup("");
-    ret->errors.length(0);
+    ret->errCode = COMMAND_FAILED;
+    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+    ret->errMsg = CORBA::string_dup( "" );
+    ret->errors.length( 0 );
   }
 
 return ret;
 }
+
+
 
 
 
@@ -1685,190 +1705,179 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , clie
  ***********************************************************************/
 
 
-ccReg::Response* ccReg_EPP_i::NSSetCreate(const char* handle, const char* authInfoPw, const ccReg::TechContact& tech, const ccReg::DNSHost& dns,ccReg::timestamp& crDate,  CORBA::Long clientID, const char* clTRID)
+ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *authInfoPw, 
+                                            const ccReg::TechContact & tech, const ccReg::DNSHost & dns,
+                                            ccReg::timestamp & crDate, CORBA::Long clientID, const char *clTRID )
 {
 PQ PQsql;
 char Array[512];
 char createDate[32];
 char roid[64];
-ccReg::Response *ret;
-int regID ,  id , techid;
-int i , len , j ;
+ccReg::Response * ret;
+int regID, id, techid;
+int i, len, j;
 time_t now;
+
 ret = new ccReg::Response;
-
-
-
 // default
-ret->errCode=0;
-ret->errors.length(0);
-crDate=0;
+ret->errCode = 0;
+ret->errors.length( 0 );
+crDate = 0;
 
-LOG( NOTICE_LOG ,  "NSSetCreate: clientID -> %d clTRID [%s] handle [%s] " , clientID , clTRID , handle );
-LOG( NOTICE_LOG ,  "NSSetCreate: authInfoPw [%s] ", authInfoPw );
+LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", clientID, clTRID, handle , authInfoPw  );
 
-if( PQsql.OpenDatabase( database ) )
-{
-
-if( PQsql.BeginAction( clientID , EPP_NSsetCreate , (char * ) clTRID  ) )
- {
- 
-    // prvni test zdali domena uz existuje
- if(  PQsql.GetNumericFromTable( "NSSET" , "id",   "handle" , (char * )  handle ) )  ret->errCode=COMMAND_OBJECT_EXIST; // nsset uz zalozen ID existuje
- else  // pokud nexistuje 
- if( PQsql.BeginTransaction() )  // zahaj transakci
-   { 
-     
-     // get  registrator ID
-     regID = PQsql.GetLoginRegistrarID( clientID );
-
-
-     // ID je cislo ze sequence
-    id =  PQsql.GetSequenceID( "nsset" );
-   
-    // vytvor roid nssetu
-    get_roid( roid , "N" , id );
-
-    // datum a cas vytvoreni
-    now = time(NULL);
-    crDate = now;
-    get_timestamp( now , createDate );    
-
-     
-
-   PQsql.INSERT( "NSSET" );
-   PQsql.INTO( "id" );
-   PQsql.INTO( "roid" );
-   PQsql.INTO( "handle" );
-   PQsql.INTO( "CrDate" );
-   PQsql.INTO( "CrID" );
-   PQsql.INTO( "ClID" );
-   PQsql.INTO( "status" );
-   PQsql.INTOVAL( "authinfopw"  , authInfoPw );
-
-   PQsql.VALUE( id );
-   PQsql.VALUE( roid );
-   PQsql.VALUE( handle );
-   PQsql.VALUE( createDate );
-   PQsql.VALUE( regID );
-   PQsql.VALUE( regID );
-   PQsql.VALUE( "{ 1 }"  ); // status OK
-   PQsql.VAL(  authInfoPw );
-
-    // zapis nejdrive nsset 
-    if( PQsql.EXEC() )
+  if( PQsql.OpenDatabase( database ) )
     {
 
+      if( PQsql.BeginAction( clientID, EPP_NSsetCreate, ( char * ) clTRID ) )
+        {
 
-      // zapis technicke kontakty 
-      len = tech.length();
-      for( i = 0 ; i < len ; i ++ )
-         {
-             techid =  PQsql.GetNumericFromTable( "Contact" , "id" ,  "handle" , tech[i] );
-             if( techid )
-             {
-             PQsql.INSERT( "nsset_contact_map" );
-             PQsql.VALUE( id ); 
-             PQsql.VALUE( techid ); 
-          
-              if( PQsql.EXEC() == false )  // pokud se nepodarilo pridat do tabulky
-                {
-                    LOG( WARNING_LOG ,  "can not insert into  host " );
-                    ret->errCode = COMMAND_FAILED;
-                    break;
-                }
-             }
-             else 
-             {
-                LOG( WARNING_LOG ,  "NSSetCreate: unknow tech Contact "  );
-                // TODO error value 
-                ret->errCode = COMMAND_PARAMETR_ERROR;                 
-              }
-         } 
-     
-       // zapis do tabulky hostu
-       len = dns.length();
-       for( i = 0 ; i < len ; i ++ )
-          {
-           // ip adresa DNS hostu
-
-
-           // preved sequenci adres
-           strcpy( Array , " { " );
-           for( j = 0 ; j < dns[i].inet.length() ; j ++ )
-           {
-              if( j > 0 ) strcat( Array , " , " );
-              strcat( Array ,  CORBA::string_dup( dns[i].inet[j]  ));
-            }
-            strcat( Array , " } " );
-
-             // LOG( NOTICE_LOG ,  "NSSetCreate: DNS Host %s [%s] ",  CORBA::string_dup( dns[i].fqdn )  , Array    );
-
-             // HOST informace pouze ipaddr a fqdn 
-              PQsql.INSERT("HOST");
-              PQsql.INTO( "NSSETID" ); 
-              PQsql.INTO( "fqdn" ); 
-              PQsql.INTO( "ipaddr" ); 
-              PQsql.VALUE( id );  
-              PQsql.VALUE( dns[i].fqdn );  
-              PQsql.VALUE( Array );  
-                   
-              if( PQsql.EXEC() == false )  // pokud se nepodarilo pridat do tabulky
-                {
-                    LOG( WARNING_LOG ,  "can not insert into  host " );
-                    ret->errCode = COMMAND_FAILED;
-                    break;
-                }          
-         }
- 
-
-    }
-
-
-       //  uloz do historie
-      if(  ret->errCode ==0   )  // pokud zatim neni zadna chyba 
-      {
-       if( PQsql.MakeHistory() )
-         {
-          if( PQsql.SaveHistory( "nsset_contact_map" , "nssetid" , id ) ) // historie tech kontakty
+          // prvni test zdali nsset uz existuje          
+          if( PQsql.GetNumericFromTable( "NSSET", "id", "handle", ( char * ) handle ) )
+            {
+               LOG( WARNING_LOG, "nsset handle [%s] EXIST", handle );
+               ret->errCode = COMMAND_OBJECT_EXIST;  // je uz zalozen
+           }
+          else                  // pokud nexistuje 
+          if( PQsql.BeginTransaction() )      // zahaj transakci
             {
 
-                   if( PQsql.SaveHistory( "HOST" , "nssetid" , id ) )
-                     {
-                       //  uloz podrizene hosty
-                           if( PQsql.SaveHistory( "NSSET" , "id" , id ) ) ret->errCode = COMMAND_OK ;
-                        
-                     }                 
+              // get  registrator ID
+              regID = PQsql.GetLoginRegistrarID( clientID );
+
+
+              // ID je cislo ze sequence
+              id = PQsql.GetSequenceID( "nsset" );
+
+              // vytvor roid nssetu
+              get_roid( roid, "N", id );
+
+              // datum a cas vytvoreni
+              now = time( NULL );
+              crDate = now;
+              get_timestamp( now, createDate );
+
+
+
+              PQsql.INSERT( "NSSET" );
+              PQsql.INTO( "id" );
+              PQsql.INTO( "roid" );
+              PQsql.INTO( "handle" );
+              PQsql.INTO( "CrDate" );
+              PQsql.INTO( "CrID" );
+              PQsql.INTO( "ClID" );
+              PQsql.INTO( "status" );
+              PQsql.INTOVAL( "authinfopw", authInfoPw );
+
+              PQsql.VALUE( id );
+              PQsql.VALUE( roid );
+              PQsql.VALUE( handle );
+              PQsql.VALUE( createDate );
+              PQsql.VALUE( regID );
+              PQsql.VALUE( regID );
+              PQsql.VALUE( "{ 1 }" );   // status OK
+              PQsql.VAL( authInfoPw );
+
+              // zapis nejdrive nsset 
+              if( PQsql.EXEC() )
+                {
+
+
+                  // zapis technicke kontakty 
+                  for( i = 0; i <  tech.length() ;  i++ )
+                    {
+                      techid = PQsql.GetNumericFromTable( "Contact", "id", "handle", tech[i] );
+                      if( techid )
+                        {
+                          PQsql.INSERT( "nsset_contact_map" );
+                          PQsql.VALUE( id );
+                          PQsql.VALUE( techid );
+
+                          if( PQsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;
+                        }
+                      else
+                        {
+                          LOG( WARNING_LOG, "NSSetCreate: unknow tech Contact " );
+                          // TODO error value 
+                          ret->errCode = COMMAND_PARAMETR_ERROR;
+                        }
+                    }
+
+                  // zapis do tabulky hostu
+                  for( i = 0; i < dns.length() ; i++ )
+                    {
+                      // ip adresa DNS hostu
+
+
+                      // preved sequenci adres
+                      strcpy( Array, " { " );
+                      for( j = 0; j < dns[i].inet.length(); j++ )
+                        {
+                          if( j > 0 ) strcat( Array, " , " );
+                          strcat( Array, CORBA::string_dup( dns[i].inet[j] ) );
+                        }
+                      strcat( Array, " } " );
+
+                      // LOG( NOTICE_LOG ,  "NSSetCreate: DNS Host %s [%s] ",  CORBA::string_dup( dns[i].fqdn )  , Array    );
+
+                      // HOST informace pouze ipaddr a fqdn 
+                      PQsql.INSERT( "HOST" );
+                      PQsql.INTO( "NSSETID" );
+                      PQsql.INTO( "fqdn" );
+                      PQsql.INTO( "ipaddr" );
+                      PQsql.VALUE( id );
+                      PQsql.VALUE( dns[i].fqdn );
+                      PQsql.VALUE( Array );
+
+                      if( PQsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;
+                    }
+
+                }
+
+
+              //  uloz do historie
+              if( ret->errCode == 0 )   // pokud zatim neni zadna chyba 
+                {
+                  if( PQsql.MakeHistory() )
+                    {
+                      if( PQsql.SaveHistory( "nsset_contact_map", "nssetid", id ) )     // historie tech kontakty
+                        {
+
+                          if( PQsql.SaveHistory( "HOST", "nssetid", id ) )
+                            {
+                              //  uloz podrizene hosty
+                              if( PQsql.SaveHistory( "NSSET", "id", id ) ) ret->errCode = COMMAND_OK;
+                            }
+                        }
+                    }          
+
+                }
+
+              // pokud vse proslo
+              if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo commitni zmeny
+              else PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
             }
-         } // konec historie
-       
-       }
 
-       // pokud vse proslo
-       if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();   // pokud uspesne nainsertovalo commitni zmeny
-       else PQsql.RollbackTransaction(); // pokud nejake chyba zrus trasakci
-   }
 
- 
- 
 
-   // zapis na konec action
-  ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ) ;
- }
 
-ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
+          // zapis na konec action
+          ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
+        }
 
-PQsql.Disconnect();
-}
+      ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );
 
-if( ret->errCode== 0 )
+      PQsql.Disconnect();
+    }
+
+if( ret->errCode == 0 )
   {
-    ret->errCode=COMMAND_FAILED;
-    ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-    ret->errMsg = CORBA::string_dup("");
-    ret->errors.length(0);
+    ret->errCode = COMMAND_FAILED;
+    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+    ret->errMsg = CORBA::string_dup( "" );
+    ret->errors.length( 0 );
   }
- 
+
 
 return ret;
 }
@@ -2856,176 +2865,229 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char* AuthInfoPw , CORBA::Short period , const ccReg::AdminContact& admin, ccReg::timestamp& crDate, ccReg::timestamp& exDate,  CORBA::Long clientID, const char* clTRID , const ccReg::ExtensionList& ext )
+ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Registrant, const char *nsset, const char *AuthInfoPw, CORBA::Short period,
+                                             const ccReg::AdminContact & admin, ccReg::timestamp & crDate, ccReg::timestamp & exDate, 
+                                             CORBA::Long clientID, const char *clTRID, const ccReg::ExtensionList & ext )
 {
 PQ PQsql;
-const ccReg::ENUMValidationExtension *enumVal;
-char sqlString[2048] ;
-char expiryDate[32] , valexpiryDate[32] , createDate[32];
+const ccReg::ENUMValidationExtension * enumVal;
+char expiryDate[32], valexpiryDate[32], createDate[32];
 char roid[64];
-ccReg::Response *ret;
-int contactid , regID , nssetid , adminid , id;
-int i , len , s , zone ;
-bool insert=true;
-time_t t ,  valExpDate ;
+ccReg::Response * ret;
+int contactid, regID, nssetid, adminid, id;
+int i, len, s, zone;
+bool insert = true;
+time_t t, valExpDate;
 
 ret = new ccReg::Response;
 
 
 // default
-valExpDate=0;
-
+valExpDate = 0;
 
 // default
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-ret->errMsg = CORBA::string_alloc(64);
-ret->errMsg = CORBA::string_dup("");
-ret->errors.length(0);
-crDate = 0 ;
-exDate = 0 ;
+ret->errCode = 0;
+ret->errors.length( 0 );
+crDate = 0;
+exDate = 0;
 
 
 
-LOG( NOTICE_LOG ,  "DomainCreate: clientID -> %d clTRID [%s] fqdn  [%s] " , clientID , clTRID  , fqdn );
-LOG( NOTICE_LOG ,  "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] period %d" , Registrant , nsset , AuthInfoPw ,period );
+LOG( NOTICE_LOG, "DomainCreate: clientID -> %d clTRID [%s] fqdn  [%s] ", clientID, clTRID, fqdn );
+LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] period %d", Registrant, nsset, AuthInfoPw, period );
 
-len =  ext.length();
-
-if( len > 0 )
-{
-  LOG( NOTICE_LOG , "extension length %d" ,  ext.length() );
-  for( i = 0 ; i < len ; i ++ )
-  {
-  if(  ext[i] >>= enumVal   ) 
+// parse extension
+  len = ext.length();
+  if( len > 0 )
     {
-       valExpDate = enumVal->valExDate ; 
-       LOG( NOTICE_LOG , "enumVal %d " ,  enumVal->valExDate ); 
-    }
-  else 
-    {
-      LOG( ERROR_LOG , "Unknown value extension[%d]" , i );
-      break;  
-    }
-
- }
-}
-
-
-
-if( PQsql.OpenDatabase( database ) )
-{
-
-if( PQsql.BeginAction( clientID , EPP_DomainCreate , (char * ) clTRID  ) )
- {
- 
-// prvni test zdali domena uz existuje
-if(  PQsql.GetNumericFromTable("DOMAIN" , "id" ,  "fqdn" , (char * ) fqdn ) ) 
-  {
-       ret->errCode=COMMAND_OBJECT_EXIST; // je uz zalozena
-       LOG( WARNING_LOG  ,  "domain  [%s] EXIST" , fqdn );
-  }
-  else
-// pokud domena nexistuje 
-  // zahaj transakci
-  if( PQsql.BeginTransaction() )
-  {
-   id =  PQsql.GetSequenceID( "domain" ); // id domeny
-
-   // vytvor roid domeny
-   get_roid( roid , "D" , id );
-
-   zone = get_zone( (char * ) fqdn ); // kontrola nazvu domeny a automaticke zarazeni do zony
-
-   if( zone == 0 )LOG( WARNING_LOG , "can not get zone for domain  [%s] " , fqdn );
-   
-   
-   // get  registrator ID
-   regID =   PQsql.GetLoginRegistrarID( clientID);
-
-   nssetid =  PQsql.GetNumericFromTable("NSSET" , "id" , "handle" , CORBA::string_dup(nsset) );
-   contactid =  PQsql.GetNumericFromTable("CONTACT" , "id" , "handle", CORBA::string_dup(Registrant) );
-
-
-   t = time(NULL);
-   crDate = t; // datum a cas vytvoreni objektu
-   exDate = expiry_time( t  , period ); // datum a cas expirace o pulnoci
-   // preved datum a cas expirace prodluz tim cas platnosti domeny
-   get_timestamp( exDate ,  expiryDate );
-   get_timestamp( crDate , createDate );
-   
-   
-    if( nssetid > 0 && contactid > 0 && zone > 0 ) // existuje nsset a kontakt
-    {
-         sprintf( sqlString , "INSERT INTO DOMAIN ( zone , crdate  , id , roid , fqdn , ClID , CrID,  Registrant  , exdate , authinfopw , nsset ) \
-              VALUES ( %d  , \'%s\'  ,  %d ,   \'%s\' , \'%s\'  ,  %d , %d  , %d ,  \'%s\' ,  \'%s\'  , %d );" , zone ,  createDate , 
-              id,  roid ,  CORBA::string_dup(fqdn) ,  regID  ,  regID , contactid , expiryDate ,  CORBA::string_dup(AuthInfoPw),  nssetid );
- 
-
-
-   // pokud se insertovalo do tabulky
-        if(  PQsql.ExecSQL( sqlString ) )
+      LOG( NOTICE_LOG, "extension length %d", ext.length() );
+      for( i = 0; i < len; i++ )
         {
-
-         // uloz extension
-        if(   valExpDate )
-         {    
-             get_timestamp(   valExpDate ,  valexpiryDate );
-             sprintf( sqlString , "INSERT INTO  enumval  VALUES ( %d ,  \'%s\' ); " , id , valexpiryDate );  
-             if( PQsql.ExecSQL( sqlString ) == false )  insert=false;
-         }
-
-          // zapis admin kontakty
-        len = admin.length();
-        if( len>  0 && insert== true )
-        {
-          for( i = 0 ; i < len ; i ++ )
+          if( ext[i] >>= enumVal )
             {
-              adminid =  PQsql.GetNumericFromTable( "Contact" , "id" , "handle" , CORBA::string_dup(admin[i]) );
-
-              sprintf( sqlString , "INSERT INTO domain_contact_map VALUES ( %d , %d );"  , id , adminid );
-
-              if( PQsql.ExecSQL( sqlString ) == false ) { insert=false; break;}  // pokud se nepodarilo pridat do tabulky                
+              valExpDate = enumVal->valExDate;
+              LOG( NOTICE_LOG, "enumVal %d ", enumVal->valExDate );
             }
-         }
-
-          if( insert ) // pokud se ulozili admin kontakty uloz vse do historie
+          else
             {
+              LOG( ERROR_LOG, "Unknown value extension[%d]", i );
+              break;
+            }
 
-              //  uloz do historie
-              if( PQsql.MakeHistory() )
+        }
+    }
+
+
+
+  if( PQsql.OpenDatabase( database ) )
+    {
+
+      if( PQsql.BeginAction( clientID, EPP_DomainCreate, ( char * ) clTRID ) )
+        {
+
+          //  test zdali domena uz existuje
+          if( PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) fqdn ) )
+            {
+              ret->errCode = COMMAND_OBJECT_EXIST;      // je uz zalozena
+              LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
+            }
+          else // pokud domena nexistuje             
+          if( PQsql.BeginTransaction() )
+            {
+              id = PQsql.GetSequenceID( "domain" );     // id domeny
+
+              // vytvor roid domeny
+              get_roid( roid, "D", id );
+
+              zone = get_zone( ( char * ) fqdn );       // kontrola nazvu domeny a automaticke zarazeni do zony
+
+              if( zone == 0 )
                 {
-                  if( PQsql.SaveHistory(  "enumval" , "domainID"   , id ) )
-                    {
-                    if( PQsql.SaveHistory( "domain_contact_map" , "domainID" , id ) )
-                      {
-                        if( PQsql.SaveHistory(  "DOMAIN" , "id" , id  ) )  ret->errCode = COMMAND_OK; 
-                      }
-                    }
+                   LOG( WARNING_LOG, "can not get zone for domain  [%s] ", fqdn );
+                   ret->errCode = COMMAND_PARAMETR_ERROR; // TODO errors 
                 }
-            }  
-        
-        } 
-        
-        
-     }
+              else
+                {
 
 
+                  // get  registrator ID
+                  regID = PQsql.GetLoginRegistrarID( clientID );
 
-  // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
-  if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
-  else  PQsql.RollbackTransaction();
+                  if( ( nssetid = PQsql.GetNumericFromTable( "NSSET", "id", "handle", nsset ) ) == 0 )
+                    {
+                      LOG( WARNING_LOG, "unknow nsset handle %s", nsset );
+                      ret->errCode = COMMAND_PARAMETR_ERROR;
+                      // TODO errors
+                    }
+                  else
+                    {
+                      if( ( contactid = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", Registrant ) ) == 0 )
+                        {
+                          LOG( WARNING_LOG, "unknow registrant handle %s", Registrant );
+                          ret->errCode = COMMAND_PARAMETR_ERROR; // TODO errors                          
+                        }
+                      else
+                        {
+                          t = time( NULL );
+                          crDate = t;   // datum a cas vytvoreni objektu
+                          exDate = expiry_time( t, period );    // datum a cas expirace o pulnoci
+                          // preved datum a cas expirace prodluz tim cas platnosti domeny
+                          get_timestamp( exDate, expiryDate );
+                          get_timestamp( crDate, createDate );
+
+
+                          PQsql.INSERT( "DOMAIN" );
+                          PQsql.INTO( "zone" );
+                          PQsql.INTO( "id" );
+                          PQsql.INTO( "roid" );
+                          PQsql.INTO( "fqdn" );
+                          PQsql.INTO( "CrDate" );
+                          PQsql.INTO( "Exdate" );
+                          PQsql.INTO( "ClID");
+                          PQsql.INTO( "CrID" );
+                          PQsql.INTO( "status" );
+                          PQsql.INTO( "Registrant" );
+                          PQsql.INTO( "nsset");
+                          PQsql.INTOVAL( "authinfopw" , AuthInfoPw);                                                                                                     
+                                                                  
+                                                                  
+                          PQsql.VALUE( zone );
+                          PQsql.VALUE( id );
+                          PQsql.VALUE( roid );
+                          PQsql.VALUE( fqdn );
+                          PQsql.VALUE( createDate );
+                          PQsql.VALUE( expiryDate );
+                          PQsql.VALUE( regID );
+                          PQsql.VALUE( regID );
+                          PQsql.VALUE( "{ 1 }" ); // status OK
+                          PQsql.VALUE( contactid );
+                          PQsql.VALUE( nssetid );
+                          PQsql.VAL(  AuthInfoPw);   
+
+                                                                                                                                                                  
+                          // pokud se insertovalo do tabulky
+                          if( PQsql.EXEC() )
+                            {
+
+                              // pridej enum  extension
+                              if( valExpDate )
+                                {
+                                  get_timestamp( valExpDate, valexpiryDate );
+                                  PQsql.INSERT( "enumval" );
+                                  PQsql.VALUE( id );
+                                  PQsql.VALUE( valexpiryDate ); 
+                                  if( PQsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;;
+                                }
+
+                              // zapis admin kontakty
+                              len = admin.length();
+                              if( len > 0  )
+                                {
+                                  for( i = 0; i < len; i++ )
+                                    {
+                                      adminid = PQsql.GetNumericFromTable( "Contact", "id", "handle", admin[i]  );
+
+                                      if( adminid )
+                                       {
+                                          PQsql.INSERT( "domain_contact_map" );
+                                          PQsql.VALUE( id );
+                                          PQsql.VALUE( adminid );
+                                         // pokud se nepodarilo pridat do tabulky                                     
+                                         if( PQsql.EXEC() == false )   ret->errCode = COMMAND_FAILED;
+                                       }   
+                                      else
+                                      {
+                                       ret->errCode = COMMAND_PARAMETR_ERROR; // TODO errors                                       
+                                      } 
+                                    }
+                                }
+
+                              if( ret->errCode == 0 )   // pokud zadna chyba uloz do historie
+                                {
+                                  //  uloz do historie
+                                  if( PQsql.MakeHistory() )
+                                    {
+                                      if( PQsql.SaveHistory( "enumval", "domainID", id ) )
+                                        {
+                                          if( PQsql.SaveHistory( "domain_contact_map", "domainID", id ) )
+                                            {
+                                              if( PQsql.SaveHistory( "DOMAIN", "id", id ) ) ret->errCode = COMMAND_OK;
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+              // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
+              if( ret->errCode == COMMAND_OK )  PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
+              else PQsql.RollbackTransaction();
+            }
+
+          // zapis na konec action
+          ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
+        }
+
+      ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );
+
+      PQsql.Disconnect();
+    }
+
+
+if( ret->errCode == 0 )
+  {
+    ret->errCode = COMMAND_FAILED;
+    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+    ret->errMsg = CORBA::string_dup( "" );
+    ret->errors.length( 0 );
   }
 
- // zapis na konec action
- ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
- }
-
-ret->errMsg =  CORBA::string_dup(   PQsql.GetErrorMessage(  ret->errCode  ) ) ;
-
-PQsql.Disconnect();
-}
 
 
 return ret;
