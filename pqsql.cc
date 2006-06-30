@@ -904,11 +904,11 @@ return ret;
 }
 
 
-bool PQ::SELECT(const char *table  const char *fname , const char * value )
+bool PQ::SELECT(const char *table  , const char *fname , const char * value )
 {
 char sqlString[512];
 
-sprintf( sqlString , "SELECT * FROM %s WHERE %s=\'%s\'" , table , fname , handle);
+sprintf( sqlString , "SELECT * FROM %s WHERE %s=\'%s\'" , table , fname , value);
 return ExecSelect( sqlString );
 }
 
