@@ -11,6 +11,47 @@ void get_roid( char *roid , char *prefix , int id )
 {
 sprintf(roid , "%s%010d-CZ" , prefix ,  id );
 }
+// prevod a testovani handlu
+bool get_HANDLE( char  * HANDLE , const char *handle )
+{
+int i , len;
+
+len = strlen( handle);
+
+// max a minimalni delka
+if( len > 1 && len <= 40 )
+{
+  for( i = 0 ; i < len ; i ++ )
+  {
+
+    // TEST
+    if( ( handle[i] >= 'a'  && handle[i] <= 'z' ) ||
+        ( handle[i] >= 'A'  && handle[i] <= 'Z' ) ||
+        ( handle[i] >= '0'  && handle[i] <= '9' ) ||
+        ( handle[i] == '.' || handle[i] == '-' ||  handle[i] == '_' ) )
+      {
+
+          // PREVOD
+          if( handle[i] >= 'a'  && handle[i] <= 'z' )
+              HANDLE[i] = handle[i] - 0x20; // prevod na velka pismena
+          else HANDLE[i] =  handle[i];
+     }
+    else
+    {
+        HANDLE[0] = 0 ;
+        return false;
+    }
+
+ }
+
+HANDLE[i] = 0 ;
+}
+else return false;
+
+
+}
+
+
 
 // zarazeni do zony a kontrola nazvu domeny
 int get_zone( char * fqdn )

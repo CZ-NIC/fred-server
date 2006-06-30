@@ -1,3 +1,5 @@
+// prevadi handle na velka pismena psojena s testem
+bool get_HANDLE( char  * HANDLE , const char *handle );
 
 // vytvoreni roid
 void get_roid( char *roid , char *prefix , int id );
