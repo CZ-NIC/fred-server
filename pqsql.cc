@@ -723,12 +723,14 @@ sprintf( sqlBuffer ,  "UPDATE %s SET  " , table );
 
 void PQ::SET( const char *fname , const char * value )
 {
-strcat( sqlBuffer ,"  ");
-strcat( sqlBuffer , fname );
-strcat( sqlBuffer , "=" );
 
 if( strlen( value ) )
  {
+
+  strcat( sqlBuffer ,"  ");
+  strcat( sqlBuffer , fname );
+  strcat( sqlBuffer , "=" );
+
    if( value[0] == 0x8 ) // specialne vymazani pri UPDATE
    {
      strcat( sqlBuffer , "NULL" );           
@@ -736,13 +738,12 @@ if( strlen( value ) )
    else 
    {
      strcat( sqlBuffer , "'" );
-     strcat( sqlBuffer ,  value );
+     strcat( sqlBuffer , value );
      strcat( sqlBuffer , "'" );
    }
 
   strcat( sqlBuffer , " ," ); // carka na konec
  }
-
 
 }
 
@@ -753,8 +754,8 @@ char numStr[16];
 strcat( sqlBuffer ,"  ");
 strcat( sqlBuffer , fname );
 strcat( sqlBuffer , "=" );
-strcat( sqlBuffer , numStr );
 sprintf( numStr , "%d" ,  value  );
+strcat( sqlBuffer , numStr );
 strcat( sqlBuffer , " ," );
 }
 
