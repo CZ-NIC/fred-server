@@ -3,7 +3,7 @@
 
 #define LANG_EN 0
 #define LANG_CS 1
-
+#define CMD_OK 1000 // OK prikaz pro konec transakce
 
 class PQ{
 public:
@@ -130,6 +130,10 @@ void VALUE( bool value );
 
 bool EXEC();
 bool SELECT(const char *table  , const char *fname , const char * value );
+bool SELECT(const char *table  , const char *fname , int value );
+
+bool SELECTCONTACTMAP( char *map , int id ); // admin a tech kontakty
+
 
 // vraci pocet radku
 int GetSelectRows(){ return nRows;};

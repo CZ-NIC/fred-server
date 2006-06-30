@@ -908,7 +908,26 @@ bool PQ::SELECT(const char *table  , const char *fname , const char * value )
 {
 char sqlString[512];
 
-sprintf( sqlString , "SELECT * FROM %s WHERE %s=\'%s\'" , table , fname , value);
+sprintf( sqlString , "SELECT * FROM %s WHERE %s=\'%s\';" , table , fname , value);
 return ExecSelect( sqlString );
 }
+
+bool PQ::SELECT(const char *table  , const char *fname , int value )
+{
+char sqlString[512];
+
+sprintf( sqlString , "SELECT * FROM %s WHERE %s=%d;" , table , fname , value);
+return ExecSelect( sqlString );
+}
+
+
+
+bool PQ::SELECTCONTACTMAP( char *map , int id )
+{
+char sqlString[512];
+
+sprintf( sqlString , "SELECT  handle FROM CONTACT  JOIN  %s_contact_map ON %s_contact_map.contactid=contact.id WHERE %s_contact_map.%sid=%d;" ,  map  , map , map  , map , id );
+return ExecSelect( sqlString );
+}
+
 
