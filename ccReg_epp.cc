@@ -457,11 +457,19 @@ if( PQsql.OpenDatabase( database ) )
              // ziskej heslo z databaza a  provnej heslo a pokud neni spravne vyhod chybu
             if( strcmp(  PQsql.GetValueFromTable("REGISTRARACL" , "password" , "registrarid" ,  roid )  , passwd )  )
               {
-                LOG( NOTICE_LOG, "bad password [%s] accept", passwd );
+                LOG( NOTICE_LOG, "bad password [%s] not accept", passwd );
                 ret->errCode = COMMAND_AUTH_ERROR;
               }
             else
+             //  porovnej certifika 
+            {
+             if( strcmp(  PQsql.GetValueFromTable("REGISTRARACL" , "cert" ,  "registrarid" ,  roid )  ,  certID )  )
               {
+                LOG( NOTICE_LOG, "bad certID [%s] not accept", certID );
+                ret->errCode = COMMAND_AUTH_ERROR;
+               }
+            else
+             {
                 LOG( NOTICE_LOG, "password [%s] accept", passwd );
 
                 // zmena hesla pokud je nejake nastaveno
@@ -520,7 +528,7 @@ if( PQsql.OpenDatabase( database ) )
                   }
 
               }
-
+            }
           }
 
         // probehne action pro svrTrID   musi byt az na mkonci pokud zna clientID
@@ -1242,13 +1250,10 @@ LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s] %s ", cl
         {
           if( PQsql.BeginTransaction() )      // zahajeni transakce
             {
-
-
-
               // test zdali kontakt uz existuje
-              if( PQsql.GetNumericFromTable( "CONTACT", "id", "handle", HANDLE  ) )
+              if( PQsql.CheckObject( "CONTACT",  "handle", handle  ) )
                 {
-                  LOG( WARNING_LOG, "object handle [%s] EXIST", HANDLE  );
+                  LOG( WARNING_LOG, "object handle [%s] EXIST", handle  );
                   ret->errCode = COMMAND_OBJECT_EXIST;  // je uz zalozena
                 }
               else              // pokud kontakt nexistuje
@@ -1780,7 +1785,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
         else
      {
         // prvni test zdali nsset uz existuje          
-        if( PQsql.GetNumericFromTable( "NSSET", "id", "handle",  HANDLE ) )
+        if(  PQsql.CheckObject( "NSSET",  "handle", handle  )   )
          {
                LOG( WARNING_LOG, "nsset handle [%s] EXIST", HANDLE );
                ret->errCode = COMMAND_OBJECT_EXIST;  // je uz zalozen
@@ -2268,7 +2273,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
    // pokud domena neexistuje
   if( (id = PQsql.GetNumericFromTable(  "NSSET"  , "id" , "handle" , (char * ) handle ) ) == 0 ) 
     {
-     LOG( WARNING_LOG  ,  "object [%s] NOT_EXIST" ,  handle );
+        LOG( WARNING_LOG  ,  "object [%s] NOT_EXIST" ,  handle );
       ret->errCode= COMMAND_OBJECT_NOT_EXIST;
     }
   else
@@ -2990,7 +2995,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Regis
 PQ PQsql;
 const ccReg::ENUMValidationExtension * enumVal;
 char expiryDate[32], valexpiryDate[32], createDate[32];
-char roid[64];
+char roid[64] , FQDN[64];
 ccReg::Response * ret;
 int contactid, regID, nssetid, adminid, id;
 int i, len, s, zone;
@@ -3043,13 +3048,28 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
       if( PQsql.BeginAction( clientID, EPP_DomainCreate, ( char * ) clTRID ) )
         {
 
-          //  test zdali domena uz existuje
-          if( PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) fqdn ) )
+
+      // preved fqd na  mala pismena a otestuj to
+       if( get_FQDN( FQDN , fqdn ) == false )  // spatny format navu domeny
+         {
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::domainCreate_fqdn;
+            ret->errors[0].value = CORBA::string_dup( fqdn );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
+        }
+      else
+       {
+
+          //  test zdali domena uz existuje                   
+          if( PQsql.CheckObject( "DOMAIN" , "fqdn" , fqdn )   )
             {
               ret->errCode = COMMAND_OBJECT_EXIST;      // je uz zalozena
               LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
             }
           else // pokud domena nexistuje             
+          {  
           if( PQsql.BeginTransaction() )
             {
               id = PQsql.GetSequenceID( "domain" );     // id domeny
@@ -3057,7 +3077,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
               // vytvor roid domeny
               get_roid( roid, "D", id );
 
-              zone = get_zone( ( char * ) fqdn );       // kontrola nazvu domeny a automaticke zarazeni do zony
+              zone = get_zone( ( char * ) fqdn , true );       // kontrola nazvu domeny a automaticke zarazeni do zony
 
               if( zone == 0 )
                 {
@@ -3112,7 +3132,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                           PQsql.VALUE( zone );
                           PQsql.VALUE( id );
                           PQsql.VALUE( roid );
-                          PQsql.VALUE( fqdn );
+                          PQsql.VALUE( FQDN );
                           PQsql.VALUE( createDate );
                           PQsql.VALUE( expiryDate );
                           PQsql.VALUE( regID );
@@ -3186,6 +3206,8 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
               if( ret->errCode == COMMAND_OK )  PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
               else PQsql.RollbackTransaction();
             }
+   }
+ }
 
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
@@ -3208,6 +3230,8 @@ if( ret->errCode == 0 )
 
 return ret;
 }
+
+
 
 
 /***********************************************************************
