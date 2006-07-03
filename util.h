@@ -1,11 +1,25 @@
+#ifndef time_t
+#include <time.h>
+#endif
+
+#define ZONE_CZ   3
+#define ZONE_CENUM 2
+#define ZONE_ENUM  1
+
+
 // prevadi handle na velka pismena psojena s testem
 bool get_HANDLE( char  * HANDLE , const char *handle );
 
 // vytvoreni roid
 void get_roid( char *roid , char *prefix , int id );
 
+// test nsset handle fqdn nebo contact id
+bool  get_CHECK( char *CHCK , const char *chck , int act );
+// prevadeni a test fqdn nazvu domeny 
+bool get_FQDN( char *FQDN , const char *handle );
+
 // zarazeni do zony a kontrola nazvu domeny 
-int get_zone( char * fqdn );
+int get_zone( const char * fqdn , bool compare );
 // vraci cas v time_t  pevede SQL retezec
 time_t get_time_t(char *string );
 // prevede time_t do retezce pro SQL

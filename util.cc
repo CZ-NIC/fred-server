@@ -3,13 +3,34 @@
 #include<time.h>
 #include<string.h>
 
+#include "util.h"
+#include "action.h"
 
 #include "log.h"
+
+// pro Objectcheck funkci
+bool  get_CHECK( char *CHCK , const char *chck , int act )
+{
+
+switch(  act )
+{
+case  EPP_DomainCheck:
+      return  get_FQDN(  CHCK , chck);
+case  EPP_ContactCheck:
+case  EPP_NSsetCheck:
+  return get_HANDLE( CHCK , chck);
+default:
+  return false;
+}
+
+}
 
 // vytvoreni roid
 void get_roid( char *roid , char *prefix , int id )
 {
 sprintf(roid , "%s%010d-CZ" , prefix ,  id );
+LOG( LOG_DEBUG ,  "get_ROID [%s] from prefix %s  id %d" , roid  , prefix , id  );
+
 }
 // prevod a testovani handlu
 bool get_HANDLE( char  * HANDLE , const char *handle )
@@ -17,6 +38,8 @@ bool get_HANDLE( char  * HANDLE , const char *handle )
 int i , len;
 
 len = strlen( handle);
+
+LOG( LOG_DEBUG ,  "get_HANDLE from [%s] len %d" , handle , len  );
 
 // max a minimalni delka
 if( len > 1 && len <= 40 )
@@ -45,18 +68,99 @@ if( len > 1 && len <= 40 )
  }
 
 HANDLE[i] = 0 ;
+LOG( LOG_DEBUG ,  "OK HANDLE [%s] " , HANDLE );
+return true;
 }
+
 else return false;
+}
+
+
+
+bool get_FQDN( char *FQDN , const char *handle )
+{
+int i , len , max ;
+int zone;
+
+zone = get_zone( handle , true  );
+max =  get_zone( handle , false  ); // konec nazvu
+
+len = strlen( handle);
+
+FQDN[0] = 0;
+
+LOG( LOG_DEBUG ,  "get_FQDN [%s] zone %d max %d" , handle  , zone , max );
+
+// maximalni delka
+if( len > 63 ) { LOG( LOG_DEBUG ,  "out ouf maximal length %d" , len ); return false; }
+if( max <= 2  ) { LOG( LOG_DEBUG ,  "minimal length" ); return false;}
+
+// test na enum zonu
+if( zone == ZONE_ENUM || zone == ZONE_CENUM  )
+{
+         for( i = 0 ; i <  max ; i ++ )
+            {
+              if(  ( handle[i] >= '0'  && handle[i] <= '9' ) ||  handle[i] == '.' )
+                {
+                     FQDN[i] = handle[i];
+                }  
+               else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , handle[i] );  FQDN[0] = 0 ;  return false; } 
+            
+            }
+
+if( handle[i] == '.' )
+ { 
+   FQDN[i] =  0 ;          
+   if( zone == ZONE_ENUM )strcat( FQDN , ".0.2.4.e164.arpa"  );
+   if( zone == ZONE_CENUM ) strcat( FQDN , ".0.2.4.c.e164.arpa" );
+
+   LOG( LOG_DEBUG ,  "OK ENUM domain [%s]" , FQDN );
+   return true;
+ }
 
 
 }
 
+if( zone == ZONE_CZ )    // DOMENA CZ
+{
 
+       // max a minimalni delka
+        for( i = 0 ; i < max ; i ++ )
+           {
+              // TEST povolene znaky
+              if( ( handle[i] >= 'a'  && handle[i] <= 'z' ) ||
+                ( handle[i] >= 'A'  && handle[i] <= 'Z' ) ||
+                ( handle[i] >= '0'  && handle[i] <= '9' ) ||  handle[i] == '-' )
+                {
+
+                       // PREVOD na mala pizmena
+                       if( handle[i] >= 'A'  && handle[i] <= 'Z' )
+                           FQDN[i] = handle[i] + 0x20; // prevod na mala pismena
+                       else FQDN[i] =  handle[i];
+              
+                }
+               else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , handle[i] );  FQDN[0] = 0 ;  return false; } 
+            }
+
+         if( handle[i] == '.' )
+          {     
+            FQDN[i] =  0 ;
+            strcat( FQDN , ".cz" ); // konec
+            LOG( LOG_DEBUG ,  "OK CZ domain [%s]" , FQDN );
+            return true;
+          }
+       
+    
+
+}
+
+return false;
+}
 
 // zarazeni do zony a kontrola nazvu domeny
-int get_zone( char * fqdn )
+int get_zone( const  char * fqdn , bool compare)
 {
-char zoneStr[3][32] = { "0.2.4.e164.arpa" , "0.2.4.c.e164.arpa" , "cz" };
+char zoneStr[3][64] = { "0.2.4.e164.arpa" , "0.2.4.c.e164.arpa" , "cz" };
 int i , len  , slen , l ;
 
 len = strlen( fqdn );
@@ -66,8 +170,13 @@ for(  i = 0 ; i < 3 ; i ++ )
         l = len - slen ;
         if( l > 0 )
          {
-          if( fqdn[l-1] == '.' )
-             if(  strncmp(  fqdn+l ,  zoneStr[i] , slen ) == 0 ) return i +1; // zaradi do zony
+          if( fqdn[l-1] == '.' ) // case less comapare
+             {
+                if( compare )
+                {
+                     if(  strncasecmp(  fqdn+l ,  zoneStr[i] , slen ) == 0 ) return i +1; // zaradi do zony
+                } else return l -1 ; // vraci konec nazvu 
+             }
          }
 
    }
