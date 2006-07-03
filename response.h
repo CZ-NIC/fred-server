@@ -13,5 +13,8 @@
 #define COMMAND_STATUS_PROHIBITS_OPERATION 2304 // nevyhovuje stavajici status flag
 #define COMMAND_PROHIBITS_OPERATION 2305
 
+#define COMMAND_NOT_ELIGIBLE_FOR_RENEW   2105    // Object is not eligible for renewal
+#define COMMAND_NOT_ELIGIBLE_FOR_TRANSFER  2106 // Object is not eligible for transfer  
+
 #define COMMAND_PARAMETR_ERROR 2005 // Parameter value syntax error
 
