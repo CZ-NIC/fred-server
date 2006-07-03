@@ -615,6 +615,30 @@ return ExecSQL( sqlString );
 }
  
 
+// vymaz data z tabulky
+bool  PQ::DeleteFromTableMap(char *map ,int  id , int contactid )
+{
+char sqlString[128];
+
+
+LOG( SQL_LOG , "DeleteFrom  %s_contact_map  id  %d contactID" , map ,id , contactid );
+
+sprintf( sqlString , "DELETE FROM %s_contact_map WHERE  %sid=%d AND contactid=%d;" , map , map ,  id ,  contactid );
+
+return ExecSQL( sqlString );
+}
+
+bool  PQ::DeleteFromHost( int nssetid , const char *fqdn )
+{
+char sqlString[128];
+
+LOG( SQL_LOG , "DeleteFrom host nssetid=%d AND fqdn=\'%s\'" , nssetid , fqdn );
+sprintf(  sqlString , "DELETE FROM HOST WHERE nssetid=%d AND fqdn=\'%s\';" , nssetid , fqdn );
+return ExecSQL( sqlString );
+}
+
+
+
 int PQ::GetSequenceID( char *sequence )
 {
 char sqlString[128];

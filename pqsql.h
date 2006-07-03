@@ -35,6 +35,11 @@ int  GetValueLength(int row  , int col);
 
 
 bool DeleteFromTable(char *table , char *fname , int id );
+// vymaz data z map tabulky
+bool DeleteFromTableMap(char *map ,int  id , int contactid );
+// vymaz z host
+bool DeleteFromHost( int nssetid , const char *fqdn );
+
 
 // zapocteni creditu za operace domain create a domain renew
 bool Credit( int registrarID , int domainID , int period , bool create );
