@@ -2260,8 +2260,19 @@ if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
 
 
 
-
-   if(  PQsql.AuthTable(  "DOMAIN"  , (char *)authInfo , id )   ) // pokud prosla autentifikace 
+  if( regID == clID )       // transfer nemuze delat stavajici client
+    {
+      LOG( WARNING_LOG, "client can not transfer domain %s" , handle );
+      ret->errCode =  COMMAND_NOT_ELIGIBLE_FOR_TRANSFER;
+    }
+   else
+  {
+   if(  PQsql.AuthTable(  "DOMAIN"  , (char *)authInfo , id )  == false  ) // pokud prosla autentifikace 
+     {       
+        LOG( WARNING_LOG , "autorization failed");
+        ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
+     }
+    else
      {
          //  uloz do historie
        if( PQsql.MakeHistory() )
@@ -2277,14 +2288,9 @@ if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
                 else  ret->errCode = COMMAND_FAILED;
            }
        }
-
+     }
     }
-   else
-   {
-        LOG( WARNING_LOG , "autorization failed");
-        ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
-    }
-
+   
 
   
    // pokud nebyla chyba pri insertovani do tabulky 
@@ -3361,7 +3367,6 @@ return ret;
  * DESCRIPTION: prevod domeny  ze stavajiciho na noveho registratora
  *              a ulozeni zmen do historie
  * PARAMETERS:  fqdn - plnohodnotny nazev domeny
- *             //  registrant - vlastnik domeny 
  *              authInfo - autentifikace heslem 
  *              clientID - id pripojeneho klienta 
  *              clTRID - cislo transakce klienta
@@ -3405,7 +3410,12 @@ LOG( NOTICE_LOG, "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  ", clie
               // client contaktu
               clID = PQsql.GetNumericFromTable( "DOMAIN", "clID", "id", id );
 
-              if( regID != clID )       // transfer nemuze delat stavajici client
+              if( regID == clID )       // transfer nemuze delat stavajici client
+                {
+                  LOG( WARNING_LOG, "client can not transfer domain %s" , fqdn );
+                  ret->errCode =  COMMAND_NOT_ELIGIBLE_FOR_TRANSFER;
+                }
+              else
                 {
                   // zpracuj  pole statusu
                   status.Make( PQsql.GetStatusFromTable( "DOMAIN", id ) );
