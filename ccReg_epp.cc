@@ -192,17 +192,14 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
                   sprintf( sqlString, "SELECT id  FROM MESSAGE  WHERE clID=%d AND seen='f' AND exDate > 'now()' ;", regID );
                   if( PQsql.ExecSelect( sqlString ) )
                     {
-
+                      ret->errCode = COMMAND_OK; // prikaz splnen
                       rows = PQsql.GetSelectRows();   // pocet zprav
                       if( rows > 0 )    // pokud jsou nejake zpravy ve fronte
                         {
                           count = rows; // pocet dalsich zprav
                           newmsgID = atoi( PQsql.GetFieldValue( 0, 0 ) );
-                          ret->errCode = COMMAND_ACK_MESG;      // zpravy jsou ve fronte
                           LOG( NOTICE_LOG, "PollAcknowledgement: newmsgID -> %d count -> %d", newmsgID, count );
                         }
-                      else
-                        ret->errCode = COMMAND_NO_MESG; // zadne zpravy ve fronte
 
                       PQsql.FreeSelect();
                     }
