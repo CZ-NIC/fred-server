@@ -159,8 +159,8 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
       if( PQsql.BeginAction( clientID, EPP_PollAcknowledgement, ( char * ) clTRID ) )
         {
 
-          // test msg ID
-          sprintf( sqlString, "SELECT * FROM MESSAGE WHERE id=%d;", msgID );
+          // test msg ID and clientID
+          sprintf( sqlString, "SELECT * FROM MESSAGE WHERE id=%d AND clID=%d;", msgID  , regID );
           rows = 0;
           if( PQsql.ExecSelect( sqlString ) )
             {
