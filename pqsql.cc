@@ -830,6 +830,26 @@ int len;
 
 }
 
+void PQ::WHEREOPP(  const  char *op ,  const  char *fname , const  char *p  , const  char * value )
+{
+int len;
+
+
+  len = strlen( sqlBuffer );
+  if(  sqlBuffer[len-1]  == ';' )
+    {
+       sqlBuffer[len-1]  = 0; // vymaz posledni strednik
+       strcat( sqlBuffer , "  "  );
+       strcat( sqlBuffer ,  op ); // operator AND OR LIKE
+       strcat( sqlBuffer , " " );
+       strcat( sqlBuffer ,  fname );
+       strcat( sqlBuffer  , p );
+       strcat( sqlBuffer , "'" );
+       strcat( sqlBuffer , value );
+       strcat( sqlBuffer , "' ;" ); // konec         
+    }
+
+}
 void PQ::WHERE( const  char *fname , int value )
 {
 char numStr[16];

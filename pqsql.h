@@ -26,7 +26,10 @@ bool RollbackTransaction()
 {return ExecSQL("ROLLBACK TRANSACTION");};
 bool CommitTransaction()
 {return ExecSQL("COMMIT TRANSACTION");};
-
+bool QuitTransaction(int code) {
+  if( code == CMD_OK ) return CommitTransaction();
+   else RollbackTransaction(); 
+};
 // nastaveni kodovani 
 void  SetEncoding(  const char *encoding) {  PQsetClientEncoding( connection , encoding ); };
 // vraci velikost 
@@ -123,6 +126,7 @@ void SET( const  char *fname , bool  value );
 void SETBOOL( const char *fname , int  value );
 void WHERE( const  char *fname , const  char * value );
 void WHERE( const  char *fname , int   value );
+void WHEREOPP(  const  char *op ,  const  char *fname , const  char *p  , const  char * value );
 void WHEREID( int id ) { WHERE( "id" , id ); };
 //  SQL INSERT funkce
 void INSERT( const  char * table );
