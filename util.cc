@@ -110,9 +110,9 @@ if( zone == ZONE_ENUM || zone == ZONE_CENUM  )
 
 if( handle[i] == '.' )
  { 
-   FQDN[i] =  0 ;          
-   if( zone == ZONE_ENUM )strcat( FQDN , ".0.2.4.e164.arpa"  );
-   if( zone == ZONE_CENUM ) strcat( FQDN , ".0.2.4.c.e164.arpa" );
+   FQDN[i+1] =  0 ;          
+   if( zone == ZONE_ENUM )strcat( FQDN ,  ENUM_ZONE );
+   if( zone == ZONE_CENUM ) strcat( FQDN , CENUM_ZONE  );
 
    LOG( LOG_DEBUG ,  "OK ENUM domain [%s]" , FQDN );
    return true;
@@ -144,8 +144,8 @@ if( zone == ZONE_CZ )    // DOMENA CZ
 
          if( handle[i] == '.' )
           {     
-            FQDN[i] =  0 ;
-            strcat( FQDN , ".cz" ); // konec
+            FQDN[i+1] =  0 ;
+            strcat( FQDN , CZ_ZONE ); // konec
             LOG( LOG_DEBUG ,  "OK CZ domain [%s]" , FQDN );
             return true;
           }
@@ -160,7 +160,7 @@ return false;
 // zarazeni do zony a kontrola nazvu domeny
 int get_zone( const  char * fqdn , bool compare)
 {
-char zoneStr[3][64] = { "0.2.4.e164.arpa" , "0.2.4.c.e164.arpa" , "cz" };
+char zoneStr[3][64] = { ENUM_ZONE  , CENUM_ZONE  , CZ_ZONE };
 int i , len  , slen , l ;
 
 len = strlen( fqdn );

@@ -6,6 +6,10 @@
 #define ZONE_CENUM 2
 #define ZONE_ENUM  1
 
+#define CZ_ZONE  "cz"
+#define CENUM_ZONE "0.2.4.c.e164.arpa"
+#define ENUM_ZONE   "0.2.4.e164.arpa"
+
 
 // prevadi handle na velka pismena psojena s testem
 bool get_HANDLE( char  * HANDLE , const char *handle );
