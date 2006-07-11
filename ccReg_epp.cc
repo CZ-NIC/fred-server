@@ -541,9 +541,8 @@ if( PQsql.OpenDatabase( database ) )
 
         ret->errMsg = CORBA::string_dup( PQsql.GetErrorMessage( ret->errCode ) );
 
-        // pokud vse proslo
-        if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();  // pokud uspesne
-        else PQsql.RollbackTransaction();        // pokud nejake chyba zrus trasakci
+        // konec transakce commit ci rollback
+        PQsql.QuitTransaction( ret->errCode );
 
       }
 
@@ -874,6 +873,7 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(const char* handle , CORBA::Long cli
 ccReg::Response *ret;
 PQ PQsql;
 Status status;
+char HANDLE[64];
 int regID=0 , id ,  crID =0  ;
 
 ret = new ccReg::Response;
@@ -895,10 +895,24 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , cl
 
       if( PQsql.BeginAction( clientID, EPP_ContactDelete, ( char * ) clTRID ) )
         {
+
+       // preved handle na velka pismena
+       if( get_HANDLE( HANDLE , handle ) == false )  // spatny format handlu
+         {
+
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format  of handle[%s]" , handle );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::contactCreate_handle;
+            ret->errors[0].value = CORBA::string_dup( handle );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of handle" );
+        }
+        else
+        {
           if( PQsql.BeginTransaction() )
             {
 
-              if( ( id = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", ( char * ) handle ) ) == 0 )
+              if( ( id = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", ( char * ) HANDLE ) ) == 0 )
                 {
                   LOG( WARNING_LOG, "object handle [%s] NOT_EXIST", handle );
                   ret->errCode = COMMAND_OBJECT_NOT_EXIST;      // pokud objekt neexistuje
@@ -908,7 +922,7 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , cl
                   // get  registrator ID
                   regID = PQsql.GetLoginRegistrarID( clientID );
                   // client contaktu ktery ho vytvoril
-                  crID = PQsql.GetNumericFromTable( "CONTACT", "crID", "handle", ( char * ) handle );
+                  crID = PQsql.GetNumericFromTable( "CONTACT", "crID", "handle", ( char * ) HANDLE );
 
 
                   if( regID != crID )   // pokud neni tvurcem kontaktu 
@@ -955,11 +969,11 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , cl
 
                 }
 
-              // pokud vse proslo
-              if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo commitni zmeny
-              else PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
+              // konec transakce commit ci rollback
+              PQsql.QuitTransaction( ret->errCode );
             }
 
+          }
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
         }
@@ -1000,10 +1014,10 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate( const char *handle, const ccReg::C
 {
 ccReg::Response * ret;
 PQ PQsql;
-char statusString[128];
-int regID = 0, crID = 0, clID = 0, id;
+char statusString[128] , HANDLE[64];
+int regID = 0, crID = 0, clID = 0, id , num ;
 bool policy_error = false;
-int len, i;
+int len, i , seq=0;
 Status status;
 
 ret = new ccReg::Response;
@@ -1037,9 +1051,24 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
 
       if( PQsql.BeginAction( clientID, EPP_ContactUpdate, ( char * ) clTRID ) )
         {
+
+       // preved handle na velka pismena
+       if( get_HANDLE( HANDLE , handle ) == false )  // spatny format handlu
+         {
+
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format  of handle[%s]" , handle );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::contactCreate_handle;
+            ret->errors[0].value = CORBA::string_dup( handle );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of handle" );
+        }
+        else
+        {
+
           if( PQsql.BeginTransaction() )      // zahajeni transakce
             {
-              if( ( id = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", ( char * ) handle ) ) == 0 )
+              if( ( id = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", ( char * ) HANDLE ) ) == 0 )
                 {
                   LOG( WARNING_LOG, "object handle [%s] NOT_EXIST", handle );
                   ret->errCode = COMMAND_OBJECT_NOT_EXIST;
@@ -1052,7 +1081,7 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
                   // zjistit kontak u domeny            
                   clID = PQsql.GetClientDomainRegistrant( regID, clientID );
                   // client contaktu ktery ho vytvoril
-                  crID = PQsql.GetNumericFromTable( "CONTACT", "crID", "handle", ( char * ) handle );
+                  crID = PQsql.GetNumericFromTable( "CONTACT", "crID", "handle", ( char * ) HANDLE  );
                   // klient spravuje nejakou domenu kontaktu nebo je jeho tvurcem   
                   if( crID == regID || clID == regID )
                     {
@@ -1084,14 +1113,35 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
 
                                           // pridany status
                                           for( i = 0; i < status_add.length(); i++ )
-                                            status.Add( status.GetStatusNumber( status_add[i] ) );
-
+                                            {
+                                                  if( status.Add( status.GetStatusNumber( status_add[i] )  ) == false )
+                                                    {
+                                                      ret->errors.length( seq +1 );
+                                                      ret->errors[seq].code = ccReg::contactUpdate_status_add;
+                                                      ret->errors[seq].value = CORBA::string_dup(  status_add[i] );
+                                                      ret->errors[seq].reason = CORBA::string_dup( "can not add status flag" );
+                                                      seq++;
+                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
+                                                    }
+                                            }
 
                                           // zruseny status flagy
-                                          for( i = 0; i < status_rem.length(); i++ )
-                                            status.Rem( status.GetStatusNumber( status_rem[i] ) );
+                                         for( i = 0; i < status_rem.length(); i++ )
+                                             {
+                                                  if( status.Rem(  status.GetStatusNumber( status_rem[i] ) ) == false )
+                                                    {
+                                                      ret->errors.length( seq +1 );
+                                                      ret->errors[seq].code = ccReg::contactUpdate_status_rem;
+                                                      ret->errors[seq].value = CORBA::string_dup(  status_rem[i] );
+                                                      ret->errors[seq].reason = CORBA::string_dup( "can not remove status flag" );
+                                                      seq++;
+                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
+                                                    }
+                                            }
 
 
+                                         if( ret->errCode == 0 )
+                                         {
                                           //  vygeneruj  novy status string array
                                           status.Array( statusString );
 
@@ -1133,6 +1183,7 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
 
                                           if( PQsql.EXEC() ) ret->errCode = COMMAND_OK;
                                           else ret->errCode = COMMAND_FAILED;
+                                         }
                                         }
                                     }
 
@@ -1160,12 +1211,11 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
 
                 }
 
-              // pokud vse proslo
-              if( ret->errCode == COMMAND_OK )
-                PQsql.CommitTransaction();    // pokud uspesne
-              else
-                PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
+              // konec transakce commit ci rollback
+              PQsql.QuitTransaction( ret->errCode );
             }
+
+          }
 
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
@@ -1364,10 +1414,8 @@ LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s] %s ", cl
                     }
                 }
 
-
-              // pokud vse proslo OK
-              if( ret->errCode == COMMAND_OK )               PQsql.CommitTransaction();    // pokud uspesne
-              else               PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
+              // konec transakce commit ci rollback
+              PQsql.QuitTransaction( ret->errCode );
             }
           }
           // zapis na konec action
@@ -1601,6 +1649,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(const char* handle, CORBA::Long client
 ccReg::Response *ret;
 PQ PQsql;
 Status status;
+char HANDLE[64];
 int regID , id , clID = 0;
 bool stat , del;
 
@@ -1619,11 +1668,17 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , clie
 
       if( PQsql.BeginAction( clientID, EPP_NSsetDelete, ( char * ) clTRID ) )
         {
+       // preved handle na velka pismena
+       if( get_HANDLE( HANDLE , handle )  )  
+        {
           if( PQsql.BeginTransaction() )      // zahajeni transakce
             {
 
+        
+
+
               // pokud NSSET existuje 
-              if( ( id = PQsql.GetNumericFromTable( "NSSET", "id", "handle", ( char * ) handle ) ) == 0 )
+              if( ( id = PQsql.GetNumericFromTable( "NSSET", "id", "handle", ( char * ) HANDLE ) ) == 0 )
                 {
                   LOG( WARNING_LOG, "object handle [%s] NOT_EXIST", handle );
                   ret->errCode = COMMAND_OBJECT_NOT_EXIST;      // pokud objekt neexistuje
@@ -1693,12 +1748,11 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , clie
                     }
                 }
 
-              // pokud vse proslo 
-              if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo commitni zmeny
-              else  PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
+              // konec transakce commit ci rollback
+              PQsql.QuitTransaction( ret->errCode );
             }
 
-
+          }
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
         }
@@ -1752,7 +1806,7 @@ char HANDLE[64]; // handle na velka pismena
 char roid[64];
 ccReg::Response * ret;
 int regID, id, techid;
-int i, len, j;
+int i, len, j , seq=0;
 time_t now;
 
 ret = new ccReg::Response;
@@ -1850,9 +1904,15 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                         }
                       else
                         {
-                          LOG( WARNING_LOG, "NSSetCreate: unknow tech Contact " );
+                          LOG( WARNING_LOG, "NSSetCreate: unknow tech Contact " );                          
+                          ret->errors.length( seq +1 );
+                          ret->errors[seq].code = ccReg::nssetCreate_tech;
+                          ret->errors[seq].value = CORBA::string_dup(  tech[i] );
+                          ret->errors[seq].reason = CORBA::string_dup( "unknow tech contact" );
+                          seq++;                                 
                           // TODO error value 
                           ret->errCode = COMMAND_PARAMETR_ERROR;
+
                         }
                     }
 
@@ -1906,9 +1966,8 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
 
                 }
 
-              // pokud vse proslo
-              if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo commitni zmeny
-              else PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
+              // konec transakce commit ci rollback
+              PQsql.QuitTransaction( ret->errCode );
             }
 
 
@@ -1969,9 +2028,9 @@ ccReg::Response *ret;
 PQ PQsql;
 Status status;
 bool  check;
-char  Array[512] ,  statusString[128] ;
+char  Array[512] ,  statusString[128] , HANDLE[64];
 int regID=0 , clID=0 , id ,nssetid ,  techid ;
-int i , j ;
+int i , j , seq=0;
 
 ret = new ccReg::Response;
 
@@ -2013,10 +2072,14 @@ if( PQsql.OpenDatabase( database ) )
     if( PQsql.BeginAction( clientID, EPP_NSsetUpdate, ( char * ) clTRID ) )
       {
 
+       // preved handle na velka pismena
+       if( get_HANDLE( HANDLE , handle )  )
+        {
+
         if( ret->errCode == 0 )
           {
             // pokud   neexistuje
-            if( ( id = PQsql.GetNumericFromTable( "NSSET", "id", "handle", ( char * ) handle ) ) == 0 )
+            if( ( id = PQsql.GetNumericFromTable( "NSSET", "id", "handle", ( char * ) HANDLE ) ) == 0 )
               {
                 LOG( WARNING_LOG, "object [%s] NOT_EXIST", handle );
                 ret->errCode = COMMAND_OBJECT_NOT_EXIST;
@@ -2053,15 +2116,37 @@ if( PQsql.OpenDatabase( database ) )
                                 if( PQsql.SaveHistory( "NSSET", "id", id ) )    // uloz zaznam
                                   {
 
-                                    // pridany status
-                                    for( i = 0; i < status_add.length(); i++ )
-                                      status.Add( status.GetStatusNumber( status_add[i] ) );
 
+                                          // pridany status
+                                          for( i = 0; i < status_add.length(); i++ )
+                                            {
+                                                  if( status.Add( status.GetStatusNumber( status_add[i] )  ) == false )
+                                                    {
+                                                      ret->errors.length( seq +1 );
+                                                      ret->errors[seq].code = ccReg::nssetUpdate_status_add;
+                                                      ret->errors[seq].value = CORBA::string_dup(  status_add[i] );
+                                                      ret->errors[seq].reason = CORBA::string_dup( "can not add status flag" );
+                                                      seq++;
+                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
+                                                    }
+                                            }
 
-                                    // zruseny status flagy
-                                    for( i = 0; i < status_rem.length(); i++ )
-                                      status.Rem( status.GetStatusNumber( status_rem[i] ) );
+                                          // zruseny status flagy
+                                         for( i = 0; i < status_rem.length(); i++ )
+                                             {
+                                                  if( status.Rem(  status.GetStatusNumber( status_rem[i] ) ) == false )
+                                                    {
+                                                      ret->errors.length( seq +1 );
+                                                      ret->errors[seq].code = ccReg::nssetUpdate_status_rem;
+                                                      ret->errors[seq].value = CORBA::string_dup(  status_rem[i] );
+                                                      ret->errors[seq].reason = CORBA::string_dup( "can not remove status flag" );
+                                                      seq++;
+                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
+                                                    }
+                                            }
 
+                                    if( ret->errCode == 0 )
+                                    {
 
                                     //  vygeneruj  novy status string array
                                     status.Array( statusString );
@@ -2103,11 +2188,26 @@ if( PQsql.OpenDatabase( database ) )
                                                   }
                                                 else
                                                   {
-                                                    // if( techid == 0 ) LOG( WARNING_LOG , "contact handle [%s] not exist" , tech_rem[i] );
-                                                    //if( check ) LOG( WARNING_LOG , "Tech contact [%s] exist" ,  tech_rem[i] );
+                                                    if( techid == 0 )
+                                                      {
+                                                        LOG( WARNING_LOG, "add tech Contact not exist" );
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
+                                                        ret->errors[seq].value = CORBA::string_dup(  tech_add[i] );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "unknow add tech contact" );
+                                                        seq++;
+                                                      }
+                                                    if( check )  
+                                                      {
+                                                        LOG( WARNING_LOG, "add tech Contact exist in contact map table" );
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
+                                                        ret->errors[seq].value = CORBA::string_dup(  tech_add[i] );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "tech contact exist in contact map" );
+                                                        seq++;
+                                                      }                                                
 
-                                                    ret->errCode = COMMAND_PARAMETR_ERROR;
-                                                    break;
+                                                    ret->errCode = COMMAND_PARAMETR_ERROR;                                            
                                                   }
 
                                               }
@@ -2129,10 +2229,25 @@ if( PQsql.OpenDatabase( database ) )
                                                   }
                                                 else
                                                   {
-                                                    // if( techid == 0 ) LOG( WARNING_LOG , "contact handle [%s] not exist" , tech_rem[i] );
-                                                    // if( check == false  ) LOG( WARNING_LOG , "Tech contact [%s]  not exist" , tech_rem[i] );
-                                                    ret->errCode = COMMAND_PARAMETR_ERROR;
-                                                    break;
+                                                    if( techid == 0 )
+                                                      {
+                                                        LOG( WARNING_LOG, "add tech Contact not exist" );
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
+                                                        ret->errors[seq].value = CORBA::string_dup(  tech_rem[i] );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "unknow add tech contact" );
+                                                        seq++;
+                                                      }
+                                                    if( !check )  
+                                                      {
+                                                         LOG( WARNING_LOG, "rem tech Contact not exist in contact map table" );
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
+                                                        ret->errors[seq].value = CORBA::string_dup(  tech_rem[i] );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "tech contact not exist in contact map" );
+                                                        seq++;
+                                                      }
+                                                   ret->errCode = COMMAND_PARAMETR_ERROR;                                                                                             
                                                   }
                                               }
 
@@ -2188,6 +2303,7 @@ if( PQsql.OpenDatabase( database ) )
                                       }
                                     else ret->errCode = COMMAND_FAILED; // spatny SQL update
                                    
+                                    }
 
 
                                   }
@@ -2201,13 +2317,13 @@ if( PQsql.OpenDatabase( database ) )
                           }
 
                       }
-                    // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
-                    if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();      // pokud uspesne nainsertovalo
-                    else PQsql.RollbackTransaction();
+                    // konec transakce commit ci rollback
+                    PQsql.QuitTransaction( ret->errCode );
                   }
               }
 
           }
+        }
         // zapis na konec action
         ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) ); 
       }
@@ -2253,7 +2369,7 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(const char* handle, const char* auth
 {
 ccReg::Response *ret;
 PQ PQsql;
-bool auth;
+char HANDLE[64];
 int regID=0 , clID=0 , id , contactid;
 
 ret = new ccReg::Response;
@@ -2270,8 +2386,11 @@ if( PQsql.OpenDatabase( database ) )
 if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
  {
 
+  // preved handle na velka pismena
+  if( get_HANDLE( HANDLE , handle )  )
+  {
    // pokud domena neexistuje
-  if( (id = PQsql.GetNumericFromTable(  "NSSET"  , "id" , "handle" , (char * ) handle ) ) == 0 ) 
+  if( (id = PQsql.GetNumericFromTable(  "NSSET"  , "id" , "handle" , (char * ) HANDLE ) ) == 0 ) 
     {
         LOG( WARNING_LOG  ,  "object [%s] NOT_EXIST" ,  handle );
       ret->errCode= COMMAND_OBJECT_NOT_EXIST;
@@ -2318,11 +2437,11 @@ if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
     }
    
 
-  
-   // pokud nebyla chyba pri insertovani do tabulky 
-   if(  ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
-   else PQsql.RollbackTransaction(); 
+    // konec transakce commit ci rollback
+    PQsql.QuitTransaction( ret->errCode );
    }
+
+  }
    // zapis na konec action
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) ) ;
 }
@@ -2629,9 +2748,8 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , clie
 
                 }
 
-              // pokud vse proslo
-              if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo commitni zmeny
-              else  PQsql.RollbackTransaction();  // pokud nejake chyba zrus trasakci
+              // konec transakce commit ci rollback
+              PQsql.QuitTransaction( ret->errCode );
             }
 
 
@@ -2692,7 +2810,7 @@ bool stat, check;
 char valexpiryDate[32];
 char statusString[128];
 int regID = 0, clID = 0, id, nssetid, contactid, adminid;
-int i, len, slen, j;
+int i, len, slen, j , seq=0;
 time_t valExpDate = 0;
 
 ret = new ccReg::Response;
@@ -2809,7 +2927,14 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                           if( ( nssetid = PQsql.GetNumericFromTable( "NSSET", "id", "handle", nsset_chg ) ) == 0 )
                                             {
                                               LOG( WARNING_LOG, "nsset %s not exist", nsset_chg );
-                                              ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
+
+                                                      ret->errors.length( seq +1 );
+                                                      ret->errors[seq].code = ccReg::domainUpdate_nsset;
+                                                      ret->errors[seq].value = CORBA::string_dup(  nsset_chg );
+                                                      ret->errors[seq].reason = CORBA::string_dup( "nsset not exist" );
+                                                      seq++;
+                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
+
                                             }
                                         }
                                       else nssetid = 0;    // nemenim nsset;
@@ -2820,23 +2945,49 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                           if( ( contactid = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", registrant_chg ) ) == 0 )
                                             {
                                               LOG( WARNING_LOG, "registrant %s not exist", registrant_chg );
-                                              ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
+                                                    
+                                                      ret->errors.length( seq +1 );
+                                                      ret->errors[seq].code = ccReg::domainUpdate_registrant;
+                                                      ret->errors[seq].value = CORBA::string_dup(  registrant_chg );
+                                                      ret->errors[seq].reason = CORBA::string_dup( "registrant not exist" );
+                                                      seq++;
+                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
+
                                             }
                                         }
                                       else contactid = 0;  // nemenim vlastnika
 
 
+                                         // pridany status
+                                          for( i = 0; i < status_add.length(); i++ )
+                                            {
+                                                  if( status.Add( status.GetStatusNumber( status_add[i] )  ) == false )
+                                                    {
+                                                      ret->errors.length( seq +1 );
+                                                      ret->errors[seq].code = ccReg::contactUpdate_status_add;
+                                                      ret->errors[seq].value = CORBA::string_dup(  status_add[i] );
+                                                      ret->errors[seq].reason = CORBA::string_dup( "can not add status flag" );
+                                                      seq++;
+                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
+                                                    }
+                                            }
 
-                                      // pridany status
-                                      len = status_add.length();
-                                      for( i = 0; i < len; i++ )
-                                        status.Add( status.GetStatusNumber( status_add[i] ) );
+                                          // zruseny status flagy
+                                         for( i = 0; i < status_rem.length(); i++ )
+                                             {
+                                                  if( status.Rem(  status.GetStatusNumber( status_rem[i] ) ) == false )
+                                                    {
+                                                      ret->errors.length( seq +1 );
+                                                      ret->errors[seq].code = ccReg::contactUpdate_status_rem;
+                                                      ret->errors[seq].value = CORBA::string_dup(  status_rem[i] );
+                                                      ret->errors[seq].reason = CORBA::string_dup( "can not remove status flag" );
+                                                      seq++;
+                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
+                                                    }
+                                            }
 
-
-                                      // zruseny status flagy
-                                      len = status_rem.length();
-                                      for( i = 0; i < len; i++ )
-                                        status.Rem( status.GetStatusNumber( status_rem[i] ) );
+                                      if( ret->errCode == 0 )
+                                      { 
 
 
                                       //  vygeneruj  novy status string array
@@ -2863,15 +3014,15 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                           if( PQsql.SaveHistory( "enumval", "domainID", id ) )  // uloz do historie 
                                             {
                                               // zmena extension
-                                              if( valExpDate )
+                                              if( valExpDate > 0 )
                                                 {
-                                                  get_timestamp( valExpDate, valexpiryDate );
-                                                  LOG( NOTICE_LOG, "change valExpDate %s ", valexpiryDate );
-                                                  PQsql.UPDATE( "enumval" );
-                                                  PQsql.SET( "ExDate", valexpiryDate );
-                                                  PQsql.WHERE( "domainID", id );
-
-                                                  if( !PQsql.EXEC() )  ret->errCode = COMMAND_FAILED; 
+                                                     get_timestamp( valExpDate, valexpiryDate );
+                                                     LOG( NOTICE_LOG, "change valExpDate %s ", valexpiryDate );
+                                                     PQsql.UPDATE( "enumval" );
+                                                     PQsql.SET( "ExDate", valexpiryDate );
+                                                     PQsql.WHERE( "domainID", id );
+ 
+                                                     if( !PQsql.EXEC() )  ret->errCode = COMMAND_FAILED; 
                                                 }
                                             }
 
@@ -2885,8 +3036,8 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 
                                                   if( adminid && !check )
                                                     {
-                                                      //  LOG( NOTICE_LOG ,  "add techid ->%d [%s]" ,  techid ,   tech_add[i] );
-                                                      PQsql.INSERT( "nsset_contact_map" );
+                                                      //  LOG( NOTICE_LOG ,  "add admin  id ->%d [%s]" ,  adminid , admin_add[i] );
+                                                      PQsql.INSERT( "domain_contact_map" );
                                                       PQsql.VALUE( id );                                                    
                                                       PQsql.VALUE( adminid );
                                                       
@@ -2894,8 +3045,27 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                     }
                                                   else
                                                     {
-                                                      // if( techid == 0 ) LOG( WARNING_LOG , "contact handle [%s] not exist" , tech_rem[i] );
-                                                      //if( check ) LOG( WARNING_LOG , "Tech contact [%s] exist" ,  tech_rem[i] );
+                                                      // if( adminid == 0 ) LOG( WARNING_LOG , "contact handle [%s] not exist" , admin_add[i]  );
+                                                      //if( check ) LOG( WARNING_LOG , "Admin contact [%s] exist in cotact map table" ,  admin_add[i]  );
+
+                                                     if( adminid  == 0 )
+                                                      {
+                                                        LOG( WARNING_LOG, "add admin-c not exist" );
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::domainUpdate_admin_add;
+                                                        ret->errors[seq].value = CORBA::string_dup(  admin_add[i] );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "unknow add admin contact" );
+                                                        seq++;
+                                                      }
+                                                    if( check )
+                                                      {
+                                                        LOG( WARNING_LOG, "add tech Contact exist in contact map table" );
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::domainUpdate_admin_add;
+                                                        ret->errors[seq].value = CORBA::string_dup(  admin_add[i] );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "admin contact exist in contact map" );
+                                                        seq++;
+                                                      }
 
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
                                                       break;
@@ -2912,7 +3082,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                   if( adminid && check )
                                                     {
                                                       //  LOG( NOTICE_LOG ,  "rem admin  -> %d [%s]" ,  adminid , admin_rem[i]  ); 
-                                                      if( !PQsql.DeleteFromTableMap( "nsset", id, adminid ) )
+                                                      if( !PQsql.DeleteFromTableMap( "domain", id, adminid ) )
                                                         {
                                                           ret->errCode = COMMAND_FAILED;
                                                           break;
@@ -2920,8 +3090,28 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                     }
                                                   else
                                                     {
-                                                      // if( techid == 0 ) LOG( WARNING_LOG , "contact handle [%s] not exist" , tech_rem[i] );
+                                                      // if( adsminid == 0 ) LOG( WARNING_LOG , "contact handle [%s] not exist" , tech_rem[i] );
                                                       // if( check == false  ) LOG( WARNING_LOG , "Tech contact [%s]  not exist" , tech_rem[i] );
+
+                                                   if( adminid  == 0 )
+                                                      {
+                                                        LOG( WARNING_LOG, "add admin-c not exist" );
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::domainUpdate_admin_add;
+                                                        ret->errors[seq].value = CORBA::string_dup(  admin_add[i] );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "unknow rem admin contact" );
+                                                        seq++;
+                                                      }
+                                                    if( !check )
+                                                      {
+                                                        LOG( WARNING_LOG, "rem admin Contac not exist in contact map table" );
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::domainUpdate_admin_add;
+                                                        ret->errors[seq].value = CORBA::string_dup(  admin_add[i] );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "admin contact not exist in contact map" );
+                                                        seq++;
+                                                      }
+
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
                                                       break;
                                                     }
@@ -2935,12 +3125,12 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                         }
                                      else ret->errCode = COMMAND_FAILED; // spatny SQL update
                                     }
+                                  }
                                 }
                             }
                         }
-                      // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
-                      if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
-                      else PQsql.RollbackTransaction();
+                      // konec transakce commit ci rollback
+                      PQsql.QuitTransaction( ret->errCode );
                     }
                 }
 
@@ -2998,7 +3188,7 @@ char expiryDate[32], valexpiryDate[32], createDate[32];
 char roid[64] , FQDN[64];
 ccReg::Response * ret;
 int contactid, regID, nssetid, adminid, id;
-int i, len, s, zone;
+int i, len, s, zone , seq=0;
 bool insert = true;
 time_t t, valExpDate;
 
@@ -3079,32 +3269,35 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
               zone = get_zone( ( char * ) fqdn , true );       // kontrola nazvu domeny a automaticke zarazeni do zony
 
-              if( zone == 0 )
-                {
-                   LOG( WARNING_LOG, "can not get zone for domain  [%s] ", fqdn );
-                   ret->errCode = COMMAND_PARAMETR_ERROR; // TODO errors 
-                }
-              else
-                {
 
-
-                  // get  registrator ID
-                  regID = PQsql.GetLoginRegistrarID( clientID );
-
-                  if( ( nssetid = PQsql.GetNumericFromTable( "NSSET", "id", "handle", nsset ) ) == 0 )
-                    {
+             // get  registrator ID
+             regID = PQsql.GetLoginRegistrarID( clientID );
+             // nsset
+            if( (nssetid = PQsql.GetNumericFromTable( "NSSET", "id", "handle", nsset  ) ) == 0 )
+              {
                       LOG( WARNING_LOG, "unknow nsset handle %s", nsset );
+                      ret->errors.length( seq +1 );
+                      ret->errors[seq].code = ccReg::domainCreate_nsset;
+                      ret->errors[seq].value = CORBA::string_dup( nsset );
+                      ret->errors[seq].reason = CORBA::string_dup( "unknow nsset" );
+                      seq++;
                       ret->errCode = COMMAND_PARAMETR_ERROR;
-                      // TODO errors
-                    }
-                  else
-                    {
-                      if( ( contactid = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", Registrant ) ) == 0 )
-                        {
-                          LOG( WARNING_LOG, "unknow registrant handle %s", Registrant );
-                          ret->errCode = COMMAND_PARAMETR_ERROR; // TODO errors                          
-                        }
-                      else
+               }
+              
+                    
+           if( ( contactid = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", Registrant ) ) == 0 )
+              {
+                      LOG( WARNING_LOG, "unknow Registrant handle %s", Registrant );
+                      ret->errors.length( seq +1 );
+                      ret->errors[seq].code = ccReg::domainCreate_registrant;
+                      ret->errors[seq].value = CORBA::string_dup( Registrant );
+                      ret->errors[seq].reason = CORBA::string_dup( "unknow Registrant" );
+                      seq++;
+                      ret->errCode = COMMAND_PARAMETR_ERROR;
+               }
+
+
+                        if( nssetid && contactid )
                         {
                           t = time( NULL );
                           crDate = t;   // datum a cas vytvoreni objektu
@@ -3174,7 +3367,13 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                                        }   
                                       else
                                       {
-                                       ret->errCode = COMMAND_PARAMETR_ERROR; // TODO errors                                       
+                                          LOG( WARNING_LOG, "DomainCreate: unknow tech Contact " );
+                                          ret->errors.length( seq +1 );
+                                          ret->errors[seq].code = ccReg::domainCreate_admin;
+                                          ret->errors[seq].value = CORBA::string_dup(  admin[i] );
+                                          ret->errors[seq].reason = CORBA::string_dup( "unknow admin contact" );
+                                          seq++;
+                                         ret->errCode = COMMAND_PARAMETR_ERROR;
                                       } 
                                     }
                                 }
@@ -3194,17 +3393,17 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                                     }
                                 }
 
-                            }
+                            
 
-                        }
+                      }                        
 
-                    }
+                    
 
                 }
 
               // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
-              if( ret->errCode == COMMAND_OK )  PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
-              else PQsql.RollbackTransaction();
+              // konec transakce commit ci rollback
+              PQsql.QuitTransaction( ret->errCode );
             }
    }
  }
@@ -3407,9 +3606,8 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
                 }
 
 
-              // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
-              if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
-              else PQsql.RollbackTransaction();
+              // konec transakce commit ci rollback
+              PQsql.QuitTransaction( ret->errCode );
             }
 
 
@@ -3532,9 +3730,8 @@ LOG( NOTICE_LOG, "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  ", clie
                     }
 
                 }
-              // pokud nebyla chyba pri insertovani do tabulky domain_contact_map
-              if( ret->errCode == COMMAND_OK ) PQsql.CommitTransaction();    // pokud uspesne nainsertovalo
-              else PQsql.RollbackTransaction();
+              // konec transakce commit ci rollback
+              PQsql.QuitTransaction( ret->errCode );
             }
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
@@ -3557,4 +3754,3 @@ if( ret->errCode == 0 )
 return ret;
 }
 
-// *INDENT-OFF*
