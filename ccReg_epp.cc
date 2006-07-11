@@ -54,6 +54,18 @@ return false;
 
 }
 
+//   Methods corresponding to IDL attributes and operations
+char* ccReg_EPP_i::version()
+{
+char *version;
+char str[64];
+sprintf( str , "(ccReg server version %s BUILD %s %s)" , VERSION , __DATE__ , __TIME__ );
+
+version = CORBA::string_dup( str );
+
+return version;
+}
+
 
 
 /***********************************************************************

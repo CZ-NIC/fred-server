@@ -1,7 +1,8 @@
 
 CXX = g++
 
-CXXFLAGS = -O2 -DSYSLOG    -DCONFIG_FILE=\"/etc/ccReg.conf\"
+CXXFLAGS = -O2   -DSYSLOG  -DCONFIG_FILE=\"/etc/ccReg.conf\" -DVERSION=\"1.0\"
+
 OBJECTS = 
 IDLFILE = ../idl/ccReg.idl
 LDFLAGS=  -L/usr/local/pgsql/lib/
@@ -48,6 +49,6 @@ install:
 	install ccReg_server /usr/local/bin/ccReg
 
 clean:
-	rm -rf *.o *_server *_client ccRegDynSK.cc  ccRegSK.cc ccRegSK.h ccReg.hh ccReg_i.cc *idl.py* ccReg__POA/ ccReg/
+	rm -rf *.o *_server *_client ccRegDynSK.cc  ccRegSK.cc ccRegSK.h ccReg.hh ccReg_i.cc *idl.py* ccReg__POA/ ccReg/ libccreg.a
 
 

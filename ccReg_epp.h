@@ -15,6 +15,8 @@ public:
   // test spojeni na databazi
   bool TestDatabaseConnect(char *db);
 
+  char* version(); // vraceni cisla verze 
+
   // obecna check funkce
   ccReg::Response*  ObjectCheck( short act , char * table , char *fname , const ccReg::Check& chck , ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID);
 

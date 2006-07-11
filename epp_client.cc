@@ -91,8 +91,10 @@ int main(int argc, char** argv)
         return 1;
       }
 
+
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
+    cout <<  EPP->version() << endl;
     loginID = 4000;
     ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
 
