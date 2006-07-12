@@ -58,10 +58,11 @@ return false;
 char* ccReg_EPP_i::version()
 {
 char *version;
-char str[64];
-sprintf( str , "(ccReg server version %s BUILD %s %s)" , VERSION , __DATE__ , __TIME__ );
+// char str[64];
+version =  new char[128];
 
-version = CORBA::string_dup( str );
+sprintf( version , "SVN rev %s BUILD DATE %s %s" , SVERSION , __DATE__ , __TIME__ );
+LOG( NOTICE_LOG , "get version %s" , version );
 
 return version;
 }
@@ -94,6 +95,7 @@ ret = new ccReg::Response;
 
 // default
 ret->errCode = 0;
+ret->errors.length( 0 );
 
 LOG( NOTICE_LOG, "GetTransaction: clientID -> %d clTRID [%s] ", clientID, clTRID );
 
@@ -112,6 +114,13 @@ LOG( NOTICE_LOG, "GetTransaction: clientID -> %d clTRID [%s] ", clientID, clTRID
 
               LOG( NOTICE_LOG, "GetTransaction: svTRID [%s] errCode -> %d msg [%s] ", ( char * ) ret->svTRID, ret->errCode, ( char * ) ret->errMsg );
             }
+          else 
+           {
+              ret->errCode = errCode;
+             ret->svTRID = CORBA::string_dup( "NULL");
+            ret->errMsg =   CORBA::string_dup( "ERROR" );
+                 LOG(  ERROR_LOG , "GetTransaction: error BeginAction");          
+           }
         }
 
       PQsql.Disconnect();
@@ -119,10 +128,10 @@ LOG( NOTICE_LOG, "GetTransaction: clientID -> %d clTRID [%s] ", clientID, clTRID
 
   if( ret->errCode == 0 )
     {
+      LOG( LOG_DEBUG, "GetTransaction: error empty");
       ret->errCode = 0;         // obecna chyba
       ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
       ret->errMsg = CORBA::string_dup( "" );
-      ret->errors.length( 0 );
     }
 
 return ret;
