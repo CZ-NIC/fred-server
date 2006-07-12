@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sstream>
 // #include <libpq-fe.h>
 
 #include "pqsql.h"
@@ -234,11 +235,24 @@ char sqlString[512];
 actionID = GetSequenceID("action");
 loginID = clientID; // id klienta
 
+// pokud neni vyplneni clientID vubec se do tabulky neuvadi, zustane tam
+// defaultni hodnota NULL
+std::ostringstream clientIdStr;
+const char *clientIdColumn = "";
+if (clientID) {
+	clientIdStr << ", " << clientID;
+	clientIdColumn = ", clientid";
+}
+
 if( actionID ) 
   {
   // zapis do action tabulky
-   sprintf( sqlString , "INSERT INTO ACTION ( id , clientid , action ,  clienttrid   )  VALUES ( %d , %d , %d , \'%s\' );" ,
-                  actionID , clientID  , action  , clTRID);
+   sprintf(
+     sqlString , 
+     "INSERT INTO ACTION ( id %s , action ,  clienttrid  ) "
+     "VALUES ( %d %s, %d , \'%s\' );" ,
+     clientIdColumn, actionID , clientIdStr.str().c_str()  , action  , clTRID
+   );
 
    return ExecSQL( sqlString );
   }
