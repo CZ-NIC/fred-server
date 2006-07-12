@@ -202,7 +202,7 @@ if( PQresultStatus(res) == PGRES_COMMAND_OK )
 else
 {
    LOG( ERROR_LOG ,  "ExecSQL error");
-   LOG( ERROR_LOG ,  "SQL ERROR: %s" , PQresultErrorMessage(result) );
+   LOG( ERROR_LOG ,  "SQL ERROR: %s" , PQresultErrorMessage(res) );
    PQclear(res);
    return false;
 }
