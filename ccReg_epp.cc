@@ -3510,7 +3510,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
           if( ext[i] >>= enumVal )
             {
               valExpDate = enumVal->valExDate;
-              LOG( NOTICE_LOG, "enumVal %d ", enumVal->valExDate );
+              LOG( NOTICE_LOG, "enumVal %d ", valExpDate );
             }
           else
             {
@@ -3585,7 +3585,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;                 
                }
-            if(   valExpDate < now || now >  expiry_time( now ,   PQsql.GetValPreriod( zone ) )  )
+            if(  TestValidityExpDate(  valExpDate  , PQsql.GetValPreriod( zone ) )  ==  false )
               {
                   LOG( WARNING_LOG, "bad validity exp date" );
                   ret->errors.length( seq +1);
