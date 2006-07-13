@@ -160,7 +160,7 @@ ccReg::Response * ccReg_EPP_i::PollAcknowledgement( CORBA::Long msgID, CORBA::Sh
 {
 PQ PQsql;
 ccReg::Response * ret;
-char sqlString[1024], str[64];
+char sqlString[1024];
 int regID, rows;
 
 ret = new ccReg::Response;
@@ -192,10 +192,8 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
                   ret->errors.length( 1 );
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                   ret->errors[0].code = ccReg::pollAck_msgID;   // spatna msg ID
-                  sprintf( str, "%d", msgID );
-                  ret->errors[0].value = CORBA::string_dup( str );
-                  sprintf( str, "unknow msgID %d", msgID );
-                  ret->errors[0].reason = CORBA::string_dup( str );
+                  ret->errors[0].value <<= msgID;
+                  ret->errors[0].reason = CORBA::string_dup( "unknow msgID" );
                 }
               PQsql.FreeSelect();
             }
@@ -925,7 +923,7 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , cl
             LOG( WARNING_LOG, "bad format  of handle[%s]" , handle );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::contactCreate_handle;
-            ret->errors[0].value = CORBA::string_dup( handle );
+            ret->errors[0].value <<= CORBA::string_dup( handle );
             ret->errors[0].reason = CORBA::string_dup( "bad format of handle" );
         }
         else
@@ -1081,7 +1079,7 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
             LOG( WARNING_LOG, "bad format  of handle[%s]" , handle );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::contactCreate_handle;
-            ret->errors[0].value = CORBA::string_dup( handle );
+            ret->errors[0].value <<= CORBA::string_dup( handle );
             ret->errors[0].reason = CORBA::string_dup( "bad format of handle" );
         }
         else
@@ -1139,7 +1137,7 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::contactUpdate_status_add;
-                                                      ret->errors[seq].value = CORBA::string_dup(  status_add[i] );
+                                                      ret->errors[seq].value <<= CORBA::string_dup(  status_add[i] );
                                                       ret->errors[seq].reason = CORBA::string_dup( "can not add status flag" );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -1153,7 +1151,7 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::contactUpdate_status_rem;
-                                                      ret->errors[seq].value = CORBA::string_dup(  status_rem[i] );
+                                                      ret->errors[seq].value <<= CORBA::string_dup(  status_rem[i] );
                                                       ret->errors[seq].reason = CORBA::string_dup( "can not remove status flag" );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -1218,7 +1216,7 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
                           LOG( WARNING_LOG, "unknow country code" );
                           ret->errors.length( 1 );
                           ret->errors[0].code = ccReg::contactUpdate_cc;        // spatne zadany neznamy country code
-                          ret->errors[0].value = CORBA::string_dup( c.CC );
+                          ret->errors[0].value <<= CORBA::string_dup( c.CC );
                           ret->errors[0].reason = CORBA::string_dup( "unknow country code" );
                         }
 
@@ -1314,7 +1312,7 @@ LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s] %s ", cl
             LOG( WARNING_LOG, "bad format  of handle[%s]" , handle );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::contactCreate_handle; 
-            ret->errors[0].value = CORBA::string_dup( handle );
+            ret->errors[0].value <<= CORBA::string_dup( handle );
             ret->errors[0].reason = CORBA::string_dup( "bad format of handle" );
         }
         else 
@@ -1430,7 +1428,7 @@ LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s] %s ", cl
                       LOG( WARNING_LOG, "unknow country code" );
                       ret->errors.length( 1 );
                       ret->errors[0].code = ccReg::contactCreate_cc;    // spatne zadany neznamy country code
-                      ret->errors[0].value = CORBA::string_dup( c.CC );
+                      ret->errors[0].value <<= CORBA::string_dup( c.CC );
                       ret->errors[0].reason = CORBA::string_dup( "unknow country code" );
                     }
                 }
@@ -1854,7 +1852,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
             LOG( WARNING_LOG, "bad format of handle[%s]" ,  handle);
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::nssetCreate_handle;
-            ret->errors[0].value = CORBA::string_dup( handle );
+            ret->errors[0].value <<= CORBA::string_dup( handle );
             ret->errors[0].reason = CORBA::string_dup( "bad format of handle" );
         }
         else
@@ -1928,7 +1926,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                           LOG( WARNING_LOG, "NSSetCreate: unknow tech Contact " );                          
                           ret->errors.length( seq +1 );
                           ret->errors[seq].code = ccReg::nssetCreate_tech;
-                          ret->errors[seq].value = CORBA::string_dup(  tech[i] );
+                          ret->errors[seq].value <<= CORBA::string_dup(  tech[i] );
                           ret->errors[seq].reason = CORBA::string_dup( "unknow tech contact" );
                           seq++;                                 
                           // TODO error value 
@@ -2145,7 +2143,7 @@ if( PQsql.OpenDatabase( database ) )
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::nssetUpdate_status_add;
-                                                      ret->errors[seq].value = CORBA::string_dup(  status_add[i] );
+                                                      ret->errors[seq].value <<= CORBA::string_dup(  status_add[i] );
                                                       ret->errors[seq].reason = CORBA::string_dup( "can not add status flag" );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -2159,7 +2157,7 @@ if( PQsql.OpenDatabase( database ) )
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::nssetUpdate_status_rem;
-                                                      ret->errors[seq].value = CORBA::string_dup(  status_rem[i] );
+                                                      ret->errors[seq].value <<= CORBA::string_dup(  status_rem[i] );
                                                       ret->errors[seq].reason = CORBA::string_dup( "can not remove status flag" );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -2214,7 +2212,7 @@ if( PQsql.OpenDatabase( database ) )
                                                         LOG( WARNING_LOG, "add tech Contact not exist" );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
-                                                        ret->errors[seq].value = CORBA::string_dup(  tech_add[i] );
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  tech_add[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( "unknow add tech contact" );
                                                         seq++;
                                                       }
@@ -2223,7 +2221,7 @@ if( PQsql.OpenDatabase( database ) )
                                                         LOG( WARNING_LOG, "add tech Contact exist in contact map table" );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
-                                                        ret->errors[seq].value = CORBA::string_dup(  tech_add[i] );
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  tech_add[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( "tech contact exist in contact map" );
                                                         seq++;
                                                       }                                                
@@ -2255,7 +2253,7 @@ if( PQsql.OpenDatabase( database ) )
                                                         LOG( WARNING_LOG, "add tech Contact not exist" );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
-                                                        ret->errors[seq].value = CORBA::string_dup(  tech_rem[i] );
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  tech_rem[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( "unknow add tech contact" );
                                                         seq++;
                                                       }
@@ -2264,7 +2262,7 @@ if( PQsql.OpenDatabase( database ) )
                                                          LOG( WARNING_LOG, "rem tech Contact not exist in contact map table" );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
-                                                        ret->errors[seq].value = CORBA::string_dup(  tech_rem[i] );
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  tech_rem[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( "tech contact not exist in contact map" );
                                                         seq++;
                                                       }
@@ -2951,7 +2949,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::domainUpdate_nsset;
-                                                      ret->errors[seq].value = CORBA::string_dup(  nsset_chg );
+                                                      ret->errors[seq].value <<= CORBA::string_dup(  nsset_chg );
                                                       ret->errors[seq].reason = CORBA::string_dup( "nsset not exist" );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -2969,7 +2967,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                     
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::domainUpdate_registrant;
-                                                      ret->errors[seq].value = CORBA::string_dup(  registrant_chg );
+                                                      ret->errors[seq].value <<= CORBA::string_dup(  registrant_chg );
                                                       ret->errors[seq].reason = CORBA::string_dup( "registrant not exist" );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -2986,7 +2984,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::contactUpdate_status_add;
-                                                      ret->errors[seq].value = CORBA::string_dup(  status_add[i] );
+                                                      ret->errors[seq].value <<= CORBA::string_dup(  status_add[i] );
                                                       ret->errors[seq].reason = CORBA::string_dup( "can not add status flag" );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -3000,7 +2998,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::contactUpdate_status_rem;
-                                                      ret->errors[seq].value = CORBA::string_dup(  status_rem[i] );
+                                                      ret->errors[seq].value <<= CORBA::string_dup(  status_rem[i] );
                                                       ret->errors[seq].reason = CORBA::string_dup( "can not remove status flag" );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -3074,7 +3072,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                         LOG( WARNING_LOG, "add admin-c not exist" );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::domainUpdate_admin_add;
-                                                        ret->errors[seq].value = CORBA::string_dup(  admin_add[i] );
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  admin_add[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( "unknow add admin contact" );
                                                         seq++;
                                                       }
@@ -3083,7 +3081,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                         LOG( WARNING_LOG, "add tech Contact exist in contact map table" );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::domainUpdate_admin_add;
-                                                        ret->errors[seq].value = CORBA::string_dup(  admin_add[i] );
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  admin_add[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( "admin contact exist in contact map" );
                                                         seq++;
                                                       }
@@ -3119,7 +3117,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                         LOG( WARNING_LOG, "add admin-c not exist" );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::domainUpdate_admin_add;
-                                                        ret->errors[seq].value = CORBA::string_dup(  admin_add[i] );
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  admin_add[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( "unknow rem admin contact" );
                                                         seq++;
                                                       }
@@ -3128,7 +3126,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                         LOG( WARNING_LOG, "rem admin Contac not exist in contact map table" );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::domainUpdate_admin_add;
-                                                        ret->errors[seq].value = CORBA::string_dup(  admin_add[i] );
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  admin_add[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( "admin contact not exist in contact map" );
                                                         seq++;
                                                       }
@@ -3261,13 +3259,13 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
 
       // preved fqd na  mala pismena a otestuj to
-       if( get_FQDN( FQDN , fqdn ) == false )  // spatny format navu domeny
+       if( ( zone = get_FQDN( FQDN , fqdn ) ) == 0 )  // spatny format navu domeny
          {
             ret->errCode = COMMAND_PARAMETR_ERROR;
             LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::domainCreate_fqdn;
-            ret->errors[0].value = CORBA::string_dup( fqdn );
+            ret->errors[0].value <<= CORBA::string_dup( fqdn );
             ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
         }
       else
@@ -3288,7 +3286,6 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
               // vytvor roid domeny
               get_roid( roid, "D", id );
 
-              zone = get_zone( ( char * ) fqdn , true );       // kontrola nazvu domeny a automaticke zarazeni do zony
 
 
              // get  registrator ID
@@ -3299,7 +3296,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                       LOG( WARNING_LOG, "unknow nsset handle %s", nsset );
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::domainCreate_nsset;
-                      ret->errors[seq].value = CORBA::string_dup( nsset );
+                      ret->errors[seq].value <<= CORBA::string_dup( nsset );
                       ret->errors[seq].reason = CORBA::string_dup( "unknow nsset" );
                       seq++;
                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -3311,7 +3308,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                       LOG( WARNING_LOG, "unknow Registrant handle %s", Registrant );
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::domainCreate_registrant;
-                      ret->errors[seq].value = CORBA::string_dup( Registrant );
+                      ret->errors[seq].value <<= CORBA::string_dup( Registrant );
                       ret->errors[seq].reason = CORBA::string_dup( "unknow Registrant" );
                       seq++;
                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -3391,7 +3388,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                                           LOG( WARNING_LOG, "DomainCreate: unknow tech Contact " );
                                           ret->errors.length( seq +1 );
                                           ret->errors[seq].code = ccReg::domainCreate_admin;
-                                          ret->errors[seq].value = CORBA::string_dup(  admin[i] );
+                                          ret->errors[seq].value <<= CORBA::string_dup(  admin[i] );
                                           ret->errors[seq].reason = CORBA::string_dup( "unknow admin contact" );
                                           seq++;
                                          ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -3480,16 +3477,18 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
   Status status;
   const ccReg::ENUMValidationExtension * enumVal;
   char exDateStr[24], valexpiryDate[32];
-
+  char FQDN[64]; 
   ccReg::Response * ret;
-  int clid, regID, id, len, i;
+  int clid, regID, id, len, i , zone , seq;
   bool stat;
-  time_t ex = 0, t, valExpDate = 0;
+  time_t ex = 0, t, valExpDate = 0 , now ;
 
   ret = new ccReg::Response;
 
   t = curExpDate;
 
+// aktualni cas
+   now = time(NULL);
 // default
   exDate = 0;
 
@@ -3498,7 +3497,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
   ret->errors.length( 0 );
 
 
-  LOG( NOTICE_LOG, "DomainRenew: clientID -> %d clTRID [%s] fqdn  [%s] period %d ", clientID, clTRID, fqdn, period );
+  LOG( NOTICE_LOG, "DomainRenew: clientID -> %d clTRID [%s] fqdn  [%s] period %d month", clientID, clTRID, fqdn, period );
 
 
   len = ext.length();
@@ -3530,14 +3529,27 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
       if( PQsql.BeginAction( clientID, EPP_DomainRenew, ( char * ) clTRID ) )
         {
 
+      // preved fqd na  mala pismena a otestuj to
+       if( ( zone = get_FQDN( FQDN , fqdn ) )  == 0 )  // spatny format navu domeny
+         {
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::domainCreate_fqdn;
+            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
+        }
+      else
+       { 
           regID = PQsql.GetLoginRegistrarID( clientID );        // aktivni registrator
-          if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) fqdn ) ) == 0 )
+          if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) FQDN ) ) == 0 )
             // prvni test zdali domena  neexistuje 
             {
               ret->errCode = COMMAND_OBJECT_NOT_EXIST;  // domena neexistujea
               LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
             }
           else
+
             // zahaj transakci
           if( PQsql.BeginTransaction() )
             {
@@ -3554,10 +3566,39 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
               if( ex != curExpDate )
                 {
                   LOG( WARNING_LOG, "curExpDate is not same as ExDate" );
+                  ret->errors.length( seq +1);
+                  ret->errors[seq].code = ccReg::domainRenew_curExpDate;
+                  ret->errors[seq].value <<=  curExpDate;
+                  ret->errors[seq].reason = CORBA::string_dup( "bad curExpDate");
+                  seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                 }
-              else
-                {
+                            
+                 
+             if( period <   PQsql.GetExPreriodMin( zone ) ||  period >  PQsql.GetExPreriodMax( zone ) ) 
+              {
+                  LOG( WARNING_LOG, "bad period interval" );
+                  ret->errors.length( seq +1);
+                  ret->errors[seq].code = ccReg::domainRenew_period;
+                  ret->errors[seq].value <<=  period;
+                  ret->errors[seq].reason = CORBA::string_dup( "bad periody interval");
+                  seq++;
+                  ret->errCode = COMMAND_PARAMETR_ERROR;                 
+               }
+            if(   valExpDate < now || now >  expiry_time( now ,   PQsql.GetValPreriod( zone ) )  )
+              {
+                  LOG( WARNING_LOG, "bad validity exp date" );
+                  ret->errors.length( seq +1);
+                  ret->errors[seq].code = ccReg::domainRenew_ext_valDate;
+                  ret->errors[seq].value <<=   valExpDate;
+                  ret->errors[seq].reason = CORBA::string_dup( "bad valExpDate");
+                  seq++;
+                  ret->errCode = COMMAND_PARAMETR_ERROR;
+
+              }
+
+               if(  ret->errCode == 0 )
+                 {
                   // zpracuj  pole statusu
                   status.Make( PQsql.GetStatusFromTable( "DOMAIN", id ) );
 
@@ -3578,6 +3619,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
                   else
                     {
                       // preved datum a cas expirace prodluz tim cas platnosti domeny
+                      
                       t = expiry_time( ex, period );
                       exDate = t;       // datum a cas prodlouzeni domeny
                       get_timestamp( t, exDateStr );
@@ -3632,6 +3674,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
             }
 
 
+          }
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
         }
