@@ -20,10 +20,13 @@ void get_roid( char *roid , char *prefix , int id );
 // test nsset handle fqdn nebo contact id
 bool  get_CHECK( char *CHCK , const char *chck , int act );
 // prevadeni a test fqdn nazvu domeny 
-bool get_FQDN( char *FQDN , const char *handle );
+// vraci zpet cislo zony
+// nula pokud je chyba
+int get_FQDN( char *FQDN , const char *fqdn );
 
 // zarazeni do zony a kontrola nazvu domeny 
 int get_zone( const char * fqdn , bool compare );
+
 // vraci cas v time_t  pevede SQL retezec
 time_t get_time_t(char *string );
 // prevede time_t do retezce pro SQL

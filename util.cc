@@ -15,7 +15,8 @@ bool  get_CHECK( char *CHCK , const char *chck , int act )
 switch(  act )
 {
 case  EPP_DomainCheck:
-      return  get_FQDN(  CHCK , chck);
+      if(  get_FQDN(  CHCK , chck) == 0 ) return false;
+      else return  true;
 case  EPP_ContactCheck:
 case  EPP_NSsetCheck:
   return get_HANDLE( CHCK , chck);
@@ -77,45 +78,46 @@ else return false;
 
 
 
-bool get_FQDN( char *FQDN , const char *handle )
+int get_FQDN( char *FQDN , const char *fqdn )
 {
 int i , len , max ;
 int zone;
 
-zone = get_zone( handle , true  );
-max =  get_zone( handle , false  ); // konec nazvu
+zone = get_zone( fqdn , true  );
+max =  get_zone( fqdn , false  ); // konec nazvu
 
-len = strlen( handle);
+len = strlen( fqdn);
 
 FQDN[0] = 0;
 
-LOG( LOG_DEBUG ,  "get_FQDN [%s] zone %d max %d" , handle  , zone , max );
+LOG( LOG_DEBUG ,  "get_FQDN [%s] zone %d max %d" , fqdn  , zone , max );
 
 // maximalni delka
-if( len > 63 ) { LOG( LOG_DEBUG ,  "out ouf maximal length %d" , len ); return false; }
-if( max <= 2  ) { LOG( LOG_DEBUG ,  "minimal length" ); return false;}
+if( len > 63 ) { LOG( LOG_DEBUG ,  "out ouf maximal length %d" , len ); return 0; }
+if( max <= 2  ) { LOG( LOG_DEBUG ,  "minimal length" ); return 0;}
 
 // test na enum zonu
 if( zone == ZONE_ENUM || zone == ZONE_CENUM  )
 {
          for( i = 0 ; i <  max ; i ++ )
             {
-              if(  ( handle[i] >= '0'  && handle[i] <= '9' ) ||  handle[i] == '.' )
+              if(  ( fqdn[i] >= '0'  && fqdn[i] <= '9' ) ||  fqdn[i] == '.' )
                 {
-                     FQDN[i] = handle[i];
+                     FQDN[i] = fqdn[i];
                 }  
-               else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , handle[i] );  FQDN[0] = 0 ;  return false; } 
+               else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , fqdn[i] );  FQDN[0] = 0 ;  return 0; } 
             
             }
 
-if( handle[i] == '.' )
+if( fqdn[i] == '.' )
  { 
-   FQDN[i+1] =  0 ;          
+   FQDN[i] =  0 ; 
+   strcat( FQDN ,"." );         
    if( zone == ZONE_ENUM )strcat( FQDN ,  ENUM_ZONE );
    if( zone == ZONE_CENUM ) strcat( FQDN , CENUM_ZONE  );
 
    LOG( LOG_DEBUG ,  "OK ENUM domain [%s]" , FQDN );
-   return true;
+   return zone;
  }
 
 
@@ -128,33 +130,34 @@ if( zone == ZONE_CZ )    // DOMENA CZ
         for( i = 0 ; i < max ; i ++ )
            {
               // TEST povolene znaky
-              if( ( handle[i] >= 'a'  && handle[i] <= 'z' ) ||
-                ( handle[i] >= 'A'  && handle[i] <= 'Z' ) ||
-                ( handle[i] >= '0'  && handle[i] <= '9' ) ||  handle[i] == '-' )
+              if( ( fqdn[i] >= 'a'  && fqdn[i] <= 'z' ) ||
+                  ( fqdn[i] >= 'A'  && fqdn[i] <= 'Z' ) ||
+                  ( fqdn[i] >= '0'  && fqdn[i] <= '9' ) ||  fqdn[i] == '-' )
                 {
 
                        // PREVOD na mala pizmena
-                       if( handle[i] >= 'A'  && handle[i] <= 'Z' )
-                           FQDN[i] = handle[i] + 0x20; // prevod na mala pismena
-                       else FQDN[i] =  handle[i];
+                       if( fqdn[i] >= 'A'  && fqdn[i] <= 'Z' )
+                            FQDN[i] = fqdn[i] + 0x20; // prevod na mala pismena
+                       else FQDN[i] = fqdn[i];
               
                 }
-               else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , handle[i] );  FQDN[0] = 0 ;  return false; } 
+               else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , fqdn[i] );  FQDN[0] = 0 ;  return 0; } 
             }
 
-         if( handle[i] == '.' )
+         if( fqdn[i] == '.' )
           {     
-            FQDN[i+1] =  0 ;
+            FQDN[i] =  0 ;
+            strcat( FQDN ,"." );
             strcat( FQDN , CZ_ZONE ); // konec
             LOG( LOG_DEBUG ,  "OK CZ domain [%s]" , FQDN );
-            return true;
+            return zone;
           }
        
     
 
 }
 
-return false;
+return 0;
 }
 
 // zarazeni do zony a kontrola nazvu domeny
