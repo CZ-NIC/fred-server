@@ -94,12 +94,12 @@ int main(int argc, char** argv)
 
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
-    cout <<  EPP->version() << endl;
-    loginID = 4000;
+     cout << "version: "  <<  EPP->version() << endl;
+    loginID = 4000; 
     ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
 
     cout << "get Transaction code " << ret->errCode << ret->errMsg  <<  ret->svTRID  << endl;
-
+/*
 
     ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "123456789" , "" ,     "GR-login" , loginID , "otisk palce" ,  ccReg::CS  );
 
@@ -107,7 +107,7 @@ int main(int argc, char** argv)
 
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
-/*
+
     ret =  EPP->ContactInfo( "jouda",  cc , loginID , "jouda_info" );
     cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
@@ -136,7 +136,7 @@ int main(int argc, char** argv)
      cout << "err code " << ret->errCode << " serverTRID " <<  ret->svTRID  << endl;
 
 */
-
+/*
    ret =  EPP->DomainInfo(  "super.cz" ,  domain , loginID , "info-cpp-temp" );
    cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
@@ -162,7 +162,7 @@ int main(int argc, char** argv)
 
   // delete  enumVal;    
    delete domain;
-
+*/
 /*
    ret =  EPP->DomainDelete(  "super.cz"  , loginID , "delete-cpp-super" );
    cout << "Delete err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
@@ -265,7 +265,7 @@ int main(int argc, char** argv)
 //     ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
 
   //  cout << "get Transaction code " << ret->errCode  <<  ret->svTRID  << endl;
-
+/*
 
 
      check = new ccReg::Check;
@@ -309,7 +309,7 @@ int main(int argc, char** argv)
       {
          cout << i << dcheck[i] << " avail " << av[i] << endl;
       }
-
+*/
  /*
 
     ret =  EPP->NSSetInfo( "NECOCZ" , nsset ,  loginID ,  "XX-nsset-info-necocz" );
