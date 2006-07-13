@@ -43,6 +43,10 @@ bool DeleteFromTableMap(char *map ,int  id , int contactid );
 // vymaz z host
 bool DeleteFromHost( int nssetid , const char *fqdn );
 
+// parametry zone
+int GetExPreriodMin(int zone){ return GetNumericFromTable( "zone", "ex_period_min" , "id" , zone ); };
+int GetExPreriodMax(int zone){ return GetNumericFromTable( "zone", "ex_period_max" , "id" , zone ); };
+int GetValPreriod(int zone){ return GetNumericFromTable( "zone", "val_period" , "id" , zone ); };
 
 // zapocteni creditu za operace domain create a domain renew
 bool Credit( int registrarID , int domainID , int period , bool create );
@@ -62,8 +66,9 @@ int GetSequenceID( char *sequence ); // id ze sequnce
 // kontroluje jestli je contactid pro dane id v tabulce nsset_contact_map nebo domain_contact_map 
 bool CheckContactMap(char * table , int id , int contactid );
 
-// teck pri Check funkcih case insensitiv
+// test pri Check funkcih case insensitiv
 int CheckObject( const char *table ,  const char *fname ,  const char *value);
+
 
 // vyssi funkce na vraceni value
 int GetLoginRegistrarID(int id) { return GetNumericFromTable( "LOGIN" , "registrarid" , "id" , id ); };
