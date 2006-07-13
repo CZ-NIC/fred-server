@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     ccReg::timestamp crDate , qDate , exDate , exvalDate ;
     ccReg::ENUMValidationExtension *enumVal;
     ccReg::ENUMValidationExtension_var ev;
-    ccReg::ExtensionList ext;
+    ccReg::ExtensionList_var ext;
     struct tm dt;
     time_t t;
     filebuf *pbuf;
@@ -95,19 +95,59 @@ int main(int argc, char** argv)
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
 
      cout << "version: "  <<  EPP->version() << endl;
+
     loginID = 4000; 
+/*
     ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
 
     cout << "get Transaction code " << ret->errCode << ret->errMsg  <<  ret->svTRID  << endl;
-/*
+*/
+    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789"  , "" ,     "LRR-login-now" , loginID , "AE:B3:5F:FA:38:80:DB:37:53:6A:3E:D4:55:E2:91:97" ,  ccReg::CS  );
 
-    ret =  EPP->ClientLogin(  "REG-GENERAL-REGISTRY"  ,  "123456789" , "" ,     "GR-login" , loginID , "otisk palce" ,  ccReg::CS  );
-
-    cout << loginID  << endl;
+    cout << "loginID" << loginID  << endl;
 
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
+   ret =  EPP->DomainInfo(  "exp.cz" ,  domain , loginID , "info-cpp-temp" );
+   cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
+   for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
+   cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
+   t = domain->ExDate;
+   cout << "ExpDate: " << ctime( &t )  << endl;
+   cout << "err code " << ret->errCode   << endl;
+   cout << "ext length " <<   domain->ext.length() << endl ;
+//   enumVal = new  ccReg::ENUMValidationExtension;
+  
+  
+    if(  domain->ext.length() == 1 )
+     {
+       if(  domain->ext[0] >>= enumVal   ) 
+        {
+          exvalDate  = enumVal->valExDate ; 
+
+         cout << "valExpDate" <<   exvalDate  << endl;
+        }
+       else cout << "Unknown value extension" << endl;
+     }
+
+   delete domain;
+
+    ext = new  ccReg::ExtensionList;
+//    ext.length(0);
+   
+ 
+
+  cout << "login ID" <<  loginID << endl;
+  ret =  EPP->DomainRenew(  "exp.cz" ,  t  , 24 , exDate ,  loginID , "renew-enum" ,  ext ); 
+    cout << "Domain renew" << "err code " << ret->errCode   << endl;
+     for( i = 0 ; i <  ret->errors.length() ; i ++ )
+        {
+           cout << "errors " <<  ret->errors[i].code <<  ret->errors[i].reason << endl;
+       }
+
+
+/*
     ret =  EPP->ContactInfo( "jouda",  cc , loginID , "jouda_info" );
     cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
@@ -137,31 +177,6 @@ int main(int argc, char** argv)
 
 */
 /*
-   ret =  EPP->DomainInfo(  "super.cz" ,  domain , loginID , "info-cpp-temp" );
-   cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
-
-   for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
-   cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
-   t = domain->ExDate;
-   cout << "ExpDate: " << ctime( &t )  << endl;
-   cout << "err code " << ret->errCode   << endl;
-   cout << "ext length " <<   domain->ext.length() << endl ;
-//   enumVal = new  ccReg::ENUMValidationExtension;
-  
-  
-    if(  domain->ext.length() == 1 )
-     {
-       if(  domain->ext[0] >>= enumVal   ) 
-        {
-          exvalDate  = enumVal->valExDate ; 
-
-         cout << "valExpDate" <<   exvalDate  << endl;
-        }
-       else cout << "Unknown value extension" << endl;
-     }
-
-  // delete  enumVal;    
-   delete domain;
 */
 /*
    ret =  EPP->DomainDelete(  "super.cz"  , loginID , "delete-cpp-super" );
@@ -235,8 +250,6 @@ int main(int argc, char** argv)
     cout << "err code " << ret->errCode   << endl;
 */
 /*
-    ret =  EPP->DomainRenew(  "example.cz" ,  t  , 12 , loginID , "renew-cpp-example.cz" ); 
-    cout << "Domain renew" << "err code " << ret->errCode   << endl;
 
 
    ret =  EPP->DomainInfo(  "temp.cz" ,  domain , loginID , "info-cpp-temp" );
@@ -579,9 +592,9 @@ delete cc;
     ret = EPP->NSSetTransfer( "NECOCZ",   "heslo" ,  loginID , "nsset-transfer" );
     cout  << "client logout "<< endl;
 */
-  //  ret =  EPP->ClientLogout( loginID , "XXXX-logout" );
+    ret =  EPP->ClientLogout( loginID , "XXXX-logout" );
 
-   // cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
+    cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
      
     orb->destroy();
   }
