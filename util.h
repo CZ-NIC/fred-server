@@ -27,6 +27,8 @@ int get_FQDN( char *FQDN , const char *fqdn );
 // zarazeni do zony a kontrola nazvu domeny 
 int get_zone( const char * fqdn , bool compare );
 
+bool TestValidityExpDate( time_t val , int max );
+
 // vraci cas v time_t  pevede SQL retezec
 time_t get_time_t(char *string );
 // prevede time_t do retezce pro SQL
