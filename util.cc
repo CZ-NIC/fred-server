@@ -196,6 +196,20 @@ for(  i = 0 ; i < 3 ; i ++ )
 return 0;
 }
 
+bool TestPeriodyInterval( int period , int min , int max )
+{
+int mod;
+// musi lezet v intervalu
+if( period >= min && period <= max )
+{
+mod = period % min;
+if( mod == 0 ) return true;
+else return false;
+}
+else  return false;
+}
+
+
 bool TestValidityExpDate( time_t val , int max )
 {
 time_t now , ex;
