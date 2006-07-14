@@ -3204,7 +3204,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Regis
 PQ PQsql;
 const ccReg::ENUMValidationExtension * enumVal;
 char expiryDate[32], valexpiryDate[32], createDate[32];
-char roid[64] , FQDN[64];
+char roid[64] , FQDN[64] , HANDLE[64];
 ccReg::Response * ret;
 int contactid, regID, nssetid, adminid, id;
 int i, len, s, zone , seq=0;
@@ -3291,7 +3291,19 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
              // get  registrator ID
              regID = PQsql.GetLoginRegistrarID( clientID );
              // nsset
-            if( (nssetid = PQsql.GetNumericFromTable( "NSSET", "id", "handle", nsset  ) ) == 0 )
+            if( get_HANDLE( HANDLE , nsset ) == false )
+              {
+                      LOG( WARNING_LOG, "bad nsset handle %s", nsset );
+                      ret->errors.length( seq +1 );
+                      ret->errors[seq].code = ccReg::domainCreate_nsset;
+                      ret->errors[seq].value <<= CORBA::string_dup( nsset );
+                      ret->errors[seq].reason = CORBA::string_dup( "bad handle nsset format" );
+                      seq++;
+                      ret->errCode = COMMAND_PARAMETR_ERROR;
+
+              }
+            else 
+            if( (nssetid = PQsql.GetNumericFromTable( "NSSET", "id", "handle", HANDLE  ) ) == 0 )
               {
                       LOG( WARNING_LOG, "unknow nsset handle %s", nsset );
                       ret->errors.length( seq +1 );
@@ -3302,8 +3314,20 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                       ret->errCode = COMMAND_PARAMETR_ERROR;
                }
               
-                    
-           if( ( contactid = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", Registrant ) ) == 0 )
+             // nsset
+            if( get_HANDLE( HANDLE , Registrant ) == false )
+              {
+                      LOG( WARNING_LOG, "bad registrant handle %s", Registrant );
+                      ret->errors.length( seq +1 );
+                      ret->errors[seq].code = ccReg::domainCreate_registrant;
+                      ret->errors[seq].value <<= CORBA::string_dup( Registrant );
+                      ret->errors[seq].reason = CORBA::string_dup( "bad handle  Registrant format" );
+                      seq++;
+                      ret->errCode = COMMAND_PARAMETR_ERROR;
+
+              }
+           else                    
+           if( ( contactid = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", HANDLE ) ) == 0 )
               {
                       LOG( WARNING_LOG, "unknow Registrant handle %s", Registrant );
                       ret->errors.length( seq +1 );
@@ -3373,7 +3397,21 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                                 {
                                   for( i = 0; i < len; i++ )
                                     {
-                                      adminid = PQsql.GetNumericFromTable( "Contact", "id", "handle", admin[i]  );
+                                     // nsset
+                                      if( get_HANDLE( HANDLE , admin[i] ) == false )
+                                        {
+                                          LOG( WARNING_LOG, "DomainCreate: bad tech Contact " );
+                                          ret->errors.length( seq +1 );
+                                          ret->errors[seq].code = ccReg::domainCreate_admin;
+                                          ret->errors[seq].value <<= CORBA::string_dup(  admin[i] );
+                                          ret->errors[seq].reason = CORBA::string_dup( "bad admin contact" );
+                                          seq++;
+                                          ret->errCode = COMMAND_PARAMETR_ERROR;
+ 
+                                       }
+                                      else 
+                                      {
+                                      adminid = PQsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE  );
 
                                       if( adminid )
                                        {
@@ -3392,7 +3430,8 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                                           ret->errors[seq].reason = CORBA::string_dup( "unknow admin contact" );
                                           seq++;
                                          ret->errCode = COMMAND_PARAMETR_ERROR;
-                                      } 
+                                      }
+                                     } 
                                     }
                                 }
 
