@@ -2826,10 +2826,11 @@ PQ PQsql;
 Status status;
 const ccReg::ENUMValidationExtension * enumVal;
 bool stat, check;
+char FQDN[64];
 char valexpiryDate[32];
 char statusString[128];
 int regID = 0, clID = 0, id, nssetid, contactid, adminid;
-int i, len, slen, j , seq=0;
+int i, len, slen, j , seq=0 , zone;
 time_t valExpDate = 0;
 
 ret = new ccReg::Response;
@@ -2899,10 +2900,22 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
       if( PQsql.BeginAction( clientID, EPP_DomainUpdate, ( char * ) clTRID ) )
         {
 
+
+      // preved fqd na  mala pismena a otestuj to
+       if( ( zone = get_FQDN( FQDN , fqdn ) ) == 0 )  // spatny format navu domeny
+         {
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::domainUpdate_fqdn;
+            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
+        }
+
           if( ret->errCode == 0 )
             {
               // pokud domena existuje
-              if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) fqdn ) ) == 0 )
+              if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) FQDN ) ) == 0 )
                 {
                   LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
                   ret->errCode = COMMAND_OBJECT_NOT_EXIST;
@@ -2934,11 +2947,25 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                             }
                           else
                             {
+                                 // test validate
+                                                     if(  TestValidityExpDate(  valExpDate  , PQsql.GetValPreriod( zone ) )  ==  false )
+                                                       {
+                                                             LOG( WARNING_LOG, "bad validity exp date" );
+                                                             ret->errors.length( seq +1);
+                                                             ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
+                                                             ret->errors[seq].value <<=   valExpDate;
+                                                             ret->errors[seq].reason = CORBA::string_dup( "bad valExpDate");
+                                                              seq++;
+                                                          ret->errCode = COMMAND_PARAMETR_ERROR;
+                                    }
+                                                else
+
                               //  uloz do historie
                               if( PQsql.MakeHistory() )
                                 {
                                   if( PQsql.SaveHistory( "Domain", "id", id ) ) // uloz zaznam
                                     {
+
 
 
                                       if( strlen( nsset_chg ) )
@@ -3031,9 +3058,11 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                           ret->errCode = COMMAND_OK;    // nastavit uspesne
 
                                           if( PQsql.SaveHistory( "enumval", "domainID", id ) )  // uloz do historie 
-                                            {
+                                                 {
+
                                               // zmena extension
                                               if( valExpDate > 0 )
+
                                                 {
                                                      get_timestamp( valExpDate, valexpiryDate );
                                                      LOG( NOTICE_LOG, "change valExpDate %s ", valexpiryDate );
@@ -3339,7 +3368,40 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                }
 
 
-                        if( nssetid && contactid )
+
+             // nastaveni defaultni periody
+             if( period == 0 )
+               {
+                 period = PQsql.GetExPreriodMin( zone );
+                 LOG( NOTICE_LOG, "get defualt peridod %d month  for zone   %d ", period , zone  );
+
+               }
+
+             if(  TestPeriodyInterval( period  ,   PQsql.GetExPreriodMin( zone )  ,  PQsql.GetExPreriodMax( zone )  )  == false )
+              {
+                  LOG( WARNING_LOG, "bad period interval" );
+                  ret->errors.length( seq +1);
+                  ret->errors[seq].code = ccReg::domainCreate_period;
+                  ret->errors[seq].value <<=  period;
+                  ret->errors[seq].reason = CORBA::string_dup( "bad periody interval");
+                  seq++;
+                  ret->errCode = COMMAND_PARAMETR_ERROR;
+               }
+            if(  TestValidityExpDate(  valExpDate  , PQsql.GetValPreriod( zone ) )  ==  false )
+              {
+                  LOG( WARNING_LOG, "bad validity exp date" );
+                  ret->errors.length( seq +1);
+                  ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
+                  ret->errors[seq].value <<=   valExpDate;
+                  ret->errors[seq].reason = CORBA::string_dup( "bad valExpDate");
+                  seq++;
+                  ret->errCode = COMMAND_PARAMETR_ERROR;
+
+              }
+
+
+
+                        if(  ret->errCode == 0  )
                         {
                           t = time( NULL );
                           crDate = t;   // datum a cas vytvoreni objektu
@@ -3763,6 +3825,7 @@ ccReg::Response * ccReg_EPP_i::DomainTransfer( const char *fqdn, const char *aut
 {
 ccReg::Response * ret;
 PQ PQsql;
+char FQDN[64];
 Status status;
 int regID = 0, clID = 0, id;  //   registrantid , contactid;
 
@@ -3780,9 +3843,20 @@ LOG( NOTICE_LOG, "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  ", clie
 
       if( PQsql.BeginAction( clientID, EPP_DomainTransfer, ( char * ) clTRID ) )
         {
+      if(  get_FQDN( FQDN , fqdn )   == 0 )  // spatny format navu domeny
+         {
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::domainCreate_fqdn;
+            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
+        }
+      else
+      {
 
           // pokud domena existuje
-          if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) fqdn ) ) == 0 )
+          if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) FQDN ) ) == 0 )
             {
               ret->errCode = COMMAND_OBJECT_NOT_EXIST;
               LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
@@ -3843,6 +3917,7 @@ LOG( NOTICE_LOG, "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  ", clie
               // konec transakce commit ci rollback
               PQsql.QuitTransaction( ret->errCode );
             }
+          }
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
         }
