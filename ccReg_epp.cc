@@ -61,7 +61,7 @@ char *version;
 // char str[64];
 version =  new char[128];
 
-sprintf( version , "SVN rev %s BUILD DATE %s %s" , SVERSION , __DATE__ , __TIME__ );
+sprintf( version , "SVN %s BUILD %s %s" , SVERSION , __DATE__ , __TIME__ );
 LOG( NOTICE_LOG , "get version %s" , version );
 
 return version;
@@ -3569,13 +3569,20 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_curExpDate;
                   ret->errors[seq].value <<=  curExpDate;
-                  ret->errors[seq].reason = CORBA::string_dup( "bad curExpDate");
+                  ret->errors[seq].reason = CORBA::string_dup( "curExpDate is not ExDate");
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                 }
-                            
-                 
-             if( period <   PQsql.GetExPreriodMin( zone ) ||  period >  PQsql.GetExPreriodMax( zone ) ) 
+                  
+             // nastaveni defaultni periody           
+             if( period == 0 ) 
+               {
+                 period = PQsql.GetExPreriodMin( zone );
+                 LOG( NOTICE_LOG, "get defualt peridod %d month  for zone   %d ", period , zone  );
+
+               }
+  
+             if(  TestPeriodyInterval( period  ,   PQsql.GetExPreriodMin( zone )  ,  PQsql.GetExPreriodMax( zone )  )  == false ) 
               {
                   LOG( WARNING_LOG, "bad period interval" );
                   ret->errors.length( seq +1);
