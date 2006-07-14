@@ -129,6 +129,8 @@ if( zone == ZONE_CZ )    // DOMENA CZ
        // max a minimalni delka
         for( i = 0 ; i < max ; i ++ )
            {
+
+
               // TEST povolene znaky
               if( ( fqdn[i] >= 'a'  && fqdn[i] <= 'z' ) ||
                   ( fqdn[i] >= 'A'  && fqdn[i] <= 'Z' ) ||
@@ -141,18 +143,26 @@ if( zone == ZONE_CZ )    // DOMENA CZ
                        else FQDN[i] = fqdn[i];
               
                 }
-               else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , fqdn[i] );  FQDN[0] = 0 ;  return 0; } 
-            }
+               else 
+                {
+               LOG( LOG_DEBUG ,  "character  %c not allowed"  , fqdn[i] ); 
+               FQDN[0] = 0 ;  
+               return 0; 
+               } 
+
+         }
+
+       
 
          if( fqdn[i] == '.' )
           {     
             FQDN[i] =  0 ;
             strcat( FQDN ,"." );
             strcat( FQDN , CZ_ZONE ); // konec
+
             LOG( LOG_DEBUG ,  "OK CZ domain [%s]" , FQDN );
             return zone;
           }
-       
     
 
 }
@@ -186,6 +196,25 @@ for(  i = 0 ; i < 3 ; i ++ )
 return 0;
 }
 
+bool TestValidityExpDate( time_t val , int max )
+{
+time_t now , ex;
+if(  max ==  0) return true;
+else
+{
+
+if(  val == 0 ) return true; // neporovanvej pokud neni zadano
+else
+{
+now = time(NULL);
+ex = expiry_time( now ,  max );
+
+if( val > now && val < ex ) return true;
+else return false;
+}
+}
+
+}
 // preveadi cas timestamp na unix time
 time_t get_time_t(char *string )
 {
