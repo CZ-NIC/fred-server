@@ -36,12 +36,10 @@ void  SetEncoding(  const char *encoding) {  PQsetClientEncoding( connection , e
 int  GetValueLength(int row  , int col);
 
 
-
+// vymaz z tabulky
 bool DeleteFromTable(char *table , char *fname , int id );
 // vymaz data z map tabulky
 bool DeleteFromTableMap(char *map ,int  id , int contactid );
-// vymaz z host
-bool DeleteFromHost( int nssetid , const char *fqdn );
 
 // parametry zone
 int GetExPreriodMin(int zone){ return GetNumericFromTable( "zone", "ex_period_min" , "id" , zone ); };
@@ -68,6 +66,9 @@ bool CheckContactMap(char * table , int id , int contactid );
 
 // test pri Check funkcih case insensitiv
 int CheckObject( const char *table ,  const char *fname ,  const char *value);
+
+// vraci ID hostu
+int CheckHost(  const char *fqdn , int nssetID );
 
 
 // vyssi funkce na vraceni value

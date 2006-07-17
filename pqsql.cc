@@ -448,7 +448,22 @@ if( ExecSelect( sqlString ) )
 return ret;
 }
 
+// vraci ID hostu
+int PQ::CheckHost(  const char *fqdn , int nssetID )
+{
+char sqlString[128];
+int hostID=0;
+sprintf( sqlString , "SELECT id FROM HOST WHERE fqdn=\'%s\' AND nssetid=%d;" ); 
 
+if( ExecSelect( sqlString ) )
+ {
+   if(  GetSelectRows()  == 0 )  hostID = atoi(  GetFieldValue( 0 , 0 )  );
+
+  FreeSelect();
+ }
+
+return hostID;
+}
 
 bool PQ::TestNSSetRelations(int id )
 {
@@ -639,15 +654,6 @@ LOG( SQL_LOG , "DeleteFrom  %s_contact_map  id  %d contactID" , map ,id , contac
 
 sprintf( sqlString , "DELETE FROM %s_contact_map WHERE  %sid=%d AND contactid=%d;" , map , map ,  id ,  contactid );
 
-return ExecSQL( sqlString );
-}
-
-bool  PQ::DeleteFromHost( int nssetid , const char *fqdn )
-{
-char sqlString[128];
-
-LOG( SQL_LOG , "DeleteFrom host nssetid=%d AND fqdn=\'%s\'" , nssetid , fqdn );
-sprintf(  sqlString , "DELETE FROM HOST WHERE nssetid=%d AND fqdn=\'%s\';" , nssetid , fqdn );
 return ExecSQL( sqlString );
 }
 
