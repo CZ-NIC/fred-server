@@ -268,21 +268,26 @@ int i , len , dot=0 , ddot=0 , num  , l ;
 char numStr[16];
 len = strlen( address );
 
+LOG( LOG_DEBUG , "test InetAddress %s" , address );
+
 for( i = 0 , l = 0   ; i < len ; i ++ )
    {
        if(   isxdigit( address[i] ) || address[i] == '.' || address[i] == ':' )
          {
              if( address[i] == '.'  ) // IPV4
                {
-                  numStr[l] = 0;
+                  numStr[l] = 0; l = 0 ;
                   num = atoi(  numStr );
+                  // LOG( LOG_DEBUG , "ipv4 %d %d [%s]" , dot , num , numStr ); 
                   if( num >  255 ) return false;
                   dot++;                    
                }
               else if(  address[i] == ':' ) // IPV6 
                      {
-                       numStr[l] = 0;
+                       numStr[l] = 0; l = 0 ;
                        num = atoh( numStr );
+                       // LOG( LOG_DEBUG , "ipv6 %d %d [%s]" , dot , num , numStr ); 
+
                        if( num > 0xffff ) return false;
                        ddot++; 
                      }
@@ -296,14 +301,14 @@ if( dot == 3 )
 {
 numStr[l] = 0;
 num = atoi(  numStr );
-if( num <=  255 ) return true; // IPV4 OK
+if( num <=  255 ) { LOG( LOG_DEBUG , "test ipv4OK" ) ; return true; } // IPV4 OK
 }
 
 if( ddot == 7 )
 {
 numStr[l] = 0;
 num = atoh(  numStr );
-if( num <= 0xfffff ) return true; // IPV6  OK
+if( num <= 0xfffff ){ LOG( LOG_DEBUG , "test ipv6 OK" ) ; return true; } // IPV6  OK
 }
 
 return false;
