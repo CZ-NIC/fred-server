@@ -9,6 +9,8 @@
 #define CZ_ZONE  "cz"
 #define CENUM_ZONE "0.2.4.c.e164.arpa"
 #define ENUM_ZONE   "0.2.4.e164.arpa"
+// funkce pro prevod hexa
+int atoh(const char *String);
 
 
 // prevadi handle na velka pismena psojena s testem
@@ -26,6 +28,15 @@ int get_FQDN( char *FQDN , const char *fqdn );
 
 // zarazeni do zony a kontrola nazvu domeny 
 int get_zone( const char * fqdn , bool compare );
+
+// prevadi DNS host  na mala pismena
+bool convert_hostname( char *HOST ,const  char *fqdn );
+
+// test spravnosti zadani hosu
+bool TestDNSHost( const char *fqdn  );
+
+// test inet addres ipv4 a ipv6
+bool TestInetAddress(const char *address );
 
 // test spravnosti intervalu periody
 bool TestPeriodyInterval( int period , int min , int max );

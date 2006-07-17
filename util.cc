@@ -2,11 +2,35 @@
 #include<stdlib.h>
 #include<time.h>
 #include<string.h>
+#include<ctype.h>
 
 #include "util.h"
 #include "action.h"
 
 #include "log.h"
+
+// implementace funkce atoh
+int atoh(const char *String)
+{
+    int Value = 0, Digit;
+    char c;
+
+    while ((c = *String++) != 0 ) {
+
+        if (c >= '0' && c <= '9')
+            Digit = (int) (c - '0');
+        else if (c >= 'a' && c <= 'f')
+            Digit = (int ) (c - 'a') + 10;
+        else if (c >= 'A' && c <= 'F')
+            Digit = (int) (c - 'A') + 10;
+        else
+            break;
+
+        Value = (Value << 4) + Digit;
+    }
+
+    return Value;
+}
 
 // pro Objectcheck funkci
 bool  get_CHECK( char *CHCK , const char *chck , int act )
@@ -49,16 +73,10 @@ if( len > 1 && len <= 40 )
   {
 
     // TEST
-    if( ( handle[i] >= 'a'  && handle[i] <= 'z' ) ||
-        ( handle[i] >= 'A'  && handle[i] <= 'Z' ) ||
-        ( handle[i] >= '0'  && handle[i] <= '9' ) ||
-        ( handle[i] == '.' || handle[i] == '-' ||  handle[i] == '_' ) )
+    if( isalnum( handle[i] ) ||   handle[i] == '.' || handle[i] == '-' ||  handle[i] == '_'  )
       {
-
-          // PREVOD
-          if( handle[i] >= 'a'  && handle[i] <= 'z' )
-              HANDLE[i] = handle[i] - 0x20; // prevod na velka pismena
-          else HANDLE[i] =  handle[i];
+          // PREVOD  na velka pismena
+          HANDLE[i] =   toupper( handle[i] ); 
      }
     else
     {
@@ -101,7 +119,8 @@ if( zone == ZONE_ENUM || zone == ZONE_CENUM  )
 {
          for( i = 0 ; i <  max ; i ++ )
             {
-              if(  ( fqdn[i] >= '0'  && fqdn[i] <= '9' ) ||  fqdn[i] == '.' )
+              // TEST povolene znaky  
+              if( isdigit( fqdn[i] )  ||  fqdn[i] == '.' )
                 {
                      FQDN[i] = fqdn[i];
                 }  
@@ -132,16 +151,10 @@ if( zone == ZONE_CZ )    // DOMENA CZ
 
 
               // TEST povolene znaky
-              if( ( fqdn[i] >= 'a'  && fqdn[i] <= 'z' ) ||
-                  ( fqdn[i] >= 'A'  && fqdn[i] <= 'Z' ) ||
-                  ( fqdn[i] >= '0'  && fqdn[i] <= '9' ) ||  fqdn[i] == '-' )
+              if( isalnum( fqdn[i]  ) ||  fqdn[i] == '.' )
                 {
-
-                       // PREVOD na mala pizmena
-                       if( fqdn[i] >= 'A'  && fqdn[i] <= 'Z' )
-                            FQDN[i] = fqdn[i] + 0x20; // prevod na mala pismena
-                       else FQDN[i] = fqdn[i];
-              
+                    // PREVOD na mala pismena
+                    FQDN[i] = tolower( fqdn[i] );
                 }
                else 
                 {
@@ -194,6 +207,106 @@ for(  i = 0 ; i < 3 ; i ++ )
 
    }
 return 0;
+}
+
+// prevadi DNS host  na mala pismena
+bool convert_hostname( char *HOST ,const  char *fqdn )
+{
+int i , len ;
+
+len = strlen( fqdn );
+
+for( i = 0  ; i < len ; i ++ )
+{
+      if(  isalnum( fqdn[i] ) ||  fqdn[i] == '-' ||  fqdn[i] == '.' )
+        {
+              HOST[i] =  tolower(  fqdn[i] ); // preved na mala pismena
+        }
+       else { HOST[0] = 0 ; return false; }
+}
+
+// koenec
+HOST[i] = 0 ;
+return true;
+}
+// test hostname 
+bool TestDNSHost( const char *fqdn )
+{
+int i , len , dot , num ;
+
+len = strlen( fqdn );
+
+// minimalni a maximalni velikost
+if( len > 3  &&  len <= 255 ) 
+{
+for( i = 0 , num = 0  , dot = 0 ; i < len ; i ++ )
+   {
+      if(  isalnum( fqdn[i] ) ||  fqdn[i] == '-' ||  fqdn[i] == '.' )
+        {
+                      if( fqdn[i] == '.' ) 
+                       {
+                          if( num > 63 ) return false; // prilis dlouhy nazev
+                          num = 0 ; 
+                          dot ++;   
+                       }
+                      else num ++ ;
+        }  
+     else return false; // spatne zadany nazev DNS hostu 
+  }
+
+
+// minimalne dve tecky
+if( dot >= 2 ) return true;
+}
+return false;
+}
+
+// test inet addres ipv4 a ipv6
+bool TestInetAddress(const char *address )
+{
+int i , len , dot=0 , ddot=0 , num  , l ;
+char numStr[16];
+len = strlen( address );
+
+for( i = 0 , l = 0   ; i < len ; i ++ )
+   {
+       if(   isxdigit( address[i] ) || address[i] == '.' || address[i] == ':' )
+         {
+             if( address[i] == '.'  ) // IPV4
+               {
+                  numStr[l] = 0;
+                  num = atoi(  numStr );
+                  if( num >  255 ) return false;
+                  dot++;                    
+               }
+              else if(  address[i] == ':' ) // IPV6 
+                     {
+                       numStr[l] = 0;
+                       num = atoh( numStr );
+                       if( num > 0xffff ) return false;
+                       ddot++; 
+                     }
+                    else { numStr[l] =  address[i] ; l ++ ; } 
+  
+         }
+   }
+
+
+if( dot == 3 ) 
+{
+numStr[l] = 0;
+num = atoi(  numStr );
+if( num <=  255 ) return true; // IPV4 OK
+}
+
+if( ddot == 7 )
+{
+numStr[l] = 0;
+num = atoh(  numStr );
+if( num <= 0xfffff ) return true; // IPV6  OK
+}
+
+return false;
 }
 
 bool TestPeriodyInterval( int period , int min , int max )
