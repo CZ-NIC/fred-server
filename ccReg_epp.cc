@@ -1035,7 +1035,7 @@ ccReg::Response * ret;
 PQ PQsql;
 char statusString[128] , HANDLE[64];
 int regID = 0, crID = 0, clID = 0, id , num ;
-bool policy_error = false;
+bool remove_update_flag = false ;
 int len, i , seq=0;
 Status status;
 
@@ -1045,21 +1045,22 @@ ret->errors.length( 0 );
 
 LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clientID, clTRID, handle );
 
-  // test status flagu pokud nejsou typu server 
-  len = status_add.length();
-  for( i = 0; i < len; i++ )
+// nacti status flagy
+  for( i = 0; i < status_add.length(); i++ )
     {
-      LOG( NOTICE_LOG, "status_add [%s] ", CORBA::string_dup( status_add[i] ) );
-      if( status.IsServerStatus( status.GetStatusNumber( status_add[i] ) ) )
-        policy_error = true;
+      LOG( NOTICE_LOG, "status_add [%s] -> %d",  (const char *)  status_add[i]  ,  status.GetStatusNumber( status_add[i] )  ); 
+      status.PutAdd( status.GetStatusNumber( status_add[i] ) ); // pridej status flag
     }
 
-  len = status_rem.length();
-  for( i = 0; i < len; i++ )
+  for( i = 0; i < status_rem.length(); i++ )
     {
-      LOG( NOTICE_LOG, "status_rem [%s] ", CORBA::string_dup( status_rem[i] ) );
-      if( status.IsServerStatus( status.GetStatusNumber( status_rem[i] ) ) )
-        policy_error = true;
+      LOG( NOTICE_LOG, "status_rem [%s] -> %d ",   (const char *) status_rem[i]  , status.GetStatusNumber( status_rem[i] )  );
+      status.PutRem(  status.GetStatusNumber( status_rem[i] ) );       
+      if( status.GetStatusNumber( status_rem[i] ) ==  STATUS_clientUpdateProhibited ) 
+        {
+           LOG( NOTICE_LOG, "remove STATUS_clientUpdateProhibited");
+           remove_update_flag=true;          
+        }
     }
 
 
@@ -1110,20 +1111,17 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
                           // zjisti  pole statusu
                           status.Make( PQsql.GetStatusFromTable( "CONTACT", id ) );
 
-                          if( status.Test( STATUS_UPDATE ) )
+
+                           
+                          // neplati kdyz je UpdateProhibited v remove  status flagu
+                          if( status.Test( STATUS_UPDATE ) && remove_update_flag == false )
                             {
                               LOG( WARNING_LOG, "status UpdateProhibited" );
                               ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
                             }
                           else  // status je OK
                             {
-                              if( policy_error )
-                                {
-                                  LOG( WARNING_LOG, "status flag policy" );
-                                  ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
-                                }
-                              else      // zadny PARAMETR_VALUE_POLICY_ERROR u add ci rem  status flagu
-                                {
+                               
                                   //  uloz do historie
                                   if( PQsql.MakeHistory() )
                                     {
@@ -1131,9 +1129,9 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
                                         {
 
                                           // pridany status
-                                          for( i = 0; i < status_add.length(); i++ )
+                                          for( i = 0; i < status.AddLength(); i++ )
                                             {
-                                                  if( status.Add( status.GetStatusNumber( status_add[i] )  ) == false )
+                                                  if( status.Add(i) == false )
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::contactUpdate_status_add;
@@ -1145,9 +1143,10 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
                                             }
 
                                           // zruseny status flagy
-                                         for( i = 0; i < status_rem.length(); i++ )
+                                         for( i = 0; i < status.RemLength(); i++ )
                                              {
-                                                  if( status.Rem(  status.GetStatusNumber( status_rem[i] ) ) == false )
+                                              
+                                                  if( status.Rem(i) == false )
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::contactUpdate_status_rem;
@@ -1161,13 +1160,14 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
 
                                          if( ret->errCode == 0 )
                                          {
-                                          //  vygeneruj  novy status string array
-                                          status.Array( statusString );
+
 
                                           // zahaj update
                                           PQsql.UPDATE( "Contact" );
 
                                           // pridat zmenene polozky 
+                                          if( remove_update_flag == false )
+                                          {
                                           PQsql.SET( "Name", c.Name );
                                           PQsql.SET( "Organization", c.Organization );
                                           PQsql.SET( "Street1", c.Street1 );
@@ -1191,10 +1191,13 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
                                           PQsql.SETBOOL( "DiscloseTelephone", c.DiscloseTelephone );
                                           PQsql.SETBOOL( "DiscloseFax", c.DiscloseFax );
                                           PQsql.SETBOOL( "DiscloseEmail", c.DiscloseEmail );
-
+                                          }
                                           // datum a cas updatu  plus kdo zmenil zanzma na konec
                                           PQsql.SET( "UpDate", "now" );
                                           PQsql.SET( "UpID", regID );
+
+                                          //  vygeneruj  novy status string array
+                                          status.Array( statusString );
                                           PQsql.SET( "status", statusString );
 
                                           // podminka na konec 
@@ -1202,7 +1205,7 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
 
                                           if( PQsql.EXEC() ) ret->errCode = COMMAND_OK;
                                           else ret->errCode = COMMAND_FAILED;
-                                         }
+                                         
                                         }
                                     }
 
@@ -2097,6 +2100,7 @@ bool  check;
 char  Array[512] ,  statusString[128] , HANDLE[64] , NAME[256];
 int regID=0 , clID=0 , id ,nssetid ,  techid  , hostID;
 int i , j , seq=0;
+bool remove_update_flag=false;
 
 ret = new ccReg::Response;
 
@@ -2105,31 +2109,24 @@ ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] authInfo_chg  [%s] " , clientID , clTRID , handle  , authInfo_chg);
 
-   // TEST add a rem statusu flagu jestli nejsou server flag
-for( i = 0; i < status_add.length(); i++ )
-  {
-     LOG( NOTICE_LOG ,"add status flag  %s" ,  (const char *) status_add[i]  );
+// nacti status flagy
+  for( i = 0; i < status_add.length(); i++ )
+    {
+      LOG( NOTICE_LOG, "status_add [%s] -> %d",  (const char *)  status_add[i]  ,  status.GetStatusNumber( status_add[i] )  );
+      status.PutAdd( status.GetStatusNumber( status_add[i] ) ); // pridej status flag
+    }
 
-    if( status.IsServerStatus( status.GetStatusNumber( status_add[i] ) ) )
-      {
-        LOG( WARNING_LOG  ,  "add status flag policy error  %s" ,  (const char *) status_add[i]  );
-        ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
-        break;
-      }
-  }
+  for( i = 0; i < status_rem.length(); i++ )
+    {
+      LOG( NOTICE_LOG, "status_rem [%s] -> %d ",   (const char *) status_rem[i]  , status.GetStatusNumber( status_rem[i] )  );
+      status.PutRem(  status.GetStatusNumber( status_rem[i] ) );
+      if( status.GetStatusNumber( status_rem[i] ) ==  STATUS_clientUpdateProhibited )
+        {
+           LOG( NOTICE_LOG, "remove STATUS_clientUpdateProhibited");
+           remove_update_flag=true;
+        }
+    }
 
-for( i = 0; i < status_rem.length(); i++ )
-  {
-      LOG( NOTICE_LOG, "rem status flag  %s" , (const char *) status_add[i]  );
-
-
-    if( status.IsServerStatus( status.GetStatusNumber( status_rem[i] ) ) )
-      {
-        LOG( WARNING_LOG  ,  "rem status flag policy error  %s" ,  (const char *) status_rem[i]  );
-        ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
-        break;
-      }
-  }
 
 
 if( PQsql.OpenDatabase( database ) )
@@ -2169,7 +2166,7 @@ if( PQsql.OpenDatabase( database ) )
                         // zpracuj  pole statusu
                         status.Make( PQsql.GetStatusFromTable( "NSSET", id ) );
 
-                        if( status.Test( STATUS_UPDATE ) )
+                        if( status.Test( STATUS_UPDATE ) && remove_update_flag== false)
                           {
                             LOG( WARNING_LOG, "status UpdateProhibited" );
                             ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -2182,11 +2179,10 @@ if( PQsql.OpenDatabase( database ) )
                                 if( PQsql.SaveHistory( "NSSET", "id", id ) )    // uloz zaznam
                                   {
 
-
                                           // pridany status
-                                          for( i = 0; i < status_add.length(); i++ )
+                                          for( i = 0; i < status.AddLength(); i++ )
                                             {
-                                                  if( status.Add( status.GetStatusNumber( status_add[i] )  ) == false )
+                                                  if( status.Add(i) == false )
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::nssetUpdate_status_add;
@@ -2198,9 +2194,10 @@ if( PQsql.OpenDatabase( database ) )
                                             }
 
                                           // zruseny status flagy
-                                         for( i = 0; i < status_rem.length(); i++ )
+                                         for( i = 0; i < status.RemLength(); i++ )
                                              {
-                                                  if( status.Rem(  status.GetStatusNumber( status_rem[i] ) ) == false )
+                                              
+                                                  if( status.Rem(i) == false )
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::nssetUpdate_status_rem;
@@ -2210,6 +2207,10 @@ if( PQsql.OpenDatabase( database ) )
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
                                                     }
                                             }
+
+
+
+
 
                                     if( ret->errCode == 0 )
                                     {
@@ -2221,20 +2222,22 @@ if( PQsql.OpenDatabase( database ) )
 
 
                                     // zmenit zaznam o domene
-                                    PQsql.UPDATE( "NSSET" );
+                                    PQsql.UPDATE( "NSSET" );                                   
                                     PQsql.SET( "UpDate", "now" );
                                     PQsql.SET( "UpID", regID );
                                     PQsql.SET( "status", statusString );
-                                    PQsql.SET( "AuthInfoPw", authInfo_chg );    // zmena autentifikace  
+                                    if( remove_update_flag == false ) PQsql.SET( "AuthInfoPw", authInfo_chg );    // zmena autentifikace  
                                     PQsql.WHEREID( id );
 
 
                                     if( PQsql.EXEC() )
                                       {
                                         ret->errCode = COMMAND_OK;      // nastavit uspesne
-
+                                       
                                         if( PQsql.SaveHistory( "nsset_contact_map", "nssetID", id ) )   // uloz do historie tech kontakty
-                                          {
+                                         {
+                                           if( remove_update_flag == false ) 
+                                           {                                           
                                             // pridat tech kontakty                      
                                             for( i = 0; i < tech_add.length(); i++ )
                                               {
@@ -2275,7 +2278,7 @@ if( PQsql.OpenDatabase( database ) )
 
                                                     ret->errCode = COMMAND_PARAMETR_ERROR;                                            
                                                   }
-
+                                                
                                               }
 
                                             // vymaz  tech kontakty
@@ -2316,11 +2319,14 @@ if( PQsql.OpenDatabase( database ) )
                                                    ret->errCode = COMMAND_PARAMETR_ERROR;
                                                   }
                                               }
-
+                                             }
                                           }
 
                                         if( PQsql.SaveHistory( "host", "nssetID", id ) )        // uloz do historie hosty
                                           {
+                                           if( remove_update_flag == false )
+                                           {
+
                                             // pridat DNS HOSTY
                                             for( i = 0; i < dns_add.length(); i++ )
                                               {
@@ -2415,12 +2421,12 @@ if( PQsql.OpenDatabase( database ) )
                                                         seq++;
                                                         ret->errCode = COMMAND_PARAMETR_ERROR;
                                                  }
- 
+  
               
                                               }
 
                                           }
-
+                                        }
 
                                       }
                                     else ret->errCode = COMMAND_FAILED; // spatny SQL update
@@ -2934,6 +2940,7 @@ char valexpiryDate[32];
 char statusString[128];
 int regID = 0, clID = 0, id, nssetid, contactid, adminid;
 int i, len, slen, j , seq=0 , zone;
+bool remove_update_flag=false;
 time_t valExpDate = 0;
 
 ret = new ccReg::Response;
@@ -2970,31 +2977,25 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
     }
 
 
-  // TEST add a rem statusu flagu jestli nejsou server flag
+// nacti status flagy
   for( i = 0; i < status_add.length(); i++ )
     {
-//      LOG( NOTICE_LOG "add status flag  %s" ,  status_add[i]  );
-
-      if( status.IsServerStatus( status.GetStatusNumber( status_add[i] ) ) )
-        {
-//               LOG( WARNING_LOG  ,  "add status flag policy error  %s" ,  status_add[i]  );
-          ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
-          break;
-        }
+      LOG( NOTICE_LOG, "status_add [%s] -> %d",  (const char *)  status_add[i]  ,  status.GetStatusNumber( status_add[i] )  );
+      status.PutAdd( status.GetStatusNumber( status_add[i] ) ); // pridej status flag
     }
 
   for( i = 0; i < status_rem.length(); i++ )
     {
-      //    LOG( NOTICE_LOG "rem status flag  %s" , status_add[i]  );
-
-
-      if( status.IsServerStatus( status.GetStatusNumber( status_rem[i] ) ) )
+      LOG( NOTICE_LOG, "status_rem [%s] -> %d ",   (const char *) status_rem[i]  , status.GetStatusNumber( status_rem[i] )  );
+      status.PutRem(  status.GetStatusNumber( status_rem[i] ) );
+      if( status.GetStatusNumber( status_rem[i] ) ==  STATUS_clientUpdateProhibited )
         {
-//               LOG( WARNING_LOG  ,  "rem status flag policy error  %s" ,  status_rem[i]  );
-          ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
-          break;
+           LOG( NOTICE_LOG, "remove STATUS_clientUpdateProhibited");
+           remove_update_flag=true;
         }
     }
+
+
 
 
   if( PQsql.OpenDatabase( database ) )
@@ -3043,7 +3044,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                           // zpracuj  pole statusu
                           status.Make( PQsql.GetStatusFromTable( "DOMAIN", id ) );
 
-                          if( status.Test( STATUS_UPDATE ) )
+                          if( status.Test( STATUS_UPDATE )  && remove_update_flag == false )
                             {
                               LOG( WARNING_LOG, "status UpdateProhibited" );
                               ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -3108,12 +3109,12 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 
 
                                          // pridany status
-                                          for( i = 0; i < status_add.length(); i++ )
+                                          for( i = 0; i < status.AddLength(); i++ )
                                             {
-                                                  if( status.Add( status.GetStatusNumber( status_add[i] )  ) == false )
+                                                  if( status.Add( i ) == false )
                                                     {
                                                       ret->errors.length( seq +1 );
-                                                      ret->errors[seq].code = ccReg::contactUpdate_status_add;
+                                                      ret->errors[seq].code = ccReg::domainUpdate_status_add;
                                                       ret->errors[seq].value <<= CORBA::string_dup(  status_add[i] );
                                                       ret->errors[seq].reason = CORBA::string_dup( "can not add status flag" );
                                                       seq++;
@@ -3122,12 +3123,12 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                             }
 
                                           // zruseny status flagy
-                                         for( i = 0; i < status_rem.length(); i++ )
+                                         for( i = 0; i < status.RemLength(); i++ )
                                              {
-                                                  if( status.Rem(  status.GetStatusNumber( status_rem[i] ) ) == false )
+                                                  if( status.Rem( i ) == false )
                                                     {
                                                       ret->errors.length( seq +1 );
-                                                      ret->errors[seq].code = ccReg::contactUpdate_status_rem;
+                                                      ret->errors[seq].code = ccReg::domainUpdate_status_rem;
                                                       ret->errors[seq].value <<= CORBA::string_dup(  status_rem[i] );
                                                       ret->errors[seq].reason = CORBA::string_dup( "can not remove status flag" );
                                                       seq++;
@@ -3145,14 +3146,15 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 
                                       // zmenit zaznam o domene
                                       PQsql.UPDATE( "DOMAIN" );
+                                      PQsql.SET( "status", statusString );                                                      
                                       PQsql.SET( "UpDate", "now" );
                                       PQsql.SET( "UpID", regID );
-                                      PQsql.SET( "UpID", regID );
-                                      PQsql.SET( "status", statusString );
+                                      if( !remove_update_flag  )
+                                      {
                                       PQsql.SET( "nsset", nssetid );    // zmena nssetu
                                       PQsql.SET( "registrant", contactid );     // zmena drzitele domeny
                                       PQsql.SET( "AuthInfoPw", authInfo_chg );  // zmena autentifikace
-
+                                      }
                                       PQsql.WHEREID( id );
 
 
@@ -3163,6 +3165,8 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                           if( PQsql.SaveHistory( "enumval", "domainID", id ) )  // uloz do historie 
                                                  {
 
+                                               if( !remove_update_flag  )
+                                               {
                                               // zmena extension
                                               if( valExpDate > 0 )
 
@@ -3175,10 +3179,14 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
  
                                                      if( !PQsql.EXEC() )  ret->errCode = COMMAND_FAILED; 
                                                 }
+                                                }
                                             }
 
                                           if( PQsql.SaveHistory( "domain_contact_map", "domainID", id ) )       // uloz do historie admin kontakty
                                             {
+                                              if( !remove_update_flag  )
+                                               {
+
                                               // pridat admin kontakty                      
                                               for( i = 0; i < admin_add.length(); i++ )
                                                 {
@@ -3268,7 +3276,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                     }
                                                 }
 
-
+                                               }
                                             }
 
 
