@@ -1,13 +1,17 @@
 #include<stdio.h>
 #include<string.h>
 #include <stdlib.h>
-
+#include "log.h"
 #include "status.h"
 
-bool Status::Add( int status )
+bool Status::Add( int s )
 {
 int j;
-
+int status;
+if( s < sadd ) 
+{
+status = stat_add[s] ;  // prvek pole 
+LOG( DEBUG_LOG , "ADD status %d -> %d\n" , s , status );
 
 // projdi pole prvku a pokud uz tamje tak nepridavej
 for( j = 0  ; j < slen ; j ++ )
@@ -23,15 +27,20 @@ for( j = 0  ; j < slen ; j ++ )
 
 //  pridavej  az na konec
 if( slen < MAX_STATUS )  { stat[slen] = status ;  slen ++ ; return true ; } 
-
+}
 // nepodarilo se pridat
 return false;
 }
 
-bool Status::Rem( int status )
+bool Status::Rem( int s )
 {
 int i ,  j;
+int status;
+if( s < srem )
+{
+status = stat_rem[s];  // prvek pole
 
+LOG( DEBUG_LOG , "REM status %d -> %d\n" , s , status );
 
 // projdi pole prvku a pokud uz tamje tak nepridavej
 for( j = 0  ; j < slen ; j ++ )
@@ -44,8 +53,26 @@ for( j = 0  ; j < slen ; j ++ )
            return true;
        }
    }
-
+}
 // nepodarilo se 
+return false;
+}
+
+
+bool Status::PutAdd( int status )
+{
+if( sadd < MAX_STATUS  ) { stat_add[sadd] = status ; sadd ++ ; return true ; }
+
+// nepodarilo se pridat
+return false;
+}
+
+bool  Status::PutRem( int status )
+{
+
+if( srem < MAX_STATUS  ) { stat_rem[srem] = status ; srem ++ ; return true ; }
+
+// nepodarilo se pridat
 return false;
 }
 
@@ -120,7 +147,17 @@ return slen;
 
 bool Status::Test( int status_flag )
 {
-int i;
+int i , j ;
+
+
+if( status_flag == STATUS_UPDATE )
+{
+for( j = 0  ; j < srem ; j ++ )
+   {
+       if(  stat_rem[j] == STATUS_clientUpdateProhibited ) return false;
+   }
+}
+
 
 for( i = 0 ; i < slen ; i ++ ) 
 { 

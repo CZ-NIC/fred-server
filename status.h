@@ -38,17 +38,23 @@ class Status
 
 public:
 
-Status(){slen=0;}; // empty
-~Status(){slen=0;}; // empty
+Status(){slen=0;sadd=0;srem=0;}; // empty
+~Status(){slen=0;sadd=0;srem=0;}; // empty
 
 int  Make(char *array);
 void Array(char *string);
 bool Test( int status_flag ); // moznosti STATUS_ DEL TRANSFER UPD nebo RENEW
-bool Add( int status );
-bool Rem( int status );
+bool Add( int s );
+bool Rem( int s );
+bool PutAdd( int status );
+bool PutRem( int status );
+
 // int Set(int p , int s )
  int Get(int p) { if( p < slen ) return stat[p] ; else return 0 ; } ;
 int Length() { return slen ;}
+int RemLength(){ return srem;}
+int AddLength(){ return sadd;}
+
 // void Debug();
 // vraci nazev status flagu
 char * GetStatusString( int status ); 
@@ -113,5 +119,7 @@ else  return false;
 
 private:
 int stat[MAX_STATUS]; // pole status flagu
-int slen; // delka status pole
+int stat_add[MAX_STATUS]; // pridavany status
+int stat_rem[MAX_STATUS]; // ruseny status
+int slen , sadd , srem; // delka status pole
 };
