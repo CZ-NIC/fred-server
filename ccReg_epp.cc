@@ -1819,7 +1819,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
                                             ccReg::timestamp & crDate, CORBA::Long clientID, const char *clTRID )
 {
 PQ PQsql;
-char Array[512];
+char Array[512] , NAME[256];
 char createDate[32];
 char HANDLE[64]; // handle na velka pismena
 char roid[64];
@@ -1912,9 +1912,24 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                   // zapis technicke kontakty 
                   for( i = 0; i <  tech.length() ;  i++ )
                     {
-                      techid = PQsql.GetNumericFromTable( "Contact", "id", "handle", tech[i] );
+
+                      // preved handle na velka pismena
+                      if( get_HANDLE( HANDLE , tech[i] ) == false )  // spatny format handlu
+                        {
+                          LOG( WARNING_LOG, "NSSetCreate: unknow tech Contact " , (const char *)  tech[i] );
+                          ret->errors.length( seq +1 );
+                          ret->errors[seq].code = ccReg::nssetCreate_tech;
+                          ret->errors[seq].value <<= CORBA::string_dup(  tech[i] );
+                          ret->errors[seq].reason = CORBA::string_dup( "unknow tech contact" );
+                          seq++;
+                          ret->errCode = COMMAND_PARAMETR_ERROR;
+                        }
+                      else
+                      { 
+                      techid = PQsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE );
                       if( techid )
                         {
+                          LOG( NOTICE_LOG, "NSSetCreate: create tech Contact " , (const char *)  tech[i] );
                           PQsql.INSERT( "nsset_contact_map" );
                           PQsql.VALUE( id );
                           PQsql.VALUE( techid );
@@ -1923,7 +1938,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                         }
                       else
                         {
-                          LOG( WARNING_LOG, "NSSetCreate: unknow tech Contact " );                          
+                          LOG( WARNING_LOG, "NSSetCreate: unknow tech Contact " , (const char *)  tech[i]  );                          
                           ret->errors.length( seq +1 );
                           ret->errors[seq].code = ccReg::nssetCreate_tech;
                           ret->errors[seq].value <<= CORBA::string_dup(  tech[i] );
@@ -1931,14 +1946,14 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                           seq++;                                 
                           // TODO error value 
                           ret->errCode = COMMAND_PARAMETR_ERROR;
-
                         }
+                      }
                     }
 
                   // zapis do tabulky hostu
                   for( i = 0; i < dns.length() ; i++ )
                     {
-                      // ip adresa DNS hostu
+     
 
 
                       // preved sequenci adres
@@ -1946,11 +1961,27 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                       for( j = 0; j < dns[i].inet.length(); j++ )
                         {
                           if( j > 0 ) strcat( Array, " , " );
-                          strcat( Array, CORBA::string_dup( dns[i].inet[j] ) );
+
+                          if( TestInetAddress( dns[i].inet[j] ) )   strcat( Array,  dns[i].inet[j]  );
+                          else
+                            {
+                                  LOG( WARNING_LOG, "NSSetCreate: bad host address %s " , (const char *) dns[i].inet[j]  );                          
+                                  ret->errors.length( seq +1 );
+                                  ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
+                                  ret->errors[seq].value <<= CORBA::string_dup(   dns[i].inet[j]  );
+                                  ret->errors[seq].reason = CORBA::string_dup( "bad host address" );
+                                  seq++;                                 
+                                  // TODO error value 
+                                  ret->errCode = COMMAND_PARAMETR_ERROR;
+                            }
                         }
                       strcat( Array, " } " );
 
-                      // LOG( NOTICE_LOG ,  "NSSetCreate: DNS Host %s [%s] ",  CORBA::string_dup( dns[i].fqdn )  , Array    );
+
+                      // test DNS hostu
+                      if( TestDNSHost( dns[i].fqdn ) )
+                        {
+                       LOG( NOTICE_LOG ,  "NSSetCreate: DNS Host %s [%s] ",   (const char *)  dns[i].fqdn   , Array    );
 
                       // HOST informace pouze ipaddr a fqdn 
                       PQsql.INSERT( "HOST" );
@@ -1958,10 +1989,26 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                       PQsql.INTO( "fqdn" );
                       PQsql.INTO( "ipaddr" );
                       PQsql.VALUE( id );
-                      PQsql.VALUE( dns[i].fqdn );
-                      PQsql.VALUE( Array );
+                      convert_hostname(  NAME , dns[i].fqdn );
 
-                      if( PQsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;
+                      PQsql.VALUE( NAME );
+                      PQsql.VALUE( Array );
+                             if( PQsql.EXEC() == false ) ret->errCode = COMMAND_FAILED; 
+                                                    
+                        }
+                     else 
+                       {
+                                  LOG( WARNING_LOG, "NSSetCreate: bad host name %s " , (const char *)  dns[i].fqdn  );
+                                  ret->errors.length( seq +1 );
+                                  ret->errors[seq].code = ccReg::nssetCreate_ns_name;
+                                  ret->errors[seq].value <<= CORBA::string_dup(  dns[i].fqdn  );
+                                  ret->errors[seq].reason = CORBA::string_dup( "bad host name" );
+                                  seq++;
+                                  // TODO error value
+                                  ret->errCode = COMMAND_PARAMETR_ERROR;
+
+                       }
+
                     }
 
                 }
@@ -2047,8 +2094,8 @@ ccReg::Response *ret;
 PQ PQsql;
 Status status;
 bool  check;
-char  Array[512] ,  statusString[128] , HANDLE[64];
-int regID=0 , clID=0 , id ,nssetid ,  techid ;
+char  Array[512] ,  statusString[128] , HANDLE[64] , NAME[256];
+int regID=0 , clID=0 , id ,nssetid ,  techid  , hostID;
 int i , j , seq=0;
 
 ret = new ccReg::Response;
@@ -2061,11 +2108,11 @@ LOG( NOTICE_LOG ,  "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] authInfo
    // TEST add a rem statusu flagu jestli nejsou server flag
 for( i = 0; i < status_add.length(); i++ )
   {
-//      LOG( NOTICE_LOG "add status flag  %s" ,  status_add[i]  );
+     LOG( NOTICE_LOG ,"add status flag  %s" ,  (const char *) status_add[i]  );
 
     if( status.IsServerStatus( status.GetStatusNumber( status_add[i] ) ) )
       {
-//               LOG( WARNING_LOG  ,  "add status flag policy error  %s" ,  status_add[i]  );
+        LOG( WARNING_LOG  ,  "add status flag policy error  %s" ,  (const char *) status_add[i]  );
         ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
         break;
       }
@@ -2073,12 +2120,12 @@ for( i = 0; i < status_add.length(); i++ )
 
 for( i = 0; i < status_rem.length(); i++ )
   {
-    //    LOG( NOTICE_LOG "rem status flag  %s" , status_add[i]  );
+      LOG( NOTICE_LOG, "rem status flag  %s" , (const char *) status_add[i]  );
 
 
     if( status.IsServerStatus( status.GetStatusNumber( status_rem[i] ) ) )
       {
-//               LOG( WARNING_LOG  ,  "rem status flag policy error  %s" ,  status_rem[i]  );
+        LOG( WARNING_LOG  ,  "rem status flag policy error  %s" ,  (const char *) status_rem[i]  );
         ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
         break;
       }
@@ -2195,7 +2242,7 @@ if( PQsql.OpenDatabase( database ) )
                                                 check = PQsql.CheckContactMap( "nsset", id, techid );
                                                 if( techid && !check )
                                                   {
-                                                    //  LOG( NOTICE_LOG ,  "add techid ->%d [%s]" ,  techid ,   tech_add[i] );
+                                                    LOG( NOTICE_LOG ,  "add techid ->%d [%s]" ,  techid ,  (const char *) tech_add[i] );
                                                     PQsql.INSERT( "nsset_contact_map" );
                                                     PQsql.VALUE( id );
                                                     PQsql.VALUE( techid );
@@ -2209,7 +2256,7 @@ if( PQsql.OpenDatabase( database ) )
                                                   {
                                                     if( techid == 0 )
                                                       {
-                                                        LOG( WARNING_LOG, "add tech Contact not exist" );
+                                                        LOG( WARNING_LOG, "add tech Contact [%s] not exist" , (const char *) tech_add[i] );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
                                                         ret->errors[seq].value <<= CORBA::string_dup(  tech_add[i] );
@@ -2218,7 +2265,7 @@ if( PQsql.OpenDatabase( database ) )
                                                       }
                                                     if( check )  
                                                       {
-                                                        LOG( WARNING_LOG, "add tech Contact exist in contact map table" );
+                                                        LOG( WARNING_LOG, "add tech Contact [%s] exist in contact map table"  , (const char *) tech_add[i] );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
                                                         ret->errors[seq].value <<= CORBA::string_dup(  tech_add[i] );
@@ -2239,7 +2286,7 @@ if( PQsql.OpenDatabase( database ) )
 
                                                 if( techid && check )
                                                   {
-                                                    //  LOG( NOTICE_LOG ,  "rem techid ->%d [%s]" ,  techid , tech_rem[i]  ); 
+                                                     LOG( NOTICE_LOG ,  "rem techid ->%d [%s]" ,  techid , (const char *) tech_rem[i]  ); 
                                                     if( !PQsql.DeleteFromTableMap( "nsset", id, techid ) )
                                                       {
                                                         ret->errCode = COMMAND_FAILED;
@@ -2250,7 +2297,7 @@ if( PQsql.OpenDatabase( database ) )
                                                   {
                                                     if( techid == 0 )
                                                       {
-                                                        LOG( WARNING_LOG, "add tech Contact not exist" );
+                                                        LOG( WARNING_LOG, "add tech Contact [%s]  not exist"  , (const char *) tech_add[i] );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
                                                         ret->errors[seq].value <<= CORBA::string_dup(  tech_rem[i] );
@@ -2259,14 +2306,14 @@ if( PQsql.OpenDatabase( database ) )
                                                       }
                                                     if( !check )  
                                                       {
-                                                         LOG( WARNING_LOG, "rem tech Contact not exist in contact map table" );
+                                                       LOG( WARNING_LOG, "rem tech Contact [%s] not in contact map table" , (const char *) tech_add[i] );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
                                                         ret->errors[seq].value <<= CORBA::string_dup(  tech_rem[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( "tech contact not exist in contact map" );
                                                         seq++;
                                                       }
-                                                   ret->errCode = COMMAND_PARAMETR_ERROR;                                                                                             
+                                                   ret->errCode = COMMAND_PARAMETR_ERROR;
                                                   }
                                               }
 
@@ -2281,39 +2328,95 @@ if( PQsql.OpenDatabase( database ) )
                                                 strcpy( Array, "{ " );
                                                 for( j = 0; j < dns_add[i].inet.length(); j++ )
                                                   {
-                                                    if( j > 0 )
-                                                      strcat( Array, " , " );
-                                                    strcat( Array, dns_add[i].inet[j] );
+                                                    if( j > 0 ) strcat( Array, " , " );
+                                                    if( TestInetAddress( dns_add[i].inet[j] ) )  strcat( Array, dns_add[i].inet[j] );
+                                                    else
+                                                      {
+                                                        LOG( WARNING_LOG, "NSSetUpdate: bad add host address %s " , (const char *)  dns_add[i].inet[j] );
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::nssetUpdate_ns_addr_add;
+                                                        ret->errors[seq].value <<= CORBA::string_dup(    dns_add[i].inet[j] );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "bad host address" );
+                                                        seq++;
+                                                        ret->errCode = COMMAND_PARAMETR_ERROR;
+                                                      }
+
                                                   }
                                                 strcat( Array, " } " );
 
-                                                // LOG( NOTICE_LOG ,  "add dns [%s] %s" , dns_add[i].fqdn  , Array );                                
 
+
+
+
+                                                // test DNS hostu
+                                                if( TestDNSHost( dns_add[i].fqdn  ) )
+                                                {
+                                                 LOG( NOTICE_LOG ,  "NSSetUpdate: add dns [%s] %s" , (const char * ) dns_add[i].fqdn  , Array );                                
 
                                                 PQsql.INSERT( "HOST" );
                                                 PQsql.INTO( "nssetid" );
                                                 PQsql.INTO( "fqdn" );
                                                 PQsql.INTO( "ipaddr" );
                                                 PQsql.VALUE( id );
-                                                PQsql.VALUE( dns_add[i].fqdn );
+                                                convert_hostname(  NAME , dns_add[i].fqdn );
+                                                PQsql.VALUE( NAME );
                                                 PQsql.VALUE( Array );
-                                                if( !PQsql.EXEC() )
-                                                  {
-                                                    ret->errCode = COMMAND_FAILED;
-                                                    break;
-                                                  }
+                                                if( !PQsql.EXEC() ) {  ret->errCode = COMMAND_FAILED; break;}
+                                                }
+                                                else
+                                                      {
+                                                        LOG( WARNING_LOG, "NSSetUpdate: bad add host name %s " , (const char *)  dns_add[i].fqdn );
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::nssetUpdate_ns_name_add;
+                                                        ret->errors[seq].value <<= CORBA::string_dup(     dns_add[i].fqdn  );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "bad host address" );
+                                                        seq++;
+                                                        ret->errCode = COMMAND_PARAMETR_ERROR;
+                                                      }
+                                          
+                                            
+                                                  
 
                                               }
 
                                             // smazat DNS HOSTY
                                             for( i = 0; i < dns_rem.length(); i++ )
                                               {
-                                                // LOG( NOTICE_LOG ,  "rem  dns [%s] " , dns_rem[i].fqdn );
-                                                if( PQsql.DeleteFromHost( id, dns_rem[i].fqdn ) == false )
-                                                  {
-                                                    ret->errCode = COMMAND_FAILED;
-                                                    break;
-                                                  }
+                                               LOG( NOTICE_LOG ,  "NSSetUpdate:  delete  host  [%s] " , (const char *)   dns_rem[i].fqdn );
+                                               
+                                               if( TestDNSHost( dns_add[i].fqdn  ) )
+                                                 {
+                                                        convert_hostname(  NAME , dns_add[i].fqdn );
+                                                        if( ( hostID = PQsql.CheckHost( NAME , id )  ) == 0 )
+                                                        {
+                                                        
+                                                        LOG( WARNING_LOG, "NSSetUpdate:  host  [%s] not in table" ,  (const char *)   dns_rem[i].fqdn );
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::nssetUpdate_ns_name_rem;
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  dns_rem[i].fqdn );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "host is not in table" );
+                                                        seq++;
+                                                        ret->errCode = COMMAND_PARAMETR_ERROR;   
+                                                       }
+                                                       else // smaz pokud zaznam existuje
+                                                       {
+                                                             if( !PQsql.DeleteFromTable("HOST" , "id" ,  hostID  ) ){ret->errCode = COMMAND_FAILED; break; }
+                                                       }
+                                                        
+
+                                                }
+                                               else
+                                                {
+                                                        LOG( WARNING_LOG, "NSSetUpdate:  bad  rem  host [%s]" ,  (const char *)   dns_rem[i].fqdn );
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::nssetUpdate_ns_name_rem;
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  dns_rem[i].fqdn );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "bad host name" );
+                                                        seq++;
+                                                        ret->errCode = COMMAND_PARAMETR_ERROR;
+                                                 }
+ 
+              
                                               }
 
                                           }
