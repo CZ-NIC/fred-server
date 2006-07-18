@@ -2100,6 +2100,7 @@ bool  check;
 char  Array[512] ,  statusString[128] , HANDLE[64] , NAME[256];
 int regID=0 , clID=0 , id ,nssetid ,  techid  , hostID;
 int i , j , seq=0;
+int hostNum;
 bool remove_update_flag=false;
 
 ret = new ccReg::Response;
@@ -2422,6 +2423,36 @@ if( PQsql.OpenDatabase( database ) )
                                                         ret->errCode = COMMAND_PARAMETR_ERROR;
                                                  }
   
+                                               // TEST pocet dns hostu
+                                                hostNum = PQsql.GetNSSetNum( id );
+                                                LOG(NOTICE_LOG, "NSSetUpdate:  hostNum %d" , hostNum );
+
+                                                if( hostNum ==  0 )
+                                                  {
+                                                    for( i = 0; i < dns_rem.length(); i++ )
+                                                      {
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::nssetUpdate_ns_host_min;
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  dns_rem[i].fqdn );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "can not remove DNS host" );
+                                                        seq++; 
+                                                      }
+                                                    ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
+                                                  }
+
+                                               if( hostNum >  9 ) // maximalni pocet
+                                                  {
+                                                    for( i = 0; i < dns_add.length(); i++ )
+                                                      {
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::nssetUpdate_ns_host_max;
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  dns_add[i].fqdn );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "can not add DNS host" );
+                                                        seq++;
+                                                      }
+                                                    ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
+                                                  }
+ 
               
                                               }
 

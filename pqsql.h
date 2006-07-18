@@ -69,6 +69,9 @@ int CheckObject( const char *table ,  const char *fname ,  const char *value);
 
 // vraci ID hostu
 int CheckHost(  const char *fqdn , int nssetID );
+// vraci pocet nssetu
+int GetNSSetNum( int nssetID );
+
 
 
 // vyssi funkce na vraceni value

@@ -325,6 +325,24 @@ if( ExecSelect( sqlString ) )
 return lang;
 }
 
+// zjistuje pocet hostu pro dany nsset
+int PQ::GetNSSetNum( int nssetID )
+{
+char sqlString[128];
+int num=0;
+
+sprintf( sqlString , "SELECT id FROM host  WHERE nssetID=%d;" , nssetID );
+
+if( ExecSelect( sqlString ) )
+ {
+     num =  GetSelectRows();
+     LOG( SQL_LOG , "nsset %d num %d" , nssetID , num ); 
+     FreeSelect();
+ }
+
+return num;
+}
+
 /*
 char *  PQ::GetStatusString( int status )
 {
