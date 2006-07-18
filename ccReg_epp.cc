@@ -2432,7 +2432,7 @@ if( PQsql.OpenDatabase( database ) )
                                                     for( i = 0; i < dns_rem.length(); i++ )
                                                       {
                                                         ret->errors.length( seq +1 );
-                                                        ret->errors[seq].code = ccReg::nssetUpdate_ns_host_min;
+                                                        ret->errors[seq].code = nssetUpdate_ns_name_rem;
                                                         ret->errors[seq].value <<= CORBA::string_dup(  dns_rem[i].fqdn );
                                                         ret->errors[seq].reason = CORBA::string_dup( "can not remove DNS host" );
                                                         seq++; 
@@ -2445,7 +2445,7 @@ if( PQsql.OpenDatabase( database ) )
                                                     for( i = 0; i < dns_add.length(); i++ )
                                                       {
                                                         ret->errors.length( seq +1 );
-                                                        ret->errors[seq].code = ccReg::nssetUpdate_ns_host_max;
+                                                        ret->errors[seq].code = nssetUpdate_ns_name_add;
                                                         ret->errors[seq].value <<= CORBA::string_dup(  dns_add[i].fqdn );
                                                         ret->errors[seq].reason = CORBA::string_dup( "can not add DNS host" );
                                                         seq++;
