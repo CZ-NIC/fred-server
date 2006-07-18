@@ -471,12 +471,17 @@ int PQ::CheckHost(  const char *fqdn , int nssetID )
 {
 char sqlString[128];
 int hostID=0;
-sprintf( sqlString , "SELECT id FROM HOST WHERE fqdn=\'%s\' AND nssetid=%d;" ); 
+
+sprintf( sqlString , "SELECT id FROM HOST WHERE fqdn=\'%s\' AND nssetid=%d;" , fqdn , nssetID ); 
 
 if( ExecSelect( sqlString ) )
  {
-   if(  GetSelectRows()  == 0 )  hostID = atoi(  GetFieldValue( 0 , 0 )  );
-
+   if(  GetSelectRows()  == 1 )
+     {
+       hostID = atoi(  GetFieldValue( 0 , 0 )  );
+       LOG( SQL_LOG , "CheckHost fqdn=\'%s\' nssetid=%d  -> hostID %d" , fqdn , nssetID , hostID );
+     }
+   
   FreeSelect();
  }
 
@@ -655,7 +660,7 @@ bool  PQ::DeleteFromTable(char *table , char *fname , int id )
 {
 char sqlString[128];
 
-LOG( SQL_LOG , "DeleteFromTable %s fname %s id -> %d\n" , table , fname  , id );
+LOG( SQL_LOG , "DeleteFromTable %s fname %s id -> %d" , table , fname  , id );
 
 sprintf(  sqlString , "DELETE FROM %s  WHERE %s=%d;" , table , fname , id );
 return ExecSQL( sqlString );

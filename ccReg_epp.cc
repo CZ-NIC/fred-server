@@ -2391,9 +2391,9 @@ if( PQsql.OpenDatabase( database ) )
                                               {
                                                LOG( NOTICE_LOG ,  "NSSetUpdate:  delete  host  [%s] " , (const char *)   dns_rem[i].fqdn );
                                                
-                                               if( TestDNSHost( dns_add[i].fqdn  ) )
+                                               if( TestDNSHost( dns_rem[i].fqdn  ) )
                                                  {
-                                                        convert_hostname(  NAME , dns_add[i].fqdn );
+                                                        convert_hostname(  NAME , dns_rem[i].fqdn );
                                                         if( ( hostID = PQsql.CheckHost( NAME , id )  ) == 0 )
                                                         {
                                                         
@@ -2407,6 +2407,7 @@ if( PQsql.OpenDatabase( database ) )
                                                        }
                                                        else // smaz pokud zaznam existuje
                                                        {
+                                                             LOG( NOTICE_LOG ,  "NSSetUpdate: Delete hostID %d" , hostID );
                                                              if( !PQsql.DeleteFromTable("HOST" , "id" ,  hostID  ) ){ret->errCode = COMMAND_FAILED; break; }
                                                        }
                                                         
@@ -2432,7 +2433,7 @@ if( PQsql.OpenDatabase( database ) )
                                                     for( i = 0; i < dns_rem.length(); i++ )
                                                       {
                                                         ret->errors.length( seq +1 );
-                                                        ret->errors[seq].code = nssetUpdate_ns_name_rem;
+                                                        ret->errors[seq].code =  ccReg::nssetUpdate_ns_name_rem; 
                                                         ret->errors[seq].value <<= CORBA::string_dup(  dns_rem[i].fqdn );
                                                         ret->errors[seq].reason = CORBA::string_dup( "can not remove DNS host" );
                                                         seq++; 
@@ -2445,7 +2446,7 @@ if( PQsql.OpenDatabase( database ) )
                                                     for( i = 0; i < dns_add.length(); i++ )
                                                       {
                                                         ret->errors.length( seq +1 );
-                                                        ret->errors[seq].code = nssetUpdate_ns_name_add;
+                                                        ret->errors[seq].code =  ccReg::nssetUpdate_ns_name_add;
                                                         ret->errors[seq].value <<= CORBA::string_dup(  dns_add[i].fqdn );
                                                         ret->errors[seq].reason = CORBA::string_dup( "can not add DNS host" );
                                                         seq++;
