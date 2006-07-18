@@ -236,6 +236,8 @@ int i , len , dot , num ;
 
 len = strlen( fqdn );
 
+LOG( LOG_DEBUG , "test DNSHost %s" , fqdn );
+ 
 // minimalni a maximalni velikost
 if( len > 3  &&  len <= 255 ) 
 {
@@ -256,8 +258,9 @@ for( i = 0 , num = 0  , dot = 0 ; i < len ; i ++ )
 
 
 // minimalne dve tecky
-if( dot >= 2 ) return true;
+if( dot >= 2 ){ LOG( LOG_DEBUG , "test OK dots %d" , dot  ) ; return true; } 
 }
+
 return false;
 }
 
