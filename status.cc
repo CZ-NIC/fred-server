@@ -11,7 +11,6 @@ int status;
 if( s < sadd ) 
 {
 status = stat_add[s] ;  // prvek pole 
-LOG( DEBUG_LOG , "ADD status %d -> %d\n" , s , status );
 
 // projdi pole prvku a pokud uz tamje tak nepridavej
 for( j = 0  ; j < slen ; j ++ )
@@ -40,7 +39,6 @@ if( s < srem )
 {
 status = stat_rem[s];  // prvek pole
 
-LOG( DEBUG_LOG , "REM status %d -> %d\n" , s , status );
 
 // projdi pole prvku a pokud uz tamje tak nepridavej
 for( j = 0  ; j < slen ; j ++ )
