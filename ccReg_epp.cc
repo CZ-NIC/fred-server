@@ -918,16 +918,6 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , cl
        // preved handle na velka pismena
        if( get_HANDLE( HANDLE , handle ) == false )  // spatny format handlu
          {
-
-            ret->errCode = COMMAND_PARAMETR_ERROR;
-            LOG( WARNING_LOG, "bad format  of handle[%s]" , handle );
-            ret->errors.length( 1 );
-            ret->errors[0].code = ccReg::contactCreate_handle;
-            ret->errors[0].value <<= CORBA::string_dup( handle );
-            ret->errors[0].reason = CORBA::string_dup( "bad format of handle" );
-        }
-        else
-        {
           if( PQsql.BeginTransaction() )
             {
 
@@ -1076,15 +1066,6 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
        if( get_HANDLE( HANDLE , handle ) == false )  // spatny format handlu
          {
 
-            ret->errCode = COMMAND_PARAMETR_ERROR;
-            LOG( WARNING_LOG, "bad format  of handle[%s]" , handle );
-            ret->errors.length( 1 );
-            ret->errors[0].code = ccReg::contactCreate_handle;
-            ret->errors[0].value <<= CORBA::string_dup( handle );
-            ret->errors[0].reason = CORBA::string_dup( "bad format of handle" );
-        }
-        else
-        {
 
           if( PQsql.BeginTransaction() )      // zahajeni transakce
             {
@@ -2650,6 +2631,7 @@ Status status;
 ccReg::timestamp valexDate;
 ccReg::ENUMValidationExtension *enumVal;
 ccReg::Response *ret;
+char FQDN[64];
 int id , clid , crid ,  upid , regid ,nssetid , regID;
 int i , len ;
 
@@ -2675,11 +2657,15 @@ if( PQsql.OpenDatabase( database ) )
 if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
  {
 
+  // preved fqd na  mala pismena a otestuj to
+  if(  get_FQDN( FQDN , fqdn )  )  // spatny format navu domeny
+   {
+   
    // get  registrator ID
    regID = PQsql.GetLoginRegistrarID( clientID );
 
 
-  if(  PQsql.SELECT( "DOMAIN" , "fqdn" , fqdn )  )
+  if(  PQsql.SELECT( "DOMAIN" , "fqdn" , FQDN )  )
   {
   if( PQsql.GetSelectRows() == 1 )
     {
@@ -2780,6 +2766,7 @@ if( PQsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
 
    }
 
+  }
    // zapis na konec action
    ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode  ) );
 
@@ -2837,6 +2824,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(const char* fqdn , CORBA::Long client
 ccReg::Response *ret;
 PQ PQsql;
 Status status;
+char FQDN[64];
 int regID , clID , id;
 bool stat;
 ret = new ccReg::Response;
@@ -2855,9 +2843,14 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , clie
       if( PQsql.BeginAction( clientID, EPP_DomainDelete, ( char * ) clTRID ) )
         {
 
+
+      // preved fqd na  mala pismena a otestuj to
+       if(  get_FQDN( FQDN , fqdn )   )  // spatny format navu domeny
+         {
+
           if( PQsql.BeginTransaction() )
             {
-              if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) fqdn ) ) == 0 )
+              if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) FQDN ) ) == 0 )
                 {
                   LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
                   ret->errCode = COMMAND_OBJECT_NOT_EXIST;
@@ -2912,7 +2905,7 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , clie
               PQsql.QuitTransaction( ret->errCode );
             }
 
-
+          }
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( PQsql.EndAction( ret->errCode ) );
         }
@@ -3773,18 +3766,9 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
       if( PQsql.BeginAction( clientID, EPP_DomainRenew, ( char * ) clTRID ) )
         {
 
-      // preved fqd na  mala pismena a otestuj to
-       if( ( zone = get_FQDN( FQDN , fqdn ) )  == 0 )  // spatny format navu domeny
+       if(  get_FQDN( FQDN , fqdn ) ) 
          {
-            ret->errCode = COMMAND_PARAMETR_ERROR;
-            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
-            ret->errors.length( 1 );
-            ret->errors[0].code = ccReg::domainCreate_fqdn;
-            ret->errors[0].value <<= CORBA::string_dup( fqdn );
-            ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
-        }
-      else
-       { 
+
           regID = PQsql.GetLoginRegistrarID( clientID );        // aktivni registrator
           if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) FQDN ) ) == 0 )
             // prvni test zdali domena  neexistuje 
@@ -3986,17 +3970,8 @@ LOG( NOTICE_LOG, "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  ", clie
 
       if( PQsql.BeginAction( clientID, EPP_DomainTransfer, ( char * ) clTRID ) )
         {
-      if(  get_FQDN( FQDN , fqdn )   == 0 )  // spatny format navu domeny
+      if(  get_FQDN( FQDN , fqdn )    )  // spatny format navu domeny
          {
-            ret->errCode = COMMAND_PARAMETR_ERROR;
-            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
-            ret->errors.length( 1 );
-            ret->errors[0].code = ccReg::domainCreate_fqdn;
-            ret->errors[0].value <<= CORBA::string_dup( fqdn );
-            ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
-        }
-      else
-      {
 
           // pokud domena existuje
           if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) FQDN ) ) == 0 )
