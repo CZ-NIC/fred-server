@@ -151,7 +151,7 @@ if( zone == ZONE_CZ )    // DOMENA CZ
 
 
               // TEST povolene znaky
-              if( isalnum( fqdn[i]  ) ||  fqdn[i] == '.' )
+              if( isalnum( fqdn[i]  ) ||  fqdn[i] == '-' ||  fqdn[i] == '.' )
                 {
                     // PREVOD na mala pismena
                     FQDN[i] = tolower( fqdn[i] );
