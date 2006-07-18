@@ -3176,8 +3176,8 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                       PQsql.SET( "UpID", regID );
                                       if( !remove_update_flag  )
                                       {
-                                      PQsql.SET( "nsset", nssetid );    // zmena nssetu
-                                      PQsql.SET( "registrant", contactid );     // zmena drzitele domeny
+                                      if( nssetid )  PQsql.SET( "nsset", nssetid );    // zmena nssetu
+                                      if( contactid ) PQsql.SET( "registrant", contactid );     // zmena drzitele domeny
                                       PQsql.SET( "AuthInfoPw", authInfo_chg );  // zmena autentifikace
                                       }
                                       PQsql.WHEREID( id );
@@ -3260,7 +3260,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                               // vymaz  admin kontakty
                                               for( i = 0; i < admin_rem.length(); i++ )
                                                 {
-                                                  adminid = PQsql.GetNumericFromTable( "Contact", "id", "handle", admin_add[i] );
+                                                  adminid = PQsql.GetNumericFromTable( "Contact", "id", "handle", admin_rem[i] );
                                                   check = PQsql.CheckContactMap( "domain", id, adminid );
 
                                                   if( adminid && check )
@@ -3279,10 +3279,10 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 
                                                    if( adminid  == 0 )
                                                       {
-                                                        LOG( WARNING_LOG, "add admin-c not exist" );
+                                                        LOG( WARNING_LOG, "rem admin-c not exist" );
                                                         ret->errors.length( seq +1 );
-                                                        ret->errors[seq].code = ccReg::domainUpdate_admin_add;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  admin_add[i] );
+                                                        ret->errors[seq].code = ccReg::domainUpdate_admin_rem;
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  admin_rem[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( "unknow rem admin contact" );
                                                         seq++;
                                                       }
@@ -3290,8 +3290,8 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                       {
                                                         LOG( WARNING_LOG, "rem admin Contac not exist in contact map table" );
                                                         ret->errors.length( seq +1 );
-                                                        ret->errors[seq].code = ccReg::domainUpdate_admin_add;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  admin_add[i] );
+                                                        ret->errors[seq].code = ccReg::domainUpdate_admin_rem;
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  admin_rem[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( "admin contact not exist in contact map" );
                                                         seq++;
                                                       }
