@@ -1026,9 +1026,10 @@ PQ PQsql;
 char statusString[128] , HANDLE[64];
 int regID = 0, crID = 0, clID = 0, id , num ;
 bool remove_update_flag = false ;
-int len, i , seq=0;
+int len, i , seq;
 Status status;
 
+seq=0;
 ret = new ccReg::Response;
 ret->errCode = 0;
 ret->errors.length( 0 );
@@ -1809,7 +1810,7 @@ char HANDLE[64]; // handle na velka pismena
 char roid[64];
 ccReg::Response * ret;
 int regID, id, techid;
-int i, len, j , seq=0;
+int i, len, j , seq;
 time_t now;
 
 ret = new ccReg::Response;
@@ -1817,7 +1818,7 @@ ret = new ccReg::Response;
 ret->errCode = 0;
 ret->errors.length( 0 );
 crDate = 0;
-
+seq=0;
 
 LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", clientID, clTRID, handle , authInfoPw  );
 
@@ -2079,12 +2080,12 @@ Status status;
 bool  check;
 char  Array[512] ,  statusString[128] , HANDLE[64] , NAME[256];
 int regID=0 , clID=0 , id ,nssetid ,  techid  , hostID;
-int i , j , seq=0;
+int i , j , seq;
 int hostNum;
 bool remove_update_flag=false;
 
 ret = new ccReg::Response;
-
+seq=0;
 ret->errCode=0;
 ret->errors.length(0);
 
@@ -2963,12 +2964,12 @@ char FQDN[64];
 char valexpiryDate[32];
 char statusString[128];
 int regID = 0, clID = 0, id, nssetid, contactid, adminid;
-int i, len, slen, j , seq=0 , zone;
+int i, len, slen, j , seq , zone;
 bool remove_update_flag=false;
 time_t valExpDate = 0;
 
 ret = new ccReg::Response;
-
+seq=0;
 ret->errCode = 0;
 ret->errors.length( 0 );
 
@@ -3371,7 +3372,7 @@ char expiryDate[32], valexpiryDate[32], createDate[32];
 char roid[64] , FQDN[64] , HANDLE[64];
 ccReg::Response * ret;
 int contactid, regID, nssetid, adminid, id;
-int i, len, s, zone , seq=0;
+int i, len, s, zone , seq;
 bool insert = true;
 time_t t, valExpDate;
 
@@ -3380,7 +3381,7 @@ ret = new ccReg::Response;
 
 // default
 valExpDate = 0;
-
+seq=0;
 // default
 ret->errCode = 0;
 ret->errors.length( 0 );
@@ -3722,11 +3723,11 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
   ret = new ccReg::Response;
 
   t = curExpDate;
-
 // aktualni cas
    now = time(NULL);
 // default
   exDate = 0;
+  seq = 0;
 
 // default
   ret->errCode = 0;
