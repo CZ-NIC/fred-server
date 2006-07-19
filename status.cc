@@ -12,6 +12,9 @@ if( s < sadd )
 {
 status = stat_add[s] ;  // prvek pole 
 
+// nelze nastavit sever status
+if( IsServerStatus( status ) ) return false;
+
 // projdi pole prvku a pokud uz tamje tak nepridavej
 for( j = 0  ; j < slen ; j ++ )
    {     
@@ -38,6 +41,9 @@ int status;
 if( s < srem )
 {
 status = stat_rem[s];  // prvek pole
+
+// nelz vymazat sever status
+if( IsServerStatus( status ) ) return false;
 
 
 // projdi pole prvku a pokud uz tamje tak nepridavej
