@@ -2548,12 +2548,12 @@ if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
 
   if( regID == clID )       // transfer nemuze delat stavajici client
     {
-      LOG( WARNING_LOG, "client can not transfer domain %s" , handle );
+      LOG( WARNING_LOG, "client can not transfer NSSET %s" , handle );
       ret->errCode =  COMMAND_NOT_ELIGIBLE_FOR_TRANSFER;
     }
    else
   {
-   if(  PQsql.AuthTable(  "DOMAIN"  , (char *)authInfo , id )  == false  ) // pokud prosla autentifikace 
+   if(  PQsql.AuthTable(  "NSSET"  , (char *)authInfo , id )  == false  ) // pokud prosla autentifikace 
      {       
         LOG( WARNING_LOG , "autorization failed");
         ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
