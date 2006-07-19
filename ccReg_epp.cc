@@ -3766,7 +3766,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
       if( PQsql.BeginAction( clientID, EPP_DomainRenew, ( char * ) clTRID ) )
         {
 
-       if(  get_FQDN( FQDN , fqdn ) ) 
+       if(  ( zone = get_FQDN( FQDN , fqdn ) ) > 0 ) 
          {
 
           regID = PQsql.GetLoginRegistrarID( clientID );        // aktivni registrator
