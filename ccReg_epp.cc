@@ -916,7 +916,7 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , cl
         {
 
        // preved handle na velka pismena
-       if( get_HANDLE( HANDLE , handle ) == false )  // spatny format handlu
+       if( get_HANDLE( HANDLE , handle )  )  
          {
           if( PQsql.BeginTransaction() )
             {
@@ -1063,7 +1063,7 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
         {
 
        // preved handle na velka pismena
-       if( get_HANDLE( HANDLE , handle ) == false )  // spatny format handlu
+       if( get_HANDLE( HANDLE , handle )  )  
          {
 
 
@@ -1818,7 +1818,6 @@ ret->errCode = 0;
 ret->errors.length( 0 );
 crDate = 0;
 
-get_HANDLE( HANDLE ,  handle );
 
 LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", clientID, clTRID, handle , authInfoPw  );
 
