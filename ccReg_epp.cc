@@ -2223,7 +2223,10 @@ if( PQsql.OpenDatabase( database ) )
                                             // pridat tech kontakty                      
                                             for( i = 0; i < tech_add.length(); i++ )
                                               {
-                                                techid = PQsql.GetNumericFromTable( "Contact", "id", "handle", tech_add[i] );
+                                               if( get_HANDLE( HANDLE , tech_add[i]  )  )
+                                                 techid = PQsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE );
+                                                else techid = 0 ;
+
                                                 check = PQsql.CheckContactMap( "nsset", id, techid );
                                                 if( techid && !check )
                                                   {
@@ -2266,7 +2269,10 @@ if( PQsql.OpenDatabase( database ) )
                                             // vymaz  tech kontakty
                                             for( i = 0; i < tech_rem.length(); i++ )
                                               {
-                                                techid = PQsql.GetNumericFromTable( "Contact", "id", "handle", tech_add[i] );
+                                                 if( get_HANDLE( HANDLE , tech_rem[i] ) ) 
+                                                    techid = PQsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE );
+                                                 else techid = 0 ;
+
                                                 check = PQsql.CheckContactMap( "nsset", id, techid );
 
                                                 if( techid && check )
@@ -2282,18 +2288,18 @@ if( PQsql.OpenDatabase( database ) )
                                                   {
                                                     if( techid == 0 )
                                                       {
-                                                        LOG( WARNING_LOG, "add tech Contact [%s]  not exist"  , (const char *) tech_add[i] );
+                                                        LOG( WARNING_LOG, "rem tech Contact [%s]  not exist"  , (const char *) tech_rem[i] );
                                                         ret->errors.length( seq +1 );
-                                                        ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
+                                                        ret->errors[seq].code = ccReg::nssetUpdate_tech_rem;
                                                         ret->errors[seq].value <<= CORBA::string_dup(  tech_rem[i] );
-                                                        ret->errors[seq].reason = CORBA::string_dup( "unknow add tech contact" );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "unknow rem tech contact" );
                                                         seq++;
                                                       }
                                                     if( !check )  
                                                       {
-                                                       LOG( WARNING_LOG, "rem tech Contact [%s] not in contact map table" , (const char *) tech_add[i] );
+                                                       LOG( WARNING_LOG, "rem tech Contact [%s] not in contact map table" , (const char *) tech_rem[i] );
                                                         ret->errors.length( seq +1 );
-                                                        ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
+                                                        ret->errors[seq].code = ccReg::nssetUpdate_tech_rem;
                                                         ret->errors[seq].value <<= CORBA::string_dup(  tech_rem[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( "tech contact not exist in contact map" );
                                                         seq++;
@@ -2519,7 +2525,6 @@ ret->errCode=0;
 ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "NSSetTransfer: clientID -> %d clTRID [%s] handle [%s] authInfo [%s] " , clientID , clTRID , handle , authInfo );
-LOG( NOTICE_LOG ,  "NSSetTransfer: authInfo [%s]" , authInfo ); 
 
 if( PQsql.OpenDatabase( database ) )
 {
@@ -2960,7 +2965,7 @@ PQ PQsql;
 Status status;
 const ccReg::ENUMValidationExtension * enumVal;
 bool stat, check;
-char FQDN[64];
+char FQDN[64] , HANDLE[64];
 char valexpiryDate[32];
 char statusString[128];
 int regID = 0, clID = 0, id, nssetid, contactid, adminid;
@@ -3099,7 +3104,9 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 
                                       if( strlen( nsset_chg ) )
                                         {
-                                          if( ( nssetid = PQsql.GetNumericFromTable( "NSSET", "id", "handle", nsset_chg ) ) == 0 )
+                                         if(  get_HANDLE( HANDLE , nsset_chg ) ) 
+                                           {
+                                            if( ( nssetid = PQsql.GetNumericFromTable( "NSSET", "id", "handle", HANDLE ) ) == 0 )
                                             {
                                               LOG( WARNING_LOG, "nsset %s not exist", nsset_chg );
 
@@ -3111,13 +3118,29 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
 
                                             }
+ 
+                                          }
+                                           else 
+                                          {
+                                                      LOG( WARNING_LOG, "nsset %s bad handle" , nsset_chg );
+                                                      ret->errors.length( seq +1 );
+                                                      ret->errors[seq].code = ccReg::domainUpdate_nsset;
+                                                      ret->errors[seq].value <<= CORBA::string_dup(  nsset_chg );
+                                                      ret->errors[seq].reason = CORBA::string_dup( "bad nsset handle" );
+                                                      seq++;
+                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
+
+                                          }
                                         }
                                       else nssetid = 0;    // nemenim nsset;
 
 
                                       if( strlen( registrant_chg ) )
                                         {
-                                          if( ( contactid = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", registrant_chg ) ) == 0 )
+                                          if(  get_HANDLE( HANDLE , registrant_chg ) )
+                                           {
+
+                                          if( ( contactid = PQsql.GetNumericFromTable( "CONTACT", "id", "handle", HANDLE ) ) == 0 )
                                             {
                                               LOG( WARNING_LOG, "registrant %s not exist", registrant_chg );
                                                     
@@ -3129,6 +3152,20 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
 
                                             }
+                                           }
+                                         else
+                                            {
+                                              LOG( WARNING_LOG, "registrant %s bad handle", registrant_chg );
+
+                                                      ret->errors.length( seq +1 );
+                                                      ret->errors[seq].code = ccReg::domainUpdate_registrant;
+                                                      ret->errors[seq].value <<= CORBA::string_dup(  registrant_chg );
+                                                      ret->errors[seq].reason = CORBA::string_dup( "bad handle registrant" );
+                                                      seq++;
+                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
+
+                                            }
+
                                         }
                                       else contactid = 0;  // nemenim vlastnika
 
@@ -3215,7 +3252,10 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                               // pridat admin kontakty                      
                                               for( i = 0; i < admin_add.length(); i++ )
                                                 {
-                                                  adminid = PQsql.GetNumericFromTable( "Contact", "id", "handle", admin_add[i] );
+                                                  if(  get_HANDLE( HANDLE , admin_add[i]  ) )
+                                                  adminid = PQsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE );
+                                                  else adminid = 0;
+
                                                   check = PQsql.CheckContactMap( "domain", id, adminid );
 
                                                   if( adminid && !check )
@@ -3260,7 +3300,10 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                               // vymaz  admin kontakty
                                               for( i = 0; i < admin_rem.length(); i++ )
                                                 {
-                                                  adminid = PQsql.GetNumericFromTable( "Contact", "id", "handle", admin_rem[i] );
+                                                  if(  get_HANDLE( HANDLE ,  admin_rem[i] ) )
+                                                  adminid = PQsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE );
+                                                  else adminid = 0;
+
                                                   check = PQsql.CheckContactMap( "domain", id, adminid );
 
                                                   if( adminid && check )
