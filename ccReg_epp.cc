@@ -1,4 +1,3 @@
-// *INDENT-OFF*
 //  implementing IDL interfaces for file ccReg.idl
 // autor Petr Blaha petr.blaha@nic.cz
 
@@ -1841,6 +1840,9 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
         }
         else
      {
+      if( PQsql.BeginTransaction() )      // zahaj transakci
+        {
+ 
         // prvni test zdali nsset uz existuje          
         if(  PQsql.CheckObject( "NSSET",  "handle", handle  )   )
          {
@@ -1849,8 +1851,6 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
         }
         else                  // pokud nexistuje 
        {
-          if( PQsql.BeginTransaction() )      // zahaj transakci
-            {
 
               // get  registrator ID
               regID = PQsql.GetLoginRegistrarID( clientID );
@@ -2123,6 +2123,8 @@ if( PQsql.OpenDatabase( database ) )
 
         if( ret->errCode == 0 )
           {
+          if( PQsql.BeginTransaction() )
+            {
             // pokud   neexistuje
             if( ( id = PQsql.GetNumericFromTable( "NSSET", "id", "handle", ( char * ) HANDLE ) ) == 0 )
               {
@@ -2131,8 +2133,6 @@ if( PQsql.OpenDatabase( database ) )
               }
             else
               {
-                if( PQsql.BeginTransaction() )
-                  {
                     // get  registrator ID
                     regID = PQsql.GetLoginRegistrarID( clientID );
                     // client contaktu
@@ -2535,6 +2535,9 @@ if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
   // preved handle na velka pismena
   if( get_HANDLE( HANDLE , handle )  )
   {
+  if( PQsql.BeginTransaction() )
+  {
+ 
    // pokud domena neexistuje
   if( (id = PQsql.GetNumericFromTable(  "NSSET"  , "id" , "handle" , (char * ) HANDLE ) ) == 0 ) 
     {
@@ -2542,7 +2545,6 @@ if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
       ret->errCode= COMMAND_OBJECT_NOT_EXIST;
     }
   else
-  if( PQsql.BeginTransaction() )  
   {
    // get  registrator ID
    regID =   PQsql.GetLoginRegistrarID( clientID);
@@ -2582,7 +2584,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
      }
     }
    
-
+   }
     // konec transakce commit ci rollback
     PQsql.QuitTransaction( ret->errCode );
    }
@@ -3048,6 +3050,9 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 
           if( ret->errCode == 0 )
             {
+             if( PQsql.BeginTransaction() )
+               {
+
               // pokud domena existuje
               if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) FQDN ) ) == 0 )
                 {
@@ -3056,8 +3061,6 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                 }
               else
                 {
-                  if( PQsql.BeginTransaction() )
-                    {
                       // get  registrator ID
                       regID = PQsql.GetLoginRegistrarID( clientID );
                       // client contaktu
@@ -3478,6 +3481,9 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
         }
       else
        {
+          if( PQsql.BeginTransaction() )
+            {
+
 
           //  test zdali domena uz existuje                   
           if( PQsql.CheckObject( "DOMAIN" , "fqdn" , fqdn )   )
@@ -3487,8 +3493,6 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
             }
           else // pokud domena nexistuje             
           {  
-          if( PQsql.BeginTransaction() )
-            {
               id = PQsql.GetSequenceID( "domain" );     // id domeny
 
               // vytvor roid domeny
@@ -3811,6 +3815,9 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
 
        if(  ( zone = get_FQDN( FQDN , fqdn ) ) > 0 ) 
          {
+            // zahaj transakci
+          if( PQsql.BeginTransaction() )
+            {
 
           regID = PQsql.GetLoginRegistrarID( clientID );        // aktivni registrator
           if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) FQDN ) ) == 0 )
@@ -3820,9 +3827,6 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
               LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
             }
           else
-
-            // zahaj transakci
-          if( PQsql.BeginTransaction() )
             {
 
 
@@ -3938,7 +3942,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
 
                                 }
                             }
-
+                           }
 
 
                         }
@@ -3990,7 +3994,6 @@ return ret;
  *
  ***********************************************************************/
 
-// *INDENT-ON*
 ccReg::Response * ccReg_EPP_i::DomainTransfer( const char *fqdn, const char *authInfo, CORBA::Long clientID, const char *clTRID )
 {
 ccReg::Response * ret;
@@ -4016,13 +4019,15 @@ LOG( NOTICE_LOG, "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  ", clie
       if(  get_FQDN( FQDN , fqdn )    )  // spatny format navu domeny
          {
 
+if( PQsql.BeginTransaction() )
+ {
           // pokud domena existuje
           if( ( id = PQsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) FQDN ) ) == 0 )
             {
               ret->errCode = COMMAND_OBJECT_NOT_EXIST;
               LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
             }
-          else if( PQsql.BeginTransaction() )
+          else 
             {
               // get  registrator ID
               regID = PQsql.GetLoginRegistrarID( clientID );
@@ -4073,7 +4078,7 @@ LOG( NOTICE_LOG, "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  ", clie
                         }
 
                     }
-
+                    }
                 }
               // konec transakce commit ci rollback
               PQsql.QuitTransaction( ret->errCode );
