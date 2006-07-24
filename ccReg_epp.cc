@@ -2517,6 +2517,7 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(const char* handle, const char* auth
 ccReg::Response *ret;
 PQ PQsql;
 char HANDLE[64];
+Status status;
 int regID=0 , clID=0 , id , contactid;
 
 ret = new ccReg::Response;
@@ -2560,6 +2561,18 @@ if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
     }
    else
   {
+
+                  // zpracuj  pole statusu
+                  status.Make( PQsql.GetStatusFromTable( "NSSET", id ) );
+
+                  if( status.Test( STATUS_TRANSFER ) )
+                    {
+                      LOG( WARNING_LOG, "status TransferProhibited" );
+                      ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
+                    }
+                  else
+                    {
+
    if(  PQsql.AuthTable(  "NSSET"  , (char *)authInfo , id )  == false  ) // pokud prosla autentifikace 
      {       
         LOG( WARNING_LOG , "autorization failed");
@@ -2583,7 +2596,7 @@ if( PQsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
        }
      }
     }
-   
+    }
    }
     // konec transakce commit ci rollback
     PQsql.QuitTransaction( ret->errCode );
