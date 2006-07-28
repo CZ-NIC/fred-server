@@ -2583,8 +2583,14 @@ if( DBsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
          //  uloz do historie
        if( DBsql.MakeHistory() )
         {
+                      if( DBsql.SaveHistory( "nsset_contact_map", "nssetid", id ) )     // historie tech kontakty
+                        {
+                          if( DBsql.SaveHistory( "HOST", "nssetid", id ) ) // historie hostu
+                           {
           if( DBsql.SaveHistory( "NSSET" , "id" , id ) ) // uloz zaznam
            { 
+
+
                 // zmena registratora
                 DBsql.UPDATE( "NSSET");
                 DBsql.SET( "TrDate" , "now" );
@@ -2593,6 +2599,9 @@ if( DBsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
                 if(   DBsql.EXEC() )  ret->errCode = COMMAND_OK; // nastavit OK                                  
                 else  ret->errCode = COMMAND_FAILED;
            }
+              }
+                 }
+
        }
      }
     }
@@ -2903,17 +2912,23 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , clie
                           if( DBsql.MakeHistory() )
                             {
                               if( DBsql.SaveHistory( "domain_contact_map", "domainID", id ) )
-                                {
-                                  if( DBsql.DeleteFromTable( "enumval", "domainID", id ) )      // enumval extension
-                                    {
+                                {                                 
                                       if( DBsql.DeleteFromTable( "domain_contact_map", "domainID", id ) )
                                         {
-                                          if( DBsql.SaveHistory( "DOMAIN", "id", id ) )
-                                            {
-                                              if( DBsql.DeleteFromTable( "DOMAIN", "id", id ) )  ret->errCode = COMMAND_OK; // pokud usmesne smazal
-                                            }
+                                           if( DBsql.SaveHistory( "enumval", "domainID", id ) ) 
+                                             {
+                                               if( DBsql.DeleteFromTable( "enumval", "domainID", id ) )      // enumval extension
+                                                {
+ 
+                                                 if( DBsql.SaveHistory( "DOMAIN", "id", id ) )
+                                                    {
+                                                       if( DBsql.DeleteFromTable( "DOMAIN", "id", id ) )  
+                                                        ret->errCode = COMMAND_OK; // pokud usmesne smazal
+                                                    }
+                                                 }
+                                              }
                                         }
-                                    }
+                                    
                                 }
                             }
                         }
@@ -3923,24 +3938,13 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
                       if( DBsql.MakeHistory() )
                         {
 
-
+                        if( DBsql.SaveHistory( "enumval",  "domainID", id ) ) // uloz extension 
+                          {
                           if( DBsql.SaveHistory( "domain_contact_map", "domainID", id ) )       // uloz kontakty
                             {
                               if( DBsql.SaveHistory( "Domain", "id", id ) )     // uloz zaznam
                                 {
-                                  // zmena platnosti domeny
-                                  DBsql.UPDATE( "DOMAIN" );
-                                  DBsql.SET( "ExDate", exDateStr );
-                                  DBsql.WHEREID( id );
-                                  if( DBsql.EXEC() ) ret->errCode = COMMAND_OK;
-                                  else ret->errCode = COMMAND_FAILED;
-                                }
-                            }
 
-                          if( ret->errCode == COMMAND_OK )
-                            {
-                              if( DBsql.SaveHistory( "enumval", "domainID", id ) )
-                                {
                                   if( valExpDate )      // zmena extension
                                     {
                                       get_timestamp( valExpDate, valexpiryDate );
@@ -3953,8 +3957,19 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
                                       if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;
                                     }
 
+                                   if( ret->errCode == 0 ) // pokud je OK
+                                   {
+                                  // zmena platnosti domeny
+                                  DBsql.UPDATE( "DOMAIN" );
+                                  DBsql.SET( "ExDate", exDateStr );
+                                  DBsql.WHEREID( id );
+                                  if( DBsql.EXEC() ) ret->errCode = COMMAND_OK;
+                                  else ret->errCode = COMMAND_FAILED;
+                                  }
                                 }
                             }
+                          }
+
                            }
 
 
@@ -4076,6 +4091,11 @@ if( DBsql.BeginTransaction() )
                           //  uloz do historie
                           if( DBsql.MakeHistory() )
                             {
+                        if( DBsql.SaveHistory( "enumval",  "domainID", id ) ) // uloz extension
+                          {
+                          if( DBsql.SaveHistory( "domain_contact_map", "domainID", id ) )       // uloz kontakty
+                            {
+
                               if( DBsql.SaveHistory( "Domain", "id", id ) )     // uloz zaznam
                                 {
                                   // zmena registratora
@@ -4086,6 +4106,8 @@ if( DBsql.BeginTransaction() )
                                   if( DBsql.EXEC() ) ret->errCode = COMMAND_OK;  // nastavit OK                                  
                                   else ret->errCode = COMMAND_FAILED;
                                 }
+                              }
+                             }
                             }
 
                         }
