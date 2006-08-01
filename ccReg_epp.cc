@@ -4188,18 +4188,6 @@ if( DBsql.OpenDatabase( database ) )
 
 if( rows == 0 ) reglist->length( 0 ); // nulova delka
 
-/*
-rl = new ccReg::RegistrarList;
-
-rl->length( rows );
-for( i = 0 ; i < rows ; i ++ )
-{
-LOG( NOTICE_LOG , "copy %s" , ( const char *)  reglist[i] );
-rl[i] = CORBA::string_dup( reglist[i]  );
-}
-
-return  rl;
-*/
 return  reglist;
 }
 
@@ -4270,4 +4258,97 @@ reg->url=CORBA::string_dup( "" );
 return reg;
 }
 
+
+
+// primitivni vypis
+ccReg::Lists*  ccReg_EPP_i::ObjectList( char* table , char *fname )
+{
+DB DBsql;
+ccReg::Lists *list;
+char sqlString[128];
+int rows =0, i;
+
+list = new ccReg::Lists;
+
+
+if( DBsql.OpenDatabase( database ) )
+  {
+   sprintf( sqlString , "SELECT %s FROM %s;" , fname , table );
+
+   if( DBsql.ExecSelect( sqlString ) )
+     {
+       rows = DBsql.GetSelectRows();
+       LOG( NOTICE_LOG, "List: %s  num -> %d",  table , rows );
+       list->length( rows );
+
+       for( i = 0 ; i < rows ; i ++ )
+          {
+             (*list)[i]=CORBA::string_dup( DBsql.GetFieldValue(  i , 0 )  ); 
+          }
+
+      DBsql.FreeSelect();
+     }
+    DBsql.Disconnect();
+
+  }
+
+if( rows == 0 ) list->length( 0 ); // nulova delka
+
+return list;
+}
+
+ccReg::Lists* ccReg_EPP_i::ListRegistrar()
+{
+return ObjectList( "REGISTRAR" , "handle" );
+}
+ccReg::Lists* ccReg_EPP_i::ListDomain()
+{
+return ObjectList( "DOMAIN" , "fqdn" );
+}
+ccReg::Lists* ccReg_EPP_i::ListContact()
+{
+return ObjectList( "CONTACT" , "handle" );
+}
+ccReg::Lists* ccReg_EPP_i::ListNSSet()
+{
+return ObjectList( "NSSET" , "handle" );
+}
+
+
+ccReg::RegObjectType ccReg_EPP_i::getRegObjectType(const char* objectName)
+{
+DB DBsql;
+char sqlString[128];
+int zone , id ;
+
+if( DBsql.OpenDatabase( database ) )
+  {
+  if( ( id =  DBsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", (char *) objectName ) )  > 0  )
+    {
+      zone =  DBsql.GetNumericFromTable( "DOMAIN", "zone" , "id" ,  id ) ;
+      switch( zone )
+            {
+               case ZONE_CZ:
+                              return ccReg::CZ_DOMAIN;
+               case ZONE_ENUM:
+                              return ccReg::ENUM_DOMAIN;
+               
+            }      
+    
+    }
+   else
+   {
+   if(  DBsql.GetNumericFromTable( "CONTACT", "id", "handle", (char *) objectName ) ) return ccReg::CONTACT_HANDLE;
+   else 
+        if(  DBsql.GetNumericFromTable( "NSSET", "id", "handle", (char *) objectName ) ) return ccReg::NSSET_HANDLE;
+   }
+
+    DBsql.Disconnect();  
+ }
+
+
+// deafult
+return  ccReg::NONE;
+}
+ 
 
