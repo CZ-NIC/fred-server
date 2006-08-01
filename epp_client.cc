@@ -34,9 +34,13 @@ int main(int argc, char** argv)
     ccReg::Domain *domain;
     ccReg::Check_var check;
     ccReg::Check dcheck(2);
-    CORBA::Short err;
+    CORBA::Any an;
+    CORBA::Short err , sh;
     CORBA::Object_var obj ;
+    ccReg::RegistrarList *rl;
+    ccReg::Registrar *reg;
     CORBA::String_var errMsg , svTR , mesg ;
+    char *msg;
     int i , len , max = 512, d , j , a;
     CORBA::Long loginID , msgID , newmsgID;
     ccReg::Avail_var av;
@@ -53,7 +57,7 @@ int main(int argc, char** argv)
     time_t t;
     filebuf *pbuf;
     char *buffer;
-    char name[64] , roid[32] , email[32] , clTRID[32];
+    char name[64] , handle[64] ,  roid[32] , email[32] , clTRID[32];
     long size  ;
     ifstream fd ("/tmp/ccReg.ref");
     // get pointer to associated buffer object
@@ -102,6 +106,30 @@ int main(int argc, char** argv)
 
     cout << "get Transaction code " << ret->errCode << ret->errMsg  <<  ret->svTRID  << endl;
 */
+
+    // vrati kompletni seznam registratoru
+    rl = EPP->getRegistrars();
+
+
+    cout << "num" <<  rl->length() << endl;    
+    // najde jednoho registratora
+    for( i = 0 ; i < rl->length() ; i ++ )
+      {
+           cout << "registrar:" << (*rl)[i].id  << (*rl)[i].handle   << (*rl)[i].name << (*rl)[i].organization << (*rl)[i].url << endl ;
+             reg =  EPP->getRegistrarByHandle(    (*rl)[i].handle  );
+             cout << "registrarInfo:" << reg->name << reg->url << endl ; 
+
+      }
+
+    ret =  EPP->ContactInfo( "jouda",  cc , 0 , "jouda_zero" );
+    cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
+
+    cout << "info "  << cc->Name  <<  endl;
+ 
+    cout <<  cc->Name << cc->Email << cc->DiscloseEmail <<  cc->CountryCode << endl;
+
+
+/*
     ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789"  , "" ,     "LRR-login-now" , loginID , "AE:B3:5F:FA:38:80:DB:37:53:6A:3E:D4:55:E2:91:97" ,  ccReg::CS  );
 
     cout << "loginID" << loginID  << endl;
@@ -139,13 +167,19 @@ int main(int argc, char** argv)
  
 
   cout << "login ID" <<  loginID << endl;
-  ret =  EPP->DomainRenew(  "exp.cz" ,  t  , 24 , exDate ,  loginID , "renew-enum" ,  ext ); 
-    cout << "Domain renew" << "err code " << ret->errCode   << endl;
+//  ret =  EPP->DomainRenew(  "e$$xp.cz" ,  t  , 18 , exDate ,  loginID , "renew-ex" ,  ext ); 
+//  cout << "Domain renew" << "err code " << ret->errCode   << endl;     
+ret =  EPP->ContactDelete( "e$$xp." ,   loginID ,  "omniorb-delete-contact"   );
+cout << "Contact delete" << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
+
      for( i = 0 ; i <  ret->errors.length() ; i ++ )
         {
            cout << "errors " <<  ret->errors[i].code <<  ret->errors[i].reason << endl;
+            an = ret->errors[i].value ;
+           if( an >>= msg) cout << "msg value " << msg << endl;
+           if( an >>= sh) cout << "int value " << sh << endl;
        }
-
+*/
 
 /*
     ret =  EPP->ContactInfo( "jouda",  cc , loginID , "jouda_info" );
@@ -592,9 +626,9 @@ delete cc;
     ret = EPP->NSSetTransfer( "NECOCZ",   "heslo" ,  loginID , "nsset-transfer" );
     cout  << "client logout "<< endl;
 */
-    ret =  EPP->ClientLogout( loginID , "XXXX-logout" );
+//    ret =  EPP->ClientLogout( loginID , "XXXX-logout" );
 
-    cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
+//    cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
      
     orb->destroy();
   }
