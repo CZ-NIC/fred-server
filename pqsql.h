@@ -7,7 +7,7 @@ PQ();
 ~PQ();
 
 // pripoji databazi s nastavenim conninfo
-bool OpenDatabase(char *conninfo); 
+bool OpenDatabase(const char *conninfo); 
 // provede sqlString 
 bool ExecSQL(char *sqlString);
 // odpojeni od databaze 

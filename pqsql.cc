@@ -19,7 +19,7 @@ PQ::~PQ()
 {
 }
 
-bool PQ::OpenDatabase(char *conninfo)
+bool PQ::OpenDatabase(const char *conninfo)
 {
 
 connection = PQconnectdb(conninfo);
