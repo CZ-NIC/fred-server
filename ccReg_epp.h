@@ -49,6 +49,16 @@ public:
   ccReg::RegistrarList* getRegistrars();
   ccReg::Registrar* getRegistrarByHandle(const char* handle);
 
+  // primitivni vypis
+  ccReg::Lists*  ObjectList( char* table , char *fname );
+  ccReg::Lists* ListRegistrar();
+  ccReg::Lists* ListDomain();
+  ccReg::Lists* ListContact();
+  ccReg::Lists* ListNSSet();
+
+  // testovaci fce na typ objektu
+  ccReg::RegObjectType getRegObjectType(const char* objectName);
+ 
 private:
 char database[128]; // nazev spojeni na databazi
 };
