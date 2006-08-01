@@ -27,10 +27,18 @@
 //
 // Example implementational code for IDL interface ccReg::EPP
 //
-ccReg_EPP_i::ccReg_EPP_i(){
+ccReg_EPP_i::ccReg_EPP_i(ccReg::Admin_ptr _admin) : admin(_admin) {
+
 }
 ccReg_EPP_i::~ccReg_EPP_i(){
 }
+
+ccReg::Admin_ptr 
+ccReg_EPP_i::getAdmin()
+{
+  return admin;
+}
+
 // test spojeni na databazi
 bool ccReg_EPP_i::TestDatabaseConnect(char *db)
 {

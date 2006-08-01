@@ -1,3 +1,4 @@
+#include "admin.h"
 //
 //  class implementing IDL interface ccReg::EPP
 //
@@ -7,10 +8,14 @@ private:
   // Make sure all instances are built on the heap by making the
   // destructor non-public
   //virtual ~ccReg_EPP_i();
+  ccReg::Admin_ptr admin;
 public:
   // standard constructor
-  ccReg_EPP_i( );
+  ccReg_EPP_i(ccReg::Admin_ptr admin);
   virtual ~ccReg_EPP_i();
+
+  // vrati administrativni objekt
+  ccReg::Admin_ptr getAdmin();
 
   // test spojeni na databazi
   bool TestDatabaseConnect(char *db);

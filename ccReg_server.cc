@@ -42,15 +42,15 @@ int main(int argc, char** argv)
 
     // Obtain a reference to the root POA.
     CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
-    PortableServer::POA_var poa = PortableServer::POA::_narrow(obj);
+    PortableServer::POA_var rootPOA = PortableServer::POA::_narrow(obj);
   
     // create POA for persistent references
-    PortableServer::POAManager_var mgr = poa->the_POAManager();
+    PortableServer::POAManager_var mgr = rootPOA->the_POAManager();
     CORBA::PolicyList pols;
     pols.length(2);
-    pols[0] = poa->create_lifespan_policy(PortableServer::PERSISTENT);
-    pols[1] = poa->create_id_assignment_policy(PortableServer::USER_ID);
-    poa = poa->create_POA("ccRegPOA",mgr.in(),pols);
+    pols[0] = rootPOA->create_lifespan_policy(PortableServer::PERSISTENT);
+    pols[1] = rootPOA->create_id_assignment_policy(PortableServer::USER_ID);
+    PortableServer::POA_var poa = rootPOA->create_POA("ccRegPOA",mgr.in(),pols);
     mgr->activate();
 
     // We allocate the objects on the heap.  Since these are reference
@@ -67,7 +67,10 @@ int main(int argc, char** argv)
 
       
 
-    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i;
+    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db);
+    CORBA::Object_var adminObj = rootPOA->servant_to_reference(myccReg_Admin_i);
+    ccReg::Admin_var admin = ccReg::Admin::_narrow(adminObj);
+    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(admin);
      
     // pokud projde uspesne test na pripojeni k databazi
     if( myccReg_EPP_i->TestDatabaseConnect( db) ) 
