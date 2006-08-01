@@ -62,6 +62,9 @@ bool  DB::BeginAction(int clientID , int action ,char *clTRID )
 {
 char sqlString[512];
 
+if( clientID == 0 ) { actionID = 0 ; loginID =  0 ;  return true; }
+else
+{
 // actionID pro logovani
 actionID = GetSequenceID("action");
 loginID = clientID; // id klienta
@@ -90,12 +93,17 @@ if( actionID )
 else return false;
 }
 
+}
+
 char * DB:: EndAction(int response )
 {
 char sqlString[512];
 // char svrTRID[32];
 int id;
 
+if( actionID == 0 ) return "no action";
+else
+{
 if( svrTRID == NULL ) 
  {
   LOG( SQL_LOG , "alloc svrTRID");
@@ -127,6 +135,7 @@ if( ExecSQL(  sqlString ) ) return   svrTRID;
 */
 
 else return "svrTRID ERROR";
+}
 }
 
 

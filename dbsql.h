@@ -65,7 +65,11 @@ int GetNSSetNum( int nssetID );
 
 
 // vyssi funkce na vraceni value
-int GetLoginRegistrarID(int id) { return GetNumericFromTable( "LOGIN" , "registrarid" , "id" , id ); };
+int GetLoginRegistrarID(int id) { 
+if( id == 0 ) return 0;
+else return GetNumericFromTable( "LOGIN" , "registrarid" , "id" , id ); 
+};
+
 int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "id" , "handle" , handle ); };
 char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "handle" , "id" , id ); };
 char * GetStatusFromTable( char *table , int id ) {  return GetValueFromTable( table , "status" , "id" , id ); };
