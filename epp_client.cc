@@ -108,7 +108,7 @@ int main(int argc, char** argv)
 */
 
     // vrati kompletni seznam registratoru
-    rl = EPP->getRegistrars();
+    rl = EPP->getAdmin()->getRegistrars();
 
 
     cout << "num" <<  rl->length() << endl;    
@@ -116,7 +116,7 @@ int main(int argc, char** argv)
     for( i = 0 ; i < rl->length() ; i ++ )
       {
            cout << "registrar:" << (*rl)[i].id  << (*rl)[i].handle   << (*rl)[i].name << (*rl)[i].organization << (*rl)[i].url << endl ;
-             reg =  EPP->getRegistrarByHandle(    (*rl)[i].handle  );
+	   reg =  EPP->getAdmin()->getRegistrarByHandle(    (*rl)[i].handle  );
              cout << "registrarInfo:" << reg->name << reg->url << endl ; 
 
       }
