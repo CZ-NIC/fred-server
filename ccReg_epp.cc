@@ -3619,6 +3619,10 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
               }
 
 
+        if( DBsql.UpdateCredit(  regID ,  id  ,  zone ,  period ,  EPP_DomainCreate )  == false )
+          {
+               ret->errCode =  COMMAND_BILLING_FAILURE;
+          }
 
                         if(  ret->errCode == 0  )
                         {
@@ -3914,6 +3918,11 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
                   ret->errCode = COMMAND_PARAMETR_ERROR;
 
               }
+
+        if( DBsql.UpdateCredit(  regID ,  id  ,  zone ,   period ,  EPP_DomainRenew )  == false )
+          {
+               ret->errCode =  COMMAND_BILLING_FAILURE;
+          }
 
                if(  ret->errCode == 0 )
                  {

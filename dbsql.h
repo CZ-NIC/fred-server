@@ -37,7 +37,7 @@ int GetExPreriodMax(int zone){ return GetNumericFromTable( "zone", "ex_period_ma
 int GetValPreriod(int zone){ return GetNumericFromTable( "zone", "val_period" , "id" , zone ); };
 
 // zapocteni creditu za operace domain create a domain renew
-bool Credit( int registrarID , int domainID , int period , bool create );
+bool UpdateCredit( int registrarID , int objectID ,  int zone ,  int period , int operation  );
 // zpracovani action 
 bool BeginAction(int clientID , int action ,char *clTRID );
 char * EndAction(int response  );

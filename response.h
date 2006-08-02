@@ -18,3 +18,5 @@
 
 #define COMMAND_PARAMETR_ERROR 2005 // Parameter value syntax error
 
+
+#define COMMAND_BILLING_FAILURE 2104  // chyba v placeni za domenu  Billing failure

@@ -40,17 +40,13 @@ if( memHandle )
 }
 
 // zpracovani creditu
-bool DB::Credit( int registrarID , int domainID , int period , bool create )
+bool DB::UpdateCredit( int registrarID , int objectID ,   int zone ,  int period , int operation  )
 {
 char sqlString[256];
-char b;
 
-// true false pro create
-if(  create ) b = 't' ;
-else b = 'f' ;
+sprintf( sqlString , "INSERT INTO CREDIT (  registrarID , objectID ,  date , operationID , period ) VALUES ( %d , %d ,  'now' , %d ,  %d );" ,  registrarID  ,  objectID , operation ,  period );
 
-sprintf( sqlString , "INSERT INTO CREDIT (  registrarID ,  domainID , date , domaincreate , period ) VALUES ( %d , %d , 'now' , \'%c\' ,  %d );" ,  registrarID  ,  domainID , b ,  period );
-
+// TODO odecteni kreditu
 if( ExecSQL( sqlString ) ) return true;      
 else return false;
 }
