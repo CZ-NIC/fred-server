@@ -36,7 +36,7 @@ ccReg_EPP_i::~ccReg_EPP_i(){
 ccReg::Admin_ptr 
 ccReg_EPP_i::getAdmin()
 {
-  return admin;
+  return ccReg::Admin::_duplicate(admin);
 }
 
 // test spojeni na databazi
