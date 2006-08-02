@@ -1288,7 +1288,8 @@ crDate = 0;
 
 
 LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s] %s ", clientID, clTRID, handle , HANDLE );
-
+LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Email %d" ,
+ c.DiscloseName  , c.DiscloseOrganization , c.DiscloseAddress , c.DiscloseTelephone , c.DiscloseFax , c.DiscloseEmail );
 
 
   if( DBsql.OpenDatabase( database ) )
@@ -1391,12 +1392,12 @@ LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s] %s ", cl
                       DBsql.VAL( c.SSN );
 
 
-                      if( c.DiscloseName > 0 ) DBsql.VALUE( "t" );
-                      if( c.DiscloseOrganization > 0 ) DBsql.VALUE( "t" );
-                      if( c.DiscloseAddress > 0 ) DBsql.VALUE( "t" );
-                      if( c.DiscloseTelephone > 0 ) DBsql.VALUE( "t" );
-                      if( c.DiscloseFax > 0 ) DBsql.VALUE( "t" );
-                      if( c.DiscloseEmail > 0 ) DBsql.VALUE( "t" );
+                      if( c.DiscloseName == 1 ) DBsql.VALUE( "t" );
+                      if( c.DiscloseOrganization ==  1 ) DBsql.VALUE( "t" );
+                      if( c.DiscloseAddress ==  1 ) DBsql.VALUE( "t" );
+                      if( c.DiscloseTelephone ==  1 ) DBsql.VALUE( "t" );
+                      if( c.DiscloseFax ==  1 ) DBsql.VALUE( "t" );
+                      if( c.DiscloseEmail == 1 ) DBsql.VALUE( "t" );
 
 
 
