@@ -59,6 +59,7 @@ return  reglist;
 }
 
 ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
+  throw (ccReg::Admin::ObjectNotFound)
 {
 DB DBsql;
 ccReg::Registrar *reg;
@@ -74,7 +75,8 @@ reg = new ccReg::Registrar ;
 
    if( DBsql.ExecSelect( sqlString ) )
    {
-        if( DBsql.GetSelectRows() == 1 )
+     if( DBsql.GetSelectRows() != 1 ) throw ccReg::Admin::ObjectNotFound();
+     else
          {
  
              reg->id =  atoi( DBsql.GetFieldValueName("ID" , 0 ) );

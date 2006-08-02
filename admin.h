@@ -11,7 +11,8 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
 
   // vypis registratoru
   ccReg::RegistrarList* getRegistrars();
-  ccReg::Registrar* getRegistrarByHandle(const char* handle);
+  ccReg::Registrar* getRegistrarByHandle(const char* handle) 
+    throw (ccReg::Admin::ObjectNotFound);
 
   // primitivni vypis
   ccReg::Lists*  ObjectList( char* table , char *fname );
