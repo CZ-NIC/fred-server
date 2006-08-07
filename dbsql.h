@@ -38,10 +38,9 @@ int GetValPreriod(int zone){ return GetNumericFromTable( "zone", "val_period" , 
 
 // zapocteni creditu za operace domain create a domain renew
 bool UpdateCredit( int registrarID , int objectID ,  int zone ,  int period , int operation  );
-// zpracovani action 
-bool BeginAction(int clientID , int action ,char *clTRID );
+// zpracovani action a ulozeni XML 
+bool BeginAction(int clientID , int action ,const char *clTRID  , const char *xml );
 char * EndAction(int response  );
-
 // vraci jazyk klienta
 int GetClientLanguage();
 

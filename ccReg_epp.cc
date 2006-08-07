@@ -110,7 +110,7 @@ LOG( NOTICE_LOG, "GetTransaction: clientID -> %d clTRID [%s] ", clientID, clTRID
     {
       if( errCode > 0 )
         {
-          if( DBsql.BeginAction( clientID, EPP_UnknowAction, ( char * ) clTRID ) )
+          if( DBsql.BeginAction( clientID, EPP_UnknowAction,  clTRID , "" ) )
             {
               // chybove hlaseni bere z clienta 
               ret->errCode = errCode;
@@ -163,7 +163,7 @@ return ret;
  ***********************************************************************/
 
 
-ccReg::Response * ccReg_EPP_i::PollAcknowledgement( CORBA::Long msgID, CORBA::Short & count, CORBA::Long & newmsgID, CORBA::Long clientID, const char *clTRID )
+ccReg::Response * ccReg_EPP_i::PollAcknowledgement( CORBA::Long msgID, CORBA::Short & count, CORBA::Long & newmsgID, CORBA::Long clientID, const char *clTRID , const char* XML )
 {
 DB DBsql;
 ccReg::Response * ret;
@@ -184,7 +184,7 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
       // get  registrator ID
       regID = DBsql.GetLoginRegistrarID( clientID );
 
-      if( DBsql.BeginAction( clientID, EPP_PollAcknowledgement, ( char * ) clTRID ) )
+      if( DBsql.BeginAction( clientID, EPP_PollAcknowledgement, clTRID , XML ) )
         {
 
           // test msg ID and clientID
@@ -281,7 +281,7 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
  *
  ***********************************************************************/
 
-ccReg::Response * ccReg_EPP_i::PollRequest( CORBA::Long & msgID, CORBA::Short & count, ccReg::timestamp & qDate, CORBA::String_out mesg, CORBA::Long clientID, const char *clTRID )
+ccReg::Response * ccReg_EPP_i::PollRequest( CORBA::Long & msgID, CORBA::Short & count, ccReg::timestamp & qDate, CORBA::String_out mesg, CORBA::Long clientID, const char *clTRID , const char* XML )
 {
 DB DBsql;
 char sqlString[1024];
@@ -311,7 +311,7 @@ LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s]", clientID, clTRID, ms
       regID = DBsql.GetLoginRegistrarID( clientID );
 
 
-      if( DBsql.BeginAction( clientID, EPP_PollAcknowledgement, ( char * ) clTRID ) )
+      if( DBsql.BeginAction( clientID, EPP_PollAcknowledgement,  clTRID , XML ) )
         {
 
           // vypsani zprav z fronty
@@ -376,7 +376,7 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response * ccReg_EPP_i::ClientLogout( CORBA::Long clientID, const char *clTRID )
+ccReg::Response * ccReg_EPP_i::ClientLogout( CORBA::Long clientID, const char *clTRID , const char* XML )
 {
 DB DBsql;
 ccReg::Response * ret;
@@ -391,7 +391,7 @@ LOG( NOTICE_LOG, "ClientLogout: clientID -> %d clTRID [%s]", clientID, clTRID );
 
   if( DBsql.OpenDatabase( database ) )
     {
-      if( DBsql.BeginAction( clientID, EPP_ClientLogout, ( char * ) clTRID ) )
+      if( DBsql.BeginAction( clientID, EPP_ClientLogout, clTRID , XML  ) )
         {
 
            DBsql.UPDATE( "Login" );
@@ -447,7 +447,9 @@ return ret;
  ***********************************************************************/
 
 
-ccReg::Response * ccReg_EPP_i::ClientLogin( const char *ClID, const char *passwd, const char *newpass, const char *clTRID, CORBA::Long & clientID, const char *certID, ccReg::Languages lang )
+ccReg::Response * ccReg_EPP_i::ClientLogin( const char *ClID, const char *passwd, const char *newpass, 
+                                            const char *clTRID, const char* XML, 
+                                            CORBA::Long & clientID, const char *certID, ccReg::Languages lang )
 {
 DB DBsql;
 int roid, id;
@@ -558,7 +560,7 @@ if( DBsql.OpenDatabase( database ) )
           }
 
         // probehne action pro svrTrID   musi byt az na mkonci pokud zna clientID
-        if( DBsql.BeginAction( clientID, EPP_ClientLogin, ( char * ) clTRID ) )
+        if( DBsql.BeginAction( clientID, EPP_ClientLogin, clTRID , XML ) )
           {
             // zapis na konec action
             ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
@@ -607,7 +609,7 @@ return ret;
  ***********************************************************************/
 
 
-ccReg::Response* ccReg_EPP_i::ObjectCheck( short act , char * table , char *fname , const ccReg::Check& chck , ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::ObjectCheck( short act , char * table , char *fname , const ccReg::Check& chck , ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 DB DBsql;
 ccReg::Response *ret;
@@ -628,7 +630,7 @@ LOG( NOTICE_LOG ,  "OBJECT %d  Check: clientID -> %d clTRID [%s] " , act  , clie
 if( DBsql.OpenDatabase( database ) )
 {
 
-  if( DBsql.BeginAction( clientID , EPP_ContactCheck , (char * ) clTRID  ) )
+  if( DBsql.BeginAction( clientID , EPP_ContactCheck ,  clTRID , XML  ) )
   {
  
     for( i = 0 ; i < len ; i ++ )
@@ -678,20 +680,20 @@ return ret;
 }
 
 
-ccReg::Response* ccReg_EPP_i::ContactCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::ContactCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
-return ObjectCheck( EPP_ContactCheck , "CONTACT"  , "handle" , handle , a , clientID , clTRID);
+return ObjectCheck( EPP_ContactCheck , "CONTACT"  , "handle" , handle , a , clientID , clTRID , XML);
 }
 
-ccReg::Response* ccReg_EPP_i::NSSetCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::NSSetCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
-return ObjectCheck( EPP_NSsetCheck ,  "NSSET"  , "handle" , handle , a ,  clientID , clTRID );
+return ObjectCheck( EPP_NSsetCheck ,  "NSSET"  , "handle" , handle , a ,  clientID , clTRID , XML);
 }
 
 
-ccReg::Response*  ccReg_EPP_i::DomainCheck(const ccReg::Check& fqdn, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID)
+ccReg::Response*  ccReg_EPP_i::DomainCheck(const ccReg::Check& fqdn, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
-return ObjectCheck(  EPP_DomainCheck , "DOMAIN"  , "fqdn" ,   fqdn , a ,  clientID , clTRID );
+return ObjectCheck(  EPP_DomainCheck , "DOMAIN"  , "fqdn" ,   fqdn , a ,  clientID , clTRID , XML);
 }
 
 
@@ -713,7 +715,7 @@ return ObjectCheck(  EPP_DomainCheck , "DOMAIN"  , "fqdn" ,   fqdn , a ,  client
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::ContactInfo(const char* handle, ccReg::Contact_out c , CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::ContactInfo(const char* handle, ccReg::Contact_out c , CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 DB DBsql;
 Status status;
@@ -735,7 +737,7 @@ if( DBsql.OpenDatabase( database ) )
 {
 
   
-if( DBsql.BeginAction( clientID , EPP_ContactInfo , (char * ) clTRID  ) )
+if( DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML ) )
   {
 
  if( get_HANDLE( HANDLE , handle ) ) // preved a otestuj na velka pismena
@@ -894,7 +896,7 @@ return ret;
  ***********************************************************************/
 
 
-ccReg::Response* ccReg_EPP_i::ContactDelete(const char* handle , CORBA::Long clientID, const char* clTRID )
+ccReg::Response* ccReg_EPP_i::ContactDelete(const char* handle , CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 ccReg::Response *ret;
 DB DBsql;
@@ -919,7 +921,7 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , cl
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( DBsql.BeginAction( clientID, EPP_ContactDelete, ( char * ) clTRID ) )
+      if( DBsql.BeginAction( clientID, EPP_ContactDelete,  clTRID , XML ) )
         {
 
        // preved handle na velka pismena
@@ -1026,7 +1028,7 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , cl
 
 ccReg::Response * ccReg_EPP_i::ContactUpdate( const char *handle, const ccReg::ContactChange & c, 
                                               const ccReg::Status & status_add, const ccReg::Status & status_rem,
-                                              CORBA::Long clientID, const char *clTRID )
+                                              CORBA::Long clientID, const char *clTRID , const char* XML )
 {
 ccReg::Response * ret;
 DB DBsql;
@@ -1067,7 +1069,7 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( DBsql.BeginAction( clientID, EPP_ContactUpdate, ( char * ) clTRID ) )
+      if( DBsql.BeginAction( clientID, EPP_ContactUpdate, clTRID , XML ) )
         {
 
        // preved handle na velka pismena
@@ -1269,7 +1271,7 @@ return ret;
 
 
 ccReg::Response * ccReg_EPP_i::ContactCreate( const char *handle, const ccReg::ContactChange & c, 
-                                              ccReg::timestamp & crDate, CORBA::Long clientID, const char *clTRID )
+                                              ccReg::timestamp & crDate, CORBA::Long clientID, const char *clTRID , const char* XML )
 {
 DB DBsql;
 char createDate[32];
@@ -1294,7 +1296,7 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
 
   if( DBsql.OpenDatabase( database ) )
     {
-      if( DBsql.BeginAction( clientID, EPP_ContactCreate, ( char * ) clTRID ) )
+      if( DBsql.BeginAction( clientID, EPP_ContactCreate,  clTRID ,  XML ) )
         {
 
        // preved handle na velka pismena
@@ -1470,7 +1472,8 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::NSSetInfo(const char* handle, ccReg::NSSet_out n, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::NSSetInfo(const char* handle, ccReg::NSSet_out n, 
+                          CORBA::Long clientID, const char* clTRID ,  const char* XML)
 {
 DB DBsql;
 Status status;
@@ -1493,7 +1496,7 @@ LOG( NOTICE_LOG ,  "NSSetInfo: clientID -> %d clTRID [%s] handle [%s] " , client
 if( DBsql.OpenDatabase( database ) )
 {
 
-if( DBsql.BeginAction( clientID , EPP_NSsetInfo , (char * ) clTRID  ) )
+if( DBsql.BeginAction( clientID , EPP_NSsetInfo , clTRID , XML  ) )
  {
 
 
@@ -1656,7 +1659,7 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::NSSetDelete(const char* handle, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::NSSetDelete(const char* handle, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 ccReg::Response *ret;
 DB DBsql;
@@ -1678,7 +1681,7 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , clie
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( DBsql.BeginAction( clientID, EPP_NSsetDelete, ( char * ) clTRID ) )
+      if( DBsql.BeginAction( clientID, EPP_NSsetDelete, clTRID , XML ) )
         {
        // preved handle na velka pismena
        if( get_HANDLE( HANDLE , handle )  )  
@@ -1809,7 +1812,7 @@ return ret;
 
 ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *authInfoPw, 
                                             const ccReg::TechContact & tech, const ccReg::DNSHost & dns,
-                                            ccReg::timestamp & crDate, CORBA::Long clientID, const char *clTRID )
+                                            ccReg::timestamp & crDate, CORBA::Long clientID, const char *clTRID , const char* XML )
 {
 DB DBsql;
 char Array[512] , NAME[256];
@@ -1833,7 +1836,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( DBsql.BeginAction( clientID, EPP_NSsetCreate, ( char * ) clTRID ) )
+      if( DBsql.BeginAction( clientID, EPP_NSsetCreate,  clTRID  , XML) )
         {
 
        // preved handle na velka pismena
@@ -2081,7 +2084,7 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle , const char* authI
                                           const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem,
                                           const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem,
                                           const ccReg::Status& status_add, const ccReg::Status& status_rem, 
-                                          CORBA::Long clientID, const char* clTRID)
+                                          CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 ccReg::Response *ret;
 DB DBsql;
@@ -2123,7 +2126,7 @@ LOG( NOTICE_LOG ,  "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] authInfo
 if( DBsql.OpenDatabase( database ) )
   {
 
-    if( DBsql.BeginAction( clientID, EPP_NSsetUpdate, ( char * ) clTRID ) )
+    if( DBsql.BeginAction( clientID, EPP_NSsetUpdate,  clTRID , XML) )
       {
 
        // preved handle na velka pismena
@@ -2521,7 +2524,7 @@ return ret;
  ***********************************************************************/
 
 
-ccReg::Response* ccReg_EPP_i::NSSetTransfer(const char* handle, const char* authInfo, CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::NSSetTransfer(const char* handle, const char* authInfo, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 ccReg::Response *ret;
 DB DBsql;
@@ -2539,7 +2542,7 @@ LOG( NOTICE_LOG ,  "NSSetTransfer: clientID -> %d clTRID [%s] handle [%s] authIn
 if( DBsql.OpenDatabase( database ) )
 {
 
-if( DBsql.BeginAction( clientID , EPP_NSsetTransfer , (char * ) clTRID  ) )
+if( DBsql.BeginAction( clientID , EPP_NSsetTransfer ,  clTRID , XML  ) )
  {
 
   // preved handle na velka pismena
@@ -2662,7 +2665,7 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::DomainInfo(const char* fqdn, ccReg::Domain_out d , CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::DomainInfo(const char* fqdn, ccReg::Domain_out d , CORBA::Long clientID, const char* clTRID ,  const char* XML)
 {
 DB DBsql;
 Status status;
@@ -2692,7 +2695,7 @@ d->ext.length(0); // extension
 if( DBsql.OpenDatabase( database ) )
 {
 
-if( DBsql.BeginAction( clientID , EPP_DomainInfo , (char * ) clTRID  ) )
+if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
  {
 
   // preved fqd na  mala pismena a otestuj to
@@ -2857,7 +2860,7 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::DomainDelete(const char* fqdn , CORBA::Long clientID, const char* clTRID)
+ccReg::Response* ccReg_EPP_i::DomainDelete(const char* fqdn , CORBA::Long clientID, const char* clTRID , const char* XML)
 {
 ccReg::Response *ret;
 DB DBsql;
@@ -2878,7 +2881,7 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , clie
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( DBsql.BeginAction( clientID, EPP_DomainDelete, ( char * ) clTRID ) )
+      if( DBsql.BeginAction( clientID, EPP_DomainDelete,  clTRID  , XML) )
         {
 
 
@@ -2997,7 +3000,7 @@ if( ret->errCode == 0 )
 ccReg::Response * ccReg_EPP_i::DomainUpdate( const char *fqdn, const char *registrant_chg, const char *authInfo_chg, const char *nsset_chg,
                                              const ccReg::AdminContact & admin_add, const ccReg::AdminContact & admin_rem,
                                              const ccReg::Status & status_add, const ccReg::Status & status_rem,
-                                             CORBA::Long clientID, const char *clTRID, const ccReg::ExtensionList & ext )
+                                             CORBA::Long clientID, const char *clTRID,  const char* XML ,  const ccReg::ExtensionList & ext )
 {
 ccReg::Response * ret;
 DB DBsql;
@@ -3070,7 +3073,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( DBsql.BeginAction( clientID, EPP_DomainUpdate, ( char * ) clTRID ) )
+      if( DBsql.BeginAction( clientID, EPP_DomainUpdate, clTRID , XML ) )
         {
 
 
@@ -3447,7 +3450,7 @@ return ret;
 
 ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Registrant, const char *nsset, const char *AuthInfoPw, CORBA::Short period,
                                              const ccReg::AdminContact & admin, ccReg::timestamp & crDate, ccReg::timestamp & exDate, 
-                                             CORBA::Long clientID, const char *clTRID, const ccReg::ExtensionList & ext )
+                                             CORBA::Long clientID, const char *clTRID,  const  char* XML , const ccReg::ExtensionList & ext )
 {
 DB DBsql;
 const ccReg::ENUMValidationExtension * enumVal;
@@ -3502,7 +3505,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( DBsql.BeginAction( clientID, EPP_DomainCreate, ( char * ) clTRID ) )
+      if( DBsql.BeginAction( clientID, EPP_DomainCreate, clTRID , XML ) )
         {
 
 
@@ -3796,7 +3799,7 @@ return ret;
 
 ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp curExpDate, CORBA::Short period, 
                                             ccReg::timestamp & exDate, CORBA::Long clientID,
-                                            const char *clTRID, const ccReg::ExtensionList & ext )
+                                            const char *clTRID, const  char* XML , const ccReg::ExtensionList & ext )
 {
   DB DBsql;
   Status status;
@@ -3851,7 +3854,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( DBsql.BeginAction( clientID, EPP_DomainRenew, ( char * ) clTRID ) )
+      if( DBsql.BeginAction( clientID, EPP_DomainRenew,  clTRID , XML ) )
         {
 
        if(  ( zone = get_FQDN( FQDN , fqdn ) ) > 0 ) 
@@ -4040,7 +4043,8 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response * ccReg_EPP_i::DomainTransfer( const char *fqdn, const char *authInfo, CORBA::Long clientID, const char *clTRID )
+ccReg::Response * ccReg_EPP_i::DomainTransfer( const char *fqdn, const char *authInfo, 
+                                 CORBA::Long clientID, const char *clTRID , const  char* XML  )
 {
 ccReg::Response * ret;
 DB DBsql;
@@ -4060,7 +4064,7 @@ LOG( NOTICE_LOG, "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  ", clie
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( DBsql.BeginAction( clientID, EPP_DomainTransfer, ( char * ) clTRID ) )
+      if( DBsql.BeginAction( clientID, EPP_DomainTransfer, clTRID , XML  ) )
         {
       if(  get_FQDN( FQDN , fqdn )    )  // spatny format navu domeny
          {

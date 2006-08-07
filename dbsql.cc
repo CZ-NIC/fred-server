@@ -54,9 +54,9 @@ else return false;
 
 // action
 // zpracovani action
-bool  DB::BeginAction(int clientID , int action ,char *clTRID )
+bool  DB::BeginAction(int clientID , int action ,const char *clTRID  , const char *xml  )
 {
-char sqlString[512];
+char sqlString[1024];
 
 if( clientID == 0 ) { actionID = 0 ; loginID =  0 ;  return true; }
 else
@@ -81,15 +81,27 @@ if( actionID )
      sqlString , 
      "INSERT INTO ACTION ( id %s , action ,  clienttrid  ) "
      "VALUES ( %d %s, %d , \'%s\' );" ,
-     clientIdColumn, actionID , clientIdStr.str().c_str()  , action  , clTRID
+     clientIdColumn, actionID , clientIdStr.str().c_str()  , action  ,(char *)  clTRID
    );
 
-   return ExecSQL( sqlString );
+   if( ExecSQL( sqlString ) ) 
+     {
+        if( strlen( xml ) )
+           {
+                INSERT("Action_XML");
+                VALUE( actionID );
+                VALUE( xml ) ;
+                return  EXEC();
+           }
+        else return true;
+     }
+   else return false;
   }
 else return false;
 }
 
 }
+
 
 char * DB:: EndAction(int response )
 {
