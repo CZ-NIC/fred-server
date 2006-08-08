@@ -1,25 +1,8 @@
 #!/bin/sh
-time epp_client > log01 &
-time epp_client > log02 &
-time epp_client > log03 &
-time epp_client > log04 &
-time epp_client > log05 &
-time epp_client > log06 &
-time epp_client > log07 &
-time epp_client > log08 &
-time epp_client > log09 &
-time epp_client > log11 &
-time epp_client > log12 &
-time epp_client > log13 &
-time epp_client > log14 &
-time epp_client > log15 &
-time epp_client > log16 &
-time epp_client > log17 &
-time epp_client > log18 &
-time epp_client > log19 &
-time epp_client > log20 &
-time epp_client > log21 &
-time epp_client > log22 &
-time epp_client > log23 &
-time epp_client > log24 &
-time epp_client > log25 &
+DATABASE="dbname=ccreg_test user=pblaha host=petr"
+echo DATABASE=$DATABASE
+time ./db_test  "$DATABASE" 1000 1000 > log1 &
+time ./db_test  "$DATABASE" 2000 1000 > log2 &
+time ./db_test  "$DATABASE" 3000 1000 > log3 &
+time ./db_test  "$DATABASE" 4000 1000 > log4 &
+time ./db_test  "$DATABASE" 5000 1000 > log5 &
