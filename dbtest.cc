@@ -45,7 +45,7 @@ if( loginID )
 
   for( i = start ; i <start+ num ; i ++ )
   {
-   sprintf( handle , "TEST%d" , i );
+   sprintf( handle , "TEST%04d" , i );
 
     ch = new ContactChange;
    ch->Name = new char[64];
@@ -77,12 +77,12 @@ if( loginID )
   t = time(NULL);
   cout << "START delete: " <<   ctime( &t )  << endl;
 
-  for( i = 0 ; i < num ; i ++ )
+  for( i = start ; i <start+ num ; i ++ )
   {
-   sprintf( handle , "TEST%d" , i );
+   sprintf( handle , "TEST%04d" , i );
    ret =  CTest->ContactDelete(  handle ,  loginID , "test-contact-delete" , "" );
    cout << "contact delete " << handle << "  "  << ret <<  endl;
- }
+  }
 
   t = time(NULL);
   cout << "END delete: " <<   ctime( &t )  << endl;
