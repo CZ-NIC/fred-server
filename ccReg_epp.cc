@@ -1298,7 +1298,7 @@ ret->errors.length( 0 );
 crDate = 0;
 
 
-LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s] %s ", clientID, clTRID, handle , HANDLE );
+LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s]", clientID, clTRID, handle );
 LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Email %d" ,
  c.DiscloseName  , c.DiscloseOrganization , c.DiscloseAddress , c.DiscloseTelephone , c.DiscloseFax , c.DiscloseEmail );
 
@@ -1371,12 +1371,12 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
                       DBsql.INTOVAL( "SSN", c.SSN );
 
 
-                      if( c.DiscloseName > 0 ) DBsql.INTO( "DiscloseName" );
-                      if( c.DiscloseOrganization > 0 ) DBsql.INTO( "DiscloseOrganization" );
-                      if( c.DiscloseAddress > 0 ) DBsql.INTO( "DiscloseAddress" );
-                      if( c.DiscloseTelephone > 0 ) DBsql.INTO( "DiscloseTelephone" );
-                      if( c.DiscloseFax > 0 ) DBsql.INTO( "DiscloseFax" );
-                      if( c.DiscloseEmail > 0 )DBsql.INTO( "DiscloseEmail" );
+                      if( c.DiscloseName ==  1 ) DBsql.INTO( "DiscloseName" );
+                      if( c.DiscloseOrganization == 1  ) DBsql.INTO( "DiscloseOrganization" );
+                      if( c.DiscloseAddress == 1 ) DBsql.INTO( "DiscloseAddress" );
+                      if( c.DiscloseTelephone == 1 ) DBsql.INTO( "DiscloseTelephone" );
+                      if( c.DiscloseFax == 1 ) DBsql.INTO( "DiscloseFax" );
+                      if( c.DiscloseEmail == 1 )DBsql.INTO( "DiscloseEmail" );
 
                       DBsql.VALUE( id );
                       DBsql.VALUE( roid );
