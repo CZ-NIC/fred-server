@@ -829,7 +829,16 @@ if( DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML ) )
    }
 
   }
-  else ret->errCode =  COMMAND_OBJECT_NOT_EXIST; // spatny handle
+ else
+  {
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of contact [%s]" , handle );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::contactInfo_handle;
+            ret->errors[0].value <<= CORBA::string_dup( handle );
+            ret->errors[0].reason = CORBA::string_dup( "bad format contact handle" );
+  }
+
  
    // zapis na konec action
    ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) ) ;
@@ -1608,8 +1617,17 @@ if( get_HANDLE( HANDLE , handle ) )
 
 
        
-  } 
- else ret->errCode=COMMAND_OBJECT_NOT_EXIST;
+  }
+ else
+  {
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of nsset [%s]" , handle );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::nssetInfo_handle;
+            ret->errors[0].value <<= CORBA::string_dup( handle );
+            ret->errors[0].reason = CORBA::string_dup( "bad format nsset handle" );
+  }
+ 
 
    // zapis na konec action
    ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode  ) ) ;
@@ -2708,8 +2726,8 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
 
   if(  DBsql.SELECT( "DOMAIN" , "fqdn" , FQDN )  )
   {
-  if( DBsql.GetSelectRows() == 1 )
-    {
+    if( DBsql.GetSelectRows() == 1 )
+      {
         id = atoi( DBsql.GetFieldValueName("id" , 0 ) );
         clid = atoi( DBsql.GetFieldValueName("ClID" , 0 ) ); 
         crid = atoi( DBsql.GetFieldValueName("CrID" , 0 ) ); 
@@ -2808,6 +2826,17 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
    }
 
   }
+ else
+  {
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::domainInfo_fqdn;
+            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
+  }
+
+
    // zapis na konec action
    ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode  ) );
 
