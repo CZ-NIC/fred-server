@@ -53,6 +53,59 @@ LOG( NOTICE_LOG ,  "Disconnec to:  [%s]" , database );
 DBsql.Disconnect();
 }
 
+int  ccReg_EPP_test::Login(const char *ClID , const char* clTRID , const char* XML)
+{
+int id , clientID=0;
+int roid;
+
+#ifndef PERNAMENT
+   if( DBsql.OpenDatabase( database ) )
+#endif
+    {
+
+
+        // dotaz na ID registratora
+        if( ( roid = DBsql.GetNumericFromTable( "REGISTRAR", "id", "handle", ( char * ) ClID ) ) == 0 )
+          {
+            LOG( NOTICE_LOG, "bad username [%s]", ClID ); // spatne username
+          }
+        else
+          {
+
+                 id = DBsql.GetSequenceID( "login" ); // ziskani id jako sequence
+
+                    // zapis do logovaci tabulky
+
+                    DBsql.INSERT( "Login" );
+                    DBsql.INTO( "id" );
+                    DBsql.INTO( "registrarid" );
+                    DBsql.INTO( "logintrid" );
+                    DBsql.VALUE( id );
+                    DBsql.VALUE( roid );
+                    DBsql.VALUE( clTRID );
+
+                    if( DBsql.EXEC() )    // pokud se podarilo zapsat do tabulky
+                      {
+                        clientID = id;
+                        LOG( NOTICE_LOG, "GET clientID  -> %d", clientID );
+
+
+                   if( DBsql.BeginAction( clientID, EPP_ClientLogin, clTRID , XML ) )
+                    {
+                      // zapis na konec action
+                       LOG( NOTICE_LOG , "svTRID %s" ,      DBsql.EndAction( COMMAND_OK ) );
+                      }
+                   }
+
+             }
+
+#ifndef PERNAMENT
+      DBsql.Disconnect();
+#endif
+    }
+
+return clientID;
+}
 
 int  ccReg_EPP_test::ContactDelete(const char* handle , long clientID, const char* clTRID , const char* XML )
 {

@@ -41,6 +41,8 @@ ccReg_EPP_test(const char *db);
 bool DatabaseConnect();
 void DatabaseDisconnect();
 
+int Login(const char *ClID , const char* clTRID , const char* XML);
+
 int ContactDelete(const char* handle , long clientID, const char* clTRID , const char* XML );
 int ContactCreate( const char *handle, const ContactChange & c, timestamp & crDate,  long clientID, const char *clTRID , const char* XML );
 private:
