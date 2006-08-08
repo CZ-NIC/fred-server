@@ -41,7 +41,7 @@ int main(int argc, char** argv)
     ccReg::Registrar *reg;
     CORBA::String_var errMsg , svTR , mesg ;
     char *msg;
-    int i , len , max = 512, d , j , a;
+    int i , len , max = 512, d , j , a , num;
     CORBA::Long loginID , msgID , newmsgID;
     ccReg::Avail_var av;
     ccReg::DNSHost_var dns_chg ,  dns_add , dns_rem;
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
 
     cout << "get Transaction code " << ret->errCode << ret->errMsg  <<  ret->svTRID  << endl;
 */
-
+/*
     // vrati kompletni seznam registratoru
     rl = EPP->getAdmin()->getRegistrars();
 
@@ -121,21 +121,52 @@ int main(int argc, char** argv)
 
       }
 
-    ret =  EPP->ContactInfo( "jouda",  cc , 0 , "jouda_zero" );
+    ret =  EPP->ContactInfo( "jouda",  cc , 0 , "jouda_zero" , "<XML></XML>");
     cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
     cout << "info "  << cc->Name  <<  endl;
  
     cout <<  cc->Name << cc->Email << cc->DiscloseEmail <<  cc->CountryCode << endl;
+*/
 
 
-/*
-    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789"  , "" ,     "LRR-login-now" , loginID , "AE:B3:5F:FA:38:80:DB:37:53:6A:3E:D4:55:E2:91:97" ,  ccReg::CS  );
+    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789"  , "" ,     "LRR-login-now" , "" , loginID , "AE:B3:5F:FA:38:80:DB:37:53:6A:3E:D4:55:E2:91:97" ,  ccReg::CS  );
 
     cout << "loginID" << loginID  << endl;
 
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
+num = 1000;
+  for( i = 0 ; i < num ; i ++ )
+  {
+   sprintf( handle , "TEST%d" , i );
+
+  ch = new ccReg::ContactChange;
+  ch->Name  = CORBA::string_dup( handle );
+  ch->CC  =  CORBA::string_dup( "CZ" );
+  
+   ret =  EPP->ContactCreate( handle , *ch ,  crDate ,  loginID , "test-contact-create"  , ""   );
+   cout << "contact create  " << handle << "  "  << ret->errCode  <<  ret->errMsg <<  ret->svTRID << endl;
+   t = crDate;
+   cout << "Create date: " << ctime( &t )  << endl; 
+   delete ch;
+  }
+
+  t = time(NULL);
+  cout << "START delete: " <<   ctime( &t )  << endl;
+
+  for( i = 0 ; i < num ; i ++ )
+  {
+   sprintf( handle , "TEST%d" , i );
+   ret =  EPP->ContactDelete(  handle ,  loginID , "test-contact-delete" , "" );
+  cout << "contact delete " << handle << "  "  << ret->errCode  <<  ret->errMsg <<  ret->svTRID << endl;
+ }
+
+  t = time(NULL);
+  cout << "END delete: " <<   ctime( &t )  << endl;
+
+
+/*
    ret =  EPP->DomainInfo(  "exp.cz" ,  domain , loginID , "info-cpp-temp" );
    cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
@@ -626,9 +657,8 @@ delete cc;
     ret = EPP->NSSetTransfer( "NECOCZ",   "heslo" ,  loginID , "nsset-transfer" );
     cout  << "client logout "<< endl;
 */
-//    ret =  EPP->ClientLogout( loginID , "XXXX-logout" );
-
-//    cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
+    ret =  EPP->ClientLogout( loginID , "XXXX-logout" , "");
+    cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
      
     orb->destroy();
   }
