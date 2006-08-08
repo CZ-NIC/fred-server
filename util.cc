@@ -114,6 +114,16 @@ LOG( LOG_DEBUG ,  "get_FQDN [%s] zone %d max %d" , fqdn  , zone , max );
 if( len > 63 ) { LOG( LOG_DEBUG ,  "out ouf maximal length %d" , len ); return 0; }
 if( max < 2  ) { LOG( LOG_DEBUG ,  "minimal length" ); return 0;}
 
+// test double dot
+for( i = 1 ; i <  len ; i ++ )
+{
+if( fqdn[i] == '.' && fqdn[i-1] == '.' )
+  {
+   LOG( LOG_DEBUG ,  "double dot not allowed" );
+   return 0;
+  }
+}
+
 // test na enum zonu
 if( zone == ZONE_ENUM || zone == ZONE_CENUM  )
 {
