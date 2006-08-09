@@ -100,6 +100,7 @@ int get_FQDN( char *FQDN , const char *fqdn )
 {
 int i , len , max ;
 int zone;
+int dot=0;
 
 zone = get_zone( fqdn , true  );
 max =  get_zone( fqdn , false  ); // konec nazvu
@@ -114,14 +115,29 @@ LOG( LOG_DEBUG ,  "get_FQDN [%s] zone %d max %d" , fqdn  , zone , max );
 if( len > 63 ) { LOG( LOG_DEBUG ,  "out ouf maximal length %d" , len ); return 0; }
 if( max < 2  ) { LOG( LOG_DEBUG ,  "minimal length" ); return 0;}
 
-// test double dot
+// test double dot .. and double --
 for( i = 1 ; i <  len ; i ++ )
 {
 if( fqdn[i] == '.' && fqdn[i-1] == '.' )
   {
-   LOG( LOG_DEBUG ,  "double dot not allowed" );
+   LOG( LOG_DEBUG ,  "double \'.\' not allowed" );
    return 0;
   }
+
+if( fqdn[i] == '-' && fqdn[i-1] == '-' )
+  {
+   LOG( LOG_DEBUG ,  "double  \'-\' not allowed" );
+   return 0;
+  }
+
+}
+
+
+if( fqdn[0] ==  '-' )
+{
+    LOG( LOG_DEBUG ,  "first \'-\' not allowed" ); 
+    return 0;
+
 }
 
 // test na enum zonu
@@ -163,6 +179,18 @@ if( zone == ZONE_CZ )    // DOMENA CZ
               // TEST povolene znaky
               if( isalnum( fqdn[i]  ) ||  fqdn[i] == '-' ||  fqdn[i] == '.' )
                 {
+                    if( fqdn[i] == '.' ) 
+                      { 
+                       dot ++;
+                       if( dot > 0 ) 
+                           { 
+                             LOG( LOG_DEBUG ,  "too much dots not allowed" );
+                            FQDN[i] =  0 ;
+                             return 0;
+                            }
+                       }
+              
+                    
                     // PREVOD na mala pismena
                     FQDN[i] = tolower( fqdn[i] );
                 }
