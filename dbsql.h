@@ -115,6 +115,8 @@ void INSERT( const  char * table );
 void INTO(const  char *fname);
 void INTOVAL(const  char *fname , const char * value );
 void VAL( const  char * value);
+void VALUESC( const char * value );
+void VALUES( const char * value  , bool esc );
 void VALUE( const  char * value );
 void VALUE( int  value );
 void VALUE( bool value );

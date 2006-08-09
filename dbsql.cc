@@ -7,6 +7,7 @@
 #include "dbsql.h"
 
 #include "util.h"
+#include "action.h"
 
 #include "status.h"
 
@@ -58,7 +59,12 @@ bool  DB::BeginAction(int clientID , int action ,const char *clTRID  , const cha
 {
 char sqlString[1024];
 
-if( clientID == 0 ) { actionID = 0 ; loginID =  0 ;  return true; }
+if( clientID == 0 ) { 
+// POUZE info funkce pro PIF
+if( action == EPP_ContactInfo ||  action == EPP_NSsetInfo ||   action ==  EPP_DomainInfo ) 
+  { actionID = 0 ; loginID =  0 ;  return true;  }
+else return false;
+}
 else
 {
 // actionID pro logovani
@@ -88,9 +94,10 @@ if( actionID )
      {
         if( strlen( xml ) )
            {
+              LOG( DEBUG_LOG , "XML:[%s]" , xml );           
                 INSERT("Action_XML");
                 VALUE( actionID );
-                VALUE( xml ) ;
+                VALUESC( xml );
                 return  EXEC();
            }
         else return true;
@@ -631,7 +638,7 @@ return ret;
 // SQL UPDATE funkce
 void DB::UPDATE( const char * table )
 {
-sqlBuffer = new char[4096];
+sqlBuffer = new char[4096*4];
 
 sprintf( sqlBuffer ,  "UPDATE %s SET  " , table );
 }
@@ -781,9 +788,12 @@ void DB::VAL(  const char * value)
 if( strlen( value ) ) VALUE( value );
 }
 
-void DB::VALUE( const char * value )
+
+void DB::VALUES( const char * value  , bool esc )
 {
-int len;
+int len , length , i , l;
+
+
 len = strlen( sqlBuffer );
 
 
@@ -806,10 +816,36 @@ else
 }
 
 strcat( sqlBuffer , " '" );
-strcat( sqlBuffer ,  value );
+// esacepe
+if( esc)
+{
+len = strlen( sqlBuffer );
+length =  strlen(  value );
+
+for( i  = 0 , l = len ; i < length ; i ++ , l++ )
+ {
+   if(  value[i] == '\\' )  { sqlBuffer[l] =  '\\' ;  l++;  sqlBuffer[l] =  '\\' ; }
+   else if(  value[i] == '\'' ) { sqlBuffer[l] =  '\\' ;  l++; sqlBuffer[l] = '\'' ; }
+        else  if( value[i] == '\r' ||  value[i] == '\n' )  sqlBuffer[l] = ' ';
+              else  sqlBuffer[l] = value[i];
+ }
+sqlBuffer[l] = 0 ;
+}
+else strcat( sqlBuffer ,  value );
+
+
 strcat( sqlBuffer , "' );" ); // vzdy ukoncit
  
+}
 
+void DB::VALUESC( const char * value )
+{
+VALUES( value , true );
+}
+
+void DB::VALUE( const char * value )
+{
+VALUES( value , false );
 }
 
 void DB::VALUE( int  value )
