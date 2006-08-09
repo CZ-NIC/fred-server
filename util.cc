@@ -4,10 +4,31 @@
 #include<string.h>
 #include<ctype.h>
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+
 #include "util.h"
 #include "action.h"
 
 #include "log.h"
+
+
+
+
+int test_inet_addr( const char *src )
+{
+struct sockaddr_in a4;
+struct sockaddr_in6  a6;
+
+if( inet_pton(AF_INET,  src, &a4.sin_addr) == 0 )
+// test IPV6
+{
+  if( inet_pton(AF_INET6,  src, &a6.sin6_addr) == 0 ) return 0;
+  else return IPV6;
+}
+else return IPV4;
+}
 
 // implementace funkce atoh
 int atoh(const char *String)
@@ -305,55 +326,14 @@ return false;
 // test inet addres ipv4 a ipv6
 bool TestInetAddress(const char *address )
 {
-int i , len , dot=0 , ddot=0 , num  , l ;
-char numStr[16];
-len = strlen( address );
+int t;
 
-LOG( LOG_DEBUG , "test InetAddress %s" , address );
-
-for( i = 0 , l = 0   ; i < len ; i ++ )
-   {
-       if(   isxdigit( address[i] ) || address[i] == '.' || address[i] == ':' )
-         {
-             if( address[i] == '.'  ) // IPV4
-               {
-                  numStr[l] = 0; l = 0 ;
-                  num = atoi(  numStr );
-                  // LOG( LOG_DEBUG , "ipv4 %d %d [%s]" , dot , num , numStr ); 
-                  if( num >  255 ) return false;
-                  dot++;                    
-               }
-              else if(  address[i] == ':' ) // IPV6 
-                     {
-                       numStr[l] = 0; l = 0 ;
-                       num = atoh( numStr );
-                       // LOG( LOG_DEBUG , "ipv6 %d %d [%s]" , dot , num , numStr ); 
-
-                       if( num > 0xffff ) return false;
-                       ddot++; 
-                     }
-                    else { numStr[l] =  address[i] ; l ++ ; } 
-  
-         }
-   }
-
-
-if( dot == 3 ) 
-{
-numStr[l] = 0;
-num = atoi(  numStr );
-if( num <=  255 ) { LOG( LOG_DEBUG , "test ipv4OK" ) ; return true; } // IPV4 OK
+t = test_inet_addr( address ); 
+LOG( LOG_DEBUG , "test InetAddress %s -> %d" , address , t );
+if( t ) return true;
+else return false;
 }
 
-if( ddot == 7 )
-{
-numStr[l] = 0;
-num = atoh(  numStr );
-if( num <= 0xfffff ){ LOG( LOG_DEBUG , "test ipv6 OK" ) ; return true; } // IPV6  OK
-}
-
-return false;
-}
 
 bool TestPeriodyInterval( int period , int min , int max )
 {

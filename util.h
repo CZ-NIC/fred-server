@@ -9,6 +9,14 @@
 #define CZ_ZONE  "cz"
 #define CENUM_ZONE "0.2.4.c.e164.arpa"
 #define ENUM_ZONE   "0.2.4.e164.arpa"
+
+
+#define IPV4 4
+#define IPV6 6
+
+// test ip adres
+int test_inet_addr( const char *src );
+
 // funkce pro prevod hexa
 int atoh(const char *String);
 
