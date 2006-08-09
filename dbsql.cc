@@ -59,10 +59,10 @@ bool  DB::BeginAction(int clientID , int action ,const char *clTRID  , const cha
 {
 char sqlString[1024];
 
-if( clientID == 0 ) { 
-// POUZE info funkce pro PIF
 if( action == EPP_ContactInfo ||  action == EPP_NSsetInfo ||   action ==  EPP_DomainInfo ) 
-  { actionID = 0 ; loginID =  0 ;  return true;  }
+{
+ // POUZE info funkce pro PIF
+if( clientID == 0 ) { actionID = 0 ; loginID =  0 ;  return true;  }
 else return false;
 }
 else
