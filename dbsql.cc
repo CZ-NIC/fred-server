@@ -59,14 +59,12 @@ bool  DB::BeginAction(int clientID , int action ,const char *clTRID  , const cha
 {
 char sqlString[1024];
 
+ // umozni  info funkce pro PIF
 if( action == EPP_ContactInfo ||  action == EPP_NSsetInfo ||   action ==  EPP_DomainInfo ) 
 {
- // POUZE info funkce pro PIF
 if( clientID == 0 ) { actionID = 0 ; loginID =  0 ;  return true;  }
-else return false;
 }
-else
-{
+
 // actionID pro logovani
 actionID = GetSequenceID("action");
 loginID = clientID; // id klienta
@@ -94,7 +92,6 @@ if( actionID )
      {
         if( strlen( xml ) )
            {
-              LOG( DEBUG_LOG , "XML:[%s]" , xml );           
                 INSERT("Action_XML");
                 VALUE( actionID );
                 VALUESC( xml );
@@ -105,7 +102,7 @@ if( actionID )
    else return false;
   }
 else return false;
-}
+
 
 }
 
