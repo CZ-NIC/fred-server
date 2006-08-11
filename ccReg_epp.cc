@@ -1839,7 +1839,7 @@ char HANDLE[64]; // handle na velka pismena
 char roid[64];
 ccReg::Response * ret;
 int regID, id, techid;
-int i, len, j , seq;
+int i, len, j , seq , zone ;
 time_t now;
 
 ret = new ccReg::Response;
@@ -1985,7 +1985,6 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                                   ret->errors[seq].value <<= CORBA::string_dup(   dns[i].inet[j]  );
                                   ret->errors[seq].reason = CORBA::string_dup( "bad host address" );
                                   seq++;                                 
-                                  // TODO error value 
                                   ret->errCode = COMMAND_PARAMETR_ERROR;
                             }
                         }
@@ -1997,17 +1996,41 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                         {
                        LOG( NOTICE_LOG ,  "NSSetCreate: DNS Host %s [%s] ",   (const char *)  dns[i].fqdn   , Array    );
 
-                      // HOST informace pouze ipaddr a fqdn 
-                      DBsql.INSERT( "HOST" );
-                      DBsql.INTO( "NSSETID" );
-                      DBsql.INTO( "fqdn" );
-                      DBsql.INTO( "ipaddr" );
-                      DBsql.VALUE( id );
-                      convert_hostname(  NAME , dns[i].fqdn );
+                       convert_hostname(  NAME , dns[i].fqdn );
+ 
 
-                      DBsql.VALUE( NAME );
-                      DBsql.VALUE( Array );
-                             if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED; 
+                        zone = get_zone( NAME  , true ); // cislo zony kam patri
+ 
+                        if( zone == 0 && dns[i].inet.length() > 0 ) // neni v definovanych zonach a obsahuje zaznam ip adresy
+                        {
+                            for( j = 0 ; j < dns[i].inet.length() ; j ++ )
+                               {
+
+                                    LOG( WARNING_LOG, "NSSetCreate:  ipaddr  glue not allowed %s " , (const char *) dns[i].inet[j]   );
+                                    ret->errors.length( seq +1 );
+                                    ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
+                                    ret->errors[seq].value <<= CORBA::string_dup(   dns[i].inet[j]  ); // staci vratit prvni zaznam
+                                    ret->errors[seq].reason = CORBA::string_dup( "not glue ipaddr allowed" );
+                                    seq++;
+                                }
+                                    ret->errCode = COMMAND_PARAMETR_ERROR;
+ 
+                        }
+                       else
+                        {
+                          // HOST informace pouze ipaddr a fqdn 
+                          DBsql.INSERT( "HOST" );
+                          DBsql.INTO( "NSSETID" );
+                          DBsql.INTO( "fqdn" );
+                          DBsql.INTO( "ipaddr" );
+                          DBsql.VALUE( id );
+
+                          DBsql.VALUE( NAME );
+                          DBsql.VALUE( Array );
+                          if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED; 
+                        }
+
+
                                                     
                         }
                      else 
@@ -2110,7 +2133,7 @@ Status status;
 bool  check;
 char  Array[512] ,  statusString[128] , HANDLE[64] , NAME[256];
 int regID=0 , clID=0 , id ,nssetid ,  techid  , hostID;
-int i , j , seq;
+int i , j , seq , zone ;
 int hostNum;
 bool remove_update_flag=false;
 
@@ -2377,16 +2400,50 @@ if( DBsql.OpenDatabase( database ) )
                                                 {
                                                  LOG( NOTICE_LOG ,  "NSSetUpdate: add dns [%s] %s" , (const char * ) dns_add[i].fqdn  , Array );                                
 
-                                                DBsql.INSERT( "HOST" );
-                                                DBsql.INTO( "nssetid" );
-                                                DBsql.INTO( "fqdn" );
-                                                DBsql.INTO( "ipaddr" );
-                                                DBsql.VALUE( id );
-                                                convert_hostname(  NAME , dns_add[i].fqdn );
-                                                DBsql.VALUE( NAME );
-                                                DBsql.VALUE( Array );
-                                                if( !DBsql.EXEC() ) {  ret->errCode = COMMAND_FAILED; break;}
+
+                                                 convert_hostname(  NAME , dns_add[i].fqdn );
+
+                                                 zone = get_zone( NAME , true ); // cislo zony kam patri
+
+                                               if( zone == 0 && dns_add[i].inet.length() > 0 ) // neni v definovanych zonach a obsahuje zaznam ip adresy
+                                                 {
+                                                   for( j = 0 ; j < dns_add[i].inet.length() ; j ++ )
+                                                   {
+                                                    LOG( WARNING_LOG, "NSSetUpdate:  ipaddr  glue not allowed %s " , (const char *) dns_add[i].inet[j]   );
+                                                    ret->errors.length( seq +1 );
+                                                    ret->errors[seq].code = ccReg::nssetUpdate_ns_addr_add;
+                                                    ret->errors[seq].value <<= CORBA::string_dup(   dns_add[i].inet[j]  ); 
+                                                    ret->errors[seq].reason = CORBA::string_dup( "not glue ipaddr allowed" );
+                                                    seq++;
+                                                   }
+                                                   ret->errCode = COMMAND_PARAMETR_ERROR;             
                                                 }
+                                              else
+                                               {
+
+                                                   if(  DBsql.CheckHost( NAME , id )  ) // uz exstuje nelze pridat
+                                                     {
+                                                        LOG( WARNING_LOG, "NSSetUpdate:  host name %s exist" , (const char *)  dns_add[i].fqdn );
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code = ccReg::nssetUpdate_ns_name_add;
+                                                        ret->errors[seq].value <<= CORBA::string_dup(   dns_add[i].fqdn  );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "host name exist" );
+                                                        seq++;
+                                                        ret->errCode = COMMAND_PARAMETR_ERROR;
+                                                     }
+                                                     else
+                                                     {
+                                                         DBsql.INSERT( "HOST" );
+                                                         DBsql.INTO( "nssetid" );
+                                                         DBsql.INTO( "fqdn" );
+                                                         DBsql.INTO( "ipaddr" );
+                                                         DBsql.VALUE( id );
+                                                         DBsql.VALUE( NAME );
+                                                         DBsql.VALUE( Array );
+                                                         if( !DBsql.EXEC() ) {  ret->errCode = COMMAND_FAILED; break;}
+                                                      }
+                                              }
+                                             }
                                                 else
                                                       {
                                                         LOG( WARNING_LOG, "NSSetUpdate: bad add host name %s " , (const char *)  dns_add[i].fqdn );
