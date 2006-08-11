@@ -14,6 +14,28 @@
 #include "log.h"
 
 
+bool validateIPV4(const char *ipadd)
+{
+        unsigned b1, b2, b3, b4;
+        int rc;
+
+        rc = sscanf(ipadd, "%3u.%3u.%3u.%3u",  &b1, &b2, &b3, &b4);
+        if (rc == 4 )
+         {
+           if ( (b1 | b2 | b3 | b4) > 255 ) return false; // max
+           if (strspn(ipadd, "0123456789.") < strlen(ipadd)) return false;
+
+           if( b1 == 127 )  return false;
+           if( b1 == 10 )  return false;
+           if( b1 == 172 && b2 >= 16 && b2 < 32 ) return false;
+           if( b1 ==  192 && b2 == 168 ) return false ;
+           if( b1 >= 224 )  return false ; // multicast
+
+           return true; // OK
+        }
+      else return false;
+}
+
 
 
 int test_inet_addr( const char *src )
@@ -24,10 +46,13 @@ struct sockaddr_in6  a6;
 if( inet_pton(AF_INET,  src, &a4.sin_addr) == 0 )
 // test IPV6
 {
-  if( inet_pton(AF_INET6,  src, &a6.sin6_addr) == 0 ) return 0;
-  else return IPV6;
+  if( inet_pton(AF_INET6,  src, &a6.sin6_addr)  ) return IPV6;
+  // TODO local adres for ipv6
 }
-else return IPV4;
+else  if( validateIPV4( src ) ) return IPV4;  // validate for local adres
+
+
+return 0;
 }
 
 // implementace funkce atoh

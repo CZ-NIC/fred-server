@@ -14,6 +14,10 @@
 #define IPV4 4
 #define IPV6 6
 
+// test local adres
+
+bool validateIPV4(const char *ipadd);
+
 // test ip adres
 int test_inet_addr( const char *src );
 
