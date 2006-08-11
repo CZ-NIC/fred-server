@@ -1839,7 +1839,7 @@ char HANDLE[64]; // handle na velka pismena
 char roid[64];
 ccReg::Response * ret;
 int regID, id, techid;
-int i, len, j , seq , zone ;
+int i, len, j , l , seq , zone ;
 time_t now;
 
 ret = new ccReg::Response;
@@ -1969,26 +1969,44 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                     {
      
 
-
                       // preved sequenci adres
                       strcpy( Array, " { " );
                       for( j = 0; j < dns[i].inet.length(); j++ )
                         {
                           if( j > 0 ) strcat( Array, " , " );
 
-                          if( TestInetAddress( dns[i].inet[j] ) )   strcat( Array,  dns[i].inet[j]  );
+                          if( TestInetAddress( dns[i].inet[j] ) )
+                            {
+                                 for( l = 0 ; l < j  ; l ++ )
+                                    {
+                                         if( strcmp( dns[i].inet[l] ,   dns[i].inet[j] ) == 0 )
+                                            {
+                                               LOG( WARNING_LOG, "NSSetCreate: duplicity host address %s " , (const char *) dns[i].inet[j]  );
+                                               ret->errors.length( seq +1 );
+                                               ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
+                                               ret->errors[seq].value <<= CORBA::string_dup(   dns[i].inet[j]  );
+                                               ret->errors[seq].reason = CORBA::string_dup( "duplicity host address" );
+                                               seq++;
+                                               ret->errCode = COMMAND_PARAMETR_ERROR;
+                                           }
+                                    }
+                                     
+                              strcat( Array,  dns[i].inet[j]  );
+                            }
                           else
                             {
-                                  LOG( WARNING_LOG, "NSSetCreate: bad host address %s " , (const char *) dns[i].inet[j]  );                          
+                                  LOG( WARNING_LOG, "NSSetCreate: bad host address %s " , (const char *) dns[i].inet[j]  );
                                   ret->errors.length( seq +1 );
                                   ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
                                   ret->errors[seq].value <<= CORBA::string_dup(   dns[i].inet[j]  );
                                   ret->errors[seq].reason = CORBA::string_dup( "bad host address" );
-                                  seq++;                                 
+                                  seq++;
                                   ret->errCode = COMMAND_PARAMETR_ERROR;
                             }
+
                         }
                       strcat( Array, " } " );
+
 
 
                       // test DNS hostu
@@ -2133,7 +2151,7 @@ Status status;
 bool  check;
 char  Array[512] ,  statusString[128] , HANDLE[64] , NAME[256];
 int regID=0 , clID=0 , id ,nssetid ,  techid  , hostID;
-int i , j , seq , zone ;
+int i , j , l  , seq , zone ;
 int hostNum;
 bool remove_update_flag=false;
 
@@ -2371,12 +2389,33 @@ if( DBsql.OpenDatabase( database ) )
                                             // pridat DNS HOSTY
                                             for( i = 0; i < dns_add.length(); i++ )
                                               {
+
+
+
                                                 // vytvor pole inet adres
                                                 strcpy( Array, "{ " );
-                                                for( j = 0; j < dns_add[i].inet.length(); j++ )
-                                                  {
+                                              for( j = 0; j < dns_add[i].inet.length(); j++ )
+                                                {
                                                     if( j > 0 ) strcat( Array, " , " );
-                                                    if( TestInetAddress( dns_add[i].inet[j] ) )  strcat( Array, dns_add[i].inet[j] );
+
+                                                    if( TestInetAddress( dns_add[i].inet[j] ) )  
+                                                      {
+                                                         for( l = 0 ; l < j ; l ++ )
+                                                         {
+                                                          if( strcmp( dns_add[i].inet[l] ,   dns_add[i].inet[j] ) == 0 )
+                                                            {
+                                                                LOG( WARNING_LOG, "NSSetUpdate: duplicity host address %s " , (const char *) dns_add[i].inet[j]  );
+                                                                ret->errors.length( seq +1 );
+                                                                ret->errors[seq].code = ccReg::nssetUpdate_ns_addr_add;
+                                                                ret->errors[seq].value <<= CORBA::string_dup(   dns_add[i].inet[j]  );
+                                                                ret->errors[seq].reason = CORBA::string_dup( "duplicity host address" );
+                                                                seq++;
+                                                               ret->errCode = COMMAND_PARAMETR_ERROR;
+                                                             }
+                                                          }
+
+                                                      strcat( Array,  dns_add[i].inet[j]  );
+                                                    }
                                                     else
                                                       {
                                                         LOG( WARNING_LOG, "NSSetUpdate: bad add host address %s " , (const char *)  dns_add[i].inet[j] );
@@ -2387,9 +2426,13 @@ if( DBsql.OpenDatabase( database ) )
                                                         seq++;
                                                         ret->errCode = COMMAND_PARAMETR_ERROR;
                                                       }
+                                                 }
 
-                                                  }
-                                                strcat( Array, " } " );
+                                              
+                                                 strcat( Array, " } " );
+ 
+
+
 
 
 
@@ -2440,11 +2483,11 @@ if( DBsql.OpenDatabase( database ) )
                                                          DBsql.VALUE( id );
                                                          DBsql.VALUE( NAME );
                                                          DBsql.VALUE( Array );
-                                                         if( !DBsql.EXEC() ) {  ret->errCode = COMMAND_FAILED; break;}
+                                                         if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;
                                                       }
-                                              }
+                                                 }
                                              }
-                                                else
+                                             else
                                                       {
                                                         LOG( WARNING_LOG, "NSSetUpdate: bad add host name %s " , (const char *)  dns_add[i].fqdn );
                                                         ret->errors.length( seq +1 );
