@@ -130,21 +130,43 @@ int main(int argc, char** argv)
 */
 
 
-    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789"  , "" ,     "LRR-login-now" , "" , loginID , "AE:B3:5F:FA:38:80:DB:37:53:6A:3E:D4:55:E2:91:97" ,  ccReg::CS  );
+
+
+    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "heslo"  , "" ,     "LRR-login-now" , "" , loginID , "certifikat" ,  ccReg::EN  );
 
     cout << "loginID" << loginID  << endl;
 
+
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
+
+
+
+if( loginID )
+{
 num = 1000;
+
   for( i = 0 ; i < num ; i ++ )
   {
-   sprintf( handle , "TEST%d" , i );
+   sprintf( handle , "CID:ORBA%d" , i );
 
   ch = new ccReg::ContactChange;
   ch->Name  = CORBA::string_dup( handle );
   ch->CC  =  CORBA::string_dup( "CZ" );
-  
+  ch->City =  CORBA::string_dup( "mesto");
+  ch->Organization = CORBA::string_dup( "" );
+  ch->Street1 =  CORBA::string_dup( "ulice");
+  ch->Street2 =  CORBA::string_dup( "ulice");
+  ch->Street3 =  CORBA::string_dup( "ulice");
+  ch->StateOrProvince = CORBA::string_dup( "" );
+  ch->Telephone = CORBA::string_dup( "" );
+  ch->Fax = CORBA::string_dup( "" );
+  ch->Email = CORBA::string_dup( "neco@email.cz" );
+  ch->SSN = CORBA::string_dup( "123456l/LN01" );
+  ch->SSNtype =  ccReg::PASS;
+  ch->AuthInfoPw = CORBA::string_dup( "heslo" );
+ 
+     
    ret =  EPP->ContactCreate( handle , *ch ,  crDate ,  loginID , "test-contact-create"  , ""   );
    cout << "contact create  " << handle << "  "  << ret->errCode  <<  ret->errMsg <<  ret->svTRID << endl;
    t = crDate;
@@ -152,18 +174,50 @@ num = 1000;
    delete ch;
   }
 
-  t = time(NULL);
-  cout << "START delete: " <<   ctime( &t )  << endl;
+}
 
+
+    ret =  EPP->ClientLogout( loginID , "XXXX-logout" , "");
+    cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
+
+
+    ret =  EPP->ClientLogin(  "REG-CT"  ,  "heslo"  , "" ,     "LRR-login-now" , "" , loginID , "certifikat" ,  ccReg::EN  );
+
+    cout << "loginID" << loginID  << endl;
+
+
+    cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+
+
+if( loginID )
+{
+
+num = 1000;
   for( i = 0 ; i < num ; i ++ )
   {
-   sprintf( handle , "TEST%d" , i );
-   ret =  EPP->ContactDelete(  handle ,  loginID , "test-contact-delete" , "" );
-  cout << "contact delete " << handle << "  "  << ret->errCode  <<  ret->errMsg <<  ret->svTRID << endl;
- }
+   sprintf( handle , "CID:ORBA%d" , i );
 
-  t = time(NULL);
-  cout << "END delete: " <<   ctime( &t )  << endl;
+    ret =  EPP->ContactTransfer( handle, "heslo" ,  loginID, "test-contact-transfer" , "<XML></XML>"  );
+    cout << "contact transfer err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
+
+
+    ret =  EPP->ContactInfo( handle ,  cc , loginID , "test-contact-info" , "<XML></XML>");
+    cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
+
+
+    cout << "info: "  <<  cc->Name << cc->Email << cc->DiscloseEmail <<  cc->CountryCode << endl;
+    t = cc->TrDate;
+    cout << "transfer date: " << ctime( &t )  << endl;
+
+    delete cc;
+
+    ret =  EPP->ContactDelete(  handle ,  loginID , "test-contact-delete" , "" );
+    cout << "contact delete " << handle << "  "  << ret->errCode  <<  ret->errMsg <<  ret->svTRID << endl;
+  }
+
+
+
+}
 
 
 /*
