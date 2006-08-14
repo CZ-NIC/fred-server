@@ -14,13 +14,8 @@
 #define EPP_ContactDelete       202  
 #define EPP_ContactUpdate       203 
 #define EPP_ContactCreate       204
+#define EPP_ContactTransfer     205
 
-// funkce pro hosty
-#define EPP_HostCheck           300
-#define EPP_HostInfo            301 
-#define EPP_HostDelete          302 
-#define EPP_HostUpdate          303
-#define EPP_HostCreate          304
 
 // funkce pro NSSET
 #define EPP_NSsetCheck           400
@@ -43,3 +38,8 @@
 
 // dalsi funkce
 #define EPP_UnknowAction       1000
+
+// list funkce
+#define EPP_ListContact        1002 
+#define EPP_ListNSset          1004 
+#define EPP_ListDomain         1005 
