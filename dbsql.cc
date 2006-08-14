@@ -57,7 +57,6 @@ else return false;
 // zpracovani action
 bool  DB::BeginAction(int clientID , int action ,const char *clTRID  , const char *xml  )
 {
-char sqlString[1024];
 
  // umozni  info funkce pro PIF
 if( action == EPP_ContactInfo ||  action == EPP_NSsetInfo ||   action ==  EPP_DomainInfo ) 
@@ -69,26 +68,21 @@ if( clientID == 0 ) { actionID = 0 ; loginID =  0 ;  return true;  }
 actionID = GetSequenceID("action");
 loginID = clientID; // id klienta
 
-// pokud neni vyplneni clientID vubec se do tabulky neuvadi, zustane tam
-// defaultni hodnota NULL
-std::ostringstream clientIdStr;
-const char *clientIdColumn = "";
-if (clientID) {
-	clientIdStr << ", " << clientID;
-	clientIdColumn = ", clientid";
-}
-
 if( actionID ) 
   {
   // zapis do action tabulky
-   sprintf(
-     sqlString , 
-     "INSERT INTO ACTION ( id %s , action ,  clienttrid  ) "
-     "VALUES ( %d %s, %d , \'%s\' );" ,
-     clientIdColumn, actionID , clientIdStr.str().c_str()  , action  ,(char *)  clTRID
-   );
-
-   if( ExecSQL( sqlString ) ) 
+  INSERT( "ACTION" );
+  INTO( "id" );
+  if( clientID > 0 ) INTO( "clientID"  );
+  INTO( "action" );
+  INTO( "clienttrid" );
+  
+  VALUE(  actionID  );
+  if( clientID > 0 ) VALUE( clientID );
+  VALUE( action );
+  VALUE(  clTRID );
+  
+   if( EXEC() ) 
      {
         if( strlen( xml ) )
            {
@@ -109,8 +103,6 @@ else return false;
 
 char * DB:: EndAction(int response )
 {
-char sqlString[512];
-// char svrTRID[32];
 int id;
 
 if( actionID == 0 ) return "no action";
@@ -125,14 +117,19 @@ if( svrTRID == NULL )
 // cislo transakce co vraci server
 sprintf( svrTRID , "ccReg-%010d" , actionID );
 
-sprintf( sqlString , "UPDATE Action SET response=%d , enddate='now()' , servertrid=\'%s\' WHERE id=%d;" ,  response  , svrTRID , actionID );
+UPDATE("ACTION");
+SET( "response" , response );
+SET( "enddate", "now" );
+SET( "servertrid" , svrTRID );
+WHEREID( actionID );
+
 
 // update tabulky
 id  =  actionID;
 actionID = 0 ; 
 LOG( SQL_LOG ,  "EndAction svrTRID: %s" ,  svrTRID );
 
-if( ExecSQL(  sqlString ) ) return   svrTRID;
+if( EXEC() ) return   svrTRID;
 /* {
 
    sprintf( sqlString , "SELECT  servertrid FROM Action  WHERE id=%d;"  , id );
