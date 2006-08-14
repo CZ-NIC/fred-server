@@ -36,6 +36,7 @@ public:
   ccReg::Response* ContactDelete(const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* ContactUpdate(const char* handle, const ccReg::ContactChange& c, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* ContactCreate(const char* handle, const ccReg::ContactChange& c, ccReg::timestamp& crDate, CORBA::Long clientID, const char* clTRID , const char* XML );
+  ccReg::Response* ContactTransfer(const char* handle, const char* authInfo, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* NSSetCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* NSSetInfo(const char* handle, ccReg::NSSet_out n, CORBA::Long clientID, const char* clTRID , const char*  XML);
   ccReg::Response* NSSetDelete(const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML);

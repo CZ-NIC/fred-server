@@ -31,6 +31,7 @@ ccReg_EPP_i::ccReg_EPP_i(ccReg::Admin_ptr _admin) : admin(_admin) {
 
 }
 ccReg_EPP_i::~ccReg_EPP_i(){
+ 
 }
 
 ccReg::Admin_ptr 
@@ -721,8 +722,8 @@ DB DBsql;
 Status status;
 ccReg::Response *ret;
 char HANDLE[64]; // handle na velka pismena
-int id , clid , crid , upid;
-int actionID=0;
+int id , clid , crid , upid , regID;
+int actionID=0 , ssn ;
 int len , i  , s ;
 
 c = new ccReg::Contact;
@@ -739,7 +740,9 @@ if( DBsql.OpenDatabase( database ) )
   
 if( DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML ) )
   {
-
+   // get  registrator ID
+   regID = DBsql.GetLoginRegistrarID( clientID );
+ 
  if( get_HANDLE( HANDLE , handle ) ) // preved a otestuj na velka pismena
  {
   if( DBsql.SELECT( "CONTACT" , "HANDLE" , HANDLE )  )
@@ -747,6 +750,7 @@ if( DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML ) )
   if( DBsql.GetSelectRows() == 1 )
     {
 
+        clid =  atoi( DBsql.GetFieldValueName("ClID" , 0 ) ); 
         crid =  atoi( DBsql.GetFieldValueName("CrID" , 0 ) ); 
         upid =  atoi( DBsql.GetFieldValueName("UpID" , 0 ) ); 
 
@@ -759,6 +763,7 @@ if( DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML ) )
 	c->ROID=CORBA::string_dup( DBsql.GetFieldValueName("ROID" , 0 ) ); // ROID     
 	c->CrDate= get_time_t( DBsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
 	c->UpDate= get_time_t( DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
+	c->TrDate= get_time_t( DBsql.GetFieldValueName("TrDate" , 0 ) ); // datum a cas transferu
 	c->Name=CORBA::string_dup( DBsql.GetFieldValueName("Name" , 0 )  ); // jmeno nebo nazev kontaktu
 	c->Organization=CORBA::string_dup( DBsql.GetFieldValueName("Organization" , 0 )); // nazev organizace
 	c->Street1=CORBA::string_dup( DBsql.GetFieldValueName("Street1" , 0 ) ); // adresa
@@ -779,6 +784,14 @@ if( DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML ) )
 
 	c->VAT=CORBA::string_dup(DBsql.GetFieldValueName("VAT" , 0 )); // DIC
 	c->SSN=CORBA::string_dup(DBsql.GetFieldValueName("SSN" , 0 )); // SSN
+
+        ssn =   atoi( DBsql.GetFieldValueName("SSNtype" , 0 ) );
+
+
+
+        if( regID == clid ) // pokud je registrator clientem obdrzi autentifikaci
+           c->AuthInfoPw = CORBA::string_dup( DBsql.GetFieldValueName("AuthInfoPw" , 0 ) ); // autentifikace
+         else  c->AuthInfoPw = CORBA::string_dup( "" ); // jinak prazdny retezec
 
         
         c->DiscloseName = DBsql.GetFieldBooleanValueName( "DiscloseName" , 0 );
@@ -808,7 +821,29 @@ if( DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML ) )
         // identifikator registratora
         c->CrID =  CORBA::string_dup(  DBsql.GetRegistrarHandle( crid ) );
         c->UpID =  CORBA::string_dup(  DBsql.GetRegistrarHandle( upid ) );
+        c->ClID =  CORBA::string_dup(  DBsql.GetRegistrarHandle( clid ) );
 
+
+        // type SSN EMPTY , RC , OP , PASS , ICO
+
+        switch( ssn )
+        {
+         case 1:
+                  c->SSNtype = ccReg::RC;
+                  break;
+         case 2:
+                  c->SSNtype = ccReg::OP;
+                  break;
+         case 3:
+                  c->SSNtype = ccReg::PASS;
+                  break;
+         case 4:
+                  c->SSNtype = ccReg::ICO;
+                  break;
+         default:
+                 c->SSNtype = ccReg::EMPTY;
+                  break;
+        }
         ret->errCode=COMMAND_OK; // VASE OK
 
 
@@ -863,8 +898,10 @@ c->handle=CORBA::string_dup("");
 c->ROID=CORBA::string_dup("");   
 c->CrID=CORBA::string_dup("");    // identifikator registratora ktery vytvoril kontak
 c->UpID=CORBA::string_dup("");    // identifikator registratora ktery provedl zmeny
+c->ClID=CORBA::string_dup(""); 
 c->CrDate=0; // datum a cas vytvoreni
 c->UpDate=0; // datum a cas zmeny
+c->TrDate=0; // dattum a cas transferu
 c->stat.length(0); // status
 c->Name=CORBA::string_dup(""); // jmeno nebo nazev kontaktu
 c->Organization=CORBA::string_dup(""); // nazev organizace
@@ -881,6 +918,8 @@ c->Email=CORBA::string_dup("");
 c->NotifyEmail=CORBA::string_dup(""); // upozornovaci email
 c->VAT=CORBA::string_dup(""); // DIC
 c->SSN=CORBA::string_dup(""); // SSN
+c->SSNtype =  ccReg::EMPTY ;
+c->AuthInfoPw=CORBA::string_dup(""); // heslo
 }
 
 
@@ -911,7 +950,7 @@ ccReg::Response *ret;
 DB DBsql;
 Status status;
 char HANDLE[64];
-int regID=0 , id ,  crID =0  ;
+int regID , id ,  clID ;
 
 ret = new ccReg::Response;
 
@@ -948,11 +987,12 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , cl
                 {
                   // get  registrator ID
                   regID = DBsql.GetLoginRegistrarID( clientID );
-                  // client contaktu ktery ho vytvoril
-                  crID = DBsql.GetNumericFromTable( "CONTACT", "crID", "handle", ( char * ) HANDLE );
+                  // klient kontaku
+                  clID = DBsql.GetNumericFromTable( "CONTACT", "ClID", "id", id );
 
 
-                  if( regID != crID )   // pokud neni tvurcem kontaktu 
+
+                  if( regID != clID )   // pokud neni klientem
                     {
                       LOG( WARNING_LOG, "bad autorization not  creator of handle [%s]", handle );
                       ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
@@ -1042,7 +1082,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate( const char *handle, const ccReg::C
 ccReg::Response * ret;
 DB DBsql;
 char statusString[128] , HANDLE[64];
-int regID = 0, crID = 0, clID = 0, id , num ;
+int regID = 0,  clID = 0, id , num ;
 bool remove_update_flag = false ;
 int len, i , seq;
 Status status;
@@ -1098,13 +1138,17 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
                 {
                   // get  registrator ID
                   regID = DBsql.GetLoginRegistrarID( clientID );
-                  // zjistit kontak u domeny            
-                  clID = DBsql.GetClientDomainRegistrant( regID, clientID );
-                  // client contaktu ktery ho vytvoril
-                  crID = DBsql.GetNumericFromTable( "CONTACT", "crID", "handle", ( char * ) HANDLE  );
-                  // klient spravuje nejakou domenu kontaktu nebo je jeho tvurcem   
-                  if( crID == regID || clID == regID )
+                  // client contaktu
+                  clID = DBsql.GetNumericFromTable( "CONTACT", "clID", "id", id );
+
+                  if( clID != regID )
                     {
+                        LOG( WARNING_LOG, "bad autorization not  client of contact [%s]", handle );
+                        ret->errCode = COMMAND_AUTOR_ERROR;     // spatna autorizace
+                    }
+                  else
+                   {
+
                       if( DBsql.TestCountryCode( c.CC ) )       // test kodu zeme pokud je nastavena
                         {
 
@@ -1183,6 +1227,9 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
                                           DBsql.SET( "NotifyEmail", c.NotifyEmail );
                                           DBsql.SET( "VAT", c.VAT );
                                           DBsql.SET( "SSN", c.SSN );
+                                          if(  c.SSNtype > ccReg::EMPTY )  DBsql.SET( "SSNtype" , c.SSNtype ); // typ ssn
+                                          // heslo
+                                          DBsql.SET( "AuthInfoPw", c.AuthInfoPw ); 
 
                                           //  Disclose parametry
                                           DBsql.SETBOOL( "DiscloseName", c.DiscloseName );
@@ -1223,11 +1270,6 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
                           ret->errors[0].reason = CORBA::string_dup( "unknow country code" );
                         }
 
-                    }
-                  else          // client neni tvurcem kontaktu ani nespravuje zadnou jeho domenu
-                    {
-                      LOG( WARNING_LOG, "bad autorization of handle [%s]", handle );
-                      ret->errCode = COMMAND_AUTOR_ERROR;       // spatna autorizace
                     }
 
 
@@ -1309,7 +1351,7 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
         {
 
        // preved handle na velka pismena
-       if( get_HANDLE( HANDLE , handle ) == false )  // spatny format handlu
+       if( get_CONTACTHANDLE( HANDLE , handle ) == false )  // spatny format handlu
          {
 
             ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -1317,7 +1359,7 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::contactCreate_handle; 
             ret->errors[0].value <<= CORBA::string_dup( handle );
-            ret->errors[0].reason = CORBA::string_dup( "bad format of handle" );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of handle use CID:CONTACT" );
         }
         else 
         {
@@ -1352,6 +1394,7 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
                       DBsql.INTO( "handle" );
                       DBsql.INTO( "CrDate" );
                       DBsql.INTO( "CrID" );
+                      DBsql.INTO( "ClID" );
                       DBsql.INTO( "status" );
 
                       DBsql.INTOVAL( "Name", c.Name );
@@ -1369,6 +1412,8 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
                       DBsql.INTOVAL( "NotifyEmail", c.NotifyEmail );
                       DBsql.INTOVAL( "VAT", c.VAT );
                       DBsql.INTOVAL( "SSN", c.SSN );
+                      if(  c.SSNtype > ccReg::EMPTY ) DBsql.INTO( "SSNtype");
+                      DBsql.INTOVAL( "AuthInfoPw", c.AuthInfoPw );
 
 
                       if( c.DiscloseName ==  1 ) DBsql.INTO( "DiscloseName" );
@@ -1382,6 +1427,7 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
                       DBsql.VALUE( roid );
                       DBsql.VALUE( HANDLE );
                       DBsql.VALUE( createDate );
+                      DBsql.VALUE( regID );
                       DBsql.VALUE( regID );
                       DBsql.VALUE( "{ 1 }" );   // OK status
 
@@ -1401,6 +1447,8 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
                       DBsql.VAL( c.NotifyEmail );
                       DBsql.VAL( c.VAT );
                       DBsql.VAL( c.SSN );
+                      if(  c.SSNtype > ccReg::EMPTY ) DBsql.VALUE(   c.SSNtype );
+                      DBsql.VAL( c.AuthInfoPw  );
 
 
                       if( c.DiscloseName == 1 ) DBsql.VALUE( "t" );
@@ -1459,6 +1507,143 @@ if( ret->errCode == 0 )
 
 return ret;
 }
+
+
+
+/***********************************************************************
+ *
+ * FUNCTION:    ContactTransfer
+ *
+ * DESCRIPTION: prevod kontactu od puvodniho na noveho registratora
+ *              a ulozeni zmen do historie
+ * PARAMETERS:  handle - identifikator kontaktu
+ *              authInfo - autentifikace heslem
+ *              clientID - id pripojeneho klienta 
+ *              clTRID - cislo transakce klienta
+ *
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
+
+ccReg::Response* ccReg_EPP_i::ContactTransfer(const char* handle, const char* authInfo, CORBA::Long clientID, const char* clTRID , const char* XML )
+{
+ccReg::Response *ret;
+DB DBsql;
+char HANDLE[64];
+Status status;
+int regID=0 , clID=0 , id , contactid;
+
+ret = new ccReg::Response;
+
+ret->errCode=0;
+ret->errors.length(0);
+
+LOG( NOTICE_LOG ,  "ContactTransfer: clientID -> %d clTRID [%s] handle [%s] authInfo [%s] " , clientID , clTRID , handle , authInfo );
+
+if( DBsql.OpenDatabase( database ) )
+{
+
+if( DBsql.BeginAction( clientID , EPP_ContactTransfer ,  clTRID , XML  ) )
+ {
+
+  // preved handle na velka pismena
+  if( get_HANDLE( HANDLE , handle )  )
+  {
+  if( DBsql.BeginTransaction() )
+  {
+ 
+   // pokud domena neexistuje
+  if( (id = DBsql.GetNumericFromTable(  "CONTACT"  , "id" , "handle" , (char * ) HANDLE ) ) == 0 ) 
+    {
+        LOG( WARNING_LOG  ,  "object [%s] NOT_EXIST" ,  handle );
+      ret->errCode= COMMAND_OBJECT_NOT_EXIST;
+    }
+  else
+  {
+   // get  registrator ID
+   regID =   DBsql.GetLoginRegistrarID( clientID);
+   // client contaktu
+   clID  =  DBsql.GetNumericFromTable(  "CONTACT"  , "clID" , "id" , id );
+
+
+
+  if( regID == clID )       // transfer nemuze delat stavajici client
+    {
+      LOG( WARNING_LOG, "client can not transfer contact %s" , handle );
+      ret->errCode =  COMMAND_NOT_ELIGIBLE_FOR_TRANSFER;
+    }
+   else
+  {
+
+                  // zpracuj  pole statusu
+                  status.Make( DBsql.GetStatusFromTable( "CONTACT", id ) );
+
+                  if( status.Test( STATUS_TRANSFER ) )
+                    {
+                      LOG( WARNING_LOG, "status TransferProhibited" );
+                      ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
+                    }
+                  else
+                    {
+
+   if(  DBsql.AuthTable(  "CONTACT"  , (char *)authInfo , id )  == false  ) // pokud prosla autentifikace 
+     {       
+        LOG( WARNING_LOG , "autorization failed");
+        ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
+     }
+    else
+     {
+         //  uloz do historie
+       if( DBsql.MakeHistory() )
+        {
+          if( DBsql.SaveHistory( "CONTACT" , "id" , id ) ) // uloz zaznam
+           { 
+
+
+                // zmena registratora
+                DBsql.UPDATE( "CONTACT");
+                DBsql.SET( "TrDate" , "now" );
+                DBsql.SET( "clID" , regID );
+                DBsql.WHEREID( id ); 
+                if(   DBsql.EXEC() )  ret->errCode = COMMAND_OK; // nastavit OK                                  
+                else  ret->errCode = COMMAND_FAILED;
+           }
+
+       }
+     }
+    }
+    }
+   }
+    // konec transakce commit ci rollback
+    DBsql.QuitTransaction( ret->errCode );
+   }
+
+  }
+   // zapis na konec action
+   ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode  ) ) ;
+}
+
+
+ret->errMsg =  CORBA::string_dup(   DBsql.GetErrorMessage(  ret->errCode  ) ) ;
+
+DBsql.Disconnect();
+}
+
+
+if( ret->errCode == 0 )
+  {
+    ret->errCode = COMMAND_FAILED;
+    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+    ret->errMsg = CORBA::string_dup( "" );
+  }
+
+return ret;
+}
+
+
+
+
 
 
 
@@ -1858,7 +2043,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
         {
 
        // preved handle na velka pismena
-       if( get_HANDLE( HANDLE , handle ) == false )  // spatny format handlu
+       if( get_NSSETHANDLE( HANDLE , handle ) == false )  // spatny format handlu
          {
 
             ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -1866,7 +2051,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::nssetCreate_handle;
             ret->errors[0].value <<= CORBA::string_dup( handle );
-            ret->errors[0].reason = CORBA::string_dup( "bad format of handle" );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of handle use NSSID:NSSET" );
         }
         else
      {
