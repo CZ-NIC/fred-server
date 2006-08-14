@@ -89,7 +89,7 @@ case  EPP_DomainCheck:
       else return  true;
 case  EPP_ContactCheck:
 case  EPP_NSsetCheck:
-  return get_HANDLE( CHCK , chck);
+  return get_HANDLE( CHCK , chck); // deafult
 default:
   return false;
 }
@@ -103,8 +103,27 @@ sprintf(roid , "%s%010d-CZ" , prefix ,  id );
 LOG( LOG_DEBUG ,  "get_ROID [%s] from prefix %s  id %d" , roid  , prefix , id  );
 
 }
+// contact handle
+bool get_CONTACTHANDLE(  char  * HANDLE , const char *handle  )
+{
+return  get_handle( HANDLE , handle ,1 );
+}
+
+// nsset handle
+bool get_NSSETHANDLE(  char  * HANDLE , const char *handle  )
+{
+return  get_handle( HANDLE , handle ,2 );
+}
+
+// obecny handle
+bool get_HANDLE(  char  * HANDLE , const char *handle  )
+{
+return  get_handle( HANDLE , handle , 0  );
+}
+
+
 // prevod a testovani handlu
-bool get_HANDLE( char  * HANDLE , const char *handle )
+bool get_handle( char  * HANDLE , const char *handle  , int typ )
 {
 int i , len;
 
@@ -119,13 +138,14 @@ if( len > 1 && len <= 40 )
   {
 
     // TEST
-    if( isalnum( handle[i] ) ||   handle[i] == '.' || handle[i] == '-' ||  handle[i] == '_'  )
+    if( isalnum( handle[i] ) ||   handle[i] == '.' || handle[i] == '-' ||  handle[i] == '_'   || handle[i] == ':' )
       {
           // PREVOD  na velka pismena
           HANDLE[i] =   toupper( handle[i] ); 
      }
     else
     {
+
         HANDLE[0] = 0 ;
         return false;
     }
@@ -133,8 +153,28 @@ if( len > 1 && len <= 40 )
  }
 
 HANDLE[i] = 0 ;
-LOG( LOG_DEBUG ,  "OK HANDLE [%s] " , HANDLE );
-return true;
+
+switch( typ )
+{
+ case 1:
+          if( strncmp( HANDLE ,  "CID:"   , 4 ) == 0 ) 
+             {
+                LOG( LOG_DEBUG ,  "OK CONTACT HANDLE [%s] " , HANDLE );
+                return true;
+             }
+          else return false; 
+ case 2:
+          if( strncmp( HANDLE ,  "NSSID:"   , 6 ) == 0 ) 
+             {
+                LOG( LOG_DEBUG ,  "OK NSSET HANDLE [%s] " , HANDLE );
+                return true;
+             }
+          else return false;
+ default:
+          LOG( LOG_DEBUG ,  "OK HANDLE [%s] " , HANDLE );
+          return true;
+}
+
 }
 
 else return false;

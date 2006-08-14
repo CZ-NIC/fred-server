@@ -28,6 +28,18 @@ int atoh(const char *String);
 // prevadi handle na velka pismena psojena s testem
 bool get_HANDLE( char  * HANDLE , const char *handle );
 
+// contact handle
+bool get_CONTACTHANDLE(  char  * HANDLE , const char *handle  );
+
+// nsset handle
+bool get_NSSETHANDLE(  char  * HANDLE , const char *handle  );
+
+// obecny handle
+bool get_HANDLE(  char  * HANDLE , const char *handle  );
+
+// prevod a testovani handlu
+bool get_handle( char  * HANDLE , const char *handle  , int typ );
+
 // vytvoreni roid
 void get_roid( char *roid , char *prefix , int id );
 
