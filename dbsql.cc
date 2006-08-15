@@ -80,7 +80,7 @@ if( actionID )
   VALUE(  actionID  );
   if( clientID > 0 ) VALUE( clientID );
   VALUE( action );
-  VALUE(  clTRID );
+  VALUE( clTRID );
   
    if( EXEC() ) 
      {
@@ -88,7 +88,7 @@ if( actionID )
            {
                 INSERT("Action_XML");
                 VALUE( actionID );
-                VALUESC( xml );
+                VALUE( xml );
                 return  EXEC();
            }
         else return true;
@@ -111,7 +111,7 @@ else
 if( svrTRID == NULL ) 
  {
   LOG( SQL_LOG , "alloc svrTRID");
-  svrTRID= new char[32] ; 
+  svrTRID= new char[MAX_SVTID] ; 
  }
 
 // cislo transakce co vraci server
@@ -446,7 +446,7 @@ return regID;
 
 char *  DB::GetValueFromTable( const char *table , const char *vname , const char *fname , const char *value)
 {
-char sqlString[128];
+char sqlString[512];
 int size;
 // char *handle;
 
@@ -576,7 +576,7 @@ return 0;
 // ulozi radek tabulky s id
 bool DB::SaveHistory(char *table , char *fname , int id )
 {
-char sqlString[4096] , buf[256] ;
+char sqlString[MAX_SQLBUFFER] , buf[1024] ;
 int i ,  row ;
 bool ret= true; // default
 
@@ -632,33 +632,86 @@ return ret;
 // SQL UPDATE funkce
 void DB::UPDATE( const char * table )
 {
-sqlBuffer = new char[4096*4];
-
-sprintf( sqlBuffer ,  "UPDATE %s SET  " , table );
+sqlBuffer = new char[MAX_SQLBUFFER];
+memset(  sqlBuffer , 0 , MAX_SQLBUFFER );
+SQLCat( "UPDATE " );
+SQLCat( table );
+SQLCat( " SET " );
 }
 
+void DB::SQLDelEnd()
+{
+int len;
+len = strlen( sqlBuffer );
+// vymaz konec
+if( len > 0 )  sqlBuffer[len-1]  = 0;
+}
+
+bool DB::SQLTestEnd( char c )
+{
+int len;
+len = strlen( sqlBuffer );
+
+// test
+if(  sqlBuffer[len-1]  == c ) return true;
+else return false;
+}
+
+void DB::SQLCat(const char *str )
+{
+int len , length ;
+len = strlen( str );
+length = strlen( sqlBuffer );
+
+//  test na delku retezce
+if(  len  + length < MAX_SQLBUFFER ) strcat( sqlBuffer , str );
+}
+
+// escape
+void DB::SQLCatEscape( const char * value )
+{
+int length;
+char *str;
+
+length = strlen( value );
+
+if( length )
+{
+    // zvetsi retezec
+    // LOG( SQL_LOG , "alloc escape string length  %d" , length*2 );
+    str = new char[length*2];
+    // DB escape funkce
+    Escape( str , value  , length ) ;
+    SQLCat( str );
+    // LOG( SQL_LOG , "free  escape string" );
+    delete str;
+}
+
+}
 void DB::SET( const char *fname , const char * value )
 {
+int length;
+char *str;
 
 if( strlen( value ) )
  {
 
-  strcat( sqlBuffer ,"  ");
-  strcat( sqlBuffer , fname );
-  strcat( sqlBuffer , "=" );
+  SQLCat(" ");
+  SQLCat(fname );
+  SQLCat( "=" );
 
    if( value[0] == 0x8 ) // specialne vymazani pri UPDATE
    {
-     strcat( sqlBuffer , "NULL" );           
+     SQLCat( "NULL" );           
    }
    else 
    {
-     strcat( sqlBuffer , "'" );
-     strcat( sqlBuffer , value );
-     strcat( sqlBuffer , "'" );
+    SQLCat( "'" );
+    SQLCatEscape(  value ); 
+    SQLCat(  "'" );
    }
 
-  strcat( sqlBuffer , " ," ); // carka na konec
+  SQLCat(  " ," ); // carka na konec
  }
 
 }
@@ -667,25 +720,25 @@ void DB::SET( const char *fname , int value )
 {
 char numStr[16];
 
-strcat( sqlBuffer ,"  ");
-strcat( sqlBuffer , fname );
-strcat( sqlBuffer , "=" );
+SQLCat( "  ");
+SQLCat(  fname );
+SQLCat(  "=" );
 sprintf( numStr , "%d" ,  value  );
-strcat( sqlBuffer , numStr );
-strcat( sqlBuffer , " ," );
+SQLCat(  numStr );
+SQLCat( " ," );
 }
 
 void DB::SET( const char *fname , bool  value )
 {
 
-strcat( sqlBuffer ,"  "); 
-strcat( sqlBuffer , fname );
-strcat( sqlBuffer , "=" );
+SQLCat( "  "); 
+SQLCat(  fname );
+SQLCat(  "=" );
 
-if( value )  strcat( sqlBuffer , "\'t\'");
-else  strcat( sqlBuffer , "\'f\'");
+if( value )  SQLCat( "\'t\'");
+else  SQLCat( "\'f\'");
 
-strcat( sqlBuffer , " ," );
+SQLCat(  " ," );
 }
 
 
@@ -694,51 +747,45 @@ void DB::SETBOOL( const char *fname , int  value )
 // jedna jako tru 0 jako false -1 nic nemenit
 if( value == 1 || value == 0 )
 {
-strcat( sqlBuffer ,"  "); 
-strcat( sqlBuffer , fname );
-strcat( sqlBuffer , "=" );
+SQLCat("  "); 
+SQLCat( fname );
+SQLCat( "=" );
 
-if( value )  strcat( sqlBuffer , "\'t\'");
-else  strcat( sqlBuffer , "\'f\'");
+if( value )  SQLCat( "\'t\'");
+else  SQLCat( "\'f\'");
 
-strcat( sqlBuffer , " ," );
+SQLCat( " ," );
 }
 
 }
 
 void DB::WHERE(const char *fname , const char * value )
 {
-int len;
+  if( SQLTestEnd( ',' )  ) SQLDelEnd();  // vymaz posledni znak
 
-
-  len = strlen( sqlBuffer );
-  if(  sqlBuffer[len-1]  == ',' )  sqlBuffer[len-1]  = 0; // vymaz posledni carku 
-
-  strcat( sqlBuffer ,"  WHERE " );
-  strcat( sqlBuffer , fname );
-  strcat( sqlBuffer , "='" );
-  strcat( sqlBuffer , value );
-  strcat( sqlBuffer , "' ;" );
+  SQLCat("  WHERE " );
+  SQLCat( fname );
+  SQLCat( "='" );
+  SQLCatEscape(  value );
+  SQLCat( "' ;" );
 
 }
 
 void DB::WHEREOPP(  const  char *op ,  const  char *fname , const  char *p  , const  char * value )
 {
-int len;
 
 
-  len = strlen( sqlBuffer );
-  if(  sqlBuffer[len-1]  == ';' )
+  if(  SQLTestEnd( ';' )  )
     {
-       sqlBuffer[len-1]  = 0; // vymaz posledni strednik
-       strcat( sqlBuffer , "  "  );
-       strcat( sqlBuffer ,  op ); // operator AND OR LIKE
-       strcat( sqlBuffer , " " );
-       strcat( sqlBuffer ,  fname );
-       strcat( sqlBuffer  , p );
-       strcat( sqlBuffer , "'" );
-       strcat( sqlBuffer , value );
-       strcat( sqlBuffer , "' ;" ); // konec         
+       SQLDelEnd(); // umaz posledni strednik
+       SQLCat( "  "  );
+       SQLCat(  op ); // operator AND OR LIKE
+       SQLCat( " " );
+       SQLCat( fname );
+       SQLCat(  p );
+       SQLCat(  "'" );
+       SQLCatEscape(  value );
+       SQLCat(  "' ;" ); // konec         
     }
 
 }
@@ -752,22 +799,21 @@ WHERE( fname , numStr );
 
 void DB::INSERT( const char * table )
 {
-sqlBuffer = new char[4096];
-
-sprintf( sqlBuffer ,  "INSERT INTO  %s  " , table );
+sqlBuffer = new char[MAX_SQLBUFFER];
+memset(  sqlBuffer , 0 , MAX_SQLBUFFER );
+SQLCat( "INSERT INTO " );
+SQLCat( table );
+SQLCat( "  " );
 }
 
 void DB::INTO(const char *fname)
 {
-int len;
-len = strlen( sqlBuffer );
-
  
 // zacni zavorkou
-if(  sqlBuffer[len-1]  == ' ' ) strcat ( sqlBuffer , " ( " ); // zavorka
+if( SQLTestEnd(' ') ) SQLCat(  " ( " ); // zavorka
 
-strcat( sqlBuffer , fname );
-strcat( sqlBuffer , " ," );
+SQLCat( fname );
+SQLCat( " ," );
 
 }
 
@@ -785,74 +831,60 @@ if( strlen( value ) ) VALUE( value );
 
 void DB::VALUES( const char * value  , bool esc )
 {
-int len , length , i , l;
-
+int len ;
 
 len = strlen( sqlBuffer );
 
 
-if(  sqlBuffer[len-1] == ';' ) // ukonceni 
+if(  SQLTestEnd(  ';' ) ) // ukonceni 
 {
-sqlBuffer[len-1]  = 0;
-sqlBuffer[len-2]  = ',';
+SQLDelEnd();
+SQLDelEnd();
+SQLCat( ",");
 } 
 else
 {
 
- if(  sqlBuffer[len-1]  == ',' )  
+ if(   SQLTestEnd( ',' )  )  
  {
-   sqlBuffer[len-1]  = 0; // vymaz carku
-   strcat ( sqlBuffer , " ) " ); // uzavri zavorku 
+   SQLDelEnd();
+   SQLCat( " ) " ); // uzavri zavorku 
   }
 
-  strcat ( sqlBuffer , " VALUES ( " );
+  SQLCat( " VALUES ( " );
 
 }
 
-strcat( sqlBuffer , " '" );
+SQLCat( " '" );
+
 // esacepe
-if( esc)
-{
-len = strlen( sqlBuffer );
-length =  strlen(  value );
-
-for( i  = 0 , l = len ; i < length ; i ++ , l++ )
- {
-   if(  value[i] == '\\' )  { sqlBuffer[l] =  '\\' ;  l++;  sqlBuffer[l] =  '\\' ; }
-   else if(  value[i] == '\'' ) { sqlBuffer[l] =  '\\' ;  l++; sqlBuffer[l] = '\'' ; }
-        else  if( value[i] == '\r' ||  value[i] == '\n' )  sqlBuffer[l] = ' ';
-              else  sqlBuffer[l] = value[i];
- }
-sqlBuffer[l] = 0 ;
-}
-else strcat( sqlBuffer ,  value );
+if( esc) SQLCatEscape(  value );
+else  SQLCat( value );
 
 
 strcat( sqlBuffer , "' );" ); // vzdy ukoncit
  
 }
 
-void DB::VALUESC( const char * value )
-{
-VALUES( value , true );
-}
 
 void DB::VALUE( const char * value )
 {
-VALUES( value , false );
+// pouzij ESCAPE 
+VALUES( value , true ); 
 }
 
 void DB::VALUE( int  value )
 {
 char numStr[16];
 sprintf( numStr , "%d" ,  value );
-VALUE( numStr );
+VALUES( numStr , false ); // bez ESC
 }
 
 void DB::VALUE( bool  value )
 {
-if( value ) VALUE( "t" );
-else VALUE( "f" );
+// bez ESC
+if( value ) VALUES( "t" , false );
+else VALUES( "f" , false );
 }
 
 
@@ -872,9 +904,22 @@ return ret;
 bool DB::SELECT(const char *table  , const char *fname , const char * value )
 {
 char sqlString[512];
+char *str;
+int length;
 
-sprintf( sqlString , "SELECT * FROM %s WHERE %s=\'%s\';" , table , fname , value);
+length = strlen( value );
+
+if( length )
+{
+str = new char[length*2];
+// DB escape funkce
+Escape( str , value  , length ) ;
+sprintf( sqlString , "SELECT * FROM %s WHERE %s=\'%s\';" , table , fname , str );
+delete str;
+
 return ExecSelect( sqlString );
+}
+else return false;
 }
 
 bool DB::SELECT(const char *table  , const char *fname , int value )

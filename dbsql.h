@@ -5,6 +5,9 @@
 #define LANG_CS 1
 #define CMD_OK 1000 // OK prikaz pro konec transakce
 
+#define MAX_SQLBUFFER 4096*4 // delka sqlBuffer
+#define MAX_SVTID 32 // delka svtrid
+
 class DB : public PQ{
 public:
 // constructor a destruktor
@@ -120,6 +123,18 @@ void VALUES( const char * value  , bool esc );
 void VALUE( const  char * value );
 void VALUE( int  value );
 void VALUE( bool value );
+
+// SQL string funkce
+
+// umazani konce retezce
+void SQLDelEnd();
+// test konce retezce sqlBuffer na znak c 
+bool SQLTestEnd( char c );
+// pouziti strcat do sqlBuffer s testem na delku retezce 
+void SQLCat(const char *str );
+// escape
+void SQLCatEscape( const char * value ); 
+
 
 bool EXEC();
 bool SELECT(const char *table  , const char *fname , const char * value );
