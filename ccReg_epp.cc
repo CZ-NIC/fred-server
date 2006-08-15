@@ -844,6 +844,9 @@ if( DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML ) )
          case 4:
                   c->SSNtype = ccReg::ICO;
                   break;
+         case 5:
+                  c->SSNtype = ccReg::MPSV;
+                  break;
          default:
                  c->SSNtype = ccReg::EMPTY;
                   break;
