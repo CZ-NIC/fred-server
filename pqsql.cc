@@ -119,7 +119,7 @@ return PQgetlength( result , row , col );
 
 
 // spusti select a vrati pocet radek
-bool PQ::ExecSelect(char *sqlString)
+bool PQ::ExecSelect(const char *sqlString)
 {
 
 LOG( SQL_LOG , "SELECT: [%s]" , sqlString );
@@ -157,7 +157,35 @@ void  PQ::Disconnect()
  PQfinish(connection); 
 }
 
-bool PQ::ExecSQL(char *sqlString)
+
+bool PQ::Escape(char *str ,  const char *String  , int length )
+{
+//int err;
+size_t  len;
+
+
+
+// escape retezce
+// len =  PQescapeStringConn(connection, str , String,  length, &err);
+
+/*
+if( err != NULL )
+{
+   LOG( ERROR_LOG ,  "ExecSQL escape error: %s" , String );
+  delete str;
+  return false;
+}
+else
+*/
+
+len =  PQescapeString( str,  String ,  length);
+
+LOG( SQL_LOG , "escape len  %d [%s]" , len  , str   );
+
+return true;
+}
+
+bool PQ::ExecSQL(const char *sqlString)
 {
 PGresult   *res;
 
@@ -168,7 +196,6 @@ LOG( SQL_LOG , "result:  %s %s" ,  PQresStatus( PQresultStatus(res) ) ,PQcmdStat
 
 if( PQresultStatus(res) == PGRES_COMMAND_OK )
   {
-
      LOG( SQL_LOG ,  "PQcmdTuples: %s" ,  PQcmdTuples( res) );
      PQclear(res);
     return true;
@@ -180,6 +207,8 @@ else
    PQclear(res);
    return false;
 }
+
+
 
 } 
 

@@ -9,7 +9,7 @@ PQ();
 // pripoji databazi s nastavenim conninfo
 bool OpenDatabase(const char *conninfo); 
 // provede sqlString 
-bool ExecSQL(char *sqlString);
+bool ExecSQL(const char *sqlString);
 // odpojeni od databaze 
 void Disconnect();
 
@@ -19,7 +19,7 @@ void  SetEncoding(  const char *encoding) ;
 int  GetValueLength(int row  , int col);
 
 // spusti select a vrati pocet radek
-bool ExecSelect(char *sqlString);
+bool ExecSelect(const char *sqlString);
 // vyprazdni result selectu a nastav pocet radku a sloupcu na -1
 void  FreeSelect();
 // vraci hodnotu
@@ -38,6 +38,8 @@ char *  GetFieldName( int col );
 // jestli neni null
 bool IsNotNull( int row , int col );
 
+// escape string 
+bool Escape(char *str ,  const char *String ,  int length  );
 
 // vraci pocet radku
 int GetSelectRows();
