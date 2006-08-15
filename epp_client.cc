@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     char *msg;
     int i , len , max = 512, d , j , a , num;
     CORBA::Long loginID , msgID , newmsgID;
-    ccReg::Avail_var av;
+    ccReg::CheckResp_var cr;
     ccReg::DNSHost_var dns_chg ,  dns_add , dns_rem;
     ccReg::TechContact_var tech_add , tech_rem;
     ccReg::AdminContact_var admin;
@@ -132,7 +132,8 @@ int main(int argc, char** argv)
 
 
 
-    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "heslo"  , "" ,     "LRR-login-now" , "" , loginID , "certifikat" ,  ccReg::EN  );
+    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789"  , "" ,     "LRR-login-now" , "" , loginID , "AE:B3:5F:FA:38:80:DB:37:53:6A:3E:D4:55:E2:91:97" ,  ccReg::EN  );
+
 
     cout << "loginID" << loginID  << endl;
 
@@ -181,7 +182,8 @@ num = 1000;
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
 
 
-    ret =  EPP->ClientLogin(  "REG-CT"  ,  "heslo"  , "" ,     "LRR-login-now" , "" , loginID , "certifikat" ,  ccReg::EN  );
+
+    ret =  EPP->ClientLogin(  "REG-LRR2"  ,  "123456789"  , "" ,     "LRR-login-now" , "" , loginID , "AE:B3:5F:FA:38:80:DB:37:53:6A:3E:D4:55:E2:91:97" ,  ccReg::EN  );
 
     cout << "loginID" << loginID  << endl;
 
@@ -397,7 +399,7 @@ cout << "Contact delete" << "err code " << ret->errCode << ret->errMsg << " serv
 //     ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
 
   //  cout << "get Transaction code " << ret->errCode  <<  ret->svTRID  << endl;
-/*
+
 
 
      check = new ccReg::Check;
@@ -407,12 +409,12 @@ cout << "Contact delete" << "err code " << ret->errCode << ret->errMsg << " serv
      check[2] = CORBA::string_dup(  "NECOCZ-ADMIN" );
      check[3] = CORBA::string_dup(  "NECOCZ-NIKDO" );
  
-     ret =  EPP->ContactCheck( check , av,   loginID ,  "check-neco" );
-     cout <<  " err code " << ret->errCode  <<  ret->svTRID  << endl;
+    ret =  EPP->ContactCheck( check , cr,   loginID ,  "check-neco"  , "XML" );
+    cout <<  " err code " << ret->errCode  <<  ret->svTRID  << endl;
  
-    for( i = 0 ; i <  av->length() ; i ++ )
+    for( i = 0 ; i <  cr->length() ; i ++ )
       {
-         cout << i << check[i] << " avail " << av[i] << endl;
+         cout << i << check[i] << " avail: " << cr[i].avail << " reason: "  <<  cr[i].reason << endl;
       }
 
 
@@ -421,27 +423,27 @@ cout << "Contact delete" << "err code " << ret->errCode << ret->errMsg << " serv
      dcheck[1] = CORBA::string_dup(  "Example.cz" );
      dcheck[2] = CORBA::string_dup(  "EXAMPLE.CZ" );
 
-     ret =  EPP->DomainCheck( dcheck , av,   loginID ,  "domain-neco" );
+     ret =  EPP->DomainCheck( dcheck , cr,   loginID ,  "domain-neco" , "XML" );
      cout <<  " err code " << ret->errCode  <<  ret->svTRID  << endl;
  
-    for( i = 0 ; i <  av->length() ; i ++ )
+    for( i = 0 ; i <  cr->length() ; i ++ )
       {
-         cout << i << dcheck[i] << " avail " << av[i] << endl;
+         cout << i << check[i] << " avail: " << cr[i].avail << " reason: "  <<  cr[i].reason << endl;
       }
-
+ 
 
  dcheck.length(3);
  dcheck[0] = CORBA::string_dup(  "NECOCZ" );
  dcheck[1] = CORBA::string_dup(  "necocz" );
  dcheck[2] = CORBA::string_dup(  "NSSET" );
 
-    ret =  EPP->NSSetCheck(  dcheck , av,   loginID ,  "XX-nsset-check" );
+    ret =  EPP->NSSetCheck(  dcheck , cr,   loginID ,  "XX-nsset-check" , "XML" );
 
-  for( i = 0 ; i <  av->length() ; i ++ )
+    for( i = 0 ; i <  cr->length() ; i ++ )
       {
-         cout << i << dcheck[i] << " avail " << av[i] << endl;
+         cout << i << check[i] << " avail: " << cr[i].avail << " reason: "  <<  cr[i].reason << endl;
       }
-*/
+
  /*
 
     ret =  EPP->NSSetInfo( "NECOCZ" , nsset ,  loginID ,  "XX-nsset-info-necocz" );
