@@ -610,7 +610,7 @@ return ret;
  ***********************************************************************/
 
 
-ccReg::Response* ccReg_EPP_i::ObjectCheck( short act , char * table , char *fname , const ccReg::Check& chck , ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID , const char* XML )
+ccReg::Response* ccReg_EPP_i::ObjectCheck( short act , char * table , char *fname , const ccReg::Check& chck , ccReg::CheckResp_out  a, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 DB DBsql;
 ccReg::Response *ret;
@@ -618,7 +618,9 @@ int  len , av ;
 long unsigned int i;
 ret = new ccReg::Response;
 
-a = new ccReg::Avail;
+a = new ccReg::CheckResp;
+
+
 ret->errCode=0;
 ret->errors.length(0);
 
@@ -640,12 +642,14 @@ if( DBsql.OpenDatabase( database ) )
       switch( DBsql.CheckObject( table , fname , chck[i] ) )
            {
              case 1:
-                       a[i]= 0;    // objekt existuje
-                       //LOG( NOTICE_LOG ,  "object %s exist not Avail" , (char * ) chck[i] );
+                       a[i].avail = ccReg::Exist;    // objekt existuje
+                       a[i].reason =  CORBA::string_dup( "object exist not Avail" );
+                       LOG( NOTICE_LOG ,  "object %s exist not Avail" , (const char * ) chck[i] );
                        break;
              case 0:
-                       a[i]= 1;    // objekt existuje
-                       //LOG( NOTICE_LOG ,  "object %s not exist  Avail" ,(char * ) chck[i] );
+                       a[i].avail =  ccReg::NotExist;    // objekt ne existuje
+                       a[i].reason =  CORBA::string_dup( "");  // free
+                       LOG( NOTICE_LOG ,  "object %s not exist  Avail" ,(const char * ) chck[i] );
                        break; 
              default: // error
                       ret->errCode=COMMAND_FAILED;
@@ -681,18 +685,18 @@ return ret;
 }
 
 
-ccReg::Response* ccReg_EPP_i::ContactCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID , const char* XML )
+ccReg::Response* ccReg_EPP_i::ContactCheck(const ccReg::Check& handle, ccReg::CheckResp_out  a, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 return ObjectCheck( EPP_ContactCheck , "CONTACT"  , "handle" , handle , a , clientID , clTRID , XML);
 }
 
-ccReg::Response* ccReg_EPP_i::NSSetCheck(const ccReg::Check& handle, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID , const char* XML )
+ccReg::Response* ccReg_EPP_i::NSSetCheck(const ccReg::Check& handle, ccReg::CheckResp_out  a, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 return ObjectCheck( EPP_NSsetCheck ,  "NSSET"  , "handle" , handle , a ,  clientID , clTRID , XML);
 }
 
 
-ccReg::Response*  ccReg_EPP_i::DomainCheck(const ccReg::Check& fqdn, ccReg::Avail_out a, CORBA::Long clientID, const char* clTRID , const char* XML )
+ccReg::Response*  ccReg_EPP_i::DomainCheck(const ccReg::Check& fqdn, ccReg::CheckResp_out  a, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 return ObjectCheck(  EPP_DomainCheck , "DOMAIN"  , "fqdn" ,   fqdn , a ,  clientID , clTRID , XML);
 }
@@ -4687,4 +4691,26 @@ if( DBsql.OpenDatabase( database ) )
 return  ccReg::NONE;
 }
  
+
+ccReg::Response* ccReg_EPP_i::ContactList(ccReg::Lists_out contacts, CORBA::Long clientID, const char* clTRID, const char* XML)
+{
+  // insert code here and remove the warning
+  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::ContactList
+}
+
+
+
+ccReg::Response* ccReg_EPP_i::NSSetList(ccReg::Lists_out nssets, CORBA::Long clientID, const char* clTRID, const char* XML)
+{
+  // insert code here and remove the warning
+  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::NSSetList
+}
+
+
+ccReg::Response* ccReg_EPP_i::DomainList(ccReg::Lists_out domains, CORBA::Long clientID, const char* clTRID, const char* XML){
+  // insert code here and remove the warning
+  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::DomainList
+}
+
+
 
