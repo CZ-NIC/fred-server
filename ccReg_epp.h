@@ -27,6 +27,9 @@ public:
   char set_DISCLOSE(  ccReg::Disclose d );
   bool test_DISCLOSE(  ccReg::Disclose d );
 
+  // obecna list funkce
+  ccReg::Response* FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list , CORBA::Long clientID, const char* clTRID, const char* XML);
+
 
   // obecna check funkce
   ccReg::Response*  ObjectCheck( short act , char * table , char *fname , const ccReg::Check& chck , ccReg::CheckResp_out   a, CORBA::Long clientID, const char* clTRID , const char* XML );

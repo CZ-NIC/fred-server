@@ -4748,24 +4748,89 @@ return  ccReg::NONE;
 }
  
 
+// primitivni vypis
+ccReg::Response*  ccReg_EPP_i::FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list ,   CORBA::Long clientID, const char* clTRID, const char* XML )
+{
+DB DBsql;
+int rows =0, i;
+ccReg::Response * ret;
+int regID;
+ret = new ccReg::Response;
+
+// default
+ret->errors.length( 0 );
+ret->errCode =0 ; // default
+
+list = new ccReg::Lists;
+
+if( DBsql.OpenDatabase( database ) )
+{
+  if( DBsql.BeginAction( clientID , act ,  clTRID , XML  ) )
+  {
+
+    // get  registrator ID
+    regID = DBsql.GetLoginRegistrarID( clientID );
+
+   DBsql.SELECTFROM( fname , table );
+   DBsql.WHERE( "ClID" , regID );
+
+   if( DBsql.SELECT() )
+     {
+       rows = DBsql.GetSelectRows();
+        
+       LOG( NOTICE_LOG, "Full List: %s  num -> %d ClID %d",  table , rows  ,  regID );
+       list->length( rows );
+
+       for( i = 0 ; i < rows ; i ++ )
+          {
+             (*list)[i]=CORBA::string_dup( DBsql.GetFieldValue(  i , 0 )  ); 
+          }
+
+      DBsql.FreeSelect();
+     }
+
+
+
+      // comand OK
+     if( ret->errCode == 0 ) ret->errCode=COMMAND_OK; // vse proslo OK zadna chyba
+
+      // zapis na konec action
+      ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) ) ;
+  }
+
+ret->errMsg =  CORBA::string_dup(   DBsql.GetErrorMessage(  ret->errCode  ) ) ;
+
+DBsql.Disconnect();
+}
+
+
+if( ret->errCode == 0 )
+  {
+    ret->errCode = COMMAND_FAILED;    // obecna chyba
+    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+    ret->errMsg = CORBA::string_dup( "" );
+  }
+
+return ret;
+}
+
+
 ccReg::Response* ccReg_EPP_i::ContactList(ccReg::Lists_out contacts, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
-  // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::ContactList"
+return FullList( EPP_ListContact , "CONTACT"  , "HANDLE" , contacts ,  clientID,  clTRID,  XML);
 }
 
 
 
 ccReg::Response* ccReg_EPP_i::NSSetList(ccReg::Lists_out nssets, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
-  // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::NSSetList"
+return FullList( EPP_ListNSset  , "NSSET"  , "HANDLE" , nssets ,  clientID,  clTRID,  XML);
 }
 
 
-ccReg::Response* ccReg_EPP_i::DomainList(ccReg::Lists_out domains, CORBA::Long clientID, const char* clTRID, const char* XML){
-  // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::DomainList"
+ccReg::Response* ccReg_EPP_i::DomainList(ccReg::Lists_out domains, CORBA::Long clientID, const char* clTRID, const char* XML)
+{
+return FullList( EPP_ListDomain , "DOMAIN"  , "fqdn" , domains ,  clientID,  clTRID,  XML);
 }
 
 
