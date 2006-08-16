@@ -334,6 +334,7 @@ if( ExecSelect( sqlString ) )
   FreeSelect();
  }
 
+if( hostID == 0 )  LOG( SQL_LOG , "Host fqdn=\'%s\' not found" , fqdn  );
 return hostID;
 }
 
@@ -741,17 +742,17 @@ else  SQLCat( "\'f\'");
 SQLCat(  " ," );
 }
 
-
-void DB::SETBOOL( const char *fname , int  value )
+// nastavi but t nebo f 
+void DB::SETBOOL( const char *fname , char c  )
 {
 // jedna jako tru 0 jako false -1 nic nemenit
-if( value == 1 || value == 0 )
+if( c == 't' || c == 'f'  ||  c == 'T' || c == 'F' )
 {
 SQLCat("  "); 
 SQLCat( fname );
 SQLCat( "=" );
 
-if( value )  SQLCat( "\'t\'");
+if(  c == 't' ||  c == 'T' )  SQLCat( "\'t\'");
 else  SQLCat( "\'f\'");
 
 SQLCat( " ," );

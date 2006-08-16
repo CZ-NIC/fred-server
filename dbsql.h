@@ -108,7 +108,7 @@ void UPDATE( const  char * table );
 void SET( const  char *fname , const  char * value );
 void SET( const  char *fname , int   value );
 void SET( const  char *fname , bool  value );
-void SETBOOL( const char *fname , int  value );
+void SETBOOL( const char *fname , char c );
 void WHERE( const  char *fname , const  char * value );
 void WHERE( const  char *fname , int   value );
 void WHEREOPP(  const  char *op ,  const  char *fname , const  char *p  , const  char * value );
