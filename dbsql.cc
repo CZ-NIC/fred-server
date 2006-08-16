@@ -921,9 +921,9 @@ memset(  sqlBuffer , 0 , MAX_SQLBUFFER );
 SQLCat( "SELECT " );
 if( strlen( fname )  ) SQLCat( fname );
 else SQLCat( " * " ) ;
-SQLCat( " FROM ;" );
+SQLCat( " FROM " );
 SQLCat( table );
-
+SQLCat( " ;" ); // ukoncit
 }
 
 
