@@ -22,6 +22,12 @@ public:
 
   char* version(); // vraceni cisla verze 
 
+  // podpora disclose
+  ccReg::Disclose  get_DISCLOSE( bool d );
+  char set_DISCLOSE(  ccReg::Disclose d );
+  bool test_DISCLOSE(  ccReg::Disclose d );
+
+
   // obecna check funkce
   ccReg::Response*  ObjectCheck( short act , char * table , char *fname , const ccReg::Check& chck , ccReg::CheckResp_out   a, CORBA::Long clientID, const char* clTRID , const char* XML );
 

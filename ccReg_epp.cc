@@ -76,6 +76,35 @@ return version;
 }
 
 
+// DISCLOSE
+//  podpora prace s  disclose parametrem pres enum definici
+ccReg::Disclose ccReg_EPP_i::get_DISCLOSE( bool d )
+{
+if( d ) return ccReg::DISCL_DISPLAY;
+else return ccReg::DISCL_HIDE;
+}
+
+char ccReg_EPP_i::set_DISCLOSE(  ccReg::Disclose d )
+{
+switch( d )
+{
+case ccReg::DISCL_DISPLAY:
+    return 't' ;
+case ccReg::DISCL_HIDE:
+    return 'f' ;
+default:  
+    return ' ' ;
+}
+
+}
+
+
+bool ccReg_EPP_i::test_DISCLOSE(  ccReg::Disclose d )
+{
+if( d == ccReg::DISCL_DISPLAY ) return true;
+else return false;
+}
+
 
 /***********************************************************************
  *
@@ -821,15 +850,15 @@ if( DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML ) )
            c->AuthInfoPw = CORBA::string_dup( DBsql.GetFieldValueName("AuthInfoPw" , 0 ) ); // autentifikace
          else  c->AuthInfoPw = CORBA::string_dup( "" ); // jinak prazdny retezec
 
-        
-        c->DiscloseName = DBsql.GetFieldBooleanValueName( "DiscloseName" , 0 );
-        c->DiscloseOrganization = DBsql.GetFieldBooleanValueName( "DiscloseOrganization" , 0 );
-        c->DiscloseAddress = DBsql.GetFieldBooleanValueName( "DiscloseAddress" , 0 );
-        c->DiscloseTelephone = DBsql.GetFieldBooleanValueName( "DiscloseTelephone" , 0 );
-        c->DiscloseFax  = DBsql.GetFieldBooleanValueName( "DiscloseFax" , 0 );
-        c->DiscloseEmail = DBsql.GetFieldBooleanValueName( "DiscloseEmail" , 0 );
 
- 
+        c->DiscloseName = get_DISCLOSE(  DBsql.GetFieldBooleanValueName( "DiscloseName" , 0 ) );
+        c->DiscloseOrganization =  get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseOrganization" , 0 ) );
+        c->DiscloseAddress =get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseAddress" , 0 ) );
+        c->DiscloseTelephone = get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseTelephone" , 0 ) );
+        c->DiscloseFax  = get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseFax" , 0 ) );
+        c->DiscloseEmail = get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseEmail" , 0  ) );
+
+
     
     
         // free select
@@ -1262,13 +1291,14 @@ LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clien
                                           // heslo
                                           DBsql.SET( "AuthInfoPw", c.AuthInfoPw ); 
 
+
                                           //  Disclose parametry
-                                          DBsql.SETBOOL( "DiscloseName", c.DiscloseName );
-                                          DBsql.SETBOOL( "DiscloseOrganization", c.DiscloseOrganization );
-                                          DBsql.SETBOOL( "DiscloseAddress", c.DiscloseAddress );
-                                          DBsql.SETBOOL( "DiscloseTelephone", c.DiscloseTelephone );
-                                          DBsql.SETBOOL( "DiscloseFax", c.DiscloseFax );
-                                          DBsql.SETBOOL( "DiscloseEmail", c.DiscloseEmail );
+                                          DBsql.SETBOOL( "DiscloseName", set_DISCLOSE( c.DiscloseName) );
+                                          DBsql.SETBOOL( "DiscloseOrganization", set_DISCLOSE( c.DiscloseOrganization ) );
+                                          DBsql.SETBOOL( "DiscloseAddress", set_DISCLOSE(  c.DiscloseAddress ) );
+                                          DBsql.SETBOOL( "DiscloseTelephone",  set_DISCLOSE(  c.DiscloseTelephone ) );
+                                          DBsql.SETBOOL( "DiscloseFax",  set_DISCLOSE( c.DiscloseFax ) );
+                                          DBsql.SETBOOL( "DiscloseEmail", set_DISCLOSE( c.DiscloseEmail ) );
                                           }
                                           // datum a cas updatu  plus kdo zmenil zanzma na konec
                                           DBsql.SET( "UpDate", "now" );
@@ -1447,12 +1477,12 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
                       DBsql.INTOVAL( "AuthInfoPw", c.AuthInfoPw );
 
 
-                      if( c.DiscloseName ==  1 ) DBsql.INTO( "DiscloseName" );
-                      if( c.DiscloseOrganization == 1  ) DBsql.INTO( "DiscloseOrganization" );
-                      if( c.DiscloseAddress == 1 ) DBsql.INTO( "DiscloseAddress" );
-                      if( c.DiscloseTelephone == 1 ) DBsql.INTO( "DiscloseTelephone" );
-                      if( c.DiscloseFax == 1 ) DBsql.INTO( "DiscloseFax" );
-                      if( c.DiscloseEmail == 1 )DBsql.INTO( "DiscloseEmail" );
+                      if( c.DiscloseName ==  ccReg::DISCL_DISPLAY ) DBsql.INTO( "DiscloseName" );
+                      if( c.DiscloseOrganization == ccReg::DISCL_DISPLAY  ) DBsql.INTO( "DiscloseOrganization" );
+                      if( c.DiscloseAddress == ccReg::DISCL_DISPLAY ) DBsql.INTO( "DiscloseAddress" );
+                      if( c.DiscloseTelephone == ccReg::DISCL_DISPLAY ) DBsql.INTO( "DiscloseTelephone" );
+                      if( c.DiscloseFax == ccReg::DISCL_DISPLAY ) DBsql.INTO( "DiscloseFax" );
+                      if( c.DiscloseEmail == ccReg::DISCL_DISPLAY )DBsql.INTO( "DiscloseEmail" );
 
                       DBsql.VALUE( id );
                       DBsql.VALUE( roid );
@@ -1482,13 +1512,12 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
                       DBsql.VAL( c.AuthInfoPw  );
 
 
-                      if( c.DiscloseName == 1 ) DBsql.VALUE( "t" );
-                      if( c.DiscloseOrganization ==  1 ) DBsql.VALUE( "t" );
-                      if( c.DiscloseAddress ==  1 ) DBsql.VALUE( "t" );
-                      if( c.DiscloseTelephone ==  1 ) DBsql.VALUE( "t" );
-                      if( c.DiscloseFax ==  1 ) DBsql.VALUE( "t" );
-                      if( c.DiscloseEmail == 1 ) DBsql.VALUE( "t" );
-
+                      if( test_DISCLOSE( c.DiscloseName ) ) DBsql.VALUE( "t" );
+                      if( test_DISCLOSE( c.DiscloseOrganization ) ) DBsql.VALUE( "t" );
+                      if( test_DISCLOSE( c.DiscloseAddress ) ) DBsql.VALUE( "t" );
+                      if( test_DISCLOSE( c.DiscloseTelephone ) ) DBsql.VALUE( "t" );
+                      if( test_DISCLOSE( c.DiscloseFax ) ) DBsql.VALUE( "t" );
+                      if( test_DISCLOSE( c.DiscloseEmail ) ) DBsql.VALUE( "t" );
 
 
 
