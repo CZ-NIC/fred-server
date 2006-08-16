@@ -4763,6 +4763,8 @@ ret->errCode =0 ; // default
 
 list = new ccReg::Lists;
 
+LOG( NOTICE_LOG ,  "LIST %d  clientID -> %d clTRID [%s] " , act  , clientID , clTRID );
+
 if( DBsql.OpenDatabase( database ) )
 {
   if( DBsql.BeginAction( clientID , act ,  clTRID , XML  ) )
