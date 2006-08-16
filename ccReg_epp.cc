@@ -615,6 +615,7 @@ ccReg::Response* ccReg_EPP_i::ObjectCheck( short act , char * table , char *fnam
 DB DBsql;
 ccReg::Response *ret;
 int  len , av ;
+char HANDLE[64] , FQDN[64];
 long unsigned int i;
 ret = new ccReg::Response;
 
@@ -633,12 +634,34 @@ LOG( NOTICE_LOG ,  "OBJECT %d  Check: clientID -> %d clTRID [%s] " , act  , clie
 if( DBsql.OpenDatabase( database ) )
 {
 
-  if( DBsql.BeginAction( clientID , EPP_ContactCheck ,  clTRID , XML  ) )
+  if( DBsql.BeginAction( clientID , act ,  clTRID , XML  ) )
   {
  
     for( i = 0 ; i < len ; i ++ )
      { 
-       
+      switch(act)
+            {
+                  case EPP_ContactCheck:
+                  case EPP_NSsetCheck:
+                       if( get_HANDLE( HANDLE ,  chck[i] ) ==  false )
+                         {
+                            a[i].avail = ccReg::BadFormat;    // spatny format
+                            a[i].reason =  CORBA::string_dup( "bad format  of handle" );
+
+                         }
+                        break;
+                  case EPP_DomainCheck:
+                       if( get_FQDN( FQDN ,  chck[i] ) ==  false )
+                         {
+                            a[i].avail = ccReg::BadFormat;    // spatny format
+                            a[i].reason =  CORBA::string_dup( "bad format  of domain" );
+                         }
+                        break;
+            
+            }
+     
+      if(   a[i].avail != ccReg::BadFormat )
+      {
       switch( DBsql.CheckObject( table , fname , chck[i] ) )
            {
              case 1:
@@ -655,6 +678,7 @@ if( DBsql.OpenDatabase( database ) )
                       ret->errCode=COMMAND_FAILED;
                       break;             
             }
+      }
   
      }
     

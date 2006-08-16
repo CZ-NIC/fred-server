@@ -140,7 +140,7 @@ int main(int argc, char** argv)
 
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
-
+/*
 
 
 if( loginID )
@@ -220,7 +220,7 @@ num = 1000;
 
 
 }
-
+*/
 
 /*
    ret =  EPP->DomainInfo(  "exp.cz" ,  domain , loginID , "info-cpp-temp" );
@@ -404,7 +404,7 @@ cout << "Contact delete" << "err code " << ret->errCode << ret->errMsg << " serv
 
      check = new ccReg::Check;
      check->length(4);
-     check[0] = CORBA::string_dup(  "NECOCZ-PETR" );
+     check[0] = CORBA::string_dup(  "NECOCZ%PETR" );
      check[1] = CORBA::string_dup(  "NECOCZ-Petr" );
      check[2] = CORBA::string_dup(  "NECOCZ-ADMIN" );
      check[3] = CORBA::string_dup(  "NECOCZ-NIKDO" );
@@ -414,26 +414,27 @@ cout << "Contact delete" << "err code " << ret->errCode << ret->errMsg << " serv
  
     for( i = 0 ; i <  cr->length() ; i ++ )
       {
-         cout << i << check[i] << " avail: " << cr[i].avail << " reason: "  <<  cr[i].reason << endl;
+         cout << i << check[i] << "contact avail: " << cr[i].avail << " reason: "  <<  cr[i].reason << endl;
       }
 
 
-     dcheck.length(3);
-     dcheck[0] = CORBA::string_dup(  "example.cz" );
-     dcheck[1] = CORBA::string_dup(  "Example.cz" );
-     dcheck[2] = CORBA::string_dup(  "EXAMPLE.CZ" );
+     dcheck.length(4);
+     dcheck[0] = CORBA::string_dup(  "www.example.cz" );
+     dcheck[1] = CORBA::string_dup(  "example.sk" );
+     dcheck[2] = CORBA::string_dup(  "Example.cz" );
+     dcheck[3] = CORBA::string_dup(  "EXAMPLE.CZ" );
 
      ret =  EPP->DomainCheck( dcheck , cr,   loginID ,  "domain-neco" , "XML" );
      cout <<  " err code " << ret->errCode  <<  ret->svTRID  << endl;
  
     for( i = 0 ; i <  cr->length() ; i ++ )
       {
-         cout << i << check[i] << " avail: " << cr[i].avail << " reason: "  <<  cr[i].reason << endl;
+         cout << i << dcheck[i] << "domain avail: " << cr[i].avail << " reason: "  <<  cr[i].reason << endl;
       }
  
 
  dcheck.length(3);
- dcheck[0] = CORBA::string_dup(  "NECOCZ" );
+ dcheck[0] = CORBA::string_dup(  "NECO$CZ" );
  dcheck[1] = CORBA::string_dup(  "necocz" );
  dcheck[2] = CORBA::string_dup(  "NSSET" );
 
@@ -441,7 +442,7 @@ cout << "Contact delete" << "err code " << ret->errCode << ret->errMsg << " serv
 
     for( i = 0 ; i <  cr->length() ; i ++ )
       {
-         cout << i << check[i] << " avail: " << cr[i].avail << " reason: "  <<  cr[i].reason << endl;
+         cout << i << dcheck[i] << "nsset avail: " << cr[i].avail << " reason: "  <<  cr[i].reason << endl;
       }
 
  /*
