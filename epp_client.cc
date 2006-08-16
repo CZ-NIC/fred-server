@@ -38,6 +38,7 @@ int main(int argc, char** argv)
     CORBA::Short err , sh;
     CORBA::Object_var obj ;
     ccReg::RegistrarList *rl;
+    ccReg::Lists *lists ;
     ccReg::Registrar *reg;
     CORBA::String_var errMsg , svTR , mesg ;
     char *msg;
@@ -139,6 +140,33 @@ int main(int argc, char** argv)
 
 
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+
+    ret =  EPP->ContactList ( lists , loginID , "contact-list" , "<XML>contact-list</XML>" );
+    cout << "ContactList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+ 
+     for( i = 0 ; i < lists->length() ; i ++ )
+        cout << "handle: " << (*lists)[i] << endl ;
+
+
+    delete lists;
+    ret =  EPP->NSSetList ( lists , loginID , "nsset-list" , "<XML>nsset-list</XML>" );
+    cout << "NSsetList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+
+     for( i = 0 ; i < lists->length() ; i ++ )
+        cout << "handle: " << (*lists)[i] << endl ;
+
+
+    delete lists;
+    ret =  EPP->DomainList ( lists , loginID , "domain-list" , "<XML>domain-list</XML>" );
+    cout << "domainList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+
+     for( i = 0 ; i < lists->length() ; i ++ )
+        cout << "fqdn: " << (*lists)[i] << endl ;
+
+
+    delete lists;
+
+
 
 /*
 
