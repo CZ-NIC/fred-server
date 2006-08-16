@@ -123,6 +123,11 @@ void VALUES( const char * value  , bool esc );
 void VALUE( const  char * value );
 void VALUE( int  value );
 void VALUE( bool value );
+// SQL SELECT funkce
+void SELECTFROM( const char *fname  , const char * table  );
+// pro funkce select field from table where field=value
+bool SELECTONE(  const char * table  , const char *fname ,  const char *value );
+bool SELECTONE(  const char * table  , const char *fname ,  int value );
 
 // SQL string funkce
 
@@ -136,11 +141,11 @@ void SQLCat(const char *str );
 void SQLCatEscape( const char * value ); 
 
 
+// konecne funkce
 bool EXEC();
-bool SELECT(const char *table  , const char *fname , const char * value );
-bool SELECT(const char *table  , const char *fname , int value );
+bool SELECT();
 
-bool SELECTCONTACTMAP( char *map , int id ); // admin a tech kontakty
+bool SELECTCONTACTMAP( char *map , int id ); //  pro admin a tech kontakty
 
 
 

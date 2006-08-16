@@ -761,7 +761,7 @@ SQLCat( " ," );
 
 void DB::WHERE(const char *fname , const char * value )
 {
-  if( SQLTestEnd( ',' )  ) SQLDelEnd();  // vymaz posledni znak
+  if( SQLTestEnd( ',' ) ||  SQLTestEnd( ';' ) ) SQLDelEnd();  // vymaz posledni znak
 
   SQLCat("  WHERE " );
   SQLCat( fname );
@@ -900,36 +900,45 @@ delete sqlBuffer;
 return ret;
 }
 
-
-bool DB::SELECT(const char *table  , const char *fname , const char * value )
+bool DB::SELECT()
 {
-char sqlString[512];
-char *str;
-int length;
+bool ret;
+// provede select SQL 
+ret = ExecSelect( sqlBuffer );
 
-length = strlen( value );
-
-if( length )
-{
-str = new char[length*2];
-// DB escape funkce
-Escape( str , value  , length ) ;
-sprintf( sqlString , "SELECT * FROM %s WHERE %s=\'%s\';" , table , fname , str );
-delete str;
-
-return ExecSelect( sqlString );
-}
-else return false;
+// uvolni pamet
+delete sqlBuffer;
+// vrat vysledek
+return ret;
 }
 
-bool DB::SELECT(const char *table  , const char *fname , int value )
+// SQL SELECT funkce
+void DB::SELECTFROM( const char *fname  , const char * table  )
 {
-char sqlString[512];
+sqlBuffer = new char[MAX_SQLBUFFER];
+memset(  sqlBuffer , 0 , MAX_SQLBUFFER );
+SQLCat( "SELECT " );
+if( strlen( fname )  ) SQLCat( fname );
+else SQLCat( " * " ) ;
+SQLCat( " FROM ;" );
+SQLCat( table );
 
-sprintf( sqlString , "SELECT * FROM %s WHERE %s=%d;" , table , fname , value);
-return ExecSelect( sqlString );
 }
 
+
+bool DB::SELECTONE(  const char * table  , const char *fname ,  const char *value )
+{
+SELECTFROM( fname , table );
+WHERE( fname , value );
+return SELECT();
+}
+
+bool DB::SELECTONE(  const char * table  , const char *fname ,  int value )
+{
+SELECTFROM( fname , table );
+WHERE( fname , value );
+return SELECT();
+}
 
 
 bool DB::SELECTCONTACTMAP( char *map , int id )

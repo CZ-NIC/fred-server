@@ -773,7 +773,7 @@ if( DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML ) )
  
  if( get_HANDLE( HANDLE , handle ) ) // preved a otestuj na velka pismena
  {
-  if( DBsql.SELECT( "CONTACT" , "HANDLE" , HANDLE )  )
+  if( DBsql.SELECTONE( "CONTACT" , "HANDLE" , HANDLE )  )
   {
   if( DBsql.GetSelectRows() == 1 )
     {
@@ -1731,7 +1731,7 @@ if( get_HANDLE( HANDLE , handle ) )
    // get  registrator ID
    regID = DBsql.GetLoginRegistrarID( clientID );
 
-  if(  DBsql.SELECT( "NSSET" , "HANDLE" , HANDLE ) )
+  if(  DBsql.SELECTONE( "NSSET" , "HANDLE" , HANDLE ) )
   {
   if( DBsql.GetSelectRows() == 1 )
     {
@@ -1775,7 +1775,7 @@ if( get_HANDLE( HANDLE , handle ) )
         n->UpID =  CORBA::string_dup( DBsql.GetRegistrarHandle( crid ) );
 
         // dotaz na DNS servry  na tabulky host
-        if(   DBsql.SELECT( "HOST" , "nssetid" , nssetid  ) )
+        if(   DBsql.SELECTONE( "HOST" , "nssetid" , nssetid  ) )
           {  
              len =  DBsql.GetSelectRows();
             
@@ -3040,7 +3040,7 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
    regID = DBsql.GetLoginRegistrarID( clientID );
 
 
-  if(  DBsql.SELECT( "DOMAIN" , "fqdn" , FQDN )  )
+  if(  DBsql.SELECTONE( "DOMAIN" , "fqdn" , FQDN )  )
   {
     if( DBsql.GetSelectRows() == 1 )
       {
@@ -3112,7 +3112,7 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
 
 
        // uloz extension pokud existuje
-        if( DBsql.SELECT( "enumval" , "domainID" , id ) )
+        if( DBsql.SELECTONE( "enumval" , "domainID" , id ) )
           {    
             if( DBsql.GetSelectRows() == 1 )
               {
@@ -4219,7 +4219,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
             {
 
 
-              if( DBsql.SELECT( "DOMAIN", "id", id ) )
+              if( DBsql.SELECTONE( "DOMAIN", "id", id ) )
                 {
 
                   clid = atoi( DBsql.GetFieldValueName( "ClID", 0 ) );
@@ -4632,7 +4632,6 @@ ccReg::Lists*  ccReg_EPP_i::ObjectList( char* table , char *fname )
 {
 DB DBsql;
 ccReg::Lists *list;
-char sqlString[128];
 int rows =0, i;
 
 list = new ccReg::Lists;
@@ -4640,9 +4639,10 @@ list = new ccReg::Lists;
 
 if( DBsql.OpenDatabase( database ) )
   {
-   sprintf( sqlString , "SELECT %s FROM %s;" , fname , table );
+   DBsql.SELECTFROM( fname , table );
 
-   if( DBsql.ExecSelect( sqlString ) )
+
+   if( DBsql.SELECT() )
      {
        rows = DBsql.GetSelectRows();
        LOG( NOTICE_LOG, "List: %s  num -> %d",  table , rows );
@@ -4722,7 +4722,7 @@ return  ccReg::NONE;
 ccReg::Response* ccReg_EPP_i::ContactList(ccReg::Lists_out contacts, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
   // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::ContactList
+  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::ContactList"
 }
 
 
@@ -4730,13 +4730,13 @@ ccReg::Response* ccReg_EPP_i::ContactList(ccReg::Lists_out contacts, CORBA::Long
 ccReg::Response* ccReg_EPP_i::NSSetList(ccReg::Lists_out nssets, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
   // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::NSSetList
+  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::NSSetList"
 }
 
 
 ccReg::Response* ccReg_EPP_i::DomainList(ccReg::Lists_out domains, CORBA::Long clientID, const char* clTRID, const char* XML){
   // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::DomainList
+  #warning "Code missing in function <ccReg::Response* ccReg_EPP_i::DomainList"
 }
 
 
