@@ -685,7 +685,7 @@ if( length )
     Escape( str , value  , length ) ;
     SQLCat( str );
     // LOG( SQL_LOG , "free  escape string" );
-    delete str;
+    delete[] str;
 }
 
 }
@@ -896,7 +896,7 @@ bool ret;
 ret =  ExecSQL( sqlBuffer );
 
 // uvolni pamet
-delete sqlBuffer;
+delete[] sqlBuffer;
 // vrat vysledek
 return ret;
 }
@@ -908,7 +908,7 @@ bool ret;
 ret = ExecSelect( sqlBuffer );
 
 // uvolni pamet
-delete sqlBuffer;
+delete[] sqlBuffer;
 // vrat vysledek
 return ret;
 }
