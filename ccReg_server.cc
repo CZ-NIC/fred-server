@@ -9,6 +9,7 @@
 #include "ccReg.hh"
 #include "ccReg_epp.h"
 #include <signal.h>
+#include <unistd.h>
 
 // pouzivani LOGu 
 #include "log.h"
@@ -68,7 +69,9 @@ int main(int argc, char** argv)
       
 
     ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db);
-    CORBA::Object_var adminObj = rootPOA->servant_to_reference(myccReg_Admin_i);
+    CORBA::Object_var adminObj = rootPOA->servant_to_reference(myccReg_Admin_i);    
+    myccReg_Admin_i->_remove_ref();
+
     ccReg::Admin_var admin = ccReg::Admin::_narrow(adminObj);
     ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(admin);
      
@@ -113,6 +116,8 @@ int main(int argc, char** argv)
     PortableServer::POAManager_var pman = poa->the_POAManager();
     pman->activate();
     LOG( EMERG_LOG , "Starting ccReg_server");
+    // odpoji se od terminalu a zalozi vlastni skupinu
+    setsid(); 
     orb->run();
     orb->destroy();
 
