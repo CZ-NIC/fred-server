@@ -784,6 +784,15 @@ int actionID=0 , ssn ;
 int len , i  , s ;
 
 c = new ccReg::Contact;
+// inicializace pro pripad neuspesneho hledani
+c->DiscloseName = ccReg::DISCL_EMPTY;
+c->DiscloseOrganization = ccReg::DISCL_EMPTY;
+c->DiscloseAddress = ccReg::DISCL_EMPTY;
+c->DiscloseTelephone = ccReg::DISCL_EMPTY;
+c->DiscloseFax  = ccReg::DISCL_EMPTY;
+c->DiscloseEmail = ccReg::DISCL_EMPTY;
+c->SSNtype = ccReg::EMPTY; 
+
 ret = new ccReg::Response;
 
 ret->errCode=0;
