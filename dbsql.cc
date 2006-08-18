@@ -936,7 +936,7 @@ return SELECT();
 
 bool DB::SELECTONE(  const char * table  , const char *fname ,  int value )
 {
-SELECTFROM( fname , table );
+SELECTFROM( "" , table );
 WHERE( fname , value );
 return SELECT();
 }
