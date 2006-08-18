@@ -3335,7 +3335,14 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , clie
               DBsql.QuitTransaction( ret->errCode );
             }
 
-          }
+          } else {          
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::domainInfo_fqdn;
+            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
+         }
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
         }
