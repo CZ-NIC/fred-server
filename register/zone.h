@@ -14,8 +14,12 @@ namespace Register
     class Manager
     {
      public:
+      /// destruktor
+      virtual ~Manager() {}
       /// return default enum country prefix e.g '0.2.4'
       virtual const std::string& getDefaultEnumSuffix() const = 0;
+      /// return default domain suffix e.g. 'cz'
+      virtual const std::string& getDefaultDomainSuffix() const = 0;
       /// return enum zone string 'e164.arpa'
       virtual const std::string& getEnumZoneString() const = 0;
       /// find zone from domain fqdn

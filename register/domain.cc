@@ -1,4 +1,7 @@
+#include <sstream>
+#include <memory>
 #include "domain.h"
+#include "blacklist.h"
 #include "dbsql.h"
 
 #define IS_NUMBER(x) (x >= '0' && x <= '9')
@@ -11,16 +14,17 @@ namespace Register
   {
     class ManagerImpl : virtual public Manager
     {
-      Zone::Manager *zm; ///< zone management api
       DB *db; ///< connection do db
+      Zone::Manager *zm; ///< zone management api
+      std::auto_ptr<Blacklist> blacklist; ///< black list manager
      public:
       ManagerImpl(DB *_db, Zone::Manager *_zm) :
-       db(_db), zm(_zm)
+       db(_db), zm(_zm), blacklist(Blacklist::create(_db))
       {}
+      /// interface method implementation  
       std::string makeEnumDomain(const std::string& number)
-       throw (NOT_A_NUMBER)
+       const throw (NOT_A_NUMBER)
       {
-        // +420385514407
         std::string result;
         unsigned l = number.size();
         if (!l) throw NOT_A_NUMBER();
@@ -37,14 +41,18 @@ namespace Register
         if (!IS_NUMBER(number[last])) throw NOT_A_NUMBER();
         result += number[last];
         // append default country code if short
-        if (l-last == NUMLEN)
+        if (l-last == NUMLEN) {
+          result += '.';
           result += zm->getDefaultEnumSuffix();
+        }
         // append enum domain zone
+        result += '.';
         result += zm->getEnumZoneString(); 
         return result;
       }
+      /// interface method implementation  
       void parseDomainName(const std::string& fqdn, DomainName& domain) 
-       throw (INVALID_DOMAIN_NAME)
+       const throw (INVALID_DOMAIN_NAME)
       {
         std::string part;
         for (unsigned i=0; i<fqdn.size(); i++) {
@@ -79,6 +87,28 @@ namespace Register
         // append last part
         domain.push_back(part);
       }
+      /// interface method implementation  
+      CheckAvailType checkAvail(const std::string& fqdn) const 
+        throw (SQL_ERROR)
+      {
+        DomainName domain;
+        try { parseDomainName(fqdn,domain); }
+        catch (INVALID_DOMAIN_NAME) { return CA_INVALID_HANDLE; }
+        if (!zm->findZoneId(fqdn)) return CA_BAD_ZONE;
+        if (blacklist->checkDomain(fqdn)) return CA_BLACKLIST;
+        std::stringstream sql;
+        CheckAvailType ret = CA_AVAILABLE;
+        sql << "SELECT fqdn FROM domain WHERE '"
+            << fqdn << "' LIKE CONCAT('%',fqdn)";
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        if (db->GetSelectRows() == 1) {
+          std::string fqdnLoaded = db->GetFieldValue(0,0);
+          if (fqdn == fqdnLoaded) ret = CA_REGISTRED;
+          ret = CA_PARENT_REGISTRED;  
+        }
+        db->FreeSelect();
+        return ret;        
+      } 
     };
     Manager *Manager::create(DB *db, Zone::Manager *zm)
     {
