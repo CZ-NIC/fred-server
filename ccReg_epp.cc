@@ -4736,6 +4736,7 @@ ccReg_EPP_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
   std::auto_ptr<Register::Manager> r(Register::Manager::create(NULL));
   Register::CheckHandle chd;
   r->checkHandle(handle,chd);
+  ch = new ccReg::CheckHandleType;
   ch->newHandle = CORBA::string_dup(chd.newHandle.c_str());
   switch (chd.handleClass) {
     case Register::CH_ENUM_BAD_ZONE : ch->handleClass = ccReg::CH_ENUM_BAD_ZONE;
