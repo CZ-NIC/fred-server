@@ -22,6 +22,8 @@
 // prace se status flagy
 #include "status.h"
 
+#include "register/register.h"
+
 // log
 #include "log.h"
 //
@@ -4728,8 +4730,32 @@ ccReg::Lists* ccReg_EPP_i::ListNSSet()
 return ObjectList( "NSSET" , "handle" );
 }
 
+void
+ccReg_EPP_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
+{
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(NULL));
+  Register::CheckHandle chd;
+  r->checkHandle(handle,chd);
+  ch->newHandle = CORBA::string_dup(chd.newHandle.c_str());
+  switch (chd.handleClass) {
+    case Register::CH_ENUM_BAD_ZONE : ch->handleClass = ccReg::CH_ENUM_BAD_ZONE;
+    case Register::CH_ENUM : 
+      ch->handleClass = ccReg::CH_ENUM; break;
+    case Register::CH_DOMAIN_PART : 
+     ch->handleClass = ccReg::CH_DOMAIN_PART; break;
+    case Register::CH_DOMAIN_BAD_ZONE : 
+     ch->handleClass = ccReg::CH_DOMAIN_BAD_ZONE; break;
+    case Register::CH_DOMAIN_LONG : 
+      ch->handleClass = ccReg::CH_DOMAIN_LONG; break;
+    case Register::CH_DOMAIN : ch->handleClass = ccReg::CH_DOMAIN; break;
+    case Register::CH_NSSET : ch->handleClass = ccReg::CH_NSSET; break;
+    case Register::CH_CONTACT : ch->handleClass = ccReg::CH_CONTACT; break;
+    case Register::CH_INVALID : ch->handleClass = ccReg::CH_INVALID; break;
+  } 
+}
 
-ccReg::RegObjectType ccReg_EPP_i::getRegObjectType(const char* objectName)
+/*
+ccReg::RegObjectType ccReg_EPP_i::getRegObjectType(const char* objecthName)
 {
 DB DBsql;
 char sqlString[128];
@@ -4764,7 +4790,7 @@ if( DBsql.OpenDatabase( database ) )
 // deafult
 return  ccReg::NONE;
 }
- 
+ */
 
 // primitivni vypis
 ccReg::Response*  ccReg_EPP_i::FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list ,   CORBA::Long clientID, const char* clTRID, const char* XML )

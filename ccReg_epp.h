@@ -77,7 +77,8 @@ public:
   ccReg::Response* DomainList(ccReg::Lists_out domains, CORBA::Long clientID, const char* clTRID, const char* XML);
 
   // testovaci fce na typ objektu
-  ccReg::RegObjectType getRegObjectType(const char* objectName);
+  //  ccReg::RegObjectType getRegObjectType(const char* objectName);
+  void checkHandle(const char* handle, ccReg::CheckHandleType_out ch);
  
 private:
 char database[128]; // nazev spojeni na databazi

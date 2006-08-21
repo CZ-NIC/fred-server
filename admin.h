@@ -22,5 +22,5 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   ccReg::Lists* ListNSSet();
 
   // testovaci fce na typ objektu
-  ccReg::RegObjectType getRegObjectType(const char* objectName);
+  //  ccReg::RegObjectType getRegObjectType(const char* objectName);
 };

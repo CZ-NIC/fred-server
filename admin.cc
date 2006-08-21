@@ -183,7 +183,7 @@ ccReg::Lists* ccReg_Admin_i::ListNSSet()
 return ObjectList( "NSSET" , "handle" );
 }
 
-
+/*
 ccReg::RegObjectType ccReg_Admin_i::getRegObjectType(const char* objectName)
 {
 DB DBsql;
@@ -214,9 +214,10 @@ int zone , id ;
 
     DBsql.Disconnect();  
  }
-
-
 // deafult
 return  ccReg::NONE;
 }
+
+*/
+
  
