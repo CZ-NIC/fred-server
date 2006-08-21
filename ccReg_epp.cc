@@ -674,6 +674,7 @@ if( DBsql.OpenDatabase( database ) )
                   case EPP_NSsetCheck:
                        if( get_HANDLE( HANDLE ,  chck[i] ) ==  false )
                          {
+                            LOG( NOTICE_LOG ,  "bad format %s of handle"  , (const char * ) chck[i] );
                             a[i].avail = ccReg::BadFormat;    // spatny format
                             a[i].reason =  CORBA::string_dup( "bad format  of handle" );
 
@@ -682,6 +683,7 @@ if( DBsql.OpenDatabase( database ) )
                   case EPP_DomainCheck:
                        if( get_FQDN( FQDN ,  chck[i] ) ==  false )
                          {
+                            LOG( NOTICE_LOG ,  "bad format %s of fqdn"  , (const char * ) chck[i] );
                             a[i].avail = ccReg::BadFormat;    // spatny format
                             a[i].reason =  CORBA::string_dup( "bad format  of domain" );
                          }
