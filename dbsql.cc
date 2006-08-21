@@ -118,7 +118,7 @@ if( svrTRID == NULL )
 sprintf( svrTRID , "ccReg-%010d" , actionID );
 
 UPDATE("ACTION");
-SET( "response" , response );
+if( response > 0  ) SET( "response" , response );
 SET( "enddate", "now" );
 SET( "servertrid" , svrTRID );
 WHEREID( actionID );
