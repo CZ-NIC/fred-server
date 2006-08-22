@@ -108,6 +108,284 @@ else return false;
 }
 
 
+// ZONE
+
+int  ccReg_EPP_i::loadZones()  // load zones
+{
+int rows=0 , i;
+DB DBsql;
+
+LOG( NOTICE_LOG, "LOAD zones" );
+zone = new ccReg::Zones;
+
+if( DBsql.OpenDatabase( database ) )
+{
+
+
+   if( DBsql.ExecSelect("select * from zone order by id") )
+     {
+       rows = DBsql.GetSelectRows();
+       max_zone = rows;
+ 
+       LOG( NOTICE_LOG, "Max zone  -> %d "  , max_zone );
+
+      
+       zone->length( rows );
+
+       for( i = 0 ; i < rows ; i ++ )
+          {
+             (*zone)[i].fqdn=CORBA::string_dup( DBsql.GetFieldValueName( "fqdn" , i )   );
+             (*zone)[i].ex_period_min= atoi( DBsql.GetFieldValueName( "ex_period_min" , i ));  
+             (*zone)[i].ex_period_max=  atoi(  DBsql.GetFieldValueName( "ex_period_max" , i ));  
+             (*zone)[i].val_period=  atoi(  DBsql.GetFieldValueName( "val_period" , i ));  
+             (*zone)[i].dots_max=  atoi(   DBsql.GetFieldValueName( "dots_max" , i ) );  
+             (*zone)[i].enum_zone =  DBsql.GetFieldBooleanValueName( "enum_zone" , i );
+              LOG( NOTICE_LOG, "Get ZONE %d fqdn [%s] ex_period_min %d ex_period_max %d val_period %d dots_max %d  enum_zone %d" , i+1 ,
+          ( char *)  (*zone)[i].fqdn , (*zone)[i].ex_period_min , (*zone)[i].ex_period_max , (*zone)[i].val_period , (*zone)[i].dots_max ,  (*zone)[i].enum_zone );  
+          }
+
+      DBsql.FreeSelect();
+     }
+
+
+DBsql.Disconnect();
+}
+
+if( rows == 0 ) zone->length( rows );
+
+return rows;
+}
+
+  // parametry zone
+int  ccReg_EPP_i::GetZoneExPeriodMin(int z)
+{
+
+if( z > 0 && z <=  zone->length() )
+{
+ LOG(LOG_DEBUG , "GetZoneExPreriodMin zone %d -> %d" , z , (*zone)[z-1].ex_period_min );
+ return (*zone)[z-1].ex_period_min;
+} 
+else
+return 0;
+}
+
+int  ccReg_EPP_i::GetZoneExPeriodMax(int z)
+{
+
+if( z > 0 && z <=  zone->length() )
+{
+ LOG(LOG_DEBUG , "GetZoneExPreriodMax zone %d -> %d" , z , (*zone)[z-1].ex_period_max );
+ return (*zone)[z-1].ex_period_max;
+}
+else
+return 0;
+}
+
+int  ccReg_EPP_i::GetZoneValPeriod(int z)
+{
+
+if( z > 0 && z <=  zone->length() )
+{
+ LOG(LOG_DEBUG , "GetZoneValPreriod zone %d -> %d" , z , (*zone)[z-1].val_period );
+ return (*zone)[z-1].val_period;
+}
+else
+return 0;
+
+}
+
+bool ccReg_EPP_i::GetZoneEnum(int z)
+{
+
+if( z > 0 && z <= zone->length() )
+{
+  LOG(LOG_DEBUG , "GetZoneEnum zone %d -> %d" , z , (*zone)[z-1].enum_zone );
+ return (*zone)[z-1].enum_zone;
+}
+else return 0;
+}
+
+int  ccReg_EPP_i::GetZoneDotsMax( int z) 
+{
+if( z > 0 && z <=  zone->length() )
+{
+ LOG(LOG_DEBUG , "GetZoneDotsMax zone %d -> %d" , z , (*zone)[z-1].dots_max );
+ return (*zone)[z-1].dots_max ;
+}
+else
+return 0;
+
+
+}
+
+char * ccReg_EPP_i::GetZoneFQDN( int z)
+{
+
+if( z > 0 && z <=  zone->length() )
+{
+ LOG( LOG_DEBUG , "GetZoneFQDN zone %d -> [%s]" , z , (char *) (*zone)[z-1].fqdn );
+ return (*zone)[z-1].fqdn;
+}
+else return "";
+
+}
+
+int ccReg_EPP_i::getZone( const char *fqdn )
+{
+return getZZ( fqdn , true );
+}
+
+int ccReg_EPP_i::getZoneMax( const char *fqdn )
+{
+return getZZ( fqdn , false );
+}
+
+
+int ccReg_EPP_i::getZZ( const char *fqdn , bool compare )
+{
+int max , i ;
+int  len  , slen , l ;
+
+max = zone->length();
+
+len = strlen(  fqdn );
+
+for(  i = 0 ; i < max ; i ++ )
+   {
+  
+        slen = strlen(  (char *) (*zone)[i].fqdn );
+        l = len - slen ;
+        if( l > 0 )
+         {
+          if( fqdn[l-1] == '.' ) // case less comapare
+             {
+                if( compare ) 
+                  {
+                     // LOG( LOG_DEBUG , "compare zone %d [%s] [%s] slen %d" , i ,  fqdn+l ,  (char *) (*zone)[i].fqdn  ,slen );
+                     if(  strncasecmp(  fqdn+l ,  (char *) (*zone)[i].fqdn  , slen ) == 0 ) return i +1; // zaradi do zony                  
+                  }
+                 else return l -1 ; // vraci konec nazvu
+         
+                
+             }
+         }
+
+   }
+
+return 0;
+}
+
+
+bool ccReg_EPP_i::testFQDN( const char *fqdn )
+{
+char FQDN[64];
+
+if( getFQDN( FQDN ,  fqdn ) ) return true;
+else return false;
+}
+
+int ccReg_EPP_i::getFQDN( char *FQDN , const char *fqdn )
+{
+int i , len , max ;
+int z;
+int dot=0 , dot_max;
+bool en;
+z = getZone( fqdn  );
+max = getZoneMax( fqdn  ); // konec nazvu
+
+len = strlen( fqdn);
+
+FQDN[0] = 0;
+
+LOG( LOG_DEBUG ,  "getFQDN [%s] zone %d max %d" , fqdn  , z , max );
+
+// maximalni delka
+if( len > 63 ) { LOG( LOG_DEBUG ,  "out ouf maximal length %d" , len ); return 0; }
+if( max < 2  ) { LOG( LOG_DEBUG ,  "minimal length" ); return 0;}
+
+// test double dot .. and double --
+for( i = 1 ; i <  len ; i ++ )
+{
+
+if( fqdn[i] == '.' && fqdn[i-1] == '.' )
+  {
+   LOG( LOG_DEBUG ,  "double \'.\' not allowed" );
+   return 0;
+  }
+
+if( fqdn[i] == '-' && fqdn[i-1] == '-' )
+  {
+   LOG( LOG_DEBUG ,  "double  \'-\' not allowed" );
+   return 0;
+  }
+
+}
+
+
+if( fqdn[0] ==  '-' )
+{
+    LOG( LOG_DEBUG ,  "first \'-\' not allowed" );
+    return 0;
+}
+
+
+
+if( z )
+{
+
+for( i = 0 ; i <=  max ; i ++ )
+{
+   if( fqdn[i] == '.' ) dot ++ ;
+}
+
+// test pocet tecek
+dot_max = GetZoneDotsMax(z);
+
+if( dot > dot_max )
+{
+    LOG( LOG_DEBUG ,  "too much %d dots max %d" , dot   , dot_max  );
+    return 0;
+}
+
+
+en =  GetZoneEnum( z );
+
+
+
+         for( i = 0 ; i <  max ; i ++ )
+            {
+              
+              // TEST pro eunum zone a ccTLD
+              if(  en )
+                {
+                 if(  isdigit( fqdn[i] )  ||  fqdn[i] == '.' ||  fqdn[i] == '-' ) FQDN[i] = fqdn[i];
+                 else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , fqdn[i] );  FQDN[0] = 0 ;  return 0; }
+                }
+               else  
+                {
+                      // TEST povolene znaky
+                     if( isalnum( fqdn[i]  ) ||  fqdn[i] == '-' ||  fqdn[i] == '.' ) FQDN[i] = tolower( fqdn[i] ) ;
+                     else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , fqdn[i] );  FQDN[0] = 0 ;  return 0; }
+                }
+
+
+            }
+
+
+            // PREVOD konce na mala  pismena
+            for( i = max ; i < len ; i ++ )   FQDN[i] = tolower( fqdn[i] );
+            FQDN[i] = 0 ; // ukocit
+
+
+   LOG( LOG_DEBUG ,  "OK zone %d -> FQDN [%s]" , z ,  FQDN );
+   return z;
+}
+
+return 0;
+}
+
+
+
 /***********************************************************************
  *
  * FUNCTION:	GetTransaction
@@ -660,16 +938,16 @@ len = chck.length();
 a->length(len);
 
 LOG( NOTICE_LOG ,  "OBJECT %d  Check: clientID -> %d clTRID [%s] " , act  , clientID , clTRID );
- 
+
 
 if( DBsql.OpenDatabase( database ) )
 {
 
   if( DBsql.BeginAction( clientID , act ,  clTRID , XML  ) )
   {
- 
+
     for( i = 0 ; i < len ; i ++ )
-     { 
+     {
       switch(act)
             {
                 case EPP_ContactCheck:
@@ -724,7 +1002,7 @@ if( DBsql.OpenDatabase( database ) )
 
                         break;
                   case EPP_DomainCheck:
-                       if( get_FQDN( FQDN , chck[i] )  )
+                       if( getFQDN( FQDN , chck[i] )  )
                          {
                             if( DBsql.CheckDomain( FQDN ) )
                               {
@@ -747,19 +1025,19 @@ if( DBsql.OpenDatabase( database ) )
                             a[i].reason =  CORBA::string_dup( "bad format  of domain" );
                          }
                         break;
-           }  
+           }
      }
-    
-     
+
+
       // comand OK
-     if( ret->errCode == 0 ) ret->errCode=COMMAND_OK; // vse proslo OK zadna chyba 
+     if( ret->errCode == 0 ) ret->errCode=COMMAND_OK; // vse proslo OK zadna chyba
 
       // zapis na konec action
-      ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) ) ;    
+      ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) ) ;
   }
 
 ret->errMsg =  CORBA::string_dup(   DBsql.GetErrorMessage(  ret->errCode  ) ) ;
- 
+
 DBsql.Disconnect();
 }
 
@@ -2132,7 +2410,7 @@ char HANDLE[64]; // handle na velka pismena
 char roid[64];
 ccReg::Response * ret;
 int regID, id, techid;
-int i, len, j , l , seq , zone ;
+int i, len, j , l , seq ;
 time_t now;
 
 ret = new ccReg::Response;
@@ -2310,9 +2588,8 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                        convert_hostname(  NAME , dns[i].fqdn );
  
 
-                        zone = get_zone( NAME  , true ); // cislo zony kam patri
  
-                        if( zone == 0 && dns[i].inet.length() > 0 ) // neni v definovanych zonach a obsahuje zaznam ip adresy
+                        if( getZone( dns[i].fqdn  ) == 0   && dns[i].inet.length() > 0 ) // neni v definovanych zonach a obsahuje zaznam ip adresy
                         {
                             for( j = 0 ; j < dns[i].inet.length() ; j ++ )
                                {
@@ -2444,7 +2721,7 @@ Status status;
 bool  check;
 char  Array[512] ,  statusString[128] , HANDLE[64] , NAME[256];
 int regID=0 , clID=0 , id ,nssetid ,  techid  , hostID;
-int i , j , l  , seq , zone ;
+int i , j , l  , seq ;
 int hostNum;
 bool remove_update_flag=false;
 
@@ -2739,9 +3016,8 @@ if( DBsql.OpenDatabase( database ) )
 
                                                  convert_hostname(  NAME , dns_add[i].fqdn );
 
-                                                 zone = get_zone( NAME , true ); // cislo zony kam patri
 
-                                               if( zone == 0 && dns_add[i].inet.length() > 0 ) // neni v definovanych zonach a obsahuje zaznam ip adresy
+                                               if( getZone( dns_add[i].fqdn ) == 0     && dns_add[i].inet.length() > 0 ) // neni v definovanych zonach a obsahuje zaznam ip adresy
                                                  {
                                                    for( j = 0 ; j < dns_add[i].inet.length() ; j ++ )
                                                    {
@@ -3110,7 +3386,7 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
  {
 
   // preved fqd na  mala pismena a otestuj to
-  if(  get_FQDN( FQDN , fqdn )  )  // spatny format navu domeny
+  if(  getFQDN(  FQDN , fqdn )  )  
    {
    
    // get  registrator ID
@@ -3308,7 +3584,7 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , clie
 
 
       // preved fqd na  mala pismena a otestuj to
-       if(  get_FQDN( FQDN , fqdn )   )  // spatny format navu domeny
+       if(  getFQDN( FQDN , fqdn )   )  // spatny format navu domeny
          {
 
           if( DBsql.BeginTransaction() )
@@ -3507,7 +3783,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 
 
       // preved fqd na  mala pismena a otestuj to
-       if( ( zone = get_FQDN( FQDN , fqdn ) ) == 0 )  // spatny format navu domeny
+       if( ( zone = getFQDN( FQDN , fqdn ) ) == 0 )  // spatny format navu domeny
          {
             ret->errCode = COMMAND_PARAMETR_ERROR;
             LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
@@ -3554,7 +3830,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                           else
                             {
                                  // test validate
-                                                     if(  TestValidityExpDate(  valExpDate  , DBsql.GetValPreriod( zone ) )  ==  false )
+                                                     if(  TestValidityExpDate(  valExpDate  , GetZoneValPeriod( zone ) )  ==  false )
                                                        {
                                                              LOG( WARNING_LOG, "bad validity exp date" );
                                                              ret->errors.length( seq +1);
@@ -3939,7 +4215,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
 
       // preved fqd na  mala pismena a otestuj to
-       if( ( zone = get_FQDN( FQDN , fqdn ) ) == 0 )  // spatny format navu domeny
+       if( ( zone = getFQDN( FQDN , fqdn ) ) == 0 )  // spatny format navu domeny
          {
             ret->errCode = COMMAND_PARAMETR_ERROR;
             LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
@@ -4024,12 +4300,12 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
              // nastaveni defaultni periody
              if( period == 0 )
                {
-                 period = DBsql.GetExPreriodMin( zone );
+                 period = GetZoneExPeriodMin( zone );
                  LOG( NOTICE_LOG, "get defualt peridod %d month  for zone   %d ", period , zone  );
 
                }
 
-             if(  TestPeriodyInterval( period  ,   DBsql.GetExPreriodMin( zone )  ,  DBsql.GetExPreriodMax( zone )  )  == false )
+             if(  TestPeriodyInterval( period  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  == false )
               {
                   LOG( WARNING_LOG, "bad period interval" );
                   ret->errors.length( seq +1);
@@ -4039,7 +4315,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                }
-            if(  TestValidityExpDate(  valExpDate  , DBsql.GetValPreriod( zone ) )  ==  false )
+            if(  TestValidityExpDate(  valExpDate  , GetZoneValPeriod( zone ) )  ==  false )
               {
                   LOG( WARNING_LOG, "bad validity exp date" );
                   ret->errors.length( seq +1);
@@ -4286,7 +4562,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
       if( DBsql.BeginAction( clientID, EPP_DomainRenew,  clTRID , XML ) )
         {
 
-       if(  ( zone = get_FQDN( FQDN , fqdn ) ) > 0 ) 
+       if(  ( zone = getFQDN( FQDN , fqdn ) ) > 0 ) 
          {
             // zahaj transakci
           if( DBsql.BeginTransaction() )
@@ -4325,12 +4601,12 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
              // nastaveni defaultni periody           
              if( period == 0 ) 
                {
-                 period = DBsql.GetExPreriodMin( zone );
+                 period = GetZoneExPeriodMin( zone );
                  LOG( NOTICE_LOG, "get defualt peridod %d month  for zone   %d ", period , zone  );
 
                }
   
-             if(  TestPeriodyInterval( period  ,   DBsql.GetExPreriodMin( zone )  ,  DBsql.GetExPreriodMax( zone )  )  == false ) 
+             if(  TestPeriodyInterval( period  ,   GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  == false ) 
               {
                   LOG( WARNING_LOG, "bad period interval" );
                   ret->errors.length( seq +1);
@@ -4340,7 +4616,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;                 
                }
-            if(  TestValidityExpDate(  valExpDate  , DBsql.GetValPreriod( zone ) )  ==  false )
+            if(  TestValidityExpDate(  valExpDate  , GetZoneValPeriod( zone ) )  ==  false )
               {
                   LOG( WARNING_LOG, "bad validity exp date" );
                   ret->errors.length( seq +1);
@@ -4495,7 +4771,7 @@ LOG( NOTICE_LOG, "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  ", clie
 
       if( DBsql.BeginAction( clientID, EPP_DomainTransfer, clTRID , XML  ) )
         {
-      if(  get_FQDN( FQDN , fqdn )    )  // spatny format navu domeny
+      if(  getFQDN( FQDN , fqdn )    )  // spatny format navu domeny
          {
 
 if( DBsql.BeginTransaction() )

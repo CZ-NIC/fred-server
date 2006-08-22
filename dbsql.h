@@ -34,10 +34,6 @@ bool DeleteFromTable(char *table , char *fname , int id );
 // vymaz data z map tabulky
 bool DeleteFromTableMap(char *map ,int  id , int contactid );
 
-// parametry zone
-int GetExPreriodMin(int zone){ return GetNumericFromTable( "zone", "ex_period_min" , "id" , zone ); };
-int GetExPreriodMax(int zone){ return GetNumericFromTable( "zone", "ex_period_max" , "id" , zone ); };
-int GetValPreriod(int zone){ return GetNumericFromTable( "zone", "val_period" , "id" , zone ); };
 
 // zapocteni creditu za operace domain create a domain renew
 bool UpdateCredit( int registrarID , int objectID ,  int zone ,  int period , int operation  );

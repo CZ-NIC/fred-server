@@ -1,4 +1,5 @@
 #include "admin.h"
+
 //
 //  class implementing IDL interface ccReg::EPP
 //
@@ -20,6 +21,25 @@ public:
   // test spojeni na databazi
   bool TestDatabaseConnect(char *db);
 
+  // nacteni zone z tabulky zones
+  int loadZones(); // load zones
+  // parametry zone
+  int GetZoneExPeriodMin(int z);
+  int GetZoneExPeriodMax(int z);
+  int GetZoneValPeriod(int z);
+  int GetZoneDotsMax( int z);
+  bool GetZoneEnum(int z);
+  char * GetZoneFQDN( int z);
+ 
+
+
+  ccReg::Zones * getZones(){ return zone; }
+  int getZone( const char *fqdn );
+  int getZoneMax( const char *fqdn );
+  int getZZ( const char *fqdn  , bool compare );
+  int getFQDN( char *FQDN , const char *fqdn );
+  bool testFQDN(  const char *fqdn );
+  
   char* version(); // vraceni cisla verze 
 
   // podpora disclose
@@ -82,4 +102,6 @@ public:
  
 private:
 char database[128]; // nazev spojeni na databazi
+ccReg::Zones *zone;
+int max_zone;
 };

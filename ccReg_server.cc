@@ -79,6 +79,9 @@ int main(int argc, char** argv)
     if( myccReg_EPP_i->TestDatabaseConnect( db) ) 
     {
 
+     // load zones
+     myccReg_EPP_i->loadZones();
+
 
     // Activate the objects.  This tells the POA that the objects are
     // ready to accept requests.
