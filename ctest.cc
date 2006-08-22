@@ -278,7 +278,7 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
           if( DBsql.BeginTransaction() )      // zahajeni transakce
             {
               // test zdali kontakt uz existuje
-              if( DBsql.CheckObject( "CONTACT",  "handle", handle  ) )
+              if( DBsql.CheckContact( HANDLE  ) )
                 {
                   LOG( WARNING_LOG, "object handle [%s] EXIST", handle  );
                   ret_errCode = COMMAND_OBJECT_EXIST;  // je uz zalozena
