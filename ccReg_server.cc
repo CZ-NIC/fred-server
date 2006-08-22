@@ -73,7 +73,22 @@ int main(int argc, char** argv)
     myccReg_Admin_i->_remove_ref();
 
     ccReg::Admin_var admin = ccReg::Admin::_narrow(adminObj);
-    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(admin);
+
+
+    ccReg_Whois_i* myccReg_Whois_i = new ccReg_Whois_i(db);
+    CORBA::Object_var whoisObj = rootPOA->servant_to_reference(myccReg_Whois_i);
+    myccReg_Whois_i->_remove_ref();
+
+    ccReg::Whois_var whois = ccReg::Whois::_narrow(whoisObj);
+
+
+    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(admin, whois);
+
+
+
+
+
+
      
     // pokud projde uspesne test na pripojeni k databazi
     if( myccReg_EPP_i->TestDatabaseConnect( db) ) 

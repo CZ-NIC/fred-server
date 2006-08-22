@@ -1,4 +1,5 @@
 #include "admin.h"
+#include "whois.h"
 
 //
 //  class implementing IDL interface ccReg::EPP
@@ -10,13 +11,17 @@ private:
   // destructor non-public
   //virtual ~ccReg_EPP_i();
   ccReg::Admin_ptr admin;
+  ccReg::Whois_ptr whois;
 public:
   // standard constructor
-  ccReg_EPP_i(ccReg::Admin_ptr admin);
+  ccReg_EPP_i(ccReg::Admin_ptr admin ,  ccReg::Whois_ptr whois );
   virtual ~ccReg_EPP_i();
 
   // vrati administrativni objekt
   ccReg::Admin_ptr getAdmin();
+
+  // vraci Whois objekt
+  ccReg::Whois_ptr getWhois();
 
   // test spojeni na databazi
   bool TestDatabaseConnect(char *db);

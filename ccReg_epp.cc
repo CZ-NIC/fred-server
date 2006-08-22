@@ -29,7 +29,7 @@
 //
 // Example implementational code for IDL interface ccReg::EPP
 //
-ccReg_EPP_i::ccReg_EPP_i(ccReg::Admin_ptr _admin) : admin(_admin) {
+ccReg_EPP_i::ccReg_EPP_i(ccReg::Admin_ptr _admin , ccReg::Whois_ptr _whois ) : admin(_admin) ,  whois(_whois) {
 
 }
 ccReg_EPP_i::~ccReg_EPP_i(){
@@ -40,6 +40,13 @@ ccReg::Admin_ptr
 ccReg_EPP_i::getAdmin()
 {
   return ccReg::Admin::_duplicate(admin);
+}
+
+
+ccReg::Whois_ptr 
+ccReg_EPP_i::getWhois()
+{
+  return ccReg::Whois::_duplicate(whois);
 }
 
 // test spojeni na databazi

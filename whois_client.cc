@@ -25,7 +25,7 @@ int main(int argc, char** argv)
     char *buffer;
     char name[64] , roid[32];
     long size;
-    ifstream fd ("/tmp/ccWhois.ref");
+    ifstream fd ("/tmp/ccReg.ref");
     // get pointer to associated buffer object
      pbuf=fd.rdbuf();
 
@@ -53,11 +53,12 @@ int main(int argc, char** argv)
         return 1;
       }
 
-    ccReg::Whois_var Whois = ccReg::Whois::_narrow (obj);
+    ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
+    cout <<"EPP" << endl;
     ccReg::DomainWhois *dm;
 
     
-    dm =  Whois->Domain("neco.cz" );
+    dm = EPP->getWhois()->Domain("example.cz" );
 
     for( n = 0 ; n < dm->ns.length() ; n ++ )
     cout <<  dm->name << "NameServers: " << dm->ns[n] <<  endl;

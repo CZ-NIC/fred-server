@@ -8,23 +8,18 @@ IDLFILE = ../idl/ccReg.idl
 LDFLAGS=  -L/usr/local/pgsql/lib/
 LIBS=  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread
 CPPFLAGS =  -I/usr/local/pgsql/include/   -I/usr/include/postgresql/  -I.  -Wno-deprecated
-CCREG_SERVER_OBJECTS=ccRegSK.o ccRegDynSK.o  ccReg_epp.o  ccReg_server.o  dbsql.o pqsql.o util.o status.o conf.o log.o admin.o
-WHOIS_SERVER_OBJECTS=ccRegSK.o  ccReg_whois.o  whois_server.o   dbsql.o  pqsql.o util.o log.o
+CCREG_SERVER_OBJECTS=ccRegSK.o ccRegDynSK.o  ccReg_epp.o  ccReg_server.o  dbsql.o pqsql.o util.o status.o conf.o log.o admin.o whois.o
 EPP_CLIENT_OBJECTS=ccRegSK.o ccRegDynSK.o  epp_client.o
 WHOIS_CLIENT_OBJECTS=ccRegSK.o whois_client.o
 
 
-all: ccWhois_server ccReg_server epp_client whois_client
+all:  ccReg_server epp_client whois_client
 .SUFFIXES:  .o
 
 ccReg_server: $(CCREG_SERVER_OBJECTS)
 	$(MAKE) -C register
 #	ar -rs libccreg.a $(CCREG_SERVER_OBJECTS)
 	$(CXX) -o ccReg_server $(CCREG_SERVER_OBJECTS) $(LDFLAGS) $(LIBS) register/libccreg.a -lpq
-
-
-ccWhois_server: $(WHOIS_SERVER_OBJECTS)
-	$(CXX) -o ccWhois_server $(WHOIS_SERVER_OBJECTS) $(LDFLAGS) $(LIBS)   -lpq
 
 
 epp_client: $(EPP_CLIENT_OBJECTS)
