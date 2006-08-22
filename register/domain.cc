@@ -41,7 +41,7 @@ namespace Register
         if (!IS_NUMBER(number[last])) throw NOT_A_NUMBER();
         result += number[last];
         // append default country code if short
-        if (l-last == NUMLEN) {
+        if (l-last <= NUMLEN) {
           result += '.';
           result += zm->getDefaultEnumSuffix();
         }
