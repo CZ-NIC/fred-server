@@ -56,8 +56,14 @@ int GetSequenceID( char *sequence ); // id ze sequnce
 // kontroluje jestli je contactid pro dane id v tabulce nsset_contact_map nebo domain_contact_map 
 bool CheckContactMap(char * table , int id , int contactid );
 
-// test pri Check funkcih case insensitiv
-int CheckObject( const char *table ,  const char *fname ,  const char *value);
+// vraci id objektu pokud ho nalezne
+int CheckNSSet(const char *handle );
+// pro nsset
+int CheckContact(const char *handle);
+// test pri Check funkci  na handle nssetu ci kontaktu
+int CheckHandle( const char *table ,  const char *handle );
+// vraci id domeny
+int CheckDomain( const char *fqdn );
 
 // vraci ID hostu
 int CheckHost(  const char *fqdn , int nssetID );

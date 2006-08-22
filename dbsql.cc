@@ -287,33 +287,67 @@ if( ExecSelect( sqlString ) )
 return ret;
 }
 
-// test pri Check funkci case insensitiv
+
+int DB::CheckNSSet(const char *handle )
+{
+return CheckHandle( "NSSET" , handle );
+}
+
+int DB::CheckContact(const char *handle )
+{
+return CheckHandle( "CONTACT" , handle );
+}
+
+
+
+// test pri Check funkci  na handle nssetu ci kontaktu
 // vracena hodnota: -1 chyba 0 objekt eexistuje 1 onbjekt existuje
-int DB::CheckObject( const char *table ,   const char *fname ,  const char *value )
+int DB::CheckHandle( const char *table ,     const char *handle )
 {
 char sqlString[128];
-int ret = -1; // defult chyba
+int  id=0 ;
 
-sprintf( sqlString , "SELECT id FROM %s  WHERE %s  ILIKE \'%s\'" , table , fname , value );
+sprintf( sqlString , "SELECT id FROM %s  WHERE handle=\'%s\';" , table ,  handle );
 
 if( ExecSelect( sqlString ) )
  {
-   switch( GetSelectRows() )
-        {
-          case 1:
-                    ret = 1; //  objekt nalezen
-                    break;
-          case 0:
-                    ret = 0; //  objekt nenalezen 
-                    break;
-             
-        }
 
-    FreeSelect();
+
+   if(  GetSelectRows()  == 1 )
+     {
+       id = atoi(  GetFieldValue( 0 , 0 )  );
+       LOG( SQL_LOG , "Check table %s handle=\'%s\'  -> ID %d" , table , handle , id );
+     }
+
+
+   FreeSelect();
   }
 
-return ret;
+return id;
 }
+
+
+
+// test pri Check funkci na domenu case insensitiv
+int DB::CheckDomain(   const char *fqdn )
+{
+char sqlString[128];
+int id=0;
+
+
+sprintf( sqlString , "SELECT id FROM domain  WHERE \'%s\' LIKE \'%%\'||fqdn;"  , fqdn  );
+
+if( ExecSelect( sqlString ) )
+ {
+   id = atoi(  GetFieldValue( 0 , 0 )  );
+   LOG( SQL_LOG , "Check domain  fqdn=\'%s\'  -> ID %d" , fqdn ,  id );
+
+   FreeSelect();
+  }
+
+return id;
+}
+
 
 // vraci ID hostu
 int DB::CheckHost(  const char *fqdn , int nssetID )

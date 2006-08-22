@@ -672,47 +672,82 @@ if( DBsql.OpenDatabase( database ) )
      { 
       switch(act)
             {
-                  case EPP_ContactCheck:
-                  case EPP_NSsetCheck:
-                       if( get_HANDLE( HANDLE ,  chck[i] ) ==  false )
+                case EPP_ContactCheck:
+                     if( get_HANDLE( HANDLE , chck[i] )  )
                          {
-                            LOG( NOTICE_LOG ,  "bad format %s of handle"  , (const char * ) chck[i] );
-                            a[i].avail = ccReg::BadFormat;    // spatny format
-                            a[i].reason =  CORBA::string_dup( "bad format  of handle" );
+                            if( DBsql.CheckContact( HANDLE ) )
+                              {
+                                a[i].avail = ccReg::Exist;    // objekt existuje
+                                a[i].reason =  CORBA::string_dup( "contact exist not Avail" );
+                                LOG( NOTICE_LOG ,  "contact %s exist not Avail" , (const char * ) chck[i] );
+                              }
+                             else
+                              {
+                                a[i].avail =  ccReg::NotExist;    // objekt ne existuje
+                                a[i].reason =  CORBA::string_dup( "");  // free
+                                LOG( NOTICE_LOG ,  "contact %s not exist  Avail" ,(const char * ) chck[i] );
+                              }
 
                          }
+                       else
+                         {
+                            LOG( NOTICE_LOG ,  "bad format %s of contact handle"  , (const char * ) chck[i] );
+                            a[i].avail = ccReg::BadFormat;    // spatny format
+                            a[i].reason =  CORBA::string_dup( "bad format of nsset handle" );
+                         }
+
+                        break;
+
+                  case EPP_NSsetCheck:
+                       if( get_HANDLE( HANDLE , chck[i] )  )
+                         {
+                            if( DBsql.CheckNSSet( HANDLE ) )
+                              {
+                                a[i].avail = ccReg::Exist;    // objekt existuje
+                                a[i].reason =  CORBA::string_dup( "nsset exist not Avail" );
+                                LOG( NOTICE_LOG ,  "nsset %s exist not Avail" , (const char * ) chck[i] );
+                              }
+                             else
+                              {
+                                a[i].avail =  ccReg::NotExist;    // objekt ne existuje
+                                a[i].reason =  CORBA::string_dup( "");  // free
+                                LOG( NOTICE_LOG ,  "nsset %s not exist  Avail" ,(const char * ) chck[i] );
+                              }
+
+                         }
+                       else
+                         {
+                            LOG( NOTICE_LOG ,  "bad format %s of nsset handle"  , (const char * ) chck[i] );
+                            a[i].avail = ccReg::BadFormat;    // spatny format
+                            a[i].reason =  CORBA::string_dup( "bad format of nsset handle" );
+                         }
+
                         break;
                   case EPP_DomainCheck:
-                       if( get_FQDN( FQDN ,  chck[i] ) ==  false )
+                       if( get_FQDN( FQDN , chck[i] )  )
+                         {
+                            if( DBsql.CheckDomain( FQDN ) )
+                              {
+                                a[i].avail = ccReg::Exist;    // objekt existuje
+                                a[i].reason =  CORBA::string_dup( "domain exist not Avail" );
+                                LOG( NOTICE_LOG ,  "domain %s exist not Avail" , (const char * ) chck[i] );
+                              }
+                             else
+                              {
+                                a[i].avail =  ccReg::NotExist;    // objekt ne existuje
+                                a[i].reason =  CORBA::string_dup( "");  // free
+                                LOG( NOTICE_LOG ,  "domain %s not exist  Avail" ,(const char * ) chck[i] );
+                              }
+
+                         }
+                       else
                          {
                             LOG( NOTICE_LOG ,  "bad format %s of fqdn"  , (const char * ) chck[i] );
                             a[i].avail = ccReg::BadFormat;    // spatny format
                             a[i].reason =  CORBA::string_dup( "bad format  of domain" );
                          }
                         break;
-            
-            }
-     
-      if(   a[i].avail != ccReg::BadFormat )
-      {
-      switch( DBsql.CheckObject( table , fname , chck[i] ) )
-           {
-             case 1:
-                       a[i].avail = ccReg::Exist;    // objekt existuje
-                       a[i].reason =  CORBA::string_dup( "object exist not Avail" );
-                       LOG( NOTICE_LOG ,  "object %s exist not Avail" , (const char * ) chck[i] );
-                       break;
-             case 0:
-                       a[i].avail =  ccReg::NotExist;    // objekt ne existuje
-                       a[i].reason =  CORBA::string_dup( "");  // free
-                       LOG( NOTICE_LOG ,  "object %s not exist  Avail" ,(const char * ) chck[i] );
-                       break; 
-             default: // error
-                      ret->errCode=COMMAND_FAILED;
-                      break;             
-            }
-      }
-  
+           }  
      }
     
      
@@ -1440,7 +1475,7 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
           if( DBsql.BeginTransaction() )      // zahajeni transakce
             {
               // test zdali kontakt uz existuje
-              if( DBsql.CheckObject( "CONTACT",  "handle", handle  ) )
+              if( DBsql.CheckContact( HANDLE  ) )
                 {
                   LOG( WARNING_LOG, "object handle [%s] EXIST", handle  );
                   ret->errCode = COMMAND_OBJECT_EXIST;  // je uz zalozena
@@ -2132,7 +2167,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
         {
  
         // prvni test zdali nsset uz existuje          
-        if(  DBsql.CheckObject( "NSSET",  "handle", handle  )   )
+        if(  DBsql.CheckNSSet( HANDLE )   )
          {
                LOG( WARNING_LOG, "nsset handle [%s] EXIST", HANDLE );
                ret->errCode = COMMAND_OBJECT_EXIST;  // je uz zalozen
@@ -3920,7 +3955,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
 
           //  test zdali domena uz existuje                   
-          if( DBsql.CheckObject( "DOMAIN" , "fqdn" , fqdn )   )
+          if( DBsql.CheckDomain ( FQDN )   )
             {
               ret->errCode = COMMAND_OBJECT_EXIST;      // je uz zalozena
               LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
