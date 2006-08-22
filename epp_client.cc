@@ -140,7 +140,7 @@ int main(int argc, char** argv)
 
 
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
-
+/*
     ret =  EPP->ContactList ( lists , loginID , "contact-list" , "<XML>contact-list</XML>" );
     cout << "ContactList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
  
@@ -166,14 +166,18 @@ int main(int argc, char** argv)
 
     delete lists;
 
+*/
 
 
-/*
 
 
 if( loginID )
 {
 num = 1000;
+
+
+
+
 
   for( i = 0 ; i < num ; i ++ )
   {
@@ -188,23 +192,45 @@ num = 1000;
   ch->Street2 =  CORBA::string_dup( "ulice");
   ch->Street3 =  CORBA::string_dup( "ulice");
   ch->StateOrProvince = CORBA::string_dup( "" );
+  ch->PostalCode = CORBA::string_dup( "252 62");
   ch->Telephone = CORBA::string_dup( "" );
   ch->Fax = CORBA::string_dup( "" );
   ch->Email = CORBA::string_dup( "neco@email.cz" );
-  ch->SSN = CORBA::string_dup( "123456l/LN01" );
+  ch->NotifyEmail= CORBA::string_dup( "" );
+  ch->VAT= CORBA::string_dup( "" );
+  ch->SSN = CORBA::string_dup( "123456l/LN01" ); 
   ch->SSNtype =  ccReg::PASS;
   ch->AuthInfoPw = CORBA::string_dup( "heslo" );
+  ch->DiscloseName = ccReg::DISCL_DISPLAY;
+  ch->DiscloseOrganization = ccReg::DISCL_DISPLAY;
+  ch->DiscloseAddress = ccReg::DISCL_DISPLAY;
+  ch->DiscloseTelephone = ccReg::DISCL_DISPLAY;
+  ch->DiscloseFax = ccReg::DISCL_DISPLAY;
+  ch->DiscloseEmail = ccReg::DISCL_DISPLAY;
+
  
-     
-   ret =  EPP->ContactCreate( handle , *ch ,  crDate ,  loginID , "test-contact-create"  , ""   );
+   cout << "contact create  " << handle << endl;     
+   ret =  EPP->ContactCreate( handle , *ch ,  crDate ,  loginID , "test-contact-create"  , "<XML corba>"   );
    cout << "contact create  " << handle << "  "  << ret->errCode  <<  ret->errMsg <<  ret->svTRID << endl;
    t = crDate;
    cout << "Create date: " << ctime( &t )  << endl; 
    delete ch;
   }
 
-}
 
+  for( i = 0 ; i < num ; i ++ )
+  {
+   sprintf( handle , "CID:ORBA%d" , i );
+
+
+    ret =  EPP->ContactDelete(  handle ,  loginID , "test-contact-delete" , "" );
+    cout << "contact delete " << handle << "  "  << ret->errCode  <<  ret->errMsg <<  ret->svTRID << endl;
+  }
+
+
+
+}
+/*
 
     ret =  EPP->ClientLogout( loginID , "XXXX-logout" , "");
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
@@ -429,7 +455,7 @@ cout << "Contact delete" << "err code " << ret->errCode << ret->errMsg << " serv
   //  cout << "get Transaction code " << ret->errCode  <<  ret->svTRID  << endl;
 
 
-
+/*
      check = new ccReg::Check;
      check->length(4);
      check[0] = CORBA::string_dup(  "NECOCZ%PETR" );
@@ -473,6 +499,7 @@ cout << "Contact delete" << "err code " << ret->errCode << ret->errMsg << " serv
          cout << i << dcheck[i] << "nsset avail: " << cr[i].avail << " reason: "  <<  cr[i].reason << endl;
       }
 
+*/
  /*
 
     ret =  EPP->NSSetInfo( "NECOCZ" , nsset ,  loginID ,  "XX-nsset-info-necocz" );
