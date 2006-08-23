@@ -1,8 +1,10 @@
-#include <memory>
+#include <memory> ///< auto_ptr<>
+#include <ctype.h> ///< toupper()
 #include "register.h"
 #include "dbsql.h"
 #include "zone.h"
 #include "domain.h"
+
 
 namespace Register
 {
@@ -56,8 +58,11 @@ namespace Register
        }
        catch (...) {
          // no domain name, could be nsset or contact
-         if (!handle.compare(0,6,"nssid:")) ch.handleClass = CH_NSSET;
-         else if (!handle.compare(0,4,"cid:")) ch.handleClass = CH_CONTACT;
+         std::string upper;
+         for (unsigned i=0; i<handle.size(); i++) 
+           upper+=toupper(handle[i]);
+         if (!upper.compare(0,6,"NSSID:")) ch.handleClass = CH_NSSET;
+         else if (!upper.compare(0,4,"CID:")) ch.handleClass = CH_CONTACT;
          else ch.handleClass = CH_INVALID;
        } 
      }
