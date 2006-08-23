@@ -861,7 +861,7 @@ if( DBsql.OpenDatabase( database ) )
                             LOG( NOTICE_LOG, "SET LANG to CS" ); 
 
                             DBsql.UPDATE( "Login" );
-                            DBsql.SET( "lang" , "cs"  );
+                            DBsql.SSET( "lang" , "cs"  );
                             DBsql.WHEREID( clientID  );
 
                             if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;    // pokud se nezdarilo
@@ -1486,6 +1486,8 @@ ret->errCode = 0;
 ret->errors.length( 0 );
 
 LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clientID, clTRID, handle );
+LOG( NOTICE_LOG, "ContactUpdate: Disclose Name %d Org %d Add %d Tel %d Fax %d Email %d" ,
+ c.DiscloseName  , c.DiscloseOrganization , c.DiscloseAddress , c.DiscloseTelephone , c.DiscloseFax , c.DiscloseEmail );
 
 // nacti status flagy
   for( i = 0; i < status_add.length(); i++ )
@@ -4334,11 +4336,8 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
               }
 
-
-        if( DBsql.UpdateCredit(  regID ,  id  ,  zone ,  period ,  EPP_DomainCreate )  == false )
-          {
-               ret->errCode =  COMMAND_BILLING_FAILURE;
-          }
+               // zpracovani creditu
+               if( DBsql.UpdateCredit(  regID ,   EPP_DomainCreate  ,    zone ,  period  )  == false )  ret->errCode =  COMMAND_BILLING_FAILURE;
 
                         if(  ret->errCode == 0  )
                         {
@@ -4635,10 +4634,8 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
 
               }
 
-        if( DBsql.UpdateCredit(  regID ,  id  ,  zone ,   period ,  EPP_DomainRenew )  == false )
-          {
-               ret->errCode =  COMMAND_BILLING_FAILURE;
-          }
+                               // zpracovani creditu
+               if( DBsql.UpdateCredit(  regID ,   EPP_DomainRenew   ,    zone ,  period  )  == false )  ret->errCode =  COMMAND_BILLING_FAILURE;
 
                if(  ret->errCode == 0 )
                  {
