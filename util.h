@@ -43,8 +43,6 @@ bool get_handle( char  * HANDLE , const char *handle  , int typ );
 // vytvoreni roid
 void get_roid( char *roid , char *prefix , int id );
 
-// test nsset handle fqdn nebo contact id
-bool  get_CHECK( char *CHCK , const char *chck , int act );
 // prevadeni a test fqdn nazvu domeny 
 // vraci zpet cislo zony
 // nula pokud je chyba
@@ -67,6 +65,12 @@ bool TestPeriodyInterval( int period , int min , int max );
 // test intervalu validace
 bool TestValidityExpDate( time_t val , int max );
 
+// preveadi credit registratora na halire bez konverze na float
+int get_credit( const char *priceStr );
+
+// prevadi cenu v halirich na string
+void get_price(char *priceStr  , int price);
+
 // vraci cas v time_t  pevede SQL retezec
 time_t get_time_t(char *string );
 // prevede time_t do retezce pro SQL
@@ -82,10 +86,3 @@ void get_array_value(char *array ,  char *value , int field );
 // vraci numericky prvek pole
 int get_array_numeric(char *array , int field );
 
-void add_field_value( char *string , char *fname , char *value );
-void add_field_bool(  char *string , char *fname , int value );
-// pridavani nazvu pole pri create
-void create_field_fname( char *string , char *fname , char *value );
-
-void create_field_value( char *string , char *fname , char *value );
- 

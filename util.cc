@@ -78,23 +78,6 @@ int atoh(const char *String)
     return Value;
 }
 
-// pro Objectcheck funkci
-bool  get_CHECK( char *CHCK , const char *chck , int act )
-{
-
-switch(  act )
-{
-case  EPP_DomainCheck:
-      if(  get_FQDN(  CHCK , chck) == 0 ) return false;
-      else return  true;
-case  EPP_ContactCheck:
-case  EPP_NSsetCheck:
-  return get_HANDLE( CHCK , chck); // deafult
-default:
-  return false;
-}
-
-}
 
 // vytvoreni roid
 void get_roid( char *roid , char *prefix , int id )
@@ -433,6 +416,31 @@ else return false;
 }
 
 }
+
+// preveadi credit registratora na halire bez konverze na float
+int get_credit( const char *priceStr )
+{
+char str[32];
+int i;
+
+strcpy(  str , priceStr );
+
+for( i = 0 ;i < strlen( str ) ; i ++ )
+{
+        if( str[i] == '.' ) {  str[i] =  str[i+1] ;  str[i+1]  = str[i+2] ;  str[i+2]  = 0 ; break ; }
+}
+
+// default
+return atoi( str  ) ;
+}
+
+
+// prevadi cenu v halirich na string
+void get_price(char *priceStr  , int price)
+{
+sprintf( priceStr , "%ld%c%02ld" , price/100 , '.' ,  price %100 );
+}
+
 // preveadi cas timestamp na unix time
 time_t get_time_t(char *string )
 {
@@ -596,49 +604,4 @@ if( strlen( value ) )
 
 }
 
-
-// pri update nastaveni bool hodnot
-void add_field_bool(  char *string , char *fname , int value )
-{
-char buf[64];
-
-
-if( value  == 1 )  // hodota je true
-{
-  sprintf( buf , "  %s=\'t\' , " , fname   );
-  strcat( string , buf );
-}
-
-
-if( value  == 0 )  // hodota je false
-{
-  sprintf( buf , "  %s=\'f\' , " , fname   );
-  strcat( string , buf );
-}
-
-}
-// pridavani nazvu pole pri create
-void create_field_fname( char *string , char *fname , char *value )
-{
-char buf[1024];
-
-if( strlen( value ) )
- {
-     sprintf(buf , " , %s " , fname );
-     strcat( string , buf );
- }
-}
-
-
-
-void create_field_value( char *string , char *fname , char *value )
-{
-char buf[1024];
-
-if( strlen( value ) )
- {
-     sprintf(buf , " , \'%s\' " , value );
-     strcat( string , buf );
- }
-}
 
