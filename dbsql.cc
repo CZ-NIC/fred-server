@@ -41,27 +41,51 @@ if( memHandle )
 }
 
 // vraci castku za operaci 
-int DB::GetPrice(   int action  ,  int zone , int period  )
+long DB::GetPrice(   int action  ,  int zone , int period  )
 {
-// zatim natvrdo castka 25 kc za mesic 300 kc za rok
-if( action == EPP_DomainRenew ||  action == EPP_DomainCreate ) return  period * 2500;
-else return 0;
-}
+char sqlString[256];
+long p ,  price=0; // cena
+int per; // cena za periodu
+sprintf(  sqlString ,  "SELECT * FROM price WHERE valid_from < 'now()'  and ( valid_to is NULL or valid_to > 'now()' )  and action=%d and zone=%d;" , action , zone );
 
+if( ExecSelect( sqlString ) )
+ {
+
+   if(  GetSelectRows()  == 1 )
+     {
+       p = get_price( GetFieldValueName( "price" , 0 ) );
+       per = atoi( GetFieldValueName( "period" , 0 ) );
+       // vypocet ceny
+       price = period * p  / per;
+
+       LOG( NOTICE_LOG , "GetPrice action %d zone %d period %d   -> price %ld (units) " , action , zone , period  , price);
+     }
+
+
+   FreeSelect();
+  }
+
+return price;
+}
 
 // zpracovani creditu
 bool DB::UpdateCredit( int regID ,   int action  , int zone ,  int period  )
 {
-char sqlString[256];
 char priceStr[16];
 char creditStr[16];
-int price , credit;
+long price , credit;
 
-// vyse creditu registratora prevedena na halire
-credit  =  get_credit( GetRegistrarCredit( regID)  );
 
 // cena za operaci v registru
+
 price =  GetPrice( action , zone , period );
+
+// zadna cena (zadarmo) operace se povoluje
+if( price == 0 ) return true;
+
+
+// vyse creditu registratora prevedena na halire
+credit  =  get_price( GetRegistrarCredit( regID)  );
 
 LOG( NOTICE_LOG , "UpdateCredit: action %d period %d credit %d price %d" , action , period  , credit , price ); 
 
@@ -71,8 +95,8 @@ if( credit - price > 0 )
   // odecti credit;
   credit = credit - price;
   //  preved  na string
-  get_price( creditStr ,  credit );
-  get_price(   priceStr , price  );
+  get_priceStr( creditStr ,  credit );
+  get_priceStr(   priceStr , price  );
 
   INSERT( "CREDIT" );
   INTO( "registrar" );
@@ -97,6 +121,7 @@ if( credit - price > 0 )
 
 }
 else  LOG( ERROR_LOG , "NOT CREDIT return false" );
+
 
 // default
 return false; //nema

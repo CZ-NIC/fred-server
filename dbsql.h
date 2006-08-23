@@ -36,7 +36,7 @@ bool DeleteFromTableMap(char *map ,int  id , int contactid );
 
 
 // vraci castku za operaci
-int GetPrice(   int action  ,  int zone , int period  );
+long GetPrice(   int action  ,  int zone , int period  );
 // zpracovani creditu
 bool UpdateCredit( int regID ,   int action  , int zone ,  int period  );
 
