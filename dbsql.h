@@ -35,8 +35,11 @@ bool DeleteFromTable(char *table , char *fname , int id );
 bool DeleteFromTableMap(char *map ,int  id , int contactid );
 
 
-// zapocteni creditu za operace domain create a domain renew
-bool UpdateCredit( int registrarID , int objectID ,  int zone ,  int period , int operation  );
+// vraci castku za operaci
+int GetPrice(   int action  ,  int zone , int period  );
+// zpracovani creditu
+bool UpdateCredit( int regID ,   int action  , int zone ,  int period  );
+
 // zpracovani action a ulozeni XML 
 bool BeginAction(int clientID , int action ,const char *clTRID  , const char *xml );
 char * EndAction(int response  );
@@ -76,6 +79,7 @@ else return GetNumericFromTable( "LOGIN" , "registrarid" , "id" , id );
 
 int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "id" , "handle" , handle ); };
 char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "handle" , "id" , id ); };
+char * GetRegistrarCredit(int id ) { return GetValueFromTable( "REGISTRAR", "credit" , "id" , id ); };
 char * GetStatusFromTable( char *table , int id ) {  return GetValueFromTable( table , "status" , "id" , id ); };
 
 
@@ -107,7 +111,12 @@ bool SaveHistory(char *table , char *fname ,  int id ); // ulozi radek tabulky
 
 // SQL UPDATE funkce
 void UPDATE( const  char * table );
-void SET( const  char *fname , const  char * value );
+
+// set 
+void SSET( const char *fname , const char * value ); // bez escape
+void SET( const char *fname , const char * value ); // s escape
+void SETS( const char *fname , const char * value , bool esc ); 
+
 void SET( const  char *fname , int   value );
 void SET( const  char *fname , bool  value );
 void SETBOOL( const char *fname , char c );
@@ -123,6 +132,7 @@ void VAL( const  char * value);
 void VALUESC( const char * value );
 void VALUES( const char * value  , bool esc );
 void VALUE( const  char * value );
+void VVALUE( const char * value ); // bez escape
 void VALUE( int  value );
 void VALUE( bool value );
 // SQL SELECT funkce

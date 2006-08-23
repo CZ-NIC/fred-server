@@ -40,16 +40,66 @@ if( memHandle )
 
 }
 
+// vraci castku za operaci 
+int DB::GetPrice(   int action  ,  int zone , int period  )
+{
+// zatim natvrdo castka 25 kc za mesic 300 kc za rok
+if( action == EPP_DomainRenew ||  action == EPP_DomainCreate ) return  period * 2500;
+else return 0;
+}
+
+
 // zpracovani creditu
-bool DB::UpdateCredit( int registrarID , int objectID ,   int zone ,  int period , int operation  )
+bool DB::UpdateCredit( int regID ,   int action  , int zone ,  int period  )
 {
 char sqlString[256];
+char priceStr[16];
+char creditStr[16];
+int price , credit;
 
-sprintf( sqlString , "INSERT INTO CREDIT (  registrarID , objectID ,  date , operationID , period ) VALUES ( %d , %d ,  'now' , %d ,  %d );" ,  registrarID  ,  objectID , operation ,  period );
+// vyse creditu registratora prevedena na halire
+credit  =  get_credit( GetRegistrarCredit( regID)  );
 
-// TODO odecteni kreditu
-if( ExecSQL( sqlString ) ) return true;      
-else return false;
+// cena za operaci v registru
+price =  GetPrice( action , zone , period );
+
+LOG( NOTICE_LOG , "UpdateCredit: action %d period %d credit %d price %d" , action , period  , credit , price ); 
+
+// pokud ma dostatecny credfit
+if( credit - price > 0 )
+{
+  // odecti credit;
+  credit = credit - price;
+  //  preved  na string
+  get_price( creditStr ,  credit );
+  get_price(   priceStr , price  );
+
+  INSERT( "CREDIT" );
+  INTO( "registrar" );
+  INTO( "action" );
+  INTO( "amount" );
+  INTO( "credit" );
+
+  VALUE( regID  );
+  VALUE( action );
+  VVALUE( priceStr );
+  VVALUE( creditStr );
+
+   if( EXEC() )
+     {
+       // update stavu creditu registratora
+
+         UPDATE("REGISTRAR");
+         SSET( "Credit" , creditStr );
+         WHEREID( regID );
+         if( EXEC() ) return true; // pokud vse proslo
+     }
+
+}
+else  LOG( ERROR_LOG , "NOT CREDIT return false" );
+
+// default
+return false; //nema
 }
 
 
@@ -120,7 +170,7 @@ sprintf( svrTRID , "ccReg-%010d" , actionID );
 UPDATE("ACTION");
 if( response > 0  ) SET( "response" , response );
 SET( "enddate", "now" );
-SET( "servertrid" , svrTRID );
+SSET( "servertrid" , svrTRID ); // bez escape
 WHEREID( actionID );
 
 
@@ -723,7 +773,19 @@ if( length )
 }
 
 }
+
+// beaz escape 
+void DB::SSET( const char *fname , const char * value )
+{
+SETS( fname , value , false );
+}
+// s escape 
 void DB::SET( const char *fname , const char * value )
+{
+SETS( fname , value , true );
+}
+
+void DB::SETS( const char *fname , const char * value , bool esc )
 {
 int length;
 char *str;
@@ -742,7 +804,8 @@ if( strlen( value ) )
    else 
    {
     SQLCat( "'" );
-    SQLCatEscape(  value ); 
+    if( esc )  SQLCatEscape(  value ); 
+    else SQLCat( value );
     SQLCat(  "'" );
    }
 
@@ -901,6 +964,11 @@ strcat( sqlBuffer , "' );" ); // vzdy ukoncit
  
 }
 
+void DB::VVALUE( const char * value )
+{
+// nepouzivej ESCAPE
+VALUES( value , false );
+}
 
 void DB::VALUE( const char * value )
 {
