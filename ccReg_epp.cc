@@ -5045,6 +5045,7 @@ ccReg::Lists* ccReg_EPP_i::ListNSSet()
 return ObjectList( "NSSET" , "handle" );
 }
 
+#define SWITCH_CONVERT(x) case Register::x : ch->handleClass = ccReg::x; break
 void
 ccReg_EPP_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
 {
@@ -5054,59 +5055,17 @@ ccReg_EPP_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
   ch = new ccReg::CheckHandleType;
   ch->newHandle = CORBA::string_dup(chd.newHandle.c_str());
   switch (chd.handleClass) {
-    case Register::CH_ENUM_BAD_ZONE : ch->handleClass = ccReg::CH_ENUM_BAD_ZONE;
-    case Register::CH_ENUM : 
-      ch->handleClass = ccReg::CH_ENUM; break;
-    case Register::CH_DOMAIN_PART : 
-     ch->handleClass = ccReg::CH_DOMAIN_PART; break;
-    case Register::CH_DOMAIN_BAD_ZONE : 
-     ch->handleClass = ccReg::CH_DOMAIN_BAD_ZONE; break;
-    case Register::CH_DOMAIN_LONG : 
-      ch->handleClass = ccReg::CH_DOMAIN_LONG; break;
-    case Register::CH_DOMAIN : ch->handleClass = ccReg::CH_DOMAIN; break;
-    case Register::CH_NSSET : ch->handleClass = ccReg::CH_NSSET; break;
-    case Register::CH_CONTACT : ch->handleClass = ccReg::CH_CONTACT; break;
-    case Register::CH_INVALID : ch->handleClass = ccReg::CH_INVALID; break;
+    SWITCH_CONVERT(CH_ENUM_BAD_ZONE);
+    SWITCH_CONVERT(CH_ENUM); 
+    SWITCH_CONVERT(CH_DOMAIN_PART); 
+    SWITCH_CONVERT(CH_DOMAIN_BAD_ZONE); 
+    SWITCH_CONVERT(CH_DOMAIN_LONG); 
+    SWITCH_CONVERT(CH_DOMAIN);
+    SWITCH_CONVERT(CH_NSSET);
+    SWITCH_CONVERT(CH_CONTACT);
+    SWITCH_CONVERT(CH_INVALID);
   } 
 }
-
-/*
-ccReg::RegObjectType ccReg_EPP_i::getRegObjectType(const char* objecthName)
-{
-DB DBsql;
-char sqlString[128];
-int zone , id ;
-
-if( DBsql.OpenDatabase( database ) )
-  {
-  if( ( id =  DBsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", (char *) objectName ) )  > 0  )
-    {
-      zone =  DBsql.GetNumericFromTable( "DOMAIN", "zone" , "id" ,  id ) ;
-      switch( zone )
-            {
-               case ZONE_CZ:
-                              return ccReg::CZ_DOMAIN;
-               case ZONE_ENUM:
-                              return ccReg::ENUM_DOMAIN;
-               
-            }      
-    
-    }
-   else
-   {
-   if(  DBsql.GetNumericFromTable( "CONTACT", "id", "handle", (char *) objectName ) ) return ccReg::CONTACT_HANDLE;
-   else 
-        if(  DBsql.GetNumericFromTable( "NSSET", "id", "handle", (char *) objectName ) ) return ccReg::NSSET_HANDLE;
-   }
-
-    DBsql.Disconnect();  
- }
-
-
-// deafult
-return  ccReg::NONE;
-}
- */
 
 // primitivni vypis
 ccReg::Response*  ccReg_EPP_i::FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list ,   CORBA::Long clientID, const char* clTRID, const char* XML )
