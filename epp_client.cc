@@ -181,7 +181,7 @@ num = 1000;
 
   for( i = 0 ; i < num ; i ++ )
   {
-   sprintf( handle , "CID:ORBA%d" , i );
+   sprintf( handle , "CID:omniORB%d" , i );
 
   ch = new ccReg::ContactChange;
   ch->Name  = CORBA::string_dup( handle );
@@ -210,7 +210,7 @@ num = 1000;
 
  
    cout << "contact create  " << handle << endl;     
-   ret =  EPP->ContactCreate( handle , *ch ,  crDate ,  loginID , "test-contact-create"  , "<XML corba>"   );
+   ret =  EPP->ContactCreate( handle , *ch ,  crDate ,  loginID , "test-contact-create"  , "<XML omniORB>"   );
    cout << "contact create  " << handle << "  "  << ret->errCode  <<  ret->errMsg <<  ret->svTRID << endl;
    t = crDate;
    cout << "Create date: " << ctime( &t )  << endl; 
@@ -220,7 +220,7 @@ num = 1000;
 
   for( i = 0 ; i < num ; i ++ )
   {
-   sprintf( handle , "CID:ORBA%d" , i );
+   sprintf( handle , "CID:omniORB%d" , i );
 
 
     ret =  EPP->ContactDelete(  handle ,  loginID , "test-contact-delete" , "" );
