@@ -66,10 +66,10 @@ bool TestPeriodyInterval( int period , int min , int max );
 bool TestValidityExpDate( time_t val , int max );
 
 // preveadi credit registratora na halire bez konverze na float
-int get_credit( const char *priceStr );
+long get_price( const char *priceStr );
 
 // prevadi cenu v halirich na string
-void get_price(char *priceStr  , int price);
+void get_priceStr(char *priceStr  , long price);
 
 // vraci cas v time_t  pevede SQL retezec
 time_t get_time_t(char *string );

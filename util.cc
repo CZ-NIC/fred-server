@@ -417,8 +417,8 @@ else return false;
 
 }
 
-// preveadi credit registratora na halire bez konverze na float
-int get_credit( const char *priceStr )
+// preveadi cenu  halire bez konverze pres float
+long get_price( const char *priceStr )
 {
 char str[32];
 int i;
@@ -431,12 +431,12 @@ for( i = 0 ;i < strlen( str ) ; i ++ )
 }
 
 // default
-return atoi( str  ) ;
+return atol( str  ) ;
 }
 
 
 // prevadi cenu v halirich na string
-void get_price(char *priceStr  , int price)
+void get_priceStr(char *priceStr  , long price)
 {
 sprintf( priceStr , "%ld%c%02ld" , price/100 , '.' ,  price %100 );
 }
