@@ -43,3 +43,6 @@
 #define EPP_ListContact        1002 
 #define EPP_ListNSset          1004 
 #define EPP_ListDomain         1005 
+
+#define EPP_ClientCredit       1010
+

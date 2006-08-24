@@ -682,6 +682,67 @@ return ret;
 
 /***********************************************************************
  *
+ * FUNCTION:    ClientCredit
+ *
+ * DESCRIPTION: informacee o vysi creditu  prihlaseneho registratora
+ * PARAMETERS:  clientID - id pripojeneho klienta
+ *              clTRID - cislo transakce klienta
+ *        OUT:  credit - vyse creditu v halirich
+ *       
+ * RETURNED:    svTRID a errCode
+ *
+ ***********************************************************************/
+
+ccReg::Response* ccReg_EPP_i::ClientCredit(ccReg::price& credit, CORBA::Long clientID, const char* clTRID, const char* XML)
+{
+DB DBsql;
+ccReg::Response * ret;
+int regID;
+
+ret = new ccReg::Response;
+ret->errCode = 0;
+ret->errors.length( 0 );
+
+LOG( NOTICE_LOG, "ClientCredit: clientID -> %d clTRID [%s]", clientID, clTRID );
+
+
+  if( DBsql.OpenDatabase( database ) )
+    {
+      if( DBsql.BeginAction( clientID, EPP_ClientCredit, clTRID , XML  ) )
+        {
+
+           // get  registrator ID
+           regID = DBsql.GetLoginRegistrarID( clientID );
+
+           // vyse creditu registratora prevedena na halire
+           credit  =  get_price( DBsql.GetRegistrarCredit( regID)  );
+
+           ret->errCode = COMMAND_OK;   
+
+
+          // zapis na konec action
+          ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
+        }
+
+
+      ret->errMsg = CORBA::string_dup( DBsql.GetErrorMessage( ret->errCode ) );
+
+      DBsql.Disconnect();
+    }
+
+
+if( ret->errCode == 0 )
+  {
+    ret->errCode = COMMAND_FAILED;    // obecna chyba
+    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+    ret->errMsg = CORBA::string_dup( "" );
+  }
+
+return ret;
+}
+
+/***********************************************************************
+ *
  * FUNCTION:    ClientLogout
  *
  * DESCRIPTION: odhlaseni clienta za zapis do tabulky login
@@ -4908,6 +4969,7 @@ if( DBsql.OpenDatabase( database ) )
              (*reglist)[i].fax=CORBA::string_dup( DBsql.GetFieldValueName("fax" , i ) );
              (*reglist)[i].email=CORBA::string_dup( DBsql.GetFieldValueName("email" , i ) );
              (*reglist)[i].url=CORBA::string_dup( DBsql.GetFieldValueName("url" , i ) );
+             (*reglist)[i].credit=get_price( DBsql.GetFieldValueName("credit" , i ) );
 
           }
 
@@ -4956,7 +5018,7 @@ if( DBsql.OpenDatabase( database ) )
              reg->fax=CORBA::string_dup( DBsql.GetFieldValueName("fax" , 0 ) );
              reg->email=CORBA::string_dup( DBsql.GetFieldValueName("email" , 0 ) );
              reg->url=CORBA::string_dup( DBsql.GetFieldValueName("url" , 0 ) );
-
+             reg->credit=get_price( DBsql.GetFieldValueName("credit" , 0 ) );
             find = true;
          }
      
@@ -4984,6 +5046,7 @@ reg->telephone=CORBA::string_dup( "" );
 reg->fax=CORBA::string_dup( "" );
 reg->email=CORBA::string_dup( "" );
 reg->url=CORBA::string_dup( "" );
+reg->credit=0;
 }
 
 return reg;

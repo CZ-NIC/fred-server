@@ -44,6 +44,7 @@ int main(int argc, char** argv)
     char *msg;
     int i , len , max = 512, d , j , a , num;
     CORBA::Long loginID , msgID , newmsgID;
+    ccReg::price credit;
     ccReg::CheckResp_var cr;
     ccReg::DNSHost_var dns_chg ,  dns_add , dns_rem;
     ccReg::TechContact_var tech_add , tech_rem;
@@ -140,6 +141,10 @@ int main(int argc, char** argv)
 
 
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+
+     ret =  EPP->ClientCredit( credit ,  loginID , "clTRID-credit" , "<XML>credit</XML>" );
+     cout << "credit " << credit <<  "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+
 /*
     ret =  EPP->ContactList ( lists , loginID , "contact-list" , "<XML>contact-list</XML>" );
     cout << "ContactList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
