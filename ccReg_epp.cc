@@ -1697,7 +1697,7 @@ LOG( NOTICE_LOG, "ContactUpdate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
                                           DBsql.SETBOOL( "DiscloseEmail", set_DISCLOSE( c.DiscloseEmail ) );
                                           }
                                           // datum a cas updatu  plus kdo zmenil zanzma na konec
-                                          DBsql.SET( "UpDate", "now" );
+                                          DBsql.SSET( "UpDate", "now" );
                                           DBsql.SET( "UpID", regID );
 
                                           //  vygeneruj  novy status string array
@@ -2059,7 +2059,7 @@ if( DBsql.BeginAction( clientID , EPP_ContactTransfer ,  clTRID , XML  ) )
 
                 // zmena registratora
                 DBsql.UPDATE( "CONTACT");
-                DBsql.SET( "TrDate" , "now" );
+                DBsql.SSET( "TrDate" , "now" );
                 DBsql.SET( "clID" , regID );
                 DBsql.WHEREID( id ); 
                 if(   DBsql.EXEC() )  ret->errCode = COMMAND_OK; // nastavit OK                                  
@@ -2551,12 +2551,12 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
               DBsql.INTOVAL( "authinfopw", authInfoPw );
 
               DBsql.VALUE( id );
-              DBsql.VALUE( roid );
-              DBsql.VALUE( HANDLE  );
-              DBsql.VALUE( createDate );
+              DBsql.VVALUE( roid ); // neni potreba escape
+              DBsql.VVALUE( HANDLE  );
+              DBsql.VVALUE( createDate );
               DBsql.VALUE( regID );
               DBsql.VALUE( regID );
-              DBsql.VALUE( "{ 1 }" );   // status OK
+              DBsql.VVALUE( "{ 1 }" );   // status OK
               DBsql.VAL( authInfoPw );
 
               // zapis nejdrive nsset 
@@ -2916,9 +2916,9 @@ if( DBsql.OpenDatabase( database ) )
 
                                     // zmenit zaznam o domene
                                     DBsql.UPDATE( "NSSET" );                                   
-                                    DBsql.SET( "UpDate", "now" );
+                                    DBsql.SSET( "UpDate", "now" );
                                     DBsql.SET( "UpID", regID );
-                                    DBsql.SET( "status", statusString );
+                                    DBsql.SSET( "status", statusString );
                                     if( remove_update_flag == false ) DBsql.SET( "AuthInfoPw", authInfo_chg );    // zmena autentifikace  
                                     DBsql.WHEREID( id );
 
@@ -3362,7 +3362,7 @@ if( DBsql.BeginAction( clientID , EPP_NSsetTransfer ,  clTRID , XML  ) )
 
                 // zmena registratora
                 DBsql.UPDATE( "NSSET");
-                DBsql.SET( "TrDate" , "now" );
+                DBsql.SSET( "TrDate" , "now" );
                 DBsql.SET( "clID" , regID );
                 DBsql.WHEREID( id ); 
                 if(   DBsql.EXEC() )  ret->errCode = COMMAND_OK; // nastavit OK                                  
@@ -4026,8 +4026,8 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 
                                       // zmenit zaznam o domene
                                       DBsql.UPDATE( "DOMAIN" );
-                                      DBsql.SET( "status", statusString );                                                      
-                                      DBsql.SET( "UpDate", "now" );
+                                      DBsql.SSET( "status", statusString );                                                      
+                                      DBsql.SSET( "UpDate", "now" );
                                       DBsql.SET( "UpID", regID );
                                       if( !remove_update_flag  )
                                       {
@@ -4892,7 +4892,7 @@ if( DBsql.BeginTransaction() )
                                 {
                                   // zmena registratora
                                   DBsql.UPDATE( "DOMAIN" );
-                                  DBsql.SET( "TrDate", "now" );
+                                  DBsql.SSET( "TrDate", "now" );
                                   DBsql.SET( "ClID", regID );
                                   DBsql.WHEREID( id );
                                   if( DBsql.EXEC() ) ret->errCode = COMMAND_OK;  // nastavit OK                                  
