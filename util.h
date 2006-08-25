@@ -79,6 +79,10 @@ void get_timestamp( time_t t , char *string);
 // spocita cas expirace ze zadaneho casu plus period mesice
 time_t expiry_time( time_t extime ,  int period );
 
+// porovnava datum co je v databazi podle datumu zadanevo jako curexdate z XML prevedeneho na tim_t v GMT
+bool test_expiry_date( time_t dbextime ,   time_t curexptime );
+
+
 // zjisti velikost pole z retezce
 int get_array_length(char *array);
 // vrati prvek pole

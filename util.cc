@@ -499,15 +499,36 @@ int mon;
 // preved cas
 dt =   *gmtime(  &extime );
 
+// pocet mesico
 mon =  dt.tm_mon + period;
-// printf("year %d  mon %d \n" ,  dt.tm_year +1900 , dt.tm_mon +1);
+// preved na rok
 dt.tm_year = dt.tm_year + (mon / 12 );
+// aktualni mesic
 dt.tm_mon = mon % 12;
-dt.tm_hour = 0;
-dt.tm_min = 0;
-dt.tm_sec = 0;
+
+LOG( LOG_DEBUG , "expiry_time: %4d-%02d-%02d %02d:%02d:%02d" ,
+                   dt.tm_year+1900 ,  dt.tm_mon +1, dt.tm_mday ,
+                   dt.tm_hour,   dt.tm_min , dt.tm_sec);
+
 
 return timegm(&dt);
+}
+
+// porovnava datum co je v databazi podle datumu zadanevo jako curexdate z XML
+bool test_expiry_date( time_t dbextime , time_t curexptime  )
+{
+struct tm dt , cdt;
+
+// preved cas (na lokalni )
+dt = *localtime (  &dbextime );
+cdt = *gmtime(  &curexptime ); // zadany timestamp jako gmtime
+
+LOG( LOG_DEBUG , "test_expiry_date: local date %4d-%02d-%02d curExpDate %4d-%02d-%02d" ,
+                  dt.tm_year+1900 ,  dt.tm_mon +1, dt.tm_mday ,
+                  cdt.tm_year+1900 ,  cdt.tm_mon +1, cdt.tm_mday  );
+
+if(  dt.tm_year == cdt.tm_year && dt.tm_mon == cdt.tm_mon &&  dt.tm_mday == cdt.tm_mday ) return true;
+else return false;
 }
 
 

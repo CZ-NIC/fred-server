@@ -4558,7 +4558,7 @@ return ret;
  * DESCRIPTION: prodlouzeni platnosti domeny o  periodu
  *              a ulozeni zmen do historie
  * PARAMETERS:  fqdn - nazev domeny nssetu
- *              curExpDate - datum vyprseni domeny pred prodlouzenim
+ *              curExpDate - datum vyprseni domeny !!! cas v GMT 00:00:00
  *              period - doba prodlouzeni v mesicich
  *        OUT:  exDate - datum a cas nove expirace domeny   
  *              clientID - id pripojeneho klienta 
@@ -4585,7 +4585,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
 
   ret = new ccReg::Response;
 
-  t = curExpDate;
+ 
 // aktualni cas
    now = time(NULL);
 // default
@@ -4654,7 +4654,9 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
                   DBsql.FreeSelect();
                 }
 
-              if( ex != curExpDate )
+              // porovnani datumu co je uvedene v databazi se zadanym datumem
+              // ex timestamp se prevadi na localtime a z toho se bere datum a porovnava se rok mesic a den
+              if(  test_expiry_date( ex , curExpDate ) == false )
                 {
                   LOG( WARNING_LOG, "curExpDate is not same as ExDate" );
                   ret->errors.length( seq +1);
