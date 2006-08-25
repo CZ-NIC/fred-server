@@ -464,7 +464,7 @@ dt.tm_mon = dt.tm_mon -1;
 // rok - 1900
 dt.tm_year = dt.tm_year - 1900;
 
-t = mktime(&dt);
+t = timegm(&dt);
 if( t < 0 ) return 0; // fix na velek roky
 
 LOG( LOG_DEBUG , "get_time_t from [%s] = %ld" , string , t );
@@ -506,9 +506,8 @@ dt.tm_mon = mon % 12;
 dt.tm_hour = 0;
 dt.tm_min = 0;
 dt.tm_sec = 0;
-//printf("mktime 0x%x\n" , mktime(&dt) );
 
-return mktime(&dt);
+return timegm(&dt);
 }
 
 
