@@ -182,7 +182,7 @@ LOG( LOG_DEBUG ,  "get_FQDN [%s] zone %d max %d" , fqdn  , zone , max );
 
 // maximalni delka
 if( len > 63 ) { LOG( LOG_DEBUG ,  "out ouf maximal length %d" , len ); return 0; }
-if( max < 2  ) { LOG( LOG_DEBUG ,  "minimal length" ); return 0;}
+if( max == 0 ) { LOG( LOG_DEBUG ,  "minimal length" ); return 0;}
 
 // test double dot .. and double --
 for( i = 1 ; i <  len ; i ++ )
