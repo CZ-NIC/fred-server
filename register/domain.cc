@@ -57,8 +57,9 @@ namespace Register
         std::string part;
         for (unsigned i=0; i<fqdn.size(); i++) {
           if (part.empty()) {
-            // first character of every label has to be letter
-            if (!IS_LETTER(fqdn[i])) throw INVALID_DOMAIN_NAME();
+            // first character of every label has to be letter or digit
+            if (!IS_NUMBER(fqdn[i]) && !IS_LETTER(fqdn[i]))
+              throw INVALID_DOMAIN_NAME();
           }
           else {
             // dot '.' is a separator of labels, store and clear part
@@ -98,13 +99,15 @@ namespace Register
         if (blacklist->checkDomain(fqdn)) return CA_BLACKLIST;
         std::stringstream sql;
         CheckAvailType ret = CA_AVAILABLE;
-        sql << "SELECT fqdn FROM domain WHERE '"
-            << fqdn << "' LIKE CONCAT('%',fqdn)";
+        // domain cannot be subdomain or parent domain of registred domain
+        sql << "SELECT fqdn FROM domain WHERE "
+            << "('" << fqdn << "' LIKE '%'||fqdn) OR "
+            << "(fqdn LIKE '%'||'" << fqdn << "')";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         if (db->GetSelectRows() == 1) {
           std::string fqdnLoaded = db->GetFieldValue(0,0);
           if (fqdn == fqdnLoaded) ret = CA_REGISTRED;
-          ret = CA_PARENT_REGISTRED;  
+          else ret = CA_PARENT_REGISTRED;  
         }
         db->FreeSelect();
         return ret;        
