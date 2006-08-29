@@ -16,10 +16,10 @@ namespace Register
       {
         bool ret = false;
         std::ostringstream sql;
-        sql << "SELECT id FROM domain_blacklist b"
-            << "WHERE " << fqdn << " REGEXP b.regexp "
+        sql << "SELECT id FROM domain_blacklist b "
+            << "WHERE '" << fqdn << "' ~ b.regexp "
             << "AND NOW()>b.valid_from "
-            << "AND (ISNULL b.valid_to OR NOW()<b.valid_to) ";
+            << "AND (b.valid_to ISNULL OR NOW()<b.valid_to) ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         if (db->GetSelectRows() > 0) ret = true;
         db->FreeSelect();
