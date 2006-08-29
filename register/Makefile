@@ -1,9 +1,13 @@
 OBJS = register.o zone.o blacklist.o domain.o
+EXT = ../pqsql.o ../dbsql.o ../util.o -lpq
 LIB = libccreg.a
 CXXFLAGS = -g -I.. -I/usr/include/postgresql/
 
 $(LIB) : $(OBJS)
 	$(AR) -rs $@ $(OBJS)
+	
+testreg: test.o $(OBJS)
+	$(CXX) -o $@ test.o $(OBJS) $(EXT)
 
 clean:
 	rm *.o
