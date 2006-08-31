@@ -72,10 +72,14 @@ for(cur_node = a_node; cur_node; cur_node = cur_node->next)
               {
                  log_local = GetLocal(  (char *)cur_node->children->content);
               }
-           }
-         
-
-      }                       
+       }
+       else  if(  compare(   cur_node->parent->name , "NAMESERVICE" ) ==0  ) 
+           { 
+            if( compare(   cur_node->name , "ior" ) == 0 )  
+              {
+                  nameServiceIOR = (char *) cur_node->children->content;
+              }
+       }                       
       get_element_names(cur_node->children);
     }
 }
@@ -93,7 +97,7 @@ bool Conf::ReadConfigFileXML(const char *filename )
         fprintf(stderr , "error: could not parse file %s\n", filename );
         return false;
     }
-  else   fprintf( stderr , "open  XML config file %s\n" , filename);
+//  else   fprintf( stderr , "open  XML config file %s\n" , filename);
 
 
   //Get the root element node 
@@ -164,7 +168,9 @@ bool Conf::ReadConfigFileTXT(const char *filename )
 {
 FILE *f;
 char buf[MAX_LINE];
-char keys[MAX_KEYS][KEY_MAX] = { "dbname" , "user" , "password" , "host" , "port" , "log_mask" ,  "log_level" , "log_local" };
+char keys[MAX_KEYS][KEY_MAX] = { 
+  "dbname" , "user" , "password" , "host" , "port" ,
+  "log_mask" ,  "log_level" , "log_local", "nameservice" };
 int key;
 char keyname[KEY_MAX];
 char value[MAX_LINE];
@@ -172,7 +178,7 @@ int i , k , l , len , line ;
 
 if( ( f = fopen( filename ,  "r" ) ) != NULL ) 
   {
-   fprintf( stderr , "open TXT config file %s\n" , filename);
+   // fprintf( stderr , "open TXT config file %s\n" , filename);
 
     for(line=0 ;; line ++)
     {
@@ -238,7 +244,9 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
                 case KEY_log_local:
                            log_local = GetLocal(value);
                            break; 
-               
+                case KEY_nameservice:
+                           nameServiceIOR = value;
+                           break;              
                 default:
                          fprintf( stderr , "parse error on line %d  [%s]\n" , line , buf );
                          break;

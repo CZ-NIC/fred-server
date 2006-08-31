@@ -11,8 +11,11 @@
 #define KEY_log_mask    6
 #define KEY_log_level   7
 #define KEY_log_local   8
+#define KEY_nameservice 9
 
-#define MAX_KEYS  8 
+#define MAX_KEYS  9 
+
+#include <string>
 
 class Conf {
 public:
@@ -43,6 +46,7 @@ char * GetDBuser(){ if( user[0] == 0 ) return NULL ; else return user; };
 char * GetDBpass(){ if( password[0] == 0 ) return NULL ; else return password; };
 char * GetDBport(){ if(port[0] == 0 ) return NULL ; else  return port; };
 char * GetDBconninfo();
+const char *GetNameService(){ return nameServiceIOR.c_str(); } 
 
 
 int GetSYSLOGlevel(){ return log_level; };
@@ -60,5 +64,6 @@ char port[16];
 char conninfo[256];
 int log_level;
 int log_local;
+std::string nameServiceIOR;
 };
 
