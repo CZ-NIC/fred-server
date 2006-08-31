@@ -11,7 +11,7 @@
 
 // funkce pro praci s postgres
 #include "dbsql.h"
-#define DATABASE "dbname=ccreg user=ccreg password=Eeh5ahSi host=curlew" 
+#define DATABASE "dbname=ccreg user=ccreg password=Eeh5ahSi host=localhost" 
 
 // konverze casu
 #include "util.h"
