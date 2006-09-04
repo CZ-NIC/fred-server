@@ -18,7 +18,7 @@ int main(int argc, char** argv)
     ccReg::Contact *contact , cc;
     CORBA::Short err;
     CORBA::Object_var obj ;
-    CORBA::String_var errMsg , svTR;
+    CORBA::String_var errMsg , svTR , tim;
     int i , n;
     time_t t;
     filebuf *pbuf;
@@ -58,27 +58,27 @@ int main(int argc, char** argv)
     ccReg::DomainWhois *dm;
 
     
-    dm = EPP->getWhois()->Domain("example.cz" );
+    dm = EPP->getWhois()->getDomain("example.cz" , tim );
 
     for( n = 0 ; n < dm->ns.length() ; n ++ )
-    cout <<  dm->name << "NameServers: " << dm->ns[n] <<  endl;
+    cout << "status" <<  dm->status <<   "NameServers: " << dm->ns[n] <<  endl;
 
     cout <<"Registrator: " << dm->registrarName << "url: " << dm->registrarUrl <<  endl;
 
 
-    t = (time_t )  dm->created;
-    cout << "registered: "  << asctime( gmtime( &t) ) << endl;
+    cout << "registered: "  <<   dm->created  << endl;
 
 
-    t = (time_t )  dm->expired;
-    cout << "expired: "  << asctime( gmtime( &t) ) << endl;
+    cout << "expired: "  <<   dm->expired << endl;
+
+    cout << "timestamp: "  <<   tim << endl;
 
     for( n = 0 ; n < dm->tech.length() ; n ++ )
-    cout <<  dm->name << "Tech contact: " << dm->tech[n] <<  endl;
+    cout <<  "Tech contact: " << dm->tech[n] <<  endl;
 
 
-    for( n = 0 ; n < dm->admin.length() ; n ++ )
-    cout <<  dm->name << "Admin contact: " << dm->admin[n] <<  endl;
+//    for( n = 0 ; n < dm->admin.length() ; n ++ )
+  //  cout <<  dm->name << "Admin contact: " << dm->admin[n] <<  endl;
    
    delete dm ;
     
@@ -90,9 +90,16 @@ int main(int argc, char** argv)
   catch(CORBA::SystemException& ex) {
     cerr << "Caught a CORBA::" << ex._name() << endl;
   }
-  catch(CORBA::Exception& ex) {
-    cerr << "Caught CORBA::Exception: " << ex._name() << endl;
+
+
+  catch(ccReg::Whois::DomainNotFound& ex) {
+    cerr << "Caught DomainNotFound::timestamp: " << ex.timestamp << endl;    
   }
+
+  catch(CORBA::Exception& ex) {
+    cerr << "Caught CORBA::Exception: " << ex._name() << endl;    
+  }
+
   catch(omniORB::fatalException& fe) {
    cerr << "Caught omniORB::fatalException:" << endl;
    cerr << "  file: " << fe.file() << endl;
