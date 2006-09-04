@@ -82,7 +82,7 @@ int main(int argc, char** argv)
         rootPOA->servant_to_reference(myccReg_Whois_i);
       myccReg_Whois_i->_remove_ref();
       ccReg::Whois_var whois = ccReg::Whois::_narrow(whoisObj);
-      ns.bind("Whois",adminObj);
+      ns.bind("Whois",whoisObj);
 
       ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(admin, whois);
      
@@ -104,11 +104,8 @@ int main(int argc, char** argv)
         cout << "start syslog facility local" 
              <<  config.GetSYSLOGlocal()   << endl;
         setlogmask ( LOG_UPTO(  config.GetSYSLOGlevel()  )   );
-//         openlog ("ccReg", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL0+  config.GetSYSLOGlocal()  );
-// natvrdo local1
         openlog ( "ccReg", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
 #endif
-
         // IDL interface: ccReg::EPP
         CORBA::Object_var ref = poa->id_to_reference(myccReg_EPP_iid);
         ns.bind("EPP",ref);
