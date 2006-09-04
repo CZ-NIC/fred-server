@@ -475,6 +475,44 @@ return t;
 }
 
 
+void get_rfc3339_timestamp( time_t t , char *string)
+{
+struct tm *dt;
+int diff;
+char sign , tzstr[6] ; 
+
+// preved n alokalni cas
+dt = localtime( &t );
+
+diff =   dt->tm_gmtoff;
+
+
+if( diff == 0 ) sign = 'Z' ; // UTC zulu time 
+else if (diff < 0)
+       {
+        sign = '-';
+        diff = -diff;
+       }
+     else  sign = '+';
+
+
+
+
+sprintf(  string , "%4d-%02d-%02dT%02d:%02d:%02d%c" , 
+    dt->tm_year + 1900  ,  dt->tm_mon + 1 ,  dt->tm_mday ,
+    dt->tm_hour,   dt->tm_min , dt->tm_sec , sign );
+
+
+if( diff != 0 ) 
+ { 
+   sprintf( tzstr ,   "%02d:%02d"  ,   diff / SECSPERHOUR  , ( diff % SECSPERHOUR )   / MINSPERHOUR );  // timezone
+   strcat( string , tzstr );
+  }
+
+}
+
+
+
 
 void get_timestamp( time_t t , char *string)
 {
