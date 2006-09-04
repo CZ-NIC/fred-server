@@ -14,6 +14,11 @@
 #define IPV4 4
 #define IPV6 6
 
+
+#define   SECSPERMIN 60
+#define MINSPERHOUR    60
+#define SECSPERHOUR    (SECSPERMIN * MINSPERHOUR)
+
 // test local adres
 
 bool validateIPV4(const char *ipadd);
@@ -73,6 +78,10 @@ void get_priceStr(char *priceStr  , long price);
 
 // vraci cas v time_t  pevede SQL retezec
 time_t get_time_t(char *string );
+
+// prevede cas na timestamp dle rfc3339 s casovou zonou jako offset
+void get_rfc3339_timestamp( time_t t , char *string);
+
 // prevede time_t do retezce pro SQL
 void get_timestamp( time_t t , char *string);
 
