@@ -4328,6 +4328,8 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
              // get  registrator ID
              regID = DBsql.GetLoginRegistrarID( clientID );
+            if( strlen( nsset) == 0 ) nssetid = 0; // lze vytvorit domenu bez nssetu
+            else
              // nsset
             if( get_HANDLE( HANDLE , nsset ) == false )
               {
@@ -4352,7 +4354,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                       ret->errCode = COMMAND_PARAMETR_ERROR;
                }
               
-             // nsset
+             //  registrant
             if( get_HANDLE( HANDLE , Registrant ) == false )
               {
                       LOG( WARNING_LOG, "bad registrant handle %s", Registrant );
@@ -4408,10 +4410,50 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
               }
 
-               // zpracovani creditu
+
+
+
+
+                              // otestuj admin kontakty na exsitenci a spravny tvar handlu
+                              len = admin.length();
+                              if( len > 0  )
+                                {
+                                  for( i = 0; i < len; i++ )
+                                    {
+                                     // nsset
+                                      if( get_HANDLE( HANDLE , admin[i] ) == false )
+                                        {
+                                          LOG( WARNING_LOG, "DomainCreate: bad admin Contact " );
+                                          ret->errors.length( seq +1 );
+                                          ret->errors[seq].code = ccReg::domainCreate_admin;
+                                          ret->errors[seq].value <<= CORBA::string_dup(  admin[i] );
+                                          ret->errors[seq].reason = CORBA::string_dup( "bad admin contact" );
+                                          seq++;
+                                          ret->errCode = COMMAND_PARAMETR_ERROR;
+ 
+                                       }
+                                      else 
+                                      {
+                                      adminid = DBsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE  );
+
+                                      if( adminid == 0 ) 
+                                        {
+                                          LOG( WARNING_LOG, "DomainCreate: unknow admin Contact " );
+                                          ret->errors.length( seq +1 );
+                                          ret->errors[seq].code = ccReg::domainCreate_admin;
+                                          ret->errors[seq].value <<= CORBA::string_dup(  admin[i] );
+                                          ret->errors[seq].reason = CORBA::string_dup( "unknow admin contact" );
+                                          seq++;
+                                         ret->errCode = COMMAND_PARAMETR_ERROR;
+                                        }
+                                      } 
+                                    }
+                                }
+
+                // zpracovani creditu
                if( DBsql.UpdateCredit(  regID ,   EPP_DomainCreate  ,    zone ,  period  )  == false )  ret->errCode =  COMMAND_BILLING_FAILURE;
 
-                        if(  ret->errCode == 0  )
+                        if(  ret->errCode == 0  ) // pokud nedoslo k chybe
                         {
                           t = time( NULL );
                           crDate = t;   // datum a cas vytvoreni objektu
@@ -4432,21 +4474,22 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                           DBsql.INTO( "CrID" );
                           DBsql.INTO( "status" );
                           DBsql.INTO( "Registrant" );
-                          DBsql.INTO( "nsset");
+                          DBsql.INTO( "nsset" );
                           DBsql.INTOVAL( "authinfopw" , AuthInfoPw);
                                                                   
                                                                   
                           DBsql.VALUE( zone );
                           DBsql.VALUE( id );
-                          DBsql.VALUE( roid );
-                          DBsql.VALUE( FQDN );
+                          DBsql.VVALUE( roid );
+                          DBsql.VVALUE( FQDN );
                           DBsql.VALUE( createDate );
                           DBsql.VALUE( expiryDate );
                           DBsql.VALUE( regID );
                           DBsql.VALUE( regID );
                           DBsql.VALUE( "{ 1 }" ); // status OK
                           DBsql.VALUE( contactid );
-                          DBsql.VALUE( nssetid );
+                          if( nssetid == 0 )  DBsql.VALUE( "NULL" ); // domena bez nssetu
+                          else DBsql.VALUE( nssetid );
                           DBsql.VAL(  AuthInfoPw);   
 
                           // pokud se insertovalo do tabulky
@@ -4463,49 +4506,27 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                                   if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;;
                                 }
 
-                              // zapis admin kontakty
-                              len = admin.length();
-                              if( len > 0  )
-                                {
-                                  for( i = 0; i < len; i++ )
+
+
+                                   // pridej admin kontakty
+                                  for( i = 0; i <  admin.length(); i++ )
                                     {
                                      // nsset
-                                      if( get_HANDLE( HANDLE , admin[i] ) == false )
+                                      if( get_HANDLE( HANDLE , admin[i] )  )
                                         {
-                                          LOG( WARNING_LOG, "DomainCreate: bad tech Contact " );
-                                          ret->errors.length( seq +1 );
-                                          ret->errors[seq].code = ccReg::domainCreate_admin;
-                                          ret->errors[seq].value <<= CORBA::string_dup(  admin[i] );
-                                          ret->errors[seq].reason = CORBA::string_dup( "bad admin contact" );
-                                          seq++;
-                                          ret->errCode = COMMAND_PARAMETR_ERROR;
- 
-                                       }
-                                      else 
-                                      {
-                                      adminid = DBsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE  );
+                                           adminid = DBsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE  );
 
-                                      if( adminid )
-                                       {
-                                          DBsql.INSERT( "domain_contact_map" );
-                                          DBsql.VALUE( id );
-                                          DBsql.VALUE( adminid );
-                                         // pokud se nepodarilo pridat do tabulky                                     
-                                         if( DBsql.EXEC() == false )   ret->errCode = COMMAND_FAILED;
-                                       }   
-                                      else
-                                      {
-                                          LOG( WARNING_LOG, "DomainCreate: unknow tech Contact " );
-                                          ret->errors.length( seq +1 );
-                                          ret->errors[seq].code = ccReg::domainCreate_admin;
-                                          ret->errors[seq].value <<= CORBA::string_dup(  admin[i] );
-                                          ret->errors[seq].reason = CORBA::string_dup( "unknow admin contact" );
-                                          seq++;
-                                         ret->errCode = COMMAND_PARAMETR_ERROR;
-                                      }
-                                     } 
-                                    }
-                                }
+                                            if( adminid )
+                                              {
+                                                   DBsql.INSERT( "domain_contact_map" );
+                                                   DBsql.VALUE( id );
+                                                   DBsql.VALUE( adminid );
+                                                   // pokud se nepodarilo pridat do tabulky
+                                                  if( DBsql.EXEC() == false )   ret->errCode = COMMAND_FAILED;
+                                               }
+                                          }
+                                     }
+
 
                               if( ret->errCode == 0 )   // pokud zadna chyba uloz do historie
                                 {
