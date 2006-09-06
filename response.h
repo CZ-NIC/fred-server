@@ -17,6 +17,6 @@
 #define COMMAND_NOT_ELIGIBLE_FOR_TRANSFER  2106 // Object is not eligible for transfer  
 
 #define COMMAND_PARAMETR_ERROR 2005 // Parameter value syntax error
-
+#define COMMAND_PARAMETR_MISSING 2003 // chybejici parametr 
 
 #define COMMAND_BILLING_FAILURE 2104  // chyba v placeni za domenu  Billing failure

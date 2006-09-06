@@ -2564,6 +2564,17 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                 {
 
 
+                 if(  tech.length() == 0 )
+                   {
+                      LOG( WARNING_LOG, "NSSetCreate: not any tech Contact "  );
+                      ret->errors.length( seq +1 );
+                      ret->errors[seq].code = ccReg::nssetCreate_tech;
+                      ret->errors[seq].value <<= CORBA::string_dup( "tech contact"  );
+                      ret->errors[seq].reason = CORBA::string_dup( "not any tech contact" );
+                      seq++;
+                      ret->errCode = COMMAND_PARAMETR_MISSING ; // musi byt alespon jeden nsset;
+                   }
+                 else
                   // zapis technicke kontakty 
                   for( i = 0; i <  tech.length() ;  i++ )
                     {
