@@ -346,6 +346,23 @@ return id;
 
 */
 
+// testuje pravo registratora na zapis do zony 
+bool DB::TestRegistrarZone(int regID , int zone )
+{
+bool ret = false;
+char sqlString[128];
+sprintf( sqlString , "SELECT * FROM  RegistrarACL WHERE registrarid=%d AND zoneid=%d;" ,  regID , zone );
+
+if( ExecSelect( sqlString ) )
+ {
+    if(  GetSelectRows() == 1  ) ret=true; // mam pravo 
+    FreeSelect();
+  }
+
+return ret;
+}
+
+
 bool  DB::CheckContactMap(char * table , int id , int contactid )
 {
 bool ret = false;
@@ -361,6 +378,8 @@ if( ExecSelect( sqlString ) )
 
 return ret;
 }
+
+
 
 
 int DB::CheckNSSet(const char *handle )

@@ -102,6 +102,9 @@ bool TestContactRelations(int id );
 
 bool AuthTable(  char *table , char *auth , int id );
 
+// testuje pravo registratora na zapis do zony
+bool TestRegistrarZone(int regID , int zone );
+
 
 // funkce na ulozeni obsahu radku ID tabluky  do 
 int MakeHistory(); // zapise do tabulky history

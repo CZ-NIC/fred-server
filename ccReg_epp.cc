@@ -3441,7 +3441,7 @@ ccReg::timestamp valexDate;
 ccReg::ENUMValidationExtension *enumVal;
 ccReg::Response *ret;
 char FQDN[64];
-int id , clid , crid ,  upid , regid ,nssetid , regID;
+int id , clid , crid ,  upid , regid ,nssetid , regID , zone;
 int i , len ;
 
 d = new ccReg::Domain;
@@ -3466,16 +3466,38 @@ if( DBsql.OpenDatabase( database ) )
 if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
  {
 
-  // preved fqd na  mala pismena a otestuj to
-  if(  getFQDN(  FQDN , fqdn )  )  
-   {
+
+
+      // preved fqd na  mala pismena a otestuj to
+       // spatny format navu domeny
+    if( ( zone = getFQDN( FQDN , fqdn ) ) == 0 )
+      {
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::domainInfo_fqdn;
+            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
+      }
+     else
+      {
+
+             // get  registrator ID
+            regID = DBsql.GetLoginRegistrarID( clientID );
+
+           if(  DBsql.TestRegistrarZone( regID , zone ) == false )
+             {
+               LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
+               ret->errCode =  COMMAND_AUTHENTICATION_ERROR;
+             }
+          else
+
+
    
-   // get  registrator ID
-   regID = DBsql.GetLoginRegistrarID( clientID );
 
 
-  if(  DBsql.SELECTONE( "DOMAIN" , "fqdn" , FQDN )  )
-  {
+    if(  DBsql.SELECTONE( "DOMAIN" , "fqdn" , FQDN )  )
+    {
     if( DBsql.GetSelectRows() == 1 )
       {
         id = atoi( DBsql.GetFieldValueName("id" , 0 ) );
@@ -3576,15 +3598,6 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
    }
 
   }
- else
-  {
-            ret->errCode = COMMAND_PARAMETR_ERROR;
-            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
-            ret->errors.length( 1 );
-            ret->errors[0].code = ccReg::domainInfo_fqdn;
-            ret->errors[0].value <<= CORBA::string_dup( fqdn );
-            ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
-  }
 
 
    // zapis na konec action
@@ -3645,7 +3658,7 @@ ccReg::Response *ret;
 DB DBsql;
 Status status;
 char FQDN[64];
-int regID , clID , id;
+int regID , clID , id , zone;
 bool stat;
 ret = new ccReg::Response;
 
@@ -3665,9 +3678,28 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , clie
 
 
       // preved fqd na  mala pismena a otestuj to
-       if(  getFQDN( FQDN , fqdn )   )  // spatny format navu domeny
+       // spatny format navu domeny
+       if( ( zone = getFQDN( FQDN , fqdn ) ) == 0 )  
+         {          
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::domainInfo_fqdn;
+            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
+         }
+        else
          {
 
+             // get  registrator ID
+            regID = DBsql.GetLoginRegistrarID( clientID );
+
+           if(  DBsql.TestRegistrarZone( regID , zone ) == false )
+             {
+               LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
+               ret->errCode =  COMMAND_AUTHENTICATION_ERROR;
+             }
+          else  
           if( DBsql.BeginTransaction() )
             {
               if( ( id = DBsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) FQDN ) ) == 0 )
@@ -3678,7 +3710,6 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , clie
               else
                 {
 
-                  regID = DBsql.GetLoginRegistrarID( clientID );        // aktivni registrator
                   clID = DBsql.GetNumericFromTable( "DOMAIN", "ClID", "id", id );       // client objektu
 
                   if( regID != clID )
@@ -3731,14 +3762,7 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , clie
               DBsql.QuitTransaction( ret->errCode );
             }
 
-          } else {          
-            ret->errCode = COMMAND_PARAMETR_ERROR;
-            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
-            ret->errors.length( 1 );
-            ret->errors[0].code = ccReg::domainInfo_fqdn;
-            ret->errors[0].value <<= CORBA::string_dup( fqdn );
-            ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
-         }
+          }
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
         }
@@ -3874,6 +3898,15 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
             ret->errors[0].reason = CORBA::string_dup( "bad format of fqdn" );
         }
 
+             // get  registrator ID
+            regID = DBsql.GetLoginRegistrarID( clientID );
+
+           if(  DBsql.TestRegistrarZone( regID , zone ) == false )
+             {
+               LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
+               ret->errCode =  COMMAND_AUTHENTICATION_ERROR;
+             }
+
           if( ret->errCode == 0 )
             {
              if( DBsql.BeginTransaction() )
@@ -3887,8 +3920,6 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                 }
               else
                 {
-                      // get  registrator ID
-                      regID = DBsql.GetLoginRegistrarID( clientID );
                       // client contaktu
                       clID = DBsql.GetNumericFromTable( "DOMAIN", "clID", "id", id );
 
@@ -4294,9 +4325,8 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
       if( DBsql.BeginAction( clientID, EPP_DomainCreate, clTRID , XML ) )
         {
 
-
       // preved fqd na  mala pismena a otestuj to
-       if( ( zone = getFQDN( FQDN , fqdn ) ) == 0 )  // spatny format navu domeny
+       if(  ( zone = getFQDN( FQDN , fqdn ) ) == 0  )  // spatny format navu domeny
          {
             ret->errCode = COMMAND_PARAMETR_ERROR;
             LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
@@ -4307,6 +4337,16 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
         }
       else
        {
+             // get  registrator ID
+            regID = DBsql.GetLoginRegistrarID( clientID );
+
+           if(  DBsql.TestRegistrarZone( regID , zone ) == false )
+             {
+               LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
+               ret->errCode =  COMMAND_AUTHENTICATION_ERROR;
+             }
+          else
+
           if( DBsql.BeginTransaction() )
             {
 
@@ -4326,8 +4366,6 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
 
 
-             // get  registrator ID
-             regID = DBsql.GetLoginRegistrarID( clientID );
             if( strlen( nsset) == 0 ) nssetid = 0; // lze vytvorit domenu bez nssetu
             else
              // nsset
@@ -4663,11 +4701,23 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
 
        if(  ( zone = getFQDN( FQDN , fqdn ) ) > 0 ) 
          {
+
+
+             // get  registrator ID
+            regID = DBsql.GetLoginRegistrarID( clientID );
+
+           if(  DBsql.TestRegistrarZone( regID , zone ) == false )
+             {
+               LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
+               ret->errCode =  COMMAND_AUTHENTICATION_ERROR;
+             }
+          else
+
+
             // zahaj transakci
           if( DBsql.BeginTransaction() )
             {
 
-          regID = DBsql.GetLoginRegistrarID( clientID );        // aktivni registrator
           if( ( id = DBsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", ( char * ) FQDN ) ) == 0 )
             // prvni test zdali domena  neexistuje 
             {
@@ -4854,7 +4904,7 @@ ccReg::Response * ret;
 DB DBsql;
 char FQDN[64];
 Status status;
-int regID = 0, clID = 0, id;  //   registrantid , contactid;
+int regID = 0, clID = 0, id , zone;  //   registrantid , contactid;
 
 ret = new ccReg::Response;
 
@@ -4870,8 +4920,21 @@ LOG( NOTICE_LOG, "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  ", clie
 
       if( DBsql.BeginAction( clientID, EPP_DomainTransfer, clTRID , XML  ) )
         {
-      if(  getFQDN( FQDN , fqdn )    )  // spatny format navu domeny
+
+       if(  ( zone = getFQDN( FQDN , fqdn ) ) > 0 ) // spatny format navu domeny
          {
+
+
+             // get  registrator ID
+            regID = DBsql.GetLoginRegistrarID( clientID );
+
+           if(  DBsql.TestRegistrarZone( regID , zone ) == false )
+             {
+               LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
+               ret->errCode =  COMMAND_AUTHENTICATION_ERROR;
+             }
+          else
+
 
 if( DBsql.BeginTransaction() )
  {
