@@ -512,12 +512,12 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
               rows = DBsql.GetSelectRows();
               if( rows == 0 )
                 {
-                  LOG( ERROR_LOG, "unknow msgID %d", msgID );
+                  LOG( ERROR_LOG, "unknown msgID %d", msgID );
                   ret->errors.length( 1 );
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                   ret->errors[0].code = ccReg::pollAck_msgID;   // spatna msg ID
                   ret->errors[0].value <<= msgID;
-                  ret->errors[0].reason = CORBA::string_dup( "unknow msgID" );
+                  ret->errors[0].reason = CORBA::string_dup( "unknown msgID" );
                 }
               DBsql.FreeSelect();
             }
@@ -1720,11 +1720,11 @@ LOG( NOTICE_LOG, "ContactUpdate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
                       else      // neplatny kod zeme
                         {
                           ret->errCode = COMMAND_PARAMETR_ERROR;
-                          LOG( WARNING_LOG, "unknow country code" );
+                          LOG( WARNING_LOG, "unknown country code" );
                           ret->errors.length( 1 );
                           ret->errors[0].code = ccReg::contactUpdate_cc;        // spatne zadany neznamy country code
                           ret->errors[0].value <<= CORBA::string_dup( c.CC );
-                          ret->errors[0].reason = CORBA::string_dup( "unknow country code" );
+                          ret->errors[0].reason = CORBA::string_dup( "unknown country code" );
                         }
 
                     }
@@ -1933,11 +1933,11 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
                   else          // neplatny kod zeme  
                     {
                       ret->errCode = COMMAND_PARAMETR_ERROR;
-                      LOG( WARNING_LOG, "unknow country code" );
+                      LOG( WARNING_LOG, "unknown country code" );
                       ret->errors.length( 1 );
                       ret->errors[0].code = ccReg::contactCreate_cc;    // spatne zadany neznamy country code
                       ret->errors[0].value <<= CORBA::string_dup( c.CC );
-                      ret->errors[0].reason = CORBA::string_dup( "unknow country code" );
+                      ret->errors[0].reason = CORBA::string_dup( "unknown country code" );
                     }
                 }
 
@@ -2582,11 +2582,11 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                       // preved handle na velka pismena
                       if( get_HANDLE( HANDLE , tech[i] ) == false )  // spatny format handlu
                         {
-                          LOG( WARNING_LOG, "NSSetCreate: unknow tech Contact " , (const char *)  tech[i] );
+                          LOG( WARNING_LOG, "NSSetCreate: unknown tech Contact " , (const char *)  tech[i] );
                           ret->errors.length( seq +1 );
                           ret->errors[seq].code = ccReg::nssetCreate_tech;
                           ret->errors[seq].value <<= CORBA::string_dup(  tech[i] );
-                          ret->errors[seq].reason = CORBA::string_dup( "unknow tech contact" );
+                          ret->errors[seq].reason = CORBA::string_dup( "unknown tech contact" );
                           seq++;
                           ret->errCode = COMMAND_PARAMETR_ERROR;
                         }
@@ -2604,11 +2604,11 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                         }
                       else
                         {
-                          LOG( WARNING_LOG, "NSSetCreate: unknow tech Contact " , (const char *)  tech[i]  );                          
+                          LOG( WARNING_LOG, "NSSetCreate: unknown tech Contact " , (const char *)  tech[i]  );                          
                           ret->errors.length( seq +1 );
                           ret->errors[seq].code = ccReg::nssetCreate_tech;
                           ret->errors[seq].value <<= CORBA::string_dup(  tech[i] );
-                          ret->errors[seq].reason = CORBA::string_dup( "unknow tech contact" );
+                          ret->errors[seq].reason = CORBA::string_dup( "unknown tech contact" );
                           seq++;                                 
                           // TODO error value 
                           ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -2970,7 +2970,7 @@ if( DBsql.OpenDatabase( database ) )
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
                                                         ret->errors[seq].value <<= CORBA::string_dup(  tech_add[i] );
-                                                        ret->errors[seq].reason = CORBA::string_dup( "unknow add tech contact" );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "unknown add tech contact" );
                                                         seq++;
                                                       }
                                                     if( check )  
@@ -3014,7 +3014,7 @@ if( DBsql.OpenDatabase( database ) )
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_rem;
                                                         ret->errors[seq].value <<= CORBA::string_dup(  tech_rem[i] );
-                                                        ret->errors[seq].reason = CORBA::string_dup( "unknow rem tech contact" );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "unknown rem tech contact" );
                                                         seq++;
                                                       }
                                                     if( !check )  
@@ -4138,7 +4138,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::domainUpdate_admin_add;
                                                         ret->errors[seq].value <<= CORBA::string_dup(  admin_add[i] );
-                                                        ret->errors[seq].reason = CORBA::string_dup( "unknow add admin contact" );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "unknown add admin contact" );
                                                         seq++;
                                                       }
                                                     if( check )
@@ -4186,7 +4186,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::domainUpdate_admin_rem;
                                                         ret->errors[seq].value <<= CORBA::string_dup(  admin_rem[i] );
-                                                        ret->errors[seq].reason = CORBA::string_dup( "unknow rem admin contact" );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "unknown rem admin contact" );
                                                         seq++;
                                                       }
                                                     if( !check )
@@ -4383,11 +4383,11 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
             else 
             if( (nssetid = DBsql.GetNumericFromTable( "NSSET", "id", "handle", HANDLE  ) ) == 0 )
               {
-                      LOG( WARNING_LOG, "unknow nsset handle %s", nsset );
+                      LOG( WARNING_LOG, "unknown nsset handle %s", nsset );
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::domainCreate_nsset;
                       ret->errors[seq].value <<= CORBA::string_dup( nsset );
-                      ret->errors[seq].reason = CORBA::string_dup( "unknow nsset" );
+                      ret->errors[seq].reason = CORBA::string_dup( "unknown nsset" );
                       seq++;
                       ret->errCode = COMMAND_PARAMETR_ERROR;
                }
@@ -4407,11 +4407,11 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
            else                    
            if( ( contactid = DBsql.GetNumericFromTable( "CONTACT", "id", "handle", HANDLE ) ) == 0 )
               {
-                      LOG( WARNING_LOG, "unknow Registrant handle %s", Registrant );
+                      LOG( WARNING_LOG, "unknown Registrant handle %s", Registrant );
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::domainCreate_registrant;
                       ret->errors[seq].value <<= CORBA::string_dup( Registrant );
-                      ret->errors[seq].reason = CORBA::string_dup( "unknow Registrant" );
+                      ret->errors[seq].reason = CORBA::string_dup( "unknown Registrant" );
                       seq++;
                       ret->errCode = COMMAND_PARAMETR_ERROR;
                }
@@ -4476,11 +4476,11 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
                                       if( adminid == 0 ) 
                                         {
-                                          LOG( WARNING_LOG, "DomainCreate: unknow admin Contact " );
+                                          LOG( WARNING_LOG, "DomainCreate: unknown admin Contact " );
                                           ret->errors.length( seq +1 );
                                           ret->errors[seq].code = ccReg::domainCreate_admin;
                                           ret->errors[seq].value <<= CORBA::string_dup(  admin[i] );
-                                          ret->errors[seq].reason = CORBA::string_dup( "unknow admin contact" );
+                                          ret->errors[seq].reason = CORBA::string_dup( "unknown admin contact" );
                                           seq++;
                                          ret->errCode = COMMAND_PARAMETR_ERROR;
                                         }
