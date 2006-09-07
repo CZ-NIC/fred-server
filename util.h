@@ -78,6 +78,9 @@ long get_price( const char *priceStr );
 // prevadi cenu v halirich na string
 void get_priceStr(char *priceStr  , long price);
 
+// prevod casu z DB v UTC na lokalni cas dle rfc3339 
+void get_dateStr(  char *dateStr , const char *string );
+
 // prevadi casovy string na zulu date time dle rfc3339
 void get_zulu_t(  char *dateStr , const char *string );
 

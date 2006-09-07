@@ -444,7 +444,13 @@ void get_priceStr(char *priceStr  , long price)
 sprintf( priceStr , "%ld%c%02ld" , price/100 , '.' ,  price %100 );
 }
 
-// 
+void get_dateStr(  char *dateStr , const char *string )
+{
+// provizorni reseni ZULU 
+get_zulu_t( dateStr , string );
+}
+  
+
 void get_zulu_t(  char *dateStr , const char *string )
 {
 
