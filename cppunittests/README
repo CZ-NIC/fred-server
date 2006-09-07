@@ -1,12 +1,13 @@
 Testy ktere musi projit:
 
-Session
+Session - testy login a logou funkci
 -------
 
+Zalogovani s neexistujicim username
 Zalogovani se spravnym heslem
-! Zalogovani se spravnym otiskem certifikatu
-! Zalogovani se spatnym otiskem certifikatu
 Zalogovani se spatnym heslem
+Zalogovani se spravnym otiskem certifikatu
+Zalogovani se spatnym otiskem certifikatu
 Zmena hesla tam a zpatky s kontrolnim zalogovanim
 
 Contact
@@ -17,4 +18,11 @@ Zalozeni neexistujiciho noveho kontaktu
 Pokus o zalozeni existujiciho kontaktu
 Check na seznam existujiciho a neexistujicich kontaktu
 Info na existujici kontakt
-
+Smazani kontaktu 
+Smazani kontaktu na ktery existuji nejake vazby
+Check na smazany kontakt
+Update vsech parametru krome stavu
+Pokus o update stavu Server*
+Update stavu clientDeleteProhibited a pokus o smazani
+Update stavu clientUpdateProhibited a pokus o zmenu objektu, smazani stavu
+Smazani kontaktu na ktery existuji nejake vazby
