@@ -99,8 +99,8 @@ int main(int argc, char** argv)
 
 
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
-
-     cout << "version: "  <<  EPP->version() << endl;
+    ccReg::timestamp_var ts;
+     cout << "version: "  <<  EPP->version(ts) << endl;
 
     loginID = 4000; 
 /*
@@ -142,8 +142,8 @@ int main(int argc, char** argv)
 
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
-     ret =  EPP->ClientCredit( credit ,  loginID , "clTRID-credit" , "<XML>credit</XML>" );
-     cout << "credit " << credit <<  "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+//     ret =  EPP->ClientCredit( credit ,  loginID , "clTRID-credit" , "<XML>credit</XML>" );
+//     cout << "credit " << credit <<  "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
 /*
     ret =  EPP->ContactList ( lists , loginID , "contact-list" , "<XML>contact-list</XML>" );
@@ -217,8 +217,7 @@ num = 1000;
    cout << "contact create  " << handle << endl;     
    ret =  EPP->ContactCreate( handle , *ch ,  crDate ,  loginID , "test-contact-create"  , "<XML omniORB>"   );
    cout << "contact create  " << handle << "  "  << ret->errCode  <<  ret->errMsg <<  ret->svTRID << endl;
-   t = crDate;
-   cout << "Create date: " << ctime( &t )  << endl; 
+   cout << "Create date: " << crDate  << endl; 
    delete ch;
   }
 

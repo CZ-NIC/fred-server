@@ -26,6 +26,10 @@ int main(int argc, char** argv)
     char name[64] , roid[32];
     long size;
     ifstream fd ("/tmp/ccReg.ref");
+    
+    // OPRAVIT NA NAMESERVICE!!!!
+    exit(-1);
+    
     // get pointer to associated buffer object
      pbuf=fd.rdbuf();
 
@@ -58,7 +62,7 @@ int main(int argc, char** argv)
     ccReg::DomainWhois *dm;
 
     
-    dm = EPP->getWhois()->getDomain("example.cz" , tim );
+    //dm = EPP->getWhois()->getDomain("example.cz" , tim );
 
     for( n = 0 ; n < dm->ns.length() ; n ++ )
     cout << "status" <<  dm->status <<   "NameServers: " << dm->ns[n] <<  endl;
