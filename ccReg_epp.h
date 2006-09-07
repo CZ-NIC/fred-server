@@ -45,7 +45,8 @@ public:
   int getFQDN( char *FQDN , const char *fqdn );
   bool testFQDN(  const char *fqdn );
   
-  char* version(); // vraceni cisla verze 
+  // vraceni cisla verze
+  char* version(ccReg::timestamp_out datetime);
 
 
   // true vse zobrazovat false vse skryt pro disclose flags
@@ -65,7 +66,7 @@ public:
   // methods corresponding to defined IDL attributes and operations
   ccReg::Response* GetTransaction(CORBA::Long clientID, const char* clTRID, CORBA::Short errCode );
   ccReg::Response* PollAcknowledgement(CORBA::Long msgID, CORBA::Short& count, CORBA::Long& newmsgID, CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* PollRequest(CORBA::Long& msgID, CORBA::Short& count, ccReg::timestamp& qDate, CORBA::String_out mesg, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* PollRequest(CORBA::Long& msgID, CORBA::Short& count, ccReg::timestamp_out qDate, CORBA::String_out mesg, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, const char* XML ,  CORBA::Long& clientID , const char* certID , ccReg::Languages lang);
   ccReg::Response* ClientLogout(CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* ClientCredit(ccReg::price& credit, CORBA::Long clientID, const char* clTRID, const char* XML);
@@ -73,20 +74,20 @@ public:
   ccReg::Response* ContactInfo(const char* handle, ccReg::Contact_out c, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* ContactDelete(const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* ContactUpdate(const char* handle, const ccReg::ContactChange& c, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* ContactCreate(const char* handle, const ccReg::ContactChange& c, ccReg::timestamp& crDate, CORBA::Long clientID, const char* clTRID , const char* XML );
+  ccReg::Response* ContactCreate(const char* handle, const ccReg::ContactChange& c, ccReg::timestamp_out crDate, CORBA::Long clientID, const char* clTRID , const char* XML );
   ccReg::Response* ContactTransfer(const char* handle, const char* authInfo, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* NSSetCheck(const ccReg::Check& handle, ccReg::CheckResp_out  a, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* NSSetInfo(const char* handle, ccReg::NSSet_out n, CORBA::Long clientID, const char* clTRID , const char*  XML);
   ccReg::Response* NSSetDelete(const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* NSSetCreate(const char* handle, const char* authInfoPw, const ccReg::TechContact& tech, const ccReg::DNSHost& dns, ccReg::timestamp& crDate, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* NSSetCreate(const char* handle, const char* authInfoPw, const ccReg::TechContact& tech, const ccReg::DNSHost& dns, ccReg::timestamp_out crDate, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* NSSetUpdate(const char* handle, const char* authInfo_chg, const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem, const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* NSSetTransfer(const char* handle, const char* authInfo, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* DomainCheck(const ccReg::Check& fqdn, ccReg::CheckResp_out  a, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* DomainInfo(const char* fqdn, ccReg::Domain_out d, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* DomainDelete(const char* fqdn, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* DomainUpdate(const char* fqdn, const char* registrant_chg,  const char* authInfo_chg, const char* nsset_chg, const ccReg::AdminContact& admin_add, const ccReg::AdminContact& admin_rem, const ccReg::Status& status_add, const ccReg::Status& status_rem, CORBA::Long clientID, const char* clTRID , const char* XML ,const ccReg::ExtensionList& ext );
-  ccReg::Response* DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char* AuthInfoPw, CORBA::Short period, const ccReg::AdminContact& admin,  ccReg::timestamp& crDate, ccReg::timestamp& exDate,  CORBA::Long clientID, const char* clTRID, const char* XML , const ccReg::ExtensionList& ext );
-  ccReg::Response* DomainRenew(const char* fqdn, ccReg::timestamp curExpDate, CORBA::Short period, ccReg::timestamp& exDate, CORBA::Long clientID, const char* clTRID , const char* XML, const ccReg::ExtensionList& ext );
+  ccReg::Response* DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char* AuthInfoPw, CORBA::Short period, const ccReg::AdminContact& admin,  ccReg::timestamp_out crDate, ccReg::date_out exDate,  CORBA::Long clientID, const char* clTRID, const char* XML , const ccReg::ExtensionList& ext );
+  ccReg::Response* DomainRenew(const char* fqdn, const char* curExpDate, CORBA::Short period, ccReg::timestamp_out exDate, CORBA::Long clientID, const char* clTRID, const char* XML, const ccReg::ExtensionList& ext);
   ccReg::Response* DomainTransfer(const char* fqdn,  const char* authInfo, CORBA::Long clientID, const char* clTRID  , const char* XML);
  
   // pro public interface
@@ -105,9 +106,6 @@ public:
   ccReg::Response* NSSetList(ccReg::Lists_out nssets, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* DomainList(ccReg::Lists_out domains, CORBA::Long clientID, const char* clTRID, const char* XML);
 
-  // testovaci fce na typ objektu
-  //  ccReg::RegObjectType getRegObjectType(const char* objectName);
-  void checkHandle(const char* handle, ccReg::CheckHandleType_out ch);
  
 private:
 char database[128]; // nazev spojeni na databazi

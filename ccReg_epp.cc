@@ -71,18 +71,33 @@ return false;
 
 }
 
-//   Methods corresponding to IDL attributes and operations
-char* ccReg_EPP_i::version()
+// ziskani cisla verze plus datum cas
+char* ccReg_EPP_i::version(ccReg::timestamp_out datetime)
 {
 char *version;
+time_t t;
+char dateStr[MAX_DATE];
+
+// casova znacka
+t = time(NULL);
+
 // char str[64];
 version =  new char[128];
 
 sprintf( version , "SVN %s BUILD %s %s" , SVERSION , __DATE__ , __TIME__ );
 LOG( NOTICE_LOG , "get version %s" , version );
 
+// aktualnidatum a cas
+// vrat casove razitko
+
+get_rfc3339_timestamp( t , dateStr  );
+datetime =  CORBA::string_dup( dateStr );
+
+
 return version;
 }
+
+
 
 
 // DISCLOSE
@@ -660,19 +675,19 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
  *
  ***********************************************************************/
 
-ccReg::Response * ccReg_EPP_i::PollRequest( CORBA::Long & msgID, CORBA::Short & count, ccReg::timestamp & qDate, CORBA::String_out mesg, CORBA::Long clientID, const char *clTRID , const char* XML )
+ccReg::Response * ccReg_EPP_i::PollRequest( CORBA::Long & msgID, CORBA::Short & count, ccReg::timestamp_out qDate, CORBA::String_out mesg, CORBA::Long clientID, const char *clTRID , const char* XML )
 {
 DB DBsql;
 char sqlString[1024];
+char dateStr[MAX_DATE];
 ccReg::Response * ret;
 int regID;
 int rows;
-
 ret = new ccReg::Response;
 
 
 //vyprazdni
-qDate = 0;
+qDate =  CORBA::string_dup( "" );
 count = 0;
 msgID = 0;
 mesg = CORBA::string_dup( "" );       // prazdna hodnota
@@ -703,7 +718,9 @@ LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s]", clientID, clTRID, ms
               if( rows > 0 )    // pokud jsou nejake zpravy ve fronte
                 {
                   count = rows;
-                  qDate = get_time_t( DBsql.GetFieldValueName( "CrDate", 0 ) );
+                  // prevede cas s postgres na rfc3339 cas s offsetem casove zony
+                  get_dateStr( dateStr , DBsql.GetFieldValueName("CrDate" , 0 ) ); 
+                  qDate =  CORBA::string_dup( dateStr );
                   msgID = atoi( DBsql.GetFieldValueName( "ID", 0 ) );
                   mesg = CORBA::string_dup( DBsql.GetFieldValueName( "message", 0 ) );
                   ret->errCode = COMMAND_ACK_MESG;      // zpravy jsou ve fronte
@@ -1274,9 +1291,9 @@ if( DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML ) )
 
 	c->handle=CORBA::string_dup( DBsql.GetFieldValueName("handle" , 0 ) ); // handle
 	c->ROID=CORBA::string_dup( DBsql.GetFieldValueName("ROID" , 0 ) ); // ROID     
-	c->CrDate= get_time_t( DBsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
-	c->UpDate= get_time_t( DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
-	c->TrDate= get_time_t( DBsql.GetFieldValueName("TrDate" , 0 ) ); // datum a cas transferu
+	c->CrDate= CORBA::string_dup( DBsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
+	c->UpDate= CORBA::string_dup( DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
+	c->TrDate= CORBA::string_dup( DBsql.GetFieldValueName("TrDate" , 0 ) ); // datum a cas transferu
 	c->Name=CORBA::string_dup( DBsql.GetFieldValueName("Name" , 0 )  ); // jmeno nebo nazev kontaktu
 	c->Organization=CORBA::string_dup( DBsql.GetFieldValueName("Organization" , 0 )); // nazev organizace
 	c->Street1=CORBA::string_dup( DBsql.GetFieldValueName("Street1" , 0 ) ); // adresa
@@ -1433,9 +1450,9 @@ c->ROID=CORBA::string_dup("");
 c->CrID=CORBA::string_dup("");    // identifikator registratora ktery vytvoril kontak
 c->UpID=CORBA::string_dup("");    // identifikator registratora ktery provedl zmeny
 c->ClID=CORBA::string_dup(""); 
-c->CrDate=0; // datum a cas vytvoreni
-c->UpDate=0; // datum a cas zmeny
-c->TrDate=0; // dattum a cas transferu
+c->CrDate=CORBA::string_dup(""); // datum a cas vytvoreni
+c->UpDate=CORBA::string_dup(""); // datum a cas zmeny
+c->TrDate=CORBA::string_dup(""); // dattum a cas transferu
 c->stat.length(0); // status
 c->Name=CORBA::string_dup(""); // jmeno nebo nazev kontaktu
 c->Organization=CORBA::string_dup(""); // nazev organizace
@@ -1861,22 +1878,20 @@ return ret;
 
 
 ccReg::Response * ccReg_EPP_i::ContactCreate( const char *handle, const ccReg::ContactChange & c, 
-                                              ccReg::timestamp & crDate, CORBA::Long clientID, const char *clTRID , const char* XML )
+                                              ccReg::timestamp_out crDate, CORBA::Long clientID, const char *clTRID , const char* XML )
 {
 DB DBsql;
-char createDate[32];
 char roid[64];
 char HANDLE[64]; // handle na velka pismena
 ccReg::Response * ret;
 int regID, id;
 int i , len;
-time_t now;
 // default
 ret = new ccReg::Response;
 ret->errCode = 0;
 ret->errors.length( 0 );
 
-crDate = 0;
+crDate = CORBA::string_dup( "" ); 
 
 
 LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s]", clientID, clTRID, handle );
@@ -1915,11 +1930,6 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                   // test zdali country code je existujici zeme
                   if( DBsql.TestCountryCode( c.CC ) )
                     {
-                      // datum vytvoreni kontaktu
-                      now = time( NULL );
-                      crDate = now;
-                      get_timestamp( now, createDate );
-
                       id = DBsql.GetSequenceID( "contact" );
                       // get  registrator ID
                       regID = DBsql.GetLoginRegistrarID( clientID );
@@ -1965,7 +1975,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                       DBsql.VALUE( id );
                       DBsql.VALUE( roid );
                       DBsql.VALUE( HANDLE );
-                      DBsql.VALUE( createDate );
+                      DBsql.VVALUE( "now" );
                       DBsql.VALUE( regID );
                       DBsql.VALUE( regID );
                       DBsql.VALUE( "{ 1 }" );   // OK status
@@ -2001,8 +2011,11 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
 
 
                       // pokud se podarilo insertovat
-                      if( DBsql.EXEC() )      //   ret->errCode = COMMAND_OK;
-                        {       //  uloz do historie
+                      if( DBsql.EXEC() )    
+                        {     
+                          // datum a cas vytvoreni
+                          crDate =  CORBA::string_dup(  DBsql.GetValueFromTable( "CONTACT", "CrDate" , "id" , id ) );
+                          //  uloz do historie
                           if( DBsql.MakeHistory() )
                             {
                               if( DBsql.SaveHistory( "Contact", "id", id ) )    // uloz zaznam
@@ -2253,9 +2266,9 @@ if( get_HANDLE( HANDLE , handle ) )
 
         n->ROID=CORBA::string_dup( DBsql.GetFieldValueName("ROID" , 0 ) ); // ROID
         n->handle=CORBA::string_dup( DBsql.GetFieldValueName("handle" , 0 ) ); // ROID
-        n->CrDate= get_time_t( DBsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
-        n->UpDate= get_time_t( DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
-        n->TrDate= get_time_t(DBsql.GetFieldValueName("TrDate" , 0 ) );  // datum a cas transferu
+        n->CrDate=CORBA::string_dup( DBsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
+        n->UpDate=CORBA::string_dup( DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
+        n->TrDate=CORBA::string_dup( DBsql.GetFieldValueName("TrDate" , 0 ) );  // datum a cas transferu
 
         if( regID == clid ) // pokud je registrator clientem obdrzi autentifikaci
            n->AuthInfoPw = CORBA::string_dup( DBsql.GetFieldValueName("AuthInfoPw" , 0 ) ); // autentifikace
@@ -2372,9 +2385,9 @@ ret->errMsg = CORBA::string_dup( "" );
 n->ROID =  CORBA::string_dup( "" ); // fqdn nazev domeny
 n->handle =  CORBA::string_dup( "" ); // handle nssetu
 n->stat.length(0); // status sequence
-n->CrDate=0; // datum vytvoreni
-n->UpDate=0; // datum zmeny
-n->TrDate=0;
+n->CrDate=CORBA::string_dup( "" ); // datum vytvoreni
+n->UpDate=CORBA::string_dup( "" ); // datum zmeny
+n->TrDate=CORBA::string_dup( "" ); // datum transferu
 n->AuthInfoPw=  CORBA::string_dup( "" ); 
 n->dns.length(0);
 n->tech.length(0);
@@ -2554,23 +2567,17 @@ return ret;
 
 ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *authInfoPw, 
                                             const ccReg::TechContact & tech, const ccReg::DNSHost & dns,
-                                            ccReg::timestamp & crDate, CORBA::Long clientID, const char *clTRID , const char* XML )
-{
-DB DBsql;
-char Array[512] , NAME[256];
-char createDate[32];
-char HANDLE[64]; // handle na velka pismena
-char roid[64];
-ccReg::Response * ret;
-int regID, id, techid;
+                                            ccReg::timestamp_out crDate, CORBA::Long clientID, const char *clTRID , const char* XML ) 
+{ 
+DB DBsql; 
+char Array[512] , NAME[256]; char createDate[32]; char HANDLE[64]; // handle na velka pismena 
+char roid[64]; ccReg::Response * ret; int regID, id, techid; 
 int i, len, j , l , seq ;
-time_t now;
-
 ret = new ccReg::Response;
 // default
 ret->errCode = 0;
 ret->errors.length( 0 );
-crDate = 0;
+crDate = CORBA::string_dup( "" );
 seq=0;
 
 LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", clientID, clTRID, handle , authInfoPw  );
@@ -2616,11 +2623,6 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
               // vytvor roid nssetu
               get_roid( roid, "N", id );
 
-              // datum a cas vytvoreni
-              now = time( NULL );
-              crDate = now;
-              get_timestamp( now, createDate );
-
 
 
               DBsql.INSERT( "NSSET" );
@@ -2636,7 +2638,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
               DBsql.VALUE( id );
               DBsql.VVALUE( roid ); // neni potreba escape
               DBsql.VVALUE( HANDLE  );
-              DBsql.VVALUE( createDate );
+              DBsql.VVALUE( "now" );
               DBsql.VALUE( regID );
               DBsql.VALUE( regID );
               DBsql.VVALUE( "{ 1 }" );   // status OK
@@ -2645,6 +2647,8 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
               // zapis nejdrive nsset 
               if( DBsql.EXEC() )
                 {
+                  // datum a cas vytvoreni
+                  crDate =  CORBA::string_dup(  DBsql.GetValueFromTable( "NSSET", "CrDate" , "id" , id ) );
 
 
                  if(  tech.length() == 0 )
@@ -3592,10 +3596,10 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
 
         status.Make(  DBsql.GetFieldValueName("status" , 0 ) ) ; // status
 
-	d->CrDate= get_time_t( DBsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
-	d->UpDate= get_time_t( DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
-	d->TrDate= get_time_t( DBsql.GetFieldValueName("TrDate" , 0 ) ); // datum a cas transferu
-	d->ExDate= get_time_t( DBsql.GetFieldValueName("ExDate" , 0 ) ); //  datum a cas expirace
+	d->CrDate= CORBA::string_dup( DBsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
+	d->UpDate= CORBA::string_dup( DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
+	d->TrDate= CORBA::string_dup( DBsql.GetFieldValueName("TrDate" , 0 ) ); // datum a cas transferu
+	d->ExDate= CORBA::string_dup( DBsql.GetFieldValueName("ExDate" , 0 ) ); //  datum a cas expirace
 
 	d->ROID=CORBA::string_dup( DBsql.GetFieldValueName("roid" , 0 )  ); // jmeno nebo nazev kontaktu
 	d->name=CORBA::string_dup( DBsql.GetFieldValueName("fqdn" , 0 )  ); // jmeno nebo nazev kontaktu
@@ -3655,7 +3659,7 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
           {    
             if( DBsql.GetSelectRows() == 1 )
               {
-                valexDate =  get_time_t( DBsql.GetFieldValueName("ExDate" , 0 ) );
+                valexDate =  CORBA::string_dup( DBsql.GetFieldValueName("ExDate" , 0 ) );
 
                 enumVal = new ccReg::ENUMValidationExtension;
                 enumVal->valExDate = valexDate ;
@@ -3707,10 +3711,10 @@ d->name=  CORBA::string_dup( "" ); // fqdn nazev domeny
 d->nsset = CORBA::string_dup( "" ); // nsset
 d->AuthInfoPw  = CORBA::string_dup( "" ); //  autentifikace
 d->stat.length(0); // status sequence
-d->UpDate=0; // datuum zmeny
-d->CrDate=0; // datum vytvoreni
-d->TrDate=0; // datum transferu
-d->ExDate=0; // datum vyprseni
+d->UpDate= CORBA::string_dup( "" ); // datuum zmeny
+d->CrDate= CORBA::string_dup( "" ); // datum vytvoreni
+d->TrDate= CORBA::string_dup( "" ); // datum transferu
+d->ExDate= CORBA::string_dup( "" ); // datum vyprseni
 d->Registrant=CORBA::string_dup( "" ); 
 d->ClID=  CORBA::string_dup( "" );    // identifikator registratora ktery vytvoril host
 d->UpID=  CORBA::string_dup( "" );    // identifikator registratora ktery zmenil zaznam
@@ -3901,12 +3905,11 @@ Status status;
 const ccReg::ENUMValidationExtension * enumVal;
 bool stat, check;
 char FQDN[64] , HANDLE[64];
-char valexpiryDate[32];
+char valexpiryDate[32]="";
 char statusString[128];
 int regID = 0, clID = 0, id, nssetid, contactid, adminid;
 int i, len, slen, j , seq , zone;
 bool remove_update_flag=false;
-time_t valExpDate = 0;
 
 ret = new ccReg::Response;
 seq=0;
@@ -3929,8 +3932,8 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
         {
           if( ext[i] >>= enumVal )
             {
-              valExpDate = enumVal->valExDate;
-              LOG( NOTICE_LOG, "enumVal %d ", enumVal->valExDate );
+              strcpy( valexpiryDate  ,  enumVal->valExDate );
+              LOG( NOTICE_LOG, "enumVal %s ",  valexpiryDate);
             }
           else
             {
@@ -4025,17 +4028,17 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                           else
                             {
                                  // test validate
-                                                     if(  TestValidityExpDate(  valExpDate  , GetZoneValPeriod( zone ) )  ==  false )
-                                                       {
-                                                             LOG( WARNING_LOG, "bad validity exp date" );
-                                                             ret->errors.length( seq +1);
-                                                             ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
-                                                             ret->errors[seq].value <<=   valExpDate;
-                                                             ret->errors[seq].reason = CORBA::string_dup( "bad valExpDate");
-                                                              seq++;
-                                                          ret->errCode = COMMAND_PARAMETR_ERROR;
+                                 if(  TestValidityExpDate(  valexpiryDate  , GetZoneValPeriod( zone ) )  ==  false )
+                                   {
+                                      LOG( WARNING_LOG, "bad validity exp date" );
+                                      ret->errors.length( seq +1);
+                                      ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
+                                      ret->errors[seq].value <<=   valexpiryDate;
+                                      ret->errors[seq].reason = CORBA::string_dup( "bad valExpDate");
+                                      seq++;
+                                      ret->errCode = COMMAND_PARAMETR_ERROR;
                                     }
-                                                else
+                              else
 
                               //  uloz do historie
                               if( DBsql.MakeHistory() )
@@ -4172,18 +4175,16 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 
                                                if( !remove_update_flag  )
                                                {
-                                              // zmena extension
-                                              if( valExpDate > 0 )
-
-                                                {
-                                                     get_timestamp( valExpDate, valexpiryDate );
+                                                  // zmena extension
+                                                   if( strlen( valexpiryDate )  > 0 )
+                                                    {
                                                      LOG( NOTICE_LOG, "change valExpDate %s ", valexpiryDate );
                                                      DBsql.UPDATE( "enumval" );
                                                      DBsql.SET( "ExDate", valexpiryDate );
                                                      DBsql.WHERE( "domainID", id );
  
                                                      if( !DBsql.EXEC() )  ret->errCode = COMMAND_FAILED; 
-                                                }
+                                                    }
                                                 }
                                             }
 
@@ -4349,7 +4350,7 @@ return ret;
  ***********************************************************************/
 
 ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Registrant, const char *nsset, const char *AuthInfoPw, CORBA::Short period,
-                                             const ccReg::AdminContact & admin, ccReg::timestamp & crDate, ccReg::timestamp & exDate, 
+                                             const ccReg::AdminContact & admin, ccReg::timestamp_out crDate, ccReg::timestamp_out  exDate, 
                                              CORBA::Long clientID, const char *clTRID,  const  char* XML , const ccReg::ExtensionList & ext )
 {
 DB DBsql;
@@ -4371,8 +4372,8 @@ seq=0;
 // default
 ret->errCode = 0;
 ret->errors.length( 0 );
-crDate = 0;
-exDate = 0;
+crDate =  CORBA::string_dup( "" );
+exDate =  CORBA::string_dup( "" );
 
 
 
@@ -4388,8 +4389,8 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
         {
           if( ext[i] >>= enumVal )
             {
-              valExpDate = enumVal->valExDate;
-              LOG( NOTICE_LOG, "enumVal %d ", enumVal->valExDate );
+              strcpy( valexpiryDate  ,  enumVal->valExDate );
+              LOG( NOTICE_LOG, "enumVal %s ",  valexpiryDate);
             }
           else
             {
@@ -4519,12 +4520,12 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                }
-            if(  TestValidityExpDate(  valExpDate  , GetZoneValPeriod( zone ) )  ==  false )
+            if(  TestValidityExpDate(  valexpiryDate , GetZoneValPeriod( zone ) )  ==  false )
               {
                   LOG( WARNING_LOG, "bad validity exp date" );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
-                  ret->errors[seq].value <<=   valExpDate;
+                  ret->errors[seq].value <<=   valexpiryDate;
                   ret->errors[seq].reason = CORBA::string_dup( "bad valExpDate");
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4576,12 +4577,9 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
                         if(  ret->errCode == 0  ) // pokud nedoslo k chybe
                         {
-                          t = time( NULL );
-                          crDate = t;   // datum a cas vytvoreni objektu
-                          exDate = expiry_time( t, period );    // datum a cas expirace o pulnoci
-                          // preved datum a cas expirace prodluz tim cas platnosti domeny
-                          get_timestamp( exDate, expiryDate );
-                          get_timestamp( crDate, createDate );
+                        //  expiry_time( expiryDate , period );    // datum a cas expirace o pulnoci
+                       // TODO zatim natvrdo nutno prepsat podle CrDate pres nasledny update  po zalozeni
+                          strcpy( expiryDate , "2008-06-08 00:00:00");
 
 
                           DBsql.INSERT( "DOMAIN" );
@@ -4603,7 +4601,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                           DBsql.VALUE( id );
                           DBsql.VVALUE( roid );
                           DBsql.VVALUE( FQDN );
-                          DBsql.VALUE( createDate );
+                          DBsql.VVALUE( "now" );
                           DBsql.VALUE( expiryDate );
                           DBsql.VALUE( regID );
                           DBsql.VALUE( regID );
@@ -4617,10 +4615,14 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                           if( DBsql.EXEC() )
                             {
 
+                                // zjisti datum a cas vytvoreni domeny
+                                crDate =  CORBA::string_dup(  DBsql.GetValueFromTable( "DOMAIN", "CrDate" , "id" , id ) );
+                                //  vrat datum expirace
+                                exDate =  CORBA::string_dup(  DBsql.GetValueFromTable( "DOMAIN", "ExDate" , "id" , id ) );
+
                               // pridej enum  extension
-                              if( valExpDate )
+                              if( strlen( valexpiryDate) > 0  )
                                 {
-                                  get_timestamp( valExpDate, valexpiryDate );
                                   DBsql.INSERT( "enumval" );
                                   DBsql.VALUE( id );
                                   DBsql.VALUE( valexpiryDate ); 
@@ -4722,19 +4724,20 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp curExpDate, CORBA::Short period, 
-                                            ccReg::timestamp & exDate, CORBA::Long clientID,
+
+ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExpDate, CORBA::Short period, 
+                                            ccReg::timestamp_out exDate, CORBA::Long clientID,
                                             const char *clTRID, const  char* XML , const ccReg::ExtensionList & ext )
 {
   DB DBsql;
   Status status;
   const ccReg::ENUMValidationExtension * enumVal;
-  char exDateStr[24], valexpiryDate[32];
+  char exDateStr[24], valexpiryDate[32]="";
   char FQDN[64]; 
   ccReg::Response * ret;
   int clid, regID, id, len, i , zone , seq;
   bool stat;
-  time_t ex = 0, t, valExpDate = 0 , now ;
+  time_t ex = 0, t,  now ;
 
   ret = new ccReg::Response;
 
@@ -4742,7 +4745,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
 // aktualni cas
    now = time(NULL);
 // default
-  exDate = 0;
+  exDate =  CORBA::string_dup( "" );
   seq = 0;
 
 // default
@@ -4753,8 +4756,9 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
   LOG( NOTICE_LOG, "DomainRenew: clientID -> %d clTRID [%s] fqdn  [%s] period %d month", clientID, clTRID, fqdn, period );
 
 
-  len = ext.length();
 
+// parse extension
+  len = ext.length();
   if( len > 0 )
     {
       LOG( NOTICE_LOG, "extension length %d", ext.length() );
@@ -4762,8 +4766,8 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
         {
           if( ext[i] >>= enumVal )
             {
-              valExpDate = enumVal->valExDate;
-              LOG( NOTICE_LOG, "enumVal %d ", valExpDate );
+              strcpy( valexpiryDate  ,  enumVal->valExDate );
+              LOG( NOTICE_LOG, "enumVal %s ",  valexpiryDate);
             }
           else
             {
@@ -4773,6 +4777,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
 
         }
     }
+
 
 
 
@@ -4821,7 +4826,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
 
               // porovnani datumu co je uvedene v databazi se zadanym datumem
               // ex timestamp se prevadi na localtime a z toho se bere datum a porovnava se rok mesic a den
-              if(  test_expiry_date( ex , curExpDate ) == false )
+/* TODO TEST              if(  test_expiry_date( ex , curExpDate ) == false )
                 {
                   LOG( WARNING_LOG, "curExpDate is not same as ExDate" );
                   ret->errors.length( seq +1);
@@ -4831,7 +4836,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                 }
-                  
+  */                
              // nastaveni defaultni periody           
              if( period == 0 ) 
                {
@@ -4850,17 +4855,18 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;                 
                }
-            if(  TestValidityExpDate(  valExpDate  , GetZoneValPeriod( zone ) )  ==  false )
-              {
-                  LOG( WARNING_LOG, "bad validity exp date" );
-                  ret->errors.length( seq +1);
-                  ret->errors[seq].code = ccReg::domainRenew_ext_valDate;
-                  ret->errors[seq].value <<=   valExpDate;
-                  ret->errors[seq].reason = CORBA::string_dup( "bad valExpDate");
-                  seq++;
-                  ret->errCode = COMMAND_PARAMETR_ERROR;
-
+             // test validate
+           if(  TestValidityExpDate(  valexpiryDate  , GetZoneValPeriod( zone ) )  ==  false )
+             {
+                 LOG( WARNING_LOG, "bad validity exp date" );
+                 ret->errors.length( seq +1);
+                 ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
+                 ret->errors[seq].value <<=   valexpiryDate;
+                 ret->errors[seq].reason = CORBA::string_dup( "bad valExpDate");
+                 seq++;
+                 ret->errCode = COMMAND_PARAMETR_ERROR;
               }
+
 
                                // zpracovani creditu
                if( DBsql.UpdateCredit(  regID ,   EPP_DomainRenew   ,    zone ,  period  )  == false )  ret->errCode =  COMMAND_BILLING_FAILURE;
@@ -4887,10 +4893,12 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
                   else
                     {
                       // preved datum a cas expirace prodluz tim cas platnosti domeny
-                      
+/* TODO                      
                       t = expiry_time( ex, period );
                       exDate = t;       // datum a cas prodlouzeni domeny
                       get_timestamp( t, exDateStr );
+*/
+                     strcpy( exDateStr , "2009-06-08 00:00:00"); 
 
                       //  uloz do historie
                       if( DBsql.MakeHistory() )
@@ -4903,9 +4911,8 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, ccReg::timestamp c
                               if( DBsql.SaveHistory( "Domain", "id", id ) )     // uloz zaznam
                                 {
 
-                                  if( valExpDate )      // zmena extension
+                                  if( strlen( valexpiryDate ) > 0  )      // zmena extension
                                     {
-                                      get_timestamp( valExpDate, valexpiryDate );
                                       LOG( NOTICE_LOG, "change valExpDate %s ", valexpiryDate );
 
                                       DBsql.UPDATE( "enumval" );
@@ -5287,7 +5294,7 @@ ccReg::Lists* ccReg_EPP_i::ListNSSet()
 {
 return ObjectList( "NSSET" , "handle" );
 }
-
+/* zrusena funkce v idl
 #define SWITCH_CONVERT(x) case Register::x : ch->handleClass = ccReg::x; break
 void
 ccReg_EPP_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
@@ -5309,7 +5316,7 @@ ccReg_EPP_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
     SWITCH_CONVERT(CH_INVALID);
   } 
 }
-
+*/
 // primitivni vypis
 ccReg::Response*  ccReg_EPP_i::FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list ,   CORBA::Long clientID, const char* clTRID, const char* XML )
 {
