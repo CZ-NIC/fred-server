@@ -550,62 +550,13 @@ sprintf(string ,  "%4d-%02d-%02d %02d:%02d:%02d" ,
 
 }
 
-// spocita cas expirace ze zadaneho casu plus period mesice
-time_t expiry_time( time_t extime ,  int period )
-{
-return extime  +  SECSPERDAY * 10 ; // 10 dni  
-
-/*
-void  expiry_datetime( char dateStr ,  int period )
-{
-
-// TODO implementace 
-strcpy( dateStr , "2008-06-08 00:00:00");
-/*
-time_t t;
-struct tm dt;
-int mon;
-
-// aktualni cas
-t  = time(NULL);
-// preved cas
-dt =  *gmtime(  &extime );
-
-// pocet mesico
-mon =  dt.tm_mon + period;
-// preved na rok
-dt.tm_year = dt.tm_year + (mon / 12 );
-// aktualni mesic
-dt.tm_mon = mon % 12;
-
-LOG( LOG_DEBUG , "expiry_time: %4d-%02d-%02d %02d:%02d:%02d" ,
-                   dt.tm_year+1900 ,  dt.tm_mon +1, dt.tm_mday ,
-                   dt.tm_hour,   dt.tm_min , dt.tm_sec);
 
 
-return timegm(&dt);
-*/
-}
-
-
-// porovnava datum co je v databazi podle datumu zadanevo jako curexdate z XML
-bool test_expiry_date( time_t dbextime , time_t curexptime  )
+// porovnava datum co je v databazi expDateStr podle datumu zadaneho jako curExpDate
+bool test_expiry_date( const char * expDateStr , const char * curExpDate ) 
 {
 return true;
-/*
-struct tm dt , cdt;
-
-// preved cas (na lokalni )
-dt = *localtime (  &dbextime );
-cdt = *gmtime(  &curexptime ); // zadany timestamp jako gmtime
-
-LOG( LOG_DEBUG , "test_expiry_date: local date %4d-%02d-%02d curExpDate %4d-%02d-%02d" ,
-                  dt.tm_year+1900 ,  dt.tm_mon +1, dt.tm_mday ,
-                  cdt.tm_year+1900 ,  cdt.tm_mon +1, cdt.tm_mday  );
-
-if(  dt.tm_year == cdt.tm_year && dt.tm_mon == cdt.tm_mon &&  dt.tm_mday == cdt.tm_mday ) return true;
-else return false;
-*/
+// TODO
 }
 
 

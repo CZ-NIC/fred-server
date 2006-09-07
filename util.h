@@ -93,11 +93,8 @@ void get_rfc3339_timestamp( time_t t , char *string);
 // prevede time_t do retezce pro SQL
 void get_timestamp( time_t t , char *string);
 
-// spocita cas expirace ze zadaneho casu plus period mesice
-time_t expiry_time( time_t extime ,  int period );
-
-// porovnava datum co je v databazi podle datumu zadanevo jako curexdate z XML prevedeneho na tim_t v GMT
-bool test_expiry_date( time_t dbextime ,   time_t curexptime );
+// porovnava datum co je v databazi podle datumu zadanevo jako curexdate z XML
+bool test_expiry_date( const char * expDateStr , const char * curExpDate );
 
 
 // zjisti velikost pole z retezce
