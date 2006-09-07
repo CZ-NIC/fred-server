@@ -1973,7 +1973,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                       DBsql.VALUE( id );
                       DBsql.VALUE( roid );
                       DBsql.VALUE( HANDLE );
-                      DBsql.VVALUE( "now" );
+                      DBsql.VALUENOW();
                       DBsql.VALUE( regID );
                       DBsql.VALUE( regID );
                       DBsql.VALUE( "{ 1 }" );   // OK status
@@ -2636,7 +2636,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
               DBsql.VALUE( id );
               DBsql.VVALUE( roid ); // neni potreba escape
               DBsql.VVALUE( HANDLE  );
-              DBsql.VVALUE( "now" );
+              DBsql.VALUENOW(); // aktualni cas current_timestamp
               DBsql.VALUE( regID );
               DBsql.VALUE( regID );
               DBsql.VVALUE( "{ 1 }" );   // status OK
@@ -4353,19 +4353,18 @@ ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Regis
 {
 DB DBsql;
 const ccReg::ENUMValidationExtension * enumVal;
-char expiryDate[32], valexpiryDate[32], createDate[32];
+char valexpiryDate[MAX_DATE];
 char roid[64] , FQDN[64] , HANDLE[64];
 ccReg::Response * ret;
 int contactid, regID, nssetid, adminid, id;
 int i, len, s, zone , seq;
 bool insert = true;
-time_t t, valExpDate;
 
 ret = new ccReg::Response;
 
-
 // default
-valExpDate = 0;
+strcpy( valexpiryDate , "" );
+
 seq=0;
 // default
 ret->errCode = 0;
@@ -4575,10 +4574,6 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
                         if(  ret->errCode == 0  ) // pokud nedoslo k chybe
                         {
-                        //  expiry_time( expiryDate , period );    // datum a cas expirace o pulnoci
-                       // TODO zatim natvrdo nutno prepsat podle CrDate pres nasledny update  po zalozeni
-                          strcpy( expiryDate , "2008-06-08 00:00:00");
-
 
                           DBsql.INSERT( "DOMAIN" );
                           DBsql.INTO( "zone" );
@@ -4599,8 +4594,8 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                           DBsql.VALUE( id );
                           DBsql.VVALUE( roid );
                           DBsql.VVALUE( FQDN );
-                          DBsql.VVALUE( "now" );
-                          DBsql.VALUE( expiryDate );
+                          DBsql.VALUENOW(); // aktualni cas current_timestamp
+                          DBsql.VALUEPERIOD(  period  ); // aktualni cas  plus interval period v mesicich
                           DBsql.VALUE( regID );
                           DBsql.VALUE( regID );
                           DBsql.VALUE( "{ 1 }" ); // status OK
@@ -4730,22 +4725,23 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
   DB DBsql;
   Status status;
   const ccReg::ENUMValidationExtension * enumVal;
-  char exDateStr[24], valexpiryDate[32]="";
+  char expDateStr[MAX_DATE], valexpiryDate[MAX_DATE];
   char FQDN[64]; 
   ccReg::Response * ret;
   int clid, regID, id, len, i , zone , seq;
   bool stat;
-  time_t ex = 0, t,  now ;
 
   ret = new ccReg::Response;
 
  
 // aktualni cas
-   now = time(NULL);
+
 // default
   exDate =  CORBA::string_dup( "" );
   seq = 0;
 
+   strcpy( expDateStr , "" );
+   strcpy( valexpiryDate , "" );
 // default
   ret->errCode = 0;
   ret->errors.length( 0 );
@@ -4818,13 +4814,13 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                 {
 
                   clid = atoi( DBsql.GetFieldValueName( "ClID", 0 ) );
-                  ex = get_time_t( DBsql.GetFieldValueName( "ExDate", 0 ) );    // datum a cas  expirace domeny
+                  strcpy( expDateStr ,  DBsql.GetFieldValueName( "ExDate", 0 ) );    // datum a cas  expirace domeny
                   DBsql.FreeSelect();
                 }
 
               // porovnani datumu co je uvedene v databazi se zadanym datumem
               // ex timestamp se prevadi na localtime a z toho se bere datum a porovnava se rok mesic a den
-/* TODO TEST              if(  test_expiry_date( ex , curExpDate ) == false )
+             if(  test_expiry_date( expDateStr , curExpDate ) == false )
                 {
                   LOG( WARNING_LOG, "curExpDate is not same as ExDate" );
                   ret->errors.length( seq +1);
@@ -4834,7 +4830,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                 }
-  */                
+  
              // nastaveni defaultni periody           
              if( period == 0 ) 
                {
@@ -4890,13 +4886,6 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                     }
                   else
                     {
-                      // preved datum a cas expirace prodluz tim cas platnosti domeny
-/* TODO                      
-                      t = expiry_time( ex, period );
-                      exDate = t;       // datum a cas prodlouzeni domeny
-                      get_timestamp( t, exDateStr );
-*/
-                     strcpy( exDateStr , "2009-06-08 00:00:00"); 
 
                       //  uloz do historie
                       if( DBsql.MakeHistory() )
@@ -4924,7 +4913,8 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                                    {
                                   // zmena platnosti domeny
                                   DBsql.UPDATE( "DOMAIN" );
-                                  DBsql.SET( "ExDate", exDateStr );
+                             // TODO     DBsql.SETPERIOD( "ExDate", exDateStr );
+                                  DBsql.SET ( "ExDate", "2010-10-10" );
                                   DBsql.WHEREID( id );
                                   if( DBsql.EXEC() ) ret->errCode = COMMAND_OK;
                                   else ret->errCode = COMMAND_FAILED;
