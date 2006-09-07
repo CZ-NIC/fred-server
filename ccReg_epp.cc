@@ -86,33 +86,95 @@ return version;
 
 
 // DISCLOSE
-//  podpora prace s  disclose parametrem pres enum definici
-ccReg::Disclose ccReg_EPP_i::get_DISCLOSE( bool d )
+/*
+ info
+A)  pokud je policy VSE ZOBRAZ, pak flag bude nastaven na DISCL_HIDE a polozky z databaze, ktere
+    maji hodnotu 'false' budou mit hodnotu 'true', zbytek 'false'. Pokud ani jedna polozka nebude
+    mit nastaveno 'true', vrati se flag DISCL_EMPTY (hodnoty polozek nejsou nepodstatny)
+
+B)  pokud je policy VSE SKRYJ, pak flag bude nastaven na DISCL_DISPLAY a polozky z databaze, ktere
+    maji hodnotu 'true' budou mit hodnotu 'true', zbytek 'false'.  Pokud ani jedna polozka nebude
+    mit nastaveno 'true', vrati se flag DISCL_EMPTY (hodnoty polozek nejsou nepodstatny)
+*/
+
+// db parametr true ci false z DB
+bool ccReg_EPP_i::get_DISCLOSE( bool db )
 {
-if( d ) return ccReg::DISCL_DISPLAY;
-else return ccReg::DISCL_HIDE;
+if( DefaultPolicy() )
+  {
+    if( db == false  )  return true;
+    else return false;
+  }
+else
+  {
+    if( db == true )  return true;
+    else return false;
+  }
+
 }
 
-char ccReg_EPP_i::set_DISCLOSE(  ccReg::Disclose d )
+/*
+1)   pokud je flag DISCL_HIDE a defaultni policy je VSE ZOBRAZ, pak se do databaze ulozi 'true'
+     pro idl polozky s hodnotou 'false' a 'false' pro idl polozky s hodnotou 'true'
+
+2)   pokud je flag DISCL_DISPLAY a defaultni policy je VSE ZOBRAZ, pak se do databaze ulozi ke vsem   polozkam 'true'
+
+3)   pokud je flag DISCL_HIDE a defaultni policy je VSE SKRYJ, pak se do databaze ulozi ke vsem   polozkam 'false'
+
+4)   pokud je flag DISCL_DISPLAY a defaultni policy je VSE SKRYJ, pak se do databaze ulozi 'true'
+     pro idl polozky s hodnotou 'true' a 'false' pro idl polozky s hodnotou 'false'
+
+5)   pokud je flag DISCL_EMPTY a defaultni policy je VSE ZOBRAZ, pak se do  databaze ulozi vsude 'true'
+6)    pokud je flag DISCL_EMPTY a defaultni policy je VSE SKRYJ, pak se do  databaze ulozi vsude 'false'
+
+update to samy jako create s tim ze pokud je flag:    DISCL_EMPTY tak se databaze neaktualizuje (bez ohledu na politiku serveru)
+*/
+
+
+// pro update
+// d parametr nastaveni disclose pri update
+char  ccReg_EPP_i::update_DISCLOSE( bool  d   ,  ccReg::Disclose flag )
 {
-switch( d )
+
+if( flag ==  ccReg::DISCL_EMPTY ) return ' '; // nic nemeni v databazi
+else return setvalue_DISCLOSE( d , flag );
+}
+
+
+
+
+// pro create
+char  ccReg_EPP_i::setvalue_DISCLOSE( bool  d   ,  ccReg::Disclose flag )
+{
+
+switch( flag )
 {
 case ccReg::DISCL_DISPLAY:
-    return 't' ;
+    if( DefaultPolicy() )  return 't'; // 2
+    else // 4
+      {
+        if( d ) return 't' ;
+         else return 'f' ;
+      }
+
 case ccReg::DISCL_HIDE:
-    return 'f' ;
-default:  
-    return ' ' ;
+     if( DefaultPolicy() )
+       {
+           // 1
+           if( d ) return 'f' ;
+           else return 't' ;
+       }
+     else  return 'f' ; // 3
+
+case ccReg::DISCL_EMPTY:
+     // pouzij policy servru
+     if( DefaultPolicy() )   return 't'; // 5
+     else  return 'f' ; // 6
 }
+
 
 }
 
-
-bool ccReg_EPP_i::test_DISCLOSE(  ccReg::Disclose d )
-{
-if( d == ccReg::DISCL_DISPLAY ) return true;
-else return false;
-}
 
 
 // ZONE
@@ -1245,12 +1307,30 @@ if( DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML ) )
          else  c->AuthInfoPw = CORBA::string_dup( "" ); // jinak prazdny retezec
 
 
-        c->DiscloseName = get_DISCLOSE(  DBsql.GetFieldBooleanValueName( "DiscloseName" , 0 ) );
+
+
+
+        // DiscloseFlag nastaveni podle defaul policy servru
+
+        if( DefaultPolicy() ) c->DiscloseFlag = ccReg::DISCL_HIDE;
+        else c->DiscloseFlag =   ccReg::DISCL_DISPLAY;
+
+
+
+
+        // nastavuje tru jen ty co se lisy od default policy pres get_DISCLOSE
+        c->DiscloseName =  get_DISCLOSE(  DBsql.GetFieldBooleanValueName( "DiscloseName" , 0 )   );
         c->DiscloseOrganization =  get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseOrganization" , 0 ) );
         c->DiscloseAddress =get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseAddress" , 0 ) );
         c->DiscloseTelephone = get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseTelephone" , 0 ) );
         c->DiscloseFax  = get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseFax" , 0 ) );
         c->DiscloseEmail = get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseEmail" , 0  ) );
+
+      // pokud neni nic nastaveno na true vrat flag empty
+      if( !c->DiscloseName && !c->DiscloseOrganization && !c->DiscloseAddress && !c->DiscloseTelephone && !c->DiscloseFax && !c->DiscloseEmail )
+               c->DiscloseFlag =   ccReg::DISCL_EMPTY;
+
+
 
 
     
@@ -1547,7 +1627,7 @@ ret->errCode = 0;
 ret->errors.length( 0 );
 
 LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", clientID, clTRID, handle );
-LOG( NOTICE_LOG, "ContactUpdate: Disclose Name %d Org %d Add %d Tel %d Fax %d Email %d" ,
+LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d Email %d" , c.DiscloseFlag ,
  c.DiscloseName  , c.DiscloseOrganization , c.DiscloseAddress , c.DiscloseTelephone , c.DiscloseFax , c.DiscloseEmail );
 
 // nacti status flagy
@@ -1688,13 +1768,15 @@ LOG( NOTICE_LOG, "ContactUpdate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
                                           DBsql.SET( "AuthInfoPw", c.AuthInfoPw ); 
 
 
+
                                           //  Disclose parametry
-                                          DBsql.SETBOOL( "DiscloseName", set_DISCLOSE( c.DiscloseName) );
-                                          DBsql.SETBOOL( "DiscloseOrganization", set_DISCLOSE( c.DiscloseOrganization ) );
-                                          DBsql.SETBOOL( "DiscloseAddress", set_DISCLOSE(  c.DiscloseAddress ) );
-                                          DBsql.SETBOOL( "DiscloseTelephone",  set_DISCLOSE(  c.DiscloseTelephone ) );
-                                          DBsql.SETBOOL( "DiscloseFax",  set_DISCLOSE( c.DiscloseFax ) );
-                                          DBsql.SETBOOL( "DiscloseEmail", set_DISCLOSE( c.DiscloseEmail ) );
+                                          DBsql.SETBOOL( "DiscloseName", update_DISCLOSE( c.DiscloseName , c.DiscloseFlag ) );
+                                          DBsql.SETBOOL( "DiscloseOrganization", update_DISCLOSE( c.DiscloseOrganization , c.DiscloseFlag ) );
+                                          DBsql.SETBOOL( "DiscloseAddress", update_DISCLOSE(  c.DiscloseAddress, c.DiscloseFlag  ) );
+                                          DBsql.SETBOOL( "DiscloseTelephone",  update_DISCLOSE(  c.DiscloseTelephone , c.DiscloseFlag ) );
+                                          DBsql.SETBOOL( "DiscloseFax",  update_DISCLOSE( c.DiscloseFax , c.DiscloseFlag ) );
+                                          DBsql.SETBOOL( "DiscloseEmail", update_DISCLOSE( c.DiscloseEmail, c.DiscloseFlag  ) );
+
                                           }
                                           // datum a cas updatu  plus kdo zmenil zanzma na konec
                                           DBsql.SSET( "UpDate", "now" );
@@ -1798,7 +1880,7 @@ crDate = 0;
 
 
 LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s]", clientID, clTRID, handle );
-LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Email %d" ,
+LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d Email %d" , c.DiscloseFlag ,
  c.DiscloseName  , c.DiscloseOrganization , c.DiscloseAddress , c.DiscloseTelephone , c.DiscloseFax , c.DiscloseEmail );
 
 
@@ -1872,13 +1954,13 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
                       if(  c.SSNtype > ccReg::EMPTY ) DBsql.INTO( "SSNtype");
                       DBsql.INTOVAL( "AuthInfoPw", c.AuthInfoPw );
 
-
-                      if( c.DiscloseName ==  ccReg::DISCL_DISPLAY ) DBsql.INTO( "DiscloseName" );
-                      if( c.DiscloseOrganization == ccReg::DISCL_DISPLAY  ) DBsql.INTO( "DiscloseOrganization" );
-                      if( c.DiscloseAddress == ccReg::DISCL_DISPLAY ) DBsql.INTO( "DiscloseAddress" );
-                      if( c.DiscloseTelephone == ccReg::DISCL_DISPLAY ) DBsql.INTO( "DiscloseTelephone" );
-                      if( c.DiscloseFax == ccReg::DISCL_DISPLAY ) DBsql.INTO( "DiscloseFax" );
-                      if( c.DiscloseEmail == ccReg::DISCL_DISPLAY )DBsql.INTO( "DiscloseEmail" );
+                      // disclose se vzdy zapisou but t nebo f
+                      DBsql.INTO( "DiscloseName" );
+                      DBsql.INTO( "DiscloseOrganization" );
+                      DBsql.INTO( "DiscloseAddress" );
+                      DBsql.INTO( "DiscloseTelephone" );
+                      DBsql.INTO( "DiscloseFax" );
+                      DBsql.INTO( "DiscloseEmail" );
 
                       DBsql.VALUE( id );
                       DBsql.VALUE( roid );
@@ -1907,13 +1989,14 @@ LOG( NOTICE_LOG, "ContactCreate: Disclose Name %d Org %d Add %d Tel %d Fax %d Em
                       if(  c.SSNtype > ccReg::EMPTY ) DBsql.VALUE(   c.SSNtype );
                       DBsql.VAL( c.AuthInfoPw  );
 
+                      // zapis disclose podle DiscloseFlag a DefaultPolicy servru
+                      DBsql.VALUE( setvalue_DISCLOSE( c.DiscloseName , c.DiscloseFlag )  );
+                      DBsql.VALUE( setvalue_DISCLOSE( c.DiscloseOrganization , c.DiscloseFlag ) );
+                      DBsql.VALUE( setvalue_DISCLOSE( c.DiscloseAddress , c.DiscloseFlag ) );
+                      DBsql.VALUE( setvalue_DISCLOSE( c.DiscloseTelephone , c.DiscloseFlag ) );
+                      DBsql.VALUE( setvalue_DISCLOSE( c.DiscloseFax , c.DiscloseFlag ) );
+                      DBsql.VALUE( setvalue_DISCLOSE( c.DiscloseEmail , c.DiscloseFlag  ) );
 
-                      if( test_DISCLOSE( c.DiscloseName ) ) DBsql.VALUE( "t" );
-                      if( test_DISCLOSE( c.DiscloseOrganization ) ) DBsql.VALUE( "t" );
-                      if( test_DISCLOSE( c.DiscloseAddress ) ) DBsql.VALUE( "t" );
-                      if( test_DISCLOSE( c.DiscloseTelephone ) ) DBsql.VALUE( "t" );
-                      if( test_DISCLOSE( c.DiscloseFax ) ) DBsql.VALUE( "t" );
-                      if( test_DISCLOSE( c.DiscloseEmail ) ) DBsql.VALUE( "t" );
 
 
 

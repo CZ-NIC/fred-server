@@ -47,10 +47,13 @@ public:
   
   char* version(); // vraceni cisla verze 
 
-  // podpora disclose
-  ccReg::Disclose  get_DISCLOSE( bool d );
-  char set_DISCLOSE(  ccReg::Disclose d );
-  bool test_DISCLOSE(  ccReg::Disclose d );
+
+  // true vse zobrazovat false vse skryt pro disclose flags
+  bool DefaultPolicy(){return true;}
+  // podpora disclose parametru
+  bool get_DISCLOSE( bool db );
+  char update_DISCLOSE( bool  d   ,  ccReg::Disclose flag );
+  char setvalue_DISCLOSE( bool  d   ,  ccReg::Disclose flag );
 
   // obecna list funkce
   ccReg::Response* FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list , CORBA::Long clientID, const char* clTRID, const char* XML);
