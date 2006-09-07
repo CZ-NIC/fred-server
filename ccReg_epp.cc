@@ -157,32 +157,32 @@ else return setvalue_DISCLOSE( d , flag );
 
 
 // pro create
-char  ccReg_EPP_i::setvalue_DISCLOSE( bool  d   ,  ccReg::Disclose flag )
+bool  ccReg_EPP_i::setvalue_DISCLOSE( bool  d   ,  ccReg::Disclose flag )
 {
 
 switch( flag )
 {
 case ccReg::DISCL_DISPLAY:
-    if( DefaultPolicy() )  return 't'; // 2
+    if( DefaultPolicy() )  return true; // 2
     else // 4
       {
-        if( d ) return 't' ;
-         else return 'f' ;
+        if( d ) return true ;
+         else return false ;
       }
 
 case ccReg::DISCL_HIDE:
      if( DefaultPolicy() )
        {
            // 1
-           if( d ) return 'f' ;
-           else return 't' ;
+           if( d ) return true ;
+           else return false ;
        }
-     else  return 'f' ; // 3
+     else  return true ; // 3
 
 case ccReg::DISCL_EMPTY:
      // pouzij policy servru
-     if( DefaultPolicy() )   return 't'; // 5
-     else  return 'f' ; // 6
+     if( DefaultPolicy() )   return true; // 5
+     else  return false ; // 6
 }
 
 
