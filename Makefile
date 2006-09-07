@@ -33,7 +33,7 @@ whois_client: $(WHOIS_CLIENT_OBJECTS)
 
 
 ccRegSK.cc ccRegDynSK.cc ccRegSK.h:
-	omniidl -bcxx -Wba $(IDLFILE)
+	omniidl -bcxx -Wba   -Wbinline $(IDLFILE)
 
 %.o: %.cc 
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS)  -c -g $<
