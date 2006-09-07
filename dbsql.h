@@ -138,6 +138,12 @@ void VALUE( const  char * value );
 void VVALUE( const char * value ); // bez escape
 void VALUE( int  value );
 void VALUE( bool value );
+
+// zadani aktualni cas
+void VALUENOW();
+// zadani aktualnic as puls interval period v mesicich
+void VALUEPERIOD( int period );
+
 // SQL SELECT funkce
 void SELECTFROM( const char *fname  , const char * table  );
 // pro funkce select field from table where field=value

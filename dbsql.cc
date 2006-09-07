@@ -1008,6 +1008,22 @@ strcat( sqlBuffer , "' );" ); // vzdy ukoncit
  
 }
 
+// zadani aktualni cas 
+void DB::VALUENOW()
+{
+VVALUE("current_timestamp" );
+}
+
+// zadani aktualnic as puls interval perido v mesicich
+void DB::VALUEPERIOD( int period )
+{
+char str[80];
+// spocitej dobu expirace 
+sprintf( str , "current_timestamp + interval\'%d month\' " , period );
+VVALUE( str  );
+}
+
+
 void DB::VVALUE( const char * value )
 {
 // nepouzivej ESCAPE
