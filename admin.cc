@@ -2,6 +2,8 @@
 #include "log.h"
 #include "util.h"
 #include "dbsql.h"
+#include "register/register.h"
+
 
 ccReg_Admin_i::ccReg_Admin_i(const std::string _database) : database(_database)
 {}
@@ -183,41 +185,25 @@ ccReg::Lists* ccReg_Admin_i::ListNSSet()
 return ObjectList( "NSSET" , "handle" );
 }
 
-/*
-ccReg::RegObjectType ccReg_Admin_i::getRegObjectType(const char* objectName)
+#define SWITCH_CONVERT(x) case Register::x : ch->handleClass = ccReg::x; break
+void
+ccReg_Admin_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
 {
-DB DBsql;
-char sqlString[128];
-int zone , id ;
-
- if( DBsql.OpenDatabase( database.c_str() ) )
-  {
-  if( ( id =  DBsql.GetNumericFromTable( "DOMAIN", "id", "fqdn", (char *) objectName ) )  > 0  )
-    {
-      zone =  DBsql.GetNumericFromTable( "DOMAIN", "zone" , "id" ,  id ) ;
-      switch( zone )
-            {
-               case ZONE_CZ:
-                              return ccReg::CZ_DOMAIN;
-               case ZONE_ENUM:
-                              return ccReg::ENUM_DOMAIN;
-               
-            }      
-    
-    }
-   else
-   {
-   if(  DBsql.GetNumericFromTable( "CONTACT", "id", "handle", (char *) objectName ) ) return ccReg::CONTACT_HANDLE;
-   else 
-        if(  DBsql.GetNumericFromTable( "NSSET", "id", "handle", (char *) objectName ) ) return ccReg::NSSET_HANDLE;
-   }
-
-    DBsql.Disconnect();  
- }
-// deafult
-return  ccReg::NONE;
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(NULL));
+  Register::CheckHandle chd;
+  r->checkHandle(handle,chd);
+  ch = new ccReg::CheckHandleType;
+  ch->newHandle = CORBA::string_dup(chd.newHandle.c_str());
+  switch (chd.handleClass) {
+    SWITCH_CONVERT(CH_ENUM_BAD_ZONE);
+    SWITCH_CONVERT(CH_ENUM); 
+    SWITCH_CONVERT(CH_DOMAIN_PART); 
+    SWITCH_CONVERT(CH_DOMAIN_BAD_ZONE); 
+    SWITCH_CONVERT(CH_DOMAIN_LONG); 
+    SWITCH_CONVERT(CH_DOMAIN);
+    SWITCH_CONVERT(CH_NSSET);
+    SWITCH_CONVERT(CH_CONTACT);
+    SWITCH_CONVERT(CH_INVALID);
+  } 
 }
-
-*/
-
  

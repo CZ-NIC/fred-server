@@ -22,8 +22,6 @@
 // prace se status flagy
 #include "status.h"
 
-#include "register/register.h"
-
 // log
 #include "log.h"
 //
@@ -5294,29 +5292,7 @@ ccReg::Lists* ccReg_EPP_i::ListNSSet()
 {
 return ObjectList( "NSSET" , "handle" );
 }
-/* zrusena funkce v idl
-#define SWITCH_CONVERT(x) case Register::x : ch->handleClass = ccReg::x; break
-void
-ccReg_EPP_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
-{
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(NULL));
-  Register::CheckHandle chd;
-  r->checkHandle(handle,chd);
-  ch = new ccReg::CheckHandleType;
-  ch->newHandle = CORBA::string_dup(chd.newHandle.c_str());
-  switch (chd.handleClass) {
-    SWITCH_CONVERT(CH_ENUM_BAD_ZONE);
-    SWITCH_CONVERT(CH_ENUM); 
-    SWITCH_CONVERT(CH_DOMAIN_PART); 
-    SWITCH_CONVERT(CH_DOMAIN_BAD_ZONE); 
-    SWITCH_CONVERT(CH_DOMAIN_LONG); 
-    SWITCH_CONVERT(CH_DOMAIN);
-    SWITCH_CONVERT(CH_NSSET);
-    SWITCH_CONVERT(CH_CONTACT);
-    SWITCH_CONVERT(CH_INVALID);
-  } 
-}
-*/
+
 // primitivni vypis
 ccReg::Response*  ccReg_EPP_i::FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list ,   CORBA::Long clientID, const char* clTRID, const char* XML )
 {
