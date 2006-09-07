@@ -18,7 +18,9 @@
 #define   SECSPERMIN 60
 #define MINSPERHOUR    60
 #define SECSPERHOUR    (SECSPERMIN * MINSPERHOUR)
+#define SECSPERDAY SECSPERHOUR * 24
 
+#define  MAX_DATE 32 // delka stringu pro datum
 // test local adres
 
 bool validateIPV4(const char *ipadd);
@@ -68,7 +70,7 @@ bool TestInetAddress(const char *address );
 // test spravnosti intervalu periody
 bool TestPeriodyInterval( int period , int min , int max );
 // test intervalu validace
-bool TestValidityExpDate( time_t val , int max );
+bool TestValidityExpDate( const char *timestamp , int max );
 
 // preveadi credit registratora na halire bez konverze na float
 long get_price( const char *priceStr );
@@ -76,8 +78,11 @@ long get_price( const char *priceStr );
 // prevadi cenu v halirich na string
 void get_priceStr(char *priceStr  , long price);
 
+// prevadi casovy string na zulu date time dle rfc3339
+void get_zulu_t(  char *dateStr , const char *string );
+
 // vraci cas v time_t  pevede SQL retezec
-time_t get_time_t(char *string );
+time_t get_time_t(const char *string );
 
 // prevede cas na timestamp dle rfc3339 s casovou zonou jako offset
 void get_rfc3339_timestamp( time_t t , char *string);

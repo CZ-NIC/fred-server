@@ -397,8 +397,11 @@ else  return false;
 }
 
 
-bool TestValidityExpDate( time_t val , int max )
+bool TestValidityExpDate( const char *timestamp , int max   )
 {
+// TODO implementace
+return true;
+/*
 time_t now , ex;
 if(  max ==  0) return true;
 else
@@ -414,7 +417,7 @@ if( val > now && val < ex ) return true;
 else return false;
 }
 }
-
+*/
 }
 
 // preveadi cenu  halire bez konverze pres float
@@ -441,8 +444,22 @@ void get_priceStr(char *priceStr  , long price)
 sprintf( priceStr , "%ld%c%02ld" , price/100 , '.' ,  price %100 );
 }
 
+// 
+void get_zulu_t(  char *dateStr , const char *string )
+{
+
+if( strcmp( string , "NULL" ) == 0 )  strcpy( dateStr , "" );
+else
+{
+strcpy(  dateStr , string );
+if( dateStr[10] == ' ' )  dateStr[10] = 'T' ; 
+strcat( dateStr , "Z" );
+}
+
+}
+
 // preveadi cas timestamp na unix time
-time_t get_time_t(char *string )
+time_t get_time_t(const char *string )
 {
 struct tm dt;
 time_t t;
@@ -530,12 +547,23 @@ sprintf(string ,  "%4d-%02d-%02d %02d:%02d:%02d" ,
 // spocita cas expirace ze zadaneho casu plus period mesice
 time_t expiry_time( time_t extime ,  int period )
 {
+return extime  +  SECSPERDAY * 10 ; // 10 dni  
+
+/*
+void  expiry_datetime( char dateStr ,  int period )
+{
+
+// TODO implementace 
+strcpy( dateStr , "2008-06-08 00:00:00");
+/*
+time_t t;
 struct tm dt;
 int mon;
 
-
+// aktualni cas
+t  = time(NULL);
 // preved cas
-dt =   *gmtime(  &extime );
+dt =  *gmtime(  &extime );
 
 // pocet mesico
 mon =  dt.tm_mon + period;
@@ -550,11 +578,15 @@ LOG( LOG_DEBUG , "expiry_time: %4d-%02d-%02d %02d:%02d:%02d" ,
 
 
 return timegm(&dt);
+*/
 }
+
 
 // porovnava datum co je v databazi podle datumu zadanevo jako curexdate z XML
 bool test_expiry_date( time_t dbextime , time_t curexptime  )
 {
+return true;
+/*
 struct tm dt , cdt;
 
 // preved cas (na lokalni )
@@ -567,6 +599,7 @@ LOG( LOG_DEBUG , "test_expiry_date: local date %4d-%02d-%02d curExpDate %4d-%02d
 
 if(  dt.tm_year == cdt.tm_year && dt.tm_mon == cdt.tm_mon &&  dt.tm_mday == cdt.tm_mday ) return true;
 else return false;
+*/
 }
 
 
