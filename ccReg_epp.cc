@@ -1241,6 +1241,7 @@ DB DBsql;
 Status status;
 ccReg::Response *ret;
 char HANDLE[64]; // handle na velka pismena
+char dateStr[MAX_DATE];
 int id , clid , crid , upid , regID;
 int actionID=0 , ssn ;
 int len , i  , s ;
@@ -1289,9 +1290,12 @@ if( DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML ) )
 
 	c->handle=CORBA::string_dup( DBsql.GetFieldValueName("handle" , 0 ) ); // handle
 	c->ROID=CORBA::string_dup( DBsql.GetFieldValueName("ROID" , 0 ) ); // ROID     
-	c->CrDate= CORBA::string_dup( DBsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
-	c->UpDate= CORBA::string_dup( DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
-	c->TrDate= CORBA::string_dup( DBsql.GetFieldValueName("TrDate" , 0 ) ); // datum a cas transferu
+        convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("CrDate" , 0 ) ); // datum a cas vytvoreni
+	c->CrDate= CORBA::string_dup( dateStr );
+	convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
+        c->UpDate= CORBA::string_dup( dateStr ); 
+	convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("TrDate" , 0 ) ); // datum a cas transferu
+        c->TrDate= CORBA::string_dup( dateStr );
 	c->Name=CORBA::string_dup( DBsql.GetFieldValueName("Name" , 0 )  ); // jmeno nebo nazev kontaktu
 	c->Organization=CORBA::string_dup( DBsql.GetFieldValueName("Organization" , 0 )); // nazev organizace
 	c->Street1=CORBA::string_dup( DBsql.GetFieldValueName("Street1" , 0 ) ); // adresa
@@ -2223,6 +2227,7 @@ DB DBsql;
 Status status;
 char HANDLE[64];
 char  adres[1042] , adr[128] ;
+char dateStr[MAX_DATE];
 ccReg::Response *ret;
 int clid , crid , upid , nssetid , regID;
 int i , j  ,ilen , len , s ;
@@ -2264,9 +2269,12 @@ if( get_HANDLE( HANDLE , handle ) )
 
         n->ROID=CORBA::string_dup( DBsql.GetFieldValueName("ROID" , 0 ) ); // ROID
         n->handle=CORBA::string_dup( DBsql.GetFieldValueName("handle" , 0 ) ); // ROID
-        n->CrDate=CORBA::string_dup( DBsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
-        n->UpDate=CORBA::string_dup( DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
-        n->TrDate=CORBA::string_dup( DBsql.GetFieldValueName("TrDate" , 0 ) );  // datum a cas transferu
+        convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("CrDate" , 0 ) ); // datum a cas vytvoreni
+        n->CrDate= CORBA::string_dup( dateStr );
+        convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
+        n->UpDate= CORBA::string_dup( dateStr );
+        convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("TrDate" , 0 ) ); // datum a cas transferu
+        n->TrDate= CORBA::string_dup( dateStr );
 
         if( regID == clid ) // pokud je registrator clientem obdrzi autentifikaci
            n->AuthInfoPw = CORBA::string_dup( DBsql.GetFieldValueName("AuthInfoPw" , 0 ) ); // autentifikace
@@ -3526,6 +3534,7 @@ ccReg::timestamp valexDate;
 ccReg::ENUMValidationExtension *enumVal;
 ccReg::Response *ret;
 char FQDN[64];
+char dateStr[64];
 int id , clid , crid ,  upid , regid ,nssetid , regID , zone;
 int i , len ;
 
@@ -3594,10 +3603,15 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
 
         status.Make(  DBsql.GetFieldValueName("status" , 0 ) ) ; // status
 
-	d->CrDate= CORBA::string_dup( DBsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas vytvoreni
-	d->UpDate= CORBA::string_dup( DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
-	d->TrDate= CORBA::string_dup( DBsql.GetFieldValueName("TrDate" , 0 ) ); // datum a cas transferu
-	d->ExDate= CORBA::string_dup( DBsql.GetFieldValueName("ExDate" , 0 ) ); //  datum a cas expirace
+        convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("CrDate" , 0 ) ); // datum a cas vytvoreni
+        d->CrDate= CORBA::string_dup( dateStr );
+        convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
+        d->UpDate= CORBA::string_dup( dateStr );
+        convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("TrDate" , 0 ) ); // datum a cas transferu
+        d->TrDate= CORBA::string_dup( dateStr );
+        convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("ExDate" , 0 ) ); // datum a cas expirace
+        d->ExDate= CORBA::string_dup( dateStr );
+
 
 	d->ROID=CORBA::string_dup( DBsql.GetFieldValueName("roid" , 0 )  ); // jmeno nebo nazev kontaktu
 	d->name=CORBA::string_dup( DBsql.GetFieldValueName("fqdn" , 0 )  ); // jmeno nebo nazev kontaktu

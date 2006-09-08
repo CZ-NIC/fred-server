@@ -497,6 +497,16 @@ return t;
 
 }
 
+void convert_rfc3339_timestamp( char *dateStr , const char *string )
+{
+time_t t;
+
+t =  get_time_t( string );
+if( t <= 0 ) strcpy( dateStr , "" );
+// preved vstupni string a vrat rfc3339 date time s casovou zonou
+else get_rfc3339_timestamp(  t , dateStr );
+
+}
 
 void get_rfc3339_timestamp( time_t t , char *string)
 {
@@ -549,6 +559,8 @@ sprintf(string ,  "%4d-%02d-%02d %02d:%02d:%02d" ,
                   dt->tm_hour,   dt->tm_min , dt->tm_sec);
 
 }
+
+
 
 
 
