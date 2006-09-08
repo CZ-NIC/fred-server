@@ -54,7 +54,7 @@ public:
   // podpora disclose parametru
   bool get_DISCLOSE( bool db );
   char update_DISCLOSE( bool  d   ,  ccReg::Disclose flag );
-  char setvalue_DISCLOSE( bool  d   ,  ccReg::Disclose flag );
+  bool setvalue_DISCLOSE( bool  d   ,  ccReg::Disclose flag );
 
   // obecna list funkce
   ccReg::Response* FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list , CORBA::Long clientID, const char* clTRID, const char* XML);
