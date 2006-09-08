@@ -555,8 +555,14 @@ sprintf(string ,  "%4d-%02d-%02d %02d:%02d:%02d" ,
 // porovnava datum co je v databazi expDateStr podle datumu zadaneho jako curExpDate
 bool test_expiry_date( const char * expDateStr , const char * curExpDate ) 
 {
-return true;
-// TODO
+int eyear , emonth , emday;
+int cyear , cmonth , cmday;
+
+sscanf( expDateStr , "%4d-%02d-%02d" , &eyear , &emonth , &emday );
+sscanf( curExpDate , "%4d-%02d-%02d" , &cyear , &cmonth , &cmday );
+// porovnani datumu 
+if( eyear == cyear  &&  emonth == cmonth && emday == cmday )return true;
+else return false;
 }
 
 
