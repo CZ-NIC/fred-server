@@ -150,7 +150,12 @@ char  ccReg_EPP_i::update_DISCLOSE( bool  d   ,  ccReg::Disclose flag )
 {
 
 if( flag ==  ccReg::DISCL_EMPTY ) return ' '; // nic nemeni v databazi
-else return setvalue_DISCLOSE( d , flag );
+else 
+ {
+     if(  setvalue_DISCLOSE( d , flag ) ) return 't' ;
+     else return 'f' ;
+  }
+
 }
 
 
