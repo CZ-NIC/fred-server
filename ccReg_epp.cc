@@ -174,8 +174,8 @@ case ccReg::DISCL_HIDE:
      if( DefaultPolicy() )
        {
            // 1
-           if( d ) return true ;
-           else return false ;
+           if( d ) return false ;
+           else return true ;
        }
      else  return true ; // 3
 
