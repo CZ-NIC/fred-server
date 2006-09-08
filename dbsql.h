@@ -123,6 +123,8 @@ void SETS( const char *fname , const char * value , bool esc );
 void SET( const  char *fname , int   value );
 void SET( const  char *fname , bool  value );
 void SETBOOL( const char *fname , char c );
+void SETEXDATE( int period ) ; //nastavi ExpDate pres interval
+
 void WHERE( const  char *fname , const  char * value );
 void WHERE( const  char *fname , int   value );
 void WHEREOPP(  const  char *op ,  const  char *fname , const  char *p  , const  char * value );
@@ -143,6 +145,8 @@ void VALUE( bool value );
 void VALUENOW();
 // zadani aktualnic as puls interval period v mesicich
 void VALUEPERIOD( int period );
+// zadani null values
+void VALUENULL();
 
 // SQL SELECT funkce
 void SELECTFROM( const char *fname  , const char * table  );

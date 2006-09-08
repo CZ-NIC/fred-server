@@ -870,6 +870,8 @@ SQLCat(  numStr );
 SQLCat( " ," );
 }
 
+
+
 void DB::SET( const char *fname , bool  value )
 {
 
@@ -901,6 +903,17 @@ SQLCat( " ," );
 
 }
 
+//nastavi ExpDate
+void DB::SETEXDATE( int period )
+{
+char str[80];
+
+SQLCat(" ExDate=");
+// spocitej dobu expirace
+sprintf( str , "current_timestamp + interval\'%d month\' " , period );
+SQLCat( str );
+SQLCat( " ," );
+}
 void DB::WHERE(const char *fname , const char * value )
 {
   if( SQLTestEnd( ',' ) ||  SQLTestEnd( ';' ) ) SQLDelEnd();  // vymaz posledni znak
@@ -1016,6 +1029,11 @@ void DB::VALUENOW()
 VALUES("current_timestamp" , false , false );
 }
 
+// zadani null values
+void DB::VALUENULL()
+{
+VALUES("NULL" , false , false );
+}
 // zadani aktualnic as puls interval perido v mesicich
 void DB::VALUEPERIOD( int period )
 {
