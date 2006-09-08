@@ -971,7 +971,7 @@ if( strlen( value ) ) VALUE( value );
 }
 
 
-void DB::VALUES( const char * value  , bool esc )
+void DB::VALUES( const char * value  , bool esc , bool amp )
 {
 int len ;
 
@@ -997,21 +997,23 @@ else
 
 }
 
-SQLCat( " '" );
+
+if( amp ) SQLCat( " '" );
+else SQLCat( " " );
 
 // esacepe
 if( esc) SQLCatEscape(  value );
 else  SQLCat( value );
 
-
-strcat( sqlBuffer , "' );" ); // vzdy ukoncit
+if( amp ) SQLCat( "'");
+strcat( sqlBuffer , " );" ); // vzdy ukoncit
  
 }
 
 // zadani aktualni cas 
 void DB::VALUENOW()
 {
-VVALUE("current_timestamp" );
+VALUES("current_timestamp" , false , false );
 }
 
 // zadani aktualnic as puls interval perido v mesicich
@@ -1020,34 +1022,34 @@ void DB::VALUEPERIOD( int period )
 char str[80];
 // spocitej dobu expirace 
 sprintf( str , "current_timestamp + interval\'%d month\' " , period );
-VVALUE( str  );
+VALUES( str , false , false );
 }
 
 
 void DB::VVALUE( const char * value )
 {
 // nepouzivej ESCAPE
-VALUES( value , false );
+VALUES( value , false , true);
 }
 
 void DB::VALUE( const char * value )
 {
 // pouzij ESCAPE 
-VALUES( value , true ); 
+VALUES( value , true , true ); 
 }
 
 void DB::VALUE( int  value )
 {
 char numStr[16];
 sprintf( numStr , "%d" ,  value );
-VALUES( numStr , false ); // bez ESC
+VALUES( numStr , false , false ); // bez ESC
 }
 
 void DB::VALUE( bool  value )
 {
 // bez ESC
-if( value ) VALUES( "t" , false );
-else VALUES( "f" , false );
+if( value ) VALUES( "t" , false , true);
+else VALUES( "f" , false , true );
 }
 
 

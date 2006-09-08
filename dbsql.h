@@ -133,7 +133,7 @@ void INTO(const  char *fname);
 void INTOVAL(const  char *fname , const char * value );
 void VAL( const  char * value);
 void VALUESC( const char * value );
-void VALUES( const char * value  , bool esc );
+void VALUES( const char * value  , bool esc , bool amp); // pouzivat esc sequence a uvozovat do ampersandu
 void VALUE( const  char * value );
 void VVALUE( const char * value ); // bez escape
 void VALUE( int  value );
