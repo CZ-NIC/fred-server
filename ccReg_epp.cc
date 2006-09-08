@@ -4600,7 +4600,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                           DBsql.VALUE( regID );
                           DBsql.VALUE( "{ 1 }" ); // status OK
                           DBsql.VALUE( contactid );
-                          if( nssetid == 0 )  DBsql.VALUE( "NULL" ); // domena bez nssetu
+                          if( nssetid == 0 )   DBsql.VALUENULL(); // domena bez nssetu zapsano NULL
                           else DBsql.VALUE( nssetid );
                           DBsql.VAL(  AuthInfoPw);   
 
@@ -4906,18 +4906,23 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                                       DBsql.SET( "ExDate", valexpiryDate );
                                       DBsql.WHERE( "domainID", id );
 
-                                      if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;
+                                      if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;                                     
                                     }
 
                                    if( ret->errCode == 0 ) // pokud je OK
                                    {
-                                  // zmena platnosti domeny
-                                  DBsql.UPDATE( "DOMAIN" );
-                             // TODO     DBsql.SETPERIOD( "ExDate", exDateStr );
-                                  DBsql.SET ( "ExDate", "2010-10-10" );
-                                  DBsql.WHEREID( id );
-                                  if( DBsql.EXEC() ) ret->errCode = COMMAND_OK;
-                                  else ret->errCode = COMMAND_FAILED;
+                                     // zmena platnosti domeny
+                                     DBsql.UPDATE( "DOMAIN" );                                     
+                                     DBsql.SETEXDATE( period );
+                                     DBsql.WHEREID( id );
+                                     if( DBsql.EXEC() ) 
+                                       {
+                                           // vraceni nastaveneho  ExDate datum expirace
+                                           exDate =  CORBA::string_dup(  DBsql.GetValueFromTable( "DOMAIN", "ExDate" , "id" , id ) );
+                                           ret->errCode = COMMAND_OK;
+                                       
+                                       }
+                                     else ret->errCode = COMMAND_FAILED;
                                   }
                                 }
                             }
