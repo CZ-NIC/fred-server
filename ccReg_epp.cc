@@ -2714,6 +2714,32 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                       }
                     }
 
+                  if(  dns.length() < 2  ) // musi zadat minimalne dva dns hosty
+                    {
+                      if( dns.length() == 2 )
+                        {
+                          LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s"  , (const char *)  dns[i].fqdn   );    
+                          ret->errors.length( seq +1 );
+                          ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
+                          ret->errors[seq].value <<= CORBA::string_dup( dns[i].fqdn   );
+                          ret->errors[seq].reason = CORBA::string_dup( "unknown tech contact" );
+                          seq++;
+                          ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
+                        }
+                      else
+                        {
+                          LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s"  , (const char *)  dns[i].fqdn   );
+                          ret->errors.length( seq +1 );
+                          ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
+                          ret->errors[seq].value <<= CORBA::string_dup( "dns host"  );
+                          ret->errors[seq].reason = CORBA::string_dup( "not any DNS host" );
+                          seq++;
+                          ret->errCode = COMMAND_PARAMETR_ERROR;
+                        }
+ 
+                    }
+                  else
+
                   // zapis do tabulky hostu
                   for( i = 0; i < dns.length() ; i++ )
                     {
@@ -3293,7 +3319,7 @@ if( DBsql.OpenDatabase( database ) )
                                                 hostNum = DBsql.GetNSSetNum( id );
                                                 LOG(NOTICE_LOG, "NSSetUpdate:  hostNum %d" , hostNum );
 
-                                                if( hostNum ==  0 )
+                                                if( hostNum <=  2 ) // musi minimalne dva DNS hosty zustat
                                                   {
                                                     for( i = 0; i < dns_rem.length(); i++ )
                                                       {
