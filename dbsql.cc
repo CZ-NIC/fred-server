@@ -250,7 +250,7 @@ return lang;
 }
 
 // zjistuje pocet hostu pro dany nsset
-int DB::GetNSSetNum( int nssetID )
+int DB::GetNSSetHosts( int nssetID )
 {
 char sqlString[128];
 int num=0;
@@ -266,6 +266,25 @@ if( ExecSelect( sqlString ) )
 
 return num;
 }
+
+// zjistuje pocet  tech pro dany nsset
+int DB::GetNSSetContacts( int nssetID )
+{
+char sqlString[128];
+int num=0;
+
+sprintf( sqlString , "SELECT * FROM nsset_contact_map  WHERE nssetID=%d;" , nssetID );
+
+if( ExecSelect( sqlString ) )
+  {
+     num =  GetSelectRows();
+     LOG( SQL_LOG , " nsset_contact_map  num %d"  , num );
+     FreeSelect();
+  }
+
+return num;
+}
+
 
 /*
 char *  DB::GetStatusString( int status )

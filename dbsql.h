@@ -67,8 +67,9 @@ int CheckDomain( const char *fqdn );
 // vraci ID hostu
 int CheckHost(  const char *fqdn , int nssetID );
 // vraci pocet nssetu
-int GetNSSetNum( int nssetID );
-
+int GetNSSetHosts( int nssetID );
+// zjistuje pocet  tech pro dany nsset
+int GetNSSetContacts( int nssetID );
 
 
 // vyssi funkce na vraceni value
