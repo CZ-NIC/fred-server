@@ -25,8 +25,8 @@
 // vygeneruje nahodne heslo delky len obsahujici znaky [a-z] [A-Z] a [0-0]
 void random_pass(char *str );
 
-// test local adres
-
+// test inet adres
+bool validateIPV6(const char *ipadd);
 bool validateIPV4(const char *ipadd);
 
 // test ip adres

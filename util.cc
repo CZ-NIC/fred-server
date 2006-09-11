@@ -32,6 +32,17 @@ for( i = 0 ; i < len ;  )
  str[i] = 0 ; // ukocit
 }
 
+bool validateIPV6(const char *ipadd)
+{
+
+// loop back
+if( strcmp( ipadd ,"::1" ) == 0 )  return false;
+
+// TODO
+
+return true;
+}
+
 bool validateIPV4(const char *ipadd)
 {
         unsigned b1, b2, b3, b4;
@@ -40,6 +51,8 @@ bool validateIPV4(const char *ipadd)
         rc = sscanf(ipadd, "%3u.%3u.%3u.%3u",  &b1, &b2, &b3, &b4);
         if (rc == 4 )
          {
+           if( b1 == 0 &&  b2  == 0 && b3  == 0 && b4  == 0 ) return false; 
+           if( b1 == 1 &&  b2  == 1 && b3  == 1 && b4  == 1 ) return false; 
            if ( (b1 | b2 | b3 | b4) > 255 ) return false; // max
            if (strspn(ipadd, "0123456789.") < strlen(ipadd)) return false;
 
@@ -64,7 +77,7 @@ struct sockaddr_in6  a6;
 if( inet_pton(AF_INET,  src, &a4.sin_addr) == 0 )
 // test IPV6
 {
-  if( inet_pton(AF_INET6,  src, &a6.sin6_addr)  ) return IPV6;
+  if( inet_pton(AF_INET6,  src, &a6.sin6_addr)  )  if( validateIPV6( src ) )return IPV6;
   // TODO local adres for ipv6
 }
 else  if( validateIPV4( src ) ) return IPV4;  // validate for local adres
