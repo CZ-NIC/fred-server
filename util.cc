@@ -36,7 +36,7 @@ bool validateIPV6(const char *ipadd)
 {
 
 // loop back
-if( strcmp( ipadd ,"::1" ) == 0 )  return false;
+if( strncmp( ipadd ,"::"  , 2 ) == 0 )  return false;
 
 // TODO
 
