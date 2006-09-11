@@ -3380,7 +3380,7 @@ if( DBsql.OpenDatabase( database ) )
                                                 hostNum = DBsql.GetNSSetHosts( id );
                                                 LOG(NOTICE_LOG, "NSSetUpdate:  hostNum %d" , hostNum );
 
-                                                if( hostNum <=  2 ) // musi minimalne dva DNS hosty zustat
+                                                if( hostNum <  2 ) // musi minimalne dva DNS hosty zustat
                                                   {
                                                     for( i = 0; i < dns_rem.length(); i++ )
                                                       {
