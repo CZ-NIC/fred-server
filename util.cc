@@ -14,6 +14,24 @@
 #include "log.h"
 
 
+
+// vygeneruje nahodne heslo delky len obsahujici znaky [a-z] [A-Z] a [0-0]
+void random_pass(char *str )
+{
+int len=PASS_LEN;
+int i ;
+char c;
+
+for( i = 0 ; i < len ;  )
+{
+     c = 32+(int) (96.0*rand()/(RAND_MAX+1.0));
+
+  if(  isalnum(c ) )  {    str[i] = c ; i ++ ; }
+
+}
+ str[i] = 0 ; // ukocit
+}
+
 bool validateIPV4(const char *ipadd)
 {
         unsigned b1, b2, b3, b4;

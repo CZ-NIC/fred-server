@@ -21,6 +21,10 @@
 #define SECSPERDAY SECSPERHOUR * 24
 
 #define  MAX_DATE 32 // delka stringu pro datum
+#define PASS_LEN 8 // delka hesla
+// vygeneruje nahodne heslo delky len obsahujici znaky [a-z] [A-Z] a [0-0]
+void random_pass(char *str );
+
 // test local adres
 
 bool validateIPV4(const char *ipadd);

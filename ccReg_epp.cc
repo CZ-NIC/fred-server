@@ -2090,6 +2090,7 @@ ccReg::Response* ccReg_EPP_i::ContactTransfer(const char* handle, const char* au
 ccReg::Response *ret;
 DB DBsql;
 char HANDLE[64];
+char pass[PASS_LEN+1];
 Status status;
 int regID=0 , clID=0 , id , contactid;
 
@@ -2159,11 +2160,14 @@ if( DBsql.BeginAction( clientID , EPP_ContactTransfer ,  clTRID , XML  ) )
           if( DBsql.SaveHistory( "CONTACT" , "id" , id ) ) // uloz zaznam
            { 
 
+                // pri prevodu autogeneruj nove heslo
+                random_pass(  pass  );
 
                 // zmena registratora
                 DBsql.UPDATE( "CONTACT");
                 DBsql.SSET( "TrDate" , "now" );
-                DBsql.SET( "clID" , regID );
+                DBsql.SSET( "AuthInfoPw" , pass );
+                DBsql.SET( "ClID" , regID );
                 DBsql.WHEREID( id ); 
                 if(   DBsql.EXEC() )  ret->errCode = COMMAND_OK; // nastavit OK                                  
                 else  ret->errCode = COMMAND_FAILED;
@@ -3477,6 +3481,7 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(const char* handle, const char* auth
 {
 ccReg::Response *ret;
 DB DBsql;
+char pass[PASS_LEN+1];
 char HANDLE[64];
 Status status;
 int regID=0 , clID=0 , id , contactid;
@@ -3552,10 +3557,14 @@ if( DBsql.BeginAction( clientID , EPP_NSsetTransfer ,  clTRID , XML  ) )
            { 
 
 
+                // pri prevodu autogeneruj nove heslo
+                random_pass(  pass  );
+
                 // zmena registratora
                 DBsql.UPDATE( "NSSET");
                 DBsql.SSET( "TrDate" , "now" );
-                DBsql.SET( "clID" , regID );
+                DBsql.SSET( "AuthInfoPw" , pass );
+                DBsql.SET( "ClID" , regID );
                 DBsql.WHEREID( id ); 
                 if(   DBsql.EXEC() )  ret->errCode = COMMAND_OK; // nastavit OK                                  
                 else  ret->errCode = COMMAND_FAILED;
@@ -5087,6 +5096,7 @@ ccReg::Response * ccReg_EPP_i::DomainTransfer( const char *fqdn, const char *aut
 {
 ccReg::Response * ret;
 DB DBsql;
+char pass[PASS_LEN+1];
 char FQDN[64];
 Status status;
 int regID = 0, clID = 0, id , zone;  //   registrantid , contactid;
@@ -5172,9 +5182,13 @@ if( DBsql.BeginTransaction() )
 
                               if( DBsql.SaveHistory( "Domain", "id", id ) )     // uloz zaznam
                                 {
+                                  // pri prevodu autogeneruj nove heslo
+                                  random_pass(  pass  );
+
                                   // zmena registratora
                                   DBsql.UPDATE( "DOMAIN" );
                                   DBsql.SSET( "TrDate", "now" );
+                                  DBsql.SSET( "AuthInfoPw" , pass );
                                   DBsql.SET( "ClID", regID );
                                   DBsql.WHEREID( id );
                                   if( DBsql.EXEC() ) ret->errCode = COMMAND_OK;  // nastavit OK                                  
