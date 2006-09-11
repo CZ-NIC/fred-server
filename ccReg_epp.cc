@@ -2623,7 +2623,155 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
         }
         else                  // pokud nexistuje 
        {
+             // Test tech kontaktu 
 
+                 if(  tech.length() == 0 )
+                   {
+                      LOG( WARNING_LOG, "NSSetCreate: not any tech Contact "  );
+                      ret->errors.length( seq +1 );
+                      ret->errors[seq].code = ccReg::nssetCreate_tech;
+                      ret->errors[seq].value <<= CORBA::string_dup( "tech contact"  );
+                      ret->errors[seq].reason = CORBA::string_dup( "not any tech contact" );
+                      seq++;
+                      ret->errCode = COMMAND_PARAMETR_MISSING ; // musi byt alespon jeden nsset;
+                   }
+                 else
+                 {
+                 
+                  // zapis technicke kontakty 
+                  for( i = 0; i <  tech.length() ;  i++ )
+                    {
+
+                      // preved handle na velka pismena
+                      if( get_HANDLE( HANDLE , tech[i] ) == false )  // spatny format handlu
+                        {
+                          LOG( WARNING_LOG, "NSSetCreate: unknown tech Contact " , (const char *)  tech[i] );
+                          ret->errors.length( seq +1 );
+                          ret->errors[seq].code = ccReg::nssetCreate_tech;
+                          ret->errors[seq].value <<= CORBA::string_dup(  tech[i] );
+                          ret->errors[seq].reason = CORBA::string_dup( "unknown tech contact" );
+                          seq++;
+                          ret->errCode = COMMAND_PARAMETR_ERROR;
+                        }
+                      else
+                        { 
+                          techid = DBsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE );
+                          if( techid == 0 )
+                          {
+                          LOG( WARNING_LOG, "NSSetCreate: unknown tech Contact " , (const char *)  tech[i]  );                          
+                          ret->errors.length( seq +1 );
+                          ret->errors[seq].code = ccReg::nssetCreate_tech;
+                          ret->errors[seq].value <<= CORBA::string_dup(  tech[i] );
+                          ret->errors[seq].reason = CORBA::string_dup( "unknown tech contact" );
+                          seq++;                                 
+                          // TODO error value 
+                          ret->errCode = COMMAND_PARAMETR_ERROR;
+                          }
+                        }
+                    }
+
+                  }
+         
+           LOG( DEBUG_LOG ,  "NSSetCreate:  dns.length %d" , dns.length() );
+             // test DNS hostu
+               if(  dns.length() < 2  ) // musi zadat minimalne dva dns hosty
+                 {
+                 
+                      if( dns.length() == 1 )
+                        {
+                          LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s"  , (const char *)  dns[0].fqdn   );    
+                          ret->errors.length( seq +1 );
+                          ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
+                          ret->errors[seq].value <<= CORBA::string_dup( dns[0].fqdn   );
+                          ret->errors[seq].reason = CORBA::string_dup( "minimal two dns host set one" );
+                          seq++;
+                          ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
+                        }
+                      else
+                        {
+                          LOG( WARNING_LOG, "NSSetCreate: minimal two dns host not any DNS host"     );
+                          ret->errors.length( seq +1 );
+                          ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
+                          ret->errors[seq].value <<= CORBA::string_dup( "not any dns host"  );
+                          ret->errors[seq].reason = CORBA::string_dup( "not any DNS host sets" );
+                          seq++;
+                          ret->errCode = COMMAND_PARAMETR_ERROR;
+                        }
+ 
+                  }
+                  else
+                  {
+                  // test dns hostu
+                  for( i = 0; i < dns.length() ; i++ )
+                    {
+     
+                      LOG( DEBUG_LOG , "NSSetCreate: test host %s" ,  (const char *)  dns[i].fqdn  );
+                      // preved sequenci adres
+                      for( j = 0; j < dns[i].inet.length(); j++ )
+                        {
+                           LOG( DEBUG_LOG , "NSSetCreate: test inet[%d] = %s " , j ,   (const char *) dns[i].inet[j]   );
+                          if( TestInetAddress( dns[i].inet[j] )  == false )
+                            {
+                                  LOG( WARNING_LOG, "NSSetCreate: bad host address %s " , (const char *) dns[i].inet[j]  );
+                                  ret->errors.length( seq +1 );
+                                  ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
+                                  ret->errors[seq].value <<= CORBA::string_dup(   dns[i].inet[j]  );
+                                  ret->errors[seq].reason = CORBA::string_dup( "bad host address" );
+                                  seq++;
+                                  ret->errCode = COMMAND_PARAMETR_ERROR;
+                            }
+
+                        }
+
+
+
+                      // test DNS hostu
+                     if( TestDNSHost( dns[i].fqdn ) )
+                      {
+                       LOG( NOTICE_LOG ,  "NSSetCreate: test DNS Host %s",   (const char *)  dns[i].fqdn       );
+
+                       convert_hostname(  NAME , dns[i].fqdn );
+ 
+
+ 
+                        if( getZone( dns[i].fqdn  ) == 0   && dns[i].inet.length() > 0 ) // neni v definovanych zonach a obsahuje zaznam ip adresy
+                          {
+                            for( j = 0 ; j < dns[i].inet.length() ; j ++ )
+                               {
+
+                                    LOG( WARNING_LOG, "NSSetCreate:  ipaddr  glue not allowed %s " , (const char *) dns[i].inet[j]   );
+                                    ret->errors.length( seq +1 );
+                                    ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
+                                    ret->errors[seq].value <<= CORBA::string_dup(   dns[i].inet[j]  ); // staci vratit prvni zaznam
+                                    ret->errors[seq].reason = CORBA::string_dup( "not glue ipaddr allowed" );
+                                    seq++;
+                                }
+                                    ret->errCode = COMMAND_PARAMETR_ERROR;
+ 
+                           }
+
+                                                    
+                        }
+                       else 
+                          {
+                                  LOG( WARNING_LOG, "NSSetCreate: bad host name %s " , (const char *)  dns[i].fqdn  );
+                                  ret->errors.length( seq +1 );
+                                  ret->errors[seq].code = ccReg::nssetCreate_ns_name;
+                                  ret->errors[seq].value <<= CORBA::string_dup(  dns[i].fqdn  );
+                                  ret->errors[seq].reason = CORBA::string_dup( "bad host name" );
+                                  seq++;
+                                  // TODO error value
+                                  ret->errCode = COMMAND_PARAMETR_ERROR;
+
+                          }
+
+                       }
+ 
+                    }
+                  }
+
+            if( ret->errCode == 0 )
+            {
               // get  registrator ID
               regID = DBsql.GetLoginRegistrarID( clientID );
 
@@ -2634,7 +2782,8 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
               // vytvor roid nssetu
               get_roid( roid, "N", id );
 
-
+              // preved znova nsset handle
+              get_NSSETHANDLE( HANDLE , handle );
 
               DBsql.INSERT( "NSSET" );
               DBsql.INTO( "id" );
@@ -2661,35 +2810,13 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                   // datum a cas vytvoreni
                   crDate =  CORBA::string_dup(  DBsql.GetValueFromTable( "NSSET", "CrDate" , "id" , id ) );
 
-
-                 if(  tech.length() == 0 )
-                   {
-                      LOG( WARNING_LOG, "NSSetCreate: not any tech Contact "  );
-                      ret->errors.length( seq +1 );
-                      ret->errors[seq].code = ccReg::nssetCreate_tech;
-                      ret->errors[seq].value <<= CORBA::string_dup( "tech contact"  );
-                      ret->errors[seq].reason = CORBA::string_dup( "not any tech contact" );
-                      seq++;
-                      ret->errCode = COMMAND_PARAMETR_MISSING ; // musi byt alespon jeden nsset;
-                   }
-                 else
-                  // zapis technicke kontakty 
+                  // zapis technicke kontakty
                   for( i = 0; i <  tech.length() ;  i++ )
                     {
 
                       // preved handle na velka pismena
-                      if( get_HANDLE( HANDLE , tech[i] ) == false )  // spatny format handlu
-                        {
-                          LOG( WARNING_LOG, "NSSetCreate: unknown tech Contact " , (const char *)  tech[i] );
-                          ret->errors.length( seq +1 );
-                          ret->errors[seq].code = ccReg::nssetCreate_tech;
-                          ret->errors[seq].value <<= CORBA::string_dup(  tech[i] );
-                          ret->errors[seq].reason = CORBA::string_dup( "unknown tech contact" );
-                          seq++;
-                          ret->errCode = COMMAND_PARAMETR_ERROR;
-                        }
-                      else
-                      { 
+                      if( get_HANDLE( HANDLE , tech[i] )  )  // spatny format handlu
+                      {
                       techid = DBsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE );
                       if( techid )
                         {
@@ -2700,50 +2827,17 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
 
                           if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;
                         }
-                      else
-                        {
-                          LOG( WARNING_LOG, "NSSetCreate: unknown tech Contact " , (const char *)  tech[i]  );                          
-                          ret->errors.length( seq +1 );
-                          ret->errors[seq].code = ccReg::nssetCreate_tech;
-                          ret->errors[seq].value <<= CORBA::string_dup(  tech[i] );
-                          ret->errors[seq].reason = CORBA::string_dup( "unknown tech contact" );
-                          seq++;                                 
-                          // TODO error value 
-                          ret->errCode = COMMAND_PARAMETR_ERROR;
-                        }
                       }
                     }
 
-                  if(  dns.length() < 2  ) // musi zadat minimalne dva dns hosty
-                    {
-                      if( dns.length() == 2 )
-                        {
-                          LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s"  , (const char *)  dns[i].fqdn   );    
-                          ret->errors.length( seq +1 );
-                          ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
-                          ret->errors[seq].value <<= CORBA::string_dup( dns[i].fqdn   );
-                          ret->errors[seq].reason = CORBA::string_dup( "unknown tech contact" );
-                          seq++;
-                          ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
-                        }
-                      else
-                        {
-                          LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s"  , (const char *)  dns[i].fqdn   );
-                          ret->errors.length( seq +1 );
-                          ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
-                          ret->errors[seq].value <<= CORBA::string_dup( "dns host"  );
-                          ret->errors[seq].reason = CORBA::string_dup( "not any DNS host" );
-                          seq++;
-                          ret->errCode = COMMAND_PARAMETR_ERROR;
-                        }
- 
-                    }
-                  else
 
-                  // zapis do tabulky hostu
+                 // zapis DNS hosty
+
+
+              // zapis do tabulky hostu
                   for( i = 0; i < dns.length() ; i++ )
                     {
-     
+
 
                       // preved sequenci adres
                       strcpy( Array, " { " );
@@ -2753,31 +2847,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
 
                           if( TestInetAddress( dns[i].inet[j] ) )
                             {
-                                 for( l = 0 ; l < j  ; l ++ )
-                                    {
-                                         if( strcmp( dns[i].inet[l] ,   dns[i].inet[j] ) == 0 )
-                                            {
-                                               LOG( WARNING_LOG, "NSSetCreate: duplicity host address %s " , (const char *) dns[i].inet[j]  );
-                                               ret->errors.length( seq +1 );
-                                               ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
-                                               ret->errors[seq].value <<= CORBA::string_dup(   dns[i].inet[j]  );
-                                               ret->errors[seq].reason = CORBA::string_dup( "duplicity host address" );
-                                               seq++;
-                                               ret->errCode = COMMAND_PARAMETR_ERROR;
-                                           }
-                                    }
-                                     
-                              strcat( Array,  dns[i].inet[j]  );
-                            }
-                          else
-                            {
-                                  LOG( WARNING_LOG, "NSSetCreate: bad host address %s " , (const char *) dns[i].inet[j]  );
-                                  ret->errors.length( seq +1 );
-                                  ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
-                                  ret->errors[seq].value <<= CORBA::string_dup(   dns[i].inet[j]  );
-                                  ret->errors[seq].reason = CORBA::string_dup( "bad host address" );
-                                  seq++;
-                                  ret->errCode = COMMAND_PARAMETR_ERROR;
+                               strcat( Array,  dns[i].inet[j]  );
                             }
 
                         }
@@ -2785,33 +2855,13 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
 
 
 
-                      // test DNS hostu
-                      if( TestDNSHost( dns[i].fqdn ) )
-                        {
+                      // preved nazev domeny 
                        LOG( NOTICE_LOG ,  "NSSetCreate: DNS Host %s [%s] ",   (const char *)  dns[i].fqdn   , Array    );
-
                        convert_hostname(  NAME , dns[i].fqdn );
- 
 
- 
-                        if( getZone( dns[i].fqdn  ) == 0   && dns[i].inet.length() > 0 ) // neni v definovanych zonach a obsahuje zaznam ip adresy
-                        {
-                            for( j = 0 ; j < dns[i].inet.length() ; j ++ )
-                               {
 
-                                    LOG( WARNING_LOG, "NSSetCreate:  ipaddr  glue not allowed %s " , (const char *) dns[i].inet[j]   );
-                                    ret->errors.length( seq +1 );
-                                    ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
-                                    ret->errors[seq].value <<= CORBA::string_dup(   dns[i].inet[j]  ); // staci vratit prvni zaznam
-                                    ret->errors[seq].reason = CORBA::string_dup( "not glue ipaddr allowed" );
-                                    seq++;
-                                }
-                                    ret->errCode = COMMAND_PARAMETR_ERROR;
- 
-                        }
-                       else
-                        {
-                          // HOST informace pouze ipaddr a fqdn 
+
+                          // HOST informace pouze ipaddr a fqdn
                           DBsql.INSERT( "HOST" );
                           DBsql.INTO( "NSSETID" );
                           DBsql.INTO( "fqdn" );
@@ -2820,28 +2870,13 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
 
                           DBsql.VALUE( NAME );
                           DBsql.VALUE( Array );
-                          if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED; 
-                        }
-
-
-                                                    
-                        }
-                     else 
-                       {
-                                  LOG( WARNING_LOG, "NSSetCreate: bad host name %s " , (const char *)  dns[i].fqdn  );
-                                  ret->errors.length( seq +1 );
-                                  ret->errors[seq].code = ccReg::nssetCreate_ns_name;
-                                  ret->errors[seq].value <<= CORBA::string_dup(  dns[i].fqdn  );
-                                  ret->errors[seq].reason = CORBA::string_dup( "bad host name" );
-                                  seq++;
-                                  // TODO error value
-                                  ret->errCode = COMMAND_PARAMETR_ERROR;
+                          if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;
 
                        }
 
-                    }
 
-                }
+
+
 
 
               //  uloz do historie
@@ -2861,6 +2896,8 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                     }          
 
                 }
+
+              }
 
               // konec transakce commit ci rollback
               DBsql.QuitTransaction( ret->errCode );
@@ -3153,6 +3190,26 @@ if( DBsql.OpenDatabase( database ) )
                                                    ret->errCode = COMMAND_PARAMETR_ERROR;
                                                   }
                                               }
+
+                                               // TEST pocet tech kontaktu
+                                                hostNum = DBsql.GetNSSetContacts( id );
+                                                LOG(NOTICE_LOG, "NSSetUpdate: tech Contact  %d" , hostNum );
+
+                                               if( hostNum == 0  ) // musi zustat alespon jeden tech kontact po update
+                                                 {
+
+                                                    for( i = 0; i < tech_rem.length(); i++ )
+                                                      {
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code =  ccReg::nssetUpdate_tech_rem;
+                                                        ret->errors[seq].value <<= CORBA::string_dup(  tech_rem[i] );
+                                                        ret->errors[seq].reason = CORBA::string_dup( "can not remove DNS host to zero" );
+                                                        seq++;
+                                                      }
+                                                    ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
+
+                                                 }
+
                                              }
                                           }
 
@@ -3316,7 +3373,7 @@ if( DBsql.OpenDatabase( database ) )
                                                  }
   
                                                // TEST pocet dns hostu
-                                                hostNum = DBsql.GetNSSetNum( id );
+                                                hostNum = DBsql.GetNSSetHosts( id );
                                                 LOG(NOTICE_LOG, "NSSetUpdate:  hostNum %d" , hostNum );
 
                                                 if( hostNum <=  2 ) // musi minimalne dva DNS hosty zustat
