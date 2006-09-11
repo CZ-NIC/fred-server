@@ -4134,20 +4134,12 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                               LOG( WARNING_LOG, "status UpdateProhibited" );
                               ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
                             }
-                          else
-                            {
-                                 // test validate
-                                 if(  TestValidityExpDate(  valexpiryDate  , GetZoneValPeriod( zone ) )  ==  false )
-                                   {
-                                      LOG( WARNING_LOG, "bad validity exp date" );
-                                      ret->errors.length( seq +1);
-                                      ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
-                                      ret->errors[seq].value <<=   valexpiryDate;
-                                      ret->errors[seq].reason = CORBA::string_dup( "bad valExpDate");
-                                      seq++;
-                                      ret->errCode = COMMAND_PARAMETR_ERROR;
-                                    }
-                              else
+                          else                            
+                          {
+
+
+
+
 
                               //  uloz do historie
                               if( DBsql.MakeHistory() )
@@ -4252,6 +4244,35 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
                                                     }
                                             }
+
+
+                           // Test jestli za danono u enum domen
+                             if( GetZoneEnum( zone ) )
+                               {
+                                 if( strlen( valexpiryDate ) == 0 )
+                                   {
+                                     LOG( WARNING_LOG, "DomainUpdate: not validity exp date "  );
+                                     ret->errors.length( seq +1 );
+                                     ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
+                                     ret->errors[seq].value <<= CORBA::string_dup( "not valExpDate"  );
+                                     ret->errors[seq].reason = CORBA::string_dup( "not any tech contact" );
+                                     seq++;
+                                     ret->errCode = COMMAND_PARAMETR_MISSING ;
+                                   }
+                               else
+                                 // test validate
+                                 if(  TestValidityExpDate(  valexpiryDate  , GetZoneValPeriod( zone ) )  ==  false )
+                                   {
+                                      LOG( WARNING_LOG, "DomainUpdate: bad validity exp date" );
+                                      ret->errors.length( seq +1);
+                                      ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
+                                      ret->errors[seq].value <<=   valexpiryDate;
+                                      ret->errors[seq].reason = CORBA::string_dup( "bad valExpDate");
+                                      seq++;
+                                      ret->errCode = COMMAND_PARAMETR_ERROR;
+                                    }
+                               }
+
 
                                       if( ret->errCode == 0 )
                                       { 
@@ -4628,9 +4649,26 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                }
+
+            // Test jestli za danono u enum domen
+            if( GetZoneEnum( zone ) )
+            {
+             if( strlen( valexpiryDate ) == 0 )
+               {
+
+                  LOG( WARNING_LOG, "DomainCreate: not validity exp date "  );
+                  ret->errors.length( seq +1 );
+                  ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
+
+                  ret->errors[seq].value <<= CORBA::string_dup( "not valExpDate"  );
+                  ret->errors[seq].reason = CORBA::string_dup( "not any tech contact" );
+                  seq++;
+                  ret->errCode = COMMAND_PARAMETR_MISSING ;                
+               }
+            else
             if(  TestValidityExpDate(  valexpiryDate , GetZoneValPeriod( zone ) )  ==  false )
               {
-                  LOG( WARNING_LOG, "bad validity exp date" );
+                  LOG( WARNING_LOG, "DomainCreate: bad validity exp date" );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
                   ret->errors[seq].value <<=   valexpiryDate;
@@ -4640,7 +4678,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
               }
 
-
+             }
 
 
 
@@ -4949,6 +4987,8 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                  LOG( NOTICE_LOG, "get defualt peridod %d month  for zone   %d ", period , zone  );
 
                }
+
+
   
              if(  TestPeriodyInterval( period  ,   GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  == false ) 
               {
@@ -4960,17 +5000,40 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;                 
                }
+
+
              // test validate
-           if(  TestValidityExpDate(  valexpiryDate  , GetZoneValPeriod( zone ) )  ==  false )
-             {
-                 LOG( WARNING_LOG, "bad validity exp date" );
-                 ret->errors.length( seq +1);
-                 ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
-                 ret->errors[seq].value <<=   valexpiryDate;
-                 ret->errors[seq].reason = CORBA::string_dup( "bad valExpDate");
-                 seq++;
-                 ret->errCode = COMMAND_PARAMETR_ERROR;
+
+
+            // Test jestli za danono u enum domen
+            if( GetZoneEnum( zone ) )
+            {
+             if( strlen( valexpiryDate ) == 0 )
+               {
+
+                  LOG( WARNING_LOG, "DomainRenew: not validity exp date "  );
+                  ret->errors.length( seq +1 );
+                  ret->errors[seq].code = ccReg::domainRenew_ext_valDate;
+
+                  ret->errors[seq].value <<= CORBA::string_dup( "not valExpDate"  );
+                  ret->errors[seq].reason = CORBA::string_dup( "not any tech contact" );
+                  seq++;
+                  ret->errCode = COMMAND_PARAMETR_MISSING ;
+               }
+            else
+            if(  TestValidityExpDate(  valexpiryDate , GetZoneValPeriod( zone ) )  ==  false )
+              {
+                  LOG( WARNING_LOG, "DomainRenew: bad validity exp date" );
+                  ret->errors.length( seq +1);
+                  ret->errors[seq].code = ccReg::domainRenew_ext_valDate;
+                  ret->errors[seq].value <<=   valexpiryDate;
+                  ret->errors[seq].reason = CORBA::string_dup( "bad valExpDate");
+                  seq++;
+                  ret->errCode = COMMAND_PARAMETR_ERROR;
+
               }
+
+             }
 
 
                                // zpracovani creditu
