@@ -927,9 +927,8 @@ void DB::SETEXDATE( int period )
 {
 char str[80];
 
-SQLCat(" ExDate=");
 // spocitej dobu expirace
-sprintf( str , "current_timestamp + interval\'%d month\' " , period );
+sprintf( str , " ExDate= ExDate + interval\'%d month\' " , period );
 SQLCat( str );
 SQLCat( " ," );
 }
