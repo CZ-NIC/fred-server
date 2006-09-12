@@ -461,11 +461,11 @@ return id;
 // test pri Check funkci na domenu case insensitiv
 int DB::CheckDomain(   const char *fqdn )
 {
-char sqlString[128];
+char sqlString[512];
 int id=0;
 
+sprintf( sqlString , "SELECT id FROM domain  WHERE  ( \'%s\' LIKE  \'%%\'||fqdn) OR  (fqdn LIKE  \'%%\'  || \'%s\' );"  , fqdn   , fqdn );
 
-sprintf( sqlString , "SELECT id FROM domain  WHERE \'%s\' LIKE \'%%\'||fqdn;"  , fqdn  );
 
 if( ExecSelect( sqlString ) )
  {
