@@ -3,6 +3,8 @@ EXT = ../pqsql.o ../dbsql.o ../util.o -lpq
 LIB = libccreg.a
 CXXFLAGS = -g -I.. -I/usr/include/postgresql/
 
+all: $(LIB) testreg
+
 $(LIB) : $(OBJS)
 	$(AR) -rs $@ $(OBJS)
 	

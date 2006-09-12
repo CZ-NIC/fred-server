@@ -43,8 +43,15 @@ namespace Register
            ch.handleClass = CH_DOMAIN_PART;
            return;
          }
-         if (!zm->findZoneId(handle)) ch.handleClass = CH_DOMAIN_BAD_ZONE;
+         const Zone::Zone *z = zm->findZoneId(handle); 
+         if (!z) ch.handleClass = CH_DOMAIN_BAD_ZONE;
          else {
+           // special test for enum domain (parts are single numbers)
+           if (z->isEnumZone()) {
+             if (dm->checkEnumDomainName(dn)) ch.handleClass = CH_ENUM;
+             else ch.handleClass = CH_INVALID;
+             return;
+           }
            // only second level domain is allowed
            if (dn.size() == 2) ch.handleClass = CH_DOMAIN;
            else {

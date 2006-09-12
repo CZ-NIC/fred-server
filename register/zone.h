@@ -10,6 +10,17 @@ namespace Register
 {
   namespace Zone
   {
+    /// zone attributes and specific parameters 
+    class Zone {
+     protected:
+      /// protected destruktor - object is managed by Manager object
+      virtual ~Zone() {}
+     public:
+      /// suffix of domain name for this zone
+      virtual const std::string& getFqdn() const = 0;
+      ///< is zone for enum domains?
+      virtual bool isEnumZone() const = 0;     
+    };
     /// holder for zones managed by register
     class Manager
     {
@@ -23,7 +34,7 @@ namespace Register
       /// return enum zone string 'e164.arpa'
       virtual const std::string& getEnumZoneString() const = 0;
       /// find zone from domain fqdn
-      virtual unsigned findZoneId(const std::string& fqdn) const = 0;
+      virtual const Zone* findZoneId(const std::string& fqdn) const = 0;
       /// create manager object
       static Manager *create(DB *db);
     };

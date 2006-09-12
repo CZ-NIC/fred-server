@@ -7,6 +7,10 @@ namespace Register
   class SQL_ERROR
   {
   };
+  /// Exception when specified object is not found
+  class NOT_FOUND
+  {
+  };
 };
 
 #endif

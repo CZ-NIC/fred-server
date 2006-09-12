@@ -41,7 +41,9 @@ namespace Register
       virtual void parseDomainName(const std::string& fqdn, DomainName& domain) 
         const throw (INVALID_DOMAIN_NAME) = 0;
       /// check availability of domain  
-      virtual CheckAvailType checkAvail(const std::string& fqdn) const = 0; 
+      virtual CheckAvailType checkAvail(const std::string& fqdn) const = 0;
+      /// check validity of enum domain name (every part is one digit)
+      virtual bool checkEnumDomainName(DomainName& domain) const = 0; 
       /// factory method
       static Manager *create(DB *db, Zone::Manager *zm);
     };

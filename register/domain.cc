@@ -111,6 +111,16 @@ namespace Register
         }
         db->FreeSelect();
         return ret;        
+      }
+      /// interface method implementation
+      bool checkEnumDomainName(DomainName& domain) const
+      {
+        // must have suffix e164.org
+        if (domain.size()<=2) return false;
+        // every part of domain name except of suffix must be one digit
+        for (unsigned i=0; i<domain.size()-2; i++)
+          if (domain[i].length() != 1 || !IS_NUMBER(domain[i][0]))
+            return false;
       } 
     };
     Manager *Manager::create(DB *db, Zone::Manager *zm)

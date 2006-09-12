@@ -10,22 +10,33 @@ namespace Register
 {
   namespace Zone
   {
-    struct Zone {
-      Zone(unsigned _id, const std::string& _fqdn, bool _isEnum) :
+    struct ZoneImpl : public virtual Zone {
+      ZoneImpl(unsigned _id, const std::string& _fqdn, bool _isEnum) :
         id(_id), fqdn(_fqdn), isEnum(_isEnum)
       {}
+      ~ZoneImpl() {}
       unsigned id;
       std::string fqdn;
       bool isEnum;
-      /// compare wheter domain belongs to this zone (according to suffix)
+      /// compare if domain belongs to this zone (according to suffix)
       bool operator==(const std::string& domain) const
       {
         unsigned l = fqdn.length();
         if (domain.length() < l) return false;
         return domain.compare(domain.length()-l,l,fqdn) == 0;  
       }
+      /// interface implementation
+      const std::string& getFqdn() const 
+      {
+        return fqdn; 
+      }
+      /// interface implementation
+      bool isEnumZone() const 
+      {
+        return isEnum; 
+      }           
     };
-    typedef std::vector<Zone> ZoneList;
+    typedef std::vector<ZoneImpl> ZoneList;
     class ManagerImpl : virtual public Manager
     {
       ZoneList zoneList;
@@ -40,9 +51,9 @@ namespace Register
        enumZoneString("e164.arpa"),
        defaultDomainSuffix("cz") 
       {
-        zoneList.push_back(Zone(1,"0.2.4.e164.arpa",true));
-        zoneList.push_back(Zone(2,"0.2.4.c.164.arpa",true));
-        zoneList.push_back(Zone(3,"cz",false));
+        zoneList.push_back(ZoneImpl(1,"0.2.4.e164.arpa",true));
+        zoneList.push_back(ZoneImpl(2,"0.2.4.c.164.arpa",true));
+        zoneList.push_back(ZoneImpl(3,"cz",false));
       }
       const std::string& getDefaultEnumSuffix() const
       {
@@ -56,11 +67,11 @@ namespace Register
       {
         return enumZoneString; 
       }
-      unsigned findZoneId(const std::string& fqdn) const
+      const Zone* findZoneId(const std::string& fqdn) const
       {
         ZoneList::const_iterator i = find(RANGE(zoneList),fqdn);
-        if (i!=zoneList.end()) return i->id;
-        else return 0;
+        if (i!=zoneList.end()) return &(*i);
+        else return NULL;
       }
     };
     Manager* Manager::create(DB *db)
