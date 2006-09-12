@@ -4273,6 +4273,20 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                     }
                                }
 
+             else
+             {
+               if( strlen( valexpiryDate )  )  // omlyemen zadan datum validace
+                {
+                  LOG( WARNING_LOG, "DomainCreate: can not  validity exp date" );
+                  ret->errors.length( seq +1);
+                  ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
+                  ret->errors[seq].value <<=   valexpiryDate;
+                  ret->errors[seq].reason = CORBA::string_dup( "can not valExpDate");
+                  seq++;
+                  ret->errCode = COMMAND_PARAMETR_ERROR;
+                }
+             }
+
 
                                       if( ret->errCode == 0 )
                                       { 
@@ -4305,6 +4319,8 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 
                                                if( !remove_update_flag  )
                                                {
+                                             if( GetZoneEnum( zone ) )
+                                               {
                                                   // zmena extension
                                                    if( strlen( valexpiryDate )  > 0 )
                                                     {
@@ -4315,6 +4331,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
  
                                                      if( !DBsql.EXEC() )  ret->errCode = COMMAND_FAILED; 
                                                     }
+                                                 }
                                                 }
                                             }
 
@@ -4661,7 +4678,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                   ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
 
                   ret->errors[seq].value <<= CORBA::string_dup( "not valExpDate"  );
-                  ret->errors[seq].reason = CORBA::string_dup( "not any tech contact" );
+                  ret->errors[seq].reason = CORBA::string_dup( "not valExpDate" );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_MISSING ;                
                }
@@ -4679,7 +4696,19 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
               }
 
              }
-
+            else 
+             {
+               if( strlen( valexpiryDate )  )  // omlyemen zadan datum validace
+                {
+                  LOG( WARNING_LOG, "DomainCreate: can not  validity exp date" );
+                  ret->errors.length( seq +1);
+                  ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
+                  ret->errors[seq].value <<=   valexpiryDate;
+                  ret->errors[seq].reason = CORBA::string_dup( "can not valExpDate");
+                  seq++;
+                  ret->errCode = COMMAND_PARAMETR_ERROR;
+                }
+             } 
 
 
                               // otestuj admin kontakty na exsitenci a spravny tvar handlu
@@ -4763,6 +4792,8 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                                 exDate =  CORBA::string_dup(  DBsql.GetValueFromTable( "DOMAIN", "ExDate" , "id" , id ) );
 
                               // pridej enum  extension
+                      if( GetZoneEnum( zone ) )
+                        {
                               if( strlen( valexpiryDate) > 0  )
                                 {
                                   DBsql.INSERT( "enumval" );
@@ -4771,7 +4802,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                                   if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;;
                                 }
 
-
+                         }
 
                                    // pridej admin kontakty
                                   for( i = 0; i <  admin.length(); i++ )
@@ -5034,8 +5065,20 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
               }
 
              }
-
-
+            else
+             {
+               if( strlen( valexpiryDate )  )  // omlyemen zadan datum validace
+                {
+                  LOG( WARNING_LOG, "DomainCreate: can not  validity exp date" );
+                  ret->errors.length( seq +1);
+                  ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
+                  ret->errors[seq].value <<=   valexpiryDate;
+                  ret->errors[seq].reason = CORBA::string_dup( "can not valExpDate");
+                  seq++;
+                  ret->errCode = COMMAND_PARAMETR_ERROR;
+                }
+             }
+ 
                                // zpracovani creditu
                if( DBsql.UpdateCredit(  regID ,   EPP_DomainRenew   ,    zone ,  period  )  == false )  ret->errCode =  COMMAND_BILLING_FAILURE;
 
@@ -5071,7 +5114,8 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                             {
                               if( DBsql.SaveHistory( "Domain", "id", id ) )     // uloz zaznam
                                 {
-
+                                if( GetZoneEnum( zone ) )
+                                 {
                                   if( strlen( valexpiryDate ) > 0  )      // zmena extension
                                     {
                                       LOG( NOTICE_LOG, "change valExpDate %s ", valexpiryDate );
@@ -5082,7 +5126,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
 
                                       if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;                                     
                                     }
-
+                                   }
                                    if( ret->errCode == 0 ) // pokud je OK
                                    {
                                      // zmena platnosti domeny
