@@ -82,6 +82,9 @@ long get_price( const char *priceStr );
 // prevadi cenu v halirich na string
 void get_priceStr(char *priceStr  , long price);
 
+// prevod datau z DB SQL na date
+void convert_rfc3339_date( char *dateStr , const char *string );
+
 // preved cas z UTC stringu na lokalni cas dle rfc3339 z casovou zonou
 void convert_rfc3339_timestamp( char *dateStr , const char *string );
 

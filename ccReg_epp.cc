@@ -3627,7 +3627,6 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(const char* fqdn, ccReg::Domain_out d ,
 {
 DB DBsql;
 Status status;
-ccReg::timestamp valexDate;
 ccReg::ENUMValidationExtension *enumVal;
 ccReg::Response *ret;
 char FQDN[64];
@@ -3768,14 +3767,15 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
           {    
             if( DBsql.GetSelectRows() == 1 )
               {
-                valexDate =  CORBA::string_dup( DBsql.GetFieldValueName("ExDate" , 0 ) );
 
                 enumVal = new ccReg::ENUMValidationExtension;
-                enumVal->valExDate = valexDate ;
+                convert_rfc3339_date( dateStr ,  DBsql.GetFieldValueName("ExDate" , 0 ) ); // datum a cas expirace validace
+
+                enumVal->valExDate = CORBA::string_dup( dateStr );
                 d->ext.length(1); // preved na  extension
                 d->ext[0] <<= enumVal;
-                LOG( NOTICE_LOG , "enumValExtension ExDate %d" ,   valexDate );
-              }
+                LOG( NOTICE_LOG , "enumValExtension ExDate %s" ,  dateStr );
+             }
 
            DBsql.FreeSelect();
          } else ret->errCode=COMMAND_FAILED;

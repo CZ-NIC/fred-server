@@ -527,6 +527,12 @@ return t;
 
 
 }
+// prevod datau z DB SQL na date 
+void convert_rfc3339_date( char *dateStr , const char *string )
+{
+strncpy( dateStr , string , 10 );
+dateStr[10] = 0; // ukoncit
+}
 
 void convert_rfc3339_timestamp( char *dateStr , const char *string )
 {
