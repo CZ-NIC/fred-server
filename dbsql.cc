@@ -370,11 +370,28 @@ bool DB::TestRegistrarZone(int regID , int zone )
 {
 bool ret = false;
 char sqlString[128];
-sprintf( sqlString , "SELECT * FROM  RegistrarACL WHERE registrarid=%d AND zoneid=%d;" ,  regID , zone );
+char zoneArray[64] , str[10] ;
+int z , j  , len ;
+
+sprintf( sqlString , "SELECT zone FROM REGISTRAR WHERE id=%d; " ,  regID  );
 
 if( ExecSelect( sqlString ) )
  {
-    if(  GetSelectRows() == 1  ) ret=true; // mam pravo 
+    if(  GetSelectRows() == 1  )
+      {
+                   // pole zone
+                   strcpy( zoneArray , GetFieldValue( 0 , 0 ) );
+
+                   // zpracuj pole adres
+                   len =  get_array_length( zoneArray  );
+                   for( j = 0 ; j < len ; j ++)
+                      {
+                        get_array_value( zoneArray , str , j );
+                        z = atoi( str ); 
+                        if( z == zone ) { ret=true; break ; }  // mam pravo                       
+                      }
+
+      }
     FreeSelect();
   }
 
