@@ -456,16 +456,31 @@ if( ExecSelect( sqlString ) )
 return id;
 }
 
+// pro select domeny pri info 
+bool DB::SELECTDOMAIN(   const char *fqdn , int zone , bool enum_zone )
+{
+int id;
 
+if( enum_zone ) 
+{
+id = CheckDomain(  fqdn ,  zone , true );
+return SELECTONE( "DOMAIN" , "id" , id );
+}
+else return  SELECTONE( "DOMAIN" , "fqdn" , fqdn  );
+
+}  
 
 // test pri Check funkci na domenu case insensitiv
-int DB::CheckDomain(   const char *fqdn )
+int DB::CheckDomain(   const char *fqdn , int zone , bool enum_zone )
 {
 char sqlString[512];
 int id=0;
 
-sprintf( sqlString , "SELECT id FROM domain  WHERE  ( \'%s\' LIKE  \'%%\'||fqdn) OR  (fqdn LIKE  \'%%\'  || \'%s\' );"  , fqdn   , fqdn );
 
+
+if( enum_zone )sprintf( sqlString , "SELECT id FROM domain  WHERE  ( \'%s\' LIKE  \'%%\'||fqdn) OR  (fqdn LIKE  \'%%\'  || \'%s\' ) AND zone=%d;"  , fqdn   , fqdn  , zone );
+else  sprintf( sqlString , "SELECT id FROM domain  WHERE   \'%s\'  ILIKE fqdn;" , fqdn );
+ 
 
 if( ExecSelect( sqlString ) )
  {

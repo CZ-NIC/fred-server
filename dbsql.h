@@ -62,7 +62,10 @@ int CheckContact(const char *handle);
 // test pri Check funkci  na handle nssetu ci kontaktu
 int CheckHandle( const char *table ,  const char *handle );
 // vraci id domeny
-int CheckDomain( const char *fqdn );
+int CheckDomain( const char *fqdn   , int zone , bool enum_zone );
+// pro select domeny pri info
+bool SELECTDOMAIN(   const char *fqdn , int zone , bool enum_zone );
+
 
 // vraci ID hostu
 int CheckHost(  const char *fqdn , int nssetID );

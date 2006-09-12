@@ -1073,7 +1073,7 @@ ccReg::Response* ccReg_EPP_i::ObjectCheck( short act , char * table , char *fnam
 {
 DB DBsql;
 ccReg::Response *ret;
-int  len , av ;
+int  len , av , zone ;
 char HANDLE[64] , FQDN[64];
 long unsigned int i;
 ret = new ccReg::Response;
@@ -1152,9 +1152,9 @@ if( DBsql.OpenDatabase( database ) )
 
                         break;
                   case EPP_DomainCheck:
-                       if( getFQDN( FQDN , chck[i] )  )
+                       if((  zone =  getFQDN( FQDN , chck[i] )  )  )
                          {
-                            if( DBsql.CheckDomain( FQDN ) )
+                            if( DBsql.CheckDomain( FQDN , zone , GetZoneEnum( zone )  ) )
                               {
                                 a[i].avail = ccReg::Exist;    // objekt existuje
                                 a[i].reason =  CORBA::string_dup( "domain exist not Avail" );
@@ -3631,7 +3631,7 @@ ccReg::ENUMValidationExtension *enumVal;
 ccReg::Response *ret;
 char FQDN[64];
 char dateStr[64];
-int id , clid , crid ,  upid , regid ,nssetid , regID , zone;
+int id , clid , crid ,  upid , regid ,nssetid , regID , zone ;
 int i , len ;
 
 d = new ccReg::Domain;
@@ -3683,10 +3683,12 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
           else
 
 
+
+
    
 
-
-    if(  DBsql.SELECTONE( "DOMAIN" , "fqdn" , FQDN )  )
+   
+    if(  DBsql.SELECTDOMAIN(  FQDN  , zone , GetZoneEnum( zone ) )  )
     {
     if( DBsql.GetSelectRows() == 1 )
       {
@@ -4582,7 +4584,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
 
           //  test zdali domena uz existuje                   
-          if( DBsql.CheckDomain ( FQDN )   )
+          if( DBsql.CheckDomain( FQDN , zone , GetZoneEnum( zone )  )  )
             {
               ret->errCode = COMMAND_OBJECT_EXIST;      // je uz zalozena
               LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
