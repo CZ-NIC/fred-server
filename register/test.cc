@@ -14,7 +14,11 @@ int main()
   while (1) {
     std::cout << "Domain: ";
     std::cin >> input;
+    Register::CheckHandle ch;
+    m->checkHandle(input,ch);
+    std::cout << "Result of checkHandle: " << ch.handleClass 
+              << " NewHandle: " << ch.newHandle << std::endl;
     Register::Domain::CheckAvailType ca = dm->checkAvail(input);
-    std::cout << "Result: " << ca << std::endl;
+    std::cout << "Result of checkAvail: " << ca << std::endl;
   }
 }
