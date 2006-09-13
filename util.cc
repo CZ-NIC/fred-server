@@ -427,28 +427,32 @@ else return false;
 else  return false;
 }
 
-
-bool TestValidityExpDate( const char *timestamp , int max   )
+// porovnadi datumu validace expirace u enum domen
+bool TestValidityExpDate( const char *exDateStr , const char *expvalDateStr )
 {
-// TODO implementace
-return true;
-/*
-time_t now , ex;
-if(  max ==  0) return true;
-else
-{
+int eyear , emonth , emday;
+int cyear , cmonth , cmday;
 
-if(  val == 0 ) return true; // neporovanvej pokud neni zadano
-else
-{
-now = time(NULL);
-ex = expiry_time( now ,  max );
 
-if( val > now && val < ex ) return true;
-else return false;
-}
-}
-*/
+LOG( LOG_DEBUG ,  "TestValidityExpDate:  dateStr %s  expvalDate %s" ,  exDateStr  , expvalDateStr  );
+
+sscanf( exDateStr , "%4d-%02d-%02d" , &eyear , &emonth , &emday );
+sscanf( expvalDateStr , "%4d-%02d-%02d" , &cyear , &cmonth , &cmday );
+LOG( LOG_DEBUG ,  "eyear %d  emonth %d  emday %d" ,  eyear , emonth , emday );
+LOG( LOG_DEBUG ,  "cyear %d  cmonth %d  cmday %d" ,  cyear , cmonth , cmday );
+// porovnani datumu
+if( eyear < cyear ) return true; // pokud je o rok mene je to OK
+else if(  eyear == cyear ) // pokud stejny rok porovnej mesice
+      {
+        if( emonth < cmonth )  return true;
+        else if( emonth == cmonth ) // pokud je stejny mesic
+             {
+                 if( emday <= cmday )return true; // porovnej dny
+             }
+      }
+
+// default
+return false;
 }
 
 // preveadi cenu  halire bez konverze pres float

@@ -74,7 +74,7 @@ bool TestInetAddress(const char *address );
 // test spravnosti intervalu periody
 bool TestPeriodyInterval( int period , int min , int max );
 // test intervalu validace
-bool TestValidityExpDate( const char *timestamp , int max );
+bool TestValidityExpDate( const char *exDateStr , const char *expvalDateStr );
 
 // preveadi credit registratora na halire bez konverze na float
 long get_price( const char *priceStr );

@@ -416,7 +416,29 @@ return ret;
 }
 
 
+// vypocet pres postgres aktulani datum plus x mesicu
+void DB::GetValExDate(char *dateStr ,  int period )
+{
+char sqlString[128];
 
+strcpy( dateStr , "1900-01-01" ); // default datum
+
+sprintf( sqlString , "SELECT current_date+interval\'%d month\';" , period );
+
+
+if( ExecSelect( sqlString ) )
+ {
+    if(  GetSelectRows() == 1  ) 
+      {
+        strncpy( dateStr ,     GetFieldValue( 0 , 0 ) , 10 ); 
+        dateStr[10] = 0 ;
+      }
+    FreeSelect();
+  }
+
+
+
+}
 
 int DB::CheckNSSet(const char *handle )
 {

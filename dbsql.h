@@ -67,6 +67,9 @@ int CheckDomain( const char *fqdn   , int zone , bool enum_zone );
 bool SELECTDOMAIN(   const char *fqdn , int zone , bool enum_zone );
 
 
+// vypocet pres postgres aktulani datum plus x mesicu
+void GetValExDate(char *dateStr ,  int period );
+
 // vraci ID hostu
 int CheckHost(  const char *fqdn , int nssetID );
 // vraci pocet nssetu
