@@ -1111,9 +1111,18 @@ if( DBsql.OpenDatabase( database ) )
                               }
                              else
                               {
-                                a[i].avail =  ccReg::NotExist;    // objekt ne existuje
-                                a[i].reason =  CORBA::string_dup( "");  // free
-                                LOG( NOTICE_LOG ,  "contact %s not exist  Avail" ,(const char * ) chck[i] );
+                               if( DBsql.TestContactHandleHistory(  HANDLE  , DefaultContactHandlePeriod()  ) ) 
+                                 {
+                                     a[i].avail =  ccReg::DelPeriod;    // ochrana lhuta
+                                     a[i].reason =  CORBA::string_dup( "in deleted period");  // v ochrane lhute
+                                     LOG( NOTICE_LOG ,  "contact %s in delete period" ,(const char * ) chck[i] );
+                                 }
+                                else
+                                 {
+                                     a[i].avail =  ccReg::NotExist;    // objekt ne existuje
+                                     a[i].reason =  CORBA::string_dup( "");  // free
+                                     LOG( NOTICE_LOG ,  "contact %s not exist  Avail" ,(const char * ) chck[i] );
+                                  }
                               }
 
                          }
@@ -1137,9 +1146,18 @@ if( DBsql.OpenDatabase( database ) )
                               }
                              else
                               {
-                                a[i].avail =  ccReg::NotExist;    // objekt ne existuje
-                                a[i].reason =  CORBA::string_dup( "");  // free
-                                LOG( NOTICE_LOG ,  "nsset %s not exist  Avail" ,(const char * ) chck[i] );
+                               if( DBsql.TestNSSetHandleHistory( HANDLE ,  DefaultDomainNSSetPeriod()  ) )
+                                 {
+                                     a[i].avail =  ccReg::DelPeriod;    // ochrana lhuta
+                                     a[i].reason =  CORBA::string_dup( "in deleted period");  // v ochrane lhute
+                                     LOG( NOTICE_LOG ,  "nsset %s in delete period" ,(const char * ) chck[i] );
+                                 }
+                                else
+                                 {
+                                      a[i].avail =  ccReg::NotExist;    // objekt ne existuje
+                                      a[i].reason =  CORBA::string_dup( "");  // free
+                                      LOG( NOTICE_LOG ,  "nsset %s not exist  Avail" ,(const char * ) chck[i] );
+                                  }
                               }
 
                          }
@@ -1162,9 +1180,19 @@ if( DBsql.OpenDatabase( database ) )
                               }
                              else
                               {
-                                a[i].avail =  ccReg::NotExist;    // objekt ne existuje
-                                a[i].reason =  CORBA::string_dup( "");  // free
-                                LOG( NOTICE_LOG ,  "domain %s not exist  Avail" ,(const char * ) chck[i] );
+
+                               if( DBsql.TestDomainFQDNHistory( FQDN , DefaultDomainFQDNPeriod() ) )
+                                 {
+                                     a[i].avail =  ccReg::DelPeriod;    // objekt byl smazan je v historri a ma ochranou lhutu
+                                     a[i].reason =  CORBA::string_dup( "in deleted period");  // v ochrane lhute
+                                     LOG( NOTICE_LOG ,  "domain %s in delete period" ,(const char * ) chck[i] );
+                                 }
+                                else
+                                 {
+                                     a[i].avail =  ccReg::NotExist;    // objekt ne existuje
+                                     a[i].reason =  CORBA::string_dup( "");  // free
+                                     LOG( NOTICE_LOG ,  "domain %s not exist  Avail" ,(const char * ) chck[i] );
+                                  }
                               }
 
                          }
