@@ -66,6 +66,13 @@ int CheckDomain( const char *fqdn   , int zone , bool enum_zone );
 // pro select domeny pri info
 bool SELECTDOMAIN(   const char *fqdn , int zone , bool enum_zone );
 
+bool TestContactHandleHistory( const char * handle , int period );
+bool TestNSSetHandleHistory( const char * handle , int period );
+bool TestDomainFQDNHistory( const char * fqdn , int period );
+
+// test na objekty v historii
+bool TestObjectHistory( const char *table , const char *fname ,  const char * name , int period );
+
 
 // vypocet pres postgres aktulani datum plus x mesicu
 void GetValExDate(char *dateStr ,  int period );

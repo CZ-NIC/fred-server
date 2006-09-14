@@ -1934,6 +1934,20 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                 }
               else              // pokud kontakt nexistuje
                 {
+                    // test jestli neni ve smazanych kontaktech
+                   if( DBsql.TestContactHandleHistory( HANDLE , DefaultContactHandlePeriod() ) )
+                     {
+
+                       ret->errCode = COMMAND_PARAMETR_ERROR;
+                       LOG( WARNING_LOG, "handle[%s] was deleted" , handle );
+                       ret->errors.length( 1 );
+                       ret->errors[0].code = ccReg::contactCreate_handle;
+                       ret->errors[0].value <<= CORBA::string_dup( handle );
+                       ret->errors[0].reason = CORBA::string_dup( "handle exist in delete" );
+                     }
+                  else
+
+
                   // test zdali country code je existujici zeme
                   if( DBsql.TestCountryCode( c.CC ) )
                     {
@@ -2627,6 +2641,19 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
         }
         else                  // pokud nexistuje 
        {
+
+                    // test jestli neni ve smazanych kontaktech
+                   if( DBsql.TestNSSetHandleHistory( HANDLE ,  DefaultDomainNSSetPeriod()  ) )
+                     {
+                       ret->errCode = COMMAND_PARAMETR_ERROR;
+                       LOG( WARNING_LOG, "handle[%s] was deleted" , handle );
+                       ret->errors.length( 1 );
+                       ret->errors[0].code = ccReg::nssetCreate_handle;
+                       ret->errors[0].value <<= CORBA::string_dup( handle );
+                       ret->errors[0].reason = CORBA::string_dup( "nsset handle exist in delete" );
+                     }
+                  else
+
              // Test tech kontaktu 
 
                  if(  tech.length() == 0 )
@@ -4593,6 +4620,19 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
             }
           else // pokud domena nexistuje             
           {  
+                    // test jestli neni ve smazanych kontaktech
+            if( DBsql.TestDomainFQDNHistory( FQDN , DefaultDomainFQDNPeriod() ) )
+             {
+
+                       ret->errCode = COMMAND_PARAMETR_ERROR;
+                       LOG( WARNING_LOG, "handle[%s] was deleted" , fqdn );
+                       ret->errors.length( 1 );
+                       ret->errors[0].code = ccReg::domainCreate_fqdn;
+                       ret->errors[0].value <<= CORBA::string_dup( fqdn );
+                       ret->errors[0].reason = CORBA::string_dup( "fqdn exist in delete" );
+                 }
+                else
+        {
               id = DBsql.GetSequenceID( "domain" );     // id domeny
 
               // vytvor roid domeny
@@ -4848,7 +4888,8 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
 
                       }                        
 
-                    
+
+                   }                    
 
                 }
 

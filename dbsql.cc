@@ -285,6 +285,44 @@ if( ExecSelect( sqlString ) )
 return num;
 }
 
+bool DB::TestContactHandleHistory( const char * handle , int period )
+{
+return TestObjectHistory( "CONTACT" , "HANDLE" , handle , period );
+}
+
+
+bool DB::TestNSSetHandleHistory( const char * handle , int period )
+{
+return TestObjectHistory( "NSSET" , "HANDLE" , handle , period );
+}
+
+
+bool DB::TestDomainFQDNHistory( const char * fqdn , int period )
+{
+return TestObjectHistory( "DOMAIN" , "FQDN" , fqdn , period );
+}
+
+// test na objekty v historii
+bool DB::TestObjectHistory( const char *table , const char *fname ,  const char * name , int period )
+{
+char sqlString[512];
+bool ret=false;
+int count;
+
+sprintf( sqlString , "SELECT count(*)  FROM %s_history , history WHERE \
+  %s_history.%s=\'%s\' AND %s_history.historyid=history.id  AND \
+  history.moddate > current_timestamp - interval\'%d month';" , 
+     table , table , fname , name , table,  period );
+
+if( ExecSelect( sqlString ) )
+  {
+     count = atoi(  GetFieldValue( 0 , 0 ) ) ;
+     if( count > 0 )  ret=true ;
+     FreeSelect();
+  }
+
+return ret;
+}
 
 /*
 char *  DB::GetStatusString( int status )
