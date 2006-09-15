@@ -103,7 +103,18 @@ int GetClientDomainRegistrant( int clID , int contactID );
 // vraci chybovou zpravu z enum_error
 char * GetErrorMessageEN(int err ) {  return GetValueFromTable( "enum_error", "status" , "id" , err ); };
 char * GetErrorMessageCS(int err ) {  return GetValueFromTable( "enum_error", "status_cs" , "id" , err ); };
-char * GetErrorMessage( int err ); // test na jazyk klienta
+char * GetErrorMessage( int err )   // vraci chybovou zpravu podle pouziteho jazyka
+       { if( GetClientLanguage() == LANG_CS ) return GetErrorMessageCS( err );
+         else return GetErrorMessageEN( err ); };
+
+// reason error message
+char * GetReasonMessageEN(int err ) {  return GetValueFromTable( "enum_reason", "reason" , "id" , err ); };
+char * GetReasonMessageCS(int err ) {  return GetValueFromTable( "enum_reason", "reason_cs" , "id" , err ); };
+char * GetReasonMessage( int err ) //  vraci chybovy posis duvod reason podle pouziteho jazyka
+       { if( GetClientLanguage() == LANG_CS ) return GetReasonMessageCS( err );
+         else return GetReasonMessageEN( err ); };
+
+ 
 
 // test kodu zemo
 bool TestCountryCode(const char *cc);

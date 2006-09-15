@@ -223,26 +223,21 @@ else return "svrTRID ERROR";
 }
 
 
-// vraci chybovou zpravu podle jazyka
-char * DB::GetErrorMessage(int err )
-{
-
-if( GetClientLanguage() == LANG_CS ) return GetErrorMessageCS( err );
-else return GetErrorMessageEN( err );
-
-}
 
 // vraci jazyk klienta
 int DB::GetClientLanguage()
 {
-int lang = LANG_EN;
+int lang = LANG_EN; // default
 char sqlString[128];
 
 sprintf( sqlString , "SELECT  lang  FROM  login  WHERE id=%d;" , loginID );
 
 if( ExecSelect( sqlString ) )
  {
-     if(  strcmp(   GetFieldValue( 0 , 0 ) , "cs" ) == 0 ) lang =LANG_CS;
+     if( GetSelectRows() == 1 ) 
+       {
+        if(  strcmp(   GetFieldValue( 0 , 0 ) , "cs" ) == 0 ) lang =LANG_CS;
+       }
      FreeSelect();
  }
 
