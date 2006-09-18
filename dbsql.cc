@@ -304,6 +304,8 @@ char sqlString[512];
 bool ret=false;
 int count;
 
+if( period > 0 )
+{
 sprintf( sqlString , "SELECT count(*)  FROM %s_history , history WHERE \
   %s_history.%s=\'%s\' AND %s_history.historyid=history.id  AND \
   history.moddate > current_timestamp - interval\'%d month';" , 
@@ -317,6 +319,9 @@ if( ExecSelect( sqlString ) )
   }
 
 return ret;
+}
+else return true;
+
 }
 
 /*
