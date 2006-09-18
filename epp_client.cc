@@ -11,6 +11,8 @@
 //////////////////////////////////////////////////////////////////////
 
 
+static CORBA::Object_ptr getObjectReference(CORBA::ORB_ptr orb);
+
 void random_string(char *str , int len)
 {
 int i , j ;
@@ -61,6 +63,7 @@ int main(int argc, char** argv)
     char *buffer;
     char name[64] , handle[64] ,  roid[32] , email[32] , clTRID[32];
     long size  ;
+/*
     ifstream fd ("/tmp/ccReg.ref");
     // get pointer to associated buffer object
      pbuf=fd.rdbuf();
@@ -83,7 +86,8 @@ int main(int argc, char** argv)
      // get CORBA reference
      obj = orb->string_to_object(  buffer );
 
-
+*/
+   obj =  getObjectReference( orb );
 
 //    CORBA::Object_var obj = orb->string_to_object (uri);
 
@@ -100,10 +104,10 @@ int main(int argc, char** argv)
 
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
     ccReg::timestamp_var ts;
-     cout << "version: "  <<  EPP->version(ts) << endl;
+    cout << "version: "  <<  EPP->version(ts) << endl;
+    cout << "timestamp " << ts << endl ;
+/*    loginID = 4000; 
 
-    loginID = 4000; 
-/*
     ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
 
     cout << "get Transaction code " << ret->errCode << ret->errMsg  <<  ret->svTRID  << endl;
@@ -142,6 +146,32 @@ int main(int argc, char** argv)
 
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
+   ret =  EPP->DomainInfo(  "exp.cz" ,  domain , loginID , "info-enum-4.4.4" , "<XML>"  );
+   cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
+
+   for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
+   cout << "Domain info"  << domain->name << domain->Registrant <<  domain->nsset <<  endl;
+  
+   cout << "CrDate: " <<  domain->CrDate << endl;
+   cout << "ExDate: " <<  domain->ExDate << endl;
+   cout << "err code " << ret->errCode   << endl;
+   cout << "ext length " <<   domain->ext.length() << endl ;
+   enumVal = new  ccReg::ENUMValidationExtension;
+
+
+    if(  domain->ext.length() == 1 )
+     {
+       if(  domain->ext[0] >>= enumVal   )
+        {
+         cout << "valExpDate" <<    enumVal->valExDate  << endl;
+        }
+       else cout << "Unknown value extension" << endl;
+     }
+
+   delete domain;
+
+
+
 //     ret =  EPP->ClientCredit( credit ,  loginID , "clTRID-credit" , "<XML>credit</XML>" );
 //     cout << "credit " << credit <<  "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
@@ -171,7 +201,7 @@ int main(int argc, char** argv)
 
     delete lists;
 
-*/
+
 
 
 
@@ -234,7 +264,7 @@ num = 1000;
 
 
 }
-/*
+
 
     ret =  EPP->ClientLogout( loginID , "XXXX-logout" , "");
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
@@ -795,3 +825,74 @@ delete cc;
   }
   return 0;
 }
+
+
+
+//////////////////////////////////////////////////////////////////////
+
+static CORBA::Object_ptr
+getObjectReference(CORBA::ORB_ptr orb)
+{
+  CosNaming::NamingContext_var rootContext;
+
+  try {
+    // Obtain a reference to the root context of the Name service:
+    CORBA::Object_var obj;
+    obj = orb->resolve_initial_references("NameService");
+
+    // Narrow the reference returned.
+    rootContext = CosNaming::NamingContext::_narrow(obj);
+    if( CORBA::is_nil(rootContext) ) {
+      cerr << "Failed to narrow the root naming context." << endl;
+      return CORBA::Object::_nil();
+    }
+  }
+  catch (CORBA::NO_RESOURCES&) {
+    cerr << "Caught NO_RESOURCES exception. You must configure omniORB "
+         << "with the location" << endl
+         << "of the naming service." << endl;
+    return 0;
+  }
+  catch(CORBA::ORB::InvalidName& ex) {
+    // This should not happen!
+    cerr << "Service required is invalid [does not exist]." << endl;
+    return CORBA::Object::_nil();
+  }
+
+  // Create a name object, containing the name test/context:
+  CosNaming::Name name;
+  name.length(2);
+
+  name[0].id   = (const char*) "ccReg";       // string copied
+  name[0].kind = (const char*) "context"; // string copied
+  name[1].id   = (const char*) "EPP";
+  name[1].kind = (const char*) "Object";
+  // Note on kind: The kind field is used to indicate the type
+  // of the object. This is to avoid conventions such as that used
+  // by files (name.type -- e.g. test.ps = postscript etc.)
+
+  try {
+    // Resolve the name to an object reference.
+    return rootContext->resolve(name);
+  }
+  catch(CosNaming::NamingContext::NotFound& ex) {
+    // This exception is thrown if any of the components of the
+    // path [contexts or the object] aren't found:
+    cerr << "Context not found." << endl;
+  }
+  catch(CORBA::TRANSIENT& ex) {
+    cerr << "Caught system exception TRANSIENT -- unable to contact the "
+         << "naming service." << endl
+         << "Make sure the naming server is running and that omniORB is "
+         << "configured correctly." << endl;
+
+  }
+  catch(CORBA::SystemException& ex) {
+    cerr << "Caught a CORBA::" << ex._name()
+         << " while using the naming service." << endl;
+    return 0;
+  }
+
+  return CORBA::Object::_nil();
+}
+
