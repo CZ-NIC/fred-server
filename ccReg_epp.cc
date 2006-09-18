@@ -4341,7 +4341,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                      ret->errors.length( seq +1 );
                                      ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
                                      ret->errors[seq].value <<= CORBA::string_dup( "not valExpDate"  );
-                                     ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetErrorMessage(REASON_MSG_VALEXPDATE_REQUIRED ) );
+                                     ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetReasonMessage(REASON_MSG_VALEXPDATE_REQUIRED ) );
                                      seq++;
                                      ret->errCode = COMMAND_PARAMETR_MISSING ;
                                    }
@@ -4353,7 +4353,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                       ret->errors.length( seq +1);
                                       ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
                                       ret->errors[seq].value <<=   valexpiryDate;
-                                      ret->errors[seq].reason = CORBA::string_dup( DBsql.GetErrorMessage(REASON_MSG_VALEXPDATE_NOT_VALID ) );
+                                      ret->errors[seq].reason = CORBA::string_dup( DBsql.GetReasonMessage(REASON_MSG_VALEXPDATE_NOT_VALID ) );
                                       seq++;
                                       ret->errCode = COMMAND_PARAMETR_ERROR;
                                     }
@@ -4367,7 +4367,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
                   ret->errors[seq].value <<=   valexpiryDate;
-                  ret->errors[seq].reason = CORBA::string_dup( DBsql.GetErrorMessage(REASON_MSG_VALEXPDATE_NOT_USED ) );
+                  ret->errors[seq].reason = CORBA::string_dup( DBsql.GetReasonMessage(REASON_MSG_VALEXPDATE_NOT_USED ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                 }
@@ -4651,7 +4651,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::domainCreate_fqdn;
             ret->errors[0].value <<= CORBA::string_dup( fqdn );
-            ret->errors[0].reason = CORBA::string_dup( DBsql.GetErrorMessage( REASON_MSG_BAD_FORMAT_FQDN )  );
+            ret->errors[0].reason = CORBA::string_dup( DBsql.GetReasonMessage( REASON_MSG_BAD_FORMAT_FQDN )  );
         }
       else
        {
@@ -4686,7 +4686,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                        ret->errors.length( 1 );
                        ret->errors[0].code = ccReg::domainCreate_fqdn;
                        ret->errors[0].value <<= CORBA::string_dup( fqdn );
-                       ret->errors[0].reason = CORBA::string_dup(  DBsql.GetErrorMessage( REASON_MSG_FQDN_HISTORY )  );
+                       ret->errors[0].reason = CORBA::string_dup(  DBsql.GetReasonMessage( REASON_MSG_FQDN_HISTORY )  );
                  }
                 else
         {
@@ -4706,7 +4706,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::domainCreate_nsset;
                       ret->errors[seq].value <<= CORBA::string_dup( nsset );
-                      ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetErrorMessage( REASON_MSG_BAD_FORMAT_NSSET_HANDLE )  );
+                      ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetReasonMessage( REASON_MSG_BAD_FORMAT_NSSET_HANDLE )  );
                       seq++;
                       ret->errCode = COMMAND_PARAMETR_ERROR;
 
@@ -4718,7 +4718,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::domainCreate_nsset;
                       ret->errors[seq].value <<= CORBA::string_dup( nsset );
-                      ret->errors[seq].reason = CORBA::string_dup( DBsql.GetErrorMessage( REASON_MSG_UNKNOW_NSSET  )  );
+                      ret->errors[seq].reason = CORBA::string_dup( DBsql.GetReasonMessage( REASON_MSG_UNKNOW_NSSET  )  );
                       seq++;
                       ret->errCode = COMMAND_PARAMETR_ERROR;
                }
@@ -4730,7 +4730,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::domainCreate_registrant;
                       ret->errors[seq].value <<= CORBA::string_dup( Registrant );
-                      ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetErrorMessage( REASON_MSG_BAD_FORMAT_CONTACT_HANDLE )  );
+                      ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetReasonMessage( REASON_MSG_BAD_FORMAT_CONTACT_HANDLE )  );
                       seq++;
                       ret->errCode = COMMAND_PARAMETR_ERROR;
 
@@ -4742,7 +4742,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::domainCreate_registrant;
                       ret->errors[seq].value <<= CORBA::string_dup( Registrant );
-                      ret->errors[seq].reason = CORBA::string_dup( DBsql.GetErrorMessage( REASON_MSG_UNKNOW_REGISTRANT )  );
+                      ret->errors[seq].reason = CORBA::string_dup( DBsql.GetReasonMessage( REASON_MSG_UNKNOW_REGISTRANT )  );
                       seq++;
                       ret->errCode = COMMAND_PARAMETR_ERROR;
                }
@@ -4763,7 +4763,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainCreate_period;
                   ret->errors[seq].value <<=  period;
-                  ret->errors[seq].reason = CORBA::string_dup( DBsql.GetErrorMessage( REASON_MSG_BAD_PERIOD ) );
+                  ret->errors[seq].reason = CORBA::string_dup( DBsql.GetReasonMessage( REASON_MSG_BAD_PERIOD ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                }
@@ -4780,7 +4780,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                   ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
 
                   ret->errors[seq].value <<= CORBA::string_dup( "not valExpDate"  );
-                  ret->errors[seq].reason = CORBA::string_dup( DBsql.GetErrorMessage(REASON_MSG_VALEXPDATE_REQUIRED ) ); // TODO
+                  ret->errors[seq].reason = CORBA::string_dup( DBsql.GetReasonMessage(REASON_MSG_VALEXPDATE_REQUIRED ) ); // TODO
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_MISSING ;                
                }
@@ -4791,7 +4791,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
                   ret->errors[seq].value <<=   valexpiryDate;
-                  ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetErrorMessage(REASON_MSG_VALEXPDATE_NOT_VALID ) );
+                  ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetReasonMessage(REASON_MSG_VALEXPDATE_NOT_VALID ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
 
@@ -4806,7 +4806,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
                   ret->errors[seq].value <<=   valexpiryDate;
-                  ret->errors[seq].reason = CORBA::string_dup( DBsql.GetErrorMessage( REASON_MSG_VALEXPDATE_NOT_USED ));
+                  ret->errors[seq].reason = CORBA::string_dup( DBsql.GetReasonMessage( REASON_MSG_VALEXPDATE_NOT_USED ));
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                 }
@@ -4826,7 +4826,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                                           ret->errors.length( seq +1 );
                                           ret->errors[seq].code = ccReg::domainCreate_admin;
                                           ret->errors[seq].value <<= CORBA::string_dup(  admin[i] );
-                                          ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetErrorMessage(REASON_MSG_BAD_FORMAT_CONTACT_HANDLE ) );
+                                          ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetReasonMessage(REASON_MSG_BAD_FORMAT_CONTACT_HANDLE ) );
                                           seq++;
                                           ret->errCode = COMMAND_PARAMETR_ERROR;
  
@@ -4841,7 +4841,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                                           ret->errors.length( seq +1 );
                                           ret->errors[seq].code = ccReg::domainCreate_admin;
                                           ret->errors[seq].value <<= CORBA::string_dup(  admin[i] );
-                                          ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetErrorMessage(REASON_MSG_UNKNOW_ADMIN ) );
+                                          ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetReasonMessage(REASON_MSG_UNKNOW_ADMIN ) );
                                           seq++;
                                          ret->errCode = COMMAND_PARAMETR_ERROR;
                                         }
@@ -5014,7 +5014,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
   DB DBsql;
   Status status;
   const ccReg::ENUMValidationExtension * enumVal;
-  char expDateStr[MAX_DATE], valexpiryDate[MAX_DATE] , exvdateStr[MAX_DATE];
+  char expDateStr[MAX_DATE],  ExDateStr[MAX_DATE] , valexpiryDate[MAX_DATE] , exvdateStr[MAX_DATE];
   char FQDN[64]; 
   ccReg::Response * ret;
   int clid, regID, id, len, i , zone , seq;
@@ -5115,7 +5115,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_curExpDate;
                   ret->errors[seq].value <<=  curExpDate;
-                  ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetErrorMessage( REASON_MSG_CUREXPDATE_NOT_EXPDATE ) );
+                  ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetReasonMessage( REASON_MSG_CUREXPDATE_NOT_EXPDATE ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                 }
@@ -5128,17 +5128,32 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
 
                }
 
-
   
-             if(  TestPeriodyInterval( period  ,   GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  == false ) 
+             if(  TestPeriodyInterval(   period  ,   GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  == false ) 
               {
                   LOG( WARNING_LOG, "bad period interval" );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_period;
                   ret->errors[seq].value <<=  period;
-                  ret->errors[seq].reason = CORBA::string_dup( DBsql.GetErrorMessage( REASON_MSG_BAD_PERIOD ) );
+                  ret->errors[seq].reason = CORBA::string_dup( DBsql.GetReasonMessage( REASON_MSG_BAD_PERIOD ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;                 
+               }
+
+              if( DBsql.GetExpDate( ExDateStr , id ,  period  ,  GetZoneExPeriodMax( zone ) )  )
+                {
+                    // vypocet ExDate datum expirace
+                    exDate =  CORBA::string_dup( ExDateStr );                                     
+                }
+              else
+                {
+                  LOG( WARNING_LOG, "bad max period interval" );
+                  ret->errors.length( seq +1);
+                  ret->errors[seq].code = ccReg::domainRenew_period;
+                  ret->errors[seq].value <<=  period;
+                  ret->errors[seq].reason = CORBA::string_dup( DBsql.GetReasonMessage( REASON_MSG_BAD_PERIOD ) );
+                  seq++;
+                  ret->errCode = COMMAND_PARAMETR_ERROR;
                }
 
 
@@ -5157,7 +5172,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                   ret->errors[seq].code = ccReg::domainRenew_ext_valDate;
 
                   ret->errors[seq].value <<= CORBA::string_dup( "not valExpDate"  ); // TODO
-                  ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetErrorMessage(REASON_MSG_VALEXPDATE_REQUIRED ) ); 
+                  ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetReasonMessage(REASON_MSG_VALEXPDATE_REQUIRED ) ); 
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_MISSING ;
                }
@@ -5168,7 +5183,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_ext_valDate;
                   ret->errors[seq].value <<=   valexpiryDate;
-                  ret->errors[seq].reason = CORBA::string_dup(   DBsql.GetErrorMessage(REASON_MSG_VALEXPDATE_NOT_VALID ) ); // TODO
+                  ret->errors[seq].reason = CORBA::string_dup(   DBsql.GetReasonMessage(REASON_MSG_VALEXPDATE_NOT_VALID ) ); // TODO
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
 
@@ -5183,7 +5198,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
                   ret->errors[seq].value <<=   valexpiryDate;
-                  ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetErrorMessage(REASON_MSG_VALEXPDATE_NOT_USED) ); // TODO
+                  ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetReasonMessage(REASON_MSG_VALEXPDATE_NOT_USED) ); // TODO
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                 }
@@ -5241,15 +5256,9 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                                    {
                                      // zmena platnosti domeny
                                      DBsql.UPDATE( "DOMAIN" );                                     
-                                     DBsql.SETEXDATE( period );
+                                     DBsql.SET(  "ExDate", ExDateStr );
                                      DBsql.WHEREID( id );
-                                     if( DBsql.EXEC() ) 
-                                       {
-                                           // vraceni nastaveneho  ExDate datum expirace
-                                           exDate =  CORBA::string_dup(  DBsql.GetValueFromTable( "DOMAIN", "ExDate" , "id" , id ) );
-                                           ret->errCode = COMMAND_OK;
-                                       
-                                       }
+                                     if( DBsql.EXEC() )   ret->errCode = COMMAND_OK;
                                      else ret->errCode = COMMAND_FAILED;
                                   }
                                 }
