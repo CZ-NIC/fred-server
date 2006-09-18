@@ -3751,16 +3751,15 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
 
              // get  registrator ID
             regID = DBsql.GetLoginRegistrarID( clientID );
-
+/*
            if(  DBsql.TestRegistrarZone( regID , zone ) == false )
              {
                LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
                ret->errCode =  COMMAND_AUTHENTICATION_ERROR;
              }
           else
-
-
-
+         ZRUSENO 
+*/
 
    
 
