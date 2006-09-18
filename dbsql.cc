@@ -320,7 +320,7 @@ if( ExecSelect( sqlString ) )
 
 return ret;
 }
-else return true;
+else return false;
 
 }
 
