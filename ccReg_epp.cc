@@ -3800,19 +3800,25 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
         d->UpID = CORBA::string_dup( DBsql.GetRegistrarHandle( upid ) );
 
         // vlastnik domeny
-        d->Registrant=CORBA::string_dup( DBsql.GetValueFromTable( "CONTACT" , "handle" , "id" , regid ) );
-
+        if(  GetZoneEnum( zone )  )
+          {
+              if( regID == clid )  d->Registrant=CORBA::string_dup( DBsql.GetValueFromTable( "CONTACT" , "handle" , "id" , regid ) );
+              else  d->Registrant=CORBA::string_dup( "" ); // skryj vlastnika enum domenu 
+          }
+         else  d->Registrant=CORBA::string_dup( DBsql.GetValueFromTable( "CONTACT" , "handle" , "id" , regid ) );
 
         //  handle na nsset
         d->nsset=CORBA::string_dup( DBsql.GetValueFromTable( "NSSET" , "handle", "id" , nssetid ) );
     
 
         // dotaz na admin kontakty
-        // dotaz na technicke kontakty
+
+        
         if(  DBsql.SELECTCONTACTMAP( "domain"  , id ) )
           {
-               len =  DBsql.GetSelectRows(); // pocet technickych kontaktu
-               d->admin.length(len); // technicke kontaktry handle
+               len =  DBsql.GetSelectRows(); // pocet adnim kontaktu     
+               if(  GetZoneEnum( zone )  &&  regID  != clid  ) len = 0 ; // zadne admin kontakty skryt 
+               d->admin.length(len); // pocet admin kontaktu
                for( i = 0 ; i < len ; i ++) 
                  {
                    d->admin[i] = CORBA::string_dup( DBsql.GetFieldValue( i , 0 )  );
