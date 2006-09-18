@@ -1920,6 +1920,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate( const char *handle, const ccReg::C
                                               ccReg::timestamp_out crDate, CORBA::Long clientID, const char *clTRID , const char* XML )
 {
 DB DBsql;
+char pass[PASS_LEN+1];
 char roid[64];
 char HANDLE[64]; // handle na velka pismena
 ccReg::Response * ret;
@@ -1998,6 +1999,8 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                       DBsql.INTO( "CrID" );
                       DBsql.INTO( "ClID" );
                       DBsql.INTO( "status" );
+                      DBsql.INTO( "AuthInfoPw" );
+
 
                       DBsql.INTOVAL( "Name", c.Name );
                       DBsql.INTOVAL( "Organization", c.Organization );
@@ -2015,7 +2018,6 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                       DBsql.INTOVAL( "VAT", c.VAT );
                       DBsql.INTOVAL( "SSN", c.SSN );
                       if(  c.SSNtype > ccReg::EMPTY ) DBsql.INTO( "SSNtype");
-                      DBsql.INTOVAL( "AuthInfoPw", c.AuthInfoPw );
 
                       // disclose se vzdy zapisou but t nebo f
                       DBsql.INTO( "DiscloseName" );
@@ -2034,6 +2036,16 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                       DBsql.VALUE( "{ 1 }" );   // OK status
 
 
+
+                     if( strlen ( c.AuthInfoPw ) == 0 )
+                       {
+                          random_pass(  pass  ); // autogenerovane heslo pokud se heslo nezada
+                          DBsql.VVALUE( pass );
+                        }
+                      else DBsql.VALUE( c.AuthInfoPw );
+
+
+
                       DBsql.VAL( c.Name );
                       DBsql.VAL( c.Organization );
                       DBsql.VAL( c.Street1 );
@@ -2050,7 +2062,6 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                       DBsql.VAL( c.VAT );
                       DBsql.VAL( c.SSN );
                       if(  c.SSNtype > ccReg::EMPTY ) DBsql.VALUE(   c.SSNtype );
-                      DBsql.VAL( c.AuthInfoPw  );
 
                       // zapis disclose podle DiscloseFlag a DefaultPolicy servru
                       DBsql.VALUE( setvalue_DISCLOSE( c.DiscloseName , c.DiscloseFlag )  );
@@ -2632,6 +2643,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
 { 
 DB DBsql; 
 char Array[512] , NAME[256]; char createDate[32]; char HANDLE[64]; // handle na velka pismena 
+char pass[PASS_LEN+1];
 char roid[64]; ccReg::Response * ret; int regID, id, techid; 
 int i, len, j , l , seq ;
 ret = new ccReg::Response;
@@ -2854,7 +2866,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
               DBsql.INTO( "CrID" );
               DBsql.INTO( "ClID" );
               DBsql.INTO( "status" );
-              DBsql.INTOVAL( "authinfopw", authInfoPw );
+              DBsql.INTO( "authinfopw");
 
               DBsql.VALUE( id );
               DBsql.VVALUE( roid ); // neni potreba escape
@@ -2863,7 +2875,15 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
               DBsql.VALUE( regID );
               DBsql.VALUE( regID );
               DBsql.VVALUE( "{ 1 }" );   // status OK
-              DBsql.VAL( authInfoPw );
+
+
+              if( strlen ( authInfoPw ) == 0 )
+                {
+                  random_pass(  pass  ); // autogenerovane heslo pokud se heslo nezada
+                  DBsql.VVALUE( pass );
+                }
+              else DBsql.VALUE( authInfoPw ); 
+ 
 
               // zapis nejdrive nsset 
               if( DBsql.EXEC() )
@@ -4571,6 +4591,7 @@ const ccReg::ENUMValidationExtension * enumVal;
 char valexpiryDate[MAX_DATE];
 char exvdateStr[MAX_DATE];
 char roid[64] , FQDN[64] , HANDLE[64];
+char pass[PASS_LEN+1];
 ccReg::Response * ret;
 int contactid, regID, nssetid, adminid, id;
 int i, len, s, zone , seq;
@@ -4846,7 +4867,7 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                           DBsql.INTO( "status" );
                           DBsql.INTO( "Registrant" );
                           DBsql.INTO( "nsset" );
-                          DBsql.INTOVAL( "authinfopw" , AuthInfoPw);
+                          DBsql.INTO( "authinfopw");
                                                                   
                                                                   
                           DBsql.VALUE( zone );
@@ -4861,7 +4882,13 @@ LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] p
                           DBsql.VALUE( contactid );
                           if( nssetid == 0 )   DBsql.VALUENULL(); // domena bez nssetu zapsano NULL
                           else DBsql.VALUE( nssetid );
-                          DBsql.VAL(  AuthInfoPw);   
+
+                          if( strlen ( AuthInfoPw ) == 0 )
+                            {
+                               random_pass(  pass  ); // autogenerovane heslo pokud se heslo nezada
+                               DBsql.VVALUE( pass );
+                            }
+                          else DBsql.VALUE(  AuthInfoPw);   
 
                           // pokud se insertovalo do tabulky
                           if( DBsql.EXEC() )
