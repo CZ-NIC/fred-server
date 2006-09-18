@@ -473,6 +473,32 @@ if( ExecSelect( sqlString ) )
 
 }
 
+
+bool DB::GetExpDate(char *dateStr , int domainID , int period  , int max_period )
+{
+char sqlString[256];
+bool ret=false;
+strcpy( dateStr , "1900-01-01" ); // default datum
+
+sprintf( sqlString , "SELECT  ExDate+interval\'%d month\' FROM DOMAIN WHERE id=%d AND ExDate+interval\'%d month\' < current_date+interval\'%d month\';",
+           period , domainID , period , max_period );
+
+
+if( ExecSelect( sqlString ) )
+ {
+    if(  GetSelectRows() == 1  )
+      {
+        strncpy( dateStr ,     GetFieldValue( 0 , 0 ) , 10 );
+        dateStr[10] = 0 ;
+        ret = true;
+      }
+    FreeSelect();
+  }
+
+return ret;
+}
+
+
 int DB::CheckNSSet(const char *handle )
 {
 return CheckHandle( "NSSET" , handle );
@@ -1009,16 +1035,7 @@ SQLCat( " ," );
 
 }
 
-//nastavi ExpDate
-void DB::SETEXDATE( int period )
-{
-char str[80];
 
-// spocitej dobu expirace
-sprintf( str , " ExDate= ExDate + interval\'%d month\' " , period );
-SQLCat( str );
-SQLCat( " ," );
-}
 void DB::WHERE(const char *fname , const char * value )
 {
   if( SQLTestEnd( ',' ) ||  SQLTestEnd( ';' ) ) SQLDelEnd();  // vymaz posledni znak

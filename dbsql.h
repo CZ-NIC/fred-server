@@ -76,6 +76,8 @@ bool TestObjectHistory( const char *table , const char *fname ,  const char * na
 
 // vypocet pres postgres aktulani datum plus x mesicu
 void GetValExDate(char *dateStr ,  int period );
+// vypocet doby exprace
+bool GetExpDate(char *dateStr , int domainID , int period  , int max_period );
 
 // vraci ID hostu
 int CheckHost(  const char *fqdn , int nssetID );
@@ -148,7 +150,6 @@ void SETS( const char *fname , const char * value , bool esc );
 void SET( const  char *fname , int   value );
 void SET( const  char *fname , bool  value );
 void SETBOOL( const char *fname , char c );
-void SETEXDATE( int period ) ; //nastavi ExpDate pres interval
 
 void WHERE( const  char *fname , const  char * value );
 void WHERE( const  char *fname , int   value );
