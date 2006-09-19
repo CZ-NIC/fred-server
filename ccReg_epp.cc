@@ -591,6 +591,11 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
           if( DBsql.ExecSelect( sqlString ) )
             {
               rows = DBsql.GetSelectRows();
+              DBsql.FreeSelect();
+            }
+          else
+            ret->errCode = COMMAND_FAILED;
+
               if( rows == 0 )
                 {
                   LOG( ERROR_LOG, "unknown msgID %d", msgID );
@@ -600,11 +605,7 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
                   ret->errors[0].value <<= msgID;
                   ret->errors[0].reason = CORBA::string_dup(  DBsql.GetReasonMessage( REASON_MSG_UNKNOW_MSGID) );
                 }
-              DBsql.FreeSelect();
-            }
           else
-            ret->errCode = COMMAND_FAILED;
-
           if( rows == 1 )       // pokud tam ta zprava existuje
             {
               // oznac zpravu jako prectenou  
