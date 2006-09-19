@@ -605,7 +605,8 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
                   ret->errors[0].value <<= msgID;
                   ret->errors[0].reason = CORBA::string_dup(  DBsql.GetReasonMessage( REASON_MSG_UNKNOW_MSGID) );
                 }
-          else
+          else  
+
           if( rows == 1 )       // pokud tam ta zprava existuje
             {
               // oznac zpravu jako prectenou  
@@ -4335,18 +4336,9 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                              if( GetZoneEnum( zone ) )
                                {
                                  DBsql.GetValExDate( exvdateStr , GetZoneValPeriod( zone ) ); // vypocet maximalni doby expirace
-                                 if( strlen( valexpiryDate ) == 0 )
-                                   {
-                                     LOG( WARNING_LOG, "DomainUpdate: not validity exp date "  );
-                                     ret->errors.length( seq +1 );
-                                     ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
-                                     ret->errors[seq].value <<= CORBA::string_dup( "not valExpDate"  );
-                                     ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetReasonMessage(REASON_MSG_VALEXPDATE_REQUIRED ) );
-                                     seq++;
-                                     ret->errCode = COMMAND_PARAMETR_MISSING ;
-                                   }
-                               else
                                  // test validate
+                                 if( strlen( valexpiryDate ) > 0  )
+                                 {
                                  if(  TestValidityExpDate(  valexpiryDate  , exvdateStr )  ==  false )
                                    {
                                       LOG( WARNING_LOG, "DomainUpdate: bad validity exp date" );
@@ -4357,6 +4349,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
                                       seq++;
                                       ret->errCode = COMMAND_PARAMETR_ERROR;
                                     }
+                                 }
                                }
 
              else
@@ -5164,21 +5157,10 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
             if( GetZoneEnum( zone ) )
             {
                 DBsql.GetValExDate( exvdateStr , GetZoneValPeriod( zone ) ); // vypocet maximalni do
-             if( strlen( valexpiryDate ) == 0 )
-               {
-
-                  LOG( WARNING_LOG, "DomainRenew: not validity exp date "  );
-                  ret->errors.length( seq +1 );
-                  ret->errors[seq].code = ccReg::domainRenew_ext_valDate;
-
-                  ret->errors[seq].value <<= CORBA::string_dup( "not valExpDate"  ); // TODO
-                  ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetReasonMessage(REASON_MSG_VALEXPDATE_REQUIRED ) ); 
-                  seq++;
-                  ret->errCode = COMMAND_PARAMETR_MISSING ;
-               }
-            else
-            if(  TestValidityExpDate(  valexpiryDate , exvdateStr )  ==  false )
-              {
+             if( strlen( valexpiryDate ) > 0 )
+             {
+              if(  TestValidityExpDate(  valexpiryDate , exvdateStr )  ==  false )
+                {
                   LOG( WARNING_LOG, "DomainRenew: bad validity exp date" );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_ext_valDate;
@@ -5186,7 +5168,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                   ret->errors[seq].reason = CORBA::string_dup(   DBsql.GetReasonMessage(REASON_MSG_VALEXPDATE_NOT_VALID ) ); // TODO
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
-
+                }
               }
 
              }
