@@ -3,6 +3,8 @@
 #include "util.h"
 #include "dbsql.h"
 
+#include "register/register.h"
+
 ccReg_Whois_i::ccReg_Whois_i(const std::string _database) : database(_database)
 {}
 
@@ -11,38 +13,33 @@ ccReg_Whois_i::~ccReg_Whois_i()
 
 ccReg::DomainWhois* ccReg_Whois_i::getDomain(const char* domain_name, CORBA::String_out timestamp)
 {
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(NULL));
+  Register::CheckHandle chd;
+
 DB DBsql;
 char sqlString[1024];
 char dateStr[32];
+char timestampStr[32];
 ccReg::DomainWhois *dm;
 int clid , did ,nssetid , id  ;
 int i , len;
+int zone;
 time_t t , created , expired ;
 bool found = false;
 int db_error=0;
+
+
 
 // casova znacka
 t = time(NULL);
 
 
+// vrat casove razitko
+get_rfc3339_timestamp( t , timestampStr  );
+timestamp =  CORBA::string_dup( timestampStr );
+
 dm = new ccReg::DomainWhois;
 
-// dotaz na domenu
-sprintf( sqlString , "SELECT * FROM DOMAIN WHERE fqdn=\'%s\'" , domain_name );
-
-/*
-  // struktura
-  struct DomainWhois
-  {
-    WhoisDomainStatus status;   // status 1 REGISTRED - 0 FREE
-    string created;
-    string expired;
-    string registrarName;       // jmeno registratora
-    string registrarUrl;        // odkaz na jeho webovou adresu
-    NameServers ns;             // sequence nameservru
-    TechContact tech;           // sequence handle na technicke kontakty
-  };
-*/
 
 // free
 // dm->name= CORBA::string_dup( "" );
@@ -57,9 +54,16 @@ dm->tech.length(0); // nulova sekvence
 // dm->admin.length(0); // nulova sekvence
 
 
+r->checkHandle(domain_name ,chd);
+
+LOG( LOG_DEBUG ,  "WHOIS: checkHandle %s -> handleClass %d newHandle %s" , domain_name , chd.handleClass  , chd.newHandle.c_str()    );
+
+if(  chd.handleClass   ==  Register::CH_ENUM  || chd.handleClass   ==  Register::CH_DOMAIN ) 
+{
+
 if( DBsql.OpenDatabase( database.c_str() ) )
 {
-  if( DBsql.ExecSelect( sqlString ) )
+ if(  DBsql.SELECTDOMAIN(  chd.newHandle.c_str()  , ZONE_ENUM , true )  )
   {
   if( DBsql.GetSelectRows() == 1 )
     {
@@ -159,16 +163,26 @@ switch( db_error )
         break;
 
 }
-
-// vrat casove razitko
-get_rfc3339_timestamp( t , dateStr  );
-timestamp =  CORBA::string_dup( dateStr );
-
-
 if( !found )
 {
-throw ccReg::Whois::DomainNotFound( dateStr );  
+throw ccReg::Whois::DomainError( timestampStr , ccReg::WE_NOTFOUND  );  
 }
+
+}
+else // ostatni chyny
+if(  chd.handleClass   ==  Register::CH_DOMAIN_LONG ) 
+  throw ccReg::Whois::DomainError( timestampStr , ccReg::WE_DOMAIN_LONG );
+  else
+  if(  chd.handleClass   ==  Register::CH_DOMAIN_BAD_ZONE )
+    throw ccReg::Whois::DomainError( timestampStr , ccReg::WE_DOMAIN_BAD_ZONE );
+   else
+  // default
+   throw ccReg::Whois::DomainError( timestampStr , ccReg::WE_INVALID );
+
+
+
+
+
 
 return dm;
 }
