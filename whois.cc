@@ -19,6 +19,8 @@ int clid , did ,nssetid , id  ;
 int i , len;
 time_t t , created , expired ;
 bool found = false;
+int db_error=0;
+
 // casova znacka
 t = time(NULL);
 
@@ -140,13 +142,22 @@ if( DBsql.OpenDatabase( database.c_str() ) )
    }
  
   }
- 
+  else  db_error=2;
  
  DBsql.Disconnect();
 }
-else
+else db_error=1;
+
+switch( db_error )
 {
-throw ccReg::Whois::WhoisError( "database error" );
+  case 1:
+        throw ccReg::Whois::WhoisError( "database connect error" );
+        break;
+
+  case 2:
+        throw ccReg::Whois::WhoisError( "database select error" );
+        break;
+
 }
 
 // vrat casove razitko
