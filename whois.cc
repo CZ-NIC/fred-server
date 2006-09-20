@@ -64,7 +64,6 @@ if(  chd.handleClass   ==  Register::CH_ENUM  || chd.handleClass   ==  Register:
 {
 if( chd.handleClass   ==  Register::CH_ENUM ){ zone = ZONE_ENUM;  en=true;}
 else {ZONE_CZ ; en=false; }
-dm->fqdn =  CORBA::string_dup( domain_name  );
 
 if( DBsql.OpenDatabase( database.c_str() ) )
 {
@@ -92,6 +91,7 @@ if( DBsql.OpenDatabase( database.c_str() ) )
      if( t  > expired )   dm->status = ccReg::WHOIS_EXPIRED;
      else dm->status = ccReg::WHOIS_ACTIVE;
 
+     dm->fqdn =  CORBA::string_dup( DBsql.GetFieldValueName("fqdn" , 0 ) );
 
 
      // free select
