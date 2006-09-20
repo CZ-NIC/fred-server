@@ -3,6 +3,11 @@
 #include <libxml/tree.h>
 #endif
 
+#ifndef LOG_LOCAL0
+#include <syslog.h>
+#endif
+
+
 #define KEY_dbname      1
 #define KEY_user        2
 #define KEY_pass        3  
@@ -51,6 +56,32 @@ const char *GetNameService(){ return nameServiceIOR.c_str(); }
 
 int GetSYSLOGlevel(){ return log_level; };
 int GetSYSLOGlocal(){ return log_local; };
+int GetSYSLOGfacility()
+{ 
+switch( log_local )
+      {
+        case 0:
+        return LOG_LOCAL0;
+        case 1:
+        return LOG_LOCAL1;
+        case 2:
+        return LOG_LOCAL2;
+        case 3:
+        return LOG_LOCAL3;
+        case 4:
+        return LOG_LOCAL4;
+        case 5:
+        return LOG_LOCAL5;
+        case 6:
+        return LOG_LOCAL6;
+        case 7:
+        return LOG_LOCAL7;
+        default:
+        return LOG_LOCAL0;
+      }
+
+};        
+
 
 int GetLocal(char *value);
 int GetLevel(char *value);
