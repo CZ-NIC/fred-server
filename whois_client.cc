@@ -65,15 +65,17 @@ int main(int argc, char** argv)
     ccReg::Whois_var Whois = ccReg::Whois::_narrow (obj);
     ccReg::DomainWhois *dm;
 
-    strcpy( name , "sracka.cz"  );
+    strcpy( name , "4.4.4.0.2.4.e164.arpa"  );
     cout << "getDomain" << name << endl;
 
     dm = Whois->getDomain( name  , tim );
 
-    cout << "WHOIS: " << name << endl;
+    cout << "WHOIS: " << dm->fqdn << endl;
+    cout << "fqdn" << dm->fqdn << endl;
+    cout << "status" <<  dm->status << endl; 
 
     for( n = 0 ; n < dm->ns.length() ; n ++ )
-    cout << "status" <<  dm->status <<   "NameServers: " << dm->ns[n] <<  endl;
+    cout <<  "NameServers: " << dm->ns[n] <<  endl;
 
     cout << "Registrator: " << dm->registrarName << "url: " << dm->registrarUrl <<  endl;
 
