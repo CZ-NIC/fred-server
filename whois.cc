@@ -24,6 +24,7 @@ ccReg::DomainWhois *dm;
 int clid , did ,nssetid , id  ;
 int i , len;
 int zone;
+bool en;
 time_t t , created , expired ;
 bool found = false;
 int db_error=0;
@@ -52,18 +53,23 @@ dm->registrarUrl  = CORBA::string_dup( "" );
 //dm->ns.length(0); // nulova sekvence
 dm->tech.length(0); // nulova sekvence
 // dm->admin.length(0); // nulova sekvence
+ dm->fqdn = CORBA::string_dup( "" ) ;
 
 
 r->checkHandle(domain_name ,chd);
 
-LOG( LOG_DEBUG ,  "WHOIS: checkHandle %s -> handleClass %d newHandle %s" , domain_name , chd.handleClass  , chd.newHandle.c_str()    );
+LOG( LOG_DEBUG ,  "WHOIS: checkHandle %s -> handleClass %d" , domain_name , chd.handleClass );
 
 if(  chd.handleClass   ==  Register::CH_ENUM  || chd.handleClass   ==  Register::CH_DOMAIN ) 
 {
+if( chd.handleClass   ==  Register::CH_ENUM ){ zone = ZONE_ENUM;  en=true;}
+else {ZONE_CZ ; en=false; }
+dm->fqdn =  CORBA::string_dup( domain_name  );
 
 if( DBsql.OpenDatabase( database.c_str() ) )
 {
- if(  DBsql.SELECTDOMAIN(  chd.newHandle.c_str()  , ZONE_ENUM , true )  )
+
+ if(  DBsql.SELECTDOMAIN(  domain_name  , zone , en  )  )
   {
   if( DBsql.GetSelectRows() == 1 )
     {
