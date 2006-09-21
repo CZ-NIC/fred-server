@@ -98,6 +98,37 @@ return version;
 
 
 
+// parse extension
+void  ccReg_EPP_i::GetValExpDateFromExtension( char *valexpDate , const ccReg::ExtensionList& ext )
+{
+int len , i ;
+const ccReg::ENUMValidationExtension * enumVal;
+
+strcpy( valexpDate , "" );
+
+
+  len = ext.length();
+  if( len > 0 )
+    {
+      LOG( DEBUG_LOG, "extension length %d", ext.length() );
+      for( i = 0; i < len; i++ )
+        {
+          if( ext[i] >>= enumVal )
+            {
+              strcpy( valexpDate, enumVal->valExDate );
+              LOG( DEBUG_LOG, "enumVal %s ", valexpDate );
+            }
+          else
+            {
+              LOG( ERROR_LOG, "Unknown value extension[%d]", i );
+              break;
+            }
+
+        }
+    }
+
+}
+
 
 // DISCLOSE
 /*
@@ -4097,7 +4128,6 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate( const char *fqdn, const char *regis
 ccReg::Response * ret;
 DB DBsql;
 Status status;
-const ccReg::ENUMValidationExtension * enumVal;
 bool stat, check;
 char FQDN[64] , HANDLE[64];
 char valexpiryDate[MAX_DATE] , exvdateStr[MAX_DATE];
@@ -4118,26 +4148,8 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 
 
 // parse extension
-  len = ext.length();
+GetValExpDateFromExtension( valexpiryDate , ext );
 
-  if( len > 0 )
-    {
-      LOG( NOTICE_LOG, "extension length %d", ext.length() );
-      for( i = 0; i < len; i++ )
-        {
-          if( ext[i] >>= enumVal )
-            {
-              strcpy( valexpiryDate  ,  enumVal->valExDate );
-              LOG( NOTICE_LOG, "enumVal %s ",  valexpiryDate);
-            }
-          else
-            {
-              LOG( ERROR_LOG, "Unknown value extension[%d]", i );
-              break;
-            }
-
-        }
-    }
 
 
 // nacti status flagy
@@ -4580,7 +4592,6 @@ ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Regis
                                              CORBA::Long clientID, const char *clTRID,  const  char* XML , const ccReg::ExtensionList & ext )
 {
 DB DBsql;
-const ccReg::ENUMValidationExtension * enumVal;
 char valexpiryDate[MAX_DATE];
 char exvdateStr[MAX_DATE];
 char roid[64] , FQDN[64] , HANDLE[64];
@@ -4608,27 +4619,7 @@ LOG( NOTICE_LOG, "DomainCreate: clientID -> %d clTRID [%s] fqdn  [%s] ", clientI
 LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] period %d", Registrant, nsset, AuthInfoPw, period );
 
 // parse extension
-  len = ext.length();
-  if( len > 0 )
-    {
-      LOG( NOTICE_LOG, "extension length %d", ext.length() );
-      for( i = 0; i < len; i++ )
-        {
-          if( ext[i] >>= enumVal )
-            {
-              strcpy( valexpiryDate  ,  enumVal->valExDate );
-              LOG( NOTICE_LOG, "enumVal %s ",  valexpiryDate);
-            }
-          else
-            {
-              LOG( ERROR_LOG, "Unknown value extension[%d]", i );
-              break;
-            }
-
-        }
-    }
-
-
+GetValExpDateFromExtension( valexpiryDate , ext );
 
   if( DBsql.OpenDatabase( database ) )
     {
@@ -5006,7 +4997,6 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
 {
   DB DBsql;
   Status status;
-  const ccReg::ENUMValidationExtension * enumVal;
   char expDateStr[MAX_DATE],  ExDateStr[MAX_DATE] , valexpiryDate[MAX_DATE] , exvdateStr[MAX_DATE];
   char FQDN[64]; 
   ccReg::Response * ret;
@@ -5033,28 +5023,10 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
 
 
 
+
 // parse extension
-  len = ext.length();
-  if( len > 0 )
-    {
-      LOG( NOTICE_LOG, "extension length %d", ext.length() );
-      for( i = 0; i < len; i++ )
-        {
-          if( ext[i] >>= enumVal )
-            {
-              strcpy( valexpiryDate  ,  enumVal->valExDate );
-              LOG( NOTICE_LOG, "enumVal %s ",  valexpiryDate);
-            }
-          else
-            {
-              LOG( ERROR_LOG, "Unknown value extension[%d]", i );
-              break;
-            }
-
-        }
-    }
-
-
+GetValExpDateFromExtension( valexpiryDate , ext );
+ 
 
 
   if( DBsql.OpenDatabase( database ) )

@@ -44,6 +44,11 @@ public:
   int getZZ( const char *fqdn  , bool compare );
   int getFQDN( char *FQDN , const char *fqdn );
   bool testFQDN(  const char *fqdn );
+
+// parse extension
+  void GetValExpDateFromExtension( char *valexpDate , const ccReg::ExtensionList& ext );
+
+
   
   // vraceni cisla verze
   char* version(ccReg::timestamp_out datetime);
