@@ -121,7 +121,7 @@ namespace Register
         for (unsigned i=0; i<domain.size()-2; i++)
           if (domain[i].length() != 1 || !IS_NUMBER(domain[i][0]))
             return false;
-	return true;
+        return true;
       } 
     };
     Manager *Manager::create(DB *db, Zone::Manager *zm)
