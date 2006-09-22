@@ -455,27 +455,24 @@ return ret;
 
 
 // vypocet pres postgres aktulani datum plus x mesicu
-void DB::GetValExDate(char *dateStr ,  int period )
+bool DB::TestValExDate(const char *dateStr ,  int period )
 {
-char sqlString[128];
+char sqlString[256];
+bool ret =false;
 
-strcpy( dateStr , "1900-01-01" ); // default datum
 
-sprintf( sqlString , "SELECT current_date+interval\'%d month\';" , period );
 
+sprintf( sqlString , "SELECT valex , max, min  from (select date\'%s\' as valex , current_date + interval\'%d month\' as max,  current_date as min ) as tmp WHERE valex > min AND valex <= max;" , 
+                         dateStr , period );
 
 if( ExecSelect( sqlString ) )
  {
-    if(  GetSelectRows() == 1  ) 
-      {
-        strncpy( dateStr ,     GetFieldValue( 0 , 0 ) , 10 ); 
-        dateStr[10] = 0 ;
-      }
+    if(  GetSelectRows() == 1  )  ret = true;
     FreeSelect();
-  }
+ }
 
 
-
+return ret;
 }
 
 

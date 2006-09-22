@@ -74,8 +74,8 @@ bool TestDomainFQDNHistory( const char * fqdn , int period );
 bool TestObjectHistory( const char *table , const char *fname ,  const char * name , int period );
 
 
-// vypocet pres postgres aktulani datum plus x mesicu
-void GetValExDate(char *dateStr ,  int period );
+// test doby expirace validace
+bool TestValExDate(const char *dateStr ,  int period );
 // vypocet doby exprace
 bool GetExpDate(char *dateStr , int domainID , int period  , int max_period );
 

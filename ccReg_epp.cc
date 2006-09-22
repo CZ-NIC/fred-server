@@ -4130,7 +4130,7 @@ DB DBsql;
 Status status;
 bool stat, check;
 char FQDN[64] , HANDLE[64];
-char valexpiryDate[MAX_DATE] , exvdateStr[MAX_DATE];
+char valexpiryDate[MAX_DATE];
 char statusString[128];
 int regID = 0, clID = 0, id, nssetid, contactid, adminid;
 int i, len, slen, j , seq , zone;
@@ -4347,11 +4347,9 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                            // Test jestli za danono u enum domen
                              if( GetZoneEnum( zone ) )
                                {
-                                 DBsql.GetValExDate( exvdateStr , GetZoneValPeriod( zone ) ); // vypocet maximalni doby expirace
-                                 // test validate
                                  if( strlen( valexpiryDate ) > 0  )
                                  {
-                                 if(  TestValidityExpDate(  valexpiryDate  , exvdateStr )  ==  false )
+                                 if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) ) ==  false ) // test validace expirace
                                    {
                                       LOG( WARNING_LOG, "DomainUpdate: bad validity exp date" );
                                       ret->errors.length( seq +1);
@@ -4593,7 +4591,6 @@ ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Regis
 {
 DB DBsql;
 char valexpiryDate[MAX_DATE];
-char exvdateStr[MAX_DATE];
 char roid[64] , FQDN[64] , HANDLE[64];
 char pass[PASS_LEN+1];
 ccReg::Response * ret;
@@ -4755,7 +4752,6 @@ GetValExpDateFromExtension( valexpiryDate , ext );
             // Test jestli za danono u enum domen
             if( GetZoneEnum( zone ) )
             {
-              DBsql.GetValExDate( exvdateStr , GetZoneValPeriod( zone ) ); // vypocet maximalni doby expirace
              if( strlen( valexpiryDate ) == 0 )
                {
 
@@ -4769,7 +4765,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   ret->errCode = COMMAND_PARAMETR_MISSING ;                
                }
             else
-            if(  TestValidityExpDate(  valexpiryDate ,  exvdateStr )  ==  false )
+            if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) ) ==  false ) // test validace expirace
               {
                   LOG( WARNING_LOG, "DomainCreate: bad validity exp date" );
                   ret->errors.length( seq +1);
@@ -4997,7 +4993,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
 {
   DB DBsql;
   Status status;
-  char expDateStr[MAX_DATE],  ExDateStr[MAX_DATE] , valexpiryDate[MAX_DATE] , exvdateStr[MAX_DATE];
+  char expDateStr[MAX_DATE],  ExDateStr[MAX_DATE] , valexpiryDate[MAX_DATE] ;
   char FQDN[64]; 
   ccReg::Response * ret;
   int clid, regID, id, len, i , zone , seq;
@@ -5128,10 +5124,9 @@ GetValExpDateFromExtension( valexpiryDate , ext );
             // Test jestli za danono u enum domen
             if( GetZoneEnum( zone ) )
             {
-                DBsql.GetValExDate( exvdateStr , GetZoneValPeriod( zone ) ); // vypocet maximalni do
              if( strlen( valexpiryDate ) > 0 )
              {
-              if(  TestValidityExpDate(  valexpiryDate , exvdateStr )  ==  false )
+              if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) ) ==  false ) // test validace expirace
                 {
                   LOG( WARNING_LOG, "DomainRenew: bad validity exp date" );
                   ret->errors.length( seq +1);
