@@ -98,16 +98,6 @@ public:
   ccReg::Response* DomainRenew(const char* fqdn, const char* curExpDate, CORBA::Short period, ccReg::timestamp_out exDate, CORBA::Long clientID, const char* clTRID, const char* XML, const ccReg::ExtensionList& ext);
   ccReg::Response* DomainTransfer(const char* fqdn,  const char* authInfo, CORBA::Long clientID, const char* clTRID  , const char* XML);
  
-  // pro public interface
-  ccReg::RegistrarList* getRegistrars();
-  ccReg::Registrar* getRegistrarByHandle(const char* handle);
-
-  // primitivni vypis
-  ccReg::Lists*  ObjectList( char* table , char *fname );
-  ccReg::Lists* ListRegistrar();
-  ccReg::Lists* ListDomain();
-  ccReg::Lists* ListContact();
-  ccReg::Lists* ListNSSet();
 
   // EPP vypis
   ccReg::Response* ContactList(ccReg::Lists_out contacts, CORBA::Long clientID, const char* clTRID, const char* XML);
