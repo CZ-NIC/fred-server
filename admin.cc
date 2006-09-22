@@ -46,7 +46,8 @@ reglist = new ccReg::RegistrarList;
              (*reglist)[i].fax=CORBA::string_dup( DBsql.GetFieldValueName("fax" , i ) );
              (*reglist)[i].email=CORBA::string_dup( DBsql.GetFieldValueName("email" , i ) );
              (*reglist)[i].url=CORBA::string_dup( DBsql.GetFieldValueName("url" , i ) );
-
+             (*reglist)[i].credit=get_price( DBsql.GetFieldValueName("credit" , i ) );
+  
           }
 
        DBsql.FreeSelect();
@@ -65,17 +66,15 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
 {
 DB DBsql;
 ccReg::Registrar *reg;
-char sqlString[128];
 bool find=false;
 
 reg = new ccReg::Registrar ;
 
  if( DBsql.OpenDatabase( database.c_str() ) )
   { 
-    sprintf( sqlString , "SELECT * FROM REGISTRAR WHERE handle=\'%s\';" , handle );
-    LOG( NOTICE_LOG, "getRegistrar: num -> %s", handle );
+    LOG( NOTICE_LOG, "getRegistrByHandle: handle -> %s", handle );
 
-   if( DBsql.ExecSelect( sqlString ) )
+   if( DBsql.SELECTONE( "REGISTRAR" , "handle" , handle  ) )
    {
      if( DBsql.GetSelectRows() != 1 ) throw ccReg::Admin::ObjectNotFound();
      else
@@ -96,7 +95,7 @@ reg = new ccReg::Registrar ;
              reg->fax=CORBA::string_dup( DBsql.GetFieldValueName("fax" , 0 ) );
              reg->email=CORBA::string_dup( DBsql.GetFieldValueName("email" , 0 ) );
              reg->url=CORBA::string_dup( DBsql.GetFieldValueName("url" , 0 ) );
-
+             reg->credit=get_price( DBsql.GetFieldValueName("credit" , 0 ) );
             find = true;
          }
      
@@ -124,6 +123,7 @@ reg->telephone=CORBA::string_dup( "" );
 reg->fax=CORBA::string_dup( "" );
 reg->email=CORBA::string_dup( "" );
 reg->url=CORBA::string_dup( "" );
+reg->credit=0;
 }
 
 return reg;
