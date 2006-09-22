@@ -1238,6 +1238,7 @@ SQLCat( " ;" ); // ukoncit
 
 bool DB::SELECTONE(  const char * table  , const char *fname ,  const char *value )
 {
+LOG( SQL_LOG , "SELECTONE  table %s fname %s values %s" , table  , fname ,  value  );
 SELECTFROM( "" , table );
 WHERE( fname , value );
 return SELECT();
