@@ -10,6 +10,12 @@ int main()
   db.OpenDatabase("dbname=ccreg user=ccreg");
   std::auto_ptr<Register::Manager> m(Register::Manager::create(&db));
   Register::Domain::Manager *dm = m->getDomainManager();
+  Register::Registrar::Manager *rm = m->getRegistrarManager();
+  Register::Registrar::RegistrarList *rl = rm->getList();
+  rl->reload();
+  for (unsigned i=0; i<rl->size(); i++)
+    std::cout << "id:" << rl->get(i)->getId() 
+              << " handle: " << rl->get(i)->getHandle() << std::endl;
   std::string input;
   while (1) {
     std::cout << "Domain: ";

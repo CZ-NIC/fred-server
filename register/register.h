@@ -3,6 +3,7 @@
 
 #include <string>
 #include "domain.h"
+#include "registrar.h"
 
 /// forward declared parameter type
 class DB;
@@ -38,6 +39,8 @@ namespace Register
     ) const = 0;
     /// return domain manager
     virtual Domain::Manager *getDomainManager() = 0;
+    /// return registrar manager
+    virtual Registrar::Manager *getRegistrarManager() = 0;
     /// factory method
     static Manager *create(DB *db);    
   };
