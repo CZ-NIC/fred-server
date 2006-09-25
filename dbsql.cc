@@ -839,7 +839,6 @@ return 0;
 // ulozi radek tabulky s id
 bool DB::SaveHistory(char *table , char *fname , int id )
 {
-char sqlString[MAX_SQLBUFFER] , buf[1024] ;
 int i ,  row ;
 bool ret= true; // default
 
@@ -847,38 +846,27 @@ bool ret= true; // default
 if( historyID )
 {
     LOG( SQL_LOG , "SaveHistory historyID - > %d" , historyID ); 
-    sprintf(  sqlString , "SELECT * FROM %s WHERE %s=%d;" , table , fname ,  id );
-
-    if( ExecSelect( sqlString ) )
+    if( SELECTONE( table , fname , id )  )
     {
      for( row = 0 ; row <  GetSelectRows() ; row ++ )
      {
-
-      sprintf( sqlString , "INSERT INTO %s_history ( HISTORYID   " ,  table );
+      // zapis do tabulky historie 
+      INSERTHISTORY( table );
 
        for( i = 0 ; i <  GetSelectCols() ; i ++ )
           {
-           if( IsNotNull( row , i ) )
-             {
-              strcat( sqlString , " , " );  
-              strcat( sqlString ,  GetFieldName( i ) );
-             }
+           if( IsNotNull( row , i ) ) INTO(  GetFieldName( i ) ); 
           }
 
-       sprintf( buf , " ) VALUES ( %d "  ,  historyID );
-       strcat( sqlString , buf ); 
- 
+      VALUE( historyID ); // zapis jako prvni historyID
       for( i = 0 ; i <  GetSelectCols() ; i ++ )
       {
-        if( IsNotNull( row , i ) )
-          {  
-            sprintf( buf , " , \'%s\'" , GetFieldValue( row  , i ) );
-            strcat(  sqlString , buf );
-          }
+        // uloz pouze ne null hosdnoty
+        if( IsNotNull( row , i ) ) VALUE(  GetFieldValue( row  , i ) );
        }
-      strcat(  sqlString , " );" );
 
-      if( ExecSQL(  sqlString ) == false) { ret = false ; break;  } // pokud nastane chyba
+        if( EXEC() == false) { ret = false ; break;  } // uloz hostorii a  pokud nastane chyba
+
       }
 
      FreeSelect();
@@ -1074,6 +1062,20 @@ char numStr[16];
 sprintf( numStr , "%d" ,  value );
 WHERE( fname , numStr ); 
 }
+
+// INSERT INTO history
+void DB::INSERTHISTORY( const char * table )
+{
+sqlBuffer = new char[MAX_SQLBUFFER];
+memset(  sqlBuffer , 0 , MAX_SQLBUFFER );
+SQLCat( "INSERT INTO ");
+SQLCat( table );
+SQLCat( "_history " );
+INTO( "HISTORYID" );
+}
+
+
+
 // INSERT INTO funkce
 
 void DB::INSERT( const char * table )

@@ -156,6 +156,7 @@ void WHERE( const  char *fname , int   value );
 void WHEREOPP(  const  char *op ,  const  char *fname , const  char *p  , const  char * value );
 void WHEREID( int id ) { WHERE( "id" , id ); };
 //  SQL INSERT funkce
+void INSERTHISTORY( const char * table );
 void INSERT( const  char * table );
 void INTO(const  char *fname);
 void INTOVAL(const  char *fname , const char * value );
