@@ -6,12 +6,13 @@
 #include <iostream.h>
 #include <ccReg.hh>
 
+#include <nameservice.h>
+
 #include <time.h>
 
 //////////////////////////////////////////////////////////////////////
 
 
-static CORBA::Object_ptr getObjectReference(CORBA::ORB_ptr orb);
 
 void random_string(char *str , int len)
 {
@@ -29,6 +30,7 @@ int main(int argc, char** argv)
   try {
 //     CORBA::String_var clID, pass , cc ; 
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);    
+    CORBA::Object_var  epp_obj , admin_obj;
     ccReg::Contact *contact , *cc;
     ccReg::ContactChange *ch;
     ccReg::Response *ret;
@@ -38,7 +40,6 @@ int main(int argc, char** argv)
     ccReg::Check dcheck(2);
     CORBA::Any an;
     CORBA::Short err , sh;
-    CORBA::Object_var obj ;
     ccReg::RegistrarList *rl;
     ccReg::Lists *lists ;
     ccReg::Registrar *reg;
@@ -63,70 +64,55 @@ int main(int argc, char** argv)
     char *buffer;
     char name[64] , handle[64] ,  roid[32] , email[32] , clTRID[32];
     long size  ;
-/*
-    ifstream fd ("/tmp/ccReg.ref");
-    // get pointer to associated buffer object
-     pbuf=fd.rdbuf();
+    NameService ns(orb);
 
-     // get file size using buffer's members
-     size=pbuf->pubseekoff (0,ios::end,ios::in);
-     pbuf->pubseekpos (0,ios::in);
+    epp_obj =  ns.resolve("EPP");
 
-     // allocate memory to contain file data
-     buffer=new char[size+1];
-
-     // get file data  
-     pbuf->sgetn (buffer,size);
-     buffer[size] = 0; // end line     
-     fd.close ();
+    if (CORBA::is_nil (epp_obj))
+      {
+        return 1;
+      }
+    ccReg::EPP_var EPP = ccReg::EPP::_narrow (epp_obj);
 
 
-     cout << "IOR: "  << buffer<< endl;
+    admin_obj =  ns.resolve("Admin");
 
-     // get CORBA reference
-     obj = orb->string_to_object(  buffer );
-
-*/
-   obj =  getObjectReference( orb );
-
-//    CORBA::Object_var obj = orb->string_to_object (uri);
-
-
-  
-
-//      EPP::EPP_var epp = ccReg::EPP::_narrow (obj);
-
-    if (CORBA::is_nil (obj)) 
+    if (CORBA::is_nil (admin_obj)) 
       {
         return 1;
       }
 
+    ccReg::Admin_var Admin = ccReg::Admin::_narrow (admin_obj);
 
-    ccReg::EPP_var EPP = ccReg::EPP::_narrow (obj);
     ccReg::timestamp_var ts;
-    cout << "version: "  <<  EPP->version(ts) << endl;
-    cout << "timestamp " << ts << endl ;
+    cerr << "EPP version: "  <<  EPP->version(ts)   << endl;
+   
+
 /*    loginID = 4000; 
 
     ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
 
     cout << "get Transaction code " << ret->errCode << ret->errMsg  <<  ret->svTRID  << endl;
 */
-/*
+
     // vrati kompletni seznam registratoru
-    rl = EPP->getAdmin()->getRegistrars();
+    rl = Admin->getRegistrars();
 
 
-    cout << "num" <<  rl->length() << endl;    
+
+    cerr << "Registrar total:" << rl->length() << endl ;
+
     // najde jednoho registratora
     for( i = 0 ; i < rl->length() ; i ++ )
       {
-           cout << "registrar:" << (*rl)[i].id  << (*rl)[i].handle   << (*rl)[i].name << (*rl)[i].organization << (*rl)[i].url << endl ;
-	   reg =  EPP->getAdmin()->getRegistrarByHandle(    (*rl)[i].handle  );
-             cout << "registrarInfo:" << reg->name << reg->url << endl ; 
+ //          cout << "registrar:" << (*rl)[i].id  << (*rl)[i].handle   << (*rl)[i].name << (*rl)[i].organization << (*rl)[i].url << endl ;
+ 	   reg =  Admin->getRegistrarByHandle(    (*rl)[i].handle  );
+             cout << "registrar:" << reg->name << reg->url << endl ; 
 
       }
 
+
+/*
     ret =  EPP->ContactInfo( "jouda",  cc , 0 , "jouda_zero" , "<XML></XML>");
     cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
@@ -136,7 +122,7 @@ int main(int argc, char** argv)
 */
 
 
-
+/*
 
     ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789"  , "" ,     "LRR-login-now" , "" , loginID , "AE:B3:5F:FA:38:80:DB:37:53:6A:3E:D4:55:E2:91:97" ,  ccReg::EN  );
 
@@ -146,13 +132,15 @@ int main(int argc, char** argv)
 
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
-   ret =  EPP->DomainInfo(  "exp.cz" ,  domain , loginID , "info-enum-4.4.4" , "<XML>"  );
+   ret =  EPP->DomainInfo(  "beta.cz" ,  domain , loginID , "info-enum-4.4.4" , "<XML>"  );
    cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
    for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
    cout << "Domain info"  << domain->name << domain->Registrant <<  domain->nsset <<  endl;
   
    cout << "CrDate: " <<  domain->CrDate << endl;
+   cout << "UpDate: " <<  domain->UpDate << endl;
+   cout << "TrDate: " <<  domain->TrDate << endl;
    cout << "ExDate: " <<  domain->ExDate << endl;
    cout << "err code " << ret->errCode   << endl;
    cout << "ext length " <<   domain->ext.length() << endl ;
@@ -170,33 +158,40 @@ int main(int argc, char** argv)
 
    delete domain;
 
-
+*/
 
 //     ret =  EPP->ClientCredit( credit ,  loginID , "clTRID-credit" , "<XML>credit</XML>" );
 //     cout << "credit " << credit <<  "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+loginID=0;
 
-/*
+
     ret =  EPP->ContactList ( lists , loginID , "contact-list" , "<XML>contact-list</XML>" );
-    cout << "ContactList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+    cerr << "ContactList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
  
+    cerr << "Contacts total:" << lists->length() << endl ;
+
      for( i = 0 ; i < lists->length() ; i ++ )
-        cout << "handle: " << (*lists)[i] << endl ;
+        cout << "contact: " << (*lists)[i] << endl ;
 
 
     delete lists;
     ret =  EPP->NSSetList ( lists , loginID , "nsset-list" , "<XML>nsset-list</XML>" );
-    cout << "NSsetList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+    cerr << "NSsetList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+
+    cerr << "NSSET total:" << lists->length() << endl ;
 
      for( i = 0 ; i < lists->length() ; i ++ )
-        cout << "handle: " << (*lists)[i] << endl ;
+        cout << "nsset: " << (*lists)[i] << endl ;
 
 
     delete lists;
     ret =  EPP->DomainList ( lists , loginID , "domain-list" , "<XML>domain-list</XML>" );
-    cout << "domainList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+    cerr << "domainList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+
+    cerr << "domain total:" << lists->length() << endl ;
 
      for( i = 0 ; i < lists->length() ; i ++ )
-        cout << "fqdn: " << (*lists)[i] << endl ;
+        cout << "domain: " << (*lists)[i] << endl ;
 
 
     delete lists;
@@ -204,7 +199,7 @@ int main(int argc, char** argv)
 
 
 
-
+/*
 
 if( loginID )
 {
@@ -803,8 +798,8 @@ delete cc;
     ret = EPP->NSSetTransfer( "NECOCZ",   "heslo" ,  loginID , "nsset-transfer" );
     cout  << "client logout "<< endl;
 */
-    ret =  EPP->ClientLogout( loginID , "XXXX-logout" , "");
-    cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
+//    ret =  EPP->ClientLogout( loginID , "XXXX-logout" , "");
+  //  cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
      
     orb->destroy();
   }
@@ -826,73 +821,4 @@ delete cc;
   return 0;
 }
 
-
-
-//////////////////////////////////////////////////////////////////////
-
-static CORBA::Object_ptr
-getObjectReference(CORBA::ORB_ptr orb)
-{
-  CosNaming::NamingContext_var rootContext;
-
-  try {
-    // Obtain a reference to the root context of the Name service:
-    CORBA::Object_var obj;
-    obj = orb->resolve_initial_references("NameService");
-
-    // Narrow the reference returned.
-    rootContext = CosNaming::NamingContext::_narrow(obj);
-    if( CORBA::is_nil(rootContext) ) {
-      cerr << "Failed to narrow the root naming context." << endl;
-      return CORBA::Object::_nil();
-    }
-  }
-  catch (CORBA::NO_RESOURCES&) {
-    cerr << "Caught NO_RESOURCES exception. You must configure omniORB "
-         << "with the location" << endl
-         << "of the naming service." << endl;
-    return 0;
-  }
-  catch(CORBA::ORB::InvalidName& ex) {
-    // This should not happen!
-    cerr << "Service required is invalid [does not exist]." << endl;
-    return CORBA::Object::_nil();
-  }
-
-  // Create a name object, containing the name test/context:
-  CosNaming::Name name;
-  name.length(2);
-
-  name[0].id   = (const char*) "ccReg";       // string copied
-  name[0].kind = (const char*) "context"; // string copied
-  name[1].id   = (const char*) "EPP";
-  name[1].kind = (const char*) "Object";
-  // Note on kind: The kind field is used to indicate the type
-  // of the object. This is to avoid conventions such as that used
-  // by files (name.type -- e.g. test.ps = postscript etc.)
-
-  try {
-    // Resolve the name to an object reference.
-    return rootContext->resolve(name);
-  }
-  catch(CosNaming::NamingContext::NotFound& ex) {
-    // This exception is thrown if any of the components of the
-    // path [contexts or the object] aren't found:
-    cerr << "Context not found." << endl;
-  }
-  catch(CORBA::TRANSIENT& ex) {
-    cerr << "Caught system exception TRANSIENT -- unable to contact the "
-         << "naming service." << endl
-         << "Make sure the naming server is running and that omniORB is "
-         << "configured correctly." << endl;
-
-  }
-  catch(CORBA::SystemException& ex) {
-    cerr << "Caught a CORBA::" << ex._name()
-         << " while using the naming service." << endl;
-    return 0;
-  }
-
-  return CORBA::Object::_nil();
-}
 
