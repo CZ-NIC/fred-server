@@ -4,7 +4,7 @@ CXX = g++
 CXXFLAGS =   -DSYSLOG   -DCONFIG_FILE=\"/etc/ccReg.conf\" -DSVERSION=\"${SVN_REVISION}\"
 
 OBJECTS = 
-IDLFILE = ../idl/ccReg.idl
+IDLFILE = ../../idl/trunk/ccReg.idl
 LDFLAGS=  -L/usr/local/pgsql/lib/
 LIBS=  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread
 CPPFLAGS =  -I/usr/local/pgsql/include/   -I/usr/include/postgresql/  -I.  -Wno-deprecated

@@ -9,6 +9,10 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   ccReg_Admin_i(const std::string database);
   virtual ~ccReg_Admin_i();
 
+  //session
+  virtual char* login(const char* username, const char* password);
+  virtual ccReg::Session_ptr getSession(const char* sessionID);
+
   // vypis registratoru
   ccReg::RegistrarList* getRegistrars();
   ccReg::Registrar* getRegistrarByHandle(const char* handle) 

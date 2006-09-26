@@ -26,11 +26,9 @@ reglist = new ccReg::RegistrarList;
        rows = DBsql.GetSelectRows();
        LOG( NOTICE_LOG, "getRegistrars: num -> %d",  rows );
        reglist->length( rows );
-
        for( i = 0 ; i < rows ; i ++ )
           {    
              //  *(reglist[i]) = new ccReg::Registrar;   
-
              (*reglist)[i].id = atoi( DBsql.GetFieldValueName("ID" , i ) );
              (*reglist)[i].handle=CORBA::string_dup( DBsql.GetFieldValueName("handle" , i ) ); // handle
              (*reglist)[i].name=CORBA::string_dup( DBsql.GetFieldValueName("name" , i ) ); 
@@ -207,3 +205,14 @@ ccReg_Admin_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
   } 
 }
  
+char* 
+ccReg_Admin_i::login(const char* username, const char* password)
+{
+  return CORBA::string_dup("XXX");
+}
+
+ccReg::Session_ptr 
+ccReg_Admin_i::getSession(const char* sessionID)
+{
+  return NULL;
+}
