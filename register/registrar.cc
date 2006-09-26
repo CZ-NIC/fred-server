@@ -176,16 +176,24 @@ namespace Register
       typedef std::vector<RegistrarImpl*> RegistrarListType;
       RegistrarListType registrars;
       DB *db;
+      std::string fulltext;
      public:
       RegistrarListImpl(DB *_db) : db(_db)
       {
+      }
+      virtual void setFulltextFilter(const std::string& _fulltext)
+      {
+	fulltext = _fulltext;
       }
       virtual void reload() throw (SQL_ERROR)
       {
         std::ostringstream sql;
         sql << "SELECT id,handle,name,url "
             << "FROM registrar";
-        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+	if (!fulltext.empty()) {
+	  sql << " WHERE name LIKE '%" << fulltext << "%'";
+	}
+	if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           registrars.push_back(
             new RegistrarImpl(
@@ -226,21 +234,161 @@ namespace Register
       virtual Registrar* create()
       {
         return new RegistrarImpl();
-      }
-      
+      }      
     };
+
+    class EPPActionImpl : virtual public EPPAction
+    {
+      unsigned sessionId;
+      unsigned type;
+      //      ptime startTime;
+      std::string serverTransactionId;
+      std::string clientTransactionId;
+      std::string message;
+      unsigned result;
+      std::string registrarHandle;
+     public:
+      EPPActionImpl(
+        unsigned _sessionId,
+	unsigned _type,
+	//	ptime _startTime,
+	const std::string& _serverTransactionId,
+	const std::string& _clientTransactionId,
+	const std::string& _message,
+	unsigned _result,
+	const std::string& _registrarHandle
+      ) : 
+        sessionId(_sessionId), type(_type), 
+	//        startTime(_startTime),
+        serverTransactionId(_serverTransactionId),
+        clientTransactionId(_clientTransactionId),
+        message(_message), result(_result), registrarHandle(_registrarHandle)
+      {
+      }
+      virtual unsigned getSessionId() const
+      {
+	return sessionId;
+      }
+      virtual unsigned getType() const
+      {
+	return type;
+      }
+      //      virtual const ptime getStartTime() const
+      //      {
+      //	return startTime;
+      //      }
+      virtual const std::string& getServerTransactionId() const
+      {
+	return serverTransactionId;
+      }
+      virtual const std::string& getClientTransactionId() const
+      {
+	return clientTransactionId;
+      }
+      virtual const std::string& getEPPMessage() const
+      {
+	return message;
+      }
+      virtual unsigned getResult() const
+      {
+	return result;
+      }
+      virtual const std::string& getRegistrarHandle() const
+      {
+	return registrarHandle;
+      }
+    };
+
+    /// List of EPPAction objects
+    class EPPActionListImpl : virtual public EPPActionList
+    {
+      typedef std::vector<EPPActionImpl *> ActionList;
+      ActionList alist;
+      unsigned sessionId;
+      unsigned registrarId;
+      //      time_period period;
+      unsigned typeId;
+      unsigned returnCodeId;
+      DB *db;
+     public:
+      EPPActionListImpl(DB *_db) : db(_db)
+      {
+      }
+      virtual void setSessionFiltr(unsigned _sessionId)
+      {
+	sessionId = _sessionId;
+      }
+      virtual void setRegistrarFiltr(unsigned _registrarId)
+      {
+	registrarId = _registrarId;
+      }
+      virtual void setTimePeriod(const time_period& _period)
+      {
+	//	period = _period;
+      }
+      virtual void setType(unsigned _typeId)
+      {
+	typeId = _typeId;
+      }
+      virtual void setReturnCode(unsigned _returnCodeId)
+      {
+	returnCodeId = _returnCodeId;
+      }
+      virtual void reload()
+      {
+        std::ostringstream sql;
+        sql << "SELECT a.clientid,a.action,a.startdate,"
+	    << "a.servertrid,a.clienttrid,"
+	    << "ax.xml,a.response,r.handle "
+            << "FROM action a, action_xml ax, "
+	    << "login l,  "
+	    << "registrar r "
+	    << "WHERE a.id=ax.actionid AND l.id=a.clientid "
+	    << "AND r.id=l.registrarid";
+	if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+          alist.push_back(
+            new EPPActionImpl(
+	      atoi(db->GetFieldValue(i,0)),
+              atoi(db->GetFieldValue(i,1)),
+	      //              ptime(db->GetFieldValue(i,2)),
+              db->GetFieldValue(i,3),
+              db->GetFieldValue(i,4),
+              db->GetFieldValue(i,5),
+              atoi(db->GetFieldValue(i,6)),
+              db->GetFieldValue(i,7)
+            )
+          );
+        }
+	
+      }
+      virtual const unsigned size() const
+      {
+	return alist.size();
+      }
+      virtual const EPPAction* get(unsigned idx) const
+      {
+	return idx >= alist.size() ?  NULL : alist[idx];
+      }
+    };
+
     
     class ManagerImpl : virtual public Manager
     {
       DB *db; ///< connection do db
       RegistrarListImpl rl;
+      EPPActionListImpl eal;
      public:
       ManagerImpl(DB *_db) :
-        db(_db), rl(_db)
+        db(_db), rl(_db), eal(db)
       {}     
       virtual RegistrarList *getList()
       {
         return &rl;
+      }
+      virtual EPPActionList *getEPPActionList()
+      {
+	return &eal;
       }
     }; // class ManagerImpl
     Manager *Manager::create(DB *db)

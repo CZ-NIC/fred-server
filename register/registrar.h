@@ -3,6 +3,7 @@
 
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_period.hpp>
+
 #include "exceptions.h" 
 
 using namespace boost::posix_time;
@@ -68,6 +69,8 @@ namespace Register {
       /// Protected destructor, object is manager by Manager
       virtual ~RegistrarList() {}
      public:
+      /// Fulltext search filter
+      virtual void setFulltextFilter(const std::string& fulltext) = 0;
       /// Reload actual list of registrars
       virtual void reload() throw (SQL_ERROR) = 0;
       /// Return size of list
@@ -90,7 +93,7 @@ namespace Register {
       /// Return type of session
       virtual unsigned getType() const = 0;
       /// Return time of session start
-      virtual const ptime getStartTime() const = 0;
+      //      virtual const ptime getStartTime() const = 0;
       /// Return server provided transaction id
       virtual const std::string& getServerTransactionId() const = 0;
       /// Return client provided transaction id
@@ -99,6 +102,7 @@ namespace Register {
       virtual const std::string& getEPPMessage() const = 0;
       /// Return result of action
       virtual unsigned getResult() const = 0;
+      virtual const std::string& getRegistrarHandle() const = 0;
     };
     
     /// List of EPPAction objects
@@ -125,12 +129,12 @@ namespace Register {
       virtual const EPPAction* get(unsigned idx) const = 0;
     };
     
-    /// Detail about session
-    class Session
+    /// Detail about EPP session
+    class EPPSession
     {
      protected:
-      /// protected destructor, Session is managed by SessionList
-      virtual ~Session() {}
+      /// protected destructor, EPPSession is managed by EPPSessionList
+      virtual ~EPPSession() {}
      public: 
       /// Return id of this session
       virtual unsigned getId() const = 0;
@@ -148,6 +152,8 @@ namespace Register {
       virtual ~Manager() {}
       /// Return list of registrars
       virtual RegistrarList *getList() = 0;
+      /// Return list of EPP actions
+      virtual EPPActionList *getEPPActionList() = 0;
       /// Factory method
       static Manager *create(DB *db);
     };
