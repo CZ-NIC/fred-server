@@ -53,6 +53,10 @@ namespace Register {
       virtual const std::string& getURL() const = 0;
       /// Set registrar URL
       virtual void setURL(const std::string& newURL) = 0;
+      /// Return ACL list size
+      virtual unsigned getACLSize() const = 0;
+      /// Return ACL list member by index
+      virtual ACL* getACL(unsigned idx) const = 0;
       /// Save changes to database
       virtual void save() throw (SQL_ERROR) = 0;
     };

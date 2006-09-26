@@ -13,9 +13,15 @@ int main()
   Register::Registrar::Manager *rm = m->getRegistrarManager();
   Register::Registrar::RegistrarList *rl = rm->getList();
   rl->reload();
-  for (unsigned i=0; i<rl->size(); i++)
-    std::cout << "id:" << rl->get(i)->getId() 
-              << " handle: " << rl->get(i)->getHandle() << std::endl;
+  for (unsigned i=0; i<rl->size(); i++) {
+    const Register::Registrar::Registrar *r = rl->get(i);
+    std::cout << "id:" << r->getId() 
+              << " handle: " << r->getHandle() << std::endl;
+    for (unsigned j=0; j<r->getACLSize(); j++)
+      std::cout << "  cert:" << r->getACL(j)->getCertificateMD5()
+		<< " pass:" << r->getACL(j)->getPassword()
+		<< std::endl;
+  }
   std::string input;
   while (1) {
     std::cout << "Domain: ";

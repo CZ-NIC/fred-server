@@ -50,6 +50,18 @@ namespace Register
       {
         return id == _id;
       }      
+      bool hasChanged() const
+      {
+	return changed;
+      }
+      std::string makeSQL(unsigned registrarId)
+      {
+	std::ostringstream sql;
+	sql << "INSERT INTO registraracl (registrarid,cert,password) VALUES "
+	    << "(" << registrarId << "," << certificateMD5 << "," 
+	    << password << ");";
+	return sql.str();
+      }
     };
 
     class RegistrarImpl : virtual public Registrar 
@@ -104,7 +116,7 @@ namespace Register
       {
         SET(url,newURL);
       }
-      virtual unsigned getACLSize()
+      virtual unsigned getACLSize() const
       {
         return acl.size();
       }
@@ -120,7 +132,8 @@ namespace Register
       }
       virtual void save() throw (SQL_ERROR)
       {
-        if (!changed) return;
+        if (changed) {
+	  // save registrar data
         /*
         SQL_SAVE(sql,"registrar",id);
         SQL_SAVE_ADD(sql,"name",name);
@@ -128,6 +141,21 @@ namespace Register
         SQL_SAVE_ADD(sql,"url",url);
         SQL_SAVE_DOIT(sql,db);
         */
+	}
+	ACLList::const_iterator i = find_if(
+          acl.begin(),acl.end(),std::mem_fun(&ACLImpl::hasChanged)
+	);
+	// !!! must check for this.id
+	if (i != acl.end()) {
+	  std::ostringstream sql;
+	  sql << "DELETE FROM registraracl WHERE registrarid=" << id;
+	  // make sql
+	  for (unsigned j=0;j<acl.size();j++) {
+	    sql.str("");
+	    sql << acl[j]->makeSQL(id);
+	    // do sql;
+	  }
+	}
       }
       void putACL(
         unsigned id,
@@ -137,7 +165,7 @@ namespace Register
       {
         acl.push_back(new ACLImpl(id,certificateMD5,password));
       }
-      bool operator==(unsigned _id)
+      bool hasId(unsigned _id) const
       {
         return id == _id;
       }      
@@ -170,17 +198,16 @@ namespace Register
         }
         db->FreeSelect();
         sql.str("");
-        sql << "SELECT registrarid,cert,passwd "
+        sql << "SELECT registrarid,cert,password "
             << "FROM registraracl";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           // find associated registrar
           unsigned registrarId = atoi(db->GetFieldValue(i,0));
-          RegistrarListType::iterator r;
-          //          RegistrarListType::iterator r = find(
-          //            registrars.begin(),registrars.end(),
-          //            bind2nd(mem_fun_ref(RegistrarImpl::hasId),registrarId)
-          //          );
+	  RegistrarListType::iterator r = find_if(
+	    registrars.begin(),registrars.end(),
+            std::bind2nd(std::mem_fun(&RegistrarImpl::hasId),registrarId)
+          );
           if (r == registrars.end()) continue;
           // if found add acl
           (*r)->putACL(0,db->GetFieldValue(i,1),db->GetFieldValue(i,2));
