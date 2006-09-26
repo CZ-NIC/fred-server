@@ -375,6 +375,17 @@ int i , len , dot , num ;
 len = strlen( fqdn );
 
 LOG( LOG_DEBUG , "test DNSHost %s" , fqdn );
+
+
+// konci na tecku
+if( fqdn[len-1] == '.' ) { LOG( LOG_DEBUG , "ERORR dots on end" );  return false; }
+
+for(  i = len -1  ; i > 0 ; i -- )
+{
+ if(  fqdn[i] == '.' ) break;
+ else if(  isalpha(  fqdn[i] )  == 0 )  { LOG( LOG_DEBUG , "ERORR not tld" );  return false; }
+}
+
  
 // minimalni a maximalni velikost
 if( len > 3  &&  len <= 255 ) 
