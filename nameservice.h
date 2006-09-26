@@ -14,11 +14,17 @@ class NameService
   /// exception when cannot bind context 
   struct BAD_CONTEXT {};
   /// config rootContext from supplied orb
+        NameService(CORBA::ORB_ptr orb)
+    throw (NOT_RUNNING);
 	NameService(CORBA::ORB_ptr orb, const std::string& nameServiceIOR) 
     throw (NOT_RUNNING);
   /// bind object into ccReg.context/'name'.Object
   void bind(const std::string& name, CORBA::Object_ptr objref)
     throw (NOT_RUNNING, BAD_CONTEXT);
+  /// resolve object into ccReg.context/'name'.Object get IOR
+  CORBA::Object_ptr resolve( const std::string& name)
+    throw (NOT_RUNNING, BAD_CONTEXT);
+
   /// destroy NameServiceObject
 	virtual ~NameService();
 };
