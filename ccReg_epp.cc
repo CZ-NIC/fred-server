@@ -1954,6 +1954,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate( const char *handle, const ccReg::C
 {
 DB DBsql;
 char pass[PASS_LEN+1];
+char dateStr[MAX_DATE];
 char roid[64];
 char HANDLE[64]; // handle na velka pismena
 ccReg::Response * ret;
@@ -2111,7 +2112,9 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                       if( DBsql.EXEC() )    
                         {     
                           // datum a cas vytvoreni
-                          crDate =  CORBA::string_dup(  DBsql.GetValueFromTable( "CONTACT", "CrDate" , "id" , id ) );
+                         convert_rfc3339_timestamp( dateStr ,   DBsql.GetValueFromTable( "CONTACT", "CrDate" , "id" , id ) ); 
+                         crDate= CORBA::string_dup( dateStr );
+
                           //  uloz do historie
                           if( DBsql.MakeHistory() )
                             {
@@ -2453,6 +2456,7 @@ if( get_HANDLE( HANDLE , handle ) )
     DBsql.FreeSelect();
     LOG( WARNING_LOG  ,  "object handle [%s] NOT_EXIST" , handle );
     ret->errCode=COMMAND_OBJECT_NOT_EXIST;
+
     }
 
    } else ret->errCode=COMMAND_FAILED;
@@ -2677,6 +2681,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
 DB DBsql; 
 char Array[512] , NAME[256]; char createDate[32]; char HANDLE[64]; // handle na velka pismena 
 char pass[PASS_LEN+1];
+char dateStr[MAX_DATE];
 char roid[64]; ccReg::Response * ret; int regID, id, techid; 
 int i, len, j , l , seq ;
 ret = new ccReg::Response;
@@ -2922,7 +2927,8 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
               if( DBsql.EXEC() )
                 {
                   // datum a cas vytvoreni
-                  crDate =  CORBA::string_dup(  DBsql.GetValueFromTable( "NSSET", "CrDate" , "id" , id ) );
+                  convert_rfc3339_timestamp( dateStr ,   DBsql.GetValueFromTable(  "NSSET", "CrDate" , "id" , id ) );
+                  crDate= CORBA::string_dup( dateStr );
 
                   // zapis technicke kontakty
                   for( i = 0; i <  tech.length() ;  i++ )
@@ -4590,7 +4596,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Regis
                                              CORBA::Long clientID, const char *clTRID,  const  char* XML , const ccReg::ExtensionList & ext )
 {
 DB DBsql;
-char valexpiryDate[MAX_DATE];
+char valexpiryDate[MAX_DATE] , dateStr[MAX_DATE];
 char roid[64] , FQDN[64] , HANDLE[64];
 char pass[PASS_LEN+1];
 ccReg::Response * ret;
@@ -4875,9 +4881,13 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                             {
 
                                 // zjisti datum a cas vytvoreni domeny
-                                crDate =  CORBA::string_dup(  DBsql.GetValueFromTable( "DOMAIN", "CrDate" , "id" , id ) );
+                                convert_rfc3339_timestamp( dateStr ,   DBsql.GetValueFromTable(  "DOMAIN", "CrDate" , "id" , id ) );
+                                crDate= CORBA::string_dup( dateStr );
+
                                 //  vrat datum expirace
-                                exDate =  CORBA::string_dup(  DBsql.GetValueFromTable( "DOMAIN", "ExDate" , "id" , id ) );
+                                convert_rfc3339_date( dateStr ,   DBsql.GetValueFromTable( "DOMAIN", "ExDate" , "id" , id ) ); 
+                                exDate =  CORBA::string_dup( dateStr );
+
 
                               // pridej enum  extension
                       if( GetZoneEnum( zone ) )
@@ -5105,6 +5115,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                 {
                     // vypocet ExDate datum expirace
                     exDate =  CORBA::string_dup( ExDateStr );                                     
+                    // TODO convert to rfc3339
                 }
               else
                 {
@@ -5143,9 +5154,9 @@ GetValExpDateFromExtension( valexpiryDate , ext );
              {
                if( strlen( valexpiryDate )  )  // omlyemen zadan datum validace
                 {
-                  LOG( WARNING_LOG, "DomainCreate: can not  validity exp date" );
+                  LOG( WARNING_LOG, "DomainRenew: can not  validity exp date" );
                   ret->errors.length( seq +1);
-                  ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
+                  ret->errors[seq].code = ccReg::domainRenew_ext_valDate;
                   ret->errors[seq].value <<=   valexpiryDate;
                   ret->errors[seq].reason = CORBA::string_dup(  DBsql.GetReasonMessage(REASON_MSG_VALEXPDATE_NOT_USED) ); // TODO
                   seq++;
