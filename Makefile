@@ -22,7 +22,7 @@ all:  ccReg_server epp_client whois_client
 ccReg_server: $(CCREG_SERVER_OBJECTS)
 	$(MAKE) -C register
 #	ar -rs libccreg.a $(CCREG_SERVER_OBJECTS)
-	$(CXX) -o ccReg_server $(CCREG_SERVER_OBJECTS) $(LDFLAGS) $(LIBS) register/libccreg.a -lpq
+	$(CXX) -o ccReg_server $(CCREG_SERVER_OBJECTS) $(LDFLAGS) $(LIBS) register/libccreg.a -lpq -lboost_date_time
 
 
 epp_client: $(EPP_CLIENT_OBJECTS)

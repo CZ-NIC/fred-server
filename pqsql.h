@@ -1,3 +1,6 @@
+#ifndef __PQSQL_H__
+#define __PQSQL_H__
+
 #include <libpq-fe.h>
 
 class PQ{
@@ -51,3 +54,5 @@ PGconn     *connection;
 PGresult   *result;
 int nRows , nCols; // pocet radek pri selectu
 };
+
+#endif

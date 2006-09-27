@@ -1,3 +1,6 @@
+#ifndef __DBSQL_H__
+#define __DBSQL_H__
+
 #include "pqsql.h"
 
 
@@ -212,3 +215,5 @@ int actionID; // id tabulky akce
 int historyID; // id tabulky historie
 int loginID; // id klienta
 };
+
+#endif
