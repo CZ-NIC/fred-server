@@ -1,5 +1,6 @@
 #include "registrar.h"
 #include "dbsql.h"
+#include <boost/date_time/posix_time/time_parsers.hpp>
 #include <vector>
 #include <algorithm>
 #include <functional>
@@ -185,8 +186,15 @@ namespace Register
       {
 	fulltext = _fulltext;
       }
+      void clear()
+      {
+	for (unsigned i=0; i<registrars.size(); i++)
+	  delete registrars[i];
+	registrars.clear();
+      }
       virtual void reload() throw (SQL_ERROR)
       {
+	clear();
         std::ostringstream sql;
         sql << "SELECT id,handle,name,url "
             << "FROM registrar";
@@ -241,7 +249,8 @@ namespace Register
     {
       unsigned sessionId;
       unsigned type;
-      //      ptime startTime;
+      std::string typeName;
+      ptime startTime;
       std::string serverTransactionId;
       std::string clientTransactionId;
       std::string message;
@@ -251,15 +260,16 @@ namespace Register
       EPPActionImpl(
         unsigned _sessionId,
 	unsigned _type,
-	//	ptime _startTime,
+	const std::string& _typeName,
+	ptime _startTime,
 	const std::string& _serverTransactionId,
 	const std::string& _clientTransactionId,
 	const std::string& _message,
 	unsigned _result,
 	const std::string& _registrarHandle
       ) : 
-        sessionId(_sessionId), type(_type), 
-	//        startTime(_startTime),
+        sessionId(_sessionId), type(_type), typeName(_typeName),
+	startTime(_startTime),
         serverTransactionId(_serverTransactionId),
         clientTransactionId(_clientTransactionId),
         message(_message), result(_result), registrarHandle(_registrarHandle)
@@ -273,10 +283,14 @@ namespace Register
       {
 	return type;
       }
-      //      virtual const ptime getStartTime() const
-      //      {
-      //	return startTime;
-      //      }
+      virtual const std::string& getTypeName() const
+      {
+	return typeName;
+      }
+      virtual const ptime getStartTime() const
+      {
+      	return startTime;
+      }
       virtual const std::string& getServerTransactionId() const
       {
 	return serverTransactionId;
@@ -334,29 +348,37 @@ namespace Register
       {
 	returnCodeId = _returnCodeId;
       }
+      void clear()
+      {
+	for (unsigned i=0; i<alist.size(); i++)
+	  delete alist[i];
+	alist.clear();
+      }
       virtual void reload()
       {
+	clear();
         std::ostringstream sql;
-        sql << "SELECT a.clientid,a.action,a.startdate,"
+        sql << "SELECT a.clientid,a.action,ea.status,a.startdate,"
 	    << "a.servertrid,a.clienttrid,"
 	    << "ax.xml,a.response,r.handle "
-            << "FROM action a, action_xml ax, "
+            << "FROM action a, action_xml ax, enum_action ea,"
 	    << "login l,  "
 	    << "registrar r "
 	    << "WHERE a.id=ax.actionid AND l.id=a.clientid "
-	    << "AND r.id=l.registrarid";
+	    << "AND r.id=l.registrarid AND ea.id=a.action";
 	if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           alist.push_back(
             new EPPActionImpl(
 	      atoi(db->GetFieldValue(i,0)),
               atoi(db->GetFieldValue(i,1)),
-	      //              ptime(db->GetFieldValue(i,2)),
-              db->GetFieldValue(i,3),
+	      db->GetFieldValue(i,2),
+	      ptime(time_from_string(db->GetFieldValue(i,3))),
               db->GetFieldValue(i,4),
               db->GetFieldValue(i,5),
-              atoi(db->GetFieldValue(i,6)),
-              db->GetFieldValue(i,7)
+              db->GetFieldValue(i,6),
+              atoi(db->GetFieldValue(i,7)),
+              db->GetFieldValue(i,8)
             )
           );
         }

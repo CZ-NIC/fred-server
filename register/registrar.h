@@ -90,10 +90,12 @@ namespace Register {
      public:
       /// Return id of session action is part of
       virtual unsigned getSessionId() const = 0;
-      /// Return type of session
+      /// Return type of actoion
       virtual unsigned getType() const = 0;
+      /// Return type name of action
+      virtual const std::string& getTypeName() const = 0;
       /// Return time of session start
-      //      virtual const ptime getStartTime() const = 0;
+      virtual const ptime getStartTime() const = 0;
       /// Return server provided transaction id
       virtual const std::string& getServerTransactionId() const = 0;
       /// Return client provided transaction id

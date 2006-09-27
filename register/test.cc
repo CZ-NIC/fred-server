@@ -14,6 +14,7 @@ int main()
   /// -=-=-=-=-=-
   /// ACTIONS
   /// -=-=-=-=-=-
+  /*
   Register::Registrar::EPPActionList *eal = rm->getEPPActionList();
   eal->reload();
   for (unsigned i=0; i<eal->size(); i++) {
@@ -21,6 +22,7 @@ int main()
     std::cout << "id:" << a->getType() 
               << " handle: " << a->getRegistrarHandle() << std::endl;
   }
+  */
   /// -=-=-=-=-=-
   /// REGISTARS
   /// -=-=-=-=-=-

@@ -9,7 +9,7 @@ $(LIB) : $(OBJS)
 	$(AR) -rs $@ $(OBJS)
 
 testreg: test.o $(OBJS)
-	$(CXX) -o $@ test.o $(OBJS) $(EXT)
+	$(CXX) -o $@ test.o $(OBJS) $(EXT) -lboost_date_time
 
 clean:
 	rm *.o
