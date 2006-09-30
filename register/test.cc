@@ -12,6 +12,13 @@ int main()
   Register::Domain::Manager *dm = m->getDomainManager();
   Register::Registrar::Manager *rm = m->getRegistrarManager();
   /// -=-=-=-=-=-
+  /// DOMAINS
+  /// -=-=-=-=-=-
+  Register::Domain::List *dl = dm->getList();
+  dl->reload();
+  for (unsigned i=0; i<dl->getCount(); i++)
+    std::cout << dl->get(i)->getFQDN() << std::endl;
+  /// -=-=-=-=-=-
   /// ACTIONS
   /// -=-=-=-=-=-
   /*
