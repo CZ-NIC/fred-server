@@ -7,6 +7,56 @@
 
 using namespace boost::posix_time;
 
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//    ccReg_PageTable_i
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+ccReg_PageTable_i::ccReg_PageTable_i()
+  : aPageSize(10), aPage(0)
+{
+}
+
+CORBA::Short 
+ccReg_PageTable_i::pageSize()
+{
+  return aPageSize;
+}
+
+void 
+ccReg_PageTable_i::pageSize(CORBA::Short _v)
+{
+  aPageSize = _v;
+  aPage = 0;
+}
+
+CORBA::Short 
+ccReg_PageTable_i::page()
+{
+  return aPage;
+}
+
+void 
+ccReg_PageTable_i::page(CORBA::Short _v)
+{
+  aPage = _v;
+}
+
+CORBA::Short 
+ccReg_PageTable_i::start()
+{
+  return aPage*aPageSize;
+}
+
+CORBA::Short 
+ccReg_PageTable_i::numPages()
+{
+  return numRows()/aPageSize;
+}
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//    ccReg_Admin_i
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 ccReg_Admin_i::ccReg_Admin_i(const std::string _database) : 
   database(_database), session(new ccReg_Session_i(_database))
 {
@@ -234,11 +284,13 @@ ccReg_Session_i::ccReg_Session_i(const std::string& database)
   m.reset(Register::Manager::create(&db));
   reg = new ccReg_Registrars_i(m->getRegistrarManager()->getList());
   eppa = new ccReg_EPPActions_i(m->getRegistrarManager()->getEPPActionList());
+  dm = new ccReg_Domains_i(m->getDomainManager()->getList());
 }
 
 ccReg_Session_i::~ccReg_Session_i()
 {
 }
+
 
 ccReg::Registrars_ptr 
 ccReg_Session_i::getRegistrars()
@@ -250,6 +302,16 @@ ccReg_Session_i::getEPPActions()
 {
   return eppa->_this();
 }
+
+ccReg::Domains_ptr 
+ccReg_Session_i::getDomains()
+{
+  return dm->_this();
+}
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//    ccReg_Registrars_i
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::RegistrarList *_rl)
   : rl(_rl)
@@ -307,41 +369,6 @@ ccReg_Registrars_i::numColumns()
   return 3;
 }
 
-CORBA::Short 
-ccReg_Registrars_i::pageSize()
-{
-  return rl->size();
-}
-
-void 
-ccReg_Registrars_i::pageSize(CORBA::Short _v)
-{
-}
-
-CORBA::Short 
-ccReg_Registrars_i::page()
-{
-  return 0;
-}
-
-void 
-ccReg_Registrars_i::page(CORBA::Short _v)
-{
-  
-}
-
-CORBA::Short 
-ccReg_Registrars_i::start()
-{
-  return 0;
-}
-
-CORBA::Short 
-ccReg_Registrars_i::numPages()
-{
-  return 1;
-}
-
 void 
 ccReg_Registrars_i::reload()
 {
@@ -361,10 +388,14 @@ ccReg_Registrars_i::fulltext(const char* _v)
   rl->setFulltextFilter(fulltextFilter);
 }
 
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//    ccReg_EPPActions_i
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 ccReg_EPPActions_i::ccReg_EPPActions_i(
   Register::Registrar::EPPActionList *_eal
 )
-  : eal(_eal), aPage(0), aPageSize(25)
+  : eal(_eal), registrarFilter(0)
 {
 }
 
@@ -427,43 +458,6 @@ ccReg_EPPActions_i::numColumns()
   return 4;
 }
 
-CORBA::Short 
-ccReg_EPPActions_i::pageSize()
-{
-  return aPageSize;
-}
-
-void 
-ccReg_EPPActions_i::pageSize(CORBA::Short _v)
-{
-  aPageSize = _v;
-  aPage = 0;
-}
-
-CORBA::Short 
-ccReg_EPPActions_i::page()
-{
-  return aPage;
-}
-
-void 
-ccReg_EPPActions_i::page(CORBA::Short _v)
-{
-  aPage = _v;
-}
-
-CORBA::Short 
-ccReg_EPPActions_i::start()
-{
-  return aPage*aPageSize;
-}
-
-CORBA::Short 
-ccReg_EPPActions_i::numPages()
-{
-  return numRows()/aPageSize;
-}
-
 void 
 ccReg_EPPActions_i::reload()
 {
@@ -481,4 +475,102 @@ ccReg_EPPActions_i::registrar(CORBA::Short _v)
 {
   registrarFilter = _v;
   eal->setRegistrarFiltr(_v);
+}
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//    ccReg_Domains_i
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+ccReg_Domains_i::ccReg_Domains_i(
+  Register::Domain::List *_dl
+)
+  : dl(_dl), registrantFilter(0), registrarFilter(0)
+{
+}
+
+ccReg_Domains_i::~ccReg_Domains_i()
+{
+}
+
+ccReg::TableRow* 
+ccReg_Domains_i::getColumnNames()
+{
+  ccReg::TableRow *tr = new ccReg::TableRow;
+  tr->length(5);
+  (*tr)[0] = CORBA::string_dup("FQDN");
+  (*tr)[1] = CORBA::string_dup("CrDate"); 
+  (*tr)[2] = CORBA::string_dup("Registrar"); 
+  (*tr)[3] = CORBA::string_dup("Registrant"); 
+  (*tr)[4] = CORBA::string_dup("NSSet"); 
+  return tr;
+}
+
+ccReg::TableRow* 
+ccReg_Domains_i::getRow(CORBA::Short row)
+{
+  const Register::Domain::Domain *d = dl->get(row);
+  if (!d) return NULL;
+  ccReg::TableRow *tr = new ccReg::TableRow;
+  tr->length(5);
+  (*tr)[0] = CORBA::string_dup(d->getFQDN().c_str());
+  (*tr)[1] = CORBA::string_dup(to_simple_string(d->getCreateDate()).c_str());
+  (*tr)[2] = CORBA::string_dup(d->getRegistrarHandle().c_str()); 
+  (*tr)[3] = CORBA::string_dup(d->getRegistrantHandle().c_str()); 
+  (*tr)[4] = CORBA::string_dup(d->getNSSetHandle().c_str()); 
+  return tr;
+}
+
+void 
+ccReg_Domains_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
+{
+}
+
+char*
+ccReg_Domains_i::outputCSV()
+{
+  return CORBA::string_dup("1,1,1");
+}
+
+CORBA::Short 
+ccReg_Domains_i::numRows()
+{
+  return dl->getCount();
+}
+
+CORBA::Short 
+ccReg_Domains_i::numColumns()
+{
+  return 5;
+}
+
+void 
+ccReg_Domains_i::reload()
+{
+  dl->reload();
+}
+
+CORBA::Short 
+ccReg_Domains_i::registrar()
+{
+  return registrarFilter;
+}
+
+void 
+ccReg_Domains_i::registrar(CORBA::Short _v)
+{
+  registrarFilter = _v;
+  dl->setRegistrarFilter(_v);
+}
+
+CORBA::Short 
+ccReg_Domains_i::registrant()
+{
+  return registrantFilter;
+}
+
+void 
+ccReg_Domains_i::registrant(CORBA::Short _v)
+{
+  registrantFilter = _v;
+  //  dl->setRegistrarFilter(_v);
 }
