@@ -156,7 +156,8 @@ namespace Register
         sql << "SELECT d.id,d.fqdn,d.zone,n.id,n.handle,c.id,c.handle,"
 	    << "r.id,r.handle,d.crdate "
             << "FROM domain d, nsset n, contact c, registrar r "
-	    << "WHERE d.nsset=n.id AND d.registrant=c.id AND d.clid=r.id";
+	    << "WHERE d.nsset=n.id AND d.registrant=c.id "
+	    << "AND d.clid=r.id LIMIT 1000";
 	if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           dlist.push_back(

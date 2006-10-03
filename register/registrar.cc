@@ -365,7 +365,7 @@ namespace Register
 	    << "login l,  "
 	    << "registrar r "
 	    << "WHERE a.id=ax.actionid AND l.id=a.clientid "
-	    << "AND r.id=l.registrarid AND ea.id=a.action";
+	    << "AND r.id=l.registrarid AND ea.id=a.action LIMIT 1000";
 	if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           alist.push_back(
