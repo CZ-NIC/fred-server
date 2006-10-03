@@ -4,6 +4,7 @@
 #include "dbsql.h"
 #include "register/register.h"
 #include <boost/date_time/posix_time/time_formatters.hpp>
+#include <math.h>
 
 using namespace boost::posix_time;
 
@@ -50,7 +51,7 @@ ccReg_PageTable_i::start()
 CORBA::Short 
 ccReg_PageTable_i::numPages()
 {
-  return numRows()/aPageSize;
+  return (unsigned)ceil(numRows()/aPageSize);
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
