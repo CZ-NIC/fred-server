@@ -4,6 +4,8 @@
 #include <string>
 #include "domain.h"
 #include "registrar.h"
+#include "contact.h"
+#include "nsset.h"
 
 /// forward declared parameter type
 class DB;
@@ -41,6 +43,10 @@ namespace Register
     virtual Domain::Manager *getDomainManager() = 0;
     /// return registrar manager
     virtual Registrar::Manager *getRegistrarManager() = 0;
+    /// return contact manager
+    virtual Contact::Manager *getContactManager() = 0;
+    /// return nsset manager
+    virtual NSSet::Manager *getNSSetManager() = 0;
     /// factory method
     static Manager *create(DB *db);    
   };

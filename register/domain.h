@@ -69,7 +69,7 @@ namespace Register
       virtual ~List() {}
       /// return count of domains in list
       virtual unsigned getCount() const = 0;
-      /// get detail of loaded zone
+      /// get detail of loaded domain
       virtual Domain *get(unsigned idx) const = 0;
       /// set filter for domain zone
       virtual void setZoneFilter(unsigned zoneId) = 0;
@@ -103,6 +103,6 @@ namespace Register
       static Manager *create(DB *db, Zone::Manager *zm);
     };
   } // namespace Domain
-} // namespace Admin
+} // namespace Register
 
 #endif /*DOMAIN_H_*/

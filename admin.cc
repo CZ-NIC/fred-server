@@ -37,7 +37,8 @@ ccReg_PageTable_i::page()
 }
 
 void 
-ccReg_PageTable_i::page(CORBA::Short _v)
+ccReg_PageTable_i::setPage(CORBA::Short _v) 
+  throw (ccReg::PageTable::INVALID_PAGE)
 {
   aPage = _v;
 }
@@ -53,6 +54,24 @@ ccReg_PageTable_i::numPages()
 {
   return (unsigned)ceil(numRows()/aPageSize);
 }
+
+ccReg::TableRow* 
+ccReg_PageTable_i::getPageRow(CORBA::Short pageRow)
+  throw (ccReg::Table::INVALID_ROW)
+{
+  getRow(pageRow + start());
+}
+
+CORBA::Short 
+ccReg_PageTable_i::numPageRows()
+{
+  unsigned s = start();
+  unsigned n = numRows();
+  if (s > n) return 0; /// something wrong
+  unsigned l = n - s;
+  return l < aPageSize ? l : aPageSize;
+}
+
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_Admin_i
@@ -336,9 +355,10 @@ ccReg_Registrars_i::getColumnNames()
 
 ccReg::TableRow* 
 ccReg_Registrars_i::getRow(CORBA::Short row)
+  throw (ccReg::Table::INVALID_ROW)
 {
   const Register::Registrar::Registrar *r = rl->get(row);
-  if (!r) return NULL;
+  if (!r) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
   tr->length(3);
   (*tr)[0] = CORBA::string_dup(r->getName().c_str()); 
@@ -418,9 +438,11 @@ ccReg_EPPActions_i::getColumnNames()
 
 ccReg::TableRow* 
 ccReg_EPPActions_i::getRow(CORBA::Short row)
+  throw (ccReg::Table::INVALID_ROW)
+
 {
   const Register::Registrar::EPPAction *a = eal->get(row);
-  if (!a) return NULL;
+  if (!a) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
   tr->length(4);
   std::ostringstream buffer;
@@ -508,9 +530,10 @@ ccReg_Domains_i::getColumnNames()
 
 ccReg::TableRow* 
 ccReg_Domains_i::getRow(CORBA::Short row)
+  throw (ccReg::Table::INVALID_ROW)
 {
   const Register::Domain::Domain *d = dl->get(row);
-  if (!d) return NULL;
+  if (!d) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
   tr->length(5);
   (*tr)[0] = CORBA::string_dup(d->getFQDN().c_str());

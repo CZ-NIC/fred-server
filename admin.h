@@ -12,9 +12,15 @@ class ccReg_PageTable_i : virtual public POA_ccReg::PageTable {
   CORBA::Short pageSize();
   void pageSize(CORBA::Short _v);
   CORBA::Short page();
-  void page(CORBA::Short _v);
+  void setPage(CORBA::Short page) throw (ccReg::PageTable::INVALID_PAGE);
   CORBA::Short start();
   CORBA::Short numPages();
+  ccReg::TableRow* getRow(CORBA::Short row) 
+    throw (ccReg::Table::INVALID_ROW);
+  ccReg::TableRow* getPageRow(CORBA::Short pageRow) 
+    throw (ccReg::Table::INVALID_ROW);
+  CORBA::Short numPageRows();
+
 };
 
 class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions, 
@@ -26,7 +32,7 @@ class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions,
   ccReg_EPPActions_i(Register::Registrar::EPPActionList *eal);
   ~ccReg_EPPActions_i();
   ccReg::TableRow* getColumnNames();
-  ccReg::TableRow* getRow(CORBA::Short row);
+  ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
   char* outputCSV();
   CORBA::Short numRows();
@@ -45,7 +51,7 @@ class ccReg_Registrars_i : virtual public POA_ccReg::Registrars,
   ccReg_Registrars_i(Register::Registrar::RegistrarList *rl);
   ~ccReg_Registrars_i();
   ccReg::TableRow* getColumnNames();
-  ccReg::TableRow* getRow(CORBA::Short row);
+  ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
   char* outputCSV();
   CORBA::Short numRows();
@@ -65,7 +71,7 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
   ccReg_Domains_i(Register::Domain::List *dl);
   ~ccReg_Domains_i();
   ccReg::TableRow* getColumnNames();
-  ccReg::TableRow* getRow(CORBA::Short row);
+  ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
   char* outputCSV();
   CORBA::Short numRows();
@@ -77,11 +83,45 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
   void registrant(CORBA::Short _v);
 };
 
+class ccReg_Contacts_i : virtual public POA_ccReg::Contacts, 
+                         public ccReg_PageTable_i,
+                         public PortableServer::RefCountServantBase {
+  Register::Contact::List *cl;
+ public:
+  ccReg_Contacts_i(Register::Contact::List *cl);
+  ~ccReg_Contacts_i();
+  ccReg::TableRow* getColumnNames();
+  ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
+  char* outputCSV();
+  CORBA::Short numRows();
+  CORBA::Short numColumns();
+  void reload();
+};
+
+class ccReg_NSSets_i : virtual public POA_ccReg::NSSets, 
+                       public ccReg_PageTable_i,
+                       public PortableServer::RefCountServantBase {
+  Register::NSSet::List *nl;
+ public:
+  ccReg_NSSets_i(Register::NSSet::List *dl);
+  ~ccReg_NSSets_i();
+  ccReg::TableRow* getColumnNames();
+  ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
+  char* outputCSV();
+  CORBA::Short numRows();
+  CORBA::Short numColumns();
+  void reload();
+};
+
 class ccReg_Session_i : public POA_ccReg::Session,
                         public PortableServer::RefCountServantBase {
   ccReg_Registrars_i* reg;
   ccReg_EPPActions_i* eppa;
   ccReg_Domains_i* dm;
+  ccReg_Contacts_i* cm;
+  ccReg_NSSets_i* nm;
   DB db;
   std::auto_ptr<Register::Manager> m;
  public:
@@ -90,6 +130,8 @@ class ccReg_Session_i : public POA_ccReg::Session,
   ccReg::Registrars_ptr getRegistrars();
   ccReg::EPPActions_ptr getEPPActions();
   ccReg::Domains_ptr getDomains();
+  ccReg::Contacts_ptr getContacts();
+  ccReg::NSSets_ptr getNSSets();
 };
 
 // implementace interface Admin
