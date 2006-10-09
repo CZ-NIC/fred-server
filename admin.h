@@ -15,8 +15,6 @@ class ccReg_PageTable_i : virtual public POA_ccReg::PageTable {
   void setPage(CORBA::Short page) throw (ccReg::PageTable::INVALID_PAGE);
   CORBA::Short start();
   CORBA::Short numPages();
-  ccReg::TableRow* getRow(CORBA::Short row) 
-    throw (ccReg::Table::INVALID_ROW);
   ccReg::TableRow* getPageRow(CORBA::Short pageRow) 
     throw (ccReg::Table::INVALID_ROW);
   CORBA::Short numPageRows();
@@ -87,6 +85,7 @@ class ccReg_Contacts_i : virtual public POA_ccReg::Contacts,
                          public ccReg_PageTable_i,
                          public PortableServer::RefCountServantBase {
   Register::Contact::List *cl;
+  CORBA::Short registrarFilter;
  public:
   ccReg_Contacts_i(Register::Contact::List *cl);
   ~ccReg_Contacts_i();
@@ -97,12 +96,15 @@ class ccReg_Contacts_i : virtual public POA_ccReg::Contacts,
   CORBA::Short numRows();
   CORBA::Short numColumns();
   void reload();
+  CORBA::Short registrar();
+  void registrar(CORBA::Short _v);
 };
 
 class ccReg_NSSets_i : virtual public POA_ccReg::NSSets, 
                        public ccReg_PageTable_i,
                        public PortableServer::RefCountServantBase {
   Register::NSSet::List *nl;
+  CORBA::Short registrarFilter;
  public:
   ccReg_NSSets_i(Register::NSSet::List *dl);
   ~ccReg_NSSets_i();
@@ -113,6 +115,8 @@ class ccReg_NSSets_i : virtual public POA_ccReg::NSSets,
   CORBA::Short numRows();
   CORBA::Short numColumns();
   void reload();
+  CORBA::Short registrar();
+  void registrar(CORBA::Short _v);
 };
 
 class ccReg_Session_i : public POA_ccReg::Session,

@@ -297,6 +297,9 @@ ccReg_Admin_i::getSession(const char* sessionID)
   return session->_this();
 }
 
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//    ccReg_Session_i
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 ccReg_Session_i::ccReg_Session_i(const std::string& database)
 {
@@ -305,6 +308,8 @@ ccReg_Session_i::ccReg_Session_i(const std::string& database)
   reg = new ccReg_Registrars_i(m->getRegistrarManager()->getList());
   eppa = new ccReg_EPPActions_i(m->getRegistrarManager()->getEPPActionList());
   dm = new ccReg_Domains_i(m->getDomainManager()->getList());
+  cm = new ccReg_Contacts_i(m->getContactManager()->getList());
+  nm = new ccReg_NSSets_i(m->getNSSetManager()->getList());
 }
 
 ccReg_Session_i::~ccReg_Session_i()
@@ -327,6 +332,18 @@ ccReg::Domains_ptr
 ccReg_Session_i::getDomains()
 {
   return dm->_this();
+}
+
+ccReg::Contacts_ptr 
+ccReg_Session_i::getContacts()
+{
+  return cm->_this();
+}
+
+ccReg::NSSets_ptr 
+ccReg_Session_i::getNSSets()
+{
+  return nm->_this();
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -597,4 +614,170 @@ ccReg_Domains_i::registrant(CORBA::Short _v)
 {
   registrantFilter = _v;
   //  dl->setRegistrarFilter(_v);
+}
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//    ccReg_Contact_i
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+ccReg_Contacts_i::ccReg_Contacts_i(
+  Register::Contact::List *_cl
+)
+  : cl(_cl), registrarFilter(0)
+{
+}
+
+ccReg_Contacts_i::~ccReg_Contacts_i()
+{
+}
+
+ccReg::TableRow* 
+ccReg_Contacts_i::getColumnNames()
+{
+  ccReg::TableRow *tr = new ccReg::TableRow;
+  tr->length(4);
+  (*tr)[0] = CORBA::string_dup("Handle");
+  (*tr)[1] = CORBA::string_dup("Name"); 
+  (*tr)[2] = CORBA::string_dup("CrDate"); 
+  (*tr)[3] = CORBA::string_dup("Registrar"); 
+  return tr;
+}
+
+ccReg::TableRow* 
+ccReg_Contacts_i::getRow(CORBA::Short row)
+  throw (ccReg::Table::INVALID_ROW)
+{
+  const Register::Contact::Contact *c = cl->get(row);
+  if (!c) throw ccReg::Table::INVALID_ROW();
+  ccReg::TableRow *tr = new ccReg::TableRow;
+  tr->length(4);
+  (*tr)[0] = CORBA::string_dup(c->getHandle().c_str());
+  (*tr)[1] = CORBA::string_dup(c->getName().c_str());
+  (*tr)[2] = CORBA::string_dup(to_simple_string(c->getCreateDate()).c_str());
+  (*tr)[3] = CORBA::string_dup(c->getRegistrarHandle().c_str()); 
+  return tr;
+}
+
+void 
+ccReg_Contacts_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
+{
+}
+
+char*
+ccReg_Contacts_i::outputCSV()
+{
+  return CORBA::string_dup("1,1,1");
+}
+
+CORBA::Short 
+ccReg_Contacts_i::numRows()
+{
+  return cl->getCount();
+}
+
+CORBA::Short 
+ccReg_Contacts_i::numColumns()
+{
+  return 4;
+}
+
+void 
+ccReg_Contacts_i::reload()
+{
+  cl->reload();
+}
+
+CORBA::Short 
+ccReg_Contacts_i::registrar()
+{
+  return registrarFilter;
+}
+
+void 
+ccReg_Contacts_i::registrar(CORBA::Short _v)
+{
+  registrarFilter = _v;
+  cl->setRegistrarFilter(_v);
+}
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//    ccReg_NSSets_i
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+ccReg_NSSets_i::ccReg_NSSets_i(
+  Register::NSSet::List *_nl
+)
+  : nl(_nl), registrarFilter(0)
+{
+}
+
+ccReg_NSSets_i::~ccReg_NSSets_i()
+{
+}
+
+ccReg::TableRow* 
+ccReg_NSSets_i::getColumnNames()
+{
+  ccReg::TableRow *tr = new ccReg::TableRow;
+  tr->length(3);
+  (*tr)[0] = CORBA::string_dup("Handle");
+  (*tr)[1] = CORBA::string_dup("CrDate"); 
+  (*tr)[2] = CORBA::string_dup("Registrar"); 
+  return tr;
+}
+
+ccReg::TableRow* 
+ccReg_NSSets_i::getRow(CORBA::Short row)
+  throw (ccReg::Table::INVALID_ROW)
+{
+  const Register::NSSet::NSSet *n = nl->get(row);
+  if (!n) throw ccReg::Table::INVALID_ROW();
+  ccReg::TableRow *tr = new ccReg::TableRow;
+  tr->length(3);
+  (*tr)[0] = CORBA::string_dup(n->getHandle().c_str());
+  (*tr)[1] = CORBA::string_dup(to_simple_string(n->getCreateDate()).c_str());
+  (*tr)[2] = CORBA::string_dup(n->getRegistrarHandle().c_str()); 
+  return tr;
+}
+
+void 
+ccReg_NSSets_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
+{
+}
+
+char*
+ccReg_NSSets_i::outputCSV()
+{
+  return CORBA::string_dup("1,1,1");
+}
+
+CORBA::Short 
+ccReg_NSSets_i::numRows()
+{
+  return nl->getCount();
+}
+
+CORBA::Short 
+ccReg_NSSets_i::numColumns()
+{
+  return 3;
+}
+
+void 
+ccReg_NSSets_i::reload()
+{
+  nl->reload();
+}
+
+CORBA::Short 
+ccReg_NSSets_i::registrar()
+{
+  return registrarFilter;
+}
+
+void 
+ccReg_NSSets_i::registrar(CORBA::Short _v)
+{
+  registrarFilter = _v;
+  nl->setRegistrarFilter(_v);
 }
