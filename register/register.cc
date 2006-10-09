@@ -14,12 +14,16 @@ namespace Register
    std::auto_ptr<Zone::Manager> zm;
    std::auto_ptr<Domain::Manager> dm;
    std::auto_ptr<Registrar::Manager> rm;
+   std::auto_ptr<Contact::Manager> cm;
+   std::auto_ptr<NSSet::Manager> nm;
   public:
    ManagerImpl(DB *_db) : db(_db)
    {
      zm.reset(Zone::Manager::create(db));
      dm.reset(Domain::Manager::create(db,zm.get()));
      rm.reset(Registrar::Manager::create(db));
+     cm.reset(Contact::Manager::create(db));
+     nm.reset(NSSet::Manager::create(db));
    } 
    /// interface method implementation
    void checkHandle(const std::string& handle, CheckHandle& ch) const
@@ -83,6 +87,14 @@ namespace Register
    Registrar::Manager *getRegistrarManager()
    {
      return rm.get();
+   }   
+   Contact::Manager *getContactManager()
+   {
+     return cm.get();
+   }   
+   NSSet::Manager *getNSSetManager()
+   {
+     return nm.get();
    }   
  };
  Manager *Manager::create(DB *db)
