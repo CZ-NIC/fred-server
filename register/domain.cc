@@ -18,8 +18,8 @@ namespace Register
     {
       struct AdminInfo 
       {
-	unsigned id;
-	std::string handle;
+	      unsigned id;
+        std::string handle;
       };
       typedef std::vector<AdminInfo> AdminInfoList;
       unsigned id;
@@ -33,15 +33,15 @@ namespace Register
      public:
       DomainImpl(
         unsigned _id,
-	const std::string& _fqdn,
-	unsigned _zone,
-	unsigned _nsset,
-	const std::string& _nssetHandle,
-	unsigned _registrant,
-	const std::string& _registrantHandle,
-	unsigned _registrar,
-	const std::string& _registrarHandle,
-	ptime _crDate
+        const std::string& _fqdn,
+        unsigned _zone,
+        unsigned _nsset,
+        const std::string& _nssetHandle,
+        unsigned _registrant,
+        const std::string& _registrantHandle,
+        unsigned _registrar,
+        const std::string& _registrarHandle,
+        ptime _crDate
       )
 	: ObjectImpl(_crDate,_registrar,_registrarHandle),
 	  id(_id), fqdn(_fqdn), zone(_zone), nsset(_nsset),
@@ -51,29 +51,29 @@ namespace Register
       }
       virtual unsigned getId() const
       {
-	return id;
+        return id;
       }
       virtual const std::string& getFQDN() const
       {
-	return fqdn;
+        return fqdn;
       }
       virtual unsigned getZoneId() const
       {
-	return zone;
+        return zone;
       }
       virtual const std::string& getNSSetHandle() const
       {
-	return nssetHandle;
+        return nssetHandle;
       }
       virtual unsigned getNSSetId() const
       {
-	return nsset;
+        return nsset;
       }
       virtual void setNSSetId(unsigned nsset)
       {
-	// check existance and set handle
-	this->nsset = nsset;
-	modified = true;
+        // check existance and set handle
+        this->nsset = nsset;
+        modified = true;
       }
       virtual const std::string& getRegistrantHandle() const
       {
