@@ -53,7 +53,7 @@ namespace Register
       }      
       bool hasChanged() const
       {
-	      return changed;
+              return changed;
       }
       std::string makeSQL(unsigned registrarId)
       {
@@ -134,7 +134,7 @@ namespace Register
       virtual void save() throw (SQL_ERROR)
       {
         if (changed) {
-	  // save registrar data
+          // save registrar data
         /*
         SQL_SAVE(sql,"registrar",id);
         SQL_SAVE_ADD(sql,"name",name);
@@ -142,21 +142,21 @@ namespace Register
         SQL_SAVE_ADD(sql,"url",url);
         SQL_SAVE_DOIT(sql,db);
         */
-	}
-	ACLList::const_iterator i = find_if(
+        }
+        ACLList::const_iterator i = find_if(
           acl.begin(),acl.end(),std::mem_fun(&ACLImpl::hasChanged)
-	);
-	// !!! must check for this.id
-	if (i != acl.end()) {
-	  std::ostringstream sql;
-	  sql << "DELETE FROM registraracl WHERE registrarid=" << id;
-	  // make sql
-	  for (unsigned j=0;j<acl.size();j++) {
-	    sql.str("");
-	    sql << acl[j]->makeSQL(id);
-	    // do sql;
-	  }
-	}
+        );
+        // !!! must check for this.id
+        if (i != acl.end()) {
+          std::ostringstream sql;
+          sql << "DELETE FROM registraracl WHERE registrarid=" << id;
+          // make sql
+          for (unsigned j=0;j<acl.size();j++) {
+            sql.str("");
+            sql << acl[j]->makeSQL(id);
+            // do sql;
+          }
+        }
       }
       void putACL(
         unsigned id,
@@ -184,13 +184,13 @@ namespace Register
       }
       virtual void setFulltextFilter(const std::string& _fulltext)
       {
-	fulltext = _fulltext;
+        fulltext = _fulltext;
       }
       void clear()
       {
-	for (unsigned i=0; i<registrars.size(); i++)
-	  delete registrars[i];
-	registrars.clear();
+        for (unsigned i=0; i<registrars.size(); i++)
+          delete registrars[i];
+        registrars.clear();
       }
       virtual void reload() throw (SQL_ERROR)
       {
@@ -200,7 +200,7 @@ namespace Register
             << "FROM registrar";
         if (!fulltext.empty())
           sql << " WHERE name ILIKE '%" << fulltext << "%'";
-	if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           registrars.push_back(
             new RegistrarImpl(
@@ -219,8 +219,8 @@ namespace Register
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           // find associated registrar
           unsigned registrarId = atoi(db->GetFieldValue(i,0));
-	  RegistrarListType::iterator r = find_if(
-	    registrars.begin(),registrars.end(),
+          RegistrarListType::iterator r = find_if(
+            registrars.begin(),registrars.end(),
             std::bind2nd(std::mem_fun(&RegistrarImpl::hasId),registrarId)
           );
           if (r == registrars.end()) continue;
@@ -258,17 +258,17 @@ namespace Register
      public:
       EPPActionImpl(
         unsigned _sessionId,
-	unsigned _type,
-	const std::string& _typeName,
-	ptime _startTime,
-	const std::string& _serverTransactionId,
-	const std::string& _clientTransactionId,
-	const std::string& _message,
-	unsigned _result,
-	const std::string& _registrarHandle
+        unsigned _type,
+        const std::string& _typeName,
+        ptime _startTime,
+        const std::string& _serverTransactionId,
+        const std::string& _clientTransactionId,
+        const std::string& _message,
+        unsigned _result,
+        const std::string& _registrarHandle
       ) : 
         sessionId(_sessionId), type(_type), typeName(_typeName),
-	startTime(_startTime),
+        startTime(_startTime),
         serverTransactionId(_serverTransactionId),
         clientTransactionId(_clientTransactionId),
         message(_message), result(_result), registrarHandle(_registrarHandle)
@@ -276,39 +276,39 @@ namespace Register
       }
       virtual unsigned getSessionId() const
       {
-	return sessionId;
+        return sessionId;
       }
       virtual unsigned getType() const
       {
-	return type;
+        return type;
       }
       virtual const std::string& getTypeName() const
       {
-	return typeName;
+        return typeName;
       }
       virtual const ptime getStartTime() const
       {
-      	return startTime;
+              return startTime;
       }
       virtual const std::string& getServerTransactionId() const
       {
-	return serverTransactionId;
+        return serverTransactionId;
       }
       virtual const std::string& getClientTransactionId() const
       {
-	return clientTransactionId;
+        return clientTransactionId;
       }
       virtual const std::string& getEPPMessage() const
       {
-	return message;
+        return message;
       }
       virtual unsigned getResult() const
       {
-	return result;
+        return result;
       }
       virtual const std::string& getRegistrarHandle() const
       {
-	return registrarHandle;
+        return registrarHandle;
       }
     };
 
@@ -342,7 +342,7 @@ namespace Register
       }
       void setTimePeriod(const time_period& _period)
       {
-        //	period = _period;
+        //        period = _period;
       }
       virtual void setType(unsigned _typeId)
       {
@@ -390,15 +390,15 @@ namespace Register
             )
           );
         }
-	
+        
       }
       virtual const unsigned size() const
       {
-	return alist.size();
+        return alist.size();
       }
       virtual const EPPAction* get(unsigned idx) const
       {
-	return idx >= alist.size() ?  NULL : alist[idx];
+        return idx >= alist.size() ?  NULL : alist[idx];
       }
     };
 
@@ -418,7 +418,7 @@ namespace Register
       }
       virtual EPPActionList *getEPPActionList()
       {
-	return &eal;
+        return &eal;
       }
     }; // class ManagerImpl
     Manager *Manager::create(DB *db)

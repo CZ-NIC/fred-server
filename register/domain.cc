@@ -18,7 +18,7 @@ namespace Register
     {
       struct AdminInfo 
       {
-	      unsigned id;
+        unsigned id;
         std::string handle;
       };
       typedef std::vector<AdminInfo> AdminInfoList;
@@ -164,10 +164,10 @@ namespace Register
         clear();
         std::ostringstream sql;
         sql << "SELECT d.id,d.fqdn,d.zone,n.id,n.handle,c.id,c.handle,"
-	          << "r.id,r.handle,d.crdate "
+            << "r.id,r.handle,d.crdate "
             << "FROM contact c, registrar r, "
             << "domain d LEFT JOIN nsset n ON (d.nsset=n.id) " 
-	          << "WHERE d.registrant=c.id "
+            << "WHERE d.registrant=c.id "
             << "AND d.clid=r.id ";
         if (registrarFilter)
           sql << "AND d.clid=" << registrarFilter << " ";
@@ -207,7 +207,7 @@ namespace Register
       ListImpl dlist;
      public:
       ManagerImpl(DB *_db, Zone::Manager *_zm) :
-	      db(_db), zm(_zm), blacklist(Blacklist::create(_db)), dlist(_db)
+        db(_db), zm(_zm), blacklist(Blacklist::create(_db)), dlist(_db)
       {}
       /// interface method implementation  
       std::string makeEnumDomain(const std::string& number)

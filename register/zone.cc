@@ -57,7 +57,7 @@ namespace Register
       }
       const std::string& getDefaultEnumSuffix() const
       {
-      	return defaultEnumSuffix;
+        return defaultEnumSuffix;
       }
       const std::string& getDefaultDomainSuffix() const
       {

@@ -45,8 +45,8 @@ int main()
               << " handle: " << r->getHandle() << std::endl;
     for (unsigned j=0; j<r->getACLSize(); j++)
       std::cout << "  cert:" << r->getACL(j)->getCertificateMD5()
-		<< " pass:" << r->getACL(j)->getPassword()
-		<< std::endl;
+                << " pass:" << r->getACL(j)->getPassword()
+                << std::endl;
   }
   /// -=-=-=-=-=-
   /// DOMAINS
@@ -57,7 +57,7 @@ int main()
   Register::CheckHandle ch;
   m->checkHandle(input,ch);
   std::cout << "Result of checkHandle: " << ch.handleClass 
-	    << " NewHandle: " << ch.newHandle << std::endl;
+            << " NewHandle: " << ch.newHandle << std::endl;
   Register::Domain::CheckAvailType ca = dm->checkAvail(input);
   std::cout << "Result of checkAvail: " << ca << std::endl;
 
