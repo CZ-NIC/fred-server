@@ -514,7 +514,20 @@ void
 ccReg_EPPActions_i::registrar(CORBA::Short _v)
 {
   registrarFilter = _v;
-  eal->setRegistrarFiltr(_v);
+  eal->setRegistrarFilter(_v);
+}
+
+char* 
+ccReg_EPPActions_i::registrarHandle()
+{
+  return CORBA::string_dup(registrarHandleFilter.c_str());
+}
+
+void 
+ccReg_EPPActions_i::registrarHandle(const char* _v)
+{
+  registrarHandleFilter = _v;
+  eal->setRegistrarHandleFilter(registrarHandleFilter);
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -613,7 +626,33 @@ void
 ccReg_Domains_i::registrant(CORBA::Short _v)
 {
   registrantFilter = _v;
-  //  dl->setRegistrarFilter(_v);
+  dl->setRegistrarFilter(_v);
+}
+
+char* 
+ccReg_Domains_i::registrarHandle()
+{
+  return CORBA::string_dup(registrarHandleFilter.c_str());
+}
+
+void 
+ccReg_Domains_i::registrarHandle(const char* _v)
+{
+  registrarHandleFilter = _v;
+  dl->setRegistrarHandleFilter(registrarHandleFilter);
+}
+
+char* 
+ccReg_Domains_i::registrantHandle()
+{
+  return CORBA::string_dup(registrantHandleFilter.c_str());
+}
+
+void 
+ccReg_Domains_i::registrantHandle(const char* _v)
+{
+  registrantHandleFilter = _v;
+  dl->setRegistrantHandleFilter(registrantHandleFilter);
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -700,6 +739,19 @@ ccReg_Contacts_i::registrar(CORBA::Short _v)
   cl->setRegistrarFilter(_v);
 }
 
+char* 
+ccReg_Contacts_i::registrarHandle()
+{
+  return CORBA::string_dup(registrarHandleFilter.c_str());
+}
+
+void 
+ccReg_Contacts_i::registrarHandle(const char* _v)
+{
+  registrarHandleFilter = _v;
+  cl->setRegistrarHandleFilter(registrarHandleFilter);
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_NSSets_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -781,3 +833,17 @@ ccReg_NSSets_i::registrar(CORBA::Short _v)
   registrarFilter = _v;
   nl->setRegistrarFilter(_v);
 }
+
+char* 
+ccReg_NSSets_i::registrarHandle()
+{
+  return CORBA::string_dup(registrarHandleFilter.c_str());
+}
+
+void 
+ccReg_NSSets_i::registrarHandle(const char* _v)
+{
+  registrarHandleFilter = _v;
+  nl->setRegistrarHandleFilter(registrarHandleFilter);
+}
+

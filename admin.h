@@ -18,7 +18,6 @@ class ccReg_PageTable_i : virtual public POA_ccReg::PageTable {
   ccReg::TableRow* getPageRow(CORBA::Short pageRow) 
     throw (ccReg::Table::INVALID_ROW);
   CORBA::Short numPageRows();
-
 };
 
 class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions, 
@@ -26,6 +25,7 @@ class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions,
                            public PortableServer::RefCountServantBase {
   Register::Registrar::EPPActionList *eal;
   CORBA::Short registrarFilter;
+  std::string registrarHandleFilter;
  public:
   ccReg_EPPActions_i(Register::Registrar::EPPActionList *eal);
   ~ccReg_EPPActions_i();
@@ -38,6 +38,8 @@ class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions,
   void reload();
   CORBA::Short registrar();
   void registrar(CORBA::Short _v);
+  char* registrarHandle();
+  void registrarHandle(const char* _v);  
 };
 
 class ccReg_Registrars_i : virtual public POA_ccReg::Registrars,
@@ -64,7 +66,9 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
                            public PortableServer::RefCountServantBase {
   Register::Domain::List *dl;
   CORBA::Short registrarFilter;
+  std::string registrarHandleFilter;
   CORBA::Short registrantFilter;
+  std::string registrantHandleFilter;
  public:
   ccReg_Domains_i(Register::Domain::List *dl);
   ~ccReg_Domains_i();
@@ -77,8 +81,12 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
   void reload();
   CORBA::Short registrar();
   void registrar(CORBA::Short _v);
+  char* registrarHandle();
+  void registrarHandle(const char* _v);  
   CORBA::Short registrant();
   void registrant(CORBA::Short _v);
+  char* registrantHandle();
+  void registrantHandle(const char* _v);  
 };
 
 class ccReg_Contacts_i : virtual public POA_ccReg::Contacts, 
@@ -86,6 +94,7 @@ class ccReg_Contacts_i : virtual public POA_ccReg::Contacts,
                          public PortableServer::RefCountServantBase {
   Register::Contact::List *cl;
   CORBA::Short registrarFilter;
+  std::string registrarHandleFilter;
  public:
   ccReg_Contacts_i(Register::Contact::List *cl);
   ~ccReg_Contacts_i();
@@ -98,6 +107,8 @@ class ccReg_Contacts_i : virtual public POA_ccReg::Contacts,
   void reload();
   CORBA::Short registrar();
   void registrar(CORBA::Short _v);
+  char* registrarHandle();
+  void registrarHandle(const char* _v);  
 };
 
 class ccReg_NSSets_i : virtual public POA_ccReg::NSSets, 
@@ -105,6 +116,7 @@ class ccReg_NSSets_i : virtual public POA_ccReg::NSSets,
                        public PortableServer::RefCountServantBase {
   Register::NSSet::List *nl;
   CORBA::Short registrarFilter;
+  std::string registrarHandleFilter;
  public:
   ccReg_NSSets_i(Register::NSSet::List *dl);
   ~ccReg_NSSets_i();
@@ -117,6 +129,8 @@ class ccReg_NSSets_i : virtual public POA_ccReg::NSSets,
   void reload();
   CORBA::Short registrar();
   void registrar(CORBA::Short _v);
+  char* registrarHandle();
+  void registrarHandle(const char* _v);  
 };
 
 class ccReg_Session_i : public POA_ccReg::Session,
