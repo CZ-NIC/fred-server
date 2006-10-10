@@ -43,10 +43,10 @@ namespace Register
         const std::string& _registrarHandle,
         ptime _crDate
       )
-	: ObjectImpl(_crDate,_registrar,_registrarHandle),
-	  id(_id), fqdn(_fqdn), zone(_zone), nsset(_nsset),
-	  nssetHandle(_nssetHandle), registrant(_registrant),
-	  registrantHandle(_registrantHandle)
+      : ObjectImpl(_crDate,_registrar,_registrarHandle),
+        id(_id), fqdn(_fqdn), zone(_zone), nsset(_nsset),
+        nssetHandle(_nssetHandle), registrant(_registrant),
+        registrantHandle(_registrantHandle)
       {
       }
       virtual unsigned getId() const
@@ -77,32 +77,32 @@ namespace Register
       }
       virtual const std::string& getRegistrantHandle() const
       {
-	return registrantHandle;
+        return registrantHandle;
       }
       virtual unsigned getRegistrantId() const
       {
-	return registrant;
+        return registrant;
       }
       virtual void setRegistrantId(unsigned registrant)
       {
-	this->registrant = registrant;
+        this->registrant = registrant;
       }
       virtual unsigned getAdminCount() const
       {
-	return adminList.size();
+        return adminList.size();
       }
       virtual unsigned getAdminByIdx(unsigned idx) const
       {
-	if (idx >= getAdminCount()) return 0;
-	return adminList[idx].id;
+        if (idx >= getAdminCount()) return 0;
+        return adminList[idx].id;
       }
       virtual void removeAdminId(unsigned id)
       {
-	// find id in list and delete
+        // find id in list and delete
       }
       virtual void insertAdminId(unsigned id)
       {
-	// check existance of id
+        // check existance of id
       }      
     };
 
@@ -112,68 +112,88 @@ namespace Register
       DomainListType dlist;
       unsigned zoneFilter;
       unsigned registrarFilter;
+      std::string registrarHandleFilter;
       unsigned registrantFilter;
+      std::string registrantHandleFilter;
       DB *db;
      public:
       ListImpl(DB *_db) : 
-	zoneFilter(0), registrarFilter(0), registrantFilter(0), db(_db)
+        zoneFilter(0), registrarFilter(0), registrantFilter(0), db(_db)
       {
       }
       virtual ~ListImpl()
       {
-	clear();
+        clear();
       }
       void clear()
       {
-	for (unsigned i=0; i<dlist.size(); i++) delete dlist[i];
-	dlist.clear();
+        for (unsigned i=0; i<dlist.size(); i++) delete dlist[i];
+        dlist.clear();
       }
       virtual unsigned getCount() const
       {
-	return dlist.size();
+        return dlist.size();
       }
       virtual Domain *get(unsigned idx) const
       {
-	if (idx >= dlist.size()) return NULL;
-	return dlist[idx];
+        if (idx >= dlist.size()) return NULL;
+        return dlist[idx];
       }
       virtual void setZoneFilter(unsigned zoneId)
       {
-	zoneFilter = zoneId;
+        zoneFilter = zoneId;
       }
       virtual void setRegistrarFilter(unsigned registrarId)
       {
-	registrarFilter = registrarId;
+        registrarFilter = registrarId;
       }
+      void setRegistrarHandleFilter(const std::string& _registrarHandle)
+      {
+        registrarHandleFilter = _registrarHandle;
+      }      
       virtual void setRegistrantFilter(unsigned registrantId)
       {
-	registrantFilter = registrantId;
+        registrantFilter = registrantId;
       }
+      void setRegistrantHandleFilter(const std::string& _registrantHandle)
+      {
+        registrantHandleFilter = _registrantHandle;
+      }      
       virtual void reload()
       {
-	clear();
+        clear();
         std::ostringstream sql;
         sql << "SELECT d.id,d.fqdn,d.zone,n.id,n.handle,c.id,c.handle,"
-	    << "r.id,r.handle,d.crdate "
-            << "FROM domain d, nsset n, contact c, registrar r "
-	    << "WHERE d.nsset=n.id AND d.registrant=c.id "
-	    << "AND d.clid=r.id LIMIT 1000";
-	if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+	          << "r.id,r.handle,d.crdate "
+            << "FROM contact c, registrar r, "
+            << "domain d LEFT JOIN nsset n ON (d.nsset=n.id) " 
+	          << "WHERE d.registrant=c.id "
+            << "AND d.clid=r.id ";
+        if (registrarFilter)
+          sql << "AND d.clid=" << registrarFilter << " ";
+        if (!registrarHandleFilter.empty())
+          sql << "AND r.handle='" << registrarHandleFilter << "' ";
+        if (registrantFilter)
+          sql << "AND d.registrant=" << registrantFilter << " ";
+        if (!registrantHandleFilter.empty())
+          sql << "AND c.handle='" << registrantHandleFilter << "' ";
+        sql << "LIMIT 1000";
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           dlist.push_back(
-	    new DomainImpl(
-	      atoi(db->GetFieldValue(i,0)),
+            new DomainImpl(
+              atoi(db->GetFieldValue(i,0)),
               db->GetFieldValue(i,1),
-	      atoi(db->GetFieldValue(i,2)),
-	      atoi(db->GetFieldValue(i,3)),
+              atoi(db->GetFieldValue(i,2)),
+              atoi(db->GetFieldValue(i,3)),
               db->GetFieldValue(i,4),
-	      atoi(db->GetFieldValue(i,5)),
+              atoi(db->GetFieldValue(i,5)),
               db->GetFieldValue(i,6),
-	      atoi(db->GetFieldValue(i,7)),
+              atoi(db->GetFieldValue(i,7)),
               db->GetFieldValue(i,8),
-	      ptime(time_from_string(db->GetFieldValue(i,9)))
-	      )
-	    );
+              ptime(time_from_string(db->GetFieldValue(i,9)))
+            )
+          );
         }
         db->FreeSelect();
       }
@@ -187,11 +207,11 @@ namespace Register
       ListImpl dlist;
      public:
       ManagerImpl(DB *_db, Zone::Manager *_zm) :
-	db(_db), zm(_zm), blacklist(Blacklist::create(_db)), dlist(_db)
+	      db(_db), zm(_zm), blacklist(Blacklist::create(_db)), dlist(_db)
       {}
       /// interface method implementation  
       std::string makeEnumDomain(const std::string& number)
-       const throw (NOT_A_NUMBER)
+        const throw (NOT_A_NUMBER)
       {
         std::string result;
         unsigned l = number.size();
@@ -293,7 +313,7 @@ namespace Register
       } 
       virtual List *getList()
       {
-	return &dlist;
+        return &dlist;
       }
     };
     Manager *Manager::create(DB *db, Zone::Manager *zm)

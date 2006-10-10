@@ -36,6 +36,10 @@ namespace Register
       virtual Contact *get(unsigned idx) const = 0;
       /// set filter for registrar
       virtual void setRegistrarFilter(unsigned registrarId) = 0;
+      /// set filter for registrar handle
+      virtual void setRegistrarHandleFilter(
+        const std::string& registrarHandle
+      ) = 0;
       /// reload list with current filter
       virtual void reload() throw (SQL_ERROR) = 0;
     };

@@ -43,6 +43,7 @@ namespace Register
       typedef std::vector<ContactImpl *> ContactList;
       ContactList clist;
       unsigned registrar;
+      std::string registrarHandle;
       DB *db;
      public:
       ListImpl(DB *_db) : registrar(0), db(_db)
@@ -69,6 +70,10 @@ namespace Register
       {
         registrar = registrarId;
       }
+      void setRegistrarHandleFilter(const std::string& _registrarHandle)
+      {
+        registrarHandle = _registrarHandle;
+      }      
       void reload() throw (SQL_ERROR)
       {
         clear();
@@ -79,6 +84,8 @@ namespace Register
             << "WHERE c.clid=r.id ";
         if (registrar)
           sql << "AND c.clid=" << registrar << " ";
+        if (!registrarHandle.empty())
+          sql << "AND r.handle='" << registrarHandle << "' ";     
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {

@@ -116,7 +116,11 @@ namespace Register {
       /// Set filtr for session action is part of
       virtual void setSessionFiltr(unsigned sessionId) = 0;
       /// Set filtr for registrar who performed action
-      virtual void setRegistrarFiltr(unsigned registrarId) = 0;
+      virtual void setRegistrarFilter(unsigned registrarId) = 0;
+      /// Set filtr for registrar who performed action
+      virtual void setRegistrarHandleFilter(
+        const std::string& registrarHandle
+      ) = 0;
       /// Set filtr for time interval of performing acion 
       virtual void setTimePeriod(const time_period& period) = 0;
       /// Set filtr for action type

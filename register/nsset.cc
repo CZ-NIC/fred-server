@@ -37,6 +37,7 @@ namespace Register
       typedef std::vector<NSSetImpl *> NSSetList;
       NSSetList nlist;
       unsigned registrar;
+      std::string registrarHandle;
       DB *db;
      public:
       ListImpl(DB *_db) : registrar(0), db(_db)
@@ -63,16 +64,22 @@ namespace Register
       {
         registrar = registrarId;
       }
+      void setRegistrarHandleFilter(const std::string& _registrarHandle)
+      {
+        registrarHandle = _registrarHandle;
+      }
       void reload() throw (SQL_ERROR)
       {
         clear();
         std::ostringstream sql;
         sql << "SELECT n.id,n.handle,"
-            << "r.id,r.handle,c.crdate "
+            << "r.id,r.handle,n.crdate "
             << "FROM nsset n, registrar r "
             << "WHERE n.clid=r.id ";
         if (registrar)
           sql << "AND n.clid=" << registrar << " ";
+        if (!registrarHandle.empty())
+          sql << "AND r.handle='" << registrarHandle << "' ";
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {

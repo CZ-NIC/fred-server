@@ -75,8 +75,16 @@ namespace Register
       virtual void setZoneFilter(unsigned zoneId) = 0;
       /// set filter for registrar
       virtual void setRegistrarFilter(unsigned registrarId) = 0;
+      /// set filter for registrar handle
+      virtual void setRegistrarHandleFilter(
+        const std::string& registrarHandle
+      ) = 0;
       /// set filter for registrant
       virtual void setRegistrantFilter(unsigned registrantId) = 0;
+      /// set filter for registrant handle
+      virtual void setRegistrantHandleFilter(
+        const std::string& registrantHandle
+      ) = 0;
       /// reload list with current filter
       virtual void reload() = 0;
     };
