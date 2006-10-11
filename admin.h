@@ -29,7 +29,7 @@ class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions,
  public:
   ccReg_EPPActions_i(Register::Registrar::EPPActionList *eal);
   ~ccReg_EPPActions_i();
-  ccReg::TableRow* getColumnNames();
+  ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
   char* outputCSV();
@@ -50,7 +50,7 @@ class ccReg_Registrars_i : virtual public POA_ccReg::Registrars,
  public:
   ccReg_Registrars_i(Register::Registrar::RegistrarList *rl);
   ~ccReg_Registrars_i();
-  ccReg::TableRow* getColumnNames();
+  ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
   char* outputCSV();
@@ -72,7 +72,7 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
  public:
   ccReg_Domains_i(Register::Domain::List *dl);
   ~ccReg_Domains_i();
-  ccReg::TableRow* getColumnNames();
+  ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
   char* outputCSV();
@@ -98,7 +98,7 @@ class ccReg_Contacts_i : virtual public POA_ccReg::Contacts,
  public:
   ccReg_Contacts_i(Register::Contact::List *cl);
   ~ccReg_Contacts_i();
-  ccReg::TableRow* getColumnNames();
+  ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
   char* outputCSV();
@@ -120,7 +120,7 @@ class ccReg_NSSets_i : virtual public POA_ccReg::NSSets,
  public:
   ccReg_NSSets_i(Register::NSSet::List *dl);
   ~ccReg_NSSets_i();
-  ccReg::TableRow* getColumnNames();
+  ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
   char* outputCSV();

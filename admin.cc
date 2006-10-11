@@ -359,16 +359,20 @@ ccReg_Registrars_i::~ccReg_Registrars_i()
 {
 }
 
-ccReg::TableRow*
-ccReg_Registrars_i::getColumnNames()
+ccReg::Table::ColumnHeaders* 
+ccReg_Registrars_i::getColumnHeaders()
 {
-  ccReg::TableRow *tr = new ccReg::TableRow;
-  tr->length(3);
-  (*tr)[0] = CORBA::string_dup("Name"); 
-  (*tr)[1] = CORBA::string_dup("Handle"); 
-  (*tr)[2] = CORBA::string_dup("URL"); 
-  return tr;
+  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+  ch->length(3);
+  (*ch)[0].name = CORBA::string_dup("Type"); 
+  (*ch)[0].type = ccReg::Table::CT_OTHER; 
+  (*ch)[1].name = CORBA::string_dup("Registrar"); 
+  (*ch)[1].type = ccReg::Table::CT_REGISTRAR_HANDLE; 
+  (*ch)[2].name = CORBA::string_dup("Time"); 
+  (*ch)[2].type = ccReg::Table::CT_OTHER; 
 }
+
+
 
 ccReg::TableRow* 
 ccReg_Registrars_i::getRow(CORBA::Short row)
@@ -441,16 +445,19 @@ ccReg_EPPActions_i::~ccReg_EPPActions_i()
 {
 }
 
-ccReg::TableRow* 
-ccReg_EPPActions_i::getColumnNames()
+ccReg::Table::ColumnHeaders* 
+ccReg_EPPActions_i::getColumnHeaders()
 {
-  ccReg::TableRow *tr = new ccReg::TableRow;
-  tr->length(4);
-  (*tr)[0] = CORBA::string_dup("SessionID"); 
-  (*tr)[1] = CORBA::string_dup("Type"); 
-  (*tr)[2] = CORBA::string_dup("Registrar"); 
-  (*tr)[3] = CORBA::string_dup("Time"); 
-  return tr;
+  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+  ch->length(4);
+  (*ch)[0].name = CORBA::string_dup("SessionID"); 
+  (*ch)[0].type = ccReg::Table::CT_OTHER; 
+  (*ch)[1].name = CORBA::string_dup("Type"); 
+  (*ch)[1].type = ccReg::Table::CT_OTHER; 
+  (*ch)[2].name = CORBA::string_dup("Registrar"); 
+  (*ch)[2].type = ccReg::Table::CT_REGISTRAR_HANDLE; 
+  (*ch)[3].name = CORBA::string_dup("Time"); 
+  (*ch)[3].type = ccReg::Table::CT_OTHER; 
 }
 
 ccReg::TableRow* 
@@ -545,17 +552,21 @@ ccReg_Domains_i::~ccReg_Domains_i()
 {
 }
 
-ccReg::TableRow* 
-ccReg_Domains_i::getColumnNames()
+ccReg::Table::ColumnHeaders* 
+ccReg_Domains_i::getColumnHeaders()
 {
-  ccReg::TableRow *tr = new ccReg::TableRow;
-  tr->length(5);
-  (*tr)[0] = CORBA::string_dup("FQDN");
-  (*tr)[1] = CORBA::string_dup("CrDate"); 
-  (*tr)[2] = CORBA::string_dup("Registrar"); 
-  (*tr)[3] = CORBA::string_dup("Registrant"); 
-  (*tr)[4] = CORBA::string_dup("NSSet"); 
-  return tr;
+  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+  ch->length(5);
+  (*ch)[0].name = CORBA::string_dup("FQDN"); 
+  (*ch)[0].type = ccReg::Table::CT_OTHER; 
+  (*ch)[1].name = CORBA::string_dup("CrDate"); 
+  (*ch)[1].type = ccReg::Table::CT_OTHER; 
+  (*ch)[2].name = CORBA::string_dup("Registrar"); 
+  (*ch)[2].type = ccReg::Table::CT_REGISTRAR_HANDLE; 
+  (*ch)[3].name = CORBA::string_dup("Registrant"); 
+  (*ch)[3].type = ccReg::Table::CT_CONTACT_HANDLE; 
+  (*ch)[4].name = CORBA::string_dup("NSSet"); 
+  (*ch)[4].type = ccReg::Table::CT_NSSET_HANDLE; 
 }
 
 ccReg::TableRow* 
@@ -670,16 +681,19 @@ ccReg_Contacts_i::~ccReg_Contacts_i()
 {
 }
 
-ccReg::TableRow* 
-ccReg_Contacts_i::getColumnNames()
+ccReg::Table::ColumnHeaders* 
+ccReg_Contacts_i::getColumnHeaders()
 {
-  ccReg::TableRow *tr = new ccReg::TableRow;
-  tr->length(4);
-  (*tr)[0] = CORBA::string_dup("Handle");
-  (*tr)[1] = CORBA::string_dup("Name"); 
-  (*tr)[2] = CORBA::string_dup("CrDate"); 
-  (*tr)[3] = CORBA::string_dup("Registrar"); 
-  return tr;
+  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+  ch->length(4);
+  (*ch)[0].name = CORBA::string_dup("Handle"); 
+  (*ch)[0].type = ccReg::Table::CT_OTHER; 
+  (*ch)[1].name = CORBA::string_dup("Name"); 
+  (*ch)[1].type = ccReg::Table::CT_OTHER; 
+  (*ch)[2].name = CORBA::string_dup("CrDate"); 
+  (*ch)[2].type = ccReg::Table::CT_OTHER; 
+  (*ch)[3].name = CORBA::string_dup("Registrar"); 
+  (*ch)[3].type = ccReg::Table::CT_REGISTRAR_HANDLE; 
 }
 
 ccReg::TableRow* 
@@ -767,15 +781,17 @@ ccReg_NSSets_i::~ccReg_NSSets_i()
 {
 }
 
-ccReg::TableRow* 
-ccReg_NSSets_i::getColumnNames()
+ccReg::Table::ColumnHeaders* 
+ccReg_NSSets_i::getColumnHeaders()
 {
-  ccReg::TableRow *tr = new ccReg::TableRow;
-  tr->length(3);
-  (*tr)[0] = CORBA::string_dup("Handle");
-  (*tr)[1] = CORBA::string_dup("CrDate"); 
-  (*tr)[2] = CORBA::string_dup("Registrar"); 
-  return tr;
+  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+  ch->length(3);
+  (*ch)[0].name = CORBA::string_dup("Handle"); 
+  (*ch)[0].type = ccReg::Table::CT_OTHER; 
+  (*ch)[1].name = CORBA::string_dup("CrDate"); 
+  (*ch)[1].type = ccReg::Table::CT_OTHER; 
+  (*ch)[2].name = CORBA::string_dup("Registrar"); 
+  (*ch)[2].type = ccReg::Table::CT_REGISTRAR_HANDLE; 
 }
 
 ccReg::TableRow* 
