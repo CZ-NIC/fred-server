@@ -59,7 +59,7 @@ ccReg::TableRow*
 ccReg_PageTable_i::getPageRow(CORBA::Short pageRow)
   throw (ccReg::Table::INVALID_ROW)
 {
-  getRow(pageRow + start());
+  return getRow(pageRow + start());
 }
 
 CORBA::Short 
@@ -544,7 +544,7 @@ ccReg_EPPActions_i::registrarHandle(const char* _v)
 ccReg_Domains_i::ccReg_Domains_i(
   Register::Domain::List *_dl
 )
-  : dl(_dl), registrantFilter(0), registrarFilter(0)
+  : dl(_dl), registrarFilter(0), registrantFilter(0)
 {
 }
 
