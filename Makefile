@@ -1,7 +1,7 @@
 
 CXX = g++
 
-CXXFLAGS =   -DSYSLOG   -DCONFIG_FILE=\"/etc/ccReg.conf\" -DSVERSION=\"${SVN_REVISION}\"
+CXXFLAGS = -Wall  -DSYSLOG   -DCONFIG_FILE=\"/etc/ccReg.conf\" -DSVERSION=\"${SVN_REVISION}\"
 
 OBJECTS = 
 IDLFILE = ../../idl/trunk/ccReg.idl
