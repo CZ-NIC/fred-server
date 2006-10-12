@@ -72,7 +72,6 @@ ccReg_PageTable_i::numPageRows()
   return l < aPageSize ? l : aPageSize;
 }
 
-
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_Admin_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -310,6 +309,11 @@ ccReg_Session_i::ccReg_Session_i(const std::string& database)
   dm = new ccReg_Domains_i(m->getDomainManager()->getList());
   cm = new ccReg_Contacts_i(m->getContactManager()->getList());
   nm = new ccReg_NSSets_i(m->getNSSetManager()->getList());
+  reg->reload();
+  eppa->reload();
+  dm->reload();
+  cm->reload();
+  nm->reload();
 }
 
 ccReg_Session_i::~ccReg_Session_i()
