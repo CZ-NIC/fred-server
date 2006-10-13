@@ -2,6 +2,7 @@
 #define OBJECT_H_
 
 #include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <string>
 #include <set>
@@ -54,6 +55,26 @@ namespace Register
     /// Remove state from status set
     virtual bool deleteStatus(StatusElement element) = 0;
   };
+  
+  class ObjectList {
+   protected:
+    /// protected destructor
+    virtual ~ObjectList() {}
+   public:
+    /// return count of objects in list
+    virtual unsigned getCount() const = 0;
+    /// get detail of loaded objects
+    virtual Object *get(unsigned idx) const = 0;
+    /// set filter for registrar
+    virtual void setRegistrarFilter(unsigned registrarId) = 0;
+    /// set filter for registrar handle
+    virtual void setRegistrarHandleFilter(
+      const std::string& registrarHandle
+    ) = 0;
+    /// set filter for period of crDate
+    virtual void setCrDateIntervalFilter(time_period period) = 0;
+  };
+  
 };
 
 #endif

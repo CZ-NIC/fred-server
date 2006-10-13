@@ -1,6 +1,7 @@
 #include "registrar.h"
 #include "dbsql.h"
 #include <boost/date_time/posix_time/time_parsers.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <vector>
 #include <algorithm>
 #include <functional>

@@ -63,22 +63,14 @@ namespace Register
       virtual void insertAdminId(unsigned id) = 0;
     };
     /// domain list
-    class List
+    class List : virtual public ObjectList
     {
      public:
       virtual ~List() {}
-      /// return count of domains in list
-      virtual unsigned getCount() const = 0;
       /// get detail of loaded domain
       virtual Domain *get(unsigned idx) const = 0;
       /// set filter for domain zone
       virtual void setZoneFilter(unsigned zoneId) = 0;
-      /// set filter for registrar
-      virtual void setRegistrarFilter(unsigned registrarId) = 0;
-      /// set filter for registrar handle
-      virtual void setRegistrarHandleFilter(
-        const std::string& registrarHandle
-      ) = 0;
       /// set filter for registrant
       virtual void setRegistrantFilter(unsigned registrantId) = 0;
       /// set filter for registrant handle

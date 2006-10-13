@@ -38,9 +38,12 @@ namespace Register
       NSSetList nlist;
       unsigned registrar;
       std::string registrarHandle;
+      time_period crDateIntervalFilter;      
       DB *db;
      public:
-      ListImpl(DB *_db) : registrar(0), db(_db)
+      ListImpl(DB *_db) : registrar(0),
+      crDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),  
+      db(_db)
       {
       }
       ~ListImpl() 
@@ -68,6 +71,10 @@ namespace Register
       {
         registrarHandle = _registrarHandle;
       }
+      void setCrDateIntervalFilter(time_period period)
+      {
+        crDateIntervalFilter = period;
+      }      
       void reload() throw (SQL_ERROR)
       {
         clear();

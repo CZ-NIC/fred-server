@@ -115,10 +115,13 @@ namespace Register
       std::string registrarHandleFilter;
       unsigned registrantFilter;
       std::string registrantHandleFilter;
+      time_period crDateIntervalFilter;
       DB *db;
      public:
       ListImpl(DB *_db) : 
-        zoneFilter(0), registrarFilter(0), registrantFilter(0), db(_db)
+        zoneFilter(0), registrarFilter(0), registrantFilter(0),
+        crDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
+        db(_db)
       {
       }
       virtual ~ListImpl()
@@ -158,6 +161,10 @@ namespace Register
       void setRegistrantHandleFilter(const std::string& _registrantHandle)
       {
         registrantHandleFilter = _registrantHandle;
+      }
+      void setCrDateIntervalFilter(time_period period)
+      {
+        crDateIntervalFilter = period;
       }      
       virtual void reload()
       {

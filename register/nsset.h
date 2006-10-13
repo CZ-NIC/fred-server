@@ -23,21 +23,13 @@ namespace Register
       /// return nsset handle
       virtual const std::string& getHandle() const = 0;
     };
-    /// domain list
-    class List
+    /// nssets list
+    class List : virtual public ObjectList
     {
      public:
       virtual ~List() {}
-      /// return count of nssets in list
-      virtual unsigned getCount() const = 0;
       /// get detail of loaded nsset
       virtual NSSet *get(unsigned idx) const = 0;
-      /// set filter for registrar
-      virtual void setRegistrarFilter(unsigned registrarId) = 0;
-      /// set filter for registrar handle
-      virtual void setRegistrarHandleFilter(
-        const std::string& registrarHandle
-      ) = 0;
       /// reload list with current filter
       virtual void reload() throw (SQL_ERROR) = 0;
     };

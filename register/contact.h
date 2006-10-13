@@ -26,20 +26,12 @@ namespace Register
       virtual const std::string& getName() const = 0;
     };
     /// domain list
-    class List
+    class List : virtual public ObjectList
     {
      public:
       virtual ~List() {}
-      /// return count of contacts in list
-      virtual unsigned getCount() const = 0;
       /// get detail of loaded contact
       virtual Contact *get(unsigned idx) const = 0;
-      /// set filter for registrar
-      virtual void setRegistrarFilter(unsigned registrarId) = 0;
-      /// set filter for registrar handle
-      virtual void setRegistrarHandleFilter(
-        const std::string& registrarHandle
-      ) = 0;
       /// reload list with current filter
       virtual void reload() throw (SQL_ERROR) = 0;
     };
