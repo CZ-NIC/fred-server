@@ -26,6 +26,12 @@ class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions,
   Register::Registrar::EPPActionList *eal;
   CORBA::Short registrarFilter;
   std::string registrarHandleFilter;
+  std::string typeFilter;
+  std::string handleFilter;
+  CORBA::Short resultFilter;
+  ccReg::DateInterval timeFilter;
+  std::string clTRIDFilter;
+  std::string svTRIDFilter;
  public:
   ccReg_EPPActions_i(Register::Registrar::EPPActionList *eal);
   ~ccReg_EPPActions_i();
@@ -35,11 +41,21 @@ class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions,
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
-  void reload();
   CORBA::Short registrar();
   void registrar(CORBA::Short _v);
   char* registrarHandle();
-  void registrarHandle(const char* _v);  
+  void registrarHandle(const char* _v);
+  char* type();
+  void type(const char* _v);
+  char* handle();
+  void handle(const char* _v);
+  CORBA::Short result();
+  void result(CORBA::Short _v);
+  ccReg::DateInterval time();
+  void time(const ccReg::DateInterval& _v);
+  void reload();
+  void clear();
+  ccReg::Filter_ptr aFilter();  
 };
 
 class ccReg_Registrars_i : virtual public POA_ccReg::Registrars,
@@ -47,6 +63,8 @@ class ccReg_Registrars_i : virtual public POA_ccReg::Registrars,
                            public PortableServer::RefCountServantBase {  
   Register::Registrar::RegistrarList *rl;
   std::string fulltextFilter;
+  std::string nameFilter;
+  std::string handleFilter;
  public:
   ccReg_Registrars_i(Register::Registrar::RegistrarList *rl);
   ~ccReg_Registrars_i();
@@ -56,19 +74,45 @@ class ccReg_Registrars_i : virtual public POA_ccReg::Registrars,
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
-  void reload();
   char* fulltext();
   void fulltext(const char* _v);
+  char* name();
+  void name(const char* _v);
+  char* handle();
+  void handle(const char* _v);
+  ccReg::Filter_ptr aFilter();
+  void reload();
+  void clear();
 };
 
-class ccReg_Domains_i : virtual public POA_ccReg::Domains, 
-                           public ccReg_PageTable_i,
-                           public PortableServer::RefCountServantBase {
-  Register::Domain::List *dl;
+class ccReg_RegObjectFilter_i : virtual public POA_ccReg::RegObjectFilter {
   CORBA::Short registrarFilter;
   std::string registrarHandleFilter;
+  ccReg::DateInterval crDateFilter;
+  Register::ObjectList *ol;
+ public:
+  ccReg_RegObjectFilter_i(Register::ObjectList *_ol);
+  CORBA::Short registrar();
+  void registrar(CORBA::Short _v);
+  char* registrarHandle();
+  void registrarHandle(const char* _v);
+  ccReg::DateInterval crDate();
+  void crDate(const ccReg::DateInterval& _v);
+  void clear();
+};
+
+class ccReg_Domains_i : virtual public POA_ccReg::Domains,
+                        virtual public ccReg_RegObjectFilter_i,
+                        public ccReg_PageTable_i,
+                        public PortableServer::RefCountServantBase {
+  Register::Domain::List *dl;
   CORBA::Short registrantFilter;
   std::string registrantHandleFilter;
+  CORBA::Short nssetFilter;
+  std::string nssetHandleFilter;
+  CORBA::Short adminFilter;
+  std::string adminHandleFilter;
+  std::string fqdnFilter;
  public:
   ccReg_Domains_i(Register::Domain::List *dl);
   ~ccReg_Domains_i();
@@ -79,22 +123,30 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
   CORBA::Short numRows();
   CORBA::Short numColumns();
   void reload();
-  CORBA::Short registrar();
-  void registrar(CORBA::Short _v);
-  char* registrarHandle();
-  void registrarHandle(const char* _v);  
   CORBA::Short registrant();
   void registrant(CORBA::Short _v);
   char* registrantHandle();
-  void registrantHandle(const char* _v);  
+  void registrantHandle(const char* _v);
+  CORBA::Short nsset();
+  void nsset(CORBA::Short _v);
+  char* nssetHandle();
+  void nssetHandle(const char* _v);
+  CORBA::Short admin();
+  void admin(CORBA::Short _v);
+  char* adminHandle();
+  void adminHandle(const char* _v);
+  char* fqdn();
+  void fqdn(const char* _v);
+  ccReg::Filter_ptr aFilter();  
+  void clear();
 };
 
 class ccReg_Contacts_i : virtual public POA_ccReg::Contacts, 
+                         virtual public ccReg_RegObjectFilter_i,
                          public ccReg_PageTable_i,
                          public PortableServer::RefCountServantBase {
   Register::Contact::List *cl;
-  CORBA::Short registrarFilter;
-  std::string registrarHandleFilter;
+  std::string handleFilter;
  public:
   ccReg_Contacts_i(Register::Contact::List *cl);
   ~ccReg_Contacts_i();
@@ -104,19 +156,19 @@ class ccReg_Contacts_i : virtual public POA_ccReg::Contacts,
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
+  char* handle();
+  void handle(const char* _v);
   void reload();
-  CORBA::Short registrar();
-  void registrar(CORBA::Short _v);
-  char* registrarHandle();
-  void registrarHandle(const char* _v);  
+  ccReg::Filter_ptr aFilter();  
+  void clear();
 };
 
 class ccReg_NSSets_i : virtual public POA_ccReg::NSSets, 
+                       virtual public ccReg_RegObjectFilter_i,
                        public ccReg_PageTable_i,
                        public PortableServer::RefCountServantBase {
   Register::NSSet::List *nl;
-  CORBA::Short registrarFilter;
-  std::string registrarHandleFilter;
+  std::string handleFilter;
  public:
   ccReg_NSSets_i(Register::NSSet::List *dl);
   ~ccReg_NSSets_i();
@@ -126,11 +178,11 @@ class ccReg_NSSets_i : virtual public POA_ccReg::NSSets,
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
+  char* handle();
+  void handle(const char* _v);
   void reload();
-  CORBA::Short registrar();
-  void registrar(CORBA::Short _v);
-  char* registrarHandle();
-  void registrarHandle(const char* _v);  
+  ccReg::Filter_ptr aFilter();  
+  void clear();
 };
 
 class ccReg_Session_i : public POA_ccReg::Session,
@@ -170,12 +222,10 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   ccReg::Registrar* getRegistrarByHandle(const char* handle) 
     throw (ccReg::Admin::ObjectNotFound);
 
-  // primitivni vypis
-  ccReg::Lists*  ObjectList( char* table , char *fname );
-  ccReg::Lists* ListRegistrar();
-  ccReg::Lists* ListDomain();
-  ccReg::Lists* ListContact();
-  ccReg::Lists* ListNSSet();
+  void putRegistrar(const ccReg::Registrar& regData);
+  ccReg::RegObject* getContactByHandle(const char* handle);
+  ccReg::RegObject* getNSSetByHandle(const char* handle);
+  ccReg::RegObject* getDomainByFQDN(const char* fqdn);
 
   /// testovaci fce na typ objektu
   void checkHandle(const char* handle, ccReg::CheckHandleType_out ch);

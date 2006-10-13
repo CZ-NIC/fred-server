@@ -194,7 +194,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
  
   if( find == false )
   {
-    reg->id =  0;
+    reg->id = 0;
     reg->handle=CORBA::string_dup( ""  ); // handle
     reg->name=CORBA::string_dup( ""  );
     reg->organization=CORBA::string_dup( "" );
@@ -212,54 +212,6 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
     reg->credit=0;
   }
   return reg;
-}
-
-// primitivni vypis
-ccReg::Lists*  ccReg_Admin_i::ObjectList( char* table , char *fname )
-{
-  DB DBsql;
-  ccReg::Lists *list;
-  char sqlString[128];
-  int rows =0, i;
-
-  list = new ccReg::Lists;
-
-  if( DBsql.OpenDatabase( database.c_str() ) )
-  {
-    sprintf( sqlString , "SELECT %s FROM %s;" , fname , table );
-
-    if( DBsql.ExecSelect( sqlString ) )
-    {
-      rows = DBsql.GetSelectRows();
-      LOG( NOTICE_LOG, "List: %s  num -> %d",  table , rows );
-      list->length( rows );
-      for( i = 0 ; i < rows ; i ++ )
-      {
-        (*list)[i]=CORBA::string_dup( DBsql.GetFieldValue(  i , 0 )  ); 
-      }
-      DBsql.FreeSelect();
-    }
-    DBsql.Disconnect();
-  }
-  if( rows == 0 ) list->length( 0 ); // nulova delka
-  return list;
-}
-
-ccReg::Lists* ccReg_Admin_i::ListRegistrar()
-{
-  return ObjectList( "REGISTRAR" , "handle" );
-}
-ccReg::Lists* ccReg_Admin_i::ListDomain()
-{
-  return ObjectList( "DOMAIN" , "fqdn" );
-}
-ccReg::Lists* ccReg_Admin_i::ListContact()
-{
-  return ObjectList( "CONTACT" , "handle" );
-}
-ccReg::Lists* ccReg_Admin_i::ListNSSet()
-{
-  return ObjectList( "NSSET" , "handle" );
 }
 
 #define SWITCH_CONVERT(x) case Register::x : ch->handleClass = ccReg::x; break
@@ -294,6 +246,44 @@ ccReg::Session_ptr
 ccReg_Admin_i::getSession(const char* sessionID)
 {
   return session->_this();
+}
+
+void 
+ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData)
+{
+}
+
+ccReg::RegObject* 
+ccReg_Admin_i::getContactByHandle(const char* handle)
+{
+  ccReg::RegObject* o = new ccReg::RegObject;
+  o->id = 1;
+  o->handle = CORBA::string_dup("handle");
+  o->registrarHandle = CORBA::string_dup("reg handle");
+  o->crDate = CORBA::string_dup("time");
+  return o;
+}
+
+ccReg::RegObject* 
+ccReg_Admin_i::getNSSetByHandle(const char* handle)
+{
+  ccReg::RegObject* o = new ccReg::RegObject;
+  o->id = 1;
+  o->handle = CORBA::string_dup("handle");
+  o->registrarHandle = CORBA::string_dup("reg handle");
+  o->crDate = CORBA::string_dup("time");
+  return o;
+}
+
+ccReg::RegObject*
+ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
+{
+  ccReg::RegObject* o = new ccReg::RegObject;
+  o->id = 1;
+  o->handle = CORBA::string_dup("handle");
+  o->registrarHandle = CORBA::string_dup("reg handle");
+  o->crDate = CORBA::string_dup("time");
+  return o;
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -433,6 +423,45 @@ ccReg_Registrars_i::fulltext(const char* _v)
   rl->setFulltextFilter(fulltextFilter);
 }
 
+char* 
+ccReg_Registrars_i::name()
+{
+  return CORBA::string_dup(nameFilter.c_str());
+}
+
+void 
+ccReg_Registrars_i::name(const char* _v)
+{
+  nameFilter = _v;
+//  rl->setNameFilter(_v);
+}
+
+char* 
+ccReg_Registrars_i::handle()
+{
+  return CORBA::string_dup(handleFilter.c_str());
+}
+
+void 
+ccReg_Registrars_i::handle(const char* _v)
+{
+  handleFilter = _v;
+//  rl->setHandleFilter(_v);
+}
+
+ccReg::Filter_ptr
+ccReg_Registrars_i::aFilter()
+{
+  return _this();
+}
+
+void
+ccReg_Registrars_i::clear()
+{
+  fulltextFilter = "";
+  //rl->clear();
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_EPPActions_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -541,14 +570,139 @@ ccReg_EPPActions_i::registrarHandle(const char* _v)
   eal->setRegistrarHandleFilter(registrarHandleFilter);
 }
 
+char* 
+ccReg_EPPActions_i::type()
+{
+  return CORBA::string_dup(typeFilter.c_str());
+}
+
+void 
+ccReg_EPPActions_i::type(const char* _v)
+{
+  typeFilter = _v;
+  //eal->setTypeFilter(_v);
+}
+
+char* 
+ccReg_EPPActions_i::handle()
+{
+  return CORBA::string_dup(handleFilter.c_str());
+}
+
+void 
+ccReg_EPPActions_i::handle(const char* _v)
+{
+  handleFilter = _v;
+  //eal->setHandleFilter(_v); 
+}
+
+CORBA::Short 
+ccReg_EPPActions_i::result()
+{
+  return resultFilter;
+}
+
+void 
+ccReg_EPPActions_i::result(CORBA::Short _v)
+{
+  resultFilter = _v;
+  //eal->setResultFilter(_v);
+}
+
+ccReg::DateInterval 
+ccReg_EPPActions_i::time()
+{
+  return timeFilter;
+}
+
+void 
+ccReg_EPPActions_i::time(const ccReg::DateInterval& _v)
+{
+  timeFilter = _v;
+  //eal->setTimeFilter(_v)
+}
+
+ccReg::Filter_ptr
+ccReg_EPPActions_i::aFilter()
+{
+  return _this();
+}
+
+void
+ccReg_EPPActions_i::clear()
+{
+  registrarHandleFilter = "";
+  typeFilter = "";
+  handleFilter = "";
+  resultFilter = 0;
+//  timeFilter = ;
+  clTRIDFilter = "";
+  svTRIDFilter = "";
+  //rl->clear();
+}
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//    ccReg_RegObjectFilter_i
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+ccReg_RegObjectFilter_i::ccReg_RegObjectFilter_i(Register::ObjectList *_ol)
+  : registrarFilter(0), ol(_ol)
+{
+}
+
+CORBA::Short 
+ccReg_RegObjectFilter_i::registrar()
+{
+  return registrarFilter;
+}
+
+void 
+ccReg_RegObjectFilter_i::registrar(CORBA::Short _v)
+{
+  registrarFilter = _v;
+  ol->setRegistrarFilter(_v);
+}
+
+char* 
+ccReg_RegObjectFilter_i::registrarHandle()
+{
+  return CORBA::string_dup(registrarHandleFilter.c_str());
+}
+
+void 
+ccReg_RegObjectFilter_i::registrarHandle(const char* _v)
+{
+  registrarHandleFilter = _v;
+  ol->setRegistrarHandleFilter(registrarHandleFilter);
+}
+
+ccReg::DateInterval 
+ccReg_RegObjectFilter_i::crDate()
+{
+  return crDateFilter;
+}
+
+void 
+ccReg_RegObjectFilter_i::crDate(const ccReg::DateInterval& _v)
+{
+  crDateFilter = _v;
+  // ol->setCrDateIntervalFilter(_v)
+}
+
+void 
+ccReg_RegObjectFilter_i::clear()
+{
+  registrarFilter = 0;
+  registrarHandleFilter = "";
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_Domains_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 ccReg_Domains_i::ccReg_Domains_i(
   Register::Domain::List *_dl
-)
-  : dl(_dl), registrarFilter(0), registrantFilter(0)
+) : ccReg_RegObjectFilter_i(_dl),dl(_dl), registrantFilter(0)
 {
 }
 
@@ -620,19 +774,6 @@ ccReg_Domains_i::reload()
 }
 
 CORBA::Short 
-ccReg_Domains_i::registrar()
-{
-  return registrarFilter;
-}
-
-void 
-ccReg_Domains_i::registrar(CORBA::Short _v)
-{
-  registrarFilter = _v;
-  dl->setRegistrarFilter(_v);
-}
-
-CORBA::Short 
 ccReg_Domains_i::registrant()
 {
   return registrantFilter;
@@ -643,19 +784,6 @@ ccReg_Domains_i::registrant(CORBA::Short _v)
 {
   registrantFilter = _v;
   dl->setRegistrarFilter(_v);
-}
-
-char* 
-ccReg_Domains_i::registrarHandle()
-{
-  return CORBA::string_dup(registrarHandleFilter.c_str());
-}
-
-void 
-ccReg_Domains_i::registrarHandle(const char* _v)
-{
-  registrarHandleFilter = _v;
-  dl->setRegistrarHandleFilter(registrarHandleFilter);
 }
 
 char* 
@@ -671,6 +799,84 @@ ccReg_Domains_i::registrantHandle(const char* _v)
   dl->setRegistrantHandleFilter(registrantHandleFilter);
 }
 
+CORBA::Short 
+ccReg_Domains_i::nsset()
+{
+  return nssetFilter;
+}
+
+void 
+ccReg_Domains_i::nsset(CORBA::Short _v)
+{
+  nssetFilter = _v;
+  //dl->setNSSetFilter(_v)
+}
+
+char* 
+ccReg_Domains_i::nssetHandle()
+{
+  return CORBA::string_dup(nssetHandleFilter.c_str());
+}
+
+void 
+ccReg_Domains_i::nssetHandle(const char* _v)
+{
+  nssetHandleFilter = _v;
+  //dl->setNSSetHandleFilter(_v)
+}
+
+CORBA::Short 
+ccReg_Domains_i::admin()
+{
+  return adminFilter;
+}
+
+void 
+ccReg_Domains_i::admin(CORBA::Short _v)
+{
+  adminFilter = _v;
+  //dl->setAdminFilter(_v);
+}
+
+char* 
+ccReg_Domains_i::adminHandle()
+{
+  return CORBA::string_dup(adminHandleFilter.c_str());
+}
+
+void 
+ccReg_Domains_i::adminHandle(const char* _v)
+{
+  adminHandleFilter = _v;
+  //dl->setAdminHandleFilter(_v);
+}
+
+char* 
+ccReg_Domains_i::fqdn()
+{
+  return CORBA::string_dup(fqdnFilter.c_str());
+}
+
+void 
+ccReg_Domains_i::fqdn(const char* _v)
+{
+  fqdnFilter = _v;
+  //dl->setFQDNFilter(_v)
+}
+
+ccReg::Filter_ptr
+ccReg_Domains_i::aFilter()
+{
+  return _this();
+}
+
+void
+ccReg_Domains_i::clear()
+{
+  ccReg_RegObjectFilter_i::clear();
+  // rl->clear();
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_Contact_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -678,7 +884,7 @@ ccReg_Domains_i::registrantHandle(const char* _v)
 ccReg_Contacts_i::ccReg_Contacts_i(
   Register::Contact::List *_cl
 )
-  : cl(_cl), registrarFilter(0)
+  : ccReg_RegObjectFilter_i(_cl), cl(_cl)
 {
 }
 
@@ -746,30 +952,31 @@ ccReg_Contacts_i::reload()
   cl->reload();
 }
 
-CORBA::Short 
-ccReg_Contacts_i::registrar()
-{
-  return registrarFilter;
-}
-
-void 
-ccReg_Contacts_i::registrar(CORBA::Short _v)
-{
-  registrarFilter = _v;
-  cl->setRegistrarFilter(_v);
-}
-
 char* 
-ccReg_Contacts_i::registrarHandle()
+ccReg_Contacts_i::handle()
 {
-  return CORBA::string_dup(registrarHandleFilter.c_str());
+  return CORBA::string_dup(handleFilter.c_str());
 }
 
 void 
-ccReg_Contacts_i::registrarHandle(const char* _v)
+ccReg_Contacts_i::handle(const char* _v)
 {
-  registrarHandleFilter = _v;
-  cl->setRegistrarHandleFilter(registrarHandleFilter);
+  handleFilter = _v;
+  //cl->setHandleFilter(_v) 
+}
+
+ccReg::Filter_ptr
+ccReg_Contacts_i::aFilter()
+{
+  return _this();
+}
+
+void
+ccReg_Contacts_i::clear()
+{
+  ccReg_RegObjectFilter_i::clear();
+  handleFilter = "";
+  // cl->clear();
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -779,7 +986,7 @@ ccReg_Contacts_i::registrarHandle(const char* _v)
 ccReg_NSSets_i::ccReg_NSSets_i(
   Register::NSSet::List *_nl
 )
-  : nl(_nl), registrarFilter(0)
+  : ccReg_RegObjectFilter_i(_nl), nl(_nl)
 {
 }
 
@@ -844,29 +1051,29 @@ ccReg_NSSets_i::reload()
   nl->reload();
 }
 
-CORBA::Short 
-ccReg_NSSets_i::registrar()
-{
-  return registrarFilter;
-}
-
-void 
-ccReg_NSSets_i::registrar(CORBA::Short _v)
-{
-  registrarFilter = _v;
-  nl->setRegistrarFilter(_v);
-}
-
 char* 
-ccReg_NSSets_i::registrarHandle()
+ccReg_NSSets_i::handle()
 {
-  return CORBA::string_dup(registrarHandleFilter.c_str());
+  return CORBA::string_dup(handleFilter.c_str());
 }
 
 void 
-ccReg_NSSets_i::registrarHandle(const char* _v)
+ccReg_NSSets_i::handle(const char* _v)
 {
-  registrarHandleFilter = _v;
-  nl->setRegistrarHandleFilter(registrarHandleFilter);
+  handleFilter = _v;
+  //nl->setHandleFilter(_v) 
 }
 
+ccReg::Filter_ptr
+ccReg_NSSets_i::aFilter()
+{
+  return _this();
+}
+
+void
+ccReg_NSSets_i::clear()
+{
+  ccReg_RegObjectFilter_i::clear();
+  handleFilter = "";
+  // nl->clear();
+}
