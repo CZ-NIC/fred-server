@@ -53,6 +53,10 @@ class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions,
   void result(CORBA::Short _v);
   ccReg::DateInterval time();
   void time(const ccReg::DateInterval& _v);
+  char* clTRID();
+  void clTRID(const char* _v);
+  char* svTRID();
+  void svTRID(const char* _v);
   void reload();
   void clear();
   ccReg::Filter_ptr aFilter();  

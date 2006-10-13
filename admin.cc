@@ -622,6 +622,32 @@ ccReg_EPPActions_i::time(const ccReg::DateInterval& _v)
   //eal->setTimeFilter(_v)
 }
 
+char* 
+ccReg_EPPActions_i::clTRID()
+{
+  return CORBA::string_dup(clTRIDFilter.c_str());
+}
+
+void 
+ccReg_EPPActions_i::clTRID(const char* _v)
+{
+  clTRIDFilter = _v;
+  //eal->setClTRID(_v);
+}
+
+char* 
+ccReg_EPPActions_i::svTRID()
+{
+  return CORBA::string_dup(svTRIDFilter.c_str());
+}
+
+void 
+ccReg_EPPActions_i::svTRID(const char* _v)
+{
+  svTRIDFilter = _v;
+  //eal->setSvTRID(_v);
+}
+
 ccReg::Filter_ptr
 ccReg_EPPActions_i::aFilter()
 {
