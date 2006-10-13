@@ -1,8 +1,11 @@
 #include <memory>
 #include <iostream>
 #include <string>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include "register.h"
 #include "dbsql.h"
+
+using namespace boost::gregorian;
 
 int main()
 {
@@ -14,22 +17,32 @@ int main()
   /// -=-=-=-=-=-
   /// DOMAINS
   /// -=-=-=-=-=-
-  Register::Domain::List *dl = dm->getList();
-  dl->reload();
-  for (unsigned i=0; i<dl->getCount(); i++)
-    std::cout << dl->get(i)->getFQDN() << std::endl;
+  //Register::Domain::List *dl = dm->getList();
+  ///dl->reload();
+  //for (unsigned i=0; i<dl->getCount(); i++)
+///    std::cout << dl->get(i)->getFQDN() << std::endl;
   /// -=-=-=-=-=-
   /// ACTIONS
   /// -=-=-=-=-=-
-  /*
   Register::Registrar::EPPActionList *eal = rm->getEPPActionList();
+  eal->setRegistrarHandleFilter("REG");
+  eal->setTimePeriodFilter(
+    time_period(
+      ptime(date(2006,1,1),time_duration(0,0,0)),
+      ptime(date(2006,1,1),time_duration(24,0,0))
+    )
+  );
+  eal->setReturnCodeFilter(1000);
+  eal->setHandleFilter("d");
+  eal->setTextTypeFilter("c");
+  eal->setClTRIDFilter("b");
+  eal->setSvTRIDFilter("a");      
   eal->reload();
   for (unsigned i=0; i<eal->size(); i++) {
     const Register::Registrar::EPPAction *a = eal->get(i);
     std::cout << "id:" << a->getType() 
               << " handle: " << a->getRegistrarHandle() << std::endl;
   }
-  */
   /// -=-=-=-=-=-
   /// REGISTARS
   /// -=-=-=-=-=-
@@ -37,7 +50,7 @@ int main()
   std::string filtr;
   std::cout << "Registrar filter: ";
   std::cin >> filtr;
-  rl->setFulltextFilter(filtr);
+  rl->setNameFilter(filtr);
   rl->reload();
   for (unsigned i=0; i<rl->size(); i++) {
     const Register::Registrar::Registrar *r = rl->get(i);

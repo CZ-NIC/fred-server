@@ -136,13 +136,13 @@ namespace Register
       {
         if (changed) {
           // save registrar data
-        /*
-        SQL_SAVE(sql,"registrar",id);
-        SQL_SAVE_ADD(sql,"name",name);
-        SQL_SAVE_ADD(sql,"handle",handle);
-        SQL_SAVE_ADD(sql,"url",url);
-        SQL_SAVE_DOIT(sql,db);
-        */
+          /*
+          SQL_SAVE(sql,"registrar",id);
+          SQL_SAVE_ADD(sql,"name",name);
+          SQL_SAVE_ADD(sql,"handle",handle);
+          SQL_SAVE_ADD(sql,"url",url);
+          SQL_SAVE_DOIT(sql,db);
+          */
         }
         ACLList::const_iterator i = find_if(
           acl.begin(),acl.end(),std::mem_fun(&ACLImpl::hasChanged)
@@ -178,14 +178,19 @@ namespace Register
       typedef std::vector<RegistrarImpl*> RegistrarListType;
       RegistrarListType registrars;
       DB *db;
-      std::string fulltext;
+      std::string name;
+      std::string handle;
      public:
       RegistrarListImpl(DB *_db) : db(_db)
       {
       }
-      virtual void setFulltextFilter(const std::string& _fulltext)
+      virtual void setHandleFilter(const std::string& _handle)
       {
-        fulltext = _fulltext;
+        handle = _handle;
+      }
+      virtual void setNameFilter(const std::string& _name)
+      {
+        name = _name;
       }
       void clear()
       {
@@ -198,9 +203,11 @@ namespace Register
         clear();
         std::ostringstream sql;
         sql << "SELECT id,handle,name,url "
-            << "FROM registrar";
-        if (!fulltext.empty())
-          sql << " WHERE name ILIKE '%" << fulltext << "%'";
+            << "FROM registrar WHERE 1=1 ";
+        if (!name.empty())
+          sql << " AND name ILIKE '%" << name << "%'";
+        if (!handle.empty())
+          sql << " AND handle ILIKE '%" << name << "%'";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           registrars.push_back(
@@ -289,7 +296,7 @@ namespace Register
       }
       virtual const ptime getStartTime() const
       {
-              return startTime;
+        return startTime;
       }
       virtual const std::string& getServerTransactionId() const
       {
@@ -321,15 +328,22 @@ namespace Register
       unsigned sessionId;
       unsigned registrarId;
       std::string registrarHandle;
-      //      time_period period;
+      time_period period;
       unsigned typeId;
+      std::string type;
       unsigned returnCodeId;
+      std::string clTRID;
+      std::string svTRID;
+      std::string handle;
       DB *db;
      public:
-      EPPActionListImpl(DB *_db) : db(_db)
+      EPPActionListImpl(DB *_db) :
+       sessionId(0), registrarId(0), 
+       period(ptime(neg_infin),ptime(pos_infin)),
+       typeId(0), returnCodeId(0), db(_db)
       {
       }
-      void setSessionFiltr(unsigned _sessionId)
+      void setSessionFilter(unsigned _sessionId)
       {
         sessionId = _sessionId;
       }
@@ -341,17 +355,33 @@ namespace Register
       {
         registrarHandle = _registrarHandle;
       }
-      void setTimePeriod(const time_period& _period)
+      void setTimePeriodFilter(const time_period& _period)
       {
-        //        period = _period;
+        period = _period;
       }
-      virtual void setType(unsigned _typeId)
+      virtual void setTypeFilter(unsigned _typeId)
       {
         typeId = _typeId;
       }
-      virtual void setReturnCode(unsigned _returnCodeId)
+      virtual void setReturnCodeFilter(unsigned _returnCodeId)
       {
         returnCodeId = _returnCodeId;
+      }
+      virtual void setHandleFilter(const std::string& _handle)
+      {
+        handle = _handle;
+      }
+      virtual void setTextTypeFilter(const std::string& _textType)
+      {
+        type = _textType;
+      }
+      virtual void setClTRIDFilter(const std::string& _clTRID)
+      {
+        clTRID = _clTRID;
+      }
+      virtual void setSvTRIDFilter(const std::string& _svTRID)
+      {      
+        svTRID = _svTRID;
       }
       void clear()
       {
@@ -367,14 +397,33 @@ namespace Register
             << "a.servertrid,a.clienttrid,"
             << "ax.xml,a.response,r.handle "
             << "FROM action a, action_xml ax, enum_action ea,"
-            << "login l,  "
+            << "login l, "
             << "registrar r "
             << "WHERE a.id=ax.actionid AND l.id=a.clientid "
-            << "AND r.id=l.registrarid AND ea.id=a.action LIMIT 1000";
+            << "AND r.id=l.registrarid AND ea.id=a.action ";
         if (registrarId)
           sql << "AND r.id=" << registrarId << " ";
         if (!registrarHandle.empty())
           sql << "AND r.handle='" << registrarHandle << "' ";
+        if (!period.begin().is_special())
+          sql << "AND a.startdate>='" 
+              <<  to_iso_extended_string(period.begin().date()) 
+              << "' ";
+        if (!period.end().is_special())
+          sql << "AND a.startdate<='" 
+              <<  to_iso_extended_string(period.end().date()) 
+              << "' ";
+        if (!type.empty())
+          sql << "AND ea.status='" << type << "' ";
+        if (returnCodeId)
+          sql << "AND a.response=" << returnCodeId << " ";
+        if (!clTRID.empty())
+          sql << "AND a.clienttrid='" << clTRID << "' ";
+        if (!svTRID.empty())
+          sql << "AND a.servertrid='" << svTRID << "' ";
+        if (!handle.empty())
+          sql << "AND ax.xml ILIKE '%" << handle << "%' ";
+        sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           alist.push_back(

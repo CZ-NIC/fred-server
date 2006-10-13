@@ -69,8 +69,10 @@ namespace Register {
       /// Protected destructor, object is manager by Manager
       virtual ~RegistrarList() {}
      public:
-      /// Fulltext search filter
-      virtual void setFulltextFilter(const std::string& fulltext) = 0;
+      /// Filter in handle
+      virtual void setHandleFilter(const std::string& handle) = 0;
+      /// Filter in name
+      virtual void setNameFilter(const std::string& name) = 0;
       /// Reload actual list of registrars
       virtual void reload() throw (SQL_ERROR) = 0;
       /// Return size of list
@@ -113,20 +115,28 @@ namespace Register {
      public:
       /// Public destructor, user is responsible for destruction
       virtual ~EPPActionList() {}
-      /// Set filtr for session action is part of
-      virtual void setSessionFiltr(unsigned sessionId) = 0;
-      /// Set filtr for registrar who performed action
+      /// Set filter for session action is part of
+      virtual void setSessionFilter(unsigned sessionId) = 0;
+      /// Set filter for registrar who performed action
       virtual void setRegistrarFilter(unsigned registrarId) = 0;
-      /// Set filtr for registrar who performed action
+      /// Set filter for registrar who performed action
       virtual void setRegistrarHandleFilter(
         const std::string& registrarHandle
       ) = 0;
-      /// Set filtr for time interval of performing acion 
-      virtual void setTimePeriod(const time_period& period) = 0;
-      /// Set filtr for action type
-      virtual void setType(unsigned typeId) = 0;
-      /// Set filtr for return code
-      virtual void setReturnCode(unsigned returnCodeId) = 0;
+      /// Set filter for time interval of performing acion 
+      virtual void setTimePeriodFilter(const time_period& period) = 0;
+      /// Set filter for action type
+      virtual void setTypeFilter(unsigned typeId) = 0;
+      /// Set filter for return code
+      virtual void setReturnCodeFilter(unsigned returnCodeId) = 0;
+      /// Set filter for handle in XML
+      virtual void setHandleFilter(const std::string& handle) = 0;
+      /// Set filter for text type of action
+      virtual void setTextTypeFilter(const std::string& textType) = 0;
+      /// Set filter for clTRID
+      virtual void setClTRIDFilter(const std::string& clTRID) = 0;
+      /// set filter for svTRID
+      virtual void setSvTRIDFilter(const std::string& svTRID) = 0;      
       /// Reload list according actual filter settings
       virtual void reload() = 0;
       /// Return size of list
