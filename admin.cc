@@ -7,6 +7,7 @@
 #include <math.h>
 
 using namespace boost::posix_time;
+using namespace boost::gregorian;
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_PageTable_i
@@ -420,7 +421,7 @@ void
 ccReg_Registrars_i::fulltext(const char* _v)
 {
   fulltextFilter = _v;
-  rl->setFulltextFilter(fulltextFilter);
+  rl->setNameFilter(fulltextFilter);
 }
 
 char* 
@@ -433,7 +434,7 @@ void
 ccReg_Registrars_i::name(const char* _v)
 {
   nameFilter = _v;
-//  rl->setNameFilter(_v);
+ rl->setNameFilter(_v);
 }
 
 char* 
@@ -446,7 +447,7 @@ void
 ccReg_Registrars_i::handle(const char* _v)
 {
   handleFilter = _v;
-//  rl->setHandleFilter(_v);
+  rl->setHandleFilter(_v);
 }
 
 ccReg::Filter_ptr
@@ -580,7 +581,7 @@ void
 ccReg_EPPActions_i::type(const char* _v)
 {
   typeFilter = _v;
-  //eal->setTypeFilter(_v);
+  eal->setTextTypeFilter(_v);
 }
 
 char* 
@@ -593,7 +594,7 @@ void
 ccReg_EPPActions_i::handle(const char* _v)
 {
   handleFilter = _v;
-  //eal->setHandleFilter(_v); 
+  eal->setHandleFilter(_v); 
 }
 
 CORBA::Short 
@@ -606,7 +607,7 @@ void
 ccReg_EPPActions_i::result(CORBA::Short _v)
 {
   resultFilter = _v;
-  //eal->setResultFilter(_v);
+  eal->setReturnCodeFilter(_v);
 }
 
 ccReg::DateInterval 
@@ -619,7 +620,12 @@ void
 ccReg_EPPActions_i::time(const ccReg::DateInterval& _v)
 {
   timeFilter = _v;
-  //eal->setTimeFilter(_v)
+  eal->setTimePeriodFilter(
+    time_period(
+      ptime(date(_v.from.year,_v.from.month,_v.from.day),time_duration(0,0,0)),
+      ptime(date(_v.to.year,_v.to.month,_v.to.day),time_duration(0,0,0))
+    )
+  );
 }
 
 char* 
@@ -632,7 +638,7 @@ void
 ccReg_EPPActions_i::clTRID(const char* _v)
 {
   clTRIDFilter = _v;
-  //eal->setClTRID(_v);
+  eal->setClTRIDFilter(_v);
 }
 
 char* 
@@ -645,7 +651,7 @@ void
 ccReg_EPPActions_i::svTRID(const char* _v)
 {
   svTRIDFilter = _v;
-  //eal->setSvTRID(_v);
+  eal->setSvTRIDFilter(_v);
 }
 
 ccReg::Filter_ptr
