@@ -77,8 +77,20 @@ namespace Register
       virtual void setRegistrantHandleFilter(
         const std::string& registrantHandle
       ) = 0;
+      /// set filter for nsset
+      virtual void setNSSetFilter(unsigned nssetId) = 0;
+      /// set filter for nsset handle
+      virtual void setNSSetHandleFilter(const std::string& nssetHandle) = 0;
+      /// set filter for admin
+      virtual void setAdminFilter(unsigned adminId) = 0;
+      /// set filter for admin handle
+      virtual void setAdminHandleFilter(const std::string& adminHandle) = 0;
+      /// set filter for domain name 
+      virtual void setFQDNFilter(const std::string& fqdn) = 0;
       /// reload list with current filter
       virtual void reload() = 0;
+      /// clear filter data
+      virtual void clearFilter() = 0;      
     };
     /// main entry class
     class Manager
@@ -91,7 +103,7 @@ namespace Register
         const throw (NOT_A_NUMBER) = 0;
       /// tokenize domain name into sequence
       virtual void parseDomainName(
-       const std::string& fqdn, DomainName& domain
+        const std::string& fqdn, DomainName& domain
       ) const throw (INVALID_DOMAIN_NAME) = 0;
       /// check availability of domain  
       virtual CheckAvailType checkAvail(const std::string& fqdn) const = 0;

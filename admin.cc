@@ -5,6 +5,7 @@
 #include "register/register.h"
 #include <boost/date_time/posix_time/time_formatters.hpp>
 #include <math.h>
+#include <memory>
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
@@ -252,38 +253,106 @@ ccReg_Admin_i::getSession(const char* sessionID)
 void 
 ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData)
 {
+  DB db;
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  Register::Registrar::Manager *rm = r->getRegistrarManager();
+  Register::Registrar::RegistrarList *rl = rm->getList();
+  Register::Registrar::Registrar *reg;
+  if (!regData.id) reg = rl->create();
+  else {
+    rl->setIdFilter(regData.id);
+    rl->reload();
+    if (rl->size() != 1) {
+      db.Disconnect();
+      throw ccReg::Admin::UpdateFailed();
+    }
+    reg = rl->get(0);
+  }
+  reg->setHandle((const char *)regData.handle);
+  reg->setURL((const char *)regData.url);
+  reg->setName((const char *)regData.name);
+  try {
+    reg->save();
+    db.Disconnect();
+  } catch (...) {
+    db.Disconnect();
+    throw ccReg::Admin::UpdateFailed();
+  }
 }
 
 ccReg::RegObject* 
 ccReg_Admin_i::getContactByHandle(const char* handle)
+  throw (ccReg::Admin::ObjectNotFound)
 {
+  DB db;
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  Register::Contact::Manager *cr = r->getContactManager();
+  Register::Contact::List *cl = cr->getList();
+  cl->setHandleFilter(handle);
+  cl->reload();
+  if (cl->getCount() != 1) {
+    db.Disconnect();
+    throw ccReg::Admin::ObjectNotFound();
+  } 
   ccReg::RegObject* o = new ccReg::RegObject;
-  o->id = 1;
-  o->handle = CORBA::string_dup("handle");
-  o->registrarHandle = CORBA::string_dup("reg handle");
-  o->crDate = CORBA::string_dup("time");
+  Register::Contact::Contact *c = cl->get(0);
+  o->id = c->getId();
+  o->handle = CORBA::string_dup(c->getHandle().c_str());
+  o->registrarHandle = CORBA::string_dup(c->getRegistrarHandle().c_str());
+  o->crDate = CORBA::string_dup(to_simple_string(c->getCreateDate()).c_str());
+  db.Disconnect();
   return o;
 }
 
 ccReg::RegObject* 
 ccReg_Admin_i::getNSSetByHandle(const char* handle)
+  throw (ccReg::Admin::ObjectNotFound)
 {
+  DB db;
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  Register::NSSet::Manager *nr = r->getNSSetManager();
+  Register::NSSet::List *nl = nr->getList();
+  nl->setHandleFilter(handle);
+  nl->reload();
+  if (nl->getCount() != 1) {
+    db.Disconnect();
+    throw ccReg::Admin::ObjectNotFound();
+  } 
   ccReg::RegObject* o = new ccReg::RegObject;
-  o->id = 1;
-  o->handle = CORBA::string_dup("handle");
-  o->registrarHandle = CORBA::string_dup("reg handle");
-  o->crDate = CORBA::string_dup("time");
+  Register::NSSet::NSSet *n = nl->get(0);
+  o->id = n->getId();
+  o->handle = CORBA::string_dup(n->getHandle().c_str());
+  o->registrarHandle = CORBA::string_dup(n->getRegistrarHandle().c_str());
+  o->crDate = CORBA::string_dup(to_simple_string(n->getCreateDate()).c_str());
+  db.Disconnect();
   return o;
 }
 
 ccReg::RegObject*
 ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
+  throw (ccReg::Admin::ObjectNotFound)
 {
+  DB db;
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  Register::Domain::Manager *dm = r->getDomainManager();
+  Register::Domain::List *dl = dm->getList();
+  dl->setFQDNFilter(fqdn);
+  dl->reload();
+  if (dl->getCount() != 1) {
+    db.Disconnect();
+    throw ccReg::Admin::ObjectNotFound();
+  } 
   ccReg::RegObject* o = new ccReg::RegObject;
-  o->id = 1;
-  o->handle = CORBA::string_dup("handle");
-  o->registrarHandle = CORBA::string_dup("reg handle");
-  o->crDate = CORBA::string_dup("time");
+  Register::Domain::Domain *d = dl->get(0);
+  o->id = d->getId();
+  o->handle = CORBA::string_dup(d->getFQDN().c_str());
+  o->registrarHandle = CORBA::string_dup(d->getRegistrarHandle().c_str());
+  o->crDate = CORBA::string_dup(to_simple_string(d->getCreateDate()).c_str());
+  db.Disconnect();
   return o;
 }
 
@@ -309,6 +378,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& database)
 
 ccReg_Session_i::~ccReg_Session_i()
 {
+  db.Disconnect();
 }
 
 
@@ -460,7 +530,9 @@ void
 ccReg_Registrars_i::clear()
 {
   fulltextFilter = "";
-  //rl->clear();
+  handleFilter = "";
+  nameFilter = "";
+  rl->clearFilter();
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -667,10 +739,15 @@ ccReg_EPPActions_i::clear()
   typeFilter = "";
   handleFilter = "";
   resultFilter = 0;
-//  timeFilter = ;
+  timeFilter.from.year = 0;;
+  timeFilter.from.month = 0;
+  timeFilter.from.day = 0;
+  timeFilter.to.year = 0;;
+  timeFilter.to.month = 0;
+  timeFilter.to.day = 0;
   clTRIDFilter = "";
   svTRIDFilter = "";
-  //rl->clear();
+  eal->clearFilter();
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -841,7 +918,7 @@ void
 ccReg_Domains_i::nsset(CORBA::Short _v)
 {
   nssetFilter = _v;
-  //dl->setNSSetFilter(_v)
+  dl->setNSSetFilter(_v);
 }
 
 char* 
@@ -854,7 +931,7 @@ void
 ccReg_Domains_i::nssetHandle(const char* _v)
 {
   nssetHandleFilter = _v;
-  //dl->setNSSetHandleFilter(_v)
+  dl->setNSSetHandleFilter(_v);
 }
 
 CORBA::Short 
@@ -867,7 +944,7 @@ void
 ccReg_Domains_i::admin(CORBA::Short _v)
 {
   adminFilter = _v;
-  //dl->setAdminFilter(_v);
+  dl->setAdminFilter(_v);
 }
 
 char* 
@@ -880,7 +957,7 @@ void
 ccReg_Domains_i::adminHandle(const char* _v)
 {
   adminHandleFilter = _v;
-  //dl->setAdminHandleFilter(_v);
+  dl->setAdminHandleFilter(_v);
 }
 
 char* 
@@ -893,7 +970,7 @@ void
 ccReg_Domains_i::fqdn(const char* _v)
 {
   fqdnFilter = _v;
-  //dl->setFQDNFilter(_v)
+  dl->setFQDNFilter(_v);
 }
 
 ccReg::Filter_ptr
@@ -906,7 +983,7 @@ void
 ccReg_Domains_i::clear()
 {
   ccReg_RegObjectFilter_i::clear();
-  // rl->clear();
+  dl->clearFilter();
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -994,7 +1071,7 @@ void
 ccReg_Contacts_i::handle(const char* _v)
 {
   handleFilter = _v;
-  //cl->setHandleFilter(_v) 
+  cl->setHandleFilter(_v);
 }
 
 ccReg::Filter_ptr
@@ -1008,7 +1085,7 @@ ccReg_Contacts_i::clear()
 {
   ccReg_RegObjectFilter_i::clear();
   handleFilter = "";
-  // cl->clear();
+  cl->clearFilter();
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -1093,7 +1170,7 @@ void
 ccReg_NSSets_i::handle(const char* _v)
 {
   handleFilter = _v;
-  //nl->setHandleFilter(_v) 
+  nl->setHandleFilter(_v);
 }
 
 ccReg::Filter_ptr
@@ -1107,5 +1184,5 @@ ccReg_NSSets_i::clear()
 {
   ccReg_RegObjectFilter_i::clear();
   handleFilter = "";
-  // nl->clear();
+  nl->clearFilter();
 }

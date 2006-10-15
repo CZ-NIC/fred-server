@@ -38,6 +38,7 @@ namespace Register
       NSSetList nlist;
       unsigned registrar;
       std::string registrarHandle;
+      std::string handle;
       time_period crDateIntervalFilter;      
       DB *db;
      public:
@@ -74,7 +75,11 @@ namespace Register
       void setCrDateIntervalFilter(time_period period)
       {
         crDateIntervalFilter = period;
-      }      
+      }
+      void setHandleFilter(const std::string& _handle)
+      {
+        handle = _handle;
+      }
       void reload() throw (SQL_ERROR)
       {
         clear();
@@ -85,8 +90,10 @@ namespace Register
             << "WHERE n.clid=r.id ";
         if (registrar)
           sql << "AND n.clid=" << registrar << " ";
-        if (!registrarHandle.empty())
+        if (!registrarHandle.empty())        
           sql << "AND r.handle='" << registrarHandle << "' ";
+        if (!handle.empty())
+          sql << "AND n.handle='" << handle << "' ";          
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -100,6 +107,13 @@ namespace Register
             )
           ); 
         }
+      }
+      void clearFilter()
+      {
+        registrar = 0;
+        registrarHandle = "";
+        crDateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));
+        handle = "";
       }
     };
     class ManagerImpl : public virtual Manager

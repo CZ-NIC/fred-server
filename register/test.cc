@@ -14,6 +14,13 @@ int main()
   std::auto_ptr<Register::Manager> m(Register::Manager::create(&db));
   Register::Domain::Manager *dm = m->getDomainManager();
   Register::Registrar::Manager *rm = m->getRegistrarManager();
+  Register::Registrar::RegistrarList *rl2 = rm->getList();
+  rl2->setIdFilter(2);
+  rl2->reload();
+  Register::Registrar::Registrar *r = rl2->get(0);
+  r->setName("Name2");
+  r->setURL("URL");
+  r->save();
   /// -=-=-=-=-=-
   /// DOMAINS
   /// -=-=-=-=-=-
@@ -48,8 +55,8 @@ int main()
   /// -=-=-=-=-=-
   Register::Registrar::RegistrarList *rl = rm->getList();
   std::string filtr;
-  std::cout << "Registrar filter: ";
-  std::cin >> filtr;
+//  std::cout << "Registrar filter: ";
+//  std::cin >> filtr;
   rl->setNameFilter(filtr);
   rl->reload();
   for (unsigned i=0; i<rl->size(); i++) {
@@ -64,6 +71,19 @@ int main()
   /// -=-=-=-=-=-
   /// DOMAINS
   /// -=-=-=-=-=-
+  Register::Domain::List *dl = dm->getList();
+  dl->setRegistrarHandleFilter("REG");
+  dl->setRegistrantHandleFilter("CID");
+  dl->setCrDateIntervalFilter(
+    time_period(
+      ptime(date(2006,1,1),time_duration(0,0,0)),
+      ptime(date(2006,1,1),time_duration(24,0,0))
+    )
+  );
+  dl->setFQDNFilter("dom");
+  dl->setAdminHandleFilter("a");
+  dl->setNSSetHandleFilter("n");
+  dl->reload();
   std::string input;
   std::cout << "Domain: ";
   std::cin >> input;

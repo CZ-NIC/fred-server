@@ -5,7 +5,6 @@
 #include "zone.h"
 #include "domain.h"
 
-
 namespace Register
 {
  class ManagerImpl : virtual public Manager

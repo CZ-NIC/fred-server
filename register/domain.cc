@@ -116,12 +116,17 @@ namespace Register
       unsigned registrantFilter;
       std::string registrantHandleFilter;
       time_period crDateIntervalFilter;
+      unsigned nsset;
+      std::string nssetHandle;
+      unsigned admin;
+      std::string adminHandle;
+      std::string fqdn;
       DB *db;
      public:
       ListImpl(DB *_db) : 
         zoneFilter(0), registrarFilter(0), registrantFilter(0),
         crDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
-        db(_db)
+        nsset(0), admin(0), db(_db)
       {
       }
       virtual ~ListImpl()
@@ -165,25 +170,66 @@ namespace Register
       void setCrDateIntervalFilter(time_period period)
       {
         crDateIntervalFilter = period;
-      }      
+      }
+      virtual void setNSSetFilter(unsigned _nssetId)
+      {
+        nsset = _nssetId;
+      }
+      virtual void setNSSetHandleFilter(const std::string& _nssetHandle)
+      {
+        nssetHandle = _nssetHandle;
+      }
+      virtual void setAdminFilter(unsigned _adminId)
+      {
+        admin = _adminId;
+      }
+      virtual void setAdminHandleFilter(const std::string& _adminHandle)
+      {
+        adminHandle = _adminHandle;
+      }
+      virtual void setFQDNFilter(const std::string& _fqdn)
+      {
+        fqdn = _fqdn;
+      }
       virtual void reload()
       {
         clear();
         std::ostringstream sql;
-        sql << "SELECT d.id,d.fqdn,d.zone,n.id,n.handle,c.id,c.handle,"
+        sql << "SELECT DISTINCT d.id,d.fqdn,d.zone,n.id,n.handle,"
+            << "c.id,c.handle,"
             << "r.id,r.handle,d.crdate "
             << "FROM contact c, registrar r, "
-            << "domain d LEFT JOIN nsset n ON (d.nsset=n.id) " 
+            << "domain d LEFT JOIN nsset n ON (d.nsset=n.id) "
+            << "LEFT JOIN domain_contact_map adcm ON (d.id=adcm.domainid) "
+            << "LEFT JOIN contact ac ON (adcm.contactid=ac.id) "
             << "WHERE d.registrant=c.id "
             << "AND d.clid=r.id ";
         if (registrarFilter)
-          sql << "AND d.clid=" << registrarFilter << " ";
+          sql << "AND r.id=" << registrarFilter << " ";
         if (!registrarHandleFilter.empty())
           sql << "AND r.handle='" << registrarHandleFilter << "' ";
         if (registrantFilter)
-          sql << "AND d.registrant=" << registrantFilter << " ";
+          sql << "AND c.id=" << registrantFilter << " ";
         if (!registrantHandleFilter.empty())
           sql << "AND c.handle='" << registrantHandleFilter << "' ";
+        if (!crDateIntervalFilter.begin().is_special())
+          sql << "AND d.crDate>='" 
+              <<  to_iso_extended_string(crDateIntervalFilter.begin().date()) 
+              << "' ";
+        if (!crDateIntervalFilter.end().is_special())
+          sql << "AND d.crDate<='" 
+              <<  to_iso_extended_string(crDateIntervalFilter.end().date()) 
+              << "' ";
+        if (nsset)
+          sql << "AND n.id=" << nsset << " ";
+        if (!nssetHandle.empty())
+          sql << "AND n.handle='" << nssetHandle << "' ";          
+        if (admin)
+          sql << "AND ac.id=" << admin << " ";
+        if (!adminHandle.empty())
+          sql << "AND ac.handle='" << adminHandle << "' ";          
+        if (!fqdn.empty())
+          sql << "AND d.fqdn LIKE '%" << fqdn << "%' ";          
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -204,6 +250,20 @@ namespace Register
         }
         db->FreeSelect();
       }
+      void clearFilter()
+      {
+        registrarFilter = 0;
+        registrarHandleFilter = "";
+        crDateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));
+        registrantFilter = 0;
+        registrantHandleFilter = "";
+        nsset = 0;
+        nssetHandle = "";
+        admin = 0;
+        adminHandle = "";
+        fqdn = "";
+        zoneFilter = 0;
+      }      
     };
 
     class ManagerImpl : virtual public Manager

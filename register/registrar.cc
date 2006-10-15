@@ -70,6 +70,7 @@ namespace Register
     {
       typedef std::vector<ACLImpl *> ACLList;
       typedef ACLList::iterator ACLListIter;
+      DB *db; ///< db connection
       unsigned id; ///< DB: registrar.id
       std::string handle; ///< DB: registrar.handle
       std::string name; ///< DB: registrar.name
@@ -78,12 +79,12 @@ namespace Register
       bool changed; ///< object was changed, need sync to database
       ACLList acl; ///< access control
      public:
-      RegistrarImpl() : id(0), changed(true)
+      RegistrarImpl(DB *_db) :  db(_db), id(0), changed(true)
       {}
-      RegistrarImpl(
+      RegistrarImpl(DB *_db,
         unsigned _id, const std::string& _handle, const std::string& _name,
         const std::string& _url
-      ) : id(_id), handle(_handle), name(_name), url(_url)
+      ) : db(_db), id(_id), handle(_handle), name(_name), url(_url)
       {
       }
       ~RegistrarImpl()
@@ -143,11 +144,31 @@ namespace Register
           SQL_SAVE_ADD(sql,"url",url);
           SQL_SAVE_DOIT(sql,db);
           */
+          std::ostringstream sql;
+          if (id) {
+            sql << "UPDATE registrar SET "
+                << "name='" << getName() << "',"
+                << "handle='" << getHandle() << "',"
+                << "url='" << getURL() << "' "
+                << "WHERE id=" << id;
+          } else {
+            id = db->GetSequenceID("registrar");
+            sql << "INSERT INTO registrar "
+                << "(id,name,handle,url,zone) "
+                << "VALUES "
+                << "("
+                << id << ","
+                << "'" << getName() << "',"
+                << "'" << getHandle() << "',"
+                << "'" << getURL() << "',"
+                << "'{1}'"
+                << ")";
+          }
+          if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();          
         }
         ACLList::const_iterator i = find_if(
           acl.begin(),acl.end(),std::mem_fun(&ACLImpl::hasChanged)
         );
-        // !!! must check for this.id
         if (i != acl.end()) {
           std::ostringstream sql;
           sql << "DELETE FROM registraracl WHERE registrarid=" << id;
@@ -155,7 +176,7 @@ namespace Register
           for (unsigned j=0;j<acl.size();j++) {
             sql.str("");
             sql << acl[j]->makeSQL(id);
-            // do sql;
+            if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();          
           }
         }
       }
@@ -180,9 +201,14 @@ namespace Register
       DB *db;
       std::string name;
       std::string handle;
+      unsigned idFilter;
      public:
-      RegistrarListImpl(DB *_db) : db(_db)
+      RegistrarListImpl(DB *_db) : db(_db), idFilter(0)
       {
+      }
+      virtual void setIdFilter(unsigned _idFilter)
+      {
+        idFilter = _idFilter;
       }
       virtual void setHandleFilter(const std::string& _handle)
       {
@@ -204,6 +230,8 @@ namespace Register
         std::ostringstream sql;
         sql << "SELECT id,handle,name,url "
             << "FROM registrar WHERE 1=1 ";
+        if (idFilter)
+          sql << " AND id=" << idFilter << " ";
         if (!name.empty())
           sql << " AND name ILIKE '%" << name << "%'";
         if (!handle.empty())
@@ -212,6 +240,7 @@ namespace Register
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           registrars.push_back(
             new RegistrarImpl(
+              db,
               atoi(db->GetFieldValue(i,0)),
               db->GetFieldValue(i,1),
               db->GetFieldValue(i,2),
@@ -246,9 +275,19 @@ namespace Register
         if (idx > size()) return NULL;
         return registrars[idx];
       }
+      virtual Registrar* get(unsigned idx)
+      {
+        if (idx > size()) return NULL;
+        return registrars[idx];
+      }
       virtual Registrar* create()
       {
-        return new RegistrarImpl();
+        return new RegistrarImpl(db);
+      }
+      void clearFilter()
+      {
+        name = "";
+        handle = "";
       }      
     };
 
@@ -440,7 +479,6 @@ namespace Register
             )
           );
         }
-        
       }
       virtual const unsigned size() const
       {
@@ -450,9 +488,21 @@ namespace Register
       {
         return idx >= alist.size() ?  NULL : alist[idx];
       }
+      virtual void clearFilter()
+      {
+        sessionId = 0;
+        registrarId = 0;
+        registrarHandle = "";
+        period = time_period(ptime(neg_infin),ptime(pos_infin));
+        typeId = 0;
+        type = "";
+        returnCodeId = 0;
+        clTRID = "";
+        svTRID = "";
+        handle = "";
+      }
     };
 
-    
     class ManagerImpl : virtual public Manager
     {
       DB *db; ///< connection do db

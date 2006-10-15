@@ -69,6 +69,8 @@ namespace Register {
       /// Protected destructor, object is manager by Manager
       virtual ~RegistrarList() {}
      public:
+      /// Filter in id
+      virtual void setIdFilter(unsigned id) = 0;
       /// Filter in handle
       virtual void setHandleFilter(const std::string& handle) = 0;
       /// Filter in name
@@ -79,8 +81,12 @@ namespace Register {
       virtual unsigned size() const = 0;
       /// Get registrar detail object by list index
       virtual const Registrar* get(unsigned idx) const = 0;
+      /// Get registrar detail object by list index for update
+      virtual Registrar* get(unsigned idx) = 0;
       /// Create new registrar in list
       virtual Registrar* create() = 0;
+      /// clear filter data
+      virtual void clearFilter() = 0;      
     };
     
     /// Action made by registrar through EPP
@@ -143,6 +149,8 @@ namespace Register {
       virtual const unsigned size() const = 0;
       /// Return deatil of action by index in list
       virtual const EPPAction* get(unsigned idx) const = 0;
+      /// clear filter data
+      virtual void clearFilter() = 0;      
     };
     
     /// Detail about EPP session
