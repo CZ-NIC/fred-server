@@ -87,7 +87,7 @@ if( price == 0 ) return true;
 // vyse creditu registratora prevedena na halire
 credit  =  get_price( GetRegistrarCredit( regID)  );
 
-LOG( NOTICE_LOG , "UpdateCredit: action %d period %d credit %d price %d" , action , period  , credit , price ); 
+LOG( NOTICE_LOG , "UpdateCredit: action %d period %d credit %ld price %ld" , action , period  , credit , price ); 
 
 // pokud ma dostatecny credfit
 if( credit - price > 0 )
@@ -785,7 +785,7 @@ bool  DB::DeleteFromTableMap(char *map ,int  id , int contactid )
 char sqlString[128];
 
 
-LOG( SQL_LOG , "DeleteFrom  %s_contact_map  id  %d contactID" , map ,id , contactid );
+LOG( SQL_LOG , "DeleteFrom  %s_contact_map  id  %d contactID %d" , map ,id , contactid );
 
 sprintf( sqlString , "DELETE FROM %s_contact_map WHERE  %sid=%d AND contactid=%d;" , map , map ,  id ,  contactid );
 
@@ -953,8 +953,6 @@ SETS( fname , value , true );
 
 void DB::SETS( const char *fname , const char * value , bool esc )
 {
-int length;
-char *str;
 
 if( strlen( value ) )
  {
