@@ -63,7 +63,7 @@ LOG( LOG_DEBUG ,  "WHOIS: checkHandle %s -> handleClass %d" , domain_name , chd.
 if(  chd.handleClass   ==  Register::CH_ENUM  || chd.handleClass   ==  Register::CH_DOMAIN ) 
 {
 if( chd.handleClass   ==  Register::CH_ENUM ){ zone = ZONE_ENUM;  en=true;}
-else {ZONE_CZ ; en=false; }
+else {zone = ZONE_CZ ; en=false ; }
 
 if( DBsql.OpenDatabase( database.c_str() ) )
 {
@@ -73,7 +73,7 @@ if( DBsql.OpenDatabase( database.c_str() ) )
   if( DBsql.GetSelectRows() == 1 )
     {
  
-       
+     dm->enum_domain = en; // jestli je domena enumova dodelano pro bug #405       
      created = get_time_t( DBsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas  vytvoreni domeny
      expired = get_time_t( DBsql.GetFieldValueName("ExDate" , 0 ) )  ; // datum expirace
 
