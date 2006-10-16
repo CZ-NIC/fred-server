@@ -34,6 +34,10 @@ for( i = 0 ; i < len ;  )
 
 bool validateIPV6(const char *ipadd)
 {
+int len;
+// ukoncena adresa dvojteckou
+len = strlen( ipadd);
+if( ipadd[len-1] == ':' ) return false;
 
 // loop back
 if( strncmp( ipadd ,"::"  , 2 ) == 0 )  return false;
@@ -47,6 +51,11 @@ bool validateIPV4(const char *ipadd)
 {
         unsigned b1, b2, b3, b4;
         int rc;
+        int len;
+// ukoncena adresa teckou
+len = strlen( ipadd);
+if( ipadd[len-1] == '.' ) return false;
+
 
         rc = sscanf(ipadd, "%3u.%3u.%3u.%3u",  &b1, &b2, &b3, &b4);
         if (rc == 4 )
@@ -443,11 +452,11 @@ else  return false;
 long get_price( const char *priceStr )
 {
 char str[32];
-int i;
+int i , len;
 
 strcpy(  str , priceStr );
-
-for( i = 0 ;i < strlen( str ) ; i ++ )
+len = strlen( priceStr );
+for( i = 0 ;i < len  ; i ++ )
 {
         if( str[i] == '.' ) {  str[i] =  str[i+1] ;  str[i+1]  = str[i+2] ;  str[i+2]  = 0 ; break ; }
 }
@@ -606,14 +615,14 @@ else return false;
 // vraci pocet prvku v poli
 int get_array_length(char *array)
 {
-int i , num;
+int i , num , len ;
 // nulova velikost pole
-
+len = strlen( array);
 if( array[0] != '{' ) return -1; // neni pole
 
 if( array[0] == '{' &&  array[1] == '}' ) return 0;
 
-for( i = 0 , num = 1 ; i < strlen( array) ; i ++ )
+for( i = 0 , num = 1 ; i <len ; i ++ )
 {
   if(  array[i] == ',' ) num ++;
 }
@@ -625,15 +634,16 @@ return num;
 // vraci prvek pole
 void get_array_value(char *array ,  char *value , int field )
 {
-int i , num , from;
+int i , num , from , len ;
 
+len = strlen ( array );
 // default value
 strcpy( value , "" );
 
 if( array[0] == '{' )
 {
 
-   for( i = 1 , num = 0 , from = 1 ; i < strlen ( array ) ; i ++ )
+   for( i = 1 , num = 0 , from = 1 ; i < len  ; i ++ )
       {
             if(  array[i] == ',' ||  array[i] ==  '}' )
               {
@@ -649,50 +659,4 @@ if( array[0] == '{' )
 }
 
 }
-
-
-// vraci numericky prvek pole
-int get_array_numeric(char *array , int field )
-{
-int i , num , from;
-char value[32];
-
-// default value
-strcpy( value , "" );
-
-if( array[0] == '{' )
-{
-
-   for( i = 1 , num = 0 , from = 1 ; i < strlen ( array ) ; i ++ )
-      {
-            if(  array[i] == ',' ||  array[i] ==  '}' )
-              {
-                 if( num == field )
-                   {
-                      strncpy( value , array+from , i - from ); // zkopiruj retezec
-                      value[i - from] = 0 ; // zakoncit
-                      return atoi( value );
-                   }
-                 else { num ++ ; from = i + 1; }
-               }
-      }
-}
-
-}
-
-
-// pridavani retezce pri update
-void add_field_value( char *string , char *fname , char *value )
-{
-char buf[1024];
-
-if( strlen( value ) )
- {
-   if( value[0] == 0x8 ) sprintf(buf , " %s=NULL ," ,  fname ); // vymaz polozku pri updatu
-   else    sprintf(buf , " %s=\'%s\' ," ,  fname , value );
-   strcat( string , buf );  
- }
-
-}
-
 
