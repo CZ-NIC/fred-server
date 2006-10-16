@@ -105,10 +105,10 @@ strcat( string , " }" );
 // vytvori numericke pole ze string
 int Status::Make(char *array)
 {
-int i, num , from , p ;
+int i, num , from , p , len;
 char value[16];
 
-
+len = strlen( array );
 
 // nulova velikost pole
 
@@ -116,7 +116,7 @@ if( array[0] != '{' ) return -1; // neni pole
 
 if( array[0] == '{' &&  array[1] == '}' ) return 0;
 
-for( i = 0 , num = 1 ; i < strlen( array) ; i ++ )
+for( i = 0 , num = 1 ; i < len  ; i ++ )
 {
   if(  array[i] == ',' ) num ++;
 }
@@ -129,7 +129,7 @@ slen = num;
  if( array[0] == '{' )
  {
 
-   for( i = 1 , p = 0 , from =  1 ; i < strlen ( array ) ; i ++ )
+   for( i = 1 , p = 0 , from =  1 ; i < len ; i ++ )
       {
             if(  array[i] == ',' ||  array[i] ==  '}' )
               {
