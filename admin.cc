@@ -54,7 +54,7 @@ ccReg_PageTable_i::start()
 CORBA::Short 
 ccReg_PageTable_i::numPages()
 {
-  return (unsigned)ceil(numRows()/aPageSize);
+  return (unsigned)ceil((double)numRows()/aPageSize);
 }
 
 ccReg::TableRow* 
@@ -692,12 +692,17 @@ void
 ccReg_EPPActions_i::time(const ccReg::DateInterval& _v)
 {
   timeFilter = _v;
-  eal->setTimePeriodFilter(
-    time_period(
-      ptime(date(_v.from.year,_v.from.month,_v.from.day),time_duration(0,0,0)),
-      ptime(date(_v.to.year,_v.to.month,_v.to.day),time_duration(0,0,0))
-    )
-  );
+  try {
+    eal->setTimePeriodFilter(
+      time_period(
+        ptime(date(_v.from.year,_v.from.month,_v.from.day),
+              time_duration(0,0,0)),
+        ptime(date(_v.to.year,_v.to.month,_v.to.day),
+              time_duration(0,0,0))
+      )
+    );
+  } 
+  catch (...) {}
 }
 
 char* 
@@ -795,7 +800,17 @@ void
 ccReg_RegObjectFilter_i::crDate(const ccReg::DateInterval& _v)
 {
   crDateFilter = _v;
-  // ol->setCrDateIntervalFilter(_v)
+  try {
+    ol->setCrDateIntervalFilter(
+      time_period(
+        ptime(date(_v.from.year,_v.from.month,_v.from.day),
+              time_duration(0,0,0)),
+        ptime(date(_v.to.year,_v.to.month,_v.to.day),
+              time_duration(0,0,0))
+      )
+    );
+  } 
+  catch (...) {}
 }
 
 void 
