@@ -223,6 +223,8 @@ case ccReg::DISCL_EMPTY:
 }
 
 
+// default
+return false;
 }
 
 
@@ -279,7 +281,7 @@ return rows;
 int  ccReg_EPP_i::GetZoneExPeriodMin(int z)
 {
 
-if( z > 0 && z <=  zone->length() )
+if( z > 0 && z <=  (int )  zone->length() )
 {
  LOG(LOG_DEBUG , "GetZoneExPreriodMin zone %d -> %d" , z , (*zone)[z-1].ex_period_min );
  return (*zone)[z-1].ex_period_min;
@@ -291,7 +293,7 @@ return 0;
 int  ccReg_EPP_i::GetZoneExPeriodMax(int z)
 {
 
-if( z > 0 && z <=  zone->length() )
+if( z > 0 && z <= (int )  zone->length() )
 {
  LOG(LOG_DEBUG , "GetZoneExPreriodMax zone %d -> %d" , z , (*zone)[z-1].ex_period_max );
  return (*zone)[z-1].ex_period_max;
@@ -303,7 +305,7 @@ return 0;
 int  ccReg_EPP_i::GetZoneValPeriod(int z)
 {
 
-if( z > 0 && z <=  zone->length() )
+if( z > 0 && z <=  (int ) zone->length() )
 {
  LOG(LOG_DEBUG , "GetZoneValPreriod zone %d -> %d" , z , (*zone)[z-1].val_period );
  return (*zone)[z-1].val_period;
@@ -316,7 +318,7 @@ return 0;
 bool ccReg_EPP_i::GetZoneEnum(int z)
 {
 
-if( z > 0 && z <= zone->length() )
+if( z > 0 && z <= (int ) zone->length() )
 {
   LOG(LOG_DEBUG , "GetZoneEnum zone %d -> %d" , z , (*zone)[z-1].enum_zone );
  return (*zone)[z-1].enum_zone;
@@ -326,7 +328,7 @@ else return 0;
 
 int  ccReg_EPP_i::GetZoneDotsMax( int z) 
 {
-if( z > 0 && z <=  zone->length() )
+if( z > 0 && z <=  (int )  zone->length() )
 {
  LOG(LOG_DEBUG , "GetZoneDotsMax zone %d -> %d" , z , (*zone)[z-1].dots_max );
  return (*zone)[z-1].dots_max ;
@@ -340,7 +342,7 @@ return 0;
 char * ccReg_EPP_i::GetZoneFQDN( int z)
 {
 
-if( z > 0 && z <=  zone->length() )
+if( z > 0 && z <= (int ) zone->length() )
 {
  LOG( LOG_DEBUG , "GetZoneFQDN zone %d -> [%s]" , z , (char *) (*zone)[z-1].fqdn );
  return (*zone)[z-1].fqdn;
@@ -365,7 +367,7 @@ int ccReg_EPP_i::getZZ( const char *fqdn , bool compare )
 int max , i ;
 int  len  , slen , l ;
 
-max = zone->length();
+max = (int ) zone->length();
 
 len = strlen(  fqdn );
 
@@ -736,7 +738,7 @@ ret->errCode = 0;
 ret->errors.length( 0 );
 
 
-LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s]", clientID, clTRID, msgID );
+LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s] msgID %d", clientID, clTRID, msgID );
 
   if( DBsql.OpenDatabase( database ) )
     {
@@ -1110,9 +1112,8 @@ ccReg::Response* ccReg_EPP_i::ObjectCheck( short act , char * table , char *fnam
 {
 DB DBsql;
 ccReg::Response *ret;
-int  len , av , zone ;
+int  i , len , zone ;
 char HANDLE[64] , FQDN[64];
-long unsigned int i;
 ret = new ccReg::Response;
 
 a = new ccReg::CheckResp;
@@ -1321,9 +1322,8 @@ Status status;
 ccReg::Response *ret;
 char HANDLE[64]; // handle na velka pismena
 char dateStr[MAX_DATE];
-int id , clid , crid , upid , regID;
-int actionID=0 , ssn ;
-int len , i  , s ;
+int  clid , crid , upid , regID;
+int len , i  , ssn;
 
 c = new ccReg::Contact;
 // inicializace pro pripad neuspesneho hledani
@@ -1714,9 +1714,9 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate( const char *handle, const ccReg::C
 ccReg::Response * ret;
 DB DBsql;
 char statusString[128] , HANDLE[64];
-int regID = 0,  clID = 0, id , num ;
+int regID ,  clID , id ;
 bool remove_update_flag = false ;
-int len, i , seq;
+int  i , seq;
 Status status;
 
 seq=0;
@@ -1729,13 +1729,13 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
  c.DiscloseName  , c.DiscloseOrganization , c.DiscloseAddress , c.DiscloseTelephone , c.DiscloseFax , c.DiscloseEmail );
 
 // nacti status flagy
-  for( i = 0; i < status_add.length(); i++ )
+  for( i = 0; i < (int ) status_add.length(); i++ )
     {
       LOG( NOTICE_LOG, "status_add [%s] -> %d",  (const char *)  status_add[i]  ,  status.GetStatusNumber( status_add[i] )  ); 
       status.PutAdd( status.GetStatusNumber( status_add[i] ) ); // pridej status flag
     }
 
-  for( i = 0; i < status_rem.length(); i++ )
+  for( i = 0; i <  (int ) status_rem.length(); i++ )
     {
       LOG( NOTICE_LOG, "status_rem [%s] -> %d ",   (const char *) status_rem[i]  , status.GetStatusNumber( status_rem[i] )  );
       status.PutRem(  status.GetStatusNumber( status_rem[i] ) );       
@@ -1971,7 +1971,6 @@ char roid[64];
 char HANDLE[64]; // handle na velka pismena
 ccReg::Response * ret;
 int regID, id;
-int i , len;
 // default
 ret = new ccReg::Response;
 ret->errCode = 0;
@@ -2197,7 +2196,7 @@ DB DBsql;
 char HANDLE[64];
 char pass[PASS_LEN+1];
 Status status;
-int regID=0 , clID=0 , id , contactid;
+int regID , clID , id;
 
 ret = new ccReg::Response;
 
@@ -2344,7 +2343,7 @@ char  adres[1042] , adr[128] ;
 char dateStr[MAX_DATE];
 ccReg::Response *ret;
 int clid , crid , upid , nssetid , regID;
-int i , j  ,ilen , len , s ;
+int i , j  ,ilen , len ;
 
 ret = new ccReg::Response;
 n = new ccReg::NSSet;
@@ -2691,11 +2690,11 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
                                             ccReg::timestamp_out crDate, CORBA::Long clientID, const char *clTRID , const char* XML ) 
 { 
 DB DBsql; 
-char Array[512] , NAME[256]; char createDate[32]; char HANDLE[64]; // handle na velka pismena 
+char Array[512] , NAME[256] ,   HANDLE[64]; // handle na velka pismena 
 char pass[PASS_LEN+1];
 char dateStr[MAX_DATE];
 char roid[64]; ccReg::Response * ret; int regID, id, techid; 
-int i, len, j , l , seq ;
+int  i , j ,  seq ;
 ret = new ccReg::Response;
 // default
 ret->errCode = 0;
@@ -2764,13 +2763,13 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                  {
                  
                   // zapis technicke kontakty 
-                  for( i = 0; i <  tech.length() ;  i++ )
+                  for( i = 0; i < (int)  tech.length() ;  i++ )
                     {
 
                       // preved handle na velka pismena
                       if( get_HANDLE( HANDLE , tech[i] ) == false )  // spatny format handlu
                         {
-                          LOG( WARNING_LOG, "NSSetCreate: unknown tech Contact " , (const char *)  tech[i] );
+                          LOG( WARNING_LOG, "NSSetCreate: unknown tech Contact %s" , (const char *)  tech[i] );
                           ret->errors.length( seq +1 );
                           ret->errors[seq].code = ccReg::nssetCreate_tech;
                           ret->errors[seq].value <<= CORBA::string_dup(  tech[i] );
@@ -2783,7 +2782,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                           techid = DBsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE );
                           if( techid == 0 )
                           {
-                          LOG( WARNING_LOG, "NSSetCreate: unknown tech Contact " , (const char *)  tech[i]  );                          
+                          LOG( WARNING_LOG, "NSSetCreate: unknown tech Contact %s" , (const char *)  tech[i]  );                          
                           ret->errors.length( seq +1 );
                           ret->errors[seq].code = ccReg::nssetCreate_tech;
                           ret->errors[seq].value <<= CORBA::string_dup(  tech[i] );
@@ -2826,12 +2825,12 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                   else
                   {
                   // test dns hostu
-                  for( i = 0; i < dns.length() ; i++ )
+                  for( i = 0; i < (int)  dns.length() ; i++ )
                     {
      
                       LOG( DEBUG_LOG , "NSSetCreate: test host %s" ,  (const char *)  dns[i].fqdn  );
                       // preved sequenci adres
-                      for( j = 0; j < dns[i].inet.length(); j++ )
+                      for( j = 0; j < (int ) dns[i].inet.length(); j++ )
                         {
                            LOG( DEBUG_LOG , "NSSetCreate: test inet[%d] = %s " , j ,   (const char *) dns[i].inet[j]   );
                           if( TestInetAddress( dns[i].inet[j] )  == false )
@@ -2860,7 +2859,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
  
                         if( getZone( dns[i].fqdn  ) == 0   && dns[i].inet.length() > 0 ) // neni v definovanych zonach a obsahuje zaznam ip adresy
                           {
-                            for( j = 0 ; j < dns[i].inet.length() ; j ++ )
+                            for( j = 0 ; j < (int )  dns[i].inet.length() ; j ++ )
                                {
 
                                     LOG( WARNING_LOG, "NSSetCreate:  ipaddr  glue not allowed %s " , (const char *) dns[i].inet[j]   );
@@ -2943,7 +2942,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                   crDate= CORBA::string_dup( dateStr );
 
                   // zapis technicke kontakty
-                  for( i = 0; i <  tech.length() ;  i++ )
+                  for( i = 0; i <  (int ) tech.length() ;  i++ )
                     {
 
                       // preved handle na velka pismena
@@ -2952,7 +2951,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                       techid = DBsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE );
                       if( techid )
                         {
-                          LOG( NOTICE_LOG, "NSSetCreate: create tech Contact " , (const char *)  tech[i] );
+                          LOG( NOTICE_LOG, "NSSetCreate: create tech Contact %s" , (const char *)  tech[i] );
                           DBsql.INSERT( "nsset_contact_map" );
                           DBsql.VALUE( id );
                           DBsql.VALUE( techid );
@@ -2967,13 +2966,13 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
 
 
               // zapis do tabulky hostu
-                  for( i = 0; i < dns.length() ; i++ )
+                  for( i = 0; i < (int) dns.length() ; i++ )
                     {
 
 
                       // preved sequenci adres
                       strcpy( Array, " { " );
-                      for( j = 0; j < dns[i].inet.length(); j++ )
+                      for( j = 0; j < (int) dns[i].inet.length(); j++ )
                         {
                           if( j > 0 ) strcat( Array, " , " );
 
@@ -3094,8 +3093,9 @@ DB DBsql;
 Status status;
 bool  check;
 char  Array[512] ,  statusString[128] , HANDLE[64] , NAME[256];
-int regID=0 , clID=0 , id ,nssetid ,  techid  , hostID;
-int i , j , l  , seq ;
+int regID , clID , id ,  techid  , hostID;
+int  j , l  , seq ;
+unsigned int i;
 int hostNum , techNum;
 bool remove_update_flag=false;
 
@@ -3107,13 +3107,13 @@ ret->errors.length(0);
 LOG( NOTICE_LOG ,  "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] authInfo_chg  [%s] " , clientID , clTRID , handle  , authInfo_chg);
 
 // nacti status flagy
-  for( i = 0; i < status_add.length(); i++ )
+  for( i = 0; i <  status_add.length(); i++ )
     {
       LOG( NOTICE_LOG, "status_add [%s] -> %d",  (const char *)  status_add[i]  ,  status.GetStatusNumber( status_add[i] )  );
       status.PutAdd( status.GetStatusNumber( status_add[i] ) ); // pridej status flag
     }
 
-  for( i = 0; i < status_rem.length(); i++ )
+  for( i = 0; i <  status_rem.length(); i++ )
     {
       LOG( NOTICE_LOG, "status_rem [%s] -> %d ",   (const char *) status_rem[i]  , status.GetStatusNumber( status_rem[i] )  );
       status.PutRem(  status.GetStatusNumber( status_rem[i] ) );
@@ -3177,7 +3177,7 @@ if( DBsql.OpenDatabase( database ) )
                                   {
 
                                           // pridany status
-                                          for( i = 0; i < status.AddLength(); i++ )
+                                          for( i = 0; i < (unsigned int ) status.AddLength(); i++ )
                                             {
                                                   if( status.Add(i) == false )
                                                     {
@@ -3191,7 +3191,7 @@ if( DBsql.OpenDatabase( database ) )
                                             }
 
                                           // zruseny status flagy
-                                         for( i = 0; i < status.RemLength(); i++ )
+                                         for( i = 0; i < (unsigned int )   status.RemLength(); i++ )
                                              {
                                               
                                                   if( status.Rem(i) == false )
@@ -3358,7 +3358,7 @@ if( DBsql.OpenDatabase( database ) )
 
                                                 // vytvor pole inet adres
                                                 strcpy( Array, "{ " );
-                                              for( j = 0; j < dns_add[i].inet.length(); j++ )
+                                              for( j = 0; j < (int ) dns_add[i].inet.length(); j++ )
                                                 {
                                                     if( j > 0 ) strcat( Array, " , " );
 
@@ -3411,9 +3411,9 @@ if( DBsql.OpenDatabase( database ) )
                                                  convert_hostname(  NAME , dns_add[i].fqdn );
 
 
-                                               if( getZone( dns_add[i].fqdn ) == 0     && dns_add[i].inet.length() > 0 ) // neni v definovanych zonach a obsahuje zaznam ip adresy
+                                               if( getZone( dns_add[i].fqdn ) == 0     && (int )  dns_add[i].inet.length() > 0 ) // neni v definovanych zonach a obsahuje zaznam ip adresy
                                                  {
-                                                   for( j = 0 ; j < dns_add[i].inet.length() ; j ++ )
+                                                   for( j = 0 ; j < (int )  dns_add[i].inet.length() ; j ++ )
                                                    {
                                                     LOG( WARNING_LOG, "NSSetUpdate:  ipaddr  glue not allowed %s " , (const char *) dns_add[i].inet[j]   );
                                                     ret->errors.length( seq +1 );
@@ -3612,7 +3612,7 @@ DB DBsql;
 char pass[PASS_LEN+1];
 char HANDLE[64];
 Status status;
-int regID=0 , clID=0 , id , contactid;
+int regID , clID , id ;
 
 ret = new ccReg::Response;
 
@@ -4150,12 +4150,13 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate( const char *fqdn, const char *regis
 ccReg::Response * ret;
 DB DBsql;
 Status status;
-bool stat, check;
+bool check;
 char FQDN[64] , HANDLE[64];
 char valexpiryDate[MAX_DATE];
 char statusString[128];
 int regID = 0, clID = 0, id, nssetid, contactid, adminid;
-int i, len, slen, j , seq , zone;
+int   seq , zone;
+unsigned int i;
 bool remove_update_flag=false;
 
 ret = new ccReg::Response;
@@ -4340,7 +4341,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
 
 
                                          // pridany status
-                                          for( i = 0; i < status.AddLength(); i++ )
+                                          for( i = 0; i < (unsigned int )  status.AddLength(); i++ )
                                             {
                                                   if( status.Add( i ) == false )
                                                     {
@@ -4354,7 +4355,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                             }
 
                                           // zruseny status flagy
-                                         for( i = 0; i < status.RemLength(); i++ )
+                                         for( i = 0; i <  (unsigned int ) status.RemLength(); i++ )
                                              {
                                                   if( status.Rem( i ) == false )
                                                     {
@@ -4619,8 +4620,7 @@ char roid[64] , FQDN[64] , HANDLE[64];
 char pass[PASS_LEN+1];
 ccReg::Response * ret;
 int contactid, regID, nssetid, adminid, id;
-int i, len, s, zone , seq;
-bool insert = true;
+int i, len,  zone , seq;
 
 ret = new ccReg::Response;
 
@@ -4923,7 +4923,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                          }
 
                                    // pridej admin kontakty
-                                  for( i = 0; i <  admin.length(); i++ )
+                                  for( i = 0; i < (int )   admin.length(); i++ )
                                     {
                                      // nsset
                                       if( get_HANDLE( HANDLE , admin[i] )  )
@@ -5026,7 +5026,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
   char expDateStr[MAX_DATE],  ExDateStr[MAX_DATE] , valexpiryDate[MAX_DATE] ;
   char FQDN[64]; 
   ccReg::Response * ret;
-  int clid, regID, id, len, i , zone , seq;
+  int clid, regID, id,  zone , seq;
   bool stat;
 
   ret = new ccReg::Response;
