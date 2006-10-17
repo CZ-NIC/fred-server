@@ -692,17 +692,22 @@ void
 ccReg_EPPActions_i::time(const ccReg::DateInterval& _v)
 {
   timeFilter = _v;
+  date from;
+  date to;
   try {
-    eal->setTimePeriodFilter(
-      time_period(
-        ptime(date(_v.from.year,_v.from.month,_v.from.day),
-              time_duration(0,0,0)),
-        ptime(date(_v.to.year,_v.to.month,_v.to.day),
-              time_duration(0,0,0))
-      )
-    );
-  } 
+    from = date(_v.from.year,_v.from.month,_v.from.day);
+  }
   catch (...) {}
+  try {
+    to = date(_v.to.year,_v.to.month,_v.to.day);
+  }
+  catch (...) {}
+  eal->setTimePeriodFilter(
+    time_period(
+      ptime(from,time_duration(0,0,0)),
+      ptime(to,time_duration(0,0,0))
+    )
+  );
 }
 
 char* 
@@ -800,17 +805,22 @@ void
 ccReg_RegObjectFilter_i::crDate(const ccReg::DateInterval& _v)
 {
   crDateFilter = _v;
+  date from;
+  date to;
   try {
-    ol->setCrDateIntervalFilter(
-      time_period(
-        ptime(date(_v.from.year,_v.from.month,_v.from.day),
-              time_duration(0,0,0)),
-        ptime(date(_v.to.year,_v.to.month,_v.to.day),
-              time_duration(0,0,0))
-      )
-    );
-  } 
+    from = date(_v.from.year,_v.from.month,_v.from.day);
+  }
   catch (...) {}
+  try {
+    to = date(_v.to.year,_v.to.month,_v.to.day);
+  }
+  catch (...) {}
+  ol->setCrDateIntervalFilter(
+    time_period(
+      ptime(from,time_duration(0,0,0)),
+      ptime(to,time_duration(0,0,0))
+    )
+  );
 }
 
 void 
