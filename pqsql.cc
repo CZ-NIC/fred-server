@@ -180,7 +180,7 @@ else
 
 len =  PQescapeString( str,  String ,  length);
 
-LOG( SQL_LOG , "escape len  %ld [%s]" , len  , str   );
+LOG( SQL_LOG , "escape len  %d [%s]" ,  (int ) len  , str   );
 
 return true;
 }
