@@ -192,8 +192,9 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
           //printf("[%s]\n" , buf );
 
           // parse  config file
-          for( i = 0 , key = 0  ; i < KEY_MAX  , i < len ; i ++ )
-             {                                                
+          for( i = 0 , key = 0  ;  i < len ; i ++ )
+             {               
+                if( i >= KEY_MAX ) break;                                   
                 if(  buf[i] == '=' ) 
                   {
                     keyname[i] = 0 ; 
@@ -217,7 +218,7 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
              }
 
 
-           if( key ) debug("KEY %d %s value[%s]\n" , key , keyname  , value );
+//           if( key ) debug("config KEY %d %s value [%s]\n" , key , keyname  , value );
 
            switch( key)
              {
