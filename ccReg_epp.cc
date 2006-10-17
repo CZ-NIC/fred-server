@@ -538,7 +538,7 @@ ret = new ccReg::Response;
 ret->errCode = 0;
 ret->errors.length( 0 );
 
-LOG( NOTICE_LOG, "GetTransaction: clientID -> %ld clTRID [%s] ",  clientID, clTRID );
+LOG( NOTICE_LOG, "GetTransaction: clientID -> %d clTRID [%s] ",  (int )  clientID, clTRID );
 
   if( DBsql.OpenDatabase( database ) )
     {
@@ -610,7 +610,7 @@ ret->errors.length( 0 );
 count = 0;
 newmsgID = 0;
 
-LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %ld clTRID [%s] msgID -> %ld", clientID, clTRID,   msgID );
+LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", (int) clientID, clTRID,   (int ) msgID );
 
   if( DBsql.OpenDatabase( database ) )
     {
@@ -634,7 +634,7 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %ld clTRID [%s] msgID -> %ld"
 
               if( rows == 0 )
                 {
-                  LOG( ERROR_LOG, "unknown msgID %ld", msgID );
+                  LOG( ERROR_LOG, "unknown msgID %d", (int)  msgID );
                   ret->errors.length( 1 );
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                   ret->errors[0].code = ccReg::pollAck_msgID;   // spatna msg ID
@@ -738,7 +738,7 @@ ret->errCode = 0;
 ret->errors.length( 0 );
 
 
-LOG( NOTICE_LOG, "PollRequest: clientID -> %ld clTRID [%s] msgID %ld", clientID, clTRID, msgID );
+LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s] msgID %d",  (int ) clientID, clTRID, (int ) msgID );
 
   if( DBsql.OpenDatabase( database ) )
     {
@@ -766,7 +766,7 @@ LOG( NOTICE_LOG, "PollRequest: clientID -> %ld clTRID [%s] msgID %ld", clientID,
                   msgID = atoi( DBsql.GetFieldValueName( "ID", 0 ) );
                   mesg = CORBA::string_dup( DBsql.GetFieldValueName( "message", 0 ) );
                   ret->errCode = COMMAND_ACK_MESG;      // zpravy jsou ve fronte
-                  LOG( NOTICE_LOG, "PollRequest: msgID -> %ld count -> %d mesg [%s]", msgID, count, CORBA::string_dup( mesg ) );
+                  LOG( NOTICE_LOG, "PollRequest: msgID -> %d count -> %d mesg [%s]",  (int )  msgID, count, CORBA::string_dup( mesg ) );
                 }
               else
                 ret->errCode = COMMAND_NO_MESG; // zadne zpravy ve fronte
@@ -824,7 +824,7 @@ ret = new ccReg::Response;
 ret->errCode = 0;
 ret->errors.length( 0 );
 
-LOG( NOTICE_LOG, "ClientCredit: clientID -> %ld clTRID [%s]", clientID, clTRID );
+LOG( NOTICE_LOG, "ClientCredit: clientID -> %d clTRID [%s]",  (int )  clientID, clTRID );
 
 
   if( DBsql.OpenDatabase( database ) )
@@ -885,7 +885,7 @@ ret = new ccReg::Response;
 ret->errCode = 0;
 ret->errors.length( 0 );
 
-LOG( NOTICE_LOG, "ClientLogout: clientID -> %ld clTRID [%s]", clientID, clTRID );
+LOG( NOTICE_LOG, "ClientLogout: clientID -> %d clTRID [%s]",  (int )  clientID, clTRID );
 
 
   if( DBsql.OpenDatabase( database ) )
@@ -1033,7 +1033,7 @@ if( DBsql.OpenDatabase( database ) )
                     if( DBsql.EXEC() )    // pokud se podarilo zapsat do tabulky
                       {
                         clientID = id;
-                        LOG( NOTICE_LOG, "GET clientID  -> %ld", clientID );
+                        LOG( NOTICE_LOG, "GET clientID  -> %d",  (int )  clientID );
 
                         ret->errCode = COMMAND_OK; // zikano clinetID OK
 
@@ -1126,7 +1126,7 @@ ret->errors.length(0);
 len = chck.length();
 a->length(len);
 
-LOG( NOTICE_LOG ,  "OBJECT %d  Check: clientID -> %ld clTRID [%s] " , act  , clientID , clTRID );
+LOG( NOTICE_LOG ,  "OBJECT %d  Check: clientID -> %d clTRID [%s] " , act  ,  (int )  clientID , clTRID );
 
 
 if( DBsql.OpenDatabase( database ) )
@@ -1341,7 +1341,7 @@ ret = new ccReg::Response;
 ret->errCode=0;
 ret->errors.length(0);
 
-LOG( NOTICE_LOG ,  "ContactInfo: clientID -> %ld clTRID [%s] handle [%s] " , clientID , clTRID , handle );
+LOG( NOTICE_LOG ,  "ContactInfo: clientID -> %d clTRID [%s] handle [%s] " ,  (int )  clientID , clTRID , handle );
  
 if( DBsql.OpenDatabase( database ) )
 {
@@ -1595,7 +1595,7 @@ ret->errMsg = CORBA::string_alloc(64);
 ret->errMsg = CORBA::string_dup("");
 ret->errors.length(0);
 
-LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %ld clTRID [%s] handle [%s] " , clientID , clTRID , handle );
+LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (int )  clientID , clTRID , handle );
 
 
 
@@ -1725,7 +1725,7 @@ ret = new ccReg::Response;
 ret->errCode = 0;
 ret->errors.length( 0 );
 
-LOG( NOTICE_LOG, "ContactUpdate: clientID -> %ld clTRID [%s] handle [%s] ", clientID, clTRID, handle );
+LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", (int ) clientID, clTRID, handle );
 LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d Email %d" , c.DiscloseFlag ,
  c.DiscloseName  , c.DiscloseOrganization , c.DiscloseAddress , c.DiscloseTelephone , c.DiscloseFax , c.DiscloseEmail );
 
@@ -1980,7 +1980,7 @@ ret->errors.length( 0 );
 crDate = CORBA::string_dup( "" ); 
 
 
-LOG( NOTICE_LOG, "ContactCreate: clientID -> %ld clTRID [%s] handle [%s]", clientID, clTRID, handle );
+LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s]", (int ) clientID, clTRID, handle );
 LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d Email %d" , c.DiscloseFlag ,
  c.DiscloseName  , c.DiscloseOrganization , c.DiscloseAddress , c.DiscloseTelephone , c.DiscloseFax , c.DiscloseEmail );
 
@@ -2204,7 +2204,7 @@ ret = new ccReg::Response;
 ret->errCode=0;
 ret->errors.length(0);
 
-LOG( NOTICE_LOG ,  "ContactTransfer: clientID -> %ld clTRID [%s] handle [%s] authInfo [%s] " , clientID , clTRID , handle , authInfo );
+LOG( NOTICE_LOG ,  "ContactTransfer: clientID -> %d clTRID [%s] handle [%s] authInfo [%s] " , (int ) clientID , clTRID , handle , authInfo );
 
 if( DBsql.OpenDatabase( database ) )
 {
@@ -2352,7 +2352,7 @@ n = new ccReg::NSSet;
 // default
 ret->errCode = 0;
 ret->errors.length(0);
-LOG( NOTICE_LOG ,  "NSSetInfo: clientID -> %ld clTRID [%s] handle [%s] " , clientID , clTRID , handle );
+LOG( NOTICE_LOG ,  "NSSetInfo: clientID -> %d clTRID [%s] handle [%s] " , (int ) clientID , clTRID , handle );
  
 
 
@@ -2551,7 +2551,7 @@ ret = new ccReg::Response;
 ret->errCode=0;
 ret->errors.length(0);
 
-LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %ld clTRID [%s] handle [%s] " , clientID , clTRID , handle );
+LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int ) clientID , clTRID , handle );
 
 
   if( DBsql.OpenDatabase( database ) )
@@ -2703,7 +2703,7 @@ ret->errors.length( 0 );
 crDate = CORBA::string_dup( "" );
 seq=0;
 
-LOG( NOTICE_LOG, "NSSetCreate: clientID -> %ld clTRID [%s] handle [%s]  authInfoPw [%s]", clientID, clTRID, handle , authInfoPw  );
+LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", (int ) clientID, clTRID, handle , authInfoPw  );
 
   if( DBsql.OpenDatabase( database ) )
     {
@@ -2796,7 +2796,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %ld clTRID [%s] handle [%s]  authInfo
 
                   }
          
-           LOG( DEBUG_LOG ,  "NSSetCreate:  dns.length %ld" , dns.length() );
+           LOG( DEBUG_LOG ,  "NSSetCreate:  dns.length %d" , (int ) dns.length() );
              // test DNS hostu
                if(  dns.length() < 2  ) // musi zadat minimalne dva dns hosty
                  {
@@ -3105,7 +3105,7 @@ seq=0;
 ret->errCode=0;
 ret->errors.length(0);
 
-LOG( NOTICE_LOG ,  "NSSetUpdate: clientID -> %ld clTRID [%s] handle [%s] authInfo_chg  [%s] " , clientID , clTRID , handle  , authInfo_chg);
+LOG( NOTICE_LOG ,  "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] authInfo_chg  [%s] " , (int ) clientID , clTRID , handle  , authInfo_chg);
 
 // nacti status flagy
   for( i = 0; i <  status_add.length(); i++ )
@@ -3620,7 +3620,7 @@ ret = new ccReg::Response;
 ret->errCode=0;
 ret->errors.length(0);
 
-LOG( NOTICE_LOG ,  "NSSetTransfer: clientID -> %ld clTRID [%s] handle [%s] authInfo [%s] " , clientID , clTRID , handle , authInfo );
+LOG( NOTICE_LOG ,  "NSSetTransfer: clientID -> %d clTRID [%s] handle [%s] authInfo [%s] " , (int ) clientID , clTRID , handle , authInfo );
 
 if( DBsql.OpenDatabase( database ) )
 {
@@ -3774,7 +3774,7 @@ ret->errCode=COMMAND_FAILED;
 ret->errors.length(0);
 
 
-LOG( NOTICE_LOG ,  "DomainInfo: clientID -> %ld clTRID [%s] fqdn  [%s] " , clientID , clTRID  , fqdn );
+LOG( NOTICE_LOG ,  "DomainInfo: clientID -> %d clTRID [%s] fqdn  [%s] " , (int ) clientID , clTRID  , fqdn );
 
 
 d->ext.length(0); // extension
@@ -4001,7 +4001,7 @@ ret = new ccReg::Response;
 ret->errCode=0;
 ret->errors.length(0);
 
-LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %ld clTRID [%s] fqdn  [%s] " , clientID , clTRID  , fqdn );
+LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int ) clientID , clTRID  , fqdn );
 
 
   if( DBsql.OpenDatabase( database ) )
@@ -4167,8 +4167,8 @@ ret->errors.length( 0 );
 
 strcpy( valexpiryDate , "" ); // default
 
-LOG( NOTICE_LOG, "DomainUpdate: clientID -> %ld clTRID [%s] fqdn  [%s] , registrant_chg  [%s] authInfo_chg [%s]  nsset_chg [%s] ",
-       clientID, clTRID, fqdn, registrant_chg, authInfo_chg, nsset_chg );
+LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registrant_chg  [%s] authInfo_chg [%s]  nsset_chg [%s] ",
+      (int )  clientID, clTRID, fqdn, registrant_chg, authInfo_chg, nsset_chg );
 
 
 // parse extension
@@ -4637,7 +4637,7 @@ exDate =  CORBA::string_dup( "" );
 
 
 
-LOG( NOTICE_LOG, "DomainCreate: clientID -> %ld clTRID [%s] fqdn  [%s] ", clientID, clTRID, fqdn );
+LOG( NOTICE_LOG, "DomainCreate: clientID -> %d clTRID [%s] fqdn  [%s] ", (int )  clientID, clTRID, fqdn );
 LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] period %d", Registrant, nsset, AuthInfoPw, period );
 
 // parse extension
@@ -5046,7 +5046,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
   ret->errors.length( 0 );
 
 
-  LOG( NOTICE_LOG, "DomainRenew: clientID -> %ld clTRID [%s] fqdn  [%s] period %d month", clientID, clTRID, fqdn, period );
+  LOG( NOTICE_LOG, "DomainRenew: clientID -> %d clTRID [%s] fqdn  [%s] period %d month", (int ) clientID, clTRID, fqdn, period );
 
 
 
@@ -5314,7 +5314,7 @@ ret = new ccReg::Response;
 ret->errCode = 0;
 ret->errors.length( 0 );
 
-LOG( NOTICE_LOG, "DomainTransfer: clientID -> %ld clTRID [%s] fqdn  [%s]  ", clientID, clTRID, fqdn );
+LOG( NOTICE_LOG, "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  ", (int ) clientID, clTRID, fqdn );
 
 
   if( DBsql.OpenDatabase( database ) )
@@ -5452,7 +5452,7 @@ ret->errCode =0 ; // default
 
 list = new ccReg::Lists;
 
-LOG( NOTICE_LOG ,  "LIST %d  clientID -> %ld clTRID [%s] " , act  , clientID , clTRID );
+LOG( NOTICE_LOG ,  "LIST %d  clientID -> %d clTRID [%s] " , act  , (int )  clientID , clTRID );
 
 if( DBsql.OpenDatabase( database ) )
 {
