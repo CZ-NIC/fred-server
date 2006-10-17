@@ -374,22 +374,29 @@ for(  i = 0 ; i < max ; i ++ )
   
         slen = strlen(  (char *) (*zone)[i].fqdn );
         l = len - slen ;
+
         if( l > 0 )
          {
           if( fqdn[l-1] == '.' ) // case less comapare
              {
                 if( compare ) 
                   {
-                     // LOG( LOG_DEBUG , "compare zone %d [%s] [%s] slen %d" , i ,  fqdn+l ,  (char *) (*zone)[i].fqdn  ,slen );
                      if(  strncasecmp(  fqdn+l ,  (char *) (*zone)[i].fqdn  , slen ) == 0 ) return i +1; // zaradi do zony                  
                   }
-                 else return l -1 ; // vraci konec nazvu
-         
-                
+                 else return l -1 ; // vraci konec nazvu                        
              }
          }
 
    }
+
+// vrat max konec nazvu domeny bez tecky
+if( compare == false )
+{
+for( l = len-1 ; l > 0 ; l -- )
+  {
+    if(  fqdn[l] == '.' )  return l-1;   // vraci konec nazvu domeny 
+  }
+}
 
 return 0;
 }
@@ -399,7 +406,7 @@ bool ccReg_EPP_i::testFQDN( const char *fqdn )
 {
 char FQDN[64];
 
-if( getFQDN( FQDN ,  fqdn ) ) return true;
+if( getFQDN( FQDN ,  fqdn ) > 0  ) return true;
 else return false;
 }
 
@@ -419,8 +426,8 @@ FQDN[0] = 0;
 LOG( LOG_DEBUG ,  "getFQDN [%s] zone %d max %d" , fqdn  , z , max );
 
 // maximalni delka
-if( len > 63 ) { LOG( LOG_DEBUG ,  "out ouf maximal length %d" , len ); return 0; }
-if( max == 0  ) { LOG( LOG_DEBUG ,  "minimal length" ); return 0;}
+if( len > 63 ) { LOG( LOG_DEBUG ,  "out ouf maximal length %d" , len ); return -1; }
+if( max == 0 ) { LOG( LOG_DEBUG ,  "minimal length" ); return -1;}
 
 // test double dot .. and double --
 for( i = 1 ; i <  len ; i ++ )
@@ -429,13 +436,13 @@ for( i = 1 ; i <  len ; i ++ )
 if( fqdn[i] == '.' && fqdn[i-1] == '.' )
   {
    LOG( LOG_DEBUG ,  "double \'.\' not allowed" );
-   return 0;
+   return -1;
   }
 
 if( fqdn[i] == '-' && fqdn[i-1] == '-' )
   {
    LOG( LOG_DEBUG ,  "double  \'-\' not allowed" );
-   return 0;
+   return -1;
   }
 
 }
@@ -444,13 +451,11 @@ if( fqdn[i] == '-' && fqdn[i-1] == '-' )
 if( fqdn[0] ==  '-' )
 {
     LOG( LOG_DEBUG ,  "first \'-\' not allowed" );
-    return 0;
+    return -1;
 }
 
 
 
-if( z )
-{
 
 for( i = 0 ; i <=  max ; i ++ )
 {
@@ -463,7 +468,7 @@ dot_max = GetZoneDotsMax(z);
 if( dot > dot_max )
 {
     LOG( LOG_DEBUG ,  "too much %d dots max %d" , dot   , dot_max  );
-    return 0;
+    return -1;
 }
 
 
@@ -478,13 +483,13 @@ en =  GetZoneEnum( z );
               if(  en )
                 {
                  if(  isdigit( fqdn[i] )  ||  fqdn[i] == '.' ||  fqdn[i] == '-' ) FQDN[i] = fqdn[i];
-                 else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , fqdn[i] );  FQDN[0] = 0 ;  return 0; }
+                 else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , fqdn[i] );  FQDN[0] = 0 ;  return -1; }
                 }
                else  
                 {
                       // TEST povolene znaky
                      if( isalnum( fqdn[i]  ) ||  fqdn[i] == '-' ||  fqdn[i] == '.' ) FQDN[i] = tolower( fqdn[i] ) ;
-                     else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , fqdn[i] );  FQDN[0] = 0 ;  return 0; }
+                     else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , fqdn[i] );  FQDN[0] = 0 ;  return -1; }
                 }
 
 
@@ -496,11 +501,9 @@ en =  GetZoneEnum( z );
             FQDN[i] = 0 ; // ukocit
 
 
-   LOG( LOG_DEBUG ,  "OK zone %d -> FQDN [%s]" , z ,  FQDN );
+   LOG( LOG_DEBUG ,  "zone %d -> FQDN [%s]" , z ,  FQDN );
    return z;
-}
 
-return 0;
 }
 
 
@@ -1204,7 +1207,7 @@ if( DBsql.OpenDatabase( database ) )
 
                         break;
                   case EPP_DomainCheck:
-                       if((  zone =  getFQDN( FQDN , chck[i] )  )  )
+                       if( (  zone =  getFQDN( FQDN , chck[i] )  ) > 0  )
                          {
                             if( DBsql.CheckDomain( FQDN , zone , GetZoneEnum( zone )  ) )
                               {
@@ -1232,9 +1235,18 @@ if( DBsql.OpenDatabase( database ) )
                          }
                        else
                          {
-                            LOG( NOTICE_LOG ,  "bad format %s of fqdn"  , (const char * ) chck[i] );
-                            a[i].avail = ccReg::BadFormat;    // spatny format
-                            a[i].reason =  CORBA::string_dup( DBsql.GetReasonMessage(REASON_MSG_BAD_FORMAT_FQDN ) );
+                           if( zone < 0 )   
+                             {
+                               LOG( NOTICE_LOG ,  "bad format %s of fqdn"  , (const char * ) chck[i] );
+                               a[i].avail = ccReg::BadFormat;    // spatny format
+                               a[i].reason =  CORBA::string_dup( DBsql.GetReasonMessage(REASON_MSG_BAD_FORMAT_FQDN ) );
+                             }
+                           else
+                             {
+                               LOG( NOTICE_LOG ,  "not applicable %s"  , (const char * ) chck[i] );
+                               a[i].avail = ccReg::NotApplicable;    // nepouzitelna domena neni v zone
+                               a[i].reason =  CORBA::string_dup( DBsql.GetReasonMessage(REASON_MSG_NOT_APPLICABLE_FQDN ) );
+                             }
                          }
                         break;
            }
@@ -3776,14 +3788,16 @@ if( DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) )
 
       // preved fqd na  mala pismena a otestuj to
        // spatny format navu domeny
-    if( ( zone = getFQDN( FQDN , fqdn ) ) == 0 )
+    if( ( zone = getFQDN( FQDN , fqdn ) ) <= 0 )
       {
             ret->errCode = COMMAND_PARAMETR_ERROR;
-            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
+            LOG( WARNING_LOG, "not in zone [%d]" , zone );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::domainInfo_fqdn;
             ret->errors[0].value <<= CORBA::string_dup( fqdn );
-            ret->errors[0].reason = CORBA::string_dup( DBsql.GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN )   );
+
+            if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( DBsql.GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN ) );
+            else  ret->errors[0].reason = CORBA::string_dup( DBsql.GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN )   );
       }
      else
       {
@@ -3998,14 +4012,16 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , clie
 
       // preved fqd na  mala pismena a otestuj to
        // spatny format navu domeny
-       if( ( zone = getFQDN( FQDN , fqdn ) ) == 0 )  
+       if( ( zone = getFQDN( FQDN , fqdn ) ) <= 0 )  
          {          
             ret->errCode = COMMAND_PARAMETR_ERROR;
-            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
+            LOG( WARNING_LOG, "not in zone [%d]" , zone );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::domainInfo_fqdn;
             ret->errors[0].value <<= CORBA::string_dup( fqdn );
-            ret->errors[0].reason = CORBA::string_dup( DBsql.GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN ) );
+            if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( DBsql.GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN ) );
+            else  ret->errors[0].reason = CORBA::string_dup( DBsql.GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN )   );
+
          }
         else
          {
@@ -4187,14 +4203,16 @@ GetValExpDateFromExtension( valexpiryDate , ext );
 
 
       // preved fqd na  mala pismena a otestuj to
-       if( ( zone = getFQDN( FQDN , fqdn ) ) == 0 )  // spatny format navu domeny
+       if( ( zone = getFQDN( FQDN , fqdn ) ) <= 0 )  // spatny format navu domeny
          {
             ret->errCode = COMMAND_PARAMETR_ERROR;
-            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
+            LOG( WARNING_LOG, "not in zone %d" , zone );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::domainUpdate_fqdn;
             ret->errors[0].value <<= CORBA::string_dup( fqdn );
-            ret->errors[0].reason = CORBA::string_dup( DBsql.GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN ) );
+            if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( DBsql.GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN ) );
+            else  ret->errors[0].reason = CORBA::string_dup( DBsql.GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN )   );
+
         }
 
              // get  registrator ID
@@ -4631,14 +4649,16 @@ GetValExpDateFromExtension( valexpiryDate , ext );
         {
 
       // preved fqd na  mala pismena a otestuj to
-       if(  ( zone = getFQDN( FQDN , fqdn ) ) == 0  )  // spatny format navu domeny
+       if(  ( zone = getFQDN( FQDN , fqdn ) ) <= 0  )  // spatny format navu domeny
          {
             ret->errCode = COMMAND_PARAMETR_ERROR;
-            LOG( WARNING_LOG, "bad format of fqdn[%s]" , fqdn );
+            LOG( WARNING_LOG, "not in zone %d" , zone );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::domainCreate_fqdn;
             ret->errors[0].value <<= CORBA::string_dup( fqdn );
-            ret->errors[0].reason = CORBA::string_dup( DBsql.GetReasonMessage( REASON_MSG_BAD_FORMAT_FQDN )  );
+            if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( DBsql.GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN ) );
+            else  ret->errors[0].reason = CORBA::string_dup( DBsql.GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN )   );
+
         }
       else
        {
