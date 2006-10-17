@@ -28,7 +28,7 @@ bool CommitTransaction()
 {return ExecSQL("COMMIT TRANSACTION");};
 bool QuitTransaction(int code) {
   if( code == CMD_OK ) return CommitTransaction();
-   else RollbackTransaction(); 
+   else return RollbackTransaction(); 
 };
 
 
