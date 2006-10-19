@@ -169,12 +169,16 @@ for( i = 0 ; i < slen ; i ++ )
         {
             case STATUS_DELETE:
                  if( IsDeleteStatus(  stat[i] ) ) return true;
+                 else break; 
             case STATUS_UPDATE:
                  if( IsUpdateStatus(  stat[i] ) ) return true;
+                 else break;
             case STATUS_RENEW:
                  if( IsRenewStatus(  stat[i] ) ) return true;
+                 else break;
             case STATUS_TRANSFER:
                  if( IsTransferStatus(  stat[i] ) ) return true;
+                 else break;
         }            
 
 }
