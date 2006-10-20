@@ -38,8 +38,12 @@ namespace Register
     virtual const std::string& getRegistrarHandle() const = 0;
     /// Return id of dedicated registrar
     virtual unsigned getRegistrarId() const  = 0;
+    /// Return handle of registrar who made last update
+    virtual const std::string& getUpdateRegistrarHandle() const = 0;
     /// Return id of registrar who made last update
     virtual unsigned getUpdateRegistrarId() const = 0;
+    /// Return handle of registrar who created object
+    virtual const std::string& getCreateRegistrarHandle() const = 0;
     /// Return id of registrar who created object
     virtual unsigned getCreateRegistrarId() const = 0;
     /// Return authorization token

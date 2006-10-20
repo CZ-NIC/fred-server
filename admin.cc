@@ -848,7 +848,7 @@ ccReg::Table::ColumnHeaders*
 ccReg_Domains_i::getColumnHeaders()
 {
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
-  ch->length(5);
+  ch->length(11);
   (*ch)[0].name = CORBA::string_dup("FQDN"); 
   (*ch)[0].type = ccReg::Table::CT_DOMAIN_HANDLE; 
   (*ch)[1].name = CORBA::string_dup("CrDate"); 
@@ -859,6 +859,19 @@ ccReg_Domains_i::getColumnHeaders()
   (*ch)[3].type = ccReg::Table::CT_CONTACT_HANDLE; 
   (*ch)[4].name = CORBA::string_dup("NSSet"); 
   (*ch)[4].type = ccReg::Table::CT_NSSET_HANDLE;
+  (*ch)[5].name = CORBA::string_dup("TrDate"); 
+  (*ch)[5].type = ccReg::Table::CT_OTHER;
+  (*ch)[6].name = CORBA::string_dup("UpDate"); 
+  (*ch)[6].type = ccReg::Table::CT_OTHER;
+  (*ch)[7].name = CORBA::string_dup("CrRegistrar"); 
+  (*ch)[7].type = ccReg::Table::CT_REGISTRAR_HANDLE; 
+  (*ch)[8].name = CORBA::string_dup("UpRegistrar"); 
+  (*ch)[8].type = ccReg::Table::CT_REGISTRAR_HANDLE; 
+  (*ch)[9].name = CORBA::string_dup("AuthInfo"); 
+  (*ch)[9].type = ccReg::Table::CT_OTHER;
+  (*ch)[10].name = CORBA::string_dup("Roid"); 
+  (*ch)[10].type = ccReg::Table::CT_OTHER;
+
   return ch;
 }
 
@@ -875,6 +888,12 @@ ccReg_Domains_i::getRow(CORBA::Short row)
   (*tr)[2] = CORBA::string_dup(d->getRegistrarHandle().c_str()); 
   (*tr)[3] = CORBA::string_dup(d->getRegistrantHandle().c_str()); 
   (*tr)[4] = CORBA::string_dup(d->getNSSetHandle().c_str()); 
+  (*tr)[5] = CORBA::string_dup(to_simple_string(d->getTransferDate()).c_str());
+  (*tr)[6] = CORBA::string_dup(to_simple_string(d->getUpdateDate()).c_str());
+  (*tr)[7] = CORBA::string_dup(d->getCreateRegistrarHandle().c_str()); 
+  (*tr)[8] = CORBA::string_dup(d->getUpdateRegistrarHandle().c_str()); 
+  (*tr)[9] = CORBA::string_dup(d->getAuthPw().c_str()); 
+  (*tr)[10] = CORBA::string_dup(d->getROID().c_str()); 
   return tr;
 }
 
@@ -898,7 +917,7 @@ ccReg_Domains_i::numRows()
 CORBA::Short 
 ccReg_Domains_i::numColumns()
 {
-  return 5;
+  return 11;
 }
 
 void 

@@ -14,7 +14,9 @@ namespace Register
     unsigned registrar;
     std::string registrarHandle;
     unsigned updateRegistrar;
+    std::string updateRegistrarHandle;
     unsigned createRegistrar;
+    std::string createRegistrarHandle;
     std::string authPw;
     std::string roid;
     StatusSet sset;
@@ -22,7 +24,11 @@ namespace Register
    public:
     ObjectImpl();
     ObjectImpl(
-      ptime _crDate, unsigned registrar, const std::string registrarHandle
+      ptime _crDate, ptime _trDate, ptime _upDate,
+      unsigned registrar, const std::string registrarHandle,
+      unsigned updateRegistrar, const std::string updateRegistrarHandle,
+      unsigned createRegistrar, const std::string createRegistrarHandle,
+      const std::string& authPw, const std::string roid
     );
     ptime getCreateDate() const;
     ptime getTransferDate() const;
@@ -30,7 +36,9 @@ namespace Register
     unsigned getRegistrarId() const;
     const std::string& getRegistrarHandle() const;
     unsigned getUpdateRegistrarId() const;
+    const std::string& getUpdateRegistrarHandle() const;
     unsigned getCreateRegistrarId() const;
+    const std::string& getCreateRegistrarHandle() const;
     const std::string& getAuthPw() const;
     void setAuthPw(const std::string& auth);
     const std::string& getROID() const;

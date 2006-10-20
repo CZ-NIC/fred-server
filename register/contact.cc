@@ -18,11 +18,22 @@ namespace Register
          unsigned _id, 
          const std::string& _handle, 
          const std::string& _name,
-         unsigned registrarId,
-         const std::string& registrarHandle,
-         ptime crDate      
-       ) : ObjectImpl(crDate,registrarId,registrarHandle),
-           id(_id), handle(_handle), name(_name)
+         unsigned _registrar,
+         const std::string& _registrarHandle,
+         ptime _crDate,
+         ptime _trDate,
+         ptime _upDate,
+         unsigned _createRegistrar,
+         const std::string& _createRegistrarHandle,
+         unsigned _updateRegistrar,      
+         const std::string& _updateRegistrarHandle,
+         const std::string& _authPw,
+         const std::string& _roid
+       ) :
+         ObjectImpl(_crDate,_trDate,_upDate,_registrar,_registrarHandle,
+         _createRegistrar,_createRegistrarHandle,
+         _updateRegistrar,_updateRegistrarHandle,_authPw,_roid),
+         id(_id), handle(_handle), name(_name)
        {
        }
        unsigned getId() const
@@ -110,7 +121,15 @@ namespace Register
               db->GetFieldValue(i,2),
               atoi(db->GetFieldValue(i,3)),
               db->GetFieldValue(i,4),
-              ptime(time_from_string(db->GetFieldValue(i,5)))
+              ptime(time_from_string(db->GetFieldValue(i,5))),
+              ptime(time_from_string(db->GetFieldValue(i,5))),
+              ptime(time_from_string(db->GetFieldValue(i,5))),
+              1,
+              "",
+              1,
+              "",
+              "auth",
+              "roid"              
             )
           ); 
         }

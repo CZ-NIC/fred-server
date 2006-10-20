@@ -1,8 +1,19 @@
 #include "object_impl.h"
 
 Register::ObjectImpl::ObjectImpl(
-  ptime _crDate, unsigned _registrar, const std::string _registrarHandle
- ) : crDate(_crDate), registrar(_registrar), registrarHandle(_registrarHandle)
+  ptime _crDate, ptime _trDate, ptime _upDate,
+  unsigned _registrar, const std::string _registrarHandle,
+  unsigned _updateRegistrar, const std::string _updateRegistrarHandle,
+  unsigned _createRegistrar, const std::string _createRegistrarHandle,
+  const std::string& _authPw, const std::string _roid
+) :
+ crDate(_crDate), trDate(_trDate), upDate(_upDate), 
+ registrar(_registrar), registrarHandle(_registrarHandle),
+ updateRegistrar(_updateRegistrar), 
+ updateRegistrarHandle(_updateRegistrarHandle),
+ createRegistrar(_createRegistrar), 
+ createRegistrarHandle(_createRegistrarHandle),
+ authPw(_authPw), roid(_roid)
 {
 }
 
@@ -47,6 +58,18 @@ unsigned
 Register::ObjectImpl::getUpdateRegistrarId() const
 {
   return updateRegistrar;
+}
+
+const std::string&
+Register::ObjectImpl::getCreateRegistrarHandle() const
+{
+  return createRegistrarHandle;
+}
+
+const std::string&
+Register::ObjectImpl::getUpdateRegistrarHandle() const
+{
+  return updateRegistrarHandle;
 }
 
 unsigned 

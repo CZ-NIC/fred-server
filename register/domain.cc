@@ -41,9 +41,19 @@ namespace Register
         const std::string& _registrantHandle,
         unsigned _registrar,
         const std::string& _registrarHandle,
-        ptime _crDate
+        ptime _crDate,
+        ptime _trDate,
+        ptime _upDate,
+        unsigned _createRegistrar,
+        const std::string& _createRegistrarHandle,
+        unsigned _updateRegistrar,      
+        const std::string& _updateRegistrarHandle,
+        const std::string& _authPw,
+        const std::string& _roid
       )
-      : ObjectImpl(_crDate,_registrar,_registrarHandle),
+      : ObjectImpl(_crDate,_trDate,_upDate,_registrar,_registrarHandle,
+        _createRegistrar,_createRegistrarHandle,
+        _updateRegistrar,_updateRegistrarHandle,_authPw,_roid),
         id(_id), fqdn(_fqdn), zone(_zone), nsset(_nsset),
         nssetHandle(_nssetHandle), registrant(_registrant),
         registrantHandle(_registrantHandle)
@@ -197,7 +207,8 @@ namespace Register
         std::ostringstream sql;
         sql << "SELECT DISTINCT d.id,d.fqdn,d.zone,n.id,n.handle,"
             << "c.id,c.handle,"
-            << "r.id,r.handle,d.crdate "
+            << "r.id,r.handle,d.crdate,d.trdate,d.update,"
+            << "d.crid,'',d.upid,'REG-LRR',d.roid,d.authinfopw "
             << "FROM contact c, registrar r, "
             << "domain d LEFT JOIN nsset n ON (d.nsset=n.id) "
             << "LEFT JOIN domain_contact_map adcm ON (d.id=adcm.domainid) "
@@ -244,7 +255,15 @@ namespace Register
               db->GetFieldValue(i,6),
               atoi(db->GetFieldValue(i,7)),
               db->GetFieldValue(i,8),
-              ptime(time_from_string(db->GetFieldValue(i,9)))
+              ptime(time_from_string(db->GetFieldValue(i,9))),
+              ptime(time_from_string(db->GetFieldValue(i,10))),
+              ptime(time_from_string(db->GetFieldValue(i,11))),
+              atoi(db->GetFieldValue(i,12)),
+              db->GetFieldValue(i,13),
+              atoi(db->GetFieldValue(i,14)),
+              db->GetFieldValue(i,15),
+              db->GetFieldValue(i,16),
+              db->GetFieldValue(i,17)
             )
           );
         }
