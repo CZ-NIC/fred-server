@@ -49,6 +49,8 @@ namespace Register
       virtual void setNSSetId(unsigned nsset) = 0;
       /// return handle of registrant
       virtual const std::string& getRegistrantHandle() const = 0;
+      /// return name of registrant
+      virtual const std::string& getRegistrantName() const = 0;
       /// return id of registrant
       virtual unsigned getRegistrantId() const = 0;
       /// set registrant 

@@ -13,10 +13,10 @@ namespace Register
     ptime upDate;
     unsigned registrar;
     std::string registrarHandle;
-    unsigned updateRegistrar;
-    std::string updateRegistrarHandle;
     unsigned createRegistrar;
     std::string createRegistrarHandle;
+    unsigned updateRegistrar;
+    std::string updateRegistrarHandle;
     std::string authPw;
     std::string roid;
     StatusSet sset;

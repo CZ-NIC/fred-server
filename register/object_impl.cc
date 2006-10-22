@@ -3,23 +3,23 @@
 Register::ObjectImpl::ObjectImpl(
   ptime _crDate, ptime _trDate, ptime _upDate,
   unsigned _registrar, const std::string _registrarHandle,
-  unsigned _updateRegistrar, const std::string _updateRegistrarHandle,
   unsigned _createRegistrar, const std::string _createRegistrarHandle,
+  unsigned _updateRegistrar, const std::string _updateRegistrarHandle,
   const std::string& _authPw, const std::string _roid
 ) :
  crDate(_crDate), trDate(_trDate), upDate(_upDate), 
  registrar(_registrar), registrarHandle(_registrarHandle),
- updateRegistrar(_updateRegistrar), 
- updateRegistrarHandle(_updateRegistrarHandle),
  createRegistrar(_createRegistrar), 
  createRegistrarHandle(_createRegistrarHandle),
+ updateRegistrar(_updateRegistrar), 
+ updateRegistrarHandle(_updateRegistrarHandle),
  authPw(_authPw), roid(_roid)
 {
 }
 
 Register::ObjectImpl::ObjectImpl()
   : crDate(not_a_date_time), trDate(not_a_date_time), upDate(not_a_date_time),
-    registrar(0), updateRegistrar(0), createRegistrar(0), modified(true)
+    registrar(0), createRegistrar(0), updateRegistrar(0), modified(true)
 {
 }
 

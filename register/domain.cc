@@ -29,7 +29,10 @@ namespace Register
       std::string nssetHandle;
       unsigned registrant;
       std::string registrantHandle;
+      std::string registrantName;
       AdminInfoList adminList;
+      ptime exDate;
+      ptime valExDate;
      public:
       DomainImpl(
         unsigned _id,
@@ -39,6 +42,7 @@ namespace Register
         const std::string& _nssetHandle,
         unsigned _registrant,
         const std::string& _registrantHandle,
+        const std::string& _registrantName,
         unsigned _registrar,
         const std::string& _registrarHandle,
         ptime _crDate,
@@ -49,14 +53,17 @@ namespace Register
         unsigned _updateRegistrar,      
         const std::string& _updateRegistrarHandle,
         const std::string& _authPw,
-        const std::string& _roid
+        const std::string& _roid,
+        ptime _exDate,
+        ptime _valExDate
       )
       : ObjectImpl(_crDate,_trDate,_upDate,_registrar,_registrarHandle,
         _createRegistrar,_createRegistrarHandle,
         _updateRegistrar,_updateRegistrarHandle,_authPw,_roid),
         id(_id), fqdn(_fqdn), zone(_zone), nsset(_nsset),
         nssetHandle(_nssetHandle), registrant(_registrant),
-        registrantHandle(_registrantHandle)
+        registrantHandle(_registrantHandle), registrantName(_registrantName),
+        exDate(_exDate), valExDate(_valExDate)
       {
       }
       virtual unsigned getId() const
@@ -89,6 +96,10 @@ namespace Register
       {
         return registrantHandle;
       }
+      virtual const std::string& getRegistrantName() const
+      {
+        return registrantName;
+      }
       virtual unsigned getRegistrantId() const
       {
         return registrant;
@@ -96,6 +107,14 @@ namespace Register
       virtual void setRegistrantId(unsigned registrant)
       {
         this->registrant = registrant;
+      }
+      virtual ptime getExpirationDate() const
+      {
+        return exDate; 
+      }
+      virtual ptime getValExDate() const
+      {
+        return valExDate; 
       }
       virtual unsigned getAdminCount() const
       {
@@ -113,7 +132,7 @@ namespace Register
       virtual void insertAdminId(unsigned id)
       {
         // check existance of id
-      }      
+      }
     };
 
     class ListImpl : public virtual List
@@ -201,19 +220,25 @@ namespace Register
       {
         fqdn = _fqdn;
       }
+#define MAKE_TIME(ROW,COL)  \
+ (ptime(db->IsNotNull(ROW,COL) ? \
+ time_from_string(db->GetFieldValue(ROW,COL)) : not_a_date_time))
       virtual void reload()
       {
         clear();
         std::ostringstream sql;
         sql << "SELECT DISTINCT d.id,d.fqdn,d.zone,n.id,n.handle,"
-            << "c.id,c.handle,"
+            << "c.id,c.handle,c.name,"
             << "r.id,r.handle,d.crdate,d.trdate,d.update,"
-            << "d.crid,'',d.upid,'REG-LRR',d.roid,d.authinfopw "
-            << "FROM contact c, registrar r, "
+            << "d.crid,creg.handle,d.upid,ureg.handle,d.roid,d.authinfopw,"
+            << "d.exdate,ev.exdate "
+            << "FROM contact c, registrar r, registrar creg, "
             << "domain d LEFT JOIN nsset n ON (d.nsset=n.id) "
             << "LEFT JOIN domain_contact_map adcm ON (d.id=adcm.domainid) "
             << "LEFT JOIN contact ac ON (adcm.contactid=ac.id) "
-            << "WHERE d.registrant=c.id "
+            << "LEFT JOIN registrar ureg ON (d.upid=ureg.id) "
+            << "LEFT JOIN enumval ev ON (d.id=ev.domainid) "
+            << "WHERE d.registrant=c.id AND d.crid=creg.id "
             << "AND d.clid=r.id ";
         if (registrarFilter)
           sql << "AND r.id=" << registrarFilter << " ";
@@ -246,24 +271,27 @@ namespace Register
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           dlist.push_back(
             new DomainImpl(
-              atoi(db->GetFieldValue(i,0)),
-              db->GetFieldValue(i,1),
-              atoi(db->GetFieldValue(i,2)),
-              atoi(db->GetFieldValue(i,3)),
-              db->GetFieldValue(i,4),
-              atoi(db->GetFieldValue(i,5)),
-              db->GetFieldValue(i,6),
-              atoi(db->GetFieldValue(i,7)),
-              db->GetFieldValue(i,8),
-              ptime(time_from_string(db->GetFieldValue(i,9))),
-              ptime(time_from_string(db->GetFieldValue(i,10))),
-              ptime(time_from_string(db->GetFieldValue(i,11))),
-              atoi(db->GetFieldValue(i,12)),
-              db->GetFieldValue(i,13),
-              atoi(db->GetFieldValue(i,14)),
-              db->GetFieldValue(i,15),
-              db->GetFieldValue(i,16),
-              db->GetFieldValue(i,17)
+              atoi(db->GetFieldValue(i,0)), // id
+              db->GetFieldValue(i,1), // fqdn
+              atoi(db->GetFieldValue(i,2)), // zone
+              atoi(db->GetFieldValue(i,3)), // nsset id
+              db->GetFieldValue(i,4), // nsset handle
+              atoi(db->GetFieldValue(i,5)), // registrant id
+              db->GetFieldValue(i,6), // registrant handle
+              db->GetFieldValue(i,7), // registrant name
+              atoi(db->GetFieldValue(i,8)), // registrar
+              db->GetFieldValue(i,9), // registrar handle
+              MAKE_TIME(i,10), // crdate
+              MAKE_TIME(i,11), // update
+              MAKE_TIME(i,12), // trdate
+              atoi(db->GetFieldValue(i,13)), // crid
+              db->GetFieldValue(i,14), // crid handle
+              atoi(db->GetFieldValue(i,15)), // upid
+              db->GetFieldValue(i,16), // upid handle
+              db->GetFieldValue(i,17), // authinfo
+              db->GetFieldValue(i,18), // roid
+              MAKE_TIME(i,19), // exdate
+              MAKE_TIME(i,20) // valexdate
             )
           );
         }
