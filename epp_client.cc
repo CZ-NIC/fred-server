@@ -45,7 +45,8 @@ int main(int argc, char** argv)
     ccReg::Registrar *reg;
     CORBA::String_var errMsg , svTR , mesg ;
     char *msg;
-    int i , len , max = 512, d , j , a , num;
+    unsigned long  i  ;
+    int len , max = 512, d , j , a , num;
     CORBA::Long loginID , msgID , newmsgID;
     ccReg::price credit;
     ccReg::CheckResp_var cr;
