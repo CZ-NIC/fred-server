@@ -17,14 +17,12 @@ int main(int argc, char** argv)
   try {
 //     CORBA::String_var clID, pass , cc ; 
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);    
-    ccReg::Contact *contact , cc;
-    CORBA::Short err;
     CORBA::Object_var obj ;
-    CORBA::String_var errMsg , svTR , tim;
-    int i , n;
-    time_t t;
+    CORBA::String_var errMsg , tim;
+    int  n ;
     char name[64];
-    long size;
+
+    // use name service
     NameService ns(orb);
 
     obj =  ns.resolve("Whois");
@@ -46,7 +44,7 @@ int main(int argc, char** argv)
     cout << "fqdn" << dm->fqdn << endl;
     cout << "status" <<  dm->status << endl; 
 
-    for( n = 0 ; n < dm->ns.length() ; n ++ )
+    for( n = 0 ; n < (int ) dm->ns.length() ; n ++ )
     cout <<  "NameServers: " << dm->ns[n] <<  endl;
 
     cout << "Registrator: " << dm->registrarName << "url: " << dm->registrarUrl <<  endl;
