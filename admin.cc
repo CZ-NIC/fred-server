@@ -381,6 +381,9 @@ ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
   cd->valExDate = CORBA::string_dup(
     to_simple_string(d->getValExDate()).c_str()
   );
+  cd->nssetHandle = CORBA::string_dup(
+    d->getNSSetHandle().c_str()
+  );
   cd->admins.length(d->getAdminCount());
   for (unsigned i=0; i<d->getAdminCount(); i++)
     cd->admins[i] = CORBA::string_dup("CID:JOUDA");
