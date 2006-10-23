@@ -350,8 +350,40 @@ ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
   Register::Domain::Domain *d = dl->get(0);
   cd->id = d->getId();
   cd->fqdn = CORBA::string_dup(d->getFQDN().c_str());
-  cd->registrarHandle = CORBA::string_dup(d->getRegistrarHandle().c_str());
-  cd->createDate = CORBA::string_dup(to_simple_string(d->getCreateDate()).c_str());
+  cd->roid = CORBA::string_dup(d->getROID().c_str());
+  cd->registrarHandle = CORBA::string_dup(
+    d->getRegistrarHandle().c_str()
+  );
+  cd->transferDate = CORBA::string_dup(
+    to_simple_string(d->getTransferDate()).c_str()
+  );
+  cd->updateDate = CORBA::string_dup(
+    to_simple_string(d->getUpdateDate()).c_str()
+  );
+  cd->createDate = CORBA::string_dup(
+    to_simple_string(d->getCreateDate()).c_str()
+  );
+  cd->createRegistrarHandle = CORBA::string_dup(
+    d->getCreateRegistrarHandle().c_str()
+  ); 
+  cd->updateRegistrarHandle = CORBA::string_dup(
+    d->getUpdateRegistrarHandle().c_str()
+  ); 
+  cd->authInfo = CORBA::string_dup(
+    d->getAuthPw().c_str()
+  ); 
+  cd->registrantHandle = CORBA::string_dup(
+    d->getRegistrantHandle().c_str()
+  );
+  cd->expirationDate = CORBA::string_dup(
+    to_simple_string(d->getExpirationDate()).c_str()
+  );
+  cd->valExDate = CORBA::string_dup(
+    to_simple_string(d->getValExDate()).c_str()
+  );
+  cd->admins.length(d->getAdminCount());
+  for (unsigned i=0; i<d->getAdminCount(); i++)
+    cd->admins[i] = CORBA::string_dup("CID:JOUDA");
   db.Disconnect();
   return cd;
 }
