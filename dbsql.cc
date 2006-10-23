@@ -454,16 +454,42 @@ return ret;
 }
 
 
-// vypocet pres postgres aktulani datum plus x mesicu
-bool DB::TestValExDate(const char *dateStr ,  int period )
+bool DB::TestValExDate(const char *dateStr ,  int period  , int interval , int id )
 {
 char sqlString[256];
+char maxDate[32];
 bool ret =false;
 
+// default
+strcpy( maxDate ,  "" );
+
+if( id)
+{
+ // vyber mensi ze dvou hodnot
+ sprintf( sqlString , "SELECT  date_smaller (  date( exdate + interval\'%d month\' )  , date( current_date + interval\'%d month\' + interval\'%d days\' ) )  FROM enumval WHERE domainid=%d;" , 
+                  period , period , interval , id   );
+if( ExecSelect( sqlString ) )
+ {
+    if(  GetSelectRows() == 1  )   strcpy( maxDate ,  GetFieldValue( 0 , 0 )   ) ;
+     FreeSelect();
+  }
+}
+else
+{
+ sprintf( sqlString , "SELECT date( current_date + interval\'%d month\' + interval\'%d days\'  ) ; " , period , interval );
+if( ExecSelect( sqlString ) )
+ {
+    if(  GetSelectRows() == 1  )   strcpy( maxDate ,  GetFieldValue( 0 , 0 )   ) ;
+    FreeSelect();
+ }
+}
+
+// nepodarilose vypocitat maxDate
+if( strlen( maxDate  ) == 0 ) return false;
 
 
-sprintf( sqlString , "SELECT valex , max, min  from (select date\'%s\' as valex , current_date + interval\'%d month\' as max,  current_date as min ) as tmp WHERE valex > min AND valex <= max;" , 
-                         dateStr , period );
+sprintf( sqlString , "SELECT valex , max, min  from (select date\'%s\' as valex , date( '%s' )  as max,  current_date as min ) as tmp WHERE valex > min AND valex < max;" ,
+                        dateStr , maxDate  );
 
 if( ExecSelect( sqlString ) )
  {
@@ -474,6 +500,7 @@ if( ExecSelect( sqlString ) )
 
 return ret;
 }
+
 
 
 bool DB::GetExpDate(char *dateStr , int domainID , int period  , int max_period )

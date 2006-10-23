@@ -78,7 +78,7 @@ bool TestObjectHistory( const char *table , const char *fname ,  const char * na
 
 
 // test doby expirace validace
-bool TestValExDate(const char *dateStr ,  int period );
+bool TestValExDate(const char *dateStr ,  int period  , int interval , int id );
 // vypocet doby exprace
 bool GetExpDate(char *dateStr , int domainID , int period  , int max_period );
 

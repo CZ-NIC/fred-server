@@ -59,6 +59,8 @@ public:
 
   // true vse zobrazovat false vse skryt pro disclose flags
   bool DefaultPolicy(){return true;}
+
+   int DefaultValExpInterval(){ return 14; } // ochrana lhuta 14 dni pro datum expirace validace
   // podpora disclose parametru
   bool get_DISCLOSE( bool db );
   char update_DISCLOSE( bool  d   ,  ccReg::Disclose flag );

@@ -4167,8 +4167,8 @@ ret->errors.length( 0 );
 
 strcpy( valexpiryDate , "" ); // default
 
-LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registrant_chg  [%s] authInfo_chg [%s]  nsset_chg [%s] ",
-      (int )  clientID, clTRID, fqdn, registrant_chg, authInfo_chg, nsset_chg );
+LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registrant_chg  [%s] authInfo_chg [%s]  nsset_chg [%s] ext.length %d",
+      (int )  clientID, clTRID, fqdn, registrant_chg, authInfo_chg, nsset_chg , ext.length() );
 
 
 // parse extension
@@ -4375,7 +4375,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                {
                                  if( strlen( valexpiryDate ) > 0  )
                                  {
-                                 if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) ) ==  false ) // test validace expirace
+                                 if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) , DefaultValExpInterval() , id  ) ==  false ) // test validace expirace
                                    {
                                       LOG( WARNING_LOG, "DomainUpdate: bad validity exp date" );
                                       ret->errors.length( seq +1);
@@ -4792,7 +4792,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   ret->errCode = COMMAND_PARAMETR_MISSING ;                
                }
             else
-            if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) ) ==  false ) // test validace expirace
+            if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) ,  DefaultValExpInterval() , 0   ) ==  false ) // test validace expirace
               {
                   LOG( WARNING_LOG, "DomainCreate: bad validity exp date" );
                   ret->errors.length( seq +1);
@@ -5158,7 +5158,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
             {
              if( strlen( valexpiryDate ) > 0 )
              {
-              if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) ) ==  false ) // test validace expirace
+              if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) ,  DefaultValExpInterval() , id  ) ==  false ) // test validace expirace
                 {
                   LOG( WARNING_LOG, "DomainRenew: bad validity exp date" );
                   ret->errors.length( seq +1);
