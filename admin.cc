@@ -849,26 +849,26 @@ ccReg_Domains_i::getColumnHeaders()
 {
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
   ch->length(11);
-  (*ch)[0].name = CORBA::string_dup("Jmeno"); 
+  (*ch)[0].name = CORBA::string_dup("Jméno"); 
   (*ch)[0].type = ccReg::Table::CT_DOMAIN_HANDLE; 
   (*ch)[1].name = CORBA::string_dup("Datum registrace"); 
   (*ch)[1].type = ccReg::Table::CT_OTHER; 
-  (*ch)[2].name = CORBA::string_dup("Datum ukoncení registrace"); 
+  (*ch)[2].name = CORBA::string_dup("Datum ukončení registrace"); 
   (*ch)[2].type = ccReg::Table::CT_OTHER; 
-  (*ch)[3].name = CORBA::string_dup("Drzitel"); 
+  (*ch)[3].name = CORBA::string_dup("Držitel"); 
   (*ch)[3].type = ccReg::Table::CT_CONTACT_HANDLE; 
-  (*ch)[4].name = CORBA::string_dup("Jmeno drzitele"); 
-  (*ch)[4].type = ccReg::Table::CT_CONTACT_HANDLE; 
-  (*ch)[5].name = CORBA::string_dup("Registrator"); 
+  (*ch)[4].name = CORBA::string_dup("Jméno držitele"); 
+  (*ch)[4].type = ccReg::Table::CT_OTHER; 
+  (*ch)[5].name = CORBA::string_dup("Registrátor"); 
   (*ch)[5].type = ccReg::Table::CT_REGISTRAR_HANDLE; 
-  (*ch)[6].name = CORBA::string_dup("Generovani"); 
+  (*ch)[6].name = CORBA::string_dup("Generováni"); 
   (*ch)[6].type = ccReg::Table::CT_OTHER;
   (*ch)[7].name = CORBA::string_dup("Expirace"); 
   (*ch)[7].type = ccReg::Table::CT_OTHER;
-  (*ch)[8].name = CORBA::string_dup("Zruseni"); 
+  (*ch)[8].name = CORBA::string_dup("Zrušeni"); 
   (*ch)[8].type = ccReg::Table::CT_OTHER;
-  (*ch)[9].name = CORBA::string_dup("Vyrazeni z DNS"); 
-  (*ch)[9].type = ccReg::Table::CT_REGISTRAR_HANDLE; 
+  (*ch)[9].name = CORBA::string_dup("Vyřazení z DNS"); 
+  (*ch)[9].type = ccReg::Table::CT_OTHER; 
   (*ch)[10].name = CORBA::string_dup("Validace"); 
   (*ch)[10].type = ccReg::Table::CT_OTHER;
 
@@ -885,20 +885,34 @@ ccReg_Domains_i::getRow(CORBA::Short row)
   tr->length(11);
   // fqdn
   (*tr)[0] = CORBA::string_dup(d->getFQDN().c_str());
+  // crdate
   (*tr)[1] = CORBA::string_dup(to_simple_string(d->getCreateDate()).c_str());
-  (*tr)[2] = CORBA::string_dup("N/A");
-//  (*tr)[2] = CORBA::string_dup(to_simple_string(ptime(not_a_date_time)).c_str());
-  (*tr)[3] = CORBA::string_dup(d->getRegistrantHandle().c_str()); 
-  (*tr)[4] = CORBA::string_dup(d->getRegistrantName().c_str()); 
-  (*tr)[5] = CORBA::string_dup(d->getRegistrarHandle().c_str()); 
-  (*tr)[6] = CORBA::string_dup(d->getNSSetHandle().c_str()); 
-  (*tr)[7] = CORBA::string_dup("N/A");
-  (*tr)[8] = CORBA::string_dup("N/A");
-//  (*tr)[8] = CORBA::string_dup(to_simple_string(ptime(not_a_date_time)).c_str());
-  (*tr)[9] = CORBA::string_dup("N/A");
-//  (*tr)[9] = CORBA::string_dup(to_simple_string(ptime(not_a_date_time)).c_str());
-  (*tr)[10] = CORBA::string_dup("N/A");
-//  (*tr)[10] = CORBA::string_dup(to_simple_string(ptime(not_a_date_time)).c_str());
+  // delete date
+  (*tr)[2] = CORBA::string_dup(
+    to_simple_string(ptime(not_a_date_time)).c_str()
+  );
+  // registrant handle
+  (*tr)[3] = CORBA::string_dup(d->getRegistrantHandle().c_str());
+  // registrant name 
+  (*tr)[4] = CORBA::string_dup(d->getRegistrantName().c_str());
+  // registrar handle 
+  (*tr)[5] = CORBA::string_dup(d->getRegistrarHandle().c_str());
+  // zone generation 
+  (*tr)[6] = CORBA::string_dup("N/A");
+  // expiration date 
+  (*tr)[7] = CORBA::string_dup(
+    to_simple_string(d->getExpirationDate()).c_str()
+  );
+  // zruseni ??
+  (*tr)[8] = CORBA::string_dup(
+    to_simple_string(ptime(not_a_date_time)).c_str()
+  );
+  // vyrazeni z dns
+  (*tr)[9] = CORBA::string_dup(
+    to_simple_string(ptime(not_a_date_time)).c_str()
+  );
+  // validace
+  (*tr)[10] = CORBA::string_dup(to_simple_string(d->getValExDate()).c_str());
   return tr;
 }
 

@@ -63,6 +63,10 @@ namespace Register
       virtual void removeAdminId(unsigned id) = 0;
       /// insert contact into admin contact list
       virtual void insertAdminId(unsigned id) = 0;
+      /// return date of registration expiration
+      virtual ptime getExpirationDate() const = 0;
+      /// return date of validation expiration
+      virtual ptime getValExDate() const = 0;
     };
     /// domain list
     class List : virtual public ObjectList
