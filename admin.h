@@ -227,11 +227,11 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
     throw (ccReg::Admin::ObjectNotFound);
 
   void putRegistrar(const ccReg::Registrar& regData);
-  ccReg::RegObject* getContactByHandle(const char* handle)
+  ccReg::ContactDetail* getContactByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound);
   ccReg::RegObject* getNSSetByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound);
-  ccReg::RegObject* getDomainByFQDN(const char* fqdn)
+  ccReg::DomainDetail* getDomainByFQDN(const char* fqdn)
     throw (ccReg::Admin::ObjectNotFound);
 
   /// testovaci fce na typ objektu

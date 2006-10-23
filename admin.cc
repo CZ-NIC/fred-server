@@ -281,7 +281,7 @@ ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData)
   }
 }
 
-ccReg::RegObject* 
+ccReg::ContactDetail* 
 ccReg_Admin_i::getContactByHandle(const char* handle)
   throw (ccReg::Admin::ObjectNotFound)
 {
@@ -296,14 +296,14 @@ ccReg_Admin_i::getContactByHandle(const char* handle)
     db.Disconnect();
     throw ccReg::Admin::ObjectNotFound();
   } 
-  ccReg::RegObject* o = new ccReg::RegObject;
+  ccReg::ContactDetail* cc = new ccReg::ContactDetail;
   Register::Contact::Contact *c = cl->get(0);
-  o->id = c->getId();
-  o->handle = CORBA::string_dup(c->getHandle().c_str());
-  o->registrarHandle = CORBA::string_dup(c->getRegistrarHandle().c_str());
-  o->crDate = CORBA::string_dup(to_simple_string(c->getCreateDate()).c_str());
+  cc->id = c->getId();
+  cc->handle = CORBA::string_dup(c->getHandle().c_str());
+  cc->registrarHandle = CORBA::string_dup(c->getRegistrarHandle().c_str());
+  cc->createDate = CORBA::string_dup(to_simple_string(c->getCreateDate()).c_str());
   db.Disconnect();
-  return o;
+  return cc;
 }
 
 ccReg::RegObject* 
@@ -331,7 +331,7 @@ ccReg_Admin_i::getNSSetByHandle(const char* handle)
   return o;
 }
 
-ccReg::RegObject*
+ccReg::DomainDetail*
 ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
   throw (ccReg::Admin::ObjectNotFound)
 {
@@ -346,14 +346,14 @@ ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
     db.Disconnect();
     throw ccReg::Admin::ObjectNotFound();
   } 
-  ccReg::RegObject* o = new ccReg::RegObject;
+  ccReg::DomainDetail* cd = new ccReg::DomainDetail;
   Register::Domain::Domain *d = dl->get(0);
-  o->id = d->getId();
-  o->handle = CORBA::string_dup(d->getFQDN().c_str());
-  o->registrarHandle = CORBA::string_dup(d->getRegistrarHandle().c_str());
-  o->crDate = CORBA::string_dup(to_simple_string(d->getCreateDate()).c_str());
+  cd->id = d->getId();
+  cd->fqdn = CORBA::string_dup(d->getFQDN().c_str());
+  cd->registrarHandle = CORBA::string_dup(d->getRegistrarHandle().c_str());
+  cd->createDate = CORBA::string_dup(to_simple_string(d->getCreateDate()).c_str());
   db.Disconnect();
-  return o;
+  return cd;
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
