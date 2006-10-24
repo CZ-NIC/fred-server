@@ -117,6 +117,8 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
   CORBA::Short adminFilter;
   std::string adminHandleFilter;
   std::string fqdnFilter;
+  ccReg::DateInterval exDateFilter;
+  ccReg::DateInterval valExDateFilter;
  public:
   ccReg_Domains_i(Register::Domain::List *dl);
   ~ccReg_Domains_i();
@@ -141,6 +143,10 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
   void adminHandle(const char* _v);
   char* fqdn();
   void fqdn(const char* _v);
+  ccReg::DateInterval exDate();
+  void exDate(const ccReg::DateInterval& _v);
+  ccReg::DateInterval valExDate();
+  void valExDate(const ccReg::DateInterval& _v);
   ccReg::Filter_ptr aFilter();  
   void clear();
 };

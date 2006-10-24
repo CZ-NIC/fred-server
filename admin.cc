@@ -1082,6 +1082,62 @@ ccReg_Domains_i::fqdn(const char* _v)
   dl->setFQDNFilter(_v);
 }
 
+ccReg::DateInterval 
+ccReg_Domains_i::exDate()
+{
+  return exDateFilter;
+}
+
+void 
+ccReg_Domains_i::exDate(const ccReg::DateInterval& _v)
+{
+  exDateFilter = _v;
+  date from;
+  date to;
+  try {
+    from = date(_v.from.year,_v.from.month,_v.from.day);
+  }
+  catch (...) {}
+  try {
+    to = date(_v.to.year,_v.to.month,_v.to.day);
+  }
+  catch (...) {}
+  dl->setCrDateIntervalFilter(
+    time_period(
+      ptime(from,time_duration(0,0,0)),
+      ptime(to,time_duration(0,0,0))
+    )
+  );
+}
+
+ccReg::DateInterval 
+ccReg_Domains_i::valExDate()
+{
+  return valExDateFilter;
+}
+
+void 
+ccReg_Domains_i::valExDate(const ccReg::DateInterval& _v)
+{
+  valExDateFilter = _v;
+  date from;
+  date to;
+  try {
+    from = date(_v.from.year,_v.from.month,_v.from.day);
+  }
+  catch (...) {}
+  try {
+    to = date(_v.to.year,_v.to.month,_v.to.day);
+  }
+  catch (...) {}
+  dl->setCrDateIntervalFilter(
+    time_period(
+      ptime(from,time_duration(0,0,0)),
+      ptime(to,time_duration(0,0,0))
+    )
+  );
+}
+
 ccReg::Filter_ptr
 ccReg_Domains_i::aFilter()
 {
