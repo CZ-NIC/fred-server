@@ -1,5 +1,6 @@
 #include <sstream>
 #include <memory>
+#include <functional>
 #include "domain.h"
 #include "blacklist.h"
 #include "dbsql.h"
@@ -20,6 +21,9 @@ namespace Register
       {
         unsigned id;
         std::string handle;
+        AdminInfo(unsigned _id, const std::string& _handle)
+          : id(_id), handle(_handle)
+        {} 
       };
       typedef std::vector<AdminInfo> AdminInfoList;
       unsigned id;
@@ -120,10 +124,17 @@ namespace Register
       {
         return adminList.size();
       }
-      virtual unsigned getAdminByIdx(unsigned idx) const
+      virtual unsigned getAdminIdByIdx(unsigned idx) const
+        throw (NOT_FOUND)
       {
-        if (idx >= getAdminCount()) return 0;
+        if (idx >= getAdminCount()) throw NOT_FOUND();
         return adminList[idx].id;
+      }
+      virtual const std::string& getAdminHandleByIdx(unsigned idx)  const 
+        throw (NOT_FOUND)
+      {
+        if (idx >= getAdminCount()) throw NOT_FOUND();
+        return adminList[idx].handle;
       }
       virtual void removeAdminId(unsigned id)
       {
@@ -133,6 +144,16 @@ namespace Register
       {
         // check existance of id
       }
+      /// id lookup function
+      bool hasId(unsigned id) const
+      {
+        return this->id == id;
+      }
+      /// add one admin handle - for domain intialization
+      void addAdminHandle(unsigned id, const std::string& handle)
+      {
+        adminList.push_back(AdminInfo(id,handle));
+      } 
     };
 
     class ListImpl : public virtual List
@@ -227,11 +248,13 @@ namespace Register
       {
         clear();
         std::ostringstream sql;
+        /// loading admin contact handles together with domains
         sql << "SELECT DISTINCT d.id,d.fqdn,d.zone,n.id,n.handle,"
             << "c.id,c.handle,c.name,"
-            << "r.id,r.handle,d.crdate,d.trdate,d.update,"
-            << "d.crid,creg.handle,d.upid,ureg.handle,d.roid,d.authinfopw,"
-            << "d.exdate,ev.exdate "
+            << "r.id,r.handle,"
+            << "d.crdate,d.trdate,d.update,"
+            << "d.crid,creg.handle,d.upid,ureg.handle,d.authinfopw,d.roid,"
+            << "d.exdate,ev.exdate,ac.handle "
             << "FROM contact c, registrar r, registrar creg, "
             << "domain d LEFT JOIN nsset n ON (d.nsset=n.id) "
             << "LEFT JOIN domain_contact_map adcm ON (d.id=adcm.domainid) "
@@ -269,9 +292,20 @@ namespace Register
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          dlist.push_back(
-            new DomainImpl(
-              atoi(db->GetFieldValue(i,0)), // id
+          unsigned id = atoi(db->GetFieldValue(i,0));
+          // sql result has multiple lines for one domain
+          // if domain has been already initialized only admin contacts
+          // are filled
+          DomainListType::const_iterator dom = find_if(
+            dlist.begin(),dlist.end(),
+            std::bind2nd(std::mem_fun(&DomainImpl::hasId),id)
+          ); 
+          DomainImpl *d;
+          if (dom != dlist.end()) 
+            d = *dom;
+          else {
+            d = new DomainImpl(
+              id, // id
               db->GetFieldValue(i,1), // fqdn
               atoi(db->GetFieldValue(i,2)), // zone
               atoi(db->GetFieldValue(i,3)), // nsset id
@@ -282,8 +316,8 @@ namespace Register
               atoi(db->GetFieldValue(i,8)), // registrar
               db->GetFieldValue(i,9), // registrar handle
               MAKE_TIME(i,10), // crdate
-              MAKE_TIME(i,11), // update
-              MAKE_TIME(i,12), // trdate
+              MAKE_TIME(i,11), // trdate
+              MAKE_TIME(i,12), // update
               atoi(db->GetFieldValue(i,13)), // crid
               db->GetFieldValue(i,14), // crid handle
               atoi(db->GetFieldValue(i,15)), // upid
@@ -292,8 +326,12 @@ namespace Register
               db->GetFieldValue(i,18), // roid
               MAKE_TIME(i,19), // exdate
               MAKE_TIME(i,20) // valexdate
-            )
-          );
+            );
+            dlist.push_back(d);
+          }
+          // add admin contact (temporary ignore id)
+          if (db->IsNotNull(i,21)) 
+            d->addAdminHandle(0,db->GetFieldValue(i,21));
         }
         db->FreeSelect();
       }

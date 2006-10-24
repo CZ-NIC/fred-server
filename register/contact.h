@@ -24,6 +24,32 @@ namespace Register
       virtual const std::string& getHandle() const = 0;
       /// return contact name
       virtual const std::string& getName() const = 0;
+      /// return contact organization
+      virtual const std::string& getOrganization() const = 0;
+      /// return contact street addres part 1
+      virtual const std::string& getStreet1() const = 0;
+      /// return contact street addres part 2
+      virtual const std::string& getStreet2() const = 0;
+      /// return contact street addres part 3
+      virtual const std::string& getStreet3() const = 0;
+      /// return contact state or province 
+      virtual const std::string& getProvince() const = 0;
+      /// return contact postl code      
+      virtual const std::string& getPostalCode() const = 0;
+      /// return contact city
+      virtual const std::string& getCity() const = 0;
+      /// return contact contry code      
+      virtual const std::string& getCountry() const = 0;
+      /// return contact phone number
+      virtual const std::string& getTelephone() const = 0;
+      /// return contact fax number
+      virtual const std::string& getFax() const = 0;
+      /// return contact email
+      virtual const std::string& getEmail() const = 0;
+      /// return contact notify email
+      virtual const std::string& getNotifyEmail() const = 0;
+      /// return contact identification string
+      virtual const std::string& getSSN() const = 0;
     };
     /// domain list
     class List : virtual public ObjectList

@@ -5,6 +5,7 @@
 #include <vector>
 #include "zone.h"
 #include "object.h"
+#include "exceptions.h"
 
 /// forward declared parameter type 
 class DB;
@@ -58,7 +59,11 @@ namespace Register
       /// return count of admin contacts
       virtual unsigned getAdminCount() const = 0;
       /// return id of admin contact by index
-      virtual unsigned getAdminByIdx(unsigned idx) const = 0;
+      virtual unsigned getAdminIdByIdx(unsigned idx) const
+        throw (NOT_FOUND) = 0;
+      /// return handle of admin contact by index
+      virtual const std::string& getAdminHandleByIdx(unsigned idx) const 
+        throw (NOT_FOUND) = 0;
       /// remove contact from admin contact list
       virtual void removeAdminId(unsigned id) = 0;
       /// insert contact into admin contact list

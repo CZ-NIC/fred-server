@@ -10,6 +10,10 @@
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
+#define DUPSTR(s) CORBA::string_dup(s)
+#define DUPSTRFUN(f) DUPSTR(f().c_str())
+#define DUPSTRDATE(f) DUPSTR(to_simple_string(f()).c_str())
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_PageTable_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -156,7 +160,10 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
     LOG( NOTICE_LOG, "getRegistrByHandle: handle -> %s", handle );
     if( DBsql.SELECTONE( "REGISTRAR" , "handle" , handle  ) )
     {
-      if( DBsql.GetSelectRows() != 1 ) throw ccReg::Admin::ObjectNotFound();
+      if( DBsql.GetSelectRows() != 1 ) {
+         DBsql.Disconnect();
+         throw ccReg::Admin::ObjectNotFound();
+      }
       else
         {
           reg->id =  atoi( DBsql.GetFieldValueName("ID" , 0 ) );
@@ -299,9 +306,29 @@ ccReg_Admin_i::getContactByHandle(const char* handle)
   ccReg::ContactDetail* cc = new ccReg::ContactDetail;
   Register::Contact::Contact *c = cl->get(0);
   cc->id = c->getId();
-  cc->handle = CORBA::string_dup(c->getHandle().c_str());
-  cc->registrarHandle = CORBA::string_dup(c->getRegistrarHandle().c_str());
-  cc->createDate = CORBA::string_dup(to_simple_string(c->getCreateDate()).c_str());
+  cc->handle = DUPSTRFUN(c->getHandle);
+  cc->roid = DUPSTRFUN(c->getROID);
+  cc->registrarHandle = DUPSTRFUN(c->getRegistrarHandle);
+  cc->transferDate = DUPSTRDATE(c->getTransferDate);
+  cc->updateDate = DUPSTRDATE(c->getUpdateDate);
+  cc->createDate = DUPSTRDATE(c->getCreateDate);
+  cc->createRegistrarHandle = DUPSTRFUN(c->getCreateRegistrarHandle);
+  cc->updateRegistrarHandle = DUPSTRFUN(c->getUpdateRegistrarHandle); 
+  cc->authInfo = DUPSTRFUN(c->getAuthPw); 
+  cc->name = DUPSTRFUN(c->getName); 
+  cc->organization = DUPSTRFUN(c->getOrganization);
+  cc->street1 = DUPSTRFUN(c->getStreet1);
+  cc->street2 = DUPSTRFUN(c->getStreet2);
+  cc->street3 = DUPSTRFUN(c->getStreet3);
+  cc->province = DUPSTRFUN(c->getProvince);
+  cc->postalcode = DUPSTRFUN(c->getPostalCode);
+  cc->city = DUPSTRFUN(c->getCity);
+  cc->country = DUPSTRFUN(c->getCountry);
+  cc->telephone = DUPSTRFUN(c->getTelephone);
+  cc->fax = DUPSTRFUN(c->getFax);
+  cc->email = DUPSTRFUN(c->getEmail);
+  cc->notifyEmail = DUPSTRFUN(c->getNotifyEmail);
+  cc->ssn = DUPSTRFUN(c->getSSN);
   db.Disconnect();
   return cc;
 }
@@ -349,44 +376,27 @@ ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
   ccReg::DomainDetail* cd = new ccReg::DomainDetail;
   Register::Domain::Domain *d = dl->get(0);
   cd->id = d->getId();
-  cd->fqdn = CORBA::string_dup(d->getFQDN().c_str());
-  cd->roid = CORBA::string_dup(d->getROID().c_str());
-  cd->registrarHandle = CORBA::string_dup(
-    d->getRegistrarHandle().c_str()
-  );
-  cd->transferDate = CORBA::string_dup(
-    to_simple_string(d->getTransferDate()).c_str()
-  );
-  cd->updateDate = CORBA::string_dup(
-    to_simple_string(d->getUpdateDate()).c_str()
-  );
-  cd->createDate = CORBA::string_dup(
-    to_simple_string(d->getCreateDate()).c_str()
-  );
-  cd->createRegistrarHandle = CORBA::string_dup(
-    d->getCreateRegistrarHandle().c_str()
-  ); 
-  cd->updateRegistrarHandle = CORBA::string_dup(
-    d->getUpdateRegistrarHandle().c_str()
-  ); 
-  cd->authInfo = CORBA::string_dup(
-    d->getAuthPw().c_str()
-  ); 
-  cd->registrantHandle = CORBA::string_dup(
-    d->getRegistrantHandle().c_str()
-  );
-  cd->expirationDate = CORBA::string_dup(
-    to_simple_string(d->getExpirationDate()).c_str()
-  );
-  cd->valExDate = CORBA::string_dup(
-    to_simple_string(d->getValExDate()).c_str()
-  );
-  cd->nssetHandle = CORBA::string_dup(
-    d->getNSSetHandle().c_str()
-  );
+  cd->fqdn = DUPSTRFUN(d->getFQDN);
+  cd->roid = DUPSTRFUN(d->getROID);
+  cd->registrarHandle = DUPSTRFUN(d->getRegistrarHandle);
+  cd->transferDate = DUPSTRDATE(d->getTransferDate);
+  cd->updateDate = DUPSTRDATE(d->getUpdateDate);
+  cd->createDate = DUPSTRDATE(d->getCreateDate);
+  cd->createRegistrarHandle = DUPSTRFUN(d->getCreateRegistrarHandle); 
+  cd->updateRegistrarHandle = DUPSTRFUN(d->getUpdateRegistrarHandle); 
+  cd->authInfo = DUPSTRFUN(d->getAuthPw); 
+  cd->registrantHandle = DUPSTRFUN(d->getRegistrantHandle);
+  cd->expirationDate = DUPSTRDATE(d->getExpirationDate);
+  cd->valExDate = DUPSTRDATE(d->getValExDate);
+  cd->nssetHandle = DUPSTRFUN(d->getNSSetHandle);
   cd->admins.length(d->getAdminCount());
-  for (unsigned i=0; i<d->getAdminCount(); i++)
-    cd->admins[i] = CORBA::string_dup("CID:JOUDA");
+  try {
+    for (unsigned i=0; i<d->getAdminCount(); i++)
+      cd->admins[i] = CORBA::string_dup(d->getAdminHandleByIdx(i).c_str());
+  }
+  catch (Register::NOT_FOUND) {
+    /// some implementation error WHAT TO DO?
+  }
   db.Disconnect();
   return cd;
 }
