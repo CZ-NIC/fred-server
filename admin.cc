@@ -90,139 +90,6 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database) :
 ccReg_Admin_i::~ccReg_Admin_i() 
 {}
 
-ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
-{
-  int rows = 0 , i ;
-  DB DBsql;
-  ccReg::RegistrarList *reglist;
-
-  reglist = new ccReg::RegistrarList;
-
-  if( DBsql.OpenDatabase( database.c_str() ) )
-  {
-    if( DBsql.ExecSelect( "SELECT * FROM REGISTRAR;"  ) )
-    {
-      rows = DBsql.GetSelectRows();
-      LOG( NOTICE_LOG, "getRegistrars: num -> %d",  rows );
-      reglist->length( rows );
-      for( i = 0 ; i < rows ; i ++ )
-      {    
-        //  *(reglist[i]) = new ccReg::Registrar;   
-        (*reglist)[i].id = atoi( DBsql.GetFieldValueName("ID" , i ) );
-        (*reglist)[i].handle=CORBA::string_dup(
-          DBsql.GetFieldValueName("handle" , i ) ); // handle
-        (*reglist)[i].name=CORBA::string_dup(
-          DBsql.GetFieldValueName("name" , i ) ); 
-        (*reglist)[i].organization=CORBA::string_dup( 
-          DBsql.GetFieldValueName("organization" , i ) ); 
-        (*reglist)[i].street1=CORBA::string_dup( 
-          DBsql.GetFieldValueName("street1" , i ) );
-        (*reglist)[i].street2=CORBA::string_dup( 
-          DBsql.GetFieldValueName("street2" , i ) );
-        (*reglist)[i].street3=CORBA::string_dup( 
-          DBsql.GetFieldValueName("street3" , i ) );
-        (*reglist)[i].city=CORBA::string_dup( 
-          DBsql.GetFieldValueName("city" , i ) );
-        (*reglist)[i].stateorprovince=CORBA::string_dup( 
-          DBsql.GetFieldValueName("stateorprovince" , i ) );
-        (*reglist)[i].postalcode=CORBA::string_dup( 
-          DBsql.GetFieldValueName("postalcode" , i ) );
-        (*reglist)[i].country=CORBA::string_dup( 
-          DBsql.GetFieldValueName("country" , i ) );
-        (*reglist)[i].telephone=CORBA::string_dup( 
-          DBsql.GetFieldValueName("telephone" , i ) );
-        (*reglist)[i].fax=CORBA::string_dup( 
-          DBsql.GetFieldValueName("fax" , i ) );
-        (*reglist)[i].email=CORBA::string_dup( 
-          DBsql.GetFieldValueName("email" , i ) );
-        (*reglist)[i].url=CORBA::string_dup( 
-          DBsql.GetFieldValueName("url" , i ) );
-        (*reglist)[i].credit=get_price( 
-          DBsql.GetFieldValueName("credit" , i ) );
-      }
-      DBsql.FreeSelect();
-    }
-    DBsql.Disconnect();
-  }
-  if( rows == 0 ) reglist->length( 0 ); // nulova delka
-  return  reglist;
-}
-
-ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
-  throw (ccReg::Admin::ObjectNotFound)
-{
-  DB DBsql;
-  ccReg::Registrar *reg;
-  bool find=false;
-  reg = new ccReg::Registrar ;
-  if( DBsql.OpenDatabase( database.c_str() ) )
-  { 
-    LOG( NOTICE_LOG, "getRegistrByHandle: handle -> %s", handle );
-    if( DBsql.SELECTONE( "REGISTRAR" , "handle" , handle  ) )
-    {
-      if( DBsql.GetSelectRows() != 1 ) {
-         DBsql.Disconnect();
-         throw ccReg::Admin::ObjectNotFound();
-      }
-      else
-        {
-          reg->id =  atoi( DBsql.GetFieldValueName("ID" , 0 ) );
-          reg->handle=CORBA::string_dup( 
-            DBsql.GetFieldValueName("handle" , 0 ) ); // handle
-          reg->name=CORBA::string_dup( DBsql.GetFieldValueName("name" , 0 ) );
-          reg->organization=CORBA::string_dup( 
-            DBsql.GetFieldValueName("organization" , 0 ) );
-          reg->street1=CORBA::string_dup( 
-            DBsql.GetFieldValueName("street1" , 0 ) );
-          reg->street2=CORBA::string_dup( 
-            DBsql.GetFieldValueName("street2" , 0 ) );
-          reg->street3=CORBA::string_dup( 
-            DBsql.GetFieldValueName("street3" , 0 ) );
-          reg->city=CORBA::string_dup( 
-            DBsql.GetFieldValueName("city" , 0 ) );
-          reg->stateorprovince=CORBA::string_dup( 
-            DBsql.GetFieldValueName("stateorprovince" , 0 ) );
-          reg->postalcode=CORBA::string_dup( 
-            DBsql.GetFieldValueName("postalcode" , 0 ) );
-          reg->country=CORBA::string_dup( 
-            DBsql.GetFieldValueName("country" , 0 ) );
-          reg->telephone=CORBA::string_dup( 
-            DBsql.GetFieldValueName("telephone" , 0 ) );
-          reg->fax=CORBA::string_dup( 
-            DBsql.GetFieldValueName("fax" , 0 ) );
-          reg->email=CORBA::string_dup( 
-            DBsql.GetFieldValueName("email" , 0 ) );
-          reg->url=CORBA::string_dup( DBsql.GetFieldValueName("url" , 0 ) );
-          reg->credit=get_price( DBsql.GetFieldValueName("credit" , 0 ) );
-          find = true;
-        }   
-      DBsql.FreeSelect();
-    }
-    DBsql.Disconnect();
-  }
- 
-  if( find == false )
-  {
-    reg->id = 0;
-    reg->handle=CORBA::string_dup( ""  ); // handle
-    reg->name=CORBA::string_dup( ""  );
-    reg->organization=CORBA::string_dup( "" );
-    reg->street1=CORBA::string_dup( "" );
-    reg->street2=CORBA::string_dup( "" );
-    reg->street3=CORBA::string_dup( "" );
-    reg->city=CORBA::string_dup( "" );
-    reg->stateorprovince=CORBA::string_dup( "" );
-    reg->postalcode=CORBA::string_dup( "" );
-    reg->country=CORBA::string_dup( "" );
-    reg->telephone=CORBA::string_dup( "" );
-    reg->fax=CORBA::string_dup( "" );
-    reg->email=CORBA::string_dup( "" );
-    reg->url=CORBA::string_dup( "" );
-    reg->credit=0;
-  }
-  return reg;
-}
-
 #define SWITCH_CONVERT(x) case Register::x : ch->handleClass = ccReg::x; break
 void
 ccReg_Admin_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
@@ -258,6 +125,75 @@ ccReg_Admin_i::getSession(const char* sessionID)
 }
 
 void 
+ccReg_Admin_i::fillRegistrar(
+  ccReg::Registrar& creg, Register::Registrar::Registrar *reg
+)
+{
+  creg.id = reg->getId();
+  creg.name = DUPSTRFUN(reg->getName);
+  creg.handle = DUPSTRFUN(reg->getHandle);
+  creg.url = DUPSTRFUN(reg->getURL);
+  creg.organization = DUPSTRFUN(reg->getOrganization);
+  creg.street1 = DUPSTRFUN(reg->getStreet1);
+  creg.street2 = DUPSTRFUN(reg->getStreet2);
+  creg.street3 = DUPSTRFUN(reg->getStreet3);
+  creg.city = DUPSTRFUN(reg->getCity);
+  creg.postalcode = DUPSTRFUN(reg->getPostalCode);
+  creg.stateorprovince = DUPSTRFUN(reg->getProvince);
+  creg.country = DUPSTRFUN(reg->getCountry);
+  creg.telephone = DUPSTRFUN(reg->getTelephone);
+  creg.fax = DUPSTRFUN(reg->getFax);
+  creg.email = DUPSTRFUN(reg->getEmail);
+  creg.credit = reg->getCredit();
+  if (reg->getACLSize()) {
+     creg.md5Cert = DUPSTRFUN(reg->getACL(0)->getCertificateMD5);
+     creg.password = DUPSTRFUN(reg->getACL(0)->getPassword);
+  } else {
+     creg.md5Cert = DUPSTR("");
+     creg.password = DUPSTR("");
+  }
+} 
+
+ccReg::RegistrarList* 
+ccReg_Admin_i::getRegistrars()
+{
+  DB db;
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> regm(Register::Manager::create(&db));
+  Register::Registrar::Manager *rm = regm->getRegistrarManager();
+  Register::Registrar::RegistrarList *rl = rm->getList();
+  rl->reload();
+  LOG( NOTICE_LOG, "getRegistrars: num -> %d",  rl->size() );
+  ccReg::RegistrarList* reglist = new ccReg::RegistrarList;
+  reglist->length(rl->size());
+  for (unsigned i=0; i<rl->size(); i++)
+    fillRegistrar((*reglist)[i],rl->get(i));
+  db.Disconnect();
+  return reglist;
+}
+
+ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
+  throw (ccReg::Admin::ObjectNotFound)
+{
+  DB db;
+  LOG( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> regm(Register::Manager::create(&db));
+  Register::Registrar::Manager *rm = regm->getRegistrarManager();
+  Register::Registrar::RegistrarList *rl = rm->getList();
+  rl->setHandleFilter(handle);
+  rl->reload();
+  if (rl->size() < 1) {
+    db.Disconnect();
+    throw ccReg::Admin::ObjectNotFound();
+  } 
+  ccReg::Registrar* creg = new ccReg::Registrar;
+  fillRegistrar(*creg,rl->get(0));
+  db.Disconnect();
+  return creg;
+}
+
+void 
 ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData)
 {
   DB db;
@@ -265,7 +201,7 @@ ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData)
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
   Register::Registrar::Manager *rm = r->getRegistrarManager();
   Register::Registrar::RegistrarList *rl = rm->getList();
-  Register::Registrar::Registrar *reg;
+  Register::Registrar::Registrar *reg; // registrar to be created or updated
   if (!regData.id) reg = rl->create();
   else {
     rl->setIdFilter(regData.id);
@@ -279,6 +215,22 @@ ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData)
   reg->setHandle((const char *)regData.handle);
   reg->setURL((const char *)regData.url);
   reg->setName((const char *)regData.name);
+  reg->setOrganization((const char *)regData.organization);
+  reg->setStreet1((const char *)regData.street1);
+  reg->setStreet2((const char *)regData.street2);
+  reg->setStreet3((const char *)regData.street3);
+  reg->setCity((const char *)regData.city);
+  reg->setProvince((const char *)regData.stateorprovince);
+  reg->setPostalCode((const char *)regData.postalcode);
+  reg->setCountry((const char *)regData.country);
+  reg->setTelephone((const char *)regData.telephone);
+  reg->setFax((const char *)regData.fax);
+  reg->setEmail((const char *)regData.email);
+  Register::Registrar::ACL *acl;
+  if (reg->getACLSize()) acl = reg->getACL(0);
+  else acl = reg->newACL();
+  acl->setCertificateMD5((const char *)regData.md5Cert);
+  acl->setPassword((const char *)regData.password);
   try {
     reg->save();
     db.Disconnect();
@@ -395,7 +347,7 @@ ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
       cd->admins[i] = CORBA::string_dup(d->getAdminHandleByIdx(i).c_str());
   }
   catch (Register::NOT_FOUND) {
-    /// some implementation error WHAT TO DO?
+    /// some implementation error - index is out of bound - WHAT TO DO?
   }
   db.Disconnect();
   return cd;

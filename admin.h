@@ -213,6 +213,10 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
                      public PortableServer::RefCountServantBase {
   std::string database;
   ccReg_Session_i *session;
+  void fillRegistrar(
+    ccReg::Registrar& creg, 
+    Register::Registrar::Registrar *reg
+  ); 
  public:
   ccReg_Admin_i(const std::string database);
   virtual ~ccReg_Admin_i();
@@ -236,5 +240,6 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
 
   /// testovaci fce na typ objektu
   void checkHandle(const char* handle, ccReg::CheckHandleType_out ch);
+  
   
 };

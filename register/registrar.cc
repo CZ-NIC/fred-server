@@ -54,14 +54,14 @@ namespace Register
       }      
       bool hasChanged() const
       {
-              return changed;
+        return changed;
       }
       std::string makeSQL(unsigned registrarId)
       {
         std::ostringstream sql;
         sql << "INSERT INTO registraracl (registrarid,cert,password) VALUES "
-            << "(" << registrarId << "," << certificateMD5 << "," 
-            << password << ");";
+            << "(" << registrarId << ",'" << certificateMD5 << "','" 
+            << password << "');";
         return sql.str();
       }
     };
@@ -76,6 +76,18 @@ namespace Register
       std::string name; ///< DB: registrar.name
       std::string url; ///< DB: registrar.name
       std::string password; ///< DB: registraracl.passwd
+      std::string organization; ///< DB: registrar.organization
+      std::string street1; ///< DB: registrar.street1
+      std::string street2; ///< DB: registrar.street2
+      std::string street3; ///< DB: registrar.street3
+      std::string city; ///< DB: registrar.city
+      std::string province; ///< DB: registrar.stateorprovince
+      std::string postalCode; ///< DB: registrar.postalcode
+      std::string country; ///< DB: registrar.country
+      std::string telephone; ///< DB: registrar.telephone
+      std::string fax; ///< DB: registrar.fax
+      std::string email; ///< DB: registrar.email
+      unsigned long credit; ///< DB: registrar.credit
       bool changed; ///< object was changed, need sync to database
       ACLList acl; ///< access control
      public:
@@ -83,8 +95,18 @@ namespace Register
       {}
       RegistrarImpl(DB *_db,
         unsigned _id, const std::string& _handle, const std::string& _name,
-        const std::string& _url
-      ) : db(_db), id(_id), handle(_handle), name(_name), url(_url)
+        const std::string& _url, const std::string& _organization, 
+        const std::string& _street1, const std::string& _street2, 
+        const std::string& _street3, const std::string& _city, 
+        const std::string& _province, const std::string& _postalCode, 
+        const std::string& _country, const std::string& _telephone, 
+        const std::string& _fax, const std::string& _email, 
+        unsigned long _credit 
+      ) : db(_db), id(_id), handle(_handle), name(_name), url(_url),
+          organization(_organization), street1(_street1), street2(_street2), 
+          street3(_street3), city(_city), province(_province), 
+          postalCode(_postalCode), country(_country), telephone(_telephone), 
+          fax(_fax), email(_email), credit(_credit)
       {
       }
       ~RegistrarImpl()
@@ -119,6 +141,98 @@ namespace Register
       {
         SET(url,newURL);
       }
+      virtual const std::string& getOrganization() const
+      {
+        return organization;
+      }
+      virtual void setOrganization(const std::string& _organization)
+      {
+        SET(organization,_organization);
+      }
+      virtual const std::string& getStreet1() const
+      {
+        return street1;
+      }
+      virtual void setStreet1(const std::string& _street1)
+      {
+        SET(street1,_street1);
+      }
+      virtual const std::string& getStreet2() const
+      {
+        return street2;
+      }
+      virtual void setStreet2(const std::string& _street2)
+      {
+        SET(street2,_street2);
+      }
+      virtual const std::string& getStreet3() const
+      {
+        return street3;
+      }
+      virtual void setStreet3(const std::string& _street3)
+      {
+        SET(street3,_street3);
+      }
+      virtual const std::string& getCity() const
+      {
+        return city;
+      }
+      virtual void setCity(const std::string& _city)
+      {
+        SET(city,_city);
+      }
+      virtual const std::string& getProvince() const
+      {
+        return province;
+      }
+      virtual void setProvince(const std::string& _province)
+      {
+        SET(province,_province);
+      }
+      virtual const std::string& getPostalCode() const
+      {
+        return postalCode;
+      }
+      virtual void setPostalCode(const std::string& _postalCode)
+      {
+        SET(postalCode,_postalCode);
+      }
+      virtual const std::string& getCountry() const
+      {
+        return country;
+      }
+      virtual void setCountry(const std::string& _country)
+      {
+        SET(country,_country);
+      }
+      virtual const std::string& getTelephone() const
+      {
+        return telephone;
+      }
+      virtual void setTelephone(const std::string& _telephone)
+      {
+        SET(telephone,_telephone);
+      }
+      virtual const std::string& getFax() const
+      {
+        return fax;
+      }
+      virtual void setFax(const std::string& _fax)
+      {
+        SET(fax,_fax);
+      }
+      virtual const std::string& getEmail() const
+      {
+        return email;
+      }
+      virtual void setEmail(const std::string& _email)
+      {
+        SET(email,_email);
+      }
+      virtual unsigned long getCredit() const
+      {
+        return credit;
+      }
       virtual unsigned getACLSize() const
       {
         return acl.size();
@@ -149,19 +263,43 @@ namespace Register
             sql << "UPDATE registrar SET "
                 << "name='" << getName() << "',"
                 << "handle='" << getHandle() << "',"
-                << "url='" << getURL() << "' "
+                << "url='" << getURL() << "', "
+                << "organization='" << getOrganization() << "',"
+                << "street1='" << getStreet1() << "',"
+                << "street2='" << getStreet2() << "',"
+                << "street3='" << getStreet3() << "',"
+                << "city='" << getCity() << "',"
+                << "stateorprovince='" << getProvince() << "',"
+                << "postalcode='" << getPostalCode() << "',"
+                << "country='" << getCountry() << "',"
+                << "telephone='" << getTelephone() << "',"
+                << "fax='" << getFax() << "',"
+                << "email='" << getEmail() << "' "
                 << "WHERE id=" << id;
           } else {
             id = db->GetSequenceID("registrar");
             sql << "INSERT INTO registrar "
-                << "(id,name,handle,url,zone) "
+                << "(id,name,handle,url,zone,organization,street1,street2,"
+                << "street3,city,stateorprovince,postalcode,country,"
+                << "telephone,fax,email) "
                 << "VALUES "
                 << "("
                 << id << ","
                 << "'" << getName() << "',"
                 << "'" << getHandle() << "',"
                 << "'" << getURL() << "',"
-                << "'{1}'"
+                << "'{1}',"
+                << "'" << getOrganization() << "',"
+                << "'" << getStreet1() << "',"
+                << "'" << getStreet2() << "',"
+                << "'" << getStreet3() << "',"
+                << "'" << getCity() << "',"
+                << "'" << getProvince() << "',"
+                << "'" << getPostalCode() << "',"
+                << "'" << getCountry() << "',"
+                << "'" << getTelephone() << "',"
+                << "'" << getFax() << "',"
+                << "'" << getEmail() << "',"
                 << ")";
           }
           if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();          
@@ -172,7 +310,7 @@ namespace Register
         if (i != acl.end()) {
           std::ostringstream sql;
           sql << "DELETE FROM registraracl WHERE registrarid=" << id;
-          // make sql
+          if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();          
           for (unsigned j=0;j<acl.size();j++) {
             sql.str("");
             sql << acl[j]->makeSQL(id);
@@ -228,14 +366,16 @@ namespace Register
       {
         clear();
         std::ostringstream sql;
-        sql << "SELECT id,handle,name,url "
+        sql << "SELECT id,handle,name,url,organization,"
+            << "street1,street2,street3,city,stateorprovince,"
+            << "postalcode,country,telephone,fax,email,credit "
             << "FROM registrar WHERE 1=1 ";
         if (idFilter)
           sql << " AND id=" << idFilter << " ";
         if (!name.empty())
           sql << " AND name ILIKE '%" << name << "%'";
         if (!handle.empty())
-          sql << " AND handle ILIKE '%" << name << "%'";
+          sql << " AND handle ='" << handle << "'";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           registrars.push_back(
@@ -244,7 +384,19 @@ namespace Register
               atoi(db->GetFieldValue(i,0)),
               db->GetFieldValue(i,1),
               db->GetFieldValue(i,2),
-              db->GetFieldValue(i,3)
+              db->GetFieldValue(i,3),
+              db->GetFieldValue(i,4),
+              db->GetFieldValue(i,5),
+              db->GetFieldValue(i,6),
+              db->GetFieldValue(i,7),
+              db->GetFieldValue(i,8),
+              db->GetFieldValue(i,9),
+              db->GetFieldValue(i,10),
+              db->GetFieldValue(i,11),
+              db->GetFieldValue(i,12),
+              db->GetFieldValue(i,13),
+              db->GetFieldValue(i,14),
+              atol(db->GetFieldValue(i,15))
             )
           );
         }

@@ -54,6 +54,54 @@ namespace Register {
       virtual const std::string& getURL() const = 0;
       /// Set registrar URL
       virtual void setURL(const std::string& newURL) = 0;
+      /// Get registrar organization      
+      virtual const std::string& getOrganization() const = 0;
+      /// Set registrar organization
+      virtual void setOrganization(const std::string& _organization) = 0;
+      /// Get registrar street part 1
+      virtual const std::string& getStreet1() const = 0;
+      /// Set registrar street part 1
+      virtual void setStreet1(const std::string& _street1) = 0;
+      /// Get registrar street part 2
+      virtual const std::string& getStreet2() const = 0;
+      /// Set registrar street part 2
+      virtual void setStreet2(const std::string& _street2) = 0;
+      /// Get registrar street part 3
+      virtual const std::string& getStreet3() const = 0;
+      /// Set registrar street part 3
+      virtual void setStreet3(const std::string& _street3) = 0;
+      /// Get registrar city
+      virtual const std::string& getCity() const = 0;
+      /// Set registrar city
+      virtual void setCity(const std::string& _city) = 0;
+      /// Get registrar state or province 
+      virtual const std::string& getProvince() const = 0;
+      /// Set registrar state or province
+      virtual void setProvince(const std::string& _province) = 0;
+      /// Get registrar postal code
+      virtual const std::string& getPostalCode() const = 0;
+      /// Set registrar postal code
+      virtual void setPostalCode(const std::string& _postalCode) = 0;
+      /// Get registrar country code
+      virtual const std::string& getCountry() const = 0;
+      /// Set registrar country code
+      virtual void setCountry(const std::string& _country) = 0;
+      /// Get registrar telephone number
+      virtual const std::string& getTelephone() const = 0;
+      /// Set registrar telephone number
+      virtual void setTelephone(const std::string& _telephone) = 0;
+      /// Get registrar fax number
+      virtual const std::string& getFax() const = 0;
+      /// Set registrar fax number
+      virtual void setFax(const std::string& _fax) = 0;
+      /// Get registrar email
+      virtual const std::string& getEmail() const = 0;
+      /// Set registrar email
+      virtual void setEmail(const std::string& _email) = 0;
+      /// Get actual credit 
+      virtual unsigned long getCredit() const = 0;
+      /// Create new ACL record
+      virtual ACL* newACL() = 0;
       /// Return ACL list size
       virtual unsigned getACLSize() const = 0;
       /// Return ACL list member by index
