@@ -1140,7 +1140,7 @@ if( DBsql.OpenDatabase( database ) )
       switch(act)
             {
                 case EPP_ContactCheck:
-                     if( get_HANDLE( HANDLE , chck[i] )  )
+                     if( get_CONTACTHANDLE( HANDLE , chck[i] )  )
                          {
                             if( DBsql.CheckContact( HANDLE ) )
                               {
@@ -1175,7 +1175,7 @@ if( DBsql.OpenDatabase( database ) )
                         break;
 
                   case EPP_NSsetCheck:
-                       if( get_HANDLE( HANDLE , chck[i] )  )
+                       if( get_NSSETHANDLE( HANDLE , chck[i] )  )
                          {
                             if( DBsql.CheckNSSet( HANDLE ) )
                               {
