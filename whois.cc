@@ -5,6 +5,8 @@
 
 #include "register/register.h"
 
+#define MAX_LONG 63 // maximalni delka domeny
+
 ccReg_Whois_i::ccReg_Whois_i(const std::string _database) : database(_database)
 {}
 
@@ -18,6 +20,7 @@ ccReg::DomainWhois* ccReg_Whois_i::getDomain(const char* domain_name, CORBA::Str
 
 DB DBsql;
 char sqlString[1024];
+char fqdn[64];
 char dateStr[32];
 char timestampStr[32];
 ccReg::DomainWhois *dm;
@@ -55,10 +58,23 @@ dm->tech.length(0); // nulova sekvence
 // dm->admin.length(0); // nulova sekvence
  dm->fqdn = CORBA::string_dup( "" ) ;
 
+len =  (int )  strlen( (const char * ) domain_name ) ;
+if( len < MAX_LONG )
+  {
+   // preved na mala pismena
+    for( i = 0 ; i < len ; i ++ )  fqdn[i] = tolower( domain_name[i] );
+    fqdn[i] = 0 ; // ukoncit 
+    r->checkHandle( fqdn ,chd);
+    LOG( LOG_DEBUG ,  "WHOIS: checkHandle %s -> handleClass %d" , fqdn , chd.handleClass );
 
-r->checkHandle(domain_name ,chd);
+  }
+else
+ {
+   LOG( LOG_DEBUG ,  "WHOIS: domain too long len = %d  %s\n" , len ,  domain_name  );
+   throw ccReg::Whois::DomainError( timestampStr , ccReg::WE_DOMAIN_LONG );
+ }
 
-LOG( LOG_DEBUG ,  "WHOIS: checkHandle %s -> handleClass %d" , domain_name , chd.handleClass );
+
 
 if(  chd.handleClass   ==  Register::CH_ENUM  || chd.handleClass   ==  Register::CH_DOMAIN ) 
 {
@@ -68,7 +84,7 @@ else {zone = ZONE_CZ ; en=false ; }
 if( DBsql.OpenDatabase( database.c_str() ) )
 {
 
- if(  DBsql.SELECTDOMAIN(  domain_name  , zone , en  )  )
+ if(  DBsql.SELECTDOMAIN(  fqdn  , zone , en  )  )
   {
   if( DBsql.GetSelectRows() == 1 )
     {
