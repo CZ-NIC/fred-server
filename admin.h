@@ -233,7 +233,7 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   void putRegistrar(const ccReg::Registrar& regData);
   ccReg::ContactDetail* getContactByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound);
-  ccReg::RegObject* getNSSetByHandle(const char* handle)
+  ccReg::NSSetDetail* getNSSetByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound);
   ccReg::DomainDetail* getDomainByFQDN(const char* fqdn)
     throw (ccReg::Admin::ObjectNotFound);
