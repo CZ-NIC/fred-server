@@ -13,6 +13,8 @@
 
 #include "log.h"
 
+#include "nullvalue.h"
+
 // constructor 
 DB::DB()
 { 
@@ -987,9 +989,9 @@ if( strlen( value ) )
   SQLCat(" ");
   SQLCat(fname );
   SQLCat( "=" );
-
-   if( value[0] == 0x8 ) // specialne vymazani pri UPDATE
-   {
+ // ODSTRANIT zatim to pouziva take hack na znak \b
+   if( strcmp( value  , NULL_STRING ) ==  0 || value[0] == 0x8 ) // nastavi NULL value pro NULL string z IDL
+   {     
      SQLCat( "NULL" );           
    }
    else 
