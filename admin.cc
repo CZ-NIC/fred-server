@@ -34,9 +34,14 @@ formatTime(ptime p,bool date)
 }
 
 #define DUPSTR(s) CORBA::string_dup(s)
-#define DUPSTRFUN(f) DUPSTR(f().c_str())
+#define DUPSTRC(s) CORBA::string_dup(s.c_str())
+#define DUPSTRFUN(f) DUPSTRC(f())
 //#define DUPSTRDATE(f) DUPSTR(to_simple_string(f()).c_str())
-#define DUPSTRDATE(f) DUPSTR(formatTime(f(),true).c_str())
+#define DUPSTRDATE(f) DUPSTRC(formatTime(f(),true))
+#define DUPSTRDATESHORT(f) DUPSTRC(formatTime(f(),false))
+#define COLHEAD(x,i,title,tp) \
+  (*x)[i].name = DUPSTR(title); \
+  (*x)[i].type = ccReg::Table::tp 
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_PageTable_i
@@ -336,20 +341,20 @@ ccReg_Admin_i::getNSSetByHandle(const char* handle)
   cn->createRegistrarHandle = DUPSTRFUN(n->getCreateRegistrarHandle);
   cn->updateRegistrarHandle = DUPSTRFUN(n->getUpdateRegistrarHandle); 
   cn->authInfo = DUPSTRFUN(n->getAuthPw); 
-  cn->admins.length(1);
+  cn->admins.length(n->getAdminCount());
   try {
     for (unsigned i=0; i<n->getAdminCount(); i++)
-      cn->admins[i] = DUPSTR(n->getAdminByIdx(i).c_str());
+      cn->admins[i] = DUPSTRC(n->getAdminByIdx(i));
   }
   catch (Register::NOT_FOUND) {
     /// some implementation error - index is out of bound - WHAT TO DO?
   }
   cn->hosts.length(n->getHostCount());
   for (unsigned i=0; i<n->getHostCount(); i++) {
-    cn->hosts[i].fqdn = DUPSTR(n->getHostByIdx(i)->getName().c_str());
+    cn->hosts[i].fqdn = DUPSTRFUN(n->getHostByIdx(i)->getName);
     cn->hosts[i].inet.length(n->getHostByIdx(i)->getAddrCount());
     for (unsigned j=0; j<n->getHostByIdx(i)->getAddrCount(); j++)
-      cn->hosts[i].inet[j] = DUPSTR(n->getHostByIdx(i)->getAddrByIdx(j).c_str());
+      cn->hosts[i].inet[j] = DUPSTRC(n->getHostByIdx(i)->getAddrByIdx(j));
   }
   db.Disconnect();
   return cn;
@@ -471,12 +476,9 @@ ccReg_Registrars_i::getColumnHeaders()
 {
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
   ch->length(3);
-  (*ch)[0].name = CORBA::string_dup("Name"); 
-  (*ch)[0].type = ccReg::Table::CT_OTHER; 
-  (*ch)[1].name = CORBA::string_dup("Handle"); 
-  (*ch)[1].type = ccReg::Table::CT_REGISTRAR_HANDLE; 
-  (*ch)[2].name = CORBA::string_dup("URL"); 
-  (*ch)[2].type = ccReg::Table::CT_OTHER;
+  COLHEAD(ch,0,"Name",CT_OTHER);
+  COLHEAD(ch,1,"Handle",CT_REGISTRAR_HANDLE); 
+  COLHEAD(ch,2,"URL",CT_OTHER);
   return ch;
 }
 
@@ -488,9 +490,9 @@ ccReg_Registrars_i::getRow(CORBA::Short row)
   if (!r) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
   tr->length(3);
-  (*tr)[0] = CORBA::string_dup(r->getName().c_str()); 
-  (*tr)[1] = CORBA::string_dup(r->getHandle().c_str()); 
-  (*tr)[2] = CORBA::string_dup(r->getURL().c_str()); 
+  (*tr)[0] = DUPSTRFUN(r->getName); 
+  (*tr)[1] = DUPSTRFUN(r->getHandle); 
+  (*tr)[2] = DUPSTRFUN(r->getURL); 
   return tr;
 }
 
@@ -596,15 +598,10 @@ ccReg::Table::ColumnHeaders*
 ccReg_EPPActions_i::getColumnHeaders()
 {
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
-  ch->length(4);
-  (*ch)[0].name = CORBA::string_dup("SessionID"); 
-  (*ch)[0].type = ccReg::Table::CT_OTHER; 
-  (*ch)[1].name = CORBA::string_dup("Type"); 
-  (*ch)[1].type = ccReg::Table::CT_OTHER; 
-  (*ch)[2].name = CORBA::string_dup("Registrar"); 
-  (*ch)[2].type = ccReg::Table::CT_REGISTRAR_HANDLE; 
-  (*ch)[3].name = CORBA::string_dup("Time"); 
-  (*ch)[3].type = ccReg::Table::CT_OTHER;
+  ch->length(3);
+  COLHEAD(ch,0,"Type",CT_OTHER);
+  COLHEAD(ch,1,"Registrar",CT_REGISTRAR_HANDLE);
+  COLHEAD(ch,2,"Time",CT_OTHER);
   return ch;
 }
 
@@ -616,17 +613,10 @@ ccReg_EPPActions_i::getRow(CORBA::Short row)
   const Register::Registrar::EPPAction *a = eal->get(row);
   if (!a) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
-  tr->length(4);
-  std::ostringstream buffer;
-  buffer << a->getSessionId();
-  (*tr)[0] = CORBA::string_dup(buffer.str().c_str());
-  buffer.str("");
-  buffer << a->getTypeName();
-  (*tr)[1] = CORBA::string_dup(buffer.str().c_str());
-  (*tr)[2] = CORBA::string_dup(a->getRegistrarHandle().c_str()); 
-  buffer.str("");
-  buffer << to_simple_string(a->getStartTime());
-  (*tr)[3] = CORBA::string_dup(buffer.str().c_str());
+  tr->length(3);
+  (*tr)[0] = DUPSTRFUN(a->getTypeName);
+  (*tr)[1] = DUPSTRFUN(a->getRegistrarHandle); 
+  (*tr)[2] = DUPSTRDATE(a->getStartTime);
   return tr;
 }
 
@@ -891,29 +881,17 @@ ccReg_Domains_i::getColumnHeaders()
 {
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
   ch->length(11);
-  (*ch)[0].name = CORBA::string_dup("Jméno"); 
-  (*ch)[0].type = ccReg::Table::CT_DOMAIN_HANDLE; 
-  (*ch)[1].name = CORBA::string_dup("Registrace"); 
-  (*ch)[1].type = ccReg::Table::CT_OTHER; 
-  (*ch)[2].name = CORBA::string_dup("Ukončení"); 
-  (*ch)[2].type = ccReg::Table::CT_OTHER; 
-  (*ch)[3].name = CORBA::string_dup("Držitel"); 
-  (*ch)[3].type = ccReg::Table::CT_CONTACT_HANDLE; 
-  (*ch)[4].name = CORBA::string_dup("Jméno držitele"); 
-  (*ch)[4].type = ccReg::Table::CT_OTHER; 
-  (*ch)[5].name = CORBA::string_dup("Registrátor"); 
-  (*ch)[5].type = ccReg::Table::CT_REGISTRAR_HANDLE; 
-  (*ch)[6].name = CORBA::string_dup("Zóna"); 
-  (*ch)[6].type = ccReg::Table::CT_OTHER;
-  (*ch)[7].name = CORBA::string_dup("Expirace"); 
-  (*ch)[7].type = ccReg::Table::CT_OTHER;
-  (*ch)[8].name = CORBA::string_dup("Zrušeni"); 
-  (*ch)[8].type = ccReg::Table::CT_OTHER;
-  (*ch)[9].name = CORBA::string_dup("Ze zóny"); 
-  (*ch)[9].type = ccReg::Table::CT_OTHER; 
-  (*ch)[10].name = CORBA::string_dup("Validace"); 
-  (*ch)[10].type = ccReg::Table::CT_OTHER;
-
+  COLHEAD(ch,0,"Jméno",CT_DOMAIN_HANDLE);
+  COLHEAD(ch,1,"Registrace",CT_OTHER);
+  COLHEAD(ch,2,"Ukončení",CT_OTHER);
+  COLHEAD(ch,3,"Držitel",CT_CONTACT_HANDLE);
+  COLHEAD(ch,4,"Jméno držitele",CT_OTHER);
+  COLHEAD(ch,5,"Registrátor",CT_REGISTRAR_HANDLE);
+  COLHEAD(ch,6,"Zóna",CT_OTHER);
+  COLHEAD(ch,7,"Expirace",CT_OTHER);
+  COLHEAD(ch,8,"Zrušeni",CT_OTHER);
+  COLHEAD(ch,9,"Ze zóny",CT_OTHER);
+  COLHEAD(ch,10,"Validace",CT_OTHER);
   return ch;
 }
 
@@ -925,55 +903,17 @@ ccReg_Domains_i::getRow(CORBA::Short row)
   if (!d) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
   tr->length(11);
-  // fqdn
-  (*tr)[0] = CORBA::string_dup(d->getFQDN().c_str());
-  // crdate
-  (*tr)[1] = CORBA::string_dup(
-    formatTime(d->getCreateDate(),true).c_str()
-//  to_simple_string(d->getCreateDate()).c_str()
-  );
-  // delete date
-  (*tr)[2] = CORBA::string_dup(
-   ""
-//    to_simple_string(ptime(not_a_date_time)).c_str()
-  );
-  // registrant handle
-  (*tr)[3] = CORBA::string_dup(d->getRegistrantHandle().c_str());
-  // registrant name 
-  (*tr)[4] = CORBA::string_dup(d->getRegistrantName().c_str());
-  // registrar handle 
-  (*tr)[5] = CORBA::string_dup(d->getRegistrarHandle().c_str());
-  // zone generation 
-  (*tr)[6] = CORBA::string_dup("");
-  // expiration date 
-  ptime et = d->getExpirationDate();
-  std::ostringstream extime;
-  unsigned m = et.date().month();
-  extime << std::setfill('0') << std::setw(2)
-         << et.date().day() << "." 
-         << std::setw(2)
-	 << m << "." 
-         << std::setw(2)
-         << et.date().year();
-  (*tr)[7] = CORBA::string_dup(
-      formatTime(d->getExpirationDate(),false).c_str()
-//    to_simple_string(d->getExpirationDate()).c_str()
-  );
-  // zruseni ??
-  (*tr)[8] = CORBA::string_dup(
-    ""
-    //to_simple_string(ptime(not_a_date_time)).c_str()
-  );
-  // vyrazeni z dns
-  (*tr)[9] = CORBA::string_dup(
-   ""
-//    to_simple_string(ptime(not_a_date_time)).c_str()
-  );
-  // validace
-  (*tr)[10] = CORBA::string_dup(
-    formatTime(d->getValExDate(),false).c_str()
-//  to_simple_string(d->getValExDate()).c_str() 
-  );
+  (*tr)[0] = DUPSTRFUN(d->getFQDN); // fqdn
+  (*tr)[1] = DUPSTRDATE(d->getCreateDate); // crdate
+  (*tr)[2] = DUPSTR(""); // delete date
+  (*tr)[3] = DUPSTRFUN(d->getRegistrantHandle); // registrant handle
+  (*tr)[4] = DUPSTRFUN(d->getRegistrantName); // registrant name
+  (*tr)[5] = DUPSTRFUN(d->getRegistrarHandle); // registrar handle 
+  (*tr)[6] = DUPSTR(""); // zone generation 
+  (*tr)[7] = DUPSTRDATESHORT(d->getExpirationDate); // expiration date 
+  (*tr)[8] = DUPSTR(""); // zruseni ??
+  (*tr)[9] = DUPSTR(""); // vyrazeni z dns
+  (*tr)[10] = DUPSTRDATESHORT(d->getValExDate); // validace
   return tr;
 }
 
@@ -1186,14 +1126,10 @@ ccReg_Contacts_i::getColumnHeaders()
 {
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
   ch->length(4);
-  (*ch)[0].name = CORBA::string_dup("Handle"); 
-  (*ch)[0].type = ccReg::Table::CT_CONTACT_HANDLE; 
-  (*ch)[1].name = CORBA::string_dup("Name"); 
-  (*ch)[1].type = ccReg::Table::CT_OTHER; 
-  (*ch)[2].name = CORBA::string_dup("CrDate"); 
-  (*ch)[2].type = ccReg::Table::CT_OTHER; 
-  (*ch)[3].name = CORBA::string_dup("Registrar"); 
-  (*ch)[3].type = ccReg::Table::CT_REGISTRAR_HANDLE;
+  COLHEAD(ch,0,"Handle",CT_CONTACT_HANDLE);
+  COLHEAD(ch,1,"Name",CT_OTHER);
+  COLHEAD(ch,2,"CrDate",CT_OTHER);
+  COLHEAD(ch,3,"Registrar",CT_REGISTRAR_HANDLE);
   return ch;
 }
 
@@ -1205,10 +1141,10 @@ ccReg_Contacts_i::getRow(CORBA::Short row)
   if (!c) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
   tr->length(4);
-  (*tr)[0] = CORBA::string_dup(c->getHandle().c_str());
-  (*tr)[1] = CORBA::string_dup(c->getName().c_str());
-  (*tr)[2] = CORBA::string_dup(to_simple_string(c->getCreateDate()).c_str());
-  (*tr)[3] = CORBA::string_dup(c->getRegistrarHandle().c_str()); 
+  (*tr)[0] = DUPSTRFUN(c->getHandle);
+  (*tr)[1] = DUPSTRFUN(c->getName);
+  (*tr)[2] = DUPSTRDATE(c->getCreateDate);
+  (*tr)[3] = DUPSTRFUN(c->getRegistrarHandle); 
   return tr;
 }
 
@@ -1288,12 +1224,9 @@ ccReg_NSSets_i::getColumnHeaders()
 {
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
   ch->length(3);
-  (*ch)[0].name = CORBA::string_dup("Handle"); 
-  (*ch)[0].type = ccReg::Table::CT_NSSET_HANDLE; 
-  (*ch)[1].name = CORBA::string_dup("CrDate"); 
-  (*ch)[1].type = ccReg::Table::CT_OTHER; 
-  (*ch)[2].name = CORBA::string_dup("Registrar"); 
-  (*ch)[2].type = ccReg::Table::CT_REGISTRAR_HANDLE;
+  COLHEAD(ch,0,"Handle",CT_NSSET_HANDLE);
+  COLHEAD(ch,1,"CrDate",CT_OTHER);
+  COLHEAD(ch,2,"Registrar",CT_REGISTRAR_HANDLE);
   return ch;
 }
 
@@ -1305,9 +1238,9 @@ ccReg_NSSets_i::getRow(CORBA::Short row)
   if (!n) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
   tr->length(3);
-  (*tr)[0] = CORBA::string_dup(n->getHandle().c_str());
-  (*tr)[1] = CORBA::string_dup(to_simple_string(n->getCreateDate()).c_str());
-  (*tr)[2] = CORBA::string_dup(n->getRegistrarHandle().c_str()); 
+  (*tr)[0] = DUPSTRFUN(n->getHandle);
+  (*tr)[1] = DUPSTRDATE(n->getCreateDate);
+  (*tr)[2] = DUPSTRFUN(n->getRegistrarHandle); 
   return tr;
 }
 

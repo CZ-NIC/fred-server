@@ -153,14 +153,20 @@ namespace Register
       {
         handle = _handle;
       }
+#define MAKE_TIME(ROW,COL)  \
+ (ptime(db->IsNotNull(ROW,COL) ? \
+ time_from_string(db->GetFieldValue(ROW,COL)) : not_a_date_time))   
       void reload() throw (SQL_ERROR)
       {
         clear();
         std::ostringstream sql;
         sql << "SELECT n.id,n.handle,"
-            << "r.id,r.handle,n.crdate "
-            << "FROM nsset n, registrar r "
-            << "WHERE n.clid=r.id ";
+            << "r.id,r.handle, "
+            << "n.crdate,n.trdate,n.update,"
+            << "n.crid,creg.handle,n.upid,ureg.handle,n.authinfopw,n.roid "
+            << "FROM registrar r, registrar creg, nsset n "
+            << "LEFT JOIN registrar ureg ON (n.upid=ureg.id) "
+            << "WHERE n.clid=r.id AND n.crid=creg.id ";
         if (registrar)
           sql << "AND n.clid=" << registrar << " ";
         if (!registrarHandle.empty())        
@@ -172,19 +178,19 @@ namespace Register
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           nlist.push_back(
             new NSSetImpl(
-              atoi(db->GetFieldValue(i,0)),
-              db->GetFieldValue(i,1),
-              atoi(db->GetFieldValue(i,2)),
-              db->GetFieldValue(i,3),
-              ptime(time_from_string(db->GetFieldValue(i,4))),
-              ptime(time_from_string(db->GetFieldValue(i,4))),
-              ptime(time_from_string(db->GetFieldValue(i,4))),
-              1,
-              "",
-              1,
-              "",
-              "auth",
-              "roid"                                      
+              atoi(db->GetFieldValue(i,0)), // nsset id
+              db->GetFieldValue(i,1), // nsset handle
+              atoi(db->GetFieldValue(i,2)), // registrar id
+              db->GetFieldValue(i,3), // registrar handle
+              MAKE_TIME(i,4), // registrar crdate
+              MAKE_TIME(i,5), // registrar trdate
+              MAKE_TIME(i,6), // registrar update
+              atoi(db->GetFieldValue(i,7)), // crid 
+              db->GetFieldValue(i,8), // crid handle
+              atoi(db->GetFieldValue(i,9)), // upid
+              db->GetFieldValue(i,10), // upid handle
+              db->GetFieldValue(i,11), // authinfo
+              db->GetFieldValue(i,12) // roid
             )
           ); 
         }
@@ -216,10 +222,10 @@ namespace Register
           );
           if (n != nlist.end()) {
             HostImpl* h = (*n)->addHost(db->GetFieldValue(i,1));
+            std::string addrs = db->GetFieldValue(i,2);
             char buffer[100];
-            for (unsigned i=0; 
-                 i<(unsigned)get_array_length(db->GetFieldValue(i,2)); i++) {
-              get_array_value(db->GetFieldValue(i,2),buffer,i);
+            for (int j=0; j<get_array_length((char *)addrs.c_str()); j++) {
+              get_array_value((char *)addrs.c_str(),buffer,j);
               h->addAddr(buffer);
             }
           }
