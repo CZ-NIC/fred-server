@@ -299,7 +299,7 @@ namespace Register
                 << "'" << getCountry() << "',"
                 << "'" << getTelephone() << "',"
                 << "'" << getFax() << "',"
-                << "'" << getEmail() << "',"
+                << "'" << getEmail() << "'"
                 << ")";
           }
           if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();          
