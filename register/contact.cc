@@ -236,8 +236,9 @@ namespace Register
               db->GetFieldValue(i,25), //notifyEmail
               db->GetFieldValue(i,26) //ssn              
             )
-          ); 
+          );
         }
+        db->FreeSelect();
       }
       void clearFilter()
       {

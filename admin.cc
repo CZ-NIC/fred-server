@@ -338,18 +338,18 @@ ccReg_Admin_i::getNSSetByHandle(const char* handle)
   cn->authInfo = DUPSTRFUN(n->getAuthPw); 
   cn->admins.length(1);
   try {
-    for (unsigned i=0; i<1; i++)
-      cn->admins[i] = DUPSTR("CID:JOUDA");
+    for (unsigned i=0; i<n->getAdminCount(); i++)
+      cn->admins[i] = DUPSTR(n->getAdminByIdx(i).c_str());
   }
   catch (Register::NOT_FOUND) {
     /// some implementation error - index is out of bound - WHAT TO DO?
   }
-  cn->hosts.length(1);
-  for (unsigned i=0; i<1; i++) {
-    cn->hosts[i].fqdn = DUPSTR("ns.nic.cz");
-    cn->hosts[i].inet.length(2);
-    cn->hosts[i].inet[0] = DUPSTR("222.222.222.222");
-    cn->hosts[i].inet[1] = DUPSTR("111.111.111.111");
+  cn->hosts.length(n->getHostCount());
+  for (unsigned i=0; i<n->getHostCount(); i++) {
+    cn->hosts[i].fqdn = DUPSTR(n->getHostByIdx(i)->getName().c_str());
+    cn->hosts[i].inet.length(n->getHostByIdx(i)->getAddrCount());
+    for (unsigned j=0; j<n->getHostByIdx(i)->getAddrCount(); j++)
+      cn->hosts[i].inet[j] = DUPSTR(n->getHostByIdx(i)->getAddrByIdx(j).c_str());
   }
   db.Disconnect();
   return cn;

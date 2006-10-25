@@ -13,6 +13,18 @@ namespace Register
 {
   namespace NSSet
   {
+    class Host
+    {
+     public:
+      /// public destructor
+      virtual ~Host() {}
+      /// return id of nsset
+      virtual const std::string getName() const = 0;
+      /// return count of address
+      virtual unsigned getAddrCount() const = 0;
+      /// return address by index
+      virtual std::string getAddrByIdx(unsigned idx) const = 0;
+    };
     class NSSet : virtual public Register::Object
     {
      public:
@@ -22,6 +34,14 @@ namespace Register
       virtual unsigned getId() const = 0;
       /// return nsset handle
       virtual const std::string& getHandle() const = 0;
+      /// return count of admin contacts
+      virtual unsigned getAdminCount() const = 0;
+      /// return handle of admin contact by index
+      virtual std::string getAdminByIdx(unsigned idx) const = 0;
+      /// return count of managed hosts
+      virtual unsigned getHostCount() const = 0;
+      /// return host by index
+      virtual const Host *getHostByIdx(unsigned idx) const = 0;
     };
     /// nssets list
     class List : virtual public ObjectList
