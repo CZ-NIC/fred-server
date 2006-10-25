@@ -1,13 +1,20 @@
 
 CXX = g++
 
-CXXFLAGS = -Wall  -DSYSLOG   -DCONFIG_FILE=\"/etc/ccReg.conf\" -DSVERSION=\"${SVN_REVISION}\"
+CXXFLAGS = -Wall -DSYSLOG -DCONFIG_FILE=\"/etc/ccReg.conf\" \
+           -DSVERSION=\"${SVN_REVISION}\"
 
 OBJECTS = 
 IDLFILE = ../../idl/trunk/ccReg.idl
-LDFLAGS=  -L/usr/local/pgsql/lib/
-LIBS=  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread
-CPPFLAGS =  -I/usr/local/pgsql/include/   -I/usr/include/postgresql/  -I.  -Wno-deprecated
+LDFLAGS =  -L/usr/local/pgsql/lib/
+LIBS =  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread
+SVLIBS = $(LIBS) register/libccreg.a -lpq -lboost_date_time
+
+CPPFLAGS =  -I/usr/local/pgsql/include/   -I/usr/include/postgresql/ \
+            -I.  -Wno-deprecated
+ADMIN_SERVER_OBJECTS = \
+    ccRegSK.o admin.o log.o conf.o dbsql.o pqsql.o util.o admin_server.o \
+    nameservice.o
 CCREG_SERVER_OBJECTS = \
     ccRegSK.o ccRegDynSK.o  ccReg_epp.o  ccReg_server.o  \
     dbsql.o pqsql.o util.o status.o conf.o log.o admin.o whois.o \
@@ -22,8 +29,11 @@ all:  ccReg_server epp_client whois_client
 ccReg_server: $(CCREG_SERVER_OBJECTS)
 	$(MAKE) -C register
 #	ar -rs libccreg.a $(CCREG_SERVER_OBJECTS)
-	$(CXX) -o ccReg_server $(CCREG_SERVER_OBJECTS) $(LDFLAGS) $(LIBS) register/libccreg.a -lpq -lboost_date_time
+	$(CXX) -o ccReg_server $(CCREG_SERVER_OBJECTS) $(LDFLAGS) $(SVLIBS)
 
+admin_server: $(ADMIN_SERVER_OBJECTS)
+	$(MAKE) -C register
+	$(CXX) -o admin_server $(ADMIN_SERVER_OBJECTS) $(LDFLAGS) $(SVLIBS)
 
 epp_client: $(EPP_CLIENT_OBJECTS)
 	$(CXX) -o epp_client $(EPP_CLIENT_OBJECTS) $(LDFLAGS) $(LIBS)
@@ -48,6 +58,7 @@ install:
 	install ccReg_server /usr/local/bin/ccReg
 
 clean:
+	make -C register clean
 	rm -rf *.o *_server *_client ccRegDynSK.cc  ccRegSK.cc ccRegSK.h ccReg.hh ccReg_i.cc *idl.py* ccReg__POA/ ccReg/ libccreg.a
 
 
