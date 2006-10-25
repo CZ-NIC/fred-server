@@ -6,13 +6,37 @@
 #include <boost/date_time/posix_time/time_formatters.hpp>
 #include <math.h>
 #include <memory>
+#include <iomanip>
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
+std::string 
+formatTime(ptime p,bool date)
+{
+  if (p.is_special()) return "";
+  std::ostringstream stime;
+  stime << std::setfill('0') << std::setw(2)
+        << p.date().day() << "." 
+        << std::setw(2)
+        << (int)p.date().month() << "." 
+        << std::setw(2)
+        << p.date().year();
+  if (date) 
+   stime << " "
+         << std::setw(2)
+         << p.time_of_day().hours() << ":"
+         << std::setw(2)
+         << p.time_of_day().minutes() << ":"
+         << std::setw(2)
+         << p.time_of_day().seconds();
+  return stime.str();
+}
+
 #define DUPSTR(s) CORBA::string_dup(s)
 #define DUPSTRFUN(f) DUPSTR(f().c_str())
-#define DUPSTRDATE(f) DUPSTR(to_simple_string(f()).c_str())
+//#define DUPSTRDATE(f) DUPSTR(to_simple_string(f()).c_str())
+#define DUPSTRDATE(f) DUPSTR(formatTime(f(),true).c_str())
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_PageTable_i
@@ -904,15 +928,8 @@ ccReg_Domains_i::getRow(CORBA::Short row)
   // fqdn
   (*tr)[0] = CORBA::string_dup(d->getFQDN().c_str());
   // crdate
-  ptime ct = d->getCreateDate();
-  std::ostringstream ctime;
-  ctime << ct.date().day() << "/" 
-        << ct.date().month() << "/" 
-        << ct.date().year() << " ";
-//        << ct.hour() << ":"
-//        << ct.minute() << ":";
   (*tr)[1] = CORBA::string_dup(
-   ctime.str().c_str()
+    formatTime(d->getCreateDate(),true).c_str()
 //  to_simple_string(d->getCreateDate()).c_str()
   );
   // delete date
@@ -931,11 +948,15 @@ ccReg_Domains_i::getRow(CORBA::Short row)
   // expiration date 
   ptime et = d->getExpirationDate();
   std::ostringstream extime;
-  extime << et.date().day() << "/" 
-        << et.date().month() << "/" 
-        << et.date().year();
+  unsigned m = et.date().month();
+  extime << std::setfill('0') << std::setw(2)
+         << et.date().day() << "." 
+         << std::setw(2)
+	 << m << "." 
+         << std::setw(2)
+         << et.date().year();
   (*tr)[7] = CORBA::string_dup(
-      extime.str().c_str()
+      formatTime(d->getExpirationDate(),false).c_str()
 //    to_simple_string(d->getExpirationDate()).c_str()
   );
   // zruseni ??
@@ -949,14 +970,8 @@ ccReg_Domains_i::getRow(CORBA::Short row)
 //    to_simple_string(ptime(not_a_date_time)).c_str()
   );
   // validace
-  ptime vt = d->getValExDate();
-  std::ostringstream vtime;
-  if (!vt.is_special())
-    vtime << vt.date().day() << "/" 
-          << vt.date().month() << "/" 
-          << vt.date().year();
   (*tr)[10] = CORBA::string_dup(
-    vtime.str().c_str()
+    formatTime(d->getValExDate(),false).c_str()
 //  to_simple_string(d->getValExDate()).c_str() 
   );
   return tr;
@@ -1102,7 +1117,7 @@ ccReg_Domains_i::exDate(const ccReg::DateInterval& _v)
     to = date(_v.to.year,_v.to.month,_v.to.day);
   }
   catch (...) {}
-  dl->setCrDateIntervalFilter(
+  dl->setExpirationDateFilter(
     time_period(
       ptime(from,time_duration(0,0,0)),
       ptime(to,time_duration(0,0,0))
@@ -1130,7 +1145,7 @@ ccReg_Domains_i::valExDate(const ccReg::DateInterval& _v)
     to = date(_v.to.year,_v.to.month,_v.to.day);
   }
   catch (...) {}
-  dl->setCrDateIntervalFilter(
+  dl->setValExDateFilter(
     time_period(
       ptime(from,time_duration(0,0,0)),
       ptime(to,time_duration(0,0,0))

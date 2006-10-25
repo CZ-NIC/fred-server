@@ -98,6 +98,10 @@ namespace Register
       virtual void setAdminHandleFilter(const std::string& adminHandle) = 0;
       /// set filter for domain name 
       virtual void setFQDNFilter(const std::string& fqdn) = 0;
+      /// set filter for period of expiration date
+      virtual void setExpirationDateFilter(time_period period) = 0;
+      /// set filter for period of val. expiration date
+      virtual void setValExDateFilter(time_period period) = 0;
       /// reload list with current filter
       virtual void reload() = 0;
       /// clear filter data

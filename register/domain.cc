@@ -171,12 +171,17 @@ namespace Register
       unsigned admin;
       std::string adminHandle;
       std::string fqdn;
+      time_period exDate;
+      time_period valExDate;
       DB *db;
      public:
       ListImpl(DB *_db) : 
         zoneFilter(0), registrarFilter(0), registrantFilter(0),
         crDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
-        nsset(0), admin(0), db(_db)
+        nsset(0), admin(0),
+        exDate(ptime(neg_infin),ptime(pos_infin)),
+        valExDate(ptime(neg_infin),ptime(pos_infin)),
+        db(_db)
       {
       }
       virtual ~ListImpl()
@@ -241,6 +246,14 @@ namespace Register
       {
         fqdn = _fqdn;
       }
+      virtual void setExpirationDateFilter(time_period period)
+      {
+        exDate = period;
+      }
+      virtual void setValExDateFilter(time_period period)
+      {
+        valExDate = period;
+      }
 #define MAKE_TIME(ROW,COL)  \
  (ptime(db->IsNotNull(ROW,COL) ? \
  time_from_string(db->GetFieldValue(ROW,COL)) : not_a_date_time))
@@ -278,7 +291,23 @@ namespace Register
         if (!crDateIntervalFilter.end().is_special())
           sql << "AND d.crDate<='" 
               <<  to_iso_extended_string(crDateIntervalFilter.end().date()) 
+              << " 23:59:59' ";
+        if (!exDate.begin().is_special())
+          sql << "AND d.exdate>='" 
+              <<  to_iso_extended_string(exDate.begin().date()) 
               << "' ";
+        if (!exDate.end().is_special())
+          sql << "AND d.exdate<='" 
+              <<  to_iso_extended_string(exDate.end().date()) 
+              << " 23:59:59' ";
+        if (!valExDate.begin().is_special())
+          sql << "AND ev.exdate>='" 
+              <<  to_iso_extended_string(valExDate.begin().date()) 
+              << "' ";
+        if (!valExDate.end().is_special())
+          sql << "AND ev.exdate<='" 
+              <<  to_iso_extended_string(valExDate.end().date()) 
+              << " 23:59:59' ";
         if (nsset)
           sql << "AND n.id=" << nsset << " ";
         if (!nssetHandle.empty())
