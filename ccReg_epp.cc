@@ -129,6 +129,13 @@ strcpy( valexpDate , "" );
 
 }
 
+bool ccReg_EPP_i::is_null( const char *str )
+{
+// nastavovani NULL hodnoty
+    if( strcmp( str  , ccReg::SET_NULL_VALUE  ) ==  0 || str[0] == 0x8 )return true;
+    else return false;
+
+}
 
 // DISCLOSE
 /*
@@ -1145,7 +1152,7 @@ if( DBsql.OpenDatabase( database ) )
                             if( DBsql.CheckContact( HANDLE ) )
                               {
                                 a[i].avail  =  ccReg::Exist ;    // objekt existuje
-                                a[i].reason =  CORBA::string_dup(   DBsql.GetReasonMessage( REASON_MSG_CONTACT_EXIST ) );
+                                a[i].reason =  CORBA::string_dup(   DBsql.GetReasonMessage( REASON_MSG_HANDLE_EXIST ) );
                                 LOG( NOTICE_LOG ,  "contact %s exist not Avail" , (const char * ) chck[i] );
                               }
                              else
@@ -1153,7 +1160,7 @@ if( DBsql.OpenDatabase( database ) )
                                if( DBsql.TestContactHandleHistory(  HANDLE  , DefaultContactHandlePeriod()  ) ) 
                                  {
                                      a[i].avail =  ccReg::DelPeriod;    // ochrana lhuta
-                                     a[i].reason =  CORBA::string_dup(    DBsql.GetReasonMessage( REASON_MSG_CONTACT_HISTORY ) );  // v ochrane lhute
+                                     a[i].reason =  CORBA::string_dup(    DBsql.GetReasonMessage( REASON_MSG_HANDLE_PROTECTED_PERIOD ) );  // v ochrane lhute
                                      LOG( NOTICE_LOG ,  "contact %s in delete period" ,(const char * ) chck[i] );
                                  }
                                 else
@@ -1169,7 +1176,7 @@ if( DBsql.OpenDatabase( database ) )
                          {
                             LOG( NOTICE_LOG ,  "bad format %s of contact handle"  , (const char * ) chck[i] );
                             a[i].avail = ccReg::BadFormat;    // spatny format
-                            a[i].reason =  CORBA::string_dup(  DBsql.GetReasonMessage(REASON_MSG_BAD_FORMAT_CONTACT_HANDLE  ));
+                            a[i].reason =  CORBA::string_dup(  DBsql.GetReasonMessage( REASON_MSG_HANDLE_BAD_FORMAT  ));
                          }
 
                         break;
@@ -1180,7 +1187,7 @@ if( DBsql.OpenDatabase( database ) )
                             if( DBsql.CheckNSSet( HANDLE ) )
                               {
                                 a[i].avail = ccReg::Exist;    // objekt existuje
-                                a[i].reason =  CORBA::string_dup( DBsql.GetReasonMessage( REASON_MSG_NSSET_EXIST )  );
+                                a[i].reason =  CORBA::string_dup( DBsql.GetReasonMessage( REASON_MSG_HANDLE_EXIST )  );
                                 LOG( NOTICE_LOG ,  "nsset %s exist not Avail" , (const char * ) chck[i] );
                               }
                              else
@@ -1188,7 +1195,7 @@ if( DBsql.OpenDatabase( database ) )
                                if( DBsql.TestNSSetHandleHistory( HANDLE ,  DefaultDomainNSSetPeriod()  ) )
                                  {
                                      a[i].avail =  ccReg::DelPeriod;    // ochrana lhuta
-                                     a[i].reason =  CORBA::string_dup( DBsql.GetReasonMessage( REASON_MSG_NSSET_HISTORY )  );  // v ochrane lhute
+                                     a[i].reason =  CORBA::string_dup( DBsql.GetReasonMessage( REASON_MSG_HANDLE_PROTECTED_PERIOD )  );  // v ochrane lhute
                                      LOG( NOTICE_LOG ,  "nsset %s in delete period" ,(const char * ) chck[i] );
                                  }
                                 else
@@ -1204,7 +1211,7 @@ if( DBsql.OpenDatabase( database ) )
                          {
                             LOG( NOTICE_LOG ,  "bad format %s of nsset handle"  , (const char * ) chck[i] );
                             a[i].avail = ccReg::BadFormat;    // spatny format
-                            a[i].reason =  CORBA::string_dup(  DBsql.GetReasonMessage(REASON_MSG_BAD_FORMAT_NSSET_HANDLE ) );
+                            a[i].reason =  CORBA::string_dup(  DBsql.GetReasonMessage( REASON_MSG_HANDLE_BAD_FORMAT ) );
                          }
 
                         break;
@@ -1849,24 +1856,24 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                                           // pridat zmenene polozky 
                                           if( remove_update_flag == false )
                                           {
-                                          DBsql.SET( "Name", c.Name );
-                                          DBsql.SET( "Organization", c.Organization );
-                                          DBsql.SET( "Street1", c.Street1 );
-                                          DBsql.SET( "Street2", c.Street2 );
-                                          DBsql.SET( "Street3", c.Street3 );
-                                          DBsql.SET( "City", c.City );
-                                          DBsql.SET( "StateOrProvince", c.StateOrProvince );
-                                          DBsql.SET( "PostalCode", c.PostalCode );
-                                          DBsql.SET( "Country", c.CC );
-                                          DBsql.SET( "Telephone", c.Telephone );
-                                          DBsql.SET( "Fax", c.Fax );
-                                          DBsql.SET( "Email", c.Email );
-                                          DBsql.SET( "NotifyEmail", c.NotifyEmail );
-                                          DBsql.SET( "VAT", c.VAT );
-                                          DBsql.SET( "SSN", c.SSN );
+                                          DBsql.NSET( "Name", c.Name  , is_null(c.Name ) );
+                                          DBsql.NSET( "Organization", c.Organization ,  is_null(c.Organization ));
+                                          DBsql.NSET( "Street1", c.Street1 , is_null(c.Street1 ));
+                                          DBsql.NSET( "Street2", c.Street2 , is_null(c.Street2));
+                                          DBsql.NSET( "Street3", c.Street3 , is_null(c.Street3 ));
+                                          DBsql.NSET( "City", c.City, is_null(c.City) );
+                                          DBsql.NSET( "StateOrProvince", c.StateOrProvince, is_null(c.StateOrProvince ) );
+                                          DBsql.NSET( "PostalCode", c.PostalCode, is_null(c.PostalCode ) );
+                                          DBsql.NSET( "Country", c.CC , is_null(c.CC ));
+                                          DBsql.NSET( "Telephone", c.Telephone , is_null(c.Telephone ));
+                                          DBsql.NSET( "Fax", c.Fax , is_null(c.Fax ));
+                                          DBsql.NSET( "Email", c.Email , is_null(c.Email ));
+                                          DBsql.NSET( "NotifyEmail", c.NotifyEmail , is_null(c.NotifyEmail ));
+                                          DBsql.NSET( "VAT", c.VAT , is_null(c.VAT  ));
+                                          DBsql.NSET( "SSN", c.SSN , is_null(c.SSN ));
                                           if(  c.SSNtype > ccReg::EMPTY )  DBsql.SET( "SSNtype" , c.SSNtype ); // typ ssn
                                           // heslo
-                                          DBsql.SET( "AuthInfoPw", c.AuthInfoPw ); 
+                                          DBsql.NSET( "AuthInfoPw", c.AuthInfoPw, is_null(c.AuthInfoPw ) ); 
 
 
 
@@ -3224,7 +3231,7 @@ if( DBsql.OpenDatabase( database ) )
                                     DBsql.SSET( "UpDate", "now" );
                                     DBsql.SET( "UpID", regID );
                                     DBsql.SSET( "status", statusString );
-                                    if( remove_update_flag == false ) DBsql.SET( "AuthInfoPw", authInfo_chg );    // zmena autentifikace  
+                                    if( remove_update_flag == false ) DBsql.NSET( "AuthInfoPw", authInfo_chg , is_null( authInfo_chg )  );    // zmena autentifikace  
                                     DBsql.WHEREID( id );
 
 
@@ -4420,7 +4427,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                       {
                                       if( nssetid )  DBsql.SET( "nsset", nssetid );    // zmena nssetu
                                       if( contactid ) DBsql.SET( "registrant", contactid );     // zmena drzitele domeny
-                                      DBsql.SET( "AuthInfoPw", authInfo_chg );  // zmena autentifikace
+                                      DBsql.NSET( "AuthInfoPw", authInfo_chg , is_null( authInfo_chg ) );  // zmena autentifikace
                                       }
                                       DBsql.WHEREID( id );
 

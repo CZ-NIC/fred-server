@@ -13,7 +13,6 @@
 
 #include "log.h"
 
-#include "nullvalue.h"
 
 // constructor 
 DB::DB()
@@ -972,15 +971,20 @@ if( length )
 // beaz escape 
 void DB::SSET( const char *fname , const char * value )
 {
-SETS( fname , value , false );
+SETS( fname , value , false , false );
 }
 // s escape 
 void DB::SET( const char *fname , const char * value )
 {
-SETS( fname , value , true );
+SETS( fname , value , true , false );
 }
 
-void DB::SETS( const char *fname , const char * value , bool esc )
+void DB::NSET( const char *fname , const char * value , bool null )
+{
+SETS( fname ,  value , true , null );
+}
+
+void DB::SETS( const char *fname , const char * value , bool esc  , bool null )
 {
 
 if( strlen( value ) )
@@ -990,7 +994,8 @@ if( strlen( value ) )
   SQLCat(fname );
   SQLCat( "=" );
  // ODSTRANIT zatim to pouziva take hack na znak \b
-   if( strcmp( value  , NULL_STRING ) ==  0 || value[0] == 0x8 ) // nastavi NULL value pro NULL string z IDL
+//   if( strcmp( value  , NULL_STRING ) ==  0 || value[0] == 0x8 ) // nastavi NULL value pro NULL string z IDL
+ if( null )
    {     
      SQLCat( "NULL" );           
    }

@@ -66,6 +66,9 @@ public:
   char update_DISCLOSE( bool  d   ,  ccReg::Disclose flag );
   bool setvalue_DISCLOSE( bool  d   ,  ccReg::Disclose flag );
 
+  //  otestovani retezce jestli neni nahodou NULL VALUE
+  bool is_null( const char *str );
+
   // obecna list funkce
   ccReg::Response* FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list , CORBA::Long clientID, const char* clTRID, const char* XML);
 

@@ -148,7 +148,8 @@ void UPDATE( const  char * table );
 // set 
 void SSET( const char *fname , const char * value ); // bez escape
 void SET( const char *fname , const char * value ); // s escape
-void SETS( const char *fname , const char * value , bool esc ); 
+void NSET( const char *fname , const char * value , bool null );
+void SETS( const char *fname , const char * value , bool esc  , bool null  ); 
 
 void SET( const  char *fname , int   value );
 void SET( const  char *fname , bool  value );
