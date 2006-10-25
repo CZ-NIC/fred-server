@@ -78,8 +78,8 @@ public:
 
   // methods corresponding to defined IDL attributes and operations
   ccReg::Response* GetTransaction(CORBA::Long clientID, const char* clTRID, CORBA::Short errCode );
-  ccReg::Response* PollAcknowledgement(CORBA::Long msgID, CORBA::Short& count, CORBA::Long& newmsgID, CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* PollRequest(CORBA::Long& msgID, CORBA::Short& count, ccReg::timestamp_out qDate, CORBA::String_out mesg, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* PollAcknowledgement(const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID,  CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* PollRequest(CORBA::String_out msgID, CORBA::Short& count, ccReg::timestamp_out qDate, CORBA::String_out mesg, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, const char* XML ,  CORBA::Long& clientID , const char* certID , ccReg::Languages lang);
   ccReg::Response* ClientLogout(CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* ClientCredit(ccReg::price& credit, CORBA::Long clientID, const char* clTRID, const char* XML);
