@@ -45,6 +45,16 @@ int main(int argc, char** argv)
     }
     strcpy( db , config.GetDBconninfo() );
     std::cout << "DATABASE: "  << db << endl;
+
+#ifdef SYSLOG
+    cout << "start syslog at level " 
+         <<  config.GetSYSLOGlevel()   << endl;
+    cout << "start syslog facility local" 
+         <<  config.GetSYSLOGlocal()   << endl;
+    setlogmask ( LOG_UPTO(  config.GetSYSLOGlevel()  )   );
+    openlog ( "ccReg", LOG_CONS | LOG_PID | LOG_NDELAY,  config.GetSYSLOGfacility() );
+#endif
+
     // Initialise the ORB.
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
     orbToShutdown = orb;
@@ -92,8 +102,12 @@ int main(int argc, char** argv)
       std::cout << "Database connection failed\n";
       exit(-2);
     } 
+
     myccReg_EPP_i->loadZones();
-     
+    myccReg_EPP_i->LoadCountryCode(); /// nacti ciselnik zemi
+    myccReg_EPP_i->LoadErrorMessages();  // nacti chybove zpravy
+    myccReg_EPP_i->LoadReasonMessages();  // nacti reason zpravy
+
     PortableServer::ObjectId_var myccReg_EPP_iid = 
       PortableServer::string_to_ObjectId("ccReg");
     poa->activate_object_with_id(myccReg_EPP_iid,myccReg_EPP_i);
@@ -111,14 +125,6 @@ int main(int argc, char** argv)
     
     // pokud projde uspesne test na pripojeni k databazi
     
-#ifdef SYSLOG
-    cout << "start syslog at level " 
-         <<  config.GetSYSLOGlevel()   << endl;
-    cout << "start syslog facility local" 
-         <<  config.GetSYSLOGlocal()   << endl;
-    setlogmask ( LOG_UPTO(  config.GetSYSLOGlevel()  )   );
-    openlog ( "ccReg", LOG_CONS | LOG_PID | LOG_NDELAY,  config.GetSYSLOGfacility() );
-#endif
 
     // Obtain a POAManager, and tell the POA to start accepting
     // requests on its objects.

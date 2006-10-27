@@ -1,6 +1,9 @@
 #include "admin.h"
 #include "whois.h"
 
+#include "countrycode.h"
+#include "messages.h"
+
 //
 //  class implementing IDL interface ccReg::EPP
 //
@@ -24,7 +27,7 @@ public:
   ccReg::Whois_ptr getWhois();
 
   // test spojeni na databazi
-  bool TestDatabaseConnect(char *db);
+  bool TestDatabaseConnect(const char *db);
 
   // nacteni zone z tabulky zones
   int loadZones(); // load zones
@@ -69,6 +72,18 @@ public:
   //  otestovani retezce jestli neni nahodou NULL VALUE
   bool is_null( const char *str );
 
+  // nacita tabulku zemi enum_country z databaze 
+  int LoadCountryCode();
+  // testuje kod zeme 
+  bool TestCountryCode( const char *cc );
+
+  int LoadErrorMessages(); 
+  char * GetErrorMessage(int err , int lang );
+
+  int LoadReasonMessages(); 
+  char * GetReasonMessage(int err , int lang);
+
+
   // obecna list funkce
   ccReg::Response* FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list , CORBA::Long clientID, const char* clTRID, const char* XML);
 
@@ -111,6 +126,9 @@ public:
 
  
 private:
+Mesg *ErrorMsg;
+Mesg *ReasonMsg;
+CountryCode *CC;
 char database[128]; // nazev spojeni na databazi
 ccReg::Zones *zone;
 int max_zone;
