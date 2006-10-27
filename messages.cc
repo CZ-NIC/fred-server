@@ -29,7 +29,7 @@ errMsg[add] =  new char[len];
 memset( errMsg[add] , 0 , len );
 strcpy( errMsg[add] , msg );
 // cesky preklad
-len = strlen( msg )+1;
+len = strlen( msg_cs )+1;
 LOG(DEBUG_LOG ,"alloc errMsg_cs[%d] size %d\n" , add , len );
 errMsg_cs[add] =  new char[len];
 memset( errMsg_cs[add] , 0 , len );
