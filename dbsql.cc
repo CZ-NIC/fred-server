@@ -131,21 +131,29 @@ return false; //nema
 
 // action
 // zpracovani action
-bool  DB::BeginAction(int clientID , int action ,const char *clTRID  , const char *xml  )
+int  DB::BeginAction(int clientID , int action ,const char *clTRID  , const char *xml  )
 {
+
+// HACK pro PIF
 
  // umozni  info funkce pro PIF
 if( action == EPP_ContactInfo ||  action == EPP_NSsetInfo ||   action ==  EPP_DomainInfo ) 
 {
-if( clientID == 0 ) { actionID = 0 ; loginID =  0 ;  return true;  }
+if( clientID == 0 ) { actionID = 0 ; loginID =  0 ;  return 1;  }
 }
+
 
 // actionID pro logovani
 actionID = GetSequenceID("action");
 loginID = clientID; // id klienta
+clientLang = LANG_EN; // default
+registrarID=0;
 
 if( actionID ) 
   {
+   //  zjisti id prihlaseneho registratora z tabulky Login
+   if( clientID ) registrarID= GetNumericFromTable( "LOGIN" , "registrarid" , "id" , clientID ); ;
+
   // zapis do action tabulky
   INSERT( "ACTION" );
   INTO( "id" );
@@ -160,20 +168,22 @@ if( actionID )
   
    if( EXEC() ) 
      {
+          // zjisti jazyk clienta v tabulce login
+           clientLang = ReturnClientLanguage();
+
         if( strlen( xml ) )
            {
                 INSERT("Action_XML");
                 VALUE( actionID );
                 VALUE( xml );
-                return  EXEC();
+                if(  EXEC() ) return registrarID;
            }
-        else return true;
+        else return registrarID;
      }
-   else return false;
+
   }
-else return false;
 
-
+return 0;
 }
 
 
@@ -203,6 +213,7 @@ WHEREID( actionID );
 // update tabulky
 id  =  actionID;
 actionID = 0 ; 
+registrarID=0;
 LOG( SQL_LOG ,  "EndAction svrTRID: %s" ,  svrTRID );
 
 if( EXEC() ) return   svrTRID;
@@ -225,8 +236,9 @@ else return "svrTRID ERROR";
 
 
 
-// vraci jazyk klienta
-int DB::GetClientLanguage()
+// vraci jazyk klienta z tabulky login
+
+int DB::ReturnClientLanguage()
 {
 int lang = LANG_EN; // default
 char sqlString[128];
@@ -244,6 +256,7 @@ if( ExecSelect( sqlString ) )
 
 return lang;
 }
+
 
 // zjistuje pocet hostu pro dany nsset
 int DB::GetNSSetHosts( int nssetID )
@@ -698,6 +711,7 @@ return ret;
 
 
 // test kodu zemo
+/*
 bool DB::TestCountryCode(const char *cc)
 {
 char sqlString[128];
@@ -714,6 +728,7 @@ if( ExecSelect( sqlString ) )
 
 return ret;
 }
+*/
 
 // vraci id registratora z domeny
 int DB::GetClientDomainRegistrant( int clID , int contactID )

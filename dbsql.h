@@ -44,10 +44,13 @@ long GetPrice(   int action  ,  int zone , int period  );
 bool UpdateCredit( int regID ,   int action  , int zone ,  int period  );
 
 // zpracovani action a ulozeni XML 
-bool BeginAction(int clientID , int action ,const char *clTRID  , const char *xml );
+// vraci registarID id registratora
+int BeginAction(int clientID , int action ,const char *clTRID  , const char *xml );
 char * EndAction(int response  );
 // vraci jazyk klienta
-int GetClientLanguage();
+int GetClientLanguage() {return clientLang;}
+// zjisti komunikujici jazyk z tabulky login
+int ReturnClientLanguage();
 
 // vraci handle nebo id tabulky
 int GetNumericFromTable( const char *table , const char *vname ,  const char *fname ,  const char *value);
@@ -91,10 +94,7 @@ int GetNSSetContacts( int nssetID );
 
 
 // vyssi funkce na vraceni value
-int GetLoginRegistrarID(int id) { 
-if( id == 0 ) return 0;
-else return GetNumericFromTable( "LOGIN" , "registrarid" , "id" , id ); 
-};
+int GetLoginRegistrarID(int id) { return  registrarID; } 
 
 int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "id" , "handle" , handle ); };
 char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "handle" , "id" , id ); };
@@ -104,27 +104,6 @@ char * GetStatusFromTable( char *table , int id ) {  return GetValueFromTable( t
 
 // vraci id registratora z domeny
 int GetClientDomainRegistrant( int clID , int contactID );
-
-// vraci chybovou zpravu z enum_error
-char * GetErrorMessageEN(int err ) {  return GetValueFromTable( "enum_error", "status" , "id" , err ); };
-char * GetErrorMessageCS(int err ) {  return GetValueFromTable( "enum_error", "status_cs" , "id" , err ); };
-char * GetErrorMessage( int err )   // vraci chybovou zpravu podle pouziteho jazyka
-       { if( GetClientLanguage() == LANG_CS ) return GetErrorMessageCS( err );
-         else return GetErrorMessageEN( err ); };
-
-// reason error message
-char * GetReasonMessageEN(int err ) {  return GetValueFromTable( "enum_reason", "reason" , "id" , err ); };
-char * GetReasonMessageCS(int err ) {  return GetValueFromTable( "enum_reason", "reason_cs" , "id" , err ); };
-char * GetReasonMessage( int err ) //  vraci chybovy posis duvod reason podle pouziteho jazyka
-       { if( GetClientLanguage() == LANG_CS ) return GetReasonMessageCS( err );
-         else return GetReasonMessageEN( err ); };
-
- 
-
-// test kodu zemo
-bool TestCountryCode(const char *cc);
-char * GetCountryNameEN( const char *cc ) { return GetValueFromTable("enum_country" , "country" , "id" , cc ); };
-char * GetCountryNameCS( const char *cc ) { return  GetValueFromTable("enum_country" , "country_cs" , "id" , cc ); };
 
 // test na vazu mezi tabulkami pro kontakt a nsset
 bool TestNSSetRelations(int id );
@@ -215,6 +194,8 @@ char *sqlBuffer;
 int actionID; // id tabulky akce
 int historyID; // id tabulky historie
 int loginID; // id klienta
+int clientLang;
+int registrarID;
 };
 
 #endif
