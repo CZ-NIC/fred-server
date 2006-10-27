@@ -17,8 +17,8 @@ ADMIN_SERVER_OBJECTS = \
     nameservice.o
 CCREG_SERVER_OBJECTS = \
     ccRegSK.o ccRegDynSK.o  ccReg_epp.o  ccReg_server.o  \
-    dbsql.o pqsql.o util.o status.o conf.o log.o admin.o whois.o \
-    nameservice.o
+    dbsql.o pqsql.o util.o status.o conf.o  log.o admin.o whois.o \
+    nameservice.o countrycode.o messages.o
 EPP_CLIENT_OBJECTS=ccRegSK.o ccRegDynSK.o  epp_client.o nameservice.o
 WHOIS_CLIENT_OBJECTS=ccRegSK.o whois_client.o nameservice.o
 
