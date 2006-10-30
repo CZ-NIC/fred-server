@@ -403,6 +403,30 @@ ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
   return cd;
 }
 
+CORBA::Long 
+ccReg_Admin_i::getEnumDomainCount()
+{
+  DB db;
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  Register::Domain::Manager *dm = r->getDomainManager();
+  CORBA::Long ret = dm->getEnumDomainCount();
+  db.Disconnect();
+  return ret;
+}
+
+CORBA::Long
+ccReg_Admin_i::getEnumNumberCount()
+{
+  DB db;
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  Register::Domain::Manager *dm = r->getDomainManager();
+  CORBA::Long ret = dm->getEnumNumberCount();
+  db.Disconnect();
+  return ret;
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_Session_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

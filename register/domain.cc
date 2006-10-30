@@ -472,7 +472,10 @@ namespace Register
         sql << "SELECT fqdn FROM domain WHERE "
             << "('" << fqdn << "' LIKE '%'||fqdn) OR "
             << "(fqdn LIKE '%'||'" << fqdn << "')";
-        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        if (!db->ExecSelect(sql.str().c_str())) {
+          db->FreeSelect();
+          throw SQL_ERROR();
+        }
         if (db->GetSelectRows() == 1) {
           std::string fqdnLoaded = db->GetFieldValue(0,0);
           if (fqdn == fqdnLoaded) ret = CA_REGISTRED;
@@ -491,7 +494,28 @@ namespace Register
           if (domain[i].length() != 1 || !IS_NUMBER(domain[i][0]))
             return false;
         return true;
-      } 
+      }
+      unsigned long getEnumDomainCount() const
+      {
+        std::stringstream sql;
+        unsigned ret = 0;
+        sql << "SELECT COUNT(*) FROM domain WHERE fqdn LIKE '%e164.arpa'";
+        if (db->ExecSelect(sql.str().c_str()) && db->GetSelectRows() == 1)
+          ret =  atol(db->GetFieldValue(0,0));
+        db->FreeSelect();
+        return ret;
+      }
+      unsigned long getEnumNumberCount() const
+      {
+        std::stringstream sql;
+        unsigned ret = 0;
+        sql << "SELECT SUM(power(10,(33-char_length(fqdn))/2)) "
+            << "FROM domain WHERE fqdn LIKE '%e164.arpa'";
+        if (db->ExecSelect(sql.str().c_str()) && db->GetSelectRows() == 1)
+          ret =  atol(db->GetFieldValue(0,0));
+        db->FreeSelect();
+        return ret;
+      }  
       virtual List *getList()
       {
         return &dlist;

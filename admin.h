@@ -214,7 +214,7 @@ class ccReg_Session_i : public POA_ccReg::Session,
   ccReg::NSSets_ptr getNSSets();
 };
 
-// implementace interface Admin
+// interface Admin implementation
 class ccReg_Admin_i: public POA_ccReg::Admin, 
                      public PortableServer::RefCountServantBase {
   std::string database;
@@ -227,22 +227,28 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   ccReg_Admin_i(const std::string database);
   virtual ~ccReg_Admin_i();
 
-  //session
+  // session
   virtual char* login(const char* username, const char* password);
   virtual ccReg::Session_ptr getSession(const char* sessionID);
 
-  // vypis registratoru
+  // registrar management
   ccReg::RegistrarList* getRegistrars();
   ccReg::Registrar* getRegistrarByHandle(const char* handle) 
     throw (ccReg::Admin::ObjectNotFound);
-
   void putRegistrar(const ccReg::Registrar& regData);
+  
+  // object detail
   ccReg::ContactDetail* getContactByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound);
   ccReg::NSSetDetail* getNSSetByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound);
   ccReg::DomainDetail* getDomainByFQDN(const char* fqdn)
     throw (ccReg::Admin::ObjectNotFound);
+
+  // statistics
+  CORBA::Long getEnumDomainCount();
+  CORBA::Long getEnumNumberCount();
+  
 
   /// testovaci fce na typ objektu
   void checkHandle(const char* handle, ccReg::CheckHandleType_out ch);
