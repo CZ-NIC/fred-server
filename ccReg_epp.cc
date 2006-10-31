@@ -22,7 +22,6 @@
 		
 // prace se status flagy
 #include "status.h"
-#include "flags.h"
 // log
 #include "log.h"
 
@@ -1423,8 +1422,7 @@ return ObjectCheck(  EPP_DomainCheck , "DOMAIN"  , "fqdn" ,   fqdn , a ,  client
 ccReg::Response* ccReg_EPP_i::ContactInfo(const char* handle, ccReg::Contact_out c , CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 DB DBsql;
-// Status status;
-int status ;
+Status status;
 ccReg::Response *ret;
 char HANDLE[64]; // handle na velka pismena
 char dateStr[MAX_DATE];
@@ -1467,9 +1465,8 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
         upid =  atoi( DBsql.GetFieldValueName("UpID" , 0 ) ); 
 
 
-        status = atoi(  DBsql.GetFieldValueName("flags" , 0 ) ) ; // priznaky statusu
 
-//        status.Make(  DBsql.GetFieldValueName("status" , 0 ) ) ; // status
+        status.Make(  DBsql.GetFieldValueName("status" , 0 ) ) ; // status
 
 
 	c->handle=CORBA::string_dup( DBsql.GetFieldValueName("handle" , 0 ) ); // handle
@@ -1540,10 +1537,18 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
 	DBsql.FreeSelect();
 
 
-        // zpracuj pole statusu        
-        len = NUM_FLAGS( status);
+
+
+
+        // zpracuj pole statusu
+        len =  status.Length();
         c->stat.length(len);
-        for( i = 0 ; i < len  ; i ++) c->stat[i] = CORBA::string_dup(  GET_FLAGNAME(   GET_FLAG( status , i ) )  );
+
+        for( i = 0 ; i < len  ; i ++)
+           {
+              c->stat[i] = CORBA::string_dup( status.GetStatusString(  status.Get(i)  ) );
+           }
+
            
         
               
@@ -1679,9 +1684,10 @@ return ret;
 ccReg::Response* ccReg_EPP_i::ContactDelete(const char* handle , CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 ccReg::Response *ret;
+Status status;
 DB DBsql;
 char HANDLE[64];
-int regID , id ,  clID , status;
+int regID , id ,  clID;
 
 ret = new ccReg::Response;
 
@@ -1728,9 +1734,10 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
                     }                               
                   else                                                                                           
                     {
-                      //  jestli je status delete
-                      status =  DBsql.GetNumericFromTable( "CONTACT", "flags", "id" , id ) ;
-                      if(  status & DELETE_STATUS   )
+                      // zpracuj  pole statusu
+                      status.Make( DBsql.GetStatusFromTable( "CONTACT", id ) );
+
+                      if( status.Test( STATUS_DELETE ) )
                         {
                           LOG( WARNING_LOG, "status DeleteProhibited" );
                           ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
