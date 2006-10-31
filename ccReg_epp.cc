@@ -5127,7 +5127,22 @@ GetValExpDateFromExtension( valexpiryDate , ext );
       if( ( regID = DBsql.BeginAction( clientID, EPP_DomainRenew,  clTRID , XML )  ) )
         {
 
-       if(  ( zone = getFQDN( FQDN , fqdn ) ) > 0 ) 
+
+
+      // preved fqd na  mala pismena a otestuj to
+       if(  ( zone = getFQDN( FQDN , fqdn ) ) <= 0  )  // spatny format navu domeny
+         {
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "not in zone %d" , zone );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::domainCreate_fqdn;
+            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN , CLIENT_LANG() ) );
+            else  ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN , CLIENT_LANG() )   );
+
+        }
+      else
+
          {
 
 
@@ -5386,7 +5401,22 @@ LOG( NOTICE_LOG, "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  ", (int
       if( (  regID =  DBsql.BeginAction( clientID, EPP_DomainTransfer, clTRID , XML  )  ) )
         {
 
-       if(  ( zone = getFQDN( FQDN , fqdn ) ) > 0 ) // spatny format navu domeny
+
+      // preved fqd na  mala pismena a otestuj to
+       if(  ( zone = getFQDN( FQDN , fqdn ) ) <= 0  )  // spatny format navu domeny
+         {
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "not in zone %d" , zone );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::domainCreate_fqdn;
+            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN , CLIENT_LANG() ) );
+            else  ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN , CLIENT_LANG() )   );
+
+        }
+      else
+
+
          {
 
 
