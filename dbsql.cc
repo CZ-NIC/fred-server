@@ -986,20 +986,21 @@ if( length )
 // beaz escape 
 void DB::SSET( const char *fname , const char * value )
 {
-SETS( fname , value , false , false );
+SETS( fname , value , false   );
 }
 // s escape 
 void DB::SET( const char *fname , const char * value )
 {
-SETS( fname , value , true , false );
+SETS( fname , value , true );
 }
 
+/*
 void DB::NSET( const char *fname , const char * value , bool null )
 {
 SETS( fname ,  value , true , null );
 }
-
-void DB::SETS( const char *fname , const char * value , bool esc  , bool null )
+*/
+void DB::SETS( const char *fname , const char * value , bool esc /* , bool null  */)
 {
 
 if( strlen( value ) )
@@ -1010,7 +1011,9 @@ if( strlen( value ) )
   SQLCat( "=" );
  // ODSTRANIT zatim to pouziva take hack na znak \b
 //   if( strcmp( value  , NULL_STRING ) ==  0 || value[0] == 0x8 ) // nastavi NULL value pro NULL string z IDL
- if( null )
+
+// if( null )
+  if(   value[0] == 0x8 )  //  zatim pouzivat s mod_eppd hack na znak \b
    {     
      SQLCat( "NULL" );           
    }

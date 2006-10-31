@@ -22,7 +22,7 @@
 		
 // prace se status flagy
 #include "status.h"
-
+#include "flags.h"
 // log
 #include "log.h"
 
@@ -228,7 +228,7 @@ strcpy( valexpDate , "" );
     }
 
 }
-
+/*
 bool ccReg_EPP_i::is_null( const char *str )
 {
 // nastavovani NULL hodnoty
@@ -236,7 +236,7 @@ bool ccReg_EPP_i::is_null( const char *str )
     else return false;
 
 }
-
+*/
 // DISCLOSE
 /*
  info
@@ -1423,7 +1423,8 @@ return ObjectCheck(  EPP_DomainCheck , "DOMAIN"  , "fqdn" ,   fqdn , a ,  client
 ccReg::Response* ccReg_EPP_i::ContactInfo(const char* handle, ccReg::Contact_out c , CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 DB DBsql;
-Status status;
+// Status status;
+int status ;
 ccReg::Response *ret;
 char HANDLE[64]; // handle na velka pismena
 char dateStr[MAX_DATE];
@@ -1466,8 +1467,9 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
         upid =  atoi( DBsql.GetFieldValueName("UpID" , 0 ) ); 
 
 
+        status = atoi(  DBsql.GetFieldValueName("flags" , 0 ) ) ; // priznaky statusu
 
-        status.Make(  DBsql.GetFieldValueName("status" , 0 ) ) ; // status
+//        status.Make(  DBsql.GetFieldValueName("status" , 0 ) ) ; // status
 
 
 	c->handle=CORBA::string_dup( DBsql.GetFieldValueName("handle" , 0 ) ); // handle
@@ -1509,8 +1511,6 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
 
 
 
-
-
         // DiscloseFlag nastaveni podle defaul policy servru
 
         if( DefaultPolicy() ) c->DiscloseFlag = ccReg::DISCL_HIDE;
@@ -1540,15 +1540,12 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
 	DBsql.FreeSelect();
 
 
-        // zpracuj pole statusu
-        len =  status.Length();
+        // zpracuj pole statusu        
+        len = NUM_FLAGS( status);
         c->stat.length(len);
-
-        for( i = 0 ; i < len  ; i ++)
-           {
-              c->stat[i] = CORBA::string_dup( status.GetStatusString(  status.Get(i)  ) );
-           }
-
+        for( i = 0 ; i < len  ; i ++) c->stat[i] = CORBA::string_dup(  GET_FLAGNAME(   GET_FLAG( status , i ) )  );
+           
+        
               
         // identifikator registratora
         c->CrID =  CORBA::string_dup(  DBsql.GetRegistrarHandle( crid ) );
@@ -1683,9 +1680,8 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(const char* handle , CORBA::Long cli
 {
 ccReg::Response *ret;
 DB DBsql;
-Status status;
 char HANDLE[64];
-int regID , id ,  clID ;
+int regID , id ,  clID , status;
 
 ret = new ccReg::Response;
 
@@ -1732,10 +1728,9 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
                     }                               
                   else                                                                                           
                     {
-                      // zpracuj  pole statusu
-                      status.Make( DBsql.GetStatusFromTable( "CONTACT", id ) );
-
-                      if( status.Test( STATUS_DELETE ) )
+                      //  jestli je status delete
+                      status =  DBsql.GetNumericFromTable( "CONTACT", "flags", "id" , id ) ;
+                      if(  status & DELETE_STATUS   )
                         {
                           LOG( WARNING_LOG, "status DeleteProhibited" );
                           ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -1947,24 +1942,24 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                                           // pridat zmenene polozky 
                                           if( remove_update_flag == false )
                                           {
-                                          DBsql.NSET( "Name", c.Name  , is_null(c.Name ) );
-                                          DBsql.NSET( "Organization", c.Organization ,  is_null(c.Organization ));
-                                          DBsql.NSET( "Street1", c.Street1 , is_null(c.Street1 ));
-                                          DBsql.NSET( "Street2", c.Street2 , is_null(c.Street2));
-                                          DBsql.NSET( "Street3", c.Street3 , is_null(c.Street3 ));
-                                          DBsql.NSET( "City", c.City, is_null(c.City) );
-                                          DBsql.NSET( "StateOrProvince", c.StateOrProvince, is_null(c.StateOrProvince ) );
-                                          DBsql.NSET( "PostalCode", c.PostalCode, is_null(c.PostalCode ) );
-                                          DBsql.NSET( "Country", c.CC , is_null(c.CC ));
-                                          DBsql.NSET( "Telephone", c.Telephone , is_null(c.Telephone ));
-                                          DBsql.NSET( "Fax", c.Fax , is_null(c.Fax ));
-                                          DBsql.NSET( "Email", c.Email , is_null(c.Email ));
-                                          DBsql.NSET( "NotifyEmail", c.NotifyEmail , is_null(c.NotifyEmail ));
-                                          DBsql.NSET( "VAT", c.VAT , is_null(c.VAT  ));
-                                          DBsql.NSET( "SSN", c.SSN , is_null(c.SSN ));
+                                          DBsql.SET( "Name", c.Name );
+                                          DBsql.SET( "Organization", c.Organization );
+                                          DBsql.SET( "Street1", c.Street1 );
+                                          DBsql.SET( "Street2", c.Street2 );
+                                          DBsql.SET( "Street3", c.Street3 );
+                                          DBsql.SET( "City", c.City );
+                                          DBsql.SET( "StateOrProvince", c.StateOrProvince );
+                                          DBsql.SET( "PostalCode", c.PostalCode);
+                                          DBsql.SET( "Country", c.CC );
+                                          DBsql.SET( "Telephone", c.Telephone );
+                                          DBsql.SET( "Fax", c.Fax );
+                                          DBsql.SET( "Email", c.Email );
+                                          DBsql.SET( "NotifyEmail", c.NotifyEmail );
+                                          DBsql.SET( "VAT", c.VAT );
+                                          DBsql.SET( "SSN", c.SSN );
                                           if(  c.SSNtype > ccReg::EMPTY )  DBsql.SET( "SSNtype" , c.SSNtype ); // typ ssn
                                           // heslo
-                                          DBsql.NSET( "AuthInfoPw", c.AuthInfoPw, is_null(c.AuthInfoPw ) ); 
+                                          DBsql.SET( "AuthInfoPw", c.AuthInfoPw ); 
 
 
 
@@ -3311,7 +3306,7 @@ if( DBsql.OpenDatabase( database ) )
                                     DBsql.SSET( "UpDate", "now" );
                                     DBsql.SET( "UpID", regID );
                                     DBsql.SSET( "status", statusString );
-                                    if( remove_update_flag == false ) DBsql.NSET( "AuthInfoPw", authInfo_chg , is_null( authInfo_chg )  );    // zmena autentifikace  
+                                    if( remove_update_flag == false ) DBsql.SET( "AuthInfoPw", authInfo_chg   );    // zmena autentifikace  
                                     DBsql.WHEREID( id );
 
 
@@ -4486,7 +4481,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                       {
                                       if( nssetid )  DBsql.SET( "nsset", nssetid );    // zmena nssetu
                                       if( contactid ) DBsql.SET( "registrant", contactid );     // zmena drzitele domeny
-                                      DBsql.NSET( "AuthInfoPw", authInfo_chg , is_null( authInfo_chg ) );  // zmena autentifikace
+                                      DBsql.SET( "AuthInfoPw", authInfo_chg  );  // zmena autentifikace
                                       }
                                       DBsql.WHEREID( id );
 

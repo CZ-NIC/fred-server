@@ -70,7 +70,7 @@ public:
   bool setvalue_DISCLOSE( bool  d   ,  ccReg::Disclose flag );
 
   //  otestovani retezce jestli neni nahodou NULL VALUE
-  bool is_null( const char *str );
+//   bool is_null( const char *str );
 
   // nacita tabulku zemi enum_country z databaze 
   int LoadCountryCode();
