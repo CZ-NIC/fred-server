@@ -8,8 +8,8 @@
 class Mesg
 {
 public:
-Mesg::Mesg(int num);
-Mesg::~Mesg();
+Mesg(int num);
+~Mesg();
 
 void SetLang(int l )
 {
