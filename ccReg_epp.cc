@@ -4235,8 +4235,8 @@ ret->errors.length( 0 );
 
 strcpy( valexpiryDate , "" ); // default
 
-LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registrant_chg  [%s] authInfo_chg [%s]  nsset_chg [%s] ext.length %d",
-      (int )  clientID, clTRID, fqdn, registrant_chg, authInfo_chg, nsset_chg , ext.length() );
+LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registrant_chg  [%s] authInfo_chg [%s]  nsset_chg [%s] ext.length %ld",
+      (int )  clientID, clTRID, fqdn, registrant_chg, authInfo_chg, nsset_chg , (long)ext.length() );
 
 
 // parse extension
