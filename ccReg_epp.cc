@@ -685,12 +685,11 @@ LOG( NOTICE_LOG, "GetTransaction: clientID -> %d clTRID [%s] ",  (int )  clientI
 return ret;
 }
 
-/***********************************************************************
- *
+/*
  * FUNCTION:    PollAcknowledgement
  *
- * DESCRIPTION: potvrezeni prijeti zpravy msgID 
- *              vraci pocet zbyvajicich zprav count 
+ * DESCRIPTION: potvrezeni prijeti zpravy msgID
+ *              vraci pocet zbyvajicich zprav count
  *              a dalsi zpravu newmsgID
  *
  * PARAMETERS:  msgID - cislo zpravy ve fronte
@@ -698,41 +697,39 @@ return ret;
  *        OUT:  newmsgID - cislo nove zpravy
  *              clTRID - cislo transakce klienta
  *              clientID - identifikace klienta
- * 
+ *
  * RETURNED:    svTRID a errCode
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::PollAcknowledgement(const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID,  CORBA::Long clientID,const char* clTRID, const char* XML)
+
+ccReg::Response * ccReg_EPP_i::PollAcknowledgement( CORBA::Long msgID, CORBA::Short & count, CORBA::Long & newmsgID, CORBA::Long clientID, const char *clTRID ,
+const char* XML )
 {
 DB DBsql;
 ccReg::Response * ret;
 char sqlString[1024];
 int regID, rows;
-long mID;
+
 ret = new ccReg::Response;
 ret->errCode = 0;
 ret->errors.length( 0 );
 count = 0;
-newmsgID =  CORBA::string_dup("");
+newmsgID = 0;
 
-// LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %s", (int) clientID, clTRID,   msgID );
-
+LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", (int) clientID, clTRID,   (int ) msgID );
   if( DBsql.OpenDatabase( database ) )
     {
 
+      // get  registrator ID
+      regID = DBsql.GetLoginRegistrarID( clientID );
 
-      if( ( regID =  DBsql.BeginAction( clientID, EPP_PollAcknowledgement, clTRID , XML )  ) )
+      if( DBsql.BeginAction( clientID, EPP_PollAcknowledgement, clTRID , XML ) )
         {
 
-          rows = 0;
-
-           mID = atol( msgID );
-          if( mID > 0 )
-          { 
           // test msg ID and clientID
-          sprintf( sqlString, "SELECT * FROM MESSAGE WHERE id=%ld AND clID=%d;",  mID  , regID );
-          
+          sprintf( sqlString, "SELECT * FROM MESSAGE WHERE id=%d AND clID=%d;",  (int ) msgID  , regID );
+          rows = 0;
           if( DBsql.ExecSelect( sqlString ) )
             {
               rows = DBsql.GetSelectRows();
@@ -741,23 +738,21 @@ newmsgID =  CORBA::string_dup("");
           else
             ret->errCode = COMMAND_FAILED;
 
-          }
-
-         if( rows == 0 )
-           {
-                  LOG( ERROR_LOG, "unknown msgID %s",   msgID );
+              if( rows == 0 )
+                {
+                  LOG( ERROR_LOG, "unknown msgID %d", (int)  msgID );
                   ret->errors.length( 1 );
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                   ret->errors[0].code = ccReg::pollAck_msgID;   // spatna msg ID
                   ret->errors[0].value <<= msgID;
-                  ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_UNKNOW_MSGID , CLIENT_LANG() ) );
-             }
-          else  
+                  ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_UNKNOW_MSGID  , CLIENT_LANG()  ) );
+                }
+          else
 
           if( rows == 1 )       // pokud tam ta zprava existuje
             {
-              // oznac zpravu jako prectenou  
-              sprintf( sqlString, "UPDATE MESSAGE SET seen='t' WHERE id=%ld AND clID=%d;",  mID, regID );
+              // oznac zpravu jako prectenou
+              sprintf( sqlString, "UPDATE MESSAGE SET seen='t' WHERE id=%d AND clID=%d;", (int ) msgID, regID );
 
               if( DBsql.ExecSQL( sqlString ) )
                 {
@@ -770,8 +765,8 @@ newmsgID =  CORBA::string_dup("");
                       if( rows > 0 )    // pokud jsou nejake zpravy ve fronte
                         {
                           count = rows; // pocet dalsich zprav
-                          newmsgID =  CORBA::string_dup( DBsql.GetFieldValue( 0, 0 ) );                             
-                          LOG( NOTICE_LOG, "PollAcknowledgement: newmsgID -> %s count -> %d",  (const char *)newmsgID, count );
+                          newmsgID = atoi( DBsql.GetFieldValue( 0, 0 ) );
+                          LOG( NOTICE_LOG, "PollAcknowledgement: newmsgID -> %d count -> %d", (int ) newmsgID, count );
                         }
 
                       DBsql.FreeSelect();
@@ -792,7 +787,7 @@ newmsgID =  CORBA::string_dup("");
       else
         ret->errCode = COMMAND_FAILED;
 
-      ret->errMsg = CORBA::string_dup( GetErrorMessage( ret->errCode , CLIENT_LANG() ) );
+      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
 
       DBsql.Disconnect();
     }
@@ -813,22 +808,22 @@ newmsgID =  CORBA::string_dup("");
  *
  * FUNCTION:    PollAcknowledgement
  *
- * DESCRIPTION: ziskani zpravy msgID z fronty 
- *              vraci pocet zprav ve fronte a obsah zpravy        
+ * DESCRIPTION: ziskani zpravy msgID z fronty
+ *              vraci pocet zprav ve fronte a obsah zpravy
  *
- * PARAMETERS: 
+ * PARAMETERS:
  *        OUT:  msgID - cislo zpozadovane pravy ve fronte
- *        OUT:  count -  pocet 
+ *        OUT:  count -  pocet
  *        OUT:  qDate - datum a cas zpravy
- *        OUT:  mesg  - obsah zpravy  
+ *        OUT:  mesg  - obsah zpravy
  *              clTRID - cislo transakce klienta
  *              clientID - identifikace klienta
- * 
+ *
  * RETURNED:    svTRID a errCode
  *
  ***********************************************************************/
 
-ccReg::Response * ccReg_EPP_i::PollRequest( CORBA::String_out msgID, CORBA::Short & count, ccReg::timestamp_out qDate, CORBA::String_out mesg, CORBA::Long clientID, const char *clTRID , const char* XML )
+ccReg::Response * ccReg_EPP_i::PollRequest( CORBA::Long & msgID, CORBA::Short & count, ccReg::timestamp_out qDate, CORBA::String_out mesg, CORBA::Long clientID, const char *clTRID , const char* XML )
 {
 DB DBsql;
 char sqlString[1024];
@@ -839,42 +834,46 @@ int rows;
 ret = new ccReg::Response;
 
 
+
 //vyprazdni
 qDate =  CORBA::string_dup( "" );
 count = 0;
-msgID =  CORBA::string_dup( "" );
+msgID = 0;
 mesg = CORBA::string_dup( "" );       // prazdna hodnota
 
 ret->errCode = 0;
 ret->errors.length( 0 );
 
 
-LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s]",  (int ) clientID, clTRID);
+LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s] msgID %d",  (int ) clientID, clTRID, (int ) msgID );
 
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( (  regID =  DBsql.BeginAction( clientID, EPP_PollAcknowledgement,  clTRID , XML )  ) )
+      // get  registrator ID
+      regID = DBsql.GetLoginRegistrarID( clientID );
+
+
+      if( DBsql.BeginAction( clientID, EPP_PollAcknowledgement,  clTRID , XML ) )
         {
 
-         
           // vypsani zprav z fronty
           sprintf( sqlString, "SELECT *  FROM MESSAGE  WHERE clID=%d AND seen='f' AND exDate > 'now()' ;", regID );
 
           if( DBsql.ExecSelect( sqlString ) )
             {
-              rows = DBsql.GetSelectRows();   // pocet zprav 
+              rows = DBsql.GetSelectRows();   // pocet zprav
 
               if( rows > 0 )    // pokud jsou nejake zpravy ve fronte
                 {
                   count = rows;
                   // prevede cas s postgres na rfc3339 cas s offsetem casove zony
-                  get_dateStr( dateStr , DBsql.GetFieldValueName("CrDate" , 0 ) ); 
+                  get_dateStr( dateStr , DBsql.GetFieldValueName("CrDate" , 0 ) );
                   qDate =  CORBA::string_dup( dateStr );
-                  msgID =  CORBA::string_dup( DBsql.GetFieldValueName( "ID", 0 ) );
+                  msgID = atoi( DBsql.GetFieldValueName( "ID", 0 ) );
                   mesg = CORBA::string_dup( DBsql.GetFieldValueName( "message", 0 ) );
                   ret->errCode = COMMAND_ACK_MESG;      // zpravy jsou ve fronte
-                  LOG( NOTICE_LOG, "PollRequest: msgID -> %s count -> %d mesg [%s]", (const char *)  msgID, count, CORBA::string_dup( mesg ) );
+                  LOG( NOTICE_LOG, "PollRequest: msgID -> %d count -> %d mesg [%s]",  (int )  msgID, count, CORBA::string_dup( mesg ) );
                 }
               else
                 ret->errCode = COMMAND_NO_MESG; // zadne zpravy ve fronte
@@ -884,7 +883,6 @@ LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s]",  (int ) clientID, cl
           else
             ret->errCode = COMMAND_FAILED;
 
-         
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
 
@@ -893,7 +891,7 @@ LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s]",  (int ) clientID, cl
         ret->errCode = COMMAND_FAILED;
 
 
-      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
 
       DBsql.Disconnect();
     }
@@ -907,6 +905,8 @@ if( ret->errCode == 0 )
 
 return ret;
 }
+
+
 
 
 
