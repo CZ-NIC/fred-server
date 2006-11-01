@@ -119,6 +119,8 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
   std::string fqdnFilter;
   ccReg::DateInterval exDateFilter;
   ccReg::DateInterval valExDateFilter;
+  std::string techAdminHandleFilter;
+  std::string nssetIPFilter;
  public:
   ccReg_Domains_i(Register::Domain::List *dl);
   ~ccReg_Domains_i();
@@ -147,6 +149,10 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
   void exDate(const ccReg::DateInterval& _v);
   ccReg::DateInterval valExDate();
   void valExDate(const ccReg::DateInterval& _v);
+  char *techAdminHandle();
+  void techAdminHandle(const char * _v);
+  char *nssetIP();
+  void nssetIP(const char *_v);
   ccReg::Filter_ptr aFilter();  
   void clear();
 };

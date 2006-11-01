@@ -173,6 +173,8 @@ namespace Register
       std::string fqdn;
       time_period exDate;
       time_period valExDate;
+      std::string techAdmin;
+      std::string hostIP;
       DB *db;
      public:
       ListImpl(DB *_db) : 
@@ -254,6 +256,14 @@ namespace Register
       {
         valExDate = period;
       }
+      virtual void setTechAdminHandleFilter(const std::string& handle)
+      {
+        techAdmin = handle;
+      }
+      virtual void setHostIPFilter(const std::string& ip)
+      {
+        hostIP = ip;
+      }
 #define MAKE_TIME(ROW,COL)  \
  (ptime(db->IsNotNull(ROW,COL) ? \
  time_from_string(db->GetFieldValue(ROW,COL)) : not_a_date_time))
@@ -274,6 +284,9 @@ namespace Register
             << "LEFT JOIN contact ac ON (adcm.contactid=ac.id) "
             << "LEFT JOIN registrar ureg ON (d.upid=ureg.id) "
             << "LEFT JOIN enumval ev ON (d.id=ev.domainid) "
+            << "LEFT JOIN nsset_contact_map ncm ON (ncm.nssetid=n.id) "
+            << "LEFT JOIN contact tc ON (ncm.contactid=tc.id) "
+            << "LEFT JOIN host h ON (n.id=h.nssetid) "
             << "WHERE d.registrant=c.id AND d.crid=creg.id "
             << "AND d.clid=r.id ";
         if (registrarFilter)
@@ -317,7 +330,12 @@ namespace Register
         if (!adminHandle.empty())
           sql << "AND ac.handle='" << adminHandle << "' ";          
         if (!fqdn.empty())
-          sql << "AND d.fqdn LIKE '%" << fqdn << "%' ";          
+          sql << "AND d.fqdn LIKE '%" << fqdn << "%' ";
+        if (!techAdmin.empty())
+          sql << "AND tc.handle='" << techAdmin << "' ";
+        if (!hostIP.empty())
+          sql << "AND STRPOS(ARRAY_TO_STRING(h.ipaddr,' '),'"
+              << hostIP << "')!=0 ";        
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {

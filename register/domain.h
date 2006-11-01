@@ -102,6 +102,10 @@ namespace Register
       virtual void setExpirationDateFilter(time_period period) = 0;
       /// set filter for period of val. expiration date
       virtual void setValExDateFilter(time_period period) = 0;
+      /// set filter for admin handle in associated nsset 
+      virtual void setTechAdminHandleFilter(const std::string& handle) = 0;
+      /// set filter for IP address in associated nsset 
+      virtual void setHostIPFilter(const std::string& ip) = 0;
       /// reload list with current filter
       virtual void reload() = 0;
       /// clear filter data

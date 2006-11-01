@@ -1117,6 +1117,32 @@ ccReg_Domains_i::valExDate(const ccReg::DateInterval& _v)
   );
 }
 
+char *
+ccReg_Domains_i::techAdminHandle()
+{
+  return DUPSTRC(techAdminHandleFilter);
+}
+
+void 
+ccReg_Domains_i::techAdminHandle(const char * _v)
+{
+  techAdminHandleFilter = _v;
+  dl->setTechAdminHandleFilter(techAdminHandleFilter);
+}
+
+char *
+ccReg_Domains_i::nssetIP()
+{
+  return DUPSTRC(nssetIPFilter);
+}
+
+void 
+ccReg_Domains_i::nssetIP(const char *_v)
+{
+  nssetIPFilter = _v;
+  dl->setHostIPFilter(nssetIPFilter);
+}
+
 ccReg::Filter_ptr
 ccReg_Domains_i::aFilter()
 {
