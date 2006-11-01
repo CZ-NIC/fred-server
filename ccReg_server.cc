@@ -103,10 +103,26 @@ int main(int argc, char** argv)
       exit(-2);
     } 
 
-    myccReg_EPP_i->loadZones();
-    myccReg_EPP_i->LoadCountryCode(); /// nacti ciselnik zemi
-    myccReg_EPP_i->LoadErrorMessages();  // nacti chybove zpravy
-    myccReg_EPP_i->LoadReasonMessages();  // nacti reason zpravy
+    if( myccReg_EPP_i->loadZones() <= 0  ){
+      std::cout << "Database error: load zones\n";
+      exit(-4);
+    }
+ 
+    if( myccReg_EPP_i->LoadCountryCode() <= 0 ){  /// nacti ciselnik zemi
+      std::cout << "Database error: load country code\n";
+      exit(-5);
+    }
+       
+    if( myccReg_EPP_i->LoadErrorMessages() <= 0 ){  // nacti chybove zpravy
+      std::cout << "Database error: load country error messages\n";
+      exit(-6);
+    }
+
+     if( myccReg_EPP_i->LoadReasonMessages()  <= 0 ){   // nacti reason zpravy
+      std::cout << "Database error: load country reason messages\n";
+      exit(-7);
+    }
+
 
     PortableServer::ObjectId_var myccReg_EPP_iid = 
       PortableServer::string_to_ObjectId("ccReg");
