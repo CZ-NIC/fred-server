@@ -77,6 +77,24 @@ namespace Register
     ) = 0;
     /// set filter for period of crDate
     virtual void setCrDateIntervalFilter(time_period period) = 0;
+    /// set filter for create registrar
+    virtual void setCreateRegistrarFilter(unsigned registrarId) = 0;
+    /// set filter for create registrar handle
+    virtual void setCreateRegistrarHandleFilter(
+      const std::string& registrarHandle
+    ) = 0;
+    /// set filter for period of upDate
+    virtual void setUpdateIntervalFilter(time_period period) = 0;
+    /// set filter for update registrar
+    virtual void setUpdateRegistrarFilter(unsigned registrarId) = 0;
+    /// set filter for update registrar handle
+    virtual void setUpdateRegistrarHandleFilter(
+      const std::string& registrarHandle
+    ) = 0;
+    /// set filter for period of trDate
+    virtual void setTrDateIntervalFilter(time_period period) = 0;
+    /// clear filter
+    virtual void clear() = 0;
   };
   
 };

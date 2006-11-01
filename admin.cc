@@ -851,6 +851,64 @@ ccReg_RegObjectFilter_i::registrarHandle(const char* _v)
   ol->setRegistrarHandleFilter(registrarHandleFilter);
 }
 
+// ---
+
+CORBA::Short 
+ccReg_RegObjectFilter_i::createRegistrar()
+{
+  return createRegistrarFilter;
+}
+
+void 
+ccReg_RegObjectFilter_i::createRegistrar(CORBA::Short _v)
+{
+  createRegistrarFilter = _v;
+  ol->setCreateRegistrarFilter(_v);
+}
+
+char* 
+ccReg_RegObjectFilter_i::createRegistrarHandle()
+{
+  return CORBA::string_dup(createRegistrarHandleFilter.c_str());
+}
+
+void 
+ccReg_RegObjectFilter_i::createRegistrarHandle(const char* _v)
+{
+  createRegistrarHandleFilter = _v;
+  ol->setCreateRegistrarHandleFilter(createRegistrarHandleFilter);
+}
+
+// --
+
+CORBA::Short 
+ccReg_RegObjectFilter_i::updateRegistrar()
+{
+  return updateRegistrarFilter;
+}
+
+void 
+ccReg_RegObjectFilter_i::updateRegistrar(CORBA::Short _v)
+{
+  updateRegistrarFilter = _v;
+  ol->setUpdateRegistrarFilter(_v);
+}
+
+char* 
+ccReg_RegObjectFilter_i::updateRegistrarHandle()
+{
+  return CORBA::string_dup(updateRegistrarHandleFilter.c_str());
+}
+
+void 
+ccReg_RegObjectFilter_i::updateRegistrarHandle(const char* _v)
+{
+  updateRegistrarHandleFilter = _v;
+  ol->setUpdateRegistrarHandleFilter(updateRegistrarHandleFilter);
+}
+
+// ---
+
 ccReg::DateInterval 
 ccReg_RegObjectFilter_i::crDate()
 {
@@ -872,6 +930,66 @@ ccReg_RegObjectFilter_i::crDate(const ccReg::DateInterval& _v)
   }
   catch (...) {}
   ol->setCrDateIntervalFilter(
+    time_period(
+      ptime(from,time_duration(0,0,0)),
+      ptime(to,time_duration(0,0,0))
+    )
+  );
+}
+
+// --
+
+ccReg::DateInterval 
+ccReg_RegObjectFilter_i::trDate()
+{
+  return trDateFilter;
+}
+
+void 
+ccReg_RegObjectFilter_i::trDate(const ccReg::DateInterval& _v)
+{
+  trDateFilter = _v;
+  date from;
+  date to;
+  try {
+    from = date(_v.from.year,_v.from.month,_v.from.day);
+  }
+  catch (...) {}
+  try {
+    to = date(_v.to.year,_v.to.month,_v.to.day);
+  }
+  catch (...) {}
+  ol->setTrDateIntervalFilter(
+    time_period(
+      ptime(from,time_duration(0,0,0)),
+      ptime(to,time_duration(0,0,0))
+    )
+  );
+}
+
+// --
+
+ccReg::DateInterval 
+ccReg_RegObjectFilter_i::upDate()
+{
+  return upDateFilter;
+}
+
+void 
+ccReg_RegObjectFilter_i::upDate(const ccReg::DateInterval& _v)
+{
+  upDateFilter = _v;
+  date from;
+  date to;
+  try {
+    from = date(_v.from.year,_v.from.month,_v.from.day);
+  }
+  catch (...) {}
+  try {
+    to = date(_v.to.year,_v.to.month,_v.to.day);
+  }
+  catch (...) {}
+  ol->setUpdateIntervalFilter(
     time_period(
       ptime(from,time_duration(0,0,0)),
       ptime(to,time_duration(0,0,0))
@@ -1230,13 +1348,78 @@ ccReg_Contacts_i::reload()
 char* 
 ccReg_Contacts_i::handle()
 {
-  return CORBA::string_dup(handleFilter.c_str());
+  return DUPSTRC(handleFilter);
 }
 
 void 
 ccReg_Contacts_i::handle(const char* _v)
 {
   handleFilter = _v;
+  cl->setHandleFilter(_v);
+}
+
+char* 
+ccReg_Contacts_i::name()
+{
+  return DUPSTRC(nameFilter);
+}
+
+void 
+ccReg_Contacts_i::name(const char* _v)
+{
+  nameFilter = _v;
+  cl->setNameFilter(_v);
+}
+
+char* 
+ccReg_Contacts_i::org()
+{
+  return DUPSTRC(orgFilter);
+}
+
+void 
+ccReg_Contacts_i::org(const char* _v)
+{
+  orgFilter = _v;
+  cl->setOrganizationFilter(_v);
+}
+
+char* 
+ccReg_Contacts_i::email()
+{
+  return DUPSTRC(emailFilter);
+}
+
+void 
+ccReg_Contacts_i::email(const char* _v)
+{
+  emailFilter = _v;
+  cl->setEmailFilter(_v);
+}
+
+char* 
+ccReg_Contacts_i::ident()
+{
+  return DUPSTRC(identFilter);
+}
+
+void 
+ccReg_Contacts_i::ident(const char* _v)
+{
+  identFilter = _v;
+  cl->setIdentFilter(_v);
+}
+
+char* 
+ccReg_Contacts_i::vat()
+{
+  return DUPSTRC(vatFilter);
+}
+
+void 
+ccReg_Contacts_i::vat(const char* _v)
+{
+  vatFilter = _v;
   cl->setHandleFilter(_v);
 }
 
@@ -1251,6 +1434,11 @@ ccReg_Contacts_i::clear()
 {
   ccReg_RegObjectFilter_i::clear();
   handleFilter = "";
+  nameFilter = "";
+  orgFilter = "";
+  emailFilter = "";
+  identFilter = "";
+  vatFilter = "";
   cl->clearFilter();
 }
 
@@ -1326,7 +1514,7 @@ ccReg_NSSets_i::reload()
 char* 
 ccReg_NSSets_i::handle()
 {
-  return CORBA::string_dup(handleFilter.c_str());
+  return DUPSTRC(handleFilter);
 }
 
 void 
@@ -1334,6 +1522,45 @@ ccReg_NSSets_i::handle(const char* _v)
 {
   handleFilter = _v;
   nl->setHandleFilter(_v);
+}
+
+char* 
+ccReg_NSSets_i::adminHandle()
+{
+  return DUPSTRC(adminHandleFilter);
+}
+
+void 
+ccReg_NSSets_i::adminHandle(const char* _v)
+{
+  adminHandleFilter = _v;
+  nl->setAdminFilter(_v);
+}
+
+char* 
+ccReg_NSSets_i::ip()
+{
+  return DUPSTRC(ipFilter);
+}
+
+void 
+ccReg_NSSets_i::ip(const char* _v)
+{
+  ipFilter = _v;
+  nl->setHostIPFilter(_v);
+}
+
+char* 
+ccReg_NSSets_i::hostname()
+{
+  return DUPSTRC(hostnameFilter);
+}
+
+void 
+ccReg_NSSets_i::hostname(const char* _v)
+{
+  hostnameFilter = _v;
+  nl->setHostNameFilter(_v);
 }
 
 ccReg::Filter_ptr
@@ -1347,5 +1574,8 @@ ccReg_NSSets_i::clear()
 {
   ccReg_RegObjectFilter_i::clear();
   handleFilter = "";
+  adminHandleFilter = "";
+  ipFilter = "";
+  hostnameFilter = "";
   nl->clearFilter();
 }

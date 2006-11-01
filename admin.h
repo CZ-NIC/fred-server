@@ -92,7 +92,13 @@ class ccReg_Registrars_i : virtual public POA_ccReg::Registrars,
 class ccReg_RegObjectFilter_i : virtual public POA_ccReg::RegObjectFilter {
   CORBA::Short registrarFilter;
   std::string registrarHandleFilter;
+  CORBA::Short createRegistrarFilter;
+  std::string createRegistrarHandleFilter;
+  CORBA::Short updateRegistrarFilter;
+  std::string updateRegistrarHandleFilter;
   ccReg::DateInterval crDateFilter;
+  ccReg::DateInterval upDateFilter;
+  ccReg::DateInterval trDateFilter;
   Register::ObjectList *ol;
  public:
   ccReg_RegObjectFilter_i(Register::ObjectList *_ol);
@@ -100,8 +106,20 @@ class ccReg_RegObjectFilter_i : virtual public POA_ccReg::RegObjectFilter {
   void registrar(CORBA::Short _v);
   char* registrarHandle();
   void registrarHandle(const char* _v);
+  CORBA::Short createRegistrar();
+  void createRegistrar(CORBA::Short _v);
+  char* createRegistrarHandle();
+  void createRegistrarHandle(const char* _v);
+  CORBA::Short updateRegistrar();
+  void updateRegistrar(CORBA::Short _v);
+  char* updateRegistrarHandle();
+  void updateRegistrarHandle(const char* _v);
   ccReg::DateInterval crDate();
   void crDate(const ccReg::DateInterval& _v);
+  ccReg::DateInterval upDate();
+  void upDate(const ccReg::DateInterval& _v);
+  ccReg::DateInterval trDate();
+  void trDate(const ccReg::DateInterval& _v);
   void clear();
 };
 
@@ -163,6 +181,11 @@ class ccReg_Contacts_i : virtual public POA_ccReg::Contacts,
                          public PortableServer::RefCountServantBase {
   Register::Contact::List *cl;
   std::string handleFilter;
+  std::string nameFilter;
+  std::string orgFilter;
+  std::string emailFilter;
+  std::string identFilter;
+  std::string vatFilter;
  public:
   ccReg_Contacts_i(Register::Contact::List *cl);
   ~ccReg_Contacts_i();
@@ -174,6 +197,16 @@ class ccReg_Contacts_i : virtual public POA_ccReg::Contacts,
   CORBA::Short numColumns();
   char* handle();
   void handle(const char* _v);
+  char* name();
+  void name(const char* _v);
+  char* org();
+  void org(const char* _v);
+  char* ident();
+  void ident(const char* _v);
+  char* email();
+  void email(const char* _v);
+  char* vat();
+  void vat(const char* _v);
   void reload();
   ccReg::Filter_ptr aFilter();  
   void clear();
@@ -185,6 +218,9 @@ class ccReg_NSSets_i : virtual public POA_ccReg::NSSets,
                        public PortableServer::RefCountServantBase {
   Register::NSSet::List *nl;
   std::string handleFilter;
+  std::string adminHandleFilter;
+  std::string hostnameFilter;
+  std::string ipFilter;
  public:
   ccReg_NSSets_i(Register::NSSet::List *dl);
   ~ccReg_NSSets_i();
@@ -196,6 +232,12 @@ class ccReg_NSSets_i : virtual public POA_ccReg::NSSets,
   CORBA::Short numColumns();
   char* handle();
   void handle(const char* _v);
+  char* adminHandle();
+  void adminHandle(const char* _v);
+  char* hostname();
+  void hostname(const char* _v);
+  char* ip();
+  void ip(const char* _v);
   void reload();
   ccReg::Filter_ptr aFilter();  
   void clear();

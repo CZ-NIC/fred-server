@@ -1,5 +1,9 @@
 #include "object_impl.h"
 
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//     Register::ObjectImpl
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 Register::ObjectImpl::ObjectImpl(
   ptime _crDate, ptime _trDate, ptime _upDate,
   unsigned _registrar, const std::string _registrarHandle,
@@ -114,4 +118,92 @@ Register::ObjectImpl::deleteStatus(StatusElement element)
 {
   modified = true;
   return sset.erase(element);
+}
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//     Register::ObjectListImpl
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Register::ObjectListImpl::ObjectListImpl() :
+ registrarFilter(0), 
+ createRegistrarFilter(0), 
+ updateRegistrarFilter(0),
+ crDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
+ updateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
+ trDateIntervalFilter(ptime(neg_infin),ptime(pos_infin))
+{
+}
+
+void 
+Register::ObjectListImpl::setRegistrarFilter(unsigned registrarId)
+{
+  registrarFilter = registrarId;
+}
+
+void 
+Register::ObjectListImpl::setRegistrarHandleFilter(
+  const std::string& registrarHandle
+)
+{
+  registrarHandleFilter = registrarHandle;
+}
+
+void 
+Register::ObjectListImpl::setCrDateIntervalFilter(time_period period)
+{
+  crDateIntervalFilter = period;
+}
+
+void 
+Register::ObjectListImpl::setCreateRegistrarFilter(unsigned registrarId)
+{
+  createRegistrarFilter = registrarId;
+}
+
+void 
+Register::ObjectListImpl::setCreateRegistrarHandleFilter(
+  const std::string& registrarHandle
+)
+{
+  createRegistrarHandleFilter = registrarHandle;
+}
+
+void 
+Register::ObjectListImpl::setUpdateIntervalFilter(time_period period)
+{
+  updateIntervalFilter = period;
+}
+
+void 
+Register::ObjectListImpl::setUpdateRegistrarFilter(unsigned registrarId)
+{
+  updateRegistrarFilter = registrarId;
+}
+
+void 
+Register::ObjectListImpl::setUpdateRegistrarHandleFilter(
+  const std::string& registrarHandle
+)
+{
+  updateRegistrarHandleFilter = registrarHandle;
+}
+
+void 
+Register::ObjectListImpl::setTrDateIntervalFilter(time_period period)
+{
+  trDateIntervalFilter = period;
+}
+
+void
+Register::ObjectListImpl::clear()
+{
+  crDateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));
+  updateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));
+  trDateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));
+  registrarFilter = 0;
+  createRegistrarFilter = 0;
+  updateRegistrarFilter = 0;
+  registrarHandleFilter = "";
+  createRegistrarHandleFilter = ""; 
+  updateRegistrarHandleFilter = "";
 }

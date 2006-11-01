@@ -105,18 +105,17 @@ namespace Register
         return id == _id;
       }
     };
-    class ListImpl : public virtual List
+    class ListImpl : public virtual List, public ObjectListImpl
     {
       typedef std::vector<NSSetImpl *> NSSetList;
       NSSetList nlist;
-      unsigned registrar;
-      std::string registrarHandle;
       std::string handle;
-      time_period crDateIntervalFilter;      
+      std::string hostname;
+      std::string ip;
+      std::string admin;
       DB *db;
      public:
-      ListImpl(DB *_db) : registrar(0),
-      crDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),  
+      ListImpl(DB *_db) : ObjectListImpl(),  
       db(_db)
       {
       }
@@ -137,21 +136,21 @@ namespace Register
       {
         return idx >= getCount() ? NULL : nlist[idx];
       }      
-      void setRegistrarFilter(unsigned registrarId)
-      {
-        registrar = registrarId;
-      }
-      void setRegistrarHandleFilter(const std::string& _registrarHandle)
-      {
-        registrarHandle = _registrarHandle;
-      }
-      void setCrDateIntervalFilter(time_period period)
-      {
-        crDateIntervalFilter = period;
-      }
       void setHandleFilter(const std::string& _handle)
       {
         handle = _handle;
+      }
+      void setHostNameFilter(const std::string& name)
+      {
+        hostname = name;
+      }
+      void setHostIPFilter(const std::string& _ip)
+      {
+        ip = _ip;
+      }
+      void setAdminFilter(const std::string& handle)
+      {
+        admin = handle;
       }
 #define MAKE_TIME(ROW,COL)  \
  (ptime(db->IsNotNull(ROW,COL) ? \
@@ -166,13 +165,25 @@ namespace Register
             << "n.crid,creg.handle,n.upid,ureg.handle,n.authinfopw,n.roid "
             << "FROM registrar r, registrar creg, nsset n "
             << "LEFT JOIN registrar ureg ON (n.upid=ureg.id) "
+            << "LEFT JOIN nsset_contact_map ncm ON (ncm.nssetid=n.id) "
+            << "LEFT JOIN contact tc ON (ncm.contactid=tc.id) "
+            << "LEFT JOIN host h ON (n.id=h.nssetid) "
             << "WHERE n.clid=r.id AND n.crid=creg.id ";
-        if (registrar)
-          sql << "AND n.clid=" << registrar << " ";
-        if (!registrarHandle.empty())        
-          sql << "AND r.handle='" << registrarHandle << "' ";
-        if (!handle.empty())
-          sql << "AND n.handle='" << handle << "' ";          
+        SQL_ID_FILTER(sql,"r.id",registrarFilter);
+        SQL_HANDLE_FILTER(sql,"r.handle",registrarHandleFilter);
+        SQL_ID_FILTER(sql,"creg.id",createRegistrarFilter);
+        SQL_HANDLE_FILTER(sql,"creg.handle",createRegistrarHandleFilter);
+        SQL_ID_FILTER(sql,"ureg.id",updateRegistrarFilter);
+        SQL_HANDLE_FILTER(sql,"ureg.handle",updateRegistrarHandleFilter);        
+        SQL_DATE_FILTER(sql,"n.crDate",crDateIntervalFilter);
+        SQL_DATE_FILTER(sql,"n.upDate",updateIntervalFilter);
+        SQL_DATE_FILTER(sql,"n.trDate",trDateIntervalFilter);
+        SQL_HANDLE_FILTER(sql,"n.handle",handle);
+        SQL_HANDLE_FILTER(sql,"tc.handle",admin);        
+        SQL_HANDLE_FILTER(sql,"h.fqdn",hostname);
+        if (!ip.empty())
+          sql << "AND STRPOS(ARRAY_TO_STRING(h.ipaddr,' '),'"
+              << ip << "')!=0 ";          
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -234,10 +245,11 @@ namespace Register
       }
       void clearFilter()
       {
-        registrar = 0;
-        registrarHandle = "";
-        crDateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));
+        ObjectListImpl::clear();
         handle = "";
+        admin = "";
+        ip = "";
+        hostname = "";
       }
     };
     class ManagerImpl : public virtual Manager

@@ -156,16 +156,13 @@ namespace Register
       } 
     };
 
-    class ListImpl : public virtual List
+    class ListImpl : virtual public List, public ObjectListImpl
     {
       typedef std::vector<DomainImpl *> DomainListType;
       DomainListType dlist;
       unsigned zoneFilter;
-      unsigned registrarFilter;
-      std::string registrarHandleFilter;
       unsigned registrantFilter;
       std::string registrantHandleFilter;
-      time_period crDateIntervalFilter;
       unsigned nsset;
       std::string nssetHandle;
       unsigned admin;
@@ -177,9 +174,8 @@ namespace Register
       std::string hostIP;
       DB *db;
      public:
-      ListImpl(DB *_db) : 
-        zoneFilter(0), registrarFilter(0), registrantFilter(0),
-        crDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
+      ListImpl(DB *_db) : ObjectListImpl(), 
+        zoneFilter(0), registrantFilter(0),
         nsset(0), admin(0),
         exDate(ptime(neg_infin),ptime(pos_infin)),
         valExDate(ptime(neg_infin),ptime(pos_infin)),
@@ -208,14 +204,6 @@ namespace Register
       {
         zoneFilter = zoneId;
       }
-      virtual void setRegistrarFilter(unsigned registrarId)
-      {
-        registrarFilter = registrarId;
-      }
-      void setRegistrarHandleFilter(const std::string& _registrarHandle)
-      {
-        registrarHandleFilter = _registrarHandle;
-      }      
       virtual void setRegistrantFilter(unsigned registrantId)
       {
         registrantFilter = registrantId;
@@ -223,10 +211,6 @@ namespace Register
       void setRegistrantHandleFilter(const std::string& _registrantHandle)
       {
         registrantHandleFilter = _registrantHandle;
-      }
-      void setCrDateIntervalFilter(time_period period)
-      {
-        crDateIntervalFilter = period;
       }
       virtual void setNSSetFilter(unsigned _nssetId)
       {
@@ -289,50 +273,25 @@ namespace Register
             << "LEFT JOIN host h ON (n.id=h.nssetid) "
             << "WHERE d.registrant=c.id AND d.crid=creg.id "
             << "AND d.clid=r.id ";
-        if (registrarFilter)
-          sql << "AND r.id=" << registrarFilter << " ";
-        if (!registrarHandleFilter.empty())
-          sql << "AND r.handle='" << registrarHandleFilter << "' ";
-        if (registrantFilter)
-          sql << "AND c.id=" << registrantFilter << " ";
-        if (!registrantHandleFilter.empty())
-          sql << "AND c.handle='" << registrantHandleFilter << "' ";
-        if (!crDateIntervalFilter.begin().is_special())
-          sql << "AND d.crDate>='" 
-              <<  to_iso_extended_string(crDateIntervalFilter.begin().date()) 
-              << "' ";
-        if (!crDateIntervalFilter.end().is_special())
-          sql << "AND d.crDate<='" 
-              <<  to_iso_extended_string(crDateIntervalFilter.end().date()) 
-              << " 23:59:59' ";
-        if (!exDate.begin().is_special())
-          sql << "AND d.exdate>='" 
-              <<  to_iso_extended_string(exDate.begin().date()) 
-              << "' ";
-        if (!exDate.end().is_special())
-          sql << "AND d.exdate<='" 
-              <<  to_iso_extended_string(exDate.end().date()) 
-              << " 23:59:59' ";
-        if (!valExDate.begin().is_special())
-          sql << "AND ev.exdate>='" 
-              <<  to_iso_extended_string(valExDate.begin().date()) 
-              << "' ";
-        if (!valExDate.end().is_special())
-          sql << "AND ev.exdate<='" 
-              <<  to_iso_extended_string(valExDate.end().date()) 
-              << " 23:59:59' ";
-        if (nsset)
-          sql << "AND n.id=" << nsset << " ";
-        if (!nssetHandle.empty())
-          sql << "AND n.handle='" << nssetHandle << "' ";          
-        if (admin)
-          sql << "AND ac.id=" << admin << " ";
-        if (!adminHandle.empty())
-          sql << "AND ac.handle='" << adminHandle << "' ";          
-        if (!fqdn.empty())
-          sql << "AND d.fqdn LIKE '%" << fqdn << "%' ";
-        if (!techAdmin.empty())
-          sql << "AND tc.handle='" << techAdmin << "' ";
+        SQL_ID_FILTER(sql,"r.id",registrarFilter);
+        SQL_HANDLE_FILTER(sql,"r.handle",registrarHandleFilter);
+        SQL_ID_FILTER(sql,"creg.id",createRegistrarFilter);
+        SQL_HANDLE_FILTER(sql,"creg.handle",createRegistrarHandleFilter);
+        SQL_ID_FILTER(sql,"ureg.id",updateRegistrarFilter);
+        SQL_HANDLE_FILTER(sql,"ureg.handle",updateRegistrarHandleFilter);
+        SQL_DATE_FILTER(sql,"d.crDate",crDateIntervalFilter);
+        SQL_DATE_FILTER(sql,"d.upDate",updateIntervalFilter);
+        SQL_DATE_FILTER(sql,"d.trDate",trDateIntervalFilter);
+        SQL_ID_FILTER(sql,"c.id",registrantFilter);
+        SQL_HANDLE_FILTER(sql,"c.handle",registrantHandleFilter);
+        SQL_DATE_FILTER(sql,"d.exdate",exDate);
+        SQL_DATE_FILTER(sql,"ev.exdate",valExDate);
+        SQL_ID_FILTER(sql,"n.id",nsset);
+        SQL_HANDLE_FILTER(sql,"n.handle",nssetHandle);
+        SQL_ID_FILTER(sql,"ac.id",admin);
+        SQL_HANDLE_FILTER(sql,"ac.handle",adminHandle);
+        SQL_HANDLE_FILTER(sql,"d.fqdn",fqdn);
+        SQL_HANDLE_FILTER(sql,"tc.handle",techAdmin);
         if (!hostIP.empty())
           sql << "AND STRPOS(ARRAY_TO_STRING(h.ipaddr,' '),'"
               << hostIP << "')!=0 ";        
@@ -384,9 +343,7 @@ namespace Register
       }
       void clearFilter()
       {
-        registrarFilter = 0;
-        registrarHandleFilter = "";
-        crDateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));
+        ObjectListImpl::clear();
         registrantFilter = 0;
         registrantHandleFilter = "";
         nsset = 0;
@@ -395,6 +352,8 @@ namespace Register
         adminHandle = "";
         fqdn = "";
         zoneFilter = 0;
+        techAdmin = "";
+        hostIP = "";
       }      
     };
 

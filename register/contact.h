@@ -60,6 +60,16 @@ namespace Register
       virtual Contact *get(unsigned idx) const = 0;
       /// set filter for handle
       virtual void setHandleFilter(const std::string& handle) = 0;
+      /// set filter for name
+      virtual void setNameFilter(const std::string& name) = 0;
+      /// set filter for identity id
+      virtual void setIdentFilter(const std::string& ident) = 0;
+      /// set filter for email
+      virtual void setEmailFilter(const std::string& email) = 0;
+      /// set filter for organization
+      virtual void setOrganizationFilter(const std::string& org) = 0;
+      /// set filter for VAT number
+      virtual void setVATFilter(const std::string& vat) = 0;
       /// reload list with current filter
       virtual void reload() throw (SQL_ERROR) = 0;
       /// clear filter data

@@ -13,5 +13,5 @@ testreg: test.o $(OBJS)
 	$(CXX) -o $@ test.o $(OBJS) $(EXT) -lboost_date_time
 
 clean:
-	rm *.o
-	rm $(LIB)
+	rm -rf *.o
+	rm -rf $(LIB)

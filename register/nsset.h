@@ -52,6 +52,12 @@ namespace Register
       virtual NSSet *get(unsigned idx) const = 0;
       /// set filter for handle
       virtual void setHandleFilter(const std::string& handle) = 0;
+      /// set filter for nameserver hostname
+      virtual void setHostNameFilter(const std::string& name) = 0;
+      /// set filter for nameserver ip address
+      virtual void setHostIPFilter(const std::string& ip) = 0;
+      /// set filter for tech admin
+      virtual void setAdminFilter(const std::string& handle) = 0;
       /// reload list with current filter
       virtual void reload() throw (SQL_ERROR) = 0;
       /// clear filter data

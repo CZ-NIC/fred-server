@@ -131,18 +131,19 @@ namespace Register
         return ssn;
       }
     };
-    class ListImpl : public virtual List
+    class ListImpl : public virtual List, public ObjectListImpl
     {
       typedef std::vector<ContactImpl *> ContactList;
       ContactList clist;
-      unsigned registrar;
-      std::string registrarHandle;
-      time_period crDateIntervalFilter;
       std::string handle;
+      std::string name;
+      std::string ident;
+      std::string email;
+      std::string org;
+      std::string vat;
       DB *db;
      public:
-      ListImpl(DB *_db) : registrar(0),
-      crDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
+      ListImpl(DB *_db) : ObjectListImpl(),
       db(_db)
       {
       }
@@ -163,21 +164,29 @@ namespace Register
       {
         return idx >= getCount() ? NULL : clist[idx];
       }      
-      void setRegistrarFilter(unsigned registrarId)
-      {
-        registrar = registrarId;
-      }
-      void setRegistrarHandleFilter(const std::string& _registrarHandle)
-      {
-        registrarHandle = _registrarHandle;
-      }
-      void setCrDateIntervalFilter(time_period period)
-      {
-        crDateIntervalFilter = period;
-      }    
       void setHandleFilter(const std::string& _handle)
       {
         handle = _handle;
+      }
+      void setNameFilter(const std::string& _name)
+      {
+        name = _name;
+      }
+      void setIdentFilter(const std::string& _ident)
+      {
+        ident = _ident;
+      }
+      void setEmailFilter(const std::string& _email)
+      {
+        email = _email;
+      }
+      void setOrganizationFilter(const std::string& _org)
+      {
+        org = _org;
+      }
+      void setVATFilter(const std::string& _vat)
+      {
+        vat = _vat;
       }
 #define MAKE_TIME(ROW,COL)  \
  (ptime(db->IsNotNull(ROW,COL) ? \
@@ -197,12 +206,21 @@ namespace Register
             << "FROM registrar r, registrar creg, contact c "
             << "LEFT JOIN registrar ureg ON (c.upid=ureg.id) "
             << "WHERE c.clid=r.id AND c.crid=creg.id ";
-        if (registrar)
-          sql << "AND c.clid=" << registrar << " ";
-        if (!registrarHandle.empty())
-          sql << "AND r.handle='" << registrarHandle << "' ";     
-        if (!handle.empty())
-          sql << "AND c.handle='" << handle << "' ";     
+        SQL_ID_FILTER(sql,"r.id",registrarFilter);
+        SQL_HANDLE_FILTER(sql,"r.handle",registrarHandleFilter);
+        SQL_ID_FILTER(sql,"creg.id",createRegistrarFilter);
+        SQL_HANDLE_FILTER(sql,"creg.handle",createRegistrarHandleFilter);
+        SQL_ID_FILTER(sql,"ureg.id",updateRegistrarFilter);
+        SQL_HANDLE_FILTER(sql,"ureg.handle",updateRegistrarHandleFilter);        
+        SQL_DATE_FILTER(sql,"n.crDate",crDateIntervalFilter);
+        SQL_DATE_FILTER(sql,"n.upDate",updateIntervalFilter);
+        SQL_DATE_FILTER(sql,"n.trDate",trDateIntervalFilter);
+        SQL_HANDLE_FILTER(sql,"c.handle",handle);
+        SQL_HANDLE_FILTER(sql,"c.name",name);
+        SQL_HANDLE_FILTER(sql,"c.ssn",ident);
+        SQL_HANDLE_FILTER(sql,"c.email",email);
+        SQL_HANDLE_FILTER(sql,"c.organization",org);
+        SQL_HANDLE_FILTER(sql,"c.vat",vat);
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -242,10 +260,13 @@ namespace Register
       }
       void clearFilter()
       {
-        registrar = 0;
-        registrarHandle = "";
-        crDateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));
+        ObjectListImpl::clear();
         handle = "";
+        name = "";
+        ident = "";
+        email = "";
+        org = "";
+        vat = "";
       }
     };
     class ManagerImpl : public virtual Manager
