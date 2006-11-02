@@ -4830,15 +4830,27 @@ GetValExpDateFromExtension( valexpiryDate , ext );
 
                }
 
-             if(  TestPeriodyInterval( period  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  == false )
+
+             switch(  TestPeriodyInterval( period  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  == false )
               {
-                  LOG( WARNING_LOG, "bad period interval" );
+                  case 2:
+                  LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainCreate_period;
                   ret->errors[seq].value <<=  period;
-                  ret->errors[seq].reason = CORBA::string_dup(GetReasonMessage( REASON_MSG_BAD_PERIOD , CLIENT_LANG() ) );
+                  ret->errors[seq].reason = CORBA::string_dup(GetReasonMessage( REASON_MSG_PERIOD_RANGE , CLIENT_LANG() ) );
                   seq++;
-                  ret->errCode = COMMAND_PARAMETR_ERROR;
+                  ret->errCode = COMMAND_PARAMETR_RANGE_ERROR ;
+                  break;
+                  case 1:
+                  LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period  ,  GetZoneExPeriodMin( zone )   );
+                  ret->errors.length( seq +1);
+                  ret->errors[seq].code = ccReg::domainCreate_period;
+                  ret->errors[seq].value <<=  period;
+                  ret->errors[seq].reason = CORBA::string_dup(GetReasonMessage( REASON_MSG_PERIOD_POLICY , CLIENT_LANG() ) );
+                  seq++;
+                  ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR ;
+                  break;
                }
 
             // Test jestli za danono u enum domen
@@ -5200,16 +5212,30 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                }
 
   
-             if(  TestPeriodyInterval(   period  ,   GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  == false ) 
+
+             switch(  TestPeriodyInterval( period  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  == false )
               {
-                  LOG( WARNING_LOG, "bad period interval" );
+                  case 2:
+                  LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_period;
                   ret->errors[seq].value <<=  period;
-                  ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_PERIOD , CLIENT_LANG() ) );
+                  ret->errors[seq].reason = CORBA::string_dup(GetReasonMessage( REASON_MSG_PERIOD_RANGE , CLIENT_LANG() ) );
                   seq++;
-                  ret->errCode = COMMAND_PARAMETR_ERROR;                 
+                  ret->errCode = COMMAND_PARAMETR_RANGE_ERROR ;
+                  break;
+                  case 1:
+                  LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period  ,  GetZoneExPeriodMin( zone )   );
+                  ret->errors.length( seq +1);
+                  ret->errors[seq].code = ccReg::domainRenew_period;
+                  ret->errors[seq].value <<=  period;
+                  ret->errors[seq].reason = CORBA::string_dup(GetReasonMessage( REASON_MSG_PERIOD_POLICY , CLIENT_LANG() ) );
+                  seq++;
+                  ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR ;
+                  break;
                }
+
+
 
               if( DBsql.GetExpDate( ExDateStr , id ,  period  ,  GetZoneExPeriodMax( zone ) )  )
                 {
@@ -5219,13 +5245,13 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                 }
               else
                 {
-                  LOG( WARNING_LOG, "bad max period interval" );
+                  LOG( WARNING_LOG, "period %d GetExpDate out of range" , period );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_period;
                   ret->errors[seq].value <<=  period;
-                  ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_PERIOD , CLIENT_LANG() ) );
+                  ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_PERIOD_RANGE , CLIENT_LANG() ) );
                   seq++;
-                  ret->errCode = COMMAND_PARAMETR_ERROR;
+                  ret->errCode = COMMAND_PARAMETR_RANGE_ERROR;
                }
 
 
