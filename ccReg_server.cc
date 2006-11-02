@@ -75,8 +75,10 @@ int main(int argc, char** argv)
     // prepare NameService object
     std::string nameServiceIOR = "corbaname::";
     nameServiceIOR += config.GetNameService();
+    cout << "nameServiceIOR: " <<   nameServiceIOR << endl;
     NameService ns(orb,nameServiceIOR);
 
+#ifdef ADMIN
     PortableServer::ObjectId_var adminObjectId = 
       PortableServer::string_to_ObjectId("Admin");
     ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db);
@@ -84,7 +86,9 @@ int main(int argc, char** argv)
     CORBA::Object_var adminObj = myccReg_Admin_i->_this();          
     myccReg_Admin_i->_remove_ref();
     ns.bind("Admin",adminObj);
-    
+    ccReg::Admin_var admin = ccReg::Admin::_narrow(adminObj);
+#endif
+#ifdef WHOIS    
     PortableServer::ObjectId_var whoisObjectId = 
       PortableServer::string_to_ObjectId("Whois");
     ccReg_Whois_i* myccReg_Whois_i = new ccReg_Whois_i(db);
@@ -95,8 +99,15 @@ int main(int argc, char** argv)
 
     // pristup na admin a whois je mozna z EPP vyhodit
     ccReg::Whois_var whois = ccReg::Whois::_narrow(whoisObj);
-    ccReg::Admin_var admin = ccReg::Admin::_narrow(adminObj);
-    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(admin, whois);
+#endif
+
+ 
+    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i();
+
+    ccReg::timestamp_var ts;
+    cout << "version: " << myccReg_EPP_i->version(ts) << endl;
+    cout << "timestamp: " << ts << endl;
+
     // musi byt zavolano pred loadZones
     if (!myccReg_EPP_i->TestDatabaseConnect(db)) {
       std::cout << "Database connection failed\n";

@@ -5,10 +5,10 @@ CXXFLAGS = -Wall -DSYSLOG -DCONFIG_FILE=\"/etc/ccReg.conf\" \
            -DSVERSION=\"${SVN_REVISION}\"
 
 OBJECTS = 
-IDLFILE = ../../idl/trunk/ccReg.idl
+IDLFILE = ../../idl/branches/1.1/ccReg.idl
 LDFLAGS =  -L/usr/local/pgsql/lib/
-LIBS =  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread
-SVLIBS = $(LIBS) register/libccreg.a -lpq -lboost_date_time
+LIBS =  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread 
+SVLIBS = $(LIBS) register/libccreg.a  -lboost_date_time -lpq
 
 CPPFLAGS =  -I/usr/local/pgsql/include/   -I/usr/include/postgresql/ \
             -I.  -Wno-deprecated
@@ -17,8 +17,8 @@ ADMIN_SERVER_OBJECTS = \
     nameservice.o
 CCREG_SERVER_OBJECTS = \
     ccRegSK.o ccRegDynSK.o  ccReg_epp.o  ccReg_server.o  \
-    dbsql.o pqsql.o util.o status.o conf.o  log.o admin.o whois.o \
-    nameservice.o countrycode.o messages.o
+    dbsql.o pqsql.o util.o status.o conf.o  log.o  \
+    nameservice.o countrycode.o messages.o 
 EPP_CLIENT_OBJECTS=ccRegSK.o ccRegDynSK.o  epp_client.o nameservice.o
 WHOIS_CLIENT_OBJECTS=ccRegSK.o whois_client.o nameservice.o
 
@@ -27,9 +27,7 @@ all:  ccReg_server epp_client whois_client
 .SUFFIXES:  .o
 
 ccReg_server: $(CCREG_SERVER_OBJECTS)
-	$(MAKE) -C register
-#	ar -rs libccreg.a $(CCREG_SERVER_OBJECTS)
-	$(CXX) -o ccReg_server $(CCREG_SERVER_OBJECTS) $(LDFLAGS) $(SVLIBS)
+	$(CXX) -o ccReg_server $(CCREG_SERVER_OBJECTS) $(LDFLAGS)  $(LIBS) -lpq
 
 admin_server: $(ADMIN_SERVER_OBJECTS)
 	$(MAKE) -C register
