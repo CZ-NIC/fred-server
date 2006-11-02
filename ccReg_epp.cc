@@ -1055,7 +1055,6 @@ ccReg::Response * ccReg_EPP_i::ClientLogin( const char *ClID, const char *passwd
 {
 DB DBsql;
 int roid, id;
-bool change=true;
 ccReg::Response * ret;
 ret = new ccReg::Response;
 
@@ -1071,56 +1070,34 @@ LOG( NOTICE_LOG, "ClientLogin:  certID  [%s] language  [%d] ", certID, lang );
 if( DBsql.OpenDatabase( database ) )
   {
 
-    if( DBsql.BeginTransaction() )
+
+   // dotaz na ID registratora 
+    if( ( roid = DBsql.GetNumericFromTable( "REGISTRAR", "id", "handle", ( char * ) ClID ) ) == 0 )
       {
-
-        // dotaz na ID registratora 
-        if( ( roid = DBsql.GetNumericFromTable( "REGISTRAR", "id", "handle", ( char * ) ClID ) ) == 0 )
-          {
-            LOG( NOTICE_LOG, "bad username [%s]", ClID ); // spatne username 
-            ret->errCode = COMMAND_AUTH_ERROR;
-          }
-        else
-          {
-
-
-             // ziskej heslo z databaza a  provnej heslo a pokud neni spravne vyhod chybu
-            if( strcmp(  DBsql.GetValueFromTable("REGISTRARACL" , "password" , "registrarid" ,  roid )  , passwd )  )
-              {
+        LOG( NOTICE_LOG, "bad username [%s]", ClID ); // spatne username 
+        ret->errCode = COMMAND_AUTH_ERROR;
+      }
+    else
+            
+        // ziskej heslo z databaza a  provnej heslo a pokud neni spravne vyhod chybu
+       if( strcmp(  DBsql.GetValueFromTable("REGISTRARACL" , "password" , "registrarid" ,  roid )  , passwd )  )
+         {
                 LOG( NOTICE_LOG, "bad password [%s] not accept", passwd );
                 ret->errCode = COMMAND_AUTH_ERROR;
-              }
-            else
-             //  porovnej certifika 
-            {
+          }
+        else 
+          //  porovnej certifika 
              if( strcmp(  DBsql.GetValueFromTable("REGISTRARACL" , "cert" ,  "registrarid" ,  roid )  ,  certID )  )
               {
                 LOG( NOTICE_LOG, "bad certID [%s] not accept", certID );
                 ret->errCode = COMMAND_AUTH_ERROR;
-               }
-            else
-             {
-                LOG( NOTICE_LOG, "password [%s] accept", passwd );
-
-                // zmena hesla pokud je nejake nastaveno
-                if( strlen( newpass ) )
-                  {
-                    LOG( NOTICE_LOG, "change password  [%s]  to  newpass [%s] ", passwd, newpass );
+               } 
+        else
+        
+          if( DBsql.BeginTransaction() )
+            {
 
 
-                    DBsql.UPDATE( "REGISTRARACL" );
-                    DBsql.SET( "password" , newpass );         
-                    DBsql.WHERE( "registrarid" , roid  );
-
-                    if( DBsql.EXEC() == false )
-                      {
-                        ret->errCode = COMMAND_FAILED;
-                        change = false;
-                      }
-                  }
-
-                if( change ) // pokud projde zmena defaulte je nastava true
-                  {
                     id = DBsql.GetSequenceID( "login" ); // ziskani id jako sequence
 
                     // zapis do logovaci tabulky 
@@ -1152,28 +1129,37 @@ if( DBsql.OpenDatabase( database ) )
                             if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;    // pokud se nezdarilo
                           }
 
+
+                           // zmena hesla pokud je nejake nastaveno
+                           if( strlen( newpass ) )
+                             {
+                               LOG( NOTICE_LOG, "change password  [%s]  to  newpass [%s] ", passwd, newpass );
+
+
+                               DBsql.UPDATE( "REGISTRARACL" );
+                               DBsql.SET( "password" , newpass );         
+                               DBsql.WHERE( "registrarid" , roid  );
+
+                               if( DBsql.EXEC() ==  false ) ret->errCode = COMMAND_FAILED;   // pokud se nezdarilo
+                             }
+
                       }
-                    else ret->errCode = COMMAND_FAILED;
 
-                  }
-
-              }
-            }
+              // ukoci transakco 
+              DBsql.QuitTransaction( ret->errCode );
           }
 
+         // uloz colani funkce a ziskej svTRID 
         // probehne action pro svrTrID   musi byt az na mkonci pokud zna clientID
-        if( DBsql.BeginAction( clientID, EPP_ClientLogin, clTRID , XML ) )
-          {
+         DBsql.BeginAction( clientID, EPP_ClientLogin, clTRID , XML );        
             // zapis na konec action
-            ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
-          }
+         ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
+         
 
         ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
 
-        // konec transakce commit ci rollback
-        DBsql.QuitTransaction( ret->errCode );
 
-      }
+      
 
     DBsql.Disconnect();
   }
