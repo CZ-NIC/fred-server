@@ -160,6 +160,9 @@ namespace Register {
       virtual const std::string& getEPPMessage() const = 0;
       /// Return result of action
       virtual unsigned getResult() const = 0;
+      /// Return result message
+      virtual std::string getResultStatus() const = 0;
+      /// Return handle of registrar who made this action
       virtual const std::string& getRegistrarHandle() const = 0;
     };
     

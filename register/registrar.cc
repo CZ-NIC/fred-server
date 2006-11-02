@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
+#include "object_impl.h" // SQL macros !! TODO !!
 
 #define SET(a,b) { a = b; changed = true; }
 
@@ -370,12 +371,9 @@ namespace Register
             << "street1,street2,street3,city,stateorprovince,"
             << "postalcode,country,telephone,fax,email,credit "
             << "FROM registrar WHERE 1=1 ";
-        if (idFilter)
-          sql << " AND id=" << idFilter << " ";
-        if (!name.empty())
-          sql << " AND name ILIKE '%" << name << "%'";
-        if (!handle.empty())
-          sql << " AND handle ='" << handle << "'";
+        SQL_ID_FILTER(sql,"id",idFilter);
+        SQL_HANDLE_FILTER(sql,"name",name);
+        SQL_HANDLE_FILTER(sql,"handle",handle);
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           registrars.push_back(
@@ -505,6 +503,10 @@ namespace Register
       {
         return result;
       }
+      virtual std::string getResultStatus() const
+      {
+        return result < 2000 ? "OK" : "FAILED";
+      }
       virtual const std::string& getRegistrarHandle() const
       {
         return registrarHandle;
@@ -592,26 +594,13 @@ namespace Register
             << "registrar r "
             << "WHERE a.id=ax.actionid AND l.id=a.clientid "
             << "AND r.id=l.registrarid AND ea.id=a.action ";
-        if (registrarId)
-          sql << "AND r.id=" << registrarId << " ";
-        if (!registrarHandle.empty())
-          sql << "AND r.handle='" << registrarHandle << "' ";
-        if (!period.begin().is_special())
-          sql << "AND a.startdate>='" 
-              <<  to_iso_extended_string(period.begin().date()) 
-              << "' ";
-        if (!period.end().is_special())
-          sql << "AND a.startdate<='" 
-              <<  to_iso_extended_string(period.end().date()) 
-              << "' ";
-        if (!type.empty())
-          sql << "AND ea.status='" << type << "' ";
-        if (returnCodeId)
-          sql << "AND a.response=" << returnCodeId << " ";
-        if (!clTRID.empty())
-          sql << "AND a.clienttrid='" << clTRID << "' ";
-        if (!svTRID.empty())
-          sql << "AND a.servertrid='" << svTRID << "' ";
+        SQL_ID_FILTER(sql,"r.id",registrarId);
+        SQL_HANDLE_FILTER(sql,"r.handle",registrarHandle);
+        SQL_DATE_FILTER(sql,"a.startdate",period);
+        SQL_HANDLE_FILTER(sql,"ea.status",type);
+        SQL_ID_FILTER(sql,"a.response",returnCodeId);
+        SQL_HANDLE_FILTER(sql,"a.clienttrid",clTRID);
+        SQL_HANDLE_FILTER(sql,"a.servertrid",svTRID);
         if (!handle.empty())
           sql << "AND ax.xml ILIKE '%" << handle << "%' ";
         sql << "LIMIT 1000";
