@@ -8,6 +8,12 @@
 
 #include "ccReg.hh"
 #include "ccReg_epp.h"
+#ifdef WHOIS
+#include "whois.h"
+#endif
+#ifdef ADMIN
+#include "admin.h"
+#endif
 #include <signal.h>
 #include <unistd.h>
 
