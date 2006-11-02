@@ -15,7 +15,8 @@
        << " 23:59:59' "
 #define SQL_HANDLE_FILTER(x,colname,member) \
   if (!member.empty()) \
-     x << "AND " << colname << "='" << member << "' "
+     x << "AND " \
+       << colname << " ILIKE TRANSLATE('" << member << "','*?','%_') "
 #define SQL_ID_FILTER(x,colname,member) \
   if (member) \
      x << "AND " << colname << "=" << member << " "
