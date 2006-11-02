@@ -153,9 +153,10 @@ return rows;
 
 bool  ccReg_EPP_i::TestCountryCode( const char *cc )
 {
-LOG( NOTICE_LOG ,  "CCREG:: TestCountryCode  [%s] len %d" , cc , strlen( cc ) );
+LOG( NOTICE_LOG ,  "CCREG:: TestCountryCode  [%s]" , cc );
+
 // kod zeme neni zadan
-if( strlen( cc ) == 0 ) { LOG( NOTICE_LOG ,  "empty CountryCode"  ); return true; }
+if( strlen( cc ) == 0 ) return true; 
 else
 {
  if( strlen(cc ) == 2 )  // dvojmismeny kod zeme
