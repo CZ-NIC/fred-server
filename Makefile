@@ -1,11 +1,11 @@
 
 CXX = g++
 
-CXXFLAGS = -Wall -DSYSLOG -DCONFIG_FILE=\"/etc/ccReg.conf\" \
+CXXFLAGS = -Wall -DSYSLOG -DCONFIG_FILE=\"/etc/ccReg.conf\" -DWHOIS -DADMIN \
            -DSVERSION=\"${SVN_REVISION}\"
 
 OBJECTS = 
-IDLFILE = ../../idl/branches/1.1/ccReg.idl
+IDLFILE = ../../idl/trunk/ccReg.idl
 LDFLAGS =  -L/usr/local/pgsql/lib/
 LIBS =  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread 
 SVLIBS = $(LIBS) register/libccreg.a  -lboost_date_time -lpq
@@ -17,7 +17,7 @@ ADMIN_SERVER_OBJECTS = \
     nameservice.o
 CCREG_SERVER_OBJECTS = \
     ccRegSK.o ccRegDynSK.o  ccReg_epp.o  ccReg_server.o  \
-    dbsql.o pqsql.o util.o status.o conf.o  log.o  \
+    dbsql.o pqsql.o util.o status.o conf.o  log.o  whois.o admin.o \
     nameservice.o countrycode.o messages.o 
 EPP_CLIENT_OBJECTS=ccRegSK.o ccRegDynSK.o  epp_client.o nameservice.o
 WHOIS_CLIENT_OBJECTS=ccRegSK.o whois_client.o nameservice.o
@@ -27,7 +27,8 @@ all:  ccReg_server epp_client whois_client
 .SUFFIXES:  .o
 
 ccReg_server: $(CCREG_SERVER_OBJECTS)
-	$(CXX) -o ccReg_server $(CCREG_SERVER_OBJECTS) $(LDFLAGS)  $(LIBS) -lpq
+	$(MAKE) -C register
+	$(CXX) -o ccReg_server $(CCREG_SERVER_OBJECTS) $(LDFLAGS)  $(LIBS)  $(SVLIBS)
 
 admin_server: $(ADMIN_SERVER_OBJECTS)
 	$(MAKE) -C register
