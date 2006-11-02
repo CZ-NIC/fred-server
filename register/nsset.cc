@@ -159,7 +159,8 @@ namespace Register
       {
         clear();
         std::ostringstream sql;
-        sql << "SELECT n.id,n.handle,"
+        sql << "SELECT DISTINCT "
+            << "n.id,n.handle,"
             << "r.id,r.handle, "
             << "n.crdate,n.trdate,n.update,"
             << "n.crid,creg.handle,n.upid,ureg.handle,n.authinfopw,n.roid "
