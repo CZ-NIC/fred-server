@@ -32,25 +32,13 @@
 //
 // Example implementational code for IDL interface ccReg::EPP
 //
-ccReg_EPP_i::ccReg_EPP_i(ccReg::Admin_ptr _admin , ccReg::Whois_ptr _whois ) : admin(_admin) ,  whois(_whois) {
+ccReg_EPP_i::ccReg_EPP_i( )  {
 
 }
 ccReg_EPP_i::~ccReg_EPP_i(){
  
 }
 
-ccReg::Admin_ptr 
-ccReg_EPP_i::getAdmin()
-{
-  return ccReg::Admin::_duplicate(admin);
-}
-
-
-ccReg::Whois_ptr 
-ccReg_EPP_i::getWhois()
-{
-  return ccReg::Whois::_duplicate(whois);
-}
 
 // test spojeni na databazi
 bool ccReg_EPP_i::TestDatabaseConnect(const char *db)
@@ -165,8 +153,19 @@ return rows;
 
 bool  ccReg_EPP_i::TestCountryCode( const char *cc )
 {
-LOG( NOTICE_LOG ,  "TestCountryCode [%s]" , cc);
-return CC->TestCountryCode( cc ); 
+LOG( NOTICE_LOG ,  "CCREG:: TestCountryCode  [%s] len %d" , cc , strlen( cc ) );
+// kod zeme neni zadan
+if( strlen( cc ) == 0 ) { LOG( NOTICE_LOG ,  "empty CountryCode"  ); return true; }
+else
+{
+ if( strlen(cc ) == 2 )  // dvojmismeny kod zeme
+  {
+   LOG( NOTICE_LOG ,  "TestCountryCode [%s]" , cc);
+   return CC->TestCountryCode( cc ); 
+  }
+else return false;
+}
+
 }
 
 // ziskani cisla verze plus datum cas

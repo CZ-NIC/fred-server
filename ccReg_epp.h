@@ -1,5 +1,3 @@
-#include "admin.h"
-#include "whois.h"
 
 #include "countrycode.h"
 #include "messages.h"
@@ -13,18 +11,12 @@ private:
   // Make sure all instances are built on the heap by making the
   // destructor non-public
   //virtual ~ccReg_EPP_i();
-  ccReg::Admin_ptr admin;
-  ccReg::Whois_ptr whois;
 public:
   // standard constructor
-  ccReg_EPP_i(ccReg::Admin_ptr admin ,  ccReg::Whois_ptr whois );
+  ccReg_EPP_i();
   virtual ~ccReg_EPP_i();
 
-  // vrati administrativni objekt
-  ccReg::Admin_ptr getAdmin();
 
-  // vraci Whois objekt
-  ccReg::Whois_ptr getWhois();
 
   // test spojeni na databazi
   bool TestDatabaseConnect(const char *db);
