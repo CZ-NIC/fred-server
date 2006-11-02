@@ -212,9 +212,9 @@ namespace Register
         SQL_HANDLE_FILTER(sql,"creg.handle",createRegistrarHandleFilter);
         SQL_ID_FILTER(sql,"ureg.id",updateRegistrarFilter);
         SQL_HANDLE_FILTER(sql,"ureg.handle",updateRegistrarHandleFilter);        
-        SQL_DATE_FILTER(sql,"n.crDate",crDateIntervalFilter);
-        SQL_DATE_FILTER(sql,"n.upDate",updateIntervalFilter);
-        SQL_DATE_FILTER(sql,"n.trDate",trDateIntervalFilter);
+        SQL_DATE_FILTER(sql,"c.crDate",crDateIntervalFilter);
+        SQL_DATE_FILTER(sql,"c.upDate",updateIntervalFilter);
+        SQL_DATE_FILTER(sql,"c.trDate",trDateIntervalFilter);
         SQL_HANDLE_FILTER(sql,"c.handle",handle);
         SQL_HANDLE_FILTER(sql,"c.name",name);
         SQL_HANDLE_FILTER(sql,"c.ssn",ident);
