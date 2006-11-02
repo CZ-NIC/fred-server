@@ -622,10 +622,11 @@ ccReg::Table::ColumnHeaders*
 ccReg_EPPActions_i::getColumnHeaders()
 {
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
-  ch->length(3);
+  ch->length(4);
   COLHEAD(ch,0,"Type",CT_OTHER);
   COLHEAD(ch,1,"Registrar",CT_REGISTRAR_HANDLE);
   COLHEAD(ch,2,"Time",CT_OTHER);
+  COLHEAD(ch,3,"Result",CT_OTHER);
   return ch;
 }
 
@@ -637,10 +638,11 @@ ccReg_EPPActions_i::getRow(CORBA::Short row)
   const Register::Registrar::EPPAction *a = eal->get(row);
   if (!a) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
-  tr->length(3);
+  tr->length(4);
   (*tr)[0] = DUPSTRFUN(a->getTypeName);
   (*tr)[1] = DUPSTRFUN(a->getRegistrarHandle); 
   (*tr)[2] = DUPSTRDATE(a->getStartTime);
+  (*tr)[3] = DUPSTRFUN(a->getResultStatus);
   return tr;
 }
 
