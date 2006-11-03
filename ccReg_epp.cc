@@ -4818,7 +4818,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                }
 
 
-             switch(  TestPeriodyInterval( period  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  == false )
+             switch(  TestPeriodyInterval( period  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  )
               {
                   case 2:
                   LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
@@ -5200,7 +5200,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
 
   
 
-             switch(  TestPeriodyInterval( period  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  == false )
+             switch(  TestPeriodyInterval( period  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )   )
               {
                   case 2:
                   LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
@@ -5220,9 +5220,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR ;
                   break;
-               }
-
-
+                 default: // spocitej ze zadaneho datumu 
 
               if( DBsql.GetExpDate( ExDateStr , id ,  period  ,  GetZoneExPeriodMax( zone ) )  )
                 {
@@ -5240,7 +5238,8 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_RANGE_ERROR;
                }
-
+                  break;
+              }
 
              // test validate
 
