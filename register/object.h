@@ -69,8 +69,10 @@ namespace Register
     virtual unsigned getCount() const = 0;
     /// get detail of loaded objects
     virtual Object *get(unsigned idx) const = 0;
+    /// set filter for id
+    virtual void setIdFilter(unsigned long id) = 0;
     /// set filter for registrar
-    virtual void setRegistrarFilter(unsigned registrarId) = 0;
+    virtual void setRegistrarFilter(unsigned long registrarId) = 0;
     /// set filter for registrar handle
     virtual void setRegistrarHandleFilter(
       const std::string& registrarHandle
@@ -78,7 +80,7 @@ namespace Register
     /// set filter for period of crDate
     virtual void setCrDateIntervalFilter(time_period period) = 0;
     /// set filter for create registrar
-    virtual void setCreateRegistrarFilter(unsigned registrarId) = 0;
+    virtual void setCreateRegistrarFilter(unsigned long registrarId) = 0;
     /// set filter for create registrar handle
     virtual void setCreateRegistrarHandleFilter(
       const std::string& registrarHandle
@@ -86,7 +88,7 @@ namespace Register
     /// set filter for period of upDate
     virtual void setUpdateIntervalFilter(time_period period) = 0;
     /// set filter for update registrar
-    virtual void setUpdateRegistrarFilter(unsigned registrarId) = 0;
+    virtual void setUpdateRegistrarFilter(unsigned long registrarId) = 0;
     /// set filter for update registrar handle
     virtual void setUpdateRegistrarHandleFilter(
       const std::string& registrarHandle

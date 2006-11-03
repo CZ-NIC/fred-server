@@ -340,6 +340,7 @@ namespace Register
       DB *db;
       std::string name;
       std::string handle;
+      std::string xml;
       unsigned idFilter;
      public:
       RegistrarListImpl(DB *_db) : db(_db), idFilter(0)
@@ -352,6 +353,10 @@ namespace Register
       virtual void setHandleFilter(const std::string& _handle)
       {
         handle = _handle;
+      }
+      virtual void setXMLFilter(const std::string& _xml)
+      {
+        xml = _xml;
       }
       virtual void setNameFilter(const std::string& _name)
       {
@@ -443,7 +448,8 @@ namespace Register
 
     class EPPActionImpl : virtual public EPPAction
     {
-      unsigned sessionId;
+      unsigned long id;
+      unsigned long sessionId;
       unsigned type;
       std::string typeName;
       ptime startTime;
@@ -452,9 +458,11 @@ namespace Register
       std::string message;
       unsigned result;
       std::string registrarHandle;
+      std::string handle;
      public:
       EPPActionImpl(
-        unsigned _sessionId,
+        unsigned long _id,
+        unsigned long _sessionId,
         unsigned _type,
         const std::string& _typeName,
         ptime _startTime,
@@ -462,16 +470,22 @@ namespace Register
         const std::string& _clientTransactionId,
         const std::string& _message,
         unsigned _result,
-        const std::string& _registrarHandle
+        const std::string& _registrarHandle,
+        const std::string& _handle
       ) : 
-        sessionId(_sessionId), type(_type), typeName(_typeName),
+        id(_id), sessionId(_sessionId), type(_type), typeName(_typeName),
         startTime(_startTime),
         serverTransactionId(_serverTransactionId),
         clientTransactionId(_clientTransactionId),
-        message(_message), result(_result), registrarHandle(_registrarHandle)
+        message(_message), result(_result), registrarHandle(_registrarHandle),
+        handle(_handle)
       {
       }
-      virtual unsigned getSessionId() const
+      virtual unsigned long getId() const
+      {
+        return id;
+      }
+      virtual unsigned long getSessionId() const
       {
         return sessionId;
       }
@@ -511,6 +525,10 @@ namespace Register
       {
         return registrarHandle;
       }
+      virtual const std::string& getHandle() const
+      {
+        return handle;
+      }
     };
 
     /// List of EPPAction objects
@@ -518,8 +536,9 @@ namespace Register
     {
       typedef std::vector<EPPActionImpl *> ActionList;
       ActionList alist;
-      unsigned sessionId;
-      unsigned registrarId;
+      unsigned long id;
+      unsigned long sessionId;
+      unsigned long registrarId;
       std::string registrarHandle;
       time_period period;
       unsigned typeId;
@@ -528,19 +547,24 @@ namespace Register
       std::string clTRID;
       std::string svTRID;
       std::string handle;
+      std::string xml;
       DB *db;
      public:
       EPPActionListImpl(DB *_db) :
-       sessionId(0), registrarId(0), 
+       id(0), sessionId(0), registrarId(0), 
        period(ptime(neg_infin),ptime(pos_infin)),
        typeId(0), returnCodeId(0), db(_db)
       {
       }
-      void setSessionFilter(unsigned _sessionId)
+      void setIdFilter(unsigned long _id)
+      {
+        id = _id;
+      }
+      void setSessionFilter(unsigned long _sessionId)
       {
         sessionId = _sessionId;
       }
-      void setRegistrarFilter(unsigned _registrarId)
+      void setRegistrarFilter(unsigned long _registrarId)
       {
         registrarId = _registrarId;
       }
@@ -564,6 +588,10 @@ namespace Register
       {
         handle = _handle;
       }
+      virtual void setXMLFilter(const std::string& _xml)
+      {
+        xml = _xml;
+      }
       virtual void setTextTypeFilter(const std::string& _textType)
       {
         type = _textType;
@@ -582,18 +610,24 @@ namespace Register
           delete alist[i];
         alist.clear();
       }
+#define DB_NULL_INT(i,j) \
+ (db->IsNotNull(i,j)) ? 0 : atoi(db->GetFieldValue(i,j))
+#define DB_NULL_STR(i,j) \
+ (db->IsNotNull(i,j)) ? "" : db->GetFieldValue(i,j)
       virtual void reload()
       {
         clear();
         std::ostringstream sql;
-        sql << "SELECT a.clientid,a.action,ea.status,a.startdate,"
+        sql << "SELECT a.id,a.clientid,a.action,ea.status,a.startdate,"
             << "a.servertrid,a.clienttrid,"
-            << "ax.xml,a.response,r.handle "
-            << "FROM action a, action_xml ax, enum_action ea,"
-            << "login l, "
-            << "registrar r "
-            << "WHERE a.id=ax.actionid AND l.id=a.clientid "
-            << "AND r.id=l.registrarid AND ea.id=a.action ";
+            << "ax.xml,a.response,r.handle,'HANDLE' "
+            << "FROM enum_action ea, action a " 
+            << "LEFT JOIN enum_error er ON (a.response=er.id) " 
+            << "LEFT JOIN action_xml ax ON (a.id=ax.actionid) "
+            << "LEFT JOIN login l ON (l.id=a.clientid) "
+            << "LEFT JOIN registrar r ON (r.id=l.registrarid) "
+            << "WHERE ea.id=a.action ";
+        SQL_ID_FILTER(sql,"a.id",id);
         SQL_ID_FILTER(sql,"r.id",registrarId);
         SQL_HANDLE_FILTER(sql,"r.handle",registrarHandle);
         SQL_DATE_FILTER(sql,"a.startdate",period);
@@ -601,22 +635,27 @@ namespace Register
         SQL_ID_FILTER(sql,"a.response",returnCodeId);
         SQL_HANDLE_FILTER(sql,"a.clienttrid",clTRID);
         SQL_HANDLE_FILTER(sql,"a.servertrid",svTRID);
+        /// TODO - handle has to have special data column
         if (!handle.empty())
           sql << "AND ax.xml ILIKE '%" << handle << "%' ";
+        if (!xml.empty())
+          sql << "AND ax.xml ILIKE '%" << xml << "%' ";
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           alist.push_back(
             new EPPActionImpl(
               atoi(db->GetFieldValue(i,0)),
-              atoi(db->GetFieldValue(i,1)),
-              db->GetFieldValue(i,2),
-              ptime(time_from_string(db->GetFieldValue(i,3))),
-              db->GetFieldValue(i,4),
+              DB_NULL_INT(i,1),
+              atoi(db->GetFieldValue(i,2)),
+              db->GetFieldValue(i,3),
+              ptime(time_from_string(db->GetFieldValue(i,4))),
               db->GetFieldValue(i,5),
               db->GetFieldValue(i,6),
-              atoi(db->GetFieldValue(i,7)),
-              db->GetFieldValue(i,8)
+              DB_NULL_STR(i,7),
+              DB_NULL_INT(i,8),
+              DB_NULL_STR(i,9),
+              DB_NULL_STR(i,10)
             )
           );
         }
@@ -631,6 +670,7 @@ namespace Register
       }
       virtual void clearFilter()
       {
+        id = 0;
         sessionId = 0;
         registrarId = 0;
         registrarHandle = "";
@@ -641,6 +681,7 @@ namespace Register
         clTRID = "";
         svTRID = "";
         handle = "";
+        xml = "";
       }
     };
 
@@ -649,10 +690,15 @@ namespace Register
       DB *db; ///< connection do db
       RegistrarListImpl rl;
       EPPActionListImpl eal;
+      std::vector<std::string> actionTypes;
      public:
       ManagerImpl(DB *_db) :
         db(_db), rl(_db), eal(db)
-      {}     
+      {
+        // TODO SQL load
+        actionTypes.push_back("DomainCreate");
+        actionTypes.push_back("ContactCreate");
+      }     
       virtual RegistrarList *getList()
       {
         return &rl;
@@ -661,6 +707,16 @@ namespace Register
       {
         return &eal;
       }
+      virtual unsigned getEPPActionTypeCount()
+      {
+        return actionTypes.size();
+      }
+      virtual const std::string& getEPPActionTypeByIdx(unsigned idx) const
+        throw (NOT_FOUND)
+      {
+        if (idx >= actionTypes.size()) throw NOT_FOUND();
+        return actionTypes[idx];
+      }      
     }; // class ManagerImpl
     Manager *Manager::create(DB *db)
     {

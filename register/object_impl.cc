@@ -135,7 +135,13 @@ Register::ObjectListImpl::ObjectListImpl() :
 }
 
 void 
-Register::ObjectListImpl::setRegistrarFilter(unsigned registrarId)
+Register::ObjectListImpl::setIdFilter(unsigned long id)
+{
+  idFilter = id;
+}
+
+void 
+Register::ObjectListImpl::setRegistrarFilter(unsigned long registrarId)
 {
   registrarFilter = registrarId;
 }
@@ -155,7 +161,7 @@ Register::ObjectListImpl::setCrDateIntervalFilter(time_period period)
 }
 
 void 
-Register::ObjectListImpl::setCreateRegistrarFilter(unsigned registrarId)
+Register::ObjectListImpl::setCreateRegistrarFilter(unsigned long registrarId)
 {
   createRegistrarFilter = registrarId;
 }
@@ -175,7 +181,7 @@ Register::ObjectListImpl::setUpdateIntervalFilter(time_period period)
 }
 
 void 
-Register::ObjectListImpl::setUpdateRegistrarFilter(unsigned registrarId)
+Register::ObjectListImpl::setUpdateRegistrarFilter(unsigned long registrarId)
 {
   updateRegistrarFilter = registrarId;
 }
@@ -197,6 +203,7 @@ Register::ObjectListImpl::setTrDateIntervalFilter(time_period period)
 void
 Register::ObjectListImpl::clear()
 {
+  idFilter = 0;
   crDateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));
   updateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));
   trDateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));

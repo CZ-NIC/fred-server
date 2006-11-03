@@ -144,12 +144,15 @@ namespace Register {
       /// Protected destructor, object is managed by EPPActionList
       virtual ~EPPAction() {}
      public:
+      virtual unsigned long getId() const = 0; 
       /// Return id of session action is part of
-      virtual unsigned getSessionId() const = 0;
+      virtual unsigned long getSessionId() const = 0;
       /// Return type of actoion
       virtual unsigned getType() const = 0;
       /// Return type name of action
       virtual const std::string& getTypeName() const = 0;
+      /// Return handle of main object in action
+      virtual const std::string& getHandle() const = 0;
       /// Return time of session start
       virtual const ptime getStartTime() const = 0;
       /// Return server provided transaction id
@@ -172,10 +175,12 @@ namespace Register {
      public:
       /// Public destructor, user is responsible for destruction
       virtual ~EPPActionList() {}
+      /// Set filter for action with id
+      virtual void setIdFilter(unsigned long id) = 0;
       /// Set filter for session action is part of
-      virtual void setSessionFilter(unsigned sessionId) = 0;
+      virtual void setSessionFilter(unsigned long sessionId) = 0;
       /// Set filter for registrar who performed action
-      virtual void setRegistrarFilter(unsigned registrarId) = 0;
+      virtual void setRegistrarFilter(unsigned long registrarId) = 0;
       /// Set filter for registrar who performed action
       virtual void setRegistrarHandleFilter(
         const std::string& registrarHandle
@@ -188,6 +193,8 @@ namespace Register {
       virtual void setReturnCodeFilter(unsigned returnCodeId) = 0;
       /// Set filter for handle in XML
       virtual void setHandleFilter(const std::string& handle) = 0;
+      /// Filter in xml
+      virtual void setXMLFilter(const std::string& xml) = 0;
       /// Set filter for text type of action
       virtual void setTextTypeFilter(const std::string& textType) = 0;
       /// Set filter for clTRID
@@ -229,6 +236,12 @@ namespace Register {
       virtual RegistrarList *getList() = 0;
       /// Return list of EPP actions
       virtual EPPActionList *getEPPActionList() = 0;
+      /// Return count of EPP action types
+      virtual unsigned getEPPActionTypeCount() = 0;
+      /// Return EPP action type by index
+      virtual const std::string& getEPPActionTypeByIdx(
+        unsigned idx
+      ) const throw (NOT_FOUND) = 0;
       /// Factory method
       static Manager *create(DB *db);
     };

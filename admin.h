@@ -18,6 +18,7 @@ class ccReg_PageTable_i : virtual public POA_ccReg::PageTable {
   ccReg::TableRow* getPageRow(CORBA::Short pageRow) 
     throw (ccReg::Table::INVALID_ROW);
   CORBA::Short numPageRows();
+  CORBA::Long getPageRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
 };
 
 class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions, 
@@ -29,14 +30,16 @@ class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions,
   std::string typeFilter;
   std::string handleFilter;
   CORBA::Short resultFilter;
-  ccReg::DateInterval timeFilter;
+  ccReg::DateTimeInterval timeFilter;
   std::string clTRIDFilter;
   std::string svTRIDFilter;
+  std::string xmlFilter;
  public:
   ccReg_EPPActions_i(Register::Registrar::EPPActionList *eal);
   ~ccReg_EPPActions_i();
   ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  CORBA::Long getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
   char* outputCSV();
   CORBA::Short numRows();
@@ -49,10 +52,12 @@ class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions,
   void type(const char* _v);
   char* handle();
   void handle(const char* _v);
+  char* xml();
+  void xml(const char* _v);
   CORBA::Short result();
   void result(CORBA::Short _v);
-  ccReg::DateInterval time();
-  void time(const ccReg::DateInterval& _v);
+  ccReg::DateTimeInterval time();
+  void time(const ccReg::DateTimeInterval& _v);
   char* clTRID();
   void clTRID(const char* _v);
   char* svTRID();
@@ -75,6 +80,7 @@ class ccReg_Registrars_i : virtual public POA_ccReg::Registrars,
   ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
+  CORBA::Long getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
@@ -145,6 +151,7 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
   ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
+  CORBA::Long getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
@@ -192,6 +199,7 @@ class ccReg_Contacts_i : virtual public POA_ccReg::Contacts,
   ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
+  CORBA::Long getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
@@ -227,6 +235,7 @@ class ccReg_NSSets_i : virtual public POA_ccReg::NSSets,
   ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
+  CORBA::Long getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
@@ -286,17 +295,32 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   void putRegistrar(const ccReg::Registrar& regData);
   
   // object detail
+  void fillContact(ccReg::ContactDetail* cv, Register::Contact::Contact* c);
   ccReg::ContactDetail* getContactByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound);
+  ccReg::ContactDetail* getContactById(CORBA::Long id)
+    throw (ccReg::Admin::ObjectNotFound);
+  void fillNSSet(ccReg::NSSetDetail* cn, Register::NSSet::NSSet* n);
   ccReg::NSSetDetail* getNSSetByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound);
+  ccReg::NSSetDetail* getNSSetById(CORBA::Long id)
+    throw (ccReg::Admin::ObjectNotFound);
+  void fillDomain(ccReg::DomainDetail* cd, Register::Domain::Domain* d);
   ccReg::DomainDetail* getDomainByFQDN(const char* fqdn)
+    throw (ccReg::Admin::ObjectNotFound);
+  ccReg::DomainDetail* getDomainById(CORBA::Long id)
+    throw (ccReg::Admin::ObjectNotFound);
+  ccReg::EPPAction* getEPPActionById(CORBA::Long id)
     throw (ccReg::Admin::ObjectNotFound);
 
   // statistics
   CORBA::Long getEnumDomainCount();
   CORBA::Long getEnumNumberCount();
   
+  // counters
+  ccReg::EPPActionTypeSeq* getEPPActionTypeList();
+  ccReg::CountryDescSeq* getCountryDescList();
+  char* getDefaultCountry();
 
   /// testovaci fce na typ objektu
   void checkHandle(const char* handle, ccReg::CheckHandleType_out ch);

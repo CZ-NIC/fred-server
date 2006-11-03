@@ -15,6 +15,7 @@ namespace Register
    std::auto_ptr<Registrar::Manager> rm;
    std::auto_ptr<Contact::Manager> cm;
    std::auto_ptr<NSSet::Manager> nm;
+   std::vector<CountryDesc> countries;
   public:
    ManagerImpl(DB *_db) : db(_db)
    {
@@ -23,6 +24,14 @@ namespace Register
      rm.reset(Registrar::Manager::create(db));
      cm.reset(Contact::Manager::create(db));
      nm.reset(NSSet::Manager::create(db));
+     // TODO SQL load
+     CountryDesc cd;
+     cd.cc = "CZ";
+     cd.name = "Czech Republic";
+     countries.push_back(cd);
+     cd.cc = "SK";
+     cd.name = "Slovak Republic";
+     countries.push_back(cd);
    } 
    /// interface method implementation
    void checkHandle(const std::string& handle, CheckHandle& ch) const
@@ -94,6 +103,16 @@ namespace Register
    NSSet::Manager *getNSSetManager()
    {
      return nm.get();
+   }
+   virtual unsigned getCountryDescSize() const
+   {
+     return countries.size();
+   }
+   virtual const CountryDesc& getCountryDescByIdx(unsigned idx) const
+     throw (NOT_FOUND)
+   {
+     if (idx >= countries.size()) throw NOT_FOUND();
+     return countries[idx];
    }   
  };
  Manager *Manager::create(DB *db)

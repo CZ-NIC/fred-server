@@ -72,28 +72,30 @@ namespace Register
   class ObjectListImpl : virtual public ObjectList
   {
    protected:
-    unsigned registrarFilter;
+    unsigned long idFilter;
+    unsigned long registrarFilter;
     std::string registrarHandleFilter;
-    unsigned createRegistrarFilter;
+    unsigned long createRegistrarFilter;
     std::string createRegistrarHandleFilter;
-    unsigned updateRegistrarFilter;
+    unsigned long updateRegistrarFilter;
     std::string updateRegistrarHandleFilter;
     time_period crDateIntervalFilter;
     time_period updateIntervalFilter;
     time_period trDateIntervalFilter;
    public:
     ObjectListImpl();
-    virtual void setRegistrarFilter(unsigned registrarId);
+    virtual void setIdFilter(unsigned long id);
+    virtual void setRegistrarFilter(unsigned long registrarId);
     virtual void setRegistrarHandleFilter(
       const std::string& registrarHandle
     );
     virtual void setCrDateIntervalFilter(time_period period);
-    virtual void setCreateRegistrarFilter(unsigned registrarId);
+    virtual void setCreateRegistrarFilter(unsigned long registrarId);
     virtual void setCreateRegistrarHandleFilter(
       const std::string& registrarHandle
     );
     virtual void setUpdateIntervalFilter(time_period period);
-    virtual void setUpdateRegistrarFilter(unsigned registrarId);
+    virtual void setUpdateRegistrarFilter(unsigned long registrarId);
     virtual void setUpdateRegistrarHandleFilter(
       const std::string& registrarHandle
     );
