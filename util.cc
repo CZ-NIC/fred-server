@@ -437,8 +437,10 @@ else return false;
 int TestPeriodyInterval( int period , int min , int max )
 {
 int mod;
+LOG( LOG_DEBUG , "test periody interval perido %d min %d max %d" ,  period ,  min ,   max  );
+
 // musi lezet v intervalu
-if( period >= min && period <= max )
+if( period > 0  && period <= max )
 {
 mod = period % min;
 if( mod == 0 ) return 0; // je to OK
