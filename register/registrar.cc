@@ -611,9 +611,9 @@ namespace Register
         alist.clear();
       }
 #define DB_NULL_INT(i,j) \
- (db->IsNotNull(i,j)) ? 0 : atoi(db->GetFieldValue(i,j))
+  (db->IsNotNull(i,j)) ? atoi(db->GetFieldValue(i,j)) : 0
 #define DB_NULL_STR(i,j) \
- (db->IsNotNull(i,j)) ? "" : db->GetFieldValue(i,j)
+  (db->IsNotNull(i,j)) ? db->GetFieldValue(i,j) : ""
       virtual void reload()
       {
         clear();
