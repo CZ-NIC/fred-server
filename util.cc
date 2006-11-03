@@ -434,17 +434,17 @@ else return false;
 }
 
 
-bool TestPeriodyInterval( int period , int min , int max )
+int TestPeriodyInterval( int period , int min , int max )
 {
 int mod;
 // musi lezet v intervalu
 if( period >= min && period <= max )
 {
 mod = period % min;
-if( mod == 0 ) return true;
-else return false;
+if( mod == 0 ) return 0; // je to OK
+else return 1; // interval je sice spravne ale neni v rozsahu obdobi 12 .. 24 .. 36  mesicu
 }
-else  return false;
+else  return 2 ;  // period je mimo stanoveny rozsah
 }
 
 

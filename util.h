@@ -72,7 +72,7 @@ bool TestDNSHost( const char *fqdn  );
 bool TestInetAddress(const char *address );
 
 // test spravnosti intervalu periody
-bool TestPeriodyInterval( int period , int min , int max );
+int TestPeriodyInterval( int period , int min , int max );
 
 // preveadi credit registratora na halire bez konverze na float
 long get_price( const char *priceStr );
