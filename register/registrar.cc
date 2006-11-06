@@ -698,6 +698,25 @@ namespace Register
         // TODO SQL load
         actionTypes.push_back("DomainCreate");
         actionTypes.push_back("ContactCreate");
+        actionTypes.push_back("NSSetCreate");
+        actionTypes.push_back("ContactUpdate");
+        actionTypes.push_back("DomainUpdate");
+        actionTypes.push_back("NSSetUpdate");
+        actionTypes.push_back("ContactDelete");
+        actionTypes.push_back("DomainDelete");
+        actionTypes.push_back("NSSetDelete");
+        actionTypes.push_back("ContactTransfer");
+        actionTypes.push_back("DomainTransfer");
+        actionTypes.push_back("NSSetTransfer");
+        actionTypes.push_back("ContactCheck");
+        actionTypes.push_back("DomainCheck");
+        actionTypes.push_back("NSSetCheck");
+        actionTypes.push_back("ContactInfo");
+        actionTypes.push_back("DomainInfo");
+        actionTypes.push_back("NSSetInfo");
+        actionTypes.push_back("DomainRenew");
+        actionTypes.push_back("ClientLogin");
+        actionTypes.push_back("ClientLogout");
       }     
       virtual RegistrarList *getList()
       {
