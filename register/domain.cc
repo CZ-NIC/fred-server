@@ -273,6 +273,7 @@ namespace Register
             << "LEFT JOIN host h ON (n.id=h.nssetid) "
             << "WHERE d.registrant=c.id AND d.crid=creg.id "
             << "AND d.clid=r.id ";
+        SQL_ID_FILTER(sql,"d.id",idFilter);
         SQL_ID_FILTER(sql,"r.id",registrarFilter);
         SQL_HANDLE_FILTER(sql,"r.handle",registrarHandleFilter);
         SQL_ID_FILTER(sql,"creg.id",createRegistrarFilter);
