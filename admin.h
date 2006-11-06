@@ -34,6 +34,7 @@ class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions,
   std::string clTRIDFilter;
   std::string svTRIDFilter;
   std::string xmlFilter;
+  ccReg::EPPActionsFilter::ResultType resultClassFilter;
  public:
   ccReg_EPPActions_i(Register::Registrar::EPPActionList *eal);
   ~ccReg_EPPActions_i();
@@ -62,6 +63,8 @@ class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions,
   void clTRID(const char* _v);
   char* svTRID();
   void svTRID(const char* _v);
+  ccReg::EPPActionsFilter::ResultType resultClass();
+  void resultClass(ccReg::EPPActionsFilter::ResultType _v);
   void reload();
   void clear();
   ccReg::Filter_ptr aFilter();  
@@ -105,6 +108,7 @@ class ccReg_RegObjectFilter_i : virtual public POA_ccReg::RegObjectFilter {
   ccReg::DateInterval crDateFilter;
   ccReg::DateInterval upDateFilter;
   ccReg::DateInterval trDateFilter;
+  ccReg::ObjectStatusSeq statusFilter;
   Register::ObjectList *ol;
  public:
   ccReg_RegObjectFilter_i(Register::ObjectList *_ol);
@@ -126,6 +130,8 @@ class ccReg_RegObjectFilter_i : virtual public POA_ccReg::RegObjectFilter {
   void upDate(const ccReg::DateInterval& _v);
   ccReg::DateInterval trDate();
   void trDate(const ccReg::DateInterval& _v);
+  ccReg::ObjectStatusSeq *status();
+  void status(const ccReg::ObjectStatusSeq& _v);
   void clear();
 };
 
@@ -321,7 +327,9 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   ccReg::EPPActionTypeSeq* getEPPActionTypeList();
   ccReg::CountryDescSeq* getCountryDescList();
   char* getDefaultCountry();
-
+  ccReg::ObjectStatusDescSeq* getDomainStatusDescList();
+  ccReg::ObjectStatusDescSeq* getContactStatusDescList();
+  ccReg::ObjectStatusDescSeq* getNSSetStatusDescList();
   /// testovaci fce na typ objektu
   void checkHandle(const char* handle, ccReg::CheckHandleType_out ch);
   

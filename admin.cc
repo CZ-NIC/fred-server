@@ -305,6 +305,14 @@ ccReg_Admin_i::fillContact(
   cc->email = DUPSTRFUN(c->getEmail);
   cc->notifyEmail = DUPSTRFUN(c->getNotifyEmail);
   cc->ssn = DUPSTRFUN(c->getSSN); 
+  cc->ssnType = DUPSTRFUN(c->getSSNType); 
+  cc->vat = DUPSTRFUN(c->getVAT); 
+  cc->discloseName = c->getDiscloseName(); 
+  cc->discloseOrganization = c->getDiscloseOrganization(); 
+  cc->discloseAddress = c->getDiscloseAddr(); 
+  cc->discloseEmail = c->getDiscloseEmail(); 
+  cc->discloseTelephone = c->getDiscloseTelephone(); 
+  cc->discloseFax = c->getDiscloseFax(); 
 }
 
 ccReg::ContactDetail* 
@@ -578,6 +586,25 @@ ccReg_Admin_i::getDefaultCountry()
 {
   return CORBA::string_dup("CZ");
 }
+
+ccReg::ObjectStatusDescSeq* 
+ccReg_Admin_i::getDomainStatusDescList()
+{
+  return new ccReg::ObjectStatusDescSeq; //TODO
+}
+
+ccReg::ObjectStatusDescSeq* 
+ccReg_Admin_i::getContactStatusDescList()
+{
+  return new ccReg::ObjectStatusDescSeq; //TODO
+}
+
+ccReg::ObjectStatusDescSeq* 
+ccReg_Admin_i::getNSSetStatusDescList()
+{
+  return new ccReg::ObjectStatusDescSeq; // TODO
+}
+
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_Session_i
@@ -949,8 +976,8 @@ ccReg_EPPActions_i::time(const ccReg::DateTimeInterval& _v)
   catch (...) {}
   eal->setTimePeriodFilter(
     time_period(
-      ptime(from,time_duration(0,0,0)),
-      ptime(to,time_duration(0,0,0))
+      ptime(from,time_duration(_v.from.hour,_v.from.minute,_v.from.second)),
+      ptime(to,time_duration(_v.to.hour,_v.to.minute,_v.to.second))
     )
   );
 }
@@ -981,6 +1008,25 @@ ccReg_EPPActions_i::svTRID(const char* _v)
   eal->setSvTRIDFilter(_v);
 }
 
+ccReg::EPPActionsFilter::ResultType 
+ccReg_EPPActions_i::resultClass()
+{
+  return resultClassFilter;
+}
+
+void 
+ccReg_EPPActions_i::resultClass(ccReg::EPPActionsFilter::ResultType _v)
+{
+  resultClassFilter = _v;
+  eal->setResultFilter( 
+    _v == ccReg::EPPActionsFilter::RT_OK ? Register::Registrar::EARF_OK :
+    _v == ccReg::EPPActionsFilter::RT_FAIL ? Register::Registrar::EARF_FAIL :
+                                             Register::Registrar::EARF_ALL
+  );
+    
+  
+}
+
 ccReg::Filter_ptr
 ccReg_EPPActions_i::aFilter()
 {
@@ -997,11 +1043,18 @@ ccReg_EPPActions_i::clear()
   timeFilter.from.date.year = 0;;
   timeFilter.from.date.month = 0;
   timeFilter.from.date.day = 0;
+  timeFilter.from.hour = 0;
+  timeFilter.from.minute = 0;
+  timeFilter.from.second = 0;
   timeFilter.to.date.year = 0;;
   timeFilter.to.date.month = 0;
   timeFilter.to.date.day = 0;
+  timeFilter.to.hour = 0;
+  timeFilter.to.minute = 0;
+  timeFilter.to.second = 0;
   clTRIDFilter = "";
   svTRIDFilter = "";
+  resultClassFilter = ccReg::EPPActionsFilter::RT_ALL;
   eal->clearFilter();
 }
 
@@ -1186,11 +1239,30 @@ ccReg_RegObjectFilter_i::upDate(const ccReg::DateInterval& _v)
   );
 }
 
+ccReg::ObjectStatusSeq *
+ccReg_RegObjectFilter_i::status()
+{
+  return new ccReg::ObjectStatusSeq(statusFilter);
+}
+
+
+void 
+ccReg_RegObjectFilter_i::status(const ccReg::ObjectStatusSeq& _v)
+{
+  statusFilter = _v;
+}
+
+
 void 
 ccReg_RegObjectFilter_i::clear()
 {
   registrarFilter = 0;
   registrarHandleFilter = "";
+  createRegistrarFilter = 0;
+  createRegistrarHandleFilter = "";
+  updateRegistrarFilter = 0;
+  updateRegistrarHandleFilter = "";
+
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
