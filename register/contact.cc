@@ -206,6 +206,7 @@ namespace Register
             << "FROM registrar r, registrar creg, contact c "
             << "LEFT JOIN registrar ureg ON (c.upid=ureg.id) "
             << "WHERE c.clid=r.id AND c.crid=creg.id ";
+        SQL_ID_FILTER(sql,"c.id",idFilter);
         SQL_ID_FILTER(sql,"r.id",registrarFilter);
         SQL_HANDLE_FILTER(sql,"r.handle",registrarHandleFilter);
         SQL_ID_FILTER(sql,"creg.id",createRegistrarFilter);
