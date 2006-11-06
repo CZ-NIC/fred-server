@@ -50,6 +50,22 @@ namespace Register
       virtual const std::string& getNotifyEmail() const = 0;
       /// return contact identification string
       virtual const std::string& getSSN() const = 0;
+      /// return contact identification type
+      virtual const std::string& getSSNType() const = 0;
+      /// return value added tax identification
+      virtual const std::string& getVAT() const = 0;
+      /// return disclose attribute for contact name
+      virtual bool getDiscloseName() const = 0;
+      /// return disclose attribute for contact name
+      virtual bool getDiscloseOrganization() const = 0;
+      /// return disclose attribute for contact name
+      virtual bool getDiscloseAddr() const = 0;
+      /// return disclose attribute for contact name
+      virtual bool getDiscloseEmail() const = 0;
+      /// return disclose attribute for contact name
+      virtual bool getDiscloseTelephone() const = 0;
+      /// return disclose attribute for contact name
+      virtual bool getDiscloseFax() const = 0;
     };
     /// domain list
     class List : virtual public ObjectList

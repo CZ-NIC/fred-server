@@ -4,6 +4,8 @@
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <vector>
 
+#define SET_SSNTYPE(t) ((t == 1 ? "RC" : (t == 2 ? "ICO" : "PASS")))
+
 namespace Register
 {
   namespace Contact
@@ -26,6 +28,14 @@ namespace Register
       std::string email;
       std::string notifyEmail;
       std::string ssn;
+      std::string ssnType;
+      std::string vat;
+      bool discloseName;
+      bool discloseOrganization;
+      bool discloseAddr;
+      bool discloseEmail;
+      bool discloseTelephone;
+      bool discloseFax;
      public:
       ContactImpl(
         unsigned _id,
@@ -54,7 +64,15 @@ namespace Register
         const std::string& _fax,
         const std::string& _email,
         const std::string& _notifyEmail,
-        const std::string& _ssn         
+        const std::string& _ssn,
+        unsigned _ssnType,   
+        const std::string& _vat,
+        bool _discloseName,
+        bool _discloseOrganization,
+        bool _discloseAddr,
+        bool _discloseEmail,
+        bool _discloseTelephone,
+        bool _discloseFax  
       ) :
         ObjectImpl(_crDate,_trDate,_upDate,_registrar,_registrarHandle,
         _createRegistrar,_createRegistrarHandle,
@@ -63,7 +81,12 @@ namespace Register
         organization(_organization), street1(_street1), street2(_street2),
         street3(_street3), province(_province), postalCode(_postalCode),
         city(_city), country(_country), telephone(_telephone), fax(_fax),
-        email(_email), notifyEmail(_notifyEmail), ssn(_ssn)
+        email(_email), notifyEmail(_notifyEmail), ssn(_ssn),
+        ssnType(SET_SSNTYPE(_ssnType)), vat(_vat),
+        discloseName(_discloseName),discloseOrganization(_discloseOrganization),
+        discloseAddr(_discloseAddr),discloseEmail(_discloseEmail),
+        discloseTelephone(_discloseTelephone),discloseFax(_discloseFax)
+        
       {
       }
       unsigned getId() const
@@ -129,6 +152,38 @@ namespace Register
       const std::string& getSSN() const
       {
         return ssn;
+      }
+      virtual const std::string& getSSNType() const
+      {
+        return ssnType;
+      }
+      virtual const std::string& getVAT() const
+      {
+        return vat;
+      }
+      virtual bool getDiscloseName() const
+      {
+        return discloseName;
+      }
+      virtual bool getDiscloseOrganization() const
+      {
+        return discloseOrganization;
+      }
+      virtual bool getDiscloseAddr() const
+      {
+        return discloseAddr;
+      }
+      virtual bool getDiscloseEmail() const
+      {
+        return discloseEmail;
+      }
+      virtual bool getDiscloseTelephone() const
+      {
+        return discloseTelephone;
+      }
+      virtual bool getDiscloseFax() const
+      {
+        return discloseFax;
       }
     };
     class ListImpl : public virtual List, public ObjectListImpl
@@ -202,7 +257,9 @@ namespace Register
             << "c.organization,c.street1,c.street2,c.street3,"
             << "c.stateorprovince,"
             << "c.postalcode,c.city,c.country,c.telephone,c.fax,c.email,"
-            << "c.notifyEmail,c.ssn "
+            << "c.notifyEmail,c.ssn,c.ssntype,c.vat,"
+            << "c.disclosename,c.discloseorganization,c.discloseaddress,"
+            << "c.discloseemail,c.disclosetelephone,c.disclosefax "
             << "FROM registrar r, registrar creg, contact c "
             << "LEFT JOIN registrar ureg ON (c.upid=ureg.id) "
             << "WHERE c.clid=r.id AND c.crid=creg.id ";
@@ -253,7 +310,15 @@ namespace Register
               db->GetFieldValue(i,23), //fax
               db->GetFieldValue(i,24), //email
               db->GetFieldValue(i,25), //notifyEmail
-              db->GetFieldValue(i,26) //ssn              
+              db->GetFieldValue(i,26), //ssn
+              atoi(db->GetFieldValue(i,27)), //ssntype
+              db->GetFieldValue(i,28), //vat
+              (*db->GetFieldValue(i,29) == 't'), //discloseName
+              (*db->GetFieldValue(i,30) == 't'), //discloseOrganization
+              (*db->GetFieldValue(i,31) == 't'), //discloseAddr
+              (*db->GetFieldValue(i,32) == 't'), //discloseEmail
+              (*db->GetFieldValue(i,33) == 't'), //discloseTelephone
+              (*db->GetFieldValue(i,34) == 't') //discloseFax
             )
           );
         }
