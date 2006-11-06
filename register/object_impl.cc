@@ -125,12 +125,13 @@ Register::ObjectImpl::deleteStatus(StatusElement element)
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 Register::ObjectListImpl::ObjectListImpl() :
- registrarFilter(0), 
- createRegistrarFilter(0), 
- updateRegistrarFilter(0),
- crDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
- updateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
- trDateIntervalFilter(ptime(neg_infin),ptime(pos_infin))
+  idFilter(0),
+  registrarFilter(0), 
+  createRegistrarFilter(0), 
+  updateRegistrarFilter(0),
+  crDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
+  updateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
+  trDateIntervalFilter(ptime(neg_infin),ptime(pos_infin))
 {
 }
 
