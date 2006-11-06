@@ -137,6 +137,13 @@ namespace Register {
       virtual void clearFilter() = 0;      
     };
     
+    /// Type for specification of EPP action result in filter for actions
+    enum EPPActionResultFilter {
+      EARF_OK, ///< EPP action result begins with 1
+      EARF_FAIL, ///< EPP action result is greater than 1 
+      EARF_ALL ///< All EPP Actions
+    };
+    
     /// Action made by registrar through EPP
     class EPPAction 
     {
@@ -189,8 +196,10 @@ namespace Register {
       virtual void setTimePeriodFilter(const time_period& period) = 0;
       /// Set filter for action type
       virtual void setTypeFilter(unsigned typeId) = 0;
-      /// Set filter for return code
+      /// Set filter for concrete return code
       virtual void setReturnCodeFilter(unsigned returnCodeId) = 0;
+      /// Set filter for simple result classification
+      virtual void setResultFilter(EPPActionResultFilter result) = 0;
       /// Set filter for handle in XML
       virtual void setHandleFilter(const std::string& handle) = 0;
       /// Filter in xml

@@ -548,12 +548,14 @@ namespace Register
       std::string svTRID;
       std::string handle;
       std::string xml;
+      EPPActionResultFilter result;
       DB *db;
      public:
       EPPActionListImpl(DB *_db) :
        id(0), sessionId(0), registrarId(0), 
        period(ptime(neg_infin),ptime(pos_infin)),
-       typeId(0), returnCodeId(0), db(_db)
+       typeId(0), returnCodeId(0), result(EARF_ALL),
+       db(_db)
       {
       }
       void setIdFilter(unsigned long _id)
@@ -583,6 +585,10 @@ namespace Register
       virtual void setReturnCodeFilter(unsigned _returnCodeId)
       {
         returnCodeId = _returnCodeId;
+      }
+      virtual void setResultFilter(EPPActionResultFilter _result)
+      {
+        result = _result;
       }
       virtual void setHandleFilter(const std::string& _handle)
       {
@@ -640,6 +646,10 @@ namespace Register
           sql << "AND ax.xml ILIKE '%" << handle << "%' ";
         if (!xml.empty())
           sql << "AND ax.xml ILIKE '%" << xml << "%' ";
+        if (result != EARF_ALL)
+          sql << "AND (a.response " 
+              << (result == EARF_OK ? "<" : " IS NULL OR a.response >=") 
+              << " 2000) ";
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -682,6 +692,7 @@ namespace Register
         svTRID = "";
         handle = "";
         xml = "";
+        result = EARF_ALL;
       }
     };
 

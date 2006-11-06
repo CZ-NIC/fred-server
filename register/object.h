@@ -11,21 +11,28 @@ using namespace boost::posix_time;
 
 namespace Register
 {
+  /// Status description
+  struct StatusDesc
+  {
+    unsigned id;
+    std::string desc;
+  };
+  /// Request for inclusion status in filter
+  struct StatusFlagFilter {
+    /// id of flag 
+    unsigned flagId;
+    /// wheter it has to be On (true) or Off (false)
+    bool flagIsOn;
+  };
+  /// List of filters for status. Not include status is ignored
+  typedef std::vector<StatusFlagFilter> StatusFlagListFilter; 
   /// Common ancestor for all types managed in register
   class Object
   {
    public:
     virtual ~Object() {}
-    /// State elements that can be set to object
-    enum StatusElement
-    {
-      CLIENT_TRANSFER_PROHIBITED,
-      SERVER_TRANSFER_PROHIBITED,
-      CLIENT_DELETE_PROHIBITED,
-      SERVER_DELETE_PROHIBITED,
-      CLIENT_UPDATE_PROHIBITED,
-      SERVER_UPDATE_PROHIBITED
-    };
+    /// State elements that can be set to object are managed by their id 
+    typedef unsigned StatusElement;
     /// Set of states
     typedef std::set<StatusElement> StatusSet;
     /// Return time of object registration
