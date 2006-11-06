@@ -519,7 +519,7 @@ namespace Register
       }
       virtual std::string getResultStatus() const
       {
-        return result < 2000 ? "OK" : "FAILED";
+        return (result < 2000 && result) ? "OK" : "FAILED";
       }
       virtual const std::string& getRegistrarHandle() const
       {
