@@ -1,7 +1,7 @@
 
 CXX = g++
 
-CXXFLAGS = -Wall -DSYSLOG -DCONFIG_FILE=\"/etc/ccReg.conf\" -DWHOIS -DADMIN \
+CXXFLAGS = -Wall -DSYSLOG -DCONFIG_FILE=\"/etc/ccReg.conf\" \
            -DSVERSION=\"${SVN_REVISION}\"
 
 OBJECTS = 
@@ -19,20 +19,28 @@ CCREG_SERVER_OBJECTS = \
     ccRegSK.o ccRegDynSK.o  ccReg_epp.o  ccReg_server.o  \
     dbsql.o pqsql.o util.o status.o conf.o  log.o  whois.o admin.o \
     nameservice.o countrycode.o messages.o 
+PIF_SERVER_OBJECTS = \
+    ccRegSK.o ccRegDynSK.o  ccReg_epp.o  pif_server.o  \
+    dbsql.o pqsql.o util.o status.o conf.o  log.o  whois.o admin.o \
+    nameservice.o countrycode.o messages.o 
 EPP_CLIENT_OBJECTS=ccRegSK.o ccRegDynSK.o  epp_client.o nameservice.o
 WHOIS_CLIENT_OBJECTS=ccRegSK.o whois_client.o nameservice.o
 
+all:  fred_rifd fred_adifd fred_pifd
 
-all:  ccReg_server epp_client whois_client
 .SUFFIXES:  .o
 
-ccReg_server: $(CCREG_SERVER_OBJECTS)
+fred_rifd: $(CCREG_SERVER_OBJECTS)
 	$(MAKE) -C register
-	$(CXX) -o ccReg_server $(CCREG_SERVER_OBJECTS) $(LDFLAGS)  $(LIBS)  $(SVLIBS)
+	$(CXX) -o fred_rifd $(CCREG_SERVER_OBJECTS) $(LDFLAGS)  $(LIBS)  $(SVLIBS)
 
-admin_server: $(ADMIN_SERVER_OBJECTS)
+fred_adifd: $(ADMIN_SERVER_OBJECTS)
 	$(MAKE) -C register
-	$(CXX) -o admin_server $(ADMIN_SERVER_OBJECTS) $(LDFLAGS) $(SVLIBS)
+	$(CXX) -o fred_adifd $(ADMIN_SERVER_OBJECTS) $(LDFLAGS) $(SVLIBS)
+
+fred_pifd: $(PIF_SERVER_OBJECTS)
+	$(MAKE) -C register
+	$(CXX) -o fred_pifd $(PIF_SERVER_OBJECTS) $(LDFLAGS) $(SVLIBS)
 
 epp_client: $(EPP_CLIENT_OBJECTS)
 	$(CXX) -o epp_client $(EPP_CLIENT_OBJECTS) $(LDFLAGS) $(LIBS)
