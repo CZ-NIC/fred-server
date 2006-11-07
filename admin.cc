@@ -1563,11 +1563,12 @@ ccReg::Table::ColumnHeaders*
 ccReg_Contacts_i::getColumnHeaders()
 {
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
-  ch->length(4);
+  ch->length(5);
   COLHEAD(ch,0,"Handle",CT_CONTACT_HANDLE);
   COLHEAD(ch,1,"Name",CT_OTHER);
-  COLHEAD(ch,2,"CrDate",CT_OTHER);
-  COLHEAD(ch,3,"Registrar",CT_REGISTRAR_HANDLE);
+  COLHEAD(ch,2,"Organization",CT_OTHER);
+  COLHEAD(ch,3,"CrDate",CT_OTHER);
+  COLHEAD(ch,4,"Registrar",CT_REGISTRAR_HANDLE);
   return ch;
 }
 
@@ -1578,11 +1579,12 @@ ccReg_Contacts_i::getRow(CORBA::Short row)
   const Register::Contact::Contact *c = cl->get(row);
   if (!c) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
-  tr->length(4);
+  tr->length(5);
   (*tr)[0] = DUPSTRFUN(c->getHandle);
   (*tr)[1] = DUPSTRFUN(c->getName);
-  (*tr)[2] = DUPSTRDATE(c->getCreateDate);
-  (*tr)[3] = DUPSTRFUN(c->getRegistrarHandle); 
+  (*tr)[2] = DUPSTRFUN(c->getOrganization);
+  (*tr)[3] = DUPSTRDATE(c->getCreateDate);
+  (*tr)[4] = DUPSTRFUN(c->getRegistrarHandle); 
   return tr;
 }
 
@@ -1615,7 +1617,7 @@ ccReg_Contacts_i::numRows()
 CORBA::Short 
 ccReg_Contacts_i::numColumns()
 {
-  return 4;
+  return 5;
 }
 
 void 
