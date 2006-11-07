@@ -1284,17 +1284,17 @@ ccReg_Domains_i::getColumnHeaders()
 {
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
   ch->length(11);
-  COLHEAD(ch,0,"Jméno",CT_DOMAIN_HANDLE);
-  COLHEAD(ch,1,"Registrace",CT_OTHER);
-  COLHEAD(ch,2,"Ukončení",CT_OTHER);
-  COLHEAD(ch,3,"Držitel",CT_CONTACT_HANDLE);
-  COLHEAD(ch,4,"Jméno držitele",CT_OTHER);
-  COLHEAD(ch,5,"Registrátor",CT_REGISTRAR_HANDLE);
-  COLHEAD(ch,6,"Zóna",CT_OTHER);
-  COLHEAD(ch,7,"Expirace",CT_OTHER);
-  COLHEAD(ch,8,"Zrušeni",CT_OTHER);
-  COLHEAD(ch,9,"Ze zóny",CT_OTHER);
-  COLHEAD(ch,10,"Validace",CT_OTHER);
+  COLHEAD(ch,0,"FQDN",CT_DOMAIN_HANDLE);
+  COLHEAD(ch,1,"CrDate",CT_OTHER);
+  COLHEAD(ch,2,"Delete",CT_OTHER);
+  COLHEAD(ch,3,"Registrant",CT_CONTACT_HANDLE);
+  COLHEAD(ch,4,"Registrant name",CT_OTHER);
+  COLHEAD(ch,5,"Registrator",CT_REGISTRAR_HANDLE);
+  COLHEAD(ch,6,"In zone",CT_OTHER);
+  COLHEAD(ch,7,"Expiration",CT_OTHER);
+  COLHEAD(ch,8,"Cancel",CT_OTHER);
+  COLHEAD(ch,9,"Out Zone",CT_OTHER);
+  COLHEAD(ch,10,"Validation",CT_OTHER);
   return ch;
 }
 
