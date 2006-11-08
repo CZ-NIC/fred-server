@@ -4665,7 +4665,7 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Registrant, const char *nsset, const char *AuthInfoPw, CORBA::Short period,
+ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Registrant, const char *nsset, const char *AuthInfoPw,  const ccReg::Period_str& period,
                                              const ccReg::AdminContact & admin, ccReg::timestamp_out crDate, ccReg::timestamp_out  exDate, 
                                              CORBA::Long clientID, const char *clTRID,  const  char* XML , const ccReg::ExtensionList & ext )
 {
@@ -4676,6 +4676,8 @@ char pass[PASS_LEN+1];
 ccReg::Response * ret;
 int contactid, regID, nssetid, adminid, id;
 int i, len,  zone , seq;
+int period_count;
+char periodStr[10];
 
 ret = new ccReg::Response;
 
@@ -4692,7 +4694,18 @@ exDate =  CORBA::string_dup( "" );
 
 
 LOG( NOTICE_LOG, "DomainCreate: clientID -> %d clTRID [%s] fqdn  [%s] ", (int )  clientID, clTRID, fqdn );
-LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s] period %d", Registrant, nsset, AuthInfoPw, period );
+LOG( NOTICE_LOG, "DomainCreate:  Registrant  [%s]  nsset [%s]  AuthInfoPw [%s]", Registrant, nsset, AuthInfoPw);
+
+
+
+// prepocet periody
+if( period.unit == ccReg::unit_year ) {  period_count = period.count * 12; sprintf(  periodStr , "y%d" , period.count ); }
+else if( period.unit == ccReg::unit_month ) {  period_count = period.count; sprintf(  periodStr , "m%d" , period.count ); }
+     else period_count = 0;
+
+
+LOG( NOTICE_LOG, "DomainCreate: period count %d unit %d period_count %d string [%s]" ,   period.count , period.unit ,  period_count  , periodStr);
+
 
 // parse extension
 GetValExpDateFromExtension( valexpiryDate , ext );
@@ -4810,30 +4823,30 @@ GetValExpDateFromExtension( valexpiryDate , ext );
 
 
              // nastaveni defaultni periody
-             if( period == 0 )
+             if( period_count == 0 )
                {
-                 period = GetZoneExPeriodMin( zone );
-                 LOG( NOTICE_LOG, "get defualt peridod %d month  for zone   %d ", period , zone  );
+                 period_count = GetZoneExPeriodMin( zone );
+                 LOG( NOTICE_LOG, "get defualt peridod %d month  for zone   %d ", period_count , zone  );
 
                }
 
 
-             switch(  TestPeriodyInterval( period  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  )
+             switch(  TestPeriodyInterval( period_count  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )  )
               {
                   case 2:
-                  LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
+                  LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period_count ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainCreate_period;
-                  ret->errors[seq].value <<=  period;
+                  ret->errors[seq].value <<=  CORBA::string_dup( periodStr);
                   ret->errors[seq].reason = CORBA::string_dup(GetReasonMessage( REASON_MSG_PERIOD_RANGE , CLIENT_LANG() ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_RANGE_ERROR ;
                   break;
                   case 1:
-                  LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period  ,  GetZoneExPeriodMin( zone )   );
+                  LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period_count  ,  GetZoneExPeriodMin( zone )   );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainCreate_period;
-                  ret->errors[seq].value <<=  period;
+                  ret->errors[seq].value <<=  CORBA::string_dup( periodStr);
                   ret->errors[seq].reason = CORBA::string_dup(GetReasonMessage( REASON_MSG_PERIOD_POLICY , CLIENT_LANG() ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR ;
@@ -4921,7 +4934,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                 }
 
                 // zpracovani creditu
-               if( DBsql.UpdateCredit(  regID ,   EPP_DomainCreate  ,    zone ,  period  )  == false )  ret->errCode =  COMMAND_BILLING_FAILURE;
+               if( DBsql.UpdateCredit(  regID ,   EPP_DomainCreate  ,    zone ,  period_count  )  == false )  ret->errCode =  COMMAND_BILLING_FAILURE;
 
                         if(  ret->errCode == 0  ) // pokud nedoslo k chybe
                         {
@@ -4946,7 +4959,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                           DBsql.VVALUE( roid );
                           DBsql.VVALUE( FQDN );
                           DBsql.VALUENOW(); // aktualni cas current_timestamp
-                          DBsql.VALUEPERIOD(  period  ); // aktualni cas  plus interval period v mesicich
+                          DBsql.VALUEPERIOD(  period_count  ); // aktualni cas  plus interval period v mesicich
                           DBsql.VALUE( regID );
                           DBsql.VALUE( regID );
                           DBsql.VALUE( "{ 1 }" ); // status OK
@@ -5082,7 +5095,7 @@ return ret;
  ***********************************************************************/
 
 
-ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExpDate, CORBA::Short period, 
+ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExpDate,  const ccReg::Period_str& period, 
                                             ccReg::timestamp_out exDate, CORBA::Long clientID,
                                             const char *clTRID, const  char* XML , const ccReg::ExtensionList & ext )
 {
@@ -5093,6 +5106,8 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
   ccReg::Response * ret;
   int clid, regID, id,  zone , seq;
   bool stat;
+int period_count;
+char periodStr[10];
 
   ret = new ccReg::Response;
 
@@ -5110,7 +5125,18 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
   ret->errors.length( 0 );
 
 
-  LOG( NOTICE_LOG, "DomainRenew: clientID -> %d clTRID [%s] fqdn  [%s] period %d month", (int ) clientID, clTRID, fqdn, period );
+  LOG( NOTICE_LOG, "DomainRenew: clientID -> %d clTRID [%s] fqdn  [%s] curExpDate [%s]", (int ) clientID, clTRID, fqdn , (const char *) curExpDate ) ;
+
+
+
+
+// prepocet periody
+if( period.unit == ccReg::unit_year ) {  period_count = period.count * 12; sprintf(  periodStr , "y%d" , period.count ); }
+else if( period.unit == ccReg::unit_month ) { period_count = period.count; sprintf(  periodStr , "m%d" , period.count ); }
+     else period_count = 0;
+
+
+LOG( NOTICE_LOG, "DomainRenew: period count %d unit %d period_count %d string [%s]" ,   period.count , period.unit ,  period_count  , periodStr);
 
 
 
@@ -5191,38 +5217,38 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                 }
   
              // nastaveni defaultni periody           
-             if( period == 0 ) 
+             if( period_count == 0 ) 
                {
-                 period = GetZoneExPeriodMin( zone );
-                 LOG( NOTICE_LOG, "get defualt peridod %d month  for zone   %d ", period , zone  );
+                 period_count = GetZoneExPeriodMin( zone );
+                 LOG( NOTICE_LOG, "get defualt peridod %d month  for zone   %d ", period_count , zone  );
 
                }
 
   
 
-             switch(  TestPeriodyInterval( period  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )   )
+             switch(  TestPeriodyInterval( period_count  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )   )
               {
                   case 2:
-                  LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
+                  LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period_count ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_period;
-                  ret->errors[seq].value <<=  period;
+                  ret->errors[seq].value <<=   CORBA::string_dup( periodStr );
                   ret->errors[seq].reason = CORBA::string_dup(GetReasonMessage( REASON_MSG_PERIOD_RANGE , CLIENT_LANG() ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_RANGE_ERROR ;
                   break;
                   case 1:
-                  LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period  ,  GetZoneExPeriodMin( zone )   );
+                  LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period_count  ,  GetZoneExPeriodMin( zone )   );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_period;
-                  ret->errors[seq].value <<=  period;
+                  ret->errors[seq].value <<=  CORBA::string_dup( periodStr );
                   ret->errors[seq].reason = CORBA::string_dup(GetReasonMessage( REASON_MSG_PERIOD_POLICY , CLIENT_LANG() ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR ;
                   break;
                  default: // spocitej ze zadaneho datumu 
 
-              if( DBsql.GetExpDate( ExDateStr , id ,  period  ,  GetZoneExPeriodMax( zone ) )  )
+              if( DBsql.GetExpDate( ExDateStr , id ,  period_count  ,  GetZoneExPeriodMax( zone ) )  )
                 {
                     // vypocet ExDate datum expirace
                     exDate =  CORBA::string_dup( ExDateStr );                                     
@@ -5230,10 +5256,10 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                 }
               else
                 {
-                  LOG( WARNING_LOG, "period %d GetExpDate out of range" , period );
+                  LOG( WARNING_LOG, "period %d GetExpDate out of range" , period_count );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_period;
-                  ret->errors[seq].value <<=  period;
+                  ret->errors[seq].value <<=   CORBA::string_dup( periodStr );
                   ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_PERIOD_RANGE , CLIENT_LANG() ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_RANGE_ERROR;
@@ -5277,7 +5303,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
              }
  
                                // zpracovani creditu
-               if( DBsql.UpdateCredit(  regID ,   EPP_DomainRenew   ,    zone ,  period  )  == false )  ret->errCode =  COMMAND_BILLING_FAILURE;
+               if( DBsql.UpdateCredit(  regID ,   EPP_DomainRenew   ,    zone ,  period_count  )  == false )  ret->errCode =  COMMAND_BILLING_FAILURE;
 
                if(  ret->errCode == 0 )
                  {
