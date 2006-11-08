@@ -110,9 +110,14 @@ namespace Register
           fax(_fax), email(_email), credit(_credit)
       {
       }
-      ~RegistrarImpl()
+      void clear()
       {
         for (unsigned i=0; i<acl.size(); i++) delete acl[i];
+        acl.clear();
+      }
+      ~RegistrarImpl()
+      {
+        clear();
       }
       virtual unsigned getId() const
       {
@@ -248,6 +253,17 @@ namespace Register
         acl.push_back(newACL);
         return newACL;
       }
+      virtual void deleteACL(unsigned idx)
+      {
+        if (idx < acl.size()) {
+          delete acl[idx];
+          acl.erase(acl.begin()+idx);
+        }
+      }
+      virtual void clearACLList()
+      {
+        clear();
+      }
       virtual void save() throw (SQL_ERROR)
       {
         if (changed) {
@@ -308,7 +324,7 @@ namespace Register
         ACLList::const_iterator i = find_if(
           acl.begin(),acl.end(),std::mem_fun(&ACLImpl::hasChanged)
         );
-        if (i != acl.end()) {
+        {
           std::ostringstream sql;
           sql << "DELETE FROM registraracl WHERE registrarid=" << id;
           if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();          

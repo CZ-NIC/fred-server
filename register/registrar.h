@@ -106,6 +106,10 @@ namespace Register {
       virtual unsigned getACLSize() const = 0;
       /// Return ACL list member by index
       virtual ACL* getACL(unsigned idx) const = 0;
+      /// Delete ACL or do nothing
+      virtual void deleteACL(unsigned idx) = 0;
+      /// Clear ACL list
+      virtual void clearACLList() = 0;
       /// Save changes to database
       virtual void save() throw (SQL_ERROR) = 0;
     };

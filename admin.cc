@@ -260,10 +260,9 @@ ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData)
   reg->setTelephone((const char *)regData.telephone);
   reg->setFax((const char *)regData.fax);
   reg->setEmail((const char *)regData.email);
+  reg->clearACLList();
   for (unsigned i=0; i<regData.access.length(); i++) {
-    Register::Registrar::ACL *acl;
-    if (i < reg->getACLSize()) acl = reg->getACL(i);
-    else acl = reg->newACL();
+    Register::Registrar::ACL *acl = reg->newACL();
     acl->setCertificateMD5((const char *)regData.access[i].md5Cert);
     acl->setPassword((const char *)regData.access[i].password);
   }
