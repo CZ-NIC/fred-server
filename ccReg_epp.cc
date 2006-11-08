@@ -708,6 +708,7 @@ const char* XML )
 DB DBsql;
 ccReg::Response * ret;
 char sqlString[1024];
+char msgStr[16];
 int regID, rows;
 
 ret = new ccReg::Response;
@@ -743,7 +744,8 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
                   ret->errors.length( 1 );
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                   ret->errors[0].code = ccReg::pollAck_msgID;   // spatna msg ID
-                  ret->errors[0].value <<= msgID;
+                  sprintf( msgStr , "%d", (int ) msgID ); 
+                  ret->errors[0].value = CORBA::string_dup(  msgStr );
                   ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_UNKNOW_MSGID  , CLIENT_LANG()  ) );
                 }
           else
@@ -1593,7 +1595,7 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
             LOG( WARNING_LOG, "bad format of contact [%s]" , handle );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::contactInfo_handle;
-            ret->errors[0].value <<= CORBA::string_dup( handle );
+            ret->errors[0].value = CORBA::string_dup( handle );
             ret->errors[0].reason = CORBA::string_dup(  GetReasonMessage(REASON_MSG_BAD_FORMAT_CONTACT_HANDLE , CLIENT_LANG() )  );
   }
 
@@ -1900,7 +1902,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::contactUpdate_status_add;
-                                                      ret->errors[seq].value <<= CORBA::string_dup(  status_add[i] );
+                                                      ret->errors[seq].value = CORBA::string_dup(  status_add[i] );
                                                       ret->errors[seq].reason =
                                                       CORBA::string_dup(  GetReasonMessage(REASON_MSG_CAN_NOT_ADD_STATUS , CLIENT_LANG() )   );
                                                       seq++;
@@ -1916,7 +1918,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::contactUpdate_status_rem;
-                                                      ret->errors[seq].value <<= CORBA::string_dup(  status_rem[i] );
+                                                      ret->errors[seq].value = CORBA::string_dup(  status_rem[i] );
                                                       ret->errors[seq].reason = 
                                                       CORBA::string_dup(  GetReasonMessage(REASON_MSG_CAN_NOT_REM_STATUS , CLIENT_LANG() )   );
                                                       seq++;
@@ -1992,7 +1994,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                           LOG( WARNING_LOG, "unknown country code" );
                           ret->errors.length( 1 );
                           ret->errors[0].code = ccReg::contactUpdate_cc;        // spatne zadany neznamy country code
-                          ret->errors[0].value <<= CORBA::string_dup( c.CC );
+                          ret->errors[0].value = CORBA::string_dup( c.CC );
                           ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_UNKNOW_COUNTRY , CLIENT_LANG() ) );
 
                         }
@@ -2085,7 +2087,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
             LOG( WARNING_LOG, "bad format  of handle[%s]" , handle );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::contactCreate_handle; 
-            ret->errors[0].value <<= CORBA::string_dup( handle );
+            ret->errors[0].value = CORBA::string_dup( handle );
             ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_FORMAT_CONTACT_HANDLE , CLIENT_LANG() ) );
         }
         else 
@@ -2108,7 +2110,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                        LOG( WARNING_LOG, "handle[%s] was deleted" , handle );
                        ret->errors.length( 1 );
                        ret->errors[0].code = ccReg::contactCreate_handle;
-                       ret->errors[0].value <<= CORBA::string_dup( handle );
+                       ret->errors[0].value = CORBA::string_dup( handle );
                        ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_CONTACT_HISTORY , CLIENT_LANG() ) );
                      }
                   else
@@ -2229,7 +2231,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                       LOG( WARNING_LOG, "unknown country code" );
                       ret->errors.length( 1 );
                       ret->errors[0].code = ccReg::contactCreate_cc;    // spatne zadany neznamy country code
-                      ret->errors[0].value <<= CORBA::string_dup( c.CC );
+                      ret->errors[0].value = CORBA::string_dup( c.CC );
                       ret->errors[0].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_UNKNOW_COUNTRY , CLIENT_LANG() )   );
                     }
                 }
@@ -2563,7 +2565,7 @@ if( get_HANDLE( HANDLE , handle ) )
             LOG( WARNING_LOG, "bad format of nsset [%s]" , handle );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::nssetInfo_handle;
-            ret->errors[0].value <<= CORBA::string_dup( handle );
+            ret->errors[0].value = CORBA::string_dup( handle );
             ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_FORMAT_NSSET_HANDLE , CLIENT_LANG()  )  );
   }
  
@@ -2798,7 +2800,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
             LOG( WARNING_LOG, "bad format of handle[%s]" ,  handle);
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::nssetCreate_handle;
-            ret->errors[0].value <<= CORBA::string_dup( handle );
+            ret->errors[0].value = CORBA::string_dup( handle );
             ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_FORMAT_NSSET_HANDLE , CLIENT_LANG() )  );
         }
         else
@@ -2822,7 +2824,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                        LOG( WARNING_LOG, "handle[%s] was deleted" , handle );
                        ret->errors.length( 1 );
                        ret->errors[0].code = ccReg::nssetCreate_handle;
-                       ret->errors[0].value <<= CORBA::string_dup( handle );
+                       ret->errors[0].value = CORBA::string_dup( handle );
                        ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_NSSET_HISTORY , CLIENT_LANG() ) );
                      }
                   else
@@ -2834,7 +2836,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                       LOG( WARNING_LOG, "NSSetCreate: not any tech Contact "  );
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::nssetCreate_tech;
-                      ret->errors[seq].value <<= CORBA::string_dup( "tech contact"  );
+                      ret->errors[seq].value = CORBA::string_dup( "tech contact"  ); // TODO ???
                       ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_NOT_ANY_TECH  , CLIENT_LANG() ) );
                       seq++;
                       ret->errCode = COMMAND_PARAMETR_MISSING ; // musi byt alespon jeden nsset;
@@ -2852,7 +2854,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                           LOG( WARNING_LOG, "NSSetCreate: unknown tech Contact %s" , (const char *)  tech[i] );
                           ret->errors.length( seq +1 );
                           ret->errors[seq].code = ccReg::nssetCreate_tech;
-                          ret->errors[seq].value <<= CORBA::string_dup(  tech[i] );
+                          ret->errors[seq].value = CORBA::string_dup(  tech[i] );
                           ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_BAD_FORMAT_CONTACT_HANDLE , CLIENT_LANG() ) );
                           seq++;
                           ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -2865,7 +2867,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                           LOG( WARNING_LOG, "NSSetCreate: unknown tech Contact %s" , (const char *)  tech[i]  );                          
                           ret->errors.length( seq +1 );
                           ret->errors[seq].code = ccReg::nssetCreate_tech;
-                          ret->errors[seq].value <<= CORBA::string_dup(  tech[i] );
+                          ret->errors[seq].value = CORBA::string_dup(  tech[i] );
                           ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_UNKNOW_TECH ,  CLIENT_LANG() ) );
                           seq++;                                 
                           ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -2885,7 +2887,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                           LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s"  , (const char *)  dns[0].fqdn   );    
                           ret->errors.length( seq +1 );
                           ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
-                          ret->errors[seq].value <<= CORBA::string_dup( dns[0].fqdn   );
+                          ret->errors[seq].value = CORBA::string_dup( dns[0].fqdn   );
                           ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_MIN_DNS , CLIENT_LANG() )  );
                           seq++;
                           ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
@@ -2895,7 +2897,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                           LOG( WARNING_LOG, "NSSetCreate: minimal two dns DNS hosts"     );
                           ret->errors.length( seq +1 );
                           ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
-                          ret->errors[seq].value <<= CORBA::string_dup( "not any dns host"  ); // TODO VALUE ?? 
+                          ret->errors[seq].value = CORBA::string_dup( "not any dns host"  ); // TODO VALUE ?? 
                           ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_MIN_DNS ,  CLIENT_LANG()) );
                           seq++;
                           ret->errCode = COMMAND_PARAMETR_MISSING;
@@ -2918,7 +2920,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                                   LOG( WARNING_LOG, "NSSetCreate: bad host address %s " , (const char *) dns[i].inet[j]  );
                                   ret->errors.length( seq +1 );
                                   ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
-                                  ret->errors[seq].value <<= CORBA::string_dup(   dns[i].inet[j]  );
+                                  ret->errors[seq].value = CORBA::string_dup(   dns[i].inet[j]  );
                                   ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_BAD_IP_ADDRESS , CLIENT_LANG() )  );
                                   seq++;
                                   ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -2945,7 +2947,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                                     LOG( WARNING_LOG, "NSSetCreate:  ipaddr  glue not allowed %s " , (const char *) dns[i].inet[j]   );
                                     ret->errors.length( seq +1 );
                                     ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
-                                    ret->errors[seq].value <<= CORBA::string_dup(   dns[i].inet[j]  ); // staci vratit prvni zaznam
+                                    ret->errors[seq].value = CORBA::string_dup(   dns[i].inet[j]  ); // staci vratit prvni zaznam
                                     ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_IP_GLUE_NOT_ALLOWED , CLIENT_LANG() ) );
                                     seq++;
                                 }
@@ -2960,7 +2962,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                                   LOG( WARNING_LOG, "NSSetCreate: bad host name %s " , (const char *)  dns[i].fqdn  );
                                   ret->errors.length( seq +1 );
                                   ret->errors[seq].code = ccReg::nssetCreate_ns_name;
-                                  ret->errors[seq].value <<= CORBA::string_dup(  dns[i].fqdn  );
+                                  ret->errors[seq].value = CORBA::string_dup(  dns[i].fqdn  );
                                   ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_DNS_NAME , CLIENT_LANG() ) );
                                   seq++;
                                   ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -3259,7 +3261,7 @@ if( DBsql.OpenDatabase( database ) )
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::nssetUpdate_status_add;
-                                                      ret->errors[seq].value <<= CORBA::string_dup(  status_add[i] );
+                                                      ret->errors[seq].value = CORBA::string_dup(  status_add[i] );
                                                       ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_CAN_NOT_ADD_STATUS , CLIENT_LANG() ) );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -3274,7 +3276,7 @@ if( DBsql.OpenDatabase( database ) )
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::nssetUpdate_status_rem;
-                                                      ret->errors[seq].value <<= CORBA::string_dup(  status_rem[i] );
+                                                      ret->errors[seq].value = CORBA::string_dup(  status_rem[i] );
                                                       ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_CAN_NOT_REM_STATUS , CLIENT_LANG() ) );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -3338,7 +3340,7 @@ if( DBsql.OpenDatabase( database ) )
                                                         LOG( WARNING_LOG, "add tech Contact [%s] not exist" , (const char *) tech_add[i] );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  tech_add[i] );
+                                                        ret->errors[seq].value = CORBA::string_dup(  tech_add[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_UNKNOW_TECH ,  CLIENT_LANG() )  );
                                                         seq++;
                                                       }
@@ -3347,7 +3349,7 @@ if( DBsql.OpenDatabase( database ) )
                                                         LOG( WARNING_LOG, "add tech Contact [%s] exist in contact map table"  , (const char *) tech_add[i] );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  tech_add[i] );
+                                                        ret->errors[seq].value = CORBA::string_dup(  tech_add[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_TECH_EXIST , CLIENT_LANG() )  );
                                                         seq++;
                                                       }                                                
@@ -3382,7 +3384,7 @@ if( DBsql.OpenDatabase( database ) )
                                                         LOG( WARNING_LOG, "rem tech Contact [%s]  not exist"  , (const char *) tech_rem[i] );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_rem;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  tech_rem[i] );
+                                                        ret->errors[seq].value = CORBA::string_dup(  tech_rem[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_UNKNOW_TECH , CLIENT_LANG())  );
                                                         seq++;
                                                       }
@@ -3391,7 +3393,7 @@ if( DBsql.OpenDatabase( database ) )
                                                        LOG( WARNING_LOG, "rem tech Contact [%s] not in contact map table" , (const char *) tech_rem[i] );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_rem;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  tech_rem[i] );
+                                                        ret->errors[seq].value = CORBA::string_dup(  tech_rem[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_TECH_NOTEXIST , CLIENT_LANG() ) );
                                                         seq++;
                                                       }
@@ -3410,7 +3412,7 @@ if( DBsql.OpenDatabase( database ) )
                                                       {
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code =  ccReg::nssetUpdate_tech_rem;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  tech_rem[i] );
+                                                        ret->errors[seq].value = CORBA::string_dup(  tech_rem[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_CAN_NOT_REMOVE_TECH , CLIENT_LANG() ));
                                                         seq++;
                                                       }
@@ -3447,7 +3449,7 @@ if( DBsql.OpenDatabase( database ) )
                                                                 LOG( WARNING_LOG, "NSSetUpdate: duplicity host address %s " , (const char *) dns_add[i].inet[j]  );
                                                                 ret->errors.length( seq +1 );
                                                                 ret->errors[seq].code = ccReg::nssetUpdate_ns_addr_add;
-                                                                ret->errors[seq].value <<= CORBA::string_dup(   dns_add[i].inet[j]  );
+                                                                ret->errors[seq].value = CORBA::string_dup(   dns_add[i].inet[j]  );
                                                                 ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_REASON_MSG_DUPLICITY_IP_ADDRESS , CLIENT_LANG() ) );
                                                                 seq++;
                                                                ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -3461,7 +3463,7 @@ if( DBsql.OpenDatabase( database ) )
                                                         LOG( WARNING_LOG, "NSSetUpdate: bad add host address %s " , (const char *)  dns_add[i].inet[j] );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_ns_addr_add;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(    dns_add[i].inet[j] );
+                                                        ret->errors[seq].value = CORBA::string_dup(    dns_add[i].inet[j] );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_IP_ADDRESS , CLIENT_LANG() ) );
                                                         seq++;
                                                         ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -3494,7 +3496,7 @@ if( DBsql.OpenDatabase( database ) )
                                                     LOG( WARNING_LOG, "NSSetUpdate:  ipaddr  glue not allowed %s " , (const char *) dns_add[i].inet[j]   );
                                                     ret->errors.length( seq +1 );
                                                     ret->errors[seq].code = ccReg::nssetUpdate_ns_addr_add;
-                                                    ret->errors[seq].value <<= CORBA::string_dup(   dns_add[i].inet[j]  ); 
+                                                    ret->errors[seq].value = CORBA::string_dup(   dns_add[i].inet[j]  ); 
                                                     ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_IP_GLUE_NOT_ALLOWED  , CLIENT_LANG() )  );
                                                     seq++;
                                                    }
@@ -3508,7 +3510,7 @@ if( DBsql.OpenDatabase( database ) )
                                                         LOG( WARNING_LOG, "NSSetUpdate:  host name %s exist" , (const char *)  dns_add[i].fqdn );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_ns_name_add;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(   dns_add[i].fqdn  );
+                                                        ret->errors[seq].value = CORBA::string_dup(   dns_add[i].fqdn  );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_DNS_NAME_EXIST , CLIENT_LANG() )  );
                                                         seq++;
                                                         ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -3531,7 +3533,7 @@ if( DBsql.OpenDatabase( database ) )
                                                         LOG( WARNING_LOG, "NSSetUpdate: bad add host name %s " , (const char *)  dns_add[i].fqdn );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_ns_name_add;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(     dns_add[i].fqdn  );
+                                                        ret->errors[seq].value = CORBA::string_dup(     dns_add[i].fqdn  );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_DNS_NAME  , CLIENT_LANG()) );
                                                         seq++;
                                                         ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -3556,7 +3558,7 @@ if( DBsql.OpenDatabase( database ) )
                                                         LOG( WARNING_LOG, "NSSetUpdate:  host  [%s] not in table" ,  (const char *)   dns_rem[i].fqdn );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_ns_name_rem;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  dns_rem[i].fqdn );
+                                                        ret->errors[seq].value = CORBA::string_dup(  dns_rem[i].fqdn );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_DNS_NAME_NOTEXIST , CLIENT_LANG() ) );
                                                         seq++;
                                                         ret->errCode = COMMAND_PARAMETR_ERROR;   
@@ -3574,7 +3576,7 @@ if( DBsql.OpenDatabase( database ) )
                                                         LOG( WARNING_LOG, "NSSetUpdate:  bad  rem  host [%s]" ,  (const char *)   dns_rem[i].fqdn );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_ns_name_rem;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  dns_rem[i].fqdn );
+                                                        ret->errors[seq].value = CORBA::string_dup(  dns_rem[i].fqdn );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_DNS_NAME , CLIENT_LANG() )  );
                                                         seq++;
                                                         ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -3590,7 +3592,7 @@ if( DBsql.OpenDatabase( database ) )
                                                       {
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code =  ccReg::nssetUpdate_ns_name_rem; 
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  dns_rem[i].fqdn );
+                                                        ret->errors[seq].value = CORBA::string_dup(  dns_rem[i].fqdn );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_CAN_NOT_REM_DNS , CLIENT_LANG()) );
                                                         seq++; 
                                                       }
@@ -3603,7 +3605,7 @@ if( DBsql.OpenDatabase( database ) )
                                                       {
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code =  ccReg::nssetUpdate_ns_name_add;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  dns_add[i].fqdn );
+                                                        ret->errors[seq].value = CORBA::string_dup(  dns_add[i].fqdn );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_CAN_NOT_ADD_DNS , CLIENT_LANG() )  );
                                                         seq++;
                                                       }
@@ -3869,7 +3871,7 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) 
             LOG( WARNING_LOG, "not in zone [%d]" , zone );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::domainInfo_fqdn;
-            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            ret->errors[0].value = CORBA::string_dup( fqdn );
 
             if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN , CLIENT_LANG()) );
             else  ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN , CLIENT_LANG() )   );
@@ -3970,7 +3972,7 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) 
 
                 enumVal->valExDate = CORBA::string_dup( dateStr );
                 d->ext.length(1); // preved na  extension
-                d->ext[0] <<= enumVal;
+                d->ext[0] <<=  enumVal;
                 LOG( NOTICE_LOG , "enumValExtension ExDate %s" ,  dateStr );
              }
 
@@ -4077,7 +4079,7 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int
             LOG( WARNING_LOG, "not in zone [%d]" , zone );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::domainInfo_fqdn;
-            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            ret->errors[0].value = CORBA::string_dup( fqdn );
             if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN , CLIENT_LANG() ) );
             else  ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN , CLIENT_LANG() )   );
 
@@ -4267,7 +4269,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
             LOG( WARNING_LOG, "not in zone %d" , zone );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::domainUpdate_fqdn;
-            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            ret->errors[0].value = CORBA::string_dup( fqdn );
             if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN , CLIENT_LANG() ) );
             else  ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN , CLIENT_LANG() )   );
 
@@ -4337,7 +4339,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
 
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::domainUpdate_nsset;
-                                                      ret->errors[seq].value <<= CORBA::string_dup(  nsset_chg );
+                                                      ret->errors[seq].value = CORBA::string_dup(  nsset_chg );
                                                       ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_NSSET_NOTEXIST , CLIENT_LANG() ) );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4350,7 +4352,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                                       LOG( WARNING_LOG, "nsset %s bad handle" , nsset_chg );
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::domainUpdate_nsset;
-                                                      ret->errors[seq].value <<= CORBA::string_dup(  nsset_chg );
+                                                      ret->errors[seq].value = CORBA::string_dup(  nsset_chg );
                                                       ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_BAD_FORMAT_NSSET_HANDLE , CLIENT_LANG() ) );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4371,7 +4373,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                                     
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::domainUpdate_registrant;
-                                                      ret->errors[seq].value <<= CORBA::string_dup(  registrant_chg );
+                                                      ret->errors[seq].value = CORBA::string_dup(  registrant_chg );
                                                       ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_REGISTRANT_NOTEXIST , CLIENT_LANG()));
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4384,7 +4386,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
 
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::domainUpdate_registrant;
-                                                      ret->errors[seq].value <<= CORBA::string_dup(  registrant_chg );
+                                                      ret->errors[seq].value = CORBA::string_dup(  registrant_chg );
                                                       ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_BAD_FORMAT_CONTACT_HANDLE , CLIENT_LANG() )  );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4402,7 +4404,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::domainUpdate_status_add;
-                                                      ret->errors[seq].value <<= CORBA::string_dup(  status_add[i] );
+                                                      ret->errors[seq].value = CORBA::string_dup(  status_add[i] );
                                                       ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_CAN_NOT_ADD_STATUS , CLIENT_LANG() ) );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4416,7 +4418,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                                     {
                                                       ret->errors.length( seq +1 );
                                                       ret->errors[seq].code = ccReg::domainUpdate_status_rem;
-                                                      ret->errors[seq].value <<= CORBA::string_dup(  status_rem[i] );
+                                                      ret->errors[seq].value = CORBA::string_dup(  status_rem[i] );
                                                       ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_CAN_NOT_REM_STATUS , CLIENT_LANG())  );
                                                       seq++;
                                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4434,7 +4436,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                       LOG( WARNING_LOG, "DomainUpdate: bad validity exp date" );
                                       ret->errors.length( seq +1);
                                       ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
-                                      ret->errors[seq].value <<=   valexpiryDate;
+                                      ret->errors[seq].value =  CORBA::string_dup(  valexpiryDate );
                                       ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(REASON_MSG_VALEXPDATE_NOT_VALID , CLIENT_LANG() ) );
                                       seq++;
                                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4449,7 +4451,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   LOG( WARNING_LOG, "DomainUpdate: can not  validity exp date" );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainUpdate_ext_valDate;
-                  ret->errors[seq].value <<=   valexpiryDate;
+                  ret->errors[seq].value =  CORBA::string_dup(   valexpiryDate );
                   ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(REASON_MSG_VALEXPDATE_NOT_USED , CLIENT_LANG()  ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4537,7 +4539,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                                         LOG( WARNING_LOG, "add admin-c not exist" );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::domainUpdate_admin_add;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  admin_add[i] );
+                                                        ret->errors[seq].value = CORBA::string_dup(  admin_add[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(REASON_MSG_UNKNOW_ADMIN , CLIENT_LANG() ) );
                                                         seq++;
                                                       }
@@ -4546,7 +4548,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                                         LOG( WARNING_LOG, "add tech Contact exist in contact map table" );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::domainUpdate_admin_add;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  admin_add[i] );
+                                                        ret->errors[seq].value = CORBA::string_dup(  admin_add[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage(REASON_MSG_ADMIN_EXIST , CLIENT_LANG())  );
                                                         seq++;
                                                       }
@@ -4585,7 +4587,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                                         LOG( WARNING_LOG, "rem admin-c not exist" );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::domainUpdate_admin_rem;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  admin_rem[i] );
+                                                        ret->errors[seq].value = CORBA::string_dup(  admin_rem[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(REASON_MSG_UNKNOW_ADMIN , CLIENT_LANG()) );
                                                         seq++;
                                                       }
@@ -4594,7 +4596,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                                         LOG( WARNING_LOG, "rem admin Contac not exist in contact map table" );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::domainUpdate_admin_rem;
-                                                        ret->errors[seq].value <<= CORBA::string_dup(  admin_rem[i] );
+                                                        ret->errors[seq].value = CORBA::string_dup(  admin_rem[i] );
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(REASON_MSG_ADMIN_NOTEXIST , CLIENT_LANG())  );
                                                         seq++;
                                                       }
@@ -4723,7 +4725,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
             LOG( WARNING_LOG, "not in zone %d" , zone );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::domainCreate_fqdn;
-            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            ret->errors[0].value = CORBA::string_dup( fqdn );
             if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN , CLIENT_LANG() ) );
             else  ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN , CLIENT_LANG() )   );
 
@@ -4758,7 +4760,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                        LOG( WARNING_LOG, "handle[%s] was deleted" , fqdn );
                        ret->errors.length( 1 );
                        ret->errors[0].code = ccReg::domainCreate_fqdn;
-                       ret->errors[0].value <<= CORBA::string_dup( fqdn );
+                       ret->errors[0].value = CORBA::string_dup( fqdn );
                        ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_FQDN_HISTORY , CLIENT_LANG())  );
                  }
                 else
@@ -4778,7 +4780,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                       LOG( WARNING_LOG, "bad nsset handle %s", nsset );
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::domainCreate_nsset;
-                      ret->errors[seq].value <<= CORBA::string_dup( nsset );
+                      ret->errors[seq].value = CORBA::string_dup( nsset );
                       ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_FORMAT_NSSET_HANDLE  , CLIENT_LANG() )  );
                       seq++;
                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4790,7 +4792,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                       LOG( WARNING_LOG, "unknown nsset handle %s", nsset );
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::domainCreate_nsset;
-                      ret->errors[seq].value <<= CORBA::string_dup( nsset );
+                      ret->errors[seq].value = CORBA::string_dup( nsset );
                       ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_UNKNOW_NSSET  , CLIENT_LANG() )  );
                       seq++;
                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4802,7 +4804,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                       LOG( WARNING_LOG, "bad registrant handle %s", Registrant );
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::domainCreate_registrant;
-                      ret->errors[seq].value <<= CORBA::string_dup( Registrant );
+                      ret->errors[seq].value = CORBA::string_dup( Registrant );
                       ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_BAD_FORMAT_CONTACT_HANDLE , CLIENT_LANG() )  );
                       seq++;
                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4814,7 +4816,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                       LOG( WARNING_LOG, "unknown Registrant handle %s", Registrant );
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::domainCreate_registrant;
-                      ret->errors[seq].value <<= CORBA::string_dup( Registrant );
+                      ret->errors[seq].value = CORBA::string_dup( Registrant );
                       ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_UNKNOW_REGISTRANT , CLIENT_LANG() )  );
                       seq++;
                       ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4837,7 +4839,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period_count ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainCreate_period;
-                  ret->errors[seq].value <<=  CORBA::string_dup( periodStr);
+                  ret->errors[seq].value =  CORBA::string_dup( periodStr);
                   ret->errors[seq].reason = CORBA::string_dup(GetReasonMessage( REASON_MSG_PERIOD_RANGE , CLIENT_LANG() ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_RANGE_ERROR ;
@@ -4846,7 +4848,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period_count  ,  GetZoneExPeriodMin( zone )   );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainCreate_period;
-                  ret->errors[seq].value <<=  CORBA::string_dup( periodStr);
+                  ret->errors[seq].value =  CORBA::string_dup( periodStr);
                   ret->errors[seq].reason = CORBA::string_dup(GetReasonMessage( REASON_MSG_PERIOD_POLICY , CLIENT_LANG() ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR ;
@@ -4863,7 +4865,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   ret->errors.length( seq +1 );
                   ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
 
-                  ret->errors[seq].value <<= CORBA::string_dup( "not valExpDate"  );
+                  ret->errors[seq].value = CORBA::string_dup( "not valExpDate"  ); // ??? TODO
                   ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(REASON_MSG_VALEXPDATE_REQUIRED  , CLIENT_LANG() ) ); // TODO
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_MISSING ;                
@@ -4874,7 +4876,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   LOG( WARNING_LOG, "DomainCreate: bad validity exp date" );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
-                  ret->errors[seq].value <<=   valexpiryDate;
+                  ret->errors[seq].value =   CORBA::string_dup(  valexpiryDate );
                   ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage(REASON_MSG_VALEXPDATE_NOT_VALID  , CLIENT_LANG() ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4889,7 +4891,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   LOG( WARNING_LOG, "DomainCreate: can not  validity exp date" );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainCreate_ext_valDate;
-                  ret->errors[seq].value <<=   valexpiryDate;
+                  ret->errors[seq].value =   CORBA::string_dup(   valexpiryDate );
                   ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_VALEXPDATE_NOT_USED , CLIENT_LANG()  ));
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4909,7 +4911,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                           LOG( WARNING_LOG, "DomainCreate: bad admin Contact " );
                                           ret->errors.length( seq +1 );
                                           ret->errors[seq].code = ccReg::domainCreate_admin;
-                                          ret->errors[seq].value <<= CORBA::string_dup(  admin[i] );
+                                          ret->errors[seq].value = CORBA::string_dup(  admin[i] );
                                           ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(REASON_MSG_BAD_FORMAT_CONTACT_HANDLE  , CLIENT_LANG() ) );
                                           seq++;
                                           ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -4924,7 +4926,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                           LOG( WARNING_LOG, "DomainCreate: unknown admin Contact " );
                                           ret->errors.length( seq +1 );
                                           ret->errors[seq].code = ccReg::domainCreate_admin;
-                                          ret->errors[seq].value <<= CORBA::string_dup(  admin[i] );
+                                          ret->errors[seq].value = CORBA::string_dup(  admin[i] );
                                           ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(REASON_MSG_UNKNOW_ADMIN  , CLIENT_LANG() ) );
                                           seq++;
                                          ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -5162,7 +5164,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
             LOG( WARNING_LOG, "not in zone %d" , zone );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::domainCreate_fqdn;
-            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            ret->errors[0].value = CORBA::string_dup( fqdn );
             if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN , CLIENT_LANG() ) );
             else  ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN , CLIENT_LANG() )   );
 
@@ -5210,7 +5212,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   LOG( WARNING_LOG, "curExpDate is not same as ExDate" );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_curExpDate;
-                  ret->errors[seq].value <<=  curExpDate;
+                  ret->errors[seq].value =    CORBA::string_dup( curExpDate );
                   ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_CUREXPDATE_NOT_EXPDATE ,  CLIENT_LANG() ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -5232,7 +5234,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period_count ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_period;
-                  ret->errors[seq].value <<=   CORBA::string_dup( periodStr );
+                  ret->errors[seq].value =   CORBA::string_dup( periodStr );
                   ret->errors[seq].reason = CORBA::string_dup(GetReasonMessage( REASON_MSG_PERIOD_RANGE , CLIENT_LANG() ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_RANGE_ERROR ;
@@ -5241,7 +5243,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period_count  ,  GetZoneExPeriodMin( zone )   );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_period;
-                  ret->errors[seq].value <<=  CORBA::string_dup( periodStr );
+                  ret->errors[seq].value =  CORBA::string_dup( periodStr );
                   ret->errors[seq].reason = CORBA::string_dup(GetReasonMessage( REASON_MSG_PERIOD_POLICY , CLIENT_LANG() ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR ;
@@ -5259,7 +5261,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   LOG( WARNING_LOG, "period %d GetExpDate out of range" , period_count );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_period;
-                  ret->errors[seq].value <<=   CORBA::string_dup( periodStr );
+                  ret->errors[seq].value =   CORBA::string_dup( periodStr );
                   ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_PERIOD_RANGE , CLIENT_LANG() ) );
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_RANGE_ERROR;
@@ -5280,7 +5282,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   LOG( WARNING_LOG, "DomainRenew: bad validity exp date" );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_ext_valDate;
-                  ret->errors[seq].value <<=   valexpiryDate;
+                  ret->errors[seq].value =   CORBA::string_dup(   valexpiryDate );
                   ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage(REASON_MSG_VALEXPDATE_NOT_VALID , CLIENT_LANG() ) ); // TODO
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -5295,7 +5297,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   LOG( WARNING_LOG, "DomainRenew: can not  validity exp date" );
                   ret->errors.length( seq +1);
                   ret->errors[seq].code = ccReg::domainRenew_ext_valDate;
-                  ret->errors[seq].value <<=   valexpiryDate;
+                  ret->errors[seq].value =  CORBA::string_dup(   valexpiryDate );
                   ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage(REASON_MSG_VALEXPDATE_NOT_USED , CLIENT_LANG() ) ); // TODO
                   seq++;
                   ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -5448,7 +5450,7 @@ LOG( NOTICE_LOG, "DomainTransfer: clientID -> %d clTRID [%s] fqdn  [%s]  ", (int
             LOG( WARNING_LOG, "not in zone %d" , zone );
             ret->errors.length( 1 );
             ret->errors[0].code = ccReg::domainCreate_fqdn;
-            ret->errors[0].value <<= CORBA::string_dup( fqdn );
+            ret->errors[0].value = CORBA::string_dup( fqdn );
             if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN , CLIENT_LANG() ) );
             else  ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN , CLIENT_LANG() )   );
 
