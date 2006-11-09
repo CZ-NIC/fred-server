@@ -128,11 +128,36 @@ else  LOG( ERROR_LOG , "NOT CREDIT return false" );
 return false; //nema
 }
 
+int DB::SaveXMLout( const char *svTRID , const char *xml  )
+{
+int actionID;
+
+actionID = GetNumericFromTable( "action" , "id" ,  "serverTRID" , svTRID  );
+
+if( actionID > 0 )
+  {
+
+
+        if( strlen( xml ) )
+           {
+                UPDATE("Action_XML");
+                SET( "xml_out" , xml );
+                WHERE( "actionID" , actionID );
+                if(  EXEC() ) return true;
+           }
+
+   }
+
+// default
+return false;
+}
 
 // action
 // zpracovani action
 int  DB::BeginAction(int clientID , int action ,const char *clTRID  , const char *xml  )
 {
+
+
 
 // HACK pro PIF
 
