@@ -43,6 +43,9 @@ long GetPrice(   int action  ,  int zone , int period  );
 // zpracovani creditu
 bool UpdateCredit( int regID ,   int action  , int zone ,  int period  );
 
+// ukladada vytvorene XML z mod_eppd
+int SaveXMLout( const char *svTRID , const char *xml  );
+
 // zpracovani action a ulozeni XML 
 // vraci registarID id registratora
 int BeginAction(int clientID , int action ,const char *clTRID  , const char *xml );

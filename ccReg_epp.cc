@@ -616,6 +616,42 @@ en =  GetZoneEnum( z );
 
 
 
+
+/***********************************************************************
+ *
+ * FUNCTION:    SaveOutXML
+ *
+ * DESCRIPTION: uklada vystupni XML podle 
+ *              vygenerovane  server transaction ID
+ *
+ * PARAMETERS:  svTRID - cislo transakce klienta
+ *              XML - xml vystupni string z mod_eppd
+ *
+ * RETURNED:    true if succes save
+ *
+ ***********************************************************************/
+
+
+CORBA::Boolean ccReg_EPP_i::SaveOutXML(const char* svTRID, const char* XML)
+{
+DB DBsql;
+int ok;
+
+if( DBsql.OpenDatabase( database ) )
+    {
+       if( DBsql.BeginTransaction() )
+       {
+
+         if( DBsql.SaveXMLout( svTRID,  XML) ) ok=CMD_OK;
+         else ok=0; 
+
+         DBsql.QuitTransaction( ok );
+      }    
+   }
+// default
+return true; // TODO
+}
+
 /***********************************************************************
  *
  * FUNCTION:	GetTransaction
