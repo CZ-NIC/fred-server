@@ -20,9 +20,6 @@
 #include "response.h"  // vracene chybove kody
 #include "reason.h"
 		
-// prace se status flagy
-#include "status.h"
-// log
 #include "log.h"
 
 
@@ -670,7 +667,7 @@ return true; // TODO
 
 
 
-ccReg::Response * ccReg_EPP_i::GetTransaction( CORBA::Long clientID, const char *clTRID, CORBA::Short errCode )
+ccReg::Response * ccReg_EPP_i::GetTransaction(CORBA::Short errCode, const ccReg::Error& errors , CORBA::Long clientID , const char* clTRID)
 {
 DB DBsql;
 ccReg::Response * ret;
@@ -686,8 +683,8 @@ LOG( NOTICE_LOG, "GetTransaction: clientID -> %d clTRID [%s] ",  (int )  clientI
     {
       if( errCode > 0 )
         {
-          if( DBsql.BeginAction( clientID, EPP_UnknowAction,  clTRID , "" ) )
-            {
+           DBsql.BeginAction( clientID, EPP_UnknowAction,  clTRID , "" ) ;
+            
               // chybove hlaseni bere z clienta 
               ret->errCode = errCode;
               // zapis na konec action
@@ -696,14 +693,15 @@ LOG( NOTICE_LOG, "GetTransaction: clientID -> %d clTRID [%s] ",  (int )  clientI
               ret->errMsg = CORBA::string_dup( GetErrorMessage( ret->errCode  , 0 ) );
 
               LOG( NOTICE_LOG, "GetTransaction: svTRID [%s] errCode -> %d msg [%s] ", ( char * ) ret->svTRID, ret->errCode, ( char * ) ret->errMsg );
-            }
+            /*
           else 
            {
               ret->errCode = errCode;
-             ret->svTRID = CORBA::string_dup( "NULL");
-            ret->errMsg =   CORBA::string_dup( "ERROR" );
-                 LOG(  ERROR_LOG , "GetTransaction: error BeginAction");          
+              ret->svTRID = CORBA::string_dup( "NULL");
+              ret->errMsg =   CORBA::string_dup( "ERROR" );
+              LOG(  ERROR_LOG , "GetTransaction: error BeginAction");          
            }
+*/ 
         }
 
       DBsql.Disconnect();
@@ -738,22 +736,20 @@ return ret;
  ***********************************************************************/
 
 
-ccReg::Response * ccReg_EPP_i::PollAcknowledgement( CORBA::Long msgID, CORBA::Short & count, CORBA::Long & newmsgID, CORBA::Long clientID, const char *clTRID ,
-const char* XML )
+ccReg::Response* ccReg_EPP_i::PollAcknowledgement(const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
 DB DBsql;
 ccReg::Response * ret;
 char sqlString[1024];
-char msgStr[16];
 int regID, rows;
 
 ret = new ccReg::Response;
 ret->errCode = 0;
 ret->errors.length( 0 );
 count = 0;
-newmsgID = 0;
+newmsgID =  CORBA::string_dup( "");
 
-LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", (int) clientID, clTRID,   (int ) msgID );
+LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %s", (int) clientID, clTRID,    msgID );
   if( DBsql.OpenDatabase( database ) )
     {
 
@@ -764,7 +760,7 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
         {
 
           // test msg ID and clientID
-          sprintf( sqlString, "SELECT * FROM MESSAGE WHERE id=%d AND clID=%d;",  (int ) msgID  , regID );
+          sprintf( sqlString, "SELECT * FROM MESSAGE WHERE id=%s AND clID=%d;",   msgID  , regID );
           rows = 0;
           if( DBsql.ExecSelect( sqlString ) )
             {
@@ -776,20 +772,20 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
 
               if( rows == 0 )
                 {
-                  LOG( ERROR_LOG, "unknown msgID %d", (int)  msgID );
+                  LOG( ERROR_LOG, "unknown msgID %s",   msgID );
                   ret->errors.length( 1 );
                   ret->errCode = COMMAND_PARAMETR_ERROR;
                   ret->errors[0].code = ccReg::pollAck_msgID;   // spatna msg ID
-                  sprintf( msgStr , "%d", (int ) msgID ); 
-                  ret->errors[0].value = CORBA::string_dup(  msgStr );
+                  ret->errors[0].value =  CORBA::string_dup(  msgID ) ;
                   ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_UNKNOW_MSGID  , CLIENT_LANG()  ) );
                 }
           else
 
+
           if( rows == 1 )       // pokud tam ta zprava existuje
             {
               // oznac zpravu jako prectenou
-              sprintf( sqlString, "UPDATE MESSAGE SET seen='t' WHERE id=%d AND clID=%d;", (int ) msgID, regID );
+              sprintf( sqlString, "UPDATE MESSAGE SET seen='t' WHERE id=%s AND clID=%d;",  msgID, regID );
 
               if( DBsql.ExecSQL( sqlString ) )
                 {
@@ -802,8 +798,8 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
                       if( rows > 0 )    // pokud jsou nejake zpravy ve fronte
                         {
                           count = rows; // pocet dalsich zprav
-                          newmsgID = atoi( DBsql.GetFieldValue( 0, 0 ) );
-                          LOG( NOTICE_LOG, "PollAcknowledgement: newmsgID -> %d count -> %d", (int ) newmsgID, count );
+                          newmsgID =   CORBA::string_dup(  DBsql.GetFieldValue( 0, 0 ) ) ;
+                          LOG( NOTICE_LOG, "PollAcknowledgement: newmsgID -> %s count -> %d", (const char *) newmsgID, count );
                         }
 
                       DBsql.FreeSelect();
@@ -841,9 +837,12 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
 }
 
 
+
+
+
 /***********************************************************************
  *
- * FUNCTION:    PollAcknowledgement
+ * FUNCTION:    PollRequest
  *
  * DESCRIPTION: ziskani zpravy msgID z fronty
  *              vraci pocet zprav ve fronte a obsah zpravy
@@ -860,7 +859,7 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %d", 
  *
  ***********************************************************************/
 
-ccReg::Response * ccReg_EPP_i::PollRequest( CORBA::Long & msgID, CORBA::Short & count, ccReg::timestamp_out qDate, CORBA::String_out mesg, CORBA::Long clientID, const char *clTRID , const char* XML )
+ccReg::Response* ccReg_EPP_i::PollRequest(CORBA::String_out msgID, CORBA::Short& count, ccReg::timestamp_out qDate, CORBA::String_out mesg, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
 DB DBsql;
 char sqlString[1024];
@@ -875,14 +874,14 @@ ret = new ccReg::Response;
 //vyprazdni
 qDate =  CORBA::string_dup( "" );
 count = 0;
-msgID = 0;
+msgID = CORBA::string_dup( "" );
 mesg = CORBA::string_dup( "" );       // prazdna hodnota
 
 ret->errCode = 0;
 ret->errors.length( 0 );
 
 
-LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s] msgID %d",  (int ) clientID, clTRID, (int ) msgID );
+LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s]",  (int ) clientID,  clTRID);
 
   if( DBsql.OpenDatabase( database ) )
     {
@@ -907,10 +906,10 @@ LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s] msgID %d",  (int ) cli
                   // prevede cas s postgres na rfc3339 cas s offsetem casove zony
                   get_dateStr( dateStr , DBsql.GetFieldValueName("CrDate" , 0 ) );
                   qDate =  CORBA::string_dup( dateStr );
-                  msgID = atoi( DBsql.GetFieldValueName( "ID", 0 ) );
+                  msgID =   CORBA::string_dup(  DBsql.GetFieldValueName( "ID", 0 ) );
                   mesg = CORBA::string_dup( DBsql.GetFieldValueName( "message", 0 ) );
                   ret->errCode = COMMAND_ACK_MESG;      // zpravy jsou ve fronte
-                  LOG( NOTICE_LOG, "PollRequest: msgID -> %d count -> %d mesg [%s]",  (int )  msgID, count, CORBA::string_dup( mesg ) );
+                  LOG( NOTICE_LOG, "PollRequest: msgID -> %s count -> %d mesg [%s]",  (const char * )   msgID, count, CORBA::string_dup( mesg ) );
                 }
               else
                 ret->errCode = COMMAND_NO_MESG; // zadne zpravy ve fronte
@@ -942,6 +941,7 @@ if( ret->errCode == 0 )
 
 return ret;
 }
+
 
 
 
@@ -1446,12 +1446,11 @@ return ObjectCheck(  EPP_DomainCheck , "DOMAIN"  , "fqdn" ,   fqdn , a ,  client
 ccReg::Response* ccReg_EPP_i::ContactInfo(const char* handle, ccReg::Contact_out c , CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 DB DBsql;
-Status status;
+// Status status;
 ccReg::Response *ret;
 char HANDLE[64]; // handle na velka pismena
 char dateStr[MAX_DATE];
-int  clid , crid , upid , regID;
-int len , i  , ssn;
+int  clid , crid , upid , regID , ssn;
 
 c = new ccReg::Contact;
 // inicializace pro pripad neuspesneho hledani
@@ -1461,7 +1460,7 @@ c->DiscloseAddress = ccReg::DISCL_EMPTY;
 c->DiscloseTelephone = ccReg::DISCL_EMPTY;
 c->DiscloseFax  = ccReg::DISCL_EMPTY;
 c->DiscloseEmail = ccReg::DISCL_EMPTY;
-c->SSNtype = ccReg::EMPTY; 
+c->identtype = ccReg::EMPTY; 
 
 ret = new ccReg::Response;
 
@@ -1490,7 +1489,7 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
 
 
 
-        status.Make(  DBsql.GetFieldValueName("status" , 0 ) ) ; // status
+        // status.Make(  DBsql.GetFieldValueName("status" , 0 ) ) ; // status
 
 
 	c->handle=CORBA::string_dup( DBsql.GetFieldValueName("handle" , 0 ) ); // handle
@@ -1520,7 +1519,7 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
 
 
 	c->VAT=CORBA::string_dup(DBsql.GetFieldValueName("VAT" , 0 )); // DIC
-	c->SSN=CORBA::string_dup(DBsql.GetFieldValueName("SSN" , 0 )); // SSN
+	c->ident=CORBA::string_dup(DBsql.GetFieldValueName("SSN" , 0 )); // SSN
 
         ssn =   atoi( DBsql.GetFieldValueName("SSNtype" , 0 ) );
 
@@ -1563,18 +1562,9 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
 
 
 
-
-        // zpracuj pole statusu
-        len =  status.Length();
-        c->stat.length(len);
-
-        for( i = 0 ; i < len  ; i ++)
-           {
-              c->stat[i] = CORBA::string_dup( status.GetStatusString(  status.Get(i)  ) );
-           }
-
-           
-        
+          c->stat.length(1);
+          c->stat[0].value = CORBA::string_dup( "ok" );         
+          c->stat[0].text = CORBA::string_dup( "Contact is OK" ); 
               
         // identifikator registratora
         c->CrID =  CORBA::string_dup(  DBsql.GetRegistrarHandle( crid ) );
@@ -1587,22 +1577,22 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
         switch( ssn )
         {
          case 1:
-                  c->SSNtype = ccReg::RC;
+                  c->identtype = ccReg::RC;
                   break;
          case 2:
-                  c->SSNtype = ccReg::OP;
+                  c->identtype = ccReg::OP;
                   break;
          case 3:
-                  c->SSNtype = ccReg::PASS;
+                  c->identtype = ccReg::PASS;
                   break;
          case 4:
-                  c->SSNtype = ccReg::ICO;
+                  c->identtype = ccReg::ICO;
                   break;
          case 5:
-                  c->SSNtype = ccReg::MPSV;
+                  c->identtype = ccReg::MPSV;
                   break;
          default:
-                 c->SSNtype = ccReg::EMPTY;
+                 c->identtype = ccReg::EMPTY;
                   break;
         }
         ret->errCode=COMMAND_OK; // VASE OK
@@ -1678,8 +1668,8 @@ c->Fax=CORBA::string_dup("");
 c->Email=CORBA::string_dup("");
 c->NotifyEmail=CORBA::string_dup(""); // upozornovaci email
 c->VAT=CORBA::string_dup(""); // DIC
-c->SSN=CORBA::string_dup(""); // SSN
-c->SSNtype =  ccReg::EMPTY ;
+c->ident=CORBA::string_dup(""); // SSN
+c->identtype =  ccReg::EMPTY ;
 c->AuthInfoPw=CORBA::string_dup(""); // heslo
 }
 
@@ -1708,7 +1698,7 @@ return ret;
 ccReg::Response* ccReg_EPP_i::ContactDelete(const char* handle , CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 ccReg::Response *ret;
-Status status;
+// Status status;
 DB DBsql;
 char HANDLE[64];
 int regID , id ,  clID;
@@ -1758,6 +1748,7 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
                     }                               
                   else                                                                                           
                     {
+/*
                       // zpracuj  pole statusu
                       status.Make( DBsql.GetStatusFromTable( "CONTACT", id ) );
 
@@ -1767,6 +1758,7 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
                           ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
                         }
                       else // status je OK
+*/
                         {
                           // test na vazbu do tabulky domain domain_contact_map a nsset_contact_map
                           if( DBsql.TestContactRelations( id ) )        // kontakt nemuze byt smazan ma vazby  
@@ -1824,8 +1816,6 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
  *              nebo ten ktery kontaktu vede nejakou domenu
  * PARAMETERS:  handle - identifikator kontaktu
  *              c      - ContactChange  zmenene informace o kontaktu
- *              status_add - pridane status priznaky 
- *              status_rem - status priznaky na zruseni
  *              clientID - id pripojeneho klienta 
  *              clTRID - cislo transakce klienta
  * 
@@ -1835,16 +1825,14 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
 
 
 ccReg::Response * ccReg_EPP_i::ContactUpdate( const char *handle, const ccReg::ContactChange & c, 
-                                              const ccReg::Status & status_add, const ccReg::Status & status_rem,
                                               CORBA::Long clientID, const char *clTRID , const char* XML )
 {
 ccReg::Response * ret;
 DB DBsql;
-char statusString[128] , HANDLE[64];
+char  HANDLE[64];
 int regID ,  clID , id ;
 bool remove_update_flag = false ;
-int  i , seq;
-Status status;
+int  seq;
 
 seq=0;
 ret = new ccReg::Response;
@@ -1854,24 +1842,6 @@ ret->errors.length( 0 );
 LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", (int ) clientID, clTRID, handle );
 LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d Email %d" , c.DiscloseFlag ,
  c.DiscloseName  , c.DiscloseOrganization , c.DiscloseAddress , c.DiscloseTelephone , c.DiscloseFax , c.DiscloseEmail );
-
-// nacti status flagy
-  for( i = 0; i < (int ) status_add.length(); i++ )
-    {
-      LOG( NOTICE_LOG, "status_add [%s] -> %d",  (const char *)  status_add[i]  ,  status.GetStatusNumber( status_add[i] )  ); 
-      status.PutAdd( status.GetStatusNumber( status_add[i] ) ); // pridej status flag
-    }
-
-  for( i = 0; i <  (int ) status_rem.length(); i++ )
-    {
-      LOG( NOTICE_LOG, "status_rem [%s] -> %d ",   (const char *) status_rem[i]  , status.GetStatusNumber( status_rem[i] )  );
-      status.PutRem(  status.GetStatusNumber( status_rem[i] ) );       
-      if( status.GetStatusNumber( status_rem[i] ) ==  STATUS_clientUpdateProhibited ) 
-        {
-           LOG( NOTICE_LOG, "remove STATUS_clientUpdateProhibited");
-           remove_update_flag=true;          
-        }
-    }
 
 
 
@@ -1910,7 +1880,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
 
                       if( TestCountryCode( c.CC ) )       // test kodu zeme pokud je nastavena
                         {
-
+/*
                           // zjisti  pole statusu
                           status.Make( DBsql.GetStatusFromTable( "CONTACT", id ) );
 
@@ -1923,6 +1893,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                               ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
                             }
                           else  // status je OK
+*/
                             {
                                
                                   //  uloz do historie
@@ -1930,38 +1901,6 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                                     {
                                       if( DBsql.SaveHistory( "Contact", "id", id ) )    // uloz zaznam
                                         {
-
-                                          // pridany status
-                                          for( i = 0; i < status.AddLength(); i++ )
-                                            {
-                                                  if( status.Add(i) == false )
-                                                    {
-                                                      ret->errors.length( seq +1 );
-                                                      ret->errors[seq].code = ccReg::contactUpdate_status_add;
-                                                      ret->errors[seq].value = CORBA::string_dup(  status_add[i] );
-                                                      ret->errors[seq].reason =
-                                                      CORBA::string_dup(  GetReasonMessage(REASON_MSG_CAN_NOT_ADD_STATUS , CLIENT_LANG() )   );
-                                                      seq++;
-                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
-                                                    }
-                                            }
-
-                                          // zruseny status flagy
-                                         for( i = 0; i < status.RemLength(); i++ )
-                                             {
-                                              
-                                                  if( status.Rem(i) == false )
-                                                    {
-                                                      ret->errors.length( seq +1 );
-                                                      ret->errors[seq].code = ccReg::contactUpdate_status_rem;
-                                                      ret->errors[seq].value = CORBA::string_dup(  status_rem[i] );
-                                                      ret->errors[seq].reason = 
-                                                      CORBA::string_dup(  GetReasonMessage(REASON_MSG_CAN_NOT_REM_STATUS , CLIENT_LANG() )   );
-                                                      seq++;
-                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
-                                                    }
-                                            }
-
 
                                          if( ret->errCode == 0 )
                                          {
@@ -1987,8 +1926,8 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                                           DBsql.SET( "Email", c.Email );
                                           DBsql.SET( "NotifyEmail", c.NotifyEmail );
                                           DBsql.SET( "VAT", c.VAT );
-                                          DBsql.SET( "SSN", c.SSN );
-                                          if(  c.SSNtype > ccReg::EMPTY )  DBsql.SET( "SSNtype" , c.SSNtype ); // typ ssn
+                                          DBsql.SET( "SSN", c.ident );
+                                          if(  c.identtype > ccReg::EMPTY )  DBsql.SET( "SSNtype" , c.identtype ); // typ ssn
                                           // heslo
                                           DBsql.SET( "AuthInfoPw", c.AuthInfoPw ); 
 
@@ -2007,9 +1946,6 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                                           DBsql.SSET( "UpDate", "now" );
                                           DBsql.SET( "UpID", regID );
 
-                                          //  vygeneruj  novy status string array
-                                          status.Array( statusString );
-                                          DBsql.SET( "status", statusString );
 
                                           // podminka na konec 
                                           DBsql.WHEREID( id );
@@ -2167,7 +2103,6 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                       DBsql.INTO( "CrDate" );
                       DBsql.INTO( "CrID" );
                       DBsql.INTO( "ClID" );
-                      DBsql.INTO( "status" );
                       DBsql.INTO( "AuthInfoPw" );
 
 
@@ -2185,8 +2120,8 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                       DBsql.INTOVAL( "Email", c.Email );
                       DBsql.INTOVAL( "NotifyEmail", c.NotifyEmail );
                       DBsql.INTOVAL( "VAT", c.VAT );
-                      DBsql.INTOVAL( "SSN", c.SSN );
-                      if(  c.SSNtype > ccReg::EMPTY ) DBsql.INTO( "SSNtype");
+                      DBsql.INTOVAL( "SSN", c.ident );
+                      if(  c.identtype > ccReg::EMPTY ) DBsql.INTO( "SSNtype");
 
                       // disclose se vzdy zapisou but t nebo f
                       DBsql.INTO( "DiscloseName" );
@@ -2202,7 +2137,6 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                       DBsql.VALUENOW();
                       DBsql.VALUE( regID );
                       DBsql.VALUE( regID );
-                      DBsql.VALUE( "{ 1 }" );   // OK status
 
 
 
@@ -2229,8 +2163,8 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                       DBsql.VAL( c.Email );
                       DBsql.VAL( c.NotifyEmail );
                       DBsql.VAL( c.VAT );
-                      DBsql.VAL( c.SSN );
-                      if(  c.SSNtype > ccReg::EMPTY ) DBsql.VALUE(   c.SSNtype );
+                      DBsql.VAL( c.ident );
+                      if(  c.identtype > ccReg::EMPTY ) DBsql.VALUE(   c.identtype );
 
                       // zapis disclose podle DiscloseFlag a DefaultPolicy servru
                       DBsql.VALUE( setvalue_DISCLOSE( c.DiscloseName , c.DiscloseFlag )  );
@@ -2319,7 +2253,6 @@ ccReg::Response *ret;
 DB DBsql;
 char HANDLE[64];
 char pass[PASS_LEN+1];
-Status status;
 int regID , clID , id;
 
 ret = new ccReg::Response;
@@ -2361,7 +2294,7 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_ContactTransfer ,  clTRID , XML
     }
    else
   {
-
+/*
                   // zpracuj  pole statusu
                   status.Make( DBsql.GetStatusFromTable( "CONTACT", id ) );
 
@@ -2371,6 +2304,7 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_ContactTransfer ,  clTRID , XML
                       ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
                     }
                   else
+*/
                     {
 
    if(  DBsql.AuthTable(  "CONTACT"  , (char *)authInfo , id )  == false  ) // pokud prosla autentifikace 
@@ -2459,7 +2393,6 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(const char* handle, ccReg::NSSet_out n,
                           CORBA::Long clientID, const char* clTRID ,  const char* XML)
 {
 DB DBsql;
-Status status;
 char HANDLE[64];
 char  adres[1042] , adr[128] ;
 char dateStr[MAX_DATE];
@@ -2498,7 +2431,6 @@ if( get_HANDLE( HANDLE , handle ) )
         crid = atoi( DBsql.GetFieldValueName("CrID" , 0 ) );
         upid = atoi( DBsql.GetFieldValueName("UpID" , 0 ) );
 
-        status.Make(  DBsql.GetFieldValueName("status" , 0 ) ); 
 
         n->ROID=CORBA::string_dup( DBsql.GetFieldValueName("ROID" , 0 ) ); // ROID
         n->handle=CORBA::string_dup( DBsql.GetFieldValueName("handle" , 0 ) ); // ROID
@@ -2521,13 +2453,11 @@ if( get_HANDLE( HANDLE , handle ) )
 
 
 
-        // zpracuj pole statusu
-        len =  status.Length();
-        n->stat.length(len);
-        for( i = 0 ; i <  len  ; i ++)
-           {
-              n->stat[i] = CORBA::string_dup( status.GetStatusString(  status.Get(i)  ) );
-           }
+
+          // status is OK 
+          n->stat.length(1);
+          n->stat[0].value = CORBA::string_dup( "ok" );
+          n->stat[0].text = CORBA::string_dup( "NSSet is OK" );
 
 
         n->ClID =  CORBA::string_dup( DBsql.GetRegistrarHandle( clid ) );
@@ -2658,10 +2588,9 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(const char* handle, CORBA::Long client
 {
 ccReg::Response *ret;
 DB DBsql;
-Status status;
 char HANDLE[64];
 int regID , id , clID = 0;
-bool stat , del;
+bool  del;
 
 
 ret = new ccReg::Response;
@@ -2704,6 +2633,7 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int
                     }
                   else
                     {
+/*
                       // zpracuj  pole statusu
                       status.Make( DBsql.GetStatusFromTable( "NSSET", id ) );
 
@@ -2714,6 +2644,7 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int
                           stat = false;
                         }
                       else      // status je OK
+*/
                         {
                           // test na vazbu do tabulky domain jestli existuji vazby na  nsset
                           if( DBsql.TestNSSetRelations( id ) )  //  nemuze byt smazan
@@ -3030,7 +2961,6 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
               DBsql.INTO( "CrDate" );
               DBsql.INTO( "CrID" );
               DBsql.INTO( "ClID" );
-              DBsql.INTO( "status" );
               DBsql.INTO( "authinfopw");
 
               DBsql.VALUE( id );
@@ -3039,7 +2969,6 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
               DBsql.VALUENOW(); // aktualni cas current_timestamp
               DBsql.VALUE( regID );
               DBsql.VALUE( regID );
-              DBsql.VVALUE( "{ 1 }" );   // status OK
 
 
               if( strlen ( authInfoPw ) == 0 )
@@ -3187,8 +3116,6 @@ return ret;
  *              dns_rem - sequence   DNS zaznamu   pro smazani
  *              tech_add - sequence pridannych technickych kontaktu
  *              tech_rem - sequence technickych kontaktu na smazani
- *              status_add - pridane status flagy
- *              status_rem - status flagy na smazani
  *              clientID - id pripojeneho klienta 
  *              clTRID - cislo transakce klienta
  * 
@@ -3201,14 +3128,12 @@ return ret;
 ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle , const char* authInfo_chg, 
                                           const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem,
                                           const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem,
-                                          const ccReg::Status& status_add, const ccReg::Status& status_rem, 
                                           CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 ccReg::Response *ret;
 DB DBsql;
-Status status;
 bool  check;
-char  Array[512] ,  statusString[128] , HANDLE[64] , NAME[256];
+char  Array[512]  , HANDLE[64] , NAME[256];
 int regID , clID , id ,  techid  , hostID;
 int  j , l  , seq ;
 unsigned int i;
@@ -3221,24 +3146,6 @@ ret->errCode=0;
 ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] authInfo_chg  [%s] " , (int ) clientID , clTRID , handle  , authInfo_chg);
-
-// nacti status flagy
-  for( i = 0; i <  status_add.length(); i++ )
-    {
-      LOG( NOTICE_LOG, "status_add [%s] -> %d",  (const char *)  status_add[i]  ,  status.GetStatusNumber( status_add[i] )  );
-      status.PutAdd( status.GetStatusNumber( status_add[i] ) ); // pridej status flag
-    }
-
-  for( i = 0; i <  status_rem.length(); i++ )
-    {
-      LOG( NOTICE_LOG, "status_rem [%s] -> %d ",   (const char *) status_rem[i]  , status.GetStatusNumber( status_rem[i] )  );
-      status.PutRem(  status.GetStatusNumber( status_rem[i] ) );
-      if( status.GetStatusNumber( status_rem[i] ) ==  STATUS_clientUpdateProhibited )
-        {
-           LOG( NOTICE_LOG, "remove STATUS_clientUpdateProhibited");
-           remove_update_flag=true;
-        }
-    }
 
 
 
@@ -3275,6 +3182,7 @@ if( DBsql.OpenDatabase( database ) )
                     else
                       {
                         // zpracuj  pole statusu
+/*
                         status.Make( DBsql.GetStatusFromTable( "NSSET", id ) );
 
                         if( status.Test( STATUS_UPDATE ) && remove_update_flag== false)
@@ -3282,42 +3190,15 @@ if( DBsql.OpenDatabase( database ) )
                             LOG( WARNING_LOG, "status UpdateProhibited" );
                             ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
                           }
-                        else
+                        else */
+
                           {
+
                             //  uloz do historie
                             if( DBsql.MakeHistory() )
                               {
                                 if( DBsql.SaveHistory( "NSSET", "id", id ) )    // uloz zaznam
                                   {
-
-                                          // pridany status
-                                          for( i = 0; i < (unsigned int ) status.AddLength(); i++ )
-                                            {
-                                                  if( status.Add(i) == false )
-                                                    {
-                                                      ret->errors.length( seq +1 );
-                                                      ret->errors[seq].code = ccReg::nssetUpdate_status_add;
-                                                      ret->errors[seq].value = CORBA::string_dup(  status_add[i] );
-                                                      ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_CAN_NOT_ADD_STATUS , CLIENT_LANG() ) );
-                                                      seq++;
-                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
-                                                    }
-                                            }
-
-                                          // zruseny status flagy
-                                         for( i = 0; i < (unsigned int )   status.RemLength(); i++ )
-                                             {
-                                              
-                                                  if( status.Rem(i) == false )
-                                                    {
-                                                      ret->errors.length( seq +1 );
-                                                      ret->errors[seq].code = ccReg::nssetUpdate_status_rem;
-                                                      ret->errors[seq].value = CORBA::string_dup(  status_rem[i] );
-                                                      ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_CAN_NOT_REM_STATUS , CLIENT_LANG() ) );
-                                                      seq++;
-                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
-                                                    }
-                                            }
 
 
 
@@ -3326,8 +3207,6 @@ if( DBsql.OpenDatabase( database ) )
                                     if( ret->errCode == 0 )
                                     {
 
-                                    //  vygeneruj  novy status string array
-                                    status.Array( statusString );
 
 
 
@@ -3336,7 +3215,6 @@ if( DBsql.OpenDatabase( database ) )
                                     DBsql.UPDATE( "NSSET" );                                   
                                     DBsql.SSET( "UpDate", "now" );
                                     DBsql.SET( "UpID", regID );
-                                    DBsql.SSET( "status", statusString );
                                     if( remove_update_flag == false ) DBsql.SET( "AuthInfoPw", authInfo_chg   );    // zmena autentifikace  
                                     DBsql.WHEREID( id );
 
@@ -3725,7 +3603,6 @@ ccReg::Response *ret;
 DB DBsql;
 char pass[PASS_LEN+1];
 char HANDLE[64];
-Status status;
 int regID , clID , id ;
 
 ret = new ccReg::Response;
@@ -3770,14 +3647,6 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_NSsetTransfer ,  clTRID , XML  
   {
 
                   // zpracuj  pole statusu
-                  status.Make( DBsql.GetStatusFromTable( "NSSET", id ) );
-
-                  if( status.Test( STATUS_TRANSFER ) )
-                    {
-                      LOG( WARNING_LOG, "status TransferProhibited" );
-                      ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
-                    }
-                  else
                     {
 
    if(  DBsql.AuthTable(  "NSSET"  , (char *)authInfo , id )  == false  ) // pokud prosla autentifikace 
@@ -3867,7 +3736,6 @@ return ret;
 ccReg::Response* ccReg_EPP_i::DomainInfo(const char* fqdn, ccReg::Domain_out d , CORBA::Long clientID, const char* clTRID ,  const char* XML)
 {
 DB DBsql;
-Status status;
 ccReg::ENUMValidationExtension *enumVal;
 ccReg::Response *ret;
 char FQDN[64];
@@ -3926,7 +3794,6 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) 
         regid = atoi( DBsql.GetFieldValueName("registrant" , 0 ) ); 
         nssetid = atoi( DBsql.GetFieldValueName("nsset" , 0 ) );  
 
-        status.Make(  DBsql.GetFieldValueName("status" , 0 ) ) ; // status
 
         convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("CrDate" , 0 ) ); // datum a cas vytvoreni
         d->CrDate= CORBA::string_dup( dateStr );
@@ -3954,16 +3821,14 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) 
     
         // free select
 	DBsql.FreeSelect();
-        
-        // zpracuj pole statusu
-        len =  status.Length();
-        d->stat.length(len);
 
-        for( i = 0 ; i < len ; i ++)
-           {
-              d->stat[i] = CORBA::string_dup( status.GetStatusString(  status.Get(i)  ) );
-           }
+          // status is OK
+          d->stat.length(1);
+          d->stat[0].value = CORBA::string_dup( "ok" );
+          d->stat[0].text = CORBA::string_dup( "Domain is OK" );
 
+
+         
 
         d->ClID = CORBA::string_dup( DBsql.GetRegistrarHandle( clid ) );
         d->CrID = CORBA::string_dup( DBsql.GetRegistrarHandle( crid ) );
@@ -4086,10 +3951,8 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(const char* fqdn , CORBA::Long client
 {
 ccReg::Response *ret;
 DB DBsql;
-Status status;
 char FQDN[64];
 int regID , clID , id , zone;
-bool stat;
 ret = new ccReg::Response;
 
 
@@ -4150,15 +4013,7 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int
                   else
                     {
                       // zpracuj  pole statusu
-                      status.Make( DBsql.GetStatusFromTable( "DOMAIN", id ) );
 
-                      if( status.Test( STATUS_DELETE ) )
-                        {
-                          LOG( WARNING_LOG, "status DeleteProhibited" );
-                          ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
-                          stat = false;
-                        }
-                      else      // status je OK
                         {
                           //  uloz do historie
                           if( DBsql.MakeHistory() )
@@ -4228,8 +4083,6 @@ if( ret->errCode == 0 )
  *              nsset_chg - zmena nssetu 
  *              admin_add - sequence pridanych admin kontaktu
  *              admin_rem - sequence smazanych admin kontaktu
- *              status_add - pridane status flagy
- *              status_rem - status flagy na smazani
  *              clientID - id klienta
  *              clTRID - cislo transakce klienta
  *              ext - ExtensionList
@@ -4239,16 +4092,13 @@ if( ret->errCode == 0 )
  ***********************************************************************/
 ccReg::Response * ccReg_EPP_i::DomainUpdate( const char *fqdn, const char *registrant_chg, const char *authInfo_chg, const char *nsset_chg,
                                              const ccReg::AdminContact & admin_add, const ccReg::AdminContact & admin_rem,
-                                             const ccReg::Status & status_add, const ccReg::Status & status_rem,
                                              CORBA::Long clientID, const char *clTRID,  const char* XML ,  const ccReg::ExtensionList & ext )
 {
 ccReg::Response * ret;
 DB DBsql;
-Status status;
 bool check;
 char FQDN[64] , HANDLE[64];
 char valexpiryDate[MAX_DATE];
-char statusString[128];
 int regID = 0, clID = 0, id, nssetid, contactid, adminid;
 int   seq , zone;
 unsigned int i;
@@ -4269,24 +4119,6 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 GetValExpDateFromExtension( valexpiryDate , ext );
 
 
-
-// nacti status flagy
-  for( i = 0; i < status_add.length(); i++ )
-    {
-      LOG( NOTICE_LOG, "status_add [%s] -> %d",  (const char *)  status_add[i]  ,  status.GetStatusNumber( status_add[i] )  );
-      status.PutAdd( status.GetStatusNumber( status_add[i] ) ); // pridej status flag
-    }
-
-  for( i = 0; i < status_rem.length(); i++ )
-    {
-      LOG( NOTICE_LOG, "status_rem [%s] -> %d ",   (const char *) status_rem[i]  , status.GetStatusNumber( status_rem[i] )  );
-      status.PutRem(  status.GetStatusNumber( status_rem[i] ) );
-      if( status.GetStatusNumber( status_rem[i] ) ==  STATUS_clientUpdateProhibited )
-        {
-           LOG( NOTICE_LOG, "remove STATUS_clientUpdateProhibited");
-           remove_update_flag=true;
-        }
-    }
 
 
 
@@ -4343,14 +4175,6 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                       else
                         {
                           // zpracuj  pole statusu
-                          status.Make( DBsql.GetStatusFromTable( "DOMAIN", id ) );
-
-                          if( status.Test( STATUS_UPDATE )  && remove_update_flag == false )
-                            {
-                              LOG( WARNING_LOG, "status UpdateProhibited" );
-                              ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
-                            }
-                          else                            
                           {
 
 
@@ -4433,33 +4257,6 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                       else contactid = 0;  // nemenim vlastnika
 
 
-                                         // pridany status
-                                          for( i = 0; i < (unsigned int )  status.AddLength(); i++ )
-                                            {
-                                                  if( status.Add( i ) == false )
-                                                    {
-                                                      ret->errors.length( seq +1 );
-                                                      ret->errors[seq].code = ccReg::domainUpdate_status_add;
-                                                      ret->errors[seq].value = CORBA::string_dup(  status_add[i] );
-                                                      ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_CAN_NOT_ADD_STATUS , CLIENT_LANG() ) );
-                                                      seq++;
-                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
-                                                    }
-                                            }
-
-                                          // zruseny status flagy
-                                         for( i = 0; i <  (unsigned int ) status.RemLength(); i++ )
-                                             {
-                                                  if( status.Rem( i ) == false )
-                                                    {
-                                                      ret->errors.length( seq +1 );
-                                                      ret->errors[seq].code = ccReg::domainUpdate_status_rem;
-                                                      ret->errors[seq].value = CORBA::string_dup(  status_rem[i] );
-                                                      ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_CAN_NOT_REM_STATUS , CLIENT_LANG())  );
-                                                      seq++;
-                                                      ret->errCode = COMMAND_PARAMETR_ERROR;
-                                                    }
-                                            }
 
 
                            // Test jestli za danono u enum domen
@@ -4499,13 +4296,10 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                       { 
 
 
-                                      //  vygeneruj  novy status string array
-                                      status.Array( statusString );
 
 
                                       // zmenit zaznam o domene
                                       DBsql.UPDATE( "DOMAIN" );
-                                      DBsql.SSET( "status", statusString );                                                      
                                       DBsql.SSET( "UpDate", "now" );
                                       DBsql.SET( "UpID", regID );
                                       if( !remove_update_flag  )
@@ -4986,7 +4780,6 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                           DBsql.INTO( "Exdate" );
                           DBsql.INTO( "ClID");
                           DBsql.INTO( "CrID" );
-                          DBsql.INTO( "status" );
                           DBsql.INTO( "Registrant" );
                           DBsql.INTO( "nsset" );
                           DBsql.INTO( "authinfopw");
@@ -5000,7 +4793,6 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                           DBsql.VALUEPERIOD(  period_count  ); // aktualni cas  plus interval period v mesicich
                           DBsql.VALUE( regID );
                           DBsql.VALUE( regID );
-                          DBsql.VALUE( "{ 1 }" ); // status OK
                           DBsql.VALUE( contactid );
                           if( nssetid == 0 )   DBsql.VALUENULL(); // domena bez nssetu zapsano NULL
                           else DBsql.VALUE( nssetid );
@@ -5138,12 +4930,10 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                                             const char *clTRID, const  char* XML , const ccReg::ExtensionList & ext )
 {
   DB DBsql;
-  Status status;
   char expDateStr[MAX_DATE],  ExDateStr[MAX_DATE] , valexpiryDate[MAX_DATE] ;
   char FQDN[64]; 
   ccReg::Response * ret;
   int clid, regID, id,  zone , seq;
-  bool stat;
 int period_count;
 char periodStr[10];
 
@@ -5346,15 +5136,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                if(  ret->errCode == 0 )
                  {
                   // zpracuj  pole statusu
-                  status.Make( DBsql.GetStatusFromTable( "DOMAIN", id ) );
-
-                  if( status.Test( STATUS_RENEW ) )
-                    {
-                      LOG( WARNING_LOG, "status RenewProhibited" );
-                      ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
-                      stat = false;
-                    }
-                  else          // status je OK
+ // status je OK
 
 
                   if( clid != regID )
@@ -5460,7 +5242,6 @@ ccReg::Response * ret;
 DB DBsql;
 char pass[PASS_LEN+1];
 char FQDN[64];
-Status status;
 int regID = 0, clID = 0, id , zone;  //   registrantid , contactid;
 
 ret = new ccReg::Response;
@@ -5527,15 +5308,7 @@ if( DBsql.BeginTransaction() )
               else
                 {
                   // zpracuj  pole statusu
-                  status.Make( DBsql.GetStatusFromTable( "DOMAIN", id ) );
 
-                  if( status.Test( STATUS_TRANSFER ) )
-                    {
-                      LOG( WARNING_LOG, "status TransferProhibited" );
-                      ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
-
-                    }
-                  else
                     {
                       // autentifikace
                       if( DBsql.AuthTable( "DOMAIN", ( char * ) authInfo, id ) == false )
