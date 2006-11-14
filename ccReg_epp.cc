@@ -672,12 +672,23 @@ ccReg::Response * ccReg_EPP_i::GetTransaction(CORBA::Short errCode, const ccReg:
 DB DBsql;
 ccReg::Response * ret;
 ret = new ccReg::Response;
-
+int i , len;
+len = errors.length();
 // default
 ret->errCode = 0;
-ret->errors.length( 0 );
+ret->errors.length( len );
 
 LOG( NOTICE_LOG, "GetTransaction: clientID -> %d clTRID [%s] ",  (int )  clientID, clTRID );
+LOG( NOTICE_LOG, "GetTransaction:  errCode %d",  (int ) errCode  );
+
+// prekopiruj strukturu pro Honzu 
+for( i = 0 ;i < len ; i ++ )
+{
+ ret->errors[i].code = errors[i].code;
+ ret->errors[i].value =  CORBA::string_dup(  errors[i].value ) ;
+ ret->errors[i].reason = CORBA::string_dup(  "GetTransaction TODO msg"   ); // TODO hlasky
+ LOG( NOTICE_LOG, "GetTransaction: errors[%d] code %d value %s\n" , i ,   ret->errors[i].code , ( char * )   ret->errors[i].value  );
+}
 
   if( DBsql.OpenDatabase( database ) )
     {
