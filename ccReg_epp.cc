@@ -1802,6 +1802,17 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
             }
 
           }
+ else
+  {
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of contact [%s]" , handle );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::contactInfo_handle;
+            ret->errors[0].value = CORBA::string_dup( handle );
+            ret->errors[0].reason = CORBA::string_dup(  GetReasonMessage(REASON_MSG_BAD_FORMAT_CONTACT_HANDLE , CLIENT_LANG() )  );
+  }
+
+
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
         }
@@ -2713,6 +2724,17 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int
             }
 
           }
+        else
+          {
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of nssetr [%s]" , handle );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::nssetInfo_handle; // TODO
+            ret->errors[0].value = CORBA::string_dup( handle );
+            ret->errors[0].reason = CORBA::string_dup(  GetReasonMessage(REASON_MSG_BAD_FORMAT_NSSET_HANDLE , CLIENT_LANG() )  );
+         }
+
+
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
         }
