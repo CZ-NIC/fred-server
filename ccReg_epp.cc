@@ -5463,4 +5463,192 @@ return FullList( EPP_ListDomain , "DOMAIN"  , "fqdn" , domains ,  clientID,  clT
 }
 
 
+ccReg::Response*  ccReg_EPP_i::ObjectSendAuthInfo( short act , char * table , char *fname , const char *name , CORBA::Long clientID, const char* clTRID , const char* XML )
+{
+DB DBsql;
+int clID ,  id ,  zone;
+int i , rows;
+ccReg::Response * ret;
+int regID , registrarID , techID[10] ; // TODO MAX_TECH
+char autInfo[32];
+char Email[128];
+char notifyEmail[128];
+char NAME[64];
+ret = new ccReg::Response;
+
+// default
+ret->errors.length( 0 );
+ret->errCode =0 ; // default
+autInfo[0] = 0 ;
+
+LOG( NOTICE_LOG ,  "ObjectSendAuthInfo %d  clientID -> %d clTRID [%s] " , act  , (int )  clientID , clTRID );
+
+if( DBsql.OpenDatabase( database ) )
+{
+
+  if( ( regID =  DBsql.BeginAction( clientID , act ,  clTRID , XML  )  ) )
+  {
+
+   switch( act )
+   {
+   case EPP_ContactSendAuthInfo:     
+       // preved handle na velka pismena
+       if( get_CONTACTHANDLE( NAME , name ) == false )  // spatny format handlu
+         {
+             LOG( WARNING_LOG, "bad format  of [%s]" , name );
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::contactCreate_handle; // REMOVE TODO
+            ret->errors[0].value = CORBA::string_dup( name );
+            ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_FORMAT_CONTACT_HANDLE , CLIENT_LANG() ) );
+        }
+       break;
+     
+   case EPP_NSSetSendAuthInfo:
+       // preved handle na velka pismena
+       if( get_NSSETHANDLE( NAME , name ) == false )  // spatny format handlu
+         {
+            LOG( WARNING_LOG, "bad format  of [%s]" , name );
+            ret->errCode = COMMAND_PARAMETR_ERROR;	
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::nssetCreate_handle; // REMOVE TODO
+            ret->errors[0].value = CORBA::string_dup( name );
+            ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_FORMAT_CONTACT_HANDLE , CLIENT_LANG() ) );
+        }
+       break;
+   case EPP_DomainSendAuthInfo:
+      // preved fqd na  mala pismena a otestuj to
+       if(  ( zone = getFQDN( NAME , name ) ) <= 0  )  // spatny format navu domeny
+         {
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "domain %s not in zone %d" , name ,  zone );
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::domainCreate_fqdn;
+            ret->errors[0].value = CORBA::string_dup( name );
+            if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN , CLIENT_LANG() ) );
+            else  ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN , CLIENT_LANG() )   );
+          }
+         break;
+
+    }
+ 
+  
+    if(  ret->errCode == 0 ) // pokud vse OK
+    if( DBsql.BeginTransaction() )
+      {
+          // pokud domena existuje
+          if( ( id = DBsql.GetNumericFromTable( table , "id", fname , ( char * ) NAME ) ) == 0 )
+            {
+              ret->errCode = COMMAND_OBJECT_NOT_EXIST;
+              LOG( WARNING_LOG, "object [%s] NOT_EXIST", NAME );
+            }
+          else
+            {
+              // client contaktu
+              clID = DBsql.GetNumericFromTable( table , "clID", "id", id );
+
+
+                if( clID != regID )
+                  {
+                      LOG( WARNING_LOG, "bad autorization not  client of object [%s]", NAME );
+                      ret->errCode = COMMAND_AUTOR_ERROR;       // spatna autorizace
+                  }
+                 else
+                  {
+
+                      strncpy( autInfo ,  DBsql.GetValueFromTable( table , "authinfopw" , "id"  , id )  , 32 );
+                      LOG( NOTICE_LOG , "Get autInfo %s for %s" , autInfo ,   ( char * ) NAME  );
+
+                       switch( act )
+                       {
+                           case EPP_ContactSendAuthInfo:
+                                   strcpy( Email ,  DBsql.GetValueFromTable( "CONTACT" , "email" , "id"  , id )  );
+                                   strcpy( notifyEmail ,  DBsql.GetValueFromTable("CONTACT"  , "notifyemail" , "id"  , id )  );
+                                   LOG( NOTICE_LOG, "contactID %d email %s notify %s" , id , Email  , notifyEmail );
+                                break;
+  
+                          case EPP_DomainSendAuthInfo: // odesle autinfo domeny na e-mail vlastnika domeny
+                                   registrarID =   DBsql.GetNumericFromTable(  "DOMAIN" , "registrant" ,  "id"  , id )  ;                                  
+                                   if( registrarID )
+                                     {
+                                       strcpy( Email ,  DBsql.GetValueFromTable( "CONTACT"  , "email" , "id"  , registrarID ) ) ;
+                                       strcpy( notifyEmail ,  DBsql.GetValueFromTable( "CONTACT"  , "notifyemail" , "id"  , registrarID )  );
+                                       LOG( NOTICE_LOG, "registrarID %d email %s notify %s" , registrarID , Email  , notifyEmail );
+                                     }
+                                break;
+
+                          case EPP_NSSetSendAuthInfo:
+                                DBsql.SELECTFROM( "contactID" , "nsset_contact_map" );
+                                DBsql.WHERE( "nssetID" , id );
+                                if( DBsql.SELECT() )
+                                  {
+                                     rows = DBsql.GetSelectRows();
+
+                                     LOG( NOTICE_LOG, "nsset_contact_map list: %s  num -> %d ID %d",  table , rows  ,  id );
+
+                                     for( i = 0 ; i < rows  ; i ++ )  techID[i] = atoi( DBsql.GetFieldValue(  i , 0 )  );
+                                     DBsql.FreeSelect();
+
+                                          // projed vsechny techID kontakty
+                                         for( i = 0 ; i < rows  ; i ++ ) 
+                                         { 
+                                          if( techID[i] )
+                                            {
+                                               strcpy( Email ,  DBsql.GetValueFromTable(  "CONTACT" , "email" , "id"  , techID[i] )  );
+                                               strcpy( notifyEmail ,  DBsql.GetValueFromTable(  "CONTACT" , "notifyemail" , "id"  , techID[i] )  );
+                                               LOG( NOTICE_LOG, "techID %d email %s notify %s" , techID[i] , Email  , notifyEmail );
+                                            }
+                                         }
+   
+                                  }
+                              break;
+                           }   
+                                 
+
+                      // TODO pokud maily odesly
+                      ret->errCode=COMMAND_OK;
+
+ 
+                  }
+ 
+
+             }
+
+
+        // konec transakce commit ci rollback
+        DBsql.QuitTransaction( ret->errCode );
+     } 
+      // zapis na konec action
+      ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) ) ;
+  }
+
+ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+
+DBsql.Disconnect();
+}
+
+
+if( ret->errCode == 0 )
+  {
+    ret->errCode = COMMAND_FAILED;    // obecna chyba
+    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
+    ret->errMsg = CORBA::string_dup( "" );
+  }
+
+return ret;
+}
+
+
+ccReg::Response* ccReg_EPP_i::domainSendAuthInfo(const char*  fqdn, CORBA::Long clientID, const char* clTRID, const char*  XML)
+{
+return   ObjectSendAuthInfo(  EPP_DomainSendAuthInfo , "DOMAIN" ,  "fqdn" , fqdn , clientID , clTRID, XML);
+}
+ccReg::Response* ccReg_EPP_i::contactSendAuthInfo(const char* handle,  CORBA::Long clientID, const char* clTRID, const char*  XML)
+{
+return   ObjectSendAuthInfo(  EPP_ContactSendAuthInfo , "CONTACT" ,  "handle" , handle , clientID , clTRID, XML);
+}
+ccReg::Response* ccReg_EPP_i::nssetSendAuthInfo(const char* handle,  CORBA::Long clientID, const char* clTRID, const char*  XML)
+{
+return   ObjectSendAuthInfo(  EPP_NSSetSendAuthInfo , "NSSET" ,  "handle" , handle , clientID , clTRID, XML);
+}
 

@@ -83,6 +83,9 @@ public:
   // obecna check funkce
   ccReg::Response*  ObjectCheck( short act , char * table , char *fname , const ccReg::Check& chck , ccReg::CheckResp_out   a, CORBA::Long clientID, const char* clTRID , const char* XML );
 
+   // pro obecny send authInfo
+  ccReg::Response*  ObjectSendAuthInfo( short act , char * table , char *fname , const char *name , CORBA::Long clientID, const char* clTRID , const char* XML );
+
    CORBA::Boolean SaveOutXML(const char* svTRID, const char* XML);
  
 
@@ -113,12 +116,18 @@ public:
   ccReg::Response* DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char* AuthInfoPw,  const ccReg::Period_str& period, const ccReg::AdminContact& admin,  ccReg::timestamp_out crDate, ccReg::date_out exDate,  CORBA::Long clientID, const char* clTRID, const char* XML , const ccReg::ExtensionList& ext );
   ccReg::Response* DomainRenew(const char* fqdn, const char* curExpDate,  const ccReg::Period_str& period, ccReg::timestamp_out exDate, CORBA::Long clientID, const char* clTRID, const char* XML, const ccReg::ExtensionList& ext);
   ccReg::Response* DomainTransfer(const char* fqdn,  const char* authInfo, CORBA::Long clientID, const char* clTRID  , const char* XML);
+
+   // 
+  ccReg::Response* domainSendAuthInfo(const char*  fqdn, CORBA::Long clientID, const char* clTRID, const char*  XML);
+  ccReg::Response* contactSendAuthInfo(const char* handle,  CORBA::Long clientID, const char* clTRID, const char*  XML);
+  ccReg::Response* nssetSendAuthInfo(const char* handle,  CORBA::Long clientID, const char* clTRID, const char*  XML);
  
 
   // EPP vypis
   ccReg::Response* ContactList(ccReg::Lists_out contacts, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* NSSetList(ccReg::Lists_out nssets, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* DomainList(ccReg::Lists_out domains, CORBA::Long clientID, const char* clTRID, const char* XML);
+
 
  
 private:

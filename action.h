@@ -46,3 +46,8 @@
 
 #define EPP_ClientCredit       1010
 
+// send auth info fce
+#define EPP_ContactSendAuthInfo 1101
+#define EPP_NSSetSendAuthInfo   1102
+#define EPP_DomainSendAuthInfo  1103
+

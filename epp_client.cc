@@ -31,6 +31,7 @@ int main(int argc, char** argv)
 //     CORBA::String_var clID, pass , cc ; 
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);    
     CORBA::Object_var  epp_obj , admin_obj;
+     CORBA::Short errCode ; 
 //    ccReg::Contact *contact , *cc;
 //    ccReg::ContactChange *ch;
     ccReg::Response *ret;
@@ -44,6 +45,7 @@ int main(int argc, char** argv)
     ccReg::Lists *lists ;
     ccReg::Registrar *reg;
     CORBA::String_var errMsg , svTR , mesg ;
+    ccReg::Error errors;
 //    char *msg;
     unsigned long  i  ;
 //    int len , max = 512, d , j , a , num;
@@ -90,14 +92,20 @@ int main(int argc, char** argv)
     cerr << "EPP version: "  <<  EPP->version(ts)   << endl;
    
 
-/*    loginID = 4000; 
+    loginID = 0; 
 
-    ret =  EPP->GetTransaction( loginID, "unknwo act" , 2104);
+//    errors = new ccReg::Error_var;
+    errors.length(0);
+
+    errCode=1000;
+    ret =  EPP->GetTransaction( errCode ,  errors , loginID ,  "client-CLTRID" );
+
 
     cout << "get Transaction code " << ret->errCode << ret->errMsg  <<  ret->svTRID  << endl;
-*/
+
 
     // vrati kompletni seznam registratoru
+/*
     rl = Admin->getRegistrars();
 
 
@@ -112,7 +120,7 @@ int main(int argc, char** argv)
              cout << "registrar:" << reg->name << reg->url << endl ; 
 
       }
-
+*/
 
 /*
     ret =  EPP->ContactInfo( "jouda",  cc , 0 , "jouda_zero" , "<XML></XML>");
@@ -124,7 +132,7 @@ int main(int argc, char** argv)
 */
 
 
-/*
+
 
     ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789"  , "" ,     "LRR-login-now" , "" , loginID , "AE:B3:5F:FA:38:80:DB:37:53:6A:3E:D4:55:E2:91:97" ,  ccReg::EN  );
 
@@ -134,6 +142,21 @@ int main(int argc, char** argv)
 
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
+    ret =  EPP->domainSendAuthInfo("nic.edu" , loginID, "EPP_DomainSendAuthInfo" , "<XML>" );
+    cout << "SendAuthInfo err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+
+    ret =  EPP->nssetSendAuthInfo("SID:EXAMPLE" , loginID, "EPP_nssetSendAuthInfo" , "<XML>" );
+    cout << "SendAuthInfo err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+
+    ret =  EPP->nssetSendAuthInfo("NSSID:NEWNSSET" , loginID, "EPP_nssetSendAuthInfo" , "<XML>" );
+    cout << "SendAuthInfo err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+
+    ret =  EPP->contactSendAuthInfo("debil" , loginID, "EPP_contactSendAuthInfo" , "<XML>" );
+    cout << "SendAuthInfo err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+   
+
+
+/*
    ret =  EPP->DomainInfo(  "beta.cz" ,  domain , loginID , "info-enum-4.4.4" , "<XML>"  );
    cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
@@ -164,6 +187,7 @@ int main(int argc, char** argv)
 
 //     ret =  EPP->ClientCredit( credit ,  loginID , "clTRID-credit" , "<XML>credit</XML>" );
 //     cout << "credit " << credit <<  "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+/*
 loginID=0;
 
 
@@ -198,7 +222,7 @@ loginID=0;
 
     delete lists;
 
-
+*/
 
 
 /*
@@ -798,10 +822,11 @@ delete cc;
     cout  << "nsset transfer" << endl;
 //    ret = EPP->DomainTransfer("neco.cz",   "NECOCZ-PETR" , "heslo" ,  loginID , "domain-transfer" );
     ret = EPP->NSSetTransfer( "NECOCZ",   "heslo" ,  loginID , "nsset-transfer" );
-    cout  << "client logout "<< endl;
 */
-//    ret =  EPP->ClientLogout( loginID , "XXXX-logout" , "");
-  //  cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
+    cout  << "client logout "<< endl;
+
+    ret =  EPP->ClientLogout( loginID , "XXXX-logout" , "");
+  cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
      
     orb->destroy();
   }
