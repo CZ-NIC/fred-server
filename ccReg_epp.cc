@@ -1450,7 +1450,8 @@ DB DBsql;
 ccReg::Response *ret;
 char HANDLE[64]; // handle na velka pismena
 char dateStr[MAX_DATE];
-int  clid , crid , upid , regID , ssn;
+int  clid , crid , upid , regID ;
+int  ssn , id , slen;
 
 c = new ccReg::Contact;
 // inicializace pro pripad neuspesneho hledani
@@ -1491,7 +1492,7 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
 
         // status.Make(  DBsql.GetFieldValueName("status" , 0 ) ) ; // status
 
-
+        id = atoi(  DBsql.GetFieldValueName("id" , 0 ) ); // ID kontaktu pro ziskani vazeb
 	c->handle=CORBA::string_dup( DBsql.GetFieldValueName("handle" , 0 ) ); // handle
 	c->ROID=CORBA::string_dup( DBsql.GetFieldValueName("ROID" , 0 ) ); // ROID     
         convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("CrDate" , 0 ) ); // datum a cas vytvoreni
@@ -1560,11 +1561,20 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
 	DBsql.FreeSelect();
 
 
+       if( DBsql.TestContactRelations( id ) )  slen = 2;
+       else slen=1;
 
+        c->stat.length(slen);
 
-          c->stat.length(1);
-          c->stat[0].value = CORBA::string_dup( "ok" );         
-          c->stat[0].text = CORBA::string_dup( "Contact is OK" ); 
+        c->stat[0].value = CORBA::string_dup( "ok" );         
+        c->stat[0].text = CORBA::string_dup( "Contact is OK" ); 
+
+       if( slen > 1 )
+        {
+          c->stat[1].value = CORBA::string_dup( "linked" );         
+          c->stat[1].text = CORBA::string_dup( "Contact is admin or tech" ); 
+        }
+
               
         // identifikator registratora
         c->CrID =  CORBA::string_dup(  DBsql.GetRegistrarHandle( crid ) );
@@ -2398,7 +2408,7 @@ char  adres[1042] , adr[128] ;
 char dateStr[MAX_DATE];
 ccReg::Response *ret;
 int clid , crid , upid , nssetid , regID;
-int i , j  ,ilen , len ;
+int i , j  ,ilen , len , slen ;
 
 ret = new ccReg::Response;
 n = new ccReg::NSSet;
@@ -2454,10 +2464,21 @@ if( get_HANDLE( HANDLE , handle ) )
 
 
 
-          // status is OK 
-          n->stat.length(1);
-          n->stat[0].value = CORBA::string_dup( "ok" );
-          n->stat[0].text = CORBA::string_dup( "NSSet is OK" );
+
+       if( DBsql.TestNSSetRelations( nssetid ) )  slen = 2;
+       else slen=1;
+
+        n->stat.length(slen);
+        n->stat[0].value = CORBA::string_dup( "ok" );
+        n->stat[0].text = CORBA::string_dup( "NSSet is OK" );
+
+
+       if( slen > 1 )
+        {
+          n->stat[1].value = CORBA::string_dup( "linked" );
+          n->stat[1].text = CORBA::string_dup( "NSSet is linked with domains" );
+        }
+
 
 
         n->ClID =  CORBA::string_dup( DBsql.GetRegistrarHandle( clid ) );
