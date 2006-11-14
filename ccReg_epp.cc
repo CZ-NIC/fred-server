@@ -2504,8 +2504,8 @@ if( get_HANDLE( HANDLE , handle ) )
 
 
         n->ClID =  CORBA::string_dup( DBsql.GetRegistrarHandle( clid ) );
-        n->CrID =  CORBA::string_dup( DBsql.GetRegistrarHandle( upid ) );
-        n->UpID =  CORBA::string_dup( DBsql.GetRegistrarHandle( crid ) );
+        n->CrID =  CORBA::string_dup( DBsql.GetRegistrarHandle( crid ) );
+        n->UpID =  CORBA::string_dup( DBsql.GetRegistrarHandle( upid ) );
 
         // dotaz na DNS servry  na tabulky host
         if(   DBsql.SELECTONE( "HOST" , "nssetid" , nssetid  ) )

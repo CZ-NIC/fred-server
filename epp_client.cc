@@ -32,7 +32,7 @@ int main(int argc, char** argv)
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);    
     CORBA::Object_var  epp_obj , admin_obj;
      CORBA::Short errCode ; 
-//    ccReg::Contact *contact , *cc;
+    ccReg::Contact *contact , *cc;
 //    ccReg::ContactChange *ch;
     ccReg::Response *ret;
 //    ccReg::NSSet *nsset;
@@ -95,9 +95,12 @@ int main(int argc, char** argv)
     loginID = 0; 
 
 //    errors = new ccReg::Error_var;
-    errors.length(0);
+    errors.length(1);
+    errors[0].code=ccReg::contactUpdate_cc;
+    errors[0].value= CORBA::string_dup( "XX" );
 
     errCode=1000;
+    cout << "get Transaction code input " << errCode << endl;
     ret =  EPP->GetTransaction( errCode ,  errors , loginID ,  "client-CLTRID" );
 
 
@@ -141,7 +144,7 @@ int main(int argc, char** argv)
 
 
     cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
-
+/*
     ret =  EPP->domainSendAuthInfo("nic.edu" , loginID, "EPP_DomainSendAuthInfo" , "<XML>" );
     cout << "SendAuthInfo err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
@@ -154,6 +157,12 @@ int main(int argc, char** argv)
     ret =  EPP->contactSendAuthInfo("debil" , loginID, "EPP_contactSendAuthInfo" , "<XML>" );
     cout << "SendAuthInfo err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
    
+*/
+    ret =  EPP->ContactInfo( "CID:DEBIL" ,  cc , loginID , "test-contact-info" , "<XML>debil</XML>");
+    cout << "ContactInfo err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
+   
+  for( i = 0 ; i < cc->stat.length() ; i ++ )
+       cout << "status " <<  cc->stat[i].value <<  cc->stat[i].text << endl;
 
 
 /*
