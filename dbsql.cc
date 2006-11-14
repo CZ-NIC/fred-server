@@ -546,7 +546,7 @@ bool DB::GetExpDate(char *dateStr , int domainID , int period  , int max_period 
 {
 char sqlString[256];
 bool ret=false;
-strcpy( dateStr , "1900-01-01" ); // default datum
+strcpy( dateStr , "" ); // default datum
 
 sprintf( sqlString , "SELECT  ExDate+interval\'%d month\' FROM DOMAIN WHERE id=%d AND ExDate+interval\'%d month\' < current_date+interval\'%d month\';",
            period , domainID , period , max_period );
@@ -556,8 +556,7 @@ if( ExecSelect( sqlString ) )
  {
     if(  GetSelectRows() == 1  )
       {
-        strncpy( dateStr ,     GetFieldValue( 0 , 0 ) , 10 );
-        dateStr[10] = 0 ;
+        convert_rfc3339_timestamp( dateStr ,     GetFieldValue( 0 , 0 ) );        
         ret = true;
       }
     FreeSelect();
