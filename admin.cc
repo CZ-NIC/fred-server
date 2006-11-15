@@ -159,6 +159,7 @@ ccReg_Admin_i::login(const char* username, const char* password)
   userList.push_back("martin");
   userList.push_back("pavel");
   userList.push_back("jara");
+  userList.push_back("zuzka");
   userList.push_back("david");
   std::vector<std::string>::const_iterator i = find(
     userList.begin(), userList.end(), username
@@ -223,6 +224,27 @@ ccReg_Admin_i::getRegistrars()
     fillRegistrar((*reglist)[i],rl->get(i));
   db.Disconnect();
   return reglist;
+}
+
+ccReg::Registrar* ccReg_Admin_i::getRegistrarById(CORBA::Long id)
+  throw (ccReg::Admin::ObjectNotFound)
+{
+  DB db;
+  LOG( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> regm(Register::Manager::create(&db));
+  Register::Registrar::Manager *rm = regm->getRegistrarManager();
+  Register::Registrar::RegistrarList *rl = rm->getList();
+  rl->setIdFilter(id);
+  rl->reload();
+  if (rl->size() < 1) {
+    db.Disconnect();
+    throw ccReg::Admin::ObjectNotFound();
+  } 
+  ccReg::Registrar* creg = new ccReg::Registrar;
+  fillRegistrar(*creg,rl->get(0));
+  db.Disconnect();
+  return creg;
 }
 
 ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
