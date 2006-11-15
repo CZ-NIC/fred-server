@@ -1,8 +1,9 @@
 #include "ccReg.hh"
-#include <string>
 #include "register/register.h"
 #include "dbsql.h"
 #include <memory>
+#include <string>
+#include <map>
 
 class ccReg_PageTable_i : virtual public POA_ccReg::PageTable {
   unsigned int aPageSize;
@@ -281,7 +282,8 @@ class ccReg_Session_i : public POA_ccReg::Session,
 class ccReg_Admin_i: public POA_ccReg::Admin, 
                      public PortableServer::RefCountServantBase {
   std::string database;
-  ccReg_Session_i *session;
+  typedef std::map<std::string,ccReg_Session_i *> SessionListType;
+  SessionListType sessionList;
   void fillRegistrar(
     ccReg::Registrar& creg, 
     Register::Registrar::Registrar *reg
@@ -291,8 +293,10 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   virtual ~ccReg_Admin_i();
 
   // session
-  virtual char* login(const char* username, const char* password);
-  virtual ccReg::Session_ptr getSession(const char* sessionID);
+  virtual char* login(const char* username, const char* password)
+    throw (ccReg::Admin::AuthFailed);
+  virtual ccReg::Session_ptr getSession(const char* sessionID)
+    throw (ccReg::Admin::ObjectNotFound);
 
   // registrar management
   ccReg::RegistrarList* getRegistrars();

@@ -119,12 +119,14 @@ ccReg_PageTable_i::getPageRowId(CORBA::Short row)
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 ccReg_Admin_i::ccReg_Admin_i(const std::string _database) : 
-  database(_database), session(new ccReg_Session_i(_database))
+  database(_database)
 {
 }
 
 ccReg_Admin_i::~ccReg_Admin_i() 
-{}
+{
+/// clean sessions
+}
 
 #define SWITCH_CONVERT(x) case Register::x : ch->handleClass = ccReg::x; break
 void
@@ -150,14 +152,31 @@ ccReg_Admin_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
  
 char* 
 ccReg_Admin_i::login(const char* username, const char* password)
+  throw (ccReg::Admin::AuthFailed)
 {
-  return CORBA::string_dup("XXX");
+  std::vector<std::string> userList;
+  userList.push_back("superuser");
+  userList.push_back("martin");
+  userList.push_back("pavel");
+  userList.push_back("jara");
+  userList.push_back("david");
+  std::vector<std::string>::const_iterator i = find(
+    userList.begin(), userList.end(), username
+  );
+  if (i == userList.end()) throw ccReg::Admin::AuthFailed();
+  SessionListType::const_iterator j = sessionList.find(username);
+  if (j == sessionList.end())
+    sessionList[username] = new ccReg_Session_i(database);
+  return CORBA::string_dup(username);
 }
 
 ccReg::Session_ptr 
 ccReg_Admin_i::getSession(const char* sessionID)
+  throw (ccReg::Admin::ObjectNotFound)
 {
-  return session->_this();
+  SessionListType::const_iterator i = sessionList.find(sessionID);
+  if (i == sessionList.end()) throw ccReg::Admin::ObjectNotFound();
+  return (*i).second->_this();
 }
 
 void 
