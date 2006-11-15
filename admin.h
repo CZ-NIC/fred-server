@@ -300,6 +300,8 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
 
   // registrar management
   ccReg::RegistrarList* getRegistrars();
+  ccReg::Registrar* getRegistrarById(CORBA::Long id) 
+    throw (ccReg::Admin::ObjectNotFound);
   ccReg::Registrar* getRegistrarByHandle(const char* handle) 
     throw (ccReg::Admin::ObjectNotFound);
   void putRegistrar(const ccReg::Registrar& regData);

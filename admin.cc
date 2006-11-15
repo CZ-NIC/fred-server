@@ -230,7 +230,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarById(CORBA::Long id)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
-  LOG( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
+  LOG( NOTICE_LOG, "getRegistarByHandle: id -> %ld", id );
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> regm(Register::Manager::create(&db));
   Register::Registrar::Manager *rm = regm->getRegistrarManager();
