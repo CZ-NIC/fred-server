@@ -1863,7 +1863,6 @@ ccReg::Response * ret;
 DB DBsql;
 char  HANDLE[64];
 int regID ,  clID , id ;
-bool remove_update_flag = false ;
 int  seq;
 
 seq=0;
@@ -1912,20 +1911,6 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
 
                       if( TestCountryCode( c.CC ) )       // test kodu zeme pokud je nastavena
                         {
-/*
-                          // zjisti  pole statusu
-                          status.Make( DBsql.GetStatusFromTable( "CONTACT", id ) );
-
-
-                           
-                          // neplati kdyz je UpdateProhibited v remove  status flagu
-                          if( status.Test( STATUS_UPDATE ) && remove_update_flag == false )
-                            {
-                              LOG( WARNING_LOG, "status UpdateProhibited" );
-                              ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
-                            }
-                          else  // status je OK
-*/
                             {
                                
                                   //  uloz do historie
@@ -1942,7 +1927,6 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                                           DBsql.UPDATE( "Contact" );
 
                                           // pridat zmenene polozky 
-                                          if( remove_update_flag == false )
                                           {
                                           DBsql.SET( "Name", c.Name );
                                           DBsql.SET( "Organization", c.Organization );
@@ -2426,9 +2410,10 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(const char* handle, ccReg::NSSet_out n,
 {
 DB DBsql;
 char HANDLE[64];
-char  adres[1042] , adr[128] ;
+// char  adres[1042] , adr[128] ;
 char dateStr[MAX_DATE];
 ccReg::Response *ret;
+int hostID[10]; // TODO define max hostID
 int clid , crid , upid , nssetid , regID;
 int i , j  ,ilen , len , slen ;
 
@@ -2516,27 +2501,28 @@ if( get_HANDLE( HANDLE , handle ) )
              n->dns.length(len);
  
              for( i = 0 ; i < len ; i ++)   
-                {
-                     
+                {                     
                    // fqdn DNS servru nazev  
                    n->dns[i].fqdn = CORBA::string_dup(  DBsql.GetFieldValueName("fqdn" , i ) );
- 
-                   // pole adres
-                   strcpy( adres , DBsql.GetFieldValueName("ipaddr" , i ) );
-
-                   // zpracuj pole adres
-                   ilen =  get_array_length( adres );
-                   n->dns[i].inet.length(ilen); // sequence ip adres
-                   for( j = 0 ; j < ilen ; j ++)
-                      {
-                        get_array_value( adres , adr , j );
-                        n->dns[i].inet[j] =CORBA::string_dup( adr );
-                      }
-
-
+                   hostID[i] = atoi( DBsql.GetFieldValueName("id"  , i )  ); // ziskej hostID 
                 }
-
              DBsql.FreeSelect();
+
+               // ziskej vypid ipadres pro jednotlive HOSTY
+                for( i = 0 ; i < len ; i ++)
+                 {
+                      if(   DBsql.SELECTONE( "HOST_ipaddr_map" , "hostID" ,  hostID[i] ) )
+                       {
+                           ilen = DBsql.GetSelectRows(); // pocet ip adres
+                           n->dns[i].inet.length(ilen); // sequence ip adres
+                           for( j = 0 ; j < ilen ; j ++)                      
+                               n->dns[i].inet[j] =CORBA::string_dup( DBsql.GetFieldValueName("ipaddr" , j ) );
+                          DBsql.FreeSelect();
+                       }
+                    else n->dns[i].inet.length(0); // nulova delka pokud nejsou zadany ip adresy
+                  }
+ 
+
           } else ret->errCode=COMMAND_FAILED;
  
 
@@ -2708,6 +2694,10 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int
                                       if( DBsql.DeleteFromTable( "nsset_contact_map", "nssetid", id ) )
                                         {
 
+                                    if( DBsql.SaveHistory( "HOST_IPADDR_map", "nssetid", id ) ) // uloz ip adresy
+                                      {
+                                        if( DBsql.DeleteFromTable( "HOST_IPADDR_map", "nssetid", id ) ) //smaz ip adresy
+                                          {
                                           if( DBsql.SaveHistory( "HOST", "nssetid", id ) )
                                             {
                                               // vymaz nejdrive podrizene hosty
@@ -2720,6 +2710,8 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int
                                                     }
                                                 }
                                             }
+                                           }
+                                        }
                                         }
                                     }
                                 }      
@@ -2793,10 +2785,11 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
                                             ccReg::timestamp_out crDate, CORBA::Long clientID, const char *clTRID , const char* XML ) 
 { 
 DB DBsql; 
-char Array[512] , NAME[256] ,   HANDLE[64]; // handle na velka pismena 
+char  NAME[256] ,   HANDLE[64]; // handle na velka pismena 
 char pass[PASS_LEN+1];
 char dateStr[MAX_DATE];
-char roid[64]; ccReg::Response * ret; int regID, id, techid; 
+char roid[64]; ccReg::Response * ret; 
+int regID, id, techid , hostID; 
 int  i , j ,  seq ;
 ret = new ccReg::Response;
 // default
@@ -3061,6 +3054,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                     }
 
 
+
                  // zapis DNS hosty
 
 
@@ -3069,40 +3063,52 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                     {
 
 
-                      // preved sequenci adres
-                      strcpy( Array, " { " );
-                      for( j = 0; j < (int) dns[i].inet.length(); j++ )
-                        {
-                          if( j > 0 ) strcat( Array, " , " );
-
-                          if( TestInetAddress( dns[i].inet[j] ) )
-                            {
-                               strcat( Array,  dns[i].inet[j]  );
-                            }
-
-                        }
-                      strcat( Array, " } " );
-
-
-
-                      // preved nazev domeny 
-                       LOG( NOTICE_LOG ,  "NSSetCreate: DNS Host %s [%s] ",   (const char *)  dns[i].fqdn   , Array    );
+                      // preved nazev domeny
+                       LOG( NOTICE_LOG ,  "NSSetCreate: DNS Host %s ",   (const char *)  dns[i].fqdn      );
                        convert_hostname(  NAME , dns[i].fqdn );
+
+
+                          // ID je cislo ze sequence
+                          hostID = DBsql.GetSequenceID( "host" );
+
 
 
 
                           // HOST informace pouze ipaddr a fqdn
                           DBsql.INSERT( "HOST" );
+                          DBsql.INTO( "ID" );
                           DBsql.INTO( "NSSETID" );
                           DBsql.INTO( "fqdn" );
-                          DBsql.INTO( "ipaddr" );
+                          DBsql.INTO( "ipaddr" ); // REMOVE
+                          DBsql.VALUE( hostID );
                           DBsql.VALUE( id );
+                          DBsql.VVALUE( NAME );
+                          DBsql.VVALUE( "{}" ); // REMOVE
+                          if( DBsql.EXEC()  )
+                            {
 
-                          DBsql.VALUE( NAME );
-                          DBsql.VALUE( Array );
-                          if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;
+                              // preved sequenci adres
+                              for( j = 0; j < (int) dns[i].inet.length(); j++ )
+                                 {
+                                    LOG( NOTICE_LOG ,  "NSSetCreate: IP address hostID  %d [%s] ",  hostID  , (const char *)  dns[i].inet[j]   );
+
+                                   // HOST_IPADDR ulozeni IP adress DNS hostu
+                                   DBsql.INSERT( "HOST_IPADDR_map" );
+                                   DBsql.INTO( "HOSTID" );
+                                   DBsql.INTO( "NSSETID" );
+                                   DBsql.INTO( "ipaddr" );
+                                   DBsql.VALUE( hostID );
+                                   DBsql.VALUE( id ); // nsset id
+                                   DBsql.VVALUE( dns[i].inet[j]  );
+
+                                   if( DBsql.EXEC() == false ) {  ret->errCode = COMMAND_FAILED; break ; }
+
+                                }
+                            }else {  ret->errCode = COMMAND_FAILED; break; }
 
                        }
+
+
 
 
 
@@ -3116,12 +3122,14 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                     {
                       if( DBsql.SaveHistory( "nsset_contact_map", "nssetid", id ) )     // historie tech kontakty
                         {
-
+                       if( DBsql.SaveHistory( "HOST_IPADDR_map", "nssetid", id ) ) // uloz ip adresy
+                         {
                           if( DBsql.SaveHistory( "HOST", "nssetid", id ) )
                             {
                               //  uloz podrizene hosty
                               if( DBsql.SaveHistory( "NSSET", "id", id ) ) ret->errCode = COMMAND_OK;
                             }
+                          }
                         }
                     }          
 
@@ -3187,12 +3195,11 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle , const char* authI
 ccReg::Response *ret;
 DB DBsql;
 bool  check;
-char  Array[512]  , HANDLE[64] , NAME[256];
-int regID , clID , id ,  techid  , hostID;
+char  HANDLE[64] , NAME[256];
+int regID , clID , nssetID ,  techid  , hostID;
 int  j , l  , seq ;
 unsigned int i;
 int hostNum , techNum;
-bool remove_update_flag=false;
 
 ret = new ccReg::Response;
 seq=0;
@@ -3206,156 +3213,88 @@ LOG( NOTICE_LOG ,  "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] authInfo
 if( DBsql.OpenDatabase( database ) )
   {
 
-    if( ( regID = DBsql.BeginAction( clientID, EPP_NSsetUpdate,  clTRID , XML)  ) )
+  if( ( regID = DBsql.BeginAction( clientID, EPP_NSsetUpdate,  clTRID , XML)  ) )
+   {
+
+     // preved handle na velka pismena
+    if( get_NSSETHANDLE( HANDLE , handle ) == false )  // spatny format handlu
+       {
+
+            ret->errCode = COMMAND_PARAMETR_ERROR;
+            LOG( WARNING_LOG, "bad format of handle[%s]" ,  handle);
+            ret->errors.length( 1 );
+            ret->errors[0].code = ccReg::nssetCreate_handle;
+            ret->errors[0].value = CORBA::string_dup( handle );
+            ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_FORMAT_NSSET_HANDLE , CLIENT_LANG() )  );
+      }
+     else
       {
-
-       // preved handle na velka pismena
-       if( get_HANDLE( HANDLE , handle )  )
-        {
-
-        if( ret->errCode == 0 )
+      if( DBsql.BeginTransaction() )
+       {
+         // pokud   neexistuje
+         if( ( nssetID = DBsql.GetNumericFromTable( "NSSET", "id", "handle", ( char * ) HANDLE ) ) == 0 )
           {
-          if( DBsql.BeginTransaction() )
-            {
-            // pokud   neexistuje
-            if( ( id = DBsql.GetNumericFromTable( "NSSET", "id", "handle", ( char * ) HANDLE ) ) == 0 )
-              {
                 LOG( WARNING_LOG, "object [%s] NOT_EXIST", handle );
                 ret->errCode = COMMAND_OBJECT_NOT_EXIST;
-              }
-            else
-              {
-                    // client contaktu
-                    clID = DBsql.GetNumericFromTable( "NSSET", "clID", "id", id );
+          }
+         else
+          {
+            // client contaktu 
+           if( ( clID = DBsql.GetNumericFromTable( "NSSET", "clID", "id", nssetID ) )  != regID )
+            {
+                LOG( WARNING_LOG, "bad autorization not  client of nsset [%s]", handle );
+                ret->errCode = COMMAND_AUTOR_ERROR;     // spatna autorizace
+             }
+           else
+             {
 
-                    if( clID != regID )
-                      {
-                        LOG( WARNING_LOG, "bad autorization not  client of nsset [%s]", handle );
-                        ret->errCode = COMMAND_AUTOR_ERROR;     // spatna autorizace
-                      }
-                    else
-                      {
-                        // zpracuj  pole statusu
-/*
-                        status.Make( DBsql.GetStatusFromTable( "NSSET", id ) );
+              
+               // test  REM tech kontaktu
+               for( i = 0; i < tech_add.length(); i++ )
+                  {
 
-                        if( status.Test( STATUS_UPDATE ) && remove_update_flag== false)
+                    techid = DBsql.GetContactID( tech_add[i]   );
+
+                        if( techid == 0 )
                           {
-                            LOG( WARNING_LOG, "status UpdateProhibited" );
-                            ret->errCode = COMMAND_STATUS_PROHIBITS_OPERATION;
-                          }
-                        else */
-
-                          {
-
-                            //  uloz do historie
-                            if( DBsql.MakeHistory() )
-                              {
-                                if( DBsql.SaveHistory( "NSSET", "id", id ) )    // uloz zaznam
-                                  {
-
-
-
-
-
-                                    if( ret->errCode == 0 )
-                                    {
-
+                            LOG( WARNING_LOG, "add tech Contact [%s] not exist" , (const char *) tech_add[i] );
+                            ret->errors.length( seq +1 );
+                            ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
+                            ret->errors[seq].value = CORBA::string_dup(  tech_add[i] );
+                            ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_UNKNOW_TECH ,  CLIENT_LANG() )) ;
+                            seq++;
+                           }
+                       else
+                          if(  DBsql.CheckContactMap( "nsset", nssetID , techid ) )  // exist in contac map
+                           {
+                            LOG( WARNING_LOG, "add tech Contact [%s] exist in contact map table"  , (const char *) tech_add[i] );
+                            ret->errors.length( seq +1 );
+                            ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
+                            ret->errors[seq].value = CORBA::string_dup(  tech_add[i] );
+                            ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_TECH_EXIST , CLIENT_LANG() ) );
+                            seq++;
+                            }
+                 }
 
 
+                // test REM tech kontaktu
+                for( i = 0; i < tech_rem.length(); i++ )
+                   {
+                    techid = DBsql.GetContactID( tech_rem[i]   );
+
+                    check = DBsql.CheckContactMap( "nsset",  nssetID , techid );
 
 
-                                    // zmenit zaznam o domene
-                                    DBsql.UPDATE( "NSSET" );                                   
-                                    DBsql.SSET( "UpDate", "now" );
-                                    DBsql.SET( "UpID", regID );
-                                    if( remove_update_flag == false ) DBsql.SET( "AuthInfoPw", authInfo_chg   );    // zmena autentifikace  
-                                    DBsql.WHEREID( id );
-
-
-                                    if( DBsql.EXEC() )
-                                      {
-                                        ret->errCode = COMMAND_OK;      // nastavit uspesne
-                                       
-                                        if( DBsql.SaveHistory( "nsset_contact_map", "nssetID", id ) )   // uloz do historie tech kontakty
-                                         {
-                                           if( remove_update_flag == false ) 
-                                           {                                           
-                                            // pridat tech kontakty                      
-                                            for( i = 0; i < tech_add.length(); i++ )
-                                              {
-                                               if( get_HANDLE( HANDLE , tech_add[i]  )  )
-                                                 techid = DBsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE );
-                                                else techid = 0 ;
-
-                                                check = DBsql.CheckContactMap( "nsset", id, techid );
-                                                if( techid && !check )
-                                                  {
-                                                    LOG( NOTICE_LOG ,  "add techid ->%d [%s]" ,  techid ,  (const char *) tech_add[i] );
-                                                    DBsql.INSERT( "nsset_contact_map" );
-                                                    DBsql.VALUE( id );
-                                                    DBsql.VALUE( techid );
-                                                    if( !DBsql.EXEC() )
-                                                      {
-                                                        ret->errCode = COMMAND_FAILED;
-                                                        break;
-                                                      }
-                                                  }
-                                                else
-                                                  {
-                                                    if( techid == 0 )
-                                                      {
-                                                        LOG( WARNING_LOG, "add tech Contact [%s] not exist" , (const char *) tech_add[i] );
-                                                        ret->errors.length( seq +1 );
-                                                        ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
-                                                        ret->errors[seq].value = CORBA::string_dup(  tech_add[i] );
-                                                        ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_UNKNOW_TECH ,  CLIENT_LANG() )  );
-                                                        seq++;
-                                                      }
-                                                    if( check )  
-                                                      {
-                                                        LOG( WARNING_LOG, "add tech Contact [%s] exist in contact map table"  , (const char *) tech_add[i] );
-                                                        ret->errors.length( seq +1 );
-                                                        ret->errors[seq].code = ccReg::nssetUpdate_tech_add;
-                                                        ret->errors[seq].value = CORBA::string_dup(  tech_add[i] );
-                                                        ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_TECH_EXIST , CLIENT_LANG() )  );
-                                                        seq++;
-                                                      }                                                
-
-                                                    ret->errCode = COMMAND_PARAMETR_ERROR;                                            
-                                                  }
-                                                
-                                              }
-
-                                            // vymaz  tech kontakty
-                                            for( i = 0; i < tech_rem.length(); i++ )
-                                              {
-                                                 if( get_HANDLE( HANDLE , tech_rem[i] ) ) 
-                                                    techid = DBsql.GetNumericFromTable( "Contact", "id", "handle", HANDLE );
-                                                 else techid = 0 ;
-
-                                                check = DBsql.CheckContactMap( "nsset", id, techid );
-
-                                                if( techid && check )
-                                                  {
-                                                     LOG( NOTICE_LOG ,  "rem techid ->%d [%s]" ,  techid , (const char *) tech_rem[i]  ); 
-                                                    if( !DBsql.DeleteFromTableMap( "nsset", id, techid ) )
-                                                      {
-                                                        ret->errCode = COMMAND_FAILED;
-                                                        break;
-                                                      }
-                                                  }
-                                                else
-                                                  {
-                                                    if( techid == 0 )
-                                                      {
+                                              if( techid == 0 )
+                                                {
                                                         LOG( WARNING_LOG, "rem tech Contact [%s]  not exist"  , (const char *) tech_rem[i] );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_tech_rem;
                                                         ret->errors[seq].value = CORBA::string_dup(  tech_rem[i] );
-                                                        ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_UNKNOW_TECH , CLIENT_LANG())  );
-                                                        seq++;
-                                                      }
+                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_UNKNOW_TECH , CLIENT_LANG())  );
+                                                     seq++;
+                                                       }
+
                                                     if( !check )  
                                                       {
                                                        LOG( WARNING_LOG, "rem tech Contact [%s] not in contact map table" , (const char *) tech_rem[i] );
@@ -3365,48 +3304,22 @@ if( DBsql.OpenDatabase( database ) )
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_TECH_NOTEXIST , CLIENT_LANG() ) );
                                                         seq++;
                                                       }
-                                                   ret->errCode = COMMAND_PARAMETR_ERROR;
-                                                  }
-                                              }
 
-                                               // TEST pocet tech kontaktu
-                                                techNum = DBsql.GetNSSetContacts( id );
-                                                LOG(NOTICE_LOG, "NSSetUpdate: tech Contact  %d" , techNum );
-
-                                               if( techNum == 0  ) // musi zustat alespon jeden tech kontact po update
-                                                 {
-
-                                                    for( i = 0; i < tech_rem.length(); i++ )
-                                                      {
-                                                        ret->errors.length( seq +1 );
-                                                        ret->errors[seq].code =  ccReg::nssetUpdate_tech_rem;
-                                                        ret->errors[seq].value = CORBA::string_dup(  tech_rem[i] );
-                                                        ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_CAN_NOT_REMOVE_TECH , CLIENT_LANG() ));
-                                                        seq++;
-                                                      }
-                                                    ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
-
-                                                 }
-
-                                             }
-                                          }
-
-                                        if( DBsql.SaveHistory( "host", "nssetID", id ) )        // uloz do historie hosty
-                                          {
-                                           if( remove_update_flag == false )
-                                           {
-
-                                            // pridat DNS HOSTY
-                                            for( i = 0; i < dns_add.length(); i++ )
-                                              {
+                       }
 
 
 
-                                                // vytvor pole inet adres
-                                                strcpy( Array, "{ " );
+
+
+
+                           // pridat DNS HOSTY TEST IP adresy a nazvy DNS HOSTU
+                            for( i = 0; i < dns_add.length(); i++ )
+                              {
+
+
+                                              // TEST IP adres 
                                               for( j = 0; j < (int ) dns_add[i].inet.length(); j++ )
                                                 {
-                                                    if( j > 0 ) strcat( Array, " , " );
 
                                                     if( TestInetAddress( dns_add[i].inet[j] ) )  
                                                       {
@@ -3424,7 +3337,6 @@ if( DBsql.OpenDatabase( database ) )
                                                              }
                                                           }
 
-                                                      strcat( Array,  dns_add[i].inet[j]  );
                                                     }
                                                     else
                                                       {
@@ -3438,23 +3350,16 @@ if( DBsql.OpenDatabase( database ) )
                                                       }
                                                  }
 
-                                              
-                                                 strcat( Array, " } " );
- 
-
-
-
-
-
+                                               
 
 
                                                 // test DNS hostu
-                                                if( TestDNSHost( dns_add[i].fqdn  ) )
-                                                {
-                                                 LOG( NOTICE_LOG ,  "NSSetUpdate: add dns [%s] %s" , (const char * ) dns_add[i].fqdn  , Array );                                
+                                        if( TestDNSHost( dns_add[i].fqdn  ) )
+                                          {
+                                            LOG( NOTICE_LOG ,  "NSSetUpdate: add dns [%s]" , (const char * ) dns_add[i].fqdn );   
 
 
-                                                 convert_hostname(  NAME , dns_add[i].fqdn );
+                                             convert_hostname(  NAME , dns_add[i].fqdn ); // preved na mala pismena
 
 
                                                if( getZone( dns_add[i].fqdn ) == 0     && (int )  dns_add[i].inet.length() > 0 ) // neni v definovanych zonach a obsahuje zaznam ip adresy
@@ -3470,10 +3375,9 @@ if( DBsql.OpenDatabase( database ) )
                                                    }
                                                    ret->errCode = COMMAND_PARAMETR_ERROR;             
                                                 }
-                                              else
+                                              else                                              
                                                {
-
-                                                   if(  DBsql.CheckHost( NAME , id )  ) // uz exstuje nelze pridat
+                                                   if(  DBsql.CheckHost( NAME , nssetID )  ) // uz exstuje nelze pridat
                                                      {
                                                         LOG( WARNING_LOG, "NSSetUpdate:  host name %s exist" , (const char *)  dns_add[i].fqdn );
                                                         ret->errors.length( seq +1 );
@@ -3483,21 +3387,11 @@ if( DBsql.OpenDatabase( database ) )
                                                         seq++;
                                                         ret->errCode = COMMAND_PARAMETR_ERROR;
                                                      }
-                                                     else
-                                                     {
-                                                         DBsql.INSERT( "HOST" );
-                                                         DBsql.INTO( "nssetid" );
-                                                         DBsql.INTO( "fqdn" );
-                                                         DBsql.INTO( "ipaddr" );
-                                                         DBsql.VALUE( id );
-                                                         DBsql.VALUE( NAME );
-                                                         DBsql.VALUE( Array );
-                                                         if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;
-                                                      }
-                                                 }
-                                             }
-                                             else
-                                                      {
+                                                
+                                               }
+                                          }
+                                          else // spatny format
+                                          {
                                                         LOG( WARNING_LOG, "NSSetUpdate: bad add host name %s " , (const char *)  dns_add[i].fqdn );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_ns_name_add;
@@ -3505,14 +3399,16 @@ if( DBsql.OpenDatabase( database ) )
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_BAD_DNS_NAME  , CLIENT_LANG()) );
                                                         seq++;
                                                         ret->errCode = COMMAND_PARAMETR_ERROR;
-                                                      }
-                                          
-                                            
-                                                  
+                                          }
+                                                                                                                                  
 
-                                              }
+                            } // konec cyklu 
 
-                                            // smazat DNS HOSTY
+
+
+
+
+                                            // test pro  DNS HOSTY na smazani jestli ej spravny format a jestli existuji
                                             for( i = 0; i < dns_rem.length(); i++ )
                                               {
                                                LOG( NOTICE_LOG ,  "NSSetUpdate:  delete  host  [%s] " , (const char *)   dns_rem[i].fqdn );
@@ -3520,9 +3416,8 @@ if( DBsql.OpenDatabase( database ) )
                                                if( TestDNSHost( dns_rem[i].fqdn  ) )
                                                  {
                                                         convert_hostname(  NAME , dns_rem[i].fqdn );
-                                                        if( ( hostID = DBsql.CheckHost( NAME , id )  ) == 0 )
-                                                        {
-                                                        
+                                                        if( ( hostID = DBsql.CheckHost( NAME , nssetID )  ) == 0 )
+                                                        {                                                        
                                                         LOG( WARNING_LOG, "NSSetUpdate:  host  [%s] not in table" ,  (const char *)   dns_rem[i].fqdn );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_ns_name_rem;
@@ -3530,11 +3425,6 @@ if( DBsql.OpenDatabase( database ) )
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_DNS_NAME_NOTEXIST , CLIENT_LANG() ) );
                                                         seq++;
                                                         ret->errCode = COMMAND_PARAMETR_ERROR;   
-                                                       }
-                                                       else // smaz pokud zaznam existuje
-                                                       {
-                                                             LOG( NOTICE_LOG ,  "NSSetUpdate: Delete hostID %d" , hostID );
-                                                             if( !DBsql.DeleteFromTable("HOST" , "id" ,  hostID  ) ){ret->errCode = COMMAND_FAILED; break; }
                                                        }
                                                         
 
@@ -3549,9 +3439,152 @@ if( DBsql.OpenDatabase( database ) )
                                                         seq++;
                                                         ret->errCode = COMMAND_PARAMETR_ERROR;
                                                  }
-  
-                                               // TEST pocet dns hostu
-                                                hostNum = DBsql.GetNSSetHosts( id );
+                                    
+                                              }
+
+
+               if( seq ) ret->errCode = COMMAND_PARAMETR_ERROR; // chyba v parametrech
+               else
+               {
+                // uloz history nejdrive pred update
+                  
+
+                 if( DBsql.MakeHistory() )
+                 if( DBsql.SaveHistory( "nsset_contact_map", "nssetid", nssetID ) )     // historie tech kontakty
+                       if( DBsql.SaveHistory( "HOST_IPADDR_map", "nssetid", nssetID ) ) // uloz ip adresy
+                          if( DBsql.SaveHistory( "HOST", "nssetid", nssetID ) )
+                              //  uloz podrizene hosty
+                              if( DBsql.SaveHistory( "NSSET", "id", nssetID ) ) 
+                                 {
+
+
+                                    // zmenit zaznam o nssetu
+                                    DBsql.UPDATE( "NSSET" );                                   
+                                    DBsql.SSET( "UpDate", "now" );
+                                    DBsql.SET( "UpID", regID );
+                                    DBsql.SET( "AuthInfoPw", authInfo_chg   );    // zmena autentifikace  
+                                    DBsql.WHEREID( nssetID );
+
+
+                                    if( DBsql.EXEC() )ret->errCode = COMMAND_OK;      // nastavit uspesne jako default
+                                    else ret->errCode = COMMAND_FAILED;
+                                       
+
+                                  //-------- TECH kontakty
+
+                                            // pridat tech kontakty                      
+                                            for( i = 0; i < tech_add.length(); i++ )
+                                              {
+                                                techid = DBsql.GetContactID( tech_add[i]  );
+
+                                                LOG( NOTICE_LOG ,  "INSERT add techid ->%d [%s]" ,  techid ,  (const char *) tech_add[i] );
+                                                DBsql.INSERT( "nsset_contact_map" );
+                                                DBsql.VALUE( nssetID );
+                                                DBsql.VALUE( techid );
+                                                if( !DBsql.EXEC() ) ret->errCode = COMMAND_FAILED;
+                                                                                                
+                                              }
+
+                                            // vymaz  tech kontakty
+                                            for( i = 0; i < tech_rem.length(); i++ )
+                                              {
+                                                techid = DBsql.GetContactID( tech_rem[i]   );
+
+
+                                                   LOG( NOTICE_LOG ,  "DELETE rem techid ->%d [%s]" ,  techid , (const char *) tech_rem[i]  ); 
+                                                  if( !DBsql.DeleteFromTableMap( "nsset", nssetID  , techid ) ) ret->errCode = COMMAND_FAILED;
+                                 
+                                              }
+
+                                               //--------- TEST pocet tech kontaktu po ADD a REM
+                                                techNum = DBsql.GetNSSetContacts( nssetID );
+                                                LOG(NOTICE_LOG, "NSSetUpdate: tech Contact  %d" , techNum );
+
+                                               if( techNum == 0  ) // musi zustat alespon jeden tech kontact po update
+                                                 {
+
+                                                    for( i = 0; i < tech_rem.length(); i++ ) // vsecny REM tech kontakty jsou chyba
+                                                      {
+                                                        ret->errors.length( seq +1 );
+                                                        ret->errors[seq].code =  ccReg::nssetUpdate_tech_rem;
+                                                        ret->errors[seq].value = CORBA::string_dup(  tech_rem[i] );
+                                                        ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_CAN_NOT_REMOVE_TECH , CLIENT_LANG() ));
+                                                        seq++;
+                                                      }
+                                                    ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
+                                                 }
+
+                                             
+                                         
+
+                                        //-------- DNS HOSTY pridat
+
+                                          for( i = 0; i < dns_add.length(); i++ )
+                                             {
+
+                                                    
+                                                     // ID je cislo ze sequence
+                                                      hostID = DBsql.GetSequenceID( "host" );
+
+                                                         // HOST informace pouze ipaddr a fqdn
+                                                         DBsql.INSERT( "HOST" );
+                                                         DBsql.INTO( "ID" ); 
+                                                         DBsql.INTO( "nssetid" );
+                                                         DBsql.INTO( "fqdn" );
+                                                         DBsql.INTO( "ipaddr" );
+                                                         DBsql.VALUE( hostID ); 
+                                                         DBsql.VALUE( nssetID ); 
+                                                         DBsql.VALUE( NAME );
+                                                         DBsql.VALUE( "{}" ); // REMOVE obsolete
+                                                         if( DBsql.EXEC())  // pridej IP adresey
+                                                           {
+                                                                // preved sequenci adres
+                                                                for( j = 0; j < (int) dns_add[i].inet.length(); j++ )
+                                                                     {
+                                                                       LOG( NOTICE_LOG ,  "insert  IP address hostID  %d [%s] ",  hostID  , (const char *)  dns_add[i].inet[j]   );
+
+                                                                       // HOST_IPADDR ulozeni IP adress DNS hostu
+                                                                       DBsql.INSERT( "HOST_IPADDR_map" );
+                                                                       DBsql.INTO( "HOSTID" );
+                                                                       DBsql.INTO( "NSSETID" );
+                                                                       DBsql.INTO( "ipaddr" );
+                                                                       DBsql.VALUE( hostID );
+                                                                       DBsql.VALUE( nssetID ); 
+                                                                       DBsql.VVALUE( dns_add[i].inet[j]  );
+
+                                                                      if( DBsql.EXEC() == false ) {  ret->errCode = COMMAND_FAILED; break ; }
+
+                                                                      }
+
+                                                           }
+                                                          else  { ret->errCode = COMMAND_FAILED; break ; } 
+                                                           
+                                                             
+                                              }
+                                                 
+
+
+
+
+
+
+                                            // smazat DNS HOSTY
+                                            for( i = 0; i < dns_rem.length(); i++ )
+                                              {
+                                               LOG( NOTICE_LOG ,  "NSSetUpdate:  delete  host  [%s] " , (const char *)   dns_rem[i].fqdn );
+
+                                                      convert_hostname(  NAME , dns_rem[i].fqdn );
+                                                      hostID = DBsql.CheckHost( NAME , nssetID );
+                                                      LOG( NOTICE_LOG ,  "DELETE  hostID %d" , hostID );
+                                                      if( !DBsql.DeleteFromTable("HOST" , "id" ,  hostID  ) )  ret->errCode = COMMAND_FAILED;
+                                                       else   if(  !DBsql.DeleteFromTable("HOST_IPADDR_map"  , "hostID" ,  hostID )  )ret->errCode = COMMAND_FAILED;
+                                              }
+
+
+
+
+                                               //------- TEST pocet dns hostu
+                                                hostNum = DBsql.GetNSSetHosts( nssetID );
                                                 LOG(NOTICE_LOG, "NSSetUpdate:  hostNum %d" , hostNum );
 
                                                 if( hostNum <  2 ) // musi minimalne dva DNS hosty zustat
@@ -3580,37 +3613,28 @@ if( DBsql.OpenDatabase( database ) )
                                                     ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
                                                   }
  
-              
-                                              }
-
-                                          }
-                                        }
-
-                                      }
-                                    else ret->errCode = COMMAND_FAILED; // spatny SQL update
-                                   
-                                    }
-
-
-                                  }
 
 
 
-                              }
-
-
-
-                          }
-
-                      }
-                    // konec transakce commit ci rollback
-                    DBsql.QuitTransaction( ret->errCode );
+                             }
+           
+                         
                   }
+
+                                           
               }
 
+            }
+            
+
+           }              
+
+
+
+            // konec transakce commit ci rollback
+            DBsql.QuitTransaction( ret->errCode );
           }
-        }
-        // zapis na konec action
+       // zapis na konec action
         ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) ); 
       }
 
@@ -3715,6 +3739,9 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_NSsetTransfer ,  clTRID , XML  
         {
                       if( DBsql.SaveHistory( "nsset_contact_map", "nssetid", id ) )     // historie tech kontakty
                         {
+                                 if( DBsql.SaveHistory( "HOST_IPADDR_map", "nssetid", id ) ) // uloz ip adresy
+                                  {
+
                           if( DBsql.SaveHistory( "HOST", "nssetid", id ) ) // historie hostu
                            {
           if( DBsql.SaveHistory( "NSSET" , "id" , id ) ) // uloz zaznam
@@ -3736,6 +3763,7 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_NSsetTransfer ,  clTRID , XML  
               }
                  }
 
+          }
        }
      }
     }
@@ -4156,7 +4184,6 @@ char valexpiryDate[MAX_DATE];
 int regID = 0, clID = 0, id, nssetid, contactid, adminid;
 int   seq , zone;
 unsigned int i;
-bool remove_update_flag=false;
 
 ret = new ccReg::Response;
 seq=0;
@@ -4346,8 +4373,8 @@ GetValExpDateFromExtension( valexpiryDate , ext );
              }
 
 
-                                      if( ret->errCode == 0 )
-                                      { 
+                       if( ret->errCode == 0 )
+                        { 
 
 
 
@@ -4356,12 +4383,9 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                       DBsql.UPDATE( "DOMAIN" );
                                       DBsql.SSET( "UpDate", "now" );
                                       DBsql.SET( "UpID", regID );
-                                      if( !remove_update_flag  )
-                                      {
                                       if( nssetid )  DBsql.SET( "nsset", nssetid );    // zmena nssetu
                                       if( contactid ) DBsql.SET( "registrant", contactid );     // zmena drzitele domeny
                                       DBsql.SET( "AuthInfoPw", authInfo_chg  );  // zmena autentifikace
-                                      }
                                       DBsql.WHEREID( id );
 
 
@@ -4370,10 +4394,8 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                           ret->errCode = COMMAND_OK;    // nastavit uspesne
 
                                           if( DBsql.SaveHistory( "enumval", "domainID", id ) )  // uloz do historie 
-                                                 {
+                                            {
 
-                                               if( !remove_update_flag  )
-                                               {
                                              if( GetZoneEnum( zone ) )
                                                {
                                                   // zmena extension
@@ -4385,15 +4407,13 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                                      DBsql.WHERE( "domainID", id );
  
                                                      if( !DBsql.EXEC() )  ret->errCode = COMMAND_FAILED; 
-                                                    }
-                                                 }
+                                                    }                                                 
                                                 }
                                             }
 
                                           if( DBsql.SaveHistory( "domain_contact_map", "domainID", id ) )       // uloz do historie admin kontakty
                                             {
-                                              if( !remove_update_flag  )
-                                               {
+                                               
 
                                               // pridat admin kontakty                      
                                               for( i = 0; i < admin_add.length(); i++ )
@@ -4490,7 +4510,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                                     }
                                                 }
 
-                                               }
+                                               
                                             }
 
 
