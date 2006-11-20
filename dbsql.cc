@@ -301,6 +301,16 @@ if( ExecSelect( sqlString ) )
 return num;
 }
 
+int  DB::GetContactID( const char *handle )
+{
+char HANDLE[64];
+
+if( get_HANDLE( HANDLE , handle ) ) // preved handle na velka pismena
+ return  GetNumericFromTable( "Contact", "id", "handle", HANDLE );
+else return  0 ;
+}
+
+ 
 // zjistuje pocet  tech pro dany nsset
 int DB::GetNSSetContacts( int nssetID )
 {
@@ -447,8 +457,8 @@ bool DB::TestRegistrarZone(int regID , int zone )
 {
 bool ret = false;
 char sqlString[128];
-char zoneArray[64] , str[10] ;
-int z , j  , len ;
+// char zoneArray[64] , str[10] ;
+// int z , j  , len ;
 
 sprintf( sqlString , "SELECT zone FROM REGISTRAR WHERE id=%d; " ,  regID  );
 
@@ -456,6 +466,8 @@ if( ExecSelect( sqlString ) )
  {
     if(  GetSelectRows() == 1  )
       {
+                     ret=true;
+/* TODO predelat databazove schama a zrusit posledni array
                    // pole zone
                    strcpy( zoneArray , GetFieldValue( 0 , 0 ) );
 
@@ -468,6 +480,7 @@ if( ExecSelect( sqlString ) )
                         if( z == zone ) { ret=true; break ; }  // mam pravo                       
                       }
 
+*/
       }
     FreeSelect();
   }
