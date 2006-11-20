@@ -612,7 +612,7 @@ sscanf( curExpDate , "%4d-%02d-%02d" , &cyear , &cmonth , &cmday );
 if( eyear == cyear  &&  emonth == cmonth && emday == cmday )return true;
 else return false;
 }
-
+/*
 
 // vraci pocet prvku v poli
 int get_array_length(char *array)
@@ -662,3 +662,4 @@ if( array[0] == '{' )
 
 }
 
+*/
