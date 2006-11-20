@@ -74,6 +74,8 @@ int CheckHandle( const char *table ,  const char *handle );
 int CheckDomain( const char *fqdn   , int zone , bool enum_zone );
 // pro select domeny pri info
 bool SELECTDOMAIN(   const char *fqdn , int zone , bool enum_zone );
+// vraci ID kontaktu z handlu zadaneho ipres mala pismena nebo nula pokud je chyba
+int  GetContactID( const char *handle );
 
 bool TestContactHandleHistory( const char * handle , int period );
 bool TestNSSetHandleHistory( const char * handle , int period );
