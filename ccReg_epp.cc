@@ -3522,6 +3522,7 @@ if( DBsql.OpenDatabase( database ) )
                                           for( i = 0; i < dns_add.length(); i++ )
                                              {
 
+                                             convert_hostname(  NAME , dns_add[i].fqdn ); // preved na mala pismena
                                                     
                                                      // ID je cislo ze sequence
                                                       hostID = DBsql.GetSequenceID( "host" );
