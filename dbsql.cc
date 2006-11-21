@@ -373,6 +373,66 @@ else return false;
 
 }
 
+
+
+int DB::CreateObject( const char *type , int regID , const char *name , const char *authInfoPw )
+{
+char roid[64];
+char pass[PASS_LEN+1];
+int id;
+
+id = GetSequenceID( "object" );
+
+ // vytvor roid 
+ get_roid( roid, ( char * ) type , id );
+
+ INSERT( "OBJECT" );
+ INTO( "id" );
+ INTO( "type" );
+ INTO( "roid" );
+ INTO( "NAME" );
+ INTO( "CrDate" );
+ INTO( "CrID" );
+ INTO( "ClID" );
+ INTO( "AuthInfoPw" );
+
+ VALUE( id );
+
+// TYP objektu
+switch( type[0] )
+  {
+    case 'C' :
+         VALUE( 1 );
+         break;
+    case 'D' :
+         VALUE( 3 );
+         break;
+    case 'N' :
+         VALUE( 2 );
+         break;
+   default :
+         VALUE( 0);
+  }
+    
+ VALUE( roid );
+ VALUE( name  );
+ VALUENOW();
+ VALUE( regID );
+ VALUE( regID );
+
+                     if( strlen ( authInfoPw ) == 0 )
+                       {
+                          random_pass(  pass  ); // autogenerovane heslo pokud se heslo nezada
+                          VVALUE( pass );
+                        }
+                      else VALUE( authInfoPw );
+
+
+if( EXEC() )return id;
+else return 0;
+}
+
+
 /*
 char *  DB::GetStatusString( int status )
 {

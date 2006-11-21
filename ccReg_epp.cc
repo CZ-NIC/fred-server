@@ -1794,7 +1794,10 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
                                 {
                                   if( DBsql.SaveHistory( "Contact", "id", id ) ) // uloz zaznam
                                     {
-                                      if( DBsql.DeleteFromTable( "CONTACT", "id", id ) ) ret->errCode = COMMAND_OK;      // pokud usmesne smazal
+                                      if( DBsql.DeleteFromTable( "CONTACT", "id", id ) )
+// TODO                          if( DBsql.SaveHistory( "OBJECT", "id", id ) ) // smaz v tabulce object
+                              if( DBsql.DeleteFromTable(  "OBJECT", "id", id ) )
+                                                    ret->errCode = COMMAND_OK;      // pokud usmesne smazal
                                     }
                                 }
 
@@ -2107,7 +2110,9 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                   // test zdali country code je existujici zeme
                   if( TestCountryCode( c.CC ) )
                     {
-                      id = DBsql.GetSequenceID( "contact" );
+                    //  id = DBsql.GetSequenceID( "contact" );
+
+                      id= DBsql.CreateObject( "C" ,  regID , HANDLE ,  c.AuthInfoPw );
 
                       // vytvor roid kontaktu
                       get_roid( roid, "C", id );
@@ -2688,6 +2693,7 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int
                               //  uloz do historie
                               if( DBsql.MakeHistory() )
                                 {
+
                                   if( DBsql.SaveHistory( "nsset_contact_map", "nssetid", id ) ) // historie tech kontakty
                                     {
                                       // na zacatku vymaz technicke kontakty
@@ -2706,7 +2712,10 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int
                                                   if( DBsql.SaveHistory( "NSSET", "id", id ) )
                                                     {
                                                       // vymaz NSSET nakonec
-                                                      if( DBsql.DeleteFromTable( "NSSET", "id", id ) ) ret->errCode = COMMAND_OK;   // pokud vse OK
+                                                      if( DBsql.DeleteFromTable( "NSSET", "id", id ) ) 
+// TOFO                                                              if( DBsql.SaveHistory( "OBJECT", "id", id ) ) // smaz v tabulce object
+                                                               if( DBsql.DeleteFromTable(  "OBJECT", "id", id ) )
+                                                                         ret->errCode = COMMAND_OK;   // pokud vse OK
                                                     }
                                                 }
                                             }
@@ -2992,14 +3001,17 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
             {
 
 
+              // preved znova nsset handle
+              get_NSSETHANDLE( HANDLE , handle );
+
+              id= DBsql.CreateObject( "N" ,  regID , HANDLE ,  authInfoPw );
+
               // ID je cislo ze sequence
-              id = DBsql.GetSequenceID( "nsset" );
+//              id = DBsql.GetSequenceID( "nsset" );
 
               // vytvor roid nssetu
               get_roid( roid, "N", id );
 
-              // preved znova nsset handle
-              get_NSSETHANDLE( HANDLE , handle );
 
               DBsql.INSERT( "NSSET" );
               DBsql.INTO( "id" );
@@ -4113,7 +4125,9 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int
                                                  if( DBsql.SaveHistory( "DOMAIN", "id", id ) )
                                                     {
                                                        if( DBsql.DeleteFromTable( "DOMAIN", "id", id ) )  
-                                                        ret->errCode = COMMAND_OK; // pokud usmesne smazal
+// TODO                                                             if( DBsql.SaveHistory( "OBJECT", "id", id ) ) // smaz v tabulce object
+                                                                  if( DBsql.DeleteFromTable(  "OBJECT", "id", id ) )
+                                                                              ret->errCode = COMMAND_OK; // pokud usmesne smazal
                                                     }
                                                  }
                                               }
@@ -4669,8 +4683,12 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                        ret->errors[0].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_FQDN_HISTORY , CLIENT_LANG())  );
                  }
                 else
+
         {
-              id = DBsql.GetSequenceID( "domain" );     // id domeny
+
+                          id= DBsql.CreateObject( "D" ,  regID , FQDN ,  AuthInfoPw );
+
+ //             id = DBsql.GetSequenceID( "domain" );     // id domeny
 
               // vytvor roid domeny
               get_roid( roid, "D", id );
@@ -4845,6 +4863,8 @@ GetValExpDateFromExtension( valexpiryDate , ext );
 
                         if(  ret->errCode == 0  ) // pokud nedoslo k chybe
                         {
+
+
 
                           DBsql.INSERT( "DOMAIN" );
                           DBsql.INTO( "zone" );

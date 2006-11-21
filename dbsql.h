@@ -119,6 +119,9 @@ bool AuthTable(  char *table , char *auth , int id );
 // testuje pravo registratora na zapis do zony
 bool TestRegistrarZone(int regID , int zone );
 
+// vytvoreni objektu v tabulce object pri create fce
+int CreateObject( const char *type , int regID , const char *name , const char *authInfoPw );
+
 
 // funkce na ulozeni obsahu radku ID tabluky  do 
 int MakeHistory(); // zapise do tabulky history
