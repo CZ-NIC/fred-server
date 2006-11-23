@@ -1080,6 +1080,15 @@ if( length )
 
 }
 
+
+void DB::SETPRICE( const char *fname , long price )
+{
+char priceStr[16];
+// castka v halirich
+sprintf( priceStr , "%ld.%02ld" , price /100 ,  price %100 );
+SETS( fname , priceStr , false  ); // bez ESC
+}
+
 // beaz escape 
 void DB::SSET( const char *fname , const char * value )
 {
@@ -1138,6 +1147,7 @@ sprintf( numStr , "%d" ,  value  );
 SQLCat(  numStr );
 SQLCat( " ," );
 }
+
 
 
 
@@ -1344,6 +1354,13 @@ else VALUES( "f" , false , true );
 }
 
 
+void DB::VALPRICE( long price )
+{
+char priceStr[16];
+// castka v halirich
+sprintf( priceStr , "%ld.%02ld" , price /100 ,  price %100 );
+VALUES( priceStr , false , false ); // bez ESC
+}
 bool DB::EXEC()
 {
 bool ret;

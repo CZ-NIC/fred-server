@@ -141,6 +141,7 @@ void SETS( const char *fname , const char * value , bool esc  /* , bool null  */
 void SET( const  char *fname , int   value );
 void SET( const  char *fname , bool  value );
 void SETBOOL( const char *fname , char c );
+void SETPRICE( const char *fname , long price );
 
 void WHERE( const  char *fname , const  char * value );
 void WHERE( const  char *fname , int   value );
@@ -158,6 +159,7 @@ void VALUE( const  char * value );
 void VVALUE( const char * value ); // bez escape
 void VALUE( int  value );
 void VALUE( bool value );
+void VALPRICE( long price ); // cena v halirich
 
 // zadani aktualni cas
 void VALUENOW();
