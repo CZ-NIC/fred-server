@@ -21,6 +21,11 @@ namespace Register
       {
         return name;
       }
+      /// must not be reference because of find_if algo (ref. to ref. problem)
+      bool hasName(std::string _name) const
+      {
+        return name == _name;
+      }
       virtual unsigned getAddrCount() const
       {
         return addrList.size();
@@ -97,7 +102,12 @@ namespace Register
       }
       HostImpl *addHost(const std::string& name)
       {
-        hosts.push_back(HostImpl(name));
+        HostListType::iterator i = find_if(
+          hosts.begin(),hosts.end(),
+          std::bind2nd(std::mem_fun_ref(&HostImpl::hasName),name)
+        );
+        if (i == hosts.end()) hosts.push_back(HostImpl(name));
+        else return &(*i);
         return &hosts.back();
       }
       bool hasId(unsigned _id)
@@ -224,8 +234,9 @@ namespace Register
         }
         db->FreeSelect();
         sql.str("");
-        sql << "SELECT h.nssetid, h.fqdn, h.ipaddr "
-            << "FROM host h ";
+        sql << "SELECT h.nssetid, h.fqdn, him.ipaddr "
+            << "FROM host h, host_ipaddr_map him "
+            << "WHERE h.id=him.hostid";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           unsigned id = atoi(db->GetFieldValue(i,0));
@@ -235,12 +246,7 @@ namespace Register
           );
           if (n != nlist.end()) {
             HostImpl* h = (*n)->addHost(db->GetFieldValue(i,1));
-            std::string addrs = db->GetFieldValue(i,2);
-            char buffer[100];
-            for (int j=0; j<get_array_length((char *)addrs.c_str()); j++) {
-              get_array_value((char *)addrs.c_str(),buffer,j);
-              h->addAddr(buffer);
-            }
+            h->addAddr(db->GetFieldValue(i,2));
           }
         }
         db->FreeSelect();
