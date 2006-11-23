@@ -31,7 +31,7 @@ all:  fred_rifd fred_adifd fred_pifd
 
 .SUFFIXES:  .o
 
-ccReg_server: $(CCREG_SERVER_OBJECTS)
+fred_rifd: $(CCREG_SERVER_OBJECTS)
 	$(CXX) -o ccReg_server $(CCREG_SERVER_OBJECTS) $(LDFLAGS)  $(LIBS)  -lpq
 
 fred_adifd: $(ADMIN_SERVER_OBJECTS)
