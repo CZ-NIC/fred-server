@@ -46,7 +46,7 @@ int CopyString( char *dst , char *src , int from , int len )
 return  CopyStr( dst , src ,   from , len , false );
 }
 
-
+/*
 int CopyDate( char *dst , char *src , int from  )
 {
 char ds[GPC_MAX_DATE+1];
@@ -65,13 +65,14 @@ char str[GPC_MAX_PRICE+1];
 CopyStr(  str , src ,   from , GPC_MAX_PRICE , false );
 // preved naint
 p = atoi( str );
-sprintf(dst , "%d.02d" , p / 100 , p %100 );
+
+sprintf( dst , "%d.02d" , p / 100 , p %100 );
 
 return from + GPC_MAX_PRICE;
 }
 
 
-
+*/
 void GPC::GetHead( ST_Head *head )
 {
 // cislo uctu klienta bz pocatecnich nul na zacatku
@@ -102,6 +103,7 @@ strcpy( item->vs , gpc_item[recItem].varSymbol );
 strcpy( item->ss , gpc_item[recItem].specSymbol );
 
 strcpy( item->memo , gpc_item[recItem].memo );
+strcpy( item->evid , gpc_item[recItem].evidNum );
 
 // preved datum
 convert_date( item->date ,  gpc_item[recItem].date  );
@@ -151,6 +153,7 @@ int seek;
    seek= CopyString( gpc_item[numrecItem].date , tmp, seek , GPC_MAX_DATE );
 
 
+#ifdef DEBUG
    debug("cislo protiuctu: %s\n" ,  gpc_item[numrecItem].accountOther  );
    debug("cislo dokladu  : %s\n" ,  gpc_item[numrecItem].evidNum  );
    debug("castka  %s kod zauctovani[%c]\n" ,  gpc_item[numrecItem].price  , gpc_item[numrecItem].accountCode );
@@ -160,8 +163,8 @@ int seek;
   
    debug("kod zmeny [%c]  druh dat[%c%c%c%c] \n" , gpc_item[numrecItem].changeCode ,
          gpc_item[numrecItem].dataType[0] , gpc_item[numrecItem].dataType[1] , gpc_item[numrecItem].dataType[2] , gpc_item[numrecItem].dataType[3] );
-   debug("datum zuctovani [%s] %s\n" , gpc_item[numrecItem].date );
-
+   debug("datum zuctovani [%s]\n" , gpc_item[numrecItem].date );
+#endif
  
 
 
@@ -207,6 +210,7 @@ int seek;
    seek = CopyString( gpc_head.dateList , tmp,seek , GPC_MAX_DATE );
 
 
+#ifdef DEBUG
    debug("cislo uctu klienta: %s\n" ,  gpc_head.accountNumber  );
    debug("nazev uctu klienta: %s\n" ,  gpc_head.accountName  );
    debug("stary zustatek: [%c]%s datum [%s]\n"  , gpc_head.oldBalanceSign ,  gpc_head.oldBalance , gpc_head.dateOldBalance );
@@ -214,7 +218,7 @@ int seek;
    debug("kreditni obrat: [%c]%s\n"  , gpc_head.creditSign ,   gpc_head.credit  );
    debug("debetni obrat: [%c]%s\n"  ,  gpc_head.debetSign ,  gpc_head.debet  );
    debug("datum vypisu  [%s] poradi %d\n" , gpc_head.dateList , gpc_head.num );
-
+#endif
 
 
 }
@@ -224,7 +228,6 @@ int GPC::ReadGPCFile( char * filename )
 FILE *fd;
 int i , l , numrec;
 char tmp[GPC_MAX_RECORD+2];
-char *rawdata[GPC_MAX_RECORD];
 
 if( (fd = fopen( filename ,  "r" ) ) == NULL ) return -1;
 else 
@@ -250,22 +253,22 @@ for( l = 0 , numrec = -1 ; l < MAX_ITEMS ;  )
 
        if( strncmp( tmp ,  GPC_LIST_HEAD , 3 ) == 0 ) 
         { 
-           debug("HEAD:\n%s\n" , tmp );
+          // debug("HEAD:\n%s\n" , tmp );
            ParseHead( tmp  );
          }
        else if( strncmp( tmp ,  GPC_LIST_ITEM , 3 ) == 0 )
           { 
-             debug("ITEM:\n%s\n" , tmp );
+            // debug("ITEM:\n%s\n" , tmp );
              ParseItem( tmp  );
              l ++; 
             } 
-            else {  debug("UNKNOW:\n%s\n" , tmp ); }
+//            else { debug("UNKNOW:\n%s\n" , tmp );  }
      }
 
 if( numrec >=0  ) break ; // pokud jsou nacteny nejake rady nebo nic
 }
 
-debug("Konec nacitani polozek vypisu %d\n" , numrec );
+// debug("Konec nacitani polozek vypisu %d\n" , numrec );
 fclose(fd);
 return numrec;
 }

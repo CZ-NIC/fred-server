@@ -19,6 +19,7 @@ CCREG_SERVER_OBJECTS = \
     ccRegSK.o ccRegDynSK.o  ccReg_epp.o  ccReg_server.o  \
     dbsql.o pqsql.o util.o conf.o  log.o   \
     nameservice.o countrycode.o messages.o 
+BANKING_OBJECT = gpc.o banking.o log.o conf.o dbsql.o pqsql.o util.o 
 PIF_SERVER_OBJECTS = \
     ccRegSK.o ccRegDynSK.o  ccReg_epp.o  pif_server.o  \
     dbsql.o pqsql.o util.o status.o conf.o  log.o  whois.o admin.o \
@@ -56,6 +57,10 @@ ccRegSK.cc ccRegDynSK.cc ccRegSK.h:
 
 ccReg_idl.py:
 	omniidl -bpython $(IDLFILE)
+
+banking: $(BANKING_OBJECT)
+	$(CXX) -o banking_gpc  $(BANKING_OBJECT) $(LDFLAGS) -lpq
+
 
 test: ccReg_idl.py
 	python test.py

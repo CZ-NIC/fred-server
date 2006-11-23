@@ -96,6 +96,7 @@ char bank[MAX_CODE]; // kod banky proti uctu z KS
 char ks[MAX_KS];
 char vs[MAX_VS];
 char ss[MAX_SS];
+char evid[MAX_MEMO]; // doklad cislo
 char memo[MAX_MEMO]; // poznamka
 char date[MAX_DATE]; // datum splatnosti  zkonvertovane datum fe romatu YYYY-MM-DD
 long price; // castka v halirich;
