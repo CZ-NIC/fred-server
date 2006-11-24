@@ -6,6 +6,7 @@
 #include "registrar.h"
 #include "contact.h"
 #include "nsset.h"
+#include "auth_info.h"
 
 /// forward declared parameter type
 class DB;
