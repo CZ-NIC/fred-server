@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 
     PortableServer::ObjectId_var adminObjectId = 
       PortableServer::string_to_ObjectId("Admin2");
-    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db);
+    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db,&ns);
     poa->activate_object_with_id(adminObjectId,myccReg_Admin_i);
     CORBA::Object_var adminObj = myccReg_Admin_i->_this();          
     myccReg_Admin_i->_remove_ref();

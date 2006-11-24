@@ -3,6 +3,7 @@
 #include "util.h"
 #include "dbsql.h"
 #include "register/register.h"
+#include "mailer_manager.h"
 #include <boost/date_time/posix_time/time_formatters.hpp>
 #include <math.h>
 #include <memory>
@@ -118,8 +119,8 @@ ccReg_PageTable_i::getPageRowId(CORBA::Short row)
 //    ccReg_Admin_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-ccReg_Admin_i::ccReg_Admin_i(const std::string _database) : 
-  database(_database)
+ccReg_Admin_i::ccReg_Admin_i(const std::string _database, NameService *_ns) : 
+  database(_database), ns(_ns)
 {
 }
 
@@ -645,6 +646,79 @@ ccReg_Admin_i::getNSSetStatusDescList()
   return new ccReg::ObjectStatusDescSeq; // TODO
 }
 
+CORBA::Long 
+ccReg_Admin_i::createAuthInfoRequest(
+  CORBA::Long objectId, 
+  ccReg::Admin::RequestType type, 
+  CORBA::Long eppActionId, 
+  const char* requestReason,
+  const char* emailToAnswer
+) throw (
+  ccReg::Admin::BAD_EMAIL, ccReg::Admin::OBJECT_NOT_FOUND, 
+  ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR
+)
+{
+  DB db;
+  db.OpenDatabase(database.c_str());
+  MailerManager mm(ns);
+  std::auto_ptr<Register::AuthInfoRequest::Manager> r(
+    Register::AuthInfoRequest::Manager::create(&db,&mm)
+  );
+  Register::AuthInfoRequest::Manager::RequestType rtype;
+  switch (type) {
+    case ccReg::Admin::RT_EPP:
+      rtype = Register::AuthInfoRequest::Manager::RT_EPP; break;
+    case ccReg::Admin::RT_AUTO_PIF:
+      rtype = Register::AuthInfoRequest::Manager::RT_AUTO_PIF; break;
+    case ccReg::Admin::RT_EMAIL_PIF:
+      rtype = Register::AuthInfoRequest::Manager::RT_EMAIL_PIF; break;
+    case ccReg::Admin::RT_POST_PIF:
+      rtype = Register::AuthInfoRequest::Manager::RT_POST_PIF; break;
+  };
+  try {
+    r->createRequest(
+      objectId,rtype,eppActionId,requestReason,emailToAnswer
+    );
+  } 
+  catch (Register::AuthInfoRequest::Manager::BAD_EMAIL) { 
+    db.Disconnect();
+    throw ccReg::Admin::BAD_EMAIL();
+  } 
+  catch (Register::AuthInfoRequest::Manager::OBJECT_NOT_FOUND) {
+    db.Disconnect();    
+    throw ccReg::Admin::OBJECT_NOT_FOUND();
+  } 
+  catch (Register::AuthInfoRequest::Manager::ACTION_NOT_FOUND) { 
+    db.Disconnect();
+    throw ccReg::Admin::ACTION_NOT_FOUND();
+  } 
+  catch (Register::SQL_ERROR) {
+    db.Disconnect();  
+    throw ccReg::Admin::SQL_ERROR();
+  } 
+  db.Disconnect();
+  return 0;
+}
+
+void 
+ccReg_Admin_i::processAuthInfoRequest(CORBA::Long id) 
+  throw (ccReg::Admin::SQL_ERROR)
+{
+  DB db;
+  db.OpenDatabase(database.c_str());
+  MailerManager mm(ns);
+  std::auto_ptr<Register::AuthInfoRequest::Manager> r(
+    Register::AuthInfoRequest::Manager::create(&db,&mm)
+  );
+  try {
+    r->processRequest(id);
+  } 
+  catch (Register::SQL_ERROR) { 
+    db.Disconnect();
+    throw ccReg::Admin::SQL_ERROR();
+  } 
+  db.Disconnect();  
+}
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_Session_i

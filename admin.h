@@ -1,3 +1,6 @@
+#ifndef _MAILER_H_
+#define _MAILER_H_
+
 #include "ccReg.hh"
 #include "register/register.h"
 #include "dbsql.h"
@@ -278,6 +281,7 @@ class ccReg_Session_i : public POA_ccReg::Session,
   ccReg::NSSets_ptr getNSSets();
 };
 
+class NameService;
 // interface Admin implementation
 class ccReg_Admin_i: public POA_ccReg::Admin, 
                      public PortableServer::RefCountServantBase {
@@ -288,8 +292,9 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
     ccReg::Registrar& creg, 
     Register::Registrar::Registrar *reg
   ); 
+  NameService *ns;
  public:
-  ccReg_Admin_i(const std::string database);
+  ccReg_Admin_i(const std::string database, NameService *ns);
   virtual ~ccReg_Admin_i();
 
   // session
@@ -338,6 +343,17 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   ccReg::ObjectStatusDescSeq* getNSSetStatusDescList();
   /// testovaci fce na typ objektu
   void checkHandle(const char* handle, ccReg::CheckHandleType_out ch);
-  
-  
+  CORBA::Long createAuthInfoRequest(
+    CORBA::Long objectId, 
+    ccReg::Admin::RequestType type, 
+    CORBA::Long eppActionId, 
+    const char* requestReason,
+    const char* emailToAnswer
+  ) throw (
+    ccReg::Admin::BAD_EMAIL, ccReg::Admin::OBJECT_NOT_FOUND, 
+    ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR
+  );
+  void processAuthInfoRequest(CORBA::Long id) throw (ccReg::Admin::SQL_ERROR); 
 };
+
+#endif

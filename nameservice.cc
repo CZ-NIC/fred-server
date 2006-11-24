@@ -87,7 +87,9 @@ NameService::bind(const std::string& name, CORBA::Object_ptr objref)
 
 
 
-CORBA::Object_ptr NameService::resolve( const std::string& name)
+CORBA::Object_ptr NameService::resolve(
+  const std::string& name, const std::string context
+)
  throw (NOT_RUNNING, BAD_CONTEXT)
 {
 
@@ -95,7 +97,7 @@ CORBA::Object_ptr NameService::resolve( const std::string& name)
   CosNaming::Name contextName;
   contextName.length(2);
 
-  contextName[0].id   = (const char*) "ccReg";       // string copied
+  contextName[0].id   = (const char*) context.c_str();       // string copied
   contextName[0].kind = (const char*) "context"; // string copied
   contextName[1].id   = name.c_str();
   contextName[1].kind = (const char*) "Object";
