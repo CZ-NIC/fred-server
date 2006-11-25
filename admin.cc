@@ -664,16 +664,16 @@ ccReg_Admin_i::createAuthInfoRequest(
   std::auto_ptr<Register::AuthInfoRequest::Manager> r(
     Register::AuthInfoRequest::Manager::create(&db,&mm)
   );
-  Register::AuthInfoRequest::Manager::RequestType rtype;
+  Register::AuthInfoRequest::RequestType rtype;
   switch (type) {
     case ccReg::Admin::RT_EPP:
-      rtype = Register::AuthInfoRequest::Manager::RT_EPP; break;
+      rtype = Register::AuthInfoRequest::RT_EPP; break;
     case ccReg::Admin::RT_AUTO_PIF:
-      rtype = Register::AuthInfoRequest::Manager::RT_AUTO_PIF; break;
+      rtype = Register::AuthInfoRequest::RT_AUTO_PIF; break;
     case ccReg::Admin::RT_EMAIL_PIF:
-      rtype = Register::AuthInfoRequest::Manager::RT_EMAIL_PIF; break;
+      rtype = Register::AuthInfoRequest::RT_EMAIL_PIF; break;
     case ccReg::Admin::RT_POST_PIF:
-      rtype = Register::AuthInfoRequest::Manager::RT_POST_PIF; break;
+      rtype = Register::AuthInfoRequest::RT_POST_PIF; break;
   };
   try {
     r->createRequest(
