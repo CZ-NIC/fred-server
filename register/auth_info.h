@@ -1,8 +1,11 @@
 #ifndef _AUTH_INFO_H_
 #define _AUTH_INFO_H_
 
+#include <boost/date_time/posix_time/ptime.hpp>
 #include "exceptions.h"
 #include "mailer.h"
+
+using namespace boost::posix_time;
 
 /// forward declared parameter type 
 class DB;
@@ -26,6 +29,13 @@ namespace Register
       OT_CONTACT, ///< Object of request is contact
       OT_NSSET ///< Object of request is nsset
     };
+    /// Status of request
+    enum RequestStatus
+    {
+      RS_NEW, ///< Request was created and waiting for autorization 
+      RS_ANSWERED, ///< Email with answer was sent
+      RS_INVALID ///< Time passed without authorization 
+    };
     /// Detail od request
     class Detail
     {
@@ -36,8 +46,11 @@ namespace Register
       virtual const std::string& getObjectHandle() const = 0;
       virtual ObjectType getObjectType() const = 0;
       virtual RequestType getRequestType() const = 0;
+      virtual RequestStatus getRequestStatus() const = 0;
+      virtual ptime getCreationTime() const = 0;
+      virtual ptime getClosingTime() const = 0;
       virtual const std::string& getReason() const = 0;
-      virtual const std::string& getEmail() const = 0;
+      virtual const std::string& getEmailToAnswer() const = 0;
       virtual unsigned long getAnswerEmailId() const = 0;
     }; // Detail
     class List
@@ -46,7 +59,10 @@ namespace Register
       virtual ~List() {}
       virtual unsigned long getCount() const = 0;
       virtual Detail *get(unsigned long idx) const = 0;
-      
+      virtual void setIdFilter(unsigned long id) = 0;
+      virtual void setHandleFilter(const std::string& handle) = 0;
+      virtual void setEmailFilter(const std::string& email) = 0;
+      virtual void reload() throw (SQL_ERROR) = 0;
     }; // List
     class Manager
     {
@@ -57,6 +73,10 @@ namespace Register
       struct OBJECT_NOT_FOUND {};
       /// Exception for bad EPP action id in EPP request
       struct ACTION_NOT_FOUND {};
+      /// Exception for bad request id
+      struct REQUEST_NOT_FOUND {};
+      /// Exception in processing closed request
+      struct REQUEST_CLOSED {};
       virtual ~Manager() {}
       /// Create request for auth_info
       virtual unsigned long createRequest(
@@ -67,7 +87,8 @@ namespace Register
         const std::string& emailToAnswer ///< email to answer ([AUTO|POST]_PIF)
       ) throw (BAD_EMAIL, OBJECT_NOT_FOUND, ACTION_NOT_FOUND, SQL_ERROR) = 0;
       /// Process request by sending email with auth_info
-      virtual void processRequest(unsigned id) = 0;
+      virtual void processRequest(unsigned id) 
+        throw (REQUEST_NOT_FOUND, REQUEST_CLOSED, SQL_ERROR) = 0;
       /// factory method
       static Manager *create(DB *db, Register::Mailer::Manager *mm);      
     }; // Manager
