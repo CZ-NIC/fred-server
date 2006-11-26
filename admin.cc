@@ -34,6 +34,27 @@ formatTime(ptime p,bool date)
   return stime.str();
 }
 
+time_period 
+setPeriod(const ccReg::DateTimeInterval& _v)
+{
+  date from;
+  date to;
+  try {
+    from = date(_v.from.date.year,_v.from.date.month,_v.from.date.day);
+  }
+  catch (...) {}
+  try {
+    to = date(_v.to.date.year,_v.to.date.month,_v.to.date.day);
+  }
+  catch (...) {}
+  return time_period(
+    ptime(from,time_duration(_v.from.hour,_v.from.minute,_v.from.second)),
+    ptime(to,time_duration(_v.to.hour,_v.to.minute,_v.to.second))
+  );
+}
+
+
+
 #define DUPSTR(s) CORBA::string_dup(s)
 #define DUPSTRC(s) CORBA::string_dup(s.c_str())
 #define DUPSTRFUN(f) DUPSTRC(f())
@@ -168,7 +189,7 @@ ccReg_Admin_i::login(const char* username, const char* password)
   if (i == userList.end()) throw ccReg::Admin::AuthFailed();
   SessionListType::const_iterator j = sessionList.find(username);
   if (j == sessionList.end())
-    sessionList[username] = new ccReg_Session_i(database);
+    sessionList[username] = new ccReg_Session_i(database,ns);
   return CORBA::string_dup(username);
 }
 
@@ -569,6 +590,50 @@ ccReg_Admin_i::getDomainById(CORBA::Long id)
   return cd;
 }
 
+void
+ccReg_Admin_i::fillAuthInfoRequest(
+  ccReg::AuthInfoRequest::Detail *carid,
+  Register::AuthInfoRequest::Detail *rarid
+)
+{
+  carid->id = rarid->getId();
+  carid->handle = DUPSTRFUN(rarid->getObjectHandle);
+  carid->status = ccReg::AuthInfoRequest::RS_NEW;
+  carid->type = ccReg::AuthInfoRequest::RT_EPP;
+  carid->crTime = DUPSTRDATE(rarid->getCreationTime);
+  carid->closeTime = DUPSTRDATE(rarid->getClosingTime);
+  carid->reason = DUPSTRFUN(rarid->getReason);
+  carid->svTRID = DUPSTRC(std::string(""));
+  carid->email = DUPSTRFUN(rarid->getEmailToAnswer);
+  carid->answerEmailId = rarid->getAnswerEmailId();
+  carid->oType = ccReg::AuthInfoRequest::OT_DOMAIN;
+  carid->objectId = rarid->getId();
+  carid->registrar = DUPSTRC(std::string(""));
+}
+
+ccReg::AuthInfoRequest::Detail* 
+ccReg_Admin_i::getAuthInfoRequestById(CORBA::Long id)
+  throw (ccReg::Admin::ObjectNotFound)
+{
+  DB db;
+  db.OpenDatabase(database.c_str());
+  MailerManager mm(ns);
+  std::auto_ptr<Register::AuthInfoRequest::Manager> r(
+    Register::AuthInfoRequest::Manager::create(&db,&mm)
+  );
+  Register::AuthInfoRequest::List *airl = r->getList();
+  airl->setIdFilter(id);
+  airl->reload();
+  if (airl->getCount() != 1) {
+    db.Disconnect();
+    throw ccReg::Admin::ObjectNotFound();
+  } 
+  ccReg::AuthInfoRequest::Detail* aird = new ccReg::AuthInfoRequest::Detail;
+  fillAuthInfoRequest(aird,airl->get(0));
+  db.Disconnect();
+  return aird;
+}
+
 CORBA::Long 
 ccReg_Admin_i::getEnumDomainCount()
 {
@@ -724,20 +789,18 @@ ccReg_Admin_i::processAuthInfoRequest(CORBA::Long id)
 //    ccReg_Session_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-ccReg_Session_i::ccReg_Session_i(const std::string& database)
+ccReg_Session_i::ccReg_Session_i(const std::string& database, NameService *ns)
+ : mm(ns)
 {
   db.OpenDatabase(database.c_str());
   m.reset(Register::Manager::create(&db));
+  am.reset(Register::AuthInfoRequest::Manager::create(&db,&mm));
   reg = new ccReg_Registrars_i(m->getRegistrarManager()->getList());
   eppa = new ccReg_EPPActions_i(m->getRegistrarManager()->getEPPActionList());
   dm = new ccReg_Domains_i(m->getDomainManager()->getList());
   cm = new ccReg_Contacts_i(m->getContactManager()->getList());
   nm = new ccReg_NSSets_i(m->getNSSetManager()->getList());
-  reg->reload();
-  eppa->reload();
-  dm->reload();
-  cm->reload();
-  nm->reload();
+  airm = new ccReg_AIRequests_i(am->getList());
 }
 
 ccReg_Session_i::~ccReg_Session_i()
@@ -772,6 +835,12 @@ ccReg::NSSets_ptr
 ccReg_Session_i::getNSSets()
 {
   return nm->_this();
+}
+
+ccReg::AuthInfoRequests_ptr 
+ccReg_Session_i::getAuthInfoRequests()
+{
+  return airm->_this();
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -1078,22 +1147,7 @@ void
 ccReg_EPPActions_i::time(const ccReg::DateTimeInterval& _v)
 {
   timeFilter = _v;
-  date from;
-  date to;
-  try {
-    from = date(_v.from.date.year,_v.from.date.month,_v.from.date.day);
-  }
-  catch (...) {}
-  try {
-    to = date(_v.to.date.year,_v.to.date.month,_v.to.date.day);
-  }
-  catch (...) {}
-  eal->setTimePeriodFilter(
-    time_period(
-      ptime(from,time_duration(_v.from.hour,_v.from.minute,_v.from.second)),
-      ptime(to,time_duration(_v.to.hour,_v.to.minute,_v.to.second))
-    )
-  );
+  eal->setTimePeriodFilter(setPeriod(_v));
 }
 
 char* 
@@ -1982,4 +2036,181 @@ ccReg_NSSets_i::clear()
   ipFilter = "";
   hostnameFilter = "";
   nl->clearFilter();
+}
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//    ccReg_AIRequests_i
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+ccReg_AIRequests_i::ccReg_AIRequests_i(
+  Register::AuthInfoRequest::List *_airl
+)
+  : airl(_airl)
+{
+}
+
+ccReg_AIRequests_i::~ccReg_AIRequests_i()
+{
+}
+
+ccReg::Table::ColumnHeaders* 
+ccReg_AIRequests_i::getColumnHeaders()
+{
+  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+  ch->length(5);
+  COLHEAD(ch,0,"RequestId",CT_OTHER);
+  COLHEAD(ch,1,"CrDate",CT_OTHER);
+  COLHEAD(ch,2,"Handle",CT_OTHER);
+  COLHEAD(ch,3,"Type",CT_OTHER);
+  COLHEAD(ch,4,"Status",CT_OTHER);
+  return ch;
+}
+
+ccReg::TableRow* 
+ccReg_AIRequests_i::getRow(CORBA::Short row)
+  throw (ccReg::Table::INVALID_ROW)
+{
+  const Register::AuthInfoRequest::Detail *aird = airl->get(row);
+  if (!aird) throw ccReg::Table::INVALID_ROW();
+  ccReg::TableRow *tr = new ccReg::TableRow;
+  tr->length(5);
+  std::stringstream id;
+  id << aird->getId();
+  (*tr)[0] = DUPSTRFUN(id.str);
+  (*tr)[1] = DUPSTRDATE(aird->getCreationTime);
+  (*tr)[2] = DUPSTRFUN(aird->getObjectHandle);
+  std::string type;
+  switch (aird->getRequestType()) {
+    case Register::AuthInfoRequest::RT_EPP : type = "EPP"; break;
+    case Register::AuthInfoRequest::RT_AUTO_PIF : type = "AUTO_PIF"; break;
+    case Register::AuthInfoRequest::RT_EMAIL_PIF : type = "MAIL_PIF"; break;
+    case Register::AuthInfoRequest::RT_POST_PIF : type = "POST_PIF"; break;
+  }
+  (*tr)[3] = DUPSTRC(type);
+  std::string status;
+  switch (aird->getRequestStatus()) {
+    case Register::AuthInfoRequest::RS_NEW : type = "NEW"; break;
+    case Register::AuthInfoRequest::RS_ANSWERED : type = "CLOSED"; break;
+    case Register::AuthInfoRequest::RS_INVALID : type = "INVALID"; break;
+  }
+  (*tr)[4] = DUPSTRC(status);
+  return tr;
+}
+
+void 
+ccReg_AIRequests_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
+{
+}
+
+CORBA::Long 
+ccReg_AIRequests_i::getRowId(CORBA::Short row) 
+  throw (ccReg::Table::INVALID_ROW)
+{
+  const Register::AuthInfoRequest::Detail *aird = airl->get(row);
+  if (!aird) throw ccReg::Table::INVALID_ROW();
+  return aird->getId();
+}
+
+char*
+ccReg_AIRequests_i::outputCSV()
+{
+  return CORBA::string_dup("1,1,1");
+}
+
+CORBA::Short 
+ccReg_AIRequests_i::numRows()
+{
+  return airl->getCount();
+}
+
+CORBA::Short 
+ccReg_AIRequests_i::numColumns()
+{
+  return 5;
+}
+
+void 
+ccReg_AIRequests_i::reload()
+{
+  airl->reload();
+}
+
+#define FILTER_IMPL(FUNC,PTYPEGET,PTYPESET,MEMBER,MEMBERG, SETF) \
+PTYPEGET FUNC() { return MEMBERG; } \
+void FUNC(PTYPESET _v) { MEMBER = _v; SETF; }
+
+#define FILTER_IMPL_L(FUNC,MEMBER,SETF) \
+  FILTER_IMPL(FUNC,CORBA::Long,CORBA::Long,MEMBER,MEMBER, SETF)
+
+#define FILTER_IMPL_S(FUNC,MEMBER,SETF) \
+  FILTER_IMPL(FUNC,char *,const char *,MEMBER,DUPSTRC(MEMBER), SETF)
+
+FILTER_IMPL_L(ccReg_AIRequests_i::id,idFilter,airl->setIdFilter(_v));
+
+FILTER_IMPL_S(ccReg_AIRequests_i::handle,handleFilter,
+              airl->setHandleFilter(_v));
+
+FILTER_IMPL_S(ccReg_AIRequests_i::email,emailFilter,
+              airl->setEmailFilter(_v));
+
+FILTER_IMPL_S(ccReg_AIRequests_i::reason,reasonFilter,
+              airl->setReasonFilter(_v));
+
+FILTER_IMPL_S(ccReg_AIRequests_i::svTRID,svTRIDFilter,
+              airl->setSvTRIDFilter(_v));
+
+FILTER_IMPL(ccReg_AIRequests_i::type,
+            ccReg::AuthInfoRequest::RequestType,
+            ccReg::AuthInfoRequest::RequestType,
+            requestTypeFilter,requestTypeFilter,
+            airl->setRequestTypeFilter(
+             _v == ccReg::AuthInfoRequest::RT_EPP ? 
+               Register::AuthInfoRequest::RT_EPP : 
+             _v == ccReg::AuthInfoRequest::RT_AUTO_PIF ? 
+               Register::AuthInfoRequest::RT_AUTO_PIF : 
+             _v == ccReg::AuthInfoRequest::RT_EMAIL_PIF ? 
+               Register::AuthInfoRequest::RT_EMAIL_PIF : 
+               Register::AuthInfoRequest::RT_POST_PIF 
+            ));
+
+FILTER_IMPL(ccReg_AIRequests_i::status,
+            ccReg::AuthInfoRequest::RequestStatus,
+            ccReg::AuthInfoRequest::RequestStatus,
+            requestStatusFilter,requestStatusFilter,
+            airl->setRequestStatusFilter(
+             _v == ccReg::AuthInfoRequest::RS_NEW ? 
+               Register::AuthInfoRequest::RS_NEW : 
+             _v == ccReg::AuthInfoRequest::RS_ANSWERED ? 
+               Register::AuthInfoRequest::RS_ANSWERED : 
+               Register::AuthInfoRequest::RS_INVALID 
+            ));
+            
+FILTER_IMPL(ccReg_AIRequests_i::crTime,
+            ccReg::DateTimeInterval,
+            const ccReg::DateTimeInterval&,
+            crTimeFilter,crTimeFilter,
+            airl->setCreationTimeFilter(setPeriod(_v)));
+
+FILTER_IMPL(ccReg_AIRequests_i::closeTime,
+            ccReg::DateTimeInterval,
+            const ccReg::DateTimeInterval&,
+            closeTimeFilter,closeTimeFilter,
+            airl->setCloseTimeFilter(setPeriod(_v)));
+
+ccReg::Filter_ptr
+ccReg_AIRequests_i::aFilter()
+{
+  return _this();
+}
+
+void
+ccReg_AIRequests_i::clear()
+{
+  idFilter = 0;
+  handleFilter = "";
+  emailFilter = "";
+  svTRIDFilter = "";
+  reasonFilter = "";
+  // TODO CLEAR OTHER 
+  airl->clearFilter();
 }

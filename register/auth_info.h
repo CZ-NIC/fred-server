@@ -2,6 +2,7 @@
 #define _AUTH_INFO_H_
 
 #include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "exceptions.h"
 #include "mailer.h"
 
@@ -62,7 +63,14 @@ namespace Register
       virtual void setIdFilter(unsigned long id) = 0;
       virtual void setHandleFilter(const std::string& handle) = 0;
       virtual void setEmailFilter(const std::string& email) = 0;
+      virtual void setReasonFilter(const std::string& reason) = 0;
+      virtual void setSvTRIDFilter(const std::string& svTRID) = 0;
+      virtual void setRequestTypeFilter(RequestType type) = 0;
+      virtual void setRequestStatusFilter(RequestStatus status) = 0;
+      virtual void setCreationTimeFilter(time_period period) = 0;
+      virtual void setCloseTimeFilter(time_period period) = 0;
       virtual void reload() throw (SQL_ERROR) = 0;
+      virtual void clearFilter() = 0;
     }; // List
     class Manager
     {
@@ -89,6 +97,8 @@ namespace Register
       /// Process request by sending email with auth_info
       virtual void processRequest(unsigned id) 
         throw (REQUEST_NOT_FOUND, REQUEST_CLOSED, SQL_ERROR) = 0;
+      /// Create list of requests
+      virtual List *getList() = 0;
       /// factory method
       static Manager *create(DB *db, Register::Mailer::Manager *mm);      
     }; // Manager

@@ -4,6 +4,7 @@
 #include "ccReg.hh"
 #include "register/register.h"
 #include "dbsql.h"
+#include "mailer_manager.h"
 #include <memory>
 #include <string>
 #include <map>
@@ -262,6 +263,53 @@ class ccReg_NSSets_i : virtual public POA_ccReg::NSSets,
   void clear();
 };
 
+
+class ccReg_AIRequests_i : virtual public POA_ccReg::AuthInfoRequests, 
+                           public ccReg_PageTable_i,
+                           public PortableServer::RefCountServantBase {
+  Register::AuthInfoRequest::List *airl;
+  CORBA::Long idFilter;
+  std::string handleFilter;
+  ccReg::DateTimeInterval crTimeFilter;
+  ccReg::DateTimeInterval closeTimeFilter;
+  std::string svTRIDFilter;
+  std::string emailFilter;
+  std::string reasonFilter;
+  ccReg::AuthInfoRequest::RequestType requestTypeFilter;
+  ccReg::AuthInfoRequest::RequestStatus requestStatusFilter;
+ public:
+  ccReg_AIRequests_i(Register::AuthInfoRequest::List *_airl);
+  ~ccReg_AIRequests_i();
+  ccReg::Table::ColumnHeaders* getColumnHeaders();
+  ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  CORBA::Long getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
+  char* outputCSV();
+  CORBA::Short numRows();
+  CORBA::Short numColumns();
+  CORBA::Long id();
+  void id(CORBA::Long _v);
+  char* handle();
+  void handle(const char* _v);
+  ccReg::AuthInfoRequest::RequestStatus status();
+  void status(ccReg::AuthInfoRequest::RequestStatus _v);
+  ccReg::AuthInfoRequest::RequestType type();
+  void type(ccReg::AuthInfoRequest::RequestType _v);
+  ccReg::DateTimeInterval crTime();
+  void crTime(const ccReg::DateTimeInterval& _v);
+  ccReg::DateTimeInterval closeTime();
+  void closeTime(const ccReg::DateTimeInterval& _v);
+  char* reason();
+  void reason(const char* _v);
+  char* svTRID();
+  void svTRID(const char* _v);
+  char* email();
+  void email(const char* _v);
+  void reload();
+  void clear();
+  ccReg::Filter_ptr aFilter();  
+};
+
 class ccReg_Session_i : public POA_ccReg::Session,
                         public PortableServer::RefCountServantBase {
   ccReg_Registrars_i* reg;
@@ -269,16 +317,20 @@ class ccReg_Session_i : public POA_ccReg::Session,
   ccReg_Domains_i* dm;
   ccReg_Contacts_i* cm;
   ccReg_NSSets_i* nm;
+  ccReg_AIRequests_i* airm;
   DB db;
   std::auto_ptr<Register::Manager> m;
+  std::auto_ptr<Register::AuthInfoRequest::Manager> am;
+  MailerManager mm;
  public:
-  ccReg_Session_i(const std::string& database);
+  ccReg_Session_i(const std::string& database, NameService *ns);
   ~ccReg_Session_i();
   ccReg::Registrars_ptr getRegistrars();
   ccReg::EPPActions_ptr getEPPActions();
   ccReg::Domains_ptr getDomains();
   ccReg::Contacts_ptr getContacts();
   ccReg::NSSets_ptr getNSSets();
+  ccReg::AuthInfoRequests_ptr getAuthInfoRequests();
 };
 
 class NameService;
@@ -329,6 +381,13 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
     throw (ccReg::Admin::ObjectNotFound);
   ccReg::EPPAction* getEPPActionById(CORBA::Long id)
     throw (ccReg::Admin::ObjectNotFound);
+  void fillAuthInfoRequest(
+    ccReg::AuthInfoRequest::Detail *carid,
+    Register::AuthInfoRequest::Detail *rarid
+  );
+  ccReg::AuthInfoRequest::Detail* getAuthInfoRequestById(CORBA::Long id)
+    throw (ccReg::Admin::ObjectNotFound);
+
 
   // statistics
   CORBA::Long getEnumDomainCount();

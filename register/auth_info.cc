@@ -144,6 +144,12 @@ namespace Register
       unsigned long idFilter;
       std::string handleFilter;
       std::string emailFilter;
+      std::string reasonFilter;
+      std::string svTRIDFilter;
+      RequestType typeFilter;
+      RequestStatus statusFilter;
+      time_period creationTimeFilter;
+      time_period closeTimeFilter;     
       Mailer::Manager *mm;
       DB *db;
       void clear()
@@ -154,6 +160,9 @@ namespace Register
       }
      public:
       ListImpl(Mailer::Manager *_mm, DB *_db) : 
+        idFilter(0),
+        creationTimeFilter(ptime(neg_infin),ptime(pos_infin)),
+        closeTimeFilter(ptime(neg_infin),ptime(pos_infin)),         
         mm(_mm), db(_db)
       {}
       virtual unsigned long getCount() const
@@ -177,6 +186,42 @@ namespace Register
       {
         emailFilter = _email;
       }
+      virtual void setRequestTypeFilter(RequestType type)
+      {
+        typeFilter = type;
+      }
+      virtual void setRequestStatusFilter(RequestStatus status)
+      {
+        statusFilter = status;
+      }
+      virtual void setCreationTimeFilter(time_period period)
+      {
+        creationTimeFilter = period;
+      }
+      virtual void setCloseTimeFilter(time_period period)
+      {
+        closeTimeFilter = period;
+      }
+      virtual void setReasonFilter(const std::string& reason)
+      {
+        reasonFilter = reason;
+      }
+      virtual void setSvTRIDFilter(const std::string& svTRID)
+      {
+        svTRIDFilter = svTRID;
+      }
+      virtual void clearFilter()
+      {
+        idFilter = 0;
+        handleFilter = "";
+        emailFilter = "";
+        reasonFilter = "";
+        svTRIDFilter = "";
+        // creationTimeFIlter
+        // closeTimeFilter
+        // typeFilter
+        // statusFilter 
+      }      
       virtual void reload() throw (SQL_ERROR)
       {
         clear();
@@ -195,8 +240,10 @@ namespace Register
     {
       DB *db;
       Mailer::Manager *mm;
+      ListImpl l;
      public:
-      ManagerImpl(DB *_db, Mailer::Manager *_mm) : db(_db), mm(_mm)
+      ManagerImpl(DB *_db, Mailer::Manager *_mm) : 
+        db(_db), mm(_mm), l(_mm,_db)
       {}
       unsigned long createRequest(
         unsigned long objectId,
@@ -219,7 +266,11 @@ namespace Register
         DetailImpl *d = dynamic_cast<DetailImpl *>(l.get(0));
         if (d->getRequestStatus() != RS_NEW) throw REQUEST_CLOSED();
         d->process();
-      } 
+      }
+      List *getList()
+      {
+        return &l;
+      }
     }; // ManagerImpl
     Manager *Manager::create(DB *db, Mailer::Manager *mm)
     {
