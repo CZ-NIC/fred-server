@@ -38,6 +38,8 @@ bool GetFieldNumericValueName(char *fname , int row );
 
 // jmeno pole
 char *  GetFieldName( int col );
+int GetNameField(char *fname );
+
 // jestli neni null
 bool IsNotNull( int row , int col );
 

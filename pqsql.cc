@@ -64,6 +64,11 @@ if( col == -1 ) return "";
 else return  GetFieldValue( row , col );
 }
 
+int  PQ::GetNameField(char *fname )
+{
+return  PQfnumber(result, fname);
+}
+
 // jmeno pole
 char *  PQ::GetFieldName( int col )
 {
