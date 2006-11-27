@@ -1517,20 +1517,24 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
 	c->Name=CORBA::string_dup( DBsql.GetFieldValueName("Name" , 0 )  ); // jmeno nebo nazev kontaktu
 	c->Organization=CORBA::string_dup( DBsql.GetFieldValueName("Organization" , 0 )); // nazev organizace
        
+
         for( s = 0 , snum =0  ; s < 3 ; s ++ )
         {
         sprintf( streetStr , "Street%d" , s +1);           
         if(  DBsql.IsNotNull( 0 ,  DBsql.GetNameField(  streetStr ) ) ) snum ++ ;
         }
+           LOG( DEBUG_LOG  ,  "strrets num  %d" , snum );
 
+      
         c->Streets.length( snum );
          for( s = 0   ; s < 3 ; s ++ )
           {
+           sprintf( streetStr , "Street%d" , s +1);           
+
            if(  DBsql.IsNotNull( 0 ,  DBsql.GetNameField(  streetStr ) ) )
            {
-            c->Streets.length( snum + 1 );
-            c->Streets[snum]=CORBA::string_dup( DBsql.GetFieldValueName(  streetStr, 0 ) ); // adresa
-            snum ++;
+            c->Streets[s]=CORBA::string_dup( DBsql.GetFieldValueName(  streetStr, 0 ) ); // adresa
+            LOG( DEBUG_LOG  ,  "street%d  ->  %s" , s+1 ,  (char *)  c->Streets[s]  );          
             }
           }
 
