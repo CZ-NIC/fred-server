@@ -154,7 +154,9 @@ ccReg_Admin_i::~ccReg_Admin_i()
 void
 ccReg_Admin_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
 {
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(NULL));
+  DB db;
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
   Register::CheckHandle chd;
   r->checkHandle(handle,chd);
   ch = new ccReg::CheckHandleType;
@@ -169,7 +171,8 @@ ccReg_Admin_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
     SWITCH_CONVERT(CH_NSSET);
     SWITCH_CONVERT(CH_CONTACT);
     SWITCH_CONVERT(CH_INVALID);
-  } 
+  }
+  db.Disconnect(); 
 }
  
 char* 

@@ -3,6 +3,7 @@
 #include <functional>
 #include "zone.h"
 #include "dbsql.h"
+#include <iostream>
 
 #define RANGE(x) x.begin(),x.end()
 
@@ -51,9 +52,14 @@ namespace Register
        enumZoneString("e164.arpa"),
        defaultDomainSuffix("cz") 
       {
-        zoneList.push_back(ZoneImpl(1,"0.2.4.e164.arpa",true));
-        zoneList.push_back(ZoneImpl(2,"0.2.4.c.164.arpa",true));
-        zoneList.push_back(ZoneImpl(3,"cz",false));
+        if (!db->ExecSelect("SELECT id,fqdn,enum_zone FROM zone")) return;
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+          zoneList.push_back(ZoneImpl(
+           atoi(db->GetFieldValue(i,0)),
+           db->GetFieldValue(i,1),
+           *db->GetFieldValue(i,2) == 't' ? true : false
+           ));
+        }
       }
       const std::string& getDefaultEnumSuffix() const
       {

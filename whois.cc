@@ -15,8 +15,6 @@ ccReg_Whois_i::~ccReg_Whois_i()
 
 ccReg::DomainWhois* ccReg_Whois_i::getDomain(const char* domain_name, CORBA::String_out timestamp)
 {
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(NULL));
-  Register::CheckHandle chd;
 
 DB DBsql;
 char sqlString[1024];
@@ -31,7 +29,11 @@ bool en;
 time_t t , created , expired ;
 bool found = false;
 int db_error=0;
+  Register::CheckHandle chd;
+if( DBsql.OpenDatabase( database.c_str() ) )
+{
 
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&DBsql));
 
 
 // casova znacka
@@ -81,8 +83,6 @@ if(  chd.handleClass   ==  Register::CH_ENUM  || chd.handleClass   ==  Register:
 if( chd.handleClass   ==  Register::CH_ENUM ){ zone = ZONE_ENUM;  en=true;}
 else {zone = ZONE_CZ ; en=false ; }
 
-if( DBsql.OpenDatabase( database.c_str() ) )
-{
 
  if(  DBsql.SELECTDOMAIN(  fqdn  , zone , en  )  )
   {
