@@ -301,7 +301,7 @@ namespace Register
             << "LEFT JOIN login l ON (a.clientid=l.id) "
             << "LEFT JOIN registrar r ON (l.registrarid=r.id) "
             << "WHERE o.id=air.object_id ";
-        SQL_ID_FILTER(sql,"d.id",idFilter);
+        SQL_ID_FILTER(sql,"air.id",idFilter);
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           DetailImpl *d = new DetailImpl(
