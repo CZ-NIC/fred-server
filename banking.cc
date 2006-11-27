@@ -10,6 +10,215 @@
 
 // #define error printf
 
+// TODO konfig
+int get_VATNum()
+{
+return 19;
+}
+
+// prepocita dan z ceny bez dane pre skoeficient
+long get_VAT(long price)
+{
+double p, c=100.0;
+double koef = 0.1597; // koeficient ze zakona pro DPH 19%
+long ret;
+
+p = price; 
+p = p / c;
+
+ret =  (long ) ( (p * koef ) * c ) ;
+return ret;
+}
+
+// vytvoreni zalohovych faktur z bankovnich vypisu
+struct invBANK
+{
+int id;
+int regID;
+long price;
+int zone;
+char prefix[25]; // prefix zalohove faktury
+};
+
+
+
+int  banking_invoicing(const char *database )
+{
+DB db;
+char sqlString[512];
+struct invBANK **ib;
+char prefixStr[25];
+int num , i;
+int counter, zero , id;
+int invoiceID;
+long credit;
+
+if( db.OpenDatabase( database  ) )
+{
+
+LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
+
+if(  db.BeginTransaction() )
+  {
+
+     // SQL dotaz na bankovni vypisy a jajich  zparovani podke varsym v  tabulce banking_invoice_varsym_map
+     strcpy( sqlString , "SELECT id , registarid, price , zone from bank_statement_item , banking_invoice_varsym_map where bank_statement_item.account_number=banking_invoice_varsym_map.account_number and bank_statement_item.bank_code=banking_invoice_varsym_map.bank_code and banking_invoice_varsym_map.varsymb=banking_invoice_varsym_map.varsymb and bank_statement_item.invoice_id is null" );
+
+     if( db.ExecSelect( sqlString )  )
+       {
+          num =  db.GetSelectRows();
+
+        if( num > 0 )
+        {   
+          ib= new  invBANK *[num];
+        
+          for( i = 0 ; i < num ; i ++ )
+            {
+                ib[i] =  new  invBANK;
+                ib[i]->id = atoi( db.GetFieldValueName("id" , i ) );
+                ib[i]->regID = atoi( db.GetFieldValueName("registarid"  , i ) );
+                ib[i]->zone = atoi( db.GetFieldValueName("zone" , i ) );
+                ib[i]->price = (long) ( 100.0 *  atof( db.GetFieldValueName("price" , i ) ) );
+                LOG( LOG_DEBUG ,"baking_items: id %d regID %d zone %d price %ld"  ,  ib[i]->id ,   ib[i]->regID , ib[i]->zone , ib[i]->price );
+            }
+
+        }
+         db.FreeSelect();
+      }
+
+   if( num > 0 )
+   {
+
+   for( i = 0 ; i < num ; i ++ )
+      {
+       sprintf( sqlString , "SELECT *  FROM invoice_prefix WHERE zone=%d and typ=1;",  ib[i]->zone );    
+
+       prefixStr[0] = 0 ; 
+       counter = 0; 
+       if( db.ExecSelect( sqlString )  )
+         {
+            if(  db.GetSelectRows() == 1 )
+              {
+                    id = atoi( db.GetFieldValueName("id"  , 0 ) );
+                    counter =  atoi( db.GetFieldValueName("counter" , 0 ) );
+                    zero =  atoi( db.GetFieldValueName("num" , 0 ) );
+                    sprintf( prefixStr , "%s%0*d" , 
+                    db.GetFieldValueName("pref" , 0 )  , zero ,  counter );
+                    LOG( LOG_DEBUG ,"invoice pref [%s] prefix[%s]" , db.GetFieldValueName("pref" , 0 )  ,   prefixStr  );
+              }
+           db.FreeSelect();
+          }
+
+        if( counter > 0  && id )
+          {
+            db.UPDATE( "invoice_prefix" );
+            db.SET( "counter" , counter +1 );
+            db.WHEREID( id );
+            if( !db.EXEC() )
+              {
+                   LOG( LOG_ERR , "SQL EXEC error update invoice_prefix");
+                   db.QuitTransaction( 0 );
+                   // odpojeni od databaze
+                   db.Disconnect();
+                   return -8;
+               }
+
+          }
+
+        // jestlize byl vytvoren prefix zalohove faktury
+        if( strlen( prefixStr  )  )
+          {
+	  invoiceID = db.GetSequenceID( "invoice" ); 
+
+           db.INSERT( "invoice" );
+           db.INTO( "id" );
+           db.INTO( "prefix" );
+           db.INTO( "typ" );
+           db.INTO( "registarid" );
+           db.INTO( "price" );
+           db.INTO( "numvat" );
+           db.INTO( "vat" );
+           db.INTO( "total" );
+           db.VALUE(  invoiceID );  
+           db.VALUE(  prefixStr  );
+           db.VALUE( 1 ); // zalohova FA
+           db.VALUE( ib[i]->regID );
+           db.VALPRICE( ib[i]->price );
+          
+           db.VALUE( get_VATNum() );
+           db.VALPRICE( get_VAT( ib[i]->price  ) );
+           credit = ib[i]->price - get_VAT( ib[i]->price) ;
+           db.VALPRICE( credit ); // cena bez dane
+
+           if( !db.EXEC() ) 
+              {
+                LOG( LOG_ERR , "SQL EXEC error invoice");
+                db.QuitTransaction( 0 );
+                // odpojeni od databaze
+                db.Disconnect();
+                return  -2;
+              }
+
+
+
+            // uloz credit
+           db.INSERT( "credit_invoice_credit_map" );
+           db.INTO( "registrarid" );
+           db.INTO( "zone" );
+           db.INTO( "invoice_id" );
+           db.INTO( "credit" );
+           db.INTO( "total" );
+
+           db.VALUE( ib[i]->regID );
+           db.VALUE( ib[i]->zone );
+           db.VALUE( invoiceID );
+           db.VALPRICE( credit ); 
+           db.VALPRICE( 0 );
+  
+           if( !db.EXEC() )
+              {
+                LOG( LOG_ERR , "SQL EXEC error credit_invoice_credit_map");
+                db.QuitTransaction( 0 );
+                // odpojeni od databaze
+                db.Disconnect();
+                return  -3;
+              }
+
+            db.UPDATE( "bank_statement_item" );
+            db.SET( "invoice_id" , invoiceID );
+            db.WHEREID(  ib[i]->id  );
+            if( !db.EXEC() )
+              {
+                   LOG( LOG_ERR , "SQL EXEC error update invoice_statement_item");
+                   db.QuitTransaction( 0 );
+                   // odpojeni od databaze
+                   db.Disconnect();
+                   return -5;
+               }
+ 
+           
+          }
+
+       }
+
+      delete [] ib;
+   }
+  else
+   {
+          LOG( LOG_ERR , "nenalezeny zadne platby ke zparovani"  );          
+   }
+
+     
+     
+
+  db.QuitTransaction( CMD_OK );
+  }
+// odpojeni od databaze
+db.Disconnect();
+}
+
+return 0;
+}
 
 int banking_statement(const char *database , ST_Head *head , ST_Item  **item , int numrec )
 {
@@ -26,10 +235,10 @@ int rc;
 if( db.OpenDatabase( database  ) )
 {
 
-   LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
+LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
 
-   if(  db.BeginTransaction() )
-    {  
+if(  db.BeginTransaction() )
+  {  
 
      sprintf( sqlString , "SELECT  * FROM  bank_account WHERE account_number=\'%s\';" ,  head->account );
 
@@ -214,6 +423,15 @@ Conf config; // READ CONFIG  file
 
 
 
+if( argc ==2 )
+{
+ if( strcmp(  argv[1]  , "--invoice"  )  == 0 )
+   {
+       err =  banking_invoicing( config.GetDBconninfo() );
+       return err;
+   }
+}
+
 if( argc==3)
 {
 
@@ -281,7 +499,7 @@ return 0;
 
 
 
-printf("import banking statement file to database\nusage: %s --bank-gpc file.gpc\ninvoicing: %s --invoice"  , argv[0]  , argv[0] );  
+printf("import banking statement file to database\nusage: %s --bank-gpc file.gpc\ninvoicing: %s --invoice\n"  , argv[0]  , argv[0] );  
 
 #ifdef SYSLOG
   closelog ();
