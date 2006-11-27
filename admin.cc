@@ -601,17 +601,40 @@ ccReg_Admin_i::fillAuthInfoRequest(
 {
   carid->id = rarid->getId();
   carid->handle = DUPSTRFUN(rarid->getObjectHandle);
-  carid->status = ccReg::AuthInfoRequest::RS_NEW;
-  carid->type = ccReg::AuthInfoRequest::RT_EPP;
+  switch (rarid->getRequestStatus()) {
+    case Register::AuthInfoRequest::RS_NEW :
+      carid->status = ccReg::AuthInfoRequest::RS_NEW; break;
+    case Register::AuthInfoRequest::RS_ANSWERED :
+      carid->status = ccReg::AuthInfoRequest::RS_ANSWERED; break;
+    case Register::AuthInfoRequest::RS_INVALID :
+      carid->status = ccReg::AuthInfoRequest::RS_INVALID; break;
+  }
+  switch (rarid->getRequestType()) {
+    case Register::AuthInfoRequest::RT_EPP :
+      carid->type = ccReg::AuthInfoRequest::RT_EPP; break;
+    case Register::AuthInfoRequest::RT_AUTO_PIF :
+      carid->type = ccReg::AuthInfoRequest::RT_AUTO_PIF; break;
+    case Register::AuthInfoRequest::RT_EMAIL_PIF :
+      carid->type = ccReg::AuthInfoRequest::RT_EMAIL_PIF; break;
+    case Register::AuthInfoRequest::RT_POST_PIF :
+      carid->type = ccReg::AuthInfoRequest::RT_POST_PIF; break;
+  }
   carid->crTime = DUPSTRDATE(rarid->getCreationTime);
   carid->closeTime = DUPSTRDATE(rarid->getClosingTime);
   carid->reason = DUPSTRFUN(rarid->getReason);
-  carid->svTRID = DUPSTRC(std::string(""));
+  carid->svTRID = DUPSTRFUN(rarid->getSvTRID);
   carid->email = DUPSTRFUN(rarid->getEmailToAnswer);
   carid->answerEmailId = rarid->getAnswerEmailId();
-  carid->oType = ccReg::AuthInfoRequest::OT_DOMAIN;
-  carid->objectId = rarid->getId();
-  carid->registrar = DUPSTRC(std::string(""));
+  switch (rarid->getObjectType()) {
+    case Register::AuthInfoRequest::OT_DOMAIN :
+      carid->oType = ccReg::AuthInfoRequest::OT_DOMAIN; break;
+    case Register::AuthInfoRequest::OT_CONTACT :
+      carid->oType = ccReg::AuthInfoRequest::OT_CONTACT; break;
+    case Register::AuthInfoRequest::OT_NSSET :
+      carid->oType = ccReg::AuthInfoRequest::OT_NSSET; break;
+  }
+  carid->objectId = rarid->getObjectId();
+  carid->registrar = DUPSTRFUN(rarid->getRegistrarName);
 }
 
 ccReg::AuthInfoRequest::Detail* 
@@ -743,8 +766,9 @@ ccReg_Admin_i::createAuthInfoRequest(
     case ccReg::Admin::RT_POST_PIF:
       rtype = Register::AuthInfoRequest::RT_POST_PIF; break;
   };
+  unsigned long ret = 0;
   try {
-    r->createRequest(
+    ret = r->createRequest(
       objectId,rtype,eppActionId,requestReason,emailToAnswer
     );
   } 
@@ -765,7 +789,7 @@ ccReg_Admin_i::createAuthInfoRequest(
     throw ccReg::Admin::SQL_ERROR();
   } 
   db.Disconnect();
-  return 0;
+  return ret;
 }
 
 void 

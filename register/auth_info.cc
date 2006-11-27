@@ -1,4 +1,5 @@
 #include "auth_info.h"
+#include "object_impl.h"
 #include "dbsql.h"
 //#include </usr/include/boost/date_time/time_clock.hpp>
 #include </usr/include/boost/date_time/local_time/local_time.hpp>
@@ -26,7 +27,9 @@ namespace Register
       std::string reason;
       std::string emailToAnswer;
       unsigned long answerEmailId;
+      unsigned long actionId;
       std::string registrarName;
+      std::string svTRID;
       Mailer::Manager *mm;
       DB *db;
      public:
@@ -36,7 +39,8 @@ namespace Register
         RequestType _requestType, RequestStatus _requestStatus,
         ptime _creationTime, ptime _closingTime,
         const std::string& _reason, const std::string& _emailToAnswer,
-        unsigned long _answerEmailId, const std::string& _registrarName,
+        unsigned long _answerEmailId, unsigned long _actionId,
+        const std::string& _registrarName, const std::string& _svTRID,
         Mailer::Manager *_mm, DB *_db
       ) :
         id(_id), objectId(_objectId), objectHandle(_objectHandle),
@@ -44,7 +48,8 @@ namespace Register
         requestStatus(_requestStatus), creationTime(_creationTime),
         closingTime(_closingTime), reason(_reason), 
         emailToAnswer(_emailToAnswer), answerEmailId(_answerEmailId),
-        registrarName(_registrarName), mm(_mm), db(_db)
+        actionId(_actionId), registrarName(_registrarName), svTRID(_svTRID),
+        mm(_mm), db(_db)
       {}
       virtual unsigned long getId() const
       {
@@ -90,6 +95,18 @@ namespace Register
       {
         return answerEmailId;
       }
+      virtual unsigned long getActionId() const
+      {
+        return actionId;
+      }
+      virtual const std::string& getRegistrarName() const
+      {
+        return registrarName;
+      }
+      virtual const std::string& getSvTRID() const
+      {
+        return svTRID;
+      }      
       /// Query object for its addresses where to send answer
       std::string getEmailAddresses()
       {
@@ -136,6 +153,45 @@ namespace Register
           "AuthInfo Request",
           getTemplateName(),params,handles
         );
+      }
+      void save() throw (SQL_ERROR)
+      {
+        std::stringstream sql;
+        short rType;
+        switch (requestType) {
+          case RT_EPP: rType = 1; break;
+          case RT_AUTO_PIF: rType = 2; break;
+          case RT_EMAIL_PIF: rType = 3; break;
+          case RT_POST_PIF: rType = 4; break;
+        }
+        short statusId;
+        switch (requestStatus) {
+          case RS_NEW: statusId = 1; break;
+          case RS_ANSWERED: statusId = 2; break;
+          case RS_INVALID: statusId = 3; break;
+        }
+        if (!id) {
+          id = db->GetSequenceID("auth_info_requests");
+          sql << "INSERT INTO auth_info_requests "
+              << "(id,object_id,request_type,epp_action_id,reason,"
+              << "email_to_answer) "
+              << "VALUES ("
+              << id << ","
+              << objectId << ","
+              << rType << ",";
+          if (actionId)
+            sql << actionId << ",";
+          else
+            sql << "NULL,";
+          sql << "'" << reason << "',"
+              << "'" << emailToAnswer << "')";
+        } else { 
+          sql << "UPDATE auth_info_requests SET "
+              << "status=" << statusId << ","
+              << "resolve_time=now() "
+              << "WHERE id=" << id;
+        }
+        if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();          
       }
     }; // DetailImpl
     class ListImpl : virtual public List
@@ -221,19 +277,52 @@ namespace Register
         // closeTimeFilter
         // typeFilter
         // statusFilter 
-      }      
+      }
+#define RT_SQL(x) ((x) == 1 ? RT_EPP : \
+                  ((x) == 2 ? RT_AUTO_PIF : \
+                  ((x) == 3 ? RT_EMAIL_PIF : RT_POST_PIF)))       
+#define RS_SQL(x) ((x) == 1 ? RS_NEW : \
+                  ((x) == 2 ? RS_ANSWERED : RS_INVALID))       
+#define OT_SQL(x) ((x) == 1 ? OT_DOMAIN : \
+                  ((x) == 2 ? OT_CONTACT : OT_NSSET))       
+#define MAKE_TIME(ROW,COL)  \
+ (ptime(db->IsNotNull(ROW,COL) ? \
+ time_from_string(db->GetFieldValue(ROW,COL)) : not_a_date_time))
       virtual void reload() throw (SQL_ERROR)
       {
         clear();
-        DetailImpl *d = new DetailImpl(
-          0, 0, "CID:JARA", OT_CONTACT, RT_AUTO_PIF, RS_NEW,
-          ptime(boost::posix_time::second_clock::local_time()), 
-          ptime(not_a_date_time), 
-          "reason", 
-          "jara@talir.cz", 0, "REG_IPEX",
-          mm, db
-        );
-        requests.push_back(d);
+        std::stringstream sql;
+        sql << "SELECT air.id,o.id,o.name,o.type,air.request_type,air.status,"
+            << "air.create_time,air.resolve_time,air.reason,"
+            << "air.email_to_answer,air.answer_email_id,"
+            << "a.id,r.handle,a.servertrid "
+            << "FROM object o, auth_info_requests air "
+            << "LEFT JOIN action a ON (air.epp_action_id=a.id) "
+            << "LEFT JOIN login l ON (a.clientid=l.id) "
+            << "LEFT JOIN registrar r ON (l.registrarid=r.id) "
+            << "WHERE o.id=air.object_id ";
+        SQL_ID_FILTER(sql,"d.id",idFilter);
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+          DetailImpl *d = new DetailImpl(
+            atoi(db->GetFieldValue(i,0)), // id
+            atoi(db->GetFieldValue(i,1)), // objectId
+            db->GetFieldValue(i,2), // handle
+            OT_SQL(atoi(db->GetFieldValue(i,3))), // object type
+            RT_SQL(atoi(db->GetFieldValue(i,4))), // request type
+            RS_SQL(atoi(db->GetFieldValue(i,5))), // status
+            MAKE_TIME(i,6), // create time
+            MAKE_TIME(i,7), // resolve time
+            db->GetFieldValue(i,8), // reason 
+            db->GetFieldValue(i,9), // email
+            atoi(db->GetFieldValue(i,10)), // answered email id
+            atoi(db->GetFieldValue(i,11)), // action id
+            db->GetFieldValue(i,12), // registrar
+            db->GetFieldValue(i,13), // svtrid
+            mm, db
+          );
+          requests.push_back(d);
+        }
       }
     };
     class ManagerImpl : virtual public Manager
@@ -253,8 +342,21 @@ namespace Register
         const std::string& emailToAnswer
       ) throw (BAD_EMAIL, OBJECT_NOT_FOUND, ACTION_NOT_FOUND, SQL_ERROR)
       {
-        processRequest(0);
-        return 0;
+        std::string handle = "CID:JARA";
+        ObjectType otype = OT_CONTACT;
+        std::string regName = "REG-JARA";
+        std::string action = "";
+        DetailImpl d(
+          0, objectId, handle, otype, requestType, RS_NEW,
+          ptime(boost::posix_time::second_clock::local_time()), 
+          ptime(not_a_date_time),
+          requestReason, emailToAnswer, 0, 0, regName, action,         
+          mm,db
+        );
+        d.save();
+        if (requestType == RT_EPP || requestType == RT_AUTO_PIF)
+          d.process();
+        return d.getId();
       }
       void processRequest(unsigned id)
         throw (REQUEST_NOT_FOUND, REQUEST_CLOSED, SQL_ERROR)

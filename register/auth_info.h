@@ -53,6 +53,8 @@ namespace Register
       virtual const std::string& getReason() const = 0;
       virtual const std::string& getEmailToAnswer() const = 0;
       virtual unsigned long getAnswerEmailId() const = 0;
+      virtual const std::string& getRegistrarName() const = 0;
+      virtual const std::string& getSvTRID() const = 0;
     }; // Detail
     class List
     {

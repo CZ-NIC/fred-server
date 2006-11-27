@@ -10,7 +10,7 @@ using namespace boost::gregorian;
 int main()
 {
   DB db;
-  db.OpenDatabase("dbname=ccreg user=ccreg");
+  db.OpenDatabase("host=curlew dbname=ccreg user=ccreg");
   std::auto_ptr<Register::Manager> m(Register::Manager::create(&db));
   Register::Domain::Manager *dm = m->getDomainManager();
   Register::Registrar::Manager *rm = m->getRegistrarManager();
