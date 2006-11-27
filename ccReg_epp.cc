@@ -1463,6 +1463,8 @@ char HANDLE[64]; // handle na velka pismena
 char dateStr[MAX_DATE];
 int  clid , crid , upid , regID ;
 int  ssn , id , slen;
+int s , snum;
+char streetStr[10];
 
 c = new ccReg::Contact;
 // inicializace pro pripad neuspesneho hledani
@@ -1514,10 +1516,24 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
         c->TrDate= CORBA::string_dup( dateStr );
 	c->Name=CORBA::string_dup( DBsql.GetFieldValueName("Name" , 0 )  ); // jmeno nebo nazev kontaktu
 	c->Organization=CORBA::string_dup( DBsql.GetFieldValueName("Organization" , 0 )); // nazev organizace
-	c->Street1=CORBA::string_dup( DBsql.GetFieldValueName("Street1" , 0 ) ); // adresa
-	c->Street2=CORBA::string_dup( DBsql.GetFieldValueName("Street2" , 0 ) ); // adresa
+       
+        for( s = 0 , snum =0  ; s < 3 ; s ++ )
+        {
+        sprintf( streetStr , "Street%d" , s +1);           
+        if(  DBsql.IsNotNull( 0 ,  DBsql.GetNameField(  streetStr ) ) ) snum ++ ;
+        }
 
-	c->Street3=CORBA::string_dup( DBsql.GetFieldValueName("Street3" , 0 ) ); // adresa
+        c->Streets.length( snum );
+         for( s = 0   ; s < 3 ; s ++ )
+          {
+           if(  DBsql.IsNotNull( 0 ,  DBsql.GetNameField(  streetStr ) ) )
+           {
+            c->Streets.length( snum + 1 );
+            c->Streets[snum]=CORBA::string_dup( DBsql.GetFieldValueName(  streetStr, 0 ) ); // adresa
+            snum ++;
+            }
+          }
+
 	c->City=CORBA::string_dup( DBsql.GetFieldValueName("City" , 0 ) );  // obec
 	c->StateOrProvince=CORBA::string_dup( DBsql.GetFieldValueName("StateOrProvince"  , 0 ));
 	c->PostalCode=CORBA::string_dup(DBsql.GetFieldValueName("PostalCode" , 0 )); // PSC
@@ -1677,9 +1693,7 @@ c->TrDate=CORBA::string_dup(""); // dattum a cas transferu
 c->stat.length(0); // status
 c->Name=CORBA::string_dup(""); // jmeno nebo nazev kontaktu
 c->Organization=CORBA::string_dup(""); // nazev organizace
-c->Street1=CORBA::string_dup(""); // adresa
-c->Street2=CORBA::string_dup(""); // adresa
-c->Street3=CORBA::string_dup(""); // adresa
+c->Streets.length(0);
 c->City=CORBA::string_dup("");  // obec
 c->StateOrProvince=CORBA::string_dup("");
 c->PostalCode=CORBA::string_dup(""); // PSC
@@ -1867,6 +1881,9 @@ DB DBsql;
 char  HANDLE[64];
 int regID ,  clID , id ;
 int  seq;
+int s , snum;
+char streetStr[10];
+
 
 seq=0;
 ret = new ccReg::Response;
@@ -1933,9 +1950,14 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                                           {
                                           DBsql.SET( "Name", c.Name );
                                           DBsql.SET( "Organization", c.Organization );
-                                          DBsql.SET( "Street1", c.Street1 );
-                                          DBsql.SET( "Street2", c.Street2 );
-                                          DBsql.SET( "Street3", c.Street3 );
+                                          snum = c.Streets.length();
+                                          for( s = 0 ; s < 3  ; s ++ )
+                                             {
+                                               sprintf( streetStr , "Street%d" , s +1);
+                                               if( s < snum ) DBsql.SET(  streetStr , c.Streets[s] );
+                                               else DBsql.SET( streetStr , "\b" ); // SET NULL by hack
+                                             }
+
                                           DBsql.SET( "City", c.City );
                                           DBsql.SET( "StateOrProvince", c.StateOrProvince );
                                           DBsql.SET( "PostalCode", c.PostalCode);
@@ -2052,6 +2074,9 @@ char roid[64];
 char HANDLE[64]; // handle na velka pismena
 ccReg::Response * ret;
 int regID, id;
+int s , snum;
+char streetStr[10];
+
 // default
 ret = new ccReg::Response;
 ret->errCode = 0;
@@ -2129,9 +2154,15 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
 
                       DBsql.INTOVAL( "Name", c.Name );
                       DBsql.INTOVAL( "Organization", c.Organization );
-                      DBsql.INTOVAL( "Street1", c.Street1 );
-                      DBsql.INTOVAL( "Street2", c.Street2 );
-                      DBsql.INTOVAL( "Street3", c.Street3 );
+
+                      snum = c.Streets.length();
+                      for( s = 0 ; s < snum  ; s ++ )
+                         {
+                           sprintf( streetStr , "Street%d" , s +1);
+                           DBsql.INTOVAL(  streetStr, c.Streets[s] );
+                         }
+
+
                       DBsql.INTOVAL( "City", c.City );
                       DBsql.INTOVAL( "StateOrProvince", c.StateOrProvince );
                       DBsql.INTOVAL( "PostalCode", c.PostalCode );
@@ -2172,9 +2203,13 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
 
                       DBsql.VAL( c.Name );
                       DBsql.VAL( c.Organization );
-                      DBsql.VAL( c.Street1 );
-                      DBsql.VAL( c.Street2 );
-                      DBsql.VAL( c.Street3 );
+                      snum = c.Streets.length();
+                      for( s = 0 ; s < snum  ; s ++ )  
+                         {
+                           sprintf( streetStr , "Street%d" , s +1);
+                           DBsql.VAL(  c.Streets[s] );
+                         }
+
                       DBsql.VAL( c.City );
                       DBsql.VAL( c.StateOrProvince );
                       DBsql.VAL( c.PostalCode );
