@@ -827,6 +827,243 @@ return ret;
 }
 */
 
+// test zustatku na uctu pro import bankovniho vypisu
+int DB::TestBankAccount( char *accountStr , int num , long oldBalance )
+{
+int accountID=0;
+int lastNum=0;
+long lastBalance=0;
+
+  if(  SELECTONE( "bank_account" , "account_number" ,  accountStr  ) )
+    {
+          if(  GetSelectRows() == 1 )
+            {
+                accountID = atoi( GetFieldValueName("id"  , 0 ) );
+                lastNum = atoi( GetFieldValueName("last_num" , 0 ) );
+                lastBalance = (long) ( 100.0 *  atof( GetFieldValueName("balance" , 0 ) )  );
+            }
+       
+       FreeSelect();
+     }
+
+if(  accountID )
+{
+    LOG( LOG_DEBUG ,"posledni vypis ucetID %d cislo %d zustatek na uctu %ld" , accountID ,  lastNum , lastBalance);
+
+
+     // test podle cisla vypisu ne pro prvni vypis
+    if( num > 1  )
+      {
+        if( lastNum + 1 != num ) 
+          {
+               LOG(  ERROR_LOG  , "chyba nesedi cislo  vypisu %d  posledni nacteny je %d" , num , lastNum );
+          }
+      }
+
+    // dalsi test pokud sedi zustatek na uctu
+   if(  oldBalance  == lastBalance ) return accountID;
+   else
+     {
+         LOG(  ERROR_LOG  , "chyba nesedi zustatek na uctu poslednu zustatek %ld nacitany stav %ld" , lastBalance ,  oldBalance );
+     }
+
+}
+else 
+{
+   LOG(  ERROR_LOG  , "nelze najit ucet na vypisu cislo %s" ,  accountStr );
+}
+
+
+return 0;
+}
+
+
+// update zustatku na uctu
+bool DB::UpdateBankAccount( int accountID , char *date , int num ,  long newBalance  )
+{
+    
+     //  update  tabulky
+
+           UPDATE( "bank_account" );
+           SET( "last_date" , date  );
+           SET( "last_num" , num );
+           SETPRICE( "balance" , newBalance );
+           WHEREID( accountID );
+
+       return EXEC();
+}
+
+
+
+
+int DB::SaveBankHead( int accountID ,int num ,  char *date  ,  char *oldDate , long oldBalance , long newBalance , long credit , long debet )
+{ 
+int statemetID;
+
+     statemetID = GetSequenceID( "bank_statement_head" );
+   // id | account_id | num | create_date | balance_old_date | balance_old | balance_new | balance_credit | balence_debet
+
+                    INSERT( "bank_statement_head" );
+                    INTO( "id" );
+                    INTO( "account_id" );
+                    INTO( "num" );
+                    INTO( "create_date" );
+                    INTO( "balance_old_date" );
+                    INTO( "balance_old" );
+                    INTO( "balance_new" );
+                    INTO( "balance_credit" );
+                    INTO( "balance_debet" );
+                    VALUE(  statemetID );
+                    VALUE(  accountID );
+                    VALUE(  num );
+                    VALUE(  date );
+                    VALUE(  oldDate );
+                    VALPRICE(  oldBalance );
+                    VALPRICE(  newBalance  );
+                    VALPRICE(  credit );
+                    VALPRICE(  debet );
+
+     if( EXEC() ) return statemetID;
+     else return 0;
+
+}
+
+bool DB::SaveBankItem( int statemetID , char *account  , char *bank , char *evidNum,  char *date , char *memo ,
+                       int code  ,  char *konstSymb ,  char *varSymb , char *specsymb  , long price )
+{
+                    INSERT( "bank_statement_item" );
+                    INTO( "statement_id" );
+                    INTO( "account_number" );
+                    INTO( "bank_code" );
+                    INTO( "account_evid" );
+                    INTO( "account_date" );
+                    INTO( "account_memo" );
+                    INTO( "code" );
+                    INTO( "konstsym" );
+                    INTO( "varsymb" );
+                    INTO( "specsymb" );
+                    INTO( "price" );
+                    VALUE( statemetID );
+                    VALUE( account );
+                    VALUE( bank );
+                    VALUE( evidNum );
+                    VALUE( date );
+                    VALUE( memo );
+                    VALUE( code );
+                    VALUE( konstSymb  );
+                    VALUE( varSymb );
+                    VALUE( specsymb);
+                    VALPRICE( price );
+
+return EXEC ();
+}
+
+
+// uloz credit
+bool DB::SaveCredit(  int regID  , int zone  ,  long credit  ,int invoiceID )
+{
+
+            // uloz credit
+           INSERT( "credit_invoice_credit_map" );
+           INTO( "registrarid" );
+           INTO( "zone" );
+           INTO( "credit" );
+           INTO( "total" );
+           if( invoiceID ) INTO( "invoice_id" );
+
+           VALUE( regID );
+           VALUE( zone );
+           VALPRICE( credit );
+           VALPRICE( 0 );
+           if( invoiceID ) VALUE( invoiceID );
+
+           return EXEC();
+}
+                
+// nastav bankovni vypis jako zpracovany
+bool DB::UpdateBankStatementItem( int id , int invoiceID)
+{
+                  UPDATE( "bank_statement_item" );
+                  SET( "invoice_id" , invoiceID );
+                  WHEREID(  id  );
+                  return EXEC();
+}  
+
+// vytvoreni zalohove faktury pro registratora na castku price s vysi DPH vatNum odvedenou dani vat  a castkou bez DPH credit
+int  DB::MakeAInvoice( const char *prefixStr  , int regID , long price , int vatNum , long vat ,  long credit )
+{
+int invoiceID;
+
+// castka bez DPh + DPH by se mela rovanat castce s dani 
+if( (vat + credit)  == price ) 
+{
+
+           invoiceID = GetSequenceID( "invoice" );
+
+           INSERT( "invoice" );
+           INTO( "id" );
+           INTO( "prefix" );
+           INTO( "typ" );
+           INTO( "registarid" );
+           INTO( "price" );
+           INTO( "numvat" );
+           INTO( "vat" );
+           INTO( "total" );
+           VALUE( invoiceID );
+           VALUE( prefixStr  );
+           VALUE( 1 ); // zalohova FA
+           VALUE( regID );
+           VALPRICE( price );
+
+           VALUE( vatNum );
+           VALPRICE( price  );
+           VALPRICE( credit ); // cena bez dane
+          
+           if(  EXEC() ) return invoiceID;
+}
+          
+return 0;
+} 
+
+
+
+bool DB::GetInvoicePrefix( char *prefixStr , int typ , int zone )
+{
+char sqlString[512];
+int id , counter , zero;
+
+sprintf( sqlString , "SELECT *  FROM invoice_prefix WHERE zone=%d and typ=%d;",  zone , typ);
+
+prefixStr[0] = 0 ;
+counter = 0;
+id=0;
+
+       if( ExecSelect( sqlString )  )
+         {
+            if(  GetSelectRows() == 1 )
+              {
+                    id = atoi( GetFieldValueName("id"  , 0 ) );
+                    counter =  atoi( GetFieldValueName("counter" , 0 ) );
+                    zero =  atoi( GetFieldValueName("num" , 0 ) );
+                    sprintf( prefixStr , "%s%0*d" ,  GetFieldValueName("pref" , 0 )  , zero ,  counter );
+                    LOG( LOG_DEBUG ,"generate invoice zone %d typ %d counter %d  prefix[%s]" , zone , typ , counter ,    prefixStr  );
+              }
+           FreeSelect();
+          }
+
+        if( counter > 0  && id )
+          {
+            UPDATE( "invoice_prefix" );
+            SET( "counter" , counter +1 );
+            WHEREID( id );
+            if( EXEC() ) return true;
+           }
+
+ 
+return false;         
+}
+
+
 // vraci id registratora z domeny
 int DB::GetClientDomainRegistrant( int clID , int contactID )
 {

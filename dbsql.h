@@ -84,6 +84,31 @@ bool TestDomainFQDNHistory( const char * fqdn , int period );
 // test na objekty v historii
 bool TestObjectHistory( const char *table , const char *fname ,  const char * name , int period );
 
+// test zustatku na uctu pro import bankovniho vypisu
+int TestBankAccount( char *accountStr , int num , long oldBalance );
+
+// update zustatku na uctu
+bool DB::UpdateBankAccount( int accountID , char *date , int num ,  long newBalance  );
+
+// ulozeni hlavicky vypisu return ID hlavicky
+int SaveBankHead( int accountID ,int num ,  char *date  ,  char *oldDate , long oldBalance , long newBalance , long credit , long debet );
+
+// ulozeni polozky vypisu
+bool SaveBankItem( int statemetID , char *account  , char *bank , char *evidNum, char *date , char *memo , int code , 
+                       char *konstSymb ,  char *varSymb , char *specsymb  , long price );
+
+
+// uloz credit
+bool SaveCredit(  int regID  , int zone  ,  long credit  ,int invoiceID );
+
+// nastav bankovni vypis jako zpracovany
+bool UpdateBankStatementItem( int id , int invoiceID);
+
+// vytvoreni zalohove faktury pro registratora na castku price s vysi DPH vatNum odvedenou dani vat  a castkou bez DPH credit
+int  MakeAInvoice( const char *prefixStr  , int regID , long price , int vatNum , long vat ,  long credit );
+
+// generovani cisla faktur a update countru prefixu 
+bool GetInvoicePrefix( char *prefixStr , int typ , int zone );
 
 // test doby expirace validace
 bool TestValExDate(const char *dateStr ,  int period  , int interval , int id );

@@ -41,6 +41,41 @@ char prefix[25]; // prefix zalohove faktury
 };
 
 
+// rucni naliti creditu pro registratora
+int credit_invoicing(const char *database  , const char *registrarHandle ,  int zone , long  credit )
+{
+DB db;
+char sqlString[512];
+int regID;
+
+if( db.OpenDatabase( database  ) )
+{
+
+LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
+
+if( ( regID = db.GetRegistrarID( (char * )  registrarHandle ) )  ) 
+  {
+
+    if(  db.BeginTransaction() )
+      {
+
+      }
+  }
+else
+  {
+     LOG( LOG_ERR , "unkow registrarHandle %s" , registrarHandle );
+     db.Disconnect();
+     return -5;   
+  }
+
+
+// odpojeni od databaze
+db.Disconnect();
+}
+ 
+
+}
+
 
 int  banking_invoicing(const char *database )
 {
@@ -49,7 +84,6 @@ char sqlString[512];
 struct invBANK **ib;
 char prefixStr[25];
 int num , i;
-int counter, zero , id;
 int invoiceID;
 long credit;
 
@@ -86,71 +120,45 @@ if(  db.BeginTransaction() )
          db.FreeSelect();
       }
 
+
    if( num > 0 )
    {
 
    for( i = 0 ; i < num ; i ++ )
       {
-       sprintf( sqlString , "SELECT *  FROM invoice_prefix WHERE zone=%d and typ=1;",  ib[i]->zone );    
-
-       prefixStr[0] = 0 ; 
-       counter = 0; 
-       if( db.ExecSelect( sqlString )  )
-         {
-            if(  db.GetSelectRows() == 1 )
-              {
-                    id = atoi( db.GetFieldValueName("id"  , 0 ) );
-                    counter =  atoi( db.GetFieldValueName("counter" , 0 ) );
-                    zero =  atoi( db.GetFieldValueName("num" , 0 ) );
-                    sprintf( prefixStr , "%s%0*d" , 
-                    db.GetFieldValueName("pref" , 0 )  , zero ,  counter );
-                    LOG( LOG_DEBUG ,"invoice pref [%s] prefix[%s]" , db.GetFieldValueName("pref" , 0 )  ,   prefixStr  );
-              }
-           db.FreeSelect();
-          }
-
-        if( counter > 0  && id )
-          {
-            db.UPDATE( "invoice_prefix" );
-            db.SET( "counter" , counter +1 );
-            db.WHEREID( id );
-            if( !db.EXEC() )
-              {
-                   LOG( LOG_ERR , "SQL EXEC error update invoice_prefix");
-                   db.QuitTransaction( 0 );
-                   // odpojeni od databaze
-                   db.Disconnect();
-                   return -8;
-               }
-
-          }
-
+        // vygenerovani cisla faktury 
         // jestlize byl vytvoren prefix zalohove faktury
-        if( strlen( prefixStr  )  )
+        if( db.GetInvoicePrefix( prefixStr , 1 ,  ib[i]->zone  )  )
           {
-	  invoiceID = db.GetSequenceID( "invoice" ); 
 
-           db.INSERT( "invoice" );
-           db.INTO( "id" );
-           db.INTO( "prefix" );
-           db.INTO( "typ" );
-           db.INTO( "registarid" );
-           db.INTO( "price" );
-           db.INTO( "numvat" );
-           db.INTO( "vat" );
-           db.INTO( "total" );
-           db.VALUE(  invoiceID );  
-           db.VALUE(  prefixStr  );
-           db.VALUE( 1 ); // zalohova FA
-           db.VALUE( ib[i]->regID );
-           db.VALPRICE( ib[i]->price );
-          
-           db.VALUE( get_VATNum() );
-           db.VALPRICE( get_VAT( ib[i]->price  ) );
-           credit = ib[i]->price - get_VAT( ib[i]->price) ;
-           db.VALPRICE( credit ); // cena bez dane
+            credit =  ib[i]->price -  get_VAT( ib[i]->price  ); // pripocitavany credit (castka be DPH )
+             
+            // vytvoreni zalohove faktury a ulozeni creditu         
+           invoiceID =  db.MakeAInvoice( (const char * ) prefixStr , ib[i]->regID , ib[i]->price  ,  get_VATNum() , get_VAT( ib[i]->price ) , credit );
 
-           if( !db.EXEC() ) 
+           if( invoiceID )
+             {
+                if( db.SaveCredit( ib[i]->regID , ib[i]->zone , credit ,  invoiceID  ) )
+                {
+                  if( !db.UpdateBankStatementItem( invoiceID ,  ib[i]->id ) )
+                    {
+                     LOG( LOG_ERR , "SQL EXEC error update invoice_statement_item");
+                     db.QuitTransaction( 0 );
+                     // odpojeni od databaze
+                     db.Disconnect();
+                     return -5;
+                   }
+               }
+               else  
+                    {
+                     LOG( LOG_ERR , "SQL EXEC error save credit");
+                     db.QuitTransaction( 0 );
+                     // odpojeni od databaze
+                     db.Disconnect();
+                     return -6;
+                    }
+             }
+           else
               {
                 LOG( LOG_ERR , "SQL EXEC error invoice");
                 db.QuitTransaction( 0 );
@@ -159,43 +167,6 @@ if(  db.BeginTransaction() )
                 return  -2;
               }
 
-
-
-            // uloz credit
-           db.INSERT( "credit_invoice_credit_map" );
-           db.INTO( "registrarid" );
-           db.INTO( "zone" );
-           db.INTO( "invoice_id" );
-           db.INTO( "credit" );
-           db.INTO( "total" );
-
-           db.VALUE( ib[i]->regID );
-           db.VALUE( ib[i]->zone );
-           db.VALUE( invoiceID );
-           db.VALPRICE( credit ); 
-           db.VALPRICE( 0 );
-  
-           if( !db.EXEC() )
-              {
-                LOG( LOG_ERR , "SQL EXEC error credit_invoice_credit_map");
-                db.QuitTransaction( 0 );
-                // odpojeni od databaze
-                db.Disconnect();
-                return  -3;
-              }
-
-            db.UPDATE( "bank_statement_item" );
-            db.SET( "invoice_id" , invoiceID );
-            db.WHEREID(  ib[i]->id  );
-            if( !db.EXEC() )
-              {
-                   LOG( LOG_ERR , "SQL EXEC error update invoice_statement_item");
-                   db.QuitTransaction( 0 );
-                   // odpojeni od databaze
-                   db.Disconnect();
-                   return -5;
-               }
- 
            
           }
 
@@ -220,17 +191,13 @@ db.Disconnect();
 return 0;
 }
 
-int banking_statement(const char *database , ST_Head *head , ST_Item  **item , int numrec )
+bool banking_statement(const char *database , ST_Head *head , ST_Item  **item , int numrec )
 {
 DB db;
-char sqlString[512];
-int lastNum; // poradove cislo posledniho vypisu
-int accountID=0;
-long lastBalance=0; 
-int statemetID=0;
-bool retOK=false;
+int accountID;
+int statemetID;
 int rc;
-
+int ret=0;
 
 if( db.OpenDatabase( database  ) )
 {
@@ -240,163 +207,37 @@ LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
 if(  db.BeginTransaction() )
   {  
 
-     sprintf( sqlString , "SELECT  * FROM  bank_account WHERE account_number=\'%s\';" ,  head->account );
+    if( ( accountID = db.TestBankAccount(  head->account , head->num , head->oldBalnce )  ) )
+      {   
+        if( statemetID = db.SaveBankHead( accountID , head->num ,  head->date ,  head->oldDate ,  head->oldBalnce ,  head->newBalance  ,  head->credit  ,  head->debet ) ) 
+         {
+         LOG( LOG_DEBUG , "accountID %d statemetID %d\n" ,  accountID , statemetID );             
+          for( rc = 0 ; rc < numrec ; rc ++ )
+           {
+              if( !db.SaveBankItem( statemetID , item[rc]->account  ,  item[rc]->bank ,  item[rc]->evid ,  item[rc]->date ,   item[rc]->memo , 
+                             item[rc]->code , item[rc]->ks , item[rc]->vs ,  item[rc]->ss ,  item[rc]->price ) ) break;
+          
+           }
+         }
+         
+        // update zustaktu na uctu
+       if( db.UpdateBankAccount( accountID , head->date , head->num ,  head->newBalance  ) ) ret = CMD_OK;    
+      }     
 
-     if( db.ExecSelect( sqlString )  )
-       {
-          if(  db.GetSelectRows() == 1 )
-            {
-                accountID = atoi( db.GetFieldValueName("id"  , 0 ) ); 
-                lastNum = atoi( db.GetFieldValueName("last_num" , 0 ) );
-                lastBalance = (long) ( 100.0 *  atof( db.GetFieldValueName("balance" , 0 ) )  );
-            }
-
-         db.FreeSelect();
-        }
-     
-
-     LOG( LOG_DEBUG ,"posledni vypis ucetID %d cislo %d zustatek na uctu %ld" , accountID ,  lastNum , lastBalance);
-
-     if( accountID == 0 )
-       {
-          LOG( LOG_ERR , "nelze najit ucet na vypisu cislo %s" ,  head->account );          
-          db.QuitTransaction( 0 );
-          // odpojeni od databaze
-           db.Disconnect();
-          return -5;
-       }
-
-     // test podle cisla vypisu ne pro prvni vypis
-    if( head->num > 1  )
-      {
-        if( lastNum + 1 != head->num )
-          {
-               LOG( LOG_ERR , "chyba nesedi cislo  vypisu %d  posledni nacteny je %d" , head->num , lastNum );
-               db.QuitTransaction( 0 );
-                // odpojeni od databaze
-                db.Disconnect();
-                return -3;
-          }      
-      }
-
-    // test pokud nesedi zustatek na uctu
-   if(  head->oldBalnce  != lastBalance )
-     {
-         LOG( LOG_ERR , "chyba nesedi zustatek na uctu poslednu zustatek %ld nacitany stav %ld" , lastBalance ,  head->oldBalnce );
-               db.QuitTransaction( 0 );
-                // odpojeni od databaze
-               db.Disconnect();
-               return  -4;
-     }
-
-     statemetID = db.GetSequenceID( "bank_statement_head" ); 
-   // id | account_id | num | create_date | balance_old_date | balance_old | balance_new | balance_credit | balence_debet
-
-                    db.INSERT( "bank_statement_head" );
-                    db.INTO( "id" );
-                    db.INTO( "account_id" );
-                    db.INTO( "num" );
-                    db.INTO( "create_date" );
-                    db.INTO( "balance_old_date" );
-                    db.INTO( "balance_old" );
-                    db.INTO( "balance_new" );
-                    db.INTO( "balance_credit" );
-                    db.INTO( "balance_debet" );
-                    db.VALUE(  statemetID );
-                    db.VALUE(  accountID );
-                    db.VALUE( head->num );
-                    db.VALUE(  head->date );
-                    db.VALUE(  head->oldDate );
-                    db.VALPRICE(  head->oldBalnce );
-                    db.VALPRICE(  head->newBalance  );
-                    db.VALPRICE(  head->credit );
-                    db.VALPRICE(  head->debet );
-
-      if( !db.EXEC() ) 
-      {
-          LOG( LOG_ERR , "SQL EXEC error bank_statement_head");
-                db.QuitTransaction( 0 );
-                // odpojeni od databaze
-               db.Disconnect();
-               return  -6;
-     }
-
-
-     for( rc = 0 ; rc < numrec ; rc ++ )
-        {
-
-
-// id | statement_id | account_number | bank_code | code | konstsym | varsymb | specsymb | price | account_evid | account_date | account_memo
-                    db.INSERT( "bank_statement_item" );
-                    db.INTO( "statement_id" );
-                    db.INTO( "account_number" );
-                    db.INTO( "account_evid" );
-                    db.INTO( "account_date" );
-                    db.INTO( "account_memo" );
-                    db.INTO( "bank_code" );
-                    db.INTO( "code" );
-                    db.INTO( "konstsym" );
-                    db.INTO( "varsymb" );
-                    db.INTO( "specsymb" );
-                    db.INTO( "price" );
-                    db.VALUE(  statemetID );
-                    db.VALUE(  item[rc]->account );
-                    db.VALUE( item[rc]->evid );
-                    db.VALUE(  item[rc]->date );
-                    db.VALUE(   item[rc]->memo );
-                    db.VALUE(   item[rc]->bank );
-                    db.VALUE(   item[rc]->code );
-                    db.VALUE(   item[rc]->ks );
-                    db.VALUE(   item[rc]->vs );
-                    db.VALUE(   item[rc]->ss );
-                    db.VALPRICE(  item[rc]->price );
-
-
-              if( !db.EXEC() )
-               { 
-                   LOG( LOG_ERR , "SQL EXEC error bank_statement_item");
-                   db.QuitTransaction( 0 );
-                   // odpojeni od databaze
-                   db.Disconnect();
-                   return -7;
-               }
- 
-              
-        }
-
-     //  update  tabulky 
-    // UPDATE bank_account set last_date='2006-11-10', last_num=162 , balance='230000.00' where id=1;
-
-           db.UPDATE( "bank_account" );
-           db.SET( "last_date" , head->date  );
-           db.SET( "last_num" , head->num );
-           db.SETPRICE( "balance" , head->newBalance );
-           db.WHEREID( accountID );
-
-              if( !db.EXEC() )
-               {
-                   LOG( LOG_ERR , "SQL EXEC error update bank_account");
-                   db.QuitTransaction( 0 );
-                   // odpojeni od databaze
-                   db.Disconnect();
-                   return -8;
-               }
              
-
-       retOK =  db.QuitTransaction( CMD_OK ); // potvrdit transakci jako uspesnou OK
+        
+       db.QuitTransaction( ret ); // potvrdit transakci jako uspesnou OK
     }
       // odpojeni od databaze
       db.Disconnect();
 
-if( retOK ) return 0;
-else return 1;
+if( ret == CMD_OK ) return true;
 }
-else
-{
-      LOG( ALERT_LOG ,  "Cannot connect to DB %s" , database );
-      return -1;
-}
+else LOG( ALERT_LOG ,  "Cannot connect to DB %s" , database );
 
+
+
+      return false;
 
 }
 
@@ -476,13 +317,10 @@ if( argc==3)
 
 
      // proved import bankovniho prikazu do databaze
-     err = banking_statement( config.GetDBconninfo() , head ,  item ,  numrec );
+     if(  banking_statement( config.GetDBconninfo() , head ,  item ,  numrec ) )
+           printf("FILE %s succesfully import to database\n" ,  argv[2] );
+     else printf("error import file %s to database\n" ,  argv[2] );
 
-
-
-     // vysledek
-     if( err != 0 ) printf("error %d import banking statement\n"  , err );
-     else  printf("FILE %s succesfully import to database\n" ,  argv[2] );  
 
      // uvolni pamet
       delete head;
