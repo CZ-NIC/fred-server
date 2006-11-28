@@ -88,7 +88,7 @@ bool TestObjectHistory( const char *table , const char *fname ,  const char * na
 int TestBankAccount( char *accountStr , int num , long oldBalance );
 
 // update zustatku na uctu
-bool DB::UpdateBankAccount( int accountID , char *date , int num ,  long newBalance  );
+bool UpdateBankAccount( int accountID , char *date , int num ,  long newBalance  );
 
 // ulozeni hlavicky vypisu return ID hlavicky
 int SaveBankHead( int accountID ,int num ,  char *date  ,  char *oldDate , long oldBalance , long newBalance , long credit , long debet );
