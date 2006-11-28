@@ -41,7 +41,7 @@ bool DeleteFromTableMap(char *map ,int  id , int contactid );
 // vraci castku za operaci
 long GetPrice(   int action  ,  int zone , int period  );
 // zpracovani creditu
-bool UpdateCredit( int regID ,   int action  , int zone ,  int period  );
+long UpdateInvoiceCredit( int regID ,   int action  , int zone  , int period  );
 
 // ukladada vytvorene XML z mod_eppd
 int SaveXMLout( const char *svTRID , const char *xml  );

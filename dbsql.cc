@@ -47,6 +47,8 @@ long DB::GetPrice(   int action  ,  int zone , int period  )
 char sqlString[256];
 long p ,  price=0; // cena
 int per; // cena za periodu
+
+
 sprintf(  sqlString ,  "SELECT * FROM price WHERE valid_from < 'now()'  and ( valid_to is NULL or valid_to > 'now()' )  and action=%d and zone=%d;" , action , zone );
 
 if( ExecSelect( sqlString ) )
@@ -69,63 +71,86 @@ if( ExecSelect( sqlString ) )
 return price;
 }
 
-// zpracovani creditu
-bool DB::UpdateCredit( int regID ,   int action  , int zone ,  int period  )
+// zpracovani creditu strzeni ze zalohe faktury ci dvou faktur
+long DB::UpdateInvoiceCredit( int regID ,   int action  , int zone   , int period  )
 {
 char priceStr[16];
-char creditStr[16];
-long price , credit;
-
+// char creditStr[16];
+long price , credit ;
+char sqlString[256];
+int invoiceID;
+int invID[2];
+long cr[2];
+int i , num;
 
 // cena za operaci v registru
-
 price =  GetPrice( action , zone , period );
 
 // zadna cena (zadarmo) operace se povoluje
-if( price == 0 ) return true;
+if( price == 0 ) return 0;
 
+// zjisti na jakych zalohovych fakturach je volny credit vypis vzdy dve po sobe nasledujici
+sprintf( sqlString , "SELECT * FROM credit_invoice_credit_map WHERE registrarid=%d and zone=%d and credit > 0 order by invoice_id limit 2;" , regID , zone );
 
-// vyse creditu registratora prevedena na halire
-credit  =  get_price( GetRegistrarCredit( regID)  );
+invoiceID=0;
 
-LOG( NOTICE_LOG , "UpdateCredit: action %d period %d credit %ld price %ld" , action , period  , credit , price ); 
+if( ExecSelect( sqlString ) )
+ {
+    num = GetSelectRows();
 
-// pokud ma dostatecny credfit
-if( credit - price > 0 )
+    for( i = 0 ; i  < num ; i ++ )
+       {
+        invID[i]  = atoi( GetFieldValueName( "invoice_id"  , i ) );
+        cr[i]  =  (long) ( 100.0 *  atof( GetFieldValueName("credit" , i ) )  );
+       }
+     FreeSelect();
+ }
+
+if( num  > 0 )
 {
-  // odecti credit;
-  credit = credit - price;
-  //  preved  na string
-  get_priceStr( creditStr ,  credit );
-  get_priceStr(   priceStr , price  );
+credit= cr[0];
+invoiceID=invID[0];
 
-  INSERT( "CREDIT" );
-  INTO( "registrar" );
-  INTO( "action" );
-  INTO( "amount" );
-  INTO( "credit" );
+if( credit - price > 0 )
+  {
+     get_priceStr(   priceStr , price  );  
+     
+     sprintf(  sqlString ,  "UPDATE credit_invoice_credit_map set credit=credit-%s , total=total+%s  where invoice_id=%d;" , priceStr , priceStr , invoiceID );
+     if( !ExecSQL( sqlString )   ) {  LOG( CRIT_LOG , "error update   zalohova faktura %d" , invoiceID );  return -1; }  // chyba
+   }
+else
+  {
+   if(  num == 2 )   
+    {
+     get_priceStr(   priceStr , cr[0] );
+     invoiceID=invID[0];
+     sprintf(  sqlString ,  "UPDATE credit_invoice_credit_map set credit=0 , total=total+%s where invoice_id=%d;" , priceStr , invoiceID );
+     if( !ExecSQL( sqlString ) )  { LOG( CRIT_LOG , "error update prvni  zalohova faktura %d" , invoiceID );  return -2; }
+     else
+        {
+             invoiceID=invID[1];                        
+             credit = price  - cr[0];
+             LOG(   DEBUG_LOG , "pozadovana castka credit0 %ld credit1 %ld price %ld credi %ld" , cr[0] ,  cr[1]  , price  , credit );
+             if( cr[1] -  credit  > 0 )
+             {
+               get_priceStr(  priceStr , credit ); // zmena o cenu minus credit z predchozi zal faktury
+               sprintf(  sqlString , "UPDATE credit_invoice_credit_map set credit=credit-%s , total=total+%s  where invoice_id=%d;" , priceStr , priceStr , invoiceID );
+               if( !ExecSQL( sqlString ) ) {  LOG( CRIT_LOG , "error update nasleduji   zalohova faktura %d" , invoiceID ); return -3; }
+             }
+             else {  LOG( CRIT_LOG , "na dalsi zalohove fakture id %d  neni pozadovana castka  %ld credit %ld" ,   invoiceID ,  price  , cr[1] );  return -5 ; }
 
-  VALUE( regID  );
-  VALUE( action );
-  VVALUE( priceStr );
-  VVALUE( creditStr );
+        }
+    }
+   else { LOG( CRIT_LOG , "neni uz dalsi zalohova faktura ke zpracovani ");  return -4;  }
 
-   if( EXEC() )
-     {
-       // update stavu creditu registratora
+  }
 
-         UPDATE("REGISTRAR");
-         SSET( "Credit" , creditStr );
-         WHEREID( regID );
-         if( EXEC() ) return true; // pokud vse proslo
-     }
 
 }
-else  LOG( ERROR_LOG , "NOT CREDIT return false" );
+else { LOG( CRIT_LOG , "nejsou zadne zalohova faktura ke ke zpracovani ");  return -10; }
 
-
-// default
-return false; //nema
+// vrat cenu pokud vse proslo
+return price;
 }
 
 int DB::SaveXMLout( const char *svTRID , const char *xml  )
