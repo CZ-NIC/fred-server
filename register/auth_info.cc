@@ -154,22 +154,15 @@ namespace Register
           getTemplateName(),params,handles
         );
       }
+#define RT_SQL(x) ((x) == RT_EPP ? 1 : \
+                  ((x) == RT_AUTO_PIF ? 2 :\
+                  ((x) == RT_EMAIL_PIF ? 3 : 4)))
+#define RS_SQL(x) ((x) == RS_NEW ? 1 : \
+                  ((x) == RS_ANSWERED ? 2 : 3))
+                  
       void save() throw (SQL_ERROR)
       {
         std::stringstream sql;
-        short rType;
-        switch (requestType) {
-          case RT_EPP: rType = 1; break;
-          case RT_AUTO_PIF: rType = 2; break;
-          case RT_EMAIL_PIF: rType = 3; break;
-          case RT_POST_PIF: rType = 4; break;
-        }
-        short statusId;
-        switch (requestStatus) {
-          case RS_NEW: statusId = 1; break;
-          case RS_ANSWERED: statusId = 2; break;
-          case RS_INVALID: statusId = 3; break;
-        }
         if (!id) {
           id = db->GetSequenceID("auth_info_requests");
           sql << "INSERT INTO auth_info_requests "
@@ -178,7 +171,7 @@ namespace Register
               << "VALUES ("
               << id << ","
               << objectId << ","
-              << rType << ",";
+              << RT_SQL(requestType) << ",";
           if (actionId)
             sql << actionId << ",";
           else
@@ -187,7 +180,7 @@ namespace Register
               << "'" << emailToAnswer << "')";
         } else { 
           sql << "UPDATE auth_info_requests SET "
-              << "status=" << statusId << ","
+              << "status=" << RS_SQL(requestStatus) << ","
               << "resolve_time=now() "
               << "WHERE id=" << id;
         }
@@ -203,7 +196,9 @@ namespace Register
       std::string reasonFilter;
       std::string svTRIDFilter;
       RequestType typeFilter;
+      bool typeIgnoreFilter;
       RequestStatus statusFilter;
+      bool statusIgnoreFilter;
       time_period creationTimeFilter;
       time_period closeTimeFilter;     
       Mailer::Manager *mm;
@@ -217,6 +212,7 @@ namespace Register
      public:
       ListImpl(Mailer::Manager *_mm, DB *_db) : 
         idFilter(0),
+        typeIgnoreFilter(true), statusIgnoreFilter(true),
         creationTimeFilter(ptime(neg_infin),ptime(pos_infin)),
         closeTimeFilter(ptime(neg_infin),ptime(pos_infin)),         
         mm(_mm), db(_db)
@@ -273,17 +269,17 @@ namespace Register
         emailFilter = "";
         reasonFilter = "";
         svTRIDFilter = "";
-        // creationTimeFIlter
-        // closeTimeFilter
-        // typeFilter
-        // statusFilter 
+        creationTimeFilter = time_period(ptime(neg_infin),ptime(pos_infin));
+        closeTimeFilter = time_period(ptime(neg_infin),ptime(pos_infin));
+        typeIgnoreFilter = true;
+        statusIgnoreFilter = true;
       }
-#define RT_SQL(x) ((x) == 1 ? RT_EPP : \
+#define SQL_RT(x) ((x) == 1 ? RT_EPP : \
                   ((x) == 2 ? RT_AUTO_PIF : \
                   ((x) == 3 ? RT_EMAIL_PIF : RT_POST_PIF)))       
-#define RS_SQL(x) ((x) == 1 ? RS_NEW : \
+#define SQL_RS(x) ((x) == 1 ? RS_NEW : \
                   ((x) == 2 ? RS_ANSWERED : RS_INVALID))       
-#define OT_SQL(x) ((x) == 1 ? OT_DOMAIN : \
+#define SQL_OT(x) ((x) == 1 ? OT_DOMAIN : \
                   ((x) == 2 ? OT_CONTACT : OT_NSSET))       
 #define MAKE_TIME(ROW,COL)  \
  (ptime(db->IsNotNull(ROW,COL) ? \
@@ -302,15 +298,25 @@ namespace Register
             << "LEFT JOIN registrar r ON (l.registrarid=r.id) "
             << "WHERE o.id=air.object_id ";
         SQL_ID_FILTER(sql,"air.id",idFilter);
+        SQL_HANDLE_FILTER(sql,"o.name",handleFilter);
+        SQL_HANDLE_FILTER(sql,"air.email_to_answer",emailFilter);
+        SQL_HANDLE_FILTER(sql,"air.reason",reasonFilter);
+        SQL_HANDLE_FILTER(sql,"a.servertrid",svTRIDFilter);        
+        SQL_DATE_FILTER(sql,"air.create_time",creationTimeFilter);
+        SQL_DATE_FILTER(sql,"air.close_time",closeTimeFilter);
+        if (!typeIgnoreFilter)
+          sql << "AND air.request_type=" << RT_SQL(typeFilter) << " ";
+        if (!statusIgnoreFilter)
+          sql << "AND air.status=" << RS_SQL(statusFilter) << " ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           DetailImpl *d = new DetailImpl(
             atoi(db->GetFieldValue(i,0)), // id
             atoi(db->GetFieldValue(i,1)), // objectId
             db->GetFieldValue(i,2), // handle
-            OT_SQL(atoi(db->GetFieldValue(i,3))), // object type
-            RT_SQL(atoi(db->GetFieldValue(i,4))), // request type
-            RS_SQL(atoi(db->GetFieldValue(i,5))), // status
+            SQL_OT(atoi(db->GetFieldValue(i,3))), // object type
+            SQL_RT(atoi(db->GetFieldValue(i,4))), // request type
+            SQL_RS(atoi(db->GetFieldValue(i,5))), // status
             MAKE_TIME(i,6), // create time
             MAKE_TIME(i,7), // resolve time
             db->GetFieldValue(i,8), // reason 
