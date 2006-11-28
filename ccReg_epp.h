@@ -1,6 +1,8 @@
 
 #include "countrycode.h"
 #include "messages.h"
+// JT: adding mailer manager
+#include "mailer_manager.h"
 
 //
 //  class implementing IDL interface ccReg::EPP
@@ -11,9 +13,10 @@ private:
   // Make sure all instances are built on the heap by making the
   // destructor non-public
   //virtual ~ccReg_EPP_i();
+  MailerManager *mm;
 public:
   // standard constructor
-  ccReg_EPP_i();
+  ccReg_EPP_i(MailerManager *_mm);
   virtual ~ccReg_EPP_i();
 
 

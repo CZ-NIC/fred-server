@@ -107,8 +107,8 @@ int main(int argc, char** argv)
     ccReg::Whois_var whois = ccReg::Whois::_narrow(whoisObj);
 #endif
 
- 
-    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i();
+    MailerManager mm(&ns);
+    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(&mm);
 
     ccReg::timestamp_var ts;
     cout << "version: " << myccReg_EPP_i->version(ts) << endl;

@@ -91,7 +91,8 @@ int main(int argc, char** argv)
     // pristup na admin a whois je mozna z EPP vyhodit
     ccReg::Whois_var whois = ccReg::Whois::_narrow(whoisObj);
  
-    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i();
+    MailerManager mm(&ns);
+    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(&mm);
 
     ccReg::timestamp_var ts;
     cout << "version: " << myccReg_EPP_i->version(ts) << endl;

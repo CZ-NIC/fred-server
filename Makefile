@@ -5,7 +5,7 @@ CXXFLAGS = -Wall -DSYSLOG -DCONFIG_FILE=\"/etc/ccReg.conf\" \
            -DSVERSION=\"${SVN_REVISION}\"
 
 OBJECTS = 
-IDLDIR = ../../idl/branches/devel/
+IDLDIR = ../../idl/trunk/
 IDLFILE = $(IDLDIR)/ccReg.idl
 LDFLAGS =  -L/usr/local/pgsql/lib/
 LIBS =  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread 
@@ -29,7 +29,8 @@ all:  fred_rifd fred_adifd fred_pifd
 .SUFFIXES:  .o
 
 fred_rifd: $(CCREG_SERVER_OBJECTS) ccReg.hh
-	$(CXX) -o fred_rifd $(CCREG_SERVER_OBJECTS) $(LDFLAGS)  $(LIBS)  -lpq
+	$(MAKE) -C register
+	$(CXX) -o fred_rifd $(CCREG_SERVER_OBJECTS) $(LDFLAGS)  $(SVLIBS)
 
 fred_adifd: $(ADMIN_SERVER_OBJECTS) ccReg.hh
 	$(MAKE) -C register

@@ -22,6 +22,11 @@
 		
 #include "log.h"
 
+// JT: START
+// MailerManager is connected in constructor
+#include <register/auth_info.h>
+#include <memory>
+// JT: END
 
 // TODO predelat do session
 #define  CLIENT_LANG() DBsql.GetClientLanguage()
@@ -29,7 +34,7 @@
 //
 // Example implementational code for IDL interface ccReg::EPP
 //
-ccReg_EPP_i::ccReg_EPP_i( )  {
+ccReg_EPP_i::ccReg_EPP_i(MailerManager *_mm ) : mm(_mm) {
 
 }
 ccReg_EPP_i::~ccReg_EPP_i(){
@@ -5737,8 +5742,21 @@ if( DBsql.OpenDatabase( database ) )
                            }   
                                  
 
-                      // TODO pokud maily odesly
-                      ret->errCode=COMMAND_OK;
+                      // CREATE REQUEST
+                      // JT: START
+                      std::auto_ptr<Register::AuthInfoRequest::Manager> airm(
+                        Register::AuthInfoRequest::Manager::create(&DBsql,mm)
+                      );
+                      try {
+                        // TODO: get action type
+                        airm->createRequest(id,Register::AuthInfoRequest::RT_EPP,0,"","");
+                        ret->errCode=COMMAND_OK;
+                      } catch (...) {
+                        LOG( WARNING_LOG, "cannot create and process request");
+                        ret->errCode = COMMAND_PARAMETR_ERROR;
+                      }
+                      // JT: END
+
 
  
                   }
