@@ -5746,6 +5746,7 @@ if( DBsql.OpenDatabase( database ) )
                       );
                       try {
                         // TODO: get action type
+                        LOG(  NOTICE_LOG , "createRequest objectID %d actionID %d" , id,DBsql.GetActionID() );
                         airm->createRequest(id,Register::AuthInfoRequest::RT_EPP, DBsql.GetActionID(),"","");
                         ret->errCode=COMMAND_OK;
                       } catch (...) {
