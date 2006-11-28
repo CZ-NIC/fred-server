@@ -740,13 +740,14 @@ ccReg_Admin_i::getNSSetStatusDescList()
 CORBA::Long 
 ccReg_Admin_i::createAuthInfoRequest(
   CORBA::Long objectId, 
-  ccReg::Admin::RequestType type, 
+  ccReg::AuthInfoRequest::RequestType type, 
   CORBA::Long eppActionId, 
   const char* requestReason,
   const char* emailToAnswer
 ) throw (
   ccReg::Admin::BAD_EMAIL, ccReg::Admin::OBJECT_NOT_FOUND, 
-  ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR
+  ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR,
+  ccReg::Admin::INVALID_INPUT
 )
 {
   DB db;
@@ -757,13 +758,16 @@ ccReg_Admin_i::createAuthInfoRequest(
   );
   Register::AuthInfoRequest::RequestType rtype;
   switch (type) {
-    case ccReg::Admin::RT_EPP:
+    case ccReg::AuthInfoRequest::RT_IGNORE:
+      db.Disconnect();
+      throw ccReg::Admin::INVALID_INPUT();
+    case ccReg::AuthInfoRequest::RT_EPP:
       rtype = Register::AuthInfoRequest::RT_EPP; break;
-    case ccReg::Admin::RT_AUTO_PIF:
+    case ccReg::AuthInfoRequest::RT_AUTO_PIF:
       rtype = Register::AuthInfoRequest::RT_AUTO_PIF; break;
-    case ccReg::Admin::RT_EMAIL_PIF:
+    case ccReg::AuthInfoRequest::RT_EMAIL_PIF:
       rtype = Register::AuthInfoRequest::RT_EMAIL_PIF; break;
-    case ccReg::Admin::RT_POST_PIF:
+    case ccReg::AuthInfoRequest::RT_POST_PIF:
       rtype = Register::AuthInfoRequest::RT_POST_PIF; break;
   };
   unsigned long ret = 0;
@@ -2116,9 +2120,9 @@ ccReg_AIRequests_i::getRow(CORBA::Short row)
   (*tr)[3] = DUPSTRC(type);
   std::string status;
   switch (aird->getRequestStatus()) {
-    case Register::AuthInfoRequest::RS_NEW : type = "NEW"; break;
-    case Register::AuthInfoRequest::RS_ANSWERED : type = "CLOSED"; break;
-    case Register::AuthInfoRequest::RS_INVALID : type = "INVALID"; break;
+    case Register::AuthInfoRequest::RS_NEW : status = "NEW"; break;
+    case Register::AuthInfoRequest::RS_ANSWERED : status = "CLOSED"; break;
+    case Register::AuthInfoRequest::RS_INVALID : status = "INVALID"; break;
   }
   (*tr)[4] = DUPSTRC(status);
   return tr;
@@ -2190,6 +2194,9 @@ FILTER_IMPL(ccReg_AIRequests_i::type,
             ccReg::AuthInfoRequest::RequestType,
             ccReg::AuthInfoRequest::RequestType,
             requestTypeFilter,requestTypeFilter,
+            airl->setRequestTypeIgnoreFilter(
+              _v == ccReg::AuthInfoRequest::RT_IGNORE
+            );
             airl->setRequestTypeFilter(
              _v == ccReg::AuthInfoRequest::RT_EPP ? 
                Register::AuthInfoRequest::RT_EPP : 
@@ -2204,6 +2211,9 @@ FILTER_IMPL(ccReg_AIRequests_i::status,
             ccReg::AuthInfoRequest::RequestStatus,
             ccReg::AuthInfoRequest::RequestStatus,
             requestStatusFilter,requestStatusFilter,
+            airl->setRequestStatusIgnoreFilter(
+              _v == ccReg::AuthInfoRequest::RS_IGNORE
+            );
             airl->setRequestStatusFilter(
              _v == ccReg::AuthInfoRequest::RS_NEW ? 
                Register::AuthInfoRequest::RS_NEW : 

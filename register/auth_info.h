@@ -68,7 +68,9 @@ namespace Register
       virtual void setReasonFilter(const std::string& reason) = 0;
       virtual void setSvTRIDFilter(const std::string& svTRID) = 0;
       virtual void setRequestTypeFilter(RequestType type) = 0;
+      virtual void setRequestTypeIgnoreFilter(bool ignore) = 0;
       virtual void setRequestStatusFilter(RequestStatus status) = 0;
+      virtual void setRequestStatusIgnoreFilter(bool ignore) = 0;
       virtual void setCreationTimeFilter(time_period period) = 0;
       virtual void setCloseTimeFilter(time_period period) = 0;
       virtual void reload() throw (SQL_ERROR) = 0;

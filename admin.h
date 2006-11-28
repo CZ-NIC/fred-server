@@ -404,13 +404,14 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   void checkHandle(const char* handle, ccReg::CheckHandleType_out ch);
   CORBA::Long createAuthInfoRequest(
     CORBA::Long objectId, 
-    ccReg::Admin::RequestType type, 
+    ccReg::AuthInfoRequest::RequestType type, 
     CORBA::Long eppActionId, 
     const char* requestReason,
     const char* emailToAnswer
   ) throw (
     ccReg::Admin::BAD_EMAIL, ccReg::Admin::OBJECT_NOT_FOUND, 
-    ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR
+    ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR, 
+    ccReg::Admin::INVALID_INPUT
   );
   void processAuthInfoRequest(CORBA::Long id) throw (ccReg::Admin::SQL_ERROR); 
 };

@@ -242,9 +242,17 @@ namespace Register
       {
         typeFilter = type;
       }
+      virtual void setRequestTypeIgnoreFilter(bool ignore)
+      {
+      	typeIgnoreFilter = ignore;
+      }      
       virtual void setRequestStatusFilter(RequestStatus status)
       {
         statusFilter = status;
+      }
+      virtual void setRequestStatusIgnoreFilter(bool ignore)
+      {
+      	statusIgnoreFilter = ignore;
       }
       virtual void setCreationTimeFilter(time_period period)
       {
