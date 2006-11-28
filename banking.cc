@@ -42,42 +42,64 @@ char prefix[25]; // prefix zalohove faktury
 
 
 // rucni naliti creditu pro registratora
-int credit_invoicing(const char *database  , const char *registrarHandle ,  int zone , long  credit )
+bool credit_invoicing(const char *database  , const char *registrarHandle ,  const char  *zone_fqdn , long  price )
 {
 DB db;
-char sqlString[512];
 int regID;
+int invoiceID;
+int zone;
+char prefixStr[25];
+long credit;
+int ret = 0;
 
 if( db.OpenDatabase( database  ) )
 {
 
 LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
 
-if( ( regID = db.GetRegistrarID( (char * )  registrarHandle ) )  ) 
+if( db.BeginTransaction() )
+ {
+
+  if(  (regID = db.GetRegistrarID( (char * )  registrarHandle ) )  ) 
   {
 
-    if(  db.BeginTransaction() )
-      {
+    if( ( zone =  db.GetNumericFromTable( "zone", "id", "fqdn", zone_fqdn ) )  )
+     {     
+        // cislo zalohove faktury
+        if( db.GetInvoicePrefix( prefixStr , 1 ,  zone  )  )
+         {
+            credit =  price -  get_VAT( price ); // pripocitavany credit (castka be DPH )
+
+            // vytvoreni zalohove faktury a ulozeni creditu
+           invoiceID =  db.MakeAInvoice( (const char * ) prefixStr , regID , price , get_VATNum() , get_VAT( price ) , credit );
+
+           if( invoiceID )
+             {
+                if( db.SaveCredit( regID , zone , credit ,  invoiceID  ) )ret = CMD_OK;                
+             }    
+         }
 
       }
+     else LOG( LOG_ERR , "unkow zone %s\n" , zone_fqdn );
   }
-else
+  else
   {
-     LOG( LOG_ERR , "unkow registrarHandle %s" , registrarHandle );
-     db.Disconnect();
-     return -5;   
+     LOG( LOG_ERR , "unkow registrarHandle %s" , registrarHandle );          
   }
 
+    db.QuitTransaction( ret );
+}
 
 // odpojeni od databaze
 db.Disconnect();
 }
  
-
+if( ret ) return true;
+else return false;
 }
 
 
-int  banking_invoicing(const char *database )
+int banking_invoicing(const char *database )
 {
 DB db;
 char sqlString[512];
@@ -86,6 +108,7 @@ char prefixStr[25];
 int num , i;
 int invoiceID;
 long credit;
+int ret=0;
 
 if( db.OpenDatabase( database  ) )
 {
@@ -95,6 +118,7 @@ LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
 if(  db.BeginTransaction() )
   {
 
+ 
      // SQL dotaz na bankovni vypisy a jajich  zparovani podke varsym v  tabulce banking_invoice_varsym_map
      strcpy( sqlString , "SELECT id , registarid, price , zone from bank_statement_item , banking_invoice_varsym_map where bank_statement_item.account_number=banking_invoice_varsym_map.account_number and bank_statement_item.bank_code=banking_invoice_varsym_map.bank_code and banking_invoice_varsym_map.varsymb=banking_invoice_varsym_map.varsymb and bank_statement_item.invoice_id is null" );
 
@@ -124,71 +148,49 @@ if(  db.BeginTransaction() )
    if( num > 0 )
    {
 
-   for( i = 0 ; i < num ; i ++ )
+      for( i = 0 ; i < num ; i ++ )
       {
-        // vygenerovani cisla faktury 
-        // jestlize byl vytvoren prefix zalohove faktury
-        if( db.GetInvoicePrefix( prefixStr , 1 ,  ib[i]->zone  )  )
-          {
+          // vygenerovani cisla faktury 
+         // jestlize byl vytvoren prefix zalohove faktury
+          if( db.GetInvoicePrefix( prefixStr , 1 ,  ib[i]->zone  )  )
+           {
 
-            credit =  ib[i]->price -  get_VAT( ib[i]->price  ); // pripocitavany credit (castka be DPH )
+              credit =  ib[i]->price -  get_VAT( ib[i]->price  ); // pripocitavany credit (castka be DPH )
              
-            // vytvoreni zalohove faktury a ulozeni creditu         
-           invoiceID =  db.MakeAInvoice( (const char * ) prefixStr , ib[i]->regID , ib[i]->price  ,  get_VATNum() , get_VAT( ib[i]->price ) , credit );
-
-           if( invoiceID )
+              // vytvoreni zalohove faktury a ulozeni creditu         
+             if( ( invoiceID =  db.MakeAInvoice( (const char * ) prefixStr , ib[i]->regID , 
+                            ib[i]->price  ,  get_VATNum() , get_VAT( ib[i]->price ) , credit ) ) )
              {
-                if( db.SaveCredit( ib[i]->regID , ib[i]->zone , credit ,  invoiceID  ) )
-                {
-                  if( !db.UpdateBankStatementItem( invoiceID ,  ib[i]->id ) )
-                    {
-                     LOG( LOG_ERR , "SQL EXEC error update invoice_statement_item");
-                     db.QuitTransaction( 0 );
-                     // odpojeni od databaze
-                     db.Disconnect();
-                     return -5;
-                   }
+                   if( db.SaveCredit( ib[i]->regID , ib[i]->zone , credit ,  invoiceID  ) )
+                     {
+                       if( db.UpdateBankStatementItem( invoiceID ,  ib[i]->id ) ) ret = CMD_OK;
+                    //   else { LOG( LOG_ERR , "SQL EXEC error update invoice_statement_item");  ret =  0 ;num -1; break; }  
+                     }
+                 //  else { LOG( LOG_ERR , "SQL EXEC error update invoice_statement_item"); ret =  0 ; num -1; break;   }
+                  
+                   
                }
-               else  
-                    {
-                     LOG( LOG_ERR , "SQL EXEC error save credit");
-                     db.QuitTransaction( 0 );
-                     // odpojeni od databaze
-                     db.Disconnect();
-                     return -6;
-                    }
-             }
-           else
-              {
-                LOG( LOG_ERR , "SQL EXEC error invoice");
-                db.QuitTransaction( 0 );
-                // odpojeni od databaze
-                db.Disconnect();
-                return  -2;
-              }
+//               else  {    LOG( LOG_ERR , "SQL EXEC error save credit");  ret = 0 ; num -1; break; }
 
-           
-          }
 
+           }
+  //       else  { LOG( LOG_ERR , "make invoice prefix" );  ret = 0 ; num -1;  }
+                     
        }
 
-      delete [] ib;
+    // free mem
+    delete [] ib;
    }
-  else
-   {
-          LOG( LOG_ERR , "nenalezeny zadne platby ke zparovani"  );          
-   }
+  else LOG( NOTICE_LOG , "nenalezeny zadne platby ke zparovani"  );
 
-     
-     
-
-  db.QuitTransaction( CMD_OK );
+    
+  db.QuitTransaction( ret);
   }
 // odpojeni od databaze
 db.Disconnect();
 }
 
-return 0;
+return num;
 }
 
 bool banking_statement(const char *database , ST_Head *head , ST_Item  **item , int numrec )
@@ -209,7 +211,7 @@ if(  db.BeginTransaction() )
 
     if( ( accountID = db.TestBankAccount(  head->account , head->num , head->oldBalnce )  ) )
       {   
-        if( statemetID = db.SaveBankHead( accountID , head->num ,  head->date ,  head->oldDate ,  head->oldBalnce ,  head->newBalance  ,  head->credit  ,  head->debet ) ) 
+        if(  ( statemetID = db.SaveBankHead( accountID , head->num ,  head->date ,  head->oldDate ,  head->oldBalnce ,  head->newBalance  ,  head->credit  ,  head->debet ) ) > 0 )
          {
          LOG( LOG_DEBUG , "accountID %d statemetID %d\n" ,  accountID , statemetID );             
           for( rc = 0 ; rc < numrec ; rc ++ )
@@ -246,7 +248,7 @@ int main(int argc , char *argv[] )
 GPC gpc;
 ST_Head *head;
 ST_Item **item;
-int i , numrec , err ;
+int i , numrec ,  num ;
 
 Conf config; // READ CONFIG  file
 
@@ -263,16 +265,26 @@ Conf config; // READ CONFIG  file
 #endif
 
 
+// usage
+if( argc == 1 )printf("import banking statement file to database\nusage: %s --bank-gpc file.gpc\ninvoicing: %s --invoice\ncredit: %s --credit REG_HANDLE zone price\n"  , argv[0]  , argv[0] ,  argv[0]);  
+
 
 if( argc ==2 )
 {
  if( strcmp(  argv[1]  , "--invoice"  )  == 0 )
    {
-       err =  banking_invoicing( config.GetDBconninfo() );
-       return err;
+       banking_invoicing( config.GetDBconninfo() );
+        
    }
 }
 
+if( argc == 5 )
+ {
+   if( strcmp(  argv[1]  , "--credit" )  == 0 )
+     {
+       credit_invoicing(  config.GetDBconninfo() ,  argv[2] , argv[3] , atol( argv[4] ) );
+     }
+ }
 if( argc==3)
 {
 
@@ -317,16 +329,16 @@ if( argc==3)
 
 
      // proved import bankovniho prikazu do databaze
-     if(  banking_statement( config.GetDBconninfo() , head ,  item ,  numrec ) )
-           printf("FILE %s succesfully import to database\n" ,  argv[2] );
-     else printf("error import file %s to database\n" ,  argv[2] );
+     if( (  num =  banking_statement( config.GetDBconninfo() , head ,  item ,  numrec ) )  < 0 ) 
+            printf("error import file %s to database\n" ,  argv[2] );
+      else 
+           printf("FILE %s succesfully import to database num items %d\n" ,  argv[2] , num );
 
 
      // uvolni pamet
       delete head;
       delete [] item;
 
-    return err;      
    }
 
   }
@@ -335,9 +347,6 @@ return 0;
 }
 
 
-
-
-printf("import banking statement file to database\nusage: %s --bank-gpc file.gpc\ninvoicing: %s --invoice\n"  , argv[0]  , argv[0] );  
 
 #ifdef SYSLOG
   closelog ();
