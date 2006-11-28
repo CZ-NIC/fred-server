@@ -110,12 +110,17 @@ namespace Register
       /// Query object for its addresses where to send answer
       std::string getEmailAddresses()
       {
+        //TODO: return specific email for RT_EPP & RT_AUTO_PIF
         return emailToAnswer;
       }
       /// Query object for its authinfo
-      std::string getAuthInfo()
+      std::string getAuthInfo() throw (SQL_ERROR, Manager::OBJECT_NOT_FOUND) 
       {
-        return "AuthInfo";
+        std::stringstream sql;
+        sql << "SELECT AuthInfoPw FROM object WHERE id=" << objectId;
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        if (db->GetSelectRows() != 1) throw Manager::OBJECT_NOT_FOUND();
+        return db->GetFieldValue(0,0);
       }
       /// Select template name according to request type
       std::string getTemplateName()
@@ -129,37 +134,43 @@ namespace Register
         return "";
       }
       /// Process request by sending email with answer 
-      void process() throw (SQL_ERROR)
+      void process(bool invalid) throw (SQL_ERROR)
       {
-        local_time_facet *ltf = new local_time_facet("%d/%m/%Y");
-        ltf->format("%d/%m/%Y");
-        std::ostringstream buf;
-        buf.imbue(std::locale(std::locale::classic(), ltf));
-        Mailer::Parameters params;
-        params["registrar"] = registrarName;
-        params["wwwpage"] = PIF_PAGE;
-        buf << creationTime;
-        params["reqdate"] = buf.str();
-        buf.str("");
-        buf << id;
-        params["reqid"] = buf.str();
-        params["handle"] = objectHandle;
-        params["authinfo"] = getAuthInfo();
-        Mailer::Handles handles;
-        handles.push_back(objectHandle);
-        mm->sendEmail(
-          "auth_info@nic.cz",
-          getEmailAddresses(),
-          "AuthInfo Request",
-          getTemplateName(),params,handles
-        );
+      	if (invalid) requestStatus = RS_INVALID;
+        {
+          // TODO: repair datetime formatting
+          local_time_facet *ltf = new local_time_facet("%d/%m/%Y");
+          ltf->format("%d/%m/%Y");
+          std::ostringstream buf;
+          buf.imbue(std::locale(std::locale::classic(), ltf));
+          Mailer::Parameters params;
+          params["registrar"] = registrarName;
+          params["wwwpage"] = PIF_PAGE;
+          buf << creationTime;
+          params["reqdate"] = buf.str();
+          buf.str("");
+          buf << id;
+          params["reqid"] = buf.str();
+          params["handle"] = objectHandle;
+          params["authinfo"] = getAuthInfo();
+          Mailer::Handles handles;
+          handles.push_back(objectHandle);
+          answerEmailId = mm->sendEmail(
+            "auth_info@nic.cz",
+            getEmailAddresses(),
+            "AuthInfo Request",
+            getTemplateName(),params,handles
+          );
+          requestStatus = RS_ANSWERED;
+        }
+        closingTime = ptime(boost::posix_time::second_clock::local_time());
+        save();
       }
 #define RT_SQL(x) ((x) == RT_EPP ? 1 : \
                   ((x) == RT_AUTO_PIF ? 2 :\
                   ((x) == RT_EMAIL_PIF ? 3 : 4)))
 #define RS_SQL(x) ((x) == RS_NEW ? 1 : \
                   ((x) == RS_ANSWERED ? 2 : 3))
-                  
       void save() throw (SQL_ERROR)
       {
         std::stringstream sql;
@@ -178,7 +189,8 @@ namespace Register
             sql << "NULL,";
           sql << "'" << reason << "',"
               << "'" << emailToAnswer << "')";
-        } else { 
+        } else {
+          // TODO: proper update
           sql << "UPDATE auth_info_requests SET "
               << "status=" << RS_SQL(requestStatus) << ","
               << "resolve_time=now() "
@@ -356,23 +368,39 @@ namespace Register
         const std::string& emailToAnswer
       ) throw (BAD_EMAIL, OBJECT_NOT_FOUND, ACTION_NOT_FOUND, SQL_ERROR)
       {
-        std::string handle = "CID:JARA";
-        ObjectType otype = OT_CONTACT;
-        std::string regName = "REG-JARA";
-        std::string action = "";
+      	// TODO - must be solved in specific modules (object & action)
+      	// maybe it should be solved in save() but this these are not mutable
+      	// membmers
+      	std::stringstream sql;
+      	sql << "SELECT id FROM object WHERE id=" << objectId;
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+      	if (db->GetSelectRows() != 1) throw OBJECT_NOT_FOUND();
+      	sql.str("");
+      	if (eppActionId) {
+      	  sql << "SELECT id FROM action WHERE id=" << eppActionId;
+          if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+          if (db->GetSelectRows() != 1) throw ACTION_NOT_FOUND();
+        }
+        // TODO - There should be specific constructor for creation
         DetailImpl d(
-          0, objectId, handle, otype, requestType, RS_NEW,
+          0,
+          // objectId details are ignored
+          objectId, "", OT_DOMAIN,
+          requestType, RS_NEW,
           ptime(boost::posix_time::second_clock::local_time()), 
           ptime(not_a_date_time),
-          requestReason, emailToAnswer, 0, 0, regName, action,         
+          requestReason, emailToAnswer, 0,
+          // actionId strings are ignored 
+          eppActionId, "", "",         
           mm,db
         );
         d.save();
+        /// imidiate processing of automatic requests
         if (requestType == RT_EPP || requestType == RT_AUTO_PIF)
-          d.process();
+          d.process(false);
         return d.getId();
       }
-      void processRequest(unsigned id)
+      void processRequest(unsigned id, bool invalid)
         throw (REQUEST_NOT_FOUND, REQUEST_CLOSED, SQL_ERROR)
       {
         ListImpl l(mm,db);
@@ -381,7 +409,7 @@ namespace Register
         if (l.getCount() !=1) throw REQUEST_NOT_FOUND();
         DetailImpl *d = dynamic_cast<DetailImpl *>(l.get(0));
         if (d->getRequestStatus() != RS_NEW) throw REQUEST_CLOSED();
-        d->process();
+        d->process(invalid);
       }
       List *getList()
       {

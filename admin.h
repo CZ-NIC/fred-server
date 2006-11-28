@@ -413,7 +413,8 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
     ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR, 
     ccReg::Admin::INVALID_INPUT
   );
-  void processAuthInfoRequest(CORBA::Long id) throw (ccReg::Admin::SQL_ERROR); 
+  void processAuthInfoRequest(CORBA::Long id, CORBA::Boolean invalid) 
+    throw (ccReg::Admin::SQL_ERROR, ccReg::Admin::OBJECT_NOT_FOUND);
 };
 
 #endif

@@ -98,8 +98,8 @@ namespace Register
         const std::string& requestReason, ///< reason from PIF (*_PIF)
         const std::string& emailToAnswer ///< email to answer ([AUTO|POST]_PIF)
       ) throw (BAD_EMAIL, OBJECT_NOT_FOUND, ACTION_NOT_FOUND, SQL_ERROR) = 0;
-      /// Process request by sending email with auth_info
-      virtual void processRequest(unsigned id) 
+      /// Process request by sending email with auth_info or closing as invalid
+      virtual void processRequest(unsigned id, bool invalid) 
         throw (REQUEST_NOT_FOUND, REQUEST_CLOSED, SQL_ERROR) = 0;
       /// Create list of requests
       virtual List *getList() = 0;

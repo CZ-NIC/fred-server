@@ -797,8 +797,8 @@ ccReg_Admin_i::createAuthInfoRequest(
 }
 
 void 
-ccReg_Admin_i::processAuthInfoRequest(CORBA::Long id) 
-  throw (ccReg::Admin::SQL_ERROR)
+ccReg_Admin_i::processAuthInfoRequest(CORBA::Long id, CORBA::Boolean invalid) 
+  throw (ccReg::Admin::SQL_ERROR, ccReg::Admin::OBJECT_NOT_FOUND)
 {
   DB db;
   db.OpenDatabase(database.c_str());
@@ -807,11 +807,15 @@ ccReg_Admin_i::processAuthInfoRequest(CORBA::Long id)
     Register::AuthInfoRequest::Manager::create(&db,&mm)
   );
   try {
-    r->processRequest(id);
+    r->processRequest(id,invalid);
   } 
   catch (Register::SQL_ERROR) { 
     db.Disconnect();
     throw ccReg::Admin::SQL_ERROR();
+  } 
+  catch (Register::AuthInfoRequest::Manager::OBJECT_NOT_FOUND) { 
+    db.Disconnect();
+    throw ccReg::Admin::OBJECT_NOT_FOUND();
   } 
   db.Disconnect();  
 }
