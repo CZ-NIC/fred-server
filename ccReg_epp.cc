@@ -358,6 +358,7 @@ if( DBsql.OpenDatabase( database ) )
 
        for( i = 0 ; i < rows ; i ++ )
           {
+             (*zone)[i].id=atoi( DBsql.GetFieldValueName( "id" , i )); 
              (*zone)[i].fqdn=CORBA::string_dup( DBsql.GetFieldValueName( "fqdn" , i )   );
              (*zone)[i].ex_period_min= atoi( DBsql.GetFieldValueName( "ex_period_min" , i ));  
              (*zone)[i].ex_period_max=  atoi(  DBsql.GetFieldValueName( "ex_period_max" , i ));  
@@ -381,77 +382,76 @@ return rows;
 }
 
   // parametry zone
-int  ccReg_EPP_i::GetZoneExPeriodMin(int z)
+int  ccReg_EPP_i::GetZoneExPeriodMin(int id)
 {
+unsigned int  z;
 
-if( z > 0 && z <=  (int )  zone->length() )
-{
- LOG(LOG_DEBUG , "GetZoneExPreriodMin zone %d -> %d" , z , (*zone)[z-1].ex_period_min );
- return (*zone)[z-1].ex_period_min;
-} 
-else
+for ( z = 0 ; z < zone->length() ; z ++ )
+    {
+         if(  (*zone)[z].id == id )  return (*zone)[z].ex_period_min;
+    }
+
 return 0;
 }
 
-int  ccReg_EPP_i::GetZoneExPeriodMax(int z)
+int  ccReg_EPP_i::GetZoneExPeriodMax(int id)
 {
+unsigned int z;
 
-if( z > 0 && z <= (int )  zone->length() )
-{
- LOG(LOG_DEBUG , "GetZoneExPreriodMax zone %d -> %d" , z , (*zone)[z-1].ex_period_max );
- return (*zone)[z-1].ex_period_max;
-}
-else
+for ( z = 0 ; z < zone->length() ; z ++ )
+    {
+         if(  (*zone)[z].id == id ) return (*zone)[z].ex_period_max;
+    }
+
 return 0;
 }
 
-int  ccReg_EPP_i::GetZoneValPeriod(int z)
+int  ccReg_EPP_i::GetZoneValPeriod(int id)
 {
+unsigned int z;
 
-if( z > 0 && z <=  (int ) zone->length() )
-{
- LOG(LOG_DEBUG , "GetZoneValPreriod zone %d -> %d" , z , (*zone)[z-1].val_period );
- return (*zone)[z-1].val_period;
-}
-else
+for ( z = 0 ; z < zone->length() ; z ++ )
+    {
+         if(  (*zone)[z].id == id ) return   (*zone)[z].val_period ;
+    }
+
 return 0;
-
 }
 
-bool ccReg_EPP_i::GetZoneEnum(int z)
+bool ccReg_EPP_i::GetZoneEnum(int id)
 {
+unsigned int z;
 
-if( z > 0 && z <= (int ) zone->length() )
-{
-  LOG(LOG_DEBUG , "GetZoneEnum zone %d -> %d" , z , (*zone)[z-1].enum_zone );
- return (*zone)[z-1].enum_zone;
-}
-else return 0;
+for ( z = 0 ; z < zone->length() ; z ++ )
+    {
+        if(  (*zone)[z].id == id ) return  (*zone)[z].enum_zone;
+    }
+
+return false;
 }
 
-int  ccReg_EPP_i::GetZoneDotsMax( int z) 
+
+int  ccReg_EPP_i::GetZoneDotsMax( int id) 
 {
-if( z > 0 && z <=  (int )  zone->length() )
-{
- LOG(LOG_DEBUG , "GetZoneDotsMax zone %d -> %d" , z , (*zone)[z-1].dots_max );
- return (*zone)[z-1].dots_max ;
-}
-else
+unsigned int z;
+
+for ( z = 0 ; z < zone->length() ; z ++ )
+    {
+         if(  (*zone)[z].id == id ) return  (*zone)[z].dots_max ;
+    }
+
 return 0;
-
-
 }
 
-char * ccReg_EPP_i::GetZoneFQDN( int z)
+char * ccReg_EPP_i::GetZoneFQDN( int id)
 {
+unsigned int z;
+for ( z = 0 ; z < zone->length() ; z ++ )
+    {
+         if(  (*zone)[z].id == id ) return  (char *) (*zone)[z].fqdn ;
+    }
 
-if( z > 0 && z <= (int ) zone->length() )
-{
- LOG( LOG_DEBUG , "GetZoneFQDN zone %d -> [%s]" , z , (char *) (*zone)[z-1].fqdn );
- return (*zone)[z-1].fqdn;
-}
-else return "";
-
+return "";
 }
 
 int ccReg_EPP_i::getZone( const char *fqdn )
@@ -486,7 +486,7 @@ for(  i = 0 ; i < max ; i ++ )
              {
                 if( compare ) 
                   {
-                     if(  strncasecmp(  fqdn+l ,  (char *) (*zone)[i].fqdn  , slen ) == 0 ) return i +1; // zaradi do zony                  
+                     if(  strncasecmp(  fqdn+l ,  (char *) (*zone)[i].fqdn  , slen ) == 0 ) return (*zone)[i].id ; // zaradi do zony  vraci ID
                   }
                  else return l -1 ; // vraci konec nazvu                        
              }
@@ -1517,24 +1517,20 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
 	c->Name=CORBA::string_dup( DBsql.GetFieldValueName("Name" , 0 )  ); // jmeno nebo nazev kontaktu
 	c->Organization=CORBA::string_dup( DBsql.GetFieldValueName("Organization" , 0 )); // nazev organizace
        
-
         for( s = 0 , snum =0  ; s < 3 ; s ++ )
         {
         sprintf( streetStr , "Street%d" , s +1);           
         if(  DBsql.IsNotNull( 0 ,  DBsql.GetNameField(  streetStr ) ) ) snum ++ ;
         }
-           LOG( DEBUG_LOG  ,  "strrets num  %d" , snum );
 
-      
         c->Streets.length( snum );
          for( s = 0   ; s < 3 ; s ++ )
           {
-           sprintf( streetStr , "Street%d" , s +1);           
-
            if(  DBsql.IsNotNull( 0 ,  DBsql.GetNameField(  streetStr ) ) )
            {
-            c->Streets[s]=CORBA::string_dup( DBsql.GetFieldValueName(  streetStr, 0 ) ); // adresa
-            LOG( DEBUG_LOG  ,  "street%d  ->  %s" , s+1 ,  (char *)  c->Streets[s]  );          
+            c->Streets.length( snum + 1 );
+            c->Streets[snum]=CORBA::string_dup( DBsql.GetFieldValueName(  streetStr, 0 ) ); // adresa
+            snum ++;
             }
           }
 
