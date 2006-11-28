@@ -5603,20 +5603,16 @@ return FullList( EPP_ListDomain , "DOMAIN"  , "fqdn" , domains ,  clientID,  clT
 ccReg::Response*  ccReg_EPP_i::ObjectSendAuthInfo( short act , char * table , char *fname , const char *name , CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 DB DBsql;
-int clID ,  id ,  zone;
-int i , rows;
+int   id ,  zone;
 ccReg::Response * ret;
-int regID , registrarID , techID[10] ; // TODO MAX_TECH
-char autInfo[32];
-char Email[128];
-char notifyEmail[128];
+int regID;
 char NAME[64];
 ret = new ccReg::Response;
 
 // default
 ret->errors.length( 0 );
 ret->errCode =0 ; // default
-autInfo[0] = 0 ;
+// autInfo[0] = 0 ;
 
 LOG( NOTICE_LOG ,  "ObjectSendAuthInfo %d  clientID -> %d clTRID [%s] " , act  , (int )  clientID , clTRID );
 
@@ -5681,6 +5677,7 @@ if( DBsql.OpenDatabase( database ) )
             }
           else
             {
+/* neni potreba zjistovat  vlastnika objektu a vypisovat e-maily zjsiti si to spodni vrstva 
               // client contaktu
               clID = DBsql.GetNumericFromTable( table , "clID", "id", id );
 
@@ -5740,7 +5737,7 @@ if( DBsql.OpenDatabase( database ) )
                                   }
                               break;
                            }   
-                                 
+  */                               
 
                       // CREATE REQUEST
                       // JT: START
@@ -5749,7 +5746,7 @@ if( DBsql.OpenDatabase( database ) )
                       );
                       try {
                         // TODO: get action type
-                        airm->createRequest(id,Register::AuthInfoRequest::RT_EPP,0,"","");
+                        airm->createRequest(id,Register::AuthInfoRequest::RT_EPP, DBsql.GetActionID(),"","");
                         ret->errCode=COMMAND_OK;
                       } catch (...) {
                         LOG( WARNING_LOG, "cannot create and process request");
@@ -5759,7 +5756,7 @@ if( DBsql.OpenDatabase( database ) )
 
 
  
-                  }
+                  
  
 
              }
