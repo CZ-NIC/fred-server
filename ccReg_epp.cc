@@ -4634,7 +4634,7 @@ int contactid, regID, nssetid, adminid, id;
 int i, len,  zone , seq;
 int period_count;
 char periodStr[10];
-
+long price;
 ret = new ccReg::Response;
 
 // default
@@ -4894,7 +4894,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                 }
 
                 // zpracovani creditu
-               if( DBsql.UpdateCredit(  regID ,   EPP_DomainCreate  ,    zone ,  period_count  )  == false )  ret->errCode =  COMMAND_BILLING_FAILURE;
+               if( ( price = DBsql.UpdateInvoiceCredit(  regID ,   EPP_DomainCreate  ,   zone ,  period_count  )  )  < 0 )  ret->errCode =  COMMAND_BILLING_FAILURE;
 
                         if(  ret->errCode == 0  ) // pokud nedoslo k chybe
                         {
@@ -5066,6 +5066,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
   int clid, regID, id,  zone , seq;
 int period_count;
 char periodStr[10];
+long price;
 
   ret = new ccReg::Response;
 
@@ -5261,7 +5262,8 @@ GetValExpDateFromExtension( valexpiryDate , ext );
              }
  
                                // zpracovani creditu
-               if( DBsql.UpdateCredit(  regID ,   EPP_DomainRenew   ,    zone ,  period_count  )  == false )  ret->errCode =  COMMAND_BILLING_FAILURE;
+               if( ( price = DBsql.UpdateInvoiceCredit(  regID ,   EPP_DomainRenew  ,   zone ,  period_count  ) ) < 0 ) ret->errCode =  COMMAND_BILLING_FAILURE;
+
 
                if(  ret->errCode == 0 )
                  {
