@@ -395,9 +395,18 @@ namespace Register
           mm,db
         );
         d.save();
-        /// imidiate processing of automatic requests
-        if (requestType == RT_EPP || requestType == RT_AUTO_PIF)
-          d.process(false);
+        // imidiate processing of automatic requests
+        if (requestType == RT_EPP || requestType == RT_AUTO_PIF) {
+          // must be processed with another load to fill registrar 
+          // and object details
+          try { processRequest(d.getId(),false); }
+          catch (REQUEST_NOT_FOUND) {
+            // strange!! log error
+          }
+          catch (REQUEST_CLOSED) {
+            // strange!! somebody faster then me?
+          }
+        }
         return d.getId();
       }
       void processRequest(unsigned id, bool invalid)
