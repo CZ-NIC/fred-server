@@ -117,14 +117,14 @@ namespace Register
         std::stringstream sql;
         switch (objectType) {
           case OT_DOMAIN:
-            sql << "SELECT c.email FROM domain d, contact c "
+            sql << "SELECT DISTINCT c.email FROM domain d, contact c "
                   << "WHERE d.registrant=c.id AND d.id=" << objectId;
             break;
           case OT_CONTACT:
-            sql << "SELECT c.email FROM contact c WHERE c.id=" << objectId;
+            sql << "SELECT DISTINCT c.email FROM contact c WHERE c.id=" << objectId;
             break;
           case OT_NSSET:
-            sql << "SELECT c.email FROM nsset_contact_map ncm, contact c "
+            sql << "SELECT DISTINCT c.email FROM nsset_contact_map ncm, contact c "
                   << "WHERE ncm.contactid=c.id AND ncm.nssetid=" << objectId;
             break;
         };
