@@ -5669,7 +5669,7 @@ if( DBsql.OpenDatabase( database ) )
     if(  ret->errCode == 0 ) // pokud vse OK
     if( DBsql.BeginTransaction() )
       {
-          // pokud domena existuje
+          // pokud objekt existuje
           if( ( id = DBsql.GetNumericFromTable( table , "id", fname , ( char * ) NAME ) ) == 0 )
             {
               ret->errCode = COMMAND_OBJECT_NOT_EXIST;
@@ -5677,91 +5677,19 @@ if( DBsql.OpenDatabase( database ) )
             }
           else
             {
-/* neni potreba zjistovat  vlastnika objektu a vypisovat e-maily zjsiti si to spodni vrstva 
-              // client contaktu
-              clID = DBsql.GetNumericFromTable( table , "clID", "id", id );
-
-
-                if( clID != regID )
-                  {
-                      LOG( WARNING_LOG, "bad autorization not  client of object [%s]", NAME );
-                      ret->errCode = COMMAND_AUTOR_ERROR;       // spatna autorizace
-                  }
-                 else
-                  {
-
-                      strncpy( autInfo ,  DBsql.GetValueFromTable( table , "authinfopw" , "id"  , id )  , 32 );
-                      LOG( NOTICE_LOG , "Get autInfo %s for %s" , autInfo ,   ( char * ) NAME  );
-
-                       switch( act )
-                       {
-                           case EPP_ContactSendAuthInfo:
-                                   strcpy( Email ,  DBsql.GetValueFromTable( "CONTACT" , "email" , "id"  , id )  );
-                                   strcpy( notifyEmail ,  DBsql.GetValueFromTable("CONTACT"  , "notifyemail" , "id"  , id )  );
-                                   LOG( NOTICE_LOG, "contactID %d email %s notify %s" , id , Email  , notifyEmail );
-                                break;
-  
-                          case EPP_DomainSendAuthInfo: // odesle autinfo domeny na e-mail vlastnika domeny
-                                   registrarID =   DBsql.GetNumericFromTable(  "DOMAIN" , "registrant" ,  "id"  , id )  ;                                  
-                                   if( registrarID )
-                                     {
-                                       strcpy( Email ,  DBsql.GetValueFromTable( "CONTACT"  , "email" , "id"  , registrarID ) ) ;
-                                       strcpy( notifyEmail ,  DBsql.GetValueFromTable( "CONTACT"  , "notifyemail" , "id"  , registrarID )  );
-                                       LOG( NOTICE_LOG, "registrarID %d email %s notify %s" , registrarID , Email  , notifyEmail );
-                                     }
-                                break;
-
-                          case EPP_NSSetSendAuthInfo:
-                                DBsql.SELECTFROM( "contactID" , "nsset_contact_map" );
-                                DBsql.WHERE( "nssetID" , id );
-                                if( DBsql.SELECT() )
-                                  {
-                                     rows = DBsql.GetSelectRows();
-
-                                     LOG( NOTICE_LOG, "nsset_contact_map list: %s  num -> %d ID %d",  table , rows  ,  id );
-
-                                     for( i = 0 ; i < rows  ; i ++ )  techID[i] = atoi( DBsql.GetFieldValue(  i , 0 )  );
-                                     DBsql.FreeSelect();
-
-                                          // projed vsechny techID kontakty
-                                         for( i = 0 ; i < rows  ; i ++ ) 
-                                         { 
-                                          if( techID[i] )
-                                            {
-                                               strcpy( Email ,  DBsql.GetValueFromTable(  "CONTACT" , "email" , "id"  , techID[i] )  );
-                                               strcpy( notifyEmail ,  DBsql.GetValueFromTable(  "CONTACT" , "notifyemail" , "id"  , techID[i] )  );
-                                               LOG( NOTICE_LOG, "techID %d email %s notify %s" , techID[i] , Email  , notifyEmail );
-                                            }
-                                         }
-   
-                                  }
-                              break;
-                           }   
-  */                               
-
-                      // CREATE REQUEST
-                      // JT: START
-                      std::auto_ptr<Register::AuthInfoRequest::Manager> airm(
-                        Register::AuthInfoRequest::Manager::create(&DBsql,mm)
-                      );
-                      try {
-                        // TODO: get action type
-                        LOG(  NOTICE_LOG , "createRequest objectID %d actionID %d" , id,DBsql.GetActionID() );
-                        airm->createRequest(id,Register::AuthInfoRequest::RT_EPP, DBsql.GetActionID(),"","");
-                        ret->errCode=COMMAND_OK;
-                      } catch (...) {
-                        LOG( WARNING_LOG, "cannot create and process request");
-                        ret->errCode = COMMAND_PARAMETR_ERROR;
-                      }
-                      // JT: END
-
-
- 
-                  
- 
-
+               std::auto_ptr<Register::AuthInfoRequest::Manager> airm(
+                 Register::AuthInfoRequest::Manager::create(&DBsql,mm)
+               );
+               try {
+                 LOG(  NOTICE_LOG , "createRequest objectID %d actionID %d" , 
+                            id,DBsql.GetActionID() );
+                 airm->createRequest(id,Register::AuthInfoRequest::RT_EPP, 
+                                                     DBsql.GetActionID(),"","");
+                  ret->errCode=COMMAND_OK;
+                } catch (...) {
+                  LOG( WARNING_LOG, "cannot create and process request");
+                }
              }
-
 
         // konec transakce commit ci rollback
         DBsql.QuitTransaction( ret->errCode );

@@ -176,6 +176,9 @@ namespace Register
           params["handle"] = objectHandle;
           params["authinfo"] = getAuthInfo();
           Mailer::Handles handles;
+          // TODO: insert handles of contacts recieving 
+          // email (RT_EPP&RT_AUTO_PIF)
+          // TODO: object->email relation should not be handled in mail module
           handles.push_back(objectHandle);
           answerEmailId = mm->sendEmail(
             "", // default sender from notification system
