@@ -139,7 +139,7 @@ int GetClientDomainRegistrant( int clID , int contactID );
 bool TestNSSetRelations(int id );
 bool TestContactRelations(int id );
 
-bool AuthTable(  char *table , char *auth , int id );
+bool AuthTable(const  char *table , char *auth , int id );
 
 // testuje pravo registratora na zapis do zony
 bool TestRegistrarZone(int regID , int zone );
@@ -152,6 +152,17 @@ int CreateObject( const char *type , int regID , const char *name , const char *
 int MakeHistory(); // zapise do tabulky history
 bool SaveHistory(char *table , char *fname ,  int id ); // ulozi radek tabulky
 
+
+
+// uloz do historie kontakt vraci history ID
+int SaveNSSetHistory( int id );
+bool DeleteNSSetObject( int id );
+
+int SaveDomainHistory( int id );
+bool DeleteDomainObject( int id ); 
+
+int SaveContactHistory( int id ); 
+bool DeleteContactObject( int id ); // smaz kontakt
 
 
 // SQL UPDATE funkce

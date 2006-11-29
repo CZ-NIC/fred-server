@@ -809,7 +809,7 @@ return ret;
 }
 
 // potvrzeni hesla authinfopw v tabulce 
-bool  DB::AuthTable(  char *table , char *auth , int id )
+bool  DB::AuthTable(const  char *table , char *auth , int id )
 {
 bool ret=false;
 char *pass;
@@ -1213,6 +1213,91 @@ if( ExecSelect( sqlString ) )
 
 return id;
 }
+
+int DB::SaveNSSetHistory( int id )
+{
+int history_ID;
+
+ //  uloz do historie
+ if(  ( history_ID =MakeHistory() ) )
+   {
+
+      if( SaveHistory( "NSSET", "id", id ) )        
+           if( SaveHistory( "HOST", "nssetid", id ) )
+              if( SaveHistory( "HOST_IPADDR_map", "nssetid", id ) ) 
+                    if( SaveHistory(  "nsset_contact_map", "nssetid", id ) )  // historie tech kontakty
+                           return history_ID;
+   }
+
+return 0;         
+}
+
+bool DB::DeleteNSSetObject( int id )
+{
+
+// na zacatku vymaz technicke kontakty
+if( DeleteFromTable( "nsset_contact_map", "nssetid", id ) )
+   if( DeleteFromTable( "HOST_IPADDR_map", "nssetid", id ) ) // nejdrive smaz ip adresy
+        if( DeleteFromTable( "HOST", "nssetid", id ) )  // vymaz podrizene hosty
+             if( DeleteFromTable( "NSSET", "id", id ) )
+                          if( DeleteFromTable(  "OBJECT", "id", id ) ) return true;
+
+
+return false;
+}
+
+int DB::SaveDomainHistory( int id )
+{
+int history_ID;
+                          //  uloz do historie
+ if(  ( history_ID =MakeHistory() ) )
+   {
+     if( SaveHistory( "DOMAIN" , "id", id ) )  
+        if( SaveHistory( "domain_contact_map", "domainID", id ) )       // uloz admin kontakty
+                   if( SaveHistory( "enumval",  "domainID", id ) )  // uloz extension
+                                   return history_ID;
+   }
+
+return 0;
+}
+
+bool DB::DeleteDomainObject( int id )
+{
+    if( DeleteFromTable( "domain_contact_map", "domainID", id ) ) // admin kontakt     
+         if( DeleteFromTable( "enumval", "domainID", id ) )      // enumval extension
+               if( DeleteFromTable( "DOMAIN", "id", id ) )
+                       if( DeleteFromTable(  "OBJECT", "id", id ) ) return true;
+
+
+return false;
+}
+                                   
+ 
+
+int DB::SaveContactHistory( int id )
+{
+int history_ID;
+                          //  uloz do historie
+ if(  ( history_ID =MakeHistory() ) )
+   {
+     if( SaveHistory(  "Contact", "id", id ) )   return history_ID;
+   }
+
+return 0;
+}
+
+
+bool DB::DeleteContactObject( int id )
+{
+
+     if( DeleteFromTable( "CONTACT", "id", id ) )
+       {
+             if( DeleteFromTable(  "OBJECT", "id", id ) ) return true;
+       }
+
+return false;
+}
+
 
 
 int DB::MakeHistory() // zapise do tabulky history
