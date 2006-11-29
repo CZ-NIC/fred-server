@@ -19,7 +19,7 @@ DB();
 
 // transaction function
 bool BeginTransaction()
-{ return ExecSQL("START TRANSACTION  ISOLATION LEVEL SERIALIZABLE"); };
+{ return ExecSQL("START TRANSACTION  ISOLATION LEVEL READ COMMITTED"); };
 bool EndTransaction()
 {return ExecSQL("END TRANSACTION"); };
 bool RollbackTransaction()
