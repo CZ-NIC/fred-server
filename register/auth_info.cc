@@ -110,8 +110,29 @@ namespace Register
       /// Query object for its addresses where to send answer
       std::string getEmailAddresses()
       {
-        //TODO: return specific email for RT_EPP & RT_AUTO_PIF
-        return emailToAnswer;
+        if (requestType != RT_EPP && requestType != RT_AUTO_PIF) 
+          return emailToAnswer;
+        // TODO: should be done by using interface of Domain::Manager, 
+        // Contact::Manager & NSSet::Manager
+        std::stringstream sql;
+        switch (objectType) {
+          case OT_DOMAIN:
+            sql << "SELECT c.email FROM domain d, contact c "
+                  << "WHERE d.registrant=c.id AND d.id=" << objectId;
+            break;
+          case OT_CONTACT:
+            sql << "SELECT c.email FROM contact c WHERE c.id=" << objectId;
+            break;
+          case OT_NSSET:
+            sql << "SELECT c.email FROM nsset_contact_map ncm, contact c "
+                  << "WHERE ncm.contactid=c.id AND ncm.nssetid=" << objectId;
+            break;
+        };
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        std::stringstream emails;
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
+          emails << db->GetFieldValue(i,0) << " ";
+        return emails.str();
       }
       /// Query object for its authinfo
       std::string getAuthInfo() throw (SQL_ERROR, Manager::OBJECT_NOT_FOUND) 
@@ -138,15 +159,14 @@ namespace Register
       {
       	if (invalid) requestStatus = RS_INVALID;
         {
-          // TODO: repair datetime formatting
-          local_time_facet *ltf = new local_time_facet("%d/%m/%Y");
-          ltf->format("%d/%m/%Y");
-          std::ostringstream buf;
-          buf.imbue(std::locale(std::locale::classic(), ltf));
+          // template parameters generation
+          // TODO: text localization and date format locale
           Mailer::Parameters params;
           params["registrar"] = registrarName;
           params["wwwpage"] = PIF_PAGE;
-          buf << creationTime;
+          std::ostringstream buf;
+          buf.imbue(std::locale(buf.getloc(), new time_facet("%d/%m/%Y")));
+          buf << creationTime.date();
           params["reqdate"] = buf.str();
           buf.str("");
           buf << id;
@@ -156,9 +176,9 @@ namespace Register
           Mailer::Handles handles;
           handles.push_back(objectHandle);
           answerEmailId = mm->sendEmail(
-            "auth_info@nic.cz",
+            "", // default sender from notification system
             getEmailAddresses(),
-            "AuthInfo Request",
+            "AuthInfo Request", // TODO: subject should be taken from template!
             getTemplateName(),params,handles
           );
           requestStatus = RS_ANSWERED;
@@ -190,10 +210,11 @@ namespace Register
           sql << "'" << reason << "',"
               << "'" << emailToAnswer << "')";
         } else {
-          // TODO: proper update
+          // TODO: proper update (but other are not mutable)
           sql << "UPDATE auth_info_requests SET "
               << "status=" << RS_SQL(requestStatus) << ","
-              << "resolve_time=now() "
+              << "resolve_time=now(), "
+              << "answer_email_id=" << answerEmailId << " "
               << "WHERE id=" << id;
         }
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();          
