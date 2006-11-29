@@ -130,8 +130,10 @@ namespace Register
         };
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         std::stringstream emails;
-        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
-          emails << db->GetFieldValue(i,0) << " ";
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+          emails << db->GetFieldValue(i,0);
+          if (i != (unsigned)db->GetSelectRows()) emails << ", ";
+        }
         return emails.str();
       }
       /// Query object for its authinfo
