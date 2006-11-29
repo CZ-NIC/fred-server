@@ -120,6 +120,10 @@ public:
   ccReg::Response* DomainRenew(const char* fqdn, const char* curExpDate,  const ccReg::Period_str& period, ccReg::timestamp_out exDate, CORBA::Long clientID, const char* clTRID, const char* XML, const ccReg::ExtensionList& ext);
   ccReg::Response* DomainTransfer(const char* fqdn,  const char* authInfo, CORBA::Long clientID, const char* clTRID  , const char* XML);
 
+  // spolecna funkce pro transfer objektu
+  ccReg::Response* ObjectTransfer(short act ,  const char*table , const char* name,
+                                           const char* authInfo, CORBA::Long clientID, const char* clTRID , const char* XML );
+
    // 
   ccReg::Response* domainSendAuthInfo(const char*  fqdn, CORBA::Long clientID, const char* clTRID, const char*  XML);
   ccReg::Response* contactSendAuthInfo(const char* handle,  CORBA::Long clientID, const char* clTRID, const char*  XML);
