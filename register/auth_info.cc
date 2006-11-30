@@ -1,14 +1,12 @@
 #include "auth_info.h"
 #include "object_impl.h"
 #include "dbsql.h"
-//#include </usr/include/boost/date_time/time_clock.hpp>
-#include </usr/include/boost/date_time/local_time/local_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <sstream>
 
 #define PIF_PAGE "enum.nic.cz";
 
-//using namespace boost::date_time;
-using namespace boost::local_time;
+using namespace boost::gregorian;
 
 namespace Register
 {
@@ -118,14 +116,16 @@ namespace Register
         switch (objectType) {
           case OT_DOMAIN:
             sql << "SELECT DISTINCT c.email FROM domain d, contact c "
-                  << "WHERE d.registrant=c.id AND d.id=" << objectId;
+                << "WHERE d.registrant=c.id AND d.id=" << objectId;
             break;
           case OT_CONTACT:
-            sql << "SELECT DISTINCT c.email FROM contact c WHERE c.id=" << objectId;
+            sql << "SELECT DISTINCT c.email FROM contact c "
+                << "WHERE c.id=" << objectId;
             break;
           case OT_NSSET:
-            sql << "SELECT DISTINCT c.email FROM nsset_contact_map ncm, contact c "
-                  << "WHERE ncm.contactid=c.id AND ncm.nssetid=" << objectId;
+            sql << "SELECT DISTINCT c.email "
+                << "FROM nsset_contact_map ncm, contact c "
+                << "WHERE ncm.contactid=c.id AND ncm.nssetid=" << objectId;
             break;
         };
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
@@ -167,7 +167,7 @@ namespace Register
           params["registrar"] = registrarName;
           params["wwwpage"] = PIF_PAGE;
           std::ostringstream buf;
-          buf.imbue(std::locale(buf.getloc(), new time_facet("%d/%m/%Y")));
+          buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
           buf << creationTime.date();
           params["reqdate"] = buf.str();
           buf.str("");
