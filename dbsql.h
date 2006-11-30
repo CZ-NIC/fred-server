@@ -122,6 +122,7 @@ int GetNSSetHosts( int nssetID );
 // zjistuje pocet  tech pro dany nsset
 int GetNSSetContacts( int nssetID );
 
+int SetHistoryIDFromObject( int id ){ return (  historyID = GetNumericFromTable( "OBJECT" ,   "historyID" , "id" , id ) ); };
 
 // vyssi funkce na vraceni value
 int GetLoginRegistrarID(int id) { return  registrarID; } 
@@ -149,19 +150,19 @@ int CreateObject( const char *type , int regID , const char *name , const char *
 
 
 // funkce na ulozeni obsahu radku ID tabluky  do 
-int MakeHistory(); // zapise do tabulky history
+int MakeHistory(int objectID); // zapise do tabulky history vraci historyID
 bool SaveHistory(char *table , char *fname ,  int id ); // ulozi radek tabulky
 
 
 
-// uloz do historie kontakt vraci history ID
-int SaveNSSetHistory( int id );
+// uloz do historie 
+bool SaveNSSetHistory( int id );
 bool DeleteNSSetObject( int id );
 
-int SaveDomainHistory( int id );
+bool SaveDomainHistory( int id );
 bool DeleteDomainObject( int id ); 
 
-int SaveContactHistory( int id ); 
+bool SaveContactHistory( int id ); 
 bool DeleteContactObject( int id ); // smaz kontakt
 
 

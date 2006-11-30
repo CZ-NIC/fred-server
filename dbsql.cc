@@ -198,6 +198,7 @@ actionID = GetSequenceID("action");
 loginID = clientID; // id klienta
 clientLang = LANG_EN; // default
 registrarID=0;
+historyID = 0 ; // history ID je nula
 
 if( actionID ) 
   {
@@ -257,6 +258,8 @@ UPDATE("ACTION");
 if( response > 0  ) SET( "response" , response );
 SET( "enddate", "now" );
 SSET( "servertrid" , svrTRID ); // bez escape
+// uloz history ID pokud je nejake nastaveno
+if( historyID  ) SET( "historyID" , historyID ); 
 WHEREID( actionID );
 
 
@@ -1214,19 +1217,18 @@ if( ExecSelect( sqlString ) )
 return id;
 }
 
-int DB::SaveNSSetHistory( int id )
+bool DB::SaveNSSetHistory( int id )
 {
-int history_ID;
 
  //  uloz do historie
- if(  ( history_ID =MakeHistory() ) )
+ if(   MakeHistory(id)  )
    {
 
       if( SaveHistory( "NSSET", "id", id ) )        
            if( SaveHistory( "HOST", "nssetid", id ) )
               if( SaveHistory( "HOST_IPADDR_map", "nssetid", id ) ) 
                     if( SaveHistory(  "nsset_contact_map", "nssetid", id ) )  // historie tech kontakty
-                           return history_ID;
+                           return true;
    }
 
 return 0;         
@@ -1246,16 +1248,15 @@ if( DeleteFromTable( "nsset_contact_map", "nssetid", id ) )
 return false;
 }
 
-int DB::SaveDomainHistory( int id )
+bool DB::SaveDomainHistory( int id )
 {
-int history_ID;
                           //  uloz do historie
- if(  ( history_ID =MakeHistory() ) )
+ if( MakeHistory(id)  )
    {
      if( SaveHistory( "DOMAIN" , "id", id ) )  
         if( SaveHistory( "domain_contact_map", "domainID", id ) )       // uloz admin kontakty
                    if( SaveHistory( "enumval",  "domainID", id ) )  // uloz extension
-                                   return history_ID;
+                                   return true;
    }
 
 return 0;
@@ -1274,13 +1275,12 @@ return false;
                                    
  
 
-int DB::SaveContactHistory( int id )
+bool DB::SaveContactHistory( int id )
 {
-int history_ID;
-                          //  uloz do historie
- if(  ( history_ID =MakeHistory() ) )
+ //  uloz do historie
+ if(   MakeHistory(id) )
    {
-     if( SaveHistory(  "Contact", "id", id ) )   return history_ID;
+     if( SaveHistory(  "Contact", "id", id ) ) return true;
    }
 
 return 0;
@@ -1300,11 +1300,10 @@ return false;
 
 
 
-int DB::MakeHistory() // zapise do tabulky history
+int DB::MakeHistory(int objectID) // zapise do tabulky history
 {
 char sqlString[128];
 
-historyID = 0 ;
 
 if( actionID )
  {   
@@ -1314,7 +1313,12 @@ if( actionID )
     {
      LOG( SQL_LOG , "MakeHistory actionID -> %d " , actionID); 
      sprintf(  sqlString , "INSERT INTO HISTORY ( id , action ) VALUES ( %d  , %d );" , historyID , actionID );
-     if( ExecSQL(  sqlString ) ) return historyID;
+     if( ExecSQL(  sqlString ) )
+        {
+            LOG( SQL_LOG , "Update objectID  %d -> historyID %d " , objectID , historyID );
+            sprintf(  sqlString , "UPDATE OBJECT set historyID=%d WHERE id=%d;" , historyID  , objectID );
+            if( ExecSQL(  sqlString ) ) return historyID;
+        }
     }
  }
 

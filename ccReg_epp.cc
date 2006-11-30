@@ -1808,7 +1808,8 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
                             }
                           else
                             {
-                               if(   DBsql.SaveContactHistory( id ) )
+// neukladej historii pri delete                               if(   DBsql.SaveContactHistory( id ) )
+                                 if(  DBsql.SetHistoryIDFromObject( id ) ) // uloz jenom history ID 
                                  {
                                        if(  DBsql.DeleteContactObject( id ) ) ret->errCode = COMMAND_OK;      // pokud usmesne smazal
                                  }
@@ -1927,9 +1928,6 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
 
                       if( TestCountryCode( c.CC ) )       // test kodu zeme pokud je nastavena
                         {
-                             //  uloz do historie
-                             if(   DBsql.SaveContactHistory( id ) )
-                               {
 
 
 
@@ -1978,10 +1976,13 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                                           // podminka na konec 
                                           DBsql.WHEREID( id );
 
-                                          if( DBsql.EXEC() ) ret->errCode = COMMAND_OK;
-                                          else ret->errCode = COMMAND_FAILED;
+                                          if( DBsql.EXEC() )
+                                            {
+                                                 //  uloz do historie
+                                                  if(   DBsql.SaveContactHistory( id ) )  ret->errCode = COMMAND_OK;
+                                           }
                                          
-                                       }
+                                       
                                
                         }
                       else      // neplatny kod zeme
@@ -2288,7 +2289,6 @@ DB DBsql;
 char NAME[64];
 char pass[PASS_LEN+1];
 int regID , clID , id;
-bool saveHist=false;
 int zone;
 
 ret = new ccReg::Response;
@@ -2379,22 +2379,7 @@ if( DBsql.OpenDatabase( database ) )
                     else
                       {
                        
-                            switch( act )
-                            {
-                                case EPP_ContactTransfer:
-                                     if(   DBsql.SaveContactHistory(  id ) ) saveHist=true;
-                                      break;
-                                case EPP_NSsetTransfer:
-                                     if(   DBsql.SaveDomainHistory(  id ) ) saveHist=true;
-                                      break;
-                                case EPP_DomainTransfer:
-                                     if(   DBsql.SaveDomainHistory(  id ) ) saveHist=true;
-                                      break;
 
-                             }
-
-                        if( saveHist )
-                         {                           
 
                               // pri prevodu autogeneruj nove heslo
                               random_pass(  pass  );
@@ -2405,9 +2390,25 @@ if( DBsql.OpenDatabase( database ) )
                               DBsql.SSET( "AuthInfoPw" , pass );
                               DBsql.SET( "ClID" , regID );
                               DBsql.WHEREID( id ); 
-                              if(   DBsql.EXEC() )  ret->errCode = COMMAND_OK; // nastavit OK                                  
-                              else  ret->errCode = COMMAND_FAILED;
-                          }              
+
+                              if(   DBsql.EXEC() )  
+                               {
+                                 switch( act )
+                                {
+                                    case EPP_ContactTransfer:
+                                     if(   DBsql.SaveContactHistory(  id ) ) ret->errCode = COMMAND_OK;
+                                      break;
+                                    case EPP_NSsetTransfer:
+                                     if(   DBsql.SaveDomainHistory(  id ) ) ret->errCode = COMMAND_OK;
+                                      break;
+                                   case EPP_DomainTransfer:
+                                     if(   DBsql.SaveDomainHistory(  id ) ) ret->errCode = COMMAND_OK;
+                                      break;
+
+                                    
+                                  }
+                               }
+                       
                       
                       }
 
@@ -2740,7 +2741,8 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int
                             }
                           else
                             {
-                              if(  DBsql.SaveNSSetHistory( id )  ) 
+// nemaz historii                              if(  DBsql.SaveNSSetHistory( id )  ) 
+                              if(  DBsql.SetHistoryIDFromObject( id ) ) // uloz jenom history ID
                                 {
                                      if( DBsql.DeleteNSSetObject( id )  ) ret->errCode = COMMAND_OK;   // pokud vse OK 
                                 }
@@ -3451,9 +3453,6 @@ if( DBsql.OpenDatabase( database ) )
                if( seq ) ret->errCode = COMMAND_PARAMETR_ERROR; // chyba v parametrech
                else
                {
-                // uloz history nejdrive pred update
-                  if( DBsql.SaveNSSetHistory( nssetID ) )
-                     {
 
 
                                     // zmenit zaznam o nssetu
@@ -3464,9 +3463,8 @@ if( DBsql.OpenDatabase( database ) )
                                     DBsql.WHEREID( nssetID );
 
 
-                                    if( DBsql.EXEC() )ret->errCode = COMMAND_OK;      // nastavit uspesne jako default
-                                    else ret->errCode = COMMAND_FAILED;
-                                       
+                                    if( DBsql.EXEC() )
+                                      {
 
                                   //-------- TECH kontakty
 
@@ -3615,9 +3613,12 @@ if( DBsql.OpenDatabase( database ) )
 
 
 
-                             }
-           
-                         
+                                                // uloz history na konci update  nejdrive pred update pokud nedoslo k chybe 
+                                                if( ret->errCode == 0 )  if( DBsql.SaveNSSetHistory( nssetID ) ) ret->errCode = COMMAND_OK;      // nastavit uspesne jako default
+                                       
+                             
+                                            }          
+                          
                   }
 
                                            
@@ -3955,7 +3956,8 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int
                     }
                   else
                     {
-                      if(   DBsql.SaveDomainHistory( id )  ) 
+// neukladej historii                      if(   DBsql.SaveDomainHistory( id )  ) 
+                      if(  DBsql.SetHistoryIDFromObject( id ) ) // uloz jenom history ID
                         {
                            if(  DBsql.DeleteDomainObject( id )  ) ret->errCode = COMMAND_OK; // pokud usmesne smazal
                         }
@@ -4241,10 +4243,7 @@ if( DBsql.OpenDatabase( database ) )
 
 
                if( seq ) ret->errCode = COMMAND_PARAMETR_ERROR; // chyba v parametrech
-               else               
-                // uloz history nejdrive pred update
-                       if( DBsql.SaveDomainHistory( id ) )
-                         {
+               else   {
 
 
 
@@ -4260,7 +4259,9 @@ if( DBsql.OpenDatabase( database ) )
 
                                       if( DBsql.EXEC() )
                                       {
-                                          ret->errCode = COMMAND_OK;    // nastavit uspesne
+
+
+
 
                                              // zmena extension
                                              if( GetZoneEnum( zone ) && strlen( valexpiryDate )  > 0  )
@@ -4302,7 +4303,10 @@ if( DBsql.OpenDatabase( database ) )
 
                                                  }
 
-                                                                                         
+                                                  
+                                 // uloz history nejdrive no konci update pokud nedoslo k chybe
+                                     if( ret->errCode == 0 )   if( DBsql.SaveDomainHistory( id ) )   ret->errCode = COMMAND_OK;    // nastavit uspesne
+                                       
 
                                       }
 
@@ -4976,9 +4980,6 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                   else
                     {
 
-                      //  uloz do historie
-                      if( DBsql.SaveDomainHistory( id ) )
-                        {
 
 
                                 if( GetZoneEnum( zone ) )
@@ -5000,12 +5001,16 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                      DBsql.UPDATE( "DOMAIN" );                                     
                                      DBsql.SET(  "ExDate", ExDateStr );
                                      DBsql.WHEREID( id );
-                                     if( DBsql.EXEC() )   ret->errCode = COMMAND_OK;
+                                     if( DBsql.EXEC() ) 
+                                       {
+                                              //  uloz do historie
+                                             if( DBsql.SaveDomainHistory( id ) )  ret->errCode = COMMAND_OK;
+                                       }
                                      else ret->errCode = COMMAND_FAILED;
                                   }
 
                                 
-                           }
+                           
                         }
 
                     }
