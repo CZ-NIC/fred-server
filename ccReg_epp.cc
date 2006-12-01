@@ -1781,12 +1781,10 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
                 }
               else 
                 {
-                  // klient kontaku
-                  clID = DBsql.GetNumericFromTable( "CONTACT", "ClID", "id", id );
 
 
 
-                  if( regID != clID )   // pokud neni klientem
+                  if( regID !=  ( clID = DBsql.GetObjectClientID( id  )  ) )   // pokud neni klientem
                     {
                       LOG( WARNING_LOG, "bad autorization not  creator of handle [%s]", handle );
                       ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
@@ -1920,10 +1918,8 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
               // pokud kontakt existuje 
               else
                 {
-                  // client contaktu
-                  clID = DBsql.GetNumericFromTable( "CONTACT", "clID", "id", id );
 
-                  if( clID != regID )
+                  if( ( clID = DBsql.GetObjectClientID( id  ) )  != regID )
                     {
                         LOG( WARNING_LOG, "bad autorization not  client of contact [%s]", handle );
                         ret->errCode = COMMAND_AUTOR_ERROR;     // spatna autorizace
@@ -2130,6 +2126,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
 
                       DBsql.INSERT( "CONTACT" );
                       DBsql.INTO( "id" );
+
                       DBsql.INTO( "roid" );
                       DBsql.INTO( "handle" );
                       DBsql.INTO( "CrDate" );
@@ -2363,10 +2360,8 @@ if( DBsql.OpenDatabase( database ) )
            }
          else
            {
-             // client contaktu
-               clID  =  DBsql.GetNumericFromTable(  "OBJECT" , "clID" , "id" , id );
 
-               if( regID == clID )       // transfer nemuze delat stavajici client
+               if( regID == ( clID= DBsql.GetObjectClientID( id)  ) )       // transfer nemuze delat stavajici client
                  {
                    LOG( WARNING_LOG, "client can not transfer  object %s" , NAME );
                    ret->errCode =  COMMAND_NOT_ELIGIBLE_FOR_TRANSFER;
@@ -2725,9 +2720,8 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int
                 }
               else
                 {
-                  clID = DBsql.GetNumericFromTable( "NSSET", "ClID", "id", id );
 
-                  if( regID != clID )   // pokud neni klientem 
+                  if( regID != ( clID = DBsql.GetObjectClientID( id)  )  )   // pokud neni klientem 
                     {
                       LOG( WARNING_LOG, "bad autorization not client of nsset [%s]", handle );
                       ret->errCode = COMMAND_AUTOR_ERROR;       // spatna autorizace
@@ -3249,7 +3243,7 @@ if( DBsql.OpenDatabase( database ) )
          else
           {
             // client contaktu 
-           if( ( clID = DBsql.GetNumericFromTable( "NSSET", "clID", "id", nssetID ) )  != regID )
+           if( ( clID = DBsql.GetObjectClientID( nssetID ) )  != regID )
             {
                 LOG( WARNING_LOG, "bad autorization not  client of nsset [%s]", handle );
                 ret->errCode = COMMAND_AUTOR_ERROR;     // spatna autorizace
@@ -3974,9 +3968,8 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int
               else
                 {
 
-                  clID = DBsql.GetNumericFromTable( "DOMAIN", "ClID", "id", id );       // client objektu
 
-                  if( regID != clID )
+                  if( regID != ( clID = DBsql.GetObjectClientID(  id )  ) )
                     {
                       LOG( WARNING_LOG, "bad autorization not client of fqdn [%s]", fqdn );
                       ret->errCode = COMMAND_AUTOR_ERROR;       // spatna autorizace
@@ -4096,7 +4089,7 @@ if( DBsql.OpenDatabase( database ) )
                   ret->errCode = COMMAND_OBJECT_NOT_EXIST;
                 }
               // jeslize neni client kontaktu 
-              else  if( ( clID = DBsql.GetNumericFromTable( "DOMAIN", "clID", "id", id ) ) != regID )
+              else  if( ( clID =  DBsql.GetObjectClientID( id ) ) != regID )
                       {
                           LOG( WARNING_LOG, "bad autorization not  client of domain [%s]", fqdn );
                           ret->errCode = COMMAND_AUTOR_ERROR;   // spatna autorizace
@@ -4887,18 +4880,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
           else
             {
 
-
-              if( DBsql.SELECTONE( "DOMAIN", "id", id ) )
-                {
-
-                  clid =  DBsql.GetFieldNumericValueName( "ClID", 0 );
-                  strcpy( expDateStr ,  DBsql.GetFieldValueName( "ExDate", 0 ) );    // datum a cas  expirace domeny
-                  DBsql.FreeSelect();
-                }
-
-              // porovnani datumu co je uvedene v databazi se zadanym datumem
-              // ex timestamp se prevadi na localtime a z toho se bere datum a porovnava se rok mesic a den
-             if(  test_expiry_date( expDateStr , curExpDate ) == false )
+              if( DBsql.TestExpDate( curExpDate  , id ) == false  )
                 {
                   LOG( WARNING_LOG, "curExpDate is not same as ExDate" );
                   ret->errors.length( seq +1);
@@ -5005,7 +4987,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
  // status je OK
 
 
-                  if( clid != regID )
+                  if( ( clid =  DBsql.GetObjectClientID( id)  ) != regID )
                     {
                       LOG( WARNING_LOG, "bad autorization not  client of domain [%s]", fqdn );
                       ret->errCode = COMMAND_AUTOR_ERROR;       // spatna autorizace
@@ -5104,7 +5086,7 @@ if( DBsql.OpenDatabase( database ) )
   if( ( regID =  DBsql.BeginAction( clientID , act ,  clTRID , XML  )  ) )
   {
 
-
+// TODO LIST podle clienat OBJEKTU
    DBsql.SELECTFROM( fname , table );
    DBsql.WHERE( "ClID" , regID );
 

@@ -79,6 +79,8 @@ int  GetContactID( const char *handle );
 
 // update object dle id  a registrator
 bool ObjectUpdate( int id , int regID , const char *authInfo );
+// vraci ClID objektu
+int GetObjectClientID( int id ) { return GetNumericFromTable( "OBJECT" , "ClID" , "id" , id ); } ;
 
 bool TestContactHandleHistory( const char * handle , int period );
 bool TestNSSetHandleHistory( const char * handle , int period );
@@ -112,6 +114,9 @@ int  MakeAInvoice( const char *prefixStr  , int regID , long price , int vatNum 
 
 // generovani cisla faktur a update countru prefixu 
 bool GetInvoicePrefix( char *prefixStr , int typ , int zone );
+
+// testuje zadane datum expirace na domenu id
+bool TestExpDate( const char *dateStr , int id );
 
 // test doby expirace validace
 bool TestValExDate(const char *dateStr ,  int period  , int interval , int id );
