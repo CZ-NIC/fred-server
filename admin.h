@@ -23,14 +23,14 @@ class ccReg_PageTable_i : virtual public POA_ccReg::PageTable {
   ccReg::TableRow* getPageRow(CORBA::Short pageRow) 
     throw (ccReg::Table::INVALID_ROW);
   CORBA::Short numPageRows();
-  TID getPageRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  ccReg::TID getPageRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
 };
 
 class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions, 
                            public ccReg_PageTable_i,
                            public PortableServer::RefCountServantBase {
   Register::Registrar::EPPActionList *eal;
-  TID registrarFilter;
+  ccReg::TID registrarFilter;
   std::string registrarHandleFilter;
   std::string typeFilter;
   std::string handleFilter;
@@ -45,13 +45,13 @@ class ccReg_EPPActions_i : virtual public POA_ccReg::EPPActions,
   ~ccReg_EPPActions_i();
   ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
-  TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  ccReg::TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
-  TID registrar();
-  void registrar(TID _v);
+  ccReg::TID registrar();
+  void registrar(ccReg::TID _v);
   char* registrarHandle();
   void registrarHandle(const char* _v);
   char* type();
@@ -89,7 +89,7 @@ class ccReg_Registrars_i : virtual public POA_ccReg::Registrars,
   ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
-  TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  ccReg::TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
@@ -106,11 +106,11 @@ class ccReg_Registrars_i : virtual public POA_ccReg::Registrars,
 };
 
 class ccReg_RegObjectFilter_i : virtual public POA_ccReg::RegObjectFilter {
-  TID registrarFilter;
+  ccReg::TID registrarFilter;
   std::string registrarHandleFilter;
-  TID createRegistrarFilter;
+  ccReg::TID createRegistrarFilter;
   std::string createRegistrarHandleFilter;
-  TID updateRegistrarFilter;
+  ccReg::TID updateRegistrarFilter;
   std::string updateRegistrarHandleFilter;
   ccReg::DateInterval crDateFilter;
   ccReg::DateInterval upDateFilter;
@@ -119,16 +119,16 @@ class ccReg_RegObjectFilter_i : virtual public POA_ccReg::RegObjectFilter {
   Register::ObjectList *ol;
  public:
   ccReg_RegObjectFilter_i(Register::ObjectList *_ol);
-  TID registrar();
-  void registrar(TID _v);
+  ccReg::TID registrar();
+  void registrar(ccReg::TID _v);
   char* registrarHandle();
   void registrarHandle(const char* _v);
-  TID createRegistrar();
-  void createRegistrar(TID _v);
+  ccReg::TID createRegistrar();
+  void createRegistrar(ccReg::TID _v);
   char* createRegistrarHandle();
   void createRegistrarHandle(const char* _v);
-  TID updateRegistrar();
-  void updateRegistrar(TID _v);
+  ccReg::TID updateRegistrar();
+  void updateRegistrar(ccReg::TID _v);
   char* updateRegistrarHandle();
   void updateRegistrarHandle(const char* _v);
   ccReg::DateInterval crDate();
@@ -147,11 +147,11 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
                         public ccReg_PageTable_i,
                         public PortableServer::RefCountServantBase {
   Register::Domain::List *dl;
-  TID registrantFilter;
+  ccReg::TID registrantFilter;
   std::string registrantHandleFilter;
-  TID nssetFilter;
+  ccReg::TID nssetFilter;
   std::string nssetHandleFilter;
-  TID adminFilter;
+  ccReg::TID adminFilter;
   std::string adminHandleFilter;
   std::string fqdnFilter;
   ccReg::DateInterval exDateFilter;
@@ -164,21 +164,21 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
   ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
-  TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  ccReg::TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
   void reload();
-  TID registrant();
-  void registrant(TID _v);
+  ccReg::TID registrant();
+  void registrant(ccReg::TID _v);
   char* registrantHandle();
   void registrantHandle(const char* _v);
-  TID nsset();
-  void nsset(TID _v);
+  ccReg::TID nsset();
+  void nsset(ccReg::TID _v);
   char* nssetHandle();
   void nssetHandle(const char* _v);
-  TID admin();
-  void admin(TID _v);
+  ccReg::TID admin();
+  void admin(ccReg::TID _v);
   char* adminHandle();
   void adminHandle(const char* _v);
   char* fqdn();
@@ -213,7 +213,7 @@ class ccReg_Contacts_i : virtual public POA_ccReg::Contacts,
   ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
-  TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  ccReg::TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
@@ -250,7 +250,7 @@ class ccReg_NSSets_i : virtual public POA_ccReg::NSSets,
   ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
-  TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  ccReg::TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
@@ -273,7 +273,7 @@ class ccReg_AIRequests_i : virtual public POA_ccReg::AuthInfoRequests,
                            public ccReg_PageTable_i,
                            public PortableServer::RefCountServantBase {
   Register::AuthInfoRequest::List *airl;
-  TID idFilter;
+  ccReg::TID idFilter;
   std::string handleFilter;
   ccReg::DateTimeInterval crTimeFilter;
   ccReg::DateTimeInterval closeTimeFilter;
@@ -287,13 +287,13 @@ class ccReg_AIRequests_i : virtual public POA_ccReg::AuthInfoRequests,
   ~ccReg_AIRequests_i();
   ccReg::Table::ColumnHeaders* getColumnHeaders();
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
-  TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  ccReg::TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
   char* outputCSV();
   CORBA::Short numRows();
   CORBA::Short numColumns();
-  TID id();
-  void id(TID _v);
+  ccReg::TID id();
+  void id(ccReg::TID _v);
   char* handle();
   void handle(const char* _v);
   ccReg::AuthInfoRequest::RequestStatus status();
@@ -363,7 +363,7 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
 
   // registrar management
   ccReg::RegistrarList* getRegistrars();
-  ccReg::Registrar* getRegistrarById(TID id) 
+  ccReg::Registrar* getRegistrarById(ccReg::TID id) 
     throw (ccReg::Admin::ObjectNotFound);
   ccReg::Registrar* getRegistrarByHandle(const char* handle) 
     throw (ccReg::Admin::ObjectNotFound);
@@ -373,23 +373,23 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   void fillContact(ccReg::ContactDetail* cv, Register::Contact::Contact* c);
   ccReg::ContactDetail* getContactByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound);
-  ccReg::ContactDetail* getContactById(TID id)
+  ccReg::ContactDetail* getContactById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound);
   void fillNSSet(ccReg::NSSetDetail* cn, Register::NSSet::NSSet* n);
   ccReg::NSSetDetail* getNSSetByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound);
-  ccReg::NSSetDetail* getNSSetById(TID id)
+  ccReg::NSSetDetail* getNSSetById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound);
   void fillDomain(ccReg::DomainDetail* cd, Register::Domain::Domain* d);
   ccReg::DomainDetail* getDomainByFQDN(const char* fqdn)
     throw (ccReg::Admin::ObjectNotFound);
-  ccReg::DomainDetail* getDomainById(TID id)
+  ccReg::DomainDetail* getDomainById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound);
   void fillEPPAction(
     ccReg::EPPAction* cea, 
     const Register::Registrar::EPPAction *rea
   );
-  ccReg::EPPAction* getEPPActionById(TID id)
+  ccReg::EPPAction* getEPPActionById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound);
   ccReg::EPPAction* getEPPActionBySvTRID(const char* svTRID)
     throw (ccReg::Admin::ObjectNotFound);
@@ -397,7 +397,7 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
     ccReg::AuthInfoRequest::Detail *carid,
     Register::AuthInfoRequest::Detail *rarid
   );
-  ccReg::AuthInfoRequest::Detail* getAuthInfoRequestById(TID id)
+  ccReg::AuthInfoRequest::Detail* getAuthInfoRequestById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound);
 
 
@@ -414,10 +414,10 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   ccReg::ObjectStatusDescSeq* getNSSetStatusDescList();
   /// testovaci fce na typ objektu
   void checkHandle(const char* handle, ccReg::CheckHandleType_out ch);
-  TID createAuthInfoRequest(
-    TID objectId, 
+  ccReg::TID createAuthInfoRequest(
+    ccReg::TID objectId, 
     ccReg::AuthInfoRequest::RequestType type, 
-    TID eppActionId, 
+    ccReg::TID eppActionId, 
     const char* requestReason,
     const char* emailToAnswer
   ) throw (
@@ -425,7 +425,7 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
     ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR, 
     ccReg::Admin::INVALID_INPUT
   );
-  void processAuthInfoRequest(TID id, CORBA::Boolean invalid) 
+  void processAuthInfoRequest(ccReg::TID id, CORBA::Boolean invalid) 
     throw (ccReg::Admin::SQL_ERROR, ccReg::Admin::OBJECT_NOT_FOUND);
 };
 
