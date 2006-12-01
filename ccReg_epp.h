@@ -121,7 +121,7 @@ public:
   ccReg::Response* DomainTransfer(const char* fqdn,  const char* authInfo, CORBA::Long clientID, const char* clTRID  , const char* XML);
 
   // spolecna funkce pro transfer objektu
-  ccReg::Response* ObjectTransfer(short act ,  const char*table , const char* name,
+  ccReg::Response* ObjectTransfer(short act ,  const char*table , const char *fname,  const char *name ,
                                            const char* authInfo, CORBA::Long clientID, const char* clTRID , const char* XML );
 
    // 

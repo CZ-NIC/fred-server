@@ -2283,7 +2283,7 @@ return ret;
  ***********************************************************************/
 
 
-ccReg::Response* ccReg_EPP_i::ObjectTransfer(short act ,  const char*table , const char* name,
+ccReg::Response* ccReg_EPP_i::ObjectTransfer(short act ,  const char*table ,  const char*fname , const char* name,
                                            const char* authInfo, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 ccReg::Response *ret;
@@ -2356,7 +2356,7 @@ if( DBsql.OpenDatabase( database ) )
       {
  
           // pokud objekt neexistuje
-         if( (id = DBsql.GetNumericFromTable(  "OBJECT"  , "id" , "handle" , (char * ) NAME) ) == 0 ) 
+         if( (id = DBsql.GetNumericFromTable( table  , "id" , fname , (char * ) NAME) ) == 0 ) 
            {
              LOG( WARNING_LOG  ,  "object [%s] NOT_EXIST" ,  NAME );
              ret->errCode= COMMAND_OBJECT_NOT_EXIST;
@@ -2364,7 +2364,7 @@ if( DBsql.OpenDatabase( database ) )
          else
            {
              // client contaktu
-               clID  =  DBsql.GetNumericFromTable(   "OBJECT" , "clID" , "id" , id );
+               clID  =  DBsql.GetNumericFromTable(  "OBJECT" , "clID" , "id" , id );
 
                if( regID == clID )       // transfer nemuze delat stavajici client
                  {
@@ -2447,17 +2447,17 @@ return ret;
 
 ccReg::Response* ccReg_EPP_i::ContactTransfer(const char* handle, const char* authInfo, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
-return ObjectTransfer( EPP_ContactTransfer , "CONTACT" ,  handle, authInfo,  clientID, clTRID , XML );
+return ObjectTransfer( EPP_ContactTransfer , "CONTACT" ,  "handle" , handle, authInfo,  clientID, clTRID , XML );
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetTransfer(const char* handle, const char* authInfo, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
-return ObjectTransfer( EPP_NSsetTransfer , "NSSET" ,  handle, authInfo,  clientID, clTRID , XML );
+return ObjectTransfer( EPP_NSsetTransfer , "NSSET" ,  "handle" , handle, authInfo,  clientID, clTRID , XML );
 }
 
 ccReg::Response* ccReg_EPP_i::DomainTransfer(const char* fqdn, const char* authInfo, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
-return ObjectTransfer( EPP_DomainTransfer , "DOMAIN" ,  fqdn, authInfo,  clientID, clTRID , XML );
+return ObjectTransfer( EPP_DomainTransfer , "DOMAIN" , "fqdn" , fqdn, authInfo,  clientID, clTRID , XML );
 }
 
 
