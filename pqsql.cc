@@ -60,7 +60,7 @@ int col;
 
 col = PQfnumber(result, fname);
 
-if( col == -1 ) return ""; 
+if( col == -1 ) {  LOG( WARNING_LOG , "unknow FieldName: %s" , fname );   return "";  }
 else return  GetFieldValue( row , col );
 }
 
@@ -108,8 +108,9 @@ val = GetFieldValueName( fname , row );
 if( val[0] == 't' ) return true;
 else return false;
 }
+
 // vraci integer hodnoty
-bool PQ::GetFieldNumericValueName(char *fname , int row )
+int PQ::GetFieldNumericValueName(char *fname , int row )
 {
 return atoi( GetFieldValueName( fname , row ) );
 }

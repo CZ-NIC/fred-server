@@ -34,7 +34,7 @@ char * GetFieldValue( int row , int col );
 // vraci boolean hodnoty
 bool GetFieldBooleanValueName(char *fname , int row );
 // vraci integer hodnoty
-bool GetFieldNumericValueName(char *fname , int row );
+int  GetFieldNumericValueName(char *fname , int row );
 
 // jmeno pole
 char *  GetFieldName( int col );
