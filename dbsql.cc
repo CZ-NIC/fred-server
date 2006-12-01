@@ -657,7 +657,7 @@ if( ExecSelect( sqlString ) )
  {
     if(  GetSelectRows() == 1  )
       {
-        convert_rfc3339_timestamp( dateStr ,     GetFieldValue( 0 , 0 ) );        
+        convert_rfc3339_date( dateStr ,     GetFieldValue( 0 , 0 ) );         // musi to vratit jakop datum
         ret = true;
       }
     FreeSelect();

@@ -3772,7 +3772,7 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) 
         d->UpDate= CORBA::string_dup( dateStr );
         convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("TrDate" , 0 ) ); // datum a cas transferu
         d->TrDate= CORBA::string_dup( dateStr );
-        convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("ExDate" , 0 ) ); // datum a cas expirace
+        convert_rfc3339_date( dateStr ,  DBsql.GetFieldValueName("ExDate" , 0 ) ); // datum a cas expirace
         d->ExDate= CORBA::string_dup( dateStr );
 
 
