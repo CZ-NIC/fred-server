@@ -3202,12 +3202,12 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle , const char* authI
 ccReg::Response *ret;
 DB DBsql;
 bool  check;
-char  HANDLE[64] , NAME[256];
+char  HANDLE[64] , NAME[256] , REM_NAME[256];
 int regID , clID , nssetID ,  techid  , hostID;
-int  j , l  , seq ;
-unsigned int i;
+int    seq  ;
+unsigned int i , j , k , l ;
 int hostNum , techNum;
-
+bool findRem; // test zdali se pridavany host zaroven delete 
 ret = new ccReg::Response;
 seq=0;
 ret->errCode=0;
@@ -3325,7 +3325,7 @@ if( DBsql.OpenDatabase( database ) )
 
 
                                               // TEST IP adres 
-                                              for( j = 0; j < (int ) dns_add[i].inet.length(); j++ )
+                                              for( j = 0; j <  dns_add[i].inet.length(); j++ )
                                                 {
 
                                                     if( TestInetAddress( dns_add[i].inet[j] ) )  
@@ -3371,7 +3371,7 @@ if( DBsql.OpenDatabase( database ) )
 
                                                if( getZone( dns_add[i].fqdn ) == 0     && (int )  dns_add[i].inet.length() > 0 ) // neni v definovanych zonach a obsahuje zaznam ip adresy
                                                  {
-                                                   for( j = 0 ; j < (int )  dns_add[i].inet.length() ; j ++ )
+                                                   for( j = 0 ; j <   dns_add[i].inet.length() ; j ++ )
                                                    {
                                                     LOG( WARNING_LOG, "NSSetUpdate:  ipaddr  glue not allowed %s " , (const char *) dns_add[i].inet[j]   );
                                                     ret->errors.length( seq +1 );
@@ -3384,8 +3384,26 @@ if( DBsql.OpenDatabase( database ) )
                                                 }
                                               else                                              
                                                {
+                 
+
                                                    if(  DBsql.CheckHost( NAME , nssetID )  ) // uz exstuje nelze pridat
                                                      {
+                                                       // TEST jestli nahodou neni DNS host mezi  dns_rem[i].fqdn
+                                                         findRem=false;
+                                                         for( k = 0; k < dns_rem.length(); k++ )
+                                                         {
+                                                            convert_hostname(  REM_NAME , dns_rem[k].fqdn );
+                                                            if( strcmp( NAME , REM_NAME ) == 0 ) 
+                                                              { 
+                                                                     LOG( NOTICE_LOG ,"NSSetUpdate: add HOST %s find remove host %s" , NAME , REM_NAME );
+                                                                 findRem=true; break; 
+                                                              }
+                                                          
+                                                         } 
+
+
+                                                        if(  !findRem ) 
+                                                        {
                                                         LOG( WARNING_LOG, "NSSetUpdate:  host name %s exist" , (const char *)  dns_add[i].fqdn );
                                                         ret->errors.length( seq +1 );
                                                         ret->errors[seq].code = ccReg::nssetUpdate_ns_name_add;
@@ -3393,6 +3411,8 @@ if( DBsql.OpenDatabase( database ) )
                                                         ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_DNS_NAME_EXIST , CLIENT_LANG() )  );
                                                         seq++;
                                                         ret->errCode = COMMAND_PARAMETR_ERROR;
+                                                        }
+
                                                      }
                                                 
                                                }
@@ -3510,10 +3530,23 @@ if( DBsql.OpenDatabase( database ) )
                                                     ret->errCode = COMMAND_PARAMETR_VALUE_POLICY_ERROR;
                                                  }
 
+                                            // smazat DNS HOSTY  PRVNI FAZE
+                                            for( i = 0; i < dns_rem.length(); i++ )
+                                              {
+                                               LOG( NOTICE_LOG ,  "NSSetUpdate:  delete  host  [%s] " , (const char *)   dns_rem[i].fqdn );
+
+                                                      convert_hostname(  NAME , dns_rem[i].fqdn );
+                                                      hostID = DBsql.CheckHost( NAME , nssetID );
+                                                      LOG( NOTICE_LOG ,  "DELETE  hostID %d" , hostID );
+                                                      if( !DBsql.DeleteFromTable("HOST" , "id" ,  hostID  ) )  ret->errCode = COMMAND_FAILED;
+                                                       else   if(  !DBsql.DeleteFromTable("HOST_IPADDR_map"  , "hostID" ,  hostID )  )ret->errCode = COMMAND_FAILED;
+                                              }
+
+
                                              
                                          
 
-                                        //-------- DNS HOSTY pridat
+                                        //-------- DNS HOSTY pridat DRUHA FAZE
 
                                           for( i = 0; i < dns_add.length(); i++ )
                                              {
@@ -3536,7 +3569,7 @@ if( DBsql.OpenDatabase( database ) )
                                                          if( DBsql.EXEC())  // pridej IP adresey
                                                            {
                                                                 // preved sequenci adres
-                                                                for( j = 0; j < (int) dns_add[i].inet.length(); j++ )
+                                                                for( j = 0; j < dns_add[i].inet.length(); j++ )
                                                                      {
                                                                        LOG( NOTICE_LOG ,  "insert  IP address hostID  %d [%s] ",  hostID  , (const char *)  dns_add[i].inet[j]   );
 
@@ -3564,18 +3597,6 @@ if( DBsql.OpenDatabase( database ) )
 
 
 
-
-                                            // smazat DNS HOSTY
-                                            for( i = 0; i < dns_rem.length(); i++ )
-                                              {
-                                               LOG( NOTICE_LOG ,  "NSSetUpdate:  delete  host  [%s] " , (const char *)   dns_rem[i].fqdn );
-
-                                                      convert_hostname(  NAME , dns_rem[i].fqdn );
-                                                      hostID = DBsql.CheckHost( NAME , nssetID );
-                                                      LOG( NOTICE_LOG ,  "DELETE  hostID %d" , hostID );
-                                                      if( !DBsql.DeleteFromTable("HOST" , "id" ,  hostID  ) )  ret->errCode = COMMAND_FAILED;
-                                                       else   if(  !DBsql.DeleteFromTable("HOST_IPADDR_map"  , "hostID" ,  hostID )  )ret->errCode = COMMAND_FAILED;
-                                              }
 
 
 
