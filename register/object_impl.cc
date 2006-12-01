@@ -5,13 +5,13 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 Register::ObjectImpl::ObjectImpl(
-  ptime _crDate, ptime _trDate, ptime _upDate,
-  unsigned _registrar, const std::string _registrarHandle,
-  unsigned _createRegistrar, const std::string _createRegistrarHandle,
-  unsigned _updateRegistrar, const std::string _updateRegistrarHandle,
+  TID _id, ptime _crDate, ptime _trDate, ptime _upDate,
+  TID _registrar, const std::string _registrarHandle,
+  TID _createRegistrar, const std::string _createRegistrarHandle,
+  TID _updateRegistrar, const std::string _updateRegistrarHandle,
   const std::string& _authPw, const std::string _roid
 ) :
- crDate(_crDate), trDate(_trDate), upDate(_upDate), 
+ id(_id), crDate(_crDate), trDate(_trDate), upDate(_upDate), 
  registrar(_registrar), registrarHandle(_registrarHandle),
  createRegistrar(_createRegistrar), 
  createRegistrarHandle(_createRegistrarHandle),
@@ -22,11 +22,16 @@ Register::ObjectImpl::ObjectImpl(
 }
 
 Register::ObjectImpl::ObjectImpl()
-  : crDate(not_a_date_time), trDate(not_a_date_time), upDate(not_a_date_time),
+  : id(0), crDate(not_a_date_time), trDate(not_a_date_time), upDate(not_a_date_time),
     registrar(0), createRegistrar(0), updateRegistrar(0), modified(true)
 {
 }
 
+TID
+Register::ObjectImpl::getId() const
+{
+  return id;
+}
 
 ptime 
 Register::ObjectImpl::getCreateDate() const
@@ -46,7 +51,7 @@ Register::ObjectImpl::getUpdateDate() const
   return upDate;
 }
 
-unsigned 
+TID
 Register::ObjectImpl::getRegistrarId() const
 {
   return registrar;
@@ -58,7 +63,7 @@ Register::ObjectImpl::getRegistrarHandle() const
   return registrarHandle;
 }
 
-unsigned 
+TID
 Register::ObjectImpl::getUpdateRegistrarId() const
 {
   return updateRegistrar;
@@ -76,7 +81,7 @@ Register::ObjectImpl::getUpdateRegistrarHandle() const
   return updateRegistrarHandle;
 }
 
-unsigned 
+TID
 Register::ObjectImpl::getCreateRegistrarId() const
 {
   return createRegistrar;
@@ -136,13 +141,13 @@ Register::ObjectListImpl::ObjectListImpl() :
 }
 
 void 
-Register::ObjectListImpl::setIdFilter(unsigned long id)
+Register::ObjectListImpl::setIdFilter(TID id)
 {
   idFilter = id;
 }
 
 void 
-Register::ObjectListImpl::setRegistrarFilter(unsigned long registrarId)
+Register::ObjectListImpl::setRegistrarFilter(TID registrarId)
 {
   registrarFilter = registrarId;
 }
@@ -162,7 +167,7 @@ Register::ObjectListImpl::setCrDateIntervalFilter(time_period period)
 }
 
 void 
-Register::ObjectListImpl::setCreateRegistrarFilter(unsigned long registrarId)
+Register::ObjectListImpl::setCreateRegistrarFilter(TID registrarId)
 {
   createRegistrarFilter = registrarId;
 }
@@ -182,7 +187,7 @@ Register::ObjectListImpl::setUpdateIntervalFilter(time_period period)
 }
 
 void 
-Register::ObjectListImpl::setUpdateRegistrarFilter(unsigned long registrarId)
+Register::ObjectListImpl::setUpdateRegistrarFilter(TID registrarId)
 {
   updateRegistrarFilter = registrarId;
 }

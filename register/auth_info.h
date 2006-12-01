@@ -3,6 +3,7 @@
 
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include "types.h"
 #include "exceptions.h"
 #include "mailer.h"
 
@@ -42,8 +43,8 @@ namespace Register
     {
      public:
       virtual ~Detail() {}
-      virtual unsigned long getId() const = 0;
-      virtual unsigned long getObjectId() const = 0;
+      virtual TID getId() const = 0;
+      virtual TID getObjectId() const = 0;
       virtual const std::string& getObjectHandle() const = 0;
       virtual ObjectType getObjectType() const = 0;
       virtual RequestType getRequestType() const = 0;
@@ -52,7 +53,7 @@ namespace Register
       virtual ptime getClosingTime() const = 0;
       virtual const std::string& getReason() const = 0;
       virtual const std::string& getEmailToAnswer() const = 0;
-      virtual unsigned long getAnswerEmailId() const = 0;
+      virtual TID getAnswerEmailId() const = 0;
       virtual const std::string& getRegistrarName() const = 0;
       virtual const std::string& getSvTRID() const = 0;
     }; // Detail
@@ -60,9 +61,9 @@ namespace Register
     {
      public:
       virtual ~List() {}
-      virtual unsigned long getCount() const = 0;
-      virtual Detail *get(unsigned long idx) const = 0;
-      virtual void setIdFilter(unsigned long id) = 0;
+      virtual unsigned getCount() const = 0;
+      virtual Detail *get(unsigned idx) const = 0;
+      virtual void setIdFilter(TID id) = 0;
       virtual void setHandleFilter(const std::string& handle) = 0;
       virtual void setEmailFilter(const std::string& email) = 0;
       virtual void setReasonFilter(const std::string& reason) = 0;
@@ -91,15 +92,15 @@ namespace Register
       struct REQUEST_CLOSED {};
       virtual ~Manager() {}
       /// Create request for auth_info
-      virtual unsigned long createRequest(
-        unsigned long objectId, ///< id of object to take auth_info from
+      virtual TID createRequest(
+        TID objectId, ///< id of object to take auth_info from
         RequestType requestType, ///< type of request
-        unsigned long eppActionId, ///< id of EPP action (EPP)
+        TID eppActionId, ///< id of EPP action (EPP)
         const std::string& requestReason, ///< reason from PIF (*_PIF)
         const std::string& emailToAnswer ///< email to answer ([AUTO|POST]_PIF)
       ) throw (BAD_EMAIL, OBJECT_NOT_FOUND, ACTION_NOT_FOUND, SQL_ERROR) = 0;
       /// Process request by sending email with auth_info or closing as invalid
-      virtual void processRequest(unsigned id, bool invalid) 
+      virtual void processRequest(TID id, bool invalid) 
         throw (REQUEST_NOT_FOUND, REQUEST_CLOSED, SQL_ERROR) = 0;
       /// Create list of requests
       virtual List *getList() = 0;

@@ -30,8 +30,6 @@ namespace Register
      public:
       /// public destructor
       virtual ~NSSet() {}
-      /// return id of nsset
-      virtual unsigned getId() const = 0;
       /// return nsset handle
       virtual const std::string& getHandle() const = 0;
       /// return count of admin contacts

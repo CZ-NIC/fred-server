@@ -4,6 +4,7 @@
 #include "zone.h"
 #include "dbsql.h"
 #include <iostream>
+#include "types.h"
 
 #define RANGE(x) x.begin(),x.end()
 
@@ -12,11 +13,11 @@ namespace Register
   namespace Zone
   {
     struct ZoneImpl : public virtual Zone {
-      ZoneImpl(unsigned _id, const std::string& _fqdn, bool _isEnum) :
+      ZoneImpl(TID _id, const std::string& _fqdn, bool _isEnum) :
         id(_id), fqdn(_fqdn), isEnum(_isEnum)
       {}
       ~ZoneImpl() {}
-      unsigned id;
+      TID id;
       std::string fqdn;
       bool isEnum;
       /// compare if domain belongs to this zone (according to suffix)
@@ -55,7 +56,7 @@ namespace Register
         if (!db->ExecSelect("SELECT id,fqdn,enum_zone FROM zone")) return;
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           zoneList.push_back(ZoneImpl(
-           atoi(db->GetFieldValue(i,0)),
+           STR_TO_ID(db->GetFieldValue(i,0)),
            db->GetFieldValue(i,1),
            *db->GetFieldValue(i,2) == 't' ? true : false
            ));

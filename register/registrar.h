@@ -4,6 +4,7 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_period.hpp>
 
+#include "types.h"
 #include "exceptions.h" 
 
 using namespace boost::posix_time;
@@ -41,7 +42,7 @@ namespace Register {
       /// Public destructor, user is responsible for object delete
       virtual ~Registrar() {}
       /// Return registrar id
-      virtual unsigned getId() const = 0;
+      virtual TID getId() const = 0;
       /// Return registrar handle (EPP session login name)
       virtual const std::string& getHandle() const = 0;
       /// Set registrar handle (EPP session login name)
@@ -122,7 +123,7 @@ namespace Register {
       virtual ~RegistrarList() {}
      public:
       /// Filter in id
-      virtual void setIdFilter(unsigned id) = 0;
+      virtual void setIdFilter(TID id) = 0;
       /// Filter in handle
       virtual void setHandleFilter(const std::string& handle) = 0;
       /// Filter in name
@@ -155,9 +156,9 @@ namespace Register {
       /// Protected destructor, object is managed by EPPActionList
       virtual ~EPPAction() {}
      public:
-      virtual unsigned long getId() const = 0; 
+      virtual TID getId() const = 0; 
       /// Return id of session action is part of
-      virtual unsigned long getSessionId() const = 0;
+      virtual TID getSessionId() const = 0;
       /// Return type of actoion
       virtual unsigned getType() const = 0;
       /// Return type name of action
@@ -187,11 +188,11 @@ namespace Register {
       /// Public destructor, user is responsible for destruction
       virtual ~EPPActionList() {}
       /// Set filter for action with id
-      virtual void setIdFilter(unsigned long id) = 0;
+      virtual void setIdFilter(TID id) = 0;
       /// Set filter for session action is part of
-      virtual void setSessionFilter(unsigned long sessionId) = 0;
+      virtual void setSessionFilter(TID sessionId) = 0;
       /// Set filter for registrar who performed action
-      virtual void setRegistrarFilter(unsigned long registrarId) = 0;
+      virtual void setRegistrarFilter(TID registrarId) = 0;
       /// Set filter for registrar who performed action
       virtual void setRegistrarHandleFilter(
         const std::string& registrarHandle
@@ -232,7 +233,7 @@ namespace Register {
       virtual ~EPPSession() {}
      public: 
       /// Return id of this session
-      virtual unsigned getId() const = 0;
+      virtual TID getId() const = 0;
       /// Return time of login action
       virtual const std::string& getLoginTime() const = 0;
       /// Return private list of actions of this session

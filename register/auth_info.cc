@@ -14,8 +14,8 @@ namespace Register
   {
     class DetailImpl : virtual public Detail
     {
-      unsigned long id;
-      unsigned long objectId;
+      TID id;
+      TID objectId;
       std::string objectHandle;
       ObjectType objectType;
       RequestType requestType;
@@ -24,20 +24,20 @@ namespace Register
       ptime closingTime;
       std::string reason;
       std::string emailToAnswer;
-      unsigned long answerEmailId;
-      unsigned long actionId;
+      TID answerEmailId;
+      TID actionId;
       std::string registrarName;
       std::string svTRID;
       Mailer::Manager *mm;
       DB *db;
      public:
       DetailImpl(
-        unsigned long _id, unsigned long _objectId,
+        TID _id, TID _objectId,
         const std::string& _objectHandle, ObjectType _objectType,
         RequestType _requestType, RequestStatus _requestStatus,
         ptime _creationTime, ptime _closingTime,
         const std::string& _reason, const std::string& _emailToAnswer,
-        unsigned long _answerEmailId, unsigned long _actionId,
+        TID _answerEmailId, TID _actionId,
         const std::string& _registrarName, const std::string& _svTRID,
         Mailer::Manager *_mm, DB *_db
       ) :
@@ -49,11 +49,11 @@ namespace Register
         actionId(_actionId), registrarName(_registrarName), svTRID(_svTRID),
         mm(_mm), db(_db)
       {}
-      virtual unsigned long getId() const
+      virtual TID getId() const
       {
         return id;
       }
-      virtual unsigned long getObjectId() const
+      virtual TID getObjectId() const
       {
         return objectId;
       }
@@ -89,11 +89,11 @@ namespace Register
       {
         return emailToAnswer;
       }
-      virtual unsigned long getAnswerEmailId() const
+      virtual TID getAnswerEmailId() const
       {
         return answerEmailId;
       }
-      virtual unsigned long getActionId() const
+      virtual TID getActionId() const
       {
         return actionId;
       }
@@ -228,7 +228,7 @@ namespace Register
     class ListImpl : virtual public List
     {
       std::vector<DetailImpl *> requests;
-      unsigned long idFilter;
+      TID idFilter;
       std::string handleFilter;
       std::string emailFilter;
       std::string reasonFilter;
@@ -255,16 +255,16 @@ namespace Register
         closeTimeFilter(ptime(neg_infin),ptime(pos_infin)),         
         mm(_mm), db(_db)
       {}
-      virtual unsigned long getCount() const
+      virtual unsigned getCount() const
       {
         return requests.size();
       }
-      virtual Detail *get(unsigned long idx) const
+      virtual Detail *get(unsigned idx) const
       {
         if (idx >= requests.size()) return NULL;
         return requests[idx];
       }
-      virtual void setIdFilter(unsigned long _id)
+      virtual void setIdFilter(TID _id)
       {
         idFilter = _id;
       }
@@ -355,10 +355,10 @@ namespace Register
         if (!statusIgnoreFilter)
           sql << "AND air.status=" << RS_SQL(statusFilter) << " ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+        for (TID i=0; i < (TID)db->GetSelectRows(); i++) {
           DetailImpl *d = new DetailImpl(
-            atoi(db->GetFieldValue(i,0)), // id
-            atoi(db->GetFieldValue(i,1)), // objectId
+            STR_TO_ID(db->GetFieldValue(i,0)), // id
+            STR_TO_ID(db->GetFieldValue(i,1)), // objectId
             db->GetFieldValue(i,2), // handle
             SQL_OT(atoi(db->GetFieldValue(i,3))), // object type
             SQL_RT(atoi(db->GetFieldValue(i,4))), // request type
@@ -367,8 +367,8 @@ namespace Register
             MAKE_TIME(i,7), // resolve time
             db->GetFieldValue(i,8), // reason 
             db->GetFieldValue(i,9), // email
-            atoi(db->GetFieldValue(i,10)), // answered email id
-            atoi(db->GetFieldValue(i,11)), // action id
+            STR_TO_ID(db->GetFieldValue(i,10)), // answered email id
+            STR_TO_ID(db->GetFieldValue(i,11)), // action id
             db->GetFieldValue(i,12), // registrar
             db->GetFieldValue(i,13), // svtrid
             mm, db
@@ -386,10 +386,10 @@ namespace Register
       ManagerImpl(DB *_db, Mailer::Manager *_mm) : 
         db(_db), mm(_mm), l(_mm,_db)
       {}
-      unsigned long createRequest(
-        unsigned long objectId,
+      TID createRequest(
+        TID objectId,
         RequestType requestType,
-        unsigned long eppActionId,
+        TID eppActionId,
         const std::string& requestReason,
         const std::string& emailToAnswer
       ) throw (BAD_EMAIL, OBJECT_NOT_FOUND, ACTION_NOT_FOUND, SQL_ERROR)
@@ -435,7 +435,7 @@ namespace Register
         }
         return d.getId();
       }
-      void processRequest(unsigned id, bool invalid)
+      void processRequest(TID id, bool invalid)
         throw (REQUEST_NOT_FOUND, REQUEST_CLOSED, SQL_ERROR)
       {
         ListImpl l(mm,db);

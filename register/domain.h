@@ -36,38 +36,36 @@ namespace Register
      public:
       /// public destructor
       virtual ~Domain() {}
-      /// return id of domain
-      virtual unsigned getId() const = 0;
       /// return fully qualified domain name
       virtual const std::string& getFQDN() const = 0;
       /// return id of zone
-      virtual unsigned getZoneId() const = 0;
+      virtual TID getZoneId() const = 0;
       /// return handle of nsset
       virtual const std::string& getNSSetHandle() const = 0;
       /// return id of nsset
-      virtual unsigned getNSSetId() const = 0;
+      virtual TID getNSSetId() const = 0;
       /// set nsset
-      virtual void setNSSetId(unsigned nsset) = 0;
+      virtual void setNSSetId(TID nsset) = 0;
       /// return handle of registrant
       virtual const std::string& getRegistrantHandle() const = 0;
       /// return name of registrant
       virtual const std::string& getRegistrantName() const = 0;
       /// return id of registrant
-      virtual unsigned getRegistrantId() const = 0;
+      virtual TID getRegistrantId() const = 0;
       /// set registrant 
-      virtual void setRegistrantId(unsigned registrant) = 0;
+      virtual void setRegistrantId(TID registrant) = 0;
       /// return count of admin contacts
       virtual unsigned getAdminCount() const = 0;
       /// return id of admin contact by index
-      virtual unsigned getAdminIdByIdx(unsigned idx) const
+      virtual TID getAdminIdByIdx(unsigned idx) const
         throw (NOT_FOUND) = 0;
       /// return handle of admin contact by index
       virtual const std::string& getAdminHandleByIdx(unsigned idx) const 
         throw (NOT_FOUND) = 0;
       /// remove contact from admin contact list
-      virtual void removeAdminId(unsigned id) = 0;
+      virtual void removeAdminId(TID id) = 0;
       /// insert contact into admin contact list
-      virtual void insertAdminId(unsigned id) = 0;
+      virtual void insertAdminId(TID id) = 0;
       /// return date of registration expiration
       virtual ptime getExpirationDate() const = 0;
       /// return date of validation expiration
@@ -81,19 +79,19 @@ namespace Register
       /// get detail of loaded domain
       virtual Domain *get(unsigned idx) const = 0;
       /// set filter for domain zone
-      virtual void setZoneFilter(unsigned zoneId) = 0;
+      virtual void setZoneFilter(TID zoneId) = 0;
       /// set filter for registrant
-      virtual void setRegistrantFilter(unsigned registrantId) = 0;
+      virtual void setRegistrantFilter(TID registrantId) = 0;
       /// set filter for registrant handle
       virtual void setRegistrantHandleFilter(
         const std::string& registrantHandle
       ) = 0;
       /// set filter for nsset
-      virtual void setNSSetFilter(unsigned nssetId) = 0;
+      virtual void setNSSetFilter(TID nssetId) = 0;
       /// set filter for nsset handle
       virtual void setNSSetHandleFilter(const std::string& nssetHandle) = 0;
       /// set filter for admin
-      virtual void setAdminFilter(unsigned adminId) = 0;
+      virtual void setAdminFilter(TID adminId) = 0;
       /// set filter for admin handle
       virtual void setAdminHandleFilter(const std::string& adminHandle) = 0;
       /// set filter for domain name 

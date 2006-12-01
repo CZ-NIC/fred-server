@@ -19,19 +19,18 @@ namespace Register
     {
       struct AdminInfo 
       {
-        unsigned id;
+        TID id;
         std::string handle;
-        AdminInfo(unsigned _id, const std::string& _handle)
+        AdminInfo(TID _id, const std::string& _handle)
           : id(_id), handle(_handle)
         {} 
       };
       typedef std::vector<AdminInfo> AdminInfoList;
-      unsigned id;
       std::string fqdn;
-      unsigned zone;
-      unsigned nsset;
+      TID zone;
+      TID nsset;
       std::string nssetHandle;
-      unsigned registrant;
+      TID registrant;
       std::string registrantHandle;
       std::string registrantName;
       AdminInfoList adminList;
@@ -39,46 +38,42 @@ namespace Register
       ptime valExDate;
      public:
       DomainImpl(
-        unsigned _id,
+        TID _id,
         const std::string& _fqdn,
-        unsigned _zone,
-        unsigned _nsset,
+        TID _zone,
+        TID _nsset,
         const std::string& _nssetHandle,
-        unsigned _registrant,
+        TID _registrant,
         const std::string& _registrantHandle,
         const std::string& _registrantName,
-        unsigned _registrar,
+        TID _registrar,
         const std::string& _registrarHandle,
         ptime _crDate,
         ptime _trDate,
         ptime _upDate,
-        unsigned _createRegistrar,
+        TID _createRegistrar,
         const std::string& _createRegistrarHandle,
-        unsigned _updateRegistrar,      
+        TID _updateRegistrar,      
         const std::string& _updateRegistrarHandle,
         const std::string& _authPw,
         const std::string& _roid,
         ptime _exDate,
         ptime _valExDate
       )
-      : ObjectImpl(_crDate,_trDate,_upDate,_registrar,_registrarHandle,
+      : ObjectImpl(_id,_crDate,_trDate,_upDate,_registrar,_registrarHandle,
         _createRegistrar,_createRegistrarHandle,
         _updateRegistrar,_updateRegistrarHandle,_authPw,_roid),
-        id(_id), fqdn(_fqdn), zone(_zone), nsset(_nsset),
+        fqdn(_fqdn), zone(_zone), nsset(_nsset),
         nssetHandle(_nssetHandle), registrant(_registrant),
         registrantHandle(_registrantHandle), registrantName(_registrantName),
         exDate(_exDate), valExDate(_valExDate)
       {
       }
-      virtual unsigned getId() const
-      {
-        return id;
-      }
       virtual const std::string& getFQDN() const
       {
         return fqdn;
       }
-      virtual unsigned getZoneId() const
+      virtual TID getZoneId() const
       {
         return zone;
       }
@@ -86,11 +81,11 @@ namespace Register
       {
         return nssetHandle;
       }
-      virtual unsigned getNSSetId() const
+      virtual TID getNSSetId() const
       {
         return nsset;
       }
-      virtual void setNSSetId(unsigned nsset)
+      virtual void setNSSetId(TID nsset)
       {
         // check existance and set handle
         this->nsset = nsset;
@@ -104,11 +99,11 @@ namespace Register
       {
         return registrantName;
       }
-      virtual unsigned getRegistrantId() const
+      virtual TID getRegistrantId() const
       {
         return registrant;
       }
-      virtual void setRegistrantId(unsigned registrant)
+      virtual void setRegistrantId(TID registrant)
       {
         this->registrant = registrant;
       }
@@ -124,7 +119,7 @@ namespace Register
       {
         return adminList.size();
       }
-      virtual unsigned getAdminIdByIdx(unsigned idx) const
+      virtual TID getAdminIdByIdx(unsigned idx) const
         throw (NOT_FOUND)
       {
         if (idx >= getAdminCount()) throw NOT_FOUND();
@@ -136,21 +131,21 @@ namespace Register
         if (idx >= getAdminCount()) throw NOT_FOUND();
         return adminList[idx].handle;
       }
-      virtual void removeAdminId(unsigned id)
+      virtual void removeAdminId(TID id)
       {
         // find id in list and delete
       }
-      virtual void insertAdminId(unsigned id)
+      virtual void insertAdminId(TID id)
       {
         // check existance of id
       }
       /// id lookup function
-      bool hasId(unsigned id) const
+      bool hasId(TID id) const
       {
         return this->id == id;
       }
       /// add one admin handle - for domain intialization
-      void addAdminHandle(unsigned id, const std::string& handle)
+      void addAdminHandle(TID id, const std::string& handle)
       {
         adminList.push_back(AdminInfo(id,handle));
       } 
@@ -160,12 +155,12 @@ namespace Register
     {
       typedef std::vector<DomainImpl *> DomainListType;
       DomainListType dlist;
-      unsigned zoneFilter;
-      unsigned registrantFilter;
+      TID zoneFilter;
+      TID registrantFilter;
       std::string registrantHandleFilter;
-      unsigned nsset;
+      TID nsset;
       std::string nssetHandle;
-      unsigned admin;
+      TID admin;
       std::string adminHandle;
       std::string fqdn;
       time_period exDate;
@@ -200,11 +195,11 @@ namespace Register
         if (idx >= dlist.size()) return NULL;
         return dlist[idx];
       }
-      virtual void setZoneFilter(unsigned zoneId)
+      virtual void setZoneFilter(TID zoneId)
       {
         zoneFilter = zoneId;
       }
-      virtual void setRegistrantFilter(unsigned registrantId)
+      virtual void setRegistrantFilter(TID registrantId)
       {
         registrantFilter = registrantId;
       }
@@ -212,7 +207,7 @@ namespace Register
       {
         registrantHandleFilter = _registrantHandle;
       }
-      virtual void setNSSetFilter(unsigned _nssetId)
+      virtual void setNSSetFilter(TID _nssetId)
       {
         nsset = _nssetId;
       }
@@ -220,7 +215,7 @@ namespace Register
       {
         nssetHandle = _nssetHandle;
       }
-      virtual void setAdminFilter(unsigned _adminId)
+      virtual void setAdminFilter(TID _adminId)
       {
         admin = _adminId;
       }
@@ -299,7 +294,7 @@ namespace Register
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          unsigned id = atoi(db->GetFieldValue(i,0));
+          TID id = STR_TO_ID(db->GetFieldValue(i,0));
           // sql result has multiple lines for one domain
           // if domain has been already initialized only admin contacts
           // are filled
@@ -314,20 +309,20 @@ namespace Register
             d = new DomainImpl(
               id, // id
               db->GetFieldValue(i,1), // fqdn
-              atoi(db->GetFieldValue(i,2)), // zone
-              atoi(db->GetFieldValue(i,3)), // nsset id
+              STR_TO_ID(db->GetFieldValue(i,2)), // zone
+              STR_TO_ID(db->GetFieldValue(i,3)), // nsset id
               db->GetFieldValue(i,4), // nsset handle
-              atoi(db->GetFieldValue(i,5)), // registrant id
+              STR_TO_ID(db->GetFieldValue(i,5)), // registrant id
               db->GetFieldValue(i,6), // registrant handle
               db->GetFieldValue(i,7), // registrant name
-              atoi(db->GetFieldValue(i,8)), // registrar
+              STR_TO_ID(db->GetFieldValue(i,8)), // registrar
               db->GetFieldValue(i,9), // registrar handle
               MAKE_TIME(i,10), // crdate
               MAKE_TIME(i,11), // trdate
               MAKE_TIME(i,12), // update
-              atoi(db->GetFieldValue(i,13)), // crid
+              STR_TO_ID(db->GetFieldValue(i,13)), // crid
               db->GetFieldValue(i,14), // crid handle
-              atoi(db->GetFieldValue(i,15)), // upid
+              STR_TO_ID(db->GetFieldValue(i,15)), // upid
               db->GetFieldValue(i,16), // upid handle
               db->GetFieldValue(i,17), // authinfo
               db->GetFieldValue(i,18), // roid
@@ -476,7 +471,7 @@ namespace Register
       unsigned long getEnumDomainCount() const
       {
         std::stringstream sql;
-        unsigned ret = 0;
+        unsigned long ret = 0;
         sql << "SELECT COUNT(*) FROM domain WHERE fqdn LIKE '%e164.arpa'";
         if (db->ExecSelect(sql.str().c_str()) && db->GetSelectRows() == 1)
           ret =  atol(db->GetFieldValue(0,0));
@@ -486,7 +481,7 @@ namespace Register
       unsigned long getEnumNumberCount() const
       {
         std::stringstream sql;
-        unsigned ret = 0;
+        unsigned long ret = 0;
         sql << "SELECT SUM(power(10,(33-char_length(fqdn))/2)) "
             << "FROM domain WHERE fqdn LIKE '%e164.arpa'";
         if (db->ExecSelect(sql.str().c_str()) && db->GetSelectRows() == 1)

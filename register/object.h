@@ -7,6 +7,8 @@
 #include <string>
 #include <set>
 
+#include "types.h"
+
 using namespace boost::posix_time;
 
 namespace Register
@@ -35,6 +37,8 @@ namespace Register
     typedef unsigned StatusElement;
     /// Set of states
     typedef std::set<StatusElement> StatusSet;
+    /// return id of object
+    virtual TID getId() const = 0;
     /// Return time of object registration
     virtual ptime getCreateDate() const  = 0;
     /// Return time of last transfer
@@ -44,15 +48,15 @@ namespace Register
     /// Return handle of dedicated registrar
     virtual const std::string& getRegistrarHandle() const = 0;
     /// Return id of dedicated registrar
-    virtual unsigned getRegistrarId() const  = 0;
+    virtual TID getRegistrarId() const  = 0;
     /// Return handle of registrar who made last update
     virtual const std::string& getUpdateRegistrarHandle() const = 0;
     /// Return id of registrar who made last update
-    virtual unsigned getUpdateRegistrarId() const = 0;
+    virtual TID getUpdateRegistrarId() const = 0;
     /// Return handle of registrar who created object
     virtual const std::string& getCreateRegistrarHandle() const = 0;
     /// Return id of registrar who created object
-    virtual unsigned getCreateRegistrarId() const = 0;
+    virtual TID getCreateRegistrarId() const = 0;
     /// Return authorization token
     virtual const std::string& getAuthPw() const = 0;
     /// Set authorization token
@@ -77,9 +81,9 @@ namespace Register
     /// get detail of loaded objects
     virtual Object *get(unsigned idx) const = 0;
     /// set filter for id
-    virtual void setIdFilter(unsigned long id) = 0;
+    virtual void setIdFilter(TID id) = 0;
     /// set filter for registrar
-    virtual void setRegistrarFilter(unsigned long registrarId) = 0;
+    virtual void setRegistrarFilter(TID registrarId) = 0;
     /// set filter for registrar handle
     virtual void setRegistrarHandleFilter(
       const std::string& registrarHandle
@@ -87,7 +91,7 @@ namespace Register
     /// set filter for period of crDate
     virtual void setCrDateIntervalFilter(time_period period) = 0;
     /// set filter for create registrar
-    virtual void setCreateRegistrarFilter(unsigned long registrarId) = 0;
+    virtual void setCreateRegistrarFilter(TID registrarId) = 0;
     /// set filter for create registrar handle
     virtual void setCreateRegistrarHandleFilter(
       const std::string& registrarHandle
@@ -95,7 +99,7 @@ namespace Register
     /// set filter for period of upDate
     virtual void setUpdateIntervalFilter(time_period period) = 0;
     /// set filter for update registrar
-    virtual void setUpdateRegistrarFilter(unsigned long registrarId) = 0;
+    virtual void setUpdateRegistrarFilter(TID registrarId) = 0;
     /// set filter for update registrar handle
     virtual void setUpdateRegistrarHandleFilter(
       const std::string& registrarHandle

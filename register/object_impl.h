@@ -29,14 +29,15 @@ namespace Register
   class ObjectImpl : virtual public Object
   {
    protected:
+    TID id;
     ptime crDate;
     ptime trDate;
     ptime upDate;
-    unsigned registrar;
+    TID registrar;
     std::string registrarHandle;
-    unsigned createRegistrar;
+    TID createRegistrar;
     std::string createRegistrarHandle;
-    unsigned updateRegistrar;
+    TID updateRegistrar;
     std::string updateRegistrarHandle;
     std::string authPw;
     std::string roid;
@@ -45,20 +46,21 @@ namespace Register
    public:
     ObjectImpl();
     ObjectImpl(
-      ptime _crDate, ptime _trDate, ptime _upDate,
-      unsigned registrar, const std::string registrarHandle,
-      unsigned updateRegistrar, const std::string updateRegistrarHandle,
-      unsigned createRegistrar, const std::string createRegistrarHandle,
+      TID _id, ptime _crDate, ptime _trDate, ptime _upDate,
+      TID registrar, const std::string registrarHandle,
+      TID updateRegistrar, const std::string updateRegistrarHandle,
+      TID createRegistrar, const std::string createRegistrarHandle,
       const std::string& authPw, const std::string roid
     );
+    TID getId() const;
     ptime getCreateDate() const;
     ptime getTransferDate() const;
     ptime getUpdateDate() const;
-    unsigned getRegistrarId() const;
+    TID getRegistrarId() const;
     const std::string& getRegistrarHandle() const;
-    unsigned getUpdateRegistrarId() const;
+    TID getUpdateRegistrarId() const;
     const std::string& getUpdateRegistrarHandle() const;
-    unsigned getCreateRegistrarId() const;
+    TID getCreateRegistrarId() const;
     const std::string& getCreateRegistrarHandle() const;
     const std::string& getAuthPw() const;
     void setAuthPw(const std::string& auth);
@@ -72,30 +74,30 @@ namespace Register
   class ObjectListImpl : virtual public ObjectList
   {
    protected:
-    unsigned long idFilter;
-    unsigned long registrarFilter;
+    TID idFilter;
+    TID registrarFilter;
     std::string registrarHandleFilter;
-    unsigned long createRegistrarFilter;
+    TID createRegistrarFilter;
     std::string createRegistrarHandleFilter;
-    unsigned long updateRegistrarFilter;
+    TID updateRegistrarFilter;
     std::string updateRegistrarHandleFilter;
     time_period crDateIntervalFilter;
     time_period updateIntervalFilter;
     time_period trDateIntervalFilter;
    public:
     ObjectListImpl();
-    virtual void setIdFilter(unsigned long id);
-    virtual void setRegistrarFilter(unsigned long registrarId);
+    virtual void setIdFilter(TID id);
+    virtual void setRegistrarFilter(TID registrarId);
     virtual void setRegistrarHandleFilter(
       const std::string& registrarHandle
     );
     virtual void setCrDateIntervalFilter(time_period period);
-    virtual void setCreateRegistrarFilter(unsigned long registrarId);
+    virtual void setCreateRegistrarFilter(TID registrarId);
     virtual void setCreateRegistrarHandleFilter(
       const std::string& registrarHandle
     );
     virtual void setUpdateIntervalFilter(time_period period);
-    virtual void setUpdateRegistrarFilter(unsigned long registrarId);
+    virtual void setUpdateRegistrarFilter(TID registrarId);
     virtual void setUpdateRegistrarHandleFilter(
       const std::string& registrarHandle
     );

@@ -12,7 +12,6 @@ namespace Register
   {
     class ContactImpl : public ObjectImpl, public virtual Contact
     {
-      unsigned id;
       std::string handle;
       std::string name;
       std::string organization;
@@ -38,17 +37,17 @@ namespace Register
       bool discloseFax;
      public:
       ContactImpl(
-        unsigned _id,
+        TID _id,
         const std::string& _handle, 
         const std::string& _name,
-        unsigned _registrar,
+        TID _registrar,
         const std::string& _registrarHandle,
         ptime _crDate,
         ptime _trDate,
         ptime _upDate,
-        unsigned _createRegistrar,
+        TID _createRegistrar,
         const std::string& _createRegistrarHandle,
-        unsigned _updateRegistrar,      
+        TID _updateRegistrar,      
         const std::string& _updateRegistrarHandle,
         const std::string& _authPw,
         const std::string& _roid,
@@ -74,10 +73,10 @@ namespace Register
         bool _discloseTelephone,
         bool _discloseFax  
       ) :
-        ObjectImpl(_crDate,_trDate,_upDate,_registrar,_registrarHandle,
+        ObjectImpl(_id, _crDate,_trDate,_upDate,_registrar,_registrarHandle,
         _createRegistrar,_createRegistrarHandle,
         _updateRegistrar,_updateRegistrarHandle,_authPw,_roid),
-        id(_id), handle(_handle), name(_name),
+        handle(_handle), name(_name),
         organization(_organization), street1(_street1), street2(_street2),
         street3(_street3), province(_province), postalCode(_postalCode),
         city(_city), country(_country), telephone(_telephone), fax(_fax),
@@ -88,10 +87,6 @@ namespace Register
         discloseTelephone(_discloseTelephone),discloseFax(_discloseFax)
         
       {
-      }
-      unsigned getId() const
-      {
-        return id;
       }
       const std::string& getHandle() const
       {
@@ -284,17 +279,17 @@ namespace Register
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           clist.push_back(
             new ContactImpl(
-              atoi(db->GetFieldValue(i,0)), // id
+              STR_TO_ID(db->GetFieldValue(i,0)), // id
               db->GetFieldValue(i,1), // handle
               db->GetFieldValue(i,2), // name
-              atoi(db->GetFieldValue(i,3)), // registrar id
+              STR_TO_ID(db->GetFieldValue(i,3)), // registrar id
               db->GetFieldValue(i,4), // registrar handle
               MAKE_TIME(i,5), // crdate
               MAKE_TIME(i,6), // trdate
               MAKE_TIME(i,7), // update
-              atoi(db->GetFieldValue(i,8)), // crid
+              STR_TO_ID(db->GetFieldValue(i,8)), // crid
               db->GetFieldValue(i,9), // crid handle
-              atoi(db->GetFieldValue(i,10)), // upid
+              STR_TO_ID(db->GetFieldValue(i,10)), // upid
               db->GetFieldValue(i,11), // upid handle
               db->GetFieldValue(i,12), // authinfo
               db->GetFieldValue(i,13), // roid

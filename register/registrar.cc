@@ -72,7 +72,7 @@ namespace Register
       typedef std::vector<ACLImpl *> ACLList;
       typedef ACLList::iterator ACLListIter;
       DB *db; ///< db connection
-      unsigned id; ///< DB: registrar.id
+      TID id; ///< DB: registrar.id
       std::string handle; ///< DB: registrar.handle
       std::string name; ///< DB: registrar.name
       std::string url; ///< DB: registrar.name
@@ -95,7 +95,7 @@ namespace Register
       RegistrarImpl(DB *_db) :  db(_db), id(0), changed(true)
       {}
       RegistrarImpl(DB *_db,
-        unsigned _id, const std::string& _handle, const std::string& _name,
+        TID _id, const std::string& _handle, const std::string& _name,
         const std::string& _url, const std::string& _organization, 
         const std::string& _street1, const std::string& _street2, 
         const std::string& _street3, const std::string& _city, 
@@ -119,7 +119,7 @@ namespace Register
       {
         clear();
       }
-      virtual unsigned getId() const
+      virtual TID getId() const
       {
         return id;
       }
@@ -357,12 +357,12 @@ namespace Register
       std::string name;
       std::string handle;
       std::string xml;
-      unsigned idFilter;
+      TID idFilter;
      public:
       RegistrarListImpl(DB *_db) : db(_db), idFilter(0)
       {
       }
-      virtual void setIdFilter(unsigned _idFilter)
+      virtual void setIdFilter(TID _idFilter)
       {
         idFilter = _idFilter;
       }
@@ -400,7 +400,7 @@ namespace Register
           registrars.push_back(
             new RegistrarImpl(
               db,
-              atoi(db->GetFieldValue(i,0)),
+              STR_TO_ID(db->GetFieldValue(i,0)),
               db->GetFieldValue(i,1),
               db->GetFieldValue(i,2),
               db->GetFieldValue(i,3),
@@ -426,7 +426,7 @@ namespace Register
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           // find associated registrar
-          unsigned registrarId = atoi(db->GetFieldValue(i,0));
+          unsigned registrarId = STR_TO_ID(db->GetFieldValue(i,0));
           RegistrarListType::iterator r = find_if(
             registrars.begin(),registrars.end(),
             std::bind2nd(std::mem_fun(&RegistrarImpl::hasId),registrarId)
@@ -464,8 +464,8 @@ namespace Register
 
     class EPPActionImpl : virtual public EPPAction
     {
-      unsigned long id;
-      unsigned long sessionId;
+      TID id;
+      TID sessionId;
       unsigned type;
       std::string typeName;
       ptime startTime;
@@ -477,8 +477,8 @@ namespace Register
       std::string handle;
      public:
       EPPActionImpl(
-        unsigned long _id,
-        unsigned long _sessionId,
+        TID _id,
+        TID _sessionId,
         unsigned _type,
         const std::string& _typeName,
         ptime _startTime,
@@ -497,11 +497,11 @@ namespace Register
         handle(_handle)
       {
       }
-      virtual unsigned long getId() const
+      virtual TID getId() const
       {
         return id;
       }
-      virtual unsigned long getSessionId() const
+      virtual TID getSessionId() const
       {
         return sessionId;
       }
@@ -552,9 +552,9 @@ namespace Register
     {
       typedef std::vector<EPPActionImpl *> ActionList;
       ActionList alist;
-      unsigned long id;
-      unsigned long sessionId;
-      unsigned long registrarId;
+      TID id;
+      TID sessionId;
+      TID registrarId;
       std::string registrarHandle;
       time_period period;
       unsigned typeId;
@@ -574,15 +574,15 @@ namespace Register
        db(_db)
       {
       }
-      void setIdFilter(unsigned long _id)
+      void setIdFilter(TID _id)
       {
         id = _id;
       }
-      void setSessionFilter(unsigned long _sessionId)
+      void setSessionFilter(TID _sessionId)
       {
         sessionId = _sessionId;
       }
-      void setRegistrarFilter(unsigned long _registrarId)
+      void setRegistrarFilter(TID _registrarId)
       {
         registrarId = _registrarId;
       }
@@ -671,7 +671,7 @@ namespace Register
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           alist.push_back(
             new EPPActionImpl(
-              atoi(db->GetFieldValue(i,0)),
+              STR_TO_ID(db->GetFieldValue(i,0)),
               DB_NULL_INT(i,1),
               atoi(db->GetFieldValue(i,2)),
               db->GetFieldValue(i,3),

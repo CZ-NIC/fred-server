@@ -18,8 +18,6 @@ namespace Register
      public:
       /// public destructor
       virtual ~Contact() {}
-      /// return id of contact
-      virtual unsigned getId() const = 0;
       /// return contact handle
       virtual const std::string& getHandle() const = 0;
       /// return contact name
