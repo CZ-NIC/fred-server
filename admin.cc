@@ -129,7 +129,7 @@ ccReg_PageTable_i::numPageRows()
   return l < aPageSize ? l : aPageSize;
 }
 
-CORBA::Long 
+TID 
 ccReg_PageTable_i::getPageRowId(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW)
 {
@@ -231,6 +231,7 @@ ccReg_Admin_i::fillRegistrar(
     creg.access[i].md5Cert = DUPSTRFUN(reg->getACL(i)->getCertificateMD5);
     creg.access[i].password = DUPSTRFUN(reg->getACL(i)->getPassword);
   }
+  creg.hidden = reg->getHandle() == "REG-CZNIC" ? true : false;
 } 
 
 ccReg::RegistrarList* 
@@ -251,11 +252,11 @@ ccReg_Admin_i::getRegistrars()
   return reglist;
 }
 
-ccReg::Registrar* ccReg_Admin_i::getRegistrarById(CORBA::Long id)
+ccReg::Registrar* ccReg_Admin_i::getRegistrarById(TID id)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
-  LOG( NOTICE_LOG, "getRegistarByHandle: id -> %ld", id );
+  LOG( NOTICE_LOG, "getRegistarByHandle: id -> %lld", id );
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> regm(Register::Manager::create(&db));
   Register::Registrar::Manager *rm = regm->getRegistrarManager();
@@ -402,7 +403,7 @@ ccReg_Admin_i::getContactByHandle(const char* handle)
 }
 
 ccReg::ContactDetail* 
-ccReg_Admin_i::getContactById(CORBA::Long id)
+ccReg_Admin_i::getContactById(TID id)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
@@ -474,7 +475,7 @@ ccReg_Admin_i::getNSSetByHandle(const char* handle)
 }
 
 ccReg::NSSetDetail* 
-ccReg_Admin_i::getNSSetById(CORBA::Long id)
+ccReg_Admin_i::getNSSetById(TID id)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
@@ -494,8 +495,46 @@ ccReg_Admin_i::getNSSetById(CORBA::Long id)
   return cn;
 }
 
+void
+ccReg_Admin_i::fillEPPAction(
+  ccReg::EPPAction* cea, 
+  const Register::Registrar::EPPAction *rea
+)
+{
+  cea->id = rea->getId();
+  cea->xml = DUPSTRFUN(rea->getEPPMessage);
+  cea->time = DUPSTRDATE(rea->getStartTime);
+  cea->type = DUPSTRFUN(rea->getTypeName);
+  cea->objectHandle = DUPSTRFUN(rea->getHandle);
+  cea->registrarHandle = DUPSTRFUN(rea->getRegistrarHandle);
+  cea->result = rea->getResult();
+  cea->clTRID = DUPSTRFUN(rea->getClientTransactionId);
+  cea->svTRID = DUPSTRFUN(rea->getServerTransactionId);
+}
+
 ccReg::EPPAction* 
-ccReg_Admin_i::getEPPActionById(CORBA::Long id)
+ccReg_Admin_i::getEPPActionBySvTRID(const char* svTRID)
+  throw (ccReg::Admin::ObjectNotFound)
+{
+  DB db;
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  Register::Registrar::Manager *rm = r->getRegistrarManager();
+  Register::Registrar::EPPActionList *eal = rm->getEPPActionList();
+  eal->setSvTRIDFilter(svTRID);
+  eal->reload();
+  if (eal->size() != 1) {
+    db.Disconnect();
+    throw ccReg::Admin::ObjectNotFound();
+  } 
+  ccReg::EPPAction* ea = new ccReg::EPPAction;
+  fillEPPAction(ea,eal->get(0));
+  db.Disconnect();
+  return ea;
+}
+
+ccReg::EPPAction* 
+ccReg_Admin_i::getEPPActionById(TID id)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
@@ -510,16 +549,7 @@ ccReg_Admin_i::getEPPActionById(CORBA::Long id)
     throw ccReg::Admin::ObjectNotFound();
   } 
   ccReg::EPPAction* ea = new ccReg::EPPAction;
-  const Register::Registrar::EPPAction *a = eal->get(0);
-  ea->id = a->getId();
-  ea->xml = DUPSTRFUN(a->getEPPMessage);
-  ea->time = DUPSTRDATE(a->getStartTime);
-  ea->type = DUPSTRFUN(a->getTypeName);
-  ea->objectHandle = DUPSTRFUN(a->getHandle);
-  ea->registrarHandle = DUPSTRFUN(a->getRegistrarHandle);
-  ea->result = a->getResult();
-  ea->clTRID = DUPSTRFUN(a->getClientTransactionId);
-  ea->svTRID = DUPSTRFUN(a->getServerTransactionId);
+  fillEPPAction(ea,eal->get(0));
   db.Disconnect();
   return ea;
 }
@@ -573,7 +603,7 @@ ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
 }
 
 ccReg::DomainDetail*
-ccReg_Admin_i::getDomainById(CORBA::Long id)
+ccReg_Admin_i::getDomainById(TID id)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
@@ -638,7 +668,7 @@ ccReg_Admin_i::fillAuthInfoRequest(
 }
 
 ccReg::AuthInfoRequest::Detail* 
-ccReg_Admin_i::getAuthInfoRequestById(CORBA::Long id)
+ccReg_Admin_i::getAuthInfoRequestById(TID id)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
@@ -737,11 +767,11 @@ ccReg_Admin_i::getNSSetStatusDescList()
   return new ccReg::ObjectStatusDescSeq; // TODO
 }
 
-CORBA::Long 
+TID 
 ccReg_Admin_i::createAuthInfoRequest(
-  CORBA::Long objectId, 
+  TID objectId, 
   ccReg::AuthInfoRequest::RequestType type, 
-  CORBA::Long eppActionId, 
+  TID eppActionId, 
   const char* requestReason,
   const char* emailToAnswer
 ) throw (
@@ -797,7 +827,7 @@ ccReg_Admin_i::createAuthInfoRequest(
 }
 
 void 
-ccReg_Admin_i::processAuthInfoRequest(CORBA::Long id, CORBA::Boolean invalid) 
+ccReg_Admin_i::processAuthInfoRequest(TID id, CORBA::Boolean invalid) 
   throw (ccReg::Admin::SQL_ERROR, ccReg::Admin::OBJECT_NOT_FOUND)
 {
   DB db;
@@ -921,7 +951,7 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 {
 }
 
-CORBA::Long 
+TID 
 ccReg_Registrars_i::getRowId(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW)
 {
@@ -1008,6 +1038,12 @@ ccReg_Registrars_i::clear()
   rl->clearFilter();
 }
 
+CORBA::ULongLong 
+ccReg_Registrars_i::resultSize()
+{
+  return 12345;
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_EPPActions_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -1061,7 +1097,7 @@ ccReg_EPPActions_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 {
 }
 
-CORBA::Long 
+TID 
 ccReg_EPPActions_i::getRowId(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW)
 {
@@ -1094,14 +1130,14 @@ ccReg_EPPActions_i::reload()
   eal->reload();
 }
 
-CORBA::Short 
+TID 
 ccReg_EPPActions_i::registrar()
 {
   return registrarFilter;
 }
 
 void 
-ccReg_EPPActions_i::registrar(CORBA::Short _v)
+ccReg_EPPActions_i::registrar(TID _v)
 {
   registrarFilter = _v;
   eal->setRegistrarFilter(_v);
@@ -1261,6 +1297,12 @@ ccReg_EPPActions_i::clear()
   eal->clearFilter();
 }
 
+CORBA::ULongLong 
+ccReg_EPPActions_i::resultSize()
+{
+  return 12345;
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_RegObjectFilter_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -1270,14 +1312,14 @@ ccReg_RegObjectFilter_i::ccReg_RegObjectFilter_i(Register::ObjectList *_ol)
 {
 }
 
-CORBA::Short 
+TID 
 ccReg_RegObjectFilter_i::registrar()
 {
   return registrarFilter;
 }
 
 void 
-ccReg_RegObjectFilter_i::registrar(CORBA::Short _v)
+ccReg_RegObjectFilter_i::registrar(TID _v)
 {
   registrarFilter = _v;
   ol->setRegistrarFilter(_v);
@@ -1298,14 +1340,14 @@ ccReg_RegObjectFilter_i::registrarHandle(const char* _v)
 
 // ---
 
-CORBA::Short 
+TID 
 ccReg_RegObjectFilter_i::createRegistrar()
 {
   return createRegistrarFilter;
 }
 
 void 
-ccReg_RegObjectFilter_i::createRegistrar(CORBA::Short _v)
+ccReg_RegObjectFilter_i::createRegistrar(TID _v)
 {
   createRegistrarFilter = _v;
   ol->setCreateRegistrarFilter(_v);
@@ -1326,14 +1368,14 @@ ccReg_RegObjectFilter_i::createRegistrarHandle(const char* _v)
 
 // --
 
-CORBA::Short 
+TID 
 ccReg_RegObjectFilter_i::updateRegistrar()
 {
   return updateRegistrarFilter;
 }
 
 void 
-ccReg_RegObjectFilter_i::updateRegistrar(CORBA::Short _v)
+ccReg_RegObjectFilter_i::updateRegistrar(TID _v)
 {
   updateRegistrarFilter = _v;
   ol->setUpdateRegistrarFilter(_v);
@@ -1528,7 +1570,7 @@ ccReg_Domains_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 {
 }
 
-CORBA::Long 
+TID 
 ccReg_Domains_i::getRowId(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW)
 {
@@ -1561,14 +1603,14 @@ ccReg_Domains_i::reload()
   dl->reload();
 }
 
-CORBA::Short 
+TID 
 ccReg_Domains_i::registrant()
 {
   return registrantFilter;
 }
 
 void 
-ccReg_Domains_i::registrant(CORBA::Short _v)
+ccReg_Domains_i::registrant(TID _v)
 {
   registrantFilter = _v;
   dl->setRegistrarFilter(_v);
@@ -1587,14 +1629,14 @@ ccReg_Domains_i::registrantHandle(const char* _v)
   dl->setRegistrantHandleFilter(registrantHandleFilter);
 }
 
-CORBA::Short 
+TID 
 ccReg_Domains_i::nsset()
 {
   return nssetFilter;
 }
 
 void 
-ccReg_Domains_i::nsset(CORBA::Short _v)
+ccReg_Domains_i::nsset(TID _v)
 {
   nssetFilter = _v;
   dl->setNSSetFilter(_v);
@@ -1613,14 +1655,14 @@ ccReg_Domains_i::nssetHandle(const char* _v)
   dl->setNSSetHandleFilter(_v);
 }
 
-CORBA::Short 
+TID 
 ccReg_Domains_i::admin()
 {
   return adminFilter;
 }
 
 void 
-ccReg_Domains_i::admin(CORBA::Short _v)
+ccReg_Domains_i::admin(TID _v)
 {
   adminFilter = _v;
   dl->setAdminFilter(_v);
@@ -1747,6 +1789,12 @@ ccReg_Domains_i::clear()
   dl->clearFilter();
 }
 
+CORBA::ULongLong 
+ccReg_Domains_i::resultSize()
+{
+  return 12345;
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_Contact_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -1796,7 +1844,7 @@ ccReg_Contacts_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 {
 }
 
-CORBA::Long 
+TID 
 ccReg_Contacts_i::getRowId(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW)
 {
@@ -1926,6 +1974,12 @@ ccReg_Contacts_i::clear()
   cl->clearFilter();
 }
 
+CORBA::ULongLong 
+ccReg_Contacts_i::resultSize()
+{
+  return 12345;
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_NSSets_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -1971,7 +2025,7 @@ ccReg_NSSets_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 {
 }
 
-CORBA::Long 
+TID 
 ccReg_NSSets_i::getRowId(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW)
 {
@@ -2073,6 +2127,12 @@ ccReg_NSSets_i::clear()
   nl->clearFilter();
 }
 
+CORBA::ULongLong 
+ccReg_NSSets_i::resultSize()
+{
+  return 12345;
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_AIRequests_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -2137,7 +2197,7 @@ ccReg_AIRequests_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 {
 }
 
-CORBA::Long 
+TID 
 ccReg_AIRequests_i::getRowId(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW)
 {
@@ -2175,7 +2235,7 @@ PTYPEGET FUNC() { return MEMBERG; } \
 void FUNC(PTYPESET _v) { MEMBER = _v; SETF; }
 
 #define FILTER_IMPL_L(FUNC,MEMBER,SETF) \
-  FILTER_IMPL(FUNC,CORBA::Long,CORBA::Long,MEMBER,MEMBER, SETF)
+  FILTER_IMPL(FUNC,TID,TID,MEMBER,MEMBER, SETF)
 
 #define FILTER_IMPL_S(FUNC,MEMBER,SETF) \
   FILTER_IMPL(FUNC,char *,const char *,MEMBER,DUPSTRC(MEMBER), SETF)
@@ -2254,4 +2314,10 @@ ccReg_AIRequests_i::clear()
   reasonFilter = "";
   // TODO CLEAR OTHER 
   airl->clearFilter();
+}
+
+CORBA::ULongLong 
+ccReg_AIRequests_i::resultSize()
+{
+  return 12345;
 }
