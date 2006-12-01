@@ -1370,6 +1370,18 @@ if( historyID )
 return ret;
 }
 
+// id object a registrator
+bool DB::ObjectUpdate( int id , int regID , const char *authInfo )
+{
+// datum a cas updatu  plus kdo zmenil zanzma na konec
+UPDATE( "OBJECT" );
+SSET( "UpDate", "now" );
+SET( "UpID", regID );
+SET( "AuthInfoPw", authInfo ); 
+WHEREID( id );
+return EXEC();
+}
+
 // UPDATE funkce
 // SQL UPDATE funkce
 void DB::UPDATE( const char * table )
@@ -1546,22 +1558,28 @@ void DB::WHERE(const char *fname , const char * value )
 
 }
 
+
+void DB::OPERATOR(  const  char *op )
+{
+  if( SQLTestEnd( ',' ) ||  SQLTestEnd( ';' ) ) SQLDelEnd();  // vymaz posledni znak
+       SQLCat( "  "  );
+       SQLCat( op ); // operator AND OR LIKE
+       SQLCat( " " );
+}
+
+
 void DB::WHEREOPP(  const  char *op ,  const  char *fname , const  char *p  , const  char * value )
 {
+  if( SQLTestEnd( ',' ) ||  SQLTestEnd( ';' ) ) SQLDelEnd();  // vymaz posledni znak
 
-
-  if(  SQLTestEnd( ';' )  )
-    {
-       SQLDelEnd(); // umaz posledni strednik
        SQLCat( "  "  );
-       SQLCat(  op ); // operator AND OR LIKE
+       SQLCat( op ); // operator AND OR LIKE
        SQLCat( " " );
        SQLCat( fname );
        SQLCat(  p );
        SQLCat(  "'" );
        SQLCatEscape(  value );
        SQLCat(  "' ;" ); // konec         
-    }
 
 }
 void DB::WHERE( const  char *fname , int value )
@@ -1762,6 +1780,27 @@ bool DB::SELECTONE(  const char * table  , const char *fname ,  int value )
 {
 SELECTFROM( "" , table );
 WHERE( fname , value );
+return SELECT();
+}
+
+bool DB::SELECTOBJECT(  const char *table , const char *fname ,  const char *value )
+{
+sqlBuffer = new char[MAX_SQLBUFFER];
+memset(  sqlBuffer , 0 , MAX_SQLBUFFER );
+SQLCat( "SELECT * " );
+SQLCat( " FROM " );
+SQLCat( " OBJECT , ");
+SQLCat( table ); // table
+SQLCat( " WHERE " ); 
+SQLCat( table );
+SQLCat( "." );
+SQLCat( fname );
+SQLCat( "='" );
+SQLCatEscape(  value );
+SQLCat( "' AND " );
+SQLCat(  table );
+SQLCat( ".id=OBJECT.ID" );
+SQLCat( " ;" ); // ukoncit
 return SELECT();
 }
 

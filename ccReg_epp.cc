@@ -1468,8 +1468,8 @@ char HANDLE[64]; // handle na velka pismena
 char dateStr[MAX_DATE];
 int  clid , crid , upid , regID ;
 int  ssn , id , slen;
-int s , snum;
-char streetStr[10];
+int s , snum ;
+char streetStr[32];
 
 c = new ccReg::Contact;
 // inicializace pro pripad neuspesneho hledani
@@ -1497,28 +1497,33 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
  
  if( get_HANDLE( HANDLE , handle ) ) // preved a otestuj na velka pismena
  {
-  if( DBsql.SELECTONE( "CONTACT" , "HANDLE" , HANDLE )  )
+  if( DBsql.SELECTOBJECT( "CONTACT" ,"handle"  ,  HANDLE )  )
   {
   if( DBsql.GetSelectRows() == 1 )
     {
 
-        clid =  atoi( DBsql.GetFieldValueName("ClID" , 0 ) ); 
-        crid =  atoi( DBsql.GetFieldValueName("CrID" , 0 ) ); 
-        upid =  atoi( DBsql.GetFieldValueName("UpID" , 0 ) ); 
+        id =   DBsql.GetFieldNumericValueName("ID" , 0 ); // ID kontaktu pro ziskani vazeb
+
+        clid =  DBsql.GetFieldNumericValueName("ClID" , 0 ); 
+        crid =  DBsql.GetFieldNumericValueName("CrID" , 0 ); 
+        upid =  DBsql.GetFieldNumericValueName("UpID" , 0 ); 
 
 
 
         // status.Make(  DBsql.GetFieldValueName("status" , 0 ) ) ; // status
 
-        id = atoi(  DBsql.GetFieldValueName("id" , 0 ) ); // ID kontaktu pro ziskani vazeb
-	c->handle=CORBA::string_dup( DBsql.GetFieldValueName("handle" , 0 ) ); // handle
 	c->ROID=CORBA::string_dup( DBsql.GetFieldValueName("ROID" , 0 ) ); // ROID     
+
         convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("CrDate" , 0 ) ); // datum a cas vytvoreni
 	c->CrDate= CORBA::string_dup( dateStr );
 	convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("UpDate" , 0 ) ); // datum a cas zmeny
         c->UpDate= CORBA::string_dup( dateStr ); 
 	convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("TrDate" , 0 ) ); // datum a cas transferu
         c->TrDate= CORBA::string_dup( dateStr );
+
+
+	c->handle=CORBA::string_dup( DBsql.GetFieldValueName("handle" , 0 ) ); // handle
+
 	c->Name=CORBA::string_dup( DBsql.GetFieldValueName("Name" , 0 )  ); // jmeno nebo nazev kontaktu
 	c->Organization=CORBA::string_dup( DBsql.GetFieldValueName("Organization" , 0 )); // nazev organizace
        
@@ -1554,7 +1559,7 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
 	c->VAT=CORBA::string_dup(DBsql.GetFieldValueName("VAT" , 0 )); // DIC
 	c->ident=CORBA::string_dup(DBsql.GetFieldValueName("SSN" , 0 )); // SSN
 
-        ssn =   atoi( DBsql.GetFieldValueName("SSNtype" , 0 ) );
+        ssn = DBsql.GetFieldNumericValueName("SSNtype" , 0 ) ;
 
 
 
@@ -1590,7 +1595,7 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
     
     
         // free select
-	DBsql.FreeSelect();
+       DBsql.FreeSelect();
 
 
        if( DBsql.TestContactRelations( id ) )  slen = 2;
@@ -1929,6 +1934,9 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                       if( TestCountryCode( c.CC ) )       // test kodu zeme pokud je nastavena
                         {
 
+                          if( DBsql.ObjectUpdate(id , regID  , c.AuthInfoPw )  ) // update OBJECT tabulky 
+                             {
+
 
 
                                           // zahaj update
@@ -1955,8 +1963,9 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                                           DBsql.SET( "VAT", c.VAT );
                                           DBsql.SET( "SSN", c.ident );
                                           if(  c.identtype > ccReg::EMPTY )  DBsql.SET( "SSNtype" , c.identtype ); // typ ssn
-                                          // heslo
-                                          DBsql.SET( "AuthInfoPw", c.AuthInfoPw ); 
+
+                                          // heslo je ve spolecne tabulce object 
+                                          // DBsql.SET( "AuthInfoPw", c.AuthInfoPw ); 
 
 
 
@@ -1968,21 +1977,14 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                                           DBsql.SETBOOL( "DiscloseFax",  update_DISCLOSE( c.DiscloseFax , c.DiscloseFlag ) );
                                           DBsql.SETBOOL( "DiscloseEmail", update_DISCLOSE( c.DiscloseEmail, c.DiscloseFlag  ) );
 
-                                          // datum a cas updatu  plus kdo zmenil zanzma na konec
-                                          DBsql.SSET( "UpDate", "now" );
-                                          DBsql.SET( "UpID", regID );
 
 
                                           // podminka na konec 
                                           DBsql.WHEREID( id );
 
-                                          if( DBsql.EXEC() )
-                                            {
-                                                 //  uloz do historie
-                                                  if(   DBsql.SaveContactHistory( id ) )  ret->errCode = COMMAND_OK;
-                                           }
+                                          if( DBsql.EXEC() )  if(   DBsql.SaveContactHistory( id ) )  ret->errCode = COMMAND_OK;
                                          
-                                       
+                                  }                                       
                                
                         }
                       else      // neplatny kod zeme
@@ -2296,7 +2298,7 @@ ret = new ccReg::Response;
 ret->errCode=0;
 ret->errors.length(0);
 
-LOG( NOTICE_LOG ,  "ObjectContact: act %d table %s clientID -> %d clTRID [%s] object [%s] authInfo [%s] " , act , table ,  (int ) clientID , clTRID , name , authInfo );
+LOG( NOTICE_LOG ,  "ObjectContact: act %d  clientID -> %d clTRID [%s] object [%s] authInfo [%s] " , act  ,  (int ) clientID , clTRID , name , authInfo );
 
 if( DBsql.OpenDatabase( database ) )
 {
@@ -2354,7 +2356,7 @@ if( DBsql.OpenDatabase( database ) )
       {
  
           // pokud objekt neexistuje
-         if( (id = DBsql.GetNumericFromTable(  table  , "id" , "handle" , (char * ) NAME) ) == 0 ) 
+         if( (id = DBsql.GetNumericFromTable(  "OBJECT"  , "id" , "handle" , (char * ) NAME) ) == 0 ) 
            {
              LOG( WARNING_LOG  ,  "object [%s] NOT_EXIST" ,  NAME );
              ret->errCode= COMMAND_OBJECT_NOT_EXIST;
@@ -2362,7 +2364,7 @@ if( DBsql.OpenDatabase( database ) )
          else
            {
              // client contaktu
-               clID  =  DBsql.GetNumericFromTable(  table , "clID" , "id" , id );
+               clID  =  DBsql.GetNumericFromTable(   "OBJECT" , "clID" , "id" , id );
 
                if( regID == clID )       // transfer nemuze delat stavajici client
                  {
@@ -2371,7 +2373,7 @@ if( DBsql.OpenDatabase( database ) )
                  }
                else
                  {
-                    if(  DBsql.AuthTable(  table  , (char *)authInfo , id )  == false  ) // pokud prosla autentifikace 
+                    if(  DBsql.AuthTable(   "OBJECT"  , (char *)authInfo , id )  == false  ) // pokud prosla autentifikace 
                       {       
                          LOG( WARNING_LOG , "autorization failed");
                          ret->errCode = COMMAND_AUTOR_ERROR; // spatna autorizace
@@ -2385,7 +2387,7 @@ if( DBsql.OpenDatabase( database ) )
                               random_pass(  pass  );
  
                               // zmena registratora
-                              DBsql.UPDATE( table );
+                              DBsql.UPDATE( "OBJECT" );
                               DBsql.SSET( "TrDate" , "now" );
                               DBsql.SSET( "AuthInfoPw" , pass );
                               DBsql.SET( "ClID" , regID );
@@ -2512,15 +2514,15 @@ if( get_HANDLE( HANDLE , handle ) )
  {
 
 
-  if(  DBsql.SELECTONE( "NSSET" , "HANDLE" , HANDLE ) )
+  if(  DBsql.SELECTOBJECT( "NSSET" , "HANDLE" , HANDLE ) )
   {
   if( DBsql.GetSelectRows() == 1 )
     {
  
-        nssetid = atoi( DBsql.GetFieldValueName("ID" , 0 ) );
-        clid = atoi( DBsql.GetFieldValueName("ClID" , 0 ) );
-        crid = atoi( DBsql.GetFieldValueName("CrID" , 0 ) );
-        upid = atoi( DBsql.GetFieldValueName("UpID" , 0 ) );
+        nssetid = DBsql.GetFieldNumericValueName("ID" , 0 );
+        clid =  DBsql.GetFieldNumericValueName("ClID" , 0 );
+        crid =  DBsql.GetFieldNumericValueName("CrID" , 0 );
+        upid =  DBsql.GetFieldNumericValueName("UpID" , 0 );
 
 
         n->ROID=CORBA::string_dup( DBsql.GetFieldValueName("ROID" , 0 ) ); // ROID
@@ -2578,7 +2580,7 @@ if( get_HANDLE( HANDLE , handle ) )
                 {                     
                    // fqdn DNS servru nazev  
                    n->dns[i].fqdn = CORBA::string_dup(  DBsql.GetFieldValueName("fqdn" , i ) );
-                   hostID[i] = atoi( DBsql.GetFieldValueName("id"  , i )  ); // ziskej hostID 
+                   hostID[i] =  DBsql.GetFieldNumericValueName("id"  , i ); // ziskej hostID 
                 }
              DBsql.FreeSelect();
 
@@ -3474,8 +3476,10 @@ if( DBsql.OpenDatabase( database ) )
                else
                {
 
+                      if( DBsql.ObjectUpdate( nssetID , regID  , authInfo_chg )  )
 
-                                    // zmenit zaznam o nssetu
+/*
+                                    // zmenit zaznam o nssetu ted 
                                     DBsql.UPDATE( "NSSET" );                                   
                                     DBsql.SSET( "UpDate", "now" );
                                     DBsql.SET( "UpID", regID );
@@ -3484,6 +3488,7 @@ if( DBsql.OpenDatabase( database ) )
 
 
                                     if( DBsql.EXEC() )
+*/
                                       {
 
                                   //-------- TECH kontakty
@@ -3748,16 +3753,17 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) 
      else
       {
    
-    if(  DBsql.SELECTDOMAIN(  FQDN  , zone , GetZoneEnum( zone ) )  )
+//     if(  DBsql.SELECTDOMAIN(  FQDN  , zone , GetZoneEnum( zone ) )  )
+   if(  DBsql.SELECTOBJECT( "DOMAIN" , "fqdn" , FQDN ) ) 
     {
     if( DBsql.GetSelectRows() == 1 )
       {
-        id = atoi( DBsql.GetFieldValueName("id" , 0 ) );
-        clid = atoi( DBsql.GetFieldValueName("ClID" , 0 ) ); 
-        crid = atoi( DBsql.GetFieldValueName("CrID" , 0 ) ); 
-        upid = atoi( DBsql.GetFieldValueName("UpID" , 0 ) ); 
-        regid = atoi( DBsql.GetFieldValueName("registrant" , 0 ) ); 
-        nssetid = atoi( DBsql.GetFieldValueName("nsset" , 0 ) );  
+        id =  DBsql.GetFieldNumericValueName("id" , 0 );
+        clid =  DBsql.GetFieldNumericValueName("ClID" , 0 ); 
+        crid =  DBsql.GetFieldNumericValueName("CrID" , 0 ); 
+        upid =  DBsql.GetFieldNumericValueName("UpID" , 0 ); 
+        regid = DBsql.GetFieldNumericValueName("registrant" , 0 ) ; 
+        nssetid =  DBsql.GetFieldNumericValueName("nsset" , 0 ) ;  
 
 
         convert_rfc3339_timestamp( dateStr ,  DBsql.GetFieldValueName("CrDate" , 0 ) ); // datum a cas vytvoreni
@@ -4267,18 +4273,23 @@ if( DBsql.OpenDatabase( database ) )
                else   {
 
 
+                           if( DBsql.ObjectUpdate( id ,  regID  , authInfo_chg )  ) 
+                             {
 
+                              if( nssetid || contactid  )  // update domain tabulky pouze kdyz menim registratora ci nsset
+                                {                                            
                                       // zmenit zaznam o domene
                                       DBsql.UPDATE( "DOMAIN" );
-                                      DBsql.SSET( "UpDate", "now" );
-                                      DBsql.SET( "UpID", regID );
+                                    //  DBsql.SSET( "UpDate", "now" );
+                                      //DBsql.SET( "UpID", regID );
                                       if( nssetid )  DBsql.SET( "nsset", nssetid );    // zmena nssetu
                                       if( contactid ) DBsql.SET( "registrant", contactid );     // zmena drzitele domeny
-                                      DBsql.SET( "AuthInfoPw", authInfo_chg  );  // zmena autentifikace
+                                     // DBsql.SET( "AuthInfoPw", authInfo_chg  );  // zmena autentifikace
                                       DBsql.WHEREID( id );
+                                      if( !DBsql.EXEC() )  ret->errCode = COMMAND_FAILED;
+                                }
 
-
-                                      if( DBsql.EXEC() )
+                                      if( ret->errCode == 0  )
                                       {
 
 
@@ -4331,8 +4342,9 @@ if( DBsql.OpenDatabase( database ) )
 
                                       }
 
-                           }
 
+                            }
+                        }
                     
                // konec transakce commit ci rollback
                 DBsql.QuitTransaction( ret->errCode );
@@ -4879,7 +4891,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
               if( DBsql.SELECTONE( "DOMAIN", "id", id ) )
                 {
 
-                  clid = atoi( DBsql.GetFieldValueName( "ClID", 0 ) );
+                  clid =  DBsql.GetFieldNumericValueName( "ClID", 0 );
                   strcpy( expDateStr ,  DBsql.GetFieldValueName( "ExDate", 0 ) );    // datum a cas  expirace domeny
                   DBsql.FreeSelect();
                 }

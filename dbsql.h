@@ -77,6 +77,9 @@ bool SELECTDOMAIN(   const char *fqdn , int zone , bool enum_zone );
 // vraci ID kontaktu z handlu zadaneho ipres mala pismena nebo nula pokud je chyba
 int  GetContactID( const char *handle );
 
+// update object dle id  a registrator
+bool ObjectUpdate( int id , int regID , const char *authInfo );
+
 bool TestContactHandleHistory( const char * handle , int period );
 bool TestNSSetHandleHistory( const char * handle , int period );
 bool TestDomainFQDNHistory( const char * fqdn , int period );
@@ -183,6 +186,7 @@ void SETPRICE( const char *fname , long price );
 void WHERE( const  char *fname , const  char * value );
 void WHERE( const  char *fname , int   value );
 void WHEREOPP(  const  char *op ,  const  char *fname , const  char *p  , const  char * value );
+void OPERATOR(  const  char *op );
 void WHEREID( int id ) { WHERE( "id" , id ); };
 //  SQL INSERT funkce
 void INSERTHISTORY( const char * table );
@@ -228,7 +232,9 @@ bool EXEC();
 bool SELECT();
 
 bool SELECTCONTACTMAP( char *map , int id ); //  pro admin a tech kontakty
+bool SELECTOBJECT(  const char *table , const char *fname ,  const char *value );
 
+ 
 
 
 int GetActionID() { return actionID; } // vraci odkaz do tabulky action ID
