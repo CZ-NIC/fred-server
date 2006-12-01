@@ -22,12 +22,13 @@ Register::ObjectImpl::ObjectImpl(
 }
 
 Register::ObjectImpl::ObjectImpl()
-  : id(0), crDate(not_a_date_time), trDate(not_a_date_time), upDate(not_a_date_time),
+  : id(0), crDate(not_a_date_time), trDate(not_a_date_time), 
+    upDate(not_a_date_time),
     registrar(0), createRegistrar(0), updateRegistrar(0), modified(true)
 {
 }
 
-TID
+Register::TID
 Register::ObjectImpl::getId() const
 {
   return id;
@@ -51,7 +52,7 @@ Register::ObjectImpl::getUpdateDate() const
   return upDate;
 }
 
-TID
+Register::TID
 Register::ObjectImpl::getRegistrarId() const
 {
   return registrar;
@@ -63,7 +64,7 @@ Register::ObjectImpl::getRegistrarHandle() const
   return registrarHandle;
 }
 
-TID
+Register::TID
 Register::ObjectImpl::getUpdateRegistrarId() const
 {
   return updateRegistrar;
@@ -81,7 +82,7 @@ Register::ObjectImpl::getUpdateRegistrarHandle() const
   return updateRegistrarHandle;
 }
 
-TID
+Register::TID
 Register::ObjectImpl::getCreateRegistrarId() const
 {
   return createRegistrar;
