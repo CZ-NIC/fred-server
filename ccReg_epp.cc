@@ -2300,7 +2300,7 @@ LOG( NOTICE_LOG ,  "ObjectContact: act %d  clientID -> %d clTRID [%s] object [%s
 if( DBsql.OpenDatabase( database ) )
 {
 
- if( ( regID =  DBsql.BeginAction( clientID , EPP_ContactTransfer ,  clTRID , XML  )  ) )
+ if( ( regID =  DBsql.BeginAction( clientID , act  ,  clTRID , XML  )  ) )
  {
 
 
@@ -2396,7 +2396,7 @@ if( DBsql.OpenDatabase( database ) )
                                      if(   DBsql.SaveContactHistory(  id ) ) ret->errCode = COMMAND_OK;
                                       break;
                                     case EPP_NSsetTransfer:
-                                     if(   DBsql.SaveDomainHistory(  id ) ) ret->errCode = COMMAND_OK;
+                                     if(   DBsql.SaveNSsetHistory(  id ) ) ret->errCode = COMMAND_OK;
                                       break;
                                    case EPP_DomainTransfer:
                                      if(   DBsql.SaveDomainHistory(  id ) ) ret->errCode = COMMAND_OK;
