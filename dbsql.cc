@@ -418,7 +418,7 @@ id = GetSequenceID( "object" );
  INTO( "id" );
  INTO( "type" );
  INTO( "roid" );
- INTO( "NAME" );
+//  INTO( "NAME" ); -- name se nepouziva
  INTO( "CrDate" );
  INTO( "CrID" );
  INTO( "ClID" );
@@ -443,7 +443,7 @@ switch( type[0] )
   }
     
  VALUE( roid );
- VALUE( name  );
+//  VALUE( name  );
  VALUENOW();
  VALUE( regID );
  VALUE( regID );
@@ -1331,9 +1331,12 @@ if( actionID )
      sprintf(  sqlString , "INSERT INTO HISTORY ( id , action ) VALUES ( %d  , %d );" , historyID , actionID );
      if( ExecSQL(  sqlString ) )
         {
-            LOG( SQL_LOG , "Update objectID  %d -> historyID %d " , objectID , historyID );
-            sprintf(  sqlString , "UPDATE OBJECT set historyID=%d WHERE id=%d;" , historyID  , objectID );
-            if( ExecSQL(  sqlString ) ) return historyID;
+          if( SaveHistory(  "OBJECT" ,  "id", objectID ) )  // uloz take object do object_history
+            {
+              LOG( SQL_LOG , "Update objectID  %d -> historyID %d " , objectID , historyID );
+              sprintf(  sqlString , "UPDATE OBJECT set historyID=%d WHERE id=%d;" , historyID  , objectID );
+              if( ExecSQL(  sqlString ) ) return historyID;
+            }
         }
     }
  }
@@ -1362,14 +1365,15 @@ if( historyID )
 
        for( i = 0 ; i <  GetSelectCols() ; i ++ )
           {
-           if( IsNotNull( row , i ) ) INTO(  GetFieldName( i ) ); 
+           // pokud to neni historyID z tabulky object to uz neukladej
+           if( IsNotNull( row , i ) && strcasecmp( "historyID" , GetFieldName(i) ) != 0  ) INTO(  GetFieldName( i ) ); 
           }
 
       VALUE( historyID ); // zapis jako prvni historyID
       for( i = 0 ; i <  GetSelectCols() ; i ++ )
       {
         // uloz pouze ne null hosdnoty
-        if( IsNotNull( row , i ) ) VALUE(  GetFieldValue( row  , i ) );
+        if( IsNotNull( row , i ) && strcasecmp( "historyID" , GetFieldName(i) ) != 0   ) VALUE(  GetFieldValue( row  , i ) );
        }
 
         if( EXEC() == false) { ret = false ; break;  } // uloz hostorii a  pokud nastane chyba
