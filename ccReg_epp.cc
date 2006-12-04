@@ -2396,7 +2396,7 @@ if( DBsql.OpenDatabase( database ) )
                                      if(   DBsql.SaveContactHistory(  id ) ) ret->errCode = COMMAND_OK;
                                       break;
                                     case EPP_NSsetTransfer:
-                                     if(   DBsql.SaveNSsetHistory(  id ) ) ret->errCode = COMMAND_OK;
+                                     if(   DBsql.SaveNSSetHistory(  id ) ) ret->errCode = COMMAND_OK;
                                       break;
                                    case EPP_DomainTransfer:
                                      if(   DBsql.SaveDomainHistory(  id ) ) ret->errCode = COMMAND_OK;
