@@ -22,11 +22,9 @@ MailerManager::sendEmail(
   ccReg::MailHeader header;
   header.h_from = CORBA::string_dup(from.c_str());
   header.h_to = CORBA::string_dup(to.c_str());
-  header.h_subject = CORBA::string_dup(subject.c_str());
-  // prepare templates
-  ccReg::Lists templates;
-  templates.length(1);
-  templates[0] = CORBA::string_dup(mailTemplate.c_str());
+  // header.h_subject = CORBA::string_dup(subject.c_str());
+  // prepare template
+  const char * mailType = CORBA::string_dup(mailTemplate.c_str()); 
   // prepare data
   ccReg::KeyValues data;
   data.length(params.size());
@@ -48,7 +46,7 @@ MailerManager::sendEmail(
   CORBA::String_var prevMsg;
   // call mailer
   CORBA::Long id = mailer->mailNotify(
-    templates,header,data,handleList,attachments,prev,prevMsg
+    mailType,header,data,handleList,attachments,prev,prevMsg
   );
   return (unsigned long)id;
 } 
