@@ -5,7 +5,7 @@ CXXFLAGS = -Wall -DSYSLOG -DCONFIG_FILE=\"/etc/ccReg.conf\" \
            -DSVERSION=\"${SVN_REVISION}\"
 
 OBJECTS = 
-IDLDIR = ../../idl/trunk/
+IDLDIR = /home/jara/enum/idl/branches/devel/
 IDLFILE = $(IDLDIR)/ccReg.idl
 LDFLAGS =  -L/usr/local/pgsql/lib/
 LIBS =  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread 
