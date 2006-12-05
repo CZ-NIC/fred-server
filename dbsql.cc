@@ -750,15 +750,19 @@ int DB::GetDomainID( const char *fqdn  )
 char sqlString[512];
 int id=0;
 
-sprintf( sqlString , "SELECT id FROM object  WHERE  ( \'%s\' LIKE  \'%%.\'|| name ) OR  (name LIKE  \'%%\'  || \'%s\' );"  , fqdn   , fqdn  );
+sprintf( sqlString , "SELECT id FROM object  WHERE  ( \'%s\' LIKE  \'%%.\'|| name ) OR  (name LIKE  \'%%\'  || \'%s\' )  OR ( name=\'%s\' );"  , fqdn   , fqdn  , fqdn );
  
 
 if( ExecSelect( sqlString ) )
  {
-   id = atoi(  GetFieldValue( 0 , 0 )  );
-   LOG( SQL_LOG , "Check domain  fqdn=\'%s\'  -> ID %d" , fqdn ,  id );
+  if( GetSelectRows()  > 0 )
+    {
+     id = atoi(  GetFieldValue( 0 , 0 )  );
+     LOG( SQL_LOG , "Check domain   fqdn=\'%s\'  -> ID %d" , fqdn ,  id );
+    }
 
-   FreeSelect();
+     FreeSelect();
+     
   }
 
 return id;
