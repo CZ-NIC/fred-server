@@ -41,7 +41,7 @@ bool DeleteFromTableMap(char *map ,int  id , int contactid );
 // vraci castku za operaci
 long GetPrice(   int action  ,  int zone , int period  );
 // zpracovani creditu
-long UpdateInvoiceCredit( int regID ,   int action  , int zone  , int period  );
+long UpdateInvoiceCredit( int regID ,   int action  , int zone  , int period  , int objectID );
 
 // ukladada vytvorene XML z mod_eppd
 int SaveXMLout( const char *svTRID , const char *xml  );
@@ -62,25 +62,30 @@ char * GetValueFromTable( const char *table , const char *vname ,  const char *f
 char * GetValueFromTable( const char *table , const char *vname ,  const char *fname ,  int numeric);
 int GetSequenceID( char *sequence ); // id ze sequnce
 // kontroluje jestli je contactid pro dane id v tabulce nsset_contact_map nebo domain_contact_map 
-bool CheckContactMap(char * table , int id , int contactid );
+bool CheckContactMap(const char * table , int id , int contactid );
+// pridave contact do pole kontaktu
+bool AddContactMap( const char * table , int id , int contactid );
+ 
+// vraci datum a cas dle rfc3339
+char * GetFieldDateTimeValueName(  const char *fname , int row );
+char * GetFieldDateValueName(  const char *fname , int row );
 
-// vraci id objektu pokud ho nalezne
-int CheckNSSet(const char *handle );
-// pro nsset
-int CheckContact(const char *handle);
-// test pri Check funkci  na handle nssetu ci kontaktu
-int CheckHandle( const char *table ,  const char *handle );
-// vraci id domeny
-int CheckDomain( const char *fqdn   , int zone , bool enum_zone );
 // pro select domeny pri info
-bool SELECTDOMAIN(   const char *fqdn , int zone , bool enum_zone );
+// bool SELECTDOMAIN(   const char *fqdn , int zone , bool enum_zone );
 // vraci ID kontaktu z handlu zadaneho ipres mala pismena nebo nula pokud je chyba
 int  GetContactID( const char *handle );
+int  GetNSSetID( const char *handle );
+// vraci id domeny ( special pro enum )
+int  GetDomainID( const char *fqdn );
 
 // update object dle id  a registrator
 bool ObjectUpdate( int id , int regID , const char *authInfo );
 // vraci ClID objektu
 int GetObjectClientID( int id ) { return GetNumericFromTable( "OBJECT" , "ClID" , "id" , id ); } ;
+// vraci ID objektu podle jeho nazvu
+int GetObjectID( const char *name ) { return GetNumericFromTable( "OBJECT" , "id" , "name" , name ); };
+char * GetObjectCrDateTime( int id );
+char * GetObjectName( int id ) { return GetValueFromTable( "OBJECT", "name" , "id" , id ); };
 
 bool TestContactHandleHistory( const char * handle , int period );
 bool TestNSSetHandleHistory( const char * handle , int period );
@@ -124,7 +129,7 @@ bool TestValExDate(const char *dateStr ,  int period  , int interval , int id );
 bool GetExpDate(char *dateStr , int domainID , int period  , int max_period );
 
 // vraci ID hostu
-int CheckHost(  const char *fqdn , int nssetID );
+int GetHostID(  const char *fqdn , int nssetID );
 // vraci pocet nssetu
 int GetNSSetHosts( int nssetID );
 // zjistuje pocet  tech pro dany nsset
@@ -200,12 +205,15 @@ void INTO(const  char *fname);
 void INTOVAL(const  char *fname , const char * value );
 void VAL( const  char * value);
 void VALUESC( const char * value );
-void VALUES( const char * value  , bool esc , bool amp); // pouzivat esc sequence a uvozovat do ampersandu
+void VALUES( const char * value  , bool esc , bool amp ,  int uplo ); // pouzivat esc sequence a uvozovat do ampersandu
 void VALUE( const  char * value );
 void VVALUE( const char * value ); // bez escape
 void VALUE( int  value );
 void VALUE( bool value );
 void VALPRICE( long price ); // cena v halirich
+
+void VALUELOWER( const char * value  );
+void VALUEUPPER( const char * value  );
 
 // zadani aktualni cas
 void VALUENOW();
@@ -221,6 +229,12 @@ bool SELECTONE(  const char * table  , const char *fname ,  const char *value );
 bool SELECTONE(  const char * table  , const char *fname ,  int value );
 
 // SQL string funkce
+
+
+void SQLCatLower( const char *str );
+void SQLCatUpper(const char *str );
+// prevadi na mala ci velka pismena
+void SQLCatLW( const char *str , bool lw );
 
 // umazani konce retezce
 void SQLDelEnd();
@@ -249,6 +263,7 @@ private:
 char *memHandle;
 char *svrTRID;
 char *sqlBuffer;
+char dtStr[32]; //  pro datum
 int actionID; // id tabulky akce
 int historyID; // id tabulky historie
 int loginID; // id klienta

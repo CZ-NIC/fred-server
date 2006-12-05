@@ -39,6 +39,7 @@ if( memHandle )
      delete[] memHandle;
   }
 
+   
 }
 
 // vraci castku za operaci 
@@ -72,7 +73,7 @@ return price;
 }
 
 // zpracovani creditu strzeni ze zalohe faktury ci dvou faktur
-long DB::UpdateInvoiceCredit( int regID ,   int action  , int zone   , int period  )
+long DB::UpdateInvoiceCredit( int regID ,   int action  , int zone   , int period , int objectID  )
 {
 char priceStr[16];
 // char creditStr[16];
@@ -287,6 +288,24 @@ else return "svrTRID ERROR";
 }
 }
 
+char * DB::GetObjectCrDateTime( int id )
+{
+convert_rfc3339_timestamp( dtStr ,  GetValueFromTable(  "OBJECT" , "CrDate"  , "id" , id ) );
+return dtStr;
+}
+
+char * DB::GetFieldDateTimeValueName(  const char *fname , int row )
+{
+convert_rfc3339_timestamp( dtStr ,  GetFieldValueName( (char * ) fname , row ) ) ;
+return dtStr;
+}
+
+char * DB::GetFieldDateValueName(  const char *fname , int row )
+{
+convert_rfc3339_date( dtStr ,  GetFieldValueName(  (char * )  fname , row ) ) ;
+return dtStr;
+}
+
 
 
 // vraci jazyk klienta z tabulky login
@@ -333,10 +352,19 @@ int  DB::GetContactID( const char *handle )
 {
 char HANDLE[64];
 
-if( get_HANDLE( HANDLE , handle ) ) // preved handle na velka pismena
- return  GetNumericFromTable( "Contact", "id", "handle", HANDLE );
-else return  0 ;
+if( get_CONTACTHANDLE( HANDLE , handle ) == false ) return -1; // preved handle na velka pismena
+else return GetObjectID( HANDLE );
 }
+
+int  DB::GetNSSetID( const char *handle )
+{
+char HANDLE[64];
+
+if( get_NSSETHANDLE( HANDLE , handle ) == false ) return -1 ; // preved handle na velka pismena
+else  return  GetObjectID( HANDLE );
+}
+
+ 
 
  
 // zjistuje pocet  tech pro dany nsset
@@ -417,8 +445,8 @@ id = GetSequenceID( "object" );
  INSERT( "OBJECT" );
  INTO( "id" );
  INTO( "type" );
+ INTO( "NAME" ); 
  INTO( "roid" );
-//  INTO( "NAME" ); -- name se nepouziva
  INTO( "CrDate" );
  INTO( "CrID" );
  INTO( "ClID" );
@@ -429,21 +457,23 @@ id = GetSequenceID( "object" );
 // TYP objektu
 switch( type[0] )
   {
-    case 'C' :
+    case 'C' : // kontakt
          VALUE( 1 );
+         VALUEUPPER( name );
          break;
-    case 'D' :
-         VALUE( 3 );
-         break;
-    case 'N' :
+    case 'N' : // nsset
          VALUE( 2 );
+         VALUEUPPER( name );
+         break;
+    case 'D' : // domena
+         VALUE( 3 );
+         VALUELOWER( name );
          break;
    default :
          VALUE( 0);
   }
     
  VALUE( roid );
-//  VALUE( name  );
  VALUENOW();
  VALUE( regID );
  VALUE( regID );
@@ -577,7 +607,7 @@ return ret;
 }
 
 
-bool  DB::CheckContactMap(char * table , int id , int contactid )
+bool  DB::CheckContactMap(const char * table , int id , int contactid )
 {
 bool ret = false;
 char sqlString[128];
@@ -594,6 +624,19 @@ return ret;
 }
 
 
+
+
+
+// pridave contact do pole kontaktu
+bool DB::AddContactMap( const char * table , int id , int  contactid )
+{
+char sqlString[128];
+
+sprintf( sqlString , "INSERT INTO %s_contact_map VALUES ( %d , %d );" ,  table , id , contactid );
+
+return ExecSQL( sqlString );
+}
+ 
 // test porovani zadaneho datumu expirace s datumem v databazi
 bool DB::TestExpDate( const char *dateStr , int id )
 {
@@ -683,45 +726,9 @@ return ret;
 }
 
 
-int DB::CheckNSSet(const char *handle )
-{
-return CheckHandle( "NSSET" , handle );
-}
-
-int DB::CheckContact(const char *handle )
-{
-return CheckHandle( "CONTACT" , handle );
-}
-
-
-
-// test pri Check funkci  na handle nssetu ci kontaktu
-// vracena hodnota: -1 chyba 0 objekt eexistuje 1 onbjekt existuje
-int DB::CheckHandle( const char *table ,     const char *handle )
-{
-char sqlString[128];
-int  id=0 ;
-
-sprintf( sqlString , "SELECT id FROM %s  WHERE handle=\'%s\';" , table ,  handle );
-
-if( ExecSelect( sqlString ) )
- {
-
-
-   if(  GetSelectRows()  == 1 )
-     {
-       id = atoi(  GetFieldValue( 0 , 0 )  );
-       LOG( SQL_LOG , "Check table %s handle=\'%s\'  -> ID %d" , table , handle , id );
-     }
-
-
-   FreeSelect();
-  }
-
-return id;
-}
 
 // pro select domeny pri info 
+/*
 bool DB::SELECTDOMAIN(   const char *fqdn , int zone , bool enum_zone )
 {
 int id;
@@ -734,17 +741,16 @@ return SELECTONE( "DOMAIN" , "id" , id );
 else return  SELECTONE( "DOMAIN" , "fqdn" , fqdn  );
 
 }  
+*/
+
 
 // test pri Check funkci na domenu case insensitiv
-int DB::CheckDomain(   const char *fqdn , int zone , bool enum_zone )
+int DB::GetDomainID( const char *fqdn  )
 {
 char sqlString[512];
 int id=0;
 
-
-
-if( enum_zone )sprintf( sqlString , "SELECT id FROM domain  WHERE  ( \'%s\' LIKE  \'%%\'||fqdn) OR  (fqdn LIKE  \'%%\'  || \'%s\' ) AND zone=%d;"  , fqdn   , fqdn  , zone );
-else  sprintf( sqlString , "SELECT id FROM domain  WHERE   \'%s\'  ILIKE fqdn;" , fqdn );
+sprintf( sqlString , "SELECT id FROM object  WHERE  ( \'%s\' LIKE  \'%%.\'|| name ) OR  (name LIKE  \'%%\'  || \'%s\' );"  , fqdn   , fqdn  );
  
 
 if( ExecSelect( sqlString ) )
@@ -760,7 +766,7 @@ return id;
 
 
 // vraci ID hostu
-int DB::CheckHost(  const char *fqdn , int nssetID )
+int DB::GetHostID(  const char *fqdn , int nssetID )
 {
 char sqlString[128];
 int hostID=0;
@@ -1441,6 +1447,41 @@ length = strlen( sqlBuffer );
 if(  len  + length < MAX_SQLBUFFER ) strcat( sqlBuffer , str );
 }
 
+
+void DB::SQLCatLower( const char *str )
+{
+SQLCatLW( str , false );
+}
+
+void DB::SQLCatUpper(const char *str )
+{
+SQLCatLW( str , true );
+}
+
+// prevadi na mala ci velka pismena 
+void DB::SQLCatLW( const char *str , bool lw )
+{
+int len , length , i ;
+len = strlen( str );
+length = strlen( sqlBuffer );
+
+//  test na delku retezce
+if(  len  + length < MAX_SQLBUFFER ) 
+{
+  for( i = 0 ; i < len ; i ++ ) 
+   {
+       if( lw ) sqlBuffer[length+i] = toupper( str[i] );
+       else sqlBuffer[length+i] = tolower( str[i] );
+   }
+// ukonict retezec
+sqlBuffer[length+len] = 0;
+}
+
+LOG( SQL_LOG , "DB::SQLCatLW lw %d str[%s] sqlBuffer[%s]" ,  lw , str , sqlBuffer );
+
+}
+
+
 // escape
 void DB::SQLCatEscape( const char * value )
 {
@@ -1655,8 +1696,18 @@ void DB::VAL(  const char * value)
 if( strlen( value ) ) VALUE( value );
 }
 
+void DB::VALUEUPPER( const char * value  )
+{
+VALUES( value , false , true , 1 );
+}
 
-void DB::VALUES( const char * value  , bool esc , bool amp )
+void DB::VALUELOWER( const char * value  )
+{
+VALUES( value , false , true , -1 );
+}
+
+
+void DB::VALUES( const char * value  , bool esc , bool amp , int uplo )
 {
 int len ;
 
@@ -1688,7 +1739,13 @@ else SQLCat( " " );
 
 // esacepe
 if( esc) SQLCatEscape(  value );
-else  SQLCat( value );
+else 
+{
+ 
+  if( uplo == 0 ) SQLCat( value );
+  else if(  uplo > 0 ) SQLCatUpper( value );
+       else  SQLCatLower( value );
+}
 
 if( amp ) SQLCat( "'");
 strcat( sqlBuffer , " );" ); // vzdy ukoncit
@@ -1698,13 +1755,13 @@ strcat( sqlBuffer , " );" ); // vzdy ukoncit
 // zadani aktualni cas 
 void DB::VALUENOW()
 {
-VALUES("current_timestamp" , false , false );
+VALUES("current_timestamp" , false , false , 0 );
 }
 
 // zadani null values
 void DB::VALUENULL()
 {
-VALUES("NULL" , false , false );
+VALUES("NULL" , false , false , 0 );
 }
 // zadani aktualnic as puls interval perido v mesicich
 void DB::VALUEPERIOD( int period )
@@ -1712,34 +1769,34 @@ void DB::VALUEPERIOD( int period )
 char str[80];
 // spocitej dobu expirace 
 sprintf( str , "current_timestamp + interval\'%d month\' " , period );
-VALUES( str , false , false );
+VALUES( str , false , false , 0 );
 }
 
 
 void DB::VVALUE( const char * value )
 {
 // nepouzivej ESCAPE
-VALUES( value , false , true);
+VALUES( value , false , true , 0 );
 }
 
 void DB::VALUE( const char * value )
 {
 // pouzij ESCAPE 
-VALUES( value , true , true ); 
+VALUES( value , true , true , 0  ); 
 }
 
 void DB::VALUE( int  value )
 {
 char numStr[16];
 sprintf( numStr , "%d" ,  value );
-VALUES( numStr , false , false ); // bez ESC
+VALUES( numStr , false , false , 0  ); // bez ESC
 }
 
 void DB::VALUE( bool  value )
 {
 // bez ESC
-if( value ) VALUES( "t" , false , true);
-else VALUES( "f" , false , true );
+if( value ) VALUES( "t" , false , true , 0 );
+else VALUES( "f" , false , true  , 0);
 }
 
 
@@ -1748,7 +1805,7 @@ void DB::VALPRICE( long price )
 char priceStr[16];
 // castka v halirich
 sprintf( priceStr , "%ld.%02ld" , price /100 ,  price %100 );
-VALUES( priceStr , false , false ); // bez ESC
+VALUES( priceStr , false , false , 0  ); // bez ESC
 }
 bool DB::EXEC()
 {
@@ -1812,14 +1869,13 @@ SQLCat( " FROM " );
 SQLCat( " OBJECT , ");
 SQLCat( table ); // table
 SQLCat( " WHERE " ); 
-SQLCat( table );
-SQLCat( "." );
-SQLCat( fname );
+SQLCat( " Object.name" );
 SQLCat( "='" );
 SQLCatEscape(  value );
 SQLCat( "' AND " );
-SQLCat(  table );
-SQLCat( ".id=OBJECT.ID" );
+SQLCat( "Object.id=");
+SQLCat( table ); 
+SQLCat( ".id" );
 SQLCat( " ;" ); // ukoncit
 return SELECT();
 }
@@ -1829,7 +1885,7 @@ bool DB::SELECTCONTACTMAP( char *map , int id )
 {
 char sqlString[512];
 
-sprintf( sqlString , "SELECT  handle FROM CONTACT  JOIN  %s_contact_map ON %s_contact_map.contactid=contact.id WHERE %s_contact_map.%sid=%d;" ,  map  , map , map  , map , id );
+sprintf( sqlString , "SELECT  object.name  FROM OBJECT JOIN  %s_contact_map ON %s_contact_map.contactid=object.id WHERE %s_contact_map.%sid=%d;" ,  map  , map , map  , map , id );
 return ExecSelect( sqlString );
 }
 
