@@ -165,28 +165,28 @@ namespace Register
         clear();
         std::ostringstream sql;
         sql << "SELECT DISTINCT "
-            << "n.id,n.handle,"
+            << "o.id,o.name,"
             << "r.id,r.handle, "
-            << "n.crdate,n.trdate,n.update,"
-            << "n.crid,creg.handle,n.upid,ureg.handle,n.authinfopw,n.roid "
-            << "FROM registrar r, registrar creg, nsset n "
+            << "o.crdate,o.trdate,o.update,"
+            << "o.crid,creg.handle,o.upid,ureg.handle,o.authinfopw,o.roid "
+            << "FROM registrar r, registrar creg, nsset n, object o "
             << "LEFT JOIN registrar ureg ON (n.upid=ureg.id) "
             << "LEFT JOIN nsset_contact_map ncm ON (ncm.nssetid=n.id) "
-            << "LEFT JOIN contact tc ON (ncm.contactid=tc.id) "
+            << "LEFT JOIN object tco ON (ncm.contactid=tco.id) "
             << "LEFT JOIN host h ON (n.id=h.nssetid) "
-            << "WHERE n.clid=r.id AND n.crid=creg.id ";
-        SQL_ID_FILTER(sql,"n.id",idFilter);
+            << "WHERE n.id=o.id AND o.clid=r.id AND o.crid=creg.id ";
+        SQL_ID_FILTER(sql,"o.id",idFilter);
         SQL_ID_FILTER(sql,"r.id",registrarFilter);
         SQL_HANDLE_FILTER(sql,"r.handle",registrarHandleFilter);
         SQL_ID_FILTER(sql,"creg.id",createRegistrarFilter);
         SQL_HANDLE_FILTER(sql,"creg.handle",createRegistrarHandleFilter);
         SQL_ID_FILTER(sql,"ureg.id",updateRegistrarFilter);
         SQL_HANDLE_FILTER(sql,"ureg.handle",updateRegistrarHandleFilter);        
-        SQL_DATE_FILTER(sql,"n.crDate",crDateIntervalFilter);
-        SQL_DATE_FILTER(sql,"n.upDate",updateIntervalFilter);
-        SQL_DATE_FILTER(sql,"n.trDate",trDateIntervalFilter);
-        SQL_HANDLE_FILTER(sql,"n.handle",handle);
-        SQL_HANDLE_FILTER(sql,"tc.handle",admin);        
+        SQL_DATE_FILTER(sql,"o.crDate",crDateIntervalFilter);
+        SQL_DATE_FILTER(sql,"o.upDate",updateIntervalFilter);
+        SQL_DATE_FILTER(sql,"o.trDate",trDateIntervalFilter);
+        SQL_HANDLE_FILTER(sql,"o.name",handle);
+        SQL_HANDLE_FILTER(sql,"tco.name",admin);        
         SQL_HANDLE_FILTER(sql,"h.fqdn",hostname);
         if (!ip.empty())
           sql << "AND STRPOS(ARRAY_TO_STRING(h.ipaddr,' '),'"

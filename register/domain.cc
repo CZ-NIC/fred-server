@@ -251,43 +251,43 @@ namespace Register
         clear();
         std::ostringstream sql;
         /// loading admin contact handles together with domains
-        sql << "SELECT DISTINCT d.id,d.fqdn,d.zone,n.id,n.handle,"
-            << "c.id,c.handle,c.name,"
+        sql << "SELECT DISTINCT o.id,o.name,d.zone,no.id,no.name,"
+            << "co.id,co.name,c.name,"
             << "r.id,r.handle,"
-            << "d.crdate,d.trdate,d.update,"
-            << "d.crid,creg.handle,d.upid,ureg.handle,d.authinfopw,d.roid,"
+            << "o.crdate,o.trdate,o.update,"
+            << "o.crid,creg.handle,o.upid,ureg.handle,o.authinfopw,o.roid,"
             << "d.exdate,ev.exdate,ac.handle "
-            << "FROM contact c, registrar r, registrar creg, "
-            << "domain d LEFT JOIN nsset n ON (d.nsset=n.id) "
+            << "FROM contact c, object co, registrar r, registrar creg, "
+            << "object o, domain d LEFT JOIN object no ON (d.nsset=no.id) "
             << "LEFT JOIN domain_contact_map adcm ON (d.id=adcm.domainid) "
-            << "LEFT JOIN contact ac ON (adcm.contactid=ac.id) "
-            << "LEFT JOIN registrar ureg ON (d.upid=ureg.id) "
+            << "LEFT JOIN object aco ON (adcm.contactid=aco.id) "
+            << "LEFT JOIN registrar ureg ON (o.upid=ureg.id) "
             << "LEFT JOIN enumval ev ON (d.id=ev.domainid) "
-            << "LEFT JOIN nsset_contact_map ncm ON (ncm.nssetid=n.id) "
-            << "LEFT JOIN contact tc ON (ncm.contactid=tc.id) "
-            << "LEFT JOIN host h ON (n.id=h.nssetid) "
-            << "WHERE d.registrant=c.id AND d.crid=creg.id "
-            << "AND d.clid=r.id ";
-        SQL_ID_FILTER(sql,"d.id",idFilter);
+            << "LEFT JOIN nsset_contact_map ncm ON (ncm.nssetid=no.id) "
+            << "LEFT JOIN object tco ON (ncm.contactid=tco.id) "
+            << "LEFT JOIN host h ON (no.id=h.nssetid) "
+            << "WHERE d.id=o.id AND d.registrant=c.id AND c.id=co.id "
+            << "AND o.crid=creg.id AND o.clid=r.id ";
+        SQL_ID_FILTER(sql,"o.id",idFilter);
         SQL_ID_FILTER(sql,"r.id",registrarFilter);
         SQL_HANDLE_FILTER(sql,"r.handle",registrarHandleFilter);
         SQL_ID_FILTER(sql,"creg.id",createRegistrarFilter);
         SQL_HANDLE_FILTER(sql,"creg.handle",createRegistrarHandleFilter);
         SQL_ID_FILTER(sql,"ureg.id",updateRegistrarFilter);
         SQL_HANDLE_FILTER(sql,"ureg.handle",updateRegistrarHandleFilter);
-        SQL_DATE_FILTER(sql,"d.crDate",crDateIntervalFilter);
-        SQL_DATE_FILTER(sql,"d.upDate",updateIntervalFilter);
-        SQL_DATE_FILTER(sql,"d.trDate",trDateIntervalFilter);
-        SQL_ID_FILTER(sql,"c.id",registrantFilter);
-        SQL_HANDLE_FILTER(sql,"c.handle",registrantHandleFilter);
+        SQL_DATE_FILTER(sql,"o.crDate",crDateIntervalFilter);
+        SQL_DATE_FILTER(sql,"o.upDate",updateIntervalFilter);
+        SQL_DATE_FILTER(sql,"o.trDate",trDateIntervalFilter);
+        SQL_ID_FILTER(sql,"co.id",registrantFilter);
+        SQL_HANDLE_FILTER(sql,"co.name",registrantHandleFilter);
         SQL_DATE_FILTER(sql,"d.exdate",exDate);
         SQL_DATE_FILTER(sql,"ev.exdate",valExDate);
-        SQL_ID_FILTER(sql,"n.id",nsset);
-        SQL_HANDLE_FILTER(sql,"n.handle",nssetHandle);
-        SQL_ID_FILTER(sql,"ac.id",admin);
-        SQL_HANDLE_FILTER(sql,"ac.handle",adminHandle);
-        SQL_HANDLE_FILTER(sql,"d.fqdn",fqdn);
-        SQL_HANDLE_FILTER(sql,"tc.handle",techAdmin);
+        SQL_ID_FILTER(sql,"no.id",nsset);
+        SQL_HANDLE_FILTER(sql,"no.handle",nssetHandle);
+        SQL_ID_FILTER(sql,"aco.id",admin);
+        SQL_HANDLE_FILTER(sql,"aco.handle",adminHandle);
+        SQL_HANDLE_FILTER(sql,"o.name",fqdn);
+        SQL_HANDLE_FILTER(sql,"tco.name",techAdmin);
         if (!hostIP.empty())
           sql << "AND STRPOS(ARRAY_TO_STRING(h.ipaddr,' '),'"
               << hostIP << "')!=0 ";        
