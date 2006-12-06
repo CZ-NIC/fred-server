@@ -256,16 +256,17 @@ namespace Register
             << "r.id,r.handle,"
             << "o.crdate,o.trdate,o.update,"
             << "o.crid,creg.handle,o.upid,ureg.handle,o.authinfopw,o.roid,"
-            << "d.exdate,ev.exdate,ac.handle "
+            << "d.exdate,ev.exdate,aco.name "
             << "FROM contact c, object co, registrar r, registrar creg, "
-            << "object o, domain d LEFT JOIN object no ON (d.nsset=no.id) "
+            << "object o LEFT JOIN registrar ureg ON (o.upid=ureg.id), "
+            << "domain d LEFT JOIN object no ON (d.nsset=no.id) "
             << "LEFT JOIN domain_contact_map adcm ON (d.id=adcm.domainid) "
-            << "LEFT JOIN object aco ON (adcm.contactid=aco.id) "
-            << "LEFT JOIN registrar ureg ON (o.upid=ureg.id) "
+            << "LEFT JOIN object aco ON (adcm.contactid=aco.id) "            
             << "LEFT JOIN enumval ev ON (d.id=ev.domainid) "
             << "LEFT JOIN nsset_contact_map ncm ON (ncm.nssetid=no.id) "
             << "LEFT JOIN object tco ON (ncm.contactid=tco.id) "
             << "LEFT JOIN host h ON (no.id=h.nssetid) "
+            << "LEFT JOIN host_ipaddr_map him ON (him.hostid=h.id) "
             << "WHERE d.id=o.id AND d.registrant=c.id AND c.id=co.id "
             << "AND o.crid=creg.id AND o.clid=r.id ";
         SQL_ID_FILTER(sql,"o.id",idFilter);
@@ -283,14 +284,12 @@ namespace Register
         SQL_DATE_FILTER(sql,"d.exdate",exDate);
         SQL_DATE_FILTER(sql,"ev.exdate",valExDate);
         SQL_ID_FILTER(sql,"no.id",nsset);
-        SQL_HANDLE_FILTER(sql,"no.handle",nssetHandle);
+        SQL_HANDLE_FILTER(sql,"no.name",nssetHandle);
         SQL_ID_FILTER(sql,"aco.id",admin);
-        SQL_HANDLE_FILTER(sql,"aco.handle",adminHandle);
+        SQL_HANDLE_FILTER(sql,"aco.name",adminHandle);
         SQL_HANDLE_FILTER(sql,"o.name",fqdn);
         SQL_HANDLE_FILTER(sql,"tco.name",techAdmin);
-        if (!hostIP.empty())
-          sql << "AND STRPOS(ARRAY_TO_STRING(h.ipaddr,' '),'"
-              << hostIP << "')!=0 ";        
+        SQL_HANDLE_FILTER(sql,"host(him.ipaddr)",hostIP);
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {

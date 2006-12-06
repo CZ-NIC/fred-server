@@ -390,7 +390,7 @@ namespace Register
         std::ostringstream sql;
         sql << "SELECT id,handle,name,url,organization,"
             << "street1,street2,street3,city,stateorprovince,"
-            << "postalcode,country,telephone,fax,email,credit "
+            << "postalcode,country,telephone,fax,email "
             << "FROM registrar WHERE 1=1 ";
         SQL_ID_FILTER(sql,"id",idFilter);
         SQL_HANDLE_FILTER(sql,"name",name);
@@ -415,7 +415,8 @@ namespace Register
               db->GetFieldValue(i,12),
               db->GetFieldValue(i,13),
               db->GetFieldValue(i,14),
-              atol(db->GetFieldValue(i,15))
+	      //              atol(db->GetFieldValue(i,15))
+              0 // temporary credit disable
             )
           );
         }
