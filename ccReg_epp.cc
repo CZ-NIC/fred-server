@@ -3022,11 +3022,9 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                           DBsql.INTO( "ID" );
                           DBsql.INTO( "NSSETID" );
                           DBsql.INTO( "fqdn" );
-                          DBsql.INTO( "ipaddr" ); // REMOVE
                           DBsql.VALUE( hostID );
                           DBsql.VALUE( id );
                           DBsql.VVALUE( NAME );
-                          DBsql.VVALUE( "{}" ); // REMOVE
                           if( DBsql.EXEC()  )
                             {
 
@@ -3455,11 +3453,9 @@ if( DBsql.OpenDatabase( database ) )
                                                          DBsql.INTO( "ID" ); 
                                                          DBsql.INTO( "nssetid" );
                                                          DBsql.INTO( "fqdn" );
-                                                         DBsql.INTO( "ipaddr" );
                                                          DBsql.VALUE( hostID ); 
                                                          DBsql.VALUE( nssetID ); 
                                                          DBsql.VALUE( NAME );
-                                                         DBsql.VALUE( "{}" ); // REMOVE obsolete
                                                          if( DBsql.EXEC())  // pridej IP adresey
                                                            {
                                                                 // preved sequenci adres
@@ -5022,8 +5018,8 @@ ccReg::Response*  ccReg_EPP_i::ObjectSendAuthInfo( short act , char * table , ch
 DB DBsql;
 int   id ,  zone;
 ccReg::Response * ret;
+char FQDN[64];
 int regID;
-char NAME[64];
 ret = new ccReg::Response;
 
 // default
@@ -5042,8 +5038,7 @@ if( DBsql.OpenDatabase( database ) )
    switch( act )
    {
    case EPP_ContactSendAuthInfo:     
-       // preved handle na velka pismena
-       if( get_CONTACTHANDLE( NAME , name ) == false )  // spatny format handlu
+         if( (id=DBsql.GetContactID( name ) < 0 ) )
          {
              LOG( WARNING_LOG, "bad format  of [%s]" , name );
             ret->errCode = COMMAND_PARAMETR_ERROR;
@@ -5055,8 +5050,7 @@ if( DBsql.OpenDatabase( database ) )
        break;
      
    case EPP_NSSetSendAuthInfo:
-       // preved handle na velka pismena
-       if( get_NSSETHANDLE( NAME , name ) == false )  // spatny format handlu
+       if( (id=DBsql.GetNSSetID( name ) < 0 ) ) 
          {
             LOG( WARNING_LOG, "bad format  of [%s]" , name );
             ret->errCode = COMMAND_PARAMETR_ERROR;	
@@ -5068,7 +5062,7 @@ if( DBsql.OpenDatabase( database ) )
        break;
    case EPP_DomainSendAuthInfo:
       // preved fqd na  mala pismena a otestuj to
-       if(  ( zone = getFQDN( NAME , name ) ) <= 0  )  // spatny format navu domeny
+       if(  ( zone = getFQDN( FQDN , name ) ) <= 0  )  // spatny format navu domeny
          {
             ret->errCode = COMMAND_PARAMETR_ERROR;
             LOG( WARNING_LOG, "domain %s not in zone %d" , name ,  zone );
@@ -5077,23 +5071,23 @@ if( DBsql.OpenDatabase( database ) )
             ret->errors[0].value = CORBA::string_dup( name );
             if( zone == 0 ) ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_NOT_APPLICABLE_FQDN , CLIENT_LANG() ) );
             else  ret->errors[0].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_BAD_FORMAT_FQDN , CLIENT_LANG() )   );
-          }
-         break;
+         }
+        else  id=DBsql.GetDomainID( FQDN ); // ziskej ID domeny
+ 
+       break;
 
     }
  
+
+if( id == 0 )
+  {
+       ret->errCode = COMMAND_OBJECT_NOT_EXIST;
+       LOG( WARNING_LOG, "object [%s] NOT_EXIST", name );
+  }
+else 
+if( id > 0 )
+  {
   
-    if(  ret->errCode == 0 ) // pokud vse OK
-    if( DBsql.BeginTransaction() )
-      {
-          // pokud objekt existuje
-          if( ( id = DBsql.GetNumericFromTable( table , "id", fname , ( char * ) NAME ) ) == 0 )
-            {
-              ret->errCode = COMMAND_OBJECT_NOT_EXIST;
-              LOG( WARNING_LOG, "object [%s] NOT_EXIST", NAME );
-            }
-          else
-            {
                std::auto_ptr<Register::AuthInfoRequest::Manager> airm(
                  Register::AuthInfoRequest::Manager::create(&DBsql,mm)
                );
@@ -5106,10 +5100,7 @@ if( DBsql.OpenDatabase( database ) )
                 } catch (...) {
                   LOG( WARNING_LOG, "cannot create and process request");
                 }
-             }
-
-        // konec transakce commit ci rollback
-        DBsql.QuitTransaction( ret->errCode );
+             
      } 
       // zapis na konec action
       ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) ) ;
