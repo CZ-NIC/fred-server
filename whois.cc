@@ -19,14 +19,13 @@ ccReg::DomainWhois* ccReg_Whois_i::getDomain(const char* domain_name, CORBA::Str
 DB DBsql;
 char sqlString[1024];
 char fqdn[64];
-char dateStr[32];
 char timestampStr[32];
 ccReg::DomainWhois *dm;
-int clid , did ,nssetid , id  ;
+int clid ,nssetid ;
 int i , len;
 int zone;
 bool en;
-time_t t , created , expired ;
+time_t t ,  expired ;
 bool found = false;
 int db_error=0;
   Register::CheckHandle chd;
@@ -84,26 +83,21 @@ if( chd.handleClass   ==  Register::CH_ENUM ){ zone = ZONE_ENUM;  en=true;}
 else {zone = ZONE_CZ ; en=false ; }
 
 
- if(  DBsql.SELECTDOMAIN(  fqdn  , zone , en  )  )
+
+ if(  DBsql.SELECTOBJECT( "DOMAIN" , "fqdn" , fqdn )    )
   {
   if( DBsql.GetSelectRows() == 1 )
     {
  
      dm->enum_domain = en; // jestli je domena enumova dodelano pro bug #405       
-     created = get_time_t( DBsql.GetFieldValueName("CrDate" , 0 ) )  ; // datum a cas  vytvoreni domeny
-     expired = get_time_t( DBsql.GetFieldValueName("ExDate" , 0 ) )  ; // datum expirace
+     dm->created = CORBA::string_dup(  DBsql.GetFieldDateTimeValueName("CrDate" , 0 ) );
+     dm->expired = CORBA::string_dup( DBsql.GetFieldDateValueName("ExDate" , 0 )  );
 
-     get_rfc3339_timestamp( created , dateStr  );
-     dm->created = CORBA::string_dup( dateStr );
+     clid =  DBsql.GetFieldNumericValueName("ClID" , 0 ); // client registrator
+     nssetid = DBsql.GetFieldNumericValueName( "nsset" , 0 ); // id nsset
 
-     get_rfc3339_timestamp( expired , dateStr  );
-     dm->expired = CORBA::string_dup( dateStr );
-
-     clid = atoi(  DBsql.GetFieldValueName("clid" , 0 ) ); // client registrator
-     did = atoi(  DBsql.GetFieldValueName("id" , 0 ) ); // id domeny
-     nssetid = atoi(  DBsql.GetFieldValueName("nsset" , 0 ) ); // id nsset
-     id = atoi(  DBsql.GetFieldValueName("id" , 0 ) ); // id nsset
-
+      // test jestli je domena expirovana
+     expired = get_time_t( DBsql.GetFieldValueName("ExDate" , 0 ) ); 
      if( t  > expired )   dm->status = ccReg::WHOIS_EXPIRED;
      else dm->status = ccReg::WHOIS_ACTIVE;
 
@@ -122,18 +116,16 @@ else {zone = ZONE_CZ ; en=false ; }
         DBsql.FreeSelect();
       }
 
-    // dotaz na  dns hosty z nssetu
-    sprintf( sqlString , "SELECT  fqdn  FROM HOST WHERE  nssetid=%d;" , nssetid);
  
 
-    if( DBsql.ExecSelect( sqlString ) )
+    if(   DBsql.SELECTONE( "HOST" , "nssetid" , nssetid  )  )
       {
     
          len =  DBsql.GetSelectRows(); // pocet DNS servru
          dm->ns.length(len); // sequence DNS servru
          for( i = 0 ; i < len ; i ++)
             {
-              dm->ns[i] = CORBA::string_dup( DBsql.GetFieldValue( i , 0 )  );
+              dm->ns[i] = CORBA::string_dup(  DBsql.GetFieldValueName("fqdn" , i )   );
             }
 
         DBsql.FreeSelect(); 
@@ -141,28 +133,15 @@ else {zone = ZONE_CZ ; en=false ; }
 
 
 
-    // dotaz na technicke kontakty
-     sprintf( sqlString , "SELECT  handle FROM CONTACT  JOIN  nsset_contact_map ON nsset_contact_map.contactid=contact.id WHERE nsset_contact_map.nssetid=%d;" , nssetid  );
 
-     if( DBsql.ExecSelect( sqlString ) )
+     // dotaz na technicke kontakty
+     if(  DBsql.SELECTCONTACTMAP( "nsset"  , nssetid ) )
           {
                len =  DBsql.GetSelectRows(); // pocet technickych kontaktu
                dm->tech.length(len); // technicke kontaktry handle
                for( i = 0 ; i < len ; i ++) dm->tech[i] = CORBA::string_dup( DBsql.GetFieldValue( i , 0 )  );
                DBsql.FreeSelect();
           }
-/*
-      // dotaz na admin kontakty
-     sprintf( sqlString , "SELECT  handle FROM CONTACT  JOIN  domain_contact_map ON domain_contact_map.contactid=contact.id WHERE domain_contact_map.domainid=%d;" , id  );
-
-     if( DBsql.ExecSelect( sqlString ) )
-          {
-               len =  DBsql.GetSelectRows(); // pocet technickych kontaktu
-               dm->admin.length(len); // technicke kontaktry handle
-               for( i = 0 ; i < len ; i ++) dm->admin[i] = CORBA::string_dup( DBsql.GetFieldValue( i , 0 )  );
-               DBsql.FreeSelect();
-          }
-*/
 
     found = true;   
    }
