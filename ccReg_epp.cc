@@ -3046,12 +3046,12 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
 
                                 }
 
-                               //  uloz do historie
-                              if( DBsql.SaveNSSetHistory( id ) )   ret->errCode = COMMAND_OK; 
                             }else {  ret->errCode = COMMAND_FAILED; break; }
 
                        }
 
+                  //  uloz do historie POKUD vse OK
+                if( ret->errCode == 0 )  if( DBsql.SaveNSSetHistory( id ) )   ret->errCode = COMMAND_OK; 
               }
 
               // konec transakce commit ci rollback
@@ -4933,6 +4933,9 @@ DB DBsql;
 int rows =0, i;
 ccReg::Response * ret;
 int regID;
+int typ;
+char sqlString[128];
+
 ret = new ccReg::Response;
 
 // default
@@ -4949,11 +4952,29 @@ if( DBsql.OpenDatabase( database ) )
   if( ( regID =  DBsql.BeginAction( clientID , act ,  clTRID , XML  )  ) )
   {
 
-// TODO LIST podle clienat OBJEKTU
-   DBsql.SELECTFROM( fname , table );
-   DBsql.WHERE( "ClID" , regID );
+  // definovani dles typu
+  switch( act )
+        {
+          case EPP_ListContact:
+               typ=1;          
+               break;
+          case EPP_ListNSset:
+               typ=2;          
+               break;
+          case EPP_ListDomain:
+               typ=3;          
+               break;
+          default:
+               typ=0;
+         }
 
-   if( DBsql.SELECT() )
+
+
+    // TODO LIST podle clienat OBJEKTU
+   sprintf( sqlString , "SELECT name FROM  Object WHERE clid=%d and type=%d;" ,  regID , typ );
+
+
+   if( DBsql.ExecSelect( sqlString) )
      {
        rows = DBsql.GetSelectRows();
         
