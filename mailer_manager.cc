@@ -16,7 +16,7 @@ MailerManager::sendEmail(
   const std::string& mailTemplate,
   Register::Mailer::Parameters params,
   Register::Mailer::Handles handles
-)
+) throw (Register::Mailer::NOT_SEND)
 {
   // prepare header
   ccReg::MailHeader header;
@@ -45,8 +45,12 @@ MailerManager::sendEmail(
   bool prev = false;
   CORBA::String_var prevMsg;
   // call mailer
-  CORBA::Long id = mailer->mailNotify(
-    mailType,header,data,handleList,attachments,prev,prevMsg
-  );
-  return (unsigned long)id;
+  try {
+    CORBA::Long id = mailer->mailNotify(
+      mailType,header,data,handleList,attachments,prev,prevMsg
+    );
+    return (unsigned long)id;
+  } catch (...) {
+    throw Register::Mailer::NOT_SEND();
+  }
 } 

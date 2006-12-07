@@ -160,7 +160,7 @@ namespace Register
         return "";
       }
       /// Process request by sending email with answer 
-      void process(bool invalid) throw (SQL_ERROR)
+      void process(bool invalid) throw (SQL_ERROR, Mailer::NOT_SEND)
       {
       	if (invalid) requestStatus = RS_INVALID;
         {
@@ -188,7 +188,7 @@ namespace Register
             getEmailAddresses(),
             "AuthInfo Request", // TODO: subject should be taken from template!
             getTemplateName(),params,handles
-          );
+          ); // can throw Mailer::NOT_SEND exception
           requestStatus = RS_ANSWERED;
         }
         closingTime = ptime(boost::posix_time::second_clock::local_time());
@@ -403,7 +403,10 @@ namespace Register
         TID eppActionId,
         const std::string& requestReason,
         const std::string& emailToAnswer
-      ) throw (BAD_EMAIL, OBJECT_NOT_FOUND, ACTION_NOT_FOUND, SQL_ERROR)
+      ) throw (
+        BAD_EMAIL, OBJECT_NOT_FOUND, ACTION_NOT_FOUND, SQL_ERROR, 
+        Mailer::NOT_SEND
+      )
       {
       	// TODO - must be solved in specific modules (object & action)
       	// maybe it should be solved in save() but this these are not mutable
@@ -447,7 +450,7 @@ namespace Register
         return d.getId();
       }
       void processRequest(TID id, bool invalid)
-        throw (REQUEST_NOT_FOUND, REQUEST_CLOSED, SQL_ERROR)
+        throw (REQUEST_NOT_FOUND, REQUEST_CLOSED, SQL_ERROR, Mailer::NOT_SEND)
       {
         ListImpl l(mm,db);
         l.setIdFilter(id);

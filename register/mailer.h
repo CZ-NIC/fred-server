@@ -11,6 +11,8 @@ namespace Register
   {
     typedef std::map<std::string,std::string> Parameters;
     typedef std::vector<std::string> Handles;
+    // Exception thrown when mail cannot be send
+    struct NOT_SEND {};
     class Manager
     {
      public:
@@ -22,7 +24,7 @@ namespace Register
         const std::string& mailTemplate,
         Parameters params,
         Handles handles
-      ) = 0;
+      ) throw (NOT_SEND)= 0;
     }; // Manager
   }; // Mailer
 }; // Register

@@ -22,7 +22,7 @@ class MailerManager : public Register::Mailer::Manager
     const std::string& mailTemplate,
     Register::Mailer::Parameters params,
     Register::Mailer::Handles handles
-  ); 
+  ) throw (Register::Mailer::NOT_SEND) ; 
 };
 
 #endif
