@@ -140,7 +140,10 @@ namespace Register
       std::string getAuthInfo() throw (SQL_ERROR, Manager::OBJECT_NOT_FOUND) 
       {
         std::stringstream sql;
-        sql << "SELECT AuthInfoPw FROM object WHERE id=" << objectId;
+        // find authinfo of actual version of object linked to request
+        sql << "SELECT o.AuthInfoPw "
+            << "FROM object o, object_history oh "
+            << "WHERE o.id=oh.id AND oh.historyid=" << objectId;
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         if (db->GetSelectRows() != 1) throw Manager::OBJECT_NOT_FOUND();
         return db->GetFieldValue(0,0);
@@ -200,7 +203,14 @@ namespace Register
       {
         std::stringstream sql;
         if (!id) {
+          // find actual object version to link to history
+          sql << "SELECT historyid FROM object WHERE id=" << objectId;
+          // TODO: proper handling of this situation
+          if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+          objectId = STR_TO_ID(db->GetFieldValue(0,0));
+          // create new request
           id = db->GetSequenceID("auth_info_requests");
+          sql.str("");
           sql << "INSERT INTO auth_info_requests "
               << "(id,object_id,request_type,epp_action_id,reason,"
               << "email_to_answer) "
@@ -325,8 +335,8 @@ namespace Register
                   ((x) == 3 ? RT_EMAIL_PIF : RT_POST_PIF)))       
 #define SQL_RS(x) ((x) == 1 ? RS_NEW : \
                   ((x) == 2 ? RS_ANSWERED : RS_INVALID))       
-#define SQL_OT(x) ((x) == 1 ? OT_DOMAIN : \
-                  ((x) == 2 ? OT_CONTACT : OT_NSSET))       
+#define SQL_OT(x) ((x) == 3 ? OT_DOMAIN : \
+                  ((x) == 1 ? OT_CONTACT : OT_NSSET))       
 #define MAKE_TIME(ROW,COL)  \
  (ptime(db->IsNotNull(ROW,COL) ? \
  time_from_string(db->GetFieldValue(ROW,COL)) : not_a_date_time))
@@ -334,17 +344,18 @@ namespace Register
       {
         clear();
         std::stringstream sql;
-        sql << "SELECT air.id,o.id,o.name,o.type,air.request_type,air.status,"
+        sql << "SELECT air.id,oh.id,oh.name,oh.type,"
+            << "air.request_type,air.status,"
             << "air.create_time,air.resolve_time,air.reason,"
             << "air.email_to_answer,air.answer_email_id,"
             << "a.id,r.handle,a.servertrid "
-            << "FROM object o, auth_info_requests air "
+            << "FROM object_history oh, auth_info_requests air "
             << "LEFT JOIN action a ON (air.epp_action_id=a.id) "
             << "LEFT JOIN login l ON (a.clientid=l.id) "
             << "LEFT JOIN registrar r ON (l.registrarid=r.id) "
-            << "WHERE o.id=air.object_id ";
+            << "WHERE oh.historyid=air.object_id ";
         SQL_ID_FILTER(sql,"air.id",idFilter);
-        SQL_HANDLE_FILTER(sql,"o.name",handleFilter);
+        SQL_HANDLE_FILTER(sql,"oh.name",handleFilter);
         SQL_HANDLE_FILTER(sql,"air.email_to_answer",emailFilter);
         SQL_HANDLE_FILTER(sql,"air.reason",reasonFilter);
         SQL_HANDLE_FILTER(sql,"a.servertrid",svTRIDFilter);        
