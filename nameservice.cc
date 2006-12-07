@@ -35,10 +35,7 @@ NameService::NameService(CORBA::ORB_ptr orb, const std::string& nameServiceIOR)
     rootContext = CosNaming::NamingContext::_narrow(obj);
     if( CORBA::is_nil(rootContext) ) throw NOT_RUNNING();
   }
-  catch (CORBA::NO_RESOURCES&) {
-    throw NOT_RUNNING();
-  }
-  catch (CORBA::ORB::InvalidName&) {
+  catch (...) {
     throw NOT_RUNNING();
   }
 }
