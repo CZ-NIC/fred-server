@@ -41,6 +41,13 @@ ccReg_EPP_i::~ccReg_EPP_i(){
  
 }
 
+void ccReg_EPP_i::ServerInternalError()
+{
+  LOG( ALERT_LOG, "ServerInternalError");
+
+ throw ccReg::EPP::ServerIntError( "server internal error" );
+} 
+
 
 // test spojeni na databazi
 bool ccReg_EPP_i::TestDatabaseConnect(const char *db)
@@ -192,6 +199,8 @@ LOG( NOTICE_LOG , "get version %s" , version );
 
 get_rfc3339_timestamp( t , dateStr  );
 datetime =  CORBA::string_dup( dateStr );
+
+
 
 
 return version;
@@ -650,6 +659,8 @@ if( DBsql.OpenDatabase( database ) )
          DBsql.QuitTransaction( ok );
       }    
    }
+else ServerInternalError();
+
 // default
 return true; // TODO
 }
@@ -723,13 +734,8 @@ for( i = 0 ;i < len ; i ++ )
       DBsql.Disconnect();
     }
 
-  if( ret->errCode == 0 )
-    {
-      LOG( LOG_DEBUG, "GetTransaction: error empty");
-      ret->errCode = 0;         // obecna chyba
-      ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-      ret->errMsg = CORBA::string_dup( "" );
-    }
+  if( ret->errCode == 0 ) ServerInternalError();
+
 
 return ret;
 }
@@ -841,12 +847,7 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %s", 
       DBsql.Disconnect();
     }
 
-  if( ret->errCode == 0 )
-    {
-      ret->errCode = COMMAND_FAILED;    // obecna chyba
-      ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-      ret->errMsg = CORBA::string_dup( "" );
-    }
+  if( ret->errCode == 0 ) ServerInternalError();
 
 
   return ret;
@@ -948,12 +949,8 @@ LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s]",  (int ) clientID,  c
       DBsql.Disconnect();
     }
 
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;    // obecna chyba
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+  if( ret->errCode == 0 ) ServerInternalError();
+  
 
 return ret;
 }
@@ -1009,13 +1006,7 @@ LOG( NOTICE_LOG, "ClientCredit: clientID -> %d clTRID [%s]",  (int )  clientID, 
       DBsql.Disconnect();
     }
 
-
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;    // obecna chyba
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+  if( ret->errCode == 0 ) ServerInternalError();
 
 return ret;
 }
@@ -1072,14 +1063,8 @@ LOG( NOTICE_LOG, "ClientLogout: clientID -> %d clTRID [%s]",  (int )  clientID, 
 
       DBsql.Disconnect();
     }
-
-
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;    // obecna chyba
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+ 
+ if( ret->errCode == 0 ) ServerInternalError();
 
 return ret;
 }
@@ -1219,12 +1204,7 @@ if( DBsql.OpenDatabase( database ) )
     DBsql.Disconnect();
   }
 
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;    // obecna chyba
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+  if( ret->errCode == 0 ) ServerInternalError();
 
 return ret;
 }
@@ -1409,18 +1389,13 @@ if( DBsql.OpenDatabase( database ) )
       ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) ) ;
   }
 
+
 ret->errMsg =  CORBA::string_dup(   GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  ) ;
 
 DBsql.Disconnect();
 }
 
-
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;    // obecna chyba
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+  if( ret->errCode == 0 ) ServerInternalError();
 
 
  
@@ -1688,40 +1663,8 @@ DBsql.Disconnect();
 }
 
 
-
-
-// vyprazdni kontakt pro navratovou hodnotu
-if( ret->errCode == 0 )
-{
-ret->errCode = COMMAND_FAILED;    // obecna chyba
-ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-ret->errMsg = CORBA::string_dup( "" );
-c->handle=CORBA::string_dup("");
-c->ROID=CORBA::string_dup("");   
-c->CrID=CORBA::string_dup("");    // identifikator registratora ktery vytvoril kontak
-c->UpID=CORBA::string_dup("");    // identifikator registratora ktery provedl zmeny
-c->ClID=CORBA::string_dup(""); 
-c->CrDate=CORBA::string_dup(""); // datum a cas vytvoreni
-c->UpDate=CORBA::string_dup(""); // datum a cas zmeny
-c->TrDate=CORBA::string_dup(""); // dattum a cas transferu
-c->stat.length(0); // status
-c->Name=CORBA::string_dup(""); // jmeno nebo nazev kontaktu
-c->Organization=CORBA::string_dup(""); // nazev organizace
-c->Streets.length(0);
-c->City=CORBA::string_dup("");  // obec
-c->StateOrProvince=CORBA::string_dup("");
-c->PostalCode=CORBA::string_dup(""); // PSC
-c->CountryCode=CORBA::string_dup(""); // zeme
-c->Telephone=CORBA::string_dup("");
-c->Fax=CORBA::string_dup("");
-c->Email=CORBA::string_dup("");
-c->NotifyEmail=CORBA::string_dup(""); // upozornovaci email
-c->VAT=CORBA::string_dup(""); // DIC
-c->ident=CORBA::string_dup(""); // SSN
-c->identtype =  ccReg::EMPTY ;
-c->AuthInfoPw=CORBA::string_dup(""); // heslo
-}
-
+if( ret->errCode == 0 ) ServerInternalError();
+ 
 
 return ret;
 }
@@ -1754,11 +1697,7 @@ int regID , id ,  clID;
 ret = new ccReg::Response;
 
 
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_alloc(32); //  server transaction
-ret->svTRID = CORBA::string_dup(""); // prazdna hodnota
-ret->errMsg = CORBA::string_alloc(64);
-ret->errMsg = CORBA::string_dup("");
+ret->errCode=0;
 ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (int )  clientID , clTRID , handle );
@@ -1834,6 +1773,9 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
 
       DBsql.Disconnect();
     }
+
+
+if( ret->errCode == 0 ) ServerInternalError();
 
   return ret;
 }
@@ -2002,12 +1944,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
     }
 
 
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;    // obecna chyba
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+if( ret->errCode == 0 ) ServerInternalError();
 
 return ret;
 }
@@ -2199,12 +2136,8 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
    }
 
 
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+
+if( ret->errCode == 0 ) ServerInternalError();
 
 return ret;
 }
@@ -2392,12 +2325,7 @@ DBsql.Disconnect();
 }
 
 
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+if( ret->errCode == 0 ) ServerInternalError();
 
 return ret;
 }
@@ -2607,23 +2535,7 @@ DBsql.Disconnect();
 }
 
 
-// vyprazdni
-if( ret->errCode == 0 )
-{
-ret->errCode=COMMAND_FAILED;
-ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-ret->errMsg = CORBA::string_dup( "" );
-n->ROID =  CORBA::string_dup( "" ); // fqdn nazev domeny
-n->handle =  CORBA::string_dup( "" ); // handle nssetu
-n->stat.length(0); // status sequence
-n->CrDate=CORBA::string_dup( "" ); // datum vytvoreni
-n->UpDate=CORBA::string_dup( "" ); // datum zmeny
-n->TrDate=CORBA::string_dup( "" ); // datum transferu
-n->AuthInfoPw=  CORBA::string_dup( "" ); 
-n->dns.length(0);
-n->tech.length(0);
-}
-
+if( ret->errCode == 0 ) ServerInternalError();
 
 
 return ret;
@@ -2729,12 +2641,7 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int
     }
 
 
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+if( ret->errCode == 0 ) ServerInternalError();
 
  
 return ret;
@@ -3068,13 +2975,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
       DBsql.Disconnect();
     }
 
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
-
+if( ret->errCode == 0 ) ServerInternalError();
 
 return ret;
 }
@@ -3552,13 +3453,7 @@ if( DBsql.OpenDatabase( database ) )
     DBsql.Disconnect();
   }
 
-
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+if( ret->errCode == 0 ) ServerInternalError();
 
 
 return ret;
@@ -3603,7 +3498,7 @@ ret = new ccReg::Response;
 
 
 // default
-ret->errCode=COMMAND_FAILED;
+ret->errCode=0;
 ret->errors.length(0);
 
 
@@ -3765,28 +3660,7 @@ DBsql.Disconnect();
 }
 
 
-// pokud neneslo kontakt
-if( ret->errCode == 0 )
-{
-   ret->errCode = COMMAND_FAILED;
-   ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-   ret->errMsg = CORBA::string_dup( "" );
-
-// vyprazdni
-d->ROID =  CORBA::string_dup( "" ); // domena do ktere patri host
-d->name=  CORBA::string_dup( "" ); // fqdn nazev domeny
-d->nsset = CORBA::string_dup( "" ); // nsset
-d->AuthInfoPw  = CORBA::string_dup( "" ); //  autentifikace
-d->stat.length(0); // status sequence
-d->UpDate= CORBA::string_dup( "" ); // datuum zmeny
-d->CrDate= CORBA::string_dup( "" ); // datum vytvoreni
-d->TrDate= CORBA::string_dup( "" ); // datum transferu
-d->ExDate= CORBA::string_dup( "" ); // datum vyprseni
-d->Registrant=CORBA::string_dup( "" ); 
-d->ClID=  CORBA::string_dup( "" );    // identifikator registratora ktery vytvoril host
-d->UpID=  CORBA::string_dup( "" );    // identifikator registratora ktery zmenil zaznam
-d->CrID=  CORBA::string_dup( "" );    // identifikator registratora ktery zmenil zaznam
-}
+if( ret->errCode == 0 ) ServerInternalError();
 
 
 return ret;
@@ -3893,14 +3767,7 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int
       DBsql.Disconnect();
     }
 
-
-
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+if( ret->errCode == 0 ) ServerInternalError();
 
   return ret;
 }
@@ -4242,13 +4109,7 @@ if( DBsql.OpenDatabase( database ) )
       DBsql.Disconnect();
     }
 
-
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+if( ret->errCode == 0 ) ServerInternalError();
 
 return ret;
 }
@@ -4610,14 +4471,7 @@ if( DBsql.OpenDatabase( database ) )
  DBsql.Disconnect();
 }
 
-
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
-
+if( ret->errCode == 0 ) ServerInternalError();
 
 
 return ret;
@@ -4911,12 +4765,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
     }
 
 
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+if( ret->errCode == 0 ) ServerInternalError();
 
 
 return ret;
@@ -5004,12 +4853,8 @@ DBsql.Disconnect();
 }
 
 
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;    // obecna chyba
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+if( ret->errCode == 0 ) ServerInternalError();
+
 
 return ret;
 }
@@ -5105,13 +4950,13 @@ if( id == 0 )
        ret->errCode = COMMAND_OBJECT_NOT_EXIST;
        LOG( WARNING_LOG, "object [%s] NOT_EXIST", name );
   }
-else 
-if( id > 0 )
+else  if( id > 0 )
   {
   
                std::auto_ptr<Register::AuthInfoRequest::Manager> airm(
                  Register::AuthInfoRequest::Manager::create(&DBsql,mm)
                );
+
                try {
                  LOG(  NOTICE_LOG , "createRequest objectID %d actionID %d" , 
                             id,DBsql.GetActionID() );
@@ -5120,6 +4965,7 @@ if( id > 0 )
                   ret->errCode=COMMAND_OK;
                 } catch (...) {
                   LOG( WARNING_LOG, "cannot create and process request");
+                  ret->errCode=COMMAND_FAILED;
                 }
              
      } 
@@ -5133,12 +4979,7 @@ DBsql.Disconnect();
 }
 
 
-if( ret->errCode == 0 )
-  {
-    ret->errCode = COMMAND_FAILED;    // obecna chyba
-    ret->svTRID = CORBA::string_dup( "" );    // prazdna hodnota
-    ret->errMsg = CORBA::string_dup( "" );
-  }
+if( ret->errCode == 0 ) ServerInternalError();
 
 return ret;
 }
