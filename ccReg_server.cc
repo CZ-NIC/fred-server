@@ -1,62 +1,44 @@
-#ifdef HAVE_ANSI_CPLUSPLUS_HEADERS
-#include <iostream>
-#include <fstream>
-#else
-#include <iostream.h>
-#include <fstream.h>
-#endif
-
 #include "ccReg.hh"
 #include "ccReg_epp.h"
-#ifdef WHOIS
-#include "whois.h"
-#endif
-#ifdef ADMIN
-#include "admin.h"
-#endif
+
 #include <signal.h>
 #include <unistd.h>
+#include <iostream>
 
-// pouzivani LOGu 
 #include "log.h"
-
-// nacitani config souboru
 #include "conf.h"
-
 #include "nameservice.h"
 
 #ifndef CONFIG_FILE
 #define CONFIG_FILE "ccReg.conf"
 #endif
 
-
+// proper cleanup in case of signal
 static CORBA::ORB_ptr orbToShutdown = NULL;
 static void signalHandler(int signal)
 {
 	if (orbToShutdown) orbToShutdown->shutdown(0);
 }
-// spusteni ccReg servru
 
-// End of example implementational code
 int main(int argc, char** argv)
 {
   try {
-    // nastaveni databaze
+    // database connection settings
     char db[256];
     Conf config; // READ CONFIG  file
     // read config file
     if (!config.ReadConfigFile(CONFIG_FILE)) {
-      std::cout << "Cannot read config file\n";
+      std::cerr << "Cannot read config file\n";
       exit(-1);
     }
     strcpy( db , config.GetDBconninfo() );
-    std::cout << "DATABASE: "  << db << endl;
+    std::cerr << "DATABASE: "  << db << std::endl;
 
 #ifdef SYSLOG
-    cout << "start syslog at level " 
-         <<  config.GetSYSLOGlevel()   << endl;
-    cout << "start syslog facility local" 
-         <<  config.GetSYSLOGlocal()   << endl;
+    std::cerr << "start syslog at level " 
+              <<  config.GetSYSLOGlevel()   << std::endl;
+    std::cerr << "start syslog facility local" 
+              <<  config.GetSYSLOGlocal()   << std::endl;
     setlogmask ( LOG_UPTO(  config.GetSYSLOGlevel()  )   );
     openlog ( "ccReg", LOG_CONS | LOG_PID | LOG_NDELAY,  config.GetSYSLOGfacility() );
 #endif
@@ -76,104 +58,70 @@ int main(int argc, char** argv)
     pols[0] = rootPOA->create_lifespan_policy(PortableServer::PERSISTENT);
     pols[1] = rootPOA->create_id_assignment_policy(PortableServer::USER_ID);
     PortableServer::POA_var poa = 
-      rootPOA->create_POA("ccRegPOA",mgr.in(),pols);
+      rootPOA->create_POA("RegistryPOA",mgr.in(),pols);
 
     // prepare NameService object
     std::string nameServiceIOR = "corbaname::";
     nameServiceIOR += config.GetNameService();
-    cout << "nameServiceIOR: " <<   nameServiceIOR << endl;
+    std::cerr << "nameServiceIOR: " <<   nameServiceIOR << std::endl;
     NameService ns(orb,nameServiceIOR);
-
-#ifdef ADMIN
-    PortableServer::ObjectId_var adminObjectId = 
-      PortableServer::string_to_ObjectId("Admin");
-    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db);
-    poa->activate_object_with_id(adminObjectId,myccReg_Admin_i);
-    CORBA::Object_var adminObj = myccReg_Admin_i->_this();          
-    myccReg_Admin_i->_remove_ref();
-    ns.bind("Admin",adminObj);
-    ccReg::Admin_var admin = ccReg::Admin::_narrow(adminObj);
-#endif
-#ifdef WHOIS    
-    PortableServer::ObjectId_var whoisObjectId = 
-      PortableServer::string_to_ObjectId("Whois");
-    ccReg_Whois_i* myccReg_Whois_i = new ccReg_Whois_i(db);
-    poa->activate_object_with_id(whoisObjectId,myccReg_Whois_i);
-    CORBA::Object_var whoisObj = myccReg_Whois_i->_this();
-    myccReg_Whois_i->_remove_ref();
-    ns.bind("Whois",whoisObj);
-
-    // pristup na admin a whois je mozna z EPP vyhodit
-    ccReg::Whois_var whois = ccReg::Whois::_narrow(whoisObj);
-#endif
-
+    
     MailerManager mm(&ns);
     ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(&mm);
 
     ccReg::timestamp_var ts;
-    cout << "version: " << myccReg_EPP_i->version(ts) << endl;
-    cout << "timestamp: " << ts << endl;
+    std::cerr << "version: " << myccReg_EPP_i->version(ts) << std::endl;
+    std::cerr << "timestamp: " << ts << std::endl;
 
-    // musi byt zavolano pred loadZones
+    // must be called before loadZones
     if (!myccReg_EPP_i->TestDatabaseConnect(db)) {
-      std::cout << "Database connection failed\n";
+      std::cerr << "Database connection failed\n";
       exit(-2);
     } 
 
     if( myccReg_EPP_i->loadZones() <= 0  ){
-      std::cout << "Database error: load zones\n";
+      std::cerr << "Database error: load zones\n";
       exit(-4);
     }
  
     if( myccReg_EPP_i->LoadCountryCode() <= 0 ){  /// nacti ciselnik zemi
-      std::cout << "Database error: load country code\n";
+      std::cerr << "Database error: load country code\n";
       exit(-5);
     }
        
     if( myccReg_EPP_i->LoadErrorMessages() <= 0 ){  // nacti chybove zpravy
-      std::cout << "Database error: load country error messages\n";
+      std::cerr << "Database error: load country error messages\n";
       exit(-6);
     }
 
      if( myccReg_EPP_i->LoadReasonMessages()  <= 0 ){   // nacti reason zpravy
-      std::cout << "Database error: load country reason messages\n";
+      std::cerr << "Database error: load country reason messages\n";
       exit(-7);
     }
 
-
     PortableServer::ObjectId_var myccReg_EPP_iid = 
-      PortableServer::string_to_ObjectId("ccReg");
+      PortableServer::string_to_ObjectId("Register");
     poa->activate_object_with_id(myccReg_EPP_iid,myccReg_EPP_i);
     myccReg_EPP_i->_remove_ref();
-    // IDL interface: ccReg::EPP
-    // CORBA::Object_var ref = poa->id_to_reference(myccReg_EPP_iid);
-    CORBA::Object_var ref = myccReg_EPP_i->_this();
-    ns.bind("EPP",ref);
-//    CORBA::String_var sior(orb->object_to_string(ref));
-//    std::cout << "IDL object ccReg::EPP IOR = '" 
-//              << (char*)sior << "'" << std::endl;
-//    ofstream fout ("/tmp/ccReg.ref");
-//    fout << (char*)sior ; // orb->object_to_string(ref)  ; //  
-//    fout.close ();
-    
-    // pokud projde uspesne test na pripojeni k databazi
-    
+    ns.bind("EPP",myccReg_EPP_i->_this());
 
     // Obtain a POAManager, and tell the POA to start accepting
     // requests on its objects.
     PortableServer::POAManager_var pman = poa->the_POAManager();
     pman->activate();
-    LOG(DEBUG_LOG , "Starting ccReg_server");
-    // odpoji se od terminalu a zalozi vlastni skupinu
+    LOG(DEBUG_LOG , "Starting Fred rifd");
+    // disconnect from terminal
     setsid(); 
     orb->run();
     orb->destroy();
   }
-  catch (CORBA::TRANSIENT&) {
-    LOG(
-      ERROR_LOG,
-      "Caught system exception TRANSIENT -- unable to contact the server."
-    );
+  catch (NameService::NOT_RUNNING&) {
+    std::cerr << "Nameservice connection error\n";
+    exit(-8);
+  }
+  catch (MailerManager::RESOLVE_FAILED) {
+    std::cerr << "Cannot connect to mailer\n";
+    exit(-9);
   }
   catch (CORBA::SystemException& ex) {
     LOG(ERROR_LOG,"Caught a CORBA:: %s " , ex._name() );
@@ -188,8 +136,11 @@ int main(int argc, char** argv)
        fe.file(),fe.line(),fe.errmsg()
     );
   }
-  catch (NameService::NOT_RUNNING) {
-    LOG(ERROR_LOG,"NameService not running or cannot be found");
+  catch (...) {
+    LOG(
+      ERROR_LOG,
+      "Unhandled exception"
+    );        
   }
 
 #ifdef SYSLOG
