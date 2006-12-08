@@ -78,7 +78,7 @@ int main(int argc, char** argv)
       }
     ccReg::EPP_var EPP = ccReg::EPP::_narrow (epp_obj);
 
-
+/*
     admin_obj =  ns.resolve("Admin");
 
     if (CORBA::is_nil (admin_obj)) 
@@ -87,7 +87,7 @@ int main(int argc, char** argv)
       }
 
     ccReg::Admin_var Admin = ccReg::Admin::_narrow (admin_obj);
-
+*/
     ccReg::timestamp_var ts;
     cerr << "EPP version: "  <<  EPP->version(ts)   << endl;
    
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
 
 
 
-    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789"  , "" ,     "LRR-login-now" , "" , loginID , "AE:B3:5F:FA:38:80:DB:37:53:6A:3E:D4:55:E2:91:97" ,  ccReg::EN  );
+    ret =  EPP->ClientLogin(  "REG-LRR2"  ,  "123456789"  , "" ,     "LRR-login-now" , "" , loginID , "AE:B3:5F:FA:38:80:DB:37:53:6A:3E:D4:55:E2:91:97" ,  ccReg::EN  );
 
 
     cout << "loginID" << loginID  << endl;
@@ -165,7 +165,7 @@ int main(int argc, char** argv)
   for( i = 0 ; i < cc->stat.length() ; i ++ )
        cout << "status " <<  cc->stat[i].value <<  cc->stat[i].text << endl;
 
-    ret =  EPP->ClientCredit(  loginID , credit , "client-credit-ZC" , "<XML>get_rededit</XML>" );
+    ret =  EPP->ClientCredit( credit ,   loginID  , "client-credit-ZC" , "<XML>get_rededit</XML>" );
     cout << "ClientCredit " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
    for( i = 0 ; i < credit->length() ; i ++  )
@@ -205,9 +205,6 @@ int main(int argc, char** argv)
 
 //     ret =  EPP->ClientCredit( credit ,  loginID , "clTRID-credit" , "<XML>credit</XML>" );
 //     cout << "credit " << credit <<  "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
-/*
-loginID=0;
-
 
     ret =  EPP->ContactList ( lists , loginID , "contact-list" , "<XML>contact-list</XML>" );
     cerr << "ContactList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
@@ -215,10 +212,10 @@ loginID=0;
     cerr << "Contacts total:" << lists->length() << endl ;
 
      for( i = 0 ; i < lists->length() ; i ++ )
-        cout << "contact: " << (*lists)[i] << endl ;
-
-
+        cout << "contact: " << (*lists)[i] << endl;
     delete lists;
+
+
     ret =  EPP->NSSetList ( lists , loginID , "nsset-list" , "<XML>nsset-list</XML>" );
     cerr << "NSsetList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
@@ -240,7 +237,7 @@ loginID=0;
 
     delete lists;
 
-*/
+
 
 
 /*

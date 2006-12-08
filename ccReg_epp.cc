@@ -983,7 +983,7 @@ return ret;
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::ClientCredit(CORBA::Long clientID, ccReg::ZoneCredit_out credit, const char* clTRID, const char* XML)
+ccReg::Response* ccReg_EPP_i::ClientCredit( ccReg::ZoneCredit_out credit, CORBA::Long clientID , const char* clTRID, const char* XML)
 {
 DB DBsql;
 ccReg::Response * ret;
