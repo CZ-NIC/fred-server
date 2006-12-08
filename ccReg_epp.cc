@@ -395,6 +395,16 @@ if( rows == 0 ) zone->length( rows );
 return rows;
 }
 
+unsigned  int ccReg_EPP_i::GetZoneLength() 
+{
+return  zone->length() ;
+}
+unsigned int  ccReg_EPP_i::GetZoneID( unsigned int z ) 
+{
+if( z <  zone->length() ) return  (*zone)[z].id;
+else return 0;
+}
+
   // parametry zone
 int  ccReg_EPP_i::GetZoneExPeriodMin(int id)
 {
@@ -904,12 +914,12 @@ LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s]",  (int ) clientID,  c
     {
 
       // get  registrator ID
-      regID = DBsql.GetLoginRegistrarID( clientID );
-
-
-      if( DBsql.BeginAction( clientID, EPP_PollAcknowledgement,  clTRID , XML ) )
+      if( ( regID = DBsql.BeginAction( clientID, EPP_PollAcknowledgement,  clTRID , XML )  ) )
         {
 
+
+         LOG( NOTICE_LOG, "PollRequest: registrarID %d" , regID );
+           
           // vypsani zprav z fronty
           sprintf( sqlString, "SELECT *  FROM MESSAGE  WHERE clID=%d AND seen='f' AND exDate > 'now()' ;", regID );
 
@@ -967,21 +977,27 @@ return ret;
  * DESCRIPTION: informacee o vysi creditu  prihlaseneho registratora
  * PARAMETERS:  clientID - id pripojeneho klienta
  *              clTRID - cislo transakce klienta
- *        OUT:  credit - vyse creditu v halirich
+ *        OUT:  credit - vyse creditu v halirich pro kazdou zonu
  *       
  * RETURNED:    svTRID a errCode
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::ClientCredit(CORBA::Long& credit, CORBA::Long clientID, const char* clTRID, const char* XML)
+ccReg::Response* ccReg_EPP_i::ClientCredit(CORBA::Long clientID, ccReg::ZoneCredit_out credit, const char* clTRID, const char* XML)
 {
 DB DBsql;
 ccReg::Response * ret;
 int regID;
+long price;
+unsigned int z , seq , zoneID;
 
 ret = new ccReg::Response;
 ret->errCode = 0;
 ret->errors.length( 0 );
+
+credit  = new ccReg::ZoneCredit;
+credit->length(0);
+seq=0;
 
 LOG( NOTICE_LOG, "ClientCredit: clientID -> %d clTRID [%s]",  (int )  clientID, clTRID );
 
@@ -991,8 +1007,22 @@ LOG( NOTICE_LOG, "ClientCredit: clientID -> %d clTRID [%s]",  (int )  clientID, 
       if( ( regID = DBsql.BeginAction( clientID, EPP_ClientCredit, clTRID , XML  )  ) )
         {
 
+
+          for( z = 0 ; z < GetZoneLength() ; z ++ )
+          {
+            zoneID = GetZoneID(z);
            // vyse creditu registratora prevedena na halire
-           credit  =  get_price( DBsql.GetRegistrarCredit( regID)  );
+            price  = DBsql.GetRegistrarCredit( regID , zoneID );
+
+            if( price >  0)
+             {
+                credit->length(seq+1);             
+                credit[seq].price = price;
+                credit[seq].zone_fqdn =  CORBA::string_dup(  GetZoneFQDN(zoneID ) );
+                seq++;   
+             } 
+
+          }
 
            ret->errCode = COMMAND_OK;   
 

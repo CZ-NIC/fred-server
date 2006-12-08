@@ -42,6 +42,27 @@ if( memHandle )
    
 }
 
+long DB::GetRegistrarCredit(int regID , int zoneID )
+{
+long price=0;
+char sqlString[128];
+
+sprintf(  sqlString ,  "SELECT sum( credit) FROM credit_invoice_credit_map   WHERE  registrarid=%d and zone=%d; " , regID , zoneID );
+
+if( ExecSelect( sqlString ) )
+ {
+ 
+  if(  GetSelectRows()  == 1 )
+     {
+       price =  (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
+     }
+
+   FreeSelect();
+  }
+
+return price;
+}
+
 // vraci castku za operaci 
 long DB::GetPrice(   int action  ,  int zone , int period  )
 {

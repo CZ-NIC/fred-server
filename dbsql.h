@@ -43,6 +43,8 @@ long GetPrice(   int action  ,  int zone , int period  );
 // zpracovani creditu
 long UpdateInvoiceCredit( int regID ,   int action  , int zone  , int period  , int objectID );
 
+long GetRegistrarCredit(int regID , int zoneID );
+
 // ukladada vytvorene XML z mod_eppd
 int SaveXMLout( const char *svTRID , const char *xml  );
 
@@ -142,7 +144,6 @@ int GetLoginRegistrarID(int id) { return  registrarID; }
 
 int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "id" , "handle" , handle ); };
 char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "handle" , "id" , id ); };
-char * GetRegistrarCredit(int id ) { return GetValueFromTable( "REGISTRAR", "credit" , "id" , id ); };
 char * GetStatusFromTable( char *table , int id ) {  return GetValueFromTable( table , "status" , "id" , id ); };
 
 

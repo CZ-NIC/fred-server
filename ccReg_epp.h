@@ -27,14 +27,14 @@ public:
   // nacteni zone z tabulky zones
   int loadZones(); // load zones
   // parametry zone
-  int GetZoneExPeriodMin(int z);
-  int GetZoneExPeriodMax(int z);
-  int GetZoneValPeriod(int z);
-  int GetZoneDotsMax( int z);
-  bool GetZoneEnum(int z);
-  char * GetZoneFQDN( int z);
- 
-
+  int GetZoneExPeriodMin(int id);
+  int GetZoneExPeriodMax(int id);
+  int GetZoneValPeriod(int id);
+  int GetZoneDotsMax( int id);
+  bool GetZoneEnum(int id);
+  char * GetZoneFQDN( int id);
+  unsigned int GetZoneID( unsigned  int z );
+  unsigned int GetZoneLength();
 
   ccReg::Zones * getZones(){ return zone; }
   int getZone( const char *fqdn );
@@ -47,6 +47,10 @@ public:
   void GetValExpDateFromExtension( char *valexpDate , const ccReg::ExtensionList& ext );
 
 
+
+  // send    exception ServerIntError
+  void ServerInternalError();
+ 
   
   // vraceni cisla verze
   char* version(ccReg::timestamp_out datetime);
@@ -99,7 +103,7 @@ public:
 
   ccReg::Response* ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, const char* XML ,  CORBA::Long& clientID , const char* certID , ccReg::Languages lang);
   ccReg::Response* ClientLogout(CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* ClientCredit(CORBA::Long& credit, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* ClientCredit(CORBA::Long clientID, ccReg::ZoneCredit_out credit, const char* clTRID, const char* XML);
   ccReg::Response* ContactCheck(const ccReg::Check& handle, ccReg::CheckResp_out a, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* ContactInfo(const char* handle, ccReg::Contact_out c, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* ContactDelete(const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML);

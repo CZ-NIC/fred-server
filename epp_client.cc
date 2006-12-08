@@ -39,7 +39,8 @@ int main(int argc, char** argv)
 //    ccReg::Domain *domain;
     ccReg::Check_var check;
     ccReg::Check dcheck(2);
-    CORBA::Any an;
+    ccReg::ZoneCredit_var credit;
+    CORBA::Any an; 
 //    CORBA::Short err , sh;
     ccReg::RegistrarList *rl;
     ccReg::Lists *lists ;
@@ -51,7 +52,6 @@ int main(int argc, char** argv)
 //    int len , max = 512, d , j , a , num;
    CORBA::Long loginID;
 //    CORBA::Long msgID , newmsgID;
-//    ccReg::price credit;
     ccReg::CheckResp_var cr;
     ccReg::DNSHost_var dns_chg ,  dns_add , dns_rem;
     ccReg::TechContact_var tech_add , tech_rem;
@@ -160,9 +160,18 @@ int main(int argc, char** argv)
 */
     ret =  EPP->ContactInfo( "CID:DEBIL" ,  cc , loginID , "test-contact-info" , "<XML>debil</XML>");
     cout << "ContactInfo err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
-   
+      cout << "ContactInfo " <<  cc->Name << endl;
+
   for( i = 0 ; i < cc->stat.length() ; i ++ )
        cout << "status " <<  cc->stat[i].value <<  cc->stat[i].text << endl;
+
+    ret =  EPP->ClientCredit(  loginID , credit , "client-credit-ZC" , "<XML>get_rededit</XML>" );
+    cout << "ClientCredit " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
+
+   for( i = 0 ; i < credit->length() ; i ++  )
+    {
+     cout << "credit " << credit[i].price << " zone " << credit[i].zone_fqdn << endl;
+    }
 
 
 /*
