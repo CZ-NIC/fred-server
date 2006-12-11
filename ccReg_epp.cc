@@ -3896,7 +3896,7 @@ if( DBsql.OpenDatabase( database ) )
                LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
                ret->errCode =  COMMAND_AUTHENTICATION_ERROR;
               }
-             else if( DBsql.GetDomainID( FQDN )  ) // jestli existuje konrola pres id
+             else if(  DBsql.GetDomainID( FQDN )    ) // jestli existuje konrola pres id
                   {
                    LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
                    ret->errCode = COMMAND_OBJECT_EXIST;      // je uz zalozena
@@ -3965,17 +3965,17 @@ if( DBsql.OpenDatabase( database ) )
                               // Test u enaum domen
                              if( GetZoneEnum( zone )  )
                                {
-                                 if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) , DefaultValExpInterval() , id  ) ==  false ) // test validace expirace
+                                  // test bez ID domeny
+                                 if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) , DefaultValExpInterval() , 0  ) ==  false ) // test validace expirace
                                    {
-                                      LOG( WARNING_LOG, "DomainUpdate:  validity exp date is not valid %s" , valexpiryDate  );
+                                      LOG( WARNING_LOG, "Validity exp date is not valid %s" , valexpiryDate  );
                                       SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , CLIENT_LANG() );
                                     }
                                  
                                }
                               else
                                 {
-
-                                    LOG( WARNING_LOG, "DomainUpdate: can not  validity exp date %s"   , valexpiryDate );
+                                    LOG( WARNING_LOG, "Validity exp date %s not user"   , valexpiryDate );
                                     SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::domain_ext_valDate ,  REASON_MSG_VALEXPDATE_NOT_USED  , valexpiryDate  , CLIENT_LANG() );
 
                                 }
@@ -4231,7 +4231,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                {
                                  if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) , DefaultValExpInterval() , id  ) ==  false ) // test validace expirace
                                    {
-                                      LOG( WARNING_LOG, "DomainUpdate:  validity exp date is not valid %s" , valexpiryDate  );
+                                      LOG( WARNING_LOG, "Validity exp date is not valid %s" , valexpiryDate  );
                                       SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , CLIENT_LANG() );
                                     }
                                  
@@ -4239,7 +4239,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                               else
                                 {
 
-                                    LOG( WARNING_LOG, "DomainUpdate: can not  validity exp date %s"   , valexpiryDate );
+                                    LOG( WARNING_LOG, "Can not  validity exp date %s"   , valexpiryDate );
                                     SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::domain_ext_valDate ,  REASON_MSG_VALEXPDATE_NOT_USED  , valexpiryDate  , CLIENT_LANG() );
 
                                 }            
