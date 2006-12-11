@@ -2142,8 +2142,13 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
       if( ( regID = DBsql.BeginAction( clientID, EPP_ContactCreate,  clTRID ,  XML )  ))
         {
 
-         if( (id = DBsql.GetContactID( handle ) ) <= 0 ) SetReasonContactHandle( ret , handle , id , CLIENT_LANG() ); 
-          else  if( DBsql.BeginTransaction() )      // zahajeni transakce
+         if( (id = DBsql.GetContactID( handle ) ) < 0 ) SetReasonContactHandle( ret , handle , id , CLIENT_LANG() ); 
+           else if( id ) 
+               {
+                   LOG( WARNING_LOG  ,  "object [%s] EXIST" ,  handle );
+                   ret->errCode= COMMAND_OBJECT_EXIST;
+               }             
+             else   if( DBsql.BeginTransaction() )      // zahajeni transakce
               {
                     // test jestli neni ve smazanych kontaktech
                   if( DBsql.TestContactHandleHistory( handle , DefaultContactHandlePeriod() ) ) SetReasonContactHistory( ret , handle , CLIENT_LANG() );
@@ -2729,9 +2734,14 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
         {
 
 
-          if( (  id = DBsql.GetNSSetID( handle ) ) <= 0 )  SetReasonNSSetHandle( ret , handle , id , CLIENT_LANG() );
-      else     
-      if( DBsql.BeginTransaction() )      // zahaj transakci
+       if( (  id = DBsql.GetNSSetID( handle ) ) <   0 )  SetReasonNSSetHandle( ret , handle , id , CLIENT_LANG() );
+        else if( id )
+               {
+                   LOG( WARNING_LOG  ,  "object [%s] EXIST" ,  handle );
+                   ret->errCode= COMMAND_OBJECT_EXIST;
+               }
+
+      else    if( DBsql.BeginTransaction() )      // zahaj transakci
         {
  
 
@@ -3020,14 +3030,20 @@ if( DBsql.OpenDatabase( database ) )
                   {
                     if( ( techid = DBsql.GetContactID( tech_add[i] ) ) <= 0 )   SetReasonNSSetTechADD( ret , tech_add[i] , techid ,  CLIENT_LANG()  );
                     else  if(  DBsql.CheckContactMap( "nsset", nssetID , techid ) ) SetReasonNSSetTechExistMap(  ret , tech_add[i]  , CLIENT_LANG() );
+
+                    LOG( NOTICE_LOG ,  "ADD  tech  techid ->%d [%s]" ,  techid ,  (const char *) tech_add[i] );
                   }
 
 
                 // test REM tech kontaktu
                 for( i = 0; i < tech_rem.length(); i++ )
-                   {
-                    if( ( techid = DBsql.GetContactID( tech_add[i] ) ) <= 0 )   SetReasonNSSetTechREM( ret , tech_rem[i] , techid ,  CLIENT_LANG()  );
+                   { 
+                     
+                    if( ( techid = DBsql.GetContactID( tech_rem[i] ) ) <= 0 ) SetReasonNSSetTechREM( ret , tech_rem[i] , techid ,  CLIENT_LANG()  );
                     else  if( !DBsql.CheckContactMap( "nsset", nssetID , techid ) ) SetReasonNSSetTechNotExistMap(  ret , tech_rem[i]  , CLIENT_LANG() );
+
+                    LOG( NOTICE_LOG ,  "REM  tech  techid ->%d [%s]" ,  techid ,  (const char *) tech_rem[i] );
+                     
                    }
 
 
