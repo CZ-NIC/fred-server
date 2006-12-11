@@ -83,6 +83,39 @@ public:
   char * GetReasonMessage(int err , int lang);
 
 
+  void ccReg_EPP_i::SetErrorReason(  ccReg::Response *ret , int errCode ,  ccReg::ErrorSpec reasonCode ,  int reasonMsg , const char *value , int lang );
+  void SetReasonUnknowCC( ccReg::Response *ret , const char *value , int lang );
+
+  void SetReasonContactHandle( ccReg::Response *ret ,  const char *handle , int id , int lang ); 
+  void SetReasonNSSetHandle( ccReg::Response *ret ,  const char *handle , int id ,   int lang );
+
+  void SetReasonDomainFQDN(  ccReg::Response *ret , const char *fqdn ,  int zone , int lang  );
+
+
+  void SetReasonContactHistory( ccReg::Response *ret , const char *handle , int lang  );
+  void SetReasonDomainHistory( ccReg::Response *ret , const char *fqdn , int lang  );
+  void SetReasonNSSetHistory( ccReg::Response *ret , const char *handle , int lang  );
+
+  void SetReasonContactMap( ccReg::Response *ret ,  ccReg::ErrorSpec reasonCode , const char *handle , int id ,  int lang );
+
+  void SetReasonNSSetTech( ccReg::Response *ret , const char * handle  , int  techID ,  int lang  );
+  void SetReasonNSSetTechADD(ccReg::Response * ret , const char * handle  , int  techID ,  int lang  );
+  void SetReasonNSSetTechREM( ccReg::Response *ret , const char * handle  , int  techID ,  int lang  );
+  void SetReasonDomainAdmin( ccReg::Response *ret , const char * handle  , int  adminID ,  int lang  );
+  void SetReasonDomainAdminADD(ccReg::Response * ret , const char * handle  , int  adminID ,  int lang  );
+  void SetReasonDomainAdminREM( ccReg::Response * ret , const char * handle  , int  adminID ,  int lang  );
+
+  void SetReasonNSSetTechExistMap( ccReg::Response *ret , const char * handle  ,  int lang  );
+  void SetReasonNSSetTechNotExistMap( ccReg::Response *ret , const char * handle  ,  int lang  );
+
+  void SetReasonDomainAdminExistMap( ccReg::Response *ret , const char * handle  ,  int lang  );
+  void SetReasonDomainAdminNotExistMap( ccReg::Response *ret , const char * handle  ,  int lang  );
+
+
+  void SetReasonDomainNSSet(  ccReg::Response *ret , const char * nsset_handle , int  nssetid , int  lang);
+  void SetReasonDomainRegistrant( ccReg::Response *ret , const char * contact_handle , int   contactid , int  lang);
+
+
   // obecna list funkce
   ccReg::Response* FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list , CORBA::Long clientID, const char* clTRID, const char* XML);
 

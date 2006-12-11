@@ -82,8 +82,9 @@ int  GetDomainID( const char *fqdn );
 
 // update object dle id  a registrator
 bool ObjectUpdate( int id , int regID , const char *authInfo );
-// vraci ClID objektu
-int GetObjectClientID( int id ) { return GetNumericFromTable( "OBJECT" , "ClID" , "id" , id ); } ;
+// test ClID=regID objektu
+bool TestObjectClientID( int id  , int regID );
+
 // vraci ID objektu podle jeho nazvu
 int GetObjectID( const char *name ) { return GetNumericFromTable( "OBJECT" , "id" , "name" , name ); };
 char * GetObjectCrDateTime( int id );
@@ -253,6 +254,7 @@ bool SELECT();
 
 bool SELECTCONTACTMAP( char *map , int id ); //  pro admin a tech kontakty
 bool SELECTOBJECT(  const char *table , const char *fname ,  const char *value );
+bool SELECTOBJECTID(  const char *table , const char *fname ,  int id  );
 
  
 

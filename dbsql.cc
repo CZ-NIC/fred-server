@@ -369,6 +369,23 @@ if( ExecSelect( sqlString ) )
 return num;
 }
 
+
+// jestli je registrator clientam objektu
+bool DB::TestObjectClientID( int id  , int regID )
+{
+char sqlString[128];
+bool ret=false;
+sprintf( sqlString , "SELECT id FROM  object WHERE id=%d and clID=%d " , id , regID ); 
+if( ExecSelect( sqlString ) )
+ {
+   if( GetSelectRows() == 1 ) ret = true;
+     FreeSelect();
+ }
+
+return ret;
+}
+
+ 
 int  DB::GetContactID( const char *handle )
 {
 char HANDLE[64];
@@ -1898,6 +1915,31 @@ SQLCat( " Object.name" );
 SQLCat( "='" );
 SQLCatEscape(  value );
 SQLCat( "' AND " );
+SQLCat( "Object.id=");
+SQLCat( table ); 
+SQLCat( ".id" );
+SQLCat( " ;" ); // ukoncit
+return SELECT();
+}
+
+
+
+bool DB::SELECTOBJECTID(  const char *table , const char *fname ,  int id  )
+{
+char numStr[16];
+
+sqlBuffer = new char[MAX_SQLBUFFER];
+memset(  sqlBuffer , 0 , MAX_SQLBUFFER );
+SQLCat( "SELECT * " );
+SQLCat( " FROM " );
+SQLCat( " OBJECT , ");
+SQLCat( table ); // table
+SQLCat( " WHERE " ); 
+SQLCat( " Object.id" );
+SQLCat( "=" );
+sprintf( numStr , "%d" , id );
+SQLCat(  numStr );
+SQLCat( " AND " );
 SQLCat( "Object.id=");
 SQLCat( table ); 
 SQLCat( ".id" );
