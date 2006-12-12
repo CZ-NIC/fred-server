@@ -423,36 +423,42 @@ if( ExecSelect( sqlString ) )
 return num;
 }
 
-bool DB::TestContactHandleHistory( const char * handle , int period )
+bool DB::SaveObjectDelete( int id )
 {
-return TestObjectHistory( "CONTACT" , "HANDLE" , handle , period );
+char sqlString[512];
+sprintf( sqlString , "INSERT INTO object_delete ( id , historyid , name ) VALUES  ( %d ,  (select historyid from object where id=%d) ,  (select name from object where id=%d) );" , id , id , id );
+
+return ExecSQL( sqlString );
+}
+
+bool DB::TestContactHandleHistory( const char * handle , int days )
+{
+return TestObjectHistory( handle , days );
 }
 
 
-bool DB::TestNSSetHandleHistory( const char * handle , int period )
+bool DB::TestNSSetHandleHistory( const char * handle , int days )
 {
-return TestObjectHistory( "NSSET" , "HANDLE" , handle , period );
+return TestObjectHistory(  handle , days );
 }
 
 
-bool DB::TestDomainFQDNHistory( const char * fqdn , int period )
+bool DB::TestDomainFQDNHistory( const char * fqdn , int days )
 {
-return TestObjectHistory( "DOMAIN" , "FQDN" , fqdn , period );
+return TestObjectHistory( fqdn , days );
 }
 
 // test na objekty v historii
-bool DB::TestObjectHistory( const char *table , const char *fname ,  const char * name , int period )
+bool DB::TestObjectHistory(   const char * name , int days )
 {
 char sqlString[512];
 bool ret=false;
 int count;
 
-if( period > 0 )
+if( days > 0 )
 {
-sprintf( sqlString , "SELECT count(*)  FROM %s_history , history WHERE \
-  %s_history.%s=\'%s\' AND %s_history.historyid=history.id  AND \
-  history.moddate > current_timestamp - interval\'%d month';" , 
-     table , table , fname , name , table,  period );
+// nezalezi mala velka pismena
+sprintf( sqlString , "SELECT count( id ) FROM object_delete  WHERE name ILIKE \'%s\' and  deltime  > current_timestamp - interval\'%d days\';"  , name , days );
 
 if( ExecSelect( sqlString ) )
   {
@@ -462,8 +468,7 @@ if( ExecSelect( sqlString ) )
   }
 
 return ret;
-}
-else return false;
+} else return false;
 
 }
 

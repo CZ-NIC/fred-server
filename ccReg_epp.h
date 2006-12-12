@@ -55,9 +55,9 @@ public:
   // vraceni cisla verze
   char* version(ccReg::timestamp_out datetime);
 
-  int DefaultContactHandlePeriod(){ return 0; } // ochrana lhuta 1 mesic na vse
-  int DefaultDomainNSSetPeriod(){ return 0; }
-  int DefaultDomainFQDNPeriod(){ return 0; }
+  int DefaultContactHandlePeriod(){ return 2; } // ochrana lhuta ve dnech
+  int DefaultDomainNSSetPeriod(){ return 2; }
+  int DefaultDomainFQDNPeriod(){ return 2; }
 
   // true vse zobrazovat false vse skryt pro disclose flags
   bool DefaultPolicy(){return true;}

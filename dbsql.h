@@ -90,12 +90,15 @@ int GetObjectID( const char *name ) { return GetNumericFromTable( "OBJECT" , "id
 char * GetObjectCrDateTime( int id );
 char * GetObjectName( int id ) { return GetValueFromTable( "OBJECT", "name" , "id" , id ); };
 
-bool TestContactHandleHistory( const char * handle , int period );
-bool TestNSSetHandleHistory( const char * handle , int period );
-bool TestDomainFQDNHistory( const char * fqdn , int period );
+// ukladani smazaneho objektu
+bool SaveObjectDelete( int id );
+
+bool TestContactHandleHistory( const char * handle , int days );
+bool TestNSSetHandleHistory( const char * handle , int days );
+bool TestDomainFQDNHistory( const char * fqdn , int days );
 
 // test na objekty v historii
-bool TestObjectHistory( const char *table , const char *fname ,  const char * name , int period );
+bool TestObjectHistory(   const char * name , int days );
 
 // test zustatku na uctu pro import bankovniho vypisu
 int TestBankAccount( char *accountStr , int num , long oldBalance );
@@ -138,7 +141,6 @@ int GetNSSetHosts( int nssetID );
 // zjistuje pocet  tech pro dany nsset
 int GetNSSetContacts( int nssetID );
 
-int SetHistoryIDFromObject( int id ){ return (  historyID = GetNumericFromTable( "OBJECT" ,   "historyID" , "id" , id ) ); };
 
 // vyssi funkce na vraceni value
 int GetLoginRegistrarID(int id) { return  registrarID; } 

@@ -1930,7 +1930,7 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
                             }
                           else
                             {
-                                 if(  DBsql.SetHistoryIDFromObject( id ) ) // uloz jenom history ID 
+                               if(  DBsql.SaveObjectDelete( id  ) ) // uloz do tabulky smazanych objektu
                                  {
                                        if(  DBsql.DeleteContactObject( id ) ) ret->errCode = COMMAND_OK;      // pokud usmesne smazal
                                  }
@@ -2656,8 +2656,7 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int
                             }
                           else
                             {
-// nemaz historii                              if(  DBsql.SaveNSSetHistory( id )  ) 
-                              if(  DBsql.SetHistoryIDFromObject( id ) ) // uloz jenom history ID
+                              if(  DBsql.SaveObjectDelete( id  ) ) // uloz do tabulky smazanych objektu
                                 {
                                      if( DBsql.DeleteNSSetObject( id )  ) ret->errCode = COMMAND_OK;   // pokud vse OK 
                                 }
@@ -3564,9 +3563,9 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int
                     }
                   else
                     {
-// neukladej historii                      if(   DBsql.SaveDomainHistory( id )  ) 
-                      if(  DBsql.SetHistoryIDFromObject( id ) ) // uloz jenom history ID
+                      if(  DBsql.SaveObjectDelete( id  ) ) // uloz do tabulky smazanych objektu
                         {
+
                            if(  DBsql.DeleteDomainObject( id )  ) ret->errCode = COMMAND_OK; // pokud usmesne smazal
                         }
                     }
