@@ -4,7 +4,12 @@
 #include <sys/types.h>
 #include <sstream>
 
+#ifdef TIMELOG
+#include <sys/time.h>
+#include <time.h>
+#endif
 
+#include "timeclock.h"
 #include "pqsql.h"
 
 #include "log.h"
@@ -12,11 +17,18 @@
 // constructor 
 PQ::PQ()
 { 
+#ifdef TIMECLOCK
+timeclock_start();
+#endif
 }
+
 
 // destructor
 PQ::~PQ()
 {
+#ifdef TIMECLOCK
+timeclock_quit();
+#endif
 }
 
 bool PQ::OpenDatabase(const char *conninfo)
@@ -128,7 +140,12 @@ return PQgetlength( result , row , col );
 bool PQ::ExecSelect(const char *sqlString)
 {
 
+#ifdef TIMECLOCK
+timeclock_begin();
+#endif
+
 LOG( SQL_LOG , "SELECT: [%s]" , sqlString );
+
 
         result = PQexec(connection, sqlString );
 
@@ -140,11 +157,14 @@ LOG( SQL_LOG , "SELECT: [%s]" , sqlString );
             return false;
         }
 
-
 nRows = PQntuples( result );
 nCols = PQnfields(result);
 
 LOG( SQL_LOG , "result number of rows (tuples) %d and nfields %d" , nRows , nCols );
+
+#ifdef TIMECLOCK
+timeclock_end();
+#endif
 
 return true;
 }
@@ -195,16 +215,24 @@ bool PQ::ExecSQL(const char *sqlString)
 {
 PGresult   *res;
 
+#ifdef TIMECLOCK
+timeclock_begin();
+#endif
+
 LOG( SQL_LOG , "ExecSQL: [%s]" , sqlString );
 res =  PQexec( connection , sqlString);
 
 LOG( SQL_LOG , "result:  %s %s" ,  PQresStatus( PQresultStatus(res) ) ,PQcmdStatus( res ) );
+#ifdef TIMECLOCK
+timeclock_end();
+#endif
+
 
 if( PQresultStatus(res) == PGRES_COMMAND_OK )
   {
      LOG( SQL_LOG ,  "PQcmdTuples: %s" ,  PQcmdTuples( res) );
      PQclear(res);
-    return true;
+     return true;
   }
 else
 {
