@@ -280,8 +280,6 @@ UPDATE("ACTION");
 if( response > 0  ) SET( "response" , response );
 SET( "enddate", "now" );
 SSET( "servertrid" , svrTRID ); // bez escape
-// uloz history ID pokud je nejake nastaveno
-if( historyID  ) SET( "historyID" , historyID ); 
 WHEREID( actionID );
 
 
