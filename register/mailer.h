@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include "types.h"
 
 namespace Register
 {
@@ -17,7 +18,7 @@ namespace Register
     {
      public:
       virtual ~Manager() {}
-      virtual unsigned long sendEmail(
+      virtual TID sendEmail(
         const std::string& from,
         const std::string& to,
         const std::string& subject,
