@@ -22,6 +22,7 @@ char fqdn[64];
 char timestampStr[32];
 ccReg::DomainWhois *dm;
 int clid ,nssetid ;
+int id;
 int i , len;
 int zone;
 bool en;
@@ -83,11 +84,10 @@ if( chd.handleClass   ==  Register::CH_ENUM ){ zone = ZONE_ENUM;  en=true;}
 else {zone = ZONE_CZ ; en=false ; }
 
 
-
- if(  DBsql.SELECTOBJECT( "DOMAIN" , "fqdn" , fqdn )    )
+if( ( id = DBsql.GetDomainID( fqdn , en ) )  )
+{
+ if(  DBsql.SELECTOBJECTID( "DOMAIN" , "fqdn" ,  id )    )
   {
-  if( DBsql.GetSelectRows() == 1 )
-    {
  
      dm->enum_domain = en; // jestli je domena enumova dodelano pro bug #405       
      dm->created = CORBA::string_dup(  DBsql.GetFieldDateTimeValueName("CrDate" , 0 ) );
@@ -144,10 +144,10 @@ else {zone = ZONE_CZ ; en=false ; }
           }
 
     found = true;   
-   }
- 
-  }
-  else  db_error=2;
+   } else  db_error=2;
+
+ }
+  else found = false;
  
  DBsql.Disconnect();
 }
