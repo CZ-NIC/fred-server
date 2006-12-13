@@ -316,6 +316,47 @@ class ccReg_AIRequests_i : virtual public POA_ccReg::AuthInfoRequests,
   CORBA::ULongLong resultSize();
 };
 
+class ccReg_Mails_i : virtual public POA_ccReg::Mails, 
+                      public ccReg_PageTable_i,
+                      public PortableServer::RefCountServantBase {
+  ccReg::TID idFilter;
+  CORBA::Long statusFilter;
+  CORBA::UShort typeFilter;
+  std::string fulltextFilter;
+  std::string handleFilter;
+  std::string attachmentFilter;
+  ccReg::DateTimeInterval createTimeFilter;
+  MailerManager mm;
+ public:
+  ccReg_Mails_i(NameService *ns);
+  ~ccReg_Mails_i();
+  ccReg::Table::ColumnHeaders* getColumnHeaders();
+  ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  ccReg::TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
+  void sortByColumn(CORBA::Short column, CORBA::Boolean dir);
+  char* outputCSV();
+  CORBA::Short numRows();
+  CORBA::Short numColumns();
+  ccReg::TID id();
+  void id(ccReg::TID _v);
+  CORBA::Long status();
+  void status(CORBA::Long _v);
+  CORBA::UShort type();
+  void type(CORBA::UShort _v);
+  char* handle();
+  void handle(const char* _v);
+  char* fulltext();
+  void fulltext(const char* _v);
+  char* attachment();
+  void attachment(const char* _v);
+  ccReg::DateTimeInterval createTime();
+  void createTime(const ccReg::DateTimeInterval& _v);
+  void reload();
+  void clear();
+  ccReg::Filter_ptr aFilter();
+  CORBA::ULongLong resultSize();
+};
+
 class ccReg_Session_i : public POA_ccReg::Session,
                         public PortableServer::RefCountServantBase {
   ccReg_Registrars_i* reg;
@@ -324,6 +365,7 @@ class ccReg_Session_i : public POA_ccReg::Session,
   ccReg_Contacts_i* cm;
   ccReg_NSSets_i* nm;
   ccReg_AIRequests_i* airm;
+  ccReg_Mails_i* mml;
   DB db;
   std::auto_ptr<Register::Manager> m;
   std::auto_ptr<Register::AuthInfoRequest::Manager> am;
@@ -337,6 +379,7 @@ class ccReg_Session_i : public POA_ccReg::Session,
   ccReg::Contacts_ptr getContacts();
   ccReg::NSSets_ptr getNSSets();
   ccReg::AuthInfoRequests_ptr getAuthInfoRequests();
+  ccReg::Mails_ptr getMails();
 };
 
 class NameService;
@@ -399,6 +442,8 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   );
   ccReg::AuthInfoRequest::Detail* getAuthInfoRequestById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound);
+  ccReg::Mailing::Detail* getEmailById(ccReg::TID id)
+    throw (ccReg::Admin::ObjectNotFound);
 
 
   // statistics
@@ -413,7 +458,7 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   ccReg::ObjectStatusDescSeq* getContactStatusDescList();
   ccReg::ObjectStatusDescSeq* getNSSetStatusDescList();
   /// testovaci fce na typ objektu
-  void checkHandle(const char* handle, ccReg::CheckHandleType_out ch);
+  void checkHandle(const char* handle, ccReg::CheckHandleTypeSeq_out ch);
   ccReg::TID createAuthInfoRequest(
     ccReg::TID objectId, 
     ccReg::AuthInfoRequest::RequestType type, 

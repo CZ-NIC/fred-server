@@ -8,7 +8,7 @@ MailerManager::MailerManager(NameService *ns)
   } catch (...) { throw RESOLVE_FAILED(); }
 }
 
-unsigned long 
+Register::TID 
 MailerManager::sendEmail(
   const std::string& from,
   const std::string& to,
@@ -53,4 +53,52 @@ MailerManager::sendEmail(
   } catch (...) {
     throw Register::Mailer::NOT_SEND();
   }
+} 
+
+MailerManager::List& 
+MailerManager::getMailList()
+{
+  return mailList;
+}
+
+#define LIST_CHUNK_SIZE 100
+
+void 
+MailerManager::reload(MailerManager::Filter& f) throw (LOAD_ERROR)
+{
+  ccReg::MailFilter mf;
+  if (!f.id) mf.mailid = -1;
+  else mf.mailid = f.id;
+  mf.status = f.status;
+  mf.handle = CORBA::string_dup(f.handle.c_str());
+  mf.attachment = CORBA::string_dup(f.attachment.c_str());
+  try {
+    mailList.clear();
+    ccReg::MailSearch_var ms = mailer->createSearchObject(mf);
+    ccReg::MailList_var mls;
+    do {
+      mls = ms->getNext(LIST_CHUNK_SIZE);
+      for (unsigned i=0; i<mls->length(); i++) {
+        MailerManager::Detail d;
+        ccReg::Mail& m = mls[i];
+        d.id = m.mailid;
+        d.content = m.content;
+        d.createTime = m.crdate;
+        d.modTime = m.moddate;
+        d.status = m.status;
+        for (unsigned j=0; j<m.handles.length(); j++)
+          d.handles.push_back((const char *)m.handles[j]);
+        for (unsigned j=0; j<m.attachments.length(); j++)
+          d.attachments.push_back((const char *)m.attachments[j]);
+        mailList.push_back(d);
+      }
+    } while (mls->length());
+  } catch (...) {
+    throw LOAD_ERROR();
+  }
+}
+
+MailerManager::Filter::Filter() :
+ id(0), status(-1)
+{
 } 

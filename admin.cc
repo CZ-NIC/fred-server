@@ -152,26 +152,56 @@ ccReg_Admin_i::~ccReg_Admin_i()
 
 #define SWITCH_CONVERT(x) case Register::x : ch->handleClass = ccReg::x; break
 void
-ccReg_Admin_i::checkHandle(const char* handle, ccReg::CheckHandleType_out ch)
+ccReg_Admin_i::checkHandle(const char* handle, ccReg::CheckHandleTypeSeq_out chso)
 {
   DB db;
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  ccReg::CheckHandleTypeSeq* chs = new ccReg::CheckHandleTypeSeq;
+  chs->length(1);
   Register::CheckHandle chd;
   r->checkHandle(handle,chd);
-  ch = new ccReg::CheckHandleType;
+  ccReg::CheckHandleType *ch = &(*chs)[0];
   ch->newHandle = CORBA::string_dup(chd.newHandle.c_str());
   switch (chd.handleClass) {
-    SWITCH_CONVERT(CH_ENUM_BAD_ZONE);
-    SWITCH_CONVERT(CH_ENUM); 
-    SWITCH_CONVERT(CH_DOMAIN_PART); 
-    SWITCH_CONVERT(CH_DOMAIN_BAD_ZONE); 
-    SWITCH_CONVERT(CH_DOMAIN_LONG); 
-    SWITCH_CONVERT(CH_DOMAIN);
-    SWITCH_CONVERT(CH_NSSET);
-    SWITCH_CONVERT(CH_CONTACT);
-    SWITCH_CONVERT(CH_INVALID);
+   case Register::CH_ENUM_BAD_ZONE:
+     ch->handleClass = ccReg::CH_UNREGISTRABLE;
+     ch->hType = ccReg::HT_ENUM_NUMBER;
+     break;
+   case Register::CH_ENUM:
+     ch->handleClass = ccReg::CH_FREE;
+     ch->hType = ccReg::HT_ENUM_NUMBER;
+     break;
+   case Register::CH_DOMAIN_PART:
+     ch->handleClass = ccReg::CH_PART;
+     ch->hType = ccReg::HT_DOMAIN;
+     break;
+   case Register::CH_DOMAIN_BAD_ZONE:
+     ch->handleClass = ccReg::CH_UNREGISTRABLE;
+     ch->hType = ccReg::HT_DOMAIN;
+     break;
+   case Register::CH_DOMAIN_LONG:
+     ch->handleClass = ccReg::CH_LONG;
+     ch->hType = ccReg::HT_DOMAIN;
+     break;
+   case Register::CH_DOMAIN:
+     ch->handleClass = ccReg::CH_FREE;
+     ch->hType = ccReg::HT_DOMAIN;
+     break;
+   case Register::CH_NSSET:
+     ch->handleClass = ccReg::CH_FREE;
+     ch->hType = ccReg::HT_NSSET;
+     break;
+   case Register::CH_CONTACT:
+     ch->handleClass = ccReg::CH_FREE;
+     ch->hType = ccReg::HT_CONTACT;
+     break;
+   case Register::CH_INVALID:
+     ch->handleClass = ccReg::CH_FREE;
+     ch->hType = ccReg::HT_OTHER;
+     break;
   }
+  chso = chs;
   db.Disconnect(); 
 }
  
@@ -690,6 +720,32 @@ ccReg_Admin_i::getAuthInfoRequestById(ccReg::TID id)
   return aird;
 }
 
+ccReg::Mailing::Detail* 
+ccReg_Admin_i::getEmailById(ccReg::TID id)
+  throw (ccReg::Admin::ObjectNotFound)
+{
+  MailerManager mm(ns);
+  MailerManager::Filter mf;
+  mf.id = id;
+  try { mm.reload(mf); }
+  catch (...) { throw ccReg::Admin::ObjectNotFound(); }
+  if (mm.getMailList().size() != 1) throw ccReg::Admin::ObjectNotFound();
+  MailerManager::Detail& mld = mm.getMailList()[0];
+  ccReg::Mailing::Detail* md = new ccReg::Mailing::Detail;
+  md->id = mld.id;
+  md->status = mld.status;
+  md->createTime = DUPSTRC(mld.createTime);
+  md->modTime = DUPSTRC(mld.modTime);
+  md->content = DUPSTRC(mld.content);
+  md->handles.length(mld.handles.size());
+  for (unsigned i=0; i<mld.handles.size(); i++)
+    md->handles[i] = DUPSTRC(mld.handles[i]);
+  md->attachments.length(mld.attachments.size());
+  for (unsigned i=0; i<mld.attachments.size(); i++)
+    md->attachments[i] = DUPSTRC(mld.attachments[i]);
+  return md;
+}
+
 CORBA::Long 
 ccReg_Admin_i::getEnumDomainCount()
 {
@@ -866,10 +922,12 @@ ccReg_Session_i::ccReg_Session_i(const std::string& database, NameService *ns)
   cm = new ccReg_Contacts_i(m->getContactManager()->getList());
   nm = new ccReg_NSSets_i(m->getNSSetManager()->getList());
   airm = new ccReg_AIRequests_i(am->getList());
+  mml = new ccReg_Mails_i(ns);
 }
 
 ccReg_Session_i::~ccReg_Session_i()
 {
+  // TODO: Delete all tables;
   db.Disconnect();
 }
 
@@ -906,6 +964,12 @@ ccReg::AuthInfoRequests_ptr
 ccReg_Session_i::getAuthInfoRequests()
 {
   return airm->_this();
+}
+
+ccReg::Mails_ptr 
+ccReg_Session_i::getMails()
+{
+  return mml->_this();
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -2321,3 +2385,146 @@ ccReg_AIRequests_i::resultSize()
 {
   return 12345;
 }
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//    ccReg_Mails_i
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+ccReg_Mails_i::ccReg_Mails_i(NameService *ns) : 
+  idFilter(0), statusFilter(-1), mm(ns)
+{
+}
+
+ccReg_Mails_i::~ccReg_Mails_i()
+{
+}
+
+ccReg::Table::ColumnHeaders* 
+ccReg_Mails_i::getColumnHeaders()
+{
+  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+  ch->length(3);
+  COLHEAD(ch,0,"Id",CT_OTHER);
+  COLHEAD(ch,1,"CrDate",CT_OTHER);
+  COLHEAD(ch,2,"Type",CT_OTHER);
+  return ch;
+}
+
+ccReg::TableRow* 
+ccReg_Mails_i::getRow(CORBA::Short row)
+  throw (ccReg::Table::INVALID_ROW)
+{
+  if ((unsigned)row >= mm.getMailList().size()) throw ccReg::Table::INVALID_ROW();
+  MailerManager::Detail& md = mm.getMailList()[row];
+  ccReg::TableRow *tr = new ccReg::TableRow;
+  tr->length(3);
+  std::stringstream id;
+  id << md.id;
+  (*tr)[0] = DUPSTRC(id.str());
+  (*tr)[1] = DUPSTRC(md.createTime);
+  (*tr)[2] = DUPSTRC(std::string(""));
+  return tr;
+}
+
+void 
+ccReg_Mails_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
+{
+}
+
+ccReg::TID 
+ccReg_Mails_i::getRowId(CORBA::Short row) 
+  throw (ccReg::Table::INVALID_ROW)
+{
+  if ((unsigned)row >= mm.getMailList().size()) throw ccReg::Table::INVALID_ROW();
+  MailerManager::Detail& md = mm.getMailList()[row];
+  return md.id;
+}
+
+char*
+ccReg_Mails_i::outputCSV()
+{
+  return CORBA::string_dup("1,1,1");
+}
+
+CORBA::Short 
+ccReg_Mails_i::numRows()
+{
+  return mm.getMailList().size();
+}
+
+CORBA::Short 
+ccReg_Mails_i::numColumns()
+{
+  return 3;
+}
+
+void 
+ccReg_Mails_i::reload()
+{
+  MailerManager::Filter mf;
+  mf.id = idFilter;
+  mf.status = statusFilter;
+  mf.handle = handleFilter;
+  mf.attachment = attachmentFilter;
+  try {
+    mm.reload(mf);
+  } catch (...) {}
+}
+
+#define FILTER_IMPL(FUNC,PTYPEGET,PTYPESET,MEMBER,MEMBERG, SETF) \
+PTYPEGET FUNC() { return MEMBERG; } \
+void FUNC(PTYPESET _v) { MEMBER = _v; SETF; }
+
+#define FILTER_IMPL_L(FUNC,MEMBER,SETF) \
+  FILTER_IMPL(FUNC,ccReg::TID,ccReg::TID,MEMBER,MEMBER, SETF)
+
+#define FILTER_IMPL_S(FUNC,MEMBER,SETF) \
+  FILTER_IMPL(FUNC,char *,const char *,MEMBER,DUPSTRC(MEMBER), SETF)
+
+FILTER_IMPL_L(ccReg_Mails_i::id,idFilter,clear());
+
+FILTER_IMPL(ccReg_Mails_i::status,CORBA::Long,CORBA::Long,statusFilter,statusFilter,clear());
+
+FILTER_IMPL(ccReg_Mails_i::type,CORBA::UShort,CORBA::UShort,typeFilter,typeFilter,clear());
+
+FILTER_IMPL_S(ccReg_Mails_i::handle,handleFilter,
+              clear());
+
+FILTER_IMPL_S(ccReg_Mails_i::fulltext,fulltextFilter,
+              clear());
+
+FILTER_IMPL_S(ccReg_Mails_i::attachment,attachmentFilter,
+              clear());
+
+FILTER_IMPL(ccReg_Mails_i::createTime,
+            ccReg::DateTimeInterval,
+            const ccReg::DateTimeInterval&,
+            createTimeFilter,createTimeFilter,
+            clear() // TODO: function
+             );
+
+ccReg::Filter_ptr
+ccReg_Mails_i::aFilter()
+{
+  return _this();
+}
+
+void
+ccReg_Mails_i::clear()
+{
+  idFilter = 0;
+//  handleFilter = "";
+//  emailFilter = "";
+//  svTRIDFilter = "";
+//  reasonFilter = "";
+  // TODO CLEAR OTHER 
+//  airl->clearFilter();
+}
+
+CORBA::ULongLong 
+ccReg_Mails_i::resultSize()
+{
+  return 12345;
+}
+
+
