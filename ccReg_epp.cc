@@ -1559,7 +1559,7 @@ if( DBsql.OpenDatabase( database ) )
                   case EPP_DomainCheck:
                        if( (  zone =  getFQDN( FQDN , chck[i] )  ) > 0  )
                          {
-                            if( ( id = DBsql.GetDomainID( FQDN ) ) > 0  )
+                            if( ( id = DBsql.GetDomainID( FQDN , GetZoneEnum( zone ) ) ) > 0  )
                               {
                                 a[i].avail = ccReg::Exist;    // objekt existuje
                                 a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_FQDN_EXIST , CLIENT_LANG() ) );
@@ -2236,7 +2236,8 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                         {     
                           // zjisti datum a cas vytvoreni objektu
                           crDate= CORBA::string_dup( DBsql.GetObjectCrDateTime( id )  );
-                          if(   DBsql.SaveContactHistory( id ) )   ret->errCode = COMMAND_OK;    // pokud se ulozilo do Historie
+                          if(   DBsql.SaveContactHistory( id ) )   // pokud se ulozilo do Historie
+                              if ( DBsql.SaveObjectCreate( id ) )   ret->errCode = COMMAND_OK;    // pokud ulozilo crhistoryID 
                         }                    
                    }
 
@@ -2318,7 +2319,7 @@ if( DBsql.OpenDatabase( database ) )
        if(  ( zone = getFQDN( FQDN , name ) ) <= 0  ) SetReasonDomainFQDN( ret , name , zone , CLIENT_LANG() );
        else
          {
-               if( ( id = DBsql.GetDomainID( FQDN ) )   == 0 )
+               if( ( id = DBsql.GetDomainID( FQDN ,  GetZoneEnum( zone ) ) )   == 0 )
                 {
                    LOG( WARNING_LOG  ,  "domain [%s] NOT_EXIST" ,  name );
                    ret->errCode= COMMAND_OBJECT_NOT_EXIST;
@@ -2933,7 +2934,9 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
 
 
                   //  uloz do historie POKUD vse OK
-                 if(  ret->errCode !=  COMMAND_FAILED  )  if( DBsql.SaveNSSetHistory( id ) )   ret->errCode = COMMAND_OK; 
+                 if(  ret->errCode !=  COMMAND_FAILED  )  
+                  if( DBsql.SaveNSSetHistory( id ) )
+                         if ( DBsql.SaveObjectCreate( id ) )  ret->errCode = COMMAND_OK; 
                 } // konec exec
 
            
@@ -3371,7 +3374,7 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) 
    if( DBsql.BeginTransaction() )      // zahajeni transakce
     {
    
-        if( ( id = DBsql.GetDomainID( FQDN ) ) == 0 )
+        if( ( id = DBsql.GetDomainID( FQDN  ,   GetZoneEnum( zone )  ) ) == 0 )
           {
             LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
            ret->errCode = COMMAND_OBJECT_NOT_EXIST;
@@ -3547,7 +3550,7 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int
           else  
           if( DBsql.BeginTransaction() )
             {
-              if( ( id = DBsql.GetDomainID( FQDN ) ) == 0 )
+              if( ( id = DBsql.GetDomainID( FQDN ,   GetZoneEnum( zone )  ) ) == 0 )
                 {
                   LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
                   ret->errCode = COMMAND_OBJECT_NOT_EXIST;
@@ -3652,7 +3655,7 @@ if( DBsql.OpenDatabase( database ) )
                ret->errCode =  COMMAND_AUTHENTICATION_ERROR;
              }
             // pokud domena existuje
-             else if( ( id = DBsql.GetDomainID( FQDN ) ) == 0 )
+             else if( ( id = DBsql.GetDomainID( FQDN ,   GetZoneEnum( zone )  ) ) == 0 )
                 {
                   LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
                   ret->errCode = COMMAND_OBJECT_NOT_EXIST;
@@ -3895,7 +3898,7 @@ if( DBsql.OpenDatabase( database ) )
                LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
                ret->errCode =  COMMAND_AUTHENTICATION_ERROR;
               }
-             else if(  DBsql.GetDomainID( FQDN )    ) // jestli existuje konrola pres id
+             else if(  DBsql.GetDomainID( FQDN  ,   GetZoneEnum( zone )  )    ) // jestli existuje konrola pres id
                   {
                    LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
                    ret->errCode = COMMAND_OBJECT_EXIST;      // je uz zalozena
@@ -4051,7 +4054,8 @@ if( DBsql.OpenDatabase( database ) )
 
 
                                 if(  ret->errCode == 0  ) // pokud nedoslo k chybe
-                                        if(  DBsql.SaveDomainHistory( id ) ) ret->errCode = COMMAND_OK; // pokud 
+                                        if(  DBsql.SaveDomainHistory( id ) )
+                                             if ( DBsql.SaveObjectCreate( id ) ) ret->errCode = COMMAND_OK; // pokud 
                             
                              } else ret->errCode = COMMAND_FAILED; // end exec
 
@@ -4175,7 +4179,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
              }
            else
           
-              if( ( id = DBsql.GetDomainID( FQDN ) ) == 0 )
+              if( ( id = DBsql.GetDomainID( FQDN  ,  GetZoneEnum( zone ) ) ) == 0 )
               // prvni test zdali domena  neexistuje 
                {
                  ret->errCode = COMMAND_OBJECT_NOT_EXIST;  // domena neexistujea
@@ -4465,7 +4469,7 @@ if( DBsql.OpenDatabase( database ) )
    case EPP_DomainSendAuthInfo:
       // preved fqd na  mala pismena a otestuj to
        if(  ( zone = getFQDN( FQDN , name ) ) <= 0  )  SetReasonDomainFQDN( ret , name , zone , CLIENT_LANG() );
-       else if( ( id=DBsql.GetDomainID( FQDN )  ) == 0 )   ret->errCode = COMMAND_OBJECT_NOT_EXIST; ; // ziskej ID domeny  pokue existuje
+       else if( ( id=DBsql.GetDomainID( FQDN ,GetZoneEnum( zone ) )  ) == 0 )   ret->errCode = COMMAND_OBJECT_NOT_EXIST; ; // ziskej ID domeny  pokue existuje
        break;
 
     }

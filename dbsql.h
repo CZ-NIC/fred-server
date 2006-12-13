@@ -78,7 +78,7 @@ char * GetFieldDateValueName(  const char *fname , int row );
 int  GetContactID( const char *handle );
 int  GetNSSetID( const char *handle );
 // vraci id domeny ( special pro enum )
-int  GetDomainID( const char *fqdn );
+int  GetDomainID( const char *fqdn , bool enum_zone );
 
 // update object dle id  a registrator
 bool ObjectUpdate( int id , int regID , const char *authInfo );
@@ -86,12 +86,15 @@ bool ObjectUpdate( int id , int regID , const char *authInfo );
 bool TestObjectClientID( int id  , int regID );
 
 // vraci ID objektu podle jeho nazvu
-int GetObjectID( const char *name ) { return GetNumericFromTable( "OBJECT" , "id" , "name" , name ); };
-char * GetObjectCrDateTime( int id );
-char * GetObjectName( int id ) { return GetValueFromTable( "OBJECT", "name" , "id" , id ); };
+int GetObjectID( const char *name );
 
-// ukladani smazaneho objektu
+char * GetObjectCrDateTime( int id );
+char * GetObjectName( int id );
+
+// ukladani smazaneho objektu ErDate
 bool SaveObjectDelete( int id );
+// ukladani crhistoryID do tabulky object_regiustry
+bool SaveObjectCreate( int id );
 
 bool TestContactHandleHistory( const char * handle , int days );
 bool TestNSSetHandleHistory( const char * handle , int days );
@@ -255,7 +258,6 @@ bool EXEC();
 bool SELECT();
 
 bool SELECTCONTACTMAP( char *map , int id ); //  pro admin a tech kontakty
-bool SELECTOBJECT(  const char *table , const char *fname ,  const char *value );
 bool SELECTOBJECTID(  const char *table , const char *fname ,  int id  );
 
  

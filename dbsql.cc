@@ -311,7 +311,7 @@ else return "svrTRID ERROR";
 
 char * DB::GetObjectCrDateTime( int id )
 {
-convert_rfc3339_timestamp( dtStr ,  GetValueFromTable(  "OBJECT" , "CrDate"  , "id" , id ) );
+convert_rfc3339_timestamp( dtStr ,  GetValueFromTable(  "OBJECT_registry" , "CrDate"  , "id" , id ) );
 return dtStr;
 }
 
@@ -385,6 +385,11 @@ if( ExecSelect( sqlString ) )
 return ret;
 }
 
+char * DB::GetObjectName( int id )
+{
+return GetValueFromTable( "object_registry" , "name" , "id" , id );
+}
+ 
  
 int  DB::GetContactID( const char *handle )
 {
@@ -403,6 +408,26 @@ else  return  GetObjectID( HANDLE );
 }
 
  
+int DB::GetObjectID( const char *name )
+{
+char sqlString[512];
+int id=0;
+
+ sprintf( sqlString , "SELECT object.id FROM object_registry , object WHERE object_registry.id=object.id AND object_registry.name=\'%s\';" , name );
+if( ExecSelect( sqlString ) )
+ {
+  if( GetSelectRows()  ==  1 )
+    {
+     id = atoi(  GetFieldValue( 0 , 0 )  );
+     LOG( SQL_LOG , "GetObjectID   name=\'%s\'  -> ID %d" , name ,  id );
+    }
+
+   FreeSelect();
+ }
+
+return id;
+}
+
 
  
 // zjistuje pocet  tech pro dany nsset
@@ -425,10 +450,26 @@ return num;
 
 bool DB::SaveObjectDelete( int id )
 {
-char sqlString[512];
-sprintf( sqlString , "INSERT INTO object_delete ( id , historyid , name ) VALUES  ( %d ,  (select historyid from object where id=%d) ,  (select name from object where id=%d) );" , id , id , id );
+   LOG( SQL_LOG , "set delete objectID %d" , id );
+           // uloz ze je objekt smazan
+           UPDATE( "object_registry" );
+           SET( "ErDate" , "now" );
+           WHEREID( id );
+           return EXEC();
+}
 
-return ExecSQL( sqlString );
+
+bool DB::SaveObjectCreate( int id )
+{
+ LOG( SQL_LOG , "set create histyoryID for object ID %d historyID %d" , id ,  historyID);
+if( historyID )
+  {
+           UPDATE( "object_registry" );
+           SET( "crhistoryid" , historyID );
+           WHEREID( id );
+           return EXEC();
+   }        
+else return false;
 }
 
 bool DB::TestContactHandleHistory( const char * handle , int days )
@@ -451,6 +492,7 @@ return TestObjectHistory( fqdn , days );
 // test na objekty v historii
 bool DB::TestObjectHistory(   const char * name , int days )
 {
+/* TODO predelat
 char sqlString[512];
 bool ret=false;
 int count;
@@ -468,7 +510,9 @@ if( ExecSelect( sqlString ) )
   }
 
 return ret;
-} else return false;
+} else 
+*/
+return false;
 
 }
 
@@ -480,20 +524,18 @@ char roid[64];
 char pass[PASS_LEN+1];
 int id;
 
-id = GetSequenceID( "object" );
+id = GetSequenceID( "object_registry" );
 
  // vytvor roid 
  get_roid( roid, ( char * ) type , id );
 
- INSERT( "OBJECT" );
+ INSERT( "OBJECT_registry" );
  INTO( "id" );
  INTO( "type" );
  INTO( "NAME" ); 
  INTO( "roid" );
  INTO( "CrDate" );
  INTO( "CrID" );
- INTO( "ClID" );
- INTO( "AuthInfoPw" );
 
  VALUE( id );
 
@@ -519,7 +561,19 @@ switch( type[0] )
  VALUE( roid );
  VALUENOW();
  VALUE( regID );
+ 
+
+
+if( EXEC() )
+ {
+ INSERT( "OBJECT" );
+ INTO( "id" );
+ INTO( "ClID" );
+ INTO( "AuthInfoPw" );
+
+ VALUE( id );
  VALUE( regID );
+
 
                      if( strlen ( authInfoPw ) == 0 )
                        {
@@ -528,8 +582,9 @@ switch( type[0] )
                         }
                       else VALUE( authInfoPw );
 
-
-if( EXEC() )return id;
+  if( EXEC() )  return id;
+  else return 0; 
+ }
 else return 0;
 }
 
@@ -770,45 +825,33 @@ return ret;
 
 
 
-// pro select domeny pri info 
-/*
-bool DB::SELECTDOMAIN(   const char *fqdn , int zone , bool enum_zone )
-{
-int id;
-
-if( enum_zone ) 
-{
-id = CheckDomain(  fqdn ,  zone , true );
-return SELECTONE( "DOMAIN" , "id" , id );
-}
-else return  SELECTONE( "DOMAIN" , "fqdn" , fqdn  );
-
-}  
-*/
 
 
 // test pri Check funkci na domenu case insensitiv
-int DB::GetDomainID( const char *fqdn  )
+int DB::GetDomainID( const char *fqdn  , bool enum_zone )
 {
-char sqlString[512];
-int id=0;
-
-sprintf( sqlString , "SELECT id FROM object  WHERE  ( \'%s\' LIKE  \'%%.\'|| name ) OR  (name LIKE  \'%%.\'  || \'%s\' )  OR ( name=\'%s\' );"  , fqdn   , fqdn  , fqdn );
- 
-
+// TODOTODOTODOTODOTODOTODO
+//char sqlString[512];
+//int id=0;
+return GetObjectID( fqdn );
+// if( enum_zone )
+//sprintf( sqlString , "SELECT id FROM object  WHERE  ( \'%s\' LIKE  \'%%.\'|| name ) OR  (name LIKE  \'%%.\'  || \'%s\' )  OR ( name=\'%s\' );"  , fqdn   , fqdn  , fqdn );
+// else 
+// sprintf( sqlString , "SELECT id FROM object_registry , object WHERE  object.id=object_registry.id and  object_registry.name=\'%s\';" , fqdn );
+/*
 if( ExecSelect( sqlString ) )
  {
-  if( GetSelectRows()  > 0 )
+  if( GetSelectRows()  ==  1 )
     {
      id = atoi(  GetFieldValue( 0 , 0 )  );
      LOG( SQL_LOG , "Check domain   fqdn=\'%s\'  -> ID %d" , fqdn ,  id );
     }
 
-     FreeSelect();
-     
-  }
+   FreeSelect();
+ }
 
 return id;
+*/
 }
 
 
@@ -852,32 +895,37 @@ return ret;
 
 bool DB::TestContactRelations(int id )
 {
-bool ret = false;
+int count=0;
 char sqlString[128];
 
-sprintf( sqlString , "SELECT id from DOMAIN WHERE Registrant=%d;" , id );
+sprintf( sqlString , "SELECT count(id) from DOMAIN WHERE Registrant=%d;" , id );
 if( ExecSelect( sqlString ) ) 
   {
-     if(  GetSelectRows() > 0 ) ret=true;  // nejaka domena kterou ma kontakt registrovany
+     count = atoi(  GetFieldValue( 0 , 0 ) );
      FreeSelect();
   }
 
-sprintf( sqlString , "SELECT * from DOMAIN_CONTACT_MAP WHERE contactid=%d;" , id );
+if( count > 0 ) return true;
+
+sprintf( sqlString , "SELECT count(nssetID ) from NSSET_CONTACT_MAP WHERE contactid=%d;" , id );
 if( ExecSelect( sqlString ) )
   {
-     if(  GetSelectRows() > 0 ) ret=true; // kontakt je admin kontakt nejake domeny 
+     count = atoi(  GetFieldValue( 0 , 0 ) );
      FreeSelect();
   }
 
-sprintf( sqlString , "SELECT * from NSSET_CONTACT_MAP WHERE contactid=%d;" , id );
+if( count > 0 ) return true;
+
+sprintf( sqlString , "SELECT count( domainID)  from DOMAIN_CONTACT_MAP WHERE contactid=%d;" , id );
 if( ExecSelect( sqlString ) )
   {
-     if(  GetSelectRows() > 0 ) ret=true; // kontakt je tech kontakt nejakeho nssetu
+    count = atoi(  GetFieldValue( 0 , 0 ) );
+
      FreeSelect();
   }
 
-
-return ret;
+if( count > 0 ) return true;
+else return false;
 }
 
 // potvrzeni hesla authinfopw v tabulce 
@@ -1387,7 +1435,7 @@ if( actionID )
           if( SaveHistory(  "OBJECT" ,  "id", objectID ) )  // uloz take object do object_history
             {
               LOG( SQL_LOG , "Update objectID  %d -> historyID %d " , objectID , historyID );
-              sprintf(  sqlString , "UPDATE OBJECT set historyID=%d WHERE id=%d;" , historyID  , objectID );
+              sprintf(  sqlString , "UPDATE OBJECT_registry set historyID=%d WHERE id=%d;" , historyID  , objectID );
               if( ExecSQL(  sqlString ) ) return historyID;
             }
         }
@@ -1907,26 +1955,6 @@ WHERE( fname , value );
 return SELECT();
 }
 
-bool DB::SELECTOBJECT(  const char *table , const char *fname ,  const char *value )
-{
-sqlBuffer = new char[MAX_SQLBUFFER];
-memset(  sqlBuffer , 0 , MAX_SQLBUFFER );
-SQLCat( "SELECT * " );
-SQLCat( " FROM " );
-SQLCat( " OBJECT , ");
-SQLCat( table ); // table
-SQLCat( " WHERE " ); 
-SQLCat( " Object.name" );
-SQLCat( "='" );
-SQLCatEscape(  value );
-SQLCat( "' AND " );
-SQLCat( "Object.id=");
-SQLCat( table ); 
-SQLCat( ".id" );
-SQLCat( " ;" ); // ukoncit
-return SELECT();
-}
-
 
 
 bool DB::SELECTOBJECTID(  const char *table , const char *fname ,  int id  )
@@ -1937,10 +1965,10 @@ sqlBuffer = new char[MAX_SQLBUFFER];
 memset(  sqlBuffer , 0 , MAX_SQLBUFFER );
 SQLCat( "SELECT * " );
 SQLCat( " FROM " );
-SQLCat( " OBJECT , ");
+SQLCat( " object_registry ,  object  , ");
 SQLCat( table ); // table
-SQLCat( " WHERE " ); 
-SQLCat( " Object.id" );
+SQLCat( " WHERE Object.id= object_registry.id" ); 
+SQLCat( " AND Object.id" );
 SQLCat( "=" );
 sprintf( numStr , "%d" , id );
 SQLCat(  numStr );
@@ -1957,7 +1985,7 @@ bool DB::SELECTCONTACTMAP( char *map , int id )
 {
 char sqlString[512];
 
-sprintf( sqlString , "SELECT  object.name  FROM OBJECT JOIN  %s_contact_map ON %s_contact_map.contactid=object.id WHERE %s_contact_map.%sid=%d;" ,  map  , map , map  , map , id );
+sprintf( sqlString , "SELECT  object_registry.name  FROM object_registry JOIN  %s_contact_map ON %s_contact_map.contactid=object_registry.id WHERE %s_contact_map.%sid=%d;" ,  map  , map , map  , map , id );
 return ExecSelect( sqlString );
 }
 
