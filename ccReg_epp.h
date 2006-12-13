@@ -83,7 +83,7 @@ public:
   char * GetReasonMessage(int err , int lang);
 
 
-  void ccReg_EPP_i::SetErrorReason(  ccReg::Response *ret , int errCode ,  ccReg::ErrorSpec reasonCode ,  int reasonMsg , const char *value , int lang );
+  void SetErrorReason(  ccReg::Response *ret , int errCode ,  ccReg::ErrorSpec reasonCode ,  int reasonMsg , const char *value , int lang );
   void SetReasonUnknowCC( ccReg::Response *ret , const char *value , int lang );
 
   void SetReasonContactHandle( ccReg::Response *ret ,  const char *handle , int id , int lang ); 
