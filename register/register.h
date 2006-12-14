@@ -13,18 +13,29 @@ class DB;
 
 namespace Register
 {
+  /// Deducted type of checked handle
+  enum HandleType 
+  {
+    HT_ENUM_BLOCK, ///< Handle is block number
+    HT_ENUM_NUMBER, ///< Handle is number
+    HT_ENUM_DOMAIN_BLOCK, ///< Handle is block enum domain
+    HT_ENUM_DOMAIN, ///< Handle is enum domain
+    HT_DOMAIN, ///< Handle is non enum domain
+    HT_CONTACT, ///< Handle is contact
+    HT_NSSET, ///< Handle is nsset
+    HT_REGISTRAR, ///< Handle is registrar
+    HT_OTHER ///< Invalid handle    
+  }
   /// classification for register object handle 
   enum CheckHandleClass 
   {
-    CH_ENUM_BAD_ZONE, ///< handle is enum number not managed in this register 
-    CH_ENUM, ///< handle is enum number
-    CH_DOMAIN_PART, ///< handle is single string (appended by default domain)
-    CH_DOMAIN_BAD_ZONE, ///< hadnle is domain not managed in this register
-    CH_DOMAIN_LONG, ///< handle is domain longer then allowed (truncated)
-    CH_DOMAIN, ///< handle is domain
-    CH_NSSET, ///< handle is nsset
-    CH_CONTACT, ///< handle is contact  
-    CH_INVALID ///< not a valid handle
+    CH_UNREGISTRABLE, ///< is outside of register
+    CH_REGISTRED, ///<  is registred
+    CH_REGISTRED_UNDER, ///< is registred under super domain
+    CH_REGISTRED_PART, /// < has registred part
+    CH_PART, ///< is part of potentialy registrable handle
+    CH_LONG, ///< Handle is part of potentialy registrable handle 
+    CH_FREE ///< Handle is free for registration or has unknown stattus
   };
   /// return type for checkHandle
   struct CheckHandle 
