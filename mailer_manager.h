@@ -28,7 +28,9 @@ class MailerManager : public Register::Mailer::Manager
   {
     Filter();
     Register::TID id;
+    std::string crTime;
     std::string modTime;
+    long type;
     long status;
     std::string content;
     std::string handle;
@@ -39,10 +41,11 @@ class MailerManager : public Register::Mailer::Manager
     Register::TID id;
     std::string createTime;
     std::string modTime;
+    long type;
     long status;
     std::string content;
     std::vector<std::string> handles;
-    std::vector<std::string> attachments;   
+    std::vector<Register::TID> attachments;   
   };
   typedef std::vector<Detail> List;
  private:

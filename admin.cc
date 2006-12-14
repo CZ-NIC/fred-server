@@ -733,6 +733,7 @@ ccReg_Admin_i::getEmailById(ccReg::TID id)
   MailerManager::Detail& mld = mm.getMailList()[0];
   ccReg::Mailing::Detail* md = new ccReg::Mailing::Detail;
   md->id = mld.id;
+  md->type = mld.type;
   md->status = mld.status;
   md->createTime = DUPSTRC(mld.createTime);
   md->modTime = DUPSTRC(mld.modTime);
@@ -742,7 +743,7 @@ ccReg_Admin_i::getEmailById(ccReg::TID id)
     md->handles[i] = DUPSTRC(mld.handles[i]);
   md->attachments.length(mld.attachments.size());
   for (unsigned i=0; i<mld.attachments.size(); i++)
-    md->attachments[i] = DUPSTRC(mld.attachments[i]);
+    md->attachments[i] = mld.attachments[i];
   return md;
 }
 

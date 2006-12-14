@@ -40,7 +40,7 @@ MailerManager::sendEmail(
   for (unsigned i=0; i<handles.size(); i++)
     handleList[0] = CORBA::string_dup(handles[i].c_str());
   // no attachments at this time
-  ccReg::Lists attachments;
+  ccReg::Attachment_seq attachments;
   // send immidiately
   bool prev = false;
   CORBA::String_var prevMsg;
@@ -69,9 +69,13 @@ MailerManager::reload(MailerManager::Filter& f) throw (LOAD_ERROR)
   ccReg::MailFilter mf;
   if (!f.id) mf.mailid = -1;
   else mf.mailid = f.id;
+  if (!f.type) mf.mailtype = -1;
+  else mf.mailtype = f.type;
   mf.status = f.status;
   mf.handle = CORBA::string_dup(f.handle.c_str());
-  mf.attachment = CORBA::string_dup(f.attachment.c_str());
+  mf.attachid = -1;
+  //TODO: filter for string
+  //mf.attachment = CORBA::string_dup(f.attachment.c_str());
   try {
     mailList.clear();
     ccReg::MailSearch_var ms = mailer->createSearchObject(mf);
@@ -86,10 +90,13 @@ MailerManager::reload(MailerManager::Filter& f) throw (LOAD_ERROR)
         d.createTime = m.crdate;
         d.modTime = m.moddate;
         d.status = m.status;
+        d.type = m.mailtype;
         for (unsigned j=0; j<m.handles.length(); j++)
           d.handles.push_back((const char *)m.handles[j]);
         for (unsigned j=0; j<m.attachments.length(); j++)
-          d.attachments.push_back((const char *)m.attachments[j]);
+          d.attachments.push_back(m.attachments[j]);
+        // TODO remove: just for testing
+        if (!d.attachments.size()) d.attachments.push_back(1);
         mailList.push_back(d);
       }
     } while (mls->length());
@@ -99,6 +106,6 @@ MailerManager::reload(MailerManager::Filter& f) throw (LOAD_ERROR)
 }
 
 MailerManager::Filter::Filter() :
- id(0), status(-1)
+ id(0), type(0), status(-1)
 {
 } 
