@@ -72,7 +72,7 @@ int col;
 
 col = PQfnumber(result, fname);
 
-if( col == -1 ) {  LOG( WARNING_LOG , "unknow FieldName: %s" , fname );   return "";  }
+if( col == -1 ) {  LOG( WARNING_LOG , "UNKNOW FieldName: %s" , fname );   return "";  }
 else return  GetFieldValue( row , col );
 }
 
@@ -219,7 +219,7 @@ PGresult   *res;
 timeclock_begin();
 #endif
 
-LOG( SQL_LOG , "ExecSQL: [%s]" , sqlString );
+LOG( SQL_LOG , "EXECSQL: [%s]" , sqlString );
 res =  PQexec( connection , sqlString);
 
 LOG( SQL_LOG , "result:  %s %s" ,  PQresStatus( PQresultStatus(res) ) ,PQcmdStatus( res ) );
@@ -236,8 +236,7 @@ if( PQresultStatus(res) == PGRES_COMMAND_OK )
   }
 else
 {
-   LOG( ERROR_LOG ,  "ExecSQL error");
-   LOG( ERROR_LOG ,  "SQL ERROR: %s" , PQresultErrorMessage(res) );
+   LOG( ERROR_LOG ,  "EXECSQL: SQL ERROR: %s" , PQresultErrorMessage(res) );
    PQclear(res);
    return false;
 }
