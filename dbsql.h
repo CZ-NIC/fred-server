@@ -45,17 +45,21 @@ long UpdateInvoiceCredit( int regID ,   int action  , int zone  , int period  , 
 
 long GetRegistrarCredit(int regID , int zoneID );
 
+// test otisdku certifikatu a hesla v tabulce registrar ACL
+bool  TestRegistrarACL( int  regID , const char *  pass , const char * cert );
+
+
 // ukladada vytvorene XML z mod_eppd
 int SaveXMLout( const char *svTRID , const char *xml  );
 
 // zpracovani action a ulozeni XML 
 // vraci registarID id registratora
-int BeginAction(int clientID , int action ,const char *clTRID  , const char *xml );
+bool BeginAction(int clientID , int action ,const char *clTRID  , const char *xml );
 char * EndAction(int response  );
 // vraci jazyk klienta
-int GetClientLanguage() {return clientLang;}
+// int GetClientLanguage() {return clientLang;}
 // zjisti komunikujici jazyk z tabulky login
-int ReturnClientLanguage();
+// int ReturnClientLanguage();
 
 // vraci handle nebo id tabulky
 int GetNumericFromTable( const char *table , const char *vname ,  const char *fname ,  const char *value);
@@ -86,7 +90,7 @@ bool ObjectUpdate( int id , int regID , const char *authInfo );
 bool TestObjectClientID( int id  , int regID );
 
 // vraci ID objektu podle jeho nazvu
-int GetObjectID( const char *name );
+int GetObjectID( int type , const char *name );
 
 char * GetObjectCrDateTime( int id );
 char * GetObjectName( int id );
@@ -274,7 +278,7 @@ char dtStr[32]; //  pro datum
 int actionID; // id tabulky akce
 int historyID; // id tabulky historie
 int loginID; // id klienta
-int clientLang;
+// int clientLang;
 int registrarID;
 };
 

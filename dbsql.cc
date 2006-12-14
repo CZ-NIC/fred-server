@@ -63,6 +63,23 @@ if( ExecSelect( sqlString ) )
 return price;
 }
 
+bool  DB::TestRegistrarACL( int  regID , const char *  pass , const char * cert )
+{
+char sqlString[512];
+bool ret =false;
+
+sprintf(  sqlString ,  "SELECT  registrarid FROM registraracl WHERE registrarid=%d and cert=\'%s\' and password=\'%s\'; " ,   regID ,  cert ,  pass );
+if( ExecSelect( sqlString ) )
+ {
+
+   if(  GetSelectRows()  > 0 ) ret = true;
+
+   FreeSelect();
+  }
+
+return ret;
+}
+
 // vraci castku za operaci 
 long DB::GetPrice(   int action  ,  int zone , int period  )
 {
@@ -201,31 +218,32 @@ return false;
 
 // action
 // zpracovani action
-int  DB::BeginAction(int clientID , int action ,const char *clTRID  , const char *xml  )
+bool  DB::BeginAction(int clientID , int action ,const char *clTRID  , const char *xml  )
 {
 
 
 
-// HACK pro PIF
+// HACK pro PIF zruseno  ted primo pres ADIF
 
  // umozni  info funkce pro PIF
+/*
 if( action == EPP_ContactInfo ||  action == EPP_NSsetInfo ||   action ==  EPP_DomainInfo ) 
 {
 if( clientID == 0 ) { actionID = 0 ; loginID =  0 ;  return 1;  }
 }
+*/
 
 
 // actionID pro logovani
 actionID = GetSequenceID("action");
 loginID = clientID; // id klienta
-clientLang = LANG_EN; // default
 registrarID=0;
 historyID = 0 ; // history ID je nula
 
 if( actionID ) 
   {
    //  zjisti id prihlaseneho registratora z tabulky Login
-   if( clientID ) registrarID= GetNumericFromTable( "LOGIN" , "registrarid" , "id" , clientID ); ;
+/// uklada se do session   if( clientID ) registrarID= GetNumericFromTable( "LOGIN" , "registrarid" , "id" , clientID ); ;
 
   // zapis do action tabulky
   INSERT( "ACTION" );
@@ -242,21 +260,21 @@ if( actionID )
    if( EXEC() ) 
      {
           // zjisti jazyk clienta v tabulce login
-           clientLang = ReturnClientLanguage();
+         // pres session  clientLang = ReturnClientLanguage();
 
         if( strlen( xml ) )
            {
                 INSERT("Action_XML");
                 VALUE( actionID );
                 VALUE( xml );
-                if(  EXEC() ) return registrarID;
+                if(  EXEC() ) return true;
            }
-        else return registrarID;
+        else return true;
      }
 
   }
 
-return 0;
+return false;
 }
 
 
@@ -290,20 +308,7 @@ registrarID=0;
 LOG( SQL_LOG ,  "EndAction svrTRID: %s" ,  svrTRID );
 
 if( EXEC() ) return   svrTRID;
-/* {
-
-   sprintf( sqlString , "SELECT  servertrid FROM Action  WHERE id=%d;"  , id );
-   if( ExecSelect( sqlString ) )
-    {
-      svr =  GetFieldValue( 0 , 0 );
-      LOG( SQL_LOG , "GetsvrTRID %s" , svr );   
-     //  FreeSelect(); 
-    }
-  return svr;
- }
-*/
-
-else return "svrTRID ERROR";
+else return "svrTRID_DATABASE_ERROR";
 }
 }
 
@@ -326,27 +331,6 @@ return dtStr;
 }
 
 
-
-// vraci jazyk klienta z tabulky login
-
-int DB::ReturnClientLanguage()
-{
-int lang = LANG_EN; // default
-char sqlString[128];
-
-sprintf( sqlString , "SELECT  lang  FROM  login  WHERE id=%d;" , loginID );
-
-if( ExecSelect( sqlString ) )
- {
-     if( GetSelectRows() == 1 ) 
-       {
-        if(  strcmp(   GetFieldValue( 0 , 0 ) , "cs" ) == 0 ) lang =LANG_CS;
-       }
-     FreeSelect();
- }
-
-return lang;
-}
 
 
 // zjistuje pocet hostu pro dany nsset
@@ -394,7 +378,7 @@ int  DB::GetContactID( const char *handle )
 char HANDLE[64];
 
 if( get_CONTACTHANDLE( HANDLE , handle ) == false ) return -1; // preved handle na velka pismena
-else return GetObjectID( HANDLE );
+else return GetObjectID( 1 , HANDLE );
 }
 
 int  DB::GetNSSetID( const char *handle )
@@ -402,16 +386,16 @@ int  DB::GetNSSetID( const char *handle )
 char HANDLE[64];
 
 if( get_NSSETHANDLE( HANDLE , handle ) == false ) return -1 ; // preved handle na velka pismena
-else  return  GetObjectID( HANDLE );
+else  return  GetObjectID( 2 , HANDLE );
 }
 
  
-int DB::GetObjectID( const char *name )
+int DB::GetObjectID( int type , const char *name )
 {
 char sqlString[512];
 int id=0;
 
- sprintf( sqlString , "SELECT object.id FROM object_registry , object WHERE object_registry.id=object.id AND object_registry.name=\'%s\';" , name );
+sprintf( sqlString , "SELECT object.id FROM object_registry , object WHERE object_registry.type=%d AND object_registry.id=object.id AND object_registry.name=\'%s\';" , type ,  name );
 if( ExecSelect( sqlString ) )
  {
   if( GetSelectRows()  ==  1 )
@@ -831,7 +815,7 @@ int DB::GetDomainID( const char *fqdn  , bool enum_zone )
 // TODOTODOTODOTODOTODOTODO
 //char sqlString[512];
 //int id=0;
-return GetObjectID( fqdn );
+return GetObjectID( 3 , fqdn );
 // if( enum_zone )
 //sprintf( sqlString , "SELECT id FROM object  WHERE  ( \'%s\' LIKE  \'%%.\'|| name ) OR  (name LIKE  \'%%.\'  || \'%s\' )  OR ( name=\'%s\' );"  , fqdn   , fqdn  , fqdn );
 // else 

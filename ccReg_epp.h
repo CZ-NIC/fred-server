@@ -4,6 +4,15 @@
 // JT: adding mailer manager
 #include "mailer_manager.h"
 
+
+struct Session
+{
+int clientID;
+int registrarID;
+int language;
+long long timestamp;
+};
+
 //
 //  class implementing IDL interface ccReg::EPP
 //
@@ -47,6 +56,19 @@ public:
   void GetValExpDateFromExtension( char *valexpDate , const ccReg::ExtensionList& ext );
 
 
+ // session manager
+  void CreateSession(int max , long wait );
+  // prihlaseni pri Login zapise registrarID z tabulky registrar a pouzivany jazyk
+  bool LoginSession( int loginID , int registrarID , int language );
+  //  odhlaseni
+  bool LogoutSession( int loginID );
+  // vraci GetRegistrarID pokud nevyprsi timeout
+  // zaroven procistovani session pro dlouho vysici klienty
+  int GetRegistrarID( int clientID );
+  // vraci jazyk
+  int GetRegistrarLang( int clientID );
+  //  vraci poces session
+  int GetNumSession(){ return numSession ; }; 
 
   // send    exception ServerIntError
   void ServerInternalError();
@@ -175,6 +197,10 @@ public:
 
  
 private:
+Session *session;
+int numSession; // pocet aktivnik session
+int maxSession; // maximalni pocet session
+long long maxWaitClient; // cas v sec prodleva po jako dobou je udrzovano spojeni
 Mesg *ErrorMsg;
 Mesg *ReasonMsg;
 CountryCode *CC;

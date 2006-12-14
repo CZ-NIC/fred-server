@@ -28,8 +28,6 @@
 #include <memory>
 // JT: END
 
-// TODO predelat do session
-#define  CLIENT_LANG() DBsql.GetClientLanguage()
 
 //
 // Example implementational code for IDL interface ccReg::EPP
@@ -38,7 +36,7 @@ ccReg_EPP_i::ccReg_EPP_i(MailerManager *_mm ) : mm(_mm) {
 
 }
 ccReg_EPP_i::~ccReg_EPP_i(){
- 
+
 }
 
 void ccReg_EPP_i::ServerInternalError()
@@ -48,6 +46,146 @@ void ccReg_EPP_i::ServerInternalError()
  throw ccReg::EPP::ServerIntError( "server internal error" );
 } 
 
+
+void ccReg_EPP_i::CreateSession(int max , long wait)
+{
+int i;
+
+
+LOG( DEBUG_LOG , "SESSION CREATE max %d wait %ld" , max , wait );
+
+session = new Session[max];
+numSession=0; // pocet aktivnich session
+maxSession=max; // maximalni pocet pripustnych session
+maxWaitClient=wait; // prodleva
+for( i = 0 ; i < max ; i ++ )
+  {
+    session[i].clientID=0;
+    session[i].registrarID=0;
+    session[i].language =0;
+    session[i].timestamp=0;
+  }
+
+}
+ // session
+bool ccReg_EPP_i::LoginSession( int loginID , int registrarID , int language )
+{
+int i;
+
+
+if( numSession < maxSession )
+{
+// najdi prvni uvolnenou session
+for( i = 0 ; i <  maxSession ; i ++ )
+  {
+   if( session[i].clientID== 0 )
+     {
+       LOG( DEBUG_LOG , "SESSION  login  clientID %d registrarID %d lang %d" , loginID , registrarID ,  language );
+       session[i].clientID=loginID;
+       session[i].registrarID=registrarID;
+       session[i].language = language;
+       session[i].timestamp=( long long ) time(NULL);
+       numSession++;
+       LOG( DEBUG_LOG , "SESSION  num %d numSession %d timespatmp %lld"  , i , numSession  , session[i].timestamp );
+       return true;
+     }
+  }
+}
+else
+{
+LOG( ALERT_LOG , "SESSION MAX_CLIENTS %d"  , maxSession );
+}
+
+return false;
+}
+
+bool  ccReg_EPP_i::LogoutSession( int loginID )
+{
+int i;
+
+
+for( i = 0 ; i < maxSession  ; i ++ )
+{
+   if( session[i].clientID== loginID )
+     {
+       session[i].clientID=0;
+       session[i].registrarID=0;
+       session[i].language =0;
+       session[i].timestamp=0;
+       numSession--;
+       LOG( DEBUG_LOG , "SESSION LOGOUT %d numSession %d"  , i , numSession );
+       return true;
+     }
+}
+
+LOG( ALERT_LOG , "SESSION LOGOUT UNKNOW loginID %d" , loginID );
+   
+return false;
+}
+
+int  ccReg_EPP_i::GetRegistrarID( int clientID )
+{
+int regID=0;
+int i , num=0;
+long long  t;
+
+LOG( DEBUG_LOG , "SESSION GetRegistrarID %d" ,   clientID );
+
+  t = ( long long )  time(NULL);
+
+for( i = 0 ; i < maxSession ; i ++ )
+{
+
+  if( session[i].clientID )
+  {    
+   LOG( DEBUG_LOG , "SESSION  maxWait %lld time %lld timestamp session[%d].timestamp  %lld" ,   maxWaitClient , t , i ,  session[i].timestamp );
+
+   // garbage collector 
+   if(  t >  session[i].timestamp  +  maxWaitClient )
+     {
+          LOG( ERROR_LOG , "SESSION[%d] TIMEOUT %lld GARBAGE" ,  i ,  session[i].timestamp);
+          session[i].clientID=0;
+          session[i].registrarID=0;
+          session[i].language =0;
+          session[i].timestamp=0;
+          numSession--;
+     }
+
+   if( session[i].clientID==clientID )
+     {
+           session[i].timestamp=t;
+           LOG( DEBUG_LOG , "SESSION[%d] loginID %d -> regID %d" , i ,  clientID , session[i].registrarID );
+           LOG( DEBUG_LOG , "SESSION[%d] TIMESTMAP %lld" ,   i ,  session[i].timestamp );
+           regID = session[i].registrarID ; 
+      }
+
+
+   }
+
+}
+
+
+numSession = numSession - num ; // odectene session
+return regID;
+}
+
+
+
+int  ccReg_EPP_i::GetRegistrarLang( int clientID )
+{
+int i;
+
+for( i = 0 ; i < numSession ; i ++ )
+  {
+   if( session[i].clientID==clientID ) 
+     {
+        LOG( DEBUG_LOG , "SESSION[%d]  loginID %d -> lang %d" ,  i ,  clientID , session[i].language );
+        return session[i].language ;
+      }
+  }
+
+return 0;
+}
 
 // test spojeni na databazi
 bool ccReg_EPP_i::TestDatabaseConnect(const char *db)
@@ -981,7 +1119,8 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %s", 
     {
 
       // get  registrator ID
-      regID = DBsql.GetLoginRegistrarID( clientID );
+       regID = DBsql.GetLoginRegistrarID( clientID );
+
 
       if( DBsql.BeginAction( clientID, EPP_PollAcknowledgement, clTRID , XML ) )
         {
@@ -1000,7 +1139,7 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %s", 
               if( rows == 0 )
                 {
                   LOG( ERROR_LOG, "unknown msgID %s",   msgID );
-                  SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::poll_msgID , REASON_MSG_UNKNOW_MSGID , msgID , CLIENT_LANG() );
+                  SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::poll_msgID , REASON_MSG_UNKNOW_MSGID , msgID , GetRegistrarLang( clientID ) );
                 }
           else
 
@@ -1043,7 +1182,7 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %s", 
       else
         ret->errCode = COMMAND_FAILED;
 
-      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
       DBsql.Disconnect();
     }
@@ -1101,13 +1240,13 @@ ret->errors.length( 0 );
 
 LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s]",  (int ) clientID,  clTRID);
 
+if(  ( regID = GetRegistrarID( clientID ) ) )
   if( DBsql.OpenDatabase( database ) )
     {
 
       // get  registrator ID
-      if( ( regID = DBsql.BeginAction( clientID, EPP_PollAcknowledgement,  clTRID , XML )  ) )
+      if( (  DBsql.BeginAction( clientID, EPP_PollAcknowledgement,  clTRID , XML )  ) )
         {
-
 
          LOG( NOTICE_LOG, "PollRequest: registrarID %d" , regID );
            
@@ -1145,7 +1284,7 @@ LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s]",  (int ) clientID,  c
         ret->errCode = COMMAND_FAILED;
 
 
-      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
       DBsql.Disconnect();
     }
@@ -1192,12 +1331,12 @@ seq=0;
 
 LOG( NOTICE_LOG, "ClientCredit: clientID -> %d clTRID [%s]",  (int )  clientID, clTRID );
 
-
+if(  ( regID = GetRegistrarID( clientID ) ) )
   if( DBsql.OpenDatabase( database ) )
     {
-      if( ( regID = DBsql.BeginAction( clientID, EPP_ClientCredit, clTRID , XML  )  ) )
+      if( ( DBsql.BeginAction( clientID, EPP_ClientCredit, clTRID , XML  )  ) )
         {
-
+ 
 
           for( z = 0 ; z < GetZoneLength() ; z ++ )
           {
@@ -1222,7 +1361,7 @@ LOG( NOTICE_LOG, "ClientCredit: clientID -> %d clTRID [%s]",  (int )  clientID, 
           ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
         }
 
-      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
       DBsql.Disconnect();
     }
@@ -1268,9 +1407,13 @@ LOG( NOTICE_LOG, "ClientLogout: clientID -> %d clTRID [%s]",  (int )  clientID, 
            DBsql.SET( "logouttrid" , clTRID );
            DBsql.WHEREID( clientID );   
 
+         if(  LogoutSession(  clientID ) )// logout session
+          {
 
           if( DBsql.EXEC() )  ret->errCode = COMMAND_LOGOUT;      // uspesne oddlaseni
           else ret->errCode = COMMAND_FAILED;
+
+          } else ret->errCode = COMMAND_FAILED;
 
 
           // zapis na konec action
@@ -1280,7 +1423,7 @@ LOG( NOTICE_LOG, "ClientLogout: clientID -> %d clTRID [%s]",  (int )  clientID, 
         ret->errCode = COMMAND_FAILED;
 
 
-      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
       DBsql.Disconnect();
     }
@@ -1315,7 +1458,8 @@ ccReg::Response * ccReg_EPP_i::ClientLogin( const char *ClID, const char *passwd
                                             CORBA::Long & clientID, const char *certID, ccReg::Languages lang )
 {
 DB DBsql;
-int roid, id;
+int regID=0, id=0;
+int language=0;
 ccReg::Response * ret;
 ret = new ccReg::Response;
 
@@ -1333,7 +1477,7 @@ if( DBsql.OpenDatabase( database ) )
 
 
    // dotaz na ID registratora 
-    if( ( roid = DBsql.GetNumericFromTable( "REGISTRAR", "id", "handle", ( char * ) ClID ) ) == 0 )
+    if( ( regID = DBsql.GetNumericFromTable( "REGISTRAR", "id", "handle", ( char * ) ClID ) ) == 0 )
       {
         LOG( NOTICE_LOG, "bad username [%s]", ClID ); // spatne username 
         ret->errCode = COMMAND_AUTH_ERROR;
@@ -1341,18 +1485,12 @@ if( DBsql.OpenDatabase( database ) )
     else
             
         // ziskej heslo z databaza a  provnej heslo a pokud neni spravne vyhod chybu
-       if( strcmp(  DBsql.GetValueFromTable("REGISTRARACL" , "password" , "registrarid" ,  roid )  , passwd )  )
+        
+       if(  !DBsql.TestRegistrarACL( regID ,  passwd ,   certID ) )
          {
-                LOG( NOTICE_LOG, "bad password [%s] not accept", passwd );
+                LOG( NOTICE_LOG, "password [%s]  or certID [%s]  not accept", passwd ,  certID  );
                 ret->errCode = COMMAND_AUTH_ERROR;
           }
-        else 
-          //  porovnej certifika 
-             if( strcmp(  DBsql.GetValueFromTable("REGISTRARACL" , "cert" ,  "registrarid" ,  roid )  ,  certID )  )
-              {
-                LOG( NOTICE_LOG, "bad certID [%s] not accept", certID );
-                ret->errCode = COMMAND_AUTH_ERROR;
-               } 
         else
         
           if( DBsql.BeginTransaction() )
@@ -1368,7 +1506,7 @@ if( DBsql.OpenDatabase( database ) )
                     DBsql.INTO( "registrarid" );
                     DBsql.INTO( "logintrid" );
                     DBsql.VALUE( id );
-                    DBsql.VALUE( roid );
+                    DBsql.VALUE( regID );
                     DBsql.VALUE( clTRID );
    
                     if( DBsql.EXEC() )    // pokud se podarilo zapsat do tabulky
@@ -1376,8 +1514,7 @@ if( DBsql.OpenDatabase( database ) )
                         clientID = id;
                         LOG( NOTICE_LOG, "GET clientID  -> %d",  (int )  clientID );
 
-                        ret->errCode = COMMAND_OK; // zikano clinetID OK
-
+                        
                         // nankonec zmena komunikacniho  jazyka pouze na cestinu
                         if( lang == ccReg::CS )
                           {
@@ -1386,9 +1523,10 @@ if( DBsql.OpenDatabase( database ) )
                             DBsql.UPDATE( "Login" );
                             DBsql.SSET( "lang" , "cs"  );
                             DBsql.WHEREID( clientID  );
-
+                            language=1;
                             if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;    // pokud se nezdarilo
                           }
+
 
 
                            // zmena hesla pokud je nejake nastaveno
@@ -1399,10 +1537,27 @@ if( DBsql.OpenDatabase( database ) )
 
                                DBsql.UPDATE( "REGISTRARACL" );
                                DBsql.SET( "password" , newpass );         
-                               DBsql.WHERE( "registrarid" , roid  );
+                               DBsql.WHERE( "registrarid" , regID  );
 
                                if( DBsql.EXEC() ==  false ) ret->errCode = COMMAND_FAILED;   // pokud se nezdarilo
                              }
+
+
+                         if(  ret->errCode == 0 )
+                           {
+                             if(  LoginSession(  clientID  , regID ,  language ) )
+                               {
+                                      // probehne action pro svrTrID   musi byt az na mkonci pokud zna clientID 
+                                       // uloz pouze pro zname clientID
+                                      if( DBsql.BeginAction( clientID, EPP_ClientLogin, clTRID , XML ) )  ret->errCode = COMMAND_OK;
+                                      else ret->errCode = COMMAND_FAILED;
+
+
+                                      ret->errCode = COMMAND_OK;
+                               }
+                             else ret->errCode = COMMAND_FAILED;
+                           }
+
 
                       }
 
@@ -1410,14 +1565,11 @@ if( DBsql.OpenDatabase( database ) )
               DBsql.QuitTransaction( ret->errCode );
           }
 
-         // uloz colani funkce a ziskej svTRID 
-        // probehne action pro svrTrID   musi byt az na mkonci pokud zna clientID
-         DBsql.BeginAction( clientID, EPP_ClientLogin, clTRID , XML );        
-            // zapis na konec action
-         ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
+            // zapis na konec action pokud je id
+        if( id )      ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
          
 
-        ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+        ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
 
       
@@ -1491,7 +1643,7 @@ if( DBsql.OpenDatabase( database ) )
                             if( id >  0   )
                               {
                                 a[i].avail  =  ccReg::Exist ;    // objekt existuje
-                                a[i].reason =  CORBA::string_dup(   GetReasonMessage( REASON_MSG_HANDLE_EXIST , CLIENT_LANG() )  );
+                                a[i].reason =  CORBA::string_dup(   GetReasonMessage( REASON_MSG_HANDLE_EXIST , GetRegistrarLang( clientID ) )  );
                                 LOG( NOTICE_LOG ,  "contact %s exist not Avail" , (const char * ) chck[i] );
                               }
                              else
@@ -1499,7 +1651,7 @@ if( DBsql.OpenDatabase( database ) )
                                if( DBsql.TestContactHandleHistory(  chck[i]  , DefaultContactHandlePeriod()  ) ) 
                                  {
                                      a[i].avail =  ccReg::DelPeriod;    // ochrana lhuta
-                                     a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_HANDLE_PROTECTED_PERIOD , CLIENT_LANG() ) );  // v ochrane lhute
+                                     a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_HANDLE_PROTECTED_PERIOD , GetRegistrarLang( clientID ) ) );  // v ochrane lhute
                                      LOG( NOTICE_LOG ,  "contact %s in delete period" ,(const char * ) chck[i] );
                                  }
                                 else
@@ -1515,7 +1667,7 @@ if( DBsql.OpenDatabase( database ) )
                          {
                             LOG( NOTICE_LOG ,  "bad format %s of contact handle"  , (const char * ) chck[i] );
                             a[i].avail = ccReg::BadFormat;    // spatny format
-                            a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_HANDLE_BAD_FORMAT , CLIENT_LANG() ));
+                            a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_HANDLE_BAD_FORMAT , GetRegistrarLang( clientID ) ));
                          }
 
                         break;
@@ -1528,7 +1680,7 @@ if( DBsql.OpenDatabase( database ) )
                             if( id > 0  )
                               {
                                 a[i].avail = ccReg::Exist;    // objekt existuje
-                                a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_HANDLE_EXIST , CLIENT_LANG() )  );
+                                a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_HANDLE_EXIST , GetRegistrarLang( clientID ) )  );
                                 LOG( NOTICE_LOG ,  "nsset %s exist not Avail" , (const char * ) chck[i] );
                               }
                              else
@@ -1536,7 +1688,7 @@ if( DBsql.OpenDatabase( database ) )
                                if( DBsql.TestNSSetHandleHistory( chck[i]  ,  DefaultDomainNSSetPeriod()  ) )
                                  {
                                      a[i].avail =  ccReg::DelPeriod;    // ochrana lhuta
-                                     a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_HANDLE_PROTECTED_PERIOD , CLIENT_LANG() )  );  // v ochrane lhute
+                                     a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_HANDLE_PROTECTED_PERIOD , GetRegistrarLang( clientID ) )  );  // v ochrane lhute
                                      LOG( NOTICE_LOG ,  "nsset %s in delete period" ,(const char * ) chck[i] );
                                  }
                                 else
@@ -1552,7 +1704,7 @@ if( DBsql.OpenDatabase( database ) )
                          {
                             LOG( NOTICE_LOG ,  "bad format %s of nsset handle"  , (const char * ) chck[i] );
                             a[i].avail = ccReg::BadFormat;    // spatny format
-                            a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_HANDLE_BAD_FORMAT , CLIENT_LANG() ) );
+                            a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_HANDLE_BAD_FORMAT , GetRegistrarLang( clientID ) ) );
                          }
 
                         break;
@@ -1562,7 +1714,7 @@ if( DBsql.OpenDatabase( database ) )
                             if( ( id = DBsql.GetDomainID( FQDN , GetZoneEnum( zone ) ) ) > 0  )
                               {
                                 a[i].avail = ccReg::Exist;    // objekt existuje
-                                a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_FQDN_EXIST , CLIENT_LANG() ) );
+                                a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_FQDN_EXIST , GetRegistrarLang( clientID ) ) );
                                 LOG( NOTICE_LOG ,  "domain %s exist not Avail" , (const char * ) chck[i] );
                               }
                              else
@@ -1571,7 +1723,7 @@ if( DBsql.OpenDatabase( database ) )
                                if( DBsql.TestDomainFQDNHistory( FQDN , DefaultDomainFQDNPeriod() ) )
                                  {
                                      a[i].avail =  ccReg::DelPeriod;    // objekt byl smazan je v historri a ma ochranou lhutu
-                                     a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_FQDN_HISTORY , CLIENT_LANG() ) );  // v ochrane lhute
+                                     a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_FQDN_HISTORY , GetRegistrarLang( clientID ) ) );  // v ochrane lhute
                                      LOG( NOTICE_LOG ,  "domain %s in delete period" ,(const char * ) chck[i] );
                                  }
                                 else
@@ -1589,13 +1741,13 @@ if( DBsql.OpenDatabase( database ) )
                              {
                                LOG( NOTICE_LOG ,  "bad format %s of fqdn"  , (const char * ) chck[i] );
                                a[i].avail = ccReg::BadFormat;    // spatny format
-                               a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_BAD_FORMAT_FQDN , CLIENT_LANG() ) );
+                               a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_BAD_FORMAT_FQDN , GetRegistrarLang( clientID ) ) );
                              }
                            else
                              {
                                LOG( NOTICE_LOG ,  "not applicable %s"  , (const char * ) chck[i] );
                                a[i].avail = ccReg::NotApplicable;    // nepouzitelna domena neni v zone
-                               a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_NOT_APPLICABLE_FQDN , CLIENT_LANG() ) );
+                               a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_NOT_APPLICABLE_FQDN , GetRegistrarLang( clientID ) ) );
                              }
                          }
                         break;
@@ -1611,7 +1763,7 @@ if( DBsql.OpenDatabase( database ) )
   }
 
 
-ret->errMsg =  CORBA::string_dup(   GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  ) ;
+ret->errMsg =  CORBA::string_dup(   GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  ) ;
 
 DBsql.Disconnect();
 }
@@ -1687,16 +1839,17 @@ ret->errCode=0;
 ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "ContactInfo: clientID -> %d clTRID [%s] handle [%s] " ,  (int )  clientID , clTRID , handle );
- 
-if( DBsql.OpenDatabase( database ) )
-{
+
+if(  (regID = GetRegistrarID( clientID ) ) )
+ if( DBsql.OpenDatabase( database ) )
+  {
 
   
-if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  ) )
-  {
+  if(   DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  )
+   {
  
 
-  if( (id = DBsql.GetContactID( handle ) ) <= 0  )  SetReasonContactHandle( ret , handle , id , CLIENT_LANG() );
+  if( (id = DBsql.GetContactID( handle ) ) <= 0  )  SetReasonContactHandle( ret , handle , id , GetRegistrarLang( clientID ) );
   else if( DBsql.BeginTransaction() )
   {
     if( DBsql.SELECTOBJECTID( "CONTACT" ,"handle"  ,  id )  )
@@ -1857,7 +2010,7 @@ if( ( regID = DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  
 
 
 
-ret->errMsg =  CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )   );
+ret->errMsg =  CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )   );
 
 DBsql.Disconnect();
 }
@@ -1904,13 +2057,15 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
 
 
 
+if(  ( regID = GetRegistrarID( clientID ) ) )
+
   if( DBsql.OpenDatabase( database ) )
     {
-
-      if( ( regID =  DBsql.BeginAction( clientID, EPP_ContactDelete,  clTRID , XML )  ))
+      if( (  DBsql.BeginAction( clientID, EPP_ContactDelete,  clTRID , XML )  ))
         {
 
-         if( (id = DBsql.GetContactID( handle ) ) <= 0  )  SetReasonContactHandle( ret , handle , id , CLIENT_LANG() );      
+ 
+         if( (id = DBsql.GetContactID( handle ) ) <= 0  )  SetReasonContactHandle( ret , handle , id , GetRegistrarLang( clientID ) );      
           else if( DBsql.BeginTransaction() )
           {
 
@@ -1954,7 +2109,7 @@ LOG( NOTICE_LOG ,  "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (i
         }
 
 
-      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
       DBsql.Disconnect();
     }
@@ -2003,15 +2158,16 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
 
 
 
+if(  ( regID = GetRegistrarID( clientID ) ) )
 
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( (  regID =  DBsql.BeginAction( clientID, EPP_ContactUpdate, clTRID , XML ) ) )
+      if( (  DBsql.BeginAction( clientID, EPP_ContactUpdate, clTRID , XML ) ) )
         {
 
-
-         if( (id = DBsql.GetContactID( handle ) ) <= 0  )  SetReasonContactHandle( ret , handle , id , CLIENT_LANG() );
+ 
+         if( (id = DBsql.GetContactID( handle ) ) <= 0  )  SetReasonContactHandle( ret , handle , id , GetRegistrarLang( clientID ) );
          else  if( DBsql.BeginTransaction() )      // zahajeni transakce
             {
 
@@ -2022,7 +2178,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
                     }
                   else                   
 
-                      if( !TestCountryCode( c.CC ) ) SetReasonUnknowCC( ret , c.CC , CLIENT_LANG() );
+                      if( !TestCountryCode( c.CC ) ) SetReasonUnknowCC( ret , c.CC , GetRegistrarLang( clientID ) );
                       else
                           if( DBsql.ObjectUpdate(id , regID  , c.AuthInfoPw )  ) // update OBJECT tabulky 
                              {
@@ -2084,7 +2240,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
         }
 
 
-      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
 
       DBsql.Disconnect();
@@ -2137,12 +2293,14 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
  c.DiscloseName  , c.DiscloseOrganization , c.DiscloseAddress , c.DiscloseTelephone , c.DiscloseFax , c.DiscloseEmail );
 
 
+if(  ( regID = GetRegistrarID( clientID ) ) )
+
   if( DBsql.OpenDatabase( database ) )
     {
-      if( ( regID = DBsql.BeginAction( clientID, EPP_ContactCreate,  clTRID ,  XML )  ))
+      if( (  DBsql.BeginAction( clientID, EPP_ContactCreate,  clTRID ,  XML )  ))
         {
-
-         if( (id = DBsql.GetContactID( handle ) ) < 0 ) SetReasonContactHandle( ret , handle , id , CLIENT_LANG() ); 
+ 
+         if( (id = DBsql.GetContactID( handle ) ) < 0 ) SetReasonContactHandle( ret , handle , id , GetRegistrarLang( clientID ) ); 
            else if( id ) 
                {
                    LOG( WARNING_LOG  ,  "object [%s] EXIST" ,  handle );
@@ -2151,10 +2309,10 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
              else   if( DBsql.BeginTransaction() )      // zahajeni transakce
               {
                     // test jestli neni ve smazanych kontaktech
-                  if( DBsql.TestContactHandleHistory( handle , DefaultContactHandlePeriod() ) ) SetReasonContactHistory( ret , handle , CLIENT_LANG() );
+                  if( DBsql.TestContactHandleHistory( handle , DefaultContactHandlePeriod() ) ) SetReasonContactHistory( ret , handle , GetRegistrarLang( clientID ) );
                   else
                   // test zdali country code je existujici zeme
-                  if( !TestCountryCode( c.CC ) ) SetReasonUnknowCC( ret , c.CC , CLIENT_LANG() );
+                  if( !TestCountryCode( c.CC ) ) SetReasonUnknowCC( ret , c.CC , GetRegistrarLang( clientID ) );
                   else
                     {
                     //  id = DBsql.GetSequenceID( "contact" );
@@ -2251,7 +2409,7 @@ LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d 
           ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
         }
 
-      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
       DBsql.Disconnect();
    }
 
@@ -2297,26 +2455,26 @@ ret->errCode=0;
 ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "ObjectContact: act %d  clientID -> %d clTRID [%s] object [%s] authInfo [%s] " , act  ,  (int ) clientID , clTRID , name , authInfo );
-
-if( DBsql.OpenDatabase( database ) )
-{
-
- if( ( regID =  DBsql.BeginAction( clientID , act  ,  clTRID , XML  )  ) )
+if(  (regID = GetRegistrarID( clientID ) ) )
+ if( DBsql.OpenDatabase( database ) )
  {
 
+ if( (  DBsql.BeginAction( clientID , act  ,  clTRID , XML  )  ) )
+ {
+ 
 
    switch( act )
    {
    case EPP_ContactTransfer:
-       if( (id = DBsql.GetContactID( name ) ) <= 0 ) SetReasonContactHandle( ret , name , id , CLIENT_LANG() );
+       if( (id = DBsql.GetContactID( name ) ) <= 0 ) SetReasonContactHandle( ret , name , id , GetRegistrarLang( clientID ) );
        break;
 
    case EPP_NSsetTransfer:
-       if( (id = DBsql.GetNSSetID( name ) ) <= 0 ) SetReasonNSSetHandle( ret , name , id , CLIENT_LANG() );
+       if( (id = DBsql.GetNSSetID( name ) ) <= 0 ) SetReasonNSSetHandle( ret , name , id , GetRegistrarLang( clientID ) );
        break;
    case EPP_DomainTransfer:
       // preved fqd na  mala pismena a otestuj to
-       if(  ( zone = getFQDN( FQDN , name ) ) <= 0  ) SetReasonDomainFQDN( ret , name , zone , CLIENT_LANG() );
+       if(  ( zone = getFQDN( FQDN , name ) ) <= 0  ) SetReasonDomainFQDN( ret , name , zone , GetRegistrarLang( clientID ) );
        else
          {
                if( ( id = DBsql.GetDomainID( FQDN ,  GetZoneEnum( zone ) ) )   == 0 )
@@ -2399,7 +2557,7 @@ if( DBsql.OpenDatabase( database ) )
  }
 
 
-ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
 DBsql.Disconnect();
 }
@@ -2469,16 +2627,17 @@ ret->errors.length(0);
 LOG( NOTICE_LOG ,  "NSSetInfo: clientID -> %d clTRID [%s] handle [%s] " , (int ) clientID , clTRID , handle );
  
 
+if(  (regID = GetRegistrarID( clientID ) ) )
 
 if( DBsql.OpenDatabase( database ) )
 {
 
-if( ( regID =  DBsql.BeginAction( clientID , EPP_NSsetInfo , clTRID , XML  )  ))
+if( ( DBsql.BeginAction( clientID , EPP_NSsetInfo , clTRID , XML  )  ))
  {
+ 
 
 
-
- if( (nssetid = DBsql.GetNSSetID( handle ) ) <= 0  )  SetReasonNSSetHandle( ret , handle , nssetid , CLIENT_LANG() ); 
+ if( (nssetid = DBsql.GetNSSetID( handle ) ) <= 0  )  SetReasonNSSetHandle( ret , handle , nssetid , GetRegistrarLang( clientID ) ); 
  else if( DBsql.BeginTransaction() )
   {
      if(  DBsql.SELECTOBJECTID( "NSSET" , "HANDLE" , nssetid ) )
@@ -2587,7 +2746,7 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_NSsetInfo , clTRID , XML  )  ))
    ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode  ) ) ;
  }
 
-ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
 DBsql.Disconnect();
 }
@@ -2631,13 +2790,15 @@ ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int ) clientID , clTRID , handle );
 
+if(  ( regID = GetRegistrarID( clientID ) ) )
 
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( ( regID = DBsql.BeginAction( clientID, EPP_NSsetDelete, clTRID , XML )  ))
+      if( (  DBsql.BeginAction( clientID, EPP_NSsetDelete, clTRID , XML )  ))
         {
-          if( (  id = DBsql.GetNSSetID( handle ) ) <= 0 )  SetReasonNSSetHandle( ret , handle , id , CLIENT_LANG() );
+ 
+          if( (  id = DBsql.GetNSSetID( handle ) ) <= 0 )  SetReasonNSSetHandle( ret , handle , id , GetRegistrarLang( clientID ) );
           else if( DBsql.BeginTransaction() )      // zahajeni transakce
             {
 
@@ -2676,7 +2837,7 @@ LOG( NOTICE_LOG ,  "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int
           ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
         }
 
-      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
       DBsql.Disconnect();
     }
@@ -2727,14 +2888,16 @@ crDate = CORBA::string_dup( "" );
 
 LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", (int ) clientID, clTRID, handle , authInfoPw  );
 
+if(  ( regID = GetRegistrarID( clientID ) ) )
+
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( ( regID =   DBsql.BeginAction( clientID, EPP_NSsetCreate,  clTRID  , XML)  ))
+      if( (  DBsql.BeginAction( clientID, EPP_NSsetCreate,  clTRID  , XML)  ))
         {
+ 
 
-
-       if( (  id = DBsql.GetNSSetID( handle ) ) <   0 )  SetReasonNSSetHandle( ret , handle , id , CLIENT_LANG() );
+       if( (  id = DBsql.GetNSSetID( handle ) ) <   0 )  SetReasonNSSetHandle( ret , handle , id , GetRegistrarLang( clientID ) );
         else if( id )
                {
                    LOG( WARNING_LOG  ,  "object [%s] EXIST" ,  handle );
@@ -2746,7 +2909,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
  
 
              // test jestli neni ve smazanych kontaktech
-         if( DBsql.TestNSSetHandleHistory( handle ,  DefaultDomainNSSetPeriod()  ) ) SetReasonNSSetHistory( ret , handle , CLIENT_LANG() );
+         if( DBsql.TestNSSetHandleHistory( handle ,  DefaultDomainNSSetPeriod()  ) ) SetReasonNSSetHistory( ret , handle , GetRegistrarLang( clientID ) );
          else 
           {
              // Test tech kontaktu 
@@ -2760,7 +2923,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                       ret->errors.length( seq +1 );
                       ret->errors[seq].code = ccReg::nssetCreate_tech;
                       ret->errors[seq].value = CORBA::string_dup( "tech contact"  ); // TODO ???
-                      ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_NOT_ANY_TECH  , CLIENT_LANG() ) );
+                      ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_NOT_ANY_TECH  , GetRegistrarLang( clientID ) ) );
                       seq++;
 */
                       ret->errCode = COMMAND_PARAMETR_MISSING ; // musi byt alespon jeden nsset;
@@ -2771,7 +2934,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                     // test tech kontaktu
                      for( i = 0; i <   tech.length() ;  i++ )
                       {
-                         if( ( techid = DBsql.GetContactID( tech[i] ) ) <= 0 )   SetReasonNSSetTech( ret , tech[i] , techid ,  CLIENT_LANG()  ); 
+                         if( ( techid = DBsql.GetContactID( tech[i] ) ) <= 0 )   SetReasonNSSetTech( ret , tech[i] , techid ,  GetRegistrarLang( clientID )  ); 
                       }
 
                   }
@@ -2784,7 +2947,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                       if( dns.length() == 1 )
                         {
                           LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s"  , (const char *)  dns[0].fqdn   );    
-                          SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_dns_name , REASON_MSG_MIN_DNS , dns[0].fqdn , CLIENT_LANG() );
+                          SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_dns_name , REASON_MSG_MIN_DNS , dns[0].fqdn , GetRegistrarLang( clientID ) );
                         }
                       else
                         {
@@ -2793,7 +2956,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                           ret->errors.length( seq +1 );
                           ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
                           ret->errors[seq].value = CORBA::string_dup( "not any dns host"  ); // TODO VALUE ?? 
-                          ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_MIN_DNS ,  CLIENT_LANG()) );
+                          ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_MIN_DNS ,  GetRegistrarLang( clientID )) );
                           seq++;
 */
                           ret->errCode = COMMAND_PARAMETR_MISSING;
@@ -2814,7 +2977,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                           if( TestInetAddress( dns[i].inet[j] )  == false )
                             {
                                   LOG( WARNING_LOG, "NSSetCreate: bad host address %s " , (const char *) dns[i].inet[j]  );
-                                  SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , REASON_MSG_BAD_IP_ADDRESS, dns[i].inet[j] , CLIENT_LANG() );
+                                  SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , REASON_MSG_BAD_IP_ADDRESS, dns[i].inet[j] , GetRegistrarLang( clientID ) );
                             }
 
                         }
@@ -2826,7 +2989,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                        {
 
                           LOG( WARNING_LOG, "NSSetCreate: bad host name %s " , (const char *)  dns[i].fqdn  );
-                         SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name , REASON_MSG_BAD_DNS_NAME ,  dns[i].fqdn , CLIENT_LANG() );
+                         SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name , REASON_MSG_BAD_DNS_NAME ,  dns[i].fqdn , GetRegistrarLang( clientID ) );
                        }
                      else
                        {
@@ -2840,7 +3003,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
                                {
 
                                     LOG( WARNING_LOG, "NSSetCreate:  ipaddr  glue not allowed %s " , (const char *) dns[i].inet[j]   );
-                                    SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , REASON_MSG_IP_GLUE_NOT_ALLOWED ,  dns[i].inet[j] ,  CLIENT_LANG() );
+                                    SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , REASON_MSG_IP_GLUE_NOT_ALLOWED ,  dns[i].inet[j] ,  GetRegistrarLang( clientID ) );
                                 } 
                            }                                                    
                        }  
@@ -2954,7 +3117,7 @@ LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoP
      ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
      }
 
-      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
       DBsql.Disconnect();
     }
@@ -3007,14 +3170,16 @@ ret->errors.length(0);
 LOG( NOTICE_LOG ,  "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] authInfo_chg  [%s] " , (int ) clientID , clTRID , handle  , authInfo_chg);
 
 
+if(  (regID = GetRegistrarID( clientID ) ) ) 
 
 if( DBsql.OpenDatabase( database ) )
   {
 
-  if( ( regID = DBsql.BeginAction( clientID, EPP_NSsetUpdate,  clTRID , XML)  ) )
+  if( (  DBsql.BeginAction( clientID, EPP_NSsetUpdate,  clTRID , XML)  ) )
    {
 
-     if( (  nssetID = DBsql.GetNSSetID( handle ) ) <= 0 )  SetReasonNSSetHandle( ret , handle , nssetID , CLIENT_LANG() );
+ 
+     if( (  nssetID = DBsql.GetNSSetID( handle ) ) <= 0 )  SetReasonNSSetHandle( ret , handle , nssetID , GetRegistrarLang( clientID ) );
      else  if( DBsql.BeginTransaction() )
        {
             // client contaktu 
@@ -3030,8 +3195,8 @@ if( DBsql.OpenDatabase( database ) )
                // test  ADD tech kontaktu
                for( i = 0; i < tech_add.length(); i++ )
                   {
-                    if( ( techid = DBsql.GetContactID( tech_add[i] ) ) <= 0 )   SetReasonNSSetTechADD( ret , tech_add[i] , techid ,  CLIENT_LANG()  );
-                    else  if(  DBsql.CheckContactMap( "nsset", nssetID , techid ) ) SetReasonNSSetTechExistMap(  ret , tech_add[i]  , CLIENT_LANG() );
+                    if( ( techid = DBsql.GetContactID( tech_add[i] ) ) <= 0 )   SetReasonNSSetTechADD( ret , tech_add[i] , techid ,  GetRegistrarLang( clientID )  );
+                    else  if(  DBsql.CheckContactMap( "nsset", nssetID , techid ) ) SetReasonNSSetTechExistMap(  ret , tech_add[i]  , GetRegistrarLang( clientID ) );
 
                     LOG( NOTICE_LOG ,  "ADD  tech  techid ->%d [%s]" ,  techid ,  (const char *) tech_add[i] );
                   }
@@ -3041,8 +3206,8 @@ if( DBsql.OpenDatabase( database ) )
                 for( i = 0; i < tech_rem.length(); i++ )
                    { 
                      
-                    if( ( techid = DBsql.GetContactID( tech_rem[i] ) ) <= 0 ) SetReasonNSSetTechREM( ret , tech_rem[i] , techid ,  CLIENT_LANG()  );
-                    else  if( !DBsql.CheckContactMap( "nsset", nssetID , techid ) ) SetReasonNSSetTechNotExistMap(  ret , tech_rem[i]  , CLIENT_LANG() );
+                    if( ( techid = DBsql.GetContactID( tech_rem[i] ) ) <= 0 ) SetReasonNSSetTechREM( ret , tech_rem[i] , techid ,  GetRegistrarLang( clientID )  );
+                    else  if( !DBsql.CheckContactMap( "nsset", nssetID , techid ) ) SetReasonNSSetTechNotExistMap(  ret , tech_rem[i]  , GetRegistrarLang( clientID ) );
 
                     LOG( NOTICE_LOG ,  "REM  tech  techid ->%d [%s]" ,  techid ,  (const char *) tech_rem[i] );
                      
@@ -3060,7 +3225,7 @@ if( DBsql.OpenDatabase( database ) )
                     if( TestDNSHost( dns_add[i].fqdn  ) == false )
                      {
                           LOG( WARNING_LOG, "NSSetUpdate: bad add host name %s " , (const char *)  dns_add[i].fqdn );
-                          SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name_add , REASON_MSG_BAD_DNS_NAME ,  dns_add[i].fqdn , CLIENT_LANG() );
+                          SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name_add , REASON_MSG_BAD_DNS_NAME ,  dns_add[i].fqdn , GetRegistrarLang( clientID ) );
                      }
                     else
                      {
@@ -3073,7 +3238,7 @@ if( DBsql.OpenDatabase( database ) )
                              for( j = 0 ; j <   dns_add[i].inet.length() ; j ++ )
                                 {
                                    LOG( WARNING_LOG, "NSSetUpdate:  ipaddr  glue not allowed %s " , (const char *) dns_add[i].inet[j]   );
-                                   SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , REASON_MSG_IP_GLUE_NOT_ALLOWED ,  dns_add[i].inet[j] , CLIENT_LANG() );
+                                   SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , REASON_MSG_IP_GLUE_NOT_ALLOWED ,  dns_add[i].inet[j] , GetRegistrarLang( clientID ) );
                                  }
                            }
                          else                                              
@@ -3096,7 +3261,7 @@ if( DBsql.OpenDatabase( database ) )
                                   if(  !findRem ) // pokud neni ve vymazavanych dns hostech
                                     {
                                       LOG( WARNING_LOG, "NSSetUpdate:  host name %s exist" , (const char *)  dns_add[i].fqdn );
-                                      SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name_add , REASON_MSG_DNS_NAME_EXIST ,  dns_add[i].fqdn , CLIENT_LANG() );
+                                      SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name_add , REASON_MSG_DNS_NAME_EXIST ,  dns_add[i].fqdn , GetRegistrarLang( clientID ) );
                                     }
 
                                 } 
@@ -3116,7 +3281,7 @@ if( DBsql.OpenDatabase( database ) )
                                        if( strcmp( dns_add[i].inet[l] ,   dns_add[i].inet[j] ) == 0 )
                                          {
                                            LOG( WARNING_LOG, "NSSetUpdate: duplicity host address %s " , (const char *) dns_add[i].inet[j]  );
-                                           SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , REASON_MSG_REASON_MSG_DUPLICITY_IP_ADDRESS ,  dns_add[i].inet[j] , CLIENT_LANG() );
+                                           SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , REASON_MSG_REASON_MSG_DUPLICITY_IP_ADDRESS ,  dns_add[i].inet[j] , GetRegistrarLang( clientID ) );
                                          }
                                      }
 
@@ -3124,7 +3289,7 @@ if( DBsql.OpenDatabase( database ) )
                              else // spatna IP adresa
                                {
                                    LOG( WARNING_LOG, "NSSetUpdate: bad add host address %s " , (const char *)  dns_add[i].inet[j] );
-                                   SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr ,  REASON_MSG_BAD_IP_ADDRESS ,  dns_add[i].inet[j] ,  CLIENT_LANG() );
+                                   SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr ,  REASON_MSG_BAD_IP_ADDRESS ,  dns_add[i].inet[j] ,  GetRegistrarLang( clientID ) );
                                }
                            }                                            
    
@@ -3143,7 +3308,7 @@ if( DBsql.OpenDatabase( database ) )
                     if( TestDNSHost( dns_rem[i].fqdn  ) == false )
                       {
                           LOG( WARNING_LOG, "NSSetUpdate: bad rem host name %s " , (const char *)  dns_rem[i].fqdn );
-                          SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name_rem , REASON_MSG_BAD_DNS_NAME ,  dns_add[i].fqdn , CLIENT_LANG() );
+                          SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name_rem , REASON_MSG_BAD_DNS_NAME ,  dns_add[i].fqdn , GetRegistrarLang( clientID ) );
                        }
                      else
                        {
@@ -3151,7 +3316,7 @@ if( DBsql.OpenDatabase( database ) )
                            if( ( hostID = DBsql.GetHostID( NAME , nssetID )  ) == 0 )
                              {                                                        
                                  LOG( WARNING_LOG, "NSSetUpdate:  host  [%s] not in table" ,  (const char *)   dns_rem[i].fqdn );
-                                 SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name_rem , REASON_MSG_DNS_NAME_NOTEXIST  ,  dns_rem[i].fqdn , CLIENT_LANG() );
+                                 SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name_rem , REASON_MSG_DNS_NAME_NOTEXIST  ,  dns_rem[i].fqdn , GetRegistrarLang( clientID ) );
                              }
                        }
                   }
@@ -3193,7 +3358,7 @@ if( DBsql.OpenDatabase( database ) )
 
                                                     for( i = 0; i < tech_rem.length(); i++ ) // vsecny REM tech kontakty jsou chyba
                                                       {
-                                                       SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_tech_rem , REASON_MSG_CAN_NOT_REMOVE_TECH ,   tech_rem[i] , CLIENT_LANG() );
+                                                       SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_tech_rem , REASON_MSG_CAN_NOT_REMOVE_TECH ,   tech_rem[i] , GetRegistrarLang( clientID ) );
                                                       }
                                                  }
 
@@ -3269,7 +3434,7 @@ if( DBsql.OpenDatabase( database ) )
                                                     for( i = 0; i < dns_rem.length(); i++ )
                                                       {
                                                       // vechny REM DNS hosy jsou chyba
-                                                       SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_dns_name_rem , REASON_MSG_CAN_NOT_REM_DNS  , dns_rem[i].fqdn , CLIENT_LANG() );
+                                                       SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_dns_name_rem , REASON_MSG_CAN_NOT_REM_DNS  , dns_rem[i].fqdn , GetRegistrarLang( clientID ) );
                                                       }
                                                   }
 
@@ -3278,7 +3443,7 @@ if( DBsql.OpenDatabase( database ) )
                                                     for( i = 0; i < dns_add.length(); i++ )
                                                       {
                                                         // vsechny ADD dns host jsou chyba
-                                                       SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_dns_name_add , REASON_MSG_CAN_NOT_ADD_DNS  , dns_add[i].fqdn , CLIENT_LANG() );
+                                                       SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_dns_name_add , REASON_MSG_CAN_NOT_ADD_DNS  , dns_add[i].fqdn , GetRegistrarLang( clientID ) );
                                                       }
                                                   }
  
@@ -3300,7 +3465,7 @@ if( DBsql.OpenDatabase( database ) )
         ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) ); 
       }
 
-    ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+    ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
     DBsql.Disconnect();
   }
@@ -3359,17 +3524,19 @@ LOG( NOTICE_LOG ,  "DomainInfo: clientID -> %d clTRID [%s] fqdn  [%s] " , (int )
 
 d->ext.length(0); // extension
 
+if(  ( regID = GetRegistrarID( clientID ) ) )
+
 if( DBsql.OpenDatabase( database ) )
 {
 
-if( ( regID =  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) )
+if( (  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) )
  {
-
+ 
 
 
       // preved fqd na  mala pismena a otestuj to
        // spatny format navu domeny
-    if( ( zone = getFQDN( FQDN , fqdn ) ) <= 0 ) SetReasonDomainFQDN( ret , fqdn , zone , CLIENT_LANG() );
+    if( ( zone = getFQDN( FQDN , fqdn ) ) <= 0 ) SetReasonDomainFQDN( ret , fqdn , zone , GetRegistrarLang( clientID ) );
    else
    if( DBsql.BeginTransaction() )      // zahajeni transakce
     {
@@ -3486,7 +3653,7 @@ if( ( regID =  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) 
    ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode  ) );
 
  }
-      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
 DBsql.Disconnect();
 }
@@ -3527,17 +3694,19 @@ ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int ) clientID , clTRID  , fqdn );
 
+if(  (regID = GetRegistrarID( clientID ) ) )
 
   if( DBsql.OpenDatabase( database ) )
     {
 
-      if( ( regID = DBsql.BeginAction( clientID, EPP_DomainDelete,  clTRID  , XML)  ) )
+      if( (  DBsql.BeginAction( clientID, EPP_DomainDelete,  clTRID  , XML)  ) )
         {
 
+ 
 
       // preved fqd na  mala pismena a otestuj to
        // spatny format navu domeny
-       if( ( zone = getFQDN( FQDN , fqdn ) ) <= 0 )    SetReasonDomainFQDN( ret , fqdn , zone , CLIENT_LANG() );
+       if( ( zone = getFQDN( FQDN , fqdn ) ) <= 0 )    SetReasonDomainFQDN( ret , fqdn , zone , GetRegistrarLang( clientID ) );
         else
          {
 
@@ -3584,7 +3753,7 @@ LOG( NOTICE_LOG ,  "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int
           ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
         }
 
-      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
       DBsql.Disconnect();
     }
@@ -3641,14 +3810,17 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 // parse extension
 GetValExpDateFromExtension( valexpiryDate , ext );
 
+if(  ( regID = GetRegistrarID( clientID ) ) )
+
 if( DBsql.OpenDatabase( database ) )
   {
 
-   if( ( regID = DBsql.BeginAction( clientID, EPP_DomainUpdate, clTRID , XML )  ) )
+   if( (  DBsql.BeginAction( clientID, EPP_DomainUpdate, clTRID , XML )  ) )
      {
+ 
 
       // preved fqd na  mala pismena a otestuj to
-       if( ( zone = getFQDN( FQDN , fqdn ) ) <= 0 )   SetReasonDomainFQDN( ret , fqdn , zone , CLIENT_LANG() );
+       if( ( zone = getFQDN( FQDN , fqdn ) ) <= 0 )   SetReasonDomainFQDN( ret , fqdn , zone , GetRegistrarLang( clientID ) );
         else if(  DBsql.TestRegistrarZone( regID , zone ) == false )
              {
                LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
@@ -3675,9 +3847,9 @@ if( DBsql.OpenDatabase( database ) )
                             for( i = 0; i < admin_add.length(); i++ )
                                {
                                     if( ( adminid = DBsql.GetContactID( admin_add[i] ) ) <= 0 ) 
-                                          SetReasonDomainAdminADD( ret , admin_add[i] , adminid ,  CLIENT_LANG()  );
+                                          SetReasonDomainAdminADD( ret , admin_add[i] , adminid ,  GetRegistrarLang( clientID )  );
                                     else  if(  DBsql.CheckContactMap( "domain", id, adminid ) )
-                                              SetReasonDomainAdminExistMap(  ret , admin_add[i]  , CLIENT_LANG() );
+                                              SetReasonDomainAdminExistMap(  ret , admin_add[i]  , GetRegistrarLang( clientID ) );
                                }
 
 
@@ -3685,16 +3857,16 @@ if( DBsql.OpenDatabase( database ) )
                             for( i = 0; i < admin_rem.length(); i++ )
                                {
                                     if( ( adminid = DBsql.GetContactID( admin_rem[i] ) ) <= 0 )
-                                          SetReasonDomainAdminREM( ret , admin_rem[i] , adminid ,  CLIENT_LANG()  );
+                                          SetReasonDomainAdminREM( ret , admin_rem[i] , adminid ,  GetRegistrarLang( clientID )  );
                                     else  if(  !DBsql.CheckContactMap( "domain", id, adminid ) )
-                                              SetReasonDomainAdminNotExistMap(  ret , admin_rem[i]  , CLIENT_LANG() );
+                                              SetReasonDomainAdminNotExistMap(  ret , admin_rem[i]  , GetRegistrarLang( clientID ) );
                                 }
 
 
 
                             if( strlen( nsset_chg ) == 0  ) nssetid = 0;    // nemenim nsset;
                             else if( ( nssetid = DBsql.GetNSSetID( nsset_chg ) ) <= 0 )
-                                     SetReasonDomainNSSet( ret , nsset_chg , nssetid , CLIENT_LANG() );
+                                     SetReasonDomainNSSet( ret , nsset_chg , nssetid , GetRegistrarLang( clientID ) );
  
 
 
@@ -3702,7 +3874,7 @@ if( DBsql.OpenDatabase( database ) )
                          //  registrant
                            if( strlen( registrant_chg  ) == 0  )  contactid = 0;  // nemenim vlastnika
                            else  if( (  contactid =   DBsql.GetContactID(  registrant_chg ) ) <= 0 ) 
-                                     SetReasonDomainRegistrant( ret , registrant_chg , contactid , CLIENT_LANG() );
+                                     SetReasonDomainRegistrant( ret , registrant_chg , contactid , GetRegistrarLang( clientID ) );
 
 
                           if( strlen( valexpiryDate ) )
@@ -3713,7 +3885,7 @@ if( DBsql.OpenDatabase( database ) )
                                  if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) , DefaultValExpInterval() , id  ) ==  false ) // test validace expirace
                                    {
                                       LOG( WARNING_LOG, "DomainUpdate:  validity exp date is not valid %s" , valexpiryDate  );
-                                      SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , CLIENT_LANG() );
+                                      SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , GetRegistrarLang( clientID ) );
                                     }
                                  
                                }
@@ -3721,7 +3893,7 @@ if( DBsql.OpenDatabase( database ) )
                                 {
 
                                     LOG( WARNING_LOG, "DomainUpdate: can not  validity exp date %s"   , valexpiryDate );
-                                    SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::domain_ext_valDate ,  REASON_MSG_VALEXPDATE_NOT_USED  , valexpiryDate  , CLIENT_LANG() );
+                                    SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::domain_ext_valDate ,  REASON_MSG_VALEXPDATE_NOT_USED  , valexpiryDate  , GetRegistrarLang( clientID ) );
 
                                 }            
                              }
@@ -3805,7 +3977,7 @@ if( DBsql.OpenDatabase( database ) )
           ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );                                        
         }
 
-      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
       DBsql.Disconnect();
     }
@@ -3882,14 +4054,17 @@ LOG( NOTICE_LOG, "DomainCreate: period count %d unit %d period_count %d string [
 // parse extension
 GetValExpDateFromExtension( valexpiryDate , ext );
 
+if(  ( regID = GetRegistrarID( clientID ) ) )
+
 if( DBsql.OpenDatabase( database ) )
 {
 
- if( (  regID =  DBsql.BeginAction( clientID, EPP_DomainCreate, clTRID , XML )  ))
+ if( (  DBsql.BeginAction( clientID, EPP_DomainCreate, clTRID , XML )  ))
    {
 
+ 
        // preved fqd na  mala pismena a otestuj to
-    if(  ( zone = getFQDN( FQDN , fqdn ) ) <= 0  )  SetReasonDomainFQDN( ret , fqdn , zone , CLIENT_LANG() );
+    if(  ( zone = getFQDN( FQDN , fqdn ) ) <= 0  )  SetReasonDomainFQDN( ret , fqdn , zone , GetRegistrarLang( clientID ) );
     else 
      if( DBsql.BeginTransaction() )
       {
@@ -3903,20 +4078,20 @@ if( DBsql.OpenDatabase( database ) )
                    LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
                    ret->errCode = COMMAND_OBJECT_EXIST;      // je uz zalozena
                   }
-                 else if( DBsql.TestDomainFQDNHistory( FQDN , DefaultDomainFQDNPeriod() ) ) SetReasonDomainHistory( ret , fqdn , CLIENT_LANG());
+                 else if( DBsql.TestDomainFQDNHistory( FQDN , DefaultDomainFQDNPeriod() ) ) SetReasonDomainHistory( ret , fqdn , GetRegistrarLang( clientID ));
                      else
                       {
 
     
                       if( strlen( nsset) == 0 ) nssetid = 0; // lze vytvorit domenu bez nssetu
-                      else  if( ( nssetid = DBsql.GetNSSetID(  nsset ) ) <= 0  ) SetReasonDomainNSSet( ret , nsset , nssetid , CLIENT_LANG() );
+                      else  if( ( nssetid = DBsql.GetNSSetID(  nsset ) ) <= 0  ) SetReasonDomainNSSet( ret , nsset , nssetid , GetRegistrarLang( clientID ) );
                     
                   
 
               
                        //  registrant              
                       if( (  contactid =   DBsql.GetContactID( Registrant ) ) <= 0 )
-                               SetReasonDomainRegistrant( ret , Registrant , contactid , CLIENT_LANG() );
+                               SetReasonDomainRegistrant( ret , Registrant , contactid , GetRegistrarLang( clientID ) );
 
 
 
@@ -3933,11 +4108,11 @@ if( DBsql.OpenDatabase( database ) )
               {
                case 2:
                   LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period_count ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
-                  SetErrorReason( ret , COMMAND_PARAMETR_RANGE_ERROR  , ccReg::domain_period , REASON_MSG_PERIOD_RANGE ,  periodStr , CLIENT_LANG() );
+                  SetErrorReason( ret , COMMAND_PARAMETR_RANGE_ERROR  , ccReg::domain_period , REASON_MSG_PERIOD_RANGE ,  periodStr , GetRegistrarLang( clientID ) );
                   break;
                case 1:
                   LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period_count  ,  GetZoneExPeriodMin( zone )   );
-                  SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR  , ccReg::domain_period , REASON_MSG_PERIOD_POLICY ,  periodStr , CLIENT_LANG() );
+                  SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR  , ccReg::domain_period , REASON_MSG_PERIOD_POLICY ,  periodStr , GetRegistrarLang( clientID ) );
                   break;
 
               }
@@ -3957,7 +4132,7 @@ if( DBsql.OpenDatabase( database ) )
                   ret->errors[seq].code = ccReg::domain_ext_valDate;
 
                   ret->errors[seq].value = CORBA::string_dup( "not valExpDate"  ); // ??? TODO
-                  ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(REASON_MSG_VALEXPDATE_REQUIRED  , CLIENT_LANG() ) ); // TODO
+                  ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(REASON_MSG_VALEXPDATE_REQUIRED  , GetRegistrarLang( clientID ) ) ); // TODO
 
                            */
                       }
@@ -3971,14 +4146,14 @@ if( DBsql.OpenDatabase( database ) )
                                  if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) , DefaultValExpInterval() , 0  ) ==  false ) // test validace expirace
                                    {
                                       LOG( WARNING_LOG, "Validity exp date is not valid %s" , valexpiryDate  );
-                                      SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , CLIENT_LANG() );
+                                      SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , GetRegistrarLang( clientID ) );
                                     }
                                  
                                }
                               else
                                 {
                                     LOG( WARNING_LOG, "Validity exp date %s not user"   , valexpiryDate );
-                                    SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::domain_ext_valDate ,  REASON_MSG_VALEXPDATE_NOT_USED  , valexpiryDate  , CLIENT_LANG() );
+                                    SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::domain_ext_valDate ,  REASON_MSG_VALEXPDATE_NOT_USED  , valexpiryDate  , GetRegistrarLang( clientID ) );
 
                                 }
              
@@ -3990,7 +4165,7 @@ if( DBsql.OpenDatabase( database ) )
                             for( i = 0; i < admin.length(); i++ )
                                {
                                     if( ( adminid = DBsql.GetContactID( admin[i] ) ) <= 0 )
-                                            SetReasonDomainAdmin( ret , admin[i] , adminid ,  CLIENT_LANG()  );
+                                            SetReasonDomainAdmin( ret , admin[i] , adminid ,  GetRegistrarLang( clientID )  );
                                }
 
 
@@ -4074,7 +4249,7 @@ if( DBsql.OpenDatabase( database ) )
      }
 
 
- ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+ ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
  DBsql.Disconnect();
 }
@@ -4155,18 +4330,20 @@ LOG( NOTICE_LOG, "DomainRenew: period count %d unit %d period_count %d string [%
 GetValExpDateFromExtension( valexpiryDate , ext );
  
 
+if(  ( regID = GetRegistrarID( clientID ) ) )
 
   if( DBsql.OpenDatabase( database ) )
     {
 
 
-      if( ( regID = DBsql.BeginAction( clientID, EPP_DomainRenew,  clTRID , XML )  ) )
+      if( ( DBsql.BeginAction( clientID, EPP_DomainRenew,  clTRID , XML )  ) )
         {
 
 
+ 
 
       // preved fqd na  mala pismena a otestuj to
-        if(  ( zone = getFQDN( FQDN , fqdn ) ) <= 0  )   SetReasonDomainFQDN( ret , fqdn , zone , CLIENT_LANG() );
+        if(  ( zone = getFQDN( FQDN , fqdn ) ) <= 0  )   SetReasonDomainFQDN( ret , fqdn , zone , GetRegistrarLang( clientID ) );
         else
           // zahaj transakci
         if( DBsql.BeginTransaction() )
@@ -4191,7 +4368,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
               if( DBsql.TestExpDate( curExpDate  , id ) == false  )
                 {
                   LOG( WARNING_LOG, "curExpDate is not same as ExDate" );
-                  SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_curExpDate , REASON_MSG_CUREXPDATE_NOT_EXPDATE ,  curExpDate , CLIENT_LANG() );
+                  SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_curExpDate , REASON_MSG_CUREXPDATE_NOT_EXPDATE ,  curExpDate , GetRegistrarLang( clientID ) );
                 }
   
              // nastaveni defaultni periody           
@@ -4208,11 +4385,11 @@ GetValExpDateFromExtension( valexpiryDate , ext );
               {
                case 2:
                   LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period_count ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
-                  SetErrorReason( ret , COMMAND_PARAMETR_RANGE_ERROR  , ccReg::domain_period , REASON_MSG_PERIOD_RANGE ,  periodStr , CLIENT_LANG() );
+                  SetErrorReason( ret , COMMAND_PARAMETR_RANGE_ERROR  , ccReg::domain_period , REASON_MSG_PERIOD_RANGE ,  periodStr , GetRegistrarLang( clientID ) );
                   break;
                case 1:
                   LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period_count  ,  GetZoneExPeriodMin( zone )   );
-                  SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR  , ccReg::domain_period , REASON_MSG_PERIOD_POLICY ,  periodStr , CLIENT_LANG() );
+                  SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR  , ccReg::domain_period , REASON_MSG_PERIOD_POLICY ,  periodStr , GetRegistrarLang( clientID ) );
                   break;
                default:
                        // vypocet ExDate datum expirace
@@ -4220,7 +4397,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                        else
                          {
                              LOG( WARNING_LOG, "period %d GetExpDate out of range" , period_count );
-                             SetErrorReason( ret , COMMAND_PARAMETR_RANGE_ERROR , ccReg::domain_period , REASON_MSG_PERIOD_RANGE ,  periodStr , CLIENT_LANG() );
+                             SetErrorReason( ret , COMMAND_PARAMETR_RANGE_ERROR , ccReg::domain_period , REASON_MSG_PERIOD_RANGE ,  periodStr , GetRegistrarLang( clientID ) );
                           }
                   break; 
 
@@ -4235,7 +4412,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                  if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) , DefaultValExpInterval() , id  ) ==  false ) // test validace expirace
                                    {
                                       LOG( WARNING_LOG, "Validity exp date is not valid %s" , valexpiryDate  );
-                                      SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , CLIENT_LANG() );
+                                      SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , GetRegistrarLang( clientID ) );
                                     }
                                  
                                }
@@ -4243,7 +4420,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
                                 {
 
                                     LOG( WARNING_LOG, "Can not  validity exp date %s"   , valexpiryDate );
-                                    SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::domain_ext_valDate ,  REASON_MSG_VALEXPDATE_NOT_USED  , valexpiryDate  , CLIENT_LANG() );
+                                    SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::domain_ext_valDate ,  REASON_MSG_VALEXPDATE_NOT_USED  , valexpiryDate  , GetRegistrarLang( clientID ) );
 
                                 }            
                              }
@@ -4315,7 +4492,7 @@ GetValExpDateFromExtension( valexpiryDate , ext );
           ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
         }
 
-      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
       DBsql.Disconnect();
     }
@@ -4351,10 +4528,12 @@ list = new ccReg::Lists;
 
 LOG( NOTICE_LOG ,  "LIST %d  clientID -> %d clTRID [%s] " , act  , (int )  clientID , clTRID );
 
+if(  ( regID = GetRegistrarID( clientID ) ) )
+
 if( DBsql.OpenDatabase( database ) )
 {
 
-  if( ( regID =  DBsql.BeginAction( clientID , act ,  clTRID , XML  )  ) )
+  if( (   DBsql.BeginAction( clientID , act ,  clTRID , XML  )  ) )
   {
 
   // definovani dles typu
@@ -4375,8 +4554,8 @@ if( DBsql.OpenDatabase( database ) )
 
 
 
-    // TODO LIST podle clienat OBJEKTU
-   sprintf( sqlString , "SELECT name FROM  Object WHERE clid=%d and type=%d;" ,  regID , typ );
+    // TODO LIST podle clienat OBJEKTU predelat na Object_registry 
+//    sprintf( sqlString , "SELECT name FROM  Object_registry WHERE clid=%d and type=%d;" ,  regID , typ );
 
 
    if( DBsql.ExecSelect( sqlString) )
@@ -4403,7 +4582,7 @@ if( DBsql.OpenDatabase( database ) )
       ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) ) ;
   }
 
-      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
 DBsql.Disconnect();
 }
@@ -4451,24 +4630,27 @@ ret->errCode =0 ; // default
 
 LOG( NOTICE_LOG ,  "ObjectSendAuthInfo %d  clientID -> %d clTRID [%s] " , act  , (int )  clientID , clTRID );
 
+if(  ( regID = GetRegistrarID( clientID ) ) )
+
 if( DBsql.OpenDatabase( database ) )
 {
 
-  if( ( regID =  DBsql.BeginAction( clientID , act ,  clTRID , XML  )  ) )
+  if( (   DBsql.BeginAction( clientID , act ,  clTRID , XML  )  ) )
   {
+
 
    switch( act )
    {
    case EPP_ContactSendAuthInfo:
-       if( (id = DBsql.GetContactID( name ) ) <= 0 ) SetReasonContactHandle( ret , name , id , CLIENT_LANG() );
+       if( (id = DBsql.GetContactID( name ) ) <= 0 ) SetReasonContactHandle( ret , name , id , GetRegistrarLang( clientID ) );
        break;
 
    case EPP_NSSetSendAuthInfo:
-       if( (id = DBsql.GetNSSetID( name ) ) <= 0 ) SetReasonNSSetHandle( ret , name , id , CLIENT_LANG() );
+       if( (id = DBsql.GetNSSetID( name ) ) <= 0 ) SetReasonNSSetHandle( ret , name , id , GetRegistrarLang( clientID ) );
        break;
    case EPP_DomainSendAuthInfo:
       // preved fqd na  mala pismena a otestuj to
-       if(  ( zone = getFQDN( FQDN , name ) ) <= 0  )  SetReasonDomainFQDN( ret , name , zone , CLIENT_LANG() );
+       if(  ( zone = getFQDN( FQDN , name ) ) <= 0  )  SetReasonDomainFQDN( ret , name , zone , GetRegistrarLang( clientID ) );
        else if( ( id=DBsql.GetDomainID( FQDN ,GetZoneEnum( zone ) )  ) == 0 )   ret->errCode = COMMAND_OBJECT_NOT_EXIST; ; // ziskej ID domeny  pokue existuje
        break;
 
@@ -4497,7 +4679,7 @@ if( DBsql.OpenDatabase( database ) )
       ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) ) ;
   }
 
-ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , CLIENT_LANG() )  );
+ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
 DBsql.Disconnect();
 }
