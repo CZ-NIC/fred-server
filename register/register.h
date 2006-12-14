@@ -25,7 +25,7 @@ namespace Register
     HT_NSSET, ///< Handle is nsset
     HT_REGISTRAR, ///< Handle is registrar
     HT_OTHER ///< Invalid handle    
-  }
+  };
   /// classification for register object handle 
   enum CheckHandleClass 
   {
@@ -42,6 +42,7 @@ namespace Register
   {
     std::string newHandle; ///< transformed handle if appropriate
     CheckHandleClass handleClass; ///< result of handle classification
+    HandleType type; ///< type of handle
   };
   /// structure with country description
   struct CountryDesc
