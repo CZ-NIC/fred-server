@@ -25,6 +25,7 @@ int main(int argc, char** argv)
   try {
     // database connection settings
     char db[256];
+
     Conf config; // READ CONFIG  file
     // read config file
     if (!config.ReadConfigFile(CONFIG_FILE)) {
@@ -68,6 +69,11 @@ int main(int argc, char** argv)
     
     MailerManager mm(&ns);
     ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(&mm);
+
+    // create session TODO config
+    std::cerr << "CreateSession: max "  << config.GetSessionMax()  << " timeout " <<  config.GetSessionWait() <<  std::endl;
+    myccReg_EPP_i->CreateSession( config.GetSessionMax() , config.GetSessionWait() );
+
 
     ccReg::timestamp_var ts;
     std::cerr << "version: " << myccReg_EPP_i->version(ts) << std::endl;

@@ -17,15 +17,18 @@
 #define KEY_log_level   7
 #define KEY_log_local   8
 #define KEY_nameservice 9
-
-#define MAX_KEYS  9 
+#define KEY_session_max  10
+#define KEY_session_wait  11
+#define MAX_KEYS  11 
 
 #include <string>
 
 class Conf {
 public:
 
-Conf() { port[0]=0; host[0] = 0 ; user[0]=0 ; password[0] = 0 ; host[0]=0; log_level = 0 ; conninfo[0] =0 ; log_local=0; }; // empty
+Conf() { port[0]=0; host[0] = 0 ; user[0]=0 ; password[0] = 0 ; host[0]=0; log_level = 0 ; conninfo[0] =0 ; log_local=0; 
+// default hodnoty bez udani v konfigu
+session_max=20 ; session_wait=300;}; // empty
 ~Conf(){}; // empty
 
 bool  ReadConfigFile(const char *filename )
@@ -44,6 +47,8 @@ bool  ReadConfigFileXML(const char *filename );
 bool  ReadConfigFileTXT(const char *filename );
 
 
+int GetSessionMax() { return  session_max; } ;
+int GetSessionWait() { return  session_wait; } ;
 
 char * GetDBhost(){ if( host[0] == 0 ) return NULL ; else  return host; };
 char * GetDBname(){ if( dbname[0] == 0 ) return NULL ; else  return dbname; };
@@ -86,6 +91,7 @@ switch( log_local )
 int GetLocal(char *value);
 int GetLevel(char *value);
 
+
 private:
 char dbname[32];
 char user[32];
@@ -95,6 +101,8 @@ char port[16];
 char conninfo[256];
 int log_level;
 int log_local;
+int session_max;
+int session_wait;
 std::string nameServiceIOR;
 };
 

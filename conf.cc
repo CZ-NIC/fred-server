@@ -170,7 +170,7 @@ FILE *f;
 char buf[MAX_LINE];
 char keys[MAX_KEYS][KEY_MAX] = { 
   "dbname" , "user" , "password" , "host" , "port" ,
-  "log_mask" ,  "log_level" , "log_local", "nameservice" };
+  "log_mask" ,  "log_level" , "log_local", "nameservice"  , "session_max" , "session_wait" };
 int key;
 char keyname[KEY_MAX];
 char value[MAX_LINE];
@@ -237,8 +237,12 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
                 case KEY_port:
                            strcpy( port ,  value );
                            break; 
-                case KEY_log_mask: // TODO
-                           break; 
+                case KEY_session_wait:
+                           session_wait = atoi(  value );
+                           break;
+                case KEY_session_max:
+                           session_max = atoi(  value );
+                           break;
                 case KEY_log_level:
                            log_level = GetLevel(value);
                            break; 
