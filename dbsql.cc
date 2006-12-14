@@ -237,13 +237,10 @@ if( clientID == 0 ) { actionID = 0 ; loginID =  0 ;  return 1;  }
 // actionID pro logovani
 actionID = GetSequenceID("action");
 loginID = clientID; // id klienta
-registrarID=0;
 historyID = 0 ; // history ID je nula
 
 if( actionID ) 
   {
-   //  zjisti id prihlaseneho registratora z tabulky Login
-/// uklada se do session   if( clientID ) registrarID= GetNumericFromTable( "LOGIN" , "registrarid" , "id" , clientID ); ;
 
   // zapis do action tabulky
   INSERT( "ACTION" );
@@ -304,7 +301,6 @@ WHEREID( actionID );
 // update tabulky
 id  =  actionID;
 actionID = 0 ; 
-registrarID=0;
 LOG( SQL_LOG ,  "EndAction svrTRID: %s" ,  svrTRID );
 
 if( EXEC() ) return   svrTRID;

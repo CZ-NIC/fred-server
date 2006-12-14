@@ -1115,11 +1115,9 @@ count = 0;
 newmsgID =  CORBA::string_dup( "");
 
 LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %s", (int) clientID, clTRID,    msgID );
+if(  ( regID = GetRegistrarID( clientID ) ) )
   if( DBsql.OpenDatabase( database ) )
     {
-
-      // get  registrator ID
-       regID = DBsql.GetLoginRegistrarID( clientID );
 
 
       if( DBsql.BeginAction( clientID, EPP_PollAcknowledgement, clTRID , XML ) )
@@ -1133,29 +1131,26 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %s", 
               rows = DBsql.GetSelectRows();
               DBsql.FreeSelect();
             }
-          else
-            ret->errCode = COMMAND_FAILED;
+          else  ret->errCode = COMMAND_FAILED;
 
-              if( rows == 0 )
-                {
+          if( rows == 0 )
+            {
                   LOG( ERROR_LOG, "unknown msgID %s",   msgID );
                   SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::poll_msgID , REASON_MSG_UNKNOW_MSGID , msgID , GetRegistrarLang( clientID ) );
-                }
-          else
-
-
-          if( rows == 1 )       // pokud tam ta zprava existuje
-            {
+            }
+          else  if( rows == 1 )       // pokud tam ta zprava existuje
+              {
               // oznac zpravu jako prectenou
               sprintf( sqlString, "UPDATE MESSAGE SET seen='t' WHERE id=%s AND clID=%d;",  msgID, regID );
 
+                 
               if( DBsql.ExecSQL( sqlString ) )
                 {
+                   ret->errCode = COMMAND_OK;     
                   // zjisteni dalsi ID zpravy ve fronte
-                  sprintf( sqlString, "SELECT id  FROM MESSAGE  WHERE clID=%d AND seen='f' AND exDate > 'now()' ;", regID );
+                  sprintf( sqlString, "SELECT id FROM MESSAGE  WHERE clID=%d AND seen='f' AND exDate > 'now()' ;", regID );
                   if( DBsql.ExecSelect( sqlString ) )
                     {
-                      ret->errCode = COMMAND_OK; // prikaz splnen
                       rows = DBsql.GetSelectRows();   // pocet zprav
                       if( rows > 0 )    // pokud jsou nejake zpravy ve fronte
                         {
@@ -1163,26 +1158,24 @@ LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %s", 
                           newmsgID =   CORBA::string_dup(  DBsql.GetFieldValue( 0, 0 ) ) ;
                           LOG( NOTICE_LOG, "PollAcknowledgement: newmsgID -> %s count -> %d", (const char *) newmsgID, count );
                         }
-
+                       else 
+                       {
+                        count = 0;
+                       newmsgID =   CORBA::string_dup( "" ); // zadne dalsi zpravy
+                        }
                       DBsql.FreeSelect();
                     }
-                  else
-                    ret->errCode = COMMAND_FAILED;
 
-                }
-              else
-                ret->errCode = COMMAND_FAILED;
+                }             
+
 
             }
-          else
-            ret->errCode = COMMAND_FAILED;
+
           // zapis na konec action
           ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
         }
-      else
-        ret->errCode = COMMAND_FAILED;
 
-      ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
+       ret->errMsg = CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
 
       DBsql.Disconnect();
     }

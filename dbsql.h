@@ -149,8 +149,6 @@ int GetNSSetHosts( int nssetID );
 int GetNSSetContacts( int nssetID );
 
 
-// vyssi funkce na vraceni value
-int GetLoginRegistrarID(int id) { return  registrarID; } 
 
 int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "id" , "handle" , handle ); };
 char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "handle" , "id" , id ); };
@@ -278,8 +276,6 @@ char dtStr[32]; //  pro datum
 int actionID; // id tabulky akce
 int historyID; // id tabulky historie
 int loginID; // id klienta
-// int clientLang;
-int registrarID;
 };
 
 #endif
