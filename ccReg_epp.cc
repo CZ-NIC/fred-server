@@ -72,6 +72,7 @@ bool ccReg_EPP_i::LoginSession( int loginID , int registrarID , int language )
 {
 int i;
 
+GarbageSesion();
 
 if( numSession < maxSession )
 {
@@ -103,6 +104,7 @@ bool  ccReg_EPP_i::LogoutSession( int loginID )
 {
 int i;
 
+GarbageSesion();
 
 for( i = 0 ; i < maxSession  ; i ++ )
 {
@@ -123,24 +125,22 @@ LOG( ALERT_LOG , "SESSION LOGOUT UNKNOW loginID %d" , loginID );
 return false;
 }
 
-int  ccReg_EPP_i::GetRegistrarID( int clientID )
+void ccReg_EPP_i::GarbageSesion()
 {
-int regID=0;
-int i , num=0;
+int i ;
 long long  t;
 
-LOG( DEBUG_LOG , "SESSION GetRegistrarID %d" ,   clientID );
-
-  t = ( long long )  time(NULL);
+LOG( DEBUG_LOG , "SESSION GARBAGE" );
+t = ( long long )  time(NULL);
 
 for( i = 0 ; i < maxSession ; i ++ )
 {
 
   if( session[i].clientID )
-  {    
+  {
    LOG( DEBUG_LOG , "SESSION  maxWait %lld time %lld timestamp session[%d].timestamp  %lld" ,   maxWaitClient , t , i ,  session[i].timestamp );
 
-   // garbage collector 
+   // garbage collector
    if(  t >  session[i].timestamp  +  maxWaitClient )
      {
           LOG( ERROR_LOG , "SESSION[%d] TIMEOUT %lld GARBAGE" ,  i ,  session[i].timestamp);
@@ -150,22 +150,35 @@ for( i = 0 ; i < maxSession ; i ++ )
           session[i].timestamp=0;
           numSession--;
      }
+  }
+
+}
+
+}
+
+
+int  ccReg_EPP_i::GetRegistrarID( int clientID )
+{
+int regID=0;
+int i ;
+
+LOG( DEBUG_LOG , "SESSION GetRegistrarID %d" ,   clientID );
+
+
+for( i = 0 ; i < maxSession ; i ++ )
+{
 
    if( session[i].clientID==clientID )
      {
-           session[i].timestamp=t;
+           session[i].timestamp=  ( long long )  time(NULL);
            LOG( DEBUG_LOG , "SESSION[%d] loginID %d -> regID %d" , i ,  clientID , session[i].registrarID );
            LOG( DEBUG_LOG , "SESSION[%d] TIMESTMAP %lld" ,   i ,  session[i].timestamp );
            regID = session[i].registrarID ; 
       }
 
-
-   }
-
+  
 }
 
-
-numSession = numSession - num ; // odectene session
 return regID;
 }
 

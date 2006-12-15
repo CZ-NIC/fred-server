@@ -62,8 +62,9 @@ public:
   bool LoginSession( int loginID , int registrarID , int language );
   //  odhlaseni
   bool LogoutSession( int loginID );
+  void GarbageSesion(); // procistovani session pro vysici klienty
   // vraci GetRegistrarID pokud nevyprsi timeout
-  // zaroven procistovani session pro dlouho vysici klienty
+
   int GetRegistrarID( int clientID );
   // vraci jazyk
   int GetRegistrarLang( int clientID );
