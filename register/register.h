@@ -16,9 +16,7 @@ namespace Register
   /// Deducted type of checked handle
   enum HandleType 
   {
-    HT_ENUM_BLOCK, ///< Handle is block number
     HT_ENUM_NUMBER, ///< Handle is number
-    HT_ENUM_DOMAIN_BLOCK, ///< Handle is block enum domain
     HT_ENUM_DOMAIN, ///< Handle is enum domain
     HT_DOMAIN, ///< Handle is non enum domain
     HT_CONTACT, ///< Handle is contact
@@ -29,21 +27,24 @@ namespace Register
   /// classification for register object handle 
   enum CheckHandleClass 
   {
-    CH_UNREGISTRABLE, ///< is outside of register
-    CH_REGISTRED, ///<  is registred
-    CH_REGISTRED_UNDER, ///< is registred under super domain
-    CH_REGISTRED_PART, /// < has registred part
-    CH_PART, ///< is part of potentialy registrable handle
-    CH_LONG, ///< Handle is part of potentialy registrable handle 
+    CH_UNREGISTRABLE, ///< Handle is outside of register
+    CH_UNREGISTRABLE_LONG, ///< Handle is too long
+    CH_REGISTRED, ///< Handle is registred
+    CH_REGISTRED_PARENT, ///< Handle is registred under super domain
+    CH_REGISTRED_CHILD, /// < Handle has registred subdomain
+    CH_PROTECTED, //< Handle is in protected period or on blacklist
     CH_FREE ///< Handle is free for registration or has unknown stattus
   };
-  /// return type for checkHandle
+  /// one classification record 
   struct CheckHandle 
   {
     std::string newHandle; ///< transformed handle if appropriate
+    std::string conflictHandle; ///< handle that is in conflict
     CheckHandleClass handleClass; ///< result of handle classification
     HandleType type; ///< type of handle
   };
+  /// return type for checkHandle, list of classification records
+  typedef std::vector<CheckHandle> CheckHandleList;
   /// structure with country description
   struct CountryDesc
   {
@@ -58,7 +59,7 @@ namespace Register
     virtual ~Manager() {}
     /// classify input handle according register rules 
     virtual void checkHandle(
-      const std::string& handle, CheckHandle& ch
+      const std::string& handle, CheckHandleList& ch
     ) const = 0;
     /// return domain manager
     virtual Domain::Manager *getDomainManager() = 0;

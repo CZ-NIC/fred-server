@@ -87,10 +87,11 @@ int main()
   std::string input;
   std::cout << "Domain: ";
   std::cin >> input;
-  Register::CheckHandle ch;
-  m->checkHandle(input,ch);
-  std::cout << "Result of checkHandle: " << ch.handleClass 
-            << " NewHandle: " << ch.newHandle << std::endl;
+  Register::CheckHandleList chl;
+  m->checkHandle(input,chl);
+  if (chl.size() < 1) return -1;
+  std::cout << "Result of checkHandle: " << chl[0].handleClass 
+            << " NewHandle: " << chl[0].newHandle << std::endl;
   Register::Domain::CheckAvailType ca = dm->checkAvail(input);
   std::cout << "Result of checkAvail: " << ca << std::endl;
 

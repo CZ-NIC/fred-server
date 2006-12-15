@@ -204,7 +204,7 @@ namespace Register
         std::stringstream sql;
         if (!id) {
           // find actual object version to link to history
-          sql << "SELECT historyid FROM object WHERE id=" << objectId;
+          sql << "SELECT historyid FROM object_registry WHERE id=" << objectId;
           // TODO: proper handling of this situation
           if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
           objectId = STR_TO_ID(db->GetFieldValue(0,0));
@@ -349,13 +349,14 @@ namespace Register
             << "air.create_time,air.resolve_time,air.reason,"
             << "air.email_to_answer,air.answer_email_id,"
             << "a.id,r.handle,a.servertrid "
-            << "FROM object_history oh, auth_info_requests air "
+            << "FROM object_registry or, object_history oh, " 
+            << "auth_info_requests air "
             << "LEFT JOIN action a ON (air.epp_action_id=a.id) "
             << "LEFT JOIN login l ON (a.clientid=l.id) "
             << "LEFT JOIN registrar r ON (l.registrarid=r.id) "
-            << "WHERE oh.historyid=air.object_id ";
+            << "WHERE oh.historyid=air.object_id AND or.id=oh.id ";
         SQL_ID_FILTER(sql,"air.id",idFilter);
-        SQL_HANDLE_FILTER(sql,"oh.name",handleFilter);
+        SQL_HANDLE_FILTER(sql,"or.name",handleFilter);
         SQL_HANDLE_FILTER(sql,"air.email_to_answer",emailFilter);
         SQL_HANDLE_FILTER(sql,"air.reason",reasonFilter);
         SQL_HANDLE_FILTER(sql,"a.servertrid",svTRIDFilter);        

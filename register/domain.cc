@@ -9,7 +9,6 @@
 
 #define IS_NUMBER(x) (x >= '0' && x <= '9')
 #define IS_LETTER(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'))
-#define NUMLEN 9
 
 namespace Register
 {
@@ -251,24 +250,25 @@ namespace Register
         clear();
         std::ostringstream sql;
         /// loading admin contact handles together with domains
-        sql << "SELECT DISTINCT o.id,o.name,d.zone,no.id,no.name,"
-            << "co.id,co.name,c.name,"
+        sql << "SELECT DISTINCT or.id,or.name,d.zone,nor.id,nor.name,"
+            << "cor.id,cor.name,c.name,"
             << "r.id,r.handle,"
-            << "o.crdate,o.trdate,o.update,"
-            << "o.crid,creg.handle,o.upid,ureg.handle,o.authinfopw,o.roid,"
-            << "d.exdate,ev.exdate,aco.name "
-            << "FROM contact c, object co, registrar r, registrar creg, "
+            << "or.crdate,o.trdate,o.update,"
+            << "creg.id,creg.handle,ureg.id,ureg.handle,o.authinfopw,or.roid,"
+            << "d.exdate,ev.exdate,acor.name "
+            << "FROM contact c, object_registry cor, "
+            << "registrar r, registrar creg, "
             << "object o LEFT JOIN registrar ureg ON (o.upid=ureg.id), "
-            << "domain d LEFT JOIN object no ON (d.nsset=no.id) "
+            << "domain d LEFT JOIN object nor ON (d.nsset=nor.id) "
             << "LEFT JOIN domain_contact_map adcm ON (d.id=adcm.domainid) "
-            << "LEFT JOIN object aco ON (adcm.contactid=aco.id) "            
+            << "LEFT JOIN object_registry acor ON (adcm.contactid=acor.id) "            
             << "LEFT JOIN enumval ev ON (d.id=ev.domainid) "
             << "LEFT JOIN nsset_contact_map ncm ON (ncm.nssetid=no.id) "
-            << "LEFT JOIN object tco ON (ncm.contactid=tco.id) "
+            << "LEFT JOIN object_registry tcor ON (ncm.contactid=tcor.id) "
             << "LEFT JOIN host h ON (no.id=h.nssetid) "
             << "LEFT JOIN host_ipaddr_map him ON (him.hostid=h.id) "
-            << "WHERE d.id=o.id AND d.registrant=c.id AND c.id=co.id "
-            << "AND o.crid=creg.id AND o.clid=r.id ";
+            << "WHERE d.id=o.id AND d.registrant=c.id AND c.id=cor.id "
+            << "AND or.crid=creg.id AND o.clid=r.id ";
         SQL_ID_FILTER(sql,"o.id",idFilter);
         SQL_ID_FILTER(sql,"r.id",registrarFilter);
         SQL_HANDLE_FILTER(sql,"r.handle",registrarHandleFilter);
@@ -276,19 +276,19 @@ namespace Register
         SQL_HANDLE_FILTER(sql,"creg.handle",createRegistrarHandleFilter);
         SQL_ID_FILTER(sql,"ureg.id",updateRegistrarFilter);
         SQL_HANDLE_FILTER(sql,"ureg.handle",updateRegistrarHandleFilter);
-        SQL_DATE_FILTER(sql,"o.crDate",crDateIntervalFilter);
+        SQL_DATE_FILTER(sql,"or.crDate",crDateIntervalFilter);
         SQL_DATE_FILTER(sql,"o.upDate",updateIntervalFilter);
         SQL_DATE_FILTER(sql,"o.trDate",trDateIntervalFilter);
-        SQL_ID_FILTER(sql,"co.id",registrantFilter);
-        SQL_HANDLE_FILTER(sql,"co.name",registrantHandleFilter);
+        SQL_ID_FILTER(sql,"cor.id",registrantFilter);
+        SQL_HANDLE_FILTER(sql,"cor.name",registrantHandleFilter);
         SQL_DATE_FILTER(sql,"d.exdate",exDate);
         SQL_DATE_FILTER(sql,"ev.exdate",valExDate);
-        SQL_ID_FILTER(sql,"no.id",nsset);
-        SQL_HANDLE_FILTER(sql,"no.name",nssetHandle);
-        SQL_ID_FILTER(sql,"aco.id",admin);
-        SQL_HANDLE_FILTER(sql,"aco.name",adminHandle);
-        SQL_HANDLE_FILTER(sql,"o.name",fqdn);
-        SQL_HANDLE_FILTER(sql,"tco.name",techAdmin);
+        SQL_ID_FILTER(sql,"nor.id",nsset);
+        SQL_HANDLE_FILTER(sql,"nor.name",nssetHandle);
+        SQL_ID_FILTER(sql,"acor.id",admin);
+        SQL_HANDLE_FILTER(sql,"acor.name",adminHandle);
+        SQL_HANDLE_FILTER(sql,"or.name",fqdn);
+        SQL_HANDLE_FILTER(sql,"tcor.name",techAdmin);
         SQL_HANDLE_FILTER(sql,"host(him.ipaddr)",hostIP);
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
@@ -382,7 +382,7 @@ namespace Register
         if (!IS_NUMBER(number[last])) throw NOT_A_NUMBER();
         result += number[last];
         // append default country code if short
-        if (l-last <= NUMLEN) {
+        if (!last) {
           result += '.';
           result += zm->getDefaultEnumSuffix();
         }

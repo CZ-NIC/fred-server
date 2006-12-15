@@ -151,55 +151,42 @@ ccReg_Admin_i::~ccReg_Admin_i()
 }
 
 #define SWITCH_CONVERT(x) case Register::x : ch->handleClass = ccReg::x; break
+#define SWITCH_CONVERT_T(x) case Register::x : ch->hType = ccReg::x; break
 void
-ccReg_Admin_i::checkHandle(const char* handle, ccReg::CheckHandleTypeSeq_out chso)
+ccReg_Admin_i::checkHandle(
+  const char* handle, ccReg::CheckHandleTypeSeq_out chso
+)
 {
   DB db;
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
   ccReg::CheckHandleTypeSeq* chs = new ccReg::CheckHandleTypeSeq;
-  chs->length(1);
-  Register::CheckHandle chd;
-  r->checkHandle(handle,chd);
-  ccReg::CheckHandleType *ch = &(*chs)[0];
-  ch->newHandle = CORBA::string_dup(chd.newHandle.c_str());
-  switch (chd.handleClass) {
-   case Register::CH_ENUM_BAD_ZONE:
-     ch->handleClass = ccReg::CH_UNREGISTRABLE;
-     ch->hType = ccReg::HT_ENUM_NUMBER;
-     break;
-   case Register::CH_ENUM:
-     ch->handleClass = ccReg::CH_FREE;
-     ch->hType = ccReg::HT_ENUM_NUMBER;
-     break;
-   case Register::CH_DOMAIN_PART:
-     ch->handleClass = ccReg::CH_PART;
-     ch->hType = ccReg::HT_DOMAIN;
-     break;
-   case Register::CH_DOMAIN_BAD_ZONE:
-     ch->handleClass = ccReg::CH_UNREGISTRABLE;
-     ch->hType = ccReg::HT_DOMAIN;
-     break;
-   case Register::CH_DOMAIN_LONG:
-     ch->handleClass = ccReg::CH_LONG;
-     ch->hType = ccReg::HT_DOMAIN;
-     break;
-   case Register::CH_DOMAIN:
-     ch->handleClass = ccReg::CH_FREE;
-     ch->hType = ccReg::HT_DOMAIN;
-     break;
-   case Register::CH_NSSET:
-     ch->handleClass = ccReg::CH_FREE;
-     ch->hType = ccReg::HT_NSSET;
-     break;
-   case Register::CH_CONTACT:
-     ch->handleClass = ccReg::CH_FREE;
-     ch->hType = ccReg::HT_CONTACT;
-     break;
-   case Register::CH_INVALID:
-     ch->handleClass = ccReg::CH_FREE;
-     ch->hType = ccReg::HT_OTHER;
-     break;
+  Register::CheckHandleList chl;
+  r->checkHandle(handle,chl);
+  chs->length(chl.size());
+  for (unsigned i=0; i< chl.size(); i++) {
+    ccReg::CheckHandleType *ch = &(*chs)[i];
+    Register::CheckHandle& chd = chl[i];
+    ch->newHandle = CORBA::string_dup(chd.newHandle.c_str());
+    ch->conflictHandle = CORBA::string_dup(chd.conflictHandle.c_str());
+    switch (chd.type) {
+      SWITCH_CONVERT_T(HT_ENUM_NUMBER);
+      SWITCH_CONVERT_T(HT_ENUM_DOMAIN);
+      SWITCH_CONVERT_T(HT_DOMAIN);
+      SWITCH_CONVERT_T(HT_CONTACT);
+      SWITCH_CONVERT_T(HT_NSSET);
+      SWITCH_CONVERT_T(HT_REGISTRAR);
+      SWITCH_CONVERT_T(HT_OTHER);
+    }
+    switch (chd.handleClass) {
+      SWITCH_CONVERT(CH_UNREGISTRABLE);
+      SWITCH_CONVERT(CH_UNREGISTRABLE_LONG);
+      SWITCH_CONVERT(CH_REGISTRED);
+      SWITCH_CONVERT(CH_REGISTRED_PARENT);
+      SWITCH_CONVERT(CH_REGISTRED_CHILD);
+      SWITCH_CONVERT(CH_PROTECTED);
+      SWITCH_CONVERT(CH_FREE);
+    }
   }
   chso = chs;
   db.Disconnect(); 

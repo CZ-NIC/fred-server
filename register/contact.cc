@@ -245,30 +245,32 @@ namespace Register
       {
         clear();
         std::ostringstream sql;
-        sql << "SELECT o.id,o.name,c.name,"
+        sql << "SELECT or.id,or.name,c.name,"
             << "r.id,r.handle,"
-            << "o.crdate,o.trdate,o.update,"
-            << "o.crid,creg.handle,o.upid,ureg.handle,o.authinfopw,o.roid,"
+            << "or.crdate,o.trdate,o.update,"
+            << "creg.id,creg.handle,ureg.id,ureg.handle,o.authinfopw,or.roid,"
             << "c.organization,c.street1,c.street2,c.street3,"
             << "c.stateorprovince,"
             << "c.postalcode,c.city,c.country,c.telephone,c.fax,c.email,"
             << "c.notifyEmail,c.ssn,c.ssntype,c.vat,"
             << "c.disclosename,c.discloseorganization,c.discloseaddress,"
             << "c.discloseemail,c.disclosetelephone,c.disclosefax "
-            << "FROM registrar r, registrar creg, contact c, object o "
+            << "FROM registrar r, registrar creg, "
+            << "contact c, object o, object_registry or "
             << "LEFT JOIN registrar ureg ON (o.upid=ureg.id) "
-            << "WHERE c.id=o.id AND o.clid=r.id AND o.crid=creg.id ";
-        SQL_ID_FILTER(sql,"o.id",idFilter);
+            << "WHERE c.id=o.id AND o.clid=r.id "
+            << "AND or.crid=creg.id AND o.id=or.id";
+        SQL_ID_FILTER(sql,"or.id",idFilter);
         SQL_ID_FILTER(sql,"r.id",registrarFilter);
         SQL_HANDLE_FILTER(sql,"r.handle",registrarHandleFilter);
         SQL_ID_FILTER(sql,"creg.id",createRegistrarFilter);
         SQL_HANDLE_FILTER(sql,"creg.handle",createRegistrarHandleFilter);
         SQL_ID_FILTER(sql,"ureg.id",updateRegistrarFilter);
         SQL_HANDLE_FILTER(sql,"ureg.handle",updateRegistrarHandleFilter);        
-        SQL_DATE_FILTER(sql,"o.crDate",crDateIntervalFilter);
+        SQL_DATE_FILTER(sql,"or.crDate",crDateIntervalFilter);
         SQL_DATE_FILTER(sql,"o.upDate",updateIntervalFilter);
         SQL_DATE_FILTER(sql,"o.trDate",trDateIntervalFilter);
-        SQL_HANDLE_FILTER(sql,"o.name",handle);
+        SQL_HANDLE_FILTER(sql,"or.name",handle);
         SQL_HANDLE_FILTER(sql,"c.name",name);
         SQL_HANDLE_FILTER(sql,"c.ssn",ident);
         SQL_HANDLE_FILTER(sql,"c.email",email);

@@ -165,14 +165,15 @@ namespace Register
         clear();
         std::ostringstream sql;
         sql << "SELECT DISTINCT "
-            << "o.id,o.name,"
+            << "or.id,or.name,"
             << "r.id,r.handle, "
-            << "o.crdate,o.trdate,o.update,"
-            << "o.crid,creg.handle,o.upid,ureg.handle,o.authinfopw,o.roid "
+            << "or.crdate,o.trdate,o.update,"
+            << "creg.id,creg.handle,ureg.id,ureg.handle,o.authinfopw,or.roid "
             << "FROM registrar r, registrar creg, "
-	    << "object o LEFT JOIN registrar ureg ON (o.upid=ureg.id), "
+            << "object_registry or, object o "
+            << "LEFT JOIN registrar ureg ON (o.upid=ureg.id), "
             << "nsset n LEFT JOIN nsset_contact_map ncm ON (ncm.nssetid=n.id) "
-            << "LEFT JOIN object tco ON (ncm.contactid=tco.id) "
+            << "LEFT JOIN object_registry tcor ON (ncm.contactid=tcor.id) "
             << "LEFT JOIN host h ON (n.id=h.nssetid) "
             << "LEFT JOIN host_ipaddr_map him ON (him.hostid=h.id) "
             << "WHERE n.id=o.id AND o.clid=r.id AND o.crid=creg.id ";
@@ -183,11 +184,11 @@ namespace Register
         SQL_HANDLE_FILTER(sql,"creg.handle",createRegistrarHandleFilter);
         SQL_ID_FILTER(sql,"ureg.id",updateRegistrarFilter);
         SQL_HANDLE_FILTER(sql,"ureg.handle",updateRegistrarHandleFilter);        
-        SQL_DATE_FILTER(sql,"o.crDate",crDateIntervalFilter);
+        SQL_DATE_FILTER(sql,"or.crDate",crDateIntervalFilter);
         SQL_DATE_FILTER(sql,"o.upDate",updateIntervalFilter);
         SQL_DATE_FILTER(sql,"o.trDate",trDateIntervalFilter);
-        SQL_HANDLE_FILTER(sql,"o.name",handle);
-        SQL_HANDLE_FILTER(sql,"tco.name",admin);        
+        SQL_HANDLE_FILTER(sql,"or.name",handle);
+        SQL_HANDLE_FILTER(sql,"tcor.name",admin);        
         SQL_HANDLE_FILTER(sql,"h.fqdn",hostname);
         SQL_HANDLE_FILTER(sql,"host(him.ipaddr)",ip);
         sql << "LIMIT 1000";
@@ -213,9 +214,9 @@ namespace Register
         }
         db->FreeSelect();
         sql.str("");
-        sql << "SELECT n.nssetid, co.name "
-            << "FROM nsset_contact_map n, object co "
-            << "WHERE n.contactid = co.id";
+        sql << "SELECT n.nssetid, cor.name "
+            << "FROM nsset_contact_map n, object_registry cor "
+            << "WHERE n.contactid = cor.id";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           TID id = STR_TO_ID(db->GetFieldValue(i,0));

@@ -34,14 +34,30 @@ namespace Register
      countries.push_back(cd);
    } 
    /// interface method implementation
-   void checkHandle(const std::string& handle, CheckHandle& ch) const
+   void checkHandle(const std::string& handle, CheckHandleList& chl) const
    {
+     CheckHandle chnew;
+     chnew.type = HT_OTHER;
+     chnew.handleClass= CH_FREE;
+     chl.push_back(chnew);
+     CheckHandle& ch(chl.back());
      try {
        ch.newHandle.clear();
        // trying convert string to enum domain
        ch.newHandle = dm->makeEnumDomain(handle);
-       if (!zm->findZoneId(ch.newHandle)) ch.handleClass = CH_ENUM_BAD_ZONE;
-       else ch.handleClass = CH_ENUM;
+       // succeeded!
+       ch.type = HT_ENUM_NUMBER;
+       switch (dm->checkAvail(ch.newHandle)) {
+         case Domain::CA_INVALID_HANDLE: // TODO: log problem,  
+         case Domain::CA_BAD_LENGHT:
+         case Domain::CA_BAD_ZONE: ch.handleClass = CH_UNREGISTRABLE; break;
+         case Domain::CA_PROTECTED:
+         case Domain::CA_BLACKLIST: ch.handleClass = CH_PROTECTED; break;
+         case Domain::CA_REGISTRED: ch.handleClass = CH_REGISTRED; break;
+         case Domain::CA_PARENT_REGISTRED: ch.handleClass = CH_REGISTRED_PARENT; break;
+         case Domain::CA_CHILD_REGISTRED: ch.handleClass = CH_REGISTRED_CHILD; break;
+         case Domain::CA_AVAILABLE: ch.handleClass = CH_FREE; break;       
+       }
        return;
      } 
      catch (...) {
@@ -49,31 +65,50 @@ namespace Register
        Domain::DomainName dn;
        try {
          dm->parseDomainName(handle,dn);
+         // succeed!
          if (dn.size() == 1) {
+          throw Domain::INVALID_DOMAIN_NAME();
+          /* NOT AVAILABLE NOW 
            // single name is appended by default domain
            ch.newHandle = dn[0];
            ch.newHandle += '.';
            ch.newHandle += zm->getDefaultDomainSuffix();
-           ch.handleClass = CH_DOMAIN_PART;
+           ch.type = HT_DOMAIN;
+           ch.handleClass = CH_UNREGISTRABLE;
            return;
+          */
          }
          const Zone::Zone *z = zm->findZoneId(handle); 
-         if (!z) ch.handleClass = CH_DOMAIN_BAD_ZONE;
+         if (!z) {
+           ch.handleClass = CH_UNREGISTRABLE;
+           const std::string& esuf = zm->getDefaultEnumSuffix();
+           if (handle.rfind(esuf) + esuf.size() == handle.size())
+             ch.type = HT_DOMAIN;
+           else 
+             ch.type = HT_ENUM_DOMAIN;
+         }
          else {
            // special test for enum domain (parts are single numbers)
            if (z->isEnumZone()) {
-             if (dm->checkEnumDomainName(dn)) ch.handleClass = CH_ENUM;
-             else ch.handleClass = CH_INVALID;
+             if (!dm->checkEnumDomainName(dn))
+               throw Domain::INVALID_DOMAIN_NAME();
+             ch.type = HT_ENUM_DOMAIN;
+             ch.handleClass = CH_FREE; // TODO: CHECK!!!!! 
              return;
            }
-           // only second level domain is allowed
-           if (dn.size() == 2) ch.handleClass = CH_DOMAIN;
+           // is normal domain
+           ch.type = HT_DOMAIN;           
+           // only second level domain is allowed           
+           if (dn.size() != 2) ch.handleClass = CH_UNREGISTRABLE_LONG;
            else {
+             ch.handleClass = CH_FREE;
+            /*
              ch.handleClass = CH_DOMAIN_LONG;
              // long domain name is truncated to 2nd level
              ch.newHandle = dn[dn.size()-2];
              ch.newHandle += '.';
              ch.newHandle += dn[dn.size()-1];
+            */
            } 
          }
        }
@@ -82,9 +117,15 @@ namespace Register
          std::string upper;
          for (unsigned i=0; i<handle.size(); i++) 
            upper+=toupper(handle[i]);
-         if (!upper.compare(0,6,"NSSID:")) ch.handleClass = CH_NSSET;
-         else if (!upper.compare(0,4,"CID:")) ch.handleClass = CH_CONTACT;
-         else ch.handleClass = CH_INVALID;
+         if (!upper.compare(0,6,"NSSID:")) {
+           ch.type = HT_NSSET;
+           ch.handleClass = CH_FREE;
+         }
+         else if (!upper.compare(0,4,"CID:")) {
+           ch.type = HT_CONTACT;
+           ch.handleClass = CH_FREE;
+         }
+         else return; // default
        } 
      }
    }
