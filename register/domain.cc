@@ -440,10 +440,14 @@ namespace Register
         if (blacklist->checkDomain(fqdn)) return CA_BLACKLIST;
         std::stringstream sql;
         CheckAvailType ret = CA_AVAILABLE;
-        // domain cannot be subdomain or parent domain of registred domain
-        sql << "SELECT fqdn FROM domain WHERE "
-            << "('" << fqdn << "' LIKE '%'||fqdn) OR "
-            << "(fqdn LIKE '%'||'" << fqdn << "')";
+        // domain can be subdomain or parent domain of registred domain
+        // there could be a lot of subdomains therefor LIMIT 1
+        sql << "SELECT o.name FROM domain d, object_registry o "
+            << "WHERE d.id=o.id AND "
+            << "('" << fqdn << "' LIKE '%.'|| o.name) OR "
+            << "(o.name LIKE '%.'||'" << fqdn << "') OR "
+            << "o.name='" << fqdn << "' "
+            << "LIMIT 1";
         if (!db->ExecSelect(sql.str().c_str())) {
           db->FreeSelect();
           throw SQL_ERROR();
@@ -451,7 +455,8 @@ namespace Register
         if (db->GetSelectRows() == 1) {
           std::string fqdnLoaded = db->GetFieldValue(0,0);
           if (fqdn == fqdnLoaded) ret = CA_REGISTRED;
-          else ret = CA_PARENT_REGISTRED;  
+          else if (fqdn.size() > fqdnLoaded.size()) ret = CA_PARENT_REGISTRED;
+          else ret = CA_CHILD_REGISTRED;  
         }
         db->FreeSelect();
         return ret;        

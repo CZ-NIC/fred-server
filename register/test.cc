@@ -10,9 +10,10 @@ using namespace boost::gregorian;
 int main()
 {
   DB db;
-  db.OpenDatabase("host=curlew dbname=ccreg user=ccreg");
+  db.OpenDatabase("host=localhost dbname=ccreg user=ccreg");
   std::auto_ptr<Register::Manager> m(Register::Manager::create(&db));
   Register::Domain::Manager *dm = m->getDomainManager();
+  /*
   Register::Registrar::Manager *rm = m->getRegistrarManager();
   Register::Registrar::RegistrarList *rl2 = rm->getList();
   rl2->setIdFilter(2);
@@ -84,15 +85,20 @@ int main()
   dl->setAdminHandleFilter("a");
   dl->setNSSetHandleFilter("n");
   dl->reload();
+  */
+  while (1) {
   std::string input;
   std::cout << "Domain: ";
   std::cin >> input;
   Register::CheckHandleList chl;
   m->checkHandle(input,chl);
   if (chl.size() < 1) return -1;
-  std::cout << "Result of checkHandle: " << chl[0].handleClass 
-            << " NewHandle: " << chl[0].newHandle << std::endl;
+  std::cout << "Result of checkHandle: \n"
+            << " Type: " << chl[0].type << std::endl
+            << " Class: " << chl[0].handleClass << std::endl
+            << " NewHandle: " << chl[0].newHandle << std::endl
+            << " Conflict: " << chl[0].conflictHandle << std::endl;
   Register::Domain::CheckAvailType ca = dm->checkAvail(input);
   std::cout << "Result of checkAvail: " << ca << std::endl;
-
+  }
 }
