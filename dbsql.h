@@ -40,6 +40,8 @@ bool DeleteFromTableMap(char *map ,int  id , int contactid );
 
 // vraci castku za operaci
 long GetPrice(   int action  ,  int zone , int period  );
+bool SaveInvoiceCredit(int regID , int objectID , int action  , int zone  , const char *ExDate , long price );
+
 // zpracovani creditu
 long UpdateInvoiceCredit( int regID ,   int action  , int zone  , int period  , int objectID );
 

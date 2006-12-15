@@ -4016,7 +4016,7 @@ int   zone ;
 unsigned int i;
 int period_count;
 char periodStr[10];
-long price;
+long price=0;
 ret = new ccReg::Response;
 
 // default
@@ -4201,6 +4201,9 @@ if( DBsql.OpenDatabase( database ) )
                                 exDate =  CORBA::string_dup( dateStr );
 
 
+                              // ulozeni polozky na fakturu
+                              if(  DBsql.SaveInvoiceCredit(  regID ,  id  , EPP_DomainCreate  , zone  , dateStr ,  price ) == false ) ret->errCode = COMMAND_FAILED;
+
                               // pridej enum  extension
                               if( GetZoneEnum( zone ) && strlen( valexpiryDate) > 0  )
                                 {
@@ -4286,7 +4289,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
   int  regID, id,  zone ;
 int period_count;
 char periodStr[10];
-long price;
+long price=0;
 
   ret = new ccReg::Response;
 
@@ -4439,6 +4442,11 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 
 
 
+                                    // ulozeni polozky na fakturu
+                                   if(  DBsql.SaveInvoiceCredit(  regID ,  id  , EPP_DomainRenew  , zone  ,ExDateStr ,  price ) == false ) 
+                                         ret->errCode = COMMAND_FAILED;
+                            
+
                                 if( GetZoneEnum( zone ) )
                                  {
                                   if( strlen( valexpiryDate ) > 0  )      // zmena extension
@@ -4452,8 +4460,11 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                                       if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;                                     
                                     }
                                    }
+
+
                                    if( ret->errCode == 0 ) // pokud je OK
                                    {
+
                                      // zmena platnosti domeny
                                      DBsql.UPDATE( "DOMAIN" );                                     
                                      DBsql.SET(  "ExDate", ExDateStr );

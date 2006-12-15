@@ -110,6 +110,30 @@ if( ExecSelect( sqlString ) )
 return price;
 }
 
+// ukladani polozky creditu
+bool DB::SaveInvoiceCredit(int regID , int objectID , int action  , int zone  , const char *ExDate , long price ) 
+{
+if( price > 0 )
+{
+LOG( DEBUG_LOG , "uctovani creditu  castka  %ld ExDate [%s] regID %d" , price , ExDate , regID  );
+// uloz zaznam o zuctovanem creditu
+INSERT( "invoice_object_registry" );
+INTO( "objectid" );
+INTO( "registrarid"  );
+INTO( "action" );
+INTO( "zone" );
+INTO( "ExDate" );
+INTO( "price" );
+VALUE( objectID );
+VALUE( regID );
+VALUE( action);
+VALUE( zone );
+VALUE( ExDate);
+VALPRICE( price);
+return EXEC();
+}
+else return true;
+}
 // zpracovani creditu strzeni ze zalohe faktury ci dvou faktur
 long DB::UpdateInvoiceCredit( int regID ,   int action  , int zone   , int period , int objectID  )
 {
