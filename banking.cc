@@ -71,12 +71,9 @@ if( db.BeginTransaction() )
             credit =  price -  get_VAT( price ); // pripocitavany credit (castka be DPH )
 
             // vytvoreni zalohove faktury a ulozeni creditu
-           invoiceID =  db.MakeAInvoice( (const char * ) prefixStr , regID , price , get_VATNum() , get_VAT( price ) , credit );
+           invoiceID =  db.MakeAInvoice( (const char * ) prefixStr ,  zone , regID , price , get_VATNum() , get_VAT( price ) , credit );
 
-           if( invoiceID )
-             {
-                if( db.SaveCredit( regID , zone , credit ,  invoiceID  ) )ret = CMD_OK;                
-             }    
+           if( invoiceID ) if( db.SaveCredit( invoiceID , credit )  ) ret = CMD_OK;
          }
 
       }
@@ -158,10 +155,10 @@ if(  db.BeginTransaction() )
               credit =  ib[i]->price -  get_VAT( ib[i]->price  ); // pripocitavany credit (castka be DPH )
              
               // vytvoreni zalohove faktury a ulozeni creditu         
-             if( ( invoiceID =  db.MakeAInvoice( (const char * ) prefixStr , ib[i]->regID , 
+             if( ( invoiceID =  db.MakeAInvoice( (const char * ) prefixStr , ib[i]->zone , ib[i]->regID , 
                             ib[i]->price  ,  get_VATNum() , get_VAT( ib[i]->price ) , credit ) ) )
              {
-                   if( db.SaveCredit( ib[i]->regID , ib[i]->zone , credit ,  invoiceID  ) )
+                   if( db.SaveCredit(   invoiceID   , credit ) )
                      {
                        if( db.UpdateBankStatementItem( invoiceID ,  ib[i]->id ) ) ret = CMD_OK;
                     //   else { LOG( LOG_ERR , "SQL EXEC error update invoice_statement_item");  ret =  0 ;num -1; break; }  
@@ -282,7 +279,7 @@ if( argc == 5 )
  {
    if( strcmp(  argv[1]  , "--credit" )  == 0 )
      {
-       credit_invoicing(  config.GetDBconninfo() ,  argv[2] , argv[3] , atol( argv[4] ) );
+       credit_invoicing(  config.GetDBconninfo() ,  argv[2] , argv[3] , atol( argv[4] ) * 100L );
      }
  }
 if( argc==3)

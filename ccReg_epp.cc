@@ -4029,7 +4029,6 @@ int   zone ;
 unsigned int i;
 int period_count;
 char periodStr[10];
-long price=0;
 ret = new ccReg::Response;
 
 // default
@@ -4182,9 +4181,6 @@ if( DBsql.OpenDatabase( database ) )
 
                         id= DBsql.CreateObject( "D" ,  regID , FQDN ,  AuthInfoPw );
 
-                         // zpracovani creditu
-                        if( ( price = DBsql.UpdateInvoiceCredit(  regID ,   EPP_DomainCreate  ,   zone ,  period_count , id  )  )  < 0 )  
-                              ret->errCode =  COMMAND_BILLING_FAILURE;
 
 
                           DBsql.INSERT( "DOMAIN" );
@@ -4214,9 +4210,7 @@ if( DBsql.OpenDatabase( database ) )
                                 exDate =  CORBA::string_dup( dateStr );
 
 
-                              // ulozeni polozky na fakturu
-                              if(  DBsql.SaveInvoiceCredit(  regID ,  id  , EPP_DomainCreate  , zone  , dateStr ,  price ) == false ) ret->errCode = COMMAND_FAILED;
-
+                                  
                               // pridej enum  extension
                               if( GetZoneEnum( zone ) && strlen( valexpiryDate) > 0  )
                                 {
@@ -4235,6 +4229,11 @@ if( DBsql.OpenDatabase( database ) )
                                           if(  !DBsql.AddContactMap( "domain" , id  , adminid  ) ) { ret->errCode = COMMAND_FAILED; break; }
  
                                      }
+
+         
+                             // zpracovani creditu a ulozeni polozky na fakturu
+                             if( DBsql.UpdateInvoiceCredit(  regID ,   EPP_DomainCreate  ,   zone ,  period_count ,  dateStr , id  )  == false  ) 
+                                    ret->errCode =  COMMAND_BILLING_FAILURE;
 
 
                                 if(  ret->errCode == 0  ) // pokud nedoslo k chybe
@@ -4302,7 +4301,6 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
   int  regID, id,  zone ;
 int period_count;
 char periodStr[10];
-long price=0;
 
   ret = new ccReg::Response;
 
@@ -4435,8 +4433,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                              }
 
  
-                               // zpracovani creditu
-               if( ( price = DBsql.UpdateInvoiceCredit(  regID ,   EPP_DomainRenew  ,   zone ,  period_count , id ) ) < 0 ) ret->errCode =  COMMAND_BILLING_FAILURE;
+
 
 
                if(  ret->errCode == 0 )
@@ -4454,10 +4451,6 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                     {
 
 
-
-                                    // ulozeni polozky na fakturu
-                                   if(  DBsql.SaveInvoiceCredit(  regID ,  id  , EPP_DomainRenew  , zone  ,ExDateStr ,  price ) == false ) 
-                                         ret->errCode = COMMAND_FAILED;
                             
 
                                 if( GetZoneEnum( zone ) )
@@ -4473,6 +4466,11 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                                       if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;                                     
                                     }
                                    }
+
+
+                      // zpracovani creditu a ulozeni polozky na fakturu
+                      if( DBsql.UpdateInvoiceCredit(  regID ,   EPP_DomainRenew  ,   zone ,  period_count ,  ExDateStr , id  )  == false  )
+                          ret->errCode =  COMMAND_BILLING_FAILURE;
 
 
                                    if( ret->errCode == 0 ) // pokud je OK
