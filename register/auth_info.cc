@@ -344,19 +344,19 @@ namespace Register
       {
         clear();
         std::stringstream sql;
-        sql << "SELECT air.id,oh.id,oh.name,oh.type,"
+        sql << "SELECT air.id,obr.id,obr.name,obr.type,"
             << "air.request_type,air.status,"
             << "air.create_time,air.resolve_time,air.reason,"
             << "air.email_to_answer,air.answer_email_id,"
             << "a.id,r.handle,a.servertrid "
-            << "FROM object_registry or, object_history oh, " 
+            << "FROM object_registry obr, object_history oh, " 
             << "auth_info_requests air "
             << "LEFT JOIN action a ON (air.epp_action_id=a.id) "
             << "LEFT JOIN login l ON (a.clientid=l.id) "
             << "LEFT JOIN registrar r ON (l.registrarid=r.id) "
-            << "WHERE oh.historyid=air.object_id AND or.id=oh.id ";
+            << "WHERE oh.historyid=air.object_id AND obr.id=oh.id ";
         SQL_ID_FILTER(sql,"air.id",idFilter);
-        SQL_HANDLE_FILTER(sql,"or.name",handleFilter);
+        SQL_HANDLE_FILTER(sql,"obr.name",handleFilter);
         SQL_HANDLE_FILTER(sql,"air.email_to_answer",emailFilter);
         SQL_HANDLE_FILTER(sql,"air.reason",reasonFilter);
         SQL_HANDLE_FILTER(sql,"a.servertrid",svTRIDFilter);        

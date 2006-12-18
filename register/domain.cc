@@ -250,25 +250,25 @@ namespace Register
         clear();
         std::ostringstream sql;
         /// loading admin contact handles together with domains
-        sql << "SELECT DISTINCT or.id,or.name,d.zone,nor.id,nor.name,"
+        sql << "SELECT DISTINCT obr.id,obr.name,d.zone,nor.id,nor.name,"
             << "cor.id,cor.name,c.name,"
             << "r.id,r.handle,"
-            << "or.crdate,o.trdate,o.update,"
-            << "creg.id,creg.handle,ureg.id,ureg.handle,o.authinfopw,or.roid,"
+            << "obr.crdate,o.trdate,o.update,"
+            << "creg.id,creg.handle,ureg.id,ureg.handle,o.authinfopw,obr.roid,"
             << "d.exdate,ev.exdate,acor.name "
             << "FROM contact c, object_registry cor, "
-            << "registrar r, registrar creg, "
+            << "registrar r, registrar creg, object_registry obr, "
             << "object o LEFT JOIN registrar ureg ON (o.upid=ureg.id), "
-            << "domain d LEFT JOIN object nor ON (d.nsset=nor.id) "
+            << "domain d LEFT JOIN object_registry nor ON (d.nsset=nor.id) "
             << "LEFT JOIN domain_contact_map adcm ON (d.id=adcm.domainid) "
             << "LEFT JOIN object_registry acor ON (adcm.contactid=acor.id) "            
             << "LEFT JOIN enumval ev ON (d.id=ev.domainid) "
-            << "LEFT JOIN nsset_contact_map ncm ON (ncm.nssetid=no.id) "
+            << "LEFT JOIN nsset_contact_map ncm ON (ncm.nssetid=nor.id) "
             << "LEFT JOIN object_registry tcor ON (ncm.contactid=tcor.id) "
-            << "LEFT JOIN host h ON (no.id=h.nssetid) "
+            << "LEFT JOIN host h ON (nor.id=h.nssetid) "
             << "LEFT JOIN host_ipaddr_map him ON (him.hostid=h.id) "
             << "WHERE d.id=o.id AND d.registrant=c.id AND c.id=cor.id "
-            << "AND or.crid=creg.id AND o.clid=r.id ";
+            << "AND obr.id=o.id AND obr.crid=creg.id AND o.clid=r.id ";
         SQL_ID_FILTER(sql,"o.id",idFilter);
         SQL_ID_FILTER(sql,"r.id",registrarFilter);
         SQL_HANDLE_FILTER(sql,"r.handle",registrarHandleFilter);
@@ -276,7 +276,7 @@ namespace Register
         SQL_HANDLE_FILTER(sql,"creg.handle",createRegistrarHandleFilter);
         SQL_ID_FILTER(sql,"ureg.id",updateRegistrarFilter);
         SQL_HANDLE_FILTER(sql,"ureg.handle",updateRegistrarHandleFilter);
-        SQL_DATE_FILTER(sql,"or.crDate",crDateIntervalFilter);
+        SQL_DATE_FILTER(sql,"obr.crDate",crDateIntervalFilter);
         SQL_DATE_FILTER(sql,"o.upDate",updateIntervalFilter);
         SQL_DATE_FILTER(sql,"o.trDate",trDateIntervalFilter);
         SQL_ID_FILTER(sql,"cor.id",registrantFilter);
@@ -287,7 +287,7 @@ namespace Register
         SQL_HANDLE_FILTER(sql,"nor.name",nssetHandle);
         SQL_ID_FILTER(sql,"acor.id",admin);
         SQL_HANDLE_FILTER(sql,"acor.name",adminHandle);
-        SQL_HANDLE_FILTER(sql,"or.name",fqdn);
+        SQL_HANDLE_FILTER(sql,"obr.name",fqdn);
         SQL_HANDLE_FILTER(sql,"tcor.name",techAdmin);
         SQL_HANDLE_FILTER(sql,"host(him.ipaddr)",hostIP);
         sql << "LIMIT 1000";

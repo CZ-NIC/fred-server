@@ -165,18 +165,19 @@ namespace Register
         clear();
         std::ostringstream sql;
         sql << "SELECT DISTINCT "
-            << "or.id,or.name,"
+            << "obr.id,obr.name,"
             << "r.id,r.handle, "
-            << "or.crdate,o.trdate,o.update,"
-            << "creg.id,creg.handle,ureg.id,ureg.handle,o.authinfopw,or.roid "
+            << "obr.crdate,o.trdate,o.update,"
+            << "creg.id,creg.handle,ureg.id,ureg.handle,o.authinfopw,obr.roid "
             << "FROM registrar r, registrar creg, "
-            << "object_registry or, object o "
+            << "object_registry obr, object o "
             << "LEFT JOIN registrar ureg ON (o.upid=ureg.id), "
             << "nsset n LEFT JOIN nsset_contact_map ncm ON (ncm.nssetid=n.id) "
             << "LEFT JOIN object_registry tcor ON (ncm.contactid=tcor.id) "
             << "LEFT JOIN host h ON (n.id=h.nssetid) "
             << "LEFT JOIN host_ipaddr_map him ON (him.hostid=h.id) "
-            << "WHERE n.id=o.id AND o.clid=r.id AND o.crid=creg.id ";
+            << "WHERE n.id=o.id AND obr.id=o.id AND o.clid=r.id "
+            << "AND obr.crid=creg.id ";
         SQL_ID_FILTER(sql,"o.id",idFilter);
         SQL_ID_FILTER(sql,"r.id",registrarFilter);
         SQL_HANDLE_FILTER(sql,"r.handle",registrarHandleFilter);
@@ -184,10 +185,10 @@ namespace Register
         SQL_HANDLE_FILTER(sql,"creg.handle",createRegistrarHandleFilter);
         SQL_ID_FILTER(sql,"ureg.id",updateRegistrarFilter);
         SQL_HANDLE_FILTER(sql,"ureg.handle",updateRegistrarHandleFilter);        
-        SQL_DATE_FILTER(sql,"or.crDate",crDateIntervalFilter);
+        SQL_DATE_FILTER(sql,"obr.crDate",crDateIntervalFilter);
         SQL_DATE_FILTER(sql,"o.upDate",updateIntervalFilter);
         SQL_DATE_FILTER(sql,"o.trDate",trDateIntervalFilter);
-        SQL_HANDLE_FILTER(sql,"or.name",handle);
+        SQL_HANDLE_FILTER(sql,"obr.name",handle);
         SQL_HANDLE_FILTER(sql,"tcor.name",admin);        
         SQL_HANDLE_FILTER(sql,"h.fqdn",hostname);
         SQL_HANDLE_FILTER(sql,"host(him.ipaddr)",ip);
