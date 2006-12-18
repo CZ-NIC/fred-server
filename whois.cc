@@ -29,7 +29,8 @@ bool en;
 time_t t ,  expired ;
 bool found = false;
 int db_error=0;
-  Register::CheckHandle chd;
+Register::CheckHandleList chdl;
+Register::CheckHandle* chd = NULL;
 if( DBsql.OpenDatabase( database.c_str() ) )
 {
 
@@ -66,8 +67,8 @@ if( len < MAX_LONG )
    // preved na mala pismena
     for( i = 0 ; i < len ; i ++ )  fqdn[i] = tolower( domain_name[i] );
     fqdn[i] = 0 ; // ukoncit 
-    r->checkHandle( fqdn ,chd);
-    LOG( LOG_DEBUG ,  "WHOIS: checkHandle %s -> handleClass %d" , fqdn , chd.handleClass );
+    r->checkHandle( fqdn ,chdl);
+    LOG( LOG_DEBUG ,  "WHOIS: checkHandle %s " , fqdn );
 
   }
 else
@@ -76,11 +77,16 @@ else
    throw ccReg::Whois::DomainError( timestampStr , ccReg::WE_DOMAIN_LONG );
  }
 
-
-
-if(  chd.handleClass   ==  Register::CH_ENUM  || chd.handleClass   ==  Register::CH_DOMAIN ) 
+for (unsigned j=0;j<chdl.size();j++) {
+  if (chdl[j].type == Register::HT_ENUM_DOMAIN ||
+      chdl[j].type == Register::HT_DOMAIN) {
+    chd = &chdl[j];
+    break;
+  }
+}
+if(chd) 
 {
-if( chd.handleClass   ==  Register::CH_ENUM ){ zone = ZONE_ENUM;  en=true;}
+if( chd->type == Register::HT_ENUM_DOMAIN){ zone = ZONE_ENUM;  en=true;}
 else {zone = ZONE_CZ ; en=false ; }
 
 
@@ -171,10 +177,10 @@ throw ccReg::Whois::DomainError( timestampStr , ccReg::WE_NOTFOUND  );
 
 }
 else // ostatni chyny
-if(  chd.handleClass   ==  Register::CH_DOMAIN_LONG ) 
+if(  chd && chd->handleClass   ==  Register::CH_UNREGISTRABLE_LONG ) 
   throw ccReg::Whois::DomainError( timestampStr , ccReg::WE_DOMAIN_LONG );
   else
-  if(  chd.handleClass   ==  Register::CH_DOMAIN_BAD_ZONE )
+  if(  chd && chd->handleClass   ==  Register::CH_UNREGISTRABLE )
     throw ccReg::Whois::DomainError( timestampStr , ccReg::WE_DOMAIN_BAD_ZONE );
    else
   // default
