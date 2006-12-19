@@ -1,9 +1,13 @@
 #ifndef MAILER_MANAGER_H_
 #define MAILER_MANAGER_H_
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include "ccReg.hh"
 #include "register/mailer.h"
 #include "nameservice.h"
+
+using namespace boost::posix_time;
 
 /// Implementation of register mailer 
 /** Use remote CORBA mailer to implement register mailer functionality.
@@ -27,9 +31,10 @@ class MailerManager : public Register::Mailer::Manager
   struct Filter 
   {
     Filter();
+    void clear();
     Register::TID id;
-    std::string crTime;
-    std::string modTime;
+    time_period crTime;
+    time_period modTime;
     long type;
     long status;
     std::string content;

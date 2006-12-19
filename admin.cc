@@ -53,7 +53,22 @@ setPeriod(const ccReg::DateTimeInterval& _v)
   );
 }
 
-
+void
+clearPeriod(ccReg::DateTimeInterval& _v)
+{
+  _v.from.date.year = 0;
+  _v.from.date.month = 0;
+  _v.from.date.day = 0;
+  _v.from.hour = 0;
+  _v.from.minute = 0;
+  _v.from.second = 0;
+  _v.to.date.year = 0;
+  _v.to.date.month = 0;
+  _v.to.date.day = 0;
+  _v.to.hour = 0;
+  _v.to.minute = 0;
+  _v.to.second = 0;
+}
 
 #define DUPSTR(s) CORBA::string_dup(s)
 #define DUPSTRC(s) CORBA::string_dup(s.c_str())
@@ -2402,7 +2417,8 @@ ccReg::TableRow*
 ccReg_Mails_i::getRow(CORBA::Short row)
   throw (ccReg::Table::INVALID_ROW)
 {
-  if ((unsigned)row >= mm.getMailList().size()) throw ccReg::Table::INVALID_ROW();
+  if ((unsigned)row >= mm.getMailList().size()) 
+    throw ccReg::Table::INVALID_ROW();
   MailerManager::Detail& md = mm.getMailList()[row];
   ccReg::TableRow *tr = new ccReg::TableRow;
   tr->length(3);
@@ -2423,7 +2439,8 @@ ccReg::TID
 ccReg_Mails_i::getRowId(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW)
 {
-  if ((unsigned)row >= mm.getMailList().size()) throw ccReg::Table::INVALID_ROW();
+  if ((unsigned)row >= mm.getMailList().size()) 
+    throw ccReg::Table::INVALID_ROW();
   MailerManager::Detail& md = mm.getMailList()[row];
   return md.id;
 }
@@ -2454,6 +2471,8 @@ ccReg_Mails_i::reload()
   mf.status = statusFilter;
   mf.handle = handleFilter;
   mf.attachment = attachmentFilter;
+  mf.content = handleFilter;
+  mf.crTime = setPeriod(createTimeFilter);
   try {
     mm.reload(mf);
   } catch (...) {}
@@ -2469,27 +2488,24 @@ void FUNC(PTYPESET _v) { MEMBER = _v; SETF; }
 #define FILTER_IMPL_S(FUNC,MEMBER,SETF) \
   FILTER_IMPL(FUNC,char *,const char *,MEMBER,DUPSTRC(MEMBER), SETF)
 
-FILTER_IMPL_L(ccReg_Mails_i::id,idFilter,clear());
+FILTER_IMPL_L(ccReg_Mails_i::id,idFilter,);
 
-FILTER_IMPL(ccReg_Mails_i::status,CORBA::Long,CORBA::Long,statusFilter,statusFilter,clear());
+FILTER_IMPL(ccReg_Mails_i::status,CORBA::Long,CORBA::Long,
+            statusFilter,statusFilter,);
 
-FILTER_IMPL(ccReg_Mails_i::type,CORBA::UShort,CORBA::UShort,typeFilter,typeFilter,clear());
+FILTER_IMPL(ccReg_Mails_i::type,CORBA::UShort,CORBA::UShort,
+            typeFilter,typeFilter,);
 
-FILTER_IMPL_S(ccReg_Mails_i::handle,handleFilter,
-              clear());
+FILTER_IMPL_S(ccReg_Mails_i::handle,handleFilter,);
 
-FILTER_IMPL_S(ccReg_Mails_i::fulltext,fulltextFilter,
-              clear());
+FILTER_IMPL_S(ccReg_Mails_i::fulltext,fulltextFilter,);
 
-FILTER_IMPL_S(ccReg_Mails_i::attachment,attachmentFilter,
-              clear());
+FILTER_IMPL_S(ccReg_Mails_i::attachment,attachmentFilter,);
 
 FILTER_IMPL(ccReg_Mails_i::createTime,
             ccReg::DateTimeInterval,
             const ccReg::DateTimeInterval&,
-            createTimeFilter,createTimeFilter,
-            clear() // TODO: function
-             );
+            createTimeFilter,createTimeFilter,);
 
 ccReg::Filter_ptr
 ccReg_Mails_i::aFilter()
@@ -2501,12 +2517,12 @@ void
 ccReg_Mails_i::clear()
 {
   idFilter = 0;
-//  handleFilter = "";
-//  emailFilter = "";
-//  svTRIDFilter = "";
-//  reasonFilter = "";
-  // TODO CLEAR OTHER 
-//  airl->clearFilter();
+  handleFilter = "";
+  typeFilter = 0;
+  statusFilter = -1;
+  fulltextFilter = "";
+  attachmentFilter = "";
+  clearPeriod(createTimeFilter);
 }
 
 CORBA::ULongLong 

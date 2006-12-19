@@ -63,6 +63,15 @@ MailerManager::getMailList()
 
 #define LIST_CHUNK_SIZE 100
 
+#define SET_TIME(x,y) if (x.is_special()) {\
+  y.date.year = 0; y.date.month = 0; y.date.day = 0; \
+  y.hour = 0; y.minute = 0; y.second = 0; \
+} else { \
+  y.date.year = x.date().year(); y.date.month = x.date().month(); \
+  y.date.day = x.date().day(); \
+  y.hour = x.time_of_day().hours(); y.minute = x.time_of_day().minutes(); \
+  y.second = x.time_of_day().seconds(); \
+}  
 void 
 MailerManager::reload(MailerManager::Filter& f) throw (LOAD_ERROR)
 {
@@ -73,9 +82,12 @@ MailerManager::reload(MailerManager::Filter& f) throw (LOAD_ERROR)
   else mf.mailtype = f.type;
   mf.status = f.status;
   mf.handle = CORBA::string_dup(f.handle.c_str());
-  mf.attachid = -1;
+  mf.fulltext = CORBA::string_dup(f.content.c_str());
   //TODO: filter for string
   //mf.attachment = CORBA::string_dup(f.attachment.c_str());
+  mf.attachid = -1;
+  SET_TIME(f.crTime.begin(),mf.crdate.from);
+  SET_TIME(f.crTime.end(),mf.crdate.to);
   try {
     mailList.clear();
     ccReg::MailSearch_var ms = mailer->createSearchObject(mf);
@@ -106,6 +118,19 @@ MailerManager::reload(MailerManager::Filter& f) throw (LOAD_ERROR)
 }
 
 MailerManager::Filter::Filter() :
- id(0), type(0), status(-1)
+ id(0), crTime(ptime(neg_infin),ptime(pos_infin)),
+ modTime(ptime(neg_infin),ptime(pos_infin)), type(0), status(-1)
 {
+} 
+
+void
+MailerManager::Filter::clear()
+{
+  id = 0;
+  type = 0;
+  status = -1;
+  handle = "";
+  content = "";
+  attachment = "";
+  crTime = time_period(ptime(neg_infin),ptime(pos_infin));
 } 
