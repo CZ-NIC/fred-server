@@ -1137,7 +1137,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
         {
 
           // test msg ID and clientID
-          sprintf( sqlString, "SELECT * FROM MESSAGE WHERE id=%s AND clID=%d;",   msgID  , regID );
+          sprintf( sqlString, "SELECT id FROM MESSAGE WHERE id=%s AND seen='f'  AND clID=%d;",   msgID  , regID );
           rows = 0;
           if( DBsql.ExecSelect( sqlString ) )
             {
@@ -1151,7 +1151,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                   LOG( ERROR_LOG, "unknown msgID %s",   msgID );
                   SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::poll_msgID , REASON_MSG_UNKNOW_MSGID , msgID , GetRegistrarLang( clientID ) );
             }
-          else  if( rows == 1 )       // pokud tam ta zprava existuje
+          else if( rows == 1 )       // pokud tam ta zprava existuje
               {
               // oznac zpravu jako prectenou
               sprintf( sqlString, "UPDATE MESSAGE SET seen='t' WHERE id=%s AND clID=%d;",  msgID, regID );
@@ -1160,10 +1160,11 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
               if( DBsql.ExecSQL( sqlString ) )
                 {
                    ret->errCode = COMMAND_OK;     
-                  // zjisteni dalsi ID zpravy ve fronte
-                  sprintf( sqlString, "SELECT id FROM MESSAGE  WHERE clID=%d AND seen='f' AND exDate > 'now()' ;", regID );
+                  // zjisteni dalsi messages 
+                  sprintf( sqlString, "SELECT id FROM MESSAGE WHERE clID=%d AND seen='f' AND exDate > 'now()' ;", regID );
                   if( DBsql.ExecSelect( sqlString ) )
                     {
+                     
                       rows = DBsql.GetSelectRows();   // pocet zprav
                       if( rows > 0 )    // pokud jsou nejake zpravy ve fronte
                         {
@@ -1171,12 +1172,8 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                           newmsgID =   CORBA::string_dup(  DBsql.GetFieldValue( 0, 0 ) ) ;
                           LOG( NOTICE_LOG, "PollAcknowledgement: newmsgID -> %s count -> %d", (const char *) newmsgID, count );
                         }
-                       else 
-                       {
-                        count = 0;
-                       newmsgID =   CORBA::string_dup( "" ); // zadne dalsi zpravy
-                        }
-                      DBsql.FreeSelect();
+
+                     DBsql.FreeSelect();
                     }
 
                 }             
