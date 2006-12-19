@@ -1180,7 +1180,7 @@ if( (vat + credit)  == price )
            VALPRICE( price );
 
            VALUE( vatNum );
-           VALPRICE( price  );
+           VALPRICE( vat  );
            VALPRICE( credit ); // cena bez dane
           
            if(  EXEC() ) return invoiceID;
