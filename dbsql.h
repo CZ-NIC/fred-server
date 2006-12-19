@@ -40,7 +40,7 @@ bool DeleteFromTableMap(char *map ,int  id , int contactid );
 
 // vraci castku za operaci
 long GetPrice(   int action  ,  int zone , int period  );
-bool SaveInvoiceCredit(int regID , int objectID , int action  , int zone  , const char *ExDate , long price ,  int invoiceID  );
+bool SaveInvoiceCredit(int regID , int objectID , int action  , int zone  , const char *ExDate , long price ,  long price2  ,int invoiceID , int invoiceID2 );
 
 // zpracovani creditu
 bool UpdateInvoiceCredit( int regID ,   int action  , int zone  , int period  ,  const char *ExDate , int objectID );
@@ -130,7 +130,7 @@ bool SaveCredit( int invoiceID ,  long credit   );
 bool UpdateBankStatementItem( int id , int invoiceID);
 
 // vytvoreni zalohove faktury pro registratora na castku price s vysi DPH vatNum odvedenou dani vat  a castkou bez DPH credit
-int  MakeAInvoice( const char *prefixStr  ,  int zone , int regID , long price , int vatNum , long vat ,  long credit );
+int  MakeInvoice( const char *prefixStr  ,  int zone , int regID , long price , int vatNum , long vat ,  long credit );
 
 // generovani cisla faktur a update countru prefixu 
 bool GetInvoicePrefix( char *prefixStr , int typ , int zone );
