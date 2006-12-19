@@ -47,7 +47,7 @@ NameService::bind(const std::string& name, CORBA::Object_ptr objref)
   try {
     CosNaming::Name contextName;
     contextName.length(1);
-    contextName[0].id   = (const char*) "ccReg";  // string copied
+    contextName[0].id   = (const char*) "fred";  // string copied
     contextName[0].kind = (const char*) "context"; // string copied
     CosNaming::NamingContext_var testContext;
     try {

@@ -7,8 +7,9 @@
 #endif
 
 #include "ccReg.hh"
-#include "ccReg_epp.h"
+//#include "ccReg_epp.h"
 #include "whois.h"
+#include "admin.h"
 
 #include <signal.h>
 #include <unistd.h>
@@ -88,47 +89,14 @@ int main(int argc, char** argv)
     myccReg_Whois_i->_remove_ref();
     ns.bind("Whois",whoisObj);
 
-    // pristup na admin a whois je mozna z EPP vyhodit
-    ccReg::Whois_var whois = ccReg::Whois::_narrow(whoisObj);
- 
-    MailerManager mm(&ns);
-    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(&mm);
+    PortableServer::ObjectId_var webWhoisObjectId = 
+      PortableServer::string_to_ObjectId("WebWhois");
+    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db,&ns);
+    poa->activate_object_with_id(webWhoisObjectId,myccReg_Admin_i);
+    CORBA::Object_var webWhoisObj = myccReg_Admin_i->_this();
+    myccReg_Admin_i->_remove_ref();
+    ns.bind("WebWhois",webWhoisObj);
 
-    ccReg::timestamp_var ts;
-    cout << "version: " << myccReg_EPP_i->version(ts) << endl;
-    cout << "timestamp: " << ts << endl;
-
-    // musi byt zavolano pred loadZones
-    if (!myccReg_EPP_i->TestDatabaseConnect(db)) {
-      std::cout << "Database connection failed\n";
-      exit(-2);
-    } 
-
-    if( myccReg_EPP_i->loadZones() <= 0  ){
-      std::cout << "Database error: load zones\n";
-      exit(-4);
-    }
- 
-    if( myccReg_EPP_i->LoadCountryCode() <= 0 ){  /// nacti ciselnik zemi
-      std::cout << "Database error: load country code\n";
-      exit(-5);
-    }
-       
-    if( myccReg_EPP_i->LoadErrorMessages() <= 0 ){  // nacti chybove zpravy
-      std::cout << "Database error: load country error messages\n";
-      exit(-6);
-    }
-
-     if( myccReg_EPP_i->LoadReasonMessages()  <= 0 ){   // nacti reason zpravy
-      std::cout << "Database error: load country reason messages\n";
-      exit(-7);
-    }
-
-
-    PortableServer::ObjectId_var myccReg_EPP_iid = 
-      PortableServer::string_to_ObjectId("ccReg");
-    poa->activate_object_with_id(myccReg_EPP_iid,myccReg_EPP_i);
-    
     // Obtain a POAManager, and tell the POA to start accepting
     // requests on its objects.
     PortableServer::POAManager_var pman = poa->the_POAManager();

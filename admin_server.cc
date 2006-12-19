@@ -68,12 +68,12 @@ int main(int argc, char** argv)
     NameService ns(orb,nameServiceIOR);
 
     PortableServer::ObjectId_var adminObjectId = 
-      PortableServer::string_to_ObjectId("Admin2");
+      PortableServer::string_to_ObjectId("Admin");
     ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db,&ns);
     poa->activate_object_with_id(adminObjectId,myccReg_Admin_i);
     CORBA::Object_var adminObj = myccReg_Admin_i->_this();          
     myccReg_Admin_i->_remove_ref();
-    ns.bind("Admin2",adminObj);
+    ns.bind("Admin",adminObj);
     
     
 #ifdef SYSLOG

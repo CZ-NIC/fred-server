@@ -19,8 +19,8 @@ ADMIN_SERVER_OBJECTS = $(COMMON_OBJECTS) admin.o  admin_server.o
 CCREG_SERVER_OBJECTS = $(COMMON_OBJECTS) ccReg_epp.o  ccReg_server.o  \
    countrycode.o messages.o 
 BANKING_OBJECT = gpc.o banking.o log.o conf.o dbsql.o pqsql.o util.o 
-PIF_SERVER_OBJECTS = $(COMMON_OBJECTS) ccReg_epp.o  pif_server.o  \
-   whois.o admin.o countrycode.o messages.o 
+PIF_SERVER_OBJECTS = $(COMMON_OBJECTS) pif_server.o  \
+   whois.o admin.o
 EPP_CLIENT_OBJECTS=ccRegSK.o ccRegDynSK.o  epp_client.o nameservice.o
 WHOIS_CLIENT_OBJECTS=ccRegSK.o whois_client.o nameservice.o
 
