@@ -71,6 +71,9 @@ bool TestDNSHost( const char *fqdn  );
 // test inet addres ipv4 a ipv6
 bool TestInetAddress(const char *address );
 
+// test ExDate
+bool TestExDate( const char *curExDate , const char * ExDate );
+
 // test spravnosti intervalu periody
 int TestPeriodyInterval( int period , int min , int max );
 
@@ -86,8 +89,6 @@ void convert_rfc3339_date( char *dateStr , const char *string );
 // preved cas z UTC stringu na lokalni cas dle rfc3339 z casovou zonou
 void convert_rfc3339_timestamp( char *dateStr , const char *string );
 
-// prevod casu z DB v UTC na lokalni cas dle rfc3339 
-void get_dateStr(  char *dateStr , const char *string );
 
 // prevadi casovy string na zulu date time dle rfc3339
 void get_zulu_t(  char *dateStr , const char *string );
@@ -96,7 +97,7 @@ void get_zulu_t(  char *dateStr , const char *string );
 time_t get_time_t(const char *string );
 
 // prevede cas na timestamp dle rfc3339 s casovou zonou jako offset
-void get_rfc3339_timestamp( time_t t , char *string);
+void get_rfc3339_timestamp( time_t t , char *string ,   bool day );
 
 // prevede time_t do retezce pro SQL
 void get_timestamp( time_t t , char *string);

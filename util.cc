@@ -434,6 +434,14 @@ else return false;
 }
 
 
+bool TestExDate( const char *curExDate , const char * ExDate )
+{
+LOG( LOG_DEBUG , "test curExDate [%s] ExDate [%s]" , curExDate ,  ExDate );
+
+if( strcmp( curExDate ,  ExDate ) == 0 ){ LOG( LOG_DEBUG , "test OK" ); return true; }
+else { LOG( LOG_DEBUG , "test fail " );  return false; }
+}
+
 int TestPeriodyInterval( int period , int min , int max )
 {
 int mod;
@@ -526,11 +534,17 @@ return t;
 
 
 }
+
+
 // prevod datau z DB SQL na date 
 void convert_rfc3339_date( char *dateStr , const char *string )
 {
-strncpy( dateStr , string , 10 );
-dateStr[10] = 0; // ukoncit
+time_t t;
+
+t =  get_time_t( string ); // preved na GMT
+if( t <= 0 ) strcpy( dateStr , "" ); // chyba ERROR
+// preved vstupni string a vrat rfc3339 date  
+else get_rfc3339_timestamp(  t , dateStr , true); // vrat jako lokalni DATUM
 }
 
 void convert_rfc3339_timestamp( char *dateStr , const char *string )
@@ -538,13 +552,13 @@ void convert_rfc3339_timestamp( char *dateStr , const char *string )
 time_t t;
 
 t =  get_time_t( string );
-if( t <= 0 ) strcpy( dateStr , "" );
+if( t <= 0 ) strcpy( dateStr , "" ); // chyba ERROR
 // preved vstupni string a vrat rfc3339 date time s casovou zonou
-else get_rfc3339_timestamp(  t , dateStr );
-
+else get_rfc3339_timestamp(  t , dateStr , false );
 }
 
-void get_rfc3339_timestamp( time_t t , char *string)
+
+void get_rfc3339_timestamp( time_t t , char *string , bool day)
 {
 struct tm *dt;
 int diff;
@@ -565,8 +579,10 @@ else if (diff < 0)
      else  sign = '+';
 
 
-
-
+// preved pouze den
+if( day ) sprintf(  string , "%4d-%02d-%02d" ,  dt->tm_year + 1900  ,  dt->tm_mon + 1 ,  dt->tm_mday  );
+else 
+{
 sprintf(  string , "%4d-%02d-%02dT%02d:%02d:%02d%c" , 
     dt->tm_year + 1900  ,  dt->tm_mon + 1 ,  dt->tm_mday ,
     dt->tm_hour,   dt->tm_min , dt->tm_sec , sign );
@@ -577,6 +593,9 @@ if( diff != 0 )
    sprintf( tzstr ,   "%02d:%02d"  ,   diff / SECSPERHOUR  , ( diff % SECSPERHOUR )   / MINSPERHOUR );  // timezone
    strcat( string , tzstr );
   }
+
+}
+
 
 }
 
