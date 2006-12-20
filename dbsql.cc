@@ -803,21 +803,7 @@ sprintf( sqlString , "INSERT INTO %s_contact_map VALUES ( %d , %d );" ,  table ,
 return ExecSQL( sqlString );
 }
  
-// test porovani zadaneho datumu expirace s datumem v databazi
-bool DB::TestExpDate( const char *dateStr , int id )
-{
-bool ret =false;
-char sqlString[256];
 
-sprintf( sqlString , "SELECT  ExDate FROM domain WHERE  id=%d and date(ExDate)=\'%s\';" , id , dateStr );
-if( ExecSelect( sqlString ) )
- {
-    if(  GetSelectRows() == 1  ) ret = true;
-     FreeSelect();
-  }
-
-return ret;
-}
 
 bool DB::TestValExDate(const char *dateStr ,  int period  , int interval , int id )
 {

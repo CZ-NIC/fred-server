@@ -137,8 +137,6 @@ int  MakeInvoice( const char *prefixStr  ,  int zone , int regID , long price , 
 // generovani cisla faktur a update countru prefixu 
 bool GetInvoicePrefix( char *prefixStr , int typ , int zone );
 
-// testuje zadane datum expirace na domenu id
-bool TestExpDate( const char *dateStr , int id );
 
 // test doby expirace validace
 bool TestValExDate(const char *dateStr ,  int period  , int interval , int id );
