@@ -4567,7 +4567,10 @@ if( DBsql.OpenDatabase( database ) )
 
 
     // TODO LIST podle clienat OBJEKTU predelat na Object_registry 
-//    sprintf( sqlString , "SELECT name FROM  Object_registry WHERE clid=%d and type=%d;" ,  regID , typ );
+   sprintf( sqlString , 
+     "SELECT obr.name FROM  object_registry obr, object o "
+     "WHERE obr.id=o.id AND o.clid=%d AND obr.type=%d",regID,typ 
+   );
 
 
    if( DBsql.ExecSelect( sqlString) )
