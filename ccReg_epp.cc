@@ -543,7 +543,7 @@ LOG( NOTICE_LOG , "get version %s" , version );
 // aktualnidatum a cas
 // vrat casove razitko
 
-get_rfc3339_timestamp( t , dateStr  );
+get_rfc3339_timestamp( t , dateStr , false );
 datetime =  CORBA::string_dup( dateStr );
 
 
@@ -1223,7 +1223,6 @@ ccReg::Response* ccReg_EPP_i::PollRequest(CORBA::String_out msgID, CORBA::Short&
 {
 DB DBsql;
 char sqlString[1024];
-char dateStr[MAX_DATE];
 ccReg::Response * ret;
 int regID;
 int rows;
@@ -1264,8 +1263,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                 {
                   count = rows;
                   // prevede cas s postgres na rfc3339 cas s offsetem casove zony
-                  get_dateStr( dateStr , DBsql.GetFieldValueName("CrDate" , 0 ) );
-                  qDate =  CORBA::string_dup( dateStr );
+                  qDate =  CORBA::string_dup( DBsql.GetFieldDateValueName("CrDate" , 0 )  );
                   msgID =   CORBA::string_dup(  DBsql.GetFieldValueName( "ID", 0 ) );
                   mesg = CORBA::string_dup( DBsql.GetFieldValueName( "message", 0 ) );
                   ret->errCode = COMMAND_ACK_MESG;      // zpravy jsou ve fronte
@@ -3630,8 +3628,6 @@ if( (  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) )
               {
 
                 enumVal = new ccReg::ENUMValidationExtension;
-              //  convert_rfc3339_date( dateStr ,  DBsql.GetFieldValueName("ExDate" , 0 ) ); // datum a cas expirace validace
-
                 enumVal->valExDate = CORBA::string_dup(  DBsql.GetFieldDateValueName( "ExDate" , 0 ) );
                 d->ext.length(1); // preved na  extension
                 d->ext[0] <<=  enumVal;
@@ -4018,7 +4014,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Regis
                                              CORBA::Long clientID, const char *clTRID,  const  char* XML , const ccReg::ExtensionList & ext )
 {
 DB DBsql;
-char valexpiryDate[MAX_DATE] , dateStr[MAX_DATE];
+char valexpiryDate[MAX_DATE];
 char  FQDN[64];
 ccReg::Response * ret;
 int contactid, regID, nssetid, adminid, id;
@@ -4202,9 +4198,8 @@ if( DBsql.OpenDatabase( database ) )
                                 // zjisti datum a cas vytvoreni domeny
                                 crDate= CORBA::string_dup(  DBsql.GetObjectCrDateTime( id )  );
 
-                                //  vrat datum expirace
-                                convert_rfc3339_date( dateStr ,   DBsql.GetValueFromTable( "DOMAIN", "ExDate" , "id" , id ) ); 
-                                exDate =  CORBA::string_dup( dateStr );
+                                //  vrat datum expirace jako lokalni datum 
+                                exDate =  CORBA::string_dup(  DBsql.GetDomainExDate(id)  );
 
 
                                   
@@ -4229,7 +4224,7 @@ if( DBsql.OpenDatabase( database ) )
 
          
                              // zpracovani creditu a ulozeni polozky na fakturu
-                             if( DBsql.UpdateInvoiceCredit(  regID ,   EPP_DomainCreate  ,   zone ,  period_count ,  dateStr , id  )  == false  ) 
+                             if( DBsql.UpdateInvoiceCredit(  regID ,   EPP_DomainCreate  ,   zone ,  period_count ,  exDate , id  )  == false  ) 
                                     ret->errCode =  COMMAND_BILLING_FAILURE;
 
 
@@ -4292,7 +4287,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                                             const char *clTRID, const  char* XML , const ccReg::ExtensionList & ext )
 {
   DB DBsql;
-  char expDateStr[MAX_DATE],  ExDateStr[MAX_DATE] , valexpiryDate[MAX_DATE] ;
+  char expDateStr[MAX_DATE],   valexpiryDate[MAX_DATE] ;
   char FQDN[64]; 
   ccReg::Response * ret;
   int  regID, id,  zone ;
@@ -4369,7 +4364,8 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
              else
              {
           
-              if( DBsql.TestExpDate( curExpDate  , id ) == false  )
+              // test ExDate
+              if( TestExDate(  curExpDate  , DBsql.GetDomainExDate(id)  )  == false )
                 {
                   LOG( WARNING_LOG, "curExpDate is not same as ExDate" );
                   SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_curExpDate , REASON_MSG_CUREXPDATE_NOT_EXPDATE ,  curExpDate , GetRegistrarLang( clientID ) );
@@ -4397,10 +4393,9 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                   break;
                default:
                        // vypocet ExDate datum expirace
-                       if( DBsql.GetExpDate( ExDateStr , id ,  period_count  ,  GetZoneExPeriodMax( zone ) )  )   exDate =  CORBA::string_dup( ExDateStr );
-                       else
+                       if( DBsql.CountExDate( id ,  period_count  ,  GetZoneExPeriodMax( zone ) ) == false )
                          {
-                             LOG( WARNING_LOG, "period %d GetExpDate out of range" , period_count );
+                             LOG( WARNING_LOG, "period %d ExDate out of range" , period_count );
                              SetErrorReason( ret , COMMAND_PARAMETR_RANGE_ERROR , ccReg::domain_period , REASON_MSG_PERIOD_RANGE ,  periodStr , GetRegistrarLang( clientID ) );
                           }
                   break; 
@@ -4465,22 +4460,24 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                                    }
 
 
-                      // zpracovani creditu a ulozeni polozky na fakturu
-                      if( DBsql.UpdateInvoiceCredit(  regID ,   EPP_DomainRenew  ,   zone ,  period_count ,  ExDateStr , id  )  == false  )
-                          ret->errCode =  COMMAND_BILLING_FAILURE;
 
 
                                    if( ret->errCode == 0 ) // pokud je OK
                                    {
 
-                                     // zmena platnosti domeny
-                                     DBsql.UPDATE( "DOMAIN" );                                     
-                                     DBsql.SET(  "ExDate", ExDateStr );
-                                     DBsql.WHEREID( id );
-                                     if( DBsql.EXEC() ) 
+                                     // prodlouzeni platnosti domeny
+                                     if( DBsql.RenewExDate( id , period_count ) ) 
                                        {
+                                           //  vrat datum expirace jako lokalni datum
+                                           exDate =  CORBA::string_dup(  DBsql.GetDomainExDate(id)  );
+
+                                       // zpracovani creditu a ulozeni polozky na fakturu
+                                           if( DBsql.UpdateInvoiceCredit(  regID ,   EPP_DomainRenew  ,   zone ,  period_count , exDate , id  )  == false  )
+                                                       ret->errCode =  COMMAND_BILLING_FAILURE;
+                                            else                                             
                                               //  uloz do historie
                                              if( DBsql.SaveDomainHistory( id ) )  ret->errCode = COMMAND_OK;
+                                            
                                        }
                                      else ret->errCode = COMMAND_FAILED;
                                   }

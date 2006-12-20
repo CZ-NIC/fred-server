@@ -94,7 +94,9 @@ bool TestObjectClientID( int id  , int regID );
 // vraci ID objektu podle jeho nazvu
 int GetObjectID( int type , const char *name );
 
-char * GetObjectCrDateTime( int id );
+char * GetDomainExDate( int id ); // vraci ExDate domeny jako datum (lokalni datum)
+
+char * GetObjectCrDateTime( int id ); // vraci datum a cas vytvoreni objektu
 char * GetObjectName( int id );
 
 // ukladani smazaneho objektu ErDate
@@ -140,8 +142,10 @@ bool TestExpDate( const char *dateStr , int id );
 
 // test doby expirace validace
 bool TestValExDate(const char *dateStr ,  int period  , int interval , int id );
-// vypocet doby exprace
-bool GetExpDate(char *dateStr , int domainID , int period  , int max_period );
+// test doby expirace
+bool CountExDate(  int domainID , int period  , int max_period );
+bool RenewExDate(  int domainID , int period  );
+
 
 // vraci ID hostu
 int GetHostID(  const char *fqdn , int nssetID );

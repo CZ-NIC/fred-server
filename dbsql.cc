@@ -398,6 +398,12 @@ convert_rfc3339_timestamp( dtStr ,  GetValueFromTable(  "OBJECT_registry" , "CrD
 return dtStr;
 }
 
+
+char * DB::GetDomainExDate( int id )
+{
+convert_rfc3339_date( dtStr , GetValueFromTable( "DOMAIN", "ExDate" , "id" , id ) );
+return dtStr;
+}
 char * DB::GetFieldDateTimeValueName(  const char *fname , int row )
 {
 convert_rfc3339_timestamp( dtStr ,  GetFieldValueName( (char * ) fname , row ) ) ;
@@ -862,11 +868,11 @@ return ret;
 
 
 
-bool DB::GetExpDate(char *dateStr , int domainID , int period  , int max_period )
+// testuje jestli lze prodlouzit domenu pri DomainRenew
+bool DB::CountExDate( int domainID , int period  , int max_period )
 {
 char sqlString[256];
 bool ret=false;
-strcpy( dateStr , "" ); // default datum
 
 sprintf( sqlString , "SELECT  ExDate+interval\'%d month\' FROM DOMAIN WHERE id=%d AND ExDate+interval\'%d month\' < current_date+interval\'%d month\';",
            period , domainID , period , max_period );
@@ -874,11 +880,7 @@ sprintf( sqlString , "SELECT  ExDate+interval\'%d month\' FROM DOMAIN WHERE id=%
 
 if( ExecSelect( sqlString ) )
  {
-    if(  GetSelectRows() == 1  )
-      {
-        convert_rfc3339_date( dateStr ,     GetFieldValue( 0 , 0 ) );         // musi to vratit jakop datum
-        ret = true;
-      }
+    if(  GetSelectRows() == 1  )  ret = true;
     FreeSelect();
   }
 
@@ -886,6 +888,17 @@ return ret;
 }
 
 
+bool DB::RenewExDate(  int domainID , int period  )
+{
+char sqlString[256];
+
+sprintf( sqlString , "UPDATE domain SET  ExDate=ExDate+interval\'%d month\' WHERE id=%d ;" ,  period , domainID );
+
+return ExecSQL(  sqlString );
+}
+
+
+ 
 
 
 
