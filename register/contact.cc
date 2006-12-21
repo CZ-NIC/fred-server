@@ -344,6 +344,10 @@ namespace Register
       {
         return &clist;
       }      
+      CheckAvailType checkAvail(const std::string& handle) const
+      {
+        return CA_INVALID_HANDLE;
+      }
     };
     Manager *Manager::create(DB *db)
     {

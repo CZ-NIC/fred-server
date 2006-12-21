@@ -17,6 +17,22 @@ namespace Register
    std::auto_ptr<NSSet::Manager> nm;
    std::vector<CountryDesc> countries;
   public:
+   CheckHandleClass classifyDomain(
+     const std::string& fqdn, std::string& conflictFqdn) const
+   {
+     switch (dm->checkAvail(fqdn,conflictFqdn)) {
+       case Domain::CA_INVALID_HANDLE:
+       case Domain::CA_BAD_LENGHT:
+       case Domain::CA_BAD_ZONE: return CH_UNREGISTRABLE;
+       case Domain::CA_PROTECTED:
+       case Domain::CA_BLACKLIST: return CH_PROTECTED;
+       case Domain::CA_REGISTRED: return CH_REGISTRED;
+       case Domain::CA_PARENT_REGISTRED: return CH_REGISTRED_PARENT;
+       case Domain::CA_CHILD_REGISTRED: return CH_REGISTRED_CHILD;
+       case Domain::CA_AVAILABLE: return CH_FREE;
+     }
+     return CH_UNREGISTRABLE;
+   }
    ManagerImpl(DB *_db) : db(_db)
    {
      zm.reset(Zone::Manager::create(db));
@@ -33,6 +49,8 @@ namespace Register
      cd.name = "Slovak Republic";
      countries.push_back(cd);
    } 
+#define CHECK_DOM \
+
    /// interface method implementation
    void checkHandle(const std::string& handle, CheckHandleList& chl) const
    {
@@ -47,17 +65,7 @@ namespace Register
        ch.newHandle = dm->makeEnumDomain(handle);
        // succeeded!
        ch.type = HT_ENUM_NUMBER;
-       switch (dm->checkAvail(ch.newHandle)) {
-         case Domain::CA_INVALID_HANDLE: // TODO: log problem,  
-         case Domain::CA_BAD_LENGHT:
-         case Domain::CA_BAD_ZONE: ch.handleClass = CH_UNREGISTRABLE; break;
-         case Domain::CA_PROTECTED:
-         case Domain::CA_BLACKLIST: ch.handleClass = CH_PROTECTED; break;
-         case Domain::CA_REGISTRED: ch.handleClass = CH_REGISTRED; break;
-         case Domain::CA_PARENT_REGISTRED: ch.handleClass = CH_REGISTRED_PARENT; break;
-         case Domain::CA_CHILD_REGISTRED: ch.handleClass = CH_REGISTRED_CHILD; break;
-         case Domain::CA_AVAILABLE: ch.handleClass = CH_FREE; break;       
-       }
+       ch.handleClass = classifyDomain(ch.newHandle,ch.conflictHandle);
        return;
      } 
      catch (...) {
@@ -80,12 +88,14 @@ namespace Register
          }
          const Zone::Zone *z = zm->findZoneId(handle); 
          if (!z) {
+           // unregistrable because of diffrenet zone
+           // must determine if it is enum domain or nod  
            ch.handleClass = CH_UNREGISTRABLE;
            const std::string& esuf = zm->getDefaultEnumSuffix();
            if (handle.rfind(esuf) + esuf.size() == handle.size())
-             ch.type = HT_DOMAIN;
-           else 
              ch.type = HT_ENUM_DOMAIN;
+           else 
+             ch.type = HT_DOMAIN;
          }
          else {
            // special test for enum domain (parts are single numbers)
@@ -93,7 +103,7 @@ namespace Register
              if (!dm->checkEnumDomainName(dn))
                throw Domain::INVALID_DOMAIN_NAME();
              ch.type = HT_ENUM_DOMAIN;
-             ch.handleClass = CH_FREE; // TODO: CHECK!!!!! 
+             ch.handleClass = classifyDomain(handle,ch.conflictHandle);
              return;
            }
            // is normal domain
@@ -101,7 +111,7 @@ namespace Register
            // only second level domain is allowed           
            if (dn.size() != 2) ch.handleClass = CH_UNREGISTRABLE_LONG;
            else {
-             ch.handleClass = CH_FREE;
+             ch.handleClass = classifyDomain(handle,ch.conflictHandle);
             /*
              ch.handleClass = CH_DOMAIN_LONG;
              // long domain name is truncated to 2nd level

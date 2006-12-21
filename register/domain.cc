@@ -430,7 +430,10 @@ namespace Register
         domain.push_back(part);
       }
       /// interface method implementation  
-      CheckAvailType checkAvail(const std::string& fqdn) const 
+      CheckAvailType checkAvail(
+        const std::string& fqdn,
+        std::string& conflictFqdn
+      ) const 
         throw (SQL_ERROR)
       {
         DomainName domain;
@@ -453,9 +456,10 @@ namespace Register
           throw SQL_ERROR();
         }
         if (db->GetSelectRows() == 1) {
-          std::string fqdnLoaded = db->GetFieldValue(0,0);
-          if (fqdn == fqdnLoaded) ret = CA_REGISTRED;
-          else if (fqdn.size() > fqdnLoaded.size()) ret = CA_PARENT_REGISTRED;
+          conflictFqdn = db->GetFieldValue(0,0);
+          if (fqdn == conflictFqdn) ret = CA_REGISTRED;
+          else if (fqdn.size() > conflictFqdn.size())
+            ret = CA_PARENT_REGISTRED;
           else ret = CA_CHILD_REGISTRED;  
         }
         db->FreeSelect();
