@@ -4287,7 +4287,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                                             const char *clTRID, const  char* XML , const ccReg::ExtensionList & ext )
 {
   DB DBsql;
-  char expDateStr[MAX_DATE],   valexpiryDate[MAX_DATE] ;
+  char   valexpiryDate[MAX_DATE] ;
   char FQDN[64]; 
   ccReg::Response * ret;
   int  regID, id,  zone ;
@@ -4302,7 +4302,6 @@ char periodStr[10];
 // default
   exDate =  CORBA::string_dup( "" );
 
-   strcpy( expDateStr , "" );
    strcpy( valexpiryDate , "" );
 // default
   ret->errCode = 0;
