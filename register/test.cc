@@ -98,7 +98,8 @@ int main()
             << " Class: " << chl[0].handleClass << std::endl
             << " NewHandle: " << chl[0].newHandle << std::endl
             << " Conflict: " << chl[0].conflictHandle << std::endl;
-  Register::Domain::CheckAvailType ca = dm->checkAvail(input);
+  std::string conflictHandle;
+  Register::Domain::CheckAvailType ca = dm->checkAvail(input,conflictHandle);
   std::cout << "Result of checkAvail: " << ca << std::endl;
   }
 }
