@@ -42,7 +42,7 @@ t = time(NULL);
 
 
 // vrat casove razitko
-get_rfc3339_timestamp( t , timestampStr  );
+get_rfc3339_timestamp( t , timestampStr, false  );
 timestamp =  CORBA::string_dup( timestampStr );
 
 dm = new ccReg::DomainWhois;
