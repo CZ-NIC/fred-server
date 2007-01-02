@@ -2729,6 +2729,9 @@ if( ( DBsql.BeginAction( clientID , EPP_NSsetInfo , clTRID , XML  )  ))
 
      } else ret->errCode=COMMAND_FAILED;
 
+    // konec transakce commit ci rollback
+    DBsql.QuitTransaction( ret->errCode );
+
     }else ret->errCode=COMMAND_FAILED;
 
        
