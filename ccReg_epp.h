@@ -115,11 +115,9 @@ public:
   void SetReasonDomainFQDN(  ccReg::Response *ret , const char *fqdn ,  int zone , int lang  );
 
 
-  void SetReasonContactHistory( ccReg::Response *ret , const char *handle , int lang  );
-  void SetReasonDomainHistory( ccReg::Response *ret , const char *fqdn , int lang  );
-  void SetReasonNSSetHistory( ccReg::Response *ret , const char *handle , int lang  );
+  void SetReasonProtectedPeriod( ccReg::Response *ret , const char *value , int lang  );
 
-  void SetReasonContactMap( ccReg::Response *ret ,  ccReg::ErrorSpec reasonCode , const char *handle , int id ,  int lang );
+  void SetReasonContactMap( ccReg::Response *ret ,  ccReg::ErrorSpec reasonCode , const char *handle , int id ,  int lang , bool tech_or_admin);
 
   void SetReasonNSSetTech( ccReg::Response *ret , const char * handle  , int  techID ,  int lang  );
   void SetReasonNSSetTechADD(ccReg::Response * ret , const char * handle  , int  techID ,  int lang  );

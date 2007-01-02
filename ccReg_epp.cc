@@ -301,7 +301,7 @@ ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( reasonMsg , lang 
 void ccReg_EPP_i::SetReasonUnknowCC( ccReg::Response *ret ,  const char *value , int lang )
 {
 LOG( WARNING_LOG, "Reason: unknown country code: %s"  , value );
-SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::contact_cc , REASON_MSG_UNKNOW_COUNTRY ,  value ,  lang );
+SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::contact_cc , REASON_MSG_COUNTRY_NOTEXIST ,  value ,  lang );
 }
 
 
@@ -347,7 +347,7 @@ void ccReg_EPP_i::SetReasonDomainFQDN(  ccReg::Response *ret , const char *fqdn 
 
 LOG( WARNING_LOG, "domain in zone %s" , (const char * )  fqdn );
 if( zone == 0 )
-    SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::domain_fqdn , REASON_MSG_NOT_APPLICABLE_FQDN  , fqdn ,   lang );
+    SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::domain_fqdn , REASON_MSG_NOT_APPLICABLE_DOMAIN  , fqdn ,   lang );
 else if ( zone < 0 )
       SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::domain_fqdn , REASON_MSG_BAD_FORMAT_FQDN  , fqdn ,   lang );
 
@@ -366,7 +366,7 @@ if( nssetid < 0 )
 else  if( nssetid == 0 )
         {
           LOG( WARNING_LOG, " domain nsset not exist [%s]" , nsset_handle );
-          SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::domain_nsset ,  REASON_MSG_UNKNOW_NSSET , nsset_handle , lang );
+          SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::domain_nsset ,  REASON_MSG_NSSET_NOTEXIST , nsset_handle , lang );
         }
 
 }
@@ -381,32 +381,21 @@ if( contactid < 0 )
 else  if( contactid == 0 )
         {
           LOG( WARNING_LOG, " domain registrant not exist [%s]" , contact_handle );
-          SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::domain_registrant ,  REASON_MSG_UNKNOW_REGISTRANT ,  contact_handle , lang );
+          SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::domain_registrant ,  REASON_MSG_REGISTRANT_NOTEXIST ,  contact_handle , lang );
         }
 }
 
 
-void ccReg_EPP_i::SetReasonContactHistory( ccReg::Response *ret , const char *handle , int lang  )
+void ccReg_EPP_i::SetReasonProtectedPeriod( ccReg::Response *ret , const char *value , int lang  )
 {
-LOG( WARNING_LOG, "contact handle [%s] in history period" , handle );
-SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::contact_handle ,  REASON_MSG_CONTACT_HISTORY , handle ,  lang );
+LOG( WARNING_LOG, "object [%s] in history period" , value );
+SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::contact_handle ,  REASON_MSG_PROTECTED_PERIOD , value ,  lang );
 }
 
 
-void ccReg_EPP_i::SetReasonDomainHistory( ccReg::Response *ret , const char *fqdn , int lang  )
-{
-LOG( WARNING_LOG, "domain [%s] in history period" , fqdn );
-SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::domain_fqdn ,  REASON_MSG_FQDN_HISTORY  , fqdn  ,  lang );
-}
-
-void ccReg_EPP_i::SetReasonNSSetHistory( ccReg::Response *ret , const char *handle , int lang  )
-{
-LOG( WARNING_LOG, "NSSET handle [%s] in history period" , handle );
-SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::nsset_handle ,  REASON_MSG_CONTACT_HISTORY , handle ,  lang );
-}
 
 
-void ccReg_EPP_i::SetReasonContactMap( ccReg::Response *ret ,  ccReg::ErrorSpec reasonCode , const char *handle , int id ,  int lang )
+void ccReg_EPP_i::SetReasonContactMap( ccReg::Response *ret ,  ccReg::ErrorSpec reasonCode , const char *handle , int id ,  int lang ,  bool tech_or_admin )
 {
 
 if( id < 0 )
@@ -417,42 +406,42 @@ if( id < 0 )
 else if( id == 0 )
        {
           LOG( WARNING_LOG, " Contact %s not exist" ,  (const char *)  handle  );
-          SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , reasonCode , REASON_MSG_CONTACT_NOTEXIST  , handle  , lang );
+          if( tech_or_admin )  SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , reasonCode , REASON_MSG_TECH_NOTEXIST  , handle  , lang );
+          else   SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , reasonCode , REASON_MSG_ADMIN_NOTEXIST  , handle  , lang );
        }
 
 }
 
 void ccReg_EPP_i::SetReasonNSSetTech( ccReg::Response *ret , const char * handle  , int  techID ,  int lang  )
 {
-SetReasonContactMap(  ret , ccReg::nsset_tech , handle , techID ,lang );
+SetReasonContactMap(  ret , ccReg::nsset_tech , handle , techID ,lang , true);
 }
 
 void ccReg_EPP_i::SetReasonNSSetTechADD( ccReg::Response *ret , const char * handle  , int  techID ,  int lang  )
 {
-SetReasonContactMap(  ret , ccReg::nsset_tech_add , handle , techID,lang );
+SetReasonContactMap(  ret , ccReg::nsset_tech_add , handle , techID,lang , true);
 }
 
 void ccReg_EPP_i::SetReasonNSSetTechREM( ccReg::Response *ret , const char * handle  , int  techID ,  int lang  )
 {
-SetReasonContactMap(  ret , ccReg::nsset_tech_rem, handle , techID,lang );
+SetReasonContactMap(  ret , ccReg::nsset_tech_rem, handle , techID,lang , true);
 }
 
 
 void ccReg_EPP_i::SetReasonDomainAdmin( ccReg::Response *ret , const char * handle  , int  adminID ,  int lang  )
 {
-SetReasonContactMap(  ret , ccReg::domain_admin , handle , adminID ,lang );
+SetReasonContactMap(  ret , ccReg::domain_admin , handle , adminID ,lang , false);
 }
 
 void ccReg_EPP_i::SetReasonDomainAdminADD( ccReg::Response *ret , const char * handle  , int  adminID ,  int lang  )
 {
-SetReasonContactMap(  ret , ccReg::domain_admin_add , handle , adminID ,lang );
+SetReasonContactMap(  ret , ccReg::domain_admin_add , handle , adminID ,lang , false );
 }
 
 void ccReg_EPP_i::SetReasonDomainAdminREM( ccReg::Response *ret , const char * handle  , int  adminID ,  int lang  )
 {
-SetReasonContactMap(  ret , ccReg::domain_admin_rem , handle , adminID ,lang );
+SetReasonContactMap(  ret , ccReg::domain_admin_rem , handle , adminID ,lang , false );
 }
-
 
 
 void ccReg_EPP_i::SetReasonNSSetTechExistMap(   ccReg::Response *ret , const char * handle  ,  int lang  )
@@ -1149,7 +1138,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
           if( rows == 0 )
             {
                   LOG( ERROR_LOG, "unknown msgID %s",   msgID );
-                  SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::poll_msgID , REASON_MSG_UNKNOW_MSGID , msgID , GetRegistrarLang( clientID ) );
+                  SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::poll_msgID , REASON_MSG_MSGID_NOTEXIST , msgID , GetRegistrarLang( clientID ) );
             }
           else if( rows == 1 )       // pokud tam ta zprava existuje
               {
@@ -1644,7 +1633,7 @@ if( DBsql.OpenDatabase( database ) )
                             if( id >  0   )
                               {
                                 a[i].avail  =  ccReg::Exist ;    // objekt existuje
-                                a[i].reason =  CORBA::string_dup(   GetReasonMessage( REASON_MSG_HANDLE_EXIST , GetRegistrarLang( clientID ) )  );
+                                a[i].reason =  CORBA::string_dup(   GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID ) )  );
                                 LOG( NOTICE_LOG ,  "contact %s exist not Avail" , (const char * ) chck[i] );
                               }
                              else
@@ -1652,7 +1641,7 @@ if( DBsql.OpenDatabase( database ) )
                                if( DBsql.TestContactHandleHistory(  chck[i]  , DefaultContactHandlePeriod()  ) ) 
                                  {
                                      a[i].avail =  ccReg::DelPeriod;    // ochrana lhuta
-                                     a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_HANDLE_PROTECTED_PERIOD , GetRegistrarLang( clientID ) ) );  // v ochrane lhute
+                                     a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_PROTECTED_PERIOD , GetRegistrarLang( clientID ) ) );  // v ochrane lhute
                                      LOG( NOTICE_LOG ,  "contact %s in delete period" ,(const char * ) chck[i] );
                                  }
                                 else
@@ -1668,7 +1657,7 @@ if( DBsql.OpenDatabase( database ) )
                          {
                             LOG( NOTICE_LOG ,  "bad format %s of contact handle"  , (const char * ) chck[i] );
                             a[i].avail = ccReg::BadFormat;    // spatny format
-                            a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_HANDLE_BAD_FORMAT , GetRegistrarLang( clientID ) ));
+                            a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID ) ));
                          }
 
                         break;
@@ -1681,7 +1670,7 @@ if( DBsql.OpenDatabase( database ) )
                             if( id > 0  )
                               {
                                 a[i].avail = ccReg::Exist;    // objekt existuje
-                                a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_HANDLE_EXIST , GetRegistrarLang( clientID ) )  );
+                                a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID ) )  );
                                 LOG( NOTICE_LOG ,  "nsset %s exist not Avail" , (const char * ) chck[i] );
                               }
                              else
@@ -1689,7 +1678,7 @@ if( DBsql.OpenDatabase( database ) )
                                if( DBsql.TestNSSetHandleHistory( chck[i]  ,  DefaultDomainNSSetPeriod()  ) )
                                  {
                                      a[i].avail =  ccReg::DelPeriod;    // ochrana lhuta
-                                     a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_HANDLE_PROTECTED_PERIOD , GetRegistrarLang( clientID ) )  );  // v ochrane lhute
+                                     a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_PROTECTED_PERIOD , GetRegistrarLang( clientID ) )  );  // v ochrane lhute
                                      LOG( NOTICE_LOG ,  "nsset %s in delete period" ,(const char * ) chck[i] );
                                  }
                                 else
@@ -1705,7 +1694,7 @@ if( DBsql.OpenDatabase( database ) )
                          {
                             LOG( NOTICE_LOG ,  "bad format %s of nsset handle"  , (const char * ) chck[i] );
                             a[i].avail = ccReg::BadFormat;    // spatny format
-                            a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_HANDLE_BAD_FORMAT , GetRegistrarLang( clientID ) ) );
+                            a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID ) ) );
                          }
 
                         break;
@@ -1715,7 +1704,7 @@ if( DBsql.OpenDatabase( database ) )
                             if( ( id = DBsql.GetDomainID( FQDN , GetZoneEnum( zone ) ) ) > 0  )
                               {
                                 a[i].avail = ccReg::Exist;    // objekt existuje
-                                a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_FQDN_EXIST , GetRegistrarLang( clientID ) ) );
+                                a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID ) ) );
                                 LOG( NOTICE_LOG ,  "domain %s exist not Avail" , (const char * ) chck[i] );
                               }
                              else
@@ -1724,7 +1713,7 @@ if( DBsql.OpenDatabase( database ) )
                                if( DBsql.TestDomainFQDNHistory( FQDN , DefaultDomainFQDNPeriod() ) )
                                  {
                                      a[i].avail =  ccReg::DelPeriod;    // objekt byl smazan je v historri a ma ochranou lhutu
-                                     a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_FQDN_HISTORY , GetRegistrarLang( clientID ) ) );  // v ochrane lhute
+                                     a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_PROTECTED_PERIOD , GetRegistrarLang( clientID ) ) );  // v ochrane lhute
                                      LOG( NOTICE_LOG ,  "domain %s in delete period" ,(const char * ) chck[i] );
                                  }
                                 else
@@ -1742,13 +1731,13 @@ if( DBsql.OpenDatabase( database ) )
                              {
                                LOG( NOTICE_LOG ,  "bad format %s of fqdn"  , (const char * ) chck[i] );
                                a[i].avail = ccReg::BadFormat;    // spatny format
-                               a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_BAD_FORMAT_FQDN , GetRegistrarLang( clientID ) ) );
+                               a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID ) ) );
                              }
                            else
                              {
                                LOG( NOTICE_LOG ,  "not applicable %s"  , (const char * ) chck[i] );
                                a[i].avail = ccReg::NotApplicable;    // nepouzitelna domena neni v zone
-                               a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_NOT_APPLICABLE_FQDN , GetRegistrarLang( clientID ) ) );
+                               a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_NOT_APPLICABLE_DOMAIN , GetRegistrarLang( clientID ) ) );
                              }
                          }
                         break;
@@ -2310,7 +2299,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
              else   if( DBsql.BeginTransaction() )      // zahajeni transakce
               {
                     // test jestli neni ve smazanych kontaktech
-                  if( DBsql.TestContactHandleHistory( handle , DefaultContactHandlePeriod() ) ) SetReasonContactHistory( ret , handle , GetRegistrarLang( clientID ) );
+                  if( DBsql.TestContactHandleHistory( handle , DefaultContactHandlePeriod() ) ) SetReasonProtectedPeriod( ret , handle , GetRegistrarLang( clientID ) );
                   else
                   // test zdali country code je existujici zeme
                   if( !TestCountryCode( c.CC ) ) SetReasonUnknowCC( ret , c.CC , GetRegistrarLang( clientID ) );
@@ -2910,7 +2899,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
  
 
              // test jestli neni ve smazanych kontaktech
-         if( DBsql.TestNSSetHandleHistory( handle ,  DefaultDomainNSSetPeriod()  ) ) SetReasonNSSetHistory( ret , handle , GetRegistrarLang( clientID ) );
+         if( DBsql.TestNSSetHandleHistory( handle ,  DefaultDomainNSSetPeriod()  ) ) SetReasonProtectedPeriod( ret , handle , GetRegistrarLang( clientID ) );
          else 
           {
              // Test tech kontaktu 
@@ -2948,7 +2937,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                       if( dns.length() == 1 )
                         {
                           LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s"  , (const char *)  dns[0].fqdn   );    
-                          SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_dns_name , REASON_MSG_MIN_DNS , dns[0].fqdn , GetRegistrarLang( clientID ) );
+                          SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_dns_name , REASON_MSG_MIN_TWO_DNS_SERVER , dns[0].fqdn , GetRegistrarLang( clientID ) );
                         }
                       else
                         {
@@ -3282,7 +3271,7 @@ if( DBsql.OpenDatabase( database ) )
                                        if( strcmp( dns_add[i].inet[l] ,   dns_add[i].inet[j] ) == 0 )
                                          {
                                            LOG( WARNING_LOG, "NSSetUpdate: duplicity host address %s " , (const char *) dns_add[i].inet[j]  );
-                                           SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , REASON_MSG_REASON_MSG_DUPLICITY_IP_ADDRESS ,  dns_add[i].inet[j] , GetRegistrarLang( clientID ) );
+                                           SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , REASON_MSG_DUPLICITY_DNS_ADDRESS ,  dns_add[i].inet[j] , GetRegistrarLang( clientID ) );
                                          }
                                      }
 
@@ -4076,7 +4065,7 @@ if( DBsql.OpenDatabase( database ) )
                    LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
                    ret->errCode = COMMAND_OBJECT_EXIST;      // je uz zalozena
                   }
-                 else if( DBsql.TestDomainFQDNHistory( FQDN , DefaultDomainFQDNPeriod() ) ) SetReasonDomainHistory( ret , fqdn , GetRegistrarLang( clientID ));
+                 else if( DBsql.TestDomainFQDNHistory( FQDN , DefaultDomainFQDNPeriod() ) )  SetReasonProtectedPeriod( ret , fqdn , GetRegistrarLang( clientID ));
                      else
                       {
 
