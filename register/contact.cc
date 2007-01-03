@@ -2,6 +2,7 @@
 #include "dbsql.h"
 #include "object_impl.h"
 #include <boost/date_time/posix_time/time_parsers.hpp>
+#include <boost/regex.hpp>
 #include <vector>
 
 #define SET_SSNTYPE(t) ((t == 1 ? "RC" : (t == 2 ? "ICO" : "PASS")))
@@ -336,6 +337,26 @@ namespace Register
     {
       DB *db; ///< connection do db
       ListImpl clist;
+      /// check if handle is in valid format
+      /** Valid format is regexp 'CID:[[:alnum:]_.:]{1,36}' */
+      bool checkHandleFormat(const std::string& handle) const
+      {
+        return boost::regex_match(handle,boost::regex(
+           "[cC][iI][dD]:[a-zA-Z0-9_.:]{1,36}"
+        ));
+      }
+      /// check if object is in database
+      bool checkHandleRegistration(const std::string& handle) const
+        throw (SQL_ERROR)
+      {
+        std::ostringstream sql;
+        sql << "SELECT COUNT(*) FROM object_registry o, contact c "
+            << "WHERE o.id=c.id AND o.name=upper('" << handle << "')";
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        bool result = (atoi(db->GetFieldValue(0,0)));
+        db->FreeSelect();
+        return result;
+      }
      public:
       ManagerImpl(DB *_db) :
         db(_db), clist(_db)
@@ -343,10 +364,13 @@ namespace Register
       virtual List *getList()
       {
         return &clist;
-      }      
-      CheckAvailType checkAvail(const std::string& handle) const
+      }
+      virtual CheckAvailType checkAvail(const std::string& handle) const
+        throw (SQL_ERROR)
       {
-        return CA_INVALID_HANDLE;
+        if (!checkHandleFormat(handle)) return CA_INVALID_HANDLE;
+        if (!checkHandleRegistration(handle)) return CA_REGISTRED;
+        return CA_FREE;
       }
     };
     Manager *Manager::create(DB *db)

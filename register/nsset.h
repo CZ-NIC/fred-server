@@ -69,6 +69,20 @@ namespace Register
       virtual ~Manager() {}
       /// return list of nssets
       virtual List *getList() = 0;
+      /// type for check 
+      enum CheckAvailType {
+        /// handle cannot be contact
+        CA_INVALID_HANDLE,
+        /// handle is already registred
+        CA_REGISTRED,
+        /// handle is in protected period
+        CA_PROTECTED,
+        /// handle is free for registration
+        CA_FREE
+      };
+      /// check possibilities for registration
+      virtual CheckAvailType checkAvail(const std::string& handle) const 
+        throw (SQL_ERROR) = 0;
       /// factory method
       static Manager *create(DB *db);
     };

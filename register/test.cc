@@ -10,7 +10,7 @@ using namespace boost::gregorian;
 int main()
 {
   DB db;
-  db.OpenDatabase("host=localhost dbname=ccreg user=ccreg");
+  db.OpenDatabase("host=localhost dbname=ccreg user=postgres");
   std::auto_ptr<Register::Manager> m(Register::Manager::create(&db));
   Register::Domain::Manager *dm = m->getDomainManager();
   /*
@@ -88,7 +88,7 @@ int main()
   */
   while (1) {
   std::string input;
-  std::cout << "Domain: ";
+  std::cout << "Handle: ";
   std::cin >> input;
   Register::CheckHandleList chl;
   m->checkHandle(input,chl);

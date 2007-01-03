@@ -9,7 +9,7 @@ IDLDIR = ../../idl/branches/devel/
 IDLFILE = $(IDLDIR)/ccReg.idl
 LDFLAGS =  -L/usr/local/pgsql/lib/
 LIBS =  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread 
-SVLIBS = $(LIBS) register/libccreg.a  -lboost_date_time -lpq
+SVLIBS = $(LIBS) register/libccreg.a  -lboost_date_time -lboost_regex -lpq
 
 CPPFLAGS =  -I/usr/local/pgsql/include/   -I/usr/include/postgresql/ \
             -I. -Wno-deprecated

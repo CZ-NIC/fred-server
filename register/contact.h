@@ -109,7 +109,8 @@ namespace Register
         CA_FREE
       };
       /// check possibilities for registration
-      virtual CheckAvailType checkAvail(const std::string& handle) const = 0;
+      virtual CheckAvailType checkAvail(const std::string& handle) const 
+        throw (SQL_ERROR) = 0;
       /// factory method
       static Manager *create(DB *db);
     };

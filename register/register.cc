@@ -124,18 +124,44 @@ namespace Register
        }
        catch (...) {
          // no domain name, could be nsset or contact
-         std::string upper;
-         for (unsigned i=0; i<handle.size(); i++) 
-           upper+=toupper(handle[i]);
-         if (!upper.compare(0,6,"NSSID:")) {
-           ch.type = HT_NSSET;
-           ch.handleClass = CH_FREE;
-         }
-         else if (!upper.compare(0,4,"CID:")) {
+         // check contact
+         Contact::Manager::CheckAvailType cca = 
+           getContactManager()->checkAvail(handle);
+         if (cca != Contact::Manager::CA_INVALID_HANDLE) {
+           // is contact
            ch.type = HT_CONTACT;
-           ch.handleClass = CH_FREE;
+           switch (cca) {
+             case Contact::Manager::CA_PROTECTED : 
+               ch.handleClass= CH_PROTECTED; 
+               break;
+             case Contact::Manager::CA_REGISTRED :
+               ch.handleClass= CH_REGISTRED; 
+               break;
+             default:
+               ch.handleClass = CH_FREE;
+           };
+           return;
          }
-         else return; // default
+         // not contact, could be nsset   
+         NSSet::Manager::CheckAvailType nca = 
+           getNSSetManager()->checkAvail(handle);
+         if (nca != NSSet::Manager::CA_INVALID_HANDLE) {
+           // is nsset
+           ch.type = HT_NSSET;
+           switch (nca) {
+             case NSSet::Manager::CA_PROTECTED : 
+               ch.handleClass= CH_PROTECTED; 
+               break;
+             case NSSet::Manager::CA_REGISTRED :
+               ch.handleClass= CH_REGISTRED; 
+               break;
+             default:
+               ch.handleClass = CH_FREE;
+           };
+           return;
+         }
+         // left default settings
+         return;
        } 
      }
    }
@@ -147,11 +173,11 @@ namespace Register
    {
      return rm.get();
    }   
-   Contact::Manager *getContactManager()
+   Contact::Manager *getContactManager() const
    {
      return cm.get();
    }   
-   NSSet::Manager *getNSSetManager()
+   NSSet::Manager *getNSSetManager() const
    {
      return nm.get();
    }

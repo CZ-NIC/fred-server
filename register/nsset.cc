@@ -3,6 +3,8 @@
 #include "util.h"
 #include "object_impl.h"
 #include <boost/date_time/posix_time/time_parsers.hpp>
+#include <boost/regex.hpp>
+
 #include <vector>
 
 namespace Register
@@ -260,6 +262,26 @@ namespace Register
     {
       DB *db; ///< connection do db
       ListImpl nlist;
+      /// check if handle is in valid format
+      /** Valid format is regexp 'NSSID:[[:alnum:]_.:]{1,36}' */
+      bool checkHandleFormat(const std::string& handle) const
+      {
+        return boost::regex_match(handle,boost::regex(
+           "[nN][sS][sS][iI][dD]:[a-zA-Z0-9_.:]{1,36}"
+        ));
+      }
+      /// check if object is in database
+      bool checkHandleRegistration(const std::string& handle) const
+        throw (SQL_ERROR)
+      {
+        std::ostringstream sql;
+        sql << "SELECT COUNT(*) FROM object_registry o, nsset n "
+            << "WHERE o.id=n.id AND o.name=upper('" << handle << "')";
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        bool result = (atoi(db->GetFieldValue(0,0)));
+        db->FreeSelect();
+        return result;
+      }      
      public:
       ManagerImpl(DB *_db) :
         db(_db), nlist(_db)
@@ -267,7 +289,14 @@ namespace Register
       virtual List *getList()
       {
         return &nlist;
-      }      
+      }
+      virtual CheckAvailType checkAvail(const std::string& handle) const
+        throw (SQL_ERROR)
+      {
+        if (!checkHandleFormat(handle)) return CA_INVALID_HANDLE;
+        if (!checkHandleRegistration(handle)) return CA_REGISTRED;
+        return CA_FREE;
+      }            
     };
     Manager *Manager::create(DB *db)
     {

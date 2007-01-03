@@ -66,9 +66,9 @@ namespace Register
     /// return registrar manager
     virtual Registrar::Manager *getRegistrarManager() = 0;
     /// return contact manager
-    virtual Contact::Manager *getContactManager() = 0;
+    virtual Contact::Manager *getContactManager() const = 0;
     /// return nsset manager
-    virtual NSSet::Manager *getNSSetManager() = 0;
+    virtual NSSet::Manager *getNSSetManager() const = 0;
     /// return size of country description list
     virtual unsigned getCountryDescSize() const = 0;
     /// return country description by index in list
