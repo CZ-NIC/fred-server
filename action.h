@@ -51,3 +51,7 @@
 #define EPP_NSSetSendAuthInfo   1102
 #define EPP_DomainSendAuthInfo  1103
 
+// definice operaci z enum_operation
+#define OPERATION_DomainCreate 1
+#define OPERATION_DomainRenew  2
+

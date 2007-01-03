@@ -81,14 +81,16 @@ return ret;
 }
 
 // vraci castku za operaci 
-long DB::GetPrice(   int action  ,  int zone , int period  )
+long DB::GetPrice(   int operation ,  int zone , int period  )
 {
 char sqlString[256];
 long p ,  price=0; // cena
 int per; // cena za periodu
 
 
-sprintf(  sqlString ,  "SELECT price , period FROM price WHERE valid_from < 'now()'  and ( valid_to is NULL or valid_to > 'now()' )  and action=%d and zone=%d;" , action , zone );
+if( period > 0 ) sprintf(  sqlString ,  "SELECT price , period FROM price_list WHERE valid_from < 'now()'  and ( valid_to is NULL or valid_to > 'now()' )  and operation=%d and zone=%d;" , operation , zone );
+else  sprintf(  sqlString ,  "SELECT price  FROM price_list WHERE valid_from < 'now()'  and ( valid_to is NULL or valid_to > 'now()' )  AND  operation=%d and zone=%d;" , operation , zone );
+
 
 if( ExecSelect( sqlString ) )
  {
@@ -96,13 +98,17 @@ if( ExecSelect( sqlString ) )
    if(  GetSelectRows()  == 1 )
      {
        p = get_price(   GetFieldValue( 0 , 0 )    );
+
+       if( period > 0 )  
+       {
        per = atoi(  GetFieldValue( 0 , 1 )   );
        // vypocet ceny
        price = period * p  / per;
+       }else  price = p;
 
-       LOG( NOTICE_LOG , "GetPrice action %d zone %d period %d   -> price %ld (units) " , action , zone , period  , price);
+       LOG( NOTICE_LOG , "GetPrice operation %d zone %d period %d   -> price %ld (units) " , operation , zone , period  , price);
      }
-
+   
 
    FreeSelect();
   }
@@ -111,7 +117,7 @@ return price;
 }
 
 // ukladani polozky creditu
-bool DB::SaveInvoiceCredit(int regID , int objectID , int action  , int zone  , const char *ExDate , long price  , long price2 ,  int invoiceID   , int invoiceID2) 
+bool DB::SaveInvoiceCredit(int regID , int objectID , int operation , int zone  , const char *ExDate , long price  , long price2 ,  int invoiceID   , int invoiceID2) 
 {
 int id;
 
@@ -126,15 +132,15 @@ INSERT( "invoice_object_registry" );
 INTO( "id" );
 INTO( "objectid" );
 INTO( "registrarid"  );
-INTO( "action" );
+INTO( "operation" );
 INTO( "zone" );
-INTO( "ExDate" );
+INTOVAL( "ExDate" , ExDate); // pokud je nastaveno EXDate
 VALUE( id );
 VALUE( objectID );
 VALUE( regID );
-VALUE( action);
+VALUE( operation );
 VALUE( zone );
-VALUE( ExDate);
+VAL( ExDate);
 if( EXEC() ) 
  {
 
@@ -177,8 +183,21 @@ else
 }
 else return true;
 }
+
+// operace registrace domeny  CREATE
+bool DB::BillingCreateDomain( int regID , int  zone , int  objectID  )
+{
+return UpdateInvoiceCredit( regID ,  OPERATION_DomainCreate , zone , 0 , "" , objectID  );
+}
+// operace prodlouzeni domeny RENEW
+bool DB::BillingRenewDomain(  int regID , int  zone , int  objectID , int period  ,  const char *ExDate )
+{
+return UpdateInvoiceCredit( regID ,  OPERATION_DomainRenew , zone , period  , ExDate , objectID  );
+}
+
+
 // zpracovani creditu strzeni ze zalohe faktury ci dvou faktur
-bool DB::UpdateInvoiceCredit( int regID ,   int action  , int zone   , int period , const char *ExDate ,  int objectID  )
+bool DB::UpdateInvoiceCredit( int regID ,   int operation  , int zone   , int period , const char *ExDate ,  int objectID  )
 {
 char priceStr[16];
 // char creditStr[16];
@@ -190,7 +209,7 @@ long cr[2];
 int i , num;
 
 // cena za operaci v registru
-price =  GetPrice( action , zone , period );
+price =  GetPrice( operation , zone , period );
 
 // zadna cena (zadarmo) operace se povoluje
 if( price == 0 ) return true;
@@ -224,7 +243,7 @@ if( credit - price > 0 )
   {
      get_priceStr(   priceStr , price  );  
 
-     if( SaveInvoiceCredit(  regID , objectID ,   action  ,  zone   , ExDate , price , 0 , invoiceID , 0  )  )
+     if( SaveInvoiceCredit(  regID , objectID ,   operation  ,  zone   , ExDate , price , 0 , invoiceID , 0  )  )
       {
        sprintf(  sqlString ,  "UPDATE invoice SET  credit=credit-%s  WHERE id=%d;" , priceStr  , invoiceID );
        if( ExecSQL( sqlString )   ) return true;
@@ -244,7 +263,7 @@ else
      invoiceID=invID[0];
 
     
-       if( SaveInvoiceCredit(  regID ,objectID , action  ,  zone , ExDate , cr[0] ,  price  - cr[0]  , invID[0] , invID[1]  )  ) 
+       if( SaveInvoiceCredit(  regID ,objectID , operation  ,  zone , ExDate , cr[0] ,  price  - cr[0]  , invID[0] , invID[1]  )  ) 
          {
         // nastav credit na nulu u prvni zalohove faktury 
         sprintf(  sqlString ,  "UPDATE invoice  SET  credit=0  WHERE id=%d;" , invoiceID );
@@ -1013,6 +1032,23 @@ return ret;
 }
 
 
+int DB::GetSystemVAT()  // vraci hodnotu DPH pro sluzby registrace
+{
+char sqlString[128] = "select vat from price_vat where valid_to > now() or valid_to is null;" ;
+int dph=0;
+
+if( ExecSelect( sqlString ) )
+  {
+    if( GetSelectRows() == 1 )
+      {
+          dph = atoi( GetFieldValue( 0 , 0 ) );
+      }
+    FreeSelect();
+  }
+
+return dph;
+} 
+
 // test kodu zemo
 /*
 bool DB::TestCountryCode(const char *cc)
@@ -1202,9 +1238,8 @@ if( (vat + credit)  == price )
            INTO( "zone" );
            INTO( "registrarid" );
            INTO( "price" );
-           INTO( "numvat" );
            INTO( "vat" );
-           INTO( "total" );
+           INTO( "totalVAT" );           
            VALUE( invoiceID );
            VALUE( prefixStr  );
            VALUE( zone );

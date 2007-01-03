@@ -39,11 +39,16 @@ bool DeleteFromTableMap(char *map ,int  id , int contactid );
 
 
 // vraci castku za operaci
-long GetPrice(   int action  ,  int zone , int period  );
-bool SaveInvoiceCredit(int regID , int objectID , int action  , int zone  , const char *ExDate , long price ,  long price2  ,int invoiceID , int invoiceID2 );
+long GetPrice(   int  operation  ,  int zone , int period  );
+bool SaveInvoiceCredit(int regID , int objectID , int  operation  , int zone  , const char *ExDate , long price ,  long price2  ,int invoiceID , int invoiceID2 );
+
+// operace registrace domeny  CREATE
+bool BillingCreateDomain( int regID , int  zone , int  objectID  );
+// operace prodlouzeni domeny RENEW
+bool BillingRenewDomain(  int regID , int  zone , int  objectID , int period  ,  const char *ExDate );
 
 // zpracovani creditu
-bool UpdateInvoiceCredit( int regID ,   int action  , int zone  , int period  ,  const char *ExDate , int objectID );
+bool UpdateInvoiceCredit( int regID ,   int operation  , int zone  , int period  ,  const char *ExDate , int objectID );
 
 long GetRegistrarCredit(int regID , int zoneID );
 
@@ -123,6 +128,9 @@ int SaveBankHead( int accountID ,int num ,  char *date  ,  char *oldDate , long 
 // ulozeni polozky vypisu
 bool SaveBankItem( int statemetID , char *account  , char *bank , char *evidNum, char *date , char *memo , int code , 
                        char *konstSymb ,  char *varSymb , char *specsymb  , long price );
+
+
+int GetSystemVAT();  // vraci hodnotu DPH pro sluzby registrace
 
 
 // uloz credit

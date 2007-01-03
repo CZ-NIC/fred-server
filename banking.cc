@@ -10,11 +10,6 @@
 
 // #define error printf
 
-// TODO konfig
-int get_VATNum()
-{
-return 19;
-}
 
 // prepocita dan z ceny bez dane pre skoeficient
 long get_VAT(long price)
@@ -51,6 +46,7 @@ int zone;
 char prefixStr[25];
 long credit;
 int ret = 0;
+int DPH=0;
 
 if( db.OpenDatabase( database  ) )
 {
@@ -60,6 +56,7 @@ LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
 if( db.BeginTransaction() )
  {
 
+  DPH = db.GetSystemVAT();
   if(  (regID = db.GetRegistrarID( (char * )  registrarHandle ) )  ) 
   {
 
@@ -71,7 +68,7 @@ if( db.BeginTransaction() )
             credit =  price -  get_VAT( price ); // pripocitavany credit (castka be DPH )
 
             // vytvoreni zalohove faktury a ulozeni creditu
-           invoiceID =  db.MakeAInvoice( (const char * ) prefixStr ,  zone , regID , price , get_VATNum() , get_VAT( price ) , credit );
+           invoiceID =  db.MakeInvoice( (const char * ) prefixStr ,  zone , regID , price , DPH , get_VAT( price ) , credit );
 
            if( invoiceID ) if( db.SaveCredit( invoiceID , credit )  ) ret = CMD_OK;
          }
@@ -95,7 +92,7 @@ if( ret ) return true;
 else return false;
 }
 
-
+/* PREDELAT 
 int banking_invoicing(const char *database )
 {
 DB db;
@@ -106,7 +103,8 @@ int num , i;
 int invoiceID;
 long credit;
 int ret=0;
-
+int DPH=0;
+ 
 if( db.OpenDatabase( database  ) )
 {
 
@@ -115,6 +113,7 @@ LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
 if(  db.BeginTransaction() )
   {
 
+ DPH = GetSystemVAT();
  
      // SQL dotaz na bankovni vypisy a jajich  zparovani podke varsym v  tabulce banking_invoice_varsym_map
      strcpy( sqlString , "SELECT id , registarid, price , zone from bank_statement_item , banking_invoice_varsym_map where bank_statement_item.account_number=banking_invoice_varsym_map.account_number and bank_statement_item.bank_code=banking_invoice_varsym_map.bank_code and banking_invoice_varsym_map.varsymb=banking_invoice_varsym_map.varsymb and bank_statement_item.invoice_id is null" );
@@ -155,8 +154,8 @@ if(  db.BeginTransaction() )
               credit =  ib[i]->price -  get_VAT( ib[i]->price  ); // pripocitavany credit (castka be DPH )
              
               // vytvoreni zalohove faktury a ulozeni creditu         
-             if( ( invoiceID =  db.MakeAInvoice( (const char * ) prefixStr , ib[i]->zone , ib[i]->regID , 
-                            ib[i]->price  ,  get_VATNum() , get_VAT( ib[i]->price ) , credit ) ) )
+             if( ( invoiceID =  db.MakeInvoice( (const char * ) prefixStr , ib[i]->zone , ib[i]->regID , 
+                            ib[i]->price  ,  DPH  , get_VAT( ib[i]->price ) , credit ) ) )
              {
                    if( db.SaveCredit(   invoiceID   , credit ) )
                      {
@@ -189,6 +188,8 @@ db.Disconnect();
 
 return num;
 }
+
+*/
 
 bool banking_statement(const char *database , ST_Head *head , ST_Item  **item , int numrec )
 {
@@ -265,15 +266,15 @@ Conf config; // READ CONFIG  file
 // usage
 if( argc == 1 )printf("import banking statement file to database\nusage: %s --bank-gpc file.gpc\ninvoicing: %s --invoice\ncredit: %s --credit REG_HANDLE zone price\n"  , argv[0]  , argv[0] ,  argv[0]);  
 
-
+/*
 if( argc ==2 )
 {
  if( strcmp(  argv[1]  , "--invoice"  )  == 0 )
    {
-       banking_invoicing( config.GetDBconninfo() );
-        
+       banking_invoicing( config.GetDBconninfo() );        
    }
 }
+*/
 
 if( argc == 5 )
  {

@@ -4202,8 +4202,7 @@ if( DBsql.OpenDatabase( database ) )
                                  // uloz  admin kontakty
                                   for( i = 0; i < admin.length(); i++ )
                                     {
-                                            adminid  = DBsql.GetContactID( admin[i] );
-
+                                           adminid  = DBsql.GetContactID( admin[i] );
                                            LOG( DEBUG_LOG, "DomainCreate: add admin Contact %s id %d " , (const char *)   admin[i] , adminid );
                                           if(  !DBsql.AddContactMap( "domain" , id  , adminid  ) ) { ret->errCode = COMMAND_FAILED; break; }
  
@@ -4211,13 +4210,16 @@ if( DBsql.OpenDatabase( database ) )
 
          
                              // zpracovani creditu a ulozeni polozky na fakturu
-                             if( DBsql.UpdateInvoiceCredit(  regID ,   EPP_DomainCreate  ,   zone ,  period_count ,  exDate , id  )  == false  ) 
-                                    ret->errCode =  COMMAND_BILLING_FAILURE;
+                              // nejprve oprerace registrace
+                             if( DBsql.BillingCreateDomain( regID ,  zone ,  id  )  == false ) ret->errCode =  COMMAND_BILLING_FAILURE;
+                             else                                
+                                 // nasledne operace prodlouzeni domeny
+                                    if( DBsql.BillingRenewDomain( regID ,  zone , id ,  period_count ,  exDate ) == false ) ret->errCode =  COMMAND_BILLING_FAILURE;
+                                     else 
+                                          if(  DBsql.SaveDomainHistory( id ) )
+                                               if ( DBsql.SaveObjectCreate( id ) ) ret->errCode = COMMAND_OK; // pokud
+                             
 
-
-                                if(  ret->errCode == 0  ) // pokud nedoslo k chybe
-                                        if(  DBsql.SaveDomainHistory( id ) )
-                                             if ( DBsql.SaveObjectCreate( id ) ) ret->errCode = COMMAND_OK; // pokud 
                             
                              } else ret->errCode = COMMAND_FAILED; // end exec
 
@@ -4457,12 +4459,10 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                                            //  vrat datum expirace jako lokalni datum
                                            exDate =  CORBA::string_dup(  DBsql.GetDomainExDate(id)  );
 
-                                       // zpracovani creditu a ulozeni polozky na fakturu
-                                           if( DBsql.UpdateInvoiceCredit(  regID ,   EPP_DomainRenew  ,   zone ,  period_count , exDate , id  )  == false  )
-                                                       ret->errCode =  COMMAND_BILLING_FAILURE;
-                                            else                                             
-                                              //  uloz do historie
-                                             if( DBsql.SaveDomainHistory( id ) )  ret->errCode = COMMAND_OK;
+                                     // zuctovani operace prodlouzeni domeny
+                                    if( DBsql.BillingRenewDomain( regID ,  zone , id ,  period_count ,  exDate ) == false )
+                                     ret->errCode =  COMMAND_BILLING_FAILURE;
+                                     else  if( DBsql.SaveDomainHistory( id ) )  ret->errCode = COMMAND_OK; 
                                             
                                        }
                                      else ret->errCode = COMMAND_FAILED;
