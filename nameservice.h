@@ -22,10 +22,8 @@ class NameService
   void bind(const std::string& name, CORBA::Object_ptr objref)
     throw (NOT_RUNNING, BAD_CONTEXT);
   /// resolve object into ccReg.context/'name'.Object get IOR
-  CORBA::Object_ptr resolve(
-    const std::string& name, const std::string context = "ccReg"
-  ) throw (NOT_RUNNING, BAD_CONTEXT);
-
+  CORBA::Object_ptr resolve(    const std::string& name   ) 
+    throw (NOT_RUNNING, BAD_CONTEXT);
   /// destroy NameServiceObject
 	virtual ~NameService();
 };
