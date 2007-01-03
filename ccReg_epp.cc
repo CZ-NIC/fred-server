@@ -1535,16 +1535,7 @@ if( DBsql.OpenDatabase( database ) )
 
                          if(  ret->errCode == 0 )
                            {
-                             if(  LoginSession(  clientID  , regID ,  language ) )
-                               {
-                                      // probehne action pro svrTrID   musi byt az na mkonci pokud zna clientID 
-                                       // uloz pouze pro zname clientID
-                                      if( DBsql.BeginAction( clientID, EPP_ClientLogin, clTRID , XML ) )  ret->errCode = COMMAND_OK;
-                                      else ret->errCode = COMMAND_FAILED;
-
-
-                                      ret->errCode = COMMAND_OK;
-                               }
+                             if(  LoginSession(  clientID  , regID ,  language ) ) ret->errCode = COMMAND_OK;
                              else ret->errCode = COMMAND_FAILED;
                            }
 
@@ -1555,12 +1546,16 @@ if( DBsql.OpenDatabase( database ) )
               DBsql.QuitTransaction( ret->errCode );
           }
 
-            // zapis na konec action pokud je id
-        if( id )      ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
+          // zapis do tabuky action a vrat svTRID
+         if(  DBsql.BeginAction( clientID, EPP_ClientLogin, clTRID , XML )  )
+          {
+               ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
+           
          
 
-        ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
-
+             ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
+          }
+         else ServerInternalError();
 
       
 
