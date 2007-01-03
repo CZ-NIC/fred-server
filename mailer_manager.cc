@@ -4,7 +4,7 @@ MailerManager::MailerManager(NameService *ns)
   throw (RESOLVE_FAILED)
 {
   try {
-    mailer = ccReg::Mailer::_narrow(ns->resolve("Mailer","fred"));
+    mailer = ccReg::Mailer::_narrow(ns->resolve("Mailer"));
   } catch (...) { throw RESOLVE_FAILED(); }
 }
 
