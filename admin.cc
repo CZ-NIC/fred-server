@@ -2472,6 +2472,7 @@ ccReg_Mails_i::reload()
   mf.handle = handleFilter;
   mf.attachment = attachmentFilter;
   mf.content = handleFilter;
+  mf.type = typeFilter;
   mf.crTime = setPeriod(createTimeFilter);
   try {
     mm.reload(mf);
