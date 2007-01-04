@@ -1230,6 +1230,7 @@ int invoiceID;
 if( (vat + credit)  == price ) 
 {
 
+
            invoiceID = GetSequenceID( "invoice" );
 
            INSERT( "invoice" );
@@ -1240,6 +1241,7 @@ if( (vat + credit)  == price )
            INTO( "price" );
            INTO( "vat" );
            INTO( "totalVAT" );           
+           INTO( "credit" );
            VALUE( invoiceID );
            VALUE( prefixStr  );
            VALUE( zone );
