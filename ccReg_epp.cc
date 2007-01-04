@@ -1536,7 +1536,11 @@ if( DBsql.OpenDatabase( database ) )
                          if(  ret->errCode == 0 )
                            {
                              if(  LoginSession(  clientID  , regID ,  language ) ) ret->errCode = COMMAND_OK;
-                             else ret->errCode = COMMAND_FAILED;
+                             else 
+                              {
+                                  clientID=0; // zadny klient pro insert
+                                  ret->errCode =COMMAND_MAX_SESSION_LIMIT; // prekrocen maximalni pocet spojeni
+                              }
                            }
 
 

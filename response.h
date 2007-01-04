@@ -22,3 +22,5 @@
 #define COMMAND_PARAMETR_MISSING 2003 // chybejici parametr 
 
 #define COMMAND_BILLING_FAILURE 2104  // chyba v placeni za domenu  Billing failure
+
+#define  COMMAND_MAX_SESSION_LIMIT 2502 // maximalni pocet spojeni
