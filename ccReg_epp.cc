@@ -1380,6 +1380,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogout( CORBA::Long clientID, const char *c
 {
 DB DBsql;
 ccReg::Response * ret;
+int lang;
 
 
 ret = new ccReg::Response;
@@ -1398,6 +1399,7 @@ LOG( NOTICE_LOG, "ClientLogout: clientID -> %d clTRID [%s]",  (int )  clientID, 
            DBsql.SET( "logoutdate" , "now" );
            DBsql.SET( "logouttrid" , clTRID );
            DBsql.WHEREID( clientID );   
+           lang = GetRegistrarLang( clientID ); // zapamatovat si jazyk klienta
 
          if(  LogoutSession(  clientID ) )// logout session
           {
@@ -1415,7 +1417,7 @@ LOG( NOTICE_LOG, "ClientLogout: clientID -> %d clTRID [%s]",  (int )  clientID, 
         ret->errCode = COMMAND_FAILED;
 
 
-      ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
+        ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , lang )  );
 
       DBsql.Disconnect();
     }
