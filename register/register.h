@@ -64,7 +64,7 @@ namespace Register
     /// return domain manager
     virtual Domain::Manager *getDomainManager() = 0;
     /// return registrar manager
-    virtual Registrar::Manager *getRegistrarManager() = 0;
+    virtual Registrar::Manager *getRegistrarManager() const = 0;
     /// return contact manager
     virtual Contact::Manager *getContactManager() const = 0;
     /// return nsset manager

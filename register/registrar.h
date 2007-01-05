@@ -256,6 +256,8 @@ namespace Register {
       virtual const std::string& getEPPActionTypeByIdx(
         unsigned idx
       ) const throw (NOT_FOUND) = 0;
+      virtual bool checkHandle(const std::string) const 
+        throw (SQL_ERROR) = 0;
       /// Factory method
       static Manager *create(DB *db);
     };

@@ -16,7 +16,7 @@ namespace Register
    std::auto_ptr<Contact::Manager> cm;
    std::auto_ptr<NSSet::Manager> nm;
    std::vector<CountryDesc> countries;
-  public:
+   /// classify domain status as handle status
    CheckHandleClass classifyDomain(
      const std::string& fqdn, std::string& conflictFqdn) const
    {
@@ -33,6 +33,7 @@ namespace Register
      }
      return CH_UNREGISTRABLE;
    }
+  public:
    ManagerImpl(DB *_db) : db(_db)
    {
      zm.reset(Zone::Manager::create(db));
@@ -112,7 +113,7 @@ namespace Register
            if (dn.size() != 2) ch.handleClass = CH_UNREGISTRABLE_LONG;
            else {
              ch.handleClass = classifyDomain(handle,ch.conflictHandle);
-            /*
+            /* NOT AVAILABLE NOW
              ch.handleClass = CH_DOMAIN_LONG;
              // long domain name is truncated to 2nd level
              ch.newHandle = dn[dn.size()-2];
@@ -160,6 +161,10 @@ namespace Register
            };
            return;
          }
+         if (getRegistrarManager()->checkHandle(handle)) {
+           ch.type = HT_REGISTRAR;
+           ch.handleClass= CH_REGISTRED;             
+         }
          // left default settings
          return;
        } 
@@ -169,7 +174,7 @@ namespace Register
    {
      return dm.get();
    }   
-   Registrar::Manager *getRegistrarManager()
+   Registrar::Manager *getRegistrarManager() const
    {
      return rm.get();
    }   

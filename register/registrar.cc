@@ -764,6 +764,17 @@ namespace Register
         if (idx >= actionTypes.size()) throw NOT_FOUND();
         return actionTypes[idx];
       }      
+      virtual bool checkHandle(const std::string handle) const 
+        throw (SQL_ERROR)
+      {
+        std::stringstream sql;
+        sql << "SELECT * FROM registrar "
+            << "WHERE UPPER(handle)=UPPER('" << handle << "')";
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        bool result = (atoi(db->GetFieldValue(0,0)));
+        db->FreeSelect();
+        return result;            
+      }
     }; // class ManagerImpl
     Manager *Manager::create(DB *db)
     {
