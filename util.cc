@@ -536,6 +536,30 @@ return t;
 }
 
 
+// prevod lokalniho datumu na UTC timestamp pro SQL
+void get_utctime_from_localdate( char *utctime , char *dateStr )
+{
+struct tm dt;
+time_t t;
+int year , month  , day ;
+
+memset(&dt,0,sizeof(dt));
+
+sscanf( dateStr , "%4d-%02d-%02d" , &year ,&month , &day );
+dt.tm_mday  = day;
+dt.tm_mon = month -1;
+dt.tm_year = year - 1900;
+dt.tm_isdst = -1; // negative if the information is not available
+
+LOG( LOG_DEBUG , "tm_year  %d tm_mon  %d tm_mday %d hour %d min %d sec %d" , dt.tm_year , dt.tm_mon , dt.tm_mday   , dt.tm_hour,   dt.tm_min , dt.tm_sec );
+ t = mktime( &dt );
+
+get_timestamp(  t , utctime );
+
+LOG( LOG_DEBUG , "get_utctime_from_localdate:  date [%s] utctime [%s]" , dateStr , utctime );
+
+} 
+
 // prevod datau z DB SQL na date 
 void convert_rfc3339_date( char *dateStr , const char *string )
 {
