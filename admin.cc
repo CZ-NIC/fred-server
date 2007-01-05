@@ -289,6 +289,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
 {
   DB db;
   LOG( NOTICE_LOG, "getRegistarByHandle: id -> %lld", (unsigned long long)id );
+  if (!id) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> regm(Register::Manager::create(&db));
   Register::Registrar::Manager *rm = regm->getRegistrarManager();
@@ -310,6 +311,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
 {
   DB db;
   LOG( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
+  if (!handle || !*handle) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> regm(Register::Manager::create(&db));
   Register::Registrar::Manager *rm = regm->getRegistrarManager();
@@ -418,6 +420,7 @@ ccReg_Admin_i::getContactByHandle(const char* handle)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
+  if (!handle || !*handle) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
   Register::Contact::Manager *cr = r->getContactManager();
@@ -439,6 +442,7 @@ ccReg_Admin_i::getContactById(ccReg::TID id)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
+  if (!id) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
   Register::Contact::Manager *cr = r->getContactManager();
@@ -490,6 +494,7 @@ ccReg_Admin_i::getNSSetByHandle(const char* handle)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
+  if (!handle || !*handle) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
   Register::NSSet::Manager *nr = r->getNSSetManager();
@@ -511,6 +516,7 @@ ccReg_Admin_i::getNSSetById(ccReg::TID id)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
+  if (!id) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
   Register::NSSet::Manager *nr = r->getNSSetManager();
@@ -549,6 +555,7 @@ ccReg_Admin_i::getEPPActionBySvTRID(const char* svTRID)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
+  if (!svTRID || !*svTRID) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
   Register::Registrar::Manager *rm = r->getRegistrarManager();
@@ -570,6 +577,7 @@ ccReg_Admin_i::getEPPActionById(ccReg::TID id)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
+  if (!id) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
   Register::Registrar::Manager *rm = r->getRegistrarManager();
@@ -618,6 +626,7 @@ ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
+  if (!fqdn || !*fqdn) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
   Register::Domain::Manager *dm = r->getDomainManager();
@@ -639,6 +648,7 @@ ccReg_Admin_i::getDomainById(ccReg::TID id)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
+  if (!id) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
   Register::Domain::Manager *dm = r->getDomainManager();
@@ -704,6 +714,7 @@ ccReg_Admin_i::getAuthInfoRequestById(ccReg::TID id)
   throw (ccReg::Admin::ObjectNotFound)
 {
   DB db;
+  if (!id) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
   MailerManager mm(ns);
   std::auto_ptr<Register::AuthInfoRequest::Manager> r(
@@ -726,6 +737,7 @@ ccReg::Mailing::Detail*
 ccReg_Admin_i::getEmailById(ccReg::TID id)
   throw (ccReg::Admin::ObjectNotFound)
 {
+  if (!id) throw ccReg::Admin::ObjectNotFound();
   MailerManager mm(ns);
   MailerManager::Filter mf;
   mf.id = id;
