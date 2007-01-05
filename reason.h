@@ -34,8 +34,8 @@
 #define REASON_MSG_BAD_VALEXPDATE  20
 
 // Update NSSET nelze odstranit ci pradat DNS jost ci vyradit tech kontakt min 1 tech
-#define REASON_MSG_CAN_NOT_ADD_DNS 21
-#define REASON_MSG_CAN_NOT_REM_DNS 22
+#define REASON_MSG_CAN_NOT_REM_DNS 21
+#define REASON_MSG_CAN_NOT_ADD_DNS 22
 #define REASON_MSG_CAN_NOT_REMOVE_TECH 23
 
 

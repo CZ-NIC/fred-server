@@ -296,6 +296,8 @@ ret->errors.length(  seq+1 );
 ret->errors[seq].code = reasonCode ;    // spatne zadany neznamy country code
 ret->errors[seq].value = CORBA::string_dup( value);
 ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage( reasonMsg , lang  ) );
+
+LOG( WARNING_LOG, "SetErrorReason: code %d value [%s] msg [%s] " , reasonCode , value , (const char * )GetReasonMessage( reasonMsg , lang  ) );
 }
 
 void ccReg_EPP_i::SetReasonUnknowCC( ccReg::Response *ret ,  const char *value , int lang )
@@ -3342,6 +3344,9 @@ if( DBsql.OpenDatabase( database ) )
                                               }
 
                                                //--------- TEST pocet tech kontaktu po ADD a REM
+                                               // pouze kdyz se nejake tech kontakty mazzou
+                                              if(  tech_rem.length() > 0 )
+                                              {
                                                 techNum = DBsql.GetNSSetContacts( nssetID );
                                                 LOG(NOTICE_LOG, "NSSetUpdate: tech Contact  %d" , techNum );
 
@@ -3353,6 +3358,8 @@ if( DBsql.OpenDatabase( database ) )
                                                        SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_tech_rem , REASON_MSG_CAN_NOT_REMOVE_TECH ,   tech_rem[i] , GetRegistrarLang( clientID ) );
                                                       }
                                                  }
+                                              }
+
 
                                             // smazat DNS HOSTY  PRVNI FAZE
                                             for( i = 0; i < dns_rem.length(); i++ )
@@ -3418,6 +3425,9 @@ if( DBsql.OpenDatabase( database ) )
 
 
                                                //------- TEST pocet dns hostu
+                                                // pouze kdyz je s nimi manipulovano 
+                                               if(   dns_rem.length() > 0 ||  dns_add.length() > 0 )
+                                              {
                                                 hostNum = DBsql.GetNSSetHosts( nssetID );
                                                 LOG(NOTICE_LOG, "NSSetUpdate:  hostNum %d" , hostNum );
 
@@ -3438,8 +3448,8 @@ if( DBsql.OpenDatabase( database ) )
                                                        SetErrorReason( ret , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_dns_name_add , REASON_MSG_CAN_NOT_ADD_DNS  , dns_add[i].fqdn , GetRegistrarLang( clientID ) );
                                                       }
                                                   }
- 
 
+                                                }
 
 
                                                 // uloz history na konci update  nejdrive pred update pokud nedoslo k chybe 
@@ -3835,7 +3845,7 @@ if( DBsql.OpenDatabase( database ) )
                       
                             // test  ADD admin kontaktu
                             for( i = 0; i < admin_add.length(); i++ )
-                               {
+                               {   LOG( NOTICE_LOG , "admin ADD contact %s" , (const char *) admin_add[i] );
                                     if( ( adminid = DBsql.GetContactID( admin_add[i] ) ) <= 0 ) 
                                           SetReasonDomainAdminADD( ret , admin_add[i] , adminid ,  GetRegistrarLang( clientID )  );
                                     else  if(  DBsql.CheckContactMap( "domain", id, adminid ) )
@@ -3846,6 +3856,7 @@ if( DBsql.OpenDatabase( database ) )
                              // test REM admin kontaktu
                             for( i = 0; i < admin_rem.length(); i++ )
                                {
+                                  LOG( NOTICE_LOG , "admin REM contact %s" , (const char *) admin_rem[i] );
                                     if( ( adminid = DBsql.GetContactID( admin_rem[i] ) ) <= 0 )
                                           SetReasonDomainAdminREM( ret , admin_rem[i] , adminid ,  GetRegistrarLang( clientID )  );
                                     else  if(  !DBsql.CheckContactMap( "domain", id, adminid ) )
