@@ -141,9 +141,13 @@ namespace Register
       {
         std::stringstream sql;
         // find authinfo of actual version of object linked to request
+        // TODO: objectID is now real object ID because of LOAD
+	//      sql << "SELECT o.AuthInfoPw "
+	//          << "FROM object o, object_history oh "
+	//          << "WHERE o.id=oh.id AND oh.historyid=" << objectId;
         sql << "SELECT o.AuthInfoPw "
-            << "FROM object o, object_history oh "
-            << "WHERE o.id=oh.id AND oh.historyid=" << objectId;
+            << "FROM object o "
+            << "WHERE o.id=" << objectId;
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         if (db->GetSelectRows() != 1) throw Manager::OBJECT_NOT_FOUND();
         return db->GetFieldValue(0,0);
@@ -160,7 +164,9 @@ namespace Register
         return "";
       }
       /// Process request by sending email with answer 
-      void process(bool invalid) throw (SQL_ERROR, Mailer::NOT_SEND)
+      void process(bool invalid) throw (
+        Manager::OBJECT_NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND
+      )
       {
       	if (invalid) requestStatus = RS_INVALID;
         {
@@ -459,7 +465,11 @@ namespace Register
         if (l.getCount() !=1) throw REQUEST_NOT_FOUND();
         DetailImpl *d = dynamic_cast<DetailImpl *>(l.get(0));
         if (d->getRequestStatus() != RS_NEW) throw REQUEST_CLOSED();
-        d->process(invalid);
+        try {
+          d->process(invalid);
+        } catch (OBJECT_NOT_FOUND) {
+	  // TODO: how to handle this?
+        }
       }
       List *getList()
       {
