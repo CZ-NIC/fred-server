@@ -54,13 +54,7 @@ bool get_handle( char  * HANDLE , const char *handle  , int typ );
 // vytvoreni roid
 void get_roid( char *roid , char *prefix , int id );
 
-// prevadeni a test fqdn nazvu domeny 
-// vraci zpet cislo zony
-// nula pokud je chyba
-int get_FQDN( char *FQDN , const char *fqdn );
 
-// zarazeni do zony a kontrola nazvu domeny 
-int get_zone( const char * fqdn , bool compare );
 
 // prevadi DNS host  na mala pismena
 bool convert_hostname( char *HOST ,const  char *fqdn );

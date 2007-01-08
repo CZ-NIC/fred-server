@@ -950,6 +950,11 @@ en =  GetZoneEnum( z );
                 {
                  if(  isdigit( fqdn[i] )  ||  fqdn[i] == '.' ||  fqdn[i] == '-' ) FQDN[i] = fqdn[i];
                  else {  LOG( LOG_DEBUG ,  "character  %c not allowed"  , fqdn[i] );  FQDN[0] = 0 ;  return -1; }
+
+                 // test double numbers
+                 if(  isdigit( fqdn[i] ) && isdigit( fqdn[i+1] ) )  
+                 {LOG( LOG_DEBUG ,  "double digit [%c%c] not allowed"  , fqdn[i] , fqdn[i+1] ); FQDN[0] = 0 ;  return -1; }
+
                 }
                else  
                 {
