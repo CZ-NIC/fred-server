@@ -56,3 +56,9 @@
 
 // pro domain renew kdyz nesouhlasi zadany datum expirace
 #define REASON_MSG_CUREXPDATE_NOT_EXPDATE 32
+
+
+// pro mod_eppd pres fce GetTransaction
+#define REASON_MSG_TRANSFER_OP 33
+#define REASON_MSG_CONTACT_IDENTTYPE_MISSING 34
+#define REASON_MSG_POLL_MSGID_MISSING  35

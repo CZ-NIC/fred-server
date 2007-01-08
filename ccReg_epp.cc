@@ -1046,12 +1046,28 @@ LOG( NOTICE_LOG, "GetTransaction:  errCode %d",  (int ) errCode  );
 
 // prekopiruj strukturu pro Honzu 
 for( i = 0 ;i < len ; i ++ )
-{
- ret->errors[i].code = errors[i].code;
- ret->errors[i].value =  CORBA::string_dup(  errors[i].value ) ;
- ret->errors[i].reason = CORBA::string_dup(  "GetTransaction TODO msg"   ); // TODO hlasky
- LOG( NOTICE_LOG, "GetTransaction: errors[%d] code %d value %s\n" , i ,   ret->errors[i].code , ( char * )   ret->errors[i].value  );
-}
+   {
+        ret->errors[i].code = errors[i].code;
+        ret->errors[i].value =  CORBA::string_dup(  errors[i].value ) ;
+
+      switch(  errors[i].code  )
+      {
+       case ccReg::poll_msgID_missing:
+            ret->errors[i].reason = CORBA::string_dup( GetReasonMessage(   REASON_MSG_POLL_MSGID_MISSING ,  GetRegistrarLang( clientID ) ) );
+            break;
+       case ccReg::contact_identtype_missing:
+            ret->errors[i].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_CONTACT_IDENTTYPE_MISSING , GetRegistrarLang( clientID ) ) );
+            break;
+       case ccReg::transfer_op:
+            ret->errors[i].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_TRANSFER_OP , GetRegistrarLang( clientID ) ) );
+            break;
+       default:
+            ret->errors[i].reason = CORBA::string_dup(  "GetTransaction not specified  msg" );
+       }
+
+      LOG( NOTICE_LOG, "return reason msg: errors[%d] code %d value %s  message %s\n" , i ,   ret->errors[i].code , ( char * )   ret->errors[i].value  , (char *)   ret->errors[i].reason  );
+     }
+
 
   if( DBsql.OpenDatabase( database ) )
     {
@@ -1064,19 +1080,12 @@ for( i = 0 ;i < len ; i ++ )
               // zapis na konec action
               // zapis na konec action
               ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) );
-              ret->errMsg = CORBA::string_dup( GetErrorMessage( ret->errCode  , 0 ) );
+              ret->errMsg = CORBA::string_dup( GetErrorMessage( ret->errCode  ,  GetRegistrarLang( clientID ) ) );
 
               LOG( NOTICE_LOG, "GetTransaction: svTRID [%s] errCode -> %d msg [%s] ", ( char * ) ret->svTRID, ret->errCode, ( char * ) ret->errMsg );
-            /*
-          else 
-           {
-              ret->errCode = errCode;
-              ret->svTRID = CORBA::string_dup( "NULL");
-              ret->errMsg =   CORBA::string_dup( "ERROR" );
-              LOG(  ERROR_LOG , "GetTransaction: error BeginAction");          
-           }
-*/ 
-        }
+
+
+       }
 
       DBsql.Disconnect();
     }
@@ -4643,9 +4652,9 @@ ret->errors.length( 0 );
 ret->errCode =0 ; // default
 // autInfo[0] = 0 ;
 
-LOG( NOTICE_LOG ,  "ObjectSendAuthInfo %d  clientID -> %d clTRID [%s] " , act  , (int )  clientID , clTRID );
+LOG( NOTICE_LOG ,  "ObjectSendAuthInfo type %d  object [%s]  clientID -> %d clTRID [%s] " , act  , name ,  (int )  clientID , clTRID );
 
-if(  ( regID = GetRegistrarID( clientID ) ) )
+if( ( regID = GetRegistrarID( clientID ) ) )
 
 if( DBsql.OpenDatabase( database ) )
 {
