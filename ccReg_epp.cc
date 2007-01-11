@@ -1350,7 +1350,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
            // vyse creditu registratora prevedena na halire
             price  = DBsql.GetRegistrarCredit( regID , zoneID );
 
-            if( price >  0)
+// vzdy neco vracet i kdyz je credit nulovy            if( price >  0)
              {
                 credit->length(seq+1);             
                 credit[seq].price = price;
