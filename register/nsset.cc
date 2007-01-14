@@ -275,10 +275,11 @@ namespace Register
         throw (SQL_ERROR)
       {
         std::ostringstream sql;
-        sql << "SELECT COUNT(*) FROM object_registry o, nsset n "
-            << "WHERE o.id=n.id AND o.name=upper('" << handle << "')";
+        sql << "SELECT COUNT(*) FROM object_registry "
+            << "WHERE type=2 AND erDate ISNULL AND "
+            << "UPPER(name)=UPPER('" << handle << "')";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        bool result = (atoi(db->GetFieldValue(0,0)));
+        bool result = atoi(db->GetFieldValue(0,0));
         db->FreeSelect();
         return result;
       }      
@@ -294,7 +295,7 @@ namespace Register
         throw (SQL_ERROR)
       {
         if (!checkHandleFormat(handle)) return CA_INVALID_HANDLE;
-        if (!checkHandleRegistration(handle)) return CA_REGISTRED;
+        if (checkHandleRegistration(handle)) return CA_REGISTRED;
         return CA_FREE;
       }            
     };

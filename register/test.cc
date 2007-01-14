@@ -12,7 +12,6 @@ int main()
   DB db;
   db.OpenDatabase("host=localhost dbname=ccreg user=postgres");
   std::auto_ptr<Register::Manager> m(Register::Manager::create(&db));
-  Register::Domain::Manager *dm = m->getDomainManager();
   /*
   Register::Registrar::Manager *rm = m->getRegistrarManager();
   Register::Registrar::RegistrarList *rl2 = rm->getList();
@@ -87,19 +86,37 @@ int main()
   dl->reload();
   */
   while (1) {
-  std::string input;
-  std::cout << "Handle: ";
-  std::cin >> input;
-  Register::CheckHandleList chl;
-  m->checkHandle(input,chl);
-  if (chl.size() < 1) return -1;
-  std::cout << "Result of checkHandle: \n"
-            << " Type: " << chl[0].type << std::endl
-            << " Class: " << chl[0].handleClass << std::endl
-            << " NewHandle: " << chl[0].newHandle << std::endl
-            << " Conflict: " << chl[0].conflictHandle << std::endl;
-  std::string conflictHandle;
-  Register::Domain::CheckAvailType ca = dm->checkAvail(input,conflictHandle);
-  std::cout << "Result of checkAvail: " << ca << std::endl;
+    std::string input;
+    std::cout << "Handle: ";
+    std::cin >> input;
+    Register::CheckHandleList chl;
+    m->checkHandle(input,chl);
+    if (chl.size() < 1) return -1;
+    std::map<Register::CheckHandleClass,std::string> chcMap;
+    chcMap[Register::CH_UNREGISTRABLE] = "CH_UNREGISTRABLE";
+    chcMap[Register::CH_UNREGISTRABLE_LONG] = "CH_UNREGISTRABLE_LONG";
+    chcMap[Register::CH_REGISTRED] = "CH_REGISTRED";
+    chcMap[Register::CH_REGISTRED_PARENT] = "CH_REGISTRED_PARENT";
+    chcMap[Register::CH_REGISTRED_CHILD] = "CH_REGISTRED_CHILD";
+    chcMap[Register::CH_PROTECTED] = "CH_PROTECTED";
+    chcMap[Register::CH_FREE] = "CH_FREE";
+    
+    std::map<Register::HandleType,std::string> htMap;
+    htMap[Register::HT_ENUM_NUMBER] = "HT_ENUM_NUMBER";
+    htMap[Register::HT_ENUM_DOMAIN] = "HT_ENUM_DOMAIN";
+    htMap[Register::HT_DOMAIN] = "HT_DOMAIN";
+    htMap[Register::HT_CONTACT] = "HT_CONTACT";
+    htMap[Register::HT_NSSET] = "HT_NSSET";
+    htMap[Register::HT_REGISTRAR] = "HT_REGISTRAR";
+    htMap[Register::HT_OTHER] = "HT_OTHER";
+      
+    std::cout << "Result of checkHandle: \n";
+    for (unsigned i=0; i< chl.size(); i++) {
+      std::cout << i+1 << ".\n" 
+                << " Type: " << htMap[chl[i].type] << std::endl
+                << " Class: " << chcMap[chl[i].handleClass] << std::endl
+                << " NewHandle: " << chl[i].newHandle << std::endl
+                << " Conflict: " << chl[i].conflictHandle << std::endl;
+    }
   }
 }

@@ -395,7 +395,7 @@ namespace Register
       void parseDomainName(const std::string& fqdn, DomainName& domain) 
        const throw (INVALID_DOMAIN_NAME)
       {
-        std::string part;
+        std::string part; // one part(label) of fqdn  
         for (unsigned i=0; i<fqdn.size(); i++) {
           if (part.empty()) {
             // first character of every label has to be letter or digit
@@ -428,6 +428,9 @@ namespace Register
         if (part.empty()) throw INVALID_DOMAIN_NAME();
         // append last part
         domain.push_back(part);
+        // enum domains has special rules
+        if (checkEnumDomainSuffix(fqdn) && !checkEnumDomainName(domain))
+          throw INVALID_DOMAIN_NAME();
       }
       /// interface method implementation  
       CheckAvailType checkAvail(
@@ -436,17 +439,20 @@ namespace Register
       ) const 
         throw (SQL_ERROR)
       {
-        DomainName domain;
+        DomainName domain; // parsed domain name
         try { parseDomainName(fqdn,domain); }
         catch (INVALID_DOMAIN_NAME) { return CA_INVALID_HANDLE; }
-        if (!zm->findZoneId(fqdn)) return CA_BAD_ZONE;
-        if (blacklist->checkDomain(fqdn)) return CA_BLACKLIST;
+        const Zone::Zone *z = zm->findZoneId(fqdn);
+        // TLD domain allowed only if zone.fqdn='' is in zone list 
+        if (!z && domain.size() == 1) return CA_INVALID_HANDLE;
+        if (!z) return CA_BAD_ZONE;
+        if (domain.size() > z->getMaxLevel()) return CA_BAD_LENGHT; 
         std::stringstream sql;
         CheckAvailType ret = CA_AVAILABLE;
         // domain can be subdomain or parent domain of registred domain
         // there could be a lot of subdomains therefor LIMIT 1
-        sql << "SELECT o.name FROM domain d, object_registry o "
-            << "WHERE d.id=o.id AND "
+        sql << "SELECT o.name FROM object_registry o "
+            << "WHERE o.type=3 AND "
             << "('" << fqdn << "' LIKE '%.'|| o.name) OR "
             << "(o.name LIKE '%.'||'" << fqdn << "') OR "
             << "o.name='" << fqdn << "' "
@@ -463,6 +469,8 @@ namespace Register
           else ret = CA_CHILD_REGISTRED;  
         }
         db->FreeSelect();
+        if (ret == CA_AVAILABLE && blacklist->checkDomain(fqdn)) 
+          return CA_BLACKLIST;
         return ret;        
       }
       /// interface method implementation
@@ -476,6 +484,15 @@ namespace Register
             return false;
         return true;
       }
+      /// check if suffix is e164.arpa
+      bool checkEnumDomainSuffix(const std::string& fqdn) const
+      {
+        const std::string& esuf = zm->getEnumZoneString();
+        // check if substring 'esuf' found from right
+        // is last substring in fqdn
+        return fqdn.rfind(esuf) + esuf.size() == fqdn.size();
+      }
+      /// interface method implementation
       unsigned long getEnumDomainCount() const
       {
         std::stringstream sql;
@@ -486,6 +503,7 @@ namespace Register
         db->FreeSelect();
         return ret;
       }
+      /// interface method implementation
       unsigned long getEnumNumberCount() const
       {
         std::stringstream sql;

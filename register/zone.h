@@ -20,6 +20,8 @@ namespace Register
       virtual const std::string& getFqdn() const = 0;
       ///< is zone for enum domains?
       virtual bool isEnumZone() const = 0;     
+      ///< return maximal level of domains in this zone
+      virtual unsigned getMaxLevel() const = 0;
     };
     /// holder for zones managed by register
     class Manager

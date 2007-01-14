@@ -13,13 +13,17 @@ namespace Register
   namespace Zone
   {
     struct ZoneImpl : public virtual Zone {
-      ZoneImpl(TID _id, const std::string& _fqdn, bool _isEnum) :
-        id(_id), fqdn(_fqdn), isEnum(_isEnum)
+      ZoneImpl(
+        TID _id, const std::string& _fqdn, bool _isEnum, 
+        unsigned _maxLevel
+      ) :
+        id(_id), fqdn(_fqdn), isEnum(_isEnum), maxLevel(_maxLevel)
       {}
       ~ZoneImpl() {}
       TID id;
       std::string fqdn;
       bool isEnum;
+      unsigned maxLevel; ///< Maximal domain level in this zone
       /// compare if domain belongs to this zone (according to suffix)
       bool operator==(const std::string& domain) const
       {
@@ -36,7 +40,12 @@ namespace Register
       bool isEnumZone() const 
       {
         return isEnum; 
-      }           
+      }
+      /// interface implementation
+      virtual unsigned getMaxLevel() const
+      {
+        return maxLevel;
+      }                 
     };
     typedef std::vector<ZoneImpl> ZoneList;
     class ManagerImpl : virtual public Manager
@@ -53,12 +62,17 @@ namespace Register
        enumZoneString("e164.arpa"),
        defaultDomainSuffix("cz") 
       {
-        if (!db->ExecSelect("SELECT id,fqdn,enum_zone FROM zone")) return;
+        if (!db->ExecSelect(
+          "SELECT id, fqdn, enum_zone, "
+          "ARRAY_UPPER(STRING_TO_ARRAY(fqdn,'.'),1) + dots_max "
+          "FROM zone"
+        )) return;
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           zoneList.push_back(ZoneImpl(
            STR_TO_ID(db->GetFieldValue(i,0)),
            db->GetFieldValue(i,1),
-           *db->GetFieldValue(i,2) == 't' ? true : false
+           *db->GetFieldValue(i,2) == 't' ? true : false,
+           atoi(db->GetFieldValue(i,3))
            ));
         }
       }

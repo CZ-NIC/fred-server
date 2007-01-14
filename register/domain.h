@@ -130,6 +130,8 @@ namespace Register
       ) const throw (SQL_ERROR) = 0;
       /// check validity of enum domain name (every part is one digit)
       virtual bool checkEnumDomainName(DomainName& domain) const = 0;
+      /// check if domain is under global zone e164.arpa
+      virtual bool checkEnumDomainSuffix(const std::string& fqdn) const = 0;
       /// return current count of enum domains
       virtual unsigned long getEnumDomainCount() const = 0;
       /// return current count of enum numbers

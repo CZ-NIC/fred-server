@@ -2,6 +2,7 @@
 #include "dbsql.h"
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/regex.hpp>
 #include <vector>
 #include <algorithm>
 #include <functional>
@@ -767,11 +768,13 @@ namespace Register
       virtual bool checkHandle(const std::string handle) const 
         throw (SQL_ERROR)
       {
+        if (!boost::regex_match(handle,boost::regex("[rR][eE][gG]-.*")))
+          return false;
         std::stringstream sql;
-        sql << "SELECT * FROM registrar "
+        sql << "SELECT COUNT(*) FROM registrar "
             << "WHERE UPPER(handle)=UPPER('" << handle << "')";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        bool result = (atoi(db->GetFieldValue(0,0)));
+        bool result = atoi(db->GetFieldValue(0,0));
         db->FreeSelect();
         return result;            
       }
