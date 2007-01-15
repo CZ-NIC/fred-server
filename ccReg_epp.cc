@@ -1268,7 +1268,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                 {
                   count = rows;
                   // prevede cas s postgres na rfc3339 cas s offsetem casove zony
-                  qDate =  CORBA::string_dup( DBsql.GetFieldDateValueName("CrDate" , 0 )  );
+                  qDate =  CORBA::string_dup( DBsql.GetFieldDateTimeValueName("CrDate" , 0 )  );
                   msgID =   CORBA::string_dup(  DBsql.GetFieldValueName( "ID", 0 ) );
                   mesg = CORBA::string_dup( DBsql.GetFieldValueName( "message", 0 ) );
                   ret->errCode = COMMAND_ACK_MESG;      // zpravy jsou ve fronte
