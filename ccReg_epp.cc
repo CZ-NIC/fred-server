@@ -25,6 +25,7 @@
 // JT: START
 // MailerManager is connected in constructor
 #include <register/auth_info.h>
+#include <register/domain.h>
 #include <memory>
 // JT: END
 
@@ -1616,9 +1617,12 @@ ccReg::Response* ccReg_EPP_i::ObjectCheck( short act , char * table , char *fnam
 DB DBsql;
 ccReg::Response *ret;
 unsigned long i , len;
-int  zone ;
-char  FQDN[64];
+//int  zone ;
+// char  FQDN[64];
 int id;
+Register::Domain::NameIdPair caConflict;
+Register::Domain::CheckAvailType caType;
+
 ret = new ccReg::Response;
 
 a = new ccReg::CheckResp;
@@ -1716,6 +1720,65 @@ if( DBsql.OpenDatabase( database ) )
 
                         break;
                   case EPP_DomainCheck:
+
+                           try {
+                              std::auto_ptr<Register::Zone::Manager> zm( Register::Zone::Manager::create(&DBsql)  );
+                              std::auto_ptr<Register::Domain::Manager> dman( Register::Domain::Manager::create(&DBsql,zm.get())  );
+
+                                LOG( NOTICE_LOG ,  "domain checkAvail fqdn [%s]"  ,  (const char * ) chck[i] );
+                              
+                                caType = dman->checkAvail(  ( const char * )  chck[i] , caConflict);
+                                LOG( NOTICE_LOG ,  "domain type %d" , caType );
+                              }
+                     catch (...) {
+                               LOG( WARNING_LOG, "cannot run Register::Domain::checkAvail");
+                                ret->errCode=COMMAND_FAILED;
+                            }
+
+                     switch( caType )
+                          {
+                             case Register::Domain::CA_INVALID_HANDLE:
+                             case Register::Domain::CA_BAD_LENGHT:
+                                  a[i].avail = ccReg::BadFormat;    // spatny format
+                                  a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID ) ) );
+                                  LOG( NOTICE_LOG ,  "bad format %s of fqdn"  , (const char * ) chck[i] );
+                                  break;
+                             case Register::Domain::CA_REGISTRED:
+                             case Register::Domain::CA_CHILD_REGISTRED:
+                             case Register::Domain::CA_PARENT_REGISTRED:
+                                  a[i].avail = ccReg::Exist;    // objekt existuje
+                                  a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID ) ) );
+                                  LOG( NOTICE_LOG ,  "domain %s exist not Avail" , (const char * ) chck[i] );                                              
+                                  break;
+                             case Register::Domain::CA_AVAILABLE:
+                                  a[i].avail =  ccReg::NotExist;    // objekt ne existuje
+                                  a[i].reason =  CORBA::string_dup( "");  // free
+                                  LOG( NOTICE_LOG ,  "domain %s not exist  Avail" ,(const char * ) chck[i]  );
+                                  break;
+                             case Register::Domain::CA_BLACKLIST: // TODO
+                             case Register::Domain::CA_PROTECTED:
+                                  a[i].avail =  ccReg::DelPeriod;    // objekt byl smazan je v historri a ma ochranou lhutu
+                                  a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_PROTECTED_PERIOD , GetRegistrarLang( clientID ) ) );  // v$                                     LOG( NOTICE_LOG ,  "domain %s in delete period" ,(const char * ) chck[i] );
+                                  LOG( NOTICE_LOG ,  "domain %s in delete period" ,(const char * ) chck[i] );
+                                   break;
+                             case Register::Domain::CA_BAD_ZONE:
+                                   a[i].avail = ccReg::NotApplicable;    // nepouzitelna domena neni v zone
+                                   a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_NOT_APPLICABLE_DOMAIN , GetRegistrarLang( clientID ) ) );
+                                   LOG( NOTICE_LOG ,  "not applicable %s"  , (const char * ) chck[i] );
+                      }                 
+
+ /*
+#      CA_INVALID_HANDLE, ///< bad formed handle
+#      CA_BAD_ZONE, ///< domain outside of register
+#      CA_BAD_LENGHT, ///< domain longer then acceptable
+#      CA_PROTECTED, ///< domain temporary protected for registration
+#      CA_BLACKLIST, ///< registration blocked in blacklist TODO
+#      CA_REGISTRED, ///< domain registred
+#      CA_PARENT_REGISTRED, ///< parent already registred
+#      CA_CHILD_REGISTRED, ///< child already registred
+#      CA_AVAILABLE ///< domain is available
+*/
+/* OLD ver
                        if( (  zone =  getFQDN( FQDN , chck[i] )  ) > 0  )
                          {
                             if( ( id = DBsql.GetDomainID( FQDN , GetZoneEnum( zone ) ) ) > 0  )
@@ -1757,7 +1820,11 @@ if( DBsql.OpenDatabase( database ) )
                                a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_NOT_APPLICABLE_DOMAIN , GetRegistrarLang( clientID ) ) );
                              }
                          }
+*/
+
                         break;
+
+
            }
      }
 
