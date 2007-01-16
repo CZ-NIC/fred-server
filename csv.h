@@ -16,6 +16,8 @@ bool read_file( char * filename );
 long get_numeric( int row , int col );
 unsigned char *get_string( int row ,  int col );
 
+void close_file();
+
 char get_separator() { return  separator; };
 void set_separator(char s){ separator = s; } ;
 int get_rows(){ return  rows ; };

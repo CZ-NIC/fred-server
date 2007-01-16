@@ -54,6 +54,11 @@ bool CSV::get_row()
 
 }
 
+void CSV::close_file()
+{
+ fclose(fd);
+}
+
 char * CSV::get_value(unsigned int col )
 {
 int i , start  , j ;
