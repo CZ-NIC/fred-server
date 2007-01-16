@@ -493,7 +493,8 @@ namespace Register
         const std::string& esuf = zm->getEnumZoneString();
         // check if substring 'esuf' found from right
         // is last substring in fqdn
-        return fqdn.rfind(esuf) + esuf.size() == fqdn.size();
+        std::string::size_type i = fqdn.rfind(esuf);
+        return  i != std::string::npos && i + esuf.size() == fqdn.size();
       }
       /// interface method implementation
       unsigned long getEnumDomainCount() const
