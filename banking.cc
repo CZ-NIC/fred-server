@@ -4,26 +4,15 @@
 #include "conf.h"
 #include "dbsql.h"
 
+#include "util.h"
 #include "log.h"
+#include "csv.h"
+
 
 //  select id , invoiceid , price , account_memo , registarid , zone  from bank_statement_item , banking_invoice_varsym_map where bank_statement_item.account_number=banking_invoice_varsym_map.account_number and bank_statement_item.bank_code=banking_invoice_varsym_map.bank_code and banking_invoice_varsym_map.varsymb=banking_invoice_varsym_map.varsymb  and bank_statement_item.invoiceid is null;
 
 // #define error printf
 
-
-// prepocita dan z ceny bez dane pre skoeficient
-long get_VAT(long price)
-{
-double p, c=100.0;
-double koef = 0.1597; // koeficient ze zakona pro DPH 19%
-long ret;
-
-p = price; 
-p = p / c;
-
-ret =  (long ) ( (p * koef ) * c ) ;
-return ret;
-}
 
 // vytvoreni zalohovych faktur z bankovnich vypisu
 struct invBANK
@@ -36,17 +25,15 @@ char prefix[25]; // prefix zalohove faktury
 };
 
 
+
 // rucni naliti creditu pro registratora
-bool credit_invoicing(const char *database  , const char *registrarHandle ,  const char  *zone_fqdn , long  price )
+bool credit_invoicing(const char *database  ,   const char  *dateStr , const char *registrarHandle ,  const char  *zone_fqdn , long  price )
 {
 DB db;
 int regID;
 int invoiceID;
 int zone;
-char prefixStr[25];
-long credit;
 int ret = 0;
-int DPH=0;
 
 if( db.OpenDatabase( database  ) )
 {
@@ -56,22 +43,17 @@ LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
 if( db.BeginTransaction() )
  {
 
-  DPH = db.GetSystemVAT();
   if(  (regID = db.GetRegistrarID( (char * )  registrarHandle ) )  ) 
   {
 
     if( ( zone =  db.GetNumericFromTable( "zone", "id", "fqdn", zone_fqdn ) )  )
      {     
-        // cislo zalohove faktury
-        if( db.GetInvoicePrefix( prefixStr , 1 ,  zone  )  )
-         {
-            credit =  price -  get_VAT( price ); // pripocitavany credit (castka be DPH )
+              
 
             // vytvoreni zalohove faktury a ulozeni creditu
-           invoiceID =  db.MakeInvoice( (const char * ) prefixStr ,  zone , regID , price , DPH , get_VAT( price ) , credit );
+           invoiceID =  db.MakeNewInvoiceAdvance( dateStr ,  zone , regID , price , true  );
 
-           if( invoiceID ) if( db.SaveCredit( invoiceID , credit )  ) ret = CMD_OK;
-         }
+           if( invoiceID > 0 ) ret = CMD_OK;
 
       }
      else LOG( LOG_ERR , "unkow zone %s\n" , zone_fqdn );
@@ -90,6 +72,154 @@ db.Disconnect();
  
 if( ret ) return true;
 else return false;
+}
+
+int ebanka_invoicing( const char *database  ,   char *filename )
+{
+DB db;
+CSV csv;
+int id;
+int num=0 , err=0, ret=0;
+int regID;
+int invoiceID;
+int zone;
+int status;
+int accountID;
+char my_accountStr[18],  my_codeStr[5];
+char accountStr[18],  codeStr[5];
+char identStr[12];
+char varSymb[12] , konstSymb[12];
+char nameStr[64] , memoStr[64];
+time_t t;
+long price;
+int c;
+char datetimeString[32];
+
+if( csv.read_file( filename ) == false )
+{
+LOG( ALERT_LOG ,  "Cannot open CSV file %s" , filename );
+
+return -5;
+}
+else
+{
+  // pokud to neni 16 sloupcovy vypis z e-banky
+  if( csv.get_cols() !=  16   ) 
+    {
+       LOG( ALERT_LOG , "not like a CSV from ebanka https");           
+       csv.close_file();
+       return -16;
+     }
+
+}
+
+if( db.OpenDatabase( database  ) )
+{
+
+LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
+
+if( db.BeginTransaction() )
+ {
+
+  if( csv.get_cols() == 16   )
+   {
+    while(csv.get_row() )
+       {
+
+
+
+            strcpy( my_accountStr , csv.get_value(8)  );
+           strcpy( my_codeStr , csv.get_value(9)  );
+   
+
+             // cislo naseho uctu  plus kod banky
+          if( ( accountID = db.GetBankAccount(  my_accountStr , my_codeStr  ) )  )
+            { 
+              LOG( LOG_DEBUG ,"accountID  %d ucet [%s/%s]" , accountID , my_accountStr , my_codeStr  );              
+
+              zone = db.GetBankAccountZone( accountID );
+              LOG( LOG_DEBUG ,"account zone %d" , zone );
+             
+              // pripsana castka preved na log halire
+              price  =  get_price( csv.get_value(4) );
+                
+              t = get_local_format_time_t( csv.get_value(5)  )  ;
+              get_timestamp(  t , datetimeString);
+ 
+               // kod banky a cislo protiuctu
+              strcpy( accountStr , csv.get_value(6)  );
+              strcpy( codeStr , csv.get_value(7)  );
+              strcpy( identStr ,csv.get_value(15) ); // identifikator    
+                
+
+
+              strcpy( varSymb ,  csv.get_value(10) );
+              strcpy( konstSymb ,  csv.get_value(11) );
+
+              strcpy( nameStr ,  csv.get_value(14) ); // nazev protiuctu 
+              strcpy( memoStr ,  csv.get_value(12) ); // poznamka
+            
+              
+              status = atoi( csv.get_value(13) );
+
+              LOG( LOG_DEBUG ,"EBANKA: identifikator [%s]  status %d price %ld ucet [%s/%s] VS=[%s] KS=[%s] name: %s memo: %s" , 
+                                identStr ,status, price , accountStr , codeStr , varSymb ,  konstSymb  , nameStr , memoStr );
+
+              if( status  == 2 )  // status platny musi byt dva platba realizovana
+                {                   
+
+                        // nas_ucet , identifikator , castka ,  datum a , cislo ucto , kod banky ,  VS , KS  , nazev uctu , poznamka
+                      if( ( id = db.SaveEBankaList( accountID , identStr , price , datetimeString ,  accountStr , codeStr , 
+                                                      varSymb ,  konstSymb  , nameStr , memoStr ) )  > 0 )
+                        {                            
+                          
+                          regID =   db.GetRegistrarIDbyVarSymbol(   csv.get_value(10)  );
+
+                          if( regID > 0 )
+                            { 
+                                 LOG( LOG_DEBUG ,"nalezen registator %d handle %s" , regID , db.GetRegistrarHandle( regID ) );
+
+                                 // vytvoreni zalohove faktury a ulozeni creditu
+                                  invoiceID =  db.MakeNewInvoiceAdvance( datetimeString ,  zone , regID , price , true  );
+                                  if( invoiceID > 0 ) 
+                                    {
+                                       LOG( LOG_DEBUG , "OK vytvorena zalohova faktura id %d" , invoiceID );
+
+                                      if(   db.UpdateEBankaListInvoice( id , invoiceID )   ) num ++; // ulozeni
+                                       else  {   LOG( ERROR_LOG , "chyba update EBankaListInvoice");  err = -1; }
+                                    }
+                            }
+                           else if( regID == 0 ) LOG(  LOG_DEBUG , "nezparovana platba identifikator [%s] price %.02lf" ,  csv.get_value(15) , price ); 
+ 
+                          
+                        }
+                      else { if(  id == 0 )   LOG( LOG_DEBUG ,"platba identifikator [%s] byla jiz zpracovana"  , csv.get_value(15) );
+                             else  { LOG( ERROR_LOG , "chyba ve zpracovani vypisu enbaky");  err = -2;}
+                           }
+
+              }
+          
+           }
+
+        }
+
+
+       if( err == 0 )ret = CMD_OK;
+
+       db.QuitTransaction( ret ); // potvrdit transakci jako uspesnou OK
+    }
+      // odpojeni od databaze
+      db.Disconnect();
+
+}
+
+if( err <  0  ) return err; // pokud chyba vrat chybu
+else return num; // kdyz ne vrat pocet zpracovanych radek
+
+}
+else {  LOG( ALERT_LOG ,  "Cannot connect to DB %s" , database ); return -10 ; } 
+
+
 }
 
 /* PREDELAT 
@@ -191,6 +321,7 @@ return num;
 
 */
 
+
 bool banking_statement(const char *database , ST_Head *head , ST_Item  **item , int numrec )
 {
 DB db;
@@ -241,12 +372,18 @@ else LOG( ALERT_LOG ,  "Cannot connect to DB %s" , database );
 
 }
 
+
+
 int main(int argc , char *argv[] )
 {
 GPC gpc;
 ST_Head *head;
 ST_Item **item;
+char dateStr[12];
+char datetimeString[32];
+time_t t;
 int i , numrec ,  num ;
+
 
 Conf config; // READ CONFIG  file
 
@@ -264,25 +401,29 @@ Conf config; // READ CONFIG  file
 
 
 // usage
-if( argc == 1 )printf("import banking statement file to database\nusage: %s --bank-gpc file.gpc\ninvoicing: %s --invoice\ncredit: %s --credit REG_HANDLE zone price\n"  , argv[0]  , argv[0] ,  argv[0]);  
+if( argc == 1 )printf("import banking statement file to database\nusage: %s --bank-gpc file.gpc\ninvoicing: %s --invoice\ncredit: %s --credit REG-HANDLE zone price\nE-Banka: %s --ebanka-csv file.csv\n"  , argv[0]  , argv[0] ,  argv[0] , argv[0] );  
 
-/*
-if( argc ==2 )
-{
- if( strcmp(  argv[1]  , "--invoice"  )  == 0 )
-   {
-       banking_invoicing( config.GetDBconninfo() );        
-   }
-}
-*/
 
 if( argc == 5 )
  {
    if( strcmp(  argv[1]  , "--credit" )  == 0 )
      {
-       credit_invoicing(  config.GetDBconninfo() ,  argv[2] , argv[3] , atol( argv[4] ) * 100L );
+       t = time(NULL );
+       get_rfc3339_timestamp( t , dateStr , true ); // preved aktualni datum
+       credit_invoicing(  config.GetDBconninfo() , dateStr  ,   argv[2] , argv[3] , atol( argv[4] ) * 100L  );
      }
  }
+
+if( argc==3)
+{
+
+ if( strcmp(  argv[1]  , "--ebanka-csv" ) == 0 )
+  {
+     ebanka_invoicing(  config.GetDBconninfo() ,  argv[2] );
+  }
+
+}
+
 if( argc==3)
 {
 
@@ -341,7 +482,6 @@ if( argc==3)
 
   }
 
-return 0;
 }
 
 
