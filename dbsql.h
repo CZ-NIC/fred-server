@@ -116,8 +116,14 @@ bool TestDomainFQDNHistory( const char * fqdn , int days );
 // test na objekty v historii
 bool TestObjectHistory(   const char * name , int days );
 
+// vraci id uctu
+int GetBankAccount( const char *accountStr ,  const char *codeStr   );
+// vraci cislo zony pro kterou je ucet pouzit
+int GetBankAccountZone( int accountID );
+
 // test zustatku na uctu pro import bankovniho vypisu
-int TestBankAccount( char *accountStr , int num , long oldBalance );
+int TestBankAccount( const char *accountStr , int num , long oldBalance );
+
 
 // update zustatku na uctu
 bool UpdateBankAccount( int accountID , char *date , int num ,  long newBalance  );
@@ -129,21 +135,27 @@ int SaveBankHead( int accountID ,int num ,  char *date  ,  char *oldDate , long 
 bool SaveBankItem( int statemetID , char *account  , char *bank , char *evidNum, char *date , char *memo , int code , 
                        char *konstSymb ,  char *varSymb , char *specsymb  , long price );
 
+int TestEBankaList(const char*ident ); // vraci id zaznamu podle ident
+
+int SaveEBankaList( int account_id , const char *ident , long  price , const char *datetimeStr ,  const char *accountStr , const char *codeStr ,
+                        const char *varsymb , const char *konstsymb ,  const char *nameStr ,  const char *memoStr );
+
+
+// nastav vypis ebanky jako zpracovany na zalohovou FA
+bool UpdateEBankaListInvoice( int id , int invoiceID );
+
 
 int GetSystemVAT();  // vraci hodnotu DPH pro sluzby registrace
-
-
-// uloz credit
-bool SaveCredit( int invoiceID ,  long credit   );
+double GetSystemKOEF(); // vraci hodnotu prepocitavaciho koeficientu
 
 // nastav bankovni vypis jako zpracovany
 bool UpdateBankStatementItem( int id , int invoiceID);
 
-// vytvoreni zalohove faktury pro registratora na castku price s vysi DPH vatNum odvedenou dani vat  a castkou bez DPH credit
-int  MakeInvoice( const char *prefixStr  ,  int zone , int regID , long price , int vatNum , long vat ,  long credit );
+// vytvoreni nove  zalohove faktury pro registratora na castku price  s odvedenim dph VAT=true nebo bez
+int  MakeNewInvoiceAdvance( const char *taxDateStr , int zone ,  int regID ,  long price , bool VAT );
 
 // generovani cisla faktur a update countru prefixu 
-bool GetInvoicePrefix( char *prefixStr , int typ , int zone );
+int GetInvoicePrefix( const char *dateStr , int typ , int zone );
 
 
 // test doby expirace validace
@@ -163,6 +175,9 @@ int GetNSSetContacts( int nssetID );
 
 
 int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "id" , "handle" , handle ); };
+int GetRegistrarIDbyVarSymbol( char *vs )  { return GetNumericFromTable( "REGISTRAR", "id" , "varsymb" , vs ); };
+
+
 char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "handle" , "id" , id ); };
 char * GetStatusFromTable( char *table , int id ) {  return GetValueFromTable( table , "status" , "id" , id ); };
 

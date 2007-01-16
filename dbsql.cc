@@ -1049,6 +1049,26 @@ if( ExecSelect( sqlString ) )
 return dph;
 } 
 
+double DB::GetSystemKOEF() // vraci koeficient pro prepocet DPH
+{
+char sqlString[128] = "select koef   from price_vat where valid_to > now() or valid_to is null;" ;
+double koef;
+
+if( ExecSelect( sqlString ) )
+  {
+    if( GetSelectRows() == 1 )
+      {
+         koef = atof( GetFieldValue( 0 , 0 ) );
+      }
+    FreeSelect();
+  }
+
+return koef;
+}
+
+
+
+
 // test kodu zemo
 /*
 bool DB::TestCountryCode(const char *cc)
@@ -1067,10 +1087,52 @@ if( ExecSelect( sqlString ) )
 
 return ret;
 }
+
 */
 
+int  DB::GetBankAccount( const char *accountStr ,  const char *codeStr   )
+{
+char sqlString[128];
+int accountID=0;
+
+  LOG( LOG_DEBUG ,"GetBankAccount account %s , code %s" ,  accountStr ,codeStr   );
+sprintf( sqlString , "SELECT id FROM bank_account WHERE account_number=\'%s\' AND bank_code=\'%s\';" , accountStr ,codeStr   );
+
+if( ExecSelect( sqlString ) )
+ {
+   if( GetSelectRows() == 1   )
+    {
+        accountID=atoi( GetFieldValue( 0 , 0 ) );
+       LOG( LOG_DEBUG ,"get accountId %d" , accountID );             
+    }
+ FreeSelect();
+}
+return accountID;
+}
+
+
+int DB::GetBankAccountZone( int accountID )
+{
+char sqlString[128];
+int zone=0;
+
+LOG( LOG_DEBUG ,"GetBankAccountZone accountID %d" , accountID );
+sprintf( sqlString , "SELECT  zone  FROM bank_account WHERE id=%d" , accountID );
+
+if( ExecSelect( sqlString ) )
+ {
+   if( GetSelectRows() == 1   )
+    {
+        zone = atoi( GetFieldValue( 0 , 0 ) );
+        LOG( LOG_DEBUG ,"get zone %d" , zone );
+    }
+ }
+
+return zone;
+}
+
 // test zustatku na uctu pro import bankovniho vypisu
-int DB::TestBankAccount( char *accountStr , int num , long oldBalance )
+int DB::TestBankAccount( const  char *accountStr , int num , long oldBalance )
 {
 int accountID=0;
 int lastNum=0;
@@ -1201,16 +1263,6 @@ return EXEC ();
 }
 
 
-// uloz credit
-bool DB::SaveCredit( int invoiceID ,  long credit   )
-{
-
-           // uloz credit do tabulky invoice
-           UPDATE("invoice");
-           SETPRICE("credit"  , credit );
-           WHEREID(  invoiceID );
-           return EXEC();
-}
                 
 // nastav bankovni vypis jako zpracovany
 bool DB::UpdateBankStatementItem( int id , int invoiceID)
@@ -1221,103 +1273,190 @@ bool DB::UpdateBankStatementItem( int id , int invoiceID)
                   return EXEC();
 }  
 
+int DB::TestEBankaList( const char *ident )
+{
+char sqlString[128] ;
+int id=0;
+
+sprintf( sqlString ,  "SELECT  id    from BANK_EBANKA_LIST where ident=\'%s\'"  , ident );
+
+if( ExecSelect( sqlString ) )
+  {
+    if( GetSelectRows() == 1 )
+      { 
+          id=   atoi( GetFieldValue( 0 , 0 ) );
+
+      }
+    FreeSelect();
+  }
+
+return id;
+}
+                        // identifikator , castka ,  datum a , cislo ucto , kod banky ,  VS , KS  , nazev uctu , poznamka
+int DB::SaveEBankaList( int account_id , const char *ident , long  price , const char *datetimeStr ,  const char *accountStr , const char *codeStr , 
+                        const char *varsymb , const char *konstsymb ,  const char *nameStr ,  const char *memoStr )
+{
+int ID;
+
+// pokud jeste neni nacteny 
+if( TestEBankaList( ident ) == false )
+  {
+
+     ID = GetSequenceID( "bank_statement_head" );
+
+                    INSERT( "BANK_EBANKA_LIST" );
+                    INTO("id");
+                    INTO( "account_id" );
+                    INTO( "account_number" );
+                    INTO( "bank_code" );
+                    INTO( "konstsym" );
+                    INTO( "varsymb" );
+                    INTO( "memo");
+                    INTO( "name");
+                    INTO( "ident" );
+                    INTO( "crdate");
+                    INTO( "price" );
+                    VALUE( ID );
+                    VALUE( account_id );
+                    VALUE( accountStr );
+                    VALUE( codeStr );
+                    VALUE( konstsymb );
+                    VALUE( varsymb  );
+                    VALUE( memoStr );
+                    VALUE( nameStr );
+                    VALUE( ident );
+                    VALUE( datetimeStr );
+                    VALPRICE( price );
+
+   if( EXEC () ) return ID;
+   else return -1; // chyba
+ }
+else return 0;
+}
+
+// nastav vypis ebanky jako zpracovany na zalohovou FA
+bool DB::UpdateEBankaListInvoice( int id , int invoiceID )
+{
+                  UPDATE( "BANK_EBANKA_LIST" );
+                  SET( "invoice_id" , invoiceID );
+                  WHEREID(  id  );
+                  return EXEC();
+
+}
+
+
 // vytvoreni zalohove faktury pro registratora na castku price s vysi DPH vatNum odvedenou dani vat  a castkou bez DPH credit
-int  DB::MakeInvoice( const char *prefixStr  , int zone ,  int regID , long price , int vatNum , long vat ,  long credit )
+// taxDateStr  datum zdanitelneho plneni datum kdy castka prisla na nas ucet
+int  DB::MakeNewInvoiceAdvance( const char *taxDateStr , int zone ,  int regID ,  long price , bool VAT )
 {
 int invoiceID;
+int prefix;
+int dph;
+long total; // castka bez DPH == credit
+long credit;
+long totalVAT; // odvedene DPH;
+double koef; // prepocitavaci koeficinet pro DPH
 
-// castka bez DPh + DPH by se mela rovanat castce s dani 
-if( (vat + credit)  == price ) 
-{
+
+  if( VAT)
+    {
+     // zjisti vysi DPH
+     dph =GetSystemVAT(); // vyse DPH 19 %
+     koef =GetSystemKOEF();// vyse koeficientu
+     // cpocte odvedena DPH zaoKROUHLENE MATEMaticky na desetniky
+
+       totalVAT =  count_dph( price , koef );         
+       total = price - totalVAT;
+       credit =  total;
+
+    }
+   else // vytvori zalohovou fakturu bezodvodu DPH
+   {
+     dph=0;
+     totalVAT=0;
+     total = price;
+     credit = price;
+   }
 
 
+     prefix = GetInvoicePrefix( taxDateStr , 0 , zone );
+
+ LOG( LOG_DEBUG ,"MakeNewInvoiceAdvance taxdate[%s]   zone %d regID %d , price %ld dph %d credit %ld\n" , taxDateStr ,  zone , regID , price , dph , credit );
+ 
+     if( prefix  > 0 )
+       {
            invoiceID = GetSequenceID( "invoice" );
 
            INSERT( "invoice" );
            INTO( "id" );
            INTO( "prefix" );
            INTO( "zone" );
+           INTO( "typ" );
            INTO( "registrarid" );
+           INTO( "taxDate" );  
            INTO( "price" );
            INTO( "vat" );
+           INTO( "total" );           
            INTO( "totalVAT" );           
            INTO( "credit" );
            VALUE( invoiceID );
-           VALUE( prefixStr  );
+           VALUE( prefix  );
            VALUE( zone );
+           VALUE( 0 );  // zalohova FA
            VALUE( regID );
-           VALPRICE( price );
-
-           VALUE( vatNum );
-           VALPRICE( vat  );
-           VALPRICE( credit ); // cena bez dane
+           VALUE( taxDateStr );
+           VALPRICE( price ); // celkova castka
+           VALUE( dph ); // vyse dph 19 %
+           VALPRICE( total ); // castka bez DPH
+           VALPRICE( totalVAT ); // castka bez DPH
+           VALPRICE( credit ); // pripocteny credit
           
            if(  EXEC() ) return invoiceID;
-}
+           else return -1; // chyba SQL insert
+      }
+      else return -2;  // chyba prefixu 
           
-return 0;
 } 
 
-/*
-int  DB::MakeFaktur( const char *prefixStr  , int zone ,  int regID , const char *fromDate , const char *toDate  )
-{
-int fakturID;
-long total=0;
-char sqlString[512];
 
-sprintf( sqlString , "SELECT  sum(price ) FROM invoice_object_registry WHERE zone=%d and registrarid=%d and crdate>= date\'%s\' and crdate < date\'%s\'; " ,
-              zone , regID , fromDate , toDate  );
-
-if( ExecSelect( sqlString ) )
- {
-     total =  (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
-      FreeSelect();
- } 
-
-if( total )
-{
-
-
-}
-
-*/
-
-
-bool DB::GetInvoicePrefix( char *prefixStr , int typ , int zone )
+int DB::GetInvoicePrefix( const char *dateStr , int typ , int zone )
 {
 char sqlString[512];
-int id , counter , zero;
+int year;
+char yearStr[5];
+int prefix=0 , id=0;
 
-sprintf( sqlString , "SELECT *  FROM invoice_prefix WHERE zone=%d and typ=%d;",  zone , typ);
+// rok
+strncpy( yearStr , dateStr  , 4 );
+yearStr[4] = 0 ;
+year= atoi( yearStr);
 
-prefixStr[0] = 0 ;
-counter = 0;
-id=0;
+ LOG( LOG_DEBUG ,"GetInvoicePrefix date[%s]  year %d typ %d zone %d\n" , dateStr , year ,  typ ,  zone  ); 
 
+sprintf( sqlString , "SELECT id , prefix   FROM invoice_prefix WHERE zone=%d AND  typ=%d AND year=\'%s\';",  zone , typ, yearStr );
 
-       if( ExecSelect( sqlString )  )
-         {
+if( ExecSelect( sqlString )  )
+  {
             if(  GetSelectRows() == 1 )
               {
                     id = atoi( GetFieldValueName("id"  , 0 ) );
-                    counter =  atoi( GetFieldValueName("counter" , 0 ) );
-                    zero =  atoi( GetFieldValueName("num" , 0 ) );
-                    sprintf( prefixStr , "%s%0*d" ,  GetFieldValueName("pref" , 0 )  , zero ,  counter );
-                    LOG( LOG_DEBUG ,"generate invoice zone %d typ %d counter %d  prefix[%s]" , zone , typ , counter ,    prefixStr  );
+                    prefix =  atoi( GetFieldValueName("prefix" , 0 ) );
+                    LOG( LOG_DEBUG ,"invoice_prefix id %d -> %d" ,  id , prefix  );
               }
-           FreeSelect();
-          }
+            else return -3; // chyba
 
-        if( counter > 0  && id )
-          {
-            UPDATE( "invoice_prefix" );
-            SET( "counter" , counter +1 );
-            WHEREID( id );
-            if( EXEC() ) return true;
-           }
+     FreeSelect();
 
- 
-return false;         
+     UPDATE( "invoice_prefix" );
+     SET( "prefix" , prefix +1 );
+     WHEREID( id );
+     if( EXEC() ) return prefix;
+     else return -2; // chyba
+          
+
+  }
+ else return -1;
+
 }
 
 
