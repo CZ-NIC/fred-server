@@ -167,8 +167,8 @@ public:
   ccReg::Response* NSSetCheck(const ccReg::Check& handle, ccReg::CheckResp_out  a, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* NSSetInfo(const char* handle, ccReg::NSSet_out n, CORBA::Long clientID, const char* clTRID , const char*  XML);
   ccReg::Response* NSSetDelete(const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* NSSetCreate(const char* handle, const char* authInfoPw, const ccReg::TechContact& tech, const ccReg::DNSHost& dns, ccReg::timestamp_out crDate, CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* NSSetUpdate(const char* handle, const char* authInfo_chg, const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem, const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem,  CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* NSSetCreate(const char* handle, const char* authInfoPw, const ccReg::TechContact& tech, const ccReg::DNSHost& dns, CORBA::Short level, ccReg::timestamp_out crDate,  CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* NSSetUpdate(const char* handle, const char* authInfo_chg, const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem, const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem, CORBA::Short level, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* NSSetTransfer(const char* handle, const char* authInfo, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* DomainCheck(const ccReg::Check& fqdn, ccReg::CheckResp_out  a, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* DomainInfo(const char* fqdn, ccReg::Domain_out d, CORBA::Long clientID, const char* clTRID, const char* XML);
@@ -177,6 +177,9 @@ public:
   ccReg::Response* DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char* AuthInfoPw,  const ccReg::Period_str& period, const ccReg::AdminContact& admin,  ccReg::timestamp_out crDate, ccReg::date_out exDate,  CORBA::Long clientID, const char* clTRID, const char* XML , const ccReg::ExtensionList& ext );
   ccReg::Response* DomainRenew(const char* fqdn, const char* curExpDate,  const ccReg::Period_str& period, ccReg::timestamp_out exDate, CORBA::Long clientID, const char* clTRID, const char* XML, const ccReg::ExtensionList& ext);
   ccReg::Response* DomainTransfer(const char* fqdn,  const char* authInfo, CORBA::Long clientID, const char* clTRID  , const char* XML);
+
+  // tech chek nsset
+  ccReg::Response* nssetTest(const char* handle, const char* fqdn, CORBA::Long clientID, const char* clTRID, const char* XML);
 
   // spolecna funkce pro transfer objektu
   ccReg::Response* ObjectTransfer(short act ,  const char*table , const char *fname,  const char *name ,

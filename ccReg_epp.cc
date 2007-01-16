@@ -2662,6 +2662,9 @@ if( ( DBsql.BeginAction( clientID , EPP_NSsetInfo , clTRID , XML  )  ))
         n->UpDate= CORBA::string_dup(  DBsql.GetFieldDateTimeValueName("UpDate" , 0 ) );
         n->TrDate= CORBA::string_dup(  DBsql.GetFieldDateTimeValueName("TrDate" , 0 ) );
 
+        // uroven tech testu
+        n->level =  DBsql.GetFieldNumericValueName("checklevel" , 0 );
+
         if( regID == clid ) // pokud je registrator clientem obdrzi autentifikaci
            n->AuthInfoPw = CORBA::string_dup( DBsql.GetFieldValueName("AuthInfoPw" , 0 ) ); // autentifikace
          else  n->AuthInfoPw = CORBA::string_dup( "" ); // jinak prazdny retezec
@@ -2871,6 +2874,7 @@ return ret;
  *              authInfoPw - autentifikace 
  *              tech - sequence technickych kontaktu
  *              dns - sequence DNS zaznamu  
+ *              level - tech check  level
  *        OUT:  crDate - datum vytvoreni objektu
  *              clientID - id pripojeneho klienta 
  *              clTRID - cislo transakce klienta
@@ -2881,8 +2885,8 @@ return ret;
 
 
 ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *authInfoPw, 
-                                            const ccReg::TechContact & tech, const ccReg::DNSHost & dns,
-                                            ccReg::timestamp_out crDate, CORBA::Long clientID, const char *clTRID , const char* XML ) 
+                                            const ccReg::TechContact & tech, const ccReg::DNSHost & dns,CORBA::Short level,
+                                            ccReg::timestamp_out crDate, CORBA::Long clientID,  const char *clTRID , const char* XML ) 
 { 
 DB DBsql; 
 char  NAME[256] ; // handle na velka pismena 
@@ -2897,6 +2901,7 @@ ret->errors.length( 0 );
 crDate = CORBA::string_dup( "" );
 
 LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", (int ) clientID, clTRID, handle , authInfoPw  );
+LOG( NOTICE_LOG, "NSSetCreate: tech check level %d" , (int) level );
 
 if(  ( regID = GetRegistrarID( clientID ) ) )
 
@@ -3031,7 +3036,9 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
               // zapis to tabulky nsset
               DBsql.INSERT( "NSSET" );
               DBsql.INTO( "id" );
+              if( level >= 0 ) DBsql.INTO( "checklevel" );
               DBsql.VALUE( id );
+              if( level >= 0 ) DBsql.VALUE( level );
 
               // zapis nejdrive nsset 
               if( ! DBsql.EXEC() ) ret->errCode = COMMAND_FAILED;
@@ -3151,6 +3158,7 @@ return ret;
  *              dns_rem - sequence   DNS zaznamu   pro smazani
  *              tech_add - sequence pridannych technickych kontaktu
  *              tech_rem - sequence technickych kontaktu na smazani
+ *              level - tech check level
  *              clientID - id pripojeneho klienta 
  *              clTRID - cislo transakce klienta
  * 
@@ -3162,7 +3170,7 @@ return ret;
 
 ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle , const char* authInfo_chg, 
                                           const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem,
-                                          const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem,
+                                          const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem, CORBA::Short level,
                                           CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 ccReg::Response *ret;
@@ -3178,8 +3186,8 @@ ret->errCode=0;
 ret->errors.length(0);
 
 LOG( NOTICE_LOG ,  "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] authInfo_chg  [%s] " , (int ) clientID , clTRID , handle  , authInfo_chg);
-
-
+LOG( NOTICE_LOG,   "NSSetUpdate: tech check level %d" , (int) level );
+ 
 if(  (regID = GetRegistrarID( clientID ) ) ) 
 
 if( DBsql.OpenDatabase( database ) )
@@ -3336,6 +3344,17 @@ if( DBsql.OpenDatabase( database ) )
                if( ret->errCode == 0  ) 
                  if( DBsql.ObjectUpdate( nssetID , regID  , authInfo_chg )  )
                    {
+
+                     // update tech testu
+                     if( level >= 0 )
+                       {
+                                      LOG( NOTICE_LOG, "update nsset check level %d ", (int ) level  );
+                                      DBsql.UPDATE( "nsset" );
+                                      DBsql.SET( "checklevel", level );
+                                      DBsql.WHERE( "id", nssetID );
+                                      if( DBsql.EXEC() == false ) ret->errCode = COMMAND_FAILED;
+                       }
+ 
                                             //-------- TECH kontakty
 
                                             // pridat tech kontakty                      
@@ -4640,6 +4659,39 @@ return FullList( EPP_ListNSset  , "NSSET"  , "HANDLE" , nssets ,  clientID,  clT
 ccReg::Response* ccReg_EPP_i::DomainList(ccReg::Lists_out domains, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
 return FullList( EPP_ListDomain , "DOMAIN"  , "fqdn" , domains ,  clientID,  clTRID,  XML);
+}
+
+ccReg::Response* ccReg_EPP_i::nssetTest(const char* handle, const char* fqdn, CORBA::Long clientID, const char* clTRID, const char* XML)
+{
+DB DBsql;
+ccReg::Response * ret;
+int regID;
+int nssetid;
+
+LOG( NOTICE_LOG ,  "nssetTest nsset %s domain %s  clientID -> %d clTRID [%s] \n" , handle,  fqdn, (int )  clientID  , clTRID );
+
+if( ( regID = GetRegistrarID( clientID ) ) )
+if( DBsql.OpenDatabase( database ) )
+{
+
+  if( (   DBsql.BeginAction( clientID , EPP_NSsetTest ,  clTRID , XML  )  ) )
+    {
+      if( (nssetid = DBsql.GetNSSetID( handle ) ) <= 0  )  SetReasonNSSetHandle( ret , handle , nssetid , GetRegistrarLang( clientID ) );
+      else     ret->errCode=COMMAND_OK; // TODO TODO TODOTODOTODO
+         // zatim prazdne musi se doimplementovat 
+
+    
+      // zapis na konec action
+      ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) ) ;
+    }
+
+ret->errMsg =CORBA::string_dup( GetErrorMessage(  ret->errCode  , GetRegistrarLang( clientID ) )  );
+
+DBsql.Disconnect();
+}
+
+
+return ret;
 }
 
 

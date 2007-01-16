@@ -46,6 +46,10 @@
 
 #define EPP_ClientCredit       1010
 
+// tech check nsset
+#define EPP_NSsetTest         1012
+
+
 // send auth info fce
 #define EPP_ContactSendAuthInfo 1101
 #define EPP_NSSetSendAuthInfo   1102
