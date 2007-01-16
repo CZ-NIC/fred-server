@@ -71,7 +71,10 @@ bool TestExDate( const char *curExDate , const char * ExDate );
 // test spravnosti intervalu periody
 int TestPeriodyInterval( int period , int min , int max );
 
-// preveadi credit registratora na halire bez konverze na float
+// spocet DPH z cestky bez dane pomoci koeficientu a matematicky zaokrouhli DPH na desetniky
+long count_dph( long  price , double koef );
+
+// preveadi credit registratora na halire bez konverze na float bere i desetinou carku nebo tecku
 long get_price( const char *priceStr );
 
 // prevadi cenu v halirich na string
@@ -89,6 +92,9 @@ void convert_rfc3339_timestamp( char *dateStr , const char *string );
 
 // prevadi casovy string na zulu date time dle rfc3339
 void get_zulu_t(  char *dateStr , const char *string );
+
+// prevadi lokalni format datumu  casu do UTC
+time_t get_local_format_time_t( const char *string );
 
 // vraci cas v time_t  pevede SQL retezec
 time_t get_time_t(const char *string );
