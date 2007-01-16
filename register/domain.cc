@@ -249,7 +249,6 @@ namespace Register
       {
         clear();
         std::ostringstream sql;
-        /// loading admin contact handles together with domains
         sql << "SELECT DISTINCT obr.id,obr.name,d.zone,nor.id,nor.name,"
             << "cor.id,cor.name,c.name,"
             << "r.id,r.handle,"
@@ -435,10 +434,13 @@ namespace Register
       /// interface method implementation  
       CheckAvailType checkAvail(
         const std::string& fqdn,
-        std::string& conflictFqdn
+        NameIdPair& conflictFqdn
       ) const 
         throw (SQL_ERROR)
       {
+        // clear output
+        conflictFqdn.id = 0;
+        conflictFqdn.name = "";
         DomainName domain; // parsed domain name
         try { parseDomainName(fqdn,domain); }
         catch (INVALID_DOMAIN_NAME) { return CA_INVALID_HANDLE; }
@@ -451,7 +453,7 @@ namespace Register
         CheckAvailType ret = CA_AVAILABLE;
         // domain can be subdomain or parent domain of registred domain
         // there could be a lot of subdomains therefor LIMIT 1
-        sql << "SELECT o.name FROM object_registry o "
+        sql << "SELECT o.name, o.id FROM object_registry o "
             << "WHERE o.type=3 AND "
             << "('" << fqdn << "' LIKE '%.'|| o.name) OR "
             << "(o.name LIKE '%.'||'" << fqdn << "') OR "
@@ -462,9 +464,10 @@ namespace Register
           throw SQL_ERROR();
         }
         if (db->GetSelectRows() == 1) {
-          conflictFqdn = db->GetFieldValue(0,0);
-          if (fqdn == conflictFqdn) ret = CA_REGISTRED;
-          else if (fqdn.size() > conflictFqdn.size())
+          conflictFqdn.name = db->GetFieldValue(0,0);
+          conflictFqdn.id = STR_TO_ID(db->GetFieldValue(0,1));
+          if (fqdn == conflictFqdn.name) ret = CA_REGISTRED;
+          else if (fqdn.size() > conflictFqdn.name.size())
             ret = CA_PARENT_REGISTRED;
           else ret = CA_CHILD_REGISTRED;  
         }

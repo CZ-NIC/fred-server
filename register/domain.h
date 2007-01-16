@@ -111,6 +111,11 @@ namespace Register
       /// clear filter data
       virtual void clearFilter() = 0;      
     };
+    /// Pair of id and name of some object
+    struct NameIdPair {
+      std::string name;
+      TID id;
+    };
     /// main entry class
     class Manager
     {
@@ -126,7 +131,7 @@ namespace Register
       ) const throw (INVALID_DOMAIN_NAME) = 0;
       /// check availability of domain  
       virtual CheckAvailType checkAvail(
-       const std::string& fqdn, std::string& conflictFqdn
+       const std::string& fqdn, NameIdPair& conflictFqdn
       ) const throw (SQL_ERROR) = 0;
       /// check validity of enum domain name (every part is one digit)
       virtual bool checkEnumDomainName(DomainName& domain) const = 0;

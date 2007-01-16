@@ -45,8 +45,9 @@ namespace Register
        isEnum = true;
      } catch (...) {}
      bool isDomain = true;
-     std::string fqdn = isEnum ? ch.newHandle : handle; 
-     switch (dm->checkAvail(fqdn, ch.conflictHandle)) {
+     std::string fqdn = isEnum ? ch.newHandle : handle;
+     Domain::NameIdPair conflictFQDN; 
+     switch (dm->checkAvail(fqdn, conflictFQDN)) {
        case Domain::CA_INVALID_HANDLE:
         isDomain = false; break;
        case Domain::CA_BAD_LENGHT: 
@@ -64,7 +65,8 @@ namespace Register
          ch.handleClass = CH_REGISTRED_CHILD; break;
        case Domain::CA_AVAILABLE:
          ch.handleClass = CH_FREE; break;
-     }   
+     }
+     ch.conflictHandle = conflictFQDN.name;
      if (isDomain) {
        if (!isEnum)
          ch.type = dm->checkEnumDomainSuffix(fqdn) ? HT_ENUM_DOMAIN : HT_DOMAIN;
