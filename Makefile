@@ -18,7 +18,7 @@ COMMON_OBJECTS = conf.o dbsql.o pqsql.o util.o log.o nameservice.o \
 ADMIN_SERVER_OBJECTS = $(COMMON_OBJECTS) admin.o  admin_server.o
 CCREG_SERVER_OBJECTS = $(COMMON_OBJECTS) ccReg_epp.o  ccReg_server.o  \
    countrycode.o messages.o 
-BANKING_OBJECT = gpc.o banking.o log.o conf.o dbsql.o pqsql.o util.o 
+BANKING_OBJECT = gpc.o banking.o log.o conf.o dbsql.o pqsql.o util.o csv.o
 PIF_SERVER_OBJECTS = $(COMMON_OBJECTS) pif_server.o  \
    whois.o admin.o
 EPP_CLIENT_OBJECTS=ccRegSK.o ccRegDynSK.o  epp_client.o nameservice.o
@@ -57,7 +57,7 @@ ccReg_idl.py:
 	omniidl -bpython $(IDLFILE)
 
 banking: $(BANKING_OBJECT)
-	$(CXX) -o banking_gpc  $(BANKING_OBJECT) $(LDFLAGS) -lpq
+	$(CXX) -o banking  $(BANKING_OBJECT) $(LDFLAGS) -lpq
 
 
 test: ccReg_idl.py
