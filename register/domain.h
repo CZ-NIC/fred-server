@@ -111,11 +111,6 @@ namespace Register
       /// clear filter data
       virtual void clearFilter() = 0;      
     };
-    /// Pair of id and name of some object
-    struct NameIdPair {
-      std::string name;
-      TID id;
-    };
     /// main entry class
     class Manager
     {

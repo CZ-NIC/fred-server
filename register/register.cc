@@ -46,7 +46,7 @@ namespace Register
      } catch (...) {}
      bool isDomain = true;
      std::string fqdn = isEnum ? ch.newHandle : handle;
-     Domain::NameIdPair conflictFQDN; 
+     NameIdPair conflictFQDN; 
      switch (dm->checkAvail(fqdn, conflictFQDN)) {
        case Domain::CA_INVALID_HANDLE:
         isDomain = false; break;
@@ -73,7 +73,8 @@ namespace Register
        chl.push_back(ch);
      }
      // check if handle is registred contact
-     if (getContactManager()->checkAvail(handle) == 
+     NameIdPair conflictContact;
+     if (getContactManager()->checkAvail(handle,conflictContact) == 
          Contact::Manager::CA_REGISTRED) {
        CheckHandle chCon;
        chCon.type = HT_CONTACT;
@@ -81,7 +82,8 @@ namespace Register
        chl.push_back(chCon);
      }
      // check if handle is registred nsset   
-     if (getNSSetManager()->checkAvail(handle) == 
+     NameIdPair conflictNSSet;
+     if (getNSSetManager()->checkAvail(handle,conflictNSSet) == 
          NSSet::Manager::CA_REGISTRED) {
        CheckHandle chNss;
        chNss.type = HT_NSSET;

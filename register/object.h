@@ -13,6 +13,11 @@ using namespace boost::posix_time;
 
 namespace Register
 {
+  /// Pair of id and name of some object
+  struct NameIdPair {
+    std::string name;
+    TID id;
+  };  
   /// Status description
   struct StatusDesc
   {

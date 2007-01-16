@@ -366,9 +366,12 @@ namespace Register
       {
         return &clist;
       }
-      virtual CheckAvailType checkAvail(const std::string& handle) const
-        throw (SQL_ERROR)
+      virtual CheckAvailType checkAvail(
+        const std::string& handle, NameIdPair& conflict
+      ) const throw (SQL_ERROR)
       {
+        conflict.id = 0;
+        conflict.name = "";
         if (!checkHandleFormat(handle)) return CA_INVALID_HANDLE;
         if (checkHandleRegistration(handle)) return CA_REGISTRED;
         return CA_FREE;
