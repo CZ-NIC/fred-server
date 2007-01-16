@@ -26,6 +26,8 @@
 // MailerManager is connected in constructor
 #include <register/auth_info.h>
 #include <register/domain.h>
+#include <register/contact.h>
+#include <register/nsset.h>
 #include <memory>
 // JT: END
 
@@ -1619,9 +1621,12 @@ ccReg::Response *ret;
 unsigned long i , len;
 //int  zone ;
 // char  FQDN[64];
-int id;
-Register::Domain::NameIdPair caConflict;
+// int id;
+
+Register::NameIdPair caConflict;
 Register::Domain::CheckAvailType caType;
+Register::Contact::Manager::CheckAvailType cType;
+Register::NSSet::Manager::CheckAvailType nType;
 
 ret = new ccReg::Response;
 
@@ -1648,6 +1653,47 @@ if( DBsql.OpenDatabase( database ) )
       switch(act)
             {
                 case EPP_ContactCheck:
+                           try {
+                                std::auto_ptr<Register::Contact::Manager> cman( Register::Contact::Manager::create(&DBsql)  );
+
+                                LOG( NOTICE_LOG ,  "contact checkAvail handle [%s]"  ,  (const char * ) chck[i] );
+
+                                cType = cman->checkAvail(  ( const char * )  chck[i]  , caConflict );
+                                LOG( NOTICE_LOG ,  "contact type %d" , cType );
+                              }
+                     catch (...) {
+                               LOG( WARNING_LOG, "cannot run Register::Contact::checkAvail");
+                                ret->errCode=COMMAND_FAILED;
+                            }
+
+                     switch( cType )
+                          {
+                             case Register::Contact::Manager::CA_INVALID_HANDLE:
+                             a[i].avail = ccReg::BadFormat;    // spatny format
+                             a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID ) ));                   
+                             LOG( NOTICE_LOG ,  "bad format %s of contact handle"  , (const char * ) chck[i] );
+                             break;
+                             case Register::Contact::Manager::CA_REGISTRED:
+                             a[i].avail  =  ccReg::Exist ;    // objekt existuje
+                             a[i].reason =  CORBA::string_dup(   GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID ) )  );
+                             LOG( NOTICE_LOG ,  "contact %s exist not Avail" , (const char * ) chck[i] );
+                             break;
+
+                             case Register::Contact::Manager::CA_PROTECTED:
+                             a[i].avail =  ccReg::DelPeriod;    // ochrana lhuta
+                             a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_PROTECTED_PERIOD , GetRegistrarLang( clientID ) ) );  // v ochrane lhute
+                             LOG( NOTICE_LOG ,  "contact %s in delete period" ,(const char * ) chck[i] );
+                             break;
+                             case Register::Contact::Manager::CA_FREE:
+                             a[i].avail =  ccReg::NotExist;    // objekt ne existuje
+                             a[i].reason =  CORBA::string_dup( "");  // free
+                             LOG( NOTICE_LOG ,  "contact %s not exist  Avail" ,(const char * ) chck[i] );
+                             break;
+                         }
+
+ 
+
+/* OLD
                      id =  DBsql.GetContactID( chck[i] );
                      if( id >= 0   )
                          {
@@ -1680,10 +1726,50 @@ if( DBsql.OpenDatabase( database ) )
                             a[i].avail = ccReg::BadFormat;    // spatny format
                             a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID ) ));
                          }
-
+*/
                         break;
 
                   case EPP_NSsetCheck:
+
+                           try {
+                                std::auto_ptr<Register::NSSet::Manager> nman( Register::NSSet::Manager::create(&DBsql)  );
+
+                                LOG( NOTICE_LOG ,  "nsset checkAvail handle [%s]"  ,  (const char * ) chck[i] );
+
+                                nType = nman->checkAvail(  ( const char * )  chck[i]  , caConflict );
+                                LOG( NOTICE_LOG ,  "contact type %d" , cType );
+                              }
+                     catch (...) {
+                               LOG( WARNING_LOG, "cannot run Register::NSSet::checkAvail");
+                                ret->errCode=COMMAND_FAILED;
+                            }
+
+                     switch( nType )
+                          {
+                             case Register::NSSet::Manager::CA_INVALID_HANDLE:
+                             a[i].avail = ccReg::BadFormat;    // spatny format
+                             a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID ) ));                   
+                             LOG( NOTICE_LOG ,  "bad format %s of nsset handle"  , (const char * ) chck[i] );
+                             break;
+                             case Register::NSSet::Manager::CA_REGISTRED:
+                             a[i].avail  =  ccReg::Exist ;    // objekt existuje
+                             a[i].reason =  CORBA::string_dup(   GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID ) )  );
+                             LOG( NOTICE_LOG ,  "nsset %s exist not Avail" , (const char * ) chck[i] );
+                             break;
+
+                             case Register::NSSet::Manager::CA_PROTECTED:
+                             a[i].avail =  ccReg::DelPeriod;    // ochrana lhuta
+                             a[i].reason =  CORBA::string_dup( GetReasonMessage( REASON_MSG_PROTECTED_PERIOD , GetRegistrarLang( clientID ) ) );  // v ochrane lhute
+                             LOG( NOTICE_LOG ,  "nsset %s in delete period" ,(const char * ) chck[i] );
+                             break;
+                             case Register::NSSet::Manager::CA_FREE:
+                             a[i].avail =  ccReg::NotExist;    // objekt ne existuje
+                             a[i].reason =  CORBA::string_dup( "");  // free
+                             LOG( NOTICE_LOG ,  "nsset %s not exist  Avail" ,(const char * ) chck[i] );
+                             break;
+                         }
+
+/*
                         id =  DBsql.GetNSSetID( chck[i] );
 
                        if( id >=0   )
@@ -1719,6 +1805,7 @@ if( DBsql.OpenDatabase( database ) )
                          }
 
                         break;
+*/
                   case EPP_DomainCheck:
 
                            try {
