@@ -308,6 +308,29 @@ else  return 2 ;  // period je mimo stanoveny rozsah
 }
 
 
+// spocet DPH z cestky bez dane pomoci koeficientu a matematicky zaokrouhli DPH na desetniky
+long count_dph( long  price , double koef )
+{
+double  p ;
+long d , r , mod ;
+
+p = price/100.0; // preved na double
+d = (long ) ( (p* koef) * 100.0 ); // na long 2 des mista
+
+mod = d % 10;
+
+if( mod  > 4 ) r = (d / 10) * 10   + 10; // zaokrouhly na desetniky nahoru
+else r = (d / 10) * 10; // dolu
+
+
+LOG( LOG_DEBUG ,  "count_dph koef  %lf p = %lf price %ld d = %ld  mod %ld zaokrouhleno dph->%ld"  , koef , p , price , d ,mod , r   );
+
+return r;
+}
+
+
+
+
 // preveadi cenu  halire bez konverze pres float
 long get_price( const char *priceStr )
 {
@@ -318,7 +341,7 @@ strcpy(  str , priceStr );
 len = strlen( priceStr );
 for( i = 0 ;i < len  ; i ++ )
 {
-        if( str[i] == '.' ) {  str[i] =  str[i+1] ;  str[i+1]  = str[i+2] ;  str[i+2]  = 0 ; break ; }
+        if( str[i] == '.' || str[i] == ',' ) {  str[i] =  str[i+1] ;  str[i+1]  = str[i+2] ;  str[i+2]  = 0 ; break ; }
 }
 
 // default
@@ -350,6 +373,28 @@ if( dateStr[10] == ' ' )  dateStr[10] = 'T' ;
 strcat( dateStr , "Z" );
 }
 
+}
+
+time_t get_local_format_time_t( const char *string )
+{
+struct tm dt;
+time_t t;
+
+memset(&dt,0,sizeof(dt));
+// format 04.01.2007 15:58:17
+sscanf(string , "%02d.%02d.%4d %02d:%02d:%02d" ,
+                 &dt.tm_mday , &dt.tm_mon , &dt.tm_year ,
+                &dt.tm_hour,   &dt.tm_min , &dt.tm_sec);
+
+// mesic o jeden mene
+dt.tm_mon = dt.tm_mon -1;
+// rok - 1900
+dt.tm_year = dt.tm_year - 1900;
+
+t = mktime( &dt );
+
+LOG( LOG_DEBUG , "get_local_time_t from [%s] = %ld" , string , t );
+return t;
 }
 
 // preveadi cas timestamp na unix time
