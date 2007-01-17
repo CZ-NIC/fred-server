@@ -15,9 +15,9 @@ CPPFLAGS =  -I/usr/local/pgsql/include/   -I/usr/include/postgresql/ \
             -I. -Wno-deprecated
 COMMON_OBJECTS = conf.o dbsql.o pqsql.o util.o log.o nameservice.o \
     ccRegSK.cc ccRegDynSK.o mailer_manager.o
-ADMIN_SERVER_OBJECTS = $(COMMON_OBJECTS) admin.o  admin_server.o
+ADMIN_SERVER_OBJECTS = $(COMMON_OBJECTS) admin.o  admin_server.o tech_check.o
 CCREG_SERVER_OBJECTS = $(COMMON_OBJECTS) ccReg_epp.o  ccReg_server.o  \
-   countrycode.o messages.o 
+   countrycode.o messages.o tech_check.o
 BANKING_OBJECT = gpc.o banking.o log.o conf.o dbsql.o pqsql.o util.o csv.o
 PIF_SERVER_OBJECTS = $(COMMON_OBJECTS) pif_server.o  \
    whois.o admin.o

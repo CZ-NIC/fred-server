@@ -22,20 +22,19 @@
 		
 #include "log.h"
 
-// JT: START
 // MailerManager is connected in constructor
-#include <register/auth_info.h>
-#include <register/domain.h>
-#include <register/contact.h>
-#include <register/nsset.h>
+#include "register/auth_info.h"
+#include "register/domain.h"
+#include "register/contact.h"
+#include "register/nsset.h"
 #include <memory>
-// JT: END
-
+#include "tech_check.h"
 
 //
 // Example implementational code for IDL interface ccReg::EPP
 //
-ccReg_EPP_i::ccReg_EPP_i(MailerManager *_mm ) : mm(_mm) {
+ccReg_EPP_i::ccReg_EPP_i(MailerManager *_mm, NameService *_ns ) :
+  mm(_mm), ns(_ns) {
 
 }
 ccReg_EPP_i::~ccReg_EPP_i(){
@@ -4816,7 +4815,7 @@ return FullList( EPP_ListDomain , "DOMAIN"  , "fqdn" , domains ,  clientID,  clT
 ccReg::Response* ccReg_EPP_i::nssetTest(const char* handle, const char* fqdn, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
 DB DBsql;
-ccReg::Response * ret;
+ccReg::Response * ret = new ccReg::Response;
 int regID;
 int nssetid;
 
@@ -4829,10 +4828,28 @@ if( DBsql.OpenDatabase( database ) )
   if( (   DBsql.BeginAction( clientID , EPP_NSsetTest ,  clTRID , XML  )  ) )
     {
       if( (nssetid = DBsql.GetNSSetID( handle ) ) <= 0  )  SetReasonNSSetHandle( ret , handle , nssetid , GetRegistrarLang( clientID ) );
-      else     ret->errCode=COMMAND_OK; // TODO TODO TODOTODOTODO
-         // zatim prazdne musi se doimplementovat 
-
-    
+      else {
+        std::stringstream strid;
+        strid << regID;
+        std::string regHandle =
+          DBsql.GetValueFromTable(
+            "registrar","handle","id",strid.str().c_str()
+          );
+        ret->errCode=COMMAND_OK;
+        TechCheckManager tc(ns);
+        try {
+          tc.checkFromRegistrar(regHandle,handle,fqdn);
+        }
+        catch (TechCheckManager::INTERNAL_ERROR) {
+          LOG(ERROR_LOG,"Tech check internal error nsset [%s] fqdn  [%s] clientID -> %d clTRID [%s] " , handle  , fqdn ,  (int )  clientID , clTRID );          
+        }
+        catch (TechCheckManager::REGISTRAR_NOT_FOUND) {
+          LOG(ERROR_LOG,"Tech check reg not found nsset [%s] fqdn [%s] clientID -> %d clTRID [%s] " , handle  , fqdn ,  (int )  clientID , clTRID );
+        }
+        catch (TechCheckManager::NSSET_NOT_FOUND) {
+          LOG(ERROR_LOG,"Tech check nsset not found nset [%s] fqdn [%s] clientID -> %d clTRID [%s] " , handle  , fqdn ,  (int )  clientID , clTRID );          
+        }
+      }
       // zapis na konec action
       ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->errCode ) ) ;
     }

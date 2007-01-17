@@ -5,6 +5,7 @@
 #include "mailer_manager.h"
 
 
+
 struct Session
 {
 int clientID;
@@ -23,9 +24,10 @@ private:
   // destructor non-public
   //virtual ~ccReg_EPP_i();
   MailerManager *mm;
+  NameService *ns;
 public:
   // standard constructor
-  ccReg_EPP_i(MailerManager *_mm);
+  ccReg_EPP_i(MailerManager *_mm, NameService *_ns);
   virtual ~ccReg_EPP_i();
 
 

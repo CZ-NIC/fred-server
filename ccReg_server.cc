@@ -69,7 +69,7 @@ int main(int argc, char** argv)
     NameService ns(orb,nameServiceIOR);
     
     MailerManager mm(&ns);
-    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(&mm);
+    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(&mm,&ns);
 
     // create session TODO config
     std::cerr << "CreateSession: max "  << config.GetSessionMax()  << " timeout " <<  config.GetSessionWait() <<  std::endl;
