@@ -63,7 +63,7 @@ banking: $(BANKING_OBJECT)
 test: ccReg_idl.py
 	python test.py
 
-install: fred_rifd fred_pifd fre_adifd
+install: fred_rifd fred_pifd fred_adifd
 	install fred_rifd /usr/local/bin/
 	install fred_pifd /usr/local/bin/
 	install fred_adifd /usr/local/bin/

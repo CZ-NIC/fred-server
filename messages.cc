@@ -50,10 +50,14 @@ delete [] errMsg_cs;
 char * Mesg::GetMesg(int id)
 {
 int i;
-
+LOG(DEBUG_LOG ,"GetMesg id %d" ,  id );
 for( i = 0 ;  i < numMsg ; i ++ )
   {  
-    if( errID[i] == id ) return  errMsg[i] ; 
+    if( errID[i] == id ) 
+     {
+        LOG(DEBUG_LOG ,"return mesg [%s]" , errMsg[i] );
+        return  errMsg[i] ; 
+     }
   }
 
 return ""; // prazdy popis
@@ -64,9 +68,15 @@ char *   Mesg::GetMesg_CS(int id)
 {
 int i;
 
+LOG(DEBUG_LOG ,"GetMesgCD %d" ,  id );
+
 for( i = 0 ;  i < numMsg ; i ++ )
   {  
-    if( errID[i] == id ) return  errMsg_cs[i] ; 
+    if( errID[i] == id ) 
+       {
+          LOG(DEBUG_LOG ,"return mesg [%s]" , errMsg[i] );
+          return  errMsg_cs[i] ; 
+       }
   }
 
 return ""; // prazdy popis

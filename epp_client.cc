@@ -33,10 +33,10 @@ int main(int argc, char** argv)
     CORBA::Object_var  epp_obj , admin_obj;
      CORBA::Short errCode ; 
     ccReg::Contact *contact , *cc;
-//    ccReg::ContactChange *ch;
+    ccReg::ContactChange *ch;
     ccReg::Response *ret;
 //    ccReg::NSSet *nsset;
-//    ccReg::Domain *domain;
+    ccReg::Domain *domain;
     ccReg::Check_var check;
     ccReg::Check dcheck(2);
     ccReg::ZoneCredit_var credit;
@@ -48,25 +48,27 @@ int main(int argc, char** argv)
     CORBA::String_var errMsg , svTR , mesg ;
     ccReg::Error errors;
 //    char *msg;
-    unsigned long  i  ;
+    unsigned long  i  ,  j , num ;
 //    int len , max = 512, d , j , a , num;
    CORBA::Long loginID;
-//    CORBA::Long msgID , newmsgID;
+   
     ccReg::CheckResp_var cr;
     ccReg::DNSHost_var dns_chg ,  dns_add , dns_rem;
     ccReg::TechContact_var tech_add , tech_rem;
     ccReg::AdminContact_var admin;
     ccReg::Status_var add , rem;
-//    CORBA::Short count;
-//    ccReg::timestamp crDate , qDate , exDate , exvalDate ;
+    CORBA::Short count;
+    ccReg::timestamp crDate , qDate , exDate , exvalDate ;
+    CORBA::String_var msgID , newmsgID ;
 //    ccReg::ENUMValidationExtension *enumVal;
     ccReg::ENUMValidationExtension_var ev;
     ccReg::ExtensionList_var ext;
+     ccReg::Period_str period;
 //    struct tm dt;
 //    time_t t;
 //    filebuf *pbuf;
 //    char *buffer;
-//    char name[64] , handle[64] ,  roid[32] , email[32] , clTRID[32];
+    char name[64] , handle[64] ,  fqdn[64] , email[32] , clTRID[32];
 //    long size  ;
     NameService ns(orb);
 
@@ -96,17 +98,18 @@ int main(int argc, char** argv)
 
 //    errors = new ccReg::Error_var;
     errors.length(1);
-    errors[0].code=ccReg::contactUpdate_cc;
+    errors[0].code=ccReg::transfer_op;
     errors[0].value= CORBA::string_dup( "XX" );
 
     errCode=1000;
     cout << "get Transaction code input " << errCode << endl;
     ret =  EPP->GetTransaction( errCode ,  errors , loginID ,  "client-CLTRID" );
 
-
+/*
     cout << "get Transaction code " << ret->errCode << ret->errMsg  <<  ret->svTRID  << endl;
-
-
+    for(  i = 0 ; i < ret->errors.length() ; i ++ )
+       cout << "errors code: " <<  ret->errors[i].code << " value: "  <<  ret->errors[i].value << " raeson: "  << ret->errors[i].reason  << endl;
+ */
     // vrati kompletni seznam registratoru
 /*
     rl = Admin->getRegistrars();
@@ -135,9 +138,9 @@ int main(int argc, char** argv)
 */
 
 
+    cout << "loginIDClientLogin " << endl;
 
-
-    ret =  EPP->ClientLogin(  "REG-LRR2"  ,  "123456789"  , "" ,     "LRR-login-now" , "" , loginID , "AE:B3:5F:FA:38:80:DB:37:53:6A:3E:D4:55:E2:91:97" ,  ccReg::EN  );
+    ret =  EPP->ClientLogin(  "REG-LRR"  ,  "123456789"  , "" ,     "LRR-12345" , "" , loginID , "AE:B3:5F:FA:38:80:DB:37:53:6A:3E:D4:55:E2:91:97" ,  ccReg::EN  );
 
 
     cout << "loginID" << loginID  << endl;
@@ -158,13 +161,14 @@ int main(int argc, char** argv)
     cout << "SendAuthInfo err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
    
 */
+/*
     ret =  EPP->ContactInfo( "CID:DEBIL" ,  cc , loginID , "test-contact-info" , "<XML>debil</XML>");
     cout << "ContactInfo err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
       cout << "ContactInfo " <<  cc->Name << endl;
 
   for( i = 0 ; i < cc->stat.length() ; i ++ )
        cout << "status " <<  cc->stat[i].value <<  cc->stat[i].text << endl;
-
+*/
     ret =  EPP->ClientCredit( credit ,   loginID  , "client-credit-ZC" , "<XML>get_rededit</XML>" );
     cout << "ClientCredit " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
@@ -172,6 +176,20 @@ int main(int argc, char** argv)
     {
      cout << "credit " << credit[i].price << " zone " << credit[i].zone_fqdn << endl;
     }
+
+
+  ret =  EPP->PollRequest( msgID ,  count ,  qDate , mesg ,  loginID ,  "poll-request"  ,  "<XML>");
+  cout << "PollRequest: "  << "msgID " << msgID << endl ;
+  cout << "err code " << ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+
+  cout << "count " << count << " qDate: " <<  qDate  <<  endl;
+  cout << "message " << mesg << endl ;
+
+ msgID = CORBA::string_dup( "2" );
+  ret =  EPP->PollAcknowledgement( msgID ,  count , newmsgID , loginID ,  "poll-acknowledgement" , "<XML>"  );
+  cout << "PollRAcknowledgement: "  << ret->errCode  << endl;
+  cout << "count " << count << "newmsgID: " << newmsgID <<  " count " << count <<  endl;
+  cout << "err code " << ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
 
 
 /*
@@ -205,7 +223,7 @@ int main(int argc, char** argv)
 
 //     ret =  EPP->ClientCredit( credit ,  loginID , "clTRID-credit" , "<XML>credit</XML>" );
 //     cout << "credit " << credit <<  "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
-
+/*
     ret =  EPP->ContactList ( lists , loginID , "contact-list" , "<XML>contact-list</XML>" );
     cerr << "ContactList err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
  
@@ -236,32 +254,36 @@ int main(int argc, char** argv)
 
 
     delete lists;
+*/
 
 
 
 
-/*
 
 if( loginID )
 {
-num = 1000;
-
-
+num = 0;
 
 
 
   for( i = 0 ; i < num ; i ++ )
   {
-   sprintf( handle , "CID:omniORB%d" , i );
+
+    random_string( name ,  13 );
+
+    strcpy(  handle , "CID:XX"  );
+    strcat(  handle , name );
+
+
+
 
   ch = new ccReg::ContactChange;
-  ch->Name  = CORBA::string_dup( handle );
+  ch->Name  = CORBA::string_dup( "Jmeno Prijmeni" );
   ch->CC  =  CORBA::string_dup( "CZ" );
   ch->City =  CORBA::string_dup( "mesto");
   ch->Organization = CORBA::string_dup( "" );
-  ch->Street1 =  CORBA::string_dup( "ulice");
-  ch->Street2 =  CORBA::string_dup( "ulice");
-  ch->Street3 =  CORBA::string_dup( "ulice");
+  ch->Streets.length(0); // zadna ulice
+
   ch->StateOrProvince = CORBA::string_dup( "" );
   ch->PostalCode = CORBA::string_dup( "252 62");
   ch->Telephone = CORBA::string_dup( "" );
@@ -269,9 +291,10 @@ num = 1000;
   ch->Email = CORBA::string_dup( "neco@email.cz" );
   ch->NotifyEmail= CORBA::string_dup( "" );
   ch->VAT= CORBA::string_dup( "" );
-  ch->SSN = CORBA::string_dup( "123456l/LN01" ); 
-  ch->SSNtype =  ccReg::PASS;
+  ch->ident = CORBA::string_dup( "123456l/LN01" ); 
+  ch->identtype =  ccReg::PASS;
   ch->AuthInfoPw = CORBA::string_dup( "heslo" );
+  ch->DiscloseFlag = ccReg::DISCL_DISPLAY;
   ch->DiscloseName = ccReg::DISCL_DISPLAY;
   ch->DiscloseOrganization = ccReg::DISCL_DISPLAY;
   ch->DiscloseAddress = ccReg::DISCL_DISPLAY;
@@ -281,27 +304,75 @@ num = 1000;
 
  
    cout << "contact create  " << handle << endl;     
+   
+
    ret =  EPP->ContactCreate( handle , *ch ,  crDate ,  loginID , "test-contact-create"  , "<XML omniORB>"   );
+
    cout << "contact create  " << handle << "  "  << ret->errCode  <<  ret->errMsg <<  ret->svTRID << endl;
    cout << "Create date: " << crDate  << endl; 
+     for( j  = 0 ; j <  ret->errors.length() ; j ++ )
+        {
+           cout << "errorsreason:  " <<  ret->errors[j].code <<  ret->errors[j].reason  << ret->errors[j].value << endl;
+        }
    delete ch;
-  }
+//   delete ret;
+
+   ret =  EPP->ContactInfo( handle ,  cc , loginID , "test-contact-info" , "<XML>debil</XML>");
+   cout << "ContactInfo err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
+   cout << "ContactInfo " <<  handle << endl;
+   delete cc;
+//   delete ret;
 
 
-  for( i = 0 ; i < num ; i ++ )
-  {
-   sprintf( handle , "CID:omniORB%d" , i );
+
+//    sprintf( fqdn , "d-%d-ZZ.cz" ,  (int ) i );
+/*
+    admin = new ccReg::AdminContact;
+    admin->length(3);
+    admin[0] = CORBA::string_dup("CID:JOUDA" );
+    admin[1] = CORBA::string_dup("CID:DEBIL" );
+    admin[2] = CORBA::string_dup("CID:KOKOT" );
 
 
-    ret =  EPP->ContactDelete(  handle ,  loginID , "test-contact-delete" , "" );
-    cout << "contact delete " << handle << "  "  << ret->errCode  <<  ret->errMsg <<  ret->svTRID << endl;
+//    ext.length(0);
+    ext = new ccReg::ExtensionList;
+    ext->length(0);
+
+    period.count=1;
+    period.unit=ccReg::unit_year;
+
+
+    random_string( name ,  10 );
+
+    strcpy(  fqdn , name  );
+    strcat(  fqdn , "-tt.cz" );
+ 
+   cout << "domain " << fqdn << endl;
+   ret =  EPP->DomainCreate( fqdn , handle , "NSSID:BAZMEK" , "heslicko" , period , admin , crDate , exDate ,   loginID , "domain-create-epp-client" , "<XML>domaincreator</XML>" , ext );
+   cout << "domain create err code " << ret->errCode  <<  ret->errMsg <<  ret->svTRID << "crDate: " << crDate << "exDate" << exDate << endl;
+  
+
+   ret =  EPP->DomainInfo(  fqdn ,  domain , loginID , "info-cpp-temp"  , "<XML>");
+   cout << "err code " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
+
+   for( j = 0 ; j < domain->admin.length() ; j ++ ) cout << "admin: "  << domain->admin[j] << endl;
+   cout << "Domain info"  << domain->name << domain->Registrant <<  endl;
+   cout << "ExpDate: " << domain->ExDate  << endl;
+   cout << "err code " << ret->errCode   << endl;
+   cout << "ext length " <<   domain->ext.length() << endl ;
+
+*/
+   ret =  EPP->ContactDelete(  handle ,  loginID , "test-contact-delete" , "" );
+   cout << "contact delete " << handle << "  "  << ret->errCode  <<  ret->errMsg <<  ret->svTRID << endl;
+   delete ret;
+
   }
 
 
 
 }
 
-
+/*
     ret =  EPP->ClientLogout( loginID , "XXXX-logout" , "");
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
 

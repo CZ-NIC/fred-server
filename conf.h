@@ -13,20 +13,21 @@
 #define KEY_pass        3  
 #define KEY_host        4
 #define KEY_port        5
-#define KEY_log_mask    6
-#define KEY_log_level   7
-#define KEY_log_local   8
-#define KEY_nameservice 9
-#define KEY_session_max  10
-#define KEY_session_wait  11
-#define MAX_KEYS  11 
+#define KEY_timeout     6
+#define KEY_log_mask    7
+#define KEY_log_level   8
+#define KEY_log_local   9
+#define KEY_nameservice 10
+#define KEY_session_max  11
+#define KEY_session_wait  12
+#define MAX_KEYS  12
 
 #include <string>
 
 class Conf {
 public:
 
-Conf() { port[0]=0; host[0] = 0 ; user[0]=0 ; password[0] = 0 ; host[0]=0; log_level = 0 ; conninfo[0] =0 ; log_local=0; 
+Conf() { port[0]=0; timeout[0] = 0 ; host[0] = 0 ; user[0]=0 ; password[0] = 0 ; host[0]=0; log_level = 0 ; conninfo[0] =0 ; log_local=0; 
 // default hodnoty bez udani v konfigu
 session_max=20 ; session_wait=300;}; // empty
 ~Conf(){}; // empty
@@ -55,6 +56,7 @@ char * GetDBname(){ if( dbname[0] == 0 ) return NULL ; else  return dbname; };
 char * GetDBuser(){ if( user[0] == 0 ) return NULL ; else return user; };
 char * GetDBpass(){ if( password[0] == 0 ) return NULL ; else return password; };
 char * GetDBport(){ if(port[0] == 0 ) return NULL ; else  return port; };
+char * GetDBtimeout(){ if(timeout[0] == 0 ) return NULL ; else  return timeout; };
 char * GetDBconninfo();
 const char *GetNameService(){ return nameServiceIOR.c_str(); } 
 
@@ -98,6 +100,7 @@ char user[32];
 char password[32];
 char host[64];
 char port[16];
+char timeout[10];
 char conninfo[256];
 int log_level;
 int log_local;

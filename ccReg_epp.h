@@ -82,6 +82,8 @@ public:
   int DefaultDomainNSSetPeriod(){ return 2; }
   int DefaultDomainFQDNPeriod(){ return 2; }
 
+  int DefaultNSSetCheckLevel() { return 0; } // default nsset level
+
   // true vse zobrazovat false vse skryt pro disclose flags
   bool DefaultPolicy(){return true;}
 

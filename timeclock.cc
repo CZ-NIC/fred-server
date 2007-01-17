@@ -23,21 +23,21 @@ gettimeofday( &tv, &tz);
 tc=tv.tv_sec;
 tc=tc * MICROSEC;
 tc= tc + tv.tv_usec;
-LOG( DEBUG_LOG , "TIMECLOCK get_time_clock %ld sec  %ld usec  return %lld " , tv.tv_sec , tv.tv_usec  , tc);
+// LOG( DEBUG_LOG , "TIMECLOCK get_time_clock %ld sec  %ld usec  return %lld " , tv.tv_sec , tv.tv_usec  , tc);
 return tc;
 }
 
 void timeclock_start()
 {
 total_clock=0;
-LOG( DEBUG_LOG , "TIMECLOCK CLEAR ");
+//LOG( DEBUG_LOG , "TIMECLOCK CLEAR ");
 }
 
 
 void timeclock_begin()
 {
 
-LOG( DEBUG_LOG , "TIMECLOCK START"  );
+//LOG( DEBUG_LOG , "TIMECLOCK START"  );
 time_clock=get_time_clock();
 
 }
@@ -55,7 +55,7 @@ LOG( DEBUG_LOG , "TIMECLOCK  END  %lld (usec)" ,  total );
 void timeclock_quit()
 {
 
-LOG( DEBUG_LOG , "TIMECLOCK %lld TOTAL %lld (sec) %lld (usec)" , total_clock ,  total_clock / MICROSEC , total_clock % MICROSEC);
+LOG( DEBUG_LOG , "TIMECLOCK TOTAL  %lld (sec) %lld (usec)" ,   total_clock / MICROSEC , total_clock % MICROSEC);
 total_clock=0;
 }
 

@@ -21,6 +21,7 @@
 #define INFO_LOG        6       /* informational */
 #define LOG_DEBUG       7       /* debug-level messages */
 #define SQL_LOG      LOG_DEBUG
+#define DEBUG_LOG LOG_DEBUG
 #endif
 
 #ifdef SYSLOG

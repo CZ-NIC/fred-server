@@ -22,7 +22,7 @@
 
 #define MAX_ITEMS 256 // maximalni pocet polozek vypisu
 
-#define MAX_DATE 12
+#define MAX_DATE_STR 12
 #define MAX_ACCOUNT GPC_MAX_ACCOUNT+1
 #define MAX_NAME GPC_MAX_NAME+1
 #define MAX_MEMO GPC_MAX_MEMO+1
@@ -84,8 +84,8 @@ long oldBalnce; // stary sustatek
 long newBalance; // novy zustatek
 long credit; // creditni obrat
 long debet; // debetni obrat
-char oldDate[MAX_DATE]; // datum stareho zustatku
-char date[MAX_DATE]; // dattum vypisu;
+char oldDate[MAX_DATE_STR]; // datum stareho zustatku
+char date[MAX_DATE_STR]; // dattum vypisu;
 int num; // porwdi vypisu
 };
 
@@ -98,7 +98,7 @@ char vs[MAX_VS];
 char ss[MAX_SS];
 char evid[MAX_MEMO]; // doklad cislo
 char memo[MAX_MEMO]; // poznamka
-char date[MAX_DATE]; // datum splatnosti  zkonvertovane datum fe romatu YYYY-MM-DD
+char date[MAX_DATE_STR]; // datum splatnosti  zkonvertovane datum fe romatu YYYY-MM-DD
 long price; // castka v halirich;
 int code; // credit true debet false
 };

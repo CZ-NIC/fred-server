@@ -169,7 +169,7 @@ bool Conf::ReadConfigFileTXT(const char *filename )
 FILE *f;
 char buf[MAX_LINE];
 char keys[MAX_KEYS][KEY_MAX] = { 
-  "dbname" , "user" , "password" , "host" , "port" ,
+  "dbname" , "user" , "password" , "host" , "port" , "connect_timeout" , 
   "log_mask" ,  "log_level" , "log_local", "nameservice"  , "session_max" , "session_wait" };
 int key;
 char keyname[KEY_MAX];
@@ -218,7 +218,7 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
              }
 
 
-//           if( key ) debug("config KEY %d %s value [%s]\n" , key , keyname  , value );
+           if( key ) debug("config KEY %d %s value [%s]\n" , key , keyname  , value );
 
            switch( key)
              {
@@ -236,6 +236,9 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
                            break; 
                 case KEY_port:
                            strcpy( port ,  value );
+                           break; 
+                case KEY_timeout:
+                           strcpy( timeout ,  value );
                            break; 
                 case KEY_session_wait:
                            session_wait = atoi(  value );
@@ -285,6 +288,7 @@ if( strlen( user ) ){ sprintf( buf ,"user=%s " , user ); strcat( conninfo , buf 
 if( strlen( password )) { sprintf( buf, "password=%s " ,  password ); strcat( conninfo , buf ) ; } 
 if( strlen( host ) ){ sprintf( buf ,"host=%s " , host ); strcat( conninfo , buf ) ; } 
 if( strlen( port ) ){ sprintf( buf ,"port=%s " , port ); strcat( conninfo , buf ) ; } 
+if( strlen( timeout ) ){ sprintf( buf ,"connect_timeout=%s " , timeout ); strcat( conninfo , buf ) ; } 
 
 return  conninfo;
 }

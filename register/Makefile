@@ -2,7 +2,7 @@ OBJS = register.o zone.o blacklist.o domain.o registrar.o object_impl.o \
        contact.o nsset.o auth_info.o
 EXT = ../pqsql.o ../dbsql.o ../util.o -lpq
 LIB = libccreg.a
-CXXFLAGS = -g -Wall -I.. -I/usr/include/postgresql/
+CXXFLAGS = -g -Wall -I.. -I/usr/include/postgresql/ -DTIMECLOCK
 
 all: $(LIB) testreg
 

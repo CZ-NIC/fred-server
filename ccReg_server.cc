@@ -35,6 +35,7 @@ int main(int argc, char** argv)
     strcpy( db , config.GetDBconninfo() );
     std::cerr << "DATABASE: "  << db << std::endl;
 
+
 #ifdef SYSLOG
     std::cerr << "start syslog at level " 
               <<  config.GetSYSLOGlevel()   << std::endl;

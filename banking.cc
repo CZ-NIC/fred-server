@@ -189,11 +189,11 @@ if( db.BeginTransaction() )
                                        else  {   LOG( ERROR_LOG , "chyba update EBankaListInvoice");  err = -1; }
                                     }
                             }
-                           else if( regID == 0 ) LOG(  LOG_DEBUG , "nezparovana platba identifikator [%s] price %.02lf" ,  csv.get_value(15) , price ); 
+                           else if( regID == 0 ) LOG(  LOG_DEBUG , "nezparovana platba identifikator [%s] price %ld" , identStr   , price ); 
  
                           
                         }
-                      else { if(  id == 0 )   LOG( LOG_DEBUG ,"platba identifikator [%s] byla jiz zpracovana"  , csv.get_value(15) );
+                      else { if(  id == 0 )   LOG( LOG_DEBUG ,"platba identifikator [%s] byla jiz zpracovana"  , identStr );
                              else  { LOG( ERROR_LOG , "chyba ve zpracovani vypisu enbaky");  err = -2;}
                            }
 
@@ -399,7 +399,7 @@ Conf config; // READ CONFIG  file
     openlog ( "banking_gpc" , LOG_CONS | LOG_PID | LOG_NDELAY,  config.GetSYSLOGfacility() );
 #endif
 
-
+printf("connect DB string [%s]\n" , config.GetDBconninfo() ); 
 // usage
 if( argc == 1 )printf("import banking statement file to database\nusage: %s --bank-gpc file.gpc\ninvoicing: %s --invoice\ncredit: %s --credit REG-HANDLE zone price\nE-Banka: %s --ebanka-csv file.csv\n"  , argv[0]  , argv[0] ,  argv[0] , argv[0] );  
 
