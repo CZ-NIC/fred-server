@@ -208,6 +208,10 @@ int invID[2];
 long cr[2];
 int i , num;
 
+// systemovy registrator pracuje zadarmo
+if( GetRegistrarSystem( regID ) == true ) return true;
+
+
 // cena za operaci v registru
 price =  GetPrice( operation , zone , period );
 
@@ -462,6 +466,12 @@ bool DB::TestObjectClientID( int id  , int regID )
 {
 char sqlString[128];
 bool ret=false;
+
+
+// systemovy registrator pracuje zadarmo
+if( GetRegistrarSystem( regID ) == true ) return true; // ma prava dany objekt menit
+else
+{
 sprintf( sqlString , "SELECT id FROM  object WHERE id=%d and clID=%d " , id , regID ); 
 if( ExecSelect( sqlString ) )
  {
@@ -470,6 +480,8 @@ if( ExecSelect( sqlString ) )
  }
 
 return ret;
+}
+
 }
 
 char * DB::GetObjectName( int id )
@@ -755,12 +767,41 @@ return id;
 
 */
 
+
+// vraci tru pokud je to systemovy regostrator
+bool DB::GetRegistrarSystem( int regID )
+{
+char sqlString[128];
+bool ret=false;
+
+sprintf( sqlString , "SELECT system FROM registrar where id=%d;" , regID );
+if( ExecSelect( sqlString ) )
+ {
+    if(  GetSelectRows() == 1  )
+      {
+         ret =  GetFieldBooleanValueName( "system" , 0 );
+
+      }
+   FreeSelect();
+ }
+
+         if( ret ) LOG(  SQL_LOG , "GetRegistrarSystem TRUE" );
+         else LOG(  SQL_LOG , "GetRegistrarSystem FALSE");
+
+
+return ret;
+}
+
+
 // testuje pravo registratora na zapis do zony  podle toho odkdy ma zacatek fakturace pro danou zonu 
 // TODO ukonceni cinnosti registratora
 bool DB::TestRegistrarZone(int regID , int zone )
 {
 bool ret = false;
 char sqlString[128];
+
+// sytemovy registrator ma prava pro vsechny zony
+if( GetRegistrarSystem( regID ) == true ) return true;
 
 sprintf( sqlString , "SELECT  id  FROM  registrarinvoice  WHERE registrarid=%d and zone=%d and  current_timestamp > fromdate;" ,  regID , zone );
 
@@ -859,6 +900,7 @@ return ret;
 }
 
 
+ 
 
 // testuje jestli lze prodlouzit domenu pri DomainRenew
 bool DB::CountExDate( int domainID , int period  , int max_period )

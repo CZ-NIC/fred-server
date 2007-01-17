@@ -177,6 +177,9 @@ int GetNSSetContacts( int nssetID );
 int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "id" , "handle" , handle ); };
 int GetRegistrarIDbyVarSymbol( char *vs )  { return GetNumericFromTable( "REGISTRAR", "id" , "varsymb" , vs ); };
 
+// vraci true pokud je to systemovy registrator
+bool GetRegistrarSystem( int regID );
+
 
 char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "handle" , "id" , id ); };
 char * GetStatusFromTable( char *table , int id ) {  return GetValueFromTable( table , "status" , "id" , id ); };
