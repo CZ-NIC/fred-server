@@ -1013,6 +1013,8 @@ if( DBsql.OpenDatabase( database ) )
 
          DBsql.QuitTransaction( ok );
       }    
+
+      DBsql.Disconnect();     
    }
 else ServerInternalError();
 
