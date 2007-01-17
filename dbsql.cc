@@ -755,35 +755,22 @@ return id;
 
 */
 
-// testuje pravo registratora na zapis do zony 
+// testuje pravo registratora na zapis do zony  podle toho odkdy ma zacatek fakturace pro danou zonu 
+// TODO ukonceni cinnosti registratora
 bool DB::TestRegistrarZone(int regID , int zone )
 {
 bool ret = false;
 char sqlString[128];
-// char zoneArray[64] , str[10] ;
-// int z , j  , len ;
 
-sprintf( sqlString , "SELECT zone FROM REGISTRAR WHERE id=%d; " ,  regID  );
+sprintf( sqlString , "SELECT  id  FROM  registrarinvoice  WHERE registrarid=%d and zone=%d and  current_timestamp > fromdate;" ,  regID , zone );
+
+
 
 if( ExecSelect( sqlString ) )
  {
     if(  GetSelectRows() == 1  )
       {
-                     ret=true;
-/* TODO predelat databazove schama a zrusit posledni array
-                   // pole zone
-                   strcpy( zoneArray , GetFieldValue( 0 , 0 ) );
-
-                   // zpracuj pole adres
-                   len =  get_array_length( zoneArray  );
-                   for( j = 0 ; j < len ; j ++)
-                      {
-                        get_array_value( zoneArray , str , j );
-                        z = atoi( str ); 
-                        if( z == zone ) { ret=true; break ; }  // mam pravo                       
-                      }
-
-*/
+            ret=true;
       }
     FreeSelect();
   }
