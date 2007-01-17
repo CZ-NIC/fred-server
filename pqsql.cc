@@ -34,12 +34,13 @@ timeclock_quit();
 bool PQ::OpenDatabase(const char *conninfo)
 {
 
+  LOG( NOTICE_LOG , "Database connection:  %s" , conninfo);
 connection = PQconnectdb(conninfo);
 
 // Check to see that the backend connection was successfully made 
 if (PQstatus(connection) != CONNECTION_OK)
    {
-     LOG( ERROR_LOG ,  "Connection to database failed: %s",  
+     LOG( ALERT_LOG ,  "Connection to database failed: %s",  
                        PQerrorMessage(connection));
      PQfinish(connection);
      return false;   
