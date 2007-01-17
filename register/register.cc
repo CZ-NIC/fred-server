@@ -54,7 +54,6 @@ namespace Register
          ch.handleClass = CH_UNREGISTRABLE_LONG; break;
        case Domain::CA_BAD_ZONE:
          ch.handleClass = CH_UNREGISTRABLE; break;
-       case Domain::CA_PROTECTED:
        case Domain::CA_BLACKLIST: 
          ch.handleClass = CH_PROTECTED; break;
        case Domain::CA_REGISTRED:

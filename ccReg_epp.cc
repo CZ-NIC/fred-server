@@ -1840,17 +1840,12 @@ if( DBsql.OpenDatabase( database ) )
                                   a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID ) ) );
                                   LOG( NOTICE_LOG ,  "domain %s exist not Avail" , (const char * ) chck[i] );                                              
                                   break;
+                             case Register::Domain::CA_BLACKLIST: // TODO
                              case Register::Domain::CA_AVAILABLE:
                                   a[i].avail =  ccReg::NotExist;    // objekt ne existuje
                                   a[i].reason =  CORBA::string_dup( "");  // free
                                   LOG( NOTICE_LOG ,  "domain %s not exist  Avail" ,(const char * ) chck[i]  );
                                   break;
-                             case Register::Domain::CA_BLACKLIST: // TODO
-                             case Register::Domain::CA_PROTECTED:
-                                  a[i].avail =  ccReg::DelPeriod;    // objekt byl smazan je v historri a ma ochranou lhutu
-                                  a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_PROTECTED_PERIOD , GetRegistrarLang( clientID ) ) );  // v$                                     LOG( NOTICE_LOG ,  "domain %s in delete period" ,(const char * ) chck[i] );
-                                  LOG( NOTICE_LOG ,  "domain %s in delete period" ,(const char * ) chck[i] );
-                                   break;
                              case Register::Domain::CA_BAD_ZONE:
                                    a[i].avail = ccReg::NotApplicable;    // nepouzitelna domena neni v zone
                                    a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_NOT_APPLICABLE_DOMAIN , GetRegistrarLang( clientID ) ) );

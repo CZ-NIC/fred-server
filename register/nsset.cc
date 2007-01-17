@@ -283,6 +283,27 @@ namespace Register
         db->FreeSelect();
         return result;
       }      
+      /// check if object handle is in protection period (true=protected)
+      bool checkProtection(
+        const std::string& name, unsigned type,
+        const std::string& monthPeriodSQL
+      ) const throw (SQL_ERROR)
+      {
+        std::stringstream sql;
+        sql << "SELECT COALESCE("
+            << "MAX(erdate) + INTERVAL '" << monthPeriodSQL << "'"
+            << " > CURRENT_DATE, false) "
+            << "FROM object_registry "
+            << "WHERE NOT(erdate ISNULL) " 
+            << "AND type=" << type << " AND name='" << name << "'";
+        if (!db->ExecSelect(sql.str().c_str())) {
+          db->FreeSelect();
+          throw SQL_ERROR();
+        }
+        bool ret = (db->GetFieldValue(0,0)[0] == 't');
+        db->FreeSelect();
+        return ret;
+      }
      public:
       ManagerImpl(DB *_db) :
         db(_db), nlist(_db)
@@ -299,6 +320,8 @@ namespace Register
         conflict.name = "";
         if (!checkHandleFormat(handle)) return CA_INVALID_HANDLE;
         if (checkHandleRegistration(handle)) return CA_REGISTRED;
+        if (checkProtection(handle,2,"2 month")) 
+          return CA_PROTECTED; 
         return CA_FREE;
       }            
     };

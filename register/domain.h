@@ -23,7 +23,6 @@ namespace Register
       CA_INVALID_HANDLE, ///< bad formed handle
       CA_BAD_ZONE, ///< domain outside of register
       CA_BAD_LENGHT, ///< domain longer then acceptable
-      CA_PROTECTED, ///< domain temporary protected for registration
       CA_BLACKLIST, ///< registration blocked in blacklist
       CA_REGISTRED, ///< domain registred
       CA_PARENT_REGISTRED, ///< parent already registred

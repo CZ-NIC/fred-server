@@ -9,6 +9,7 @@
 
 #define IS_NUMBER(x) (x >= '0' && x <= '9')
 #define IS_LETTER(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'))
+#define DOMAIN_PROTECT_PERIOD_SQL "1 month"
 
 namespace Register
 {
@@ -454,10 +455,10 @@ namespace Register
         // domain can be subdomain or parent domain of registred domain
         // there could be a lot of subdomains therefor LIMIT 1
         sql << "SELECT o.name, o.id FROM object_registry o "
-            << "WHERE o.type=3 AND "
-            << "('" << fqdn << "' LIKE '%.'|| o.name) OR "
+            << "WHERE o.type=3 AND o.erdate ISNULL AND "
+            << "(('" << fqdn << "' LIKE '%.'|| o.name) OR "
             << "(o.name LIKE '%.'||'" << fqdn << "') OR "
-            << "o.name='" << fqdn << "' "
+            << "o.name='" << fqdn << "') "
             << "LIMIT 1";
         if (!db->ExecSelect(sql.str().c_str())) {
           db->FreeSelect();
@@ -472,8 +473,8 @@ namespace Register
           else ret = CA_CHILD_REGISTRED;  
         }
         db->FreeSelect();
-        if (ret == CA_AVAILABLE && blacklist->checkDomain(fqdn)) 
-          return CA_BLACKLIST;
+        if (ret != CA_AVAILABLE) return ret;
+        if (blacklist->checkDomain(fqdn)) return CA_BLACKLIST;
         return ret;        
       }
       /// interface method implementation
