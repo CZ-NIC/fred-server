@@ -1805,9 +1805,10 @@ if( DBsql.OpenDatabase( database ) )
                             a[i].avail = ccReg::BadFormat;    // spatny format
                             a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID ) ) );
                          }
+*/
 
                         break;
-*/
+
                   case EPP_DomainCheck:
 
                            try {
