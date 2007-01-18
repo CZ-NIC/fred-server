@@ -502,7 +502,8 @@ namespace Register
       {
         std::stringstream sql;
         unsigned long ret = 0;
-        sql << "SELECT COUNT(*) FROM domain WHERE fqdn LIKE '%e164.arpa'";
+        sql << "SELECT COUNT(*) FROM object_registry "
+            << "WHERE type=3 AND erdate ISNULL AND name LIKE '%e164.arpa'";
         if (db->ExecSelect(sql.str().c_str()) && db->GetSelectRows() == 1)
           ret =  atol(db->GetFieldValue(0,0));
         db->FreeSelect();
@@ -513,8 +514,9 @@ namespace Register
       {
         std::stringstream sql;
         unsigned long ret = 0;
-        sql << "SELECT SUM(power(10,(33-char_length(fqdn))/2)) "
-            << "FROM domain WHERE fqdn LIKE '%e164.arpa'";
+        sql << "SELECT SUM(power(10,(33-char_length(name))/2)) "
+            << "FROM object_registry "
+            << "WHERE type=3 AND erdate ISNULL AND name LIKE '%e164.arpa'";
         if (db->ExecSelect(sql.str().c_str()) && db->GetSelectRows() == 1)
           ret =  atol(db->GetFieldValue(0,0));
         db->FreeSelect();
