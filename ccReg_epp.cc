@@ -1840,15 +1840,20 @@ if( DBsql.OpenDatabase( database ) )
                                   LOG( NOTICE_LOG ,  "domain %s exist not Avail" , (const char * ) chck[i] );                                              
                                   break;
                              case Register::Domain::CA_BLACKLIST: // TODO
+                                  a[i].avail = ccReg::BlackList;
+                                  a[i].reason =  CORBA::string_dup( GetReasonMessage(   REASON_MSG_BLACKLISTED_DOMAIN , GetRegistrarLang( clientID ) ) );
+                                  LOG( NOTICE_LOG ,  "baclisted  %s"  , (const char * ) chck[i] );
+                                  break;
                              case Register::Domain::CA_AVAILABLE:
                                   a[i].avail =  ccReg::NotExist;    // objekt ne existuje
                                   a[i].reason =  CORBA::string_dup( "");  // free
                                   LOG( NOTICE_LOG ,  "domain %s not exist  Avail" ,(const char * ) chck[i]  );
                                   break;
                              case Register::Domain::CA_BAD_ZONE:
-                                   a[i].avail = ccReg::NotApplicable;    // nepouzitelna domena neni v zone
-                                   a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_NOT_APPLICABLE_DOMAIN , GetRegistrarLang( clientID ) ) );
-                                   LOG( NOTICE_LOG ,  "not applicable %s"  , (const char * ) chck[i] );
+                                  a[i].avail = ccReg::NotApplicable;    // nepouzitelna domena neni v zone
+                                  a[i].reason =  CORBA::string_dup( GetReasonMessage(REASON_MSG_NOT_APPLICABLE_DOMAIN , GetRegistrarLang( clientID ) ) );
+                                  LOG( NOTICE_LOG ,  "not applicable %s"  , (const char * ) chck[i] );
+                                 break;
                       }                 
 
  /*
