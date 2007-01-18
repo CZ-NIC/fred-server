@@ -7,6 +7,9 @@
 
 #include <vector>
 
+#define NSSET_REGEX    "[nN][sS][sS][iI][dD]:[a-zA-Z0-9_:\\.\\-]{1,36}"
+
+
 namespace Register
 {
   namespace NSSet
@@ -266,9 +269,7 @@ namespace Register
       /** Valid format is regexp 'NSSID:[[:alnum:]_.:]{1,36}' */
       bool checkHandleFormat(const std::string& handle) const
       {
-        return boost::regex_match(handle,boost::regex(
-           "[nN][sS][sS][iI][dD]:[a-zA-Z0-9_.:]{1,36}"
-        ));
+        return boost::regex_match(handle,boost::regex( NSSET_REGEX ) ) ;
       }
       /// check if object is in database
       bool checkHandleRegistration(const std::string& handle) const

@@ -7,6 +7,9 @@
 
 #define SET_SSNTYPE(t) ((t == 1 ? "RC" : (t == 2 ? "ICO" : "PASS")))
 
+#define CONTACT_REGEX    "[cC][iI][dD]:[a-zA-Z0-9_:\\.\\-]{1,36}"
+
+
 namespace Register
 {
   namespace Contact
@@ -341,9 +344,7 @@ namespace Register
       /** Valid format is regexp 'CID:[[:alnum:]_.:]{1,36}' */
       bool checkHandleFormat(const std::string& handle) const
       {
-        return boost::regex_match(handle,boost::regex(
-           "[cC][iI][dD]:[a-zA-Z0-9_.:]{1,36}"
-        ));
+        return boost::regex_match(handle,boost::regex(  CONTACT_REGEX ) );
       }
       /// check if object is in database
       bool checkHandleRegistration(const std::string& handle) const
