@@ -218,7 +218,7 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
              }
 
 
-           if( key ) debug("config KEY %d %s value [%s]\n" , key , keyname  , value );
+//           if( key ) debug("config KEY %d %s value [%s]\n" , key , keyname  , value );
 
            switch( key)
              {
