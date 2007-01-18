@@ -1842,7 +1842,7 @@ if( DBsql.OpenDatabase( database ) )
                              case Register::Domain::CA_BLACKLIST: // TODO
                                   a[i].avail = ccReg::BlackList;
                                   a[i].reason =  CORBA::string_dup( GetReasonMessage(   REASON_MSG_BLACKLISTED_DOMAIN , GetRegistrarLang( clientID ) ) );
-                                  LOG( NOTICE_LOG ,  "baclisted  %s"  , (const char * ) chck[i] );
+                                  LOG( NOTICE_LOG ,  "blacklisted  %s"  , (const char * ) chck[i] );
                                   break;
                              case Register::Domain::CA_AVAILABLE:
                                   a[i].avail =  ccReg::NotExist;    // objekt ne existuje
@@ -4215,6 +4215,9 @@ int   zone ;
 unsigned int i;
 int period_count;
 char periodStr[10];
+Register::NameIdPair dConflict;
+Register::Domain::CheckAvailType dType;
+
 ret = new ccReg::Response;
 
 // default
@@ -4253,10 +4256,8 @@ if( DBsql.OpenDatabase( database ) )
  if( (  DBsql.BeginAction( clientID, EPP_DomainCreate, clTRID , XML )  ))
    {
 
- 
-       // preved fqd na  mala pismena a otestuj to
-    if(  ( zone = getFQDN( FQDN , fqdn ) ) <= 0  )  SetReasonDomainFQDN( ret , fqdn , zone , GetRegistrarLang( clientID ) );
-    else 
+
+
      if( DBsql.BeginTransaction() )
       {
         if(  DBsql.TestRegistrarZone( regID , zone ) == false )
@@ -4264,14 +4265,61 @@ if( DBsql.OpenDatabase( database ) )
                LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
                ret->errCode =  COMMAND_AUTHENTICATION_ERROR;
               }
-             else if(  DBsql.GetDomainID( FQDN  ,   GetZoneEnum( zone )  )    ) // jestli existuje konrola pres id
-                  {
-                   LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
-                   ret->errCode = COMMAND_OBJECT_EXIST;      // je uz zalozena
-                  }
-                 else if( DBsql.TestDomainFQDNHistory( FQDN , DefaultDomainFQDNPeriod() ) )  SetReasonProtectedPeriod( ret , fqdn , GetRegistrarLang( clientID ));
-                     else
-                      {
+              else
+              {
+
+
+                        try {
+                              std::auto_ptr<Register::Zone::Manager> zm( Register::Zone::Manager::create(&DBsql)  );
+                              std::auto_ptr<Register::Domain::Manager> dman( Register::Domain::Manager::create(&DBsql,zm.get())  );
+
+                                LOG( NOTICE_LOG ,  "Domain::checkAvail  fqdn [%s]"  ,  (const char * ) fqdn );
+
+                                dType = dman->checkAvail(  ( const char * )  fqdn , dConflict);
+                                LOG( NOTICE_LOG ,  "domain type %d" , dType );
+                              }
+                     catch (...) {
+                               LOG( WARNING_LOG, "cannot run Register::Domain::checkAvail");
+                                ret->errCode=COMMAND_FAILED;
+                            }
+
+
+
+
+
+                     switch( dType )
+                          {
+                             case Register::Domain::CA_INVALID_HANDLE:
+                             case Register::Domain::CA_BAD_LENGHT:
+                                  LOG( NOTICE_LOG ,  "bad format %s of fqdn"  , (const char * ) fqdn );
+                                  SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::domain_fqdn , REASON_MSG_BAD_FORMAT_FQDN  , fqdn ,   GetRegistrarLang(
+clientID ));
+                                  break;
+                             case Register::Domain::CA_REGISTRED:
+                             case Register::Domain::CA_CHILD_REGISTRED:
+                             case Register::Domain::CA_PARENT_REGISTRED:
+                                  LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
+                                  ret->errCode = COMMAND_OBJECT_EXIST;      // je uz zalozena existuje
+                                  break;
+                             case Register::Domain::CA_BLACKLIST: // black listed
+                                  LOG( NOTICE_LOG ,  "blacklisted  %s"  , (const char * ) fqdn );
+                                  SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_fqdn ,  REASON_MSG_BLACKLISTED_DOMAIN , fqdn ,  GetRegistrarLang( clientID )  );
+                                  break;
+                             case Register::Domain::CA_AVAILABLE: // pokud je domena volna
+                                  // preved fqd na  mala pismena a zjiosti zonu
+                                   zone = getFQDN( FQDN , fqdn );
+                                  LOG( NOTICE_LOG ,  "domain %s avail zone %d" ,(const char * ) FQDN , zone   );
+                                  break;
+                             case Register::Domain::CA_BAD_ZONE:
+                                  // nepouzitelna domena neni v zone
+                                  LOG( NOTICE_LOG ,  "NOn in zone not applicable %s"  , (const char * ) fqdn );
+                                  SetErrorReason( ret ,  COMMAND_PARAMETR_ERROR , ccReg::domain_fqdn , REASON_MSG_NOT_APPLICABLE_DOMAIN  , fqdn ,   GetRegistrarLang( clientID ) );
+                                  break;
+                         }
+
+                if( dType == Register::Domain::CA_AVAILABLE )
+                 {
+
 
     
                       if( strlen( nsset) == 0 ) nssetid = 0; // lze vytvorit domenu bez nssetu
@@ -4431,6 +4479,7 @@ if( DBsql.OpenDatabase( database ) )
 
                       }                         // ret
 
+               }
 
 
          }              
