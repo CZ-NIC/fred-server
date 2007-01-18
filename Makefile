@@ -1,8 +1,8 @@
 
 CXX = g++
 
-CXXFLAGS = -Wall -DSYSLOG -DCONFIG_FILE=\"/etc/ccReg.conf\" \
-           -DSVERSION=\"${SVN_REVISION}\"
+CXXFLAGS = -Wall -DSYSLOG  -DCONFIG_FILE=\"/etc/ccReg.conf\" \
+           -DSVERSION=\"1.3\"
 
 OBJECTS = 
 IDLDIR = ../../idl/branches/devel/

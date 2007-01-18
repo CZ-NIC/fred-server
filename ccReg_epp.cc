@@ -530,7 +530,7 @@ t = time(NULL);
 // char str[64];
 version =  new char[128];
 
-sprintf( version , "SVN %s BUILD %s %s" , SVERSION , __DATE__ , __TIME__ );
+sprintf( version , "%s BUILD %s %s" , SVERSION , __DATE__ , __TIME__ );
 LOG( NOTICE_LOG , "get version %s" , version );
 
 // aktualnidatum a cas
@@ -1070,8 +1070,11 @@ for( i = 0 ;i < len ; i ++ )
        case ccReg::transfer_op:
             ret->errors[i].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_TRANSFER_OP , GetRegistrarLang( clientID ) ) );
             break;
+       case ccReg::unknown:
+            ret->errors[i].reason = CORBA::string_dup( GetReasonMessage( REASON_MSG_XML_VALIDITY_ERROR  , GetRegistrarLang( clientID ) ) );
+            break;
        default:
-            ret->errors[i].reason = CORBA::string_dup(  "GetTransaction not specified  msg" );
+            ret->errors[i].reason = CORBA::string_dup(  "not specified error" );
        }
 
       LOG( NOTICE_LOG, "return reason msg: errors[%d] code %d value %s  message %s\n" , i ,   ret->errors[i].code , ( char * )   ret->errors[i].value  , (char *)   ret->errors[i].reason  );
