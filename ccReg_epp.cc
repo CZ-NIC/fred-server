@@ -4211,7 +4211,7 @@ char valexpiryDate[MAX_DATE];
 char  FQDN[64];
 ccReg::Response * ret;
 int contactid, regID, nssetid, adminid, id;
-int   zone ;
+int   zone =0;
 unsigned int i;
 int period_count;
 char periodStr[10];
@@ -4260,13 +4260,7 @@ if( DBsql.OpenDatabase( database ) )
 
      if( DBsql.BeginTransaction() )
       {
-        if(  DBsql.TestRegistrarZone( regID , zone ) == false )
-             {
-               LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
-               ret->errCode =  COMMAND_AUTHENTICATION_ERROR;
-              }
-              else
-              {
+
 
 
                         try {
@@ -4307,7 +4301,7 @@ clientID ));
                                   break;
                              case Register::Domain::CA_AVAILABLE: // pokud je domena volna
                                   // preved fqd na  mala pismena a zjiosti zonu
-                                   zone = getFQDN( FQDN , fqdn );
+                                  zone = getFQDN( FQDN , fqdn );
                                   LOG( NOTICE_LOG ,  "domain %s avail zone %d" ,(const char * ) FQDN , zone   );
                                   break;
                              case Register::Domain::CA_BAD_ZONE:
@@ -4317,11 +4311,20 @@ clientID ));
                                   break;
                          }
 
-                if( dType == Register::Domain::CA_AVAILABLE )
-                 {
+         if( dType == Register::Domain::CA_AVAILABLE )
+           {
 
+
+           if(  DBsql.TestRegistrarZone( regID , zone ) == false )
+             {
+               LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
+               ret->errCode =  COMMAND_AUTHENTICATION_ERROR;
+              }
+              else
+              {
 
     
+
                       if( strlen( nsset) == 0 ) nssetid = 0; // lze vytvorit domenu bez nssetu
                       else  if( ( nssetid = DBsql.GetNSSetID(  nsset ) ) <= 0  ) SetReasonDomainNSSet( ret , nsset , nssetid , GetRegistrarLang( clientID ) );
                     
