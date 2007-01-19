@@ -4001,6 +4001,7 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
       (int )  clientID, clTRID, fqdn, registrant_chg, authInfo_chg, nsset_chg , (long)ext.length() );
 
 
+
 // parse extension
 GetValExpDateFromExtension( valexpiryDate , ext );
 
@@ -4058,11 +4059,17 @@ if( DBsql.OpenDatabase( database ) )
                                 }
 
 
-
+                
                             if( strlen( nsset_chg ) == 0  ) nssetid = 0;    // nemenim nsset;
-                            else if( ( nssetid = DBsql.GetNSSetID( nsset_chg ) ) <= 0 )
-                                     SetReasonDomainNSSet( ret , nsset_chg , nssetid , GetRegistrarLang( clientID ) );
- 
+                            else
+                             {
+                                if( nsset_chg[0] == 0x8 )   nssetid = -1; // backslah konvence NULL hodnota atributu NULL hodnota
+                                else
+                                {
+                                 if( ( nssetid = DBsql.GetNSSetID( nsset_chg ) ) <= 0 )
+                                       SetReasonDomainNSSet( ret , nsset_chg , nssetid , GetRegistrarLang( clientID ) );
+                                 }
+                              }
 
 
 
@@ -4103,10 +4110,9 @@ if( DBsql.OpenDatabase( database ) )
                               if( nssetid || contactid  )  // update domain tabulky pouze kdyz menim registratora ci nsset
                                 {                                            
                                       // zmenit zaznam o domene
-                                      DBsql.UPDATE( "DOMAIN" );
-                                    //  DBsql.SSET( "UpDate", "now" );
-                                      //DBsql.SET( "UpID", regID );
-                                      if( nssetid )  DBsql.SET( "nsset", nssetid );    // zmena nssetu
+                                      DBsql.UPDATE( "DOMAIN" );                                        
+                                      if( nssetid > 0  )  DBsql.SET( "nsset", nssetid );    // zmena nssetu
+                                      else   if( nssetid == -1 )  DBsql.SETNULL(  "nsset" ); // vymaz udaj o nssetu
                                       if( contactid ) DBsql.SET( "registrant", contactid );     // zmena drzitele domeny
                                      // DBsql.SET( "AuthInfoPw", authInfo_chg  );  // zmena autentifikace
                                       DBsql.WHEREID( id );
