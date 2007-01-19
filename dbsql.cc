@@ -84,11 +84,12 @@ return ret;
 long DB::GetPrice(   int operation ,  int zone , int period  )
 {
 char sqlString[256];
-long p ,  price=0; // cena
+long p ,  price=0; // cena default -1 nepouziva se 
 int per; // cena za periodu
 
 
 if( period > 0 ) sprintf(  sqlString ,  "SELECT price , period FROM price_list WHERE valid_from < 'now()'  and ( valid_to is NULL or valid_to > 'now()' )  and operation=%d and zone=%d;" , operation , zone );
+// cena pro jednorazove operace
 else  sprintf(  sqlString ,  "SELECT price  FROM price_list WHERE valid_from < 'now()'  and ( valid_to is NULL or valid_to > 'now()' )  AND  operation=%d and zone=%d;" , operation , zone );
 
 
@@ -108,21 +109,19 @@ if( ExecSelect( sqlString ) )
 
        LOG( NOTICE_LOG , "GetPrice operation %d zone %d period %d   -> price %ld (units) " , operation , zone , period  , price);
      }
-   
-
+    else price=-1; 
+  
    FreeSelect();
-  }
-
 return price;
+  }
+else return -2; // ERROR
 }
 
 // ukladani polozky creditu
-bool DB::SaveInvoiceCredit(int regID , int objectID , int operation , int zone  , const char *ExDate , long price  , long price2 ,  int invoiceID   , int invoiceID2) 
+bool DB::SaveInvoiceCredit(int regID , int objectID , int operation , int zone  , int period , const char *ExDate , long price  , long price2 ,  int invoiceID   , int invoiceID2) 
 {
 int id;
 
-if( price > 0 )
-{
 
 id = GetSequenceID( "bank_statement_head" );
 
@@ -134,12 +133,14 @@ INTO( "objectid" );
 INTO( "registrarid"  );
 INTO( "operation" );
 INTO( "zone" );
+INTO( "period" );
 INTOVAL( "ExDate" , ExDate); // pokud je nastaveno EXDate
 VALUE( id );
 VALUE( objectID );
 VALUE( regID );
 VALUE( operation );
 VALUE( zone );
+VALUE( period );
 VAL( ExDate);
 if( EXEC() ) 
  {
@@ -180,8 +181,22 @@ else
      return false;
   }
 
+
 }
-else return true;
+
+bool DB::InvoiceCountCredit( long  price , int invoiceID  )
+{
+char sqlString[256];
+
+// pokud nulova cene neupdavovat credit
+if( price == 0 ) return true;
+else
+{
+sprintf(  sqlString ,  "UPDATE invoice SET  credit=credit-%ld%c%02ld  WHERE id=%d;" , price /100 , '.' , price %100   , invoiceID );
+if( ExecSQL( sqlString )   ) return true;
+else { LOG( CRIT_LOG , "error InvoiceCountCredit invoice  %d price %ld" , invoiceID  , price ); return false ; }    
+}
+
 }
 
 // operace registrace domeny  CREATE
@@ -199,10 +214,8 @@ return UpdateInvoiceCredit( regID ,  OPERATION_DomainRenew , zone , period  , Ex
 // zpracovani creditu strzeni ze zalohe faktury ci dvou faktur
 bool DB::UpdateInvoiceCredit( int regID ,   int operation  , int zone   , int period , const char *ExDate ,  int objectID  )
 {
-char priceStr[16];
-// char creditStr[16];
-long price , credit ;
 char sqlString[256];
+long price , credit ;
 int invoiceID;
 int invID[2];
 long cr[2];
@@ -212,11 +225,13 @@ int i , num;
 if( GetRegistrarSystem( regID ) == true ) return true;
 
 
-// cena za operaci v registru
+// zjisti  cenu za operaci v registru musibyt >=0 
 price =  GetPrice( operation , zone , period );
 
-// zadna cena (zadarmo) operace se povoluje
-if( price == 0 ) return true;
+if( price == -2 ) return false; // chyba SQL
+
+// neni zadana ( cena je zadarmo) operace se povoluje a neuctuje 
+if( price == -1 ) return true;
 
 // zjisti na jakych zalohovych fakturach je volny credit vypis vzdy dve po sobe nasledujici
 sprintf( sqlString , "SELECT id , credit FROM invoice WHERE registrarid=%d and zone=%d and credit > 0 order by id limit 2;" , regID , zone );
@@ -236,7 +251,7 @@ if( ExecSelect( sqlString ) )
  }
 
 
-// nejsou zadne zalohove faktury na zpracovani c
+// nejsou zadne zalohove faktury na zpracovani nemuze odecitat CREDIT
 if( num == 0 ) return false;
 
 
@@ -245,13 +260,10 @@ invoiceID=invID[0];
 
 if( credit - price > 0 )
   {
-     get_priceStr(   priceStr , price  );  
 
-     if( SaveInvoiceCredit(  regID , objectID ,   operation  ,  zone   , ExDate , price , 0 , invoiceID , 0  )  )
+     if( SaveInvoiceCredit(  regID , objectID ,   operation  ,  zone   , period , ExDate , price , 0 , invoiceID , 0  )  )
       {
-       sprintf(  sqlString ,  "UPDATE invoice SET  credit=credit-%s  WHERE id=%d;" , priceStr  , invoiceID );
-       if( ExecSQL( sqlString )   ) return true;
-       else LOG( CRIT_LOG , "error update  invoice  %d" , invoiceID );   
+       return InvoiceCountCredit( price , invoiceID );
       }
 
    }
@@ -260,38 +272,26 @@ else
    
    if(  num == 2 )   // pokud existuje dalsi faktura
    {
-      credit = price  - cr[0];
- 
-     // cena je to co zbylo
-     get_priceStr(   priceStr , cr[0] );
-     invoiceID=invID[0];
-
     
-       if( SaveInvoiceCredit(  regID ,objectID , operation  ,  zone , ExDate , cr[0] ,  price  - cr[0]  , invID[0] , invID[1]  )  ) 
+       if( SaveInvoiceCredit(  regID ,objectID , operation  ,  zone , period ,  ExDate , cr[0] ,  price  - cr[0]  , invID[0] , invID[1]  )  ) 
          {
-        // nastav credit na nulu u prvni zalohove faktury 
-        sprintf(  sqlString ,  "UPDATE invoice  SET  credit=0  WHERE id=%d;" , invoiceID );
-
-        if( ExecSQL( sqlString ) )  
-        {
+         if( InvoiceCountCredit(  cr[0] , invID[0] )  ) // dopocitad do nuly na prvni zalohove FA  
+           {
              invoiceID=invID[1];                        
-             LOG(   DEBUG_LOG , "pozadovana castka credit0 %ld credit1 %ld price %ld credit %ld" , cr[0] ,  cr[1]  , price  , credit );
+             LOG(   DEBUG_LOG , "pozadovana castka credit0 %ld credit1 %ld price %ld druha castka %ld" , cr[0] ,  cr[1]  , price  , price  - cr[0] );
               
              if( cr[1] -  credit  > 0 )
              {
-                     // u druhe zalohove faktury je uctovana cena credit = cena - credit z prvni faktury   
-                   get_priceStr(  priceStr , credit ); // zmena o cenu minus credit z predchozi zal faktury
-                   sprintf(  sqlString , "UPDATE invoice SET credit=credit-%s WHERE id=%d;" ,   priceStr , invoiceID );
-                   if( ExecSQL( sqlString ) ) return true;
-                   else    LOG( CRIT_LOG , "error update nasleduji   zalohova faktura %d" , invoiceID );  
+                     // castka ponizena o zbyvajici credit na privni zalohove FA
+                   return InvoiceCountCredit(  price  - cr[0] , invID[1] );
                 
              }else   LOG( CRIT_LOG , "na dalsi zalohove fakture id %d  neni pozadovana castka  %ld credit %ld" ,   invoiceID ,  price  , cr[1] );
 
-        }else    LOG( CRIT_LOG , "error updatefirst invoice  %d" , invoiceID );  
+          }
 
       } 
  
-   }else  LOG( CRIT_LOG , "neni uz dalsi zalohova faktura ke zpracovani ");    
+   }else  LOG( ALERT_LOG , "neni uz dalsi zalohova faktura ke zpracovani ");    
  
  }
 

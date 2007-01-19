@@ -40,7 +40,9 @@ bool DeleteFromTableMap(char *map ,int  id , int contactid );
 
 // vraci castku za operaci
 long GetPrice(   int  operation  ,  int zone , int period  );
-bool SaveInvoiceCredit(int regID , int objectID , int  operation  , int zone  , const char *ExDate , long price ,  long price2  ,int invoiceID , int invoiceID2 );
+bool SaveInvoiceCredit(int regID , int objectID , int  operation  , int zone  ,  int period ,  const char *ExDate , long price ,  long price2  ,int invoiceID , int invoiceID2 );
+// odecitani castky price od credity  ze zalohove faktury 
+bool InvoiceCountCredit( long  price , int invoiceID  );
 
 // operace registrace domeny  CREATE
 bool BillingCreateDomain( int regID , int  zone , int  objectID  );
