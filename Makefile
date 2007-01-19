@@ -24,7 +24,7 @@ PIF_SERVER_OBJECTS = $(COMMON_OBJECTS) pif_server.o  \
 EPP_CLIENT_OBJECTS=ccRegSK.o ccRegDynSK.o  epp_client.o nameservice.o
 WHOIS_CLIENT_OBJECTS=ccRegSK.o whois_client.o nameservice.o
 
-all:  fred_rifd fred_adifd fred_pifd
+all:  fred_rifd fred_adifd fred_pifd banking
 
 .SUFFIXES:  .o
 
@@ -63,7 +63,11 @@ banking: $(BANKING_OBJECT)
 test: ccReg_idl.py
 	python test.py
 
-install: fred_rifd fred_pifd fred_adifd
+install_banking: banking banking.sh
+	install banking /usr/local/bin/
+	install banking.sh /usr/local/bin/
+
+install: fred_rifd fred_pifd fred_adifd install_banking
 	install fred_rifd /usr/local/bin/
 	install fred_pifd /usr/local/bin/
 	install fred_adifd /usr/local/bin/
@@ -71,6 +75,6 @@ install: fred_rifd fred_pifd fred_adifd
 
 clean:
 	make -C register clean
-	rm -rf *.o fred_* *_server *_client ccRegDynSK.cc  ccRegSK.cc ccRegSK.h ccReg.hh ccReg_i.cc *idl.py* ccReg__POA/ ccReg/ libccreg.a 
+	rm -rf *.o fred_* *_server *_client banking ccRegDynSK.cc  ccRegSK.cc ccRegSK.h ccReg.hh ccReg_i.cc *idl.py* ccReg__POA/ ccReg/ libccreg.a 
 
 
