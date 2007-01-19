@@ -1,5 +1,5 @@
 OBJS = register.o zone.o blacklist.o domain.o registrar.o object_impl.o \
-       contact.o nsset.o auth_info.o
+       contact.o nsset.o auth_info.o invoice.o
 EXT = ../pqsql.o ../dbsql.o ../util.o -lpq
 LIB = libccreg.a
 CXXFLAGS = -g -Wall -I.. -I/usr/include/postgresql/ -DTIMECLOCK
