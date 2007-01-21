@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include "invoice.h"
 #include "register.h"
 #include "dbsql.h"
 
@@ -85,6 +86,10 @@ int main()
   dl->setNSSetHandleFilter("n");
   dl->reload();
   */
+  std::auto_ptr<Register::Invoicing::Manager> im(
+    Register::Invoicing::Manager::create(&db)
+  );
+  im->archiveInvoices();
   while (1) {
     std::string input;
     std::cout << "Handle: ";
