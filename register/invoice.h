@@ -7,8 +7,8 @@
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-using namespace boost::posix_time;
-using namespace boost::gregorian;
+//using namespace boost::posix_time;
+//using namespace boost::gregorian;
 
 class DB;
 namespace Register
@@ -48,9 +48,9 @@ namespace Register
       virtual const Subject* getClient() const = 0;
       virtual TID getId() const = 0;
       virtual TID getZone() const = 0;
-      virtual ptime getCrTime() const = 0;
-      virtual date getTaxDate() const = 0;
-      virtual time_period getAccountPeriod() const = 0;
+      virtual boost::posix_time::ptime getCrTime() const = 0;
+      virtual boost::gregorian::date getTaxDate() const = 0;
+      virtual boost::posix_time::time_period getAccountPeriod() const = 0;
       virtual Type getType() const = 0;
       virtual unsigned getNumber() const = 0;
       virtual TID getRegistrar() const = 0;
@@ -59,6 +59,8 @@ namespace Register
       virtual short getVatRate() const = 0;
       virtual Money getTotal() const = 0;
       virtual Money getTotalVAT() const = 0;
+      virtual const std::string& getVarSymbol() const = 0;
+      virtual const std::string& getConstSymbol() const = 0;
     };
     class InvoiceList
     {

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <boost/date_time/posix_time/time_parsers.hpp>
 
 namespace Register
 {
@@ -86,59 +87,51 @@ namespace Register
       {
         out << "<?xml version='1.0' encoding='utf-8'?>"
             << TAGSTART(invoice)
-            << TAG(client,doExport(i->getClient()))
-            << TAG(supplier,doExport(i->getSupplier()))
-            << TAGEND(invoice);
+            << TAGSTART(client);
+        doExport(i->getClient());
+        out << TAGEND(client)
+            << TAGSTART(supplier);
+        doExport(i->getSupplier());
+        out << TAGEND(supplier)
+            << TAGEND(invoice)
+            << TAGSTART(payment)
+            << TAG(invoice_number,i->getNumber())
+            << TAG(invoice_date,i->getCrTime().date())
+            << TAG(payment_date,i->getCrTime().date())
+            << TAG(tax_point,i->getTaxDate())
+            << TAG(vs,i->getVarSymbol())
+            << TAG(ks,i->getConstSymbol())
+            << TAG(payment_method,"bankovním převodem")
+            << TAGSTART(bank)
+            << TAG(name,"ČSOB, pobočka Praha")
+            << TAG(address,"Perlova 5, Praha")
+            << TAG(account,"152903575/0300")
+            << TAG(iban,"CZ56 0300 0000 0001 5290 3575")
+            << TAGEND(bank)
+            << TAG(anotation,
+                   "Fakturujeme Vám přijetí zálohy za služby "
+                   "(smlouva o statusu Registrátora)."
+               )
+            << TAG(note,
+                   "DPH byla vypořádána na zálohových daňových dokladech."
+               )
+            << TAG(issue_person,"Zuzana Durajová")
+            << TAGEND(payment)
+            << TAGSTART(delivery)
+            << TAGSTART(entry)
+            << TAG(vatperc,i->getVatRate())
+            << TAG(basetax,i->getTotal())
+            << TAG(vat,i->getTotalVAT())
+            << TAG(total,i->getPrice())
+            << TAGEND(entry)
+            << TAGEND(delivery)
+            << TAGSTART(sumarize)
+            << TAG(total,i->getPrice())
+            << TAG(paid,i->getPrice())
+            << TAG(to_be_paid,0)
+            << TAGEND(sumarize);
+
 /*
-
-<payment>
-    <invoice_number>2406000590</invoice_number>
-    <invoice_date>3.10.2006</invoice_date>
-    <payment_date>3.10.2006</payment_date>
-    <tax_point>2.10.2006</tax_point>
-    <vs>45021295</vs>
-    <ks>308</ks>
-    <payment_method>bankovním převodem</payment_method>
-    <bank>
-        <name>ČSOB, pobočka Praha</name>
-        <address>Perlova 5, Praha</address>
-        <account>152903575/0300</account>
-        <iban>CZ56 0300 0000 0001 5290 3575</iban>
-    </bank>
-    <anotation>
-    Fakturujeme Vám přijetí zálohy za služby (smlouva o statusu Registrátora).
-    </anotation>
-    <note>DPH byla vypořádána na zálohových daňových dokladech.</note>
-    <issue_person>Zuzana Durajová</issue_person>
-</payment>
-
-<delivery>
-    <entry>
-        <vatperc>0</vatperc>
-        <basetax>0</basetax>
-        <vat>0</vat>
-        <total>0</total>
-    </entry>
-    <entry>
-        <vatperc>5</vatperc>
-        <basetax>0</basetax>
-        <vat>0</vat>
-        <total>0</total>
-    </entry>
-    <entry>
-        <vatperc>19</vatperc>
-        <basetax>42015</basetax>
-        <vat>7985</vat>
-        <total>50000</total>
-    </entry>
-</delivery>
-
-<sumarize>
-    <total>50000</total>
-    <paid>50000</paid>
-    <to_be_paid>0</to_be_paid>
-</sumarize>
-
 
 <appendix>
 
@@ -186,9 +179,9 @@ namespace Register
     {
       TID id;
       TID zone;
-      ptime crTime;
-      date taxDate;
-      time_period accountPeriod;
+      boost::posix_time::ptime crTime;
+      boost::gregorian::date taxDate;
+      boost::posix_time::time_period accountPeriod;
       Type type;
       unsigned number;
       TID registrar;
@@ -197,6 +190,8 @@ namespace Register
       short vatRate;
       Money total;
       Money totalVAT;
+      std::string constSymbol;
+      std::string varSymbol;
       SubjectImpl client;
       static SubjectImpl supplier; 
      public:
@@ -216,15 +211,15 @@ namespace Register
       {
         return zone;
       }
-      ptime getCrTime() const
+      boost::posix_time::ptime getCrTime() const
       {
         return crTime;
       }
-      date getTaxDate() const
+      boost::gregorian::date getTaxDate() const
       {
         return taxDate;
       }
-      time_period getAccountPeriod() const
+      boost::posix_time::time_period getAccountPeriod() const
       {
         return accountPeriod;
       }
@@ -260,8 +255,42 @@ namespace Register
       {
         return totalVAT;
       }
+      const std::string& getVarSymbol() const
+      {
+        return varSymbol;
+      }
+      const std::string& getConstSymbol() const
+      {
+        return constSymbol;
+      }
+#define MAKE_TIME(ROW,COL)  \
+ (boost::posix_time::ptime(db->IsNotNull(ROW,COL) ? \
+ boost::posix_time::time_from_string(\
+ db->GetFieldValue(ROW,COL)) : boost::posix_time::not_a_date_time))         
+#define MAKE_DATE(ROW,COL)  \
+ (boost::gregorian::date(db->IsNotNull(ROW,COL) ? \
+ boost::gregorian::from_string(\
+ db->GetFieldValue(ROW,COL)) : \
+ (boost::gregorian::date)boost::gregorian::not_a_date_time))
       InvoiceImpl(DB *db, unsigned l) :
-        accountPeriod(ptime(neg_infin),ptime(pos_infin)),
+        id(STR_TO_ID(db->GetFieldValue(l,0))),
+        zone(STR_TO_ID(db->GetFieldValue(l,1))),
+        crTime(MAKE_TIME(l,2)),
+        taxDate(MAKE_DATE(l,3)),
+        accountPeriod(
+          boost::posix_time::ptime(boost::posix_time::neg_infin),
+          boost::posix_time::ptime(boost::posix_time::pos_infin)
+        ),
+        type(IT_DEPOSIT),
+        number(0),
+        registrar(0),
+        credit(0),
+        price(0),
+        vatRate(0),
+        total(0),
+        totalVAT(0),
+        constSymbol("308"),
+        varSymbol(db->GetFieldValue(l,19)),
         client(
          db->GetFieldValue(l,14),"",db->GetFieldValue(l,15),
          db->GetFieldValue(l,16),"",db->GetFieldValue(l,17),
@@ -317,9 +346,9 @@ namespace Register
         sql << "SELECT i.id, i.zone, i.crdate, i.taxdate, i.fromdate, "
             << "i.todate, i.typ, i.prefix, i.registrarid, i.credit, i.price, "
             << "i.vat, i.total, i.totalvat, r.organization, r.street1, "
-            << "r.city, r.ico, r.vat "
+            << "r.city, r.ico, r.vat, r.varsymb "
             << "FROM invoice i, registrar r "
-            << "WHERE i.registrar=r.id ";
+            << "WHERE i.registrarid=r.id ";
         if(idFilter) sql << "AND i.id=" << idFilter;
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)

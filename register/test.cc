@@ -1,12 +1,10 @@
 #include <memory>
 #include <iostream>
 #include <string>
-#include <boost/date_time/gregorian/gregorian.hpp>
 #include "invoice.h"
 #include "register.h"
 #include "dbsql.h"
 
-using namespace boost::gregorian;
 
 int main()
 {
