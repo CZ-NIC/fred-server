@@ -4,7 +4,24 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <fstream>
 #include <boost/date_time/posix_time/time_parsers.hpp>
+
+#define MAKE_TIME_DEF(ROW,COL,DEF)  \
+  (boost::posix_time::ptime(db->IsNotNull(ROW,COL) ? \
+  boost::posix_time::time_from_string(\
+  db->GetFieldValue(ROW,COL)) : DEF))         
+#define MAKE_TIME(ROW,COL) \
+  MAKE_TIME_DEF(ROW,COL,boost::posix_time::not_a_date_time)         
+#define MAKE_TIME_NEG(ROW,COL) \
+  MAKE_TIME_DEF(ROW,COL,boost::posix_time::neg_infin)         
+#define MAKE_TIME_POS(ROW,COL) \
+  MAKE_TIME_DEF(ROW,COL,boost::posix_time::pos_infin)         
+#define MAKE_DATE(ROW,COL)  \
+ (boost::gregorian::date(db->IsNotNull(ROW,COL) ? \
+ boost::gregorian::from_string(\
+ db->GetFieldValue(ROW,COL)) : \
+ (boost::gregorian::date)boost::gregorian::not_a_date_time))
 
 namespace Register
 {
@@ -85,6 +102,16 @@ namespace Register
       }
       virtual void doExport(Invoice *i)
       {
+        //TODO: number is generated with strange chars if setting locales so
+        // must be generated separate
+        std::stringstream num;
+        num << i->getNumber();
+        // setting locale for proper date format
+        out.imbue(std::locale(
+          std::locale(""),
+          new boost::gregorian::date_facet("%x")
+        ));
+        // generate invoice xml
         out << "<?xml version='1.0' encoding='utf-8'?>"
             << TAGSTART(invoice)
             << TAGSTART(client);
@@ -93,9 +120,8 @@ namespace Register
             << TAGSTART(supplier);
         doExport(i->getSupplier());
         out << TAGEND(supplier)
-            << TAGEND(invoice)
             << TAGSTART(payment)
-            << TAG(invoice_number,i->getNumber())
+            << TAG(invoice_number,num.str())
             << TAG(invoice_date,i->getCrTime().date())
             << TAG(payment_date,i->getCrTime().date())
             << TAG(tax_point,i->getTaxDate())
@@ -129,51 +155,49 @@ namespace Register
             << TAG(total,i->getPrice())
             << TAG(paid,i->getPrice())
             << TAG(to_be_paid,0)
-            << TAGEND(sumarize);
-
-/*
-
-<appendix>
-
-<items>
-    <item>
-        <subject>gaad.cz</subject>
-        <code>RUDR</code>
-        <date>13.11.2007</date>
-        <count>1</count>
-        <vatperc>0</vatperc>
-        <price>300</price>
-        <total>300</total>
-    </item>
-    <item>
-        <subject>jindrizska.cz</subject>
-        <code>RUDR</code>
-        <date>3.11.2007</date>
-        <count>2</count>
-        <vatperc>0</vatperc>
-        <price>400</price>
-        <total>800</total>
-    </item>
-    <item>
-        <subject>snih.cz</subject>
-        <code>RUDR</code>
-        <date>10.10.2007</date>
-        <count>1</count>
-        <vatperc>0</vatperc>
-        <price>500</price>
-        <total>500</total>
-    </item>
-</items>
-
-<sumarize_items>
-    <total>1500</total>
-</sumarize_items>
-
-</appendix>
-
-</invoice>";
-*/
+            << TAGEND(sumarize)
+/*            
+            << TAGSTART(appendix)
+            << TAGSTART(item)
+            << TAG(subject,"Zálohová platba")
+            << TAG(code,"")
+            << TAG(date,i->getCrTime().date())
+            << TAG(count,1)
+            << TAG(vatperc,i->getTotalVAT())
+            << TAG(price,i->getPrice())
+            << TAG(total,i->getTotal())
+            << TAGEND(item)
+            << TAGEND(appendix)
+            << TAGSTART(sumarize_items)
+            << TAG(total,i->getPrice())
+            << TAGEND(sumarize_items)
+ */
+            << TAGEND(invoice);
       }      
+    };
+    class ExporterPDF : public Exporter
+    {
+     public:
+      ExporterPDF() {}
+      virtual void doExport(Invoice *i)
+      {
+        std::stringstream filename;
+        filename << "/tmp/f" << i->getNumber() << ".xml";
+        std::stringstream filenamePDF;
+        filenamePDF << "/tmp/f" << i->getNumber() << ".pdf";
+        {
+          std::ofstream f(filename.str().c_str());
+          ExporterXML xml(f);
+          xml.doExport(i);
+        }
+        std::stringstream cmd;
+        cmd << "xsltproc "
+            << "/home/jara/enum/fred2pdf/trunk/templates/invoice.xsl "
+            << filename.str()
+            << " | python /home/jara/enum/fred2pdf/trunk/doc2pdf.py > "
+            << filenamePDF.str();
+        system(cmd.str().c_str());
+      }
     };
     class InvoiceImpl : public Invoice
     {
@@ -183,7 +207,7 @@ namespace Register
       boost::gregorian::date taxDate;
       boost::posix_time::time_period accountPeriod;
       Type type;
-      unsigned number;
+      unsigned long number;
       TID registrar;
       Money credit;
       Money price;
@@ -195,107 +219,52 @@ namespace Register
       SubjectImpl client;
       static SubjectImpl supplier; 
      public:
-      const Subject* getClient() const
-      {
-        return &client;
-      }
-      const Subject* getSupplier() const
-      {
-        return &supplier;
-      }
-      TID getId() const
-      {
-        return id;
-      }
-      TID getZone() const
-      {
-        return zone;
-      }
-      boost::posix_time::ptime getCrTime() const
-      {
-        return crTime;
-      }
-      boost::gregorian::date getTaxDate() const
-      {
-        return taxDate;
-      }
+      const Subject* getClient() const { return &client; }
+      const Subject* getSupplier() const { return &supplier; }
+      TID getId() const { return id; }
+      TID getZone() const { return zone; }
+      boost::posix_time::ptime getCrTime() const { return crTime; }
+      boost::gregorian::date getTaxDate() const { return taxDate; }
       boost::posix_time::time_period getAccountPeriod() const
-      {
-        return accountPeriod;
-      }
-      Type getType() const
-      {
-        return type;
-      }
-      unsigned getNumber() const
-      {
-        return number;
-      }
-      TID getRegistrar() const
-      {
-        return registrar;
-      }
-      Money getCredit() const
-      {
-        return credit;
-      }
-      Money getPrice() const
-      {
-        return price;
-      }
-      short getVatRate() const
-      {
-        return vatRate;
-      }
-      Money getTotal() const
-      {
-        return total;
-      }
-      Money getTotalVAT() const
-      {
-        return totalVAT;
-      }
-      const std::string& getVarSymbol() const
-      {
-        return varSymbol;
-      }
-      const std::string& getConstSymbol() const
-      {
-        return constSymbol;
-      }
-#define MAKE_TIME(ROW,COL)  \
- (boost::posix_time::ptime(db->IsNotNull(ROW,COL) ? \
- boost::posix_time::time_from_string(\
- db->GetFieldValue(ROW,COL)) : boost::posix_time::not_a_date_time))         
-#define MAKE_DATE(ROW,COL)  \
- (boost::gregorian::date(db->IsNotNull(ROW,COL) ? \
- boost::gregorian::from_string(\
- db->GetFieldValue(ROW,COL)) : \
- (boost::gregorian::date)boost::gregorian::not_a_date_time))
+      { return accountPeriod; }
+      Type getType() const { return type; }
+      unsigned long getNumber() const { return number; }
+      TID getRegistrar() const { return registrar; }
+      Money getCredit() const { return credit; }
+      Money getPrice() const { return price; }
+      short getVatRate() const { return vatRate; }
+      Money getTotal() const { return total; }
+      Money getTotalVAT() const { return totalVAT; }
+      const std::string& getVarSymbol() const { return varSymbol; }
+      const std::string& getConstSymbol() const { return constSymbol; }
       InvoiceImpl(DB *db, unsigned l) :
         id(STR_TO_ID(db->GetFieldValue(l,0))),
         zone(STR_TO_ID(db->GetFieldValue(l,1))),
         crTime(MAKE_TIME(l,2)),
         taxDate(MAKE_DATE(l,3)),
-        accountPeriod(
-          boost::posix_time::ptime(boost::posix_time::neg_infin),
-          boost::posix_time::ptime(boost::posix_time::pos_infin)
-        ),
-        type(IT_DEPOSIT),
-        number(0),
-        registrar(0),
-        credit(0),
-        price(0),
-        vatRate(0),
-        total(0),
-        totalVAT(0),
+        accountPeriod(MAKE_TIME_NEG(l,4),MAKE_TIME_POS(l,5)),
+        type(atoi(db->GetFieldValue(l,6)) == 0 ? IT_DEPOSIT : IT_ACCOUNT),
+        number(atol(db->GetFieldValue(l,7))),
+        registrar(STR_TO_ID(db->GetFieldValue(l,8))),
+        credit(atol(db->GetFieldValue(l,9))),
+        price(atol(db->GetFieldValue(l,10))),
+        vatRate(atol(db->GetFieldValue(l,11))),
+        total(atol(db->GetFieldValue(l,12))),
+        totalVAT(atol(db->GetFieldValue(l,13))),
         constSymbol("308"),
-        varSymbol(db->GetFieldValue(l,19)),
+        varSymbol(db->GetFieldValue(l,20)),
         client(
-         db->GetFieldValue(l,14),"",db->GetFieldValue(l,15),
-         db->GetFieldValue(l,16),"",db->GetFieldValue(l,17),
+         db->GetFieldValue(l,14),
+         "", // fullname is empty
+         db->GetFieldValue(l,15),
+         db->GetFieldValue(l,16),
+         db->GetFieldValue(l,17),
          db->GetFieldValue(l,18),
-         "","","",""
+         db->GetFieldValue(l,19),
+         "", // registration is empty
+         "", // reclamation is empty
+         "", // url is empty
+         "" // email is empty
         )
       {
       }
@@ -346,7 +315,7 @@ namespace Register
         sql << "SELECT i.id, i.zone, i.crdate, i.taxdate, i.fromdate, "
             << "i.todate, i.typ, i.prefix, i.registrarid, i.credit, i.price, "
             << "i.vat, i.total, i.totalvat, r.organization, r.street1, "
-            << "r.city, r.ico, r.vat, r.varsymb "
+            << "r.city, r.postalcode, r.ico, r.dic, r.varsymb "
             << "FROM invoice i, registrar r "
             << "WHERE i.registrarid=r.id ";
         if(idFilter) sql << "AND i.id=" << idFilter;
@@ -373,10 +342,10 @@ namespace Register
       /// find unarchived invoices and archive then in PDF format
       void archiveInvoices() const
       {
-        ExporterXML xml(std::cout);
+        ExporterPDF pdf;
         InvoiceListImpl l(db);
         l.reload();
-        l.doExport(&xml);
+        l.doExport(&pdf);
       }
     }; // ManagerImpl
     Manager *Manager::create(DB *db)

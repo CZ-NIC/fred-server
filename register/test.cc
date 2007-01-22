@@ -88,6 +88,7 @@ int main()
     Register::Invoicing::Manager::create(&db)
   );
   im->archiveInvoices();
+  /*
   while (1) {
     std::string input;
     std::cout << "Handle: ";
@@ -122,4 +123,5 @@ int main()
                 << " Conflict: " << chl[i].conflictHandle << std::endl;
     }
   }
+  */
 }

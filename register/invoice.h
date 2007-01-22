@@ -52,7 +52,7 @@ namespace Register
       virtual boost::gregorian::date getTaxDate() const = 0;
       virtual boost::posix_time::time_period getAccountPeriod() const = 0;
       virtual Type getType() const = 0;
-      virtual unsigned getNumber() const = 0;
+      virtual unsigned long getNumber() const = 0;
       virtual TID getRegistrar() const = 0;
       virtual Money getCredit() const = 0;
       virtual Money getPrice() const = 0;
