@@ -231,6 +231,7 @@ void SETS( const char *fname , const char * value , bool esc  /* , bool null  */
 
 void SET( const  char *fname , int   value );
 void SET( const  char *fname , bool  value );
+void SETNULL( const char *fname  );
 void SETBOOL( const char *fname , char c );
 void SETPRICE( const char *fname , long price );
 

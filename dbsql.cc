@@ -123,9 +123,10 @@ bool DB::SaveInvoiceCredit(int regID , int objectID , int operation , int zone  
 int id;
 
 
-id = GetSequenceID( "bank_statement_head" );
+LOG( DEBUG_LOG , "SaveInvoiceCredit: uctovani creditu objectID %d ExDate [%s] regID %d" , objectID ,  ExDate , regID  );
 
-LOG( DEBUG_LOG , "uctovani creditu objectID %d ExDate [%s] regID %d" , objectID ,  ExDate , regID  );
+id = GetSequenceID( "invoice_object_registry" );
+
 // uloz zaznam o zuctovanem creditu
 INSERT( "invoice_object_registry" );
 INTO( "id" );
@@ -145,7 +146,7 @@ VAL( ExDate);
 if( EXEC() ) 
  {
 
-     LOG( DEBUG_LOG , "uctovani creditu  price %ld  invoiceID %d" , price , invoiceID );
+     LOG( DEBUG_LOG , "SaveInvoiceCredit:   price %ld  invoiceID %d" , price , invoiceID );
 
   INSERT( "invoice_object_registry_price_map" );
   INTO( "id");
@@ -189,7 +190,7 @@ bool DB::InvoiceCountCredit( long  price , int invoiceID  )
 char sqlString[256];
 
 // pokud nulova cene neupdavovat credit
-if( price == 0 ) return true;
+if( price == 0 ) {  LOG( DEBUG_LOG , "nulova castka nemenim credit u invoiceID %d"  , invoiceID ); return true; } 
 else
 {
 sprintf(  sqlString ,  "UPDATE invoice SET  credit=credit-%ld%c%02ld  WHERE id=%d;" , price /100 , '.' , price %100   , invoiceID );
@@ -220,6 +221,8 @@ int invoiceID;
 int invID[2];
 long cr[2];
 int i , num;
+
+LOG( DEBUG_LOG , "UpdateInvoiceCredit operation %d objectID %d ExDate [%s]  period %d regID %d" , operation , objectID ,  ExDate , period ,  regID  );
 
 // systemovy registrator pracuje zadarmo
 if( GetRegistrarSystem( regID ) == true ) return true;
@@ -1948,6 +1951,13 @@ SQLCat( " ," );
 }
 
 
+void DB::SETNULL( const char *fname  )
+{
+SQLCat( "  ");
+SQLCat(  fname );
+SQLCat(  "=NULL" );
+SQLCat( " ," );
+}
 
 
 void DB::SET( const char *fname , bool  value )
