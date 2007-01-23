@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <boost/date_time/posix_time/time_parsers.hpp>
 
@@ -76,6 +77,8 @@ namespace Register
     #define TAGSTART(tag) "<"#tag">"
     #define TAGEND(tag) "</"#tag">"
     #define TAG(tag,f) TAGSTART(tag) << f << TAGEND(tag)
+    #define OUTMONEY(f) (f)/100 << "." << \
+                        std::setfill('0') << std::setw(2) << (f)%100
     // exporter that export xml of invoice into given stream
     class ExporterXML : public Exporter
     {
@@ -102,14 +105,12 @@ namespace Register
       }
       virtual void doExport(Invoice *i)
       {
-        //TODO: number is generated with strange chars if setting locales so
-        // must be generated separate
-        std::stringstream num;
-        num << i->getNumber();
         // setting locale for proper date format
         out.imbue(std::locale(
-          std::locale(""),
-          new boost::gregorian::date_facet("%x")
+          // must be default locale (do not set locale("") because of
+          // unpredictable formatting behavior)
+          std::locale(),
+          new boost::gregorian::date_facet("%d.%m.%Y")
         ));
         // generate invoice xml
         out << "<?xml version='1.0' encoding='utf-8'?>"
@@ -121,11 +122,12 @@ namespace Register
         doExport(i->getSupplier());
         out << TAGEND(supplier)
             << TAGSTART(payment)
-            << TAG(invoice_number,num.str())
+            << TAG(invoice_number,i->getNumber())
             << TAG(invoice_date,i->getCrTime().date())
             << TAG(payment_date,i->getCrTime().date())
             << TAG(tax_point,i->getTaxDate())
             << TAG(vs,i->getVarSymbol())
+/*            
             << TAG(ks,i->getConstSymbol())
             << TAG(payment_method,"bankovním převodem")
             << TAGSTART(bank)
@@ -134,27 +136,31 @@ namespace Register
             << TAG(account,"152903575/0300")
             << TAG(iban,"CZ56 0300 0000 0001 5290 3575")
             << TAGEND(bank)
+ */
             << TAG(anotation,
                    "Fakturujeme Vám přijetí zálohy za služby "
-                   "(smlouva o statusu Registrátora)."
+                   "(Smlouva o spolupráci při registracích doménových "
+                   "jmen ENUM)."
                )
+/*
             << TAG(note,
                    "DPH byla vypořádána na zálohových daňových dokladech."
                )
-            << TAG(issue_person,"Zuzana Durajová")
+ */
+            << TAG(issue_person,"Vystaveno fakturačním systémem CZ.NIC")
             << TAGEND(payment)
             << TAGSTART(delivery)
             << TAGSTART(entry)
             << TAG(vatperc,i->getVatRate())
-            << TAG(basetax,i->getTotal())
-            << TAG(vat,i->getTotalVAT())
-            << TAG(total,i->getPrice())
+            << TAG(basetax,OUTMONEY(i->getTotal()))
+            << TAG(vat,OUTMONEY(i->getTotalVAT()))
+            << TAG(total,OUTMONEY(i->getPrice()))
             << TAGEND(entry)
             << TAGEND(delivery)
             << TAGSTART(sumarize)
-            << TAG(total,i->getPrice())
-            << TAG(paid,i->getPrice())
-            << TAG(to_be_paid,0)
+            << TAG(total,OUTMONEY(i->getPrice()))
+            << TAG(paid,OUTMONEY(i->getPrice()))
+            << TAG(to_be_paid,OUTMONEY(0))
             << TAGEND(sumarize)
 /*            
             << TAGSTART(appendix)
@@ -286,7 +292,7 @@ namespace Register
       "SpZ: odb. občanskopr. agend Magist. hl. m. Prahy, č. ZS/30/3/98",
       "CZ.NIC, z.s.p.o., Americká 23, 120 00 Praha 2",
       "www.nic.cz",
-      "fakt@nic.cz"
+      "podpora@nic.cz"
     );
     class InvoiceListImpl : public InvoiceList
     {
@@ -313,8 +319,9 @@ namespace Register
         invoices.clear();
         std::stringstream sql;
         sql << "SELECT i.id, i.zone, i.crdate, i.taxdate, i.fromdate, "
-            << "i.todate, i.typ, i.prefix, i.registrarid, i.credit, i.price, "
-            << "i.vat, i.total, i.totalvat, r.organization, r.street1, "
+            << "i.todate, i.typ, i.prefix, i.registrarid, i.credit*100, "
+            << "i.price*100, i.vat, i.total*100, i.totalvat*100, "
+            << "r.organization, r.street1, "
             << "r.city, r.postalcode, r.ico, r.dic, r.varsymb "
             << "FROM invoice i, registrar r "
             << "WHERE i.registrarid=r.id ";
