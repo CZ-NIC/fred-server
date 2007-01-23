@@ -335,17 +335,29 @@ return r;
 long get_price( const char *priceStr )
 {
 char str[32];
-int i , len;
+long price;
+int i , j  , len;
 
 strcpy(  str , priceStr );
 len = strlen( priceStr );
 for( i = 0 ;i < len  ; i ++ )
 {
+
+// pokud jesou tisice oddelene mezerou
+if( str[i] == ' ' )
+  {
+      for( j = i ; j < len -1 ; j ++ ) str[j] = str[j+1];
+      len --;
+  } 
+
         if( str[i] == '.' || str[i] == ',' ) {  str[i] =  str[i+1] ;  str[i+1]  = str[i+2] ;  str[i+2]  = 0 ; break ; }
 }
 
-// default
-return atol( str  ) ;
+price=atol( str);
+
+LOG( LOG_DEBUG ,  "get_price from string[%s] -> %ld hal" , priceStr , price );
+
+return price;
 }
 
 
