@@ -2355,13 +2355,15 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                                           DBsql.SET( "Name", c.Name );
                                           DBsql.SET( "Organization", c.Organization );
                                           snum = c.Streets.length();
+                                          if( snum > 0 )
+                                          {
                                           for( s = 0 ; s < 3  ; s ++ )
                                              {
                                                sprintf( streetStr , "Street%d" , s +1);
                                                if( s < snum ) DBsql.SET(  streetStr , c.Streets[s] );
-                                               else DBsql.SET( streetStr , "\b" ); // SET NULL by hack
+                                               else DBsql.SETNULL( streetStr  );
                                              }
-
+                                          }
                                           DBsql.SET( "City", c.City );
                                           DBsql.SET( "StateOrProvince", c.StateOrProvince );
                                           DBsql.SET( "PostalCode", c.PostalCode);
