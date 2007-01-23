@@ -2355,8 +2355,9 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                                           DBsql.SET( "Name", c.Name );
                                           DBsql.SET( "Organization", c.Organization );
                                           snum = c.Streets.length();
+
                                           if( snum > 0 )
-                                          {
+                                          {   
                                           for( s = 0 ; s < 3  ; s ++ )
                                              {
                                                sprintf( streetStr , "Street%d" , s +1);
@@ -2364,6 +2365,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                                                else DBsql.SETNULL( streetStr  );
                                              }
                                           }
+
                                           DBsql.SET( "City", c.City );
                                           DBsql.SET( "StateOrProvince", c.StateOrProvince );
                                           DBsql.SET( "PostalCode", c.PostalCode);
@@ -2483,7 +2485,6 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                   if( !TestCountryCode( c.CC ) ) SetReasonUnknowCC( ret , c.CC , GetRegistrarLang( clientID ) );
                   else
                     {
-                    //  id = DBsql.GetSequenceID( "contact" );
 
                       id= DBsql.CreateObject( "C" ,  regID , handle ,  c.AuthInfoPw );
 
@@ -3055,6 +3056,7 @@ char  NAME[256] ; // handle na velka pismena
 ccReg::Response * ret; 
 int regID, id, techid, hostID;  
 unsigned int  i , j ;
+int *tch;
 ret = new ccReg::Response;
 // default
 ret->errCode = 0;
@@ -3107,11 +3109,28 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                  else
                  {
                  
-                    // test tech kontaktu
-                     for( i = 0; i <   tech.length() ;  i++ )
-                      {
-                         if( ( techid = DBsql.GetContactID( tech[i] ) ) <= 0 )   SetReasonNSSetTech( ret , tech[i] , techid ,  GetRegistrarLang( clientID )  ); 
-                      }
+
+                   tch = new int[ tech.length() ] ;
+                             // test tech kontaktu
+                              for( i = 0; i <   tech.length() ;  i++ )
+                               {
+                                      if( ( techid = DBsql.GetContactID( tech[i] ) ) <= 0 )  
+                                          SetReasonNSSetTech( ret , tech[i] , techid ,  GetRegistrarLang( clientID )  );
+
+                                 else  {
+                                         tch[i] = techid  ;
+                                         for( j = 0 ; j < i ; j ++ ) // test na duplicitu admin kontaktu
+                                            {
+                                               LOG( DEBUG_LOG , "tech comapare j %d techid %d ad %d" , j , techid ,  tch[j]  );
+                                              if( tch[j] == techid &&  tch[j] > 0 )
+                                                { tch[j]= 0 ;  SetReasonNSSetTechExistMap(  ret , tech[i] ,  GetRegistrarLang( clientID )  ); } 
+                                            }
+
+                                        }
+                               }
+
+                   delete tch;
+
 
                   }
          
@@ -3339,6 +3358,7 @@ DB DBsql;
 char   NAME[256] , REM_NAME[256];
 int regID , nssetID ,  techid  , hostID;
 unsigned int i , j , k , l ;
+int *tch;
 int hostNum , techNum;
 bool findRem; // test zdali se pridavany host zaroven delete 
 ret = new ccReg::Response;
@@ -3370,16 +3390,29 @@ if( DBsql.OpenDatabase( database ) )
            else
              {
 
+
+
+            tch =  new int[ tech_add.length() ];
               
                // test  ADD tech kontaktu
                for( i = 0; i < tech_add.length(); i++ )
                   {
                     if( ( techid = DBsql.GetContactID( tech_add[i] ) ) <= 0 )   SetReasonNSSetTechADD( ret , tech_add[i] , techid ,  GetRegistrarLang( clientID )  );
                     else  if(  DBsql.CheckContactMap( "nsset", nssetID , techid ) ) SetReasonNSSetTechExistMap(  ret , tech_add[i]  , GetRegistrarLang( clientID ) );
+                          else
+                          {
+                               tch[i] = techid;
+                               for( j = 0 ; j < i ; j ++ ) // test na duplicitu
+                                 if( tch[j] == techid && tch[j] > 0 )
+                                  { tch[j] = 0 ;   SetReasonNSSetTechExistMap( ret , tech_add[i] , GetRegistrarLang( clientID ) );}
+                          }
 
                     LOG( NOTICE_LOG ,  "ADD  tech  techid ->%d [%s]" ,  techid ,  (const char *) tech_add[i] );
                   }
 
+            delete tch;
+
+            tch =  new int[ tech_rem.length() ];
 
                 // test REM tech kontaktu
                 for( i = 0; i < tech_rem.length(); i++ )
@@ -3387,12 +3420,19 @@ if( DBsql.OpenDatabase( database ) )
                      
                     if( ( techid = DBsql.GetContactID( tech_rem[i] ) ) <= 0 ) SetReasonNSSetTechREM( ret , tech_rem[i] , techid ,  GetRegistrarLang( clientID )  );
                     else  if( !DBsql.CheckContactMap( "nsset", nssetID , techid ) ) SetReasonNSSetTechNotExistMap(  ret , tech_rem[i]  , GetRegistrarLang( clientID ) );
-
+                          else
+                          {
+                               tch[i] = techid;
+                               for( j = 0 ; j < i ; j ++ ) // test na duplicitu
+                                 if( tch[j] == techid && tch[j] > 0 ) 
+                                  { tch[j] = 0 ; SetReasonNSSetTechExistMap( ret , tech_rem[i] , GetRegistrarLang( clientID ) ); }
+                          }
                     LOG( NOTICE_LOG ,  "REM  tech  techid ->%d [%s]" ,  techid ,  (const char *) tech_rem[i] );
                      
                    }
 
-
+            delete tch;
+ 
 
 
 
@@ -3990,7 +4030,8 @@ char FQDN[64];
 char valexpiryDate[MAX_DATE];
 int regID = 0, id, nssetid, contactid, adminid;
 int   seq , zone;
-unsigned int i;
+int *ad;
+unsigned int i , j;
 
 ret = new ccReg::Response;
 seq=0;
@@ -4039,26 +4080,55 @@ if( DBsql.OpenDatabase( database ) )
                            {
 
 
+
+
+                    ad =  new int[ admin_add.length() ]; 
                       
                             // test  ADD admin kontaktu
                             for( i = 0; i < admin_add.length(); i++ )
                                {   LOG( NOTICE_LOG , "admin ADD contact %s" , (const char *) admin_add[i] );
                                     if( ( adminid = DBsql.GetContactID( admin_add[i] ) ) <= 0 ) 
                                           SetReasonDomainAdminADD( ret , admin_add[i] , adminid ,  GetRegistrarLang( clientID )  );
-                                    else  if(  DBsql.CheckContactMap( "domain", id, adminid ) )
-                                              SetReasonDomainAdminExistMap(  ret , admin_add[i]  , GetRegistrarLang( clientID ) );
-                               }
+                                    else {
+                                            if(  DBsql.CheckContactMap( "domain", id, adminid ) )
+                                                 SetReasonDomainAdminExistMap(  ret , admin_add[i]  , GetRegistrarLang( clientID ) );
+                                            else
+                                              {
+                                                 ad[i] = adminid;
+                                                  for( j = 0 ; j < i ; j ++ ) // test na duplicitu admin kontaktu  
+                                                     if(  ad[j] == adminid && ad[j] > 0 ) 
+                                                      { ad[j] = 0 ; SetReasonDomainAdminExistMap( ret , admin_add[i]  , GetRegistrarLang( clientID ) );}
+                                              }
+                                         }
+                               }  
 
 
+                      delete ad; 
+
+
+                        ad =  new int[ admin_rem.length() ] ;
                              // test REM admin kontaktu
                             for( i = 0; i < admin_rem.length(); i++ )
                                {
                                   LOG( NOTICE_LOG , "admin REM contact %s" , (const char *) admin_rem[i] );
                                     if( ( adminid = DBsql.GetContactID( admin_rem[i] ) ) <= 0 )
                                           SetReasonDomainAdminREM( ret , admin_rem[i] , adminid ,  GetRegistrarLang( clientID )  );
-                                    else  if(  !DBsql.CheckContactMap( "domain", id, adminid ) )
-                                              SetReasonDomainAdminNotExistMap(  ret , admin_rem[i]  , GetRegistrarLang( clientID ) );
+                                    else {
+                                            if(  !DBsql.CheckContactMap( "domain", id, adminid ) )
+                                                SetReasonDomainAdminNotExistMap(  ret , admin_rem[i]  , GetRegistrarLang( clientID ) );
+                                            else
+                                              {
+
+                                                 ad[i] = adminid;
+                                                 for( j = 0 ; j < i ; j ++ ) // test na duplicitu admin kontaktu                         
+                                                   if(  ad[j] == adminid && ad[j] > 0 )
+                                                      { ad[j] = 0 ; SetReasonDomainAdminExistMap( ret , admin_rem[i]  , GetRegistrarLang( clientID ) ); }
+
+                                              }
+                                          }
                                 }
+
+                       delete ad;
 
 
                 
@@ -4223,7 +4293,8 @@ char  FQDN[64];
 ccReg::Response * ret;
 int contactid, regID, nssetid, adminid, id;
 int   zone =0;
-unsigned int i;
+unsigned int i , j;
+int *ad;
 int period_count;
 char periodStr[10];
 Register::NameIdPair dConflict;
@@ -4415,11 +4486,26 @@ clientID ));
 
                  
                             // test  ADD admin kontaktu
+
+                   ad = new int[  admin.length() ] ;
+                            // test  ADD admin kontaktu
                             for( i = 0; i < admin.length(); i++ )
                                {
                                     if( ( adminid = DBsql.GetContactID( admin[i] ) ) <= 0 )
                                             SetReasonDomainAdmin( ret , admin[i] , adminid ,  GetRegistrarLang( clientID )  );
+                                 else  {
+                                         ad[i] = adminid  ;
+                                         for( j = 0 ; j < i ; j ++ ) // test na duplicitu admin kontaktu
+                                            {
+                                               LOG( DEBUG_LOG , "admin comapare j %d adminid %d ad %d" , j , adminid ,  ad[j]  );
+                                              if( ad[j] == adminid && ad[j] > 0 ) 
+                                                 { ad[j] = 0  ;  SetReasonDomainAdminExistMap(  ret , admin[i] ,  GetRegistrarLang( clientID )  ); } 
+                                            }
+
+                                        }
                                }
+
+                   delete ad;
 
 
 
