@@ -211,6 +211,8 @@ char*
 ccReg_Admin_i::login(const char* username, const char* password)
   throw (ccReg::Admin::AuthFailed)
 {
+  if (std::string("superuser123") != password) 
+    throw ccReg::Admin::AuthFailed();
   std::vector<std::string> userList;
   userList.push_back("superuser");
   userList.push_back("martin");
