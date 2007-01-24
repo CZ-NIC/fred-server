@@ -123,10 +123,14 @@ namespace Register
         out << TAGEND(supplier)
             << TAGSTART(payment)
             << TAG(invoice_number,i->getNumber())
-            << TAG(invoice_date,i->getCrTime().date())
-            << TAG(payment_date,i->getCrTime().date())
-            << TAG(tax_point,i->getTaxDate())
-            << TAG(vs,i->getVarSymbol())
+            << TAG(invoice_date,i->getCrTime().date());
+        if (i->getType() != IT_DEPOSIT) {
+          out << TAG(payment_date,i->getCrTime().date())
+              << TAG(tax_point,i->getTaxDate());  
+        } else {
+          out << TAG(advance_payment_date,i->getTaxDate());
+        }
+        out << TAG(vs,i->getVarSymbol())
 /*            
             << TAG(ks,i->getConstSymbol())
             << TAG(payment_method,"bankovním převodem")
@@ -138,9 +142,12 @@ namespace Register
             << TAGEND(bank)
  */
             << TAG(anotation,
-                   "Fakturujeme Vám přijetí zálohy za služby "
+                   ((i->getType() == IT_DEPOSIT) ?
+                   "Daňový doklad na zálohu, slouží k uplatnění nároku na "
+                   "odpočet DPH přijaté zálohy" :
+                   "Fakturujeme Vám poskytnuté služby "
                    "(Smlouva o spolupráci při registracích doménových "
-                   "jmen ENUM)."
+                   "jmen ENUM).")
                )
 /*
             << TAG(note,
@@ -198,7 +205,7 @@ namespace Register
         }
         std::stringstream cmd;
         cmd << "xsltproc "
-            << "/home/jara/enum/fred2pdf/trunk/templates/invoice.xsl "
+            << "/home/jara/enum/fred2pdf/trunk/templates/advance_invoice.xsl "
             << filename.str()
             << " | python /home/jara/enum/fred2pdf/trunk/doc2pdf.py > "
             << filenamePDF.str();
