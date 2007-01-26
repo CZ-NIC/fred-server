@@ -93,6 +93,9 @@ int  GetNSSetID( const char *handle );
 // vraci id domeny ( special pro enum )
 int  GetDomainID( const char *fqdn , bool enum_zone );
 
+// objekt byl nekde nemam prirazen jako tech ci admin registrant domeny ci nsset u domeny
+bool ObjectModify( int id );
+
 // update object dle id  a registrator
 bool ObjectUpdate( int id , int regID , const char *authInfo );
 // test ClID=regID objektu
@@ -152,6 +155,9 @@ double GetSystemKOEF(); // vraci hodnotu prepocitavaciho koeficientu
 
 // nastav bankovni vypis jako zpracovany
 bool UpdateBankStatementItem( int id , int invoiceID);
+
+// vytvoreni ostre faktury
+int MakeNewInvoice(  const char *taxDateStr , const char *fromdateStr , const char *todateStr , int zone ,  int regID ,  long price );
 
 // vytvoreni nove  zalohove faktury pro registratora na castku price  s odvedenim dph VAT=true nebo bez
 int  MakeNewInvoiceAdvance( const char *taxDateStr , int zone ,  int regID ,  long price , bool VAT );

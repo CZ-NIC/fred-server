@@ -9,6 +9,10 @@
 #include "csv.h"
 
 
+#ifndef CONFIG_FILE
+#define CONFIG_FILE "/etc/ccReg.conf"
+#endif
+
 //  select id , invoiceid , price , account_memo , registarid , zone  from bank_statement_item , banking_invoice_varsym_map where bank_statement_item.account_number=banking_invoice_varsym_map.account_number and bank_statement_item.bank_code=banking_invoice_varsym_map.bank_code and banking_invoice_varsym_map.varsymb=banking_invoice_varsym_map.varsymb  and bank_statement_item.invoiceid is null;
 
 // #define error printf
@@ -74,6 +78,123 @@ if( ret ) return true;
 else return false;
 }
 
+int factoring( const char *database  ,     const char *registrarHandle  ,  const char  *zone_fqdn , char *taxdateStr , char *todateStr )
+{
+DB db;
+char sqlString[512];
+int regID;
+char timestampStr[32];
+char fromtimeStr[32];
+int invoiceID;
+int count=-1;
+long price;
+int zone;
+int ret = 0;
+
+if( db.OpenDatabase( database  ) )
+{
+
+LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
+
+if( db.BeginTransaction() )
+ {
+
+  if(  (regID = db.GetRegistrarID( (char * )  registrarHandle ) )  )
+  {
+
+    if( ( zone =  db.GetNumericFromTable( "zone", "id", "fqdn", zone_fqdn ) )  )
+     {
+ 
+           get_timestamp( timestampStr  , get_utctime_from_localdate(  todateStr ) );
+
+
+            // zjisti fromdate nebo lasdate
+            sprintf( sqlString , "SELECT lastdate ,  fromdate  from registrarinvoice  WHERE zone=%d and registrarid=%d;"  , zone , regID );
+             if( db.ExecSelect( sqlString ) )
+               {
+                   
+                   if( db.IsNotNull( 0 , 0 ) )
+                     {
+                         strcpy( fromtimeStr , db.GetFieldValue( 0 , 0 ) );
+                      }
+                    else strcpy( fromtimeStr ,  db.GetFieldValue( 0 , 1 ) );
+
+                 db.FreeSelect();
+                }
+
+            LOG( NOTICE_LOG , "Fakturace od %s do %s" , fromtimeStr  , timestampStr ); 
+  
+               
+
+            sprintf( sqlString , "UPDATE registrarinvoice SET lastdate=\'%s\' WHERE zone=%d and registrarid=%d;" , timestampStr , zone , regID );
+
+            if( db.ExecSQL( sqlString )   )
+            {
+                // pocet polozek k fakturaci
+               sprintf( sqlString , "SELECT count( id)  from invoice_object_registry  where crdate < \'%s\' AND  zone=%d AND registrarid=%d AND invoiceid IS NULL;" , timestampStr , zone , regID );
+               if( db.ExecSelect( sqlString ) )
+                {
+                     count = atoi(  db.GetFieldValue( 0 , 0 ) ) ;
+                     db.FreeSelect();
+                }
+
+           
+                // zjisti celkovou castku
+               if( count > 0 )
+                 {
+                     sprintf( sqlString , "SELECT sum( price ) FROM invoice_object_registry , invoice_object_registry_price_map  WHERE   invoice_object_registry_price_map.id=invoice_object_registry.id AND  crdate < \'%s\' AND zone=%d and registrarid=%d AND  invoice_object_registry.invoiceid is null ;" ,  timestampStr , zone , regID );
+                     if( db.ExecSelect( sqlString ) )
+                       {
+                            price =  (long) ( 100.0 *  atof( db.GetFieldValue( 0  , 0 ) )  );
+                             LOG( NOTICE_LOG , "Celkova castka na fakture %ld" , price ); 
+                            db.FreeSelect();
+                       }
+                 }
+                else price = 0;     
+           
+              
+             }
+
+           
+            // prazdna faktura zaznam o fakturaci
+            if( count >= 0 )
+              {
+                if( ( invoiceID = db.MakeNewInvoice(  taxdateStr , fromtimeStr , timestampStr , zone , regID   , price  )  ) > 0 ) 
+                  {                   
+                                      
+                    if( count > 0 )    // oznac polozky faktury faktrury 
+                      { 
+                          sprintf( sqlString , "UPDATE invoice_object_registry set invoiceid=%d  WHERE crdate < \'%s\' AND zone=%d and registrarid=%d AND invoiceid IS NULL;" ,  invoiceID , timestampStr , zone , regID );
+                          if( db.ExecSQL( sqlString )  ) ret = CMD_OK;
+                          
+                       }
+                    else ret = CMD_OK; // vse OK 
+
+                  }
+
+               }
+                
+          
+
+      }
+     else LOG( LOG_ERR , "unkow zone %s\n" , zone_fqdn );
+  }
+  else
+  {
+     LOG( LOG_ERR , "unkow registrarHandle %s" , registrarHandle );
+  }
+
+    db.QuitTransaction( ret );
+}
+
+// odpojeni od databaze
+db.Disconnect();
+}
+
+if( ret ) return true;
+else return false;
+}
+
 int ebanka_invoicing( const char *database  ,   char *filename )
 {
 DB db;
@@ -92,7 +213,6 @@ char varSymb[12] , konstSymb[12];
 char nameStr[64] , memoStr[64];
 time_t t;
 long price;
-int c;
 char datetimeString[32];
 
 if( csv.read_file( filename ) == false )
@@ -144,7 +264,7 @@ if( db.BeginTransaction() )
               price  =  get_price( csv.get_value(4) );
                 
               t = get_local_format_time_t( csv.get_value(5)  )  ;
-              get_timestamp(  t , datetimeString);
+              get_timestamp(   datetimeString , t);
  
                // kod banky a cislo protiuctu
               strcpy( accountStr , csv.get_value(6)  );
@@ -380,7 +500,6 @@ GPC gpc;
 ST_Head *head;
 ST_Item **item;
 char dateStr[12];
-char datetimeString[32];
 time_t t;
 int i , numrec ,  num ;
 
@@ -401,7 +520,7 @@ Conf config; // READ CONFIG  file
 
 printf("connect DB string [%s]\n" , config.GetDBconninfo() ); 
 // usage
-if( argc == 1 )printf("import banking statement file to database\nusage: %s --bank-gpc file.gpc\ninvoicing: %s --invoice\ncredit: %s --credit REG-HANDLE zone price\nE-Banka: %s --ebanka-csv file.csv\n"  , argv[0]  , argv[0] ,  argv[0] , argv[0] );  
+if( argc == 1 )printf("import banking statement file to database\nusage: %s --bank-gpc file.gpc\ninvoicing: %s --invoice\ncredit: %s --credit REG-HANDLE zone price\nE-Banka: %s --ebanka-csv file.csv\nfactoring: %s --factoring REG-NAME zone 2006-12-31  2007-01-01"  , argv[0]  , argv[0] ,  argv[0] , argv[0] , argv[0]);  
 
 
 if( argc == 5 )
@@ -413,6 +532,12 @@ if( argc == 5 )
        credit_invoicing(  config.GetDBconninfo() , dateStr  ,   argv[2] , argv[3] , atol( argv[4] ) * 100L  );
      }
  }
+
+if( argc == 6 )
+  {
+     if( strcmp(  argv[1]  , "--factoring" )  == 0 )
+      factoring(   config.GetDBconninfo() ,  argv[2] , argv[3] , argv[4]    ,  argv[5] );
+  }
 
 if( argc==3)
 {

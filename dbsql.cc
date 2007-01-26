@@ -1377,6 +1377,57 @@ bool DB::UpdateEBankaListInvoice( int id , int invoiceID )
 }
 
 
+int  DB::MakeNewInvoice(  const char *taxDateStr , const char *fromdateStr , const char *todateStr , int zone ,  int regID ,  long price )
+{
+int invoiceID;
+int prefix;
+
+prefix = GetInvoicePrefix( taxDateStr , 0 , zone );  // cislo faktury podle zdanitelneho obdobi
+LOG( LOG_DEBUG ,"MakeNewInvoice taxdate[%s]  fromdateStr [%s] todateStr[%s]  zone %d regID %d , price %ld  " , 
+taxDateStr , fromdateStr , todateStr ,   zone , regID , price );
+
+if( prefix  > 0 )
+  {
+    invoiceID = GetSequenceID( "invoice" );
+
+         INSERT( "invoice" );
+           INTO( "id" );
+           INTO( "prefix" );
+           INTO( "zone" );
+           INTO( "typ" );
+           INTO( "registrarid" );
+           INTO( "taxDate" );  
+           INTO( "fromdate");
+           INTO( "todate");
+           INTO( "price" );
+           INTO( "vat" );
+           INTO( "total" );           
+           INTO( "totalVAT" );           
+           INTO( "credit" );
+           VALUE( invoiceID );
+           VALUE( prefix  );
+           VALUE( zone );
+           if( price > 0 )  VALUE( 1 );  // vyuctovaci FA
+           else  VALUE( 2 );    // rozpis o cerpani sluzeb
+           VALUE( regID );
+           VALUE( taxDateStr );
+           VALUE( fromdateStr );
+           VALUE( todateStr ); 
+           if( price > 0 )  VALPRICE( price ); // celkova castka
+           else  VALUENULL(); // rozpis o vycotovani
+           VALUENULL(); // ostatni jsou null
+           VALUENULL();
+           VALUENULL();
+           VALUENULL();
+
+          
+           if(  EXEC() ) return invoiceID;
+           else return -1; // chyba SQL insert
+      }
+      else return -2;  // chyba prefixu 
+
+
+}
 // vytvoreni zalohove faktury pro registratora na castku price s vysi DPH vatNum odvedenou dani vat  a castkou bez DPH credit
 // taxDateStr  datum zdanitelneho plneni datum kdy castka prisla na nas ucet
 int  DB::MakeNewInvoiceAdvance( const char *taxDateStr , int zone ,  int regID ,  long price , bool VAT )
@@ -1772,6 +1823,14 @@ if( historyID )
 // default 
 
 return ret;
+}
+
+bool DB::ObjectModify( int id )
+{
+UPDATE( "OBJECT" );
+SSET( "UpDate", "now" ); // MOD date
+WHEREID( id );
+return EXEC();
 }
 
 // id object a registrator
