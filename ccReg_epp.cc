@@ -1018,7 +1018,7 @@ if( DBsql.OpenDatabase( database ) )
 else ServerInternalError();
 
 // default
-return true; // TODO
+return true; 
 }
 
 /***********************************************************************
@@ -1842,7 +1842,7 @@ if( DBsql.OpenDatabase( database ) )
                                   a[i].reason =  CORBA::string_dup(  GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID ) ) );
                                   LOG( NOTICE_LOG ,  "domain %s exist not Avail" , (const char * ) chck[i] );                                              
                                   break;
-                             case Register::Domain::CA_BLACKLIST: // TODO
+                             case Register::Domain::CA_BLACKLIST: // cerna listina
                                   a[i].avail = ccReg::BlackList;
                                   a[i].reason =  CORBA::string_dup( GetReasonMessage(   REASON_MSG_BLACKLISTED_DOMAIN , GetRegistrarLang( clientID ) ) );
                                   LOG( NOTICE_LOG ,  "blacklisted  %s"  , (const char * ) chck[i] );
@@ -1864,7 +1864,7 @@ if( DBsql.OpenDatabase( database ) )
 #      CA_BAD_ZONE, ///< domain outside of register
 #      CA_BAD_LENGHT, ///< domain longer then acceptable
 #      CA_PROTECTED, ///< domain temporary protected for registration
-#      CA_BLACKLIST, ///< registration blocked in blacklist TODO
+#      CA_BLACKLIST, ///< registration blocked in blacklist 
 #      CA_REGISTRED, ///< domain registred
 #      CA_PARENT_REGISTRED, ///< parent already registred
 #      CA_CHILD_REGISTRED, ///< child already registred
@@ -2783,7 +2783,7 @@ DB DBsql;
 // char  adres[1042] , adr[128] ;
 // char dateStr[MAX_DATE];
 ccReg::Response *ret;
-int hostID[10]; // TODO define max hostID
+int *hostID;
 int clid ,  crid , upid , nssetid , regID;
 int i , j  ,ilen , len , slen ;
 
@@ -2868,6 +2868,8 @@ if( ( DBsql.BeginAction( clientID , EPP_NSsetInfo , clTRID , XML  )  ))
             
                
              n->dns.length(len);
+             hostID= new int[ len ] ;
+
  
              for( i = 0 ; i < len ; i ++)   
                 {                     
@@ -2890,7 +2892,8 @@ if( ( DBsql.BeginAction( clientID , EPP_NSsetInfo , clTRID , XML  )  ))
                        }
                     else n->dns[i].inet.length(0); // nulova delka pokud nejsou zadany ip adresy
                   }
- 
+
+             delete hostID; 
 
           } else ret->errCode=COMMAND_FAILED;
  
@@ -3097,14 +3100,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                    {
                      ret->errCode = COMMAND_PARAMETR_MISSING ;                                       
                      LOG( WARNING_LOG, "NSSetCreate: not any tech Contact " );
-/*  TODO
-                      ret->errors.length( seq +1 );
-                      ret->errors[seq].code = ccReg::nssetCreate_tech;
-                      ret->errors[seq].value = CORBA::string_dup( "tech contact"  ); // TODO ???
-                      ret->errors[seq].reason = CORBA::string_dup(  GetReasonMessage( REASON_MSG_NOT_ANY_TECH  , GetRegistrarLang( clientID ) ) );
-                      seq++;
-*/
-                      ret->errCode = COMMAND_PARAMETR_MISSING ; // musi byt alespon jeden nsset;
+                     SetErrorReason( ret , COMMAND_PARAMETR_MISSING , ccReg::nsset_tech ,  REASON_MSG_TECH_NOTEXIST  ,  " " , GetRegistrarLang( clientID ) );
                    }
                  else
                  {
@@ -3147,13 +3143,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                       else
                         {
                           LOG( WARNING_LOG, "NSSetCreate: minimal two dns DNS hosts" );
-/* TODO
-                          ret->errors.length( seq +1 );
-                          ret->errors[seq].code = ccReg::nssetCreate_ns_addr;
-                          ret->errors[seq].value = CORBA::string_dup( "not any dns host"  ); // TODO VALUE ?? 
-                          ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(  REASON_MSG_MIN_DNS ,  GetRegistrarLang( clientID )) );
-                          seq++;
-*/
+                          SetErrorReason( ret , COMMAND_PARAMETR_MISSING , ccReg::nsset_dns_name , REASON_MSG_MIN_TWO_DNS_SERVER , " " , GetRegistrarLang( clientID ) );
                           ret->errCode = COMMAND_PARAMETR_MISSING;
                         }
  
@@ -3233,6 +3223,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                     {
                       techid = DBsql.GetContactID( tech[i] );
                       LOG( DEBUG_LOG, "NSSetCreate: add tech Contact %s id %d " , (const char *)  tech[i]  , techid);
+                      if(  !DBsql.ObjectModify( techid ) ) { ret->errCode = COMMAND_FAILED; break; } 
                       if(  !DBsql.AddContactMap( "nsset" , id  , techid  ) ) { ret->errCode = COMMAND_FAILED; break; }
                     }
 
@@ -3564,6 +3555,7 @@ if( DBsql.OpenDatabase( database ) )
                                                 techid = DBsql.GetContactID( tech_add[i]  );
                                                 
                                                 LOG( NOTICE_LOG ,  "INSERT add techid ->%d [%s]" ,  techid ,  (const char *) tech_add[i] );
+                                                if(  !DBsql.ObjectModify( techid ) ) { ret->errCode = COMMAND_FAILED; break; }
                                                 if(  !DBsql.AddContactMap( "nsset" , nssetID  , techid  ) ) { ret->errCode = COMMAND_FAILED; break; } 
                                                                                                 
                                               }
@@ -4159,7 +4151,7 @@ if( DBsql.OpenDatabase( database ) )
                                  if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) , DefaultValExpInterval() , id  ) ==  false ) // test validace expirace
                                    {
                                       LOG( WARNING_LOG, "DomainUpdate:  validity exp date is not valid %s" , valexpiryDate  );
-                                      SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , GetRegistrarLang( clientID ) );
+                                      SetErrorReason( ret , COMMAND_PARAMETR_RANGE_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , GetRegistrarLang( clientID ) );
                                     }
                                  
                                }
@@ -4189,6 +4181,13 @@ if( DBsql.OpenDatabase( database ) )
                                      // DBsql.SET( "AuthInfoPw", authInfo_chg  );  // zmena autentifikace
                                       DBsql.WHEREID( id );
                                       if( !DBsql.EXEC() )  ret->errCode = COMMAND_FAILED;
+
+
+                                if( contactid ) if( !DBsql.ObjectModify( contactid ) ) ret->errCode = COMMAND_FAILED;  // modifikace kontaktu registratora
+                                if( nssetid ) if( !DBsql.ObjectModify( nssetid ) ) ret->errCode = COMMAND_FAILED;  // modifikace nssetu
+
+
+
                                 }
 
                                       if( ret->errCode == 0  )
@@ -4214,6 +4213,8 @@ if( DBsql.OpenDatabase( database ) )
 
                                                     adminid  = DBsql.GetContactID( admin_add[i] );
                                                     LOG( DEBUG_LOG, "DomainUpdate: add admin Contact %s id %d " , (const char *)   admin_add[i] , adminid );
+                                                   if(  !DBsql.ObjectModify( adminid ) ) { ret->errCode = COMMAND_FAILED; break; } // modifikace admin kontaktu
+                                                
                                                    if(  !DBsql.AddContactMap( "domain" , id  , adminid  ) ) { ret->errCode = COMMAND_FAILED; break; }
 
                                                  }
@@ -4449,16 +4450,7 @@ clientID ));
                     if( GetZoneEnum( zone ) )
                       {
                            LOG( WARNING_LOG, "DomainCreate: validity exp date MISSING"  );
-                           ret->errCode = COMMAND_PARAMETR_MISSING;   
-                           /* TODO
-                  LOG( WARNING_LOG, "DomainCreate: not validity exp date "  );
-                  ret->errors.length( seq +1 );
-                  ret->errors[seq].code = ccReg::domain_ext_valDate;
-
-                  ret->errors[seq].value = CORBA::string_dup( "not valExpDate"  ); // ??? TODO
-                  ret->errors[seq].reason = CORBA::string_dup( GetReasonMessage(REASON_MSG_VALEXPDATE_REQUIRED  , GetRegistrarLang( clientID ) ) ); // TODO
-
-                           */
+                           SetErrorReason( ret , COMMAND_PARAMETR_MISSING , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_REQUIRED , " "  , GetRegistrarLang( clientID ) );
                       }
                   }
                  else
@@ -4470,7 +4462,7 @@ clientID ));
                                  if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) , DefaultValExpInterval() , 0  ) ==  false ) // test validace expirace
                                    {
                                       LOG( WARNING_LOG, "Validity exp date is not valid %s" , valexpiryDate  );
-                                      SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , GetRegistrarLang( clientID ) );
+                                      SetErrorReason( ret , COMMAND_PARAMETR_RANGE_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , GetRegistrarLang( clientID ) );
                                     }
                                  
                                }
@@ -4535,6 +4527,9 @@ clientID ));
                           // pokud se insertovalo do tabulky
                           if( DBsql.EXEC() )
                             {
+                                if( contactid ) if( !DBsql.ObjectModify( contactid ) ) ret->errCode = COMMAND_FAILED;  // modifikace kontaktu registratora
+                                if( nssetid ) if( !DBsql.ObjectModify( nssetid ) ) ret->errCode = COMMAND_FAILED;  // modifikace nssetu
+                                 
 
                                 // zjisti datum a cas vytvoreni domeny
                                 crDate= CORBA::string_dup(  DBsql.GetObjectCrDateTime( id )  );
@@ -4558,8 +4553,9 @@ clientID ));
                                     {
                                            adminid  = DBsql.GetContactID( admin[i] );
                                            LOG( DEBUG_LOG, "DomainCreate: add admin Contact %s id %d " , (const char *)   admin[i] , adminid );
-                                          if(  !DBsql.AddContactMap( "domain" , id  , adminid  ) ) { ret->errCode = COMMAND_FAILED; break; }
- 
+                                           if(  !DBsql.ObjectModify( adminid ) ) { ret->errCode = COMMAND_FAILED; break; } // modifikace admin kontaktu
+                                           if(  !DBsql.AddContactMap( "domain" , id  , adminid  ) ) { ret->errCode = COMMAND_FAILED; break; }
+                                         
                                      }
 
          
@@ -4754,7 +4750,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                                  if(  DBsql.TestValExDate( valexpiryDate , GetZoneValPeriod( zone ) , DefaultValExpInterval() , id  ) ==  false ) // test validace expirace
                                    {
                                       LOG( WARNING_LOG, "Validity exp date is not valid %s" , valexpiryDate  );
-                                      SetErrorReason( ret , COMMAND_PARAMETR_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , GetRegistrarLang( clientID ) );
+                                      SetErrorReason( ret , COMMAND_PARAMETR_RANGE_ERROR , ccReg::domain_ext_valDate , REASON_MSG_VALEXPDATE_NOT_VALID  , valexpiryDate  , GetRegistrarLang( clientID ) );
                                     }
                                  
                                }

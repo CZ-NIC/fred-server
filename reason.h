@@ -33,7 +33,7 @@
 // pro ENUMval
 #define REASON_MSG_VALEXPDATE_NOT_USED  18
 #define REASON_MSG_VALEXPDATE_NOT_VALID 19
-#define REASON_MSG_BAD_VALEXPDATE  20
+#define REASON_MSG_VALEXPDATE_REQUIRED 20
 
 // Update NSSET nelze odstranit ci pradat DNS jost ci vyradit tech kontakt min 1 tech
 #define REASON_MSG_CAN_NOT_REM_DNS 21
