@@ -1,8 +1,8 @@
 
 CXX = g++
 
-CXXFLAGS = -Wall -DSYSLOG  -DCONFIG_FILE=\"/etc/ccReg.conf\" \
-           -DSVERSION=\"1.3\"
+CXXFLAGS = -Wall  -DSYSLOG    -DSVERSION=\"${SVN_REVISION}\"
+
 
 OBJECTS = 
 IDLDIR = ../../idl/branches/devel/
@@ -13,32 +13,37 @@ SVLIBS = $(LIBS) register/libccreg.a  -lboost_date_time -lboost_regex -lpq
 
 CPPFLAGS =  -I/usr/local/pgsql/include/   -I/usr/include/postgresql/ \
             -I. -Wno-deprecated
-COMMON_OBJECTS = conf.o dbsql.o pqsql.o util.o log.o nameservice.o \
-    ccRegSK.cc ccRegDynSK.o mailer_manager.o
-ADMIN_SERVER_OBJECTS = $(COMMON_OBJECTS) admin.o  admin_server.o tech_check.o
-CCREG_SERVER_OBJECTS = $(COMMON_OBJECTS) ccReg_epp.o  ccReg_server.o  \
-   countrycode.o messages.o tech_check.o
+COMMON_OBJECTS =  conf.o dbsql.o pqsql.o util.o log.o nameservice.o 
+IDL_OBJECT =  ccRegSK.o ccRegDynSK.o
+ADMIN_SERVER_OBJECTS = ccReg_adifd.o $(COMMON_OBJECTS) $(IDL_OBJECT) admin.o   tech_check.o mailer_manager.o
+RIFD_SERVER_OBJECTS = ccReg_rifd.o $(COMMON_OBJECTS) $(IDL_OBJECT) ccReg_epp.o   countrycode.o messages.o tech_check.o mailer_manager.o 
+ALL_SERVER_OBJECTS = ccReg_server.o $(COMMON_OBJECTS) $(IDL_OBJECT) \
+ ccReg_epp.o   countrycode.o messages.o tech_check.o mailer_manager.o  admin.o   whois.o
 BANKING_OBJECT = gpc.o banking.o log.o conf.o dbsql.o pqsql.o util.o csv.o
-PIF_SERVER_OBJECTS = $(COMMON_OBJECTS) pif_server.o  \
-   whois.o admin.o
-EPP_CLIENT_OBJECTS=ccRegSK.o ccRegDynSK.o  epp_client.o nameservice.o
+PIF_SERVER_OBJECTS = ccReg_pifd.o $(COMMON_OBJECTS)   $(IDL_OBJECT)  whois.o admin.o mailer_manager.o
+EPP_CLIENT_OBJECTS= $(IDL_OBJECT)   epp_client.o nameservice.o
 WHOIS_CLIENT_OBJECTS=ccRegSK.o whois_client.o nameservice.o
 
 all:  fred_rifd fred_adifd fred_pifd banking
 
 .SUFFIXES:  .o
 
-fred_rifd: $(CCREG_SERVER_OBJECTS) ccReg.hh
+ccReg_server: $(ALL_SERVER_OBJECTS)
 	$(MAKE) -C register
-	$(CXX) -o fred_rifd $(CCREG_SERVER_OBJECTS) $(LDFLAGS)  $(SVLIBS)
+	$(CXX) -o ccReg_server $(ALL_SERVER_OBJECTS) $(LDFLAGS)  $(SVLIBS)
 
-fred_adifd: $(ADMIN_SERVER_OBJECTS) ccReg.hh
+fred_rifd:  $(RIFD_SERVER_OBJECTS) 
 	$(MAKE) -C register
-	$(CXX) -o fred_adifd $(ADMIN_SERVER_OBJECTS) $(LDFLAGS) $(SVLIBS)
+	$(CXX) -o fred_rifd  $(RIFD_SERVER_OBJECTS)   $(LDFLAGS)  $(SVLIBS)
 
-fred_pifd: $(PIF_SERVER_OBJECTS) ccReg.hh
+fred_adifd: $(ADMIN_SERVER_OBJECTS)
 	$(MAKE) -C register
-	$(CXX) -o fred_pifd $(PIF_SERVER_OBJECTS) $(LDFLAGS) $(SVLIBS)
+	$(CXX) -o fred_adifd  $(ADMIN_SERVER_OBJECTS)   $(LDFLAGS)  $(SVLIBS)
+
+fred_pifd:  $(PIF_SERVER_OBJECTS) 
+	$(MAKE) -C register
+
+	$(CXX) -o fred_pifd  $(PIF_SERVER_OBJECTS)  $(LDFLAGS)  $(SVLIBS)
 
 epp_client: $(EPP_CLIENT_OBJECTS)
 	$(CXX) -o epp_client $(EPP_CLIENT_OBJECTS) $(LDFLAGS) $(LIBS)
@@ -49,6 +54,18 @@ whois_client: $(WHOIS_CLIENT_OBJECTS)
 
 ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:
 	omniidl -bcxx -Wba -Wbinline $(IDLFILE)
+
+ccReg_server.o:  ccReg.hh
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DRIFD -DPIFD  -DADIF -o ccReg_ccReg_server.o -c ccReg_server.cc
+
+ccReg_rifd.o:  ccReg.hh
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DRIFD  -o ccReg_rifd.o -c  ccReg_server.cc
+
+ccReg_pifd.o: ccReg.hh
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DPIFD  -o ccReg_pifd.o -c  ccReg_server.cc
+
+ccReg_adifd.o:  ccReg.hh
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DADIF  -o ccReg_adifd.o -c  ccReg_server.cc
 
 %.o: %.cc 
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS)  -c -g $<
@@ -67,7 +84,7 @@ install_banking: banking banking.sh
 	install banking /usr/local/bin/
 	install banking.sh /usr/local/bin/
 
-install: fred_rifd fred_pifd fred_adifd install_banking
+install: fred_rifd fred_pifd fred_adifd 
 	install fred_rifd /usr/local/bin/
 	install fred_pifd /usr/local/bin/
 	install fred_adifd /usr/local/bin/
