@@ -118,7 +118,7 @@ else return -2; // ERROR
 }
 
 // ukladani polozky creditu
-bool DB::SaveInvoiceCredit(int regID , int objectID , int operation , int zone  , int period , const char *ExDate , long price  , long price2 ,  int invoiceID   , int invoiceID2) 
+bool DB::SaveInvoiceCredit(int regID , int objectID , int operation , int zone  , int period , const char *ExDate , long price  , long price2 ,  long balance , long balance2 ,  int invoiceID   , int invoiceID2) 
 {
 int id;
 
@@ -146,29 +146,33 @@ VAL( ExDate);
 if( EXEC() ) 
  {
 
-     LOG( DEBUG_LOG , "SaveInvoiceCredit:   price %ld  invoiceID %d" , price , invoiceID );
+   LOG( DEBUG_LOG , "SaveInvoiceCredit:   price %ld  balance credit %ld invoiceID %d" , price , balance,  invoiceID );
 
   INSERT( "invoice_object_registry_price_map" );
   INTO( "id");
   INTO( "invoiceID" );
   INTO( "price" );
+  INTO( "price_balance" );
   VALUE( id );
   VALUE( invoiceID );
   VALPRICE( price);
+  VALPRICE( balance );
   if( !EXEC() ) { LOG( CRIT_LOG , "ERROR invoice_object_registry_price_map" ); return false; }
     
 
   if( price2 ) // uloz druhou cenu
    {  
-     LOG( DEBUG_LOG , "uctovani creditu  price2 %ld  invoiceID2 %d" , price2 , invoiceID2 );
+     LOG( DEBUG_LOG , "uctovani creditu  price2 %ld  balance2 %ld invoiceID2 %d" , price2 , balance2 ,  invoiceID2 );
 
      INSERT( "invoice_object_registry_price_map" );
      INTO( "id");
       INTO( "invoiceID" );
       INTO( "price" );
+      INTO( "price_balance" );
       VALUE( id );
       VALUE( invoiceID2 );
       VALPRICE( price2);
+      VALPRICE( balance2 );
       if( !EXEC() ) { LOG( CRIT_LOG , "ERROR invoice_object_registry_price_map price2" ); return false; }       
    }
  
@@ -217,6 +221,7 @@ bool DB::UpdateInvoiceCredit( int regID ,   int operation  , int zone   , int pe
 {
 char sqlString[256];
 long price , credit ;
+long price1 , price2;
 int invoiceID;
 int invID[2];
 long cr[2];
@@ -264,7 +269,7 @@ invoiceID=invID[0];
 if( credit - price > 0 )
   {
 
-     if( SaveInvoiceCredit(  regID , objectID ,   operation  ,  zone   , period , ExDate , price , 0 , invoiceID , 0  )  )
+     if( SaveInvoiceCredit(  regID , objectID ,   operation  ,  zone   , period , ExDate , price , 0 , credit - price  , 0 ,  invoiceID , 0  )  )
       {
        return InvoiceCountCredit( price , invoiceID );
       }
@@ -276,12 +281,15 @@ else
    if(  num == 2 )   // pokud existuje dalsi faktura
    {
     
-       if( SaveInvoiceCredit(  regID ,objectID , operation  ,  zone , period ,  ExDate , cr[0] ,  price  - cr[0]  , invID[0] , invID[1]  )  ) 
+       price1= cr[0]; // zustatek na prvni zal FA
+       price1= price - cr[0]; // zbytek penez ztrhava se z druhe zal FA
+
+       if( SaveInvoiceCredit(  regID ,objectID , operation  ,  zone , period ,  ExDate , price1 ,  price2 ,  0 , cr[1] - price2 , invID[0] , invID[1]  )  ) 
          {
          if( InvoiceCountCredit(  cr[0] , invID[0] )  ) // dopocitad do nuly na prvni zalohove FA  
            {
              invoiceID=invID[1];                        
-             LOG(   DEBUG_LOG , "pozadovana castka credit0 %ld credit1 %ld price %ld druha castka %ld" , cr[0] ,  cr[1]  , price  , price  - cr[0] );
+             LOG(   DEBUG_LOG , "pozadovana castka credit0 %ld credit1 %ld price %ld druha castka %ld" , cr[0] ,  cr[1]  , price1  , price2 );
               
              if( cr[1] -  credit  > 0 )
              {
