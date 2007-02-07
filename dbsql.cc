@@ -13,6 +13,9 @@
 
 #include "log.h"
 
+#define INVOICE_FA  1 // typ vyuctovaci faktura
+#define INVOICE_ZAL 0 // typ zalohova faktura
+
 
 // constructor 
 DB::DB()
@@ -1384,29 +1387,122 @@ bool DB::UpdateEBankaListInvoice( int id , int invoiceID )
 
 }
 
+int DB::MakeFactoring(  int regID , int zone , const char *timestampStr ,  const char *taxDateStr )
+{
+char sqlString[512];
+int invoiceID=-1;
+char fromtimeStr[32];
+int count=-1;
+long price;
 
-int  DB::MakeNewInvoice(  const char *taxDateStr , const char *fromdateStr , const char *todateStr , int zone ,  int regID ,  long price )
+
+ LOG( NOTICE_LOG , "MakeFactoring regID %d zone %d" , regID , zone );
+
+
+
+            // zjisti fromdate nebo lasdate z tabulky registrarinvoice od kdy fakturovat 
+            sprintf( sqlString , "SELECT lastdate ,  fromdate  from registrarinvoice  WHERE zone=%d and registrarid=%d;"  , zone , regID );
+             if( ExecSelect( sqlString ) )
+               {
+
+                   if( IsNotNull( 0 , 0 ) )
+                     {
+                         strcpy( fromtimeStr , GetFieldValue( 0 , 0 ) );
+                      }
+                    else strcpy( fromtimeStr ,  GetFieldValue( 0 , 1 ) );
+
+                 FreeSelect();
+               }else return -1; // chyba
+
+            LOG( NOTICE_LOG , "Fakturace od %s do %s" , fromtimeStr  , timestampStr );
+
+
+
+
+
+                // zjisti pocet polozek k fakturaci
+               sprintf( sqlString , "SELECT count( id)  from invoice_object_registry  where crdate < \'%s\' AND  zone=%d AND registrarid=%d AND invoiceid IS NULL;" , timestampStr , zone , regID );
+               if( ExecSelect( sqlString ) )
+                {
+                     count = atoi(  GetFieldValue( 0 , 0 ) ) ;
+                     FreeSelect();
+                }else return -2; // chyba
+
+
+                // zjisti celkovou fakturovanou  castku pokud je alespon jeden zaznam
+               if( count > 0 )
+                 {
+                     sprintf( sqlString , "SELECT sum( price ) FROM invoice_object_registry , invoice_object_registry_price_map  WHERE   invoice_object_registry_price_map.id=invoice_object_registry.id AND  crdate < \'%s\' AND zone=%d and registrarid=%d AND  invoice_object_registry.invoiceid is null ;" ,  timestampStr , zone , regID );
+                     if( ExecSelect( sqlString ) )
+                       {
+                            price =  (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
+                            LOG( NOTICE_LOG , "Celkova castka na fakture %ld" , price );
+                            FreeSelect();
+                       }
+                 }
+                else price = 0; // jinak nulova castka
+
+
+             
+            // prazdna faktura zaznam o fakturaci
+           // vraci invoiceID nebo nulo pokud nebylo nic vyfakturovano pri chybe vraci zaporne cislo chyby
+                if( ( invoiceID = MakeNewInvoice(  taxDateStr , fromtimeStr , timestampStr , zone , regID   , price  , count )  ) >= 0 )
+                  {
+
+                    if( count > 0 )    // oznac polozky faktury faktrury
+                      {
+                          sprintf( sqlString , "UPDATE invoice_object_registry set invoiceid=%d  WHERE crdate < \'%s\' AND zone=%d and registrarid=%d AND invoiceid IS NULL;" ,  invoiceID , timestampStr , zone , regID );
+                          if( ExecSQL( sqlString )  == false ) return -3; // chyba
+
+                       }
+
+                    // pokud byla vytvorena faktura 
+                     if( invoiceID > 0 )  
+                       {
+                        // set last date do tabulky registrarinvoice
+                         sprintf( sqlString , "UPDATE registrarinvoice SET lastdate=\'%s\' WHERE zone=%d and registrarid=%d;" , timestampStr , zone , regID );
+                         if( ExecSQL( sqlString )   == false ) return -4; //chyba
+                       }
+ 
+
+                           
+                  }else return -5; // nepodarilo se vytvorit fakturu
+
+               
+
+return invoiceID;                   
+}
+
+            
+
+
+int  DB::MakeNewInvoice(  const char *taxDateStr , const char *fromdateStr , const char *todateStr , int zone ,  int regID ,  long price , unsigned int count  )
 {
 int invoiceID;
 int prefix;
+int type;
 
-prefix = GetInvoicePrefix( taxDateStr , 0 , zone );  // cislo faktury podle zdanitelneho obdobi
+type = GetPrefixType( taxDateStr , INVOICE_FA , zone );  // id prefixu OSTRA FA VYUCTOVACI 
+prefix = GetInvoicePrefix( taxDateStr , INVOICE_FA , zone );  // cislo faktury podle zdanitelneho obdobi
 LOG( LOG_DEBUG ,"MakeNewInvoice taxdate[%s]  fromdateStr [%s] todateStr[%s]  zone %d regID %d , price %ld  " , 
 taxDateStr , fromdateStr , todateStr ,   zone , regID , price );
 
-if( prefix  > 0 )
-  {
-    invoiceID = GetSequenceID( "invoice" );
+if( prefix  > 0  && type > 0 )
+{
 
-         INSERT( "invoice" );
+
+     
+        if( count ) // vytvor fakturu 
+          {
+           invoiceID = GetSequenceID( "invoice" );
+
+           INSERT( "invoice" );
            INTO( "id" );
            INTO( "prefix" );
            INTO( "zone" );
-           INTO( "typ" );
+           INTO( "prefix_type" );
            INTO( "registrarid" );
            INTO( "taxDate" );  
-           INTO( "fromdate");
-           INTO( "todate");
            INTO( "price" );
            INTO( "vat" );
            INTO( "total" );           
@@ -1415,24 +1511,41 @@ if( prefix  > 0 )
            VALUE( invoiceID );
            VALUE( prefix  );
            VALUE( zone );
-           if( price > 0 )  VALUE( 1 );  // vyuctovaci FA
-           else  VALUE( 2 );    // rozpis o cerpani sluzeb
+           VALUE( type );  // odkaz do prefixu
            VALUE( regID );
            VALUE( taxDateStr );
-           VALUE( fromdateStr );
-           VALUE( todateStr ); 
-           if( price > 0 )  VALPRICE( price ); // celkova castka
-           else  VALUENULL(); // rozpis o vycotovani
-           VALUENULL(); // ostatni jsou null
-           VALUENULL();
-           VALUENULL();
-           VALUENULL();
+           VALPRICE( price ); // celkova castka
+           VALUE( 0 ); // dan je nulova
+           VALPRICE( price ); // zaklad bez dane total stejny jako price
+           VALUE( 0);
+           VALUENULL(); // pouze credit je NULL
 
           
-           if(  EXEC() ) return invoiceID;
-           else return -1; // chyba SQL insert
-      }
-      else return -2;  // chyba prefixu 
+           if(  !EXEC() )  return -1; // chyba SQL insert
+          }else invoiceID=0; // prazdna fakturace
+           
+
+// zaznam o fakturaci
+           INSERT( "invoice_generation");
+          
+           INTO( "fromdate");
+           INTO( "todate");
+           INTO( "registrarid" );
+           INTO( "zone" );
+
+           INTO( "invoiceID" );
+           VALUE( fromdateStr );
+           VALUE( todateStr ); 
+           VALUE( regID );
+           VALUE( zone );
+           if( invoiceID  ) VALUE( invoiceID );
+           else   VALUENULL(); 
+
+          if( EXEC() )return invoiceID; // chyba v insertu
+          else return -3; // chyba 
+
+
+}else return -2;  // chyba ve vytvoreni  prefixu 
 
 
 }
@@ -1447,7 +1560,7 @@ long total; // castka bez DPH == credit
 long credit;
 long totalVAT; // odvedene DPH;
 double koef; // prepocitavaci koeficinet pro DPH
-
+int type; // typ ZAL FA z rady
 
   if( VAT)
     {
@@ -1470,7 +1583,9 @@ double koef; // prepocitavaci koeficinet pro DPH
    }
 
 
-     prefix = GetInvoicePrefix( taxDateStr , 0 , zone );
+     type = GetPrefixType( taxDateStr , INVOICE_ZAL , zone );
+  
+     prefix = GetInvoicePrefix( taxDateStr , INVOICE_ZAL , zone );
 
  LOG( LOG_DEBUG ,"MakeNewInvoiceAdvance taxdate[%s]   zone %d regID %d , price %ld dph %d credit %ld\n" , taxDateStr ,  zone , regID , price , dph , credit );
  
@@ -1482,7 +1597,7 @@ double koef; // prepocitavaci koeficinet pro DPH
            INTO( "id" );
            INTO( "prefix" );
            INTO( "zone" );
-           INTO( "typ" );
+           INTO( "prefix_type" );
            INTO( "registrarid" );
            INTO( "taxDate" );  
            INTO( "price" );
@@ -1493,7 +1608,7 @@ double koef; // prepocitavaci koeficinet pro DPH
            VALUE( invoiceID );
            VALUE( prefix  );
            VALUE( zone );
-           VALUE( 0 );  // zalohova FA
+           VALUE( type );  // cislo rady z tabulky invoice_prefix
            VALUE( regID );
            VALUE( taxDateStr );
            VALPRICE( price ); // celkova castka
@@ -1510,6 +1625,33 @@ double koef; // prepocitavaci koeficinet pro DPH
 } 
 
 
+int DB::GetPrefixType( const char *dateStr , int typ , int zone )
+{
+char sqlString[512];
+int year;
+char yearStr[5];
+int id=0;
+
+// rok
+strncpy( yearStr , dateStr  , 4 );
+yearStr[4] = 0 ;
+year= atoi( yearStr);
+LOG( LOG_DEBUG ,"GetPrefixType  date[%s]  year %d typ %d zone %d\n" , dateStr , year ,  typ ,  zone  );
+
+sprintf( sqlString , "SELECT id  FROM invoice_prefix WHERE zone=%d AND  typ=%d AND year=\'%s\';",  zone , typ, yearStr );
+if( ExecSelect( sqlString )  )
+  {
+            if(  GetSelectRows() == 1 )
+              {
+                    id = atoi( GetFieldValue( 0  , 0 ) );
+                    LOG( LOG_DEBUG ,"invoice_id type-> %d" , id );
+               }
+     FreeSelect();
+ }
+
+return id;
+}
+
 int DB::GetInvoicePrefix( const char *dateStr , int typ , int zone )
 {
 char sqlString[512];
@@ -1522,7 +1664,7 @@ strncpy( yearStr , dateStr  , 4 );
 yearStr[4] = 0 ;
 year= atoi( yearStr);
 
- LOG( LOG_DEBUG ,"GetInvoicePrefix date[%s]  year %d typ %d zone %d\n" , dateStr , year ,  typ ,  zone  ); 
+LOG( LOG_DEBUG ,"GetInvoicePrefix date[%s]  year %d typ %d zone %d\n" , dateStr , year ,  typ ,  zone  ); 
 
 sprintf( sqlString , "SELECT id , prefix   FROM invoice_prefix WHERE zone=%d AND  typ=%d AND year=\'%s\';",  zone , typ, yearStr );
 

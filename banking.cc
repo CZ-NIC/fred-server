@@ -81,13 +81,9 @@ else return false;
 int factoring( const char *database  ,     const char *registrarHandle  ,  const char  *zone_fqdn , char *taxdateStr , char *todateStr )
 {
 DB db;
-char sqlString[512];
 int regID;
 char timestampStr[32];
-char fromtimeStr[32];
 int invoiceID;
-int count=-1;
-long price;
 int zone;
 int ret = 0;
 
@@ -105,77 +101,10 @@ if( db.BeginTransaction() )
     if( ( zone =  db.GetNumericFromTable( "zone", "id", "fqdn", zone_fqdn ) )  )
      {
  
-           get_timestamp( timestampStr  , get_utctime_from_localdate(  todateStr ) );
-
-
-            // zjisti fromdate nebo lasdate
-            sprintf( sqlString , "SELECT lastdate ,  fromdate  from registrarinvoice  WHERE zone=%d and registrarid=%d;"  , zone , regID );
-             if( db.ExecSelect( sqlString ) )
-               {
-                   
-                   if( db.IsNotNull( 0 , 0 ) )
-                     {
-                         strcpy( fromtimeStr , db.GetFieldValue( 0 , 0 ) );
-                      }
-                    else strcpy( fromtimeStr ,  db.GetFieldValue( 0 , 1 ) );
-
-                 db.FreeSelect();
-                }
-
-            LOG( NOTICE_LOG , "Fakturace od %s do %s" , fromtimeStr  , timestampStr ); 
-  
-               
-
-            sprintf( sqlString , "UPDATE registrarinvoice SET lastdate=\'%s\' WHERE zone=%d and registrarid=%d;" , timestampStr , zone , regID );
-
-            if( db.ExecSQL( sqlString )   )
-            {
-                // pocet polozek k fakturaci
-               sprintf( sqlString , "SELECT count( id)  from invoice_object_registry  where crdate < \'%s\' AND  zone=%d AND registrarid=%d AND invoiceid IS NULL;" , timestampStr , zone , regID );
-               if( db.ExecSelect( sqlString ) )
-                {
-                     count = atoi(  db.GetFieldValue( 0 , 0 ) ) ;
-                     db.FreeSelect();
-                }
-
-           
-                // zjisti celkovou castku
-               if( count > 0 )
-                 {
-                     sprintf( sqlString , "SELECT sum( price ) FROM invoice_object_registry , invoice_object_registry_price_map  WHERE   invoice_object_registry_price_map.id=invoice_object_registry.id AND  crdate < \'%s\' AND zone=%d and registrarid=%d AND  invoice_object_registry.invoiceid is null ;" ,  timestampStr , zone , regID );
-                     if( db.ExecSelect( sqlString ) )
-                       {
-                            price =  (long) ( 100.0 *  atof( db.GetFieldValue( 0  , 0 ) )  );
-                             LOG( NOTICE_LOG , "Celkova castka na fakture %ld" , price ); 
-                            db.FreeSelect();
-                       }
-                 }
-                else price = 0;     
-           
-              
-             }
-
-           
-            // prazdna faktura zaznam o fakturaci
-            if( count >= 0 )
-              {
-                if( ( invoiceID = db.MakeNewInvoice(  taxdateStr , fromtimeStr , timestampStr , zone , regID   , price  )  ) > 0 ) 
-                  {                   
-                                      
-                    if( count > 0 )    // oznac polozky faktury faktrury 
-                      { 
-                          sprintf( sqlString , "UPDATE invoice_object_registry set invoiceid=%d  WHERE crdate < \'%s\' AND zone=%d and registrarid=%d AND invoiceid IS NULL;" ,  invoiceID , timestampStr , zone , regID );
-                          if( db.ExecSQL( sqlString )  ) ret = CMD_OK;
-                          
-                       }
-                    else ret = CMD_OK; // vse OK 
-
-                  }
-
-               }
-                
+          get_timestamp( timestampStr  , get_utctime_from_localdate(  todateStr ) );
+         
+          invoiceID = db.MakeFactoring( regID , zone , timestampStr  , taxdateStr );
           
-
       }
      else LOG( LOG_ERR , "unkow zone %s\n" , zone_fqdn );
   }
@@ -184,6 +113,8 @@ if( db.BeginTransaction() )
      LOG( LOG_ERR , "unkow registrarHandle %s" , registrarHandle );
   }
 
+    if( invoiceID >=0 ) ret = CMD_OK; // OK uspesne probehla fakturace
+
     db.QuitTransaction( ret );
 }
 
@@ -191,8 +122,8 @@ if( db.BeginTransaction() )
 db.Disconnect();
 }
 
-if( ret ) return true;
-else return false;
+if( ret ) return invoiceID;
+else return -1; // chyba
 }
 
 int ebanka_invoicing( const char *database  ,   char *filename )
