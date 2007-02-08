@@ -1,4 +1,5 @@
 #include "registrar.h"
+#include "sql.h"
 #include "dbsql.h"
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -6,7 +7,6 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
-#include "object_impl.h" // SQL macros !! TODO !!
 
 #define SET(a,b) { a = b; changed = true; }
 
@@ -389,10 +389,15 @@ namespace Register
       {
         clear();
         std::ostringstream sql;
-        sql << "SELECT id,handle,name,url,organization,"
-            << "street1,street2,street3,city,stateorprovince,"
-            << "postalcode,country,telephone,fax,email "
-            << "FROM registrar WHERE 1=1 ";
+        sql << "SELECT r.id,r.handle,r.name,r.url,r.organization,"
+            << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
+            << "r.postalcode,r.country,r.telephone,r.fax,r.email,"
+            << "SUM(i.credit) "
+            << "FROM registrar r, invoice i WHERE r.id=i.registrarid AND "
+            << "NOT(i.credit ISNULL) "
+            << "GROUP BY r.id,r.handle,r.name,r.url,r.organization,"
+            << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
+            << "r.postalcode,r.country,r.telephone,r.fax,r.email";
         SQL_ID_FILTER(sql,"id",idFilter);
         SQL_HANDLE_FILTER(sql,"name",name);
         SQL_HANDLE_FILTER(sql,"handle",handle);
@@ -416,8 +421,7 @@ namespace Register
               db->GetFieldValue(i,12),
               db->GetFieldValue(i,13),
               db->GetFieldValue(i,14),
-	      //              atol(db->GetFieldValue(i,15))
-              0 // temporary credit disable
+	      atol(db->GetFieldValue(i,15))
             )
           );
         }

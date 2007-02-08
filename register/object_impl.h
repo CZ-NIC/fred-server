@@ -3,26 +3,6 @@
 
 #include "object.h"
 
-// this should go to sql builder object
-#define SQL_DATE_FILTER(x,colname,member) \
-  if (!member.begin().is_special()) \
-     x << "AND " << colname << ">='"  \
-       <<  to_iso_extended_string(member.begin().date()) \
-       << "' "; \
-  if (!member.end().is_special()) \
-     x << "AND " << colname << "<='"  \
-       <<  to_iso_extended_string(member.end().date()) \
-       << " 23:59:59' "
-#define SQL_HANDLE_FILTER(x,colname,member) \
-  if (!member.empty()) \
-     x << "AND " \
-       << colname << " ILIKE TRANSLATE('" << member << "','*?','%_') "
-#define SQL_ID_FILTER(x,colname,member) \
-  if (member) \
-     x << "AND " << colname << "=" << member << " "
-
-
-
 namespace Register
 {
   /// Implementation of common register object properties
