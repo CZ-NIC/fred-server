@@ -1387,13 +1387,70 @@ bool DB::UpdateEBankaListInvoice( int id , int invoiceID )
 
 }
 
+// pro danou uzavranou fakturu iID spocti aktualni zustatek zalohove faktury aID pri uzavreni faktury z invoice_object_registry_price_map.price_balance
+
+long DB::GetInvoiceBalance( int iID  , int aID )
+{
+char sqlString[512];
+long price=-1; // err hodnota
+ 
+
+    LOG( NOTICE_LOG , "GetInvoiceBalance invoiceID %d zalohova FA %d" , iID  ,  aID );
+
+    sprintf( sqlString , "SELECT min(  invoice_object_registry_price_map.price_balance) FROM invoice_object_registry ,  invoice_object_registry_price_map\
+          WHERE  invoice_object_registry.id=invoice_object_registry_price_map.id and invoice_object_registry.invoiceid=%d \
+             AND invoice_object_registry_price_map.invoiceid=%d;" , iID  , aID );
+
+ if( ExecSelect( sqlString ) )
+   {
+          if( IsNotNull( 0 , 0 ) )
+            {
+                            price =  (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
+                            LOG( NOTICE_LOG , "celkovy zustatek pri  uzavreni Fa %ld" , price );
+             }
+
+       FreeSelect();
+   }else return -1; // chyba
+
+return price;
+}
+// vracizuctovanou  castku pro  FA iID  ze zalohove FA aID
+
+long DB::GetInvoiceSumaPrice( int iID  , int aID )
+{
+char sqlString[512];
+long price=-1; // err hodnota
+    LOG( NOTICE_LOG , "GetInvoiceSumaPrice invoiceID %d zalohova FA %d" , iID  ,  aID );
+
+    sprintf( sqlString , "SELECT  sum( invoice_object_registry_price_map.price ) FROM invoice_object_registry ,  invoice_object_registry_price_map\
+                 WHERE invoice_object_registry.id=invoice_object_registry_price_map.id AND invoice_object_registry.invoiceid=%d AND \
+                   invoice_object_registry_price_map.invoiceid=%d; " ,  iID  , aID );
+
+
+ if( ExecSelect( sqlString ) )
+   {
+          if( IsNotNull( 0 , 0 ) )
+            {
+                            price =  (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
+                            LOG( NOTICE_LOG , "celkovy strezeny credit z dane zal  Fa %ld" , price );
+            }
+
+       FreeSelect();
+   }else return -1; // chyba
+
+return price;
+}
+
+
 int DB::MakeFactoring(  int regID , int zone , const char *timestampStr ,  const char *taxDateStr )
 {
 char sqlString[512];
 int invoiceID=-1;
+int *aID;
+int i , num;
 char fromtimeStr[32];
 int count=-1;
-long price;
+long price , credit,  balance;
 
 
  LOG( NOTICE_LOG , "MakeFactoring regID %d zone %d" , regID , zone );
@@ -1462,6 +1519,55 @@ long price;
                         // set last date do tabulky registrarinvoice
                          sprintf( sqlString , "UPDATE registrarinvoice SET lastdate=\'%s\' WHERE zone=%d and registrarid=%d;" , timestampStr , zone , regID );
                          if( ExecSQL( sqlString )   == false ) return -4; //chyba
+
+
+
+
+                           // DOTAZ na vsechny ZAL FA ze kterych bylo cerpano na dane FA
+                              sprintf( sqlString , "select invoice_object_registry_price_map.invoiceid from  invoice_object_registry ,  invoice_object_registry_price_map  where invoice_object_registry.id=invoice_object_registry_price_map.id and invoice_object_registry.invoiceid=%d  GROUP BY invoice_object_registry_price_map.invoiceid ; " , invoiceID );
+                              // EXEC SQL a insert  invoice_credit_payment_map
+
+                              if( ExecSelect( sqlString ) )
+                                {
+                                    num = GetSelectRows();
+                                    aID = new int[num];
+                                    for( i = 0 ; i < num ; i ++ )
+                                       {
+
+                                              aID[i] = atoi( GetFieldValue( i  , 0 ) );
+                                              LOG( LOG_DEBUG ,"zalohova FA -> %d" , aID);
+
+                                       }
+                                 FreeSelect();
+
+ 
+                                 // insert do tabulky invoice_credit_payment_map;
+                               for( i = 0 ; i < num ; i ++ )
+                                  {
+                                    credit = GetInvoiceSumaPrice( invoiceID , aID[i] );
+                                    balance = GetInvoiceBalance( invoiceID , aID[i] );
+                                    if( credit>= 0 && balance >=0 ) 
+                                    {
+                                     LOG( LOG_DEBUG ,"zalohova FA  %d credit %ld balance %ld" , aID[i] , credit , balance );
+
+                                     INSERT( "invoice_credit_payment_map" );
+                                     INTO( "invoiceid" );
+                                     INTO( "ainvoiceid" );
+                                     INTO( "credit" );
+                                     INTO( "balance" );
+                                     VALUE( invoiceID );
+                                     VALUE( aID[i] );
+                                     VALPRICE( credit );
+                                     VALPRICE( balance );
+                                     if( !EXEC()  ) return -7; // chyba
+                                    }else return -8; // chyba
+
+                                  }
+
+                              delete aID;
+                               }else return -6; // chyba
+
+                                    
                        }
  
 

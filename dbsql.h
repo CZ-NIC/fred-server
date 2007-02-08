@@ -156,8 +156,13 @@ double GetSystemKOEF(); // vraci hodnotu prepocitavaciho koeficientu
 // nastav bankovni vypis jako zpracovany
 bool UpdateBankStatementItem( int id , int invoiceID);
 
+// spocte zustatek a vycerpany credit za zalohovych FA
+long GetInvoiceBalance(int iID, int aID);
+long GetInvoiceSumaPrice(int  iID , int aID );
+
 // zpusti fakturaci do zadaneho timestamp datum zdanitelneho plneni je taxdate 
 int MakeFactoring(  int regID , int zone , const char *timestampStr ,  const char *taxDateStr  );
+
 
 // vytvoreni ostre faktury
 int MakeNewInvoice(  const char *taxDateStr , const char *fromdateStr , const char *todateStr , int zone ,  int regID ,  long price , unsigned int count );
