@@ -285,7 +285,7 @@ else
    {
     
        price1= cr[0]; // zustatek na prvni zal FA
-       price1= price - cr[0]; // zbytek penez ztrhava se z druhe zal FA
+       price2= price - cr[0]; // zbytek penez ztrhava se z druhe zal FA
 
        if( SaveInvoiceCredit(  regID ,objectID , operation  ,  zone , period ,  ExDate , price1 ,  price2 ,  0 , cr[1] - price2 , invID[0] , invID[1]  )  ) 
          {
@@ -2203,23 +2203,31 @@ SQLCat( " ," );
 
 void DB::WHERE(const char *fname , const char * value )
 {
-  if( SQLTestEnd( ',' ) ||  SQLTestEnd( ';' ) ) SQLDelEnd();  // vymaz posledni znak
+  if( SQLTestEnd( ',' ) ||  SQLTestEnd( ';' ) )
+  {
+    SQLDelEnd();  // vymaz posledni znak
 
   SQLCat("  WHERE " );
   SQLCat( fname );
   SQLCat( "='" );
   SQLCatEscape(  value );
   SQLCat( "' ;" );
-
+ }
+else  sqlBuffer[0]  =0;   // zrus SQL strint
 }
 
 
 void DB::OPERATOR(  const  char *op )
 {
-  if( SQLTestEnd( ',' ) ||  SQLTestEnd( ';' ) ) SQLDelEnd();  // vymaz posledni znak
+  if( SQLTestEnd( ',' ) ||  SQLTestEnd( ';' ) )
+ {
+      SQLDelEnd();  // vymaz posledni znak
        SQLCat( "  "  );
        SQLCat( op ); // operator AND OR LIKE
        SQLCat( " " );
+ }
+else   sqlBuffer[0]  =0;   // zrus SQL strint
+
 }
 
 
@@ -2234,9 +2242,10 @@ void DB::WHEREOPP(  const  char *op ,  const  char *fname , const  char *p  , co
        SQLCat(  p );
        SQLCat(  "'" );
        SQLCatEscape(  value );
-       SQLCat(  "' ;" ); // konec         
+       SQLCat(  "' ;" ); // konec
 
 }
+
 void DB::WHERE( const  char *fname , int value )
 {
 char numStr[16];
