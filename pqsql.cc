@@ -34,7 +34,7 @@ timeclock_quit();
 bool PQ::OpenDatabase(const char *conninfo)
 {
 
-  LOG( NOTICE_LOG , "Database connection:  %s" , conninfo);
+  LOG( NOTICE_LOG , "PQ: connectdb  %s" , conninfo);
 connection = PQconnectdb(conninfo);
 
 // Check to see that the backend connection was successfully made 
@@ -180,7 +180,7 @@ void   PQ::FreeSelect()
 
 void  PQ::Disconnect()
 {
- LOG( SQL_LOG , "disconect");
+ LOG( NOTICE_LOG , "PQ: finish");
  PQfinish(connection); 
 }
 
@@ -215,7 +215,8 @@ return true;
 bool PQ::ExecSQL(const char *sqlString)
 {
 PGresult   *res;
-
+if( strlen( sqlString)  )
+{
 #ifdef TIMECLOCK
 timeclock_begin();
 #endif
@@ -242,6 +243,12 @@ else
    return false;
 }
 
+}
+else
+{
+   LOG( SQL_LOG ,  "EXECSQL:  empty string return OK" );
+ return true;
+}
 
 
 } 
