@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <fstream>
 #include <boost/date_time/posix_time/time_parsers.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #define MAKE_TIME_DEF(ROW,COL,DEF)  \
   (boost::posix_time::ptime(db->IsNotNull(ROW,COL) ? \
@@ -35,6 +36,10 @@ namespace Register
 {
   namespace Invoicing
   {
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    //   SubjecImpl
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    /// implementation of Subject interface 
     class SubjectImpl : public Subject {
       std::string name;
       std::string fullname;
@@ -120,12 +125,16 @@ namespace Register
       }
       virtual void doExport(Invoice *i)
       {
-        // setting locale for proper date format
+        // setting locale for proper date and time format
+        // do not use system locale - locale("") because of
+        // unpredictable formatting behavior
         out.imbue(std::locale(
-          // must be default locale (do not set locale("") because of
-          // unpredictable formatting behavior)
           out.getloc(),
           new boost::gregorian::date_facet("%Y-%m-%d")
+        ));
+        out.imbue(std::locale(
+          out.getloc(),
+          new boost::posix_time::time_facet("%Y-%m-%d %T")
         ));
         // generate invoice xml
         if (xmlDec)
@@ -140,42 +149,70 @@ namespace Register
             << TAGSTART(payment)
             << TAG(invoice_number,i->getNumber())
             << TAG(invoice_date,i->getCrTime().date());
-        if (i->getType() != IT_DEPOSIT)
-          out << TAG(tax_point,i->getTaxDate());  
-        else
-          out << TAG(advance_payment_date,i->getTaxDate());
+        if (i->getType() == IT_DEPOSIT) 
+          out << TAG(advance_payment_date,i->getTaxDate());  
+        else {
+          out << TAG(tax_point,i->getTaxDate())
+              << TAG(period_from,i->getAccountPeriod().begin().date())
+              << TAG(period_to,i->getAccountPeriod().end().date());
+        }  
         out << TAG(vs,i->getVarSymbol())
             << TAGEND(payment)
             << TAGSTART(delivery)
+            << TAGSTART(vat_rates)
             << TAGSTART(entry)
             << TAG(vatperc,i->getVatRate())
             << TAG(basetax,OUTMONEY(i->getTotal()))
             << TAG(vat,OUTMONEY(i->getTotalVAT()))
             << TAG(total,OUTMONEY(i->getPrice()))
             << TAGEND(entry)
+            << TAGEND(vat_rates)
             << TAGSTART(sumarize)
-            << TAG(total,OUTMONEY(i->getPrice()))
-            << TAG(paid,OUTMONEY(i->getPrice()))
+            << TAG(total,OUTMONEY(i->getTotal()))
+            << TAG(paid,
+                   OUTMONEY((i->getType() != IT_DEPOSIT ? -i->getTotal() : 0)))
             << TAG(to_be_paid,OUTMONEY(0))
             << TAGEND(sumarize)
-            << TAGEND(delivery)
-/*            
-            << TAGSTART(appendix)
-            << TAGSTART(item)
-            << TAG(subject,"Zálohová platba")
-            << TAG(code,"")
-            << TAG(date,i->getCrTime().date())
-            << TAG(count,1)
-            << TAG(vatperc,i->getTotalVAT())
-            << TAG(price,i->getPrice())
-            << TAG(total,i->getTotal())
-            << TAGEND(item)
-            << TAGEND(appendix)
-            << TAGSTART(sumarize_items)
-            << TAG(total,i->getPrice())
-            << TAGEND(sumarize_items)
- */
-            << TAGEND(invoice);
+            << TAGEND(delivery);
+        if (i->getSourceCount()) {
+          out << TAGSTART(advance_payment)
+              << TAGSTART(applied_invoices);
+          for (unsigned k=0; k<i->getSourceCount(); k++) {
+            const PaymentSource *ps = i->getSource(k);
+            out << TAGSTART(consumed)
+                << TAG(number,ps->getNumber())
+                << TAG(price,OUTMONEY(ps->getPrice()))
+                << TAG(balance,OUTMONEY(ps->getCredit()))
+                << TAGEND(consumed);
+          }
+          out << TAGEND(applied_invoices)
+              << TAGEND(advance_payment);
+        }
+        if (i->getActionCount()) { 
+          out << TAGSTART(appendix)
+              << TAGSTART(items);
+          for (unsigned k=0; k<i->getActionCount(); k++) {
+            const PaymentAction *pa = i->getAction(k);
+            out << TAGSTART(item)
+                << TAG(subject,pa->getObjectName())
+                << TAG(code,
+                       (pa->getAction() == PAT_CREATE_DOMAIN ? 
+                        "RREG" : "RUDR"))
+                << TAG(timestamp,pa->getActionTime());
+            if (!pa->getExDate().is_special())    
+              out << TAG(expiration,pa->getExDate());
+            out << TAG(count,pa->getUnitsCount())
+                << TAG(price,OUTMONEY(pa->getPricePerUnit()))
+                << TAG(total,OUTMONEY(pa->getPrice()))
+                << TAGEND(item);
+          }
+          out << TAGEND(items)
+              << TAGSTART(sumarize_items)
+              << TAG(total,i->getPrice())
+              << TAGEND(sumarize_items)
+              << TAGEND(appendix);
+        }
+        out << TAGEND(invoice);
       }      
     };
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -529,7 +566,8 @@ namespace Register
         // id that conform to filter will be stored in temporary table
         // sql is contructed from two sections 'from' and 'where'
         // that are pasted into final 'sql' stream 
-        sql << "SELECT i.id INTO TEMPORARY tmp_invoice_filter_result ";
+        sql << "SELECT DISTINCT i.id "
+            << "INTO TEMPORARY tmp_invoice_filter_result ";
         std::stringstream from;
         from << "FROM invoice i ";            
         std::stringstream where;
@@ -538,10 +576,10 @@ namespace Register
         SQL_ID_FILTER(where,"i.id",idFilter);
         SQL_ID_FILTER(where,"i.registrarid",registrarFilter);
         SQL_ID_FILTER(where,"i.zone",zoneFilter);
-        if (typeFilter) {
-          from << ", invoice_prefixes ip ";
+        if (typeFilter && typeFilter<=2) {
+          from << ", invoice_prefix ip ";
           where << "AND i.prefix_type=ip.id ";
-          SQL_ID_FILTER_FILL(where,"ip.typ",typeFilter);
+          SQL_ID_FILTER_FILL(where,"ip.typ",typeFilter-1);
         }
         if (!varSymbolFilter.empty()) {
           from << ", registrar r ";
@@ -560,6 +598,14 @@ namespace Register
           from << ", invoice_object_registry ior ";
           where << "AND i.id=ior.invoiceid ";
           SQL_ID_FILTER_FILL(where,"ior.objectid",objectFilter);
+        }
+        if (!advanceNumberFilter.empty()) {
+          from << ", invoice_object_registry ior2 "
+               << ", invoice_object_registry_price_map iorpm "
+               << ", invoice advi ";
+          where << "AND i.id=ior2.invoiceid "
+                << "AND iorpm.id=ior2.id AND iorpm.invoiceid=advi.id ";
+          SQL_WILDCARD_FILTER_FILL(where,"advi.prefix",advanceNumberFilter);
         }
         // complete sql end do the query
         sql << from.rdbuf() << where.rdbuf();
@@ -587,8 +633,8 @@ namespace Register
           " it.id, o.name, ior.crdate, ior.exdate, ior.operation, ior.period, "
           " CASE "
           "  WHEN ior.period=0 THEN 0 "
-          "  ELSE SUM(iorpm.price)/ior.period END, "
-          " SUM(iorpm.price) "
+          "  ELSE 100*SUM(iorpm.price)*12/ior.period END, "
+          " SUM(iorpm.price)*100 "
           "FROM "
           " tmp_invoice_filter_result it, "
           " invoice_object_registry ior, object_registry o, "
@@ -609,16 +655,12 @@ namespace Register
         // append list of sources to all selected invoices
         if (!db->ExecSelect(
           "SELECT "
-          " it.id, sri.prefix, SUM(iorpm.price) "
+          " it.id, sri.prefix, ipm.credit*100, ipm.balance*100 "
           "FROM "
           " tmp_invoice_filter_result it, "
-          " invoice_object_registry ior, "
-          " invoice_object_registry_price_map iorpm, invoice sri "
+          " invoice_credit_payment_map ipm, invoice sri "
           "WHERE "
-          " it.id=ior.invoiceid AND ior.id=iorpm.id "
-          " AND iorpm.invoiceid=sri.id "
-          "GROUP BY "
-          " it.id, iorpm.id, sri.prefix "
+          " it.id=ipm.invoiceid AND ipm.ainvoiceid=sri.id "
         )) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           InvoiceImpl *inv = findById(STR_TO_ID(db->GetFieldValue(i,0)));

@@ -107,7 +107,7 @@ namespace Register
       virtual void setRegistrarFilter(TID registrar) = 0;
       /// filter for id of associated zone 
       virtual void setZoneFilter(TID zone) = 0;
-      /// filter for invoice type (advance or normal)
+      /// filter for invoice type (advance=1 or normal=2)
       virtual void setTypeFilter(unsigned type) = 0;
       /// filter for variable symbol of payment
       virtual void setVarSymbolFilter(const std::string& varSymbol) = 0;
