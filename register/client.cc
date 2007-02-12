@@ -23,6 +23,11 @@ int main(int argc, char **argv)
        
     po::options_description invoiceDesc("Invoicing options");
     invoiceDesc.add_options()
+      ("invarchive", 
+       "archive unarchived invoices")
+      ("docgen_path",po::value<std::string>()->default_value(
+        "/home/jara/enum/fred2pdf/trunk"),
+       "variable symbol of payment")
       ("id", po::value<unsigned>(),
        "invoice id")
       ("registrar_id", po::value<unsigned>(),
@@ -70,11 +75,16 @@ int main(int argc, char **argv)
    
     // invoicing
     std::auto_ptr<Register::Document::Manager> docman(
-      Register::Document::Manager::create("/home/jara/enum/fred2pdf/trunk")
+      Register::Document::Manager::create(vm["docgen_path"].as<std::string>())
     );  
     std::auto_ptr<Register::Invoicing::Manager> im(
       Register::Invoicing::Manager::create(&db,docman.get())
     );
+    if (vm.count("invarchive")) {
+      im->archiveInvoices();
+      db.Disconnect();
+      exit(0);
+    }
     std::auto_ptr<Register::Invoicing::InvoiceList> il(im->createList());
     if (vm.count("id"))
       il->setIdFilter(vm["id"].as<unsigned>());
@@ -114,7 +124,7 @@ int main(int argc, char **argv)
     if (vm.count("object_id")) 
       il->setObjectFilter(vm["object_id"].as<unsigned>());
     if (vm.count("adv_number")) 
-      il->setAdvanceNumberFilter(vm["adv_number"].as<std::string>());
+      il->setAdvanceNumberFilter(vm["adv_number"].as<std::string>());    
     il->reload();
     il->exportXML(std::cout);
     
