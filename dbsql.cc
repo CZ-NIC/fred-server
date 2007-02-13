@@ -1535,7 +1535,7 @@ long price , credit,  balance;
                                        {
 
                                               aID[i] = atoi( GetFieldValue( i  , 0 ) );
-                                              LOG( LOG_DEBUG ,"zalohova FA -> %d" , aID);
+                                              LOG( LOG_DEBUG ,"zalohova FA -> %d" , aID[i]);
 
                                        }
                                  FreeSelect();
