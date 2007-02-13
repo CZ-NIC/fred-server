@@ -78,6 +78,73 @@ if( ret ) return true;
 else return false;
 }
 
+bool factoring_all(  const char *database  ,   const char  *zone_fqdn , char *taxdateStr , char *todateStr )
+{
+DB db;
+int *regID;
+int i , num =-1; 
+char timestampStr[32];
+int invoiceID;
+int zone;
+int ret = 0;
+
+if( db.OpenDatabase( database  ) )
+{
+
+LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
+
+if( db.BeginTransaction() )
+ {
+  get_timestamp( timestampStr  , get_utctime_from_localdate(  todateStr ) );
+
+ if( ( zone =  db.GetNumericFromTable( "zone", "id", "fqdn", zone_fqdn ) ) )
+  {
+   if( db.ExecSelect(  "SELECT id from registrar where system=false;" ) )
+    {
+        num =  db.GetSelectRows();
+
+        if( num > 0 )
+        {
+          regID= new int[num];
+
+          for( i = 0 ; i < num ; i ++ )
+             {
+               regID[i] = atoi( db.GetFieldValue( i  , 0 ) );
+             }
+        }
+       db.FreeSelect();
+
+
+        if( num > 0 )
+         {
+             for( i = 0 ; i < num ; i ++ )
+                {
+                    invoiceID = db.MakeFactoring( regID[i] , zone , timestampStr  , taxdateStr );
+                    LOG( NOTICE_LOG , "Vygenerovana fa %d pro regID %d" , invoiceID ,  regID[i]  );
+
+                    if( invoiceID >=0 ) ret = CMD_OK;
+                    else { ret = 0 ; break; }
+                       
+                }
+           delete regID;
+        }
+
+    }
+  } else LOG( LOG_ERR , "unkow zone %s\n" , zone_fqdn );
+
+  
+  db.QuitTransaction( ret );
+}
+
+// odpojeni od databaze
+db.Disconnect();
+}
+
+if( ret ) return invoiceID;
+else return -1; // chyba
+}
+
+
 int factoring( const char *database  ,     const char *registrarHandle  ,  const char  *zone_fqdn , char *taxdateStr , char *todateStr )
 {
 DB db;
@@ -95,10 +162,9 @@ LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
 if( db.BeginTransaction() )
  {
 
-  if(  (regID = db.GetRegistrarID( (char * )  registrarHandle ) )  )
+if(  (regID = db.GetRegistrarID( (char * )  registrarHandle ) )  )
   {
-
-    if( ( zone =  db.GetNumericFromTable( "zone", "id", "fqdn", zone_fqdn ) )  )
+   if( ( zone =  db.GetNumericFromTable( "zone", "id", "fqdn", zone_fqdn ) )  )
      {
  
           get_timestamp( timestampStr  , get_utctime_from_localdate(  todateStr ) );
@@ -106,8 +172,9 @@ if( db.BeginTransaction() )
           invoiceID = db.MakeFactoring( regID , zone , timestampStr  , taxdateStr );
           
       }
-     else LOG( LOG_ERR , "unkow zone %s\n" , zone_fqdn );
+   else LOG( LOG_ERR , "unkow zone %s\n" , zone_fqdn );
   }
+
   else
   {
      LOG( LOG_ERR , "unkow registrarHandle %s" , registrarHandle );
@@ -451,7 +518,7 @@ Conf config; // READ CONFIG  file
 
 printf("connect DB string [%s]\n" , config.GetDBconninfo() ); 
 // usage
-if( argc == 1 )printf("import banking statement file to database\nusage: %s --bank-gpc file.gpc\ninvoicing: %s --invoice\ncredit: %s --credit REG-HANDLE zone price\nE-Banka: %s --ebanka-csv file.csv\nfactoring: %s --factoring REG-NAME zone 2006-12-31  2007-01-01"  , argv[0]  , argv[0] ,  argv[0] , argv[0] , argv[0]);  
+if( argc == 1 )printf("import banking statement file to database\nusage: %s --bank-gpc file.gpc\ninvoicing: %s --invoice\ncredit: %s --credit REG-HANDLE zone price\nE-Banka: %s --ebanka-csv file.csv\none invoice: %s --factoring REG-NAME zone 2006-12-31  2007-01-01\nall invoice: %s --factoring  zone taxDate endDate\n"  , argv[0]  , argv[0] ,  argv[0] , argv[0] , argv[0] , argv[0] );  
 
 
 if( argc == 5 )
@@ -462,6 +529,9 @@ if( argc == 5 )
        get_rfc3339_timestamp( t , dateStr , true ); // preved aktualni datum
        credit_invoicing(  config.GetDBconninfo() , dateStr  ,   argv[2] , argv[3] , atol( argv[4] ) * 100L  );
      }
+
+   if( strcmp(  argv[1]  , "--factoring" )  == 0 )
+     factoring_all(  config.GetDBconninfo() ,  argv[2] , argv[3] , argv[4]   );
  }
 
 if( argc == 6 )
