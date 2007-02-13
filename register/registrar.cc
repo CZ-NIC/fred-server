@@ -297,7 +297,7 @@ namespace Register
           } else {
             id = db->GetSequenceID("registrar");
             sql << "INSERT INTO registrar "
-                << "(id,name,handle,url,zone,organization,street1,street2,"
+                << "(id,name,handle,url,organization,street1,street2,"
                 << "street3,city,stateorprovince,postalcode,country,"
                 << "telephone,fax,email) "
                 << "VALUES "
@@ -306,7 +306,6 @@ namespace Register
                 << "'" << getName() << "',"
                 << "'" << getHandle() << "',"
                 << "'" << getURL() << "',"
-                << "'{1}',"
                 << "'" << getOrganization() << "',"
                 << "'" << getStreet1() << "',"
                 << "'" << getStreet2() << "',"
