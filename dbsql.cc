@@ -1525,7 +1525,7 @@ long price , credit,  balance;
 
                            // DOTAZ na vsechny ZAL FA ze kterych bylo cerpano na dane FA
                               sprintf( sqlString , "select invoice_object_registry_price_map.invoiceid from  invoice_object_registry ,  invoice_object_registry_price_map  where invoice_object_registry.id=invoice_object_registry_price_map.id and invoice_object_registry.invoiceid=%d  GROUP BY invoice_object_registry_price_map.invoiceid ; " , invoiceID );
-                              // EXEC SQL a insert  invoice_credit_payment_map
+                               // EXEC SQL a insert  invoice_credit_payment_map
 
                               if( ExecSelect( sqlString ) )
                                 {
@@ -1587,6 +1587,8 @@ int  DB::MakeNewInvoice(  const char *taxDateStr , const char *fromdateStr , con
 int invoiceID;
 int prefix;
 int type;
+int dph;
+
 
 LOG( LOG_DEBUG ,"MakeNewInvoice taxdate[%s]  fromdateStr [%s] todateStr[%s]  zone %d regID %d , price %ld  count %d" , 
 taxDateStr , fromdateStr , todateStr ,   zone , regID , price , count);
@@ -1599,7 +1601,9 @@ if( (type = GetPrefixType( taxDateStr , INVOICE_FA , zone ) ) )   // id pouzitel
           {
            if(  (prefix = GetInvoicePrefix( taxDateStr , INVOICE_FA , zone ) )  )  // cislo faktury podle zdanitelneho obdobi
            {
-           LOG( LOG_DEBUG ,"Make Invoice prefix %d type %d\n" , prefix , type );
+            // zjisti vysi DPH
+           dph =GetSystemVAT(); 
+           LOG( LOG_DEBUG ,"Make Invoice prefix %d type %d DPH=%d\n" , prefix , type , dph);
 
            invoiceID = GetSequenceID( "invoice" );
 
@@ -1622,8 +1626,8 @@ if( (type = GetPrefixType( taxDateStr , INVOICE_FA , zone ) ) )   // id pouzitel
            VALUE( regID );
            VALUE( taxDateStr );
            VALPRICE( price ); // celkova castka
-           VALUE( 0 ); // dan je nulova
-           VALPRICE( price ); // zaklad bez dane total stejny jako price
+           VALUE( dph ); // dan je nenulova 
+           VALUE( 0 ); // zaklad bez je nulova castka 
            VALUE( 0);
            VALUENULL(); // pouze credit je NULL
 
