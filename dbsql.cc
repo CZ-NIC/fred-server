@@ -1588,8 +1588,6 @@ int invoiceID;
 int prefix;
 int type;
 
-type = GetPrefixType( taxDateStr , INVOICE_FA , zone );  // id prefixu OSTRA FA VYUCTOVACI 
-prefix = GetInvoicePrefix( taxDateStr , INVOICE_FA , zone );  // cislo faktury podle zdanitelneho obdobi
 LOG( LOG_DEBUG ,"MakeNewInvoice taxdate[%s]  fromdateStr [%s] todateStr[%s]  zone %d regID %d , price %ld  " , 
 taxDateStr , fromdateStr , todateStr ,   zone , regID , price );
 
@@ -1600,6 +1598,11 @@ if( prefix  > 0  && type > 0 )
      
         if( count ) // vytvor fakturu 
           {
+           type = GetPrefixType( taxDateStr , INVOICE_FA , zone );  // id prefixu OSTRA FA VYUCTOVACI 
+           prefix = GetInvoicePrefix( taxDateStr , INVOICE_FA , zone );  // cislo faktury podle zdanitelneho obdobi
+
+           LOG( LOG_DEBUG ,"Make Invoice prefix %d type %d\n" , prefix , type );
+
            invoiceID = GetSequenceID( "invoice" );
 
            INSERT( "invoice" );
