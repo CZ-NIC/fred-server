@@ -168,9 +168,9 @@ namespace Register
             << TAGEND(entry)
             << TAGEND(vat_rates)
             << TAGSTART(sumarize)
-            << TAG(total,OUTMONEY(i->getTotal()))
+            << TAG(total,OUTMONEY(i->getPrice()))
             << TAG(paid,
-                   OUTMONEY((i->getType() != IT_DEPOSIT ? -i->getTotal() : 0)))
+                   OUTMONEY((i->getType() != IT_DEPOSIT ? -i->getPrice() : 0)))
             << TAG(to_be_paid,OUTMONEY(0))
             << TAGEND(sumarize)
             << TAGEND(delivery);
@@ -201,14 +201,14 @@ namespace Register
                 << TAG(timestamp,pa->getActionTime());
             if (!pa->getExDate().is_special())    
               out << TAG(expiration,pa->getExDate());
-            out << TAG(count,pa->getUnitsCount())
+            out << TAG(count,pa->getUnitsCount()/12) // in years
                 << TAG(price,OUTMONEY(pa->getPricePerUnit()))
                 << TAG(total,OUTMONEY(pa->getPrice()))
                 << TAGEND(item);
           }
           out << TAGEND(items)
               << TAGSTART(sumarize_items)
-              << TAG(total,i->getPrice())
+              << TAG(total,OUTMONEY(i->getPrice()))
               << TAGEND(sumarize_items)
               << TAGEND(appendix);
         }
