@@ -121,7 +121,7 @@ else return -2; // ERROR
 }
 
 // ukladani polozky creditu
-bool DB::SaveInvoiceCredit(int regID , int objectID , int operation , int zone  , int period , const char *ExDate , long price  , long price2 ,  long balance , long balance2 ,  int invoiceID   , int invoiceID2) 
+bool DB::SaveInvoiceCredit(int regID , int objectID , int operation , int zone  , int period , const char *ExDate , long price  , long price2 ,    int invoiceID   , int invoiceID2) 
 {
 int id;
 
@@ -149,33 +149,29 @@ VAL( ExDate);
 if( EXEC() ) 
  {
 
-   LOG( DEBUG_LOG , "SaveInvoiceCredit:   price %ld  balance credit %ld invoiceID %d" , price , balance,  invoiceID );
+   LOG( DEBUG_LOG , "SaveInvoiceCredit:   price %ld   invoiceID %d" , price ,  invoiceID );
 
   INSERT( "invoice_object_registry_price_map" );
   INTO( "id");
   INTO( "invoiceID" );
   INTO( "price" );
-  INTO( "price_balance" );
   VALUE( id );
   VALUE( invoiceID );
   VALPRICE( price);
-  VALPRICE( balance );
   if( !EXEC() ) { LOG( CRIT_LOG , "ERROR invoice_object_registry_price_map" ); return false; }
     
 
   if( price2 ) // uloz druhou cenu
    {  
-     LOG( DEBUG_LOG , "uctovani creditu  price2 %ld  balance2 %ld invoiceID2 %d" , price2 , balance2 ,  invoiceID2 );
+     LOG( DEBUG_LOG , "uctovani creditu  price2 %ld   invoiceID2 %d" , price2 ,  invoiceID2 );
 
      INSERT( "invoice_object_registry_price_map" );
      INTO( "id");
       INTO( "invoiceID" );
       INTO( "price" );
-      INTO( "price_balance" );
       VALUE( id );
       VALUE( invoiceID2 );
       VALPRICE( price2);
-      VALPRICE( balance2 );
       if( !EXEC() ) { LOG( CRIT_LOG , "ERROR invoice_object_registry_price_map price2" ); return false; }       
    }
  
@@ -272,7 +268,7 @@ invoiceID=invID[0];
 if( credit - price > 0 )
   {
 
-     if( SaveInvoiceCredit(  regID , objectID ,   operation  ,  zone   , period , ExDate , price , 0 , credit - price  , 0 ,  invoiceID , 0  )  )
+     if( SaveInvoiceCredit(  regID , objectID ,   operation  ,  zone   , period , ExDate , price , 0 ,   invoiceID , 0  )  )
       {
        return InvoiceCountCredit( price , invoiceID );
       }
@@ -287,7 +283,7 @@ else
        price1= cr[0]; // zustatek na prvni zal FA
        price2= price - cr[0]; // zbytek penez ztrhava se z druhe zal FA
 
-       if( SaveInvoiceCredit(  regID ,objectID , operation  ,  zone , period ,  ExDate , price1 ,  price2 ,  0 , cr[1] - price2 , invID[0] , invID[1]  )  ) 
+       if( SaveInvoiceCredit(  regID ,objectID , operation  ,  zone , period ,  ExDate , price1 ,  price2 ,  invID[0] , invID[1]  )  ) 
          {
          if( InvoiceCountCredit(  cr[0] , invID[0] )  ) // dopocitad do nuly na prvni zalohove FA  
            {
@@ -1389,27 +1385,35 @@ bool DB::UpdateEBankaListInvoice( int id , int invoiceID )
 
 // pro danou uzavranou fakturu iID spocti aktualni zustatek zalohove faktury aID pri uzavreni faktury z invoice_object_registry_price_map.price_balance
 
-long DB::GetInvoiceBalance( int iID  , int aID )
+long DB::GetInvoiceBalance( int aID , long credit )
 {
 char sqlString[512];
+long total , suma ;
 long price=-1; // err hodnota
  
 
-    LOG( NOTICE_LOG , "GetInvoiceBalance invoiceID %d zalohova FA %d" , iID  ,  aID );
+    LOG( NOTICE_LOG , "GetInvoiceBalance: zalohova FA %d" ,  aID );
 
-    sprintf( sqlString , "SELECT min(  invoice_object_registry_price_map.price_balance) FROM invoice_object_registry ,  invoice_object_registry_price_map\
-          WHERE  invoice_object_registry.id=invoice_object_registry_price_map.id and invoice_object_registry.invoiceid=%d \
-             AND invoice_object_registry_price_map.invoiceid=%d;" , iID  , aID );
 
- if( ExecSelect( sqlString ) )
+ sprintf( sqlString ,  "select total from invoice where id=%d"  , aID   );
+
+ if( ExecSelect(  sqlString ) )
    {
-          if( IsNotNull( 0 , 0 ) )
-            {
-                            price =  (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
-                            LOG( NOTICE_LOG , "celkovy zustatek pri  uzavreni Fa %ld" , price );
-             }
+      total =  (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
+      LOG( NOTICE_LOG , "celkovy zaklad faktury %ld" ,   total );
+      FreeSelect();
 
-       FreeSelect();
+        sprintf( sqlString , "SELECT sum( credit ) FROM invoice_credit_payment_map where ainvoiceid=%d;" ,  aID );
+        if( ExecSelect( sqlString ) )
+        {
+           suma = (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
+           LOG( NOTICE_LOG , "sectweny credit %ld  pro zal FA" , suma );
+           FreeSelect();
+        } else return -2; // chyba
+
+        price = total - suma - credit;
+        LOG( NOTICE_LOG , "celkovy zustatek pri  uzavreni Fa %ld" , price  );
+
    }else return -1; // chyba
 
 return price;
@@ -1545,7 +1549,7 @@ long price , credit,  balance;
                                for( i = 0 ; i < num ; i ++ )
                                   {
                                     credit = GetInvoiceSumaPrice( invoiceID , aID[i] );
-                                    balance = GetInvoiceBalance( invoiceID , aID[i] );
+                                    balance = GetInvoiceBalance(  aID[i] , credit ); // aktualne dosptupny zustatek
                                     if( credit>= 0 && balance >=0 ) 
                                     {
                                      LOG( LOG_DEBUG ,"zalohova FA  %d credit %ld balance %ld" , aID[i] , credit , balance );

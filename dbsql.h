@@ -40,7 +40,7 @@ bool DeleteFromTableMap(char *map ,int  id , int contactid );
 
 // vraci castku za operaci
 long GetPrice(   int  operation  ,  int zone , int period  );
-bool SaveInvoiceCredit(int regID , int objectID , int  operation  , int zone  ,  int period ,  const char *ExDate , long price ,  long price2  , long balance  , long balance2 ,  int invoiceID , int invoiceID2 );
+bool SaveInvoiceCredit(int regID , int objectID , int  operation  , int zone  ,  int period ,  const char *ExDate , long price ,  long price2  ,   int invoiceID , int invoiceID2 );
 // odecitani castky price od credity  ze zalohove faktury 
 bool InvoiceCountCredit( long  price , int invoiceID  );
 
@@ -157,7 +157,7 @@ double GetSystemKOEF(); // vraci hodnotu prepocitavaciho koeficientu
 bool UpdateBankStatementItem( int id , int invoiceID);
 
 // spocte zustatek a vycerpany credit za zalohovych FA
-long GetInvoiceBalance(int iID, int aID);
+long GetInvoiceBalance( int aID , long credit );
 long GetInvoiceSumaPrice(int  iID , int aID );
 
 // zpusti fakturaci do zadaneho timestamp datum zdanitelneho plneni je taxdate 
