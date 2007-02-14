@@ -11,9 +11,9 @@ int main()
   DB db;
   //  db.OpenDatabase("host=localhost dbname=ccreg user=postgres");
   db.OpenDatabase("host=curlew dbname=ccreg user=ccreg");
-/*
   std::auto_ptr<Register::Manager> m(Register::Manager::create(&db));
   Register::Registrar::Manager *rm = m->getRegistrarManager();
+/*
   Register::Registrar::RegistrarList *rl2 = rm->getList();
   //  rl2->setIdFilter(2);
   rl2->reload();
@@ -91,17 +91,7 @@ int main()
   dl->setNSSetHandleFilter("n");
   dl->reload();
   */
-  std::auto_ptr<Register::Document::Manager> docman(
-    Register::Document::Manager::create("/home/jara/enum/fred2pdf/trunk")
-  );  
-  std::auto_ptr<Register::Invoicing::Manager> im(
-    Register::Invoicing::Manager::create(&db,docman.get())
-  );
-  std::auto_ptr<Register::Invoicing::InvoiceList> il(im->createList());
-  il->reload();
-  il->exportXML(std::cout);
   // im->archiveInvoices();
-  /*
   while (1) {
     std::string input;
     std::cout << "Handle: ";
@@ -136,5 +126,4 @@ int main()
                 << " Conflict: " << chl[i].conflictHandle << std::endl;
     }
   }
-  */
 }
