@@ -27,7 +27,10 @@ int main(int argc, char **argv)
        "archive unarchived invoices")
       ("docgen_path",po::value<std::string>()->default_value(
         "/home/jara/enum/fred2pdf/trunk"),
-       "variable symbol of payment")
+       "path to fred2pdf document generator")
+      ("fileman_path",po::value<std::string>()->default_value(
+        "/home/jara/enum/pyfred/branches/devel/clients/filemanager"),
+       "path to file manager corba client")
       ("id", po::value<unsigned>(),
        "invoice id")
       ("registrar_id", po::value<unsigned>(),
@@ -75,7 +78,10 @@ int main(int argc, char **argv)
    
     // invoicing
     std::auto_ptr<Register::Document::Manager> docman(
-      Register::Document::Manager::create(vm["docgen_path"].as<std::string>())
+      Register::Document::Manager::create(
+        vm["docgen_path"].as<std::string>(),
+        vm["fileman_path"].as<std::string>()
+      )
     );  
     std::auto_ptr<Register::Invoicing::Manager> im(
       Register::Invoicing::Manager::create(&db,docman.get())

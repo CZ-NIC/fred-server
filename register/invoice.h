@@ -132,7 +132,7 @@ namespace Register
       /// return count of invoices in list 
       virtual unsigned long getCount() const = 0;
       /// xml output of all invoices in list
-      virtual void exportXML(std::ostream& out) const = 0;     
+      virtual void exportXML(std::ostream& out) = 0;     
     };
     /// facade of invoicing subsystem
     class Manager

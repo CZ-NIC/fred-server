@@ -36,7 +36,7 @@ namespace Register
       ) const throw (Generator::ERROR) = 0;
       /// create generator that save output as given filename
       virtual Generator *createSavingGenerator(
-        GenerationType type, const std::string& filename
+        GenerationType type, const std::string& filename, unsigned filetype
       ) const throw (Generator::ERROR) = 0;
       /// generate document and return it in output stream
       virtual void generateDocument(
@@ -46,9 +46,11 @@ namespace Register
       /// generate document and store it in archive with given name
       virtual TID generateDocumentAndSave(
         GenerationType type,
-        std::istream& input, const std::string& name
+        std::istream& input, const std::string& name, unsigned filetype
       ) const throw (Generator::ERROR) = 0;
-      static Manager *create(const std::string& path);
+      static Manager *create(
+        const std::string& path, const std::string& pathFM
+      );
     };
   }
 } // Register

@@ -80,6 +80,92 @@ namespace Register
     };
     class InvoiceImpl;
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    //   PaymentSourceImpl
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    /// implementation of PaymentSource interface
+    class PaymentSourceImpl : public PaymentSource
+    {
+      unsigned long number; ///< number of source advance invoice
+      Money price; ///< money that come from this advance invoice  
+      Money credit; ///< credit remaining on this advance invoice 
+     public:
+      /// init content from sql result (ignore first column)
+      PaymentSourceImpl(DB *db, unsigned l) : 
+        number(atol(db->GetFieldValue(l,1))),
+        price(STR_TO_MONEY(db->GetFieldValue(l,2))),
+        credit(STR_TO_MONEY(db->GetFieldValue(l,3)))
+      {}
+      virtual unsigned long getNumber() const
+      {
+        return number;
+      }
+      virtual Money getPrice() const
+      {
+        return price;
+      }
+      virtual Money getCredit() const
+      {
+        return credit;
+      }
+    };
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    //   PaymentActionImpl
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    /// implementation of PaymentAction interface
+    class PaymentActionImpl : public PaymentAction
+    {
+      std::string objectName; ///< name of object affected by payment action
+      boost::posix_time::ptime actionTime; ///< time of payment action
+      boost::gregorian::date exDate; ///< exdate of domain 
+      PaymentActionType action; ///< type of action that is subject of payment
+      unsigned unitsCount; ///< number of months to expiration of domain
+      Money pricePerUnit; ///< copy of price from price list
+      Money price; ///< summarized price for all units
+     public:
+      /// init content from sql result (ignore first column)
+      PaymentActionImpl(DB *db, unsigned l) :
+        objectName(db->GetFieldValue(l,1)),
+        actionTime(MAKE_TIME(l,2)),
+        exDate(MAKE_DATE(l,3)),
+        action(
+          atoi(db->GetFieldValue(l,4)) == 1 ? 
+          PAT_CREATE_DOMAIN :
+          PAT_RENEW_DOMAIN
+        ),
+        unitsCount(atoi(db->GetFieldValue(l,5))),
+        pricePerUnit(STR_TO_MONEY(db->GetFieldValue(l,6))),
+        price(STR_TO_MONEY(db->GetFieldValue(l,7)))
+      {}      
+      virtual const std::string& getObjectName() const
+      {
+        return objectName;
+      }
+      virtual boost::posix_time::ptime getActionTime() const
+      {
+        return actionTime;
+      }
+      virtual boost::gregorian::date getExDate() const
+      {
+        return exDate;
+      }
+      virtual PaymentActionType getAction() const
+      {
+        return action;
+      }
+      virtual unsigned getUnitsCount() const
+      {
+        return unitsCount;
+      }
+      virtual Money getPricePerUnit() const
+      {
+        return pricePerUnit;
+      }
+      virtual Money getPrice() const
+      {
+        return price;
+      }
+    };
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     //   Exporter
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     /// common exporter interface 
@@ -89,6 +175,160 @@ namespace Register
       virtual ~Exporter() {}
       virtual void doExport(Invoice *) = 0;
     };
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    //   InvoiceImpl
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    /// implementation of interface Invoice
+    class InvoiceImpl : public Invoice
+    {
+      DB *dbc;
+      TID id;
+      TID zone;
+      ptime crTime;
+      boost::gregorian::date taxDate;
+      time_period accountPeriod;
+      Type type;
+      unsigned long number;
+      TID registrar;
+      Money credit;
+      Money price;
+      short vatRate;
+      Money total;
+      Money totalVAT;
+      TID file;
+      std::string varSymbol;
+      SubjectImpl client;
+      static SubjectImpl supplier;
+      std::vector<PaymentSourceImpl *> sources;
+      std::vector<PaymentActionImpl *> actions;
+      bool storeFileFlag; ///< ready for saving link to generated file
+      void clearLists()
+      {
+        for (unsigned i=0; i<sources.size(); i++) delete sources[i];
+        for (unsigned i=0; i<actions.size(); i++) delete actions[i];
+      }
+     public:
+      const Subject* getClient() const { return &client; }
+      const Subject* getSupplier() const { return &supplier; }
+      TID getId() const { return id; }
+      TID getZone() const { return zone; }
+      ptime getCrTime() const { return crTime; }
+      boost::gregorian::date getTaxDate() const { return taxDate; }
+      time_period getAccountPeriod() const
+      { return accountPeriod; }
+      Type getType() const { return type; }
+      unsigned long getNumber() const { return number; }
+      TID getRegistrar() const { return registrar; }
+      Money getCredit() const { return credit; }
+      Money getPrice() const { return price; }
+      short getVatRate() const { return vatRate; }
+      Money getTotal() const { return total; }
+      Money getTotalVAT() const { return totalVAT; }
+      const std::string& getVarSymbol() const { return varSymbol; }
+      unsigned getSourceCount() const { return sources.size(); }
+      const PaymentSource *getSource(unsigned idx) const
+      {
+        return idx>=sources.size() ? NULL : sources[idx];
+      } 
+      unsigned getActionCount() const { return actions.size(); }
+      const PaymentAction *getAction(unsigned idx) const
+      {
+        return idx>=actions.size() ? NULL : actions[idx];
+      }
+      void setFile(TID _file) 
+      {
+        // set only once (disabling overwrite link to archived file)
+        if (!file) {
+          file = _file;
+          try {
+            storeFile();
+          }
+          catch (...) {}
+        }
+      }
+      void storeFile() throw (SQL_ERROR)
+      {
+        if (storeFileFlag && file) {
+          std::stringstream sql;
+          sql << "UPDATE invoice SET file=" << file  
+              << " WHERE id=" << getId();
+          if (!dbc->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        }                
+      }
+      /// initialize invoice from result set=db with row=l 
+      InvoiceImpl(DB *db, unsigned l) :
+        dbc(db),
+        id(STR_TO_ID(db->GetFieldValue(l,0))),
+        zone(STR_TO_ID(db->GetFieldValue(l,1))),
+        crTime(MAKE_TIME(l,2)),
+        taxDate(MAKE_DATE(l,3)),
+        accountPeriod(MAKE_TIME_NEG(l,4),MAKE_TIME_POS(l,5)),
+        type(atoi(db->GetFieldValue(l,6)) == 0 ? IT_DEPOSIT : IT_ACCOUNT),
+        number(atol(db->GetFieldValue(l,7))),
+        registrar(STR_TO_ID(db->GetFieldValue(l,8))),
+        credit(STR_TO_MONEY(db->GetFieldValue(l,9))),
+        price(STR_TO_MONEY(db->GetFieldValue(l,10))),
+        vatRate(atoi(db->GetFieldValue(l,11))),
+        total(STR_TO_MONEY(db->GetFieldValue(l,12))),
+        totalVAT(STR_TO_MONEY(db->GetFieldValue(l,13))),
+        file(STR_TO_ID(db->GetFieldValue(l,14))),
+        varSymbol(db->GetFieldValue(l,21)),
+        client(
+          db->GetFieldValue(l,15),
+          "", // fullname is empty
+          db->GetFieldValue(l,16),
+          db->GetFieldValue(l,17),
+          db->GetFieldValue(l,18),
+          db->GetFieldValue(l,19),
+          db->GetFieldValue(l,20),
+          "", // registration is empty
+          "", // reclamation is empty
+          "", // url is empty
+          "" // email is empty
+        ),
+        storeFileFlag(false)
+      {
+      }
+      ~InvoiceImpl()
+      {
+        clearLists();
+      }
+      /// export invoice using given exporter
+      void doExport(Exporter *exp)
+      {
+        exp->doExport(this);
+      }
+      /// test function for find algorithm
+      bool hasId(TID id) const
+      {
+        return this->id == id;
+      }
+      /// initialize list of actions from sql result
+      void addAction(DB *db, unsigned row)
+      {
+        actions.push_back(new PaymentActionImpl(db,row));
+      }
+      /// initialize list of sources from sql result
+      void addSource(DB *db, unsigned row)
+      {
+        sources.push_back(new PaymentSourceImpl(db,row));        
+      }
+    };
+    // TODO: should be initalized somewhere else
+    /// static supplier in every invoice
+    SubjectImpl InvoiceImpl::supplier(
+      "CZ.NIC, z.s.p.o.",
+      "CZ.NIC, zájmové sdružení právnických osob",
+      "Americká 23",
+      "Praha 2",
+      "120 00",
+      "67985726",
+      "CZ67985726",
+      "SpZ: odb. občanskopr. agend Magist. hl. m. Prahy, č. ZS/30/3/98",
+      "CZ.NIC, z.s.p.o., Americká 23, 120 00 Praha 2",
+      "www.nic.cz",
+      "podpora@nic.cz"
+    );
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     //   ExporterXML
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -227,235 +467,27 @@ namespace Register
       virtual void doExport(Invoice *i)
       {
         std::stringstream filenamePDF;
-        filenamePDF << "/tmp/f" << i->getNumber() << ".pdf";
+        filenamePDF << i->getNumber() << ".pdf";
         std::fstream outf(filenamePDF.str().c_str(),std::ios::out);
-        std::auto_ptr<Document::Generator> g(
-          docman->createOutputGenerator(
-            i->getType() == IT_DEPOSIT ? 
-              Document::GT_ADVANCE_INVOICE_PDF :
-              Document::GT_INVOICE_PDF,
-            outf
-          )
-        );
-        ExporterXML xml(g->getInput(),true);
-        xml.doExport(i);
-        g->closeInput();
+        try {
+          std::auto_ptr<Document::Generator> g(
+            docman->createSavingGenerator(
+              i->getType() == IT_DEPOSIT ? 
+                Document::GT_ADVANCE_INVOICE_PDF :
+                Document::GT_INVOICE_PDF,
+              filenamePDF.str(),1
+            )
+          );
+          ExporterXML xml(g->getInput(),true);
+          xml.doExport(i);
+          InvoiceImpl *ii = dynamic_cast<InvoiceImpl *>(i);
+          ii->setFile(g->closeInput());
+        }
+        catch (...) {
+          // TODO: LOG ERROR
+        }
       }
     };
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    //   PaymentSourceImpl
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    /// implementation of PaymentSource interface
-    class PaymentSourceImpl : public PaymentSource
-    {
-      unsigned long number; ///< number of source advance invoice
-      Money price; ///< money that come from this advance invoice  
-      Money credit; ///< credit remaining on this advance invoice 
-     public:
-      /// init content from sql result (ignore first column)
-      PaymentSourceImpl(DB *db, unsigned l) : 
-        number(atol(db->GetFieldValue(l,1))),
-        price(STR_TO_MONEY(db->GetFieldValue(l,2))),
-        credit(STR_TO_MONEY(db->GetFieldValue(l,3)))
-      {}
-      virtual unsigned long getNumber() const
-      {
-        return number;
-      }
-      virtual Money getPrice() const
-      {
-        return price;
-      }
-      virtual Money getCredit() const
-      {
-        return credit;
-      }
-    };
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    //   PaymentActionImpl
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    /// implementation of PaymentAction interface
-    class PaymentActionImpl : public PaymentAction
-    {
-      std::string objectName; ///< name of object affected by payment action
-      boost::posix_time::ptime actionTime; ///< time of payment action
-      boost::gregorian::date exDate; ///< exdate of domain 
-      PaymentActionType action; ///< type of action that is subject of payment
-      unsigned unitsCount; ///< number of months to expiration of domain
-      Money pricePerUnit; ///< copy of price from price list
-      Money price; ///< summarized price for all units
-     public:
-      /// init content from sql result (ignore first column)
-      PaymentActionImpl(DB *db, unsigned l) :
-        objectName(db->GetFieldValue(l,1)),
-        actionTime(MAKE_TIME(l,2)),
-        exDate(MAKE_DATE(l,3)),
-        action(
-          atoi(db->GetFieldValue(l,4)) == 1 ? 
-          PAT_CREATE_DOMAIN :
-          PAT_RENEW_DOMAIN
-        ),
-        unitsCount(atoi(db->GetFieldValue(l,5))),
-        pricePerUnit(STR_TO_MONEY(db->GetFieldValue(l,6))),
-        price(STR_TO_MONEY(db->GetFieldValue(l,7)))
-      {}      
-      virtual const std::string& getObjectName() const
-      {
-        return objectName;
-      }
-      virtual boost::posix_time::ptime getActionTime() const
-      {
-        return actionTime;
-      }
-      virtual boost::gregorian::date getExDate() const
-      {
-        return exDate;
-      }
-      virtual PaymentActionType getAction() const
-      {
-        return action;
-      }
-      virtual unsigned getUnitsCount() const
-      {
-        return unitsCount;
-      }
-      virtual Money getPricePerUnit() const
-      {
-        return pricePerUnit;
-      }
-      virtual Money getPrice() const
-      {
-        return price;
-      }
-    };
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    //   InvoiceImpl
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    /// implementation of interface Invoice
-    class InvoiceImpl : public Invoice
-    {
-      TID id;
-      TID zone;
-      ptime crTime;
-      boost::gregorian::date taxDate;
-      time_period accountPeriod;
-      Type type;
-      unsigned long number;
-      TID registrar;
-      Money credit;
-      Money price;
-      short vatRate;
-      Money total;
-      Money totalVAT;
-      std::string varSymbol;
-      SubjectImpl client;
-      static SubjectImpl supplier;
-      std::vector<PaymentSourceImpl *> sources;
-      std::vector<PaymentActionImpl *> actions;
-      void clearLists()
-      {
-        for (unsigned i=0; i<sources.size(); i++) delete sources[i];
-        for (unsigned i=0; i<actions.size(); i++) delete actions[i];
-      }
-     public:
-      const Subject* getClient() const { return &client; }
-      const Subject* getSupplier() const { return &supplier; }
-      TID getId() const { return id; }
-      TID getZone() const { return zone; }
-      ptime getCrTime() const { return crTime; }
-      boost::gregorian::date getTaxDate() const { return taxDate; }
-      time_period getAccountPeriod() const
-      { return accountPeriod; }
-      Type getType() const { return type; }
-      unsigned long getNumber() const { return number; }
-      TID getRegistrar() const { return registrar; }
-      Money getCredit() const { return credit; }
-      Money getPrice() const { return price; }
-      short getVatRate() const { return vatRate; }
-      Money getTotal() const { return total; }
-      Money getTotalVAT() const { return totalVAT; }
-      const std::string& getVarSymbol() const { return varSymbol; }
-      unsigned getSourceCount() const { return sources.size(); }
-      const PaymentSource *getSource(unsigned idx) const
-      {
-        return idx>=sources.size() ? NULL : sources[idx];
-      } 
-      unsigned getActionCount() const { return actions.size(); }
-      const PaymentAction *getAction(unsigned idx) const
-      {
-        return idx>=actions.size() ? NULL : actions[idx];
-      }
-      /// initialize invoice from result set=db with row=l 
-      InvoiceImpl(DB *db, unsigned l) :
-        id(STR_TO_ID(db->GetFieldValue(l,0))),
-        zone(STR_TO_ID(db->GetFieldValue(l,1))),
-        crTime(MAKE_TIME(l,2)),
-        taxDate(MAKE_DATE(l,3)),
-        accountPeriod(MAKE_TIME_NEG(l,4),MAKE_TIME_POS(l,5)),
-        type(atoi(db->GetFieldValue(l,6)) == 0 ? IT_DEPOSIT : IT_ACCOUNT),
-        number(atol(db->GetFieldValue(l,7))),
-        registrar(STR_TO_ID(db->GetFieldValue(l,8))),
-        credit(STR_TO_MONEY(db->GetFieldValue(l,9))),
-        price(STR_TO_MONEY(db->GetFieldValue(l,10))),
-        vatRate(atoi(db->GetFieldValue(l,11))),
-        total(STR_TO_MONEY(db->GetFieldValue(l,12))),
-        totalVAT(STR_TO_MONEY(db->GetFieldValue(l,13))),
-        varSymbol(db->GetFieldValue(l,20)),
-        client(
-          db->GetFieldValue(l,14),
-          "", // fullname is empty
-          db->GetFieldValue(l,15),
-          db->GetFieldValue(l,16),
-          db->GetFieldValue(l,17),
-          db->GetFieldValue(l,18),
-          db->GetFieldValue(l,19),
-          "", // registration is empty
-          "", // reclamation is empty
-          "", // url is empty
-          "" // email is empty
-        )
-      {
-      }
-      ~InvoiceImpl()
-      {
-        clearLists();
-      }
-      /// export invoice using given exporter
-      void doExport(Exporter *exp) const
-      {
-        exp->doExport(const_cast<InvoiceImpl*>(this));
-      }
-      /// test function for find algorithm
-      bool hasId(TID id) const
-      {
-        return this->id == id;
-      }
-      /// initialize list of actions from sql result
-      void addAction(DB *db, unsigned row)
-      {
-        actions.push_back(new PaymentActionImpl(db,row));
-      }
-      /// initialize list of sources from sql result
-      void addSource(DB *db, unsigned row)
-      {
-        sources.push_back(new PaymentSourceImpl(db,row));        
-      }
-    };
-    // TODO: should be initalized somewhere else
-    /// static supplier in every invoice
-    SubjectImpl InvoiceImpl::supplier(
-      "CZ.NIC, z.s.p.o.",
-      "CZ.NIC, zájmové sdružení právnických osob",
-      "Americká 23",
-      "Praha 2",
-      "120 00",
-      "67985726",
-      "CZ67985726",
-      "SpZ: odb. občanskopr. agend Magist. hl. m. Prahy, č. ZS/30/3/98",
-      "CZ.NIC, z.s.p.o., Americká 23, 120 00 Praha 2",
-      "www.nic.cz",
-      "podpora@nic.cz"
-    );
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     //   InvoiceListImpl
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -615,7 +647,7 @@ namespace Register
           "SELECT "
           " i.id, i.zone, i.crdate, i.taxdate, ig.fromdate, "
           " ig.todate, ip.typ, i.prefix, i.registrarid, i.credit*100, "
-          " i.price*100, i.vat, i.total*100, i.totalvat*100, "
+          " i.price*100, i.vat, i.total*100, i.totalvat*100, i.file, "
           " r.organization, r.street1, "
           " r.city, r.postalcode, r.ico, r.dic, r.varsymb "
           "FROM "
@@ -674,7 +706,7 @@ namespace Register
           throw SQL_ERROR();
       }
       /// export all invoices on the list using given exporter
-      void doExport(Exporter *exp) const
+      void doExport(Exporter *exp)
       {
         for_each(
           invoices.begin(),invoices.end(),
@@ -686,7 +718,7 @@ namespace Register
       {
         return invoices.size();
       }
-      virtual void exportXML(std::ostream& out) const
+      virtual void exportXML(std::ostream& out)
       {
         out << "<?xml version='1.0' encoding='utf-8'?>";        
         ExporterXML xml(out,false);
