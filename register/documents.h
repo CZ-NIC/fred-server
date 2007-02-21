@@ -11,7 +11,8 @@ namespace Register
     /// supported types of generation
     enum GenerationType {
       GT_INVOICE_PDF, ///< generate PDF of invoice from XML data
-      GT_ADVANCE_INVOICE_PDF ///< generate PDF of advance invoice from XML data
+      GT_ADVANCE_INVOICE_PDF, ///< generate PDF of advance invoice from XML data
+      GT_AUTHINFO_REQUEST_PDF ///< generate PDF with request for authinfo
     };
     /// generator that has to be filled with stream of data
     class Generator {
@@ -32,24 +33,32 @@ namespace Register
       virtual ~Manager() {}
       /// create generator returning output in given stream
       virtual Generator *createOutputGenerator(
-        GenerationType type, std::ostream& output
+        GenerationType type, 
+        std::ostream& output, 
+        const std::string& lang
       ) const throw (Generator::ERROR) = 0;
       /// create generator that save output as given filename
       virtual Generator *createSavingGenerator(
-        GenerationType type, const std::string& filename, unsigned filetype
+        GenerationType type, 
+        const std::string& filename, unsigned filetype,
+        const std::string& lang
       ) const throw (Generator::ERROR) = 0;
       /// generate document and return it in output stream
       virtual void generateDocument(
         GenerationType type, 
-        std::istream& input, std::ostream& output
+        std::istream& input, std::ostream& output,
+        const std::string& lang        
       ) const throw (Generator::ERROR) = 0;
       /// generate document and store it in archive with given name
       virtual TID generateDocumentAndSave(
         GenerationType type,
-        std::istream& input, const std::string& name, unsigned filetype
+        std::istream& input, 
+        const std::string& name, unsigned filetype,
+        const std::string& lang
       ) const throw (Generator::ERROR) = 0;
       static Manager *create(
-        const std::string& path, const std::string& pathFM
+        const std::string& path, const std::string& pathFM,
+        const std::string& corbaNS
       );
     };
   }

@@ -4,6 +4,7 @@
 #include "types.h"
 #include "exceptions.h"
 #include "documents.h"
+#include "mailer.h"
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -145,7 +146,9 @@ namespace Register
       /// create empty list of invoices
       virtual InvoiceList* createList() const = 0;
       /// factory method
-      static Manager *create(DB *db, Document::Manager *docman);
+      static Manager *create(
+        DB *db, Document::Manager *docman, Mailer::Manager *mailman
+      );
     }; // Manager
   }; // Invoicing
 }; // Register

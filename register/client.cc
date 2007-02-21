@@ -1,5 +1,9 @@
 #include "invoice.h"
 #include "dbsql.h"
+#include "nameservice.h"
+#include "mailer_manager.h"
+#include "auth_info.h"
+
 #include <iostream>
 #include <boost/program_options.hpp>
 #include <boost/date_time/posix_time/time_parsers.hpp>
@@ -7,7 +11,23 @@
 namespace po = boost::program_options;
 using namespace boost::posix_time;
  
-int main(int argc, char **argv) 
+class CorbaClient
+{
+  CORBA::ORB_var orb;
+  std::auto_ptr<NameService> ns;
+ public:
+  CorbaClient(int argc, char **argv, const std::string& nshost) 
+  {
+    orb = CORBA::ORB_init(argc, argv);
+    ns.reset(new NameService(orb,"corbaname::" + nshost));    
+  }
+  NameService *getNS()
+  {
+    return ns.get();
+  }
+};
+
+int main(int argc, char **argv)
 {
   try {
     po::options_description desc("Allowed options");
@@ -19,7 +39,11 @@ int main(int argc, char **argv)
       ("dbname", po::value<std::string>()->default_value("ccreg"), 
        "database name")
       ("dbuser", po::value<std::string>()->default_value("ccreg"), 
-       "database user");
+       "database user")
+      ("corbans", po::value<std::string>()->default_value("curlew"), 
+       "corba name service host")
+      ("lang", po::value<std::string>()->default_value("cs"), 
+       "language of communication");
        
     po::options_description invoiceDesc("Invoicing options");
     invoiceDesc.add_options()
@@ -58,10 +82,21 @@ int main(int argc, char **argv)
       ("adv_number", po::value<std::string>(),
        "advance invoice number");
 
+    po::options_description aiDesc("AuthInfo options");
+    aiDesc.add_options()
+      ("authinfopdf", po::value<unsigned>(),
+       "generate pdf of auth into request");
+
     po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc.add(invoiceDesc)), vm);
+    po::store(
+      po::parse_command_line(
+        argc, argv, 
+        desc.add(invoiceDesc).add(aiDesc)
+      ), 
+      vm
+    );
     po::notify(vm); 
-    if (vm.count("help") || argc==1 ) {
+    if (vm.count("help") || argc == 1 ) {
       std::cout << desc << "\n";
       return 1;
     }
@@ -80,15 +115,33 @@ int main(int argc, char **argv)
     std::auto_ptr<Register::Document::Manager> docman(
       Register::Document::Manager::create(
         vm["docgen_path"].as<std::string>(),
-        vm["fileman_path"].as<std::string>()
+        vm["fileman_path"].as<std::string>(),
+        vm["corbans"].as<std::string>()
       )
-    );  
+    );
+    CorbaClient cc(argc,argv,vm["corbans"].as<std::string>());
+    MailerManager mm(cc.getNS());    
     std::auto_ptr<Register::Invoicing::Manager> im(
-      Register::Invoicing::Manager::create(&db,docman.get())
+      Register::Invoicing::Manager::create(&db,docman.get(),&mm)
     );
     if (vm.count("invarchive")) {
       im->archiveInvoices();
       db.Disconnect();
+      exit(0);
+    }
+    if (vm.count("authinfopdf")) {
+      std::auto_ptr<Register::AuthInfoRequest::Manager> authman(
+        Register::AuthInfoRequest::Manager::create(
+          &db,
+          &mm,
+          docman.get()
+        )
+      );
+      authman->getRequestPDF(
+        vm["authinfopdf"].as<unsigned>(),
+        vm["lang"].as<std::string>(),
+        std::cout
+      );
       exit(0);
     }
     std::auto_ptr<Register::Invoicing::InvoiceList> il(im->createList());

@@ -4,9 +4,9 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <sstream>
 
-#define PIF_PAGE "enum.nic.cz";
-
 using namespace boost::gregorian;
+
+#define AUTH_INFO_PAGE "http://enum.nic.cz/whois/authinfo.py"
 
 namespace Register
 {
@@ -174,7 +174,6 @@ namespace Register
           // TODO: text localization and date format locale
           Mailer::Parameters params;
           params["registrar"] = registrarName;
-          params["wwwpage"] = PIF_PAGE;
           std::ostringstream buf;
           buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
           buf << creationTime.date();
@@ -182,6 +181,9 @@ namespace Register
           buf.str("");
           buf << id;
           params["reqid"] = buf.str();
+          buf.str("");
+          buf << objectType;
+          params["type"] = buf.str();          
           params["handle"] = objectHandle;
           params["authinfo"] = getAuthInfo();
           Mailer::Handles handles;
@@ -189,11 +191,12 @@ namespace Register
           // email (RT_EPP&RT_AUTO_PIF)
           // TODO: object->email relation should not be handled in mail module
           handles.push_back(objectHandle);
+          Mailer::Attachments attach; // they are empty
           answerEmailId = mm->sendEmail(
             "", // default sender from notification system
             getEmailAddresses(),
             "AuthInfo Request", // TODO: subject should be taken from template!
-            getTemplateName(),params,handles
+            getTemplateName(),params,handles,attach
           ); // can throw Mailer::NOT_SEND exception
           requestStatus = RS_ANSWERED;
         }
@@ -399,10 +402,13 @@ namespace Register
     {
       DB *db;
       Mailer::Manager *mm;
+      Document::Manager *docman;
       ListImpl l;
      public:
-      ManagerImpl(DB *_db, Mailer::Manager *_mm) : 
-        db(_db), mm(_mm), l(_mm,_db)
+      ManagerImpl(
+        DB *_db, Mailer::Manager *_mm, Document::Manager *_docman
+      ) : 
+        db(_db), mm(_mm), docman(_docman), l(_mm,_db)
       {}
       TID createRequest(
         TID objectId,
@@ -468,17 +474,61 @@ namespace Register
         try {
           d->process(invalid);
         } catch (OBJECT_NOT_FOUND) {
-	  // TODO: how to handle this?
+	        // TODO: how to handle this?
         }
+      }
+      #define OT_ID(x) ((x) == OT_CONTACT ? 1 : (x) == OT_NSSET ? 2 : 3)
+      void getRequestPDF(
+        TID id, const std::string& lang, std::ostream& out
+      ) throw (REQUEST_NOT_FOUND, SQL_ERROR, Document::Generator::ERROR)
+      {
+        if (!docman) {
+          // TODO: log error
+          return;
+        }
+        ListImpl l(mm,db);
+        l.setIdFilter(id);
+        l.reload();
+        if (l.getCount() !=1) throw REQUEST_NOT_FOUND();
+        Detail *d = l.get(0);
+        std::auto_ptr<Document::Generator> g(
+          docman->createOutputGenerator(
+            Document::GT_AUTHINFO_REQUEST_PDF,
+            out,
+            lang
+          )
+        );
+        g->getInput().imbue(std::locale(std::locale(""),new date_facet("%x")));
+        g->getInput() << "<?xml version='1.0' encoding='utf-8'?>"
+                      << "<enum_whois>"
+                      << "<auth_info>"
+                      << "<handle type='" << OT_ID(d->getObjectType()) << "'>"
+                      << d->getObjectHandle()
+                      << "</handle>"
+                      << "<webform_url>" << AUTH_INFO_PAGE << "</webform_url>"
+                      << "<transaction_date>"
+                      << d->getCreationTime().date()
+                      << "</transaction_date>"
+                      << "<transaction_id>"
+                      << d->getId()
+                      << "</transaction_id>"
+                      << "<replymail>" 
+                      << d->getEmailToAnswer()
+                      << "</replymail>"
+                      << "</auth_info>"
+                      << "</enum_whois>";
+        g->closeInput();
       }
       List *getList()
       {
         return &l;
       }
     }; // ManagerImpl
-    Manager *Manager::create(DB *db, Mailer::Manager *mm)
+    Manager *Manager::create(
+      DB *db, Mailer::Manager *mm, Document::Manager *docman
+    )
     {
-      return new ManagerImpl(db,mm);
+      return new ManagerImpl(db,mm,docman);
     }
   }; // AuthInfoRequest
 }; // Register

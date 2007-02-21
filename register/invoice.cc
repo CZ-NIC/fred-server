@@ -240,8 +240,12 @@ namespace Register
         // set only once (disabling overwrite link to archived file)
         if (!file) {
           file = _file;
+          // intention was separate setting of file id and it's storage
+          // outside of document generation process. temporary 
+          // combined into setting function
+          storeFileFlag = true;
           try {
-            storeFile();
+            storeFile(); 
           }
           catch (...) {}
         }
@@ -475,7 +479,8 @@ namespace Register
               i->getType() == IT_DEPOSIT ? 
                 Document::GT_ADVANCE_INVOICE_PDF :
                 Document::GT_INVOICE_PDF,
-              filenamePDF.str(),1
+              filenamePDF.str(),1,
+              "" // default language
             )
           );
           ExporterXML xml(g->getInput(),true);
@@ -728,6 +733,96 @@ namespace Register
       }           
     }; // InvoiceListImpl 
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    //   Mails
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    /// send mails with invoices to registrars 
+    class Mails
+    {
+      /// describe one email notification about invoice or invoice generation
+      struct Item 
+      {
+        std::string registrarEmail; ///< address to deliver email
+        boost::gregorian::date from; ///< start of invoicing period 
+        boost::gregorian::date to; ///< end of invoicing period 
+        TID file; ///< id of file with invoice attached in email
+        TID generation; ///< filled if source is invoice generation
+        TID invoice; ///< filled if successful generation or advance invoice
+        TID mail; ///< id of generated email
+        const char *getTemplateName()
+        {
+          if (!generation) return "invoice_deposit";
+          if (!invoice) return "invoice_noaudit";
+          return "invoice_audit";
+        }
+        Item(
+          const std::string& _registrarEmail, 
+          boost::gregorian::date _from, boost::gregorian::date _to,
+          TID _file, TID _generation, TID _invoice, TID _mail
+        ) :
+          registrarEmail(_registrarEmail), from(_from), to(_to), file(_file),
+          generation(_generation), invoice(_invoice), mail(_mail)
+        {}
+      };
+      typedef std::vector<Item> MailItems; ///< type for notification list
+      MailItems items; ///< list of notifications to send
+      Mailer::Manager *mm; ///< mail sending interface
+      DB *db; ///< database connectivity
+     public:
+      Mails(Mailer::Manager *_mm, DB *_db) : mm(_mm), db(_db)
+      {}
+      void send()
+      {
+        for (unsigned i=0; i<items.size(); i++) {
+          Item *it = &items[i];
+          Mailer::Parameters params;
+          std::stringstream dateBuffer;
+          dateBuffer.imbue(std::locale(
+            dateBuffer.getloc(),
+            new boost::gregorian::date_facet("%d.%m.%Y")
+          ));
+          dateBuffer << it->from;
+          params["fromdate"] = dateBuffer.str();
+          dateBuffer.str("");
+          dateBuffer << it->to;
+          params["todate"] = dateBuffer.str();
+          Mailer::Handles handles;
+          // TODO: decide wetger to include domain or registrar handles
+          Mailer::Attachments attach;
+          if (it->file) attach.push_back(it->file);
+          it->mail = mm->sendEmail(
+            "", // default sender according to template 
+            it->registrarEmail, 
+            "", // default subject according to template
+            it->getTemplateName(),
+            params, handles, attach
+          );
+        }
+      }
+      void load() throw (SQL_ERROR)
+      {
+        std::stringstream sql;
+        sql << "SELECT r.email, g.fromdate, g.todate, i.file, g.id, i.id "
+            << "FROM registrar r, invoice i "
+            << "LEFT JOIN invoice_generation g ON (g.invoiceid=i.id) "
+            << "WHERE i.registrarid=r.id "
+            << "UNION "
+            << "SELECT r.email, g.fromdate, g.todate, NULL, g.id, NULL "
+            << "FROM invoice_generation g, registrar r "
+            << "WHERE g.registrarid=r.id AND g.invoiceid ISNULL ";
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
+          items.push_back(Item(
+            db->GetFieldValue(i,0),
+            MAKE_DATE(i,1),
+            MAKE_DATE(i,2),
+            STR_TO_ID(db->GetFieldValue(i,3)),
+            STR_TO_ID(db->GetFieldValue(i,4)),
+            STR_TO_ID(db->GetFieldValue(i,5)),
+            (TID)0
+          ));
+      }
+    }; // Mails
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     //   ManagerImpl
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     /// implementation for Manager interface
@@ -735,17 +830,28 @@ namespace Register
     {
       DB *db;
       Document::Manager *docman;
+      Mailer::Manager *mailman;
      public:
-      ManagerImpl(DB *_db, Document::Manager *_docman) 
-        : db(_db), docman(_docman)
+      ManagerImpl(
+        DB *_db, 
+        Document::Manager *_docman, Mailer::Manager *_mailman
+      ) : db(_db), docman(_docman), mailman(_mailman)
       {}
       /// find unarchived invoices and archive then in PDF format
       void archiveInvoices() const
       {
-        ExporterPDF pdf(docman);
-        InvoiceListImpl l(db);
-        l.reload();
-        l.doExport(&pdf);
+        try {
+          ExporterPDF pdf(docman);
+          InvoiceListImpl l(db);
+          l.setArchivedFilter(InvoiceList::AF_UNSET);
+          l.reload();
+          l.doExport(&pdf);
+          Mails m(mailman,db);
+          m.load();
+          m.send();
+        } catch (...) {
+          //TODO: LOG ERROR
+        }
       }
       /// create empty list of invoices      
       virtual InvoiceList* createList() const
@@ -753,9 +859,10 @@ namespace Register
         return new InvoiceListImpl(db);
       }
     }; // ManagerImpl
-    Manager *Manager::create(DB *db, Document::Manager *docman)
+    Manager *Manager::create(
+      DB *db, Document::Manager *docman, Mailer::Manager *mailman)
     {
-      return new ManagerImpl(db,docman);
+      return new ManagerImpl(db,docman,mailman);
     }    
   }; // Invoicing
 }; // Register

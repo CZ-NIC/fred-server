@@ -6,6 +6,7 @@
 #include "types.h"
 #include "exceptions.h"
 #include "mailer.h"
+#include "documents.h"
 
 using namespace boost::posix_time;
 
@@ -102,10 +103,18 @@ namespace Register
       /// Process request by sending email with auth_info or closing as invalid
       virtual void processRequest(TID id, bool invalid) 
         throw (REQUEST_NOT_FOUND, REQUEST_CLOSED, SQL_ERROR, Mailer::NOT_SEND) = 0;
+      virtual void getRequestPDF(
+        TID id, const std::string& lang, 
+        std::ostream& out
+      ) throw (REQUEST_NOT_FOUND, SQL_ERROR, Document::Generator::ERROR) = 0;
       /// Create list of requests
       virtual List *getList() = 0;
       /// factory method
-      static Manager *create(DB *db, Register::Mailer::Manager *mm);      
+      static Manager *create(
+        DB *db, 
+        Mailer::Manager *mm,
+        Document::Manager *docman
+      );      
     }; // Manager
   } // AuthInfo
 } // Register
