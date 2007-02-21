@@ -15,7 +15,8 @@ MailerManager::sendEmail(
   const std::string& subject,
   const std::string& mailTemplate,
   Register::Mailer::Parameters params,
-  Register::Mailer::Handles handles
+  Register::Mailer::Handles handles,
+  Register::Mailer::Attachments attach
 ) throw (Register::Mailer::NOT_SEND)
 {
   // prepare header
@@ -38,9 +39,11 @@ MailerManager::sendEmail(
   ccReg::Lists handleList;
   handleList.length(handles.size());
   for (unsigned i=0; i<handles.size(); i++)
-    handleList[0] = CORBA::string_dup(handles[i].c_str());
-  // no attachments at this time
+    handleList[i] = CORBA::string_dup(handles[i].c_str());
   ccReg::Attachment_seq attachments;
+  attachments.length(attach.size());
+  for (unsigned i=0; i<attach.size(); i++)
+    attachments[i] = attach[i];
   // send immidiately
   bool prev = false;
   CORBA::String_var prevMsg;

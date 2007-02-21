@@ -26,7 +26,8 @@ class MailerManager : public Register::Mailer::Manager
     const std::string& subject,
     const std::string& mailTemplate,
     Register::Mailer::Parameters params,
-    Register::Mailer::Handles handles
+    Register::Mailer::Handles handles,
+    Register::Mailer::Attachments attach
   ) throw (Register::Mailer::NOT_SEND) ;
   struct Filter 
   {
