@@ -5,7 +5,7 @@ CXXFLAGS = -Wall  -DSYSLOG    -DSVERSION=\"${SVN_REVISION}\"
 
 
 OBJECTS = 
-IDLDIR = ../../idl/branches/devel/
+IDLDIR = ../../idl/trunk/
 IDLFILE = $(IDLDIR)/ccReg.idl
 LDFLAGS =  -L/usr/local/pgsql/lib/
 LIBS =  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread 
