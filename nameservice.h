@@ -11,6 +11,7 @@ class NameService
 {
   CORBA::ORB_ptr orb;
   CosNaming::NamingContext_var rootContext;
+  std::string hostname;
  public:
   /// exception when NameService not running or not in omniORB config file
   struct NOT_RUNNING {};
@@ -19,7 +20,7 @@ class NameService
   /// config rootContext from supplied orb
         NameService(CORBA::ORB_ptr orb)
     throw (NOT_RUNNING);
-	NameService(CORBA::ORB_ptr orb, const std::string& nameServiceIOR) 
+	NameService(CORBA::ORB_ptr orb, const std::string& hostname) 
     throw (NOT_RUNNING);
   /// bind object into ccReg.context/'name'.Object
   void bind(const std::string& name, CORBA::Object_ptr objref)
@@ -27,6 +28,7 @@ class NameService
   /// resolve object into ccReg.context/'name'.Object get IOR
   CORBA::Object_ptr resolve(    const std::string& name   ) 
     throw (NOT_RUNNING, BAD_CONTEXT);
+  const std::string& getHostName();
   /// destroy NameServiceObject
 	virtual ~NameService();
 };

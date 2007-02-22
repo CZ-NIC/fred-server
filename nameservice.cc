@@ -23,15 +23,16 @@ NameService::NameService(CORBA::ORB_ptr orb)
 
 }
 
-NameService::NameService(CORBA::ORB_ptr orb, const std::string& nameServiceIOR)
+NameService::NameService(CORBA::ORB_ptr orb, const std::string& _hostname)
   throw (NOT_RUNNING)
+ : hostname(_hostname)
 {
   try {
     CORBA::Object_var obj;
-    if (nameServiceIOR.empty())
-      obj = orb->resolve_initial_references(nameServiceIOR.c_str());
+    if (hostname.empty())
+      obj = orb->resolve_initial_references("NameService");
     else
-      obj = orb->string_to_object(nameServiceIOR.c_str());
+      obj = orb->string_to_object(("corbaname::" + hostname).c_str());
     rootContext = CosNaming::NamingContext::_narrow(obj);
     if( CORBA::is_nil(rootContext) ) throw NOT_RUNNING();
   }
@@ -121,7 +122,11 @@ CORBA::Object_ptr NameService::resolve(  const std::string& name )
   return CORBA::Object::_nil();
 }
 
-
+const std::string& 
+NameService::getHostName()
+{
+  return hostname;
+}
 
 NameService::~NameService()
 {
