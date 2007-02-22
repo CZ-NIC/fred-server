@@ -105,10 +105,9 @@ if( !readConfig ) // pokud nenacetlo zkus default config
       rootPOA->create_POA("RegistryPOA",mgr.in(),pols);
 
     // prepare NameService object
-    std::string nameServiceIOR = "corbaname::";
-    nameServiceIOR += config.GetNameService();
-    std::cerr << "nameServiceIOR: " <<   nameServiceIOR << std::endl;
-    NameService ns(orb,nameServiceIOR);
+    std::string nameService = config.GetNameService();
+    std::cerr << "nameService host: " <<   nameService << std::endl;
+    NameService ns(orb,nameService);
 
 #ifdef ADIF
     PortableServer::ObjectId_var adminObjectId =
