@@ -720,7 +720,7 @@ ccReg_Admin_i::getAuthInfoRequestById(ccReg::TID id)
   db.OpenDatabase(database.c_str());
   MailerManager mm(ns);
   std::auto_ptr<Register::AuthInfoRequest::Manager> r(
-    Register::AuthInfoRequest::Manager::create(&db,&mm)
+    Register::AuthInfoRequest::Manager::create(&db,&mm,NULL)
   );
   Register::AuthInfoRequest::List *airl = r->getList();
   airl->setIdFilter(id);
@@ -857,7 +857,7 @@ ccReg_Admin_i::createAuthInfoRequest(
   db.OpenDatabase(database.c_str());
   MailerManager mm(ns);
   std::auto_ptr<Register::AuthInfoRequest::Manager> r(
-    Register::AuthInfoRequest::Manager::create(&db,&mm)
+    Register::AuthInfoRequest::Manager::create(&db,&mm,NULL)
   );
   Register::AuthInfoRequest::RequestType rtype;
   switch (type) {
@@ -907,7 +907,7 @@ ccReg_Admin_i::processAuthInfoRequest(ccReg::TID id, CORBA::Boolean invalid)
   db.OpenDatabase(database.c_str());
   MailerManager mm(ns);
   std::auto_ptr<Register::AuthInfoRequest::Manager> r(
-    Register::AuthInfoRequest::Manager::create(&db,&mm)
+    Register::AuthInfoRequest::Manager::create(&db,&mm,NULL)
   );
   try {
     r->processRequest(id,invalid);
@@ -932,7 +932,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& database, NameService *ns)
 {
   db.OpenDatabase(database.c_str());
   m.reset(Register::Manager::create(&db));
-  am.reset(Register::AuthInfoRequest::Manager::create(&db,&mm));
+  am.reset(Register::AuthInfoRequest::Manager::create(&db,&mm,NULL));
   reg = new ccReg_Registrars_i(m->getRegistrarManager()->getList());
   eppa = new ccReg_EPPActions_i(m->getRegistrarManager()->getEPPActionList());
   dm = new ccReg_Domains_i(m->getDomainManager()->getList());
