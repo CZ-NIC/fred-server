@@ -5060,7 +5060,7 @@ if( DBsql.OpenDatabase( database ) )
        {
   
                std::auto_ptr<Register::AuthInfoRequest::Manager> airm(
-                 Register::AuthInfoRequest::Manager::create(&DBsql,mm)
+                 Register::AuthInfoRequest::Manager::create(&DBsql,mm,NULL)
                );
 
                try {
