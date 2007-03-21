@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -Wall  -DSYSLOG    -DSVERSION=\"${SVN_REVISION}\"
 
-IDLDIR = ../../../idl/trunk/
+IDLDIR = ../../idl/trunk
 IDLFILE = $(IDLDIR)/ccReg.idl
 LDFLAGS =  -L/usr/local/pgsql/lib/
 LIBS =  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread 

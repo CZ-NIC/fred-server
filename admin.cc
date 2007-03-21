@@ -274,7 +274,7 @@ ccReg_Admin_i::fillRegistrar(
   creg.telephone = DUPSTRFUN(reg->getTelephone);
   creg.fax = DUPSTRFUN(reg->getFax);
   creg.email = DUPSTRFUN(reg->getEmail);
-  creg.credit = reg->getCredit();
+  creg.credit = DUPSTRC(std::string(""));//reg->getCredit();
   creg.access.length(reg->getACLSize());
   for (unsigned i=0; i<reg->getACLSize(); i++) {
     creg.access[i].md5Cert = DUPSTRFUN(reg->getACL(i)->getCertificateMD5);
