@@ -12,6 +12,19 @@
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
+std::string
+formatDate(date d)
+{
+  if (d.is_special()) return "";
+  std::ostringstream buf;
+  buf.imbue(std::locale(
+    buf.getloc(),
+    new boost::gregorian::date_facet("%d.%m.%Y")
+  ));
+  buf << d; 
+  return buf.str();
+}
+
 std::string 
 formatTime(ptime p,bool date)
 {
@@ -75,6 +88,7 @@ clearPeriod(ccReg::DateTimeInterval& _v)
 #define DUPSTRFUN(f) DUPSTRC(f())
 //#define DUPSTRDATE(f) DUPSTR(to_simple_string(f()).c_str())
 #define DUPSTRDATE(f) DUPSTRC(formatTime(f(),true))
+#define DUPSTRDATED(f) DUPSTRC(formatDate(f()))
 #define DUPSTRDATESHORT(f) DUPSTRC(formatTime(f(),false))
 #define COLHEAD(x,i,title,tp) \
   (*x)[i].name = DUPSTR(title); \
@@ -155,8 +169,9 @@ ccReg_PageTable_i::getPageRowId(CORBA::Short row)
 //    ccReg_Admin_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-ccReg_Admin_i::ccReg_Admin_i(const std::string _database, NameService *_ns) : 
-  database(_database), ns(_ns)
+ccReg_Admin_i::ccReg_Admin_i(
+  const std::string _database, NameService *_ns, Conf& _cfg
+) : database(_database), ns(_ns), cfg(_cfg)
 {
 }
 
@@ -226,7 +241,7 @@ ccReg_Admin_i::login(const char* username, const char* password)
   if (i == userList.end()) throw ccReg::Admin::AuthFailed();
   SessionListType::const_iterator j = sessionList.find(username);
   if (j == sessionList.end())
-    sessionList[username] = new ccReg_Session_i(database,ns);
+    sessionList[username] = new ccReg_Session_i(database,ns,cfg);
   return CORBA::string_dup(username);
 }
 
@@ -719,8 +734,13 @@ ccReg_Admin_i::getAuthInfoRequestById(ccReg::TID id)
   if (!id) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
   MailerManager mm(ns);
+  std::auto_ptr<Register::Document::Manager> docman(
+    Register::Document::Manager::create(
+      cfg.GetDocGenPath(),cfg.GetFileClientPath(),ns->getHostName()
+    ) 
+  );
   std::auto_ptr<Register::AuthInfoRequest::Manager> r(
-    Register::AuthInfoRequest::Manager::create(&db,&mm,NULL)
+    Register::AuthInfoRequest::Manager::create(&db,&mm,docman.get())
   );
   Register::AuthInfoRequest::List *airl = r->getList();
   airl->setIdFilter(id);
@@ -761,6 +781,93 @@ ccReg_Admin_i::getEmailById(ccReg::TID id)
   for (unsigned i=0; i<mld.attachments.size(); i++)
     md->attachments[i] = mld.attachments[i];
   return md;
+}
+
+static std::string
+formatMoney(Register::Invoicing::Money m)
+{
+  std::stringstream buf;
+  buf << m / 100 << "." << std::setw(2) << std::setfill('0') << m % 100;
+  return buf.str();
+}
+
+void
+ccReg_Admin_i::fillInvoice(
+  ccReg::Invoicing::Invoice *ci, Register::Invoicing::Invoice *i
+)
+{
+  std::stringstream buf;
+  ci->id = i->getId();
+  ci->zone = i->getZone();
+  ci->crTime = DUPSTRDATE(i->getCrTime);
+  ci->taxDate = DUPSTRDATED(i->getTaxDate);
+  ci->fromDate = DUPSTRDATESHORT(i->getAccountPeriod().begin);
+  ci->toDate = DUPSTRDATESHORT(i->getAccountPeriod().end);
+  ci->type = (i->getType() == Register::Invoicing::IT_DEPOSIT ?
+    ccReg::Invoicing::IT_ADVANCE : ccReg::Invoicing::IT_ACCOUNT);
+  buf << i->getNumber();
+  ci->number = DUPSTRC(buf.str());
+  ci->registrarId = i->getRegistrar();
+  ci->registrarHandle = DUPSTRC(i->getClient()->getHandle());
+  ci->credit = DUPSTRC(formatMoney(i->getCredit()));
+  ci->price = DUPSTRC(formatMoney(i->getPrice()));
+  ci->vatRate = i->getVatRate();
+  ci->total = DUPSTRC(formatMoney(i->getTotal()));
+  ci->totalVAT = DUPSTRC(formatMoney(i->getTotalVAT()));
+  ci->varSymbol = DUPSTRC(i->getVarSymbol());
+  ci->filePDF = i->getFilePDF();
+  ci->fileXML = i->getFileXML();
+  ci->payments.length(i->getSourceCount());
+  for (unsigned k=0; k<i->getSourceCount(); k++) {
+    const Register::Invoicing::PaymentSource *ps = i->getSource(k);
+    ci->payments[k].id = ps->getId();
+    ci->payments[k].price = DUPSTRC(formatMoney(ps->getPrice()));
+    ci->payments[k].balance = DUPSTRC(formatMoney(ps->getCredit()));
+    buf.str("");
+    buf << ps->getNumber();
+    ci->payments[k].number = DUPSTRC(buf.str());
+  }
+  ci->actions.length(i->getActionCount());
+  for (unsigned k=0; k<i->getActionCount(); k++) {
+    const Register::Invoicing::PaymentAction *pa = i->getAction(k);
+    ci->actions[k].objectId = pa->getObjectId();
+    ci->actions[k].objectName = DUPSTRFUN(pa->getObjectName);
+    ci->actions[k].actionTime = DUPSTRDATE(pa->getActionTime);
+    ci->actions[k].exDate = DUPSTRDATED(pa->getExDate);
+    ci->actions[k].actionType = pa->getAction();
+    ci->actions[k].unitsCount = pa->getUnitsCount();
+    ci->actions[k].pricePerUnit = DUPSTRC(formatMoney(pa->getPricePerUnit()));
+    ci->actions[k].price = DUPSTRC(formatMoney(pa->getPrice()));
+  }
+}
+
+ccReg::Invoicing::Invoice* 
+ccReg_Admin_i::getInvoiceById(ccReg::TID id)
+  throw (ccReg::Admin::ObjectNotFound)
+{
+  DB db;
+  if (!id) throw ccReg::Admin::ObjectNotFound();
+  db.OpenDatabase(database.c_str());
+  MailerManager mm(ns);
+  std::auto_ptr<Register::Document::Manager> docman(
+    Register::Document::Manager::create(
+      cfg.GetDocGenPath(),cfg.GetFileClientPath(),ns->getHostName()
+    ) 
+  );
+  std::auto_ptr<Register::Invoicing::Manager> invman(
+    Register::Invoicing::Manager::create(&db,docman.get(),&mm)
+  );
+  Register::Invoicing::InvoiceList *invl = invman->createList();
+  invl->setIdFilter(id);
+  invl->reload();
+  if (invl->getCount() != 1) {
+    db.Disconnect();
+    throw ccReg::Admin::ObjectNotFound();
+  } 
+  ccReg::Invoicing::Invoice* inv = new ccReg::Invoicing::Invoice;
+  fillInvoice(inv,invl->get(0));
+  db.Disconnect();
+  return inv;
 }
 
 CORBA::Long 
@@ -856,8 +963,13 @@ ccReg_Admin_i::createAuthInfoRequest(
   DB db;
   db.OpenDatabase(database.c_str());
   MailerManager mm(ns);
+  std::auto_ptr<Register::Document::Manager> docman(
+    Register::Document::Manager::create(
+      cfg.GetDocGenPath(),cfg.GetFileClientPath(),ns->getHostName()
+    ) 
+  );
   std::auto_ptr<Register::AuthInfoRequest::Manager> r(
-    Register::AuthInfoRequest::Manager::create(&db,&mm,NULL)
+    Register::AuthInfoRequest::Manager::create(&db,&mm,docman.get())
   );
   Register::AuthInfoRequest::RequestType rtype;
   switch (type) {
@@ -906,8 +1018,13 @@ ccReg_Admin_i::processAuthInfoRequest(ccReg::TID id, CORBA::Boolean invalid)
   DB db;
   db.OpenDatabase(database.c_str());
   MailerManager mm(ns);
+  std::auto_ptr<Register::Document::Manager> docman(
+    Register::Document::Manager::create(
+      cfg.GetDocGenPath(),cfg.GetFileClientPath(),ns->getHostName()
+    ) 
+  );
   std::auto_ptr<Register::AuthInfoRequest::Manager> r(
-    Register::AuthInfoRequest::Manager::create(&db,&mm,NULL)
+    Register::AuthInfoRequest::Manager::create(&db,&mm,docman.get())
   );
   try {
     r->processRequest(id,invalid);
@@ -923,22 +1040,64 @@ ccReg_Admin_i::processAuthInfoRequest(ccReg::TID id, CORBA::Boolean invalid)
   db.Disconnect();  
 }
 
+ccReg::Admin::Buffer* 
+ccReg_Admin_i::getAuthInfoRequestPDF(
+  ccReg::TID id, const char *lang
+)
+{
+  DB db;
+  db.OpenDatabase(database.c_str());
+  MailerManager mm(ns);
+  std::auto_ptr<Register::Document::Manager> docman(
+    Register::Document::Manager::create(
+      cfg.GetDocGenPath(),cfg.GetFileClientPath(),ns->getHostName()
+    ) 
+  );
+  std::auto_ptr<Register::AuthInfoRequest::Manager> r(
+    Register::AuthInfoRequest::Manager::create(&db,&mm,docman.get())
+  );
+  try {
+    std::stringstream outstr;
+    r->getRequestPDF(id,lang,outstr);
+    unsigned long size = outstr.str().size();
+    CORBA::Octet *b = ccReg::Admin::Buffer::allocbuf(size);
+    memcpy(b,outstr.str().c_str(),size);
+    ccReg::Admin::Buffer* output = new ccReg::Admin::Buffer(size, size, b, 1);
+    db.Disconnect();  
+    return output;
+  } 
+  catch (Register::SQL_ERROR) { 
+    db.Disconnect();
+    throw ccReg::Admin::SQL_ERROR();
+  } 
+  catch (Register::AuthInfoRequest::Manager::OBJECT_NOT_FOUND) { 
+    db.Disconnect();
+    throw ccReg::Admin::OBJECT_NOT_FOUND();
+  } 
+}
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_Session_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-ccReg_Session_i::ccReg_Session_i(const std::string& database, NameService *ns)
+ccReg_Session_i::ccReg_Session_i(
+  const std::string& database, NameService *ns, Conf& cfg
+)
  : mm(ns)
 {
   db.OpenDatabase(database.c_str());
   m.reset(Register::Manager::create(&db));
-  am.reset(Register::AuthInfoRequest::Manager::create(&db,&mm,NULL));
+  docman.reset(Register::Document::Manager::create(
+    cfg.GetDocGenPath(),cfg.GetFileClientPath(),ns->getHostName()
+  )); 
+  am.reset(Register::AuthInfoRequest::Manager::create(&db,&mm,docman.get()));
+  invm.reset(Register::Invoicing::Manager::create(&db,docman.get(),&mm));
   reg = new ccReg_Registrars_i(m->getRegistrarManager()->getList());
   eppa = new ccReg_EPPActions_i(m->getRegistrarManager()->getEPPActionList());
   dm = new ccReg_Domains_i(m->getDomainManager()->getList());
   cm = new ccReg_Contacts_i(m->getContactManager()->getList());
   nm = new ccReg_NSSets_i(m->getNSSetManager()->getList());
   airm = new ccReg_AIRequests_i(am->getList());
+  invl = new ccReg_Invoices_i(invm->createList());
   mml = new ccReg_Mails_i(ns);
 }
 
@@ -987,6 +1146,12 @@ ccReg::Mails_ptr
 ccReg_Session_i::getMails()
 {
   return mml->_this();
+}
+
+ccReg::Invoices_ptr 
+ccReg_Session_i::getInvoices()
+{
+  return invl->_this();
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -1389,7 +1554,7 @@ ccReg_EPPActions_i::resultSize()
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 ccReg_RegObjectFilter_i::ccReg_RegObjectFilter_i(Register::ObjectList *_ol)
-  : registrarFilter(0), ol(_ol)
+  : ol(_ol), registrarFilter(0)
 {
 }
 
@@ -2338,7 +2503,7 @@ FILTER_IMPL_S(ccReg_AIRequests_i::svTRID,svTRIDFilter,
 FILTER_IMPL(ccReg_AIRequests_i::type,
             ccReg::AuthInfoRequest::RequestType,
             ccReg::AuthInfoRequest::RequestType,
-            requestTypeFilter,requestTypeFilter,
+            typeFilter,typeFilter,
             airl->setRequestTypeIgnoreFilter(
               _v == ccReg::AuthInfoRequest::RT_IGNORE
             );
@@ -2355,7 +2520,7 @@ FILTER_IMPL(ccReg_AIRequests_i::type,
 FILTER_IMPL(ccReg_AIRequests_i::status,
             ccReg::AuthInfoRequest::RequestStatus,
             ccReg::AuthInfoRequest::RequestStatus,
-            requestStatusFilter,requestStatusFilter,
+            statusFilter,statusFilter,
             airl->setRequestStatusIgnoreFilter(
               _v == ccReg::AuthInfoRequest::RS_IGNORE
             );
@@ -2408,7 +2573,7 @@ ccReg_AIRequests_i::resultSize()
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 ccReg_Mails_i::ccReg_Mails_i(NameService *ns) : 
-  idFilter(0), statusFilter(-1), mm(ns)
+  mm(ns), idFilter(0), statusFilter(-1)
 {
 }
 
@@ -2493,16 +2658,6 @@ ccReg_Mails_i::reload()
   } catch (...) {}
 }
 
-#define FILTER_IMPL(FUNC,PTYPEGET,PTYPESET,MEMBER,MEMBERG, SETF) \
-PTYPEGET FUNC() { return MEMBERG; } \
-void FUNC(PTYPESET _v) { MEMBER = _v; SETF; }
-
-#define FILTER_IMPL_L(FUNC,MEMBER,SETF) \
-  FILTER_IMPL(FUNC,ccReg::TID,ccReg::TID,MEMBER,MEMBER, SETF)
-
-#define FILTER_IMPL_S(FUNC,MEMBER,SETF) \
-  FILTER_IMPL(FUNC,char *,const char *,MEMBER,DUPSTRC(MEMBER), SETF)
-
 FILTER_IMPL_L(ccReg_Mails_i::id,idFilter,);
 
 FILTER_IMPL(ccReg_Mails_i::status,CORBA::Long,CORBA::Long,
@@ -2546,4 +2701,151 @@ ccReg_Mails_i::resultSize()
   return 12345;
 }
 
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//    ccReg_Invoices_i
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+ccReg_Invoices_i::ccReg_Invoices_i(
+  Register::Invoicing::InvoiceList *_invl
+)
+  : invl(_invl)
+{
+}
+
+ccReg_Invoices_i::~ccReg_Invoices_i()
+{
+}
+
+ccReg::Table::ColumnHeaders* 
+ccReg_Invoices_i::getColumnHeaders()
+{
+  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+  ch->length(3);
+  COLHEAD(ch,0,"id",CT_OTHER);
+  COLHEAD(ch,1,"CrDate",CT_OTHER);
+  COLHEAD(ch,2,"Number",CT_OTHER);
+  return ch;
+}
+
+ccReg::TableRow* 
+ccReg_Invoices_i::getRow(CORBA::Short row)
+  throw (ccReg::Table::INVALID_ROW)
+{
+  const Register::Invoicing::Invoice *inv = invl->get(row);
+  if (!inv) throw ccReg::Table::INVALID_ROW();
+  ccReg::TableRow *tr = new ccReg::TableRow;
+  tr->length(3);
+  std::stringstream buf;
+  buf << inv->getId();
+  (*tr)[0] = DUPSTRFUN(buf.str);
+  (*tr)[1] = DUPSTRDATE(inv->getCrTime);
+  buf.str("");
+  buf << inv->getNumber();
+  (*tr)[2] = DUPSTRFUN(buf.str);
+  return tr;
+}
+
+void 
+ccReg_Invoices_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
+{
+}
+
+ccReg::TID 
+ccReg_Invoices_i::getRowId(CORBA::Short row) 
+  throw (ccReg::Table::INVALID_ROW)
+{
+  const Register::Invoicing::Invoice *inv = invl->get(row);
+  if (!inv) throw ccReg::Table::INVALID_ROW();
+  return inv->getId();
+}
+
+char*
+ccReg_Invoices_i::outputCSV()
+{
+  return CORBA::string_dup("1,1,1");
+}
+
+CORBA::Short 
+ccReg_Invoices_i::numRows()
+{
+  return invl->getCount();
+}
+
+CORBA::Short 
+ccReg_Invoices_i::numColumns()
+{
+  return 3;
+}
+
+void 
+ccReg_Invoices_i::reload()
+{
+  invl->reload();
+}
+
+FILTER_IMPL_L(ccReg_Invoices_i::id,idFilter,invl->setIdFilter(_v));
+
+FILTER_IMPL_S(ccReg_Invoices_i::number,numberFilter,
+              invl->setNumberFilter(_v));
+
+FILTER_IMPL(ccReg_Invoices_i::crDate,
+            ccReg::DateInterval,
+            const ccReg::DateInterval&,
+            crDateFilter,crDateFilter,);
+
+FILTER_IMPL_L(ccReg_Invoices_i::registrarId,
+              registrarIdFilter,invl->setRegistrarFilter(_v));
+            
+FILTER_IMPL_S(ccReg_Invoices_i::registrarHandle,registrarHandleFilter,
+              invl->setRegistrarHandleFilter(_v));
+
+FILTER_IMPL_L(ccReg_Invoices_i::zone,
+              zoneFilter,invl->setZoneFilter(_v));
+
+FILTER_IMPL(ccReg_Invoices_i::type,
+            ccReg::Invoicing::InvoiceType,
+            ccReg::Invoicing::InvoiceType,
+            typeFilter,typeFilter,
+            invl->setTypeFilter(
+             _v == ccReg::Invoicing::IT_NONE ? 
+               0 : 
+             _v == ccReg::Invoicing::IT_ADVANCE ? 
+               1 : 2 
+            ));
+
+FILTER_IMPL_S(ccReg_Invoices_i::varSymbol,varSymbolFilter,
+              invl->setVarSymbolFilter(_v));
+
+FILTER_IMPL(ccReg_Invoices_i::taxDate,
+            ccReg::DateInterval,
+            const ccReg::DateInterval&,
+            taxDateFilter,taxDateFilter,);
+      
+FILTER_IMPL_S(ccReg_Invoices_i::objectName,objectNameFilter,
+              invl->setObjectNameFilter(_v));
+      
+FILTER_IMPL_L(ccReg_Invoices_i::objectId,
+              objectIdFilter,invl->setObjectIdFilter(_v));
+
+FILTER_IMPL_S(ccReg_Invoices_i::advanceNumber,advanceNumberFilter,
+              invl->setAdvanceNumberFilter(_v));
+
+ccReg::Filter_ptr
+ccReg_Invoices_i::aFilter()
+{
+  return _this();
+}
+
+void
+ccReg_Invoices_i::clear()
+{
+  idFilter = 0;
+  numberFilter = "";
+  invl->clearFilter();
+}
+
+CORBA::ULongLong 
+ccReg_Invoices_i::resultSize()
+{
+  return 12345;
+}

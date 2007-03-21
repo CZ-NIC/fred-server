@@ -5,6 +5,7 @@
 #include "dbsql.h"
 #include <iostream>
 #include "types.h"
+#include <ctype.h>
 
 #define RANGE(x) x.begin(),x.end()
 
@@ -27,9 +28,12 @@ namespace Register
       /// compare if domain belongs to this zone (according to suffix)
       bool operator==(const std::string& domain) const
       {
+        std::string copy = domain;
+        for (unsigned i=0; i<copy.length(); i++)
+          copy[i] = tolower(copy[i]);
         unsigned l = fqdn.length();
-        if (domain.length() < l) return false;
-        return domain.compare(domain.length()-l,l,fqdn) == 0;  
+        if (copy.length() < l) return false;
+        return copy.compare(copy.length()-l,l,fqdn) == 0;  
       }
       /// interface implementation
       const std::string& getFqdn() const 

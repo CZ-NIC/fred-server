@@ -45,13 +45,31 @@ namespace Register
         return name;
       }
     };
+    /// description of process of generation
+    struct GenProcType 
+    {
+      GenProcType() 
+        : rmlProcessor(true)
+      {}
+      GenProcType(
+        const std::string& _xslTemplateName, bool _rmlProcessor,
+        const std::string& _mime
+      ) :
+        xslTemplateName(_xslTemplateName), rmlProcessor(_rmlProcessor),
+        mime(_mime)
+      {}
+      std::string xslTemplateName; ///< name of file with xsl template
+      bool rmlProcessor; ///< include rml processing after xsl tranfsormation
+      std::string mime; ///< mime type of generated file 
+    };
+
     /// implementation of Generator interface
     class GeneratorImpl : public Generator
     {
       const std::string& path; ///< path to pdf generator
       const std::string& pathFM; ///< path to filemanager client
       const std::string& corbaNS; ///< host with corba nameservice
-      const std::string& xslTemplate; ///< xsl template for xslt transform
+      const GenProcType& genProc; ///< processing description
       std::ostream* out; ///< output stream if filename is empty
       std::string filename; ///< filename for storage
       unsigned filetype; //< type of generated document from filemanager
@@ -63,12 +81,12 @@ namespace Register
       GeneratorImpl(
         const std::string& _path, 
         const std::string& _pathFM, const std::string& _corbaNS, 
-        const std::string& _xslTemplate,
+        const GenProcType& _genProc,
         std::ostream* _out, const std::string& _filename, unsigned _filetype,
         const std::string& _lang
       ) throw (TmpFile::NAME_ERROR,TmpFile::OPEN_ERROR)
         : path(_path), pathFM(_pathFM), corbaNS(_corbaNS),
-          xslTemplate(_xslTemplate), out(NULL),
+          genProc(_genProc), out(NULL),
           filename(_filename), filetype(_filetype), lang(_lang)
       {
         bufferFile.open(std::ios::out);
@@ -79,18 +97,27 @@ namespace Register
       {
         TmpFile outputFile;
         std::stringstream cmd;
-        cmd << "xsltproc  "
-            << "--stringparam srcpath " << path << "/templates/" << " ";
-        if (!lang.empty())
-          cmd << "--stringparam lang " << lang << " ";
-        cmd << path << "/templates/" << xslTemplate << " "
-            << bufferFile.getName()
-            << " | " << path << "/doc2pdf.py ";
+        // if template name is empty instead of xslt transformation
+        // just echo input to output
+        if (genProc.xslTemplateName.empty()) cmd << "cat ";
+        else {
+          cmd << "xsltproc "
+              << "--stringparam srcpath " << path << "templates/" << " ";
+          if (!lang.empty())
+            cmd << "--stringparam lang " << lang << " ";
+          cmd << path << "templates/" << genProc.xslTemplateName << " ";
+        }
+        cmd << bufferFile.getName();
+        // if input is rml and processing is needed filter through
+        // external application
+        if (genProc.rmlProcessor)
+          cmd << " | " << path << "doc2pdf.py ";
         // in case of generation into corba filesystem send result to
         // corba filesystem client
         if (!filename.empty()) {
           cmd << "| python " <<  pathFM 
-              << "/filemanager_client.py -m application/pdf -s "
+              << "filemanager_client.py -m " << genProc.mime 
+              << " -s "
               << " -l " << filename
               << " -t " << filetype;
           if (!corbaNS.empty())
@@ -118,28 +145,39 @@ namespace Register
     /// implementation of Manager interface
     class ManagerImpl : public Manager
     {
-      std::string path;
-      std::string pathFM;
-      typedef std::map<GenerationType, std::string> TemplateMapType;
-      TemplateMapType templateMap;
-      std::string corbaNS;
+      std::string path; /// path to rml processor
+      std::string pathFM; ///< path to filemanager client
+      std::string corbaNS; ///< ns with corba filemanager
+      typedef std::map<GenerationType, GenProcType> GenerationMapType;
+      GenerationMapType templateMap; ///< list of prepared templates
      public:
       ManagerImpl(
         const std::string& _path, const std::string& _pathFM,
         const std::string& _corbaNS 
       ) : path(_path), pathFM(_pathFM), corbaNS(_corbaNS)
       {
-        templateMap[GT_INVOICE_PDF] = "invoice.xsl";
-        templateMap[GT_ADVANCE_INVOICE_PDF] = "advance_invoice.xsl";
-        templateMap[GT_AUTHINFO_REQUEST_PDF] = "auth_info.xsl";
-      }
-      
+        templateMap[GT_INVOICE_PDF] = GenProcType(
+          "invoice.xsl", true, "application/pdf"
+        );
+        templateMap[GT_ADVANCE_INVOICE_PDF] = GenProcType(
+          "advance_invoice.xsl", true, "application/pdf"
+        );
+        templateMap[GT_AUTHINFO_REQUEST_PDF] = GenProcType(
+          "auth_info.xsl", true, "application/pdf"
+        );
+        templateMap[GT_INVOICE_OUT_XML] = GenProcType(
+          "", false, "text/xml"
+        );
+        templateMap[GT_ACCOUNTING_XML] = GenProcType(
+          "", false, "text/xml"
+        );
+      }      
       virtual Generator *createOutputGenerator(
         GenerationType type, std::ostream& output,
         const std::string& lang
       ) const throw (Generator::ERROR)
       {
-        TemplateMapType::const_iterator i = templateMap.find(type);
+        GenerationMapType::const_iterator i = templateMap.find(type);
         if (i == templateMap.end()) throw Generator::ERROR();
         return new GeneratorImpl(
           path,pathFM,corbaNS,i->second,&output,"",0,lang
@@ -151,7 +189,7 @@ namespace Register
         const std::string& lang         
       ) const throw (Generator::ERROR)
       {
-        TemplateMapType::const_iterator i = templateMap.find(type);
+        GenerationMapType::const_iterator i = templateMap.find(type);
         if (i == templateMap.end()) throw Generator::ERROR();
         return new GeneratorImpl(
           path,pathFM,corbaNS,i->second,NULL,filename,filetype,lang

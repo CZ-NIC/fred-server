@@ -46,7 +46,7 @@ int main(int argc, char** argv)
     {
         if( strcmp( argv[i] , "-C" )  == 0  ||  strcmp( argv[i] , "--config" ) == 0    )
          {
-          if( i +1< argc  ) // pokud je zde jeste jeden parametr
+          if( i +1< argc  ) // test for more parametr
            {
                   std::cerr << "Read config file" << argv[i+1] << std::endl ;
 
@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     }
 
 
-if( !readConfig ) // pokud nenacetlo zkus default config
+if( !readConfig ) // if config is not read try read default config
 {
     if ( config.ReadConfigFile( CONFIG_FILE ) ) readConfig=true ;
     else  {  
@@ -105,14 +105,14 @@ if( !readConfig ) // pokud nenacetlo zkus default config
       rootPOA->create_POA("RegistryPOA",mgr.in(),pols);
 
     // prepare NameService object
-    std::string nameService = config.GetNameService();
+    std::string nameService = config.GetNameServiceHost();
     std::cerr << "nameService host: " <<   nameService << std::endl;
     NameService ns(orb,nameService);
 
 #ifdef ADIF
     PortableServer::ObjectId_var adminObjectId =
     PortableServer::string_to_ObjectId("Admin");
-    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db,&ns);
+    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db,&ns,config);
     poa->activate_object_with_id(adminObjectId,myccReg_Admin_i);
     CORBA::Object_var adminObj = myccReg_Admin_i->_this();
     myccReg_Admin_i->_remove_ref();
@@ -130,7 +130,7 @@ if( !readConfig ) // pokud nenacetlo zkus default config
 
     PortableServer::ObjectId_var webWhoisObjectId =
     PortableServer::string_to_ObjectId("WebWhois");
-    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db,&ns);
+    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db,&ns,config);
     poa->activate_object_with_id(webWhoisObjectId,myccReg_Admin_i);
     CORBA::Object_var webWhoisObj = myccReg_Admin_i->_this();
     myccReg_Admin_i->_remove_ref();
@@ -142,7 +142,7 @@ if( !readConfig ) // pokud nenacetlo zkus default config
     ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(&mm,&ns);
 
 
-    // create session TODO config
+    // create session  use values from config
     std::cerr << "CreateSession: max "  << config.GetSessionMax()  << " timeout " <<  config.GetSessionWait() <<  std::endl;
     myccReg_EPP_i->CreateSession( config.GetSessionMax() , config.GetSessionWait() );
 
@@ -158,22 +158,23 @@ if( !readConfig ) // pokud nenacetlo zkus default config
       exit(-2);
     } 
 
+     // load zone parametrs 
     if( myccReg_EPP_i->loadZones() <= 0  ){
        LOG( ALERT_LOG ,  "Database error: load zones");
       exit(-4);
     }
  
-    if( myccReg_EPP_i->LoadCountryCode() <= 0 ){  /// nacti ciselnik zemi
+    if( myccReg_EPP_i->LoadCountryCode() <= 0 ){  /// louad all county code from table enum_country
          LOG( ALERT_LOG , "Database error: load country code");
       exit(-5);
     }
        
-    if( myccReg_EPP_i->LoadErrorMessages() <= 0 ){  // nacti chybove zpravy
+    if( myccReg_EPP_i->LoadErrorMessages() <= 0 ){  // load error messages to memory
       LOG( ALERT_LOG , "Database error: load  error messages");
       exit(-6);
     }
 
-     if( myccReg_EPP_i->LoadReasonMessages()  <= 0 ){   // nacti reason zpravy
+     if( myccReg_EPP_i->LoadReasonMessages()  <= 0 ){   // loead reason messages to memory
        LOG( ALERT_LOG , "Database error: load reason messages" );
       exit(-7);
     }

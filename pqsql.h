@@ -9,44 +9,44 @@ public:
 PQ();
 ~PQ();
 
-// pripoji databazi s nastavenim conninfo
+//  connect to database whith  conninfo string
 bool OpenDatabase(const char *conninfo); 
-// provede sqlString 
+// exec sqlString 
 bool ExecSQL(const char *sqlString);
-// odpojeni od databaze 
+// disconnect from database
 void Disconnect();
 
-// nastaveni kodovani 
+// client encoding 
 void  SetEncoding(  const char *encoding) ;
-// vraci velikost  prvku
+// get lenght 
 int  GetValueLength(int row  , int col);
 
-// spusti select a vrati pocet radek
+// rum SQL select 
 bool ExecSelect(const char *sqlString);
-// vyprazdni result selectu a nastav pocet radku a sloupcu na -1
+// free  result  of selectu 
 void  FreeSelect();
-// vraci hodnotu
+// return value of field name fname and row
 char * GetFieldValueName(char *fname , int row );
-// vraci retezec hodnoty
+// return value of filed with row and column
 char * GetFieldValue( int row , int col );
 
 
-// vraci boolean hodnoty
+// get BOOL value 
 bool GetFieldBooleanValueName(char *fname , int row );
-// vraci integer hodnoty
+// get integer value
 int  GetFieldNumericValueName(char *fname , int row );
 
-// jmeno pole
+// name of field
 char *  GetFieldName( int col );
 int GetNameField(char *fname );
 
-// jestli neni null
+// test null value true if not NULL false if is NULL
 bool IsNotNull( int row , int col );
 
-// escape string 
+// escape string to escape sequence  using  libpq
 bool Escape(char *str ,  const char *String ,  int length  );
 
-// vraci pocet radku
+// return number of selected rows and cols
 int GetSelectRows();
 int GetSelectCols();
 
@@ -54,7 +54,7 @@ int GetSelectCols();
 private:
 PGconn     *connection;
 PGresult   *result;
-int nRows , nCols; // pocet radek pri selectu
+int nRows , nCols; // number  of  rows and cols
 };
 
 #endif

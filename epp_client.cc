@@ -95,7 +95,7 @@ int main(int argc, char** argv)
    
 
     loginID = 0; 
-
+/*
 //    errors = new ccReg::Error_var;
     errors.length(1);
     errors[0].code=ccReg::transfer_op;
@@ -104,7 +104,7 @@ int main(int argc, char** argv)
     errCode=1000;
     cout << "get Transaction code input " << errCode << endl;
     ret =  EPP->GetTransaction( errCode ,  errors , loginID ,  "client-CLTRID" );
-
+*/
 /*
     cout << "get Transaction code " << ret->errCode << ret->errMsg  <<  ret->svTRID  << endl;
     for(  i = 0 ; i < ret->errors.length() ; i ++ )
@@ -146,7 +146,69 @@ int main(int argc, char** argv)
     cout << "loginID" << loginID  << endl;
 
 
-    cout << "err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
+    cout << "err code " <<  ret->code << ret->msg << " svTRID " <<  ret->svTRID  << endl;
+
+    strcpy(  handle , "CID:ID01"  );
+
+  
+    cout << " ContactInfo " <<  handle <<   endl;
+
+    ret =  EPP->ContactInfo( handle ,  cc , loginID , "test-contact-info" , "<XML>debil</XML>");
+    cout << "ContactInfo err code " << ret->code << ret->msg << " serverTRID " <<  ret->svTRID  << endl;
+    cout << "ContactInfo " <<  cc->Name << endl;
+
+    admin = new ccReg::AdminContact;
+    admin->length(0);
+/*
+    admin[0] = CORBA::string_dup("CID:JOUDA" );
+    admin[1] = CORBA::string_dup("CID:DEBIL" );
+    admin[2] = CORBA::string_dup("CID:KOKOT" );
+*/
+
+//    ext.length(0);
+    ext = new ccReg::ExtensionList;
+    ext->length(0);
+
+    period.count=1;
+    period.unit=ccReg::unit_year;
+
+
+    strcpy(  fqdn , "neco.cz" );
+    cout << "DomainCreate " << fqdn << endl;
+
+try {
+    ret =  EPP->DomainCreate( "neco.cz" , "cid:id01" , "NSSID:bazmek" , "heslicko" , period , admin , crDate , exDate ,   loginID , "domain-neco.cz" , "<XML>domaincreator</XML>" , ext );
+    cout << "domain create err code " << ret->code  <<  ret->msg <<  ret->svTRID << "crDate: " << crDate << "exDate" << exDate << endl;
+
+  }
+  catch(ccReg::EPP::EppError& ex) 
+    {
+    cerr << "EPP Error: errCode: "  <<  ex.errCode  << " msg: " << ex.errMsg << " svTRID: "   <<   ex.svTRID << endl;
+
+     for( unsigned int  i = 0 ; i < ex.errorList.length() ; i ++ )
+        {
+          cout << "error list  param: " << ex.errorList[i].code << " reason: "  <<   ex.errorList[i].reason << " position " <<  ex.errorList[i].position << endl ;
+        }
+  }
+
+
+ 
+
+   cout << "DomainInfo: " << fqdn << endl;
+
+   ret =  EPP->DomainInfo(  fqdn ,  domain , loginID , "info-neco" , "<XML>"  );
+   cout << "doman inf err code " << ret->code  <<  ret->msg <<  ret->svTRID  << endl;
+
+   for( i = 0 ; i < domain->admin.length() ; i ++ ) cout << "admin: "  << domain->admin[i] << endl;
+   cout << "Domain info"  << domain->name << domain->Registrant <<  domain->nsset <<  endl;
+
+   cout << "CrDate: " <<  domain->CrDate << endl;
+   cout << "UpDate: " <<  domain->UpDate << endl;
+   cout << "TrDate: " <<  domain->TrDate << endl;
+   cout << "ExDate: " <<  domain->ExDate << endl;
+
+   delete domain;
+
 /*
     ret =  EPP->domainSendAuthInfo("nic.edu" , loginID, "EPP_DomainSendAuthInfo" , "<XML>" );
     cout << "SendAuthInfo err code " <<  ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
@@ -169,15 +231,17 @@ int main(int argc, char** argv)
   for( i = 0 ; i < cc->stat.length() ; i ++ )
        cout << "status " <<  cc->stat[i].value <<  cc->stat[i].text << endl;
 */
+/*
     ret =  EPP->ClientCredit( credit ,   loginID  , "client-credit-ZC" , "<XML>get_rededit</XML>" );
-    cout << "ClientCredit " << ret->errCode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
+    cout << "ClientCredit " << ret->ode << ret->errMsg << " serverTRID " <<  ret->svTRID  << endl;
 
    for( i = 0 ; i < credit->length() ; i ++  )
     {
      cout << "credit " << credit[i].price << " zone " << credit[i].zone_fqdn << endl;
     }
+*/
 
-
+/*
   ret =  EPP->PollRequest( msgID ,  count ,  qDate , mesg ,  loginID ,  "poll-request"  ,  "<XML>");
   cout << "PollRequest: "  << "msgID " << msgID << endl ;
   cout << "err code " << ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
@@ -190,7 +254,7 @@ int main(int argc, char** argv)
   cout << "PollRAcknowledgement: "  << ret->errCode  << endl;
   cout << "count " << count << "newmsgID: " << newmsgID <<  " count " << count <<  endl;
   cout << "err code " << ret->errCode << ret->errMsg << " svTRID " <<  ret->svTRID  << endl;
-
+*/
 
 /*
    ret =  EPP->DomainInfo(  "beta.cz" ,  domain , loginID , "info-enum-4.4.4" , "<XML>"  );
@@ -257,8 +321,7 @@ int main(int argc, char** argv)
 */
 
 
-
-
+/*
 
 if( loginID )
 {
@@ -326,7 +389,7 @@ num = 0;
 
 
 //    sprintf( fqdn , "d-%d-ZZ.cz" ,  (int ) i );
-/*
+
     admin = new ccReg::AdminContact;
     admin->length(3);
     admin[0] = CORBA::string_dup("CID:JOUDA" );
@@ -361,7 +424,7 @@ num = 0;
    cout << "err code " << ret->errCode   << endl;
    cout << "ext length " <<   domain->ext.length() << endl ;
 
-*/
+
    ret =  EPP->ContactDelete(  handle ,  loginID , "test-contact-delete" , "" );
    cout << "contact delete " << handle << "  "  << ret->errCode  <<  ret->errMsg <<  ret->svTRID << endl;
    delete ret;
@@ -371,7 +434,7 @@ num = 0;
 
 
 }
-
+*/
 /*
     ret =  EPP->ClientLogout( loginID , "XXXX-logout" , "");
     cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
@@ -912,19 +975,29 @@ delete cc;
     cout  << "client logout "<< endl;
 
     ret =  EPP->ClientLogout( loginID , "XXXX-logout" , "");
-  cout << "err code " <<  ret->errCode  << " svTRID " <<  ret->svTRID  << endl;
+  cout << "err code " <<  ret->code  << " svTRID " <<  ret->svTRID  << endl;
      
     orb->destroy();
   }
   catch(CORBA::TRANSIENT&) {
    cerr << "Caught system exception TRANSIENT -- unable to contact the server." << endl ;
   }
+
+
+
+
+
   catch(CORBA::SystemException& ex) {
-    cerr << "Caught a CORBA::" << ex._name() << endl;
+    cerr << "Caught a SystemException  CORBA::" << ex._name() << endl;
   }
+
+
+
   catch(CORBA::Exception& ex) {
     cerr << "Caught CORBA::Exception: " << ex._name() << endl;
   }
+
+
   catch(omniORB::fatalException& fe) {
    cerr << "Caught omniORB::fatalException:" << endl;
    cerr << "  file: " << fe.file() << endl;

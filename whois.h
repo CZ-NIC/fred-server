@@ -12,7 +12,7 @@ class ccReg_Whois_i: public POA_ccReg::Whois ,
   virtual ~ccReg_Whois_i();
 
 
-  // dotaz na domenu
+  // whois ASK to domain
   // methods corresponding to defined IDL attributes and operations
   ccReg::DomainWhois* getDomain(const char* domain_name, CORBA::String_out timestamp);
 

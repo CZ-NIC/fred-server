@@ -1,6 +1,6 @@
 #define MAX_LINE 4096 
 #define MAX_STRING 1024
-// class for import from CSV file
+// class for import from data  CSV file
 
 class CSV
 {
@@ -8,7 +8,7 @@ public:
 CSV();
 ~CSV();
 
-// precte radek ze souboru
+// read row from file
 bool get_row();
 char * get_value(unsigned int col );
 
@@ -26,12 +26,12 @@ int get_cols(){ return  cols ; };
 private:
 
 
-int get_sepnum(); // projede buffer radky
+int get_sepnum(); // return number of separator
 
 FILE *fd;
 char separator;
-int rows , cols; // pocet radek a sloupcu CSV souboru
-char buf[MAX_LINE]; // buffer pro radek
-char string[MAX_STRING]; // 
+int rows , cols; // rows and cols of the CSV file
+char buf[MAX_LINE]; // buffer for read wors
+char string[MAX_STRING]; // string
 };
 

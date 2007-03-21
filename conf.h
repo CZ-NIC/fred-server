@@ -1,3 +1,6 @@
+#ifndef __CONF_H__
+#define __CONF_H__
+
 #ifdef XMLCONF
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -20,7 +23,10 @@
 #define KEY_nameservice 10
 #define KEY_session_max  11
 #define KEY_session_wait  12
-#define MAX_KEYS  12
+#define KEY_docgen_path  13
+#define KEY_fileclient_path  14
+#define KEY_ebanka_url  15
+#define MAX_KEYS  15
 
 #include <string>
 
@@ -28,7 +34,7 @@ class Conf {
 public:
 
 Conf() { port[0]=0; timeout[0] = 0 ; host[0] = 0 ; user[0]=0 ; password[0] = 0 ; host[0]=0; log_level = 0 ; conninfo[0] =0 ; log_local=0; 
-// default hodnoty bez udani v konfigu
+// default  values 
 session_max=20 ; session_wait=300;}; // empty
 ~Conf(){}; // empty
 
@@ -51,14 +57,16 @@ bool  ReadConfigFileTXT(const char *filename );
 int GetSessionMax() { return  session_max; } ;
 int GetSessionWait() { return  session_wait; } ;
 
-char * GetDBhost(){ if( host[0] == 0 ) return NULL ; else  return host; };
-char * GetDBname(){ if( dbname[0] == 0 ) return NULL ; else  return dbname; };
-char * GetDBuser(){ if( user[0] == 0 ) return NULL ; else return user; };
-char * GetDBpass(){ if( password[0] == 0 ) return NULL ; else return password; };
-char * GetDBport(){ if(port[0] == 0 ) return NULL ; else  return port; };
-char * GetDBtimeout(){ if(timeout[0] == 0 ) return NULL ; else  return timeout; };
-char * GetDBconninfo();
-const char *GetNameService(){ return nameServiceIOR.c_str(); } 
+const char *GetDBhost(){ if( host[0] == 0 ) return NULL ; else  return host; };
+const char *GetDBname(){ if( dbname[0] == 0 ) return NULL ; else  return dbname; };
+const char *GetDBuser(){ if( user[0] == 0 ) return NULL ; else return user; };
+const char *GetDBpass(){ if( password[0] == 0 ) return NULL ; else return password; };
+const char *GetDBport(){ if(port[0] == 0 ) return NULL ; else  return port; };
+const char *GetDBtimeout(){ if(timeout[0] == 0 ) return NULL ; else  return timeout; };
+const char *GetDBconninfo();
+const char *GetNameServiceHost() { return nameService.c_str(); }
+const char *GetDocGenPath() { return docGenPath.c_str(); }
+const char *GetFileClientPath() { return fileClientPath.c_str(); }
 
 
 int GetSYSLOGlevel(){ return log_level; };
@@ -106,6 +114,9 @@ int log_level;
 int log_local;
 int session_max;
 int session_wait;
-std::string nameServiceIOR;
+std::string nameService;
+std::string docGenPath;
+std::string fileClientPath;
 };
 
+#endif

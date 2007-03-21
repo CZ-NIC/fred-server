@@ -41,6 +41,7 @@ namespace Register
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     /// implementation of Subject interface 
     class SubjectImpl : public Subject {
+      std::string handle;
       std::string name;
       std::string fullname;
       std::string street;
@@ -54,6 +55,7 @@ namespace Register
       std::string url;
      public:
       SubjectImpl(
+        const std::string& _handle,
         const std::string& _name, const std::string& _fullname,
         const std::string& _street, const std::string& _city,
         const std::string& _zip, const std::string& _ico,
@@ -61,11 +63,12 @@ namespace Register
         const std::string& _reclamation, const std::string& _email,
         const std::string& _url
       ) : 
-        name(_name), fullname(_fullname), street(_street), city(_city),
-        zip(_zip), ico(_ico), vatNumber(_vatNumber),
+        handle(_handle), name(_name), fullname(_fullname), street(_street), 
+        city(_city), zip(_zip), ico(_ico), vatNumber(_vatNumber),
         registration(_registration), reclamation(_reclamation),
         email(_email), url(_url)
       {}      
+      const std::string& getHandle() const { return handle; }
       const std::string& getName() const { return name; }
       const std::string& getFullname() const { return fullname; }
       const std::string& getStreet() const { return street; }
@@ -88,12 +91,14 @@ namespace Register
       unsigned long number; ///< number of source advance invoice
       Money price; ///< money that come from this advance invoice  
       Money credit; ///< credit remaining on this advance invoice 
+      TID id; ///< id of source advance invoice
      public:
       /// init content from sql result (ignore first column)
       PaymentSourceImpl(DB *db, unsigned l) : 
         number(atol(db->GetFieldValue(l,1))),
         price(STR_TO_MONEY(db->GetFieldValue(l,2))),
-        credit(STR_TO_MONEY(db->GetFieldValue(l,3)))
+        credit(STR_TO_MONEY(db->GetFieldValue(l,3))),
+        id(STR_TO_ID(db->GetFieldValue(l,4)))
       {}
       virtual unsigned long getNumber() const
       {
@@ -106,6 +111,10 @@ namespace Register
       virtual Money getCredit() const
       {
         return credit;
+      }
+      virtual TID getId() const
+      {
+        return id;
       }
     };
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -120,7 +129,8 @@ namespace Register
       PaymentActionType action; ///< type of action that is subject of payment
       unsigned unitsCount; ///< number of months to expiration of domain
       Money pricePerUnit; ///< copy of price from price list
-      Money price; ///< summarized price for all units
+      Money price; ///< summarized price for all units    
+      TID objectId; ///< id of object affected by payment action
      public:
       /// init content from sql result (ignore first column)
       PaymentActionImpl(DB *db, unsigned l) :
@@ -134,8 +144,13 @@ namespace Register
         ),
         unitsCount(atoi(db->GetFieldValue(l,5))),
         pricePerUnit(STR_TO_MONEY(db->GetFieldValue(l,6))),
-        price(STR_TO_MONEY(db->GetFieldValue(l,7)))
-      {}      
+        price(STR_TO_MONEY(db->GetFieldValue(l,7))),
+        objectId(STR_TO_ID(db->GetFieldValue(l,8)))
+      {}
+      virtual TID getObjectId() const
+      {
+        return objectId;
+      }
       virtual const std::string& getObjectName() const
       {
         return objectName;
@@ -195,7 +210,8 @@ namespace Register
       short vatRate;
       Money total;
       Money totalVAT;
-      TID file;
+      TID filePDF;
+      TID fileXML;
       std::string varSymbol;
       SubjectImpl client;
       static SubjectImpl supplier;
@@ -225,6 +241,9 @@ namespace Register
       Money getTotal() const { return total; }
       Money getTotalVAT() const { return totalVAT; }
       const std::string& getVarSymbol() const { return varSymbol; }
+      TID getFilePDF() const { return filePDF; }
+      TID getFileXML() const { return fileXML; }
+      
       unsigned getSourceCount() const { return sources.size(); }
       const PaymentSource *getSource(unsigned idx) const
       {
@@ -235,11 +254,12 @@ namespace Register
       {
         return idx>=actions.size() ? NULL : actions[idx];
       }
-      void setFile(TID _file) 
+      void setFile(TID _filePDF, TID _fileXML) 
       {
         // set only once (disabling overwrite link to archived file)
-        if (!file) {
-          file = _file;
+        if (!filePDF) {
+          filePDF = _filePDF;
+          fileXML = _fileXML;
           // intention was separate setting of file id and it's storage
           // outside of document generation process. temporary 
           // combined into setting function
@@ -252,10 +272,15 @@ namespace Register
       }
       void storeFile() throw (SQL_ERROR)
       {
-        if (storeFileFlag && file) {
+        // cannot rollback generated files so ignoring if XML file hasn't
+        // been generated
+        if (storeFileFlag && filePDF) {
           std::stringstream sql;
-          sql << "UPDATE invoice SET file=" << file  
-              << " WHERE id=" << getId();
+          sql << "UPDATE invoice SET file=" << filePDF;
+          if (fileXML) {
+            sql << ",fileXML=" << fileXML;
+          }; 
+          sql << " WHERE id=" << getId();
           if (!dbc->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         }                
       }
@@ -275,16 +300,18 @@ namespace Register
         vatRate(atoi(db->GetFieldValue(l,11))),
         total(STR_TO_MONEY(db->GetFieldValue(l,12))),
         totalVAT(STR_TO_MONEY(db->GetFieldValue(l,13))),
-        file(STR_TO_ID(db->GetFieldValue(l,14))),
-        varSymbol(db->GetFieldValue(l,21)),
+        filePDF(STR_TO_ID(db->GetFieldValue(l,14))),
+        fileXML(STR_TO_ID(db->GetFieldValue(l,15))),
+        varSymbol(db->GetFieldValue(l,22)),
         client(
-          db->GetFieldValue(l,15),
-          "", // fullname is empty
+          db->GetFieldValue(l,23),
           db->GetFieldValue(l,16),
+          "", // fullname is empty
           db->GetFieldValue(l,17),
           db->GetFieldValue(l,18),
           db->GetFieldValue(l,19),
           db->GetFieldValue(l,20),
+          db->GetFieldValue(l,21),
           "", // registration is empty
           "", // reclamation is empty
           "", // url is empty
@@ -321,6 +348,7 @@ namespace Register
     // TODO: should be initalized somewhere else
     /// static supplier in every invoice
     SubjectImpl InvoiceImpl::supplier(
+      "REG-CZNIC",
       "CZ.NIC, z.s.p.o.",
       "CZ.NIC, zájmové sdružení právnických osob",
       "Americká 23",
@@ -373,12 +401,11 @@ namespace Register
         // do not use system locale - locale("") because of
         // unpredictable formatting behavior
         out.imbue(std::locale(
-          out.getloc(),
+          std::locale(
+            out.getloc(),
+            new boost::posix_time::time_facet("%Y-%m-%d %T")
+          ),
           new boost::gregorian::date_facet("%Y-%m-%d")
-        ));
-        out.imbue(std::locale(
-          out.getloc(),
-          new boost::posix_time::time_facet("%Y-%m-%d %T")
         ));
         // generate invoice xml
         if (xmlDec)
@@ -459,34 +486,55 @@ namespace Register
         out << TAGEND(invoice);
       }      
     };
+#define INVOICE_PDF_FILE_TYPE 1 
+#define INVOICE_XML_FILE_TYPE 2 
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    //   ExporterPDF
+    //   ExporterArchiver
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     // builder that create pdf of invoice and store it into filesystem
-    class ExporterPDF : public Exporter
+    class ExporterArchiver : public Exporter
     {
       Document::Manager *docman;
+      std::string makeFileName(Invoice *i, const char *suffix)
+      {
+        std::stringstream filename;
+        filename << i->getNumber() << suffix;
+        return filename.str();
+      }
      public:
-      ExporterPDF(Document::Manager *_docman) : docman(_docman) {}
+      ExporterArchiver(Document::Manager *_docman) : docman(_docman) {}
       virtual void doExport(Invoice *i)
       {
-        std::stringstream filenamePDF;
-        filenamePDF << i->getNumber() << ".pdf";
-        std::fstream outf(filenamePDF.str().c_str(),std::ios::out);
         try {
-          std::auto_ptr<Document::Generator> g(
+          // create generator for pdf 
+          std::auto_ptr<Document::Generator> gPDF(
             docman->createSavingGenerator(
               i->getType() == IT_DEPOSIT ? 
                 Document::GT_ADVANCE_INVOICE_PDF :
                 Document::GT_INVOICE_PDF,
-              filenamePDF.str(),1,
+              makeFileName(i,".pdf"),INVOICE_PDF_FILE_TYPE,
               "" // default language
             )
           );
-          ExporterXML xml(g->getInput(),true);
-          xml.doExport(i);
+          // feed generator with xml input using xml exporter
+          ExporterXML(gPDF->getInput(),true).doExport(i);
+          // return id of generated PDF file
+          TID filePDF = gPDF->closeInput();
+          // create generator for XML
+          std::auto_ptr<Document::Generator> gXML(
+            docman->createSavingGenerator(
+              Document::GT_INVOICE_OUT_XML,
+              makeFileName(i,".xml"),INVOICE_PDF_FILE_TYPE,
+              "" // default language
+            )
+          );
+          // feed generator with xml input using xml exporter
+          ExporterXML(gXML->getInput(),true).doExport(i);
+          // return id of generated PDF file
+          TID fileXML = gXML->closeInput();
+          // save generated files with invoice
           InvoiceImpl *ii = dynamic_cast<InvoiceImpl *>(i);
-          ii->setFile(g->closeInput());
+          ii->setFile(filePDF,fileXML);
         }
         catch (...) {
           // TODO: LOG ERROR
@@ -503,7 +551,8 @@ namespace Register
       InvoicesType invoices; ///< list of invoices for given filter
       DB *db; ///< database connection for querying
       TID idFilter; ///< filter for invoice id 
-      TID registrarFilter; ///< filter for registrar recieving invoice 
+      TID registrarFilter; ///< filter for registrar recieving invoice
+      std::string registrarHandleFilter; ///< filter for registrar by handle 
       TID zoneFilter; ///< filter for id of associated zone
       unsigned typeFilter; ///< filter for invoice type (advance or normal)
       std::string varSymbolFilter; ///< filter for variable symbol of payment
@@ -511,7 +560,8 @@ namespace Register
       time_period crDateFilter; ///< filter for crDate
       time_period taxDateFilter; ///< filter for taxDate
       ArchiveFilter archiveFilter; ///< filter for existance of archived file
-      TID objectFilter; ///< filter for attached object
+      TID objectIdFilter; ///< filter for attached object by id
+      std::string objectNameFilter; ///< filter for attached object by name
       std::string advanceNumberFilter; ///< filter for source advance invoice
       /// find invoice in list by id
       InvoiceImpl *findById(TID id) const
@@ -527,7 +577,7 @@ namespace Register
         idFilter(0), registrarFilter(0), zoneFilter(0), typeFilter(0), 
         crDateFilter(ptime(neg_infin),ptime(pos_infin)),
         taxDateFilter(ptime(neg_infin),ptime(pos_infin)),
-        archiveFilter(AF_IGNORE), objectFilter(0)
+        archiveFilter(AF_IGNORE), objectIdFilter(0)
       {}
       ~InvoiceListImpl()
       {
@@ -539,10 +589,11 @@ namespace Register
           delete invoices[i];
         invoices.clear();
       }
-      void clearFilter()
+      virtual void clearFilter()
       {
         idFilter = 0;
-        registrarFilter = 0; 
+        registrarFilter = 0;
+        registrarHandleFilter = "";
         zoneFilter = 0;
         typeFilter = 0;
         varSymbolFilter = "";
@@ -550,7 +601,7 @@ namespace Register
         crDateFilter = time_period(ptime(neg_infin),ptime(pos_infin));
         taxDateFilter = time_period(ptime(neg_infin),ptime(pos_infin));
         archiveFilter = AF_IGNORE;
-        objectFilter = 0;
+        objectIdFilter = 0;
       }
       virtual void setIdFilter(TID id)
       {
@@ -559,6 +610,10 @@ namespace Register
       virtual void setRegistrarFilter(TID registrar)
       {
         registrarFilter = registrar;
+      }
+      virtual void setRegistrarHandleFilter(const std::string& handle)
+      {
+        registrarHandleFilter = handle;
       }
       virtual void setZoneFilter(TID zone)
       {
@@ -588,9 +643,13 @@ namespace Register
       {
         archiveFilter = archive;
       }
-      virtual void setObjectFilter(TID object)
+      virtual void setObjectIdFilter(TID objectId)
       {
-        objectFilter = object;
+        objectIdFilter = objectId;
+      }
+      virtual void setObjectNameFilter(const std::string& objectName)
+      {
+        objectNameFilter = objectName;
       }
       virtual void setAdvanceNumberFilter(const std::string& number)
       {
@@ -618,10 +677,13 @@ namespace Register
           where << "AND i.prefix_type=ip.id ";
           SQL_ID_FILTER_FILL(where,"ip.typ",typeFilter-1);
         }
-        if (!varSymbolFilter.empty()) {
+        if (!varSymbolFilter.empty() || !registrarHandleFilter.empty()) {
           from << ", registrar r ";
           where << "AND i.registrarid=r.id ";
-          SQL_WILDCARD_FILTER_FILL(where,"r.varsymb",varSymbolFilter);
+          if (!varSymbolFilter.empty())
+            SQL_WILDCARD_FILTER_FILL(where,"r.varsymb",varSymbolFilter);
+          if (!registrarHandleFilter.empty())
+            SQL_WILDCARD_FILTER_FILL(where,"r.handle",registrarHandleFilter);
         }
         SQL_WILDCARD_FILTER(where,"i.prefix",numberFilter);
         SQL_DATE_FILTER(where,"i.crdate",crDateFilter);
@@ -631,11 +693,17 @@ namespace Register
           case AF_SET: where << "AND NOT(i.file ISNULL) "; break;
           case AF_UNSET: where << "AND i.file ISNULL "; break;
         }
-        if (objectFilter) {
+        if (objectIdFilter) {
           from << ", invoice_object_registry ior ";
           where << "AND i.id=ior.invoiceid ";
-          SQL_ID_FILTER_FILL(where,"ior.objectid",objectFilter);
+          SQL_ID_FILTER_FILL(where,"ior.objectid",objectIdFilter);
         }
+        if (!objectNameFilter.empty()) {
+          from << ", invoice_object_registry iorh, object_registry obr ";
+          where << "AND i.id=iorh.invoiceid AND obr.id=iorh.objectid ";
+          SQL_WILDCARD_FILTER_FILL(where,"obr.name",objectNameFilter);
+        }
+        
         if (!advanceNumberFilter.empty()) {
           from << ", invoice_object_registry ior2 "
                << ", invoice_object_registry_price_map iorpm "
@@ -652,9 +720,10 @@ namespace Register
           "SELECT "
           " i.id, i.zone, i.crdate, i.taxdate, ig.fromdate, "
           " ig.todate, ip.typ, i.prefix, i.registrarid, i.credit*100, "
-          " i.price*100, i.vat, i.total*100, i.totalvat*100, i.file, "
+          " i.price*100, i.vat, i.total*100, i.totalvat*100, "
+          " i.file, i.fileXML, "
           " r.organization, r.street1, "
-          " r.city, r.postalcode, r.ico, r.dic, r.varsymb "
+          " r.city, r.postalcode, r.ico, r.dic, r.varsymb, r.handle "
           "FROM "
           " tmp_invoice_filter_result it, registrar r, "
           " invoice_prefix ip, invoice i "
@@ -664,6 +733,7 @@ namespace Register
         )) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)         
           invoices.push_back(new InvoiceImpl(db,i));
+        db->FreeSelect();
         // append list of actions to all selected invoices
         if (!db->ExecSelect(
           "SELECT "
@@ -671,7 +741,7 @@ namespace Register
           " CASE "
           "  WHEN ior.period=0 THEN 0 "
           "  ELSE 100*SUM(iorpm.price)*12/ior.period END, "
-          " SUM(iorpm.price)*100 "
+          " SUM(iorpm.price)*100, o.id "
           "FROM "
           " tmp_invoice_filter_result it, "
           " invoice_object_registry ior, object_registry o, "
@@ -680,7 +750,8 @@ namespace Register
           " it.id=ior.invoiceid AND ior.objectid=o.id "
           " AND ior.id=iorpm.id "
           "GROUP BY "
-          " it.id, o.name, ior.crdate, ior.exdate, ior.operation, ior.period "
+          " it.id, o.name, ior.crdate, ior.exdate, ior.operation, "
+          " ior.period, o.id "
         )) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           InvoiceImpl *inv = findById(STR_TO_ID(db->GetFieldValue(i,0)));
@@ -689,10 +760,11 @@ namespace Register
             // TODO: log error - some database problem 
           }
         }
+        db->FreeSelect();
         // append list of sources to all selected invoices
         if (!db->ExecSelect(
           "SELECT "
-          " it.id, sri.prefix, ipm.credit*100, ipm.balance*100 "
+          " it.id, sri.prefix, ipm.credit*100, ipm.balance*100, sri.id "
           "FROM "
           " tmp_invoice_filter_result it, "
           " invoice_credit_payment_map ipm, invoice sri "
@@ -706,6 +778,7 @@ namespace Register
             // TODO: log error - some database problem 
           }
         }
+        db->FreeSelect();
         // delete temporary table
         if (!db->ExecSQL("DROP TABLE tmp_invoice_filter_result "))
           throw SQL_ERROR();
@@ -722,6 +795,10 @@ namespace Register
       virtual unsigned long getCount() const
       {
         return invoices.size();
+      }
+      virtual Invoice *get(unsigned idx) const
+      {
+        return idx < invoices.size() ? invoices[idx] : NULL;
       }
       virtual void exportXML(std::ostream& out)
       {
@@ -744,7 +821,8 @@ namespace Register
         std::string registrarEmail; ///< address to deliver email
         boost::gregorian::date from; ///< start of invoicing period 
         boost::gregorian::date to; ///< end of invoicing period 
-        TID file; ///< id of file with invoice attached in email
+        TID filePDF; ///< id of pdf file with invoice attached in email
+        TID fileXML; ///< id of xml file with invoice attached in email
         TID generation; ///< filled if source is invoice generation
         TID invoice; ///< filled if successful generation or advance invoice
         TID mail; ///< id of generated email
@@ -757,9 +835,10 @@ namespace Register
         Item(
           const std::string& _registrarEmail, 
           boost::gregorian::date _from, boost::gregorian::date _to,
-          TID _file, TID _generation, TID _invoice, TID _mail
+          TID _filePDF, TID _fileXML, TID _generation, TID _invoice, TID _mail
         ) :
-          registrarEmail(_registrarEmail), from(_from), to(_to), file(_file),
+          registrarEmail(_registrarEmail), from(_from), to(_to), 
+          filePDF(_filePDF), fileXML(_fileXML),
           generation(_generation), invoice(_invoice), mail(_mail)
         {}
       };
@@ -767,10 +846,26 @@ namespace Register
       MailItems items; ///< list of notifications to send
       Mailer::Manager *mm; ///< mail sending interface
       DB *db; ///< database connectivity
+      /// store information about sending email 
+      void store(unsigned idx) throw (SQL_ERROR)
+      {
+        std::stringstream sql;
+        sql << "INSERT INTO invoice_mails (invoiceid,genid,mailid) VALUES (";
+        if (items[idx].invoice) sql << items[idx].invoice;
+        else sql <<  "NULL";
+        sql << ",";
+        if (items[idx].generation) sql << items[idx].generation;
+        else sql << "NULL";
+        sql << ","
+            << items[idx].mail
+            << ")";
+        if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
+      }
      public:
       Mails(Mailer::Manager *_mm, DB *_db) : mm(_mm), db(_db)
       {}
-      void send()
+      /// send all mails and store information about sending
+      void send() throw (SQL_ERROR)
       {
         for (unsigned i=0; i<items.size(); i++) {
           Item *it = &items[i];
@@ -786,9 +881,10 @@ namespace Register
           dateBuffer << it->to;
           params["todate"] = dateBuffer.str();
           Mailer::Handles handles;
-          // TODO: decide wetger to include domain or registrar handles
+          // TODO: include domain or registrar handles??
           Mailer::Attachments attach;
-          if (it->file) attach.push_back(it->file);
+          if (it->filePDF) attach.push_back(it->filePDF);
+          if (it->fileXML) attach.push_back(it->fileXML);
           it->mail = mm->sendEmail(
             "", // default sender according to template 
             it->registrarEmail, 
@@ -796,19 +892,29 @@ namespace Register
             it->getTemplateName(),
             params, handles, attach
           );
+          if (!it->mail) {
+            // TODO: LOG ERROR 
+          }
+          store(i);
         }
       }
+      /// load invoices that need to be sent
       void load() throw (SQL_ERROR)
       {
         std::stringstream sql;
-        sql << "SELECT r.email, g.fromdate, g.todate, i.file, g.id, i.id "
+        sql << "SELECT r.email, g.fromdate, g.todate, "
+            << "i.file, i.fileXML, g.id, i.id "
             << "FROM registrar r, invoice i "
             << "LEFT JOIN invoice_generation g ON (g.invoiceid=i.id) "
+            << "LEFT JOIN invoice_mails im ON (im.invoiceid=i.id)"
             << "WHERE i.registrarid=r.id "
+            << "AND im.mailid ISNULL "
             << "UNION "
-            << "SELECT r.email, g.fromdate, g.todate, NULL, g.id, NULL "
-            << "FROM invoice_generation g, registrar r "
-            << "WHERE g.registrarid=r.id AND g.invoiceid ISNULL ";
+            << "SELECT r.email, g.fromdate, g.todate, NULL, NULL, g.id, NULL "
+            << "FROM registrar r, invoice_generation g "
+            << "LEFT JOIN invoice_mails im ON (im.genid=g.id) "
+            << "WHERE g.registrarid=r.id AND g.invoiceid ISNULL "
+            << "AND im.mailid ISNULL ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
           items.push_back(Item(
@@ -818,8 +924,10 @@ namespace Register
             STR_TO_ID(db->GetFieldValue(i,3)),
             STR_TO_ID(db->GetFieldValue(i,4)),
             STR_TO_ID(db->GetFieldValue(i,5)),
+            STR_TO_ID(db->GetFieldValue(i,6)),
             (TID)0
           ));
+        db->FreeSelect();
       }
     }; // Mails
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -837,15 +945,17 @@ namespace Register
         Document::Manager *_docman, Mailer::Manager *_mailman
       ) : db(_db), docman(_docman), mailman(_mailman)
       {}
-      /// find unarchived invoices and archive then in PDF format
+      /// find unarchived invoices. archive then and send them by email
       void archiveInvoices() const
       {
         try {
-          ExporterPDF pdf(docman);
+          // archive unarchived invoices
+          ExporterArchiver arch(docman);
           InvoiceListImpl l(db);
           l.setArchivedFilter(InvoiceList::AF_UNSET);
           l.reload();
-          l.doExport(&pdf);
+          l.doExport(&arch);
+          // send email with invoices
           Mails m(mailman,db);
           m.load();
           m.send();

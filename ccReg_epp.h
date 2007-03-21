@@ -32,12 +32,12 @@ public:
 
 
 
-  // test spojeni na databazi
+  // test connection 
   bool TestDatabaseConnect(const char *db);
 
-  // nacteni zone z tabulky zones
+  // load zones paremetrs from table zone
   int loadZones(); // load zones
-  // parametry zone
+  // get zones parametrs
   int GetZoneExPeriodMin(int id);
   int GetZoneExPeriodMax(int id);
   int GetZoneValPeriod(int id);
@@ -54,108 +54,115 @@ public:
   int getFQDN( char *FQDN , const char *fqdn );
   bool testFQDN(  const char *fqdn );
 
-// parse extension
+// parse extension for domain enum.exdate
   void GetValExpDateFromExtension( char *valexpDate , const ccReg::ExtensionList& ext );
 
 
  // session manager
   void CreateSession(int max , long wait );
-  // prihlaseni pri Login zapise registrarID z tabulky registrar a pouzivany jazyk
+ // startiong session for registrar with language
   bool LoginSession( int loginID , int registrarID , int language );
-  //  odhlaseni
+  //  logout session
   bool LogoutSession( int loginID );
-  void GarbageSesion(); // procistovani session pro vysici klienty
-  // vraci GetRegistrarID pokud nevyprsi timeout
-
+  void GarbageSesion(); // clear unused sessions
+  // get RegistrarID
   int GetRegistrarID( int clientID );
-  // vraci jazyk
+  // get uses language
   int GetRegistrarLang( int clientID );
-  //  vraci poces session
+  //  get number of active sessions
   int GetNumSession(){ return numSession ; }; 
 
   // send    exception ServerIntError
-  void ServerInternalError();
- 
+  void ServerInternalError(const char *fce);
+  // EPP exception 
+  void EppError( short errCode ,  const char *errMsg ,  const char *svTRID ,  ccReg::Errors *errors );
+  void NoMessages( short errCode ,  const char *errMsg ,  const char *svTRID );
   
-  // vraceni cisla verze
+  // get version of server with timestamp
   char* version(ccReg::timestamp_out datetime);
 
+  // default ExDate for EPP messages
+  int DefaultExDateSeenMessage() { return 30;}
+
+ // protected period
   int DefaultContactHandlePeriod(){ return 2; } // ochrana lhuta ve dnech
   int DefaultDomainNSSetPeriod(){ return 2; }
   int DefaultDomainFQDNPeriod(){ return 2; }
 
+ 
   int DefaultNSSetCheckLevel() { return 0; } // default nsset level
 
-  // true vse zobrazovat false vse skryt pro disclose flags
+  // true visible all false all hiddend for disclose flags
   bool DefaultPolicy(){return true;}
 
-   int DefaultValExpInterval(){ return 14; } // ochrana lhuta 14 dni pro datum expirace validace
-  // podpora disclose parametru
+   int DefaultValExpInterval(){ return 14; } //  protected period for expirace validity of enum domain 
+  // for disclose flags
   bool get_DISCLOSE( bool db );
   char update_DISCLOSE( bool  d   ,  ccReg::Disclose flag );
   bool setvalue_DISCLOSE( bool  d   ,  ccReg::Disclose flag );
 
-  //  otestovani retezce jestli neni nahodou NULL VALUE
-//   bool is_null( const char *str );
-
-  // nacita tabulku zemi enum_country z databaze 
+ // load country code
   int LoadCountryCode();
-  // testuje kod zeme 
+  // test country code
   bool TestCountryCode( const char *cc );
 
+  // load and get message of lang from enum_error
   int LoadErrorMessages(); 
   char * GetErrorMessage(int err , int lang );
 
+   // load and get message of lang from enum_reason
   int LoadReasonMessages(); 
   char * GetReasonMessage(int err , int lang);
 
 
-  void SetErrorReason(  ccReg::Response *ret , int errCode ,  ccReg::ErrorSpec reasonCode ,  int reasonMsg , const char *value , int lang );
-  void SetReasonUnknowCC( ccReg::Response *ret , const char *value , int lang );
+  // reason handle
+  short SetErrorReason(  ccReg::Errors *errors , short errCode  , ccReg::ParamError paramCode , short position  ,  int reasonMsg , int lang );
+  short SetReasonUnknowCC( ccReg::Errors *err ,  const char *value ,  int lang );
 
-  void SetReasonContactHandle( ccReg::Response *ret ,  const char *handle , int id , int lang ); 
-  void SetReasonNSSetHandle( ccReg::Response *ret ,  const char *handle , int id ,   int lang );
-
-  void SetReasonDomainFQDN(  ccReg::Response *ret , const char *fqdn ,  int zone , int lang  );
-
-
-  void SetReasonProtectedPeriod( ccReg::Response *ret , const char *value , int lang  );
-
-  void SetReasonContactMap( ccReg::Response *ret ,  ccReg::ErrorSpec reasonCode , const char *handle , int id ,  int lang , bool tech_or_admin);
-
-  void SetReasonNSSetTech( ccReg::Response *ret , const char * handle  , int  techID ,  int lang  );
-  void SetReasonNSSetTechADD(ccReg::Response * ret , const char * handle  , int  techID ,  int lang  );
-  void SetReasonNSSetTechREM( ccReg::Response *ret , const char * handle  , int  techID ,  int lang  );
-  void SetReasonDomainAdmin( ccReg::Response *ret , const char * handle  , int  adminID ,  int lang  );
-  void SetReasonDomainAdminADD(ccReg::Response * ret , const char * handle  , int  adminID ,  int lang  );
-  void SetReasonDomainAdminREM( ccReg::Response * ret , const char * handle  , int  adminID ,  int lang  );
-
-  void SetReasonNSSetTechExistMap( ccReg::Response *ret , const char * handle  ,  int lang  );
-  void SetReasonNSSetTechNotExistMap( ccReg::Response *ret , const char * handle  ,  int lang  );
-
-  void SetReasonDomainAdminExistMap( ccReg::Response *ret , const char * handle  ,  int lang  );
-  void SetReasonDomainAdminNotExistMap( ccReg::Response *ret , const char * handle  ,  int lang  );
+  short SetReasonContactHandle( ccReg::Errors *err ,  const char *handle ,  int lang );
+  short SetReasonNSSetHandle( ccReg::Errors *err , const char *handle ,  int lang );
+  short SetReasonDomainFQDN(  ccReg::Errors *err , const char *fqdn ,  int zone , int lang  );
 
 
-  void SetReasonDomainNSSet(  ccReg::Response *ret , const char * nsset_handle , int  nssetid , int  lang);
-  void SetReasonDomainRegistrant( ccReg::Response *ret , const char * contact_handle , int   contactid , int  lang);
+  short SetReasonProtectedPeriod( ccReg::Errors *err , const char *value , int lang  );
+
+  short SetReasonContactMap( ccReg::Errors *err ,  ccReg::ParamError paramCode , const char *handle , int id ,  int lang , short position  , bool tech_or_admin);
+
+  short SetReasonNSSetTech( ccReg::Errors *err , const char * handle  , int  techID ,  int lang  , short position );
+  short SetReasonNSSetTechADD(  ccReg::Errors *err  , const char * handle  , int  techID ,  int lang  , short position   );
+  short SetReasonNSSetTechREM( ccReg::Errors *err , const char * handle  , int  techID ,  int lang  , short position  );
+  short SetReasonDomainAdmin( ccReg::Errors *err , const char * handle  , int  adminID ,  int lang   , short position );
+  short SetReasonDomainAdminADD(  ccReg::Errors *err  , const char * handle  , int  adminID ,  int lang   , short position );
+  short SetReasonDomainAdminREM(  ccReg::Errors *err  , const char * handle  , int  adminID ,  int lang   , short position  );
+
+  short SetReasonNSSetTechExistMap( ccReg::Errors *err , const char * handle  ,  int lang   , short position );
+  short SetReasonNSSetTechNotExistMap( ccReg::Errors *err , const char * handle  ,  int lang  , short position  );
+
+  short SetReasonDomainAdminExistMap( ccReg::Errors *err , const char * handle  ,  int lang  , short position  );
+  short SetReasonDomainAdminNotExistMap( ccReg::Errors *err , const char * handle  ,  int lang   , short position );
 
 
-  // obecna list funkce
+  short SetReasonDomainNSSet(  ccReg::Errors *err , const char * nsset_handle , int  nssetid , int  lang);
+  short SetReasonDomainRegistrant( ccReg::Errors *err , const char * contact_handle , int   contactid , int  lang);
+
+  short SetReasonContactDuplicity(  ccReg::Errors *err, const char * handle  ,  int lang  ,  short position  , ccReg::ParamError paramCode );
+
+  // general list function
   ccReg::Response* FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list , CORBA::Long clientID, const char* clTRID, const char* XML);
 
 
-  // obecna check funkce
+  // general chek function for all objects
   ccReg::Response*  ObjectCheck( short act , char * table , char *fname , const ccReg::Check& chck , ccReg::CheckResp_out   a, CORBA::Long clientID, const char* clTRID , const char* XML );
 
-   // pro obecny send authInfo
+   // general send auth ifno for objects
   ccReg::Response*  ObjectSendAuthInfo( short act , char * table , char *fname , const char *name , CORBA::Long clientID, const char* clTRID , const char* XML );
 
    CORBA::Boolean SaveOutXML(const char* svTRID, const char* XML);
  
 
   // methods corresponding to defined IDL attributes and operations
-  ccReg::Response* GetTransaction(CORBA::Short errCode, const ccReg::Error& errors , CORBA::Long clientID , const char* clTRID);
+  ccReg::Response* GetTransaction(CORBA::Short errCode, CORBA::Long clientID, const char* clTRID, const ccReg::XmlErrors& errorCodes, ccReg::ErrorStrings_out errStrings);
+
   ccReg::Response* PollAcknowledgement(const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID,  CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* PollRequest(CORBA::String_out msgID, CORBA::Short& count, ccReg::timestamp_out qDate, CORBA::String_out mesg, CORBA::Long clientID, const char* clTRID, const char* XML);
 
@@ -185,7 +192,7 @@ public:
   // tech chek nsset
   ccReg::Response* nssetTest(const char* handle, const char* fqdn, CORBA::Long clientID, const char* clTRID, const char* XML);
 
-  // spolecna funkce pro transfer objektu
+  //common function for transfer object 
   ccReg::Response* ObjectTransfer(short act ,  const char*table , const char *fname,  const char *name ,
                                            const char* authInfo, CORBA::Long clientID, const char* clTRID , const char* XML );
 
@@ -204,13 +211,13 @@ public:
  
 private:
 Session *session;
-int numSession; // pocet aktivnik session
-int maxSession; // maximalni pocet session
-long long maxWaitClient; // cas v sec prodleva po jako dobou je udrzovano spojeni
+int numSession; // number of active session
+int maxSession; // maximal sessions
+long long maxWaitClient; //  connection timeout 
 Mesg *ErrorMsg;
 Mesg *ReasonMsg;
 CountryCode *CC;
-char database[128]; // nazev spojeni na databazi
+char database[128]; // connection string to database
 ccReg::Zones *zone;
 int max_zone;
 };

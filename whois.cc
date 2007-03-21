@@ -1,3 +1,4 @@
+// implemantation of whois from mod_whois
 #include "whois.h"
 #include "log.h"
 #include "util.h"
@@ -5,7 +6,7 @@
 
 #include "register/register.h"
 
-#define MAX_LONG 63 // maximalni delka domeny
+#define MAX_LONG 63 // maximal length of  domain name
 
 ccReg_Whois_i::ccReg_Whois_i(const std::string _database) 
   : database(_database)
@@ -24,16 +25,15 @@ ccReg::DomainWhois* ccReg_Whois_i::getDomain(
   ccReg::DomainWhois *dm;
   int clid ,nssetid ;
   int i , len;
-  int zone;
   bool en;
   time_t t ,  expired ;
   if (!DBsql.OpenDatabase(database.c_str()) )
     throw ccReg::Whois::WhoisError( "database connect error" );
   
-  // casova znacka
+  // actual time
   t = time(NULL);
   
-  // vrat casove razitko
+  // return timestamp u mod_whois
   get_rfc3339_timestamp( t , timestampStr, false  );
   timestamp =  CORBA::string_dup( timestampStr );
   
@@ -42,7 +42,8 @@ ccReg::DomainWhois* ccReg_Whois_i::getDomain(
   dm->expired =  CORBA::string_dup( "" ) ;
   dm->registrarName = CORBA::string_dup( "" );
   dm->registrarUrl  = CORBA::string_dup( "" );
-  dm->tech.length(0); // nulova sekvence
+  dm->tech.length(0); // zero tech contacts default
+
   dm->fqdn = CORBA::string_dup( "" ) ;
   
   len =  (int )  strlen( (const char * ) domain_name ) ;
@@ -88,12 +89,8 @@ ccReg::DomainWhois* ccReg_Whois_i::getDomain(
     throw ccReg::Whois::DomainError(timestampStr, ccReg::WE_NOTFOUND);
   }  
   
-  if (dman->checkEnumDomainSuffix(domain_name)) {
-     zone = ZONE_ENUM; en=true;
-  }
-  else {
-     zone = ZONE_CZ ; en=false; 
-  }
+  if (dman->checkEnumDomainSuffix(domain_name))   en=true; // ENUM domain true
+
   
   if(!DBsql.SELECTOBJECTID( "DOMAIN" , "fqdn" ,  caConflict.id)) {
     DBsql.Disconnect();
@@ -101,13 +98,13 @@ ccReg::DomainWhois* ccReg_Whois_i::getDomain(
     throw ccReg::Whois::WhoisError( "database select error" );  
   }    
 
-  dm->enum_domain = en; // jestli je domena enumova dodelano pro bug #405       
+  dm->enum_domain = en; // true or falsi if domain is ENUM type
   dm->created = CORBA::string_dup(DBsql.GetFieldDateTimeValueName("CrDate",0));
   dm->expired = CORBA::string_dup(DBsql.GetFieldDateValueName("ExDate",0));  
-  clid =  DBsql.GetFieldNumericValueName("ClID",0); // client registrator
-  nssetid = DBsql.GetFieldNumericValueName("nsset",0); // id nsset
+  clid =  DBsql.GetFieldNumericValueName("ClID",0); // client (  REGISTRAR ) of domain
+  nssetid = DBsql.GetFieldNumericValueName("nsset",0); // ID of nsset
   
-  // test jestli je domena expirovana
+  // test if domain is expired
   expired = get_time_t( DBsql.GetFieldValueName("ExDate" , 0 ) ); 
   if( t  > expired )   dm->status = ccReg::WHOIS_EXPIRED;
   else dm->status = ccReg::WHOIS_ACTIVE;
@@ -116,7 +113,7 @@ ccReg::DomainWhois* ccReg_Whois_i::getDomain(
 
   // free select
   DBsql.FreeSelect();
-  // dotaz na registratora
+  //  get info about REGISTRAR
   sprintf( sqlString , "SELECT Name , Url FROM  REGISTRAR WHERE id=%d;",clid);
 
   if( DBsql.ExecSelect( sqlString ) )
@@ -128,7 +125,7 @@ ccReg::DomainWhois* ccReg_Whois_i::getDomain(
 
   if( DBsql.SELECTONE( "HOST" , "nssetid" , nssetid  )  )
   { 
-    len =  DBsql.GetSelectRows(); // pocet DNS servru
+    len =  DBsql.GetSelectRows(); // number of DNS hosts
     dm->ns.length(len); // sequence DNS servru
     for( i = 0 ; i < len ; i ++)
     {
@@ -136,13 +133,13 @@ ccReg::DomainWhois* ccReg_Whois_i::getDomain(
     }
 
     DBsql.FreeSelect(); 
-  } else dm->ns.length(0); // zadne DNS servry
+  } else dm->ns.length(0); // not any  DNS 
   
-  // dotaz na technicke kontakty
+  // aks on tech contacts
   if(  DBsql.SELECTCONTACTMAP( "nsset"  , nssetid ) )
   {
-    len =  DBsql.GetSelectRows(); // pocet technickych kontaktu
-    dm->tech.length(len); // technicke kontaktry handle
+    len =  DBsql.GetSelectRows(); // number of tech-c
+    dm->tech.length(len); // get tech contact handle
     for( i = 0 ; i < len ; i ++) 
       dm->tech[i] = CORBA::string_dup( DBsql.GetFieldValue( i , 0 )  );
     DBsql.FreeSelect();

@@ -1,68 +1,24 @@
 {
-   OmniORB1
-   Memcheck:Param
-   socketcall.sendto(msg)
-   fun:sendto
-   fun:getifaddrs
-   fun:_ZN4omni16tcpTransportImpl10initialiseEv
-   fun:_ZN4omni29omni_giopEndpoint_initialiser6attachEv
-   fun:_ZN5CORBA8ORB_initERiPPcPKcPA2_S4_
-   fun:main
-}
-{
-   OmniORB2
-   Memcheck:Param
-   socketcall.send(msg)
-   fun:send
-   fun:_ZN4omni10giopStream9sendChunkEPNS_17giopStream_BufferE
-   fun:_ZN4omni10giopImpl1216outputMessageEndEPNS_10giopStreamE
-   fun:_ZN4omni6GIOP_S9SendReplyEv
-   fun:_ZN14omniCallHandle6upcallEP11omniServantR18omniCallDescriptor
-   fun:_ZN5ccReg9_impl_EPP9_dispatchER14omniCallHandle
-   fun:_ZN4omni10omniOrbPOA8dispatchER14omniCallHandleP17omniLocalIdentity
-   fun:_ZN17omniLocalIdentity8dispatchER14omniCallHandle
-   fun:_ZN4omni6GIOP_S13handleRequestEv
-   fun:_ZN4omni6GIOP_S10dispatcherEv
-   fun:_ZN4omni10giopWorker12real_executeEv
-   fun:_ZN4omni14giopWorkerInfo3runEv
-}
-{
-   ThredAllocProblem
-   Memcheck:Leak
-   fun:calloc
-   fun:_dl_allocate_tls
-   fun:pthread_create@@GLIBC_2.1
-   fun:_ZN11omni_thread5startEv
-   fun:_ZN16omniAsyncInvoker6insertEP8omniTask
-   fun:_ZN4omni10giopServer8activateEv
-   fun:_ZN4omni10giopServer5startEv
-   fun:_ZN4omni14omniObjAdapter13adapterActiveEv
-   fun:_Z14initialise_poav
-   fun:_ZN4omni10omniOrbPOA7rootPOAEi
-   fun:_ZN4omni16resolveRootPOAFnEv
-   fun:_ZN4omni21omniInitialReferences7resolveEPKcj
-}
-{
-   MemErrorGetTrans
+   <insert a suppression name here>
    Memcheck:Param
    socketcall.send(msg)
    fun:send
    fun:_ZN4omni10giopStream9sendChunkEPNS_17giopStream_BufferE
    fun:_ZN4omni10giopImpl1016outputMessageEndEPNS_10giopStreamE
-   fun:_ZN4omni6GIOP_S9SendReplyEv
-   fun:_ZN14omniCallHandle6upcallEP11omniServantR18omniCallDescriptor
-   fun:_ZN5ccReg9_impl_EPP9_dispatchER14omniCallHandle
-   fun:_ZN4omni10omniOrbPOA8dispatchER14omniCallHandleP17omniLocalIdentity
-   fun:_ZN17omniLocalIdentity8dispatchER14omniCallHandle
-   fun:_ZN4omni6GIOP_S13handleRequestEv
-   fun:_ZN4omni6GIOP_S10dispatcherEv
-   fun:_ZN4omni10giopWorker12real_executeEv
-   fun:_ZN4omni14giopWorkerInfo3runEv
+   fun:_ZN4omni6GIOP_C17InitialiseRequestEv
+   fun:_ZN18omniRemoteIdentity8dispatchER18omniCallDescriptor
+   fun:_ZN10omniObjRef7_invokeER18omniCallDescriptorb
+   fun:_ZN10omniObjRef12_remote_is_aEPKc
+   fun:_ZN10omniObjRef10_real_is_aEPKc
+   fun:_ZN10omniObjRef11_realNarrowEPKc
+   fun:_ZN9CosNaming13NamingContext7_narrowEPN5CORBA6ObjectE
+   fun:_ZN11NameServiceC1EPN5CORBA3ORBERKSs
+   fun:_ZN11CorbaClientC1EiPPcRKSs
 }
 {
-   PthreadLeak
+   <insert a suppression name here>
    Memcheck:Leak
-   fun:malloc
+   fun:_vgrZU_libcZdsoZa_malloc
    fun:_dl_map_object_deps
    fun:dl_open_worker
    fun:_dl_catch_error

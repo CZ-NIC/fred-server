@@ -20,15 +20,15 @@ void Mesg::AddMesg( int id, const char *msg , const char *msg_cs )
 int len;
 if( add < numMsg )
 {
-// id zpravy
+// id of messaged
 errID[add] = id;
-// orginalni zneni
+// orginalni EN
 len = strlen( msg ) +1;
 LOG(DEBUG_LOG, "alloc errMsg[%d] size %d\n" , add , len );
 errMsg[add] =  new char[len];
 memset( errMsg[add] , 0 , len );
 strcpy( errMsg[add] , msg );
-// cesky preklad
+// lokal translate to czech
 len = strlen( msg_cs )+1;
 LOG(DEBUG_LOG ,"alloc errMsg_cs[%d] size %d\n" , add , len );
 errMsg_cs[add] =  new char[len];
@@ -60,7 +60,7 @@ for( i = 0 ;  i < numMsg ; i ++ )
      }
   }
 
-return ""; // prazdy popis
+return ""; // empty desc
 }
 
 
@@ -68,16 +68,17 @@ char *   Mesg::GetMesg_CS(int id)
 {
 int i;
 
-LOG(DEBUG_LOG ,"GetMesgCD %d" ,  id );
+LOG(DEBUG_LOG ,"GetMesg_CS %d" ,  id );
 
 for( i = 0 ;  i < numMsg ; i ++ )
   {  
     if( errID[i] == id ) 
        {
-          LOG(DEBUG_LOG ,"return mesg [%s]" , errMsg[i] );
+          LOG(DEBUG_LOG ,"return CS mesg [%s]" ,  errMsg_cs[i] );
           return  errMsg_cs[i] ; 
        }
   }
 
-return ""; // prazdy popis
+return ""; // empty desc
+
 }

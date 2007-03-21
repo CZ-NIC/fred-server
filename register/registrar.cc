@@ -391,15 +391,16 @@ namespace Register
         sql << "SELECT r.id,r.handle,r.name,r.url,r.organization,"
             << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
             << "r.postalcode,r.country,r.telephone,r.fax,r.email,"
-            << "SUM(i.credit) "
-            << "FROM registrar r, invoice i WHERE r.id=i.registrarid AND "
-            << "NOT(i.credit ISNULL) "
-            << "GROUP BY r.id,r.handle,r.name,r.url,r.organization,"
-            << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
-            << "r.postalcode,r.country,r.telephone,r.fax,r.email";
+            << "COALESCE(SUM(i.credit),0) "
+            << "FROM registrar r "
+            << "LEFT JOIN invoice i ON (r.id=i.registrarid AND "
+            << "NOT(i.credit ISNULL)) WHERE 1=1 ";
         SQL_ID_FILTER(sql,"id",idFilter);
         SQL_HANDLE_FILTER(sql,"name",name);
         SQL_HANDLE_FILTER(sql,"handle",handle);
+        sql << "GROUP BY r.id,r.handle,r.name,r.url,r.organization,"
+            << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
+            << "r.postalcode,r.country,r.telephone,r.fax,r.email ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           registrars.push_back(

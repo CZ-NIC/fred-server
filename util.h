@@ -2,34 +2,27 @@
 #include <time.h>
 #endif
 
-#define ZONE_CZ   3
-#define ZONE_CENUM 2
-#define ZONE_ENUM  1
 
-#define CZ_ZONE  "cz"
-#define CENUM_ZONE "0.2.4.c.e164.arpa"
-#define ENUM_ZONE   "0.2.4.e164.arpa"
-
-
-#define IPV4 4
+#define IPV4 4 
 #define IPV6 6
 
 
-#define   SECSPERMIN 60
+#define SECSPERMIN 60
 #define MINSPERHOUR    60
 #define SECSPERHOUR    (SECSPERMIN * MINSPERHOUR)
 #define SECSPERDAY SECSPERHOUR * 24
 
-#define  MAX_DATE 32 // delka stringu pro datum
-#define PASS_LEN 8 // delka hesla
-// vygeneruje nahodne heslo delky len obsahujici znaky [a-z] [A-Z] a [0-0]
+#define  MAX_DATE 32 // max date string 
+#define PASS_LEN 8 // max length of  password 
+
+// generate random password 
 void random_pass(char *str );
 
-// test inet adres
+// test inet addr fro IPV4 and IPV6
 bool validateIPV6(const char *ipadd);
 bool validateIPV4(const char *ipadd);
 
-// test ip adres
+// test ip adres return IPV4 or IPV6 
 int test_inet_addr( const char *src );
 
 // funkce pro prevod hexa
@@ -51,57 +44,56 @@ bool get_HANDLE(  char  * HANDLE , const char *handle  );
 // prevod a testovani handlu
 bool get_handle( char  * HANDLE , const char *handle  , int typ );
 
-// vytvoreni roid
+// generate ROID 
 void get_roid( char *roid , char *prefix , int id );
 
 
 
-// prevadi DNS host  na mala pismena
+// conwert  DNS host  to lower case 
 bool convert_hostname( char *HOST ,const  char *fqdn );
 
-// test spravnosti zadani hosu
+// test  validity of DNS host
 bool TestDNSHost( const char *fqdn  );
 
-// test inet addres ipv4 a ipv6
+// test inet address ipv4 and ipv6
 bool TestInetAddress(const char *address );
 
-// test ExDate
+// test if current ExDate is same with ExDate
 bool TestExDate( const char *curExDate , const char * ExDate );
 
-// test spravnosti intervalu periody
+// test validity of the renew period in month ( min minimal renew interval ) max ( maximal length of the  renew )
 int TestPeriodyInterval( int period , int min , int max );
 
 // spocet DPH z cestky bez dane pomoci koeficientu a matematicky zaokrouhli DPH na desetniky
+// count VAT for invoicing  and round 
 long count_dph( long  price , double koef );
 
 // preveadi credit registratora na halire bez konverze na float bere i desetinou carku nebo tecku
+// convert currency  string for example   1.200,00  to logn value 120000
 long get_price( const char *priceStr );
 
-// prevadi cenu v halirich na string
+// reverse operation convert long to  currency  string 120000 -> 12000.00
 void get_priceStr(char *priceStr  , long price);
 
-// prevod lokalniho datumu na UTC timestamp pro SQL
-void get_utctime_from_localdate( char *utctime , char *dateStr );
+// convert local date  to  UTC timestamp for SQL
+time_t get_utctime_from_localdate(  char *dateStr );
 
-// prevod datau z DB SQL na date
+//convert dateg from SQL result to  date
 void convert_rfc3339_date( char *dateStr , const char *string );
 
-// preved cas z UTC stringu na lokalni cas dle rfc3339 z casovou zonou
+// convert UTC string timestamop to local time  rfc3339 with time zon
 void convert_rfc3339_timestamp( char *dateStr , const char *string );
 
 
-// prevadi casovy string na zulu date time dle rfc3339
-void get_zulu_t(  char *dateStr , const char *string );
-
-// prevadi lokalni format datumu  casu do UTC
+// convert lokal  format of date date (CZ) DD.MM.YYYY to UTC time  
 time_t get_local_format_time_t( const char *string );
 
-// vraci cas v time_t  pevede SQL retezec
+// retunr time_t from  SQL  result 
 time_t get_time_t(const char *string );
 
-// prevede cas na timestamp dle rfc3339 s casovou zonou jako offset
+// convert time_t to  timestamp   rfc3339 with timezone ( true day ) for conver only date 
 void get_rfc3339_timestamp( time_t t , char *string ,   bool day );
 
-// prevede time_t do retezce pro SQL
-void get_timestamp( time_t t , char *string);
+// convert  time_t to SQL  string  timestamp
+void get_timestamp( char *string , time_t t );
 

@@ -9,10 +9,10 @@
 #include <time.h>
 #endif
 
-#include "timeclock.h"
+#include "timeclock.h" // for time profiler
 #include "pqsql.h"
 
-#include "log.h"
+#include "log.h" // logger via syslog
 
 // constructor 
 PQ::PQ()
@@ -61,12 +61,12 @@ else
 }
 
 
-// vraci pocet radku a sloupcu
+// get number of selected tows and cols
 int PQ::GetSelectRows(){ return nRows;};
 int PQ::GetSelectCols(){ return nCols;};
 
 
-// vraci retezec hodnoty podle nazvu 
+// get string by name of filed on the row 
 char * PQ::GetFieldValueName(char *fname , int row )
 {
 int col;
@@ -82,21 +82,21 @@ int  PQ::GetNameField(char *fname )
 return  PQfnumber(result, fname);
 }
 
-// jmeno pole
+// get string name of field 
 char *  PQ::GetFieldName( int col )
 {
 if( PQfname(result, col) == NULL  ) return "";
 else return PQfname(result, col);
 }
 
-// jestli neni null
+// test if is not  NULL value
 bool  PQ::IsNotNull( int row , int col )
 { 
    if( PQgetisnull( result , row , col ) ) return false;
    else return true; // neni NULL 
 }
 
-// vraci retezec hodnoty
+// return string value at row and col
 char * PQ::GetFieldValue( int row , int col )
 {
 if( row < nRows && col < nCols )
@@ -113,7 +113,7 @@ else { LOG( ERROR_LOG , "NOT FOUND return NULL" ); return  ""; }
 }
 
 
-// vraci boolean hodnoty
+// return Boolean value true or false
 bool PQ::GetFieldBooleanValueName(char *fname , int row )
 {
 char *val;
@@ -122,7 +122,7 @@ if( val[0] == 't' ) return true;
 else return false;
 }
 
-// vraci integer hodnoty
+// convert to integer value
 int PQ::GetFieldNumericValueName(char *fname , int row )
 {
 return atoi( GetFieldValueName( fname , row ) );
@@ -130,14 +130,14 @@ return atoi( GetFieldValueName( fname , row ) );
 
 
 
-// vraci velikost aktualniho prvku 
+// return lenghth  
 int  PQ::GetValueLength(int row  , int col)
 {
 return PQgetlength( result , row , col );
 }
 
 
-// spusti select a vrati pocet radek
+// run SQL select truu if is success
 bool PQ::ExecSelect(const char *sqlString)
 {
 
@@ -170,7 +170,7 @@ timeclock_end();
 return true;
 }
 
-// uvolneni pameti po selectu
+// free memory after SELECT and clear result 
 void   PQ::FreeSelect()
 {
      LOG( SQL_LOG , "Free  select" ) ;
@@ -184,26 +184,13 @@ void  PQ::Disconnect()
  PQfinish(connection); 
 }
 
-
+// escape string to SQL 
 bool PQ::Escape(char *str ,  const char *String  , int length )
 {
 //int err;
 size_t  len;
 
 
-
-// escape retezce
-// len =  PQescapeStringConn(connection, str , String,  length, &err);
-
-/*
-if( err != NULL )
-{
-   LOG( ERROR_LOG ,  "ExecSQL escape error: %s" , String );
-  delete str;
-  return false;
-}
-else
-*/
 
 len =  PQescapeString( str,  String ,  length);
 
@@ -212,6 +199,7 @@ LOG( SQL_LOG , "escape len  %d [%s]" ,  (int ) len  , str   );
 return true;
 }
 
+// EXEC SQL string  
 bool PQ::ExecSQL(const char *sqlString)
 {
 PGresult   *res;

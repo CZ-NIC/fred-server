@@ -15,7 +15,7 @@
 
 
 
-// vygeneruje nahodne heslo delky len obsahujici znaky [a-z] [A-Z] a [0-0]
+// generate randoma password contains characters  [a-z] [A-Z] and [0-9] with length PASS_LEN
 void random_pass(char *str )
 {
 int len=PASS_LEN;
@@ -35,14 +35,14 @@ for( i = 0 ; i < len ;  )
 bool validateIPV6(const char *ipadd)
 {
 int len;
-// ukoncena adresa dvojteckou
+// test on the end 
 len = strlen( ipadd);
 if( ipadd[len-1] == ':' ) return false;
 
-// loop back
+// test loop back
 if( strncmp( ipadd ,"::"  , 2 ) == 0 )  return false;
 
-// TODO
+// TODO for more
 
 return true;
 }
@@ -52,7 +52,7 @@ bool validateIPV4(const char *ipadd)
         unsigned b1, b2, b3, b4;
         int rc;
         int len;
-// ukoncena adresa teckou
+// test on the end
 len = strlen( ipadd);
 if( ipadd[len-1] == '.' ) return false;
 
@@ -95,7 +95,7 @@ else  if( validateIPV4( src ) ) return IPV4;  // validate for local adres
 return 0;
 }
 
-// implementace funkce atoh
+// atoh function ascii to hexa
 int atoh(const char *String)
 {
     int Value = 0, Digit;
@@ -119,7 +119,7 @@ int atoh(const char *String)
 }
 
 
-// vytvoreni roid
+// generate roid started with prefix unique indentificator of object
 void get_roid( char *roid , char *prefix , int id )
 {
 sprintf(roid , "%s%010d-CZ" , prefix ,  id );
@@ -138,14 +138,14 @@ bool get_NSSETHANDLE(  char  * HANDLE , const char *handle  )
 return  get_handle( HANDLE , handle ,2 );
 }
 
-// obecny handle
+// general handle 
 bool get_HANDLE(  char  * HANDLE , const char *handle  )
 {
 return  get_handle( HANDLE , handle , 0  );
 }
 
 
-// prevod a testovani handlu
+// convert and test validity of the handle 
 bool get_handle( char  * HANDLE , const char *handle  , int typ )
 {
 int i , len;
@@ -154,7 +154,7 @@ len = strlen( handle);
 
 LOG( LOG_DEBUG ,  "get_HANDLE from [%s] len %d" , handle , len  );
 
-// max a minimalni delka
+// max a min lenght
 if( len > 1 && len <= 40 )
 {
   for( i = 0 ; i < len ; i ++ )
@@ -163,7 +163,7 @@ if( len > 1 && len <= 40 )
     // TEST
     if( isalnum( handle[i] ) ||   handle[i] == '.' || handle[i] == '-' ||  handle[i] == '_'   || handle[i] == ':' )
       {
-          // PREVOD  na velka pismena
+          // convert tu upper
           HANDLE[i] =   toupper( handle[i] ); 
      }
     else
@@ -206,7 +206,7 @@ else return false;
 
 
 
-// prevadi DNS host  na mala pismena
+// convert  DNS host  to lowwer case
 bool convert_hostname( char *HOST ,const  char *fqdn )
 {
 int i , len ;
@@ -215,18 +215,18 @@ len = strlen( fqdn );
 
 for( i = 0  ; i < len ; i ++ )
 {
-      if(  isalnum( fqdn[i] ) ||  fqdn[i] == '-' ||  fqdn[i] == '.' )
+      if(  isalnum( fqdn[i] ) ||  fqdn[i] == '-' ||  fqdn[i] == '.' ) // test name of the DNS server
         {
-              HOST[i] =  tolower(  fqdn[i] ); // preved na mala pismena
+              HOST[i] =  tolower(  fqdn[i] ); // to lowwer case 
         }
        else { HOST[0] = 0 ; return false; }
 }
 
-// koenec
+// ont the end 
 HOST[i] = 0 ;
 return true;
 }
-// test hostname 
+// test hostname  form DNS 
 bool TestDNSHost( const char *fqdn )
 {
 int i , len , dot , num ;
@@ -236,7 +236,7 @@ len = strlen( fqdn );
 LOG( LOG_DEBUG , "test DNSHost %s" , fqdn );
 
 
-// konci na tecku
+// if dot on the end 
 if( fqdn[len-1] == '.' ) { LOG( LOG_DEBUG , "ERORR dots on end" );  return false; }
 
 for(  i = len -1  ; i > 0 ; i -- )
@@ -246,7 +246,7 @@ for(  i = len -1  ; i > 0 ; i -- )
 }
 
  
-// minimalni a maximalni velikost
+// min and max lenght
 if( len > 3  &&  len <= 255 ) 
 {
 for( i = 0 , num = 0  , dot = 0 ; i < len ; i ++ )
@@ -255,24 +255,24 @@ for( i = 0 , num = 0  , dot = 0 ; i < len ; i ++ )
         {
                       if( fqdn[i] == '.' ) 
                        {
-                          if( num > 63 ) return false; // prilis dlouhy nazev
+                          if( num > 63 ) return false; // very long name for domain
                           num = 0 ; 
                           dot ++;   
                        }
                       else num ++ ;
         }  
-     else return false; // spatne zadany nazev DNS hostu 
+     else return false; // bad name of the DNS host
   }
 
 
-// minimalne dve tecky
+// minimal two dots 
 if( dot >= 2 ){ LOG( LOG_DEBUG , "test OK dots %d" , dot  ) ; return true; } 
 }
 
 return false;
 }
 
-// test inet addres ipv4 a ipv6
+// test inet addres for ipv4 and ipv6
 bool TestInetAddress(const char *address )
 {
 int t;
@@ -283,7 +283,7 @@ if( t ) return true;
 else return false;
 }
 
-
+/// compare exdate
 bool TestExDate( const char *curExDate , const char * ExDate )
 {
 LOG( LOG_DEBUG , "test curExDate [%s] ExDate [%s]" , curExDate ,  ExDate );
@@ -292,23 +292,25 @@ if( strcmp( curExDate ,  ExDate ) == 0 ){ LOG( LOG_DEBUG , "test OK" ); return t
 else { LOG( LOG_DEBUG , "test fail " );  return false; }
 }
 
+// test period validity for renew
 int TestPeriodyInterval( int period , int min , int max )
 {
 int mod;
 LOG( LOG_DEBUG , "test periody interval perido %d min %d max %d" ,  period ,  min ,   max  );
 
-// musi lezet v intervalu
+// period must be in interval 
 if( period > 0  && period <= max )
 {
 mod = period % min;
-if( mod == 0 ) return 0; // je to OK
-else return 1; // interval je sice spravne ale neni v rozsahu obdobi 12 .. 24 .. 36  mesicu
+if( mod == 0 ) return 0; // is it OK
+else return 1; // period  is correct but not in  interval like min , min*2 , min*3 like  12 .. 24 .. 36  months
 }
-else  return 2 ;  // period je mimo stanoveny rozsah
+else  return 2 ;  // period is out of range
 }
 
 
 // spocet DPH z cestky bez dane pomoci koeficientu a matematicky zaokrouhli DPH na desetniky
+// count VAT  ( local CZ ) function for banking 
 long count_dph( long  price , double koef )
 {
 double  p ;
@@ -332,6 +334,7 @@ return r;
 
 
 // preveadi cenu  halire bez konverze pres float
+// convert  local currency string 
 long get_price( const char *priceStr )
 {
 char str[32];
@@ -344,6 +347,7 @@ for( i = 0 ;i < len  ; i ++ )
 {
 
 // pokud jesou tisice oddelene mezerou
+// test for thousannds
 if( str[i] == ' ' )
   {
       for( j = i ; j < len -1 ; j ++ ) str[j] = str[j+1];
@@ -362,54 +366,38 @@ return price;
 
 
 // prevadi cenu v halirich na string
+// return currency in long to string 
 void get_priceStr(char *priceStr  , long price)
 {
 sprintf( priceStr , "%ld%c%02ld" , price/100 , '.' ,  price %100 );
 }
 
-void get_dateStr(  char *dateStr , const char *string )
-{
-// provizorni reseni ZULU 
-get_zulu_t( dateStr , string );
-}
-  
 
-void get_zulu_t(  char *dateStr , const char *string )
-{
-
-if( strcmp( string , "NULL" ) == 0 )  strcpy( dateStr , "" );
-else
-{
-strcpy(  dateStr , string );
-if( dateStr[10] == ' ' )  dateStr[10] = 'T' ; 
-strcat( dateStr , "Z" );
-}
-
-}
-
+// convert local format time in string to time_t
 time_t get_local_format_time_t( const char *string )
 {
 struct tm dt;
 time_t t;
 
 memset(&dt,0,sizeof(dt));
-// format 04.01.2007 15:58:17
+// local CZ  format in  DD.MM.YYYY HH:MM:SS 
 sscanf(string , "%02d.%02d.%4d %02d:%02d:%02d" ,
                  &dt.tm_mday , &dt.tm_mon , &dt.tm_year ,
                 &dt.tm_hour,   &dt.tm_min , &dt.tm_sec);
 
-// mesic o jeden mene
+// minus one month 
 dt.tm_mon = dt.tm_mon -1;
-// rok - 1900
+// year - 1900
 dt.tm_year = dt.tm_year - 1900;
 
+// convert local time
 t = mktime( &dt );
 
 LOG( LOG_DEBUG , "get_local_time_t from [%s] = %ld" , string , t );
 return t;
 }
 
-// preveadi cas timestamp na unix time
+// convert  timestamp to  unix time sice epoch
 time_t get_time_t(const char *string )
 {
 struct tm dt;
@@ -425,15 +413,15 @@ sscanf(string , "%4d-%02d-%02d %02d:%02d:%lf" ,
                 &dt.tm_year ,  &dt.tm_mon , &dt.tm_mday ,
                 &dt.tm_hour,   &dt.tm_min , &sec);
 
-// prevod sekund
+// convert and round sec to lowwe
 dt.tm_sec = (int ) sec ;
-// mesic o jeden mene
+//  minus one month
 dt.tm_mon = dt.tm_mon -1;
-// rok - 1900
+// year - 1900
 dt.tm_year = dt.tm_year - 1900;
 
-t = timegm(&dt);
-if( t < 0 ) return 0; // fix na velek roky
+t = timegm(&dt); // convert to GMT 
+if( t < 0 ) return 0; // fix if  convert fault 
 
 LOG( LOG_DEBUG , "get_time_t from [%s] = %ld" , string , t );
 return t;
@@ -443,8 +431,9 @@ return t;
 }
 
 
-// prevod lokalniho datumu na UTC timestamp pro SQL
-void get_utctime_from_localdate( char *utctime , char *dateStr )
+//  convert local date  to  UTC timestamp for SQL
+// involve  dayling saving time  for using time zone 
+time_t get_utctime_from_localdate( char *dateStr )
 {
 struct tm dt;
 time_t t;
@@ -456,35 +445,33 @@ sscanf( dateStr , "%4d-%02d-%02d" , &year ,&month , &day );
 dt.tm_mday  = day;
 dt.tm_mon = month -1;
 dt.tm_year = year - 1900;
-dt.tm_isdst = -1; // negative if the information is not available
+dt.tm_isdst = -1; // negative if the information is not available ( test dayling saving time ) 
 
 LOG( LOG_DEBUG , "tm_year  %d tm_mon  %d tm_mday %d hour %d min %d sec %d" , dt.tm_year , dt.tm_mon , dt.tm_mday   , dt.tm_hour,   dt.tm_min , dt.tm_sec );
- t = mktime( &dt );
+t = mktime( &dt );
 
-get_timestamp(  t , utctime );
-
-LOG( LOG_DEBUG , "get_utctime_from_localdate:  date [%s] utctime [%s]" , dateStr , utctime );
-
+return t;
 } 
 
-// prevod datau z DB SQL na date 
+//  concvert date  from database  ( int UTC date ) to local  date  
 void convert_rfc3339_date( char *dateStr , const char *string )
 {
 time_t t;
 
-t =  get_time_t( string ); // preved na GMT
-if( t <= 0 ) strcpy( dateStr , "" ); // chyba ERROR
-// preved vstupni string a vrat rfc3339 date  
-else get_rfc3339_timestamp(  t , dateStr , true); // vrat jako lokalni DATUM
+t =  get_time_t( string ); // to  GMT
+if( t <= 0 ) strcpy( dateStr , "" ); //  ERROR
+
+else get_rfc3339_timestamp(  t , dateStr , true); // return  local date 
 }
 
+// convert timestamp from database  ( int UTC ) to local date time 
 void convert_rfc3339_timestamp( char *dateStr , const char *string )
 {
 time_t t;
 
 t =  get_time_t( string );
-if( t <= 0 ) strcpy( dateStr , "" ); // chyba ERROR
-// preved vstupni string a vrat rfc3339 date time s casovou zonou
+if( t <= 0 ) strcpy( dateStr , "" ); //  ERROR
+// return string in rfc3339  like a date time with time zone 
 else get_rfc3339_timestamp(  t , dateStr , false );
 }
 
@@ -495,13 +482,13 @@ struct tm *dt;
 int diff;
 char sign , tzstr[6] ; 
 
-// preved n alokalni cas
+//convert time_t in UTC  to local time 
 dt = localtime( &t );
 
-diff =   dt->tm_gmtoff;
+diff =   dt->tm_gmtoff; // test offset from GTM 
 
 
-if( diff == 0 ) sign = 'Z' ; // UTC zulu time 
+if( diff == 0 ) sign = 'Z' ; // UTC zulu time is is not local time 
 else if (diff < 0)
        {
         sign = '-';
@@ -510,7 +497,7 @@ else if (diff < 0)
      else  sign = '+';
 
 
-// preved pouze den
+// conver only date 
 if( day ) sprintf(  string , "%4d-%02d-%02d" ,  dt->tm_year + 1900  ,  dt->tm_mon + 1 ,  dt->tm_mday  );
 else 
 {
@@ -521,7 +508,7 @@ sprintf(  string , "%4d-%02d-%02dT%02d:%02d:%02d%c" ,
 
 if( diff != 0 ) 
  { 
-   sprintf( tzstr ,   "%02d:%02d"  ,   diff / SECSPERHOUR  , ( diff % SECSPERHOUR )   / MINSPERHOUR );  // timezone
+   sprintf( tzstr ,   "%02d:%02d"  ,   diff / SECSPERHOUR  , ( diff % SECSPERHOUR )   / MINSPERHOUR );  // get timezone
    strcat( string , tzstr );
   }
 
@@ -532,14 +519,15 @@ if( diff != 0 )
 
 
 
-
-void get_timestamp( time_t t , char *string)
+// fce forconvert timestamp  time_t -> SQL string 
+void get_timestamp(  char *string ,  time_t t )
 {
 struct tm *dt;
 
-// preved cas
+//convert time to GTM 
 dt =   gmtime(  &t );
 
+// get SQL string
 sprintf(string ,  "%4d-%02d-%02d %02d:%02d:%02d" ,
                   dt->tm_year+1900 ,  dt->tm_mon +1, dt->tm_mday ,
                   dt->tm_hour,   dt->tm_min , dt->tm_sec);

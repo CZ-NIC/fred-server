@@ -32,7 +32,7 @@ len =  strlen(buf);
 
   for( j = 0 , c =0  ; j < len ; j ++ )
      {        
-        // ukonceni radku 
+        // the end of line test
         if( buf[j] == '\r' || buf[j] == '\n'  ) { buf[j] = 0 ; if( c > 0 )  c ++; break ; }
         else   if( buf[j] == separator ) c ++ ;
      }
@@ -128,12 +128,10 @@ for(i=0 , numrec = 0 ;;i++)
 
      cls = c; numrec ++ ; 
    } 
-  else  break;// prazdna radka na konci souboru
+  else  break;// empty line at th end of file 
 
 }
 
-// fclose(fd);
-// reset 
 fseek( fd, 0, SEEK_SET );
 
 rows = numrec ; cols = cls;

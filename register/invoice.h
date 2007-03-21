@@ -27,6 +27,7 @@ namespace Register
      protected:
       virtual ~Subject() {}
      public:
+      virtual const std::string& getHandle() const = 0;
       virtual const std::string& getName() const = 0;
       virtual const std::string& getFullname() const = 0;
       virtual const std::string& getStreet() const = 0;
@@ -47,6 +48,7 @@ namespace Register
       virtual unsigned long getNumber() const = 0;
       virtual Money getPrice() const = 0;
       virtual Money getCredit() const = 0;
+      virtual TID getId() const = 0;
     };
     enum PaymentActionType {
       PAT_CREATE_DOMAIN,
@@ -57,6 +59,7 @@ namespace Register
      protected:
       virtual ~PaymentAction() {}
      public:
+      virtual TID getObjectId() const = 0;
       virtual const std::string& getObjectName() const = 0;
       virtual boost::posix_time::ptime getActionTime() const = 0;
       virtual boost::gregorian::date getExDate() const = 0;
@@ -85,6 +88,8 @@ namespace Register
       virtual Money getTotal() const = 0;
       virtual Money getTotalVAT() const = 0;
       virtual const std::string& getVarSymbol() const = 0;
+      virtual TID getFilePDF() const = 0;
+      virtual TID getFileXML() const = 0;
       virtual unsigned getSourceCount() const = 0;
       virtual const PaymentSource *getSource(unsigned idx) const = 0;
       virtual unsigned getActionCount() const = 0;
@@ -106,6 +111,8 @@ namespace Register
       virtual void setIdFilter(TID id) = 0;  
       /// filter for registrar recieving invoice
       virtual void setRegistrarFilter(TID registrar) = 0;
+      /// filter for registrar recieving invoice by handle
+      virtual void setRegistrarHandleFilter(const std::string& handle) = 0;
       /// filter for id of associated zone 
       virtual void setZoneFilter(TID zone) = 0;
       /// filter for invoice type (advance=1 or normal=2)
@@ -124,14 +131,20 @@ namespace Register
       ) = 0;
       /// filter for existance of archived file
       virtual void setArchivedFilter(ArchiveFilter archive) = 0;
-      /// filter for object attached to invoice
-      virtual void setObjectFilter(TID object) = 0;
+      /// filter for object attached to invoice by id
+      virtual void setObjectIdFilter(TID objectId) = 0;
+      /// filter for object attached to invoice by name
+      virtual void setObjectNameFilter(const std::string& objectName) = 0;
       /// filter for account invoices with selected advance invoice source
       virtual void setAdvanceNumberFilter(const std::string& number) = 0;
       /// reload invoices with selected filter
       virtual void reload() throw (SQL_ERROR) = 0;
       /// return count of invoices in list 
       virtual unsigned long getCount() const = 0;
+      /// return invoice by index
+      virtual Invoice *get(unsigned idx) const = 0;
+      /// clear filter settings
+      virtual void clearFilter() = 0;      
       /// xml output of all invoices in list
       virtual void exportXML(std::ostream& out) = 0;     
     };

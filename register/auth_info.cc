@@ -274,6 +274,10 @@ namespace Register
         closeTimeFilter(ptime(neg_infin),ptime(pos_infin)),         
         mm(_mm), db(_db)
       {}
+      ~ListImpl()
+      {
+        clear();
+      }
       virtual unsigned getCount() const
       {
         return requests.size();
@@ -396,6 +400,7 @@ namespace Register
           );
           requests.push_back(d);
         }
+        db->FreeSelect();
       }
     };
     class ManagerImpl : virtual public Manager

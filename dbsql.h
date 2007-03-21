@@ -6,10 +6,10 @@
 
 #define LANG_EN 0
 #define LANG_CS 1
-#define CMD_OK 1000 // OK prikaz pro konec transakce
+#define CMD_OK 1000 // OK command to the commit transaction
 
-#define MAX_SQLBUFFER 4096*4 // delka sqlBuffer
-#define MAX_SVTID 32 // delka svtrid
+#define MAX_SQLBUFFER 4096*4 // maximal lenght od the sqlBuffer
+#define MAX_SVTID 32 // length of the server  ticket  svTRID
 
 class DB : public PQ{
 public:
@@ -31,162 +31,180 @@ bool QuitTransaction(int code) {
    else return RollbackTransaction(); 
 };
 
+///------------------------
+//   BILLING
 
-// vymaz z tabulky
-bool DeleteFromTable(char *table , char *fname , int id );
-// vymaz data z map tabulky
-bool DeleteFromTableMap(char *map ,int  id , int contactid );
-
-
-// vraci castku za operaci
+// get price for operation defined in enum_operation_table from table price_list
 long GetPrice(   int  operation  ,  int zone , int period  );
 bool SaveInvoiceCredit(int regID , int objectID , int  operation  , int zone  ,  int period ,  const char *ExDate , long price ,  long price2  ,   int invoiceID , int invoiceID2 );
-// odecitani castky price od credity  ze zalohove faktury 
+//  get credit from invoice  
 bool InvoiceCountCredit( long  price , int invoiceID  );
 
-// operace registrace domeny  CREATE
+// operation  CREATE
 bool BillingCreateDomain( int regID , int  zone , int  objectID  );
-// operace prodlouzeni domeny RENEW
+// operation RENEW
 bool BillingRenewDomain(  int regID , int  zone , int  objectID , int period  ,  const char *ExDate );
 
-// zpracovani creditu
+// coutn credit from invoce 
 bool UpdateInvoiceCredit( int regID ,   int operation  , int zone  , int period  ,  const char *ExDate , int objectID );
 
 long GetRegistrarCredit(int regID , int zoneID );
 
-// test otisdku certifikatu a hesla v tabulce registrar ACL
-bool  TestRegistrarACL( int  regID , const char *  pass , const char * cert );
+///------------------------
+/// INVOICING 
+
+// count balence and used credit on invoice
+long GetInvoiceBalance( int aID , long credit );
+long GetInvoiceSumaPrice(int  iID , int aID ); //
+
+// make factoring 
+int MakeFactoring(  int regID , int zone , const char *timestampStr ,  const char *taxDateStr  );
 
 
-// ukladada vytvorene XML z mod_eppd
-int SaveXMLout( const char *svTRID , const char *xml  );
+// make Invoice
+int MakeNewInvoice(  const char *taxDateStr , const char *fromdateStr , const char *todateStr , int zone ,  int regID ,  long price , unsigned int count );
 
-// zpracovani action a ulozeni XML 
-// vraci registarID id registratora
-bool BeginAction(int clientID , int action ,const char *clTRID  , const char *xml );
-char * EndAction(int response  );
-// vraci jazyk klienta
-// int GetClientLanguage() {return clientLang;}
-// zjisti komunikujici jazyk z tabulky login
-// int ReturnClientLanguage();
+// make new Invoice 
+int  MakeNewInvoiceAdvance( const char *taxDateStr , int zone ,  int regID ,  long price , bool VAT );
 
-// vraci handle nebo id tabulky
-int GetNumericFromTable( const char *table , const char *vname ,  const char *fname ,  const char *value);
-int GetNumericFromTable( const char *table , const char *vname ,  const char *fname ,  int numeric);
-char * GetValueFromTable( const char *table , const char *vname ,  const char *fname ,  const char *value);
-char * GetValueFromTable( const char *table , const char *vname ,  const char *fname ,  int numeric);
-int GetSequenceID( char *sequence ); // id ze sequnce
-// kontroluje jestli je contactid pro dane id v tabulce nsset_contact_map nebo domain_contact_map 
-bool CheckContactMap(const char * table , int id , int contactid );
-// pridave contact do pole kontaktu
-bool AddContactMap( const char * table , int id , int contactid );
- 
-// vraci datum a cas dle rfc3339
-char * GetFieldDateTimeValueName(  const char *fname , int row );
-char * GetFieldDateValueName(  const char *fname , int row );
+// make prefix for invoice
+int GetPrefixType( const char *dateStr , int typ , int zone );
+int GetInvoicePrefix( const char *dateStr , int typ , int zone );
 
-// pro select domeny pri info
-// bool SELECTDOMAIN(   const char *fqdn , int zone , bool enum_zone );
-// vraci ID kontaktu z handlu zadaneho ipres mala pismena nebo nula pokud je chyba
-int  GetContactID( const char *handle );
-int  GetNSSetID( const char *handle );
-// vraci id domeny ( special pro enum )
-int  GetDomainID( const char *fqdn , bool enum_zone );
+///-------------------
+// BANKING 
 
-// objekt byl nekde nemam prirazen jako tech ci admin registrant domeny ci nsset u domeny
-bool ObjectModify( int id );
-
-// update object dle id  a registrator
-bool ObjectUpdate( int id , int regID , const char *authInfo );
-// test ClID=regID objektu
-bool TestObjectClientID( int id  , int regID );
-
-// vraci ID objektu podle jeho nazvu
-int GetObjectID( int type , const char *name );
-
-char * GetDomainExDate( int id ); // vraci ExDate domeny jako datum (lokalni datum)
-
-char * GetObjectCrDateTime( int id ); // vraci datum a cas vytvoreni objektu
-char * GetObjectName( int id );
-
-// ukladani smazaneho objektu ErDate
-bool SaveObjectDelete( int id );
-// ukladani crhistoryID do tabulky object_regiustry
-bool SaveObjectCreate( int id );
-
-bool TestContactHandleHistory( const char * handle , int days );
-bool TestNSSetHandleHistory( const char * handle , int days );
-bool TestDomainFQDNHistory( const char * fqdn , int days );
-
-// test na objekty v historii
-bool TestObjectHistory(   const char * name , int days );
-
-// vraci id uctu
+// return id of the account 
 int GetBankAccount( const char *accountStr ,  const char *codeStr   );
-// vraci cislo zony pro kterou je ucet pouzit
+// retrun number of the account for zone
 int GetBankAccountZone( int accountID );
 
-// test zustatku na uctu pro import bankovniho vypisu
+// test oldBalance at account 
 int TestBankAccount( const char *accountStr , int num , long oldBalance );
 
 
-// update zustatku na uctu
+// update Balance  at the account
 bool UpdateBankAccount( int accountID , char *date , int num ,  long newBalance  );
 
-// ulozeni hlavicky vypisu return ID hlavicky
+// save bankstatement  head list for account 
 int SaveBankHead( int accountID ,int num ,  char *date  ,  char *oldDate , long oldBalance , long newBalance , long credit , long debet );
 
-// ulozeni polozky vypisu
+// save bank item for statement
 bool SaveBankItem( int statemetID , char *account  , char *bank , char *evidNum, char *date , char *memo , int code , 
                        char *konstSymb ,  char *varSymb , char *specsymb  , long price );
 
-int TestEBankaList(const char*ident ); // vraci id zaznamu podle ident
+// e-banka fce for table bank_ebanka_list on-line bankstatement  via https
+int TestEBankaList(const char*ident ); // return ident for E-banka list
 
 int SaveEBankaList( int account_id , const char *ident , long  price , const char *datetimeStr ,  const char *accountStr , const char *codeStr ,
                         const char *varsymb , const char *konstsymb ,  const char *nameStr ,  const char *memoStr );
 
-
-// nastav vypis ebanky jako zpracovany na zalohovou FA
+// gererated invoice from incoming price to the e-banke 
 bool UpdateEBankaListInvoice( int id , int invoiceID );
 
 
-int GetSystemVAT();  // vraci hodnotu DPH pro sluzby registrace
-double GetSystemKOEF(); // vraci hodnotu prepocitavaciho koeficientu
+//
+int GetSystemVAT();  // return VAT for invoicing depnds ot the actual time
+double GetSystemKOEF(); // transformed koeficient to count VAT fro price local function
 
-// nastav bankovni vypis jako zpracovany
+// this bak statament is pocessed
 bool UpdateBankStatementItem( int id , int invoiceID);
 
-// spocte zustatek a vycerpany credit za zalohovych FA
-long GetInvoiceBalance( int aID , long credit );
-long GetInvoiceSumaPrice(int  iID , int aID );
-
-// zpusti fakturaci do zadaneho timestamp datum zdanitelneho plneni je taxdate 
-int MakeFactoring(  int regID , int zone , const char *timestampStr ,  const char *taxDateStr  );
 
 
-// vytvoreni ostre faktury
-int MakeNewInvoice(  const char *taxDateStr , const char *fromdateStr , const char *todateStr , int zone ,  int regID ,  long price , unsigned int count );
 
-// vytvoreni nove  zalohove faktury pro registratora na castku price  s odvedenim dph VAT=true nebo bez
-int  MakeNewInvoiceAdvance( const char *taxDateStr , int zone ,  int regID ,  long price , bool VAT );
+//----------------------------
+// EPP function for table action and action_xml
 
-// generovani cisla faktur a update countru prefixu 
-int GetPrefixType( const char *dateStr , int typ , int zone );
-int GetInvoicePrefix( const char *dateStr , int typ , int zone );
+// save EPP masagege about transfered object to the table messages 
+bool SaveEPPTransferMessage(int  oldregID , int regID , int objectID  , int type);
+
+// save generated  XML from  mod_eppd
+int SaveXMLout( const char *svTRID , const char *xml  );
+
+// start of the EPP operation with clientID and save xml from epp-client 
+bool BeginAction(int clientID , int action ,const char *clTRID  , const char *xml );
+// end of the EPP operation
+char * EndAction(int response  ); // return svrTRID
+
+char * GetsvTRID(){ return svrTRID; } ;  // return actual generated server ticket  svrTRID
 
 
-// test doby expirace validace
-bool TestValExDate(const char *dateStr ,  int period  , int interval , int id );
-// test doby expirace
+//  test cretificate fingerprint in the table registrarACL fro registarID
+bool  TestRegistrarACL( int  regID , const char *  pass , const char * cert );
+
+
+
+int GetEPPAction() { return enum_action; } // return  EPP operation
+int GetActionID() { return actionID; } // retrun action.id 
+int GetLoginID() { return loginID; } // return clientID
+
+//----------------------------
+// DATABASE  functions
+// delete data from table 
+bool DeleteFromTable(char *table , char *fname , int id );
+// delete data from *_contact_map table
+bool DeleteFromTableMap(char *map ,int  id , int contactid );
+
+// retur  handle or id of the table 
+int GetNumericFromTable( const char *table , const char *vname ,  const char *fname ,  const char *value);
+int GetNumericFromTable( const char *table , const char *vname ,  const char *fname ,  int numeric);
+char * GetValueFromTable( const char *table , const char *vname ,  const char *fname ,  const char *value);
+char * GetValueFromTable( const char *table , const char *vname ,  const char *fname ,  int numeric);
+int GetSequenceID( char *sequence ); // get  id from  sequence 
+// test   contactid at the table  nsset_contact_map or  domain_contact_map 
+bool CheckContactMap(const char * table , int id , int contactid );
+//  add conaxctID to the table nsset_contact_map or  domain_contact_map
+
+bool AddContactMap( const char * table , int id , int contactid );
+ 
+//  return  date or timestamp from dastabase field converted to local time by function in util.cc
+char * GetFieldDateTimeValueName(  const char *fname , int row );
+char * GetFieldDateValueName(  const char *fname , int row );
+
+// retun  ID of contasct from  handlu converted to upper case 
+int  GetContactID( const char *handle );
+int  GetNSSetID( const char *handle );
+// rerurn  id of domain  ( special for enum )
+int  GetDomainID( const char *fqdn , bool enum_zone );
+
+//  save update for   object  id  by registrar regID and optionly save authInfo ( password)
+bool ObjectUpdate( int id , int regID , const char *authInfo );
+// test client ClID=regID for object
+bool TestObjectClientID( int id  , int regID );
+
+// return  ID of actual object by name 
+int GetObjectID( int type , const char *name );
+// reverse function
+char * GetObjectName( int id ); 
+
+char * GetDomainExDate( int id ); // retunr  domain.ExDate like local date 
+// special for ENUM
+char * GetDomainValExDate( int id ); // retunr  domain.ValDate like local date
+
+
+
+char * GetObjectCrDateTime( int id ); // return local timestamp of the created object
+
+// save object_registry.ErDate for deleted object
+bool SaveObjectDelete( int id );
+// save   object_registry.crhistoryID  for created object
+bool SaveObjectCreate( int id );
+
+
+// test validity of the enumdomain.exdate
+// use SQL for compare depend on the old value if is in protected interval
+bool TestValExDate(const char *valexDate ,  int period  , int interval , int id );
+// for domain.exdate
 bool CountExDate(  int domainID , int period  , int max_period );
 bool RenewExDate(  int domainID , int period  );
 
 
-// vraci ID hostu
+// test linked DNS ID hostu
 int GetHostID(  const char *fqdn , int nssetID );
-// vraci pocet nssetu
-int GetNSSetHosts( int nssetID );
-// zjistuje pocet  tech pro dany nsset
+// return number of the DNS asigned to nsset
+int GetNSSetHosts( int  nssetID );
+// return number of the tech-c  asigned to nsset
 int GetNSSetContacts( int nssetID );
 
 
@@ -194,7 +212,7 @@ int GetNSSetContacts( int nssetID );
 int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "id" , "handle" , handle ); };
 int GetRegistrarIDbyVarSymbol( char *vs )  { return GetNumericFromTable( "REGISTRAR", "id" , "varsymb" , vs ); };
 
-// vraci true pokud je to systemovy registrator
+// vraci true if the registar is system can make all operations test rehistrar.system is it true
 bool GetRegistrarSystem( int regID );
 
 
@@ -202,29 +220,38 @@ char * GetRegistrarHandle(int id ) { return GetValueFromTable( "REGISTRAR", "han
 char * GetStatusFromTable( char *table , int id ) {  return GetValueFromTable( table , "status" , "id" , id ); };
 
 
-// vraci id registratora z domeny
+// return registrarID
 int GetClientDomainRegistrant( int clID , int contactID );
 
-// test na vazu mezi tabulkami pro kontakt a nsset
+// test contacts and nsset relation for linked status
 bool TestNSSetRelations(int id );
 bool TestContactRelations(int id );
 
 bool AuthTable(const  char *table , char *auth , int id );
 
-// testuje pravo registratora na zapis do zony
+// is it right of registrar  to access to the zone 
 bool TestRegistrarZone(int regID , int zone );
 
-// vytvoreni objektu v tabulce object pri create fce
+// craeate actiove object in the table object
 int CreateObject( const char *type , int regID , const char *name , const char *authInfoPw );
 
+///---------------
+// history functions 
+int MakeHistory(int objectID);// crate inser into table history
+bool SaveHistory(char *table , char *fname ,  int id ); // save  row in table to the history table 
 
-// funkce na ulozeni obsahu radku ID tabluky  do 
-int MakeHistory(int objectID); // zapise do tabulky history vraci historyID
-bool SaveHistory(char *table , char *fname ,  int id ); // ulozi radek tabulky
+// test if exist deleted  object in history 
+bool TestContactHandleHistory( const char * handle , int days );
+bool TestNSSetHandleHistory( const char * handle , int days );
+bool TestDomainFQDNHistory( const char * fqdn , int days );
+
+// genereal fce
+bool TestObjectHistory(   const char * name , int days );
 
 
 
-// uloz do historie 
+
+// save to the history and delete objects
 bool SaveNSSetHistory( int id );
 bool DeleteNSSetObject( int id );
 
@@ -232,16 +259,16 @@ bool SaveDomainHistory( int id );
 bool DeleteDomainObject( int id ); 
 
 bool SaveContactHistory( int id ); 
-bool DeleteContactObject( int id ); // smaz kontakt
+bool DeleteContactObject( int id ); 
 
+/// SQL language 
 
 // SQL UPDATE funkce
 void UPDATE( const  char * table );
 
 // set 
-void SSET( const char *fname , const char * value ); // bez escape
-void SET( const char *fname , const char * value ); // s escape
-// void NSET( const char *fname , const char * value , bool null );
+void SSET( const char *fname , const char * value ); // without escape sequence
+void SET( const char *fname , const char * value ); // with escape
 void SETS( const char *fname , const char * value , bool esc  /* , bool null  */ ); 
 
 void SET( const  char *fname , int   value );
@@ -255,75 +282,70 @@ void WHERE( const  char *fname , int   value );
 void WHEREOPP(  const  char *op ,  const  char *fname , const  char *p  , const  char * value );
 void OPERATOR(  const  char *op );
 void WHEREID( int id ) { WHERE( "id" , id ); };
-//  SQL INSERT funkce
+//  SQL INSERT fce
 void INSERTHISTORY( const char * table );
 void INSERT( const  char * table );
 void INTO(const  char *fname);
 void INTOVAL(const  char *fname , const char * value );
 void VAL( const  char * value);
 void VALUESC( const char * value );
-void VALUES( const char * value  , bool esc , bool amp ,  int uplo ); // pouzivat esc sequence a uvozovat do ampersandu
+void VALUES( const char * value  , bool esc , bool amp ,  int uplo ); // use  esc sequence a use '
 void VALUE( const  char * value );
-void VVALUE( const char * value ); // bez escape
+void VVALUE( const char * value ); // without escape
 void VALUE( int  value );
 void VALUE( bool value );
-void VALPRICE( long price ); // cena v halirich
+void VALPRICE( long price ); // price in long
 
 void VALUELOWER( const char * value  );
 void VALUEUPPER( const char * value  );
 
-// zadani aktualni cas
+// current_timestamop
 void VALUENOW();
-// zadani aktualnic as puls interval period v mesicich
+// make interval'%month' 
 void VALUEPERIOD( int period );
-// zadani null values
+// zmake NULL value
 void VALUENULL();
 
-// SQL SELECT funkce
+// SQL SELECT fce
 void SELECTFROM( const char *fname  , const char * table  );
-// pro funkce select field from table where field=value
+// function "select field from table where field=value"
 bool SELECTONE(  const char * table  , const char *fname ,  const char *value );
 bool SELECTONE(  const char * table  , const char *fname ,  int value );
 
 // SQL string funkce
-
-
 void SQLCatLower( const char *str );
 void SQLCatUpper(const char *str );
-// prevadi na mala ci velka pismena
+// to lower or upper
 void SQLCatLW( const char *str , bool lw );
 
-// umazani konce retezce
+// del end of the sqlString
 void SQLDelEnd();
-// test konce retezce sqlBuffer na znak c 
+// test the end  sqlBuffer to char c
 bool SQLTestEnd( char c );
-// pouziti strcat do sqlBuffer s testem na delku retezce 
+// use strcat to sqlBuffer with test on the length
 void SQLCat(const char *str );
-// escape
+// escape function 
 void SQLCatEscape( const char * value ); 
 
 
-// konecne funkce
-bool EXEC();
-bool SELECT();
+// run function 
+bool EXEC(); // use ExecSQL
+bool SELECT(); // use ExecSelect
 
-bool SELECTCONTACTMAP( char *map , int id ); //  pro admin a tech kontakty
+bool SELECTCONTACTMAP( char *map , int id ); //  from adin and tech-c 
 bool SELECTOBJECTID(  const char *table , const char *fname ,  int id  );
 
  
-
-
-int GetActionID() { return actionID; } // vraci odkaz do tabulky action ID
-int GetLoginID() { return loginID; } // vraci id klienta
 
 private:
 char *memHandle;
 char *svrTRID;
 char *sqlBuffer;
-char dtStr[32]; //  pro datum
-int actionID; // id tabulky akce
-int historyID; // id tabulky historie
-int loginID; // id klienta
+char dtStr[32]; //  pfor return date
+int actionID; // id from action table
+int historyID; // id from history table
+int loginID; // id of the client action.clientID
+short enum_action; // ID of the EPP operation from enum_action
 };
 
 #endif

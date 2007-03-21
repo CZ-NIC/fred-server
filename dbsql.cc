@@ -9,25 +9,26 @@
 #include "util.h"
 #include "action.h"
 
-#include "status.h"
 
 #include "log.h"
 
-#define INVOICE_FA  1 // typ vyuctovaci faktura
-#define INVOICE_ZAL 0 // typ zalohova faktura
+// for invoice  type 
+#define INVOICE_FA  1 // normal invoice
+#define INVOICE_ZAL 0 // advance invoice 
 
 
 // constructor 
 DB::DB()
 { 
-// nastav memory buffry
+// set mem buffers 
 svrTRID = NULL;
 memHandle=NULL;  
 actionID = 0 ;
+enum_action=0;
 loginID = 0;
 }
 
-// uvolni memory buffry
+// free memory buffers
 DB::~DB()
 {
 if( svrTRID ) 
@@ -66,6 +67,7 @@ if( ExecSelect( sqlString ) )
 return price;
 }
 
+// test for login
 bool  DB::TestRegistrarACL( int  regID , const char *  pass , const char * cert )
 {
 char sqlString[512];
@@ -82,17 +84,96 @@ if( ExecSelect( sqlString ) )
 
 return ret;
 }
+// save EPP message about transfered object
+bool DB::SaveEPPTransferMessage(int  oldregID , int regID , int objectID  , int type  )
+{
+char xmlString[1024];
+char regHandle[64];
+char schema_nsset[] = " xmlns:nsset=\"http://www.nic.cz/xml/epp/nsset-1.1\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/nsset-1.1 nsset-1.1.xsd\" ";
+char schema_domain[] =  " xmlns:domain=\"http://www.nic.cz/xml/epp/domain-1.1\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/domain-1.1 domain-1.1.xsd\" ";
+char schema_contact[] =  " xmlns:contact=\"http://www.nic.cz/xml/epp/contact-1.1\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/contact-1.1 contact-1.1.xsd\" " ;
 
-// vraci castku za operaci 
+LOG( NOTICE_LOG , "EPPTransferMessage to registrar : %d trasfer objectID %d new registar %d" , oldregID , objectID , regID );
+
+ xmlString[0] = 0 ; // empty string
+
+// get registrar handle 
+strcpy( regHandle ,   GetRegistrarHandle( regID ) );
+
+switch( type )
+{
+ case 1: // contact
+        if( SELECTOBJECTID( "CONTACT" ,"handle"  , objectID ) )
+          {
+
+             sprintf(xmlString , "<contact:trnData %s ><contact:id>%s</contact:id><contact:trDate>%s<contact:trDate><contact:clID>%s</contact:clID></contact:trnDate>" ,
+                   schema_contact ,    GetFieldValueName("Name" , 0 )  , GetFieldDateTimeValueName("TrDate" , 0 ) , regHandle  );
+               FreeSelect();
+           }
+        break;
+ case 2: // nsset
+        if( SELECTOBJECTID( "NSSET" ,"handle"  , objectID ))
+          {
+
+                
+            sprintf(xmlString , "<nsset:trnData %s > <nsset:id>%s</nsset:id><nsset:trDate>%s<nsset:trDate><nsset:clID>%s</nsset:clID></nsset:/trnData>" ,
+                           schema_nsset ,    GetFieldValueName("Name" , 0 )  , GetFieldDateTimeValueName("TrDate" , 0 ) , regHandle );
+               FreeSelect();
+           }
+
+        break;
+ case 3: // domain
+        if( SELECTOBJECTID( "DOMAIN" , "fqdn"  , objectID ) )
+         {
+
+             sprintf(xmlString , "<domain:trnData %s ><domain:id>%s</domain:id><domain:trDate>%s<domain:trDate><domain:clID>%s</domain:clID></domain:trnData>" ,
+                            schema_domain ,    GetFieldValueName("Name" , 0 )  , GetFieldDateTimeValueName("TrDate" , 0 )  , regHandle );
+               FreeSelect();
+
+         }
+        break;
+  default:
+       xmlString[0] = 0 ; // empty string  
+       break;
+}
+
+LOG(DEBUG_LOG , "EPPTransferMessage xmlsString: %s" , xmlString  );
+//  insert message into table message default ExDate + 1 month
+
+INSERT( "message" );
+INTO( "Clid" );
+INTO( "crdate");
+INTO( "exdate");
+INTO( "seen");
+INTO( "message" );
+VALUE( oldregID ); // id of the old registrar 
+VALUENOW();
+VALUEPERIOD( 1 ); // aktualni datetime plus one month 
+VALUE(  false );
+
+
+
+
+if( strlen(xmlString ) )
+ {
+  VALUE( xmlString ); 
+  return  EXEC();
+ }
+else return false;
+
+}
+
+// return price per operation depend on the period in months
 long DB::GetPrice(   int operation ,  int zone , int period  )
 {
 char sqlString[256];
-long p ,  price=0; // cena default -1 nepouziva se 
-int per; // cena za periodu
+long p ,  price=0; // default price=0
+int per; // price per period
 
 
+// specialy for renew operation depend on period
 if( period > 0 ) sprintf(  sqlString ,  "SELECT price , period FROM price_list WHERE valid_from < 'now()'  and ( valid_to is NULL or valid_to > 'now()' )  and operation=%d and zone=%d;" , operation , zone );
-// cena pro jednorazove operace
+// price for operation not depend on the time interval period
 else  sprintf(  sqlString ,  "SELECT price  FROM price_list WHERE valid_from < 'now()'  and ( valid_to is NULL or valid_to > 'now()' )  AND  operation=%d and zone=%d;" , operation , zone );
 
 
@@ -101,12 +182,13 @@ if( ExecSelect( sqlString ) )
 
    if(  GetSelectRows()  == 1 )
      {
+       // get price from database convert numeric  1.00 to 100
        p = get_price(   GetFieldValue( 0 , 0 )    );
 
        if( period > 0 )  
        {
        per = atoi(  GetFieldValue( 0 , 1 )   );
-       // vypocet ceny
+       // count price 
        price = period * p  / per;
        }else  price = p;
 
@@ -120,7 +202,7 @@ return price;
 else return -2; // ERROR
 }
 
-// ukladani polozky creditu
+// save credit to invoice
 bool DB::SaveInvoiceCredit(int regID , int objectID , int operation , int zone  , int period , const char *ExDate , long price  , long price2 ,    int invoiceID   , int invoiceID2) 
 {
 int id;
@@ -130,7 +212,7 @@ LOG( DEBUG_LOG , "SaveInvoiceCredit: uctovani creditu objectID %d ExDate [%s] re
 
 id = GetSequenceID( "invoice_object_registry" );
 
-// uloz zaznam o zuctovanem creditu
+// inser record about billing objects 
 INSERT( "invoice_object_registry" );
 INTO( "id" );
 INTO( "objectid" );
@@ -138,7 +220,7 @@ INTO( "registrarid"  );
 INTO( "operation" );
 INTO( "zone" );
 INTO( "period" );
-INTOVAL( "ExDate" , ExDate); // pokud je nastaveno EXDate
+INTOVAL( "ExDate" , ExDate); // if is set ExDate for renew 
 VALUE( id );
 VALUE( objectID );
 VALUE( regID );
@@ -158,10 +240,10 @@ if( EXEC() )
   VALUE( id );
   VALUE( invoiceID );
   VALPRICE( price);
-  if( !EXEC() ) { LOG( CRIT_LOG , "ERROR invoice_object_registry_price_map" ); return false; }
+  if( !EXEC() ) { LOG( ERROR_LOG , "ERROR insert invoice_object_registry_price_map" ); return false; }
     
 
-  if( price2 ) // uloz druhou cenu
+  if( price2 ) // save next price credit came from next advance invoice
    {  
      LOG( DEBUG_LOG , "uctovani creditu  price2 %ld   invoiceID2 %d" , price2 ,  invoiceID2 );
 
@@ -172,7 +254,7 @@ if( EXEC() )
       VALUE( id );
       VALUE( invoiceID2 );
       VALPRICE( price2);
-      if( !EXEC() ) { LOG( CRIT_LOG , "ERROR invoice_object_registry_price_map price2" ); return false; }       
+      if( !EXEC() ) { LOG( ERROR_LOG , "ERROR insert invoice_object_registry_price_map price2" ); return false; }       
    }
  
  
@@ -181,7 +263,7 @@ if( EXEC() )
   }
 else 
   {
-     LOG( CRIT_LOG , "ERROR SaveInvoiceCredit invoiceID %d objectid %d " , invoiceID , objectID );
+     LOG( ERROR_LOG , "ERROR SaveInvoiceCredit invoiceID %d objectid %d " , invoiceID , objectID );
      return false;
   }
 
@@ -192,30 +274,31 @@ bool DB::InvoiceCountCredit( long  price , int invoiceID  )
 {
 char sqlString[256];
 
-// pokud nulova cene neupdavovat credit
+// if the zero price not update credit 
 if( price == 0 ) {  LOG( DEBUG_LOG , "nulova castka nemenim credit u invoiceID %d"  , invoiceID ); return true; } 
 else
 {
+// count credit on the advance invoice
 sprintf(  sqlString ,  "UPDATE invoice SET  credit=credit-%ld%c%02ld  WHERE id=%d;" , price /100 , '.' , price %100   , invoiceID );
 if( ExecSQL( sqlString )   ) return true;
-else { LOG( CRIT_LOG , "error InvoiceCountCredit invoice  %d price %ld" , invoiceID  , price ); return false ; }    
+else { LOG( ERROR_LOG , "error InvoiceCountCredit invoice  %d price %ld" , invoiceID  , price ); return false ; }    
 }
 
 }
 
-// operace registrace domeny  CREATE
+// billing operation   CREATE domain
 bool DB::BillingCreateDomain( int regID , int  zone , int  objectID  )
 {
 return UpdateInvoiceCredit( regID ,  OPERATION_DomainCreate , zone , 0 , "" , objectID  );
 }
-// operace prodlouzeni domeny RENEW
+// billing operation RENEW domain
 bool DB::BillingRenewDomain(  int regID , int  zone , int  objectID , int period  ,  const char *ExDate )
 {
 return UpdateInvoiceCredit( regID ,  OPERATION_DomainRenew , zone , period  , ExDate , objectID  );
 }
 
 
-// zpracovani creditu strzeni ze zalohe faktury ci dvou faktur
+// count credit from one or two  advance invoice 
 bool DB::UpdateInvoiceCredit( int regID ,   int operation  , int zone   , int period , const char *ExDate ,  int objectID  )
 {
 char sqlString[256];
@@ -228,19 +311,19 @@ int i , num;
 
 LOG( DEBUG_LOG , "UpdateInvoiceCredit operation %d objectID %d ExDate [%s]  period %d regID %d" , operation , objectID ,  ExDate , period ,  regID  );
 
-// systemovy registrator pracuje zadarmo
+// systemovy registrator work free without invoicing 
 if( GetRegistrarSystem( regID ) == true ) return true;
 
 
-// zjisti  cenu za operaci v registru musibyt >=0 
+// get price per operation  for zone and interval period
 price =  GetPrice( operation , zone , period );
 
-if( price == -2 ) return false; // chyba SQL
+if( price == -2 ) return false; // SQL error get price
 
-// neni zadana ( cena je zadarmo) operace se povoluje a neuctuje 
+// if the price not set  the operation is allowed and not billing
 if( price == -1 ) return true;
 
-// zjisti na jakych zalohovych fakturach je volny credit vypis vzdy dve po sobe nasledujici
+// query where is a credit on th eadvance invouce get maximal two 
 sprintf( sqlString , "SELECT id , credit FROM invoice WHERE registrarid=%d and zone=%d and credit > 0 order by id limit 2;" , regID , zone );
 
 invoiceID=0;
@@ -251,14 +334,16 @@ if( ExecSelect( sqlString ) )
 
     for( i = 0 ; i  < num ; i ++ )
        {
+       
         invID[i]  = atoi( GetFieldValue( i , 0 )  );
+          // credit 
         cr[i]  =  (long) ( 100.0 *  atof(  GetFieldValue( i , 1 )   )  );
        }
      FreeSelect();
  }
 
 
-// nejsou zadne zalohove faktury na zpracovani nemuze odecitat CREDIT
+// not any advance invoice can not billing credit
 if( num == 0 ) return false;
 
 
@@ -277,31 +362,32 @@ if( credit - price > 0 )
 else
   {
    
-   if(  num == 2 )   // pokud existuje dalsi faktura
+   if(  num == 2 )   // if exist next advance invoice 
    {
     
-       price1= cr[0]; // zustatek na prvni zal FA
-       price2= price - cr[0]; // zbytek penez ztrhava se z druhe zal FA
+       price1= cr[0]; // balance on the first invoice 
+       price2= price - cr[0]; // next credit get from second  invoice
 
+       // biling 
        if( SaveInvoiceCredit(  regID ,objectID , operation  ,  zone , period ,  ExDate , price1 ,  price2 ,  invID[0] , invID[1]  )  ) 
          {
-         if( InvoiceCountCredit(  cr[0] , invID[0] )  ) // dopocitad do nuly na prvni zalohove FA  
+         if( InvoiceCountCredit(  cr[0] , invID[0] )  ) // count to zero on the first invoice 
            {
              invoiceID=invID[1];                        
-             LOG(   DEBUG_LOG , "pozadovana castka credit0 %ld credit1 %ld price %ld druha castka %ld" , cr[0] ,  cr[1]  , price1  , price2 );
+             LOG(   DEBUG_LOG , "UpdateInvoiceCredit: price  credit0 %ld credit1 %ld price %ld second price %ld" , cr[0] ,  cr[1]  , price1  , price2 );
               
              if( cr[1] -  credit  > 0 )
              {
-                     // castka ponizena o zbyvajici credit na privni zalohove FA
+                  // second invoice 
                    return InvoiceCountCredit(  price  - cr[0] , invID[1] );
                 
-             }else   LOG( CRIT_LOG , "na dalsi zalohove fakture id %d  neni pozadovana castka  %ld credit %ld" ,   invoiceID ,  price  , cr[1] );
+             }else   LOG( WARNING_LOG , "UpdateInvoiceCredit: on the next invoice  id %d not price  %ld credit %ld" ,   invoiceID ,  price  , cr[1] );
 
           }
 
       } 
  
-   }else  LOG( ALERT_LOG , "neni uz dalsi zalohova faktura ke zpracovani ");    
+   }else  LOG( WARNING_LOG , "UpdateInvoiceCredit: not next invoice to count ");    
  
  }
 
@@ -333,33 +419,38 @@ if( actionID > 0 )
 return false;
 }
 
-// action
-// zpracovani action
+
+// action 
 bool  DB::BeginAction(int clientID , int action ,const char *clTRID  , const char *xml  )
 {
 
 
 
-// HACK pro PIF zruseno  ted primo pres ADIF
 
- // umozni  info funkce pro PIF
-/*
-if( action == EPP_ContactInfo ||  action == EPP_NSsetInfo ||   action ==  EPP_DomainInfo ) 
-{
-if( clientID == 0 ) { actionID = 0 ; loginID =  0 ;  return 1;  }
-}
-*/
-
-
-// actionID pro logovani
+// actionID for loging all action
 actionID = GetSequenceID("action");
-loginID = clientID; // id klienta
-historyID = 0 ; // history ID je nula
+loginID = clientID; // id of corba client
+historyID = 0 ; // history ID 
+
 
 if( actionID ) 
   {
+  
+  //    make  server ticket  svrTRID
 
-  // zapis do action tabulky
+  if( svrTRID==NULL )
+  { 
+     svrTRID= new char[MAX_SVTID] ;
+
+     // create  server ticket
+     sprintf( svrTRID , "ccReg-%010d" , actionID );
+     LOG( SQL_LOG ,  "Make svrTRID: %s" ,  svrTRID );
+   }
+
+  // EPP operation
+  enum_action=action;
+
+  // write to actuion table
   INSERT( "ACTION" );
   INTO( "id" );
   if( clientID > 0 ) INTO( "clientID"  );
@@ -373,9 +464,7 @@ if( actionID )
   
    if( EXEC() ) 
      {
-          // zjisti jazyk clienta v tabulce login
-         // pres session  clientLang = ReturnClientLanguage();
-
+         // write XML from epp-client
         if( strlen( xml ) )
            {
                 INSERT("Action_XML");
@@ -392,6 +481,7 @@ return false;
 }
 
 
+// end of EPP operation
 char * DB:: EndAction(int response )
 {
 int id;
@@ -399,30 +489,29 @@ int id;
 if( actionID == 0 ) return "no action";
 else
 {
-if( svrTRID == NULL ) 
- {
-  LOG( SQL_LOG , "alloc svrTRID");
-  svrTRID= new char[MAX_SVTID] ; 
- }
 
-// cislo transakce co vraci server
-sprintf( svrTRID , "ccReg-%010d" , actionID );
 
 UPDATE("ACTION");
 if( response > 0  ) SET( "response" , response );
 SET( "enddate", "now" );
-SSET( "servertrid" , svrTRID ); // bez escape
+SSET( "servertrid" , svrTRID ); // without escape
 WHEREID( actionID );
 
 
-// update tabulky
+// update table
 id  =  actionID;
 actionID = 0 ; 
 LOG( SQL_LOG ,  "EndAction svrTRID: %s" ,  svrTRID );
 
 if( EXEC() ) return   svrTRID;
-else return "svrTRID_DATABASE_ERROR";
+else
+{
+LOG( ERROR_LOG , "End action DATABASE_ERROR" ); 
+return "" ; 
 }
+
+}
+
 }
 
 char * DB::GetObjectCrDateTime( int id )
@@ -437,6 +526,14 @@ char * DB::GetDomainExDate( int id )
 convert_rfc3339_date( dtStr , GetValueFromTable( "DOMAIN", "ExDate" , "id" , id ) );
 return dtStr;
 }
+
+char * DB::GetDomainValExDate( int id )
+{
+convert_rfc3339_date( dtStr , GetValueFromTable( "enumval", "ExDate" , "domainid" , id ) );
+return dtStr;
+}
+
+
 char * DB::GetFieldDateTimeValueName(  const char *fname , int row )
 {
 convert_rfc3339_timestamp( dtStr ,  GetFieldValueName( (char * ) fname , row ) ) ;
@@ -452,7 +549,7 @@ return dtStr;
 
 
 
-// zjistuje pocet hostu pro dany nsset
+// get number of dns host  associated to nsset
 int DB::GetNSSetHosts( int nssetID )
 {
 char sqlString[128];
@@ -471,15 +568,15 @@ return num;
 }
 
 
-// jestli je registrator clientam objektu
+// if the registrar is client of the object
 bool DB::TestObjectClientID( int id  , int regID )
 {
 char sqlString[128];
 bool ret=false;
 
 
-// systemovy registrator pracuje zadarmo
-if( GetRegistrarSystem( regID ) == true ) return true; // ma prava dany objekt menit
+// system registrator o
+if( GetRegistrarSystem( regID ) == true ) return true; // has rights for all object
 else
 {
 sprintf( sqlString , "SELECT id FROM  object WHERE id=%d and clID=%d " , id , regID ); 
@@ -503,16 +600,16 @@ return GetValueFromTable( "object_registry" , "name" , "id" , id );
 int  DB::GetContactID( const char *handle )
 {
 char HANDLE[64];
-
-if( get_CONTACTHANDLE( HANDLE , handle ) == false ) return -1; // preved handle na velka pismena
+// to upper case and test
+if( get_CONTACTHANDLE( HANDLE , handle ) == false ) return -1; 
 else return GetObjectID( 1 , HANDLE );
 }
 
 int  DB::GetNSSetID( const char *handle )
 {
 char HANDLE[64];
-
-if( get_NSSETHANDLE( HANDLE , handle ) == false ) return -1 ; // preved handle na velka pismena
+// to upper case and test 
+if( get_NSSETHANDLE( HANDLE , handle ) == false ) return -1 ; 
 else  return  GetObjectID( 2 , HANDLE );
 }
 
@@ -539,7 +636,7 @@ return id;
 
 
  
-// zjistuje pocet  tech pro dany nsset
+// get number of tech-c associated to nsset
 int DB::GetNSSetContacts( int nssetID )
 {
 char sqlString[128];
@@ -557,10 +654,10 @@ if( ExecSelect( sqlString ) )
 return num;
 }
 
+// save object as deleted
 bool DB::SaveObjectDelete( int id )
 {
    LOG( SQL_LOG , "set delete objectID %d" , id );
-           // uloz ze je objekt smazan
            UPDATE( "object_registry" );
            SET( "ErDate" , "now" );
            WHEREID( id );
@@ -598,7 +695,7 @@ bool DB::TestDomainFQDNHistory( const char * fqdn , int days )
 return TestObjectHistory( fqdn , days );
 }
 
-// test na objekty v historii
+// test protected period 
 bool DB::TestObjectHistory(   const char * name , int days )
 {
 /* TODO predelat
@@ -635,7 +732,7 @@ int id;
 
 id = GetSequenceID( "object_registry" );
 
- // vytvor roid 
+ // make ROID
  get_roid( roid, ( char * ) type , id );
 
  INSERT( "OBJECT_registry" );
@@ -648,10 +745,10 @@ id = GetSequenceID( "object_registry" );
 
  VALUE( id );
 
-// TYP objektu
+// TYPe of the object
 switch( type[0] )
   {
-    case 'C' : // kontakt
+    case 'C' : // contacts
          VALUE( 1 );
          VALUEUPPER( name );
          break;
@@ -659,7 +756,7 @@ switch( type[0] )
          VALUE( 2 );
          VALUEUPPER( name );
          break;
-    case 'D' : // domena
+    case 'D' : // domain
          VALUE( 3 );
          VALUELOWER( name );
          break;
@@ -686,7 +783,7 @@ if( EXEC() )
 
                      if( strlen ( authInfoPw ) == 0 )
                        {
-                          random_pass(  pass  ); // autogenerovane heslo pokud se heslo nezada
+                          random_pass(  pass  ); // autogenerate passwor if not set 
                           VVALUE( pass );
                         }
                       else VALUE( authInfoPw );
@@ -698,87 +795,9 @@ else return 0;
 }
 
 
-/*
-char *  DB::GetStatusString( int status )
-{
-
-char sqlString[128];
-char *str;
-
-str = new char[128];
-
-sprintf( sqlString , "SELECT  status  FROM enum_status  WHERE id=%d;" , status );
-
-if( ExecSelect( sqlString ) )
- {
-      strcpy( str ,  GetFieldValue( 0 , 0 ) ) ;
-      LOG( SQL_LOG , "GetStatustring \'%s\'  ->  %d" ,  str , status );
-      FreeSelect(); 
-      return str;
- }
-else return "{ }" ; // prazdny status string pole
-}
 
 
-switch( status )
-{
-   case STATUS_ok:
-           return "ok";
-   case STATUS_inactive:
-           return "inactive";
-   case STATUS_linked:
-           return "linked";
-   case STATUS_clientDeleteProhibited:
-           return "clientDeleteProhibited";
-   case STATUS_serverDeleteProhibited:
-           return "serverDeleteProhibited";
-   case STATUS_clientHold:
-           return "clientHold";
-   case STATUS_serverHold:
-           return "serverHold";
-   case STATUS_clientRenewProhibited:
-           return "clientRenewProhibited";
-   case STATUS_serverRenewProhibited:
-           return "serverRenewProhibited";
-   case STATUS_clientTransferProhibited:
-           return "clientTransferProhibited";
-   case STATUS_serverTransferProhibited:
-           return "serverTransferProhibited";
-   case STATUS_clientUpdateProhibited:
-           return "clientUpdateProhibited";
-   case STATUS_serverUpdateProhibited:
-           return "serverUpdateProhibited";
-   default:
-           return "";
-}         
-
-return "";
-}
-
-
-int  DB::GetStatusNumber( char  *status )
-{
-char sqlString[128];
-char *handle;
-int id =0;
-
-sprintf( sqlString , "SELECT  id  FROM enum_status  WHERE status=\'%s\';" , status );
-
-if( ExecSelect( sqlString ) )
- {
-      handle = GetFieldValue( 0 , 0 );
-      id = atoi( handle );
-      LOG( SQL_LOG , "GetStatusNumeric \'%s\'  ->  (%s) %d" ,   status , handle  , id  );
-      FreeSelect();
- }
-
-return id;
-}
-
-*/
-
-
-// vraci tru pokud je to systemovy regostrator
+// return  true if is system registrar 
 bool DB::GetRegistrarSystem( int regID )
 {
 char sqlString[128];
@@ -803,14 +822,14 @@ return ret;
 }
 
 
-// testuje pravo registratora na zapis do zony  podle toho odkdy ma zacatek fakturace pro danou zonu 
-// TODO ukonceni cinnosti registratora
+// TODO test and of  invoicing
+// test registrar access to zone depend on the begin  of invoicing  table registrarinvoice
 bool DB::TestRegistrarZone(int regID , int zone )
 {
 bool ret = false;
 char sqlString[128];
 
-// sytemovy registrator ma prava pro vsechny zony
+// system registrar has rigths to all zone
 if( GetRegistrarSystem( regID ) == true ) return true;
 
 sprintf( sqlString , "SELECT  id  FROM  registrarinvoice  WHERE registrarid=%d and zone=%d and  current_timestamp > fromdate;" ,  regID , zone );
@@ -829,7 +848,7 @@ if( ExecSelect( sqlString ) )
 return ret;
 }
 
-
+// test contat in the contact map
 bool  DB::CheckContactMap(const char * table , int id , int contactid )
 {
 bool ret = false;
@@ -839,7 +858,7 @@ sprintf( sqlString , "SELECT * FROM %s_contact_map WHERE %sid=%d and contactid=%
 
 if( ExecSelect( sqlString ) )
  {
-    if(  GetSelectRows() == 1  ) ret=true; // kontakt existuje
+    if(  GetSelectRows() == 1  ) ret=true; // contact exist
     FreeSelect();
   }
 
@@ -850,7 +869,7 @@ return ret;
 
 
 
-// pridave contact do pole kontaktu
+// add contact to contact table
 bool DB::AddContactMap( const char * table , int id , int  contactid )
 {
 char sqlString[128];
@@ -862,48 +881,57 @@ return ExecSQL( sqlString );
  
 
 
-bool DB::TestValExDate(const char *dateStr ,  int period  , int interval , int id )
+bool DB::TestValExDate(const char *valexDate ,  int period  , int interval , int id )
 {
-char sqlString[256];
-char maxDate[32];
+char sqlString[512];
+char exDate[32]; //  ExDate old value  in the table enumval
 bool ret =false;
+char currentDate[32];
+bool use_interfal=false;  // default value for using protected interval
 
-// default
-strcpy( maxDate ,  "" );
 
-if( id)
+// actual local date based on the timezone
+get_rfc3339_timestamp( time(NULL) ,  currentDate , true );
+
+
+
+if( id) // if ValExDate alredy exist and updated 
 {
- // vyber mensi ze dvou hodnot
- sprintf( sqlString , "SELECT  date_smaller (  date( exdate + interval\'%d month\' )  , date( current_date + interval\'%d month\' + interval\'%d days\' ) )  FROM enumval WHERE domainid=%d;" , 
-                  period , period , interval , id   );
+// copy current Exdate during update 
+strcpy( exDate ,  GetDomainValExDate( id) ) ;
+
+// USE SQL for calculate
+// test if the ExDate is lager then actual date and less or equal to protected period (interval days)
+sprintf( sqlString , "SELECT   date_gt( date(\'%s\') , date(\'%s\') ) AND \
+           date_le ( date(\'%s\') ,  date ( date(\'%s') + interval'%d days' ) ) as test; " , 
+             exDate , currentDate , exDate , currentDate , interval );
+
+// As a test value
+  if( ExecSelect( sqlString ) )
+   {
+       if(  GetSelectRows() == 1  ) 
+           use_interfal=GetFieldBooleanValueName("test" , 0 );
+     
+     FreeSelect();
+   }
+}
+
+if(  use_interfal ) // use current exDate as max value is int the protected interval
+sprintf( sqlString , "SELECT   date_gt( date(\'%s\' ) , date(\'%s') ) AND \
+             date_le( date(\'%s\') , date( date(\'%s\') + interval'%d  months' ) ) as test; " , 
+           valexDate , currentDate ,  valexDate , exDate , period );
+else // use current date
+sprintf( sqlString , "SELECT   date_gt( date(\'%s\' ) , date(\'%s') ) AND \
+             date_le( date(\'%s\') , date( date(\'%s\') + interval'%d  months' ) ) as test; " , 
+           valexDate , currentDate ,  valexDate ,  currentDate , period );
+
 if( ExecSelect( sqlString ) )
  {
-    if(  GetSelectRows() == 1  )   strcpy( maxDate ,  GetFieldValue( 0 , 0 )   ) ;
+       if(  GetSelectRows() == 1  )
+           ret =GetFieldBooleanValueName("test" , 0 ); // return value true if is OK
+
      FreeSelect();
   }
-}
-else
-{
- sprintf( sqlString , "SELECT date( current_date + interval\'%d month\' + interval\'%d days\'  ) ; " , period , interval );
-if( ExecSelect( sqlString ) )
- {
-    if(  GetSelectRows() == 1  )   strcpy( maxDate ,  GetFieldValue( 0 , 0 )   ) ;
-    FreeSelect();
- }
-}
-
-// nepodarilose vypocitat maxDate
-if( strlen( maxDate  ) == 0 ) return false;
-
-
-sprintf( sqlString , "SELECT valex , max, min  from (select date\'%s\' as valex , date( '%s' )  as max,  current_date as min ) as tmp WHERE valex > min AND valex < max;" ,
-                        dateStr , maxDate  );
-
-if( ExecSelect( sqlString ) )
- {
-    if(  GetSelectRows() == 1  )  ret = true;
-    FreeSelect();
- }
 
 
 return ret;
@@ -912,7 +940,7 @@ return ret;
 
  
 
-// testuje jestli lze prodlouzit domenu pri DomainRenew
+// test for  renew domain
 bool DB::CountExDate( int domainID , int period  , int max_period )
 {
 char sqlString[256];
@@ -931,7 +959,7 @@ if( ExecSelect( sqlString ) )
 return ret;
 }
 
-
+// make and count new ExDate for renew domain
 bool DB::RenewExDate(  int domainID , int period  )
 {
 char sqlString[256];
@@ -946,7 +974,6 @@ return ExecSQL(  sqlString );
 
 
 
-// test pri Check funkci na domenu case insensitiv
 int DB::GetDomainID( const char *fqdn  , bool enum_zone )
 {
 // TODOTODOTODOTODOTODOTODO
@@ -974,7 +1001,7 @@ return id;
 }
 
 
-// vraci ID hostu
+// return ID of host
 int DB::GetHostID(  const char *fqdn , int nssetID )
 {
 char sqlString[128];
@@ -997,6 +1024,7 @@ if( hostID == 0 )  LOG( SQL_LOG , "Host fqdn=\'%s\' not found" , fqdn  );
 return hostID;
 }
 
+// test for nsset is linked to domain
 bool DB::TestNSSetRelations(int id )
 {
 bool ret = false;
@@ -1005,7 +1033,7 @@ char sqlString[128];
 sprintf( sqlString , "SELECT id from DOMAIN WHERE nsset=%d;" , id );
 if( ExecSelect( sqlString ) )
   {
-     if(  GetSelectRows() > 0 ) ret=true;  // jestli ma domena definovany nsset 
+     if(  GetSelectRows() > 0 ) ret=true; 
      FreeSelect();
   }
 
@@ -1047,7 +1075,7 @@ if( count > 0 ) return true;
 else return false;
 }
 
-// potvrzeni hesla authinfopw v tabulce 
+// compare authinfopw 
 bool  DB::AuthTable(const  char *table , char *auth , int id )
 {
 bool ret=false;
@@ -1071,7 +1099,7 @@ return ret;
 }
 
 
-int DB::GetSystemVAT()  // vraci hodnotu DPH pro sluzby registrace
+int DB::GetSystemVAT()  // return VAT for invoicing depend on the time
 {
 char sqlString[128] = "select vat from price_vat where valid_to > now() or valid_to is null;" ;
 int dph=0;
@@ -1088,7 +1116,7 @@ if( ExecSelect( sqlString ) )
 return dph;
 } 
 
-double DB::GetSystemKOEF() // vraci koeficient pro prepocet DPH
+double DB::GetSystemKOEF() // return VAT count parametr for count price witout VAT
 {
 char sqlString[128] = "select koef   from price_vat where valid_to > now() or valid_to is null;" ;
 double koef;
@@ -1107,28 +1135,7 @@ return koef;
 
 
 
-
-// test kodu zemo
-/*
-bool DB::TestCountryCode(const char *cc)
-{
-char sqlString[128];
-bool ret = false;
-
-if( strlen( cc )  == 0 ) return true; // test neni potreba vysledek je true
-
-sprintf( sqlString , "SELECT id FROM enum_country WHERE id=\'%s\';" , cc );
-if( ExecSelect( sqlString ) )
- {
-   if( GetSelectRows() == 1   ) ret = true;
-    FreeSelect();
- } 
-
-return ret;
-}
-
-*/
-
+// get ID of back account
 int  DB::GetBankAccount( const char *accountStr ,  const char *codeStr   )
 {
 char sqlString[128];
@@ -1149,7 +1156,7 @@ if( ExecSelect( sqlString ) )
 return accountID;
 }
 
-
+// get zone for bank account
 int DB::GetBankAccountZone( int accountID )
 {
 char sqlString[128];
@@ -1170,7 +1177,7 @@ if( ExecSelect( sqlString ) )
 return zone;
 }
 
-// test zustatku na uctu pro import bankovniho vypisu
+// test balance on the account for importing bank statament
 int DB::TestBankAccount( const  char *accountStr , int num , long oldBalance )
 {
 int accountID=0;
@@ -1194,16 +1201,16 @@ if(  accountID )
     LOG( LOG_DEBUG ,"posledni vypis ucetID %d cislo %d zustatek na uctu %ld" , accountID ,  lastNum , lastBalance);
 
 
-     // test podle cisla vypisu ne pro prvni vypis
+     // test for numer of statemnt not for the first statament
     if( num > 1  )
       {
         if( lastNum + 1 != num ) 
           {
-               LOG(  ERROR_LOG  , "chyba nesedi cislo  vypisu %d  posledni nacteny je %d" , num , lastNum );
+               LOG( ERROR_LOG  , "chyba nesedi cislo  vypisu %d  posledni nacteny je %d" , num , lastNum );
           }
       }
 
-    // dalsi test pokud sedi zustatek na uctu
+   // next test if balance is ok
    if(  oldBalance  == lastBalance ) return accountID;
    else
      {
@@ -1221,11 +1228,10 @@ return 0;
 }
 
 
-// update zustatku na uctu
+// update on the bank account
 bool DB::UpdateBankAccount( int accountID , char *date , int num ,  long newBalance  )
 {
     
-     //  update  tabulky
 
            UPDATE( "bank_account" );
            SET( "last_date" , date  );
@@ -1238,13 +1244,12 @@ bool DB::UpdateBankAccount( int accountID , char *date , int num ,  long newBala
 
 
 
-
+// save bank statament 
 int DB::SaveBankHead( int accountID ,int num ,  char *date  ,  char *oldDate , long oldBalance , long newBalance , long credit , long debet )
 { 
 int statemetID;
 
      statemetID = GetSequenceID( "bank_statement_head" );
-   // id | account_id | num | create_date | balance_old_date | balance_old | balance_new | balance_credit | balence_debet
 
                     INSERT( "bank_statement_head" );
                     INTO( "id" );
@@ -1270,7 +1275,7 @@ int statemetID;
      else return 0;
 
 }
-
+//  save items of bank statemtn
 bool DB::SaveBankItem( int statemetID , char *account  , char *bank , char *evidNum,  char *date , char *memo ,
                        int code  ,  char *konstSymb ,  char *varSymb , char *specsymb  , long price )
 {
@@ -1303,7 +1308,7 @@ return EXEC ();
 
 
                 
-// nastav bankovni vypis jako zpracovany
+// mark bank statament as imported
 bool DB::UpdateBankStatementItem( int id , int invoiceID)
 {
                   UPDATE( "bank_statement_item" );
@@ -1312,6 +1317,8 @@ bool DB::UpdateBankStatementItem( int id , int invoiceID)
                   return EXEC();
 }  
 
+
+// for E-Banka https bank  statemnt
 int DB::TestEBankaList( const char *ident )
 {
 char sqlString[128] ;
@@ -1331,13 +1338,14 @@ if( ExecSelect( sqlString ) )
 
 return id;
 }
-                        // identifikator , castka ,  datum a , cislo ucto , kod banky ,  VS , KS  , nazev uctu , poznamka
+
+// CZ desc: identifikator , castka ,  datum a , cislo ucto , kod banky ,  VS , KS  , nazev uctu , poznamka
 int DB::SaveEBankaList( int account_id , const char *ident , long  price , const char *datetimeStr ,  const char *accountStr , const char *codeStr , 
                         const char *varsymb , const char *konstsymb ,  const char *nameStr ,  const char *memoStr )
 {
 int ID;
 
-// pokud jeste neni nacteny 
+// if not readed
 if( TestEBankaList( ident ) == false )
   {
 
@@ -1368,12 +1376,13 @@ if( TestEBankaList( ident ) == false )
                     VALPRICE( price );
 
    if( EXEC () ) return ID;
-   else return -1; // chyba
+   else return -1; // error
  }
 else return 0;
 }
 
 // nastav vypis ebanky jako zpracovany na zalohovou FA
+// mark e-banka statement as imported on advance invoice
 bool DB::UpdateEBankaListInvoice( int id , int invoiceID )
 {
                   UPDATE( "BANK_EBANKA_LIST" );
@@ -1383,13 +1392,13 @@ bool DB::UpdateEBankaListInvoice( int id , int invoiceID )
 
 }
 
-// pro danou uzavranou fakturu iID spocti aktualni zustatek zalohove faktury aID pri uzavreni faktury z invoice_object_registry_price_map.price_balance
 
+// CZ desc: pro danou uzavranou fakturu iID spocti aktualni zustatek zalohove faktury aID pri uzavreni faktury z invoice_object_registry_price_map.price_balance
 long DB::GetInvoiceBalance( int aID , long credit )
 {
 char sqlString[512];
 long total , suma ;
-long price=-1; // err hodnota
+long price=-1; // err value
  
 
     LOG( NOTICE_LOG , "GetInvoiceBalance: zalohova FA %d" ,  aID );
@@ -1409,21 +1418,20 @@ long price=-1; // err hodnota
            suma = (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
            LOG( NOTICE_LOG , "sectweny credit %ld  pro zal FA" , suma );
            FreeSelect();
-        } else return -2; // chyba
+        } else return -2; // err
 
         price = total - suma - credit;
         LOG( NOTICE_LOG , "celkovy zustatek pri  uzavreni Fa %ld" , price  );
 
-   }else return -1; // chyba
+   }else return -1; // err
 
 return price;
 }
-// vracizuctovanou  castku pro  FA iID  ze zalohove FA aID
-
+// return accounted price for invoice  iID from advance invoice  FA aID
 long DB::GetInvoiceSumaPrice( int iID  , int aID )
 {
 char sqlString[512];
-long price=-1; // err hodnota
+long price=-1; // err value
     LOG( NOTICE_LOG , "GetInvoiceSumaPrice invoiceID %d zalohova FA %d" , iID  ,  aID );
 
     sprintf( sqlString , "SELECT  sum( invoice_object_registry_price_map.price ) FROM invoice_object_registry ,  invoice_object_registry_price_map\
@@ -1440,19 +1448,20 @@ long price=-1; // err hodnota
             }
 
        FreeSelect();
-   }else return -1; // chyba
+   }else return -1; // error
 
 return price;
 }
 
-
+// incoicing make new invoice
 int DB::MakeFactoring(  int regID , int zone , const char *timestampStr ,  const char *taxDateStr )
 {
 char sqlString[512];
 int invoiceID=-1;
 int *aID;
 int i , num;
-char fromtimeStr[32];
+char fromdateStr[32];
+char todateStr[32];
 int count=-1;
 long price , credit,  balance;
 
@@ -1461,27 +1470,50 @@ long price , credit,  balance;
 
 
 
-            // zjisti fromdate nebo lasdate z tabulky registrarinvoice od kdy fakturovat 
-            sprintf( sqlString , "SELECT lastdate ,  fromdate  from registrarinvoice  WHERE zone=%d and registrarid=%d;"  , zone , regID );
+// PRVNI KROK podivat se do tabulky invoice_generation do kdy byla fakturace provadena a tuto hodrnotu 
+// todate vzit jako from date
+fromdateStr[0]=0;
+
+// posledni zaznam  todate plus jeden den
+sprintf( sqlString , "SELECT date( todate + interval'1 day')  from invoice_generation  WHERE zone=%d  AND registrarid =%d  order by id desc limit 1;" ,  zone , regID );
+if( ExecSelect( sqlString ) )
+  {
+     if(  GetSelectRows() == 1 )
+      {
+         strcpy( fromdateStr , GetFieldValue( 0 , 0 ) );
+      }
+    FreeSelect();
+ }
+else return -1; // chyba
+
+
+// JINAK KROK 2 
+ 
+if( fromdateStr[0]== 0 )
+{
+            // zjisti fromdate   tabulky registrarinvoice od kdy fakturovat 
+            sprintf( sqlString , "SELECT  fromdate  from registrarinvoice  WHERE zone=%d and registrarid=%d;"  , zone , regID );
              if( ExecSelect( sqlString ) )
                {
 
                    if( IsNotNull( 0 , 0 ) )
                      {
-                         strcpy( fromtimeStr , GetFieldValue( 0 , 0 ) );
+                         strcpy( fromdateStr , GetFieldValue( 0 , 0 ) );
                       }
-                    else strcpy( fromtimeStr ,  GetFieldValue( 0 , 1 ) );
 
                  FreeSelect();
                }else return -1; // chyba
 
-            LOG( NOTICE_LOG , "Fakturace od %s do %s" , fromtimeStr  , timestampStr );
+}
+
+// 
+strncpy( todateStr ,  timestampStr , 10 );
+todateStr[10] = 0 ;
+LOG( NOTICE_LOG , "Fakturace od %s do %s timestamp [%s] " , fromdateStr , todateStr , timestampStr  );
 
 
 
-
-
-                // zjisti pocet polozek k fakturaci
+              // zjisti pocet polozek k fakturaci
                sprintf( sqlString , "SELECT count( id)  from invoice_object_registry  where crdate < \'%s\' AND  zone=%d AND registrarid=%d AND invoiceid IS NULL;" , timestampStr , zone , regID );
                if( ExecSelect( sqlString ) )
                 {
@@ -1505,9 +1537,10 @@ long price , credit,  balance;
 
 
              
+             
             // prazdna faktura zaznam o fakturaci
            // vraci invoiceID nebo nulo pokud nebylo nic vyfakturovano pri chybe vraci zaporne cislo chyby
-                if( ( invoiceID = MakeNewInvoice(  taxDateStr , fromtimeStr , timestampStr , zone , regID   , price  , count )  ) >= 0 )
+                if( ( invoiceID = MakeNewInvoice(  taxDateStr , fromdateStr , todateStr , zone , regID   , price  , count )  ) >= 0 )
                   {
 
                     if( count > 0 )    // oznac polozky faktury faktrury
@@ -1521,7 +1554,7 @@ long price , credit,  balance;
                      if( invoiceID > 0 )  
                        {
                         // set last date do tabulky registrarinvoice
-                         sprintf( sqlString , "UPDATE registrarinvoice SET lastdate=\'%s\' WHERE zone=%d and registrarid=%d;" , timestampStr , zone , regID );
+                         sprintf( sqlString , "UPDATE registrarinvoice SET lastdate=\'%s\' WHERE zone=%d and registrarid=%d;" , todateStr , zone , regID );
                          if( ExecSQL( sqlString )   == false ) return -4; //chyba
 
 
@@ -1584,7 +1617,6 @@ return invoiceID;
 }
 
             
-
 
 int  DB::MakeNewInvoice(  const char *taxDateStr , const char *fromdateStr , const char *todateStr , int zone ,  int regID ,  long price , unsigned int count  )
 {
@@ -1810,7 +1842,7 @@ if( ExecSelect( sqlString )  )
 }
 
 
-// vraci id registratora z domeny
+// vreturn id of the owner of domain
 int DB::GetClientDomainRegistrant( int clID , int contactID )
 {
 int regID=0;
@@ -1829,21 +1861,19 @@ if( ExecSelect( sqlString ) )
 
 return regID;  
 }  
-
+// function for get one value from table
 char *  DB::GetValueFromTable( const char *table , const char *vname , const char *fname , const char *value)
 {
 char sqlString[512];
 int size;
-// char *handle;
 
 sprintf( sqlString , "SELECT  %s FROM %s WHERE %s=\'%s\';" , vname ,  table  ,  fname , value );
 
 if( ExecSelect( sqlString ) )
  {
-   if( GetSelectRows() == 1   ) // pokud je vracen prave jeden zaznam
+   if( GetSelectRows() == 1   ) // if selected only one record 
      {
       size = GetValueLength( 0 , 0 );
-//      handle = new char[size+1];  // alokace pameti pro retezec
 
       if( memHandle )
        {
@@ -1890,7 +1920,7 @@ sprintf( value , "%d" ,  numeric );
 return  GetNumericFromTable( table , vname , fname , value  );
 }
 
-// vymaz data z tabulky
+// remove date from table
 bool  DB::DeleteFromTable(char *table , char *fname , int id )
 {
 char sqlString[128];
@@ -1901,8 +1931,7 @@ sprintf(  sqlString , "DELETE FROM %s  WHERE %s=%d;" , table , fname , id );
 return ExecSQL( sqlString );
 }
  
-
-// vymaz data z tabulky
+// remove date from  contact map table
 bool  DB::DeleteFromTableMap(char *map ,int  id , int contactid )
 {
 char sqlString[128];
@@ -1938,14 +1967,14 @@ return id;
 bool DB::SaveNSSetHistory( int id )
 {
 
- //  uloz do historie
+ //  save to history 
  if(   MakeHistory(id)  )
    {
 
       if( SaveHistory( "NSSET", "id", id ) )        
            if( SaveHistory( "HOST", "nssetid", id ) )
               if( SaveHistory( "HOST_IPADDR_map", "nssetid", id ) ) 
-                    if( SaveHistory(  "nsset_contact_map", "nssetid", id ) )  // historie tech kontakty
+                    if( SaveHistory(  "nsset_contact_map", "nssetid", id ) )  // history of tech-c
                            return true;
    }
 
@@ -1955,10 +1984,10 @@ return 0;
 bool DB::DeleteNSSetObject( int id )
 {
 
-// na zacatku vymaz technicke kontakty
+// fisr delete tech-c
 if( DeleteFromTable( "nsset_contact_map", "nssetid", id ) )
-   if( DeleteFromTable( "HOST_IPADDR_map", "nssetid", id ) ) // nejdrive smaz ip adresy
-        if( DeleteFromTable( "HOST", "nssetid", id ) )  // vymaz podrizene hosty
+   if( DeleteFromTable( "HOST_IPADDR_map", "nssetid", id ) ) // delete  ip address
+        if( DeleteFromTable( "HOST", "nssetid", id ) )  // delete dns hosts
              if( DeleteFromTable( "NSSET", "id", id ) )
                           if( DeleteFromTable(  "OBJECT", "id", id ) ) return true;
 
@@ -1968,12 +1997,12 @@ return false;
 
 bool DB::SaveDomainHistory( int id )
 {
-                          //  uloz do historie
+         
  if( MakeHistory(id)  )
    {
      if( SaveHistory( "DOMAIN" , "id", id ) )  
-        if( SaveHistory( "domain_contact_map", "domainID", id ) )       // uloz admin kontakty
-                   if( SaveHistory( "enumval",  "domainID", id ) )  // uloz extension
+        if( SaveHistory( "domain_contact_map", "domainID", id ) )       // save admin-c
+                   if( SaveHistory( "enumval",  "domainID", id ) )  // save enum extension
                                    return true;
    }
 
@@ -1982,8 +2011,8 @@ return 0;
 
 bool DB::DeleteDomainObject( int id )
 {
-    if( DeleteFromTable( "domain_contact_map", "domainID", id ) ) // admin kontakt     
-         if( DeleteFromTable( "enumval", "domainID", id ) )      // enumval extension
+    if( DeleteFromTable( "domain_contact_map", "domainID", id ) ) // admin-c
+         if( DeleteFromTable( "enumval", "domainID", id ) )      // enumval extension 
                if( DeleteFromTable( "DOMAIN", "id", id ) )
                        if( DeleteFromTable(  "OBJECT", "id", id ) ) return true;
 
@@ -1995,7 +2024,7 @@ return false;
 
 bool DB::SaveContactHistory( int id )
 {
- //  uloz do historie
+ 
  if(   MakeHistory(id) )
    {
      if( SaveHistory(  "Contact", "id", id ) ) return true;
@@ -2018,7 +2047,7 @@ return false;
 
 
 
-int DB::MakeHistory(int objectID) // zapise do tabulky history
+int DB::MakeHistory(int objectID) // write records of object to the histyory
 {
 char sqlString[128];
 
@@ -2033,7 +2062,7 @@ if( actionID )
      sprintf(  sqlString , "INSERT INTO HISTORY ( id , action ) VALUES ( %d  , %d );" , historyID , actionID );
      if( ExecSQL(  sqlString ) )
         {
-          if( SaveHistory(  "OBJECT" ,  "id", objectID ) )  // uloz take object do object_history
+          if( SaveHistory(  "OBJECT" ,  "id", objectID ) )  // save object table to history 
             {
               LOG( SQL_LOG , "Update objectID  %d -> historyID %d " , objectID , historyID );
               sprintf(  sqlString , "UPDATE OBJECT_registry set historyID=%d WHERE id=%d;" , historyID  , objectID );
@@ -2048,7 +2077,7 @@ return 0;
 }
 
 
-// ulozi radek tabulky s id
+// save row  tabulky s id
 bool DB::SaveHistory(char *table , char *fname , int id )
 {
 int i ,  row ;
@@ -2062,23 +2091,23 @@ if( historyID )
     {
      for( row = 0 ; row <  GetSelectRows() ; row ++ )
      {
-      // zapis do tabulky historie 
+      // insert to the history table
       INSERTHISTORY( table );
 
        for( i = 0 ; i <  GetSelectCols() ; i ++ )
           {
-           // pokud to neni historyID z tabulky object to uz neukladej
+           // if not  historyID from object table do not save
            if( IsNotNull( row , i ) && strcasecmp( "historyID" , GetFieldName(i) ) != 0  ) INTO(  GetFieldName( i ) ); 
           }
 
-      VALUE( historyID ); // zapis jako prvni historyID
+      VALUE( historyID ); // first write  historyID
       for( i = 0 ; i <  GetSelectCols() ; i ++ )
       {
-        // uloz pouze ne null hosdnoty
+        // save not null value
         if( IsNotNull( row , i ) && strcasecmp( "historyID" , GetFieldName(i) ) != 0   ) VALUE(  GetFieldValue( row  , i ) );
        }
 
-        if( EXEC() == false) { ret = false ; break;  } // uloz hostorii a  pokud nastane chyba
+        if( EXEC() == false) { ret = false ; break;  } // if error 
 
       }
 
@@ -2092,28 +2121,20 @@ if( historyID )
 return ret;
 }
 
-bool DB::ObjectModify( int id )
-{
-UPDATE( "OBJECT" );
-SSET( "UpDate", "now" ); // MOD date
-WHEREID( id );
-return EXEC();
-}
 
-// id object a registrator
+// update object table client of object (registrar) and authInfo 
 bool DB::ObjectUpdate( int id , int regID , const char *authInfo )
 {
-// datum a cas updatu  plus kdo zmenil zanzma na konec
 UPDATE( "OBJECT" );
-SSET( "UpDate", "now" );
+SSET( "UpDate", "now" ); // now 
 SET( "UpID", regID );
 SET( "AuthInfoPw", authInfo ); 
 WHEREID( id );
 return EXEC();
 }
 
-// UPDATE funkce
-// SQL UPDATE funkce
+// UPDATE fce
+// SQL UPDATE fce
 void DB::UPDATE( const char * table )
 {
 sqlBuffer = new char[MAX_SQLBUFFER];
@@ -2127,7 +2148,7 @@ void DB::SQLDelEnd()
 {
 int len;
 len = strlen( sqlBuffer );
-// vymaz konec
+// del onm the end
 if( len > 0 )  sqlBuffer[len-1]  = 0;
 }
 
@@ -2147,7 +2168,7 @@ int len , length ;
 len = strlen( str );
 length = strlen( sqlBuffer );
 
-//  test na delku retezce
+//  test for leng buffer
 if(  len  + length < MAX_SQLBUFFER ) strcat( sqlBuffer , str );
 }
 
@@ -2162,14 +2183,14 @@ void DB::SQLCatUpper(const char *str )
 SQLCatLW( str , true );
 }
 
-// prevadi na mala ci velka pismena 
+// conver to lower or upper 
 void DB::SQLCatLW( const char *str , bool lw )
 {
 int len , length , i ;
 len = strlen( str );
 length = strlen( sqlBuffer );
 
-//  test na delku retezce
+//  test the lenght
 if(  len  + length < MAX_SQLBUFFER ) 
 {
   for( i = 0 ; i < len ; i ++ ) 
@@ -2177,7 +2198,7 @@ if(  len  + length < MAX_SQLBUFFER )
        if( lw ) sqlBuffer[length+i] = toupper( str[i] );
        else sqlBuffer[length+i] = tolower( str[i] );
    }
-// ukonict retezec
+// end of buffer
 sqlBuffer[length+len] = 0;
 }
 
@@ -2186,7 +2207,7 @@ LOG( SQL_LOG , "DB::SQLCatLW lw %d str[%s] sqlBuffer[%s]" ,  lw , str , sqlBuffe
 }
 
 
-// escape
+// escape string 
 void DB::SQLCatEscape( const char * value )
 {
 int length;
@@ -2196,7 +2217,7 @@ length = strlen( value );
 
 if( length )
 {
-    // zvetsi retezec
+    // increase buffer for escape string 
     // LOG( SQL_LOG , "alloc escape string length  %d" , length*2 );
     str = new char[length*2];
     // DB escape funkce
@@ -2208,33 +2229,27 @@ if( length )
 
 }
 
-
+// set currency
 void DB::SETPRICE( const char *fname , long price )
 {
 char priceStr[16];
-// castka v halirich
+
 sprintf( priceStr , "%ld.%02ld" , price /100 ,  price %100 );
-SETS( fname , priceStr , false  ); // bez ESC
+SETS( fname , priceStr , false  ); //without ESC
 }
 
-// beaz escape 
+// without escape
 void DB::SSET( const char *fname , const char * value )
 {
 SETS( fname , value , false   );
 }
-// s escape 
+// with escape 
 void DB::SET( const char *fname , const char * value )
 {
 SETS( fname , value , true );
 }
 
-/*
-void DB::NSET( const char *fname , const char * value , bool null )
-{
-SETS( fname ,  value , true , null );
-}
-*/
-void DB::SETS( const char *fname , const char * value , bool esc /* , bool null  */)
+void DB::SETS( const char *fname , const char * value , bool esc )
 {
 
 if( strlen( value ) )
@@ -2247,6 +2262,7 @@ if( strlen( value ) )
 //   if( strcmp( value  , NULL_STRING ) ==  0 || value[0] == 0x8 ) // nastavi NULL value pro NULL string z IDL
 
 // if( null )
+ // NULL back based on backslah 
   if(   value[0] == 0x8 )  //  zatim pouzivat s mod_eppd hack na znak \b
    {     
      SQLCat( "NULL" );           
@@ -2259,7 +2275,7 @@ if( strlen( value ) )
     SQLCat(  "'" );
    }
 
-  SQLCat(  " ," ); // carka na konec
+  SQLCat(  " ," ); // commna on the end
  }
 
 }
@@ -2299,10 +2315,10 @@ else  SQLCat( "\'f\'");
 SQLCat(  " ," );
 }
 
-// nastavi but t nebo f 
+// set  t or f 
 void DB::SETBOOL( const char *fname , char c  )
 {
-// jedna jako tru 0 jako false -1 nic nemenit
+// one as  true zero like false  false -1 not change 
 if( c == 't' || c == 'f'  ||  c == 'T' || c == 'F' )
 {
 SQLCat("  "); 
@@ -2322,7 +2338,7 @@ void DB::WHERE(const char *fname , const char * value )
 {
   if( SQLTestEnd( ',' ) ||  SQLTestEnd( ';' ) )
   {
-    SQLDelEnd();  // vymaz posledni znak
+    SQLDelEnd();  //  delete last char 
 
   SQLCat("  WHERE " );
   SQLCat( fname );
@@ -2330,7 +2346,7 @@ void DB::WHERE(const char *fname , const char * value )
   SQLCatEscape(  value );
   SQLCat( "' ;" );
  }
-else  sqlBuffer[0]  =0;   // zrus SQL strint
+else  sqlBuffer[0]  =0;   // empty  SQL buffer
 }
 
 
@@ -2338,28 +2354,28 @@ void DB::OPERATOR(  const  char *op )
 {
   if( SQLTestEnd( ',' ) ||  SQLTestEnd( ';' ) )
  {
-      SQLDelEnd();  // vymaz posledni znak
+      SQLDelEnd();  //   delete last char 
        SQLCat( "  "  );
-       SQLCat( op ); // operator AND OR LIKE
+       SQLCat( op ); // op  AND OR LIKE
        SQLCat( " " );
  }
-else   sqlBuffer[0]  =0;   // zrus SQL strint
+else   sqlBuffer[0]  =0;   // empty  SQL buffer
 
 }
 
 
 void DB::WHEREOPP(  const  char *op ,  const  char *fname , const  char *p  , const  char * value )
 {
-  if( SQLTestEnd( ',' ) ||  SQLTestEnd( ';' ) ) SQLDelEnd();  // vymaz posledni znak
+  if( SQLTestEnd( ',' ) ||  SQLTestEnd( ';' ) ) SQLDelEnd();  
 
        SQLCat( "  "  );
-       SQLCat( op ); // operator AND OR LIKE
+       SQLCat( op ); // op AND OR LIKE
        SQLCat( " " );
        SQLCat( fname );
        SQLCat(  p );
        SQLCat(  "'" );
        SQLCatEscape(  value );
-       SQLCat(  "' ;" ); // konec
+       SQLCat(  "' ;" ); // end
 
 }
 
@@ -2370,7 +2386,7 @@ sprintf( numStr , "%d" ,  value );
 WHERE( fname , numStr ); 
 }
 
-// INSERT INTO history
+// INSERT INTO history 
 void DB::INSERTHISTORY( const char * table )
 {
 sqlBuffer = new char[MAX_SQLBUFFER];
@@ -2383,7 +2399,7 @@ INTO( "HISTORYID" );
 
 
 
-// INSERT INTO funkce
+// INSERT INTO fce
 
 void DB::INSERT( const char * table )
 {
@@ -2397,8 +2413,8 @@ SQLCat( "  " );
 void DB::INTO(const char *fname)
 {
  
-// zacni zavorkou
-if( SQLTestEnd(' ') ) SQLCat(  " ( " ); // zavorka
+// begin by (
+if( SQLTestEnd(' ') ) SQLCat(  " ( " ); 
 
 SQLCat( fname );
 SQLCat( " ," );
@@ -2407,7 +2423,7 @@ SQLCat( " ," );
 
 void DB::INTOVAL( const char *fname , const char * value )
 {
-// pokud josu nejaka data
+// if some value
 if( strlen( value ) ) INTO( fname );
 }
 
@@ -2434,7 +2450,7 @@ int len ;
 len = strlen( sqlBuffer );
 
 
-if(  SQLTestEnd(  ';' ) ) // ukonceni 
+if(  SQLTestEnd(  ';' ) ) // end
 {
 SQLDelEnd();
 SQLDelEnd();
@@ -2446,7 +2462,7 @@ else
  if(   SQLTestEnd( ',' )  )  
  {
    SQLDelEnd();
-   SQLCat( " ) " ); // uzavri zavorku 
+   SQLCat( " ) " ); // ont the end  )
   }
 
   SQLCat( " VALUES ( " );
@@ -2457,7 +2473,7 @@ else
 if( amp ) SQLCat( " '" );
 else SQLCat( " " );
 
-// esacepe
+// escape
 if( esc) SQLCatEscape(  value );
 else 
 {
@@ -2468,26 +2484,26 @@ else
 }
 
 if( amp ) SQLCat( "'");
-strcat( sqlBuffer , " );" ); // vzdy ukoncit
+strcat( sqlBuffer , " );" ); // vmake on the end
  
 }
 
-// zadani aktualni cas 
+// set current_timestamp
 void DB::VALUENOW()
 {
 VALUES("current_timestamp" , false , false , 0 );
 }
 
-// zadani null values
+// set null value
 void DB::VALUENULL()
 {
 VALUES("NULL" , false , false , 0 );
 }
-// zadani aktualnic as puls interval perido v mesicich
+// actual timestamp plus period in months
 void DB::VALUEPERIOD( int period )
 {
 char str[80];
-// spocitej dobu expirace 
+
 sprintf( str , "current_timestamp + interval\'%d month\' " , period );
 VALUES( str , false , false , 0 );
 }
@@ -2495,13 +2511,13 @@ VALUES( str , false , false , 0 );
 
 void DB::VVALUE( const char * value )
 {
-// nepouzivej ESCAPE
+// do not use ESCAPE
 VALUES( value , false , true , 0 );
 }
 
 void DB::VALUE( const char * value )
 {
-// pouzij ESCAPE 
+// use ESCAPE 
 VALUES( value , true , true , 0  ); 
 }
 
@@ -2509,12 +2525,12 @@ void DB::VALUE( int  value )
 {
 char numStr[16];
 sprintf( numStr , "%d" ,  value );
-VALUES( numStr , false , false , 0  ); // bez ESC
+VALUES( numStr , false , false , 0  ); // without ESC
 }
 
 void DB::VALUE( bool  value )
 {
-// bez ESC
+// without ESC
 if( value ) VALUES( "t" , false , true , 0 );
 else VALUES( "f" , false , true  , 0);
 }
@@ -2523,35 +2539,37 @@ else VALUES( "f" , false , true  , 0);
 void DB::VALPRICE( long price )
 {
 char priceStr[16];
-// castka v halirich
+//  CZ:castka v halirich
+// currency in penny 
 sprintf( priceStr , "%ld.%02ld" , price /100 ,  price %100 );
-VALUES( priceStr , false , false , 0  ); // bez ESC
+VALUES( priceStr , false , false , 0  ); // without ESC
 }
 bool DB::EXEC()
 {
 bool ret;
-// proved SQL prikaz
+// run SQL 
 ret =  ExecSQL( sqlBuffer );
 
-// uvolni pamet
+// free mem 
 delete[] sqlBuffer;
-// vrat vysledek
+// return if succes of failed
 return ret;
 }
 
+// selct functions 
 bool DB::SELECT()
 {
 bool ret;
-// provede select SQL 
+// run SQL query
 ret = ExecSelect( sqlBuffer );
 
-// uvolni pamet
+// free mem 
 delete[] sqlBuffer;
-// vrat vysledek
+//  return if succes of failed
 return ret;
 }
 
-// SQL SELECT funkce
+// SQL SELECT functions 
 void DB::SELECTFROM( const char *fname  , const char * table  )
 {
 sqlBuffer = new char[MAX_SQLBUFFER];
@@ -2561,7 +2579,7 @@ if( strlen( fname )  ) SQLCat( fname );
 else SQLCat( " * " ) ;
 SQLCat( " FROM " );
 SQLCat( table );
-SQLCat( " ;" ); // ukoncit
+SQLCat( " ;" ); // end
 }
 
 
@@ -2581,7 +2599,7 @@ return SELECT();
 }
 
 
-
+// special select to the object
 bool DB::SELECTOBJECTID(  const char *table , const char *fname ,  int id  )
 {
 char numStr[16];
@@ -2601,11 +2619,12 @@ SQLCat( " AND " );
 SQLCat( "Object.id=");
 SQLCat( table ); 
 SQLCat( ".id" );
-SQLCat( " ;" ); // ukoncit
+SQLCat( " ;" ); // end
 return SELECT();
 }
 
 
+// for contact mam table get handles of admin-c or tech-c
 bool DB::SELECTCONTACTMAP( char *map , int id )
 {
 char sqlString[512];

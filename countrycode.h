@@ -9,16 +9,14 @@ CountryCode(int num);
 
 bool AddCode(const char *code);
 bool TestCountryCode(const char *cc);
-//char * GetCountryNameEN( const char *cc ) { return GetValueFromTable("enum_country" , "country" , "id" , cc ); };
-//char * GetCountryNameCS( const char *cc ) { return  GetValueFromTable("enum_country" , "country_cs" , "id" , cc ); };
 
 
-int GetNum(){ return  num_country; } // vraci pocet zemi v ciselniku 
+int GetNum(){ return  num_country; } // return number of countries
 
 
 
 private:
-char (*CC)[MAX_CC+1]; // pole kodu zemi
+char (*CC)[MAX_CC+1]; // country allocated field
 int num_country; // 
 int add;
 };

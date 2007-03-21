@@ -1,6 +1,8 @@
 #define    COMMAND_OK     1000
 #define    COMMAND_LOGOUT 1500
 #define    COMMAND_FAILED 2400
+#define COMMAND_EXCEPTION 2000  // pokud je kod chyby vetsi nez 2000 vyvolej vyjimku
+
 #define COMMAND_OBJECT_NOT_EXIST 2303
 #define COMMAND_OBJECT_EXIST    2302
 #define COMMAND_AUTH_ERROR    2501

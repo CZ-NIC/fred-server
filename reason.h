@@ -67,3 +67,5 @@
 
 #define REASON_MSG_XML_VALIDITY_ERROR 37
 
+// duplictni tech ci admim 
+#define REASON_MSG_DUPLICITY_CONTACT 38

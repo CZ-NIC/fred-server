@@ -1,10 +1,13 @@
 #include "mailer_manager.h"
 
+#include "log.h"
+
 MailerManager::MailerManager(NameService *ns)
   throw (RESOLVE_FAILED)
 {
   try {
-    mailer = ccReg::Mailer::_narrow(ns->resolve("Mailer"));
+    CORBA::Object_var o = ns->resolve("Mailer");
+    mailer = ccReg::Mailer::_narrow(o);
   } catch (...) { throw RESOLVE_FAILED(); }
 }
 
@@ -34,21 +37,37 @@ MailerManager::sendEmail(
   for (i=params.begin(),j=0; i!=params.end(); i++,j++) {
     data[j].key = CORBA::string_dup(i->first.c_str());
     data[j].value =CORBA::string_dup(i->second.c_str());
+    LOG( DEBUG_LOG , "mailer_manager: param %d [%s] [%s] " , j , (char *)   data[j].key , (char *)  data[j].value  ); 
+
   }
   // prepare handles
   ccReg::Lists handleList;
+
+  LOG( DEBUG_LOG , "mailer_manager: handleList. length %ld" ,  handles.size() );
+
   handleList.length(handles.size());
   for (unsigned i=0; i<handles.size(); i++)
+  {
     handleList[i] = CORBA::string_dup(handles[i].c_str());
+     LOG( DEBUG_LOG , "mailer_manager: handle [%s] " , ( char *)  handleList[i] );
+
+  }
   ccReg::Attachment_seq attachments;
+  LOG( DEBUG_LOG , "mailer_manager: attach. length %ld" ,  attach.size() );
   attachments.length(attach.size());
   for (unsigned i=0; i<attach.size(); i++)
+  {
     attachments[i] = attach[i];
+   LOG( DEBUG_LOG , "mailer_manager: attachment [%lu]" ,  attachments[i] );
+
+  }
+
   // send immidiately
   bool prev = false;
   CORBA::String_var prevMsg;
   // call mailer
   try {
+   LOG( DEBUG_LOG , "mailer_manager:   mailer->mailNotify mailType [%s]  " ,  (char *) mailType );
     CORBA::Long id = mailer->mailNotify(
       mailType,header,data,handleList,attachments,prev,prevMsg
     );

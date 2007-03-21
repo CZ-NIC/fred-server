@@ -170,7 +170,9 @@ FILE *f;
 char buf[MAX_LINE];
 char keys[MAX_KEYS][KEY_MAX] = { 
   "dbname" , "user" , "password" , "host" , "port" , "connect_timeout" , 
-  "log_mask" ,  "log_level" , "log_local", "nameservice"  , "session_max" , "session_wait" };
+  "log_mask" ,  "log_level" , "log_local", "nameservice"  , "session_max" , 
+  "session_wait", "docgen_path", "fileclient_path", "ebanka_url"
+};
 int key;
 char keyname[KEY_MAX];
 char value[MAX_LINE];
@@ -185,11 +187,10 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
       fgets( buf , MAX_LINE , f );
       if(  feof(f) ) break;
 
-      if( buf[0] != '#' ) // neni komentar
+        value[0]=0;
+      len = trim( buf);  // trim bufefr
+      if( buf[0] != '#' && len > 0 ) // neni komentar
         {
-          //printf("%s" , buf );
-          len = trim( buf);  // trim bufefr
-          //printf("[%s]\n" , buf );
 
           // parse  config file
           for( i = 0 , key = 0  ;  i < len ; i ++ )
@@ -200,7 +201,7 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
                     keyname[i] = 0 ; 
                     for( k = 0 ; k < MAX_KEYS ; k ++ )
                        {
-                         if( strcmp( keys[k] ,  keyname ) == 0 ) 
+                         if( strncmp( keys[k] ,  keyname , strlen(  keys[k] )  ) == 0 ) 
                            {
                               key = k + 1; 
                               for( l = i +1 ; l < len ; l ++ ) if( buf[l]  > ' ' ) break;
@@ -217,8 +218,8 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
                    }
              }
 
-
-//           if( key ) debug("config KEY %d %s value [%s]\n" , key , keyname  , value );
+// debug print
+//   printf("config KEY %d %s value [%s]\n" , key , keyname  , value );
 
            switch( key)
              {
@@ -253,7 +254,16 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
                            log_local = GetLocal(value);
                            break; 
                 case KEY_nameservice:
-                           nameServiceIOR = value;
+                            nameService = value;
+                           break;              
+                case KEY_docgen_path:
+                            docGenPath = value;
+                           break;              
+                case KEY_fileclient_path:
+                           fileClientPath = value;
+                           break;              
+                case KEY_ebanka_url:
+                  // TODO fill
                            break;              
                 default:
                          fprintf( stderr , "parse error on line %d  [%s]\n" , line , buf );
@@ -276,7 +286,7 @@ else
 }
 #endif
 
-char *  Conf::GetDBconninfo()
+const char *  Conf::GetDBconninfo()
 {
 char buf[128];
 

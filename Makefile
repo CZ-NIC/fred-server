@@ -1,11 +1,7 @@
-
 CXX = g++
-
 CXXFLAGS = -Wall  -DSYSLOG    -DSVERSION=\"${SVN_REVISION}\"
 
-
-OBJECTS = 
-IDLDIR = ../../idl/trunk/
+IDLDIR = ../../../idl/branches/devel/
 IDLFILE = $(IDLDIR)/ccReg.idl
 LDFLAGS =  -L/usr/local/pgsql/lib/
 LIBS =  -lomniORB4 -lomniDynamic4 -lomnithread -lpthread 
@@ -16,15 +12,16 @@ CPPFLAGS =  -I/usr/local/pgsql/include/   -I/usr/include/postgresql/ \
 COMMON_OBJECTS =  conf.o dbsql.o pqsql.o util.o log.o nameservice.o 
 IDL_OBJECT =  ccRegSK.o ccRegDynSK.o
 ADMIN_SERVER_OBJECTS = ccReg_adifd.o $(COMMON_OBJECTS) $(IDL_OBJECT) admin.o   tech_check.o mailer_manager.o
-RIFD_SERVER_OBJECTS = ccReg_rifd.o $(COMMON_OBJECTS) $(IDL_OBJECT) ccReg_epp.o   countrycode.o messages.o tech_check.o mailer_manager.o 
+RIFD_SERVER_OBJECTS = ccReg_rifd.o $(COMMON_OBJECTS) $(IDL_OBJECT) ccReg_epp.o   countrycode.o messages.o tech_check.o mailer_manager.o notifier.o
 ALL_SERVER_OBJECTS = ccReg_server.o $(COMMON_OBJECTS) $(IDL_OBJECT) \
  ccReg_epp.o   countrycode.o messages.o tech_check.o mailer_manager.o  admin.o   whois.o
 BANKING_OBJECT = gpc.o banking.o log.o conf.o dbsql.o pqsql.o util.o csv.o
+EXPIRATION_OBJECTS = expiration.o  $(IDL_OBJECT)  log.o conf.o dbsql.o pqsql.o util.o  nameservice.o   mailer_manager.o
 PIF_SERVER_OBJECTS = ccReg_pifd.o $(COMMON_OBJECTS)   $(IDL_OBJECT)  whois.o admin.o mailer_manager.o
-EPP_CLIENT_OBJECTS= $(IDL_OBJECT)   epp_client.o nameservice.o
+EPP_CLIENT_OBJECTS = $(IDL_OBJECT)   epp_client.o nameservice.o
 WHOIS_CLIENT_OBJECTS=ccRegSK.o whois_client.o nameservice.o
 
-all:  fred_rifd fred_adifd fred_pifd banking
+all:  fred_rifd fred_adifd fred_pifd banking expiration
 
 .SUFFIXES:  .o
 
@@ -56,16 +53,16 @@ ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:
 	omniidl -bcxx -Wba -Wbinline $(IDLFILE)
 
 ccReg_server.o:  ccReg.hh
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DRIFD -DPIFD  -DADIF -o ccReg_ccReg_server.o -c ccReg_server.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DRIFD -DPIFD  -DADIF -g -o ccReg_ccReg_server.o -c ccReg_server.cc
 
 ccReg_rifd.o:  ccReg.hh
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DRIFD  -o ccReg_rifd.o -c  ccReg_server.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DRIFD  -o ccReg_rifd.o -g -c  ccReg_server.cc
 
 ccReg_pifd.o: ccReg.hh
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DPIFD  -o ccReg_pifd.o -c  ccReg_server.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DPIFD  -o ccReg_pifd.o -g -c  ccReg_server.cc
 
 ccReg_adifd.o:  ccReg.hh
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DADIF  -o ccReg_adifd.o -c  ccReg_server.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DADIF  -o ccReg_adifd.o -g -c  ccReg_server.cc
 
 %.o: %.cc 
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS)  -c -g $<
@@ -76,6 +73,8 @@ ccReg_idl.py:
 banking: $(BANKING_OBJECT)
 	$(CXX) -o banking  $(BANKING_OBJECT) $(LDFLAGS) -lpq
 
+expiration:  ccReg.hh $(EXPIRATION_OBJECTS) 
+	$(CXX) -o expiration $(EXPIRATION_OBJECTS) $(LDFLAGS) $(LIBS)-lpq
 
 test: ccReg_idl.py
 	python test.py

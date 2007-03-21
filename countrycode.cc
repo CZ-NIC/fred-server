@@ -14,7 +14,7 @@ bool CountryCode::AddCode( const char *code )
 {
 if( add < num_country )
 {
-//    if( !TestCountryCode( code ) )
+//    if( !TestCountryCode( code ) ) // do not test duplicity
     {
 
     CC[add][0] =  code[0];

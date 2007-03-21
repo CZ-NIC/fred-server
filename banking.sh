@@ -1,10 +1,16 @@
 #!/bin/sh
+CONF=$1
+if [ ! -f "$CONF" ]; 
+then
+    echo "configuration file not exist";
+    echo "Usage: $0 configuration_file_name"
+    exit -1; 
+fi;
+URL=$(grep '^ebanka_url' $CONF | cut -c12- | tr -d '"')
+if [ -z "$URL" ]; then exit; fi
 # run e-banka list and make invoice
-# get 
-wget -O ebanka.csv --no-check-certificate  "https://klient2.ebanka.cz/ebts/owa/shop.getpayments?shopname=CZNIC756&creditaccount=756&creditbank=2400&password=kL23Em11eNT&listtype=PLAIN"
+wget -o /dev/null -O /tmp/.ebanka.csv --no-check-certificate $URL
 # transfer to UTF8
-iconv --from-code=WINDOWS-1250 --to-code=UTF8 < ebanka.csv > e.csv
-# run e-banka config file /ect/ccReg.conf
+iconv --from-code=WINDOWS-1250 --to-code=UTF8 < /tmp/.ebanka.csv > /tmp/.e.csv
 # log to syslog
-./banking  --ebanka-csv e.csv
-
+banking -C $CONF --ebanka-csv /tmp/.e.csv
