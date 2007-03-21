@@ -256,7 +256,8 @@ namespace Register
             << "r.id,r.handle,"
             << "obr.crdate,o.trdate,o.update,"
             << "creg.id,creg.handle,ureg.id,ureg.handle,o.authinfopw,obr.roid,"
-            << "d.exdate,ev.exdate,acor.name "
+          // TODO: change time to date
+            << "d.exdate,CAST(ev.exdate AS timestamp),acor.name "
             << "FROM contact c, object_registry cor, "
             << "registrar r, registrar creg, object_registry obr, "
             << "object o LEFT JOIN registrar ureg ON (o.upid=ureg.id), "
