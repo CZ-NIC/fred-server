@@ -47,6 +47,14 @@ formatTime(ptime p,bool date)
   return stime.str();
 }
 
+static std::string
+formatMoney(Register::Invoicing::Money m)
+{
+  std::stringstream buf;
+  buf << m / 100 << "." << std::setw(2) << std::setfill('0') << m % 100;
+  return buf.str();
+}
+
 time_period 
 setPeriod(const ccReg::DateTimeInterval& _v)
 {
@@ -274,7 +282,7 @@ ccReg_Admin_i::fillRegistrar(
   creg.telephone = DUPSTRFUN(reg->getTelephone);
   creg.fax = DUPSTRFUN(reg->getFax);
   creg.email = DUPSTRFUN(reg->getEmail);
-  creg.credit = DUPSTRC(std::string(""));//reg->getCredit();
+  creg.credit = DUPSTRC(formatMoney(reg->getCredit()*100));
   creg.access.length(reg->getACLSize());
   for (unsigned i=0; i<reg->getACLSize(); i++) {
     creg.access[i].md5Cert = DUPSTRFUN(reg->getACL(i)->getCertificateMD5);
@@ -781,14 +789,6 @@ ccReg_Admin_i::getEmailById(ccReg::TID id)
   for (unsigned i=0; i<mld.attachments.size(); i++)
     md->attachments[i] = mld.attachments[i];
   return md;
-}
-
-static std::string
-formatMoney(Register::Invoicing::Money m)
-{
-  std::stringstream buf;
-  buf << m / 100 << "." << std::setw(2) << std::setfill('0') << m % 100;
-  return buf.str();
 }
 
 void
