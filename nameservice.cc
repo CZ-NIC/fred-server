@@ -1,4 +1,4 @@
-#include <iostream.h>
+#include <iostream>
 
 #include "nameservice.h"
 
@@ -109,7 +109,7 @@ CORBA::Object_ptr NameService::resolve(  const std::string& name )
   catch(CosNaming::NamingContext::NotFound& ex) {
     // This exception is thrown if any of the components of the
     // path [contexts or the object] aren't found:
-    cerr << "Context not found." << endl;
+    std::cerr << "Context not found." << std::endl;
   }
 
   catch(CORBA::TRANSIENT& ex) {

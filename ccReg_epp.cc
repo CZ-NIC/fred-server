@@ -1,8 +1,8 @@
 //  implementing IDL interfaces for file ccReg.idl
 // author: Petr Blaha petr.blaha@nic.cz
 
-#include <fstream.h>
-#include <iostream.h>
+#include <fstream>
+#include <iostream>
 
 #include <stdlib.h> 
 #include <string.h>
@@ -10,6 +10,7 @@
 #include <ccReg.hh>
 #include <ccReg_epp.h>
 
+#include "config.h"
 // database functions 
 #include "dbsql.h"
 
@@ -544,7 +545,7 @@ t = time(NULL);
 
 version =  new char[128];
 
-sprintf( version , "%s BUILD %s %s" , SVERSION , __DATE__ , __TIME__ );
+sprintf( version , "%s BUILD %s %s" , VERSION , __DATE__ , __TIME__ );
 LOG( NOTICE_LOG , "get version %s" , version );
 
 // return  actual time (local time)
