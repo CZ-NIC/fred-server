@@ -1,0 +1,55 @@
+# FRED server sample configuration
+# Version: 1.4.1
+# This file should be in /etc/fred/server.conf
+
+#
+# DATABASE CONNECTION
+#
+
+# Database credentials
+host=localhost
+port=5432
+dbname=fred
+user=fred
+#password=freds_password
+
+# Connection timeout (seconds)
+connect_timeout=2
+
+#
+# GENERAL SETTINGS
+#
+
+# FRED server CORBA name service
+nameservice = localhost
+
+# Maximum clients sessions allowed to connect to registrar interface (fred-rifd)
+session_max=100
+# Registrar interface session timeout
+session_wait=300
+
+# PDF generator path (see fred2pdf package)
+docgen_path=/usr/lib/python2.4/site-packages/fred2pdf/
+# File manager client path (see pyfred package and filemanager_client.py)
+fileclient_path=
+
+#
+# LOGGING & DEBUGGING
+#
+
+# Supported log levels 
+# EMERG       0       /* system is unusable */
+# ALERT       1       /* action must be taken immediately */
+# CRIT        2       /* critical conditions */
+# ERR         3       /* error conditions */
+# WARNING     4       /* warning conditions */
+# NOTICE      5       /* normal but significant condition */
+# INFO        6       /* informational */
+# DEBUG       7       /* debug-level messages
+
+# Log level
+log_level = DEBUG
+# Syslog local facility where to log (0-7) 
+log_local=1
+
+

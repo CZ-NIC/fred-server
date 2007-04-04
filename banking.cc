@@ -10,7 +10,7 @@
 
 
 #ifndef CONFIG_FILE
-#define CONFIG_FILE "/etc/ccReg.conf"
+#define CONFIG_FILE "/etc/fred/server.conf"
 #endif
 
 

@@ -436,7 +436,7 @@ else return true; // not generated eny e-mails
  
 // default config file
 #ifndef CONFIG_FILE
-#define CONFIG_FILE  "/etc/ccReg.conf"
+#define CONFIG_FILE  "/etc/fred/server.conf"
 #endif
 
 
