@@ -5,6 +5,7 @@
 
 
 
+#define TYPE_EXDATE_BEFORE  6 // notification after ExDate - 30
 #define TYPE_EXDATE_AFTER  1 // notification after ExDate
 #define TYPE_EXDATE_DNS   2 // remove domain from zone
 #define TYPE_EXDATE_DEL   3 // definitly remove domain after protected interval

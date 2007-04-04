@@ -55,15 +55,17 @@ case  TYPE_EXDATE_DEL: //  expiration domain after 45 days END of the protected 
 case  TYPE_EXDATE_DNS: // expiration domain after 30 days domains not generated to zone
       strcpy( sqlString , "SELECT id from  domain where current_date  > ExDate +  interval '30 days' ; " );
       break;      
-case  TYPE_EXDATE_AFTER:
-       // expirations domain 
-      strcpy( sqlString , "SELECT id from  domain where current_date  > ExDate  AND  current_date - interval '30 days' < exDate ;" );
+case  TYPE_EXDATE_AFTER: // expirations domain 
+      strcpy( sqlString , "SELECT id from  domain where current_date  > ExDate ;" );
       break;
-case  TYPE_VALEXDATE_AFTER:
-      strcpy( sqlString , "SELECT domainid from enumval where current_date > exdate;" ); // enum domain after validity
+case  TYPE_EXDATE_BEFORE: // domain that have 30 days before expiration
+      strcpy( sqlString , "SELECT id from  domain where current_date  > ExDate - interval '30 days' ;" );
       break;
-case  TYPE_VALEXDATE_BEFORE: // enum domains tot he 10 days before end of validate day 
-      strcpy( sqlString , "SELECT domainid from enumval where current_date > exdate - interval'10 days'  AND  exDate > current_date ;" );
+case  TYPE_VALEXDATE_AFTER: // enum domain after validity
+      strcpy( sqlString , "SELECT domainid from enumval where current_date > exdate;" );
+      break;
+case  TYPE_VALEXDATE_BEFORE: // enum domains that have 30 days before end of validate day 
+      strcpy( sqlString , "SELECT domainid from enumval where current_date > exdate - interval '30 days' ;" );
       break;
 default:
     sqlString[0] = 0;
@@ -169,25 +171,40 @@ char nameStr[64];
 int regID;
 ID id;
 
-
-
-if( type == TYPE_EXDATE_AFTER || TYPE_VALEXDATE_AFTER )
-{
-
 // client the registrator of the object 
 regID = db->GetNumericFromTable( "object" , "ClID" , "id" , (int )  objectID );
 strcpy( nameStr ,  db->GetValueFromTable( "object_registry"  , "name" , "id" ,  (int ) objectID ) );
 
 switch( type )
 {
+case TYPE_EXDATE_BEFORE:
+      strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
+      sprintf(xmlString , "<domain:exPrepData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s<domain:exDate></domain:exPrepData>" ,
+      schema_domain,   nameStr , exDateStr  );
+      break;
 case TYPE_EXDATE_AFTER:
       strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:xData  %s ><domain:id>%s</domain:id><domain:exDate>%s<domain:exDate></domain:exData>" ,
+      sprintf(xmlString , "<domain:exData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s<domain:exDate></domain:exData>" ,
       schema_domain,   nameStr , exDateStr  );
+      break;
+case TYPE_EXDATE_DNS:
+      strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
+      sprintf(xmlString , "<domain:exDNSData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s<domain:exDate></domain:exDNSData>" ,
+      schema_domain,   nameStr , exDateStr  );
+      break;
+case TYPE_EXDATE_DEL:
+      strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
+      sprintf(xmlString , "<domain:exDelData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s<domain:exDate></domain:exDelData>" ,
+      schema_domain,   nameStr , exDateStr  );
+      break;
+case  TYPE_VALEXDATE_BEFORE:
+      strcpy( exDateStr , db->GetValueFromTable( "enumval"  , "ExDate" , "domainID" , (int ) objectID )  );
+      sprintf(xmlString , "<domain:valExPrepData  %s ><domain:fqdn>%s</domain:fqdn><domain:valExDate>%s<domain:valExDate></domain:valExPrepData>" ,
+         schema_domain,   nameStr , exDateStr  );
       break;
 case  TYPE_VALEXDATE_AFTER:
       strcpy( exDateStr , db->GetValueFromTable( "enumval"  , "ExDate" , "domainID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:valexData  %s ><domain:id>%s</domain:id><domain:valexDate>%s<domain:valexDate></domain:valexData>" ,
+      sprintf(xmlString , "<domain:valExData  %s ><domain:fqdn>%s</domain:fqdn><domain:valExDate>%s<domain:valExDate></domain:valExData>" ,
          schema_domain,   nameStr , exDateStr  );
       break;
 
@@ -213,14 +230,15 @@ db->VALUE(  false );
 db->VALUE( xmlString );
 if( db->EXEC() ) return id;
 else return -1; //error
-}
-else return 0; // not message
 
 }
 
 
 bool Expiration::Mailer(ID objectID , ID id )
 {
+// this type of event is not announced
+if (type == TYPE_EXDATE_BEFORE) return true;
+
 char sqlString[1024];
 char paramName[32];
 char checkdateStr[16];
