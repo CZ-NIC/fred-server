@@ -395,9 +395,9 @@ namespace Register
             << "FROM registrar r "
             << "LEFT JOIN invoice i ON (r.id=i.registrarid AND "
             << "NOT(i.credit ISNULL)) WHERE 1=1 ";
-        SQL_ID_FILTER(sql,"id",idFilter);
-        SQL_HANDLE_FILTER(sql,"name",name);
-        SQL_HANDLE_FILTER(sql,"handle",handle);
+        SQL_ID_FILTER(sql,"r.id",idFilter);
+        SQL_HANDLE_FILTER(sql,"r.name",name);
+        SQL_HANDLE_FILTER(sql,"r.handle",handle);
         sql << "GROUP BY r.id,r.handle,r.name,r.url,r.organization,"
             << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
             << "r.postalcode,r.country,r.telephone,r.fax,r.email ";
