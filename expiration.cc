@@ -148,9 +148,11 @@ db->INSERT( "object_status_notifications" );
 db->INTO( "id" );
 db->INTO( "objectID" );
 db->INTO( "crdate");
+db->INTO( "notify");
 db->VALUE( (int ) id );
 db->VALUE( (int ) objectID );
 db->VALUENOW();
+db->VALUE( (int ) type );
 
 if( db->EXEC() ) return id;
 else return 0;
@@ -179,32 +181,32 @@ switch( type )
 {
 case TYPE_EXDATE_BEFORE:
       strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:exPrepData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s<domain:exDate></domain:exPrepData>" ,
+      sprintf(xmlString , "<domain:exPrepData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s</domain:exDate></domain:exPrepData>" ,
       schema_domain,   nameStr , exDateStr  );
       break;
 case TYPE_EXDATE_AFTER:
       strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:exData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s<domain:exDate></domain:exData>" ,
+      sprintf(xmlString , "<domain:exData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s</domain:exDate></domain:exData>" ,
       schema_domain,   nameStr , exDateStr  );
       break;
 case TYPE_EXDATE_DNS:
       strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:exDNSData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s<domain:exDate></domain:exDNSData>" ,
+      sprintf(xmlString , "<domain:exDNSData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s</domain:exDate></domain:exDNSData>" ,
       schema_domain,   nameStr , exDateStr  );
       break;
 case TYPE_EXDATE_DEL:
       strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:exDelData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s<domain:exDate></domain:exDelData>" ,
+      sprintf(xmlString , "<domain:exDelData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s</domain:exDate></domain:exDelData>" ,
       schema_domain,   nameStr , exDateStr  );
       break;
 case  TYPE_VALEXDATE_BEFORE:
       strcpy( exDateStr , db->GetValueFromTable( "enumval"  , "ExDate" , "domainID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:valExPrepData  %s ><domain:fqdn>%s</domain:fqdn><domain:valExDate>%s<domain:valExDate></domain:valExPrepData>" ,
+      sprintf(xmlString , "<domain:valExPrepData  %s ><domain:fqdn>%s</domain:fqdn><domain:valExDate>%s</domain:valExDate></domain:valExPrepData>" ,
          schema_domain,   nameStr , exDateStr  );
       break;
 case  TYPE_VALEXDATE_AFTER:
       strcpy( exDateStr , db->GetValueFromTable( "enumval"  , "ExDate" , "domainID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:valExData  %s ><domain:fqdn>%s</domain:fqdn><domain:valExDate>%s<domain:valExDate></domain:valExData>" ,
+      sprintf(xmlString , "<domain:valExData  %s ><domain:fqdn>%s</domain:fqdn><domain:valExDate>%s</domain:valExDate></domain:valExData>" ,
          schema_domain,   nameStr , exDateStr  );
       break;
 
@@ -265,11 +267,11 @@ params["domain"]  =  db->GetValueFromTable( "object_registry" , "name" , "id" , 
 registrantID = db->GetNumericFromTable( "domain" , "registrant" , "id" , objectID );
 params["owner"] = db->GetValueFromTable( "object_registry" , "name" , "id" , registrantID );
 // notify e-mail if the owner
-emails <<  db->GetValueFromTable( "contact"  , "notifyemail" , "id" ,  registrantID );    
+emails <<  db->GetValueFromTable( "contact"  , "email" , "id" ,  registrantID );    
 
 
 
-if( type == TYPE_EXDATE_DNS || type == TYPE_EXDATE_DEL )
+if( type == TYPE_VALEXDATE_AFTER || type == TYPE_EXDATE_DNS || type == TYPE_EXDATE_DEL )
 {
 nssetID =  db->GetNumericFromTable( "domain" , "nsset" ,  "id" , objectID );
 
@@ -278,7 +280,7 @@ if( nssetID > 0 ) // test if exist nsset for this domain
 params["nsset"]  = db->GetValueFromTable( "object_registry" , "name" , "id" ,  nssetID );
 
 // Tech emails 
-sprintf( sqlString , "SELECT notifyemail FROM contact LEFT  JOIN nsset_contact_map  ON nsset_contact_map.nssetid=%d WHERE contact.id=nsset_contact_map.contactid;" , nssetID);
+sprintf( sqlString , "SELECT email FROM contact LEFT  JOIN nsset_contact_map  ON nsset_contact_map.nssetid=%d WHERE contact.id=nsset_contact_map.contactid;" , nssetID);
 
 if( db->ExecSelect( sqlString ) )
  {
@@ -287,8 +289,12 @@ if( db->ExecSelect( sqlString ) )
     {
        if( db->IsNotNull( i ,  0 ) )
           {
-             if(  !tech_emails.str().empty()  )  emails << " , " ; // insert comma 
-             tech_emails <<   db->GetFieldValue( i , 0 ) ;
+            std::string newEmail = db->GetFieldValue( i , 0 ) ;
+            if (!newEmail.empty() && tech_emails.str().find(newEmail) == std::string::npos)
+              {
+                if(  !tech_emails.str().empty()  )  emails << " , " ; // insert comma 
+                tech_emails <<  newEmail;
+              }
           }
      }
   db->FreeSelect();
@@ -341,7 +347,7 @@ params["exregdate"] = exregdateStr;
 
 
 // list  admin-c with  notify e-mail
-sprintf(  sqlString , "SELECT  object_registry.name , contact.notifyemail  FROM object_registry JOIN domain_contact_map ON domain_contact_map.contactID=object_registry.id  JOIN contact ON object_registry.id=contact.id WHERe domain_contact_map.domainid=%d and contact.id = object_registry.id;" , objectID );
+sprintf(  sqlString , "SELECT  object_registry.name , contact.email  FROM object_registry JOIN domain_contact_map ON domain_contact_map.contactID=object_registry.id  JOIN contact ON object_registry.id=contact.id WHERe domain_contact_map.domainid=%d and contact.id = object_registry.id;" , objectID );
 
 if( db->ExecSelect( sqlString ) )
  {
@@ -352,8 +358,12 @@ if( db->ExecSelect( sqlString ) )
        params[paramName]  = db->GetFieldValue( i , 0 );
        if( db->IsNotNull( i ,  1 ) )
           {
-             if( !emails.str().empty()  )  emails << " , " ; // insert comma
-             emails <<   db->GetFieldValue( i , 1 ) ;
+            std::string newEmail = db->GetFieldValue( i , 1 ) ;
+            if (!newEmail.empty() && emails.str().find(newEmail) == std::string::npos)
+              {
+                if( !emails.str().empty()  )  emails << " , " ; // insert comma
+                emails << newEmail ;
+              }
           }
      }
   db->FreeSelect(); 
@@ -389,8 +399,11 @@ case  TYPE_VALEXDATE_BEFORE:
       mailID =   mm->sendEmail( "" , emails.str() ,  "", "expiration_validation_before",   params , handles , attach ); 
       break;
 case  TYPE_VALEXDATE_AFTER:
+      params["exdate"] = db->GetDomainValExDate(  objectID );
       mail_type = db->GetNumericFromTable( "mail_type" , "id" , "name" ,   "expiration_validation" );
       mailID =   mm->sendEmail( "" , emails.str() ,  "", "expiration_validation",   params , handles , attach ); 
+      tech_mail_type =  db->GetNumericFromTable( "mail_type" , "id" , "name" ,  "expiration_dns_tech" ); 
+      tech_mailID = mm->sendEmail( "" , tech_emails.str() , "",  "expiration_dns_tech" ,  params , handles , attach ); 
       break;
      
 }
@@ -398,7 +411,7 @@ case  TYPE_VALEXDATE_AFTER:
 
 
 
-if( type == TYPE_EXDATE_DNS || type == TYPE_EXDATE_DEL )
+if( type == TYPE_VALEXDATE_AFTER || type == TYPE_EXDATE_DNS || type == TYPE_EXDATE_DEL )
 { 
 if( tech_mailID  > 0 )
   {
@@ -478,12 +491,17 @@ ccReg::EPP_var EPP = ccReg::EPP::_narrow( ns->resolve("EPP")   );
 
 printf("connect DB string [%s]\n" , config.GetDBconninfo() );
 // usage
-if( argc == 1 )printf("expiration handling\nusage: %s --valexdate-before OR --valexdate-after OR  --exdate-after OR  --exdate-dns OR --exdate-del\n"  , argv[0]   );
+if( argc == 1 )printf("expiration handling\nusage: %s --valexdate-before OR --valexdate-after OR  --exdate-before OR --exdate-after OR  --exdate-dns OR --exdate-del\n"  , argv[0]   );
 
 
 if( argc == 2 )
 {
 
+
+            if( strcmp(  argv[1]  , "--exdate-before" )  == 0 ) 
+              {
+                type = TYPE_EXDATE_BEFORE ;
+              }
 
             if( strcmp(  argv[1]  , "--exdate-after" )  == 0 ) 
               {
@@ -534,7 +552,7 @@ if( argc == 2 )
                       else tr=0;
                       db.QuitTransaction( tr );
 
-                 if( type ==  TYPE_EXDATE_DEL ) // REMOVE domains after protected interval ExDate+45 days 
+                 if( type ==  TYPE_EXDATE_DEL && exp->NumDomains()) // REMOVE domains after protected interval ExDate+45 days 
                  {
                      // DELETE via EPP interface 
                      // get login  parametrs of system registrar from database
