@@ -42,7 +42,7 @@ namespace Register
       }
       void addAddr(const std::string& addr)
       {
-        addrList.push_back(addr);
+        if (!addr.empty()) addrList.push_back(addr);
       } 
     };
     class NSSetImpl : public ObjectImpl, public virtual NSSet
@@ -236,8 +236,7 @@ namespace Register
         db->FreeSelect();
         sql.str("");
         sql << "SELECT h.nssetid, h.fqdn, him.ipaddr "
-            << "FROM host h, host_ipaddr_map him "
-            << "WHERE h.id=him.hostid";
+            << "FROM host h LEFT JOIN host_ipaddr_map him ON (h.id=him.hostid) ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           TID id = STR_TO_ID(db->GetFieldValue(i,0));
