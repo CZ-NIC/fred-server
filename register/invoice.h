@@ -35,6 +35,7 @@ namespace Register
       virtual const std::string& getZip() const = 0;
       virtual const std::string& getICO() const = 0;
       virtual const std::string& getVatNumber() const = 0;
+      virtual bool getVatApply() const = 0;
       virtual const std::string& getRegistration() const = 0;
       virtual const std::string& getReclamation() const = 0;
       virtual const std::string& getEmail() const = 0;

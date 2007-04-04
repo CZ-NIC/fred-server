@@ -53,6 +53,7 @@ namespace Register
       std::string reclamation;
       std::string email;
       std::string url;
+      bool vatApply;
      public:
       SubjectImpl(
         const std::string& _handle,
@@ -61,12 +62,12 @@ namespace Register
         const std::string& _zip, const std::string& _ico,
         const std::string& _vatNumber, const std::string& _registration,
         const std::string& _reclamation, const std::string& _email,
-        const std::string& _url
+        const std::string& _url, bool _vatApply
       ) : 
         handle(_handle), name(_name), fullname(_fullname), street(_street), 
         city(_city), zip(_zip), ico(_ico), vatNumber(_vatNumber),
         registration(_registration), reclamation(_reclamation),
-        email(_email), url(_url)
+        email(_email), url(_url), vatApply(_vatApply)
       {}      
       const std::string& getHandle() const { return handle; }
       const std::string& getName() const { return name; }
@@ -76,6 +77,7 @@ namespace Register
       const std::string& getZip() const { return zip; }
       const std::string& getICO() const { return ico; }
       const std::string& getVatNumber() const { return vatNumber; }
+      bool getVatApply() const { return vatApply; }
       const std::string& getRegistration() const { return registration; }
       const std::string& getReclamation() const { return reclamation; }
       const std::string& getEmail() const { return email; }
@@ -315,7 +317,8 @@ namespace Register
           "", // registration is empty
           "", // reclamation is empty
           "", // url is empty
-          "" // email is empty
+          "", // email is empty
+          atoi(db->GetFieldValue(l,24))
         ),
         storeFileFlag(false)
       {
@@ -359,7 +362,8 @@ namespace Register
       "SpZ: odb. občanskopr. agend Magist. hl. m. Prahy, č. ZS/30/3/98",
       "CZ.NIC, z.s.p.o., Americká 23, 120 00 Praha 2",
       "www.nic.cz",
-      "podpora@nic.cz"
+      "podpora@nic.cz",
+      1
     );
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     //   ExporterXML
@@ -392,7 +396,8 @@ namespace Register
             << TAG(registration,s->getRegistration())
             << TAG(reclamation,s->getReclamation())
             << TAG(url,s->getURL())
-            << TAG(email,s->getEmail());
+            << TAG(email,s->getEmail())
+            << TAG(vat_not_apply,(s->getVatApply() ? 0 : 1));
         return out;
       }
       virtual void doExport(Invoice *i)
@@ -723,7 +728,7 @@ namespace Register
           " i.price*100, i.vat, i.total*100, i.totalvat*100, "
           " i.file, i.fileXML, "
           " r.organization, r.street1, "
-          " r.city, r.postalcode, r.ico, r.dic, r.varsymb, r.handle "
+          " r.city, r.postalcode, r.ico, r.dic, r.varsymb, r.handle, r.vat "
           "FROM "
           " tmp_invoice_filter_result it, registrar r, "
           " invoice_prefix ip, invoice i "
