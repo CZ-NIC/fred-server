@@ -4,6 +4,8 @@ noinst_LIBRARIES = libfred.a
 
 bin_PROGRAMS = fred_rifd fred_adifd fred_pifd banking expiration
 
+bin_SCRIPTS = banking.sh
+
 libfred_a_SOURCES = ccRegSK.cc ccRegDynSK.cc conf.cc dbsql.cc pqsql.cc util.cc log.cc nameservice.cc mailer_manager.cc admin.cc tech_check.cc
 libfred_a_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
 
