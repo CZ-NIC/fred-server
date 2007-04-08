@@ -15,6 +15,7 @@
 @SET_MAKE@
 
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -32,8 +33,9 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
-bin_PROGRAMS = fred_rifd$(EXEEXT) fred_adifd$(EXEEXT) \
-	fred_pifd$(EXEEXT) banking$(EXEEXT) expiration$(EXEEXT)
+bin_PROGRAMS = fred-rifd$(EXEEXT) fred-adifd$(EXEEXT) \
+	fred-pifd$(EXEEXT) fred-banking$(EXEEXT) \
+	fred-expiration$(EXEEXT) fred-admin$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
@@ -66,31 +68,38 @@ am_libfred_a_OBJECTS = libfred_a-ccRegSK.$(OBJEXT) \
 	libfred_a-mailer_manager.$(OBJEXT) libfred_a-admin.$(OBJEXT) \
 	libfred_a-tech_check.$(OBJEXT)
 libfred_a_OBJECTS = $(am_libfred_a_OBJECTS)
-am__installdirs = "$(DESTDIR)$(bindir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am_banking_OBJECTS = banking-gpc.$(OBJEXT) banking-banking.$(OBJEXT) \
-	banking-log.$(OBJEXT) banking-csv.$(OBJEXT)
-banking_OBJECTS = $(am_banking_OBJECTS)
+am_fred_adifd_OBJECTS =
+fred_adifd_OBJECTS = $(am_fred_adifd_OBJECTS)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-banking_DEPENDENCIES = libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
-banking_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(banking_LDFLAGS) \
-	$(LDFLAGS) -o $@
-am_expiration_OBJECTS = expiration-expiration.$(OBJEXT)
-expiration_OBJECTS = $(am_expiration_OBJECTS)
-expiration_DEPENDENCIES = libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
-expiration_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(expiration_LDFLAGS) $(LDFLAGS) -o $@
-am_fred_adifd_OBJECTS =
-fred_adifd_OBJECTS = $(am_fred_adifd_OBJECTS)
 fred_adifd_DEPENDENCIES = ccReg_adifd.o libfred.a register/libccreg.a \
 	$(am__DEPENDENCIES_2)
 fred_adifd_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(fred_adifd_LDFLAGS) \
 	$(LDFLAGS) -o $@
+am_fred_admin_OBJECTS = fred_admin-client.$(OBJEXT)
+fred_admin_OBJECTS = $(am_fred_admin_OBJECTS)
+fred_admin_DEPENDENCIES = libfred.a register/libccreg.a \
+	$(am__DEPENDENCIES_2)
+fred_admin_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(fred_admin_LDFLAGS) $(LDFLAGS) -o $@
+am_fred_banking_OBJECTS = fred_banking-gpc.$(OBJEXT) \
+	fred_banking-banking.$(OBJEXT) fred_banking-log.$(OBJEXT) \
+	fred_banking-csv.$(OBJEXT)
+fred_banking_OBJECTS = $(am_fred_banking_OBJECTS)
+fred_banking_DEPENDENCIES = libfred.a register/libccreg.a \
+	$(am__DEPENDENCIES_2)
+fred_banking_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(fred_banking_LDFLAGS) $(LDFLAGS) -o $@
+am_fred_expiration_OBJECTS = fred_expiration-expiration.$(OBJEXT)
+fred_expiration_OBJECTS = $(am_fred_expiration_OBJECTS)
+fred_expiration_DEPENDENCIES = libfred.a register/libccreg.a \
+	$(am__DEPENDENCIES_2)
+fred_expiration_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(fred_expiration_LDFLAGS) $(LDFLAGS) -o $@
 am_fred_pifd_OBJECTS = fred_pifd-whois.$(OBJEXT)
 fred_pifd_OBJECTS = $(am_fred_pifd_OBJECTS)
 fred_pifd_DEPENDENCIES = ccReg_pifd.o libfred.a register/libccreg.a \
@@ -105,6 +114,8 @@ fred_rifd_DEPENDENCIES = ccReg_rifd.o libfred.a register/libccreg.a \
 	$(am__DEPENDENCIES_2)
 fred_rifd_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(fred_rifd_LDFLAGS) $(LDFLAGS) -o $@
+binSCRIPT_INSTALL = $(INSTALL_SCRIPT)
+SCRIPTS = $(bin_SCRIPTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -117,12 +128,14 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libfred_a_SOURCES) $(banking_SOURCES) \
-	$(expiration_SOURCES) $(fred_adifd_SOURCES) \
-	$(fred_pifd_SOURCES) $(fred_rifd_SOURCES)
-DIST_SOURCES = $(libfred_a_SOURCES) $(banking_SOURCES) \
-	$(expiration_SOURCES) $(fred_adifd_SOURCES) \
-	$(fred_pifd_SOURCES) $(fred_rifd_SOURCES)
+SOURCES = $(libfred_a_SOURCES) $(fred_adifd_SOURCES) \
+	$(fred_admin_SOURCES) $(fred_banking_SOURCES) \
+	$(fred_expiration_SOURCES) $(fred_pifd_SOURCES) \
+	$(fred_rifd_SOURCES)
+DIST_SOURCES = $(libfred_a_SOURCES) $(fred_adifd_SOURCES) \
+	$(fred_admin_SOURCES) $(fred_banking_SOURCES) \
+	$(fred_expiration_SOURCES) $(fred_pifd_SOURCES) \
+	$(fred_rifd_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -260,6 +273,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = register
 noinst_LIBRARIES = libfred.a
+bin_SCRIPTS = banking.sh
 libfred_a_SOURCES = ccRegSK.cc ccRegDynSK.cc conf.cc dbsql.cc pqsql.cc util.cc log.cc nameservice.cc mailer_manager.cc admin.cc tech_check.cc
 libfred_a_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
 COMMON_LIBS = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS)
@@ -277,14 +291,18 @@ fred_pifd_SOURCES = whois.cc
 fred_pifd_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
 fred_pifd_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
 fred_pifd_LDADD = ccReg_pifd.o libfred.a register/libccreg.a $(COMMON_LIBS)
-banking_SOURCES = gpc.cc banking.cc log.cc csv.cc
-banking_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-banking_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-banking_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS)
-expiration_SOURCES = expiration.cc 
-expiration_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-expiration_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-expiration_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_banking_SOURCES = gpc.cc banking.cc log.cc csv.cc
+fred_banking_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_banking_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_banking_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_expiration_SOURCES = expiration.cc 
+fred_expiration_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_expiration_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_expiration_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_admin_SOURCES = register/client.cc
+fred_admin_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_admin_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_admin_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -370,21 +388,43 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-banking$(EXEEXT): $(banking_OBJECTS) $(banking_DEPENDENCIES) 
-	@rm -f banking$(EXEEXT)
-	$(banking_LINK) $(banking_OBJECTS) $(banking_LDADD) $(LIBS)
-expiration$(EXEEXT): $(expiration_OBJECTS) $(expiration_DEPENDENCIES) 
-	@rm -f expiration$(EXEEXT)
-	$(expiration_LINK) $(expiration_OBJECTS) $(expiration_LDADD) $(LIBS)
-fred_adifd$(EXEEXT): $(fred_adifd_OBJECTS) $(fred_adifd_DEPENDENCIES) 
-	@rm -f fred_adifd$(EXEEXT)
+fred-adifd$(EXEEXT): $(fred_adifd_OBJECTS) $(fred_adifd_DEPENDENCIES) 
+	@rm -f fred-adifd$(EXEEXT)
 	$(fred_adifd_LINK) $(fred_adifd_OBJECTS) $(fred_adifd_LDADD) $(LIBS)
-fred_pifd$(EXEEXT): $(fred_pifd_OBJECTS) $(fred_pifd_DEPENDENCIES) 
-	@rm -f fred_pifd$(EXEEXT)
+fred-admin$(EXEEXT): $(fred_admin_OBJECTS) $(fred_admin_DEPENDENCIES) 
+	@rm -f fred-admin$(EXEEXT)
+	$(fred_admin_LINK) $(fred_admin_OBJECTS) $(fred_admin_LDADD) $(LIBS)
+fred-banking$(EXEEXT): $(fred_banking_OBJECTS) $(fred_banking_DEPENDENCIES) 
+	@rm -f fred-banking$(EXEEXT)
+	$(fred_banking_LINK) $(fred_banking_OBJECTS) $(fred_banking_LDADD) $(LIBS)
+fred-expiration$(EXEEXT): $(fred_expiration_OBJECTS) $(fred_expiration_DEPENDENCIES) 
+	@rm -f fred-expiration$(EXEEXT)
+	$(fred_expiration_LINK) $(fred_expiration_OBJECTS) $(fred_expiration_LDADD) $(LIBS)
+fred-pifd$(EXEEXT): $(fred_pifd_OBJECTS) $(fred_pifd_DEPENDENCIES) 
+	@rm -f fred-pifd$(EXEEXT)
 	$(fred_pifd_LINK) $(fred_pifd_OBJECTS) $(fred_pifd_LDADD) $(LIBS)
-fred_rifd$(EXEEXT): $(fred_rifd_OBJECTS) $(fred_rifd_DEPENDENCIES) 
-	@rm -f fred_rifd$(EXEEXT)
+fred-rifd$(EXEEXT): $(fred_rifd_OBJECTS) $(fred_rifd_DEPENDENCIES) 
+	@rm -f fred-rifd$(EXEEXT)
 	$(fred_rifd_LINK) $(fred_rifd_OBJECTS) $(fred_rifd_LDADD) $(LIBS)
+install-binSCRIPTS: $(bin_SCRIPTS)
+	@$(NORMAL_INSTALL)
+	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
+	@list='$(bin_SCRIPTS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  if test -f $$d$$p; then \
+	    f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
+	    echo " $(binSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(bindir)/$$f'"; \
+	    $(binSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(bindir)/$$f"; \
+	  else :; fi; \
+	done
+
+uninstall-binSCRIPTS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(bin_SCRIPTS)'; for p in $$list; do \
+	  f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
+	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
+	done
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -392,11 +432,12 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/banking-banking.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/banking-csv.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/banking-gpc.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/banking-log.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/expiration-expiration.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_admin-client.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_banking-banking.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_banking-csv.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_banking-gpc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_banking-log.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_expiration-expiration.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_pifd-whois.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-ccReg_epp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-countrycode.Po@am__quote@
@@ -582,75 +623,89 @@ libfred_a-tech_check.obj: tech_check.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-tech_check.obj `if test -f 'tech_check.cc'; then $(CYGPATH_W) 'tech_check.cc'; else $(CYGPATH_W) '$(srcdir)/tech_check.cc'; fi`
 
-banking-gpc.o: gpc.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT banking-gpc.o -MD -MP -MF $(DEPDIR)/banking-gpc.Tpo -c -o banking-gpc.o `test -f 'gpc.cc' || echo '$(srcdir)/'`gpc.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/banking-gpc.Tpo $(DEPDIR)/banking-gpc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gpc.cc' object='banking-gpc.o' libtool=no @AMDEPBACKSLASH@
+fred_admin-client.o: register/client.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_admin_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_admin-client.o -MD -MP -MF $(DEPDIR)/fred_admin-client.Tpo -c -o fred_admin-client.o `test -f 'register/client.cc' || echo '$(srcdir)/'`register/client.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_admin-client.Tpo $(DEPDIR)/fred_admin-client.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='register/client.cc' object='fred_admin-client.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o banking-gpc.o `test -f 'gpc.cc' || echo '$(srcdir)/'`gpc.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_admin_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_admin-client.o `test -f 'register/client.cc' || echo '$(srcdir)/'`register/client.cc
 
-banking-gpc.obj: gpc.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT banking-gpc.obj -MD -MP -MF $(DEPDIR)/banking-gpc.Tpo -c -o banking-gpc.obj `if test -f 'gpc.cc'; then $(CYGPATH_W) 'gpc.cc'; else $(CYGPATH_W) '$(srcdir)/gpc.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/banking-gpc.Tpo $(DEPDIR)/banking-gpc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gpc.cc' object='banking-gpc.obj' libtool=no @AMDEPBACKSLASH@
+fred_admin-client.obj: register/client.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_admin_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_admin-client.obj -MD -MP -MF $(DEPDIR)/fred_admin-client.Tpo -c -o fred_admin-client.obj `if test -f 'register/client.cc'; then $(CYGPATH_W) 'register/client.cc'; else $(CYGPATH_W) '$(srcdir)/register/client.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_admin-client.Tpo $(DEPDIR)/fred_admin-client.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='register/client.cc' object='fred_admin-client.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o banking-gpc.obj `if test -f 'gpc.cc'; then $(CYGPATH_W) 'gpc.cc'; else $(CYGPATH_W) '$(srcdir)/gpc.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_admin_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_admin-client.obj `if test -f 'register/client.cc'; then $(CYGPATH_W) 'register/client.cc'; else $(CYGPATH_W) '$(srcdir)/register/client.cc'; fi`
 
-banking-banking.o: banking.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT banking-banking.o -MD -MP -MF $(DEPDIR)/banking-banking.Tpo -c -o banking-banking.o `test -f 'banking.cc' || echo '$(srcdir)/'`banking.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/banking-banking.Tpo $(DEPDIR)/banking-banking.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='banking.cc' object='banking-banking.o' libtool=no @AMDEPBACKSLASH@
+fred_banking-gpc.o: gpc.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-gpc.o -MD -MP -MF $(DEPDIR)/fred_banking-gpc.Tpo -c -o fred_banking-gpc.o `test -f 'gpc.cc' || echo '$(srcdir)/'`gpc.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-gpc.Tpo $(DEPDIR)/fred_banking-gpc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gpc.cc' object='fred_banking-gpc.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o banking-banking.o `test -f 'banking.cc' || echo '$(srcdir)/'`banking.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-gpc.o `test -f 'gpc.cc' || echo '$(srcdir)/'`gpc.cc
 
-banking-banking.obj: banking.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT banking-banking.obj -MD -MP -MF $(DEPDIR)/banking-banking.Tpo -c -o banking-banking.obj `if test -f 'banking.cc'; then $(CYGPATH_W) 'banking.cc'; else $(CYGPATH_W) '$(srcdir)/banking.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/banking-banking.Tpo $(DEPDIR)/banking-banking.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='banking.cc' object='banking-banking.obj' libtool=no @AMDEPBACKSLASH@
+fred_banking-gpc.obj: gpc.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-gpc.obj -MD -MP -MF $(DEPDIR)/fred_banking-gpc.Tpo -c -o fred_banking-gpc.obj `if test -f 'gpc.cc'; then $(CYGPATH_W) 'gpc.cc'; else $(CYGPATH_W) '$(srcdir)/gpc.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-gpc.Tpo $(DEPDIR)/fred_banking-gpc.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gpc.cc' object='fred_banking-gpc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o banking-banking.obj `if test -f 'banking.cc'; then $(CYGPATH_W) 'banking.cc'; else $(CYGPATH_W) '$(srcdir)/banking.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-gpc.obj `if test -f 'gpc.cc'; then $(CYGPATH_W) 'gpc.cc'; else $(CYGPATH_W) '$(srcdir)/gpc.cc'; fi`
 
-banking-log.o: log.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT banking-log.o -MD -MP -MF $(DEPDIR)/banking-log.Tpo -c -o banking-log.o `test -f 'log.cc' || echo '$(srcdir)/'`log.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/banking-log.Tpo $(DEPDIR)/banking-log.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='log.cc' object='banking-log.o' libtool=no @AMDEPBACKSLASH@
+fred_banking-banking.o: banking.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-banking.o -MD -MP -MF $(DEPDIR)/fred_banking-banking.Tpo -c -o fred_banking-banking.o `test -f 'banking.cc' || echo '$(srcdir)/'`banking.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-banking.Tpo $(DEPDIR)/fred_banking-banking.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='banking.cc' object='fred_banking-banking.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o banking-log.o `test -f 'log.cc' || echo '$(srcdir)/'`log.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-banking.o `test -f 'banking.cc' || echo '$(srcdir)/'`banking.cc
 
-banking-log.obj: log.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT banking-log.obj -MD -MP -MF $(DEPDIR)/banking-log.Tpo -c -o banking-log.obj `if test -f 'log.cc'; then $(CYGPATH_W) 'log.cc'; else $(CYGPATH_W) '$(srcdir)/log.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/banking-log.Tpo $(DEPDIR)/banking-log.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='log.cc' object='banking-log.obj' libtool=no @AMDEPBACKSLASH@
+fred_banking-banking.obj: banking.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-banking.obj -MD -MP -MF $(DEPDIR)/fred_banking-banking.Tpo -c -o fred_banking-banking.obj `if test -f 'banking.cc'; then $(CYGPATH_W) 'banking.cc'; else $(CYGPATH_W) '$(srcdir)/banking.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-banking.Tpo $(DEPDIR)/fred_banking-banking.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='banking.cc' object='fred_banking-banking.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o banking-log.obj `if test -f 'log.cc'; then $(CYGPATH_W) 'log.cc'; else $(CYGPATH_W) '$(srcdir)/log.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-banking.obj `if test -f 'banking.cc'; then $(CYGPATH_W) 'banking.cc'; else $(CYGPATH_W) '$(srcdir)/banking.cc'; fi`
 
-banking-csv.o: csv.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT banking-csv.o -MD -MP -MF $(DEPDIR)/banking-csv.Tpo -c -o banking-csv.o `test -f 'csv.cc' || echo '$(srcdir)/'`csv.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/banking-csv.Tpo $(DEPDIR)/banking-csv.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='csv.cc' object='banking-csv.o' libtool=no @AMDEPBACKSLASH@
+fred_banking-log.o: log.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-log.o -MD -MP -MF $(DEPDIR)/fred_banking-log.Tpo -c -o fred_banking-log.o `test -f 'log.cc' || echo '$(srcdir)/'`log.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-log.Tpo $(DEPDIR)/fred_banking-log.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='log.cc' object='fred_banking-log.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o banking-csv.o `test -f 'csv.cc' || echo '$(srcdir)/'`csv.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-log.o `test -f 'log.cc' || echo '$(srcdir)/'`log.cc
 
-banking-csv.obj: csv.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT banking-csv.obj -MD -MP -MF $(DEPDIR)/banking-csv.Tpo -c -o banking-csv.obj `if test -f 'csv.cc'; then $(CYGPATH_W) 'csv.cc'; else $(CYGPATH_W) '$(srcdir)/csv.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/banking-csv.Tpo $(DEPDIR)/banking-csv.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='csv.cc' object='banking-csv.obj' libtool=no @AMDEPBACKSLASH@
+fred_banking-log.obj: log.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-log.obj -MD -MP -MF $(DEPDIR)/fred_banking-log.Tpo -c -o fred_banking-log.obj `if test -f 'log.cc'; then $(CYGPATH_W) 'log.cc'; else $(CYGPATH_W) '$(srcdir)/log.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-log.Tpo $(DEPDIR)/fred_banking-log.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='log.cc' object='fred_banking-log.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o banking-csv.obj `if test -f 'csv.cc'; then $(CYGPATH_W) 'csv.cc'; else $(CYGPATH_W) '$(srcdir)/csv.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-log.obj `if test -f 'log.cc'; then $(CYGPATH_W) 'log.cc'; else $(CYGPATH_W) '$(srcdir)/log.cc'; fi`
 
-expiration-expiration.o: expiration.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(expiration_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT expiration-expiration.o -MD -MP -MF $(DEPDIR)/expiration-expiration.Tpo -c -o expiration-expiration.o `test -f 'expiration.cc' || echo '$(srcdir)/'`expiration.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/expiration-expiration.Tpo $(DEPDIR)/expiration-expiration.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='expiration.cc' object='expiration-expiration.o' libtool=no @AMDEPBACKSLASH@
+fred_banking-csv.o: csv.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-csv.o -MD -MP -MF $(DEPDIR)/fred_banking-csv.Tpo -c -o fred_banking-csv.o `test -f 'csv.cc' || echo '$(srcdir)/'`csv.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-csv.Tpo $(DEPDIR)/fred_banking-csv.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='csv.cc' object='fred_banking-csv.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(expiration_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o expiration-expiration.o `test -f 'expiration.cc' || echo '$(srcdir)/'`expiration.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-csv.o `test -f 'csv.cc' || echo '$(srcdir)/'`csv.cc
 
-expiration-expiration.obj: expiration.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(expiration_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT expiration-expiration.obj -MD -MP -MF $(DEPDIR)/expiration-expiration.Tpo -c -o expiration-expiration.obj `if test -f 'expiration.cc'; then $(CYGPATH_W) 'expiration.cc'; else $(CYGPATH_W) '$(srcdir)/expiration.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/expiration-expiration.Tpo $(DEPDIR)/expiration-expiration.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='expiration.cc' object='expiration-expiration.obj' libtool=no @AMDEPBACKSLASH@
+fred_banking-csv.obj: csv.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-csv.obj -MD -MP -MF $(DEPDIR)/fred_banking-csv.Tpo -c -o fred_banking-csv.obj `if test -f 'csv.cc'; then $(CYGPATH_W) 'csv.cc'; else $(CYGPATH_W) '$(srcdir)/csv.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-csv.Tpo $(DEPDIR)/fred_banking-csv.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='csv.cc' object='fred_banking-csv.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(expiration_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o expiration-expiration.obj `if test -f 'expiration.cc'; then $(CYGPATH_W) 'expiration.cc'; else $(CYGPATH_W) '$(srcdir)/expiration.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-csv.obj `if test -f 'csv.cc'; then $(CYGPATH_W) 'csv.cc'; else $(CYGPATH_W) '$(srcdir)/csv.cc'; fi`
+
+fred_expiration-expiration.o: expiration.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_expiration_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_expiration-expiration.o -MD -MP -MF $(DEPDIR)/fred_expiration-expiration.Tpo -c -o fred_expiration-expiration.o `test -f 'expiration.cc' || echo '$(srcdir)/'`expiration.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_expiration-expiration.Tpo $(DEPDIR)/fred_expiration-expiration.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='expiration.cc' object='fred_expiration-expiration.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_expiration_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_expiration-expiration.o `test -f 'expiration.cc' || echo '$(srcdir)/'`expiration.cc
+
+fred_expiration-expiration.obj: expiration.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_expiration_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_expiration-expiration.obj -MD -MP -MF $(DEPDIR)/fred_expiration-expiration.Tpo -c -o fred_expiration-expiration.obj `if test -f 'expiration.cc'; then $(CYGPATH_W) 'expiration.cc'; else $(CYGPATH_W) '$(srcdir)/expiration.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_expiration-expiration.Tpo $(DEPDIR)/fred_expiration-expiration.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='expiration.cc' object='fred_expiration-expiration.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_expiration_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_expiration-expiration.obj `if test -f 'expiration.cc'; then $(CYGPATH_W) 'expiration.cc'; else $(CYGPATH_W) '$(srcdir)/expiration.cc'; fi`
 
 fred_pifd-whois.o: whois.cc
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_pifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_pifd-whois.o -MD -MP -MF $(DEPDIR)/fred_pifd-whois.Tpo -c -o fred_pifd-whois.o `test -f 'whois.cc' || echo '$(srcdir)/'`whois.cc
@@ -997,10 +1052,10 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(LIBRARIES) $(PROGRAMS) config.h
+all-am: Makefile $(LIBRARIES) $(PROGRAMS) $(SCRIPTS) config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(bindir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -1051,7 +1106,7 @@ install-data-am:
 
 install-dvi: install-dvi-recursive
 
-install-exec-am: install-binPROGRAMS
+install-exec-am: install-binPROGRAMS install-binSCRIPTS
 
 install-html: install-html-recursive
 
@@ -1084,7 +1139,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS
+uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) install-am \
 	install-strip
@@ -1096,15 +1151,16 @@ uninstall-am: uninstall-binPROGRAMS
 	distcheck distclean distclean-compile distclean-generic \
 	distclean-hdr distclean-tags distcleancheck distdir \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-binPROGRAMS install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am uninstall-binPROGRAMS
+	install install-am install-binPROGRAMS install-binSCRIPTS \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
+	tags tags-recursive uninstall uninstall-am \
+	uninstall-binPROGRAMS uninstall-binSCRIPTS
 
 
 ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:

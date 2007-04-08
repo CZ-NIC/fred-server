@@ -2,7 +2,7 @@ SUBDIRS=register
 
 noinst_LIBRARIES = libfred.a
 
-bin_PROGRAMS = fred_rifd fred_adifd fred_pifd banking expiration
+bin_PROGRAMS = fred-rifd fred-adifd fred-pifd fred-banking fred-expiration fred-admin
 
 bin_SCRIPTS = banking.sh
 
@@ -32,15 +32,20 @@ fred_pifd_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) 
 fred_pifd_LDFLAGS   = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
 fred_pifd_LDADD     = ccReg_pifd.o libfred.a register/libccreg.a $(COMMON_LIBS)
 
-banking_SOURCES = gpc.cc banking.cc log.cc csv.cc
-banking_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-banking_LDFLAGS   = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-banking_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_banking_SOURCES = gpc.cc banking.cc log.cc csv.cc
+fred_banking_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_banking_LDFLAGS   = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_banking_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS)
 
-expiration_SOURCES = expiration.cc 
-expiration_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-expiration_LDFLAGS   = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-expiration_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_expiration_SOURCES = expiration.cc 
+fred_expiration_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_expiration_LDFLAGS   = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_expiration_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS)
+
+fred_admin_SOURCES   = register/client.cc
+fred_admin_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_admin_LDFLAGS   = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_admin_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS)
 
 ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:
 	omniidl -bcxx -Wba -Wbinline $(IDLFILE)
