@@ -56,7 +56,7 @@ int main(int argc, char **argv)
        "database name")
       ("user", po::value<std::string>()->default_value("fred"), 
        "database user")
-      ("pass", po::value<std::string>(), 
+      ("password", po::value<std::string>(), 
        "database password")
       ("host", po::value<std::string>(),
        "database host")
@@ -156,6 +156,8 @@ int main(int argc, char **argv)
       connstring << " host=" << vm["host"].as<std::string>();
     if (vm.count("port"))
       connstring << " port=" << vm["port"].as<unsigned>();
+    if (vm.count("password"))
+      connstring << " password=" << vm["password"].as<std::string>();
                 
     if (!db.OpenDatabase(connstring.str().c_str())) {
       stdout << "Database connection error (" << connstring.str() << ")\n";
