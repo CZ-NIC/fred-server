@@ -801,8 +801,8 @@ ccReg_Admin_i::fillInvoice(
   ci->zone = i->getZone();
   ci->crTime = DUPSTRDATE(i->getCrTime);
   ci->taxDate = DUPSTRDATED(i->getTaxDate);
-  ci->fromDate = DUPSTRDATESHORT(i->getAccountPeriod().begin);
-  ci->toDate = DUPSTRDATESHORT(i->getAccountPeriod().end);
+  ci->fromDate = DUPSTRDATED(i->getAccountPeriod().begin);
+  ci->toDate = DUPSTRDATED(i->getAccountPeriod().end);
   ci->type = (i->getType() == Register::Invoicing::IT_DEPOSIT ?
     ccReg::Invoicing::IT_ADVANCE : ccReg::Invoicing::IT_ACCOUNT);
   buf << i->getNumber();
