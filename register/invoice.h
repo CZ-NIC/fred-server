@@ -79,7 +79,7 @@ namespace Register
       virtual TID getZone() const = 0;
       virtual boost::posix_time::ptime getCrTime() const = 0;
       virtual boost::gregorian::date getTaxDate() const = 0;
-      virtual boost::posix_time::time_period getAccountPeriod() const = 0;
+      virtual boost::gregorian::date_period getAccountPeriod() const = 0;
       virtual Type getType() const = 0;
       virtual unsigned long getNumber() const = 0;
       virtual TID getRegistrar() const = 0;

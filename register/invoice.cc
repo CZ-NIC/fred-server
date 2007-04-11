@@ -12,25 +12,28 @@
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+using namespace boost::gregorian;
+using namespace boost::posix_time;
+
 #define MAKE_TIME_DEF(ROW,COL,DEF)  \
-  (boost::posix_time::ptime(db->IsNotNull(ROW,COL) ? \
-  boost::posix_time::time_from_string(\
-  db->GetFieldValue(ROW,COL)) : DEF))         
+  (ptime(db->IsNotNull(ROW,COL) ? \
+   time_from_string(db->GetFieldValue(ROW,COL)) : DEF))         
 #define MAKE_TIME(ROW,COL) \
-  MAKE_TIME_DEF(ROW,COL,boost::posix_time::not_a_date_time)         
+  MAKE_TIME_DEF(ROW,COL,ptime(not_a_date_time))         
 #define MAKE_TIME_NEG(ROW,COL) \
-  MAKE_TIME_DEF(ROW,COL,boost::posix_time::neg_infin)         
+  MAKE_TIME_DEF(ROW,COL,ptime(neg_infin))         
 #define MAKE_TIME_POS(ROW,COL) \
-  MAKE_TIME_DEF(ROW,COL,boost::posix_time::pos_infin)         
+  MAKE_TIME_DEF(ROW,COL,ptime(pos_infin))         
+#define MAKE_DATE_DEF(ROW,COL,DEF)  \
+ (date(db->IsNotNull(ROW,COL) ? from_string(db->GetFieldValue(ROW,COL)) : DEF))
 #define MAKE_DATE(ROW,COL)  \
- (boost::gregorian::date(db->IsNotNull(ROW,COL) ? \
- boost::gregorian::from_string(\
- db->GetFieldValue(ROW,COL)) : \
- (boost::gregorian::date)boost::gregorian::not_a_date_time))
+  MAKE_DATE_DEF(ROW,COL,date(not_a_date_time))
+#define MAKE_DATE_NEG(ROW,COL) \
+  MAKE_DATE_DEF(ROW,COL,date(neg_infin))         
+#define MAKE_DATE_POS(ROW,COL) \
+  MAKE_DATE_DEF(ROW,COL,date(pos_infin))         
 
 #define STR_TO_MONEY(x) atol(x)
-
-using namespace boost::posix_time;
 
 namespace Register
 {
@@ -126,8 +129,8 @@ namespace Register
     class PaymentActionImpl : public PaymentAction
     {
       std::string objectName; ///< name of object affected by payment action
-      boost::posix_time::ptime actionTime; ///< time of payment action
-      boost::gregorian::date exDate; ///< exdate of domain 
+      ptime actionTime; ///< time of payment action
+      date exDate; ///< exdate of domain 
       PaymentActionType action; ///< type of action that is subject of payment
       unsigned unitsCount; ///< number of months to expiration of domain
       Money pricePerUnit; ///< copy of price from price list
@@ -157,11 +160,11 @@ namespace Register
       {
         return objectName;
       }
-      virtual boost::posix_time::ptime getActionTime() const
+      virtual ptime getActionTime() const
       {
         return actionTime;
       }
-      virtual boost::gregorian::date getExDate() const
+      virtual date getExDate() const
       {
         return exDate;
       }
@@ -202,8 +205,8 @@ namespace Register
       TID id;
       TID zone;
       ptime crTime;
-      boost::gregorian::date taxDate;
-      time_period accountPeriod;
+      date taxDate;
+      date_period accountPeriod;
       Type type;
       unsigned long number;
       TID registrar;
@@ -231,8 +234,8 @@ namespace Register
       TID getId() const { return id; }
       TID getZone() const { return zone; }
       ptime getCrTime() const { return crTime; }
-      boost::gregorian::date getTaxDate() const { return taxDate; }
-      time_period getAccountPeriod() const
+      date getTaxDate() const { return taxDate; }
+      date_period getAccountPeriod() const
       { return accountPeriod; }
       Type getType() const { return type; }
       unsigned long getNumber() const { return number; }
@@ -293,7 +296,7 @@ namespace Register
         zone(STR_TO_ID(db->GetFieldValue(l,1))),
         crTime(MAKE_TIME(l,2)),
         taxDate(MAKE_DATE(l,3)),
-        accountPeriod(MAKE_TIME_NEG(l,4),MAKE_TIME_POS(l,5)),
+        accountPeriod(MAKE_DATE_NEG(l,4),MAKE_DATE_POS(l,5)),
         type(atoi(db->GetFieldValue(l,6)) == 0 ? IT_DEPOSIT : IT_ACCOUNT),
         number(atol(db->GetFieldValue(l,7))),
         registrar(STR_TO_ID(db->GetFieldValue(l,8))),
@@ -318,7 +321,7 @@ namespace Register
           "", // reclamation is empty
           "", // url is empty
           "", // email is empty
-          atoi(db->GetFieldValue(l,24))
+          db->GetFieldValue(l,24)[0] == 't'
         ),
         storeFileFlag(false)
       {
@@ -408,9 +411,9 @@ namespace Register
         out.imbue(std::locale(
           std::locale(
             out.getloc(),
-            new boost::posix_time::time_facet("%Y-%m-%d %T")
+            new time_facet("%Y-%m-%d %T")
           ),
-          new boost::gregorian::date_facet("%Y-%m-%d")
+          new date_facet("%Y-%m-%d")
         ));
         // generate invoice xml
         if (xmlDec)
@@ -429,8 +432,8 @@ namespace Register
           out << TAG(advance_payment_date,i->getTaxDate());  
         else {
           out << TAG(tax_point,i->getTaxDate())
-              << TAG(period_from,i->getAccountPeriod().begin().date())
-              << TAG(period_to,i->getAccountPeriod().end().date());
+              << TAG(period_from,i->getAccountPeriod().begin())
+              << TAG(period_to,i->getAccountPeriod().end());
         }  
         out << TAG(vs,i->getVarSymbol())
             << TAGEND(payment)
@@ -824,8 +827,8 @@ namespace Register
       struct Item 
       {
         std::string registrarEmail; ///< address to deliver email
-        boost::gregorian::date from; ///< start of invoicing period 
-        boost::gregorian::date to; ///< end of invoicing period 
+        date from; ///< start of invoicing period 
+        date to; ///< end of invoicing period 
         TID filePDF; ///< id of pdf file with invoice attached in email
         TID fileXML; ///< id of xml file with invoice attached in email
         TID generation; ///< filled if source is invoice generation
@@ -839,7 +842,7 @@ namespace Register
         }
         Item(
           const std::string& _registrarEmail, 
-          boost::gregorian::date _from, boost::gregorian::date _to,
+          date _from, date _to,
           TID _filePDF, TID _fileXML, TID _generation, TID _invoice, TID _mail
         ) :
           registrarEmail(_registrarEmail), from(_from), to(_to), 
@@ -878,7 +881,7 @@ namespace Register
           std::stringstream dateBuffer;
           dateBuffer.imbue(std::locale(
             dateBuffer.getloc(),
-            new boost::gregorian::date_facet("%d.%m.%Y")
+            new date_facet("%d.%m.%Y")
           ));
           dateBuffer << it->from;
           params["fromdate"] = dateBuffer.str();
