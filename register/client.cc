@@ -36,37 +36,61 @@ class CorbaClient
 int main(int argc, char **argv)
 {
   DB db;
+  bool connected = false;
   // to avoid valgrind showing memory leak because std::cout don't delete
   // imbued facets properly, using own created output stream
-  std::fstream stdout("/dev/stdout");   
+  std::ofstream stdout("/dev/stdout",std::ios::out);   
   try {
     po::options_description desc("Allowed options");
     desc.add_options()
       ("help", 
        "this help")
-      ("dbhost", po::value<std::string>()->default_value("curlew"),
-       "database host")
-      ("dbname", po::value<std::string>()->default_value("ccreg"), 
-       "database name")
-      ("dbuser", po::value<std::string>()->default_value("ccreg"), 
-       "database user")
-      ("corbans", po::value<std::string>()->default_value("curlew"), 
-       "corba name service host")
+      ("conf", po::value<std::string>()->default_value("/etc/fred/server.conf"),
+       "configuration file")
       ("lang", po::value<std::string>()->default_value("cs"), 
        "language of communication");
-       
+
+    po::options_description configDesc("Config options");
+    configDesc.add_options()
+      ("dbname", po::value<std::string>()->default_value("fred"), 
+       "database name")
+      ("user", po::value<std::string>()->default_value("fred"), 
+       "database user")
+      ("pass", po::value<std::string>(), 
+       "database password")
+      ("host", po::value<std::string>(),
+       "database host")
+      ("port", po::value<unsigned>(), 
+       "database port")
+      ("nameservice", po::value<std::string>()->default_value("localhost"), 
+       "corba name service host")
+      ("docgen_path",po::value<std::string>()->default_value(
+        ""),
+       "path to fred2pdf document generator")
+      ("fileclient_path",po::value<std::string>()->default_value(
+        ""),
+       "path to file manager corba client")
+      ("timeout", po::value<unsigned>(),
+       "timeout for trying to connect to database")
+      ("log_mask", po::value<unsigned>(),
+       "obsolete config option")
+      ("log_level", po::value<std::string>(),
+       "syslog level")
+      ("log_local", po::value<unsigned>(),
+       "syslog facilty is local#")
+      ("session_max", po::value<unsigned>(),
+       "maximal number of concurrent EPP sessions")
+      ("session_wait", po::value<unsigned>(),
+       "maximal length of EPP session")
+      ("ebanka_url", po::value<std::string>(),
+       "web url for download of incoming payments");
+
     po::options_description invoiceDesc("Invoicing options");
     invoiceDesc.add_options()
       ("invoice_archive", 
        "archive unarchived invoices")
       ("invoice_list", 
        "list xml of invoices according to specified filter")
-      ("docgen_path",po::value<std::string>()->default_value(
-        "/home/jara/enum/fred2pdf/trunk/"),
-       "path to fred2pdf document generator")
-      ("fileman_path",po::value<std::string>()->default_value(
-        "/home/jara/enum/pyfred/branches/devel/clients/filemanager/"),
-       "path to file manager corba client")
       ("id", po::value<unsigned>(),
        "invoice id")
       ("registrar_id", po::value<unsigned>(),
@@ -109,37 +133,45 @@ int main(int argc, char **argv)
        "list of bank statements");
 
     po::variables_map vm;
+    // parse help and config filename options
     po::store(
       po::parse_command_line(
         argc, argv, 
-        desc.add(invoiceDesc).add(aiDesc).add(bankDesc)
-      ), 
-      vm
+        desc.add(configDesc).add(invoiceDesc).add(aiDesc).add(bankDesc)
+      ), vm
     );
-    po::notify(vm); 
+    // parse options from config file
+    std::ifstream configFile(vm["conf"].as<std::string>().c_str());
+    po::store(po::parse_config_file(configFile, configDesc), vm);
+
     if (vm.count("help") || argc == 1 ) {
       stdout << desc << "\n";
       return 1;
     }
     
     std::stringstream connstring;
-    connstring << "host=" << vm["dbhost"].as<std::string>() 
-               << " dbname=" << vm["dbname"].as<std::string>() 
-               << " user=" << vm["dbuser"].as<std::string>();
+    connstring << "dbname=" << vm["dbname"].as<std::string>() 
+               << " user=" << vm["user"].as<std::string>();
+    if (vm.count("host"))
+      connstring << " host=" << vm["host"].as<std::string>();
+    if (vm.count("port"))
+      connstring << " port=" << vm["port"].as<unsigned>();
+                
     if (!db.OpenDatabase(connstring.str().c_str())) {
       stdout << "Database connection error (" << connstring.str() << ")\n";
-      exit(-1);
+      return -1;
     }
-   
+    connected = true;
+    
     // invoicing
     std::auto_ptr<Register::Document::Manager> docman(
       Register::Document::Manager::create(
         vm["docgen_path"].as<std::string>(),
-        vm["fileman_path"].as<std::string>(),
-        vm["corbans"].as<std::string>()
+        vm["fileclient_path"].as<std::string>(),
+        vm["nameservice"].as<std::string>()
       )
     );
-    CorbaClient cc(argc,argv,vm["corbans"].as<std::string>());
+    CorbaClient cc(argc,argv,vm["nameservice"].as<std::string>());
     MailerManager mm(cc.getNS());    
     std::auto_ptr<Register::Invoicing::Manager> im(
       Register::Invoicing::Manager::create(&db,docman.get(),&mm)
@@ -225,15 +257,14 @@ int main(int argc, char **argv)
       stList->reload();
       stList->exportXML(stdout);
     }
-    
-    db.Disconnect();
+    if (connected) db.Disconnect();
   }
   catch (std::exception& e) {
     stdout << e.what() << "\n";
-    db.Disconnect();
+    if (connected) db.Disconnect();
   }
   catch (Register::SQL_ERROR) {
     stdout << "SQL ERROR \n";
-    db.Disconnect();
+    if (connected) db.Disconnect();
   }
 }
