@@ -7,7 +7,7 @@ bin_PROGRAMS = fred-rifd fred-adifd fred-pifd fred-banking fred-expiration fred-
 bin_SCRIPTS = banking.sh
 
 libfred_a_SOURCES = ccRegSK.cc ccRegDynSK.cc conf.cc dbsql.cc pqsql.cc util.cc log.cc nameservice.cc mailer_manager.cc admin.cc tech_check.cc
-libfred_a_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+libfred_a_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
 
 COMMON_LIBS = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS)
 
@@ -16,36 +16,36 @@ IDLFILE = $(IDLDIR)/ccReg.idl
 
 fred_rifd_SOURCES   = ccReg_epp.cc countrycode.cc messages.cc notifier.cc
 
-fred_rifd_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_rifd_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
 fred_rifd_LDFLAGS   = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_rifd_LDADD     = ccReg_rifd.o libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_rifd_LDADD     = ccReg_rifd.o libfred.a register/libccreg.a $(COMMON_LIBS)  $(LIBDAEMON_LIBS)
 
 
 fred_adifd_SOURCES   = 
-fred_adifd_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_adifd_LDFLAGS   = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_adifd_LDADD    = ccReg_adifd.o libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_adifd_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_adifd_LDFLAGS   = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_adifd_LDADD    = ccReg_adifd.o libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 
 fred_pifd_SOURCES   = whois.cc
 
-fred_pifd_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_pifd_LDFLAGS   = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_pifd_LDADD     = ccReg_pifd.o libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_pifd_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_pifd_LDFLAGS   = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_pifd_LDADD     = ccReg_pifd.o libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 
 fred_banking_SOURCES = gpc.cc banking.cc log.cc csv.cc
-fred_banking_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_banking_LDFLAGS   = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_banking_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_banking_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_banking_LDFLAGS   = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_banking_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 
 fred_expiration_SOURCES = expiration.cc 
-fred_expiration_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_expiration_LDFLAGS   = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_expiration_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_expiration_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_expiration_LDFLAGS   = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_expiration_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 
 fred_admin_SOURCES   = register/client.cc
-fred_admin_CPPFLAGS  = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_admin_LDFLAGS   = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_admin_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_admin_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_admin_LDFLAGS   = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_admin_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 
 ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:
 	omniidl -bcxx -Wba -Wbinline $(IDLFILE)

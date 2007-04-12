@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.61)
 AC_INIT([fred], 1.4.5)
-AC_CONFIG_SRCDIR(conf.cc)
+AC_CONFIG_SRCDIR(ccReg_server.cc)
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([aclocal])
 
@@ -25,7 +25,9 @@ AC_CHECK_LIB([pthread], [pthread_exit])
 
 PKG_CHECK_MODULES(OMNIORB4, [omniORB4, omniDynamic4, omnithread3])
 
-AX_BOOST
+PKG_CHECK_MODULES(LIBDAEMON, [libdaemon >= 0.10])
+
+AX_BOOST_BASE
 AX_BOOST_DATE_TIME
 AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_REGEX

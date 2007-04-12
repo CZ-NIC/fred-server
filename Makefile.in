@@ -32,7 +32,6 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = @build@
 bin_PROGRAMS = fred-rifd$(EXEEXT) fred-adifd$(EXEEXT) \
 	fred-pifd$(EXEEXT) fred-banking$(EXEEXT) \
 	fred-expiration$(EXEEXT) fred-admin$(EXEEXT)
@@ -42,7 +41,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
 	config.guess config.sub depcomp install-sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/aclocal/ax_boost.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/aclocal/ax_boost_base.m4 \
 	$(top_srcdir)/aclocal/ax_boost_date_time.m4 \
 	$(top_srcdir)/aclocal/ax_boost_program_options.m4 \
 	$(top_srcdir)/aclocal/ax_boost_regex.m4 \
@@ -77,13 +76,13 @@ am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 fred_adifd_DEPENDENCIES = ccReg_adifd.o libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
+	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
 fred_adifd_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(fred_adifd_LDFLAGS) \
 	$(LDFLAGS) -o $@
 am_fred_admin_OBJECTS = fred_admin-client.$(OBJEXT)
 fred_admin_OBJECTS = $(am_fred_admin_OBJECTS)
 fred_admin_DEPENDENCIES = libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
+	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
 fred_admin_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(fred_admin_LDFLAGS) $(LDFLAGS) -o $@
 am_fred_banking_OBJECTS = fred_banking-gpc.$(OBJEXT) \
@@ -91,19 +90,19 @@ am_fred_banking_OBJECTS = fred_banking-gpc.$(OBJEXT) \
 	fred_banking-csv.$(OBJEXT)
 fred_banking_OBJECTS = $(am_fred_banking_OBJECTS)
 fred_banking_DEPENDENCIES = libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
+	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
 fred_banking_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(fred_banking_LDFLAGS) $(LDFLAGS) -o $@
 am_fred_expiration_OBJECTS = fred_expiration-expiration.$(OBJEXT)
 fred_expiration_OBJECTS = $(am_fred_expiration_OBJECTS)
 fred_expiration_DEPENDENCIES = libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
+	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
 fred_expiration_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(fred_expiration_LDFLAGS) $(LDFLAGS) -o $@
 am_fred_pifd_OBJECTS = fred_pifd-whois.$(OBJEXT)
 fred_pifd_OBJECTS = $(am_fred_pifd_OBJECTS)
 fred_pifd_DEPENDENCIES = ccReg_pifd.o libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
+	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
 fred_pifd_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(fred_pifd_LDFLAGS) $(LDFLAGS) -o $@
 am_fred_rifd_OBJECTS = fred_rifd-ccReg_epp.$(OBJEXT) \
@@ -111,7 +110,7 @@ am_fred_rifd_OBJECTS = fred_rifd-ccReg_epp.$(OBJEXT) \
 	fred_rifd-notifier.$(OBJEXT)
 fred_rifd_OBJECTS = $(am_fred_rifd_OBJECTS)
 fred_rifd_DEPENDENCIES = ccReg_rifd.o libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
+	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
 fred_rifd_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(fred_rifd_LDFLAGS) $(LDFLAGS) -o $@
 binSCRIPT_INSTALL = $(INSTALL_SCRIPT)
@@ -167,16 +166,9 @@ AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 BOOST_CPPFLAGS = @BOOST_CPPFLAGS@
 BOOST_DATE_TIME_LIB = @BOOST_DATE_TIME_LIB@
-BOOST_FILESYSTEM_LIB = @BOOST_FILESYSTEM_LIB@
-BOOST_IOSTREAMS_LIB = @BOOST_IOSTREAMS_LIB@
 BOOST_LDFLAGS = @BOOST_LDFLAGS@
 BOOST_PROGRAM_OPTIONS_LIB = @BOOST_PROGRAM_OPTIONS_LIB@
 BOOST_REGEX_LIB = @BOOST_REGEX_LIB@
-BOOST_SERIALIZATION_LIB = @BOOST_SERIALIZATION_LIB@
-BOOST_SIGNALS_LIB = @BOOST_SIGNALS_LIB@
-BOOST_THREAD_LIB = @BOOST_THREAD_LIB@
-BOOST_UNIT_TEST_FRAMEWORK_LIB = @BOOST_UNIT_TEST_FRAMEWORK_LIB@
-BOOST_WSERIALIZATION_LIB = @BOOST_WSERIALIZATION_LIB@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -200,6 +192,8 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
+LIBDAEMON_CFLAGS = @LIBDAEMON_CFLAGS@
+LIBDAEMON_LIBS = @LIBDAEMON_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
@@ -237,11 +231,7 @@ am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
-build = @build@
 build_alias = @build_alias@
-build_cpu = @build_cpu@
-build_os = @build_os@
-build_vendor = @build_vendor@
 builddir = @builddir@
 datadir = @datadir@
 datarootdir = @datarootdir@
@@ -275,34 +265,34 @@ SUBDIRS = register
 noinst_LIBRARIES = libfred.a
 bin_SCRIPTS = banking.sh
 libfred_a_SOURCES = ccRegSK.cc ccRegDynSK.cc conf.cc dbsql.cc pqsql.cc util.cc log.cc nameservice.cc mailer_manager.cc admin.cc tech_check.cc
-libfred_a_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+libfred_a_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
 COMMON_LIBS = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS)
 IDLDIR = idl
 IDLFILE = $(IDLDIR)/ccReg.idl
 fred_rifd_SOURCES = ccReg_epp.cc countrycode.cc messages.cc notifier.cc
-fred_rifd_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_rifd_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
 fred_rifd_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_rifd_LDADD = ccReg_rifd.o libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_rifd_LDADD = ccReg_rifd.o libfred.a register/libccreg.a $(COMMON_LIBS)  $(LIBDAEMON_LIBS)
 fred_adifd_SOURCES = 
-fred_adifd_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_adifd_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_adifd_LDADD = ccReg_adifd.o libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_adifd_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_adifd_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_adifd_LDADD = ccReg_adifd.o libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 fred_pifd_SOURCES = whois.cc
-fred_pifd_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_pifd_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_pifd_LDADD = ccReg_pifd.o libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_pifd_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_pifd_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_pifd_LDADD = ccReg_pifd.o libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 fred_banking_SOURCES = gpc.cc banking.cc log.cc csv.cc
-fred_banking_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_banking_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_banking_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_banking_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_banking_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_banking_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 fred_expiration_SOURCES = expiration.cc 
-fred_expiration_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_expiration_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_expiration_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_expiration_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_expiration_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_expiration_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 fred_admin_SOURCES = register/client.cc
-fred_admin_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_admin_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_admin_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS)
+fred_admin_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
+fred_admin_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+fred_admin_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
