@@ -84,13 +84,6 @@ int main(int argc, char** argv) {
 	    goto finish;
 	}
 
-	/* Initialize signal handling */
-	if (daemon_signal_init(SIGINT, SIGQUIT, SIGHUP, 0) < 0) {
-	    daemon_log(LOG_ERR, "Could not register signal handlers (%s).", strerror(errno));
-	    daemon_retval_send(2);
-	    goto finish;
-	}
-
 	/*... do some further init work here */
 	/* TODO: Move database initialization here */
 
@@ -98,11 +91,6 @@ int main(int argc, char** argv) {
 	daemon_retval_send(0);
 
 	daemon_log(LOG_INFO, "Successfully started");
-
-	/* Prepare for select() on the signal fd */
-	FD_ZERO(&fds);
-	FD_SET(fd = daemon_signal_fd(), &fds);
-
 	
 	try {
 	    // database connection settings
@@ -141,19 +129,16 @@ int main(int argc, char** argv) {
 	    }
 
 
-#ifdef SYSLOG
-	    std::cerr << "start syslog at level " 
-		      <<  config.GetSYSLOGlevel()   << std::endl;
-	    std::cerr << "start syslog facility local" 
-		      <<  config.GetSYSLOGlocal()   << std::endl;
-	    setlogmask ( LOG_UPTO(  config.GetSYSLOGlevel()  )   );
-	    openlog ( argv[0] , LOG_CONS | LOG_PID | LOG_NDELAY,  config.GetSYSLOGfacility() );
-#endif
+// 	    std::cerr << "start syslog at level " 
+// 		      <<  config.GetSYSLOGlevel()   << std::endl;
+// 	    std::cerr << "start syslog facility local" 
+// 		      <<  config.GetSYSLOGlocal()   << std::endl;
+// 	    setlogmask ( LOG_UPTO(  config.GetSYSLOGlevel()  )   );
+// 	    openlog ( argv[0] , LOG_CONS | LOG_PID | LOG_NDELAY,  config.GetSYSLOGfacility() );
 
 	    // database string
 	    strcpy( db , config.GetDBconninfo() );
-	    std::cerr << "DATABASE: "  << db << std::endl;
-
+	    daemon_log(LOG_INFO, "DATABASE: %s", db);
 
 	    // Initialise the ORB.
 	    CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
@@ -265,40 +250,36 @@ int main(int argc, char** argv) {
 	    orb->destroy();
 	}
 	catch (NameService::NOT_RUNNING&) {
-	    LOG(NOTICE_LOG ,  "Nameservice connection error" );
+	    daemon_log(LOG_ERR, "Nameservice connection error");
+	    daemon_pid_file_remove();
 	    exit(-8);
 	}
     
 	catch (MailerManager::RESOLVE_FAILED) {
-	    LOG(ALERT_LOG , "Cannot connect to mailer" );
+	    daemon_log(LOG_ERR, "Cannot connect to mailer");
+	    daemon_pid_file_remove();
 	    exit(-9);
 	}
     
 	catch (CORBA::SystemException& ex) {
-	    LOG(ERROR_LOG,"Caught a CORBA:: %s " , ex._name() );
+	    daemon_log(LOG_ERR, "Caught a CORBA:: %s " , ex._name() );
 	}
 	catch (CORBA::Exception& ex) {
-	    LOG(ERROR_LOG,"Caught CORBA::Exception: %s " , ex._name() );
+	    daemon_log(LOG_ERR, "Caught CORBA::Exception: %s " , ex._name() );
 	}
 	catch (omniORB::fatalException& fe) {
-	    LOG(ERROR_LOG,
-		"Caught  omniORB::fatalException: %s line: %d mesg: %s" ,
-		fe.file(),fe.line(),fe.errmsg()
+	    daemon_log(LOG_ERR,
+		       "Caught  omniORB::fatalException: %s line: %d mesg: %s" ,
+		       fe.file(), fe.line(), fe.errmsg()
 		);
 	}
 	catch (...) {
-	    LOG(ERROR_LOG,
-		"Unhandled exception"
-		);        
+	    daemon_log(LOG_ERR, "Unhandled exception");
 	}
 
 	/* Do a cleanup */
     finish:
-#ifdef SYSLOG
-	closelog()
-#endif
 	daemon_log(LOG_INFO, "Exiting...");
-	daemon_signal_done();
 	daemon_pid_file_remove();
 	return 0;
     }
