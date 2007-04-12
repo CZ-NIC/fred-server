@@ -115,8 +115,8 @@ namespace Register
         // in case of generation into corba filesystem send result to
         // corba filesystem client
         if (!filename.empty()) {
-          cmd << "| python " <<  pathFM 
-              << "filemanager_client.py -m " << genProc.mime 
+          cmd << "| python " << pathFM 
+              << " -m " << genProc.mime 
               << " -s "
               << " -l " << filename
               << " -t " << filetype;
