@@ -9,8 +9,8 @@ fi;
 URL=$(grep '^ebanka_url' $CONF | cut -c12- | tr -d '"')
 if [ -z "$URL" ]; then exit; fi
 # run e-banka list and make invoice
-wget -o /dev/null -O /tmp/.ebanka.csv --no-check-certificate $URL
+wget -q -O /tmp/.ebanka.csv --no-check-certificate $URL
 # transfer to UTF8
 iconv --from-code=WINDOWS-1250 --to-code=UTF8 < /tmp/.ebanka.csv > /tmp/.e.csv
 # log to syslog
-banking -C $CONF --ebanka-csv /tmp/.e.csv
+/usr/sbin/fred-banking -C $CONF --ebanka-csv /tmp/.e.csv
