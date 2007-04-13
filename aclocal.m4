@@ -1018,8 +1018,8 @@ AC_SUBST([am__tar])
 AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
-m4_include([aclocal/ax_boost_base.m4])
-m4_include([aclocal/ax_boost_date_time.m4])
-m4_include([aclocal/ax_boost_program_options.m4])
-m4_include([aclocal/ax_boost_regex.m4])
-m4_include([aclocal/ax_lib_postgresql.m4])
+m4_include([m4/ax_boost_base.m4])
+m4_include([m4/ax_boost_date_time.m4])
+m4_include([m4/ax_boost_program_options.m4])
+m4_include([m4/ax_boost_regex.m4])
+m4_include([m4/ax_lib_postgresql.m4])
