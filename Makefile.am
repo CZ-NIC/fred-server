@@ -47,6 +47,9 @@ fred_admin_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS
 fred_admin_LDFLAGS   = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
 fred_admin_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 
+register/libccreg.a:
+	make -C register libccreg.a
+
 ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:
 	omniidl -bcxx -Wba -Wbinline $(IDLFILE)
 
