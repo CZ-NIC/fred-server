@@ -70,7 +70,7 @@ int main(int argc, char **argv)
       ("fileclient_path",po::value<std::string>()->default_value(
         ""),
        "path to file manager corba client")
-      ("timeout", po::value<unsigned>(),
+      ("connect_timeout", po::value<unsigned>(),
        "timeout for trying to connect to database")
       ("log_mask", po::value<unsigned>(),
        "obsolete config option")
