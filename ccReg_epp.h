@@ -75,7 +75,7 @@ public:
   // send    exception ServerIntError
   void ServerInternalError(const char *fce);
   // EPP exception 
-  void EppError( short errCode ,  const char *errMsg ,  const char *svTRID ,  ccReg::Errors *errors );
+  void EppError( short errCode ,  const char *errMsg ,  const char *svTRID ,  ccReg::Errors_var& errors );
   void NoMessages( short errCode ,  const char *errMsg ,  const char *svTRID );
   
   // get version of server with timestamp
@@ -116,36 +116,36 @@ public:
 
 
   // reason handle
-  short SetErrorReason(  ccReg::Errors *errors , short errCode  , ccReg::ParamError paramCode , short position  ,  int reasonMsg , int lang );
-  short SetReasonUnknowCC( ccReg::Errors *err ,  const char *value ,  int lang );
+  short SetErrorReason(  ccReg::Errors_var& errors , short errCode  , ccReg::ParamError paramCode , short position  ,  int reasonMsg , int lang );
+  short SetReasonUnknowCC( ccReg::Errors_var& err ,  const char *value ,  int lang );
 
-  short SetReasonContactHandle( ccReg::Errors *err ,  const char *handle ,  int lang );
-  short SetReasonNSSetHandle( ccReg::Errors *err , const char *handle ,  int lang );
-  short SetReasonDomainFQDN(  ccReg::Errors *err , const char *fqdn ,  int zone , int lang  );
-
-
-  short SetReasonProtectedPeriod( ccReg::Errors *err , const char *value , int lang  );
-
-  short SetReasonContactMap( ccReg::Errors *err ,  ccReg::ParamError paramCode , const char *handle , int id ,  int lang , short position  , bool tech_or_admin);
-
-  short SetReasonNSSetTech( ccReg::Errors *err , const char * handle  , int  techID ,  int lang  , short position );
-  short SetReasonNSSetTechADD(  ccReg::Errors *err  , const char * handle  , int  techID ,  int lang  , short position   );
-  short SetReasonNSSetTechREM( ccReg::Errors *err , const char * handle  , int  techID ,  int lang  , short position  );
-  short SetReasonDomainAdmin( ccReg::Errors *err , const char * handle  , int  adminID ,  int lang   , short position );
-  short SetReasonDomainAdminADD(  ccReg::Errors *err  , const char * handle  , int  adminID ,  int lang   , short position );
-  short SetReasonDomainAdminREM(  ccReg::Errors *err  , const char * handle  , int  adminID ,  int lang   , short position  );
-
-  short SetReasonNSSetTechExistMap( ccReg::Errors *err , const char * handle  ,  int lang   , short position );
-  short SetReasonNSSetTechNotExistMap( ccReg::Errors *err , const char * handle  ,  int lang  , short position  );
-
-  short SetReasonDomainAdminExistMap( ccReg::Errors *err , const char * handle  ,  int lang  , short position  );
-  short SetReasonDomainAdminNotExistMap( ccReg::Errors *err , const char * handle  ,  int lang   , short position );
+  short SetReasonContactHandle( ccReg::Errors_var& err ,  const char *handle ,  int lang );
+  short SetReasonNSSetHandle( ccReg::Errors_var& err , const char *handle ,  int lang );
+  short SetReasonDomainFQDN(  ccReg::Errors_var& err , const char *fqdn ,  int zone , int lang  );
 
 
-  short SetReasonDomainNSSet(  ccReg::Errors *err , const char * nsset_handle , int  nssetid , int  lang);
-  short SetReasonDomainRegistrant( ccReg::Errors *err , const char * contact_handle , int   contactid , int  lang);
+  short SetReasonProtectedPeriod( ccReg::Errors_var& err , const char *value , int lang  );
 
-  short SetReasonContactDuplicity(  ccReg::Errors *err, const char * handle  ,  int lang  ,  short position  , ccReg::ParamError paramCode );
+  short SetReasonContactMap( ccReg::Errors_var& err ,  ccReg::ParamError paramCode , const char *handle , int id ,  int lang , short position  , bool tech_or_admin);
+
+  short SetReasonNSSetTech( ccReg::Errors_var& err , const char * handle  , int  techID ,  int lang  , short position );
+  short SetReasonNSSetTechADD(  ccReg::Errors_var& err  , const char * handle  , int  techID ,  int lang  , short position   );
+  short SetReasonNSSetTechREM( ccReg::Errors_var& err , const char * handle  , int  techID ,  int lang  , short position  );
+  short SetReasonDomainAdmin( ccReg::Errors_var& err , const char * handle  , int  adminID ,  int lang   , short position );
+  short SetReasonDomainAdminADD(  ccReg::Errors_var& err  , const char * handle  , int  adminID ,  int lang   , short position );
+  short SetReasonDomainAdminREM(  ccReg::Errors_var& err  , const char * handle  , int  adminID ,  int lang   , short position  );
+
+  short SetReasonNSSetTechExistMap( ccReg::Errors_var& err , const char * handle  ,  int lang   , short position );
+  short SetReasonNSSetTechNotExistMap( ccReg::Errors_var& err , const char * handle  ,  int lang  , short position  );
+
+  short SetReasonDomainAdminExistMap( ccReg::Errors_var& err , const char * handle  ,  int lang  , short position  );
+  short SetReasonDomainAdminNotExistMap( ccReg::Errors_var& err , const char * handle  ,  int lang   , short position );
+
+
+  short SetReasonDomainNSSet(  ccReg::Errors_var& err , const char * nsset_handle , int  nssetid , int  lang);
+  short SetReasonDomainRegistrant( ccReg::Errors_var& err , const char * contact_handle , int   contactid , int  lang);
+
+  short SetReasonContactDuplicity(  ccReg::Errors_var& err, const char * handle  ,  int lang  ,  short position  , ccReg::ParamError paramCode );
 
   // general list function
   ccReg::Response* FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list , CORBA::Long clientID, const char* clTRID, const char* XML);

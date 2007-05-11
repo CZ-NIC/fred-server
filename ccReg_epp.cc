@@ -38,11 +38,13 @@
 // Example implementational code for IDL interface ccReg::EPP
 //
 ccReg_EPP_i::ccReg_EPP_i(MailerManager *_mm, NameService *_ns ) :
-  mm(_mm), ns(_ns) {
-
+  mm(_mm), ns(_ns), zone(NULL) 
+{
 }
-ccReg_EPP_i::~ccReg_EPP_i(){
-
+ccReg_EPP_i::~ccReg_EPP_i()
+{
+  LOG( ERROR_LOG, "EPP_i destructor");
+  if (zone) delete zone;
 }
 
 // HANDLE EXCEPTIONS
@@ -53,10 +55,10 @@ void ccReg_EPP_i::ServerInternalError(const char *fce)
  throw ccReg::EPP::ServerIntError( "server internal error" );
 } 
 
-void ccReg_EPP_i::EppError( short errCode ,  const char *msg ,  const char *svTRID ,  ccReg::Errors *errors )
+void ccReg_EPP_i::EppError( short errCode ,  const char *msg ,  const char *svTRID ,  ccReg::Errors_var& errors )
 {
   LOG( WARNING_LOG ,"EppError errCode %d msg %s svTRID[%s] " , errCode , msg , svTRID );
-   throw ccReg::EPP::EppError(  errCode ,  msg , svTRID , (*errors) );
+   throw ccReg::EPP::EppError(  errCode ,  msg , svTRID , errors );
 }
 
 void ccReg_EPP_i::NoMessages( short errCode ,  const char *msg ,  const char *svTRID )
@@ -307,29 +309,29 @@ else return ErrorMsg->GetMesg( err );
  
 
 
-short ccReg_EPP_i::SetErrorReason(  ccReg::Errors *errors , short errCode , ccReg::ParamError paramCode , short  position  , int reasonMsg , int lang )
+short ccReg_EPP_i::SetErrorReason(  ccReg::Errors_var& errors , short errCode , ccReg::ParamError paramCode , short  position  , int reasonMsg , int lang )
 {
 unsigned int seq;
 
 seq =  errors->length();
 errors->length(  seq+1 );
 
-(*errors)[seq].code = paramCode;
-(*errors)[seq].position = position;
-(*errors)[seq].reason = CORBA::string_dup( GetReasonMessage( reasonMsg , lang  ) );
+errors[seq].code = paramCode;
+errors[seq].position = position;
+errors[seq].reason = CORBA::string_dup( GetReasonMessage( reasonMsg , lang  ) );
 
 LOG( WARNING_LOG, "SetErrorReason seq%d: err_code %d position [%d]  param %d msgID [%d] " , seq ,  errCode , position , paramCode , reasonMsg  );
 return errCode;
 }
 
-short ccReg_EPP_i::SetReasonUnknowCC( ccReg::Errors *err , const char *value , int lang )
+short ccReg_EPP_i::SetReasonUnknowCC( ccReg::Errors_var& err , const char *value , int lang )
 {
 LOG( WARNING_LOG, "Reason: unknown country code: %s"  , value );
 return SetErrorReason( err ,  COMMAND_PARAMETR_ERROR , ccReg::contact_cc , 1 , REASON_MSG_COUNTRY_NOTEXIST ,  lang );
 }
 
 
-short ccReg_EPP_i::SetReasonContactHandle( ccReg::Errors *err ,  const char *handle ,  int lang )
+short ccReg_EPP_i::SetReasonContactHandle( ccReg::Errors_var& err ,  const char *handle ,  int lang )
 {
 
       LOG( WARNING_LOG, "bad format of contact [%s]" , handle );
@@ -338,7 +340,7 @@ short ccReg_EPP_i::SetReasonContactHandle( ccReg::Errors *err ,  const char *han
 
 
 
-short ccReg_EPP_i::SetReasonNSSetHandle( ccReg::Errors *err ,  const char *handle ,  int lang )
+short ccReg_EPP_i::SetReasonNSSetHandle( ccReg::Errors_var& err ,  const char *handle ,  int lang )
 {
  
 
@@ -348,7 +350,7 @@ short ccReg_EPP_i::SetReasonNSSetHandle( ccReg::Errors *err ,  const char *handl
 }
 
 
-short ccReg_EPP_i::SetReasonDomainFQDN(  ccReg::Errors *err , const char *fqdn ,  int zone , int lang  )
+short ccReg_EPP_i::SetReasonDomainFQDN(  ccReg::Errors_var& err , const char *fqdn ,  int zone , int lang  )
 {
 
 LOG( WARNING_LOG, "domain in zone %s" , (const char * )  fqdn );
@@ -362,7 +364,7 @@ return 0;
 }
 
 
-short ccReg_EPP_i::SetReasonDomainNSSet(  ccReg::Errors *err  , const char * nsset_handle , int  nssetid , int  lang)
+short ccReg_EPP_i::SetReasonDomainNSSet(  ccReg::Errors_var& err  , const char * nsset_handle , int  nssetid , int  lang)
 {
 
 
@@ -380,7 +382,7 @@ else  if( nssetid == 0 )
 return 0;
 }
 
-short ccReg_EPP_i::SetReasonDomainRegistrant(  ccReg::Errors *err  , const char * contact_handle , int   contactid , int  lang)
+short ccReg_EPP_i::SetReasonDomainRegistrant(  ccReg::Errors_var& err  , const char * contact_handle , int   contactid , int  lang)
 {
 
 if( contactid < 0 )
@@ -398,7 +400,7 @@ return 0;
 }
 
 
-short ccReg_EPP_i::SetReasonProtectedPeriod(  ccReg::Errors *err, const char *value , int lang  )
+short ccReg_EPP_i::SetReasonProtectedPeriod(  ccReg::Errors_var& err, const char *value , int lang  )
 {
 LOG( WARNING_LOG, "object [%s] in history period" , value );
 return SetErrorReason( err ,  COMMAND_PARAMETR_ERROR , ccReg::contact_handle , 1  , REASON_MSG_PROTECTED_PERIOD  ,  lang );
@@ -407,7 +409,7 @@ return SetErrorReason( err ,  COMMAND_PARAMETR_ERROR , ccReg::contact_handle , 1
 
 
 
-short ccReg_EPP_i::SetReasonContactMap( ccReg::Errors *err,   ccReg::ParamError paramCode  , const char *handle , int id ,  int lang ,  short position , bool tech_or_admin  )
+short ccReg_EPP_i::SetReasonContactMap( ccReg::Errors_var& err,   ccReg::ParamError paramCode  , const char *handle , int id ,  int lang ,  short position , bool tech_or_admin  )
 {
 
 if( id < 0 )
@@ -425,65 +427,65 @@ else if( id == 0 )
 return 0;
 }
 
-short ccReg_EPP_i::SetReasonContactDuplicity(  ccReg::Errors *err, const char * handle  ,  int lang  ,  short position  , ccReg::ParamError paramCode )
+short ccReg_EPP_i::SetReasonContactDuplicity(  ccReg::Errors_var& err, const char * handle  ,  int lang  ,  short position  , ccReg::ParamError paramCode )
 {
 LOG( WARNING_LOG, "Contact [%s] duplicity "  , (const char *) handle );
 return SetErrorReason( err ,  COMMAND_PARAMETR_ERROR ,  paramCode , position , REASON_MSG_DUPLICITY_CONTACT  , lang );
 }
 
 
-short ccReg_EPP_i::SetReasonNSSetTech(  ccReg::Errors *err , const char * handle  , int  techID ,  int lang ,  short position )
+short ccReg_EPP_i::SetReasonNSSetTech(  ccReg::Errors_var& err , const char * handle  , int  techID ,  int lang ,  short position )
 {
 return SetReasonContactMap(  err , ccReg::nsset_tech , handle , techID ,lang ,position , true);
 }
 
-short ccReg_EPP_i::SetReasonNSSetTechADD(  ccReg::Errors *err , const char * handle  , int  techID ,  int lang ,  short position )
+short ccReg_EPP_i::SetReasonNSSetTechADD(  ccReg::Errors_var& err , const char * handle  , int  techID ,  int lang ,  short position )
 {
 return SetReasonContactMap(  err , ccReg::nsset_tech_add , handle , techID,lang , position ,true);
 }
 
-short ccReg_EPP_i::SetReasonNSSetTechREM( ccReg::Errors *err , const char * handle  , int  techID ,  int lang ,  short position )
+short ccReg_EPP_i::SetReasonNSSetTechREM( ccReg::Errors_var& err , const char * handle  , int  techID ,  int lang ,  short position )
 {
 return SetReasonContactMap(  err , ccReg::nsset_tech_rem, handle , techID,lang , position ,true);
 }
 
 
-short ccReg_EPP_i::SetReasonDomainAdmin(  ccReg::Errors *err , const char * handle  , int  adminID ,  int lang  ,  short position)
+short ccReg_EPP_i::SetReasonDomainAdmin(  ccReg::Errors_var& err , const char * handle  , int  adminID ,  int lang  ,  short position)
 {
 return SetReasonContactMap(  err , ccReg::domain_admin , handle , adminID ,lang , position ,false);
 }
 
-short ccReg_EPP_i::SetReasonDomainAdminADD(  ccReg::Errors *err , const char * handle  , int  adminID ,  int lang  ,  short position)
+short ccReg_EPP_i::SetReasonDomainAdminADD(  ccReg::Errors_var& err , const char * handle  , int  adminID ,  int lang  ,  short position)
 {
 return SetReasonContactMap(  err , ccReg::domain_admin_add , handle , adminID ,lang ,position , false );
 }
 
-short ccReg_EPP_i::SetReasonDomainAdminREM(  ccReg::Errors *err , const char * handle  , int  adminID ,  int lang  ,  short position)
+short ccReg_EPP_i::SetReasonDomainAdminREM(  ccReg::Errors_var& err , const char * handle  , int  adminID ,  int lang  ,  short position)
 {
 return SetReasonContactMap(  err , ccReg::domain_admin_rem , handle , adminID ,lang , position ,false );
 }
 
 
-short ccReg_EPP_i::SetReasonNSSetTechExistMap(    ccReg::Errors *err, const char * handle  ,  int lang  ,  short position)
+short ccReg_EPP_i::SetReasonNSSetTechExistMap(    ccReg::Errors_var& err, const char * handle  ,  int lang  ,  short position)
 {
  LOG( WARNING_LOG, "Tech Contact [%s] exist in contact map table"  , (const char *) handle );
 return SetErrorReason( err ,  COMMAND_PARAMETR_ERROR , ccReg::nsset_tech_add ,  position +1, REASON_MSG_TECH_EXIST  , lang );
 }
 
-short ccReg_EPP_i::SetReasonNSSetTechNotExistMap(  ccReg::Errors *err , const char * handle  ,  int lang  ,  short position)
+short ccReg_EPP_i::SetReasonNSSetTechNotExistMap(  ccReg::Errors_var& err , const char * handle  ,  int lang  ,  short position)
 {
  LOG( WARNING_LOG, "Tech Contact [%s] notexist in contact map table"  , (const char *) handle );
 return SetErrorReason( err ,  COMMAND_PARAMETR_ERROR , ccReg::nsset_tech_rem ,position+1 ,  REASON_MSG_TECH_NOTEXIST  ,  lang );
 }
 
 
-short ccReg_EPP_i::SetReasonDomainAdminExistMap(    ccReg::Errors *err  , const char * handle  ,  int lang  ,  short position)
+short ccReg_EPP_i::SetReasonDomainAdminExistMap(    ccReg::Errors_var& err  , const char * handle  ,  int lang  ,  short position)
 {
  LOG( WARNING_LOG, "Admin Contact [%s] exist in contact map table"  , (const char *) handle );
 return SetErrorReason( err ,  COMMAND_PARAMETR_ERROR , ccReg::domain_admin_add ,position+1 ,  REASON_MSG_ADMIN_EXIST  ,   lang );
 }
 
-short ccReg_EPP_i::SetReasonDomainAdminNotExistMap(   ccReg::Errors *err , const char * handle  ,  int lang ,  short position )
+short ccReg_EPP_i::SetReasonDomainAdminNotExistMap(   ccReg::Errors_var& err , const char * handle  ,  int lang ,  short position )
 {
  LOG( WARNING_LOG, "Admin Contact [%s] notexist in contact map table"  , (const char *) handle );
 return SetErrorReason( err ,  COMMAND_PARAMETR_ERROR , ccReg::domain_admin_rem ,  position+1 ,REASON_MSG_ADMIN_NOTEXIST  ,  lang );
@@ -1058,7 +1060,7 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(CORBA::Short errCode, CORBA::Long c
 {
 
 DB DBsql;
-ccReg::Response * ret;
+ccReg::Response_var ret;
 ret = new ccReg::Response;
 int i , len;
 
@@ -1123,7 +1125,7 @@ for( i = 0 ;i < len ; i ++ )
   if( ret->code == 0 ) ServerInternalError("GetTransaction");
 
 
-return ret;
+return ret._retn();
 
 }
 
@@ -1148,8 +1150,8 @@ return ret;
 ccReg::Response* ccReg_EPP_i::PollAcknowledgement(const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
 DB DBsql;
-ccReg::Response * ret;
-ccReg::Errors *errors;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
 char sqlString[1024];
 int regID, rows;
 
@@ -1204,6 +1206,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                         {
                           count = rows; //  numbers
                           // next new messages
+                          CORBA::string_free(newmsgID);
                           newmsgID =   CORBA::string_dup(  DBsql.GetFieldValue( 0, 0 ) ) ;
                           LOG( NOTICE_LOG, "PollAcknowledgement: newmsgID -> %s count -> %d", (const char *) newmsgID, count );
                         }
@@ -1235,7 +1238,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
   if( ret->code == 0 ) ServerInternalError("PollAcknowledgement");
 
 
-  return ret;
+  return ret._retn();
 }
 
 
@@ -1265,7 +1268,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(CORBA::String_out msgID, CORBA::Short&
 {
 DB DBsql;
 char sqlString[1024];
-ccReg::Response * ret;
+ccReg::Response_var ret;
 int regID;
 int rows;
 ret = new ccReg::Response;
@@ -1303,8 +1306,11 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
               if( rows > 0 )    // is some messages
                 {
                   count = rows;
+                  CORBA::string_free(qDate);
                   qDate =  CORBA::string_dup( DBsql.GetFieldDateTimeValueName("CrDate" , 0 )  );
+                  CORBA::string_free(msgID);
                   msgID =   CORBA::string_dup(  DBsql.GetFieldValueName( "ID", 0 ) );
+                  CORBA::string_free(mesg);
                   mesg = CORBA::string_dup( DBsql.GetFieldValueName( "message", 0 ) );
                   ret->code = COMMAND_ACK_MESG;      // messages are in the table
                   LOG( NOTICE_LOG, "PollRequest: msgID -> %s count -> %d mesg [%s]",  (const char * )   msgID, count, CORBA::string_dup( mesg ) );
@@ -1337,7 +1343,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
   if( ret->code == 0 ) ServerInternalError("PollRequest");
   
 
-return ret;
+return ret._retn();
 }
 
 
@@ -1361,7 +1367,7 @@ return ret;
 ccReg::Response* ccReg_EPP_i::ClientCredit( ccReg::ZoneCredit_out credit, CORBA::Long clientID , const char* clTRID, const char* XML)
 {
 DB DBsql;
-ccReg::Response * ret;
+ccReg::Response_var ret;
 int regID;
 long price;
 unsigned int z , seq , zoneID;
@@ -1411,7 +1417,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 
   if( ret->code == 0 ) ServerInternalError("ClientCredit");
 
-return ret;
+return ret._retn();
 }
 
 /***********************************************************************
@@ -1430,7 +1436,7 @@ return ret;
 ccReg::Response * ccReg_EPP_i::ClientLogout( CORBA::Long clientID, const char *clTRID , const char* XML )
 {
 DB DBsql;
-ccReg::Response * ret;
+ccReg::Response_var ret;
 int lang=0; // default 
 
 
@@ -1471,7 +1477,7 @@ LOG( NOTICE_LOG, "ClientLogout: clientID -> %d clTRID [%s]",  (int )  clientID, 
  
  if( ret->code == 0 ) ServerInternalError("ClientLogout");
 
-return ret;
+return ret._retn();
 }
 
 /***********************************************************************
@@ -1501,7 +1507,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin( const char *ClID, const char *passwd
 DB DBsql;
 int regID=0, id=0;
 int language=0;
-ccReg::Response * ret;
+ccReg::Response_var ret;
 ret = new ccReg::Response;
 
 // default
@@ -1617,7 +1623,7 @@ if( DBsql.OpenDatabase( database ) )
 
   if( ret->code == 0 ) ServerInternalError("ClientLogin");
 
-return ret;
+return ret._retn();
 }
 
 
@@ -1645,7 +1651,7 @@ return ret;
 ccReg::Response* ccReg_EPP_i::ObjectCheck( short act , char * table , char *fname , const ccReg::Check& chck , ccReg::CheckResp_out  a, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 DB DBsql;
-ccReg::Response *ret;
+ccReg::Response_var ret;
 unsigned long i , len;
 
 Register::NameIdPair caConflict;
@@ -1845,7 +1851,7 @@ DBsql.Disconnect();
 
 
  
-return ret;
+return ret._retn();
 }
 
 
@@ -1887,8 +1893,8 @@ return ObjectCheck(  EPP_DomainCheck , "DOMAIN"  , "fqdn" ,   fqdn , a ,  client
 ccReg::Response* ccReg_EPP_i::ContactInfo(const char* handle, ccReg::Contact_out c , CORBA::Long clientID, const char* clTRID , const char* XML )
 {
 DB DBsql;
-ccReg::Response *ret;
-ccReg::Errors *errors;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
 int  clid , crid , upid , regID ;
 int  ssn , id , slen;
 int s , snum ;
@@ -2103,7 +2109,7 @@ if( ret->code > COMMAND_EXCEPTION) EppError(  ret->code , ret->msg ,  ret->svTRI
 if( ret->code == 0 ) ServerInternalError("ContactInfo");
  
 
-return ret;
+return ret._retn();
 }
 
 
@@ -2126,9 +2132,9 @@ return ret;
 
 ccReg::Response* ccReg_EPP_i::ContactDelete(const char* handle , CORBA::Long clientID, const char* clTRID , const char* XML )
 {
-EPPNotifier *ntf;
-ccReg::Response *ret;
-ccReg::Errors *errors;
+std::auto_ptr<EPPNotifier> ntf;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
 DB DBsql;
 int regID , id ;
 
@@ -2174,7 +2180,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                   else                                                                                           
                     {
 
-                        ntf = new EPPNotifier(mm , &DBsql, regID , id ); // notifier maneger before delete 
+                        ntf.reset(new EPPNotifier(mm , &DBsql, regID , id )); // notifier maneger before delete 
 
                           // test to  table  domain domain_contact_map and nsset_contact_map for relations 
                           if( DBsql.TestContactRelations( id ) )        // can not be deleted
@@ -2220,7 +2226,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 
 if( ret->code == 0 ) ServerInternalError("ContactDelete");
 
-  return ret;
+  return ret._retn();
 }
 
 
@@ -2245,10 +2251,10 @@ if( ret->code == 0 ) ServerInternalError("ContactDelete");
 ccReg::Response * ccReg_EPP_i::ContactUpdate( const char *handle, const ccReg::ContactChange & c, 
                                               CORBA::Long clientID, const char *clTRID , const char* XML )
 {
-ccReg::Response * ret;
-ccReg::Errors *errors;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
 DB DBsql;
-EPPNotifier *ntf;
+std::auto_ptr<EPPNotifier> ntf;
 int regID ,  id ;
 int s , snum;
 char streetStr[10];
@@ -2352,7 +2358,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 
                         if( ret->code == COMMAND_OK ) // run notifier
                         {
-                            ntf = new EPPNotifier(mm , &DBsql, regID , id );
+                            ntf.reset(new EPPNotifier(mm , &DBsql, regID , id ));
                             ntf->Send(); // send messages with objectID
                         }
 
@@ -2376,7 +2382,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 
 if( ret->code == 0 ) ServerInternalError("ContactUpdate");
 
-return ret;
+return ret._retn();
 }
 
 
@@ -2401,10 +2407,10 @@ return ret;
 ccReg::Response * ccReg_EPP_i::ContactCreate( const char *handle, const ccReg::ContactChange & c, 
                                               ccReg::timestamp_out crDate, CORBA::Long clientID, const char *clTRID , const char* XML )
 {
-EPPNotifier *ntf;
+std::auto_ptr<EPPNotifier> ntf;
 DB DBsql;
-ccReg::Response * ret;
-ccReg::Errors *errors;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
 
 int regID, id;
 int s , snum;
@@ -2528,7 +2534,8 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                       // if is inserted
                       if( DBsql.EXEC() )    
                         {     
-                          // get local timestamp of created  object 
+                          // get local timestamp of created  object
+                          CORBA::string_free(crDate); 
                           crDate= CORBA::string_dup( DBsql.GetObjectCrDateTime( id )  );
                           if(   DBsql.SaveContactHistory( id ) )   // save history
                               if ( DBsql.SaveObjectCreate( id ) )   ret->code = COMMAND_OK;    // if saved
@@ -2539,7 +2546,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 
                         if( ret->code == COMMAND_OK ) // run notifier
                         {
-                            ntf = new EPPNotifier(mm , &DBsql, regID , id );
+                            ntf.reset(new EPPNotifier(mm , &DBsql, regID , id ));
                             ntf->Send(); // send message with  objectID
                         }
 
@@ -2560,7 +2567,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 
 if( ret->code == 0 ) ServerInternalError("ContactCreate");
 
-return ret;
+return ret._retn();
 }
 
 
@@ -2585,10 +2592,10 @@ return ret;
 ccReg::Response* ccReg_EPP_i::ObjectTransfer(short act ,  const char*table ,  const char*fname , const char* name,
                                            const char* authInfo, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
-ccReg::Response *ret;
-ccReg::Errors *errors;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
 DB DBsql;
-EPPNotifier *ntf;
+std::auto_ptr<EPPNotifier> ntf;
 char FQDN[64];
 char pass[PASS_LEN+1];
 int regID  , id , oldregID;
@@ -2713,7 +2720,7 @@ if(  (regID = GetRegistrarID( clientID ) ) )
 
         if( ret->code == COMMAND_OK ) // run notifier
          {
-            ntf = new EPPNotifier(mm , &DBsql, regID , id );
+            ntf.reset(new EPPNotifier(mm , &DBsql, regID , id ));
             ntf->Send(); 
          }
                      
@@ -2738,7 +2745,7 @@ DBsql.Disconnect();
 
 if( ret->code == 0 ) ServerInternalError("ObjectTransfer");
 
-return ret;
+return ret._retn();
 }
 
 
@@ -2783,8 +2790,8 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(const char* handle, ccReg::NSSet_out n,
                           CORBA::Long clientID, const char* clTRID ,  const char* XML)
 {
 DB DBsql;
-ccReg::Response *ret;
-ccReg::Errors *errors;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
 int *hostID;
 int clid ,  crid , upid , nssetid , regID;
 int i , j  ,ilen , len , slen ;
@@ -2945,7 +2952,7 @@ DBsql.Disconnect();
 if( ret->code == 0 ) ServerInternalError("NSSetInfo");
 
 
-return ret;
+return ret._retn();
 }
 
 /***********************************************************************
@@ -2966,10 +2973,10 @@ return ret;
 
 ccReg::Response* ccReg_EPP_i::NSSetDelete(const char* handle, CORBA::Long clientID, const char* clTRID , const char* XML )
 {
-ccReg::Response *ret;
-ccReg::Errors *errors;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
 DB DBsql;
-EPPNotifier *ntf;
+std::auto_ptr<EPPNotifier> ntf;
 int regID , id ;
 
 
@@ -3009,7 +3016,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                   else
                    {
                        // create notifier
-                        ntf = new EPPNotifier(mm , &DBsql, regID , id );
+                        ntf.reset(new EPPNotifier(mm , &DBsql, regID , id ));
 
                           // test to  table domain if realtions to nsset
                           if( DBsql.TestNSSetRelations( id ) )  //  can not be delete
@@ -3051,7 +3058,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 if( ret->code == 0 ) ServerInternalError("NSSetDelete");
 
  
-return ret;
+return ret._retn();
 }
 
 
@@ -3081,10 +3088,10 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
                                             ccReg::timestamp_out crDate, CORBA::Long clientID,  const char *clTRID , const char* XML ) 
 { 
 DB DBsql; 
-EPPNotifier *ntf;
+std::auto_ptr<EPPNotifier> ntf;
 char  NAME[256] ; // to upper case of name of DNS hosts
-ccReg::Response * ret; 
-ccReg::Errors *errors;
+ccReg::Response_var ret; 
+ccReg::Errors_var errors;
 int regID, id, techid, hostID;  
 unsigned int  i , j  , l;
 short inetNum;
@@ -3273,6 +3280,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
               {
 
                   // get local timestamp with timezone of created onbject
+                  CORBA::string_free(crDate);
                   crDate= CORBA::string_dup( DBsql.GetObjectCrDateTime( id )  );
 
                   // insert all tech-c
@@ -3347,7 +3355,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 
              if( ret->code == COMMAND_OK ) // run notifier
                {
-                            ntf = new EPPNotifier(mm , &DBsql, regID , id );
+                            ntf.reset(new EPPNotifier(mm , &DBsql, regID , id ));
                             ntf->Send(); //send messages
                }
 
@@ -3377,7 +3385,7 @@ delete tch;
 
 if( ret->code == 0 ) ServerInternalError("NSSetCreate");
 
-return ret;
+return ret._retn();
 }
 
 
@@ -3409,9 +3417,9 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(const char* handle , const char* authI
                                           const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem, CORBA::Short level,
                                           CORBA::Long clientID, const char* clTRID , const char* XML )
 {
-ccReg::Response *ret;
-ccReg::Errors *errors;
-EPPNotifier *ntf;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
+std::auto_ptr<EPPNotifier> ntf;
 DB DBsql;
 char   NAME[256] , REM_NAME[256];
 int regID , nssetID ,  techid  , hostID;
@@ -3615,7 +3623,7 @@ if( DBsql.OpenDatabase( database ) )
 
 
                                 // notifier                           
-                              ntf = new EPPNotifier(mm , &DBsql, regID , nssetID );
+                              ntf.reset(new EPPNotifier(mm , &DBsql, regID , nssetID ));
                               //  add to current tech-c added tech-c
                               for( i = 0; i < tech_add.length(); i++ )ntf->AddTechNew( tch_add[i] );
 
@@ -3797,7 +3805,7 @@ delete tch_rem;
 if( ret->code == 0 ) ServerInternalError("NSSetUpdate");
 
 
-return ret;
+return ret._retn();
 }
 
 
@@ -3826,8 +3834,8 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(const char* fqdn, ccReg::Domain_out d ,
 {
 DB DBsql;
 ccReg::ENUMValidationExtension *enumVal;
-ccReg::Response *ret;
-ccReg::Errors *errors;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
 char FQDN[64];
 int id , clid , crid ,  upid , regid ,nssetid , regID , zone ;
 int i , len ;
@@ -3984,7 +3992,7 @@ DBsql.Disconnect();
 if( ret->code == 0 ) ServerInternalError("DomainInfo");
 
 
-return ret;
+return ret._retn();
 }
 
 /***********************************************************************
@@ -4003,10 +4011,10 @@ return ret;
 
 ccReg::Response* ccReg_EPP_i::DomainDelete(const char* fqdn , CORBA::Long clientID, const char* clTRID , const char* XML)
 {
-ccReg::Response *ret;
-ccReg::Errors *errors;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
 DB DBsql;
-EPPNotifier *ntf;
+std::auto_ptr<EPPNotifier> ntf;
 char FQDN[64];
 int regID , id , zone;
 ret = new ccReg::Response;
@@ -4061,7 +4069,7 @@ if(  (regID = GetRegistrarID( clientID ) ) )
                   else
                     {
                      // run notifier
-                      ntf = new EPPNotifier(mm , &DBsql, regID , id );
+                      ntf.reset(new EPPNotifier(mm , &DBsql, regID , id ));
  
                       if(  DBsql.SaveObjectDelete( id  ) ) //sav object as delete 
                         {             
@@ -4090,7 +4098,7 @@ if(  (regID = GetRegistrarID( clientID ) ) )
 
 if( ret->code == 0 ) ServerInternalError("DomainDelete");
 
-  return ret;
+  return ret._retn();
 }
 
 
@@ -4118,9 +4126,9 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate( const char *fqdn, const char *regis
                                              const ccReg::AdminContact & admin_add, const ccReg::AdminContact & admin_rem,
                                              CORBA::Long clientID, const char *clTRID,  const char* XML ,  const ccReg::ExtensionList & ext )
 {
-ccReg::Response * ret;
-ccReg::Errors *errors;
-EPPNotifier *ntf;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
+std::auto_ptr<EPPNotifier> ntf;
 DB DBsql;
 char FQDN[64];
 char valexpiryDate[MAX_DATE];
@@ -4274,7 +4282,7 @@ if( DBsql.OpenDatabase( database ) )
  
                                    // BEGIN notifier
                                    // notify default contacts
-                                  ntf = new EPPNotifier(mm , &DBsql, regID , id );
+                                  ntf.reset(new EPPNotifier(mm , &DBsql, regID , id ));
 
                                   for( i = 0; i < admin_add.length(); i++ )
                                        ntf->AddAdminNew( ac_add[i] ); // notifier new ADMIN contact
@@ -4383,7 +4391,7 @@ delete ac_rem;
 
 if( ret->code == 0 ) ServerInternalError("DomainUpdate");
 
-return ret;
+return ret._retn();
 }
 
  
@@ -4414,15 +4422,15 @@ ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Regis
                                              CORBA::Long clientID, const char *clTRID,  const  char* XML , const ccReg::ExtensionList & ext )
 {
 DB DBsql;
-EPPNotifier *ntf;
+std::auto_ptr<EPPNotifier> ntf;
 char valexpiryDate[MAX_DATE] ;
 char  FQDN[64];
-ccReg::Response * ret;
-ccReg::Errors *errors;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
 int contactid, regID, nssetid, adminid, id;
 int   zone =0;
 unsigned int i , j;
-int *ad;
+std::vector<int> ad;
 int period_count;
 char periodStr[10];
 Register::NameIdPair dConflict;
@@ -4442,7 +4450,7 @@ crDate =  CORBA::string_dup( "" );
 exDate =  CORBA::string_dup( "" );
 
 
-ad = new int[  admin.length() ] ;
+ad.resize(admin.length());
 
 
 LOG( NOTICE_LOG, "DomainCreate: clientID -> %d clTRID [%s] fqdn  [%s] ", (int )  clientID, clTRID, fqdn );
@@ -4662,10 +4670,12 @@ if( DBsql.OpenDatabase( database ) )
                             {
                                  
 
-                                // get local timestamp of created domain 
+                                // get local timestamp of created domain
+                                CORBA::string_free(crDate); 
                                 crDate= CORBA::string_dup(  DBsql.GetObjectCrDateTime( id )  );
 
                                 //  get local date of expiration
+                                CORBA::string_free(exDate);
                                 exDate =  CORBA::string_dup(  DBsql.GetDomainExDate(id)  );
 
 
@@ -4705,7 +4715,7 @@ if( DBsql.OpenDatabase( database ) )
 
                         if( ret->code == COMMAND_OK ) // run notifier
                         {
-                            ntf = new EPPNotifier(mm , &DBsql, regID , id );
+                            ntf.reset(new EPPNotifier(mm , &DBsql, regID , id ));
                             ntf->Send(); // send messages
                         }
 
@@ -4730,7 +4740,6 @@ if( DBsql.OpenDatabase( database ) )
  DBsql.Disconnect();
 }
 
-delete ad;
 
   // EPP exception
   if(  ret->code > COMMAND_EXCEPTION) EppError(  ret->code , ret->msg ,  ret->svTRID , errors );
@@ -4738,7 +4747,7 @@ delete ad;
 if( ret->code == 0 ) ServerInternalError("DomainCreate");
 
 
-return ret;
+return ret._retn();
 }
 
 
@@ -4768,11 +4777,11 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                                             const char *clTRID, const  char* XML , const ccReg::ExtensionList & ext )
 {
   DB DBsql;
-  EPPNotifier *ntf;
+  std::auto_ptr<EPPNotifier> ntf;
   char   valexpiryDate[MAX_DATE] ;
   char FQDN[64]; 
-  ccReg::Response * ret;
-  ccReg::Errors *errors;
+  ccReg::Response_var ret;
+  ccReg::Errors_var errors;
   int  regID, id,  zone ;
 int period_count;
 char periodStr[10];
@@ -4947,7 +4956,8 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                                      // make Renew Domain count new Exdate in 
                                      if( DBsql.RenewExDate( id , period_count ) ) 
                                        {
-                                           //  return new Exdate as local date 
+                                           //  return new Exdate as local date
+                                           CORBA::string_free(exDate); 
                                            exDate =  CORBA::string_dup(  DBsql.GetDomainExDate(id)  );
 
                                      // billing credit operation domain-renew
@@ -4970,7 +4980,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 
         if( ret->code == COMMAND_OK ) // run notifier
          {
-            ntf = new EPPNotifier(mm , &DBsql, regID , id );
+            ntf.reset(new EPPNotifier(mm , &DBsql, regID , id ));
             ntf->Send(); // send mesages to default contats
          }
 
@@ -4994,7 +5004,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 if( ret->code == 0 ) ServerInternalError("DomainRenew");
 
 
-return ret;
+return ret._retn();
 }
 
 
@@ -5006,7 +5016,7 @@ ccReg::Response*  ccReg_EPP_i::FullList(short act , const char *table , char *fn
 {
 DB DBsql;
 int rows =0, i;
-ccReg::Response * ret;
+ccReg::Response_var ret;
 int regID;
 int typ;
 char sqlString[128];
@@ -5086,7 +5096,7 @@ DBsql.Disconnect();
 if( ret->code == 0 ) ServerInternalError("FullList");
 
 
-return ret;
+return ret._retn();
 }
 
 
@@ -5112,7 +5122,7 @@ return FullList( EPP_ListDomain , "DOMAIN"  , "fqdn" , domains ,  clientID,  clT
 ccReg::Response* ccReg_EPP_i::nssetTest(const char* handle, const char* fqdn, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
 DB DBsql;
-ccReg::Response * ret = new ccReg::Response;
+ccReg::Response_var ret = new ccReg::Response;
 int regID;
 int nssetid;
 
@@ -5158,7 +5168,7 @@ DBsql.Disconnect();
 }
 
 
-return ret;
+return ret._retn();
 }
 
 // function for send authinfo
@@ -5166,8 +5176,8 @@ ccReg::Response*  ccReg_EPP_i::ObjectSendAuthInfo( short act , char * table , ch
 {
 DB DBsql;
 int   id ,  zone;
-ccReg::Response * ret;
-ccReg::Errors *errors;
+ccReg::Response_var ret;
+ccReg::Errors_var errors;
 char FQDN[64];
 int regID;
 ret = new ccReg::Response;
@@ -5247,7 +5257,7 @@ DBsql.Disconnect();
 
 if( ret->code == 0 ) ServerInternalError("ObjectSendAuthInfo");
 
-return ret;
+return ret._retn();
 }
 
 

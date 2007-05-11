@@ -79,6 +79,7 @@ namespace Register
            atoi(db->GetFieldValue(i,3))
            ));
         }
+        db->FreeSelect();
       }
       const std::string& getDefaultEnumSuffix() const
       {

@@ -35,6 +35,7 @@
 static CORBA::ORB_ptr orbToShutdown = NULL;
 static void signalHandler(int signal)
 {
+  daemon_log(LOG_ERR, "Daemon is closing");  
 	if (orbToShutdown) orbToShutdown->shutdown(0);
 }
 

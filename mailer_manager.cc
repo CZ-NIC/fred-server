@@ -26,9 +26,6 @@ MailerManager::sendEmail(
   ccReg::MailHeader header;
   header.h_from = CORBA::string_dup(from.c_str());
   header.h_to = CORBA::string_dup(to.c_str());
-  // header.h_subject = CORBA::string_dup(subject.c_str());
-  // prepare template
-  const char * mailType = CORBA::string_dup(mailTemplate.c_str()); 
   // prepare data
   ccReg::KeyValues data;
   data.length(params.size());
@@ -67,9 +64,13 @@ MailerManager::sendEmail(
   CORBA::String_var prevMsg;
   // call mailer
   try {
-   LOG( DEBUG_LOG , "mailer_manager:   mailer->mailNotify mailType [%s]  " ,  (char *) mailType );
+    LOG(
+      DEBUG_LOG, 
+      "mailer_manager:   mailer->mailNotify mailType [%s]  ",
+      mailTemplate.c_str()
+    );
     CORBA::Long id = mailer->mailNotify(
-      mailType,header,data,handleList,attachments,prev,prevMsg
+      mailTemplate.c_str(),header,data,handleList,attachments,prev,prevMsg
     );
     return (unsigned long)id;
   } catch (...) {

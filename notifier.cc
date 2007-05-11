@@ -39,6 +39,7 @@ registrarID=0;
 
 bool EPPNotifier::Send()
 {
+if (!notify.size()) return true;
 unsigned int i , num;
 short  type , mod;
 ID cID;
@@ -64,13 +65,13 @@ cID =  notify[i].contactID;
 type =   notify[i].type;
 mod =   notify[i].modify;
 
+std::string objectName = db->GetValueFromTable( "object_registry" ,  "name" , "id" ,  cID ); 
 LOG( DEBUG_LOG ,"EPPNotifier: sendTo  %s %s contactID %d [%s]" ,  
-           GetContactType( type ) , GetContactModify( mod)  , cID  , 
-           db->GetValueFromTable( "object_registry" ,  "name" , "id" ,  cID ) );
+           GetContactType( type ) , GetContactModify( mod)  , cID  , objectName.c_str());
 
-LOG( DEBUG_LOG ,"EPPNotifier:  email %s notifyEmail %s " , 
-               db->GetValueFromTable( "contact" ,  "email" , "id" ,  cID ) ,
-               db->GetValueFromTable( "contact" ,  "notifyemail" , "id" ,  cID )  ); 
+std::string cEmail = db->GetValueFromTable( "contact" ,  "email" , "id" ,  cID );
+std::string cNotifyEmail = db->GetValueFromTable( "contact" ,  "notifyemail" , "id" ,  cID ); 
+LOG( DEBUG_LOG ,"EPPNotifier:  email %s notifyEmail %s " , cEmail.c_str(),cNotifyEmail.c_str()); 
 
          if ( i > 0 ) emails << " , ";         // add more
          emails <<   db->GetValueFromTable( "contact" ,  "notifyemail" , "id" ,  cID ) ;
@@ -78,9 +79,11 @@ LOG( DEBUG_LOG ,"EPPNotifier:  email %s notifyEmail %s " ,
 
 }
 LOG( DEBUG_LOG , "EPPNotifier: TO: %s" , emails.str().c_str()   );
+try {
 // Mailer manager send emailes 
 mm->sendEmail( "" ,  emails.str()  , "",  getTemplate() ,params,handles,attach );
-
+} 
+catch (...) { return false; }
 return true;
 }
 
