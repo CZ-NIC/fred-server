@@ -362,6 +362,10 @@ namespace Register
       RegistrarListImpl(DB *_db) : db(_db), idFilter(0)
       {
       }
+      ~RegistrarListImpl()
+      {
+        clear();
+      }
       virtual void setIdFilter(TID _idFilter)
       {
         idFilter = _idFilter;
@@ -579,6 +583,10 @@ namespace Register
        typeId(0), returnCodeId(0), result(EARF_ALL),
        db(_db)
       {
+      }
+      ~EPPActionListImpl()
+      {
+        clear();
       }
       void setIdFilter(TID _id)
       {
