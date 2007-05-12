@@ -73,9 +73,11 @@ std::string cEmail = db->GetValueFromTable( "contact" ,  "email" , "id" ,  cID )
 std::string cNotifyEmail = db->GetValueFromTable( "contact" ,  "notifyemail" , "id" ,  cID ); 
 LOG( DEBUG_LOG ,"EPPNotifier:  email %s notifyEmail %s " , cEmail.c_str(),cNotifyEmail.c_str()); 
 
-         if ( i > 0 ) emails << " , ";         // add more
-         emails <<   db->GetValueFromTable( "contact" ,  "notifyemail" , "id" ,  cID ) ;
-
+         
+         if (!cNotifyEmail.empty()) {
+          if (!emails.str().empty()) emails << ", ";
+          emails << cNotifyEmail;
+         }
 
 }
 LOG( DEBUG_LOG , "EPPNotifier: TO: %s" , emails.str().c_str()   );
