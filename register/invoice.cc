@@ -286,7 +286,7 @@ namespace Register
             sql << ",fileXML=" << fileXML;
           }; 
           sql << " WHERE id=" << getId();
-          if (!dbc->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+          if (!dbc->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
         }                
       }
       /// initialize invoice from result set=db with row=l 

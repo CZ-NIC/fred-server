@@ -134,6 +134,7 @@ namespace Register
           emails << db->GetFieldValue(i,0);
           if (i != (unsigned)db->GetSelectRows()) emails << ", ";
         }
+        db->FreeSelect();
         return emails.str();
       }
       /// Query object for its authinfo
@@ -149,8 +150,13 @@ namespace Register
             << "FROM object o "
             << "WHERE o.id=" << objectId;
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        if (db->GetSelectRows() != 1) throw Manager::OBJECT_NOT_FOUND();
-        return db->GetFieldValue(0,0);
+        if (db->GetSelectRows() != 1) {
+          db->FreeSelect();
+          throw Manager::OBJECT_NOT_FOUND();
+        }
+        std::string authInfo = db->GetFieldValue(0,0);
+        db->FreeSelect();
+        return authInfo;
       }
       /// Select template name according to request type
       std::string getTemplateName()
@@ -217,6 +223,7 @@ namespace Register
           // TODO: proper handling of this situation
           if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
           objectId = STR_TO_ID(db->GetFieldValue(0,0));
+          db->FreeSelect();
           // create new request
           id = db->GetSequenceID("auth_info_requests");
           sql.str("");
@@ -428,18 +435,29 @@ namespace Register
       {
       	// TODO - must be solved in specific modules (object & action)
       	// maybe it should be solved in save() but this these are not mutable
-      	// membmers
+      	// members
+        // test if object exists
       	std::stringstream sql;
       	sql << "SELECT id FROM object WHERE id=" << objectId;
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-      	if (db->GetSelectRows() != 1) throw OBJECT_NOT_FOUND();
+      	if (db->GetSelectRows() != 1) {
+          db->FreeSelect();
+          throw OBJECT_NOT_FOUND();
+        }
+        db->FreeSelect();
       	sql.str("");
+        // test if action exists
       	if (eppActionId) {
       	  sql << "SELECT id FROM action WHERE id=" << eppActionId;
           if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-          if (db->GetSelectRows() != 1) throw ACTION_NOT_FOUND();
+          if (db->GetSelectRows() != 1) {
+            db->FreeSelect();
+            throw ACTION_NOT_FOUND();
+          }
+          db->FreeSelect();
         }
         // TODO - There should be specific constructor for creation
+        // of DetailImpl without thouse default values
         DetailImpl d(
           0,
           // objectId details are ignored

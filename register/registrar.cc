@@ -421,7 +421,7 @@ namespace Register
               db->GetFieldValue(i,12),
               db->GetFieldValue(i,13),
               db->GetFieldValue(i,14),
-	      atol(db->GetFieldValue(i,15))
+              atol(db->GetFieldValue(i,15))
             )
           );
         }
@@ -691,6 +691,7 @@ namespace Register
             )
           );
         }
+        db->FreeSelect();
       }
       virtual const unsigned size() const
       {
