@@ -3,10 +3,12 @@
 
 #include "ccReg.hh"
 #include "nameservice.h"
+#include <vector>
 
 class TechCheckManager {
   ccReg::TechCheck_var tc;
  public:
+  typedef std::vector<std::string> FQDNList;
   class RESOLVE_FAILED {};
   class INTERNAL_ERROR {};
   class REGISTRAR_NOT_FOUND {};
@@ -14,7 +16,7 @@ class TechCheckManager {
   TechCheckManager(NameService *ns) throw (RESOLVE_FAILED);
   void checkFromRegistrar(
     const std::string& registrar, const std::string& nsset, 
-    const std::string& fqdn
+    int level, const FQDNList& fqdns, const char *cltrid
   ) throw (INTERNAL_ERROR, REGISTRAR_NOT_FOUND, NSSET_NOT_FOUND);
 };
 

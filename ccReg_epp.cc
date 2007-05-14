@@ -3951,6 +3951,20 @@ if( (  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) )
                DBsql.FreeSelect();
            }else ret->code=COMMAND_FAILED;
 
+        // query to temp-c
+        if(  DBsql.SELECTCONTACTMAP( "domain"  , id ) )
+          {
+               len =  DBsql.GetSelectRows(); // number of temp-c 
+               // hide temp-c  for enum domain if registrar  not client of the domain
+               if(  GetZoneEnum( zone )  &&  regID  != clid  ) len = 0 ; //  not eny admin-c
+               d->tmpcontact.length(len); // number of temp-c
+               for( i = 0 ; i < len ; i ++) 
+                 { // get handle of temp-c
+                   d->tmpcontact[i] = CORBA::string_dup( DBsql.GetFieldValue( i , 0 )  );
+                 }
+               DBsql.FreeSelect();
+           }else ret->code=COMMAND_FAILED;
+
 
        // get enum.exdate validity date 
         if( DBsql.SELECTONE( "enumval" , "domainID" , id ) )
@@ -4115,6 +4129,7 @@ if( ret->code == 0 ) ServerInternalError("DomainDelete");
  *              nsset_chg - zmena nssetu 
  *              admin_add - sequence pridanych admin kontaktu
  *              admin_rem - sequence smazanych admin kontaktu
+ *              tmpcontact_rem - sequence of deleted temporary contacts
  *              clientID - id klienta
  *              clTRID - cislo transakce klienta
  *              ext - ExtensionList
@@ -4124,6 +4139,7 @@ if( ret->code == 0 ) ServerInternalError("DomainDelete");
  ***********************************************************************/
 ccReg::Response * ccReg_EPP_i::DomainUpdate( const char *fqdn, const char *registrant_chg, const char *authInfo_chg, const char *nsset_chg,
                                              const ccReg::AdminContact & admin_add, const ccReg::AdminContact & admin_rem,
+                                             const ccReg::AdminContact& tmpcontact_rem,
                                              CORBA::Long clientID, const char *clTRID,  const char* XML ,  const ccReg::ExtensionList & ext )
 {
 ccReg::Response_var ret;
@@ -5119,14 +5135,14 @@ return FullList( EPP_ListDomain , "DOMAIN"  , "fqdn" , domains ,  clientID,  clT
 }
 
 // function for run nsset tests 
-ccReg::Response* ccReg_EPP_i::nssetTest(const char* handle, const char* fqdn, CORBA::Long clientID, const char* clTRID, const char* XML)
+ccReg::Response* ccReg_EPP_i::nssetTest(const char* handle, CORBA::Short level, const ccReg::Lists& fqdns, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
 DB DBsql;
 ccReg::Response_var ret = new ccReg::Response;
 int regID;
 int nssetid;
 
-LOG( NOTICE_LOG ,  "nssetTest nsset %s domain %s  clientID -> %d clTRID [%s] \n" , handle,  fqdn, (int )  clientID  , clTRID );
+LOG( NOTICE_LOG ,  "nssetTest nsset %s  clientID -> %d clTRID [%s] \n" , handle, (int )  clientID  , clTRID );
 
 if( ( regID = GetRegistrarID( clientID ) ) )
 if( DBsql.OpenDatabase( database ) )
@@ -5145,17 +5161,20 @@ if( DBsql.OpenDatabase( database ) )
           );
         ret->code=COMMAND_OK;
         TechCheckManager tc(ns);
+        TechCheckManager::FQDNList ifqdns;
+        for (unsigned i=0; i<fqdns.length(); i++)
+          ifqdns.push_back((const char *)fqdns[i]);
         try {
-          tc.checkFromRegistrar(regHandle,handle,fqdn);
+          tc.checkFromRegistrar(regHandle,handle,level,ifqdns,clTRID);
         }
         catch (TechCheckManager::INTERNAL_ERROR) {
-          LOG(ERROR_LOG,"Tech check internal error nsset [%s] fqdn  [%s] clientID -> %d clTRID [%s] " , handle  , fqdn ,  (int )  clientID , clTRID );          
+          LOG(ERROR_LOG,"Tech check internal error nsset [%s] clientID -> %d clTRID [%s] " , handle  , (int )  clientID , clTRID );          
         }
         catch (TechCheckManager::REGISTRAR_NOT_FOUND) {
-          LOG(ERROR_LOG,"Tech check reg not found nsset [%s] fqdn [%s] clientID -> %d clTRID [%s] " , handle  , fqdn ,  (int )  clientID , clTRID );
+          LOG(ERROR_LOG,"Tech check reg not found nsset [%s] clientID -> %d clTRID [%s] " , handle  , (int )  clientID , clTRID );
         }
         catch (TechCheckManager::NSSET_NOT_FOUND) {
-          LOG(ERROR_LOG,"Tech check nsset not found nset [%s] fqdn [%s] clientID -> %d clTRID [%s] " , handle  , fqdn ,  (int )  clientID , clTRID );          
+          LOG(ERROR_LOG,"Tech check nsset not found nset [%s] clientID -> %d clTRID [%s] " , handle  , (int )  clientID , clTRID );          
         }
       }
       
