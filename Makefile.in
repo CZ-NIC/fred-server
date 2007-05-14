@@ -1153,6 +1153,9 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS
 	uninstall-binPROGRAMS uninstall-binSCRIPTS
 
 
+register/libccreg.a:
+	make -C register libccreg.a
+
 ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:
 	omniidl -bcxx -Wba -Wbinline $(IDLFILE)
 
