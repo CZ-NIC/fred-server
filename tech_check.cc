@@ -23,13 +23,13 @@ TechCheckManager::checkFromRegistrar(
     CORBA::String_var nss = nsset.c_str();
     tc->checkNssetAsynch(reg,nss,level,false,true,ccReg::CHKR_EPP,cfqdns,cltrid);
   }
-  catch (ccReg::TechCheck::InternalError) {
-    throw INTERNAL_ERROR();
-  }
   catch (ccReg::TechCheck::NssetNotFound) {
     throw NSSET_NOT_FOUND();
   }
   catch (ccReg::TechCheck::RegistrarNotFound) {
     throw REGISTRAR_NOT_FOUND();
+  }
+  catch (...) {
+    throw INTERNAL_ERROR();
   }
 }
