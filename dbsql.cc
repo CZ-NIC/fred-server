@@ -858,7 +858,7 @@ bool  DB::CheckContactMap(const char * table, int id, int contactid, int role)
   if (role)
     sql << " AND role=" << role; 
   if (ExecSelect(sql.str().c_str())) {
-    if (GetSelectRows() > 1) ret = true; // contact exist
+    if (GetSelectRows() >= 1) ret = true; // contact exist
     FreeSelect();
   }
   return ret;
