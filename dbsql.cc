@@ -849,25 +849,20 @@ return ret;
 }
 
 // test contat in the contact map
-bool  DB::CheckContactMap(const char * table , int id , int contactid )
+bool  DB::CheckContactMap(const char * table, int id, int contactid, int role)
 {
-bool ret = false;
-char sqlString[128];
-
-sprintf( sqlString , "SELECT * FROM %s_contact_map WHERE %sid=%d and contactid=%d" , table , table , id , contactid );
-
-if( ExecSelect( sqlString ) )
- {
-    if(  GetSelectRows() == 1  ) ret=true; // contact exist
+  bool ret = false;
+  std::stringstream sql;
+  sql << "SELECT * FROM " << table << "_contact_map "
+      << "WHERE " << table << "id=" << id << " AND contactid=" << contactid;
+  if (role)
+    sql << " AND role=" << role; 
+  if (ExecSelect(sql.str().c_str())) {
+    if (GetSelectRows() > 1) ret = true; // contact exist
     FreeSelect();
   }
-
-return ret;
+  return ret;
 }
-
-
-
-
 
 // add contact to contact table
 bool DB::AddContactMap( const char * table , int id , int  contactid )
@@ -976,28 +971,7 @@ return ExecSQL(  sqlString );
 
 int DB::GetDomainID( const char *fqdn  , bool enum_zone )
 {
-// TODOTODOTODOTODOTODOTODO
-//char sqlString[512];
-//int id=0;
-return GetObjectID( 3 , fqdn );
-// if( enum_zone )
-//sprintf( sqlString , "SELECT id FROM object  WHERE  ( \'%s\' LIKE  \'%%.\'|| name ) OR  (name LIKE  \'%%.\'  || \'%s\' )  OR ( name=\'%s\' );"  , fqdn   , fqdn  , fqdn );
-// else 
-// sprintf( sqlString , "SELECT id FROM object_registry , object WHERE  object.id=object_registry.id and  object_registry.name=\'%s\';" , fqdn );
-/*
-if( ExecSelect( sqlString ) )
- {
-  if( GetSelectRows()  ==  1 )
-    {
-     id = atoi(  GetFieldValue( 0 , 0 )  );
-     LOG( SQL_LOG , "Check domain   fqdn=\'%s\'  -> ID %d" , fqdn ,  id );
-    }
-
-   FreeSelect();
- }
-
-return id;
-*/
+  return GetObjectID( 3 , fqdn );
 }
 
 
@@ -1339,7 +1313,6 @@ if( ExecSelect( sqlString ) )
 return id;
 }
 
-// CZ desc: identifikator , castka ,  datum a , cislo ucto , kod banky ,  VS , KS  , nazev uctu , poznamka
 int DB::SaveEBankaList( int account_id , const char *ident , long  price , const char *datetimeStr ,  const char *accountStr , const char *codeStr , 
                         const char *varsymb , const char *konstsymb ,  const char *nameStr ,  const char *memoStr )
 {
@@ -1381,7 +1354,6 @@ if( TestEBankaList( ident ) == false )
 else return 0;
 }
 
-// nastav vypis ebanky jako zpracovany na zalohovou FA
 // mark e-banka statement as imported on advance invoice
 bool DB::UpdateEBankaListInvoice( int id , int invoiceID )
 {
@@ -1393,7 +1365,7 @@ bool DB::UpdateEBankaListInvoice( int id , int invoiceID )
 }
 
 
-// CZ desc: pro danou uzavranou fakturu iID spocti aktualni zustatek zalohove faktury aID pri uzavreni faktury z invoice_object_registry_price_map.price_balance
+// count new balance on advance invoice from total and all usages of that invoice 
 long DB::GetInvoiceBalance( int aID , long credit )
 {
 char sqlString[512];
@@ -2539,7 +2511,6 @@ else VALUES( "f" , false , true  , 0);
 void DB::VALPRICE( long price )
 {
 char priceStr[16];
-//  CZ:castka v halirich
 // currency in penny 
 sprintf( priceStr , "%ld.%02ld" , price /100 ,  price %100 );
 VALUES( priceStr , false , false , 0  ); // without ESC
@@ -2625,12 +2596,15 @@ return SELECT();
 
 
 // for contact mam table get handles of admin-c or tech-c
-bool DB::SELECTCONTACTMAP( char *map , int id )
+bool DB::SELECTCONTACTMAP( char *map , int id, unsigned role )
 {
-char sqlString[512];
-
-sprintf( sqlString , "SELECT  object_registry.name  FROM object_registry JOIN  %s_contact_map ON %s_contact_map.contactid=object_registry.id WHERE %s_contact_map.%sid=%d;" ,  map  , map , map  , map , id );
-return ExecSelect( sqlString );
+  std::stringstream sql;
+  sql << "SELECT name  FROM object_registry o, "
+      << map << "_contact_map c WHERE c.contactid=o.id AND c."
+      << map << "id=" << id;
+  if (role)
+    sql << " AND role=" << role;
+  return ExecSelect(sql.str().c_str());
 }
 
 

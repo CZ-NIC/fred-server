@@ -153,7 +153,7 @@ char * GetValueFromTable( const char *table , const char *vname ,  const char *f
 char * GetValueFromTable( const char *table , const char *vname ,  const char *fname ,  int numeric);
 int GetSequenceID( char *sequence ); // get  id from  sequence 
 // test   contactid at the table  nsset_contact_map or  domain_contact_map 
-bool CheckContactMap(const char * table , int id , int contactid );
+bool CheckContactMap(const char * table , int id , int contactid, int role );
 //  add conaxctID to the table nsset_contact_map or  domain_contact_map
 
 bool AddContactMap( const char * table , int id , int contactid );
@@ -332,7 +332,8 @@ void SQLCatEscape( const char * value );
 bool EXEC(); // use ExecSQL
 bool SELECT(); // use ExecSelect
 
-bool SELECTCONTACTMAP( char *map , int id ); //  from adin and tech-c 
+/// loading contact map for nsset admin a domain admin and tmp_contact
+bool SELECTCONTACTMAP( char *map , int id, unsigned role); 
 bool SELECTOBJECTID(  const char *table , const char *fname ,  int id  );
 
  

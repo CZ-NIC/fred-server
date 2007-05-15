@@ -136,7 +136,7 @@ ccReg::DomainWhois* ccReg_Whois_i::getDomain(
   } else dm->ns.length(0); // not any  DNS 
   
   // aks on tech contacts
-  if(  DBsql.SELECTCONTACTMAP( "nsset"  , nssetid ) )
+  if(  DBsql.SELECTCONTACTMAP( "nsset"  , nssetid, 0 ) )
   {
     len =  DBsql.GetSelectRows(); // number of tech-c
     dm->tech.length(len); // get tech contact handle

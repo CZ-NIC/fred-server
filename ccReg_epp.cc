@@ -2918,7 +2918,7 @@ if( ( DBsql.BeginAction( clientID , EPP_NSsetInfo , clTRID , XML  )  ))
 
 
         // query to tech-c
-        if(  DBsql.SELECTCONTACTMAP( "nsset"  , nssetid ) )
+        if(  DBsql.SELECTCONTACTMAP( "nsset"  , nssetid, 0 ) )
           {
                len =  DBsql.GetSelectRows(); // numbers of tech-c
                n->tech.length(len); // tech-c handles length 
@@ -3474,7 +3474,7 @@ if( DBsql.OpenDatabase( database ) )
                for( i = 0; i < tech_add.length(); i++ )
                   {
                     if( ( techid = DBsql.GetContactID( tech_add[i] ) ) <= 0 ) ret->code =  SetReasonNSSetTechADD( errors , tech_add[i] , techid ,  GetRegistrarLang( clientID ) , i  );
-                    else  if(  DBsql.CheckContactMap( "nsset", nssetID , techid ) ) ret->code = SetReasonNSSetTechExistMap(  errors , tech_add[i]  , GetRegistrarLang( clientID )  , i );
+                    else  if(  DBsql.CheckContactMap( "nsset", nssetID , techid, 0 ) ) ret->code = SetReasonNSSetTechExistMap(  errors , tech_add[i]  , GetRegistrarLang( clientID )  , i );
                           else
                           {
                                tch_add[i] = techid;
@@ -3493,7 +3493,7 @@ if( DBsql.OpenDatabase( database ) )
                    { 
                      
                     if( ( techid = DBsql.GetContactID( tech_rem[i] ) ) <= 0 ) ret->code = SetReasonNSSetTechREM( errors , tech_rem[i] , techid ,  GetRegistrarLang( clientID ) , i  );
-                    else  if( !DBsql.CheckContactMap( "nsset", nssetID , techid ) )ret->code =  SetReasonNSSetTechNotExistMap(  errors , tech_rem[i]  , GetRegistrarLang( clientID ) , i  );
+                    else  if( !DBsql.CheckContactMap( "nsset", nssetID , techid, 0 ) )ret->code =  SetReasonNSSetTechNotExistMap(  errors , tech_rem[i]  , GetRegistrarLang( clientID ) , i  );
                           else
                           {
                                tch_rem[i] = techid;
@@ -3938,7 +3938,7 @@ if( (  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) )
     
 
         // query to admin-c
-        if(  DBsql.SELECTCONTACTMAP( "domain"  , id ) )
+        if(  DBsql.SELECTCONTACTMAP( "domain"  , id, 1 ) )
           {
                len =  DBsql.GetSelectRows(); // number of admin-c 
                // hide admin-c  for enum domain if registrar  not client of the domain
@@ -3952,7 +3952,7 @@ if( (  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) )
            }else ret->code=COMMAND_FAILED;
 
         // query to temp-c
-        if(  DBsql.SELECTCONTACTMAP( "domain"  , id ) )
+        if(  DBsql.SELECTCONTACTMAP( "domain"  , id, 2 ) )
           {
                len =  DBsql.GetSelectRows(); // number of temp-c 
                // hide temp-c  for enum domain if registrar  not client of the domain
@@ -4150,7 +4150,7 @@ char FQDN[64];
 char valexpiryDate[MAX_DATE];
 int regID = 0, id, nssetid, contactid, adminid;
 int   seq , zone;
-int *ac_add , *ac_rem;
+std::vector<int> ac_add, ac_rem, tc_rem;
 unsigned int i , j;
 
 ret = new ccReg::Response;
@@ -4167,9 +4167,10 @@ LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registra
 
 
 
-ac_add =  new int[ admin_add.length() ]; 
-ac_rem =  new int[ admin_rem.length() ]; 
-
+ac_add.resize(admin_add.length()); 
+ac_rem.resize(admin_rem.length()); 
+tc_rem.resize(tmpcontact_rem.length());
+ 
 // parse enum.Exdate extension
 GetValExpDateFromExtension( valexpiryDate , ext );
 
@@ -4216,7 +4217,7 @@ if( DBsql.OpenDatabase( database ) )
                                     if( ( adminid = DBsql.GetContactID( admin_add[i] ) ) <= 0 ) 
                                         ret->code =   SetReasonDomainAdminADD( errors , admin_add[i] , adminid ,  GetRegistrarLang( clientID )  , i  );
                                     else {
-                                            if(  DBsql.CheckContactMap( "domain", id, adminid ) )
+                                            if(  DBsql.CheckContactMap( "domain", id, adminid, 1 ) )
                                                  ret->code = SetReasonDomainAdminExistMap( errors , admin_add[i]  , GetRegistrarLang( clientID ) , i );
                                             else
                                               {
@@ -4225,7 +4226,21 @@ if( DBsql.OpenDatabase( database ) )
                                                      if(  ac_add[j] == adminid && ac_add[j] > 0 ) 
                                                       { ac_add[j] = 0 ; ret->code = SetReasonContactDuplicity( errors , admin_add[i]  , GetRegistrarLang( clientID ) , i , ccReg::domain_admin_add );}
                                               }
+                                            // admin cannot be added if there is equivalent id in temp-c
+                                            if(  DBsql.CheckContactMap( "domain", id, adminid, 2 )) {
+                                              // exception is when in this command there is schedulet remove of thet temp-c
+                                              std::string adminHandle = (const char *)admin_add[i];
+                                              bool tmpcFound = false;                                          
+                                              for (unsigned ti=0; ti<tmpcontact_rem.length(); ti++) {
+                                                if (adminHandle == (const char *)tmpcontact_rem[ti]) {
+                                                  tmpcFound = true;
+                                                  break;
+                                                }
+                                              }
+                                              if (!tmpcFound)
+                                                ret->code = SetReasonDomainAdminExistMap( errors , admin_add[i]  , GetRegistrarLang( clientID ) , i );
                                          }
+                                    }
                                }  
 
 
@@ -4236,7 +4251,7 @@ if( DBsql.OpenDatabase( database ) )
                                     if( ( adminid = DBsql.GetContactID( admin_rem[i] ) ) <= 0 )
                                           ret->code = SetReasonDomainAdminREM( errors , admin_rem[i] , adminid ,  GetRegistrarLang( clientID )  , i );
                                     else {
-                                            if(  !DBsql.CheckContactMap( "domain", id, adminid ) )
+                                            if(  !DBsql.CheckContactMap( "domain", id, adminid, 1 ) )
                                                 ret->code =  SetReasonDomainAdminNotExistMap(  errors , admin_rem[i]  , GetRegistrarLang( clientID ) , i );
                                             else
                                               {
@@ -4250,6 +4265,26 @@ if( DBsql.OpenDatabase( database ) )
                                           }
                                 }
 
+                             // test REM temp-c
+                            for( i = 0; i < tmpcontact_rem.length(); i++ )
+                               {
+                                  LOG( NOTICE_LOG , "temp REM contact %s" , (const char *) tmpcontact_rem[i] );
+                                    if( ( adminid = DBsql.GetContactID( tmpcontact_rem[i] ) ) <= 0 )
+                                          ret->code = SetReasonDomainAdminREM( errors , tmpcontact_rem[i] , adminid ,  GetRegistrarLang( clientID )  , i );
+                                    else {
+                                            if(  !DBsql.CheckContactMap( "domain", id, adminid, 2 ) )
+                                                ret->code =  SetReasonDomainAdminNotExistMap(  errors , tmpcontact_rem[i]  , GetRegistrarLang( clientID ) , i );
+                                            else
+                                              {
+
+                                                 tc_rem[i] = adminid;
+                                                 for( j = 0 ; j < i ; j ++ ) // test  duplicity
+                                                   if(  tc_rem[j] == adminid && ac_rem[j] > 0 )
+                                                      {  tc_rem[j] = 0 ; ret->code = SetReasonContactDuplicity( errors , tmpcontact_rem[i]  , GetRegistrarLang( clientID )  , i  , ccReg::domain_admin_rem ); }
+
+                                              }
+                                          }
+                                }
 
 
                 
@@ -4346,6 +4381,16 @@ if( DBsql.OpenDatabase( database ) )
                                                      if( !DBsql.EXEC() )  ret->code = COMMAND_FAILED; 
                                                 }
                                             
+                                              // REM temp-c (must be befor ADD admin-c because of uniqueness)
+                                              for( i = 0; i < tmpcontact_rem.length(); i++ )
+                                                {
+                                                  if( ( adminid = DBsql.GetContactID( admin_rem[i] ) ) )
+                                                    {
+                                                      LOG( NOTICE_LOG ,  "delete temp-c-c  -> %d [%s]" ,  tc_rem[i] , (const char * ) tmpcontact_rem[i]  ); 
+                                                      if( !DBsql.DeleteFromTableMap( "domain", id, tc_rem[i] ) )  { ret->code = COMMAND_FAILED; break; }
+                                                    }
+
+                                                 }
 
 
                                               // ADD admin-c 
@@ -4398,9 +4443,6 @@ if( DBsql.OpenDatabase( database ) )
 
       DBsql.Disconnect();
     }
-
-delete ac_add;
-delete ac_rem;
 
   // EPP exception
   if(  ret->code > COMMAND_EXCEPTION) EppError(  ret->code , ret->msg ,  ret->svTRID , errors );
