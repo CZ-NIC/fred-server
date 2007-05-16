@@ -4394,7 +4394,7 @@ if( DBsql.OpenDatabase( database ) )
                                               // REM temp-c (must be befor ADD admin-c because of uniqueness)
                                               for( i = 0; i < tmpcontact_rem.length(); i++ )
                                                 {
-                                                  if( ( adminid = DBsql.GetContactID( admin_rem[i] ) ) )
+                                                  if( ( adminid = DBsql.GetContactID( tmpcontact_rem[i] ) ) )
                                                     {
                                                       LOG( NOTICE_LOG ,  "delete temp-c-c  -> %d [%s]" ,  tc_rem[i] , (const char * ) tmpcontact_rem[i]  ); 
                                                       if( !DBsql.DeleteFromTableMap( "domain", id, tc_rem[i] ) )  { ret->code = COMMAND_FAILED; break; }
