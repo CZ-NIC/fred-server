@@ -5193,6 +5193,7 @@ DB DBsql;
 ccReg::Response_var ret = new ccReg::Response;
 int regID;
 int nssetid;
+ bool internalError = false;
 
 LOG( NOTICE_LOG ,  "nssetTest nsset %s  clientID -> %d clTRID [%s] \n" , handle, (int )  clientID  , clTRID );
 
@@ -5220,14 +5221,20 @@ if( DBsql.OpenDatabase( database ) )
           tc.checkFromRegistrar(regHandle,handle,level,ifqdns,clTRID);
         }
         catch (TechCheckManager::INTERNAL_ERROR) {
-          LOG(ERROR_LOG,"Tech check internal error nsset [%s] clientID -> %d clTRID [%s] " , handle  , (int )  clientID , clTRID );          
+          LOG(ERROR_LOG,"Tech check internal error nsset [%s] clientID -> %d clTRID [%s] " , handle  , (int )  clientID , clTRID );
+          internalError = true;
         }
         catch (TechCheckManager::REGISTRAR_NOT_FOUND) {
           LOG(ERROR_LOG,"Tech check reg not found nsset [%s] clientID -> %d clTRID [%s] " , handle  , (int )  clientID , clTRID );
+          internalError = true;
         }
         catch (TechCheckManager::NSSET_NOT_FOUND) {
           LOG(ERROR_LOG,"Tech check nsset not found nset [%s] clientID -> %d clTRID [%s] " , handle  , (int )  clientID , clTRID );          
-        }
+          internalError = true;
+        } 
+      } else {
+        LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
+        ret->code = COMMAND_OBJECT_NOT_EXIST;
       }
       
       ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->code ) ) ;
@@ -5236,6 +5243,7 @@ if( DBsql.OpenDatabase( database ) )
 ret->msg =CORBA::string_dup( GetErrorMessage(  ret->code  , GetRegistrarLang( clientID ) )  );
 
 DBsql.Disconnect();
+ if (internalError) ServerInternalError("NSSetTest");
 }
 
 
