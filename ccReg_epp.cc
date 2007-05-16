@@ -465,6 +465,11 @@ short ccReg_EPP_i::SetReasonDomainAdminREM(  ccReg::Errors_var& err , const char
 return SetReasonContactMap(  err , ccReg::domain_admin_rem , handle , adminID ,lang , position ,false );
 }
 
+short ccReg_EPP_i::SetReasonDomainTempCREM(  ccReg::Errors_var& err , const char * handle  , int  adminID ,  int lang  ,  short position)
+{
+return SetReasonContactMap(  err , ccReg::domain_tmpcontact , handle , adminID ,lang , position ,false );
+}
+
 
 short ccReg_EPP_i::SetReasonNSSetTechExistMap(    ccReg::Errors_var& err, const char * handle  ,  int lang  ,  short position)
 {
@@ -491,6 +496,11 @@ short ccReg_EPP_i::SetReasonDomainAdminNotExistMap(   ccReg::Errors_var& err , c
 return SetErrorReason( err ,  COMMAND_PARAMETR_ERROR , ccReg::domain_admin_rem ,  position+1 ,REASON_MSG_ADMIN_NOTEXIST  ,  lang );
 }
 
+short ccReg_EPP_i::SetReasonDomainTempCNotExistMap(   ccReg::Errors_var& err , const char * handle  ,  int lang ,  short position )
+{
+ LOG( WARNING_LOG, "Temp Contact [%s] notexist in contact map table"  , (const char *) handle );
+return SetErrorReason( err ,  COMMAND_PARAMETR_ERROR , ccReg::domain_tmpcontact,  position+1 ,REASON_MSG_ADMIN_NOTEXIST  ,  lang );
+}
  
 
 // load country code table  enum_country from databaze
@@ -4270,10 +4280,10 @@ if( DBsql.OpenDatabase( database ) )
                                {
                                   LOG( NOTICE_LOG , "temp REM contact %s" , (const char *) tmpcontact_rem[i] );
                                     if( ( adminid = DBsql.GetContactID( tmpcontact_rem[i] ) ) <= 0 )
-                                          ret->code = SetReasonDomainAdminREM( errors , tmpcontact_rem[i] , adminid ,  GetRegistrarLang( clientID )  , i );
+                                          ret->code = SetReasonDomainTempCREM( errors , tmpcontact_rem[i] , adminid ,  GetRegistrarLang( clientID )  , i );
                                     else {
                                             if(  !DBsql.CheckContactMap( "domain", id, adminid, 2 ) )
-                                                ret->code =  SetReasonDomainAdminNotExistMap(  errors , tmpcontact_rem[i]  , GetRegistrarLang( clientID ) , i );
+                                                ret->code =  SetReasonDomainTempCNotExistMap(  errors , tmpcontact_rem[i]  , GetRegistrarLang( clientID ) , i );
                                             else
                                               {
 

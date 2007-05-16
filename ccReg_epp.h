@@ -134,12 +134,14 @@ public:
   short SetReasonDomainAdmin( ccReg::Errors_var& err , const char * handle  , int  adminID ,  int lang   , short position );
   short SetReasonDomainAdminADD(  ccReg::Errors_var& err  , const char * handle  , int  adminID ,  int lang   , short position );
   short SetReasonDomainAdminREM(  ccReg::Errors_var& err  , const char * handle  , int  adminID ,  int lang   , short position  );
+  short SetReasonDomainTempCREM(  ccReg::Errors_var& err  , const char * handle  , int  adminID ,  int lang   , short position  );
 
   short SetReasonNSSetTechExistMap( ccReg::Errors_var& err , const char * handle  ,  int lang   , short position );
   short SetReasonNSSetTechNotExistMap( ccReg::Errors_var& err , const char * handle  ,  int lang  , short position  );
 
   short SetReasonDomainAdminExistMap( ccReg::Errors_var& err , const char * handle  ,  int lang  , short position  );
   short SetReasonDomainAdminNotExistMap( ccReg::Errors_var& err , const char * handle  ,  int lang   , short position );
+  short SetReasonDomainTempCNotExistMap( ccReg::Errors_var& err , const char * handle  ,  int lang   , short position );
 
 
   short SetReasonDomainNSSet(  ccReg::Errors_var& err , const char * nsset_handle , int  nssetid , int  lang);
