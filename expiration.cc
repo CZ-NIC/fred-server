@@ -181,32 +181,32 @@ switch( type )
 {
 case TYPE_EXDATE_BEFORE:
       strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:exPrepData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s</domain:exDate></domain:exPrepData>" ,
+      sprintf(xmlString , "<domain:impendingExpData %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:impendingExpData>" ,
       schema_domain,   nameStr , exDateStr  );
       break;
 case TYPE_EXDATE_AFTER:
       strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:exData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s</domain:exDate></domain:exData>" ,
+      sprintf(xmlString , "<domain:expData %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:expData>" ,
       schema_domain,   nameStr , exDateStr  );
       break;
 case TYPE_EXDATE_DNS:
       strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:exDNSData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s</domain:exDate></domain:exDNSData>" ,
+      sprintf(xmlString , "<domain:dnsOutageData  %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:dnsOutageData>" ,
       schema_domain,   nameStr , exDateStr  );
       break;
 case TYPE_EXDATE_DEL:
       strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:exDelData  %s ><domain:fqdn>%s</domain:fqdn><domain:exDate>%s</domain:exDate></domain:exDelData>" ,
+      sprintf(xmlString , "<domain:delData  %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:delData>" ,
       schema_domain,   nameStr , exDateStr  );
       break;
 case  TYPE_VALEXDATE_BEFORE:
       strcpy( exDateStr , db->GetValueFromTable( "enumval"  , "ExDate" , "domainID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:valExPrepData  %s ><domain:fqdn>%s</domain:fqdn><domain:valExDate>%s</domain:valExDate></domain:valExPrepData>" ,
+      sprintf(xmlString , "<domain:impendingValExpData %s ><domain:name>%s</domain:name><domain:valExDate>%s</domain:valExDate></domain:impendingValExpData>" ,
          schema_domain,   nameStr , exDateStr  );
       break;
 case  TYPE_VALEXDATE_AFTER:
       strcpy( exDateStr , db->GetValueFromTable( "enumval"  , "ExDate" , "domainID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:valExData  %s ><domain:fqdn>%s</domain:fqdn><domain:valExDate>%s</domain:valExDate></domain:valExData>" ,
+      sprintf(xmlString , "<domain:valExpData %s ><domain:name>%s</domain:name><domain:valExDate>%s</domain:valExDate></domain:valExpData>" ,
          schema_domain,   nameStr , exDateStr  );
       break;
 
