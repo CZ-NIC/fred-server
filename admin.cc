@@ -764,7 +764,8 @@ ccReg_Admin_i::getAuthInfoRequestById(ccReg::TID id)
   MailerManager mm(ns);
   std::auto_ptr<Register::Document::Manager> docman(
     Register::Document::Manager::create(
-      cfg.GetDocGenPath(),cfg.GetFileClientPath(),ns->getHostName()
+      cfg.GetDocGenPath(), cfg.GetDocGenTemplatePath(),
+      cfg.GetFileClientPath(),ns->getHostName()
     ) 
   );
   std::auto_ptr<Register::AuthInfoRequest::Manager> r(
@@ -871,7 +872,8 @@ ccReg_Admin_i::getInvoiceById(ccReg::TID id)
   MailerManager mm(ns);
   std::auto_ptr<Register::Document::Manager> docman(
     Register::Document::Manager::create(
-      cfg.GetDocGenPath(),cfg.GetFileClientPath(),ns->getHostName()
+      cfg.GetDocGenPath(), cfg.GetDocGenTemplatePath(),
+      cfg.GetFileClientPath(), ns->getHostName()
     ) 
   );
   std::auto_ptr<Register::Invoicing::Manager> invman(
@@ -985,7 +987,8 @@ ccReg_Admin_i::createAuthInfoRequest(
   MailerManager mm(ns);
   std::auto_ptr<Register::Document::Manager> docman(
     Register::Document::Manager::create(
-      cfg.GetDocGenPath(),cfg.GetFileClientPath(),ns->getHostName()
+      cfg.GetDocGenPath(), cfg.GetDocGenTemplatePath(),
+      cfg.GetFileClientPath(), ns->getHostName()
     ) 
   );
   std::auto_ptr<Register::AuthInfoRequest::Manager> r(
@@ -1040,7 +1043,8 @@ ccReg_Admin_i::processAuthInfoRequest(ccReg::TID id, CORBA::Boolean invalid)
   MailerManager mm(ns);
   std::auto_ptr<Register::Document::Manager> docman(
     Register::Document::Manager::create(
-      cfg.GetDocGenPath(),cfg.GetFileClientPath(),ns->getHostName()
+      cfg.GetDocGenPath(), cfg.GetDocGenTemplatePath(),
+      cfg.GetFileClientPath(), ns->getHostName()
     ) 
   );
   std::auto_ptr<Register::AuthInfoRequest::Manager> r(
@@ -1070,7 +1074,8 @@ ccReg_Admin_i::getAuthInfoRequestPDF(
   MailerManager mm(ns);
   std::auto_ptr<Register::Document::Manager> docman(
     Register::Document::Manager::create(
-      cfg.GetDocGenPath(),cfg.GetFileClientPath(),ns->getHostName()
+      cfg.GetDocGenPath(), cfg.GetDocGenTemplatePath(),
+      cfg.GetFileClientPath(), ns->getHostName()
     ) 
   );
   std::auto_ptr<Register::AuthInfoRequest::Manager> r(
@@ -1107,7 +1112,8 @@ ccReg_Session_i::ccReg_Session_i(
   db.OpenDatabase(database.c_str());
   m.reset(Register::Manager::create(&db));
   docman.reset(Register::Document::Manager::create(
-    cfg.GetDocGenPath(),cfg.GetFileClientPath(),ns->getHostName()
+    cfg.GetDocGenPath(), cfg.GetDocGenTemplatePath(),
+    cfg.GetFileClientPath(), ns->getHostName()
   )); 
   am.reset(Register::AuthInfoRequest::Manager::create(&db,&mm,docman.get()));
   invm.reset(Register::Invoicing::Manager::create(&db,docman.get(),&mm));

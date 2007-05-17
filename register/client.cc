@@ -67,6 +67,9 @@ int main(int argc, char **argv)
       ("docgen_path",po::value<std::string>()->default_value(
         ""),
        "path to fred2pdf document generator")
+      ("docgen_template_path",po::value<std::string>()->default_value(
+        ""),
+       "path to fred2pdf document generator templates")
       ("fileclient_path",po::value<std::string>()->default_value(
         ""),
        "path to file manager corba client")
@@ -169,6 +172,7 @@ int main(int argc, char **argv)
     std::auto_ptr<Register::Document::Manager> docman(
       Register::Document::Manager::create(
         vm["docgen_path"].as<std::string>(),
+        vm["docgen_template_path"].as<std::string>(),
         vm["fileclient_path"].as<std::string>(),
         vm["nameservice"].as<std::string>()
       )

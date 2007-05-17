@@ -60,7 +60,8 @@ namespace Register
         const std::string& lang
       ) const throw (Generator::ERROR) = 0;
       static Manager *create(
-        const std::string& path, const std::string& pathFM,
+        const std::string& path, const std::string& pathTemplates,
+        const std::string& pathFM,
         const std::string& corbaNS
       );
     };

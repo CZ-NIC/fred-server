@@ -26,7 +26,8 @@
 #define KEY_docgen_path  13
 #define KEY_fileclient_path  14
 #define KEY_ebanka_url  15
-#define MAX_KEYS  15
+#define KEY_docgen_template_path  16
+#define MAX_KEYS  16
 
 #include <string>
 
@@ -66,7 +67,9 @@ const char *GetDBtimeout(){ if(timeout[0] == 0 ) return NULL ; else  return time
 const char *GetDBconninfo();
 const char *GetNameServiceHost() { return nameService.c_str(); }
 const char *GetDocGenPath() { return docGenPath.c_str(); }
+const char *GetDocGenTemplatePath() { return docGenTemplatePath.c_str(); }
 const char *GetFileClientPath() { return fileClientPath.c_str(); }
+const char *GetEBankaURL() { return eBankaURL.c_str(); }
 
 
 int GetSYSLOGlevel(){ return log_level; };
@@ -116,7 +119,9 @@ int session_max;
 int session_wait;
 std::string nameService;
 std::string docGenPath;
+std::string docGenTemplatePath;
 std::string fileClientPath;
+std::string eBankaURL;
 };
 
 #endif

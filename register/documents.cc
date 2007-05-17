@@ -67,6 +67,7 @@ namespace Register
     class GeneratorImpl : public Generator
     {
       const std::string& path; ///< path to pdf generator
+      const std::string& pathTemplates; ///< path to pdf generator templates
       const std::string& pathFM; ///< path to filemanager client
       const std::string& corbaNS; ///< host with corba nameservice
       const GenProcType& genProc; ///< processing description
@@ -79,13 +80,14 @@ namespace Register
      public:
       /// initialize generator with streams, path, template and filename
       GeneratorImpl(
-        const std::string& _path, 
+        const std::string& _path, const std::string& _pathTemplates,
         const std::string& _pathFM, const std::string& _corbaNS, 
         const GenProcType& _genProc,
         std::ostream* _out, const std::string& _filename, unsigned _filetype,
         const std::string& _lang
       ) throw (TmpFile::NAME_ERROR,TmpFile::OPEN_ERROR)
-        : path(_path), pathFM(_pathFM), corbaNS(_corbaNS),
+        : path(_path), pathTemplates(_pathTemplates), 
+          pathFM(_pathFM), corbaNS(_corbaNS),
           genProc(_genProc), out(NULL),
           filename(_filename), filetype(_filetype), lang(_lang)
       {
@@ -102,16 +104,17 @@ namespace Register
         if (genProc.xslTemplateName.empty()) cmd << "cat ";
         else {
           cmd << "xsltproc "
-              << "--stringparam srcpath " << path << "templates/" << " ";
+              << "--stringparam srcpath " << pathTemplates << "templates/" 
+              << " ";
           if (!lang.empty())
             cmd << "--stringparam lang " << lang << " ";
-          cmd << path << "templates/" << genProc.xslTemplateName << " ";
+          cmd << pathTemplates << "templates/" << genProc.xslTemplateName << " ";
         }
         cmd << bufferFile.getName();
         // if input is rml and processing is needed filter through
         // external application
         if (genProc.rmlProcessor)
-          cmd << " | " << path << "doc2pdf.py ";
+          cmd << " | " << path << " ";
         // in case of generation into corba filesystem send result to
         // corba filesystem client
         if (!filename.empty()) {
@@ -146,15 +149,18 @@ namespace Register
     class ManagerImpl : public Manager
     {
       std::string path; /// path to rml processor
+      std::string pathTemplates; /// path to rml processor templates
       std::string pathFM; ///< path to filemanager client
       std::string corbaNS; ///< ns with corba filemanager
       typedef std::map<GenerationType, GenProcType> GenerationMapType;
       GenerationMapType templateMap; ///< list of prepared templates
      public:
       ManagerImpl(
-        const std::string& _path, const std::string& _pathFM,
+        const std::string& _path, const std::string& _pathTemplates,
+        const std::string& _pathFM,
         const std::string& _corbaNS 
-      ) : path(_path), pathFM(_pathFM), corbaNS(_corbaNS)
+      ) : path(_path), pathTemplates(_pathTemplates), 
+          pathFM(_pathFM), corbaNS(_corbaNS)
       {
         templateMap[GT_INVOICE_PDF] = GenProcType(
           "invoice.xsl", true, "application/pdf"
@@ -180,7 +186,7 @@ namespace Register
         GenerationMapType::const_iterator i = templateMap.find(type);
         if (i == templateMap.end()) throw Generator::ERROR();
         return new GeneratorImpl(
-          path,pathFM,corbaNS,i->second,&output,"",0,lang
+          path,pathTemplates,pathFM,corbaNS,i->second,&output,"",0,lang
         );
       }
       virtual Generator *createSavingGenerator(
@@ -192,7 +198,8 @@ namespace Register
         GenerationMapType::const_iterator i = templateMap.find(type);
         if (i == templateMap.end()) throw Generator::ERROR();
         return new GeneratorImpl(
-          path,pathFM,corbaNS,i->second,NULL,filename,filetype,lang
+          path,pathTemplates,pathFM,corbaNS,i->second,NULL,
+          filename,filetype,lang
         );
       }
       virtual void generateDocument(
@@ -217,11 +224,12 @@ namespace Register
       }
     };
     Manager *Manager::create(
-      const std::string& path, const std::string& pathFM, 
+      const std::string& path, const std::string& pathTemplates,
+      const std::string& pathFM, 
       const std::string& corbaNS
     )
     {
-      return new ManagerImpl(path,pathFM,corbaNS);
+      return new ManagerImpl(path,pathTemplates,pathFM,corbaNS);
     }
   }
 } // Register

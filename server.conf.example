@@ -29,7 +29,9 @@ session_max=100
 session_wait=300
 
 # PDF generator path (see fred2pdf package)
-docgen_path=/usr/lib/python2.4/site-packages/fred2pdf/
+docgen_path=/usr/bin/doc2pdf.py
+docgen_template_path=/usr/lib/python2.4/site-packages/fred2pdf/
+
 # File manager client path (see pyfred package and filemanager_client.py)
 fileclient_path=/usr/bin/filemanager_client
 
