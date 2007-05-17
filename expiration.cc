@@ -50,22 +50,22 @@ ID id;
 switch( type )
 {
 case  TYPE_EXDATE_DEL: //  expiration domain after 45 days END of the protected period domain will be deleted after notification
-      strcpy( sqlString , "SELECT id from  domain where current_date  > ExDate +  interval '45 days' ; " );
+      strcpy( sqlString , "SELECT id from  domain where current_date  >= ExDate +  interval '45 days' ; " );
       break;
 case  TYPE_EXDATE_DNS: // expiration domain after 30 days domains not generated to zone
-      strcpy( sqlString , "SELECT id from  domain where current_date  > ExDate +  interval '30 days' ; " );
+      strcpy( sqlString , "SELECT id from  domain where current_date  >= ExDate +  interval '30 days' ; " );
       break;      
 case  TYPE_EXDATE_AFTER: // expirations domain 
-      strcpy( sqlString , "SELECT id from  domain where current_date  > ExDate ;" );
+      strcpy( sqlString , "SELECT id from  domain where current_date  >= ExDate ;" );
       break;
 case  TYPE_EXDATE_BEFORE: // domain that have 30 days before expiration
-      strcpy( sqlString , "SELECT id from  domain where current_date  > ExDate - interval '30 days' ;" );
+      strcpy( sqlString , "SELECT id from  domain where current_date  >= ExDate - interval '30 days' ;" );
       break;
 case  TYPE_VALEXDATE_AFTER: // enum domain after validity
-      strcpy( sqlString , "SELECT domainid from enumval where current_date > exdate;" );
+      strcpy( sqlString , "SELECT domainid from enumval where current_date >= exdate;" );
       break;
 case  TYPE_VALEXDATE_BEFORE: // enum domains that have 30 days before end of validate day 
-      strcpy( sqlString , "SELECT domainid from enumval where current_date > exdate - interval '30 days' ;" );
+      strcpy( sqlString , "SELECT domainid from enumval where current_date >= exdate - interval '30 days' ;" );
       break;
 default:
     sqlString[0] = 0;
@@ -292,7 +292,7 @@ if( db->ExecSelect( sqlString ) )
             std::string newEmail = db->GetFieldValue( i , 0 ) ;
             if (!newEmail.empty() && tech_emails.str().find(newEmail) == std::string::npos)
               {
-                if(  !tech_emails.str().empty()  )  emails << " , " ; // insert comma 
+                if(  !tech_emails.str().empty()  )  tech_emails << " , " ; // insert comma 
                 tech_emails <<  newEmail;
               }
           }
@@ -378,32 +378,48 @@ LOG( DEBUG_LOG , "Expiration mail TO:  %s type %d" ,  emails.str().c_str()   , t
 switch( type )
 {
 case  TYPE_EXDATE_DNS:
-      mail_type = db->GetNumericFromTable( "mail_type" , "id" , "name" , "expiration_dns_owner"  );
-      mailID =   mm->sendEmail( "" , emails.str() , "",  "expiration_dns_owner",  params , handles , attach ); 
-      tech_mail_type =  db->GetNumericFromTable( "mail_type" , "id" , "name" ,  "expiration_dns_tech" ); 
-      tech_mailID = mm->sendEmail( "" , tech_emails.str() , "",  "expiration_dns_tech" ,  params , handles , attach ); 
+      if (!emails.str().empty()) {
+        mail_type = db->GetNumericFromTable( "mail_type" , "id" , "name" , "expiration_dns_owner"  );
+        mailID =   mm->sendEmail( "" , emails.str() , "",  "expiration_dns_owner",  params , handles , attach );
+      }
+      if (!tech_emails.str().empty()) {
+        tech_mail_type =  db->GetNumericFromTable( "mail_type" , "id" , "name" ,  "expiration_dns_tech" ); 
+        tech_mailID = mm->sendEmail( "" , tech_emails.str() , "",  "expiration_dns_tech" ,  params , handles , attach );
+      } 
       break; 
 case  TYPE_EXDATE_DEL:
-      mail_type = db->GetNumericFromTable( "mail_type" , "id" , "name" , "expiration_register_owner" );
-      mailID =   mm->sendEmail( "" , emails.str() , "",  "expiration_register_owner",   params , handles , attach ); 
-      tech_mail_type =  db->GetNumericFromTable( "mail_type" , "id" , "name" ,   "expiration_register_tech" );
-      tech_mailID = mm->sendEmail( "" , tech_emails.str() , "",  "expiration_register_tech" ,  params , handles , attach ); 
+      if (!emails.str().empty()) {
+        mail_type = db->GetNumericFromTable( "mail_type" , "id" , "name" , "expiration_register_owner" );
+        mailID =   mm->sendEmail( "" , emails.str() , "",  "expiration_register_owner",   params , handles , attach );
+      } 
+      if (!tech_emails.str().empty()) {
+        tech_mail_type =  db->GetNumericFromTable( "mail_type" , "id" , "name" ,   "expiration_register_tech" );
+        tech_mailID = mm->sendEmail( "" , tech_emails.str() , "",  "expiration_register_tech" ,  params , handles , attach );
+      } 
       break; 
 
 case  TYPE_EXDATE_AFTER:
-      mail_type = db->GetNumericFromTable( "mail_type" , "id" , "name" , "expiration_notify" ); 
-      mailID =   mm->sendEmail( "" , emails.str() , "", "expiration_notify",   params , handles , attach ); 
+      if (!emails.str().empty()) {
+        mail_type = db->GetNumericFromTable( "mail_type" , "id" , "name" , "expiration_notify" ); 
+        mailID =   mm->sendEmail( "" , emails.str() , "", "expiration_notify",   params , handles , attach );
+      } 
       break;
 case  TYPE_VALEXDATE_BEFORE:
       mail_type = db->GetNumericFromTable( "mail_type" , "id" , "name" ,  "expiration_validation_before" );
-      mailID =   mm->sendEmail( "" , emails.str() ,  "", "expiration_validation_before",   params , handles , attach ); 
+      if (!emails.str().empty()) {
+        mailID =   mm->sendEmail( "" , emails.str() ,  "", "expiration_validation_before",   params , handles , attach );
+      } 
       break;
 case  TYPE_VALEXDATE_AFTER:
-      params["exdate"] = db->GetDomainValExDate(  objectID );
-      mail_type = db->GetNumericFromTable( "mail_type" , "id" , "name" ,   "expiration_validation" );
-      mailID =   mm->sendEmail( "" , emails.str() ,  "", "expiration_validation",   params , handles , attach ); 
-      tech_mail_type =  db->GetNumericFromTable( "mail_type" , "id" , "name" ,  "expiration_dns_tech" ); 
-      tech_mailID = mm->sendEmail( "" , tech_emails.str() , "",  "expiration_dns_tech" ,  params , handles , attach ); 
+      if (!emails.str().empty()) {
+        params["exdate"] = db->GetDomainValExDate(  objectID );
+        mail_type = db->GetNumericFromTable( "mail_type" , "id" , "name" ,   "expiration_validation" );
+        mailID =   mm->sendEmail( "" , emails.str() ,  "", "expiration_validation",   params , handles , attach );
+      } 
+      if (!tech_emails.str().empty()) {
+        tech_mail_type =  db->GetNumericFromTable( "mail_type" , "id" , "name" ,  "expiration_dns_tech" ); 
+        tech_mailID = mm->sendEmail( "" , tech_emails.str() , "",  "expiration_dns_tech" ,  params , handles , attach );
+      } 
       break;
      
 }
