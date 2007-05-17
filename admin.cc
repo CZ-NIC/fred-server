@@ -74,6 +74,26 @@ setPeriod(const ccReg::DateTimeInterval& _v)
   );
 }
 
+time_period 
+setPeriod(const ccReg::DateInterval& _v)
+{
+  date from;
+  date to;
+  try {
+    from = date(_v.from.year,_v.from.month,_v.from.day);
+  }
+  catch (...) {}
+  try {
+    to = date(_v.to.year,_v.to.month,_v.to.day);
+  }
+  catch (...) {}
+  return time_period(
+    ptime(from,time_duration(0,0,0)),
+    ptime(to,time_duration(0,0,0))
+  );
+}
+
+
 void
 clearPeriod(ccReg::DateTimeInterval& _v)
 {
@@ -2585,10 +2605,11 @@ ccReg::Table::ColumnHeaders*
 ccReg_Mails_i::getColumnHeaders()
 {
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
-  ch->length(3);
+  ch->length(4);
   COLHEAD(ch,0,"Id",CT_OTHER);
   COLHEAD(ch,1,"CrDate",CT_OTHER);
   COLHEAD(ch,2,"Type",CT_OTHER);
+  COLHEAD(ch,3,"Status",CT_OTHER);
   return ch;
 }
 
@@ -2600,12 +2621,15 @@ ccReg_Mails_i::getRow(CORBA::Short row)
     throw ccReg::Table::INVALID_ROW();
   MailerManager::Detail& md = mm.getMailList()[row];
   ccReg::TableRow *tr = new ccReg::TableRow;
-  tr->length(3);
-  std::stringstream id;
-  id << md.id;
-  (*tr)[0] = DUPSTRC(id.str());
+  tr->length(4);
+  std::stringstream buf;
+  buf << md.id;
+  (*tr)[0] = DUPSTRC(buf.str());
   (*tr)[1] = DUPSTRC(md.createTime);
-  (*tr)[2] = DUPSTRC(std::string(""));
+  (*tr)[2] = DUPSTRC(md.typeDesc);
+  buf.str("");
+  buf << md.status;
+  (*tr)[3] = DUPSTRC(buf.str());
   return tr;
 }
 
@@ -2639,7 +2663,7 @@ ccReg_Mails_i::numRows()
 CORBA::Short 
 ccReg_Mails_i::numColumns()
 {
-  return 3;
+  return 4;
 }
 
 void 
@@ -2648,9 +2672,9 @@ ccReg_Mails_i::reload()
   MailerManager::Filter mf;
   mf.id = idFilter;
   mf.status = statusFilter;
+  mf.content = fulltextFilter;
   mf.handle = handleFilter;
   mf.attachment = attachmentFilter;
-  mf.content = handleFilter;
   mf.type = typeFilter;
   mf.crTime = setPeriod(createTimeFilter);
   try {
@@ -2720,10 +2744,13 @@ ccReg::Table::ColumnHeaders*
 ccReg_Invoices_i::getColumnHeaders()
 {
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
-  ch->length(3);
+  ch->length(6);
   COLHEAD(ch,0,"id",CT_OTHER);
   COLHEAD(ch,1,"CrDate",CT_OTHER);
   COLHEAD(ch,2,"Number",CT_OTHER);
+  COLHEAD(ch,3,"Registrar",CT_REGISTRAR_HANDLE);
+  COLHEAD(ch,4,"Total",CT_OTHER);
+  COLHEAD(ch,5,"Credit",CT_OTHER);
   return ch;
 }
 
@@ -2734,7 +2761,7 @@ ccReg_Invoices_i::getRow(CORBA::Short row)
   const Register::Invoicing::Invoice *inv = invl->get(row);
   if (!inv) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
-  tr->length(3);
+  tr->length(6);
   std::stringstream buf;
   buf << inv->getId();
   (*tr)[0] = DUPSTRFUN(buf.str);
@@ -2742,6 +2769,9 @@ ccReg_Invoices_i::getRow(CORBA::Short row)
   buf.str("");
   buf << inv->getNumber();
   (*tr)[2] = DUPSTRFUN(buf.str);
+  (*tr)[3] = DUPSTRFUN(inv->getClient()->getHandle);
+  (*tr)[4] = DUPSTRC(formatMoney(inv->getPrice()));
+  (*tr)[5] = DUPSTRC(formatMoney(inv->getCredit()));
   return tr;
 }
 
@@ -2774,7 +2804,7 @@ ccReg_Invoices_i::numRows()
 CORBA::Short 
 ccReg_Invoices_i::numColumns()
 {
-  return 3;
+  return 6;
 }
 
 void 
@@ -2791,7 +2821,8 @@ FILTER_IMPL_S(ccReg_Invoices_i::number,numberFilter,
 FILTER_IMPL(ccReg_Invoices_i::crDate,
             ccReg::DateInterval,
             const ccReg::DateInterval&,
-            crDateFilter,crDateFilter,);
+            crDateFilter,crDateFilter,
+            invl->setCrDateFilter(setPeriod(_v)));
 
 FILTER_IMPL_L(ccReg_Invoices_i::registrarId,
               registrarIdFilter,invl->setRegistrarFilter(_v));
@@ -2819,7 +2850,8 @@ FILTER_IMPL_S(ccReg_Invoices_i::varSymbol,varSymbolFilter,
 FILTER_IMPL(ccReg_Invoices_i::taxDate,
             ccReg::DateInterval,
             const ccReg::DateInterval&,
-            taxDateFilter,taxDateFilter,);
+            taxDateFilter,taxDateFilter,
+            invl->setTaxDateFilter(setPeriod(_v)));
       
 FILTER_IMPL_S(ccReg_Invoices_i::objectName,objectNameFilter,
               invl->setObjectNameFilter(_v));

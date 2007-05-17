@@ -48,12 +48,13 @@ class MailerManager : public Register::Mailer::Manager
     std::string createTime;
     std::string modTime;
     long type;
+    std::string typeDesc;
     long status;
     std::string content;
     std::vector<std::string> handles;
     std::vector<Register::TID> attachments;   
   };
-  typedef std::vector<Detail> List;
+  typedef std::vector<Detail> List;  
  private:
   List mailList;
  public:

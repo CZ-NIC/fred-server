@@ -112,6 +112,7 @@ MailerManager::reload(MailerManager::Filter& f) throw (LOAD_ERROR)
   SET_TIME(f.crTime.begin(),mf.crdate.from);
   SET_TIME(f.crTime.end(),mf.crdate.to);
   try {
+    ccReg::MailTypeCodes_var mtc = mailer->getMailTypes();
     mailList.clear();
     ccReg::MailSearch_var ms = mailer->createSearchObject(mf);
     ccReg::MailList_var mls;
@@ -126,12 +127,12 @@ MailerManager::reload(MailerManager::Filter& f) throw (LOAD_ERROR)
         d.modTime = m.moddate;
         d.status = m.status;
         d.type = m.mailtype;
+        for (unsigned j=0; j<mtc->length(); j++)
+          if (mtc[j].id == d.type) d.typeDesc = mtc[j].name;
         for (unsigned j=0; j<m.handles.length(); j++)
           d.handles.push_back((const char *)m.handles[j]);
         for (unsigned j=0; j<m.attachments.length(); j++)
           d.attachments.push_back(m.attachments[j]);
-        // TODO remove: just for testing
-        if (!d.attachments.size()) d.attachments.push_back(1);
         mailList.push_back(d);
       }
     } while (mls->length());

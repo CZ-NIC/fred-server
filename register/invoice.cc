@@ -689,7 +689,7 @@ namespace Register
           from << ", registrar r ";
           where << "AND i.registrarid=r.id ";
           if (!varSymbolFilter.empty())
-            SQL_WILDCARD_FILTER_FILL(where,"r.varsymb",varSymbolFilter);
+            SQL_WILDCARD_FILTER_FILL(where,"TRIM(r.varsymb)",varSymbolFilter);
           if (!registrarHandleFilter.empty())
             SQL_WILDCARD_FILTER_FILL(where,"r.handle",registrarHandleFilter);
         }
