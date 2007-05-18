@@ -571,7 +571,7 @@ for( i = 1 ;   i < argc ; i ++ )
        {
            if(  i +4< argc )  factoring(   config.GetDBconninfo() ,  argv[i+1] , argv[i+2] , argv[i+3]    ,  argv[i+4] );
            break;
-
+       }
 
    if( strcmp(  argv[i]  , "--ebanka-csv" ) == 0 )
     {
@@ -579,7 +579,7 @@ for( i = 1 ;   i < argc ; i ++ )
      break;
     }
 
-}
+
 
 
   if( strcmp(  argv[i]  , "--bank-gpc" ) == 0  &&  i +1< argc  )
