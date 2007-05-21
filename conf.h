@@ -27,7 +27,8 @@
 #define KEY_fileclient_path  14
 #define KEY_ebanka_url  15
 #define KEY_docgen_template_path  16
-#define MAX_KEYS  16
+#define KEY_nsset_level  17
+#define MAX_KEYS  17
 
 #include <string>
 
@@ -70,6 +71,7 @@ const char *GetDocGenPath() { return docGenPath.c_str(); }
 const char *GetDocGenTemplatePath() { return docGenTemplatePath.c_str(); }
 const char *GetFileClientPath() { return fileClientPath.c_str(); }
 const char *GetEBankaURL() { return eBankaURL.c_str(); }
+const char *GetNSSetLevel() { return nssetLevel.c_str(); }
 
 
 int GetSYSLOGlevel(){ return log_level; };
@@ -122,6 +124,7 @@ std::string docGenPath;
 std::string docGenTemplatePath;
 std::string fileClientPath;
 std::string eBankaURL;
+std::string nssetLevel;
 };
 
 #endif

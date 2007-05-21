@@ -86,7 +86,9 @@ int main(int argc, char **argv)
       ("session_wait", po::value<unsigned>(),
        "maximal length of EPP session")
       ("ebanka_url", po::value<std::string>(),
-       "web url for download of incoming payments");
+       "web url for download of incoming payments"),
+      ("nsset_level", po::value<unsigned>(),
+       "default report level of new nsset");
 
     po::options_description invoiceDesc("Invoicing options");
     invoiceDesc.add_options()

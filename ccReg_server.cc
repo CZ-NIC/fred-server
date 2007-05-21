@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
 
 #ifdef RIFD
 	    MailerManager mm(&ns);
-	    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(&mm,&ns);
+	    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(&mm,&ns,config);
 
 
 	    // create session  use values from config

@@ -14,6 +14,7 @@ int language;
 long long timestamp;
 };
 
+class Conf; 
 //
 //  class implementing IDL interface ccReg::EPP
 //
@@ -25,9 +26,10 @@ private:
   //virtual ~ccReg_EPP_i();
   MailerManager *mm;
   NameService *ns;
+  Conf& conf;
 public:
   // standard constructor
-  ccReg_EPP_i(MailerManager *_mm, NameService *_ns);
+  ccReg_EPP_i(MailerManager *_mm, NameService *_ns, Conf& _conf);
   virtual ~ccReg_EPP_i();
 
 

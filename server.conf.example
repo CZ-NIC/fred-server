@@ -54,4 +54,7 @@ log_level = DEBUG
 # Syslog local facility where to log (0-7) 
 log_local=1
 
+# Default report level of new NSSet
+nsset_level=3
+
 

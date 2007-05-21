@@ -172,7 +172,7 @@ char keys[MAX_KEYS][KEY_MAX] = {
   "dbname" , "user" , "password" , "host" , "port" , "connect_timeout" , 
   "log_mask" ,  "log_level" , "log_local", "nameservice"  , "session_max" , 
   "session_wait", "docgen_path", "fileclient_path", "ebanka_url",
-  "docgen_template_path"
+  "docgen_template_path", "nsset_level"
 };
 int key;
 char keyname[KEY_MAX];
@@ -267,6 +267,9 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
                            break;              
                 case KEY_docgen_template_path:
                             docGenTemplatePath = value;
+                           break;              
+                case KEY_nsset_level:
+                            nssetLevel = value;
                            break;              
                 default:
 		    daemon_log(LOG_ERR, "parse error on line %d  [%s]\n" , line , buf );

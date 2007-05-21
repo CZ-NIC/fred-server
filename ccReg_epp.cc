@@ -24,6 +24,9 @@
 // logger 
 #include "log.h"
 
+//config
+#include "conf.h"
+
 // MailerManager is connected in constructor
 #include "register/auth_info.h"
 #include "register/domain.h"
@@ -37,8 +40,8 @@
 //
 // Example implementational code for IDL interface ccReg::EPP
 //
-ccReg_EPP_i::ccReg_EPP_i(MailerManager *_mm, NameService *_ns ) :
-  mm(_mm), ns(_ns), zone(NULL) 
+ccReg_EPP_i::ccReg_EPP_i(MailerManager *_mm, NameService *_ns, Conf& _conf ) :
+  mm(_mm), ns(_ns), zone(NULL), conf(_conf) 
 {
 }
 ccReg_EPP_i::~ccReg_EPP_i()
@@ -3277,6 +3280,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 
               id= DBsql.CreateObject( "N" ,  regID , handle ,  authInfoPw );
 
+              if (level<0) level = atoi(conf.GetNSSetLevel());
               // write to nsset table
               DBsql.INSERT( "NSSET" );
               DBsql.INTO( "id" );
