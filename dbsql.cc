@@ -1522,12 +1522,12 @@ LOG( NOTICE_LOG , "Fakturace od %s do %s timestamp [%s] " , fromdateStr , todate
 
                        }
 
+                    // set last date do tabulky registrarinvoice
+                    sprintf( sqlString , "UPDATE registrarinvoice SET lastdate=\'%s\' WHERE zone=%d and registrarid=%d;" , todateStr , zone , regID );
+                    if( ExecSQL( sqlString )   == false ) return -4; //chyba
                     // pokud byla vytvorena faktura 
                      if( invoiceID > 0 )  
                        {
-                        // set last date do tabulky registrarinvoice
-                         sprintf( sqlString , "UPDATE registrarinvoice SET lastdate=\'%s\' WHERE zone=%d and registrarid=%d;" , todateStr , zone , regID );
-                         if( ExecSQL( sqlString )   == false ) return -4; //chyba
 
 
 
