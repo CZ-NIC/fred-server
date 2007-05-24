@@ -5266,6 +5266,7 @@ int regID;
 ret = new ccReg::Response;
 
 // default
+errors = new ccReg::Errors;
 errors->length( 0 );
 ret->code =0 ; // default
 
