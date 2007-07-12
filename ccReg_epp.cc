@@ -2089,6 +2089,9 @@ if(  (regID = GetRegistrarID( clientID ) ) )
          case 5:
                   c->identtype = ccReg::MPSV;
                   break;
+         case 6:
+                  c->identtype = ccReg::BIRTHDAY;
+                  break;
          default:
                  c->identtype = ccReg::EMPTY;
                   break;
