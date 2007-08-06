@@ -12,9 +12,9 @@
 #define MAX_SQLSTRING 512
 
 
-EPPNotifier::EPPNotifier( MailerManager *mailManager, DB *dbs , ID regid ,ID objectid)
+EPPNotifier::EPPNotifier(bool _disable, MailerManager *mailManager, DB *dbs , ID regid ,ID objectid)
 {
-
+disable = _disable;
 mm=mailManager;
 db=dbs;
 enum_action=db->GetEPPAction(); // id of the EPP operation
@@ -39,7 +39,7 @@ registrarID=0;
 
 bool EPPNotifier::Send()
 {
-if (!notify.size()) return true;
+if (!notify.size() || disable) return true;
 unsigned int i , num;
 short  type , mod;
 ID cID;

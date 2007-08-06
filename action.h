@@ -1,14 +1,14 @@
-// definice kodu EPP v ccReg
+// EPP code definition in ccReg
 
-// prihlasovani
+// login
 #define EPP_ClientLogin         100
 #define EPP_ClientLogout        101
 
-// poll funkce
+// poll function
 #define EPP_PollAcknowledgement  120 
 #define EPP_PollResponse         121
 
-// funkce pro praci s kontakty
+// function for work with contacts
 #define EPP_ContactCheck        200
 #define EPP_ContactInfo         201
 #define EPP_ContactDelete       202  
@@ -17,7 +17,7 @@
 #define EPP_ContactTransfer     205
 
 
-// funkce pro NSSET
+// NSSET function
 #define EPP_NSsetCheck           400
 #define EPP_NSsetInfo            401
 #define EPP_NSsetDelete          402
@@ -25,7 +25,7 @@
 #define EPP_NSsetCreate          404
 #define EPP_NSsetTransfer        405 
 
-// funkce pro domeny
+// domain function
 #define EPP_DomainCheck         500
 #define EPP_DomainInfo          501
 #define EPP_DomainDelete        502
@@ -36,10 +36,10 @@
 #define EPP_DomainTrade         507 
 
 
-// dalsi funkce
+// next function
 #define EPP_UnknowAction       1000
 
-// list funkce
+// list function
 #define EPP_ListContact        1002 
 #define EPP_ListNSset          1004 
 #define EPP_ListDomain         1005 
@@ -50,12 +50,22 @@
 #define EPP_NSsetTest         1012
 
 
-// send auth info fce
+// send auth info function
 #define EPP_ContactSendAuthInfo 1101
 #define EPP_NSSetSendAuthInfo   1102
 #define EPP_DomainSendAuthInfo  1103
 
-// definice operaci z enum_operation
+// info functions
+#define EPP_Info   1104
+#define EPP_GetInfoResults  1105
+
+// definition of operations from enum_operation
 #define OPERATION_DomainCreate 1
 #define OPERATION_DomainRenew  2
+
+
+// definition of operations from enum_operation
+#define OPERATION_DomainCreate 1
+#define OPERATION_DomainRenew  2
+
 

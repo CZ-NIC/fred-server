@@ -357,9 +357,6 @@ namespace Register
                   ((x) == 2 ? RS_ANSWERED : RS_INVALID))       
 #define SQL_OT(x) ((x) == 3 ? OT_DOMAIN : \
                   ((x) == 1 ? OT_CONTACT : OT_NSSET))       
-#define MAKE_TIME(ROW,COL)  \
- (ptime(db->IsNotNull(ROW,COL) ? \
- time_from_string(db->GetFieldValue(ROW,COL)) : not_a_date_time))
       virtual void reload() throw (SQL_ERROR)
       {
         clear();

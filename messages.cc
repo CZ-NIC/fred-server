@@ -22,13 +22,13 @@ if( add < numMsg )
 {
 // id of messaged
 errID[add] = id;
-// orginalni EN
+// original EN
 len = strlen( msg ) +1;
 LOG(DEBUG_LOG, "alloc errMsg[%d] size %d\n" , add , len );
 errMsg[add] =  new char[len];
 memset( errMsg[add] , 0 , len );
 strcpy( errMsg[add] , msg );
-// lokal translate to czech
+// local translate to czech
 len = strlen( msg_cs )+1;
 LOG(DEBUG_LOG ,"alloc errMsg_cs[%d] size %d\n" , add , len );
 errMsg_cs[add] =  new char[len];

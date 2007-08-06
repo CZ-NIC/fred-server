@@ -75,7 +75,7 @@ public:
   int GetNumSession(){ return numSession ; }; 
 
   // send    exception ServerIntError
-  void ServerInternalError(const char *fce);
+  void ServerInternalError(const char *fce, const char *svTRID="DUMMY-SVTRID");
   // EPP exception 
   void EppError( short errCode ,  const char *errMsg ,  const char *svTRID ,  ccReg::Errors_var& errors );
   void NoMessages( short errCode ,  const char *errMsg ,  const char *svTRID );
@@ -87,7 +87,7 @@ public:
   int DefaultExDateSeenMessage() { return 30;}
 
  // protected period
-  int DefaultContactHandlePeriod(){ return 2; } // ochrana lhuta ve dnech
+  int DefaultContactHandlePeriod(){ return 2; } // protected period in days
   int DefaultDomainNSSetPeriod(){ return 2; }
   int DefaultDomainFQDNPeriod(){ return 2; }
 
@@ -97,7 +97,7 @@ public:
   // true visible all false all hiddend for disclose flags
   bool DefaultPolicy(){return true;}
 
-   int DefaultValExpInterval(){ return 14; } //  protected period for expirace validity of enum domain 
+   int DefaultValExpInterval(){ return 14; } //  protected period for expiration validity of enum domain 
   // for disclose flags
   bool get_DISCLOSE( bool db );
   char update_DISCLOSE( bool  d   ,  ccReg::Disclose flag );
@@ -126,7 +126,7 @@ public:
   short SetReasonDomainFQDN(  ccReg::Errors_var& err , const char *fqdn ,  int zone , int lang  );
 
 
-  short SetReasonProtectedPeriod( ccReg::Errors_var& err , const char *value , int lang  );
+  short SetReasonProtectedPeriod( ccReg::Errors_var& err , const char *value , int lang, ccReg::ParamError paramCode=ccReg::contact_handle  );
 
   short SetReasonContactMap( ccReg::Errors_var& err ,  ccReg::ParamError paramCode , const char *handle , int id ,  int lang , short position  , bool tech_or_admin);
 
@@ -155,10 +155,10 @@ public:
   ccReg::Response* FullList(short act , const char *table , char *fname  ,  ccReg::Lists_out  list , CORBA::Long clientID, const char* clTRID, const char* XML);
 
 
-  // general chek function for all objects
+  // general check function for all objects
   ccReg::Response*  ObjectCheck( short act , char * table , char *fname , const ccReg::Check& chck , ccReg::CheckResp_out   a, CORBA::Long clientID, const char* clTRID , const char* XML );
 
-   // general send auth ifno for objects
+   // general send auth info for objects
   ccReg::Response*  ObjectSendAuthInfo( short act , char * table , char *fname , const char *name , CORBA::Long clientID, const char* clTRID , const char* XML );
 
    CORBA::Boolean SaveOutXML(const char* svTRID, const char* XML);
@@ -193,7 +193,7 @@ public:
   ccReg::Response* DomainRenew(const char* fqdn, const char* curExpDate,  const ccReg::Period_str& period, ccReg::timestamp_out exDate, CORBA::Long clientID, const char* clTRID, const char* XML, const ccReg::ExtensionList& ext);
   ccReg::Response* DomainTransfer(const char* fqdn,  const char* authInfo, CORBA::Long clientID, const char* clTRID  , const char* XML);
 
-  // tech chek nsset
+  // tech check nsset
   ccReg::Response* nssetTest(const char* handle, CORBA::Short level, const ccReg::Lists& fqdns, CORBA::Long clientID, const char* clTRID, const char* XML);
 
   //common function for transfer object 
@@ -206,12 +206,14 @@ public:
   ccReg::Response* nssetSendAuthInfo(const char* handle,  CORBA::Long clientID, const char* clTRID, const char*  XML);
  
 
-  // EPP vypis
+  // EPP print out
   ccReg::Response* ContactList(ccReg::Lists_out contacts, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* NSSetList(ccReg::Lists_out nssets, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* DomainList(ccReg::Lists_out domains, CORBA::Long clientID, const char* clTRID, const char* XML);
 
-
+  // Info messages
+  ccReg::Response* info(ccReg::InfoType type, const char* handle, CORBA::Long& count, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* getInfoResults(ccReg::Lists_out handles, CORBA::Long clientID, const char* clTRID, const char* XML);
  
 private:
 Session *session;
@@ -224,4 +226,5 @@ CountryCode *CC;
 char database[128]; // connection string to database
 ccReg::Zones *zone;
 int max_zone;
+bool testInfo; // TODO: remove 
 };

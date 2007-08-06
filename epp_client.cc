@@ -110,7 +110,7 @@ int main(int argc, char** argv)
     for(  i = 0 ; i < ret->errors.length() ; i ++ )
        cout << "errors code: " <<  ret->errors[i].code << " value: "  <<  ret->errors[i].value << " raeson: "  << ret->errors[i].reason  << endl;
  */
-    // vrati kompletni seznam registratoru
+    // returns complete list of registrars
 /*
     rl = Admin->getRegistrars();
 
@@ -118,7 +118,7 @@ int main(int argc, char** argv)
 
     cerr << "Registrar total:" << rl->length() << endl ;
 
-    // najde jednoho registratora
+    // find one registrar
     for( i = 0 ; i < rl->length() ; i ++ )
       {
  //          cout << "registrar:" << (*rl)[i].id  << (*rl)[i].handle   << (*rl)[i].name << (*rl)[i].organization << (*rl)[i].url << endl ;

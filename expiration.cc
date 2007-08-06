@@ -167,7 +167,8 @@ return db->GetValueFromTable( "object_registry"  , "name" , "id" ,  (int ) domai
 int Expiration::Message(ID objectID )
 {
 char xmlString[1024];
-char schema_domain[] =  " xmlns:domain=\"http://www.nic.cz/xml/epp/domain-1.1\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/domain-1.1 domain-1.1.xsd\" ";
+char schema_domain[] =  " xmlns:domain=\"http://www.nic.cz/xml/epp/domain-1.3\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/domain-1.3 domain-1.3.xsd\" ";
+char schema_enumval[] =  " xmlns:enumval=\"http://www.nic.cz/xml/epp/enumval-1.1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/enumval-1.1 enumval-1.1.xsd\" ";
 char exDateStr[32];
 char nameStr[64];
 int regID;
@@ -201,13 +202,13 @@ case TYPE_EXDATE_DEL:
       break;
 case  TYPE_VALEXDATE_BEFORE:
       strcpy( exDateStr , db->GetValueFromTable( "enumval"  , "ExDate" , "domainID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:impendingValExpData %s ><domain:name>%s</domain:name><domain:valExDate>%s</domain:valExDate></domain:impendingValExpData>" ,
-         schema_domain,   nameStr , exDateStr  );
+      sprintf(xmlString , "<enumval:impendingValExpData %s ><enumval:name>%s</enumval:name><enumval:valExDate>%s</enumval:valExDate></enumval:impendingValExpData>" ,
+         schema_enumval,   nameStr , exDateStr  );
       break;
 case  TYPE_VALEXDATE_AFTER:
       strcpy( exDateStr , db->GetValueFromTable( "enumval"  , "ExDate" , "domainID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:valExpData %s ><domain:name>%s</domain:name><domain:valExDate>%s</domain:valExDate></domain:valExpData>" ,
-         schema_domain,   nameStr , exDateStr  );
+      sprintf(xmlString , "<enumval:valExpData %s ><enumval:name>%s</enumval:name><enumval:valExDate>%s</enumval:valExDate></enumval:valExpData>" ,
+         schema_enumval,   nameStr , exDateStr  );
       break;
 
 }

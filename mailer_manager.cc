@@ -22,6 +22,7 @@ MailerManager::sendEmail(
   Register::Mailer::Attachments attach
 ) throw (Register::Mailer::NOT_SEND)
 {
+  if (to.empty()) return 0;
   // prepare header
   ccReg::MailHeader header;
   header.h_from = CORBA::string_dup(from.c_str());

@@ -120,7 +120,7 @@ class ccReg_Domains_i : virtual public POA_ccReg::Domains,
                         virtual public ccReg_RegObjectFilter_i,
                         public ccReg_PageTable_i,
                         public PortableServer::RefCountServantBase {
-  Register::Domain::List *dl;
+  std::auto_ptr<Register::Domain::List> dl;
  public:
   ccReg_Domains_i(Register::Domain::List *dl);
   ~ccReg_Domains_i();
@@ -143,7 +143,7 @@ class ccReg_Contacts_i : virtual public POA_ccReg::Contacts,
                          virtual public ccReg_RegObjectFilter_i,
                          public ccReg_PageTable_i,
                          public PortableServer::RefCountServantBase {
-  Register::Contact::List *cl;
+  std::auto_ptr<Register::Contact::List> cl;
  public:
   ccReg_Contacts_i(Register::Contact::List *cl);
   ~ccReg_Contacts_i();
@@ -161,9 +161,9 @@ class ccReg_NSSets_i : virtual public POA_ccReg::NSSets,
                        public ccReg_PageTable_i,
                        public PortableServer::RefCountServantBase 
 {
-  Register::NSSet::List *nl;
+  std::auto_ptr<Register::NSSet::List> nl;
  public:
-  ccReg_NSSets_i(Register::NSSet::List *dl);
+  ccReg_NSSets_i(Register::NSSet::List *nl);
   ~ccReg_NSSets_i();
   DECL_PAGETABLE_I;
   DECL_ATTRIBUTE_STR(handle);
@@ -171,7 +171,6 @@ class ccReg_NSSets_i : virtual public POA_ccReg::NSSets,
   DECL_ATTRIBUTE_STR(hostname);
   DECL_ATTRIBUTE_STR(ip);
 };
-
 
 class ccReg_AIRequests_i : virtual public POA_ccReg::AuthInfoRequests, 
                            public ccReg_PageTable_i,

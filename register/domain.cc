@@ -35,8 +35,11 @@ namespace Register
       std::string registrantHandle;
       std::string registrantName;
       AdminInfoList adminList;
-      ptime exDate;
-      ptime valExDate;
+      AdminInfoList tempList;
+      date exDate;
+      date valExDate;
+      unsigned zoneStatus;
+      ptime zoneStatusTime;
      public:
       DomainImpl(
         TID _id,
@@ -58,8 +61,10 @@ namespace Register
         const std::string& _updateRegistrarHandle,
         const std::string& _authPw,
         const std::string& _roid,
-        ptime _exDate,
-        ptime _valExDate
+        date _exDate,
+        date _valExDate,
+        unsigned _zoneStatus,
+        ptime _zoneStatusTime
       )
       : ObjectImpl(_id,_crDate,_trDate,_upDate,_registrar,_registrarHandle,
         _createRegistrar,_createRegistrarHandle,
@@ -67,7 +72,8 @@ namespace Register
         fqdn(_fqdn), zone(_zone), nsset(_nsset),
         nssetHandle(_nssetHandle), registrant(_registrant),
         registrantHandle(_registrantHandle), registrantName(_registrantName),
-        exDate(_exDate), valExDate(_valExDate)
+        exDate(_exDate), valExDate(_valExDate),
+        zoneStatus(_zoneStatus), zoneStatusTime(_zoneStatusTime)
       {
       }
       virtual const std::string& getFQDN() const
@@ -108,29 +114,38 @@ namespace Register
       {
         this->registrant = registrant;
       }
-      virtual ptime getExpirationDate() const
+      virtual date getExpirationDate() const
       {
         return exDate; 
       }
-      virtual ptime getValExDate() const
+      virtual date getValExDate() const
       {
         return valExDate; 
       }
-      virtual unsigned getAdminCount() const
+      virtual unsigned getZoneStatus() const
       {
-        return adminList.size();
+        return zoneStatus;
       }
-      virtual TID getAdminIdByIdx(unsigned idx) const
+      virtual ptime getZoneStatusTime() const
+      {
+        return zoneStatusTime;
+      }
+      virtual unsigned getAdminCount(unsigned role) const
+      {
+        return role == 1 ? adminList.size() : tempList.size();
+      }
+      virtual TID getAdminIdByIdx(unsigned idx, unsigned role) const
         throw (NOT_FOUND)
       {
-        if (idx >= getAdminCount()) throw NOT_FOUND();
-        return adminList[idx].id;
+        if (idx >= getAdminCount(role)) throw NOT_FOUND();
+        return role == 1 ? adminList[idx].id : tempList[idx].id;
       }
-      virtual const std::string& getAdminHandleByIdx(unsigned idx)  const 
-        throw (NOT_FOUND)
+      virtual const std::string& getAdminHandleByIdx(
+	unsigned idx, unsigned role
+      )  const throw (NOT_FOUND)
       {
-        if (idx >= getAdminCount()) throw NOT_FOUND();
-        return adminList[idx].handle;
+        if (idx >= getAdminCount(role)) throw NOT_FOUND();
+        return role == 1 ? adminList[idx].handle : tempList[idx].handle;
       }
       virtual void removeAdminId(TID id)
       {
@@ -146,9 +161,10 @@ namespace Register
         return this->id == id;
       }
       /// add one admin handle - for domain intialization
-      void addAdminHandle(TID id, const std::string& handle)
+      void addAdminHandle(TID id, const std::string& handle, unsigned role=1)
       {
-        adminList.push_back(AdminInfo(id,handle));
+        if (role == 1) adminList.push_back(AdminInfo(id,handle));
+	else tempList.push_back(AdminInfo(id,handle));
       } 
     };
 
@@ -168,14 +184,14 @@ namespace Register
       time_period valExDate;
       std::string techAdmin;
       std::string hostIP;
-      DB *db;
+      unsigned zoneStatus;
      public:
-      ListImpl(DB *_db) : ObjectListImpl(), 
+      ListImpl(DB *_db) : ObjectListImpl(_db), 
         zoneFilter(0), registrantFilter(0),
         nsset(0), admin(0),
         exDate(ptime(neg_infin),ptime(pos_infin)),
         valExDate(ptime(neg_infin),ptime(pos_infin)),
-        db(_db)
+        zoneStatus(0)
       {
       }
       virtual ~ListImpl()
@@ -244,97 +260,191 @@ namespace Register
       {
         hostIP = ip;
       }
-#define MAKE_TIME(ROW,COL)  \
- (ptime(db->IsNotNull(ROW,COL) ? \
- time_from_string(db->GetFieldValue(ROW,COL)) : not_a_date_time))
-      virtual void reload()
+      virtual void setZoneStatusFilter(unsigned status) 
+      {
+        zoneStatus = status;
+      }
+      void makeQuery(bool count, bool limit, std::stringstream& sql) const
+      {
+        std::stringstream from, where;
+        sql.str("");
+        if (!count) 
+          sql << "INSERT INTO " << getTempTableName() << " ";
+        sql << "SELECT " << (count ? "COUNT(" : "")
+            << "DISTINCT d.id" << (count ? ") " : " ");
+        from << "FROM domain d ";
+        where << "WHERE 1=1 ";
+        SQL_ID_FILTER(where,"d.id",idFilter);
+        SQL_DATE_FILTER(where,"d.exdate",exDate);
+        SQL_ID_FILTER(where,"d.nsset",nsset);
+        SQL_ID_FILTER(where,"d.registrant",registrantFilter);
+        if (registrarFilter || !registrarHandleFilter.empty() ||
+            updateRegistrarFilter || !updateRegistrarHandleFilter.empty() ||
+            TIME_FILTER_SET(updateIntervalFilter) ||
+            TIME_FILTER_SET(trDateIntervalFilter)
+           ) {
+          from << ",object o ";
+          where << "AND d.id=o.id ";
+          SQL_ID_FILTER(where,"o.clid",registrarFilter);
+          SQL_ID_FILTER(where,"o.upid",updateRegistrarFilter);
+          SQL_DATE_FILTER(where,"o.upDate",updateIntervalFilter);
+          SQL_DATE_FILTER(where,"o.trDate",trDateIntervalFilter);
+          if (!registrarHandleFilter.empty()) {
+            from << ",registrar reg ";
+            where << "AND o.clid=reg.id ";
+            SQL_HANDLE_FILTER(where,"reg.handle",registrarHandleFilter);
+          }
+          if (!updateRegistrarHandleFilter.empty()) {
+            from << ",registrar ureg ";
+            where << "AND o.upid=ureg.id ";          
+            SQL_HANDLE_FILTER(where,"reg.handle",updateRegistrarHandleFilter);
+          }
+        }
+        if (createRegistrarFilter || !createRegistrarHandleFilter.empty() ||
+            TIME_FILTER_SET(crDateIntervalFilter) ||
+            !fqdn.empty()) {
+          from << ",object_registry obr ";
+          where << "AND obr.id=d.id AND obr.type=3 ";       
+          SQL_ID_FILTER(where,"obr.crid",createRegistrarFilter);
+          SQL_DATE_FILTER(where,"obr.crdate",crDateIntervalFilter);
+          SQL_HANDLE_FILTER(where,"obr.name",fqdn);
+          if (!createRegistrarHandleFilter.empty()) {
+            from << ",registrar creg ";
+            where << "AND obr.crid=creg.id ";          
+            SQL_HANDLE_FILTER(where,"creg.handle",createRegistrarHandleFilter);
+          }
+        }
+        if (TIME_FILTER_SET(valExDate)) {
+          from << ",enumval ev ";
+          where << "AND d.id=ev.domainid ";
+          SQL_DATE_FILTER(where,"ev.exdate",valExDate);
+        }
+        if (!registrantHandleFilter.empty()) {
+          from << ",object_registry cor ";
+          where << "AND d.registrant=cor.id AND cor.type=1 ";
+          SQL_HANDLE_FILTER(where,"cor.name",registrantHandleFilter);
+        }
+        if (admin || !adminHandle.empty()) {
+          from << ",domain_contact_map dcm ";
+          where << "AND d.id=dcm.domainid ";
+          SQL_ID_FILTER(where,"dcm.contactid",admin);
+          if (!adminHandle.empty()) {
+            from << ",object_registry dcor ";
+            where << "AND dcm.contactid=dcor.id AND dcor.type=1 ";
+            SQL_HANDLE_FILTER(where,"dcor.name",adminHandle);
+          }
+        }
+        if (!nssetHandle.empty()) {
+          from << ",object_registry nor ";
+          where << "AND d.nsset=nor.id AND nor.type=2 ";         
+          SQL_HANDLE_FILTER(where,"nor.name",nssetHandle);
+        }
+        if (!techAdmin.empty()) {
+          from << ",nsset_contact_map ncm, object_registry tcor ";
+          where << "AND d.nsset=ncm.nssetid AND ncm.contactid=tcor.id "
+                << "AND tcor.type=1 ";
+          SQL_HANDLE_FILTER(where,"tcor.name",techAdmin);
+        }
+        if (!hostIP.empty()) {
+          from << ",host_ipaddr_map him ";
+          where << "AND d.nsset=him.nssetid ";
+          SQL_HANDLE_FILTER(where,"host(him.ipaddr)",hostIP);
+        }
+        if (!count) where << "ORDER BY d.id ASC ";
+        if (limit) where << "LIMIT 1000 ";
+        sql << from.rdbuf();
+        sql << where.rdbuf();
+      }
+      virtual void reload() throw (SQL_ERROR)
       {
         clear();
+        fillTempTable(true);
+        db->ExecSelect("SET enable_seqscan=off");
         std::ostringstream sql;
-        sql << "SELECT DISTINCT obr.id,obr.name,d.zone,nor.id,nor.name,"
+        // load domain data
+        sql << "SELECT "
+            // domain, zone, nsset
+            << "obr.id,obr.name,d.zone,nor.id,nor.name,"
+            // registrant
             << "cor.id,cor.name,c.name,"
+            // registrar
             << "r.id,r.handle,"
+            // registration dates
             << "obr.crdate,o.trdate,o.update,"
-            << "creg.id,creg.handle,ureg.id,ureg.handle,o.authinfopw,obr.roid,"
-          // TODO: change time to date
-            << "d.exdate,CAST(ev.exdate AS timestamp),acor.name "
-            << "FROM contact c, object_registry cor, "
+            // creating and updating registrar
+            << "creg.id,creg.handle,ureg.id,ureg.handle,"
+            // repository data
+            << "o.authinfopw,obr.roid,"
+            // expiration and validation dates
+            << "d.exdate,ev.exdate, "
+            // zone generation status and status change time
+            << "gdh.status, gdh.chdate "
+            << "FROM "
+            << getTempTableName() << " tmp, "
+            << "contact c, object_registry cor, "
             << "registrar r, registrar creg, object_registry obr, "
             << "object o LEFT JOIN registrar ureg ON (o.upid=ureg.id), "
             << "domain d LEFT JOIN object_registry nor ON (d.nsset=nor.id) "
-            << "LEFT JOIN domain_contact_map adcm ON (d.id=adcm.domainid) "
-            << "LEFT JOIN object_registry acor ON (adcm.contactid=acor.id) "            
             << "LEFT JOIN enumval ev ON (d.id=ev.domainid) "
-            << "LEFT JOIN nsset_contact_map ncm ON (ncm.nssetid=nor.id) "
-            << "LEFT JOIN object_registry tcor ON (ncm.contactid=tcor.id) "
-            << "LEFT JOIN host h ON (nor.id=h.nssetid) "
-            << "LEFT JOIN host_ipaddr_map him ON (him.hostid=h.id) "
-            << "WHERE d.id=o.id AND d.registrant=c.id AND c.id=cor.id "
+            << "LEFT JOIN genzone_domain_history gdh "
+            << "ON (d.id=gdh.domain_id and gdh.last='t') "
+            << "WHERE tmp.id=d.id AND d.id=o.id AND d.registrant=c.id "
+            << "AND c.id=cor.id "
             << "AND obr.id=o.id AND obr.crid=creg.id AND o.clid=r.id ";
-        SQL_ID_FILTER(sql,"o.id",idFilter);
-        SQL_ID_FILTER(sql,"r.id",registrarFilter);
-        SQL_HANDLE_FILTER(sql,"r.handle",registrarHandleFilter);
-        SQL_ID_FILTER(sql,"creg.id",createRegistrarFilter);
-        SQL_HANDLE_FILTER(sql,"creg.handle",createRegistrarHandleFilter);
-        SQL_ID_FILTER(sql,"ureg.id",updateRegistrarFilter);
-        SQL_HANDLE_FILTER(sql,"ureg.handle",updateRegistrarHandleFilter);
-        SQL_DATE_FILTER(sql,"obr.crDate",crDateIntervalFilter);
-        SQL_DATE_FILTER(sql,"o.upDate",updateIntervalFilter);
-        SQL_DATE_FILTER(sql,"o.trDate",trDateIntervalFilter);
-        SQL_ID_FILTER(sql,"cor.id",registrantFilter);
-        SQL_HANDLE_FILTER(sql,"cor.name",registrantHandleFilter);
-        SQL_DATE_FILTER(sql,"d.exdate",exDate);
-        SQL_DATE_FILTER(sql,"ev.exdate",valExDate);
-        SQL_ID_FILTER(sql,"nor.id",nsset);
-        SQL_HANDLE_FILTER(sql,"nor.name",nssetHandle);
-        SQL_ID_FILTER(sql,"acor.id",admin);
-        SQL_HANDLE_FILTER(sql,"acor.name",adminHandle);
-        SQL_HANDLE_FILTER(sql,"obr.name",fqdn);
-        SQL_HANDLE_FILTER(sql,"tcor.name",techAdmin);
-        SQL_HANDLE_FILTER(sql,"host(him.ipaddr)",hostIP);
-        sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          TID id = STR_TO_ID(db->GetFieldValue(i,0));
-          // sql result has multiple lines for one domain
-          // if domain has been already initialized only admin contacts
-          // are filled
+          DomainImpl *d;
+          d = new DomainImpl(
+            STR_TO_ID(db->GetFieldValue(i,0)), // id
+            db->GetFieldValue(i,1), // fqdn
+            STR_TO_ID(db->GetFieldValue(i,2)), // zone
+            STR_TO_ID(db->GetFieldValue(i,3)), // nsset id
+            db->GetFieldValue(i,4), // nsset handle
+            STR_TO_ID(db->GetFieldValue(i,5)), // registrant id
+            db->GetFieldValue(i,6), // registrant handle
+            db->GetFieldValue(i,7), // registrant name
+            STR_TO_ID(db->GetFieldValue(i,8)), // registrar
+            db->GetFieldValue(i,9), // registrar handle
+            MAKE_TIME(i,10), // crdate
+            MAKE_TIME(i,11), // trdate
+            MAKE_TIME(i,12), // update
+            STR_TO_ID(db->GetFieldValue(i,13)), // crid
+            db->GetFieldValue(i,14), // crid handle
+            STR_TO_ID(db->GetFieldValue(i,15)), // upid
+            db->GetFieldValue(i,16), // upid handle
+            db->GetFieldValue(i,17), // authinfo
+            db->GetFieldValue(i,18), // roid
+            MAKE_DATE(i,19), // exdate
+            MAKE_DATE(i,20), // valexdate
+            atoi(db->GetFieldValue(i,21)), // zone status
+            MAKE_TIME(i,22) // zone status time 
+          );
+          dlist.push_back(d);
+        }
+        db->FreeSelect();
+        db->ExecSelect("SET enable_seqscan=on");
+        // add admin contacts
+        sql.str("");
+        sql << "SELECT "
+            << "tmp.id, obr.id, obr.name, dcm.role "
+            << "FROM "
+            << getTempTableName() << " tmp, "
+            << "domain_contact_map dcm, "
+            << "object_registry obr "
+            << "WHERE tmp.id=dcm.domainid and dcm.contactid=obr.id ";  
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           DomainListType::const_iterator dom = find_if(
             dlist.begin(),dlist.end(),
-            std::bind2nd(std::mem_fun(&DomainImpl::hasId),id)
-          ); 
-          DomainImpl *d;
-          if (dom != dlist.end()) 
-            d = *dom;
-          else {
-            d = new DomainImpl(
-              id, // id
-              db->GetFieldValue(i,1), // fqdn
-              STR_TO_ID(db->GetFieldValue(i,2)), // zone
-              STR_TO_ID(db->GetFieldValue(i,3)), // nsset id
-              db->GetFieldValue(i,4), // nsset handle
-              STR_TO_ID(db->GetFieldValue(i,5)), // registrant id
-              db->GetFieldValue(i,6), // registrant handle
-              db->GetFieldValue(i,7), // registrant name
-              STR_TO_ID(db->GetFieldValue(i,8)), // registrar
-              db->GetFieldValue(i,9), // registrar handle
-              MAKE_TIME(i,10), // crdate
-              MAKE_TIME(i,11), // trdate
-              MAKE_TIME(i,12), // update
-              STR_TO_ID(db->GetFieldValue(i,13)), // crid
-              db->GetFieldValue(i,14), // crid handle
-              STR_TO_ID(db->GetFieldValue(i,15)), // upid
-              db->GetFieldValue(i,16), // upid handle
-              db->GetFieldValue(i,17), // authinfo
-              db->GetFieldValue(i,18), // roid
-              MAKE_TIME(i,19), // exdate
-              MAKE_TIME(i,20) // valexdate
-            );
-            dlist.push_back(d);
-          }
-          // add admin contact (temporary ignore id)
-          if (db->IsNotNull(i,21)) 
-            d->addAdminHandle(0,db->GetFieldValue(i,21));
+            std::bind2nd(std::mem_fun(&DomainImpl::hasId),
+                         STR_TO_ID(db->GetFieldValue(i,0)))
+          );
+          if (dom == dlist.end()) throw SQL_ERROR(); 
+          (*dom)->addAdminHandle(
+	    STR_TO_ID(db->GetFieldValue(i,1)),
+	    db->GetFieldValue(i,2),
+	    atoi(db->GetFieldValue(i,3))
+          );
         }
         db->FreeSelect();
       }
@@ -351,7 +461,12 @@ namespace Register
         zoneFilter = 0;
         techAdmin = "";
         hostIP = "";
-      }      
+        zoneStatus = 0;
+      }
+      virtual const char *getTempTableName() const
+      {
+        return "tmp_domain_filter_result";
+      }            
     };
 
     class ManagerImpl : virtual public Manager
@@ -359,10 +474,9 @@ namespace Register
       DB *db; ///< connection do db
       Zone::Manager *zm; ///< zone management api
       std::auto_ptr<Blacklist> blacklist; ///< black list manager
-      ListImpl dlist;
      public:
       ManagerImpl(DB *_db, Zone::Manager *_zm) :
-        db(_db), zm(_zm), blacklist(Blacklist::create(_db)), dlist(_db)
+        db(_db), zm(_zm), blacklist(Blacklist::create(_db))
       {}
       /// interface method implementation  
       std::string makeEnumDomain(const std::string& number)
@@ -456,12 +570,18 @@ namespace Register
         CheckAvailType ret = CA_AVAILABLE;
         // domain can be subdomain or parent domain of registred domain
         // there could be a lot of subdomains therefor LIMIT 1
-        sql << "SELECT o.name, o.id FROM object_registry o "
-            << "WHERE o.type=3 AND o.erdate ISNULL AND "
-            << "(('" << fqdn << "' LIKE '%.'|| o.name) OR "
-            << "(o.name LIKE '%.'||'" << fqdn << "') OR "
-            << "o.name='" << fqdn << "') "
-            << "LIMIT 1";
+        if (z->isEnumZone())
+          sql << "SELECT o.name, o.id FROM object_registry o "
+              << "WHERE o.type=3 AND o.erdate ISNULL AND "
+              << "(('" << fqdn << "' LIKE '%.'|| o.name) OR "
+              << "(o.name LIKE '%.'||'" << fqdn << "') OR "
+              << "o.name='" << fqdn << "') "
+              << "LIMIT 1";
+        else 
+          sql << "SELECT o.name, o.id FROM object_registry o "
+              << "WHERE o.type=3 AND o.erdate ISNULL AND "
+              << "o.name='" << fqdn << "' "
+              << "LIMIT 1";        
         if (!db->ExecSelect(sql.str().c_str())) {
           db->FreeSelect();
           throw SQL_ERROR();
@@ -524,9 +644,9 @@ namespace Register
         db->FreeSelect();
         return ret;
       }  
-      virtual List *getList()
+      virtual List *createList()
       {
-        return &dlist;
+        return new ListImpl(db);
       }
     };
     Manager *Manager::create(DB *db, Zone::Manager *zm)

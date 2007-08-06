@@ -4,6 +4,8 @@
 #include "auth_info.h"
 #include "invoice.h"
 #include "bank.h"
+#include "info_buffer.h"
+#include "log.h"
 
 #include <iostream>
 #include <fstream>
@@ -65,30 +67,25 @@ int main(int argc, char **argv)
       ("nameservice", po::value<std::string>()->default_value("localhost"), 
        "corba name service host")
       ("docgen_path",po::value<std::string>()->default_value(
-        ""),
+        "/usr/bin/fred-doc2pdf"),
        "path to fred2pdf document generator")
       ("docgen_template_path",po::value<std::string>()->default_value(
-        ""),
+        "/usr/share/fred2pdf/templates/"),
        "path to fred2pdf document generator templates")
       ("fileclient_path",po::value<std::string>()->default_value(
-        ""),
+        "/usr/bin/filemanager_client"),
        "path to file manager corba client")
-      ("connect_timeout", po::value<unsigned>(),
-       "timeout for trying to connect to database")
-      ("log_mask", po::value<unsigned>(),
-       "obsolete config option")
-      ("log_level", po::value<std::string>(),
-       "syslog level")
-      ("log_local", po::value<unsigned>(),
-       "syslog facilty is local#")
-      ("session_max", po::value<unsigned>(),
-       "maximal number of concurrent EPP sessions")
-      ("session_wait", po::value<unsigned>(),
-       "maximal length of EPP session")
-      ("ebanka_url", po::value<std::string>(),
-       "web url for download of incoming payments"),
-      ("nsset_level", po::value<unsigned>(),
-       "default report level of new nsset");
+      ("log_level",po::value<unsigned>()->default_value(DEBUG_LOG),
+       "minimal level of logging")
+      ("log_local",po::value<unsigned>()->default_value(2),
+       "syslog local facility number")
+      ("restricted_handles",po::value<unsigned>()->default_value(1),
+       "restricted format of handles (CID: & NSSID:)");
+
+    po::options_description fileDesc(""); 
+    fileDesc.add_options()
+      ("*", po::value<std::string>(), 
+       "other-options");
 
     po::options_description invoiceDesc("Invoicing options");
     invoiceDesc.add_options()
@@ -137,22 +134,37 @@ int main(int argc, char **argv)
       ("bank_statement_list", 
        "list of bank statements");
 
+    po::options_description infoBufferDesc("Info buffer options");
+    infoBufferDesc.add_options()
+      ("info_buffer_make_info", po::value<unsigned>(),
+       "invoke generation of list of o for given registrar")
+      ("info_buffer_get_chunk", po::value<unsigned>(),
+       "output chunk of buffer for given registrar")
+      ("info_buffer_registrar", po::value<unsigned>(),
+       "id of registrar for buffer selection")
+      ("info_buffer_request", po::value<std::string>()->default_value(""),
+       "handle for query");
+
     po::variables_map vm;
     // parse help and config filename options
     po::store(
       po::parse_command_line(
         argc, argv, 
-        desc.add(configDesc).add(invoiceDesc).add(aiDesc).add(bankDesc)
+        desc.add(configDesc).add(invoiceDesc).add(aiDesc).add(bankDesc).
+        add(infoBufferDesc)
       ), vm
     );
     // parse options from config file
     std::ifstream configFile(vm["conf"].as<std::string>().c_str());
-    po::store(po::parse_config_file(configFile, configDesc), vm);
+    po::store(po::parse_config_file(configFile, fileDesc.add(configDesc)), vm);
 
     if (vm.count("help") || argc == 1 ) {
       stdout << desc << "\n";
       return 1;
     }
+    
+    Logger::get().setLevel(vm["log_level"].as<unsigned>());
+    Logger::get().setFacility(vm["log_local"].as<unsigned>());    
     
     std::stringstream connstring;
     connstring << "dbname=" << vm["dbname"].as<std::string>() 
@@ -265,6 +277,66 @@ int main(int argc, char **argv)
       stList->reload();
       stList->exportXML(stdout);
     }
+    std::auto_ptr<Register::Zone::Manager> zoneMan(
+      Register::Zone::Manager::create(&db)
+    );
+    std::auto_ptr<Register::Domain::Manager> domMan(
+      Register::Domain::Manager::create(&db, zoneMan.get())
+    );
+    std::auto_ptr<Register::Contact::Manager> conMan(
+      Register::Contact::Manager::create(
+        &db,vm["restricted_handles"].as<unsigned>()
+      )
+    );
+    std::auto_ptr<Register::NSSet::Manager> nssMan(
+      Register::NSSet::Manager::create(
+        &db,vm["restricted_handles"].as<unsigned>()
+      )
+    );
+    // infoBuffer
+    std::auto_ptr<Register::InfoBuffer::Manager> infoBufMan(
+      Register::InfoBuffer::Manager::create(
+        &db, domMan.get(), nssMan.get(), conMan.get()
+      )
+    );
+    if (vm.count("info_buffer_make_info")) {
+      unsigned type = vm["info_buffer_make_info"].as<unsigned>();
+      if (type < 1 && type > 7) 
+        std::cerr << "info_buffer_make_info must be in 1..7.\n ";
+      else {
+        if (!vm.count("info_buffer_registrar"))
+          std::cerr << "info_buffer_registrar must be set.\n ";
+        else {
+          infoBufMan->info(
+            vm["info_buffer_registrar"].as<unsigned>(),
+            type == 1 ? Register::InfoBuffer::T_LIST_CONTACTS :
+            type == 2 ? Register::InfoBuffer::T_LIST_DOMAINS :
+            type == 3 ? Register::InfoBuffer::T_LIST_NSSETS :
+            type == 4 ? Register::InfoBuffer::T_DOMAINS_BY_NSSET :
+            type == 5 ? Register::InfoBuffer::T_DOMAINS_BY_CONTACT :
+            type == 6 ? Register::InfoBuffer::T_NSSETS_BY_CONTACT :
+            Register::InfoBuffer::T_NSSETS_BY_NS,      
+            vm["info_buffer_request"].as<std::string>()
+          );
+        }
+      }
+    }
+    if (vm.count("info_buffer_get_chunk")) {
+      unsigned chunkSize = vm["info_buffer_get_chunk"].as<unsigned>();
+      if (!vm.count("info_buffer_registrar"))
+        std::cerr << "info_buffer_registrar must be set.\n ";
+      else {
+        std::auto_ptr<Register::InfoBuffer::Chunk> chunk(
+          infoBufMan->getChunk(
+            vm["info_buffer_registrar"].as<unsigned>(),
+            chunkSize
+          )
+        );
+        for (unsigned long i=0; i<chunk->getCount(); i++)
+          std::cout << chunk->getNext() << std::endl;
+      }
+    }
+    
     if (connected) db.Disconnect();
   }
   catch (std::exception& e) {

@@ -89,9 +89,9 @@ bool DB::SaveEPPTransferMessage(int  oldregID , int regID , int objectID  , int 
 {
 char xmlString[1024];
 char regHandle[64];
-char schema_nsset[] = " xmlns:nsset=\"http://www.nic.cz/xml/epp/nsset-1.1\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/nsset-1.1 nsset-1.1.xsd\" ";
-char schema_domain[] =  " xmlns:domain=\"http://www.nic.cz/xml/epp/domain-1.1\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/domain-1.1 domain-1.1.xsd\" ";
-char schema_contact[] =  " xmlns:contact=\"http://www.nic.cz/xml/epp/contact-1.1\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/contact-1.1 contact-1.1.xsd\" " ;
+char schema_nsset[] = " xmlns:nsset=\"http://www.nic.cz/xml/epp/nsset-1.2\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/nsset-1.2 nsset-1.2.xsd\" ";
+char schema_domain[] =  " xmlns:domain=\"http://www.nic.cz/xml/epp/domain-1.3\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/domain-1.3 domain-1.3.xsd\" ";
+char schema_contact[] =  " xmlns:contact=\"http://www.nic.cz/xml/epp/contact-1.4\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/contact-1.4 contact-1.4.xsd\" " ;
 
 LOG( NOTICE_LOG , "EPPTransferMessage to registrar : %d trasfer objectID %d new registar %d" , oldregID , objectID , regID );
 
@@ -106,7 +106,7 @@ switch( type )
         if( SELECTOBJECTID( "CONTACT" ,"handle"  , objectID ) )
           {
 
-             sprintf(xmlString , "<contact:trnData %s ><contact:id>%s</contact:id><contact:trDate>%s<contact:trDate><contact:clID>%s</contact:clID></contact:trnDate>" ,
+             sprintf(xmlString , "<contact:trnData %s ><contact:id>%s</contact:id><contact:trDate>%s</contact:trDate><contact:clID>%s</contact:clID></contact:trnData>" ,
                    schema_contact ,    GetFieldValueName("Name" , 0 )  , GetFieldDateTimeValueName("TrDate" , 0 ) , regHandle  );
                FreeSelect();
            }
@@ -116,7 +116,7 @@ switch( type )
           {
 
                 
-            sprintf(xmlString , "<nsset:trnData %s > <nsset:id>%s</nsset:id><nsset:trDate>%s<nsset:trDate><nsset:clID>%s</nsset:clID></nsset:/trnData>" ,
+            sprintf(xmlString , "<nsset:trnData %s > <nsset:id>%s</nsset:id><nsset:trDate>%s</nsset:trDate><nsset:clID>%s</nsset:clID></nsset:trnData>" ,
                            schema_nsset ,    GetFieldValueName("Name" , 0 )  , GetFieldDateTimeValueName("TrDate" , 0 ) , regHandle );
                FreeSelect();
            }
@@ -126,7 +126,7 @@ switch( type )
         if( SELECTOBJECTID( "DOMAIN" , "fqdn"  , objectID ) )
          {
 
-             sprintf(xmlString , "<domain:trnData %s ><domain:id>%s</domain:id><domain:trDate>%s<domain:trDate><domain:clID>%s</domain:clID></domain:trnData>" ,
+             sprintf(xmlString , "<domain:trnData %s ><domain:name>%s</domain:name><domain:trDate>%s</domain:trDate><domain:clID>%s</domain:clID></domain:trnData>" ,
                             schema_domain ,    GetFieldValueName("Name" , 0 )  , GetFieldDateTimeValueName("TrDate" , 0 )  , regHandle );
                FreeSelect();
 
@@ -148,7 +148,7 @@ INTO( "seen");
 INTO( "message" );
 VALUE( oldregID ); // id of the old registrar 
 VALUENOW();
-VALUEPERIOD( 1 ); // aktualni datetime plus one month 
+VALUEPERIOD( 1 ); // actual datetime plus one month 
 VALUE(  false );
 
 
@@ -212,7 +212,7 @@ LOG( DEBUG_LOG , "SaveInvoiceCredit: uctovani creditu objectID %d ExDate [%s] re
 
 id = GetSequenceID( "invoice_object_registry" );
 
-// inser record about billing objects 
+// insert record about billing objects 
 INSERT( "invoice_object_registry" );
 INTO( "id" );
 INTO( "objectid" );
@@ -311,7 +311,7 @@ int i , num;
 
 LOG( DEBUG_LOG , "UpdateInvoiceCredit operation %d objectID %d ExDate [%s]  period %d regID %d" , operation , objectID ,  ExDate , period ,  regID  );
 
-// systemovy registrator work free without invoicing 
+// system registrar work free without invoicing 
 if( GetRegistrarSystem( regID ) == true ) return true;
 
 
@@ -424,8 +424,9 @@ return false;
 bool  DB::BeginAction(int clientID , int action ,const char *clTRID  , const char *xml  )
 {
 
+  bool ret = false;
 
-
+  BeginTransaction();
 
 // actionID for loging all action
 actionID = GetSequenceID("action");
@@ -450,7 +451,7 @@ if( actionID )
   // EPP operation
   enum_action=action;
 
-  // write to actuion table
+  // write to action table
   INSERT( "ACTION" );
   INTO( "id" );
   if( clientID > 0 ) INTO( "clientID"  );
@@ -470,14 +471,16 @@ if( actionID )
                 INSERT("Action_XML");
                 VALUE( actionID );
                 VALUE( xml );
-                if(  EXEC() ) return true;
+                if(  EXEC() ) ret = true;
            }
-        else return true;
+        else ret = true;
      }
 
   }
 
-return false;
+ QuitTransaction( ret ? CMD_OK : 0 );
+
+  return ret;
 }
 
 
@@ -698,14 +701,14 @@ return TestObjectHistory( fqdn , days );
 // test protected period 
 bool DB::TestObjectHistory(   const char * name , int days )
 {
-/* TODO predelat
+/* TODO rework
 char sqlString[512];
 bool ret=false;
 int count;
 
 if( days > 0 )
 {
-// nezalezi mala velka pismena
+// it doesn't depend if lowercase or uppercase 
 sprintf( sqlString , "SELECT count( id ) FROM object_delete  WHERE name ILIKE \'%s\' and  deltime  > current_timestamp - interval\'%d days\';"  , name , days );
 
 if( ExecSelect( sqlString ) )
@@ -745,7 +748,7 @@ id = GetSequenceID( "object_registry" );
 
  VALUE( id );
 
-// TYPe of the object
+// Type of the object
 switch( type[0] )
   {
     case 'C' : // contacts
@@ -783,7 +786,7 @@ if( EXEC() )
 
                      if( strlen ( authInfoPw ) == 0 )
                        {
-                          random_pass(  pass  ); // autogenerate passwor if not set 
+                          random_pass(  pass  ); // autogenerate password if not set 
                           VVALUE( pass );
                         }
                       else VALUE( authInfoPw );
@@ -848,7 +851,7 @@ if( ExecSelect( sqlString ) )
 return ret;
 }
 
-// test contat in the contact map
+// test contact in the contact map
 bool  DB::CheckContactMap(const char * table, int id, int contactid, int role)
 {
   bool ret = false;
@@ -890,7 +893,7 @@ get_rfc3339_timestamp( time(NULL) ,  currentDate , true );
 
 
 
-if( id) // if ValExDate alredy exist and updated 
+if( id) // if ValExDate already exist and updated 
 {
 // copy current Exdate during update 
 strcpy( exDate ,  GetDomainValExDate( id) ) ;
@@ -1090,7 +1093,7 @@ if( ExecSelect( sqlString ) )
 return dph;
 } 
 
-double DB::GetSystemKOEF() // return VAT count parametr for count price witout VAT
+double DB::GetSystemKOEF() // return VAT count parametr for count price without VAT
 {
 char sqlString[128] = "select koef   from price_vat where valid_to > now() or valid_to is null;" ;
 double koef;
@@ -1151,7 +1154,7 @@ if( ExecSelect( sqlString ) )
 return zone;
 }
 
-// test balance on the account for importing bank statament
+// test balance on the account for importing bank statement
 int DB::TestBankAccount( const  char *accountStr , int num , long oldBalance )
 {
 int accountID=0;
@@ -1175,7 +1178,7 @@ if(  accountID )
     LOG( LOG_DEBUG ,"posledni vypis ucetID %d cislo %d zustatek na uctu %ld" , accountID ,  lastNum , lastBalance);
 
 
-     // test for numer of statemnt not for the first statament
+     // test for numer of statement not for the first statement
     if( num > 1  )
       {
         if( lastNum + 1 != num ) 
@@ -1218,7 +1221,7 @@ bool DB::UpdateBankAccount( int accountID , char *date , int num ,  long newBala
 
 
 
-// save bank statament 
+// save bank statement 
 int DB::SaveBankHead( int accountID ,int num ,  char *date  ,  char *oldDate , long oldBalance , long newBalance , long credit , long debet )
 { 
 int statemetID;
@@ -1249,7 +1252,7 @@ int statemetID;
      else return 0;
 
 }
-//  save items of bank statemtn
+//  save items of bank statement
 bool DB::SaveBankItem( int statemetID , char *account  , char *bank , char *evidNum,  char *date , char *memo ,
                        int code  ,  char *konstSymb ,  char *varSymb , char *specsymb  , long price )
 {
@@ -1282,7 +1285,7 @@ return EXEC ();
 
 
                 
-// mark bank statament as imported
+// mark bank statement as imported
 bool DB::UpdateBankStatementItem( int id , int invoiceID)
 {
                   UPDATE( "bank_statement_item" );
@@ -1292,7 +1295,7 @@ bool DB::UpdateBankStatementItem( int id , int invoiceID)
 }  
 
 
-// for E-Banka https bank  statemnt
+// for E-Banka https bank statement
 int DB::TestEBankaList( const char *ident )
 {
 char sqlString[128] ;
@@ -1425,7 +1428,7 @@ long price=-1; // err value
 return price;
 }
 
-// incoicing make new invoice
+// invoicing make new invoice
 int DB::MakeFactoring(  int regID , int zone , const char *timestampStr ,  const char *taxDateStr )
 {
 char sqlString[512];
@@ -1442,11 +1445,11 @@ long price , credit,  balance;
 
 
 
-// PRVNI KROK podivat se do tabulky invoice_generation do kdy byla fakturace provadena a tuto hodrnotu 
-// todate vzit jako from date
+// First step look into table invoice_generation till when invoicing was realised and this value 
+// todate take as from date
 fromdateStr[0]=0;
 
-// posledni zaznam  todate plus jeden den
+// last record todate plus one day
 sprintf( sqlString , "SELECT date( todate + interval'1 day')  from invoice_generation  WHERE zone=%d  AND registrarid =%d  order by id desc limit 1;" ,  zone , regID );
 if( ExecSelect( sqlString ) )
   {
@@ -1456,14 +1459,14 @@ if( ExecSelect( sqlString ) )
       }
     FreeSelect();
  }
-else return -1; // chyba
+else return -1; // error
 
 
-// JINAK KROK 2 
+// else STEP 2 
  
 if( fromdateStr[0]== 0 )
 {
-            // zjisti fromdate   tabulky registrarinvoice od kdy fakturovat 
+            // find out fromdate from tabel registrarinvoice from when invoicing 
             sprintf( sqlString , "SELECT  fromdate  from registrarinvoice  WHERE zone=%d and registrarid=%d;"  , zone , regID );
              if( ExecSelect( sqlString ) )
                {
@@ -1474,7 +1477,7 @@ if( fromdateStr[0]== 0 )
                       }
 
                  FreeSelect();
-               }else return -1; // chyba
+               }else return -1; // error
 
 }
 
@@ -1485,16 +1488,16 @@ LOG( NOTICE_LOG , "Fakturace od %s do %s timestamp [%s] " , fromdateStr , todate
 
 
 
-              // zjisti pocet polozek k fakturaci
+              // find out amount of item for invoicing
                sprintf( sqlString , "SELECT count( id)  from invoice_object_registry  where crdate < \'%s\' AND  zone=%d AND registrarid=%d AND invoiceid IS NULL;" , timestampStr , zone , regID );
                if( ExecSelect( sqlString ) )
                 {
                      count = atoi(  GetFieldValue( 0 , 0 ) ) ;
                      FreeSelect();
-                }else return -2; // chyba
+                }else return -2; // error
 
 
-                // zjisti celkovou fakturovanou  castku pokud je alespon jeden zaznam
+                // find out total invoiced price if it exists al least one record
                if( count > 0 )
                  {
                      sprintf( sqlString , "SELECT sum( price ) FROM invoice_object_registry , invoice_object_registry_price_map  WHERE   invoice_object_registry_price_map.id=invoice_object_registry.id AND  crdate < \'%s\' AND zone=%d and registrarid=%d AND  invoice_object_registry.invoiceid is null ;" ,  timestampStr , zone , regID );
@@ -1505,34 +1508,34 @@ LOG( NOTICE_LOG , "Fakturace od %s do %s timestamp [%s] " , fromdateStr , todate
                             FreeSelect();
                        }
                  }
-                else price = 0; // jinak nulova castka
+                else price = 0; // else null price
 
 
              
              
-            // prazdna faktura zaznam o fakturaci
-           // vraci invoiceID nebo nulo pokud nebylo nic vyfakturovano pri chybe vraci zaporne cislo chyby
+            // empty invoice invoicing record
+           // returns invoiceID or null if nothings was invoiced, on error returns negative number of error
                 if( ( invoiceID = MakeNewInvoice(  taxDateStr , fromdateStr , todateStr , zone , regID   , price  , count )  ) >= 0 )
                   {
 
-                    if( count > 0 )    // oznac polozky faktury faktrury
+                    if( count > 0 )    // mark item of invoice
                       {
                           sprintf( sqlString , "UPDATE invoice_object_registry set invoiceid=%d  WHERE crdate < \'%s\' AND zone=%d and registrarid=%d AND invoiceid IS NULL;" ,  invoiceID , timestampStr , zone , regID );
-                          if( ExecSQL( sqlString )  == false ) return -3; // chyba
+                          if( ExecSQL( sqlString )  == false ) return -3; // error
 
                        }
 
-                    // set last date do tabulky registrarinvoice
+                    // set last date into tabel registrarinvoice
                     sprintf( sqlString , "UPDATE registrarinvoice SET lastdate=\'%s\' WHERE zone=%d and registrarid=%d;" , todateStr , zone , regID );
-                    if( ExecSQL( sqlString )   == false ) return -4; //chyba
-                    // pokud byla vytvorena faktura 
+                    if( ExecSQL( sqlString )   == false ) return -4; // error
+                    // if invoice was created  
                      if( invoiceID > 0 )  
                        {
 
 
 
 
-                           // DOTAZ na vsechny ZAL FA ze kterych bylo cerpano na dane FA
+                           // query for all advance invoices, from which were gathered for taxes FA 
                               sprintf( sqlString , "select invoice_object_registry_price_map.invoiceid from  invoice_object_registry ,  invoice_object_registry_price_map  where invoice_object_registry.id=invoice_object_registry_price_map.id and invoice_object_registry.invoiceid=%d  GROUP BY invoice_object_registry_price_map.invoiceid ; " , invoiceID );
                                // EXEC SQL a insert  invoice_credit_payment_map
 
@@ -1550,11 +1553,11 @@ LOG( NOTICE_LOG , "Fakturace od %s do %s timestamp [%s] " , fromdateStr , todate
                                  FreeSelect();
 
  
-                                 // insert do tabulky invoice_credit_payment_map;
+                                 // insert into table invoice_credit_payment_map;
                                for( i = 0 ; i < num ; i ++ )
                                   {
                                     credit = GetInvoiceSumaPrice( invoiceID , aID[i] );
-                                    balance = GetInvoiceBalance(  aID[i] , credit ); // aktualne dosptupny zustatek
+                                    balance = GetInvoiceBalance(  aID[i] , credit ); // actual available balance
                                     if( credit>= 0 && balance >=0 ) 
                                     {
                                      LOG( LOG_DEBUG ,"zalohova FA  %d credit %ld balance %ld" , aID[i] , credit , balance );
@@ -1568,20 +1571,20 @@ LOG( NOTICE_LOG , "Fakturace od %s do %s timestamp [%s] " , fromdateStr , todate
                                      VALUE( aID[i] );
                                      VALPRICE( credit );
                                      VALPRICE( balance );
-                                     if( !EXEC()  ) return -7; // chyba
-                                    }else return -8; // chyba
+                                     if( !EXEC()  ) return -7; // error
+                                    }else return -8; // error
 
                                   }
 
                               delete aID;
-                               }else return -6; // chyba
+                               }else return -6; // error
 
                                     
                        }
  
 
                            
-                  }else return -5; // nepodarilo se vytvorit fakturu
+                  }else return -5; // invoice creation wasn't successful
 
                
 
@@ -1600,16 +1603,16 @@ int dph;
 
 LOG( LOG_DEBUG ,"MakeNewInvoice taxdate[%s]  fromdateStr [%s] todateStr[%s]  zone %d regID %d , price %ld  count %d" , 
 taxDateStr , fromdateStr , todateStr ,   zone , regID , price , count);
-if( (type = GetPrefixType( taxDateStr , INVOICE_FA , zone ) ) )   // id pouzitelneho prefixu faktury 
+if( (type = GetPrefixType( taxDateStr , INVOICE_FA , zone ) ) )   // usable prefix id of invoice  
 {
 
 
      
-        if( count ) // vytvor fakturu 
+        if( count ) // create invoice 
           {
-           if(  (prefix = GetInvoicePrefix( taxDateStr , INVOICE_FA , zone ) )  )  // cislo faktury podle zdanitelneho obdobi
+           if(  (prefix = GetInvoicePrefix( taxDateStr , INVOICE_FA , zone ) )  )  // number of invoice accord to taxable period
            {
-            // zjisti vysi DPH
+            // find out VAT height 
            dph =GetSystemVAT(); 
            LOG( LOG_DEBUG ,"Make Invoice prefix %d type %d DPH=%d\n" , prefix , type , dph);
 
@@ -1630,23 +1633,23 @@ if( (type = GetPrefixType( taxDateStr , INVOICE_FA , zone ) ) )   // id pouzitel
            VALUE( invoiceID );
            VALUE( prefix  );
            VALUE( zone );
-           VALUE( type );  // odkaz do prefixu
+           VALUE( type );  // link into prefix
            VALUE( regID );
            VALUE( taxDateStr );
-           VALPRICE( price ); // celkova castka
-           VALUE( dph ); // dan je nenulova 
-           VALUE( 0 ); // zaklad bez je nulova castka 
+           VALPRICE( price ); // total price
+           VALUE( dph ); // VAT is not null 
+           VALUE( 0 ); // base without is zero amount  
            VALUE( 0);
-           VALUENULL(); // pouze credit je NULL
+           VALUENULL(); // only credit is NULL
 
           
-           if(  !EXEC() )  return -1; // chyba SQL insert
+           if(  !EXEC() )  return -1; // SQL insert error 
            } else return -4;
 
-          }else invoiceID=0; // prazdna fakturace
+          }else invoiceID=0; // empty invoicing
            
 
-// zaznam o fakturaci
+// record of invoicing
            INSERT( "invoice_generation");
           
            INTO( "fromdate");
@@ -1662,40 +1665,41 @@ if( (type = GetPrefixType( taxDateStr , INVOICE_FA , zone ) ) )   // id pouzitel
            if( invoiceID  ) VALUE( invoiceID );
            else   VALUENULL(); 
 
-          if( EXEC() )return invoiceID; // chyba v insertu
-          else return -3; // chyba 
+          if( EXEC() )return invoiceID; // insert error
+          else return -3; // error 
 
 
-}else return -2;  // chyba ve vytvoreni  prefixu 
+}else return -2;  // prefix creation error  
 
 
 }
-// vytvoreni zalohove faktury pro registratora na castku price s vysi DPH vatNum odvedenou dani vat  a castkou bez DPH credit
-// taxDateStr  datum zdanitelneho plneni datum kdy castka prisla na nas ucet
+// description in english
+// creation of advance invoice for registrar for price amount with height VAT vatNum paid VAT tax and amount without VAT credit
+// taxDateStr date of taxable fulfilment date when value came into our account
 int  DB::MakeNewInvoiceAdvance( const char *taxDateStr , int zone ,  int regID ,  long price , bool VAT )
 {
 int invoiceID;
 int prefix;
 int dph;
-long total; // castka bez DPH == credit
+long total; // amount without VAT == credit
 long credit;
-long totalVAT; // odvedene DPH;
-double koef; // prepocitavaci koeficinet pro DPH
-int type; // typ ZAL FA z rady
+long totalVAT; // paid VAT
+double koef; // conversion coefficient for VAT
+int type; // type of advance invoice (ZAL FA) from front 
 
   if( VAT)
     {
-     // zjisti vysi DPH
-     dph =GetSystemVAT(); // vyse DPH 19 %
-     koef =GetSystemKOEF();// vyse koeficientu
-     // cpocte odvedena DPH zaoKROUHLENE MATEMaticky na desetniky
+     // find out VAT height
+     dph =GetSystemVAT(); // VAT height 19 %
+     koef =GetSystemKOEF();// coefficient height
+     // count paid VAT math rounded off at dimes 
 
        totalVAT =  count_dph( price , koef );         
        total = price - totalVAT;
        credit =  total;
 
     }
-   else // vytvori zalohovou fakturu bezodvodu DPH
+   else // create advance invoice without paid VAT 
    {
      dph=0;
      totalVAT=0;
@@ -1729,19 +1733,19 @@ int type; // typ ZAL FA z rady
            VALUE( invoiceID );
            VALUE( prefix  );
            VALUE( zone );
-           VALUE( type );  // cislo rady z tabulky invoice_prefix
+           VALUE( type );  // number of line from tabel invoice_prefix
            VALUE( regID );
            VALUE( taxDateStr );
-           VALPRICE( price ); // celkova castka
-           VALUE( dph ); // vyse dph 19 %
-           VALPRICE( total ); // castka bez DPH
-           VALPRICE( totalVAT ); // castka bez DPH
-           VALPRICE( credit ); // pripocteny credit
+           VALPRICE( price ); // total price
+           VALUE( dph ); // VAT height 19 %
+           VALPRICE( total ); // price without VAT
+           VALPRICE( totalVAT ); // price without VAT
+           VALPRICE( credit ); // added credit
           
            if(  EXEC() ) return invoiceID;
-           else return -1; // chyba SQL insert
+           else return -1; // SQL insert error
       }
-      else return -2;  // chyba prefixu 
+      else return -2;  // prefix error 
           
 } 
 
@@ -1753,7 +1757,7 @@ int year;
 char yearStr[5];
 int id=0;
 
-// rok
+// year
 strncpy( yearStr , dateStr  , 4 );
 yearStr[4] = 0 ;
 year= atoi( yearStr);
@@ -1780,7 +1784,7 @@ int year;
 char yearStr[5];
 int prefix=0 , id=0;
 
-// rok
+// year
 strncpy( yearStr , dateStr  , 4 );
 yearStr[4] = 0 ;
 year= atoi( yearStr);
@@ -1797,7 +1801,7 @@ if( ExecSelect( sqlString )  )
                     prefix =  atoi( GetFieldValueName("prefix" , 0 ) );
                     LOG( LOG_DEBUG ,"invoice_prefix id %d -> %d" ,  id , prefix  );
               }
-            else return -3; // chyba
+            else return -3; // error
 
      FreeSelect();
 
@@ -1805,7 +1809,7 @@ if( ExecSelect( sqlString )  )
      SET( "prefix" , prefix +1 );
      WHEREID( id );
      if( EXEC() ) return prefix;
-     else return -2; // chyba
+     else return -2; // error
           
 
   }
@@ -1956,7 +1960,7 @@ return 0;
 bool DB::DeleteNSSetObject( int id )
 {
 
-// fisr delete tech-c
+// first delete tech-c
 if( DeleteFromTable( "nsset_contact_map", "nssetid", id ) )
    if( DeleteFromTable( "HOST_IPADDR_map", "nssetid", id ) ) // delete  ip address
         if( DeleteFromTable( "HOST", "nssetid", id ) )  // delete dns hosts
@@ -2019,7 +2023,7 @@ return false;
 
 
 
-int DB::MakeHistory(int objectID) // write records of object to the histyory
+int DB::MakeHistory(int objectID) // write records of object to the history
 {
 char sqlString[128];
 
@@ -2049,7 +2053,7 @@ return 0;
 }
 
 
-// save row  tabulky s id
+// save row of tabel with id
 bool DB::SaveHistory(char *table , char *fname , int id )
 {
 int i ,  row ;
@@ -2120,7 +2124,7 @@ void DB::SQLDelEnd()
 {
 int len;
 len = strlen( sqlBuffer );
-// del onm the end
+// del on the end
 if( len > 0 )  sqlBuffer[len-1]  = 0;
 }
 
@@ -2140,7 +2144,7 @@ int len , length ;
 len = strlen( str );
 length = strlen( sqlBuffer );
 
-//  test for leng buffer
+//  test for length buffer
 if(  len  + length < MAX_SQLBUFFER ) strcat( sqlBuffer , str );
 }
 
@@ -2155,7 +2159,7 @@ void DB::SQLCatUpper(const char *str )
 SQLCatLW( str , true );
 }
 
-// conver to lower or upper 
+// convert to lower or upper 
 void DB::SQLCatLW( const char *str , bool lw )
 {
 int len , length , i ;
@@ -2230,12 +2234,12 @@ if( strlen( value ) )
   SQLCat(" ");
   SQLCat(fname );
   SQLCat( "=" );
- // ODSTRANIT zatim to pouziva take hack na znak \b
-//   if( strcmp( value  , NULL_STRING ) ==  0 || value[0] == 0x8 ) // nastavi NULL value pro NULL string z IDL
+ // ERASE meanwhile it use also hack at sign \b
+//   if( strcmp( value  , NULL_STRING ) ==  0 || value[0] == 0x8 ) // set up NULL value for NULL string from IDL
 
 // if( null )
- // NULL back based on backslah 
-  if(   value[0] == 0x8 )  //  zatim pouzivat s mod_eppd hack na znak \b
+ // NULL back based on backslash 
+  if(   value[0] == 0x8 )  // meanwhile use with mod_eppd hack at sign \b
    {     
      SQLCat( "NULL" );           
    }
@@ -2247,7 +2251,7 @@ if( strlen( value ) )
     SQLCat(  "'" );
    }
 
-  SQLCat(  " ," ); // commna on the end
+  SQLCat(  " ," ); // comma on the end
  }
 
 }
@@ -2371,7 +2375,7 @@ INTO( "HISTORYID" );
 
 
 
-// INSERT INTO fce
+// INSERT INTO function
 
 void DB::INSERT( const char * table )
 {
@@ -2523,11 +2527,11 @@ ret =  ExecSQL( sqlBuffer );
 
 // free mem 
 delete[] sqlBuffer;
-// return if succes of failed
+// return if success of failed
 return ret;
 }
 
-// selct functions 
+// select functions 
 bool DB::SELECT()
 {
 bool ret;
@@ -2536,7 +2540,7 @@ ret = ExecSelect( sqlBuffer );
 
 // free mem 
 delete[] sqlBuffer;
-//  return if succes of failed
+//  return if success of failed
 return ret;
 }
 

@@ -29,7 +29,7 @@ for( i = 0 ; i < len ;  )
   if(  isalnum(c ) )  {    str[i] = c ; i ++ ; }
 
 }
- str[i] = 0 ; // ukocit
+ str[i] = 0 ; // to end
 }
 
 bool validateIPV6(const char *ipadd)
@@ -62,7 +62,7 @@ if( ipadd[len-1] == '.' ) return false;
          {
            if( b1 == 0 &&  b2  == 0 && b3  == 0 && b4  == 0 ) return false; 
            if( b1 == 1 &&  b2  == 1 && b3  == 1 && b4  == 1 ) return false; 
-           if ( (b1 | b2 | b3 | b4) > 255 ) return false; // max
+           if ( (b1 | b2 | b3 | b4) > 255 ) return false; // maximum
            if (strspn(ipadd, "0123456789.") < strlen(ipadd)) return false;
 
            if( b1 == 127 )  return false;
@@ -87,7 +87,7 @@ if( inet_pton(AF_INET,  src, &a4.sin_addr) == 0 )
 // test IPV6
 {
   if( inet_pton(AF_INET6,  src, &a6.sin6_addr)  )  if( validateIPV6( src ) )return IPV6;
-  // TODO local adres for ipv6
+  // TODO local address for ipv6
 }
 else  if( validateIPV4( src ) ) return IPV4;  // validate for local adres
 
@@ -217,7 +217,7 @@ for( i = 0  ; i < len ; i ++ )
 {
       if(  isalnum( fqdn[i] ) ||  fqdn[i] == '-' ||  fqdn[i] == '.' ) // test name of the DNS server
         {
-              HOST[i] =  tolower(  fqdn[i] ); // to lowwer case 
+              HOST[i] =  tolower(  fqdn[i] ); // to lower case 
         }
        else { HOST[0] = 0 ; return false; }
 }
@@ -265,14 +265,14 @@ for( i = 0 , num = 0  , dot = 0 ; i < len ; i ++ )
   }
 
 
-// minimal two dots 
-if( dot >= 2 ){ LOG( LOG_DEBUG , "test OK dots %d" , dot  ) ; return true; } 
+// minimal one dot
+if( dot >= 1 ){ LOG( LOG_DEBUG , "test OK dots %d" , dot  ) ; return true; } 
 }
 
 return false;
 }
 
-// test inet addres for ipv4 and ipv6
+// test inet address for ipv4 and ipv6
 bool TestInetAddress(const char *address )
 {
 int t;
@@ -309,20 +309,20 @@ else  return 2 ;  // period is out of range
 }
 
 
-// spocet DPH z cestky bez dane pomoci koeficientu a matematicky zaokrouhli DPH na desetniky
+//  count VAT from price without tax with help of coefficient a round VAT to dimes  
 // count VAT  ( local CZ ) function for banking 
 long count_dph( long  price , double koef )
 {
 double  p ;
 long d , r , mod ;
 
-p = price/100.0; // preved na double
-d = (long ) ( (p* koef) * 100.0 ); // na long 2 des mista
+p = price/100.0; // convert to double
+d = (long ) ( (p* koef) * 100.0 ); // to long 2 decimal places 
 
 mod = d % 10;
 
-if( mod  > 4 ) r = (d / 10) * 10   + 10; // zaokrouhly na desetniky nahoru
-else r = (d / 10) * 10; // dolu
+if( mod  > 4 ) r = (d / 10) * 10   + 10; // round up dimes
+else r = (d / 10) * 10; // down
 
 
 LOG( LOG_DEBUG ,  "count_dph koef  %lf p = %lf price %ld d = %ld  mod %ld zaokrouhleno dph->%ld"  , koef , p , price , d ,mod , r   );
@@ -332,8 +332,7 @@ return r;
 
 
 
-
-// preveadi cenu  halire bez konverze pres float
+// convert price of penny without conversion through float 
 // convert  local currency string 
 long get_price( const char *priceStr )
 {
@@ -346,8 +345,8 @@ len = strlen( priceStr );
 for( i = 0 ;i < len  ; i ++ )
 {
 
-// pokud jesou tisice oddelene mezerou
-// test for thousannds
+// if thousands are separated with blank space 
+// test for thousands
 if( str[i] == ' ' )
   {
       for( j = i ; j < len -1 ; j ++ ) str[j] = str[j+1];
@@ -365,7 +364,7 @@ return price;
 }
 
 
-// prevadi cenu v halirich na string
+// convert price in pennies to string 
 // return currency in long to string 
 void get_priceStr(char *priceStr  , long price)
 {
@@ -453,7 +452,7 @@ t = mktime( &dt );
 return t;
 } 
 
-//  concvert date  from database  ( int UTC date ) to local  date  
+//  convert date  from database  ( int UTC date ) to local  date  
 void convert_rfc3339_date( char *dateStr , const char *string )
 {
 time_t t;
@@ -497,7 +496,7 @@ else if (diff < 0)
      else  sign = '+';
 
 
-// conver only date 
+// convert only date 
 if( day ) sprintf(  string , "%4d-%02d-%02d" ,  dt->tm_year + 1900  ,  dt->tm_mon + 1 ,  dt->tm_mday  );
 else 
 {
@@ -519,7 +518,7 @@ if( diff != 0 )
 
 
 
-// fce forconvert timestamp  time_t -> SQL string 
+// function forconvert timestamp  time_t -> SQL string 
 void get_timestamp(  char *string ,  time_t t )
 {
 struct tm *dt;

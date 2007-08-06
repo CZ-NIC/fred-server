@@ -59,12 +59,17 @@ namespace Register
       std::string defaultEnumSuffix;
       std::string enumZoneString;
       std::string defaultDomainSuffix;
+      bool loaded;
      public:
       ManagerImpl(DB *_db) :
        db(_db), 
        defaultEnumSuffix("0.2.4"),
        enumZoneString("e164.arpa"),
-       defaultDomainSuffix("cz") 
+       defaultDomainSuffix("cz"),
+       loaded(false) 
+      {
+      }
+      void load()
       {
         if (!db->ExecSelect(
           "SELECT id, fqdn, enum_zone, "
@@ -80,6 +85,7 @@ namespace Register
            ));
         }
         db->FreeSelect();
+        loaded = true;
       }
       const std::string& getDefaultEnumSuffix() const
       {
@@ -95,6 +101,8 @@ namespace Register
       }
       const Zone* findZoneId(const std::string& fqdn) const
       {
+        // nonconst casting for lazy initialization
+        if (!loaded) ((Register::Zone::ManagerImpl *)this)->load();
         ZoneList::const_iterator i = find(RANGE(zoneList),fqdn);
         if (i!=zoneList.end()) return &(*i);
         else return NULL;

@@ -1,0 +1,16 @@
+1.6.4
+	* invoice mailing ignore registrars without email
+	* repair version numbers of transform poll messages
+	* bug in initialization in unix whois server
+1.6.3
+	* bug in update of disclose flags fixed
+	* bug in update of address fixed
+	* faulty namespace version in poll message corrected
+
+1.6.2
+	* disclose flags for vat, notifyEmail and ident
+	* temporary contact handling
+	* new logging infrastructure (without libdaemon)
+	* new config options (restricted_handles,disable_epp_notifier)
+	* reconnect in every login to admin interface
+	* sql optimalization

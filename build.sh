@@ -1,5 +1,5 @@
 #!/bin/sh
-# aktualni build adresar
+# actual build folder
 BDIR=/tmp/build
 REVFILE=/tmp/svn.revision
 SCHEMAS=/etc/apache2/schemas/
@@ -30,7 +30,7 @@ sleep 5
 # get source from SVN
 get_ccreg()
 {
-# stahni z SVN public jen to co je potreba
+# only download from SVN public what is need
 svn co --non-interactive    svn+ssh://pblaha@public.nic.cz/svn/enum/trunk/cr/
 svn co --non-interactive    svn+ssh://pblaha@public.nic.cz/svn/enum/trunk/mod_eppd
 svn co --non-interactive    svn+ssh://pblaha@public.nic.cz/svn/enum/trunk/epp_client/ccReg/schemas

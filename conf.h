@@ -28,16 +28,32 @@
 #define KEY_ebanka_url  15
 #define KEY_docgen_template_path  16
 #define KEY_nsset_level  17
-#define MAX_KEYS  17
+#define KEY_restricted_handles  18
+#define KEY_disable_epp_notifier  19
+#define MAX_KEYS  19
 
 #include <string>
 
 class Conf {
 public:
 
-Conf() { port[0]=0; timeout[0] = 0 ; host[0] = 0 ; user[0]=0 ; password[0] = 0 ; host[0]=0; log_level = 0 ; conninfo[0] =0 ; log_local=0; 
-// default  values 
-session_max=20 ; session_wait=300;}; // empty
+Conf() { 
+  // default  values 
+  port[0]=0; 
+  timeout[0] = 0 ; 
+  host[0] = 0 ; 
+  user[0]=0 ; 
+  password[0] = 0 ; 
+  host[0]=0; 
+  log_level = 0 ; 
+  conninfo[0] =0 ; 
+  log_local=0;
+  nssetLevel="3";
+  restrictedHandles=1;
+  disableEPPNotifier=0; 
+  session_max=20 ; 
+  session_wait=300;
+}
 ~Conf(){}; // empty
 
 bool  ReadConfigFile(const char *filename )
@@ -72,7 +88,8 @@ const char *GetDocGenTemplatePath() { return docGenTemplatePath.c_str(); }
 const char *GetFileClientPath() { return fileClientPath.c_str(); }
 const char *GetEBankaURL() { return eBankaURL.c_str(); }
 const char *GetNSSetLevel() { return nssetLevel.c_str(); }
-
+unsigned GetRestrictedHandles() { return restrictedHandles; }
+unsigned GetDisableEPPNotifier() { return disableEPPNotifier; }
 
 int GetSYSLOGlevel(){ return log_level; };
 int GetSYSLOGlocal(){ return log_local; };
@@ -125,6 +142,8 @@ std::string docGenTemplatePath;
 std::string fileClientPath;
 std::string eBankaURL;
 std::string nssetLevel;
+unsigned restrictedHandles;
+unsigned disableEPPNotifier;
 };
 
 #endif

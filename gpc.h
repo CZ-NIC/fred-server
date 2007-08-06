@@ -1,6 +1,6 @@
 
-#define GPC_LIST_HEAD "074" // hlavicka vypisu
-#define GPC_LIST_ITEM "075" // polozka vypisu
+#define GPC_LIST_HEAD "074" // head of list
+#define GPC_LIST_ITEM "075" // item of list
 
 
 #define  GPC_MAX_ACCOUNT 16
@@ -20,7 +20,7 @@
 #define debug  /* printf */
 #endif
 
-#define MAX_ITEMS 256 // maximalni pocet polozek vypisu
+#define MAX_ITEMS 256 // maximum amount of list item
 
 #define MAX_DATE_STR 12
 #define MAX_ACCOUNT GPC_MAX_ACCOUNT+1
@@ -37,69 +37,69 @@
 
 struct GPC_ListHead
 {
-// char record[3]; // typ zaznamu
-char accountNumber[GPC_MAX_ACCOUNT+1]; // cislu uctu klienta
-char accountName[GPC_MAX_NAME+1]; // zkraceny nazev klienta
-char dateOldBalance[GPC_MAX_DATE+1]; // datum stareho zustatku datum v formatu DDMMYY
-char oldBalance[GPC_MAX_BALANCE+1]; // stary zustatek
-char oldBalanceSign; // znamenko + ci -
-char newBalance[GPC_MAX_BALANCE+1]; // novy zustatek
-char newBalanceSign; // znamenko + ci -
-char credit[GPC_MAX_BALANCE+1]; // kreditni obrat
-char creditSign; // znamenko + ci -
-char debet[GPC_MAX_BALANCE+1]; // debetni obrat
-char debetSign; // znamenko + ci -
-// char numList[3+1]; // poradove cislo vypisu
+// char record[3]; // record type
+char accountNumber[GPC_MAX_ACCOUNT+1]; // client account number
+char accountName[GPC_MAX_NAME+1]; // short name of client 
+char dateOldBalance[GPC_MAX_DATE+1]; // date of old balance, date in format DDMMYY
+char oldBalance[GPC_MAX_BALANCE+1]; // old balance
+char oldBalanceSign; // sign + or -
+char newBalance[GPC_MAX_BALANCE+1]; // new balance
+char newBalanceSign; // sign + or -
+char credit[GPC_MAX_BALANCE+1]; // credit turn
+char creditSign; // sign + or -
+char debet[GPC_MAX_BALANCE+1]; // debit turn
+char debetSign; // sign + or -
+// char numList[3+1]; // ordinal number of list
 int num;
-char dateList[GPC_MAX_DATE+1]; // datum vypisu v formatu DDMMYY
-// char filter[14]; // zbytek vyplneny mezerami;
+char dateList[GPC_MAX_DATE+1]; // date of list in format DDMMYY
+// char filter[14]; // rest fulfiled with clear spaces;
 };
 
 
 struct GPC_ListItem
 {
-// char record[3]; // typ zaznamu
-char accountNumber[GPC_MAX_ACCOUNT+1]; // cislu uctu klienta
-char accountOther[GPC_MAX_ACCOUNT+1]; // cislo protiuctu
-char evidNum[GPC_MAX_EVID+1]; // cislo dokladu
-char price[GPC_MAX_PRICE+1]; // castka 
-// char accountingCode; // kod uctovani
+// char record[3]; // record type
+char accountNumber[GPC_MAX_ACCOUNT+1]; // client account number 
+char accountOther[GPC_MAX_ACCOUNT+1]; // contra-account number
+char evidNum[GPC_MAX_EVID+1]; // evidence number
+char price[GPC_MAX_PRICE+1]; // amount 
+// char accountingCode; // accounting code
 char accountCode;
-char varSymbol[GPC_MAX_SYMBOL+1]; // variabilni sybmol
-char konstSymbol[GPC_MAX_SYMBOL+1]; // kontsani symbol + sperovy kod banky protiuctu
+char varSymbol[GPC_MAX_SYMBOL+1]; // variable symbol
+char konstSymbol[GPC_MAX_SYMBOL+1]; // constant symbol + contra-account sper bank code (in czech sperovy kod banky protiuctu)
 char specSymbol[GPC_MAX_SYMBOL+1]; 
-char dateValuta[GPC_MAX_DATE+1]; // datum zustatku pro vypocet uroku
-char memo[GPC_MAX_MEMO+1]; // doplnujici udaj poznamka
-char changeCode; // kod zmeny polozky
-char dataType[4]; // dryh dat
-char date[GPC_MAX_DATE+1]; // datum slatnosti /pripsani na ucet
+char dateValuta[GPC_MAX_DATE+1]; // date of balance for interest count 
+char memo[GPC_MAX_MEMO+1]; // supplementary data
+char changeCode; // change of item code 
+char dataType[4]; // data type
+char date[GPC_MAX_DATE+1]; // maturity date / putting to account
 };
 
 
-struct ST_Head // hlavick avypisu
+struct ST_Head // head of list
 {
-char account[MAX_ACCOUNT]; // cislo uctu klienta
-char name[MAX_NAME]; // nazev klienta
-long oldBalnce; // stary sustatek
-long newBalance; // novy zustatek
-long credit; // creditni obrat
-long debet; // debetni obrat
-char oldDate[MAX_DATE_STR]; // datum stareho zustatku
-char date[MAX_DATE_STR]; // dattum vypisu;
-int num; // porwdi vypisu
+char account[MAX_ACCOUNT]; // client account number 
+char name[MAX_NAME]; // client name
+long oldBalnce; // old balance
+long newBalance; // new balance
+long credit; // credit turn
+long debet; // debit turn
+char oldDate[MAX_DATE_STR]; // date of old balance
+char date[MAX_DATE_STR]; // date of list;
+int num; // order of list
 };
 
-struct ST_Item // statem item polozka vypisu
+struct ST_Item // statement item 
 {
-char account[MAX_ACCOUNT]; // cislo protiuctu
-char bank[MAX_CODE]; // kod banky proti uctu z KS
+char account[MAX_ACCOUNT]; // contra-account number 
+char bank[MAX_CODE]; // bank code against account from KS
 char ks[MAX_KS];
 char vs[MAX_VS];
 char ss[MAX_SS];
-char evid[MAX_MEMO]; // doklad cislo
-char memo[MAX_MEMO]; // poznamka
-char date[MAX_DATE_STR]; // datum splatnosti  zkonvertovane datum fe romatu YYYY-MM-DD
-long price; // castka v halirich;
+char evid[MAX_MEMO]; // evidence number
+char memo[MAX_MEMO]; // note
+char date[MAX_DATE_STR]; // payable date converted date in format YYYY-MM-DD
+long price; // price in pennies;
 int code; // credit true debet false
 };
 

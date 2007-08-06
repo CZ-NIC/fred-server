@@ -172,7 +172,8 @@ char keys[MAX_KEYS][KEY_MAX] = {
   "dbname" , "user" , "password" , "host" , "port" , "connect_timeout" , 
   "log_mask" ,  "log_level" , "log_local", "nameservice"  , "session_max" , 
   "session_wait", "docgen_path", "fileclient_path", "ebanka_url",
-  "docgen_template_path", "nsset_level"
+  "docgen_template_path", "nsset_level", "restricted_handles", 
+  "disable_epp_notifier"
 };
 int key;
 char keyname[KEY_MAX];
@@ -248,10 +249,10 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
                            session_max = atoi(  value );
                            break;
                 case KEY_log_level:
-                           log_level = GetLevel(value);
+                           log_level = atoi(value);
                            break; 
                 case KEY_log_local:
-                           log_local = GetLocal(value);
+                           log_local = atoi(value);
                            break; 
                 case KEY_nameservice:
                             nameService = value;
@@ -270,6 +271,12 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
                            break;              
                 case KEY_nsset_level:
                             nssetLevel = value;
+                           break;              
+                case KEY_restricted_handles:
+                            restrictedHandles = atoi(value);
+                           break;              
+                case KEY_disable_epp_notifier:
+                            disableEPPNotifier = atoi(value);
                            break;              
                 default:
 		    daemon_log(LOG_ERR, "parse error on line %d  [%s]\n" , line , buf );

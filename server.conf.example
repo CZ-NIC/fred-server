@@ -50,9 +50,21 @@ fileclient_path=/usr/bin/filemanager_client
 # DEBUG       7       /* debug-level messages
 
 # Log level
-log_level = DEBUG
+log_level=7
 # Syslog local facility where to log (0-7) 
 log_local=1
 
+#
+# System defaults
+#
+
 # Default report level of new NSSet
 nsset_level=3
+
+# Restrictive format of handle (CID: & NSSID: prefixes) or not?
+restricted_handles=1
+
+# Disable EPP notifier (massive uploads or performance tests)
+disable_epp_notifier=0
+
+

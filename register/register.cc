@@ -16,14 +16,16 @@ namespace Register
    std::auto_ptr<Contact::Manager> cm;
    std::auto_ptr<NSSet::Manager> nm;
    std::vector<CountryDesc> countries;
+   bool restrictedHandles;
   public:
-   ManagerImpl(DB *_db) : db(_db)
+   ManagerImpl(DB *_db, bool _restrictedHandles) : 
+     db(_db), restrictedHandles(_restrictedHandles)
    {
      zm.reset(Zone::Manager::create(db));
      dm.reset(Domain::Manager::create(db,zm.get()));
      rm.reset(Registrar::Manager::create(db));
-     cm.reset(Contact::Manager::create(db));
-     nm.reset(NSSet::Manager::create(db));
+     cm.reset(Contact::Manager::create(db,restrictedHandles));
+     nm.reset(NSSet::Manager::create(db,restrictedHandles));
      // TODO SQL load
      CountryDesc cd;
      cd.cc = "CZ";
@@ -131,8 +133,8 @@ namespace Register
      return countries[idx];
    }   
  };
- Manager *Manager::create(DB *db)
+ Manager *Manager::create(DB *db, bool restrictedHandles)
  {
-   return new ManagerImpl(db);
+   return new ManagerImpl(db, restrictedHandles);
  }
 }

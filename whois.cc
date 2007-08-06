@@ -25,7 +25,7 @@ ccReg::DomainWhois* ccReg_Whois_i::getDomain(
   ccReg::DomainWhois *dm;
   int clid ,nssetid ;
   int i , len;
-  bool en;
+  bool en = false;
   time_t t ,  expired ;
   if (!DBsql.OpenDatabase(database.c_str()) )
     throw ccReg::Whois::WhoisError( "database connect error" );

@@ -136,6 +136,8 @@ int main(int argc, char** argv) {
 // 		      <<  config.GetSYSLOGlocal()   << std::endl;
 // 	    setlogmask ( LOG_UPTO(  config.GetSYSLOGlevel()  )   );
 // 	    openlog ( argv[0] , LOG_CONS | LOG_PID | LOG_NDELAY,  config.GetSYSLOGfacility() );
+	    Logger::get().setLevel(config.GetSYSLOGlevel());
+	    Logger::get().setFacility(config.GetSYSLOGlocal());
 
 	    // database string
 	    strcpy( db , config.GetDBconninfo() );

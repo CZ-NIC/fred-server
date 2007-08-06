@@ -42,9 +42,9 @@ class EPPNotifier {
   ID registrarID; // idof registrar who make change
   ID objectID; // type of the object  where make change
   
-
+  bool disable; // for fast upload of objects 
  public:
-  EPPNotifier(MailerManager *mailManager, DB *dbs , ID regid ,ID objectid); // add default contacts for object ID
+  EPPNotifier(bool _disable, MailerManager *mailManager, DB *dbs , ID regid ,ID objectid); // add default contacts for object ID
   ~EPPNotifier();
   bool Send(); // send e-mail messages by mailer manager
 

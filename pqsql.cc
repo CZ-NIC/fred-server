@@ -61,7 +61,7 @@ else
 }
 
 
-// get number of selected tows and cols
+// get number of selected rows and cols
 int PQ::GetSelectRows(){ return nRows;};
 int PQ::GetSelectCols(){ return nCols;};
 
@@ -93,7 +93,7 @@ else return PQfname(result, col);
 bool  PQ::IsNotNull( int row , int col )
 { 
    if( PQgetisnull( result , row , col ) ) return false;
-   else return true; // neni NULL 
+   else return true; // isn't NULL 
 }
 
 // return string value at row and col
@@ -130,14 +130,14 @@ return atoi( GetFieldValueName( fname , row ) );
 
 
 
-// return lenghth  
+// return lenght  
 int  PQ::GetValueLength(int row  , int col)
 {
 return PQgetlength( result , row , col );
 }
 
 
-// run SQL select truu if is success
+// run SQL select true if is success
 bool PQ::ExecSelect(const char *sqlString)
 {
 

@@ -4,12 +4,16 @@
 #include <boost/date_time/gregorian/formatters.hpp>
 #include <boost/date_time/posix_time/time_formatters.hpp>
 
+#define TIME_FILTER_BEG(f) (!f.begin().is_special())
+#define TIME_FILTER_END(f) (!f.end().is_special())
+#define TIME_FILTER_SET(f) (TIME_FILTER_BEG(f) || TIME_FILTER_END(f))
+
 #define SQL_TIME_FILTER(x,colname,member) \
-  if (!member.begin().is_special()) \
+  if (TIME_FILTER_BEG(member)) \
      x << "AND " << colname << ">='"  \
        <<  to_iso_extended_string(member.begin()) \
        << "' "; \
-  if (!member.end().is_special()) \
+  if (TIME_FILTER_END(member)) \
      x << "AND " << colname << "<='"  \
        <<  to_iso_extended_string(member.end()) \
        << "' "
@@ -33,5 +37,24 @@
      x << "AND " << colname << "=" << member << " "
 #define SQL_ID_FILTER(x,colname,member) \
   if (member) SQL_ID_FILTER_FILL(x,colname,member)
+
+#define MAKE_TIME_DEF(ROW,COL,DEF)  \
+  (ptime(db->IsNotNull(ROW,COL) ? \
+   time_from_string(db->GetFieldValue(ROW,COL)) : DEF))         
+#define MAKE_TIME(ROW,COL) \
+  MAKE_TIME_DEF(ROW,COL,ptime(not_a_date_time))         
+#define MAKE_TIME_NEG(ROW,COL) \
+  MAKE_TIME_DEF(ROW,COL,ptime(neg_infin))         
+#define MAKE_TIME_POS(ROW,COL) \
+  MAKE_TIME_DEF(ROW,COL,ptime(pos_infin))         
+#define MAKE_DATE_DEF(ROW,COL,DEF)  \
+ (date(db->IsNotNull(ROW,COL) ? from_string(db->GetFieldValue(ROW,COL)) : DEF))
+#define MAKE_DATE(ROW,COL)  \
+  MAKE_DATE_DEF(ROW,COL,date(not_a_date_time))
+#define MAKE_DATE_NEG(ROW,COL) \
+  MAKE_DATE_DEF(ROW,COL,date(neg_infin))         
+#define MAKE_DATE_POS(ROW,COL) \
+  MAKE_DATE_DEF(ROW,COL,date(pos_infin))         
+
 
 #endif

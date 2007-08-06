@@ -8,12 +8,16 @@
 
 #include <vector>
 
-#define NSSET_REGEX "[nN][sS][sS][iI][dD]:[a-zA-Z0-9_:.-]{1,36}"
+#define NSSET_REGEX_RESTRICTED "[nN][sS][sS][iI][dD]:[a-zA-Z0-9_:.-]{1,57}"
+#define NSSET_REGEX "[a-zA-Z0-9_:.-]{1,63}"
 
 namespace Register
 {
   namespace NSSet
   {
+    static boost::regex format(NSSET_REGEX);
+    static boost::regex formatRestricted(NSSET_REGEX_RESTRICTED);
+
     class HostImpl : public virtual Host
     {
       typedef std::vector<std::string> AddrListType;
@@ -123,12 +127,9 @@ namespace Register
       std::string hostname;
       std::string ip;
       std::string admin;
-      DB *db;
      public:
-      ListImpl(DB *_db) : ObjectListImpl(),  
-      db(_db)
-      {
-      }
+      ListImpl(DB *_db) : ObjectListImpl(_db)  
+      {}
       ~ListImpl() 
       {
         clear();
@@ -162,42 +163,96 @@ namespace Register
       {
         admin = handle;
       }
-#define MAKE_TIME(ROW,COL)  \
- (ptime(db->IsNotNull(ROW,COL) ? \
- time_from_string(db->GetFieldValue(ROW,COL)) : not_a_date_time))   
+      void makeQuery(bool count, bool limit, std::stringstream& sql) const
+      {
+        std::stringstream from, where;
+        sql.str("");
+        if (!count) 
+          sql << "INSERT INTO " << getTempTableName() << " ";
+        sql << "SELECT " << (count ? "COUNT(" : "")
+            << "DISTINCT n.id" << (count ? ") " : " ");
+        from << "FROM nsset n ";
+        where << "WHERE 1=1 ";
+        SQL_ID_FILTER(where,"n.id",idFilter);
+        if (registrarFilter || !registrarHandleFilter.empty() ||
+            updateRegistrarFilter || !updateRegistrarHandleFilter.empty() ||
+            TIME_FILTER_SET(updateIntervalFilter) ||
+            TIME_FILTER_SET(trDateIntervalFilter)
+           ) {
+          from << ",object o ";
+          where << "AND n.id=o.id ";
+          SQL_ID_FILTER(where,"o.clid",registrarFilter);
+          SQL_ID_FILTER(where,"o.upid",updateRegistrarFilter);
+          SQL_DATE_FILTER(where,"o.upDate",updateIntervalFilter);
+          SQL_DATE_FILTER(where,"o.trDate",trDateIntervalFilter);
+          if (!registrarHandleFilter.empty()) {
+            from << ",registrar reg ";
+            where << "AND o.clid=reg.id ";
+            SQL_HANDLE_FILTER(where,"reg.handle",registrarHandleFilter);
+          }
+          if (!updateRegistrarHandleFilter.empty()) {
+            from << ",registrar ureg ";
+            where << "AND o.upid=ureg.id ";          
+            SQL_HANDLE_FILTER(where,"reg.handle",updateRegistrarHandleFilter);
+          }
+        }
+        if (createRegistrarFilter || !createRegistrarHandleFilter.empty() ||
+            TIME_FILTER_SET(crDateIntervalFilter) ||
+            !handle.empty()) {
+          from << ",object_registry obr ";
+          where << "AND obr.id=n.id AND obr.type=2 ";       
+          SQL_ID_FILTER(where,"obr.crid",createRegistrarFilter);
+          SQL_DATE_FILTER(where,"obr.crdate",crDateIntervalFilter);
+          SQL_HANDLE_FILTER(where,"obr.name",handle);
+          if (!createRegistrarHandleFilter.empty()) {
+            from << ",registrar creg ";
+            where << "AND obr.crid=creg.id ";          
+            SQL_HANDLE_FILTER(where,"creg.handle",createRegistrarHandleFilter);
+          }
+        }
+        if (!admin.empty()) {
+          from << ",nsset_contact_map ncm ";
+          where << "AND n.id=ncm.nssetid ";
+          // preprared for addition of admin ID filter
+          if (!admin.empty()) {
+            from << ",object_registry ncor ";
+            where << "AND ncm.contactid=ncor.id AND ncor.type=1 ";            
+            SQL_HANDLE_FILTER(where,"ncor.name",admin);
+          }
+        }
+        if (!hostname.empty()) {
+          from << ",host h ";
+          where << "AND n.id=h.nssetid ";
+          SQL_HANDLE_FILTER(where,"h.fqdn",hostname);
+        }
+        if (!ip.empty()) {
+          from << ",host_ipaddr_map him ";
+          where << "AND n.id=him.nssetid ";
+          SQL_HANDLE_FILTER(where,"host(him.ipaddr)",ip);
+        }
+        if (!count) where << "ORDER BY n.id ASC ";
+        if (limit) where << "LIMIT 1000 ";
+        sql << from.rdbuf();
+        sql << where.rdbuf();
+      }
       void reload() throw (SQL_ERROR)
       {
         clear();
+        fillTempTable(true);
         std::ostringstream sql;
-        sql << "SELECT DISTINCT "
+        sql << "SELECT "
             << "obr.id,obr.name,"
             << "r.id,r.handle, "
             << "obr.crdate,o.trdate,o.update,"
-            << "creg.id,creg.handle,ureg.id,ureg.handle,o.authinfopw,obr.roid "
-            << "FROM registrar r, registrar creg, "
+            << "creg.id,creg.handle,ureg.id,ureg.handle,o.authinfopw,obr.roid "           
+            << "FROM "
+            << getTempTableName() << " tmp, "
+            << "nsset n, registrar r, registrar creg, "
             << "object_registry obr, object o "
-            << "LEFT JOIN registrar ureg ON (o.upid=ureg.id), "
-            << "nsset n LEFT JOIN nsset_contact_map ncm ON (ncm.nssetid=n.id) "
-            << "LEFT JOIN object_registry tcor ON (ncm.contactid=tcor.id) "
-            << "LEFT JOIN host h ON (n.id=h.nssetid) "
-            << "LEFT JOIN host_ipaddr_map him ON (him.hostid=h.id) "
-            << "WHERE n.id=o.id AND obr.id=o.id AND o.clid=r.id "
+            << "LEFT JOIN registrar ureg ON (o.upid=ureg.id) "
+            << "WHERE tmp.id=n.id AND n.id=o.id "
+            << "AND obr.id=o.id AND o.clid=r.id "
             << "AND obr.crid=creg.id ";
-        SQL_ID_FILTER(sql,"o.id",idFilter);
-        SQL_ID_FILTER(sql,"r.id",registrarFilter);
-        SQL_HANDLE_FILTER(sql,"r.handle",registrarHandleFilter);
-        SQL_ID_FILTER(sql,"creg.id",createRegistrarFilter);
-        SQL_HANDLE_FILTER(sql,"creg.handle",createRegistrarHandleFilter);
-        SQL_ID_FILTER(sql,"ureg.id",updateRegistrarFilter);
-        SQL_HANDLE_FILTER(sql,"ureg.handle",updateRegistrarHandleFilter);        
-        SQL_DATE_FILTER(sql,"obr.crDate",crDateIntervalFilter);
-        SQL_DATE_FILTER(sql,"o.upDate",updateIntervalFilter);
-        SQL_DATE_FILTER(sql,"o.trDate",trDateIntervalFilter);
-        SQL_HANDLE_FILTER(sql,"obr.name",handle);
-        SQL_HANDLE_FILTER(sql,"tcor.name",admin);        
-        SQL_HANDLE_FILTER(sql,"h.fqdn",hostname);
-        SQL_HANDLE_FILTER(sql,"host(him.ipaddr)",ip);
-        sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           nlist.push_back(
@@ -221,8 +276,10 @@ namespace Register
         db->FreeSelect();
         sql.str("");
         sql << "SELECT n.nssetid, cor.name "
-            << "FROM nsset_contact_map n, object_registry cor "
-            << "WHERE n.contactid = cor.id";
+            << "FROM "
+            << getTempTableName() << " tmp, "
+            << "nsset_contact_map n, object_registry cor "
+            << "WHERE tmp.id=n.nssetid AND n.contactid = cor.id";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           TID id = STR_TO_ID(db->GetFieldValue(i,0));
@@ -236,7 +293,10 @@ namespace Register
         db->FreeSelect();
         sql.str("");
         sql << "SELECT h.nssetid, h.fqdn, him.ipaddr "
-            << "FROM host h LEFT JOIN host_ipaddr_map him ON (h.id=him.hostid) ";
+            << "FROM "
+            << getTempTableName() << " tmp, "
+            << "host h LEFT JOIN host_ipaddr_map him ON (h.id=him.hostid) "
+            << "WHERE tmp.id=h.nssetid ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           TID id = STR_TO_ID(db->GetFieldValue(i,0));
@@ -259,30 +319,46 @@ namespace Register
         ip = "";
         hostname = "";
       }
+      virtual const char *getTempTableName() const
+      {
+        return "tmp_nsset_filter_result";
+      }                  
     };
     class ManagerImpl : public virtual Manager
     {
       DB *db; ///< connection do db
-      ListImpl nlist;
+      bool restrictedHandle; ///< format of handle is more restrictive
       /// check if handle is in valid format
-      /** Valid format is regexp 'NSSID:[[:alnum:]_.:-]{1,36}' */
       bool checkHandleFormat(const std::string& handle) const
       {
-        return boost::regex_match(handle,boost::regex(NSSET_REGEX)) ;
+        try {
+          // format is global variable, because creating online has problems
+          // with strange exceptions thrown in constructor
+          return boost::regex_match(
+            handle,restrictedHandle ? formatRestricted : format
+          );
+        } catch (...) {
+          // TODO: log error
+          return false;
+        }
       }
       /// check if object is in database
-      bool checkHandleRegistration(const std::string& handle) const
-        throw (SQL_ERROR)
+      bool checkHandleRegistration(
+        const std::string& handle,
+        NameIdPair& conflict
+      ) const throw (SQL_ERROR)
       {
         std::ostringstream sql;
-        sql << "SELECT COUNT(*) FROM object_registry "
+        sql << "SELECT id,name FROM object_registry "
             << "WHERE type=2 AND erDate ISNULL AND "
             << "UPPER(name)=UPPER('" << handle << "')";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        bool result = atoi(db->GetFieldValue(0,0));
+        bool result = db->GetSelectRows() >= 1;
+        conflict.id = result ? STR_TO_ID(db->GetFieldValue(0,0)) : 0;
+        conflict.name = result ? db->GetFieldValue(0,1) : "";
         db->FreeSelect();
         return result;
-      }      
+      }
       /// check if object handle is in protection period (true=protected)
       bool checkProtection(
         const std::string& name, unsigned type,
@@ -295,7 +371,8 @@ namespace Register
             << " > CURRENT_DATE, false) "
             << "FROM object_registry "
             << "WHERE NOT(erdate ISNULL) " 
-            << "AND type=" << type << " AND name='" << name << "'";
+            << "AND type=" << type << " "
+            << "AND UPPER(name)=UPPER('" << name << "')";
         if (!db->ExecSelect(sql.str().c_str())) {
           db->FreeSelect();
           throw SQL_ERROR();
@@ -305,12 +382,12 @@ namespace Register
         return ret;
       }
      public:
-      ManagerImpl(DB *_db) :
-        db(_db), nlist(_db)
+      ManagerImpl(DB *_db, bool _restrictedHandle) :
+        db(_db), restrictedHandle(_restrictedHandle)
       {}
-      virtual List *getList()
+      virtual List *createList()
       {
-        return &nlist;
+        return new ListImpl(db);
       }
       virtual CheckAvailType checkAvail(
         const std::string& handle, NameIdPair& conflict
@@ -319,15 +396,15 @@ namespace Register
         conflict.id = 0;
         conflict.name = "";
         if (!checkHandleFormat(handle)) return CA_INVALID_HANDLE;
-        if (checkHandleRegistration(handle)) return CA_REGISTRED;
+        if (checkHandleRegistration(handle,conflict)) return CA_REGISTRED;
         if (checkProtection(handle,2,"2 month")) 
           return CA_PROTECTED; 
         return CA_FREE;
       }            
     };
-    Manager *Manager::create(DB *db)
+    Manager *Manager::create(DB *db, bool restrictedHandle)
     {
-      return new ManagerImpl(db);
+      return new ManagerImpl(db, restrictedHandle);
     }    
   }
 }

@@ -1,4 +1,5 @@
 #include "object_impl.h"
+#include "dbsql.h"
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //     Register::ObjectImpl
@@ -130,14 +131,16 @@ Register::ObjectImpl::deleteStatus(StatusElement element)
 //     Register::ObjectListImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-Register::ObjectListImpl::ObjectListImpl() :
+Register::ObjectListImpl::ObjectListImpl(DB *_db) :
   idFilter(0),
   registrarFilter(0), 
   createRegistrarFilter(0), 
   updateRegistrarFilter(0),
   crDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
   updateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
-  trDateIntervalFilter(ptime(neg_infin),ptime(pos_infin))
+  trDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
+  realCount(0),
+  db(_db)
 {
 }
 
@@ -220,4 +223,38 @@ Register::ObjectListImpl::clear()
   registrarHandleFilter = "";
   createRegistrarHandleFilter = ""; 
   updateRegistrarHandleFilter = "";
+}
+
+unsigned long long 
+Register::ObjectListImpl::getRealCount() const
+{
+  return realCount;
+}
+
+void 
+Register::ObjectListImpl::fillTempTable(bool limit) const throw (SQL_ERROR)
+{
+  // this code is same fo every object should be inherited
+  std::stringstream sql;
+  sql << "CREATE TEMPORARY TABLE " << getTempTableName()
+      << " (id INTEGER PRIMARY KEY)";
+  // ignore if allready exists;
+  db->ExecSQL(sql.str().c_str());
+  // truncate if it already exists
+  sql.str("");
+  sql << "TRUNCATE " << getTempTableName();
+  db->ExecSQL(sql.str().c_str());
+  sql.str("");
+  makeQuery(false,limit,sql);
+  if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
+}
+void 
+Register::ObjectListImpl::makeRealCount() throw (SQL_ERROR)
+{
+  std::stringstream sql;
+  makeQuery(true,false,sql);
+  if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+  if (db->GetSelectRows() != 1) throw SQL_ERROR();
+  realCount = atoll(db->GetFieldValue(0,0));
+  db->FreeSelect();
 }

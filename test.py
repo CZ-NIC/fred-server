@@ -1,6 +1,6 @@
 #!/usr/bin/env python 
-# init test zatim pro funkce domeny 
-# dodelat vsechny funkce od vytvareni kontaktu pres nsset az po domenu
+# init test for domain function yet 
+# TODO all function from contact creation through nsset to domain 
 import sys 
 from omniORB import CORBA 
 import ccReg
@@ -25,7 +25,7 @@ result =  epp.GetTransaction( 1203 , "unknwo act" , 2104);
 print "Get transaction  svrTRID '%s' err '%d'" % ( result.svTRID ,result.errCode )
 
 result = epp.ClientLogin( "REG-GENERAL-REGISTRY" , "123456789" , "", "python-login"  );
-# nelze pouzivat out parametry vraci se jako navratova hodnota
+# out parameters can not be used it returns as release value
 loginID = result[1]
 
 print "Login  svrTRID '%s' err '%d' loginID '%d'" % ( result[0].svTRID ,result[0].errCode , loginID  );

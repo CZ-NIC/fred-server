@@ -1,5 +1,6 @@
-#include<syslog.h>
+#include <syslog.h>
 #include <libdaemon/dlog.h>
+#include <stdarg.h>
 
 #define EMERG_LOG     LOG_EMERG
 #define ALERT_LOG     LOG_ALERT
@@ -10,6 +11,38 @@
 #define DEBUG_LOG     LOG_DEBUG
 #define NOTICE_LOG    LOG_NOTICE
 #define INFO_LOG      LOG_INFO
-#define EMERG_LOG     LOG_EMERG 
 
-#define LOG daemon_log
+class Logger 
+{
+ private:
+  Logger() : level(DEBUG_LOG), facility(2) {} ///< ctor hidden
+  Logger(Logger const&) {} ///< copy ctor hidden
+  Logger& operator=(Logger const&) {} ///< assign op. hidden
+  ~Logger() {} ///< dtor hidden
+  int level; ///< minimal level of logging
+  int facility; ///< syslog facility 
+ public:
+  static Logger &get()
+  {
+    static Logger l;
+    return l;
+  }
+  void log(int prio, const char* t, ...) 
+  {
+    if (level < prio) return;
+    va_list arglist;
+    va_start(arglist, t);
+    vsyslog(prio | ((LOG_FAC(LOG_LOCAL0)+facility) << 3), t, arglist);
+    va_end(arglist);
+  }
+  void setFacility(int _facility)
+  {
+    facility = _facility;
+  }
+  void setLevel(int _level)
+  {
+    level = _level;
+  }
+};
+
+#define LOG Logger::get().log

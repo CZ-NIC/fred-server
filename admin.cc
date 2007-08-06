@@ -217,7 +217,9 @@ ccReg_Admin_i::checkHandle(
 {
   DB db;
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   ccReg::CheckHandleTypeSeq* chs = new ccReg::CheckHandleTypeSeq;
   Register::CheckHandleList chl;
   r->checkHandle(handle,chl);
@@ -263,13 +265,20 @@ ccReg_Admin_i::login(const char* username, const char* password)
   userList.push_back("jara");
   userList.push_back("zuzka");
   userList.push_back("david");
+  userList.push_back("feela");
+  userList.push_back("ondrej");
   std::vector<std::string>::const_iterator i = find(
     userList.begin(), userList.end(), username
   );
   if (i == userList.end()) throw ccReg::Admin::AuthFailed();
   SessionListType::const_iterator j = sessionList.find(username);
-  if (j == sessionList.end())
-    sessionList[username] = new ccReg_Session_i(database,ns,cfg);
+  // temporary create sesssion in every login (to reconnect)
+  //  if (j == sessionList.end())
+  //    sessionList[username] = new ccReg_Session_i(database,ns,cfg);
+  //  return CORBA::string_dup(username);
+  if (j != sessionList.end())
+    delete sessionList[username];
+  sessionList[username] = new ccReg_Session_i(database,ns,cfg);
   return CORBA::string_dup(username);
 }
 
@@ -316,7 +325,9 @@ ccReg_Admin_i::getRegistrars()
 {
   DB db;
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> regm(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> regm(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::Registrar::Manager *rm = regm->getRegistrarManager();
   Register::Registrar::RegistrarList *rl = rm->getList();
   rl->reload();
@@ -336,7 +347,9 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
   LOG( NOTICE_LOG, "getRegistarByHandle: id -> %lld", (unsigned long long)id );
   if (!id) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> regm(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> regm(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::Registrar::Manager *rm = regm->getRegistrarManager();
   Register::Registrar::RegistrarList *rl = rm->getList();
   rl->setIdFilter(id);
@@ -358,7 +371,9 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
   LOG( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
   if (!handle || !*handle) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> regm(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> regm(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::Registrar::Manager *rm = regm->getRegistrarManager();
   Register::Registrar::RegistrarList *rl = rm->getList();
   rl->setHandleFilter(handle);
@@ -378,7 +393,9 @@ ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData)
 {
   DB db;
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::Registrar::Manager *rm = r->getRegistrarManager();
   Register::Registrar::RegistrarList *rl = rm->getList();
   Register::Registrar::Registrar *reg; // registrar to be created or updated
@@ -467,9 +484,11 @@ ccReg_Admin_i::getContactByHandle(const char* handle)
   DB db;
   if (!handle || !*handle) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::Contact::Manager *cr = r->getContactManager();
-  Register::Contact::List *cl = cr->getList();
+  std::auto_ptr<Register::Contact::List> cl(cr->createList());
   cl->setHandleFilter(handle);
   cl->reload();
   if (cl->getCount() != 1) {
@@ -489,9 +508,11 @@ ccReg_Admin_i::getContactById(ccReg::TID id)
   DB db;
   if (!id) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::Contact::Manager *cr = r->getContactManager();
-  Register::Contact::List *cl = cr->getList();
+  std::auto_ptr<Register::Contact::List> cl(cr->createList());
   cl->setIdFilter(id);
   cl->reload();
   if (cl->getCount() != 1) {
@@ -541,9 +562,11 @@ ccReg_Admin_i::getNSSetByHandle(const char* handle)
   DB db;
   if (!handle || !*handle) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::NSSet::Manager *nr = r->getNSSetManager();
-  Register::NSSet::List *nl = nr->getList();
+  std::auto_ptr<Register::NSSet::List> nl(nr->createList());
   nl->setHandleFilter(handle);
   nl->reload();
   if (nl->getCount() != 1) {
@@ -563,9 +586,11 @@ ccReg_Admin_i::getNSSetById(ccReg::TID id)
   DB db;
   if (!id) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::NSSet::Manager *nr = r->getNSSetManager();
-  Register::NSSet::List *nl = nr->getList();
+  std::auto_ptr<Register::NSSet::List> nl(nr->createList());
   nl->setIdFilter(id);
   nl->reload();
   if (nl->getCount() != 1) {
@@ -602,7 +627,9 @@ ccReg_Admin_i::getEPPActionBySvTRID(const char* svTRID)
   DB db;
   if (!svTRID || !*svTRID) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::Registrar::Manager *rm = r->getRegistrarManager();
   Register::Registrar::EPPActionList *eal = rm->getEPPActionList();
   eal->setSvTRIDFilter(svTRID);
@@ -624,7 +651,9 @@ ccReg_Admin_i::getEPPActionById(ccReg::TID id)
   DB db;
   if (!id) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::Registrar::Manager *rm = r->getRegistrarManager();
   Register::Registrar::EPPActionList *eal = rm->getEPPActionList();
   eal->setIdFilter(id);
@@ -653,13 +682,16 @@ ccReg_Admin_i::fillDomain(ccReg::DomainDetail* cd, Register::Domain::Domain* d)
   cd->updateRegistrarHandle = DUPSTRFUN(d->getUpdateRegistrarHandle); 
   cd->authInfo = DUPSTRFUN(d->getAuthPw); 
   cd->registrantHandle = DUPSTRFUN(d->getRegistrantHandle);
-  cd->expirationDate = DUPSTRDATE(d->getExpirationDate);
-  cd->valExDate = DUPSTRDATE(d->getValExDate);
+  cd->expirationDate = DUPSTRDATED(d->getExpirationDate);
+  cd->valExDate = DUPSTRDATED(d->getValExDate);
   cd->nssetHandle = DUPSTRFUN(d->getNSSetHandle);
-  cd->admins.length(d->getAdminCount());
+  cd->admins.length(d->getAdminCount(1));
+  cd->temps.length(d->getAdminCount(2));
   try {
-    for (unsigned i=0; i<d->getAdminCount(); i++)
-      cd->admins[i] = CORBA::string_dup(d->getAdminHandleByIdx(i).c_str());
+    for (unsigned i=0; i<d->getAdminCount(1); i++)
+      cd->admins[i] = DUPSTRC(d->getAdminHandleByIdx(i,1));
+    for (unsigned i=0; i<d->getAdminCount(2); i++)
+      cd->temps[i] = DUPSTRC(d->getAdminHandleByIdx(i,2));
   }
   catch (Register::NOT_FOUND) {
     /// some implementation error - index is out of bound - WHAT TO DO?
@@ -673,9 +705,11 @@ ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
   DB db;
   if (!fqdn || !*fqdn) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::Domain::Manager *dm = r->getDomainManager();
-  Register::Domain::List *dl = dm->getList();
+  std::auto_ptr<Register::Domain::List> dl(dm->createList());
   dl->setFQDNFilter(fqdn);
   dl->reload();
   if (dl->getCount() != 1) {
@@ -695,9 +729,11 @@ ccReg_Admin_i::getDomainById(ccReg::TID id)
   DB db;
   if (!id) throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::Domain::Manager *dm = r->getDomainManager();
-  Register::Domain::List *dl = dm->getList();
+  std::auto_ptr<Register::Domain::List> dl(dm->createList());
   dl->setIdFilter(id);
   dl->reload();
   if (dl->getCount() != 1) {
@@ -897,7 +933,9 @@ ccReg_Admin_i::getEnumDomainCount()
 {
   DB db;
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getEnumDomainCount();
   db.Disconnect();
@@ -909,7 +947,9 @@ ccReg_Admin_i::getEnumNumberCount()
 {
   DB db;
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getEnumNumberCount();
   db.Disconnect();
@@ -921,7 +961,9 @@ ccReg_Admin_i::getEPPActionTypeList()
 {
   DB db;
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   Register::Registrar::Manager *rm = r->getRegistrarManager();
   ccReg::EPPActionTypeSeq *et = new ccReg::EPPActionTypeSeq;
   et->length(rm->getEPPActionTypeCount());
@@ -935,7 +977,9 @@ ccReg_Admin_i::getCountryDescList()
 {
   DB db;
   db.OpenDatabase(database.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db));
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
   ccReg::CountryDescSeq *cd = new ccReg::CountryDescSeq;
   cd->length(r->getCountryDescSize());
   for (unsigned i=0; i<r->getCountryDescSize(); i++) {
@@ -1110,7 +1154,7 @@ ccReg_Session_i::ccReg_Session_i(
  : mm(ns)
 {
   db.OpenDatabase(database.c_str());
-  m.reset(Register::Manager::create(&db));
+  m.reset(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
   docman.reset(Register::Document::Manager::create(
     cfg.GetDocGenPath(), cfg.GetDocGenTemplatePath(),
     cfg.GetFileClientPath(), ns->getHostName()
@@ -1119,9 +1163,9 @@ ccReg_Session_i::ccReg_Session_i(
   invm.reset(Register::Invoicing::Manager::create(&db,docman.get(),&mm));
   reg = new ccReg_Registrars_i(m->getRegistrarManager()->getList());
   eppa = new ccReg_EPPActions_i(m->getRegistrarManager()->getEPPActionList());
-  dm = new ccReg_Domains_i(m->getDomainManager()->getList());
-  cm = new ccReg_Contacts_i(m->getContactManager()->getList());
-  nm = new ccReg_NSSets_i(m->getNSSetManager()->getList());
+  dm = new ccReg_Domains_i(m->getDomainManager()->createList());
+  cm = new ccReg_Contacts_i(m->getContactManager()->createList());
+  nm = new ccReg_NSSets_i(m->getNSSetManager()->createList());
   airm = new ccReg_AIRequests_i(am->getList());
   invl = new ccReg_Invoices_i(invm->createList());
   mml = new ccReg_Mails_i(ns);
@@ -1829,11 +1873,11 @@ ccReg_Domains_i::getRow(CORBA::Short row)
   (*tr)[3] = DUPSTRFUN(d->getRegistrantHandle); // registrant handle
   (*tr)[4] = DUPSTRFUN(d->getRegistrantName); // registrant name
   (*tr)[5] = DUPSTRFUN(d->getRegistrarHandle); // registrar handle 
-  (*tr)[6] = DUPSTR(""); // zone generation 
-  (*tr)[7] = DUPSTRDATESHORT(d->getExpirationDate); // expiration date 
+  (*tr)[6] = DUPSTR(d->getZoneStatus() == 1 ? "IN" : "OUT"); // zone generation 
+  (*tr)[7] = DUPSTRDATED(d->getExpirationDate); // expiration date 
   (*tr)[8] = DUPSTR(""); // zruseni ??
-  (*tr)[9] = DUPSTR(""); // vyrazeni z dns
-  (*tr)[10] = DUPSTRDATESHORT(d->getValExDate); // validace
+  (*tr)[9] = DUPSTRDATE(d->getZoneStatusTime); // vyrazeni z dns
+  (*tr)[10] = DUPSTRDATED(d->getValExDate); // validace
   return tr;
 }
 
@@ -1872,6 +1916,7 @@ ccReg_Domains_i::numColumns()
 void 
 ccReg_Domains_i::reload()
 {
+  dl->makeRealCount();
   dl->reload();
 }
 
@@ -2064,7 +2109,7 @@ ccReg_Domains_i::clear()
 CORBA::ULongLong 
 ccReg_Domains_i::resultSize()
 {
-  return 12345;
+  return dl->getRealCount();
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -2146,6 +2191,7 @@ ccReg_Contacts_i::numColumns()
 void 
 ccReg_Contacts_i::reload()
 {
+  cl->makeRealCount();  
   cl->reload();
 }
 
@@ -2249,7 +2295,7 @@ ccReg_Contacts_i::clear()
 CORBA::ULongLong 
 ccReg_Contacts_i::resultSize()
 {
-  return 12345;
+  return cl->getRealCount();
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -2327,6 +2373,7 @@ ccReg_NSSets_i::numColumns()
 void 
 ccReg_NSSets_i::reload()
 {
+  nl->makeRealCount();  
   nl->reload();
 }
 
@@ -2402,7 +2449,7 @@ ccReg_NSSets_i::clear()
 CORBA::ULongLong 
 ccReg_NSSets_i::resultSize()
 {
-  return 12345;
+  return nl->getRealCount();
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

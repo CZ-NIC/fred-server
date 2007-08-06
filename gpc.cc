@@ -19,7 +19,7 @@ int l ;
 
 if(  erase)
 {
-// ne nuly na zacatku stringu
+// no nulls at the beginnig of string
 for( l = 0 ; l < len -1; l ++ )
 {
 if( src[from+l] > '0'  ) break; 
@@ -42,7 +42,7 @@ return   CopyStr( dst , src ,  0 , len , true );
 
 int CopyString( char *dst , char *src , int from , int len )
 {
-// smaz nuly na zacatky 
+// delete nulls at the beginning 
 return  CopyStr( dst , src ,   from , len , false );
 }
 
@@ -51,7 +51,7 @@ int CopyDate( char *dst , char *src , int from  )
 {
 char ds[GPC_MAX_DATE+1];
 CopyStr( ds , src ,   from , GPC_MAX_DATE , false );
-// preved datum
+// convert date
 convert_date( dst  , ds );
 return from + GPC_MAX_DATE;
 }
@@ -61,9 +61,9 @@ int CopyPrice( char *dst , char *src , int from  )
 int p;
 
 char str[GPC_MAX_PRICE+1];
-// zkopiruj string
+// copy string
 CopyStr(  str , src ,   from , GPC_MAX_PRICE , false );
-// preved naint
+// convert to int
 p = atoi( str );
 
 sprintf( dst , "%d.02d" , p / 100 , p %100 );
@@ -75,28 +75,28 @@ return from + GPC_MAX_PRICE;
 */
 void GPC::GetHead( ST_Head *head )
 {
-// cislo uctu klienta bz pocatecnich nul na zacatku
+// client account number without starting zeros at the beginning 
 NonZeroCopyString( head->account ,  gpc_head.accountNumber , GPC_MAX_ACCOUNT );
 
-strncpy( head->name ,  gpc_head.accountName , GPC_MAX_NAME ); // nazev klienta
-head->oldBalnce = atol(gpc_head.oldBalance ) ; // stary sustatek
-head->newBalance = atol(gpc_head.newBalance ); // novy zustatek
-head->credit = atol( gpc_head.credit ); // creditni obrat
-head->debet = atol( gpc_head.debet); // debetni obrat
-convert_date( head->oldDate , gpc_head.dateOldBalance ); // datum stareho zustatku
-convert_date( head->date , gpc_head.dateList ); // datum vypisu
-head->num =  gpc_head.num ; // porwdi vypisu
+strncpy( head->name ,  gpc_head.accountName , GPC_MAX_NAME ); // client name
+head->oldBalnce = atol(gpc_head.oldBalance ) ; // old balances
+head->newBalance = atol(gpc_head.newBalance ); // new balances
+head->credit = atol( gpc_head.credit ); // credit turn
+head->debet = atol( gpc_head.debet); // debit turn
+convert_date( head->oldDate , gpc_head.dateOldBalance ); // old balances date 
+convert_date( head->date , gpc_head.dateList ); // statement date
+head->num =  gpc_head.num ; // statement order
 }
 
 void GPC::GetItem( ST_Item *item )
 {
-// bez pocatecnich nul
+// without starting zeros
 NonZeroCopyString( item->account ,  gpc_item[recItem].accountOther ,   GPC_MAX_ACCOUNT );
 
-strncpy( item->bank ,   gpc_item[recItem].konstSymbol+2  , 4 ); // kod banky proti uctu z KS
+strncpy( item->bank ,   gpc_item[recItem].konstSymbol+2  , 4 ); // bank code against account from KS 
 item->bank[4] = 0;
 
-strncpy( item->ks ,   gpc_item[recItem].konstSymbol+6 , 4 ); // kod banky proti uctu z KS
+strncpy( item->ks ,   gpc_item[recItem].konstSymbol+6 , 4 ); // bank code against account from KS 
 item->ks[4] = 0;
 
 strcpy( item->vs , gpc_item[recItem].varSymbol );
@@ -105,9 +105,9 @@ strcpy( item->ss , gpc_item[recItem].specSymbol );
 strcpy( item->memo , gpc_item[recItem].memo );
 strcpy( item->evid , gpc_item[recItem].evidNum );
 
-// preved datum
+// convert date
 convert_date( item->date ,  gpc_item[recItem].date  );
-// cena v halirich
+// price in pennies
 item->price = atol(  gpc_item[recItem].price  );
 
 if(  gpc_item[numrecItem].accountCode == '1' ) item->code = DEBET;
@@ -132,7 +132,7 @@ int seek;
 
    seek= CopyString( gpc_item[numrecItem].price , tmp , seek , GPC_MAX_PRICE );
 
-   gpc_item[numrecItem].accountCode =   tmp[seek]; // kod uctovani 1 debet 2 credit ( 3 , 4 storna )
+   gpc_item[numrecItem].accountCode =   tmp[seek]; // account code 1 debit 2 credit ( 3 , 4 cancel )
    seek ++;
 
    seek= CopyString( gpc_item[numrecItem].varSymbol , tmp , seek , GPC_MAX_SYMBOL );
@@ -205,7 +205,7 @@ int seek;
    seek ++;
 
    seek= CopyString( numStr , tmp,seek , 3 );
-   gpc_head.num = atoi( numStr ); // poradove cislo vypisu
+   gpc_head.num = atoi( numStr ); // ordinal number of statement
  
    seek = CopyString( gpc_head.dateList , tmp,seek , GPC_MAX_DATE );
 
@@ -233,12 +233,12 @@ if( (fd = fopen( filename ,  "r" ) ) == NULL ) return -1;
 else 
 {
 
-// TODO TEST prvniho radku na cislo 075
+// TODO TEST of first line for number 075 (zero seven five)
 
 for( l = 0 , numrec = -1 ; l < MAX_ITEMS ;  )
 {
 
-// nacti  zaznam
+// read record
   for( i = 0 ; i < GPC_MAX_RECORD+2 ; i ++ )
   {
     if( feof(fd) ) { numrec=l  ;  break;  }
@@ -246,10 +246,10 @@ for( l = 0 , numrec = -1 ; l < MAX_ITEMS ;  )
   }
 
 
-  //  konec radku
+  //  end of line
    if( tmp[GPC_MAX_RECORD] == '\r' &&  tmp[GPC_MAX_RECORD+1]  == '\n'  )
      {
-       tmp[GPC_MAX_RECORD] = 0 ; // ukonict retezec
+       tmp[GPC_MAX_RECORD] = 0 ; // end of string
 
        if( strncmp( tmp ,  GPC_LIST_HEAD , 3 ) == 0 ) 
         { 
@@ -265,10 +265,10 @@ for( l = 0 , numrec = -1 ; l < MAX_ITEMS ;  )
 //            else { debug("UNKNOW:\n%s\n" , tmp );  }
      }
 
-if( numrec >=0  ) break ; // pokud jsou nacteny nejake rady nebo nic
+if( numrec >=0  ) break ; // if some lines are loaded or nothing 
 }
 
-// debug("Konec nacitani polozek vypisu %d\n" , numrec );
+// debug("End of reading list items %d\n" , numrec );
 fclose(fd);
 return numrec;
 }

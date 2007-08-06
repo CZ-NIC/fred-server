@@ -3,6 +3,8 @@
 
 #include "object.h"
 
+class DB;
+
 namespace Register
 {
   /// Implementation of common register object properties
@@ -64,8 +66,13 @@ namespace Register
     time_period crDateIntervalFilter;
     time_period updateIntervalFilter;
     time_period trDateIntervalFilter;
+    unsigned long long realCount;
+    DB *db;
+    virtual void makeQuery(
+      bool count, bool limit, std::stringstream& sql
+    ) const = 0;
    public:
-    ObjectListImpl();
+    ObjectListImpl(DB *db);
     virtual void setIdFilter(TID id);
     virtual void setRegistrarFilter(TID registrarId);
     virtual void setRegistrarHandleFilter(
@@ -82,7 +89,11 @@ namespace Register
       const std::string& registrarHandle
     );
     virtual void setTrDateIntervalFilter(time_period period);
-    virtual void clear(); 
+    virtual void clear();
+    virtual unsigned long long getRealCount() const;
+    virtual void fillTempTable(bool limit) const throw (SQL_ERROR);
+    virtual void makeRealCount() throw (SQL_ERROR);    
+    
   }; // class ObjectListImpl
    
 } // namespace register

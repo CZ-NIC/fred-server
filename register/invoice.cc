@@ -922,7 +922,8 @@ namespace Register
             << "FROM registrar r, invoice_generation g "
             << "LEFT JOIN invoice_mails im ON (im.genid=g.id) "
             << "WHERE g.registrarid=r.id AND g.invoiceid ISNULL "
-            << "AND im.mailid ISNULL ";
+            << "AND im.mailid ISNULL "
+            << "AND NOT(r.email ISNULL OR TRIM(r.email)='')";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
           items.push_back(Item(

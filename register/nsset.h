@@ -68,7 +68,7 @@ namespace Register
       /// destructor 
       virtual ~Manager() {}
       /// return list of nssets
-      virtual List *getList() = 0;
+      virtual List *createList() = 0;
       /// type for check 
       enum CheckAvailType {
         /// handle cannot be contact
@@ -85,7 +85,7 @@ namespace Register
         const std::string& handle, NameIdPair& conflict
       ) const throw (SQL_ERROR) = 0;
       /// factory method
-      static Manager *create(DB *db);
+      static Manager *create(DB *db, bool restrictedHandle);
     };
   } // namespace NSSet
 } // namespace Register

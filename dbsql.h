@@ -13,7 +13,7 @@
 
 class DB : public PQ{
 public:
-// constructor a destruktor
+// constructor and destructor
 DB();
 ~DB();
 
@@ -45,7 +45,7 @@ bool BillingCreateDomain( int regID , int  zone , int  objectID  );
 // operation RENEW
 bool BillingRenewDomain(  int regID , int  zone , int  objectID , int period  ,  const char *ExDate );
 
-// coutn credit from invoce 
+// count credit from invoce 
 bool UpdateInvoiceCredit( int regID ,   int operation  , int zone  , int period  ,  const char *ExDate , int objectID );
 
 long GetRegistrarCredit(int regID , int zoneID );
@@ -76,7 +76,7 @@ int GetInvoicePrefix( const char *dateStr , int typ , int zone );
 
 // return id of the account 
 int GetBankAccount( const char *accountStr ,  const char *codeStr   );
-// retrun number of the account for zone
+// return number of the account for zone
 int GetBankAccountZone( int accountID );
 
 // test oldBalance at account 
@@ -93,21 +93,21 @@ int SaveBankHead( int accountID ,int num ,  char *date  ,  char *oldDate , long 
 bool SaveBankItem( int statemetID , char *account  , char *bank , char *evidNum, char *date , char *memo , int code , 
                        char *konstSymb ,  char *varSymb , char *specsymb  , long price );
 
-// e-banka fce for table bank_ebanka_list on-line bankstatement  via https
+// e-banka function for table bank_ebanka_list on-line bankstatement  via https
 int TestEBankaList(const char*ident ); // return ident for E-banka list
 
 int SaveEBankaList( int account_id , const char *ident , long  price , const char *datetimeStr ,  const char *accountStr , const char *codeStr ,
                         const char *varsymb , const char *konstsymb ,  const char *nameStr ,  const char *memoStr );
 
-// gererated invoice from incoming price to the e-banke 
+// gererated invoice from incoming price to the e-banka 
 bool UpdateEBankaListInvoice( int id , int invoiceID );
 
 
 //
-int GetSystemVAT();  // return VAT for invoicing depnds ot the actual time
-double GetSystemKOEF(); // transformed koeficient to count VAT fro price local function
+int GetSystemVAT();  // return VAT for invoicing depends at the actual time
+double GetSystemKOEF(); // transformed koeficient to count VAT for price local function
 
-// this bak statament is pocessed
+// this bank statement is processed
 bool UpdateBankStatementItem( int id , int invoiceID);
 
 
@@ -130,7 +130,7 @@ char * EndAction(int response  ); // return svrTRID
 char * GetsvTRID(){ return svrTRID; } ;  // return actual generated server ticket  svrTRID
 
 
-//  test cretificate fingerprint in the table registrarACL fro registarID
+//  test certificate fingerprint in the table registrarACL for registarID
 bool  TestRegistrarACL( int  regID , const char *  pass , const char * cert );
 
 
@@ -146,7 +146,7 @@ bool DeleteFromTable(char *table , char *fname , int id );
 // delete data from *_contact_map table
 bool DeleteFromTableMap(char *map ,int  id , int contactid );
 
-// retur  handle or id of the table 
+// return  handle or id of the table 
 int GetNumericFromTable( const char *table , const char *vname ,  const char *fname ,  const char *value);
 int GetNumericFromTable( const char *table , const char *vname ,  const char *fname ,  int numeric);
 char * GetValueFromTable( const char *table , const char *vname ,  const char *fname ,  const char *value);
@@ -158,14 +158,14 @@ bool CheckContactMap(const char * table , int id , int contactid, int role );
 
 bool AddContactMap( const char * table , int id , int contactid );
  
-//  return  date or timestamp from dastabase field converted to local time by function in util.cc
+//  return  date or timestamp from database field converted to local time by function in util.cc
 char * GetFieldDateTimeValueName(  const char *fname , int row );
 char * GetFieldDateValueName(  const char *fname , int row );
 
-// retun  ID of contasct from  handlu converted to upper case 
+// return  ID of contact from  handle converted to upper case 
 int  GetContactID( const char *handle );
 int  GetNSSetID( const char *handle );
-// rerurn  id of domain  ( special for enum )
+// return  id of domain  ( special for enum )
 int  GetDomainID( const char *fqdn , bool enum_zone );
 
 //  save update for   object  id  by registrar regID and optionly save authInfo ( password)
@@ -178,9 +178,9 @@ int GetObjectID( int type , const char *name );
 // reverse function
 char * GetObjectName( int id ); 
 
-char * GetDomainExDate( int id ); // retunr  domain.ExDate like local date 
+char * GetDomainExDate( int id ); // return  domain.ExDate like local date 
 // special for ENUM
-char * GetDomainValExDate( int id ); // retunr  domain.ValDate like local date
+char * GetDomainValExDate( int id ); // return  domain.ValDate like local date
 
 
 
@@ -200,11 +200,11 @@ bool CountExDate(  int domainID , int period  , int max_period );
 bool RenewExDate(  int domainID , int period  );
 
 
-// test linked DNS ID hostu
+// test linked DNS ID host
 int GetHostID(  const char *fqdn , int nssetID );
-// return number of the DNS asigned to nsset
+// return number of the DNS assigned to nsset
 int GetNSSetHosts( int  nssetID );
-// return number of the tech-c  asigned to nsset
+// return number of the tech-c  assigned to nsset
 int GetNSSetContacts( int nssetID );
 
 
@@ -212,7 +212,7 @@ int GetNSSetContacts( int nssetID );
 int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "id" , "handle" , handle ); };
 int GetRegistrarIDbyVarSymbol( char *vs )  { return GetNumericFromTable( "REGISTRAR", "id" , "varsymb" , vs ); };
 
-// vraci true if the registar is system can make all operations test rehistrar.system is it true
+// return true if the registar is system can make all operations test registrar.system is it true
 bool GetRegistrarSystem( int regID );
 
 
@@ -232,12 +232,12 @@ bool AuthTable(const  char *table , char *auth , int id );
 // is it right of registrar  to access to the zone 
 bool TestRegistrarZone(int regID , int zone );
 
-// craeate actiove object in the table object
+// create active object in the table object
 int CreateObject( const char *type , int regID , const char *name , const char *authInfoPw );
 
 ///---------------
 // history functions 
-int MakeHistory(int objectID);// crate inser into table history
+int MakeHistory(int objectID);// create insert into table history
 bool SaveHistory(char *table , char *fname ,  int id ); // save  row in table to the history table 
 
 // test if exist deleted  object in history 
@@ -245,7 +245,7 @@ bool TestContactHandleHistory( const char * handle , int days );
 bool TestNSSetHandleHistory( const char * handle , int days );
 bool TestDomainFQDNHistory( const char * fqdn , int days );
 
-// genereal fce
+// general fuction
 bool TestObjectHistory(   const char * name , int days );
 
 
@@ -282,14 +282,14 @@ void WHERE( const  char *fname , int   value );
 void WHEREOPP(  const  char *op ,  const  char *fname , const  char *p  , const  char * value );
 void OPERATOR(  const  char *op );
 void WHEREID( int id ) { WHERE( "id" , id ); };
-//  SQL INSERT fce
+//  SQL INSERT fuction
 void INSERTHISTORY( const char * table );
 void INSERT( const  char * table );
 void INTO(const  char *fname);
 void INTOVAL(const  char *fname , const char * value );
 void VAL( const  char * value);
 void VALUESC( const char * value );
-void VALUES( const char * value  , bool esc , bool amp ,  int uplo ); // use  esc sequence a use '
+void VALUES( const char * value  , bool esc , bool amp ,  int uplo ); // use esc sequence a use '
 void VALUE( const  char * value );
 void VVALUE( const char * value ); // without escape
 void VALUE( int  value );
@@ -303,16 +303,16 @@ void VALUEUPPER( const char * value  );
 void VALUENOW();
 // make interval'%month' 
 void VALUEPERIOD( int period );
-// zmake NULL value
+// make NULL value
 void VALUENULL();
 
-// SQL SELECT fce
+// SQL SELECT function
 void SELECTFROM( const char *fname  , const char * table  );
 // function "select field from table where field=value"
 bool SELECTONE(  const char * table  , const char *fname ,  const char *value );
 bool SELECTONE(  const char * table  , const char *fname ,  int value );
 
-// SQL string funkce
+// SQL string function
 void SQLCatLower( const char *str );
 void SQLCatUpper(const char *str );
 // to lower or upper

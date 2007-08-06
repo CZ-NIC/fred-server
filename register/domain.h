@@ -7,6 +7,9 @@
 #include "object.h"
 #include "exceptions.h"
 
+#include <boost/date_time/gregorian/gregorian.hpp>
+using namespace boost::gregorian;
+
 /// forward declared parameter type 
 class DB;
 
@@ -56,21 +59,26 @@ namespace Register
       /// set registrant 
       virtual void setRegistrantId(TID registrant) = 0;
       /// return count of admin contacts
-      virtual unsigned getAdminCount() const = 0;
+      virtual unsigned getAdminCount(unsigned role=1) const = 0;
       /// return id of admin contact by index
-      virtual TID getAdminIdByIdx(unsigned idx) const
+      virtual TID getAdminIdByIdx(unsigned idx, unsigned role=1) const
         throw (NOT_FOUND) = 0;
       /// return handle of admin contact by index
-      virtual const std::string& getAdminHandleByIdx(unsigned idx) const 
-        throw (NOT_FOUND) = 0;
+      virtual const std::string& getAdminHandleByIdx(
+        unsigned idx, unsigned role=1
+      ) const throw (NOT_FOUND) = 0;
       /// remove contact from admin contact list
       virtual void removeAdminId(TID id) = 0;
       /// insert contact into admin contact list
       virtual void insertAdminId(TID id) = 0;
       /// return date of registration expiration
-      virtual ptime getExpirationDate() const = 0;
+      virtual date getExpirationDate() const = 0;
       /// return date of validation expiration
-      virtual ptime getValExDate() const = 0;
+      virtual date getValExDate() const = 0;
+      /// return time of last change in zone generation status
+      virtual ptime getZoneStatusTime() const = 0;
+      /// return zone generation status
+      virtual unsigned getZoneStatus() const = 0;
     };
     /// domain list
     class List : virtual public ObjectList
@@ -105,10 +113,12 @@ namespace Register
       virtual void setTechAdminHandleFilter(const std::string& handle) = 0;
       /// set filter for IP address in associated nsset 
       virtual void setHostIPFilter(const std::string& ip) = 0;
+      /// set filter for zone generation status
+      virtual void setZoneStatusFilter(unsigned status) = 0;
       /// reload list with current filter
-      virtual void reload() = 0;
+      virtual void reload() throw (SQL_ERROR) = 0;
       /// clear filter data
-      virtual void clearFilter() = 0;      
+      virtual void clearFilter() = 0;
     };
     /// main entry class
     class Manager
@@ -125,7 +135,7 @@ namespace Register
       ) const throw (INVALID_DOMAIN_NAME) = 0;
       /// check availability of domain  
       virtual CheckAvailType checkAvail(
-       const std::string& fqdn, NameIdPair& conflictFqdn
+        const std::string& fqdn, NameIdPair& conflictFqdn
       ) const throw (SQL_ERROR) = 0;
       /// check validity of enum domain name (every part is one digit)
       virtual bool checkEnumDomainName(DomainName& domain) const = 0;
@@ -135,8 +145,8 @@ namespace Register
       virtual unsigned long getEnumDomainCount() const = 0;
       /// return current count of enum numbers
       virtual unsigned long getEnumNumberCount() const = 0;  
-      /// Return list of domains
-      virtual List *getList() = 0;
+      /// create list of domains
+      virtual List *createList() = 0;
       /// factory method
       static Manager *create(DB *db, Zone::Manager *zm);
     };

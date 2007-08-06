@@ -29,7 +29,7 @@ class EPPServerTest : public CppUnit::TestFixture {
     epp->_remove_ref();
   }
 
-  // funkce na obecne prihlaseni
+  // general login function 
   CORBA::Long loginRegistrar(const char *registrar, const char *passwd, 
 			     const char *newpasswd, unsigned errCode)
   {
@@ -44,7 +44,7 @@ class EPPServerTest : public CppUnit::TestFixture {
     return clientID;
   }
 
-  // funkce pro obecne odhlaseni 
+  // general logout function 
   void logoutRegistrar(CORBA::Long clientID)
   {
     std::auto_ptr<ccReg::Response> rClientLogout(
@@ -54,7 +54,7 @@ class EPPServerTest : public CppUnit::TestFixture {
     CPPUNIT_ASSERT_EQUAL(1500U,(unsigned)rClientLogout->errCode);
   }
 
-  // funkce na prihlaseni a odhlaseni
+  // login and logout function
   void loginSequence(const char *registrar, const char *passwd, 
 		     const char *newpasswd, unsigned errCode)
   {
@@ -64,19 +64,19 @@ class EPPServerTest : public CppUnit::TestFixture {
     logoutRegistrar(clientID);
   }
 
-  // test na prihlaseni se spravnym heslem
+  // login test with proper password
   void testLoginLogout()
   {
     loginSequence("REG-LRR","123456789","",1000);
   }
 
-  // test na prihlaseni se spatnyn heslem
+  // login test with bad password
   void testLoginLogoutBadPasswd()
   {
     loginSequence("REG-LRR","","",2501);
   }
 
-  // test na zmenu hesla
+  // password change test
   void testPasswdChange()
   {
     loginSequence("REG-LRR","123456789","cppunit123456789",1000);
@@ -89,7 +89,7 @@ class EPPServerTest : public CppUnit::TestFixture {
     return loginRegistrar("REG-LRR","123456789","",1000);
   }
 
-  // test na kontrolu neexistujicich kontaktu
+  // control test of nonexistent contact 
   void testCheckContact()
   {
     CORBA::Long clID = login();
