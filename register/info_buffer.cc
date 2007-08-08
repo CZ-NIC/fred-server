@@ -52,7 +52,7 @@ namespace Register
             << "AND eibc.id<=" << current + chunkSize 
             << " ORDER BY eibc.id ASC";   
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        for (unsigned i=0; i<db->GetSelectRows(); i++)
+        for (int i=0; i<db->GetSelectRows(); i++)
           bufferList.push_back(db->GetFieldValue(i,0));
         db->FreeSelect();
         it = bufferList.begin();
