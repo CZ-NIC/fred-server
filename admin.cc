@@ -1051,6 +1051,9 @@ ccReg_Admin_i::createAuthInfoRequest(
       rtype = Register::AuthInfoRequest::RT_EMAIL_PIF; break;
     case ccReg::AuthInfoRequest::RT_POST_PIF:
       rtype = Register::AuthInfoRequest::RT_POST_PIF; break;
+    default:
+      // should never happen, all cases are checked (but compiler warning)
+      rtype = Register::AuthInfoRequest::RT_POST_PIF;
   };
   unsigned long ret = 0;
   try {

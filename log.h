@@ -17,7 +17,7 @@ class Logger
  private:
   Logger() : level(DEBUG_LOG), facility(2) {} ///< ctor hidden
   Logger(Logger const&) {} ///< copy ctor hidden
-  Logger& operator=(Logger const&) {} ///< assign op. hidden
+  Logger& operator=(Logger const&) { return *this; } ///< assign op. hidden
   ~Logger() {} ///< dtor hidden
   int level; ///< minimal level of logging
   int facility; ///< syslog facility 

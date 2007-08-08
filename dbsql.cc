@@ -307,7 +307,8 @@ long price1 , price2;
 int invoiceID;
 int invID[2];
 long cr[2];
-int i , num;
+int i;
+int num = 0;
 
 LOG( DEBUG_LOG , "UpdateInvoiceCredit operation %d objectID %d ExDate [%s]  period %d regID %d" , operation , objectID ,  ExDate , period ,  regID  );
 
@@ -1438,7 +1439,7 @@ int i , num;
 char fromdateStr[32];
 char todateStr[32];
 int count=-1;
-long price , credit,  balance;
+long price = 0, credit,  balance;
 
 
  LOG( NOTICE_LOG , "MakeFactoring regID %d zone %d" , regID , zone );
