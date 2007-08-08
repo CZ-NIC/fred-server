@@ -6,6 +6,7 @@
 #include "bank.h"
 #include "info_buffer.h"
 #include "log.h"
+#include "poll.h"
 
 #include <iostream>
 #include <fstream>
@@ -145,13 +146,18 @@ int main(int argc, char **argv)
       ("info_buffer_request", po::value<std::string>()->default_value(""),
        "handle for query");
 
+    po::options_description pollDesc("Poll messages options");
+    pollDesc.add_options()
+      ("poll_list_all",
+       "list all poll messages");
+
     po::variables_map vm;
     // parse help and config filename options
     po::store(
       po::parse_command_line(
         argc, argv, 
         desc.add(configDesc).add(invoiceDesc).add(aiDesc).add(bankDesc).
-        add(infoBufferDesc)
+        add(infoBufferDesc).add(pollDesc)
       ), vm
     );
     // parse options from config file
@@ -335,6 +341,17 @@ int main(int argc, char **argv)
         for (unsigned long i=0; i<chunk->getCount(); i++)
           std::cout << chunk->getNext() << std::endl;
       }
+    }
+
+    // poll
+    std::auto_ptr<Register::Poll::Manager> pollMan(
+      Register::Poll::Manager::create(
+        &db
+      )
+    );
+    if (vm.count("poll_list_all")) {
+      while (pollMan->getMessageCount(0))
+        pollMan->getNextMessage(0)->textDump(std::cout);
     }
     
     if (connected) db.Disconnect();

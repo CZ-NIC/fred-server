@@ -33,6 +33,7 @@
 #include "register/contact.h"
 #include "register/nsset.h"
 #include "register/info_buffer.h"
+#include "register/poll.h"
 #include <memory>
 #include "tech_check.h"
 
@@ -80,7 +81,7 @@ static long int getIdOfNSSet(DB *db, const char *handle, Conf& c)
 // Example implementational code for IDL interface ccReg::EPP
 //
 ccReg_EPP_i::ccReg_EPP_i(MailerManager *_mm, NameService *_ns, Conf& _conf ) :
-  mm(_mm), ns(_ns), zone(NULL), conf(_conf), testInfo(false)
+  mm(_mm), ns(_ns), conf(_conf), zone(NULL), testInfo(false)
 {
 }
 ccReg_EPP_i::~ccReg_EPP_i()
@@ -1186,7 +1187,7 @@ return ret._retn();
 
 }
 
-/*
+/***********************************************************************
  * FUNCTION:    PollAcknowledgement
  *
  * DESCRIPTION: confirmation of message income msgID
@@ -1203,104 +1204,74 @@ return ret._retn();
  *
  ***********************************************************************/
 
-
-ccReg::Response* ccReg_EPP_i::PollAcknowledgement(const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID, CORBA::Long clientID, const char* clTRID, const char* XML)
+ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
+  const char* msgID, 
+  CORBA::Short& count, 
+  CORBA::String_out newmsgID, 
+  CORBA::Long clientID, 
+  const char* clTRID, 
+  const char* XML
+)
 {
-DB DBsql;
-ccReg::Response_var ret;
-ccReg::Errors_var errors;
-char sqlString[1024];
-int regID, rows;
-
-ret = new ccReg::Response;
-errors = new ccReg::Errors;
-
-ret->code = 0;
-errors->length( 0 );
-count = 0;
-newmsgID =  CORBA::string_dup( "");
-
-LOG( NOTICE_LOG, "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %s", (int) clientID, clTRID,    msgID );
-if(  ( regID = GetRegistrarID( clientID ) ) )
-  if( DBsql.OpenDatabase( database ) )
-    {
-
-
-      if( DBsql.BeginAction( clientID, EPP_PollAcknowledgement, clTRID , XML ) )
-        {
-
-          // test msg ID and clientID
-          sprintf( sqlString, "SELECT id FROM MESSAGE WHERE id=%s AND seen='f'  AND clID=%d;",   msgID  , regID );
-          rows = 0;
-          if( DBsql.ExecSelect( sqlString ) )
-            {
-              rows = DBsql.GetSelectRows();
-              DBsql.FreeSelect();
-            }
-          else  ret->code = COMMAND_FAILED;
-
-          if( rows == 0 )
-            {
-                  LOG( ERROR_LOG, "unknown msgID %s",   msgID );
-                  ret->code = SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::poll_msgID , 1, REASON_MSG_MSGID_NOTEXIST  , GetRegistrarLang( clientID ) );
-            }
-          else if( rows == 1 )       // if this message exists 
-              {
-              // mark as read 
-              sprintf( sqlString, "UPDATE MESSAGE SET seen='t' WHERE id=%s AND clID=%d;",  msgID, regID );
-
-                 
-              if( DBsql.ExecSQL( sqlString ) )
-                {
-                   ret->code = COMMAND_OK;     
-                  // look for next messages
-                  sprintf( sqlString, "SELECT id FROM MESSAGE WHERE clID=%d AND seen='f' AND exDate > 'now()' ;", regID );
-                  if( DBsql.ExecSelect( sqlString ) )
-                    {
-                     
-                      rows = DBsql.GetSelectRows();   // number of messages
-                      if( rows > 0 )    // if some messages
-                        {
-                          count = rows; //  numbers
-                          // next new messages
-                          CORBA::string_free(newmsgID);
-                          newmsgID =   CORBA::string_dup(  DBsql.GetFieldValue( 0, 0 ) ) ;
-                          LOG( NOTICE_LOG, "PollAcknowledgement: newmsgID -> %s count -> %d", (const char *) newmsgID, count );
-                        }
-                      else count = 0 ;
-
-                     DBsql.FreeSelect();
-                    }
-
-                }             
-
-
-            }
-
-          // end action gwet ticket
-          ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->code ) );
-        }
-
-       ret->msg = CORBA::string_dup( GetErrorMessage(  ret->code  , GetRegistrarLang( clientID ) )  );
-
-      DBsql.Disconnect();
+  LOG( 
+    NOTICE_LOG, 
+    "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %s", 
+    (int) clientID, clTRID, msgID
+  );
+  DB DBsql;
+  ccReg::Errors_var errors = new ccReg::Errors;
+  if (!DBsql.OpenDatabase(database)) 
+    ServerInternalError("Cannot connect in PollAcknowledgement");
+  if ((!DBsql.BeginAction(clientID, EPP_Info, clTRID, XML))) {
+    DBsql.Disconnect();
+    ServerInternalError("Cannot begin action in PollAcknowledgement");
+  }
+  ccReg::TID registrar = GetRegistrarID(clientID);
+  LOG(NOTICE_LOG, "PollAcknowledgement: registrarID %d" , registrar);
+  ccReg::Response_var ret = new ccReg::Response();
+  if (!registrar) ret->code = COMMAND_MAX_SESSION_LIMIT;
+  else {
+    try {
+      std::auto_ptr<Register::Poll::Manager> pollMan(
+        Register::Poll::Manager::create(&DBsql)
+      );
+      pollMan->setMessageSeen(STR_TO_ID(msgID));
+      /// convert count of messages and next message id to string
+      std::stringstream buffer;
+      buffer << pollMan->getNextMessageId(registrar);
+      newmsgID = CORBA::string_dup(buffer.str().c_str());
+      count = pollMan->getMessageCount(registrar);
+      ret->code=COMMAND_OK;
     }
-
+    catch (Register::NOT_FOUND) {
+      // message id not found
+      ret->code = SetErrorReason(
+        errors, 
+        COMMAND_PARAMETR_ERROR,
+        ccReg::poll_msgID,
+        1,
+        REASON_MSG_MSGID_NOTEXIST,
+        GetRegistrarLang(clientID)
+      );
+    }
+    catch (...) {
+      DBsql.Disconnect();
+      ServerInternalError("Cannot finish in PollAcknowledgement");    
+    }  
+  }
+  ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code)) ;
+  ret->msg =CORBA::string_dup(
+    GetErrorMessage(ret->code, GetRegistrarLang( clientID))
+  );
+  DBsql.Disconnect();
   // EPP exception
-  if( ret->code > COMMAND_EXCEPTION) EppError(  ret->code , ret->msg ,  ret->svTRID , errors );
-
-// POLL exception if not next messages 
-  if( count == 0 )   NoMessages( ret->code , ret->msg ,  ret->svTRID );
-
-  if( ret->code == 0 ) ServerInternalError("PollAcknowledgement");
-
-
+  if (ret->code > COMMAND_EXCEPTION) 
+    EppError(ret->code,ret->msg,ret->svTRID,errors);
+  // POLL exception if not next messages 
+  if (count == 0)  NoMessages(ret->code,ret->msg,ret->svTRID);
+  if (ret->code == 0) ServerInternalError("PollAcknowledgement");
   return ret._retn();
 }
-
-
-
-
 
 /***********************************************************************
  *
@@ -1310,10 +1281,11 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
  *              return number of messages in front and message content
  *
  * PARAMETERS:
- *        OUT:  msgID - number of required message in front
+ *        OUT:  msgID - id of required message in front
  *        OUT:  count - number
  *        OUT:  qDate - message date and time
- *        OUT:  mesg  - message content
+ *        OUT:  type - message type
+ *        OUT:  msg  - message content as structure
  *              clTRID - transaction client number
  *              clientID - client identification
  *
@@ -1321,92 +1293,173 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::PollRequest(CORBA::String_out msgID, CORBA::Short& count, ccReg::timestamp_out qDate, CORBA::String_out mesg, CORBA::Long clientID, const char* clTRID, const char* XML)
+ccReg::Response* ccReg_EPP_i::PollRequest(
+  CORBA::String_out msgID, 
+  CORBA::Short& count, 
+  ccReg::timestamp_out qDate, 
+  ccReg::PollType& type, 
+  CORBA::Any_OUT_arg msg, 
+  CORBA::Long clientID, 
+  const char* clTRID, 
+  const char* XML
+)
 {
-DB DBsql;
-char sqlString[1024];
-ccReg::Response_var ret;
-int regID;
-int rows;
-ret = new ccReg::Response;
-
-
-
-// empty default
-qDate =  CORBA::string_dup( "" );
-count = 0;
-msgID = CORBA::string_dup( "" );
-mesg = CORBA::string_dup( "" );       
-
-ret->code = 0;
-
-
-LOG( NOTICE_LOG, "PollRequest: clientID -> %d clTRID [%s]",  (int ) clientID,  clTRID);
-
-if(  ( regID = GetRegistrarID( clientID ) ) )
-  if( DBsql.OpenDatabase( database ) )
-    {
-
-      // get  registrar ID
-      if( (  DBsql.BeginAction( clientID, EPP_PollAcknowledgement,  clTRID , XML )  ) )
-        {
-
-         LOG( NOTICE_LOG, "PollRequest: registrarID %d" , regID );
-           
-          // lokk messages from table
-          sprintf( sqlString, "SELECT *  FROM MESSAGE  WHERE clID=%d AND seen='f' AND exDate > 'now()' ;", regID );
-
-          if( DBsql.ExecSelect( sqlString ) )
-            {
-              rows = DBsql.GetSelectRows();   // number of messages
-
-              if( rows > 0 )    // is some messages
-                {
-                  count = rows;
-                  CORBA::string_free(qDate);
-                  qDate =  CORBA::string_dup( DBsql.GetFieldDateTimeValueName("CrDate" , 0 )  );
-                  CORBA::string_free(msgID);
-                  msgID =   CORBA::string_dup(  DBsql.GetFieldValueName( "ID", 0 ) );
-                  CORBA::string_free(mesg);
-                  mesg = CORBA::string_dup( DBsql.GetFieldValueName( "message", 0 ) );
-                  ret->code = COMMAND_ACK_MESG;      // messages are in the table
-                  LOG( NOTICE_LOG, "PollRequest: msgID -> %s count -> %d mesg [%s]",  (const char * )   msgID, count, CORBA::string_dup( mesg ) );
-                }
-              else
-                ret->code = COMMAND_NO_MESG; // not eny messages
-
-              DBsql.FreeSelect();
+  LOG(
+    NOTICE_LOG, 
+    "PollRequest: clientID -> %d clTRID [%s]",  (int ) clientID,  clTRID
+  );
+  DB DBsql;
+  if (!DBsql.OpenDatabase(database)) 
+    ServerInternalError("Cannot connect in pollRequest");
+  if ((!DBsql.BeginAction(clientID, EPP_Info, clTRID, XML))) {
+    DBsql.Disconnect();
+    ServerInternalError("Cannot begin action in pollRequest");
+  }
+  ccReg::TID registrar = GetRegistrarID(clientID);
+  LOG(NOTICE_LOG, "PollRequest: registrarID %d" , registrar);
+  ccReg::Response_var ret = new ccReg::Response();
+  if (!registrar) ret->code = COMMAND_MAX_SESSION_LIMIT;
+  else {
+    try {
+      std::auto_ptr<Register::Poll::Manager> pollMan(
+        Register::Poll::Manager::create(&DBsql)
+      );
+      // fill count 
+      count = pollMan->getMessageCount(registrar);
+      msg = new CORBA::Any;
+      Register::Poll::Message *m = pollMan->getNextMessage(registrar);
+      if (!m) {
+        // when there is no message
+        type = ccReg::polltype_none;
+        msgID = CORBA::string_dup("");
+        qDate = CORBA::string_dup("");
+      } else {
+        // first fill common fields
+        // transform numeric id to string and fill msgID
+        std::stringstream buffer;
+        buffer << m->getId();
+        msgID = CORBA::string_dup(buffer.str().c_str());
+        // fill qdate
+        qDate = CORBA::string_dup(
+          to_iso_extended_string(m->getCrTime()).c_str()
+        );
+        // Test type of Message object wheter it's one of
+        // MessageEvent, MessageEventReg, MessageTechCheck or
+        // MessageLowCredit
+        // check MessageEventReg before MessageEvent because
+        // MessageEvent is ancestor of MessageEventReg
+        Register::Poll::MessageEventReg *mer = 
+          dynamic_cast<Register::Poll::MessageEventReg *>(m);
+        if (mer) {
+          switch (m->getType()) {
+            case Register::Poll::MT_TRANSFER_CONTACT:
+              type = ccReg::polltype_transfer_contact; break;
+            case Register::Poll::MT_TRANSFER_NSSET:
+              type = ccReg::polltype_transfer_nsset; break;
+            case Register::Poll::MT_TRANSFER_DOMAIN:
+              type = ccReg::polltype_transfer_domain; break;
+            default:
+              LOG(ERROR_LOG, "PollRequest: invalid substitution");
+              // TODO: LOG ERROR - BAD INPUT
+              throw;
+          }
+          ccReg::PollMsg_HandleDateReg *hdm = 
+            new ccReg::PollMsg_HandleDateReg;
+          hdm->handle = CORBA::string_dup(mer->getObjectHandle().c_str());
+          hdm->date = CORBA::string_dup(
+            to_iso_extended_string(mer->getEventDate()).c_str()
+          );
+          hdm->clID = CORBA::string_dup(mer->getRegistrarHandle().c_str());
+          *msg <<= hdm;
+        } else {
+          Register::Poll::MessageEvent *me = 
+            dynamic_cast<Register::Poll::MessageEvent *>(m);
+          if (me) {
+            switch (m->getType()) {
+              case Register::Poll::MT_DELETE_CONTACT:
+                type = ccReg::polltype_delete_contact; break;
+              case Register::Poll::MT_DELETE_NSSET:
+                type = ccReg::polltype_delete_nsset; break;
+              case Register::Poll::MT_DELETE_DOMAIN:
+                type = ccReg::polltype_delete_domain; break;
+              case Register::Poll::MT_IMP_EXPIRATION:
+                type = ccReg::polltype_impexpiration; break;
+              case Register::Poll::MT_EXPIRATION:
+               type = ccReg::polltype_expiration; break;
+              case Register::Poll::MT_IMP_VALIDATION:
+                type = ccReg::polltype_impvalidation; break;
+              case Register::Poll::MT_VALIDATION:
+                type = ccReg::polltype_validation; break;
+              case Register::Poll::MT_OUTZONE:
+                type = ccReg::polltype_outzone; break;
+              default:
+                LOG(ERROR_LOG, "PollRequest: invalid substitution");
+                // TODO: LOG ERROR - BAD INPUT
+                throw;
             }
-          else
-            ret->code = COMMAND_FAILED;
-
-       
-          ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->code ) );
-
+            ccReg::PollMsg_HandleDate *hdm = new ccReg::PollMsg_HandleDate;
+            hdm->handle = CORBA::string_dup(me->getObjectHandle().c_str());
+            hdm->date = CORBA::string_dup(
+              to_iso_extended_string(me->getEventDate()).c_str()
+            );
+            *msg <<= hdm;
+          }
+          else {
+            Register::Poll::MessageLowCredit *mlc = 
+              dynamic_cast<Register::Poll::MessageLowCredit *>(m);
+            if (mlc) {
+              type = ccReg::polltype_lowcredit;
+              ccReg::PollMsg_LowCredit *hdm = new ccReg::PollMsg_LowCredit;
+              hdm->zone = CORBA::string_dup(mlc->getZone().c_str());
+              hdm->limit = mlc->getLimit();
+              hdm->credit = mlc->getCredit();
+              *msg <<= hdm;
+            }
+            else {
+              Register::Poll::MessageTechCheck *mtc = 
+                dynamic_cast<Register::Poll::MessageTechCheck *>(m);
+              if (mtc) {
+                type = ccReg::polltype_techcheck;
+                ccReg::PollMsg_Techcheck *hdm = new ccReg::PollMsg_Techcheck;
+                hdm->handle = CORBA::string_dup(mtc->getHandle().c_str());
+                hdm->fqdns.length(mtc->getFQDNS().size());
+                for (unsigned i=0; i<mtc->getFQDNS().size(); i++)
+                  hdm->fqdns[i] = mtc->getFQDNS()[i].c_str();
+                hdm->tests.length(mtc->getTests().size());
+                for (unsigned i=0; i<mtc->getTests().size(); i++) {
+                  Register::Poll::MessageTechCheckItem *test = 
+                    mtc->getTests()[i];
+                  hdm->tests[i].testname = CORBA::string_dup(
+                    test->getTestname().c_str()
+                  );
+                  hdm->tests[i].status = test->getStatus();
+                  hdm->tests[i].note = 
+                    CORBA::string_dup(test->getNote().c_str());
+                }
+                *msg <<= hdm;              
+              }
+              else {
+                DBsql.Disconnect();
+                ServerInternalError("PollRequests: Unknown message type");
+              }
+            }
+          }
         }
-      else
-        ret->code = COMMAND_FAILED;
-
-
-      ret->msg = CORBA::string_dup( GetErrorMessage(  ret->code  , GetRegistrarLang( clientID ) )  );
-
-      DBsql.Disconnect();
+      }
     }
-
-   // no other messges 
-  if(   ret->code == COMMAND_NO_MESG )   NoMessages( ret->code , ret->msg ,  ret->svTRID );
-
- 
-  if( ret->code == 0 ) ServerInternalError("PollRequest");
-  
-
-return ret._retn();
+    catch (...) {
+      DBsql.Disconnect();
+      ServerInternalError("Cannot finish in pollRequest");    
+    }  
+    ret->code=COMMAND_OK;
+  }
+  ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code)) ;
+  ret->msg =CORBA::string_dup(
+    GetErrorMessage(ret->code, GetRegistrarLang( clientID))
+  );
+  DBsql.Disconnect();
+  return ret._retn();
 }
-
-
-
-
-
 
 /***********************************************************************
  *
@@ -2125,7 +2178,8 @@ if(  (regID = GetRegistrarID( clientID ) ) )
         switch( ssn )
         {
          case 1:
-                  c->identtype = ccReg::RC;
+                  // instead RC
+                  c->identtype = ccReg::EMPTY;
                   break;
          case 2:
                   c->identtype = ccReg::OP;

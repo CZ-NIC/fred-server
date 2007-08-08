@@ -55,7 +55,8 @@ am_libccreg_a_OBJECTS = libccreg_a-register.$(OBJEXT) \
 	libccreg_a-object_impl.$(OBJEXT) libccreg_a-contact.$(OBJEXT) \
 	libccreg_a-nsset.$(OBJEXT) libccreg_a-auth_info.$(OBJEXT) \
 	libccreg_a-invoice.$(OBJEXT) libccreg_a-documents.$(OBJEXT) \
-	libccreg_a-bank.$(OBJEXT) libccreg_a-info_buffer.$(OBJEXT)
+	libccreg_a-bank.$(OBJEXT) libccreg_a-info_buffer.$(OBJEXT) \
+	libccreg_a-poll.$(OBJEXT)
 libccreg_a_OBJECTS = $(am_libccreg_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -176,7 +177,7 @@ top_srcdir = @top_srcdir@
 noinst_LIBRARIES = libccreg.a
 libccreg_a_SOURCES = register.cc zone.cc blacklist.cc domain.cc registrar.cc \
 		     object_impl.cc contact.cc nsset.cc auth_info.cc invoice.cc \
-		     documents.cc bank.cc info_buffer.cc
+		     documents.cc bank.cc info_buffer.cc poll.cc
 
 libccreg_a_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CFLAGS) $(AM_CPPFLAGS)
 all: all-am
@@ -233,6 +234,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-documents.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-domain.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-info_buffer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-poll.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-invoice.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-nsset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-object_impl.Po@am__quote@
@@ -435,6 +437,20 @@ libccreg_a-info_buffer.obj: info_buffer.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='info_buffer.cc' object='libccreg_a-info_buffer.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-info_buffer.obj `if test -f 'info_buffer.cc'; then $(CYGPATH_W) 'info_buffer.cc'; else $(CYGPATH_W) '$(srcdir)/info_buffer.cc'; fi`
+
+libccreg_a-poll.o: poll.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-poll.o -MD -MP -MF $(DEPDIR)/libccreg_a-poll.Tpo -c -o libccreg_a-poll.o `test -f 'poll.cc' || echo '$(srcdir)/'`poll.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-poll.Tpo $(DEPDIR)/libccreg_a-poll.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='poll.cc' object='libccreg_a-poll.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-poll.o `test -f 'poll.cc' || echo '$(srcdir)/'`poll.cc
+
+libccreg_a-poll.obj: poll.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-poll.obj -MD -MP -MF $(DEPDIR)/libccreg_a-poll.Tpo -c -o libccreg_a-poll.obj `if test -f 'poll.cc'; then $(CYGPATH_W) 'poll.cc'; else $(CYGPATH_W) '$(srcdir)/poll.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-poll.Tpo $(DEPDIR)/libccreg_a-poll.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='poll.cc' object='libccreg_a-poll.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-poll.obj `if test -f 'poll.cc'; then $(CYGPATH_W) 'poll.cc'; else $(CYGPATH_W) '$(srcdir)/poll.cc'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \

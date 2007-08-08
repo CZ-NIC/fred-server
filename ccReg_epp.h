@@ -168,7 +168,7 @@ public:
   ccReg::Response* GetTransaction(CORBA::Short errCode, CORBA::Long clientID, const char* clTRID, const ccReg::XmlErrors& errorCodes, ccReg::ErrorStrings_out errStrings);
 
   ccReg::Response* PollAcknowledgement(const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID,  CORBA::Long clientID, const char* clTRID, const char* XML);
-  ccReg::Response* PollRequest(CORBA::String_out msgID, CORBA::Short& count, ccReg::timestamp_out qDate, CORBA::String_out mesg, CORBA::Long clientID, const char* clTRID, const char* XML);
+  ccReg::Response* PollRequest(CORBA::String_out msgID, CORBA::Short& count, ccReg::timestamp_out qDate, ccReg::PollType& type, CORBA::Any_OUT_arg msg, CORBA::Long clientID, const char* clTRID, const char* XML);
 
   ccReg::Response* ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char* clTRID, const char* XML ,  CORBA::Long& clientID , const char* certID , ccReg::Languages lang);
   ccReg::Response* ClientLogout(CORBA::Long clientID, const char* clTRID, const char* XML);
