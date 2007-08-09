@@ -262,6 +262,7 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = register
+CLEANFILES = ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh
 noinst_LIBRARIES = libfred.a
 bin_SCRIPTS = banking.sh
 libfred_a_SOURCES = ccRegSK.cc ccRegDynSK.cc conf.cc dbsql.cc pqsql.cc util.cc log.cc nameservice.cc mailer_manager.cc admin.cc tech_check.cc
@@ -1065,6 +1066,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -1072,6 +1074,8 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+clean: clean-recursive
+
 clean-am: clean-binPROGRAMS clean-generic clean-noinstLIBRARIES \
 	mostlyclean-am
 
@@ -1167,9 +1171,6 @@ ccReg_pifd.o: ccReg.hh
 
 ccReg_adifd.o:  ccReg.hh
 	$(CXXCOMPILE) $(POSTGRESQL_CFLAGS) -DADIF  -o ccReg_adifd.o -g -c  ccReg_server.cc
-
-clean::
-	-@rm -f ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

@@ -1,4 +1,5 @@
 SUBDIRS=register
+CLEANFILES=ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh
 
 noinst_LIBRARIES = libfred.a
 
@@ -62,5 +63,3 @@ ccReg_pifd.o: ccReg.hh
 ccReg_adifd.o:  ccReg.hh
 	$(CXXCOMPILE) $(POSTGRESQL_CFLAGS) -DADIF  -o ccReg_adifd.o -g -c  ccReg_server.cc
 
-clean::
-	-@rm -f ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh
