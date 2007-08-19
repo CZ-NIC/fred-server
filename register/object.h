@@ -113,6 +113,8 @@ namespace Register
     virtual void setTrDateIntervalFilter(time_period period) = 0;
     /// clear filter
     virtual void clear() = 0;
+    /// set limit for result
+    virtual void setLimit(unsigned count) = 0;
     /// fill temporary table with selected ids 
     virtual void fillTempTable(bool limit) const throw (SQL_ERROR) = 0;
     /// fill variable with count of select objects

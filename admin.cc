@@ -746,6 +746,59 @@ ccReg_Admin_i::getDomainById(ccReg::TID id)
   return cd;
 }
 
+ccReg::DomainDetails* 
+ccReg_Admin_i::getDomainsByInverseKey(
+  const char* key, ccReg::DomainInvKeyType type, CORBA::Long limit
+)
+{
+  DB db;
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
+  Register::Domain::Manager *dm = r->getDomainManager();
+  std::auto_ptr<Register::Domain::List> dl(dm->createList());
+  switch (type) {
+    case ccReg::DIKT_REGISTRANT : dl->setRegistrantHandleFilter(key); break;
+    case ccReg::DIKT_ADMIN : dl->setAdminHandleFilter(key); break;
+    case ccReg::DIKT_NSSET : dl->setNSSetHandleFilter(key); break;
+  }
+  dl->setLimit(limit);
+  dl->reload();
+  ccReg::DomainDetails_var dlist = new ccReg::DomainDetails;
+  dlist->length(dl->getCount());
+  for (unsigned i=0; i<dl->getCount(); i++)
+    fillDomain(&dlist[i],dl->get(i));
+  db.Disconnect();
+  return dlist._retn();
+}
+
+ccReg::NSSetDetails* 
+ccReg_Admin_i::getNSSetsByInverseKey(
+  const char* key, ccReg::NSSetInvKeyType type, CORBA::Long limit
+)
+{
+  DB db;
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> r(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
+  Register::NSSet::Manager *nm = r->getNSSetManager();
+  std::auto_ptr<Register::NSSet::List> nl(nm->createList());
+  switch (type) {
+    case ccReg::NIKT_NS : nl->setHostNameFilter(key); break;
+    case ccReg::NIKT_TECH : nl->setAdminFilter(key); break;
+  }
+  nl->setLimit(limit);
+  nl->reload();
+  ccReg::NSSetDetails_var nlist = new ccReg::NSSetDetails;
+  nlist->length(nl->getCount());
+  for (unsigned i=0; i<nl->getCount(); i++)
+    fillNSSet(&nlist[i],nl->get(i));
+  db.Disconnect();
+  return nlist._retn();
+}
+
 void
 ccReg_Admin_i::fillAuthInfoRequest(
   ccReg::AuthInfoRequest::Detail *carid,

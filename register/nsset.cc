@@ -231,7 +231,7 @@ namespace Register
           SQL_HANDLE_FILTER(where,"host(him.ipaddr)",ip);
         }
         if (!count) where << "ORDER BY n.id ASC ";
-        if (limit) where << "LIMIT 1000 ";
+        if (limit) where << "LIMIT " << limitCount << " ";
         sql << from.rdbuf();
         sql << where.rdbuf();
       }

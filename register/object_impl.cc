@@ -140,6 +140,7 @@ Register::ObjectListImpl::ObjectListImpl(DB *_db) :
   updateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
   trDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
   realCount(0),
+  limitCount(1000),
   db(_db)
 {
 }
@@ -257,4 +258,10 @@ Register::ObjectListImpl::makeRealCount() throw (SQL_ERROR)
   if (db->GetSelectRows() != 1) throw SQL_ERROR();
   realCount = atoll(db->GetFieldValue(0,0));
   db->FreeSelect();
+}
+
+void 
+Register::ObjectListImpl::setLimit(unsigned count)
+{
+  limitCount = count;
 }

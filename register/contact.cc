@@ -306,7 +306,7 @@ namespace Register
           }
         }
         if (!count) where << "ORDER BY c.id ASC ";
-        if (limit) where << "LIMIT 1000 ";
+        if (limit) where << "LIMIT " << limitCount << " ";
         sql << from.rdbuf();
         sql << where.rdbuf();
       }

@@ -67,6 +67,7 @@ namespace Register
     time_period updateIntervalFilter;
     time_period trDateIntervalFilter;
     unsigned long long realCount;
+    unsigned limitCount;
     DB *db;
     virtual void makeQuery(
       bool count, bool limit, std::stringstream& sql
@@ -90,6 +91,7 @@ namespace Register
     );
     virtual void setTrDateIntervalFilter(time_period period);
     virtual void clear();
+    virtual void setLimit(unsigned count);
     virtual unsigned long long getRealCount() const;
     virtual void fillTempTable(bool limit) const throw (SQL_ERROR);
     virtual void makeRealCount() throw (SQL_ERROR);    

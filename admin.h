@@ -307,6 +307,12 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
     throw (ccReg::Admin::ObjectNotFound);
   ccReg::DomainDetail* getDomainById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound);
+  ccReg::DomainDetails* getDomainsByInverseKey(
+    const char* key, ccReg::DomainInvKeyType type, CORBA::Long limit
+  );
+  ccReg::NSSetDetails* getNSSetsByInverseKey(
+    const char* key, ccReg::NSSetInvKeyType type, CORBA::Long limit
+  );
   void fillEPPAction(
     ccReg::EPPAction* cea, 
     const Register::Registrar::EPPAction *rea
