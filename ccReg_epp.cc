@@ -1732,6 +1732,8 @@ if( DBsql.OpenDatabase( database ) )
   }
 
   if( ret->code == 0 ) ServerInternalError("ClientLogin");
+  ccReg::Errors_var errors = new ccReg::Errors;
+  if( ret->code > COMMAND_EXCEPTION) EppError(  ret->code , ret->msg ,  ret->svTRID , errors );
 
 return ret._retn();
 }
