@@ -33,6 +33,12 @@
   if (!member.empty()) SQL_WILDCARD_FILTER_FILL(x,colname,member)
 #define SQL_HANDLE_FILTER(x,colname,member) \
   SQL_WILDCARD_FILTER(x,colname,member)
+#define SQL_HANDLE_WILDCHECK_FILTER(x,colname,member,w,u) \
+  if (!member.empty()) { \
+    if (w) SQL_WILDCARD_FILTER_FILL(x,colname,member); \
+    else x << "AND " << (u?"UPPER(":"") << colname << (u?")":"") \
+           << "=" << (u?"UPPER(":"") \
+           << "'" << member << "'" <<  (u?")":"") << " "; }
 #define SQL_ID_FILTER_FILL(x,colname,member) \
      x << "AND " << colname << "=" << member << " "
 #define SQL_ID_FILTER(x,colname,member) \

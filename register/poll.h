@@ -112,8 +112,8 @@ namespace Register
       /// return id of next unseen and unexpired message for registrar
       virtual TID getNextMessageId(TID registrar) const = 0;;
       /// mark message as seen
-      virtual void setMessageSeen(TID message) throw 
-        (NOT_FOUND) = 0;;
+      virtual void setMessageSeen(TID message) 
+        throw (NOT_FOUND) = 0;;
       /// factory method
       static Manager *create(DB *db);      
     };

@@ -188,12 +188,16 @@ namespace Register
           if (!registrarHandleFilter.empty()) {
             from << ",registrar reg ";
             where << "AND o.clid=reg.id ";
-            SQL_HANDLE_FILTER(where,"reg.handle",registrarHandleFilter);
+            SQL_HANDLE_WILDCHECK_FILTER(
+              where,"reg.handle",registrarHandleFilter,wcheck,false
+            );
           }
           if (!updateRegistrarHandleFilter.empty()) {
             from << ",registrar ureg ";
             where << "AND o.upid=ureg.id ";          
-            SQL_HANDLE_FILTER(where,"reg.handle",updateRegistrarHandleFilter);
+            SQL_HANDLE_WILDCHECK_FILTER(
+              where,"ureg.handle",updateRegistrarHandleFilter,wcheck,false
+            );
           }
         }
         if (createRegistrarFilter || !createRegistrarHandleFilter.empty() ||
@@ -203,11 +207,15 @@ namespace Register
           where << "AND obr.id=n.id AND obr.type=2 ";       
           SQL_ID_FILTER(where,"obr.crid",createRegistrarFilter);
           SQL_DATE_FILTER(where,"obr.crdate",crDateIntervalFilter);
-          SQL_HANDLE_FILTER(where,"obr.name",handle);
+          SQL_HANDLE_WILDCHECK_FILTER(
+            where,"obr.name",handle,wcheck,true
+          );
           if (!createRegistrarHandleFilter.empty()) {
             from << ",registrar creg ";
             where << "AND obr.crid=creg.id ";          
-            SQL_HANDLE_FILTER(where,"creg.handle",createRegistrarHandleFilter);
+            SQL_HANDLE_WILDCHECK_FILTER(
+              where,"creg.handle",createRegistrarHandleFilter,wcheck,false
+            );
           }
         }
         if (!admin.empty()) {
@@ -217,7 +225,9 @@ namespace Register
           if (!admin.empty()) {
             from << ",object_registry ncor ";
             where << "AND ncm.contactid=ncor.id AND ncor.type=1 ";            
-            SQL_HANDLE_FILTER(where,"ncor.name",admin);
+            SQL_HANDLE_WILDCHECK_FILTER(
+              where,"ncor.name",admin,wcheck,true
+            );
           }
         }
         if (!hostname.empty()) {

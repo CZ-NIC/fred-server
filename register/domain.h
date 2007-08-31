@@ -103,6 +103,10 @@ namespace Register
       virtual void setAdminFilter(TID adminId) = 0;
       /// set filter for admin handle
       virtual void setAdminHandleFilter(const std::string& adminHandle) = 0;
+      /// set filter for admin
+      virtual void setTempFilter(TID tempId) = 0;
+      /// set filter for admin handle
+      virtual void setTempHandleFilter(const std::string& tempHandle) = 0;
       /// set filter for domain name 
       virtual void setFQDNFilter(const std::string& fqdn) = 0;
       /// set filter for period of expiration date

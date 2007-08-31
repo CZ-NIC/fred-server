@@ -179,6 +179,8 @@ namespace Register
       std::string nssetHandle;
       TID admin;
       std::string adminHandle;
+      TID temp;
+      std::string tempHandle;
       std::string fqdn;
       time_period exDate;
       time_period valExDate;
@@ -188,7 +190,7 @@ namespace Register
      public:
       ListImpl(DB *_db) : ObjectListImpl(_db), 
         zoneFilter(0), registrantFilter(0),
-        nsset(0), admin(0),
+        nsset(0), admin(0), temp(0),
         exDate(ptime(neg_infin),ptime(pos_infin)),
         valExDate(ptime(neg_infin),ptime(pos_infin)),
         zoneStatus(0)
@@ -239,6 +241,14 @@ namespace Register
       virtual void setAdminHandleFilter(const std::string& _adminHandle)
       {
         adminHandle = _adminHandle;
+      }
+      virtual void setTempFilter(TID _tempId)
+      {
+        temp = _tempId;
+      }
+      virtual void setTempHandleFilter(const std::string& _tempHandle)
+      {
+        tempHandle = _tempHandle;
       }
       virtual void setFQDNFilter(const std::string& _fqdn)
       {
@@ -292,13 +302,17 @@ namespace Register
           if (!registrarHandleFilter.empty()) {
             from << ",registrar reg ";
             where << "AND o.clid=reg.id ";
-            SQL_HANDLE_FILTER(where,"reg.handle",registrarHandleFilter);
+            SQL_HANDLE_WILDCHECK_FILTER(
+              where,"reg.handle",registrarHandleFilter,wcheck,false
+            );
           }
           if (!updateRegistrarHandleFilter.empty()) {
             from << ",registrar ureg ";
             where << "AND o.upid=ureg.id ";          
-            SQL_HANDLE_FILTER(where,"reg.handle",updateRegistrarHandleFilter);
-          }
+            SQL_HANDLE_WILDCHECK_FILTER(
+              where,"ureg.handle",updateRegistrarHandleFilter,wcheck,false
+            );
+           }
         }
         if (createRegistrarFilter || !createRegistrarHandleFilter.empty() ||
             TIME_FILTER_SET(crDateIntervalFilter) ||
@@ -307,11 +321,15 @@ namespace Register
           where << "AND obr.id=d.id AND obr.type=3 ";       
           SQL_ID_FILTER(where,"obr.crid",createRegistrarFilter);
           SQL_DATE_FILTER(where,"obr.crdate",crDateIntervalFilter);
-          SQL_HANDLE_FILTER(where,"obr.name",fqdn);
+          SQL_HANDLE_WILDCHECK_FILTER(
+            where,"obr.name",fqdn,wcheck,false
+          );
           if (!createRegistrarHandleFilter.empty()) {
             from << ",registrar creg ";
             where << "AND obr.crid=creg.id ";          
-            SQL_HANDLE_FILTER(where,"creg.handle",createRegistrarHandleFilter);
+            SQL_HANDLE_WILDCHECK_FILTER(
+              where,"creg.handle",createRegistrarHandleFilter,wcheck,false
+            );
           }
         }
         if (TIME_FILTER_SET(valExDate)) {
@@ -322,28 +340,48 @@ namespace Register
         if (!registrantHandleFilter.empty()) {
           from << ",object_registry cor ";
           where << "AND d.registrant=cor.id AND cor.type=1 ";
-          SQL_HANDLE_FILTER(where,"cor.name",registrantHandleFilter);
+          SQL_HANDLE_WILDCHECK_FILTER(
+            where,"cor.name",registrantHandleFilter,wcheck,true
+          );
         }
         if (admin || !adminHandle.empty()) {
           from << ",domain_contact_map dcm ";
-          where << "AND d.id=dcm.domainid ";
+          where << "AND d.id=dcm.domainid AND dcm.role=1 ";
           SQL_ID_FILTER(where,"dcm.contactid",admin);
           if (!adminHandle.empty()) {
             from << ",object_registry dcor ";
             where << "AND dcm.contactid=dcor.id AND dcor.type=1 ";
-            SQL_HANDLE_FILTER(where,"dcor.name",adminHandle);
+            SQL_HANDLE_WILDCHECK_FILTER(
+              where,"dcor.name",adminHandle,wcheck,true
+            );
+          }
+        }
+        if (temp || !tempHandle.empty()) {
+          from << ",domain_contact_map dcmt ";
+          where << "AND d.id=dcmt.domainid AND dcmt.role=2 ";
+          SQL_ID_FILTER(where,"dcmt.contactid",temp);
+          if (!tempHandle.empty()) {
+            from << ",object_registry dcort ";
+            where << "AND dcmt.contactid=dcort.id AND dcort.type=1 ";
+            SQL_HANDLE_WILDCHECK_FILTER(
+              where,"dcort.name",tempHandle,wcheck,true
+            );
           }
         }
         if (!nssetHandle.empty()) {
           from << ",object_registry nor ";
           where << "AND d.nsset=nor.id AND nor.type=2 ";         
-          SQL_HANDLE_FILTER(where,"nor.name",nssetHandle);
+          SQL_HANDLE_WILDCHECK_FILTER(
+            where,"nor.name",nssetHandle,wcheck,true
+          );
         }
         if (!techAdmin.empty()) {
           from << ",nsset_contact_map ncm, object_registry tcor ";
           where << "AND d.nsset=ncm.nssetid AND ncm.contactid=tcor.id "
                 << "AND tcor.type=1 ";
-          SQL_HANDLE_FILTER(where,"tcor.name",techAdmin);
+          SQL_HANDLE_WILDCHECK_FILTER(
+            where,"tcor.name",techAdmin,wcheck,true
+          );
         }
         if (!hostIP.empty()) {
           from << ",host_ipaddr_map him ";

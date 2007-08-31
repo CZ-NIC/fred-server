@@ -141,6 +141,7 @@ Register::ObjectListImpl::ObjectListImpl(DB *_db) :
   trDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
   realCount(0),
   limitCount(1000),
+  wcheck(true),
   db(_db)
 {
 }
@@ -265,3 +266,10 @@ Register::ObjectListImpl::setLimit(unsigned count)
 {
   limitCount = count;
 }
+
+void 
+Register::ObjectListImpl::setWildcardExpansion(bool _wcheck)
+{
+  wcheck = _wcheck;
+}
+

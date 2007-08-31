@@ -489,6 +489,7 @@ ccReg_Admin_i::getContactByHandle(const char* handle)
   );
   Register::Contact::Manager *cr = r->getContactManager();
   std::auto_ptr<Register::Contact::List> cl(cr->createList());
+  cl->setWildcardExpansion(false);
   cl->setHandleFilter(handle);
   cl->reload();
   if (cl->getCount() != 1) {
@@ -567,6 +568,7 @@ ccReg_Admin_i::getNSSetByHandle(const char* handle)
   );
   Register::NSSet::Manager *nr = r->getNSSetManager();
   std::auto_ptr<Register::NSSet::List> nl(nr->createList());
+  nl->setWildcardExpansion(false);
   nl->setHandleFilter(handle);
   nl->reload();
   if (nl->getCount() != 1) {
@@ -710,6 +712,7 @@ ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
   );
   Register::Domain::Manager *dm = r->getDomainManager();
   std::auto_ptr<Register::Domain::List> dl(dm->createList());
+  dl->setWildcardExpansion(false);
   dl->setFQDNFilter(fqdn);
   dl->reload();
   if (dl->getCount() != 1) {
@@ -761,6 +764,7 @@ ccReg_Admin_i::getDomainsByInverseKey(
   switch (type) {
     case ccReg::DIKT_REGISTRANT : dl->setRegistrantHandleFilter(key); break;
     case ccReg::DIKT_ADMIN : dl->setAdminHandleFilter(key); break;
+    case ccReg::DIKT_TEMP : dl->setTempHandleFilter(key); break;
     case ccReg::DIKT_NSSET : dl->setNSSetHandleFilter(key); break;
   }
   dl->setLimit(limit);

@@ -68,6 +68,7 @@ namespace Register
     time_period trDateIntervalFilter;
     unsigned long long realCount;
     unsigned limitCount;
+    bool wcheck; ///< do wildcard expansion in filter handles
     DB *db;
     virtual void makeQuery(
       bool count, bool limit, std::stringstream& sql
@@ -95,6 +96,7 @@ namespace Register
     virtual unsigned long long getRealCount() const;
     virtual void fillTempTable(bool limit) const throw (SQL_ERROR);
     virtual void makeRealCount() throw (SQL_ERROR);    
+    virtual void setWildcardExpansion(bool _wcheck);
     
   }; // class ObjectListImpl
    
