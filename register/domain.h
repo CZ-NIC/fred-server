@@ -86,7 +86,7 @@ namespace Register
      public:
       virtual ~List() {}
       /// get detail of loaded domain
-      virtual Domain *get(unsigned idx) const = 0;
+      virtual Domain *getDomain(unsigned idx) const = 0;
       /// set filter for domain zone
       virtual void setZoneFilter(TID zoneId) = 0;
       /// set filter for registrant

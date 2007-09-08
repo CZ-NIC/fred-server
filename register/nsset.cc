@@ -128,8 +128,6 @@ namespace Register
     };
     class ListImpl : public virtual List, public ObjectListImpl
     {
-      typedef std::vector<NSSetImpl *> NSSetList;
-      NSSetList nlist;
       std::string handle;
       std::string hostname;
       std::string ip;
@@ -137,22 +135,9 @@ namespace Register
      public:
       ListImpl(DB *_db) : ObjectListImpl(_db)  
       {}
-      ~ListImpl() 
+      NSSet *getNSSet(unsigned idx) const
       {
-        clear();
-      }
-      void clear()
-      {
-        for (unsigned i=0; i<nlist.size(); i++) delete nlist[i];
-        nlist.clear();
-      }
-      unsigned getCount() const
-      {
-        return nlist.size();
-      }      
-      NSSet *get(unsigned idx) const
-      {
-        return idx >= getCount() ? NULL : nlist[idx];
+        return dynamic_cast<NSSet *>(get(idx));
       }      
       void setHandleFilter(const std::string& _handle)
       {
@@ -278,7 +263,7 @@ namespace Register
             << "ORDER BY tmp.id ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          nlist.push_back(
+          olist.push_back(
             new NSSetImpl(
               STR_TO_ID(db->GetFieldValue(i,0)), // nsset id
               db->GetFieldValue(i,1), // nsset handle
@@ -298,6 +283,7 @@ namespace Register
           ); 
         }
         db->FreeSelect();
+        resetIDSequence();
         sql.str("");
         sql << "SELECT n.nssetid, cor.name "
             << "FROM "
@@ -307,15 +293,14 @@ namespace Register
             << "ORDER BY tmp.id ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          TID id = STR_TO_ID(db->GetFieldValue(i,0));
-          NSSetList::iterator n = find_if(
-            nlist.begin(),nlist.end(),
-            std::bind2nd(std::mem_fun(&NSSetImpl::hasId),id)
-          );
-          if (n != nlist.end())
-            (*n)->addAdminHandle(db->GetFieldValue(i,1));
+          NSSetImpl *ns = dynamic_cast<NSSetImpl *>(findIDSequence(
+            STR_TO_ID(db->GetFieldValue(i,0))
+          ));
+          if (!ns) throw SQL_ERROR(); 
+          ns->addAdminHandle(db->GetFieldValue(i,1));
         }
         db->FreeSelect();
+        resetIDSequence();
         sql.str("");
         sql << "SELECT h.nssetid, h.fqdn, him.ipaddr "
             << "FROM "
@@ -325,21 +310,18 @@ namespace Register
             << "ORDER BY tmp.id ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          TID id = STR_TO_ID(db->GetFieldValue(i,0));
-          NSSetList::iterator n = find_if(
-            nlist.begin(),nlist.end(),
-            std::bind2nd(std::mem_fun(&NSSetImpl::hasId),id)
-          );
-          if (n != nlist.end()) {
-            HostImpl* h = (*n)->addHost(db->GetFieldValue(i,1));
-            h->addAddr(db->GetFieldValue(i,2));
-          }
+          NSSetImpl *ns = dynamic_cast<NSSetImpl *>(findIDSequence(
+            STR_TO_ID(db->GetFieldValue(i,0))
+          ));
+          if (!ns) throw SQL_ERROR(); 
+          HostImpl* h = ns->addHost(db->GetFieldValue(i,1));
+          h->addAddr(db->GetFieldValue(i,2));
         }
         db->FreeSelect();
       }
       void clearFilter()
       {
-        ObjectListImpl::clear();
+        ObjectListImpl::clearFilter();
         handle = "";
         admin = "";
         ip = "";

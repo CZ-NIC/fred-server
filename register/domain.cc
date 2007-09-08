@@ -202,38 +202,9 @@ namespace Register
         zoneStatus(0), ptrIdx(-1)
       {
       }
-      virtual ~ListImpl()
+      virtual Domain *getDomain(unsigned idx) const
       {
-        clear();
-      }
-      void resetIDSequence()
-      {
-        ptrIdx = -1;
-      }
-      DomainImpl *findIDSequence(TID id)
-      {
-        // must be sorted by ID to make sence
-        if (ptrIdx < 0) ptrIdx = 0;
-        for (;ptrIdx <= dlist.size() && dlist[ptrIdx]->getId()<id;ptrIdx++);
-        if (ptrIdx == dlist.size() || !dlist[ptrIdx]->hasId(id)) {
-          resetIDSequence();
-          return NULL;
-        }
-        return dlist[ptrIdx];
-      }
-      void clear()
-      {
-        for (unsigned i=0; i<dlist.size(); i++) delete dlist[i];
-        dlist.clear();
-      }
-      virtual unsigned getCount() const
-      {
-        return dlist.size();
-      }
-      virtual Domain *get(unsigned idx) const
-      {
-        if (idx >= dlist.size()) return NULL;
-        return dlist[idx];
+    	return dynamic_cast<DomainImpl *>(get(idx));
       }
       virtual void setZoneFilter(TID zoneId)
       {
@@ -503,14 +474,14 @@ namespace Register
             << "ORDER BY tmp.id";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          DomainImpl *dom = findIDSequence(
+          DomainImpl *dom = dynamic_cast<DomainImpl *>(findIDSequence(
             STR_TO_ID(db->GetFieldValue(i,0))
-          );
+          ));
           if (!dom) throw SQL_ERROR(); 
           dom->addAdminHandle(
-	    STR_TO_ID(db->GetFieldValue(i,1)),
-	    db->GetFieldValue(i,2),
-	    atoi(db->GetFieldValue(i,3))
+            STR_TO_ID(db->GetFieldValue(i,1)),
+            db->GetFieldValue(i,2),
+            atoi(db->GetFieldValue(i,3))
           );
         }
         db->FreeSelect();
@@ -525,19 +496,19 @@ namespace Register
             << "WHERE tmp.id=d.id AND d.nsset=nor.id ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          DomainImpl *dom = findIDSequence(
+          DomainImpl *dom = dynamic_cast<DomainImpl *>(findIDSequence(
             STR_TO_ID(db->GetFieldValue(i,0))
-          );
+          ));
           if (!dom) throw SQL_ERROR(); 
           dom->addNSSetHandle(
-	    db->GetFieldValue(i,1)
+            db->GetFieldValue(i,1)
           );
         }
         db->FreeSelect();
       }
       void clearFilter()
       {
-        ObjectListImpl::clear();
+        ObjectListImpl::clearFilter();
         registrantFilter = 0;
         registrantHandleFilter = "";
         nsset = 0;

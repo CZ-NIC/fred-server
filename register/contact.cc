@@ -221,8 +221,6 @@ namespace Register
     };
     class ListImpl : public virtual List, public ObjectListImpl
     {
-      typedef std::vector<ContactImpl *> ContactList;
-      ContactList clist;
       std::string handle;
       std::string name;
       std::string ident;
@@ -232,22 +230,9 @@ namespace Register
      public:
       ListImpl(DB *_db) : ObjectListImpl(_db)
       {}
-      ~ListImpl() 
+      Contact *getContact(unsigned idx) const
       {
-        clear();
-      }
-      void clear()
-      {
-        for (unsigned i=0; i<clist.size(); i++) delete clist[i];
-        clist.clear();
-      }
-      unsigned getCount() const
-      {
-        return clist.size();
-      }      
-      Contact *get(unsigned idx) const
-      {
-        return idx >= getCount() ? NULL : clist[idx];
+        return dynamic_cast<ContactImpl *>(get(idx));
       }      
       void setHandleFilter(const std::string& _handle)
       {
@@ -370,7 +355,7 @@ namespace Register
             << "ORDER BY tmp.id ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          clist.push_back(
+          olist.push_back(
             new ContactImpl(
               STR_TO_ID(db->GetFieldValue(i,0)), // id
               db->GetFieldValue(i,1), // handle
@@ -417,7 +402,7 @@ namespace Register
       }
       void clearFilter()
       {
-        ObjectListImpl::clear();
+        ObjectListImpl::clearFilter();
         handle = "";
         name = "";
         ident = "";

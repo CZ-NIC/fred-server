@@ -12,27 +12,22 @@ Register::ObjectImpl::ObjectImpl(
   TID _updateRegistrar, const std::string _updateRegistrarHandle,
   const std::string& _authPw, const std::string _roid
 ) :
- id(_id), crDate(_crDate), trDate(_trDate), upDate(_upDate), 
- registrar(_registrar), registrarHandle(_registrarHandle),
- createRegistrar(_createRegistrar), 
- createRegistrarHandle(_createRegistrarHandle),
- updateRegistrar(_updateRegistrar), 
- updateRegistrarHandle(_updateRegistrarHandle),
- authPw(_authPw), roid(_roid)
+  CommonObjectImpl(_id), crDate(_crDate), trDate(_trDate), upDate(_upDate), 
+  registrar(_registrar), registrarHandle(_registrarHandle),
+  createRegistrar(_createRegistrar), 
+  createRegistrarHandle(_createRegistrarHandle),
+  updateRegistrar(_updateRegistrar), 
+  updateRegistrarHandle(_updateRegistrarHandle),
+  authPw(_authPw), roid(_roid)
 {
 }
 
 Register::ObjectImpl::ObjectImpl()
-  : id(0), crDate(not_a_date_time), trDate(not_a_date_time), 
+  : CommonObjectImpl(0), 
+    crDate(not_a_date_time), trDate(not_a_date_time), 
     upDate(not_a_date_time),
-    registrar(0), createRegistrar(0), updateRegistrar(0), modified(true)
+    registrar(0), createRegistrar(0), updateRegistrar(0)
 {
-}
-
-Register::TID
-Register::ObjectImpl::getId() const
-{
-  return id;
 }
 
 ptime 
@@ -128,28 +123,18 @@ Register::ObjectImpl::deleteStatus(StatusElement element)
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//     Register::ObjectListImpl
+//     Register::CommonListImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 Register::ObjectListImpl::ObjectListImpl(DB *_db) :
-  idFilter(0),
+  CommonListImpl(_db),
   registrarFilter(0), 
   createRegistrarFilter(0), 
   updateRegistrarFilter(0),
   crDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
   updateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
-  trDateIntervalFilter(ptime(neg_infin),ptime(pos_infin)),
-  realCount(0),
-  limitCount(1000),
-  wcheck(true),
-  db(_db)
+  trDateIntervalFilter(ptime(neg_infin),ptime(pos_infin))
 {
-}
-
-void 
-Register::ObjectListImpl::setIdFilter(TID id)
-{
-  idFilter = id;
 }
 
 void 
@@ -213,9 +198,9 @@ Register::ObjectListImpl::setTrDateIntervalFilter(time_period period)
 }
 
 void
-Register::ObjectListImpl::clear()
+Register::ObjectListImpl::clearFilter()
 {
-  idFilter = 0;
+  CommonListImpl::clearFilter();
   crDateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));
   updateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));
   trDateIntervalFilter = time_period(ptime(neg_infin),ptime(pos_infin));
@@ -226,50 +211,3 @@ Register::ObjectListImpl::clear()
   createRegistrarHandleFilter = ""; 
   updateRegistrarHandleFilter = "";
 }
-
-unsigned long long 
-Register::ObjectListImpl::getRealCount() const
-{
-  return realCount;
-}
-
-void 
-Register::ObjectListImpl::fillTempTable(bool limit) const throw (SQL_ERROR)
-{
-  // this code is same fo every object should be inherited
-  std::stringstream sql;
-  sql << "CREATE TEMPORARY TABLE " << getTempTableName()
-      << " (id INTEGER PRIMARY KEY)";
-  // ignore if allready exists;
-  db->ExecSQL(sql.str().c_str());
-  // truncate if it already exists
-  sql.str("");
-  sql << "TRUNCATE " << getTempTableName();
-  db->ExecSQL(sql.str().c_str());
-  sql.str("");
-  makeQuery(false,limit,sql);
-  if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
-}
-void 
-Register::ObjectListImpl::makeRealCount() throw (SQL_ERROR)
-{
-  std::stringstream sql;
-  makeQuery(true,false,sql);
-  if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-  if (db->GetSelectRows() != 1) throw SQL_ERROR();
-  realCount = atoll(db->GetFieldValue(0,0));
-  db->FreeSelect();
-}
-
-void 
-Register::ObjectListImpl::setLimit(unsigned count)
-{
-  limitCount = count;
-}
-
-void 
-Register::ObjectListImpl::setWildcardExpansion(bool _wcheck)
-{
-  wcheck = _wcheck;
-}
-

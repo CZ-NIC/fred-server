@@ -497,7 +497,7 @@ ccReg_Admin_i::getContactByHandle(const char* handle)
     throw ccReg::Admin::ObjectNotFound();
   } 
   ccReg::ContactDetail* cc = new ccReg::ContactDetail;
-  fillContact(cc,cl->get(0));
+  fillContact(cc,cl->getContact(0));
   db.Disconnect();
   return cc;
 }
@@ -521,7 +521,7 @@ ccReg_Admin_i::getContactById(ccReg::TID id)
     throw ccReg::Admin::ObjectNotFound();
   } 
   ccReg::ContactDetail* cc = new ccReg::ContactDetail;
-  fillContact(cc,cl->get(0));
+  fillContact(cc,cl->getContact(0));
   db.Disconnect();
   return cc;
 }
@@ -576,7 +576,7 @@ ccReg_Admin_i::getNSSetByHandle(const char* handle)
     throw ccReg::Admin::ObjectNotFound();
   }
   ccReg::NSSetDetail* cn = new ccReg::NSSetDetail;
-  fillNSSet(cn,nl->get(0));
+  fillNSSet(cn,nl->getNSSet(0));
   db.Disconnect();
   return cn;
 }
@@ -600,7 +600,7 @@ ccReg_Admin_i::getNSSetById(ccReg::TID id)
     throw ccReg::Admin::ObjectNotFound();
   }
   ccReg::NSSetDetail* cn = new ccReg::NSSetDetail;
-  fillNSSet(cn,nl->get(0));
+  fillNSSet(cn,nl->getNSSet(0));
   db.Disconnect();
   return cn;
 }
@@ -720,7 +720,7 @@ ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
     throw ccReg::Admin::ObjectNotFound();
   } 
   ccReg::DomainDetail* cd = new ccReg::DomainDetail;
-  fillDomain(cd,dl->get(0));
+  fillDomain(cd,dl->getDomain(0));
   db.Disconnect();
   return cd;
 }
@@ -744,7 +744,7 @@ ccReg_Admin_i::getDomainById(ccReg::TID id)
     throw ccReg::Admin::ObjectNotFound();
   } 
   ccReg::DomainDetail* cd = new ccReg::DomainDetail;
-  fillDomain(cd,dl->get(0));
+  fillDomain(cd,dl->getDomain(0));
   db.Disconnect();
   return cd;
 }
@@ -772,7 +772,7 @@ ccReg_Admin_i::getDomainsByInverseKey(
   ccReg::DomainDetails_var dlist = new ccReg::DomainDetails;
   dlist->length(dl->getCount());
   for (unsigned i=0; i<dl->getCount(); i++)
-    fillDomain(&dlist[i],dl->get(i));
+    fillDomain(&dlist[i],dl->getDomain(i));
   db.Disconnect();
   return dlist._retn();
 }
@@ -798,7 +798,7 @@ ccReg_Admin_i::getNSSetsByInverseKey(
   ccReg::NSSetDetails_var nlist = new ccReg::NSSetDetails;
   nlist->length(nl->getCount());
   for (unsigned i=0; i<nl->getCount(); i++)
-    fillNSSet(&nlist[i],nl->get(i));
+    fillNSSet(&nlist[i],nl->getNSSet(i));
   db.Disconnect();
   return nlist._retn();
 }
@@ -1923,7 +1923,7 @@ ccReg::TableRow*
 ccReg_Domains_i::getRow(CORBA::Short row)
   throw (ccReg::Table::INVALID_ROW)
 {
-  const Register::Domain::Domain *d = dl->get(row);
+  const Register::Domain::Domain *d = dl->getDomain(row);
   if (!d) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
   tr->length(11);
@@ -1950,7 +1950,7 @@ ccReg::TID
 ccReg_Domains_i::getRowId(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW)
 {
-  const Register::Domain::Domain *d = dl->get(row);
+  const Register::Domain::Domain *d = dl->getDomain(row);
   if (!d) throw ccReg::Table::INVALID_ROW();
   return d->getId();  
 }
@@ -2204,7 +2204,7 @@ ccReg::TableRow*
 ccReg_Contacts_i::getRow(CORBA::Short row)
   throw (ccReg::Table::INVALID_ROW)
 {
-  const Register::Contact::Contact *c = cl->get(row);
+  const Register::Contact::Contact *c = cl->getContact(row);
   if (!c) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
   tr->length(5);
@@ -2225,7 +2225,7 @@ ccReg::TID
 ccReg_Contacts_i::getRowId(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW)
 {
-  const Register::Contact::Contact *c = cl->get(row);
+  const Register::Contact::Contact *c = cl->getContact(row);
   if (!c) throw ccReg::Table::INVALID_ROW();
   return c->getId();  
 }
@@ -2388,7 +2388,7 @@ ccReg::TableRow*
 ccReg_NSSets_i::getRow(CORBA::Short row)
   throw (ccReg::Table::INVALID_ROW)
 {
-  const Register::NSSet::NSSet *n = nl->get(row);
+  const Register::NSSet::NSSet *n = nl->getNSSet(row);
   if (!n) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
   tr->length(3);
@@ -2407,7 +2407,7 @@ ccReg::TID
 ccReg_NSSets_i::getRowId(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW)
 {
-  const Register::NSSet::NSSet *n = nl->get(row);
+  const Register::NSSet::NSSet *n = nl->getNSSet(row);
   if (!n) throw ccReg::Table::INVALID_ROW();
   return n->getId();
 }

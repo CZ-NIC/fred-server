@@ -2,16 +2,16 @@
 #define OBJECT_IMPL_H_
 
 #include "object.h"
+#include "common_impl.h"
 
 class DB;
 
 namespace Register
 {
   /// Implementation of common register object properties
-  class ObjectImpl : virtual public Object
+  class ObjectImpl : public CommonObjectImpl, virtual public Object
   {
    protected:
-    TID id;
     ptime crDate;
     ptime trDate;
     ptime upDate;
@@ -24,7 +24,6 @@ namespace Register
     std::string authPw;
     std::string roid;
     StatusSet sset;
-    bool modified;
    public:
     ObjectImpl();
     ObjectImpl(
@@ -34,7 +33,6 @@ namespace Register
       TID createRegistrar, const std::string createRegistrarHandle,
       const std::string& authPw, const std::string roid
     );
-    TID getId() const;
     ptime getCreateDate() const;
     ptime getTransferDate() const;
     ptime getUpdateDate() const;
@@ -53,10 +51,9 @@ namespace Register
   }; // class ObjectImpl
   
   /// Implementation of common register object list properties
-  class ObjectListImpl : virtual public ObjectList
+  class ObjectListImpl : public CommonListImpl, virtual public ObjectList
   {
    protected:
-    TID idFilter;
     TID registrarFilter;
     std::string registrarHandleFilter;
     TID createRegistrarFilter;
@@ -66,16 +63,9 @@ namespace Register
     time_period crDateIntervalFilter;
     time_period updateIntervalFilter;
     time_period trDateIntervalFilter;
-    unsigned long long realCount;
-    unsigned limitCount;
-    bool wcheck; ///< do wildcard expansion in filter handles
-    DB *db;
-    virtual void makeQuery(
-      bool count, bool limit, std::stringstream& sql
-    ) const = 0;
    public:
     ObjectListImpl(DB *db);
-    virtual void setIdFilter(TID id);
+    virtual void clearFilter();    
     virtual void setRegistrarFilter(TID registrarId);
     virtual void setRegistrarHandleFilter(
       const std::string& registrarHandle
@@ -91,13 +81,6 @@ namespace Register
       const std::string& registrarHandle
     );
     virtual void setTrDateIntervalFilter(time_period period);
-    virtual void clear();
-    virtual void setLimit(unsigned count);
-    virtual unsigned long long getRealCount() const;
-    virtual void fillTempTable(bool limit) const throw (SQL_ERROR);
-    virtual void makeRealCount() throw (SQL_ERROR);    
-    virtual void setWildcardExpansion(bool _wcheck);
-    
   }; // class ObjectListImpl
    
 } // namespace register

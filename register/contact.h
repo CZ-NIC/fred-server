@@ -77,7 +77,7 @@ namespace Register
      public:
       virtual ~List() {}
       /// get detail of loaded contact
-      virtual Contact *get(unsigned idx) const = 0;
+      virtual Contact *getContact(unsigned idx) const = 0;
       /// set filter for handle
       virtual void setHandleFilter(const std::string& handle) = 0;
       /// set filter for name

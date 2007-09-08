@@ -7,8 +7,7 @@
 #include <string>
 #include <set>
 
-#include "types.h"
-#include "exceptions.h"
+#include "common_object.h"
 
 using namespace boost::posix_time;
 
@@ -35,7 +34,7 @@ namespace Register
   /// List of filters for status. Not include status is ignored
   typedef std::vector<StatusFlagFilter> StatusFlagListFilter; 
   /// Common ancestor for all types managed in register
-  class Object
+  class Object : virtual public CommonObject
   {
    public:
     virtual ~Object() {}
@@ -43,8 +42,6 @@ namespace Register
     typedef unsigned StatusElement;
     /// Set of states
     typedef std::set<StatusElement> StatusSet;
-    /// return id of object
-    virtual TID getId() const = 0;
     /// Return time of object registration
     virtual ptime getCreateDate() const  = 0;
     /// Return time of last transfer
@@ -77,16 +74,10 @@ namespace Register
     virtual bool deleteStatus(StatusElement element) = 0;
   };
   
-  class ObjectList {
+  class ObjectList : virtual public CommonList {
    public:
     /// public destructor
     virtual ~ObjectList() {}
-    /// return count of objects in list
-    virtual unsigned getCount() const = 0;
-    /// get detail of loaded objects
-    virtual Object *get(unsigned idx) const = 0;
-    /// set filter for id
-    virtual void setIdFilter(TID id) = 0;
     /// set filter for registrar
     virtual void setRegistrarFilter(TID registrarId) = 0;
     /// set filter for registrar handle
@@ -111,20 +102,6 @@ namespace Register
     ) = 0;
     /// set filter for period of trDate
     virtual void setTrDateIntervalFilter(time_period period) = 0;
-    /// clear filter
-    virtual void clear() = 0;
-    /// set limit for result
-    virtual void setLimit(unsigned count) = 0;
-    /// fill temporary table with selected ids 
-    virtual void fillTempTable(bool limit) const throw (SQL_ERROR) = 0;
-    /// fill variable with count of select objects
-    virtual void makeRealCount() throw (SQL_ERROR) = 0;    
-    /// get name of temporary table with result of filter
-    virtual const char *getTempTableName() const = 0;    
-    /// get variable with count of select objects
-    virtual unsigned long long getRealCount() const = 0;
-    /// set flag for enabling wildcard expansion in handles 
-    virtual void setWildcardExpansion(bool _wcheck) = 0;
   };
   
 };

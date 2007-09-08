@@ -49,7 +49,7 @@ namespace Register
      public:
       virtual ~List() {}
       /// get detail of loaded nsset
-      virtual NSSet *get(unsigned idx) const = 0;
+      virtual NSSet *getNSSet(unsigned idx) const = 0;
       /// set filter for handle
       virtual void setHandleFilter(const std::string& handle) = 0;
       /// set filter for nameserver hostname
