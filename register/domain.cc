@@ -175,8 +175,6 @@ namespace Register
 
     class ListImpl : virtual public List, public ObjectListImpl
     {
-      typedef std::vector<DomainImpl *> DomainListType;
-      DomainListType dlist;
       TID zoneFilter;
       TID registrantFilter;
       std::string registrantHandleFilter;
@@ -458,7 +456,7 @@ namespace Register
             atoi(db->GetFieldValue(i,21)), // zone status
             MAKE_TIME(i,22) // zone status time 
           );
-          dlist.push_back(d);
+          olist.push_back(d);
         }
         db->FreeSelect();
         // add admin contacts
