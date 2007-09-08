@@ -32,6 +32,8 @@ namespace Register
       virtual ~NSSet() {}
       /// return nsset handle
       virtual const std::string& getHandle() const = 0;
+      /// return technical check level
+      virtual const unsigned getCheckLevel() const = 0;
       /// return count of admin contacts
       virtual unsigned getAdminCount() const = 0;
       /// return handle of admin contact by index

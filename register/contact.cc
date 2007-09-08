@@ -53,6 +53,9 @@ namespace Register
       bool discloseEmail;
       bool discloseTelephone;
       bool discloseFax;
+      bool discloseVat;
+      bool discloseIdent;
+      bool discloseNotifyEmail;
      public:
       ContactImpl(
         TID _id,
@@ -89,7 +92,10 @@ namespace Register
         bool _discloseAddr,
         bool _discloseEmail,
         bool _discloseTelephone,
-        bool _discloseFax  
+        bool _discloseFax,
+        bool _discloseVat,
+        bool _discloseIdent,
+        bool _discloseNotifyEmail
       ) :
         ObjectImpl(_id, _crDate,_trDate,_upDate,_registrar,_registrarHandle,
         _createRegistrar,_createRegistrarHandle,
@@ -100,10 +106,12 @@ namespace Register
         city(_city), country(_country), telephone(_telephone), fax(_fax),
         email(_email), notifyEmail(_notifyEmail), ssn(_ssn),
         ssnType(SET_SSNTYPE(_ssnType)), vat(_vat),
-        discloseName(_discloseName),discloseOrganization(_discloseOrganization),
+        discloseName(_discloseName),
+        discloseOrganization(_discloseOrganization),
         discloseAddr(_discloseAddr),discloseEmail(_discloseEmail),
-        discloseTelephone(_discloseTelephone),discloseFax(_discloseFax)
-        
+        discloseTelephone(_discloseTelephone),discloseFax(_discloseFax),
+        discloseVat(_discloseVat),discloseIdent(_discloseIdent),
+        discloseNotifyEmail(_discloseNotifyEmail)
       {
       }
       const std::string& getHandle() const
@@ -197,6 +205,18 @@ namespace Register
       virtual bool getDiscloseFax() const
       {
         return discloseFax;
+      }
+      virtual bool getDiscloseVat() const
+      {
+        return discloseVat;
+      }
+      virtual bool getDiscloseIdent() const
+      {
+        return discloseIdent;
+      }
+      virtual bool getDiscloseNotifyEmail() const
+      {
+        return discloseNotifyEmail;
       }
     };
     class ListImpl : public virtual List, public ObjectListImpl
@@ -320,26 +340,34 @@ namespace Register
       }
       void reload() throw (SQL_ERROR)
       {
+        std::map<TID,std::string> registrars;
+        std::ostringstream sql;
+        sql << "SELECT id, handle FROM registrar";
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+          registrars[STR_TO_ID(db->GetFieldValue(i,0))] = 
+            db->GetFieldValue(i,1);
+        }
+        db->FreeSelect();
+        sql.str("");
         clear();
         fillTempTable(true);
-        std::ostringstream sql;
         sql << "SELECT obr.id,obr.name,c.name,"
-            << "r.id,r.handle,"
+            << "o.clid,"
             << "obr.crdate,o.trdate,o.update,"
-            << "creg.id,creg.handle,ureg.id,ureg.handle,o.authinfopw,obr.roid,"
+            << "obr.crid,o.upid,o.authinfopw,obr.roid,"
             << "c.organization,c.street1,c.street2,c.street3,"
             << "c.stateorprovince,"
             << "c.postalcode,c.city,c.country,c.telephone,c.fax,c.email,"
             << "c.notifyEmail,c.ssn,c.ssntype,c.vat,"
             << "c.disclosename,c.discloseorganization,c.discloseaddress,"
-            << "c.discloseemail,c.disclosetelephone,c.disclosefax "
+            << "c.discloseemail,c.disclosetelephone,c.disclosefax, "
+            << "c.disclosevat,c.discloseident,c.disclosenotifyemail "
             << "FROM "
             << getTempTableName() << " tmp, "
-            << "registrar r, registrar creg, "
             << "contact c, object_registry obr, object o "
-            << "LEFT JOIN registrar ureg ON (o.upid=ureg.id) "
-            << "WHERE tmp.id=c.id AND c.id=o.id AND o.clid=r.id "
-            << "AND obr.crid=creg.id AND o.id=obr.id ";
+            << "WHERE tmp.id=c.id AND c.id=o.id AND o.id=obr.id "
+            << "ORDER BY tmp.id ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           clist.push_back(
@@ -348,37 +376,40 @@ namespace Register
               db->GetFieldValue(i,1), // handle
               db->GetFieldValue(i,2), // name
               STR_TO_ID(db->GetFieldValue(i,3)), // registrar id
-              db->GetFieldValue(i,4), // registrar handle
-              MAKE_TIME(i,5), // crdate
-              MAKE_TIME(i,6), // trdate
-              MAKE_TIME(i,7), // update
-              STR_TO_ID(db->GetFieldValue(i,8)), // crid
-              db->GetFieldValue(i,9), // crid handle
-              STR_TO_ID(db->GetFieldValue(i,10)), // upid
-              db->GetFieldValue(i,11), // upid handle
-              db->GetFieldValue(i,12), // authinfo
-              db->GetFieldValue(i,13), // roid
-              db->GetFieldValue(i,14), //organization
-              db->GetFieldValue(i,15), //street1
-              db->GetFieldValue(i,16), //street2
-              db->GetFieldValue(i,17), //street3
-              db->GetFieldValue(i,18), //province
-              db->GetFieldValue(i,19), //postalcode
-              db->GetFieldValue(i,20), //city
-              db->GetFieldValue(i,21), //country
-              db->GetFieldValue(i,22), //telephone
-              db->GetFieldValue(i,23), //fax
-              db->GetFieldValue(i,24), //email
-              db->GetFieldValue(i,25), //notifyEmail
-              db->GetFieldValue(i,26), //ssn
-              atoi(db->GetFieldValue(i,27)), //ssntype
-              db->GetFieldValue(i,28), //vat
-              (*db->GetFieldValue(i,29) == 't'), //discloseName
-              (*db->GetFieldValue(i,30) == 't'), //discloseOrganization
-              (*db->GetFieldValue(i,31) == 't'), //discloseAddr
-              (*db->GetFieldValue(i,32) == 't'), //discloseEmail
-              (*db->GetFieldValue(i,33) == 't'), //discloseTelephone
-              (*db->GetFieldValue(i,34) == 't') //discloseFax
+              registrars[STR_TO_ID(db->GetFieldValue(i,3))], // reg. handle
+              MAKE_TIME(i,4), // crdate
+              MAKE_TIME(i,5), // trdate
+              MAKE_TIME(i,6), // update
+              STR_TO_ID(db->GetFieldValue(i,7)), // crid
+              registrars[STR_TO_ID(db->GetFieldValue(i,7))], // crid handle
+              STR_TO_ID(db->GetFieldValue(i,8)), // upid
+              registrars[STR_TO_ID(db->GetFieldValue(i,8))], // upid handle
+              db->GetFieldValue(i,9), // authinfo
+              db->GetFieldValue(i,10), // roid
+              db->GetFieldValue(i,11), //organization
+              db->GetFieldValue(i,12), //street1
+              db->GetFieldValue(i,13), //street2
+              db->GetFieldValue(i,14), //street3
+              db->GetFieldValue(i,15), //province
+              db->GetFieldValue(i,16), //postalcode
+              db->GetFieldValue(i,17), //city
+              db->GetFieldValue(i,18), //country
+              db->GetFieldValue(i,19), //telephone
+              db->GetFieldValue(i,20), //fax
+              db->GetFieldValue(i,21), //email
+              db->GetFieldValue(i,22), //notifyEmail
+              db->GetFieldValue(i,23), //ssn
+              atoi(db->GetFieldValue(i,24)), //ssntype
+              db->GetFieldValue(i,25), //vat
+              (*db->GetFieldValue(i,26) == 't'), //discloseName
+              (*db->GetFieldValue(i,27) == 't'), //discloseOrganization
+              (*db->GetFieldValue(i,28) == 't'), //discloseAddr
+              (*db->GetFieldValue(i,29) == 't'), //discloseEmail
+              (*db->GetFieldValue(i,30) == 't'), //discloseTelephone
+              (*db->GetFieldValue(i,31) == 't'), //discloseFax
+              (*db->GetFieldValue(i,32) == 't'), //discloseVat
+              (*db->GetFieldValue(i,33) == 't'), //discloseIdent
+              (*db->GetFieldValue(i,34) == 't') //discloseNotifyEmail
             )
           );
         }

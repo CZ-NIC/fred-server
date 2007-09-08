@@ -16,7 +16,7 @@ namespace Register
 {
   namespace Domain
   {
-    class DomainImpl : ObjectImpl, public virtual Domain
+    class DomainImpl : public ObjectImpl, public virtual Domain
     {
       struct AdminInfo 
       {
@@ -166,6 +166,11 @@ namespace Register
         if (role == 1) adminList.push_back(AdminInfo(id,handle));
 	else tempList.push_back(AdminInfo(id,handle));
       } 
+      /// add nsset handle - for domain intialization
+      void addNSSetHandle(const std::string& handle)
+      {
+        nssetHandle = handle;
+      } 
     };
 
     class ListImpl : virtual public List, public ObjectListImpl
@@ -187,18 +192,34 @@ namespace Register
       std::string techAdmin;
       std::string hostIP;
       unsigned zoneStatus;
+      signed ptrIdx; //< pointer for sequential traversal
      public:
       ListImpl(DB *_db) : ObjectListImpl(_db), 
         zoneFilter(0), registrantFilter(0),
         nsset(0), admin(0), temp(0),
         exDate(ptime(neg_infin),ptime(pos_infin)),
         valExDate(ptime(neg_infin),ptime(pos_infin)),
-        zoneStatus(0)
+        zoneStatus(0), ptrIdx(-1)
       {
       }
       virtual ~ListImpl()
       {
         clear();
+      }
+      void resetIDSequence()
+      {
+        ptrIdx = -1;
+      }
+      DomainImpl *findIDSequence(TID id)
+      {
+        // must be sorted by ID to make sence
+        if (ptrIdx < 0) ptrIdx = 0;
+        for (;ptrIdx <= dlist.size() && dlist[ptrIdx]->getId()<id;ptrIdx++);
+        if (ptrIdx == dlist.size() || !dlist[ptrIdx]->hasId(id)) {
+          resetIDSequence();
+          return NULL;
+        }
+        return dlist[ptrIdx];
       }
       void clear()
       {
@@ -395,22 +416,30 @@ namespace Register
       }
       virtual void reload() throw (SQL_ERROR)
       {
+        std::map<TID,std::string> registrars;
+        std::ostringstream sql;
+        sql << "SELECT id, handle FROM registrar";
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+          registrars[STR_TO_ID(db->GetFieldValue(i,0))] = 
+            db->GetFieldValue(i,1);
+        }
+        db->FreeSelect();
         clear();
         fillTempTable(true);
-        db->ExecSelect("SET enable_seqscan=off");
-        std::ostringstream sql;
         // load domain data
+        sql.str("");
         sql << "SELECT "
             // domain, zone, nsset
-            << "obr.id,obr.name,d.zone,nor.id,nor.name,"
+            << "obr.id,obr.name,d.zone,d.nsset,'',"
             // registrant
             << "cor.id,cor.name,c.name,"
             // registrar
-            << "r.id,r.handle,"
+            << "o.clid,'',"
             // registration dates
             << "obr.crdate,o.trdate,o.update,"
             // creating and updating registrar
-            << "creg.id,creg.handle,ureg.id,ureg.handle,"
+            << "obr.crid,'',o.upid,'',"
             // repository data
             << "o.authinfopw,obr.roid,"
             // expiration and validation dates
@@ -420,15 +449,16 @@ namespace Register
             << "FROM "
             << getTempTableName() << " tmp, "
             << "contact c, object_registry cor, "
-            << "registrar r, registrar creg, object_registry obr, "
-            << "object o LEFT JOIN registrar ureg ON (o.upid=ureg.id), "
-            << "domain d LEFT JOIN object_registry nor ON (d.nsset=nor.id) "
+            << "object_registry obr, "
+            << "object o, "//LEFT JOIN registrar ureg ON (o.upid=ureg.id), "
+            << "domain d "//LEFT JOIN object_registry nor ON (d.nsset=nor.id) "
             << "LEFT JOIN enumval ev ON (d.id=ev.domainid) "
             << "LEFT JOIN genzone_domain_history gdh "
             << "ON (d.id=gdh.domain_id and gdh.last='t') "
             << "WHERE tmp.id=d.id AND d.id=o.id AND d.registrant=c.id "
             << "AND c.id=cor.id "
-            << "AND obr.id=o.id AND obr.crid=creg.id AND o.clid=r.id ";
+            << "AND obr.id=o.id "
+            << "ORDER BY tmp.id ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           DomainImpl *d;
@@ -442,14 +472,14 @@ namespace Register
             db->GetFieldValue(i,6), // registrant handle
             db->GetFieldValue(i,7), // registrant name
             STR_TO_ID(db->GetFieldValue(i,8)), // registrar
-            db->GetFieldValue(i,9), // registrar handle
+            registrars[STR_TO_ID(db->GetFieldValue(i,8))], // registrar handle
             MAKE_TIME(i,10), // crdate
             MAKE_TIME(i,11), // trdate
             MAKE_TIME(i,12), // update
             STR_TO_ID(db->GetFieldValue(i,13)), // crid
-            db->GetFieldValue(i,14), // crid handle
+            registrars[STR_TO_ID(db->GetFieldValue(i,13))], // crid handle
             STR_TO_ID(db->GetFieldValue(i,15)), // upid
-            db->GetFieldValue(i,16), // upid handle
+            registrars[STR_TO_ID(db->GetFieldValue(i,15))], // upid handle
             db->GetFieldValue(i,17), // authinfo
             db->GetFieldValue(i,18), // roid
             MAKE_DATE(i,19), // exdate
@@ -460,8 +490,8 @@ namespace Register
           dlist.push_back(d);
         }
         db->FreeSelect();
-        db->ExecSelect("SET enable_seqscan=on");
         // add admin contacts
+        resetIDSequence();
         sql.str("");
         sql << "SELECT "
             << "tmp.id, obr.id, obr.name, dcm.role "
@@ -469,19 +499,38 @@ namespace Register
             << getTempTableName() << " tmp, "
             << "domain_contact_map dcm, "
             << "object_registry obr "
-            << "WHERE tmp.id=dcm.domainid and dcm.contactid=obr.id ";  
+            << "WHERE tmp.id=dcm.domainid and dcm.contactid=obr.id "
+            << "ORDER BY tmp.id";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          DomainListType::const_iterator dom = find_if(
-            dlist.begin(),dlist.end(),
-            std::bind2nd(std::mem_fun(&DomainImpl::hasId),
-                         STR_TO_ID(db->GetFieldValue(i,0)))
+          DomainImpl *dom = findIDSequence(
+            STR_TO_ID(db->GetFieldValue(i,0))
           );
-          if (dom == dlist.end()) throw SQL_ERROR(); 
-          (*dom)->addAdminHandle(
+          if (!dom) throw SQL_ERROR(); 
+          dom->addAdminHandle(
 	    STR_TO_ID(db->GetFieldValue(i,1)),
 	    db->GetFieldValue(i,2),
 	    atoi(db->GetFieldValue(i,3))
+          );
+        }
+        db->FreeSelect();
+        // add nsset handles (instead of LEFT JOIN)
+        resetIDSequence();
+        sql.str("");
+        sql << "SELECT "
+            << "tmp.id, nor.name "
+            << "FROM "
+            << getTempTableName() << " tmp, "
+            << "domain d, object_registry nor "
+            << "WHERE tmp.id=d.id AND d.nsset=nor.id ";
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+          DomainImpl *dom = findIDSequence(
+            STR_TO_ID(db->GetFieldValue(i,0))
+          );
+          if (!dom) throw SQL_ERROR(); 
+          dom->addNSSetHandle(
+	    db->GetFieldValue(i,1)
           );
         }
         db->FreeSelect();

@@ -64,6 +64,12 @@ namespace Register
       virtual bool getDiscloseTelephone() const = 0;
       /// return disclose attribute for contact name
       virtual bool getDiscloseFax() const = 0;
+      /// return disclose attribute for contact vat
+      virtual bool getDiscloseVat() const = 0;
+      /// return disclose attribute for contact identification token
+      virtual bool getDiscloseIdent() const = 0;
+      /// return disclose attribute for contact notify email
+      virtual bool getDiscloseNotifyEmail() const = 0;
     };
     /// domain list
     class List : virtual public ObjectList

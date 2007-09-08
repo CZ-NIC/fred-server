@@ -35,7 +35,9 @@
   SQL_WILDCARD_FILTER(x,colname,member)
 #define SQL_HANDLE_WILDCHECK_FILTER(x,colname,member,w,u) \
   if (!member.empty()) { \
-    if (w) SQL_WILDCARD_FILTER_FILL(x,colname,member); \
+    if (w && (member.find('*') != std::string::npos || \
+              member.find('?') != std::string::npos)) \
+      SQL_WILDCARD_FILTER_FILL(x,colname,member); \
     else x << "AND " << (u?"UPPER(":"") << colname << (u?")":"") \
            << "=" << (u?"UPPER(":"") \
            << "'" << member << "'" <<  (u?")":"") << " "; }

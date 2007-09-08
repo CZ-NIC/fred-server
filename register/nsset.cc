@@ -56,6 +56,7 @@ namespace Register
       typedef std::vector<HostImpl> HostListType;
       ContactListType admins;
       HostListType hosts;
+      unsigned checkLevel;
      public:
       NSSetImpl(
         TID _id, 
@@ -70,17 +71,23 @@ namespace Register
         TID _updateRegistrar,      
         const std::string& _updateRegistrarHandle,
         const std::string& _authPw,
-        const std::string& _roid         
+        const std::string& _roid,
+        unsigned _checkLevel
       ) :
-          ObjectImpl(_id, _crDate,_trDate,_upDate,_registrar,_registrarHandle,
-         _createRegistrar,_createRegistrarHandle,
-         _updateRegistrar,_updateRegistrarHandle,_authPw,_roid),
-         handle(_handle)
+        ObjectImpl(
+          _id, _crDate,_trDate,_upDate,_registrar,_registrarHandle,
+          _createRegistrar,_createRegistrarHandle,
+          _updateRegistrar,_updateRegistrarHandle,_authPw,_roid
+        ), handle(_handle), checkLevel(_checkLevel)
       {
       }
       const std::string& getHandle() const
       {
         return handle;
+      }
+      virtual const unsigned  getCheckLevel() const
+      {
+        return checkLevel;
       }
       unsigned getAdminCount() const
       {
@@ -247,22 +254,28 @@ namespace Register
       }
       void reload() throw (SQL_ERROR)
       {
+        std::map<TID,std::string> registrars;
+        std::ostringstream sql;
+        sql << "SELECT id, handle FROM registrar";
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+          registrars[STR_TO_ID(db->GetFieldValue(i,0))] = 
+            db->GetFieldValue(i,1);
+        }
+        db->FreeSelect();
+        sql.str("");
         clear();
         fillTempTable(true);
-        std::ostringstream sql;
         sql << "SELECT "
             << "obr.id,obr.name,"
-            << "r.id,r.handle, "
+            << "o.clid,"
             << "obr.crdate,o.trdate,o.update,"
-            << "creg.id,creg.handle,ureg.id,ureg.handle,o.authinfopw,obr.roid "           
+            << "obr.crid,o,upid,o.authinfopw,obr.roid,n.checklevel "
             << "FROM "
             << getTempTableName() << " tmp, "
-            << "nsset n, registrar r, registrar creg, "
-            << "object_registry obr, object o "
-            << "LEFT JOIN registrar ureg ON (o.upid=ureg.id) "
-            << "WHERE tmp.id=n.id AND n.id=o.id "
-            << "AND obr.id=o.id AND o.clid=r.id "
-            << "AND obr.crid=creg.id ";
+            << "nsset n, object_registry obr, object o "
+            << "WHERE tmp.id=n.id AND n.id=o.id AND obr.id=o.id "
+            << "ORDER BY tmp.id ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           nlist.push_back(
@@ -270,16 +283,17 @@ namespace Register
               STR_TO_ID(db->GetFieldValue(i,0)), // nsset id
               db->GetFieldValue(i,1), // nsset handle
               STR_TO_ID(db->GetFieldValue(i,2)), // registrar id
-              db->GetFieldValue(i,3), // registrar handle
-              MAKE_TIME(i,4), // registrar crdate
-              MAKE_TIME(i,5), // registrar trdate
-              MAKE_TIME(i,6), // registrar update
-              STR_TO_ID(db->GetFieldValue(i,7)), // crid 
-              db->GetFieldValue(i,8), // crid handle
-              STR_TO_ID(db->GetFieldValue(i,9)), // upid
-              db->GetFieldValue(i,10), // upid handle
-              db->GetFieldValue(i,11), // authinfo
-              db->GetFieldValue(i,12) // roid
+              registrars[STR_TO_ID(db->GetFieldValue(i,2))], // reg. handle
+              MAKE_TIME(i,3), // registrar crdate
+              MAKE_TIME(i,4), // registrar trdate
+              MAKE_TIME(i,5), // registrar update
+              STR_TO_ID(db->GetFieldValue(i,6)), // crid 
+              registrars[STR_TO_ID(db->GetFieldValue(i,6))], // crid handle
+              STR_TO_ID(db->GetFieldValue(i,7)), // upid
+              registrars[STR_TO_ID(db->GetFieldValue(i,7))], // upid handle
+              db->GetFieldValue(i,8), // authinfo
+              db->GetFieldValue(i,9), // roid
+              atoi(db->GetFieldValue(i,10)) // checklevel
             )
           ); 
         }
@@ -289,7 +303,8 @@ namespace Register
             << "FROM "
             << getTempTableName() << " tmp, "
             << "nsset_contact_map n, object_registry cor "
-            << "WHERE tmp.id=n.nssetid AND n.contactid = cor.id";
+            << "WHERE tmp.id=n.nssetid AND n.contactid = cor.id "
+            << "ORDER BY tmp.id ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           TID id = STR_TO_ID(db->GetFieldValue(i,0));
@@ -306,7 +321,8 @@ namespace Register
             << "FROM "
             << getTempTableName() << " tmp, "
             << "host h LEFT JOIN host_ipaddr_map him ON (h.id=him.hostid) "
-            << "WHERE tmp.id=h.nssetid ";
+            << "WHERE tmp.id=h.nssetid "
+            << "ORDER BY tmp.id ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           TID id = STR_TO_ID(db->GetFieldValue(i,0));
