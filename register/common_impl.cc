@@ -1,5 +1,6 @@
 #include "common_impl.h"
 #include "dbsql.h"
+#include "log.h"
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //     Register::CommonObjectImpl
@@ -63,6 +64,7 @@ void
 Register::CommonListImpl::clear()
 {
   for (unsigned i=0; i<olist.size(); i++) delete olist[i];
+  olist.clear();
 }
 
 void
@@ -128,8 +130,9 @@ Register::CommonListImpl::findIDSequence(TID id)
 {
   // must be sorted by ID to make sence
   if (ptrIdx < 0) ptrIdx = 0;
-  for (;ptrIdx <= olist.size() && olist[ptrIdx]->getId()<id;ptrIdx++);
+  for (;ptrIdx < olist.size() && olist[ptrIdx]->getId()<id;ptrIdx++);
   if (ptrIdx == olist.size() || olist[ptrIdx]->getId() != id) {
+    LOG(ERROR_LOG, "find_sequence: id %ull, ptr %d", id, ptrIdx); 
     resetIDSequence();
     return NULL;
   }

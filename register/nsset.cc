@@ -283,6 +283,8 @@ namespace Register
           ); 
         }
         db->FreeSelect();
+        // no need to proceed when nothing was loaded
+        if (!getCount()) return;
         resetIDSequence();
         sql.str("");
         sql << "SELECT n.nssetid, cor.name "

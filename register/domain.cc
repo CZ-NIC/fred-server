@@ -10,7 +10,6 @@
 
 #define IS_NUMBER(x) (x >= '0' && x <= '9')
 #define IS_LETTER(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'))
-#define DOMAIN_PROTECT_PERIOD_SQL "1 month"
 
 namespace Register
 {
@@ -190,14 +189,13 @@ namespace Register
       std::string techAdmin;
       std::string hostIP;
       unsigned zoneStatus;
-      signed ptrIdx; //< pointer for sequential traversal
      public:
       ListImpl(DB *_db) : ObjectListImpl(_db), 
         zoneFilter(0), registrantFilter(0),
         nsset(0), admin(0), temp(0),
         exDate(ptime(neg_infin),ptime(pos_infin)),
         valExDate(ptime(neg_infin),ptime(pos_infin)),
-        zoneStatus(0), ptrIdx(-1)
+        zoneStatus(0)
       {
       }
       virtual Domain *getDomain(unsigned idx) const
@@ -404,11 +402,11 @@ namespace Register
             // registrant
             << "cor.id,cor.name,c.name,"
             // registrar
-            << "o.clid,'',"
+            << "o.clid,"
             // registration dates
             << "obr.crdate,o.trdate,o.update,"
             // creating and updating registrar
-            << "obr.crid,'',o.upid,'',"
+            << "obr.crid,o.upid,"
             // repository data
             << "o.authinfopw,obr.roid,"
             // expiration and validation dates
@@ -419,8 +417,8 @@ namespace Register
             << getTempTableName() << " tmp, "
             << "contact c, object_registry cor, "
             << "object_registry obr, "
-            << "object o, "//LEFT JOIN registrar ureg ON (o.upid=ureg.id), "
-            << "domain d "//LEFT JOIN object_registry nor ON (d.nsset=nor.id) "
+            << "object o, "
+            << "domain d "
             << "LEFT JOIN enumval ev ON (d.id=ev.domainid) "
             << "LEFT JOIN genzone_domain_history gdh "
             << "ON (d.id=gdh.domain_id and gdh.last='t') "
@@ -442,23 +440,25 @@ namespace Register
             db->GetFieldValue(i,7), // registrant name
             STR_TO_ID(db->GetFieldValue(i,8)), // registrar
             registrars[STR_TO_ID(db->GetFieldValue(i,8))], // registrar handle
-            MAKE_TIME(i,10), // crdate
-            MAKE_TIME(i,11), // trdate
-            MAKE_TIME(i,12), // update
-            STR_TO_ID(db->GetFieldValue(i,13)), // crid
-            registrars[STR_TO_ID(db->GetFieldValue(i,13))], // crid handle
-            STR_TO_ID(db->GetFieldValue(i,15)), // upid
-            registrars[STR_TO_ID(db->GetFieldValue(i,15))], // upid handle
-            db->GetFieldValue(i,17), // authinfo
-            db->GetFieldValue(i,18), // roid
-            MAKE_DATE(i,19), // exdate
-            MAKE_DATE(i,20), // valexdate
-            atoi(db->GetFieldValue(i,21)), // zone status
-            MAKE_TIME(i,22) // zone status time 
+            MAKE_TIME(i,9), // crdate
+            MAKE_TIME(i,10), // trdate
+            MAKE_TIME(i,11), // update
+            STR_TO_ID(db->GetFieldValue(i,12)), // crid
+            registrars[STR_TO_ID(db->GetFieldValue(i,12))], // crid handle
+            STR_TO_ID(db->GetFieldValue(i,13)), // upid
+            registrars[STR_TO_ID(db->GetFieldValue(i,13))], // upid handle
+            db->GetFieldValue(i,14), // authinfo
+            db->GetFieldValue(i,15), // roid
+            MAKE_DATE(i,16), // exdate
+            MAKE_DATE(i,17), // valexdate
+            atoi(db->GetFieldValue(i,18)), // zone status
+            MAKE_TIME(i,19) // zone status time 
           );
           olist.push_back(d);
         }
         db->FreeSelect();
+        // no need to proceed when nothing was loaded
+        if (!getCount()) return;
         // add admin contacts
         resetIDSequence();
         sql.str("");
@@ -491,7 +491,8 @@ namespace Register
             << "FROM "
             << getTempTableName() << " tmp, "
             << "domain d, object_registry nor "
-            << "WHERE tmp.id=d.id AND d.nsset=nor.id ";
+            << "WHERE tmp.id=d.id AND d.nsset=nor.id "
+            << "ORDER BY tmp.id";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           DomainImpl *dom = dynamic_cast<DomainImpl *>(findIDSequence(
