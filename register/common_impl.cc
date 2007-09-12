@@ -84,14 +84,8 @@ Register::CommonListImpl::fillTempTable(bool limit) const throw (SQL_ERROR)
 {
   // this code is same fo every object should be inherited
   std::stringstream sql;
-  sql << "CREATE TEMPORARY TABLE " << getTempTableName()
-      << " (id INTEGER PRIMARY KEY)";
-  // ignore if allready exists;
-  db->ExecSQL(sql.str().c_str());
-  // truncate if it already exists
-  sql.str("");
-  sql << "TRUNCATE " << getTempTableName();
-  db->ExecSQL(sql.str().c_str());
+  sql << "SELECT create_tmp_table('"  << getTempTableName() << "')";
+  if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
   sql.str("");
   makeQuery(false,limit,sql);
   if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
