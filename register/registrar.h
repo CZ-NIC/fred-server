@@ -128,6 +128,8 @@ namespace Register {
       virtual void setHandleFilter(const std::string& handle) = 0;
       /// Filter in name
       virtual void setNameFilter(const std::string& name) = 0;
+      /// Filter for zone
+      virtual void setZoneFilter(const std::string& zone) = 0;
       /// Reload actual list of registrars
       virtual void reload() throw (SQL_ERROR) = 0;
       /// Return size of list

@@ -340,6 +340,27 @@ ccReg_Admin_i::getRegistrars()
   return reglist;
 }
 
+ccReg::RegistrarList* 
+ccReg_Admin_i::getRegistrarsByZone(const char *zone)
+{
+  DB db;
+  db.OpenDatabase(database.c_str());
+  std::auto_ptr<Register::Manager> regm(
+    Register::Manager::create(&db,cfg.GetRestrictedHandles())
+  );
+  Register::Registrar::Manager *rm = regm->getRegistrarManager();
+  Register::Registrar::RegistrarList *rl = rm->getList();
+  rl->setZoneFilter(zone);
+  rl->reload();
+  LOG( NOTICE_LOG, "getRegistrars: num -> %d",  rl->size() );
+  ccReg::RegistrarList* reglist = new ccReg::RegistrarList;
+  reglist->length(rl->size());
+  for (unsigned i=0; i<rl->size(); i++)
+    fillRegistrar((*reglist)[i],rl->get(i));
+  db.Disconnect();
+  return reglist;
+}
+
 ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
   throw (ccReg::Admin::ObjectNotFound)
 {

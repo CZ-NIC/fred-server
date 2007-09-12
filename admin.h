@@ -286,6 +286,7 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
     throw (ccReg::Admin::ObjectNotFound);
   // registrar management
   ccReg::RegistrarList* getRegistrars();
+  ccReg::RegistrarList* getRegistrarsByZone(const char *zone);
   ccReg::Registrar* getRegistrarById(ccReg::TID id) 
     throw (ccReg::Admin::ObjectNotFound);
   ccReg::Registrar* getRegistrarByHandle(const char* handle) 

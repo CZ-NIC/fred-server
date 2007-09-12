@@ -358,6 +358,7 @@ namespace Register
       std::string handle;
       std::string xml;
       TID idFilter;
+      std::string zoneFilter;
      public:
       RegistrarListImpl(DB *_db) : db(_db), idFilter(0)
       {
@@ -382,6 +383,10 @@ namespace Register
       {
         name = _name;
       }
+      virtual void setZoneFilter(const std::string& _zone)
+      {
+	zoneFilter = _zone;
+      }
       void clear()
       {
         for (unsigned i=0; i<registrars.size(); i++)
@@ -398,7 +403,15 @@ namespace Register
             << "COALESCE(SUM(i.credit),0) "
             << "FROM registrar r "
             << "LEFT JOIN invoice i ON (r.id=i.registrarid AND "
-            << "NOT(i.credit ISNULL)) WHERE 1=1 ";
+            << "NOT(i.credit ISNULL)) ";
+	if (!zoneFilter.empty())
+	  sql << "LEFT JOIN (SELECT z.fqdn, ri.registrarid "
+	      << "FROM zone z, registrarinvoice ri "
+	      << "WHERE z.id=ri.zone AND ri.fromdate<=CURRENT_DATE) t "
+	      << "ON (t.registrarid=r.id AND t.fqdn='" << zoneFilter << "') ";
+	sql << "WHERE 1=1 ";
+	if (!zoneFilter.empty())
+	  sql << "AND NOT(t.fqdn ISNULL) ";
         SQL_ID_FILTER(sql,"r.id",idFilter);
         SQL_HANDLE_FILTER(sql,"r.name",name);
         SQL_HANDLE_FILTER(sql,"r.handle",handle);
@@ -469,6 +482,7 @@ namespace Register
       {
         name = "";
         handle = "";
+	zoneFilter = "";
       }      
     };
 
