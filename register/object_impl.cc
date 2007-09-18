@@ -1,5 +1,37 @@
 #include "object_impl.h"
 #include "dbsql.h"
+#include "sql.h"
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//     Register::StatusImpl
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Register::StatusImpl::StatusImpl(TID _id, ptime _timeFrom, ptime _timeTo)
+  : id(_id), timeFrom(_timeFrom), timeTo(_timeTo)
+{
+}
+
+Register::StatusImpl::~StatusImpl()
+{
+}
+
+Register::TID
+Register::StatusImpl::getStatusId() const
+{
+  return id;
+}
+
+ptime
+Register::StatusImpl::getFrom() const
+{
+  return timeFrom;
+}
+
+ptime 
+Register::StatusImpl::getTo() const
+{
+  return timeTo;
+}
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //     Register::ObjectImpl
@@ -102,28 +134,28 @@ Register::ObjectImpl::getROID() const
   return roid;
 }
 
-const Register::Object::StatusSet& 
-Register::ObjectImpl::getStatusSet() const
+
+unsigned 
+Register::ObjectImpl::getStatusCount() const
 {
-  return sset;
+  return slist.size();
 }
 
-bool 
-Register::ObjectImpl::insertStatus(StatusElement element)
+const Register::Status* 
+Register::ObjectImpl::getStatusByIdx(unsigned idx) const
 {
-  modified = true;
-  return sset.insert(element).second;
+  if (idx >= slist.size()) return NULL;
+  else return &slist[idx];
 }
 
-bool 
-Register::ObjectImpl::deleteStatus(StatusElement element)
+void
+Register::ObjectImpl::insertStatus(TID id, ptime timeFrom, ptime timeTo)
 {
-  modified = true;
-  return sset.erase(element);
+  slist.push_back(StatusImpl(id,timeFrom,timeTo));
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//     Register::CommonListImpl
+//     Register::ObjectListImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 Register::ObjectListImpl::ObjectListImpl(DB *_db) :
@@ -197,6 +229,30 @@ Register::ObjectListImpl::setTrDateIntervalFilter(time_period period)
   trDateIntervalFilter = period;
 }
 
+void 
+Register::ObjectListImpl::addStateFilter(TID state, bool stateIsOn)
+{
+  for (unsigned i=0; i<sflist.size(); i++)
+    if (sflist[i].stateId == state) {
+      sflist[i].stateIsOn = stateIsOn;
+      return;
+    }
+  StatusFilter f;
+  f.stateId = state;
+  f.stateIsOn = stateIsOn;
+  sflist.push_back(f);
+}
+
+void 
+Register::ObjectListImpl::clearStateFilter(TID state)
+{
+  for (StatusFilterList::iterator i=sflist.begin(); i!=sflist.end(); i++)
+    if (i->stateId == state) {
+      sflist.erase(i);
+      return;
+    }
+}
+
 void
 Register::ObjectListImpl::clearFilter()
 {
@@ -210,4 +266,26 @@ Register::ObjectListImpl::clearFilter()
   registrarHandleFilter = "";
   createRegistrarHandleFilter = ""; 
   updateRegistrarHandleFilter = "";
+  sflist.clear();
+}
+
+void
+Register::ObjectListImpl::reload() throw (SQL_ERROR)
+{
+  std::ostringstream sql;
+  sql << "SELECT tmp.id, state_id, valid_from "
+      << "FROM " << getTempTableName() << " tmp, object_state os "
+      << "WHERE tmp.id=os.object_id AND valid_to ISNULL "
+      << "ORDER BY tmp.id ";
+  if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+  for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+    ObjectImpl *o = dynamic_cast<ObjectImpl *>(findIDSequence(
+      STR_TO_ID(db->GetFieldValue(i,0))
+    ));
+    if (!o) throw SQL_ERROR(); 
+    o->insertStatus(
+      STR_TO_ID(db->GetFieldValue(i,1)), MAKE_TIME(i,2), ptime()
+    );
+  }
+  db->FreeSelect();
 }

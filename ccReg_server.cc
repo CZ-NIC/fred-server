@@ -195,7 +195,7 @@ int main(int argc, char** argv) {
 
 #ifdef RIFD
 	    MailerManager mm(&ns);
-	    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(&mm,&ns,config);
+	    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(db,&mm,&ns,config);
 
 
 	    // create session  use values from config
@@ -206,13 +206,6 @@ int main(int argc, char** argv) {
 	    ccReg::timestamp_var ts;
 	    std::cerr << "version: " << myccReg_EPP_i->version(ts) << std::endl;
 	    std::cerr << "timestamp: " << ts << std::endl;
-
-	    // must be called before loadZones
-	    if (!myccReg_EPP_i->TestDatabaseConnect(db)) {
-		std::cerr << "Database connection failed\n";
-		LOG( ALERT_LOG , "connection  to Database [%s] failed" , db );
-		exit(-2);
-	    }
 
 	    // load zone parametrs 
 	    if( myccReg_EPP_i->loadZones() <= 0  ){
@@ -276,6 +269,13 @@ int main(int argc, char** argv) {
 		       fe.file(), fe.line(), fe.errmsg()
 		);
 	}
+#ifdef RIFD
+    catch (ccReg_EPP_i::DB_CONNECT_FAILED&) {
+	    daemon_log(LOG_ERR, "Cannot connect to db");
+	    daemon_pid_file_remove();
+	    exit(-10);
+    }
+#endif    
 	catch (...) {
 	    daemon_log(LOG_ERR, "Unhandled exception");
 	}

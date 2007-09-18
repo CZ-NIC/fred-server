@@ -407,9 +407,9 @@ double sec = 0;
 if( strcmp( string , "NULL" ) == 0 )  return 0;
 else
 {
-
-sscanf(string , "%4d-%02d-%02d %02d:%02d:%lf" ,
-                &dt.tm_year ,  &dt.tm_mon , &dt.tm_mday ,
+char sep; // just to support 'T' char in string
+sscanf(string , "%4d-%02d-%02d%c%02d:%02d:%lf" ,
+                &dt.tm_year ,  &dt.tm_mon , &dt.tm_mday , &sep,
                 &dt.tm_hour,   &dt.tm_min , &sec);
 
 // convert and round sec to lowwe

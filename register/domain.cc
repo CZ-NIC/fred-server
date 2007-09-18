@@ -504,6 +504,7 @@ namespace Register
           );
         }
         db->FreeSelect();
+        ObjectListImpl::reload();
       }
       void clearFilter()
       {
@@ -605,6 +606,18 @@ namespace Register
         if (checkEnumDomainSuffix(fqdn) && !checkEnumDomainName(domain))
           throw INVALID_DOMAIN_NAME();
       }
+      CheckAvailType checkHandle(const std::string& fqdn) const 
+      {
+        DomainName domain; // parsed domain name
+        try { parseDomainName(fqdn,domain); }
+        catch (INVALID_DOMAIN_NAME) { return CA_INVALID_HANDLE; }
+        const Zone::Zone *z = zm->findZoneId(fqdn);
+        // TLD domain allowed only if zone.fqdn='' is in zone list 
+        if (!z && domain.size() == 1) return CA_INVALID_HANDLE;
+        if (!z) return CA_BAD_ZONE;
+        if (domain.size() > z->getMaxLevel()) return CA_BAD_LENGHT; 
+        return CA_AVAILABLE;
+      }
       /// interface method implementation  
       CheckAvailType checkAvail(
         const std::string& fqdn,
@@ -615,19 +628,12 @@ namespace Register
         // clear output
         conflictFqdn.id = 0;
         conflictFqdn.name = "";
-        DomainName domain; // parsed domain name
-        try { parseDomainName(fqdn,domain); }
-        catch (INVALID_DOMAIN_NAME) { return CA_INVALID_HANDLE; }
-        const Zone::Zone *z = zm->findZoneId(fqdn);
-        // TLD domain allowed only if zone.fqdn='' is in zone list 
-        if (!z && domain.size() == 1) return CA_INVALID_HANDLE;
-        if (!z) return CA_BAD_ZONE;
-        if (domain.size() > z->getMaxLevel()) return CA_BAD_LENGHT; 
+        CheckAvailType ret = checkHandle(fqdn);
+        if (ret != CA_AVAILABLE) return ret;
         std::stringstream sql;
-        CheckAvailType ret = CA_AVAILABLE;
         // domain can be subdomain or parent domain of registred domain
         // there could be a lot of subdomains therefor LIMIT 1
-        if (z->isEnumZone())
+        if (zm->findZoneId(fqdn)->isEnumZone())
           sql << "SELECT o.name, o.id FROM object_registry o "
               << "WHERE o.type=3 AND o.erdate ISNULL AND "
               << "(('" << fqdn << "' LIKE '%.'|| o.name) OR "
@@ -637,7 +643,7 @@ namespace Register
         else 
           sql << "SELECT o.name, o.id FROM object_registry o "
               << "WHERE o.type=3 AND o.erdate ISNULL AND "
-              << "o.name='" << fqdn << "' "
+              << "o.name=LOWER('" << fqdn << "') "
               << "LIMIT 1";        
         if (!db->ExecSelect(sql.str().c_str())) {
           db->FreeSelect();

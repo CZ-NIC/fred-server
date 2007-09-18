@@ -15,33 +15,52 @@ namespace Register
 {
   /// Pair of id and name of some object
   struct NameIdPair {
-    std::string name;
-    TID id;
+   std::string name;
+   TID id;
   };  
-  /// Status description
-  struct StatusDesc
+  /// status attributes
+  class StatusDesc
   {
-    unsigned id;
-    std::string desc;
+   protected:
+    /// protected destructor
+    virtual ~StatusDesc() {}
+   public:
+	/// exception thrown in case of invalid language specification
+    struct BAD_LANG {};
+    /// return id of status
+    virtual TID getId() const = 0;
+    /// return code name of status
+    virtual const std::string& getName() const = 0;
+    /// return flag if status is exported to public
+    virtual bool getExternal() const = 0;
+    /// return description in selected language
+    virtual const std::string& getDesc(const std::string& lang) const 
+      throw (BAD_LANG) = 0;
   };
   /// Request for inclusion status in filter
-  struct StatusFlagFilter {
+  struct StatusFilter {
     /// id of flag 
-    unsigned flagId;
+    TID stateId;
     /// wheter it has to be On (true) or Off (false)
-    bool flagIsOn;
+    bool stateIsOn;
   };
-  /// List of filters for status. Not include status is ignored
-  typedef std::vector<StatusFlagFilter> StatusFlagListFilter; 
+  /// State elements that can be set to object are managed by their id 
+  class Status {
+   protected:
+    virtual ~Status() {}
+   public:
+    /// Return id of status 
+    virtual TID getStatusId() const = 0;
+    /// Return timestamp when object entered this state
+    virtual ptime getFrom() const = 0;
+    /// Return timestamp when object leaved this state
+    virtual ptime getTo() const = 0;
+  };
   /// Common ancestor for all types managed in register
   class Object : virtual public CommonObject
   {
    public:
     virtual ~Object() {}
-    /// State elements that can be set to object are managed by their id 
-    typedef unsigned StatusElement;
-    /// Set of states
-    typedef std::set<StatusElement> StatusSet;
     /// Return time of object registration
     virtual ptime getCreateDate() const  = 0;
     /// Return time of last transfer
@@ -66,12 +85,10 @@ namespace Register
     virtual void setAuthPw(const std::string& auth) = 0;
     /// Return repository object id
     virtual const std::string& getROID() const = 0;
-    /// Return set of current states
-    virtual const StatusSet& getStatusSet() const = 0;
-    /// Insert state into status set
-    virtual bool insertStatus(StatusElement element) = 0;
-    /// Remove state from status set
-    virtual bool deleteStatus(StatusElement element) = 0;
+    /// Return count of status objects in list
+    virtual unsigned getStatusCount() const = 0;
+    /// Return state by it's index in list
+    virtual const Status* getStatusByIdx(unsigned idx) const = 0;
   };
   
   class ObjectList : virtual public CommonList {
@@ -102,6 +119,10 @@ namespace Register
     ) = 0;
     /// set filter for period of trDate
     virtual void setTrDateIntervalFilter(time_period period) = 0;
+    /// add filter for one of states
+    virtual void addStateFilter(TID state, bool stateIsOn) = 0;
+    /// clear filter for one of states
+    virtual void clearStateFilter(TID state) = 0;
   };
   
 };

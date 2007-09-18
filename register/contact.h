@@ -50,6 +50,8 @@ namespace Register
       virtual const std::string& getSSN() const = 0;
       /// return contact identification type
       virtual const std::string& getSSNType() const = 0;
+      /// return id of contact identification type
+      virtual unsigned getSSNTypeId() const = 0;
       /// return value added tax identification
       virtual const std::string& getVAT() const = 0;
       /// return disclose attribute for contact name
@@ -114,6 +116,8 @@ namespace Register
         /// handle is free for registration
         CA_FREE
       };
+      /// check proper format of handle
+      virtual bool checkHandleFormat(const std::string& handle) const = 0;
       /// check possibilities for registration
       virtual CheckAvailType checkAvail(
         const std::string& handle, NameIdPair& conflict

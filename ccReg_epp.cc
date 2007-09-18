@@ -40,6 +40,96 @@
 // Notifier
 #include "notifier.h"
 
+
+class EPPAction
+{
+  ccReg::Response_var ret;
+  ccReg::Errors_var errors;
+  ccReg_EPP_i *epp;
+  DB db;
+  int regID;
+  int clientID;
+  int code; ///< needed for destructor where Response is invalidated
+ public:
+  struct ACTION_START_ERROR {};
+  EPPAction(
+    ccReg_EPP_i *_epp, int _clientID, int action, const char *clTRID, 
+    const char *xml
+  ) throw (ccReg::EPP::EppError)
+   : ret(new ccReg::Response()), errors(new ccReg::Errors()), 
+     epp(_epp), regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID)
+  {
+	if (!db.OpenDatabase(epp->getDatabaseString()))
+      epp->ServerInternalError("Cannot connect to DB");
+    if (!db.BeginAction(clientID,action,clTRID,xml)) {
+      db.Disconnect();
+      epp->ServerInternalError("Cannot beginAction");
+    }
+    if (!regID) {  
+      ret->code = COMMAND_MAX_SESSION_LIMIT;
+      ccReg::Response_var& r(getRet());
+      db.EndAction(r->code);
+      db.Disconnect();
+      epp->EppError(r->code, r->msg, r->svTRID, errors);
+    }
+    if (!db.BeginTransaction()) {
+      db.EndAction(COMMAND_FAILED);
+      db.Disconnect();
+      epp->ServerInternalError(
+        "Cannot start transaction",CORBA::string_dup(db.GetsvTRID())
+      );
+    }
+    code = ret->code = COMMAND_OK;
+  }
+  ~EPPAction()
+  {
+    db.QuitTransaction(code);
+    db.EndAction(code);
+    db.Disconnect();
+  }
+  DB *getDB()
+  {
+    return &db;
+  }
+  int getRegistrar()
+  {
+    return regID;
+  }
+  int getLang()
+  {
+    return epp->GetRegistrarLang(clientID);
+  }
+  ccReg::Response_var& getRet()
+  {
+    ret->svTRID = CORBA::string_dup(db.GetsvTRID());
+    ret->msg = CORBA::string_dup(epp->GetErrorMessage(ret->code,getLang()));
+    return ret;
+  }
+  ccReg::Errors_var& getErrors()
+  {
+    return errors;
+  }
+  void failed(int _code) throw (ccReg::EPP::EppError)
+  {
+    code = ret->code = _code;
+    ccReg::Response_var& r(getRet());
+    epp->EppError(r->code, r->msg, r->svTRID, errors);
+  }
+  void failedInternal(const char *msg) throw (ccReg::EPP::EppError)
+  {
+	code = ret->code = COMMAND_FAILED;
+	epp->ServerInternalError(msg,db.GetsvTRID());
+  }
+};
+
+/// timestamp formatting function
+static std::string formatTime(boost::posix_time::ptime tm)
+{
+  char buffer[100];
+  convert_rfc3339_timestamp(buffer,to_iso_extended_string(tm).c_str());
+  return buffer;
+}
+
 /// replace GetContactID
 static long int getIdOfContact(DB *db, const char *handle, Conf& c)
 {
@@ -80,24 +170,40 @@ static long int getIdOfNSSet(DB *db, const char *handle, Conf& c)
 //
 // Example implementational code for IDL interface ccReg::EPP
 //
-ccReg_EPP_i::ccReg_EPP_i(MailerManager *_mm, NameService *_ns, Conf& _conf ) :
-  mm(_mm), ns(_ns), conf(_conf), zone(NULL), testInfo(false)
+ccReg_EPP_i::ccReg_EPP_i(
+  const char *_db, MailerManager *_mm, NameService *_ns, Conf& _conf
+) throw (DB_CONNECT_FAILED)
+  : mm(_mm), ns(_ns), conf(_conf), zone(NULL), testInfo(false)
 {
+  // objects are shared between threads!!!
+  // init at the beginning and do not change
+  strcpy(database, _db);
+  if (!db.OpenDatabase(database)) {
+    LOG(ALERT_LOG, "can not connect to DATABASE %s", database);
+    throw DB_CONNECT_FAILED();
+  }
+  LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database);
+  regMan.reset(Register::Manager::create(&db,false)); //TODO: replace 'false'
+  regMan->initStates();
 }
 ccReg_EPP_i::~ccReg_EPP_i()
 {
+  db.Disconnect();
   LOG( ERROR_LOG, "EPP_i destructor");
   if (zone) delete zone;
 }
 
 // HANDLE EXCEPTIONS
 void ccReg_EPP_i::ServerInternalError(const char *fce, const char *svTRID)
+  throw (ccReg::EPP::EppError)
 {
   LOG( ERROR_LOG ,"Internal errror in %d fce %s svTRID[%s] "  , fce , svTRID );
   throw ccReg::EPP::EppError(  COMMAND_FAILED , "" , svTRID , ccReg::Errors(0) );
 } 
 
 void ccReg_EPP_i::EppError( short errCode ,  const char *msg ,  const char *svTRID ,  ccReg::Errors_var& errors )
+  throw (ccReg::EPP::EppError)
+
 {
   LOG( WARNING_LOG ,"EppError errCode %d msg %s svTRID[%s] " , errCode , msg , svTRID );
    throw ccReg::EPP::EppError(  errCode ,  msg , svTRID , errors );
@@ -1983,10 +2089,6 @@ ccReg::Response*  ccReg_EPP_i::DomainCheck(const ccReg::Check& fqdn, ccReg::Chec
 return ObjectCheck(  EPP_DomainCheck , "DOMAIN"  , "fqdn" ,   fqdn , a ,  clientID , clTRID , XML);
 }
 
-
-
-
-
 /***********************************************************************
  *
  * FUNCTION:    ContactInfo
@@ -2002,238 +2104,123 @@ return ObjectCheck(  EPP_DomainCheck , "DOMAIN"  , "fqdn" ,   fqdn , a ,  client
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::ContactInfo(const char* handle, ccReg::Contact_out c , CORBA::Long clientID, const char* clTRID , const char* XML )
+ccReg::Response* ccReg_EPP_i::ContactInfo(
+  const char* handle, ccReg::Contact_out c, CORBA::Long clientID, 
+  const char* clTRID , const char* XML 
+)
 {
-DB DBsql;
-ccReg::Response_var ret;
-ccReg::Errors_var errors;
-int  clid , crid , upid , regID ;
-int  ssn , id , slen;
-int s , snum ;
-char streetStr[32];
-
-LOG( NOTICE_LOG ,  "ContactInfo: clientID -> %d clTRID [%s] handle [%s] " ,  (int )  clientID , clTRID , handle );
-
-c = new ccReg::Contact;
-// default flags
-c->DiscloseName = ccReg::DISCL_EMPTY;
-c->DiscloseOrganization = ccReg::DISCL_EMPTY;
-c->DiscloseAddress = ccReg::DISCL_EMPTY;
-c->DiscloseTelephone = ccReg::DISCL_EMPTY;
-c->DiscloseFax  = ccReg::DISCL_EMPTY;
-c->DiscloseEmail = ccReg::DISCL_EMPTY;
-c->DiscloseVAT = ccReg::DISCL_EMPTY;
-c->DiscloseIdent = ccReg::DISCL_EMPTY;
-c->DiscloseNotifyEmail = ccReg::DISCL_EMPTY;
-c->identtype = ccReg::EMPTY; 
-
-ret = new ccReg::Response;
-errors = new ccReg::Errors;
-
-ret->code=0;
-errors->length(0);
-
-
-if(  (regID = GetRegistrarID( clientID ) ) )
- if( DBsql.OpenDatabase( database ) )
-  {
-
-  
-  if(   DBsql.BeginAction( clientID , EPP_ContactInfo ,  clTRID  , XML )  )
-   {
-    id = getIdOfContact(&DBsql,handle,conf);
-
-    if( id < 0  )  ret->code= SetReasonContactHandle( errors , handle ,  GetRegistrarLang( clientID ) );
-    else if ( id ==0 )
-        {
-                 LOG( WARNING_LOG, "contact handle [%s] NOT_EXIST", handle );
-                 ret->code= COMMAND_OBJECT_NOT_EXIST;
-         }
-    
-  else if( DBsql.BeginTransaction() )
-  {
-    if( DBsql.SELECTOBJECTID( "CONTACT" ,"handle"  ,  id )  )
-      {
-
-
-        clid =  DBsql.GetFieldNumericValueName("ClID" , 0 ); 
-        crid =  DBsql.GetFieldNumericValueName("CrID" , 0 ); 
-        upid =  DBsql.GetFieldNumericValueName("UpID" , 0 ); 
-
-
-
-
-	c->ROID=CORBA::string_dup( DBsql.GetFieldValueName("ROID" , 0 ) ); // ROID     
-
-	c->CrDate= CORBA::string_dup( DBsql.GetFieldDateTimeValueName("CrDate" , 0 ) );
-        c->UpDate= CORBA::string_dup(  DBsql.GetFieldDateTimeValueName("UpDate" , 0 ) ); 
-        c->TrDate= CORBA::string_dup(   DBsql.GetFieldDateTimeValueName("TrDate" , 0 )  );
-
-
-	c->handle=CORBA::string_dup( DBsql.GetFieldValueName("Name" , 0 ) ); // handle
-
-	c->Organization=CORBA::string_dup( DBsql.GetFieldValueName("Organization" , 0 )); 
-       
-        // get three  streets address
-        for( s = 0 , snum =0  ; s < 3 ; s ++ )
-        {
-        sprintf( streetStr , "Street%d" , s +1);           
-        if(  DBsql.IsNotNull( 0 ,  DBsql.GetNameField(  streetStr ) ) ) snum ++ ;
-        }
-         
-
-        c->Streets.length( snum );
-         for( s = 0   ; s < 3 ; s ++ )
-          {
-            sprintf( streetStr , "Street%d" , s +1);           
-           if(  DBsql.IsNotNull( 0 ,  DBsql.GetNameField(  streetStr ) ) )
-           {
-            c->Streets.length( snum + 1 );
-            c->Streets[snum]=CORBA::string_dup( DBsql.GetFieldValueName(  streetStr, 0 ) ); 
-            snum ++;
-            }
-          }
-
-	c->City=CORBA::string_dup( DBsql.GetFieldValueName("City" , 0 ) );  
-	c->StateOrProvince=CORBA::string_dup( DBsql.GetFieldValueName("StateOrProvince"  , 0 ));
-	c->PostalCode=CORBA::string_dup(DBsql.GetFieldValueName("PostalCode" , 0 )); // zipcode
-	c->Telephone=CORBA::string_dup( DBsql.GetFieldValueName("Telephone" , 0 ));
-	c->Fax=CORBA::string_dup(DBsql.GetFieldValueName("Fax" , 0 ));
-	c->Email=CORBA::string_dup(DBsql.GetFieldValueName("Email" , 0 ));
-	c->NotifyEmail=CORBA::string_dup(DBsql.GetFieldValueName("NotifyEmail" , 0 )); // notify email
-        c->CountryCode=CORBA::string_dup(  DBsql.GetFieldValueName("Country" , 0 )  );  // return Country code
-
-
-	c->VAT=CORBA::string_dup(DBsql.GetFieldValueName("VAT" , 0 )); // DIC
-	c->ident=CORBA::string_dup(DBsql.GetFieldValueName("SSN" , 0 )); // SSN
-
-        ssn = DBsql.GetFieldNumericValueName("SSNtype" , 0 ) ;
-
-
-
-        if( regID == clid ) // if registrar is client get authinfo
-           c->AuthInfoPw = CORBA::string_dup( DBsql.GetFieldValueName("AuthInfoPw" , 0 ) ); // password
-         else  c->AuthInfoPw = CORBA::string_dup( "" ); // else empty string
-
-
-
-        // DiscloseFlag by the default policy of the server
-
-        if( DefaultPolicy() ) c->DiscloseFlag = ccReg::DISCL_HIDE;
-        else c->DiscloseFlag =   ccReg::DISCL_DISPLAY;
-
-
-
-
-       // transforme disclose flags  with  default policy
-        c->DiscloseName =  get_DISCLOSE(  DBsql.GetFieldBooleanValueName( "DiscloseName" , 0 )   );
-        c->DiscloseOrganization =  get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseOrganization" , 0 ) );
-        c->DiscloseAddress =get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseAddress" , 0 ) );
-        c->DiscloseTelephone = get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseTelephone" , 0 ) );
-        c->DiscloseFax  = get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseFax" , 0 ) );
-        c->DiscloseEmail = get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseEmail" , 0  ) );
-        c->DiscloseVAT = get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseVAT" , 0  ) );
-        c->DiscloseIdent = get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseIdent" , 0  ) );
-        c->DiscloseNotifyEmail = get_DISCLOSE( DBsql.GetFieldBooleanValueName( "DiscloseNotifyEmail" , 0  ) );
-
-      // if not set return  flag empty
-      if( !c->DiscloseName && !c->DiscloseOrganization && !c->DiscloseAddress && !c->DiscloseTelephone && !c->DiscloseFax && !c->DiscloseEmail && !c->DiscloseVAT && !c->DiscloseIdent && !c->DiscloseNotifyEmail )
-               c->DiscloseFlag =   ccReg::DISCL_EMPTY;
-
-
-
-
-    
-    
-        // free select
-       DBsql.FreeSelect();
-
-        // contact name
-	c->Name=CORBA::string_dup( DBsql.GetValueFromTable(  "Contact" , "Name"  , "id" , id )   ); 
-
-
-        // test contact releations admin-c or tech-c or registrant of domain
-       if( DBsql.TestContactRelations( id ) )  slen = 2;
-       else slen=1;
-
-        c->stat.length(slen);
-
-       // text desct
-        c->stat[0].value = CORBA::string_dup( "ok" );         
-        c->stat[0].text = CORBA::string_dup( "Contact is OK" ); 
-
-       if( slen > 1 )
-        {
-          c->stat[1].value = CORBA::string_dup( "linked" );         
-          c->stat[1].text = CORBA::string_dup( "Contact is admin or tech" ); 
-        }
-
-              
-        // registrar's handles
-        c->CrID =  CORBA::string_dup(  DBsql.GetRegistrarHandle( crid ) );
-        c->UpID =  CORBA::string_dup(  DBsql.GetRegistrarHandle( upid ) );
-        c->ClID =  CORBA::string_dup(  DBsql.GetRegistrarHandle( clid ) );
-
-
-        // type SSN EMPTY , RC , OP , PASS , ICO
-        
-        switch( ssn )
-        {
-         case 1:
-                  // instead RC
-                  c->identtype = ccReg::EMPTY;
-                  break;
-         case 2:
-                  c->identtype = ccReg::OP;
-                  break;
-         case 3:
-                  c->identtype = ccReg::PASS;
-                  break;
-         case 4:
-                  c->identtype = ccReg::ICO;
-                  break;
-         case 5:
-                  c->identtype = ccReg::MPSV;
-                  break;
-         case 6:
-                  c->identtype = ccReg::BIRTHDAY;
-                  break;
-         default:
-                  c->identtype = ccReg::EMPTY;
-                  break;
-        }
-
-        ret->code=COMMAND_OK; // OK
-
-
-      } else ret->code=COMMAND_FAILED; // select failed
-
-     // end of transaction  commit or rollback
-      DBsql.QuitTransaction( ret->code );
-    }
-
-
-     ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->code ) );
+  LOG(
+    NOTICE_LOG ,
+    "ContactInfo: clientID -> %d clTRID [%s] handle [%s] ",
+    (int) clientID, clTRID, handle 
+  );
+  // start EPP action - this will handle all init stuff
+  EPPAction a(this,clientID,EPP_ContactInfo,clTRID,XML);
+  // initialize managers for contact manipulation
+  std::auto_ptr<Register::Contact::Manager> cman(
+    Register::Contact::Manager::create(a.getDB(),conf.GetRestrictedHandles())
+  );	  
+  // first check handle for proper format
+  if (!cman->checkHandleFormat(handle))
+	// failure in handle check, throw exception
+    a.failed(SetReasonContactHandle(a.getErrors(),handle,a.getLang()));
+  // now load contact by handle 
+  std::auto_ptr<Register::Contact::List> clist(cman->createList());
+  clist->setHandleFilter(handle);
+  try { clist->reload(); } 
+  catch (...) { a.failedInternal("Cannot load contacts"); }
+  if (clist->getCount() != 1)
+	// failer because non existance, throw exception
+    a.failed(COMMAND_OBJECT_NOT_EXIST);
+  // start filling output contact structure
+  Register::Contact::Contact *con = clist->getContact(0);
+  c = new ccReg::Contact;
+  // fill common object data
+  c->ROID = CORBA::string_dup(con->getROID().c_str()); 
+  c->CrDate = CORBA::string_dup(formatTime(con->getCreateDate()).c_str());
+  c->UpDate = CORBA::string_dup(formatTime(con->getUpdateDate()).c_str());
+  c->TrDate = CORBA::string_dup(formatTime(con->getTransferDate()).c_str());
+  c->ClID = CORBA::string_dup(con->getRegistrarHandle().c_str());
+  c->CrID = CORBA::string_dup(con->getCreateRegistrarHandle().c_str());
+  c->UpID = CORBA::string_dup(con->getUpdateRegistrarHandle().c_str());
+  // authinfo is filled only if session registar is ownering registrar 
+  c->AuthInfoPw = CORBA::string_dup(
+    a.getRegistrar() == con->getRegistrarId() ? con->getAuthPw().c_str() : ""
+  );
+  // states
+  for (unsigned i=0; i<con->getStatusCount(); i++) {
+    Register::TID stateId = con->getStatusByIdx(i)->getStatusId();
+    const Register::StatusDesc* sd = regMan->getStatusDesc(stateId);
+    if (!sd || !sd->getExternal()) continue;
+    c->stat.length(c->stat.length()+1);
+	c->stat[c->stat.length()-1].value = CORBA::string_dup(
+      sd->getName().c_str()
+    );
+    c->stat[c->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
+      a.getLang() == LANG_CS ? "CS" : "EN"
+    ).c_str());
   }
-        
-
-
-
-ret->msg =  CORBA::string_dup( GetErrorMessage(  ret->code  , GetRegistrarLang( clientID ) )   );
-
-DBsql.Disconnect();
+  if (!c->stat.length()) {
+    const Register::StatusDesc* sd = regMan->getStatusDesc(0);
+    if (sd) {
+      c->stat.length(1);
+      c->stat[0].value = CORBA::string_dup(sd->getName().c_str());
+      c->stat[0].text = CORBA::string_dup(sd->getDesc(
+        a.getLang() == LANG_CS ? "CS" : "EN"
+      ).c_str());
+    }
+  }
+  // fill contact specific data  
+  c->handle = CORBA::string_dup(con->getHandle().c_str());
+  c->Name = CORBA::string_dup(con->getName().c_str()); 
+  c->Organization = CORBA::string_dup(con->getOrganization().c_str());
+  unsigned num = 
+    !con->getStreet3().empty() ? 3 :
+    !con->getStreet2().empty() ? 2 :
+    !con->getStreet1().empty() ? 1 : 0;
+  c->Streets.length(num);
+  if (num > 0) c->Streets[0] = CORBA::string_dup(con->getStreet1().c_str()); 
+  if (num > 1) c->Streets[1] = CORBA::string_dup(con->getStreet2().c_str()); 
+  if (num > 2) c->Streets[2] = CORBA::string_dup(con->getStreet3().c_str());
+  c->City = CORBA::string_dup(con->getCity().c_str());  
+  c->StateOrProvince = CORBA::string_dup(con->getProvince().c_str());
+  c->PostalCode = CORBA::string_dup(con->getPostalCode().c_str());
+  c->Telephone = CORBA::string_dup(con->getTelephone().c_str());
+  c->Fax = CORBA::string_dup(con->getFax().c_str());
+  c->Email = CORBA::string_dup(con->getEmail().c_str());
+  c->NotifyEmail = CORBA::string_dup(con->getNotifyEmail().c_str());
+  c->CountryCode = CORBA::string_dup(con->getCountry().c_str());
+  c->VAT = CORBA::string_dup(con->getVAT().c_str());
+  c->ident = CORBA::string_dup(con->getSSN().c_str());
+  switch (con->getSSNTypeId()) {
+   case 1: c->identtype = ccReg::EMPTY; break;
+   case 2: c->identtype = ccReg::OP; break;
+   case 3: c->identtype = ccReg::PASS; break;
+   case 4: c->identtype = ccReg::ICO; break;
+   case 5: c->identtype = ccReg::MPSV; break;
+   case 6: c->identtype = ccReg::BIRTHDAY; break;
+   default: c->identtype = ccReg::EMPTY; break;
+  }
+  // DiscloseFlag by the default policy of the server
+  if (DefaultPolicy()) c->DiscloseFlag = ccReg::DISCL_HIDE;
+  else c->DiscloseFlag = ccReg::DISCL_DISPLAY;
+  // set disclose flags according to default policy
+  c->DiscloseName = get_DISCLOSE(con->getDiscloseName());
+  c->DiscloseOrganization = get_DISCLOSE(con->getDiscloseOrganization());
+  c->DiscloseAddress = get_DISCLOSE(con->getDiscloseAddr());
+  c->DiscloseTelephone = get_DISCLOSE(con->getDiscloseTelephone());
+  c->DiscloseFax = get_DISCLOSE(con->getDiscloseFax());
+  c->DiscloseEmail = get_DISCLOSE(con->getDiscloseEmail());
+  c->DiscloseVAT = get_DISCLOSE(con->getDiscloseVat());
+  c->DiscloseIdent = get_DISCLOSE(con->getDiscloseIdent());
+  c->DiscloseNotifyEmail = get_DISCLOSE(con->getDiscloseNotifyEmail());
+  // if not set return flag empty
+  if (!c->DiscloseName && !c->DiscloseOrganization && !c->DiscloseAddress && 
+      !c->DiscloseTelephone && !c->DiscloseFax && !c->DiscloseEmail && 
+      !c->DiscloseVAT && !c->DiscloseIdent && !c->DiscloseNotifyEmail)
+    c->DiscloseFlag = ccReg::DISCL_EMPTY;
+  return a.getRet()._retn();
 }
-
-
-// EPP exception
-if( ret->code > COMMAND_EXCEPTION) EppError(  ret->code , ret->msg ,  ret->svTRID , errors );
-
-if( ret->code == 0 ) ServerInternalError("ContactInfo");
- 
-
-return ret._retn();
-}
-
 
 /***********************************************************************
  *
@@ -2929,173 +2916,87 @@ return ObjectTransfer( EPP_DomainTransfer , "DOMAIN" , "fqdn" , fqdn, authInfo, 
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::NSSetInfo(const char* handle, ccReg::NSSet_out n, 
-                          CORBA::Long clientID, const char* clTRID ,  const char* XML)
+ccReg::Response* ccReg_EPP_i::NSSetInfo(
+  const char* handle, ccReg::NSSet_out n, CORBA::Long clientID, 
+  const char* clTRID, const char* XML
+)
 {
-DB DBsql;
-ccReg::Response_var ret;
-ccReg::Errors_var errors;
-int *hostID;
-int clid ,  crid , upid , nssetid , regID;
-int i , j  ,ilen , len , slen ;
-
-ret = new ccReg::Response;
-errors = new ccReg::Errors;
-
-n = new ccReg::NSSet;
-
-// default
-ret->code = 0;
-errors->length(0);
-LOG( NOTICE_LOG ,  "NSSetInfo: clientID -> %d clTRID [%s] handle [%s] " , (int ) clientID , clTRID , handle );
- 
-
-if(  (regID = GetRegistrarID( clientID ) ) )
-
-if( DBsql.OpenDatabase( database ) )
-{
-
-if( ( DBsql.BeginAction( clientID , EPP_NSsetInfo , clTRID , XML  )  ))
- {
- 
- nssetid = getIdOfNSSet(&DBsql,handle,conf);
- if( nssetid  < 0  ) ret->code =  SetReasonNSSetHandle( errors , handle , GetRegistrarLang( clientID ) ); 
- else  if( nssetid == 0 )
-        {
-                 LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
-                 ret->code = COMMAND_OBJECT_NOT_EXIST;
-         }
- else if( DBsql.BeginTransaction() )
-  {
-     if(  DBsql.SELECTOBJECTID( "NSSET" , "HANDLE" , nssetid ) )
-     {
- 
-        clid =  DBsql.GetFieldNumericValueName("ClID" , 0 );
-        crid =  DBsql.GetFieldNumericValueName("CrID" , 0 );
-        upid =  DBsql.GetFieldNumericValueName("UpID" , 0 );
-
-
-        n->ROID=CORBA::string_dup( DBsql.GetFieldValueName("ROID" , 0 ) ); // ROID
-        n->handle=CORBA::string_dup( DBsql.GetFieldValueName("name" , 0 ) ); // handle
-        n->CrDate= CORBA::string_dup( DBsql.GetFieldDateTimeValueName("CrDate" , 0 ) );
-        n->UpDate= CORBA::string_dup(  DBsql.GetFieldDateTimeValueName("UpDate" , 0 ) );
-        n->TrDate= CORBA::string_dup(  DBsql.GetFieldDateTimeValueName("TrDate" , 0 ) );
-
-        // check level of tech test of nssset
-        n->level =  DBsql.GetFieldNumericValueName("checklevel" , 0 );
-
-        if( regID == clid ) // if is client of object 
-           n->AuthInfoPw = CORBA::string_dup( DBsql.GetFieldValueName("AuthInfoPw" , 0 ) ); // get autinfo
-         else  n->AuthInfoPw = CORBA::string_dup( "" ); // or empty string
-
-        ret->code=COMMAND_OK;
-
-
-        // free select
-        DBsql.FreeSelect();
-
-
-
-
-
-        // status flags get relations to domain
-       if( DBsql.TestNSSetRelations( nssetid ) )  slen = 2;
-       else slen=1;
-
-        n->stat.length(slen);
-        n->stat[0].value = CORBA::string_dup( "ok" );
-        n->stat[0].text = CORBA::string_dup( "NSSet is OK" );
-
-
-       // text desc
-       if( slen > 1 )
-        {
-          n->stat[1].value = CORBA::string_dup( "linked" );
-          n->stat[1].text = CORBA::string_dup( "NSSet is linked with domains" );
-        }
-
-
-
-        // registrar handles
-        n->ClID =  CORBA::string_dup( DBsql.GetRegistrarHandle( clid ) );
-        n->CrID =  CORBA::string_dup( DBsql.GetRegistrarHandle( crid ) );
-        n->UpID =  CORBA::string_dup( DBsql.GetRegistrarHandle( upid ) );
-
-        // SQL select to  DNS servers to the table  hosts
-        if(   DBsql.SELECTONE( "HOST" , "nssetid" , nssetid  ) )
-          {  
-             len =  DBsql.GetSelectRows();
-            
-               
-             n->dns.length(len);
-             hostID= new int[ len ] ;
-
- 
-             for( i = 0 ; i < len ; i ++)   
-                {                     
-                   // fqdn of the DNS server  
-                   n->dns[i].fqdn = CORBA::string_dup(  DBsql.GetFieldValueName("fqdn" , i ) );
-                   hostID[i] =  DBsql.GetFieldNumericValueName("id"  , i ); // get hostID 
-                }
-             DBsql.FreeSelect();
-
-               // list of the ipaddress for hosts
-                for( i = 0 ; i < len ; i ++)
-                 {
-                      if(   DBsql.SELECTONE( "HOST_ipaddr_map" , "hostID" ,  hostID[i] ) )
-                       {
-                           ilen = DBsql.GetSelectRows(); // number of ip address
-                           n->dns[i].inet.length(ilen); // sequence of ip address
-                           for( j = 0 ; j < ilen ; j ++)                      
-                               n->dns[i].inet[j] =CORBA::string_dup( DBsql.GetFieldValueName("ipaddr" , j ) );
-                          DBsql.FreeSelect();
-                       }
-                    else n->dns[i].inet.length(0); // zero lenght of not eny ip address sets 
-                  }
-
-             delete hostID; 
-
-          } else ret->code=COMMAND_FAILED;
- 
-
-
-
-        // query to tech-c
-        if(  DBsql.SELECTCONTACTMAP( "nsset"  , nssetid, 0 ) )
-          {
-               len =  DBsql.GetSelectRows(); // numbers of tech-c
-               n->tech.length(len); // tech-c handles length 
-               for( i = 0 ; i < len ; i ++)  // get handles
-                 n->tech[i] = CORBA::string_dup( DBsql.GetFieldValue( i , 0 )  );
-
-               DBsql.FreeSelect();
-          } else ret->code=COMMAND_FAILED;
-
-     
-
-     } else ret->code=COMMAND_FAILED;
-
-    DBsql.QuitTransaction( ret->code );
-
-    }else ret->code=COMMAND_FAILED;
-
-   ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->code  ) ) ;
- }
-
-ret->msg = CORBA::string_dup( GetErrorMessage(  ret->code  , GetRegistrarLang( clientID ) )  );
-
-DBsql.Disconnect();
-}
-
-
-  // EPP exception
-  if(  ret->code > COMMAND_EXCEPTION) EppError(  ret->code , ret->msg ,  ret->svTRID , errors );
-
-
-if( ret->code == 0 ) ServerInternalError("NSSetInfo");
-
-
-return ret._retn();
+  LOG(
+    NOTICE_LOG,
+    "NSSetInfo: clientID -> %d clTRID [%s] handle [%s] ",
+    (int) clientID, clTRID, handle
+  );
+  // start EPP action - this will handle all init stuff
+  EPPAction a(this,clientID,EPP_NSsetInfo,clTRID,XML);
+  // initialize managers for nsset manipulation
+  std::auto_ptr<Register::NSSet::Manager> nman(
+    Register::NSSet::Manager::create(a.getDB(),conf.GetRestrictedHandles())
+  );	  
+  // first check handle for proper format
+  if (!nman->checkHandleFormat(handle))
+	// failure in handle check, throw exception
+    a.failed(SetReasonNSSetHandle(a.getErrors(),handle,a.getLang()));
+  // now load nsset by handle 
+  std::auto_ptr<Register::NSSet::List> nlist(nman->createList());
+  nlist->setHandleFilter(handle);
+  try { nlist->reload(); } 
+  catch (...) { a.failedInternal("Cannot load nsset"); }
+  if (nlist->getCount() != 1)
+	// failer because non existance, throw exception
+    a.failed(COMMAND_OBJECT_NOT_EXIST);
+  // start filling output nsset structure
+  Register::NSSet::NSSet *nss = nlist->getNSSet(0);
+  n = new ccReg::NSSet;
+  // fill common object data
+  n->ROID = CORBA::string_dup(nss->getROID().c_str()); 
+  n->CrDate = CORBA::string_dup(formatTime(nss->getCreateDate()).c_str());
+  n->UpDate = CORBA::string_dup(formatTime(nss->getUpdateDate()).c_str());
+  n->TrDate = CORBA::string_dup(formatTime(nss->getTransferDate()).c_str());
+  n->ClID = CORBA::string_dup(nss->getRegistrarHandle().c_str());
+  n->CrID = CORBA::string_dup(nss->getCreateRegistrarHandle().c_str());
+  n->UpID = CORBA::string_dup(nss->getUpdateRegistrarHandle().c_str());
+  // authinfo is filled only if session registar is ownering registrar 
+  n->AuthInfoPw = CORBA::string_dup(
+    a.getRegistrar() == nss->getRegistrarId() ? nss->getAuthPw().c_str() : ""
+  );
+  // states
+  for (unsigned i=0; i<nss->getStatusCount(); i++) {
+    Register::TID stateId = nss->getStatusByIdx(i)->getStatusId();
+    const Register::StatusDesc* sd = regMan->getStatusDesc(stateId);
+    if (!sd || !sd->getExternal()) continue;
+    n->stat.length(n->stat.length()+1);
+	n->stat[n->stat.length()-1].value = CORBA::string_dup(
+      sd->getName().c_str()
+    );
+    n->stat[n->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
+      a.getLang() == LANG_CS ? "CS" : "EN"
+    ).c_str());
+  }
+  if (!n->stat.length()) {
+    const Register::StatusDesc* sd = regMan->getStatusDesc(0);
+    if (sd) {
+      n->stat.length(1);
+      n->stat[0].value = CORBA::string_dup(sd->getName().c_str());
+      n->stat[0].text = CORBA::string_dup(sd->getDesc(
+        a.getLang() == LANG_CS ? "CS" : "EN"
+      ).c_str());
+    }
+  }
+  // nsset specific data
+  n->handle = CORBA::string_dup(nss->getHandle().c_str());
+  n->level = nss->getCheckLevel();
+  n->tech.length(nss->getAdminCount());
+  for (unsigned i=0; i<nss->getAdminCount(); i++)
+    n->tech[i] = CORBA::string_dup(nss->getAdminByIdx(i).c_str());
+  n->dns.length(nss->getHostCount());
+  for (unsigned i=0; i<nss->getHostCount(); i++) {
+    const Register::NSSet::Host *h = nss->getHostByIdx(i);
+    n->dns[i].fqdn = CORBA::string_dup(h->getName().c_str());
+    n->dns[i].inet.length(h->getAddrCount());
+    for (unsigned j=0; j<h->getAddrCount(); j++)
+      n->dns[i].inet[j] = CORBA::string_dup(h->getAddrByIdx(j).c_str());
+  }
+  return a.getRet()._retn();
 }
 
 /***********************************************************************
@@ -3964,19 +3865,12 @@ if( ret->code == 0 ) ServerInternalError("NSSetUpdate");
 return ret._retn();
 }
 
-
-
-
-
-
-
-
 /***********************************************************************
  *
  * FUNCTION:    DomainInfo
  *
- * DESCRIPTION: return detailed information about contact 
- *              empty value if contact doesn't exists              
+ * DESCRIPTION: return detailed information about domain 
+ *              empty value if domain doesn't exists              
  * PARAMETERS:  fqdn - domain identifier its name 
  *        OUT:  d - domain structure detailed description
  *              clientID - client id
@@ -3986,183 +3880,115 @@ return ret._retn();
  *
  ***********************************************************************/
 
-ccReg::Response* ccReg_EPP_i::DomainInfo(const char* fqdn, ccReg::Domain_out d , CORBA::Long clientID, const char* clTRID ,  const char* XML)
+ccReg::Response* ccReg_EPP_i::DomainInfo(
+  const char* fqdn, ccReg::Domain_out d, CORBA::Long clientID, 
+  const char* clTRID, const char* XML
+)
 {
-DB DBsql;
-ccReg::ENUMValidationExtension *enumVal;
-ccReg::Response_var ret;
-ccReg::Errors_var errors;
-char FQDN[64];
-int id , clid , crid ,  upid , regid ,nssetid , regID , zone ;
-int i , len ;
-
-d = new ccReg::Domain;
-ret = new ccReg::Response;
-errors = new ccReg::Errors;
-
-
-
-
-
-// default
-ret->code=0;
-errors->length(0);
-
-
-LOG( NOTICE_LOG ,  "DomainInfo: clientID -> %d clTRID [%s] fqdn  [%s] " , (int ) clientID , clTRID  , fqdn );
-
-
-d->ext.length(0); // enum.exdate extension validity date
-
-if(  ( regID = GetRegistrarID( clientID ) ) )
-
-if( DBsql.OpenDatabase( database ) )
-{
-
-if( (  DBsql.BeginAction( clientID , EPP_DomainInfo , clTRID , XML  ) ) )
- {
- 
-
-
-   // convert fqdn to lower case and test it is some errors
-    if( ( zone = getFQDN( FQDN , fqdn ) ) <= 0 ) ret->code=SetReasonDomainFQDN( errors , fqdn , zone , GetRegistrarLang( clientID ) );
-   else
-   if( DBsql.BeginTransaction() )      
-    {
-   
-        if( ( id = DBsql.GetDomainID( FQDN  ,   GetZoneEnum( zone )  ) ) == 0 )
-          {
-            LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
-           ret->code = COMMAND_OBJECT_NOT_EXIST;
-         }
-       else 
-     if(  DBsql.SELECTOBJECTID( "DOMAIN" , "fqdn" , id ) ) 
-      {
-
-        clid =  DBsql.GetFieldNumericValueName("ClID" , 0 ); 
-        crid =  DBsql.GetFieldNumericValueName("CrID" , 0 ); 
-        upid =  DBsql.GetFieldNumericValueName("UpID" , 0 ); 
-        regid = DBsql.GetFieldNumericValueName("registrant" , 0 ) ; 
-        nssetid =  DBsql.GetFieldNumericValueName("nsset" , 0 ) ;  
-
-        d->CrDate= CORBA::string_dup(  DBsql.GetFieldDateTimeValueName("CrDate" , 0 ) );
-        d->UpDate= CORBA::string_dup(  DBsql.GetFieldDateTimeValueName("UpDate" , 0 ) );
-        d->TrDate= CORBA::string_dup(  DBsql.GetFieldDateTimeValueName("TrDate" , 0 ) );
-        d->ExDate= CORBA::string_dup(  DBsql.GetFieldDateValueName("ExDate" , 0 ) );
-
-
-	d->ROID=CORBA::string_dup( DBsql.GetFieldValueName("ROID" , 0 )  ); 
-	d->name=CORBA::string_dup( DBsql.GetFieldValueName("name" , 0 )  ); // FQDN
-
-
-        if( regID == clid ) // if the registar is client of the object
-           d->AuthInfoPw = CORBA::string_dup( DBsql.GetFieldValueName("AuthInfoPw" , 0 ) ); // get authinfo
-         else  d->AuthInfoPw = CORBA::string_dup( "" ); // else empty string
- 
-
-    
-        ret->code=COMMAND_OK;
-
-    
-        // free select
-	DBsql.FreeSelect();
-
-          // status is OK default
-          d->stat.length(1);
-          d->stat[0].value = CORBA::string_dup( "ok" );
-          d->stat[0].text = CORBA::string_dup( "Domain is OK" );
-
-
-         
-
-        d->ClID = CORBA::string_dup( DBsql.GetRegistrarHandle( clid ) );
-        d->CrID = CORBA::string_dup( DBsql.GetRegistrarHandle( crid ) );
-        d->UpID = CORBA::string_dup( DBsql.GetRegistrarHandle( upid ) );
-
-        // owner of ENUM domain 
-        if(  GetZoneEnum( zone )  )
-          {
-             // if the registar is clieent of the object get owner  of enum domain
-              if( regID == clid )  d->Registrant=CORBA::string_dup( DBsql.GetObjectName( regid ) );
-              else  d->Registrant=CORBA::string_dup( "" ); // hide owner  of enum domain 
-          }
-         else  d->Registrant=CORBA::string_dup( DBsql.GetObjectName( regid ) );
-           // for ccTLD domain get  owner  of domain
-
-        //  get handle of the  nsset if exist if null get empty string
-        d->nsset=CORBA::string_dup(  DBsql.GetObjectName( nssetid ) );
-    
-
-        // query to admin-c
-        if(  DBsql.SELECTCONTACTMAP( "domain"  , id, 1 ) )
-          {
-               len =  DBsql.GetSelectRows(); // number of admin-c 
-               // hide admin-c  for enum domain if registrar  not client of the domain
-               if(  GetZoneEnum( zone )  &&  regID  != clid  ) len = 0 ; //  not any admin-c
-               d->admin.length(len); // number of admin-c
-               for( i = 0 ; i < len ; i ++) 
-                 { // get handle of admin-c
-                   d->admin[i] = CORBA::string_dup( DBsql.GetFieldValue( i , 0 )  );
-                 }
-               DBsql.FreeSelect();
-           }else ret->code=COMMAND_FAILED;
-
-        // query to temp-c
-        if(  DBsql.SELECTCONTACTMAP( "domain"  , id, 2 ) )
-          {
-               len =  DBsql.GetSelectRows(); // number of temp-c 
-               // hide temp-c  for enum domain if registrar  not client of the domain
-               if(  GetZoneEnum( zone )  &&  regID  != clid  ) len = 0 ; //  not any admin-c
-               d->tmpcontact.length(len); // number of temp-c
-               for( i = 0 ; i < len ; i ++) 
-                 { // get handle of temp-c
-                   d->tmpcontact[i] = CORBA::string_dup( DBsql.GetFieldValue( i , 0 )  );
-                 }
-               DBsql.FreeSelect();
-           }else ret->code=COMMAND_FAILED;
-
-
-       // get enum.exdate validity date 
-        if( DBsql.SELECTONE( "enumval" , "domainID" , id ) )
-          {    
-            if( DBsql.GetSelectRows() == 1 )
-              {
-                 // convert to CORBA extension
-                enumVal = new ccReg::ENUMValidationExtension;
-                enumVal->valExDate = CORBA::string_dup(  DBsql.GetFieldDateValueName( "ExDate" , 0 ) );
-                d->ext.length(1); // transform
-                d->ext[0] <<=  enumVal;
-             }
-
-           DBsql.FreeSelect();
-         } else ret->code=COMMAND_FAILED;
-   
-
-     } else ret->code=COMMAND_FAILED;
-
-     DBsql.QuitTransaction( ret->code );
- 
-
-   }
-
-  
-
-
-   ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->code  ) );
-
- }
-      ret->msg =CORBA::string_dup( GetErrorMessage(  ret->code  , GetRegistrarLang( clientID ) )  );
-
-DBsql.Disconnect();
-}
-  // EPP exception
-  if(  ret->code > COMMAND_EXCEPTION) EppError(  ret->code , ret->msg ,  ret->svTRID , errors );
-
-
-if( ret->code == 0 ) ServerInternalError("DomainInfo");
-
-
-return ret._retn();
+  LOG(
+    NOTICE_LOG, "DomainInfo: clientID -> %d clTRID [%s] fqdn  [%s] ", 
+    (int) clientID, clTRID, fqdn
+  );
+  // start EPP action - this will handle all init stuff
+  EPPAction a(this,clientID,EPP_DomainInfo,clTRID,XML);
+  // initialize managers for domain manipulation
+  std::auto_ptr<Register::Zone::Manager> zman(
+    Register::Zone::Manager::create(a.getDB())
+  );	  
+  std::auto_ptr<Register::Domain::Manager> dman(
+    Register::Domain::Manager::create(a.getDB(),zman.get())
+  );
+  // first check handle for proper format
+  Register::Domain::CheckAvailType caType = dman->checkHandle(fqdn);
+  if (caType != Register::Domain::CA_AVAILABLE) {
+	// failure in FQDN check, throw exception
+    a.failed(SetReasonDomainFQDN(
+     a.getErrors(), fqdn, caType != Register::Domain::CA_BAD_ZONE ? -1 : 0,
+     a.getLang()
+    ));
+  }
+  // now load domain by fqdn 
+  std::auto_ptr<Register::Domain::List> dlist(dman->createList());
+  dlist->setFQDNFilter(fqdn);
+  try { dlist->reload(); } 
+  catch (...) { a.failedInternal("Cannot load domains"); }
+  if (dlist->getCount() != 1)
+	// failer because non existance, throw exception
+    a.failed(COMMAND_OBJECT_NOT_EXIST);
+  // start filling output domain structure
+  Register::Domain::Domain *dom = dlist->getDomain(0);
+  d = new ccReg::Domain;
+  // fill common object data
+  d->ROID = CORBA::string_dup(dom->getROID().c_str()); 
+  d->name = CORBA::string_dup(dom->getFQDN().c_str());
+  d->CrDate = CORBA::string_dup(formatTime(dom->getCreateDate()).c_str());
+  d->UpDate = CORBA::string_dup(formatTime(dom->getUpdateDate()).c_str());
+  d->TrDate = CORBA::string_dup(formatTime(dom->getTransferDate()).c_str());
+  d->ClID = CORBA::string_dup(dom->getRegistrarHandle().c_str());
+  d->CrID = CORBA::string_dup(dom->getCreateRegistrarHandle().c_str());
+  d->UpID = CORBA::string_dup(dom->getUpdateRegistrarHandle().c_str());
+  // authinfo is filled only if session registar is ownering registrar 
+  d->AuthInfoPw = CORBA::string_dup(
+    a.getRegistrar() == dom->getRegistrarId() ? dom->getAuthPw().c_str() : ""
+  );
+  // states
+  for (unsigned i=0; i<dom->getStatusCount(); i++) {
+    Register::TID stateId = dom->getStatusByIdx(i)->getStatusId();
+    const Register::StatusDesc* sd = regMan->getStatusDesc(stateId);
+    if (!sd || !sd->getExternal()) continue;
+    d->stat.length(d->stat.length()+1);
+	d->stat[d->stat.length()-1].value = CORBA::string_dup(
+      sd->getName().c_str()
+    );
+    d->stat[d->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
+      a.getLang() == LANG_CS ? "CS" : "EN"
+    ).c_str());
+  }
+  if (!d->stat.length()) {
+    const Register::StatusDesc* sd = regMan->getStatusDesc(0);
+    if (sd) {
+      d->stat.length(1);
+      d->stat[0].value = CORBA::string_dup(sd->getName().c_str());
+      d->stat[0].text = CORBA::string_dup(sd->getDesc(
+        a.getLang() == LANG_CS ? "CS" : "EN"
+      ).c_str());
+    }
+  }
+  // fill domain specific data  
+  d->nsset = CORBA::string_dup(dom->getNSSetHandle().c_str());
+  d->ExDate = CORBA::string_dup(
+    to_iso_extended_string(dom->getExpirationDate()).c_str()
+  );
+  // registrant and contacts are disabled for other registrars 
+  // in case of enum domain
+  bool disabled =
+	a.getRegistrar() != dom->getRegistrarId() &&
+	zman->findZoneId(fqdn)->isEnumZone();
+  // registrant
+  d->Registrant = CORBA::string_dup(
+    disabled ? "" : dom->getRegistrantHandle().c_str()
+  );
+  // admin
+  unsigned adminCount = disabled ? 0 : dom->getAdminCount(1);
+  d->admin.length(adminCount);
+  for (unsigned i=0; i<adminCount; i++)
+    d->admin[i] = CORBA::string_dup(dom->getAdminHandleByIdx(i,1).c_str());
+  // temps
+  unsigned tempCount = disabled ? 0 : dom->getAdminCount(2);
+  d->tmpcontact.length(tempCount);
+  for (unsigned i=0; i<tempCount; i++)
+    d->tmpcontact[i] = CORBA::string_dup(dom->getAdminHandleByIdx(i,2).c_str());
+  // validation
+  if (!dom->getValExDate().is_special()) {
+    ccReg::ENUMValidationExtension *enumVal = 
+      new ccReg::ENUMValidationExtension();
+    enumVal->valExDate = CORBA::string_dup(
+      to_iso_extended_string(dom->getValExDate()).c_str()
+    );
+    d->ext.length(1);
+    d->ext[0] <<=  enumVal;
+  }
+  return a.getRet()._retn();     
 }
 
 /***********************************************************************
@@ -5623,3 +5449,8 @@ ccReg_EPP_i::getInfoResults(
   return ret._retn();
 }
 
+const char *
+ccReg_EPP_i::getDatabaseString()
+{
+  return database;
+}

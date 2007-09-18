@@ -74,6 +74,10 @@ namespace Register
     /// return country description by index in list
     virtual const CountryDesc& getCountryDescByIdx(unsigned idx) const 
      throw (NOT_FOUND) = 0;
+    /// initialize list of states
+    virtual void initStates() = 0;
+    /// return status description
+    virtual const StatusDesc* getStatusDesc(TID status) const = 0;
     /// factory method
     static Manager *create(DB *db, bool restrictedHandles);    
   };

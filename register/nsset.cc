@@ -255,7 +255,7 @@ namespace Register
             << "obr.id,obr.name,"
             << "o.clid,"
             << "obr.crdate,o.trdate,o.update,"
-            << "obr.crid,o,upid,o.authinfopw,obr.roid,n.checklevel "
+            << "obr.crid,o.upid,o.authinfopw,obr.roid,n.checklevel "
             << "FROM "
             << getTempTableName() << " tmp, "
             << "nsset n, object_registry obr, object o "
@@ -320,6 +320,7 @@ namespace Register
           h->addAddr(db->GetFieldValue(i,2));
         }
         db->FreeSelect();
+        ObjectListImpl::reload();
       }
       void clearFilter()
       {

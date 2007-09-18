@@ -7,6 +7,44 @@
 
 namespace Register
 {
+ class StatusDescImpl : public virtual StatusDesc
+ {
+   TID id;
+   std::string name;
+   bool external;
+   std::map<std::string,std::string> desc;
+  public:
+   StatusDescImpl(TID _id, const std::string& _name, bool _external)
+    : id(_id), name(_name), external(_external)
+   {}
+   void addDesc(const std::string& lang, const std::string text)
+   {
+     desc[lang] = text;
+   }
+   bool operator==(TID _id) const
+   {
+     return id == _id;
+   }
+   virtual TID getId() const
+   {
+     return id;
+   }
+   virtual const std::string& getName() const
+   {
+     return name;
+   }
+   virtual bool getExternal() const
+   {
+     return external;
+   }
+   virtual const std::string& getDesc(const std::string& lang) const
+     throw (BAD_LANG)
+   {
+	 std::map<std::string,std::string>::const_iterator i = desc.find(lang);
+	 if (i == desc.end()) throw BAD_LANG();
+     return i->second;
+   }
+ };
  class ManagerImpl : virtual public Manager
  {
    DB *db;
@@ -17,6 +55,7 @@ namespace Register
    std::auto_ptr<NSSet::Manager> nm;
    std::vector<CountryDesc> countries;
    bool restrictedHandles;
+   std::vector<StatusDescImpl> statusList;
   public:
    ManagerImpl(DB *_db, bool _restrictedHandles) : 
      db(_db), restrictedHandles(_restrictedHandles)
@@ -131,7 +170,46 @@ namespace Register
    {
      if (idx >= countries.size()) throw NOT_FOUND();
      return countries[idx];
-   }   
+   }
+   virtual void initStates() throw (SQL_ERROR)
+   {
+     if (!db->ExecSelect("SELECT id, name, external FROM enum_object_states")) 
+       throw SQL_ERROR();
+     statusList.clear();
+     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+       statusList.push_back(
+         StatusDescImpl( 
+           STR_TO_ID(db->GetFieldValue(i,0)),
+           db->GetFieldValue(i,1),
+          *db->GetFieldValue(i,2) == 't'
+         )
+       );
+     }
+     db->FreeSelect();
+     if (!db->ExecSelect(
+       "SELECT state_id, lang, description FROM enum_object_states_desc"
+     )) throw SQL_ERROR();
+     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+       std::vector<StatusDescImpl>::iterator it = find(
+         statusList.begin(), statusList.end(), 
+         STR_TO_ID(db->GetFieldValue(i,0))
+       );
+       if (it != statusList.end())
+         it->addDesc(db->GetFieldValue(i,1),db->GetFieldValue(i,2));
+     }
+     // hack for OK state
+     statusList.push_back(StatusDescImpl(0,"ok",true));
+     statusList.back().addDesc("CS","Objekt je bez omezení");
+     statusList.back().addDesc("EN","Objekt is without restriction");
+   }
+   virtual const StatusDesc* getStatusDesc(TID status) const
+   {
+     std::vector<StatusDescImpl>::const_iterator it = find(
+       statusList.begin(), statusList.end(), status 
+     );
+     if (it == statusList.end()) return NULL;
+     return &(*it);
+   }
  };
  Manager *Manager::create(DB *db, bool restrictedHandles)
  {

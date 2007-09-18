@@ -3,7 +3,9 @@
 #include "messages.h"
 // JT: adding mailer manager
 #include "mailer_manager.h"
-
+#include "dbsql.h"
+#include <memory>
+#include "register/register.h"
 
 
 struct Session
@@ -14,7 +16,7 @@ int language;
 long long timestamp;
 };
 
-class Conf; 
+class Conf;
 //
 //  class implementing IDL interface ccReg::EPP
 //
@@ -27,9 +29,13 @@ private:
   MailerManager *mm;
   NameService *ns;
   Conf& conf;
+  DB db;
+  std::auto_ptr<Register::Manager> regMan;
 public:
+  struct DB_CONNECT_FAILED {};
   // standard constructor
-  ccReg_EPP_i(MailerManager *_mm, NameService *_ns, Conf& _conf);
+  ccReg_EPP_i(const char *db, MailerManager *_mm, NameService *_ns, Conf& _conf)
+    throw (DB_CONNECT_FAILED);
   virtual ~ccReg_EPP_i();
 
 
@@ -75,9 +81,12 @@ public:
   int GetNumSession(){ return numSession ; }; 
 
   // send    exception ServerIntError
-  void ServerInternalError(const char *fce, const char *svTRID="DUMMY-SVTRID");
+  void ServerInternalError(const char *fce, const char *svTRID="DUMMY-SVTRID")
+    throw (ccReg::EPP::EppError);
   // EPP exception 
-  void EppError( short errCode ,  const char *errMsg ,  const char *svTRID ,  ccReg::Errors_var& errors );
+  void EppError( short errCode ,  const char *errMsg ,  const char *svTRID ,  ccReg::Errors_var& errors )
+    throw (ccReg::EPP::EppError);
+
   void NoMessages( short errCode ,  const char *errMsg ,  const char *svTRID );
   
   // get version of server with timestamp
@@ -215,6 +224,7 @@ public:
   ccReg::Response* info(ccReg::InfoType type, const char* handle, CORBA::Long& count, CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* getInfoResults(ccReg::Lists_out handles, CORBA::Long clientID, const char* clTRID, const char* XML);
  
+  const char *getDatabaseString();
 private:
 Session *session;
 int numSession; // number of active session

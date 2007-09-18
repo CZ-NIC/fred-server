@@ -82,6 +82,8 @@ namespace Register
         /// handle is free for registration
         CA_FREE
       };
+      /// check proper format of handle
+      virtual bool checkHandleFormat(const std::string& handle) const = 0;
       /// check possibilities for registration
       virtual CheckAvailType checkAvail(
         const std::string& handle, NameIdPair& conflict

@@ -8,6 +8,19 @@ class DB;
 
 namespace Register
 {
+  /// Implementation of simple status object
+  class StatusImpl : virtual public Status
+  {
+    TID id;
+    ptime timeFrom;
+    ptime timeTo;
+   public:
+    StatusImpl(TID _id, ptime _timeFrom, ptime _timeTo);
+    ~StatusImpl();
+    virtual TID getStatusId() const;
+    virtual ptime getFrom() const;
+    virtual ptime getTo() const;
+  };
   /// Implementation of common register object properties
   class ObjectImpl : public CommonObjectImpl, virtual public Object
   {
@@ -23,7 +36,8 @@ namespace Register
     std::string updateRegistrarHandle;
     std::string authPw;
     std::string roid;
-    StatusSet sset;
+    typedef std::vector<StatusImpl> StatusList;
+    StatusList slist;
    public:
     ObjectImpl();
     ObjectImpl(
@@ -45,9 +59,9 @@ namespace Register
     const std::string& getAuthPw() const;
     void setAuthPw(const std::string& auth);
     const std::string& getROID() const;
-    const StatusSet& getStatusSet() const;
-    bool insertStatus(StatusElement element);
-    bool deleteStatus(StatusElement element);
+    unsigned getStatusCount() const;
+    const Status* getStatusByIdx(unsigned idx) const;
+    void insertStatus(TID id, ptime timeFrom, ptime timeTo);
   }; // class ObjectImpl
   
   /// Implementation of common register object list properties
@@ -63,9 +77,11 @@ namespace Register
     time_period crDateIntervalFilter;
     time_period updateIntervalFilter;
     time_period trDateIntervalFilter;
+    typedef std::vector<StatusFilter> StatusFilterList;
+    StatusFilterList sflist;
    public:
     ObjectListImpl(DB *db);
-    virtual void clearFilter();    
+    virtual void clearFilter();
     virtual void setRegistrarFilter(TID registrarId);
     virtual void setRegistrarHandleFilter(
       const std::string& registrarHandle
@@ -81,6 +97,9 @@ namespace Register
       const std::string& registrarHandle
     );
     virtual void setTrDateIntervalFilter(time_period period);
+    virtual void addStateFilter(TID state, bool stateIsOn);
+    virtual void clearStateFilter(TID state);
+    void reload() throw (SQL_ERROR);
   }; // class ObjectListImpl
    
 } // namespace register

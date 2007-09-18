@@ -46,6 +46,7 @@ namespace Register
       std::string notifyEmail;
       std::string ssn;
       std::string ssnType;
+      unsigned ssnTypeId;
       std::string vat;
       bool discloseName;
       bool discloseOrganization;
@@ -105,7 +106,7 @@ namespace Register
         street3(_street3), province(_province), postalCode(_postalCode),
         city(_city), country(_country), telephone(_telephone), fax(_fax),
         email(_email), notifyEmail(_notifyEmail), ssn(_ssn),
-        ssnType(SET_SSNTYPE(_ssnType)), vat(_vat),
+        ssnType(SET_SSNTYPE(_ssnType)), ssnTypeId(_ssnType), vat(_vat),
         discloseName(_discloseName),
         discloseOrganization(_discloseOrganization),
         discloseAddr(_discloseAddr),discloseEmail(_discloseEmail),
@@ -177,6 +178,10 @@ namespace Register
       virtual const std::string& getSSNType() const
       {
         return ssnType;
+      }
+      virtual unsigned getSSNTypeId() const
+      {
+        return ssnTypeId;
       }
       virtual const std::string& getVAT() const
       {
@@ -399,6 +404,7 @@ namespace Register
           );
         }
         db->FreeSelect();
+        ObjectListImpl::reload();
       }
       void clearFilter()
       {

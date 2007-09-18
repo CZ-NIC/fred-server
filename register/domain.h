@@ -137,6 +137,8 @@ namespace Register
       virtual void parseDomainName(
         const std::string& fqdn, DomainName& domain
       ) const throw (INVALID_DOMAIN_NAME) = 0;
+      /// check handle of domain without contacting database
+      virtual CheckAvailType checkHandle(const std::string& fqdn) const = 0;
       /// check availability of domain  
       virtual CheckAvailType checkAvail(
         const std::string& fqdn, NameIdPair& conflictFqdn
