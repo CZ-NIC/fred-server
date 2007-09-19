@@ -4594,7 +4594,7 @@ if( DBsql.OpenDatabase( database ) )
 
               
                       //  owner of domain
-                      if( (  contactid =   getIdOfContact(&DBsql, Registrant,conf) ) <= 0 );
+                      if( (  contactid =   getIdOfContact(&DBsql, Registrant,conf) ) <= 0 )
                                ret->code = SetReasonDomainRegistrant( errors , Registrant , contactid , GetRegistrarLang( clientID ) );
 
 
