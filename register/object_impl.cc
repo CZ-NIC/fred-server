@@ -278,6 +278,7 @@ Register::ObjectListImpl::reload() throw (SQL_ERROR)
       << "WHERE tmp.id=os.object_id AND valid_to ISNULL "
       << "ORDER BY tmp.id ";
   if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+  resetIDSequence();
   for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
     ObjectImpl *o = dynamic_cast<ObjectImpl *>(findIDSequence(
       STR_TO_ID(db->GetFieldValue(i,0))
