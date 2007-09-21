@@ -5,6 +5,7 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include "types.h"
 #include "exceptions.h"
+#include "common_object.h"
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
@@ -18,32 +19,32 @@ namespace Register
   {
     enum MessageType
     {
-      MT_TRANSFER_CONTACT,
-      MT_TRANSFER_NSSET,
-      MT_TRANSFER_DOMAIN,
-      MT_DELETE_CONTACT,
-      MT_DELETE_NSSET,
-      MT_DELETE_DOMAIN,
-      MT_TECHCHECK,
-      MT_IMP_EXPIRATION,
-      MT_EXPIRATION,
-      MT_IMP_VALIDATION,
-      MT_VALIDATION,
-      MT_OUTZONE,
-      MT_LOW_CREDIT
+      MT_LOW_CREDIT = 1,
+      MT_TECHCHECK = 2,
+      MT_TRANSFER_CONTACT = 3,
+      MT_TRANSFER_NSSET = 4,
+      MT_TRANSFER_DOMAIN = 5,
+      MT_DELETE_CONTACT = 6,
+      MT_DELETE_NSSET = 7,
+      MT_DELETE_DOMAIN = 8,
+      MT_IMP_EXPIRATION = 9,
+      MT_EXPIRATION = 10,
+      MT_IMP_VALIDATION = 11,
+      MT_VALIDATION = 12,
+      MT_OUTZONE = 13
     };
 
     class Message
     {
-     protected:
-      virtual ~Message() {}
      public:
+      // destructor should be protected but cannot because getNextMessage() 
+      virtual ~Message() {}
       virtual TID getId() const = 0;
       virtual TID getRegistrar() const = 0;
       virtual ptime getCrTime() const = 0;
       virtual ptime getExpirationTime() const = 0;
       virtual bool getSeen() const = 0;
-      virtual MessageType getType() const = 0;
+      virtual unsigned getType() const = 0;
       virtual void textDump(std::ostream& out) const = 0;
     };
     
@@ -101,6 +102,23 @@ namespace Register
       virtual CreditType getLimit() const = 0;
     };
 
+    class List : virtual public CommonList
+    {
+     public:
+      /// return message by index
+      virtual Message* getMessage(unsigned idx) = 0;
+      /// set filter for type
+      virtual void setTypeFilter(unsigned type) = 0;
+      /// set filter for registrar
+      virtual void setRegistrarFilter(TID id) = 0;
+      /// set filter for registrar by handle
+      virtual void setRegistrarHandleFilter(const std::string& handle) = 0;
+      /// set filter for registrar by handle
+      virtual void setNonExpiredFilter(bool exp) = 0;
+      /// set filter for registrar by handle
+      virtual void setNonSeenFilter(bool seen) = 0;
+    };
+    
     class Manager
     {
      public:
@@ -111,9 +129,14 @@ namespace Register
       virtual Message* getNextMessage(TID registrar) = 0; // const = 0;
       /// return id of next unseen and unexpired message for registrar
       virtual TID getNextMessageId(TID registrar) const = 0;;
-      /// mark message as seen
-      virtual void setMessageSeen(TID message) 
-        throw (NOT_FOUND) = 0;;
+      /// mark message as seen, check ownership to registrar and if unseen
+      virtual void setMessageSeen(TID message, TID registrar) 
+        throw (NOT_FOUND) = 0;
+      virtual void createActionMessage(
+        TID registrar, unsigned type, TID objectId
+      ) throw (SQL_ERROR) = 0;
+      // create list of messages
+      virtual List* createList() = 0;
       /// factory method
       static Manager *create(DB *db);      
     };

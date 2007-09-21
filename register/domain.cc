@@ -183,6 +183,8 @@ namespace Register
       std::string adminHandle;
       TID temp;
       std::string tempHandle;
+      TID contactFilter;
+      std::string contactHandleFilter;
       std::string fqdn;
       time_period exDate;
       time_period valExDate;
@@ -192,7 +194,7 @@ namespace Register
      public:
       ListImpl(DB *_db) : ObjectListImpl(_db), 
         zoneFilter(0), registrantFilter(0),
-        nsset(0), admin(0), temp(0),
+        nsset(0), admin(0), temp(0), contactFilter(0),
         exDate(ptime(neg_infin),ptime(pos_infin)),
         valExDate(ptime(neg_infin),ptime(pos_infin)),
         zoneStatus(0)
@@ -237,6 +239,14 @@ namespace Register
       virtual void setTempHandleFilter(const std::string& _tempHandle)
       {
         tempHandle = _tempHandle;
+      }
+      virtual void setContactFilter(TID contactId)
+      {
+        contactFilter = contactId;
+      }
+      virtual void setContactHandleFilter(const std::string& cHandle)
+      {
+        contactHandleFilter = cHandle;
       }
       virtual void setFQDNFilter(const std::string& _fqdn)
       {

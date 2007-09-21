@@ -103,10 +103,14 @@ namespace Register
       virtual void setAdminFilter(TID adminId) = 0;
       /// set filter for admin handle
       virtual void setAdminHandleFilter(const std::string& adminHandle) = 0;
-      /// set filter for admin
+      /// set filter for temp contact
       virtual void setTempFilter(TID tempId) = 0;
-      /// set filter for admin handle
+      /// set filter for temp contact handle
       virtual void setTempHandleFilter(const std::string& tempHandle) = 0;
+      /// set filter for contact in any role
+      virtual void setContactFilter(TID contactId) = 0;
+      /// set filter for handle of contact in any role
+      virtual void setContactHandleFilter(const std::string& cHandle) = 0;
       /// set filter for domain name 
       virtual void setFQDNFilter(const std::string& fqdn) = 0;
       /// set filter for period of expiration date

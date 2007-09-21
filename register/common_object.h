@@ -38,6 +38,8 @@ namespace Register
     virtual unsigned long long getRealCount() const = 0;
     /// set flag for enabling wildcard expansion in handles 
     virtual void setWildcardExpansion(bool _wcheck) = 0;
+    /// reload data according to filter
+    virtual void reload() = 0;
   };
 
 }; // Register

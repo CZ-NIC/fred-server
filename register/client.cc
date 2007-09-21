@@ -148,8 +148,20 @@ int main(int argc, char **argv)
 
     po::options_description pollDesc("Poll messages options");
     pollDesc.add_options()
+      ("poll_type", po::value<unsigned>(),
+       "set filter for poll type")
+      ("poll_regid", po::value<unsigned>(),
+       "set filter for registrar id")
+      ("poll_nonseen",
+       "set filter for non seen messages")
+      ("poll_nonex",
+       "set filter for non expired messages")
       ("poll_list_all",
-       "list all poll messages");
+       "list all poll messages")
+      ("poll_list_next", po::value<unsigned>(),
+       "list next message for given registrar")
+      ("poll_set_seen", po::value<unsigned>(),
+       "set given message as seen");
 
     po::variables_map vm;
     // parse help and config filename options
@@ -350,10 +362,43 @@ int main(int argc, char **argv)
       )
     );
     if (vm.count("poll_list_all")) {
-      while (pollMan->getMessageCount(0))
-        pollMan->getNextMessage(0)->textDump(std::cout);
-    }
-    
+      std::auto_ptr<Register::Poll::List> pmlist(pollMan->createList());
+      if (vm.count("poll_type")) 
+        pmlist->setTypeFilter(vm["poll_type"].as<unsigned>());
+      if (vm.count("poll_regid")) 
+        pmlist->setRegistrarFilter(vm["poll_regid"].as<unsigned>());
+      if (vm.count("poll_nonseen")) 
+        pmlist->setNonSeenFilter(true);
+      if (vm.count("poll_nonex")) 
+        pmlist->setNonExpiredFilter(true);
+      pmlist->reload();
+      for (unsigned i=0; i<pmlist->getCount(); i++) {
+        Register::Poll::Message *m = pmlist->getMessage(i);
+        if (m) {
+          m->textDump(std::cout);
+          std::cout << std::endl;			
+        }
+      }
+    } else if (vm.count("poll_list_next")) {
+      Register::TID reg = vm["poll_list_next"].as<unsigned>();
+      unsigned count = pollMan->getMessageCount(reg);
+      if (!count) { std::cout << "No message" << std::endl; }
+      else {
+        std::auto_ptr<Register::Poll::Message> m(pollMan->getNextMessage(reg));
+        std::cout << "Messages:" << count << std::endl;
+        m->textDump(std::cout);
+        std::cout << std::endl;
+      }
+    } else if (vm.count("poll_set_seen")) {
+      try {
+        Register::TID reg = vm["poll_regid"].as<unsigned>();
+        if (!reg) std::cout << "Muset specify owning registar" << std::endl;
+        Register::TID messageId = vm["poll_set_seen"].as<unsigned>(); 
+        pollMan->setMessageSeen(messageId, reg);
+        std::cout << "NextId:" << pollMan->getNextMessageId(reg) << std::endl;
+      }
+      catch (...) { std::cout << "No message" << std::endl; }
+    }    
     if (connected) db.Disconnect();
   }
   catch (std::exception& e) {

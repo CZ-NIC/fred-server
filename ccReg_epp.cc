@@ -1341,7 +1341,7 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
       std::auto_ptr<Register::Poll::Manager> pollMan(
         Register::Poll::Manager::create(&DBsql)
       );
-      pollMan->setMessageSeen(STR_TO_ID(msgID));
+      pollMan->setMessageSeen(STR_TO_ID(msgID), registrar);
       /// convert count of messages and next message id to string
       std::stringstream buffer;
       buffer << pollMan->getNextMessageId(registrar);
@@ -2837,8 +2837,18 @@ if(  (regID = GetRegistrarID( clientID ) ) )
 
                                   if(  ret->code == COMMAND_OK ) 
                                     {
-                                         // save EPP message  to table message
-                                       if( !DBsql.SaveEPPTransferMessage( oldregID , regID , id , type   ) ) ret->code = COMMAND_FAILED;
+                                	  try {
+                                	    std::auto_ptr<Register::Poll::Manager> pollMan(
+                                	      Register::Poll::Manager::create(&DBsql)
+                                  	    );
+                                	    pollMan->createActionMessage(
+                                	      oldregID,
+                                	      type == 1 ? Register::Poll::MT_TRANSFER_CONTACT :
+                                	      type == 2 ? Register::Poll::MT_TRANSFER_NSSET :
+                                	      Register::Poll::MT_TRANSFER_DOMAIN,
+                                	      id
+                                	    );
+                                	  } catch (...) { ret->code = COMMAND_FAILED; }
                                     }
                                }
                        
