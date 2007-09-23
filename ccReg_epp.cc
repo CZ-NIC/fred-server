@@ -2531,7 +2531,16 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                     {
                        // create object generate ROID
                       id= DBsql.CreateObject( "C" ,  regID , handle ,  c.AuthInfoPw );
+                      if (id<=0) {
+                       if (id == 0) {
+                         LOG( WARNING_LOG, "contact handle [%s] EXIST", handle );
+                         ret->code= COMMAND_OBJECT_EXIST;
+                       } else {
+                           LOG( WARNING_LOG, "Cannot insert [%s] into object_registry", handle );
+                           ret->code= COMMAND_FAILED;
+                       }
 
+                      } else {
 
                       DBsql.INSERT( "CONTACT" );
                       DBsql.INTO( "id" );
@@ -2619,7 +2628,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                               if ( DBsql.SaveObjectCreate( id ) )   ret->code = COMMAND_OK;    // if saved
                         }                    
                    }
-
+                  }
                 
 
                         if( ret->code == COMMAND_OK ) // run notifier
@@ -3281,6 +3290,15 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
             {
 
               id= DBsql.CreateObject( "N" ,  regID , handle ,  authInfoPw );
+              if (id<=0) {
+               if (id==0) {
+                LOG( WARNING_LOG, "nsset handle [%s] EXIST", handle );
+                ret->code= COMMAND_OBJECT_EXIST;
+               } else {
+                   LOG( WARNING_LOG, "Cannot insert [%s] into object_registry", handle );
+                   ret->code= COMMAND_FAILED;
+               }
+              } else {
 
               if (level<0) level = atoi(conf.GetNSSetLevel());
               // write to nsset table
@@ -3377,7 +3395,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 
 
            }
-
+            }
 
             }
       DBsql.QuitTransaction( ret->code );
@@ -4645,6 +4663,15 @@ if( DBsql.OpenDatabase( database ) )
 
 
                         id= DBsql.CreateObject( "D" ,  regID , FQDN ,  AuthInfoPw );
+                        if (id<=0) {
+                         if (id == 0) {
+                          LOG( WARNING_LOG, "domain fqdn [%s] EXIST", fqdn );
+                          ret->code= COMMAND_OBJECT_EXIST;
+                         } else {
+                             LOG( WARNING_LOG, "Cannot insert [%s] into object_registry", fqdn );
+                             ret->code= COMMAND_FAILED;
+                         }
+                        } else {
 
 
 
@@ -4716,7 +4743,7 @@ if( DBsql.OpenDatabase( database ) )
                             ntf->Send(); // send messages
                         }
 
-
+                        }
                       }                       
 
                }

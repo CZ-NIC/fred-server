@@ -294,6 +294,7 @@ void VALUES( const char * value  , bool esc , bool amp ,  int uplo ); // use esc
 void VALUE( const  char * value );
 void VVALUE( const char * value ); // without escape
 void VALUE( int  value );
+void VALUE( unsigned long long value );
 void VALUE( bool value );
 void VALPRICE( long price ); // price in long
 

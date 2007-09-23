@@ -730,72 +730,40 @@ return false;
 
 int DB::CreateObject( const char *type , int regID , const char *name , const char *authInfoPw )
 {
-char roid[64];
-char pass[PASS_LEN+1];
-int id;
-
-id = GetSequenceID( "object_registry" );
-
- // make ROID
- get_roid( roid, ( char * ) type , id );
-
- INSERT( "OBJECT_registry" );
- INTO( "id" );
- INTO( "type" );
- INTO( "NAME" ); 
- INTO( "roid" );
- INTO( "CrDate" );
- INTO( "CrID" );
-
- VALUE( id );
-
-// Type of the object
-switch( type[0] )
-  {
-    case 'C' : // contacts
-         VALUE( 1 );
-         VALUEUPPER( name );
-         break;
-    case 'N' : // nsset
-         VALUE( 2 );
-         VALUEUPPER( name );
-         break;
-    case 'D' : // domain
-         VALUE( 3 );
-         VALUELOWER( name );
-         break;
-   default :
-         VALUE( 0);
+  if (!type) return 0;
+  unsigned itype;
+  switch (type[0]) {
+   case 'C' : itype = 1; break;
+   case 'N' : itype = 2; break;
+   case 'D' : itype = 3; break;
+   default : return 0;
   }
-    
- VALUE( roid );
- VALUENOW();
- VALUE( regID );
- 
+  std::stringstream sql;
+  // TODO: name should be escaped but is called after handle check so it's safe
+  sql << "SELECT create_object(" 
+      << regID << ",'" << name << "'," << itype << ")";
+  if (!ExecSelect(sql.str().c_str())) return -1;
+  unsigned long long id = atoll(GetFieldValue(0,0));
+  FreeSelect();
+  if (!id) return 0;
+  INSERT( "OBJECT" );
+  INTO( "id" );
+  INTO( "ClID" );
+  INTO( "AuthInfoPw" );
 
+  VALUE( id );
+  VALUE( regID );
 
-if( EXEC() )
- {
- INSERT( "OBJECT" );
- INTO( "id" );
- INTO( "ClID" );
- INTO( "AuthInfoPw" );
+  char pass[PASS_LEN+1];
 
- VALUE( id );
- VALUE( regID );
-
-
-                     if( strlen ( authInfoPw ) == 0 )
-                       {
-                          random_pass(  pass  ); // autogenerate password if not set 
-                          VVALUE( pass );
-                        }
-                      else VALUE( authInfoPw );
+ if( strlen ( authInfoPw ) == 0 ) {
+   random_pass(  pass  ); // autogenerate password if not set 
+   VVALUE( pass );
+ }
+ else VALUE( authInfoPw );
 
   if( EXEC() )  return id;
   else return 0; 
- }
-else return 0;
 }
 
 
@@ -2502,6 +2470,13 @@ void DB::VALUE( int  value )
 {
 char numStr[16];
 sprintf( numStr , "%d" ,  value );
+VALUES( numStr , false , false , 0  ); // without ESC
+}
+
+void DB::VALUE( unsigned long long value )
+{
+char numStr[100];
+sprintf( numStr , "%llu" ,  value );
 VALUES( numStr , false , false , 0  ); // without ESC
 }
 
