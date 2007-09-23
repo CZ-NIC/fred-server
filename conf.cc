@@ -173,7 +173,7 @@ char keys[MAX_KEYS][KEY_MAX] = {
   "log_mask" ,  "log_level" , "log_local", "nameservice"  , "session_max" , 
   "session_wait", "docgen_path", "fileclient_path", "ebanka_url",
   "docgen_template_path", "nsset_level", "restricted_handles", 
-  "disable_epp_notifier"
+  "disable_epp_notifier", "session_registrar_max"
 };
 int key;
 char keyname[KEY_MAX];
@@ -278,6 +278,9 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
                 case KEY_disable_epp_notifier:
                             disableEPPNotifier = atoi(value);
                            break;              
+                case KEY_session_registrar_max:
+                           session_registrar_max = atoi(  value );
+                           break;
                 default:
 		    daemon_log(LOG_ERR, "parse error on line %d  [%s]\n" , line , buf );
 		    break;

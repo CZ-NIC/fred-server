@@ -252,6 +252,16 @@ GarbageSesion();
 
 if( numSession < maxSession )
 {
+// count sessions for given registrar
+unsigned count = 0;
+for (i=0; i<maxSession; i++)
+  if (session[i].registrarID == registrarID)
+   count++;
+if (count >= conf.GetSessionRegistrarMax()) {
+  LOG( DEBUG_LOG , "SESSION max per registrar exceeded clientID %d registrarID %d lang %d" , loginID , registrarID ,  language );
+  //
+  return false;
+}
 // find first session to free 
 for( i = 0 ; i <  maxSession ; i ++ )
   {

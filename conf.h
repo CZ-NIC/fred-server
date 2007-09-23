@@ -30,7 +30,8 @@
 #define KEY_nsset_level  17
 #define KEY_restricted_handles  18
 #define KEY_disable_epp_notifier  19
-#define MAX_KEYS  19
+#define KEY_session_registrar_max 20
+#define MAX_KEYS  20
 
 #include <string>
 
@@ -53,6 +54,7 @@ Conf() {
   disableEPPNotifier=0; 
   session_max=20 ; 
   session_wait=300;
+  session_registrar_max=5;
 }
 ~Conf(){}; // empty
 
@@ -73,6 +75,7 @@ bool  ReadConfigFileTXT(const char *filename );
 
 
 int GetSessionMax() { return  session_max; } ;
+int GetSessionRegistrarMax() { return  session_registrar_max; } ;
 int GetSessionWait() { return  session_wait; } ;
 
 const char *GetDBhost(){ if( host[0] == 0 ) return NULL ; else  return host; };
@@ -136,6 +139,7 @@ int log_level;
 int log_local;
 int session_max;
 int session_wait;
+int session_registrar_max;
 std::string nameService;
 std::string docGenPath;
 std::string docGenTemplatePath;
