@@ -1071,7 +1071,7 @@ return 0;
 
 bool ccReg_EPP_i::testFQDN( const char *fqdn )
 {
-char FQDN[64];
+char FQDN[164];
 
 if( getFQDN( FQDN ,  fqdn ) > 0  ) return true;
 else return false;
@@ -2683,7 +2683,7 @@ ccReg::Response_var ret;
 ccReg::Errors_var errors;
 DB DBsql;
 std::auto_ptr<EPPNotifier> ntf;
-char FQDN[64];
+char FQDN[164];
 char pass[PASS_LEN+1];
 int regID  , id , oldregID;
 int type=0;
@@ -3987,7 +3987,7 @@ ccReg::Response_var ret;
 ccReg::Errors_var errors;
 DB DBsql;
 std::auto_ptr<EPPNotifier> ntf;
-char FQDN[64];
+char FQDN[164];
 int regID , id , zone;
 ret = new ccReg::Response;
 errors = new ccReg::Errors;
@@ -4104,7 +4104,7 @@ ccReg::Response_var ret;
 ccReg::Errors_var errors;
 std::auto_ptr<EPPNotifier> ntf;
 DB DBsql;
-char FQDN[64];
+char FQDN[164];
 char valexpiryDate[MAX_DATE];
 int regID = 0, id, nssetid, contactid, adminid;
 int   seq , zone;
@@ -4439,7 +4439,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Regis
 DB DBsql;
 std::auto_ptr<EPPNotifier> ntf;
 char valexpiryDate[MAX_DATE] ;
-char  FQDN[64];
+char  FQDN[164];
 ccReg::Response_var ret;
 ccReg::Errors_var errors;
 int contactid, regID, nssetid, adminid, id;
@@ -4803,7 +4803,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
   DB DBsql;
   std::auto_ptr<EPPNotifier> ntf;
   char   valexpiryDate[MAX_DATE] ;
-  char FQDN[64]; 
+  char FQDN[164]; 
   ccReg::Response_var ret;
   ccReg::Errors_var errors;
   int  regID, id,  zone ;
@@ -5213,7 +5213,7 @@ DB DBsql;
 int   id ,  zone;
 ccReg::Response_var ret;
 ccReg::Errors_var errors;
-char FQDN[64];
+char FQDN[164];
 int regID;
 ret = new ccReg::Response;
 
