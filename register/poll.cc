@@ -473,10 +473,10 @@ namespace Register
         } // hasTechCheck
         if (hasLowCredit) {
           sql.str("");
-          sql << "SELECT tmp.id, z.fqdn, pl.credit, pl.limit "
+          sql << "SELECT tmp.id, z.fqdn, pl.credit, pl.credlimit "
               << "FROM "
               << getTempTableName() << " tmp, "
-              << "poll_lowcredit pl, zone z "
+              << "poll_credit pl, zone z "
               << "WHERE tmp.id=pl.msgid AND pl.zone=z.id ";
           if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
           // assign to nsset
@@ -503,7 +503,7 @@ namespace Register
               << "poll_eppaction pa, object_history oh, registrar r, "
               << "object_registry obr "
               << "WHERE tmp.id=pa.msgid AND pa.objid=oh.historyid "
-              << "AND oh.id=obr.id ";
+              << "AND oh.id=obr.id AND oh.clid=r.id ";
           if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
           // assign to nsset
           resetIDSequence();
@@ -523,27 +523,45 @@ namespace Register
         } // hasAction
         if (hasStateChange) {
           sql.str("");
-          sql << "SELECT tmp.id, oh.trdate::date, obr.name, r.handle "
+          sql << "SELECT tmp.id, dh.exdate::date, eh.exdate::date, obr.name "
               << "FROM "
               << getTempTableName() << " tmp, "
               << "poll_statechange ps, object_state s, "
-              << "object_history oh, domain_history dh, "
-              << "object_registry obr "
-              << "LEFT JOIN enumval_history eh (ON eh.historyid=pa.oid)"
-              << "WHERE tmp.id=ps.msgid AND ps.stateid=oh.historyid "
-              << "AND oh.id=obr.id ";
+              << "object_history oh, object_registry obr, "
+              << "domain_history dh "
+              << "LEFT JOIN enumval_history eh ON (eh.historyid=dh.historyid) "
+              << "WHERE tmp.id=ps.msgid AND ps.stateid=s.id "
+              << "AND s.ohid_from=oh.historyid AND oh.id=obr.id "
+              << "AND oh.historyid=dh.historyid ";
           if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
           // assign to nsset
           resetIDSequence();
           for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-            MessageEventRegImpl *m =
-              dynamic_cast<MessageEventRegImpl *>(findIDSequence(
+            MessageEventImpl *m =
+              dynamic_cast<MessageEventImpl *>(findIDSequence(
                 STR_TO_ID(db->GetFieldValue(i,0))
               ));
             if (!m) throw SQL_ERROR();
+            date d;
+            switch (m->getType()) {
+             case MT_IMP_VALIDATION :
+             case MT_VALIDATION:
+              d = MAKE_DATE(i,2);
+              break;
+             case MT_IMP_EXPIRATION:
+             case MT_EXPIRATION:
+             case MT_OUTZONE:
+             case MT_DELETE_CONTACT:
+             case MT_DELETE_NSSET:
+             case MT_DELETE_DOMAIN:
+              d = MAKE_DATE(i,2);
+              break;
+             default:
+              // strange data in tables
+              throw SQL_ERROR();
+            }
             m->setData(
-              MAKE_DATE(i,1),
-              db->GetFieldValue(i,2),
+              d,
               db->GetFieldValue(i,3)
             );
           }
@@ -563,7 +581,27 @@ namespace Register
         return m;
       }
     };
-    
+ 
+    // Local transction needed for proper on commit handling of TEMP table
+    struct LocalTransaction {
+      DB *db;
+      bool closed;
+      LocalTransaction(DB *_db) : db(_db), closed(false) 
+      {
+        db->BeginTransaction();
+      }
+      ~LocalTransaction()
+      {
+        if (!closed)
+          db->RollbackTransaction();
+      }
+      void commit()
+      {
+        db->CommitTransaction();
+        closed = true;
+      }
+    };
+  
     class ManagerImpl : public Manager
     {
       DB* db;
@@ -574,7 +612,7 @@ namespace Register
         	<< "VALUES ("
         	<< "nextval('message_id_seq')," 
         	<< registrar << ","
-        	<< "CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '14 days',"
+        	<< "CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '7 days',"
         	<< "'f'," << type << ")";
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
       }
@@ -637,7 +675,111 @@ namespace Register
             << "FROM object_registry WHERE id=" << objectId ; 
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();        
       }
-      
+      virtual void createStateMessages(const std::string& exceptList) 
+        throw (SQL_ERROR)
+      {
+      	// transaction is needed for 'ON COMMIT DROP' functionality
+        LocalTransaction trans(db);
+    	// create temporary table because poll message need to be inserted
+    	// into two tables joined by message id
+    	const char *create =
+          "CREATE TEMPORARY TABLE tmp_poll_state_insert ("
+          " id INTEGER PRIMARY KEY, reg INTEGER, "
+          " msgtype INTEGER, stateid INTEGER "
+          ") ON COMMIT DROP ";
+        if (!db->ExecSQL(create)) throw SQL_ERROR();        
+        // for each new state appearance of state type (expirationWarning,
+        // expiration, validationWarning1, outzoneUnguarded and 
+        // deleteCandidate for all object type that has not associated
+        // poll message create one new poll message
+        std::stringstream insertTemp;
+        insertTemp << 
+          "INSERT INTO tmp_poll_state_insert SELECT "
+          " nextval('message_id_seq'),"
+          " oh.clid, "
+          // MT_IMP_EXPIRATION
+          " CASE WHEN os.state_id=8 THEN 9 "
+          // MT_EXPIRATION
+          "      WHEN os.state_id=9 THEN 10 "
+          // MT_IMP_VALIDATION
+          "      WHEN os.state_id=11 THEN 11 "
+          // MT_VALIDATION
+          "      WHEN os.state_id=13 THEN 12 "
+          // MT_OUTZONE
+          "      WHEN os.state_id=20 THEN 13 "
+          // MT_DELETE_CONTACT
+          "      WHEN os.state_id=17 AND ob.type=1 THEN 6 "
+          // MT_DELETE_NSSET
+          "      WHEN os.state_id=17 AND ob.type=2 THEN 7 "
+          // MT_DELETE_DOMAIN
+          "      WHEN os.state_id=17 AND ob.type=3 THEN 8 END, "
+          " os.id "
+          "FROM object_registry ob, object_history oh, object_state os "
+          "LEFT JOIN poll_statechange ps ON (os.id=ps.stateid) "
+          "WHERE os.state_id in (8,9,11,13,20,17) "
+          "AND oh.historyid=os.ohid_from AND ob.id=os.object_id "
+          "AND ps.stateid ISNULL ";
+        if (!exceptList.empty())
+        	insertTemp << "AND os.state_id NOT IN (" << exceptList << ")";
+        if (!db->ExecSQL(insertTemp.str().c_str())) throw SQL_ERROR();        
+        // insert into table message appropriate part from temp table
+        const char *insertMessage =
+          "INSERT INTO message "
+          "SELECT id,reg,CURRENT_TIMESTAMP,"
+          "CURRENT_TIMESTAMP + INTERVAL '7days','f',msgtype "
+          "FROM tmp_poll_state_insert ";
+        if (!db->ExecSQL(insertMessage)) throw SQL_ERROR();        
+        // insert into table poll_statechange appropriate part from temp table
+        const char *insertPollStateChange =
+          "INSERT INTO poll_statechange "
+          "SElECT id, stateid FROM tmp_poll_state_insert";
+        if (!db->ExecSQL(insertPollStateChange)) throw SQL_ERROR();
+        trans.commit();
+      }
+      virtual void createLowCreditMessages() throw (SQL_ERROR)
+      {
+    	// transaction is needed for 'ON COMMIT DROP' functionality
+    	LocalTransaction trans(db);
+    	// create temporary table because poll message need to be inserted
+    	// into two tables joined by message id
+        const char *create =
+          "CREATE TEMPORARY TABLE tmp_poll_credit_insert ("
+          " id INTEGER PRIMARY KEY, zoneid INTEGER, reg INTEGER, "
+          " credit INTEGER, credlimit INTEGER "
+          ") ON COMMIT DROP ";
+        if (!db->ExecSQL(create)) throw SQL_ERROR();        
+        // for each reagistrar and zone count credit from advance invoices.
+        // if credit is lower than limit and last poll message for this
+        // registrar and zone is older than last advance invoice,
+        // insert new poll message
+        const char *insertTemp =
+          "INSERT INTO tmp_poll_credit_insert "
+          "SELECT nextval('message_id_seq'),"
+          " i.zone, i.registrarid, SUM(i.credit), MIN(l.credlimit) "
+          "FROM invoice_prefix ip, poll_credit_zone_limit l, invoice i "
+          "LEFT JOIN (SELECT m.clid, pc.zone, MAX(m.crdate) AS crdate "
+          "           FROM message m, poll_credit pc "
+          "           WHERE m.id=pc.msgid GROUP BY m.clid, pc.zone) AS mt "
+          "ON (mt.clid=i.registrarid AND mt.zone=i.zone) "
+          "WHERE i.prefix_type=ip.id AND ip.typ=0 AND i.zone=l.zone "
+          "GROUP BY i.registrarid,i.zone "
+          "HAVING SUM(i.credit)<MIN(credlimit) "
+          "AND (MAX(mt.crdate) ISNULL OR MAX(i.crdate)>MAX(mt.crdate))";
+        if (!db->ExecSQL(insertTemp)) throw SQL_ERROR();
+        // insert into table message appropriate part from temp table
+        const char *insertMessage =
+          "INSERT INTO message "
+          "SELECT id,reg,CURRENT_TIMESTAMP,"
+          "CURRENT_TIMESTAMP + INTERVAL '7days','f',1 "
+          "FROM tmp_poll_credit_insert ";
+        if (!db->ExecSQL(insertMessage)) throw SQL_ERROR();        
+        // insert into table poll_credit appropriate part from temp table
+        const char *insertPollCredit =
+          "INSERT INTO poll_credit "
+          "SElECT id, zoneid, credlimit, credit FROM tmp_poll_credit_insert ";
+        if (!db->ExecSQL(insertPollCredit)) throw SQL_ERROR();
+        trans.commit();
+      }
     };
 
     Manager *Manager::create(DB *db)

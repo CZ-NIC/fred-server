@@ -132,9 +132,15 @@ namespace Register
       /// mark message as seen, check ownership to registrar and if unseen
       virtual void setMessageSeen(TID message, TID registrar) 
         throw (NOT_FOUND) = 0;
+      /// create action poll message (used in EPP transfer commands)
       virtual void createActionMessage(
         TID registrar, unsigned type, TID objectId
       ) throw (SQL_ERROR) = 0;
+      /// create messages about state change (called regulary after)
+      virtual void createStateMessages(const std::string& exceptList) 
+        throw (SQL_ERROR) = 0;
+      /// create messages about low credit (called after credit change)
+      virtual void createLowCreditMessages() throw (SQL_ERROR) = 0;
       // create list of messages
       virtual List* createList() = 0;
       /// factory method

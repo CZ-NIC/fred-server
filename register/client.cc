@@ -83,7 +83,8 @@ int main(int argc, char **argv)
       ("restricted_handles",po::value<unsigned>()->default_value(1),
        "restricted format of handles (CID: & NSSID:)");
 
-    po::options_description fileDesc(""); 
+    po::options_description fileDesc("");
+    fileDesc.add(configDesc);
     fileDesc.add_options()
       ("*", po::value<std::string>(), 
        "other-options");
@@ -161,7 +162,13 @@ int main(int argc, char **argv)
       ("poll_list_next", po::value<unsigned>(),
        "list next message for given registrar")
       ("poll_set_seen", po::value<unsigned>(),
-       "set given message as seen");
+       "set given message as seen")
+      ("poll_create_statechanges",
+       "create messages for state changes")
+      ("poll_except_states", po::value<std::string>()->default_value(""),
+       "list of states ignored in state creation")
+      ("poll_create_lowcredit",
+        "create messages for lowcredit");
 
     po::variables_map vm;
     // parse help and config filename options
@@ -174,7 +181,7 @@ int main(int argc, char **argv)
     );
     // parse options from config file
     std::ifstream configFile(vm["conf"].as<std::string>().c_str());
-    po::store(po::parse_config_file(configFile, fileDesc.add(configDesc)), vm);
+    po::store(po::parse_config_file(configFile, fileDesc), vm);
 
     if (vm.count("help") || argc == 1 ) {
       stdout << desc << "\n";
@@ -376,7 +383,7 @@ int main(int argc, char **argv)
         Register::Poll::Message *m = pmlist->getMessage(i);
         if (m) {
           m->textDump(std::cout);
-          std::cout << std::endl;			
+          std::cout << std::endl;	
         }
       }
     } else if (vm.count("poll_list_next")) {
@@ -398,7 +405,10 @@ int main(int argc, char **argv)
         std::cout << "NextId:" << pollMan->getNextMessageId(reg) << std::endl;
       }
       catch (...) { std::cout << "No message" << std::endl; }
-    }    
+    } else if (vm.count("poll_create_statechanges"))
+      pollMan->createStateMessages(vm["poll_except_states"].as<std::string>());
+    else if (vm.count("poll_create_lowcredit"))
+      pollMan->createLowCreditMessages();
     if (connected) db.Disconnect();
   }
   catch (std::exception& e) {
