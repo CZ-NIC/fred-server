@@ -56,7 +56,8 @@ am_libccreg_a_OBJECTS = libccreg_a-register.$(OBJEXT) \
 	libccreg_a-nsset.$(OBJEXT) libccreg_a-auth_info.$(OBJEXT) \
 	libccreg_a-invoice.$(OBJEXT) libccreg_a-documents.$(OBJEXT) \
 	libccreg_a-bank.$(OBJEXT) libccreg_a-info_buffer.$(OBJEXT) \
-	libccreg_a-poll.$(OBJEXT) libccreg_a-common_impl.$(OBJEXT)
+	libccreg_a-poll.$(OBJEXT) libccreg_a-common_impl.$(OBJEXT) \
+	libccreg_a-notify.$(OBJEXT)
 libccreg_a_OBJECTS = $(am_libccreg_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -177,7 +178,8 @@ top_srcdir = @top_srcdir@
 noinst_LIBRARIES = libccreg.a
 libccreg_a_SOURCES = register.cc zone.cc blacklist.cc domain.cc registrar.cc \
 		     object_impl.cc contact.cc nsset.cc auth_info.cc invoice.cc \
-		     documents.cc bank.cc info_buffer.cc poll.cc common_impl.cc
+		     documents.cc bank.cc info_buffer.cc poll.cc common_impl.cc \
+                     notify.cc
 
 libccreg_a_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CFLAGS) $(AM_CPPFLAGS)
 all: all-am
@@ -236,6 +238,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-domain.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-info_buffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-invoice.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-notify.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-nsset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-object_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-poll.Po@am__quote@
@@ -466,6 +469,20 @@ libccreg_a-common_impl.obj: common_impl.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='common_impl.cc' object='libccreg_a-common_impl.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-common_impl.obj `if test -f 'common_impl.cc'; then $(CYGPATH_W) 'common_impl.cc'; else $(CYGPATH_W) '$(srcdir)/common_impl.cc'; fi`
+
+libccreg_a-notify.o: notify.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-notify.o -MD -MP -MF $(DEPDIR)/libccreg_a-notify.Tpo -c -o libccreg_a-notify.o `test -f 'notify.cc' || echo '$(srcdir)/'`notify.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-notify.Tpo $(DEPDIR)/libccreg_a-notify.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='notify.cc' object='libccreg_a-notify.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-notify.o `test -f 'notify.cc' || echo '$(srcdir)/'`notify.cc
+
+libccreg_a-notify.obj: notify.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-notify.obj -MD -MP -MF $(DEPDIR)/libccreg_a-notify.Tpo -c -o libccreg_a-notify.obj `if test -f 'notify.cc'; then $(CYGPATH_W) 'notify.cc'; else $(CYGPATH_W) '$(srcdir)/notify.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-notify.Tpo $(DEPDIR)/libccreg_a-notify.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='notify.cc' object='libccreg_a-notify.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-notify.obj `if test -f 'notify.cc'; then $(CYGPATH_W) 'notify.cc'; else $(CYGPATH_W) '$(srcdir)/notify.cc'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
