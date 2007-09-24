@@ -69,9 +69,9 @@ public:
  // session manager
   void CreateSession(int max , long wait );
  // startiong session for registrar with language
-  bool LoginSession( int loginID , int registrarID , int language );
+  bool LoginSession( long loginID , int registrarID , int language );
   //  logout session
-  bool LogoutSession( int loginID );
+  bool LogoutSession( long loginID );
   void GarbageSesion(); // clear unused sessions
   // get RegistrarID
   int GetRegistrarID( int clientID );
@@ -172,6 +172,7 @@ public:
 
    CORBA::Boolean SaveOutXML(const char* svTRID, const char* XML);
  
+  void sessionClosed( CORBA::Long clientID);
 
   // methods corresponding to defined IDL attributes and operations
   ccReg::Response* GetTransaction(CORBA::Short errCode, CORBA::Long clientID, const char* clTRID, const ccReg::XmlErrors& errorCodes, ccReg::ErrorStrings_out errStrings);

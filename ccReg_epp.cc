@@ -244,7 +244,7 @@ for( i = 0 ; i < max ; i ++ )
 
 }
 // session manager 
-bool ccReg_EPP_i::LoginSession( int loginID , int registrarID , int language )
+bool ccReg_EPP_i::LoginSession( long loginID , int registrarID , int language )
 {
 int i;
 
@@ -286,7 +286,7 @@ LOG( ERROR_LOG , "SESSION MAX_CLIENTS %d"  , maxSession );
 return false;
 }
 
-bool  ccReg_EPP_i::LogoutSession( int loginID )
+bool  ccReg_EPP_i::LogoutSession( long loginID )
 {
 int i;
 
@@ -1178,6 +1178,11 @@ en =  GetZoneEnum( z );
 
 }
 
+
+void ccReg_EPP_i::sessionClosed( CORBA::Long clientID)
+{
+  LogoutSession(clientID);
+}
 
 
 
