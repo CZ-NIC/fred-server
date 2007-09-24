@@ -2401,7 +2401,18 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                                           DBsql.SET( "NotifyEmail", c.NotifyEmail );
                                           DBsql.SET( "VAT", c.VAT );
                                           DBsql.SET( "SSN", c.ident );
-                                          if(  c.identtype > ccReg::EMPTY )  DBsql.SET( "SSNtype" , c.identtype ); // type ssn
+                                          if(  c.identtype != ccReg::EMPTY ) {
+                                        	int identtype = 0;
+                                        	switch (c.identtype) {
+                                        	case ccReg::OP: identtype = 2; break;
+                                        	case ccReg::PASS: identtype = 3; break;
+                                        	case ccReg::ICO: identtype = 4; break;
+                                        	case ccReg::MPSV: identtype = 5; break;
+                                        	case ccReg::BIRTHDAY: identtype = 6; break;
+                                        	}
+                                        	DBsql.SET( "SSNtype" , identtype ); // type ssn
+                                          }
+                                          
 
 
 
@@ -2573,7 +2584,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                       DBsql.INTOVAL( "NotifyEmail", c.NotifyEmail );
                       DBsql.INTOVAL( "VAT", c.VAT );
                       DBsql.INTOVAL( "SSN", c.ident );
-                      if(  c.identtype > ccReg::EMPTY ) DBsql.INTO( "SSNtype");
+                      if(  c.identtype != ccReg::EMPTY ) DBsql.INTO( "SSNtype");
 
                       // disclose are write true or false 
                       DBsql.INTO( "DiscloseName" );
@@ -2607,7 +2618,17 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                       DBsql.VAL( c.NotifyEmail );
                       DBsql.VAL( c.VAT );
                       DBsql.VAL( c.ident );
-                      if(  c.identtype > ccReg::EMPTY ) DBsql.VALUE(   c.identtype );
+                      if(  c.identtype != ccReg::EMPTY ) {
+                    	int identtype = 0;
+                    	switch (c.identtype) {
+                    	case ccReg::OP: identtype = 2; break;
+                    	case ccReg::PASS: identtype = 3; break;
+                    	case ccReg::ICO: identtype = 4; break;
+                    	case ccReg::MPSV: identtype = 5; break;
+                    	case ccReg::BIRTHDAY: identtype = 6; break;
+                    	}
+                    	DBsql.VALUE(identtype);
+                      }
 
                       // insert DiscloseFlag by a  DefaultPolicy of server
                       DBsql.VALUE( setvalue_DISCLOSE( c.DiscloseName , c.DiscloseFlag )  );
