@@ -1,6 +1,10 @@
 #ifndef _NOTIFY_H_
 #define _NOTIFY_H_
-#include <mailer.h>
+
+#include "mailer.h"
+#include "contact.h"
+#include "nsset.h"
+#include "domain.h"
 #include "exceptions.h"
 
 class DB;
@@ -14,7 +18,13 @@ namespace Register
       /// notify contacts about state changes  
       virtual void notifyStateChanges() throw (SQL_ERROR) = 0;
       /// factory method
-      static Manager *create(DB *db, Mailer::Manager *m);
+      static Manager *create(
+        DB *db, 
+        Mailer::Manager *mm,
+        Contact::Manager *cm,
+        NSSet::Manager *nm,
+        Domain::Manager *dm
+      );
     };
   }
 }
