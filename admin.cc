@@ -508,7 +508,6 @@ ccReg_Admin_i::fillContact(
     )->getExternal())
       slist.push_back(c->getStatusByIdx(i)->getStatusId()); 
   }
-  if (slist.empty()) slist.push_back(0);
   cc->statusList.length(slist.size());
   for (unsigned i=0; i<slist.size(); i++)
     cc->statusList[i] = slist[i];  
@@ -598,7 +597,6 @@ ccReg_Admin_i::fillNSSet(ccReg::NSSetDetail* cn, Register::NSSet::NSSet* n)
     )->getExternal())
       slist.push_back(n->getStatusByIdx(i)->getStatusId()); 
   }
-  if (slist.empty()) slist.push_back(0);
   cn->statusList.length(slist.size());
   for (unsigned i=0; i<slist.size(); i++)
     cn->statusList[i] = slist[i];  
@@ -744,7 +742,6 @@ ccReg_Admin_i::fillDomain(ccReg::DomainDetail* cd, Register::Domain::Domain* d)
     )->getExternal())
       slist.push_back(d->getStatusByIdx(i)->getStatusId()); 
   }
-  if (slist.empty()) slist.push_back(0);
   cd->statusList.length(slist.size());
   for (unsigned i=0; i<slist.size(); i++)
     cd->statusList[i] = slist[i];
