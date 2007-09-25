@@ -151,8 +151,8 @@ namespace Register
       virtual bool checkEnumDomainName(DomainName& domain) const = 0;
       /// check if domain is under global zone e164.arpa
       virtual bool checkEnumDomainSuffix(const std::string& fqdn) const = 0;
-      /// return current count of enum domains
-      virtual unsigned long getEnumDomainCount() const = 0;
+      /// return current count of domains by zone
+      virtual unsigned long getDomainCount(const std::string& zone) const = 0;
       /// return current count of enum numbers
       virtual unsigned long getEnumNumberCount() const = 0;  
       /// create list of domains

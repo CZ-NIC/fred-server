@@ -199,12 +199,17 @@ ccReg_PageTable_i::getPageRowId(CORBA::Short row)
 
 ccReg_Admin_i::ccReg_Admin_i(
   const std::string _database, NameService *_ns, Conf& _cfg
-) : database(_database), ns(_ns), cfg(_cfg)
+) : database(_database), ns(_ns), cfg(_cfg) 
 {
+  // these object are shared between threads (CAUTION)
+  db.OpenDatabase(database.c_str());
+  regMan.reset(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  regMan->initStates();
 }
 
 ccReg_Admin_i::~ccReg_Admin_i() 
 {
+  db.Disconnect();
 /// clean sessions
 }
 
@@ -495,7 +500,18 @@ ccReg_Admin_i::fillContact(
   cc->discloseAddress = c->getDiscloseAddr(); 
   cc->discloseEmail = c->getDiscloseEmail(); 
   cc->discloseTelephone = c->getDiscloseTelephone(); 
-  cc->discloseFax = c->getDiscloseFax(); 
+  cc->discloseFax = c->getDiscloseFax();
+  std::vector<unsigned> slist;
+  for (unsigned i=0; i<c->getStatusCount(); i++) {
+    if (regMan->getStatusDesc(
+      c->getStatusByIdx(i)->getStatusId()
+    )->getExternal())
+      slist.push_back(c->getStatusByIdx(i)->getStatusId()); 
+  }
+  if (slist.empty()) slist.push_back(0);
+  cc->statusList.length(slist.size());
+  for (unsigned i=0; i<slist.size(); i++)
+    cc->statusList[i] = slist[i];  
 }
 
 ccReg::ContactDetail* 
@@ -575,6 +591,17 @@ ccReg_Admin_i::fillNSSet(ccReg::NSSetDetail* cn, Register::NSSet::NSSet* n)
     for (unsigned j=0; j<n->getHostByIdx(i)->getAddrCount(); j++)
       cn->hosts[i].inet[j] = DUPSTRC(n->getHostByIdx(i)->getAddrByIdx(j));
   }
+  std::vector<unsigned> slist;
+  for (unsigned i=0; i<n->getStatusCount(); i++) {
+    if (regMan->getStatusDesc(
+      n->getStatusByIdx(i)->getStatusId()
+    )->getExternal())
+      slist.push_back(n->getStatusByIdx(i)->getStatusId()); 
+  }
+  if (slist.empty()) slist.push_back(0);
+  cn->statusList.length(slist.size());
+  for (unsigned i=0; i<slist.size(); i++)
+    cn->statusList[i] = slist[i];  
 }
 
 ccReg::NSSetDetail* 
@@ -710,6 +737,17 @@ ccReg_Admin_i::fillDomain(ccReg::DomainDetail* cd, Register::Domain::Domain* d)
   cd->nssetHandle = DUPSTRFUN(d->getNSSetHandle);
   cd->admins.length(d->getAdminCount(1));
   cd->temps.length(d->getAdminCount(2));
+  std::vector<unsigned> slist;
+  for (unsigned i=0; i<d->getStatusCount(); i++) {
+    if (regMan->getStatusDesc(
+      d->getStatusByIdx(i)->getStatusId()
+    )->getExternal())
+      slist.push_back(d->getStatusByIdx(i)->getStatusId()); 
+  }
+  if (slist.empty()) slist.push_back(0);
+  cd->statusList.length(slist.size());
+  for (unsigned i=0; i<slist.size(); i++)
+    cd->statusList[i] = slist[i];
   try {
     for (unsigned i=0; i<d->getAdminCount(1); i++)
       cd->admins[i] = DUPSTRC(d->getAdminHandleByIdx(i,1));
@@ -1007,7 +1045,7 @@ ccReg_Admin_i::getInvoiceById(ccReg::TID id)
 }
 
 CORBA::Long 
-ccReg_Admin_i::getEnumDomainCount()
+ccReg_Admin_i::getDomainCount(const char *zone)
 {
   DB db;
   db.OpenDatabase(database.c_str());
@@ -1015,7 +1053,7 @@ ccReg_Admin_i::getEnumDomainCount()
     Register::Manager::create(&db,cfg.GetRestrictedHandles())
   );
   Register::Domain::Manager *dm = r->getDomainManager();
-  CORBA::Long ret = dm->getEnumDomainCount();
+  CORBA::Long ret = dm->getDomainCount(zone);
   db.Disconnect();
   return ret;
 }
@@ -1074,21 +1112,63 @@ ccReg_Admin_i::getDefaultCountry()
 }
 
 ccReg::ObjectStatusDescSeq* 
-ccReg_Admin_i::getDomainStatusDescList()
+ccReg_Admin_i::getDomainStatusDescList(const char *lang)
 {
-  return new ccReg::ObjectStatusDescSeq; //TODO
+  ccReg::ObjectStatusDescSeq* o = new ccReg::ObjectStatusDescSeq;
+  for (unsigned i=0; i<regMan->getStatusDescCount(); i++) {
+    const Register::StatusDesc *sd = regMan->getStatusDescByIdx(i); 
+    if (sd->getExternal() && sd->isForType(3)) {
+      o->length(o->length()+1);
+      try {
+        (*o)[o->length()-1].name = DUPSTRC(sd->getDesc(lang));
+      } catch (...) {
+        // unknown language
+        (*o)[o->length()-1].name = CORBA::string_dup("");
+      }
+      (*o)[o->length()-1].id = sd->getId();
+    }
+  }
+  return o;
 }
 
 ccReg::ObjectStatusDescSeq* 
-ccReg_Admin_i::getContactStatusDescList()
+ccReg_Admin_i::getContactStatusDescList(const char *lang)
 {
-  return new ccReg::ObjectStatusDescSeq; //TODO
+  ccReg::ObjectStatusDescSeq* o = new ccReg::ObjectStatusDescSeq;
+  for (unsigned i=0; i<regMan->getStatusDescCount(); i++) {
+    const Register::StatusDesc *sd = regMan->getStatusDescByIdx(i); 
+    if (sd->getExternal() && sd->isForType(1)) {
+      o->length(o->length()+1);
+      try {
+        (*o)[o->length()-1].name = DUPSTRC(sd->getDesc(lang));
+      } catch (...) {
+        // unknown language
+        (*o)[o->length()-1].name = CORBA::string_dup("");
+      }
+      (*o)[o->length()-1].id = sd->getId();
+    }
+  }
+  return o;
 }
 
 ccReg::ObjectStatusDescSeq* 
-ccReg_Admin_i::getNSSetStatusDescList()
+ccReg_Admin_i::getNSSetStatusDescList(const char *lang)
 {
-  return new ccReg::ObjectStatusDescSeq; // TODO
+  ccReg::ObjectStatusDescSeq* o = new ccReg::ObjectStatusDescSeq;
+  for (unsigned i=0; i<regMan->getStatusDescCount(); i++) {
+    const Register::StatusDesc *sd = regMan->getStatusDescByIdx(i); 
+    if (sd->getExternal() && sd->isForType(2)) {
+      o->length(o->length()+1);
+      try {
+        (*o)[o->length()-1].name = DUPSTRC(sd->getDesc(lang));
+      } catch (...) {
+        // unknown language
+        (*o)[o->length()-1].name = CORBA::string_dup("");
+      }
+      (*o)[o->length()-1].id = sd->getId();
+    }
+  }
+  return o;
 }
 
 ccReg::TID 

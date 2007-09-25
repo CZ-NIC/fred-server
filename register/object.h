@@ -36,6 +36,8 @@ namespace Register
     /// return description in selected language
     virtual const std::string& getDesc(const std::string& lang) const 
       throw (BAD_LANG) = 0;
+    /// return flag if status is supported by given type
+    virtual bool isForType(short type) const = 0;
   };
   /// Request for inclusion status in filter
   struct StatusFilter {

@@ -693,13 +693,14 @@ namespace Register
         return  i != std::string::npos && i + esuf.size() == fqdn.size();
       }
       /// interface method implementation
-      unsigned long getEnumDomainCount() const
+      unsigned long getDomainCount(const std::string& zone) const
       {
         std::stringstream sql;
         unsigned long ret = 0;
         sql << "SELECT COUNT(*) "
             << "FROM object_registry o, domain d, zone z "
-            << "WHERE d.id=o.id AND d.zone=z.id AND z.fqdn='0.2.4.e164.arpa'";
+            << "WHERE d.id=o.id AND d.zone=z.id "
+            << "AND z.fqdn='" << zone << "'";
         if (db->ExecSelect(sql.str().c_str()) && db->GetSelectRows() == 1)
           ret =  atol(db->GetFieldValue(0,0));
         db->FreeSelect();

@@ -13,10 +13,20 @@ namespace Register
    std::string name;
    bool external;
    std::map<std::string,std::string> desc;
+   bool contact;
+   bool nsset;
+   bool domain;
   public:
-   StatusDescImpl(TID _id, const std::string& _name, bool _external)
+   StatusDescImpl(
+     TID _id, const std::string& _name, bool _external, 
+     const std::string& types
+   )
     : id(_id), name(_name), external(_external)
-   {}
+   {
+     contact = types.find("1") != std::string::npos;
+     nsset = types.find("2") != std::string::npos;
+     domain = types.find("3") != std::string::npos;
+   }
    void addDesc(const std::string& lang, const std::string text)
    {
      desc[lang] = text;
@@ -43,6 +53,10 @@ namespace Register
 	 std::map<std::string,std::string>::const_iterator i = desc.find(lang);
 	 if (i == desc.end()) throw BAD_LANG();
      return i->second;
+   }
+   virtual bool isForType(short type) const
+   {
+     return type == 1 ? contact : type == 2 ? nsset : domain;
    }
  };
  class ManagerImpl : virtual public Manager
@@ -173,15 +187,18 @@ namespace Register
    }
    virtual void initStates() throw (SQL_ERROR)
    {
-     if (!db->ExecSelect("SELECT id, name, external FROM enum_object_states")) 
-       throw SQL_ERROR();
+     if (!db->ExecSelect(
+       "SELECT id, name, external, ARRAY_TO_STRING(types,',') "
+       "FROM enum_object_states")
+     ) throw SQL_ERROR();
      statusList.clear();
      for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
        statusList.push_back(
          StatusDescImpl( 
            STR_TO_ID(db->GetFieldValue(i,0)),
            db->GetFieldValue(i,1),
-          *db->GetFieldValue(i,2) == 't'
+           *db->GetFieldValue(i,2) == 't',
+           db->GetFieldValue(i,3)
          )
        );
      }
@@ -198,9 +215,9 @@ namespace Register
          it->addDesc(db->GetFieldValue(i,1),db->GetFieldValue(i,2));
      }
      // hack for OK state
-     statusList.push_back(StatusDescImpl(0,"ok",true));
+     statusList.push_back(StatusDescImpl(0,"ok",true,"1,2,3"));
      statusList.back().addDesc("CS","Objekt je bez omezení");
-     statusList.back().addDesc("EN","Objekt is without restriction");
+     statusList.back().addDesc("EN","Objekt is without restrictions");
    }
    virtual const StatusDesc* getStatusDesc(TID status) const
    {
@@ -209,6 +226,15 @@ namespace Register
      );
      if (it == statusList.end()) return NULL;
      return &(*it);
+   }
+   virtual unsigned getStatusDescCount() const
+   {
+     return statusList.size();
+   }
+   virtual const StatusDesc* getStatusDescByIdx(unsigned idx) const
+   {
+     if (idx >= statusList.size()) return NULL;
+     return &statusList[idx];
    }
  };
  Manager *Manager::create(DB *db, bool restrictedHandles)

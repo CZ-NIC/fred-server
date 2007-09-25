@@ -276,6 +276,8 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   ); 
   NameService *ns;
   Conf& cfg;
+  DB db;
+  std::auto_ptr<Register::Manager> regMan;
  public:
   ccReg_Admin_i(const std::string database, NameService *ns, Conf& _cfg);
   virtual ~ccReg_Admin_i();
@@ -331,15 +333,15 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   ccReg::Mailing::Detail* getEmailById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound);
   // statistics
-  CORBA::Long getEnumDomainCount();
+  CORBA::Long getDomainCount(const char *zone);
   CORBA::Long getEnumNumberCount();
   // counters
   ccReg::EPPActionTypeSeq* getEPPActionTypeList();
   ccReg::CountryDescSeq* getCountryDescList();
   char* getDefaultCountry();
-  ccReg::ObjectStatusDescSeq* getDomainStatusDescList();
-  ccReg::ObjectStatusDescSeq* getContactStatusDescList();
-  ccReg::ObjectStatusDescSeq* getNSSetStatusDescList();
+  ccReg::ObjectStatusDescSeq* getDomainStatusDescList(const char *lang);
+  ccReg::ObjectStatusDescSeq* getContactStatusDescList(const char *lang);
+  ccReg::ObjectStatusDescSeq* getNSSetStatusDescList(const char *lang);
   /// testovaci fce na typ objektu
   void checkHandle(const char* handle, ccReg::CheckHandleTypeSeq_out ch);
   ccReg::TID createAuthInfoRequest(

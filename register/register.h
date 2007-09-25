@@ -78,6 +78,10 @@ namespace Register
     virtual void initStates() = 0;
     /// return status description
     virtual const StatusDesc* getStatusDesc(TID status) const = 0;
+    /// return status list count 
+    virtual unsigned getStatusDescCount() const = 0;
+    /// return status desctription by index
+    virtual const StatusDesc* getStatusDescByIdx(unsigned idx) const = 0;
     /// factory method
     static Manager *create(DB *db, bool restrictedHandles);    
   };
