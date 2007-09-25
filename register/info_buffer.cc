@@ -100,7 +100,14 @@ namespace Register
             break;
           case T_DOMAINS_BY_CONTACT:
             list.reset(dm->createList());
+            list->setWildcardExpansion(false);
             LIST(Register::Domain::List)->setRegistrantHandleFilter(request);
+            list->fillTempTable(false);
+            LIST(Register::Domain::List)->setRegistrantHandleFilter("");
+            LIST(Register::Domain::List)->setAdminHandleFilter(request);
+            list->fillTempTable(false);
+            LIST(Register::Domain::List)->setAdminHandleFilter("");
+            LIST(Register::Domain::List)->setTempHandleFilter(request);
             break;
           case T_LIST_NSSETS:
             list.reset(nm->createList());
@@ -119,6 +126,7 @@ namespace Register
             LIST(Register::Contact::List)->setRegistrarFilter(registrar);
             break;
         };
+        list->setWildcardExpansion(false);
         list->fillTempTable(false);
         std::stringstream sql;
         // if there is no record for given registrar in

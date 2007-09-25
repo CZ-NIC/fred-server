@@ -273,7 +273,9 @@ namespace Register
       {
         zoneStatus = status;
       }
-      void makeQuery(bool count, bool limit, std::stringstream& sql) const
+      void makeQuery(
+        bool count, bool limit, std::stringstream& sql
+      ) const
       {
         std::stringstream from, where;
         sql.str("");
@@ -387,6 +389,8 @@ namespace Register
           where << "AND d.nsset=him.nssetid ";
           SQL_HANDLE_FILTER(where,"host(him.ipaddr)",hostIP);
         }
+        if (add) where << "AND d.id NOT IN "
+                       << "(SELECT id FROM " << getTempTableName() << ") ";
         if (!count) where << "ORDER BY d.id ASC ";
         if (limit) where << "LIMIT " << limitCount << " ";
         sql << from.rdbuf();

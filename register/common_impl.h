@@ -34,8 +34,9 @@ namespace Register
     DB *db;
     ListType olist;
     int ptrIdx;
-   public:
-	~CommonListImpl();
+    bool add;
+   public: 
+    ~CommonListImpl();
     CommonListImpl(DB *db);
     virtual void setIdFilter(TID id);
     unsigned getCount() const;

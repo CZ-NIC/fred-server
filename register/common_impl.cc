@@ -33,7 +33,8 @@ Register::CommonListImpl::CommonListImpl(DB *_db) :
   limitCount(1000),
   wcheck(true),
   db(_db),
-  ptrIdx(-1)
+  ptrIdx(-1),
+  add(false)
 {
 }
 
@@ -84,13 +85,18 @@ Register::CommonListImpl::fillTempTable(bool limit) const throw (SQL_ERROR)
 {
   // this code is same fo every object should be inherited
   std::stringstream sql;
-  sql << "SELECT create_tmp_table('"  << getTempTableName() << "')";
-  if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-  db->FreeSelect();
-  sql.str("");
+  if (!add) {
+    sql << "SELECT create_tmp_table('"  << getTempTableName() << "')";
+    if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+    db->FreeSelect();
+    sql.str("");
+  }
   makeQuery(false,limit,sql);
   if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
+  // TODO: temporary add solution, fix with multiple filter objects
+  ((CommonListImpl *)this)->add = true;
 }
+
 void 
 Register::CommonListImpl::makeRealCount() throw (SQL_ERROR)
 {
