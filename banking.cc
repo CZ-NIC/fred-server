@@ -540,7 +540,7 @@ if( !readConfig ) // if not set use default config
  // start syslog
 #ifdef SYSLOG
     setlogmask ( LOG_UPTO(  config.GetSYSLOGlevel()  )   );
-    openlog ( "banking" , LOG_CONS | LOG_PID | LOG_NDELAY,  config.GetSYSLOGfacility() );
+    openlog ( "banking" , LOG_PERROR | LOG_CONS | LOG_PID | LOG_NDELAY,  config.GetSYSLOGfacility() );
 #endif
 
 printf("connect DB string [%s]\n" , config.GetDBconninfo() ); 
@@ -588,7 +588,14 @@ for( i = 1 ;   i < argc ; i ++ )
     numrec =  gpc.ReadGPCFile(argv[i+1] );
 
     
-   if( numrec <  0 ) LOG( ALERT_LOG , "chyba nacitani souboru %s" , argv[i+1]  );
+   if( numrec <  0 ) {
+	   LOG( ALERT_LOG , "chyba nacitani souboru %s" , argv[i+1]  );
+#ifdef SYSLOG
+	  closelog ();
+#endif
+	   exit(-1);
+
+   }
    else
    {
 
@@ -646,5 +653,6 @@ for( i = 1 ;   i < argc ; i ++ )
   closelog ();
 #endif
 
+  return 0;
 }
 
