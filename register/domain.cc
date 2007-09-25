@@ -251,6 +251,7 @@ namespace Register
       virtual void setFQDNFilter(const std::string& _fqdn)
       {
         fqdn = _fqdn;
+        boost::algorithm::to_lower(fqdn);
       }
       virtual void setExpirationDateFilter(time_period period)
       {
@@ -630,11 +631,13 @@ namespace Register
       }
       /// interface method implementation  
       CheckAvailType checkAvail(
-        const std::string& fqdn,
+        const std::string& _fqdn,
         NameIdPair& conflictFqdn
       ) const 
         throw (SQL_ERROR)
       {
+        std::string fqdn = _fqdn;
+        boost::algorithm::to_lower(fqdn);
         // clear output
         conflictFqdn.id = 0;
         conflictFqdn.name = "";
@@ -653,7 +656,7 @@ namespace Register
         else 
           sql << "SELECT o.name, o.id FROM object_registry o "
               << "WHERE o.type=3 AND o.erdate ISNULL AND "
-              << "o.name=LOWER('" << fqdn << "') "
+              << "o.name='" << fqdn << "' "
               << "LIMIT 1";        
         if (!db->ExecSelect(sql.str().c_str())) {
           db->FreeSelect();
