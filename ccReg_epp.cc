@@ -2759,8 +2759,8 @@ if(  (regID = GetRegistrarID( clientID ) ) )
 
     }
 
-   
-
+    
+    if (!ret->code) {
    
     if( DBsql.BeginTransaction()  )
       {
@@ -2775,12 +2775,44 @@ if(  (regID = GetRegistrarID( clientID ) ) )
                else
                  {
 
-                  // if  authInfo is ok  
-                    if(  DBsql.AuthTable(   "OBJECT"  , (char *)authInfo , id )  == false  )
-                      {       
+                  // if  authInfo is ok
+            	   std::stringstream sql;
+            	   switch (act) {
+            	   case EPP_ContactTransfer:
+            		   sql << "SELECT authinfopw FROM object c "
+            		       << "WHERE c.id=" << id; 
+                       break;
+            	   case EPP_NSsetTransfer:
+            		   sql << "SELECT n.authinfopw FROM object n "
+            		       << "WHERE n.id=" << id << " UNION " 
+              		       << "SELECT c.authinfopw FROM nsset_contact_map ncm, object c "
+              		       << "WHERE ncm.nssetid=" << id << " AND ncm.contactid=c.id "; 
+                       break;
+            	   case EPP_DomainTransfer:
+            		   sql << "SELECT d.authinfopw FROM object d "
+            		       << "WHERE d.id=" << id << " UNION " 
+             		       << "SELECT r.authinfopw FROM domain d, object r "
+                		   << "WHERE d.registrant=r.id AND d.id=" << id << " UNION " 
+              		       << "SELECT c.authinfopw FROM domain_contact_map dcm, object c "
+              		       << "WHERE dcm.domainid=" << id << " AND dcm.contactid=c.id "
+              		       << "AND dcm.role=1";
+                       break;
+            	   }
+                   ret->code = COMMAND_AUTOR_ERROR; 
+            	   if (!DBsql.ExecSelect(sql.str().c_str())) {
+                       LOG( WARNING_LOG , "autorization failed - sql error");
+            	   } else {
+                     for (unsigned i=0; i < (unsigned)DBsql.GetSelectRows(); i++) {
+                       if (!strcmp(DBsql.GetFieldValue(i,0),(char *)authInfo)) {
+                        ret->code = 0;
+                        break;
+                       }
+                     }
+                     DBsql.FreeSelect();
+            	   }
+            	   if (ret->code) {       
                          LOG( WARNING_LOG , "autorization failed");
-                         ret->code = COMMAND_AUTOR_ERROR; 
-                      }
+                    }
                     else
                       {
 
@@ -2850,7 +2882,7 @@ if(  (regID = GetRegistrarID( clientID ) ) )
          
     DBsql.QuitTransaction( ret->code );
    }
-
+      } //test code before begin tr
   
    ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->code  ) ) ;
  }
