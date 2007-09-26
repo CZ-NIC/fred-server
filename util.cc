@@ -340,7 +340,7 @@ char str[32];
 long price;
 int i , j  , len;
 
-strcpy(str, priceStr, sizeof(str)-1);
+strncpy(str, priceStr, sizeof(str)-1);
 len = strlen( priceStr );
 for( i = 0 ;i < len  ; i ++ )
 {
@@ -458,7 +458,7 @@ void convert_rfc3339_date( char *dateStr , const char *string )
 time_t t;
 
 t =  get_time_t( string ); // to  GMT
-if( t <= 0 ) strcpy( dateStr , "" ); //  ERROR
+if( t <= 0 ) dateStr[0] = (char)NULL; //  ERROR
 
 else get_rfc3339_timestamp(  t , dateStr , true); // return  local date 
 }
@@ -469,7 +469,7 @@ void convert_rfc3339_timestamp( char *dateStr , const char *string )
 time_t t;
 
 t =  get_time_t( string );
-if( t <= 0 ) strcpy( dateStr , "" ); //  ERROR
+if( t <= 0 ) dateStr[0] = (char)NULL; //  ERROR
 // return string in rfc3339  like a date time with time zone 
 else get_rfc3339_timestamp(  t , dateStr , false );
 }
