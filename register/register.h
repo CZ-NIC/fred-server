@@ -82,6 +82,8 @@ namespace Register
     virtual unsigned getStatusDescCount() const = 0;
     /// return status desctription by index
     virtual const StatusDesc* getStatusDescByIdx(unsigned idx) const = 0;
+    /// globaly update all states of all objects
+    virtual const StatusDesc* updateObjectStates() const throw (SQL_ERROR) = 0;
     /// factory method
     static Manager *create(DB *db, bool restrictedHandles);    
   };

@@ -7,6 +7,8 @@
 #include "info_buffer.h"
 #include "log.h"
 #include "poll.h"
+#include "register.h"
+#include "notify.h"
 
 #include <iostream>
 #include <fstream>
@@ -165,18 +167,33 @@ int main(int argc, char **argv)
        "set given message as seen")
       ("poll_create_statechanges",
        "create messages for state changes")
-      ("poll_except_states", po::value<std::string>()->default_value(""),
-       "list of states ignored in state creation")
+      ("poll_except_types", po::value<std::string>()->default_value(""),
+       "list of poll message types ignored in creation (only states now)")
       ("poll_create_lowcredit",
         "create messages for lowcredit");
 
+    po::options_description objDesc("Objects options");
+    objDesc.add_options()
+      ("object_update_states",
+       "globaly update all states of all objects");
+
+    po::options_description notDesc("Notification options");
+    notDesc.add_options()
+      ("notify_state_changes",
+       "send emails to contacts about object state changes")
+      ("notify_except_types", po::value<std::string>()->default_value(""),
+       "list of notification types ignored in notification")
+      ("notify_limit", po::value<unsigned>()->default_value(0),
+       "limit for number of emails generated in one pass (0=no limit)");
+
+    
     po::variables_map vm;
     // parse help and config filename options
     po::store(
       po::parse_command_line(
         argc, argv, 
         desc.add(configDesc).add(invoiceDesc).add(aiDesc).add(bankDesc).
-        add(infoBufferDesc).add(pollDesc)
+        add(infoBufferDesc).add(pollDesc).add(objDesc).add(notDesc)
       ), vm
     );
     // parse options from config file
@@ -406,17 +423,41 @@ int main(int argc, char **argv)
       }
       catch (...) { std::cout << "No message" << std::endl; }
     } else if (vm.count("poll_create_statechanges"))
-      pollMan->createStateMessages(vm["poll_except_states"].as<std::string>());
+      pollMan->createStateMessages(vm["poll_except_types"].as<std::string>());
     else if (vm.count("poll_create_lowcredit"))
       pollMan->createLowCreditMessages();
+    
+    if (vm.count("object_update_states")) {
+      std::auto_ptr<Register::Manager> regMan(
+        Register::Manager::create(&db,vm["restricted_handles"].as<unsigned>())
+      );
+      regMan->updateObjectStates();
+    }
+
+    if (vm.count("notify_state_changes")) {
+      std::auto_ptr<Register::Notify::Manager> notifyMan(
+        Register::Notify::Manager::create(
+          &db, &mm, conMan.get(), nssMan.get(), domMan.get()
+        )
+      );
+      notifyMan->notifyStateChanges(
+        vm["notify_except_types"].as<std::string>(),
+        vm["notify_limit"].as<unsigned>()
+      );
+    }
+    
+    
     if (connected) db.Disconnect();
   }
   catch (std::exception& e) {
-    stdout << e.what() << "\n";
+    std::cerr << e.what() << "\n";
     if (connected) db.Disconnect();
+    return 2;
   }
   catch (Register::SQL_ERROR) {
-    stdout << "SQL ERROR \n";
+    std::cerr << "SQL ERROR \n";
     if (connected) db.Disconnect();
+    return 1;
   }
+  return 0;
 }

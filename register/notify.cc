@@ -1,5 +1,6 @@
 #include "notify.h"
 #include "dbsql.h"
+#include "log.h"
 #include <sstream>
 
 namespace Register
@@ -136,9 +137,27 @@ namespace Register
         std::stringstream sql;
         sql << "INSERT INTO notify_statechange (state_id,type,mail_id) "
             << "VALUES (" << state << "," << notifyType << "," << mail << ")";
-        if (db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
+        if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
       }
-      void notifyStateChanges() throw (SQL_ERROR)
+      struct NotifyRequest { 
+        TID state_id;
+        unsigned type; ///< notification id
+        std::string mtype; ///< template name
+        unsigned emails; ///< emails flag (1=normal(admins), 2=techs)
+        TID obj_id;
+        unsigned obj_type;
+        NotifyRequest(
+          TID _state_id, unsigned _type, const std::string& _mtype,
+          unsigned _emails, TID _obj_id, unsigned _obj_type
+        ) :
+          state_id(_state_id), type(_type), mtype(_mtype), emails(_emails),
+          obj_id(_obj_id), obj_type(_obj_type)
+        {}
+      };
+      void notifyStateChanges(
+        const std::string& exceptList,
+        unsigned limit
+      ) throw (SQL_ERROR)
       {
         std::stringstream sql;
         sql << "SELECT nt.state_id, nt.type, "
@@ -151,45 +170,59 @@ namespace Register
             << " WHERE s.object_id=obr.id AND obr.type=nm.obj_type "
             << " AND s.state_id=nm.state_id AND mt.id=nm.mail_type_id) AS nt "
             << "LEFT JOIN notify_statechange ns ON ("
-            << "nt.state_id=ns.state_id AND nt.type=ns.type)";
+            << "nt.state_id=ns.state_id AND nt.type=ns.type) "
+            << "WHERE ns.state_id ISNULL ";
+        if (!exceptList.empty())
+        	sql << "AND nt.type NOT IN (" << exceptList << ") ";
+        if (limit)
+        	sql << "LIMIT " << limit;
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          TID state = STR_TO_ID(db->GetFieldValue(i,0));
-          // notification id
-          unsigned ntype = atoi(db->GetFieldValue(i,1));
-          // mail type id
-          std::string mtype = db->GetFieldValue(i,2);
-          // emails flag (1=normal(admins), 2=techs)
-          unsigned emailsType = atoi(db->GetFieldValue(i,3));
-          // object id
-          TID obj = STR_TO_ID(db->GetFieldValue(i,4));
-          // emails flag (1=normal(admins), 2=techs)
-          unsigned otype = atoi(db->GetFieldValue(i,5));
+        std::vector<NotifyRequest> nlist;
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
+          nlist.push_back(NotifyRequest(
+            STR_TO_ID(db->GetFieldValue(i,0)),
+            atoi(db->GetFieldValue(i,1)),
+            db->GetFieldValue(i,2),
+            atoi(db->GetFieldValue(i,3)),
+            STR_TO_ID(db->GetFieldValue(i,4)),
+            atoi(db->GetFieldValue(i,5))
+          ));
+        db->FreeSelect();
+        std::vector<NotifyRequest>::const_iterator i = nlist.begin();
+        for (;i!=nlist.end();i++) {
           Register::Mailer::Parameters params;
           // TODO: handles are obsolete, should consider alternative solution
           Register::Mailer::Handles handles;
           Register::Mailer::Attachments attach;
           std::string emails;
           try {
-            switch (otype) {
+            switch (i->obj_type) {
              case 1: // contact
-              fillContactParams(obj,params);
-              emails = getContactEmails(obj);
+              fillContactParams(i->obj_id,params);
+              emails = getContactEmails(i->obj_id);
               break;
              case 2: // nsset
-              fillNSSetParams(obj,params);
-              emails = getNSSetTechEmails(obj);
+              fillNSSetParams(i->obj_id,params);
+              emails = getNSSetTechEmails(i->obj_id);
               break;
              case 3: // domain
-              fillDomainParams(obj,params);
-              emails = (emailsType == 1 ? getDomainAdminEmails(obj) : 
-                                          getDomainTechEmails(obj));
+              fillDomainParams(i->obj_id,params);
+              emails = (i->emails == 1 ? getDomainAdminEmails(i->obj_id) : 
+                                         getDomainTechEmails(i->obj_id));
               break;
             }
-            TID mail = mm->sendEmail("",emails,"",mtype,params,handles,attach);
-            saveNotification(state,ntype,mail);
+            TID mail = mm->sendEmail(
+              "",emails,"",i->mtype,params,handles,attach
+            );
+            saveNotification(i->state_id,i->type,mail);
           } 
-          catch (...) { break; }
+          catch (...) {
+            LOG(
+              ERROR_LOG,
+              "Notfication wasn't successful (state=%d, type=%d) ",
+              i->state_id, i->type
+            );
+          }
         }
       }
     };

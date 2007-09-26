@@ -16,7 +16,10 @@ namespace Register
     {
      public:
       /// notify contacts about state changes  
-      virtual void notifyStateChanges() throw (SQL_ERROR) = 0;
+      virtual void notifyStateChanges(
+    	const std::string& exceptList,
+    	unsigned limit
+      ) throw (SQL_ERROR) = 0;
       /// factory method
       static Manager *create(
         DB *db, 

@@ -236,6 +236,12 @@ namespace Register
      if (idx >= statusList.size()) return NULL;
      return &statusList[idx];
    }
+   virtual const StatusDesc* updateObjectStates() const throw (SQL_ERROR)
+   {
+     if (!db->ExecSelect("SELECT update_object_states()"))
+       throw SQL_ERROR();
+     db->FreeSelect();
+   }
  };
  Manager *Manager::create(DB *db, bool restrictedHandles)
  {
