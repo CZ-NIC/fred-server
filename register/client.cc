@@ -184,9 +184,10 @@ int main(int argc, char **argv)
       ("notify_except_types", po::value<std::string>()->default_value(""),
        "list of notification types ignored in notification")
       ("notify_limit", po::value<unsigned>()->default_value(0),
-       "limit for number of emails generated in one pass (0=no limit)");
+       "limit for number of emails generated in one pass (0=no limit)")
+      ("notify_debug",
+       "don't do anything, just list xml with values");
 
-    
     po::variables_map vm;
     // parse help and config filename options
     po::store(
@@ -442,7 +443,8 @@ int main(int argc, char **argv)
       );
       notifyMan->notifyStateChanges(
         vm["notify_except_types"].as<std::string>(),
-        vm["notify_limit"].as<unsigned>()
+        vm["notify_limit"].as<unsigned>(),
+        vm.count("notify_debug") ? &std::cout : NULL
       );
     }
     

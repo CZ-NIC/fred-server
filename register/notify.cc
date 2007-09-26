@@ -50,7 +50,7 @@ namespace Register
       {
         std::stringstream sql;
         sql << "SELECT c.email "
-            << "FROM domain d, nsset_contact_map ncm contact c "
+            << "FROM domain d, nsset_contact_map ncm, contact c "
             << "WHERE d.nsset=ncm.nssetid AND ncm.contactid=c.id "
             << "AND d.id=" << domain;
         return getEmailList(sql);
@@ -156,7 +156,8 @@ namespace Register
       };
       void notifyStateChanges(
         const std::string& exceptList,
-        unsigned limit
+        unsigned limit,
+        std::ostream *debugOutput
       ) throw (SQL_ERROR)
       {
         std::stringstream sql;
@@ -188,6 +189,7 @@ namespace Register
             atoi(db->GetFieldValue(i,5))
           ));
         db->FreeSelect();
+        if (debugOutput) *debugOutput << "<notifications>";
         std::vector<NotifyRequest>::const_iterator i = nlist.begin();
         for (;i!=nlist.end();i++) {
           Register::Mailer::Parameters params;
@@ -211,6 +213,16 @@ namespace Register
                                          getDomainTechEmails(i->obj_id));
               break;
             }
+            if (debugOutput) {
+              *debugOutput << "<notify>"
+                           << "<emails>" << emails << "</emails>"
+                           << "<template>" << i->mtype << "</template>";
+              Register::Mailer::Parameters::const_iterator ci = params.begin();
+              for (;ci!=params.end();ci++)
+                *debugOutput << "<param><name>" << ci->first << "</name>"
+                             << "<value>" << ci->second << "</value></param>";
+              *debugOutput << "</notify>";
+            }
             TID mail = mm->sendEmail(
               "",emails,"",i->mtype,params,handles,attach
             );
@@ -223,6 +235,7 @@ namespace Register
               i->state_id, i->type
             );
           }
+          if (debugOutput) *debugOutput << "</notifications>";
         }
       }
     };

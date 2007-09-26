@@ -18,7 +18,8 @@ namespace Register
       /// notify contacts about state changes  
       virtual void notifyStateChanges(
     	const std::string& exceptList,
-    	unsigned limit
+    	unsigned limit,
+    	std::ostream *debugOutput
       ) throw (SQL_ERROR) = 0;
       /// factory method
       static Manager *create(
