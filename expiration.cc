@@ -243,7 +243,7 @@ char checkdateStr[16];
 char exregdateStr[16];
 char dnsdateStr[16];
 int regID  ,  registrantID ,nssetID;
-ID mailID , tech_mailID;
+ID mailID = 0, tech_mailID = 0;
 ID mail_type , tech_mail_type;
 unsigned int i , num=0;
 time_t t;

@@ -1061,7 +1061,7 @@ return dph;
 double DB::GetSystemKOEF() // return VAT count parametr for count price without VAT
 {
 char sqlString[128] = "select koef   from price_vat where valid_to > now() or valid_to is null;" ;
-double koef;
+double koef = 0;
 
 if( ExecSelect( sqlString ) )
   {

@@ -142,45 +142,43 @@ else return -1; // err
 // close invoice to registar handle for zone make taxDate to the todateStr
 int factoring( const char *database  ,     const char *registrarHandle  ,  const char  *zone_fqdn , char *taxdateStr , char *todateStr )
 {
-DB db;
-int regID;
-char timestampStr[32];
-int invoiceID;
-int zone;
-int ret = 0;
+    DB db;
+    int regID;
+    char timestampStr[32];
+    int invoiceID = -1;
+    int zone;
+    int ret = 0;
 
-if( db.OpenDatabase( database  ) )
-{
+    if( db.OpenDatabase( database  ) )
+    {
 
-LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
+        LOG( LOG_DEBUG , "successfully connected to DATABASE %s"  , database);
 
-if( db.BeginTransaction() )
- {
+        if( db.BeginTransaction() )
+        {
 
-if(  (regID = db.GetRegistrarID( (char * )  registrarHandle ) )  )
-  {
-   if( ( zone =  db.GetNumericFromTable( "zone", "id", "fqdn", zone_fqdn ) )  )
-     {
+            if(  (regID = db.GetRegistrarID( (char * )  registrarHandle ) )  )
+            {
+                if( ( zone =  db.GetNumericFromTable( "zone", "id", "fqdn", zone_fqdn ) )  )
+                {
  
-          get_timestamp( timestampStr  , get_utctime_from_localdate(  todateStr ) );
-          // make invoice
-          invoiceID = db.MakeFactoring( regID , zone , timestampStr  , taxdateStr );
+                    get_timestamp( timestampStr  , get_utctime_from_localdate(  todateStr ) );
+                    // make invoice
+                    invoiceID = db.MakeFactoring( regID , zone , timestampStr  , taxdateStr );
           
-      }
-   else LOG( LOG_ERR , "unkow zone %s\n" , zone_fqdn );
-  }
-
-  else
-  {
-     LOG( LOG_ERR , "unkow registrarHandle %s" , registrarHandle );
-  }
-
-    if( invoiceID >=0 ) ret = CMD_OK; // OK succesfully invocing
-
-    db.QuitTransaction( ret );
-}
-
-db.Disconnect();
+                }
+                else
+                    LOG( LOG_ERR , "unknown zone %s\n" , zone_fqdn );
+            }
+            else
+                LOG( LOG_ERR , "unknown registrarHandle %s" , registrarHandle );
+            
+            if( invoiceID >=0 ) ret = CMD_OK; // OK succesfully invocing
+            
+            db.QuitTransaction( ret );
+        }
+        
+        db.Disconnect();
 }
 
 if( ret ) return invoiceID;
