@@ -122,7 +122,7 @@ if( db.BeginTransaction() )
                     else { ret = 0 ; break; }
                        
                 }
-           delete regID;
+           delete[] regID;
         }
 
     }

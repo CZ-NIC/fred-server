@@ -3512,7 +3512,7 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
       DBsql.Disconnect();
     }
 
-delete tch;
+delete[] tch;
 
 
   // EPP exception
@@ -3941,8 +3941,8 @@ if( DBsql.OpenDatabase( database ) )
   }
 
 // free mem
-delete tch_add;
-delete tch_rem;
+delete[] tch_add;
+delete[] tch_rem;
 
   // EPP exception
   if(  ret->code > COMMAND_EXCEPTION) EppError(  ret->code , ret->msg ,  ret->svTRID , errors );
