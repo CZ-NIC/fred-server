@@ -1809,11 +1809,11 @@ if( ExecSelect( sqlString ) )
        {
           delete[] memHandle;
           LOG( SQL_LOG , "re-alloc memHandle");
-          memHandle = new char[size+1];   
+          memHandle = new char[size+1];
         }
        else { LOG( SQL_LOG , "alloc memHandle");  memHandle = new char[size+1]; } 
  
-      strncpy( memHandle, GetFieldValue( 0 , 0 ), size );
+      strncpy( memHandle, GetFieldValue( 0 , 0 ), size + 1);
       LOG( SQL_LOG , "GetValueFromTable \'%s\' field %s  value  %s ->  %s" , table ,  fname , value  , memHandle );
       FreeSelect();      
       return memHandle;
