@@ -98,26 +98,22 @@ LOG( NOTICE_LOG , "EPPTransferMessage to registrar : %d trasfer objectID %d new 
  xmlString[0] = 0 ; // empty string
 
 // get registrar handle 
-strcpy( regHandle ,   GetRegistrarHandle( regID ) );
+strncpy( regHandle, GetRegistrarHandle( regID ), sizeof(regHandle)-1);
 
 switch( type )
 {
  case 1: // contact
         if( SELECTOBJECTID( "CONTACT" ,"handle"  , objectID ) )
-          {
-
-             sprintf(xmlString , "<contact:trnData %s ><contact:id>%s</contact:id><contact:trDate>%s</contact:trDate><contact:clID>%s</contact:clID></contact:trnData>" ,
-                   schema_contact ,    GetFieldValueName("Name" , 0 )  , GetFieldDateTimeValueName("TrDate" , 0 ) , regHandle  );
-               FreeSelect();
+        {
+              
+            snprintf(xmlString , sizeof(xmlString)-1, "<contact:trnData %s ><contact:id>%s</contact:id><contact:trDate>%s</contact:trDate><contact:clID>%s</contact:clID></contact:trnData>", schema_contact, GetFieldValueName("Name" , 0 ), GetFieldDateTimeValueName("TrDate" , 0) , regHandle );
+            FreeSelect();
            }
         break;
  case 2: // nsset
         if( SELECTOBJECTID( "NSSET" ,"handle"  , objectID ))
           {
-
-                
-            sprintf(xmlString , "<nsset:trnData %s > <nsset:id>%s</nsset:id><nsset:trDate>%s</nsset:trDate><nsset:clID>%s</nsset:clID></nsset:trnData>" ,
-                           schema_nsset ,    GetFieldValueName("Name" , 0 )  , GetFieldDateTimeValueName("TrDate" , 0 ) , regHandle );
+              snprintf(xmlString , sizeof(xmlString)-1, "<nsset:trnData %s > <nsset:id>%s</nsset:id><nsset:trDate>%s</nsset:trDate><nsset:clID>%s</nsset:clID></nsset:trnData>" , schema_nsset , GetFieldValueName("Name" , 0 ), GetFieldDateTimeValueName("TrDate" , 0 ) , regHandle );
                FreeSelect();
            }
 
@@ -125,15 +121,12 @@ switch( type )
  case 3: // domain
         if( SELECTOBJECTID( "DOMAIN" , "fqdn"  , objectID ) )
          {
-
-             sprintf(xmlString , "<domain:trnData %s ><domain:name>%s</domain:name><domain:trDate>%s</domain:trDate><domain:clID>%s</domain:clID></domain:trnData>" ,
-                            schema_domain ,    GetFieldValueName("Name" , 0 )  , GetFieldDateTimeValueName("TrDate" , 0 )  , regHandle );
-               FreeSelect();
-
+             snprintf(xmlString , sizeof(xmlString)-1, "<domain:trnData %s ><domain:name>%s</domain:name><domain:trDate>%s</domain:trDate><domain:clID>%s</domain:clID></domain:trnData>" , schema_domain , GetFieldValueName("Name" , 0 )  , GetFieldDateTimeValueName("TrDate" , 0 )  , regHandle );
+             FreeSelect();
          }
         break;
   default:
-       xmlString[0] = 0 ; // empty string  
+       xmlString[0] = NULL ; // empty string  
        break;
 }
 
@@ -865,13 +858,13 @@ get_rfc3339_timestamp( time(NULL) ,  currentDate , true );
 if( id) // if ValExDate already exist and updated 
 {
 // copy current Exdate during update 
-strcpy( exDate ,  GetDomainValExDate( id) ) ;
+    strncpy(exDate, GetDomainValExDate(id), sizeof(exDate)-1) ;
 
 // USE SQL for calculate
 // test if the ExDate is lager then actual date and less or equal to protected period (interval days)
-sprintf( sqlString , "SELECT   date_gt( date(\'%s\') , date(\'%s\') ) AND \
+    snprintf( sqlString, sizeof(sqlString)-1, "SELECT   date_gt( date(\'%s\') , date(\'%s\') ) AND \
            date_le ( date(\'%s\') ,  date ( date(\'%s') + interval'%d days' ) ) as test; " , 
-             exDate , currentDate , exDate , currentDate , interval );
+              exDate , currentDate , exDate , currentDate , interval );
 
 // As a test value
   if( ExecSelect( sqlString ) )
@@ -884,11 +877,11 @@ sprintf( sqlString , "SELECT   date_gt( date(\'%s\') , date(\'%s\') ) AND \
 }
 
 if(  use_interfal ) // use current exDate as max value is int the protected interval
-sprintf( sqlString , "SELECT   date_gt( date(\'%s\' ) , date(\'%s') ) AND \
+    snprintf( sqlString , sizeof(sqlString), "SELECT   date_gt( date(\'%s\' ) , date(\'%s') ) AND \
              date_le( date(\'%s\') , date( date(\'%s\') + interval'%d  months' ) ) as test; " , 
            valexDate , currentDate ,  valexDate , exDate , period );
 else // use current date
-sprintf( sqlString , "SELECT   date_gt( date(\'%s\' ) , date(\'%s') ) AND \
+    snprintf( sqlString , sizeof(sqlString) "SELECT   date_gt( date(\'%s\' ) , date(\'%s') ) AND \
              date_le( date(\'%s\') , date( date(\'%s\') + interval'%d  months' ) ) as test; " , 
            valexDate , currentDate ,  valexDate ,  currentDate , period );
 
@@ -1419,12 +1412,12 @@ long price = 0, credit,  balance;
 fromdateStr[0]=0;
 
 // last record todate plus one day
-sprintf( sqlString , "SELECT date( todate + interval'1 day')  from invoice_generation  WHERE zone=%d  AND registrarid =%d  order by id desc limit 1;" ,  zone , regID );
+snprintf( sqlString , sizeof(sqlString), "SELECT date( todate + interval'1 day')  from invoice_generation  WHERE zone=%d  AND registrarid =%d  order by id desc limit 1;" ,  zone , regID );
 if( ExecSelect( sqlString ) )
   {
      if(  GetSelectRows() == 1 )
       {
-         strcpy( fromdateStr , GetFieldValue( 0 , 0 ) );
+          strncpy( fromdateStr , GetFieldValue( 0 , 0 ), sizeof(fromdateStr) );
       }
     FreeSelect();
  }
@@ -1442,7 +1435,7 @@ if( fromdateStr[0]== 0 )
 
                    if( IsNotNull( 0 , 0 ) )
                      {
-                         strcpy( fromdateStr , GetFieldValue( 0 , 0 ) );
+                         strncpy( fromdateStr , GetFieldValue( 0 , 0 ), sizeof(fromdateStr) );
                       }
 
                  FreeSelect();
@@ -1828,7 +1821,7 @@ if( ExecSelect( sqlString ) )
         }
        else { LOG( SQL_LOG , "alloc memHandle");  memHandle = new char[size+1]; } 
  
-      strcpy( memHandle , GetFieldValue( 0 , 0 ) );
+      strncpy( memHandle, GetFieldValue( 0 , 0 ), size );
       LOG( SQL_LOG , "GetValueFromTable \'%s\' field %s  value  %s ->  %s" , table ,  fname , value  , memHandle );
       FreeSelect();      
       return memHandle;

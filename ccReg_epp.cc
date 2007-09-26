@@ -200,7 +200,7 @@ ccReg_EPP_i::ccReg_EPP_i(
 {
   // objects are shared between threads!!!
   // init at the beginning and do not change
-  strcpy(database, _db);
+  strncpy(database, _db, sizeof(database)-1);
   if (!db.OpenDatabase(database)) {
     LOG(ALERT_LOG, "can not connect to DATABASE %s", database);
     throw DB_CONNECT_FAILED();
@@ -409,7 +409,7 @@ bool ccReg_EPP_i::TestDatabaseConnect(const char *db)
 DB  DBsql;
 
 // connection info
-strcpy( database , db );
+strncpy(database, db, sizeof(database)-1);
 
 if(  DBsql.OpenDatabase( database ) )
 {
@@ -759,8 +759,7 @@ void  ccReg_EPP_i::GetValExpDateFromExtension( char *valexpDate , const ccReg::E
 int len , i ;
 const ccReg::ENUMValidationExtension * enumVal;
 
-strcpy( valexpDate , "" );
-
+valexpDate[0] = NULL;
 
   len = ext.length();
   if( len > 0 )
@@ -770,7 +769,7 @@ strcpy( valexpDate , "" );
         {
           if( ext[i] >>= enumVal )
             {
-              strcpy( valexpDate, enumVal->valExDate );
+              strncpy( valexpDate, enumVal->valExDate, sizeof(valexpDate) - 1 );
               LOG( DEBUG_LOG, "enumVal %s ", valexpDate );
             }
           else
@@ -4240,7 +4239,7 @@ seq=0;
 ret->code = 0;
 errors->length( 0 );
 
-strcpy( valexpiryDate , "" ); // default
+bzero(valexpiryDate, sizeof(valexpiryDate));
 
 LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registrant_chg  [%s] authInfo_chg [%s]  nsset_chg [%s] ext.length %ld",
       (int )  clientID, clTRID, fqdn, registrant_chg, authInfo_chg, nsset_chg , (long)ext.length() );
@@ -4597,9 +4596,8 @@ Register::Domain::CheckAvailType dType;
 ret = new ccReg::Response;
 errors = new ccReg::Errors;
 
-
 // default
-strcpy( valexpiryDate , "" );
+bzero(valexpiryDate, sizeof(valexpiryDate));
 
 // default
 ret->code = 0;
@@ -4962,7 +4960,7 @@ errors = new ccReg::Errors;
 // default
   exDate =  CORBA::string_dup( "" );
 
-   strcpy( valexpiryDate , "" );
+  bzero(valexpiryDate, sizeof(valexpiryDate));
 // default
   ret->code = 0;
  errors->length( 0 );

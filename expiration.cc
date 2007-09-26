@@ -50,22 +50,22 @@ ID id;
 switch( type )
 {
 case  TYPE_EXDATE_DEL: //  expiration domain after 45 days END of the protected period domain will be deleted after notification
-      strcpy( sqlString , "SELECT id from  domain where current_date  >= ExDate +  interval '45 days' ; " );
+      strncpy( sqlString , "SELECT id from domain where current_date  >= ExDate +  interval '45 days' ; ", sizeof(sqlString)-1 );
       break;
 case  TYPE_EXDATE_DNS: // expiration domain after 30 days domains not generated to zone
-      strcpy( sqlString , "SELECT id from  domain where current_date  >= ExDate +  interval '30 days' ; " );
+      strncpy( sqlString , "SELECT id from domain where current_date  >= ExDate +  interval '30 days' ; ", sizeof(sqlString)-1 );
       break;      
 case  TYPE_EXDATE_AFTER: // expirations domain 
-      strcpy( sqlString , "SELECT id from  domain where current_date  >= ExDate ;" );
+      strncpy( sqlString , "SELECT id from domain where current_date  >= ExDate ;", sizeof(sqlString)-1 );
       break;
 case  TYPE_EXDATE_BEFORE: // domain that have 30 days before expiration
-      strcpy( sqlString , "SELECT id from  domain where current_date  >= ExDate - interval '30 days' ;" );
+      strncpy( sqlString , "SELECT id from domain where current_date  >= ExDate - interval '30 days' ;", sizeof(sqlString)-1 );
       break;
 case  TYPE_VALEXDATE_AFTER: // enum domain after validity
-      strcpy( sqlString , "SELECT domainid from enumval where current_date >= exdate;" );
+      strncpy( sqlString , "SELECT domainid from enumval where current_date >= exdate;", sizeof(sqlString)-1 );
       break;
 case  TYPE_VALEXDATE_BEFORE: // enum domains that have 30 days before end of validate day 
-      strcpy( sqlString , "SELECT domainid from enumval where current_date >= exdate - interval '30 days' ;" );
+      strncpy( sqlString , "SELECT domainid from enumval where current_date >= exdate - interval '30 days' ;", sizeof(sqlString)-1 );
       break;
 default:
     sqlString[0] = 0;
@@ -176,39 +176,34 @@ ID id;
 
 // client the registrator of the object 
 regID = db->GetNumericFromTable( "object" , "ClID" , "id" , (int )  objectID );
-strcpy( nameStr ,  db->GetValueFromTable( "object_registry"  , "name" , "id" ,  (int ) objectID ) );
+strncpy( nameStr ,  db->GetValueFromTable( "object_registry"  , "name" , "id" ,  (int ) objectID ), sizeof(nameStr)-1);
 
 switch( type )
 {
 case TYPE_EXDATE_BEFORE:
-      strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:impendingExpData %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:impendingExpData>" ,
-      schema_domain,   nameStr , exDateStr  );
+      strncpy( exDateStr, db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID ), sizeof(exDateStr)-1 );
+      snprintf(xmlString, "<domain:impendingExpData %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:impendingExpData>", schema_domain, nameStr, exDateStr );
       break;
 case TYPE_EXDATE_AFTER:
-      strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:expData %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:expData>" ,
-      schema_domain,   nameStr , exDateStr  );
+      strncpy( exDateStr, db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID ), sizeof(exDateStr)-1 );
+      snprintf(xmlString, sizeof(xmlString), "<domain:expData %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:expData>", schema_domain, nameStr, exDateStr );
       break;
 case TYPE_EXDATE_DNS:
-      strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:dnsOutageData  %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:dnsOutageData>" ,
-      schema_domain,   nameStr , exDateStr  );
+      strncpy( exDateStr, db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID ), sizeof(exDateStr)-1 );
+      snprintf(xmlString, sizeof(xmlString), "<domain:dnsOutageData  %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:dnsOutageData>", schema_domain, nameStr, exDateStr );
       break;
 case TYPE_EXDATE_DEL:
-      strcpy( exDateStr , db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID )  );
-      sprintf(xmlString , "<domain:delData  %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:delData>" ,
+      strncpy( exDateStr, db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID ), sizeof(exDateStr)-1 );
+      snprintf(xmlString, sizeof(xmlString), "<domain:delData  %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:delData>" ,
       schema_domain,   nameStr , exDateStr  );
       break;
 case  TYPE_VALEXDATE_BEFORE:
-      strcpy( exDateStr , db->GetValueFromTable( "enumval"  , "ExDate" , "domainID" , (int ) objectID )  );
-      sprintf(xmlString , "<enumval:impendingValExpData %s ><enumval:name>%s</enumval:name><enumval:valExDate>%s</enumval:valExDate></enumval:impendingValExpData>" ,
-         schema_enumval,   nameStr , exDateStr  );
+      strncpy( exDateStr, db->GetValueFromTable( "enumval"  , "ExDate" , "domainID" , (int ) objectID ), sizeof(exDateStr)-1 );
+      snprintf(xmlString, sizeof(xmlString), "<enumval:impendingValExpData %s ><enumval:name>%s</enumval:name><enumval:valExDate>%s</enumval:valExDate></enumval:impendingValExpData>", schema_enumval, nameStr, exDateStr );
       break;
 case  TYPE_VALEXDATE_AFTER:
-      strcpy( exDateStr , db->GetValueFromTable( "enumval"  , "ExDate" , "domainID" , (int ) objectID )  );
-      sprintf(xmlString , "<enumval:valExpData %s ><enumval:name>%s</enumval:name><enumval:valExDate>%s</enumval:valExDate></enumval:valExpData>" ,
-         schema_enumval,   nameStr , exDateStr  );
+      strncpy( exDateStr, db->GetValueFromTable( "enumval"  , "ExDate" , "domainID" , (int ) objectID ), sizeof(exDateStr)-1 );
+      snprintf(xmlString, sizeof(xmlString), "<enumval:valExpData %s ><enumval:name>%s</enumval:name><enumval:valExDate>%s</enumval:valExDate></enumval:valExpData>", schema_enumval, nameStr, exDateStr );
       break;
 
 }

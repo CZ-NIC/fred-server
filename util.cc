@@ -340,7 +340,7 @@ char str[32];
 long price;
 int i , j  , len;
 
-strcpy(  str , priceStr );
+strcpy(str, priceStr, sizeof(str)-1);
 len = strlen( priceStr );
 for( i = 0 ;i < len  ; i ++ )
 {
