@@ -88,7 +88,7 @@ return ret;
 bool DB::SaveEPPTransferMessage(int  oldregID , int regID , int objectID  , int type  )
 {
 char xmlString[1024];
-char regHandle[64];
+char regHandle[65];
 char schema_nsset[] = " xmlns:nsset=\"http://www.nic.cz/xml/epp/nsset-1.2\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/nsset-1.2 nsset-1.2.xsd\" ";
 char schema_domain[] =  " xmlns:domain=\"http://www.nic.cz/xml/epp/domain-1.3\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/domain-1.3 domain-1.3.xsd\" ";
 char schema_contact[] =  " xmlns:contact=\"http://www.nic.cz/xml/epp/contact-1.4\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/contact-1.4 contact-1.4.xsd\" " ;
@@ -98,7 +98,7 @@ LOG( NOTICE_LOG , "EPPTransferMessage to registrar : %d trasfer objectID %d new 
  xmlString[0] = 0 ; // empty string
 
 // get registrar handle 
-strncpy( regHandle, GetRegistrarHandle( regID ), sizeof(regHandle)-1);
+strncpy( regHandle, GetRegistrarHandle( regID ), sizeof(regHandle) - 1);
 
 switch( type )
 {
@@ -106,14 +106,14 @@ switch( type )
         if( SELECTOBJECTID( "CONTACT" ,"handle"  , objectID ) )
         {
               
-            snprintf(xmlString , sizeof(xmlString)-1, "<contact:trnData %s ><contact:id>%s</contact:id><contact:trDate>%s</contact:trDate><contact:clID>%s</contact:clID></contact:trnData>", schema_contact, GetFieldValueName("Name" , 0 ), GetFieldDateTimeValueName("TrDate" , 0) , regHandle );
+            snprintf(xmlString , sizeof(xmlString), "<contact:trnData %s ><contact:id>%s</contact:id><contact:trDate>%s</contact:trDate><contact:clID>%s</contact:clID></contact:trnData>", schema_contact, GetFieldValueName("Name" , 0 ), GetFieldDateTimeValueName("TrDate" , 0) , regHandle );
             FreeSelect();
            }
         break;
  case 2: // nsset
         if( SELECTOBJECTID( "NSSET" ,"handle"  , objectID ))
           {
-              snprintf(xmlString , sizeof(xmlString)-1, "<nsset:trnData %s > <nsset:id>%s</nsset:id><nsset:trDate>%s</nsset:trDate><nsset:clID>%s</nsset:clID></nsset:trnData>" , schema_nsset , GetFieldValueName("Name" , 0 ), GetFieldDateTimeValueName("TrDate" , 0 ) , regHandle );
+              snprintf(xmlString , sizeof(xmlString), "<nsset:trnData %s > <nsset:id>%s</nsset:id><nsset:trDate>%s</nsset:trDate><nsset:clID>%s</nsset:clID></nsset:trnData>" , schema_nsset , GetFieldValueName("Name" , 0 ), GetFieldDateTimeValueName("TrDate" , 0 ) , regHandle );
                FreeSelect();
            }
 
@@ -121,7 +121,7 @@ switch( type )
  case 3: // domain
         if( SELECTOBJECTID( "DOMAIN" , "fqdn"  , objectID ) )
          {
-             snprintf(xmlString , sizeof(xmlString)-1, "<domain:trnData %s ><domain:name>%s</domain:name><domain:trDate>%s</domain:trDate><domain:clID>%s</domain:clID></domain:trnData>" , schema_domain , GetFieldValueName("Name" , 0 )  , GetFieldDateTimeValueName("TrDate" , 0 )  , regHandle );
+             snprintf(xmlString , sizeof(xmlString), "<domain:trnData %s ><domain:name>%s</domain:name><domain:trDate>%s</domain:trDate><domain:clID>%s</domain:clID></domain:trnData>" , schema_domain , GetFieldValueName("Name" , 0 )  , GetFieldDateTimeValueName("TrDate" , 0 )  , regHandle );
              FreeSelect();
          }
         break;
@@ -844,7 +844,7 @@ return ExecSQL( sqlString );
 bool DB::TestValExDate(const char *valexDate ,  int period  , int interval , int id )
 {
 char sqlString[512];
-char exDate[32]; //  ExDate old value  in the table enumval
+char exDate[33]; //  ExDate old value  in the table enumval
 bool ret =false;
 char currentDate[32];
 bool use_interfal=false;  // default value for using protected interval
@@ -862,7 +862,7 @@ if( id) // if ValExDate already exist and updated
 
 // USE SQL for calculate
 // test if the ExDate is lager then actual date and less or equal to protected period (interval days)
-    snprintf( sqlString, sizeof(sqlString)-1, "SELECT   date_gt( date(\'%s\') , date(\'%s\') ) AND \
+    snprintf( sqlString, sizeof(sqlString), "SELECT   date_gt( date(\'%s\') , date(\'%s\') ) AND \
            date_le ( date(\'%s\') ,  date ( date(\'%s') + interval'%d days' ) ) as test; " , 
               exDate , currentDate , exDate , currentDate , interval );
 
@@ -1397,8 +1397,8 @@ char sqlString[512];
 int invoiceID=-1;
 int *aID;
 int i , num;
-char fromdateStr[32];
-char todateStr[32];
+char fromdateStr[33];
+char todateStr[33];
 int count=-1;
 long price = 0, credit,  balance;
 
@@ -1417,7 +1417,7 @@ if( ExecSelect( sqlString ) )
   {
      if(  GetSelectRows() == 1 )
       {
-          strncpy( fromdateStr , GetFieldValue( 0 , 0 ), sizeof(fromdateStr) );
+          strncpy( fromdateStr , GetFieldValue( 0 , 0 ), sizeof(fromdateStr)-1 );
       }
     FreeSelect();
  }
@@ -1435,7 +1435,7 @@ if( fromdateStr[0]== 0 )
 
                    if( IsNotNull( 0 , 0 ) )
                      {
-                         strncpy( fromdateStr , GetFieldValue( 0 , 0 ), sizeof(fromdateStr) );
+                         strncpy( fromdateStr , GetFieldValue( 0 , 0 ), sizeof(fromdateStr)-1 );
                       }
 
                  FreeSelect();
@@ -1498,7 +1498,7 @@ LOG( NOTICE_LOG , "Fakturace od %s do %s timestamp [%s] " , fromdateStr , todate
 
 
                            // query for all advance invoices, from which were gathered for taxes FA 
-                           snprintf( sqlString , sizeof(sqlString)-1, "select invoice_object_registry_price_map.invoiceid from  invoice_object_registry ,  invoice_object_registry_price_map  where invoice_object_registry.id=invoice_object_registry_price_map.id and invoice_object_registry.invoiceid=%d  GROUP BY invoice_object_registry_price_map.invoiceid ; " , invoiceID );
+                           snprintf( sqlString , sizeof(sqlString), "select invoice_object_registry_price_map.invoiceid from  invoice_object_registry ,  invoice_object_registry_price_map  where invoice_object_registry.id=invoice_object_registry_price_map.id and invoice_object_registry.invoiceid=%d  GROUP BY invoice_object_registry_price_map.invoiceid ; " , invoiceID );
                                // EXEC SQL a insert  invoice_credit_payment_map
 
                            if( ExecSelect( sqlString ) )
