@@ -425,7 +425,8 @@ namespace Register
               << "poll_techcheck pt, check_nsset cn, "
               << "nsset_history nh, object_registry o "
               << "WHERE tmp.id=pt.msgid AND pt.cnid=cn.id "
-              << "AND cn.nsset_hid=nh.historyid AND nh.id=o.id";
+              << "AND cn.nsset_hid=nh.historyid AND nh.id=o.id "
+              << "ORDER BY tmp.id ";
           if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
           // assign to nsset
           resetIDSequence();
@@ -453,7 +454,8 @@ namespace Register
               << "poll_techcheck pt, check_result cr, "
               << "check_test ct "
               << "WHERE tmp.id=pt.msgid AND pt.cnid=cr.checkid "
-              << "AND cr.testid=ct.id ";
+              << "AND cr.testid=ct.id "
+              << "ORDER BY tmp.id ";
           // assign to nsset
           if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
           resetIDSequence();
@@ -477,7 +479,8 @@ namespace Register
               << "FROM "
               << getTempTableName() << " tmp, "
               << "poll_credit pl, zone z "
-              << "WHERE tmp.id=pl.msgid AND pl.zone=z.id ";
+              << "WHERE tmp.id=pl.msgid AND pl.zone=z.id "
+              << "ORDER BY tmp.id ";
           if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
           // assign to nsset
           resetIDSequence();
@@ -503,7 +506,8 @@ namespace Register
               << "poll_eppaction pa, object_history oh, registrar r, "
               << "object_registry obr "
               << "WHERE tmp.id=pa.msgid AND pa.objid=oh.historyid "
-              << "AND oh.id=obr.id AND oh.clid=r.id ";
+              << "AND oh.id=obr.id AND oh.clid=r.id "
+              << "ORDER BY tmp.id ";              
           if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
           // assign to nsset
           resetIDSequence();
@@ -532,7 +536,8 @@ namespace Register
               << "LEFT JOIN enumval_history eh ON (eh.historyid=dh.historyid) "
               << "WHERE tmp.id=ps.msgid AND ps.stateid=s.id "
               << "AND s.ohid_from=oh.historyid AND oh.id=obr.id "
-              << "AND oh.historyid=dh.historyid ";
+              << "AND oh.historyid=dh.historyid "
+              << "ORDER BY tmp.id ";
           if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
           // assign to nsset
           resetIDSequence();
@@ -719,21 +724,27 @@ namespace Register
           "WHERE os.state_id in (8,9,11,13,20,17) "
           "AND oh.historyid=os.ohid_from AND ob.id=os.object_id "
           "AND ps.stateid ISNULL ";
-        if (!exceptList.empty())
-        	insertTemp << "AND os.state_id NOT IN (" << exceptList << ")";
         if (!db->ExecSQL(insertTemp.str().c_str())) throw SQL_ERROR();        
         // insert into table message appropriate part from temp table
-        const char *insertMessage =
+        std::stringstream insertMessage; 
+        insertMessage <<
           "INSERT INTO message "
           "SELECT id,reg,CURRENT_TIMESTAMP,"
           "CURRENT_TIMESTAMP + INTERVAL '7days','f',msgtype "
           "FROM tmp_poll_state_insert ";
-        if (!db->ExecSQL(insertMessage)) throw SQL_ERROR();        
+        if (!exceptList.empty())
+        	insertMessage << "WHERE msgtype NOT IN (" << exceptList << ")";        
+        if (!db->ExecSQL(insertMessage.str().c_str())) throw SQL_ERROR();        
         // insert into table poll_statechange appropriate part from temp table
-        const char *insertPollStateChange =
+        std::stringstream insertPollStateChange;
+        insertPollStateChange <<
           "INSERT INTO poll_statechange "
-          "SElECT id, stateid FROM tmp_poll_state_insert";
-        if (!db->ExecSQL(insertPollStateChange)) throw SQL_ERROR();
+          "SELECT id, stateid FROM tmp_poll_state_insert";
+        if (!exceptList.empty())
+          insertPollStateChange << "WHERE msgtype NOT IN (" 
+                                << exceptList << ")";        
+        if (!db->ExecSQL(insertPollStateChange.str().c_str())) 
+          throw SQL_ERROR();
         trans.commit();
       }
       virtual void createLowCreditMessages() throw (SQL_ERROR)
