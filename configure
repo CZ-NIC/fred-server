@@ -715,6 +715,7 @@ CPP
 GREP
 EGREP
 LIBOBJS
+IDLDIR
 LTLIBOBJS'
 ac_subst_files=''
       ac_precious_vars='build_alias
@@ -1333,6 +1334,8 @@ Optional Packages:
                           --with-boost-regex=boost_regex-gcc-mt-d-1_33_1
   --with-postgresql=[ARG] use PostgreSQL library [default=yes], optionally
                           specify path to pg_config
+  --with-idldir           location of idl directory containing IDL interfaces
+                          [idl]
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -4375,7 +4378,7 @@ Alternatively, you may set the environment variables OMNIORB4_CFLAGS
 and OMNIORB4_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 
-To get pkg-config, see <http://www.freedesktop.org/software/pkgconfig>.
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
 See \`config.log' for more details." >&5
 echo "$as_me: error: The pkg-config script could not be found or is too old.  Make sure it
 is in your PATH or set the PKG_CONFIG environment variable to the full
@@ -4385,7 +4388,7 @@ Alternatively, you may set the environment variables OMNIORB4_CFLAGS
 and OMNIORB4_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 
-To get pkg-config, see <http://www.freedesktop.org/software/pkgconfig>.
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
 See \`config.log' for more details." >&2;}
    { (exit 1); exit 1; }; }
 else
@@ -4487,7 +4490,7 @@ Alternatively, you may set the environment variables LIBDAEMON_CFLAGS
 and LIBDAEMON_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 
-To get pkg-config, see <http://www.freedesktop.org/software/pkgconfig>.
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
 See \`config.log' for more details." >&5
 echo "$as_me: error: The pkg-config script could not be found or is too old.  Make sure it
 is in your PATH or set the PKG_CONFIG environment variable to the full
@@ -4497,7 +4500,7 @@ Alternatively, you may set the environment variables LIBDAEMON_CFLAGS
 and LIBDAEMON_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 
-To get pkg-config, see <http://www.freedesktop.org/software/pkgconfig>.
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
 See \`config.log' for more details." >&2;}
    { (exit 1); exit 1; }; }
 else
@@ -8008,6 +8011,45 @@ fi
 done
 
 
+
+# Check whether --with-idldir was given.
+if test "${with_idldir+set}" = set; then
+  withval=$with_idldir; IDLDIR=$withval
+
+else
+  IDLDIR=idl/
+
+fi
+
+as_ac_File=`echo "ac_cv_file_$IDLDIR/ccReg.idl" | $as_tr_sh`
+{ echo "$as_me:$LINENO: checking for $IDLDIR/ccReg.idl" >&5
+echo $ECHO_N "checking for $IDLDIR/ccReg.idl... $ECHO_C" >&6; }
+if { as_var=$as_ac_File; eval "test \"\${$as_var+set}\" = set"; }; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "$IDLDIR/ccReg.idl"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+ac_res=`eval echo '${'$as_ac_File'}'`
+	       { echo "$as_me:$LINENO: result: $ac_res" >&5
+echo "${ECHO_T}$ac_res" >&6; }
+if test `eval echo '${'$as_ac_File'}'` = yes; then
+  :
+else
+  { { echo "$as_me:$LINENO: error: directory \"$IDLDIR\" does not contain ccReg.idl (use --with-idldir)" >&5
+echo "$as_me: error: directory \"$IDLDIR\" does not contain ccReg.idl (use --with-idldir)" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+
+
 ac_config_files="$ac_config_files Makefile register/Makefile"
 
 cat >confcache <<\_ACEOF
@@ -8801,10 +8843,11 @@ for ac_last_try in false false false false false :; do
 GREP!$GREP$ac_delim
 EGREP!$EGREP$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
+IDLDIR!$IDLDIR$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 4; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 5; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

@@ -12,7 +12,6 @@ libfred_a_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS)
 
 COMMON_LIBS = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS)
 
-IDLDIR = idl
 IDLFILE = $(IDLDIR)/ccReg.idl
 
 fred_rifd_SOURCES   = ccReg_epp.cc countrycode.cc messages.cc notifier.cc

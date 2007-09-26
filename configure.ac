@@ -52,6 +52,14 @@ AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([gettimeofday memset strcasecmp strncasecmp strspn])
 
+AC_ARG_WITH([idldir], [AS_HELP_STRING([--with-idldir],
+                        [location of idl directory containing IDL interfaces [idl]])],
+                        [AC_SUBST([IDLDIR], [$withval])],
+                        [AC_SUBST([IDLDIR], [idl/])])
+AC_CHECK_FILE([$IDLDIR/ccReg.idl], [], [AC_MSG_ERROR(
+                           [directory "$IDLDIR" does not contain ccReg.idl (use --with-idldir)])])
+
+
 AC_CONFIG_FILES([Makefile
                  register/Makefile])
 AC_OUTPUT
