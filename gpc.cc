@@ -225,53 +225,52 @@ int seek;
 
 int GPC::ReadGPCFile( char * filename )
 {
-FILE *fd;
-int i , l , numrec;
-char tmp[GPC_MAX_RECORD+2];
+    FILE *fd;
+    int i, l, c, numrec;
+    char tmp[GPC_MAX_RECORD+2];
 
-if( (fd = fopen( filename ,  "r" ) ) == NULL ) return -1;
-else 
-{
+    if( (fd = fopen( filename ,  "r" ) ) == NULL ) return -1;
 
-// TODO TEST of first line for number 075 (zero seven five)
+    // TODO TEST of first line for number 075 (zero seven five)
+    for( l = 0 , numrec = -1 ; l < MAX_ITEMS ;  )
+    {
+        // read record
+        for( i = 0 ; i < GPC_MAX_RECORD+2 ; i ++ )
+        {
+            if( feof(fd) ) { numrec=l  ;  break;  }
+            // OS: musíme testovat návratovou hodnotu, protože pokud nastane chyba, tak je výsledek EOF
+            c = fgetc(fd);
+            if (c == EOF) {
+                // OS: došlo k chybě, vrátíme -1
+                return -1;
+            }
+            tmp[i] = c;
+        }
 
-for( l = 0 , numrec = -1 ; l < MAX_ITEMS ;  )
-{
+        //  end of line
+        if( tmp[GPC_MAX_RECORD] == '\r' &&  tmp[GPC_MAX_RECORD+1]  == '\n'  )
+        {
+            tmp[GPC_MAX_RECORD] = 0 ; // end of string
 
-// read record
-  for( i = 0 ; i < GPC_MAX_RECORD+2 ; i ++ )
-  {
-    if( feof(fd) ) { numrec=l  ;  break;  }
-    tmp[i] = fgetc( fd );
-  }
-
-
-  //  end of line
-   if( tmp[GPC_MAX_RECORD] == '\r' &&  tmp[GPC_MAX_RECORD+1]  == '\n'  )
-     {
-       tmp[GPC_MAX_RECORD] = 0 ; // end of string
-
-       if( strncmp( tmp ,  GPC_LIST_HEAD , 3 ) == 0 ) 
-        { 
-          // debug("HEAD:\n%s\n" , tmp );
-           ParseHead( tmp  );
-         }
-       else if( strncmp( tmp ,  GPC_LIST_ITEM , 3 ) == 0 )
-          { 
-            // debug("ITEM:\n%s\n" , tmp );
-             ParseItem( tmp  );
-             l ++; 
+            if( strncmp( tmp ,  GPC_LIST_HEAD , 3 ) == 0 ) 
+            {
+                // debug("HEAD:\n%s\n" , tmp );
+                ParseHead( tmp  );
+            }
+            else if( strncmp( tmp ,  GPC_LIST_ITEM , 3 ) == 0 )
+            { 
+                // debug("ITEM:\n%s\n" , tmp );
+                ParseItem( tmp  );
+                l ++; 
             } 
-//            else { debug("UNKNOW:\n%s\n" , tmp );  }
-     }
+        // else { debug("UNKNOWN:\n%s\n" , tmp );  }
+        }
+        
+        if( numrec >=0  ) break ; // if some lines are loaded or nothing 
+    }
 
-if( numrec >=0  ) break ; // if some lines are loaded or nothing 
-}
-
-// debug("End of reading list items %d\n" , numrec );
-fclose(fd);
-return numrec;
-}
-
+    // debug("End of reading list items %d\n" , numrec );
+    fclose(fd);
+    return numrec;
 }
 
