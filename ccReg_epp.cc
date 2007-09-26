@@ -143,6 +143,10 @@ class EPPAction
     ccReg::Response_var& r(getRet());
     epp->NoMessages(r->code, r->msg, r->svTRID);
   }
+  void setCode(int _code)
+  {
+    code = ret->code = _code;
+  }
 };
 
 /// timestamp formatting function
@@ -1437,6 +1441,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
   catch (ccReg::EPP::NoMessages) { throw; } 
   catch (...) { a.failedInternal("Connection problems"); }
   if (!m) a.failedInternal("Cannot get message"); // throw internal exception
+  a.setCode(COMMAND_ACK_MESG);
   msg = new CORBA::Any;
   // first fill common fields
   // transform numeric id to string and fill msgID
@@ -2797,9 +2802,15 @@ if(  (regID = GetRegistrarID( clientID ) ) )
       {
 
           // transfer can not be run by existing client 
+        if(  DBsql.TestObjectClientID( id , regID  )  && !DBsql.GetRegistrarSystem( regID ) )      
+          {
+            LOG( WARNING_LOG, "client can not transfer  object %s" , name
+                 );
+            ret->code =  COMMAND_NOT_ELIGIBLE_FOR_TRANSFER;
+          }
                
                try {            	 
-            	 if (testObjectHasState(&DBsql,id,FLAG_serverTransferProhibited))
+            	 if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverTransferProhibited))
                  {
                    LOG( WARNING_LOG, "transfer of object %s is prohibited" , name );
                    ret->code =  COMMAND_STATUS_PROHIBITS_OPERATION;
