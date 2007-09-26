@@ -40,6 +40,23 @@
 // Notifier
 #include "notifier.h"
 
+#define FLAG_serverDeleteProhibited 1
+#define FLAG_serverRenewProhibited 2
+#define FLAG_serverTransferProhibited 3
+#define FLAG_serverUpdateProhibited 4
+#define FLAG_serverRegistrantChangeProhibited 18
+
+static bool testObjectHasState(
+  DB *db, Register::TID object_id, unsigned state_id
+) throw (Register::SQL_ERROR)
+{
+  std::stringstream sql;
+  sql << "SELECT COUNT(*) FROM object_state "
+      << "WHERE object_id=" << object_id << " AND state_id=" << state_id
+      << " AND valid_to ISNULL";
+  if (!db->ExecSelect(sql.str().c_str())) throw Register::SQL_ERROR();
+  return atoi(db->GetFieldValue(0,0));      
+}
 
 class EPPAction
 {
@@ -2232,14 +2249,21 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
 
           else if( DBsql.BeginTransaction() )
           {
-
-
-                  if( !DBsql.TestObjectClientID( id , regID  )   )   //  if registrar is not client of the object 
+                  if(!DBsql.TestObjectClientID( id , regID  )   )   //  if registrar is not client of the object 
                     {
                       LOG( WARNING_LOG, "bad autorization not  creator of handle [%s]", handle );
                       ret->code = COMMAND_AUTOR_ERROR; // bad autorization
-                    }                               
-                  else                                                                                           
+                    }
+                  try {            	 
+                	 if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited))
+                     {
+                      LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
+                      ret->code =  COMMAND_STATUS_PROHIBITS_OPERATION;
+                     }
+                  } catch (...) { 
+               	   ret->code =  COMMAND_FAILED;
+                  }
+                  if (!ret->code)
                     {
 
                         ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id )); // notifier maneger before delete 
@@ -2359,8 +2383,16 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                         LOG( WARNING_LOG, "bad autorization not  client of contact [%s]", handle );
                         ret->code = COMMAND_AUTOR_ERROR;     
                     }
-                  else                   
-
+                  try {            	 
+                	 if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited))
+                     {
+                      LOG( WARNING_LOG, "update of object %s is prohibited" , handle );
+                      ret->code =  COMMAND_STATUS_PROHIBITS_OPERATION;
+                     }
+                  } catch (...) { 
+               	   ret->code =  COMMAND_FAILED;
+                  }
+                  if (!ret->code)
                       if( !TestCountryCode( c.CC ) ) ret->code = SetReasonUnknowCC( errors , c.CC , GetRegistrarLang( clientID ) );
                       else
                           if( DBsql.ObjectUpdate(id , regID  , c.AuthInfoPw )  ) // update OBJECT table
@@ -2766,13 +2798,17 @@ if(  (regID = GetRegistrarID( clientID ) ) )
       {
 
           // transfer can not be run by existing client 
- 
-               if(  DBsql.TestObjectClientID( id , regID  )  )      
+               
+               try {            	 
+            	 if (testObjectHasState(&DBsql,id,FLAG_serverTransferProhibited))
                  {
-                   LOG( WARNING_LOG, "client can not transfer  object %s" , name );
-                   ret->code =  COMMAND_NOT_ELIGIBLE_FOR_TRANSFER;
+                   LOG( WARNING_LOG, "transfer of object %s is prohibited" , name );
+                   ret->code =  COMMAND_STATUS_PROHIBITS_OPERATION;
                  }
-               else
+               } catch (...) { 
+            	   ret->code =  COMMAND_FAILED;
+               }
+               if (!ret->code)
                  {
 
                   // if  authInfo is ok
@@ -3082,7 +3118,16 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                       LOG( WARNING_LOG, "bad autorization not client of nsset [%s]", handle );
                       ret->code = COMMAND_AUTOR_ERROR;       // bad autorization
                     }
-                  else
+                  try {            	 
+                	 if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited))
+                     {
+                      LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
+                      ret->code =  COMMAND_STATUS_PROHIBITS_OPERATION;
+                     }
+                  } catch (...) { 
+               	   ret->code =  COMMAND_FAILED;
+                  }
+                  if (!ret->code)
                    {
                        // create notifier
                         ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
@@ -3556,7 +3601,17 @@ if( DBsql.OpenDatabase( database ) )
                 LOG( WARNING_LOG, "bad autorization not  client of nsset [%s]", handle );
                 ret->code = COMMAND_AUTOR_ERROR;     
              }
-           else
+           try {            	 
+         	 if (!ret->code && testObjectHasState(&DBsql,nssetID,FLAG_serverUpdateProhibited))
+              {
+               LOG( WARNING_LOG, "update of object %s is prohibited" , handle );
+               ret->code =  COMMAND_STATUS_PROHIBITS_OPERATION;
+              }
+           } catch (...) { 
+        	   ret->code =  COMMAND_FAILED;
+           }
+           
+           if (!ret->code)
              {
 
 
@@ -4096,7 +4151,16 @@ if(  (regID = GetRegistrarID( clientID ) ) )
                       LOG( WARNING_LOG, "bad autorization not client of fqdn [%s]", fqdn );
                       ret->code = COMMAND_AUTOR_ERROR;       
                     }
-                  else
+                  try {            	 
+                	 if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited))
+                     {
+                      LOG( WARNING_LOG, "delete of object %s is prohibited" , fqdn );
+                      ret->code =  COMMAND_STATUS_PROHIBITS_OPERATION;
+                     }
+                  } catch (...) { 
+               	   ret->code =  COMMAND_FAILED;
+                  }
+                  if (!ret->code)                 
                     {
                      // run notifier
                       ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
@@ -4220,7 +4284,18 @@ if( DBsql.OpenDatabase( database ) )
                           LOG( WARNING_LOG, "bad autorization not  client of domain [%s]", fqdn );
                           ret->code = COMMAND_AUTOR_ERROR;   
                        }
-                      else if( DBsql.BeginTransaction() )
+       
+                      else {
+                          try {            	 
+                        	 if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited))
+                             {
+                              LOG( WARNING_LOG, "update of object %s is prohibited" , fqdn );
+                              ret->code =  COMMAND_STATUS_PROHIBITS_OPERATION;
+                             }
+                          } catch (...) { 
+                       	   ret->code =  COMMAND_FAILED;
+                          }
+                    	  if( !ret->code && DBsql.BeginTransaction() )
                            {
 
 
@@ -4343,7 +4418,17 @@ if( DBsql.OpenDatabase( database ) )
 
                                 }            
                              }
-
+               if (strlen( registrant_chg  ) != 0) {
+                   try {            	 
+                 	 if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverRegistrantChangeProhibited))
+                      {
+                       LOG( WARNING_LOG, "registrant change %s is prohibited" , fqdn );
+                       ret->code =  COMMAND_STATUS_PROHIBITS_OPERATION;
+                      }
+                   } catch (...) { 
+                	   ret->code =  COMMAND_FAILED;
+                   }
+               }
                if( ret->code == 0 )
                 {
  
@@ -4450,7 +4535,7 @@ if( DBsql.OpenDatabase( database ) )
                     
                 DBsql.QuitTransaction( ret->code );
                }
-                
+                      }
             
           ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->code ) );                                        
         }
@@ -5009,7 +5094,17 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                       LOG( WARNING_LOG, "bad autorization not  client of domain [%s]", fqdn );
                       ret->code = COMMAND_AUTOR_ERROR;      
                     }
-                  else
+                  try {            	 
+                	 if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverRenewProhibited))
+                     {
+                      LOG( WARNING_LOG, "renew of object %s is prohibited" , fqdn );
+                      ret->code =  COMMAND_STATUS_PROHIBITS_OPERATION;
+                     }
+                  } catch (...) { 
+               	   ret->code =  COMMAND_FAILED;
+                  }
+                                    
+                  if (!ret->code)
                     {
 
 
