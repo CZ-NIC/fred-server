@@ -242,7 +242,8 @@ int GPC::ReadGPCFile( char * filename )
             c = fgetc(fd);
             if (c == EOF) {
                 // OS: došlo k chybě, vrátíme -1
-                return -1;
+                numrec = -1;
+                goto cleanup;
             }
             tmp[i] = c;
         }
@@ -269,6 +270,7 @@ int GPC::ReadGPCFile( char * filename )
         if( numrec >=0  ) break ; // if some lines are loaded or nothing 
     }
 
+cleanup:
     // debug("End of reading list items %d\n" , numrec );
     fclose(fd);
     return numrec;
