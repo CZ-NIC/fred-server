@@ -189,7 +189,7 @@ namespace Register
             atoi(db->GetFieldValue(i,5))
           ));
         db->FreeSelect();
-        if (debugOutput) *debugOutput << "<notifications>";
+        if (debugOutput) *debugOutput << "<notifications>" << std::endl;
         std::vector<NotifyRequest>::const_iterator i = nlist.begin();
         for (;i!=nlist.end();i++) {
           Register::Mailer::Parameters params;
@@ -221,7 +221,7 @@ namespace Register
               for (;ci!=params.end();ci++)
                 *debugOutput << "<param><name>" << ci->first << "</name>"
                              << "<value>" << ci->second << "</value></param>";
-              *debugOutput << "</notify>";
+              *debugOutput << "</notify>" << std::endl;
             }
             TID mail = mm->sendEmail(
               "",emails,"",i->mtype,params,handles,attach
@@ -235,8 +235,8 @@ namespace Register
               i->state_id, i->type
             );
           }
-          if (debugOutput) *debugOutput << "</notifications>";
         }
+        if (debugOutput) *debugOutput << "</notifications>" << std::endl;
       }
     };
     Manager *Manager::create(
