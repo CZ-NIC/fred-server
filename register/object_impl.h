@@ -61,7 +61,7 @@ namespace Register
     const std::string& getROID() const;
     unsigned getStatusCount() const;
     const Status* getStatusByIdx(unsigned idx) const;
-    void insertStatus(TID id, ptime timeFrom, ptime timeTo);
+    virtual void insertStatus(TID id, ptime timeFrom, ptime timeTo);
   }; // class ObjectImpl
   
   /// Implementation of common register object list properties

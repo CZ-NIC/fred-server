@@ -163,13 +163,22 @@ namespace Register
       void addAdminHandle(TID id, const std::string& handle, unsigned role=1)
       {
         if (role == 1) adminList.push_back(AdminInfo(id,handle));
-	else tempList.push_back(AdminInfo(id,handle));
+	    else tempList.push_back(AdminInfo(id,handle));
       } 
       /// add nsset handle - for domain intialization
       void addNSSetHandle(const std::string& handle)
       {
         nssetHandle = handle;
       } 
+      virtual void insertStatus(TID id, ptime timeFrom, ptime timeTo)
+      {
+    	ObjectImpl::insertStatus(id, timeFrom, timeTo);
+        // trigger setting ouzone status TODO: make define
+    	if (id == 15) {
+          zoneStatus = 0;
+          zoneStatusTime = timeFrom;
+    	}
+      }
     };
 
     class ListImpl : virtual public List, public ObjectListImpl
@@ -425,9 +434,7 @@ namespace Register
             // repository data
             << "o.authinfopw,obr.roid,"
             // expiration and validation dates
-            << "d.exdate,ev.exdate, "
-            // zone generation status and status change time
-            << "gdh.status, gdh.chdate "
+            << "d.exdate,ev.exdate "
             << "FROM "
             << getTempTableName() << " tmp, "
             << "contact c, object_registry cor, "
@@ -435,8 +442,6 @@ namespace Register
             << "object o, "
             << "domain d "
             << "LEFT JOIN enumval ev ON (d.id=ev.domainid) "
-            << "LEFT JOIN genzone_domain_history gdh "
-            << "ON (d.id=gdh.domain_id and gdh.last='t') "
             << "WHERE tmp.id=d.id AND d.id=o.id AND d.registrant=c.id "
             << "AND c.id=cor.id "
             << "AND obr.id=o.id "
@@ -466,8 +471,8 @@ namespace Register
             db->GetFieldValue(i,15), // roid
             MAKE_DATE(i,16), // exdate
             MAKE_DATE(i,17), // valexdate
-            atoi(db->GetFieldValue(i,18)), // zone status
-            MAKE_TIME(i,19) // zone status time 
+            true, // zone status
+            ptime() // zone status time 
           );
           olist.push_back(d);
         }
