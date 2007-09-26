@@ -292,7 +292,7 @@ namespace Register
             << getTempTableName() << " tmp, "
             << "nsset_contact_map n, object_registry cor "
             << "WHERE tmp.id=n.nssetid AND n.contactid = cor.id "
-            << "ORDER BY tmp.id ";
+            << "ORDER BY tmp.id, cor.id ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           NSSetImpl *ns = dynamic_cast<NSSetImpl *>(findIDSequence(
@@ -309,7 +309,7 @@ namespace Register
             << getTempTableName() << " tmp, "
             << "host h LEFT JOIN host_ipaddr_map him ON (h.id=him.hostid) "
             << "WHERE tmp.id=h.nssetid "
-            << "ORDER BY tmp.id ";
+            << "ORDER BY tmp.id, h.id, him.id ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           NSSetImpl *ns = dynamic_cast<NSSetImpl *>(findIDSequence(
