@@ -182,7 +182,7 @@ switch( type )
 {
 case TYPE_EXDATE_BEFORE:
       strncpy( exDateStr, db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID ), sizeof(exDateStr)-1 );
-      snprintf(xmlString, "<domain:impendingExpData %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:impendingExpData>", schema_domain, nameStr, exDateStr );
+      snprintf(xmlString, sizeof(xmlString), "<domain:impendingExpData %s ><domain:name>%s</domain:name><domain:exDate>%s</domain:exDate></domain:impendingExpData>", schema_domain, nameStr, exDateStr );
       break;
 case TYPE_EXDATE_AFTER:
       strncpy( exDateStr, db->GetValueFromTable( "domain" , "ExDate" , "ID" , (int ) objectID ), sizeof(exDateStr)-1 );
