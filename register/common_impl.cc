@@ -66,6 +66,7 @@ Register::CommonListImpl::clear()
 {
   for (unsigned i=0; i<olist.size(); i++) delete olist[i];
   olist.clear();
+  add = false;
 }
 
 void
