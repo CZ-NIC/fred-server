@@ -490,6 +490,7 @@ namespace Register
         l.reload();
         if (l.getCount() !=1) throw REQUEST_NOT_FOUND();
         DetailImpl *d = dynamic_cast<DetailImpl *>(l.get(0));
+        if (d == NULL) throw std::bad_cast();
         if (d->getRequestStatus() != RS_NEW) throw REQUEST_CLOSED();
         try {
           d->process(invalid);

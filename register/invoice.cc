@@ -542,6 +542,7 @@ namespace Register
           TID fileXML = gXML->closeInput();
           // save generated files with invoice
           InvoiceImpl *ii = dynamic_cast<InvoiceImpl *>(i);
+          if (ii == NULL) throw std::bad_cast();
           ii->setFile(filePDF,fileXML);
         }
         catch (...) {
