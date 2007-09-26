@@ -1498,59 +1498,51 @@ LOG( NOTICE_LOG , "Fakturace od %s do %s timestamp [%s] " , fromdateStr , todate
 
 
                            // query for all advance invoices, from which were gathered for taxes FA 
-                              sprintf( sqlString , "select invoice_object_registry_price_map.invoiceid from  invoice_object_registry ,  invoice_object_registry_price_map  where invoice_object_registry.id=invoice_object_registry_price_map.id and invoice_object_registry.invoiceid=%d  GROUP BY invoice_object_registry_price_map.invoiceid ; " , invoiceID );
+                           snprintf( sqlString , sizeof(sqlString)-1, "select invoice_object_registry_price_map.invoiceid from  invoice_object_registry ,  invoice_object_registry_price_map  where invoice_object_registry.id=invoice_object_registry_price_map.id and invoice_object_registry.invoiceid=%d  GROUP BY invoice_object_registry_price_map.invoiceid ; " , invoiceID );
                                // EXEC SQL a insert  invoice_credit_payment_map
 
-                              if( ExecSelect( sqlString ) )
-                                {
-                                    num = GetSelectRows();
-                                    aID = new int[num];
-                                    for( i = 0 ; i < num ; i ++ )
-                                       {
+                           if( ExecSelect( sqlString ) )
+                           {
+                               num = GetSelectRows();
+                               aID = new int[num];
 
-                                              aID[i] = atoi( GetFieldValue( i  , 0 ) );
-                                              LOG( LOG_DEBUG ,"zalohova FA -> %d" , aID[i]);
+                               // OS: to je stejně čuňárna, proč se to nedělá v jedné smyčce?
 
-                                       }
-                                 FreeSelect();
-
- 
-                                 // insert into table invoice_credit_payment_map;
                                for( i = 0 ; i < num ; i ++ )
-                                  {
-                                    credit = GetInvoiceSumaPrice( invoiceID , aID[i] );
-                                    balance = GetInvoiceBalance(  aID[i] , credit ); // actual available balance
-                                    if( credit>= 0 && balance >=0 ) 
-                                    {
-                                     LOG( LOG_DEBUG ,"zalohova FA  %d credit %ld balance %ld" , aID[i] , credit , balance );
+                               {
+                                   aID[i] = atoi( GetFieldValue( i  , 0 ) );
+                                   LOG( LOG_DEBUG ,"zalohova FA -> %d" , aID[i]);
+                               }
+                               FreeSelect();
 
-                                     INSERT( "invoice_credit_payment_map" );
-                                     INTO( "invoiceid" );
-                                     INTO( "ainvoiceid" );
-                                     INTO( "credit" );
-                                     INTO( "balance" );
-                                     VALUE( invoiceID );
-                                     VALUE( aID[i] );
-                                     VALPRICE( credit );
-                                     VALPRICE( balance );
-                                     if( !EXEC()  ) return -7; // error
-                                    }else return -8; // error
+                               // insert into table invoice_credit_payment_map;
+                               for( i = 0 ; i < num ; i ++ )
+                               {
+                                   credit = GetInvoiceSumaPrice( invoiceID , aID[i] );
+                                   balance = GetInvoiceBalance(  aID[i] , credit ); // actual available balance
+                                   if( credit>= 0 && balance >=0 ) 
+                                   {
+                                       LOG( LOG_DEBUG ,"zalohova FA  %d credit %ld balance %ld" , aID[i] , credit , balance );
+                                       INSERT( "invoice_credit_payment_map" );
+                                       INTO( "invoiceid" );
+                                       INTO( "ainvoiceid" );
+                                       INTO( "credit" );
+                                       INTO( "balance" );
+                                       VALUE( invoiceID );
+                                       VALUE( aID[i] );
+                                       VALPRICE( credit );
+                                       VALPRICE( balance );
+                                       if ( !EXEC()  ) { delete[] aID; return -7; } // error
+                                   } else { delete[] aID; return -8; } // error
 
-                                  }
+                               }
 
-                              delete aID;
-                               }else return -6; // error
-
-                                    
+                               delete[] aID;
+                           } else return -6; // error
                        }
- 
-
-                           
                   }else return -5; // invoice creation wasn't successful
 
-               
-
-return invoiceID;                   
+    return invoiceID;                   
 }
 
             
