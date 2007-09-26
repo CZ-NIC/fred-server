@@ -759,7 +759,7 @@ void  ccReg_EPP_i::GetValExpDateFromExtension( char *valexpDate , const ccReg::E
 int len , i ;
 const ccReg::ENUMValidationExtension * enumVal;
 
-valexpDate[0] = NULL;
+valexpDate[0] = 0;
 
   len = ext.length();
   if( len > 0 )
@@ -769,7 +769,7 @@ valexpDate[0] = NULL;
         {
           if( ext[i] >>= enumVal )
             {
-              strncpy( valexpDate, enumVal->valExDate, sizeof(valexpDate) );
+              strncpy( valexpDate, enumVal->valExDate, MAX_DATE);
               LOG( DEBUG_LOG, "enumVal %s ", valexpDate );
             }
           else
@@ -4239,8 +4239,6 @@ seq=0;
 ret->code = 0;
 errors->length( 0 );
 
-bzero(valexpiryDate, sizeof(valexpiryDate));
-
 LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registrant_chg  [%s] authInfo_chg [%s]  nsset_chg [%s] ext.length %ld",
       (int )  clientID, clTRID, fqdn, registrant_chg, authInfo_chg, nsset_chg , (long)ext.length() );
 
@@ -4595,9 +4593,6 @@ Register::Domain::CheckAvailType dType;
 
 ret = new ccReg::Response;
 errors = new ccReg::Errors;
-
-// default
-bzero(valexpiryDate, sizeof(valexpiryDate));
 
 // default
 ret->code = 0;
@@ -4960,7 +4955,6 @@ errors = new ccReg::Errors;
 // default
   exDate =  CORBA::string_dup( "" );
 
-  bzero(valexpiryDate, sizeof(valexpiryDate));
 // default
   ret->code = 0;
  errors->length( 0 );

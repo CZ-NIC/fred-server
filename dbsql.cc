@@ -856,7 +856,7 @@ get_rfc3339_timestamp( time(NULL) ,  currentDate , true );
 if (id) // if ValExDate already exist and updated 
 {
 // copy current Exdate during update 
-    strncpy(exDate, GetDomainValExDate(id), sizeof(exDate)-1) ;
+    strncpy(exDate, GetDomainValExDate(id), MAX_DATE) ;
 
 // USE SQL for calculate
 // test if the ExDate is lager then actual date and less or equal to protected period (interval days)
@@ -1420,7 +1420,7 @@ if( ExecSelect( sqlString ) )
   {
      if(  GetSelectRows() == 1 )
       {
-          strncpy( fromdateStr , GetFieldValue( 0 , 0 ), sizeof(fromdateStr)-1 );
+          strncpy( fromdateStr , GetFieldValue( 0 , 0 ), MAX_DATE );
       }
     FreeSelect();
  }
@@ -1438,7 +1438,7 @@ if( fromdateStr[0]== 0 )
 
                    if( IsNotNull( 0 , 0 ) )
                      {
-                         strncpy( fromdateStr , GetFieldValue( 0 , 0 ), sizeof(fromdateStr)-1 );
+                         strncpy( fromdateStr , GetFieldValue( 0 , 0 ), MAX_DATE );
                       }
 
                  FreeSelect();
