@@ -126,7 +126,7 @@ switch( type )
          }
         break;
   default:
-       xmlString[0] = NULL ; // empty string  
+       xmlString[0] = 0 ; // empty string  
        break;
 }
 
@@ -881,7 +881,7 @@ if(  use_interfal ) // use current exDate as max value is int the protected inte
              date_le( date(\'%s\') , date( date(\'%s\') + interval'%d  months' ) ) as test; " , 
            valexDate , currentDate ,  valexDate , exDate , period );
 else // use current date
-    snprintf( sqlString , sizeof(sqlString) "SELECT   date_gt( date(\'%s\' ) , date(\'%s') ) AND \
+    snprintf( sqlString , sizeof(sqlString), "SELECT   date_gt( date(\'%s\' ) , date(\'%s') ) AND \
              date_le( date(\'%s\') , date( date(\'%s\') + interval'%d  months' ) ) as test; " , 
            valexDate , currentDate ,  valexDate ,  currentDate , period );
 
