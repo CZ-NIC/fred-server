@@ -2,7 +2,7 @@
 #define __DBSQL_H__
 
 #include "pqsql.h"
-
+#include "util.h"
 
 #define LANG_EN 0
 #define LANG_CS 1
@@ -344,7 +344,7 @@ private:
 char *memHandle;
 char *svrTRID;
 char *sqlBuffer;
-char dtStr[32]; //  pfor return date
+char dtStr[MAX_DATE+1]; //  pfor return date
 int actionID; // id from action table
 int historyID; // id from history table
 int loginID; // id of the client action.clientID

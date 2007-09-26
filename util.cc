@@ -336,7 +336,7 @@ return r;
 // convert  local currency string 
 long get_price( const char *priceStr )
 {
-char str[32];
+char str[33];
 long price;
 int i , j  , len;
 

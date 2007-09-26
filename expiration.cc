@@ -169,7 +169,7 @@ int Expiration::Message(ID objectID )
 char xmlString[1024];
 char schema_domain[] =  " xmlns:domain=\"http://www.nic.cz/xml/epp/domain-1.3\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/domain-1.3 domain-1.3.xsd\" ";
 char schema_enumval[] =  " xmlns:enumval=\"http://www.nic.cz/xml/epp/enumval-1.1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/enumval-1.1 enumval-1.1.xsd\" ";
-char exDateStr[32];
+char exDateStr[MAX_DATE+1];
 char nameStr[64];
 int regID;
 ID id;

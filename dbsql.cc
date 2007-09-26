@@ -844,39 +844,42 @@ return ExecSQL( sqlString );
 bool DB::TestValExDate(const char *valexDate ,  int period  , int interval , int id )
 {
 char sqlString[512];
-char exDate[33]; //  ExDate old value  in the table enumval
+char exDate[MAX_DATE+1]; //  ExDate old value  in the table enumval
 bool ret =false;
-char currentDate[32];
-bool use_interfal=false;  // default value for using protected interval
-
+char currentDate[MAX_DATE+1];
+bool use_interval=false;  // default value for using protected interval
+// std::stringstream sql;
 
 // actual local date based on the timezone
 get_rfc3339_timestamp( time(NULL) ,  currentDate , true );
 
-
-
-if( id) // if ValExDate already exist and updated 
+if (id) // if ValExDate already exist and updated 
 {
 // copy current Exdate during update 
     strncpy(exDate, GetDomainValExDate(id), sizeof(exDate)-1) ;
 
 // USE SQL for calculate
 // test if the ExDate is lager then actual date and less or equal to protected period (interval days)
+
+// OS:
+//    sql << "SELECT date_gt(date('" << exDate << "'), date('" << currentDate "')) AND " 
+//        << "date_le(date('" << exDate << "'), date(date('" << currentDate << "') + interval '"
+//        << interval << " days')) as test;";
+
     snprintf( sqlString, sizeof(sqlString), "SELECT   date_gt( date(\'%s\') , date(\'%s\') ) AND \
            date_le ( date(\'%s\') ,  date ( date(\'%s') + interval'%d days' ) ) as test; " , 
               exDate , currentDate , exDate , currentDate , interval );
 
 // As a test value
-  if( ExecSelect( sqlString ) )
-   {
-       if(  GetSelectRows() == 1  ) 
-           use_interfal=GetFieldBooleanValueName("test" , 0 );
-     
-     FreeSelect();
-   }
+//    if (ExecSelect(sql.str().c_str())) {
+    if (ExecSelect(sqlString)) {
+        if (GetSelectRows() == 1) 
+            use_interval = GetFieldBooleanValueName("test" , 0 );
+        FreeSelect();
+    }
 }
 
-if(  use_interfal ) // use current exDate as max value is int the protected interval
+if (use_interval) // use current exDate as max value is int the protected interval
     snprintf( sqlString , sizeof(sqlString), "SELECT   date_gt( date(\'%s\' ) , date(\'%s') ) AND \
              date_le( date(\'%s\') , date( date(\'%s\') + interval'%d  months' ) ) as test; " , 
            valexDate , currentDate ,  valexDate , exDate , period );
@@ -1397,8 +1400,8 @@ char sqlString[512];
 int invoiceID=-1;
 int *aID;
 int i , num;
-char fromdateStr[33];
-char todateStr[33];
+char fromdateStr[MAX_DATE+1];
+char todateStr[MAX_DATE+1];
 int count=-1;
 long price = 0, credit,  balance;
 

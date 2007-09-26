@@ -731,7 +731,7 @@ char* ccReg_EPP_i::version(ccReg::timestamp_out datetime)
 {
 char *version;
 time_t t;
-char dateStr[MAX_DATE];
+char dateStr[MAX_DATE+1];
 
 // timestamp
 t = time(NULL);
@@ -769,7 +769,7 @@ valexpDate[0] = NULL;
         {
           if( ext[i] >>= enumVal )
             {
-              strncpy( valexpDate, enumVal->valExDate, sizeof(valexpDate) - 1 );
+              strncpy( valexpDate, enumVal->valExDate, sizeof(valexpDate) );
               LOG( DEBUG_LOG, "enumVal %s ", valexpDate );
             }
           else
@@ -4226,7 +4226,7 @@ ccReg::Errors_var errors;
 std::auto_ptr<EPPNotifier> ntf;
 DB DBsql;
 char FQDN[164];
-char valexpiryDate[MAX_DATE];
+char valexpiryDate[MAX_DATE+1];
 int regID = 0, id, nssetid, contactid, adminid;
 int   seq , zone;
 std::vector<int> ac_add, ac_rem, tc_rem;
@@ -4580,7 +4580,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate( const char *fqdn, const char *Regis
 {
 DB DBsql;
 std::auto_ptr<EPPNotifier> ntf;
-char valexpiryDate[MAX_DATE] ;
+char valexpiryDate[MAX_DATE+1];
 char  FQDN[164];
 ccReg::Response_var ret;
 ccReg::Errors_var errors;
@@ -4943,7 +4943,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
 {
   DB DBsql;
   std::auto_ptr<EPPNotifier> ntf;
-  char   valexpiryDate[MAX_DATE] ;
+  char valexpiryDate[MAX_DATE+1];
   char FQDN[164]; 
   ccReg::Response_var ret;
   ccReg::Errors_var errors;
