@@ -2792,7 +2792,8 @@ if(  (regID = GetRegistrarID( clientID ) ) )
                
           }
          break;
-
+   default:
+       ret->code = COMMAND_PARAMETR_ERROR;
     }
 
     
@@ -2937,7 +2938,7 @@ if(  (regID = GetRegistrarID( clientID ) ) )
 ret->msg =CORBA::string_dup( GetErrorMessage(  ret->code  , GetRegistrarLang( clientID ) )  );
 
 DBsql.Disconnect();
-}
+ }
 
 
   // EPP exception
@@ -3219,7 +3220,7 @@ ccReg::Errors_var errors;
 int regID, id, techid, hostID;  
 unsigned int  i , j  , l;
 short inetNum;
-int *tch;
+int tch[];
 
 LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", (int ) clientID, clTRID, handle , authInfoPw  );
 LOG( NOTICE_LOG, "NSSetCreate: tech check level %d tech num %d" , (int) level  , (int)  tech.length()  );
