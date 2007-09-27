@@ -34,7 +34,7 @@ namespace Register
             free(name);
             throw NAME_ERROR();
         }
-        close(fd);
+        ::close(fd);
       }
       /// try to delete file (if exist) and free memory for unique name  
       ~TmpFile()
