@@ -4,6 +4,8 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 namespace Register
 {
@@ -20,12 +22,18 @@ namespace Register
       /// initialize unique name 
       TmpFile() throw (OPEN_ERROR)
       {
+        mode_t _umask;
+        int fd;
         name = (char *)malloc(strlen(NAME_TEMPLATE)+1);
         strcpy(name,NAME_TEMPLATE);
-        if (mkstemp(name) < 0) {
-          free(name);
-          throw NAME_ERROR();
+        _umask = umask(0077);
+        fd = mkstemp(name);
+        umask(_umask);
+        if (fd < 0) {
+            free(name);
+            throw NAME_ERROR();
         }
+        close(fd);
       }
       /// try to delete file (if exist) and free memory for unique name  
       ~TmpFile()
