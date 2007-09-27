@@ -1553,7 +1553,7 @@ LOG( NOTICE_LOG , "Fakturace od %s do %s timestamp [%s] " , fromdateStr , todate
 int  DB::MakeNewInvoice(  const char *taxDateStr , const char *fromdateStr , const char *todateStr , int zone ,  int regID ,  long price , unsigned int count  )
 {
 int invoiceID;
-int prefix;
+long prefix;
 int type;
 int dph;
 
@@ -1571,7 +1571,7 @@ if( (type = GetPrefixType( taxDateStr , INVOICE_FA , zone ) ) )   // usable pref
            {
             // find out VAT height 
            dph =GetSystemVAT(); 
-           LOG( LOG_DEBUG ,"Make Invoice prefix %d type %d DPH=%d\n" , prefix , type , dph);
+           LOG( LOG_DEBUG ,"Make Invoice prefix %ld type %d DPH=%d\n" , prefix , type , dph);
 
            invoiceID = GetSequenceID( "invoice" );
 
@@ -1636,7 +1636,7 @@ if( (type = GetPrefixType( taxDateStr , INVOICE_FA , zone ) ) )   // usable pref
 int  DB::MakeNewInvoiceAdvance( const char *taxDateStr , int zone ,  int regID ,  long price , bool VAT )
 {
 int invoiceID;
-int prefix;
+long prefix;
 int dph;
 long total; // amount without VAT == credit
 long credit;
@@ -1734,12 +1734,12 @@ if( ExecSelect( sqlString )  )
 return id;
 }
 
-int DB::GetInvoicePrefix( const char *dateStr , int typ , int zone )
+long DB::GetInvoicePrefix( const char *dateStr , int typ , int zone )
 {
 char sqlString[512];
 int year;
 char yearStr[5];
-int prefix=0 , id=0;
+long  prefix=0 , id=0;
 
 // year
 strncpy( yearStr , dateStr  , 4 );
@@ -1754,9 +1754,9 @@ if( ExecSelect( sqlString )  )
   {
             if(  GetSelectRows() == 1 )
               {
-                    id = atoi( GetFieldValueName("id"  , 0 ) );
-                    prefix =  atoi( GetFieldValueName("prefix" , 0 ) );
-                    LOG( LOG_DEBUG ,"invoice_prefix id %d -> %d" ,  id , prefix  );
+                    id = atol( GetFieldValueName("id"  , 0 ) );
+                    prefix =  atol( GetFieldValueName("prefix" , 0 ) );
+                    LOG( LOG_DEBUG ,"invoice_prefix id %d -> %ld" ,  id , prefix  );
               }
             else return -3; // error
 
@@ -2213,6 +2213,18 @@ if( strlen( value ) )
 
 }
 
+void DB::SET( const char *fname , long value )
+{
+char numStr[100];
+
+SQLCat( "  ");
+SQLCat(  fname );
+SQLCat(  "=" );
+sprintf( numStr , "%ld" ,  value  );
+SQLCat(  numStr );
+SQLCat( " ," );
+}
+
 void DB::SET( const char *fname , int value )
 {
 char numStr[16];
@@ -2458,6 +2470,13 @@ void DB::VALUE( int  value )
 {
 char numStr[16];
 sprintf( numStr , "%d" ,  value );
+VALUES( numStr , false , false , 0  ); // without ESC
+}
+
+void DB::VALUE( long value )
+{
+char numStr[100];
+sprintf( numStr , "%ld" ,  value );
 VALUES( numStr , false , false , 0  ); // without ESC
 }
 

@@ -70,7 +70,7 @@ int  MakeNewInvoiceAdvance( const char *taxDateStr , int zone ,  int regID ,  lo
 
 // make prefix for invoice
 int GetPrefixType( const char *dateStr , int typ , int zone );
-int GetInvoicePrefix( const char *dateStr , int typ , int zone );
+long GetInvoicePrefix( const char *dateStr , int typ , int zone );
 
 ///-------------------
 // BANKING 
@@ -272,6 +272,7 @@ void SSET( const char *fname , const char * value ); // without escape sequence
 void SET( const char *fname , const char * value ); // with escape
 void SETS( const char *fname , const char * value , bool esc  /* , bool null  */ ); 
 
+void SET( const  char *fname , long   value );
 void SET( const  char *fname , int   value );
 void SET( const  char *fname , bool  value );
 void SETNULL( const char *fname  );
@@ -293,6 +294,7 @@ void VALUESC( const char * value );
 void VALUES( const char * value  , bool esc , bool amp ,  int uplo ); // use esc sequence a use '
 void VALUE( const  char * value );
 void VVALUE( const char * value ); // without escape
+void VALUE( long  value );
 void VALUE( int  value );
 void VALUE( unsigned long long value );
 void VALUE( bool value );
