@@ -508,6 +508,9 @@ ccReg_Admin_i::fillContact(
   cc->discloseEmail = c->getDiscloseEmail(); 
   cc->discloseTelephone = c->getDiscloseTelephone(); 
   cc->discloseFax = c->getDiscloseFax();
+  cc->discloseIdent = c->getDiscloseIdent();
+  cc->discloseVat = c->getDiscloseVat();
+  cc->discloseNotifyEmail = c->getDiscloseNotifyEmail();
   std::vector<unsigned> slist;
   for (unsigned i=0; i<c->getStatusCount(); i++) {
     if (regMan->getStatusDesc(
