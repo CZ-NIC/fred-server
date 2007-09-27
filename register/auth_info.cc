@@ -6,7 +6,7 @@
 
 using namespace boost::gregorian;
 
-#define AUTH_INFO_PAGE "http://enum.nic.cz/whois/authinfo.py"
+#define AUTH_INFO_PAGE "http://enum.nic.cz/whois/authinfo/"
 
 namespace Register
 {
@@ -116,7 +116,11 @@ namespace Register
         switch (objectType) {
           case OT_DOMAIN:
             sql << "SELECT DISTINCT c.email FROM domain d, contact c "
-                << "WHERE d.registrant=c.id AND d.id=" << objectId;
+                << "WHERE d.registrant=c.id AND d.id=" << objectId
+                << " UNION "
+                << "SELECT DISTINCT c.email "
+                << "FROM domain_contact_map dcm, contact c "
+                << "WHERE dcm.contactid=c.id AND dcm.domainid=" << objectId;
             break;
           case OT_CONTACT:
             sql << "SELECT DISTINCT c.email FROM contact c "
