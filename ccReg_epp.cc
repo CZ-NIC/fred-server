@@ -3221,7 +3221,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
     int regID, id, techid, hostID;  
     unsigned int  i , j  , l;
     short inetNum;
-    int *tch;
+    int *tch = NULL;
 
     LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", (int ) clientID, clTRID, handle , authInfoPw  );
     LOG( NOTICE_LOG, "NSSetCreate: tech check level %d tech num %d" , (int) level  , (int)  tech.length()  );
@@ -3303,7 +3303,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
                                 tch[i] = techid  ;
                                 for( j = 0 ; j < i ; j ++ ) // test duplicity
                                 {
-                                    LOG( DEBUG_LOG , "tech comapare j %d techid %d ad %d" , j , techid ,  tch[j]  );
+                                    LOG( DEBUG_LOG , "tech compare j %d techid %d ad %d" , j , techid ,  tch[j]  );
                                     if( tch[j] == techid &&  tch[j] > 0 )
                                     { tch[j]= 0 ;  ret->code =  SetReasonContactDuplicity(  errors , tech[i] ,  GetRegistrarLang( clientID ) , i , ccReg::nsset_tech ); } 
                                 }
