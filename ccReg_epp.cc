@@ -45,6 +45,7 @@
 #define FLAG_serverTransferProhibited 3
 #define FLAG_serverUpdateProhibited 4
 #define FLAG_serverRegistrantChangeProhibited 18
+#define FLAG_deleteCandidate 17
 
 static bool testObjectHasState(
   DB *db, Register::TID object_id, unsigned state_id
@@ -5086,7 +5087,11 @@ if(  ( regID = GetRegistrarID( clientID ) ) )
                       ret->code = COMMAND_AUTOR_ERROR;      
                     }
                   try {            	 
-                	 if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverRenewProhibited))
+                	 if (!ret->code && (
+                		   testObjectHasState(&DBsql,id,FLAG_serverRenewProhibited) ||
+                		   testObjectHasState(&DBsql,id,FLAG_deleteCandidate)
+                		 )
+                		)
                      {
                       LOG( WARNING_LOG, "renew of object %s is prohibited" , fqdn );
                       ret->code =  COMMAND_STATUS_PROHIBITS_OPERATION;
