@@ -414,7 +414,7 @@ namespace Register
 	  sql << "AND NOT(t.fqdn ISNULL) ";
         SQL_ID_FILTER(sql,"r.id",idFilter);
         SQL_HANDLE_FILTER(sql,"r.name",name);
-        SQL_HANDLE_FILTER(sql,"r.handle",handle);
+        SQL_HANDLE_WILDCHECK_FILTER(sql,"r.handle",handle,false,false);
         sql << "GROUP BY r.id,r.handle,r.name,r.url,r.organization,"
             << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
             << "r.postalcode,r.country,r.telephone,r.fax,r.email ";
