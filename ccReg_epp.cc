@@ -3220,7 +3220,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
     int regID, id, techid, hostID;  
     unsigned int  i , j  , l;
     short inetNum;
-    int tch[];
+    int *tch;
 
     LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", (int ) clientID, clTRID, handle , authInfoPw  );
     LOG( NOTICE_LOG, "NSSetCreate: tech check level %d tech num %d" , (int) level  , (int)  tech.length()  );
@@ -3260,7 +3260,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
                 if ( DBsql.BeginTransaction() ) {
                     Register::NSSet::Manager::CheckAvailType caType;
 
-                    tch = new int[ tech.length() ] ;
+                    tch = new int[tech.length()];
 
                     try {
                         std::auto_ptr<Register::NSSet::Manager> nman(
