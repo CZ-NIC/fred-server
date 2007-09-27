@@ -28,7 +28,7 @@
        << " 23:59:59' "
 #define SQL_WILDCARD_FILTER_FILL(x,colname,member) \
      x << "AND " \
-       << colname << " ILIKE TRANSLATE('" << member << "','*?','%_') "
+       << colname << " ILIKE TRANSLATE('" << db->Escape2(member) << "','*?','%_') "
 #define SQL_WILDCARD_FILTER(x,colname,member) \
   if (!member.empty()) SQL_WILDCARD_FILTER_FILL(x,colname,member)
 #define SQL_HANDLE_FILTER(x,colname,member) \
@@ -40,7 +40,7 @@
       SQL_WILDCARD_FILTER_FILL(x,colname,member); \
     else x << "AND " << (u?"UPPER(":"") << colname << (u?")":"") \
            << "=" << (u?"UPPER(":"") \
-           << "'" << member << "'" <<  (u?")":"") << " "; }
+           << "'" << db->Escape2(member) << "'" <<  (u?")":"") << " "; }
 #define SQL_ID_FILTER_FILL(x,colname,member) \
      x << "AND " << colname << "=" << member << " "
 #define SQL_ID_FILTER(x,colname,member) \

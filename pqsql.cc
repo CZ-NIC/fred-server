@@ -184,6 +184,16 @@ void  PQ::Disconnect()
  PQfinish(connection); 
 }
 
+std::string 
+PQ::Escape2(const std::string& str)
+{
+  char *buffer = new char[3*str.length()];
+  PQescapeStringConn(connection,buffer,str.c_str(),str.length(),NULL);
+  std::string ret = buffer;
+  delete[] buffer;
+  return ret;
+}
+
 // escape string to SQL 
 bool PQ::Escape(char *str ,  const char *String  , int length )
 {

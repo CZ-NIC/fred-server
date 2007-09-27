@@ -2,6 +2,7 @@
 #define __PQSQL_H__
 
 #include <libpq-fe.h>
+#include <string>
 
 class PQ{
 public:
@@ -45,6 +46,8 @@ bool IsNotNull( int row , int col );
 
 // escape string to escape sequence  using  libpq
 bool Escape(char *str ,  const char *String ,  int length  );
+
+std::string Escape2(const std::string& str);
 
 // return number of selected rows and cols
 int GetSelectRows();
