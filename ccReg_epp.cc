@@ -3212,327 +3212,314 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
                                             const ccReg::TechContact & tech, const ccReg::DNSHost & dns,CORBA::Short level,
                                             ccReg::timestamp_out crDate, CORBA::Long clientID,  const char *clTRID , const char* XML ) 
 { 
-DB DBsql; 
-std::auto_ptr<EPPNotifier> ntf;
-char  NAME[256] ; // to upper case of name of DNS hosts
-ccReg::Response_var ret; 
-ccReg::Errors_var errors;
-int regID, id, techid, hostID;  
-unsigned int  i , j  , l;
-short inetNum;
-int tch[];
+    DB DBsql; 
+    std::auto_ptr<EPPNotifier> ntf;
+    char  NAME[256] ; // to upper case of name of DNS hosts
+    ccReg::Response_var ret; 
+    ccReg::Errors_var errors;
+    int regID, id, techid, hostID;  
+    unsigned int  i , j  , l;
+    short inetNum;
+    int tch[];
 
-LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", (int ) clientID, clTRID, handle , authInfoPw  );
-LOG( NOTICE_LOG, "NSSetCreate: tech check level %d tech num %d" , (int) level  , (int)  tech.length()  );
+    LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", (int ) clientID, clTRID, handle , authInfoPw  );
+    LOG( NOTICE_LOG, "NSSetCreate: tech check level %d tech num %d" , (int) level  , (int)  tech.length()  );
 
-ret = new ccReg::Response;
-errors = new ccReg::Errors;
+    ret = new ccReg::Response;
+    errors = new ccReg::Errors;
 
-tch = new int[ tech.length() ] ;
+// defaults
+    ret->code = 0;
+    errors->length( 0 );
+    crDate = CORBA::string_dup( "" );
 
-// default
-ret->code = 0;
-errors->length( 0 );
-crDate = CORBA::string_dup( "" );
-
-
-if(  ( regID = GetRegistrarID( clientID ) ) )
-
-  if( DBsql.OpenDatabase( database ) )
-    {
-
-      if( (  DBsql.BeginAction( clientID, EPP_NSsetCreate,  clTRID  , XML)  ))
+    if (tech.length() < 1) {
+        LOG( WARNING_LOG, "NSSetCreate: not any tech Contact " );
+        ret->code =  SetErrorReason( errors , COMMAND_PARAMETR_MISSING , ccReg::nsset_tech , 0,   REASON_MSG_TECH_NOTEXIST  , GetRegistrarLang( clientID ) );
+    }
+    else if (dns.length() < 2) //  minimal two dns hosts
+    {                
+        if( dns.length() == 1 )
         {
-          if ( DBsql.BeginTransaction() ) {
-            Register::NSSet::Manager::CheckAvailType caType;
-            try {
-              std::auto_ptr<Register::NSSet::Manager> nman(
-                Register::NSSet::Manager::create(&DBsql,conf.GetRestrictedHandles())
-              );
-              Register::NameIdPair nameId;
-              caType = nman->checkAvail(handle,nameId);
-              id = nameId.id;
-            } 
-            catch (...) { id = -1; } 
-            if (id<0 || caType == Register::NSSet::Manager::CA_INVALID_HANDLE)
-              ret->code= SetReasonNSSetHandle( errors, handle  , GetRegistrarLang( clientID ) );
-            else if (caType == Register::NSSet::Manager::CA_REGISTRED)  {
-              LOG( WARNING_LOG, "nsset handle [%s] EXIST", handle );
-              ret->code= COMMAND_OBJECT_EXIST;
-            }
+            LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s"  , (const char *)  dns[0].fqdn   );    
+            ret->code = SetErrorReason( errors , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_dns_name , 1 , REASON_MSG_MIN_TWO_DNS_SERVER ,  GetRegistrarLang( clientID ) );
+        }
+        else
+        {
+            LOG( WARNING_LOG, "NSSetCreate: minimal two dns DNS hosts" );
+            ret->code = SetErrorReason( errors  , COMMAND_PARAMETR_MISSING , ccReg::nsset_dns_name , 0 , REASON_MSG_MIN_TWO_DNS_SERVER , GetRegistrarLang( clientID ) );
+        }
  
-            else if (caType == Register::NSSet::Manager::CA_PROTECTED)
-              ret->code= SetReasonProtectedPeriod( errors , handle , GetRegistrarLang( clientID ),ccReg::nsset_handle );
-            else {
-             // Test tech-c
+    }
+    else if ((regID = GetRegistrarID(clientID))) {
 
-                 if(  tech.length() == 0 )  // if not eny tech-c
-                   {
-                       LOG( WARNING_LOG, "NSSetCreate: not any tech Contact " );
-                       ret->code =  SetErrorReason( errors , COMMAND_PARAMETR_MISSING , ccReg::nsset_tech , 0,   REASON_MSG_TECH_NOTEXIST  , GetRegistrarLang( clientID ) );
-                   }
-                 else
-                 {
-                 
-
-                             // test tech-c
-                              std::auto_ptr<Register::Contact::Manager> cman(
-                                Register::Contact::Manager::create(&DBsql,conf.GetRestrictedHandles())
-                              );
-                              for( i = 0; i <   tech.length() ;  i++ )
-                               {
-                                Register::Contact::Manager::CheckAvailType caType;
-                                  try {
-                                    Register::NameIdPair nameId;
-                                    caType = cman->checkAvail((const char *)tech[i],nameId);
-                                    techid = nameId.id;
-                                  } catch (...) {
-                                    caType = Register::Contact::Manager::CA_INVALID_HANDLE;
-                                  }
-                                  if (caType != Register::Contact::Manager::CA_REGISTRED)  
-                                       ret->code = SetReasonNSSetTech( errors , tech[i] , techid ,  GetRegistrarLang( clientID )  , i );
-                                  else  {
-                                         tch[i] = techid  ;
-                                         for( j = 0 ; j < i ; j ++ ) // test duplicity
-                                            {
-                                               LOG( DEBUG_LOG , "tech comapare j %d techid %d ad %d" , j , techid ,  tch[j]  );
-                                              if( tch[j] == techid &&  tch[j] > 0 )
-                                                { tch[j]= 0 ;  ret->code =  SetReasonContactDuplicity(  errors , tech[i] ,  GetRegistrarLang( clientID ) , i , ccReg::nsset_tech ); } 
-                                            }
-
-                                        }
-                               }
-
-
-
-                  }
-         
-               LOG( DEBUG_LOG ,  "NSSetCreate:  dns.length %d" , (int ) dns.length() );
-               // test DNS host
-               if(  dns.length() < 2  ) //  minimal two dns hosts
-                 {
-                
-                      if( dns.length() == 1 )
-                        {
-                          LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s"  , (const char *)  dns[0].fqdn   );    
-                          ret->code = SetErrorReason( errors , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_dns_name , 1 , REASON_MSG_MIN_TWO_DNS_SERVER ,  GetRegistrarLang( clientID ) );
-                        }
-                      else
-                        {
-                          LOG( WARNING_LOG, "NSSetCreate: minimal two dns DNS hosts" );
-                          ret->code = SetErrorReason( errors  , COMMAND_PARAMETR_MISSING , ccReg::nsset_dns_name , 0 , REASON_MSG_MIN_TWO_DNS_SERVER , GetRegistrarLang( clientID ) );
-                        }
- 
-               }
-               else
-               {
-                    
-                  // test IP address of  DNS host
-                           
-                  for( i = 0 , inetNum=0; i <   dns.length() ; i++   )
-                    {
-     
-                      LOG( DEBUG_LOG , "NSSetCreate: test host %s" ,  (const char *)  dns[i].fqdn );
-
-                      //  list sequence                    
-                      for( j = 0; j <  dns[i].inet.length(); j++ )
-                        {
-                          LOG( DEBUG_LOG , "NSSetCreate: test inet[%d] = %s " , j ,   (const char *) dns[i].inet[j]   );
-                          if( TestInetAddress( dns[i].inet[j] )  )
-                            {
-                                 for( l = 0 ; l < j ; l ++ ) // test to duplicity
-                                 {
-                                       if( strcmp( dns[i].inet[l] ,   dns[i].inet[j] ) == 0 )
-                                         {
-                                           LOG( WARNING_LOG, "NSSetCreate: duplicity host address %s " , (const char *) dns[i].inet[j]  );
-                                           ret->code =SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , inetNum+j+1 ,REASON_MSG_DUPLICITY_DNS_ADDRESS ,    GetRegistrarLang( clientID ) );
-                                         }
-                                  }
-
-                            }
-                          else 
-                            {
-                                  LOG( WARNING_LOG, "NSSetCreate: bad host address %s " , (const char *) dns[i].inet[j]  );
-                                  ret->code =SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , inetNum+j+1 , REASON_MSG_BAD_IP_ADDRESS , GetRegistrarLang( clientID ) );
-                            }
-
-
-                        }
-
-
-
-
-
-                      // test DNS hosts
-                     if( TestDNSHost( dns[i].fqdn ) == false )
-                       {
-
-                          LOG( WARNING_LOG, "NSSetCreate: bad host name %s " , (const char *)  dns[i].fqdn  );
-                          ret->code = SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name , i+1 , REASON_MSG_BAD_DNS_NAME , GetRegistrarLang( clientID ) );
-                       }
-                     else
-                       {
-                          LOG( NOTICE_LOG ,  "NSSetCreate: test DNS Host %s",   (const char *)  dns[i].fqdn       );
-                          convert_hostname(  NAME , dns[i].fqdn );
-
- 
-                     // not in defined zones and exist record of ip address 
-                          if( getZone( dns[i].fqdn  ) == 0   && dns[i].inet.length() > 0 )
-                          {
-
-                            for( j = 0 ; j <  dns[i].inet.length() ; j ++ )
-                               {
-
-                                    LOG( WARNING_LOG, "NSSetCreate:  ipaddr  glue not allowed %s " , (const char *) dns[i].inet[j]   );
-                                     ret->code = SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , inetNum+j+1 ,  REASON_MSG_IP_GLUE_NOT_ALLOWED ,  GetRegistrarLang( clientID ) );
-                                } 
-
-                           }                              
-                    
-                                                  
-                       }  
-
-                       inetNum+=  dns[i].inet.length(); //  InetNum counter  for return errors 
-                   } // end of cycle
-
-
-               }
- 
-            LOG( DEBUG_LOG , "NSSetCreate: ret->code %d" ,  ret->code ); 
-
-            if( ret->code == 0 )
+        if( DBsql.OpenDatabase( database ) )
+        {
+            if( (  DBsql.BeginAction( clientID, EPP_NSsetCreate,  clTRID  , XML)  ))
             {
+                if ( DBsql.BeginTransaction() ) {
+                    Register::NSSet::Manager::CheckAvailType caType;
 
-              id= DBsql.CreateObject( "N" ,  regID , handle ,  authInfoPw );
-              if (id<=0) {
-               if (id==0) {
-                LOG( WARNING_LOG, "nsset handle [%s] EXIST", handle );
-                ret->code= COMMAND_OBJECT_EXIST;
-               } else {
-                   LOG( WARNING_LOG, "Cannot insert [%s] into object_registry", handle );
-                   ret->code= COMMAND_FAILED;
-               }
-              } else {
+                    tch = new int[ tech.length() ] ;
 
-              if (level<0) level = atoi(conf.GetNSSetLevel());
-              // write to nsset table
-              DBsql.INSERT( "NSSET" );
-              DBsql.INTO( "id" );
-              if( level >= 0 ) DBsql.INTO( "checklevel" );
-              DBsql.VALUE( id );
-              if( level >= 0 ) DBsql.VALUE( level );
+                    try {
+                        std::auto_ptr<Register::NSSet::Manager> nman(
+                            Register::NSSet::Manager::create(&DBsql,conf.GetRestrictedHandles())
+                            );
+                        Register::NameIdPair nameId;
+                        caType = nman->checkAvail(handle,nameId);
+                        id = nameId.id;
+                    } 
+                    catch (...) { id = -1; }
 
-              // nsset first
-              if( ! DBsql.EXEC() ) ret->code = COMMAND_FAILED;
-              else 
-              {
-
-                  // get local timestamp with timezone of created object
-                  CORBA::string_free(crDate);
-                  crDate= CORBA::string_dup( DBsql.GetObjectCrDateTime( id )  );
-
-                  // insert all tech-c
-                  for( i = 0; i <   tech.length() ;  i++ )
-                    {
-                      LOG( DEBUG_LOG, "NSSetCreate: add tech Contact %s id %d " , (const char *)  tech[i]  , tch[i]);
-                      if(  !DBsql.AddContactMap( "nsset" , id  , tch[i]  ) ) { ret->code = COMMAND_FAILED; break; }
+                    if (id<0 || caType == Register::NSSet::Manager::CA_INVALID_HANDLE)
+                        ret->code = SetReasonNSSetHandle( errors, handle  , GetRegistrarLang( clientID ) );
+                    else if (caType == Register::NSSet::Manager::CA_REGISTRED)  {
+                        LOG( WARNING_LOG, "nsset handle [%s] EXIST", handle );
+                        ret->code = COMMAND_OBJECT_EXIST;
                     }
+                    else if (caType == Register::NSSet::Manager::CA_PROTECTED)
+                        ret->code = SetReasonProtectedPeriod( errors , handle , GetRegistrarLang( clientID ),ccReg::nsset_handle );
+                    if (ret->code == 0) {
+                        // test tech-c
+                        std::auto_ptr<Register::Contact::Manager> cman(
+                            Register::Contact::Manager::create(&DBsql,conf.GetRestrictedHandles())
+                            );
+                        for( i = 0; i < tech.length() ; i++ )
+                        {
+                            Register::Contact::Manager::CheckAvailType caType;
+                            try {
+                                Register::NameIdPair nameId;
+                                caType = cman->checkAvail((const char *)tech[i],nameId);
+                                techid = nameId.id;
+                            } catch (...) {
+                                caType = Register::Contact::Manager::CA_INVALID_HANDLE;
+                            }
 
-
-
-                 // insert all DNS hosts
-
-
-                  for( i = 0; i < dns.length() ; i++ )
-                    {
-
-
-                      // convert host name to lower case
-                       LOG( NOTICE_LOG ,  "NSSetCreate: DNS Host %s ",   (const char *)  dns[i].fqdn      );
-                       convert_hostname(  NAME , dns[i].fqdn );
-
-
-                          // ID  sequence 
-                          hostID = DBsql.GetSequenceID( "host" );
-
-
-
-
-                          // HOST  informations
-                          DBsql.INSERT( "HOST" );
-                          DBsql.INTO( "ID" );
-                          DBsql.INTO( "NSSETID" );
-                          DBsql.INTO( "fqdn" );
-                          DBsql.VALUE( hostID );
-                          DBsql.VALUE( id );
-                          DBsql.VVALUE( NAME );
-                          if( DBsql.EXEC()  )
-                            {
-
-                              // save ip address of host
-                              for( j = 0; j <  dns[i].inet.length(); j++ )
-                                 {
-                                    LOG( NOTICE_LOG ,  "NSSetCreate: IP address hostID  %d [%s] ",  hostID  , (const char *)  dns[i].inet[j]   );
-
-                                   // HOST_IPADDR insert IP address of DNS host
-                                   DBsql.INSERT( "HOST_IPADDR_map" );
-                                   DBsql.INTO( "HOSTID" );
-                                   DBsql.INTO( "NSSETID" );
-                                   DBsql.INTO( "ipaddr" );
-                                   DBsql.VALUE( hostID );
-                                   DBsql.VALUE( id ); // write nssetID
-                                   DBsql.VVALUE( dns[i].inet[j]  );
-
-                                   if( DBsql.EXEC() == false ) {  ret->code = COMMAND_FAILED; break ; }
-
+                            if (caType != Register::Contact::Manager::CA_REGISTRED)  
+                                ret->code = SetReasonNSSetTech( errors , tech[i] , techid ,  GetRegistrarLang( clientID )  , i );
+                            else  {
+                                tch[i] = techid  ;
+                                for( j = 0 ; j < i ; j ++ ) // test duplicity
+                                {
+                                    LOG( DEBUG_LOG , "tech comapare j %d techid %d ad %d" , j , techid ,  tch[j]  );
+                                    if( tch[j] == techid &&  tch[j] > 0 )
+                                    { tch[j]= 0 ;  ret->code =  SetReasonContactDuplicity(  errors , tech[i] ,  GetRegistrarLang( clientID ) , i , ccReg::nsset_tech ); } 
                                 }
 
                             }
-                           else {  ret->code = COMMAND_FAILED; break; }
+                        }
+                    }
+
+                    if (ret->code == 0) {
+
+                        LOG( DEBUG_LOG ,  "NSSetCreate:  dns.length %d" , (int ) dns.length() );
+                        // test DNS host
+
+                        // test IP address of  DNS host
+                           
+                        for( i = 0 , inetNum=0; i <   dns.length() ; i++   )
+                        {
+     
+                            LOG( DEBUG_LOG , "NSSetCreate: test host %s" ,  (const char *)  dns[i].fqdn );
+
+                            //  list sequence                    
+                            for( j = 0; j <  dns[i].inet.length(); j++ )
+                            {
+                                LOG( DEBUG_LOG , "NSSetCreate: test inet[%d] = %s " , j ,   (const char *) dns[i].inet[j]   );
+                                if( TestInetAddress( dns[i].inet[j] )  )
+                                {
+                                    for( l = 0 ; l < j ; l ++ ) // test to duplicity
+                                    {
+                                        if( strcmp( dns[i].inet[l] ,   dns[i].inet[j] ) == 0 )
+                                        {
+                                            LOG( WARNING_LOG, "NSSetCreate: duplicity host address %s " , (const char *) dns[i].inet[j]  );
+                                            ret->code =SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , inetNum+j+1 ,REASON_MSG_DUPLICITY_DNS_ADDRESS ,    GetRegistrarLang( clientID ) );
+                                        }
+                                    }
+
+                                }
+                                else 
+                                {
+                                    LOG( WARNING_LOG, "NSSetCreate: bad host address %s " , (const char *) dns[i].inet[j]  );
+                                    ret->code =SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , inetNum+j+1 , REASON_MSG_BAD_IP_ADDRESS , GetRegistrarLang( clientID ) );
+                                }
+
+
+                            }
+
+
+
+
+
+                            // test DNS hosts
+                            if( TestDNSHost( dns[i].fqdn ) == false )
+                            {
+
+                                LOG( WARNING_LOG, "NSSetCreate: bad host name %s " , (const char *)  dns[i].fqdn  );
+                                ret->code = SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name , i+1 , REASON_MSG_BAD_DNS_NAME , GetRegistrarLang( clientID ) );
+                            }
+                            else
+                            {
+                                LOG( NOTICE_LOG ,  "NSSetCreate: test DNS Host %s",   (const char *)  dns[i].fqdn       );
+                                convert_hostname(  NAME , dns[i].fqdn );
+
+ 
+                                // not in defined zones and exist record of ip address 
+                                if( getZone( dns[i].fqdn  ) == 0   && dns[i].inet.length() > 0 )
+                                {
+
+                                    for( j = 0 ; j <  dns[i].inet.length() ; j ++ )
+                                    {
+
+                                        LOG( WARNING_LOG, "NSSetCreate:  ipaddr  glue not allowed %s " , (const char *) dns[i].inet[j]   );
+                                        ret->code = SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_addr , inetNum+j+1 ,  REASON_MSG_IP_GLUE_NOT_ALLOWED ,  GetRegistrarLang( clientID ) );
+                                    } 
+
+                                }                              
+                    
+                                                  
+                            }  
+
+                            inetNum+=  dns[i].inet.length(); //  InetNum counter  for return errors 
+                        } // end of cycle
+ 
+                        LOG( DEBUG_LOG , "NSSetCreate: ret->code %d" ,  ret->code ); 
+
+                    }
+
+                    if( ret->code == 0 )
+                    {
+
+                        id = DBsql.CreateObject( "N" ,  regID , handle ,  authInfoPw );
+                        if (id<=0) {
+                            if (id==0) {
+                                LOG( WARNING_LOG, "nsset handle [%s] EXIST", handle );
+                                ret->code= COMMAND_OBJECT_EXIST;
+                            } else {
+                                LOG( WARNING_LOG, "Cannot insert [%s] into object_registry", handle );
+                                ret->code= COMMAND_FAILED;
+                            }
+                        } else {
+
+                            if (level<0) level = atoi(conf.GetNSSetLevel());
+                            // write to nsset table
+                            DBsql.INSERT( "NSSET" );
+                            DBsql.INTO( "id" );
+                            if( level >= 0 ) DBsql.INTO( "checklevel" );
+                            DBsql.VALUE( id );
+                            if( level >= 0 ) DBsql.VALUE( level );
+
+                            // nsset first
+                            if( ! DBsql.EXEC() ) ret->code = COMMAND_FAILED;
+                            else 
+                            {
+
+                                // get local timestamp with timezone of created object
+                                CORBA::string_free(crDate);
+                                crDate= CORBA::string_dup( DBsql.GetObjectCrDateTime( id )  );
+
+                                // insert all tech-c
+                                for( i = 0; i <   tech.length() ;  i++ )
+                                {
+                                    LOG( DEBUG_LOG, "NSSetCreate: add tech Contact %s id %d " , (const char *)  tech[i]  , tch[i]);
+                                    if(  !DBsql.AddContactMap( "nsset" , id  , tch[i]  ) ) { ret->code = COMMAND_FAILED; break; }
+                                }
+
+
+
+                                // insert all DNS hosts
+
+
+                                for( i = 0; i < dns.length() ; i++ )
+                                {
+
+
+                                    // convert host name to lower case
+                                    LOG( NOTICE_LOG ,  "NSSetCreate: DNS Host %s ",   (const char *)  dns[i].fqdn      );
+                                    convert_hostname(  NAME , dns[i].fqdn );
+
+
+                                    // ID  sequence 
+                                    hostID = DBsql.GetSequenceID( "host" );
+
+
+
+
+                                    // HOST  informations
+                                    DBsql.INSERT( "HOST" );
+                                    DBsql.INTO( "ID" );
+                                    DBsql.INTO( "NSSETID" );
+                                    DBsql.INTO( "fqdn" );
+                                    DBsql.VALUE( hostID );
+                                    DBsql.VALUE( id );
+                                    DBsql.VVALUE( NAME );
+                                    if( DBsql.EXEC()  )
+                                    {
+
+                                        // save ip address of host
+                                        for( j = 0; j <  dns[i].inet.length(); j++ )
+                                        {
+                                            LOG( NOTICE_LOG ,  "NSSetCreate: IP address hostID  %d [%s] ",  hostID  , (const char *)  dns[i].inet[j]   );
+
+                                            // HOST_IPADDR insert IP address of DNS host
+                                            DBsql.INSERT( "HOST_IPADDR_map" );
+                                            DBsql.INTO( "HOSTID" );
+                                            DBsql.INTO( "NSSETID" );
+                                            DBsql.INTO( "ipaddr" );
+                                            DBsql.VALUE( hostID );
+                                            DBsql.VALUE( id ); // write nssetID
+                                            DBsql.VVALUE( dns[i].inet[j]  );
+
+                                            if( DBsql.EXEC() == false ) {  ret->code = COMMAND_FAILED; break ; }
+
+                                        }
+
+                                    }
+                                    else {  ret->code = COMMAND_FAILED; break; }
 
                       
-                     }   // end of host cycle
+                                }   // end of host cycle
 
 
-                  //  save to  historie if is OK 
-                 if(  ret->code !=  COMMAND_FAILED  )  
-                  if( DBsql.SaveNSSetHistory( id ) )
-                         if ( DBsql.SaveObjectCreate( id ) )  ret->code = COMMAND_OK; 
-                } // 
+                                    //  save to  historie if is OK 
+                                if(  ret->code !=  COMMAND_FAILED  )  
+                                    if( DBsql.SaveNSSetHistory( id ) )
+                                        if ( DBsql.SaveObjectCreate( id ) )  ret->code = COMMAND_OK; 
+                            } // 
 
 
-             if( ret->code == COMMAND_OK ) // run notifier
-               {
-                            ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
-                            ntf->Send(); //send messages
-               }
+                            if( ret->code == COMMAND_OK ) // run notifier
+                            {
+                                ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
+                                ntf->Send(); //send messages
+                            }
 
 
-           }
+                        }
+                    }
+
+                    delete[] tch;
+
+                    DBsql.QuitTransaction( ret->code );
+                }
+
+                ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->code ) );
             }
 
-            }
-      DBsql.QuitTransaction( ret->code );
-     }
+            ret->msg =CORBA::string_dup( GetErrorMessage(  ret->code  , GetRegistrarLang( clientID ) )  );
 
+            DBsql.Disconnect();
+        }
 
-     ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->code ) );
-     }
-
-      ret->msg =CORBA::string_dup( GetErrorMessage(  ret->code  , GetRegistrarLang( clientID ) )  );
-
-      DBsql.Disconnect();
     }
 
-delete[] tch;
+    // EPP exception
+    if(  ret->code > COMMAND_EXCEPTION) EppError(  ret->code , ret->msg ,  ret->svTRID , errors );
 
+    if( ret->code == 0 ) ServerInternalError("NSSetCreate");
 
-  // EPP exception
-  if(  ret->code > COMMAND_EXCEPTION) EppError(  ret->code , ret->msg ,  ret->svTRID , errors );
-
-if( ret->code == 0 ) ServerInternalError("NSSetCreate");
-
-return ret._retn();
+    return ret._retn();
 }
 
 
