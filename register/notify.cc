@@ -93,7 +93,7 @@ namespace Register
         params["dnsdate"] = to_iso_extended_string(
           d->getExpirationDate() + date_duration(30)
         );
-        params["exreddate"] = to_iso_extended_string(
+        params["exregdate"] = to_iso_extended_string(
           d->getExpirationDate() + date_duration(45)
         );
       }
@@ -222,11 +222,12 @@ namespace Register
                 *debugOutput << "<param><name>" << ci->first << "</name>"
                              << "<value>" << ci->second << "</value></param>";
               *debugOutput << "</notify>" << std::endl;
+            } else {
+              TID mail = mm->sendEmail(
+                "",emails,"",i->mtype,params,handles,attach
+              );
+              saveNotification(i->state_id,i->type,mail);
             }
-            TID mail = mm->sendEmail(
-              "",emails,"",i->mtype,params,handles,attach
-            );
-            saveNotification(i->state_id,i->type,mail);
           } 
           catch (...) {
             LOG(
@@ -238,6 +239,11 @@ namespace Register
         }
         if (debugOutput) *debugOutput << "</notifications>" << std::endl;
       }
+      virtual void generateLetters()
+        throw (SQL_ERROR)
+      {
+      }
+      
     };
     Manager *Manager::create(
       DB *db, 
