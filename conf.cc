@@ -1,7 +1,9 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#include "log.h"
 
 #define MAX_LINE 256
 #define KEY_MAX 30
