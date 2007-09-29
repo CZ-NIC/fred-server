@@ -1,3 +1,6 @@
+#ifndef __LOG_H__
+#define __LOG_H__
+
 #include <syslog.h>
 #include <stdarg.h>
 
@@ -45,3 +48,5 @@ class Logger
 };
 
 #define LOG Logger::get().log
+
+#endif
