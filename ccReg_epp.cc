@@ -5465,65 +5465,50 @@ ccReg_EPP_i::info(
   CORBA::Long clientID, const char* clTRID, const char* XML
 )
 {
-  DB DBsql;
-  if (!DBsql.OpenDatabase(database)) 
-    ServerInternalError("Cannot connect in Info");
-  if ((!DBsql.BeginAction(clientID, EPP_Info, clTRID, XML))) {
-    DBsql.Disconnect();
-    ServerInternalError("Cannot begin action in Info");
-  }
-  ccReg::Response_var ret = new ccReg::Response();
-  ccReg::TID registrar = GetRegistrarID(clientID);
-  if (!registrar) ret->code = COMMAND_MAX_SESSION_LIMIT;
-  else {
-    try {
-      std::auto_ptr<Register::Zone::Manager> zoneMan(
-        Register::Zone::Manager::create(&DBsql)
-      );
-      std::auto_ptr<Register::Domain::Manager> domMan(
-        Register::Domain::Manager::create(&DBsql, zoneMan.get())
-      );
-      std::auto_ptr<Register::Contact::Manager> conMan(
-        Register::Contact::Manager::create(&DBsql,conf.GetRestrictedHandles())
-      );
-      std::auto_ptr<Register::NSSet::Manager> nssMan(
-        Register::NSSet::Manager::create(&DBsql,conf.GetRestrictedHandles())
-      );
-      std::auto_ptr<Register::InfoBuffer::Manager> infoBufMan(
-        Register::InfoBuffer::Manager::create(
-          &DBsql, domMan.get(), nssMan.get(), conMan.get()
-        )
-      );
-      count = infoBufMan->info(
-        registrar,
-        type == ccReg::IT_LIST_CONTACTS ? 
-          Register::InfoBuffer::T_LIST_CONTACTS : 
-        type == ccReg::IT_LIST_DOMAINS ?
-          Register::InfoBuffer::T_LIST_DOMAINS : 
-        type == ccReg::IT_LIST_NSSETS ?
-          Register::InfoBuffer::T_LIST_NSSETS : 
-        type == ccReg::IT_DOMAINS_BY_NSSET ?
-          Register::InfoBuffer::T_DOMAINS_BY_NSSET : 
-        type == ccReg::IT_DOMAINS_BY_CONTACT ?
-          Register::InfoBuffer::T_DOMAINS_BY_CONTACT : 
-        type == ccReg::IT_NSSETS_BY_CONTACT ?
-          Register::InfoBuffer::T_NSSETS_BY_CONTACT : 
-          Register::InfoBuffer::T_NSSETS_BY_NS,
-        handle
-      );
-    }
-    catch (...) {
-      DBsql.Disconnect();
-      ServerInternalError("Cannot finish in Info");    
-    }
-    ret->code=COMMAND_OK;
-  }
-  ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code)) ;
-  ret->msg =CORBA::string_dup(
-    GetErrorMessage(ret->code, GetRegistrarLang(clientID))
+  LOG(
+    NOTICE_LOG, 
+    "Info: clientID -> %d clTRID [%s]",  (int ) clientID,  clTRID
   );
-  DBsql.Disconnect();
-  return ret._retn();
+  // start EPP action - this will handle all init stuff
+  EPPAction a(this,clientID,EPP_Info,clTRID,XML);
+  try {
+    std::auto_ptr<Register::Zone::Manager> zoneMan(
+      Register::Zone::Manager::create(a.getDB())
+    );
+    std::auto_ptr<Register::Domain::Manager> domMan(
+      Register::Domain::Manager::create(a.getDB(), zoneMan.get())
+    );
+    std::auto_ptr<Register::Contact::Manager> conMan(
+      Register::Contact::Manager::create(a.getDB(),conf.GetRestrictedHandles())
+    );
+    std::auto_ptr<Register::NSSet::Manager> nssMan(
+      Register::NSSet::Manager::create(a.getDB(),conf.GetRestrictedHandles())
+    );
+    std::auto_ptr<Register::InfoBuffer::Manager> infoBufMan(
+      Register::InfoBuffer::Manager::create(
+        a.getDB(), domMan.get(), nssMan.get(), conMan.get()
+      )
+    );
+    count = infoBufMan->info(
+      a.getRegistrar(),
+      type == ccReg::IT_LIST_CONTACTS ? 
+        Register::InfoBuffer::T_LIST_CONTACTS : 
+      type == ccReg::IT_LIST_DOMAINS ?
+        Register::InfoBuffer::T_LIST_DOMAINS : 
+      type == ccReg::IT_LIST_NSSETS ?
+        Register::InfoBuffer::T_LIST_NSSETS : 
+      type == ccReg::IT_DOMAINS_BY_NSSET ?
+        Register::InfoBuffer::T_DOMAINS_BY_NSSET : 
+      type == ccReg::IT_DOMAINS_BY_CONTACT ?
+        Register::InfoBuffer::T_DOMAINS_BY_CONTACT : 
+      type == ccReg::IT_NSSETS_BY_CONTACT ?
+        Register::InfoBuffer::T_NSSETS_BY_CONTACT : 
+        Register::InfoBuffer::T_NSSETS_BY_NS,
+      handle
+    );
+  }
+  catch (...)  { a.failedInternal("Connection problems"); }
+  return a.getRet()._retn();
 }
 
 ccReg::Response* 
@@ -5532,55 +5517,40 @@ ccReg_EPP_i::getInfoResults(
   const char* clTRID, const char* XML
 )
 {
-  DB DBsql;
-  if (!DBsql.OpenDatabase(database)) 
-    ServerInternalError("Cannot connect in getInfoResults");
-  if ((!DBsql.BeginAction(clientID, EPP_Info, clTRID, XML))) {
-    DBsql.Disconnect();
-    ServerInternalError("Cannot begin action in getInfoResults");
-  }
-  ccReg::TID registrar = GetRegistrarID(clientID);
-  ccReg::Response_var ret = new ccReg::Response();
-  if (!registrar) ret->code = COMMAND_MAX_SESSION_LIMIT;
-  else {
-    try {
-      std::auto_ptr<Register::Zone::Manager> zoneMan(
-        Register::Zone::Manager::create(&DBsql)
-      );
-      std::auto_ptr<Register::Domain::Manager> domMan(
-        Register::Domain::Manager::create(&DBsql, zoneMan.get())
-      );
-      std::auto_ptr<Register::Contact::Manager> conMan(
-        Register::Contact::Manager::create(&DBsql,conf.GetRestrictedHandles())
-      );
-      std::auto_ptr<Register::NSSet::Manager> nssMan(
-        Register::NSSet::Manager::create(&DBsql,conf.GetRestrictedHandles())
-      );
-      std::auto_ptr<Register::InfoBuffer::Manager> infoBufMan(
-        Register::InfoBuffer::Manager::create(
-          &DBsql, domMan.get(), nssMan.get(), conMan.get()
-        )
-      );
-      std::auto_ptr<Register::InfoBuffer::Chunk> chunk(
-        infoBufMan->getChunk(registrar,1000)
-      );
-      handles = new ccReg::Lists();  
-      handles->length(chunk->getCount());
-      for (unsigned long i=0; i<chunk->getCount(); i++)
-        (*handles)[i] = CORBA::string_dup(chunk->getNext().c_str());
-    }
-    catch (...) {
-      DBsql.Disconnect();
-      ServerInternalError("Cannot finish in ListInfo");    
-    }  
-    ret->code=COMMAND_OK;
-  }
-  ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code)) ;
-  ret->msg =CORBA::string_dup(
-    GetErrorMessage(ret->code, GetRegistrarLang( clientID))
+  LOG(
+    NOTICE_LOG, 
+    "getResults: clientID -> %d clTRID [%s]",  (int ) clientID,  clTRID
   );
-  DBsql.Disconnect();
-  return ret._retn();
+  // start EPP action - this will handle all init stuff
+  EPPAction a(this,clientID,EPP_GetInfoResults,clTRID,XML);
+  try {
+   std::auto_ptr<Register::Zone::Manager> zoneMan(
+     Register::Zone::Manager::create(a.getDB())
+   );
+   std::auto_ptr<Register::Domain::Manager> domMan(
+     Register::Domain::Manager::create(a.getDB(), zoneMan.get())
+   );
+   std::auto_ptr<Register::Contact::Manager> conMan(
+     Register::Contact::Manager::create(a.getDB(),conf.GetRestrictedHandles())
+   );
+   std::auto_ptr<Register::NSSet::Manager> nssMan(
+     Register::NSSet::Manager::create(a.getDB(),conf.GetRestrictedHandles())
+   );
+   std::auto_ptr<Register::InfoBuffer::Manager> infoBufMan(
+     Register::InfoBuffer::Manager::create(
+       a.getDB(), domMan.get(), nssMan.get(), conMan.get()
+     )
+   );
+   std::auto_ptr<Register::InfoBuffer::Chunk> chunk(
+     infoBufMan->getChunk(a.getRegistrar(),1000)
+   );
+   handles = new ccReg::Lists();  
+   handles->length(chunk->getCount());
+   for (unsigned long i=0; i<chunk->getCount(); i++)
+     (*handles)[i] = CORBA::string_dup(chunk->getNext().c_str());
+  }
+  catch (...)  { a.failedInternal("Connection problems"); }
+  return a.getRet()._retn();
 }
 
 const char *
