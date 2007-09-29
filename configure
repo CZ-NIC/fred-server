@@ -700,8 +700,6 @@ RANLIB
 PKG_CONFIG
 OMNIORB4_CFLAGS
 OMNIORB4_LIBS
-LIBDAEMON_CFLAGS
-LIBDAEMON_LIBS
 BOOST_CPPFLAGS
 BOOST_LDFLAGS
 BOOST_DATE_TIME_LIB
@@ -732,8 +730,6 @@ CFLAGS
 PKG_CONFIG
 OMNIORB4_CFLAGS
 OMNIORB4_LIBS
-LIBDAEMON_CFLAGS
-LIBDAEMON_LIBS
 CPP'
 
 
@@ -1352,10 +1348,6 @@ Some influential environment variables:
               C compiler flags for OMNIORB4, overriding pkg-config
   OMNIORB4_LIBS
               linker flags for OMNIORB4, overriding pkg-config
-  LIBDAEMON_CFLAGS
-              C compiler flags for LIBDAEMON, overriding pkg-config
-  LIBDAEMON_LIBS
-              linker flags for LIBDAEMON, overriding pkg-config
   CPP         C preprocessor
 
 Use these variables to override the choices made by `configure' or to help
@@ -4394,118 +4386,6 @@ See \`config.log' for more details." >&2;}
 else
 	OMNIORB4_CFLAGS=$pkg_cv_OMNIORB4_CFLAGS
 	OMNIORB4_LIBS=$pkg_cv_OMNIORB4_LIBS
-        { echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6; }
-	:
-fi
-
-
-pkg_failed=no
-{ echo "$as_me:$LINENO: checking for LIBDAEMON" >&5
-echo $ECHO_N "checking for LIBDAEMON... $ECHO_C" >&6; }
-
-if test -n "$PKG_CONFIG"; then
-    if test -n "$LIBDAEMON_CFLAGS"; then
-        pkg_cv_LIBDAEMON_CFLAGS="$LIBDAEMON_CFLAGS"
-    else
-        if test -n "$PKG_CONFIG" && \
-    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"libdaemon >= 0.10\"") >&5
-  ($PKG_CONFIG --exists --print-errors "libdaemon >= 0.10") 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; then
-  pkg_cv_LIBDAEMON_CFLAGS=`$PKG_CONFIG --cflags "libdaemon >= 0.10" 2>/dev/null`
-else
-  pkg_failed=yes
-fi
-    fi
-else
-	pkg_failed=untried
-fi
-if test -n "$PKG_CONFIG"; then
-    if test -n "$LIBDAEMON_LIBS"; then
-        pkg_cv_LIBDAEMON_LIBS="$LIBDAEMON_LIBS"
-    else
-        if test -n "$PKG_CONFIG" && \
-    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"libdaemon >= 0.10\"") >&5
-  ($PKG_CONFIG --exists --print-errors "libdaemon >= 0.10") 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; then
-  pkg_cv_LIBDAEMON_LIBS=`$PKG_CONFIG --libs "libdaemon >= 0.10" 2>/dev/null`
-else
-  pkg_failed=yes
-fi
-    fi
-else
-	pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        LIBDAEMON_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "libdaemon >= 0.10"`
-        else
-	        LIBDAEMON_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "libdaemon >= 0.10"`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$LIBDAEMON_PKG_ERRORS" >&5
-
-	{ { echo "$as_me:$LINENO: error: Package requirements (libdaemon >= 0.10) were not met:
-
-$LIBDAEMON_PKG_ERRORS
-
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables LIBDAEMON_CFLAGS
-and LIBDAEMON_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-" >&5
-echo "$as_me: error: Package requirements (libdaemon >= 0.10) were not met:
-
-$LIBDAEMON_PKG_ERRORS
-
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables LIBDAEMON_CFLAGS
-and LIBDAEMON_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-" >&2;}
-   { (exit 1); exit 1; }; }
-elif test $pkg_failed = untried; then
-	{ { echo "$as_me:$LINENO: error: The pkg-config script could not be found or is too old.  Make sure it
-is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
-
-Alternatively, you may set the environment variables LIBDAEMON_CFLAGS
-and LIBDAEMON_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
-See \`config.log' for more details." >&5
-echo "$as_me: error: The pkg-config script could not be found or is too old.  Make sure it
-is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
-
-Alternatively, you may set the environment variables LIBDAEMON_CFLAGS
-and LIBDAEMON_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
-See \`config.log' for more details." >&2;}
-   { (exit 1); exit 1; }; }
-else
-	LIBDAEMON_CFLAGS=$pkg_cv_LIBDAEMON_CFLAGS
-	LIBDAEMON_LIBS=$pkg_cv_LIBDAEMON_LIBS
         { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
 	:
@@ -8787,8 +8667,6 @@ RANLIB!$RANLIB$ac_delim
 PKG_CONFIG!$PKG_CONFIG$ac_delim
 OMNIORB4_CFLAGS!$OMNIORB4_CFLAGS$ac_delim
 OMNIORB4_LIBS!$OMNIORB4_LIBS$ac_delim
-LIBDAEMON_CFLAGS!$LIBDAEMON_CFLAGS$ac_delim
-LIBDAEMON_LIBS!$LIBDAEMON_LIBS$ac_delim
 BOOST_CPPFLAGS!$BOOST_CPPFLAGS$ac_delim
 BOOST_LDFLAGS!$BOOST_LDFLAGS$ac_delim
 BOOST_DATE_TIME_LIB!$BOOST_DATE_TIME_LIB$ac_delim
@@ -8799,6 +8677,8 @@ POSTGRESQL_VERSION!$POSTGRESQL_VERSION$ac_delim
 POSTGRESQL_CFLAGS!$POSTGRESQL_CFLAGS$ac_delim
 POSTGRESQL_LDFLAGS!$POSTGRESQL_LDFLAGS$ac_delim
 CPP!$CPP$ac_delim
+GREP!$GREP$ac_delim
+EGREP!$EGREP$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -8840,14 +8720,12 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
-GREP!$GREP$ac_delim
-EGREP!$EGREP$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 IDLDIR!$IDLDIR$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 5; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 3; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

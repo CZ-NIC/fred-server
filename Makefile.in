@@ -76,13 +76,13 @@ am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 fred_adifd_DEPENDENCIES = ccReg_adifd.o libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_2)
 fred_adifd_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(fred_adifd_LDFLAGS) \
 	$(LDFLAGS) -o $@
 am_fred_admin_OBJECTS = fred_admin-client.$(OBJEXT)
 fred_admin_OBJECTS = $(am_fred_admin_OBJECTS)
 fred_admin_DEPENDENCIES = libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_2)
 fred_admin_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(fred_admin_LDFLAGS) $(LDFLAGS) -o $@
 am_fred_banking_OBJECTS = fred_banking-gpc.$(OBJEXT) \
@@ -90,19 +90,19 @@ am_fred_banking_OBJECTS = fred_banking-gpc.$(OBJEXT) \
 	fred_banking-csv.$(OBJEXT)
 fred_banking_OBJECTS = $(am_fred_banking_OBJECTS)
 fred_banking_DEPENDENCIES = libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_2)
 fred_banking_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(fred_banking_LDFLAGS) $(LDFLAGS) -o $@
 am_fred_expiration_OBJECTS = fred_expiration-expiration.$(OBJEXT)
 fred_expiration_OBJECTS = $(am_fred_expiration_OBJECTS)
 fred_expiration_DEPENDENCIES = libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_2)
 fred_expiration_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(fred_expiration_LDFLAGS) $(LDFLAGS) -o $@
 am_fred_pifd_OBJECTS = fred_pifd-whois.$(OBJEXT)
 fred_pifd_OBJECTS = $(am_fred_pifd_OBJECTS)
 fred_pifd_DEPENDENCIES = ccReg_pifd.o libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_2)
 fred_pifd_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(fred_pifd_LDFLAGS) $(LDFLAGS) -o $@
 am_fred_rifd_OBJECTS = fred_rifd-ccReg_epp.$(OBJEXT) \
@@ -110,7 +110,7 @@ am_fred_rifd_OBJECTS = fred_rifd-ccReg_epp.$(OBJEXT) \
 	fred_rifd-notifier.$(OBJEXT)
 fred_rifd_OBJECTS = $(am_fred_rifd_OBJECTS)
 fred_rifd_DEPENDENCIES = ccReg_rifd.o libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_2)
 fred_rifd_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(fred_rifd_LDFLAGS) $(LDFLAGS) -o $@
 binSCRIPT_INSTALL = $(INSTALL_SCRIPT)
@@ -193,8 +193,6 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
-LIBDAEMON_CFLAGS = @LIBDAEMON_CFLAGS@
-LIBDAEMON_LIBS = @LIBDAEMON_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@

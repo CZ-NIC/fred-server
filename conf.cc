@@ -3,8 +3,6 @@
 #include<string.h>
 #include<time.h>
 
-#include <libdaemon/dlog.h>
-
 #define MAX_LINE 256
 #define KEY_MAX 30
 
@@ -96,7 +94,7 @@ bool Conf::ReadConfigFileXML(const char *filename )
     doc = xmlReadFile(filename , NULL, 0);
 
     if (doc == NULL) {
-	daemon_log(LOG_ERR, "could not parse file %s\n", filename );
+	LOG(ERROR_LOG, "could not parse file %s\n", filename );
         return false;
     }
 
@@ -112,7 +110,7 @@ bool Conf::ReadConfigFileXML(const char *filename )
     }
     else 
     {
-	daemon_log(LOG_ERR, "bad root element  %s\n", root_element->name);
+	LOG(ERROR_LOG, "bad root element  %s\n", root_element->name);
 	ret = false; 
     }
     //free the document 
@@ -282,7 +280,7 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
                            session_registrar_max = atoi(  value );
                            break;
                 default:
-		    daemon_log(LOG_ERR, "parse error on line %d  [%s]\n" , line , buf );
+		    LOG(ERROR_LOG, "parse error on line %d  [%s]\n" , line , buf );
 		    break;
              }
            
@@ -295,7 +293,7 @@ if( ( f = fopen( filename ,  "r" ) ) != NULL )
   }
 else
 {
-    daemon_log(LOG_ERR, "Cannot open config file %s\n" , filename);
+    LOG(ERROR_LOG, "Cannot open config file %s\n" , filename);
     return false;
 }
 

@@ -1,5 +1,4 @@
 #include <syslog.h>
-#include <libdaemon/dlog.h>
 #include <stdarg.h>
 
 #define EMERG_LOG     LOG_EMERG

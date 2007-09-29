@@ -1,3 +1,6 @@
+1.7.3	
+	* remove libdaemon
+
 1.6.4
 	* invoice mailing ignore registrars without email
 	* repair version numbers of transform poll messages
