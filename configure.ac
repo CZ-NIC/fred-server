@@ -25,8 +25,6 @@ AC_CHECK_LIB([pthread], [pthread_exit])
 
 PKG_CHECK_MODULES(OMNIORB4, [omniORB4, omniDynamic4, omnithread3])
 
-PKG_CHECK_MODULES(LIBDAEMON, [libdaemon >= 0.10])
-
 AX_BOOST_BASE
 AX_BOOST_DATE_TIME
 AX_BOOST_PROGRAM_OPTIONS
