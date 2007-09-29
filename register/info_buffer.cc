@@ -5,6 +5,27 @@ namespace Register
 {
   namespace InfoBuffer
   {
+    class TempSequence {
+      DB *db;
+     public:
+      TempSequence(DB *_db) throw (SQL_ERROR): db(_db) 
+      {
+        std::stringstream sql;
+        sql << "CREATE TEMPORARY SEQUENCE tmp_seq_epp_info_buffer_content";
+        if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
+        sql.str("");
+        if (!db->ExecSelect(
+              "SELECT SETVAL('tmp_seq_epp_info_buffer_content',1, false)"
+            )) throw (SQL_ERROR());
+        db->FreeSelect();
+      }
+      ~TempSequence() throw (SQL_ERROR)
+      {
+       std::stringstream sql;
+       sql << "DROP SEQUENCE tmp_seq_epp_info_buffer_content";
+       if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
+      }
+    };
     /// designed to support database cursor implementation
     class ChunkImpl : virtual public Chunk
     {
@@ -151,15 +172,8 @@ namespace Register
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
         // create temporary sequence for numbering of result.
         // numbering is then used in streaming download.
-        // this query should fail only if sequence exists which don't mind  
-        db->ExecSQL(
-          "CREATE TEMPORARY SEQUENCE tmp_seq_epp_info_buffer_content"
-        );
-        // for sure clear sequence (it could already exist)
-        if (!db->ExecSelect(
-              "SELECT SETVAL('tmp_seq_epp_info_buffer_content',1, false)"
-            )) throw (SQL_ERROR());
-        db->FreeSelect();
+        // it should disappier at the and of block  
+        TempSequence seq(db);
         // copy content of temporary table into result table
         sql.str("");
         sql << "INSERT INTO epp_info_buffer_content "
