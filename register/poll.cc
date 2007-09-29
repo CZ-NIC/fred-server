@@ -368,7 +368,7 @@ namespace Register
             o = new MessageTechCheckImpl(
               type,STR_TO_ID(db->GetFieldValue(i,1)),
               STR_TO_ID(db->GetFieldValue(i,2)),
-              MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) = 't'
+              MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) == 't'
             );
             hasTechCheck = true;
             break;
@@ -376,7 +376,7 @@ namespace Register
             o = new MessageLowCreditImpl(
               type,STR_TO_ID(db->GetFieldValue(i,1)),
               STR_TO_ID(db->GetFieldValue(i,2)),
-              MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) = 't'
+              MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) == 't'
             );
             hasLowCredit = true;
             break;
@@ -386,7 +386,7 @@ namespace Register
             o = new MessageEventRegImpl(
               type,STR_TO_ID(db->GetFieldValue(i,1)),
               STR_TO_ID(db->GetFieldValue(i,2)),
-              MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) = 't'
+              MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) == 't'
             );
             hasAction = true;
             break;
@@ -401,7 +401,7 @@ namespace Register
             o = new MessageEventImpl(
               type,STR_TO_ID(db->GetFieldValue(i,1)),
               STR_TO_ID(db->GetFieldValue(i,2)),
-              MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) = 't'
+              MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) == 't'
             );
             hasStateChange = true;
             break;
@@ -409,7 +409,7 @@ namespace Register
             o = new MessageImpl(
               type,STR_TO_ID(db->GetFieldValue(i,1)),
               STR_TO_ID(db->GetFieldValue(i,2)),
-              MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) = 't'
+              MAKE_TIME(i,3), MAKE_TIME(i,4), *db->GetFieldValue(i,5) == 't'
             );
           }
           if (o) olist.push_back(o);
