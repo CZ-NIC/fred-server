@@ -21,6 +21,8 @@ namespace Register
     	unsigned limit,
     	std::ostream *debugOutput
       ) throw (SQL_ERROR) = 0;
+      virtual void generateLetters()
+        throw (SQL_ERROR) = 0;
       /// factory method
       static Manager *create(
         DB *db, 
