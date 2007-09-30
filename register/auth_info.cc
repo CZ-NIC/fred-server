@@ -382,7 +382,7 @@ namespace Register
         SQL_HANDLE_FILTER(sql,"air.reason",reasonFilter);
         SQL_HANDLE_FILTER(sql,"a.servertrid",svTRIDFilter);        
         SQL_DATE_FILTER(sql,"air.create_time",creationTimeFilter);
-        SQL_DATE_FILTER(sql,"air.close_time",closeTimeFilter);
+        SQL_DATE_FILTER(sql,"air.resolve_time",closeTimeFilter);
         if (!typeIgnoreFilter)
           sql << "AND air.request_type=" << RT_SQL(typeFilter) << " ";
         if (!statusIgnoreFilter)
