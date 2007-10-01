@@ -734,26 +734,18 @@ else return false;
 // get version of the server and actual time
 char* ccReg_EPP_i::version(ccReg::timestamp_out datetime)
 {
-char *version;
-time_t t;
-char dateStr[MAX_DATE+1];
+  time_t t;
+  char dateStr[MAX_DATE+1];
 
-// timestamp
-t = time(NULL);
+  LOG( NOTICE_LOG, "get version %s BUILD %s %s", VERSION, __DATE__, __TIME__);
 
-version =  new char[128];
+  // return  actual time (local time)
+  t = time(NULL);
+  get_rfc3339_timestamp( t , dateStr , false );
+  datetime =  CORBA::string_dup( dateStr );
 
-sprintf( version , "%s BUILD %s %s" , VERSION , __DATE__ , __TIME__ );
-LOG( NOTICE_LOG , "get version %s" , version );
-
-// return  actual time (local time)
-get_rfc3339_timestamp( t , dateStr , false );
-datetime =  CORBA::string_dup( dateStr );
-
-
-
-
-return version;
+  // TODO: OS: check for memory leak
+  return strdup("DSDng");
 }
 
 
