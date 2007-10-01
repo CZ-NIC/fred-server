@@ -186,7 +186,11 @@ int main(int argc, char **argv)
       ("notify_limit", po::value<unsigned>()->default_value(0),
        "limit for number of emails generated in one pass (0=no limit)")
       ("notify_debug",
-       "don't do anything, just list xml with values");
+       "don't do anything, just list xml with values")
+      ("notify_letters_create",
+       "generate pdf with domain registration warning")
+      ("notify_letters_exdate",po::value<std::string>(),
+       "exdate of domain for letter creation");
 
     po::variables_map vm;
     // parse help and config filename options
@@ -435,19 +439,26 @@ int main(int argc, char **argv)
       regMan->updateObjectStates();
     }
 
+    std::auto_ptr<Register::Notify::Manager> notifyMan(
+      Register::Notify::Manager::create(
+        &db, &mm, conMan.get(), nssMan.get(), domMan.get()
+      )
+    );
     if (vm.count("notify_state_changes")) {
-      std::auto_ptr<Register::Notify::Manager> notifyMan(
-        Register::Notify::Manager::create(
-          &db, &mm, conMan.get(), nssMan.get(), domMan.get()
-        )
-      );
       notifyMan->notifyStateChanges(
         vm["notify_except_types"].as<std::string>(),
         vm["notify_limit"].as<unsigned>(),
         vm.count("notify_debug") ? &std::cout : NULL
       );
     }
-    
+    if (vm.count("notify_letters_create")) {
+      if (vm.count("notify_letters_exdate")) {
+        notifyMan->generateLetters(
+          vm["notify_letters_exdate"].as<std::string>(),
+          &std::cout
+        );
+      }
+    }
     
     if (connected) db.Disconnect();
   }

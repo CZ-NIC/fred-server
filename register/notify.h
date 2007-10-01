@@ -21,7 +21,7 @@ namespace Register
     	unsigned limit,
     	std::ostream *debugOutput
       ) throw (SQL_ERROR) = 0;
-      virtual void generateLetters()
+      virtual void generateLetters(const std::string& date, std::ostream *o)
         throw (SQL_ERROR) = 0;
       /// factory method
       static Manager *create(
