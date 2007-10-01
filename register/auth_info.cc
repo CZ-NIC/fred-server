@@ -120,7 +120,8 @@ namespace Register
                 << " UNION "
                 << "SELECT DISTINCT c.email "
                 << "FROM domain_contact_map dcm, contact c "
-                << "WHERE dcm.contactid=c.id AND dcm.domainid=" << objectId;
+                << "WHERE dcm.contactid=c.id AND dcm.role=1 "
+                << "AND dcm.domainid=" << objectId;
             break;
           case OT_CONTACT:
             sql << "SELECT DISTINCT c.email FROM contact c "
