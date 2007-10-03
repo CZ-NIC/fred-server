@@ -323,7 +323,7 @@ bool DB::UpdateInvoiceCredit( int regID ,   int operation  , int zone   , int pe
 	return true;
 
 // query where is a credit on the advance invoice get maximal two 
-    snprintf(sqlString, sizeof(sqlString), "SELECT FOR UPDATE id, credit FROM invoice WHERE registrarid=%d and zone=%d and credit > 0 order by id limit 2;", regID, zone);
+    snprintf(sqlString, sizeof(sqlString), "SELECT id, credit FROM invoice WHERE registrarid=%d and zone=%d and credit > 0 order by id limit 2 FOR UPDATE;", regID, zone);
 
     invoiceID=0;
 
