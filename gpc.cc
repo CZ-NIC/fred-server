@@ -61,17 +61,21 @@ void GPC::GetItem( ST_Item *item )
     // without starting zeros
     NonZeroCopyString( item->account ,  gpc_item[recItem].accountOther ,   GPC_MAX_ACCOUNT );
 
-    strncpy(item->bank, gpc_item[recItem].konstSymbol+2, 4); // bank code against account from KS 
-    item->bank[4] = 0;
+    strncpy(item->bank, gpc_item[recItem].konstSymbol+2, MAX_CODE-1); // bank code against account from KS 
+    item->bank[MAX_CODE-1] = 0;
 
-    strncpy(item->ks, gpc_item[recItem].konstSymbol+6, 4); // bank code against account from KS 
-    item->ks[4] = 0;
+    strncpy(item->ks, gpc_item[recItem].konstSymbol+6, MAX_KS-1); // bank code against account from KS 
+    item->ks[MAX_KS-1] = 0;
 
-    strncpy(item->vs, gpc_item[recItem].varSymbol, MAX_VS);
-    strncpy(item->ss, gpc_item[recItem].specSymbol, MAX_SS);
+    strncpy(item->vs, gpc_item[recItem].varSymbol, MAX_VS-1);
+    item->vs[MAX_VS-1] = 0;
+    strncpy(item->ss, gpc_item[recItem].specSymbol, MAX_SS-1);
+    item->ss[MAX_SS-1] = 0;
 
-    strncpy(item->memo, gpc_item[recItem].memo, MAX_MEMO );
+    strncpy(item->memo, gpc_item[recItem].memo, MAX_MEMO-1);
+    item->memo[MAX_MEMO-1] = 0;
     strncpy(item->evid, gpc_item[recItem].evidNum, MAX_MEMO );
+    item->evid[MAX_MEMO-1] = 0;
 
     // convert date
     convert_date(item->date,  gpc_item[recItem].date);
