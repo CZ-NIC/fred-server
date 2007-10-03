@@ -61,22 +61,22 @@ void GPC::GetItem( ST_Item *item )
     // without starting zeros
     NonZeroCopyString( item->account ,  gpc_item[recItem].accountOther ,   GPC_MAX_ACCOUNT );
 
-    strncpy( item->bank ,   gpc_item[recItem].konstSymbol+2  , 4 ); // bank code against account from KS 
+    strncpy(item->bank, gpc_item[recItem].konstSymbol+2, 4); // bank code against account from KS 
     item->bank[4] = 0;
 
-    strncpy( item->ks ,   gpc_item[recItem].konstSymbol+6 , 4 ); // bank code against account from KS 
+    strncpy(item->ks, gpc_item[recItem].konstSymbol+6, 4); // bank code against account from KS 
     item->ks[4] = 0;
 
-    strcpy( item->vs , gpc_item[recItem].varSymbol );
-    strcpy( item->ss , gpc_item[recItem].specSymbol );
+    strncpy(item->vs, gpc_item[recItem].varSymbol, MAX_VS);
+    strncpy(item->ss, gpc_item[recItem].specSymbol, MAX_SS);
 
-    strcpy( item->memo , gpc_item[recItem].memo );
-    strcpy( item->evid , gpc_item[recItem].evidNum );
+    strncpy(item->memo, gpc_item[recItem].memo, MAX_MEMO );
+    strncpy(item->evid, gpc_item[recItem].evidNum, MAX_MEMO );
 
     // convert date
-    convert_date( item->date ,  gpc_item[recItem].date  );
+    convert_date(item->date,  gpc_item[recItem].date);
     // price in pennies
-    item->price = atol(  gpc_item[recItem].price  );
+    item->price = atol(gpc_item[recItem].price);
 
     if(  gpc_item[numrecItem].accountCode == '1' ) item->code = DEBET;
     else if(  gpc_item[numrecItem].accountCode == '2' ) item->code = CREDIT;
@@ -223,7 +223,7 @@ int GPC::ReadGPCFile( char * filename )
 	bzero(tmp, TMP_SIZE);
 	if (fgets(tmp, TMP_SIZE, fd) == NULL) return -2; // read error
 	    
-	if (((tmp[0] == "\r") && (tmp[1] == "\n")) || (strlen(tmp) == 0)) {
+	if (((tmp[0] == '\r') && (tmp[1] == '\n')) || (strlen(tmp) == 0)) {
 	    // final newline or EOF
 	    break;
 	}
