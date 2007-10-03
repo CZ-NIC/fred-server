@@ -30,7 +30,7 @@ Register::CommonObjectImpl::getId() const
 Register::CommonListImpl::CommonListImpl(DB *_db) :
   idFilter(0),
   realCount(0),
-  limitCount(1000),
+  limitCount(5000),
   wcheck(true),
   db(_db),
   ptrIdx(-1),
