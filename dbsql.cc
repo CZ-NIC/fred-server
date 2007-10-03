@@ -159,106 +159,108 @@ else return false;
 // return price per operation depend on the period in months
 long DB::GetPrice(   int operation ,  int zone , int period  )
 {
-char sqlString[256];
-long p ,  price=0; // default price=0
-int per; // price per period
+    char sqlString[256];
+    long p ,  price=0; // default price=0
+    int per; // price per period
 
 
 // specialy for renew operation depend on period
-if( period > 0 ) sprintf(  sqlString ,  "SELECT price , period FROM price_list WHERE valid_from < 'now()'  and ( valid_to is NULL or valid_to > 'now()' )  and operation=%d and zone=%d;" , operation , zone );
+    if( period > 0 )
+	snprintf (sqlString, sizeof(sqlString), "SELECT price , period FROM price_list WHERE valid_from < 'now()'  and ( valid_to is NULL or valid_to > 'now()' )  and operation=%d and zone=%d;" , operation , zone );
 // price for operation not depend on the time interval period
-else  sprintf(  sqlString ,  "SELECT price  FROM price_list WHERE valid_from < 'now()'  and ( valid_to is NULL or valid_to > 'now()' )  AND  operation=%d and zone=%d;" , operation , zone );
+    else 
+	snprintf (sqlString, sizeof(sqlString), "SELECT price  FROM price_list WHERE valid_from < 'now()'  and ( valid_to is NULL or valid_to > 'now()' )  AND  operation=%d and zone=%d;" , operation , zone );
 
 
-if( ExecSelect( sqlString ) )
- {
+    if( ExecSelect( sqlString ) )
+    {
 
-   if(  GetSelectRows()  == 1 )
-     {
-       // get price from database convert numeric  1.00 to 100
-       p = get_price(   GetFieldValue( 0 , 0 )    );
+	if(  GetSelectRows()  == 1 )
+	{
+	    // get price from database convert numeric  1.00 to 100
+	    p = get_price(   GetFieldValue( 0 , 0 )    );
 
-       if( period > 0 )  
-       {
-       per = atoi(  GetFieldValue( 0 , 1 )   );
-       // count price 
-       price = period * p  / per;
-       }else  price = p;
+	    if( period > 0 )  
+	    {
+		per = atoi(  GetFieldValue( 0 , 1 )   );
+		// count price 
+		price = period * p  / per;
+	    }else  price = p;
 
-       LOG( NOTICE_LOG , "GetPrice operation %d zone %d period %d   -> price %ld (units) " , operation , zone , period  , price);
-     }
-    else price=-1; 
+	    LOG( NOTICE_LOG , "GetPrice operation %d zone %d period %d   -> price %ld (units) " , operation , zone , period  , price);
+	}
+	else price=-1; 
   
-   FreeSelect();
-return price;
-  }
-else return -2; // ERROR
+	FreeSelect();
+	return price;
+    }
+    else return -2; // ERROR
 }
 
 // save credit to invoice
 bool DB::SaveInvoiceCredit(int regID , int objectID , int operation , int zone  , int period , const char *ExDate , long price  , long price2 ,    int invoiceID   , int invoiceID2) 
 {
-int id;
+    int id;
 
 
-LOG( DEBUG_LOG , "SaveInvoiceCredit: uctovani creditu objectID %d ExDate [%s] regID %d" , objectID ,  ExDate , regID  );
+    LOG( DEBUG_LOG , "SaveInvoiceCredit: uctovani creditu objectID %d ExDate [%s] regID %d" , objectID ,  ExDate , regID  );
 
-id = GetSequenceID( "invoice_object_registry" );
+    id = GetSequenceID( "invoice_object_registry" );
 
 // insert record about billing objects 
-INSERT( "invoice_object_registry" );
-INTO( "id" );
-INTO( "objectid" );
-INTO( "registrarid"  );
-INTO( "operation" );
-INTO( "zone" );
-INTO( "period" );
-INTOVAL( "ExDate" , ExDate); // if is set ExDate for renew 
-VALUE( id );
-VALUE( objectID );
-VALUE( regID );
-VALUE( operation );
-VALUE( zone );
-VALUE( period );
-VAL( ExDate);
-if( EXEC() ) 
- {
+    INSERT( "invoice_object_registry" );
+    INTO( "id" );
+    INTO( "objectid" );
+    INTO( "registrarid"  );
+    INTO( "operation" );
+    INTO( "zone" );
+    INTO( "period" );
+    INTOVAL( "ExDate" , ExDate); // if is set ExDate for renew 
+    VALUE( id );
+    VALUE( objectID );
+    VALUE( regID );
+    VALUE( operation );
+    VALUE( zone );
+    VALUE( period );
+    VAL( ExDate);
+    if( EXEC() ) 
+    {
 
-   LOG( DEBUG_LOG , "SaveInvoiceCredit:   price %ld   invoiceID %d" , price ,  invoiceID );
+	LOG( DEBUG_LOG , "SaveInvoiceCredit:   price %ld   invoiceID %d" , price ,  invoiceID );
 
-  INSERT( "invoice_object_registry_price_map" );
-  INTO( "id");
-  INTO( "invoiceID" );
-  INTO( "price" );
-  VALUE( id );
-  VALUE( invoiceID );
-  VALPRICE( price);
-  if( !EXEC() ) { LOG( ERROR_LOG , "ERROR insert invoice_object_registry_price_map" ); return false; }
+	INSERT( "invoice_object_registry_price_map" );
+	INTO( "id");
+	INTO( "invoiceID" );
+	INTO( "price" );
+	VALUE( id );
+	VALUE( invoiceID );
+	VALPRICE( price);
+	if( !EXEC() ) { LOG( ERROR_LOG , "ERROR insert invoice_object_registry_price_map" ); return false; }
     
 
-  if( price2 ) // save next price credit came from next advance invoice
-   {  
-     LOG( DEBUG_LOG , "uctovani creditu  price2 %ld   invoiceID2 %d" , price2 ,  invoiceID2 );
+	if( price2 ) // save next price credit came from next advance invoice
+	{  
+	    LOG( DEBUG_LOG , "uctovani creditu  price2 %ld   invoiceID2 %d" , price2 ,  invoiceID2 );
 
-     INSERT( "invoice_object_registry_price_map" );
-     INTO( "id");
-      INTO( "invoiceID" );
-      INTO( "price" );
-      VALUE( id );
-      VALUE( invoiceID2 );
-      VALPRICE( price2);
-      if( !EXEC() ) { LOG( ERROR_LOG , "ERROR insert invoice_object_registry_price_map price2" ); return false; }       
-   }
+	    INSERT( "invoice_object_registry_price_map" );
+	    INTO( "id");
+	    INTO( "invoiceID" );
+	    INTO( "price" );
+	    VALUE( id );
+	    VALUE( invoiceID2 );
+	    VALPRICE( price2);
+	    if( !EXEC() ) { LOG( ERROR_LOG , "ERROR insert invoice_object_registry_price_map price2" ); return false; }       
+	}
  
  
 
-  return true;
-  }
-else 
-  {
-     LOG( ERROR_LOG , "ERROR SaveInvoiceCredit invoiceID %d objectid %d " , invoiceID , objectID );
-     return false;
-  }
+	return true;
+    }
+    else 
+    {
+	LOG( ERROR_LOG , "ERROR SaveInvoiceCredit invoiceID %d objectid %d " , invoiceID , objectID );
+	return false;
+    }
 
 
 }
@@ -282,111 +284,114 @@ else { LOG( ERROR_LOG , "error InvoiceCountCredit invoice  %d price %ld" , invoi
 // billing operation   CREATE domain
 bool DB::BillingCreateDomain( int regID , int  zone , int  objectID  )
 {
-return UpdateInvoiceCredit( regID ,  OPERATION_DomainCreate , zone , 0 , "" , objectID  );
+    return UpdateInvoiceCredit( regID ,  OPERATION_DomainCreate , zone , 0 , "" , objectID  );
 }
 // billing operation RENEW domain
 bool DB::BillingRenewDomain(  int regID , int  zone , int  objectID , int period  ,  const char *ExDate )
 {
-return UpdateInvoiceCredit( regID ,  OPERATION_DomainRenew , zone , period  , ExDate , objectID  );
+    return UpdateInvoiceCredit( regID ,  OPERATION_DomainRenew , zone , period  , ExDate , objectID  );
 }
 
 
 // count credit from one or two  advance invoice 
 bool DB::UpdateInvoiceCredit( int regID ,   int operation  , int zone   , int period , const char *ExDate ,  int objectID  )
 {
-char sqlString[256];
-long price , credit ;
-long price1 , price2;
-int invoiceID;
-int invID[2];
-long cr[2];
-int i;
-int num = 0;
+    char sqlString[256];
+    long price , credit ;
+    long price1 , price2;
+    int invoiceID;
+    int invID[2];
+    long cr[2];
+    int i;
+    int num = 0;
 
-LOG( DEBUG_LOG , "UpdateInvoiceCredit operation %d objectID %d ExDate [%s]  period %d regID %d" , operation , objectID ,  ExDate , period ,  regID  );
+    LOG( DEBUG_LOG , "UpdateInvoiceCredit operation %d objectID %d ExDate [%s]  period %d regID %d" , operation , objectID ,  ExDate , period ,  regID  );
 
 // system registrar work free without invoicing 
-if( GetRegistrarSystem( regID ) == true ) return true;
+    if( GetRegistrarSystem( regID ) == true )
+	return true;
 
 
 // get price per operation  for zone and interval period
-price =  GetPrice( operation , zone , period );
+    price =  GetPrice( operation , zone , period );
 
-if( price == -2 ) return false; // SQL error get price
+    if( price == -2 )
+	return false; // SQL error get price
 
 // if the price not set  the operation is allowed and not billing
-if( price == -1 ) return true;
+    if( price == -1 )
+	return true;
 
-// query where is a credit on th eadvance invouce get maximal two 
-sprintf( sqlString , "SELECT id , credit FROM invoice WHERE registrarid=%d and zone=%d and credit > 0 order by id limit 2;" , regID , zone );
+// query where is a credit on the advance invoice get maximal two 
+    snprintf(sqlString, sizeof(sqlString), "SELECT FOR UPDATE id, credit FROM invoice WHERE registrarid=%d and zone=%d and credit > 0 order by id limit 2;", regID, zone);
 
-invoiceID=0;
+    invoiceID=0;
 
-if( ExecSelect( sqlString ) )
- {
-    num = GetSelectRows();
+    if( ExecSelect( sqlString ) )
+    {
+	num = GetSelectRows();
 
-    for( i = 0 ; i  < num ; i ++ )
-       {
+	for( i = 0 ; i  < num ; i ++ )
+	{
        
-        invID[i]  = atoi( GetFieldValue( i , 0 )  );
-          // credit 
-        cr[i]  =  (long) ( 100.0 *  atof(  GetFieldValue( i , 1 )   )  );
-       }
-     FreeSelect();
- }
+	    invID[i]  = atoi( GetFieldValue( i , 0 )  );
+	    // credit 
+	    cr[i]  =  (long) ( 100.0 *  atof(  GetFieldValue( i , 1 )   )  );
+	}
+	FreeSelect();
+    }
 
 
 // not any advance invoice can not billing credit
-if( num == 0 ) return false;
+    if( num == 0 ) return false;
 
 
-credit= cr[0];
-invoiceID=invID[0];
+    credit= cr[0];
+    invoiceID=invID[0];
 
-if( credit - price > 0 )
-  {
+    if( credit - price > 0 )
+    {
 
-     if( SaveInvoiceCredit(  regID , objectID ,   operation  ,  zone   , period , ExDate , price , 0 ,   invoiceID , 0  )  )
-      {
-       return InvoiceCountCredit( price , invoiceID );
-      }
+	if( SaveInvoiceCredit(  regID , objectID ,   operation  ,  zone   , period , ExDate , price , 0 ,   invoiceID , 0  )  )
+	{
+	    return InvoiceCountCredit( price , invoiceID );
+	}
 
-   }
-else
-  {
+    }
+    else
+    {
    
-   if(  num == 2 )   // if exist next advance invoice 
-   {
+	if(  num == 2 )   // if exist next advance invoice 
+	{
     
-       price1= cr[0]; // balance on the first invoice 
-       price2= price - cr[0]; // next credit get from second  invoice
+	    price1= cr[0]; // balance on the first invoice 
+	    price2= price - cr[0]; // next credit get from second  invoice
 
-       // biling 
-       if( SaveInvoiceCredit(  regID ,objectID , operation  ,  zone , period ,  ExDate , price1 ,  price2 ,  invID[0] , invID[1]  )  ) 
-         {
-         if( InvoiceCountCredit(  cr[0] , invID[0] )  ) // count to zero on the first invoice 
-           {
-             invoiceID=invID[1];                        
-             LOG(   DEBUG_LOG , "UpdateInvoiceCredit: price  credit0 %ld credit1 %ld price %ld second price %ld" , cr[0] ,  cr[1]  , price1  , price2 );
+	    // biling 
+	    if( SaveInvoiceCredit(  regID ,objectID , operation  ,  zone , period ,  ExDate , price1 ,  price2 ,  invID[0] , invID[1]  )  ) 
+	    {
+		if( InvoiceCountCredit(  cr[0] , invID[0] )  ) // count to zero on the first invoice 
+		{
+		    invoiceID=invID[1];                        
+		    LOG(   DEBUG_LOG , "UpdateInvoiceCredit: price  credit0 %ld credit1 %ld price %ld second price %ld" , cr[0] ,  cr[1]  , price1  , price2 );
               
-             if( cr[1] -  credit  > 0 )
-             {
-                  // second invoice 
-                   return InvoiceCountCredit(  price  - cr[0] , invID[1] );
+		    if( cr[1] -  credit  > 0 )
+		    {
+			// second invoice 
+			return InvoiceCountCredit(  price  - cr[0] , invID[1] );
                 
-             }else   LOG( WARNING_LOG , "UpdateInvoiceCredit: on the next invoice  id %d not price  %ld credit %ld" ,   invoiceID ,  price  , cr[1] );
+		    }else   LOG( WARNING_LOG , "UpdateInvoiceCredit: on the next invoice  id %d not price  %ld credit %ld" ,   invoiceID ,  price  , cr[1] );
 
-          }
+		}
 
-      } 
+	    } 
  
-   }else  LOG( WARNING_LOG , "UpdateInvoiceCredit: not next invoice to count ");    
+	}else  LOG( WARNING_LOG , "UpdateInvoiceCredit: not next invoice to count ");    
  
- }
+    }
 
 
-return false;
+    return false;
 }
 
 int DB::SaveXMLout( const char *svTRID , const char *xml  )
@@ -520,8 +525,8 @@ return dtStr;
 
 char * DB::GetDomainExDate( int id )
 {
-convert_rfc3339_date( dtStr , GetValueFromTable( "DOMAIN", "ExDate" , "id" , id ) );
-return dtStr;
+    convert_rfc3339_date( dtStr , GetValueFromTable( "DOMAIN", "ExDate" , "id" , id ) );
+    return dtStr;
 }
 
 char * DB::GetDomainValExDate( int id )
@@ -906,40 +911,36 @@ return ret;
 // test for  renew domain
 bool DB::CountExDate( int domainID , int period  , int max_period )
 {
-char sqlString[256];
-bool ret=false;
+    char sqlString[256];
+    bool ret=false;
 
-sprintf( sqlString , "SELECT  ExDate+interval\'%d month\' FROM DOMAIN WHERE id=%d AND ExDate+interval\'%d month\' < current_date+interval\'%d month\';",
-           period , domainID , period , max_period );
+    snprintf(sqlString, 256, "SELECT  ExDate+interval\'%d month\' FROM DOMAIN WHERE id=%d AND ExDate+interval\'%d month\' < current_date+interval\'%d month\';",
+	     period , domainID , period , max_period );
 
+    if( ExecSelect( sqlString ) )
+    {
+	if(  GetSelectRows() == 1  )  ret = true;
+	FreeSelect();
+    }
 
-if( ExecSelect( sqlString ) )
- {
-    if(  GetSelectRows() == 1  )  ret = true;
-    FreeSelect();
-  }
-
-return ret;
+    return ret;
 }
 
 // make and count new ExDate for renew domain
 bool DB::RenewExDate(  int domainID , int period  )
 {
-char sqlString[256];
+    char sqlString[256];
 
-sprintf( sqlString , "UPDATE domain SET  ExDate=ExDate+interval\'%d month\' WHERE id=%d ;" ,  period , domainID );
+    snprintf (sqlString, 256, "UPDATE domain SET  ExDate=ExDate+interval\'%d month\' WHERE id=%d ;" ,  period , domainID );
 
-return ExecSQL(  sqlString );
+    return ExecSQL(  sqlString );
 }
-
-
- 
 
 
 
 int DB::GetDomainID( const char *fqdn  , bool enum_zone )
 {
-  return GetObjectID( 3 , fqdn );
+    return GetObjectID( 3 , fqdn );
 }
 
 

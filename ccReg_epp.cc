@@ -4928,248 +4928,238 @@ ccReg::Response * ccReg_EPP_i::DomainRenew( const char *fqdn, const char* curExp
                                             ccReg::timestamp_out exDate, CORBA::Long clientID,
                                             const char *clTRID, const  char* XML , const ccReg::ExtensionList & ext )
 {
-  DB DBsql;
-  std::auto_ptr<EPPNotifier> ntf;
-  char valexpiryDate[MAX_DATE+1];
-  char FQDN[164]; 
-  ccReg::Response_var ret;
-  ccReg::Errors_var errors;
-  int  regID, id,  zone ;
-int period_count;
-char periodStr[10];
+    DB DBsql;
+    std::auto_ptr<EPPNotifier> ntf;
+    char valexpiryDate[MAX_DATE+1];
+    char FQDN[164]; 
+    ccReg::Response_var ret;
+    ccReg::Errors_var errors;
+    int  regID, id,  zone ;
+    int period_count;
+    char periodStr[10];
 
-  ret = new ccReg::Response;
-errors = new ccReg::Errors;
+    ret = new ccReg::Response;
+    errors = new ccReg::Errors;
+
+    // default
+    exDate =  CORBA::string_dup( "" );
+
+    // default
+    ret->code = 0;
+    errors->length( 0 );
 
 
+    LOG( NOTICE_LOG, "DomainRenew: clientID -> %d clTRID [%s] fqdn  [%s] curExpDate [%s]", (int ) clientID, clTRID, fqdn , (const char *) curExpDate ) ;
+
+
+    //  period count 
+    if( period.unit == ccReg::unit_year ) {
+	period_count = period.count * 12;
+	snprintf(periodStr, sizeof(periodStr), "y%d", period.count );
+    }
+    else if (period.unit == ccReg::unit_month ) {
+	period_count = period.count;
+	snprintf(periodStr, sizeof(periodStr), "m%d", period.count );
+    }
+    else
+	period_count = 0; // use default value 
+
+
+    LOG( NOTICE_LOG, "DomainRenew: period count %d unit %d period_count %d string [%s]" ,   period.count , period.unit ,  period_count  , periodStr);
+
+
+
+
+    // parse enum.ExDate extension
+    GetValExpDateFromExtension( valexpiryDate , ext );
  
 
-// default
-  exDate =  CORBA::string_dup( "" );
+    if(  ( regID = GetRegistrarID( clientID ) ) ) {
 
-// default
-  ret->code = 0;
- errors->length( 0 );
+	if( DBsql.OpenDatabase( database ) )
+	{
+	    if( ( DBsql.BeginAction( clientID, EPP_DomainRenew,  clTRID , XML )  ) )
+	    {
 
+		// convert fqdn to lower case and test it
+		if (( zone = getFQDN( FQDN , fqdn ) ) <= 0  )
+		{
+		    ret->code=SetReasonDomainFQDN( errors  , fqdn , zone , GetRegistrarLang( clientID ) );
+		}
+		else // (( zone = getFQDN( FQDN , fqdn ) ) <= 0  )
+		{
+		    if( DBsql.BeginTransaction() )
+		    {
 
-  LOG( NOTICE_LOG, "DomainRenew: clientID -> %d clTRID [%s] fqdn  [%s] curExpDate [%s]", (int ) clientID, clTRID, fqdn , (const char *) curExpDate ) ;
+			if(  DBsql.TestRegistrarZone( regID , zone ) == false )
+			{
+			    LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
+			    ret->code =  COMMAND_AUTHENTICATION_ERROR;
+			}
+			else // (  DBsql.TestRegistrarZone( regID , zone ) == false )
+			{
+			    if( ( id = DBsql.GetDomainID( FQDN  ,  GetZoneEnum( zone ) ) ) == 0 )
+				// if domain not exist 
+			    {
+				ret->code = COMMAND_OBJECT_NOT_EXIST;  
+				LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
+			    }
+			// test curent ExDate
+			    else if( TestExDate(  curExpDate  , DBsql.GetDomainExDate(id)  )  == false )
+			    {
+				LOG( WARNING_LOG, "curExpDate is not same as ExDate" );
+				ret->code = SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::domain_curExpDate , 1 , REASON_MSG_CUREXPDATE_NOT_EXPDATE , GetRegistrarLang( clientID ) );
+			    }
+			    else
+			    {  
 
-
-
-
-//  period count 
-if( period.unit == ccReg::unit_year ) {  period_count = period.count * 12; sprintf(  periodStr , "y%d" , period.count ); }
-else if( period.unit == ccReg::unit_month ) { period_count = period.count; sprintf(  periodStr , "m%d" , period.count ); }
-     else period_count = 0; // use default value 
-
-
-LOG( NOTICE_LOG, "DomainRenew: period count %d unit %d period_count %d string [%s]" ,   period.count , period.unit ,  period_count  , periodStr);
-
-
-
-
-// parse enum.ExDate extension
-GetValExpDateFromExtension( valexpiryDate , ext );
- 
-
-if(  ( regID = GetRegistrarID( clientID ) ) )
-
-  if( DBsql.OpenDatabase( database ) )
-    {
-
-
-      if( ( DBsql.BeginAction( clientID, EPP_DomainRenew,  clTRID , XML )  ) )
-        {
-
-
- 
-
-       // convert fqdn to lower case and test it
-        if(  ( zone = getFQDN( FQDN , fqdn ) ) <= 0  )   ret->code=SetReasonDomainFQDN( errors  , fqdn , zone , GetRegistrarLang( clientID ) );
-        else
-        if( DBsql.BeginTransaction() )
-         {
-
-          if(  DBsql.TestRegistrarZone( regID , zone ) == false )
-             {
-               LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
-               ret->code =  COMMAND_AUTHENTICATION_ERROR;
-             }
-           else          
-              if( ( id = DBsql.GetDomainID( FQDN  ,  GetZoneEnum( zone ) ) ) == 0 )
-              // if domain not exist 
-               {
-                 ret->code = COMMAND_OBJECT_NOT_EXIST;  
-                 LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
-               }
-              // test curent ExDate
-             else if( TestExDate(  curExpDate  , DBsql.GetDomainExDate(id)  )  == false )
-                {
-                  LOG( WARNING_LOG, "curExpDate is not same as ExDate" );
-                  ret->code = SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::domain_curExpDate , 1 , REASON_MSG_CUREXPDATE_NOT_EXPDATE , GetRegistrarLang( clientID ) );
-                }
-             else
-            {  
-
-             // set default renew  period from zone params
-             if( period_count == 0 ) 
-               {
-                 period_count = GetZoneExPeriodMin( zone );
-                 LOG( NOTICE_LOG, "get defualt peridod %d month  for zone   %d ", period_count , zone  );
-                }
+				// set default renew  period from zone params
+				if( period_count == 0 ) 
+				{
+				    period_count = GetZoneExPeriodMin( zone );
+				    LOG( NOTICE_LOG, "get default peridod %d month  for zone   %d ", period_count , zone  );
+				}
               
                
                   
-            //  test period
-             switch(  TestPeriodyInterval( period_count  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )   )
-              {
-               case 2:
-                  LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period_count ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
-                  ret->code = SetErrorReason( errors , COMMAND_PARAMETR_RANGE_ERROR  , ccReg::domain_period , 1,REASON_MSG_PERIOD_RANGE , GetRegistrarLang( clientID ) );
-                  break;
-               case 1:
-                  LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period_count  ,  GetZoneExPeriodMin( zone )   );
-                  ret->code = SetErrorReason( errors , COMMAND_PARAMETR_VALUE_POLICY_ERROR  , ccReg::domain_period ,1, REASON_MSG_PERIOD_POLICY , GetRegistrarLang( clientID ) );
-                  break;
-               default:
-                       // count new  ExDate 
-                       if( DBsql.CountExDate( id ,  period_count  ,  GetZoneExPeriodMax( zone ) ) == false )
-                         {
-                             LOG( WARNING_LOG, "period %d ExDate out of range" , period_count );
-                             ret->code = SetErrorReason( errors  , COMMAND_PARAMETR_RANGE_ERROR , ccReg::domain_period , 1, REASON_MSG_PERIOD_RANGE  , GetRegistrarLang( clientID ) );
-                          }
-                  break; 
+				//  test period
+				switch(  TestPeriodyInterval( period_count  ,  GetZoneExPeriodMin( zone )  ,  GetZoneExPeriodMax( zone )  )   )
+				{
+				case 2:
+				    LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d"  , period_count ,  GetZoneExPeriodMax( zone )   , GetZoneExPeriodMin( zone )  );
+				    ret->code = SetErrorReason( errors , COMMAND_PARAMETR_RANGE_ERROR  , ccReg::domain_period , 1,REASON_MSG_PERIOD_RANGE , GetRegistrarLang( clientID ) );
+				    break;
+				case 1:
+				    LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period_count  ,  GetZoneExPeriodMin( zone )   );
+				    ret->code = SetErrorReason( errors , COMMAND_PARAMETR_VALUE_POLICY_ERROR  , ccReg::domain_period ,1, REASON_MSG_PERIOD_POLICY , GetRegistrarLang( clientID ) );
+				    break;
+				default:
+				    // count new  ExDate 
+				    if( DBsql.CountExDate( id ,  period_count  ,  GetZoneExPeriodMax( zone ) ) == false )
+				    {
+					LOG( WARNING_LOG, "period %d ExDate out of range" , period_count );
+					ret->code = SetErrorReason( errors  , COMMAND_PARAMETR_RANGE_ERROR , ccReg::domain_period , 1, REASON_MSG_PERIOD_RANGE  , GetRegistrarLang( clientID ) );
+				    }
+				    break; 
 
-              }
+				}
 
-             // test validity Date for enum domain 
-                          if( strlen( valexpiryDate ) )
-                            {
-                               // Test for enum domain only
-                             if( GetZoneEnum( zone )  )
-                               {
-                                 if(  DBsql.TestValExDate(  valexpiryDate ,  GetZoneValPeriod( zone ) , DefaultValExpInterval() , id   ) ==  false ) 
-                                   {
-                                      LOG( WARNING_LOG, "Validity exp date is not valid %s" , valexpiryDate  );
-                                      ret->code = SetErrorReason( errors  , COMMAND_PARAMETR_RANGE_ERROR , ccReg::domain_ext_valDate , 1 , REASON_MSG_VALEXPDATE_NOT_VALID  ,  GetRegistrarLang( clientID ) );
-                                    }
+				// test validity Date for enum domain 
+				if( strlen( valexpiryDate ) )
+				{
+				    // Test for enum domain only
+				    if( GetZoneEnum( zone )  )
+				    {
+					if(  DBsql.TestValExDate(  valexpiryDate ,  GetZoneValPeriod( zone ) , DefaultValExpInterval() , id   ) ==  false ) 
+					{
+					    LOG( WARNING_LOG, "Validity exp date is not valid %s" , valexpiryDate  );
+					    ret->code = SetErrorReason( errors  , COMMAND_PARAMETR_RANGE_ERROR , ccReg::domain_ext_valDate , 1 , REASON_MSG_VALEXPDATE_NOT_VALID  ,  GetRegistrarLang( clientID ) );
+					}
                                  
-                               }
-                              else
-                                {
+				    }
+				    else
+				    {
 
-                                    LOG( WARNING_LOG, "Can not  validity exp date %s"   , valexpiryDate );
-                                    ret->code = SetErrorReason( errors  , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::domain_ext_valDate , 1 ,   REASON_MSG_VALEXPDATE_NOT_USED   , GetRegistrarLang( clientID ) );
+					LOG( WARNING_LOG, "Can not  validity exp date %s"   , valexpiryDate );
+					ret->code = SetErrorReason( errors  , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::domain_ext_valDate , 1 ,   REASON_MSG_VALEXPDATE_NOT_USED   , GetRegistrarLang( clientID ) );
 
-                                }            
-                             }
+				    }            
+				}
 
  
 
 
 
-               if(  ret->code == 0 )// if not param error
-                 {
-
-
-                 // test client of the object
-                  if(  !DBsql.TestObjectClientID( id ,  regID  ) )
-                    {
-                      LOG( WARNING_LOG, "bad autorization not  client of domain [%s]", fqdn );
-                      ret->code = COMMAND_AUTOR_ERROR;      
-                    }
-                  try {            	 
-                	 if (!ret->code && (
-                		   testObjectHasState(&DBsql,id,FLAG_serverRenewProhibited) ||
-                		   testObjectHasState(&DBsql,id,FLAG_deleteCandidate)
-                		 )
-                		)
-                     {
-                      LOG( WARNING_LOG, "renew of object %s is prohibited" , fqdn );
-                      ret->code =  COMMAND_STATUS_PROHIBITS_OPERATION;
-                     }
-                  } catch (...) { 
-               	   ret->code =  COMMAND_FAILED;
-                  }
+				if(  ret->code == 0 )// if not param error
+				{
+				    // test client of the object
+				    if(  !DBsql.TestObjectClientID( id ,  regID  ) )
+				    {
+					LOG( WARNING_LOG, "bad autorization not client of domain [%s]", fqdn );
+					ret->code = COMMAND_AUTOR_ERROR;      
+				    }
+				    try {            	 
+					if (!ret->code && (
+						testObjectHasState(&DBsql,id,FLAG_serverRenewProhibited) ||
+						testObjectHasState(&DBsql,id,FLAG_deleteCandidate)
+						)
+					    )
+					{
+					    LOG( WARNING_LOG, "renew of object %s is prohibited" , fqdn );
+					    ret->code =  COMMAND_STATUS_PROHIBITS_OPERATION;
+					}
+				    } catch (...) { 
+					ret->code =  COMMAND_FAILED;
+				    }
                                     
-                  if (!ret->code)
-                    {
+				    if (!ret->code)
+				    {
 
 
                             
-                                 // change validity date for enum domain
-                                if( GetZoneEnum( zone ) )
-                                 {
-                                  if( strlen( valexpiryDate ) > 0  )      
-                                    {
-                                      LOG( NOTICE_LOG, "change valExpDate %s ", valexpiryDate );
+					// change validity date for enum domain
+					if( GetZoneEnum( zone ) )
+					{
+					    if( strlen( valexpiryDate ) > 0  )      
+					    {
+						LOG( NOTICE_LOG, "change valExpDate %s ", valexpiryDate );
 
-                                      DBsql.UPDATE( "enumval" );
-                                      DBsql.SET( "ExDate", valexpiryDate );
-                                      DBsql.WHERE( "domainID", id );
+						DBsql.UPDATE( "enumval" );
+						DBsql.SET( "ExDate", valexpiryDate );
+						DBsql.WHERE( "domainID", id );
 
-                                      if( DBsql.EXEC() == false ) ret->code = COMMAND_FAILED;                                     
-                                    }
-                                   }
+						if( DBsql.EXEC() == false ) ret->code = COMMAND_FAILED;                                     
+					    }
+					}
 
+					if( ret->code == 0 ) // if is OK OK
+					{
 
+					    // make Renew Domain count new Exdate in 
+					    if( DBsql.RenewExDate( id , period_count ) ) 
+					    {
+						//  return new Exdate as local date
+						CORBA::string_free(exDate); 
+						exDate =  CORBA::string_dup(  DBsql.GetDomainExDate(id)  );
 
-
-                                   if( ret->code == 0 ) // if is OK OK
-                                   {
-
-                                     // make Renew Domain count new Exdate in 
-                                     if( DBsql.RenewExDate( id , period_count ) ) 
-                                       {
-                                           //  return new Exdate as local date
-                                           CORBA::string_free(exDate); 
-                                           exDate =  CORBA::string_dup(  DBsql.GetDomainExDate(id)  );
-
-                                     // billing credit operation domain-renew
-                                    if( DBsql.BillingRenewDomain( regID ,  zone , id ,  period_count ,  exDate ) == false )
-                                     ret->code =  COMMAND_BILLING_FAILURE;
-                                     else  if( DBsql.SaveDomainHistory( id ) )  ret->code = COMMAND_OK; 
+						// billing credit operation domain-renew
+						if( DBsql.BillingRenewDomain( regID ,  zone , id ,  period_count ,  exDate ) == false )
+						    ret->code =  COMMAND_BILLING_FAILURE;
+						else  if( DBsql.SaveDomainHistory( id ) )  ret->code = COMMAND_OK; 
                                             
-                                       }
-                                     else ret->code = COMMAND_FAILED;
-                                  }
+					    }
+					    else ret->code = COMMAND_FAILED;
+					}
+				    }
+				}
+			    }
+			}
 
-                                
-                           
-                        }
+			if( ret->code == COMMAND_OK ) // run notifier
+			{
+			    ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
+			    ntf->Send(); // send mesages to default contats
+			}
+			DBsql.QuitTransaction( ret->code );
 
-                    }
-                }
+		    }
+		}
+		ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->code ) );
+	    }
 
+	    ret->msg =CORBA::string_dup( GetErrorMessage(  ret->code  , GetRegistrarLang( clientID ) )  );
 
+	    DBsql.Disconnect();
+	}
 
-        if( ret->code == COMMAND_OK ) // run notifier
-         {
-            ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
-            ntf->Send(); // send mesages to default contats
-         }
-
-            
-
-
-              DBsql.QuitTransaction( ret->code );
-
-          }
-          ret->svTRID = CORBA::string_dup( DBsql.EndAction( ret->code ) );
-        }
-
-      ret->msg =CORBA::string_dup( GetErrorMessage(  ret->code  , GetRegistrarLang( clientID ) )  );
-
-      DBsql.Disconnect();
     }
+    // EPP exception
+    if(  ret->code > COMMAND_EXCEPTION ) EppError(  ret->code , ret->msg ,  ret->svTRID , errors );
 
-  // EPP exception
-  if(  ret->code > COMMAND_EXCEPTION ) EppError(  ret->code , ret->msg ,  ret->svTRID , errors );
-
-if( ret->code == 0 ) ServerInternalError("DomainRenew");
+    if( ret->code == 0 ) ServerInternalError("DomainRenew");
 
 
-return ret._retn();
+    return ret._retn();
 }
 
 
