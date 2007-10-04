@@ -236,6 +236,7 @@ int GPC::ReadGPCFile( char * filename )
 	return -3;
     }
     ParseHead(tmp);
+    LOG(LOG_DEBUG, "GPC read head: %s", tmp);
 
     numrec = 0;
     do {
@@ -263,6 +264,7 @@ int GPC::ReadGPCFile( char * filename )
 	if (strncmp(tmp, GPC_LIST_ITEM, 3) == 0) {
 	    ParseItem(tmp);
 	    numrec ++; 
+	    LOG(LOG_DEBUG, "GPC read item: %s", tmp);
 	} else if (strncmp(tmp, GPC_LIST_VZP, 3) == 0) {
 	    // skip this line
 	} else {
