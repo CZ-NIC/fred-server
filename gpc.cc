@@ -207,9 +207,9 @@ int GPC::ReadGPCFile( char * filename )
     if ((fd = fopen(filename,  "r")) == NULL) {
 	if (errno) {
 	    strerror_r(errno, tmp, sizeof(tmp));
-	    LOG(LOG_ERROR, "GPC read failed: %s");
+	    LOG(LOG_ERR, "GPC read failed: %s");
 	} else {
-	    LOG(LOG_ERROR, "GPC read failed: file not found");
+	    LOG(LOG_ERR, "GPC read failed: file not found");
 	}
 	return -1; // open error
     }
@@ -221,9 +221,9 @@ int GPC::ReadGPCFile( char * filename )
     if (fgets(tmp, TMP_SIZE, fd) == NULL) {
 	if (errno) {
 	    strerror_r(errno, tmp, sizeof(tmp));
-	    LOG(LOG_ERROR, "GPC read failed: %s");
+	    LOG(LOG_ERR, "GPC read failed: %s");
 	} else {
-	    LOG(LOG_ERROR, "GPC read failed: file empty");
+	    LOG(LOG_ERR, "GPC read failed: file empty");
 	}
 	fclose(fd);
 	return -2; // read error
@@ -231,7 +231,7 @@ int GPC::ReadGPCFile( char * filename )
     
     if (strncmp(tmp, GPC_LIST_HEAD, 3) != 0)
     {
-	LOG(LOG_ERROR, "GPC read failed: header not found");
+	LOG(LOG_ERR, "GPC read failed: header not found");
 	fclose(fd);
 	return -3;
     }
@@ -244,7 +244,7 @@ int GPC::ReadGPCFile( char * filename )
 	if (fgets(tmp, TMP_SIZE, fd) == NULL) {
 	    if (errno) {
 		strerror_r(errno, tmp, sizeof(tmp));
-		LOG(LOG_ERROR, "GPC read failed: %s", tmp);
+		LOG(LOG_ERR, "GPC read failed: %s", tmp);
 		numrec = -2;
 	    }
 	}
@@ -255,7 +255,7 @@ int GPC::ReadGPCFile( char * filename )
 	}
 
 	if (strlen(tmp) != 130) {
-	    LOG(LOG_ERROR, "GPC read failed: invalid line len = %l", strlen(tmp));
+	    LOG(LOG_ERR, "GPC read failed: invalid line len = %l", strlen(tmp));
 	    numrec = -3;
 	    break;
 	}
@@ -268,7 +268,7 @@ int GPC::ReadGPCFile( char * filename )
     } while (numrec < MAX_ITEMS);
 	
     if (numrec == MAX_ITEMS) {
-	LOG(LOG_ERROR, "GPC read failed: too much lines = %l", numrec);
+	LOG(LOG_ERR, "GPC read failed: too much lines = %l", numrec);
 	// too much lines
 	numrec = -4;
     }
