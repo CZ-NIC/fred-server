@@ -260,11 +260,17 @@ int GPC::ReadGPCFile( char * filename )
 	    break;
 	}
 
-	if (strncmp(tmp, GPC_LIST_HEAD, 3) == 0) {
+	if (strncmp(tmp, GPC_LIST_ITEM, 3) == 0) {
 	    ParseItem(tmp);
 	    numrec ++; 
-	} 
-        
+	} else if (strncmp(tmp, GPC_LIST_VZP, 3) == 0) {
+	    // skip this line
+	} else {
+	    // unknown line
+	    LOG(LOG_ERR, "GPC read failed: unknown line: %s", tmp);
+	    numrec = -5;
+	    break;
+	}        
     } while (numrec < MAX_ITEMS);
 	
     if (numrec == MAX_ITEMS) {

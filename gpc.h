@@ -1,6 +1,7 @@
 
 #define GPC_LIST_HEAD "074" // head of list
 #define GPC_LIST_ITEM "075" // item of list
+#define GPC_LIST_VZP  "076" // item of list
 
 
 #define  GPC_MAX_ACCOUNT 16
