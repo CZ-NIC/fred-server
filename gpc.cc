@@ -1,8 +1,9 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<string.h>
-
+#include <string.h>
+#include <errno.h>
 #include "gpc.h"
+#include "log.h"
 
 void convert_date( char *dateStr ,  const char *date )
 {
@@ -203,19 +204,34 @@ int GPC::ReadGPCFile( char * filename )
     int numrec;
     char tmp[TMP_SIZE];
 
-    if ((fd = fopen(filename,  "r")) == NULL) return -1; // open error
+    if ((fd = fopen(filename,  "r")) == NULL) {
+	if (errno) {
+	    strerror_r(errno, tmp, sizeof(tmp));
+	    LOG(LOG_ERROR, "GPC read failed: %s");
+	} else {
+	    LOG(LOG_ERROR, "GPC read failed: file not found");
+	}
+	return -1; // open error
+    }
 
     // vycistime si pro jistotu buffer
     bzero(tmp, TMP_SIZE);
 
     // nacteme prvni řádku
     if (fgets(tmp, TMP_SIZE, fd) == NULL) {
+	if (errno) {
+	    strerror_r(errno, tmp, sizeof(tmp));
+	    LOG(LOG_ERROR, "GPC read failed: %s");
+	} else {
+	    LOG(LOG_ERROR, "GPC read failed: file empty");
+	}
 	fclose(fd);
 	return -2; // read error
     }
     
     if (strncmp(tmp, GPC_LIST_HEAD, 3) != 0)
     {
+	LOG(LOG_ERROR, "GPC read failed: header not found");
 	fclose(fd);
 	return -3;
     }
@@ -225,7 +241,13 @@ int GPC::ReadGPCFile( char * filename )
     do {
 	// vycistime si pro jistotu buffer
 	bzero(tmp, TMP_SIZE);
-	if (fgets(tmp, TMP_SIZE, fd) == NULL) return -2; // read error
+	if (fgets(tmp, TMP_SIZE, fd) == NULL) {
+	    if (errno) {
+		strerror_r(errno, tmp, sizeof(tmp));
+		LOG(LOG_ERROR, "GPC read failed: %s", tmp);
+		numrec = -2;
+	    }
+	}
 	    
 	if (((tmp[0] == '\r') && (tmp[1] == '\n')) || (strlen(tmp) == 0)) {
 	    // final newline or EOF
@@ -233,18 +255,20 @@ int GPC::ReadGPCFile( char * filename )
 	}
 
 	if (strlen(tmp) != 130) {
+	    LOG(LOG_ERROR, "GPC read failed: invalid line len = %l", strlen(tmp));
 	    numrec = -3;
 	    break;
 	}
 
 	if (strncmp(tmp, GPC_LIST_HEAD, 3) == 0) {
-	    ParseItem( tmp  );
+	    ParseItem(tmp);
 	    numrec ++; 
 	} 
         
     } while (numrec < MAX_ITEMS);
 	
     if (numrec == MAX_ITEMS) {
+	LOG(LOG_ERROR, "GPC read failed: too much lines = %l", numrec);
 	// too much lines
 	numrec = -4;
     }
