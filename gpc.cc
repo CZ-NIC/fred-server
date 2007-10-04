@@ -282,7 +282,7 @@ int GPC::ReadGPCFile( char * filename )
     }
 
     fclose(fd);
-    // debug("End of reading list items %d\n" , numrec );
+    LOG(LOG_DEBUG, "GPC read end: number of items: %d", numrec);
     return numrec;
 }
 
