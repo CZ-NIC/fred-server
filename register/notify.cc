@@ -169,7 +169,8 @@ namespace Register
             << " FROM object_state s, object_registry obr, "
             << " notify_statechange_map nm, mail_type mt "
             << " WHERE s.object_id=obr.id AND obr.type=nm.obj_type "
-            << " AND s.state_id=nm.state_id AND mt.id=nm.mail_type_id) AS nt "
+            << " AND s.state_id=nm.state_id AND s.valid_to ISNULL "
+            << " AND mt.id=nm.mail_type_id) AS nt "
             << "LEFT JOIN notify_statechange ns ON ("
             << "nt.state_id=ns.state_id AND nt.type=ns.type) "
             << "WHERE ns.state_id ISNULL ";
@@ -239,22 +240,26 @@ namespace Register
         }
         if (debugOutput) *debugOutput << "</notifications>" << std::endl;
       }
+#define XML_DB_OUT(x,y) "<![CDATA[" << db->GetFieldValue(x,y) << "]]>"
       virtual void generateLetters(const std::string& date, std::ostream *o)
         throw (SQL_ERROR)
       {
         std::stringstream sql;
         sql << "SELECT dobr.name,r.handle,CURRENT_DATE,"
             << "d.exdate::date + INTERVAL '45 days',cor.name,"
-            << "c.name, c.organization, "
+            << "CASE WHEN TRIM(COALESCE(c.organization,''))='' THEN c.name "
+            << "     ELSE c.organization END, "
             << "TRIM(COALESCE(c.street1,'') || ' ' || "
             << "COALESCE(c.street2,'') || ' ' || "
             << "COALESCE(c.street3,'')), "
-            << "c.city, c.postalcode, c.country "
-            << "FROM contact_history c, object_registry cor, registrar r, "
+            << "c.city, c.postalcode, ec.country "
+            << "FROM enum_country ec, contact_history c, object_registry cor, "
+            << "registrar r, "
             << "object_registry dobr, object_history doh, domain_history d, "
             << "object_state s "
             << "LEFT JOIN notify_letters nl ON (s.id=nl.state_id) "
-            << "WHERE c.historyid=cor.historyid AND cor.id=d.registrant "
+            << "WHERE ec.id=c.country AND c.historyid=cor.historyid "
+            << "AND cor.id=d.registrant "
             << "AND d.historyid=s.ohid_from AND dobr.id=d.id "
             << "AND doh.historyid=d.historyid AND s.state_id=19 "
             << "AND s.valid_to ISNULL AND d.exdate='" << date 
@@ -263,18 +268,17 @@ namespace Register
         *o << "<messages>";
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
           *o << "<message>"
-             << "<domain>" << db->GetFieldValue(i,0) << "</domain>"
-             << "<registrar>" << db->GetFieldValue(i,1) << "</registrar>"
-             << "<actual_date>" << db->GetFieldValue(i,2) << "</actual_date>"
-             << "<termination_date>" << db->GetFieldValue(i,3) <<"</termination_date>"
+             << "<domain>" << XML_DB_OUT(i,0) << "</domain>"
+             << "<registrar>" << XML_DB_OUT(i,1) << "</registrar>"
+             << "<actual_date>" << XML_DB_OUT(i,2) << "</actual_date>"
+             << "<termination_date>" << XML_DB_OUT(i,3) <<"</termination_date>"
              << "<holder>"
-             << "<handle>" << db->GetFieldValue(i,4) << "</handle>"
-             << "<name>" << db->GetFieldValue(i,5) << "</name>"
-             << "<org>" << db->GetFieldValue(i,6) << "</org>"
-             << "<street>" << db->GetFieldValue(i,7) << "</street>"
-             << "<city>" << db->GetFieldValue(i,8) << "</city>"
-             << "<zip>" << db->GetFieldValue(i,9) << "</zip>"
-             << "<country>" << db->GetFieldValue(i,10) << "</country>"
+             << "<handle>" << XML_DB_OUT(i,4) << "</handle>"
+             << "<name>" << XML_DB_OUT(i,5) << "</name>"
+             << "<street>" << XML_DB_OUT(i,6) << "</street>"
+             << "<city>" << XML_DB_OUT(i,7) << "</city>"
+             << "<zip>" << XML_DB_OUT(i,8) << "</zip>"
+             << "<country>" << XML_DB_OUT(i,9) << "</country>"
              << "</holder>"
              << "</message>";
         db->FreeSelect();        

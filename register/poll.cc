@@ -721,7 +721,7 @@ namespace Register
           " os.id "
           "FROM object_registry ob, object_history oh, object_state os "
           "LEFT JOIN poll_statechange ps ON (os.id=ps.stateid) "
-          "WHERE os.state_id in (8,9,11,13,20,17) "
+          "WHERE os.state_id in (8,9,11,13,20,17) AND os.valid_to ISNULL "
           "AND oh.historyid=os.ohid_from AND ob.id=os.object_id "
           "AND ps.stateid ISNULL ";
         if (!db->ExecSQL(insertTemp.str().c_str())) throw SQL_ERROR();        
