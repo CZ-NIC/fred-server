@@ -1,6 +1,7 @@
 #include "notify.h"
 #include "dbsql.h"
 #include "log.h"
+#include "sql.h"
 #include <sstream>
 
 namespace Register
@@ -34,6 +35,23 @@ namespace Register
         db->FreeSelect();
         return mailList;
       }
+      std::string getDomainAdminEmailsHistory(TID domain)
+      {
+        std::stringstream sql;
+        sql << "SELECT ch.email "
+            << "FROM object_registry dor, domain_history dh, "
+            << "object_registry cor, contact_history ch "
+            << "WHERE dor.historyid=dh.historyid AND dh.registrant=cor.id "
+            << "AND cor.historyid=ch.historyid "
+            << "AND dor.id=" << domain << " "
+            << "UNION "
+            << "SELECT ch.email "
+            << "FROM contact_history ch, object_registry cor, "
+            << "domain_contact_map_history dcm, object_registry dor "
+            << "WHERE ch.historyid=cor.historyid AND cor.id=dcm.contactid "
+            << "AND dcm.historyid=dor.historyid AND dor.id=" << domain;
+        return getEmailList(sql);
+      }
       std::string getDomainAdminEmails(TID domain)
       {
         std::stringstream sql;
@@ -44,6 +62,18 @@ namespace Register
             << "SELECT c.email "
             << "FROM domain_contact_map dcm, contact c "
             << "WHERE dcm.contactid=c.id AND dcm.domainid=" << domain;
+        return getEmailList(sql);
+      }
+      std::string getDomainTechEmailsHistory(TID domain)
+      {
+        std::stringstream sql;
+        sql << "SELECT ch.email "
+            << "FROM contact_history ch, object_registry cor, "
+            << "nsset_contact_map_history ncm, object_registry nor, "
+            << "domain_history dh, object_registry dor "
+            << "WHERE ch.historyid=cor.historyid AND cor.id=ncm.contactid "
+            << "AND ncm.historyid=nor.historyid AND nor.id=dh.nsset "
+            << "AND dh.historyid=dor.historyid AND dor.id=" << domain;
         return getEmailList(sql);
       }
       std::string getDomainTechEmails(TID domain)
@@ -68,6 +98,41 @@ namespace Register
         std::stringstream sql;
         sql << "SELECT c.email FROM contact c WHERE c.id=" << contact;
         return getEmailList(sql);        
+      }
+      void fillDomainParamsHistory(
+        TID domain, 
+        Register::Mailer::Parameters& params
+      ) throw (SQL_ERROR)
+      {
+        std::stringstream sql;
+        sql << "SELECT dom.name, cor.name, nor.name, r.handle, "
+            << "eh.exdate, dh.exdate "
+            << "FROM object_registry dom, object_history doh, "
+            << "registrar r, object_registry cor, domain_history dh "
+            << "LEFT JOIN object_registry nor ON (nor.id=dh.nsset) "
+            << "LEFT JOIN enumval_history eh ON (eh.historyid=dh.historyid) "
+            << "WHERE dom.historyid=doh.historyid AND doh.clid=r.id "
+            << "AND dom.historyid=dh.historyid AND dh.registrant=cor.id "
+            << "AND dom.id=" << domain;
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        params["checkdate"] = to_iso_extended_string(
+          date(day_clock::local_day())
+        );
+        params["domain"] = db->GetFieldValue(0,0);
+        params["owner"] = db->GetFieldValue(0,1);
+        params["nsset"] = db->GetFieldValue(0,2);
+        params["registrar"] = db->GetFieldValue(0,3);
+        date val(MAKE_DATE(0,4));
+        if (!val.is_special())
+          params["valdate"] = to_iso_extended_string(val);
+        date ex(MAKE_DATE(0,5));
+        params["exdate"] = to_iso_extended_string(ex);
+        params["dnsdate"] = to_iso_extended_string(
+          ex + date_duration(30)
+        );
+        params["exregdate"] = to_iso_extended_string(
+          ex + date_duration(45)
+        );        
       }
       void fillDomainParams(
         TID domain, 
@@ -209,9 +274,10 @@ namespace Register
               emails = getNSSetTechEmails(i->obj_id);
               break;
              case 3: // domain
-              fillDomainParams(i->obj_id,params);
-              emails = (i->emails == 1 ? getDomainAdminEmails(i->obj_id) : 
-                                         getDomainTechEmails(i->obj_id));
+              fillDomainParamsHistory(i->obj_id,params);
+              emails = 
+                (i->emails == 1 ? getDomainAdminEmailsHistory(i->obj_id) : 
+                                  getDomainTechEmailsHistory(i->obj_id));
               break;
             }
             if (debugOutput) {
