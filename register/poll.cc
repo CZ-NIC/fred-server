@@ -559,7 +559,7 @@ namespace Register
              case MT_DELETE_CONTACT:
              case MT_DELETE_NSSET:
              case MT_DELETE_DOMAIN:
-              d = MAKE_DATE(i,2);
+              d = MAKE_DATE(i,1);
               break;
              default:
               // strange data in tables
