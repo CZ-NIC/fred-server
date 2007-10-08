@@ -1291,7 +1291,7 @@ int ID;
 if( TestEBankaList( ident ) == false )
   {
 
-     ID = GetSequenceID( "bank_statement_head" );
+     ID = GetSequenceID( "bank_ebanka_list" );
 
                     INSERT( "BANK_EBANKA_LIST" );
                     INTO("id");

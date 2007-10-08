@@ -267,7 +267,12 @@ int GPC::ReadGPCFile( char * filename )
 	    LOG(LOG_DEBUG, "GPC read item: %s", tmp);
 	} else if (strncmp(tmp, GPC_LIST_VZP, 3) == 0) {
 	    // skip this line
-	} else {
+	} else if (strncmp(tmp, "078", 3) == 0) {
+	    // skip this line
+        } else if (strncmp(tmp, GPC_LIST_HEAD, 3) == 0) {
+          // next account => finish
+          break;
+        } else {
 	    // unknown line
 	    LOG(LOG_ERR, "GPC read failed: unknown line: %s", tmp);
 	    numrec = -5;
