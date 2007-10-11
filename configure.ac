@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.61)
+AC_PREREQ(2.59)
 AC_INIT([fred], 1.7.x)
 AC_CONFIG_SRCDIR(ccReg_server.cc)
 AC_CONFIG_HEADER([config.h])
