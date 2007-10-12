@@ -1,4 +1,5 @@
-#include<stdio.h>
+#include <sstream>
+#include <stdio.h>
 #include "gpc.h"
 
 #include "conf.h"
@@ -95,7 +96,10 @@ if( db.BeginTransaction() )
 
  if( ( zone =  db.GetNumericFromTable( "zone", "id", "fqdn", zone_fqdn ) ) )
   {
-   if( db.ExecSelect(  "SELECT id from registrar where system=false;" ) )
+    std::stringstream sql;
+    sql << "SELECT r.id FROM registrar r, registrarinvoice i WHERE r.id=i.registrarid "
+        << "AND r.system=false AND i.zone=" << zone << " AND i.fromdate<=CURRENT_DATE";
+   if( db.ExecSelect(sql.str().c_str() ) )
     {
         num =  db.GetSelectRows();
 
@@ -291,7 +295,6 @@ if( db.BeginTransaction() )
                           if( regID > 0 )
                             { 
                                  LOG( LOG_DEBUG ,"nalezen registator %d handle %s" , regID , db.GetRegistrarHandle( regID ) );
-
                                  // vytvoreni zalohove faktury a ulozeni creditu
                                   invoiceID =  db.MakeNewInvoiceAdvance( datetimeString ,  zone , regID , price , true  );
                                   if( invoiceID > 0 ) 
@@ -450,22 +453,39 @@ LOG( LOG_DEBUG , "successfully  connect to DATABASE %s"  , database);
 
 if(  db.BeginTransaction() )
   {  
-
-    if( ( accountID = db.TestBankAccount(  head->account , head->num , head->oldBalnce )  ) )
+    char bank_code[MAX_CODE];
+    bzero(bank_code, MAX_CODE);
+    if( ( accountID = db.TestBankAccount(  head->account , head->num , head->oldBalnce, bank_code )  ) )
       {   
         if(  ( statemetID = db.SaveBankHead( accountID , head->num ,  head->date ,  head->oldDate ,  head->oldBalnce ,  head->newBalance  ,  head->credit  ,  head->debet ) ) > 0 )
          {
          LOG( LOG_DEBUG , "accountID %d statemetID %d\n" ,  accountID , statemetID );             
           for( rc = 0 ; rc < numrec ; rc ++ )
            {
-              if( !db.SaveBankItem( statemetID , item[rc]->account  ,  item[rc]->bank ,  item[rc]->evid ,  item[rc]->date ,   item[rc]->memo , 
-                             item[rc]->code , item[rc]->ks , item[rc]->vs ,  item[rc]->ss ,  item[rc]->price ) ) break;
-          
-           }
+             int itemID = 0;
+              if (!strcmp("0000",item[rc]->bank)) strncpy(item[rc]->bank,bank_code,MAX_CODE-1);
+              if( (itemID = db.SaveBankItem( statemetID , item[rc]->account  ,  item[rc]->bank ,  item[rc]->evid ,  item[rc]->date ,   item[rc]->memo , 
+                             item[rc]->code , item[rc]->ks , item[rc]->vs ,  item[rc]->ss ,  item[rc]->price )) <= 0 ) break;
+              int regID =   db.GetRegistrarIDbyVarSymbol(item[rc]->vs);
+              if( regID > 0 )
+              { 
+                LOG( LOG_DEBUG ,"nalezen registator %d handle %s" , regID , db.GetRegistrarHandle( regID ) );
+                // vytvoreni zalohove faktury a ulozeni creditu
+                int zone = db.GetBankAccountZone( accountID );
+                int invoiceID =  db.MakeNewInvoiceAdvance(item[rc]->date,  zone , regID , item[rc]->price , true  );
+                if( invoiceID > 0 ) 
+                {
+                  LOG( LOG_DEBUG , "OK vytvorena zalohova faktura id %d" , invoiceID );
+                  if(   !db.UpdateBankStatementItem( itemID , invoiceID )   ) 
+                   {   LOG( ERROR_LOG , "chyba update EBankaListInvoice");  ret = -1; }
+                }
+               }
+               else if( regID == 0 ) LOG(  LOG_DEBUG , "nezparovana platba identifikator [%s] price %ld" , item[rc]->memo   , item[rc]->price ); 
+            }
          }
          
         // update zustaktu na uctu
-       if( db.UpdateBankAccount( accountID , head->date , head->num ,  head->newBalance  ) ) ret = CMD_OK;    
+       if( ret>0 && db.UpdateBankAccount( accountID , head->date , head->num ,  head->newBalance  ) ) ret = CMD_OK;    
       }     
 
              

@@ -81,7 +81,7 @@ int GetBankAccount( const char *accountStr ,  const char *codeStr   );
 int GetBankAccountZone( int accountID );
 
 // test oldBalance at account 
-int TestBankAccount( const char *accountStr , int num , long oldBalance );
+int TestBankAccount( const char *accountStr , int num , long oldBalance, char* bank );
 
 
 // update Balance  at the account
@@ -91,7 +91,7 @@ bool UpdateBankAccount( int accountID , char *date , int num ,  long newBalance 
 int SaveBankHead( int accountID ,int num ,  char *date  ,  char *oldDate , long oldBalance , long newBalance , long credit , long debet );
 
 // save bank item for statement
-bool SaveBankItem( int statemetID , char *account  , char *bank , char *evidNum, char *date , char *memo , int code , 
+int SaveBankItem( int statemetID , char *account  , char *bank , char *evidNum, char *date , char *memo , int code , 
                        char *konstSymb ,  char *varSymb , char *specsymb  , long price );
 
 // e-banka function for table bank_ebanka_list on-line bankstatement  via https
@@ -211,7 +211,7 @@ int GetNSSetContacts( int nssetID );
 
 
 int GetRegistrarID( char *handle ) { return GetNumericFromTable( "REGISTRAR", "id" , "handle" , handle ); };
-int GetRegistrarIDbyVarSymbol( char *vs )  { return GetNumericFromTable( "REGISTRAR", "id" , "varsymb" , vs ); };
+int GetRegistrarIDbyVarSymbol( char *vs )  { return GetNumericFromTable( "REGISTRAR", "id" , "varsymb" , atoi(vs) ); };
 
 // return true if the registar is system can make all operations test registrar.system is it true
 bool GetRegistrarSystem( int regID );

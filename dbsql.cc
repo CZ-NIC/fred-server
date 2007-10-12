@@ -1121,7 +1121,7 @@ return zone;
 }
 
 // test balance on the account for importing bank statement
-int DB::TestBankAccount( const  char *accountStr , int num , long oldBalance )
+int DB::TestBankAccount( const  char *accountStr , int num , long oldBalance, char *bank )
 {
 int accountID=0;
 int lastNum=0;
@@ -1134,6 +1134,7 @@ long lastBalance=0;
                 accountID = atoi( GetFieldValueName("id"  , 0 ) );
                 lastNum = atoi( GetFieldValueName("last_num" , 0 ) );
                 lastBalance = (long) ( 100.0 *  atof( GetFieldValueName("balance" , 0 ) )  );
+                strncpy(bank,GetFieldValueName("bank_code" , 0 ),4);
             }
        
        FreeSelect();
@@ -1219,10 +1220,16 @@ int statemetID;
 
 }
 //  save items of bank statement
-bool DB::SaveBankItem( int statemetID , char *account  , char *bank , char *evidNum,  char *date , char *memo ,
+int DB::SaveBankItem( int statemetID , char *account  , char *bank , char *evidNum,  char *date , char *memo ,
                        int code  ,  char *konstSymb ,  char *varSymb , char *specsymb  , long price )
 {
+     int itemID;
+
+     itemID = GetSequenceID( "bank_statement_item" );
+     if (itemID <= 0) return 0;
+
                     INSERT( "bank_statement_item" );
+                    INTO( "id" );
                     INTO( "statement_id" );
                     INTO( "account_number" );
                     INTO( "bank_code" );
@@ -1234,6 +1241,7 @@ bool DB::SaveBankItem( int statemetID , char *account  , char *bank , char *evid
                     INTO( "varsymb" );
                     INTO( "specsymb" );
                     INTO( "price" );
+                    VALUE( itemID );
                     VALUE( statemetID );
                     VALUE( account );
                     VALUE( bank );
@@ -1246,7 +1254,8 @@ bool DB::SaveBankItem( int statemetID , char *account  , char *bank , char *evid
                     VALUE( specsymb);
                     VALPRICE( price );
 
-return EXEC ();
+if (!EXEC ()) return 0;
+ return itemID;
 }
 
 
@@ -1291,7 +1300,7 @@ int ID;
 if( TestEBankaList( ident ) == false )
   {
 
-     ID = GetSequenceID( "bank_ebanka_list" );
+     ID = GetSequenceID( "bank_statement_head" );
 
                     INSERT( "BANK_EBANKA_LIST" );
                     INTO("id");
