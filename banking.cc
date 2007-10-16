@@ -472,7 +472,7 @@ if(  db.BeginTransaction() )
                 LOG( LOG_DEBUG ,"nalezen registator %d handle %s" , regID , db.GetRegistrarHandle( regID ) );
                 // vytvoreni zalohove faktury a ulozeni creditu
                 int zone = db.GetBankAccountZone( accountID );
-                int invoiceID =  db.MakeNewInvoiceAdvance(item[rc]->date,  zone , regID , item[rc]->price , true  );
+                int invoiceID =  db.MakeNewInvoiceAdvance(item[rc]->date,  zone , regID , item[rc]->price);
                 if( invoiceID > 0 ) 
                 {
                   LOG( LOG_DEBUG , "OK vytvorena zalohova faktura id %d" , invoiceID );
