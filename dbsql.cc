@@ -1643,7 +1643,7 @@ if( (type = GetPrefixType( taxDateStr , INVOICE_FA , zone ) ) )   // usable pref
 // description in english
 // creation of advance invoice for registrar for price amount with height VAT vatNum paid VAT tax and amount without VAT credit
 // taxDateStr date of taxable fulfilment date when value came into our account
-int  DB::MakeNewInvoiceAdvance( const char *taxDateStr , int zone ,  int regID ,  long price , bool VAT )
+int  DB::MakeNewInvoiceAdvance( const char *taxDateStr , int zone ,  int regID ,  long price)
 {
 int invoiceID;
 long prefix;
@@ -1654,7 +1654,18 @@ long totalVAT; // paid VAT
 double koef; // conversion coefficient for VAT
 int type; // type of advance invoice (ZAL FA) from front 
 
-  if( VAT)
+// patch by JT
+// making VAT parametr useless and taking it from DB
+std::stringstream sql;
+sql << "SELECT vat FROM registrar WHERE id=" << regID;
+if (!ExecSelect(sql.str().c_str())) return -3;
+if (GetSelectRows() != 1) return -4;
+bool VAT = *GetFieldValue(0,0) == 't';
+FreeSelect();
+// end of patch by JT
+
+
+if( VAT)
     {
      // find out VAT height
      dph =GetSystemVAT(); // VAT height 19 %

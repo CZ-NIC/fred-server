@@ -53,7 +53,7 @@ if( db.BeginTransaction() )
               
 
           // make advance invoice with credit price
-           invoiceID =  db.MakeNewInvoiceAdvance( dateStr ,  zone , regID , price , true  );
+           invoiceID =  db.MakeNewInvoiceAdvance( dateStr ,  zone , regID , price);
 
            if( invoiceID > 0 ) ret = CMD_OK;
 
@@ -296,7 +296,7 @@ if( db.BeginTransaction() )
                             { 
                                  LOG( LOG_DEBUG ,"nalezen registator %d handle %s" , regID , db.GetRegistrarHandle( regID ) );
                                  // vytvoreni zalohove faktury a ulozeni creditu
-                                  invoiceID =  db.MakeNewInvoiceAdvance( datetimeString ,  zone , regID , price , true  );
+                                  invoiceID =  db.MakeNewInvoiceAdvance( datetimeString ,  zone , regID , price);
                                   if( invoiceID > 0 ) 
                                     {
                                        LOG( LOG_DEBUG , "OK vytvorena zalohova faktura id %d" , invoiceID );

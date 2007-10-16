@@ -66,7 +66,7 @@ int MakeFactoring(  int regID , int zone , const char *timestampStr ,  const cha
 int MakeNewInvoice(  const char *taxDateStr , const char *fromdateStr , const char *todateStr , int zone ,  int regID ,  long price , unsigned int count );
 
 // make new Invoice 
-int  MakeNewInvoiceAdvance( const char *taxDateStr , int zone ,  int regID ,  long price , bool VAT );
+int  MakeNewInvoiceAdvance( const char *taxDateStr , int zone ,  int regID ,  long price);
 
 // make prefix for invoice
 int GetPrefixType( const char *dateStr , int typ , int zone );
