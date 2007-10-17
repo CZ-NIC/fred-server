@@ -189,6 +189,16 @@ if( ret ) return invoiceID;
 else return -1; // err
 }
 
+#define SIZE_my_accountStr 18
+#define SIZE_my_codeStr 5 
+#define SIZE_accountStr 18
+#define SIZE_codeStr 5
+#define SIZE_identStr 12
+#define SIZE_varSymb 12
+#define SIZE_konstSymb 12
+#define SIZE_nameStr 64
+#define SIZE_memoStr 64
+#define SIZE_datetimeString 32
 
 // e-banka on-line statement process from CSV file get from https: url
 // cz descriptions
@@ -203,14 +213,14 @@ int invoiceID;
 int zone;
 int status;
 int accountID;
-char my_accountStr[18],  my_codeStr[5];
-char accountStr[18],  codeStr[5];
-char identStr[12];
-char varSymb[12] , konstSymb[12];
-char nameStr[64] , memoStr[64];
+char my_accountStr[SIZE_my_accountStr],  my_codeStr[SIZE_my_codeStr];
+char accountStr[SIZE_accountStr],  codeStr[SIZE_codeStr];
+char identStr[SIZE_identStr];
+char varSymb[SIZE_varSymb] , konstSymb[SIZE_konstSymb];
+char nameStr[SIZE_nameStr] , memoStr[SIZE_memoStr];
 time_t t;
 long price;
-char datetimeString[32];
+char datetimeString[SIZE_datetimeString];
 
 if( csv.read_file( filename ) == false )
 {
@@ -243,10 +253,20 @@ if( db.BeginTransaction() )
     while(csv.get_row() )
        {
 
+         bzero(my_accountStr,SIZE_my_accountStr);
+         bzero(my_codeStr,SIZE_my_codeStr);
+         bzero(accountStr,SIZE_accountStr);
+         bzero(codeStr,SIZE_codeStr);
+         bzero(identStr,SIZE_identStr);
+         bzero(varSymb,SIZE_varSymb);
+         bzero(konstSymb,SIZE_konstSymb);
+         bzero(nameStr,SIZE_nameStr);
+         bzero(memoStr,SIZE_memoStr);
 
 
-            strcpy( my_accountStr , csv.get_value(8)  );
-           strcpy( my_codeStr , csv.get_value(9)  );
+
+            strncpy( my_accountStr , csv.get_value(8),SIZE_my_accountStr-1  );
+           strncpy( my_codeStr , csv.get_value(9), SIZE_my_codeStr-1  );
    
 
              // cislo naseho uctu  plus kod banky
@@ -264,17 +284,20 @@ if( db.BeginTransaction() )
               get_timestamp(   datetimeString , t);
  
                // kod banky a cislo protiuctu
-              strcpy( accountStr , csv.get_value(6)  );
-              strcpy( codeStr , csv.get_value(7)  );
-              strcpy( identStr ,csv.get_value(15) ); // identifikator    
+              strncpy( accountStr , csv.get_value(6), SIZE_accountStr-1  );
+              strncpy( codeStr , csv.get_value(7), SIZE_codeStr-1  );
+               // identifikator    
+              strncpy( identStr ,csv.get_value(15), SIZE_identStr-1 ); 
                 
 
 
-              strcpy( varSymb ,  csv.get_value(10) );
-              strcpy( konstSymb ,  csv.get_value(11) );
+              strncpy( varSymb ,  csv.get_value(10), SIZE_varSymb-1 );
+              strncpy( konstSymb ,  csv.get_value(11), SIZE_konstSymb-1 );
 
-              strcpy( nameStr ,  csv.get_value(14) ); // nazev protiuctu 
-              strcpy( memoStr ,  csv.get_value(12) ); // poznamka
+              // nazev protiuctu 
+              strncpy( nameStr ,  csv.get_value(14), SIZE_nameStr-1 ); 
+               // poznamka
+              strncpy( memoStr ,  csv.get_value(12), SIZE_memoStr-1 );
             
               
               status = atoi( csv.get_value(13) );
@@ -485,7 +508,7 @@ if(  db.BeginTransaction() )
          }
          
         // update zustaktu na uctu
-       if( ret>0 && db.UpdateBankAccount( accountID , head->date , head->num ,  head->newBalance  ) ) ret = CMD_OK;    
+       if( ret>=0 && db.UpdateBankAccount( accountID , head->date , head->num ,  head->newBalance  ) ) ret = CMD_OK;    
       }     
 
              
