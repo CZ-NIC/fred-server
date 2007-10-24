@@ -15,7 +15,8 @@ namespace Register
       GT_ADVANCE_INVOICE_PDF, ///< generate PDF of advance invoice from XML data
       GT_AUTHINFO_REQUEST_PDF, ///< generate PDF with request for authinfo
       GT_INVOICE_OUT_XML, ///< generate exporting XML of invoice
-      GT_ACCOUNTING_XML ///< generate accounting XML
+      GT_ACCOUNTING_XML, ///< generate accounting XML
+      GT_WARNING_LETTER ///< generate PDF with expiration warning letters
     };
     /// generator that has to be filled with stream of data
     class Generator {

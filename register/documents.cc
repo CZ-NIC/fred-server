@@ -186,6 +186,9 @@ namespace Register
         templateMap[GT_ACCOUNTING_XML] = GenProcType(
           "", false, "text/xml"
         );
+        templateMap[GT_WARNING_LETTER] = GenProcType(
+          "warning_letter.xsl", true, "application/pdf"
+        );
       }      
       virtual Generator *createOutputGenerator(
         GenerationType type, std::ostream& output,
