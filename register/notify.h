@@ -5,6 +5,7 @@
 #include "contact.h"
 #include "nsset.h"
 #include "domain.h"
+#include "documents.h"
 #include "exceptions.h"
 
 class DB;
@@ -19,17 +20,18 @@ namespace Register
       virtual void notifyStateChanges(
     	const std::string& exceptList,
     	unsigned limit,
-    	std::ostream *debugOutput
+    	std::ostream *debugOutput,
+        bool useHistory
       ) throw (SQL_ERROR) = 0;
-      virtual void generateLetters(const std::string& date, std::ostream *o)
-        throw (SQL_ERROR) = 0;
+      virtual void generateLetters() throw (SQL_ERROR) = 0;
       /// factory method
       static Manager *create(
         DB *db, 
         Mailer::Manager *mm,
         Contact::Manager *cm,
         NSSet::Manager *nm,
-        Domain::Manager *dm
+        Domain::Manager *dm,
+        Document::Manager *docm
       );
     };
   }

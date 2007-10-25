@@ -181,6 +181,8 @@ int main(int argc, char **argv)
     notDesc.add_options()
       ("notify_state_changes",
        "send emails to contacts about object state changes")
+      ("notify_use_history_tables",
+       "slower queries into history tables, but can handle deleted objects")
       ("notify_except_types", po::value<std::string>()->default_value(""),
        "list of notification types ignored in notification")
       ("notify_limit", po::value<unsigned>()->default_value(0),
@@ -188,9 +190,7 @@ int main(int argc, char **argv)
       ("notify_debug",
        "don't do anything, just list xml with values")
       ("notify_letters_create",
-       "generate pdf with domain registration warning")
-      ("notify_letters_exdate",po::value<std::string>(),
-       "exdate of domain for letter creation");
+       "generate pdf with domain registration warning");
 
     po::variables_map vm;
     // parse help and config filename options
@@ -441,23 +441,19 @@ int main(int argc, char **argv)
 
     std::auto_ptr<Register::Notify::Manager> notifyMan(
       Register::Notify::Manager::create(
-        &db, &mm, conMan.get(), nssMan.get(), domMan.get()
+        &db, &mm, conMan.get(), nssMan.get(), domMan.get(), docman.get()
       )
     );
     if (vm.count("notify_state_changes")) {
       notifyMan->notifyStateChanges(
         vm["notify_except_types"].as<std::string>(),
         vm["notify_limit"].as<unsigned>(),
-        vm.count("notify_debug") ? &std::cout : NULL
+        vm.count("notify_debug") ? &std::cout : NULL,
+        vm.count("notify_use_history_tables")
       );
     }
     if (vm.count("notify_letters_create")) {
-      if (vm.count("notify_letters_exdate")) {
-        notifyMan->generateLetters(
-          vm["notify_letters_exdate"].as<std::string>(),
-          &std::cout
-        );
-      }
+      notifyMan->generateLetters();
     }
     
     if (connected) db.Disconnect();

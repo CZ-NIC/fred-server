@@ -8,6 +8,26 @@ namespace Register
 {
   namespace Notify
   {
+    // Local transction needed for proper on commit handling of TEMP table
+    struct LocalTransaction {
+      DB *db;
+      bool closed;
+      LocalTransaction(DB *_db) : db(_db), closed(false) 
+      {
+        db->BeginTransaction();
+      }
+      ~LocalTransaction()
+      {
+        if (!closed)
+          db->RollbackTransaction();
+      }
+      void commit()
+      {
+        db->CommitTransaction();
+        closed = true;
+      }
+    };
+  
     class ManagerImpl : virtual public Manager
     {
       DB *db;
@@ -15,14 +35,16 @@ namespace Register
       Contact::Manager *cm;
       NSSet::Manager *nm;
       Domain::Manager *dm;
+      Document::Manager *docm;
      public:
       ManagerImpl(
         DB *_db,
         Mailer::Manager *_mm,
         Contact::Manager *_cm,
         NSSet::Manager *_nm,
-        Domain::Manager *_dm
-      ): db(_db), mm(_mm), cm(_cm), nm(_nm), dm(_dm)
+        Domain::Manager *_dm,
+        Document::Manager *_docm
+      ): db(_db), mm(_mm), cm(_cm), nm(_nm), dm(_dm), docm(_docm)
       {}
       std::string getEmailList(const std::stringstream& sql) throw (SQL_ERROR)
       {
@@ -201,7 +223,11 @@ namespace Register
       {
         std::stringstream sql;
         sql << "INSERT INTO notify_statechange (state_id,type,mail_id) "
-            << "VALUES (" << state << "," << notifyType << "," << mail << ")";
+            << "VALUES (" 
+            << state << "," << notifyType << ","; 
+        if (mail) sql << mail;
+        else sql << "NULL";
+        sql << ")";
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
       }
       struct NotifyRequest { 
@@ -222,7 +248,8 @@ namespace Register
       void notifyStateChanges(
         const std::string& exceptList,
         unsigned limit,
-        std::ostream *debugOutput
+        std::ostream *debugOutput,
+        bool useHistory
       ) throw (SQL_ERROR)
       {
         std::stringstream sql;
@@ -259,8 +286,9 @@ namespace Register
         std::vector<NotifyRequest>::const_iterator i = nlist.begin();
         for (;i!=nlist.end();i++) {
           Register::Mailer::Parameters params;
-          // TODO: handles are obsolete, should consider alternative solution
+          // handles are obsolete
           Register::Mailer::Handles handles;
+          // these mails has no attachments
           Register::Mailer::Attachments attach;
           std::string emails;
           try {
@@ -274,10 +302,18 @@ namespace Register
               emails = getNSSetTechEmails(i->obj_id);
               break;
              case 3: // domain
-              fillDomainParamsHistory(i->obj_id,params);
-              emails = 
-                (i->emails == 1 ? getDomainAdminEmailsHistory(i->obj_id) : 
-                                  getDomainTechEmailsHistory(i->obj_id));
+               if (useHistory) {
+                 fillDomainParamsHistory(i->obj_id,params);
+                 emails = 
+                   (i->emails == 1 ? getDomainAdminEmailsHistory(i->obj_id) : 
+                                     getDomainTechEmailsHistory(i->obj_id));
+               }
+               else {
+                 fillDomainParams(i->obj_id,params);
+                 emails = 
+                   (i->emails == 1 ? getDomainAdminEmails(i->obj_id) : 
+                    getDomainTechEmails(i->obj_id));
+               }
               break;
             }
             if (debugOutput) {
@@ -290,7 +326,7 @@ namespace Register
                              << "<value>" << ci->second << "</value></param>";
               *debugOutput << "</notify>" << std::endl;
             } else {
-              TID mail = mm->sendEmail(
+              TID mail = emails.empty() ? 0 : mm->sendEmail(
                 "",emails,"",i->mtype,params,handles,attach
               );
               saveNotification(i->state_id,i->type,mail);
@@ -307,60 +343,116 @@ namespace Register
         if (debugOutput) *debugOutput << "</notifications>" << std::endl;
       }
 #define XML_DB_OUT(x,y) "<![CDATA[" << db->GetFieldValue(x,y) << "]]>"
-      virtual void generateLetters(const std::string& date, std::ostream *o)
+#define WARNING_LETTER_FILE_TYPE 5 // from enum_filetype table
+      virtual void generateLetters()
         throw (SQL_ERROR)
       {
-        std::stringstream sql;
-        sql << "SELECT dobr.name,r.handle,CURRENT_DATE,"
-            << "d.exdate::date + INTERVAL '45 days',cor.name,"
-            << "CASE WHEN TRIM(COALESCE(c.organization,''))='' THEN c.name "
-            << "     ELSE c.organization END, "
-            << "TRIM(COALESCE(c.street1,'') || ' ' || "
-            << "COALESCE(c.street2,'') || ' ' || "
-            << "COALESCE(c.street3,'')), "
-            << "c.city, c.postalcode, ec.country "
-            << "FROM enum_country ec, contact_history c, object_registry cor, "
-            << "registrar r, "
-            << "object_registry dobr, object_history doh, domain_history d, "
-            << "object_state s "
-            << "LEFT JOIN notify_letters nl ON (s.id=nl.state_id) "
-            << "WHERE ec.id=c.country AND c.historyid=cor.historyid "
-            << "AND cor.id=d.registrant "
-            << "AND d.historyid=s.ohid_from AND dobr.id=d.id "
-            << "AND doh.historyid=d.historyid AND s.state_id=19 "
-            << "AND s.valid_to ISNULL AND d.exdate='" << date 
-            << "' AND doh.clid=r.id";        
-        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        *o << "<messages>";
+    	// transaction is needed for 'ON COMMIT DROP' functionality
+    	LocalTransaction trans(db);
+    	// because every expiration date is
+        // generated into separate PDF, there are two SQL queries.
+        // first for getting expiration dates and second for real data
+        // to fixate set of states between these two queries temporary
+        // table is used
+        // create temporary table
+        const char *create =
+          "CREATE TEMPORARY TABLE tmp_notify_letters ("
+          " state_id INTEGER PRIMARY KEY "
+          ") ON COMMIT DROP ";
+        // populate temporary table with states to notify
+        if (!db->ExecSQL(create)) throw SQL_ERROR();        
+        const char *fixateStates =
+          "INSERT INTO tmp_notify_letters "
+          "SELECT s.id FROM object_state s "
+          "LEFT JOIN notify_letters nl ON (s.id=nl.state_id) "
+          "WHERE s.state_id=19 AND s.valid_to ISNULL AND nl.state_id ISNULL ";
+        if (!db->ExecSQL(fixateStates)) throw SQL_ERROR();
+        // select all expiration dates of domain to notify
+        const char *selectExDates =
+          "SELECT DISTINCT dh.exdate::date "
+          "FROM tmp_notify_letters tnl, object_state s, domain_history dh "
+          "WHERE tnl.state_id=s.id AND s.ohid_from=dh.historyid ";
+        if (!db->ExecSelect(selectExDates)) throw SQL_ERROR();
+        std::vector<std::string> exDates;
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
-          *o << "<message>"
-             << "<domain>" << XML_DB_OUT(i,0) << "</domain>"
-             << "<registrar>" << XML_DB_OUT(i,1) << "</registrar>"
-             << "<actual_date>" << XML_DB_OUT(i,2) << "</actual_date>"
-             << "<termination_date>" << XML_DB_OUT(i,3) <<"</termination_date>"
-             << "<holder>"
-             << "<handle>" << XML_DB_OUT(i,4) << "</handle>"
-             << "<name>" << XML_DB_OUT(i,5) << "</name>"
-             << "<street>" << XML_DB_OUT(i,6) << "</street>"
-             << "<city>" << XML_DB_OUT(i,7) << "</city>"
-             << "<zip>" << XML_DB_OUT(i,8) << "</zip>"
-             << "<country>" << XML_DB_OUT(i,9) << "</country>"
-             << "</holder>"
-             << "</message>";
-        db->FreeSelect();        
-        *o << "</messages>";
+          exDates.push_back(db->GetFieldValue(i,0));
+        db->FreeSelect();
+        // for every expiration date generate PDF
+        for (unsigned j=0; j<exDates.size(); j++) {
+          std::stringstream filename;
+          filename << "letter-" << exDates[j] << ".pdf";  
+          std::auto_ptr<Document::Generator> gPDF(
+            docm->createSavingGenerator(
+              Document::GT_WARNING_LETTER,
+              filename.str(),WARNING_LETTER_FILE_TYPE,
+              "" // default language
+            )
+          );
+          std::ostream& out(gPDF->getInput());
+          std::stringstream sql;
+          sql << "SELECT dobr.name,r.handle,CURRENT_DATE,"
+              << "d.exdate::date + INTERVAL '45 days',cor.name,"
+              << "CASE WHEN TRIM(COALESCE(c.organization,''))='' THEN c.name "
+              << "     ELSE c.organization END, "
+              << "TRIM(COALESCE(c.street1,'') || ' ' || "
+              << "COALESCE(c.street2,'') || ' ' || "
+              << "COALESCE(c.street3,'')), "
+              << "c.city, c.postalcode, ec.country "
+              << "FROM enum_country ec, contact_history c, "
+              << "object_registry cor, registrar r, "
+              << "object_registry dobr, object_history doh, domain_history d, "
+              << "object_state s, tmp_notify_letters tnl  "
+              << "WHERE ec.id=c.country AND c.historyid=cor.historyid "
+              << "AND cor.id=d.registrant "
+              << "AND d.historyid=s.ohid_from AND dobr.id=d.id "
+              << "AND doh.historyid=d.historyid AND tnl.state_id=s.id "
+              << "AND d.exdate::date='" << exDates[j] << "' AND doh.clid=r.id "
+              << " ORDER BY CASE WHEN c.country='CZ' THEN 0 ELSE 1 END ASC, "
+              << "          c.country";        
+          if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+          out << "<messages>";
+          for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
+            out << "<message>"
+                << "<domain>" << XML_DB_OUT(i,0) << "</domain>"
+                << "<registrar>" << XML_DB_OUT(i,1) << "</registrar>"
+                << "<actual_date>" << XML_DB_OUT(i,2) << "</actual_date>"
+                << "<termination_date>" << XML_DB_OUT(i,3) 
+                << "</termination_date>"
+                << "<holder>"
+                << "<handle>" << XML_DB_OUT(i,4) << "</handle>"
+                << "<name>" << XML_DB_OUT(i,5) << "</name>"
+                << "<street>" << XML_DB_OUT(i,6) << "</street>"
+                << "<city>" << XML_DB_OUT(i,7) << "</city>"
+                << "<zip>" << XML_DB_OUT(i,8) << "</zip>"
+                << "<country>" << XML_DB_OUT(i,9) << "</country>"
+                << "</holder>"
+                << "</message>";
+          db->FreeSelect();        
+          out << "</messages>";
+          // return id of generated PDF file
+          TID filePDF = gPDF->closeInput();
+          sql.str("");
+          sql << "INSERT INTO notify_letters "
+              << "SELECT tnl.state_id, " << filePDF << " "
+              << "FROM tmp_notify_letters tnl, object_state s, "
+              << "domain_history dh "
+              << "WHERE tnl.state_id=s.id AND s.ohid_from=dh.historyid "
+              << "AND dh.exdate::date='" << exDates[j] << "'";
+          if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
+        }
+        trans.commit();
       }
-      
     };
     Manager *Manager::create(
       DB *db, 
       Mailer::Manager *mm,
       Contact::Manager *cm,
       NSSet::Manager *nm,
-      Domain::Manager *dm
+      Domain::Manager *dm,
+      Document::Manager *docm
     )
     {
-      return new ManagerImpl(db,mm,cm,nm,dm);
+      return new ManagerImpl(db,mm,cm,nm,dm,docm);
     }
   }
 }
