@@ -40,13 +40,15 @@ namespace Register
       virtual const std::string& getReclamation() const = 0;
       virtual const std::string& getEmail() const = 0;
       virtual const std::string& getURL() const = 0;
+      virtual const std::string& getPhone() const = 0;
+      virtual const std::string& getFax() const = 0;
     };
     class PaymentSource   
     {
      protected:
       virtual ~PaymentSource() {}      
      public:
-      virtual unsigned long getNumber() const = 0;
+      virtual unsigned long long getNumber() const = 0;
       virtual Money getPrice() const = 0;
       virtual Money getCredit() const = 0;
       virtual TID getId() const = 0;
@@ -81,7 +83,7 @@ namespace Register
       virtual boost::gregorian::date getTaxDate() const = 0;
       virtual boost::gregorian::date_period getAccountPeriod() const = 0;
       virtual Type getType() const = 0;
-      virtual unsigned long getNumber() const = 0;
+      virtual unsigned long long getNumber() const = 0;
       virtual TID getRegistrar() const = 0;
       virtual Money getCredit() const = 0;
       virtual Money getPrice() const = 0;

@@ -56,6 +56,8 @@ namespace Register
       std::string reclamation;
       std::string email;
       std::string url;
+      std::string phone;
+      std::string fax;
       bool vatApply;
      public:
       SubjectImpl(
@@ -65,12 +67,13 @@ namespace Register
         const std::string& _zip, const std::string& _ico,
         const std::string& _vatNumber, const std::string& _registration,
         const std::string& _reclamation, const std::string& _email,
-        const std::string& _url, bool _vatApply
+        const std::string& _url, const std::string& _phone, 
+        const std::string& _fax, bool _vatApply
       ) : 
         handle(_handle), name(_name), fullname(_fullname), street(_street), 
         city(_city), zip(_zip), ico(_ico), vatNumber(_vatNumber),
         registration(_registration), reclamation(_reclamation),
-        email(_email), url(_url), vatApply(_vatApply)
+        email(_email), url(_url), phone(_phone), fax(_fax), vatApply(_vatApply)
       {}      
       const std::string& getHandle() const { return handle; }
       const std::string& getName() const { return name; }
@@ -85,6 +88,8 @@ namespace Register
       const std::string& getReclamation() const { return reclamation; }
       const std::string& getEmail() const { return email; }
       const std::string& getURL() const { return url; }
+      const std::string& getPhone() const { return phone; }
+      const std::string& getFax() const { return fax; }
     };
     class InvoiceImpl;
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -93,19 +98,19 @@ namespace Register
     /// implementation of PaymentSource interface
     class PaymentSourceImpl : public PaymentSource
     {
-      unsigned long number; ///< number of source advance invoice
+      unsigned long long number; ///< number of source advance invoice
       Money price; ///< money that come from this advance invoice  
       Money credit; ///< credit remaining on this advance invoice 
       TID id; ///< id of source advance invoice
      public:
       /// init content from sql result (ignore first column)
       PaymentSourceImpl(DB *db, unsigned l) : 
-        number(atol(db->GetFieldValue(l,1))),
+        number(atoll(db->GetFieldValue(l,1))),
         price(STR_TO_MONEY(db->GetFieldValue(l,2))),
         credit(STR_TO_MONEY(db->GetFieldValue(l,3))),
         id(STR_TO_ID(db->GetFieldValue(l,4)))
       {}
-      virtual unsigned long getNumber() const
+      virtual unsigned long long getNumber() const
       {
         return number;
       }
@@ -208,7 +213,7 @@ namespace Register
       date taxDate;
       date_period accountPeriod;
       Type type;
-      unsigned long number;
+      unsigned long long number;
       TID registrar;
       Money credit;
       Money price;
@@ -238,7 +243,7 @@ namespace Register
       date_period getAccountPeriod() const
       { return accountPeriod; }
       Type getType() const { return type; }
-      unsigned long getNumber() const { return number; }
+      unsigned long long getNumber() const { return number; }
       TID getRegistrar() const { return registrar; }
       Money getCredit() const { return credit; }
       Money getPrice() const { return price; }
@@ -298,7 +303,7 @@ namespace Register
         taxDate(MAKE_DATE(l,3)),
         accountPeriod(MAKE_DATE_NEG(l,4),MAKE_DATE_POS(l,5)),
         type(atoi(db->GetFieldValue(l,6)) == 0 ? IT_DEPOSIT : IT_ACCOUNT),
-        number(atol(db->GetFieldValue(l,7))),
+        number(atoll(db->GetFieldValue(l,7))),
         registrar(STR_TO_ID(db->GetFieldValue(l,8))),
         credit(STR_TO_MONEY(db->GetFieldValue(l,9))),
         price(STR_TO_MONEY(db->GetFieldValue(l,10))),
@@ -321,6 +326,8 @@ namespace Register
           "", // reclamation is empty
           "", // url is empty
           "", // email is empty
+          "", // phone is empty
+          "", // fax is empty
           db->GetFieldValue(l,24)[0] == 't'
         ),
         storeFileFlag(false)
@@ -366,6 +373,8 @@ namespace Register
       "CZ.NIC, z.s.p.o., Americká 23, 120 00 Praha 2",
       "www.nic.cz",
       "podpora@nic.cz",
+      "+420 222 745 111",
+      "+420 222 745 112",
       1
     );
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -373,7 +382,8 @@ namespace Register
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     #define TAGSTART(tag) "<"#tag">"
     #define TAGEND(tag) "</"#tag">"
-    #define TAG(tag,f) TAGSTART(tag) << f << TAGEND(tag)
+    #define TAG(tag,f) TAGSTART(tag) \
+                       << "<![CDATA[" << f << "]]>" << TAGEND(tag)
     #define OUTMONEY(f) (f)/100 << "." << \
                         std::setfill('0') << std::setw(2) << (f)%100
     // builder that export xml of invoice into given stream
@@ -400,6 +410,8 @@ namespace Register
             << TAG(reclamation,s->getReclamation())
             << TAG(url,s->getURL())
             << TAG(email,s->getEmail())
+            << TAG(phone,s->getPhone())
+            << TAG(fax,s->getFax())
             << TAG(vat_not_apply,(s->getVatApply() ? 0 : 1));
         return out;
       }
@@ -732,7 +744,8 @@ namespace Register
           " i.price*100, i.vat, i.total*100, i.totalvat*100, "
           " i.file, i.fileXML, "
           " r.organization, r.street1, "
-          " r.city, r.postalcode, r.ico, r.dic, r.varsymb, r.handle, r.vat "
+          " r.city, r.postalcode, TRIM(r.ico), TRIM(r.dic), TRIM(r.varsymb), "
+          " r.handle, r.vat "
           "FROM "
           " tmp_invoice_filter_result it, registrar r, "
           " invoice_prefix ip, invoice i "
