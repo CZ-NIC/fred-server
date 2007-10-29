@@ -6,6 +6,7 @@
 #include "mailer_manager.h"
 #include <boost/date_time/posix_time/time_formatters.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
+#include <boost/date_time/c_local_time_adjustor.hpp>
 #include <math.h>
 #include <memory>
 #include <iomanip>
@@ -30,12 +31,7 @@ std::string
 formatTime(ptime p,bool date)
 {
   if (p.is_special()) return "";
-//  boost::local_time::time_zone_ptr zone(
-//    new boost::local_time::posix_time_zone("CET")
-//  );
-//  boost::local_time::local_date_time ltc(p, zone);
-//  ptime lt = ltc.local_time();
-  ptime lt = p + hours(2);
+  ptime lt = boost::date_time::c_local_adjustor<ptime>::utc_to_local(p);
   std::ostringstream stime;
   stime << std::setfill('0') << std::setw(2)
         << lt.date().day() << "." 
