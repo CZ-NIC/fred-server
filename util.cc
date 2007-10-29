@@ -255,7 +255,7 @@ for( i = 0 , num = 0  , dot = 0 ; i < len ; i ++ )
         {
                       if( fqdn[i] == '.' ) 
                        {
-                          if( num > 63 ) return false; // very long name for domain
+                          if( num == 0 || num > 63 ) return false; // very long or very short name for domain
                           num = 0 ; 
                           dot ++;   
                        }
