@@ -3370,7 +3370,18 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
                                     } 
 
                                 }                              
-                    
+
+                                // test to duplicity of nameservers
+                                for( l = 0 ; l < i ; l ++ ) 
+                                {
+                                	char  PREV_NAME[256] ; // to upper case of name of DNS hosts
+                                	convert_hostname(  PREV_NAME , dns[l].fqdn );
+                                    if( strcmp( NAME , PREV_NAME ) == 0 )
+                                    {
+                                        LOG( WARNING_LOG, "NSSetCreate: duplicity host name %s " , (const char *) NAME  );
+                                        ret->code = SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name , i+1 , REASON_MSG_DNS_NAME_EXIST ,  GetRegistrarLang( clientID ) );
+                                    }
+                                }                                
                                                   
                             }  
 
@@ -3724,6 +3735,19 @@ if( DBsql.OpenDatabase( database ) )
    
 
                      inetNum+=  dns_add[i].inet.length(); //  count  InetNum for errors
+
+                     // test to duplicity of added nameservers
+                     for( l = 0 ; l < i ; l ++ ) 
+                     {
+                     	char  PREV_NAME[256] ; // to upper case of name of DNS hosts
+                     	convert_hostname(  PREV_NAME , dns_add[l].fqdn );
+                        if( strcmp( NAME , PREV_NAME ) == 0 )
+                         {
+                             LOG( WARNING_LOG, "NSSetUpdate:  host name %s duplicate" , (const char *)  dns_add[i].fqdn );
+                             ret->code = SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name_add , i+1 , REASON_MSG_DNS_NAME_EXIST ,  GetRegistrarLang( clientID ) );
+                         }
+                     }                                
+                     
                                                                                                                                  
                 } // end of cycle
 
@@ -3750,7 +3774,21 @@ if( DBsql.OpenDatabase( database ) )
                                   ret->code = SetErrorReason( errors  , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name_rem , i+1 , REASON_MSG_DNS_NAME_NOTEXIST  , GetRegistrarLang( clientID ) );
                              }
                        }
-                  }
+
+                    // test to duplicity of removing nameservers
+                    for( l = 0 ; l < i ; l ++ ) 
+                    {
+                    	char  PREV_NAME[256] ; // to upper case of name of DNS hosts
+                    	convert_hostname(  PREV_NAME , dns_rem[l].fqdn );
+                       if( strcmp( NAME , PREV_NAME ) == 0 )
+                        {
+                            LOG( WARNING_LOG, "NSSetUpdate:  host name %s duplicate" , (const char *)  dns_rem[i].fqdn );
+                            ret->code = SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name_rem , i+1 , REASON_MSG_DNS_NAME_NOTEXIST ,  GetRegistrarLang( clientID ) );
+                        }
+                    }                                
+
+                
+                }
 
 
                 // if not any errors in the parametrs run update
