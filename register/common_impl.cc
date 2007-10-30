@@ -96,6 +96,9 @@ Register::CommonListImpl::fillTempTable(bool limit) const throw (SQL_ERROR)
   if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
   // TODO: temporary add solution, fix with multiple filter objects
   ((CommonListImpl *)this)->add = true;
+  sql.str("");
+  sql << "ANALYZE " << getTempTableName();
+  if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
 }
 
 void 

@@ -169,7 +169,12 @@ namespace Register
       void addNSSetHandle(const std::string& handle)
       {
         nssetHandle = handle;
-      } 
+      }
+      /// setting validation date - for domain initialization
+      void setValExDate(date _valExDate)
+      {
+        valExDate = _valExDate;
+      }
       virtual void insertStatus(TID id, ptime timeFrom, ptime timeTo)
       {
     	ObjectImpl::insertStatus(id, timeFrom, timeTo);
@@ -433,15 +438,14 @@ namespace Register
             << "obr.crid,o.upid,"
             // repository data
             << "o.authinfopw,obr.roid,"
-            // expiration and validation dates
-            << "d.exdate,ev.exdate "
+            // expiration and validation dates (validation in seperate query)
+            << "d.exdate,NULL "
             << "FROM "
             << getTempTableName() << " tmp, "
             << "contact c, object_registry cor, "
             << "object_registry obr, "
             << "object o, "
             << "domain d "
-            << "LEFT JOIN enumval ev ON (d.id=ev.domainid) "
             << "WHERE tmp.id=d.id AND d.id=o.id AND d.registrant=c.id "
             << "AND c.id=cor.id "
             << "AND obr.id=o.id "
@@ -522,6 +526,25 @@ namespace Register
           dom->addNSSetHandle(
             db->GetFieldValue(i,1)
           );
+        }
+        db->FreeSelect();
+        // add validation (for enum domains)
+        resetIDSequence();
+        sql.str("");
+        sql << "SELECT "
+            << "tmp.id, ev.exdate "
+            << "FROM "
+            << getTempTableName() << " tmp, "
+            << "enumval ev "
+            << "WHERE tmp.id=ev.domainid "
+            << "ORDER BY tmp.id";
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+          DomainImpl *dom = dynamic_cast<DomainImpl *>(findIDSequence(
+            STR_TO_ID(db->GetFieldValue(i,0))
+          ));
+          if (!dom) throw SQL_ERROR(); 
+          dom->setValExDate(MAKE_DATE(i,1));
         }
         db->FreeSelect();
         ObjectListImpl::reload();
