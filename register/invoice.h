@@ -27,6 +27,7 @@ namespace Register
      protected:
       virtual ~Subject() {}
      public:
+      virtual TID getId() const = 0;
       virtual const std::string& getHandle() const = 0;
       virtual const std::string& getName() const = 0;
       virtual const std::string& getFullname() const = 0;
@@ -71,6 +72,23 @@ namespace Register
       virtual Money getPricePerUnit() const = 0;
       virtual Money getPrice() const = 0;
     };
+    /// iterator over list of total price partitioned by years
+    class AnnualPartitioning
+    {
+     protected:
+      virtual ~AnnualPartitioning() {}
+     public:
+      /// restet iterator to first record
+      virtual void resetIterator() = 0;
+      /// test whether there are any records left 
+      virtual bool end() const = 0;
+      /// pass to next record
+      virtual void next() = 0;
+      /// access method for year at current record 
+      virtual unsigned getYear() const = 0;
+      /// access method for money at current record
+      virtual Money getPrice() const = 0;
+    };
     class Invoice
     {
      public:
@@ -97,6 +115,7 @@ namespace Register
       virtual const PaymentSource *getSource(unsigned idx) const = 0;
       virtual unsigned getActionCount() const = 0;
       virtual const PaymentAction *getAction(unsigned idx) const = 0;
+      virtual AnnualPartitioning *getAnnualPartitioning() = 0;   
     };
     class InvoiceList
     {

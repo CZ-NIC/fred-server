@@ -44,6 +44,7 @@ namespace Register
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     /// implementation of Subject interface 
     class SubjectImpl : public Subject {
+      TID id;
       std::string handle;
       std::string name;
       std::string fullname;
@@ -61,6 +62,7 @@ namespace Register
       bool vatApply;
      public:
       SubjectImpl(
+        TID _id,
         const std::string& _handle,
         const std::string& _name, const std::string& _fullname,
         const std::string& _street, const std::string& _city,
@@ -69,12 +71,14 @@ namespace Register
         const std::string& _reclamation, const std::string& _email,
         const std::string& _url, const std::string& _phone, 
         const std::string& _fax, bool _vatApply
-      ) : 
+      ) :
+        id(_id),
         handle(_handle), name(_name), fullname(_fullname), street(_street), 
         city(_city), zip(_zip), ico(_ico), vatNumber(_vatNumber),
         registration(_registration), reclamation(_reclamation),
         email(_email), url(_url), phone(_phone), fax(_fax), vatApply(_vatApply)
-      {}      
+      {}
+      TID getId() const { return id; }
       const std::string& getHandle() const { return handle; }
       const std::string& getName() const { return name; }
       const std::string& getFullname() const { return fullname; }
@@ -190,6 +194,67 @@ namespace Register
         return price;
       }
     };
+    /// hold list of sum of proportional parts of prices for every year
+    class AnnualPartitioningImpl : public virtual AnnualPartitioning 
+    {
+      /// type for mapping year to sum of money
+      typedef std::map<unsigned, Money> RecordsType;
+      RecordsType records; ///< list of years
+      RecordsType::const_iterator i; ///< for walkthrough in results 
+    public:
+      /** for every year in period from exdate-unitsCount to exdate 
+       * count proportional part of price according to days that belong 
+       * to relevant year */
+      /// partition action prices into years
+      void addAction(PaymentAction *pa)
+      {
+        // non periodical actions are ignored
+        if (!pa->getUnitsCount() || pa->getExDate().is_special())
+          return;
+        // lastdate will be subtracted down in every iteration
+        date lastdate = pa->getExDate();
+        // firstdate is for detection when to stop and for portion counting
+        date firstdate = pa->getExDate() - months(pa->getUnitsCount());
+        // money that still need to be partitioned
+        Money remains = pa->getPrice();
+        while (remains) {
+          Money part;
+          unsigned year = lastdate.year();
+          if (year == firstdate.year())
+            // last year just take what remains
+            part = remains;
+          else {
+            // count portion of remains and update lastdate
+            date newdate = date(year,1,1) - days(1);
+            part = remains * (lastdate - newdate).days() / 
+                             (lastdate - firstdate).days();
+            lastdate = newdate;
+          }
+          remains -= part;
+          records[year] += part;
+        }
+      }
+      void resetIterator()
+      {
+        i = records.begin();
+      }
+      bool end() const
+      {
+        return i == records.end();
+      }
+      void next()
+      {
+        i++;
+      }
+      unsigned getYear() const
+      {
+        return end() ? 0 : (*i).first; 
+      }
+      Money getPrice() const
+      {
+        return end() ? 0 : (*i).second; 
+      }
+    };
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     //   Exporter
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -228,6 +293,7 @@ namespace Register
       std::vector<PaymentSourceImpl *> sources;
       std::vector<PaymentActionImpl *> actions;
       bool storeFileFlag; ///< ready for saving link to generated file
+      AnnualPartitioningImpl ap; ///< total prices partitioned by year
       void clearLists()
       {
         for (unsigned i=0; i<sources.size(); i++) delete sources[i];
@@ -314,6 +380,7 @@ namespace Register
         fileXML(STR_TO_ID(db->GetFieldValue(l,15))),
         varSymbol(db->GetFieldValue(l,22)),
         client(
+          STR_TO_ID(db->GetFieldValue(l,25)),
           db->GetFieldValue(l,23),
           db->GetFieldValue(l,16),
           "", // fullname is empty
@@ -351,16 +418,22 @@ namespace Register
       void addAction(DB *db, unsigned row)
       {
         actions.push_back(new PaymentActionImpl(db,row));
+        ap.addAction(actions.back()); // update partitioning
       }
       /// initialize list of sources from sql result
       void addSource(DB *db, unsigned row)
       {
         sources.push_back(new PaymentSourceImpl(db,row));        
       }
+      virtual AnnualPartitioning *getAnnualPartitioning()
+      {
+        return &ap;
+      }
     };
     // TODO: should be initalized somewhere else
     /// static supplier in every invoice
     SubjectImpl InvoiceImpl::supplier(
+      0,
       "REG-CZNIC",
       "CZ.NIC, z.s.p.o.",
       "CZ.NIC, zájmové sdružení právnických osob",
@@ -397,7 +470,8 @@ namespace Register
       {}
       std::ostream& doExport(const Subject* s)
       {
-        out << TAG(name,s->getName())
+        out << TAG(id,s->getId())
+            << TAG(name,s->getName())
             << TAG(fullname,s->getFullname())
             << TAGSTART(address)
             << TAG(street,s->getStreet())
@@ -439,7 +513,7 @@ namespace Register
         out << TAGEND(supplier)
             << TAGSTART(payment)
             << TAG(invoice_number,i->getNumber())
-            << TAG(invoice_date,i->getCrTime().date());
+              << TAG(invoice_date,i->getCrTime().date());
         if (i->getType() == IT_DEPOSIT) 
           out << TAG(advance_payment_date,i->getTaxDate());  
         else {
@@ -456,6 +530,17 @@ namespace Register
             << TAG(basetax,OUTMONEY(i->getTotal()))
             << TAG(vat,OUTMONEY(i->getTotalVAT()))
             << TAG(total,OUTMONEY(i->getPrice()))
+            << TAGSTART(years);
+        for (
+          i->getAnnualPartitioning()->resetIterator();
+          !i->getAnnualPartitioning()->end();
+          i->getAnnualPartitioning()->next()
+        )
+          out << TAGSTART(entry)
+              << TAG(year,i->getAnnualPartitioning()->getYear())
+              << TAG(price,OUTMONEY(i->getAnnualPartitioning()->getPrice()))
+              << TAGEND(entry);
+        out << TAGEND(years)
             << TAGEND(entry)
             << TAGEND(vat_rates)
             << TAGSTART(sumarize)
@@ -745,7 +830,7 @@ namespace Register
           " i.file, i.fileXML, "
           " r.organization, r.street1, "
           " r.city, r.postalcode, TRIM(r.ico), TRIM(r.dic), TRIM(r.varsymb), "
-          " r.handle, r.vat "
+          " r.handle, r.vat, r.id "
           "FROM "
           " tmp_invoice_filter_result it, registrar r, "
           " invoice_prefix ip, invoice i "
