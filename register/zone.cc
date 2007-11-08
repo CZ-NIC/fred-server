@@ -74,7 +74,7 @@ namespace Register
         if (!db->ExecSelect(
           "SELECT id, fqdn, enum_zone, "
           "ARRAY_UPPER(STRING_TO_ARRAY(fqdn,'.'),1) + dots_max "
-          "FROM zone"
+          "FROM zone ORDER BY LENGTH(fqdn) DESC"
         )) return;
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           zoneList.push_back(ZoneImpl(

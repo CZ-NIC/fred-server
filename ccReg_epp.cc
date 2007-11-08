@@ -909,7 +909,7 @@ if( DBsql.OpenDatabase( database ) )
 {
 
 
-   if( DBsql.ExecSelect("select * from zone order by id") )
+   if( DBsql.ExecSelect("select * from zone order by length(fqdn) desc") )
      {
        rows = DBsql.GetSelectRows();
        max_zone = rows;
