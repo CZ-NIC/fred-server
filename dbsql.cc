@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <math.h>
 #include <sstream>
 
 #include "dbsql.h"
@@ -58,7 +59,7 @@ if( ExecSelect( sqlString ) )
  
   if(  GetSelectRows()  == 1 )
      {
-       price =  (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
+       price =  (long) rint( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
      }
 
    FreeSelect();
@@ -336,7 +337,7 @@ bool DB::UpdateInvoiceCredit( int regID ,   int operation  , int zone   , int pe
        
 	    invID[i]  = atoi( GetFieldValue( i , 0 )  );
 	    // credit 
-	    cr[i]  =  (long) ( 100.0 *  atof(  GetFieldValue( i , 1 )   )  );
+	    cr[i]  =  (long) rint( 100.0 *  atof(  GetFieldValue( i , 1 )   )  );
 	}
 	FreeSelect();
     }
@@ -1133,7 +1134,7 @@ long lastBalance=0;
             {
                 accountID = atoi( GetFieldValueName("id"  , 0 ) );
                 lastNum = atoi( GetFieldValueName("last_num" , 0 ) );
-                lastBalance = (long) ( 100.0 *  atof( GetFieldValueName("balance" , 0 ) )  );
+                lastBalance = (long) rint( 100.0 *  atof( GetFieldValueName("balance" , 0 ) )  );
                 strncpy(bank,GetFieldValueName("bank_code" , 0 ),4);
             }
        
@@ -1358,14 +1359,14 @@ long price=-1; // err value
 
  if( ExecSelect(  sqlString ) )
    {
-      total =  (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
+      total =  (long) rint( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
       LOG( NOTICE_LOG , "celkovy zaklad faktury %ld" ,   total );
       FreeSelect();
 
         sprintf( sqlString , "SELECT sum( credit ) FROM invoice_credit_payment_map where ainvoiceid=%d;" ,  aID );
         if( ExecSelect( sqlString ) )
         {
-           suma = (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
+           suma = (long) rint( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
            LOG( NOTICE_LOG , "sectweny credit %ld  pro zal FA" , suma );
            FreeSelect();
         } else return -2; // err
@@ -1393,7 +1394,7 @@ long price=-1; // err value
    {
           if( IsNotNull( 0 , 0 ) )
             {
-                            price =  (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
+                            price =  (long) rint( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
                             LOG( NOTICE_LOG , "celkovy strezeny credit z dane zal  Fa %ld" , price );
             }
 
@@ -1478,7 +1479,7 @@ LOG( NOTICE_LOG , "Fakturace od %s do %s timestamp [%s] " , fromdateStr , todate
                      sprintf( sqlString , "SELECT sum( price ) FROM invoice_object_registry , invoice_object_registry_price_map  WHERE   invoice_object_registry_price_map.id=invoice_object_registry.id AND  crdate < \'%s\' AND zone=%d and registrarid=%d AND  invoice_object_registry.invoiceid is null ;" ,  timestampStr , zone , regID );
                      if( ExecSelect( sqlString ) )
                        {
-                            price =  (long) ( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
+                            price =  (long) rint( 100.0 *  atof( GetFieldValue( 0  , 0 ) )  );
                             LOG( NOTICE_LOG , "Celkova castka na fakture %ld" , price );
                             FreeSelect();
                        }
