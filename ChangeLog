@@ -1,13 +1,19 @@
-1.7.6
+2007-11-15 Jaromir Talir (version 1.7.6)
+
     * overlapping zones supported
+
     * info request optimalization
+
     * nsset create and update fixes
       - better hostname control
       - check of hostname duplicity in request
+
     * hack in timezone conversion removed
+
     * notification fixes
       - pdf letters generation
       - sql fixes in email notification
+
     * lot of banking and invoicing fixes 
       - GPC parser
       - database sequence management
@@ -15,6 +21,7 @@
       - rounding bug in float->int conversion
       - change type long -> long long for extra long invoice numbers
       - support for export to accounting company 
+
 1.7.3	
 	* remove libdaemon
 
