@@ -3226,53 +3226,55 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
     errors->length( 0 );
     crDate = CORBA::string_dup( "" );
 
-    if (tech.length() < 1) {
-        LOG( WARNING_LOG, "NSSetCreate: not any tech Contact " );
-        ret->code =  SetErrorReason( errors , COMMAND_PARAMETR_MISSING , ccReg::nsset_tech , 0,   REASON_MSG_TECH_NOTEXIST  , GetRegistrarLang( clientID ) );
-    }
-    else if (dns.length() < 2) //  minimal two dns hosts
-    {                
-        if( dns.length() == 1 )
-        {
-            LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s"  , (const char *)  dns[0].fqdn   );    
-            ret->code = SetErrorReason( errors , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_dns_name , 1 , REASON_MSG_MIN_TWO_DNS_SERVER ,  GetRegistrarLang( clientID ) );
-        }
-        else
-        {
-            LOG( WARNING_LOG, "NSSetCreate: minimal two dns DNS hosts" );
-            ret->code = SetErrorReason( errors  , COMMAND_PARAMETR_MISSING , ccReg::nsset_dns_name , 0 , REASON_MSG_MIN_TWO_DNS_SERVER , GetRegistrarLang( clientID ) );
-        }
- 
-    }
-    else if ((regID = GetRegistrarID(clientID))) {
+    if ((regID = GetRegistrarID(clientID))) {
 
         if( DBsql.OpenDatabase( database ) )
         {
             if( (  DBsql.BeginAction( clientID, EPP_NSsetCreate,  clTRID  , XML)  ))
             {
                 if ( DBsql.BeginTransaction() ) {
-                    Register::NSSet::Manager::CheckAvailType caType;
-
-                    tch = new int[tech.length()];
-
-                    try {
-                        std::auto_ptr<Register::NSSet::Manager> nman(
-                            Register::NSSet::Manager::create(&DBsql,conf.GetRestrictedHandles())
-                            );
-                        Register::NameIdPair nameId;
-                        caType = nman->checkAvail(handle,nameId);
-                        id = nameId.id;
-                    } 
-                    catch (...) { id = -1; }
-
-                    if (id<0 || caType == Register::NSSet::Manager::CA_INVALID_HANDLE)
-                        ret->code = SetReasonNSSetHandle( errors, handle  , GetRegistrarLang( clientID ) );
-                    else if (caType == Register::NSSet::Manager::CA_REGISTRED)  {
-                        LOG( WARNING_LOG, "nsset handle [%s] EXIST", handle );
-                        ret->code = COMMAND_OBJECT_EXIST;
+                    if (tech.length() < 1) {
+                        LOG( WARNING_LOG, "NSSetCreate: not any tech Contact " );
+                        ret->code =  SetErrorReason( errors , COMMAND_PARAMETR_MISSING , ccReg::nsset_tech , 0,   REASON_MSG_TECH_NOTEXIST  , GetRegistrarLang( clientID ) );
                     }
-                    else if (caType == Register::NSSet::Manager::CA_PROTECTED)
-                        ret->code = SetReasonProtectedPeriod( errors , handle , GetRegistrarLang( clientID ),ccReg::nsset_handle );
+                    else if (dns.length() < 2) //  minimal two dns hosts
+                    {                
+                        if( dns.length() == 1 )
+                        {
+                            LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s"  , (const char *)  dns[0].fqdn   );    
+                            ret->code = SetErrorReason( errors , COMMAND_PARAMETR_VALUE_POLICY_ERROR , ccReg::nsset_dns_name , 1 , REASON_MSG_MIN_TWO_DNS_SERVER ,  GetRegistrarLang( clientID ) );
+                        }
+                        else
+                        {
+                            LOG( WARNING_LOG, "NSSetCreate: minimal two dns DNS hosts" );
+                            ret->code = SetErrorReason( errors  , COMMAND_PARAMETR_MISSING , ccReg::nsset_dns_name , 0 , REASON_MSG_MIN_TWO_DNS_SERVER , GetRegistrarLang( clientID ) );
+                        }
+                 
+                    }
+                    if (ret->code == 0) {
+	                	Register::NSSet::Manager::CheckAvailType caType;
+	
+	                    tch = new int[tech.length()];
+	
+	                    try {
+	                        std::auto_ptr<Register::NSSet::Manager> nman(
+	                            Register::NSSet::Manager::create(&DBsql,conf.GetRestrictedHandles())
+	                            );
+	                        Register::NameIdPair nameId;
+	                        caType = nman->checkAvail(handle,nameId);
+	                        id = nameId.id;
+	                    } 
+	                    catch (...) { id = -1; }
+	
+	                    if (id<0 || caType == Register::NSSet::Manager::CA_INVALID_HANDLE)
+	                        ret->code = SetReasonNSSetHandle( errors, handle  , GetRegistrarLang( clientID ) );
+	                    else if (caType == Register::NSSet::Manager::CA_REGISTRED)  {
+	                        LOG( WARNING_LOG, "nsset handle [%s] EXIST", handle );
+	                        ret->code = COMMAND_OBJECT_EXIST;
+	                    }
+	                    else if (caType == Register::NSSet::Manager::CA_PROTECTED)
+	                        ret->code = SetReasonProtectedPeriod( errors , handle , GetRegistrarLang( clientID ),ccReg::nsset_handle );
+	                }                   
                     if (ret->code == 0) {
                         // test tech-c
                         std::auto_ptr<Register::Contact::Manager> cman(
