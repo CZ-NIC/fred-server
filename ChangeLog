@@ -1,12 +1,15 @@
-2007-11-15 Jaromir Talir (version 1.7.6)
+2007-11-16 Jaromir Talir (version 1.7.6)
+
+    * removal of unused code expiration (fred-expiration) and whois 
 
     * overlapping zones supported
 
     * info request optimalization
 
     * nsset create and update fixes
-      - better hostname control
+      - better hostname control (refactored to use registry library)
       - check of hostname duplicity in request
+      - check for count of dns was outside Action (returned no SVTRID)
 
     * hack in timezone conversion removed
 

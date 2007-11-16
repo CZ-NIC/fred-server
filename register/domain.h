@@ -17,10 +17,6 @@ namespace Register
 {
   namespace Domain 
   {
-    /// exception thrown when string is not a phone number
-    class NOT_A_NUMBER {}; 
-    /// exception thrown when string is not a domain name
-    class INVALID_DOMAIN_NAME {};
     /// return type for checkAvail method 
     enum CheckAvailType {
       CA_INVALID_HANDLE, ///< bad formed handle
@@ -32,8 +28,6 @@ namespace Register
       CA_CHILD_REGISTRED, ///< child already registred
       CA_AVAILABLE ///< domain is available
     };
-    /// tokenized domain name type
-    typedef std::vector<std::string> DomainName;
     /// domain detail
     class Domain : virtual public Register::Object
     {
@@ -134,23 +128,12 @@ namespace Register
      public:
       /// destructor 
       virtual ~Manager() {}      
-      /// translate phone number into domain name
-      virtual std::string makeEnumDomain(const std::string& number)
-        const throw (NOT_A_NUMBER) = 0;
-      /// tokenize domain name into sequence
-      virtual void parseDomainName(
-        const std::string& fqdn, DomainName& domain
-      ) const throw (INVALID_DOMAIN_NAME) = 0;
       /// check handle of domain without contacting database
       virtual CheckAvailType checkHandle(const std::string& fqdn) const = 0;
       /// check availability of domain  
       virtual CheckAvailType checkAvail(
         const std::string& fqdn, NameIdPair& conflictFqdn
       ) const throw (SQL_ERROR) = 0;
-      /// check validity of enum domain name (every part is one digit)
-      virtual bool checkEnumDomainName(DomainName& domain) const = 0;
-      /// check if domain is under global zone e164.arpa
-      virtual bool checkEnumDomainSuffix(const std::string& fqdn) const = 0;
       /// return current count of domains by zone
       virtual unsigned long getDomainCount(const std::string& zone) const = 0;
       /// return current count of enum numbers

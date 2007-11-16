@@ -339,6 +339,7 @@ namespace Register
     {
       DB *db; ///< connection do db
       bool restrictedHandle; ///< format of handle is more restrictive
+      Zone::Manager *zm; ///< needed for hostname checking
       /// check if handle is in valid format
       bool checkHandleFormat(const std::string& handle) const
       {
@@ -393,8 +394,8 @@ namespace Register
         return ret;
       }
      public:
-      ManagerImpl(DB *_db, bool _restrictedHandle) :
-        db(_db), restrictedHandle(_restrictedHandle)
+      ManagerImpl(DB *_db, Zone::Manager *_zm, bool _restrictedHandle) :
+        db(_db), zm(_zm), restrictedHandle(_restrictedHandle)
       {}
       virtual List *createList()
       {
@@ -412,10 +413,27 @@ namespace Register
           return CA_PROTECTED; 
         return CA_FREE;
       }            
+      virtual unsigned checkHostname(
+        const std::string& hostname, bool glue
+      ) const
+      {
+        try {
+          // test according to database limit
+          if (hostname.length() > 255) return 1;
+          // parse hostname (will throw exception on invalid)
+          Zone::DomainName name;
+          zm->parseDomainName(hostname,name);
+          // if glue is specified, hostname must be under one of managed zones 
+          if (glue && !zm->findZoneId(hostname))
+            return 1;
+          return 0;
+        }
+        catch (...) { return 1; } // INVALID_DOMAIN_NAME
+      }
     };
-    Manager *Manager::create(DB *db, bool restrictedHandle)
+    Manager *Manager::create(DB *db, Zone::Manager *zm, bool restrictedHandle)
     {
-      return new ManagerImpl(db, restrictedHandle);
+      return new ManagerImpl(db, zm, restrictedHandle);
     }    
   }
 }

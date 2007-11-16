@@ -5,6 +5,7 @@
 #include <vector>
 #include "object.h"
 #include "exceptions.h"
+#include "zone.h"
 
 /// forward declared parameter type 
 class DB;
@@ -88,8 +89,15 @@ namespace Register
       virtual CheckAvailType checkAvail(
         const std::string& handle, NameIdPair& conflict
       ) const throw (SQL_ERROR) = 0;
+      /// check FQDN of host, should be hidden and not exported in manager API
+      /** \return 0=OK, 1=invalid name, 2=glue and invalid zone */
+      virtual unsigned checkHostname(
+        const std::string& hostname, bool glue
+      ) const = 0;
       /// factory method
-      static Manager *create(DB *db, bool restrictedHandle);
+      static Manager *create(
+        DB *db, Zone::Manager *zman, bool restrictedHandle
+      );
     };
   } // namespace NSSet
 } // namespace Register

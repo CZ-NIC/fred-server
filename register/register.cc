@@ -78,7 +78,7 @@ namespace Register
      dm.reset(Domain::Manager::create(db,zm.get()));
      rm.reset(Registrar::Manager::create(db));
      cm.reset(Contact::Manager::create(db,restrictedHandles));
-     nm.reset(NSSet::Manager::create(db,restrictedHandles));
+     nm.reset(NSSet::Manager::create(db,zm.get(),restrictedHandles));
      // TODO SQL load
      CountryDesc cd;
      cd.cc = "CZ";
@@ -95,7 +95,7 @@ namespace Register
      bool isEnum = false;
      try {
        // trying convert string to enum domain
-       ch.newHandle = dm->makeEnumDomain(handle);
+       ch.newHandle = zm->makeEnumDomain(handle);
        ch.type = HT_ENUM_NUMBER;
        isEnum = true;
      } catch (...) {}
@@ -123,7 +123,7 @@ namespace Register
      ch.conflictHandle = conflictFQDN.name;
      if (isDomain) {
        if (!isEnum)
-         ch.type = dm->checkEnumDomainSuffix(fqdn) ? HT_ENUM_DOMAIN : HT_DOMAIN;
+         ch.type = zm->checkEnumDomainSuffix(fqdn) ? HT_ENUM_DOMAIN : HT_DOMAIN;
        chl.push_back(ch);
      }
      // check if handle is registred contact

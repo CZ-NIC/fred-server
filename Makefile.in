@@ -33,8 +33,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = fred-rifd$(EXEEXT) fred-adifd$(EXEEXT) \
-	fred-pifd$(EXEEXT) fred-banking$(EXEEXT) \
-	fred-expiration$(EXEEXT) fred-admin$(EXEEXT)
+	fred-pifd$(EXEEXT) fred-banking$(EXEEXT) fred-admin$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
@@ -93,18 +92,12 @@ fred_banking_DEPENDENCIES = libfred.a register/libccreg.a \
 	$(am__DEPENDENCIES_2)
 fred_banking_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(fred_banking_LDFLAGS) $(LDFLAGS) -o $@
-am_fred_expiration_OBJECTS = fred_expiration-expiration.$(OBJEXT)
-fred_expiration_OBJECTS = $(am_fred_expiration_OBJECTS)
-fred_expiration_DEPENDENCIES = libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
-fred_expiration_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(fred_expiration_LDFLAGS) $(LDFLAGS) -o $@
-am_fred_pifd_OBJECTS = fred_pifd-whois.$(OBJEXT)
+am_fred_pifd_OBJECTS =
 fred_pifd_OBJECTS = $(am_fred_pifd_OBJECTS)
 fred_pifd_DEPENDENCIES = ccReg_pifd.o libfred.a register/libccreg.a \
 	$(am__DEPENDENCIES_2)
-fred_pifd_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(fred_pifd_LDFLAGS) $(LDFLAGS) -o $@
+fred_pifd_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(fred_pifd_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_fred_rifd_OBJECTS = fred_rifd-ccReg_epp.$(OBJEXT) \
 	fred_rifd-countrycode.$(OBJEXT) fred_rifd-messages.$(OBJEXT) \
 	fred_rifd-notifier.$(OBJEXT)
@@ -129,12 +122,10 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(libfred_a_SOURCES) $(fred_adifd_SOURCES) \
 	$(fred_admin_SOURCES) $(fred_banking_SOURCES) \
-	$(fred_expiration_SOURCES) $(fred_pifd_SOURCES) \
-	$(fred_rifd_SOURCES)
+	$(fred_pifd_SOURCES) $(fred_rifd_SOURCES)
 DIST_SOURCES = $(libfred_a_SOURCES) $(fred_adifd_SOURCES) \
 	$(fred_admin_SOURCES) $(fred_banking_SOURCES) \
-	$(fred_expiration_SOURCES) $(fred_pifd_SOURCES) \
-	$(fred_rifd_SOURCES)
+	$(fred_pifd_SOURCES) $(fred_rifd_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -276,7 +267,7 @@ fred_adifd_SOURCES =
 fred_adifd_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
 fred_adifd_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
 fred_adifd_LDADD = ccReg_adifd.o libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
-fred_pifd_SOURCES = whois.cc
+fred_pifd_SOURCES = 
 fred_pifd_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
 fred_pifd_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
 fred_pifd_LDADD = ccReg_pifd.o libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
@@ -284,10 +275,6 @@ fred_banking_SOURCES = gpc.cc banking.cc log.cc csv.cc
 fred_banking_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
 fred_banking_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
 fred_banking_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
-fred_expiration_SOURCES = expiration.cc 
-fred_expiration_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_expiration_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_expiration_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 fred_admin_SOURCES = register/client.cc
 fred_admin_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
 fred_admin_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
@@ -386,9 +373,6 @@ fred-admin$(EXEEXT): $(fred_admin_OBJECTS) $(fred_admin_DEPENDENCIES)
 fred-banking$(EXEEXT): $(fred_banking_OBJECTS) $(fred_banking_DEPENDENCIES) 
 	@rm -f fred-banking$(EXEEXT)
 	$(fred_banking_LINK) $(fred_banking_OBJECTS) $(fred_banking_LDADD) $(LIBS)
-fred-expiration$(EXEEXT): $(fred_expiration_OBJECTS) $(fred_expiration_DEPENDENCIES) 
-	@rm -f fred-expiration$(EXEEXT)
-	$(fred_expiration_LINK) $(fred_expiration_OBJECTS) $(fred_expiration_LDADD) $(LIBS)
 fred-pifd$(EXEEXT): $(fred_pifd_OBJECTS) $(fred_pifd_DEPENDENCIES) 
 	@rm -f fred-pifd$(EXEEXT)
 	$(fred_pifd_LINK) $(fred_pifd_OBJECTS) $(fred_pifd_LDADD) $(LIBS)
@@ -426,8 +410,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_banking-csv.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_banking-gpc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_banking-log.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_expiration-expiration.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_pifd-whois.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-ccReg_epp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-countrycode.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-messages.Po@am__quote@
@@ -681,34 +663,6 @@ fred_banking-csv.obj: csv.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='csv.cc' object='fred_banking-csv.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-csv.obj `if test -f 'csv.cc'; then $(CYGPATH_W) 'csv.cc'; else $(CYGPATH_W) '$(srcdir)/csv.cc'; fi`
-
-fred_expiration-expiration.o: expiration.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_expiration_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_expiration-expiration.o -MD -MP -MF $(DEPDIR)/fred_expiration-expiration.Tpo -c -o fred_expiration-expiration.o `test -f 'expiration.cc' || echo '$(srcdir)/'`expiration.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_expiration-expiration.Tpo $(DEPDIR)/fred_expiration-expiration.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='expiration.cc' object='fred_expiration-expiration.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_expiration_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_expiration-expiration.o `test -f 'expiration.cc' || echo '$(srcdir)/'`expiration.cc
-
-fred_expiration-expiration.obj: expiration.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_expiration_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_expiration-expiration.obj -MD -MP -MF $(DEPDIR)/fred_expiration-expiration.Tpo -c -o fred_expiration-expiration.obj `if test -f 'expiration.cc'; then $(CYGPATH_W) 'expiration.cc'; else $(CYGPATH_W) '$(srcdir)/expiration.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_expiration-expiration.Tpo $(DEPDIR)/fred_expiration-expiration.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='expiration.cc' object='fred_expiration-expiration.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_expiration_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_expiration-expiration.obj `if test -f 'expiration.cc'; then $(CYGPATH_W) 'expiration.cc'; else $(CYGPATH_W) '$(srcdir)/expiration.cc'; fi`
-
-fred_pifd-whois.o: whois.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_pifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_pifd-whois.o -MD -MP -MF $(DEPDIR)/fred_pifd-whois.Tpo -c -o fred_pifd-whois.o `test -f 'whois.cc' || echo '$(srcdir)/'`whois.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_pifd-whois.Tpo $(DEPDIR)/fred_pifd-whois.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='whois.cc' object='fred_pifd-whois.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_pifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_pifd-whois.o `test -f 'whois.cc' || echo '$(srcdir)/'`whois.cc
-
-fred_pifd-whois.obj: whois.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_pifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_pifd-whois.obj -MD -MP -MF $(DEPDIR)/fred_pifd-whois.Tpo -c -o fred_pifd-whois.obj `if test -f 'whois.cc'; then $(CYGPATH_W) 'whois.cc'; else $(CYGPATH_W) '$(srcdir)/whois.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_pifd-whois.Tpo $(DEPDIR)/fred_pifd-whois.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='whois.cc' object='fred_pifd-whois.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_pifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_pifd-whois.obj `if test -f 'whois.cc'; then $(CYGPATH_W) 'whois.cc'; else $(CYGPATH_W) '$(srcdir)/whois.cc'; fi`
 
 fred_rifd-ccReg_epp.o: ccReg_epp.cc
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-ccReg_epp.o -MD -MP -MF $(DEPDIR)/fred_rifd-ccReg_epp.Tpo -c -o fred_rifd-ccReg_epp.o `test -f 'ccReg_epp.cc' || echo '$(srcdir)/'`ccReg_epp.cc

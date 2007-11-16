@@ -10,6 +10,12 @@ namespace Register
 {
   namespace Zone
   {
+    /// exception thrown when string is not a domain name
+    class INVALID_DOMAIN_NAME {};
+    /// exception thrown when string is not a phone number
+    class NOT_A_NUMBER {};     
+    /// tokenized domain name type
+    typedef std::vector<std::string> DomainName;
     /// zone attributes and specific parameters 
     class Zone {
      protected:
@@ -29,6 +35,17 @@ namespace Register
      public:
       /// destruktor
       virtual ~Manager() {}
+      /// tokenize domain name into sequence
+      virtual void parseDomainName(
+        const std::string& fqdn, DomainName& domain
+      ) const throw (INVALID_DOMAIN_NAME) = 0;
+      /// check validity of enum domain name (every part is one digit)
+      virtual bool checkEnumDomainName(DomainName& domain) const = 0;
+      /// check if domain is under global zone e164.arpa
+      virtual bool checkEnumDomainSuffix(const std::string& fqdn) const = 0;
+      /// translate phone number into domain name
+      virtual std::string makeEnumDomain(const std::string& number)
+        const throw (NOT_A_NUMBER) = 0;      
       /// return default enum country prefix e.g '0.2.4'
       virtual const std::string& getDefaultEnumSuffix() const = 0;
       /// return default domain suffix e.g. 'cz'

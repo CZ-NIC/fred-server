@@ -8,6 +8,8 @@
 #include <ctype.h>
 
 #define RANGE(x) x.begin(),x.end()
+#define IS_NUMBER(x) (x >= '0' && x <= '9')
+#define IS_LETTER(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'))
 
 namespace Register
 {
@@ -87,6 +89,103 @@ namespace Register
         db->FreeSelect();
         loaded = true;
       }
+      /// interface method implementation  
+      void parseDomainName(const std::string& fqdn, DomainName& domain) 
+       const throw (INVALID_DOMAIN_NAME)
+      {
+        std::string part; // one part(label) of fqdn  
+        for (unsigned i=0; i<fqdn.size(); i++) {
+          if (part.empty()) {
+            // first character of every label has to be letter or digit
+            // digit is not in RFC 1034 but it's required in ENUM domains
+            if (!IS_NUMBER(fqdn[i]) && !IS_LETTER(fqdn[i]))
+              throw INVALID_DOMAIN_NAME();
+          }
+          else {
+            // dot '.' is a separator of labels, store and clear part
+            if (fqdn[i] == '.') {
+              // part must finish with letter or digit
+              if (!IS_NUMBER(*part.rbegin()) && !IS_LETTER(*part.rbegin()))
+                throw INVALID_DOMAIN_NAME();
+              // length of part should be < 64
+              if (part.length() > 63)
+                throw INVALID_DOMAIN_NAME();
+              domain.push_back(part);
+              part.clear();
+              continue;
+            } 
+            else {
+              if (fqdn[i] == '-') {
+                // dash '-' is acceptable only if last character wasn't dash
+                if (part[part.length()-1] == '-') throw INVALID_DOMAIN_NAME();
+              } 
+              else {
+                // other character could be only number or letter
+                if (!IS_NUMBER(fqdn[i]) && !IS_LETTER(fqdn[i]))
+                  throw INVALID_DOMAIN_NAME();
+              }
+            }
+          }
+          // add character into part
+          part += fqdn[i];
+        }
+        // last part cannot be empty
+        if (part.empty()) throw INVALID_DOMAIN_NAME();
+        // append last part
+        domain.push_back(part);
+        // enum domains has special rules
+        if (checkEnumDomainSuffix(fqdn) && !checkEnumDomainName(domain))
+          throw INVALID_DOMAIN_NAME();
+      }
+      /// interface method implementation
+      bool checkEnumDomainName(DomainName& domain) const
+      {
+        // must have suffix e164.org
+        if (domain.size()<=2) return false;
+        // every part of domain name except of suffix must be one digit
+        for (unsigned i=0; i<domain.size()-2; i++)
+          if (domain[i].length() != 1 || !IS_NUMBER(domain[i][0]))
+            return false;
+        return true;
+      }
+      /// check if suffix is e164.arpa
+      bool checkEnumDomainSuffix(const std::string& fqdn) const
+      {
+        const std::string& esuf = getEnumZoneString();
+        // check if substring 'esuf' found from right
+        // is last substring in fqdn
+        std::string::size_type i = fqdn.rfind(esuf);
+        return  i != std::string::npos && i + esuf.size() == fqdn.size();
+      }
+      /// interface method implementation  
+      std::string makeEnumDomain(const std::string& number)
+        const throw (NOT_A_NUMBER)
+      {
+        std::string result;
+        unsigned l = number.size();
+        if (!l) throw NOT_A_NUMBER();
+        // where to stop in backward processing
+        unsigned last = 0;
+        if (!number.compare(0,2,"00")) last = 2;
+        else if (number[0] == '+') last = 1;
+        // process string
+        for (unsigned i=l-1; i>last; i--) {
+          if (!IS_NUMBER(number[i])) throw NOT_A_NUMBER();
+          result += number[i];
+          result += '.';
+        }
+        if (!IS_NUMBER(number[last])) throw NOT_A_NUMBER();
+        result += number[last];
+        // append default country code if short
+        if (!last) {
+          result += '.';
+          result += getDefaultEnumSuffix();
+        }
+        // append enum domain zone
+        result += '.';
+        result += getEnumZoneString(); 
+        return result;
+      }      
       const std::string& getDefaultEnumSuffix() const
       {
         return defaultEnumSuffix;

@@ -179,8 +179,11 @@ static long int getIdOfContact(DB *db, const char *handle, Conf& c)
 /// replace GetNSSetID
 static long int getIdOfNSSet(DB *db, const char *handle, Conf& c)
 {
+  std::auto_ptr<Register::Zone::Manager> zman(
+    Register::Zone::Manager::create(db)
+  );
   std::auto_ptr<Register::NSSet::Manager> man(
-    Register::NSSet::Manager::create(db, c.GetRestrictedHandles())
+    Register::NSSet::Manager::create(db, zman.get(), c.GetRestrictedHandles())
   );
   Register::NSSet::Manager::CheckAvailType caType;
   long int ret = -1;
@@ -1912,7 +1915,8 @@ if( DBsql.OpenDatabase( database ) )
                   case EPP_NSsetCheck:
 
                            try {
-                                std::auto_ptr<Register::NSSet::Manager> nman( Register::NSSet::Manager::create(&DBsql,conf.GetRestrictedHandles())  );
+                             std::auto_ptr<Register::Zone::Manager> zman( Register::Zone::Manager::create(&DBsql)  );
+                                std::auto_ptr<Register::NSSet::Manager> nman( Register::NSSet::Manager::create(&DBsql,zman.get(),conf.GetRestrictedHandles())  );
 
                                 LOG( NOTICE_LOG ,  "nsset checkAvail handle [%s]"  ,  (const char * ) chck[i] );
 
@@ -2994,8 +2998,13 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
   // start EPP action - this will handle all init stuff
   EPPAction a(this,clientID,EPP_NSsetInfo,clTRID,XML);
   // initialize managers for nsset manipulation
+  std::auto_ptr<Register::Zone::Manager> zman(
+    Register::Zone::Manager::create(a.getDB())
+  );      
   std::auto_ptr<Register::NSSet::Manager> nman(
-    Register::NSSet::Manager::create(a.getDB(),conf.GetRestrictedHandles())
+    Register::NSSet::Manager::create(
+      a.getDB(),zman.get(),conf.GetRestrictedHandles()
+    )
   );	  
   // first check handle for proper format
   if (!nman->checkHandleFormat(handle))
@@ -3230,6 +3239,13 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
 
         if( DBsql.OpenDatabase( database ) )
         {
+            std::auto_ptr<Register::Zone::Manager> zman(
+              Register::Zone::Manager::create(&DBsql)
+            );
+            std::auto_ptr<Register::NSSet::Manager> nman(
+              Register::NSSet::Manager::create(&DBsql,zman.get(),conf.GetRestrictedHandles())
+            );
+          
             if( (  DBsql.BeginAction( clientID, EPP_NSsetCreate,  clTRID  , XML)  ))
             {
                 if ( DBsql.BeginTransaction() ) {
@@ -3257,9 +3273,6 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
 	                    tch = new int[tech.length()];
 	
 	                    try {
-	                        std::auto_ptr<Register::NSSet::Manager> nman(
-	                            Register::NSSet::Manager::create(&DBsql,conf.GetRestrictedHandles())
-	                            );
 	                        Register::NameIdPair nameId;
 	                        caType = nman->checkAvail(handle,nameId);
 	                        id = nameId.id;
@@ -3348,7 +3361,8 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
 
 
                             // test DNS hosts
-                            if( TestDNSHost( dns[i].fqdn ) == false )
+                            unsigned hostnameTest = nman->checkHostname((const char *)dns[i].fqdn,dns[i].inet.length() > 0);
+                            if( hostnameTest == 1 )
                             {
 
                                 LOG( WARNING_LOG, "NSSetCreate: bad host name %s " , (const char *)  dns[i].fqdn  );
@@ -3361,7 +3375,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate( const char *handle, const char *auth
 
  
                                 // not in defined zones and exist record of ip address 
-                                if( getZone( dns[i].fqdn  ) == 0   && dns[i].inet.length() > 0 )
+                                if(hostnameTest == 2)
                                 {
 
                                     for( j = 0 ; j <  dns[i].inet.length() ; j ++ )
@@ -3585,6 +3599,12 @@ if(  (regID = GetRegistrarID( clientID ) ) )
 
 if( DBsql.OpenDatabase( database ) )
   {
+  std::auto_ptr<Register::Zone::Manager> zman(
+    Register::Zone::Manager::create(&DBsql)
+  );
+  std::auto_ptr<Register::NSSet::Manager> nman(
+    Register::NSSet::Manager::create(&DBsql,zman.get(),conf.GetRestrictedHandles())
+  );
 
   if( (  DBsql.BeginAction( clientID, EPP_NSsetUpdate,  clTRID , XML)  ) )
    {
@@ -3664,7 +3684,7 @@ if( DBsql.OpenDatabase( database ) )
                 {
 
                      /// test DNS host
-                    if( TestDNSHost( dns_add[i].fqdn  ) == false )
+                    if (nman->checkHostname((const char *)dns_add[i].fqdn,false))
                      {
                           LOG( WARNING_LOG, "NSSetUpdate: bad add host name %s " , (const char *)  dns_add[i].fqdn );
                           ret->code = SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name_add , i+1 ,  REASON_MSG_BAD_DNS_NAME  , GetRegistrarLang( clientID ) );
@@ -3762,7 +3782,7 @@ if( DBsql.OpenDatabase( database ) )
                 {
                    LOG( NOTICE_LOG ,  "NSSetUpdate:  delete  host  [%s] " , (const char *)   dns_rem[i].fqdn );
                                                
-                    if( TestDNSHost( dns_rem[i].fqdn  ) == false )
+                    if (nman->checkHostname((const char *)dns_rem[i].fqdn,false))
                       {
                           LOG( WARNING_LOG, "NSSetUpdate: bad rem host name %s " , (const char *)  dns_rem[i].fqdn );
                            ret->code = SetErrorReason( errors , COMMAND_PARAMETR_ERROR , ccReg::nsset_dns_name_rem , i+1 , REASON_MSG_BAD_DNS_NAME ,  GetRegistrarLang( clientID ) );
@@ -5504,7 +5524,9 @@ ccReg_EPP_i::info(
       Register::Contact::Manager::create(a.getDB(),conf.GetRestrictedHandles())
     );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
-      Register::NSSet::Manager::create(a.getDB(),conf.GetRestrictedHandles())
+      Register::NSSet::Manager::create(
+        a.getDB(),zoneMan.get(),conf.GetRestrictedHandles()
+      )
     );
     std::auto_ptr<Register::InfoBuffer::Manager> infoBufMan(
       Register::InfoBuffer::Manager::create(
@@ -5556,7 +5578,9 @@ ccReg_EPP_i::getInfoResults(
      Register::Contact::Manager::create(a.getDB(),conf.GetRestrictedHandles())
    );
    std::auto_ptr<Register::NSSet::Manager> nssMan(
-     Register::NSSet::Manager::create(a.getDB(),conf.GetRestrictedHandles())
+     Register::NSSet::Manager::create(
+       a.getDB(),zoneMan.get(),conf.GetRestrictedHandles()
+     )
    );
    std::auto_ptr<Register::InfoBuffer::Manager> infoBufMan(
      Register::InfoBuffer::Manager::create(

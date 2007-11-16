@@ -4,7 +4,6 @@
 #endif
 
 #ifdef PIFD
-#include "whois.h"
 #include "admin.h"
 #endif
 
@@ -119,14 +118,6 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef PIFD
-	PortableServer::ObjectId_var whoisObjectId =
-	    PortableServer::string_to_ObjectId("Whois");
-	ccReg_Whois_i* myccReg_Whois_i = new ccReg_Whois_i(db);
-	poa->activate_object_with_id(whoisObjectId,myccReg_Whois_i);
-	CORBA::Object_var whoisObj = myccReg_Whois_i->_this();
-	myccReg_Whois_i->_remove_ref();
-	ns.bind("Whois",whoisObj);
-
 	PortableServer::ObjectId_var webWhoisObjectId =
 	    PortableServer::string_to_ObjectId("WebWhois");
 	ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db,&ns,config);

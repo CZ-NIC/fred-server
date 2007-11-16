@@ -337,7 +337,7 @@ int main(int argc, char **argv)
     );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
       Register::NSSet::Manager::create(
-        &db,vm["restricted_handles"].as<unsigned>()
+        &db,zoneMan.get(),vm["restricted_handles"].as<unsigned>()
       )
     );
     // infoBuffer

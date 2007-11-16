@@ -3,7 +3,7 @@ CLEANFILES=ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh
 
 noinst_LIBRARIES = libfred.a
 
-bin_PROGRAMS = fred-rifd fred-adifd fred-pifd fred-banking fred-expiration fred-admin
+bin_PROGRAMS = fred-rifd fred-adifd fred-pifd fred-banking fred-admin
 
 bin_SCRIPTS = banking.sh
 
@@ -26,7 +26,7 @@ fred_adifd_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS
 fred_adifd_LDFLAGS   = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
 fred_adifd_LDADD    = ccReg_adifd.o libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 
-fred_pifd_SOURCES   = whois.cc
+fred_pifd_SOURCES   =
 
 fred_pifd_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
 fred_pifd_LDFLAGS   = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
@@ -36,11 +36,6 @@ fred_banking_SOURCES = gpc.cc banking.cc log.cc csv.cc
 fred_banking_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
 fred_banking_LDFLAGS   = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
 fred_banking_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
-
-fred_expiration_SOURCES = expiration.cc 
-fred_expiration_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_expiration_LDFLAGS   = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_expiration_LDADD     = libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 
 fred_admin_SOURCES   = register/client.cc
 fred_admin_CPPFLAGS  = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
