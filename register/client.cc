@@ -10,6 +10,8 @@
 #include "register.h"
 #include "notify.h"
 
+#include "ccReg.hh" // temporary for deleteObjects function
+
 #include <iostream>
 #include <fstream>
 #include <boost/program_options.hpp>
@@ -17,7 +19,12 @@
 
 namespace po = boost::program_options;
 using namespace boost::posix_time;
- 
+
+const char* corbaOptions[][2] = { 
+  { "nativeCharCodeSet", "UTF-8" },
+  { NULL, NULL },
+};
+
 class CorbaClient
 {
   CORBA::ORB_var orb;
@@ -25,7 +32,7 @@ class CorbaClient
  public:
   CorbaClient(int argc, char **argv, const std::string& nshost) 
   {
-    orb = CORBA::ORB_init(argc, argv);
+    orb = CORBA::ORB_init(argc, argv, "", corbaOptions);
     ns.reset(new NameService(orb,nshost));    
   }
   ~CorbaClient()
@@ -37,6 +44,93 @@ class CorbaClient
     return ns.get();
   }
 };
+
+#define STR(x) x.str().c_str()
+/// delete objects with status deleteCandidate
+/** \return 0=OK -1=SQL ERROR -2=no system registrar -3=login failed */
+int deleteObjects(CorbaClient *cc, DB *db)
+{
+  // temporary done by using EPP corba interface
+  // should be instead somewhere in register library (object.cc?)
+  // get login information for first system registrar
+  if (!db->ExecSelect(
+    "SELECT r.handle,ra.cert,ra.password "
+    "FROM registrar r, registraracl ra "
+    "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1 "
+  )) return -1;
+  if (!db->GetSelectRows()) return -1;
+  std::string handle = db->GetFieldValue(0,0);
+  std::string cert = db->GetFieldValue(0,1);
+  std::string password = db->GetFieldValue(0,2);
+  db->FreeSelect();
+  // before connection load all objects, zones are needed to
+  // put zone id into cltrid (used in statistics - need to fix)  
+  if (!db->ExecSelect(
+    "SELECT o.name, o.type, COALESCE(d.zone,0) "
+    "FROM object_state s , object_registry o "
+    "LEFT JOIN domain d ON (d.id=o.id)"
+    "WHERE o.erdate ISNULL AND o.id=s.object_id "
+    "AND s.state_id=17 AND s.valid_to ISNULL "
+  )) return -1;
+  if (!db->GetSelectRows()) return 0;
+  try {
+    CORBA::Object_var o = cc->getNS()->resolve("EPP");
+    ccReg::EPP_var epp = ccReg::EPP::_narrow(o);
+    CORBA::Long clientID = 0;
+    ccReg::Response_var r = epp->ClientLogin(
+      handle.c_str(),password.c_str(),"","system_delete_login",
+      "<system_delete_login/>",clientID,cert.c_str(),ccReg::EN
+    );
+    if (r->code != 1000 || !clientID) {
+      std::cerr << "Cannot connect: " << r->code << std::endl;
+      throw -3;
+    }
+    for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+      std::string name = db->GetFieldValue(i,0);
+      std::stringstream cltrid;
+      std::stringstream xml;
+      xml << "<name>" << name << "</name>";
+      try {
+        switch (atoi(db->GetFieldValue(i,1))) {
+          case 1:
+            cltrid << "delete_contact";
+            r = epp->ContactDelete(name.c_str(),clientID,STR(cltrid),STR(xml));
+            break;
+          case 2:
+            cltrid << "delete_nsset";
+            r = epp->NSSetDelete(name.c_str(),clientID,STR(cltrid),STR(xml));
+            break;
+          case 3:
+            cltrid << "delete_unpaid_zone_" << db->GetFieldValue(i,2);
+            r = epp->DomainDelete(name.c_str(),clientID,STR(cltrid),STR(xml));
+            break;          
+        }
+        if (r->code != 1000)
+          std::cerr << "Cannot delete: " << name << " code: " << r->code;
+        else
+          std::cerr << "Deleted: " << name;
+        std::cerr << std::endl;
+      }
+      catch (...) {
+        std::cerr << "Cannot delete: " << name << std::endl;
+        // proceed with next domain
+      }
+    }
+    epp->ClientLogout(
+      clientID,"system_delete_logout","<system_delete_logout/>"
+    );
+    db->FreeSelect();
+    return 0;
+  }
+  catch (int& i) {
+    db->FreeSelect();
+    return i;
+  }
+  catch (...) {
+    db->FreeSelect();
+    return -4;
+  }
+}
 
 int main(int argc, char **argv)
 {
@@ -175,7 +269,14 @@ int main(int argc, char **argv)
     po::options_description objDesc("Objects options");
     objDesc.add_options()
       ("object_update_states",
-       "globaly update all states of all objects");
+       "globaly update all states of all objects")
+      ("object_delete_candidates",
+       "delete all objects marked with deleteCandidate state")
+      ("object_regular_procedure",
+       "shortcut for 2x update_object_states, notify_state_changes, "
+       "poll_create_statechanges, object_delete_candidates, "
+       "poll_create_lowcredit, "
+       );
 
     po::options_description notDesc("Notification options");
     notDesc.add_options()
@@ -432,11 +533,14 @@ int main(int argc, char **argv)
     else if (vm.count("poll_create_lowcredit"))
       pollMan->createLowCreditMessages();
     
+    std::auto_ptr<Register::Manager> regMan(
+      Register::Manager::create(&db,vm["restricted_handles"].as<unsigned>())
+    );
     if (vm.count("object_update_states")) {
-      std::auto_ptr<Register::Manager> regMan(
-        Register::Manager::create(&db,vm["restricted_handles"].as<unsigned>())
-      );
       regMan->updateObjectStates();
+    }
+    if (vm.count("object_delete_candidates")) {
+      return deleteObjects(&cc,&db);
     }
 
     std::auto_ptr<Register::Notify::Manager> notifyMan(
@@ -455,7 +559,17 @@ int main(int argc, char **argv)
     if (vm.count("notify_letters_create")) {
       notifyMan->generateLetters();
     }
-    
+    if (vm.count("object_regular_procedure")) {
+      regMan->updateObjectStates();
+      regMan->updateObjectStates();
+      notifyMan->notifyStateChanges("",0,NULL,false);
+      pollMan->createStateMessages("");
+      // unless notification is done by queries into non-history tables
+      // notification must be called before delete, because after
+      // delete objects are removed from non-history tables
+      deleteObjects(&cc,&db);
+      pollMan->createLowCreditMessages();
+    }
     if (connected) db.Disconnect();
   }
   catch (std::exception& e) {
