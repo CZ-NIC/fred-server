@@ -1,5 +1,10 @@
 2007-11-16 Jaromir Talir (version 1.7.6)
 
+    * object state requests can be added through fred-admin
+
+    * emails with notification about expiration have registrar name instead
+      of registrar handle
+
     * postgresql NOTICE messages on client side disabled
 
     * regular daily periodical procedure implemented in fred-admin 

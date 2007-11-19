@@ -54,6 +54,7 @@ namespace Register
       NSSet::Manager *nm;
       Domain::Manager *dm;
       Document::Manager *docm;
+      Registrar::Manager *rm;
      public:
       ManagerImpl(
         DB *_db,
@@ -61,8 +62,9 @@ namespace Register
         Contact::Manager *_cm,
         NSSet::Manager *_nm,
         Domain::Manager *_dm,
-        Document::Manager *_docm
-      ): db(_db), mm(_mm), cm(_cm), nm(_nm), dm(_dm), docm(_docm)
+        Document::Manager *_docm,
+        Registrar::Manager *_rm
+      ): db(_db), mm(_mm), cm(_cm), nm(_nm), dm(_dm), docm(_docm), rm(_rm)
       {}
       std::string getEmailList(const std::stringstream& sql) throw (SQL_ERROR)
       {
@@ -161,7 +163,6 @@ namespace Register
         params["domain"] = db->GetFieldValue(0,0);
         params["owner"] = db->GetFieldValue(0,1);
         params["nsset"] = db->GetFieldValue(0,2);
-        params["registrar"] = db->GetFieldValue(0,3);
         date val(MAKE_DATE(0,4));
         if (!val.is_special())
           params["valdate"] = to_iso_extended_string(val);
@@ -172,7 +173,23 @@ namespace Register
         );
         params["exregdate"] = to_iso_extended_string(
           ex + date_duration(45)
-        );        
+        );
+        std::string regHandle = db->GetFieldValue(0,3);
+        db->FreeSelect();
+        // fill information about registrar, query must be closed
+        rm->getList()->clearFilter();
+        rm->getList()->setHandleFilter(regHandle);
+        rm->getList()->reload();
+        std::stringstream reg;
+        if (rm->getList()->size() != 1)
+          // fallback to handle instead of error
+          reg << db->GetFieldValue(0,3);  
+        else {
+          reg << rm->getList()->get(0)->getName();
+          if (!rm->getList()->get(0)->getURL().empty())
+            reg << " (" << rm->getList()->get(0)->getURL() << ")";
+        }
+        params["registrar"] = reg.str(); 
       }
       void fillDomainParams(
         TID domain, 
@@ -191,7 +208,6 @@ namespace Register
         params["domain"] = d->getFQDN();
         params["owner"] = d->getRegistrantHandle();
         params["nsset"] = d->getNSSetHandle();
-        params["registrar"] = d->getRegistrarHandle();
         if (!d->getValExDate().is_special())
           params["valdate"] = to_iso_extended_string(d->getValExDate());
         params["exdate"] = to_iso_extended_string(d->getExpirationDate());
@@ -201,6 +217,20 @@ namespace Register
         params["exregdate"] = to_iso_extended_string(
           d->getExpirationDate() + date_duration(45)
         );
+        // fill information about registrar
+        rm->getList()->clearFilter();
+        rm->getList()->setHandleFilter(d->getRegistrarHandle());
+        rm->getList()->reload();
+        std::stringstream reg;
+        if (rm->getList()->size() != 1)
+          // fallback to handle instead of error
+          reg << db->GetFieldValue(0,3);  
+        else {
+          reg << rm->getList()->get(0)->getName();
+          if (!rm->getList()->get(0)->getURL().empty())
+            reg << " (" << rm->getList()->get(0)->getURL() << ")";
+        }
+        params["registrar"] = reg.str(); 
       }
       void fillContactParams(
         TID id, 
@@ -467,10 +497,11 @@ namespace Register
       Contact::Manager *cm,
       NSSet::Manager *nm,
       Domain::Manager *dm,
-      Document::Manager *docm
+      Document::Manager *docm,
+      Registrar::Manager *rm
     )
     {
-      return new ManagerImpl(db,mm,cm,nm,dm,docm);
+      return new ManagerImpl(db,mm,cm,nm,dm,docm,rm);
     }
   }
 }

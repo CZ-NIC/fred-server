@@ -150,6 +150,26 @@ int deleteObjects(CorbaClient *cc, DB *db)
   }
 }
 
+int createObjectStateRequest(DB *db, Register::TID object, unsigned state)
+{
+  std::stringstream sql;
+  sql << "SELECT COUNT(*) FROM object_state_request "
+      << "WHERE object_id=" << object << " AND state_id=" << state 
+      << " AND canceled ISNULL "
+      << " AND (valid_to ISNULL OR valid_to>CURRENT_TIMESTAMP) ";
+  if (!db->ExecSelect(sql.str().c_str())) return -1;
+  if (atoi(db->GetFieldValue(0,0))) return -2;
+  db->FreeSelect();
+  sql.str("");
+  sql << "INSERT INTO object_state_request "
+      << "(object_id,state_id,crdate, valid_from,valid_to) VALUES "
+      << "(" << object << "," << state 
+      << ",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "
+      << "CURRENT_TIMESTAMP + INTERVAL '7 days');";
+  if (!db->ExecSQL(sql.str().c_str())) return -1;
+  return 0;
+}
+
 int main(int argc, char **argv)
 {
   DB db;
@@ -231,7 +251,7 @@ int main(int argc, char **argv)
        "with tax date before this date")
       ("archived", po::value<unsigned>(),
        "0=not archived 1=archived other=ignore")
-      ("object_id", po::value<unsigned>(),
+      ("object_id", po::value<Register::TID>(),
        "object id")      
       ("object_name", po::value<std::string>(),
        "object name")      
@@ -286,6 +306,16 @@ int main(int argc, char **argv)
 
     po::options_description objDesc("Objects options");
     objDesc.add_options()
+      ("object_list",
+       "list xml of objects according to filter")
+      ("object_list_limit",po::value<unsigned>()->default_value(50),
+       "limit for object list")
+      ("object_id",po::value<Register::TID>(),
+       "filter for id")
+      ("object_name",po::value<std::string>(),
+       "filter for name of object")
+      ("object_new_state_request",po::value<unsigned>(),
+       "set request for object state with specified state id")
       ("object_update_states",
        "globaly update all states of all objects")
       ("object_delete_candidates",
@@ -403,7 +433,7 @@ int main(int argc, char **argv)
         il->setArchivedFilter(af);
       }
       if (vm.count("object_id")) 
-        il->setObjectIdFilter(vm["object_id"].as<unsigned>());
+        il->setObjectIdFilter(vm["object_id"].as<Register::TID>());
       if (vm.count("object_name")) 
         il->setObjectNameFilter(vm["object_name"].as<std::string>());
       if (vm.count("adv_number")) 
@@ -561,9 +591,13 @@ int main(int argc, char **argv)
       return deleteObjects(&cc,&db);
     }
 
+    std::auto_ptr<Register::Registrar::Manager> rMan(
+      Register::Registrar::Manager::create(&db)
+    );
     std::auto_ptr<Register::Notify::Manager> notifyMan(
       Register::Notify::Manager::create(
-        &db, &mm, conMan.get(), nssMan.get(), domMan.get(), docman.get()
+        &db, &mm, conMan.get(), nssMan.get(), domMan.get(), docman.get(),
+        rMan.get()
       )
     );
     if (vm.count("notify_state_changes")) {
@@ -588,6 +622,42 @@ int main(int argc, char **argv)
       deleteObjects(&cc,&db);
       pollMan->createLowCreditMessages();
     }
+    if (vm.count("object_list")) {
+      std::auto_ptr<Register::Domain::List> dl(domMan->createList());
+      if (vm.count("object_id"))
+        dl->setIdFilter(vm["object_id"].as<Register::TID>());
+      if (vm.count("object_name"))
+        dl->setFQDNFilter(vm["object_name"].as<std::string>());
+      dl->setLimit(vm["object_list_limit"].as<unsigned>());
+      dl->reload();
+      std::cout << "<objects>" << std::endl;
+      for (unsigned i=0; i<dl->getCount(); i++) {
+        std::cout << "<object>" 
+                  << "<id>" << dl->getDomain(i)->getId() << "</id>"
+                  << "<name>" << dl->getDomain(i)->getFQDN() << "</name>"
+                  << "</object>";
+      }
+      std::cout << "</objects>" << std::endl;
+    }
+    if (vm.count("object_new_state_request")) {
+      if (!vm.count("object_id"))
+        std::cerr << "object_id parameter must be specified" << std::endl;
+      else {
+        Register::TID o = vm["object_id"].as<Register::TID>();
+        unsigned s = vm["object_new_state_request"].as<unsigned>();
+        int res = createObjectStateRequest(
+          &db, 
+          vm["object_id"].as<Register::TID>(),
+          vm["object_new_state_request"].as<unsigned>()
+        );
+        switch (res) {
+          case -1: std::cerr << "SQL_ERROR" << std::endl; break;
+          case -2: std::cerr << "Already exists" << std::endl; break;
+          case  0: break;
+          default: std::cerr << "Unknown result" << std::endl; break;
+        }
+      }
+    }    
     if (connected) db.Disconnect();
   }
   catch (std::exception& e) {

@@ -7,6 +7,7 @@
 #include "domain.h"
 #include "documents.h"
 #include "exceptions.h"
+#include "registrar.h"
 
 class DB;
 namespace Register
@@ -31,7 +32,8 @@ namespace Register
         Contact::Manager *cm,
         NSSet::Manager *nm,
         Domain::Manager *dm,
-        Document::Manager *docm
+        Document::Manager *docm,
+        Registrar::Manager *rm
       );
     };
   }
