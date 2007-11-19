@@ -5,33 +5,53 @@
 class CSV
 {
 public:
-CSV();
-~CSV();
+  CSV();
+  ~CSV();
 
-// read row from file
-bool get_row();
-char * get_value(unsigned int col );
+  // read row from file
+  bool get_row();
+  char * get_value(
+    unsigned int col);
 
-bool read_file( char * filename );
-long get_numeric( int row , int col );
-unsigned char *get_string( int row ,  int col );
+  bool read_file(
+    char * filename);
+  long get_numeric(
+    int row, int col);
+  unsigned char *get_string(
+    int row, int col);
 
-void close_file();
+  void close_file();
 
-char get_separator() { return  separator; };
-void set_separator(char s){ separator = s; } ;
-int get_rows(){ return  rows ; };
-int get_cols(){ return  cols ; };
+  char get_separator()
+  {
+    return separator;
+  }
+  ;
+  void set_separator(
+    char s)
+  {
+    separator = s;
+  }
+  ;
+  int get_rows()
+  {
+    return rows;
+  }
+  ;
+  int get_cols()
+  {
+    return cols;
+  }
+  ;
 
 private:
 
+  int get_sepnum(); // return number of separator
 
-int get_sepnum(); // return number of separator
-
-FILE *fd;
-char separator;
-int rows , cols; // rows and cols of the CSV file
-char buf[MAX_LINE]; // buffer for read wors
-char string[MAX_STRING]; // string
+  FILE *fd;
+  char separator;
+  int rows, cols; // rows and cols of the CSV file
+  char buf[MAX_LINE]; // buffer for read wors
+  char string[MAX_STRING]; // string
 };
 

@@ -4,60 +4,73 @@
 #include <libpq-fe.h>
 #include <string>
 
-class PQ{
+class PQ
+{
 public:
-// constructor a destruktor
-PQ();
-~PQ();
+  // constructor a destruktor
+  PQ();
+  ~PQ();
 
-//  connect to database whith  conninfo string
-bool OpenDatabase(const char *conninfo); 
-// exec sqlString 
-bool ExecSQL(const char *sqlString);
-// disconnect from database
-void Disconnect();
+  //  connect to database whith  conninfo string
+  bool OpenDatabase(
+    const char *conninfo);
+  // exec sqlString 
+  bool ExecSQL(
+    const char *sqlString);
+  // disconnect from database
+  void Disconnect();
 
-// client encoding 
-void  SetEncoding(  const char *encoding) ;
-// get lenght 
-int  GetValueLength(int row  , int col);
+  // client encoding 
+  void SetEncoding(
+    const char *encoding);
+  // get lenght 
+  int GetValueLength(
+    int row, int col);
 
-// rum SQL select 
-bool ExecSelect(const char *sqlString);
-// free  result  of selectu 
-void  FreeSelect();
-// return value of field name fname and row
-char * GetFieldValueName(char *fname , int row );
-// return value of filed with row and column
-char * GetFieldValue( int row , int col );
+  // rum SQL select 
+  bool ExecSelect(
+    const char *sqlString);
+  // free  result  of selectu 
+  void FreeSelect();
+  // return value of field name fname and row
+  char * GetFieldValueName(
+    char *fname, int row);
+  // return value of filed with row and column
+  char * GetFieldValue(
+    int row, int col);
 
+  // get BOOL value 
+  bool GetFieldBooleanValueName(
+    char *fname, int row);
+  // get integer value
+  int GetFieldNumericValueName(
+    char *fname, int row);
 
-// get BOOL value 
-bool GetFieldBooleanValueName(char *fname , int row );
-// get integer value
-int  GetFieldNumericValueName(char *fname , int row );
+  // name of field
+  char * GetFieldName(
+    int col);
+  int GetNameField(
+    char *fname);
 
-// name of field
-char *  GetFieldName( int col );
-int GetNameField(char *fname );
+  // test null value true if not NULL false if is NULL
+  bool IsNotNull(
+    int row, int col);
 
-// test null value true if not NULL false if is NULL
-bool IsNotNull( int row , int col );
+  // escape string to escape sequence  using  libpq
+  bool Escape(
+    char *str, const char *String, int length);
 
-// escape string to escape sequence  using  libpq
-bool Escape(char *str ,  const char *String ,  int length  );
+  std::string Escape2(
+    const std::string& str);
 
-std::string Escape2(const std::string& str);
-
-// return number of selected rows and cols
-int GetSelectRows();
-int GetSelectCols();
-
+  // return number of selected rows and cols
+  int GetSelectRows();
+  int GetSelectCols();
 
 private:
-PGconn     *connection;
-PGresult   *result;
-int nRows , nCols; // number  of  rows and cols
+  PGconn *connection;
+  PGresult *result;
+  int nRows, nCols; // number  of  rows and cols
 };
 
 #endif

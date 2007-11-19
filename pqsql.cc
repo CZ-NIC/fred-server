@@ -31,254 +31,258 @@
 #include "pqsql.h"
 
 #include "log.h" // logger via syslog
-
 // constructor 
 PQ::PQ()
-{ 
+{
 #ifdef TIMECLOCK
-timeclock_start();
+  timeclock_start();
 #endif
 }
-
 
 // destructor
 PQ::~PQ()
 {
 #ifdef TIMECLOCK
-timeclock_quit();
+  timeclock_quit();
 #endif
 }
 
-static void
-noActionNoticeReceiver(void *arg, const PGresult *res)
+static void noActionNoticeReceiver(
+  void *arg, const PGresult *res)
 {
 }
 
-
-bool PQ::OpenDatabase(const char *conninfo)
+bool PQ::OpenDatabase(
+  const char *conninfo)
 {
 
   LOG( NOTICE_LOG , "PQ: connectdb  %s" , conninfo);
-connection = PQconnectdb(conninfo);
+  connection = PQconnectdb(conninfo);
 
-// Check to see that the backend connection was successfully made 
-if (PQstatus(connection) != CONNECTION_OK)
-   {
-     LOG( ALERT_LOG ,  "Connection to database failed: %s",  
-                       PQerrorMessage(connection));
-     PQfinish(connection);
-     return false;   
-   }
-else 
- {
-  LOG( NOTICE_LOG , "Database connection OK user %s host %s port %s DB %s" , 
-         PQuser(connection), PQhost(connection),
-          PQport(connection), PQdb(connection)); 
+  // Check to see that the backend connection was successfully made 
+  if (PQstatus(connection) != CONNECTION_OK) {
+    LOG( ALERT_LOG , "Connection to database failed: %s",
+        PQerrorMessage(connection));
+    PQfinish(connection);
+    return false;
+  } else {
+    LOG( NOTICE_LOG , "Database connection OK user %s host %s port %s DB %s" ,
+        PQuser(connection), PQhost(connection),
+        PQport(connection), PQdb(connection));
 
 #ifdef ENCODING
-    SetEncoding(  ENCODING );
+    SetEncoding( ENCODING );
     LOG( NOTICE_LOG , "Database set client encoding %s" , ENCODING );
 #endif 
-    
+
     // according to http://www.postgresql.org/docs/8.1/interactive/libpq-notice-processing.html
     // there is no need to print NOTICE on client side, so disable ti
     PQsetNoticeReceiver(connection, &noActionNoticeReceiver, NULL);
-  return true;
- }
+    return true;
+  }
 
 }
-
 
 // get number of selected rows and cols
-int PQ::GetSelectRows(){ return nRows;};
-int PQ::GetSelectCols(){ return nCols;};
-
+int PQ::GetSelectRows()
+{
+  return nRows;
+}
+;
+int PQ::GetSelectCols()
+{
+  return nCols;
+}
+;
 
 // get string by name of filed on the row 
-char * PQ::GetFieldValueName(char *fname , int row )
+char * PQ::GetFieldValueName(
+  char *fname, int row)
 {
-int col;
+  int col;
 
-col = PQfnumber(result, fname);
+  col = PQfnumber(result, fname);
 
-if( col == -1 ) {  LOG( WARNING_LOG , "UNKNOW FieldName: %s" , fname );   return "";  }
-else return  GetFieldValue( row , col );
+  if (col == -1) {
+    LOG( WARNING_LOG , "UNKNOW FieldName: %s" , fname );
+    return "";
+  } else
+    return GetFieldValue(row, col);
 }
 
-int  PQ::GetNameField(char *fname )
+int PQ::GetNameField(
+  char *fname)
 {
-return  PQfnumber(result, fname);
+  return PQfnumber(result, fname);
 }
 
 // get string name of field 
-char *  PQ::GetFieldName( int col )
+char * PQ::GetFieldName(
+  int col)
 {
-if( PQfname(result, col) == NULL  ) return "";
-else return PQfname(result, col);
+  if (PQfname(result, col) == NULL)
+    return "";
+  else
+    return PQfname(result, col);
 }
 
 // test if is not  NULL value
-bool  PQ::IsNotNull( int row , int col )
-{ 
-   if( PQgetisnull( result , row , col ) ) return false;
-   else return true; // isn't NULL 
+bool PQ::IsNotNull(
+  int row, int col)
+{
+  if (PQgetisnull(result, row, col) )
+    return false;
+  else
+    return true; // isn't NULL 
 }
 
 // return string value at row and col
-char * PQ::GetFieldValue( int row , int col )
+char * PQ::GetFieldValue(
+  int row, int col)
 {
-if( row < nRows && col < nCols )
-  {
-   
-   if( PQgetisnull( result , row , col ) ){ LOG( SQL_LOG , "RETURN [%d,%d] NULL" , row, col ); return "" ; }
-   else  
-     { 
-       LOG( SQL_LOG , "RETURN [%d,%d] , %s" , row , col , PQgetvalue(result, row, col ) );
-       return PQgetvalue(result, row, col ); 
-     }
+  if (row < nRows && col < nCols) {
+
+    if (PQgetisnull(result, row, col) ) {
+      LOG( SQL_LOG , "RETURN [%d,%d] NULL" , row, col );
+      return "";
+    } else {
+      LOG( SQL_LOG , "RETURN [%d,%d] , %s" , row , col , PQgetvalue(result, row, col ) );
+      return PQgetvalue(result, row, col);
+    }
+  } else {
+    LOG( ERROR_LOG , "NOT FOUND return NULL" );
+    return "";
   }
-else { LOG( ERROR_LOG , "NOT FOUND return NULL" ); return  ""; } 
 }
 
-
 // return Boolean value true or false
-bool PQ::GetFieldBooleanValueName(char *fname , int row )
+bool PQ::GetFieldBooleanValueName(
+  char *fname, int row)
 {
-char *val;
-val = GetFieldValueName( fname , row );
-if( val[0] == 't' ) return true;
-else return false;
+  char *val;
+  val = GetFieldValueName(fname, row);
+  if (val[0] == 't')
+    return true;
+  else
+    return false;
 }
 
 // convert to integer value
-int PQ::GetFieldNumericValueName(char *fname , int row )
+int PQ::GetFieldNumericValueName(
+  char *fname, int row)
 {
-return atoi( GetFieldValueName( fname , row ) );
+  return atoi(GetFieldValueName(fname, row) );
 }
-
-
 
 // return lenght  
-int  PQ::GetValueLength(int row  , int col)
+int PQ::GetValueLength(
+  int row, int col)
 {
-return PQgetlength( result , row , col );
+  return PQgetlength(result, row, col);
 }
 
-
 // run SQL select true if is success
-bool PQ::ExecSelect(const char *sqlString)
+bool PQ::ExecSelect(
+  const char *sqlString)
 {
 
 #ifdef TIMECLOCK
-timeclock_begin();
+  timeclock_begin();
 #endif
 
-LOG( SQL_LOG , "SELECT: [%s]" , sqlString );
+  LOG( SQL_LOG , "SELECT: [%s]" , sqlString );
 
+  result = PQexec(connection, sqlString);
 
-        result = PQexec(connection, sqlString );
+  if (PQresultStatus(result) != PGRES_TUPLES_OK) {
+    LOG( ERROR_LOG , "SELECT [%s]failed: %s", sqlString , PQerrorMessage(connection));
+    LOG( ERROR_LOG , "SQL ERROR: %s" , PQresultErrorMessage(result) );
+    PQclear(result);
+    return false;
+  }
 
-        if (PQresultStatus(result) != PGRES_TUPLES_OK)
-        {
-            LOG( ERROR_LOG ,  "SELECT [%s]failed: %s", sqlString , PQerrorMessage(connection));
-            LOG( ERROR_LOG ,  "SQL ERROR: %s" , PQresultErrorMessage(result) );
-            PQclear(result);
-            return false;
-        }
+  nRows = PQntuples(result);
+  nCols = PQnfields(result);
 
-nRows = PQntuples( result );
-nCols = PQnfields(result);
-
-LOG( SQL_LOG , "result number of rows (tuples) %d and nfields %d" , nRows , nCols );
+  LOG( SQL_LOG , "result number of rows (tuples) %d and nfields %d" , nRows , nCols );
 
 #ifdef TIMECLOCK
-timeclock_end();
+  timeclock_end();
 #endif
 
-return true;
+  return true;
 }
 
 // free memory after SELECT and clear result 
-void   PQ::FreeSelect()
+void PQ::FreeSelect()
 {
-     LOG( SQL_LOG , "Free  select" ) ;
-     PQclear(result);
+  LOG( SQL_LOG , "Free  select" );
+  PQclear(result);
 
 }
 
-void  PQ::Disconnect()
+void PQ::Disconnect()
 {
- LOG( NOTICE_LOG , "PQ: finish");
- PQfinish(connection); 
+  LOG( NOTICE_LOG , "PQ: finish");
+  PQfinish(connection);
 }
 
-std::string 
-PQ::Escape2(const std::string& str)
+std::string PQ::Escape2(
+  const std::string& str)
 {
   char *buffer = new char[3*str.length()];
-  PQescapeStringConn(connection,buffer,str.c_str(),str.length(),NULL);
+  PQescapeStringConn(connection, buffer, str.c_str(), str.length(), NULL);
   std::string ret = buffer;
   delete[] buffer;
   return ret;
 }
 
 // escape string to SQL 
-bool PQ::Escape(char *str ,  const char *String  , int length )
+bool PQ::Escape(
+  char *str, const char *String, int length)
 {
-//int err;
-size_t  len;
+  //int err;
+  size_t len;
 
+  len = PQescapeString(str, String, length);
 
+  LOG( SQL_LOG , "escape len  %d [%s]" , (int ) len , str );
 
-len =  PQescapeString( str,  String ,  length);
-
-LOG( SQL_LOG , "escape len  %d [%s]" ,  (int ) len  , str   );
-
-return true;
+  return true;
 }
 
 // EXEC SQL string  
-bool PQ::ExecSQL(const char *sqlString)
+bool PQ::ExecSQL(
+  const char *sqlString)
 {
-PGresult   *res;
-if( strlen( sqlString)  )
-{
+  PGresult *res;
+  if (strlen(sqlString) ) {
 #ifdef TIMECLOCK
-timeclock_begin();
+    timeclock_begin();
 #endif
 
-LOG( SQL_LOG , "EXECSQL: [%s]" , sqlString );
-res =  PQexec( connection , sqlString);
+    LOG( SQL_LOG , "EXECSQL: [%s]" , sqlString );
+    res = PQexec(connection, sqlString);
 
-LOG( SQL_LOG , "result:  %s %s" ,  PQresStatus( PQresultStatus(res) ) ,PQcmdStatus( res ) );
+    LOG( SQL_LOG , "result:  %s %s" , PQresStatus( PQresultStatus(res) ) ,PQcmdStatus( res ) );
 #ifdef TIMECLOCK
-timeclock_end();
+    timeclock_end();
 #endif
 
+    if (PQresultStatus(res) == PGRES_COMMAND_OK) {
+      LOG( SQL_LOG , "PQcmdTuples: %s" , PQcmdTuples( res) );
+      PQclear(res);
+      return true;
+    } else {
+      LOG( ERROR_LOG , "EXECSQL: SQL ERROR: %s" , PQresultErrorMessage(res) );
+      PQclear(res);
+      return false;
+    }
 
-if( PQresultStatus(res) == PGRES_COMMAND_OK )
-  {
-     LOG( SQL_LOG ,  "PQcmdTuples: %s" ,  PQcmdTuples( res) );
-     PQclear(res);
-     return true;
+  } else {
+    LOG( SQL_LOG , "EXECSQL:  empty string return OK" );
+    return true;
   }
-else
-{
-   LOG( ERROR_LOG ,  "EXECSQL: SQL ERROR: %s" , PQresultErrorMessage(res) );
-   PQclear(res);
-   return false;
-}
 
 }
-else
-{
-   LOG( SQL_LOG ,  "EXECSQL:  empty string return OK" );
- return true;
-}
-
-
-} 
-
-
-
 
