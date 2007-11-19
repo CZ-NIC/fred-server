@@ -49,6 +49,12 @@ timeclock_quit();
 #endif
 }
 
+static void
+noActionNoticeReceiver(void *arg, const PGresult *res)
+{
+}
+
+
 bool PQ::OpenDatabase(const char *conninfo)
 {
 
@@ -73,6 +79,10 @@ else
     SetEncoding(  ENCODING );
     LOG( NOTICE_LOG , "Database set client encoding %s" , ENCODING );
 #endif 
+    
+    // according to http://www.postgresql.org/docs/8.1/interactive/libpq-notice-processing.html
+    // there is no need to print NOTICE on client side, so disable ti
+    PQsetNoticeReceiver(connection, &noActionNoticeReceiver, NULL);
   return true;
  }
 

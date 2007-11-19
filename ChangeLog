@@ -1,5 +1,7 @@
 2007-11-16 Jaromir Talir (version 1.7.6)
 
+    * postgresql NOTICE messages on client side disabled
+
     * regular daily periodical procedure implemented in fred-admin 
  
     * removal of unused code expiration (fred-expiration) and whois 
