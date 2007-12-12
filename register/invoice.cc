@@ -636,7 +636,7 @@ namespace Register
                 Document::GT_ADVANCE_INVOICE_PDF :
                 Document::GT_INVOICE_PDF,
               makeFileName(i,".pdf"),INVOICE_PDF_FILE_TYPE,
-              "" // default language
+              i->getClient()->getVatApply() ? "cs" : "en"
             )
           );
           // feed generator with xml input using xml exporter
@@ -647,8 +647,8 @@ namespace Register
           std::auto_ptr<Document::Generator> gXML(
             docman->createSavingGenerator(
               Document::GT_INVOICE_OUT_XML,
-              makeFileName(i,".xml"),INVOICE_PDF_FILE_TYPE,
-              "" // default language
+              makeFileName(i,".xml"),INVOICE_XML_FILE_TYPE,
+              i->getClient()->getVatApply() ? "cs" : "en"
             )
           );
           // feed generator with xml input using xml exporter
@@ -1072,7 +1072,7 @@ namespace Register
       ) : db(_db), docman(_docman), mailman(_mailman)
       {}
       /// find unarchived invoices. archive then and send them by email
-      void archiveInvoices() const
+      void archiveInvoices(bool send) const
       {
         try {
           // archive unarchived invoices
@@ -1081,10 +1081,11 @@ namespace Register
           l.setArchivedFilter(InvoiceList::AF_UNSET);
           l.reload();
           l.doExport(&arch);
-          // send email with invoices
-          Mails m(mailman,db);
-          m.load();
-          m.send();
+          if (send) {
+            Mails m(mailman,db);
+            m.load();
+            m.send();
+          }
         } catch (...) {
           //TODO: LOG ERROR
         }

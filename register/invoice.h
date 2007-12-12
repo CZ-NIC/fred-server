@@ -177,7 +177,7 @@ namespace Register
       /// public destructor - client is responsible for destroying manager
       virtual ~Manager() {}
       /// find unarchived invoices and archive then in PDF format
-      virtual void archiveInvoices() const = 0;
+      virtual void archiveInvoices(bool send) const = 0;
       /// create empty list of invoices
       virtual InvoiceList* createList() const = 0;
       /// factory method

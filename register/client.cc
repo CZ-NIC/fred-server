@@ -227,6 +227,8 @@ int main(int argc, char **argv)
     invoiceDesc.add_options()
       ("invoice_archive", 
        "archive unarchived invoices")
+      ("invoice_dont_send", 
+       "dont send mails with invoices during archivation")
       ("invoice_list", 
        "list xml of invoices according to specified filter")
       ("id", po::value<unsigned>(),
@@ -393,7 +395,7 @@ int main(int argc, char **argv)
       Register::Invoicing::Manager::create(&db,docman.get(),&mm)
     );
     if (vm.count("invoice_archive")) {
-      im->archiveInvoices();
+      im->archiveInvoices(!vm.count("invoice_dont_send"));
     }
     if (vm.count("invoice_list")) {
       std::auto_ptr<Register::Invoicing::InvoiceList> il(im->createList());

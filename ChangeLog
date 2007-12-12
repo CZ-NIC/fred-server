@@ -1,3 +1,7 @@
+    * invoicing improvements
+	- use english PDF template for foreign registrars
+	- new option in fred-admin --invoice_dont_send to disable mailing
+
 2007-11-16 Jaromir Talir (version 1.7.6)
 
     * object state requests can be added through fred-admin
