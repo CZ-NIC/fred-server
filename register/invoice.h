@@ -44,15 +44,33 @@ namespace Register
       virtual const std::string& getPhone() const = 0;
       virtual const std::string& getFax() const = 0;
     };
-    class PaymentSource   
+    /// description of any payment transfer with vat
+    class Payment
+    {
+     protected:
+      virtual ~Payment() {}
+     public:
+      // base tax money amount  
+      virtual Money getPrice() const = 0;
+      // vat rate in percents
+      virtual unsigned getVatRate() const = 0;
+      // counted vat (approximatly price * vatRate / 100)
+      virtual Money getVat() const = 0;
+      // sum of price and vat
+      virtual Money getPriceWithVat() const = 0;      
+    };
+    class PaymentSource : virtual public Payment
     {
      protected:
       virtual ~PaymentSource() {}      
      public:
-      virtual unsigned long long getNumber() const = 0;
-      virtual Money getPrice() const = 0;
-      virtual Money getCredit() const = 0;
       virtual TID getId() const = 0;
+      /// number of source advance invoice 
+      virtual unsigned long long getNumber() const = 0;
+      /// remaining credit on source invoice
+      virtual Money getCredit() const = 0;
+      /// total price with vat of source invoice
+      virtual Money getTotalPriceWithVat() const = 0;
     };
     enum PaymentActionType {
       PAT_CREATE_DOMAIN,
@@ -115,7 +133,9 @@ namespace Register
       virtual const PaymentSource *getSource(unsigned idx) const = 0;
       virtual unsigned getActionCount() const = 0;
       virtual const PaymentAction *getAction(unsigned idx) const = 0;
-      virtual AnnualPartitioning *getAnnualPartitioning() = 0;   
+      virtual AnnualPartitioning *getAnnualPartitioning() = 0;
+      virtual unsigned getPaymentCount() const = 0;
+      virtual const Payment *getPaymentByIdx(unsigned idx) const = 0;
     };
     class InvoiceList
     {

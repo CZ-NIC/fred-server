@@ -29,6 +29,7 @@
 #include <fstream>
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/checked_delete.hpp>
 
 using namespace boost::gregorian;
 using namespace boost::posix_time;
@@ -113,32 +114,74 @@ namespace Register
       const std::string& getPhone() const { return phone; }
       const std::string& getFax() const { return fax; }
     };
-    class InvoiceImpl;
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    //   PaymentImpl
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    /// implementation of Payment interface
+    class PaymentImpl : virtual public Payment
+    {
+      Money price; ///< money that come from this advance invoice  
+      unsigned vatRate; ///< vatRate of this advance invoice
+      Money vat; ///< total vat - approx. (price * vatRate/100)
+     public:
+      PaymentImpl(const PaymentImpl* p) :
+        price(p->price), vatRate(p->vatRate), vat(p->vat)
+      {}
+      PaymentImpl(Money _price, unsigned _vatRate, Money _vat) :
+        price(_price), vatRate(_vatRate), vat(_vat)
+      {}
+      virtual Money getPrice() const
+      {
+        return price;
+      }
+      virtual unsigned getVatRate() const
+      {
+        return vatRate;
+      }
+      virtual Money getVat() const
+      {
+        return vat;
+      }
+      virtual Money getPriceWithVat() const
+      {
+        return price + vat;
+      }
+      bool operator==(unsigned _vatRate) const
+      {
+        return vatRate == _vatRate;
+      }
+      void add(const PaymentImpl *p)
+      {
+        price += p->price;
+        vat += p->vat;
+      }
+    };
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     //   PaymentSourceImpl
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     /// implementation of PaymentSource interface
-    class PaymentSourceImpl : public PaymentSource
+    class PaymentSourceImpl : public PaymentImpl, virtual public PaymentSource
     {
       unsigned long long number; ///< number of source advance invoice
-      Money price; ///< money that come from this advance invoice  
       Money credit; ///< credit remaining on this advance invoice 
       TID id; ///< id of source advance invoice
-     public:
+      Money totalPrice; ///< total price with vat on advance invoice
+    public:
       /// init content from sql result (ignore first column)
       PaymentSourceImpl(DB *db, unsigned l) : 
+        PaymentImpl(
+          STR_TO_MONEY(db->GetFieldValue(l,2)),
+          STR_TO_ID(db->GetFieldValue(l,6)),
+          STR_TO_MONEY(db->GetFieldValue(l,7))
+        ),
         number(atoll(db->GetFieldValue(l,1))),
-        price(STR_TO_MONEY(db->GetFieldValue(l,2))),
         credit(STR_TO_MONEY(db->GetFieldValue(l,3))),
-        id(STR_TO_ID(db->GetFieldValue(l,4)))
+        id(STR_TO_ID(db->GetFieldValue(l,4))),
+        totalPrice(STR_TO_MONEY(db->GetFieldValue(l,5)))
       {}
       virtual unsigned long long getNumber() const
       {
         return number;
-      }
-      virtual Money getPrice() const
-      {
-        return price;
       }
       virtual Money getCredit() const
       {
@@ -147,6 +190,10 @@ namespace Register
       virtual TID getId() const
       {
         return id;
+      }
+      virtual Money getTotalPriceWithVat() const
+      {
+        return totalPrice;
       }
     };
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -283,6 +330,7 @@ namespace Register
       virtual ~Exporter() {}
       virtual void doExport(Invoice *) = 0;
     };
+    class ManagerImpl;
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     //   InvoiceImpl
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -312,12 +360,59 @@ namespace Register
       std::vector<PaymentActionImpl *> actions;
       bool storeFileFlag; ///< ready for saving link to generated file
       AnnualPartitioningImpl ap; ///< total prices partitioned by year
+      std::vector<PaymentImpl> paid; ///< list of paid vat rates
+      ManagerImpl *man; ///< backlink to manager for VAT and others
       void clearLists()
       {
         for (unsigned i=0; i<sources.size(); i++) delete sources[i];
         for (unsigned i=0; i<actions.size(); i++) delete actions[i];
       }
      public:
+      /// initialize invoice from result set=db with row=l 
+      InvoiceImpl(DB *db, ManagerImpl *_man, unsigned l) :
+        dbc(db),
+        id(STR_TO_ID(db->GetFieldValue(l,0))),
+        zone(STR_TO_ID(db->GetFieldValue(l,1))),
+        crTime(MAKE_TIME(l,2)),
+        taxDate(MAKE_DATE(l,3)),
+        accountPeriod(MAKE_DATE_NEG(l,4),MAKE_DATE_POS(l,5)),
+        type(atoi(db->GetFieldValue(l,6)) == 0 ? IT_DEPOSIT : IT_ACCOUNT),
+        number(atoll(db->GetFieldValue(l,7))),
+        registrar(STR_TO_ID(db->GetFieldValue(l,8))),
+        credit(STR_TO_MONEY(db->GetFieldValue(l,9))),
+        price(STR_TO_MONEY(db->GetFieldValue(l,10))),
+        vatRate(atoi(db->GetFieldValue(l,11))),
+        total(STR_TO_MONEY(db->GetFieldValue(l,12))),
+        totalVAT(STR_TO_MONEY(db->GetFieldValue(l,13))),
+        filePDF(STR_TO_ID(db->GetFieldValue(l,14))),
+        fileXML(STR_TO_ID(db->GetFieldValue(l,15))),
+        varSymbol(db->GetFieldValue(l,22)),
+        client(
+          STR_TO_ID(db->GetFieldValue(l,25)),
+          db->GetFieldValue(l,23),
+          db->GetFieldValue(l,16),
+          "", // fullname is empty
+          db->GetFieldValue(l,17),
+          db->GetFieldValue(l,18),
+          db->GetFieldValue(l,19),
+          db->GetFieldValue(l,20),
+          db->GetFieldValue(l,21),
+          "", // registration is empty
+          "", // reclamation is empty
+          "", // url is empty
+          "", // email is empty
+          "", // phone is empty
+          "", // fax is empty
+          db->GetFieldValue(l,24)[0] == 't'
+        ),
+        storeFileFlag(false),
+        man(_man)
+      {
+      }
+      ~InvoiceImpl()
+      {
+        clearLists();
+      }
       const Subject* getClient() const { return &client; }
       const Subject* getSupplier() const { return &supplier; }
       TID getId() const { return id; }
@@ -336,8 +431,7 @@ namespace Register
       Money getTotalVAT() const { return totalVAT; }
       const std::string& getVarSymbol() const { return varSymbol; }
       TID getFilePDF() const { return filePDF; }
-      TID getFileXML() const { return fileXML; }
-      
+      TID getFileXML() const { return fileXML; }     
       unsigned getSourceCount() const { return sources.size(); }
       const PaymentSource *getSource(unsigned idx) const
       {
@@ -378,50 +472,6 @@ namespace Register
           if (!dbc->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
         }                
       }
-      /// initialize invoice from result set=db with row=l 
-      InvoiceImpl(DB *db, unsigned l) :
-        dbc(db),
-        id(STR_TO_ID(db->GetFieldValue(l,0))),
-        zone(STR_TO_ID(db->GetFieldValue(l,1))),
-        crTime(MAKE_TIME(l,2)),
-        taxDate(MAKE_DATE(l,3)),
-        accountPeriod(MAKE_DATE_NEG(l,4),MAKE_DATE_POS(l,5)),
-        type(atoi(db->GetFieldValue(l,6)) == 0 ? IT_DEPOSIT : IT_ACCOUNT),
-        number(atoll(db->GetFieldValue(l,7))),
-        registrar(STR_TO_ID(db->GetFieldValue(l,8))),
-        credit(STR_TO_MONEY(db->GetFieldValue(l,9))),
-        price(STR_TO_MONEY(db->GetFieldValue(l,10))),
-        vatRate(atoi(db->GetFieldValue(l,11))),
-        total(STR_TO_MONEY(db->GetFieldValue(l,12))),
-        totalVAT(STR_TO_MONEY(db->GetFieldValue(l,13))),
-        filePDF(STR_TO_ID(db->GetFieldValue(l,14))),
-        fileXML(STR_TO_ID(db->GetFieldValue(l,15))),
-        varSymbol(db->GetFieldValue(l,22)),
-        client(
-          STR_TO_ID(db->GetFieldValue(l,25)),
-          db->GetFieldValue(l,23),
-          db->GetFieldValue(l,16),
-          "", // fullname is empty
-          db->GetFieldValue(l,17),
-          db->GetFieldValue(l,18),
-          db->GetFieldValue(l,19),
-          db->GetFieldValue(l,20),
-          db->GetFieldValue(l,21),
-          "", // registration is empty
-          "", // reclamation is empty
-          "", // url is empty
-          "", // email is empty
-          "", // phone is empty
-          "", // fax is empty
-          db->GetFieldValue(l,24)[0] == 't'
-        ),
-        storeFileFlag(false)
-      {
-      }
-      ~InvoiceImpl()
-      {
-        clearLists();
-      }
       /// export invoice using given exporter
       void doExport(Exporter *exp)
       {
@@ -441,11 +491,33 @@ namespace Register
       /// initialize list of sources from sql result
       void addSource(DB *db, unsigned row)
       {
-        sources.push_back(new PaymentSourceImpl(db,row));        
+        PaymentSourceImpl *ps = new PaymentSourceImpl(db,row); 
+        sources.push_back(ps);
+        // init vat groups, if vat rate exists, add it, otherwise create new
+        std::vector<PaymentImpl>::iterator i = find(
+          paid.begin(), paid.end(), ps->getVatRate()
+        );
+        if (i != paid.end()) i->add(ps);
+        else paid.push_back(PaymentImpl(ps));        
       }
       virtual AnnualPartitioning *getAnnualPartitioning()
       {
         return &ap;
+      }
+      virtual unsigned getPaymentCount() const
+      {
+        // virtualize advance payment into list of payments to
+        // provide single point of data
+        // overcasting to stay const
+        if (type == IT_DEPOSIT && !paid.size())
+          ((InvoiceImpl *)this)->paid.push_back(
+            PaymentImpl(getTotal(),getVatRate(),getTotalVAT())
+          );
+        return paid.size();
+      }
+      virtual const Payment *getPaymentByIdx(unsigned idx) const 
+      {
+        return idx >= paid.size() ? NULL : &paid[idx];
       }
     };
     // TODO: should be initalized somewhere else
@@ -542,25 +614,28 @@ namespace Register
         out << TAG(vs,i->getVarSymbol())
             << TAGEND(payment)
             << TAGSTART(delivery)
-            << TAGSTART(vat_rates)
-            << TAGSTART(entry)
-            << TAG(vatperc,i->getVatRate())
-            << TAG(basetax,OUTMONEY(i->getTotal()))
-            << TAG(vat,OUTMONEY(i->getTotalVAT()))
-            << TAG(total,OUTMONEY(i->getPrice()))
-            << TAGSTART(years);
-        for (
-          i->getAnnualPartitioning()->resetIterator();
-          !i->getAnnualPartitioning()->end();
-          i->getAnnualPartitioning()->next()
-        )
+            << TAGSTART(vat_rates);
+        for (unsigned j=0; j<i->getPaymentCount(); j++) {
+          const Payment *p = i->getPaymentByIdx(j);
           out << TAGSTART(entry)
-              << TAG(year,i->getAnnualPartitioning()->getYear())
-              << TAG(price,OUTMONEY(i->getAnnualPartitioning()->getPrice()))
+              << TAG(vatperc,p->getVatRate())
+              << TAG(basetax,OUTMONEY(p->getPrice()))
+              << TAG(vat,OUTMONEY(p->getVat()))
+              << TAG(total,OUTMONEY(p->getPriceWithVat()))
+              << TAGSTART(years);
+          for (
+            i->getAnnualPartitioning()->resetIterator();
+            !i->getAnnualPartitioning()->end();
+            i->getAnnualPartitioning()->next()
+          )
+            out << TAGSTART(entry)
+                << TAG(year,i->getAnnualPartitioning()->getYear())
+                << TAG(price,OUTMONEY(i->getAnnualPartitioning()->getPrice()))
+                << TAGEND(entry);
+          out << TAGEND(years)
               << TAGEND(entry);
-        out << TAGEND(years)
-            << TAGEND(entry)
-            << TAGEND(vat_rates)
+        }
+        out << TAGEND(vat_rates)
             << TAGSTART(sumarize)
             << TAG(total,OUTMONEY(i->getPrice()))
             << TAG(paid,
@@ -687,6 +762,7 @@ namespace Register
       TID objectIdFilter; ///< filter for attached object by id
       std::string objectNameFilter; ///< filter for attached object by name
       std::string advanceNumberFilter; ///< filter for source advance invoice
+      ManagerImpl *man; ///< backlink to manager for VAT and others
       /// find invoice in list by id
       InvoiceImpl *findById(TID id) const
       {
@@ -697,11 +773,11 @@ namespace Register
         return i == invoices.end() ? NULL : *i;
       }      
      public:
-      InvoiceListImpl(DB *_db) : db(_db), 
+      InvoiceListImpl(DB *_db, ManagerImpl *_man) : db(_db), 
         idFilter(0), registrarFilter(0), zoneFilter(0), typeFilter(0), 
         crDateFilter(ptime(neg_infin),ptime(pos_infin)),
         taxDateFilter(ptime(neg_infin),ptime(pos_infin)),
-        archiveFilter(AF_IGNORE), objectIdFilter(0)
+        archiveFilter(AF_IGNORE), objectIdFilter(0), man(_man)
       {}
       ~InvoiceListImpl()
       {
@@ -857,7 +933,7 @@ namespace Register
           " it.id=i.id AND i.registrarid=r.id AND ip.id=i.prefix_type "
         )) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)         
-          invoices.push_back(new InvoiceImpl(db,i));
+          invoices.push_back(new InvoiceImpl(db,man,i));
         db->FreeSelect();
         // append list of actions to all selected invoices
         if (!db->ExecSelect(
@@ -889,10 +965,13 @@ namespace Register
         // append list of sources to all selected invoices
         if (!db->ExecSelect(
           "SELECT "
-          " it.id, sri.prefix, ipm.credit*100, ipm.balance*100, sri.id "
+          " it.id, sri.prefix, ipm.credit*100, ipm.balance*100, sri.id, "
+          " sri.price, sri.vat, ipm.credit*v.koef/(1-v.koef)) "
           "FROM "
           " tmp_invoice_filter_result it, "
           " invoice_credit_payment_map ipm, invoice sri "
+          " JOIN (SELECT vat,koef FROM price_vat GROUP BY vat, koef) v "
+          "   ON (sri.vat=v.vat) "
           "WHERE "
           " it.id=ipm.invoiceid AND ipm.ainvoiceid=sri.id "
         )) throw SQL_ERROR();
@@ -1056,6 +1135,21 @@ namespace Register
         db->FreeSelect();
       }
     }; // Mails
+    // hold vat rates for time periods
+    class VAT
+    {
+    public:
+      VAT(unsigned _vatRate, unsigned _koef,  date _validity) :
+        vatRate(_vatRate), koef(_koef), validity(_validity)
+      {}
+      bool operator==(unsigned rate) const
+      {
+        return vatRate == rate;
+      }
+      unsigned vatRate; ///< percent rate
+      date validity; ///< valid to this date
+      unsigned koef; ///< koeficient for VAT counting (in 1/10000)
+    };
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     //   ManagerImpl
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -1065,19 +1159,47 @@ namespace Register
       DB *db;
       Document::Manager *docman;
       Mailer::Manager *mailman;
+      std::vector<VAT> vatList;
+      void initVATList() throw (SQL_ERROR)
+      {
+        if (vatList.empty()) {
+          std::stringstream sql;
+          db->ExecSelect("SELECT vat, koef, valid_to FROM price_vat");
+          if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+          for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+            vatList.push_back(
+              VAT(
+                atoi(db->GetFieldValue(i,0)),
+                atoi(db->GetFieldValue(i,1)),
+                MAKE_DATE(i,2)
+              )
+            );
+          }
+          db->FreeSelect();
+        }
+      }
      public:
       ManagerImpl(
-        DB *_db, 
+        DB *_db,
         Document::Manager *_docman, Mailer::Manager *_mailman
       ) : db(_db), docman(_docman), mailman(_mailman)
       {}
+      const VAT *getVAT(unsigned rate) const
+      {
+        // late initialization would brake constness
+        ((ManagerImpl *)this)->initVATList();
+        std::vector<VAT>::const_iterator ci = find(
+          vatList.begin(),vatList.end(),rate
+        );
+        return ci == vatList.end() ? NULL : &(*ci);
+      }
       /// find unarchived invoices. archive then and send them by email
       void archiveInvoices(bool send) const
       {
         try {
           // archive unarchived invoices
           ExporterArchiver arch(docman);
-          InvoiceListImpl l(db);
+          InvoiceListImpl l(db,(ManagerImpl *)this);
           l.setArchivedFilter(InvoiceList::AF_UNSET);
           l.reload();
           l.doExport(&arch);
@@ -1093,7 +1215,7 @@ namespace Register
       /// create empty list of invoices      
       virtual InvoiceList* createList() const
       {
-        return new InvoiceListImpl(db);
+        return new InvoiceListImpl(db,(ManagerImpl *)this);
       }
     }; // ManagerImpl
     Manager *Manager::create(
