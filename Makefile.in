@@ -16,6 +16,7 @@
 
 
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -32,20 +33,16 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = fred-rifd$(EXEEXT) fred-adifd$(EXEEXT) \
+sbin_PROGRAMS = fred-rifd$(EXEEXT) fred-adifd$(EXEEXT) \
 	fred-pifd$(EXEEXT) fred-banking$(EXEEXT) fred-admin$(EXEEXT)
 subdir = .
-DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
-	config.guess config.sub depcomp install-sh missing
+DIST_COMMON = README $(am__configure_deps) $(dist_fredconf_DATA) \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/config.h.in $(top_srcdir)/configure AUTHORS COPYING \
+	ChangeLog INSTALL NEWS config.guess config.sub depcomp \
+	install-sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_base.m4 \
-	$(top_srcdir)/m4/ax_boost_date_time.m4 \
-	$(top_srcdir)/m4/ax_boost_program_options.m4 \
-	$(top_srcdir)/m4/ax_boost_regex.m4 \
-	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
-	$(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -58,56 +55,47 @@ AR = ar
 ARFLAGS = cru
 libfred_a_AR = $(AR) $(ARFLAGS)
 libfred_a_LIBADD =
-am_libfred_a_OBJECTS = libfred_a-ccRegSK.$(OBJEXT) \
-	libfred_a-ccRegDynSK.$(OBJEXT) libfred_a-conf.$(OBJEXT) \
-	libfred_a-dbsql.$(OBJEXT) libfred_a-pqsql.$(OBJEXT) \
-	libfred_a-util.$(OBJEXT) libfred_a-log.$(OBJEXT) \
-	libfred_a-nameservice.$(OBJEXT) \
-	libfred_a-mailer_manager.$(OBJEXT) libfred_a-admin.$(OBJEXT) \
-	libfred_a-tech_check.$(OBJEXT)
-libfred_a_OBJECTS = $(am_libfred_a_OBJECTS)
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)"
-binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
-PROGRAMS = $(bin_PROGRAMS)
-am_fred_adifd_OBJECTS =
+am_libfred_a_OBJECTS = conf.$(OBJEXT) dbsql.$(OBJEXT) pqsql.$(OBJEXT) \
+	util.$(OBJEXT) log.$(OBJEXT) nameservice.$(OBJEXT) \
+	mailer_manager.$(OBJEXT) admin.$(OBJEXT) tech_check.$(OBJEXT)
+nodist_libfred_a_OBJECTS = ccRegSK.$(OBJEXT) ccRegDynSK.$(OBJEXT)
+libfred_a_OBJECTS = $(am_libfred_a_OBJECTS) \
+	$(nodist_libfred_a_OBJECTS)
+am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(sbindir)" \
+	"$(DESTDIR)$(fredconfdir)"
+sbinPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
+PROGRAMS = $(sbin_PROGRAMS)
+am_fred_adifd_OBJECTS = fred_adifd-ccReg_server.$(OBJEXT)
 fred_adifd_OBJECTS = $(am_fred_adifd_OBJECTS)
+fred_adifd_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
-am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-fred_adifd_DEPENDENCIES = ccReg_adifd.o libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
-fred_adifd_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(fred_adifd_LDFLAGS) \
-	$(LDFLAGS) -o $@
-am_fred_admin_OBJECTS = fred_admin-client.$(OBJEXT)
+fred_adifd_DEPENDENCIES = $(am__DEPENDENCIES_1) libfred.a \
+	register/libccreg.a
+am_fred_admin_OBJECTS = client.$(OBJEXT)
 fred_admin_OBJECTS = $(am_fred_admin_OBJECTS)
-fred_admin_DEPENDENCIES = libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
-fred_admin_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(fred_admin_LDFLAGS) $(LDFLAGS) -o $@
-am_fred_banking_OBJECTS = fred_banking-gpc.$(OBJEXT) \
-	fred_banking-banking.$(OBJEXT) fred_banking-log.$(OBJEXT) \
-	fred_banking-csv.$(OBJEXT)
+fred_admin_LDADD = $(LDADD)
+fred_admin_DEPENDENCIES = $(am__DEPENDENCIES_1) libfred.a \
+	register/libccreg.a
+am_fred_banking_OBJECTS = gpc.$(OBJEXT) banking.$(OBJEXT) \
+	log.$(OBJEXT) csv.$(OBJEXT)
 fred_banking_OBJECTS = $(am_fred_banking_OBJECTS)
-fred_banking_DEPENDENCIES = libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
-fred_banking_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(fred_banking_LDFLAGS) $(LDFLAGS) -o $@
-am_fred_pifd_OBJECTS =
+fred_banking_LDADD = $(LDADD)
+fred_banking_DEPENDENCIES = $(am__DEPENDENCIES_1) libfred.a \
+	register/libccreg.a
+am_fred_pifd_OBJECTS = fred_pifd-ccReg_server.$(OBJEXT)
 fred_pifd_OBJECTS = $(am_fred_pifd_OBJECTS)
-fred_pifd_DEPENDENCIES = ccReg_pifd.o libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
-fred_pifd_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(fred_pifd_LDFLAGS) \
-	$(LDFLAGS) -o $@
+fred_pifd_LDADD = $(LDADD)
+fred_pifd_DEPENDENCIES = $(am__DEPENDENCIES_1) libfred.a \
+	register/libccreg.a
 am_fred_rifd_OBJECTS = fred_rifd-ccReg_epp.$(OBJEXT) \
 	fred_rifd-countrycode.$(OBJEXT) fred_rifd-messages.$(OBJEXT) \
-	fred_rifd-notifier.$(OBJEXT)
+	fred_rifd-notifier.$(OBJEXT) fred_rifd-ccReg_server.$(OBJEXT)
 fred_rifd_OBJECTS = $(am_fred_rifd_OBJECTS)
-fred_rifd_DEPENDENCIES = ccReg_rifd.o libfred.a register/libccreg.a \
-	$(am__DEPENDENCIES_2)
-fred_rifd_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(fred_rifd_LDFLAGS) $(LDFLAGS) -o $@
-binSCRIPT_INSTALL = $(INSTALL_SCRIPT)
-SCRIPTS = $(bin_SCRIPTS)
+fred_rifd_LDADD = $(LDADD)
+fred_rifd_DEPENDENCIES = $(am__DEPENDENCIES_1) libfred.a \
+	register/libccreg.a
+sbinSCRIPT_INSTALL = $(INSTALL_SCRIPT)
+SCRIPTS = $(sbin_SCRIPTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -120,9 +108,10 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libfred_a_SOURCES) $(fred_adifd_SOURCES) \
-	$(fred_admin_SOURCES) $(fred_banking_SOURCES) \
-	$(fred_pifd_SOURCES) $(fred_rifd_SOURCES)
+SOURCES = $(libfred_a_SOURCES) $(nodist_libfred_a_SOURCES) \
+	$(fred_adifd_SOURCES) $(fred_admin_SOURCES) \
+	$(fred_banking_SOURCES) $(fred_pifd_SOURCES) \
+	$(fred_rifd_SOURCES)
 DIST_SOURCES = $(libfred_a_SOURCES) $(fred_adifd_SOURCES) \
 	$(fred_admin_SOURCES) $(fred_banking_SOURCES) \
 	$(fred_pifd_SOURCES) $(fred_rifd_SOURCES)
@@ -133,6 +122,14 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-pdf-recursive install-ps-recursive install-recursive \
 	installcheck-recursive installdirs-recursive pdf-recursive \
 	ps-recursive uninstall-recursive
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+dist_fredconfDATA_INSTALL = $(INSTALL_DATA)
+DATA = $(dist_fredconf_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 ETAGS = etags
@@ -155,11 +152,6 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
-BOOST_CPPFLAGS = @BOOST_CPPFLAGS@
-BOOST_DATE_TIME_LIB = @BOOST_DATE_TIME_LIB@
-BOOST_LDFLAGS = @BOOST_LDFLAGS@
-BOOST_PROGRAM_OPTIONS_LIB = @BOOST_PROGRAM_OPTIONS_LIB@
-BOOST_REGEX_LIB = @BOOST_REGEX_LIB@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -199,11 +191,7 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PG_CONFIG = @PG_CONFIG@
 PKG_CONFIG = @PKG_CONFIG@
-POSTGRESQL_CFLAGS = @POSTGRESQL_CFLAGS@
-POSTGRESQL_LDFLAGS = @POSTGRESQL_LDFLAGS@
-POSTGRESQL_VERSION = @POSTGRESQL_VERSION@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -253,33 +241,36 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = register
 CLEANFILES = ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh
-noinst_LIBRARIES = libfred.a
-bin_SCRIPTS = banking.sh
-libfred_a_SOURCES = ccRegSK.cc ccRegDynSK.cc conf.cc dbsql.cc pqsql.cc util.cc log.cc nameservice.cc mailer_manager.cc admin.cc tech_check.cc
-libfred_a_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-COMMON_LIBS = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS)
+AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS)
+LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
+        $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) libfred.a register/libccreg.a
+
 IDLFILE = $(IDLDIR)/ccReg.idl
-fred_rifd_SOURCES = ccReg_epp.cc countrycode.cc messages.cc notifier.cc
-fred_rifd_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_rifd_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_rifd_LDADD = ccReg_rifd.o libfred.a register/libccreg.a $(COMMON_LIBS)  $(LIBDAEMON_LIBS)
-fred_adifd_SOURCES = 
-fred_adifd_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_adifd_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_adifd_LDADD = ccReg_adifd.o libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
-fred_pifd_SOURCES = 
-fred_pifd_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_pifd_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_pifd_LDADD = ccReg_pifd.o libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
+fredconfdir = $(sysconfdir)/fred
+noinst_LIBRARIES = libfred.a
+sbin_SCRIPTS = banking.sh
+EXTRA_DIST = banking.sh
+dist_fredconf_DATA = server.conf.example
+BUILT_SOURCES = ccRegSK.cc ccRegDynSK.cc ccReg.hh
+libfred_a_SOURCES = conf.cc dbsql.cc pqsql.cc util.cc log.cc nameservice.cc \
+  mailer_manager.cc admin.cc tech_check.cc action.h gpc.h nameservice.h \
+  response.h admin.h countrycode.h log.h notifier.h tech_check.h ccReg_epp.h \
+  csv.h mailer_manager.h pqsql.h timeclock.h conf.h dbsql.h messages.h \
+  reason.h util.h
+
+nodist_libfred_a_SOURCES = ccRegSK.cc ccRegDynSK.cc
+fred_rifd_SOURCES = ccReg_epp.cc countrycode.cc messages.cc notifier.cc \
+                      ccReg_server.cc
+
+fred_rifd_CPPFLAGS = $(AM_CPPFLAGS) -DRIFD
+fred_adifd_SOURCES = ccReg_server.cc
+fred_adifd_CPPFLAGS = $(AM_CPPFLAGS) -DADIF
+fred_pifd_SOURCES = ccReg_server.cc
+fred_pifd_CPPFLAGS = $(AM_CPPFLAGS) -DPIFD
 fred_banking_SOURCES = gpc.cc banking.cc log.cc csv.cc
-fred_banking_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_banking_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_banking_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
 fred_admin_SOURCES = register/client.cc
-fred_admin_CPPFLAGS = $(LIBDAEMON_CFLAGS) $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) $(AM_CPPFLAGS)
-fred_admin_LDFLAGS = $(LIBDAEMON_LDFLAGS) $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-fred_admin_LDADD = libfred.a register/libccreg.a $(COMMON_LIBS) $(LIBDAEMON_LIBS)
-all: config.h
+all: $(BUILT_SOURCES) config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
@@ -341,62 +332,62 @@ libfred.a: $(libfred_a_OBJECTS) $(libfred_a_DEPENDENCIES)
 	-rm -f libfred.a
 	$(libfred_a_AR) libfred.a $(libfred_a_OBJECTS) $(libfred_a_LIBADD)
 	$(RANLIB) libfred.a
-install-binPROGRAMS: $(bin_PROGRAMS)
+install-sbinPROGRAMS: $(sbin_PROGRAMS)
 	@$(NORMAL_INSTALL)
-	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	test -z "$(sbindir)" || $(MKDIR_P) "$(DESTDIR)$(sbindir)"
+	@list='$(sbin_PROGRAMS)'; for p in $$list; do \
 	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
 	  if test -f $$p \
 	  ; then \
 	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
-	   echo " $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(bindir)/$$f'"; \
-	   $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(bindir)/$$f" || exit 1; \
+	   echo " $(INSTALL_PROGRAM_ENV) $(sbinPROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(sbindir)/$$f'"; \
+	   $(INSTALL_PROGRAM_ENV) $(sbinPROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(sbindir)/$$f" || exit 1; \
 	  else :; fi; \
 	done
 
-uninstall-binPROGRAMS:
+uninstall-sbinPROGRAMS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	@list='$(sbin_PROGRAMS)'; for p in $$list; do \
 	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
+	  echo " rm -f '$(DESTDIR)$(sbindir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(sbindir)/$$f"; \
 	done
 
-clean-binPROGRAMS:
-	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+clean-sbinPROGRAMS:
+	-test -z "$(sbin_PROGRAMS)" || rm -f $(sbin_PROGRAMS)
 fred-adifd$(EXEEXT): $(fred_adifd_OBJECTS) $(fred_adifd_DEPENDENCIES) 
 	@rm -f fred-adifd$(EXEEXT)
-	$(fred_adifd_LINK) $(fred_adifd_OBJECTS) $(fred_adifd_LDADD) $(LIBS)
+	$(CXXLINK) $(fred_adifd_OBJECTS) $(fred_adifd_LDADD) $(LIBS)
 fred-admin$(EXEEXT): $(fred_admin_OBJECTS) $(fred_admin_DEPENDENCIES) 
 	@rm -f fred-admin$(EXEEXT)
-	$(fred_admin_LINK) $(fred_admin_OBJECTS) $(fred_admin_LDADD) $(LIBS)
+	$(CXXLINK) $(fred_admin_OBJECTS) $(fred_admin_LDADD) $(LIBS)
 fred-banking$(EXEEXT): $(fred_banking_OBJECTS) $(fred_banking_DEPENDENCIES) 
 	@rm -f fred-banking$(EXEEXT)
-	$(fred_banking_LINK) $(fred_banking_OBJECTS) $(fred_banking_LDADD) $(LIBS)
+	$(CXXLINK) $(fred_banking_OBJECTS) $(fred_banking_LDADD) $(LIBS)
 fred-pifd$(EXEEXT): $(fred_pifd_OBJECTS) $(fred_pifd_DEPENDENCIES) 
 	@rm -f fred-pifd$(EXEEXT)
-	$(fred_pifd_LINK) $(fred_pifd_OBJECTS) $(fred_pifd_LDADD) $(LIBS)
+	$(CXXLINK) $(fred_pifd_OBJECTS) $(fred_pifd_LDADD) $(LIBS)
 fred-rifd$(EXEEXT): $(fred_rifd_OBJECTS) $(fred_rifd_DEPENDENCIES) 
 	@rm -f fred-rifd$(EXEEXT)
-	$(fred_rifd_LINK) $(fred_rifd_OBJECTS) $(fred_rifd_LDADD) $(LIBS)
-install-binSCRIPTS: $(bin_SCRIPTS)
+	$(CXXLINK) $(fred_rifd_OBJECTS) $(fred_rifd_LDADD) $(LIBS)
+install-sbinSCRIPTS: $(sbin_SCRIPTS)
 	@$(NORMAL_INSTALL)
-	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
-	@list='$(bin_SCRIPTS)'; for p in $$list; do \
+	test -z "$(sbindir)" || $(MKDIR_P) "$(DESTDIR)$(sbindir)"
+	@list='$(sbin_SCRIPTS)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  if test -f $$d$$p; then \
 	    f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
-	    echo " $(binSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(bindir)/$$f'"; \
-	    $(binSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(bindir)/$$f"; \
+	    echo " $(sbinSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(sbindir)/$$f'"; \
+	    $(sbinSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(sbindir)/$$f"; \
 	  else :; fi; \
 	done
 
-uninstall-binSCRIPTS:
+uninstall-sbinSCRIPTS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(bin_SCRIPTS)'; for p in $$list; do \
+	@list='$(sbin_SCRIPTS)'; for p in $$list; do \
 	  f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
-	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
+	  echo " rm -f '$(DESTDIR)$(sbindir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(sbindir)/$$f"; \
 	done
 
 mostlyclean-compile:
@@ -405,26 +396,28 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_admin-client.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_banking-banking.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_banking-csv.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_banking-gpc.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_banking-log.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/admin.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/banking.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ccRegDynSK.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ccRegSK.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/client.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/conf.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csv.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbsql.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_adifd-ccReg_server.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_pifd-ccReg_server.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-ccReg_epp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-ccReg_server.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-countrycode.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-messages.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-notifier.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfred_a-admin.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfred_a-ccRegDynSK.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfred_a-ccRegSK.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfred_a-conf.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfred_a-dbsql.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfred_a-log.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfred_a-mailer_manager.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfred_a-nameservice.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfred_a-pqsql.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfred_a-tech_check.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfred_a-util.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gpc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mailer_manager.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nameservice.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pqsql.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tech_check.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/util.Po@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -440,229 +433,47 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-libfred_a-ccRegSK.o: ccRegSK.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-ccRegSK.o -MD -MP -MF $(DEPDIR)/libfred_a-ccRegSK.Tpo -c -o libfred_a-ccRegSK.o `test -f 'ccRegSK.cc' || echo '$(srcdir)/'`ccRegSK.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-ccRegSK.Tpo $(DEPDIR)/libfred_a-ccRegSK.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccRegSK.cc' object='libfred_a-ccRegSK.o' libtool=no @AMDEPBACKSLASH@
+fred_adifd-ccReg_server.o: ccReg_server.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_adifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_adifd-ccReg_server.o -MD -MP -MF $(DEPDIR)/fred_adifd-ccReg_server.Tpo -c -o fred_adifd-ccReg_server.o `test -f 'ccReg_server.cc' || echo '$(srcdir)/'`ccReg_server.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_adifd-ccReg_server.Tpo $(DEPDIR)/fred_adifd-ccReg_server.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_server.cc' object='fred_adifd-ccReg_server.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-ccRegSK.o `test -f 'ccRegSK.cc' || echo '$(srcdir)/'`ccRegSK.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_adifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_adifd-ccReg_server.o `test -f 'ccReg_server.cc' || echo '$(srcdir)/'`ccReg_server.cc
 
-libfred_a-ccRegSK.obj: ccRegSK.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-ccRegSK.obj -MD -MP -MF $(DEPDIR)/libfred_a-ccRegSK.Tpo -c -o libfred_a-ccRegSK.obj `if test -f 'ccRegSK.cc'; then $(CYGPATH_W) 'ccRegSK.cc'; else $(CYGPATH_W) '$(srcdir)/ccRegSK.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-ccRegSK.Tpo $(DEPDIR)/libfred_a-ccRegSK.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccRegSK.cc' object='libfred_a-ccRegSK.obj' libtool=no @AMDEPBACKSLASH@
+fred_adifd-ccReg_server.obj: ccReg_server.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_adifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_adifd-ccReg_server.obj -MD -MP -MF $(DEPDIR)/fred_adifd-ccReg_server.Tpo -c -o fred_adifd-ccReg_server.obj `if test -f 'ccReg_server.cc'; then $(CYGPATH_W) 'ccReg_server.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_server.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_adifd-ccReg_server.Tpo $(DEPDIR)/fred_adifd-ccReg_server.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_server.cc' object='fred_adifd-ccReg_server.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-ccRegSK.obj `if test -f 'ccRegSK.cc'; then $(CYGPATH_W) 'ccRegSK.cc'; else $(CYGPATH_W) '$(srcdir)/ccRegSK.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_adifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_adifd-ccReg_server.obj `if test -f 'ccReg_server.cc'; then $(CYGPATH_W) 'ccReg_server.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_server.cc'; fi`
 
-libfred_a-ccRegDynSK.o: ccRegDynSK.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-ccRegDynSK.o -MD -MP -MF $(DEPDIR)/libfred_a-ccRegDynSK.Tpo -c -o libfred_a-ccRegDynSK.o `test -f 'ccRegDynSK.cc' || echo '$(srcdir)/'`ccRegDynSK.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-ccRegDynSK.Tpo $(DEPDIR)/libfred_a-ccRegDynSK.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccRegDynSK.cc' object='libfred_a-ccRegDynSK.o' libtool=no @AMDEPBACKSLASH@
+client.o: register/client.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT client.o -MD -MP -MF $(DEPDIR)/client.Tpo -c -o client.o `test -f 'register/client.cc' || echo '$(srcdir)/'`register/client.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/client.Tpo $(DEPDIR)/client.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='register/client.cc' object='client.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-ccRegDynSK.o `test -f 'ccRegDynSK.cc' || echo '$(srcdir)/'`ccRegDynSK.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o client.o `test -f 'register/client.cc' || echo '$(srcdir)/'`register/client.cc
 
-libfred_a-ccRegDynSK.obj: ccRegDynSK.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-ccRegDynSK.obj -MD -MP -MF $(DEPDIR)/libfred_a-ccRegDynSK.Tpo -c -o libfred_a-ccRegDynSK.obj `if test -f 'ccRegDynSK.cc'; then $(CYGPATH_W) 'ccRegDynSK.cc'; else $(CYGPATH_W) '$(srcdir)/ccRegDynSK.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-ccRegDynSK.Tpo $(DEPDIR)/libfred_a-ccRegDynSK.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccRegDynSK.cc' object='libfred_a-ccRegDynSK.obj' libtool=no @AMDEPBACKSLASH@
+client.obj: register/client.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT client.obj -MD -MP -MF $(DEPDIR)/client.Tpo -c -o client.obj `if test -f 'register/client.cc'; then $(CYGPATH_W) 'register/client.cc'; else $(CYGPATH_W) '$(srcdir)/register/client.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/client.Tpo $(DEPDIR)/client.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='register/client.cc' object='client.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-ccRegDynSK.obj `if test -f 'ccRegDynSK.cc'; then $(CYGPATH_W) 'ccRegDynSK.cc'; else $(CYGPATH_W) '$(srcdir)/ccRegDynSK.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o client.obj `if test -f 'register/client.cc'; then $(CYGPATH_W) 'register/client.cc'; else $(CYGPATH_W) '$(srcdir)/register/client.cc'; fi`
 
-libfred_a-conf.o: conf.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-conf.o -MD -MP -MF $(DEPDIR)/libfred_a-conf.Tpo -c -o libfred_a-conf.o `test -f 'conf.cc' || echo '$(srcdir)/'`conf.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-conf.Tpo $(DEPDIR)/libfred_a-conf.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='conf.cc' object='libfred_a-conf.o' libtool=no @AMDEPBACKSLASH@
+fred_pifd-ccReg_server.o: ccReg_server.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_pifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_pifd-ccReg_server.o -MD -MP -MF $(DEPDIR)/fred_pifd-ccReg_server.Tpo -c -o fred_pifd-ccReg_server.o `test -f 'ccReg_server.cc' || echo '$(srcdir)/'`ccReg_server.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_pifd-ccReg_server.Tpo $(DEPDIR)/fred_pifd-ccReg_server.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_server.cc' object='fred_pifd-ccReg_server.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-conf.o `test -f 'conf.cc' || echo '$(srcdir)/'`conf.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_pifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_pifd-ccReg_server.o `test -f 'ccReg_server.cc' || echo '$(srcdir)/'`ccReg_server.cc
 
-libfred_a-conf.obj: conf.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-conf.obj -MD -MP -MF $(DEPDIR)/libfred_a-conf.Tpo -c -o libfred_a-conf.obj `if test -f 'conf.cc'; then $(CYGPATH_W) 'conf.cc'; else $(CYGPATH_W) '$(srcdir)/conf.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-conf.Tpo $(DEPDIR)/libfred_a-conf.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='conf.cc' object='libfred_a-conf.obj' libtool=no @AMDEPBACKSLASH@
+fred_pifd-ccReg_server.obj: ccReg_server.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_pifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_pifd-ccReg_server.obj -MD -MP -MF $(DEPDIR)/fred_pifd-ccReg_server.Tpo -c -o fred_pifd-ccReg_server.obj `if test -f 'ccReg_server.cc'; then $(CYGPATH_W) 'ccReg_server.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_server.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_pifd-ccReg_server.Tpo $(DEPDIR)/fred_pifd-ccReg_server.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_server.cc' object='fred_pifd-ccReg_server.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-conf.obj `if test -f 'conf.cc'; then $(CYGPATH_W) 'conf.cc'; else $(CYGPATH_W) '$(srcdir)/conf.cc'; fi`
-
-libfred_a-dbsql.o: dbsql.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-dbsql.o -MD -MP -MF $(DEPDIR)/libfred_a-dbsql.Tpo -c -o libfred_a-dbsql.o `test -f 'dbsql.cc' || echo '$(srcdir)/'`dbsql.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-dbsql.Tpo $(DEPDIR)/libfred_a-dbsql.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='dbsql.cc' object='libfred_a-dbsql.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-dbsql.o `test -f 'dbsql.cc' || echo '$(srcdir)/'`dbsql.cc
-
-libfred_a-dbsql.obj: dbsql.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-dbsql.obj -MD -MP -MF $(DEPDIR)/libfred_a-dbsql.Tpo -c -o libfred_a-dbsql.obj `if test -f 'dbsql.cc'; then $(CYGPATH_W) 'dbsql.cc'; else $(CYGPATH_W) '$(srcdir)/dbsql.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-dbsql.Tpo $(DEPDIR)/libfred_a-dbsql.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='dbsql.cc' object='libfred_a-dbsql.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-dbsql.obj `if test -f 'dbsql.cc'; then $(CYGPATH_W) 'dbsql.cc'; else $(CYGPATH_W) '$(srcdir)/dbsql.cc'; fi`
-
-libfred_a-pqsql.o: pqsql.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-pqsql.o -MD -MP -MF $(DEPDIR)/libfred_a-pqsql.Tpo -c -o libfred_a-pqsql.o `test -f 'pqsql.cc' || echo '$(srcdir)/'`pqsql.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-pqsql.Tpo $(DEPDIR)/libfred_a-pqsql.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='pqsql.cc' object='libfred_a-pqsql.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-pqsql.o `test -f 'pqsql.cc' || echo '$(srcdir)/'`pqsql.cc
-
-libfred_a-pqsql.obj: pqsql.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-pqsql.obj -MD -MP -MF $(DEPDIR)/libfred_a-pqsql.Tpo -c -o libfred_a-pqsql.obj `if test -f 'pqsql.cc'; then $(CYGPATH_W) 'pqsql.cc'; else $(CYGPATH_W) '$(srcdir)/pqsql.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-pqsql.Tpo $(DEPDIR)/libfred_a-pqsql.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='pqsql.cc' object='libfred_a-pqsql.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-pqsql.obj `if test -f 'pqsql.cc'; then $(CYGPATH_W) 'pqsql.cc'; else $(CYGPATH_W) '$(srcdir)/pqsql.cc'; fi`
-
-libfred_a-util.o: util.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-util.o -MD -MP -MF $(DEPDIR)/libfred_a-util.Tpo -c -o libfred_a-util.o `test -f 'util.cc' || echo '$(srcdir)/'`util.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-util.Tpo $(DEPDIR)/libfred_a-util.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='util.cc' object='libfred_a-util.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-util.o `test -f 'util.cc' || echo '$(srcdir)/'`util.cc
-
-libfred_a-util.obj: util.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-util.obj -MD -MP -MF $(DEPDIR)/libfred_a-util.Tpo -c -o libfred_a-util.obj `if test -f 'util.cc'; then $(CYGPATH_W) 'util.cc'; else $(CYGPATH_W) '$(srcdir)/util.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-util.Tpo $(DEPDIR)/libfred_a-util.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='util.cc' object='libfred_a-util.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-util.obj `if test -f 'util.cc'; then $(CYGPATH_W) 'util.cc'; else $(CYGPATH_W) '$(srcdir)/util.cc'; fi`
-
-libfred_a-log.o: log.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-log.o -MD -MP -MF $(DEPDIR)/libfred_a-log.Tpo -c -o libfred_a-log.o `test -f 'log.cc' || echo '$(srcdir)/'`log.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-log.Tpo $(DEPDIR)/libfred_a-log.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='log.cc' object='libfred_a-log.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-log.o `test -f 'log.cc' || echo '$(srcdir)/'`log.cc
-
-libfred_a-log.obj: log.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-log.obj -MD -MP -MF $(DEPDIR)/libfred_a-log.Tpo -c -o libfred_a-log.obj `if test -f 'log.cc'; then $(CYGPATH_W) 'log.cc'; else $(CYGPATH_W) '$(srcdir)/log.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-log.Tpo $(DEPDIR)/libfred_a-log.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='log.cc' object='libfred_a-log.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-log.obj `if test -f 'log.cc'; then $(CYGPATH_W) 'log.cc'; else $(CYGPATH_W) '$(srcdir)/log.cc'; fi`
-
-libfred_a-nameservice.o: nameservice.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-nameservice.o -MD -MP -MF $(DEPDIR)/libfred_a-nameservice.Tpo -c -o libfred_a-nameservice.o `test -f 'nameservice.cc' || echo '$(srcdir)/'`nameservice.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-nameservice.Tpo $(DEPDIR)/libfred_a-nameservice.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='nameservice.cc' object='libfred_a-nameservice.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-nameservice.o `test -f 'nameservice.cc' || echo '$(srcdir)/'`nameservice.cc
-
-libfred_a-nameservice.obj: nameservice.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-nameservice.obj -MD -MP -MF $(DEPDIR)/libfred_a-nameservice.Tpo -c -o libfred_a-nameservice.obj `if test -f 'nameservice.cc'; then $(CYGPATH_W) 'nameservice.cc'; else $(CYGPATH_W) '$(srcdir)/nameservice.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-nameservice.Tpo $(DEPDIR)/libfred_a-nameservice.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='nameservice.cc' object='libfred_a-nameservice.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-nameservice.obj `if test -f 'nameservice.cc'; then $(CYGPATH_W) 'nameservice.cc'; else $(CYGPATH_W) '$(srcdir)/nameservice.cc'; fi`
-
-libfred_a-mailer_manager.o: mailer_manager.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-mailer_manager.o -MD -MP -MF $(DEPDIR)/libfred_a-mailer_manager.Tpo -c -o libfred_a-mailer_manager.o `test -f 'mailer_manager.cc' || echo '$(srcdir)/'`mailer_manager.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-mailer_manager.Tpo $(DEPDIR)/libfred_a-mailer_manager.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mailer_manager.cc' object='libfred_a-mailer_manager.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-mailer_manager.o `test -f 'mailer_manager.cc' || echo '$(srcdir)/'`mailer_manager.cc
-
-libfred_a-mailer_manager.obj: mailer_manager.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-mailer_manager.obj -MD -MP -MF $(DEPDIR)/libfred_a-mailer_manager.Tpo -c -o libfred_a-mailer_manager.obj `if test -f 'mailer_manager.cc'; then $(CYGPATH_W) 'mailer_manager.cc'; else $(CYGPATH_W) '$(srcdir)/mailer_manager.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-mailer_manager.Tpo $(DEPDIR)/libfred_a-mailer_manager.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mailer_manager.cc' object='libfred_a-mailer_manager.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-mailer_manager.obj `if test -f 'mailer_manager.cc'; then $(CYGPATH_W) 'mailer_manager.cc'; else $(CYGPATH_W) '$(srcdir)/mailer_manager.cc'; fi`
-
-libfred_a-admin.o: admin.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-admin.o -MD -MP -MF $(DEPDIR)/libfred_a-admin.Tpo -c -o libfred_a-admin.o `test -f 'admin.cc' || echo '$(srcdir)/'`admin.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-admin.Tpo $(DEPDIR)/libfred_a-admin.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='admin.cc' object='libfred_a-admin.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-admin.o `test -f 'admin.cc' || echo '$(srcdir)/'`admin.cc
-
-libfred_a-admin.obj: admin.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-admin.obj -MD -MP -MF $(DEPDIR)/libfred_a-admin.Tpo -c -o libfred_a-admin.obj `if test -f 'admin.cc'; then $(CYGPATH_W) 'admin.cc'; else $(CYGPATH_W) '$(srcdir)/admin.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-admin.Tpo $(DEPDIR)/libfred_a-admin.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='admin.cc' object='libfred_a-admin.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-admin.obj `if test -f 'admin.cc'; then $(CYGPATH_W) 'admin.cc'; else $(CYGPATH_W) '$(srcdir)/admin.cc'; fi`
-
-libfred_a-tech_check.o: tech_check.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-tech_check.o -MD -MP -MF $(DEPDIR)/libfred_a-tech_check.Tpo -c -o libfred_a-tech_check.o `test -f 'tech_check.cc' || echo '$(srcdir)/'`tech_check.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-tech_check.Tpo $(DEPDIR)/libfred_a-tech_check.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='tech_check.cc' object='libfred_a-tech_check.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-tech_check.o `test -f 'tech_check.cc' || echo '$(srcdir)/'`tech_check.cc
-
-libfred_a-tech_check.obj: tech_check.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libfred_a-tech_check.obj -MD -MP -MF $(DEPDIR)/libfred_a-tech_check.Tpo -c -o libfred_a-tech_check.obj `if test -f 'tech_check.cc'; then $(CYGPATH_W) 'tech_check.cc'; else $(CYGPATH_W) '$(srcdir)/tech_check.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libfred_a-tech_check.Tpo $(DEPDIR)/libfred_a-tech_check.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='tech_check.cc' object='libfred_a-tech_check.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfred_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libfred_a-tech_check.obj `if test -f 'tech_check.cc'; then $(CYGPATH_W) 'tech_check.cc'; else $(CYGPATH_W) '$(srcdir)/tech_check.cc'; fi`
-
-fred_admin-client.o: register/client.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_admin_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_admin-client.o -MD -MP -MF $(DEPDIR)/fred_admin-client.Tpo -c -o fred_admin-client.o `test -f 'register/client.cc' || echo '$(srcdir)/'`register/client.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_admin-client.Tpo $(DEPDIR)/fred_admin-client.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='register/client.cc' object='fred_admin-client.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_admin_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_admin-client.o `test -f 'register/client.cc' || echo '$(srcdir)/'`register/client.cc
-
-fred_admin-client.obj: register/client.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_admin_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_admin-client.obj -MD -MP -MF $(DEPDIR)/fred_admin-client.Tpo -c -o fred_admin-client.obj `if test -f 'register/client.cc'; then $(CYGPATH_W) 'register/client.cc'; else $(CYGPATH_W) '$(srcdir)/register/client.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_admin-client.Tpo $(DEPDIR)/fred_admin-client.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='register/client.cc' object='fred_admin-client.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_admin_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_admin-client.obj `if test -f 'register/client.cc'; then $(CYGPATH_W) 'register/client.cc'; else $(CYGPATH_W) '$(srcdir)/register/client.cc'; fi`
-
-fred_banking-gpc.o: gpc.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-gpc.o -MD -MP -MF $(DEPDIR)/fred_banking-gpc.Tpo -c -o fred_banking-gpc.o `test -f 'gpc.cc' || echo '$(srcdir)/'`gpc.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-gpc.Tpo $(DEPDIR)/fred_banking-gpc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gpc.cc' object='fred_banking-gpc.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-gpc.o `test -f 'gpc.cc' || echo '$(srcdir)/'`gpc.cc
-
-fred_banking-gpc.obj: gpc.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-gpc.obj -MD -MP -MF $(DEPDIR)/fred_banking-gpc.Tpo -c -o fred_banking-gpc.obj `if test -f 'gpc.cc'; then $(CYGPATH_W) 'gpc.cc'; else $(CYGPATH_W) '$(srcdir)/gpc.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-gpc.Tpo $(DEPDIR)/fred_banking-gpc.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gpc.cc' object='fred_banking-gpc.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-gpc.obj `if test -f 'gpc.cc'; then $(CYGPATH_W) 'gpc.cc'; else $(CYGPATH_W) '$(srcdir)/gpc.cc'; fi`
-
-fred_banking-banking.o: banking.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-banking.o -MD -MP -MF $(DEPDIR)/fred_banking-banking.Tpo -c -o fred_banking-banking.o `test -f 'banking.cc' || echo '$(srcdir)/'`banking.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-banking.Tpo $(DEPDIR)/fred_banking-banking.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='banking.cc' object='fred_banking-banking.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-banking.o `test -f 'banking.cc' || echo '$(srcdir)/'`banking.cc
-
-fred_banking-banking.obj: banking.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-banking.obj -MD -MP -MF $(DEPDIR)/fred_banking-banking.Tpo -c -o fred_banking-banking.obj `if test -f 'banking.cc'; then $(CYGPATH_W) 'banking.cc'; else $(CYGPATH_W) '$(srcdir)/banking.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-banking.Tpo $(DEPDIR)/fred_banking-banking.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='banking.cc' object='fred_banking-banking.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-banking.obj `if test -f 'banking.cc'; then $(CYGPATH_W) 'banking.cc'; else $(CYGPATH_W) '$(srcdir)/banking.cc'; fi`
-
-fred_banking-log.o: log.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-log.o -MD -MP -MF $(DEPDIR)/fred_banking-log.Tpo -c -o fred_banking-log.o `test -f 'log.cc' || echo '$(srcdir)/'`log.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-log.Tpo $(DEPDIR)/fred_banking-log.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='log.cc' object='fred_banking-log.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-log.o `test -f 'log.cc' || echo '$(srcdir)/'`log.cc
-
-fred_banking-log.obj: log.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-log.obj -MD -MP -MF $(DEPDIR)/fred_banking-log.Tpo -c -o fred_banking-log.obj `if test -f 'log.cc'; then $(CYGPATH_W) 'log.cc'; else $(CYGPATH_W) '$(srcdir)/log.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-log.Tpo $(DEPDIR)/fred_banking-log.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='log.cc' object='fred_banking-log.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-log.obj `if test -f 'log.cc'; then $(CYGPATH_W) 'log.cc'; else $(CYGPATH_W) '$(srcdir)/log.cc'; fi`
-
-fred_banking-csv.o: csv.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-csv.o -MD -MP -MF $(DEPDIR)/fred_banking-csv.Tpo -c -o fred_banking-csv.o `test -f 'csv.cc' || echo '$(srcdir)/'`csv.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-csv.Tpo $(DEPDIR)/fred_banking-csv.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='csv.cc' object='fred_banking-csv.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-csv.o `test -f 'csv.cc' || echo '$(srcdir)/'`csv.cc
-
-fred_banking-csv.obj: csv.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_banking-csv.obj -MD -MP -MF $(DEPDIR)/fred_banking-csv.Tpo -c -o fred_banking-csv.obj `if test -f 'csv.cc'; then $(CYGPATH_W) 'csv.cc'; else $(CYGPATH_W) '$(srcdir)/csv.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_banking-csv.Tpo $(DEPDIR)/fred_banking-csv.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='csv.cc' object='fred_banking-csv.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_banking_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_banking-csv.obj `if test -f 'csv.cc'; then $(CYGPATH_W) 'csv.cc'; else $(CYGPATH_W) '$(srcdir)/csv.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_pifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_pifd-ccReg_server.obj `if test -f 'ccReg_server.cc'; then $(CYGPATH_W) 'ccReg_server.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_server.cc'; fi`
 
 fred_rifd-ccReg_epp.o: ccReg_epp.cc
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-ccReg_epp.o -MD -MP -MF $(DEPDIR)/fred_rifd-ccReg_epp.Tpo -c -o fred_rifd-ccReg_epp.o `test -f 'ccReg_epp.cc' || echo '$(srcdir)/'`ccReg_epp.cc
@@ -719,6 +530,37 @@ fred_rifd-notifier.obj: notifier.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='notifier.cc' object='fred_rifd-notifier.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_rifd-notifier.obj `if test -f 'notifier.cc'; then $(CYGPATH_W) 'notifier.cc'; else $(CYGPATH_W) '$(srcdir)/notifier.cc'; fi`
+
+fred_rifd-ccReg_server.o: ccReg_server.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-ccReg_server.o -MD -MP -MF $(DEPDIR)/fred_rifd-ccReg_server.Tpo -c -o fred_rifd-ccReg_server.o `test -f 'ccReg_server.cc' || echo '$(srcdir)/'`ccReg_server.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_rifd-ccReg_server.Tpo $(DEPDIR)/fred_rifd-ccReg_server.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_server.cc' object='fred_rifd-ccReg_server.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_rifd-ccReg_server.o `test -f 'ccReg_server.cc' || echo '$(srcdir)/'`ccReg_server.cc
+
+fred_rifd-ccReg_server.obj: ccReg_server.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-ccReg_server.obj -MD -MP -MF $(DEPDIR)/fred_rifd-ccReg_server.Tpo -c -o fred_rifd-ccReg_server.obj `if test -f 'ccReg_server.cc'; then $(CYGPATH_W) 'ccReg_server.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_server.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_rifd-ccReg_server.Tpo $(DEPDIR)/fred_rifd-ccReg_server.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_server.cc' object='fred_rifd-ccReg_server.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_rifd-ccReg_server.obj `if test -f 'ccReg_server.cc'; then $(CYGPATH_W) 'ccReg_server.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_server.cc'; fi`
+install-dist_fredconfDATA: $(dist_fredconf_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(fredconfdir)" || $(MKDIR_P) "$(DESTDIR)$(fredconfdir)"
+	@list='$(dist_fredconf_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(dist_fredconfDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(fredconfdir)/$$f'"; \
+	  $(dist_fredconfDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(fredconfdir)/$$f"; \
+	done
+
+uninstall-dist_fredconfDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_fredconf_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(fredconfdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(fredconfdir)/$$f"; \
+	done
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -994,14 +836,16 @@ distcleancheck: distclean
 	       $(distcleancheck_listfiles) ; \
 	       exit 1; } >&2
 check-am: all-am
-check: check-recursive
-all-am: Makefile $(LIBRARIES) $(PROGRAMS) $(SCRIPTS) config.h
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-recursive
+all-am: Makefile $(LIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA) config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)"; do \
+	for dir in "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(fredconfdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-recursive
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
 uninstall: uninstall-recursive
@@ -1026,9 +870,10 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-recursive
 
-clean-am: clean-binPROGRAMS clean-generic clean-noinstLIBRARIES \
+clean-am: clean-generic clean-noinstLIBRARIES clean-sbinPROGRAMS \
 	mostlyclean-am
 
 distclean: distclean-recursive
@@ -1048,11 +893,11 @@ info: info-recursive
 
 info-am:
 
-install-data-am:
+install-data-am: install-dist_fredconfDATA
 
 install-dvi: install-dvi-recursive
 
-install-exec-am: install-binPROGRAMS install-binSCRIPTS
+install-exec-am: install-sbinPROGRAMS install-sbinSCRIPTS
 
 install-html: install-html-recursive
 
@@ -1085,44 +930,34 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS
+uninstall-am: uninstall-dist_fredconfDATA uninstall-sbinPROGRAMS \
+	uninstall-sbinSCRIPTS
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) install-am \
 	install-strip
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
-	all all-am am--refresh check check-am clean clean-binPROGRAMS \
-	clean-generic clean-noinstLIBRARIES ctags ctags-recursive dist \
-	dist-all dist-bzip2 dist-gzip dist-shar dist-tarZ dist-zip \
-	distcheck distclean distclean-compile distclean-generic \
-	distclean-hdr distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-binPROGRAMS install-binSCRIPTS \
-	install-data install-data-am install-dvi install-dvi-am \
+	all all-am am--refresh check check-am clean clean-generic \
+	clean-noinstLIBRARIES clean-sbinPROGRAMS ctags ctags-recursive \
+	dist dist-all dist-bzip2 dist-gzip dist-shar dist-tarZ \
+	dist-zip distcheck distclean distclean-compile \
+	distclean-generic distclean-hdr distclean-tags distcleancheck \
+	distdir distuninstallcheck dvi dvi-am html html-am info \
+	info-am install install-am install-data install-data-am \
+	install-dist_fredconfDATA install-dvi install-dvi-am \
 	install-exec install-exec-am install-html install-html-am \
 	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
-	tags tags-recursive uninstall uninstall-am \
-	uninstall-binPROGRAMS uninstall-binSCRIPTS
+	install-pdf-am install-ps install-ps-am install-sbinPROGRAMS \
+	install-sbinSCRIPTS install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-am uninstall-dist_fredconfDATA \
+	uninstall-sbinPROGRAMS uninstall-sbinSCRIPTS
 
-
-register/libccreg.a:
-	make -C register libccreg.a
 
 ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:
 	omniidl -bcxx -Wba -Wbinline $(IDLFILE)
-
-ccReg_rifd.o:  ccReg.hh
-	$(CXXCOMPILE) $(POSTGRESQL_CFLAGS) -DRIFD  -o ccReg_rifd.o -g -c  ccReg_server.cc
-
-ccReg_pifd.o: ccReg.hh
-	$(CXXCOMPILE) $(POSTGRESQL_CFLAGS) -DPIFD  -o ccReg_pifd.o -g -c  ccReg_server.cc
-
-ccReg_adifd.o:  ccReg.hh
-	$(CXXCOMPILE) $(POSTGRESQL_CFLAGS) -DADIF  -o ccReg_adifd.o -g -c  ccReg_server.cc
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

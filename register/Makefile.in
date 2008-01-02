@@ -33,12 +33,7 @@ POST_UNINSTALL = :
 subdir = register
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_base.m4 \
-	$(top_srcdir)/m4/ax_boost_date_time.m4 \
-	$(top_srcdir)/m4/ax_boost_program_options.m4 \
-	$(top_srcdir)/m4/ax_boost_regex.m4 \
-	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
-	$(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -49,15 +44,12 @@ AR = ar
 ARFLAGS = cru
 libccreg_a_AR = $(AR) $(ARFLAGS)
 libccreg_a_LIBADD =
-am_libccreg_a_OBJECTS = libccreg_a-register.$(OBJEXT) \
-	libccreg_a-zone.$(OBJEXT) libccreg_a-blacklist.$(OBJEXT) \
-	libccreg_a-domain.$(OBJEXT) libccreg_a-registrar.$(OBJEXT) \
-	libccreg_a-object_impl.$(OBJEXT) libccreg_a-contact.$(OBJEXT) \
-	libccreg_a-nsset.$(OBJEXT) libccreg_a-auth_info.$(OBJEXT) \
-	libccreg_a-invoice.$(OBJEXT) libccreg_a-documents.$(OBJEXT) \
-	libccreg_a-bank.$(OBJEXT) libccreg_a-info_buffer.$(OBJEXT) \
-	libccreg_a-poll.$(OBJEXT) libccreg_a-common_impl.$(OBJEXT) \
-	libccreg_a-notify.$(OBJEXT)
+am_libccreg_a_OBJECTS = register.$(OBJEXT) zone.$(OBJEXT) \
+	blacklist.$(OBJEXT) domain.$(OBJEXT) registrar.$(OBJEXT) \
+	object_impl.$(OBJEXT) contact.$(OBJEXT) nsset.$(OBJEXT) \
+	auth_info.$(OBJEXT) invoice.$(OBJEXT) documents.$(OBJEXT) \
+	bank.$(OBJEXT) info_buffer.$(OBJEXT) poll.$(OBJEXT) \
+	common_impl.$(OBJEXT) notify.$(OBJEXT)
 libccreg_a_OBJECTS = $(am_libccreg_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -67,6 +59,10 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(libccreg_a_SOURCES)
 DIST_SOURCES = $(libccreg_a_SOURCES)
 ETAGS = etags
@@ -78,11 +74,6 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
-BOOST_CPPFLAGS = @BOOST_CPPFLAGS@
-BOOST_DATE_TIME_LIB = @BOOST_DATE_TIME_LIB@
-BOOST_LDFLAGS = @BOOST_LDFLAGS@
-BOOST_PROGRAM_OPTIONS_LIB = @BOOST_PROGRAM_OPTIONS_LIB@
-BOOST_REGEX_LIB = @BOOST_REGEX_LIB@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -122,11 +113,7 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PG_CONFIG = @PG_CONFIG@
 PKG_CONFIG = @PKG_CONFIG@
-POSTGRESQL_CFLAGS = @POSTGRESQL_CFLAGS@
-POSTGRESQL_LDFLAGS = @POSTGRESQL_LDFLAGS@
-POSTGRESQL_VERSION = @POSTGRESQL_VERSION@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -176,11 +163,16 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LIBRARIES = libccreg.a
 libccreg_a_SOURCES = register.cc zone.cc blacklist.cc domain.cc registrar.cc \
-		     object_impl.cc contact.cc nsset.cc auth_info.cc invoice.cc \
-		     documents.cc bank.cc info_buffer.cc poll.cc common_impl.cc \
-                     notify.cc
+  object_impl.cc contact.cc nsset.cc auth_info.cc invoice.cc \
+  documents.cc bank.cc info_buffer.cc poll.cc common_impl.cc \
+  notify.cc \
+  auth_info.h common_object.h epp_action.h mailer.h \
+  object_impl.h sql.h bank.h contact.h exceptions.h \
+  notify.h poll.h types.h blacklist.h documents.h \
+  info_buffer.h nsset.h register.h zone.h common_impl.h \
+  domain.h invoice.h object.h registrar.h
 
-libccreg_a_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CFLAGS) $(AM_CPPFLAGS)
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CFLAGS) -I$(srcdir)/..
 all: all-am
 
 .SUFFIXES:
@@ -228,22 +220,22 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-auth_info.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-bank.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-blacklist.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-common_impl.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-contact.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-documents.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-domain.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-info_buffer.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-invoice.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-notify.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-nsset.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-object_impl.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-poll.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-register.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-registrar.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libccreg_a-zone.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/auth_info.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bank.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/blacklist.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common_impl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/contact.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/documents.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/domain.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/info_buffer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/invoice.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/notify.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nsset.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/object_impl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/poll.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/register.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registrar.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zone.Po@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -258,230 +250,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-libccreg_a-register.o: register.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-register.o -MD -MP -MF $(DEPDIR)/libccreg_a-register.Tpo -c -o libccreg_a-register.o `test -f 'register.cc' || echo '$(srcdir)/'`register.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-register.Tpo $(DEPDIR)/libccreg_a-register.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='register.cc' object='libccreg_a-register.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-register.o `test -f 'register.cc' || echo '$(srcdir)/'`register.cc
-
-libccreg_a-register.obj: register.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-register.obj -MD -MP -MF $(DEPDIR)/libccreg_a-register.Tpo -c -o libccreg_a-register.obj `if test -f 'register.cc'; then $(CYGPATH_W) 'register.cc'; else $(CYGPATH_W) '$(srcdir)/register.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-register.Tpo $(DEPDIR)/libccreg_a-register.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='register.cc' object='libccreg_a-register.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-register.obj `if test -f 'register.cc'; then $(CYGPATH_W) 'register.cc'; else $(CYGPATH_W) '$(srcdir)/register.cc'; fi`
-
-libccreg_a-zone.o: zone.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-zone.o -MD -MP -MF $(DEPDIR)/libccreg_a-zone.Tpo -c -o libccreg_a-zone.o `test -f 'zone.cc' || echo '$(srcdir)/'`zone.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-zone.Tpo $(DEPDIR)/libccreg_a-zone.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='zone.cc' object='libccreg_a-zone.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-zone.o `test -f 'zone.cc' || echo '$(srcdir)/'`zone.cc
-
-libccreg_a-zone.obj: zone.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-zone.obj -MD -MP -MF $(DEPDIR)/libccreg_a-zone.Tpo -c -o libccreg_a-zone.obj `if test -f 'zone.cc'; then $(CYGPATH_W) 'zone.cc'; else $(CYGPATH_W) '$(srcdir)/zone.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-zone.Tpo $(DEPDIR)/libccreg_a-zone.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='zone.cc' object='libccreg_a-zone.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-zone.obj `if test -f 'zone.cc'; then $(CYGPATH_W) 'zone.cc'; else $(CYGPATH_W) '$(srcdir)/zone.cc'; fi`
-
-libccreg_a-blacklist.o: blacklist.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-blacklist.o -MD -MP -MF $(DEPDIR)/libccreg_a-blacklist.Tpo -c -o libccreg_a-blacklist.o `test -f 'blacklist.cc' || echo '$(srcdir)/'`blacklist.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-blacklist.Tpo $(DEPDIR)/libccreg_a-blacklist.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='blacklist.cc' object='libccreg_a-blacklist.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-blacklist.o `test -f 'blacklist.cc' || echo '$(srcdir)/'`blacklist.cc
-
-libccreg_a-blacklist.obj: blacklist.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-blacklist.obj -MD -MP -MF $(DEPDIR)/libccreg_a-blacklist.Tpo -c -o libccreg_a-blacklist.obj `if test -f 'blacklist.cc'; then $(CYGPATH_W) 'blacklist.cc'; else $(CYGPATH_W) '$(srcdir)/blacklist.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-blacklist.Tpo $(DEPDIR)/libccreg_a-blacklist.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='blacklist.cc' object='libccreg_a-blacklist.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-blacklist.obj `if test -f 'blacklist.cc'; then $(CYGPATH_W) 'blacklist.cc'; else $(CYGPATH_W) '$(srcdir)/blacklist.cc'; fi`
-
-libccreg_a-domain.o: domain.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-domain.o -MD -MP -MF $(DEPDIR)/libccreg_a-domain.Tpo -c -o libccreg_a-domain.o `test -f 'domain.cc' || echo '$(srcdir)/'`domain.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-domain.Tpo $(DEPDIR)/libccreg_a-domain.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='domain.cc' object='libccreg_a-domain.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-domain.o `test -f 'domain.cc' || echo '$(srcdir)/'`domain.cc
-
-libccreg_a-domain.obj: domain.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-domain.obj -MD -MP -MF $(DEPDIR)/libccreg_a-domain.Tpo -c -o libccreg_a-domain.obj `if test -f 'domain.cc'; then $(CYGPATH_W) 'domain.cc'; else $(CYGPATH_W) '$(srcdir)/domain.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-domain.Tpo $(DEPDIR)/libccreg_a-domain.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='domain.cc' object='libccreg_a-domain.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-domain.obj `if test -f 'domain.cc'; then $(CYGPATH_W) 'domain.cc'; else $(CYGPATH_W) '$(srcdir)/domain.cc'; fi`
-
-libccreg_a-registrar.o: registrar.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-registrar.o -MD -MP -MF $(DEPDIR)/libccreg_a-registrar.Tpo -c -o libccreg_a-registrar.o `test -f 'registrar.cc' || echo '$(srcdir)/'`registrar.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-registrar.Tpo $(DEPDIR)/libccreg_a-registrar.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='registrar.cc' object='libccreg_a-registrar.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-registrar.o `test -f 'registrar.cc' || echo '$(srcdir)/'`registrar.cc
-
-libccreg_a-registrar.obj: registrar.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-registrar.obj -MD -MP -MF $(DEPDIR)/libccreg_a-registrar.Tpo -c -o libccreg_a-registrar.obj `if test -f 'registrar.cc'; then $(CYGPATH_W) 'registrar.cc'; else $(CYGPATH_W) '$(srcdir)/registrar.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-registrar.Tpo $(DEPDIR)/libccreg_a-registrar.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='registrar.cc' object='libccreg_a-registrar.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-registrar.obj `if test -f 'registrar.cc'; then $(CYGPATH_W) 'registrar.cc'; else $(CYGPATH_W) '$(srcdir)/registrar.cc'; fi`
-
-libccreg_a-object_impl.o: object_impl.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-object_impl.o -MD -MP -MF $(DEPDIR)/libccreg_a-object_impl.Tpo -c -o libccreg_a-object_impl.o `test -f 'object_impl.cc' || echo '$(srcdir)/'`object_impl.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-object_impl.Tpo $(DEPDIR)/libccreg_a-object_impl.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='object_impl.cc' object='libccreg_a-object_impl.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-object_impl.o `test -f 'object_impl.cc' || echo '$(srcdir)/'`object_impl.cc
-
-libccreg_a-object_impl.obj: object_impl.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-object_impl.obj -MD -MP -MF $(DEPDIR)/libccreg_a-object_impl.Tpo -c -o libccreg_a-object_impl.obj `if test -f 'object_impl.cc'; then $(CYGPATH_W) 'object_impl.cc'; else $(CYGPATH_W) '$(srcdir)/object_impl.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-object_impl.Tpo $(DEPDIR)/libccreg_a-object_impl.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='object_impl.cc' object='libccreg_a-object_impl.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-object_impl.obj `if test -f 'object_impl.cc'; then $(CYGPATH_W) 'object_impl.cc'; else $(CYGPATH_W) '$(srcdir)/object_impl.cc'; fi`
-
-libccreg_a-contact.o: contact.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-contact.o -MD -MP -MF $(DEPDIR)/libccreg_a-contact.Tpo -c -o libccreg_a-contact.o `test -f 'contact.cc' || echo '$(srcdir)/'`contact.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-contact.Tpo $(DEPDIR)/libccreg_a-contact.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='contact.cc' object='libccreg_a-contact.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-contact.o `test -f 'contact.cc' || echo '$(srcdir)/'`contact.cc
-
-libccreg_a-contact.obj: contact.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-contact.obj -MD -MP -MF $(DEPDIR)/libccreg_a-contact.Tpo -c -o libccreg_a-contact.obj `if test -f 'contact.cc'; then $(CYGPATH_W) 'contact.cc'; else $(CYGPATH_W) '$(srcdir)/contact.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-contact.Tpo $(DEPDIR)/libccreg_a-contact.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='contact.cc' object='libccreg_a-contact.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-contact.obj `if test -f 'contact.cc'; then $(CYGPATH_W) 'contact.cc'; else $(CYGPATH_W) '$(srcdir)/contact.cc'; fi`
-
-libccreg_a-nsset.o: nsset.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-nsset.o -MD -MP -MF $(DEPDIR)/libccreg_a-nsset.Tpo -c -o libccreg_a-nsset.o `test -f 'nsset.cc' || echo '$(srcdir)/'`nsset.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-nsset.Tpo $(DEPDIR)/libccreg_a-nsset.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='nsset.cc' object='libccreg_a-nsset.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-nsset.o `test -f 'nsset.cc' || echo '$(srcdir)/'`nsset.cc
-
-libccreg_a-nsset.obj: nsset.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-nsset.obj -MD -MP -MF $(DEPDIR)/libccreg_a-nsset.Tpo -c -o libccreg_a-nsset.obj `if test -f 'nsset.cc'; then $(CYGPATH_W) 'nsset.cc'; else $(CYGPATH_W) '$(srcdir)/nsset.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-nsset.Tpo $(DEPDIR)/libccreg_a-nsset.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='nsset.cc' object='libccreg_a-nsset.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-nsset.obj `if test -f 'nsset.cc'; then $(CYGPATH_W) 'nsset.cc'; else $(CYGPATH_W) '$(srcdir)/nsset.cc'; fi`
-
-libccreg_a-auth_info.o: auth_info.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-auth_info.o -MD -MP -MF $(DEPDIR)/libccreg_a-auth_info.Tpo -c -o libccreg_a-auth_info.o `test -f 'auth_info.cc' || echo '$(srcdir)/'`auth_info.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-auth_info.Tpo $(DEPDIR)/libccreg_a-auth_info.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='auth_info.cc' object='libccreg_a-auth_info.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-auth_info.o `test -f 'auth_info.cc' || echo '$(srcdir)/'`auth_info.cc
-
-libccreg_a-auth_info.obj: auth_info.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-auth_info.obj -MD -MP -MF $(DEPDIR)/libccreg_a-auth_info.Tpo -c -o libccreg_a-auth_info.obj `if test -f 'auth_info.cc'; then $(CYGPATH_W) 'auth_info.cc'; else $(CYGPATH_W) '$(srcdir)/auth_info.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-auth_info.Tpo $(DEPDIR)/libccreg_a-auth_info.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='auth_info.cc' object='libccreg_a-auth_info.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-auth_info.obj `if test -f 'auth_info.cc'; then $(CYGPATH_W) 'auth_info.cc'; else $(CYGPATH_W) '$(srcdir)/auth_info.cc'; fi`
-
-libccreg_a-invoice.o: invoice.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-invoice.o -MD -MP -MF $(DEPDIR)/libccreg_a-invoice.Tpo -c -o libccreg_a-invoice.o `test -f 'invoice.cc' || echo '$(srcdir)/'`invoice.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-invoice.Tpo $(DEPDIR)/libccreg_a-invoice.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='invoice.cc' object='libccreg_a-invoice.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-invoice.o `test -f 'invoice.cc' || echo '$(srcdir)/'`invoice.cc
-
-libccreg_a-invoice.obj: invoice.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-invoice.obj -MD -MP -MF $(DEPDIR)/libccreg_a-invoice.Tpo -c -o libccreg_a-invoice.obj `if test -f 'invoice.cc'; then $(CYGPATH_W) 'invoice.cc'; else $(CYGPATH_W) '$(srcdir)/invoice.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-invoice.Tpo $(DEPDIR)/libccreg_a-invoice.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='invoice.cc' object='libccreg_a-invoice.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-invoice.obj `if test -f 'invoice.cc'; then $(CYGPATH_W) 'invoice.cc'; else $(CYGPATH_W) '$(srcdir)/invoice.cc'; fi`
-
-libccreg_a-documents.o: documents.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-documents.o -MD -MP -MF $(DEPDIR)/libccreg_a-documents.Tpo -c -o libccreg_a-documents.o `test -f 'documents.cc' || echo '$(srcdir)/'`documents.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-documents.Tpo $(DEPDIR)/libccreg_a-documents.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='documents.cc' object='libccreg_a-documents.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-documents.o `test -f 'documents.cc' || echo '$(srcdir)/'`documents.cc
-
-libccreg_a-documents.obj: documents.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-documents.obj -MD -MP -MF $(DEPDIR)/libccreg_a-documents.Tpo -c -o libccreg_a-documents.obj `if test -f 'documents.cc'; then $(CYGPATH_W) 'documents.cc'; else $(CYGPATH_W) '$(srcdir)/documents.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-documents.Tpo $(DEPDIR)/libccreg_a-documents.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='documents.cc' object='libccreg_a-documents.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-documents.obj `if test -f 'documents.cc'; then $(CYGPATH_W) 'documents.cc'; else $(CYGPATH_W) '$(srcdir)/documents.cc'; fi`
-
-libccreg_a-bank.o: bank.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-bank.o -MD -MP -MF $(DEPDIR)/libccreg_a-bank.Tpo -c -o libccreg_a-bank.o `test -f 'bank.cc' || echo '$(srcdir)/'`bank.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-bank.Tpo $(DEPDIR)/libccreg_a-bank.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='bank.cc' object='libccreg_a-bank.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-bank.o `test -f 'bank.cc' || echo '$(srcdir)/'`bank.cc
-
-libccreg_a-bank.obj: bank.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-bank.obj -MD -MP -MF $(DEPDIR)/libccreg_a-bank.Tpo -c -o libccreg_a-bank.obj `if test -f 'bank.cc'; then $(CYGPATH_W) 'bank.cc'; else $(CYGPATH_W) '$(srcdir)/bank.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-bank.Tpo $(DEPDIR)/libccreg_a-bank.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='bank.cc' object='libccreg_a-bank.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-bank.obj `if test -f 'bank.cc'; then $(CYGPATH_W) 'bank.cc'; else $(CYGPATH_W) '$(srcdir)/bank.cc'; fi`
-
-libccreg_a-info_buffer.o: info_buffer.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-info_buffer.o -MD -MP -MF $(DEPDIR)/libccreg_a-info_buffer.Tpo -c -o libccreg_a-info_buffer.o `test -f 'info_buffer.cc' || echo '$(srcdir)/'`info_buffer.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-info_buffer.Tpo $(DEPDIR)/libccreg_a-info_buffer.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='info_buffer.cc' object='libccreg_a-info_buffer.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-info_buffer.o `test -f 'info_buffer.cc' || echo '$(srcdir)/'`info_buffer.cc
-
-libccreg_a-info_buffer.obj: info_buffer.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-info_buffer.obj -MD -MP -MF $(DEPDIR)/libccreg_a-info_buffer.Tpo -c -o libccreg_a-info_buffer.obj `if test -f 'info_buffer.cc'; then $(CYGPATH_W) 'info_buffer.cc'; else $(CYGPATH_W) '$(srcdir)/info_buffer.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-info_buffer.Tpo $(DEPDIR)/libccreg_a-info_buffer.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='info_buffer.cc' object='libccreg_a-info_buffer.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-info_buffer.obj `if test -f 'info_buffer.cc'; then $(CYGPATH_W) 'info_buffer.cc'; else $(CYGPATH_W) '$(srcdir)/info_buffer.cc'; fi`
-
-libccreg_a-poll.o: poll.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-poll.o -MD -MP -MF $(DEPDIR)/libccreg_a-poll.Tpo -c -o libccreg_a-poll.o `test -f 'poll.cc' || echo '$(srcdir)/'`poll.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-poll.Tpo $(DEPDIR)/libccreg_a-poll.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='poll.cc' object='libccreg_a-poll.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-poll.o `test -f 'poll.cc' || echo '$(srcdir)/'`poll.cc
-
-libccreg_a-poll.obj: poll.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-poll.obj -MD -MP -MF $(DEPDIR)/libccreg_a-poll.Tpo -c -o libccreg_a-poll.obj `if test -f 'poll.cc'; then $(CYGPATH_W) 'poll.cc'; else $(CYGPATH_W) '$(srcdir)/poll.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-poll.Tpo $(DEPDIR)/libccreg_a-poll.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='poll.cc' object='libccreg_a-poll.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-poll.obj `if test -f 'poll.cc'; then $(CYGPATH_W) 'poll.cc'; else $(CYGPATH_W) '$(srcdir)/poll.cc'; fi`
-
-libccreg_a-common_impl.o: common_impl.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-common_impl.o -MD -MP -MF $(DEPDIR)/libccreg_a-common_impl.Tpo -c -o libccreg_a-common_impl.o `test -f 'common_impl.cc' || echo '$(srcdir)/'`common_impl.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-common_impl.Tpo $(DEPDIR)/libccreg_a-common_impl.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='common_impl.cc' object='libccreg_a-common_impl.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-common_impl.o `test -f 'common_impl.cc' || echo '$(srcdir)/'`common_impl.cc
-
-libccreg_a-common_impl.obj: common_impl.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-common_impl.obj -MD -MP -MF $(DEPDIR)/libccreg_a-common_impl.Tpo -c -o libccreg_a-common_impl.obj `if test -f 'common_impl.cc'; then $(CYGPATH_W) 'common_impl.cc'; else $(CYGPATH_W) '$(srcdir)/common_impl.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-common_impl.Tpo $(DEPDIR)/libccreg_a-common_impl.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='common_impl.cc' object='libccreg_a-common_impl.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-common_impl.obj `if test -f 'common_impl.cc'; then $(CYGPATH_W) 'common_impl.cc'; else $(CYGPATH_W) '$(srcdir)/common_impl.cc'; fi`
-
-libccreg_a-notify.o: notify.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-notify.o -MD -MP -MF $(DEPDIR)/libccreg_a-notify.Tpo -c -o libccreg_a-notify.o `test -f 'notify.cc' || echo '$(srcdir)/'`notify.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-notify.Tpo $(DEPDIR)/libccreg_a-notify.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='notify.cc' object='libccreg_a-notify.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-notify.o `test -f 'notify.cc' || echo '$(srcdir)/'`notify.cc
-
-libccreg_a-notify.obj: notify.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libccreg_a-notify.obj -MD -MP -MF $(DEPDIR)/libccreg_a-notify.Tpo -c -o libccreg_a-notify.obj `if test -f 'notify.cc'; then $(CYGPATH_W) 'notify.cc'; else $(CYGPATH_W) '$(srcdir)/notify.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/libccreg_a-notify.Tpo $(DEPDIR)/libccreg_a-notify.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='notify.cc' object='libccreg_a-notify.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libccreg_a_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libccreg_a-notify.obj `if test -f 'notify.cc'; then $(CYGPATH_W) 'notify.cc'; else $(CYGPATH_W) '$(srcdir)/notify.cc'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
