@@ -37,9 +37,9 @@ sbin_PROGRAMS = fred-rifd$(EXEEXT) fred-adifd$(EXEEXT) \
 	fred-pifd$(EXEEXT) fred-banking$(EXEEXT) fred-admin$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_fredconf_DATA) \
-	$(dist_rcconf_DATA) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(top_srcdir)/configure \
+	$(dist_rcconf_SCRIPTS) $(dist_sbin_SCRIPTS) \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/config.h.in $(top_srcdir)/configure \
 	$(top_srcdir)/contrib/fedora/fred-server.spec.in AUTHORS \
 	COPYING ChangeLog INSTALL NEWS config.guess config.sub depcomp \
 	install-sh missing
@@ -68,8 +68,8 @@ am_libfred_a_OBJECTS = conf.$(OBJEXT) dbsql.$(OBJEXT) pqsql.$(OBJEXT) \
 nodist_libfred_a_OBJECTS = ccRegSK.$(OBJEXT) ccRegDynSK.$(OBJEXT)
 libfred_a_OBJECTS = $(am_libfred_a_OBJECTS) \
 	$(nodist_libfred_a_OBJECTS)
-am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(sbindir)" \
-	"$(DESTDIR)$(fredconfdir)" "$(DESTDIR)$(rcconfdir)"
+am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(rcconfdir)" \
+	"$(DESTDIR)$(sbindir)" "$(DESTDIR)$(fredconfdir)"
 sbinPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(sbin_PROGRAMS)
 am_fred_adifd_OBJECTS = fred_adifd-ccReg_server.$(OBJEXT)
@@ -106,8 +106,9 @@ fred_rifd_LDADD = $(LDADD)
 fred_rifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) libfred.a \
 	register/libccreg.a
-sbinSCRIPT_INSTALL = $(INSTALL_SCRIPT)
-SCRIPTS = $(sbin_SCRIPTS)
+dist_rcconfSCRIPT_INSTALL = $(INSTALL_SCRIPT)
+dist_sbinSCRIPT_INSTALL = $(INSTALL_SCRIPT)
+SCRIPTS = $(dist_rcconf_SCRIPTS) $(dist_sbin_SCRIPTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -141,8 +142,7 @@ am__vpath_adj = case $$p in \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 dist_fredconfDATA_INSTALL = $(INSTALL_DATA)
-dist_rcconfDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(dist_fredconf_DATA) $(dist_rcconf_DATA)
+DATA = $(dist_fredconf_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 ETAGS = etags
@@ -272,10 +272,10 @@ IDLFILE = $(IDLDIR)/ccReg.idl
 fredconfdir = $(sysconfdir)/fred
 rcconfdir = $(sysconfdir)/init.d
 noinst_LIBRARIES = libfred.a
-sbin_SCRIPTS = banking.sh
-EXTRA_DIST = banking.sh contrib/fedora/fred-server.spec
+dist_sbin_SCRIPTS = banking.sh
+EXTRA_DIST = contrib/fedora/fred-server.spec
 dist_fredconf_DATA = server.conf
-dist_rcconf_DATA = init-scripts/fred-server
+dist_rcconf_SCRIPTS = init-scripts/fred-server
 BUILT_SOURCES = ccRegSK.cc ccRegDynSK.cc ccReg.hh
 libfred_a_SOURCES = conf.cc dbsql.cc pqsql.cc util.cc log.cc nameservice.cc \
   mailer_manager.cc admin.cc tech_check.cc action.h gpc.h nameservice.h \
@@ -396,21 +396,40 @@ fred-pifd$(EXEEXT): $(fred_pifd_OBJECTS) $(fred_pifd_DEPENDENCIES)
 fred-rifd$(EXEEXT): $(fred_rifd_OBJECTS) $(fred_rifd_DEPENDENCIES) 
 	@rm -f fred-rifd$(EXEEXT)
 	$(CXXLINK) $(fred_rifd_OBJECTS) $(fred_rifd_LDADD) $(LIBS)
-install-sbinSCRIPTS: $(sbin_SCRIPTS)
+install-dist_rcconfSCRIPTS: $(dist_rcconf_SCRIPTS)
 	@$(NORMAL_INSTALL)
-	test -z "$(sbindir)" || $(MKDIR_P) "$(DESTDIR)$(sbindir)"
-	@list='$(sbin_SCRIPTS)'; for p in $$list; do \
+	test -z "$(rcconfdir)" || $(MKDIR_P) "$(DESTDIR)$(rcconfdir)"
+	@list='$(dist_rcconf_SCRIPTS)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  if test -f $$d$$p; then \
 	    f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
-	    echo " $(sbinSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(sbindir)/$$f'"; \
-	    $(sbinSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(sbindir)/$$f"; \
+	    echo " $(dist_rcconfSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(rcconfdir)/$$f'"; \
+	    $(dist_rcconfSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(rcconfdir)/$$f"; \
 	  else :; fi; \
 	done
 
-uninstall-sbinSCRIPTS:
+uninstall-dist_rcconfSCRIPTS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(sbin_SCRIPTS)'; for p in $$list; do \
+	@list='$(dist_rcconf_SCRIPTS)'; for p in $$list; do \
+	  f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
+	  echo " rm -f '$(DESTDIR)$(rcconfdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(rcconfdir)/$$f"; \
+	done
+install-dist_sbinSCRIPTS: $(dist_sbin_SCRIPTS)
+	@$(NORMAL_INSTALL)
+	test -z "$(sbindir)" || $(MKDIR_P) "$(DESTDIR)$(sbindir)"
+	@list='$(dist_sbin_SCRIPTS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  if test -f $$d$$p; then \
+	    f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
+	    echo " $(dist_sbinSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(sbindir)/$$f'"; \
+	    $(dist_sbinSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(sbindir)/$$f"; \
+	  else :; fi; \
+	done
+
+uninstall-dist_sbinSCRIPTS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_sbin_SCRIPTS)'; for p in $$list; do \
 	  f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
 	  echo " rm -f '$(DESTDIR)$(sbindir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(sbindir)/$$f"; \
@@ -586,23 +605,6 @@ uninstall-dist_fredconfDATA:
 	  f=$(am__strip_dir) \
 	  echo " rm -f '$(DESTDIR)$(fredconfdir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(fredconfdir)/$$f"; \
-	done
-install-dist_rcconfDATA: $(dist_rcconf_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(rcconfdir)" || $(MKDIR_P) "$(DESTDIR)$(rcconfdir)"
-	@list='$(dist_rcconf_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(dist_rcconfDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(rcconfdir)/$$f'"; \
-	  $(dist_rcconfDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(rcconfdir)/$$f"; \
-	done
-
-uninstall-dist_rcconfDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(dist_rcconf_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(rcconfdir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(rcconfdir)/$$f"; \
 	done
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -884,7 +886,7 @@ check: $(BUILT_SOURCES)
 all-am: Makefile $(LIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA) config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(fredconfdir)" "$(DESTDIR)$(rcconfdir)"; do \
+	for dir in "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(rcconfdir)" "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(fredconfdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -936,11 +938,11 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-dist_fredconfDATA install-dist_rcconfDATA
+install-data-am: install-dist_fredconfDATA install-dist_rcconfSCRIPTS
 
 install-dvi: install-dvi-recursive
 
-install-exec-am: install-sbinPROGRAMS install-sbinSCRIPTS
+install-exec-am: install-dist_sbinSCRIPTS install-sbinPROGRAMS
 
 install-html: install-html-recursive
 
@@ -973,8 +975,8 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-dist_fredconfDATA uninstall-dist_rcconfDATA \
-	uninstall-sbinPROGRAMS uninstall-sbinSCRIPTS
+uninstall-am: uninstall-dist_fredconfDATA uninstall-dist_rcconfSCRIPTS \
+	uninstall-dist_sbinSCRIPTS uninstall-sbinPROGRAMS
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) install-am \
 	install-strip
@@ -987,17 +989,17 @@ uninstall-am: uninstall-dist_fredconfDATA uninstall-dist_rcconfDATA \
 	distclean-generic distclean-hdr distclean-tags distcleancheck \
 	distdir distuninstallcheck dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
-	install-dist_fredconfDATA install-dist_rcconfDATA install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-sbinPROGRAMS install-sbinSCRIPTS install-strip \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
-	tags tags-recursive uninstall uninstall-am \
-	uninstall-dist_fredconfDATA uninstall-dist_rcconfDATA \
-	uninstall-sbinPROGRAMS uninstall-sbinSCRIPTS
+	install-dist_fredconfDATA install-dist_rcconfSCRIPTS \
+	install-dist_sbinSCRIPTS install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-sbinPROGRAMS \
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
+	ps ps-am tags tags-recursive uninstall uninstall-am \
+	uninstall-dist_fredconfDATA uninstall-dist_rcconfSCRIPTS \
+	uninstall-dist_sbinSCRIPTS uninstall-sbinPROGRAMS
 
 
 ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:

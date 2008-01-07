@@ -12,10 +12,10 @@ rcconfdir = $(sysconfdir)/init.d
 
 noinst_LIBRARIES = libfred.a
 sbin_PROGRAMS = fred-rifd fred-adifd fred-pifd fred-banking fred-admin
-sbin_SCRIPTS = banking.sh
-EXTRA_DIST = banking.sh contrib/fedora/fred-server.spec
+dist_sbin_SCRIPTS = banking.sh
+EXTRA_DIST = contrib/fedora/fred-server.spec
 dist_fredconf_DATA = server.conf
-dist_rcconf_DATA = init-scripts/fred-server
+dist_rcconf_SCRIPTS = init-scripts/fred-server
 
 BUILT_SOURCES = ccRegSK.cc ccRegDynSK.cc ccReg.hh
 libfred_a_SOURCES = conf.cc dbsql.cc pqsql.cc util.cc log.cc nameservice.cc \
