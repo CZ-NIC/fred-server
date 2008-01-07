@@ -37,19 +37,26 @@ sbin_PROGRAMS = fred-rifd$(EXEEXT) fred-adifd$(EXEEXT) \
 	fred-pifd$(EXEEXT) fred-banking$(EXEEXT) fred-admin$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_fredconf_DATA) \
-	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/config.h.in $(top_srcdir)/configure AUTHORS COPYING \
-	ChangeLog INSTALL NEWS config.guess config.sub depcomp \
+	$(dist_rcconf_DATA) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
+	$(top_srcdir)/configure \
+	$(top_srcdir)/contrib/fedora/fred-server.spec.in AUTHORS \
+	COPYING ChangeLog INSTALL NEWS config.guess config.sub depcomp \
 	install-sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_base.m4 \
+	$(top_srcdir)/m4/ax_boost_date_time.m4 \
+	$(top_srcdir)/m4/ax_boost_program_options.m4 \
+	$(top_srcdir)/m4/ax_boost_regex.m4 \
+	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = contrib/fedora/fred-server.spec
 LIBRARIES = $(noinst_LIBRARIES)
 AR = ar
 ARFLAGS = cru
@@ -62,37 +69,42 @@ nodist_libfred_a_OBJECTS = ccRegSK.$(OBJEXT) ccRegDynSK.$(OBJEXT)
 libfred_a_OBJECTS = $(am_libfred_a_OBJECTS) \
 	$(nodist_libfred_a_OBJECTS)
 am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(sbindir)" \
-	"$(DESTDIR)$(fredconfdir)"
+	"$(DESTDIR)$(fredconfdir)" "$(DESTDIR)$(rcconfdir)"
 sbinPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(sbin_PROGRAMS)
 am_fred_adifd_OBJECTS = fred_adifd-ccReg_server.$(OBJEXT)
 fred_adifd_OBJECTS = $(am_fred_adifd_OBJECTS)
 fred_adifd_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
-fred_adifd_DEPENDENCIES = $(am__DEPENDENCIES_1) libfred.a \
+fred_adifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) libfred.a \
 	register/libccreg.a
 am_fred_admin_OBJECTS = client.$(OBJEXT)
 fred_admin_OBJECTS = $(am_fred_admin_OBJECTS)
 fred_admin_LDADD = $(LDADD)
-fred_admin_DEPENDENCIES = $(am__DEPENDENCIES_1) libfred.a \
+fred_admin_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) libfred.a \
 	register/libccreg.a
 am_fred_banking_OBJECTS = gpc.$(OBJEXT) banking.$(OBJEXT) \
 	log.$(OBJEXT) csv.$(OBJEXT)
 fred_banking_OBJECTS = $(am_fred_banking_OBJECTS)
 fred_banking_LDADD = $(LDADD)
-fred_banking_DEPENDENCIES = $(am__DEPENDENCIES_1) libfred.a \
-	register/libccreg.a
+fred_banking_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) libfred.a register/libccreg.a
 am_fred_pifd_OBJECTS = fred_pifd-ccReg_server.$(OBJEXT)
 fred_pifd_OBJECTS = $(am_fred_pifd_OBJECTS)
 fred_pifd_LDADD = $(LDADD)
-fred_pifd_DEPENDENCIES = $(am__DEPENDENCIES_1) libfred.a \
+fred_pifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) libfred.a \
 	register/libccreg.a
 am_fred_rifd_OBJECTS = fred_rifd-ccReg_epp.$(OBJEXT) \
 	fred_rifd-countrycode.$(OBJEXT) fred_rifd-messages.$(OBJEXT) \
 	fred_rifd-notifier.$(OBJEXT) fred_rifd-ccReg_server.$(OBJEXT)
 fred_rifd_OBJECTS = $(am_fred_rifd_OBJECTS)
 fred_rifd_LDADD = $(LDADD)
-fred_rifd_DEPENDENCIES = $(am__DEPENDENCIES_1) libfred.a \
+fred_rifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) libfred.a \
 	register/libccreg.a
 sbinSCRIPT_INSTALL = $(INSTALL_SCRIPT)
 SCRIPTS = $(sbin_SCRIPTS)
@@ -129,7 +141,8 @@ am__vpath_adj = case $$p in \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 dist_fredconfDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(dist_fredconf_DATA)
+dist_rcconfDATA_INSTALL = $(INSTALL_DATA)
+DATA = $(dist_fredconf_DATA) $(dist_rcconf_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 ETAGS = etags
@@ -152,6 +165,11 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BOOST_CPPFLAGS = @BOOST_CPPFLAGS@
+BOOST_DATE_TIME_LIB = @BOOST_DATE_TIME_LIB@
+BOOST_LDFLAGS = @BOOST_LDFLAGS@
+BOOST_PROGRAM_OPTIONS_LIB = @BOOST_PROGRAM_OPTIONS_LIB@
+BOOST_REGEX_LIB = @BOOST_REGEX_LIB@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -191,7 +209,11 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PG_CONFIG = @PG_CONFIG@
 PKG_CONFIG = @PKG_CONFIG@
+POSTGRESQL_CFLAGS = @POSTGRESQL_CFLAGS@
+POSTGRESQL_LDFLAGS = @POSTGRESQL_LDFLAGS@
+POSTGRESQL_VERSION = @POSTGRESQL_VERSION@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -248,10 +270,12 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 
 IDLFILE = $(IDLDIR)/ccReg.idl
 fredconfdir = $(sysconfdir)/fred
+rcconfdir = $(sysconfdir)/rc.d
 noinst_LIBRARIES = libfred.a
 sbin_SCRIPTS = banking.sh
-EXTRA_DIST = banking.sh
-dist_fredconf_DATA = server.conf.example
+EXTRA_DIST = banking.sh contrib/fedora/fred-server.spec
+dist_fredconf_DATA = server.conf
+dist_rcconf_DATA = init-scripts/fred-server
 BUILT_SOURCES = ccRegSK.cc ccRegDynSK.cc ccReg.hh
 libfred_a_SOURCES = conf.cc dbsql.cc pqsql.cc util.cc log.cc nameservice.cc \
   mailer_manager.cc admin.cc tech_check.cc action.h gpc.h nameservice.h \
@@ -325,6 +349,8 @@ $(srcdir)/config.h.in:  $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
+contrib/fedora/fred-server.spec: $(top_builddir)/config.status $(top_srcdir)/contrib/fedora/fred-server.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 clean-noinstLIBRARIES:
 	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
@@ -560,6 +586,23 @@ uninstall-dist_fredconfDATA:
 	  f=$(am__strip_dir) \
 	  echo " rm -f '$(DESTDIR)$(fredconfdir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(fredconfdir)/$$f"; \
+	done
+install-dist_rcconfDATA: $(dist_rcconf_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(rcconfdir)" || $(MKDIR_P) "$(DESTDIR)$(rcconfdir)"
+	@list='$(dist_rcconf_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(dist_rcconfDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(rcconfdir)/$$f'"; \
+	  $(dist_rcconfDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(rcconfdir)/$$f"; \
+	done
+
+uninstall-dist_rcconfDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_rcconf_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(rcconfdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(rcconfdir)/$$f"; \
 	done
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -841,7 +884,7 @@ check: $(BUILT_SOURCES)
 all-am: Makefile $(LIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA) config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(fredconfdir)"; do \
+	for dir in "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(fredconfdir)" "$(DESTDIR)$(rcconfdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -893,7 +936,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-dist_fredconfDATA
+install-data-am: install-dist_fredconfDATA install-dist_rcconfDATA
 
 install-dvi: install-dvi-recursive
 
@@ -930,8 +973,8 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-dist_fredconfDATA uninstall-sbinPROGRAMS \
-	uninstall-sbinSCRIPTS
+uninstall-am: uninstall-dist_fredconfDATA uninstall-dist_rcconfDATA \
+	uninstall-sbinPROGRAMS uninstall-sbinSCRIPTS
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) install-am \
 	install-strip
@@ -944,15 +987,16 @@ uninstall-am: uninstall-dist_fredconfDATA uninstall-sbinPROGRAMS \
 	distclean-generic distclean-hdr distclean-tags distcleancheck \
 	distdir distuninstallcheck dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
-	install-dist_fredconfDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-sbinPROGRAMS \
-	install-sbinSCRIPTS install-strip installcheck installcheck-am \
-	installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am uninstall-dist_fredconfDATA \
+	install-dist_fredconfDATA install-dist_rcconfDATA install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-sbinPROGRAMS install-sbinSCRIPTS install-strip \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
+	tags tags-recursive uninstall uninstall-am \
+	uninstall-dist_fredconfDATA uninstall-dist_rcconfDATA \
 	uninstall-sbinPROGRAMS uninstall-sbinSCRIPTS
 
 

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([fred], 1.7.x)
+AC_INIT([fred-server], 1.7)
 AC_CONFIG_SRCDIR(ccReg_server.cc)
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -34,7 +34,10 @@ AX_LIB_POSTGRESQL(8.0)
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h stdlib.h string.h sys/socket.h sys/time.h syslog.h unistd.h])
+AC_CHECK_HEADERS(
+	[arpa/inet.h stdlib.h string.h sys/socket.h \
+	sys/time.h syslog.h unistd.h]
+)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -50,14 +53,26 @@ AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([gettimeofday memset strcasecmp strncasecmp strspn])
 
-AC_ARG_WITH([idldir], [AS_HELP_STRING([--with-idldir],
-                        [location of idl directory containing IDL interfaces [idl]])],
-                        [AC_SUBST([IDLDIR], [$withval])],
-                        [AC_SUBST([IDLDIR], [idl/])])
-AC_CHECK_FILE([$IDLDIR/ccReg.idl], [], [AC_MSG_ERROR(
-                           [directory "$IDLDIR" does not contain ccReg.idl (use --with-idldir)])])
+AC_ARG_WITH(
+	[idldir], 
+	[AS_HELP_STRING(
+		[--with-idldir],
+		[location of idl directory containing IDL interfaces [idl]]
+	)],
+	[AC_SUBST([IDLDIR], [$withval])],
+	[AC_SUBST([IDLDIR], [/usr/share/idl/fred/])]
+)
 
+AC_CHECK_FILE(
+	[$IDLDIR/ccReg.idl], 
+	[], 
+	[AC_MSG_ERROR(
+		[directory "$IDLDIR" does not contain ccReg.idl 
+		(use --with-idldir)]
+	)]
+)
 
 AC_CONFIG_FILES([Makefile
-                 register/Makefile])
+                 register/Makefile
+		 contrib/fedora/fred-server.spec])
 AC_OUTPUT
