@@ -8,7 +8,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 IDLFILE = $(IDLDIR)/ccReg.idl
 
 fredconfdir = $(sysconfdir)/fred
-rcconfdir = $(sysconfdir)/rc.d
+rcconfdir = $(sysconfdir)/init.d
 
 noinst_LIBRARIES = libfred.a
 sbin_PROGRAMS = fred-rifd fred-adifd fred-pifd fred-banking fred-admin

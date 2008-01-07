@@ -32,7 +32,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %files
 %defattr(-,root,root,-)
 /etc/fred/server.conf
-/etc/rc.d/fred-server
+/etc/init.d/fred-server
 /usr/sbin/fred-rifd
 /usr/sbin/fred-adifd
 /usr/sbin/fred-pifd
