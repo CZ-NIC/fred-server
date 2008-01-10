@@ -75,6 +75,8 @@ namespace Register
       virtual Money getTotalVat() const = 0;
       /// total price with vat of source invoice
       virtual Money getTotalPriceWithVat() const = 0;
+      /// creation time of source invoice
+      virtual boost::posix_time::ptime getCrTime() const = 0;
     };
     enum PaymentActionType {
       PAT_CREATE_DOMAIN,

@@ -211,6 +211,7 @@ namespace Register
       TID id; ///< id of source advance invoice
       Money totalPrice; ///< total price without vat on advance invoice
       Money totalVat; ///< total vat on advance invoice
+      ptime crtime; ///< creation time of advance invoice 
     public:
       /// init content from sql result (ignore first column)
       PaymentSourceImpl(DB *db, unsigned l, ManagerImpl *man) : 
@@ -227,7 +228,8 @@ namespace Register
         credit(STR_TO_MONEY(db->GetFieldValue(l,3))),
         id(STR_TO_ID(db->GetFieldValue(l,4))),
         totalPrice(STR_TO_MONEY(db->GetFieldValue(l,5))),
-        totalVat(STR_TO_MONEY(db->GetFieldValue(l,7)))
+        totalVat(STR_TO_MONEY(db->GetFieldValue(l,7))),
+        crtime(MAKE_TIME(l,8))
       {}
       virtual unsigned long long getNumber() const
       {
@@ -253,6 +255,11 @@ namespace Register
       {
         return totalPrice + totalVat;
       }
+      virtual ptime getCrTime() const
+      {
+        return crtime;
+      }
+      
     };
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     //   PaymentActionImpl
@@ -741,10 +748,12 @@ namespace Register
                 << TAG(price,OUTMONEY(ps->getPrice()))
                 << TAG(balance,OUTMONEY(ps->getCredit()))
                 << TAG(vat,OUTMONEY(ps->getVat()))
+                << TAG(vat_rate,ps->getVatRate())
                 << TAG(pricevat,OUTMONEY(ps->getPriceWithVat()))
                 << TAG(total,OUTMONEY(ps->getTotalPrice()))
                 << TAG(total_vat,OUTMONEY(ps->getTotalVat()))
                 << TAG(total_with_vat,OUTMONEY(ps->getTotalPriceWithVat()))
+                << TAG(crtime,ps->getCrTime())
                 << TAGEND(consumed);
           }
           out << TAGEND(applied_invoices)
@@ -1063,7 +1072,7 @@ namespace Register
         if (!db->ExecSelect(
           "SELECT "
           " it.id, sri.prefix, ipm.credit*100, ipm.balance*100, sri.id, "
-          " sri.total*100, sri.vat, sri.totalvat*100 "
+          " sri.total*100, sri.vat, sri.totalvat*100, sri.crdate "
           "FROM "
           " tmp_invoice_filter_result it "
           " JOIN invoice_credit_payment_map ipm ON (it.id=ipm.invoiceid) "
