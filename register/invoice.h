@@ -69,6 +69,10 @@ namespace Register
       virtual unsigned long long getNumber() const = 0;
       /// remaining credit on source invoice
       virtual Money getCredit() const = 0;
+      /// total price withput vat of source invoice
+      virtual Money getTotalPrice() const = 0;
+      /// total vat of source invoice
+      virtual Money getTotalVat() const = 0;
       /// total price with vat of source invoice
       virtual Money getTotalPriceWithVat() const = 0;
     };
@@ -81,12 +85,19 @@ namespace Register
      protected:
       virtual ~PaymentAction() {}
      public:
+      /// id of object on which action was performed
       virtual TID getObjectId() const = 0;
+      /// name of object on which action was performed
       virtual const std::string& getObjectName() const = 0;
+      /// time of action 
       virtual boost::posix_time::ptime getActionTime() const = 0;
+      /// exdate when operation was renew otherwise (not-a-date)
       virtual boost::gregorian::date getExDate() const = 0;
+      /// type of action (creation or registration extension)
       virtual PaymentActionType getAction() const = 0;
+      /// number of month for extenstion otherwise 0
       virtual unsigned getUnitsCount() const = 0;
+      /// price (without vat) per unit
       virtual Money getPricePerUnit() const = 0;
     };
     /// iterator over list of total price partitioned by years
@@ -95,7 +106,7 @@ namespace Register
      protected:
       virtual ~AnnualPartitioning() {}
      public:
-      /// restet iterator to first record
+      /// reset iterator to first record
       virtual void resetIterator(unsigned vatRate) = 0;
       /// test whether there are any records left 
       virtual bool end() const = 0;
