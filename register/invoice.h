@@ -76,7 +76,7 @@ namespace Register
       PAT_CREATE_DOMAIN,
       PAT_RENEW_DOMAIN
     };
-    class PaymentAction
+    class PaymentAction : virtual public Payment
     {
      protected:
       virtual ~PaymentAction() {}
@@ -88,24 +88,21 @@ namespace Register
       virtual PaymentActionType getAction() const = 0;
       virtual unsigned getUnitsCount() const = 0;
       virtual Money getPricePerUnit() const = 0;
-      virtual Money getPrice() const = 0;
     };
     /// iterator over list of total price partitioned by years
-    class AnnualPartitioning
+    class AnnualPartitioning : virtual public Payment
     {
      protected:
       virtual ~AnnualPartitioning() {}
      public:
       /// restet iterator to first record
-      virtual void resetIterator() = 0;
+      virtual void resetIterator(unsigned vatRate) = 0;
       /// test whether there are any records left 
       virtual bool end() const = 0;
       /// pass to next record
       virtual void next() = 0;
       /// access method for year at current record 
       virtual unsigned getYear() const = 0;
-      /// access method for money at current record
-      virtual Money getPrice() const = 0;
     };
     class Invoice
     {

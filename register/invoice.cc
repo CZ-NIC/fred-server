@@ -58,6 +58,50 @@ namespace Register
 {
   namespace Invoicing
   {
+    // hold vat rates for time periods
+    class VAT
+    {
+    public:
+      VAT(unsigned _vatRate, unsigned _koef,  date _validity) :
+        vatRate(_vatRate), koef(_koef), validity(_validity)
+      {}
+      bool operator==(unsigned rate) const
+      {
+        return vatRate == rate;
+      }
+      unsigned vatRate; ///< percent rate
+      date validity; ///< valid to this date
+      unsigned koef; ///< koeficient for VAT counting (in 1/10000)
+    };
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    //   ManagerImpl
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    /// implementation for Manager interface
+    class ManagerImpl : public Manager
+    {
+      DB *db;
+      Document::Manager *docman;
+      Mailer::Manager *mailman;
+      std::vector<VAT> vatList;
+      void initVATList() throw (SQL_ERROR);
+     public:
+      ManagerImpl(
+        DB *_db,
+        Document::Manager *_docman, Mailer::Manager *_mailman
+      ) : db(_db), docman(_docman), mailman(_mailman)
+      {
+        initVATList();
+      }
+      /// count vat from price
+      /** price can be base or base+vat according to base flag */
+      Money countVAT(Money price, unsigned vatRate, bool base);
+      const VAT *getVAT(unsigned rate) const;
+      /// find unarchived invoices. archive then and send them by email
+      void archiveInvoices(bool send) const;
+      /// create empty list of invoices      
+      virtual InvoiceList* createList() const;
+    }; // ManagerImpl
+
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     //   SubjecImpl
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -168,11 +212,15 @@ namespace Register
       Money totalPrice; ///< total price with vat on advance invoice
     public:
       /// init content from sql result (ignore first column)
-      PaymentSourceImpl(DB *db, unsigned l) : 
+      PaymentSourceImpl(DB *db, unsigned l, ManagerImpl *man) : 
         PaymentImpl(
           STR_TO_MONEY(db->GetFieldValue(l,2)),
           STR_TO_ID(db->GetFieldValue(l,6)),
-          STR_TO_MONEY(db->GetFieldValue(l,7))
+          man->countVAT(
+            STR_TO_MONEY(db->GetFieldValue(l,2)),
+            STR_TO_ID(db->GetFieldValue(l,6)),
+            true
+          )
         ),
         number(atoll(db->GetFieldValue(l,1))),
         credit(STR_TO_MONEY(db->GetFieldValue(l,3))),
@@ -200,7 +248,7 @@ namespace Register
     //   PaymentActionImpl
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     /// implementation of PaymentAction interface
-    class PaymentActionImpl : public PaymentAction
+    class PaymentActionImpl : public PaymentImpl, virtual public PaymentAction
     {
       std::string objectName; ///< name of object affected by payment action
       ptime actionTime; ///< time of payment action
@@ -208,11 +256,19 @@ namespace Register
       PaymentActionType action; ///< type of action that is subject of payment
       unsigned unitsCount; ///< number of months to expiration of domain
       Money pricePerUnit; ///< copy of price from price list
-      Money price; ///< summarized price for all units    
       TID objectId; ///< id of object affected by payment action
-     public:
+    public:
       /// init content from sql result (ignore first column)
-      PaymentActionImpl(DB *db, unsigned l) :
+      PaymentActionImpl(DB *db, unsigned l, ManagerImpl *man) :
+        PaymentImpl(
+          STR_TO_MONEY(db->GetFieldValue(l,7)),
+          STR_TO_ID(db->GetFieldValue(l,9)),
+          man->countVAT(
+            STR_TO_MONEY(db->GetFieldValue(l,7)),
+            STR_TO_ID(db->GetFieldValue(l,9)),
+            true
+          )
+        ),
         objectName(db->GetFieldValue(l,1)),
         actionTime(MAKE_TIME(l,2)),
         exDate(MAKE_DATE(l,3)),
@@ -223,7 +279,6 @@ namespace Register
         ),
         unitsCount(atoi(db->GetFieldValue(l,5))),
         pricePerUnit(STR_TO_MONEY(db->GetFieldValue(l,6))),
-        price(STR_TO_MONEY(db->GetFieldValue(l,7))),
         objectId(STR_TO_ID(db->GetFieldValue(l,8)))
       {}
       virtual TID getObjectId() const
@@ -254,19 +309,21 @@ namespace Register
       {
         return pricePerUnit;
       }
-      virtual Money getPrice() const
-      {
-        return price;
-      }
     };
     /// hold list of sum of proportional parts of prices for every year
     class AnnualPartitioningImpl : public virtual AnnualPartitioning 
     {
       /// type for mapping year to sum of money
       typedef std::map<unsigned, Money> RecordsType;
-      RecordsType records; ///< list of years
       RecordsType::const_iterator i; ///< for walkthrough in results 
+      typedef std::map<unsigned, RecordsType> vatRatesRecordsType;
+      vatRatesRecordsType::const_iterator j; ///< for walkthrough in results 
+      vatRatesRecordsType records; ///< list of years by vat rate
+      bool noVatRate; ///< there is not vat rate asked in resetIterator()
+      ManagerImpl *man; ///< need to count vat
     public:
+      AnnualPartitioningImpl(ManagerImpl* _man) : man(_man), noVatRate(true)
+      {}
       /** for every year in period from exdate-unitsCount to exdate 
        * count proportional part of price according to days that belong 
        * to relevant year */
@@ -296,16 +353,21 @@ namespace Register
             lastdate = newdate;
           }
           remains -= part;
-          records[year] += part;
+          records[pa->getVatRate()][year] += part;
         }
       }
-      void resetIterator()
+      void resetIterator(unsigned vatRate)
       {
-        i = records.begin();
+        j = records.find(vatRate);
+        if (j == records.end()) noVatRate = true;
+        else {
+          noVatRate = false;
+          i = j->second.begin();
+        }
       }
       bool end() const
       {
-        return i == records.end();
+        return noVatRate || i == j->second.end();
       }
       void next()
       {
@@ -313,11 +375,23 @@ namespace Register
       }
       unsigned getYear() const
       {
-        return end() ? 0 : (*i).first; 
+        return end() ? 0 : i->first; 
       }
       Money getPrice() const
       {
-        return end() ? 0 : (*i).second; 
+        return end() ? 0 : i->second; 
+      }
+      unsigned getVatRate() const
+      {
+        return end() ? 0 : j->first; 
+      }
+      Money getVat() const
+      {
+        return man->countVAT(getPrice(),getVatRate(),true); 
+      }
+      Money getPriceWithVat() const
+      {
+        return getPrice() + getVat();
       }
     };
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -330,7 +404,6 @@ namespace Register
       virtual ~Exporter() {}
       virtual void doExport(Invoice *) = 0;
     };
-    class ManagerImpl;
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     //   InvoiceImpl
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -406,7 +479,8 @@ namespace Register
           db->GetFieldValue(l,24)[0] == 't'
         ),
         storeFileFlag(false),
-        man(_man)
+        man(_man),
+        ap(_man)
       {
       }
       ~InvoiceImpl()
@@ -485,13 +559,13 @@ namespace Register
       /// initialize list of actions from sql result
       void addAction(DB *db, unsigned row)
       {
-        actions.push_back(new PaymentActionImpl(db,row));
+        actions.push_back(new PaymentActionImpl(db,row,man));
         ap.addAction(actions.back()); // update partitioning
       }
       /// initialize list of sources from sql result
       void addSource(DB *db, unsigned row)
       {
-        PaymentSourceImpl *ps = new PaymentSourceImpl(db,row); 
+        PaymentSourceImpl *ps = new PaymentSourceImpl(db,row,man); 
         sources.push_back(ps);
         // init vat groups, if vat rate exists, add it, otherwise create new
         std::vector<PaymentImpl>::iterator i = find(
@@ -624,14 +698,18 @@ namespace Register
               << TAG(total,OUTMONEY(p->getPriceWithVat()))
               << TAGSTART(years);
           for (
-            i->getAnnualPartitioning()->resetIterator();
+            i->getAnnualPartitioning()->resetIterator(p->getVatRate());
             !i->getAnnualPartitioning()->end();
             i->getAnnualPartitioning()->next()
-          )
+          ) {
+            AnnualPartitioning *ap = i->getAnnualPartitioning();
             out << TAGSTART(entry)
-                << TAG(year,i->getAnnualPartitioning()->getYear())
-                << TAG(price,OUTMONEY(i->getAnnualPartitioning()->getPrice()))
+                << TAG(year,ap->getYear())
+                << TAG(price,OUTMONEY(ap->getPrice()))
+                << TAG(vat,OUTMONEY(ap->getVat()))
+                << TAG(total,OUTMONEY(ap->getPriceWithVat()))
                 << TAGEND(entry);
+          }
           out << TAGEND(years)
               << TAGEND(entry);
         }
@@ -652,6 +730,9 @@ namespace Register
                 << TAG(number,ps->getNumber())
                 << TAG(price,OUTMONEY(ps->getPrice()))
                 << TAG(balance,OUTMONEY(ps->getCredit()))
+                << TAG(vat,OUTMONEY(ps->getVat()))
+                << TAG(pricevat,OUTMONEY(ps->getPriceWithVat()))
+                << TAG(total,OUTMONEY(ps->getTotalPriceWithVat()))
                 << TAGEND(consumed);
           }
           out << TAGEND(applied_invoices)
@@ -673,6 +754,7 @@ namespace Register
             out << TAG(count,pa->getUnitsCount()/12) // in years
                 << TAG(price,OUTMONEY(pa->getPricePerUnit()))
                 << TAG(total,OUTMONEY(pa->getPrice()))
+                << TAG(vat_rate,pa->getVatRate())
                 << TAGEND(item);
           }
           out << TAGEND(items)
@@ -915,6 +997,8 @@ namespace Register
         // complete sql end do the query
         sql << from.rdbuf() << where.rdbuf();
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
+        if (!db->ExecSQL("ANALYZE tmp_invoice_filter_result"))
+            throw SQL_ERROR();
         // initialize list of invoices using temporary table 
         if (!db->ExecSelect(
           "SELECT "
@@ -926,33 +1010,34 @@ namespace Register
           " r.city, r.postalcode, TRIM(r.ico), TRIM(r.dic), TRIM(r.varsymb), "
           " r.handle, r.vat, r.id "
           "FROM "
-          " tmp_invoice_filter_result it, registrar r, "
-          " invoice_prefix ip, invoice i "
+          " tmp_invoice_filter_result it "
+          " JOIN invoice i ON (it.id=i.id) "
+          " JOIN registrar r ON (i.registrarid=r.id) "
+          " JOIN invoice_prefix ip ON (ip.id=i.prefix_type) "
           " LEFT JOIN invoice_generation ig ON (i.id=ig.invoiceid) "
-          "WHERE "
-          " it.id=i.id AND i.registrarid=r.id AND ip.id=i.prefix_type "
         )) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)         
           invoices.push_back(new InvoiceImpl(db,man,i));
         db->FreeSelect();
         // append list of actions to all selected invoices
+        // it handle situation when action come from source advance invoices
+        // with different vat rates by grouping
         if (!db->ExecSelect(
           "SELECT "
           " it.id, o.name, ior.crdate, ior.exdate, ior.operation, ior.period, "
           " CASE "
           "  WHEN ior.period=0 THEN 0 "
           "  ELSE 100*SUM(iorpm.price)*12/ior.period END, "
-          " SUM(iorpm.price)*100, o.id "
+          " SUM(iorpm.price)*100, o.id, i.vat "
           "FROM "
-          " tmp_invoice_filter_result it, "
-          " invoice_object_registry ior, object_registry o, "
-          " invoice_object_registry_price_map iorpm "
-          "WHERE "
-          " it.id=ior.invoiceid AND ior.objectid=o.id "
-          " AND ior.id=iorpm.id "
+          " tmp_invoice_filter_result it "
+          " JOIN invoice_object_registry ior ON (it.id=ior.invoiceid) "
+          " JOIN object_registry o ON (ior.objectid=o.id) "
+          " JOIN invoice_object_registry_price_map iorpm ON (ior.id=iorpm.id) "
+          " JOIN invoice i ON (iorpm.invoiceid=i.id) "
           "GROUP BY "
           " it.id, o.name, ior.crdate, ior.exdate, ior.operation, "
-          " ior.period, o.id "
+          " ior.period, o.id, i.vat "
         )) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           InvoiceImpl *inv = findById(STR_TO_ID(db->GetFieldValue(i,0)));
@@ -966,14 +1051,11 @@ namespace Register
         if (!db->ExecSelect(
           "SELECT "
           " it.id, sri.prefix, ipm.credit*100, ipm.balance*100, sri.id, "
-          " sri.price, sri.vat, ipm.credit*v.koef/(1-v.koef)) "
+          " sri.price*100, sri.vat "
           "FROM "
-          " tmp_invoice_filter_result it, "
-          " invoice_credit_payment_map ipm, invoice sri "
-          " JOIN (SELECT vat,koef FROM price_vat GROUP BY vat, koef) v "
-          "   ON (sri.vat=v.vat) "
-          "WHERE "
-          " it.id=ipm.invoiceid AND ipm.ainvoiceid=sri.id "
+          " tmp_invoice_filter_result it "
+          " JOIN invoice_credit_payment_map ipm ON (it.id=ipm.invoiceid) "
+          " JOIN invoice sri ON (ipm.ainvoiceid=sri.id) "
         )) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           InvoiceImpl *inv = findById(STR_TO_ID(db->GetFieldValue(i,0)));
@@ -1135,91 +1217,72 @@ namespace Register
         db->FreeSelect();
       }
     }; // Mails
-    // hold vat rates for time periods
-    class VAT
-    {
-    public:
-      VAT(unsigned _vatRate, unsigned _koef,  date _validity) :
-        vatRate(_vatRate), koef(_koef), validity(_validity)
-      {}
-      bool operator==(unsigned rate) const
-      {
-        return vatRate == rate;
-      }
-      unsigned vatRate; ///< percent rate
-      date validity; ///< valid to this date
-      unsigned koef; ///< koeficient for VAT counting (in 1/10000)
-    };
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    //   ManagerImpl
+    //   ManagerImpl - impl.
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    /// implementation for Manager interface
-    class ManagerImpl : public Manager
+    void 
+    ManagerImpl::initVATList() throw (SQL_ERROR)
     {
-      DB *db;
-      Document::Manager *docman;
-      Mailer::Manager *mailman;
-      std::vector<VAT> vatList;
-      void initVATList() throw (SQL_ERROR)
-      {
-        if (vatList.empty()) {
-          std::stringstream sql;
-          db->ExecSelect("SELECT vat, koef, valid_to FROM price_vat");
-          if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-          for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-            vatList.push_back(
-              VAT(
-                atoi(db->GetFieldValue(i,0)),
-                atoi(db->GetFieldValue(i,1)),
-                MAKE_DATE(i,2)
-              )
-            );
-          }
-          db->FreeSelect();
+      if (vatList.empty()) {
+        if (!db->ExecSelect("SELECT vat, 10000*koef, valid_to FROM price_vat"))
+           throw SQL_ERROR();
+        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+          vatList.push_back(
+            VAT(
+              atoi(db->GetFieldValue(i,0)),
+              atoi(db->GetFieldValue(i,1)),
+              MAKE_DATE(i,2)
+            )
+          );
         }
+        db->FreeSelect();
       }
-     public:
-      ManagerImpl(
-        DB *_db,
-        Document::Manager *_docman, Mailer::Manager *_mailman
-      ) : db(_db), docman(_docman), mailman(_mailman)
-      {}
-      const VAT *getVAT(unsigned rate) const
-      {
-        // late initialization would brake constness
-        ((ManagerImpl *)this)->initVATList();
-        std::vector<VAT>::const_iterator ci = find(
-          vatList.begin(),vatList.end(),rate
-        );
-        return ci == vatList.end() ? NULL : &(*ci);
-      }
-      /// find unarchived invoices. archive then and send them by email
-      void archiveInvoices(bool send) const
-      {
-        try {
-          // archive unarchived invoices
-          ExporterArchiver arch(docman);
-          InvoiceListImpl l(db,(ManagerImpl *)this);
-          l.setArchivedFilter(InvoiceList::AF_UNSET);
-          l.reload();
-          l.doExport(&arch);
-          if (send) {
-            Mails m(mailman,db);
-            m.load();
-            m.send();
-          }
-        } catch (...) {
-          //TODO: LOG ERROR
+    }
+    Money 
+    ManagerImpl::countVAT(Money price, unsigned vatRate, bool base)
+    {
+      const VAT *v = getVAT(vatRate);
+      unsigned coef = v ? v->koef : 0; 
+      return price * coef / (10000 - (base ? coef : 0));
+    }
+    const VAT *
+    ManagerImpl::getVAT(unsigned rate) const
+    {
+      // late initialization would brake constness
+      ((ManagerImpl *)this)->initVATList();
+      std::vector<VAT>::const_iterator ci = find(
+        vatList.begin(),vatList.end(),rate
+      );
+      return ci == vatList.end() ? NULL : &(*ci);
+    }
+    void 
+    ManagerImpl::archiveInvoices(bool send) const
+    {
+      try {
+        // archive unarchived invoices
+        ExporterArchiver arch(docman);
+        InvoiceListImpl l(db,(ManagerImpl *)this);
+        l.setArchivedFilter(InvoiceList::AF_UNSET);
+        l.reload();
+        l.doExport(&arch);
+        if (send) {
+          Mails m(mailman,db);
+          m.load();
+          m.send();
         }
+      } catch (...) {
+        //TODO: LOG ERROR
       }
-      /// create empty list of invoices      
-      virtual InvoiceList* createList() const
-      {
-        return new InvoiceListImpl(db,(ManagerImpl *)this);
-      }
-    }; // ManagerImpl
-    Manager *Manager::create(
-      DB *db, Document::Manager *docman, Mailer::Manager *mailman)
+    }
+    InvoiceList* 
+    ManagerImpl::createList() const
+    {
+      return new InvoiceListImpl(db,(ManagerImpl *)this);
+    }
+    Manager *
+    Manager::create(
+      DB *db, Document::Manager *docman, Mailer::Manager *mailman
+    )
     {
       return new ManagerImpl(db,docman,mailman);
     }    
