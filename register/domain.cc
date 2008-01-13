@@ -609,7 +609,8 @@ namespace Register
       /// interface method implementation  
       CheckAvailType checkAvail(
         const std::string& _fqdn,
-        NameIdPair& conflictFqdn
+        NameIdPair& conflictFqdn,
+        bool lock
       ) const 
         throw (SQL_ERROR)
       {
@@ -634,7 +635,8 @@ namespace Register
           sql << "SELECT o.name, o.id FROM object_registry o "
               << "WHERE o.type=3 AND o.erdate ISNULL AND "
               << "o.name='" << fqdn << "' "
-              << "LIMIT 1";        
+              << "LIMIT 1";
+        if (lock) sql << " FOR UPDATE ";        
         if (!db->ExecSelect(sql.str().c_str())) {
           db->FreeSelect();
           throw SQL_ERROR();

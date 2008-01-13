@@ -375,13 +375,15 @@ namespace Register
       /// check if object is in database
       bool checkHandleRegistration(
         const std::string& handle,
-        NameIdPair& conflict
+        NameIdPair& conflict,
+        bool lock
       ) const throw (SQL_ERROR)
       {
         std::ostringstream sql;
         sql << "SELECT id,name FROM object_registry "
             << "WHERE type=2 AND erDate ISNULL AND "
             << "UPPER(name)=UPPER('" << handle << "')";
+        if (lock) sql << " FOR UPDATE ";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         bool result = db->GetSelectRows() >= 1;
         conflict.id = result ? STR_TO_ID(db->GetFieldValue(0,0)) : 0;
@@ -420,13 +422,14 @@ namespace Register
         return new ListImpl(db);
       }
       virtual CheckAvailType checkAvail(
-        const std::string& handle, NameIdPair& conflict
+        const std::string& handle, NameIdPair& conflict, bool lock
       ) const throw (SQL_ERROR)
       {
         conflict.id = 0;
         conflict.name = "";
         if (!checkHandleFormat(handle)) return CA_INVALID_HANDLE;
-        if (checkHandleRegistration(handle,conflict)) return CA_REGISTRED;
+        if (checkHandleRegistration(handle, conflict, lock)) 
+          return CA_REGISTRED;
         if (checkProtection(handle,2,"2 month")) 
           return CA_PROTECTED; 
         return CA_FREE;

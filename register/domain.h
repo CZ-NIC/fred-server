@@ -132,7 +132,7 @@ namespace Register
       virtual CheckAvailType checkHandle(const std::string& fqdn) const = 0;
       /// check availability of domain  
       virtual CheckAvailType checkAvail(
-        const std::string& fqdn, NameIdPair& conflictFqdn
+        const std::string& fqdn, NameIdPair& conflictFqdn, bool lock = false
       ) const throw (SQL_ERROR) = 0;
       /// return current count of domains by zone
       virtual unsigned long getDomainCount(const std::string& zone) const = 0;

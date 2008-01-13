@@ -120,7 +120,7 @@ namespace Register
       virtual bool checkHandleFormat(const std::string& handle) const = 0;
       /// check possibilities for registration
       virtual CheckAvailType checkAvail(
-        const std::string& handle, NameIdPair& conflict
+        const std::string& handle, NameIdPair& conflict, bool lock = false
       ) const throw (SQL_ERROR) = 0;
       /// factory method
       static Manager *create(DB *db, bool restrictedHandle);

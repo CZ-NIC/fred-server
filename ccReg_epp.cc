@@ -181,7 +181,7 @@ static std::string formatTime(
 
 /// replace GetContactID
 static long int getIdOfContact(
-  DB *db, const char *handle, Conf& c)
+  DB *db, const char *handle, Conf& c, bool lock = false)
 {
   std::auto_ptr<Register::Contact::Manager>
       cman(Register::Contact::Manager::create(db, c.GetRestrictedHandles()) );
@@ -189,7 +189,7 @@ static long int getIdOfContact(
   long int ret = -1;
   try {
     Register::NameIdPair nameId;
-    caType = cman->checkAvail(handle,nameId);
+    caType = cman->checkAvail(handle,nameId, lock);
     ret = nameId.id;
     if (caType == Register::Contact::Manager::CA_INVALID_HANDLE)
     ret = -1;
@@ -199,7 +199,7 @@ static long int getIdOfContact(
 
 /// replace GetNSSetID
 static long int getIdOfNSSet(
-  DB *db, const char *handle, Conf& c)
+  DB *db, const char *handle, Conf& c, bool lock = false)
 {
   std::auto_ptr<Register::Zone::Manager>
       zman(Register::Zone::Manager::create(db) );
@@ -209,10 +209,45 @@ static long int getIdOfNSSet(
   long int ret = -1;
   try {
     Register::NameIdPair nameId;
-    caType = man->checkAvail(handle,nameId);
+    caType = man->checkAvail(handle,nameId,lock);
     ret = nameId.id;
     if (caType == Register::NSSet::Manager::CA_INVALID_HANDLE)
     ret = -1;
+  } catch (...) {}
+  return ret;
+}
+
+/// replace GetDomainID
+static long int getIdOfDomain(
+  DB *db, const char *handle, bool lock = false)
+{
+  std::auto_ptr<Register::Zone::Manager> zm(
+    Register::Zone::Manager::create(db)
+  );
+  std::auto_ptr<Register::Domain::Manager> dman(
+    Register::Domain::Manager::create(db,zm.get())
+  );
+  Register::NameIdPair nameId;
+  long int ret = -1;
+  try {
+    switch (dman->checkAvail(handle, nameId, lock)) { 
+      case Register::Domain::CA_REGISTRED :
+        ret = nameId.id;
+        break;
+      case Register::Domain::CA_INVALID_HANDLE :
+      case Register::Domain::CA_BAD_LENGHT :
+      case Register::Domain::CA_BLACKLIST :
+        ret = -2;
+        break;
+      case Register::Domain::CA_BAD_ZONE :
+        ret = -1;
+        break;
+      case Register::Domain::CA_PARENT_REGISTRED :
+      case Register::Domain::CA_CHILD_REGISTRED :
+      case Register::Domain::CA_AVAILABLE :
+        ret = 0;
+        break;
+    }
   } catch (...) {}
   return ret;
 }
@@ -2264,19 +2299,19 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
 
     if (DBsql.OpenDatabase(database) ) {
       if ( (DBsql.BeginAction(clientID, EPP_ContactDelete, clTRID, XML) )) {
+        if (DBsql.BeginTransaction() ) {
 
-        id = getIdOfContact(&DBsql, handle, conf);
-
-        if (id < 0)
-          ret->code= SetReasonContactHandle(errors, handle,
-              GetRegistrarLang(clientID) );
-        else if (id ==0) {
-          LOG( WARNING_LOG, "contact handle [%s] NOT_EXIST", handle );
-          ret->code= COMMAND_OBJECT_NOT_EXIST;
-        }
-
-        else if (DBsql.BeginTransaction() ) {
-          if (!DBsql.TestObjectClientID(id, regID) ) //  if registrar is not client of the object 
+          // lock
+          id = getIdOfContact(&DBsql, handle, conf, true);
+  
+          if (id < 0)
+            ret->code= SetReasonContactHandle(errors, handle,
+                GetRegistrarLang(clientID) );
+          else if (id ==0) {
+            LOG( WARNING_LOG, "contact handle [%s] NOT_EXIST", handle );
+            ret->code= COMMAND_OBJECT_NOT_EXIST;
+          }
+          if (!ret->code && !DBsql.TestObjectClientID(id, regID) ) //  if registrar is not client of the object 
           {
             LOG( WARNING_LOG, "bad autorization not  creator of handle [%s]", handle );
             ret->code = COMMAND_AUTOR_ERROR; // bad autorization
@@ -2380,19 +2415,18 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
 
       if ( (DBsql.BeginAction(clientID, EPP_ContactUpdate, clTRID, XML) )) {
 
-        id = getIdOfContact(&DBsql, handle, conf);
-
-        if (id < 0)
-          ret->code= SetReasonContactHandle(errors, handle,
-              GetRegistrarLang(clientID) );
-        else if (id ==0) {
-          LOG( WARNING_LOG, "contact handle [%s] NOT_EXIST", handle );
-          ret->code= COMMAND_OBJECT_NOT_EXIST;
-        }
-
-        else if (DBsql.BeginTransaction() ) {
-
-          if ( !DBsql.TestObjectClientID(id, regID) ) {
+        if (DBsql.BeginTransaction() ) {
+          // get ID with locking record
+          id = getIdOfContact(&DBsql, handle, conf, true);
+  
+          if (id < 0)
+            ret->code= SetReasonContactHandle(errors, handle,
+                GetRegistrarLang(clientID) );
+          else if (id ==0) {
+            LOG( WARNING_LOG, "contact handle [%s] NOT_EXIST", handle );
+            ret->code= COMMAND_OBJECT_NOT_EXIST;
+          }
+          if (!ret->code && !DBsql.TestObjectClientID(id, regID) ) {
             LOG( WARNING_LOG, "bad autorization not  client of contact [%s]", handle );
             ret->code = COMMAND_AUTOR_ERROR;
           }
@@ -2785,42 +2819,38 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
 
       if ( (DBsql.BeginAction(clientID, act, clTRID, XML) )) {
 
-        switch (act) {
-          case EPP_ContactTransfer:
-            if ( (id = getIdOfContact(&DBsql, name, conf)) < 0)
-              ret->code= SetReasonContactHandle(errors, name,
-                  GetRegistrarLang(clientID) );
-            else if (id == 0)
-              ret->code=COMMAND_OBJECT_NOT_EXIST;
-            break;
+        if (DBsql.BeginTransaction()) {
 
-          case EPP_NSsetTransfer:
-            if ( (id = getIdOfNSSet(&DBsql, name, conf) ) < 0)
-              ret->code=SetReasonNSSetHandle(errors, name,
-                  GetRegistrarLang(clientID) );
-            else if (id == 0)
-              ret->code=COMMAND_OBJECT_NOT_EXIST;
-            break;
-          case EPP_DomainTransfer:
-            // transfer  fqdn to lower case and test it 
-            if ( (zone = getFQDN(FQDN, name) ) <= 0)
-              ret->code=SetReasonDomainFQDN(errors, name, zone,
-                  GetRegistrarLang(clientID) );
-            else {
-              if ( (id = DBsql.GetDomainID(FQDN, GetZoneEnum(zone) ) ) == 0) {
-                LOG( WARNING_LOG , "domain [%s] NOT_EXIST" , name );
-                ret->code= COMMAND_OBJECT_NOT_EXIST;
-              }
+          switch (act) {
+            case EPP_ContactTransfer:
+              if ( (id = getIdOfContact(&DBsql, name, conf, true)) < 0)
+                ret->code= SetReasonContactHandle(errors, name,
+                    GetRegistrarLang(clientID) );
+              else if (id == 0)
+                ret->code=COMMAND_OBJECT_NOT_EXIST;
+              break;
+  
+            case EPP_NSsetTransfer:
+              if ( (id = getIdOfNSSet(&DBsql, name, conf, true) ) < 0)
+                ret->code=SetReasonNSSetHandle(errors, name,
+                    GetRegistrarLang(clientID) );
+              else if (id == 0)
+                ret->code=COMMAND_OBJECT_NOT_EXIST;
+              break;
+  
+            case EPP_DomainTransfer:
+              if ( (id = getIdOfDomain(&DBsql, name, true) ) < 0)
+                ret->code=SetReasonDomainFQDN(errors, name, id == -1,
+                    GetRegistrarLang(clientID) );
+              else if (id == 0)
+                ret->code=COMMAND_OBJECT_NOT_EXIST;
+              break;
+            default:
+              ret->code = COMMAND_PARAMETR_ERROR;
+          }
 
-            }
-            break;
-          default:
-            ret->code = COMMAND_PARAMETR_ERROR;
-        }
+          if (!ret->code) {
 
-        if (!ret->code) {
-
-          if (DBsql.BeginTransaction() ) {
 
             // transfer can not be run by existing client 
             if (DBsql.TestObjectClientID(id, regID)
@@ -2941,8 +2971,8 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
               ntf->Send();
             }
 
-            DBsql.QuitTransaction(ret->code);
           }
+          DBsql.QuitTransaction(ret->code);
         } //test code before begin tr
 
         ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) ) ;
@@ -3124,16 +3154,17 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
 
       if ( (DBsql.BeginAction(clientID, EPP_NSsetDelete, clTRID, XML) )) {
 
-        id = getIdOfNSSet(&DBsql, handle, conf);
-        if (id < 0)
-          ret->code = SetReasonNSSetHandle(errors, handle,
+        if (DBsql.BeginTransaction() ) {
+          // lock row 
+          id = getIdOfNSSet(&DBsql, handle, conf, true);
+          if (id < 0)
+            ret->code = SetReasonNSSetHandle(errors, handle,
               GetRegistrarLang(clientID) );
-        else if (id == 0) {
-          LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
-          ret->code = COMMAND_OBJECT_NOT_EXIST;
-        } else if (DBsql.BeginTransaction() ) {
-
-          if ( !DBsql.TestObjectClientID(id, regID) ) // if not client od the object
+          else if (id == 0) {
+            LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
+            ret->code = COMMAND_OBJECT_NOT_EXIST;
+          }
+          if (!ret->code &&  !DBsql.TestObjectClientID(id, regID) ) // if not client od the object
           {
             LOG( WARNING_LOG, "bad autorization not client of nsset [%s]", handle );
             ret->code = COMMAND_AUTOR_ERROR; // bad autorization
@@ -3599,17 +3630,16 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(
 
       if ( (DBsql.BeginAction(clientID, EPP_NSsetUpdate, clTRID, XML) )) {
 
-        if ( (nssetID = getIdOfNSSet(&DBsql, handle, conf) ) < 0)
-          ret->code = SetReasonNSSetHandle(errors, handle,
-              GetRegistrarLang(clientID) );
-        else if (nssetID == 0) {
-          LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
-          ret->code = COMMAND_OBJECT_NOT_EXIST;
-        }
-
-        else if (DBsql.BeginTransaction() ) {
+        if (DBsql.BeginTransaction() ) {
+          if ( (nssetID = getIdOfNSSet(&DBsql, handle, conf, true) ) < 0)
+            ret->code = SetReasonNSSetHandle(errors, handle,
+                GetRegistrarLang(clientID) );
+          else if (nssetID == 0) {
+            LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
+            ret->code = COMMAND_OBJECT_NOT_EXIST;
+          }
           // registrar of the object
-          if ( !DBsql.TestObjectClientID(nssetID, regID) ) {
+          if (!ret->code && !DBsql.TestObjectClientID(nssetID, regID) ) {
             LOG( WARNING_LOG, "bad autorization not  client of nsset [%s]", handle );
             ret->code = COMMAND_AUTOR_ERROR;
           }
@@ -4150,36 +4180,32 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
 
       if ( (DBsql.BeginAction(clientID, EPP_DomainDelete, clTRID, XML) )) {
 
-        // convert fqdn to lower case and test it is some errors
-        if ( (zone = getFQDN(FQDN, fqdn) ) <= 0)
-          ret->code=SetReasonDomainFQDN(errors, fqdn, zone,
-              GetRegistrarLang(clientID) );
-        else {
-
-          if (DBsql.TestRegistrarZone(regID, zone) == false) {
+        if (DBsql.BeginTransaction() ) {
+          if ( (id = getIdOfDomain(&DBsql, fqdn, true) ) < 0)
+            ret->code=SetReasonDomainFQDN(errors, fqdn, id == -1,
+                GetRegistrarLang(clientID) );
+          else if (id == 0) {
+            LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
+            ret->code=COMMAND_OBJECT_NOT_EXIST;
+          }
+          else if (DBsql.TestRegistrarZone(regID, zone) == false) {
             LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
             ret->code = COMMAND_AUTHENTICATION_ERROR;
-          } else if (DBsql.BeginTransaction() ) {
-            if ( (id = DBsql.GetDomainID(FQDN, GetZoneEnum(zone) ) ) == 0) {
-              LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
-              ret->code = COMMAND_OBJECT_NOT_EXIST;
-            } else {
-
-              // if is client of the object
-              if ( !DBsql.TestObjectClientID(id, regID) ) {
-                LOG( WARNING_LOG, "bad autorization not client of fqdn [%s]", fqdn );
-                ret->code = COMMAND_AUTOR_ERROR;
-              }
-              try {
-                if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited))
-                {
-                  LOG( WARNING_LOG, "delete of object %s is prohibited" , fqdn );
-                  ret->code = COMMAND_STATUS_PROHIBITS_OPERATION;
-                }
-              } catch (...) {
-                ret->code = COMMAND_FAILED;
-              }
-              if (!ret->code) {
+          }
+          else if ( !DBsql.TestObjectClientID(id, regID) ) {
+            LOG( WARNING_LOG, "bad autorization not client of fqdn [%s]", fqdn );
+            ret->code = COMMAND_AUTOR_ERROR;
+          }
+          try {
+            if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited))
+            {
+              LOG( WARNING_LOG, "delete of object %s is prohibited" , fqdn );
+              ret->code = COMMAND_STATUS_PROHIBITS_OPERATION;
+            }
+          } catch (...) {
+            ret->code = COMMAND_FAILED;
+          }
+          if (!ret->code) {
                 // run notifier
                 ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
 
@@ -4190,15 +4216,10 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
                 }
                 if (ret->code == COMMAND_OK)
                   ntf->Send(); // if is ok send messages
-
-              }
-
-            }
+          }
 
             DBsql.QuitTransaction(ret->code);
           }
-
-        }
 
         ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) );
       }
@@ -4279,27 +4300,24 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
 
       if ( (DBsql.BeginAction(clientID, EPP_DomainUpdate, clTRID, XML) )) {
 
-        // convert fqdn to lower case and test it if is not error 
-        if ( (zone = getFQDN(FQDN, fqdn) ) <= 0)
-          ret->code=SetReasonDomainFQDN(errors, fqdn, zone,
-              GetRegistrarLang(clientID) );
-        else if (DBsql.TestRegistrarZone(regID, zone) == false) // test registrar autority to the zone
-        {
-          LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
-          ret->code = COMMAND_AUTHENTICATION_ERROR;
-        }
-        // if domain exist
-        else if ( (id = DBsql.GetDomainID(FQDN, GetZoneEnum(zone) ) ) == 0) {
-          LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
-          ret->code = COMMAND_OBJECT_NOT_EXIST;
-        }
-        // if not client of the domain 
-        else if ( !DBsql.TestObjectClientID(id, regID) ) {
-          LOG( WARNING_LOG, "bad autorization not  client of domain [%s]", fqdn );
-          ret->code = COMMAND_AUTOR_ERROR;
-        }
-
-        else {
+        if (DBsql.BeginTransaction()) { 
+          if ( (id = getIdOfDomain(&DBsql, fqdn, true) ) < 0)
+            ret->code=SetReasonDomainFQDN(errors, fqdn, id == -1,
+                GetRegistrarLang(clientID) );
+          else if (id == 0) {
+            LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
+            ret->code=COMMAND_OBJECT_NOT_EXIST;
+          }
+          else if (DBsql.TestRegistrarZone(regID, zone) == false) // test registrar autority to the zone
+          {
+            LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
+            ret->code = COMMAND_AUTHENTICATION_ERROR;
+          }
+          // if not client of the domain 
+          else if ( !DBsql.TestObjectClientID(id, regID) ) {
+            LOG( WARNING_LOG, "bad autorization not  client of domain [%s]", fqdn );
+            ret->code = COMMAND_AUTOR_ERROR;
+          }
           try {
             if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited))
             {
@@ -4309,7 +4327,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
           } catch (...) {
             ret->code = COMMAND_FAILED;
           }
-          if ( !ret->code && DBsql.BeginTransaction() ) {
+          if ( !ret->code) {
 
             // test  ADD admin-c
             for (i = 0; i < admin_add.length(); i++) {
@@ -5000,38 +5018,33 @@ ccReg::Response * ccReg_EPP_i::DomainRenew(
 
   if ( (regID = GetRegistrarID(clientID) )) {
 
-    if (DBsql.OpenDatabase(database) ) {
-      if ( (DBsql.BeginAction(clientID, EPP_DomainRenew, clTRID, XML) )) {
-
-        // convert fqdn to lower case and test it
-        if ((zone = getFQDN(FQDN, fqdn) ) <= 0) {
-          ret->code=SetReasonDomainFQDN(errors, fqdn, zone,
-              GetRegistrarLang(clientID) );
-        } else // (( zone = getFQDN( FQDN , fqdn ) ) <= 0  )
-        {
-          if (DBsql.BeginTransaction() ) {
-
-            if (DBsql.TestRegistrarZone(regID, zone) == false) {
+    if (DBsql.OpenDatabase(database)) {
+      if (DBsql.BeginAction(clientID, EPP_DomainRenew, clTRID, XML)) {
+        if (DBsql.BeginTransaction()) {
+          if ((id = getIdOfDomain(&DBsql, fqdn, true) ) < 0)
+            ret->code=SetReasonDomainFQDN(errors, fqdn, id == -1,
+                GetRegistrarLang(clientID) );
+          else if (id == 0) {
+            LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
+            ret->code=COMMAND_OBJECT_NOT_EXIST;
+          }
+          else  if (DBsql.TestRegistrarZone(regID, zone) == false) {
               LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
               ret->code = COMMAND_AUTHENTICATION_ERROR;
-            } else // (  DBsql.TestRegistrarZone( regID , zone ) == false )
-            {
-              if ( (id = DBsql.GetDomainID(FQDN, GetZoneEnum(zone) ) ) == 0)
-              // if domain not exist 
-              {
-                ret->code = COMMAND_OBJECT_NOT_EXIST;
-                LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
-              }
-              // test curent ExDate
-              else if (TestExDate(curExpDate, DBsql.GetDomainExDate(id) )
-                  == false) {
-                LOG( WARNING_LOG, "curExpDate is not same as ExDate" );
-                ret->code = SetErrorReason(errors, COMMAND_PARAMETR_ERROR,
-                    ccReg::domain_curExpDate, 1, 
-                    REASON_MSG_CUREXPDATE_NOT_EXPDATE,
-                    GetRegistrarLang(clientID) );
-              } else {
-
+          }
+          // test curent ExDate
+          // there should be lock here for row with exdate
+          // but there is already lock on object_registry row
+          // (from getIdOfDomain) and so there cannot be any race condition
+          else if (TestExDate(curExpDate, DBsql.GetDomainExDate(id)) == false) {
+            LOG( WARNING_LOG, "curExpDate is not same as ExDate" );
+            ret->code = SetErrorReason(
+              errors, COMMAND_PARAMETR_ERROR,
+              ccReg::domain_curExpDate, 1, 
+              REASON_MSG_CUREXPDATE_NOT_EXPDATE,
+              GetRegistrarLang(clientID)
+            );
+          } else {
                 // set default renew  period from zone params
                 if (period_count == 0) {
                   period_count = GetZoneExPeriodMin(zone);
@@ -5154,8 +5167,6 @@ ccReg::Response * ccReg_EPP_i::DomainRenew(
                   }
                 }
               }
-            }
-
             if (ret->code == COMMAND_OK) // run notifier
             {
               ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
@@ -5164,7 +5175,6 @@ ccReg::Response * ccReg_EPP_i::DomainRenew(
             DBsql.QuitTransaction(ret->code);
 
           }
-        }
         ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) );
       }
 
