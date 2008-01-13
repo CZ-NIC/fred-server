@@ -39,10 +39,9 @@ subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_fredconf_DATA) \
 	$(dist_rcconf_SCRIPTS) $(dist_sbin_SCRIPTS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/config.h.in $(top_srcdir)/configure \
-	$(top_srcdir)/contrib/fedora/fred-server.spec.in AUTHORS \
-	COPYING ChangeLog INSTALL NEWS config.guess config.sub depcomp \
-	install-sh missing
+	$(srcdir)/config.h.in $(srcdir)/fred-server.spec.in \
+	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
+	config.guess config.sub depcomp install-sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_base.m4 \
 	$(top_srcdir)/m4/ax_boost_date_time.m4 \
@@ -56,7 +55,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = contrib/fedora/fred-server.spec
+CONFIG_CLEAN_FILES = fred-server.spec
 LIBRARIES = $(noinst_LIBRARIES)
 AR = ar
 ARFLAGS = cru
@@ -261,6 +260,7 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = register
 CLEANFILES = ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
@@ -273,7 +273,7 @@ fredconfdir = $(sysconfdir)/fred
 rcconfdir = $(sysconfdir)/init.d
 noinst_LIBRARIES = libfred.a
 dist_sbin_SCRIPTS = banking.sh
-EXTRA_DIST = contrib/fedora/fred-server.spec
+EXTRA_DIST = fred-server.spec
 dist_fredconf_DATA = server.conf
 dist_rcconf_SCRIPTS = init-scripts/fred-server
 BUILT_SOURCES = ccRegSK.cc ccRegDynSK.cc ccReg.hh
@@ -349,7 +349,7 @@ $(srcdir)/config.h.in:  $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
-contrib/fedora/fred-server.spec: $(top_builddir)/config.status $(top_srcdir)/contrib/fedora/fred-server.spec.in
+fred-server.spec: $(top_builddir)/config.status $(srcdir)/fred-server.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 clean-noinstLIBRARIES:

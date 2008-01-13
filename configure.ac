@@ -74,5 +74,5 @@ AC_CHECK_FILE(
 
 AC_CONFIG_FILES([Makefile
                  register/Makefile
-		 contrib/fedora/fred-server.spec])
+		 fred-server.spec])
 AC_OUTPUT

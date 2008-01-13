@@ -12,6 +12,7 @@ MSG_START="Starting FRED central registry CORBA servers..."
 MSG_STOP="Stopping FRED central registry CORBA servers..."
 
 fred_start() {
+    /usr/bin/pyfredctl start > /dev/null
     ${PATH}/fred-rifd ${OPTIONS}${RIFD_PORT} 2>/dev/null &
     ${PATH}/fred-pifd ${OPTIONS}${PIFD_PORT} 2>/dev/null &
     ${PATH}/fred-adifd ${OPTIONS}${ADIFD_PORT} 2>/dev/null &
@@ -26,6 +27,7 @@ fred_stop() {
     /usr/bin/killall fred-rifd 2>/dev/null
     /usr/bin/killall fred-pifd 2>/dev/null
     /usr/bin/killall fred-adifd 2>/dev/null
+    /usr/bin/pyfredctl stop > /dev/null
     log_success_msg ${MSG_STOP}
 }
 case "$1" in

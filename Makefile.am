@@ -1,3 +1,4 @@
+ACLOCAL_AMFLAGS = -I m4
 SUBDIRS=register
 CLEANFILES=ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
@@ -13,7 +14,7 @@ rcconfdir = $(sysconfdir)/init.d
 noinst_LIBRARIES = libfred.a
 sbin_PROGRAMS = fred-rifd fred-adifd fred-pifd fred-banking fred-admin
 dist_sbin_SCRIPTS = banking.sh
-EXTRA_DIST = contrib/fedora/fred-server.spec
+EXTRA_DIST = fred-server.spec
 dist_fredconf_DATA = server.conf
 dist_rcconf_SCRIPTS = init-scripts/fred-server
 

@@ -7938,7 +7938,7 @@ echo "$as_me: error: directory \"$IDLDIR\" does not contain ccReg.idl
 fi
 
 
-ac_config_files="$ac_config_files Makefile register/Makefile contrib/fedora/fred-server.spec"
+ac_config_files="$ac_config_files Makefile register/Makefile fred-server.spec"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -8528,7 +8528,7 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "register/Makefile") CONFIG_FILES="$CONFIG_FILES register/Makefile" ;;
-    "contrib/fedora/fred-server.spec") CONFIG_FILES="$CONFIG_FILES contrib/fedora/fred-server.spec" ;;
+    "fred-server.spec") CONFIG_FILES="$CONFIG_FILES fred-server.spec" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
