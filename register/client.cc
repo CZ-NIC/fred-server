@@ -645,8 +645,6 @@ int main(int argc, char **argv)
       if (!vm.count("object_id"))
         std::cerr << "object_id parameter must be specified" << std::endl;
       else {
-        Register::TID o = vm["object_id"].as<Register::TID>();
-        unsigned s = vm["object_new_state_request"].as<unsigned>();
         int res = createObjectStateRequest(
           &db, 
           vm["object_id"].as<Register::TID>(),

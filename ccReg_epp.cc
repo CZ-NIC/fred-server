@@ -338,7 +338,7 @@ bool ccReg_EPP_i::LoginSession(
     for (i=0; i<maxSession; i++)
       if (session[i].registrarID == registrarID)
         count++;
-    if (count >= conf.GetSessionRegistrarMax()) {
+    if ((int)count >= conf.GetSessionRegistrarMax()) {
       LOG( DEBUG_LOG , "SESSION max per registrar exceeded clientID %d registrarID %d lang %d" , loginID , registrarID , language );
       //
       return false;
@@ -1458,6 +1458,9 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
   }
   catch (ccReg::EPP::NoMessages) {throw;}
   catch (...) {a.failedInternal("Connection problems");}
+  // previous commands throw exception so this code
+  // will never be called
+  return NULL;
 }
 
 /***********************************************************************
@@ -1609,6 +1612,9 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
     return a.getRet()._retn();
   }
   a.failedInternal("Invalid message structure");
+  // previous command throw exception in any case so this code
+  // will never be called
+  return NULL;
 }
 
 /***********************************************************************
@@ -2169,9 +2175,9 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
   c->CrID = CORBA::string_dup(con->getCreateRegistrarHandle().c_str());
   c->UpID = CORBA::string_dup(con->getUpdateRegistrarHandle().c_str());
   // authinfo is filled only if session registar is ownering registrar 
-  c->AuthInfoPw
-      = CORBA::string_dup(a.getRegistrar() == con->getRegistrarId() ? con->getAuthPw().c_str()
-          : "");
+  c->AuthInfoPw = CORBA::string_dup(
+   a.getRegistrar() == (int)con->getRegistrarId()?con->getAuthPw().c_str():""
+  );
   // states
   for (unsigned i=0; i<con->getStatusCount(); i++) {
     Register::TID stateId = con->getStatusByIdx(i)->getStatusId();
@@ -2499,6 +2505,9 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                   case ccReg::BIRTHDAY:
                     identtype = 6;
                     break;
+                  case ccReg::EMPTY:
+                    // just to keep compiler satisfied :)
+                    break;
                 }
                 DBsql.SET("SSNtype", identtype); // type ssn
               }
@@ -2721,6 +2730,9 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
                   case ccReg::BIRTHDAY:
                     identtype = 6;
                     break;
+                  case ccReg::EMPTY:
+                    // just to keep compiler satisfied
+                    break;
                 }
                 DBsql.VALUE(identtype);
               }
@@ -2801,11 +2813,9 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
   ccReg::Errors_var errors;
   DB DBsql;
   std::auto_ptr<EPPNotifier> ntf;
-  char FQDN[164];
   char pass[PASS_LEN+1];
   int regID, id, oldregID;
   int type=0;
-  int zone;
 
   ret = new ccReg::Response;
   errors = new ccReg::Errors;
@@ -3073,9 +3083,10 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
   n->CrID = CORBA::string_dup(nss->getCreateRegistrarHandle().c_str());
   n->UpID = CORBA::string_dup(nss->getUpdateRegistrarHandle().c_str());
   // authinfo is filled only if session registar is ownering registrar 
-  n->AuthInfoPw
-      = CORBA::string_dup(a.getRegistrar() == nss->getRegistrarId() ? nss->getAuthPw().c_str()
-          : "");
+  n->AuthInfoPw = CORBA::string_dup(
+    a.getRegistrar() == (int)nss->getRegistrarId() ? nss->getAuthPw().c_str()
+          : ""
+  );
   // states
   for (unsigned i=0; i<nss->getStatusCount(); i++) {
     Register::TID stateId = nss->getStatusByIdx(i)->getStatusId();
@@ -4087,9 +4098,10 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
   d->CrID = CORBA::string_dup(dom->getCreateRegistrarHandle().c_str());
   d->UpID = CORBA::string_dup(dom->getUpdateRegistrarHandle().c_str());
   // authinfo is filled only if session registar is ownering registrar 
-  d->AuthInfoPw
-      = CORBA::string_dup(a.getRegistrar() == dom->getRegistrarId() ? dom->getAuthPw().c_str()
-          : "");
+  d->AuthInfoPw = CORBA::string_dup(
+    a.getRegistrar() == (int)dom->getRegistrarId() ? dom->getAuthPw().c_str()
+          : ""
+  );
   // states
   for (unsigned i=0; i<dom->getStatusCount(); i++) {
     Register::TID stateId = dom->getStatusByIdx(i)->getStatusId();
@@ -4117,7 +4129,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
   d->ExDate = CORBA::string_dup(to_iso_extended_string(dom->getExpirationDate()).c_str() );
   // registrant and contacts are disabled for other registrars 
   // in case of enum domain
-  bool disabled = a.getRegistrar() != dom->getRegistrarId()
+  bool disabled = a.getRegistrar() != (int)dom->getRegistrarId()
       && zman->findZoneId(fqdn)->isEnumZone();
   // registrant
   d->Registrant = CORBA::string_dup(disabled ? "" : dom->getRegistrantHandle().c_str() );
@@ -4163,7 +4175,6 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
   ccReg::Errors_var errors;
   DB DBsql;
   std::auto_ptr<EPPNotifier> ntf;
-  char FQDN[164];
   int regID, id, zone;
   ret = new ccReg::Response;
   errors = new ccReg::Errors;
@@ -4270,7 +4281,6 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
   ccReg::Errors_var errors;
   std::auto_ptr<EPPNotifier> ntf;
   DB DBsql;
-  char FQDN[164];
   char valexpiryDate[MAX_DATE+1];
   int regID = 0, id, nssetid, contactid, adminid;
   int seq, zone;
@@ -4981,7 +4991,6 @@ ccReg::Response * ccReg_EPP_i::DomainRenew(
   DB DBsql;
   std::auto_ptr<EPPNotifier> ntf;
   char valexpiryDate[MAX_DATE+1];
-  char FQDN[164];
   ccReg::Response_var ret;
   ccReg::Errors_var errors;
   int regID, id, zone;

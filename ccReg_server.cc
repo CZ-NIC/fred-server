@@ -55,7 +55,6 @@ static void signalHandler(
 int main(
   int argc, char** argv)
 {
-  pid_t pid;
 
   try {
     // database connection settings
