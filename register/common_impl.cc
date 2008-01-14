@@ -153,8 +153,8 @@ Register::CommonListImpl::findIDSequence(TID id)
 {
   // must be sorted by ID to make sence
   if (ptrIdx < 0) ptrIdx = 0;
-  for (;ptrIdx < olist.size() && olist[ptrIdx]->getId()<id;ptrIdx++);
-  if (ptrIdx == olist.size() || olist[ptrIdx]->getId() != id) {
+  for (;ptrIdx < (int)olist.size() && olist[ptrIdx]->getId()<id;ptrIdx++);
+  if (ptrIdx == (int)olist.size() || olist[ptrIdx]->getId() != id) {
     LOG(ERROR_LOG, "find_sequence: id %ull, ptr %d", id, ptrIdx); 
     resetIDSequence();
     return NULL;

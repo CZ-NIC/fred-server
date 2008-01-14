@@ -70,8 +70,8 @@ namespace Register
         return vatRate == rate;
       }
       unsigned vatRate; ///< percent rate
-      date validity; ///< valid to this date
       unsigned koef; ///< koeficient for VAT counting (in 1/10000)
+      date validity; ///< valid to this date
     };
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     //   ManagerImpl
@@ -336,8 +336,8 @@ namespace Register
       typedef std::map<unsigned, RecordsType> vatRatesRecordsType;
       vatRatesRecordsType::const_iterator j; ///< for walkthrough in results 
       vatRatesRecordsType records; ///< list of years by vat rate
-      bool noVatRate; ///< there is not vat rate asked in resetIterator()
       ManagerImpl *man; ///< need to count vat
+      bool noVatRate; ///< there is not vat rate asked in resetIterator()
     public:
       AnnualPartitioningImpl(ManagerImpl* _man) : man(_man), noVatRate(true)
       {}
@@ -496,8 +496,8 @@ namespace Register
           db->GetFieldValue(l,24)[0] == 't'
         ),
         storeFileFlag(false),
-        man(_man),
-        ap(_man)
+        ap(_man),
+        man(_man)
       {
       }
       ~InvoiceImpl()

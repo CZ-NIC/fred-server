@@ -17,6 +17,7 @@ namespace Register
     class Manager
     {
      public:
+      virtual ~Manager() {}
       /// notify contacts about state changes  
       virtual void notifyStateChanges(
     	const std::string& exceptList,

@@ -356,8 +356,8 @@ namespace Register
     class ManagerImpl : public virtual Manager
     {
       DB *db; ///< connection do db
-      bool restrictedHandle; ///< format of handle is more restrictive
       Zone::Manager *zm; ///< needed for hostname checking
+      bool restrictedHandle; ///< format of handle is more restrictive
       /// check if handle is in valid format
       bool checkHandleFormat(const std::string& handle) const
       {

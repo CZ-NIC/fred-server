@@ -40,8 +40,8 @@ namespace Register
       MessageImpl(
         unsigned _type, TID _id, TID _registrar, ptime _crTime,
         ptime _expTime, bool _seen
-      ) : type(_type), id(_id), registrar(_registrar), crTime(_crTime),
-          expTime(_expTime), seen(_seen)
+      ) : id(_id), registrar(_registrar), crTime(_crTime),
+          expTime(_expTime), seen(_seen), type(_type)
       {}
       TID getId() const
       {
