@@ -82,6 +82,7 @@ MailerManager::sendEmail(
   bool prev = false;
   CORBA::String_var prevMsg;
   // call mailer
+  if (CORBA::is_nil(mailer)) throw Register::Mailer::NOT_SEND();
   try {
     LOG(
       DEBUG_LOG, 
