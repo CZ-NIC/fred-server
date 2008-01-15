@@ -185,7 +185,7 @@ bool Conf::ReadConfigFileTXT(
           "nameservice", "session_max", "session_wait", "docgen_path",
           "fileclient_path", "ebanka_url", "docgen_template_path",
           "nsset_level", "restricted_handles", "disable_epp_notifier",
-          "session_registrar_max" };
+          "session_registrar_max", "lock_epp_commands" };
   int key;
   char keyname[KEY_MAX];
   char value[MAX_LINE];
@@ -288,6 +288,9 @@ bool Conf::ReadConfigFileTXT(
             break;
           case KEY_session_registrar_max:
             session_registrar_max = atoi(value);
+            break;
+          case KEY_lock_epp_commands:
+            lockEPPCommands = atoi(value);
             break;
           default:
             LOG(ERROR_LOG, "parse error on line %d  [%s]\n" , line , buf );

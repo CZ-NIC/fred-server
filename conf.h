@@ -30,7 +30,8 @@
 #define KEY_restricted_handles  18
 #define KEY_disable_epp_notifier  19
 #define KEY_session_registrar_max 20
-#define MAX_KEYS  20
+#define KEY_lock_epp_commands  21
+#define MAX_KEYS  21
 
 #include <string>
 
@@ -56,6 +57,7 @@ public:
     session_max=20;
     session_wait=300;
     session_registrar_max=5;
+    lockEPPCommands=1;
   }
   ~Conf()
   {
@@ -213,7 +215,10 @@ public:
 
   }
   ;
-
+  unsigned GetLockEPPCommands()
+  {
+    return lockEPPCommands;
+  }
   int GetLocal(
     char *value);
   int GetLevel(
@@ -240,6 +245,7 @@ private:
   std::string nssetLevel;
   unsigned restrictedHandles;
   unsigned disableEPPNotifier;
+  unsigned lockEPPCommands;
 };
 
 #endif

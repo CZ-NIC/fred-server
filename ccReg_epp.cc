@@ -183,6 +183,7 @@ static std::string formatTime(
 static long int getIdOfContact(
   DB *db, const char *handle, Conf& c, bool lock = false)
 {
+  if (lock && !c.GetLockEPPCommands()) lock = false;
   std::auto_ptr<Register::Contact::Manager>
       cman(Register::Contact::Manager::create(db, c.GetRestrictedHandles()) );
   Register::Contact::Manager::CheckAvailType caType;
@@ -201,6 +202,7 @@ static long int getIdOfContact(
 static long int getIdOfNSSet(
   DB *db, const char *handle, Conf& c, bool lock = false)
 {
+  if (lock && !c.GetLockEPPCommands()) lock = false;
   std::auto_ptr<Register::Zone::Manager>
       zman(Register::Zone::Manager::create(db) );
   std::auto_ptr<Register::NSSet::Manager> man(Register::NSSet::Manager::create(
@@ -219,8 +221,9 @@ static long int getIdOfNSSet(
 
 /// replace GetDomainID
 static long int getIdOfDomain(
-  DB *db, const char *handle, bool lock = false, int* zone = NULL)
+  DB *db, const char *handle, Conf& c, bool lock = false, int* zone = NULL)
 {
+  if (lock && !c.GetLockEPPCommands()) lock = false;
   std::auto_ptr<Register::Zone::Manager> zm(
     Register::Zone::Manager::create(db)
   );
@@ -2851,7 +2854,7 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
               break;
   
             case EPP_DomainTransfer:
-              if ( (id = getIdOfDomain(&DBsql, name, true) ) < 0)
+              if ( (id = getIdOfDomain(&DBsql, name, conf, true) ) < 0)
                 ret->code=SetReasonDomainFQDN(errors, name, id == -1,
                     GetRegistrarLang(clientID) );
               else if (id == 0)
@@ -4194,7 +4197,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
       if ( (DBsql.BeginAction(clientID, EPP_DomainDelete, clTRID, XML) )) {
 
         if (DBsql.BeginTransaction() ) {
-          if ( (id = getIdOfDomain(&DBsql, fqdn, true, &zone) ) < 0)
+          if ( (id = getIdOfDomain(&DBsql, fqdn, conf, true, &zone) ) < 0)
             ret->code=SetReasonDomainFQDN(errors, fqdn, id == -1,
                 GetRegistrarLang(clientID) );
           else if (id == 0) {
@@ -4313,7 +4316,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
       if ( (DBsql.BeginAction(clientID, EPP_DomainUpdate, clTRID, XML) )) {
 
         if (DBsql.BeginTransaction()) { 
-          if ( (id = getIdOfDomain(&DBsql, fqdn, true, &zone) ) < 0)
+          if ( (id = getIdOfDomain(&DBsql, fqdn, conf, true, &zone) ) < 0)
             ret->code=SetReasonDomainFQDN(errors, fqdn, id == -1,
                 GetRegistrarLang(clientID) );
           else if (id == 0) {
@@ -5032,7 +5035,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew(
     if (DBsql.OpenDatabase(database)) {
       if (DBsql.BeginAction(clientID, EPP_DomainRenew, clTRID, XML)) {
         if (DBsql.BeginTransaction()) {
-          if ((id = getIdOfDomain(&DBsql, fqdn, true, &zone) ) < 0)
+          if ((id = getIdOfDomain(&DBsql, fqdn, conf, true, &zone) ) < 0)
             ret->code=SetReasonDomainFQDN(errors, fqdn, id == -1,
                 GetRegistrarLang(clientID) );
           else if (id == 0) {
