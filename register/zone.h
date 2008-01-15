@@ -2,6 +2,7 @@
 #define ZONE_H_
 
 #include <string>
+#include "types.h" 
 
 /// forward declaration for database connection
 class DB;
@@ -22,6 +23,8 @@ namespace Register
       /// protected destruktor - object is managed by Manager object
       virtual ~Zone() {}
      public:
+      /// id of domain
+      virtual const TID getId() const = 0;
       /// suffix of domain name for this zone
       virtual const std::string& getFqdn() const = 0;
       ///< is zone for enum domains?

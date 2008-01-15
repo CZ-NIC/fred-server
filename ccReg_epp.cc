@@ -219,7 +219,7 @@ static long int getIdOfNSSet(
 
 /// replace GetDomainID
 static long int getIdOfDomain(
-  DB *db, const char *handle, bool lock = false)
+  DB *db, const char *handle, bool lock = false, int* zone = NULL)
 {
   std::auto_ptr<Register::Zone::Manager> zm(
     Register::Zone::Manager::create(db)
@@ -248,6 +248,8 @@ static long int getIdOfDomain(
         ret = 0;
         break;
     }
+    const Register::Zone::Zone *z = zm->findZoneId(handle);
+    if (zone && z) *zone = z->getId();
   } catch (...) {}
   return ret;
 }
@@ -4192,7 +4194,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
       if ( (DBsql.BeginAction(clientID, EPP_DomainDelete, clTRID, XML) )) {
 
         if (DBsql.BeginTransaction() ) {
-          if ( (id = getIdOfDomain(&DBsql, fqdn, true) ) < 0)
+          if ( (id = getIdOfDomain(&DBsql, fqdn, true, &zone) ) < 0)
             ret->code=SetReasonDomainFQDN(errors, fqdn, id == -1,
                 GetRegistrarLang(clientID) );
           else if (id == 0) {
@@ -4311,7 +4313,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
       if ( (DBsql.BeginAction(clientID, EPP_DomainUpdate, clTRID, XML) )) {
 
         if (DBsql.BeginTransaction()) { 
-          if ( (id = getIdOfDomain(&DBsql, fqdn, true) ) < 0)
+          if ( (id = getIdOfDomain(&DBsql, fqdn, true, &zone) ) < 0)
             ret->code=SetReasonDomainFQDN(errors, fqdn, id == -1,
                 GetRegistrarLang(clientID) );
           else if (id == 0) {
@@ -5030,7 +5032,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew(
     if (DBsql.OpenDatabase(database)) {
       if (DBsql.BeginAction(clientID, EPP_DomainRenew, clTRID, XML)) {
         if (DBsql.BeginTransaction()) {
-          if ((id = getIdOfDomain(&DBsql, fqdn, true) ) < 0)
+          if ((id = getIdOfDomain(&DBsql, fqdn, true, &zone) ) < 0)
             ret->code=SetReasonDomainFQDN(errors, fqdn, id == -1,
                 GetRegistrarLang(clientID) );
           else if (id == 0) {

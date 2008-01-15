@@ -56,6 +56,11 @@ namespace Register
         return copy.compare(copy.length()-l,l,fqdn) == 0;  
       }
       /// interface implementation
+      const TID getId() const
+      {
+        return id;
+      }
+      /// interface implementation
       const std::string& getFqdn() const 
       {
         return fqdn; 
