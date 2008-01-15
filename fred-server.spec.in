@@ -19,7 +19,7 @@ Server c++ backend for Fred registry system
 %setup
 
 %build
-%configure --prefix=/usr --sysconfdir=/etc
+%configure
 make
 
 %install
@@ -31,14 +31,14 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root,-)
-/etc/fred/server.conf
-/etc/init.d/fred-server
-/usr/sbin/fred-rifd
-/usr/sbin/fred-adifd
-/usr/sbin/fred-pifd
-/usr/sbin/fred-admin
-/usr/sbin/fred-banking
-/usr/sbin/banking.sh
+%config %{_sysconfdir}/fred/server.conf
+%{_sysconfdir}/init.d/fred-server
+%{_sbindir}/fred-rifd
+%{_sbindir}/fred-adifd
+%{_sbindir}/fred-pifd
+%{_sbindir}/fred-admin
+%{_sbindir}/fred-banking
+%{_sbindir}/banking.sh
 
 %changelog
 * Mon Sep 07 2008 Jaromir Talir <jaromir.talir@nic.cz>
