@@ -1937,39 +1937,37 @@ ccReg::Response* ccReg_EPP_i::ObjectCheck(
 
               cType = cman->checkAvail( ( const char * ) chck[i] , caConflict );
               LOG( NOTICE_LOG , "contact type %d" , cType );
+              switch (cType) {
+                case Register::Contact::Manager::CA_INVALID_HANDLE:
+                  a[i].avail = ccReg::BadFormat;
+                  a[i].reason
+                      = CORBA::string_dup(GetReasonMessage( REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID )));
+                  LOG( NOTICE_LOG , "bad format %s of contact handle" , (const char * ) chck[i] );
+                  break;
+                case Register::Contact::Manager::CA_REGISTRED:
+                  a[i].avail = ccReg::Exist;
+                  a[i].reason
+                      = CORBA::string_dup(GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID )) );
+                  LOG( NOTICE_LOG , "contact %s exist not Avail" , (const char * ) chck[i] );
+                  break;
+  
+                case Register::Contact::Manager::CA_PROTECTED:
+                  a[i].avail = ccReg::DelPeriod;
+                  a[i].reason
+                      = CORBA::string_dup(GetReasonMessage( REASON_MSG_PROTECTED_PERIOD , GetRegistrarLang( clientID )) ); // v ochrane lhute
+                  LOG( NOTICE_LOG , "contact %s in delete period" ,(const char * ) chck[i] );
+                  break;
+                case Register::Contact::Manager::CA_FREE:
+                  a[i].avail = ccReg::NotExist;
+                  a[i].reason = CORBA::string_dup(""); // free
+                  LOG( NOTICE_LOG , "contact %s not exist  Avail" ,(const char * ) chck[i] );
+                  break;
+              }
             }
             catch (...) {
               LOG( WARNING_LOG, "cannot run Register::Contact::checkAvail");
               ret->code=COMMAND_FAILED;
             }
-
-            switch (cType) {
-              case Register::Contact::Manager::CA_INVALID_HANDLE:
-                a[i].avail = ccReg::BadFormat;
-                a[i].reason
-                    = CORBA::string_dup(GetReasonMessage( REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID )));
-                LOG( NOTICE_LOG , "bad format %s of contact handle" , (const char * ) chck[i] );
-                break;
-              case Register::Contact::Manager::CA_REGISTRED:
-                a[i].avail = ccReg::Exist;
-                a[i].reason
-                    = CORBA::string_dup(GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID )) );
-                LOG( NOTICE_LOG , "contact %s exist not Avail" , (const char * ) chck[i] );
-                break;
-
-              case Register::Contact::Manager::CA_PROTECTED:
-                a[i].avail = ccReg::DelPeriod;
-                a[i].reason
-                    = CORBA::string_dup(GetReasonMessage( REASON_MSG_PROTECTED_PERIOD , GetRegistrarLang( clientID )) ); // v ochrane lhute
-                LOG( NOTICE_LOG , "contact %s in delete period" ,(const char * ) chck[i] );
-                break;
-              case Register::Contact::Manager::CA_FREE:
-                a[i].avail = ccReg::NotExist;
-                a[i].reason = CORBA::string_dup(""); // free
-                LOG( NOTICE_LOG , "contact %s not exist  Avail" ,(const char * ) chck[i] );
-                break;
-            }
-
             break;
 
           case EPP_NSsetCheck:
@@ -1981,39 +1979,39 @@ ccReg::Response* ccReg_EPP_i::ObjectCheck(
               LOG( NOTICE_LOG , "nsset checkAvail handle [%s]" , (const char * ) chck[i] );
 
               nType = nman->checkAvail( ( const char * ) chck[i] , caConflict );
-              LOG( NOTICE_LOG , "contact type %d" , cType );
+              LOG( NOTICE_LOG , "nsset check type %d" , nType );
+              switch (nType) {
+                case Register::NSSet::Manager::CA_INVALID_HANDLE:
+                  a[i].avail = ccReg::BadFormat;
+                  a[i].reason
+                      = CORBA::string_dup(GetReasonMessage( REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID )));
+                  LOG( NOTICE_LOG , "bad format %s of nsset handle" , (const char * ) chck[i] );
+                  break;
+                case Register::NSSet::Manager::CA_REGISTRED:
+                  a[i].avail = ccReg::Exist;
+                  a[i].reason
+                      = CORBA::string_dup(GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID )) );
+                  LOG( NOTICE_LOG , "nsset %s exist not Avail" , (const char * ) chck[i] );
+                  break;
+  
+                case Register::NSSet::Manager::CA_PROTECTED:
+                  a[i].avail = ccReg::DelPeriod;
+                  a[i].reason
+                      = CORBA::string_dup(GetReasonMessage( REASON_MSG_PROTECTED_PERIOD , GetRegistrarLang( clientID )) ); // v ochrane lhute
+                  LOG( NOTICE_LOG , "nsset %s in delete period" ,(const char * ) chck[i] );
+                  break;
+                case Register::NSSet::Manager::CA_FREE:
+                  a[i].avail = ccReg::NotExist;
+                  a[i].reason = CORBA::string_dup("");
+                  LOG( NOTICE_LOG , "nsset %s not exist  Avail" ,(const char * ) chck[i] );
+                  break;
+              }
             }
             catch (...) {
               LOG( WARNING_LOG, "cannot run Register::NSSet::checkAvail");
               ret->code=COMMAND_FAILED;
             }
 
-            switch (nType) {
-              case Register::NSSet::Manager::CA_INVALID_HANDLE:
-                a[i].avail = ccReg::BadFormat;
-                a[i].reason
-                    = CORBA::string_dup(GetReasonMessage( REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID )));
-                LOG( NOTICE_LOG , "bad format %s of nsset handle" , (const char * ) chck[i] );
-                break;
-              case Register::NSSet::Manager::CA_REGISTRED:
-                a[i].avail = ccReg::Exist;
-                a[i].reason
-                    = CORBA::string_dup(GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID )) );
-                LOG( NOTICE_LOG , "nsset %s exist not Avail" , (const char * ) chck[i] );
-                break;
-
-              case Register::NSSet::Manager::CA_PROTECTED:
-                a[i].avail = ccReg::DelPeriod;
-                a[i].reason
-                    = CORBA::string_dup(GetReasonMessage( REASON_MSG_PROTECTED_PERIOD , GetRegistrarLang( clientID )) ); // v ochrane lhute
-                LOG( NOTICE_LOG , "nsset %s in delete period" ,(const char * ) chck[i] );
-                break;
-              case Register::NSSet::Manager::CA_FREE:
-                a[i].avail = ccReg::NotExist;
-                a[i].reason = CORBA::string_dup("");
-                LOG( NOTICE_LOG , "nsset %s not exist  Avail" ,(const char * ) chck[i] );
-                break;
-            }
 
             break;
 
@@ -2027,59 +2025,57 @@ ccReg::Response* ccReg_EPP_i::ObjectCheck(
 
               caType = dman->checkAvail( ( const char * ) chck[i] , caConflict);
               LOG( NOTICE_LOG , "domain type %d" , caType );
+              switch (caType) {
+                case Register::Domain::CA_INVALID_HANDLE:
+                case Register::Domain::CA_BAD_LENGHT:
+                  a[i].avail = ccReg::BadFormat;
+                  a[i].reason
+                      = CORBA::string_dup(GetReasonMessage(REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID )) );
+                  LOG( NOTICE_LOG , "bad format %s of fqdn" , (const char * ) chck[i] );
+                  break;
+                case Register::Domain::CA_REGISTRED:
+                case Register::Domain::CA_CHILD_REGISTRED:
+                case Register::Domain::CA_PARENT_REGISTRED:
+                  a[i].avail = ccReg::Exist;
+                  a[i].reason
+                      = CORBA::string_dup(GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID )) );
+                  LOG( NOTICE_LOG , "domain %s exist not Avail" , (const char * ) chck[i] );
+                  break;
+                case Register::Domain::CA_BLACKLIST:
+                  a[i].avail = ccReg::BlackList;
+                  a[i].reason
+                      = CORBA::string_dup(GetReasonMessage( REASON_MSG_BLACKLISTED_DOMAIN , GetRegistrarLang( clientID )) );
+                  LOG( NOTICE_LOG , "blacklisted  %s" , (const char * ) chck[i] );
+                  break;
+                case Register::Domain::CA_AVAILABLE:
+                  a[i].avail = ccReg::NotExist;
+                  a[i].reason = CORBA::string_dup(""); // free
+                  LOG( NOTICE_LOG , "domain %s not exist  Avail" ,(const char * ) chck[i] );
+                  break;
+                case Register::Domain::CA_BAD_ZONE:
+                  a[i].avail = ccReg::NotApplicable; // unusable domain isn't in zone
+                  a[i].reason
+                      = CORBA::string_dup(GetReasonMessage(REASON_MSG_NOT_APPLICABLE_DOMAIN , GetRegistrarLang( clientID )) );
+                  LOG( NOTICE_LOG , "not applicable %s" , (const char * ) chck[i] );
+                  break;
+              }
+  
+              /*
+               #      CA_INVALID_HANDLE, ///< bad formed handle
+               #      CA_BAD_ZONE, ///< domain outside of register
+               #      CA_BAD_LENGHT, ///< domain longer then acceptable
+               #      CA_PROTECTED, ///< domain temporary protected for registration
+               #      CA_BLACKLIST, ///< registration blocked in blacklist 
+               #      CA_REGISTRED, ///< domain registred
+               #      CA_PARENT_REGISTRED, ///< parent already registred
+               #      CA_CHILD_REGISTRED, ///< child already registred
+               #      CA_AVAILABLE ///< domain is available
+               */
             }
             catch (...) {
               LOG( WARNING_LOG, "cannot run Register::Domain::checkAvail");
               ret->code=COMMAND_FAILED;
             }
-
-            switch (caType) {
-              case Register::Domain::CA_INVALID_HANDLE:
-              case Register::Domain::CA_BAD_LENGHT:
-                a[i].avail = ccReg::BadFormat;
-                a[i].reason
-                    = CORBA::string_dup(GetReasonMessage(REASON_MSG_INVALID_FORMAT , GetRegistrarLang( clientID )) );
-                LOG( NOTICE_LOG , "bad format %s of fqdn" , (const char * ) chck[i] );
-                break;
-              case Register::Domain::CA_REGISTRED:
-              case Register::Domain::CA_CHILD_REGISTRED:
-              case Register::Domain::CA_PARENT_REGISTRED:
-                a[i].avail = ccReg::Exist;
-                a[i].reason
-                    = CORBA::string_dup(GetReasonMessage( REASON_MSG_REGISTRED , GetRegistrarLang( clientID )) );
-                LOG( NOTICE_LOG , "domain %s exist not Avail" , (const char * ) chck[i] );
-                break;
-              case Register::Domain::CA_BLACKLIST:
-                a[i].avail = ccReg::BlackList;
-                a[i].reason
-                    = CORBA::string_dup(GetReasonMessage( REASON_MSG_BLACKLISTED_DOMAIN , GetRegistrarLang( clientID )) );
-                LOG( NOTICE_LOG , "blacklisted  %s" , (const char * ) chck[i] );
-                break;
-              case Register::Domain::CA_AVAILABLE:
-                a[i].avail = ccReg::NotExist;
-                a[i].reason = CORBA::string_dup(""); // free
-                LOG( NOTICE_LOG , "domain %s not exist  Avail" ,(const char * ) chck[i] );
-                break;
-              case Register::Domain::CA_BAD_ZONE:
-                a[i].avail = ccReg::NotApplicable; // unusable domain isn't in zone
-                a[i].reason
-                    = CORBA::string_dup(GetReasonMessage(REASON_MSG_NOT_APPLICABLE_DOMAIN , GetRegistrarLang( clientID )) );
-                LOG( NOTICE_LOG , "not applicable %s" , (const char * ) chck[i] );
-                break;
-            }
-
-            /*
-             #      CA_INVALID_HANDLE, ///< bad formed handle
-             #      CA_BAD_ZONE, ///< domain outside of register
-             #      CA_BAD_LENGHT, ///< domain longer then acceptable
-             #      CA_PROTECTED, ///< domain temporary protected for registration
-             #      CA_BLACKLIST, ///< registration blocked in blacklist 
-             #      CA_REGISTRED, ///< domain registred
-             #      CA_PARENT_REGISTRED, ///< parent already registred
-             #      CA_CHILD_REGISTRED, ///< child already registred
-             #      CA_AVAILABLE ///< domain is available
-             */
-
             break;
 
         }
@@ -2631,7 +2627,10 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
           caType = cman->checkAvail(handle,nameId);
           id = nameId.id;
         }
-        catch (...) {id = -1;}
+        catch (...) {
+          id = -1;
+          caType = Register::Contact::Manager::CA_INVALID_HANDLE;
+        }
         if (id<0 || caType == Register::Contact::Manager::CA_INVALID_HANDLE)
           ret->code= SetReasonContactHandle(errors, handle,
               GetRegistrarLang(clientID) );
@@ -2819,8 +2818,9 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
   DB DBsql;
   std::auto_ptr<EPPNotifier> ntf;
   char pass[PASS_LEN+1];
-  int regID, id, oldregID;
-  int type=0;
+  int regID, oldregID;
+  int type = 0;
+  int id = 0;
 
   ret = new ccReg::Response;
   errors = new ccReg::Errors;
@@ -3323,7 +3323,10 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
               caType = nman->checkAvail(handle,nameId);
               id = nameId.id;
             }
-            catch (...) {id = -1;}
+            catch (...) {
+              caType = Register::NSSet::Manager::CA_INVALID_HANDLE;
+              id = -1;
+            }
 
             if (id<0 || caType == Register::NSSet::Manager::CA_INVALID_HANDLE)
               ret->code = SetReasonNSSetHandle(errors, handle,
@@ -3348,6 +3351,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
                 techid = nameId.id;
               } catch (...) {
                 caType = Register::Contact::Manager::CA_INVALID_HANDLE;
+                techid = 0;
               }
 
               if (caType != Register::Contact::Manager::CA_REGISTRED)
@@ -4713,240 +4717,241 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
 
             dType = dman->checkAvail( ( const char * ) fqdn , dConflict);
             LOG( NOTICE_LOG , "domain type %d" , dType );
+            switch (dType) {
+              case Register::Domain::CA_INVALID_HANDLE:
+              case Register::Domain::CA_BAD_LENGHT:
+                LOG( NOTICE_LOG , "bad format %s of fqdn" , (const char * ) fqdn );
+                ret->code = SetErrorReason(errors, COMMAND_PARAMETR_ERROR,
+                    ccReg::domain_fqdn, 1, REASON_MSG_BAD_FORMAT_FQDN,
+                    GetRegistrarLang(clientID));
+                break;
+              case Register::Domain::CA_REGISTRED:
+              case Register::Domain::CA_CHILD_REGISTRED:
+              case Register::Domain::CA_PARENT_REGISTRED:
+                LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
+                ret->code = COMMAND_OBJECT_EXIST; // if is exist
+                break;
+              case Register::Domain::CA_BLACKLIST: // black listed
+                LOG( NOTICE_LOG , "blacklisted  %s" , (const char * ) fqdn );
+                ret->code = SetErrorReason(errors, COMMAND_PARAMETR_ERROR,
+                    ccReg::domain_fqdn, 1, REASON_MSG_BLACKLISTED_DOMAIN,
+                    GetRegistrarLang(clientID) );
+                break;
+              case Register::Domain::CA_AVAILABLE: // if is free
+                // conver fqdn to lower case and get zone 
+                zone = getFQDN(FQDN, fqdn);
+                LOG( NOTICE_LOG , "domain %s avail zone %d" ,(const char * ) FQDN , zone );
+                break;
+              case Register::Domain::CA_BAD_ZONE:
+                // domain not in zone
+                LOG( NOTICE_LOG , "NOn in zone not applicable %s" , (const char * ) fqdn );
+                ret->code = SetErrorReason(errors, COMMAND_PARAMETR_ERROR,
+                    ccReg::domain_fqdn, 1, REASON_MSG_NOT_APPLICABLE_DOMAIN,
+                    GetRegistrarLang(clientID) );
+                break;
+            }
+  
+            if (dType == Register::Domain::CA_AVAILABLE) {
+  
+              if (DBsql.TestRegistrarZone(regID, zone) == false) {
+                LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
+                ret->code = COMMAND_AUTHENTICATION_ERROR;
+              } else {
+  
+                if (strlen(nsset) == 0)
+                  nssetid = 0; // domain can be create without nsset
+                else if ( (nssetid = getIdOfNSSet( &DBsql, nsset, conf) ) <= 0)
+                  ret->code = SetReasonDomainNSSet(errors, nsset, nssetid,
+                      GetRegistrarLang(clientID) );
+  
+                //  owner of domain
+                if ( (contactid = getIdOfContact(&DBsql, Registrant, conf) ) <= 0)
+                  ret->code = SetReasonDomainRegistrant(errors, Registrant,
+                      contactid, GetRegistrarLang(clientID) );
+  
+                // default period if not set from zone parametrs
+                if (period_count == 0) {
+                  period_count = GetZoneExPeriodMin(zone);
+                  LOG( NOTICE_LOG, "get defualt peridod %d month  for zone   %d ", period_count , zone );
+                }
+  
+                // test period validity range and modulo
+                switch (TestPeriodyInterval(period_count,
+                    GetZoneExPeriodMin(zone) , GetZoneExPeriodMax(zone) ) ) {
+                  case 2:
+                    LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d" , period_count , GetZoneExPeriodMax( zone ) , GetZoneExPeriodMin( zone ) );
+                    ret->code = SetErrorReason(errors, 
+                    COMMAND_PARAMETR_RANGE_ERROR, ccReg::domain_period, 1, 
+                    REASON_MSG_PERIOD_RANGE, GetRegistrarLang(clientID) );
+                    break;
+                  case 1:
+                    LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period_count , GetZoneExPeriodMin( zone ) );
+                    ret->code = SetErrorReason(errors, 
+                    COMMAND_PARAMETR_VALUE_POLICY_ERROR, ccReg::domain_period, 1,
+                        REASON_MSG_PERIOD_POLICY, GetRegistrarLang(clientID) );
+                    break;
+  
+                }
+  
+                // test  validy date for enum domain
+                if (strlen(valexpiryDate) == 0) {
+                  // for enum domain must set validity date 
+                  if (GetZoneEnum(zone) ) {
+                    LOG( WARNING_LOG, "DomainCreate: validity exp date MISSING" );
+  
+                    ret->code = SetErrorReason(errors, COMMAND_PARAMETR_MISSING,
+                        ccReg::domain_ext_valDate_missing, 0, 
+                        REASON_MSG_VALEXPDATE_REQUIRED,
+                        GetRegistrarLang(clientID) );
+                  }
+                } else {
+                  // Test for enum domain
+                  if (GetZoneEnum(zone) ) {
+                    // test 
+                    if (DBsql.TestValExDate(valexpiryDate,
+                        GetZoneValPeriod(zone) , DefaultValExpInterval() , 0)
+                        == false) {
+                      LOG( WARNING_LOG, "Validity exp date is not valid %s" , valexpiryDate );
+                      ret->code = SetErrorReason(errors, 
+                      COMMAND_PARAMETR_RANGE_ERROR, ccReg::domain_ext_valDate, 1,
+                          REASON_MSG_VALEXPDATE_NOT_VALID,
+                          GetRegistrarLang(clientID) );
+                    }
+  
+                  } else {
+                    LOG( WARNING_LOG, "Validity exp date %s not user" , valexpiryDate );
+                    ret->code = SetErrorReason(errors, 
+                    COMMAND_PARAMETR_VALUE_POLICY_ERROR,
+                        ccReg::domain_ext_valDate, 1, 
+                        REASON_MSG_VALEXPDATE_NOT_USED,
+                        GetRegistrarLang(clientID) );
+  
+                  }
+  
+                }
+  
+                // test   admin-c if set 
+  
+                if (admin.length() > 0) {
+                  // test  
+                  for (i = 0; i < admin.length(); i++) {
+                    if ( (adminid = getIdOfContact( &DBsql, admin[i], conf) )
+                        <= 0)
+                      ret->code = SetReasonDomainAdmin(errors, admin[i], adminid,
+                          GetRegistrarLang(clientID) , i);
+                    else {
+                      ad[i] = adminid;
+                      for (j = 0; j < i; j ++) // test  duplicity
+                      {
+                        LOG( DEBUG_LOG , "admin comapare j %d adminid %d ad %d" , j , adminid , ad[j] );
+                        if (ad[j] == adminid && ad[j] > 0) {
+                          ad[j] = 0;
+                          ret->code
+                              = SetReasonContactDuplicity(errors, admin[i],
+                                  GetRegistrarLang(clientID) , i,
+                                  ccReg::domain_admin);
+                        }
+                      }
+  
+                    }
+                  }
+  
+                }
+  
+                if (ret->code == 0) // if not error
+                {
+  
+                  id= DBsql.CreateObject("D", regID, FQDN, AuthInfoPw);
+                  if (id<=0) {
+                    if (id == 0) {
+                      LOG( WARNING_LOG, "domain fqdn [%s] EXIST", fqdn );
+                      ret->code= COMMAND_OBJECT_EXIST;
+                    } else {
+                      LOG( WARNING_LOG, "Cannot insert [%s] into object_registry", fqdn );
+                      ret->code= COMMAND_FAILED;
+                    }
+                  } else {
+  
+                    DBsql.INSERT("DOMAIN");
+                    DBsql.INTO("id");
+                    DBsql.INTO("zone");
+                    DBsql.INTO("Exdate");
+                    DBsql.INTO("Registrant");
+                    DBsql.INTO("nsset");
+  
+                    DBsql.VALUE(id);
+                    DBsql.VALUE(zone);
+                    DBsql.VALUEPERIOD(period_count); // actual time plus interval of period in months
+                    DBsql.VALUE(contactid);
+                    if (nssetid == 0)
+                      DBsql.VALUENULL(); // domain without  nsset write NULL value
+                    else
+                      DBsql.VALUE(nssetid);
+  
+                    if (DBsql.EXEC() ) {
+  
+                      // get local timestamp of created domain
+                      CORBA::string_free(crDate);
+                      crDate= CORBA::string_dup(DBsql.GetObjectCrDateTime(id) );
+  
+                      //  get local date of expiration
+                      CORBA::string_free(exDate);
+                      exDate = CORBA::string_dup(DBsql.GetDomainExDate(id) );
+  
+                      // save  enum domain   extension validity date
+                      if (GetZoneEnum(zone) && strlen(valexpiryDate) > 0) {
+                        DBsql.INSERT("enumval");
+                        DBsql.VALUE(id);
+                        DBsql.VALUE(valexpiryDate);
+                        if (DBsql.EXEC() == false)
+                          ret->code = COMMAND_FAILED;
+                      }
+  
+                      // insert   admin-c
+                      for (i = 0; i < admin.length(); i++) {
+                        LOG( DEBUG_LOG, "DomainCreate: add admin Contact %s id %d " , (const char *) admin[i] , ad[i] );
+                        if ( !DBsql.AddContactMap("domain", id, ad[i]) ) {
+                          ret->code = COMMAND_FAILED;
+                          break;
+                        }
+  
+                      }
+  
+                      //  billing credit from and save for invoicing 
+                      // first operation billing domain-create
+                      if (DBsql.BillingCreateDomain(regID, zone, id) == false)
+                        ret->code = COMMAND_BILLING_FAILURE;
+                      else
+                      // next operation billing  domain-renew save Exdate
+                      if (DBsql.BillingRenewDomain(regID, zone, id, period_count,
+                          exDate) == false)
+                        ret->code = COMMAND_BILLING_FAILURE;
+                      else if (DBsql.SaveDomainHistory(id) ) // if is ok save to history 
+                        if (DBsql.SaveObjectCreate(id) )
+                          ret->code = COMMAND_OK;
+  
+                    } else
+                      ret->code = COMMAND_FAILED;
+  
+                    if (ret->code == COMMAND_OK) // run notifier
+                    {
+                      ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
+                      ntf->Send(); // send messages
+                    }
+  
+                  }
+                }
+  
+              }
+  
+            }
           }
           catch (...) {
             LOG( WARNING_LOG, "cannot run Register::Domain::checkAvail");
             ret->code=COMMAND_FAILED;
           }
 
-          switch (dType) {
-            case Register::Domain::CA_INVALID_HANDLE:
-            case Register::Domain::CA_BAD_LENGHT:
-              LOG( NOTICE_LOG , "bad format %s of fqdn" , (const char * ) fqdn );
-              ret->code = SetErrorReason(errors, COMMAND_PARAMETR_ERROR,
-                  ccReg::domain_fqdn, 1, REASON_MSG_BAD_FORMAT_FQDN,
-                  GetRegistrarLang(clientID));
-              break;
-            case Register::Domain::CA_REGISTRED:
-            case Register::Domain::CA_CHILD_REGISTRED:
-            case Register::Domain::CA_PARENT_REGISTRED:
-              LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
-              ret->code = COMMAND_OBJECT_EXIST; // if is exist
-              break;
-            case Register::Domain::CA_BLACKLIST: // black listed
-              LOG( NOTICE_LOG , "blacklisted  %s" , (const char * ) fqdn );
-              ret->code = SetErrorReason(errors, COMMAND_PARAMETR_ERROR,
-                  ccReg::domain_fqdn, 1, REASON_MSG_BLACKLISTED_DOMAIN,
-                  GetRegistrarLang(clientID) );
-              break;
-            case Register::Domain::CA_AVAILABLE: // if is free
-              // conver fqdn to lower case and get zone 
-              zone = getFQDN(FQDN, fqdn);
-              LOG( NOTICE_LOG , "domain %s avail zone %d" ,(const char * ) FQDN , zone );
-              break;
-            case Register::Domain::CA_BAD_ZONE:
-              // domain not in zone
-              LOG( NOTICE_LOG , "NOn in zone not applicable %s" , (const char * ) fqdn );
-              ret->code = SetErrorReason(errors, COMMAND_PARAMETR_ERROR,
-                  ccReg::domain_fqdn, 1, REASON_MSG_NOT_APPLICABLE_DOMAIN,
-                  GetRegistrarLang(clientID) );
-              break;
-          }
 
-          if (dType == Register::Domain::CA_AVAILABLE) {
-
-            if (DBsql.TestRegistrarZone(regID, zone) == false) {
-              LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
-              ret->code = COMMAND_AUTHENTICATION_ERROR;
-            } else {
-
-              if (strlen(nsset) == 0)
-                nssetid = 0; // domain can be create without nsset
-              else if ( (nssetid = getIdOfNSSet( &DBsql, nsset, conf) ) <= 0)
-                ret->code = SetReasonDomainNSSet(errors, nsset, nssetid,
-                    GetRegistrarLang(clientID) );
-
-              //  owner of domain
-              if ( (contactid = getIdOfContact(&DBsql, Registrant, conf) ) <= 0)
-                ret->code = SetReasonDomainRegistrant(errors, Registrant,
-                    contactid, GetRegistrarLang(clientID) );
-
-              // default period if not set from zone parametrs
-              if (period_count == 0) {
-                period_count = GetZoneExPeriodMin(zone);
-                LOG( NOTICE_LOG, "get defualt peridod %d month  for zone   %d ", period_count , zone );
-              }
-
-              // test period validity range and modulo
-              switch (TestPeriodyInterval(period_count,
-                  GetZoneExPeriodMin(zone) , GetZoneExPeriodMax(zone) ) ) {
-                case 2:
-                  LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d" , period_count , GetZoneExPeriodMax( zone ) , GetZoneExPeriodMin( zone ) );
-                  ret->code = SetErrorReason(errors, 
-                  COMMAND_PARAMETR_RANGE_ERROR, ccReg::domain_period, 1, 
-                  REASON_MSG_PERIOD_RANGE, GetRegistrarLang(clientID) );
-                  break;
-                case 1:
-                  LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period_count , GetZoneExPeriodMin( zone ) );
-                  ret->code = SetErrorReason(errors, 
-                  COMMAND_PARAMETR_VALUE_POLICY_ERROR, ccReg::domain_period, 1,
-                      REASON_MSG_PERIOD_POLICY, GetRegistrarLang(clientID) );
-                  break;
-
-              }
-
-              // test  validy date for enum domain
-              if (strlen(valexpiryDate) == 0) {
-                // for enum domain must set validity date 
-                if (GetZoneEnum(zone) ) {
-                  LOG( WARNING_LOG, "DomainCreate: validity exp date MISSING" );
-
-                  ret->code = SetErrorReason(errors, COMMAND_PARAMETR_MISSING,
-                      ccReg::domain_ext_valDate_missing, 0, 
-                      REASON_MSG_VALEXPDATE_REQUIRED,
-                      GetRegistrarLang(clientID) );
-                }
-              } else {
-                // Test for enum domain
-                if (GetZoneEnum(zone) ) {
-                  // test 
-                  if (DBsql.TestValExDate(valexpiryDate,
-                      GetZoneValPeriod(zone) , DefaultValExpInterval() , 0)
-                      == false) {
-                    LOG( WARNING_LOG, "Validity exp date is not valid %s" , valexpiryDate );
-                    ret->code = SetErrorReason(errors, 
-                    COMMAND_PARAMETR_RANGE_ERROR, ccReg::domain_ext_valDate, 1,
-                        REASON_MSG_VALEXPDATE_NOT_VALID,
-                        GetRegistrarLang(clientID) );
-                  }
-
-                } else {
-                  LOG( WARNING_LOG, "Validity exp date %s not user" , valexpiryDate );
-                  ret->code = SetErrorReason(errors, 
-                  COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                      ccReg::domain_ext_valDate, 1, 
-                      REASON_MSG_VALEXPDATE_NOT_USED,
-                      GetRegistrarLang(clientID) );
-
-                }
-
-              }
-
-              // test   admin-c if set 
-
-              if (admin.length() > 0) {
-                // test  
-                for (i = 0; i < admin.length(); i++) {
-                  if ( (adminid = getIdOfContact( &DBsql, admin[i], conf) )
-                      <= 0)
-                    ret->code = SetReasonDomainAdmin(errors, admin[i], adminid,
-                        GetRegistrarLang(clientID) , i);
-                  else {
-                    ad[i] = adminid;
-                    for (j = 0; j < i; j ++) // test  duplicity
-                    {
-                      LOG( DEBUG_LOG , "admin comapare j %d adminid %d ad %d" , j , adminid , ad[j] );
-                      if (ad[j] == adminid && ad[j] > 0) {
-                        ad[j] = 0;
-                        ret->code
-                            = SetReasonContactDuplicity(errors, admin[i],
-                                GetRegistrarLang(clientID) , i,
-                                ccReg::domain_admin);
-                      }
-                    }
-
-                  }
-                }
-
-              }
-
-              if (ret->code == 0) // if not error
-              {
-
-                id= DBsql.CreateObject("D", regID, FQDN, AuthInfoPw);
-                if (id<=0) {
-                  if (id == 0) {
-                    LOG( WARNING_LOG, "domain fqdn [%s] EXIST", fqdn );
-                    ret->code= COMMAND_OBJECT_EXIST;
-                  } else {
-                    LOG( WARNING_LOG, "Cannot insert [%s] into object_registry", fqdn );
-                    ret->code= COMMAND_FAILED;
-                  }
-                } else {
-
-                  DBsql.INSERT("DOMAIN");
-                  DBsql.INTO("id");
-                  DBsql.INTO("zone");
-                  DBsql.INTO("Exdate");
-                  DBsql.INTO("Registrant");
-                  DBsql.INTO("nsset");
-
-                  DBsql.VALUE(id);
-                  DBsql.VALUE(zone);
-                  DBsql.VALUEPERIOD(period_count); // actual time plus interval of period in months
-                  DBsql.VALUE(contactid);
-                  if (nssetid == 0)
-                    DBsql.VALUENULL(); // domain without  nsset write NULL value
-                  else
-                    DBsql.VALUE(nssetid);
-
-                  if (DBsql.EXEC() ) {
-
-                    // get local timestamp of created domain
-                    CORBA::string_free(crDate);
-                    crDate= CORBA::string_dup(DBsql.GetObjectCrDateTime(id) );
-
-                    //  get local date of expiration
-                    CORBA::string_free(exDate);
-                    exDate = CORBA::string_dup(DBsql.GetDomainExDate(id) );
-
-                    // save  enum domain   extension validity date
-                    if (GetZoneEnum(zone) && strlen(valexpiryDate) > 0) {
-                      DBsql.INSERT("enumval");
-                      DBsql.VALUE(id);
-                      DBsql.VALUE(valexpiryDate);
-                      if (DBsql.EXEC() == false)
-                        ret->code = COMMAND_FAILED;
-                    }
-
-                    // insert   admin-c
-                    for (i = 0; i < admin.length(); i++) {
-                      LOG( DEBUG_LOG, "DomainCreate: add admin Contact %s id %d " , (const char *) admin[i] , ad[i] );
-                      if ( !DBsql.AddContactMap("domain", id, ad[i]) ) {
-                        ret->code = COMMAND_FAILED;
-                        break;
-                      }
-
-                    }
-
-                    //  billing credit from and save for invoicing 
-                    // first operation billing domain-create
-                    if (DBsql.BillingCreateDomain(regID, zone, id) == false)
-                      ret->code = COMMAND_BILLING_FAILURE;
-                    else
-                    // next operation billing  domain-renew save Exdate
-                    if (DBsql.BillingRenewDomain(regID, zone, id, period_count,
-                        exDate) == false)
-                      ret->code = COMMAND_BILLING_FAILURE;
-                    else if (DBsql.SaveDomainHistory(id) ) // if is ok save to history 
-                      if (DBsql.SaveObjectCreate(id) )
-                        ret->code = COMMAND_OK;
-
-                  } else
-                    ret->code = COMMAND_FAILED;
-
-                  if (ret->code == COMMAND_OK) // run notifier
-                  {
-                    ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
-                    ntf->Send(); // send messages
-                  }
-
-                }
-              }
-
-            }
-
-          }
           // if ret->code == COMMAND_OK commit transaction
           DBsql.QuitTransaction(ret->code);
         }
@@ -5378,7 +5383,8 @@ ccReg::Response* ccReg_EPP_i::ObjectSendAuthInfo(
   const char* clTRID, const char* XML)
 {
   DB DBsql;
-  int id, zone;
+  int zone;
+  int id = 0;
   ccReg::Response_var ret;
   ccReg::Errors_var errors;
   char FQDN[164];

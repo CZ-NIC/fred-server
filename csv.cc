@@ -60,8 +60,8 @@ int CSV::get_sepnum()
 bool CSV::get_row()
 {
 
-  fgets(buf, MAX_LINE, fd);
-  if (feof(fd) ) {
+  char *s = fgets(buf, MAX_LINE, fd);
+  if (feof(fd) || (!s)) {
     fclose(fd) ;
     return false;
   } else {
@@ -124,13 +124,14 @@ char * CSV::get_value(
 bool CSV::read_file(
   char *filename)
 {
-  int i, numrec, cls, c;
+  int i, numrec, c;
+  int cls = 0; //shouldnt be needed but compiler throws warning
 
   if ( (fd = fopen(filename, "r") ) != NULL) {
 
     for (i=0, numrec = 0;; i++) {
-      fgets(buf, MAX_LINE, fd);
-      if (feof(fd) )
+      char *s = fgets(buf, MAX_LINE, fd);
+      if (feof(fd) || (!s))
         break;
 
       c = get_sepnum();

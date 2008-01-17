@@ -194,8 +194,8 @@ bool Conf::ReadConfigFileTXT(
   if ( (f = fopen(filename, "r") ) != NULL) {
 
     for (line=0;; line ++) {
-      fgets(buf, MAX_LINE, f);
-      if (feof(f) )
+      char *s = fgets(buf, MAX_LINE, f);
+      if (feof(f) || (!s))
         break;
 
       value[0]=0;

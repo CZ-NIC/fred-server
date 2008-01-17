@@ -89,10 +89,10 @@ bool factoring_all(const char *database, const char *zone_fqdn,
   char *taxdateStr, char *todateStr)
 {
   DB db;
-  int *regID;
+  int *regID = 0;
   int i, num =-1;
   char timestampStr[32];
-  int invoiceID;
+  int invoiceID = 0;
   int zone;
   int ret = 0;
 
@@ -109,15 +109,11 @@ bool factoring_all(const char *database, const char *zone_fqdn,
             << "SELECT r.id FROM registrar r, registrarinvoice i WHERE r.id=i.registrarid "
             << "AND r.system=false AND i.zone=" << zone
             << " AND i.fromdate<=CURRENT_DATE";
-        if (db.ExecSelect(sql.str().c_str() ) ) {
+        if (db.ExecSelect(sql.str().c_str()) && db.GetSelectRows() > 0) {
           num = db.GetSelectRows();
-
-          if (num > 0) {
-            regID= new int[num];
-
-            for (i = 0; i < num; i ++) {
-              regID[i] = atoi(db.GetFieldValue(i, 0) );
-            }
+          regID= new int[num];
+          for (i = 0; i < num; i ++) {
+            regID[i] = atoi(db.GetFieldValue(i, 0) );
           }
           db.FreeSelect();
 
