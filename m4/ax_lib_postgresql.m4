@@ -79,9 +79,13 @@ AC_DEFUN([AX_LIB_POSTGRESQL],
         fi
 
         if test "$PG_CONFIG" != "no"; then
+            POSTGRESQL_INCLUDEDIR="`$PG_CONFIG --includedir`"
+            AC_CHECK_HEADERS([$POSTGRESQL_INCLUDEDIR/libpq-fe.h],[],
+                             [AC_MSG_ERROR([PostgreSQL include file libpq-fe.h not found!])])
+
             AC_MSG_CHECKING([for PostgreSQL libraries])
 
-            POSTGRESQL_CFLAGS="-I`$PG_CONFIG --includedir`"
+            POSTGRESQL_CFLAGS="-I$POSTGRESQL_INCLUDEDIR"
             POSTGRESQL_LDFLAGS="-L`$PG_CONFIG --libdir` -lpq"
 
             POSTGRESQL_VERSION=`$PG_CONFIG --version | sed -e 's#PostgreSQL ##'`
@@ -93,7 +97,7 @@ AC_DEFUN([AX_LIB_POSTGRESQL],
             AC_MSG_RESULT([yes])
         else
             found_postgresql="no"
-            AC_MSG_RESULT([no])
+            dnl AC_MSG_RESULT([no])
         fi
     fi
 
@@ -140,6 +144,8 @@ AC_DEFUN([AX_LIB_POSTGRESQL],
         else
             AC_MSG_RESULT([no])
         fi
+    else
+	AC_MSG_ERROR([PostgreSQL library or devel header files not found.])
     fi
 
     AC_SUBST([POSTGRESQL_VERSION])
