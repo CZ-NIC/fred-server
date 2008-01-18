@@ -1,19 +1,21 @@
-Name:           fred-server
+Name:           @PACKAGE@
 Version:        @VERSION@
 Release:        1%{?dist}
-Summary:        Free Registry for Enum and Domain
+Summary:        FRED - CORBA backend C++ server
 
 Group:          Applications/Utils
 License:        GPL
 URL:            http://fred.nic.cz
 Source:         %{name}-%{version}.tar.gz
-Source:         http://fred.nic.cz/download/%{name}-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-%(%{__id_u} -n)
 BuildRequires:  libomniORB4.1-devel, fred-idl, boost-devel, postgresql-devel
-Requires: libomniORB4.1, boost, postgresql-libs, fred-pyfred
+Requires: libomniORB4.1, boost, postgresql-libs, fred-pyfred, fred-doc2pdf fred-db
 
 %description
-Server c++ backend for Fred registry system
+FRED (Free Registry for Enum and Domain) is free registry system for 
+managing domain registrations. This package contains binaries for running
+CORBA backend server which provides core bussiness logic for it's numerous
+clients. 
 
 %prep
 %setup
