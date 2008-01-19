@@ -11,7 +11,17 @@ OPTIONS="-ORBnativeCharCodeSet UTF-8 -ORBendPoint giop:tcp::"
 MSG_START="Starting FRED central registry CORBA servers..."
 MSG_STOP="Stopping FRED central registry CORBA servers..."
 
+# set DB_INIT=0 if you have your own database setup (database name,
+# database user, access rules..etc)
+DB_INIT=1
+
 fred_start() {
+    if [ $DB_INIT -eq 1 ]
+    then
+	# this script will ensure that database exists
+	/bin/su - postgres -c /usr/share/fred-db/createdb.sh
+	if [ $? -ne 0 ]; then exit 1; fi
+    fi
     /usr/bin/pyfredctl start > /dev/null
     ${PATH}/fred-rifd ${OPTIONS}${RIFD_PORT} 2>/dev/null &
     ${PATH}/fred-pifd ${OPTIONS}${PIFD_PORT} 2>/dev/null &
