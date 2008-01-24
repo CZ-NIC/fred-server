@@ -100,6 +100,10 @@ namespace Register
       void archiveInvoices(bool send) const;
       /// create empty list of invoices      
       virtual InvoiceList* createList() const;
+      /// return credit for registrar by zone
+      virtual Money getCreditByZone(
+	const std::string& registrarHandle, TID zone
+      ) const throw (SQL_ERROR);
     }; // ManagerImpl
 
     // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -430,6 +434,7 @@ namespace Register
       DB *dbc;
       TID id;
       TID zone;
+      std::string zoneName;
       ptime crTime;
       date taxDate;
       date_period accountPeriod;
@@ -463,6 +468,7 @@ namespace Register
         dbc(db),
         id(STR_TO_ID(db->GetFieldValue(l,0))),
         zone(STR_TO_ID(db->GetFieldValue(l,1))),
+        zoneName(db->GetFieldValue(l,26)),
         crTime(MAKE_TIME(l,2)),
         taxDate(MAKE_DATE(l,3)),
         accountPeriod(MAKE_DATE_NEG(l,4),MAKE_DATE_POS(l,5)),
@@ -508,6 +514,7 @@ namespace Register
       const Subject* getSupplier() const { return &supplier; }
       TID getId() const { return id; }
       TID getZone() const { return zone; }
+      const std::string& getZoneName() const { return zoneName; }
       ptime getCrTime() const { return crTime; }
       date getTaxDate() const { return taxDate; }
       date_period getAccountPeriod() const
@@ -865,6 +872,7 @@ namespace Register
       TID objectIdFilter; ///< filter for attached object by id
       std::string objectNameFilter; ///< filter for attached object by name
       std::string advanceNumberFilter; ///< filter for source advance invoice
+      bool partialLoad; ///< reloads will ignore actions
       ManagerImpl *man; ///< backlink to manager for VAT and others
       /// find invoice in list by id
       InvoiceImpl *findById(TID id) const
@@ -905,6 +913,7 @@ namespace Register
         taxDateFilter = time_period(ptime(neg_infin),ptime(pos_infin));
         archiveFilter = AF_IGNORE;
         objectIdFilter = 0;
+        partialLoad = false;
       }
       virtual void setIdFilter(TID id)
       {
@@ -958,6 +967,10 @@ namespace Register
       {
         advanceNumberFilter = number;
       }
+      virtual void setPartialLoad(bool _partialLoad)
+      {
+        partialLoad = _partialLoad;
+      }      
       virtual void reload() throw (SQL_ERROR)
       {
         clearList();
@@ -1029,13 +1042,16 @@ namespace Register
           " i.file, i.fileXML, "
           " r.organization, r.street1, "
           " r.city, r.postalcode, TRIM(r.ico), TRIM(r.dic), TRIM(r.varsymb), "
-          " r.handle, r.vat, r.id "
+          " r.handle, r.vat, r.id, z.fqdn "
           "FROM "
           " tmp_invoice_filter_result it "
           " JOIN invoice i ON (it.id=i.id) "
+          " JOIN zone z ON (i.zone=z.id) "
           " JOIN registrar r ON (i.registrarid=r.id) "
           " JOIN invoice_prefix ip ON (ip.id=i.prefix_type) "
           " LEFT JOIN invoice_generation ig ON (i.id=ig.invoiceid) "
+          // temporary static sorting
+          " ORDER BY crdate DESC "
         )) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)         
           invoices.push_back(new InvoiceImpl(db,man,i));
@@ -1043,31 +1059,35 @@ namespace Register
         // append list of actions to all selected invoices
         // it handle situation when action come from source advance invoices
         // with different vat rates by grouping
-        if (!db->ExecSelect(
-          "SELECT "
-          " it.id, o.name, ior.crdate, ior.exdate, ior.operation, ior.period, "
-          " CASE "
-          "  WHEN ior.period=0 THEN 0 "
-          "  ELSE 100*SUM(iorpm.price)*12/ior.period END, "
-          " SUM(iorpm.price)*100, o.id, i.vat "
-          "FROM "
-          " tmp_invoice_filter_result it "
-          " JOIN invoice_object_registry ior ON (it.id=ior.invoiceid) "
-          " JOIN object_registry o ON (ior.objectid=o.id) "
-          " JOIN invoice_object_registry_price_map iorpm ON (ior.id=iorpm.id) "
-          " JOIN invoice i ON (iorpm.invoiceid=i.id) "
-          "GROUP BY "
-          " it.id, o.name, ior.crdate, ior.exdate, ior.operation, "
-          " ior.period, o.id, i.vat "
-        )) throw SQL_ERROR();
-        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          InvoiceImpl *inv = findById(STR_TO_ID(db->GetFieldValue(i,0)));
-          if (inv) inv->addAction(db,i);
-          else {
-            // TODO: log error - some database problem 
+        // this is ignored on partial load
+        if (!partialLoad) {
+          if (!db->ExecSelect(
+            "SELECT "
+            " it.id, o.name, ior.crdate, ior.exdate, "
+            " ior.operation, ior.period, "
+            " CASE "
+            "  WHEN ior.period=0 THEN 0 "
+            "  ELSE 100*SUM(ipm.price)*12/ior.period END, "
+            " SUM(ipm.price)*100, o.id, i.vat "
+            "FROM "
+            " tmp_invoice_filter_result it "
+            " JOIN invoice_object_registry ior ON (it.id=ior.invoiceid) "
+            " JOIN object_registry o ON (ior.objectid=o.id) "
+            " JOIN invoice_object_registry_price_map ipm ON (ior.id=ipm.id) "
+            " JOIN invoice i ON (ipm.invoiceid=i.id) "
+            "GROUP BY "
+            " it.id, o.name, ior.crdate, ior.exdate, ior.operation, "
+            " ior.period, o.id, i.vat "
+          )) throw SQL_ERROR();
+          for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+            InvoiceImpl *inv = findById(STR_TO_ID(db->GetFieldValue(i,0)));
+            if (inv) inv->addAction(db,i);
+            else {
+              // TODO: log error - some database problem 
+            }
           }
+          db->FreeSelect();
         }
-        db->FreeSelect();
         // append list of sources to all selected invoices
         if (!db->ExecSelect(
           "SELECT "
@@ -1299,6 +1319,21 @@ namespace Register
     ManagerImpl::createList() const
     {
       return new InvoiceListImpl(db,(ManagerImpl *)this);
+    }
+    Money 
+    ManagerImpl::getCreditByZone(
+      const std::string& registrarHandle, TID zone
+    ) const throw (SQL_ERROR)
+    {
+      std::stringstream sql;
+      sql << "SELECT SUM(credit)*100 "
+	  << "FROM invoice i JOIN registrar r ON (i.registrarid=r.id) "
+	  << "WHERE i.zone=" << zone << " AND r.handle='" 
+	  << registrarHandle << "'"; 
+      if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+      Money result = STR_TO_MONEY(db->GetFieldValue(0,0));
+      db->FreeSelect();
+      return result;
     }
     Manager *
     Manager::create(

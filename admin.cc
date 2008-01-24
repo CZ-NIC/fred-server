@@ -21,6 +21,7 @@
 //#include "util.h"
 #include "dbsql.h"
 #include "register/register.h"
+#include "register/notify.h"
 #include "mailer_manager.h"
 #include <boost/date_time/posix_time/time_formatters.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
@@ -1326,6 +1327,70 @@ ccReg_Admin_i::getAuthInfoRequestPDF(
     throw ccReg::Admin::OBJECT_NOT_FOUND();
   } 
 }
+
+char* 
+ccReg_Admin_i::getCreditByZone(const char*registrarHandle, ccReg::TID zone)
+{
+  try {
+    DB db;
+    db.OpenDatabase(database.c_str());
+    std::auto_ptr<Register::Invoicing::Manager> invman(
+      Register::Invoicing::Manager::create(&db,NULL,NULL)
+    );
+    char *ret = DUPSTRC(formatMoney(invman->getCreditByZone(
+      registrarHandle,zone
+    )));
+    db.Disconnect();
+    return ret;
+  }
+  catch (...) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+}
+
+void 
+ccReg_Admin_i::generateLetters()
+{
+  try {
+    DB db;
+    db.OpenDatabase(database.c_str());
+    MailerManager mm(ns);
+    std::auto_ptr<Register::Document::Manager> docman(
+      Register::Document::Manager::create(
+        cfg.GetDocGenPath(), cfg.GetDocGenTemplatePath(),
+        cfg.GetFileClientPath(), ns->getHostName()
+      ) 
+    );
+    std::auto_ptr<Register::Zone::Manager> zoneMan(
+      Register::Zone::Manager::create(&db)
+    );
+    std::auto_ptr<Register::Domain::Manager> domMan(
+      Register::Domain::Manager::create(&db, zoneMan.get())
+    );
+    std::auto_ptr<Register::Contact::Manager> conMan(
+      Register::Contact::Manager::create(
+        &db,cfg.GetRestrictedHandles()
+      )
+    );
+    std::auto_ptr<Register::NSSet::Manager> nssMan(
+      Register::NSSet::Manager::create(
+        &db,zoneMan.get(),cfg.GetRestrictedHandles()
+      )
+    );
+    std::auto_ptr<Register::Registrar::Manager> rMan(
+      Register::Registrar::Manager::create(&db)
+    );
+    std::auto_ptr<Register::Notify::Manager> notifyMan(
+      Register::Notify::Manager::create(
+        &db, &mm, conMan.get(), nssMan.get(), domMan.get(), docman.get(),
+        rMan.get()
+      )
+    );
+    notifyMan->generateLetters();
+  }
+  catch (...) {}
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //    ccReg_Session_i
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -2066,6 +2131,9 @@ ccReg_Domains_i::getRow(CORBA::Short row)
 void 
 ccReg_Domains_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 {
+  switch (column) {
+    case 7: dl->sort(Register::Domain::MT_EXDATE,dir); break;
+  }
 }
 
 ccReg::TID 
@@ -2979,13 +3047,17 @@ ccReg::Table::ColumnHeaders*
 ccReg_Invoices_i::getColumnHeaders()
 {
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
-  ch->length(6);
+  ch->length(10);
   COLHEAD(ch,0,"id",CT_OTHER);
   COLHEAD(ch,1,"CrDate",CT_OTHER);
   COLHEAD(ch,2,"Number",CT_OTHER);
   COLHEAD(ch,3,"Registrar",CT_REGISTRAR_HANDLE);
   COLHEAD(ch,4,"Total",CT_OTHER);
   COLHEAD(ch,5,"Credit",CT_OTHER);
+  COLHEAD(ch,6,"Type",CT_OTHER);
+  COLHEAD(ch,7,"Zone",CT_OTHER);
+  COLHEAD(ch,8,"PDF",CT_FILE_ID);
+  COLHEAD(ch,9,"XML",CT_FILE_ID);
   return ch;
 }
 
@@ -2996,7 +3068,7 @@ ccReg_Invoices_i::getRow(CORBA::Short row)
   const Register::Invoicing::Invoice *inv = invl->get(row);
   if (!inv) throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
-  tr->length(6);
+  tr->length(10);
   std::stringstream buf;
   buf << inv->getId();
   (*tr)[0] = DUPSTRFUN(buf.str);
@@ -3006,7 +3078,20 @@ ccReg_Invoices_i::getRow(CORBA::Short row)
   (*tr)[2] = DUPSTRFUN(buf.str);
   (*tr)[3] = DUPSTRFUN(inv->getClient()->getHandle);
   (*tr)[4] = DUPSTRC(formatMoney(inv->getPrice()));
-  (*tr)[5] = DUPSTRC(formatMoney(inv->getCredit()));
+  buf.str("");
+  if (inv->getType() == Register::Invoicing::IT_DEPOSIT)
+    buf << formatMoney(inv->getCredit());
+  (*tr)[5] = DUPSTRFUN(buf.str);;
+  (*tr)[6] = DUPSTR(
+    inv->getType() == Register::Invoicing::IT_DEPOSIT ? "DEPOSIT" : "ACCOUNT"
+  );
+  (*tr)[7] = DUPSTRC(inv->getZoneName());
+  buf.str("");
+  buf << inv->getFilePDF();
+  (*tr)[8] = DUPSTRFUN(buf.str);
+  buf.str("");
+  buf << inv->getFileXML();
+  (*tr)[9] = DUPSTRFUN(buf.str);
   return tr;
 }
 
@@ -3045,6 +3130,7 @@ ccReg_Invoices_i::numColumns()
 void 
 ccReg_Invoices_i::reload()
 {
+  invl->setPartialLoad(true);
   invl->reload();
 }
 

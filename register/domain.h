@@ -17,6 +17,10 @@ namespace Register
 {
   namespace Domain 
   {
+    /// member identification (i.e. for sorting)
+    enum MemberType {
+      MT_EXDATE ///< expiration date
+    };
     /// return type for checkAvail method 
     enum CheckAvailType {
       CA_INVALID_HANDLE, ///< bad formed handle
@@ -121,6 +125,8 @@ namespace Register
       virtual void reload() throw (SQL_ERROR) = 0;
       /// clear filter data
       virtual void clearFilter() = 0;
+      /// sort
+      virtual void sort(MemberType member, bool asc) = 0;
     };
     /// main entry class
     class Manager

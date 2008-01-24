@@ -19,6 +19,7 @@
 #include <sstream>
 #include <memory>
 #include <functional>
+#include <algorithm>
 #include "domain.h"
 #include "blacklist.h"
 #include "object_impl.h"
@@ -198,6 +199,20 @@ namespace Register
           zoneStatus = 0;
           zoneStatusTime = timeFrom;
     	}
+      }
+    };
+    
+    class CompareExdate
+    {
+      bool asc;
+    public:
+      CompareExdate(bool _asc) : asc(_asc) {}
+      bool operator()(CommonObject *a, CommonObject *b) const
+      {
+        bool res =
+          ((dynamic_cast<DomainImpl *>(a))->getExpirationDate() <=
+          (dynamic_cast<DomainImpl *>(b))->getExpirationDate());
+        return asc && res || !asc && !res; 
       }
     };
 
@@ -578,6 +593,14 @@ namespace Register
         techAdmin = "";
         hostIP = "";
         zoneStatus = 0;
+      }
+      virtual void sort(MemberType member, bool asc)
+      {
+        switch (member) {
+          case MT_EXDATE:
+            stable_sort(olist.begin(),olist.end(),CompareExdate(asc));
+            break;
+        }
       }
       virtual const char *getTempTableName() const
       {

@@ -35,7 +35,7 @@ namespace Register
     /// get name of temporary table with result of filter
     virtual const char *getTempTableName() const = 0;    
     /// get variable with count of select objects
-    virtual unsigned long long getRealCount() const = 0;
+    virtual unsigned long long getRealCount() = 0;
     /// set flag for enabling wildcard expansion in handles 
     virtual void setWildcardExpansion(bool _wcheck) = 0;
     /// reload data according to filter

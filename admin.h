@@ -363,6 +363,9 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   );  
   ccReg::Invoicing::Invoice* getInvoiceById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound);   
+  char* getCreditByZone(const char*registrarHandle, ccReg::TID zone);
+  void generateLetters();
+
 };
 
 #endif

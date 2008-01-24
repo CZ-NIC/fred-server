@@ -52,7 +52,8 @@ Register::CommonListImpl::CommonListImpl(DB *_db) :
   wcheck(true),
   db(_db),
   ptrIdx(-1),
-  add(false)
+  add(false),
+  realCountMade(false)
 {
 }
 
@@ -94,8 +95,10 @@ Register::CommonListImpl::clearFilter()
 }
 
 unsigned long long 
-Register::CommonListImpl::getRealCount() const
+Register::CommonListImpl::getRealCount()
 {
+  if (!realCountMade)
+    makeRealCount();
   return realCount;
 }
 
@@ -128,6 +131,7 @@ Register::CommonListImpl::makeRealCount() throw (SQL_ERROR)
   if (db->GetSelectRows() != 1) throw SQL_ERROR();
   realCount = atoll(db->GetFieldValue(0,0));
   db->FreeSelect();
+  realCountMade = true;
 }
 
 void 

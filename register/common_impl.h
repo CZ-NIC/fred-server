@@ -35,6 +35,7 @@ namespace Register
     ListType olist;
     int ptrIdx;
     bool add;
+    bool realCountMade; ///< was realCount already initialized?
    public: 
     ~CommonListImpl();
     CommonListImpl(DB *db);
@@ -47,7 +48,7 @@ namespace Register
     virtual void clear();
     virtual void clearFilter();
     virtual void setLimit(unsigned count);
-    virtual unsigned long long getRealCount() const;
+    virtual unsigned long long getRealCount();
     virtual void fillTempTable(bool limit) const throw (SQL_ERROR);
     virtual void makeRealCount() throw (SQL_ERROR);    
     virtual void setWildcardExpansion(bool _wcheck);

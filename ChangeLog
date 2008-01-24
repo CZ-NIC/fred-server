@@ -1,3 +1,13 @@
+    * credit discovering supported in admin interface 
+
+    * letter generation supported in admin interface
+ 
+    * initial sorting support (domains by exdate)
+
+    * more columns and faster load in admin invoice list
+    
+    * locking of EPP command (*new configuration option*) 
+    
     * rpm building support
      
     * complete refactoring of build scripts .am and .ac

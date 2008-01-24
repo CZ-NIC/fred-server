@@ -125,6 +125,7 @@ namespace Register
       virtual const Subject* getClient() const = 0;
       virtual TID getId() const = 0;
       virtual TID getZone() const = 0;
+      virtual const std::string& getZoneName() const = 0;
       virtual boost::posix_time::ptime getCrTime() const = 0;
       virtual boost::gregorian::date getTaxDate() const = 0;
       virtual boost::gregorian::date_period getAccountPeriod() const = 0;
@@ -191,6 +192,8 @@ namespace Register
       virtual void setAdvanceNumberFilter(const std::string& number) = 0;
       /// reload invoices with selected filter
       virtual void reload() throw (SQL_ERROR) = 0;
+      /// subsequential reload will not load any action 
+      virtual void setPartialLoad(bool partialLoad) = 0;
       /// return count of invoices in list 
       virtual unsigned long getCount() const = 0;
       /// return invoice by index
@@ -210,6 +213,10 @@ namespace Register
       virtual void archiveInvoices(bool send) const = 0;
       /// create empty list of invoices
       virtual InvoiceList* createList() const = 0;
+      /// return credit for registrar by zone
+      virtual Money getCreditByZone(
+	const std::string& registrarHandle, TID zone
+      ) const throw (SQL_ERROR) = 0;
       /// factory method
       static Manager *create(
         DB *db, Document::Manager *docman, Mailer::Manager *mailman
