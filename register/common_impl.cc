@@ -165,3 +165,9 @@ Register::CommonListImpl::findIDSequence(TID id)
   }
   return olist[ptrIdx];
 }
+
+void 
+Register::CommonListImpl::setFilterModified()
+{
+  realCountMade = false;
+}

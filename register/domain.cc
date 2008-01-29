@@ -251,71 +251,88 @@ namespace Register
       virtual void setZoneFilter(TID zoneId)
       {
         zoneFilter = zoneId;
+        setFilterModified();
       }
       virtual void setRegistrantFilter(TID registrantId)
       {
         registrantFilter = registrantId;
+        setFilterModified();
       }
       void setRegistrantHandleFilter(const std::string& _registrantHandle)
       {
         registrantHandleFilter = _registrantHandle;
+        setFilterModified();
       }
       virtual void setNSSetFilter(TID _nssetId)
       {
         nsset = _nssetId;
+        setFilterModified();
       }
       virtual void setNSSetHandleFilter(const std::string& _nssetHandle)
       {
         nssetHandle = _nssetHandle;
+        setFilterModified();
       }
       virtual void setAdminFilter(TID _adminId)
       {
         admin = _adminId;
+        setFilterModified();
       }
       virtual void setAdminHandleFilter(const std::string& _adminHandle)
       {
         adminHandle = _adminHandle;
+        setFilterModified();
       }
       virtual void setTempFilter(TID _tempId)
       {
         temp = _tempId;
+        setFilterModified();
       }
       virtual void setTempHandleFilter(const std::string& _tempHandle)
       {
         tempHandle = _tempHandle;
+        setFilterModified();
       }
       virtual void setContactFilter(TID contactId)
       {
         contactFilter = contactId;
+        setFilterModified();
       }
       virtual void setContactHandleFilter(const std::string& cHandle)
       {
         contactHandleFilter = cHandle;
+        setFilterModified();
       }
       virtual void setFQDNFilter(const std::string& _fqdn)
       {
         fqdn = _fqdn;
         boost::algorithm::to_lower(fqdn);
+        setFilterModified();
       }
       virtual void setExpirationDateFilter(time_period period)
       {
         exDate = period;
+        setFilterModified();
       }
       virtual void setValExDateFilter(time_period period)
       {
         valExDate = period;
+        setFilterModified();
       }
       virtual void setTechAdminHandleFilter(const std::string& handle)
       {
         techAdmin = handle;
+        setFilterModified();
       }
       virtual void setHostIPFilter(const std::string& ip)
       {
         hostIP = ip;
+        setFilterModified();
       }
       virtual void setZoneStatusFilter(unsigned status) 
       {
         zoneStatus = status;
+        setFilterModified();
       }
       void makeQuery(
         bool count, bool limit, std::stringstream& sql

@@ -52,6 +52,7 @@ namespace Register
     virtual void fillTempTable(bool limit) const throw (SQL_ERROR);
     virtual void makeRealCount() throw (SQL_ERROR);    
     virtual void setWildcardExpansion(bool _wcheck);
+    virtual void setFilterModified();
     void resetIDSequence();
     CommonObject* findIDSequence(TID id);    
     
