@@ -126,6 +126,7 @@ void
 Register::CommonListImpl::makeRealCount() throw (SQL_ERROR)
 {
   std::stringstream sql;
+  add = false;
   makeQuery(true,false,sql);
   if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
   if (db->GetSelectRows() != 1) throw SQL_ERROR();
