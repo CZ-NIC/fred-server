@@ -445,8 +445,9 @@ namespace Register
           Zone::DomainName name;
           zm->parseDomainName(hostname,name);
           // if glue is specified, hostname must be under one of managed zones 
-          if (glue && !zm->findZoneId(hostname))
-            return 1;
+          if (glue && !zm->findZoneId(hostname)) return 1;
+          // if glue is not specified, hostname must be under any valid zone
+          if (!glue && !zm->checkTLD(name)) return 1;
           return 0;
         }
         catch (...) { return 1; } // INVALID_DOMAIN_NAME

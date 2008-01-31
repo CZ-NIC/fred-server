@@ -43,7 +43,7 @@ namespace Register
         const std::string& fqdn, DomainName& domain
       ) const throw (INVALID_DOMAIN_NAME) = 0;
       /// check validity of enum domain name (every part is one digit)
-      virtual bool checkEnumDomainName(DomainName& domain) const = 0;
+      virtual bool checkEnumDomainName(const DomainName& domain) const = 0;
       /// check if domain is under global zone e164.arpa
       virtual bool checkEnumDomainSuffix(const std::string& fqdn) const = 0;
       /// translate phone number into domain name
@@ -57,6 +57,8 @@ namespace Register
       virtual const std::string& getEnumZoneString() const = 0;
       /// find zone from domain fqdn
       virtual const Zone* findZoneId(const std::string& fqdn) const = 0;
+      /// check fqdn agains list of toplevel domain (true=found) 
+      virtual bool checkTLD(const DomainName& domain) const = 0;
       /// create manager object
       static Manager *create(DB *db);
     };

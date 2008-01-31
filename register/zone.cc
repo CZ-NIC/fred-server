@@ -22,6 +22,7 @@
 #include "zone.h"
 #include "dbsql.h"
 #include <iostream>
+#include <sstream>
 #include "types.h"
 #include <ctype.h>
 
@@ -161,7 +162,7 @@ namespace Register
           throw INVALID_DOMAIN_NAME();
       }
       /// interface method implementation
-      bool checkEnumDomainName(DomainName& domain) const
+      bool checkEnumDomainName(const DomainName& domain) const
       {
         // must have suffix e164.org
         if (domain.size()<=2) return false;
@@ -228,6 +229,18 @@ namespace Register
         ZoneList::const_iterator i = find(RANGE(zoneList),fqdn);
         if (i!=zoneList.end()) return &(*i);
         else return NULL;
+      }
+      virtual bool checkTLD(const DomainName& domain) const
+      {
+        if (domain.size() < 1) return false;
+        std::stringstream sql;
+        sql << "SELECT COUNT(*) FROM enum_tlds "
+            << "WHERE LOWER(tld)='" << *domain.rbegin() << "'";
+        if (!db->ExecSelect(sql.str().c_str())) return false;
+        if (!db->GetSelectRows()) return false;
+        bool ret = atoi(db->GetFieldValue(0,0)) > 0;
+        db->FreeSelect();
+        return ret;
       }
     };
     Manager* Manager::create(DB *db)
