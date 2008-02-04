@@ -2,7 +2,7 @@
 
 . /lib/lsb/init-functions
 
-PATH=/usr/sbin
+FRED_PATH=/usr/sbin
 RIFD_PORT=2222
 PIFD_PORT=2223
 ADIFD_PORT=2224
@@ -14,18 +14,19 @@ MSG_STOP="Stopping FRED central registry CORBA servers..."
 # set DB_INIT=0 if you have your own database setup (database name,
 # database user, access rules..etc)
 DB_INIT=1
+DB_FILE=/usr/share/fred-db/createdb.sh
 
 fred_start() {
-    if [ $DB_INIT -eq 1 ]
+    if [ $DB_INIT -eq 1 -a -x $DB_FILE ]
     then
 	# this script will ensure that database exists
-	/bin/su - postgres -c /usr/share/fred-db/createdb.sh
+	/bin/su - postgres -c $DB_FILE
 	if [ $? -ne 0 ]; then exit 1; fi
     fi
     /usr/bin/pyfredctl start > /dev/null
-    ${PATH}/fred-rifd ${OPTIONS}${RIFD_PORT} 2>/dev/null &
-    ${PATH}/fred-pifd ${OPTIONS}${PIFD_PORT} 2>/dev/null &
-    ${PATH}/fred-adifd ${OPTIONS}${ADIFD_PORT} 2>/dev/null &
+    ${FRED_PATH}/fred-rifd ${OPTIONS}${RIFD_PORT} 2>/dev/null &
+    ${FRED_PATH}/fred-pifd ${OPTIONS}${PIFD_PORT} 2>/dev/null &
+    ${FRED_PATH}/fred-adifd ${OPTIONS}${ADIFD_PORT} 2>/dev/null &
     if [ $? != 0 ]; then
 	log_failure_msg ${MSG_START}
     else
