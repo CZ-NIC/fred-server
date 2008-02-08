@@ -385,7 +385,7 @@ bool ccReg_EPP_i::LogoutSession(
     }
   }
 
-  LOG( ERROR_LOG , "SESSION LOGOUT UNKNOW loginID %d" , loginID );
+  LOG( ERROR_LOG , "SESSION LOGOUT UNKNOWN loginID %d" , loginID );
 
   return false;
 }
@@ -1284,6 +1284,7 @@ int ccReg_EPP_i::getFQDN(
 void ccReg_EPP_i::sessionClosed(
   CORBA::Long clientID)
 {
+  LOG( DEBUG_LOG , "SESSION CLOSED by clientID %ld, Calling SESSION LOGOUT", clientID );
   LogoutSession(clientID);
 }
 
