@@ -30,6 +30,25 @@
 
 #include "log.h"
 
+void
+ParsedAction::add(unsigned id, const std::string& value)
+{
+  elements[id] = value;
+}
+
+bool 
+ParsedAction::executeSQL(Register::TID actionid, DB* db)
+{
+  std::map<unsigned, std::string>::const_iterator i;
+  for (i=elements.begin();i!=elements.end();i++) {
+    std::stringstream sql;
+    sql << "INSERT INTO action_elements (actionid,elementid,value) VALUES ("
+        << actionid << "," << i->first << ",'" << db->Escape2(i->second) << "')";
+    if (!db->ExecSQL(sql.str().c_str())) return false;
+    return true;  
+  }
+}
+
 // for invoice  type 
 #define INVOICE_FA  1 // normal invoice
 #define INVOICE_ZAL 0 // advance invoice 
@@ -468,7 +487,9 @@ int DB::SaveXMLout(
 
 // action 
 bool DB::BeginAction(
-  int clientID, int action, const char *clTRID, const char *xml)
+  int clientID, int action, const char *clTRID, const char *xml,
+  ParsedAction* paction
+)
 {
 
   bool ret = false;
@@ -522,6 +543,10 @@ bool DB::BeginAction(
         ret = true;
     }
 
+    if (ret == true) {
+      if (paction)
+        ret = paction->executeSQL(actionID,this);
+    }
   }
 
   QuitTransaction(ret ? CMD_OK : 0);

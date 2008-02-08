@@ -4,12 +4,26 @@
 #include "pqsql.h"
 #include "util.h"
 
+#include "register/types.h"
+#include <map>
+
 #define LANG_EN 0
 #define LANG_CS 1
 #define CMD_OK 1000 // OK command to the commit transaction
 #define CMD_FAILED(x) (x<2000) // all successfull codes
 #define MAX_SQLBUFFER 4096*4 // maximal lenght od the sqlBuffer
 #define MAX_SVTID 32 // length of the server  ticket  svTRID
+
+class DB;
+class ParsedAction 
+{
+  std::map<unsigned, std::string> elements;
+public:
+  void add(unsigned id, const std::string& value);
+  bool executeSQL(Register::TID actionid, DB* db);
+};
+
+
 class DB : public PQ
 {
 public:
@@ -167,7 +181,9 @@ public:
 
   // start of the EPP operation with clientID and save xml from epp-client 
   bool BeginAction(
-    int clientID, int action, const char *clTRID, const char *xml);
+    int clientID, int action, const char *clTRID, const char *xml,
+    ParsedAction* paction = NULL
+  );
   // end of the EPP operation
   char * EndAction(
     int response); // return svrTRID

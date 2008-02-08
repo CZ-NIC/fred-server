@@ -91,13 +91,14 @@ public:
   };
   EPPAction(
     ccReg_EPP_i *_epp, int _clientID, int action, const char *clTRID,
-    const char *xml) throw (ccReg::EPP::EppError) :
-    ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp), regID(_epp->GetRegistrarID(_clientID)),
-        clientID(_clientID)
+    const char *xml, ParsedAction *paction = NULL
+  ) throw (ccReg::EPP::EppError) :
+    ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp), 
+    regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID)
   {
     if (!db.OpenDatabase(epp->getDatabaseString()))
       epp->ServerInternalError("Cannot connect to DB");
-    if (!db.BeginAction(clientID, action, clTRID, xml)) {
+    if (!db.BeginAction(clientID, action, clTRID, xml, paction)) {
       db.Disconnect();
       epp->ServerInternalError("Cannot beginAction");
     }
@@ -1922,11 +1923,15 @@ ccReg::Response* ccReg_EPP_i::ObjectCheck(
   len = chck.length();
   a->length(len);
 
+  ParsedAction paction;
+  for (unsigned i=0; i<len; i++)
+    paction.add((unsigned)1,(const char *)chck[i]);
+  
   LOG( NOTICE_LOG , "OBJECT %d  Check: clientID -> %d clTRID [%s] " , act , (int ) clientID , clTRID );
 
   if (DBsql.OpenDatabase(database) ) {
 
-    if (DBsql.BeginAction(clientID, act, clTRID, XML) ) {
+    if (DBsql.BeginAction(clientID, act, clTRID, XML, &paction) ) {
 
       for (i = 0; i < len; i ++) {
         switch (act) {
@@ -2147,8 +2152,10 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
       "ContactInfo: clientID -> %d clTRID [%s] handle [%s] ",
       (int) clientID, clTRID, handle
   );
+  ParsedAction paction;
+  paction.add(1,(const char*)handle);
   // start EPP action - this will handle all init stuff
-  EPPAction a(this, clientID, EPP_ContactInfo, clTRID, XML);
+  EPPAction a(this, clientID, EPP_ContactInfo, clTRID, XML, &paction);
   // initialize managers for contact manipulation
   std::auto_ptr<Register::Contact::Manager>
       cman(Register::Contact::Manager::create(a.getDB(),
@@ -2301,12 +2308,15 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
   ret->code=0;
   errors->length(0);
 
+  ParsedAction paction;
+  paction.add(1,(const char *)handle);
+
   LOG( NOTICE_LOG , "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (int ) clientID , clTRID , handle );
 
   if ( (regID = GetRegistrarID(clientID) ))
 
     if (DBsql.OpenDatabase(database) ) {
-      if ( (DBsql.BeginAction(clientID, EPP_ContactDelete, clTRID, XML) )) {
+      if ( (DBsql.BeginAction(clientID, EPP_ContactDelete, clTRID, XML, &paction) )) {
         if (DBsql.BeginTransaction() ) {
 
           // lock
@@ -2361,6 +2371,8 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
         }
 
         ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) );
+        ParsedAction paction;
+        paction.add(1,(const char *)handle);
       }
 
       ret->msg = CORBA::string_dup(GetErrorMessage(ret->code,
@@ -2413,6 +2425,9 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
   ret->code = 0;
   errors->length(0);
 
+  ParsedAction paction;
+  paction.add(1,(const char*)handle);
+
   LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", (int ) clientID, clTRID, handle );
   LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d Email %d VAT %d Ident %d NotifyEmail %d" , c.DiscloseFlag ,
       c.DiscloseName , c.DiscloseOrganization , c.DiscloseAddress , c.DiscloseTelephone , c.DiscloseFax , c.DiscloseEmail, c.DiscloseVAT, c.DiscloseIdent, c.DiscloseNotifyEmail );
@@ -2421,7 +2436,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
 
     if (DBsql.OpenDatabase(database) ) {
 
-      if ( (DBsql.BeginAction(clientID, EPP_ContactUpdate, clTRID, XML) )) {
+      if ( (DBsql.BeginAction(clientID, EPP_ContactUpdate, clTRID, XML, &paction) )) {
 
         if (DBsql.BeginTransaction() ) {
           // get ID with locking record
@@ -2609,6 +2624,9 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
   ret->code = 0;
   errors->length( 0);
 
+  ParsedAction paction;
+  paction.add(1,(const char*)handle);
+  
   crDate = CORBA::string_dup("");
 
   LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s]", (int ) clientID, clTRID, handle );
@@ -2618,7 +2636,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
   if ( (regID = GetRegistrarID(clientID) ))
 
     if (DBsql.OpenDatabase(database) ) {
-      if ( (DBsql.BeginAction(clientID, EPP_ContactCreate, clTRID, XML) )) {
+      if ( (DBsql.BeginAction(clientID, EPP_ContactCreate, clTRID, XML, &paction) )) {
         Register::Contact::Manager::CheckAvailType caType;
         try {
           std::auto_ptr<Register::Contact::Manager> cman(
@@ -2829,11 +2847,14 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
   ret->code=0;
   errors->length(0);
 
+  ParsedAction paction;
+  paction.add(1,(const char*)name);
+
   LOG( NOTICE_LOG , "ObjectContact: act %d  clientID -> %d clTRID [%s] object [%s] authInfo [%s] " , act , (int ) clientID , clTRID , name , authInfo );
   if ( (regID = GetRegistrarID(clientID) ))
     if (DBsql.OpenDatabase(database) ) {
 
-      if ( (DBsql.BeginAction(clientID, act, clTRID, XML) )) {
+      if ( (DBsql.BeginAction(clientID, act, clTRID, XML, &paction) )) {
 
         if (DBsql.BeginTransaction()) {
 
@@ -3057,8 +3078,10 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
       "NSSetInfo: clientID -> %d clTRID [%s] handle [%s] ",
       (int) clientID, clTRID, handle
   );
+  ParsedAction paction;
+  paction.add(1,(const char*)handle);
   // start EPP action - this will handle all init stuff
-  EPPAction a(this, clientID, EPP_NSsetInfo, clTRID, XML);
+  EPPAction a(this, clientID, EPP_NSsetInfo, clTRID, XML, &paction);
   // initialize managers for nsset manipulation
   std::auto_ptr<Register::Zone::Manager>
       zman(Register::Zone::Manager::create(a.getDB()) );
@@ -3163,13 +3186,16 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
   ret->code=0;
   errors->length(0);
 
+  ParsedAction paction;
+  paction.add(1,(const char*)handle);
+
   LOG( NOTICE_LOG , "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int ) clientID , clTRID , handle );
 
   if ( (regID = GetRegistrarID(clientID) ))
 
     if (DBsql.OpenDatabase(database) ) {
 
-      if ( (DBsql.BeginAction(clientID, EPP_NSsetDelete, clTRID, XML) )) {
+      if ( (DBsql.BeginAction(clientID, EPP_NSsetDelete, clTRID, XML, &paction) )) {
 
         if (DBsql.BeginTransaction() ) {
           // lock row 
@@ -3282,6 +3308,10 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
   // defaults
   ret->code = 0;
   errors->length( 0);
+
+  ParsedAction paction;
+  paction.add(1,(const char*)handle);
+
   crDate = CORBA::string_dup("");
 
   if ((regID = GetRegistrarID(clientID))) {
@@ -3292,7 +3322,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
       std::auto_ptr<Register::NSSet::Manager> nman(
         Register::NSSet::Manager::create(&DBsql,zman.get(),conf.GetRestrictedHandles()));
 
-      if ( (DBsql.BeginAction(clientID, EPP_NSsetCreate, clTRID, XML) )) {
+      if ( (DBsql.BeginAction(clientID, EPP_NSsetCreate, clTRID, XML, &paction) )) {
         if (DBsql.BeginTransaction() ) {
           if (tech.length() < 1) {
             LOG( WARNING_LOG, "NSSetCreate: not any tech Contact " );
@@ -3638,6 +3668,9 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(
   ret->code=0;
   errors->length(0);
 
+  ParsedAction paction;
+  paction.add(1,(const char*)handle);
+
   LOG( NOTICE_LOG , "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] authInfo_chg  [%s] " , (int ) clientID , clTRID , handle , authInfo_chg);
   LOG( NOTICE_LOG, "NSSetUpdate: tech check level %d" , (int) level );
 
@@ -3649,7 +3682,7 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(
       std::auto_ptr<Register::NSSet::Manager> nman(
         Register::NSSet::Manager::create(&DBsql,zman.get(),conf.GetRestrictedHandles()));
 
-      if ( (DBsql.BeginAction(clientID, EPP_NSsetUpdate, clTRID, XML) )) {
+      if ( (DBsql.BeginAction(clientID, EPP_NSsetUpdate, clTRID, XML, &paction) )) {
 
         if (DBsql.BeginTransaction() ) {
           if ( (nssetID = getIdOfNSSet(&DBsql, handle, conf, true) ) < 0)
@@ -4073,8 +4106,10 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
       NOTICE_LOG, "DomainInfo: clientID -> %d clTRID [%s] fqdn  [%s] ",
       (int) clientID, clTRID, fqdn
   );
+  ParsedAction paction;
+  paction.add(1,(const char*)fqdn);
   // start EPP action - this will handle all init stuff
-  EPPAction a(this, clientID, EPP_DomainInfo, clTRID, XML);
+  EPPAction a(this, clientID, EPP_DomainInfo, clTRID, XML, &paction);
   // initialize managers for domain manipulation
   std::auto_ptr<Register::Zone::Manager>
       zman(Register::Zone::Manager::create(a.getDB()) );
@@ -4193,13 +4228,16 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
   ret->code=0;
   errors->length(0);
 
+  ParsedAction paction;
+  paction.add(1,(const char*)fqdn);
+
   LOG( NOTICE_LOG , "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int ) clientID , clTRID , fqdn );
 
   if ( (regID = GetRegistrarID(clientID) ))
 
     if (DBsql.OpenDatabase(database) ) {
 
-      if ( (DBsql.BeginAction(clientID, EPP_DomainDelete, clTRID, XML) )) {
+      if ( (DBsql.BeginAction(clientID, EPP_DomainDelete, clTRID, XML, &paction) )) {
 
         if (DBsql.BeginTransaction() ) {
           if ( (id = getIdOfDomain(&DBsql, fqdn, conf, true, &zone) ) < 0)
@@ -4304,6 +4342,9 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
   ret->code = 0;
   errors->length( 0);
 
+  ParsedAction paction;
+  paction.add(1,(const char*)fqdn);
+
   LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registrant_chg  [%s] authInfo_chg [%s]  nsset_chg [%s] ext.length %ld",
       (int ) clientID, clTRID, fqdn, registrant_chg, authInfo_chg, nsset_chg , (long)ext.length() );
 
@@ -4318,7 +4359,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
 
     if (DBsql.OpenDatabase(database) ) {
 
-      if ( (DBsql.BeginAction(clientID, EPP_DomainUpdate, clTRID, XML) )) {
+      if ( (DBsql.BeginAction(clientID, EPP_DomainUpdate, clTRID, XML, &paction) )) {
 
         if (DBsql.BeginTransaction()) { 
           if ( (id = getIdOfDomain(&DBsql, fqdn, conf, true, &zone) ) < 0)
@@ -4674,6 +4715,10 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
   // default
   ret->code = 0;
   errors->length();
+
+  ParsedAction paction;
+  paction.add(1,(const char*)fqdn);
+  
   crDate = CORBA::string_dup("");
   exDate = CORBA::string_dup("");
 
@@ -4704,7 +4749,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
 
     if (DBsql.OpenDatabase(database) ) {
 
-      if ( (DBsql.BeginAction(clientID, EPP_DomainCreate, clTRID, XML) )) {
+      if ( (DBsql.BeginAction(clientID, EPP_DomainCreate, clTRID, XML, &paction) )) {
 
         if (DBsql.BeginTransaction() ) {
 
@@ -5011,6 +5056,9 @@ ccReg::Response * ccReg_EPP_i::DomainRenew(
   ret = new ccReg::Response;
   errors = new ccReg::Errors;
 
+  ParsedAction paction;
+  paction.add(1,(const char*)fqdn);
+
   // default
   exDate = CORBA::string_dup("");
 
@@ -5039,7 +5087,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew(
   if ( (regID = GetRegistrarID(clientID) )) {
 
     if (DBsql.OpenDatabase(database)) {
-      if (DBsql.BeginAction(clientID, EPP_DomainRenew, clTRID, XML)) {
+      if (DBsql.BeginAction(clientID, EPP_DomainRenew, clTRID, XML, &paction)) {
         if (DBsql.BeginTransaction()) {
           if ((id = getIdOfDomain(&DBsql, fqdn, conf, true, &zone) ) < 0)
             ret->code=SetReasonDomainFQDN(errors, fqdn, id == -1,
@@ -5396,6 +5444,9 @@ ccReg::Response* ccReg_EPP_i::ObjectSendAuthInfo(
   errors = new ccReg::Errors;
   errors->length( 0);
   ret->code =0; // default
+  
+  ParsedAction paction;
+  paction.add(1,(const char*)name);
 
   LOG( NOTICE_LOG , "ObjectSendAuthInfo type %d  object [%s]  clientID -> %d clTRID [%s] " , act , name , (int ) clientID , clTRID );
 
@@ -5403,7 +5454,7 @@ ccReg::Response* ccReg_EPP_i::ObjectSendAuthInfo(
 
     if (DBsql.OpenDatabase(database) ) {
 
-      if ( (DBsql.BeginAction(clientID, act, clTRID, XML) )) {
+      if ( (DBsql.BeginAction(clientID, act, clTRID, XML, &paction) )) {
 
         switch (act) {
 

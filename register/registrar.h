@@ -225,6 +225,8 @@ namespace Register {
       virtual const EPPAction* get(unsigned idx) const = 0;
       /// clear filter data
       virtual void clearFilter() = 0;      
+      /// load actions withou xml
+      virtual void setPartialLoad(bool partialLoad) = 0;
     };
     
     /// Detail about EPP session

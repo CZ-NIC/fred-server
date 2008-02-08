@@ -608,12 +608,13 @@ namespace Register
       std::string xml;
       EPPActionResultFilter result;
       DB *db;
+      bool partialLoad;
      public:
       EPPActionListImpl(DB *_db) :
        id(0), sessionId(0), registrarId(0), 
        period(ptime(neg_infin),ptime(pos_infin)),
        typeId(0), returnCodeId(0), result(EARF_ALL),
-       db(_db)
+       db(_db), partialLoad(false)
       {
       }
       ~EPPActionListImpl()
@@ -687,31 +688,37 @@ namespace Register
         clear();
         std::ostringstream sql;
         sql << "SELECT a.id,a.clientid,a.action,ea.status,a.startdate,"
-            << "a.servertrid,a.clienttrid,"
-            << "ax.xml,a.response,r.handle,'HANDLE' "
-            << "FROM enum_action ea, action a " 
-            << "LEFT JOIN enum_error er ON (a.response=er.id) " 
-            << "LEFT JOIN action_xml ax ON (a.id=ax.actionid) "
-            << "LEFT JOIN login l ON (l.id=a.clientid) "
-            << "LEFT JOIN registrar r ON (r.id=l.registrarid) "
-            << "WHERE ea.id=a.action ";
+            << "a.servertrid,a.clienttrid,";
+        if (partialLoad) sql  << "'',";
+        else sql << "ax.xml,";
+        sql << "a.response,r.handle,MIN(al.value) "
+            << "FROM action a "
+            << "JOIN enum_action ea ON (a.action=ea.id) "  
+            << "JOIN enum_error er ON (a.response=er.id) " 
+            << "JOIN login l ON (l.id=a.clientid) "
+            << "JOIN registrar r ON (r.id=l.registrarid) "
+            << "JOIN action_elements al ON (a.id=al.actionid) ";
+        if (!partialLoad)
+          sql << "JOIN action_xml ax ON (a.id=ax.actionid) ";
+        sql << "WHERE 1=1 ";
         SQL_ID_FILTER(sql,"a.id",id);
         SQL_ID_FILTER(sql,"r.id",registrarId);
-        SQL_HANDLE_FILTER(sql,"r.handle",registrarHandle);
-        SQL_DATE_FILTER(sql,"a.startdate",period);
-        SQL_HANDLE_FILTER(sql,"ea.status",type);
+        SQL_HANDLE_WILDCHECK_FILTER(sql,"r.handle",registrarHandle,1,0);
+        SQL_TIME_FILTER(sql,"a.startdate",period);
+        SQL_HANDLE_WILDCHECK_FILTER(sql,"ea.status",type,1,0);
         SQL_ID_FILTER(sql,"a.response",returnCodeId);
-        SQL_HANDLE_FILTER(sql,"a.clienttrid",clTRID);
-        SQL_HANDLE_FILTER(sql,"a.servertrid",svTRID);
+        SQL_HANDLE_WILDCHECK_FILTER(sql,"a.clienttrid",clTRID,1,0);
+        SQL_HANDLE_WILDCHECK_FILTER(sql,"a.servertrid",svTRID,1,0);
         /// TODO - handle has to have special data column
-        if (!handle.empty())
-          sql << "AND ax.xml ILIKE '%" << handle << "%' ";
-        if (!xml.empty())
-          sql << "AND ax.xml ILIKE '%" << xml << "%' ";
+        SQL_HANDLE_WILDCHECK_FILTER(sql,"al.value",handle,1,0);
         if (result != EARF_ALL)
           sql << "AND (a.response " 
               << (result == EARF_OK ? "<" : " IS NULL OR a.response >=") 
               << " 2000) ";
+        sql << "GROUP BY a.id,a.clientid,a.action,ea.status,a.startdate,"
+            << "a.servertrid,a.clienttrid,a.response,r.handle ";
+        if (!partialLoad)
+          sql << ",ax.xml ";
         sql << "LIMIT 1000";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -756,7 +763,13 @@ namespace Register
         handle = "";
         xml = "";
         result = EARF_ALL;
+        partialLoad = false;
       }
+      virtual void setPartialLoad(bool _partialLoad)
+      {
+        partialLoad = _partialLoad;
+      }
+
     };
 
     class ManagerImpl : virtual public Manager

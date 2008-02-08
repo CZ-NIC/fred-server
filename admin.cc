@@ -706,6 +706,7 @@ ccReg_Admin_i::getEPPActionBySvTRID(const char* svTRID)
   Register::Registrar::Manager *rm = r->getRegistrarManager();
   Register::Registrar::EPPActionList *eal = rm->getEPPActionList();
   eal->setSvTRIDFilter(svTRID);
+  eal->setPartialLoad(false);
   eal->reload();
   if (eal->size() != 1) {
     db.Disconnect();
@@ -730,6 +731,7 @@ ccReg_Admin_i::getEPPActionById(ccReg::TID id)
   Register::Registrar::Manager *rm = r->getRegistrarManager();
   Register::Registrar::EPPActionList *eal = rm->getEPPActionList();
   eal->setIdFilter(id);
+  eal->setPartialLoad(false);
   eal->reload();
   if (eal->size() != 1) {
     db.Disconnect();
@@ -1690,6 +1692,7 @@ ccReg_EPPActions_i::numColumns()
 void 
 ccReg_EPPActions_i::reload()
 {
+  eal->setPartialLoad(true);
   eal->reload();
 }
 
