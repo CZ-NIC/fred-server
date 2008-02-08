@@ -84,6 +84,10 @@ namespace Register
             << password << "');";
         return sql.str();
       }
+      void resetId()
+      {
+        changed = true;
+      }
     };
 
     class RegistrarImpl : virtual public Registrar 
@@ -364,7 +368,14 @@ namespace Register
       bool hasId(unsigned _id) const
       {
         return id == _id;
-      }      
+      } 
+      void resetId()
+      {
+        id = 0;
+        changed = true;
+        for (unsigned i=0; i<acl.size(); i++)
+          acl[i]->resetId();
+      }
     };
     
     class RegistrarListImpl : virtual public RegistrarList
@@ -835,6 +846,35 @@ namespace Register
         bool result = atoi(db->GetFieldValue(0,0));
         db->FreeSelect();
         return result;            
+      }
+      virtual void addRegistrar(const std::string& registrarHandle)
+        throw (SQL_ERROR)
+      {
+        RegistrarListImpl rlist(db);
+        rlist.setHandleFilter("REG-FRED_A");
+        rlist.reload();
+        if (rlist.size() < 1) return;
+        RegistrarImpl *r = dynamic_cast<RegistrarImpl *>(rlist.get(0));
+        if (!r) return;
+        r->resetId();
+        r->setHandle(registrarHandle);
+        r->save();
+      }
+      virtual void addRegistrarZone(
+        const std::string& registrarHandle, const std::string zone
+      ) throw (SQL_ERROR)
+      {
+        std::stringstream sql;
+        sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate) "
+            << "SELECT r.id,z.id,CURRENT_DATE FROM ("
+            << "SELECT id FROM registrar WHERE handle='" 
+            << registrarHandle << "') r "
+            << "JOIN (SELECT id FROM zone WHERE fqdn='" 
+            << zone << "') z ON (1=1) "
+            << "LEFT JOIN registrarinvoice ri ON "
+            << "(ri.registrarid=r.id AND ri.zone=z.id) "
+            << "WHERE ri.id ISNULL"; 
+        if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
       }
     }; // class ManagerImpl
     Manager *Manager::create(DB *db)

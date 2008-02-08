@@ -242,6 +242,25 @@ namespace Register
         db->FreeSelect();
         return ret;
       }
+      virtual void addZone(const std::string& fqdn)
+        throw (SQL_ERROR)
+      {
+        std::stringstream sql;
+        unsigned dots = 1;
+        for (unsigned i=0; i<fqdn.size(); i++)
+          if (fqdn[i] == '.') dots++;
+        bool enumZone = checkEnumDomainSuffix(fqdn);
+        if (enumZone) dots = 9;
+        sql << "INSERT INTO zone ("
+            << "  fqdn,ex_period_min,ex_period_max,val_period,"
+            << "  dots_max,enum_zone"
+            << ") VALUES ('"
+            << fqdn << "',12,120," << (enumZone ? "6," : "0,")
+            << dots << "," << (enumZone ? "'t'" : "'f'")
+            << ")";
+        if (!db->ExecSQL(sql.str().c_str()))
+          throw SQL_ERROR();
+      }
     };
     Manager* Manager::create(DB *db)
     {

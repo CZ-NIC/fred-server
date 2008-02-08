@@ -1,3 +1,14 @@
+    * adding parameter to fred-admin
+      - registrar creation
+      - zone creation
+      - zone registrar access creation
+
+    * repairing queries into action table
+      - removing LEFT JOINS
+      - parsing EPP commands into action_elements table
+      - fixing date time querying of actions
+      - better wildcard handling
+
     * dns hostname check agains enum_tld tables
 
     * credit discovering supported in admin interface 

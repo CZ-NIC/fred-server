@@ -343,13 +343,27 @@ int main(int argc, char **argv)
       ("notify_letters_create",
        "generate pdf with domain registration warning");
 
+    po::options_description regDesc("Registrar options");
+    regDesc.add_options()
+      ("zone_add",
+       "add new zone")
+      ("registrar_add",
+       "add new registrar (make a copy of REG-FRED_A)")
+      ("registrar_add_zone",
+       "add access right for registrar to zone")
+      ("zone_fqdn",po::value<std::string>(),
+       "add new zone")
+      ("registrar_handle",po::value<std::string>(),
+       "add registrar handle");
+   
     po::variables_map vm;
     // parse help and config filename options
     po::store(
       po::parse_command_line(
         argc, argv, 
         desc.add(configDesc).add(invoiceDesc).add(aiDesc).add(bankDesc).
-        add(infoBufferDesc).add(pollDesc).add(objDesc).add(notDesc)
+        add(infoBufferDesc).add(pollDesc).add(objDesc).add(notDesc).
+        add(regDesc)
       ), vm
     );
     // parse options from config file
@@ -657,7 +671,36 @@ int main(int argc, char **argv)
           default: std::cerr << "Unknown result" << std::endl; break;
         }
       }
-    }    
+    }
+    if (vm.count("zone_add")) {
+      if (!vm.count("zone_fqdn"))
+        std::cerr << "zone_fqdn parameter must be specified" << std::endl;
+      else {
+        zoneMan->addZone(vm["zone_fqdn"].as<std::string>());
+      }
+    }
+    if (vm.count("registrar_add")) {
+      if (!vm.count("registrar_handle"))
+        std::cerr << "registrar_handle parameter must be specified" 
+                  << std::endl;
+      else {
+        rMan->addRegistrar(vm["registrar_handle"].as<std::string>());
+      }
+    }
+    if (vm.count("registrar_add_zone")) {
+      if (!vm.count("registrar_handle"))
+        std::cerr << "registrar_handle parameter must be specified" 
+                  << std::endl;
+      else {
+        if (!vm.count("zone_fqdn"))
+          std::cerr << "zone_fqdn parameter must be specified" << std::endl;
+        else
+          rMan->addRegistrarZone(
+            vm["registrar_handle"].as<std::string>(),
+            vm["zone_fqdn"].as<std::string>()
+          );
+      }
+    }
     if (connected) db.Disconnect();
   }
   catch (std::exception& e) {

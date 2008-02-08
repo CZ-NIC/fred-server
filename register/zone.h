@@ -3,6 +3,7 @@
 
 #include <string>
 #include "types.h" 
+#include "exceptions.h"
 
 /// forward declaration for database connection
 class DB;
@@ -59,6 +60,8 @@ namespace Register
       virtual const Zone* findZoneId(const std::string& fqdn) const = 0;
       /// check fqdn agains list of toplevel domain (true=found) 
       virtual bool checkTLD(const DomainName& domain) const = 0;
+      /// add zone
+      virtual void addZone(const std::string& fqdn) throw (SQL_ERROR) = 0;
       /// create manager object
       static Manager *create(DB *db);
     };
