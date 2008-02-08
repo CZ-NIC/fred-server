@@ -1,3 +1,5 @@
+    * dns hostname check agains enum_tld tables
+
     * credit discovering supported in admin interface 
 
     * letter generation supported in admin interface
