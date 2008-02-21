@@ -29,6 +29,8 @@
 #include <math.h>
 #include <memory>
 #include <iomanip>
+#include <algorithm>
+#include <functional>
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
@@ -221,7 +223,7 @@ ccReg_PageTable_i::getPageRowId(CORBA::Short row)
 
 ccReg_Admin_i::ccReg_Admin_i(
   const std::string _database, NameService *_ns, Conf& _cfg
-) : database(_database), ns(_ns), cfg(_cfg) 
+) : database(_database), ns(_ns), cfg(_cfg), sessionId(0) 
 {
   // these object are shared between threads (CAUTION)
   db.OpenDatabase(database.c_str());
@@ -298,24 +300,40 @@ ccReg_Admin_i::login(const char* username, const char* password)
     userList.begin(), userList.end(), username
   );
   if (i == userList.end()) throw ccReg::Admin::AuthFailed();
-  SessionListType::const_iterator j = sessionList.find(username);
   // temporary create sesssion in every login (to reconnect)
+  //  SessionListType::const_iterator j = sessionList.find(username);
   //  if (j == sessionList.end())
   //    sessionList[username] = new ccReg_Session_i(database,ns,cfg);
   //  return CORBA::string_dup(username);
-  if (j != sessionList.end())
-    delete sessionList[username];
-  sessionList[username] = new ccReg_Session_i(database,ns,cfg);
-  return CORBA::string_dup(username);
+  // dont delete session, instead there is session garbage collector
+  //  if (j != sessionList.end())
+  //    delete sessionList[username];
+  // THREADS! - SesssionList is shared object so there should be locking
+  bool found = false;
+  do {
+    SessionListType::iterator i = sessionList.begin();
+    for (;i!=sessionList.end() && !i->second->hasTimeout();i++)
+    if (i!=sessionList.end()) {
+      sessionList.erase(i);
+      found = true;
+    }
+  }
+  while (found);
+  std::stringstream sessionIdStr;
+  sessionIdStr << username << sessionId++;
+  sessionList[sessionIdStr.str()] = new ccReg_Session_i(database,ns,cfg);
+  return CORBA::string_dup(sessionIdStr.str().c_str());
 }
 
 ccReg::Session_ptr 
 ccReg_Admin_i::getSession(const char* sessionID)
   throw (ccReg::Admin::ObjectNotFound)
 {
+  // THREADS! - SesssionList is shared object so there should be locking
   SessionListType::const_iterator i = sessionList.find(sessionID);
   if (i == sessionList.end()) throw ccReg::Admin::ObjectNotFound();
-  return (*i).second->_this();
+  i->second->updateActivityStamp();
+  return i->second->_this();
 }
 
 void 
@@ -1418,6 +1436,7 @@ ccReg_Session_i::ccReg_Session_i(
   airm = new ccReg_AIRequests_i(am->getList());
   invl = new ccReg_Invoices_i(invm->createList());
   mml = new ccReg_Mails_i(ns);
+  updateActivityStamp();
 }
 
 ccReg_Session_i::~ccReg_Session_i()
@@ -1425,6 +1444,19 @@ ccReg_Session_i::~ccReg_Session_i()
   // TODO: Delete all tables;
   db.Disconnect();
 }
+
+void 
+ccReg_Session_i::updateActivityStamp()
+{
+  activityStamp = second_clock::local_time();
+}
+
+bool 
+ccReg_Session_i::hasTimeout() const
+{
+  return activityStamp < second_clock::local_time() - minutes(1); 
+}
+
 
 ccReg::Registrars_ptr 
 ccReg_Session_i::getRegistrars()

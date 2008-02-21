@@ -249,6 +249,7 @@ class ccReg_Session_i : public POA_ccReg::Session,
   std::auto_ptr<Register::Document::Manager> docman;
   std::auto_ptr<Register::Invoicing::Manager> invm;
   MailerManager mm;
+  ptime activityStamp;
  public:
   ccReg_Session_i(const std::string& database, NameService *ns, Conf& cfg);
   ~ccReg_Session_i();
@@ -260,6 +261,8 @@ class ccReg_Session_i : public POA_ccReg::Session,
   ccReg::AuthInfoRequests_ptr getAuthInfoRequests();
   ccReg::Mails_ptr getMails();
   ccReg::Invoices_ptr getInvoices();
+  void updateActivityStamp(); ///< set activity timestamp
+  bool hasTimeout() const; ///< check activity timestamp
 };
 
 class NameService;
@@ -278,6 +281,7 @@ class ccReg_Admin_i: public POA_ccReg::Admin,
   Conf& cfg;
   DB db;
   std::auto_ptr<Register::Manager> regMan;
+  unsigned long sessionId;
  public:
   ccReg_Admin_i(const std::string database, NameService *ns, Conf& _cfg);
   virtual ~ccReg_Admin_i();
