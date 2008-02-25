@@ -1,3 +1,9 @@
+2008-02-25 Jaromir Talir (version 1.8.1)
+	
+    * changing admin session handling
+      - every session has separate session object
+      - simple garbage collector for session with 30 minut of inactivity
+
 2008-02-09 Jaromir Talir (version 1.8.0)
 
     * adding parameter to fred-admin

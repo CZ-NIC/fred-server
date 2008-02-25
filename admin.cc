@@ -296,6 +296,7 @@ ccReg_Admin_i::login(const char* username, const char* password)
   userList.push_back("david");
   userList.push_back("feela");
   userList.push_back("ondrej");
+  userList.push_back("intranet");
   std::vector<std::string>::const_iterator i = find(
     userList.begin(), userList.end(), username
   );
@@ -309,11 +310,16 @@ ccReg_Admin_i::login(const char* username, const char* password)
   //  if (j != sessionList.end())
   //    delete sessionList[username];
   // THREADS! - SesssionList is shared object so there should be locking
-  bool found = false;
+  bool found;
   do {
+    found = false;
     SessionListType::iterator i = sessionList.begin();
-    for (;i!=sessionList.end() && !i->second->hasTimeout();i++)
+    for (;i!=sessionList.end() && !i->second->hasTimeout();i++);
     if (i!=sessionList.end()) {
+      LOG(
+        DEBUG_LOG, "Admin session %s deleted, remains %d sessions", 
+        i->first.c_str(),sessionList.size()
+      );
       sessionList.erase(i);
       found = true;
     }
@@ -322,6 +328,10 @@ ccReg_Admin_i::login(const char* username, const char* password)
   std::stringstream sessionIdStr;
   sessionIdStr << username << sessionId++;
   sessionList[sessionIdStr.str()] = new ccReg_Session_i(database,ns,cfg);
+  LOG(
+    NOTICE_LOG, "Admin session %s created, total number of sessions is %d", 
+    sessionIdStr.str().c_str(), sessionList.size()
+  );
   return CORBA::string_dup(sessionIdStr.str().c_str());
 }
 
@@ -1454,9 +1464,13 @@ ccReg_Session_i::updateActivityStamp()
 bool 
 ccReg_Session_i::hasTimeout() const
 {
-  return activityStamp < second_clock::local_time() - minutes(1); 
+  LOG(
+    DEBUG_LOG,"activityStamp:%s checkTime:%s ",
+    to_simple_string(activityStamp).c_str(),
+    to_simple_string(second_clock::local_time() - minutes(30)).c_str()
+  );
+  return activityStamp < (second_clock::local_time() - minutes(30)); 
 }
-
 
 ccReg::Registrars_ptr 
 ccReg_Session_i::getRegistrars()
