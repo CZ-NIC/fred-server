@@ -118,6 +118,7 @@ namespace Register
       std::string street;
       std::string city;
       std::string zip;
+      std::string country;
       std::string ico;
       std::string vatNumber;
       std::string registration;
@@ -133,7 +134,8 @@ namespace Register
         const std::string& _handle,
         const std::string& _name, const std::string& _fullname,
         const std::string& _street, const std::string& _city,
-        const std::string& _zip, const std::string& _ico,
+        const std::string& _zip, const std::string& _country, 
+        const std::string& _ico,
         const std::string& _vatNumber, const std::string& _registration,
         const std::string& _reclamation, const std::string& _email,
         const std::string& _url, const std::string& _phone, 
@@ -141,7 +143,8 @@ namespace Register
       ) :
         id(_id),
         handle(_handle), name(_name), fullname(_fullname), street(_street), 
-        city(_city), zip(_zip), ico(_ico), vatNumber(_vatNumber),
+        city(_city), zip(_zip), country(_country), ico(_ico), 
+        vatNumber(_vatNumber),
         registration(_registration), reclamation(_reclamation),
         email(_email), url(_url), phone(_phone), fax(_fax), vatApply(_vatApply)
       {}
@@ -152,6 +155,7 @@ namespace Register
       const std::string& getStreet() const { return street; }
       const std::string& getCity() const { return city; }
       const std::string& getZip() const { return zip; }
+      const std::string& getCountry() const { return country; }
       const std::string& getICO() const { return ico; }
       const std::string& getVatNumber() const { return vatNumber; }
       bool getVatApply() const { return vatApply; }
@@ -491,6 +495,7 @@ namespace Register
           db->GetFieldValue(l,17),
           db->GetFieldValue(l,18),
           db->GetFieldValue(l,19),
+          db->GetFieldValue(l,27),
           db->GetFieldValue(l,20),
           db->GetFieldValue(l,21),
           "", // registration is empty
@@ -628,6 +633,7 @@ namespace Register
       "Americká 23",
       "Praha 2",
       "120 00",
+      "CZ",
       "67985726",
       "CZ67985726",
       "SpZ: odb. občanskopr. agend Magist. hl. m. Prahy, č. ZS/30/3/98",
@@ -665,6 +671,7 @@ namespace Register
             << TAG(street,s->getStreet())
             << TAG(city,s->getCity())
             << TAG(zip,s->getZip())
+            << TAG(country,s->getCountry())
             << TAGEND(address)
             << TAG(ico,s->getICO())
             << TAG(vat_number,s->getVatNumber())
@@ -821,7 +828,7 @@ namespace Register
                 Document::GT_ADVANCE_INVOICE_PDF :
                 Document::GT_INVOICE_PDF,
               makeFileName(i,".pdf"),INVOICE_PDF_FILE_TYPE,
-              i->getClient()->getVatApply() ? "cs" : "en"
+              i->getClient()->getCountry() == "CZ" ? "cs" : "en"
             )
           );
           // feed generator with xml input using xml exporter
@@ -888,7 +895,8 @@ namespace Register
         idFilter(0), registrarFilter(0), zoneFilter(0), typeFilter(0), 
         crDateFilter(ptime(neg_infin),ptime(pos_infin)),
         taxDateFilter(ptime(neg_infin),ptime(pos_infin)),
-        archiveFilter(AF_IGNORE), objectIdFilter(0), man(_man)
+        archiveFilter(AF_IGNORE), objectIdFilter(0), partialLoad(false),
+        man(_man)        
       {}
       ~InvoiceListImpl()
       {
@@ -1042,7 +1050,7 @@ namespace Register
           " i.file, i.fileXML, "
           " r.organization, r.street1, "
           " r.city, r.postalcode, TRIM(r.ico), TRIM(r.dic), TRIM(r.varsymb), "
-          " r.handle, r.vat, r.id, z.fqdn "
+          " r.handle, r.vat, r.id, z.fqdn, r.country "
           "FROM "
           " tmp_invoice_filter_result it "
           " JOIN invoice i ON (it.id=i.id) "

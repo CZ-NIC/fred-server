@@ -1,3 +1,7 @@
+    * invoicing fixes
+      - uninitialized determination value
+      - language of PDF based on country instead of vat application
+
 2008-02-25 Jaromir Talir (version 1.8.1)
 	
     * changing admin session handling

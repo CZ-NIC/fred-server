@@ -34,6 +34,7 @@ namespace Register
       virtual const std::string& getStreet() const = 0;
       virtual const std::string& getCity() const = 0;
       virtual const std::string& getZip() const = 0;
+      virtual const std::string& getCountry() const = 0;
       virtual const std::string& getICO() const = 0;
       virtual const std::string& getVatNumber() const = 0;
       virtual bool getVatApply() const = 0;
