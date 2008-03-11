@@ -320,6 +320,7 @@ ccReg_Admin_i::login(const char* username, const char* password)
         DEBUG_LOG, "Admin session %s deleted, remains %d sessions", 
         i->first.c_str(),sessionList.size()
       );
+      delete i->second;
       sessionList.erase(i);
       found = true;
     }
