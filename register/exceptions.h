@@ -11,6 +11,10 @@ namespace Register
   class NOT_FOUND
   {
   };
+  /// Exception when specified object already exists
+  class ALREADY_EXISTS
+  {
+  };
 };
 
 #endif

@@ -243,20 +243,44 @@ namespace Register
         return ret;
       }
       virtual void addZone(const std::string& fqdn)
-        throw (SQL_ERROR)
+        throw (SQL_ERROR, ALREADY_EXISTS)
       {
         std::stringstream sql;
+        sql << "SELECT COUNT(*) FROM zone WHERE fqdn='" << fqdn << "'";
+        bool exists = false;
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        if (!db->GetSelectRows()) throw SQL_ERROR();
+        exists = atoi(db->GetFieldValue(0,0)) > 0;
+        db->FreeSelect();
+        if (exists) throw ALREADY_EXISTS(); 
         unsigned dots = 1;
         for (unsigned i=0; i<fqdn.size(); i++)
           if (fqdn[i] == '.') dots++;
         bool enumZone = checkEnumDomainSuffix(fqdn);
         if (enumZone) dots = 9;
+        sql.str("");
         sql << "INSERT INTO zone ("
             << "  fqdn,ex_period_min,ex_period_max,val_period,"
             << "  dots_max,enum_zone"
             << ") VALUES ('"
             << fqdn << "',12,120," << (enumZone ? "6," : "0,")
             << dots << "," << (enumZone ? "'t'" : "'f'")
+            << ")";
+        if (!db->ExecSQL(sql.str().c_str()))
+          throw SQL_ERROR();
+        sql.str("");
+        sql << "INSERT INTO zone_soa ("
+            << " zone,ttl,hostmaster,serial,refresh,update_retr,expiry,"
+            << " minimum,ns_fqdn "
+            << ") VALUES ( "
+            << " currval('zone_id_seq'),18000,'hostmaster@localhost',NULL,"
+            << " 10600,3600,1209600,7200,'localhost' "
+            << ")";
+        if (!db->ExecSQL(sql.str().c_str()))
+          throw SQL_ERROR();
+        sql.str("");
+        sql << "INSERT INTO zone_ns (zone,fqdn,addrs) VALUES ("
+            << " currval('zone_id_seq'),'localhost','{}' "
             << ")";
         if (!db->ExecSQL(sql.str().c_str()))
           throw SQL_ERROR();

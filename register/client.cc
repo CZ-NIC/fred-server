@@ -676,7 +676,12 @@ int main(int argc, char **argv)
       if (!vm.count("zone_fqdn"))
         std::cerr << "zone_fqdn parameter must be specified" << std::endl;
       else {
-        zoneMan->addZone(vm["zone_fqdn"].as<std::string>());
+        try {
+          zoneMan->addZone(vm["zone_fqdn"].as<std::string>());
+        } catch (Register::ALREADY_EXISTS) {
+          std::cerr << "zone '" << vm["zone_fqdn"].as<std::string>()
+                    << "'" << " already exists in configuration " << std::endl;
+        }
       }
     }
     if (vm.count("registrar_add")) {
