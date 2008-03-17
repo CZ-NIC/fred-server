@@ -1,4 +1,8 @@
-    * invoicing fixes
+    * really small bugfixes 
+      - fixing creation of path to xslt templates
+      - fixing return value during action element insertion 
+
+    * invoicing bugfixes
       - uninitialized determination value
       - language of PDF based on country instead of vat application
 

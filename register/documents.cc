@@ -131,7 +131,7 @@ namespace Register
         if (genProc.xslTemplateName.empty()) cmd << "cat ";
         else {
           cmd << "xsltproc "
-              << "--stringparam srcpath " << pathTemplates << "templates/" 
+              << "--stringparam srcpath " << pathTemplates << "/templates/" 
               << " ";
           if (!lang.empty())
             cmd << "--stringparam lang " << lang << " ";

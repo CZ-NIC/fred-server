@@ -47,6 +47,7 @@ ParsedAction::executeSQL(Register::TID actionid, DB* db)
     if (!db->ExecSQL(sql.str().c_str())) return false;
     return true;  
   }
+  return true;
 }
 
 // for invoice  type 
