@@ -2441,7 +2441,13 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
         if (DBsql.BeginTransaction() ) {
           // get ID with locking record
           id = getIdOfContact(&DBsql, handle, conf, true);
-  
+          // for notification to old notify address, this address must be 
+          // discovered before change happen
+          std::string oldNotifyEmail;
+          if (strlen(c.NotifyEmail) && !conf.GetDisableEPPNotifier())
+            oldNotifyEmail = DBsql.GetValueFromTable(
+              "contact", "notifyemail", "id", id
+            );
           if (id < 0)
             ret->code= SetReasonContactHandle(errors, handle,
                 GetRegistrarLang(clientID) );
@@ -2562,6 +2568,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
           if (ret->code == COMMAND_OK) // run notifier
           {
             ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
+            ntf->addExtraEmails(oldNotifyEmail);
             ntf->Send(); // send messages with objectID
           }
 

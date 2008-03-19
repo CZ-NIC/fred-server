@@ -39,8 +39,14 @@ class EPPNotifier
   ID registrarID; // idof registrar who make change
   ID objectID; // type of the object  where make change
 
-  bool disable; // for fast upload of objects 
+  bool disable; // for fast upload of objects
+  std::string extraEmails; // for fixing notification of notifyEmail change
 public:
+  void addExtraEmails(const std::string& emails) 
+  {
+	  extraEmails += " ";
+	  extraEmails += emails;
+  }
   EPPNotifier(
     bool _disable, MailerManager *mailManager, DB *dbs, ID regid, ID objectid); // add default contacts for object ID
   ~EPPNotifier();

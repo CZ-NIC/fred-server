@@ -1,6 +1,9 @@
+    * update contact notification is now sent to old notify adress as well
+    
     * really small bugfixes 
       - fixing creation of path to xslt templates
-      - fixing return value during action element insertion 
+      - fixing return value during action element insertion
+      - fixing missing disconnection of database session in adif backend 
 
     * invoicing bugfixes
       - uninitialized determination value

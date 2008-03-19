@@ -96,7 +96,7 @@ bool EPPNotifier::Send()
         emails << ", ";
       emails << cNotifyEmail;
     }
-
+    emails << " " << extraEmails;
   }
   LOG( DEBUG_LOG , "EPPNotifier: TO: %s" , emails.str().c_str() );
   try {
