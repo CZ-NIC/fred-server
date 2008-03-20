@@ -14,13 +14,13 @@ MSG_STOP="Stopping FRED central registry CORBA servers..."
 # set DB_INIT=0 if you have your own database setup (database name,
 # database user, access rules..etc)
 DB_INIT=1
-DB_FILE=/usr/share/fred-db/createdb.sh
+DB_FILE="/usr/sbin/fred-dbmanager"
 
 fred_start() {
     if [ $DB_INIT -eq 1 -a -x $DB_FILE ]
     then
 	# this script will ensure that database exists
-	/bin/su - postgres -c $DB_FILE
+	/bin/su - postgres -c "$DB_FILE install"
 	if [ $? -ne 0 ]; then exit 1; fi
     fi
     /usr/bin/pyfredctl start > /dev/null
