@@ -17,16 +17,16 @@
  */
 
 #include "mailer_manager.h"
-
 #include "log.h"
 
-MailerManager::MailerManager(NameService *ns)
-  throw (RESOLVE_FAILED)
+MailerManager::MailerManager(NameService *ns) : ns_ptr(ns)
 {
   try {
-    CORBA::Object_var o = ns->resolve("Mailer");
-    mailer = ccReg::Mailer::_narrow(o);
-  } catch (...) { throw RESOLVE_FAILED(); }
+    _resolveInit();
+  }
+  catch(...) {
+    LOG(WARNING_LOG, "mailer_manager: can't connect to mailer in initialization...");
+  }
 }
 
 Register::TID 
@@ -82,13 +82,14 @@ MailerManager::sendEmail(
   bool prev = false;
   CORBA::String_var prevMsg;
   // call mailer
-  if (CORBA::is_nil(mailer)) throw Register::Mailer::NOT_SEND();
+  // if (CORBA::is_nil(mailer)) throw Register::Mailer::NOT_SEND();
   try {
     LOG(
       DEBUG_LOG, 
       "mailer_manager:   mailer->mailNotify mailType [%s]  ",
       mailTemplate.c_str()
     );
+    _resolveInit();
     CORBA::Long id = mailer->mailNotify(
       mailTemplate.c_str(),header,data,handleList,attachments,prev,prevMsg
     );
@@ -132,6 +133,7 @@ MailerManager::reload(MailerManager::Filter& f) throw (LOAD_ERROR)
   SET_TIME(f.crTime.begin(),mf.crdate.from);
   SET_TIME(f.crTime.end(),mf.crdate.to);
   try {
+    _resolveInit();
     ccReg::MailTypeCodes_var mtc = mailer->getMailTypes();
     mailList.clear();
     ccReg::MailSearch_var ms = mailer->createSearchObject(mf);
@@ -178,3 +180,24 @@ MailerManager::Filter::clear()
   attachment = "";
   crTime = time_period(ptime(neg_infin),ptime(pos_infin));
 } 
+
+void 
+MailerManager::_resolveInit() throw (RESOLVE_FAILED)
+{
+  try {
+    boost::mutex::scoped_lock scoped_lock(mutex);
+    if (!CORBA::is_nil(mailer)) {
+      LOG(DEBUG_LOG, "mailer_manager: mailer already resolved");
+      return;
+    }
+    LOG(DEBUG_LOG, "mailer_manager: resolving corba reference");
+    mailer = ccReg::Mailer::_narrow(ns_ptr->resolve("Mailer"));
+    // if (CORBA::is_nil(mailer)) {
+    //   LOG(DEBUG_LOG, "mailer_manager: mailer object is nil but resolved .. strange");
+    // }
+  } catch (...) { 
+    LOG(DEBUG_LOG, "mailer_manager: resolving failed");
+    throw RESOLVE_FAILED(); 
+  }
+  LOG(DEBUG_LOG, "mailer_manager: resolving ok");
+}

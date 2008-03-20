@@ -655,7 +655,6 @@ target_alias
 INSTALL_PROGRAM
 INSTALL_SCRIPT
 INSTALL_DATA
-am__isrc
 CYGPATH_W
 PACKAGE
 VERSION
@@ -705,6 +704,11 @@ BOOST_LDFLAGS
 BOOST_DATE_TIME_LIB
 BOOST_PROGRAM_OPTIONS_LIB
 BOOST_REGEX_LIB
+build
+build_cpu
+build_vendor
+build_os
+BOOST_THREAD_LIB
 PG_CONFIG
 CPP
 GREP
@@ -1294,6 +1298,9 @@ Program names:
   --program-prefix=PREFIX            prepend PREFIX to installed program names
   --program-suffix=SUFFIX            append SUFFIX to installed program names
   --program-transform-name=PROGRAM   run sed PROGRAM on installed program names
+
+System types:
+  --build=BUILD     configure for building on BUILD [guessed]
 _ACEOF
 fi
 
@@ -1328,6 +1335,10 @@ Optional Packages:
                           use the Regex library from boost - it is possible to
                           specify a certain library for the linker e.g.
                           --with-boost-regex=boost_regex-gcc-mt-d-1_33_1
+  --with-boost-thread[=special-lib]
+                          use the Thread library from boost - it is possible
+                          to specify a certain library for the linker e.g.
+                          --with-boost-thread=boost_thread-gcc-mt
   --with-postgresql=[ARG] use PostgreSQL library [default=yes], optionally
                           specify path to pg_config
   --with-idldir           location of idl directory containing IDL interfaces
@@ -1788,8 +1799,7 @@ ac_config_headers="$ac_config_headers config.h"
 
 
 
-am__api_version='1.10'
-
+am__api_version="1.9"
 ac_aux_dir=
 for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
   if test -f "$ac_dir/install-sh"; then
@@ -1972,53 +1982,38 @@ else
 echo "$as_me: WARNING: \`missing' script is too old or missing" >&2;}
 fi
 
-{ echo "$as_me:$LINENO: checking for a thread-safe mkdir -p" >&5
-echo $ECHO_N "checking for a thread-safe mkdir -p... $ECHO_C" >&6; }
-if test -z "$MKDIR_P"; then
-  if test "${ac_cv_path_mkdir+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
+if mkdir -p --version . >/dev/null 2>&1 && test ! -d ./--version; then
+  # We used to keeping the `.' as first argument, in order to
+  # allow $(mkdir_p) to be used without argument.  As in
+  #   $(mkdir_p) $(somedir)
+  # where $(somedir) is conditionally defined.  However this is wrong
+  # for two reasons:
+  #  1. if the package is installed by a user who cannot write `.'
+  #     make install will fail,
+  #  2. the above comment should most certainly read
+  #     $(mkdir_p) $(DESTDIR)$(somedir)
+  #     so it does not work when $(somedir) is undefined and
+  #     $(DESTDIR) is not.
+  #  To support the latter case, we have to write
+  #     test -z "$(somedir)" || $(mkdir_p) $(DESTDIR)$(somedir),
+  #  so the `.' trick is pointless.
+  mkdir_p='mkdir -p --'
 else
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH$PATH_SEPARATOR/opt/sfw/bin
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_prog in mkdir gmkdir; do
-	 for ac_exec_ext in '' $ac_executable_extensions; do
-	   { test -f "$as_dir/$ac_prog$ac_exec_ext" && $as_test_x "$as_dir/$ac_prog$ac_exec_ext"; } || continue
-	   case `"$as_dir/$ac_prog$ac_exec_ext" --version 2>&1` in #(
-	     'mkdir (GNU coreutils) '* | \
-	     'mkdir (coreutils) '* | \
-	     'mkdir (fileutils) '4.1*)
-	       ac_cv_path_mkdir=$as_dir/$ac_prog$ac_exec_ext
-	       break 3;;
-	   esac
-	 done
-       done
-done
-IFS=$as_save_IFS
-
-fi
-
-  if test "${ac_cv_path_mkdir+set}" = set; then
-    MKDIR_P="$ac_cv_path_mkdir -p"
+  # On NextStep and OpenStep, the `mkdir' command does not
+  # recognize any option.  It will interpret all options as
+  # directories to create, and then abort because `.' already
+  # exists.
+  for d in ./-p ./--version;
+  do
+    test -d $d && rmdir $d
+  done
+  # $(mkinstalldirs) is defined by Automake if mkinstalldirs exists.
+  if test -f "$ac_aux_dir/mkinstalldirs"; then
+    mkdir_p='$(mkinstalldirs)'
   else
-    # As a last resort, use the slow shell script.  Don't cache a
-    # value for MKDIR_P within a source directory, because that will
-    # break other packages using the cache if that directory is
-    # removed, or if the value is a relative name.
-    test -d ./--version && rmdir ./--version
-    MKDIR_P="$ac_install_sh -d"
+    mkdir_p='$(install_sh) -d'
   fi
 fi
-{ echo "$as_me:$LINENO: result: $MKDIR_P" >&5
-echo "${ECHO_T}$MKDIR_P" >&6; }
-
-mkdir_p="$MKDIR_P"
-case $mkdir_p in
-  [\\/$]* | ?:[\\/]*) ;;
-  */*) mkdir_p="\$(top_builddir)/$mkdir_p" ;;
-esac
 
 for ac_prog in gawk mawk nawk awk
 do
@@ -2101,16 +2096,12 @@ else
 fi
 rmdir .tst 2>/dev/null
 
-if test "`cd $srcdir && pwd`" != "`pwd`"; then
-  # Use -I$(srcdir) only when $(srcdir) != ., so that make's output
-  # is not polluted with repeated "-I."
-  am__isrc=' -I$(srcdir)'
-  # test to see if srcdir already configured
-  if test -f $srcdir/config.status; then
-    { { echo "$as_me:$LINENO: error: source directory already configured; run \"make distclean\" there first" >&5
+# test to see if srcdir already configured
+if test "`cd $srcdir && pwd`" != "`pwd`" &&
+   test -f $srcdir/config.status; then
+  { { echo "$as_me:$LINENO: error: source directory already configured; run \"make distclean\" there first" >&5
 echo "$as_me: error: source directory already configured; run \"make distclean\" there first" >&2;}
    { (exit 1); exit 1; }; }
-  fi
 fi
 
 # test whether we have cygpath
@@ -2153,7 +2144,7 @@ AUTOHEADER=${AUTOHEADER-"${am_missing_run}autoheader"}
 
 MAKEINFO=${MAKEINFO-"${am_missing_run}makeinfo"}
 
-install_sh=${install_sh-"\$(SHELL) $am_aux_dir/install-sh"}
+install_sh=${install_sh-"$am_aux_dir/install-sh"}
 
 # Installed binaries are usually stripped using `strip' when the user
 # run `make install-strip'.  However `strip' might not be the right
@@ -2257,7 +2248,7 @@ else
 fi
 
 fi
-INSTALL_STRIP_PROGRAM="\$(install_sh) -c -s"
+INSTALL_STRIP_PROGRAM="\${SHELL} \$(install_sh) -c -s"
 
 # We need awk for the "check" target.  The system "awk" is bad on
 # some platforms.
@@ -2974,13 +2965,16 @@ if test "x$enable_dependency_tracking" != xno; then
   am_depcomp="$ac_aux_dir/depcomp"
   AMDEPBACKSLASH='\'
 fi
- if test "x$enable_dependency_tracking" != xno; then
+
+
+if test "x$enable_dependency_tracking" != xno; then
   AMDEP_TRUE=
   AMDEP_FALSE='#'
 else
   AMDEP_TRUE='#'
   AMDEP_FALSE=
 fi
+
 
 
 
@@ -3051,7 +3045,6 @@ else
        depfile=sub/conftest.Po tmpdepfile=sub/conftest.TPo \
        $SHELL ./depcomp $depcc -c -o sub/conftest.${OBJEXT-o} sub/conftest.c \
          >/dev/null 2>conftest.err &&
-       grep sub/conftst1.h sub/conftest.Po > /dev/null 2>&1 &&
        grep sub/conftst6.h sub/conftest.Po > /dev/null 2>&1 &&
        grep sub/conftest.${OBJEXT-o} sub/conftest.Po > /dev/null 2>&1 &&
        ${MAKE-make} -s -f confmf > /dev/null 2>&1; then
@@ -3081,7 +3074,9 @@ fi
 echo "${ECHO_T}$am_cv_CXX_dependencies_compiler_type" >&6; }
 CXXDEPMODE=depmode=$am_cv_CXX_dependencies_compiler_type
 
- if
+
+
+if
   test "x$enable_dependency_tracking" != xno \
   && test "$am_cv_CXX_dependencies_compiler_type" = gcc3; then
   am__fastdepCXX_TRUE=
@@ -3835,7 +3830,6 @@ else
        depfile=sub/conftest.Po tmpdepfile=sub/conftest.TPo \
        $SHELL ./depcomp $depcc -c -o sub/conftest.${OBJEXT-o} sub/conftest.c \
          >/dev/null 2>conftest.err &&
-       grep sub/conftst1.h sub/conftest.Po > /dev/null 2>&1 &&
        grep sub/conftst6.h sub/conftest.Po > /dev/null 2>&1 &&
        grep sub/conftest.${OBJEXT-o} sub/conftest.Po > /dev/null 2>&1 &&
        ${MAKE-make} -s -f confmf > /dev/null 2>&1; then
@@ -3865,7 +3859,9 @@ fi
 echo "${ECHO_T}$am_cv_CC_dependencies_compiler_type" >&6; }
 CCDEPMODE=depmode=$am_cv_CC_dependencies_compiler_type
 
- if
+
+
+if
   test "x$enable_dependency_tracking" != xno \
   && test "$am_cv_CC_dependencies_compiler_type" = gcc3; then
   am__fastdepCC_TRUE=
@@ -5399,6 +5395,349 @@ fi
 				{ { echo "$as_me:$LINENO: error: Could not link against $ax_lib !" >&5
 echo "$as_me: error: Could not link against $ax_lib !" >&2;}
    { (exit 1); exit 1; }; }
+			fi
+		fi
+
+		CPPFLAGS="$CPPFLAGS_SAVED"
+    	LDFLAGS="$LDFLAGS_SAVED"
+	fi
+
+# Make sure we can run config.sub.
+$SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
+  { { echo "$as_me:$LINENO: error: cannot run $SHELL $ac_aux_dir/config.sub" >&5
+echo "$as_me: error: cannot run $SHELL $ac_aux_dir/config.sub" >&2;}
+   { (exit 1); exit 1; }; }
+
+{ echo "$as_me:$LINENO: checking build system type" >&5
+echo $ECHO_N "checking build system type... $ECHO_C" >&6; }
+if test "${ac_cv_build+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_build_alias=$build_alias
+test "x$ac_build_alias" = x &&
+  ac_build_alias=`$SHELL "$ac_aux_dir/config.guess"`
+test "x$ac_build_alias" = x &&
+  { { echo "$as_me:$LINENO: error: cannot guess build type; you must specify one" >&5
+echo "$as_me: error: cannot guess build type; you must specify one" >&2;}
+   { (exit 1); exit 1; }; }
+ac_cv_build=`$SHELL "$ac_aux_dir/config.sub" $ac_build_alias` ||
+  { { echo "$as_me:$LINENO: error: $SHELL $ac_aux_dir/config.sub $ac_build_alias failed" >&5
+echo "$as_me: error: $SHELL $ac_aux_dir/config.sub $ac_build_alias failed" >&2;}
+   { (exit 1); exit 1; }; }
+
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_build" >&5
+echo "${ECHO_T}$ac_cv_build" >&6; }
+case $ac_cv_build in
+*-*-*) ;;
+*) { { echo "$as_me:$LINENO: error: invalid value of canonical build" >&5
+echo "$as_me: error: invalid value of canonical build" >&2;}
+   { (exit 1); exit 1; }; };;
+esac
+build=$ac_cv_build
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_build
+shift
+build_cpu=$1
+build_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+build_os=$*
+IFS=$ac_save_IFS
+case $build_os in *\ *) build_os=`echo "$build_os" | sed 's/ /-/g'`;; esac
+
+
+
+
+# Check whether --with-boost-thread was given.
+if test "${with_boost_thread+set}" = set; then
+  withval=$with_boost_thread;
+        if test "$withval" = "no"; then
+			want_boost="no"
+        elif test "$withval" = "yes"; then
+            want_boost="yes"
+            ax_boost_user_thread_lib=""
+        else
+		    want_boost="yes"
+        	ax_boost_user_thread_lib="$withval"
+		fi
+
+else
+  want_boost="yes"
+
+fi
+
+
+	if test "x$want_boost" = "xyes"; then
+
+
+		CPPFLAGS_SAVED="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+		export CPPFLAGS
+
+		LDFLAGS_SAVED="$LDFLAGS"
+		LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+		export LDFLAGS
+
+        { echo "$as_me:$LINENO: checking whether the Boost::Thread library is available" >&5
+echo $ECHO_N "checking whether the Boost::Thread library is available... $ECHO_C" >&6; }
+if test "${ax_cv_boost_thread+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+			 CXXFLAGS_SAVE=$CXXFLAGS
+
+			 if test "x$build_os" = "xsolaris" ; then
+  				 CXXFLAGS="-pthreads $CXXFLAGS"
+			 elif test "x$build_os" = "xming32" ; then
+				 CXXFLAGS="-mthreads $CXXFLAGS"
+			 else
+				CXXFLAGS="-pthread $CXXFLAGS"
+			 fi
+			 cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <boost/thread/thread.hpp>
+int
+main ()
+{
+boost::thread_group thrds;
+                                   return 0;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_cxx_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  ax_cv_boost_thread=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ax_cv_boost_thread=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+			 CXXFLAGS=$CXXFLAGS_SAVE
+             ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+{ echo "$as_me:$LINENO: result: $ax_cv_boost_thread" >&5
+echo "${ECHO_T}$ax_cv_boost_thread" >&6; }
+		if test "x$ax_cv_boost_thread" = "xyes"; then
+           if test "x$build_os" = "xsolaris" ; then
+			  BOOST_CPPFLAGS="-pthreads $BOOST_CPPFLAGS"
+		   elif test "x$build_os" = "xming32" ; then
+			  BOOST_CPPFLAGS="-mthreads $BOOST_CPPFLAGS"
+		   else
+			  BOOST_CPPFLAGS="-pthread $BOOST_CPPFLAGS"
+		   fi
+
+
+
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_BOOST_THREAD
+_ACEOF
+
+			BN_BOOST_THREAD_LIB=boost_thread
+            BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/[^\/]*//'`
+
+			LDFLAGS_SAVE=$LDFLAGS
+                        case "x$build_os" in
+                          *bsd* )
+                               LDFLAGS="-pthread $LDFLAGS"
+                          break;
+                          ;;
+                        esac
+            if test "x$ax_boost_user_thread_lib" = "x"; then
+                for libextension in `ls $BOOSTLIBDIR/libboost_thread*.{so,a}* | sed 's,.*/,,' | sed -e 's;^libboost_thread\(.*\)\.so.*$;\1;' -e 's;^libboost_thread\(.*\)\.a*$;\1;'` ; do
+                     ax_lib=${BN_BOOST_THREAD_LIB}${libextension}
+				    as_ac_Lib=`echo "ac_cv_lib_$ax_lib''_exit" | $as_tr_sh`
+{ echo "$as_me:$LINENO: checking for exit in -l$ax_lib" >&5
+echo $ECHO_N "checking for exit in -l$ax_lib... $ECHO_C" >&6; }
+if { as_var=$as_ac_Lib; eval "test \"\${$as_var+set}\" = set"; }; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-l$ax_lib  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char exit ();
+int
+main ()
+{
+return exit ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  eval "$as_ac_Lib=yes"
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	eval "$as_ac_Lib=no"
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+ac_res=`eval echo '${'$as_ac_Lib'}'`
+	       { echo "$as_me:$LINENO: result: $ac_res" >&5
+echo "${ECHO_T}$ac_res" >&6; }
+if test `eval echo '${'$as_ac_Lib'}'` = yes; then
+  BOOST_THREAD_LIB="-l$ax_lib";  link_thread="yes"; break
+else
+  link_thread="no"
+fi
+
+  				done
+            else
+               for ax_lib in $ax_boost_user_thread_lib $BN_BOOST_THREAD_LIB-$ax_boost_user_thread_lib; do
+				      as_ac_Lib=`echo "ac_cv_lib_$ax_lib''_exit" | $as_tr_sh`
+{ echo "$as_me:$LINENO: checking for exit in -l$ax_lib" >&5
+echo $ECHO_N "checking for exit in -l$ax_lib... $ECHO_C" >&6; }
+if { as_var=$as_ac_Lib; eval "test \"\${$as_var+set}\" = set"; }; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-l$ax_lib  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char exit ();
+int
+main ()
+{
+return exit ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  eval "$as_ac_Lib=yes"
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	eval "$as_ac_Lib=no"
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+ac_res=`eval echo '${'$as_ac_Lib'}'`
+	       { echo "$as_me:$LINENO: result: $ac_res" >&5
+echo "${ECHO_T}$ac_res" >&6; }
+if test `eval echo '${'$as_ac_Lib'}'` = yes; then
+  BOOST_THREAD_LIB="-l$ax_lib";  link_thread="yes"; break
+else
+  link_thread="no"
+fi
+
+                  done
+
+            fi
+			if test "x$link_thread" = "xno"; then
+				{ { echo "$as_me:$LINENO: error: Could not link against $ax_lib !" >&5
+echo "$as_me: error: Could not link against $ax_lib !" >&2;}
+   { (exit 1); exit 1; }; }
+                        else
+                           case "x$build_os" in
+                              *bsd* )
+			        BOOST_LDFLAGS="-pthread $BOOST_LDFLAGS"
+                              break;
+                              ;;
+                           esac
+
 			fi
 		fi
 
@@ -8743,7 +9082,6 @@ gives unlimited permission to copy, distribute and modify it."
 ac_pwd='$ac_pwd'
 srcdir='$srcdir'
 INSTALL='$INSTALL'
-MKDIR_P='$MKDIR_P'
 _ACEOF
 
 cat >>$CONFIG_STATUS <<\_ACEOF
@@ -8953,7 +9291,6 @@ target_alias!$target_alias$ac_delim
 INSTALL_PROGRAM!$INSTALL_PROGRAM$ac_delim
 INSTALL_SCRIPT!$INSTALL_SCRIPT$ac_delim
 INSTALL_DATA!$INSTALL_DATA$ac_delim
-am__isrc!$am__isrc$ac_delim
 CYGPATH_W!$CYGPATH_W$ac_delim
 PACKAGE!$PACKAGE$ac_delim
 VERSION!$VERSION$ac_delim
@@ -9003,13 +9340,14 @@ BOOST_LDFLAGS!$BOOST_LDFLAGS$ac_delim
 BOOST_DATE_TIME_LIB!$BOOST_DATE_TIME_LIB$ac_delim
 BOOST_PROGRAM_OPTIONS_LIB!$BOOST_PROGRAM_OPTIONS_LIB$ac_delim
 BOOST_REGEX_LIB!$BOOST_REGEX_LIB$ac_delim
+build!$build$ac_delim
+build_cpu!$build_cpu$ac_delim
+build_vendor!$build_vendor$ac_delim
+build_os!$build_os$ac_delim
+BOOST_THREAD_LIB!$BOOST_THREAD_LIB$ac_delim
 PG_CONFIG!$PG_CONFIG$ac_delim
 CPP!$CPP$ac_delim
 GREP!$GREP$ac_delim
-EGREP!$EGREP$ac_delim
-POSTGRESQL_VERSION!$POSTGRESQL_VERSION$ac_delim
-POSTGRESQL_CFLAGS!$POSTGRESQL_CFLAGS$ac_delim
-POSTGRESQL_LDFLAGS!$POSTGRESQL_LDFLAGS$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -9051,12 +9389,16 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+EGREP!$EGREP$ac_delim
+POSTGRESQL_VERSION!$POSTGRESQL_VERSION$ac_delim
+POSTGRESQL_CFLAGS!$POSTGRESQL_CFLAGS$ac_delim
+POSTGRESQL_LDFLAGS!$POSTGRESQL_LDFLAGS$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 IDLDIR!$IDLDIR$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 3; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 7; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
@@ -9283,11 +9625,6 @@ ac_abs_srcdir=$ac_abs_top_srcdir$ac_dir_suffix
   [\\/$]* | ?:[\\/]* ) ac_INSTALL=$INSTALL ;;
   *) ac_INSTALL=$ac_top_build_prefix$INSTALL ;;
   esac
-  ac_MKDIR_P=$MKDIR_P
-  case $MKDIR_P in
-  [\\/$]* | ?:[\\/]* ) ;;
-  */*) ac_MKDIR_P=$ac_top_build_prefix$MKDIR_P ;;
-  esac
 _ACEOF
 
 cat >>$CONFIG_STATUS <<\_ACEOF
@@ -9341,7 +9678,6 @@ s&@builddir@&$ac_builddir&;t t
 s&@abs_builddir@&$ac_abs_builddir&;t t
 s&@abs_top_builddir@&$ac_abs_top_builddir&;t t
 s&@INSTALL@&$ac_INSTALL&;t t
-s&@MKDIR_P@&$ac_MKDIR_P&;t t
 $ac_datarootdir_hack
 " $ac_file_inputs | sed -f "$tmp/subs-1.sed" | sed -f "$tmp/subs-2.sed" >$tmp/out
 
@@ -9506,9 +9842,8 @@ echo "$as_me: executing $ac_file commands" >&6;}
   # some people rename them; so instead we look at the file content.
   # Grep'ing the first line is not enough: some people post-process
   # each Makefile.in and add a new line on top of each file to say so.
-  # Grep'ing the whole file is not good either: AIX grep has a line
-  # limit of 2048, but all sed's we know have understand at least 4000.
-  if sed 10q "$mf" | grep '^#.*generated by automake' > /dev/null 2>&1; then
+  # So let's grep whole file.
+  if grep '^#.*generated by automake' $mf > /dev/null 2>&1; then
     dirpart=`$as_dirname -- "$mf" ||
 $as_expr X"$mf" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
 	 X"$mf" : 'X\(//\)[^/]' \| \

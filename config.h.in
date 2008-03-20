@@ -18,6 +18,9 @@
 /* define if the Boost::Regex library is available */
 #undef HAVE_BOOST_REGEX
 
+/* define if the Boost::Thread library is available */
+#undef HAVE_BOOST_THREAD
+
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 #undef HAVE_DOPRNT
 

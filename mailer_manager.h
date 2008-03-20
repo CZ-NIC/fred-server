@@ -2,6 +2,8 @@
 #define MAILER_MANAGER_H_
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include "ccReg.hh"
 #include "register/mailer.h"
@@ -15,11 +17,13 @@ using namespace boost::posix_time;
  * generic pointer to abstract mailer interface */ 
 class MailerManager : public Register::Mailer::Manager
 { 
+  NameService       *ns_ptr;
   ccReg::Mailer_var mailer;
+  boost::mutex      mutex;
  public:
   class RESOLVE_FAILED {};
   class LOAD_ERROR {};
-  MailerManager(NameService *ns) throw (RESOLVE_FAILED);
+  MailerManager(NameService *ns); 
   virtual Register::TID sendEmail(
     const std::string& from,
     const std::string& to,
@@ -57,6 +61,7 @@ class MailerManager : public Register::Mailer::Manager
   typedef std::vector<Detail> List;  
  private:
   List mailList;
+  void _resolveInit() throw (RESOLVE_FAILED);
  public:
   List& getMailList();
   void reload(Filter& mf) throw (LOAD_ERROR);

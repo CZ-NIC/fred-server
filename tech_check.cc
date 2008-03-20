@@ -17,13 +17,16 @@
  */
 
 #include "tech_check.h"
+#include "log.h"
 
-TechCheckManager::TechCheckManager(NameService *ns)
-  throw (RESOLVE_FAILED)
+TechCheckManager::TechCheckManager(NameService *ns) : ns_ptr(ns)
 {
-  try {
-    tc = ccReg::TechCheck::_narrow(ns->resolve("TechCheck"));
-  } catch (...) { throw RESOLVE_FAILED(); }
+  // try {
+  //   _resolveInit();
+  // }
+  // catch(...) {
+  //   LOG(WARNING_LOG, "tech_check_manager: can't connect to tech_check in initialization..."); 
+  // }
 }
 
 void 
@@ -39,6 +42,7 @@ TechCheckManager::checkFromRegistrar(
       cfqdns[i] = fqdns[i].c_str();
     CORBA::String_var reg = registrar.c_str();
     CORBA::String_var nss = nsset.c_str();
+    _resolveInit();
     tc->checkNssetAsynch(reg,nss,level,false,true,ccReg::CHKR_EPP,cfqdns,cltrid);
   }
   catch (ccReg::TechCheck::NssetNotFound) {
@@ -51,3 +55,21 @@ TechCheckManager::checkFromRegistrar(
     throw INTERNAL_ERROR();
   }
 }
+
+void 
+TechCheckManager::_resolveInit() throw (RESOLVE_FAILED)
+{
+  try {
+    boost::mutex::scoped_lock scoped_lock(mutex);
+    if (!CORBA::is_nil(tc))
+      return;
+    LOG(DEBUG_LOG, "tech_check_manager: resolving corba reference");
+    tc = ccReg::TechCheck::_narrow(ns_ptr->resolve("TechCheck"));
+  } 
+  catch (...) { 
+    LOG(DEBUG_LOG, "tech_check_manager: resolving failed");
+    throw RESOLVE_FAILED(); 
+  }
+  LOG(DEBUG_LOG, "tech_check_manager: resolving ok");
+}
+

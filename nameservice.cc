@@ -127,9 +127,15 @@ CORBA::Object_ptr NameService::resolve(  const std::string& name )
   catch(CosNaming::NamingContext::NotFound& ex) {
     // This exception is thrown if any of the components of the
     // path [contexts or the object] aren't found:
-    std::cerr << "Context not found." << std::endl;
+    CosNaming::Name name = ex.rest_of_name;
+    std::string name_str;
+    for (unsigned i = 0; i < name.length(); ++i) {
+      name_str += std::string(name[i].id) + "(" + std::string(name[i].kind) + ")" + (name.length() != i + 1 ? "/" : "" );
+    }
+   
+    std::cerr << "Context " << name_str << " not found." << std::endl;
+    throw BAD_CONTEXT();
   }
-
   catch(CORBA::TRANSIENT& ex) {
     throw NOT_RUNNING();
   }
