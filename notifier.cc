@@ -66,8 +66,14 @@ bool EPPNotifier::Send()
 
   // 4 parameters  type of the object name  ticket svTRID and  handle of  registrar
   params["ticket"] = db->GetsvTRID();
-  params["registrar"] = db->GetValueFromTable("registrar", "handle", "id",
-      registrarID); // handle of registrar
+  std::stringstream registrarInfo;
+  registrarInfo << db->GetValueFromTable(
+    "registrar", "name", "id",registrarID
+  );
+  registrarInfo << " ("
+                << db->GetValueFromTable("registrar", "url", "id",registrarID) 
+                << ")";
+  params["registrar"] = registrarInfo.str(); // registrar name and url
   params["handle"] = db->GetValueFromTable("object_registry", "name", "id",
       objectID); // name of the object
   params["type"] = db->GetValueFromTable("object_registry", "type", "id",

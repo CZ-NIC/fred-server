@@ -443,7 +443,7 @@ namespace Register
           );
           std::ostream& out(gPDF->getInput());
           std::stringstream sql;
-          sql << "SELECT dobr.name,r.handle,CURRENT_DATE,"
+          sql << "SELECT dobr.name,r.name || ' (' || r.url || ')',CURRENT_DATE,"
               << "d.exdate::date + INTERVAL '45 days',cor.name,"
               << "CASE WHEN TRIM(COALESCE(c.organization,''))='' THEN c.name "
               << "     ELSE c.organization END, "

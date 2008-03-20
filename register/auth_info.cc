@@ -45,6 +45,7 @@ namespace Register
       TID answerEmailId;
       TID actionId;
       std::string registrarName;
+      std::string registrarInfo;
       std::string svTRID;
       Mailer::Manager *mm;
       DB *db;
@@ -56,7 +57,8 @@ namespace Register
         ptime _creationTime, ptime _closingTime,
         const std::string& _reason, const std::string& _emailToAnswer,
         TID _answerEmailId, TID _actionId,
-        const std::string& _registrarName, const std::string& _svTRID,
+        const std::string& _registrarName, const std::string& _registrarInfo,
+        const std::string& _svTRID,
         Mailer::Manager *_mm, DB *_db
       ) :
         id(_id), objectId(_objectId), objectHandle(_objectHandle),
@@ -64,7 +66,8 @@ namespace Register
         requestStatus(_requestStatus), creationTime(_creationTime),
         closingTime(_closingTime), reason(_reason), 
         emailToAnswer(_emailToAnswer), answerEmailId(_answerEmailId),
-        actionId(_actionId), registrarName(_registrarName), svTRID(_svTRID),
+        actionId(_actionId), registrarName(_registrarName), 
+        registrarInfo(_registrarInfo), svTRID(_svTRID),
         mm(_mm), db(_db)
       {}
       virtual TID getId() const
@@ -118,6 +121,10 @@ namespace Register
       virtual const std::string& getRegistrarName() const
       {
         return registrarName;
+      }
+      virtual const std::string& getRegistrarInfo() const
+      {
+        return registrarInfo;
       }
       virtual const std::string& getSvTRID() const
       {
@@ -202,7 +209,7 @@ namespace Register
           // template parameters generation
           // TODO: text localization and date format locale
           Mailer::Parameters params;
-          params["registrar"] = registrarName;
+          params["registrar"] = registrarInfo;
           std::ostringstream buf;
           buf.imbue(std::locale(std::locale(""),new date_facet("%x")));
           buf << creationTime.date();
@@ -388,7 +395,7 @@ namespace Register
             << "air.request_type,air.status,"
             << "air.create_time,air.resolve_time,air.reason,"
             << "air.email_to_answer,air.answer_email_id,"
-            << "a.id,r.handle,a.servertrid "
+            << "a.id,r.handle,r.name||' ('||r.url||')',a.servertrid "
             << "FROM object_registry obr, object_history oh, " 
             << "auth_info_requests air "
             << "LEFT JOIN action a ON (air.epp_action_id=a.id) "
@@ -422,7 +429,8 @@ namespace Register
             STR_TO_ID(db->GetFieldValue(i,10)), // answered email id
             STR_TO_ID(db->GetFieldValue(i,11)), // action id
             db->GetFieldValue(i,12), // registrar
-            db->GetFieldValue(i,13), // svtrid
+            db->GetFieldValue(i,13), // registrar info
+            db->GetFieldValue(i,14), // svtrid
             mm, db
           );
           requests.push_back(d);
@@ -487,7 +495,7 @@ namespace Register
           ptime(not_a_date_time),
           requestReason, emailToAnswer, 0,
           // actionId strings are ignored 
-          eppActionId, "", "",         
+          eppActionId, "", "", "",         
           mm,db
         );
         d.save();
