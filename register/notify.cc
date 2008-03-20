@@ -142,7 +142,7 @@ namespace Register
         return getEmailList(sql);        
       }
       void fillDomainParamsHistory(
-        TID domain, 
+        TID domain, ptime stamp, 
         Register::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
@@ -174,6 +174,7 @@ namespace Register
         params["exregdate"] = to_iso_extended_string(
           ex + date_duration(45)
         );
+        params["statechangedate"] = to_iso_extended_string(stamp.date());
         std::string regHandle = db->GetFieldValue(0,3);
         db->FreeSelect();
         // fill information about registrar, query must be closed
@@ -192,7 +193,7 @@ namespace Register
         params["registrar"] = reg.str(); 
       }
       void fillDomainParams(
-        TID domain, 
+        TID domain, ptime stamp, 
         Register::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
@@ -217,6 +218,7 @@ namespace Register
         params["exregdate"] = to_iso_extended_string(
           d->getExpirationDate() + date_duration(45)
         );
+        params["statechangedate"] = to_iso_extended_string(stamp.date());
         // fill information about registrar
         rm->getList()->clearFilter();
         rm->getList()->setHandleFilter(d->getRegistrarHandle());
@@ -279,18 +281,19 @@ namespace Register
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
       }
       struct NotifyRequest { 
-        TID state_id;
+        TID state_id; ///< id of state change (not id of status)
         unsigned type; ///< notification id
         std::string mtype; ///< template name
         unsigned emails; ///< emails flag (1=normal(admins), 2=techs)
-        TID obj_id;
-        unsigned obj_type;
+        TID obj_id; ///< id of object 
+        unsigned obj_type; ///< type of object (domain, contact...)
+        ptime stamp; ///< time of state change event
         NotifyRequest(
           TID _state_id, unsigned _type, const std::string& _mtype,
-          unsigned _emails, TID _obj_id, unsigned _obj_type
+          unsigned _emails, TID _obj_id, unsigned _obj_type, ptime _stamp
         ) :
           state_id(_state_id), type(_type), mtype(_mtype), emails(_emails),
-          obj_id(_obj_id), obj_type(_obj_type)
+          obj_id(_obj_id), obj_type(_obj_type), stamp(_stamp)
         {}
       };
       void notifyStateChanges(
@@ -302,10 +305,11 @@ namespace Register
       {
         std::stringstream sql;
         sql << "SELECT nt.state_id, nt.type, "
-            << "nt.mtype, nt.emails, nt.obj_id, nt.obj_type FROM "
+            << "nt.mtype, nt.emails, nt.obj_id, nt.obj_type, nt.valid_from "
+            << "FROM "
             << "(SELECT s.id AS state_id, nm.id AS type, "
             << " mt.name AS mtype, nm.emails, "
-            << " obr.id AS obj_id, obr.type AS obj_type "
+            << " obr.id AS obj_id, obr.type AS obj_type, s.valid_from "
             << " FROM object_state s, object_registry obr, "
             << " notify_statechange_map nm, mail_type mt "
             << " WHERE s.object_id=obr.id AND obr.type=nm.obj_type "
@@ -327,7 +331,8 @@ namespace Register
             db->GetFieldValue(i,2),
             atoi(db->GetFieldValue(i,3)),
             STR_TO_ID(db->GetFieldValue(i,4)),
-            atoi(db->GetFieldValue(i,5))
+            atoi(db->GetFieldValue(i,5)),
+            MAKE_TIME(i,6) /// Once should handle timestamp conversion
           ));
         db->FreeSelect();
         if (debugOutput) *debugOutput << "<notifications>" << std::endl;
@@ -351,13 +356,13 @@ namespace Register
               break;
              case 3: // domain
                if (useHistory) {
-                 fillDomainParamsHistory(i->obj_id,params);
+                 fillDomainParamsHistory(i->obj_id,i->stamp,params);
                  emails = 
                    (i->emails == 1 ? getDomainAdminEmailsHistory(i->obj_id) : 
                                      getDomainTechEmailsHistory(i->obj_id));
                }
                else {
-                 fillDomainParams(i->obj_id,params);
+                 fillDomainParams(i->obj_id,i->stamp,params);
                  emails = 
                    (i->emails == 1 ? getDomainAdminEmails(i->obj_id) : 
                     getDomainTechEmails(i->obj_id));
