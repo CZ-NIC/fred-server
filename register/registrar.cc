@@ -708,9 +708,9 @@ namespace Register
             << "JOIN enum_error er ON (a.response=er.id) " 
             << "JOIN login l ON (l.id=a.clientid) "
             << "JOIN registrar r ON (r.id=l.registrarid) "
-            << "JOIN action_elements al ON (a.id=al.actionid) ";
+            << "LEFT JOIN action_elements al ON (a.id=al.actionid) ";
         if (!partialLoad)
-          sql << "JOIN action_xml ax ON (a.id=ax.actionid) ";
+          sql << "LEFT JOIN action_xml ax ON (a.id=ax.actionid) ";
         sql << "WHERE 1=1 ";
         SQL_ID_FILTER(sql,"a.id",id);
         SQL_ID_FILTER(sql,"r.id",registrarId);
