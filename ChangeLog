@@ -1,3 +1,5 @@
+    * admin command --zone_add fill records in zone_soa and zone_ns tables 
+
     * changed mailer_manager and tech_check resolving of corba object (managed 
     by pyfred) when needed not in initialization - removes dependency on
     starting order of fred-rifd and pyfred servers
