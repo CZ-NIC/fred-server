@@ -1,3 +1,7 @@
+    * changed mailer_manager and tech_check resolving of corba object (managed 
+    by pyfred) when needed not in initialization - removes dependency on
+    starting order of fred-rifd and pyfred servers
+
     * fixing date in notification of technical contact about removal from zone 
 
     * update contact notification is now sent to old notify adress as well
