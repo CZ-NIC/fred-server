@@ -66,7 +66,7 @@ class CorbaClient
 #define STR(x) x.str().c_str()
 /// delete objects with status deleteCandidate
 /** \return 0=OK -1=SQL ERROR -2=no system registrar -3=login failed */
-int deleteObjects(CorbaClient *cc, DB *db)
+int deleteObjects(CorbaClient *cc, DB *db, const std::string& typeList)
 {
   // temporary done by using EPP corba interface
   // should be instead somewhere in register library (object.cc?)
@@ -82,14 +82,17 @@ int deleteObjects(CorbaClient *cc, DB *db)
   std::string password = db->GetFieldValue(0,2);
   db->FreeSelect();
   // before connection load all objects, zones are needed to
-  // put zone id into cltrid (used in statistics - need to fix)  
-  if (!db->ExecSelect(
+  // put zone id into cltrid (used in statistics - need to fix)
+  std::stringstream sql;
+  sql <<
     "SELECT o.name, o.type, COALESCE(d.zone,0) "
     "FROM object_state s , object_registry o "
     "LEFT JOIN domain d ON (d.id=o.id)"
     "WHERE o.erdate ISNULL AND o.id=s.object_id "
-    "AND s.state_id=17 AND s.valid_to ISNULL "
-  )) return -1;
+    "AND s.state_id=17 AND s.valid_to ISNULL ";
+  if (!typeList.empty())
+    sql << "AND o.type IN (" << typeList << ") ";
+  if (!db->ExecSelect(sql.str().c_str())) return -1;
   if (!db->GetSelectRows()) return 0;
   try {
     CORBA::Object_var o = cc->getNS()->resolve("EPP");
@@ -322,6 +325,8 @@ int main(int argc, char **argv)
        "globaly update all states of all objects")
       ("object_delete_candidates",
        "delete all objects marked with deleteCandidate state")
+      ("object_delete_types",po::value<std::string>()->default_value("3"),
+       "only this types of object will be deleted during mass delete")
       ("object_regular_procedure",
        "shortcut for 2x update_object_states, notify_state_changes, "
        "poll_create_statechanges, object_delete_candidates, "
@@ -334,7 +339,9 @@ int main(int argc, char **argv)
        "send emails to contacts about object state changes")
       ("notify_use_history_tables",
        "slower queries into history tables, but can handle deleted objects")
-      ("notify_except_types", po::value<std::string>()->default_value(""),
+       // default behavior ignore contact and nsset delete notification
+       // must be explicitly overwritten by setting thist parameter to "" 
+      ("notify_except_types", po::value<std::string>()->default_value("4,5"),
        "list of notification types ignored in notification")
       ("notify_limit", po::value<unsigned>()->default_value(0),
        "limit for number of emails generated in one pass (0=no limit)")
@@ -604,7 +611,7 @@ int main(int argc, char **argv)
       regMan->updateObjectStates();
     }
     if (vm.count("object_delete_candidates")) {
-      return deleteObjects(&cc,&db);
+      return deleteObjects(&cc,&db,vm["object_delete_types"].as<std::string>());
     }
 
     std::auto_ptr<Register::Registrar::Manager> rMan(
@@ -630,12 +637,14 @@ int main(int argc, char **argv)
     if (vm.count("object_regular_procedure")) {
       regMan->updateObjectStates();
       regMan->updateObjectStates();
-      notifyMan->notifyStateChanges("",0,NULL,false);
+      notifyMan->notifyStateChanges(
+        vm["notify_except_types"].as<std::string>(),0,NULL,false
+      );
       pollMan->createStateMessages("");
       // unless notification is done by queries into non-history tables
       // notification must be called before delete, because after
       // delete objects are removed from non-history tables
-      deleteObjects(&cc,&db);
+      deleteObjects(&cc,&db,vm["object_delete_types"].as<std::string>());
       pollMan->createLowCreditMessages();
     }
     if (vm.count("object_list")) {
