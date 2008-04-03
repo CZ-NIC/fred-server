@@ -757,7 +757,7 @@ namespace Register
         std::stringstream insertPollStateChange;
         insertPollStateChange <<
           "INSERT INTO poll_statechange "
-          "SELECT id, stateid FROM tmp_poll_state_insert";
+          "SELECT id, stateid FROM tmp_poll_state_insert ";
         if (!exceptList.empty())
           insertPollStateChange << "WHERE msgtype NOT IN (" 
                                 << exceptList << ")";        

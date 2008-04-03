@@ -304,7 +304,7 @@ int main(int argc, char **argv)
        "set given message as seen")
       ("poll_create_statechanges",
        "create messages for state changes")
-      ("poll_except_types", po::value<std::string>()->default_value(""),
+      ("poll_except_types", po::value<std::string>()->default_value("6,7"),
        "list of poll message types ignored in creation (only states now)")
       ("poll_create_lowcredit",
         "create messages for lowcredit");
@@ -640,7 +640,9 @@ int main(int argc, char **argv)
       notifyMan->notifyStateChanges(
         vm["notify_except_types"].as<std::string>(),0,NULL,false
       );
-      pollMan->createStateMessages("");
+      pollMan->createStateMessages(
+        vm["poll_except_types"].as<std::string>()
+      );
       // unless notification is done by queries into non-history tables
       // notification must be called before delete, because after
       // delete objects are removed from non-history tables
