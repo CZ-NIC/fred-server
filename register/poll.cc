@@ -698,28 +698,17 @@ namespace Register
             << "FROM object_registry WHERE id=" << objectId ; 
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();        
       }
-      virtual void createStateMessages(const std::string& exceptList) 
-        throw (SQL_ERROR)
+      virtual void createStateMessages(
+        const std::string& exceptList, int limit, std::ostream* debug
+      ) throw (SQL_ERROR)
       {
       	// transaction is needed for 'ON COMMIT DROP' functionality
         LocalTransaction trans(db);
-    	// create temporary table because poll message need to be inserted
-    	// into two tables joined by message id
-    	const char *create =
-          "CREATE TEMPORARY TABLE tmp_poll_state_insert ("
-          " id INTEGER PRIMARY KEY, reg INTEGER, "
-          " msgtype INTEGER, stateid INTEGER "
-          ") ON COMMIT DROP ";
-        if (!db->ExecSQL(create)) throw SQL_ERROR();        
         // for each new state appearance of state type (expirationWarning,
         // expiration, validationWarning1, outzoneUnguarded and 
         // deleteCandidate for all object type that has not associated
         // poll message create one new poll message
-        std::stringstream insertTemp;
-        insertTemp << 
-          "INSERT INTO tmp_poll_state_insert SELECT "
-          " nextval('message_id_seq'),"
-          " oh.clid, "
+        std::string caseSQL =
           // MT_IMP_EXPIRATION
           " CASE WHEN os.state_id=8 THEN 9 "
           // MT_EXPIRATION
@@ -735,33 +724,64 @@ namespace Register
           // MT_DELETE_NSSET
           "      WHEN os.state_id=17 AND ob.type=2 THEN 7 "
           // MT_DELETE_DOMAIN
-          "      WHEN os.state_id=17 AND ob.type=3 THEN 8 END, "
-          " os.id "
+          "      WHEN os.state_id=17 AND ob.type=3 THEN 8 END ";
+        std::stringstream insertSelect;
+        insertSelect <<
+          "SELECT "
+          " oh.clid AS reg, " << caseSQL << " AS msgtype, "
+          " os.id AS stateid, ob.name AS name "
           "FROM object_registry ob, object_history oh, object_state os "
           "LEFT JOIN poll_statechange ps ON (os.id=ps.stateid) "
           "WHERE os.state_id in (8,9,11,13,20,17) AND os.valid_to ISNULL "
           "AND oh.historyid=os.ohid_from AND ob.id=os.object_id "
           "AND ps.stateid ISNULL ";
-        if (!db->ExecSQL(insertTemp.str().c_str())) throw SQL_ERROR();        
+        if (!exceptList.empty())
+          insertSelect << "AND " << caseSQL 
+                       << " NOT IN (" << exceptList << ") ";
+        insertSelect << "ORDER BY os.id ";
+        if (limit)
+          insertSelect << "LIMIT " << limit;
+        if (debug) {
+          if (!db->ExecSelect(insertSelect.str().c_str())) throw SQL_ERROR();
+          *debug << "<messages>\n";
+          for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+            *debug << "<message "
+                   << "reg_id='" << db->GetFieldValue(i,0)
+                   << "' msg_type='" << db->GetFieldValue(i,1) 
+                   << "' state_id='" << db->GetFieldValue(i,2) 
+                   << "' name='" << db->GetFieldValue(i,3) << "'/>\n";
+          }
+          *debug << "</messages>\n";
+          db->FreeSelect();
+          return; // rollback (never mind in debug mode)
+        }
+    	// create temporary table because poll message need to be inserted
+    	// into two tables joined by message id
+    	const char *create =
+          "CREATE TEMPORARY TABLE tmp_poll_state_insert ("
+          " id INTEGER PRIMARY KEY, reg INTEGER, "
+          " msgtype INTEGER, stateid INTEGER "
+          ") ON COMMIT DROP ";
+        if (!db->ExecSQL(create)) throw SQL_ERROR();        
+        std::stringstream insertTemp;
+        insertTemp << 
+          "INSERT INTO tmp_poll_state_insert "
+          "SELECT "
+          " nextval('message_id_seq'), t.reg, t.msgtype, t.stateid "
+          " FROM (" << insertSelect.str() << ") t ";
+        if (!db->ExecSQL(insertTemp.str().c_str())) throw SQL_ERROR();
         // insert into table message appropriate part from temp table
-        std::stringstream insertMessage; 
-        insertMessage <<
+        const char *insertMessage = 
           "INSERT INTO message "
           "SELECT id,reg,CURRENT_TIMESTAMP,"
           "CURRENT_TIMESTAMP + INTERVAL '7days','f',msgtype "
-          "FROM tmp_poll_state_insert ";
-        if (!exceptList.empty())
-        	insertMessage << "WHERE msgtype NOT IN (" << exceptList << ")";        
-        if (!db->ExecSQL(insertMessage.str().c_str())) throw SQL_ERROR();        
+          "FROM tmp_poll_state_insert ORDER BY stateid ";
+        if (!db->ExecSQL(insertMessage)) throw SQL_ERROR();
         // insert into table poll_statechange appropriate part from temp table
-        std::stringstream insertPollStateChange;
-        insertPollStateChange <<
+        const char *insertPollStateChange =
           "INSERT INTO poll_statechange "
-          "SELECT id, stateid FROM tmp_poll_state_insert ";
-        if (!exceptList.empty())
-          insertPollStateChange << "WHERE msgtype NOT IN (" 
-                                << exceptList << ")";        
-        if (!db->ExecSQL(insertPollStateChange.str().c_str())) 
+          "SELECT id, stateid FROM tmp_poll_state_insert ORDER BY stateid ";
+        if (!db->ExecSQL(insertPollStateChange)) 
           throw SQL_ERROR();
         trans.commit();
       }

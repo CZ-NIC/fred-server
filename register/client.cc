@@ -66,7 +66,10 @@ class CorbaClient
 #define STR(x) x.str().c_str()
 /// delete objects with status deleteCandidate
 /** \return 0=OK -1=SQL ERROR -2=no system registrar -3=login failed */
-int deleteObjects(CorbaClient *cc, DB *db, const std::string& typeList)
+int deleteObjects(
+  CorbaClient *cc, DB *db, const std::string& typeList, 
+  unsigned limit, std::ostream *debug
+)
 {
   // temporary done by using EPP corba interface
   // should be instead somewhere in register library (object.cc?)
@@ -92,8 +95,20 @@ int deleteObjects(CorbaClient *cc, DB *db, const std::string& typeList)
     "AND s.state_id=17 AND s.valid_to ISNULL ";
   if (!typeList.empty())
     sql << "AND o.type IN (" << typeList << ") ";
+  sql << "ORDER BY s.id ";
+  if (limit)
+    sql << "LIMIT " << limit;
   if (!db->ExecSelect(sql.str().c_str())) return -1;
   if (!db->GetSelectRows()) return 0;
+  if (debug) {
+    *debug << "<objects>\n";
+    for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+      *debug << "<object name='" << db->GetFieldValue(i,0) << "'/>\n";
+    }
+    *debug << "</objects>\n";
+    db->FreeSelect();
+    return 0;
+  }
   try {
     CORBA::Object_var o = cc->getNS()->resolve("EPP");
     ccReg::EPP_var epp = ccReg::EPP::_narrow(o);
@@ -304,6 +319,10 @@ int main(int argc, char **argv)
        "set given message as seen")
       ("poll_create_statechanges",
        "create messages for state changes")
+      ("poll_limit", po::value<unsigned>()->default_value(0),
+       "limit for number of messages generated in one pass (0=no limit)")
+      ("poll_debug",
+       "don't do anything, just list xml with values")
       ("poll_except_types", po::value<std::string>()->default_value("6,7"),
        "list of poll message types ignored in creation (only states now)")
       ("poll_create_lowcredit",
@@ -325,6 +344,10 @@ int main(int argc, char **argv)
        "globaly update all states of all objects")
       ("object_delete_candidates",
        "delete all objects marked with deleteCandidate state")
+      ("object_delete_debug",
+       "don't delete anything, just list objects")
+      ("object_delete_limit",po::value<unsigned>()->default_value(0),
+       "limit for deletion od object list")
       ("object_delete_types",po::value<std::string>()->default_value("3"),
        "only this types of object will be deleted during mass delete")
       ("object_regular_procedure",
@@ -600,7 +623,11 @@ int main(int argc, char **argv)
       }
       catch (...) { std::cout << "No message" << std::endl; }
     } else if (vm.count("poll_create_statechanges"))
-      pollMan->createStateMessages(vm["poll_except_types"].as<std::string>());
+      pollMan->createStateMessages(
+        vm["poll_except_types"].as<std::string>(),
+        vm["poll_limit"].as<unsigned>(),
+        vm.count("poll_debug") ? &std::cout : NULL
+      );
     else if (vm.count("poll_create_lowcredit"))
       pollMan->createLowCreditMessages();
     
@@ -611,7 +638,11 @@ int main(int argc, char **argv)
       regMan->updateObjectStates();
     }
     if (vm.count("object_delete_candidates")) {
-      return deleteObjects(&cc,&db,vm["object_delete_types"].as<std::string>());
+      return deleteObjects(
+        &cc,&db,vm["object_delete_types"].as<std::string>(),
+        vm["object_delete_limit"].as<unsigned>(),
+        vm.count("object_delete_debug") ? &std::cout : NULL        
+      );
     }
 
     std::auto_ptr<Register::Registrar::Manager> rMan(
@@ -641,12 +672,12 @@ int main(int argc, char **argv)
         vm["notify_except_types"].as<std::string>(),0,NULL,false
       );
       pollMan->createStateMessages(
-        vm["poll_except_types"].as<std::string>()
+        vm["poll_except_types"].as<std::string>(),0,NULL
       );
       // unless notification is done by queries into non-history tables
       // notification must be called before delete, because after
       // delete objects are removed from non-history tables
-      deleteObjects(&cc,&db,vm["object_delete_types"].as<std::string>());
+      deleteObjects(&cc,&db,vm["object_delete_types"].as<std::string>(),0,NULL);
       pollMan->createLowCreditMessages();
     }
     if (vm.count("object_list")) {

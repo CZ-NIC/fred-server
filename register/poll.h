@@ -6,6 +6,7 @@
 #include "types.h"
 #include "exceptions.h"
 #include "common_object.h"
+#include <ostream>
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
@@ -137,8 +138,9 @@ namespace Register
         TID registrar, unsigned type, TID objectId
       ) throw (SQL_ERROR) = 0;
       /// create messages about state change (called regulary after)
-      virtual void createStateMessages(const std::string& exceptList) 
-        throw (SQL_ERROR) = 0;
+      virtual void createStateMessages(
+        const std::string& exceptList, int limit, std::ostream* debug
+      ) throw (SQL_ERROR) = 0;
       /// create messages about low credit (called after credit change)
       virtual void createLowCreditMessages() throw (SQL_ERROR) = 0;
       // create list of messages
