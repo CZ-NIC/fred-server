@@ -89,12 +89,14 @@ int deleteObjects(
   std::stringstream sql;
   sql <<
     "SELECT o.name, o.type, COALESCE(d.zone,0) "
-    "FROM object_state s , object_registry o "
-    "LEFT JOIN domain d ON (d.id=o.id)"
-    "WHERE o.erdate ISNULL AND o.id=s.object_id "
-    "AND s.state_id=17 AND s.valid_to ISNULL ";
+    "FROM object_state s "
+    "JOIN object_registry o ON ( "
+    " o.erdate ISNULL AND o.id=s.object_id "
+    " AND s.state_id=17 AND s.valid_to ISNULL"
+    ") "
+    "LEFT JOIN domain d ON (d.id=o.id)";
   if (!typeList.empty())
-    sql << "AND o.type IN (" << typeList << ") ";
+    sql << "WHERE o.type IN (" << typeList << ") ";
   sql << "ORDER BY s.id ";
   if (limit)
     sql << "LIMIT " << limit;
