@@ -262,7 +262,7 @@ namespace Register
         if (olist->getCount() != 1) throw SQL_ERROR();
         Register::NSSet::NSSet *o = olist->getNSSet(0);
         // fill params
-        params["type"] = "1";
+        params["type"] = "2";
         params["handle"] = o->getHandle();
         params["deldate"] = to_iso_extended_string(
           date(day_clock::local_day())
