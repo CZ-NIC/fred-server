@@ -19,8 +19,10 @@ namespace Register
      public:
       /// public destructor
       virtual ~Host() {}
-      /// return id of nsset
+      /// return hostname of nameserver
       virtual const std::string getName() const = 0;
+      /// return hostname of nameserver translated from IDN encoded form
+      virtual const std::string getNameIDN() const = 0;
       /// return count of address
       virtual unsigned getAddrCount() const = 0;
       /// return address by index
@@ -92,7 +94,7 @@ namespace Register
       /// check FQDN of host, should be hidden and not exported in manager API
       /** \return 0=OK, 1=invalid name, 2=glue and invalid zone */
       virtual unsigned checkHostname(
-        const std::string& hostname, bool glue
+        const std::string& hostname, bool glue, bool allowIDN = false
       ) const = 0;
       /// factory method
       static Manager *create(

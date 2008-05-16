@@ -59,8 +59,10 @@ namespace Register
     virtual ~Manager() {}
     /// classify input handle according register rules 
     virtual void checkHandle(
-      const std::string& handle, CheckHandleList& ch
+      const std::string& handle, CheckHandleList& ch, bool allowIDN
     ) const = 0;
+    /// return zone manager
+    virtual Zone::Manager *getZoneManager() = 0;
     /// return domain manager
     virtual Domain::Manager *getDomainManager() = 0;
     /// return registrar manager

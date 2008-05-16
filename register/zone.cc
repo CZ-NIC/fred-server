@@ -25,6 +25,7 @@
 #include <sstream>
 #include "types.h"
 #include <ctype.h>
+#include <idna.h>
 
 #define RANGE(x) x.begin(),x.end()
 #define IS_NUMBER(x) (x >= '0' && x <= '9')
@@ -114,8 +115,9 @@ namespace Register
         loaded = true;
       }
       /// interface method implementation  
-      void parseDomainName(const std::string& fqdn, DomainName& domain) 
-       const throw (INVALID_DOMAIN_NAME)
+      void parseDomainName(
+        const std::string& fqdn, DomainName& domain, bool allowIDN
+      ) const throw (INVALID_DOMAIN_NAME)
       {
         std::string part; // one part(label) of fqdn  
         for (unsigned i=0; i<fqdn.size(); i++) {
@@ -141,7 +143,9 @@ namespace Register
             else {
               if (fqdn[i] == '-') {
                 // dash '-' is acceptable only if last character wasn't dash
-                if (part[part.length()-1] == '-') throw INVALID_DOMAIN_NAME();
+                if (part[part.length()-1] == '-' && 
+                    (!allowIDN || part != "xn-")) 
+                  throw INVALID_DOMAIN_NAME();
               } 
               else {
                 // other character could be only number or letter
@@ -284,6 +288,24 @@ namespace Register
             << ")";
         if (!db->ExecSQL(sql.str().c_str()))
           throw SQL_ERROR();
+      }
+      virtual std::string encodeIDN(const std::string& fqdn) const
+      {
+        std::string result;
+        char *p;
+        idna_to_ascii_8z(fqdn.c_str(), &p, 0);
+        result = p ? p : fqdn;
+        if (p) free(p);
+        return result;
+      }
+      virtual std::string decodeIDN(const std::string& fqdn) const
+      {
+        std::string result;
+        char *p;
+        idna_to_unicode_8z8z(fqdn.c_str(), &p, 0);
+        result = p ? p : fqdn;
+        if (p) free(p);
+        return result;        
       }
     };
     Manager* Manager::create(DB *db)

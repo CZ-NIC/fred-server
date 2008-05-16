@@ -251,7 +251,7 @@ ccReg_Admin_i::checkHandle(
   );
   ccReg::CheckHandleTypeSeq* chs = new ccReg::CheckHandleTypeSeq;
   Register::CheckHandleList chl;
-  r->checkHandle(handle,chl);
+  r->checkHandle(handle,chl,true); // allow IDN in whois queries
   chs->length(chl.size());
   for (unsigned i=0; i< chl.size(); i++) {
     ccReg::CheckHandleType *ch = &(*chs)[i];
@@ -639,7 +639,7 @@ ccReg_Admin_i::fillNSSet(ccReg::NSSetDetail* cn, Register::NSSet::NSSet* n)
   }
   cn->hosts.length(n->getHostCount());
   for (unsigned i=0; i<n->getHostCount(); i++) {
-    cn->hosts[i].fqdn = DUPSTRFUN(n->getHostByIdx(i)->getName);
+    cn->hosts[i].fqdn = DUPSTRFUN(n->getHostByIdx(i)->getNameIDN);
     cn->hosts[i].inet.length(n->getHostByIdx(i)->getAddrCount());
     for (unsigned j=0; j<n->getHostByIdx(i)->getAddrCount(); j++)
       cn->hosts[i].inet[j] = DUPSTRC(n->getHostByIdx(i)->getAddrByIdx(j));
@@ -776,7 +776,7 @@ void
 ccReg_Admin_i::fillDomain(ccReg::DomainDetail* cd, Register::Domain::Domain* d)
 {
   cd->id = d->getId();
-  cd->fqdn = DUPSTRFUN(d->getFQDN);
+  cd->fqdn = DUPSTRFUN(d->getFQDNIDN);
   cd->roid = DUPSTRFUN(d->getROID);
   cd->registrarHandle = DUPSTRFUN(d->getRegistrarHandle);
   cd->transferDate = DUPSTRDATE(d->getTransferDate);
@@ -825,7 +825,7 @@ ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
   Register::Domain::Manager *dm = r->getDomainManager();
   std::auto_ptr<Register::Domain::List> dl(dm->createList());
   dl->setWildcardExpansion(false);
-  dl->setFQDNFilter(fqdn);
+  dl->setFQDNFilter(r->getZoneManager()->encodeIDN(fqdn));
   dl->reload();
   if (dl->getCount() != 1) {
     db.Disconnect();
@@ -899,10 +899,11 @@ ccReg_Admin_i::getNSSetsByInverseKey(
   std::auto_ptr<Register::Manager> r(
     Register::Manager::create(&db,cfg.GetRestrictedHandles())
   );
+  Register::Zone::Manager *zm = r->getZoneManager();
   Register::NSSet::Manager *nm = r->getNSSetManager();
   std::auto_ptr<Register::NSSet::List> nl(nm->createList());
   switch (type) {
-    case ccReg::NIKT_NS : nl->setHostNameFilter(key); break;
+    case ccReg::NIKT_NS : nl->setHostNameFilter(zm->encodeIDN(key)); break;
     case ccReg::NIKT_TECH : nl->setAdminFilter(key); break;
   }
   nl->setLimit(limit);

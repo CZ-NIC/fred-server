@@ -40,6 +40,8 @@ namespace Register
       virtual ~Domain() {}
       /// return fully qualified domain name
       virtual const std::string& getFQDN() const = 0;
+      /// return fully qualified domain name translated from IDN encoded form
+      virtual const std::string& getFQDNIDN() const = 0;
       /// return id of zone
       virtual TID getZoneId() const = 0;
       /// return handle of nsset
@@ -135,10 +137,13 @@ namespace Register
       /// destructor 
       virtual ~Manager() {}      
       /// check handle of domain without contacting database
-      virtual CheckAvailType checkHandle(const std::string& fqdn) const = 0;
+      virtual CheckAvailType checkHandle(
+        const std::string& fqdn, bool allowIDN = false
+      ) const = 0;
       /// check availability of domain  
       virtual CheckAvailType checkAvail(
-        const std::string& fqdn, NameIdPair& conflictFqdn, bool lock = false
+        const std::string& fqdn, NameIdPair& conflictFqdn, bool lock = false,
+        bool allowIDN = false
       ) const throw (SQL_ERROR) = 0;
       /// return current count of domains by zone
       virtual unsigned long getDomainCount(const std::string& zone) const = 0;

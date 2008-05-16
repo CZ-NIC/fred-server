@@ -73,6 +73,40 @@ AC_CHECK_FILE(
 	)]
 )
 
+AC_ARG_WITH(
+  [libidn], 
+  [AC_HELP_STRING(
+    [--with-libidn=[DIR]],
+    [Support IDN (needs GNU Libidn)]
+  )],
+  libidn=$withval, 
+  libidn=yes
+)
+if test "$libidn" != "no" ; then
+  if test "$libidn" == "yes"; then
+    PKG_CHECK_MODULES(LIBIDN, libidn >= 0.5.18, [plibidn=yes], [plibidn=no])
+    AC_SUBST(LIBIDN_CFLAGS)
+    AC_SUBST(LIBIDN_LIBS)
+  fi
+  if test "$plibidn" != "yes" ; then
+    if test "$libidn" != "yes"; then
+      LDFLAGS="${LDFLAGS} -L$libidn/lib"
+      CPPFLAGS="${CPPFLAGS} -I$libidn/include"
+    fi
+    AC_CHECK_HEADER(
+      idna.h,
+      [AC_CHECK_LIB(
+        idn, stringprep_check_version,
+        [libidn=yes LIBS="${LIBS} -lidn"], libidn=no
+       )],
+      libidn=no
+    )
+  fi
+fi
+if test "$libidn" == "no"; then
+  AC_MSG_ERROR([Libidn not found])
+fi
+
 AC_CONFIG_FILES([Makefile
                  register/Makefile
 		 fred-server.spec])

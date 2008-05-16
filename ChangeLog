@@ -1,3 +1,18 @@
+2008-05-16 Jaromir Talir (version 1.8.3)
+
+    * almost full IDN support
+      - encodeIDN, decodeIDN function in zone manager
+      - parametrized check of domain fqdn (allow xn-- at the start of domain)
+      - whois and admin backend translate utf8 string into and from ascii form   
+
+    * disabling default generation of poll messages about delete cont/nsset
+ 
+    * optimizing query for objects to delete
+
+    * fixing type of object in notificiation email about delete of nsset
+
+2008-03-25 Jaromir Talir (version 1.8.2)
+
     * object delete procedure and notification made parametrized
 
     * admin command --zone_add fill records in zone_soa and zone_ns tables 

@@ -107,7 +107,9 @@ namespace Register
      countries.push_back(cd);
    } 
    /// interface method implementation
-   void checkHandle(const std::string& handle, CheckHandleList& chl) const
+   void checkHandle(
+     const std::string& handle, CheckHandleList& chl, bool allowIDN
+   ) const
    {
      CheckHandle ch;
      bool isEnum = false;
@@ -119,8 +121,10 @@ namespace Register
      } catch (...) {}
      bool isDomain = true;
      std::string fqdn = isEnum ? ch.newHandle : handle;
+     if (allowIDN)
+       fqdn = zm->encodeIDN(fqdn);
      NameIdPair conflictFQDN; 
-     switch (dm->checkAvail(fqdn, conflictFQDN)) {
+     switch (dm->checkAvail(fqdn, conflictFQDN, false, allowIDN)) {
        case Domain::CA_INVALID_HANDLE:
         isDomain = false; break;
        case Domain::CA_BAD_LENGHT: 
@@ -139,6 +143,8 @@ namespace Register
          ch.handleClass = CH_FREE; break;
      }
      ch.conflictHandle = conflictFQDN.name;
+     if (allowIDN)
+       ch.conflictHandle = zm->decodeIDN(ch.conflictHandle);
      if (isDomain) {
        if (!isEnum)
          ch.type = zm->checkEnumDomainSuffix(fqdn) ? HT_ENUM_DOMAIN : HT_DOMAIN;
@@ -176,6 +182,10 @@ namespace Register
        chOth.handleClass= CH_FREE;
        chl.push_back(chOth);
      }
+   }
+   Zone::Manager *getZoneManager() 
+   {
+     return zm.get();
    }
    Domain::Manager *getDomainManager()
    {

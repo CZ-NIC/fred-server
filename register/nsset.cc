@@ -41,12 +41,18 @@ namespace Register
       typedef std::vector<std::string> AddrListType;
       AddrListType addrList;
       std::string name;
+      std::string nameIDN;
      public:
-      HostImpl(const std::string& _name) : name(_name)
+      HostImpl(const std::string& _name, Zone::Manager *zm) : 
+        name(_name), nameIDN(zm->decodeIDN(name))
       {}
       virtual const std::string getName() const
       {
         return name;
+      }
+      virtual const std::string getNameIDN() const
+      {
+        return nameIDN;
       }
       /// must not be reference because of find_if algo (ref. to ref. problem)
       bool hasName(std::string _name) const
@@ -75,6 +81,7 @@ namespace Register
       ContactListType admins;
       HostListType hosts;
       unsigned checkLevel;
+      Zone::Manager *zm;
      public:
       NSSetImpl(
         TID _id, 
@@ -90,13 +97,15 @@ namespace Register
         const std::string& _updateRegistrarHandle,
         const std::string& _authPw,
         const std::string& _roid,
-        unsigned _checkLevel
+        unsigned _checkLevel,
+        Zone::Manager *_zm
       ) :
         ObjectImpl(
           _id, _crDate,_trDate,_upDate,_registrar,_registrarHandle,
           _createRegistrar,_createRegistrarHandle,
           _updateRegistrar,_updateRegistrarHandle,_authPw,_roid
-        ), handle(_handle), checkLevel(_checkLevel)
+        ), handle(_handle), checkLevel(_checkLevel),
+        zm(_zm)
       {
       }
       const std::string& getHandle() const
@@ -135,7 +144,7 @@ namespace Register
           hosts.begin(),hosts.end(),
           std::bind2nd(std::mem_fun_ref(&HostImpl::hasName),name)
         );
-        if (i == hosts.end()) hosts.push_back(HostImpl(name));
+        if (i == hosts.end()) hosts.push_back(HostImpl(name,zm));
         else return &(*i);
         return &hosts.back();
       }
@@ -150,8 +159,10 @@ namespace Register
       std::string hostname;
       std::string ip;
       std::string admin;
+      Zone::Manager *zm;
      public:
-      ListImpl(DB *_db) : ObjectListImpl(_db)  
+      ListImpl(DB *_db, Zone::Manager *_zm) : 
+        ObjectListImpl(_db), zm(_zm)  
       {}
       NSSet *getNSSet(unsigned idx) const
       {
@@ -296,7 +307,8 @@ namespace Register
               registrars[STR_TO_ID(db->GetFieldValue(i,7))], // upid handle
               db->GetFieldValue(i,8), // authinfo
               db->GetFieldValue(i,9), // roid
-              atoi(db->GetFieldValue(i,10)) // checklevel
+              atoi(db->GetFieldValue(i,10)), // checklevel
+              zm
             )
           ); 
         }
@@ -419,7 +431,7 @@ namespace Register
       {}
       virtual List *createList()
       {
-        return new ListImpl(db);
+        return new ListImpl(db,zm);
       }
       virtual CheckAvailType checkAvail(
         const std::string& handle, NameIdPair& conflict, bool lock
@@ -435,7 +447,7 @@ namespace Register
         return CA_FREE;
       }            
       virtual unsigned checkHostname(
-        const std::string& hostname, bool glue
+        const std::string& hostname, bool glue, bool allowIDN
       ) const
       {
         try {
@@ -443,7 +455,7 @@ namespace Register
           if (hostname.length() > 255) return 1;
           // parse hostname (will throw exception on invalid)
           Zone::DomainName name;
-          zm->parseDomainName(hostname,name);
+          zm->parseDomainName(hostname,name,allowIDN);
           // if glue is specified, hostname must be under one of managed zones 
           if (glue && !zm->findZoneId(hostname)) return 1;
           // if glue is not specified, hostname must be under any valid zone

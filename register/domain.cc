@@ -43,6 +43,7 @@ namespace Register
       };
       typedef std::vector<AdminInfo> AdminInfoList;
       std::string fqdn;
+      std::string fqdnIDN;
       TID zone;
       TID nsset;
       std::string nssetHandle;
@@ -79,12 +80,13 @@ namespace Register
         date _exDate,
         date _valExDate,
         unsigned _zoneStatus,
-        ptime _zoneStatusTime
+        ptime _zoneStatusTime,
+        Zone::Manager *zm
       )
       : ObjectImpl(_id,_crDate,_trDate,_upDate,_registrar,_registrarHandle,
         _createRegistrar,_createRegistrarHandle,
         _updateRegistrar,_updateRegistrarHandle,_authPw,_roid),
-        fqdn(_fqdn), zone(_zone), nsset(_nsset),
+        fqdn(_fqdn), fqdnIDN(zm->decodeIDN(fqdn)), zone(_zone), nsset(_nsset),
         nssetHandle(_nssetHandle), registrant(_registrant),
         registrantHandle(_registrantHandle), registrantName(_registrantName),
         exDate(_exDate), valExDate(_valExDate),
@@ -94,6 +96,10 @@ namespace Register
       virtual const std::string& getFQDN() const
       {
         return fqdn;
+      }
+      virtual const std::string& getFQDNIDN() const
+      {
+        return fqdnIDN;
       }
       virtual TID getZoneId() const
       {
@@ -235,13 +241,14 @@ namespace Register
       std::string techAdmin;
       std::string hostIP;
       unsigned zoneStatus;
+      Zone::Manager *zm;
      public:
-      ListImpl(DB *_db) : ObjectListImpl(_db), 
+      ListImpl(DB *_db, Zone::Manager *_zm) : ObjectListImpl(_db), 
         zoneFilter(0), registrantFilter(0),
         nsset(0), admin(0), temp(0), contactFilter(0),
         exDate(ptime(neg_infin),ptime(pos_infin)),
         valExDate(ptime(neg_infin),ptime(pos_infin)),
-        zoneStatus(0)
+        zoneStatus(0), zm(_zm)
       {
       }
       virtual Domain *getDomain(unsigned idx) const
@@ -523,7 +530,8 @@ namespace Register
             MAKE_DATE(i,16), // exdate
             MAKE_DATE(i,17), // valexdate
             true, // zone status
-            ptime() // zone status time 
+            ptime(), // zone status time,
+            zm
           );
           olist.push_back(d);
         }
@@ -634,10 +642,12 @@ namespace Register
       ManagerImpl(DB *_db, Zone::Manager *_zm) :
         db(_db), zm(_zm), blacklist(Blacklist::create(_db))
       {}
-      CheckAvailType checkHandle(const std::string& fqdn) const 
+      CheckAvailType checkHandle(
+        const std::string& fqdn, bool allowIDN
+      ) const 
       {
         Zone::DomainName domain; // parsed domain name
-        try { zm->parseDomainName(fqdn,domain); }
+        try { zm->parseDomainName(fqdn,domain,allowIDN); }
         catch (Zone::INVALID_DOMAIN_NAME) { return CA_INVALID_HANDLE; }
         const Zone::Zone *z = zm->findZoneId(fqdn);
         // TLD domain allowed only if zone.fqdn='' is in zone list 
@@ -650,7 +660,8 @@ namespace Register
       CheckAvailType checkAvail(
         const std::string& _fqdn,
         NameIdPair& conflictFqdn,
-        bool lock
+        bool lock,
+        bool allowIDN
       ) const 
         throw (SQL_ERROR)
       {
@@ -659,7 +670,7 @@ namespace Register
         // clear output
         conflictFqdn.id = 0;
         conflictFqdn.name = "";
-        CheckAvailType ret = checkHandle(fqdn);
+        CheckAvailType ret = checkHandle(fqdn, allowIDN);
         if (ret != CA_AVAILABLE) return ret;
         std::stringstream sql;
         // domain can be subdomain or parent domain of registred domain
@@ -723,7 +734,7 @@ namespace Register
       }  
       virtual List *createList()
       {
-        return new ListImpl(db);
+        return new ListImpl(db,zm);
       }
     };
     Manager *Manager::create(DB *db, Zone::Manager *zm)

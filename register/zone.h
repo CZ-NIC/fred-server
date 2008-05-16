@@ -39,9 +39,13 @@ namespace Register
      public:
       /// destruktor
       virtual ~Manager() {}
+      /// encode UTF8 domain name into IDN ascii string
+      virtual std::string encodeIDN(const std::string& fqdn) const = 0;
+      /// decode IDN ascii domain name into UTF8 string
+      virtual std::string decodeIDN(const std::string& fqdn) const = 0;      
       /// tokenize domain name into sequence
       virtual void parseDomainName(
-        const std::string& fqdn, DomainName& domain
+        const std::string& fqdn, DomainName& domain, bool allowIDN
       ) const throw (INVALID_DOMAIN_NAME) = 0;
       /// check validity of enum domain name (every part is one digit)
       virtual bool checkEnumDomainName(const DomainName& domain) const = 0;

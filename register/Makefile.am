@@ -10,4 +10,5 @@ libccreg_a_SOURCES = register.cc zone.cc blacklist.cc domain.cc registrar.cc \
   info_buffer.h nsset.h register.h zone.h common_impl.h \
   domain.h invoice.h object.h registrar.h
 
-AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CFLAGS) -I$(srcdir)/..
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CFLAGS) $(LIBIDN_CFLAGS) \
+              -I$(srcdir)/..
