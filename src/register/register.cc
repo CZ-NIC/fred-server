@@ -1,0 +1,379 @@
+/*
+ *  Copyright (C) 2007  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <memory> ///< auto_ptr<>
+#include <boost/shared_ptr.hpp>
+
+#include "old_utils/dbsql.h"
+#include "register.h"
+#include "zone.h"
+#include "domain.h"
+#include "filter.h"
+#include "db/dbs.h"
+#include "log/logger.h"
+
+namespace Register {
+
+class StatusDescImpl : public virtual StatusDesc {
+  TID id;
+  std::string name;
+  bool external;
+  std::map<std::string,std::string> desc;
+  bool contact;
+  bool nsset;
+  bool domain;
+
+public:
+  StatusDescImpl(TID _id,
+                 const std::string& _name,
+                 bool _external,
+                 const std::string& types) :
+    id(_id), name(_name), external(_external) {
+    contact = types.find("1") != std::string::npos;
+    nsset = types.find("2") != std::string::npos;
+    domain = types.find("3") != std::string::npos;
+  }
+
+  void addDesc(const std::string& lang, const std::string text) {
+    desc[lang] = text;
+  }
+
+  bool operator==(TID _id) const {
+    return id == _id;
+  }
+
+  virtual TID getId() const {
+    return id;
+  }
+
+  virtual const std::string& getName() const {
+    return name;
+  }
+
+  virtual bool getExternal() const {
+    return external;
+  }
+
+  virtual const std::string& getDesc(const std::string& lang) const
+      throw (BAD_LANG) {
+    std::map<std::string,std::string>::const_iterator i = desc.find(lang);
+    if (i == desc.end())
+      throw BAD_LANG();
+    return i->second;
+  }
+
+  virtual bool isForType(short type) const {
+    return type == 1 ? contact : type == 2 ? nsset : domain;
+  }
+};
+
+class ManagerImpl : virtual public Manager {
+  DB *db;
+  DBase::Manager *m_db_manager;
+  bool m_restricted_handles;
+
+  std::auto_ptr<Zone::Manager> m_zone_manager;
+  std::auto_ptr<Domain::Manager> m_domain_manager;
+  std::auto_ptr<Registrar::Manager> m_registrar_manager;
+  std::auto_ptr<Contact::Manager> m_contact_manager;
+  std::auto_ptr<NSSet::Manager> m_nsset_manager;
+  std::auto_ptr<Filter::Manager> m_filter_manager;
+
+  std::vector<CountryDesc> m_countries;
+  std::vector<StatusDescImpl> statusList;
+
+public:
+  ManagerImpl(DB *_db, bool _restrictedHandles) :
+    db(_db), m_restricted_handles(_restrictedHandles) {
+    m_db_manager = 0;
+
+    m_zone_manager.reset(Zone::Manager::create(db));
+    m_domain_manager.reset(Domain::Manager::create(db, m_zone_manager.get()));
+    m_registrar_manager.reset(Registrar::Manager::create(db));
+    m_contact_manager.reset(Contact::Manager::create(db, m_restricted_handles));
+    m_nsset_manager.reset(NSSet::Manager::create(db,
+                                                 m_zone_manager.get(),
+                                                 m_restricted_handles));
+    // TEMP: this will be ok when DBase::Manager ptr will be initilized
+    // here in constructor (not in dbManagerInit method)
+    // m_filter_manager.reset(Filter::Manager::create(m_db_manager));
+
+    CountryDesc cd;
+    cd.cc = "CZ";
+    cd.name = "Czech Republic";
+    m_countries.push_back(cd);
+    cd.cc = "SK";
+    cd.name = "Slovak Republic";
+    m_countries.push_back(cd);
+  }
+  /// upper constructor replacement
+  ManagerImpl(DBase::Manager *_db_manager, bool _restricted_handles) :
+    m_db_manager(_db_manager), m_restricted_handles(_restricted_handles) {
+    /// initialize all other managers
+    /// TODO: db -> change to db_manager; needs other constructor update
+    m_zone_manager.reset(Zone::Manager::create(db));
+    m_domain_manager.reset(Domain::Manager::create(db, m_zone_manager.get()));
+    m_registrar_manager.reset(Registrar::Manager::create(db));
+    m_contact_manager.reset(Contact::Manager::create(db, m_restricted_handles));
+    m_nsset_manager.reset(NSSet::Manager::create(db,
+                                                 m_zone_manager.get(),
+                                                 m_restricted_handles));
+    m_filter_manager.reset(Filter::Manager::create(m_db_manager));
+
+    /// load country codes descrition from database
+    loadCountryDesc();
+  }
+
+  Zone::Manager *getZoneManager() const {
+    return m_zone_manager.get();
+  }
+
+  Domain::Manager *getDomainManager() const {
+    return m_domain_manager.get();
+  }
+
+  Registrar::Manager *getRegistrarManager() const {
+    return m_registrar_manager.get();
+  }
+
+  Contact::Manager *getContactManager() const {
+    return m_contact_manager.get();
+  }
+
+  NSSet::Manager *getNSSetManager() const {
+    return m_nsset_manager.get();
+  }
+
+  Filter::Manager* getFilterManager() const {
+    return m_filter_manager.get();
+  }
+
+  /// interface method implementation
+  void checkHandle(const std::string& handle, 
+									 CheckHandleList& chl, 
+									 bool allowIDN) const {
+    CheckHandle ch;
+    bool isEnum = false;
+    try {
+      // trying convert string to enum domain
+      ch.newHandle = m_zone_manager->makeEnumDomain(handle);
+      ch.type = HT_ENUM_NUMBER;
+      isEnum = true;
+    } catch (...) {}
+    bool isDomain = true;
+    std::string fqdn = isEnum ? ch.newHandle : handle;
+     if (allowIDN)
+       fqdn = m_zone_manager->encodeIDN(fqdn);
+    NameIdPair conflictFQDN;
+    switch (m_domain_manager->checkAvail(fqdn, conflictFQDN, false, allowIDN)) {
+      case Domain::CA_INVALID_HANDLE:
+        isDomain = false;
+        break;
+      case Domain::CA_BAD_LENGHT:
+        ch.handleClass = CH_UNREGISTRABLE_LONG;
+        break;
+      case Domain::CA_BAD_ZONE:
+        ch.handleClass = CH_UNREGISTRABLE;
+        break;
+      case Domain::CA_BLACKLIST:
+        ch.handleClass = CH_PROTECTED;
+        break;
+      case Domain::CA_REGISTRED:
+        ch.handleClass = CH_REGISTRED;
+        break;
+      case Domain::CA_PARENT_REGISTRED:
+        ch.handleClass = CH_REGISTRED_PARENT;
+        break;
+      case Domain::CA_CHILD_REGISTRED:
+        ch.handleClass = CH_REGISTRED_CHILD;
+        break;
+      case Domain::CA_AVAILABLE:
+        ch.handleClass = CH_FREE;
+        break;
+    }
+    ch.conflictHandle = conflictFQDN.name;
+    if (allowIDN)
+       ch.conflictHandle = m_zone_manager->decodeIDN(ch.conflictHandle);
+    if (isDomain) {
+      if (!isEnum)
+        ch.type = m_zone_manager->checkEnumDomainSuffix(fqdn) ? HT_ENUM_DOMAIN
+                                                              : HT_DOMAIN;
+      chl.push_back(ch);
+    }
+    // check if handle is registred contact
+    NameIdPair conflictContact;
+    if (getContactManager()->checkAvail(handle, conflictContact)
+        == Contact::Manager::CA_REGISTRED) {
+      CheckHandle chCon;
+      chCon.type = HT_CONTACT;
+      chCon.handleClass= CH_REGISTRED;
+      chl.push_back(chCon);
+    }
+    // check if handle is registred nsset   
+    NameIdPair conflictNSSet;
+    if (getNSSetManager()->checkAvail(handle, conflictNSSet) == NSSet::Manager::CA_REGISTRED) {
+      CheckHandle chNss;
+      chNss.type = HT_NSSET;
+      chNss.handleClass= CH_REGISTRED;
+      chl.push_back(chNss);
+    }
+    // check if handle is registrant   
+    if (getRegistrarManager()->checkHandle(handle)) {
+      CheckHandle chReg;
+      chReg.type = HT_REGISTRAR;
+      chReg.handleClass= CH_REGISTRED;
+      chl.push_back(chReg);
+    }
+    // if empty return OTHER   
+    if (!chl.size()) {
+      CheckHandle chOth;
+      chOth.type = HT_OTHER;
+      chOth.handleClass= CH_FREE;
+      chl.push_back(chOth);
+    }
+  }
+
+  virtual void loadCountryDesc() {
+    TRACE("[CALL] Register::Manager::loadCountryDesc()");
+    DBase::SelectQuery country_query;
+    country_query.select() << "id, country_cs, country";
+    country_query.from() << "enum_country";
+
+    try {
+      std::auto_ptr<DBase::Connection> conn(m_db_manager->getConnection());
+      std::auto_ptr<DBase::Result> r_country(conn->exec(country_query));
+      std::auto_ptr<DBase::ResultIterator> it(r_country->getIterator());
+      
+      m_countries.clear();
+      for (it->first(); !it->isDone(); it->next()) {
+        CountryDesc desc;
+        
+        std::string cc = it->getNextValue();
+        std::string name_cs = it->getNextValue();
+        std::string name = it->getNextValue();
+        
+        desc.cc = cc;
+        desc.name = (!name_cs.empty() ? name_cs : name);
+        m_countries.push_back(desc);
+      }
+      LOGGER("register").debug(boost::format("loaded '%1%' country codes "
+              "description from database") % r_country->getNumRows());
+    }
+    catch (DBase::Exception& ex) {
+      LOGGER("db").error(boost::format("%1%") % ex.what());
+    }
+    catch (std::exception& ex) {
+      LOGGER("db").error(boost::format("%1%") % ex.what());
+    }
+  }
+
+  virtual unsigned getCountryDescSize() const {
+    return m_countries.size();
+  }
+
+  virtual const CountryDesc& getCountryDescByIdx(unsigned idx) const
+      throw (NOT_FOUND) {
+    if (idx >= m_countries.size())
+      throw NOT_FOUND();
+    return m_countries[idx];
+  }
+
+  virtual void initStates() throw (SQL_ERROR) {
+    TRACE("[CALL] Register::Manager::initStates()");
+    if (!db->ExecSelect("SELECT id, name, external, ARRAY_TO_STRING(types,',') "
+      "FROM enum_object_states") )
+      throw SQL_ERROR();
+    statusList.clear();
+    for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+      statusList.push_back(StatusDescImpl(
+      STR_TO_ID(db->GetFieldValue(i,0)),
+      db->GetFieldValue(i,1),
+      *db->GetFieldValue(i,2) == 't',
+      db->GetFieldValue(i,3)) );
+    }
+    unsigned states_loaded = db->GetSelectRows();
+    db->FreeSelect();
+    
+    if (!db->ExecSelect("SELECT state_id, lang, description FROM enum_object_states_desc"))
+      throw SQL_ERROR();
+    for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
+      std::vector<StatusDescImpl>::iterator it = find(statusList.begin(),
+                                                     statusList.end(),
+                                                      STR_TO_ID(db->GetFieldValue(i,0)));
+      if (it != statusList.end())
+        it->addDesc(db->GetFieldValue(i, 1), db->GetFieldValue(i, 2));
+
+    }
+    db->FreeSelect();
+    
+    /// HACK: OK state
+    statusList.push_back(StatusDescImpl(0, "ok", true, "1,2,3"));
+    statusList.back().addDesc("CS", "Objekt je bez omezení");
+    statusList.back().addDesc("EN", "Objekt is without restrictions");
+    LOGGER("register").debug(boost::format("loaded '%1%' object states description from database")
+        % states_loaded);
+  }
+
+  virtual const StatusDesc* getStatusDesc(TID status) const {
+    std::vector<StatusDescImpl>::const_iterator it = find(statusList.begin(),
+                                                         statusList.end(),
+                                                         status);
+    if (it == statusList.end())
+      return NULL;
+    return &(*it);
+  }
+
+  virtual unsigned getStatusDescCount() const {
+    return statusList.size();
+  }
+
+  virtual const StatusDesc* getStatusDescByIdx(unsigned idx) const {
+    if (idx >= statusList.size())
+      return NULL;
+    return &statusList[idx];
+  }
+
+  virtual void updateObjectStates() const throw (SQL_ERROR) {
+    if (!db->ExecSelect("SELECT update_object_states()"))
+      throw SQL_ERROR();
+    db->FreeSelect();
+  }
+
+  /// TEMP: method for initialization new Database manager
+  virtual void dbManagerInit(DBase::Manager *_db_manager) {
+    m_db_manager = _db_manager;
+    m_filter_manager.reset(Filter::Manager::create(m_db_manager));
+    
+    /// load country codes descrition from database
+    loadCountryDesc();
+  }
+};
+
+Manager *Manager::create(DB *db, bool _restrictedHandles) {
+  TRACE("[CALL] Register::Manager::create()");
+  return new ManagerImpl(db, _restrictedHandles);
+}
+
+/// upper create factory method replacement
+Manager *create(DBase::Manager *_db_manager, bool _restricted_handles) {
+  TRACE(boost::format("[CALL] Register::Manager::create(%1%, %2%)")
+      % _db_manager % _restricted_handles);
+  return new ManagerImpl(_db_manager, _restricted_handles);
+}
+
+}

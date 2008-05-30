@@ -70,11 +70,12 @@ AC_DEFUN([AX_BOOST_REGEX],
                    ax_cv_boost_regex=yes, ax_cv_boost_regex=no)
          AC_LANG_POP([C++])
 		])
+		link_regex="no"
 		if test "x$ax_cv_boost_regex" = "xyes"; then
 			AC_DEFINE(HAVE_BOOST_REGEX,,[define if the Boost::Regex library is available])
 			BN=boost_regex
             if test "x$ax_boost_user_regex_lib" = "x"; then
-				for ax_lib in $BN $BN-$CC $BN-$CC-mt $BN-$CC-mt-s $BN-$CC-s \
+				for ax_lib in $BN $BN-mt $BN-$CC $BN-$CC-mt $BN-$CC-mt-s $BN-$CC-s \
                               lib$BN lib$BN-$CC lib$BN-$CC-mt lib$BN-$CC-mt-s lib$BN-$CC-s \
                               $BN-mgw $BN-mgw $BN-mgw-mt $BN-mgw-mt-s $BN-mgw-s ; do
 				    AC_CHECK_LIB($ax_lib, main, [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
@@ -90,6 +91,10 @@ AC_DEFUN([AX_BOOST_REGEX],
 			if test "x$link_regex" = "xno"; then
 				AC_MSG_ERROR(Could not link against $ax_lib !)
 			fi
+		fi
+
+		if test "x$link_regex" = "xno"; then
+			AC_MSG_ERROR(Boost::Regex not found!)
 		fi
 
 		CPPFLAGS="$CPPFLAGS_SAVED"

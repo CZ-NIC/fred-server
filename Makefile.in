@@ -14,7 +14,35 @@
 
 @SET_MAKE@
 
+# Copyright (C) 2004 Oren Ben-Kiki
+# This file is distributed under the same terms as the Automake macro files.
 
+# Generate automatic documentation using Doxygen. Goals and variables values
+# are controlled by the various DX_COND_??? conditionals set by autoconf.
+#
+# The provided goals are:
+# doxygen-doc: Generate all doxygen documentation.
+# doxygen-run: Run doxygen, which will generate some of the documentation
+#              (HTML, CHM, CHI, MAN, RTF, XML) but will not do the post
+#              processing required for the rest of it (PS, PDF, and some MAN).
+# doxygen-man: Rename some doxygen generated man pages.
+# doxygen-ps: Generate doxygen PostScript documentation.
+# doxygen-pdf: Generate doxygen PDF documentation.
+#
+# Note that by default these are not integrated into the automake goals. If
+# doxygen is used to generate man pages, you can achieve this integration by
+# setting man3_MANS to the list of man pages generated and then adding the
+# dependency:
+#
+#   $(man3_MANS): doxygen-doc
+#
+# This will cause make to run doxygen and generate all the documentation.
+#
+# The following variable is intended for use in Makefile.am:
+#
+# DX_CLEANFILES = everything to clean.
+#
+# This is usually added to MOSTLYCLEANFILES.
 
 
 VPATH = @srcdir@
@@ -34,107 +62,39 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
-sbin_PROGRAMS = fred-rifd$(EXEEXT) fred-adifd$(EXEEXT) \
-	fred-pifd$(EXEEXT) fred-banking$(EXEEXT) fred-admin$(EXEEXT)
-subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_fredconf_DATA) \
-	$(dist_rcconf_SCRIPTS) $(dist_sbin_SCRIPTS) \
-	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/config.h.in $(srcdir)/fred-server.spec.in \
-	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
-	config.guess config.sub depcomp install-sh missing
+	$(dist_rcconf_SCRIPTS) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
+	$(srcdir)/fred-server.spec.in $(top_srcdir)/am_doxygen.am \
+	$(top_srcdir)/conf/server.conf.in $(top_srcdir)/configure \
+	$(top_srcdir)/init-scripts/fred-server.in AUTHORS COPYING \
+	ChangeLog INSTALL NEWS config.guess config.sub depcomp \
+	install-sh missing
+subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_base.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/acinclude.m4 \
+	$(top_srcdir)/m4/ax_boost_base.m4 \
 	$(top_srcdir)/m4/ax_boost_date_time.m4 \
 	$(top_srcdir)/m4/ax_boost_program_options.m4 \
 	$(top_srcdir)/m4/ax_boost_regex.m4 \
+	$(top_srcdir)/m4/ax_boost_serialization.m4 \
 	$(top_srcdir)/m4/ax_boost_thread.m4 \
 	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/ax_prog_doxygen.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = fred-server.spec
-LIBRARIES = $(noinst_LIBRARIES)
-AR = ar
-ARFLAGS = cru
-libfred_a_AR = $(AR) $(ARFLAGS)
-libfred_a_LIBADD =
-am_libfred_a_OBJECTS = conf.$(OBJEXT) dbsql.$(OBJEXT) pqsql.$(OBJEXT) \
-	util.$(OBJEXT) log.$(OBJEXT) nameservice.$(OBJEXT) \
-	mailer_manager.$(OBJEXT) admin.$(OBJEXT) tech_check.$(OBJEXT)
-nodist_libfred_a_OBJECTS = ccRegSK.$(OBJEXT) ccRegDynSK.$(OBJEXT)
-libfred_a_OBJECTS = $(am_libfred_a_OBJECTS) \
-	$(nodist_libfred_a_OBJECTS)
-am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(rcconfdir)" \
-	"$(DESTDIR)$(sbindir)" "$(DESTDIR)$(fredconfdir)"
-sbinPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
-PROGRAMS = $(sbin_PROGRAMS)
-am_fred_adifd_OBJECTS = fred_adifd-ccReg_server.$(OBJEXT)
-fred_adifd_OBJECTS = $(am_fred_adifd_OBJECTS)
-fred_adifd_LDADD = $(LDADD)
-am__DEPENDENCIES_1 =
-fred_adifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) libfred.a register/libccreg.a
-am_fred_admin_OBJECTS = client.$(OBJEXT)
-fred_admin_OBJECTS = $(am_fred_admin_OBJECTS)
-fred_admin_LDADD = $(LDADD)
-fred_admin_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) libfred.a register/libccreg.a
-am_fred_banking_OBJECTS = gpc.$(OBJEXT) banking.$(OBJEXT) \
-	log.$(OBJEXT) csv.$(OBJEXT)
-fred_banking_OBJECTS = $(am_fred_banking_OBJECTS)
-fred_banking_LDADD = $(LDADD)
-fred_banking_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) libfred.a \
-	register/libccreg.a
-am_fred_pifd_OBJECTS = fred_pifd-ccReg_server.$(OBJEXT)
-fred_pifd_OBJECTS = $(am_fred_pifd_OBJECTS)
-fred_pifd_LDADD = $(LDADD)
-fred_pifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) libfred.a register/libccreg.a
-am_fred_rifd_OBJECTS = fred_rifd-ccReg_epp.$(OBJEXT) \
-	fred_rifd-countrycode.$(OBJEXT) fred_rifd-messages.$(OBJEXT) \
-	fred_rifd-notifier.$(OBJEXT) fred_rifd-ccReg_server.$(OBJEXT)
-fred_rifd_OBJECTS = $(am_fred_rifd_OBJECTS)
-fred_rifd_LDADD = $(LDADD)
-fred_rifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) libfred.a register/libccreg.a
+CONFIG_CLEAN_FILES = fred-server.spec conf/server.conf \
+	init-scripts/fred-server
+am__installdirs = "$(DESTDIR)$(rcconfdir)" "$(DESTDIR)$(fredconfdir)" \
+	"$(DESTDIR)$(docdir)"
 dist_rcconfSCRIPT_INSTALL = $(INSTALL_SCRIPT)
-dist_sbinSCRIPT_INSTALL = $(INSTALL_SCRIPT)
-SCRIPTS = $(dist_rcconf_SCRIPTS) $(dist_sbin_SCRIPTS)
-DEFAULT_INCLUDES = -I.@am__isrc@
-depcomp = $(SHELL) $(top_srcdir)/depcomp
-am__depfiles_maybe = depfiles
-CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-CXXLD = $(CXX)
-CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
-	-o $@
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libfred_a_SOURCES) $(nodist_libfred_a_SOURCES) \
-	$(fred_adifd_SOURCES) $(fred_admin_SOURCES) \
-	$(fred_banking_SOURCES) $(fred_pifd_SOURCES) \
-	$(fred_rifd_SOURCES)
-DIST_SOURCES = $(libfred_a_SOURCES) $(fred_adifd_SOURCES) \
-	$(fred_admin_SOURCES) $(fred_banking_SOURCES) \
-	$(fred_pifd_SOURCES) $(fred_rifd_SOURCES)
+SCRIPTS = $(dist_rcconf_SCRIPTS)
+SOURCES =
+DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -149,7 +109,8 @@ am__vpath_adj = case $$p in \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 dist_fredconfDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(dist_fredconf_DATA)
+docDATA_INSTALL = $(INSTALL_DATA)
+DATA = $(dist_fredconf_DATA) $(doc_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 ETAGS = etags
@@ -167,16 +128,19 @@ GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
+ADIFDPORT = @ADIFDPORT@
 AMTAR = @AMTAR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BINDIR = @BINDIR@
 BOOST_CPPFLAGS = @BOOST_CPPFLAGS@
 BOOST_DATE_TIME_LIB = @BOOST_DATE_TIME_LIB@
 BOOST_LDFLAGS = @BOOST_LDFLAGS@
 BOOST_PROGRAM_OPTIONS_LIB = @BOOST_PROGRAM_OPTIONS_LIB@
 BOOST_REGEX_LIB = @BOOST_REGEX_LIB@
+BOOST_SERIALIZATION_LIB = @BOOST_SERIALIZATION_LIB@
 BOOST_THREAD_LIB = @BOOST_THREAD_LIB@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -187,8 +151,38 @@ CXX = @CXX@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
+DATAROOTDIR = @DATAROOTDIR@
+DBHOST = @DBHOST@
+DBNAME = @DBNAME@
+DBPASS = @DBPASS@
+DBPORT = @DBPORT@
+DBUSER = @DBUSER@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DOXYGEN_PAPER_SIZE = @DOXYGEN_PAPER_SIZE@
+DX_CONFIG = @DX_CONFIG@
+DX_DOCDIR = @DX_DOCDIR@
+DX_DOT = @DX_DOT@
+DX_DOXYGEN = @DX_DOXYGEN@
+DX_DVIPS = @DX_DVIPS@
+DX_EGREP = @DX_EGREP@
+DX_ENV = @DX_ENV@
+DX_FLAG_chi = @DX_FLAG_chi@
+DX_FLAG_chm = @DX_FLAG_chm@
+DX_FLAG_doc = @DX_FLAG_doc@
+DX_FLAG_dot = @DX_FLAG_dot@
+DX_FLAG_html = @DX_FLAG_html@
+DX_FLAG_man = @DX_FLAG_man@
+DX_FLAG_pdf = @DX_FLAG_pdf@
+DX_FLAG_ps = @DX_FLAG_ps@
+DX_FLAG_rtf = @DX_FLAG_rtf@
+DX_FLAG_xml = @DX_FLAG_xml@
+DX_HHC = @DX_HHC@
+DX_LATEX = @DX_LATEX@
+DX_MAKEINDEX = @DX_MAKEINDEX@
+DX_PDFLATEX = @DX_PDFLATEX@
+DX_PERL = @DX_PERL@
+DX_PROJECT = @DX_PROJECT@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
@@ -206,9 +200,11 @@ LIBIDN_CFLAGS = @LIBIDN_CFLAGS@
 LIBIDN_LIBS = @LIBIDN_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
+LOCALSTATEDIR = @LOCALSTATEDIR@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
+NSHOST = @NSHOST@
 OBJEXT = @OBJEXT@
 OMNIORB4_CFLAGS = @OMNIORB4_CFLAGS@
 OMNIORB4_LIBS = @OMNIORB4_LIBS@
@@ -220,14 +216,18 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PG_CONFIG = @PG_CONFIG@
+PIFDPORT = @PIFDPORT@
 PKG_CONFIG = @PKG_CONFIG@
 POSTGRESQL_CFLAGS = @POSTGRESQL_CFLAGS@
 POSTGRESQL_LDFLAGS = @POSTGRESQL_LDFLAGS@
 POSTGRESQL_VERSION = @POSTGRESQL_VERSION@
 RANLIB = @RANLIB@
+RIFDPORT = @RIFDPORT@
+SBINDIR = @SBINDIR@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SYSCONFDIR = @SYSCONFDIR@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -247,6 +247,7 @@ build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
 builddir = @builddir@
+contextname = @contextname@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
@@ -276,49 +277,46 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = register
-CLEANFILES = ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh
-AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
-AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS)
-LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
-        $(BOOST_REGEX_LIB)  $(BOOST_THREAD_LIB) $(OMNIORB4_LIBS) \
-        $(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
-        libfred.a register/libccreg.a
+@DX_COND_doc_TRUE@@DX_COND_html_TRUE@DX_CLEAN_HTML = @DX_DOCDIR@/html
+@DX_COND_chm_TRUE@@DX_COND_doc_TRUE@DX_CLEAN_CHM = @DX_DOCDIR@/chm
+@DX_COND_chi_TRUE@@DX_COND_chm_TRUE@@DX_COND_doc_TRUE@DX_CLEAN_CHI = @DX_DOCDIR@/@PACKAGE@.chi
+@DX_COND_doc_TRUE@@DX_COND_man_TRUE@DX_CLEAN_MAN = @DX_DOCDIR@/man
+@DX_COND_doc_TRUE@@DX_COND_rtf_TRUE@DX_CLEAN_RTF = @DX_DOCDIR@/rtf
+@DX_COND_doc_TRUE@@DX_COND_xml_TRUE@DX_CLEAN_XML = @DX_DOCDIR@/xml
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@DX_CLEAN_PS = @DX_DOCDIR@/@PACKAGE@.ps
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@DX_PS_GOAL = doxygen-ps
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@DX_CLEAN_PDF = @DX_DOCDIR@/@PACKAGE@.pdf
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@DX_PDF_GOAL = doxygen-pdf
+@DX_COND_doc_TRUE@DX_CLEANFILES = \
+@DX_COND_doc_TRUE@    @DX_DOCDIR@/@PACKAGE@.tag \
+@DX_COND_doc_TRUE@    -r \
+@DX_COND_doc_TRUE@    $(DX_CLEAN_HTML) \
+@DX_COND_doc_TRUE@    $(DX_CLEAN_CHM) \
+@DX_COND_doc_TRUE@    $(DX_CLEAN_CHI) \
+@DX_COND_doc_TRUE@    $(DX_CLEAN_MAN) \
+@DX_COND_doc_TRUE@    $(DX_CLEAN_RTF) \
+@DX_COND_doc_TRUE@    $(DX_CLEAN_XML) \
+@DX_COND_doc_TRUE@    $(DX_CLEAN_PS) \
+@DX_COND_doc_TRUE@    $(DX_CLEAN_PDF) \
+@DX_COND_doc_TRUE@    $(DX_CLEAN_LATEX)
 
-IDLFILE = $(IDLDIR)/ccReg.idl
+@DX_COND_doc_TRUE@@DX_COND_latex_TRUE@DX_CLEAN_LATEX = @DX_DOCDIR@/latex
+SUBDIRS = util src
+CLEANFILES = conf/server.conf init-scripts/fred-server
 fredconfdir = $(sysconfdir)/fred
 rcconfdir = $(sysconfdir)/init.d
-noinst_LIBRARIES = libfred.a
-dist_sbin_SCRIPTS = banking.sh
 EXTRA_DIST = fred-server.spec
-dist_fredconf_DATA = server.conf
+dist_fredconf_DATA = conf/server.conf
 dist_rcconf_SCRIPTS = init-scripts/fred-server
-BUILT_SOURCES = ccRegSK.cc ccRegDynSK.cc ccReg.hh
-libfred_a_SOURCES = conf.cc dbsql.cc pqsql.cc util.cc log.cc nameservice.cc \
-  mailer_manager.cc admin.cc tech_check.cc action.h gpc.h nameservice.h \
-  response.h admin.h countrycode.h log.h notifier.h tech_check.h ccReg_epp.h \
-  csv.h mailer_manager.h pqsql.h timeclock.h conf.h dbsql.h messages.h \
-  reason.h util.h
-
-nodist_libfred_a_SOURCES = ccRegSK.cc ccRegDynSK.cc
-fred_rifd_SOURCES = ccReg_epp.cc countrycode.cc messages.cc notifier.cc \
-                      ccReg_server.cc
-
-fred_rifd_CPPFLAGS = $(AM_CPPFLAGS) -DRIFD
-fred_adifd_SOURCES = ccReg_server.cc
-fred_adifd_CPPFLAGS = $(AM_CPPFLAGS) -DADIF
-fred_pifd_SOURCES = ccReg_server.cc
-fred_pifd_CPPFLAGS = $(AM_CPPFLAGS) -DPIFD
-fred_banking_SOURCES = gpc.cc banking.cc log.cc csv.cc
-fred_admin_SOURCES = register/client.cc
-all: $(BUILT_SOURCES) config.h
+@DX_COND_html_TRUE@doc_DATA = @DX_DOCDIR@/html/*
+@DX_COND_html_TRUE@MOSTLYCLEANFILES = ${DX_CLEANFILES}
+all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .cc .o .obj
 am--refresh:
 	@:
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/am_doxygen.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -368,51 +366,10 @@ distclean-hdr:
 	-rm -f config.h stamp-h1
 fred-server.spec: $(top_builddir)/config.status $(srcdir)/fred-server.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-
-clean-noinstLIBRARIES:
-	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
-libfred.a: $(libfred_a_OBJECTS) $(libfred_a_DEPENDENCIES) 
-	-rm -f libfred.a
-	$(libfred_a_AR) libfred.a $(libfred_a_OBJECTS) $(libfred_a_LIBADD)
-	$(RANLIB) libfred.a
-install-sbinPROGRAMS: $(sbin_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	test -z "$(sbindir)" || $(MKDIR_P) "$(DESTDIR)$(sbindir)"
-	@list='$(sbin_PROGRAMS)'; for p in $$list; do \
-	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
-	  if test -f $$p \
-	  ; then \
-	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
-	   echo " $(INSTALL_PROGRAM_ENV) $(sbinPROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(sbindir)/$$f'"; \
-	   $(INSTALL_PROGRAM_ENV) $(sbinPROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(sbindir)/$$f" || exit 1; \
-	  else :; fi; \
-	done
-
-uninstall-sbinPROGRAMS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(sbin_PROGRAMS)'; for p in $$list; do \
-	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-	  echo " rm -f '$(DESTDIR)$(sbindir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(sbindir)/$$f"; \
-	done
-
-clean-sbinPROGRAMS:
-	-test -z "$(sbin_PROGRAMS)" || rm -f $(sbin_PROGRAMS)
-fred-adifd$(EXEEXT): $(fred_adifd_OBJECTS) $(fred_adifd_DEPENDENCIES) 
-	@rm -f fred-adifd$(EXEEXT)
-	$(CXXLINK) $(fred_adifd_OBJECTS) $(fred_adifd_LDADD) $(LIBS)
-fred-admin$(EXEEXT): $(fred_admin_OBJECTS) $(fred_admin_DEPENDENCIES) 
-	@rm -f fred-admin$(EXEEXT)
-	$(CXXLINK) $(fred_admin_OBJECTS) $(fred_admin_LDADD) $(LIBS)
-fred-banking$(EXEEXT): $(fred_banking_OBJECTS) $(fred_banking_DEPENDENCIES) 
-	@rm -f fred-banking$(EXEEXT)
-	$(CXXLINK) $(fred_banking_OBJECTS) $(fred_banking_LDADD) $(LIBS)
-fred-pifd$(EXEEXT): $(fred_pifd_OBJECTS) $(fred_pifd_DEPENDENCIES) 
-	@rm -f fred-pifd$(EXEEXT)
-	$(CXXLINK) $(fred_pifd_OBJECTS) $(fred_pifd_LDADD) $(LIBS)
-fred-rifd$(EXEEXT): $(fred_rifd_OBJECTS) $(fred_rifd_DEPENDENCIES) 
-	@rm -f fred-rifd$(EXEEXT)
-	$(CXXLINK) $(fred_rifd_OBJECTS) $(fred_rifd_LDADD) $(LIBS)
+conf/server.conf: $(top_builddir)/config.status $(top_srcdir)/conf/server.conf.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+init-scripts/fred-server: $(top_builddir)/config.status $(top_srcdir)/init-scripts/fred-server.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 install-dist_rcconfSCRIPTS: $(dist_rcconf_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	test -z "$(rcconfdir)" || $(MKDIR_P) "$(DESTDIR)$(rcconfdir)"
@@ -432,180 +389,6 @@ uninstall-dist_rcconfSCRIPTS:
 	  echo " rm -f '$(DESTDIR)$(rcconfdir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(rcconfdir)/$$f"; \
 	done
-install-dist_sbinSCRIPTS: $(dist_sbin_SCRIPTS)
-	@$(NORMAL_INSTALL)
-	test -z "$(sbindir)" || $(MKDIR_P) "$(DESTDIR)$(sbindir)"
-	@list='$(dist_sbin_SCRIPTS)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  if test -f $$d$$p; then \
-	    f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
-	    echo " $(dist_sbinSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(sbindir)/$$f'"; \
-	    $(dist_sbinSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(sbindir)/$$f"; \
-	  else :; fi; \
-	done
-
-uninstall-dist_sbinSCRIPTS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(dist_sbin_SCRIPTS)'; for p in $$list; do \
-	  f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
-	  echo " rm -f '$(DESTDIR)$(sbindir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(sbindir)/$$f"; \
-	done
-
-mostlyclean-compile:
-	-rm -f *.$(OBJEXT)
-
-distclean-compile:
-	-rm -f *.tab.c
-
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/admin.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/banking.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ccRegDynSK.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ccRegSK.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/client.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/conf.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csv.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbsql.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_adifd-ccReg_server.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_pifd-ccReg_server.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-ccReg_epp.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-ccReg_server.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-countrycode.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-messages.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-notifier.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gpc.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mailer_manager.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nameservice.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pqsql.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tech_check.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/util.Po@am__quote@
-
-.cc.o:
-@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
-
-.cc.obj:
-@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-fred_adifd-ccReg_server.o: ccReg_server.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_adifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_adifd-ccReg_server.o -MD -MP -MF $(DEPDIR)/fred_adifd-ccReg_server.Tpo -c -o fred_adifd-ccReg_server.o `test -f 'ccReg_server.cc' || echo '$(srcdir)/'`ccReg_server.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_adifd-ccReg_server.Tpo $(DEPDIR)/fred_adifd-ccReg_server.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_server.cc' object='fred_adifd-ccReg_server.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_adifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_adifd-ccReg_server.o `test -f 'ccReg_server.cc' || echo '$(srcdir)/'`ccReg_server.cc
-
-fred_adifd-ccReg_server.obj: ccReg_server.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_adifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_adifd-ccReg_server.obj -MD -MP -MF $(DEPDIR)/fred_adifd-ccReg_server.Tpo -c -o fred_adifd-ccReg_server.obj `if test -f 'ccReg_server.cc'; then $(CYGPATH_W) 'ccReg_server.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_server.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_adifd-ccReg_server.Tpo $(DEPDIR)/fred_adifd-ccReg_server.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_server.cc' object='fred_adifd-ccReg_server.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_adifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_adifd-ccReg_server.obj `if test -f 'ccReg_server.cc'; then $(CYGPATH_W) 'ccReg_server.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_server.cc'; fi`
-
-client.o: register/client.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT client.o -MD -MP -MF $(DEPDIR)/client.Tpo -c -o client.o `test -f 'register/client.cc' || echo '$(srcdir)/'`register/client.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/client.Tpo $(DEPDIR)/client.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='register/client.cc' object='client.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o client.o `test -f 'register/client.cc' || echo '$(srcdir)/'`register/client.cc
-
-client.obj: register/client.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT client.obj -MD -MP -MF $(DEPDIR)/client.Tpo -c -o client.obj `if test -f 'register/client.cc'; then $(CYGPATH_W) 'register/client.cc'; else $(CYGPATH_W) '$(srcdir)/register/client.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/client.Tpo $(DEPDIR)/client.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='register/client.cc' object='client.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o client.obj `if test -f 'register/client.cc'; then $(CYGPATH_W) 'register/client.cc'; else $(CYGPATH_W) '$(srcdir)/register/client.cc'; fi`
-
-fred_pifd-ccReg_server.o: ccReg_server.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_pifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_pifd-ccReg_server.o -MD -MP -MF $(DEPDIR)/fred_pifd-ccReg_server.Tpo -c -o fred_pifd-ccReg_server.o `test -f 'ccReg_server.cc' || echo '$(srcdir)/'`ccReg_server.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_pifd-ccReg_server.Tpo $(DEPDIR)/fred_pifd-ccReg_server.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_server.cc' object='fred_pifd-ccReg_server.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_pifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_pifd-ccReg_server.o `test -f 'ccReg_server.cc' || echo '$(srcdir)/'`ccReg_server.cc
-
-fred_pifd-ccReg_server.obj: ccReg_server.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_pifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_pifd-ccReg_server.obj -MD -MP -MF $(DEPDIR)/fred_pifd-ccReg_server.Tpo -c -o fred_pifd-ccReg_server.obj `if test -f 'ccReg_server.cc'; then $(CYGPATH_W) 'ccReg_server.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_server.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_pifd-ccReg_server.Tpo $(DEPDIR)/fred_pifd-ccReg_server.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_server.cc' object='fred_pifd-ccReg_server.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_pifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_pifd-ccReg_server.obj `if test -f 'ccReg_server.cc'; then $(CYGPATH_W) 'ccReg_server.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_server.cc'; fi`
-
-fred_rifd-ccReg_epp.o: ccReg_epp.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-ccReg_epp.o -MD -MP -MF $(DEPDIR)/fred_rifd-ccReg_epp.Tpo -c -o fred_rifd-ccReg_epp.o `test -f 'ccReg_epp.cc' || echo '$(srcdir)/'`ccReg_epp.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_rifd-ccReg_epp.Tpo $(DEPDIR)/fred_rifd-ccReg_epp.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_epp.cc' object='fred_rifd-ccReg_epp.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_rifd-ccReg_epp.o `test -f 'ccReg_epp.cc' || echo '$(srcdir)/'`ccReg_epp.cc
-
-fred_rifd-ccReg_epp.obj: ccReg_epp.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-ccReg_epp.obj -MD -MP -MF $(DEPDIR)/fred_rifd-ccReg_epp.Tpo -c -o fred_rifd-ccReg_epp.obj `if test -f 'ccReg_epp.cc'; then $(CYGPATH_W) 'ccReg_epp.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_epp.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_rifd-ccReg_epp.Tpo $(DEPDIR)/fred_rifd-ccReg_epp.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_epp.cc' object='fred_rifd-ccReg_epp.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_rifd-ccReg_epp.obj `if test -f 'ccReg_epp.cc'; then $(CYGPATH_W) 'ccReg_epp.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_epp.cc'; fi`
-
-fred_rifd-countrycode.o: countrycode.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-countrycode.o -MD -MP -MF $(DEPDIR)/fred_rifd-countrycode.Tpo -c -o fred_rifd-countrycode.o `test -f 'countrycode.cc' || echo '$(srcdir)/'`countrycode.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_rifd-countrycode.Tpo $(DEPDIR)/fred_rifd-countrycode.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='countrycode.cc' object='fred_rifd-countrycode.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_rifd-countrycode.o `test -f 'countrycode.cc' || echo '$(srcdir)/'`countrycode.cc
-
-fred_rifd-countrycode.obj: countrycode.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-countrycode.obj -MD -MP -MF $(DEPDIR)/fred_rifd-countrycode.Tpo -c -o fred_rifd-countrycode.obj `if test -f 'countrycode.cc'; then $(CYGPATH_W) 'countrycode.cc'; else $(CYGPATH_W) '$(srcdir)/countrycode.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_rifd-countrycode.Tpo $(DEPDIR)/fred_rifd-countrycode.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='countrycode.cc' object='fred_rifd-countrycode.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_rifd-countrycode.obj `if test -f 'countrycode.cc'; then $(CYGPATH_W) 'countrycode.cc'; else $(CYGPATH_W) '$(srcdir)/countrycode.cc'; fi`
-
-fred_rifd-messages.o: messages.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-messages.o -MD -MP -MF $(DEPDIR)/fred_rifd-messages.Tpo -c -o fred_rifd-messages.o `test -f 'messages.cc' || echo '$(srcdir)/'`messages.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_rifd-messages.Tpo $(DEPDIR)/fred_rifd-messages.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='messages.cc' object='fred_rifd-messages.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_rifd-messages.o `test -f 'messages.cc' || echo '$(srcdir)/'`messages.cc
-
-fred_rifd-messages.obj: messages.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-messages.obj -MD -MP -MF $(DEPDIR)/fred_rifd-messages.Tpo -c -o fred_rifd-messages.obj `if test -f 'messages.cc'; then $(CYGPATH_W) 'messages.cc'; else $(CYGPATH_W) '$(srcdir)/messages.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_rifd-messages.Tpo $(DEPDIR)/fred_rifd-messages.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='messages.cc' object='fred_rifd-messages.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_rifd-messages.obj `if test -f 'messages.cc'; then $(CYGPATH_W) 'messages.cc'; else $(CYGPATH_W) '$(srcdir)/messages.cc'; fi`
-
-fred_rifd-notifier.o: notifier.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-notifier.o -MD -MP -MF $(DEPDIR)/fred_rifd-notifier.Tpo -c -o fred_rifd-notifier.o `test -f 'notifier.cc' || echo '$(srcdir)/'`notifier.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_rifd-notifier.Tpo $(DEPDIR)/fred_rifd-notifier.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='notifier.cc' object='fred_rifd-notifier.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_rifd-notifier.o `test -f 'notifier.cc' || echo '$(srcdir)/'`notifier.cc
-
-fred_rifd-notifier.obj: notifier.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-notifier.obj -MD -MP -MF $(DEPDIR)/fred_rifd-notifier.Tpo -c -o fred_rifd-notifier.obj `if test -f 'notifier.cc'; then $(CYGPATH_W) 'notifier.cc'; else $(CYGPATH_W) '$(srcdir)/notifier.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_rifd-notifier.Tpo $(DEPDIR)/fred_rifd-notifier.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='notifier.cc' object='fred_rifd-notifier.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_rifd-notifier.obj `if test -f 'notifier.cc'; then $(CYGPATH_W) 'notifier.cc'; else $(CYGPATH_W) '$(srcdir)/notifier.cc'; fi`
-
-fred_rifd-ccReg_server.o: ccReg_server.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-ccReg_server.o -MD -MP -MF $(DEPDIR)/fred_rifd-ccReg_server.Tpo -c -o fred_rifd-ccReg_server.o `test -f 'ccReg_server.cc' || echo '$(srcdir)/'`ccReg_server.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_rifd-ccReg_server.Tpo $(DEPDIR)/fred_rifd-ccReg_server.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_server.cc' object='fred_rifd-ccReg_server.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_rifd-ccReg_server.o `test -f 'ccReg_server.cc' || echo '$(srcdir)/'`ccReg_server.cc
-
-fred_rifd-ccReg_server.obj: ccReg_server.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fred_rifd-ccReg_server.obj -MD -MP -MF $(DEPDIR)/fred_rifd-ccReg_server.Tpo -c -o fred_rifd-ccReg_server.obj `if test -f 'ccReg_server.cc'; then $(CYGPATH_W) 'ccReg_server.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_server.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/fred_rifd-ccReg_server.Tpo $(DEPDIR)/fred_rifd-ccReg_server.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ccReg_server.cc' object='fred_rifd-ccReg_server.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fred_rifd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o fred_rifd-ccReg_server.obj `if test -f 'ccReg_server.cc'; then $(CYGPATH_W) 'ccReg_server.cc'; else $(CYGPATH_W) '$(srcdir)/ccReg_server.cc'; fi`
 install-dist_fredconfDATA: $(dist_fredconf_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(fredconfdir)" || $(MKDIR_P) "$(DESTDIR)$(fredconfdir)"
@@ -622,6 +405,23 @@ uninstall-dist_fredconfDATA:
 	  f=$(am__strip_dir) \
 	  echo " rm -f '$(DESTDIR)$(fredconfdir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(fredconfdir)/$$f"; \
+	done
+install-docDATA: $(doc_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(docdir)" || $(MKDIR_P) "$(DESTDIR)$(docdir)"
+	@list='$(doc_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(docDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(docdir)/$$f'"; \
+	  $(docDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(docdir)/$$f"; \
+	done
+
+uninstall-docDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(doc_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(docdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(docdir)/$$f"; \
 	done
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -898,16 +698,14 @@ distcleancheck: distclean
 	       $(distcleancheck_listfiles) ; \
 	       exit 1; } >&2
 check-am: all-am
-check: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) check-recursive
-all-am: Makefile $(LIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA) config.h
+check: check-recursive
+all-am: Makefile $(SCRIPTS) $(DATA) config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(rcconfdir)" "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(fredconfdir)"; do \
+	for dir in "$(DESTDIR)$(rcconfdir)" "$(DESTDIR)$(fredconfdir)" "$(DESTDIR)$(docdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) install-recursive
+install: install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
 uninstall: uninstall-recursive
@@ -922,6 +720,7 @@ install-strip:
 	  `test -z '$(STRIP)' || \
 	    echo "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'"` install
 mostlyclean-generic:
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
 	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
@@ -932,18 +731,14 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-recursive
 
-clean-am: clean-generic clean-noinstLIBRARIES clean-sbinPROGRAMS \
-	mostlyclean-am
+clean-am: clean-generic mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
-distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-hdr distclean-tags
+distclean-am: clean-am distclean-generic distclean-hdr distclean-tags
 
 dvi: dvi-recursive
 
@@ -955,11 +750,12 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-dist_fredconfDATA install-dist_rcconfSCRIPTS
+install-data-am: install-dist_fredconfDATA install-dist_rcconfSCRIPTS \
+	install-docDATA
 
 install-dvi: install-dvi-recursive
 
-install-exec-am: install-dist_sbinSCRIPTS install-sbinPROGRAMS
+install-exec-am:
 
 install-html: install-html-recursive
 
@@ -976,13 +772,12 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-recursive
 
-mostlyclean-am: mostlyclean-compile mostlyclean-generic
+mostlyclean-am: mostlyclean-generic
 
 pdf: pdf-recursive
 
@@ -993,34 +788,78 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-dist_fredconfDATA uninstall-dist_rcconfSCRIPTS \
-	uninstall-dist_sbinSCRIPTS uninstall-sbinPROGRAMS
+	uninstall-docDATA
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) install-am \
 	install-strip
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am am--refresh check check-am clean clean-generic \
-	clean-noinstLIBRARIES clean-sbinPROGRAMS ctags ctags-recursive \
-	dist dist-all dist-bzip2 dist-gzip dist-shar dist-tarZ \
-	dist-zip distcheck distclean distclean-compile \
+	ctags ctags-recursive dist dist-all dist-bzip2 dist-gzip \
+	dist-shar dist-tarZ dist-zip distcheck distclean \
 	distclean-generic distclean-hdr distclean-tags distcleancheck \
 	distdir distuninstallcheck dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
 	install-dist_fredconfDATA install-dist_rcconfSCRIPTS \
-	install-dist_sbinSCRIPTS install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-sbinPROGRAMS \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
-	ps ps-am tags tags-recursive uninstall uninstall-am \
+	install-docDATA install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
+	pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
 	uninstall-dist_fredconfDATA uninstall-dist_rcconfSCRIPTS \
-	uninstall-dist_sbinSCRIPTS uninstall-sbinPROGRAMS
+	uninstall-docDATA
 
 
-ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:
-	omniidl -bcxx -Wba -Wbinline $(IDLFILE)
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@doxygen-ps: @DX_DOCDIR@/@PACKAGE@.ps
+
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@@DX_DOCDIR@/@PACKAGE@.ps: @DX_DOCDIR@/@PACKAGE@.tag
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@	cd @DX_DOCDIR@/latex; \
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@	rm -f *.aux *.toc *.idx *.ind *.ilg *.log *.out; \
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@	$(DX_LATEX) refman.tex; \
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@	$(MAKEINDEX_PATH) refman.idx; \
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@	$(DX_LATEX) refman.tex; \
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@	countdown=5; \
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@	while $(DX_EGREP) 'Rerun (LaTeX|to get cross-references right)' \
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@	                  refman.log > /dev/null 2>&1 \
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@	   && test $$countdown -gt 0; do \
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@	    $(DX_LATEX) refman.tex; \
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@	    countdown=`expr $$countdown - 1`; \
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@	done; \
+@DX_COND_doc_TRUE@@DX_COND_ps_TRUE@	$(DX_DVIPS) -o ../@PACKAGE@.ps refman.dvi
+
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@doxygen-pdf: @DX_DOCDIR@/@PACKAGE@.pdf
+
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@@DX_DOCDIR@/@PACKAGE@.pdf: @DX_DOCDIR@/@PACKAGE@.tag
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@	cd @DX_DOCDIR@/latex; \
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@	rm -f *.aux *.toc *.idx *.ind *.ilg *.log *.out; \
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@	$(DX_PDFLATEX) refman.tex; \
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@	$(DX_MAKEINDEX) refman.idx; \
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@	$(DX_PDFLATEX) refman.tex; \
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@	countdown=5; \
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@	while $(DX_EGREP) 'Rerun (LaTeX|to get cross-references right)' \
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@	                  refman.log > /dev/null 2>&1 \
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@	   && test $$countdown -gt 0; do \
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@	    $(DX_PDFLATEX) refman.tex; \
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@	    countdown=`expr $$countdown - 1`; \
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@	done; \
+@DX_COND_doc_TRUE@@DX_COND_pdf_TRUE@	mv refman.pdf ../@PACKAGE@.pdf
+
+@DX_COND_doc_TRUE@.PHONY: doc doxygen-run doxygen-doc $(DX_PS_GOAL) $(DX_PDF_GOAL)
+
+@DX_COND_doc_TRUE@.INTERMEDIATE: doxygen-run $(DX_PS_GOAL) $(DX_PDF_GOAL)
+
+@DX_COND_doc_TRUE@doc: doxygen-doc
+
+@DX_COND_doc_TRUE@doxygen-run: @DX_DOCDIR@/@PACKAGE@.tag
+
+@DX_COND_doc_TRUE@doxygen-doc: doxygen-run $(DX_PS_GOAL) $(DX_PDF_GOAL)
+
+@DX_COND_doc_TRUE@@DX_DOCDIR@/@PACKAGE@.tag: $(DX_CONFIG) $(pkginclude_HEADERS)
+@DX_COND_doc_TRUE@	rm -rf $(DX_CLEANFILES)
+@DX_COND_doc_TRUE@	$(DX_ENV) $(DX_DOXYGEN) $(srcdir)/$(DX_CONFIG)
+@DX_COND_html_TRUE@$(doc_DATA): doxygen-doc
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

@@ -70,6 +70,7 @@ AC_DEFUN([AX_BOOST_PROGRAM_OPTIONS],
                            ax_cv_boost_program_options=yes, ax_cv_boost_program_options=no)
 			               	AC_LANG_POP([C++])
 		])
+		link_program_options=no
 		if test "$ax_cv_boost_program_options" = yes; then
 				AC_DEFINE(HAVE_BOOST_PROGRAM_OPTIONS,,[define if the Boost::PROGRAM_OPTIONS library is available])
 				  BN=boost_program_options
@@ -92,6 +93,12 @@ AC_DEFUN([AX_BOOST_PROGRAM_OPTIONS],
 					AC_MSG_ERROR([Could not link against [$ax_lib] !])
 				fi
 		fi
+
+		if test "x$link_program_options" = "xno"; then
+			AC_MSG_ERROR([Boost::Program_Options not found!])
+		fi
+
+
 		CPPFLAGS="$CPPFLAGS_SAVED"
     	LDFLAGS="$LDFLAGS_SAVED"
 	fi

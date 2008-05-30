@@ -21,7 +21,7 @@ clients.
 %setup
 
 %build
-%configure
+%configure %idldir
 make
 
 %install

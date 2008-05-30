@@ -71,6 +71,7 @@ AC_DEFUN([AX_BOOST_DATE_TIME],
          ax_cv_boost_date_time=yes, ax_cv_boost_date_time=no)
          AC_LANG_POP([C++])
 		])
+		link_date_time="no"
 		if test "x$ax_cv_boost_date_time" = "xyes"; then
 			AC_DEFINE(HAVE_BOOST_DATE_TIME,,[define if the Boost::Date_Time library is available])
 			BN=boost_date_time
@@ -92,6 +93,10 @@ AC_DEFUN([AX_BOOST_DATE_TIME],
 			if test "x$link_date_time" = "xno"; then
 				AC_MSG_ERROR(Could not link against $ax_lib !)
 			fi
+		fi
+			
+		if test "x$link_date_time" = "xno"; then
+			AC_MSG_ERROR(Boost::Date_Time not found!)
 		fi
 
 		CPPFLAGS="$CPPFLAGS_SAVED"
