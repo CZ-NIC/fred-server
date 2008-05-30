@@ -1,3 +1,13 @@
+2008-05-30 Jaromir Talir (version 1.9.0)
+
+    * new public request module
+
+    * complete new architecture of server
+
+    * backend admin interface features
+
+    * enhanced build system
+
 2008-05-16 Jaromir Talir (version 1.8.3)
 
     * almost full IDN support
