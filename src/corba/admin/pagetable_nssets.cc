@@ -140,6 +140,7 @@ Register::NSSet::NSSet* ccReg_NSSets_i::findId(ccReg::TID _id) {
     if (nsset) {
       return nsset;
     }
+    return 0;
   }
   catch (Register::NOT_FOUND) {
     return 0;

@@ -163,6 +163,7 @@ Register::Domain::Domain* ccReg_Domains_i::findId(ccReg::TID _id) {
     if (domain) {
       return domain;
     }
+    return 0;
   }
   catch (Register::NOT_FOUND) {
     return 0;

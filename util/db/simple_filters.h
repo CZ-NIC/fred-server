@@ -313,7 +313,7 @@ template<> class Value<std::string> : public Simple {
 public:
   Value(const Column& _col, const Null<std::string>& _value,
       const std::string& _op = SQL_OP_EQ, const std::string& _conj = SQL_OP_AND) :
-    Simple(_conj), column(_col), value(_value), op(_op) {
+    Simple(_conj), column(_col), op(_op), value(_value) {
   }
   Value(const Column& _col, const std::string& _op = SQL_OP_EQ, 
         const std::string& _conj = SQL_OP_AND) :

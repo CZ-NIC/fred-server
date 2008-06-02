@@ -20,7 +20,8 @@ static bool checkState(
   return res > 0;
 }
 
-static DBase::ID insertNewStateRequest(
+// static DBase::ID insertNewStateRequest(
+static void insertNewStateRequest(
   DBase::ID blockRequestID, DBase::ID objectId, 
   unsigned state, DBase::Connection *c
 ) {
@@ -85,8 +86,8 @@ static bool queryBlockRequest(
 class PublicRequestImpl : public Register::CommonObjectImpl,
                     virtual public PublicRequest {
 private:
-  DBase::ID epp_action_id_;
   Register::PublicRequest::Type type_;
+  DBase::ID epp_action_id_;
   DBase::DateTime create_time_;
   Register::PublicRequest::Status status_;
   DBase::DateTime resolve_time_;
@@ -343,6 +344,8 @@ public:
             << "FROM nsset_contact_map ncm, contact c "
             << "WHERE ncm.contactid=c.id AND ncm.nssetid=" << getObject(i).id;
           break;
+	case OT_UNKNOWN:
+	  break;
       };
       std::auto_ptr<DBase::Result> r_emails(conn_->exec(sql));
       std::auto_ptr<DBase::ResultIterator> it(r_emails->getIterator());

@@ -47,7 +47,9 @@ public:
   ObjectRegistryImpl();
   virtual ~ObjectRegistryImpl();
 
-  virtual ObjectType getType() const { }
+  virtual ObjectType getType() const {
+    return TUNKNOWN;
+  }
   
   virtual Table& joinObjectRegistryTable();
   virtual Value<ObjectType>& setType(const DBase::Null<ObjectType> _type);

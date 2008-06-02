@@ -131,6 +131,7 @@ Register::Contact::Contact* ccReg_Contacts_i::findId(ccReg::TID _id) {
     if (contact) {
       return contact;
     }
+    return 0;
   }
   catch (Register::NOT_FOUND) {
     return 0;

@@ -19,7 +19,7 @@ ccReg::Filters::Compound_ptr
 ccReg_Registrars_i::add() {
   TRACE("[CALL] ccReg_Registrars_i::add()");
   it.clearF();
-  DBase::Filters::Registrar *f = new DBase::Filters::RegistrarImpl();
+  DBase::Filters::Registrar *f = new DBase::Filters::RegistrarImpl(true);
   uf.addFilter(f);
   return it.addE(f); 
 }
@@ -133,6 +133,7 @@ Register::Registrar::Registrar* ccReg_Registrars_i::findId(ccReg::TID _id) {
     if (registrar) {
       return registrar;
     }
+    return 0;
   }
   catch (Register::NOT_FOUND) {
     return 0;

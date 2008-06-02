@@ -15,7 +15,8 @@ ccReg_Session_i::ccReg_Session_i(const std::string& database,
                                  NameService *ns,
                                  Conf& cfg,
                                  ccReg_User_i* _user) :
-  m_mailer_manager(ns), m_user(_user) {
+  m_user(_user), m_mailer_manager(ns) {
+  
   db.OpenDatabase(database.c_str());
   m_db_manager.reset(new DBase::PSQLManager(cfg.GetDBconninfo()));
 
@@ -144,6 +145,14 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
     case ccReg::FT_PUBLICREQUEST:
       pr_detail = getPublicRequestDetail(_id);
       *result <<= pr_detail;
+      break;
+
+    case ccReg::FT_FILTER:
+    case ccReg::FT_OBJ:
+    case ccReg::FT_ACTION:
+    case ccReg::FT_INVOICE:
+    case ccReg::FT_MAIL:
+      LOGGER("corba").error("Calling method with not implemented parameter!");
       break;
   }
 
@@ -610,6 +619,9 @@ ccReg::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Registe
         break;
       case Register::PublicRequest::OT_NSSET:
         detail->objects[i].type = ccReg::PublicRequest::OT_NSSET;
+        break;
+      case Register::PublicRequest::OT_UNKNOWN:
+        LOGGER("corba").error("Not allowed object type for PublicRequest detail!");
         break;
     }
   }

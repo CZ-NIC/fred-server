@@ -127,6 +127,7 @@ bool Compound::isActive() const {
   for(; it != filter_list.end(); ++it) {
     if ((*it)->isActive()) return true;
   }
+  return false;
 }
 
 std::string Compound::getContent() const {

@@ -64,21 +64,22 @@ ccReg_Filters_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 
 char* 
 ccReg_Filters_i::outputCSV() {
+  return CORBA::string_dup("1,1,1");
 }
 
 CORBA::Short 
 ccReg_Filters_i::numRows() {
-	return m_filter_list.size();
+  return m_filter_list.size();
 }
 
 CORBA::Short 
 ccReg_Filters_i::numColumns() {
-	return 4;
+  return 4;
 }
 
 CORBA::ULongLong 
 ccReg_Filters_i::resultSize() {
-	return 1234;
+  return 1234;
 }
 
 void

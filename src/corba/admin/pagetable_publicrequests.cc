@@ -123,6 +123,7 @@ Register::PublicRequest::PublicRequest* ccReg_PublicRequests_i::findId(ccReg::TI
     if (request) {
       return request;
     }
+    return 0;
   }
   catch (Register::NOT_FOUND) {
     return 0;

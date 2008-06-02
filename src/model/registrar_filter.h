@@ -34,7 +34,7 @@ public:
 
 class RegistrarImpl : virtual public Registrar {
 public:
-  RegistrarImpl();
+  RegistrarImpl(bool _set_active = false);
   virtual ~RegistrarImpl();
 
   virtual Table& joinRegistrarTable();

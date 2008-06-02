@@ -3,8 +3,9 @@
 namespace DBase {
 namespace Filters {
 
-RegistrarImpl::RegistrarImpl() {
+RegistrarImpl::RegistrarImpl(bool _set_active) {
   setName("Registrar");
+  active = _set_active;
 }
 
 RegistrarImpl::~RegistrarImpl() {
