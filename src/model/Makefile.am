@@ -18,6 +18,9 @@ libmodel_a_SOURCES = object_registry_filter.cc object_filter.cc domain_filter.cc
 noinst_PROGRAMS = test-model
 test_model_SOURCES  = test-model.cc
 test_model_LDFLAGS  = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-test_model_LDADD    = libmodel.a $(top_builddir)/util/db/libdb.a $(top_builddir)/util/log/liblog.a \
-                      $(BOOST_DATE_TIME_LIB) $(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) 
-
+test_model_LDADD    = libmodel.a \
+                      $(top_builddir)/util/db/libdb.a \
+                      $(top_builddir)/util/libutil.a \
+		      $(top_builddir)/util/log/liblog.a \
+                      $(BOOST_DATE_TIME_LIB) $(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB)
+		      

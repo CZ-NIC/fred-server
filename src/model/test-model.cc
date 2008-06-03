@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
     //		sq.clear();
 
 
-    SelectQuery *sq1, *sq2;
+    SelectQuery *sq1; //, *sq2;
     // sq1 = new SelectQuery();
     // sq2 = new SelectQuery();
 

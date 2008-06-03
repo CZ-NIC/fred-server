@@ -17,7 +17,7 @@ Log& Logger::get(const std::string& _ctx) {
   std::map<std::string, Log*>::iterator it = logs.find(prefixed_ctx);
   if (it != logs.end()) {
     return *it->second;
-  } else if (it == logs.end()) {
+  } else {
     Log *l = new Log();
     l->setContext(prefixed_ctx);
     logs.insert(std::make_pair<std::string, Log*>(prefixed_ctx, l));

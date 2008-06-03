@@ -6432,11 +6432,10 @@ pkg_failed=no
 { echo "$as_me:$LINENO: checking for OMNIORB4" >&5
 echo $ECHO_N "checking for OMNIORB4... $ECHO_C" >&6; }
 
-if test -n "$PKG_CONFIG"; then
-    if test -n "$OMNIORB4_CFLAGS"; then
-        pkg_cv_OMNIORB4_CFLAGS="$OMNIORB4_CFLAGS"
-    else
-        if test -n "$PKG_CONFIG" && \
+if test -n "$OMNIORB4_CFLAGS"; then
+    pkg_cv_OMNIORB4_CFLAGS="$OMNIORB4_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"omniORB4, omniDynamic4, omnithread3\"") >&5
   ($PKG_CONFIG --exists --print-errors "omniORB4, omniDynamic4, omnithread3") 2>&5
   ac_status=$?
@@ -6446,15 +6445,13 @@ if test -n "$PKG_CONFIG"; then
 else
   pkg_failed=yes
 fi
-    fi
-else
-	pkg_failed=untried
+ else
+    pkg_failed=untried
 fi
-if test -n "$PKG_CONFIG"; then
-    if test -n "$OMNIORB4_LIBS"; then
-        pkg_cv_OMNIORB4_LIBS="$OMNIORB4_LIBS"
-    else
-        if test -n "$PKG_CONFIG" && \
+if test -n "$OMNIORB4_LIBS"; then
+    pkg_cv_OMNIORB4_LIBS="$OMNIORB4_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"omniORB4, omniDynamic4, omnithread3\"") >&5
   ($PKG_CONFIG --exists --print-errors "omniORB4, omniDynamic4, omnithread3") 2>&5
   ac_status=$?
@@ -6464,9 +6461,8 @@ if test -n "$PKG_CONFIG"; then
 else
   pkg_failed=yes
 fi
-    fi
-else
-	pkg_failed=untried
+ else
+    pkg_failed=untried
 fi
 
 
@@ -6479,9 +6475,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "omniORB4, omniDynamic4, omnithread3"`
+	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "omniORB4, omniDynamic4, omnithread3" 2>&1`
         else
-	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "omniORB4, omniDynamic4, omnithread3"`
+	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --print-errors "omniORB4, omniDynamic4, omnithread3" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$OMNIORB4_PKG_ERRORS" >&5
@@ -11368,11 +11364,10 @@ pkg_failed=no
 { echo "$as_me:$LINENO: checking for LIBIDN" >&5
 echo $ECHO_N "checking for LIBIDN... $ECHO_C" >&6; }
 
-if test -n "$PKG_CONFIG"; then
-    if test -n "$LIBIDN_CFLAGS"; then
-        pkg_cv_LIBIDN_CFLAGS="$LIBIDN_CFLAGS"
-    else
-        if test -n "$PKG_CONFIG" && \
+if test -n "$LIBIDN_CFLAGS"; then
+    pkg_cv_LIBIDN_CFLAGS="$LIBIDN_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"libidn >= 0.5.18\"") >&5
   ($PKG_CONFIG --exists --print-errors "libidn >= 0.5.18") 2>&5
   ac_status=$?
@@ -11382,15 +11377,13 @@ if test -n "$PKG_CONFIG"; then
 else
   pkg_failed=yes
 fi
-    fi
-else
-	pkg_failed=untried
+ else
+    pkg_failed=untried
 fi
-if test -n "$PKG_CONFIG"; then
-    if test -n "$LIBIDN_LIBS"; then
-        pkg_cv_LIBIDN_LIBS="$LIBIDN_LIBS"
-    else
-        if test -n "$PKG_CONFIG" && \
+if test -n "$LIBIDN_LIBS"; then
+    pkg_cv_LIBIDN_LIBS="$LIBIDN_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"libidn >= 0.5.18\"") >&5
   ($PKG_CONFIG --exists --print-errors "libidn >= 0.5.18") 2>&5
   ac_status=$?
@@ -11400,9 +11393,8 @@ if test -n "$PKG_CONFIG"; then
 else
   pkg_failed=yes
 fi
-    fi
-else
-	pkg_failed=untried
+ else
+    pkg_failed=untried
 fi
 
 
@@ -11415,9 +11407,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBIDN_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "libidn >= 0.5.18"`
+	        LIBIDN_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libidn >= 0.5.18" 2>&1`
         else
-	        LIBIDN_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "libidn >= 0.5.18"`
+	        LIBIDN_PKG_ERRORS=`$PKG_CONFIG --print-errors "libidn >= 0.5.18" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBIDN_PKG_ERRORS" >&5

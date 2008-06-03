@@ -75,7 +75,8 @@ fred_adifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/src/model/libmodel.a \
 	$(top_builddir)/util/db/libdb.a \
 	$(top_builddir)/src/old_utils/liboldutils.a \
-	$(top_builddir)/util/log/liblog.a $(am__DEPENDENCIES_1) \
+	$(top_builddir)/util/log/liblog.a \
+	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am_fred_pifd_OBJECTS = fred_pifd-server.$(OBJEXT)
 fred_pifd_OBJECTS = $(am_fred_pifd_OBJECTS)
@@ -88,7 +89,8 @@ fred_pifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/src/model/libmodel.a \
 	$(top_builddir)/util/db/libdb.a \
 	$(top_builddir)/src/old_utils/liboldutils.a \
-	$(top_builddir)/util/log/liblog.a $(am__DEPENDENCIES_1) \
+	$(top_builddir)/util/log/liblog.a \
+	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am_fred_rifd_OBJECTS = fred_rifd-server.$(OBJEXT)
 fred_rifd_OBJECTS = $(am_fred_rifd_OBJECTS)
@@ -101,7 +103,8 @@ fred_rifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/src/model/libmodel.a \
 	$(top_builddir)/util/db/libdb.a \
 	$(top_builddir)/src/old_utils/liboldutils.a \
-	$(top_builddir)/util/log/liblog.a $(am__DEPENDENCIES_1) \
+	$(top_builddir)/util/log/liblog.a \
+	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -291,8 +294,12 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	$(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
 	admin/libadmin_impl.a epp/libepp_impl.a \
 	libcorba.a \
-        $(top_builddir)/src/register/libfred.a $(top_builddir)/src/model/libmodel.a \
-	$(top_builddir)/util/db/libdb.a $(top_builddir)/src/old_utils/liboldutils.a $(top_builddir)/util/log/liblog.a \
+        $(top_builddir)/src/register/libfred.a \
+	$(top_builddir)/src/model/libmodel.a \
+	$(top_builddir)/util/db/libdb.a \
+	$(top_builddir)/src/old_utils/liboldutils.a \
+	$(top_builddir)/util/log/liblog.a \
+	$(top_builddir)/util/libutil.a \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB)
 
 IDLFILE = $(IDLDIR)/ccReg.idl

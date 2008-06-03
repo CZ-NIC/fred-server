@@ -48,24 +48,7 @@ enum Type {
   PRT_UNBLOCK_TRANSFER_POST_PIF     ///< Request for unblock transfer object waiting for autorization by checked letter
 };
 
-static std::string Type2Str(Type _type) {
-  switch (_type) {
-    case PRT_AUTHINFO_AUTO_RIF:           return "AuthInfo (EPP/Auto)";
-    case PRT_AUTHINFO_AUTO_PIF:           return "AuthInfo (Web/Auto)";
-    case PRT_AUTHINFO_EMAIL_PIF:          return "AuthInfo (Web/Email)";
-    case PRT_AUTHINFO_POST_PIF:           return "AuthInfo (Web/Post)";
-    case PRT_BLOCK_CHANGES_EMAIL_PIF:     return "Block changes (Web/Email)";
-    case PRT_BLOCK_CHANGES_POST_PIF:      return "Block changes (Web/Post)";
-    case PRT_BLOCK_TRANSFER_EMAIL_PIF:    return "Block transfer (Web/Email)";
-    case PRT_BLOCK_TRANSFER_POST_PIF:     return "Block transfer (Web/Post)";
-    case PRT_UNBLOCK_CHANGES_EMAIL_PIF:   return "Unblock changes (Web/Email)";
-    case PRT_UNBLOCK_CHANGES_POST_PIF:    return "Unblock changes (Web/Post)";
-    case PRT_UNBLOCK_TRANSFER_EMAIL_PIF:  return "Unblock transfer (Web/Email)";
-    case PRT_UNBLOCK_TRANSFER_POST_PIF:   return "Unblock transfer (Web/Post)";
-    default:                              return "TYPE UNKNOWN";
-  }
-}
-
+std::string Type2Str(Type _type); 
 
 /// Request status
 enum Status {
@@ -74,16 +57,7 @@ enum Status {
   PRS_INVALID    ///< Time passed without authorization   
 };
 
-static std::string Status2Str(Status _status) {
-  switch (_status) {
-    case PRS_NEW:       return "New";
-    case PRS_ANSWERED:  return "Answered";
-    case PRS_INVALID:   return "Invalidated";
-    default:            return "STATUS UNKNOWN";
-  }
-}
-
-
+std::string Status2Str(Status _status); 
 /// Object types
 enum ObjectType {
   OT_UNKNOWN = 0,
