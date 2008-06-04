@@ -91,6 +91,8 @@ static bool queryBlockRequest(
                << "ORDER BY st ASC ";
   std::auto_ptr<DBase::Result> result(c->exec(sql));
   std::auto_ptr<DBase::ResultIterator> it(result->getIterator());
+  // in case of unblocking, it's error when no block request states are found
+  if (!result->getNumRows() && unblock) return false;
   for (it->first(); !it->isDone(); it->next()) {
     if (!(bool)it->getNextValue()) return false;
     if (result->getNumRows() == numStates && !unblock ||
@@ -530,7 +532,7 @@ public:
     return getEmailToAnswer();
   }
   /// return proper type for PDF letter template
-  unsigned getPDFType() {
+  virtual unsigned getPDFType() const {
     return 1;
   }
 };
@@ -675,7 +677,7 @@ public:
 class BlockTransferRequestPIFPostImpl : public BlockTransferRequestPIFImpl {
 public:
   /// return proper type for PDF letter template
-  unsigned getPDFType() {
+  virtual unsigned getPDFType() const {
     return 2;
   }
 };
@@ -683,7 +685,7 @@ public:
 class BlockUpdateRequestPIFPostImpl : public BlockUpdateRequestPIFImpl {
 public:
   /// return proper type for PDF letter template
-  unsigned getPDFType() {
+  virtual unsigned getPDFType() const {
     return 4;
   }
 };
@@ -691,7 +693,7 @@ public:
 class UnBlockTransferRequestPIFPostImpl : public UnBlockTransferRequestPIFImpl {
 public:
   /// return proper type for PDF letter template
-  unsigned getPDFType() {
+  virtual unsigned getPDFType() const {
     return 3;
   }
 };
@@ -699,7 +701,7 @@ public:
 class UnBlockUpdateRequestPIFPostImpl : public UnBlockUpdateRequestPIFImpl {
 public:
   /// return proper type for PDF letter template
-  unsigned getPDFType() {
+  virtual unsigned getPDFType() const {
     return 5;
   }
 };
