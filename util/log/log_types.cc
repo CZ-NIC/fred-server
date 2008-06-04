@@ -103,6 +103,9 @@ SysLog::~SysLog() {
 void SysLog::msg(Log::Level _ll, const std::string& _msg,
 		const std::string& _ctx) {
 	std::string ctx = (_ctx.empty() ? "" : "[" + _ctx + "] ");
+	if (_ll == Log::LL_TRACE)
+	  _ll = Log::LL_DEBUG;
+	
 	syslog(_ll, std::string(ctx + _msg).c_str());
 }
 
