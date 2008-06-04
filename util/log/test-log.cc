@@ -25,8 +25,8 @@ int main() {
 //	
 	Logging::Logger &l = Logging::Manager::instance_ref();
 	//l.add("console", new Logging::Log(new Logging::ConsoleLog()));
-	l.get("console").addHandler(new Logging::ConsoleLog());
-	l.get("console").addHandler(new Logging::FileLog("filelog.log"));
+	l.get("console").addHandler(Logging::Log::LT_CONSOLE);
+	l.get("console").addHandler(Logging::Log::LT_FILE);
 	l.get("console").setLevel(Logging::Log::LL_DEBUG);
 	l.get("console").debug("singleton template message");
 	l.get("console").info("singleton template message 2");

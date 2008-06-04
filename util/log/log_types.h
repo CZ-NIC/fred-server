@@ -40,7 +40,7 @@ public:
 
 class SysLog : public BaseLogType {
 public:
-	SysLog(int _facility);
+	SysLog(int _facility = 2);
 	virtual ~SysLog();
 	virtual void msg(Log::Level _ll, const std::string& _msg, const std::string& _ctx);
 

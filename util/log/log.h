@@ -13,20 +13,26 @@ class BaseLogType;
 class Log {
 public:
 	enum Level {
-		LL_EMERG,
-		LL_ALERT,
-		LL_CRIT,
-		LL_ERR,
-		LL_WARNING,
-		LL_NOTICE,
-		LL_INFO,
-		LL_DEBUG,
-		LL_TRACE
+	  LL_EMERG,
+	  LL_ALERT,
+	  LL_CRIT,
+	  LL_ERR,
+	  LL_WARNING,
+	  LL_NOTICE,
+	  LL_INFO,
+	  LL_DEBUG,
+	  LL_TRACE
+	};
+
+	enum Type {
+	  LT_CONSOLE,
+	  LT_FILE,
+	  LT_SYSLOG
 	};
 
 	Log(const std::string& _ctx = "");
 	~Log();
-	void addHandler(BaseLogType *_type);
+	void addHandler(Log::Type _type, const std::string& _params = std::string());
 
 	void setLevel(Log::Level _ll);
 	Log::Level getLevel() const;

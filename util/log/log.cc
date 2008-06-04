@@ -9,12 +9,24 @@ Log::Log(const std::string& _ctx) :
 }
 
 Log::~Log() {
-	std::for_each(handlers.begin(),
-				  handlers.end(),
-				  boost::checked_deleter<BaseLogType>());}
+  std::for_each(handlers.begin(),
+                handlers.end(),
+                boost::checked_deleter<BaseLogType>());}
 
-void Log::addHandler(BaseLogType *_type) {
-	handlers.push_back(_type);
+void Log::addHandler(Log::Type _type, const std::string& _params) {
+  BaseLogType *type = 0;
+  switch (_type) {
+	  case Log::LT_CONSOLE:
+	    type = new Logging::ConsoleLog();
+	    break;
+	  case Log::LT_SYSLOG:
+	    type = new Logging::SysLog();
+	    break;
+	  case Log::LT_FILE:
+	    type = new Logging::FileLog(_params);
+	    break;
+	}
+	handlers.push_back(type);
 }
 
 void Log::setLevel(Log::Level _ll) {

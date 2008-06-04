@@ -110,18 +110,18 @@ int main(
     Logging::Manager::instance_ref().prefix("rifd");
 #endif
     
-    Logging::Manager::instance_ref().get("tracer").addHandler(new Logging::ConsoleLog());
+    Logging::Manager::instance_ref().get("tracer").addHandler(Logging::Log::LT_SYSLOG);
     Logging::Manager::instance_ref().get("tracer").setLevel(Logging::Log::LL_TRACE);
-    Logging::Manager::instance_ref().get("db").addHandler(new Logging::ConsoleLog());
+    Logging::Manager::instance_ref().get("db").addHandler(Logging::Log::LT_SYSLOG);
     Logging::Manager::instance_ref().get("db").setLevel(Logging::Log::LL_DEBUG);
-    Logging::Manager::instance_ref().get("register").addHandler(new Logging::ConsoleLog());
+    Logging::Manager::instance_ref().get("register").addHandler(Logging::Log::LT_SYSLOG);
     Logging::Manager::instance_ref().get("register").setLevel(Logging::Log::LL_DEBUG);
-    Logging::Manager::instance_ref().get("corba").addHandler(new Logging::ConsoleLog());
+    Logging::Manager::instance_ref().get("corba").addHandler(Logging::Log::LT_SYSLOG);
     Logging::Manager::instance_ref().get("corba").setLevel(Logging::Log::LL_DEBUG);
-    Logging::Manager::instance_ref().get("mailer").addHandler(new Logging::ConsoleLog());
+    Logging::Manager::instance_ref().get("mailer").addHandler(Logging::Log::LT_SYSLOG);
     Logging::Manager::instance_ref().get("mailer").setLevel(Logging::Log::LL_DEBUG);
     
-    Logging::Manager::instance_ref().get("rifd").addHandler(new Logging::ConsoleLog());
+    Logging::Manager::instance_ref().get("rifd").addHandler(Logging::Log::LT_SYSLOG);
     Logging::Manager::instance_ref().get("rifd").setLevel(Logging::Log::LL_DEBUG);
 
     TRACE("tracer on");

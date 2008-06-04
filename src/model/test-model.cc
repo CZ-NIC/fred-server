@@ -101,9 +101,9 @@ void fill_and_print_formater(const std::vector<std::string>& _store,
 
 int main(int argc, char *argv[]) {
   try {
-    Logging::Manager::instance_ref().get("db").addHandler(new Logging::ConsoleLog());
+    Logging::Manager::instance_ref().get("db").addHandler(Logging::Log::LT_CONSOLE);
     Logging::Manager::instance_ref().get("db").setLevel(Logging::Log::LL_DEBUG);
-    Logging::Manager::instance_ref().get("tracer").addHandler(new Logging::ConsoleLog());
+    Logging::Manager::instance_ref().get("tracer").addHandler(Logging::Log::LT_CONSOLE);
     Logging::Manager::instance_ref().get("tracer").setLevel(Logging::Log::LL_TRACE);
 
     SelectQuery sq;
