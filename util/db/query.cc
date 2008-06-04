@@ -61,15 +61,18 @@ void SelectQuery::make() {
   }
 
   if (m_where_prepared_values.size() > 0) {
-    boost::format m_where_prepared_format(m_where_prepared_string.str());
+    boost::format where_prepared_format(m_where_prepared_string.str());
 
     for (std::vector<std::string>::iterator it = m_where_prepared_values.begin();
     it != m_where_prepared_values.end(); ++it) {
-      m_where_prepared_format % Util::escape(*it);
+      where_prepared_format % Util::escape(*it);
     }
     where_s.clear();
     where_s.str("");
-    where_s << m_where_prepared_format.str();
+    where_s << where_prepared_format.str();
+  }
+  else {
+    where_s << m_where_prepared_string.str();
   }
 
   sql_buffer << "SELECT " << select_s.str() << " FROM " << from_s.str();

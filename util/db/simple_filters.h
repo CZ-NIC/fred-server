@@ -87,7 +87,7 @@ public:
   }
 
   virtual void serialize(DBase::SelectQuery& _sq) {
-    column.castTo("timestamptz", "CET");
+    TRACE("[CALL] _BaseDTInterval::serialize()");
     std::stringstream &prep = _sq.where_prepared_string();
     std::vector<std::string> &store = _sq.where_prepared_values();
     const DTp& t_value = value.getValue();
@@ -206,9 +206,11 @@ public:
   Interval(const Column& _col, const DBase::Null<DateTimeInterval>& _value,
       const std::string& _conj = SQL_OP_AND) :
     _BaseDTInterval<DateTimeInterval>(_col, _value, _conj) {
+    column.castTo("timestamptz", "CET");
   }
   Interval(const Column& _col, const std::string& _conj = SQL_OP_AND) :
     _BaseDTInterval<DateTimeInterval>(_col, _conj) {
+    column.castTo("timestamptz", "CET");
   }
   
   Interval() {
