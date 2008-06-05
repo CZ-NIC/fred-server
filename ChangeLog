@@ -1,3 +1,18 @@
+2008-06-05 Jaromir Talir (version 1.9.1)
+
+    * public request system fixes
+       - epp delele operation blocked on serverUpdateProhibited
+       - fixed type in mail with answer
+       - speedup of status update 
+
+2008-06-04 Jiri Sadek
+
+    * logging into syslog by default
+    
+    * date interval filtering fixed
+    
+    * compliation warning cleaned
+
 2008-05-30 Jaromir Talir (version 1.9.0)
 
     * new public request module

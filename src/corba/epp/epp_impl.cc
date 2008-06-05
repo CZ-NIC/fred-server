@@ -2339,7 +2339,10 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
             ret->code = COMMAND_AUTOR_ERROR; // bad autorization
           }
           try {
-            if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited))
+            if (!ret->code && (
+                  testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited) ||
+                  testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited)
+               ))
             {
               LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
               ret->code = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -3224,7 +3227,10 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
             ret->code = COMMAND_AUTOR_ERROR; // bad autorization
           }
           try {
-            if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited))
+            if (!ret->code && (
+                  testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited) ||
+                  testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited)
+                ))
             {
               LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
               ret->code = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -4267,7 +4273,10 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
             ret->code = COMMAND_AUTOR_ERROR;
           }
           try {
-            if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited))
+            if (!ret->code && (
+                 testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited) ||
+                 testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited)
+               ))
             {
               LOG( WARNING_LOG, "delete of object %s is prohibited" , fqdn );
               ret->code = COMMAND_STATUS_PROHIBITS_OPERATION;

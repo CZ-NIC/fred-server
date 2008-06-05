@@ -580,7 +580,7 @@ public:
   	return 1;
   }
   virtual short blockAction() const {
-  	return 1;
+  	return 2;
   }
 	virtual void processAction(bool check) throw (REQUEST_BLOCKED){
     for (unsigned i=0; i<getObjectSize(); i++) {
@@ -588,10 +588,10 @@ public:
     	      queryBlockRequest(getObject(i).id,getId(),"3",false,conn_)) {
     		insertNewStateRequest(getId(),getObject(i).id,3,conn_);
     	} else throw REQUEST_BLOCKED();
+      DBase::Query q;
+      q.buffer() << "SELECT update_object_states(" << getObject(i).id << ")";      
+      std::auto_ptr<DBase::Result> res(conn_->exec(q));
     }
-    DBase::Query q;
-    q.buffer() << "SELECT update_object_states()";
-    std::auto_ptr<DBase::Result> res(conn_->exec(q));
 	}
 };
 
@@ -608,7 +608,7 @@ public:
   	return 1;
   }
   virtual short blockAction() const {
-  	return 2;
+  	return 1;
   }
 	virtual void processAction(bool check) throw (REQUEST_BLOCKED){
     for (unsigned i=0; i<getObjectSize(); i++) {
@@ -617,10 +617,10 @@ public:
     		insertNewStateRequest(getId(),getObject(i).id,SERVER_TRANSFER_PROHIBITED,conn_);
     		insertNewStateRequest(getId(),getObject(i).id,SERVER_UPDATE_PROHIBITED,conn_);
     	} else throw REQUEST_BLOCKED();
+      DBase::Query q;
+      q.buffer() << "SELECT update_object_states(" << getObject(i).id << ")";      
+      std::auto_ptr<DBase::Result> res(conn_->exec(q));
     }
-    DBase::Query q;
-    q.buffer() << "SELECT update_object_states()";
-    std::auto_ptr<DBase::Result> res(conn_->exec(q));
 	}
 };
 
@@ -636,16 +636,16 @@ public:
   	return 2;
   }
   virtual short blockAction() const {
-  	return 1;
+  	return 2;
   }
 	virtual void processAction(bool check) throw (REQUEST_BLOCKED){
     for (unsigned i=0; i<getObjectSize(); i++) {
     	if (!queryBlockRequest(getObject(i).id,getId(),"3",true,conn_))
-       throw REQUEST_BLOCKED();
+        throw REQUEST_BLOCKED();
+      DBase::Query q;
+      q.buffer() << "SELECT update_object_states(" << getObject(i).id << ")";      
+      std::auto_ptr<DBase::Result> res(conn_->exec(q));
     }
-    DBase::Query q;
-    q.buffer() << "SELECT update_object_states()";
-    std::auto_ptr<DBase::Result> res(conn_->exec(q));
 	}
 };
 
@@ -661,16 +661,16 @@ public:
   	return 2;
   }
   virtual short blockAction() const {
-  	return 2;
+  	return 1;
   }
 	virtual void processAction(bool check) throw (REQUEST_BLOCKED){
     for (unsigned i=0; i<getObjectSize(); i++) {
     	if (!queryBlockRequest(getObject(i).id,getId(),"3,4",true,conn_))
-       throw REQUEST_BLOCKED();
+        throw REQUEST_BLOCKED();
+      DBase::Query q;
+      q.buffer() << "SELECT update_object_states(" << getObject(i).id << ")";      
+      std::auto_ptr<DBase::Result> res(conn_->exec(q));
     }
-    DBase::Query q;
-    q.buffer() << "SELECT update_object_states()";
-    std::auto_ptr<DBase::Result> res(conn_->exec(q));
 	}
 };
 

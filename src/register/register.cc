@@ -349,7 +349,7 @@ public:
   }
 
   virtual void updateObjectStates() const throw (SQL_ERROR) {
-    if (!db->ExecSelect("SELECT update_object_states()"))
+    if (!db->ExecSelect("SELECT update_object_states(0)"))
       throw SQL_ERROR();
     db->FreeSelect();
   }
