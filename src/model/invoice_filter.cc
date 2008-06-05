@@ -91,5 +91,17 @@ Object& InvoiceImpl::addObject() {
   return *tmp;
 }
 
+File& InvoiceImpl::addFile() {
+  File *tmp = new FileImpl();
+  tmp->joinOn(new Join(
+                       Column("file", joinInvoiceTable()),
+                       SQL_OP_EQ,
+                       Column("id", tmp->joinFileTable())
+                       ));
+  add(tmp);
+  tmp->setName("File");
+  return *tmp;
+}
+
 }
 }

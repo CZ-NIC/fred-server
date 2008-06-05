@@ -88,6 +88,9 @@ public:
     _ar.register_type(static_cast<RegistrarImpl *>(NULL));
     _ar.register_type(static_cast<PublicRequestImpl *>(NULL));
     _ar.register_type(static_cast<EppActionImpl *>(NULL));
+    _ar.register_type(static_cast<InvoiceImpl *>(NULL));
+    _ar.register_type(static_cast<FileImpl *>(NULL));
+    _ar.register_type(static_cast<MailImpl *>(NULL));
 
     _ar & BOOST_SERIALIZATION_NVP(filter_list);
   }

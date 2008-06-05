@@ -4,6 +4,7 @@
 #include "db/base_filters.h"
 #include "object_filter.h"
 #include "registrar_filter.h"
+#include "file_filter.h"
 
 namespace DBase {
 namespace Filters {
@@ -29,6 +30,7 @@ public:
   virtual Interval<DBase::DateInterval>& addTaxDate() = 0;
   virtual Registrar& addRegistrar() = 0;
   virtual Object& addObject() = 0;
+  virtual File& addFile() = 0;
 };
 
 class InvoiceImpl : virtual public Invoice {
@@ -45,6 +47,7 @@ public:
   virtual Interval<DBase::DateInterval>& addTaxDate();
   virtual Registrar& addRegistrar();
   virtual Object& addObject();
+  virtual File& addFile();
 };
 
 }

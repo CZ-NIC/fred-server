@@ -57,6 +57,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& database,
   m_domains->setDB(m_db_manager.get());
   m_nssets->setDB(m_db_manager.get());
   m_publicrequests->setDB(m_db_manager.get());
+  m_invoices->setDB(m_db_manager.get());
 
   updateActivity();
 }

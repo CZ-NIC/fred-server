@@ -331,7 +331,12 @@ public:
   virtual void setValue(const std::string& _value) {
     TRACE("[CALL] Value<std::sting>::setValue()");
     active = true;
-    value = _value;
+    if (op == SQL_OP_LIKE) {
+      value = "%%" + _value + "%%";
+    }
+    else {
+      value = _value;
+    }
   }
 
   virtual const std::string& getValue() const {

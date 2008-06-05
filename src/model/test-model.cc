@@ -193,20 +193,47 @@ int main(int argc, char *argv[]) {
     //    uf.clear();
     //
     //    return 1;
-   
-//    Invoice *i = new InvoiceImpl();
-//    Object* io = i->addObject();
-//    Filters::Value<std::string>& iov1 = io->addHandle("");
-//    iov1.setValue("8.9.2.0.2.2.7.4.5.0.2.4.e164.arpa");
-//   
-//    uf.addFilter(i);
-//    sq1 = new SelectQuery();
-//    sq1->addSelect("*", i->joinInvoiceTable());
-//    uf.addQuery(sq1);
-//
-//    exec_and_print__(sq, uf);
-   
     
+//    File *f = new FileImpl();
+//    f->addMimeType().setValue("*/pdf");
+//    
+//    uf.addFilter(f);
+//    sq1 = new SelectQuery();
+//    sq1->addSelect("id", f->joinFileTable());
+//    uf.addQuery(sq1);
+//      
+//    exec_and_print__(sq, uf);
+//      
+//    return 1;
+//    
+//    Mail *m = new MailImpl();
+//    //m->addId().setValue(DBase::ID(28));
+//    //m->addMessage().setValue("Contact data change");
+//    //m->addHandle().setValue("CID:JIRI");
+//    //m->addType().setValue(1);
+//    m->addAttachment().addName().setValue("150800001.pdf");
+//    
+//    uf.addFilter(m);
+//    sq1 = new SelectQuery();
+//    sq1->addSelect("id", m->joinMailTable());
+//    uf.addQuery(sq1);
+//    
+//    exec_and_print__(sq, uf);
+//    
+//    return 1;
+    
+    
+    Invoice *i = new InvoiceImpl();
+    i->addFile().addName().setValue("150800001.pdf");
+   
+    uf.addFilter(i);
+    sq1 = new SelectQuery();
+    sq1->addSelect("*", i->joinInvoiceTable());
+    uf.addQuery(sq1);
+
+    exec_and_print__(sq, uf);
+   
+    return 1;    
 
     DBase::InsertQuery iq("public_request");
     iq.add("state", DBase::Value(10));
