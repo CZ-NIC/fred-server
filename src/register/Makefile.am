@@ -1,6 +1,6 @@
 noinst_LIBRARIES = libfred.a
 
-AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CFLAGS) $(LIBIDN_CFLAGS) -I$(top_srcdir)/src \
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(LIBIDN_CFLAGS) -I$(top_srcdir)/src \
  	      -I$(top_srcdir)/util -I$(top_srcdir)
 
 libfred_a_SOURCES = register.cc zone.cc blacklist.cc domain.cc registrar.cc \
