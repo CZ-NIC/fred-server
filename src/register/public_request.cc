@@ -1,8 +1,10 @@
+#include <algorithm>
+#include <boost/utility.hpp>
+
 #include "common_impl.h"
 #include "public_request.h"
 #include "log/logger.h"
 #include "util.h"
-#include <algorithm>
 
 namespace Register {
 namespace PublicRequest {
@@ -861,6 +863,8 @@ private:
   NSSet::Manager *nsset_manager_;
   Mailer::Manager *mailer_manager_;
   Document::Manager *doc_manager_;
+  
+  DBase::Connection *conn_;
     
 public:
   ManagerImpl(DBase::Manager *_db_manager,
@@ -874,10 +878,12 @@ public:
               contact_manager_(_contact_manager),
               nsset_manager_(_nsset_manager),
               mailer_manager_(_mailer_manager),
-              doc_manager_(_doc_manager) {
+              doc_manager_(_doc_manager),
+              conn_(db_manager_->getConnection()) {
   }
 
   virtual ~ManagerImpl() {
+    boost::checked_delete<DBase::Connection>(conn_);
   }
   
   virtual Mailer::Manager* getMailerManager() const {
@@ -886,7 +892,14 @@ public:
   
   virtual List* createList() const {
     TRACE("[CALL] Register::Request::Manager::createList()");
-    return new ListImpl(db_manager_->getConnection(), (Manager *)this);
+    /*
+     * can't use this way; connection will not be properly closed when
+     * List is destroyed. Also can't closing connection in CommonLisrImpl
+     * because it can be passed as existing connection and then used after
+     * List destruction.
+     */
+    // return new ListImpl(db_manager_->getConnection(), (Manager *)this);
+    return new ListImpl(conn_, (Manager *)this);
   }
   
   virtual void getPdf(DBase::ID _id, 
