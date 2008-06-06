@@ -96,8 +96,8 @@ int PQ::GetSelectCols()
 ;
 
 // get string by name of filed on the row 
-char * PQ::GetFieldValueName(
-  char *fname, int row)
+const char * PQ::GetFieldValueName(
+  const char *fname, int row)
 {
   int col;
 
@@ -111,13 +111,13 @@ char * PQ::GetFieldValueName(
 }
 
 int PQ::GetNameField(
-  char *fname)
+  const char *fname)
 {
   return PQfnumber(result, fname);
 }
 
 // get string name of field 
-char * PQ::GetFieldName(
+const char * PQ::GetFieldName(
   int col)
 {
   if (PQfname(result, col) == NULL)
@@ -137,7 +137,7 @@ bool PQ::IsNotNull(
 }
 
 // return string value at row and col
-char * PQ::GetFieldValue(
+const char * PQ::GetFieldValue(
   int row, int col)
 {
   if (row < nRows && col < nCols) {
@@ -157,9 +157,9 @@ char * PQ::GetFieldValue(
 
 // return Boolean value true or false
 bool PQ::GetFieldBooleanValueName(
-  char *fname, int row)
+  const char *fname, int row)
 {
-  char *val;
+  const char *val;
   val = GetFieldValueName(fname, row);
   if (val[0] == 't')
     return true;
@@ -169,7 +169,7 @@ bool PQ::GetFieldBooleanValueName(
 
 // convert to integer value
 int PQ::GetFieldNumericValueName(
-  char *fname, int row)
+  const char *fname, int row)
 {
   return atoi(GetFieldValueName(fname, row) );
 }

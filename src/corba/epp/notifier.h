@@ -155,7 +155,7 @@ private:
   }
 
   // is it new contact for logger
-  char *GetContactModify(
+  const char *GetContactModify(
     short mod)
   {
     if (mod > mod)
@@ -166,7 +166,7 @@ private:
   ;
 
   // type oft the contact for logger
-  char *GetContactType(
+  const char *GetContactType(
     short type)
   {
     switch (type) {
@@ -186,7 +186,7 @@ private:
   ;
 
   // name of the tamplete from mail_type table
-  char * getTemplate()
+  const char * getTemplate()
   {
     switch (enum_action) {
       case EPP_ContactUpdate:

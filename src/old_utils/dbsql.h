@@ -186,7 +186,7 @@ public:
     ParsedAction* paction = NULL
   );
   // end of the EPP operation
-  char * EndAction(
+  const char * EndAction(
     int response); // return svrTRID
 
   char * GetsvTRID()
@@ -217,22 +217,22 @@ public:
   // DATABASE  functions
   // delete data from table 
   bool DeleteFromTable(
-    char *table, char *fname, int id);
+    const char *table, const char *fname, int id);
   // delete data from *_contact_map table
   bool DeleteFromTableMap(
-    char *map, int id, int contactid);
+    const char *map, int id, int contactid);
 
   // return  handle or id of the table 
   int GetNumericFromTable(
     const char *table, const char *vname, const char *fname, const char *value);
   int GetNumericFromTable(
     const char *table, const char *vname, const char *fname, int numeric);
-  char * GetValueFromTable(
+  const char * GetValueFromTable(
     const char *table, const char *vname, const char *fname, const char *value);
-  char * GetValueFromTable(
+  const char * GetValueFromTable(
     const char *table, const char *vname, const char *fname, int numeric);
   int GetSequenceID(
-    char *sequence); // get  id from  sequence 
+    const char *sequence); // get  id from  sequence 
   // test   contactid at the table  nsset_contact_map or  domain_contact_map 
   bool CheckContactMap(
     const char * table, int id, int contactid, int role);
@@ -267,17 +267,17 @@ public:
   int GetObjectID(
     int type, const char *name);
   // reverse function
-  char * GetObjectName(
+  const char * GetObjectName(
     int id);
 
-  char * GetDomainExDate(
+  const char * GetDomainExDate(
     int id); // return  domain.ExDate like local date 
   // special for ENUM
-  char * GetDomainValExDate(
+  const char * GetDomainValExDate(
     int id); // return  domain.ValDate like local date
 
 
-  char * GetObjectCrDateTime(
+  const char * GetObjectCrDateTime(
     int id); // return local timestamp of the created object
 
   // save object_registry.ErDate for deleted object
@@ -308,13 +308,13 @@ public:
     int nssetID);
 
   int GetRegistrarID(
-    char *handle)
+    const char *handle)
   {
     return GetNumericFromTable("REGISTRAR", "id", "handle", handle);
   }
   ;
   int GetRegistrarIDbyVarSymbol(
-    char *vs)
+    const char *vs)
   {
     return GetNumericFromTable("REGISTRAR", "id", "varsymb", atoi(vs) );
   }
@@ -324,13 +324,13 @@ public:
   bool GetRegistrarSystem(
     int regID);
 
-  char * GetRegistrarHandle(
+  const char * GetRegistrarHandle(
     int id)
   {
     return GetValueFromTable("REGISTRAR", "handle", "id", id);
   }
   ;
-  char * GetStatusFromTable(
+  const char * GetStatusFromTable(
     char *table, int id)
   {
     return GetValueFromTable(table, "status", "id", id);
@@ -348,7 +348,7 @@ public:
     int id);
 
   bool AuthTable(
-    const char *table, char *auth, int id);
+    const char *table, const char *auth, int id);
 
   // is it right of registrar  to access to the zone 
   bool TestRegistrarZone(
@@ -363,7 +363,7 @@ public:
   int MakeHistory(
     int objectID);// create insert into table history
   bool SaveHistory(
-    char *table, char *fname, int id); // save  row in table to the history table 
+    const char *table, const char *fname, int id); // save  row in table to the history table 
 
   // test if exist deleted  object in history 
   bool TestContactHandleHistory(

@@ -29,9 +29,9 @@ public:
 
   void AddMesg(
     int id, const char *msg, const char *msg_cs);
-  char * GetMesg(
+  const char * GetMesg(
     int id);
-  char * GetMesg_CS(
+  const char * GetMesg_CS(
     int id);
 
 private:

@@ -97,8 +97,8 @@ static bool queryBlockRequest(
   if (!result->getNumRows() && unblock) return false;
   for (it->first(); !it->isDone(); it->next()) {
     if (!(bool)it->getNextValue()) return false;
-    if (result->getNumRows() == numStates && !unblock ||
-    		result->getNumRows() != numStates && unblock) return false;
+    if ((result->getNumRows() == numStates && !unblock) ||
+    	(result->getNumRows() != numStates && unblock)) return false;
     if (!blockRequestID) return true;
     DBase::ID stateRequestID = it->getNextValue();
     // close

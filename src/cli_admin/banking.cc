@@ -203,7 +203,7 @@ int factoring(const char *database, const char *registrarHandle,
 
 // e-banka on-line statement process from CSV file get from https: url
 // cz descriptions
-int ebanka_invoicing(const char *database, char *filename)
+int ebanka_invoicing(const char *database, const char *filename)
 {
   DB db;
   CSV csv;

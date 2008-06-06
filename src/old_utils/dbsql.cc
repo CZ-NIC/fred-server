@@ -557,7 +557,7 @@ bool DB::BeginAction(
 }
 
 // end of EPP operation
-char * DB::EndAction(
+const char * DB::EndAction(
   int response)
 {
   int id;
@@ -589,7 +589,7 @@ char * DB::EndAction(
 
 }
 
-char * DB::GetObjectCrDateTime(
+const char * DB::GetObjectCrDateTime(
   int id)
 {
   convert_rfc3339_timestamp(dtStr, GetValueFromTable("OBJECT_registry",
@@ -597,7 +597,7 @@ char * DB::GetObjectCrDateTime(
   return dtStr;
 }
 
-char * DB::GetDomainExDate(
+const char * DB::GetDomainExDate(
   int id)
 {
   // now it is just a date - no conversion needed
@@ -606,7 +606,7 @@ char * DB::GetDomainExDate(
   // return dtStr;
 }
 
-char * DB::GetDomainValExDate(
+const char * DB::GetDomainValExDate(
   int id)
 {
   convert_rfc3339_date(dtStr, GetValueFromTable("enumval", "ExDate",
@@ -670,7 +670,7 @@ bool DB::TestObjectClientID(
 
 }
 
-char * DB::GetObjectName(
+const char * DB::GetObjectName(
   int id)
 {
   return GetValueFromTable("object_registry", "name", "id", id);
@@ -1133,10 +1133,10 @@ bool DB::TestContactRelations(
 
 // compare authinfopw 
 bool DB::AuthTable(
-  const char *table, char *auth, int id)
+  const char *table, const char *auth, int id)
 {
   bool ret=false;
-  char *pass;
+  const char *pass;
   char sqlString[128];
 
   sprintf(sqlString, "SELECT authinfopw from %s WHERE id=%d", table, id);
@@ -1953,7 +1953,7 @@ int DB::GetClientDomainRegistrant(
   return regID;
 }
 // function for get one value from table
-char * DB::GetValueFromTable(
+const char * DB::GetValueFromTable(
   const char *table, const char *vname, const char *fname, const char *value)
 {
   char sqlString[512];
@@ -1989,7 +1989,7 @@ char * DB::GetValueFromTable(
 
 }
 
-char * DB::GetValueFromTable(
+const char * DB::GetValueFromTable(
   const char *table, const char *vname, const char *fname, int numeric)
 {
   char value[16];
@@ -2017,7 +2017,7 @@ int DB::GetNumericFromTable(
 
 // remove date from table
 bool DB::DeleteFromTable(
-  char *table, char *fname, int id)
+  const char *table, const char *fname, int id)
 {
   char sqlString[128];
 
@@ -2029,7 +2029,7 @@ bool DB::DeleteFromTable(
 
 // remove date from  contact map table
 bool DB::DeleteFromTableMap(
-  char *map, int id, int contactid)
+  const char *map, int id, int contactid)
 {
   char sqlString[128];
 
@@ -2043,7 +2043,7 @@ bool DB::DeleteFromTableMap(
 }
 
 int DB::GetSequenceID(
-  char *sequence)
+  const char *sequence)
 {
   char sqlString[128];
   int id=0;
@@ -2174,7 +2174,7 @@ int DB::MakeHistory(
 
 // save row of tabel with id
 bool DB::SaveHistory(
-  char *table, char *fname, int id)
+  const char *table, const char *fname, int id)
 {
   int i, row;
   bool ret= true; // default

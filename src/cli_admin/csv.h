@@ -10,11 +10,11 @@ public:
 
   // read row from file
   bool get_row();
-  char * get_value(
+  const char * get_value(
     unsigned int col);
 
   bool read_file(
-    char * filename);
+    const char * filename);
   long get_numeric(
     int row, int col);
   unsigned char *get_string(

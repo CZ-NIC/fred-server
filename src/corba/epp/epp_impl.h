@@ -49,7 +49,7 @@ public:
   int GetZoneValPeriod(int id);
   int GetZoneDotsMax(int id);
   bool GetZoneEnum(int id);
-  char * GetZoneFQDN(int id);
+  const char * GetZoneFQDN(int id);
   unsigned int GetZoneID(unsigned int z);
   unsigned int GetZoneLength();
 
@@ -144,11 +144,11 @@ public:
 
   // load and get message of lang from enum_error
   int LoadErrorMessages();
-  char * GetErrorMessage(int err, int lang);
+  const char * GetErrorMessage(int err, int lang);
 
   // load and get message of lang from enum_reason
   int LoadReasonMessages();
-  char * GetReasonMessage(int err, int lang);
+  const char * GetReasonMessage(int err, int lang);
 
   // reason handle
   short SetErrorReason(ccReg::Errors_var& errors, short errCode,
@@ -205,18 +205,18 @@ public:
     int lang, short position, ccReg::ParamError paramCode);
 
   // general list function
-  ccReg::Response* FullList(short act, const char *table, char *fname,
+  ccReg::Response* FullList(short act, const char *table, const char *fname,
     ccReg::Lists_out list, CORBA::Long clientID, const char* clTRID,
     const char* XML);
 
   // general check function for all objects
-  ccReg::Response* ObjectCheck(short act, char * table, char *fname,
+  ccReg::Response* ObjectCheck(short act, const char * table, const char *fname,
     const ccReg::Check& chck, ccReg::CheckResp_out a, CORBA::Long clientID,
     const char* clTRID, const char* XML);
 
   // general send auth info for objects
   ccReg::Response
-      * ObjectSendAuthInfo(short act, char * table, char *fname,
+      * ObjectSendAuthInfo(short act, const char * table, const char *fname,
         const char *name, CORBA::Long clientID, const char* clTRID,
         const char* XML);
 

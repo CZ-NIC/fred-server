@@ -33,24 +33,24 @@ public:
   // free  result  of selectu 
   void FreeSelect();
   // return value of field name fname and row
-  char * GetFieldValueName(
-    char *fname, int row);
+  const char * GetFieldValueName(
+    const char *fname, int row);
   // return value of filed with row and column
-  char * GetFieldValue(
+  const char * GetFieldValue(
     int row, int col);
 
   // get BOOL value 
   bool GetFieldBooleanValueName(
-    char *fname, int row);
+    const char *fname, int row);
   // get integer value
   int GetFieldNumericValueName(
-    char *fname, int row);
+    const char *fname, int row);
 
   // name of field
-  char * GetFieldName(
+  const char * GetFieldName(
     int col);
   int GetNameField(
-    char *fname);
+    const char *fname);
 
   // test null value true if not NULL false if is NULL
   bool IsNotNull(

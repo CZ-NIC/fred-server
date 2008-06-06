@@ -470,7 +470,7 @@ public:                                                                \
   Compare##_by_what(bool _asc) : m_asc(_asc) { }                       \
   bool operator()(_object_type *_left, _object_type *_right) const {   \
     bool result = (_left->get##_by_what() <= _right->get##_by_what()); \
-    return m_asc && result || !m_asc && !result;                       \
+    return (m_asc && result) || (!m_asc && !result);		       \
 }                                                                      \
 private:                                                               \
   bool m_asc;                                                          \
@@ -844,7 +844,7 @@ public:                                                                \
   EPPActionCompare##_by_what(bool _asc) : m_asc(_asc) { }              \
   bool operator()(_object_type *_left, _object_type *_right) const {   \
     bool result = (_left->get##_by_what() <= _right->get##_by_what()); \
-    return m_asc && result || !m_asc && !result;                       \
+    return (m_asc && result) || (!m_asc && !result);		       \
 }                                                                      \
 private:                                                               \
   bool m_asc;                                                          \

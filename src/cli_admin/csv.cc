@@ -78,7 +78,7 @@ void CSV::close_file()
   fclose(fd);
 }
 
-char * CSV::get_value(
+const char * CSV::get_value(
   unsigned int col)
 {
   int i, start, j;
@@ -122,7 +122,7 @@ char * CSV::get_value(
 }
 
 bool CSV::read_file(
-  char *filename)
+  const char *filename)
 {
   int i, numrec, c;
   int cls = 0; //shouldnt be needed but compiler throws warning

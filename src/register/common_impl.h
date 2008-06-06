@@ -30,7 +30,7 @@ public:                                                              \
   Compare##_by_what(bool _asc) : asc_(_asc) { }                      \
   bool operator()(CommonObject *_left, CommonObject *_right) const { \
     bool result = ((dynamic_cast<_object_type *>(_left))->get##_by_what() <= (dynamic_cast<_object_type *>(_right))->get##_by_what()); \
-    return asc_ && result || !asc_ && !result;                       \
+    return (asc_ && result) || (!asc_ && !result);  	             \
 }                                                                    \
 private:                                                             \
   bool asc_;                                                         \

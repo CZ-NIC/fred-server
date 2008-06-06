@@ -65,7 +65,7 @@ Mesg::~Mesg()
   delete [] errMsg_cs;
 }
 
-char * Mesg::GetMesg(
+const char * Mesg::GetMesg(
   int id)
 {
   int i;
@@ -80,7 +80,7 @@ char * Mesg::GetMesg(
   return ""; // empty desc
 }
 
-char * Mesg::GetMesg_CS(
+const char * Mesg::GetMesg_CS(
   int id)
 {
   int i;

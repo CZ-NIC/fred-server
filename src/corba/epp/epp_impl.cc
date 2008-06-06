@@ -529,7 +529,7 @@ int ccReg_EPP_i::LoadErrorMessages()
   return rows;
 }
 
-char * ccReg_EPP_i::GetReasonMessage(
+const char * ccReg_EPP_i::GetReasonMessage(
   int err, int lang)
 {
   if (lang == LANG_CS)
@@ -538,7 +538,7 @@ char * ccReg_EPP_i::GetReasonMessage(
     return ReasonMsg->GetMesg(err);
 }
 
-char * ccReg_EPP_i::GetErrorMessage(
+const char * ccReg_EPP_i::GetErrorMessage(
   int err, int lang)
 {
   if (lang == LANG_CS)
@@ -1108,7 +1108,7 @@ int ccReg_EPP_i::GetZoneDotsMax(
   return 0;
 }
 
-char * ccReg_EPP_i::GetZoneFQDN(
+const char * ccReg_EPP_i::GetZoneFQDN(
   int id)
 {
   unsigned int z;
@@ -1905,7 +1905,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::ObjectCheck(
-  short act, char * table, char *fname, const ccReg::Check& chck,
+  short act, const char * table, const char *fname, const ccReg::Check& chck,
   ccReg::CheckResp_out a, CORBA::Long clientID, const char* clTRID,
   const char* XML)
 {
@@ -2475,7 +2475,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
           } catch (...) {
             ret->code = COMMAND_FAILED;
           }
-          if (!ret->code)
+          if (!ret->code) {
             if ( !TestCountryCode(c.CC) )
               ret->code = SetReasonUnknowCC(errors, c.CC,
                   GetRegistrarLang(clientID) );
@@ -2571,7 +2571,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                   ret->code = COMMAND_OK;
 
             }
-
+          }
           if (ret->code == COMMAND_OK) // run notifier
           {
             ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
@@ -5311,7 +5311,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew(
 
 // primitive list of objects
 ccReg::Response* ccReg_EPP_i::FullList(
-  short act, const char *table, char *fname, ccReg::Lists_out list,
+  short act, const char *table, const char *fname, ccReg::Lists_out list,
   CORBA::Long clientID, const char* clTRID, const char* XML)
 {
   DB DBsql;
@@ -5474,7 +5474,7 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
 
 // function for send authinfo
 ccReg::Response* ccReg_EPP_i::ObjectSendAuthInfo(
-  short act, char * table, char *fname, const char *name, CORBA::Long clientID,
+  short act, const char * table, const char *fname, const char *name, CORBA::Long clientID,
   const char* clTRID, const char* XML)
 {
   DB DBsql;
