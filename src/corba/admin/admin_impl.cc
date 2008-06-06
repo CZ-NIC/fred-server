@@ -84,13 +84,12 @@ ccReg_Admin_i::~ccReg_Admin_i() {
   /// sessions cleanup
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   SessionListType::iterator it = m_session_list.begin();
-  for (; it != m_session_list.end(); ++it) {
+  while (it != m_session_list.end()) {
     std::string session_id = it->first;
     delete it->second;
-    m_session_list.erase(it);
+    m_session_list.erase(it++);
     LOGGER("corba").debug(boost::format("session '%1%' destroyed") % session_id);
   }
-
 }
 
 #define SWITCH_CONVERT(x) case Register::x : ch->handleClass = ccReg::x; break
