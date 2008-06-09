@@ -30,20 +30,22 @@ Value<DBase::ID>& InvoiceImpl::addZoneId() {
   return *tmp;
 }
 
-Value<InvoiceType>& InvoiceImpl::addType() {
+Value<int>& InvoiceImpl::addType() {
   addJoin(new Join(
                    Column("prefix_type", joinInvoiceTable()),
                    SQL_OP_EQ,
                    Column("id", joinTable("invoice_prefix"))
                    ));
-  Value<InvoiceType> *tmp = new Value<InvoiceType>(Column("typ", joinTable("invoice_prefix")));
+  Value<int> *tmp = new Value<int>(Column("typ", joinTable("invoice_prefix")));
   add(tmp);
   tmp->setName("Type");
   return *tmp;
 }
 
 Value<std::string>& InvoiceImpl::addNumber() {
-  Value<std::string> *tmp = new Value<std::string>(Column("prefix", joinInvoiceTable()));
+  Column column = Column("prefix", joinInvoiceTable());
+  column.castTo("varchar");
+  Value<std::string> *tmp = new Value<std::string>(column);
   add(tmp);
   tmp->setName("Number");
   return *tmp;

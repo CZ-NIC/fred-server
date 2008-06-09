@@ -24,7 +24,7 @@ public:
   virtual Table& joinInvoiceTable() = 0;
   virtual Value<DBase::ID>& addId() = 0;
   virtual Value<DBase::ID>& addZoneId() = 0;
-  virtual Value<InvoiceType>& addType() = 0;
+  virtual Value<int>& addType() = 0;
   virtual Value<std::string>& addNumber() = 0;
   virtual Interval<DBase::DateTimeInterval>& addCreateTime() = 0;
   virtual Interval<DBase::DateInterval>& addTaxDate() = 0;
@@ -41,7 +41,7 @@ public:
   virtual Table& joinInvoiceTable();
   virtual Value<DBase::ID>& addId();
   virtual Value<DBase::ID>& addZoneId();
-  virtual Value<InvoiceType>& addType();
+  virtual Value<int>& addType();
   virtual Value<std::string>& addNumber();
   virtual Interval<DBase::DateTimeInterval>& addCreateTime();
   virtual Interval<DBase::DateInterval>& addTaxDate();
