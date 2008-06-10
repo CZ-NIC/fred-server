@@ -258,6 +258,7 @@ public:                                                         \
 }
 
 COMPOUND_CLASS(Registrar, Registrar, Compound,
+    FILTER_ADD(Id, addId);
     FILTER_ADD(Str, addHandle);
     FILTER_ADD(Str, addName);
     FILTER_ADD(Str, addOrganization);
@@ -278,6 +279,7 @@ COMPOUND_CLASS(Obj, Object, Compound,
 );
 
 COMPOUND_CLASS(Contact, Contact, Obj,
+    FILTER_ADD(Id, addId);
     FILTER_ADD(Str, addName);
     FILTER_ADD(Str, addOrganization);
     FILTER_ADD(Str, addCity);
@@ -288,6 +290,7 @@ COMPOUND_CLASS(Contact, Contact, Obj,
 );
 
 COMPOUND_CLASS(Domain, Domain, Obj,
+    FILTER_ADD(Id, addId);
     FILTER_ADD(Date, addExpirationDate);
     FILTER_ADD(Contact, addRegistrant);
     FILTER_ADD(Contact, addAdminContact);
@@ -296,6 +299,7 @@ COMPOUND_CLASS(Domain, Domain, Obj,
 );
 
 COMPOUND_CLASS(NSSet, NSSet, Obj,
+    FILTER_ADD(Id, addId);
     FILTER_ADD(Str, addHostFQDN);
     FILTER_ADD(Str, addHostIP);
     FILTER_ADD(Contact, addTechContact);
@@ -318,6 +322,7 @@ COMPOUND_CLASS(Filter, FilterFilter, Compound,
 );
 
 COMPOUND_CLASS(PublicRequest, PublicRequest, Compound,
+    FILTER_ADD(Id, addId);
     FILTER_ADD(Int, addType);
     FILTER_ADD(Int, addStatus);
     FILTER_ADD(DateTime, addCreateTime);
