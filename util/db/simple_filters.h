@@ -130,18 +130,18 @@ public:
       }
 
       if (t_value.getSpecial() < PAST_HOUR) {
-        beg << "date_trunc('" << what << "', current_timestamp + interval '"
+        beg << "date_trunc('" << what << "', current_timestamp AT TIME ZONE 'CET' + interval '"
             << t_value.getSpecialOffset() << " " << what <<"')";
         end << beg.str() << " + interval '1 "<< what << "'";
       } else {
         if (t_value.getSpecialOffset() < 0) {
-          beg << "current_timestamp + interval '" << t_value.getSpecialOffset()
+          beg << "current_timestamp AT TIME ZONE 'CET' + interval '" << t_value.getSpecialOffset()
               << " " << what << "'";
-          end << "current_timestamp";
+          end << "current_timestamp AT TIME ZONE 'CET'";
         } else {
-          end << "current_timestamp + interval '" << t_value.getSpecialOffset()
+          end << "current_timestamp AT TIME ZONE 'CET' + interval '" << t_value.getSpecialOffset()
               << " " << what <<"'";
-          beg << "current_timestamp";
+          beg << "current_timestamp AT TIME ZONE 'CET'";
         }
 
       }
