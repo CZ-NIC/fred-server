@@ -519,7 +519,7 @@ public:
     return "sendauthinfo_pif";
   }
   /// answer is sent to requested email
-  std::string getEmails() {
+  std::string getEmails() const {
     return getEmailToAnswer();
   }
 };
@@ -530,7 +530,7 @@ public:
     return "sendauthinfo_pif";
   }
   /// answer is sent to requested email
-  std::string getEmails() {
+  std::string getEmails() const {
     return getEmailToAnswer();
   }
   /// return proper type for PDF letter template
