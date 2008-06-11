@@ -1006,7 +1006,7 @@ ccReg::Invoicing::Invoice* ccReg_Admin_i::getInvoiceById(ccReg::TID id)
                                                  ns->getHostName() ) );
   std::auto_ptr<Register::Invoicing::Manager>
       invman(Register::Invoicing::Manager::create(&db,docman.get(),&mm));
-  Register::Invoicing::List *invl = invman->createList();
+  Register::Invoicing::InvoiceList *invl = invman->createList();
   invl->setIdFilter(id);
   invl->reload();
   if (invl->getCount() != 1) {
