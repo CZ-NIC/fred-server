@@ -96,9 +96,9 @@ ccReg_Admin_i::~ccReg_Admin_i() {
 #define SWITCH_CONVERT_T(x) case Register::x : ch->hType = ccReg::x; break
 void ccReg_Admin_i::checkHandle(const char* handle,
                                 ccReg::CheckHandleTypeSeq_out chso) {
-  DB db;
-  db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  DB ldb;
+  ldb.OpenDatabase(m_connection_string.c_str());
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&ldb,cfg.GetRestrictedHandles()));
   ccReg::CheckHandleTypeSeq* chs = new ccReg::CheckHandleTypeSeq;
   Register::CheckHandleList chl;
   r->checkHandle(handle, chl, true); // allow IDN in whois queries
@@ -128,7 +128,7 @@ void ccReg_Admin_i::checkHandle(const char* handle,
     }
   }
   chso = chs;
-  db.Disconnect();
+  ldb.Disconnect();
 }
 
 void ccReg_Admin_i::garbageSession() {
@@ -203,6 +203,19 @@ char* ccReg_Admin_i::createSession(const char* username)
   return CORBA::string_dup(session_id.c_str());
 }
 
+void ccReg_Admin_i::destroySession(const char* _session_id) {
+  TRACE(boost::format("[CALL] ccReg_Admin_i::destroySession('%1%')") % _session_id);
+  
+  boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
+  SessionListType::iterator it = m_session_list.find(_session_id);
+  if (it == m_session_list.end()) {
+    LOGGER("corba").debug(boost::format("session '%1%' not found -- already destroyed")
+        % _session_id);
+  }
+  delete it->second;
+  m_session_list.erase(it);
+}
+
 ccReg::Session_ptr ccReg_Admin_i::getSession(const char* _session_id)
     throw (ccReg::Admin::ObjectNotFound) {
   TRACE(boost::format("[CALL] ccReg_Admin_i::getSession('%1%')") % _session_id);
@@ -249,13 +262,13 @@ void ccReg_Admin_i::fillRegistrar(ccReg::Registrar& creg,
 
 ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
     throw (ccReg::Admin::SQL_ERROR) {
-  try {
-    DB db;
-    if (!db.OpenDatabase(m_connection_string.c_str())) {
-      throw ccReg::Admin::SQL_ERROR();
-    }
+  DB ldb;
+  if (!ldb.OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
+  try { 
     std::auto_ptr<Register::Manager> regm(
-        Register::Manager::create(&db,cfg.GetRestrictedHandles())
+        Register::Manager::create(&ldb,cfg.GetRestrictedHandles())
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
     Register::Registrar::RegistrarList *rl = rm->getList();
@@ -265,24 +278,24 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
     reglist->length(rl->size());
     for (unsigned i=0; i<rl->size(); i++)
     fillRegistrar((*reglist)[i],rl->get(i));
-    db.Disconnect();
+    ldb.Disconnect();
     return reglist;
   }
   catch (Register::SQL_ERROR) {
-    db.Disconnect();
+    ldb.Disconnect();
     throw ccReg::Admin::SQL_ERROR();
   }
 }
 
 ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
     throw (ccReg::Admin::SQL_ERROR) {
+  DB ldb;
+  if (!ldb.OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
   try {
-    DB db;
-    if (!db.OpenDatabase(m_connection_string.c_str())) {
-      throw ccReg::Admin::SQL_ERROR();
-    }
     std::auto_ptr<Register::Manager> regm(
-        Register::Manager::create(&db,cfg.GetRestrictedHandles())
+        Register::Manager::create(&ldb,cfg.GetRestrictedHandles())
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
     Register::Registrar::RegistrarList *rl = rm->getList();
@@ -293,73 +306,73 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
     reglist->length(rl->size());
     for (unsigned i=0; i<rl->size(); i++)
     fillRegistrar((*reglist)[i],rl->get(i));
-    db.Disconnect();
+    ldb.Disconnect();
     return reglist;
   }
   catch (Register::SQL_ERROR) {
-    db.Disconnect();
+    ldb.Disconnect();
     throw ccReg::Admin::SQL_ERROR();
   }
 }
 
 ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR) {
+  LOG( NOTICE_LOG, "getRegistarByHandle: id -> %lld", (unsigned long long)id );
+  if (!id) throw ccReg::Admin::ObjectNotFound();
+  DB ldb;
+  if (!ldb.OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
   try {
-    DB db;
-    LOG( NOTICE_LOG, "getRegistarByHandle: id -> %lld", (unsigned long long)id );
-    if (!id) throw ccReg::Admin::ObjectNotFound();
-    if (!db.OpenDatabase(m_connection_string.c_str())) {
-      throw ccReg::Admin::SQL_ERROR();
-    }
     std::auto_ptr<Register::Manager> regm(
-        Register::Manager::create(&db,cfg.GetRestrictedHandles())
+        Register::Manager::create(&ldb,cfg.GetRestrictedHandles())
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
     Register::Registrar::RegistrarList *rl = rm->getList();
     rl->setIdFilter(id);
     rl->reload();
     if (rl->size() < 1) {
-      db.Disconnect();
+      ldb.Disconnect();
       throw ccReg::Admin::ObjectNotFound();
     }
     ccReg::Registrar* creg = new ccReg::Registrar;
     fillRegistrar(*creg,rl->get(0));
-    db.Disconnect();
+    ldb.Disconnect();
     return creg;
   }
   catch (Register::SQL_ERROR) {
-    db.Disconnect();
+    ldb.Disconnect();
     throw ccReg::Admin::SQL_ERROR();
   }
 }
 
 ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR) {
+  LOG( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
+  if (!handle || !*handle) throw ccReg::Admin::ObjectNotFound();
+  DB ldb;
+  if (!ldb.OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }
   try {
-    DB db;
-    LOG( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
-    if (!handle || !*handle) throw ccReg::Admin::ObjectNotFound();
-    if (!db.OpenDatabase(m_connection_string.c_str())) {
-      throw ccReg::Admin::SQL_ERROR();
-    }
     std::auto_ptr<Register::Manager> regm(
-        Register::Manager::create(&db,cfg.GetRestrictedHandles())
+        Register::Manager::create(&ldb,cfg.GetRestrictedHandles())
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
     Register::Registrar::RegistrarList *rl = rm->getList();
     rl->setHandleFilter(handle);
     rl->reload();
     if (rl->size() < 1) {
-      db.Disconnect();
+      ldb.Disconnect();
       throw ccReg::Admin::ObjectNotFound();
     }
     ccReg::Registrar* creg = new ccReg::Registrar;
     fillRegistrar(*creg,rl->get(0));
-    db.Disconnect();
+    ldb.Disconnect();
     return creg;
   }
   catch (Register::SQL_ERROR) {
-    db.Disconnect();
+    ldb.Disconnect();
     throw ccReg::Admin::SQL_ERROR();
   }
 }
@@ -645,30 +658,33 @@ ccReg::EPPAction* ccReg_Admin_i::getEPPActionBySvTRID(const char* svTRID)
 ccReg::EPPAction* ccReg_Admin_i::getEPPActionById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
   TRACE(boost::format("[CALL] ccReg_Admin_i::getEPPActionById(%1%)") % id);
-  try {
-    DB db;
-    if (!id)
+  if (!id)
     throw ccReg::Admin::ObjectNotFound();
-    db.OpenDatabase(m_connection_string.c_str());
-    std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  
+  DB ldb;  
+  if (!ldb.OpenDatabase(m_connection_string.c_str())) {
+    throw ccReg::Admin::SQL_ERROR();
+  }  
+  try {
+    std::auto_ptr<Register::Manager> r(Register::Manager::create(&ldb,cfg.GetRestrictedHandles()));
     Register::Registrar::Manager *rm = r->getRegistrarManager();
     Register::Registrar::EPPActionList *eal = rm->getEPPActionList();
     eal->setIdFilter(id);
     eal->setPartialLoad(false);
     eal->reload();
     if (eal->size() != 1) {
-      db.Disconnect();
+      ldb.Disconnect();
       throw ccReg::Admin::ObjectNotFound();
     }
     ccReg::EPPAction* ea = new ccReg::EPPAction;
     fillEPPAction(ea, eal->get(0));
-    db.Disconnect();
+    ldb.Disconnect();
     TRACE(boost::format("[IN] ccReg_Admin_i::getEPPActionById(%1%): found action for object with handle '%2%'")
         % id % ea->objectHandle);
     return ea;
   }
   catch (Register::SQL_ERROR) {
-    db.Disconnect();
+    ldb.Disconnect();
     throw ccReg::Admin::SQL_ERROR();
   }
 }
@@ -990,7 +1006,7 @@ ccReg::Invoicing::Invoice* ccReg_Admin_i::getInvoiceById(ccReg::TID id)
                                                  ns->getHostName() ) );
   std::auto_ptr<Register::Invoicing::Manager>
       invman(Register::Invoicing::Manager::create(&db,docman.get(),&mm));
-  Register::Invoicing::InvoiceList *invl = invman->createList();
+  Register::Invoicing::List *invl = invman->createList();
   invl->setIdFilter(id);
   invl->reload();
   if (invl->getCount() != 1) {
@@ -1029,9 +1045,12 @@ ccReg::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
   Register::Registrar::Manager *rm = r->getRegistrarManager();
   ccReg::EPPActionTypeSeq *et = new ccReg::EPPActionTypeSeq;
+  
   et->length(rm->getEPPActionTypeCount());
   for (unsigned i=0; i<rm->getEPPActionTypeCount(); i++)
     (*et)[i] = DUPSTRC(rm->getEPPActionTypeByIdx(i));
+  
+  db.Disconnect();
   return et;
 }
 
@@ -1115,62 +1134,59 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getNSSetStatusDescList(const char *la
 }
 
 char* ccReg_Admin_i::getCreditByZone(const char*registrarHandle, ccReg::TID zone) {
+  DB ldb;
   try {
-    DB db;
-    db.OpenDatabase(m_connection_string.c_str());
-    std::auto_ptr<Register::Invoicing::Manager> invman(
-        Register::Invoicing::Manager::create(&db,NULL,NULL)
-    );
-    char *ret = DUPSTRC(formatMoney(invman->getCreditByZone(
-                registrarHandle,zone
-            )));
-    db.Disconnect();
+    ldb.OpenDatabase(m_connection_string.c_str());
+    std::auto_ptr<Register::Invoicing::Manager> invman(Register::Invoicing::Manager::create(&ldb,NULL,NULL));
+    char *ret = DUPSTRC(formatMoney(invman->getCreditByZone(registrarHandle,zone)));
+    ldb.Disconnect();
     return ret;
   }
   catch (...) {
+    ldb.Disconnect();
     throw ccReg::Admin::SQL_ERROR();
   }
 }
 
 void ccReg_Admin_i::generateLetters() {
+  DB ldb;
   try {
-    DB db;
-    db.OpenDatabase(m_connection_string.c_str());
+    ldb.OpenDatabase(m_connection_string.c_str());
+    
     MailerManager mm(ns);
     std::auto_ptr<Register::Document::Manager> docman(
-        Register::Document::Manager::create(
-            cfg.GetDocGenPath(), cfg.GetDocGenTemplatePath(),
-            cfg.GetFileClientPath(), ns->getHostName()
-        )
-    );
+        Register::Document::Manager::create(cfg.GetDocGenPath(), 
+                                            cfg.GetDocGenTemplatePath(),
+                                            cfg.GetFileClientPath(), 
+                                            ns->getHostName()));
     std::auto_ptr<Register::Zone::Manager> zoneMan(
-        Register::Zone::Manager::create(&db)
-    );
+        Register::Zone::Manager::create(&ldb));
     std::auto_ptr<Register::Domain::Manager> domMan(
-        Register::Domain::Manager::create(&db, zoneMan.get())
-    );
+        Register::Domain::Manager::create(&ldb,
+                                          zoneMan.get()));
     std::auto_ptr<Register::Contact::Manager> conMan(
-        Register::Contact::Manager::create(
-            &db,cfg.GetRestrictedHandles()
-        )
-    );
+        Register::Contact::Manager::create(&ldb,
+                                           cfg.GetRestrictedHandles()));
     std::auto_ptr<Register::NSSet::Manager> nssMan(
-        Register::NSSet::Manager::create(
-            &db,zoneMan.get(),cfg.GetRestrictedHandles()
-        )
-    );
+        Register::NSSet::Manager::create(&ldb,
+                                         zoneMan.get(),
+                                         cfg.GetRestrictedHandles()));
     std::auto_ptr<Register::Registrar::Manager> rMan(
-        Register::Registrar::Manager::create(&db)
-    );
+        Register::Registrar::Manager::create(&ldb));
     std::auto_ptr<Register::Notify::Manager> notifyMan(
-        Register::Notify::Manager::create(
-            &db, &mm, conMan.get(), nssMan.get(), domMan.get(), docman.get(),
-            rMan.get()
-        )
-    );
+        Register::Notify::Manager::create(&ldb,
+                                          &mm,
+                                          conMan.get(),
+                                          nssMan.get(),
+                                          domMan.get(), 
+                                          docman.get(),
+                                          rMan.get()));
     notifyMan->generateLetters();
+    ldb.Disconnect();
   }
-  catch (...) {}
+  catch (...) {
+    ldb.Disconnect();
+  }
 }
 
 ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,

@@ -52,11 +52,14 @@ public:
   virtual ~ccReg_Admin_i();
   virtual void authenticateUser(const char* _username, const char* _password)
       throw (ccReg::Admin::AuthFailed);
-  // session
+  
+  // session management
   virtual char* createSession(const char* username)
       throw (ccReg::Admin::AuthFailed);
+  virtual void destroySession(const char* _session_id);
   virtual ccReg::Session_ptr getSession(const char* sessionID)
       throw (ccReg::Admin::ObjectNotFound);
+  
   // registrar management
   ccReg::RegistrarList* getRegistrars() throw (ccReg::Admin::SQL_ERROR);
   ccReg::RegistrarList* getRegistrarsByZone(const char *zone)
@@ -66,6 +69,7 @@ public:
   ccReg::Registrar* getRegistrarByHandle(const char* handle)
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
   void putRegistrar(const ccReg::Registrar& regData);
+  
   // object detail
   void fillContact(ccReg::ContactDetail* cv, Register::Contact::Contact* c);
   ccReg::ContactDetail* getContactByHandle(const char* handle)
