@@ -1,3 +1,7 @@
+2008-06-12 Jiri Sadek (version 1.9.3)
+  
+    * bugfix - database connection leaking
+
 2008-06-11 Jaromir Talir (version 1.9.2)
   
     * bugfix - emails with request for authinfo was sent to bad address
