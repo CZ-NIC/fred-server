@@ -4,6 +4,8 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_period.hpp>
 
+#include "common_object.h"
+#include "object.h"
 #include "types.h"
 #include "exceptions.h" 
 #include "db/dbs.h"
@@ -45,13 +47,11 @@ public:
 };
 
 /// Registrar detail access
-class Registrar {
+class Registrar : virtual public Register::CommonObject {
 public:
   /// Public destructor, user is responsible for object delete
   virtual ~Registrar() {
   }
-  /// Return registrar id
-  virtual TID getId() const = 0;
   ///
   virtual const std::string& getIco() const = 0;
   ///
@@ -149,7 +149,7 @@ public:
 };
 
 /// List of registrar object
-class RegistrarList {
+class RegistrarList : virtual public Register::CommonList {
 protected:
   /// Protected destructor, object is manager by Manager
   virtual ~RegistrarList() {
@@ -167,20 +167,19 @@ public:
   virtual void reload() throw (SQL_ERROR) = 0;
   /// testing new reload function
   virtual void reload2(DBase::Filters::Union &uf, DBase::Manager* dbm) = 0;
-  /// Return size of list
-  virtual unsigned size() const = 0;
   /// Get registrar detail object by list index
-  virtual const Registrar* get(unsigned idx) const = 0;
+//  virtual const Registrar* get(unsigned idx) const = 0;
   /// Get registrar detail object by list index for update
-  virtual Registrar* get(unsigned idx) = 0;
-  /// Get registrar with given id
-  virtual Registrar* findId(DBase::ID _id) const throw (Register::NOT_FOUND) = 0;
+  virtual Registrar* get(unsigned idx) const = 0;
   /// Create new registrar in list
   virtual Registrar* create() = 0;
   /// clear filter data
   virtual void clearFilter() = 0;
   /// sort by column
   virtual void sort(MemberType _member, bool _asc) = 0;
+  
+  virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
+  virtual const char* getTempTableName() const = 0;
 };
 
 
@@ -203,13 +202,12 @@ enum EPPActionResultFilter {
 };
 
 /// Action made by registrar through EPP
-class EPPAction {
+class EPPAction : virtual public Register::CommonObject {
 protected:
   /// Protected destructor, object is managed by EPPActionList
   virtual ~EPPAction() {
   }
 public:
-  virtual TID getId() const = 0;
   /// Return id of session action is part of
   virtual TID getSessionId() const = 0;
   /// Return type of actoion
@@ -236,7 +234,7 @@ public:
 
 
 /// List of EPPAction objects
-class EPPActionList {
+class EPPActionList : virtual public Register::CommonList { 
 public:
   /// Public destructor, user is responsible for destruction
   virtual ~EPPActionList() {
@@ -269,10 +267,8 @@ public:
   virtual void setSvTRIDFilter(const std::string& svTRID) = 0;
   /// Reload list according actual filter settings
   virtual void reload() = 0;
-  /// Return size of list
-  virtual const unsigned size() const = 0;
   /// Return deatil of action by index in list
-  virtual const EPPAction* get(unsigned idx) const = 0;
+  virtual EPPAction* get(unsigned idx) const = 0;
   /// clear filter data
   virtual void clearFilter() = 0;
   /// testing new reload function
@@ -281,6 +277,9 @@ public:
   virtual void setPartialLoad(bool partialLoad) = 0;
   /// sort by column
   virtual void sort(EPPActionMemberType member, bool asc) = 0;
+  
+  virtual const char* getTempTableName() const = 0;
+  virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
 };
 
 /// Detail about EPP session

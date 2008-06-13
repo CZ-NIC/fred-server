@@ -109,7 +109,9 @@ ccReg_Registrars_i::numColumns()
 void
 ccReg_Registrars_i::clear()
 {
+  TRACE("[CALL] ccReg_Registrars_i::clear()");
   rl->clearFilter();
+  
   uf.clear();
 }
 
@@ -121,10 +123,24 @@ ccReg_Registrars_i::resultSize()
 
 void
 ccReg_Registrars_i::loadFilter(ccReg::TID _id) {
+  TRACE(boost::format("[CALL] ccReg_Registrars_i::loadFilter(%1%)") % _id);
+  ccReg_PageTable_i::loadFilter(_id);
+
+  DBase::Filters::Union::iterator uit = uf.begin();
+  for (; uit != uf.end(); ++uit) {
+    DBase::Filters::Registrar *tmp = dynamic_cast<DBase::Filters::Registrar* >(*uit);
+    it.addE(tmp);
+    TRACE(boost::format("[IN] ccReg_Registrars_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
+  }
 }
 
 void
 ccReg_Registrars_i::saveFilter(const char* _name) {
+  TRACE(boost::format("[CALL] ccReg_Registrars_i::saveFilter('%1%')") % _name);
+
+  std::auto_ptr<Register::Filter::Manager>
+      tmp_filter_manager(Register::Filter::Manager::create(dbm));
+  tmp_filter_manager->save(Register::Filter::FT_REGISTRAR, _name, uf);
 }
 
 Register::Registrar::Registrar* ccReg_Registrars_i::findId(ccReg::TID _id) {

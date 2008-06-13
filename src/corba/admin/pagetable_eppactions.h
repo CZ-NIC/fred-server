@@ -14,6 +14,7 @@ public:
   DECL_PAGETABLE_I;
   
   ccReg::Filters::Compound_ptr add();
+  Register::Registrar::EPPAction* findId(ccReg::TID _id);
 };
 
 #endif /*PAGETABLE_EPPACTIONS_H_*/

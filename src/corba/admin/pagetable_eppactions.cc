@@ -108,6 +108,7 @@ void ccReg_EPPActions_i::reload() {
 }
 
 void ccReg_EPPActions_i::clear() {
+  TRACE("[CALL] ccReg_EPPActions_i::clear()");
   uf.clear();
 }
 
@@ -116,7 +117,34 @@ CORBA::ULongLong ccReg_EPPActions_i::resultSize() {
 }
 
 void ccReg_EPPActions_i::loadFilter(ccReg::TID _id) {
+  TRACE(boost::format("[CALL] ccReg_EPPActions_i::loadFilter(%1%)") % _id);
+  ccReg_PageTable_i::loadFilter(_id);
+
+  DBase::Filters::Union::iterator uit = uf.begin();
+  for (; uit != uf.end(); ++uit) {
+    DBase::Filters::EppAction *tmp = dynamic_cast<DBase::Filters::EppAction* >(*uit);
+    it.addE(tmp);
+    TRACE(boost::format("[IN] ccReg_EPPActions_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
+  }
 }
 
 void ccReg_EPPActions_i::saveFilter(const char* _name) {
+  TRACE(boost::format("[CALL] ccReg_EPPActions_i::saveFilter('%1%')") % _name);
+
+  std::auto_ptr<Register::Filter::Manager>
+      tmp_filter_manager(Register::Filter::Manager::create(dbm));
+  tmp_filter_manager->save(Register::Filter::FT_ACTION, _name, uf);
+}
+
+Register::Registrar::EPPAction* ccReg_EPPActions_i::findId(ccReg::TID _id) {
+  try {
+    Register::Registrar::EPPAction *epp_action = dynamic_cast<Register::Registrar::EPPAction* >(eal->findId(_id));
+    if (epp_action) {
+      return epp_action;
+    }
+    return 0;
+  }
+  catch (Register::NOT_FOUND) {
+    return 0;
+  }
 }

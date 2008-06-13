@@ -16,16 +16,19 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "registrar.h"
-#include "sql.h"
-#include "old_utils/dbsql.h"
-#include "old_utils/log.h"
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/regex.hpp>
 #include <vector>
 #include <algorithm>
 #include <functional>
+
+#include "registrar.h"
+#include "common_impl.h"
+#include "sql.h"
+#include "old_utils/dbsql.h"
+#include "old_utils/log.h"
+
 #include "db/dbs.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
@@ -36,17 +39,6 @@ namespace Register {
 namespace Registrar {
 
 class RegistrarImpl;
-
-
-struct CheckId {
-  CheckId(DBase::ID _id) :
-    m_find_id(_id) {
-  }
-  bool operator()(Registrar* _object) {
-    return _object->getId() == m_find_id;
-  }
-  DBase::ID m_find_id;
-};
 
 
 class ACLImpl : virtual public ACL {
@@ -97,11 +89,12 @@ public:
 };
 
 
-class RegistrarImpl : virtual public Registrar {
+class RegistrarImpl : public Register::CommonObjectImpl,
+                      virtual public Registrar {
+  
   typedef std::vector<ACLImpl *> ACLList;
   typedef ACLList::iterator ACLListIter;
   DB *db; ///< db connection
-  TID id; ///< DB: registrar.id
   std::string ico; ///< DB: registrar.ico
   std::string dic; ///< DB: registrar.dic
   std::string var_symb; ///< DB: registrar.varsymb
@@ -129,7 +122,7 @@ class RegistrarImpl : virtual public Registrar {
 
 public:
   RegistrarImpl(DB *_db) :
-    db(_db), id(0), changed(true) {
+    CommonObjectImpl(0), db(_db), changed(true) {
   }
   RegistrarImpl(DB *_db,
                 TID _id,
@@ -153,7 +146,8 @@ public:
                 const std::string& _email,
                 bool _system,
                 unsigned long _credit) :
-    db(_db), id(_id), ico(_ico), dic(_dic), var_symb(_var_symb), vat(_vat),
+        CommonObjectImpl(_id),
+        db(_db), ico(_ico), dic(_dic), var_symb(_var_symb), vat(_vat),
         handle(_handle), name(_name), url(_url), organization(_organization),
         street1(_street1), street2(_street2), street3(_street3), city(_city),
         province(_province), postalCode(_postalCode), country(_country),
@@ -168,9 +162,7 @@ public:
   ~RegistrarImpl() {
     clear();
   }
-  virtual TID getId() const {
-    return id;
-  }
+
   virtual const std::string& getIco() const {
     return ico;
   }
@@ -376,7 +368,7 @@ public:
        * TODO: Folowing SQLs should be propably done in transaction
        */ 
       std::ostringstream sql;
-      if (id) {
+      if (id_) {
         sql << "UPDATE registrar SET " 
             << "ico = '" << getIco() << "', "
             << "dic = '" << getDic() << "', " 
@@ -397,16 +389,16 @@ public:
             << "fax = '" << getFax() << "', "
             << "email = '" << getEmail() << "', "
             << "system = " << (getSystem() ? "true" : "false") << " "
-            << "WHERE id = " << id;
+            << "WHERE id = " << id_;
       } else {
-        id = db->GetSequenceID("registrar");
+        id_ = db->GetSequenceID("registrar");
         sql << "INSERT INTO registrar "
             << "(id, ico, dic, varsymb, vat, name, handle, url, organization, street1, street2, "
             << "street3, city, stateorprovince, postalcode, country, "
             << "telephone, fax, email, system) " 
             << "VALUES " << "(" 
             // << "DEFAULT" << ", "
-            << id << ", "
+            << id_ << ", "
             << "'" << getIco() << "', "
             << "'" << getDic() << "', "
             << "'" << getVarSymb() << "', "
@@ -436,12 +428,12 @@ public:
                                         std::mem_fun(&ACLImpl::hasChanged) );
     {
       std::ostringstream sql;
-      sql << "DELETE FROM registraracl WHERE registrarid=" << id;
+      sql << "DELETE FROM registraracl WHERE registrarid=" << id_;
       if (!db->ExecSQL(sql.str().c_str()))
         throw SQL_ERROR();
-      for (unsigned j=0; j<acl.size(); j++) {
+      for (unsigned j = 0; j < acl.size(); j++) {
         sql.str("");
-        sql << acl[j]->makeSQL(id);
+        sql << acl[j]->makeSQL(id_);
         if (!db->ExecSQL(sql.str().c_str()))
           throw SQL_ERROR();
       }
@@ -454,27 +446,15 @@ public:
     acl.push_back(new ACLImpl(id,certificateMD5,password));
   }
   bool hasId(unsigned _id) const {
-    return id == _id;
+    return id_ == _id;
   }
   void resetId() {
-    id = 0;
+    id_ = 0;
     changed = true;
-    for (unsigned i=0; i<acl.size(); i++)
+    for (unsigned i = 0; i < acl.size(); i++)
       acl[i]->resetId();
   }
 };
-
-#define COMPARE_CLASS_IMPL(_object_type, _by_what)                     \
-class Compare##_by_what {                                              \
-public:                                                                \
-  Compare##_by_what(bool _asc) : m_asc(_asc) { }                       \
-  bool operator()(_object_type *_left, _object_type *_right) const {   \
-    bool result = (_left->get##_by_what() <= _right->get##_by_what()); \
-    return (m_asc && result) || (!m_asc && !result);		       \
-}                                                                      \
-private:                                                               \
-  bool m_asc;                                                          \
-};                                                               
 
 COMPARE_CLASS_IMPL(RegistrarImpl, Name)
 COMPARE_CLASS_IMPL(RegistrarImpl, Handle)
@@ -482,12 +462,9 @@ COMPARE_CLASS_IMPL(RegistrarImpl, URL)
 COMPARE_CLASS_IMPL(RegistrarImpl, Email)
 COMPARE_CLASS_IMPL(RegistrarImpl, Credit)
 
-#undef COMPARE_CLASS_IMPL
-
-class RegistrarListImpl : virtual public RegistrarList {
-  typedef std::vector<RegistrarImpl*> RegistrarListType;
-  RegistrarListType registrars;
-  DB *db;
+class RegistrarListImpl : public Register::CommonListImpl,
+                          virtual public RegistrarList {
+  
   std::string name;
   std::string handle;
   std::string xml;
@@ -495,7 +472,7 @@ class RegistrarListImpl : virtual public RegistrarList {
   std::string zoneFilter;
 public:
   RegistrarListImpl(DB *_db) :
-    db(_db), idFilter(0) {
+    CommonListImpl(_db), idFilter(0) {
   }
   ~RegistrarListImpl() {
     clear();
@@ -514,11 +491,6 @@ public:
   }
   virtual void setZoneFilter(const std::string& _zone) {
     zoneFilter = _zone;
-  }
-  void clear() {
-    for (unsigned i=0; i<registrars.size(); i++)
-      delete registrars[i];
-    registrars.clear();
   }
   virtual void reload() throw (SQL_ERROR) {
     clear();
@@ -546,7 +518,7 @@ public:
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-      registrars.push_back(new RegistrarImpl(
+      data_.push_back(new RegistrarImpl(
           db,
           STR_TO_ID(db->GetFieldValue(i,0)),
           "",
@@ -578,16 +550,14 @@ public:
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
       // find associated registrar
-      unsigned registrarId= STR_TO_ID(db->GetFieldValue(i, 0));
-      RegistrarListType::iterator
-          r = find_if(registrars.begin(),
-                      registrars.end(),
-                      std::bind2nd(std::mem_fun(&RegistrarImpl::hasId),
-                                   registrarId) );
-      if (r == registrars.end())
+      unsigned registrarId = STR_TO_ID(db->GetFieldValue(i, 0));
+      try {
+        RegistrarImpl *r = dynamic_cast<RegistrarImpl* >(findId(registrarId));
+        r->putACL(0, db->GetFieldValue(i, 1), db->GetFieldValue(i, 2));
+      }
+      catch (Register::NOT_FOUND) {
         continue;
-      // if found add acl
-      (*r)->putACL(0, db->GetFieldValue(i, 1), db->GetFieldValue(i, 2));
+      }
     }
     db->FreeSelect();
   }
@@ -640,7 +610,7 @@ public:
         bool system = ((std::string)it->getNextValue() == "t");
         unsigned long credit = 0;
 
-        registrars.push_back(new RegistrarImpl(
+        data_.push_back(new RegistrarImpl(
                 db,
                 rid,
                 ico,
@@ -677,14 +647,14 @@ public:
         DBase::ID zone_id = cit->getNextValue();
         DBase::ID registrar_id = cit->getNextValue();
         unsigned long credit = cit->getNextValue();
-
-        RegistrarListType::iterator
-            registrar_it = find_if(registrars.begin(),
-                                   registrars.end(),
-                                   std::bind2nd(std::mem_fun(&RegistrarImpl::hasId), 
-                                                registrar_id));
-          if (registrar_it != registrars.end())
-            (*registrar_it)->setCredit(zone_id, credit);
+        
+        try {
+          RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findId(registrar_id));
+          registrar_ptr->setCredit(zone_id, credit);
+        }
+        catch (Register::NOT_FOUND) {
+          continue;
+        }
       }
       
       DBase::SelectQuery acl_query;
@@ -700,45 +670,52 @@ public:
         std::string cert_md5 = ait->getNextValue();
         std::string password = ait->getNextValue();
 
-        RegistrarListType::iterator
-            registrar_it = find_if(registrars.begin(),
-                                   registrars.end(),
-                                   std::bind2nd(std::mem_fun(&RegistrarImpl::hasId), 
-                                                registrar_id));
-          if (registrar_it != registrars.end())
-            (*registrar_it)->putACL(acl_id, cert_md5, password);
+        try {
+          RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findId(registrar_id));
+          registrar_ptr->putACL(acl_id, cert_md5, password);
+        }
+        catch (Register::NOT_FOUND) {
+          continue;
+        }
+
       }      
     }
     catch (DBase::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
     }
   }
-  virtual unsigned size() const {
-    return registrars.size();
-  }
-  virtual const Registrar* get(unsigned idx) const {
-    if (idx> size())
-      return NULL;
-    return registrars[idx];
-  }
-  virtual Registrar* get(unsigned idx) {
-    if (idx> size())
-      return NULL;
-    return registrars[idx];
-  }
-  Registrar* findId(DBase::ID _id) const throw (Register::NOT_FOUND) {
-    RegistrarListType::const_iterator it = std::find_if(registrars.begin(),
-                                                        registrars.end(),
-                                                        CheckId(_id));
-    if (it != registrars.end()) {
-      LOGGER("register").debug(boost::format("object list hit! object id=%1% found")
-          % _id);
-      return *it;
+//  virtual const Registrar* get(unsigned idx) const {
+//    if (idx> size())
+//      return NULL;
+//    return data_[idx];
+//  }
+  
+  virtual Registrar* get(unsigned _idx) const {
+    try {
+      Registrar *registrar = dynamic_cast<Registrar* >(data_.at(_idx));
+      if (registrar) 
+        return registrar;
+      else
+        throw std::exception();
     }
-    LOGGER("register").debug(boost::format("object list miss! object id=%1% not found")
-        % _id);
-    throw Register::NOT_FOUND();
+    catch (...) {
+      throw std::exception();
+    } 
   }
+  
+//  Registrar* findId(DBase::ID _id) const throw (Register::NOT_FOUND) {
+//    RegistrarListType::const_iterator it = std::find_if(data_.begin(),
+//                                                        data_.end(),
+//                                                        CheckId(_id));
+//    if (it != data_.end()) {
+//      LOGGER("register").debug(boost::format("object list hit! object id=%1% found")
+//          % _id);
+//      return *it;
+//    }
+//    LOGGER("register").debug(boost::format("object list miss! object id=%1% not found")
+//        % _id);
+//    throw Register::NOT_FOUND();
+//  }
   virtual Registrar* create() {
     return new RegistrarImpl(db);
   }
@@ -751,26 +728,34 @@ public:
   virtual void sort(MemberType _member, bool _asc) {
     switch (_member) {
       case MT_NAME:
-        stable_sort(registrars.begin(), registrars.end(), CompareName(_asc));
+        stable_sort(data_.begin(), data_.end(), CompareName(_asc));
         break;
       case MT_HANDLE:
-        stable_sort(registrars.begin(), registrars.end(), CompareHandle(_asc));
+        stable_sort(data_.begin(), data_.end(), CompareHandle(_asc));
         break;
       case MT_URL:
-        stable_sort(registrars.begin(), registrars.end(), CompareURL(_asc));
+        stable_sort(data_.begin(), data_.end(), CompareURL(_asc));
         break;
       case MT_MAIL:
-        stable_sort(registrars.begin(), registrars.end(), CompareEmail(_asc));
+        stable_sort(data_.begin(), data_.end(), CompareEmail(_asc));
         break;
       case MT_CREDIT:
-        stable_sort(registrars.begin(), registrars.end(), CompareCredit(_asc));
+        stable_sort(data_.begin(), data_.end(), CompareCredit(_asc));
         break;
     }
   }
+  
+  virtual void makeQuery(bool, bool, std::stringstream&) const {
+    /* dummy implementation */
+  }
+  
+  virtual const char* getTempTableName() const {
+    return ""; /* dummy implementation */ 
+  }
 };
 
-class EPPActionImpl : virtual public EPPAction {
-  TID id;
+class EPPActionImpl : public CommonObjectImpl,
+                      virtual public EPPAction {
   TID sessionId;
   unsigned type;
   std::string typeName;
@@ -793,15 +778,12 @@ public:
                 unsigned _result,
                 const std::string& _registrarHandle,
                 const std::string& _handle) :
-    id(_id), sessionId(_sessionId), type(_type), typeName(_typeName),
+    CommonObjectImpl(_id), sessionId(_sessionId), type(_type), typeName(_typeName),
         startTime(_startTime), serverTransactionId(_serverTransactionId),
         clientTransactionId(_clientTransactionId), message(_message),
         result(_result), registrarHandle(_registrarHandle), handle(_handle) {
   }
   
-  virtual TID getId() const {
-    return id;
-  }
   virtual TID getSessionId() const {
     return sessionId;
   }
@@ -838,17 +820,25 @@ public:
 };
 
 
+/*
+ * TEMP: Have to use own COMPARE_CLASS_IMPL because EPPAction class
+ * is in same namespace as Registrar need prefix compare class name
+ * - split file? split managers?
+ */
+
+#undef COMPARE_CLASS_IMPL
 #define COMPARE_CLASS_IMPL(_object_type, _by_what)                     \
 class EPPActionCompare##_by_what {                                     \
 public:                                                                \
   EPPActionCompare##_by_what(bool _asc) : m_asc(_asc) { }              \
-  bool operator()(_object_type *_left, _object_type *_right) const {   \
-    bool result = (_left->get##_by_what() <= _right->get##_by_what()); \
-    return (m_asc && result) || (!m_asc && !result);		       \
+  bool operator()(Register::CommonObject *_left, Register::CommonObject *_right) const {   \
+    bool result = (dynamic_cast<_object_type* >(_left)->get##_by_what() <= dynamic_cast<_object_type* >(_right)->get##_by_what()); \
+    return (m_asc && result) || (!m_asc && !result);                   \
 }                                                                      \
 private:                                                               \
   bool m_asc;                                                          \
 };
+
 
 COMPARE_CLASS_IMPL(EPPActionImpl, ServerTransactionId)
 COMPARE_CLASS_IMPL(EPPActionImpl, ClientTransactionId)
@@ -861,9 +851,8 @@ COMPARE_CLASS_IMPL(EPPActionImpl, Result)
 #undef COMPARE_CLASS_IMPL
 
 /// List of EPPAction objects
-class EPPActionListImpl : virtual public EPPActionList {
-  typedef std::vector<EPPActionImpl *> ActionList;
-  ActionList alist;
+class EPPActionListImpl : public Register::CommonListImpl,
+                          virtual public EPPActionList {
   TID id;
   TID sessionId;
   TID registrarId;
@@ -877,13 +866,17 @@ class EPPActionListImpl : virtual public EPPActionList {
   std::string handle;
   std::string xml;
   EPPActionResultFilter result;
-  DB *db;
   bool partialLoad;
 public:
-  EPPActionListImpl(DB *_db) :
-    id(0), sessionId(0), registrarId(0), period(ptime(neg_infin),
-                                                ptime(pos_infin)), typeId(0),
-        returnCodeId(0), result(EARF_ALL), db(_db), partialLoad(false) {
+  EPPActionListImpl(DB *_db) : CommonListImpl(_db),
+                               id(0), 
+                               sessionId(0), 
+                               registrarId(0), 
+                               period(ptime(neg_infin), ptime(pos_infin)), 
+                               typeId(0),
+                               returnCodeId(0), 
+                               result(EARF_ALL),  
+                               partialLoad(false) {
   }
   ~EPPActionListImpl() {
     clear();
@@ -926,11 +919,6 @@ public:
   }
   virtual void setSvTRIDFilter(const std::string& _svTRID) {
     svTRID = _svTRID;
-  }
-  void clear() {
-    for (unsigned i=0; i<alist.size(); i++)
-      delete alist[i];
-    alist.clear();
   }
 #define DB_NULL_INT(i,j) \
   (db->IsNotNull(i,j)) ? atoi(db->GetFieldValue(i,j)) : 0
@@ -977,7 +965,7 @@ public:
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-      alist.push_back(new EPPActionImpl(
+      data_.push_back(new EPPActionImpl(
           STR_TO_ID(db->GetFieldValue(i,0)),
           DB_NULL_INT(i,1),
           atoi(db->GetFieldValue(i,2)),
@@ -993,12 +981,20 @@ public:
     }
     db->FreeSelect();
   }
-  virtual const unsigned size() const {
-    return alist.size();
+
+  virtual EPPAction* get(unsigned _idx) const {
+    try {
+      EPPAction *action = dynamic_cast<EPPAction* >(data_.at(_idx));
+      if (action) 
+        return action;
+      else
+        throw std::exception();
+    }
+    catch (...) {
+      throw std::exception();
+    } 
   }
-  virtual const EPPAction* get(unsigned idx) const {
-    return idx >= alist.size() ? NULL : alist[idx];
-  }
+  
   virtual void clearFilter() {
     id = 0;
     sessionId = 0;
@@ -1091,7 +1087,7 @@ public:
         std::string registrar_handle = registrars_table[registrar_id];
         std::string object_handle = it->getNextValue();
 
-        alist.push_back(
+        data_.push_back(
             new EPPActionImpl(
                 aid,
                 clid,
@@ -1118,27 +1114,35 @@ public:
   virtual void sort(EPPActionMemberType member, bool asc) {
     switch (member) {
       case MT_SVTRID:
-        stable_sort(alist.begin(), alist.end(), EPPActionCompareServerTransactionId(asc));
+        stable_sort(data_.begin(), data_.end(), EPPActionCompareServerTransactionId(asc));
         break;
       case MT_CLTRID:
-        stable_sort(alist.begin(), alist.end(), EPPActionCompareClientTransactionId(asc));
+        stable_sort(data_.begin(), data_.end(), EPPActionCompareClientTransactionId(asc));
         break;
       case MT_TYPE:
-        stable_sort(alist.begin(), alist.end(), EPPActionCompareType(asc));
+        stable_sort(data_.begin(), data_.end(), EPPActionCompareType(asc));
         break;
       case MT_OBJECT_HANDLE:
-        stable_sort(alist.begin(), alist.end(), EPPActionCompareHandle(asc));
+        stable_sort(data_.begin(), data_.end(), EPPActionCompareHandle(asc));
         break;
       case MT_REGISTRAR_HANDLE:
-        stable_sort(alist.begin(), alist.end(), EPPActionCompareRegistrarHandle(asc));
+        stable_sort(data_.begin(), data_.end(), EPPActionCompareRegistrarHandle(asc));
         break;
       case MT_TIME:
-        stable_sort(alist.begin(), alist.end(), EPPActionCompareStartTime(asc));
+        stable_sort(data_.begin(), data_.end(), EPPActionCompareStartTime(asc));
         break;
       case MT_RESULT:
-        stable_sort(alist.begin(), alist.end(), EPPActionCompareResult(asc));
+        stable_sort(data_.begin(), data_.end(), EPPActionCompareResult(asc));
         break;
     }
+  }
+
+  virtual void makeQuery(bool, bool, std::stringstream&) const {
+    /* dummy implementation */
+  }
+
+  virtual const char* getTempTableName() const {
+    return ""; /* dummy implementation */
   }
 
 };
