@@ -112,6 +112,7 @@ ccReg_Registrars_i::clear()
   TRACE("[CALL] ccReg_Registrars_i::clear()");
   rl->clearFilter();
   
+  ccReg_PageTable_i::clear();
   uf.clear();
 }
 

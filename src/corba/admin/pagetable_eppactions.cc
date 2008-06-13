@@ -109,6 +109,7 @@ void ccReg_EPPActions_i::reload() {
 
 void ccReg_EPPActions_i::clear() {
   TRACE("[CALL] ccReg_EPPActions_i::clear()");
+  ccReg_PageTable_i::clear();
   uf.clear();
 }
 

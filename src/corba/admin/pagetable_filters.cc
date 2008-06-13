@@ -85,6 +85,7 @@ ccReg_Filters_i::resultSize() {
 void
 ccReg_Filters_i::clear() {
   TRACE("[CALL] ccReg_Filters_i::clear()");
+  ccReg_PageTable_i::clear();
   uf.clear();
 }
 

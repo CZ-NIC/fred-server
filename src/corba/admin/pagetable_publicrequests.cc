@@ -90,6 +90,7 @@ CORBA::Short ccReg_PublicRequests_i::numColumns() {
 
 void ccReg_PublicRequests_i::clear() {
   TRACE("[CALL] ccReg_PublicRequests_i::clear()");
+  ccReg_PageTable_i::clear();
   uf.clear();
 }
 

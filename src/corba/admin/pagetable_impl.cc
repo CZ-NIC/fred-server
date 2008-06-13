@@ -103,6 +103,12 @@ ccReg_PageTable_i::setDB(DBase::Manager* _dbm)
 }
 
 void
+ccReg_PageTable_i::clear() {
+  TRACE("[CALL] ccReg_PageTable_i::clear()");
+  it.clearF();
+}
+
+void
 ccReg_PageTable_i::loadFilter(ccReg::TID _id) {
   TRACE(boost::format("[CALL] ccReg_PageTable_i::loadFilter(%1%)") % _id);
   uf.clear();

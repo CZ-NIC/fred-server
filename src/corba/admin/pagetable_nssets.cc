@@ -103,7 +103,10 @@ ccReg_NSSets_i::reload()
 void
 ccReg_NSSets_i::clear()
 {
+  TRACE("[CALL] ccReg_NSSets_i::clear()");
   nl->clearFilter();
+  
+  ccReg_PageTable_i::clear();
   uf.clear();
 }
 

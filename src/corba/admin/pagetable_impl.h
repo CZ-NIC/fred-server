@@ -94,6 +94,7 @@ public:
     return filterType;
   }
   ccReg::Filters::Iterator_ptr getIterator();
+  void clear();
   void loadFilter(ccReg::TID _id);
   void saveFilter(const char* _name);
   CORBA::Short getSortedBy();

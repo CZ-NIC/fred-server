@@ -99,6 +99,8 @@ void ccReg_Contacts_i::reload() {
 
 void ccReg_Contacts_i::clear() {
   cl->clearFilter();
+  
+  ccReg_PageTable_i::clear();
   uf.clear();
 }
 

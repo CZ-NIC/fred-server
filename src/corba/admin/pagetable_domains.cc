@@ -130,6 +130,8 @@ CORBA::Short ccReg_Domains_i::numColumns() {
 void ccReg_Domains_i::clear() {
   TRACE("[CALL] ccReg_Domains_i::clear()");
   dl->clearFilter();
+  
+  ccReg_PageTable_i::clear();
   uf.clear();
 }
 
