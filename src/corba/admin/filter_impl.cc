@@ -368,7 +368,13 @@ bool FilterIteratorImpl::hasNext() {
 
 ccReg::Filters::Base_ptr FilterIteratorImpl::getFilter() {
   TRACE("[CALL] FilterIteratorImpl::getFilter()");
-  return !hasNext() ? ccReg::Filters::Base::_nil() : (*i)->_this();
+  if (!hasNext()) {
+    throw ccReg::Filters::Iterator::INVALID();
+  }
+  else {
+    return (*i)->_this();
+  }
+  // return !hasNext() ? ccReg::Filters::Base::_nil() : (*i)->_this();
 }
 
 #define ITERATOR_ADD_E_METHOD_IMPL(ct, dt) \
