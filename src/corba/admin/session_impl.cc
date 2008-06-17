@@ -307,7 +307,7 @@ ccReg::PublicRequest::Detail* ccReg_Session_i::getPublicRequestDetail(ccReg::TID
 
 ccReg::Invoicing::Invoice* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
   Register::Invoicing::Invoice *invoice = m_invoices->findId(_id);
-  if (invoice) {
+  if (invoice && invoice->getActionCount()) {
     return createInvoiceDetail(invoice);
   } else {
     LOGGER("corba").debug(boost::format("constructing invoice filter for object id=%1%' detail")

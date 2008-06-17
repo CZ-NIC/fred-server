@@ -671,7 +671,8 @@ public:
     std::string object_name = _it->getNextValue();
     DBase::DateTime action_time = _it->getNextValue(); 
     DBase::Date exdate = _it->getNextValue();
-    PaymentActionType type = (PaymentActionType)(int)_it->getNextValue();
+    PaymentActionType type = (int)_it->getNextValue() == 1 ? PAT_CREATE_DOMAIN 
+                                                           : PAT_RENEW_DOMAIN;
     unsigned units = _it->getNextValue(); 
     DBase::Money price_per_unit = _it->getNextValue();
     DBase::ID id = _it->getNextValue();
