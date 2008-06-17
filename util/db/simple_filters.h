@@ -152,6 +152,8 @@ public:
     } else {
       LOGGER("tracer").trace(boost::format("[IN] _BaseDTInterval::serialize(): value is normal (special_flag='%1%')")
           % t_value.getSpecial());
+      
+      std::string second_operator = (t_value.getSpecial() == INTERVAL ? SQL_OP_LE : SQL_OP_LT); 
       bool b = false;
 
       if (!t_value.begin().is_special()) {
@@ -162,7 +164,7 @@ public:
       }
       if (!t_value.end().is_special()) {
         prep << (b ? SQL_OP_AND : getConjuction() + "( ") << column.str()
-            << SQL_OP_LT << "'%" << store.size() + 1 << "%'";
+            << second_operator << "'%" << store.size() + 1 << "%'";
         prep << " )";
         store.push_back(t_value.end().iso_str());
       } else if (b) {
