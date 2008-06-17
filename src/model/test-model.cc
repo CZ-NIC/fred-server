@@ -224,7 +224,9 @@ int main(int argc, char *argv[]) {
     
     
     Invoice *i = new InvoiceImpl();
-    i->addFile().addName().setValue("150800001.pdf");
+    //i->addType().setValue(0);
+    i->addNumber().setValue("1*");
+    //i->addFile().addName().setValue("150800001.pdf");
    
     uf.addFilter(i);
     sq1 = new SelectQuery();

@@ -18,7 +18,8 @@ enum FilterType {
   FT_ACTION,
   FT_INVOICE,
   FT_PUBLICREQUEST,
-  FT_MAIL
+  FT_MAIL,
+  FT_FILE
 };
 
 class Filter {

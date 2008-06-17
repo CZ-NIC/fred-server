@@ -9,7 +9,6 @@
 #include "filter_impl.h"
 #include "old_utils/log.h"
 #include "old_utils/dbsql.h"
-#include "register/register.h"
 #include "register/notify.h"
 #include "register/filter.h"
 #include "corba/mailer_manager.h"
@@ -333,6 +332,17 @@ COMPOUND_CLASS(PublicRequest, PublicRequest, Compound,
     FILTER_ADD(Action, addEppAction);
 );
 
+COMPOUND_CLASS(Invoice, Invoice, Compound,
+    FILTER_ADD(Id, addZoneId);
+    FILTER_ADD(Int, addType);
+    FILTER_ADD(Str, addNumber);
+    FILTER_ADD(DateTime, addCreateTime);
+    FILTER_ADD(Date, addTaxDate);
+    FILTER_ADD(Registrar, addRegistrar);
+    FILTER_ADD(Obj, addObject);
+//  FILTER_ADD(File, addFile);
+);
+
 FilterIteratorImpl::FilterIteratorImpl() :
   i(flist.end()) {
   TRACE("[CALL] FilterIteratorImpl::FilterIteratorImpl()");
@@ -398,6 +408,7 @@ ITERATOR_ADD_E_METHOD_IMPL(Contact,Contact);
 ITERATOR_ADD_E_METHOD_IMPL(Domain,Domain);
 ITERATOR_ADD_E_METHOD_IMPL(NSSet,NSSet);
 ITERATOR_ADD_E_METHOD_IMPL(PublicRequest,PublicRequest);
+ITERATOR_ADD_E_METHOD_IMPL(Invoice,Invoice);
 
 #define ITERATOR_ADD_FILTER_METHOD_IMPL(ct,dt) \
   { DBase::Filters::dt *rf = dynamic_cast<DBase::Filters::dt *>(f); \
@@ -419,4 +430,5 @@ void FilterIteratorImpl::addFilter(DBase::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(Domain,Domain);
   ITERATOR_ADD_FILTER_METHOD_IMPL(NSSet,NSSet);
   ITERATOR_ADD_FILTER_METHOD_IMPL(PublicRequest,PublicRequest);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(Invoice,Invoice);
 }

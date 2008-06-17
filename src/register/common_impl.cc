@@ -147,6 +147,9 @@ void CommonListImpl::fillTempTable(DBase::InsertQuery& _query) {
     std::auto_ptr<DBase::Result> r_create_tmp_table(conn_->exec(create_tmp_table));
   
     conn_->exec(_query);
+    
+    DBase::Query analyze("ANALYZE " + std::string(getTempTableName()));
+    conn_->exec(analyze);
   }
   catch (DBase::Exception& ex) {
     LOGGER("db").error(boost::format("%1%") % ex.what());

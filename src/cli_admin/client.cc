@@ -443,7 +443,7 @@ int main(int argc, char **argv)
       im->archiveInvoices(!vm.count("invoice_dont_send"));
     }
     if (vm.count("invoice_list")) {
-      std::auto_ptr<Register::Invoicing::InvoiceList> il(im->createList());
+      std::auto_ptr<Register::Invoicing::List> il(im->createList());
       if (vm.count("id"))
         il->setIdFilter(vm["id"].as<unsigned>());
       if (vm.count("registrar_id")) 
@@ -471,11 +471,11 @@ int main(int argc, char **argv)
         taxDateTo = time_from_string(vm["taxdate_to"].as<std::string>());
       il->setTaxDateFilter(time_period(taxDateFrom,taxDateTo)); 
       if (vm.count("archived")) {
-        Register::Invoicing::InvoiceList::ArchiveFilter af;
+        Register::Invoicing::List::ArchiveFilter af;
         switch (vm["archived"].as<unsigned>()) { 
-          case 0: af = Register::Invoicing::InvoiceList::AF_UNSET; break;
-          case 1: af = Register::Invoicing::InvoiceList::AF_SET; break;
-          default: af = Register::Invoicing::InvoiceList::AF_IGNORE; break;
+          case 0: af = Register::Invoicing::List::AF_UNSET; break;
+          case 1: af = Register::Invoicing::List::AF_SET; break;
+          default: af = Register::Invoicing::List::AF_IGNORE; break;
         }
         il->setArchivedFilter(af);
       }

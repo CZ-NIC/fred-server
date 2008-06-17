@@ -8,6 +8,7 @@
 #include "nsset.h"
 #include "auth_info.h"
 #include "public_request.h"
+#include "invoice.h"
 #include "filter.h"
 
 /// forward declared parameter type

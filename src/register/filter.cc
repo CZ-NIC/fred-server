@@ -226,12 +226,8 @@ public:
     catch (std::exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
     }
-    
-//    std::map<DBase::ID, DBase::Filters::Filter* >::const_iterator it = m_filter_data.find(_id);
-//    if (it == m_filter_data.end())
-//      throw;
-//    return it->second;
   }
+  
   virtual void save(FilterType _type, const std::string& _name, DBase::Filters::Union& _uf) {
     TRACE(boost::format("[CALL] Register::Filter::ManagerImpl::save(%1%, '%2%')") % _type % _name);
     try {
@@ -251,11 +247,6 @@ public:
 private:
 	DBase::Manager* m_db_manager;
 	ListImpl		m_filter_list;
-	/*
-	 * temporary filter map for prepared filters 
-	 * then it will be serialized to db
-	 */ 
-	std::map<DBase::ID, DBase::Filters::Filter* > m_filter_data;
 };
 
 Manager* Manager::create(DBase::Manager* _db_manager) {

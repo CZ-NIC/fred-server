@@ -62,12 +62,14 @@ private:
   ccReg::NSSetDetail* getNSSetDetail(ccReg::TID _id);
   ccReg::Registrar* getRegistrarDetail(ccReg::TID _id);
   ccReg::PublicRequest::Detail* getPublicRequestDetail(ccReg::TID _id);
+  ccReg::Invoicing::Invoice* getInvoiceDetail(ccReg::TID _id);
   
   ccReg::DomainDetail* createDomainDetail(Register::Domain::Domain* _domain);
   ccReg::ContactDetail* createContactDetail(Register::Contact::Contact* _contact);
   ccReg::NSSetDetail* createNSSetDetail(Register::NSSet::NSSet* _contact);
   ccReg::Registrar* createRegistrarDetail(Register::Registrar::Registrar* _registrar);
   ccReg::PublicRequest::Detail* createPublicRequestDetail(Register::PublicRequest::PublicRequest* _request);
+  ccReg::Invoicing::Invoice* createInvoiceDetail(Register::Invoicing::Invoice *_invoice);
   
   void _createUpdateRegistrar(const ccReg::Registrar& _registrar);
 

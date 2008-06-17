@@ -10,6 +10,7 @@
 #include "register/notify.h"
 
 #include "log/logger.h"
+#include "util.h"
 
 ccReg_Session_i::ccReg_Session_i(const std::string& database,
                                  NameService *ns,
@@ -106,6 +107,8 @@ ccReg::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
       return m_publicrequests->_this();
     case ccReg::FT_MAIL:
       return m_mails->_this();
+    case ccReg::FT_FILE:
+      break;
   }
   LOGGER("corba").debug(boost::format("[ERROR] ccReg_Session_i::getPageTable(%1%): unknown type specified")
       % _type);
@@ -153,6 +156,7 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
     case ccReg::FT_ACTION:
     case ccReg::FT_INVOICE:
     case ccReg::FT_MAIL:
+    case ccReg::FT_FILE:
       LOGGER("corba").error("Calling method with not implemented parameter!");
       break;
   }
@@ -293,6 +297,29 @@ ccReg::PublicRequest::Detail* ccReg_Session_i::getPublicRequestDetail(ccReg::TID
       throw ccReg::Admin::ObjectNotFound();
     }
     return createPublicRequestDetail(tmp_request_list->get(0));
+  }
+}
+
+ccReg::Invoicing::Invoice* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
+  Register::Invoicing::Invoice *invoice = m_invoices->findId(_id);
+  if (invoice) {
+    return createInvoiceDetail(invoice);
+  } else {
+    LOGGER("corba").debug(boost::format("constructing invoice filter for object id=%1%' detail")
+        % _id);
+    Register::Invoicing::List *tmp_invoice_list = m_invoicing_manager->createList();
+
+    DBase::Filters::Union union_filter;
+    DBase::Filters::Invoice *filter = new DBase::Filters::InvoiceImpl();
+    filter->addId().setValue(DBase::ID(_id));
+    union_filter.addFilter(filter);
+
+    tmp_invoice_list->reload(union_filter, m_db_manager.get());
+
+    if (tmp_invoice_list->size() != 1) {
+      throw ccReg::Admin::ObjectNotFound();
+    }
+    return createInvoiceDetail(tmp_invoice_list->get(0));
   }
 }
 
@@ -630,3 +657,50 @@ ccReg::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Registe
   return detail;
 }
 
+ccReg::Invoicing::Invoice* ccReg_Session_i::createInvoiceDetail(Register::Invoicing::Invoice *_invoice) {
+  ccReg::Invoicing::Invoice *detail = new ccReg::Invoicing::Invoice;
+  
+  detail->id = _invoice->getId();
+  detail->zone = _invoice->getZone();
+  detail->crTime = DUPSTRDATE(_invoice->getCrTime);
+  detail->taxDate = DUPSTRDATED(_invoice->getTaxDate);
+  detail->fromDate = DUPSTRDATED(_invoice->getAccountPeriod().begin);
+  detail->toDate = DUPSTRDATED(_invoice->getAccountPeriod().end);
+  detail->type = (_invoice->getType() == Register::Invoicing::IT_DEPOSIT ? ccReg::Invoicing::IT_ADVANCE
+                                                                         : ccReg::Invoicing::IT_ACCOUNT);
+  detail->number = DUPSTRC(Util::stream_cast<std::string>(_invoice->getNumber()));
+  detail->registrarId = _invoice->getRegistrar();
+  detail->registrarHandle = DUPSTRC(_invoice->getClient()->getHandle());
+  detail->credit = DUPSTRC(formatMoney(_invoice->getCredit()));
+  detail->price = DUPSTRC(formatMoney(_invoice->getPrice()));
+  detail->vatRate = _invoice->getVatRate();
+  detail->total = DUPSTRC(formatMoney(_invoice->getTotal()));
+  detail->totalVAT = DUPSTRC(formatMoney(_invoice->getTotalVAT()));
+  detail->varSymbol = DUPSTRC(_invoice->getVarSymbol());
+  detail->filePDF = _invoice->getFilePDF();
+  detail->fileXML = _invoice->getFileXML();
+  
+  detail->payments.length(_invoice->getSourceCount());
+  for (unsigned n = 0; n < _invoice->getSourceCount(); ++n) {
+    const Register::Invoicing::PaymentSource *ps = _invoice->getSource(n);
+    detail->payments[n].id = ps->getId();
+    detail->payments[n].price = DUPSTRC(formatMoney(ps->getPrice()));
+    detail->payments[n].balance = DUPSTRC(formatMoney(ps->getCredit()));
+    detail->payments[n].number = DUPSTRC(Util::stream_cast<std::string>(ps->getNumber()));
+  }
+  
+  detail->actions.length(_invoice->getActionCount());
+  for (unsigned n = 0; n < _invoice->getActionCount(); ++n) {
+    const Register::Invoicing::PaymentAction *pa = _invoice->getAction(n);
+    detail->actions[n].objectId = pa->getObjectId();
+    detail->actions[n].objectName = DUPSTRFUN(pa->getObjectName);
+    detail->actions[n].actionTime = DUPSTRDATE(pa->getActionTime);
+    detail->actions[n].exDate = DUPSTRDATED(pa->getExDate);
+    detail->actions[n].actionType = pa->getAction();
+    detail->actions[n].unitsCount = pa->getUnitsCount();
+    detail->actions[n].pricePerUnit = DUPSTRC(formatMoney(pa->getPricePerUnit()));
+    detail->actions[n].price = DUPSTRC(formatMoney(pa->getPrice()));
+  }
+  
+  return detail;
+}

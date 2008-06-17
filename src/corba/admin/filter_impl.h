@@ -8,7 +8,6 @@
 
 #include "corba/mailer_manager.h"
 #include "register/register.h"
-#include "register/invoice.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/conf.h"
 #include "db/dbs.h"
@@ -37,6 +36,7 @@ public:
   ccReg::Filters::Registrar_ptr addE(DBase::Filters::Registrar* f);
   ccReg::Filters::Action_ptr addE(DBase::Filters::EppAction* f);
   ccReg::Filters::PublicRequest_ptr addE(DBase::Filters::PublicRequest* f);
+  ccReg::Filters::Invoice_ptr addE(DBase::Filters::Invoice* f);
     
   void addFilter(DBase::Filters::Filter* f);
     

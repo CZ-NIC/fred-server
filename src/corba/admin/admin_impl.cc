@@ -211,6 +211,7 @@ void ccReg_Admin_i::destroySession(const char* _session_id) {
   if (it == m_session_list.end()) {
     LOGGER("corba").debug(boost::format("session '%1%' not found -- already destroyed")
         % _session_id);
+    return;
   }
   delete it->second;
   m_session_list.erase(it);
@@ -1006,7 +1007,7 @@ ccReg::Invoicing::Invoice* ccReg_Admin_i::getInvoiceById(ccReg::TID id)
                                                  ns->getHostName() ) );
   std::auto_ptr<Register::Invoicing::Manager>
       invman(Register::Invoicing::Manager::create(&db,docman.get(),&mm));
-  Register::Invoicing::InvoiceList *invl = invman->createList();
+  Register::Invoicing::List *invl = invman->createList();
   invl->setIdFilter(id);
   invl->reload();
   if (invl->getCount() != 1) {
