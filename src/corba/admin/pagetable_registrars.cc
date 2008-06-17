@@ -103,7 +103,7 @@ ccReg_Registrars_i::numRows()
 CORBA::Short 
 ccReg_Registrars_i::numColumns()
 {
-  return 3;
+  return 5;
 }
 
 void

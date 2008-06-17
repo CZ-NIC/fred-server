@@ -106,7 +106,7 @@ CORBA::Short ccReg_Invoices_i::numRows() {
 }
 
 CORBA::Short ccReg_Invoices_i::numColumns() {
-  return 6;
+  return 9;
 }
 
 void ccReg_Invoices_i::reload() {

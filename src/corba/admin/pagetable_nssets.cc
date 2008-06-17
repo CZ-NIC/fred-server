@@ -89,7 +89,7 @@ ccReg_NSSets_i::numRows()
 CORBA::Short 
 ccReg_NSSets_i::numColumns()
 {
-  return 3;
+  return 4;
 }
 
 void 

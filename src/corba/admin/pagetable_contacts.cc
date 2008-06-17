@@ -89,7 +89,7 @@ CORBA::Short ccReg_Contacts_i::numRows() {
 }
 
 CORBA::Short ccReg_Contacts_i::numColumns() {
-  return 5;
+  return 6;
 }
 
 void ccReg_Contacts_i::reload() {

@@ -85,7 +85,7 @@ CORBA::Short ccReg_PublicRequests_i::numRows() {
 }
 
 CORBA::Short ccReg_PublicRequests_i::numColumns() {
-  return 11;
+  return 4;
 }
 
 void ccReg_PublicRequests_i::clear() {
