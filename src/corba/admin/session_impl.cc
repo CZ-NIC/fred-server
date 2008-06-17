@@ -124,6 +124,7 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
   ccReg::DomainDetail *d_detail = 0;
   ccReg::Registrar *r_detail = 0;
   ccReg::PublicRequest::Detail *pr_detail = 0;
+  ccReg::Invoicing::Invoice *i_detail = 0;
 
   switch (_type) {
     case ccReg::FT_CONTACT:
@@ -150,11 +151,15 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
       pr_detail = getPublicRequestDetail(_id);
       *result <<= pr_detail;
       break;
+      
+    case ccReg::FT_INVOICE:
+      i_detail = getInvoiceDetail(_id);
+      *result <<= i_detail;
+      break;
 
     case ccReg::FT_FILTER:
     case ccReg::FT_OBJ:
     case ccReg::FT_ACTION:
-    case ccReg::FT_INVOICE:
     case ccReg::FT_MAIL:
     case ccReg::FT_FILE:
       LOGGER("corba").error("Calling method with not implemented parameter!");
