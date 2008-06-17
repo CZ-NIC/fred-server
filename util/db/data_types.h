@@ -479,6 +479,10 @@ public:
     value(_value) {
   }
   friend std::ostream& operator<<(std::ostream &_os, const Money& _v);
+  friend bool operator<(const Money& _left, const Money& _right);
+  operator unsigned long long() const {
+    return value;
+  }
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,

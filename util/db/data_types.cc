@@ -115,4 +115,8 @@ std::ostream& operator<<(std::ostream &_os, const Money& _v) {
 	return _os << _v.value;
 }
 
+bool operator<(const Money& _left, const Money& _right) {
+  return _left.value < _right.value;
+}
+
 }
