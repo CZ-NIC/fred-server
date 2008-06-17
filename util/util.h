@@ -19,17 +19,6 @@ TpOut stream_cast(const TpIn& _value) {
   return ret;
 }
 
-
-template<class TpOut> 
-TpOut stream_cast(const long _value) {
-  std::stringstream tmp;
-  tmp << _value;
-  TpOut ret;
-  tmp >> ret;
-  return ret;
-}
-
-
 template<class TpOut> 
 TpOut stream_cast(const DBase::ID& _value) {
   std::stringstream tmp;
@@ -38,17 +27,6 @@ TpOut stream_cast(const DBase::ID& _value) {
   tmp >> ret;
   return ret;
 }
-
-
-
-//template<class TpIn, class TpOut> 
-//TpOut stream_cast(const TpIn& _value);
-
-//template<class TpOut> 
-//TpOut stream_cast(const long _value);
-
-//template<class TpOut> 
-//TpOut stream_cast(const DBase::ID& _value);
 
 }
 

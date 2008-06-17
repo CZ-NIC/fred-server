@@ -81,11 +81,23 @@ public:
     return atoi(value.c_str());
   }
   
+  operator short() const {
+    return (short)atoi(value.c_str());
+  }
+  
+  operator long() const {
+    return atol(value.c_str());
+  }
+  
   operator unsigned() const {
     return atol(value.c_str());
   }
   
   operator unsigned long() const {
+    return atol(value.c_str());
+  }
+  
+  operator long long() const {
     return atol(value.c_str());
   }
   
