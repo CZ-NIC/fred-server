@@ -86,6 +86,9 @@ public:
   unsigned getCount() const;
   virtual unsigned long long getRealCount();
   virtual void makeRealCount() throw (SQL_ERROR);
+  virtual unsigned long long getRealCount(DBase::Filters::Union &_filter);
+  virtual void makeRealCount(DBase::Filters::Union &_filter);
+
   
   virtual void setWildcardExpansion(bool _wcheck);
   virtual void setIdFilter(TID id);

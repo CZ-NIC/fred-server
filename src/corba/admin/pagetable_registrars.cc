@@ -113,13 +113,14 @@ ccReg_Registrars_i::clear()
   rl->clearFilter();
   
   ccReg_PageTable_i::clear();
-  uf.clear();
+  rl->clear();
 }
 
 CORBA::ULongLong 
 ccReg_Registrars_i::resultSize()
 {
-  return 12345;
+  TRACE("ccReg_Registrars_i::resultSize()");
+  return rl->getRealCount(uf);
 }
 
 void

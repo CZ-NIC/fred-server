@@ -18,7 +18,7 @@ ccReg::Filters::Compound_ptr ccReg_Domains_i::add() {
 
 void ccReg_Domains_i::reload() {
   TRACE("[CALL] ccReg_Domains_i::reload()");
-  dl->makeRealCount();
+//  dl->makeRealCount();
   dl->reload2(uf, dbm);
 }
 
@@ -132,11 +132,12 @@ void ccReg_Domains_i::clear() {
   dl->clearFilter();
   
   ccReg_PageTable_i::clear();
-  uf.clear();
+  dl->clear();
 }
 
 CORBA::ULongLong ccReg_Domains_i::resultSize() {
-  return dl->getRealCount();
+  TRACE("[CALL] ccReg_Domains_i::resultSize()");
+  return dl->getRealCount(uf);
 }
 
 void ccReg_Domains_i::loadFilter(ccReg::TID _id) {

@@ -96,7 +96,7 @@ void
 ccReg_NSSets_i::reload()
 {
   TRACE("[CALL] ccReg_NSSets_i::reload()");
-  nl->makeRealCount();  
+//  nl->makeRealCount();  
   nl->reload2(uf, dbm);
 }
 
@@ -107,13 +107,14 @@ ccReg_NSSets_i::clear()
   nl->clearFilter();
   
   ccReg_PageTable_i::clear();
-  uf.clear();
+  nl->clear();
 }
 
 CORBA::ULongLong 
 ccReg_NSSets_i::resultSize()
 {
-  return nl->getRealCount();
+  TRACE("[CALL] ccReg_NSSets_i::resultSize()");
+  return nl->getRealCount(uf);
 }
 
 void

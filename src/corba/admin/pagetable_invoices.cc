@@ -117,11 +117,12 @@ void ccReg_Invoices_i::reload() {
 void ccReg_Invoices_i::clear() {
   TRACE("[CALL] ccReg_Invoices_i::clear()");
   ccReg_PageTable_i::clear();
-  uf.clear();
+  invoice_list_->clear();
 }
 
 CORBA::ULongLong ccReg_Invoices_i::resultSize() {
-  return 12345;
+  TRACE("ccReg_Invoices_i::resultSize()");
+  return invoice_list_->getRealCount(uf);
 }
 
 void ccReg_Invoices_i::loadFilter(ccReg::TID _id) {

@@ -46,7 +46,7 @@ TID CommonObjectImpl::getId() const {
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 CommonListImpl::CommonListImpl(DB *_db) :
-  db(_db), load_limit_(5000), real_size_(0), real_size_initialized_(false),
+  db(_db), conn_(0), load_limit_(5000), real_size_(0), real_size_initialized_(false),
   ptr_idx_(-1), add(false), wcheck(true), idFilter(0) {
 }
 
@@ -60,9 +60,14 @@ CommonListImpl::~CommonListImpl() {
 }
 
 void CommonListImpl::clear() {
+  TRACE("[CALL] CommonListImpl::clear()");
+
   for (unsigned i = 0; i < data_.size(); i++)
     delete data_[i];
   data_.clear();
+
+  real_size_ = 0;
+  real_size_initialized_ = false;
   add = false;
 }
 
@@ -126,6 +131,55 @@ unsigned long long CommonListImpl::getRealCount() {
     makeRealCount();
 
   return real_size_;
+}
+
+unsigned long long CommonListImpl::getRealCount(DBase::Filters::Union &_filter) {
+  TRACE("[CALL] CommonListImpl::getRealCount()");
+
+  if (!real_size_initialized_)
+    makeRealCount(_filter);
+
+  return real_size_;
+}
+
+void CommonListImpl::makeRealCount(DBase::Filters::Union &_filter) {
+  TRACE("[CALL] CommonListImpl::makeRealCount()");
+
+  _filter.clearQueries();
+
+  DBase::Filters::Union::iterator it = _filter.begin();
+  for (; it != _filter.end(); ++it) {
+    DBase::SelectQuery *tmp = new DBase::SelectQuery();
+    tmp->select() << "COUNT(*)";
+    _filter.addQuery(tmp);
+  }
+
+  DBase::SelectQuery count_query;
+  _filter.serialize(count_query);
+ 
+  if (conn_) {
+    try {
+      std::auto_ptr<DBase::Result> r_count(conn_->exec(count_query));
+      std::auto_ptr<DBase::ResultIterator> r_it(r_count->getIterator());
+      real_size_ = r_it->getNextValue();
+      real_size_initialized_ = true;
+    }
+    catch (DBase::Exception& ex) {
+      LOGGER("db").error(boost::format("%1%") % ex.what());
+    }
+    catch (std::exception& ex) {
+      LOGGER("db").error(boost::format("%1%") % ex.what());
+    }
+  }
+  else {
+    if (!db->ExecSelect(count_query.c_str())) {
+      LOGGER("register").error("filter data count failed - old database library connection used");
+    }
+    else {
+      real_size_ = atoll(db->GetFieldValue(0, 0));
+      real_size_initialized_ = true;
+    }
+  }
 }
 
 void CommonListImpl::makeRealCount() throw (SQL_ERROR) {

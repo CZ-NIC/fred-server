@@ -110,11 +110,12 @@ void ccReg_EPPActions_i::reload() {
 void ccReg_EPPActions_i::clear() {
   TRACE("[CALL] ccReg_EPPActions_i::clear()");
   ccReg_PageTable_i::clear();
-  uf.clear();
+  eal->clear();
 }
 
 CORBA::ULongLong ccReg_EPPActions_i::resultSize() {
-  return 12345;
+  TRACE("ccReg_EPPActions_i::resultSize()");
+  return eal->getRealCount(uf);
 }
 
 void ccReg_EPPActions_i::loadFilter(ccReg::TID _id) {

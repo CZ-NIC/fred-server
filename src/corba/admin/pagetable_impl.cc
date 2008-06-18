@@ -106,6 +106,7 @@ void
 ccReg_PageTable_i::clear() {
   TRACE("[CALL] ccReg_PageTable_i::clear()");
   it.clearF();
+  uf.clear();
 }
 
 void

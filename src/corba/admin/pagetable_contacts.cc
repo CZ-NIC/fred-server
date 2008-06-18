@@ -93,7 +93,7 @@ CORBA::Short ccReg_Contacts_i::numColumns() {
 }
 
 void ccReg_Contacts_i::reload() {
-  cl->makeRealCount();
+//  cl->makeRealCount();
   cl->reload2(uf, dbm);
 }
 
@@ -101,11 +101,12 @@ void ccReg_Contacts_i::clear() {
   cl->clearFilter();
   
   ccReg_PageTable_i::clear();
-  uf.clear();
+  cl->clear();
 }
 
 CORBA::ULongLong ccReg_Contacts_i::resultSize() {
-  return cl->getRealCount();
+  TRACE("[CALL] ccReg_Contacts_i::resultSize()");
+  return cl->getRealCount(uf);
 }
 
 void ccReg_Contacts_i::loadFilter(ccReg::TID _id) {

@@ -91,11 +91,12 @@ CORBA::Short ccReg_PublicRequests_i::numColumns() {
 void ccReg_PublicRequests_i::clear() {
   TRACE("[CALL] ccReg_PublicRequests_i::clear()");
   ccReg_PageTable_i::clear();
-  uf.clear();
+  request_list_->clear();
 }
 
 CORBA::ULongLong ccReg_PublicRequests_i::resultSize() {
-  return 123456; //request_list_->getRealCount();
+  TRACE("ccReg_PublicRequests_i::resultSize()");
+  return request_list_->getRealCount(uf);
 }
 
 void ccReg_PublicRequests_i::loadFilter(ccReg::TID _id) {
