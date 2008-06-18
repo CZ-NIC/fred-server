@@ -15,6 +15,7 @@
 #include "public_request_filter.h"
 #include "mail_filter.h"
 #include "file_filter.h"
+#include "keyset_filter.h"
 #include "union_filter.h"
 
 #endif /*MODEL_FILTERS_H_*/
