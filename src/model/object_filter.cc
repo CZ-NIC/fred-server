@@ -81,6 +81,7 @@ void ObjectImpl::_joinPolymorphicTables() {
       ));
     }
   }
+  Compound::_joinPolymorphicTables();
 }
 
 /*
@@ -160,6 +161,7 @@ void ObjectHistoryImpl::_joinPolymorphicTables() {
       ));
     }
   }
+  Compound::_joinPolymorphicTables();
 }
 
 }

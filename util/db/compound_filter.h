@@ -31,10 +31,10 @@ namespace Filters {
 class Compound : public Filter {
 public:
   Compound() :
-    Filter(), join_on(0) {
+    Filter(), join_on(0), polymorphic_joined_(false) {
   }
   Compound(const std::string& _conj) :
-    Filter(_conj), join_on(0) {
+    Filter(_conj), join_on(0), polymorphic_joined_(false) {
   }
   virtual ~Compound();
   virtual bool isSimple() const {
@@ -46,6 +46,7 @@ public:
 
   virtual Compound* clone() const;
   virtual void _joinPolymorphicTables() {
+    polymorphic_joined_ = true;
   }
 
   template<class Tp> Tp* find();
@@ -102,6 +103,7 @@ protected:
   std::deque<Join*> joins;
   std::map<std::string, Table> tables;
   static unsigned alias_suffix;
+  bool polymorphic_joined_;
 };
 
 }

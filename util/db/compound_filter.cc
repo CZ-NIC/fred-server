@@ -19,7 +19,9 @@ Compound::~Compound() {
 void Compound::serialize(DBase::SelectQuery& _sq) {
   TRACE("[CALL] Compound::serialize()");
   LOGGER("db").debug(boost::format("serializing filter '%1%'") % getName());
-  _joinPolymorphicTables();
+  
+  if (!polymorphic_joined_) 
+    _joinPolymorphicTables();
 
   TRACE("[IN] Compound::serialize(): (+)join_on");
   _sq.from() << (join_on ? join_on->getType() : "");
