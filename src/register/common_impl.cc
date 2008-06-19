@@ -144,6 +144,13 @@ unsigned long long CommonListImpl::getRealCount(DBase::Filters::Union &_filter) 
 
 void CommonListImpl::makeRealCount(DBase::Filters::Union &_filter) {
   TRACE("[CALL] CommonListImpl::makeRealCount()");
+  
+  if (_filter.empty()) {
+    real_size_ = 0;
+    real_size_initialized_ = false;
+    LOGGER("register").warning("can't make real filter data count -- no filter specified...");
+    return;
+  }
 
   _filter.clearQueries();
 
