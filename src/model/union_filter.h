@@ -37,6 +37,10 @@ public:
     query_list.push_back(_q);
   }
 
+  virtual bool empty() const {
+    return filter_list.empty();
+  }
+  
   void clearFilters();
   void clearQueries();
   void clear();
