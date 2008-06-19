@@ -91,8 +91,6 @@ public:
     _ar.register_type(static_cast<InvoiceImpl *>(NULL));
     _ar.register_type(static_cast<FileImpl *>(NULL));
     _ar.register_type(static_cast<MailImpl *>(NULL));
-    _ar.register_type(static_cast<KeySetImpl *>(NULL));
-    _ar.register_type(static_cast<KeySetHistoryImpl *>(NULL));
 
     _ar & BOOST_SERIALIZATION_NVP(filter_list);
   }

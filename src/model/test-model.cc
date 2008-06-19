@@ -8,7 +8,6 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 
-#include "keyset_filter.h"
 #include "model_filters.h"
 #include "db/dbs.h"
 #include "log/logger.h"
@@ -17,7 +16,7 @@ using namespace DBase;
 using namespace DBase::Filters;
 
 Connection* init_connection() {
-  std::string conninfo = "host=localhost dbname=fred user=fred port=22345";
+  std::string conninfo = "host=localhost dbname=fred user=fred";
   std::auto_ptr<Manager> m(new PSQLManager(conninfo));
   Connection *conn = m->getConnection();
   return conn;
@@ -223,22 +222,11 @@ int main(int argc, char *argv[]) {
 //    
 //    return 1;
     
-    //KeySet *k = new KeySetImpl();
-    //k->addTechContact().addCity().setValue("Jihlava");
-    //k->addId().setValue(DBase::ID(18));
-    // k->addDomain().addId().setValue(DBase::ID(16));
-    // uf.addFilter(k);
-    // sq1 = new SelectQuery();
-    // sq1->addSelect("*", k->joinKeySetTable());
-    // uf.addQuery(sq1);
-// 
-    // exec_and_print__(sq, uf);
-
-    return 1;
     
     Invoice *i = new InvoiceImpl();
-    //i->addFile().addName().setValue("soubor.pdf");
-    i->addRegistrar().addHandle().setValue("REG-FRED_A");
+    //i->addType().setValue(0);
+    i->addNumber().setValue("1*");
+    //i->addFile().addName().setValue("150800001.pdf");
    
     uf.addFilter(i);
     sq1 = new SelectQuery();

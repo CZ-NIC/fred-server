@@ -16,8 +16,7 @@ enum ObjectType {
   TUNKNOWN = 0,
   TCONTACT = 1,
   TNSSET = 2,
-  TDOMAIN = 3,
-  TKEYSET = 4
+  TDOMAIN = 3
 };
 
 class ObjectRegistry : public Compound {
