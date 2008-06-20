@@ -35,6 +35,10 @@ std::ostream& operator<<(std::ostream &_os, const DateTime& _v) {
 	return _os << _v.str();
 }
 
+bool operator<=(const DateTime &_left, const DateTime &_right) {
+  return _left.value <= _right.value;
+}
+
 DateTime operator+(const DateTime& _d, Time _time) {
 	return DateTime(_d.value + _time.get());
 };

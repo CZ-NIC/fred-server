@@ -196,7 +196,9 @@ char* ccReg_Admin_i::createSession(const char* username)
       + username;
 
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
-  m_session_list[session_id] = new ccReg_Session_i(m_connection_string, ns, cfg, user_info);
+  
+  ccReg_Session_i *session = new ccReg_Session_i(m_connection_string, ns, cfg, user_info);
+  m_session_list[session_id] = session; 
   LOGGER("corba").notice(boost::format("admin session '%1%' created -- total number of sessions is '%2%'")
       % session_id % m_session_list.size());
 
@@ -213,6 +215,7 @@ void ccReg_Admin_i::destroySession(const char* _session_id) {
         % _session_id);
     return;
   }
+
   delete it->second;
   m_session_list.erase(it);
 }

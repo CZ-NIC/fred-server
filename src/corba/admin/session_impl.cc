@@ -39,6 +39,9 @@ ccReg_Session_i::ccReg_Session_i(const std::string& database,
   m_invoicing_manager.reset(Register::Invoicing::Manager::create(&db,
                                                                  m_document_manager.get(),
                                                                  &m_mailer_manager));
+  
+  mail_manager_.reset(Register::Mail::Manager::create(m_db_manager.get()));
+  file_manager_.reset(Register::File::Manager::create(m_db_manager.get()));
 
   m_registrars = new ccReg_Registrars_i(m_register_manager->getRegistrarManager()->getList());
   m_eppactions = new ccReg_EPPActions_i(m_register_manager->getRegistrarManager()->getEPPActionList());
@@ -46,9 +49,10 @@ ccReg_Session_i::ccReg_Session_i(const std::string& database,
   m_contacts = new ccReg_Contacts_i(m_register_manager->getContactManager()->createList());
   m_nssets = new ccReg_NSSets_i(m_register_manager->getNSSetManager()->createList());
   m_invoices = new ccReg_Invoices_i(m_invoicing_manager->createList());
-  m_mails = new ccReg_Mails_i(ns);
   m_filters = new ccReg_Filters_i(m_register_manager->getFilterManager()->getList());
   m_publicrequests = new ccReg_PublicRequests_i(m_publicrequest_manager->createList());
+  m_mails = new ccReg_Mails_i(mail_manager_->createList(), ns);
+  m_files = new ccReg_Files_i(file_manager_->createList());
 
   // m_user = new ccReg_User_i(1, "superuser", "Pepa", "Zdepa");  
 
@@ -76,6 +80,7 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_invoices;
   delete m_filters;
   delete m_user;
+  delete m_files;
 
   db.Disconnect();
 }
@@ -108,6 +113,7 @@ ccReg::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
     case ccReg::FT_MAIL:
       return m_mails->_this();
     case ccReg::FT_FILE:
+      return m_files->_this();
       break;
   }
   LOGGER("corba").debug(boost::format("[ERROR] ccReg_Session_i::getPageTable(%1%): unknown type specified")
@@ -119,12 +125,14 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
   TRACE(boost::format("[CALL] ccReg_Session_i::getDetail(%1%, %2%)") % _type
       % _id);
   CORBA::Any *result = new CORBA::Any;
+  
   ccReg::ContactDetail *c_detail = 0;
   ccReg::NSSetDetail *n_detail = 0;
   ccReg::DomainDetail *d_detail = 0;
   ccReg::Registrar *r_detail = 0;
   ccReg::PublicRequest::Detail *pr_detail = 0;
   ccReg::Invoicing::Invoice *i_detail = 0;
+  ccReg::Mailing::Detail *m_detail = 0;
 
   switch (_type) {
     case ccReg::FT_CONTACT:
@@ -156,13 +164,19 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
       i_detail = getInvoiceDetail(_id);
       *result <<= i_detail;
       break;
+      
+    case ccReg::FT_MAIL:
+      m_detail = getMailDetail(_id);
+      *result <<= m_detail;
+      break;
 
     case ccReg::FT_FILTER:
     case ccReg::FT_OBJ:
     case ccReg::FT_ACTION:
-    case ccReg::FT_MAIL:
     case ccReg::FT_FILE:
       LOGGER("corba").error("Calling method with not implemented parameter!");
+    default:
+      throw ccReg::Admin::OBJECT_NOT_FOUND();
       break;
   }
 
@@ -325,6 +339,29 @@ ccReg::Invoicing::Invoice* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
       throw ccReg::Admin::ObjectNotFound();
     }
     return createInvoiceDetail(tmp_invoice_list->get(0));
+  }
+}
+
+ccReg::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
+  Register::Mail::Mail *mail = m_mails->findId(_id);
+  if (mail) {
+    return createMailDetail(mail);
+  } else {
+    LOGGER("corba").debug(boost::format("constructing mail filter for object id=%1%' detail")
+        % _id);
+    Register::Mail::List *tmp_mail_list = mail_manager_->createList();
+
+    DBase::Filters::Union union_filter;
+    DBase::Filters::Mail *filter = new DBase::Filters::MailImpl();
+    filter->addId().setValue(DBase::ID(_id));
+    union_filter.addFilter(filter);
+
+    tmp_mail_list->reload(union_filter);
+
+    if (tmp_mail_list->size() != 1) {
+      throw ccReg::Admin::ObjectNotFound();
+    }
+    return createMailDetail(tmp_mail_list->get(0));
   }
 }
 
@@ -706,6 +743,27 @@ ccReg::Invoicing::Invoice* ccReg_Session_i::createInvoiceDetail(Register::Invoic
     detail->actions[n].pricePerUnit = DUPSTRC(formatMoney(pa->getPricePerUnit()));
     detail->actions[n].price = DUPSTRC(formatMoney(pa->getPrice()));
   }
+  
+  return detail;
+}
+
+ccReg::Mailing::Detail* ccReg_Session_i::createMailDetail(Register::Mail::Mail *_mail) {
+  ccReg::Mailing::Detail *detail = new ccReg::Mailing::Detail;
+  
+  detail->id = _mail->getId();
+  detail->type = _mail->getType();
+  detail->status = _mail->getStatus();
+  detail->createTime = DUPSTRDATE(_mail->getCreateTime);
+  detail->modTime = DUPSTRDATE(_mail->getModTime);
+  detail->content = DUPSTRC(_mail->getContent());
+  
+  detail->handles.length(_mail->getHandleSize());
+  for (unsigned i = 0; i < _mail->getHandleSize(); ++i)
+    detail->handles[i] = DUPSTRC(_mail->getHandle(i));
+  
+  detail->attachments.length(_mail->getAttachmentSize());
+  for (unsigned i = 0; i < _mail->getAttachmentSize(); ++i)
+    detail->attachments[i] = _mail->getAttachment(i);
   
   return detail;
 }

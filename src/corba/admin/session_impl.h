@@ -20,11 +20,11 @@
 #include "pagetable_mails.h"
 #include "pagetable_invoices.h"
 #include "pagetable_filters.h"
+#include "pagetable_files.h"
 
 #include "user_impl.h"
 #include "corba/mailer_manager.h"
 #include "register/register.h"
-#include "register/invoice.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/conf.h"
 #include "db/dbs.h"
@@ -46,12 +46,15 @@ private:
   ccReg_Invoices_i* m_invoices;
   ccReg_Filters_i* m_filters;
   ccReg_User_i* m_user;
+  ccReg_Files_i* m_files;
 
   std::auto_ptr<DBase::Manager> m_db_manager;
   std::auto_ptr<Register::Manager> m_register_manager;
   std::auto_ptr<Register::PublicRequest::Manager> m_publicrequest_manager;
   std::auto_ptr<Register::Document::Manager> m_document_manager;
   std::auto_ptr<Register::Invoicing::Manager> m_invoicing_manager;
+  std::auto_ptr<Register::Mail::Manager> mail_manager_;
+  std::auto_ptr<Register::File::Manager> file_manager_;
   MailerManager m_mailer_manager;
 
   ptime m_last_activity;
@@ -63,6 +66,7 @@ private:
   ccReg::Registrar* getRegistrarDetail(ccReg::TID _id);
   ccReg::PublicRequest::Detail* getPublicRequestDetail(ccReg::TID _id);
   ccReg::Invoicing::Invoice* getInvoiceDetail(ccReg::TID _id);
+  ccReg::Mailing::Detail* getMailDetail(ccReg::TID _id);
   
   ccReg::DomainDetail* createDomainDetail(Register::Domain::Domain* _domain);
   ccReg::ContactDetail* createContactDetail(Register::Contact::Contact* _contact);
@@ -70,6 +74,7 @@ private:
   ccReg::Registrar* createRegistrarDetail(Register::Registrar::Registrar* _registrar);
   ccReg::PublicRequest::Detail* createPublicRequestDetail(Register::PublicRequest::PublicRequest* _request);
   ccReg::Invoicing::Invoice* createInvoiceDetail(Register::Invoicing::Invoice *_invoice);
+  ccReg::Mailing::Detail* createMailDetail(Register::Mail::Mail *_mail);
   
   void _createUpdateRegistrar(const ccReg::Registrar& _registrar);
 

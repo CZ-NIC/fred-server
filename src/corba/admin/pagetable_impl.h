@@ -13,6 +13,7 @@
 #include "register/register.h"
 #include "register/invoice.h"
 #include "register/notify.h"
+#include "register/mail.h"
 #include "register/filter.h"
 
 #include "old_utils/log.h"

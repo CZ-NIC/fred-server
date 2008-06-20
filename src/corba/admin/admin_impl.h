@@ -39,6 +39,7 @@ private:
   // TEMP: temporary list of possible users -> future in database table
   std::vector<std::string> m_user_list;
 
+  
   void fillRegistrar(ccReg::Registrar& creg,
                      Register::Registrar::Registrar *reg);
   void garbageSession();

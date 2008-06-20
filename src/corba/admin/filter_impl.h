@@ -37,6 +37,8 @@ public:
   ccReg::Filters::Action_ptr addE(DBase::Filters::EppAction* f);
   ccReg::Filters::PublicRequest_ptr addE(DBase::Filters::PublicRequest* f);
   ccReg::Filters::Invoice_ptr addE(DBase::Filters::Invoice* f);
+  ccReg::Filters::Mail_ptr addE(DBase::Filters::Mail* f);
+  ccReg::Filters::File_ptr addE(DBase::Filters::File* f);
     
   void addFilter(DBase::Filters::Filter* f);
     

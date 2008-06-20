@@ -6,13 +6,13 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(LIBIDN_CFLAGS) -I$(top_sr
 libfred_a_SOURCES = register.cc zone.cc blacklist.cc domain.cc registrar.cc \
                     object_impl.cc contact.cc nsset.cc auth_info.cc invoice.cc \
                     documents.cc bank.cc info_buffer.cc poll.cc common_impl.cc \
-                    notify.cc filter.cc public_request.cc \
+                    notify.cc filter.cc public_request.cc mail.cc file.cc \
                     auth_info.h common_object.h mailer.h \
                     object_impl.h sql.h bank.h contact.h exceptions.h \
                     notify.h poll.h types.h blacklist.h documents.h \
                     info_buffer.h nsset.h register.h zone.h common_impl.h \
                     domain.h invoice.h object.h registrar.h filter.h \
-                    public_request.h
+                    public_request.h mail.h file.h
 
 # noinst_PROGRAMS = test-register
 # test_register_SOURCES = test.cc

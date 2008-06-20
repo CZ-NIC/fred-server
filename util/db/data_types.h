@@ -300,6 +300,7 @@ public:
     return value;
   }
 
+  friend bool operator<=(const DateTime &_left, const DateTime &_right);
   friend std::ostream& operator<<(std::ostream &_os, const DateTime& _v);
   friend DateTime operator+(const DateTime& _d, Time _time);
   friend DateTime operator-(const DateTime& _d, Time _time);

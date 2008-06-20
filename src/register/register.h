@@ -9,6 +9,8 @@
 #include "auth_info.h"
 #include "public_request.h"
 #include "invoice.h"
+#include "mail.h"
+#include "file.h"
 #include "filter.h"
 
 /// forward declared parameter type

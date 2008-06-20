@@ -30,7 +30,7 @@ public:
 
 class FileImpl : virtual public File {
 public:
-  FileImpl();
+  FileImpl(bool _set_active = false);
   virtual ~FileImpl();
   
   virtual Table& joinFileTable();

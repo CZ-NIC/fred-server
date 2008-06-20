@@ -6,6 +6,7 @@ namespace Filters {
 MailImpl::MailImpl() : 
   Compound() {
   setName("Mail");
+  active = true;
 }
 
 MailImpl::~MailImpl() {
@@ -81,7 +82,7 @@ Value<std::string>& MailImpl::addMessage() {
 
 File& MailImpl::addAttachment() {
   File *tmp = new FileImpl();
-  addJoin(new Join(
+  tmp->addJoin(new Join(
                    Column("id", joinMailTable()),
                    SQL_OP_EQ,
                    Column("mailid", joinTable("mail_attachments"))

@@ -3,9 +3,10 @@
 namespace DBase {
 namespace Filters {
 
-FileImpl::FileImpl() :
+FileImpl::FileImpl(bool _set_active) :
   Compound() {
   setName("File");
+  active = _set_active;
 }
 
 FileImpl::~FileImpl() {

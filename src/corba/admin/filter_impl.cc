@@ -332,6 +332,16 @@ COMPOUND_CLASS(PublicRequest, PublicRequest, Compound,
     FILTER_ADD(Action, addEppAction);
 );
 
+COMPOUND_CLASS(File, File, Compound,
+    FILTER_ADD(Id, addId);
+    FILTER_ADD(Str, addName);
+    FILTER_ADD(Str, addPath);
+    FILTER_ADD(Str, addMimeType);
+    FILTER_ADD(DateTime, addCreateTime);
+    FILTER_ADD(Int, addSize);
+    FILTER_ADD(Int, addType);
+);
+
 COMPOUND_CLASS(Invoice, Invoice, Compound,
     FILTER_ADD(Id, addZoneId);
     FILTER_ADD(Int, addType);
@@ -340,7 +350,19 @@ COMPOUND_CLASS(Invoice, Invoice, Compound,
     FILTER_ADD(Date, addTaxDate);
     FILTER_ADD(Registrar, addRegistrar);
     FILTER_ADD(Obj, addObject);
-//  FILTER_ADD(File, addFile);
+    FILTER_ADD(File, addFile);
+);
+
+COMPOUND_CLASS(Mail, Mail, Compound,
+    FILTER_ADD(Id, addId);
+    FILTER_ADD(Int, addType);
+    FILTER_ADD(Str, addHandle);
+    FILTER_ADD(DateTime, addCreateTime);
+    FILTER_ADD(DateTime, addModifyTime);
+    FILTER_ADD(Int, addStatus);
+    FILTER_ADD(Int, addAttempt);
+    FILTER_ADD(Str, addMessage);
+    FILTER_ADD(File, addAttachment);
 );
 
 FilterIteratorImpl::FilterIteratorImpl() :
@@ -408,7 +430,9 @@ ITERATOR_ADD_E_METHOD_IMPL(Contact,Contact);
 ITERATOR_ADD_E_METHOD_IMPL(Domain,Domain);
 ITERATOR_ADD_E_METHOD_IMPL(NSSet,NSSet);
 ITERATOR_ADD_E_METHOD_IMPL(PublicRequest,PublicRequest);
+ITERATOR_ADD_E_METHOD_IMPL(File,File);
 ITERATOR_ADD_E_METHOD_IMPL(Invoice,Invoice);
+ITERATOR_ADD_E_METHOD_IMPL(Mail,Mail);
 
 #define ITERATOR_ADD_FILTER_METHOD_IMPL(ct,dt) \
   { DBase::Filters::dt *rf = dynamic_cast<DBase::Filters::dt *>(f); \
@@ -430,5 +454,7 @@ void FilterIteratorImpl::addFilter(DBase::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(Domain,Domain);
   ITERATOR_ADD_FILTER_METHOD_IMPL(NSSet,NSSet);
   ITERATOR_ADD_FILTER_METHOD_IMPL(PublicRequest,PublicRequest);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(File,File);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Invoice,Invoice);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(Mail,Mail);
 }
