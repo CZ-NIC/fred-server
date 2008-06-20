@@ -500,14 +500,16 @@ public:
     } // hasAction
     if (hasStateChange) {
       sql.str("");
-      sql << "SELECT tmp.id, dh.exdate::date, eh.exdate::date, obr.name "
-          << "FROM " << getTempTableName() << " tmp, "
-          << "poll_statechange ps, object_state s, "
-          << "object_history oh, object_registry obr, " << "domain_history dh "
+      sql << "SELECT tmp.id, "
+          << "COALESCE(dh.exdate::date,s.valid_from::date), "
+          << "eh.exdate::date, obr.name "
+          << "FROM " << getTempTableName() << " tmp "
+          << "JOIN poll_statechange ps ON (tmp.id=ps.msgid) "
+          << "JOIN object_state s ON (ps.stateid=s.id) "          
+          << "JOIN object_registry obr ON (s.object_id=obr.id) " 
+          << "LEFT JOIN domain_history dh ON (s.ohid_from=dh.historyid) "
           << "LEFT JOIN enumval_history eh ON (eh.historyid=dh.historyid) "
-          << "WHERE tmp.id=ps.msgid AND ps.stateid=s.id "
-          << "AND s.ohid_from=oh.historyid AND oh.id=obr.id "
-          << "AND oh.historyid=dh.historyid " << "ORDER BY tmp.id ";
+          << "ORDER BY tmp.id ";
       if (!db->ExecSelect(sql.str().c_str()))
         throw SQL_ERROR();
       // assign to nsset
