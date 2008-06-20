@@ -2872,6 +2872,7 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
 
         if (DBsql.BeginTransaction()) {
 
+          int zone = 0; // for domain zone check
           switch (act) {
             case EPP_ContactTransfer:
               if ( (id = getIdOfContact(&DBsql, name, conf, true)) < 0)
@@ -2890,12 +2891,16 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
               break;
   
             case EPP_DomainTransfer:
-              if ( (id = getIdOfDomain(&DBsql, name, conf, true) ) < 0)
+              if ( (id = getIdOfDomain(&DBsql, name, conf, true, &zone) ) < 0)
                 ret->code=SetReasonDomainFQDN(errors, name, id == -1,
                     GetRegistrarLang(clientID) );
               else if (id == 0)
                 ret->code=COMMAND_OBJECT_NOT_EXIST;
-              break;
+              if (DBsql.TestRegistrarZone(regID, zone) == false) {
+                 LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
+                 ret->code = COMMAND_AUTHENTICATION_ERROR;
+               }
+               break;
             default:
               ret->code = COMMAND_PARAMETR_ERROR;
           }
