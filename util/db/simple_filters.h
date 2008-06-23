@@ -6,6 +6,12 @@
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/string.hpp>
 
+#include "boost/date_time/posix_time/posix_time.hpp"
+#include "boost/date_time/posix_time/posix_time_types.hpp"
+#include "boost/date_time/local_timezone_defs.hpp"
+#include "boost/date_time/local_time_adjustor.hpp"
+#include "boost/date_time/c_local_time_adjustor.hpp"
+
 #include "simple_filter.h"
 #include "dbexceptions.h"
 #include "log/logger.h"
@@ -130,18 +136,18 @@ public:
       }
 
       if (t_value.getSpecial() < PAST_HOUR) {
-        beg << "date_trunc('" << what << "', current_timestamp AT TIME ZONE 'CET' + interval '"
+        beg << "date_trunc('" << what << "', current_timestamp + interval '"
             << t_value.getSpecialOffset() << " " << what <<"')";
         end << beg.str() << " + interval '1 "<< what << "'";
       } else {
         if (t_value.getSpecialOffset() < 0) {
-          beg << "current_timestamp AT TIME ZONE 'CET' + interval '" << t_value.getSpecialOffset()
+          beg << "current_timestamp + interval '" << t_value.getSpecialOffset()
               << " " << what << "'";
-          end << "current_timestamp AT TIME ZONE 'CET'";
+          end << "current_timestamp";
         } else {
-          end << "current_timestamp AT TIME ZONE 'CET' + interval '" << t_value.getSpecialOffset()
+          end << "current_timestamp + interval '" << t_value.getSpecialOffset()
               << " " << what <<"'";
-          beg << "current_timestamp AT TIME ZONE 'CET'";
+          beg << "current_timestamp";
         }
 
       }
@@ -208,14 +214,39 @@ public:
   Interval(const Column& _col, const DBase::Null<DateTimeInterval>& _value,
       const std::string& _conj = SQL_OP_AND) :
     _BaseDTInterval<DateTimeInterval>(_col, _value, _conj) {
-    column.castTo("timestamptz", "CET");
+//    column.castTo("timestamptz", "CET"); 
   }
   Interval(const Column& _col, const std::string& _conj = SQL_OP_AND) :
     _BaseDTInterval<DateTimeInterval>(_col, _conj) {
-    column.castTo("timestamptz", "CET");
+//    column.castTo("timestamptz", "CET");
   }
   
   Interval() {
+  }
+  
+  void setValue(const DateTimeInterval& _value) {
+    TRACE("[CALL] ::setValue()");
+
+    if (_value.isSpecial()) {
+      value = _value;
+    }
+    else {
+      using namespace boost::posix_time;
+      using namespace boost::gregorian;
+      
+      typedef boost::date_time::eu_dst_trait<date> eu_dst_traits;
+      typedef boost::date_time::dst_calc_engine<date, time_duration, eu_dst_traits> calc_engine; 
+      typedef boost::date_time::local_adjustor<ptime, 1, calc_engine> adjustor;
+      
+      ptime beg = _value.get().begin();
+      ptime end = _value.get().end();    
+      beg = adjustor::local_to_utc(beg);
+      end = adjustor::local_to_utc(end);
+      
+      value = DateTimeInterval(time_period(beg, end));
+    }
+    
+    active = true;
   }
 
   friend class boost::serialization::access;
