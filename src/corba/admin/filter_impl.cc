@@ -291,6 +291,8 @@ COMPOUND_CLASS(Contact, Contact, Obj,
 COMPOUND_CLASS(Domain, Domain, Obj,
     FILTER_ADD(Id, addId);
     FILTER_ADD(Date, addExpirationDate);
+    FILTER_ADD(Date, addOutZoneDate);
+    FILTER_ADD(Date, addCancelDate);
     FILTER_ADD(Contact, addRegistrant);
     FILTER_ADD(Contact, addAdminContact);
     FILTER_ADD(Contact, addTempContact);

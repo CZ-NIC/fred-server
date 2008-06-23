@@ -50,6 +50,20 @@ Interval<DBase::DateInterval>& DomainImpl::addExpirationDate() {
   return *tmp;
 }
 
+Interval<DBase::DateInterval>& DomainImpl::addOutZoneDate() {
+  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate + (select val from enum_parameters where id = 4)::int", joinDomainTable()));
+  tmp->setName("OutZoneDate");
+  add(tmp);
+  return *tmp;
+}
+
+Interval<DBase::DateInterval>& DomainImpl::addCancelDate() {
+  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate + (select val from enum_parameters where id = 6)::int", joinDomainTable()));
+  tmp->setName("CancelDate");
+  add(tmp);
+  return *tmp;
+}
+
 Contact& DomainImpl::addRegistrant() {
   Contact *tmp = new ContactImpl();
   tmp->setName("Registrant");
@@ -151,6 +165,20 @@ Value<DBase::ID>& DomainHistoryImpl::addZoneId() {
 Interval<DBase::DateInterval>& DomainHistoryImpl::addExpirationDate() {
   Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate", joinDomainTable()));
   tmp->setName("ExpirationDate");
+  add(tmp);
+  return *tmp;
+}
+
+Interval<DBase::DateInterval>& DomainHistoryImpl::addOutZoneDate() {
+  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate + (select val from enum_parameters where id = 4)::int", joinDomainTable()));
+  tmp->setName("OutZoneDate");
+  add(tmp);
+  return *tmp;
+}
+
+Interval<DBase::DateInterval>& DomainHistoryImpl::addCancelDate() {
+  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate + (select val from enum_parameters where id = 6)::int", joinDomainTable()));
+  tmp->setName("CancelDate");
   add(tmp);
   return *tmp;
 }

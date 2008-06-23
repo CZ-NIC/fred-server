@@ -23,6 +23,8 @@ public:
   virtual Value<DBase::ID>& addZoneId() = 0;
   virtual Value<DBase::ID>& addRegistrantId() = 0;
   virtual Interval<DBase::DateInterval>& addExpirationDate() = 0;
+  virtual Interval<DBase::DateInterval>& addOutZoneDate() = 0;
+  virtual Interval<DBase::DateInterval>& addCancelDate() = 0;
   virtual Contact& addRegistrant() = 0;
   virtual Contact& addAdminContact() = 0;
   virtual Contact& addTempContact() = 0;
@@ -52,6 +54,8 @@ public:
   virtual Value<DBase::ID>& addZoneId();
   virtual Value<DBase::ID>& addRegistrantId();
   virtual Interval<DBase::DateInterval>& addExpirationDate();
+  virtual Interval<DBase::DateInterval>& addOutZoneDate();
+  virtual Interval<DBase::DateInterval>& addCancelDate();
   virtual Contact& addRegistrant();
   virtual Contact& addAdminContact();
   virtual Contact& addTempContact();
@@ -84,6 +88,8 @@ public:
   virtual Value<DBase::ID>& addZoneId();
   virtual Value<DBase::ID>& addRegistrantId();
   virtual Interval<DBase::DateInterval>& addExpirationDate();
+  virtual Interval<DBase::DateInterval>& addOutZoneDate();
+  virtual Interval<DBase::DateInterval>& addCancelDate();
   virtual Contact& addRegistrant();
   virtual Contact& addAdminContact();
   virtual Contact& addTempContact();
