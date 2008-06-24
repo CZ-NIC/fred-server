@@ -106,7 +106,7 @@ void SysLog::msg(Log::Level _ll, const std::string& _msg,
 	if (_ll == Log::LL_TRACE)
 	  _ll = Log::LL_DEBUG;
 	
-	syslog(_ll, std::string(ctx + _msg).c_str());
+	syslog(_ll | ((LOG_FAC(LOG_LOCAL0) + facility) << 3), std::string(ctx + _msg).c_str());
 }
 
 }
