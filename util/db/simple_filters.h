@@ -91,6 +91,23 @@ public:
   virtual _BaseDTInterval<DTp>* clone() const {
     return 0;
   }
+  
+  virtual std::string special2str(DateTimeIntervalSpecial _spec) const {
+    switch (_spec) {
+    case LAST_HOUR:
+    case PAST_HOUR:  return "hour";
+    case LAST_DAY:
+    case PAST_DAY:   return "day";
+    case LAST_WEEK:
+    case PAST_WEEK:  return "week";
+    case LAST_MONTH:
+    case PAST_MONTH: return "month";
+    case LAST_YEAR:
+    case PAST_YEAR:  return "year";
+    default:
+      throw Exception("Interval: not valid special value");
+    }
+  }
 
   virtual void serialize(DBase::SelectQuery& _sq) {
     TRACE("[CALL] _BaseDTInterval::serialize()");
@@ -103,58 +120,6 @@ public:
       prep << getConjuction() << "( ";
       prep << column.str() << SQL_OP_IS << value;
       prep << " )";
-    } else if (t_value.isSpecial() && (t_value.getSpecial() != DAY
-        && t_value.getSpecial() != INTERVAL)) {
-      LOGGER("tracer").trace(boost::format("[IN] _BaseDTInterval::serialize(): value is special (special_flag='%1%')")
-          % t_value.getSpecial());
-      std::stringstream beg, end;
-      std::string what;
-
-      switch (t_value.getSpecial()) {
-      case LAST_HOUR:
-      case PAST_HOUR:
-        what = "hour";
-        break;
-      case LAST_DAY:
-      case PAST_DAY:
-        what = "day";
-        break;
-      case LAST_WEEK:
-      case PAST_WEEK:
-        what = "week";
-        break;
-      case LAST_MONTH:
-      case PAST_MONTH:
-        what = "month";
-        break;
-      case LAST_YEAR:
-      case PAST_YEAR:
-        what = "year";
-        break;
-      default:
-        throw Exception("Interval: not valid special value");
-      }
-
-      if (t_value.getSpecial() < PAST_HOUR) {
-        beg << "date_trunc('" << what << "', current_timestamp + interval '"
-            << t_value.getSpecialOffset() << " " << what <<"')";
-        end << beg.str() << " + interval '1 "<< what << "'";
-      } else {
-        if (t_value.getSpecialOffset() < 0) {
-          beg << "current_timestamp + interval '" << t_value.getSpecialOffset()
-              << " " << what << "'";
-          end << "current_timestamp";
-        } else {
-          end << "current_timestamp + interval '" << t_value.getSpecialOffset()
-              << " " << what <<"'";
-          beg << "current_timestamp";
-        }
-
-      }
-      prep << getConjuction() << "( ";
-      prep << column.str() << SQL_OP_GE << beg.str();
-      prep << SQL_OP_AND << column.str() << SQL_OP_LT << end.str();
-      prep << " )";
     } else {
       LOGGER("tracer").trace(boost::format("[IN] _BaseDTInterval::serialize(): value is normal (special_flag='%1%')")
           % t_value.getSpecial());
@@ -164,13 +129,13 @@ public:
 
       if (!t_value.begin().is_special()) {
         prep << getConjuction() << "( ";
-        prep << column.str() << SQL_OP_GE << "'%" << store.size() + 1 << "%'";
+        prep << column.str() << SQL_OP_GE << "'%" << store.size() + 1 << "%'" + value_post_;
         store.push_back(t_value.begin().iso_str());
         b = true;
       }
       if (!t_value.end().is_special()) {
         prep << (b ? SQL_OP_AND : getConjuction() + "( ") << column.str()
-            << second_operator << "'%" << store.size() + 1 << "%'";
+            << second_operator << "'%" << store.size() + 1 << "%'" + value_post_;
         prep << " )";
         store.push_back(t_value.end().iso_str());
       } else if (b) {
@@ -214,18 +179,16 @@ public:
   Interval(const Column& _col, const DBase::Null<DateTimeInterval>& _value,
       const std::string& _conj = SQL_OP_AND) :
     _BaseDTInterval<DateTimeInterval>(_col, _value, _conj) {
-//    column.castTo("timestamptz", "CET"); 
   }
   Interval(const Column& _col, const std::string& _conj = SQL_OP_AND) :
     _BaseDTInterval<DateTimeInterval>(_col, _conj) {
-//    column.castTo("timestamptz", "CET");
   }
   
   Interval() {
   }
   
   void setValue(const DateTimeInterval& _value) {
-    TRACE("[CALL] ::setValue()");
+    TRACE("[CALL] Inteval<DateTime>::setValue()");
 
     if (_value.isSpecial()) {
       value = _value;
@@ -247,6 +210,47 @@ public:
     }
     
     active = true;
+  }
+  
+  void serialize(DBase::SelectQuery& _sq) {
+    TRACE("[CALL] Interval<DateTime>::serialize()");
+    std::stringstream &prep = _sq.where_prepared_string();
+    const DateTimeInterval& t_value = value.getValue();
+  
+    if (!value.isNull() 
+        && t_value.isSpecial() 
+        && (t_value.getSpecial() != DAY && t_value.getSpecial() != INTERVAL)) {
+      
+      LOGGER("tracer").trace(boost::format("[IN] Interval<DateTime>::serialize(): value is special (special_flag='%1%')")
+          % t_value.getSpecial());
+      
+      std::stringstream beg, end;
+      std::string what = special2str(t_value.getSpecial());
+  
+      if (t_value.getSpecial() < PAST_HOUR) {
+        beg << "date_trunc('" << what << "', current_timestamp + interval '"
+            << t_value.getSpecialOffset() << " " << what <<"')";
+        end << beg.str() << " + interval '1 "<< what << "'";
+      } else {
+        if (t_value.getSpecialOffset() < 0) {
+          beg << "current_timestamp + interval '" << t_value.getSpecialOffset()
+              << " " << what << "'" + value_post_;
+          end << "current_timestamp" + value_post_;
+        } else {
+          end << "current_timestamp + interval '" << t_value.getSpecialOffset()
+              << " " << what <<"'" + value_post_;
+          beg << "current_timestamp" + value_post_;
+        }
+  
+      }
+      prep << getConjuction() << "( ";
+      prep << column.str() << SQL_OP_GE << beg.str();
+      prep << SQL_OP_AND << column.str() << SQL_OP_LT << end.str();
+      prep << " )";
+    }
+    else {
+      _BaseDTInterval<DateTimeInterval>::serialize(_sq);
+    }
   }
 
   friend class boost::serialization::access;
@@ -271,6 +275,47 @@ public:
   Interval() {
   }
 
+  void serialize(DBase::SelectQuery& _sq) {
+    TRACE("[CALL] Interval<Date>::serialize()");
+    std::stringstream &prep = _sq.where_prepared_string();
+    const DateInterval& t_value = value.getValue();
+  
+    if (!value.isNull() 
+        && t_value.isSpecial() 
+        && (t_value.getSpecial() != DAY && t_value.getSpecial() != INTERVAL)) {
+      
+      LOGGER("tracer").trace(boost::format("[IN] Interval<Date>::serialize(): value is special (special_flag='%1%')")
+          % t_value.getSpecial());
+      
+      std::stringstream beg, end;
+      std::string what = special2str(t_value.getSpecial());
+  
+      if (t_value.getSpecial() < PAST_HOUR) {
+        beg << "date_trunc('" << what << "', current_date + interval '"
+            << t_value.getSpecialOffset() << " " << what <<"')";
+        end << beg.str() << " + interval '1 "<< what << "'";
+      } else {
+        if (t_value.getSpecialOffset() < 0) {
+          beg << "(current_date + interval '" << t_value.getSpecialOffset()
+              << " " << what << "')" + value_post_;
+          end << "current_date" + value_post_;
+        } else {
+          end << "(current_date + interval '" << t_value.getSpecialOffset()
+              << " " << what <<"')" + value_post_;
+          beg << "current_date" + value_post_;
+        }
+  
+      }
+      prep << getConjuction() << "( ";
+      prep << column.str() << SQL_OP_GE << beg.str();
+      prep << SQL_OP_AND << column.str() << SQL_OP_LT << end.str();
+      prep << " )";
+    }
+    else {
+      _BaseDTInterval<DateInterval>::serialize(_sq);
+    }
+  }
+  
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
       const unsigned int _version) {

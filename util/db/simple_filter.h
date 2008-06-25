@@ -55,15 +55,29 @@ public:
   // virtual void serialize(DBase::SelectQuery& _sq) = 0;
   virtual void serialize(DBase::SelectQuery& _sq) {
   }
+  
+  virtual void addPostValueString(const std::string& _str) {
+    value_post_ = _str;
+  }
 
+  virtual void addPreValueString(const std::string& _str) {
+    value_pre_ = _str;
+  }
+
+  
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
       const unsigned int _version) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Filter);
+    _ar & BOOST_SERIALIZATION_NVP(allowed_wildcard);
+    _ar & BOOST_SERIALIZATION_NVP(value_post_);
+    _ar & BOOST_SERIALIZATION_NVP(value_pre_);
   }
 
 protected:
   bool allowed_wildcard;
+  std::string value_post_;
+  std::string value_pre_;
 };
 
 }

@@ -51,14 +51,16 @@ Interval<DBase::DateInterval>& DomainImpl::addExpirationDate() {
 }
 
 Interval<DBase::DateInterval>& DomainImpl::addOutZoneDate() {
-  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate + (select val from enum_parameters where id = 4)::int", joinDomainTable()));
+  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate", joinDomainTable()));
+  tmp->addPostValueString("::date - (select val from enum_parameters where id = 4)::int");
   tmp->setName("OutZoneDate");
   add(tmp);
   return *tmp;
 }
 
 Interval<DBase::DateInterval>& DomainImpl::addCancelDate() {
-  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate + (select val from enum_parameters where id = 6)::int", joinDomainTable()));
+  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate", joinDomainTable()));
+  tmp->addPostValueString("::date - (select val from enum_parameters where id = 6)::int");
   tmp->setName("CancelDate");
   add(tmp);
   return *tmp;
@@ -170,14 +172,16 @@ Interval<DBase::DateInterval>& DomainHistoryImpl::addExpirationDate() {
 }
 
 Interval<DBase::DateInterval>& DomainHistoryImpl::addOutZoneDate() {
-  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate + (select val from enum_parameters where id = 4)::int", joinDomainTable()));
+  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate", joinDomainTable()));
+  tmp->addPostValueString("::date - (select val from enum_parameters where id = 4)::int");
   tmp->setName("OutZoneDate");
   add(tmp);
   return *tmp;
 }
 
 Interval<DBase::DateInterval>& DomainHistoryImpl::addCancelDate() {
-  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate + (select val from enum_parameters where id = 6)::int", joinDomainTable()));
+  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate", joinDomainTable()));
+  tmp->addPostValueString("::date - (select val from enum_parameters where id = 6)::int");
   tmp->setName("CancelDate");
   add(tmp);
   return *tmp;
