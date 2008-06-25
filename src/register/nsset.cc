@@ -158,12 +158,15 @@ public:
   }
   void setHostNameFilter(const std::string& name) {
     hostname = name;
+    nonHandleFilterSet = true;
   }
   void setHostIPFilter(const std::string& _ip) {
     ip = _ip;
+    nonHandleFilterSet = true;
   }
   void setAdminFilter(const std::string& handle) {
     admin = handle;
+    nonHandleFilterSet = true;
   }
   void makeQuery(bool count, bool limit, std::stringstream& sql) const {
     std::stringstream from, where;
@@ -251,14 +254,20 @@ public:
     db->FreeSelect();
     sql.str("");
     clear();
-    fillTempTable(true);
+    bool useTempTable = nonHandleFilterSet || handle.empty(); 
+    if (useTempTable)
+      fillTempTable(true);
     sql << "SELECT " << "obr.id,obr.name," << "o.clid,"
         << "obr.crdate,o.trdate,o.update,"
         << "obr.crid,o.upid,o.authinfopw,obr.roid,n.checklevel " << "FROM "
-        << getTempTableName() << " tmp, "
+        << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
         << "nsset n, object_registry obr, object o "
-        << "WHERE tmp.id=n.id AND n.id=o.id AND obr.id=o.id "
-        << "ORDER BY tmp.id ";
+        << "WHERE tmp.id=n.id AND n.id=o.id AND obr.id=o.id ";
+    if (!useTempTable) {
+      sql << "AND tmp.name=UPPER('" << db->Escape2(handle) << "') "
+          << "AND tmp.erdate ISNULL AND tmp.type=2 "; 
+    }
+    sql << "ORDER BY tmp.id ";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -287,10 +296,15 @@ public:
       return;
     resetIDSequence();
     sql.str("");
-    sql << "SELECT n.nssetid, cor.name " << "FROM " << getTempTableName()
-        << " tmp, " << "nsset_contact_map n, object_registry cor "
-        << "WHERE tmp.id=n.nssetid AND n.contactid = cor.id "
-        << "ORDER BY tmp.id, cor.id ";
+    sql << "SELECT n.nssetid, cor.name " << "FROM " 
+        << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
+        << "nsset_contact_map n, object_registry cor "
+        << "WHERE tmp.id=n.nssetid AND n.contactid = cor.id ";
+    if (!useTempTable) {
+      sql << "AND tmp.name=UPPER('" << db->Escape2(handle) << "') "
+          << "AND tmp.erdate ISNULL AND tmp.type=2 "; 
+    }
+    sql << "ORDER BY tmp.id, cor.id ";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -305,9 +319,14 @@ public:
     resetIDSequence();
     sql.str("");
     sql << "SELECT h.nssetid, h.fqdn, him.ipaddr " << "FROM "
-        << getTempTableName() << " tmp, "
+        << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
         << "host h LEFT JOIN host_ipaddr_map him ON (h.id=him.hostid) "
-        << "WHERE tmp.id=h.nssetid " << "ORDER BY tmp.id, h.id, him.id ";
+        << "WHERE tmp.id=h.nssetid ";
+    if (!useTempTable) {
+      sql << "AND tmp.name=UPPER('" << db->Escape2(handle) << "') "
+          << "AND tmp.erdate ISNULL AND tmp.type=2 "; 
+    }
+    sql << "ORDER BY tmp.id, h.id, him.id ";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -320,7 +339,7 @@ public:
       h->addAddr(db->GetFieldValue(i, 2));
     }
     db->FreeSelect();
-    ObjectListImpl::reload();
+    ObjectListImpl::reload(useTempTable ? NULL : handle.c_str(),2);
   }
   virtual void reload2(DBase::Filters::Union &uf, DBase::Manager* dbm) {
     TRACE("[CALL] NSSet::ListImpl::reload2()");

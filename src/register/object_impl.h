@@ -82,6 +82,7 @@ namespace Register
     time_period trDateIntervalFilter;
     typedef std::vector<StatusFilter> StatusFilterList;
     StatusFilterList sflist;
+    bool nonHandleFilterSet; // set if other then handle(fqdn) filtr is set
    public:
     ObjectListImpl(DB *db);
     virtual void clearFilter();
@@ -102,7 +103,7 @@ namespace Register
     virtual void setTrDateIntervalFilter(time_period period);
     virtual void addStateFilter(TID state, bool stateIsOn);
     virtual void clearStateFilter(TID state);
-    void reload() throw (SQL_ERROR);
+    void reload(const char *handle = NULL, int type=0) throw (SQL_ERROR);
     void reload2(DBase::Connection* _conn);
   }; // class ObjectListImpl
    

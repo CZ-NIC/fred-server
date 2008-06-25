@@ -219,18 +219,23 @@ public:
   }
   void setNameFilter(const std::string& _name) {
     name = _name;
+    nonHandleFilterSet = true;
   }
   void setIdentFilter(const std::string& _ident) {
     ident = _ident;
+    nonHandleFilterSet = true;
   }
   void setEmailFilter(const std::string& _email) {
     email = _email;
+    nonHandleFilterSet = true;
   }
   void setOrganizationFilter(const std::string& _org) {
     org = _org;
+    nonHandleFilterSet = true;
   }
   void setVATFilter(const std::string& _vat) {
     vat = _vat;
+    nonHandleFilterSet = true;
   }
   void makeQuery(bool count, bool limit, std::stringstream& sql) const {
     std::stringstream from, where;
@@ -303,7 +308,9 @@ public:
     db->FreeSelect();
     sql.str("");
     clear();
-    fillTempTable(true);
+    bool useTempTable = nonHandleFilterSet || handle.empty(); 
+    if (useTempTable)
+      fillTempTable(true);
     sql << "SELECT obr.id,obr.name,c.name," << "o.clid,"
         << "obr.crdate,o.trdate,o.update,"
         << "obr.crid,o.upid,o.authinfopw,obr.roid,"
@@ -314,10 +321,14 @@ public:
         << "c.disclosename,c.discloseorganization,c.discloseaddress,"
         << "c.discloseemail,c.disclosetelephone,c.disclosefax, "
         << "c.disclosevat,c.discloseident,c.disclosenotifyemail " << "FROM "
-        << getTempTableName() << " tmp, "
+        << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
         << "contact c, object_registry obr, object o "
-        << "WHERE tmp.id=c.id AND c.id=o.id AND o.id=obr.id "
-        << "ORDER BY tmp.id ";
+        << "WHERE tmp.id=c.id AND c.id=o.id AND o.id=obr.id ";
+    if (!useTempTable) {
+      sql << "AND tmp.name=UPPER('" << db->Escape2(handle) << "') "
+          << "AND tmp.erdate ISNULL AND tmp.type=1 "; 
+    }    
+    sql << "ORDER BY tmp.id ";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -364,7 +375,7 @@ public:
       ));
     }
     db->FreeSelect();
-    ObjectListImpl::reload();
+    ObjectListImpl::reload(useTempTable ? NULL : handle.c_str(),1);
   }
   void reload2(DBase::Filters::Union &uf, DBase::Manager* dbm) {
     TRACE("[CALL] ContactListImpl::reload2()");

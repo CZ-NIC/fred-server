@@ -144,46 +144,55 @@ Register::ObjectListImpl::ObjectListImpl(DB *_db) :
       updateRegistrarFilter(0), crDateIntervalFilter(ptime(neg_infin),
           ptime(pos_infin)), updateIntervalFilter(ptime(neg_infin),
           ptime(pos_infin)), trDateIntervalFilter(ptime(neg_infin),
-          ptime(pos_infin)) {
+          ptime(pos_infin)), nonHandleFilterSet(false) {
 }
 
 void Register::ObjectListImpl::setRegistrarFilter(TID registrarId) {
   registrarFilter = registrarId;
+  nonHandleFilterSet = true;
 }
 
 void Register::ObjectListImpl::setRegistrarHandleFilter(
     const std::string& registrarHandle) {
   registrarHandleFilter = registrarHandle;
+  nonHandleFilterSet = true;
 }
 
 void Register::ObjectListImpl::setCrDateIntervalFilter(time_period period) {
   crDateIntervalFilter = period;
+  nonHandleFilterSet = true;
 }
 
 void Register::ObjectListImpl::setCreateRegistrarFilter(TID registrarId) {
   createRegistrarFilter = registrarId;
+  nonHandleFilterSet = true;
 }
 
 void Register::ObjectListImpl::setCreateRegistrarHandleFilter(
     const std::string& registrarHandle) {
   createRegistrarHandleFilter = registrarHandle;
+  nonHandleFilterSet = true;
 }
 
 void Register::ObjectListImpl::setUpdateIntervalFilter(time_period period) {
   updateIntervalFilter = period;
+  nonHandleFilterSet = true;
 }
 
 void Register::ObjectListImpl::setUpdateRegistrarFilter(TID registrarId) {
   updateRegistrarFilter = registrarId;
+  nonHandleFilterSet = true;
 }
 
 void Register::ObjectListImpl::setUpdateRegistrarHandleFilter(
     const std::string& registrarHandle) {
   updateRegistrarHandleFilter = registrarHandle;
+  nonHandleFilterSet = true;
 }
 
 void Register::ObjectListImpl::setTrDateIntervalFilter(time_period period) {
   trDateIntervalFilter = period;
+  nonHandleFilterSet = true;
 }
 
 void Register::ObjectListImpl::addStateFilter(TID state, bool stateIsOn) {
@@ -196,6 +205,7 @@ void Register::ObjectListImpl::addStateFilter(TID state, bool stateIsOn) {
   f.stateId = state;
   f.stateIsOn = stateIsOn;
   sflist.push_back(f);
+  nonHandleFilterSet = true;
 }
 
 void Register::ObjectListImpl::clearStateFilter(TID state) {
@@ -218,13 +228,22 @@ void Register::ObjectListImpl::clearFilter() {
   createRegistrarHandleFilter = "";
   updateRegistrarHandleFilter = "";
   sflist.clear();
+  nonHandleFilterSet = false;
 }
 
-void Register::ObjectListImpl::reload() throw (SQL_ERROR) {
+void Register::ObjectListImpl::reload(const char *handle, int type) 
+  throw (SQL_ERROR) {
   std::ostringstream sql;
   sql << "SELECT tmp.id, state_id, valid_from " << "FROM "
-      << getTempTableName() << " tmp, object_state os "
-      << "WHERE tmp.id=os.object_id AND valid_to ISNULL " << "ORDER BY tmp.id ";
+      << (!handle ? getTempTableName() : "object_registry ") << " tmp, "
+      << " object_state os "
+      << "WHERE tmp.id=os.object_id AND valid_to ISNULL ";
+  if (handle) {
+    sql << "AND tmp.name=" << (type==3 ? "LOWER" : "UPPER")
+        << "('" << db->Escape2(handle) << "') "
+        << "AND tmp.erdate ISNULL AND tmp.type=" << type << " "; 
+  }
+  sql << "ORDER BY tmp.id ";
   if (!db->ExecSelect(sql.str().c_str()))
     throw SQL_ERROR();
   resetIDSequence();

@@ -227,46 +227,57 @@ public:
   virtual void setZoneFilter(TID zoneId) {
     zoneFilter = zoneId;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setRegistrantFilter(TID registrantId) {
     registrantFilter = registrantId;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   void setRegistrantHandleFilter(const std::string& _registrantHandle) {
     registrantHandleFilter = _registrantHandle;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setNSSetFilter(TID _nssetId) {
     nsset = _nssetId;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setNSSetHandleFilter(const std::string& _nssetHandle) {
     nssetHandle = _nssetHandle;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setAdminFilter(TID _adminId) {
     admin = _adminId;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setAdminHandleFilter(const std::string& _adminHandle) {
     adminHandle = _adminHandle;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setTempFilter(TID _tempId) {
     temp = _tempId;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setTempHandleFilter(const std::string& _tempHandle) {
     tempHandle = _tempHandle;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setContactFilter(TID contactId) {
     contactFilter = contactId;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setContactHandleFilter(const std::string& cHandle) {
     contactHandleFilter = cHandle;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setFQDNFilter(const std::string& _fqdn) {
     fqdn = _fqdn;
@@ -276,22 +287,27 @@ public:
   virtual void setExpirationDateFilter(time_period period) {
     exDate = period;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setValExDateFilter(time_period period) {
     valExDate = period;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setTechAdminHandleFilter(const std::string& handle) {
     techAdmin = handle;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setHostIPFilter(const std::string& ip) {
     hostIP = ip;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   virtual void setZoneStatusFilter(unsigned status) {
     zoneStatus = status;
     setFilterModified();
+    nonHandleFilterSet = true;
   }
   void makeQuery(bool count, bool limit, std::stringstream& sql) const {
     std::stringstream from, where;
@@ -626,7 +642,9 @@ public:
     }
     db->FreeSelect();
     clear();
-    fillTempTable(true);
+    bool useTempTable = nonHandleFilterSet || fqdn.empty(); 
+    if (useTempTable)
+      fillTempTable(true);
     // load domain data
     sql.str("");
     sql << "SELECT "
@@ -643,11 +661,17 @@ public:
     // repository data
         << "o.authinfopw,obr.roid,"
     // expiration and validation dates (validation in seperate query)
-        << "d.exdate,NULL " << "FROM " << getTempTableName() << " tmp, "
+        << "d.exdate,NULL " << "FROM " 
+        << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
         << "contact c, object_registry cor, " << "object_registry obr, "
         << "object o, " << "domain d "
         << "WHERE tmp.id=d.id AND d.id=o.id AND d.registrant=c.id "
-        << "AND c.id=cor.id " << "AND obr.id=o.id " << "ORDER BY tmp.id ";
+        << "AND c.id=cor.id " << "AND obr.id=o.id ";
+    if (!useTempTable) {
+      sql << "AND tmp.name=LOWER('" << db->Escape2(fqdn) << "') "
+          << "AND tmp.erdate ISNULL AND tmp.type=3 "; 
+    }
+    sql << "ORDER BY tmp.id ";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -689,10 +713,15 @@ public:
     resetIDSequence();
     sql.str("");
     sql << "SELECT " << "tmp.id, obr.id, obr.name, dcm.role " << "FROM "
-        << getTempTableName() << " tmp, " << "domain_contact_map dcm, "
+        << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
+        << "domain_contact_map dcm, "
         << "object_registry obr "
-        << "WHERE tmp.id=dcm.domainid and dcm.contactid=obr.id "
-        << "ORDER BY tmp.id";
+        << "WHERE tmp.id=dcm.domainid and dcm.contactid=obr.id ";
+    if (!useTempTable) {
+      sql << "AND tmp.name=LOWER('" << db->Escape2(fqdn) << "') "
+          << "AND tmp.erdate ISNULL AND tmp.type=3 "; 
+    }
+    sql << "ORDER BY tmp.id";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -707,9 +736,15 @@ public:
     // add nsset handles (instead of LEFT JOIN)
     resetIDSequence();
     sql.str("");
-    sql << "SELECT " << "tmp.id, nor.name " << "FROM " << getTempTableName()
-        << " tmp, " << "domain d, object_registry nor "
-        << "WHERE tmp.id=d.id AND d.nsset=nor.id " << "ORDER BY tmp.id";
+    sql << "SELECT " << "tmp.id, nor.name " << "FROM " 
+        << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
+        << "domain d, object_registry nor "
+        << "WHERE tmp.id=d.id AND d.nsset=nor.id ";
+    if (!useTempTable) {
+      sql << "AND tmp.name=LOWER('" << db->Escape2(fqdn) << "') "
+          << "AND tmp.erdate ISNULL AND tmp.type=3 "; 
+    }
+    sql << "ORDER BY tmp.id";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -723,9 +758,14 @@ public:
     // add validation (for enum domains)
     resetIDSequence();
     sql.str("");
-    sql << "SELECT " << "tmp.id, ev.exdate " << "FROM " << getTempTableName()
-        << " tmp, " << "enumval ev " << "WHERE tmp.id=ev.domainid "
-        << "ORDER BY tmp.id";
+    sql << "SELECT " << "tmp.id, ev.exdate " << "FROM " 
+        << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
+        << "enumval ev " << "WHERE tmp.id=ev.domainid ";
+    if (!useTempTable) {
+      sql << "AND tmp.name=LOWER('" << db->Escape2(fqdn) << "') "
+          << "AND tmp.erdate ISNULL AND tmp.type=3 "; 
+    }
+    sql << "ORDER BY tmp.id";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -736,7 +776,7 @@ public:
       dom->setValExDate(MAKE_DATE(i, 1));
     }
     db->FreeSelect();
-    ObjectListImpl::reload();
+    ObjectListImpl::reload(useTempTable ? NULL : fqdn.c_str(),3);
   }
   void clearFilter() {
     ObjectListImpl::clearFilter();
