@@ -30,7 +30,7 @@ namespace Register
     struct LocalTransaction {
       DB *db;
       bool closed;
-      LocalTransaction(DB *_db) : db(_db), closed(false) 
+      LocalTransaction(DB *_db) : db(_db), closed(false)
       {
         db->BeginTransaction();
       }
@@ -45,7 +45,7 @@ namespace Register
         closed = true;
       }
     };
-  
+
     class ManagerImpl : virtual public Manager
     {
       DB *db;
@@ -133,16 +133,16 @@ namespace Register
         sql << "SELECT c.email "
             << "FROM nsset_contact_map ncm, contact c "
             << "WHERE ncm.contactid=c.id AND ncm.nssetid=" << nsset;
-        return getEmailList(sql);        
+        return getEmailList(sql);
       }
       std::string getContactEmails(TID contact)
       {
         std::stringstream sql;
         sql << "SELECT c.email FROM contact c WHERE c.id=" << contact;
-        return getEmailList(sql);        
+        return getEmailList(sql);
       }
       void fillDomainParamsHistory(
-        TID domain, ptime stamp, 
+        TID domain, ptime stamp,
         Register::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
@@ -184,16 +184,16 @@ namespace Register
         std::stringstream reg;
         if (rm->getList()->size() != 1)
           // fallback to handle instead of error
-          reg << db->GetFieldValue(0,3);  
+          reg << db->GetFieldValue(0,3);
         else {
           reg << rm->getList()->get(0)->getName();
           if (!rm->getList()->get(0)->getURL().empty())
             reg << " (" << rm->getList()->get(0)->getURL() << ")";
         }
-        params["registrar"] = reg.str(); 
+        params["registrar"] = reg.str();
       }
       void fillDomainParams(
-        TID domain, ptime stamp, 
+        TID domain, ptime stamp,
         Register::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
@@ -226,44 +226,38 @@ namespace Register
         std::stringstream reg;
         if (rm->getList()->size() != 1)
           // fallback to handle instead of error
-          reg << db->GetFieldValue(0,3);  
+          reg << db->GetFieldValue(0,3);
         else {
           reg << rm->getList()->get(0)->getName();
           if (!rm->getList()->get(0)->getURL().empty())
             reg << " (" << rm->getList()->get(0)->getURL() << ")";
         }
-        params["registrar"] = reg.str(); 
+        params["registrar"] = reg.str();
       }
       void fillContactParams(
-        TID id, 
+        TID id,
         Register::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
-        std::auto_ptr<Register::Contact::List> olist(cm->createList());
-        olist->setIdFilter(id);
-        olist->reload();
-        if (olist->getCount() != 1) throw SQL_ERROR();
-        Register::Contact::Contact *o = olist->getContact(0);
-        // fill params
+        std::stringstream sql;
+        sql << "SELECT c.name FROM object_registry c WHERE c.id=" << id;
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         params["type"] = "1";
-        params["handle"] = o->getHandle();
+        params["handle"] = db->GetFieldValue(0,0);
         params["deldate"] = to_iso_extended_string(
           date(day_clock::local_day())
         );
       }
       void fillNSSetParams(
-        TID id, 
+        TID id,
         Register::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
-        std::auto_ptr<Register::NSSet::List> olist(nm->createList());
-        olist->setIdFilter(id);
-        olist->reload();
-        if (olist->getCount() != 1) throw SQL_ERROR();
-        Register::NSSet::NSSet *o = olist->getNSSet(0);
-        // fill params
+        std::stringstream sql;
+        sql << "SELECT n.name FROM object_registry n WHERE n.id=" << id;
+        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         params["type"] = "2";
-        params["handle"] = o->getHandle();
+        params["handle"] = db->GetFieldValue(0,0);
         params["deldate"] = to_iso_extended_string(
           date(day_clock::local_day())
         );
@@ -273,19 +267,19 @@ namespace Register
       {
         std::stringstream sql;
         sql << "INSERT INTO notify_statechange (state_id,type,mail_id) "
-            << "VALUES (" 
-            << state << "," << notifyType << ","; 
+            << "VALUES ("
+            << state << "," << notifyType << ",";
         if (mail) sql << mail;
         else sql << "NULL";
         sql << ")";
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
       }
-      struct NotifyRequest { 
+      struct NotifyRequest {
         TID state_id; ///< id of state change (not id of status)
         unsigned type; ///< notification id
         std::string mtype; ///< template name
         unsigned emails; ///< emails flag (1=normal(admins), 2=techs)
-        TID obj_id; ///< id of object 
+        TID obj_id; ///< id of object
         unsigned obj_type; ///< type of object (domain, contact...)
         ptime stamp; ///< time of state change event
         NotifyRequest(
@@ -357,14 +351,14 @@ namespace Register
              case 3: // domain
                if (useHistory) {
                  fillDomainParamsHistory(i->obj_id,i->stamp,params);
-                 emails = 
-                   (i->emails == 1 ? getDomainAdminEmailsHistory(i->obj_id) : 
+                 emails =
+                   (i->emails == 1 ? getDomainAdminEmailsHistory(i->obj_id) :
                                      getDomainTechEmailsHistory(i->obj_id));
                }
                else {
                  fillDomainParams(i->obj_id,i->stamp,params);
-                 emails = 
-                   (i->emails == 1 ? getDomainAdminEmails(i->obj_id) : 
+                 emails =
+                   (i->emails == 1 ? getDomainAdminEmails(i->obj_id) :
                     getDomainTechEmails(i->obj_id));
                }
               break;
@@ -384,7 +378,7 @@ namespace Register
               );
               saveNotification(i->state_id,i->type,mail);
             }
-          } 
+          }
           catch (...) {
             LOG(
               ERROR_LOG,
@@ -413,7 +407,7 @@ namespace Register
           " state_id INTEGER PRIMARY KEY "
           ") ON COMMIT DROP ";
         // populate temporary table with states to notify
-        if (!db->ExecSQL(create)) throw SQL_ERROR();        
+        if (!db->ExecSQL(create)) throw SQL_ERROR();
         const char *fixateStates =
           "INSERT INTO tmp_notify_letters "
           "SELECT s.id FROM object_state s "
@@ -433,7 +427,7 @@ namespace Register
         // for every expiration date generate PDF
         for (unsigned j=0; j<exDates.size(); j++) {
           std::stringstream filename;
-          filename << "letter-" << exDates[j] << ".pdf";  
+          filename << "letter-" << exDates[j] << ".pdf";
           std::auto_ptr<Document::Generator> gPDF(
             docm->createSavingGenerator(
               Document::GT_WARNING_LETTER,
@@ -461,7 +455,7 @@ namespace Register
               << "AND doh.historyid=d.historyid AND tnl.state_id=s.id "
               << "AND d.exdate::date='" << exDates[j] << "' AND doh.clid=r.id "
               << " ORDER BY CASE WHEN c.country='CZ' THEN 0 ELSE 1 END ASC, "
-              << "          c.country";        
+              << "          c.country";
           if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
           out << "<messages>";
           for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
@@ -469,7 +463,7 @@ namespace Register
                 << "<domain>" << XML_DB_OUT(i,0) << "</domain>"
                 << "<registrar>" << XML_DB_OUT(i,1) << "</registrar>"
                 << "<actual_date>" << XML_DB_OUT(i,2) << "</actual_date>"
-                << "<termination_date>" << XML_DB_OUT(i,3) 
+                << "<termination_date>" << XML_DB_OUT(i,3)
                 << "</termination_date>"
                 << "<holder>"
                 << "<handle>" << XML_DB_OUT(i,4) << "</handle>"
@@ -480,7 +474,7 @@ namespace Register
                 << "<country>" << XML_DB_OUT(i,9) << "</country>"
                 << "</holder>"
                 << "</message>";
-          db->FreeSelect();        
+          db->FreeSelect();
           out << "</messages>";
           // return id of generated PDF file
           TID filePDF = gPDF->closeInput();
@@ -497,7 +491,7 @@ namespace Register
       }
     };
     Manager *Manager::create(
-      DB *db, 
+      DB *db,
       Mailer::Manager *mm,
       Contact::Manager *cm,
       NSSet::Manager *nm,
