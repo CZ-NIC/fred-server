@@ -1,3 +1,11 @@
+2008-06-26 Jaromir Talir, Jiri Sadek (version 1.10.0)
+
+    * querying invoices, mails, files
+    
+    * adding filters to domains
+    
+    * fixing state change poll messages 
+
 2008-06-12 Jiri Sadek (version 1.9.3)
   
     * bugfix - database connection leaking
