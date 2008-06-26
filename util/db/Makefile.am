@@ -9,4 +9,4 @@ libdb_a_SOURCES = connection.cc psql_connection.cc psql_result.cc psql_result_it
                   simple_filter.h connection.h dbs.h filter_it.h psql_result.h result.h \
                   simple_filters.h sql_operators.h data_types.h db_value.h manager.h    \
                   psql_result_it.h result_it.h sql_helper_objects.h transaction.h       \
-                  base_filters.h row.h 
+                  base_filters.h row.h sequence.h
