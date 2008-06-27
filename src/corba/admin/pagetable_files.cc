@@ -41,7 +41,25 @@ ccReg::TableRow* ccReg_Files_i::getRow(CORBA::Short _row)
   return tr;
 }
 
-void ccReg_Files_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
+void ccReg_Files_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
+  switch (_column) {
+    case 0:
+      file_list_->sort(Register::File::MT_NAME, _dir);
+      sorted_by_ = 0;
+      break;
+    case 1:
+      file_list_->sort(Register::File::MT_CRDATE, _dir);
+      sorted_by_ = 1;
+      break;
+    case 2:
+      file_list_->sort(Register::File::MT_TYPE, _dir);
+      sorted_by_ = 2;
+      break;
+    case 3:
+      file_list_->sort(Register::File::MT_SIZE, _dir);
+      sorted_by_ = 3;
+      break;
+  }
 }
 
 ccReg::TID ccReg_Files_i::getRowId(CORBA::Short _row)

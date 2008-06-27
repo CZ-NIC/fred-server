@@ -63,6 +63,11 @@ public:
   }
 };
 
+COMPARE_CLASS_IMPL(FileImpl, CreateTime)
+COMPARE_CLASS_IMPL(FileImpl, Name)
+COMPARE_CLASS_IMPL(FileImpl, Type)
+COMPARE_CLASS_IMPL(FileImpl, Size)
+
 
 class ListImpl : public Register::CommonListImpl,
                  virtual public List {
@@ -155,7 +160,20 @@ public:
   }
   
   virtual void sort(MemberType _member, bool _asc) {
-    
+    switch (_member) {
+      case MT_NAME:
+        stable_sort(data_.begin(), data_.end(), CompareName(_asc));
+        break;
+      case MT_CRDATE:
+        stable_sort(data_.begin(), data_.end(), CompareCreateTime(_asc));
+        break;
+      case MT_TYPE:
+        stable_sort(data_.begin(), data_.end(), CompareType(_asc));
+        break;
+      case MT_SIZE:
+        stable_sort(data_.begin(), data_.end(), CompareSize(_asc));
+        break;
+    }    
   }
   
   

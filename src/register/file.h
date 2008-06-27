@@ -10,6 +10,10 @@ namespace Register {
 namespace File {
 
 enum MemberType {
+  MT_NAME,
+  MT_CRDATE,
+  MT_TYPE,
+  MT_SIZE
 };
 
 
