@@ -54,7 +54,7 @@ bool validateIPV6(
   const char *ipadd)
 {
   int len;
-  // test on the end 
+  // test on the end
   len = strlen(ipadd);
   if (ipadd[len-1] == ':')
     return false;
@@ -172,14 +172,14 @@ bool get_NSSETHANDLE(
   return get_handle(HANDLE, handle, 2);
 }
 
-// general handle 
+// general handle
 bool get_HANDLE(
   char * HANDLE, const char *handle)
 {
   return get_handle(HANDLE, handle, 0);
 }
 
-// convert and test validity of the handle 
+// convert and test validity of the handle
 bool get_handle(
   char * HANDLE, const char *handle, int typ)
 {
@@ -243,18 +243,18 @@ bool convert_hostname(
   for (i = 0; i < len; i ++) {
     if (isalnum(fqdn[i]) || fqdn[i] == '-' || fqdn[i] == '.') // test name of the DNS server
     {
-      HOST[i] = tolower(fqdn[i]); // to lower case 
+      HOST[i] = tolower(fqdn[i]); // to lower case
     } else {
       HOST[0] = 0;
       return false;
     }
   }
 
-  // ont the end 
+  // ont the end
   HOST[i] = 0;
   return true;
 }
-// test hostname  form DNS 
+// test hostname  form DNS
 bool TestDNSHost(
   const char *fqdn)
 {
@@ -264,7 +264,7 @@ bool TestDNSHost(
 
   LOG( LOG_DEBUG , "test DNSHost %s" , fqdn );
 
-  // if dot on the end 
+  // if dot on the end
   if (fqdn[len-1] == '.') {
     LOG( LOG_DEBUG , "ERORR dots on end" );
     return false;
@@ -340,7 +340,7 @@ int TestPeriodyInterval(
   int mod;
   LOG( LOG_DEBUG , "test periody interval perido %d min %d max %d" , period , min , max );
 
-  // period must be in interval 
+  // period must be in interval
   if (period > 0 && period <= max) {
     mod = period % min;
     if (mod == 0)
@@ -351,8 +351,8 @@ int TestPeriodyInterval(
     return 2; // period is out of range
 }
 
-//  count VAT from price without tax with help of coefficient a round VAT to dimes  
-// count VAT  ( local CZ ) function for banking 
+//  count VAT from price without tax with help of coefficient a round VAT to dimes
+// count VAT  ( local CZ ) function for banking
 long count_dph(
   long price, double koef)
 {
@@ -360,7 +360,7 @@ long count_dph(
   long d, r, mod;
 
   p = price/100.0; // convert to double
-  d = (long ) ( (p* koef) * 100.0 ); // to long 2 decimal places 
+  d = (long ) ( (p* koef) * 100.0 ); // to long 2 decimal places
 
   mod = d % 10;
 
@@ -375,8 +375,8 @@ long count_dph(
   return r;
 }
 
-// convert price of penny without conversion through float 
-// convert  local currency string 
+// convert price of penny without conversion through float
+// convert  local currency string
 long get_price(
   const char *priceStr)
 {
@@ -388,7 +388,7 @@ long get_price(
   len = strlen(priceStr);
   for (i = 0; i < len; i ++) {
 
-    // if thousands are separated with blank space 
+    // if thousands are separated with blank space
     // test for thousands
     if (str[i] == ' ') {
       for (j = i; j < len -1; j ++)
@@ -411,8 +411,8 @@ long get_price(
   return price;
 }
 
-// convert price in pennies to string 
-// return currency in long to string 
+// convert price in pennies to string
+// return currency in long to string
 void get_priceStr(
   char *priceStr, long price)
 {
@@ -427,11 +427,11 @@ time_t get_local_format_time_t(
   time_t t;
 
   memset(&dt, 0, sizeof(dt));
-  // local CZ  format in  DD.MM.YYYY HH:MM:SS 
+  // local CZ  format in  DD.MM.YYYY HH:MM:SS
   sscanf(string, "%02d.%02d.%4d %02d:%02d:%02d", &dt.tm_mday, &dt.tm_mon,
       &dt.tm_year, &dt.tm_hour, &dt.tm_min, &dt.tm_sec);
 
-  // minus one month 
+  // minus one month
   dt.tm_mon = dt.tm_mon -1;
   // year - 1900
   dt.tm_year = dt.tm_year - 1900;
@@ -466,9 +466,9 @@ time_t get_time_t(
     // year - 1900
     dt.tm_year = dt.tm_year - 1900;
 
-    t = timegm(&dt); // convert to GMT 
+    t = timegm(&dt); // convert to GMT
     if (t < 0)
-      return 0; // fix if  convert fault 
+      return 0; // fix if  convert fault
 
     LOG( LOG_DEBUG , "get_time_t from [%s] = %ld" , string , t );
     return t;
@@ -477,7 +477,7 @@ time_t get_time_t(
 }
 
 //  convert local date  to  UTC timestamp for SQL
-// involve  dayling saving time  for using time zone 
+// involve  dayling saving time  for using time zone
 time_t get_utctime_from_localdate(
   char *dateStr)
 {
@@ -491,7 +491,7 @@ time_t get_utctime_from_localdate(
   dt.tm_mday = day;
   dt.tm_mon = month -1;
   dt.tm_year = year - 1900;
-  dt.tm_isdst = -1; // negative if the information is not available ( test dayling saving time ) 
+  dt.tm_isdst = -1; // negative if the information is not available ( test dayling saving time )
 
   LOG( LOG_DEBUG , "tm_year  %d tm_mon  %d tm_mday %d hour %d min %d sec %d" , dt.tm_year , dt.tm_mon , dt.tm_mday , dt.tm_hour, dt.tm_min , dt.tm_sec );
   t = mktime( &dt);
@@ -499,7 +499,7 @@ time_t get_utctime_from_localdate(
   return t;
 }
 
-//  convert date  from database  ( int UTC date ) to local  date  
+//  convert date  from database  ( int UTC date ) to local  date
 void convert_rfc3339_date(
   char *dateStr, const char *string)
 {
@@ -510,10 +510,10 @@ void convert_rfc3339_date(
     dateStr[0] = (char)NULL; //  ERROR
 
   else
-    get_rfc3339_timestamp(t, dateStr, true); // return  local date 
+    get_rfc3339_timestamp(t, dateStr, true); // return  local date
 }
 
-// convert timestamp from database  ( int UTC ) to local date time 
+// convert timestamp from database  ( int UTC ) to local date time
 void convert_rfc3339_timestamp(
   char *dateStr, const char *string)
 {
@@ -522,7 +522,7 @@ void convert_rfc3339_timestamp(
   t = get_time_t(string);
   if (t <= 0)
     dateStr[0] = (char)NULL; //  ERROR
-    // return string in rfc3339  like a date time with time zone 
+    // return string in rfc3339  like a date time with time zone
   else
     get_rfc3339_timestamp(t, dateStr, false);
 }
@@ -534,21 +534,22 @@ void get_rfc3339_timestamp(
   int diff;
   char sign, tzstr[6];
 
-  //convert time_t in UTC  to local time 
-  dt = localtime( &t);
+  //convert time_t in UTC  to local time
+  struct tm result;
+  dt = localtime_r( &t, &result);
 
-  diff = dt->tm_gmtoff; // test offset from GTM 
+  diff = dt->tm_gmtoff; // test offset from GTM
 
 
   if (diff == 0)
-    sign = 'Z'; // UTC zulu time is is not local time 
+    sign = 'Z'; // UTC zulu time is is not local time
   else if (diff < 0) {
     sign = '-';
     diff = -diff;
   } else
     sign = '+';
 
-  // convert only date 
+  // convert only date
   if (day)
     sprintf(string, "%4d-%02d-%02d", dt->tm_year + 1900, dt->tm_mon + 1,
         dt->tm_mday);
@@ -566,14 +567,15 @@ void get_rfc3339_timestamp(
 
 }
 
-// function forconvert timestamp  time_t -> SQL string 
+// function forconvert timestamp  time_t -> SQL string
 void get_timestamp(
   char *string, time_t t)
 {
   struct tm *dt;
 
-  //convert time to GTM 
-  dt = gmtime( &t);
+  //convert time to GTM
+  struct tm result;
+  dt = gmtime_r( &t, &result);
 
   // get SQL string
   sprintf(string, "%4d-%02d-%02d %02d:%02d:%02d", dt->tm_year+1900, dt->tm_mon
