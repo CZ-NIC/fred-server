@@ -45,30 +45,27 @@ ccReg::TableRow* ccReg_Contacts_i::getRow(CORBA::Short row)
 
 void ccReg_Contacts_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
   TRACE(boost::format("[CALL] ccReg_Contacts_i::sortByColumn(%1%, %2%)") % column % dir);
+  /* save sort state */
+  ccReg_PageTable_i::sortByColumn(column, dir);
+  
   switch (column) {
     case 0:
       cl->sort(Register::Contact::MT_HANDLE, dir);
-      sorted_by_ = 0;
       break;
     case 1:
       cl->sort(Register::Contact::MT_NAME, dir);
-      sorted_by_ = 1;
       break;
     case 2:
       cl->sort(Register::Contact::MT_ORGANIZATION, dir);
-      sorted_by_ = 2;
       break;
     case 3:
       cl->sort(Register::Contact::MT_CRDATE, dir);
-      sorted_by_ = 3;
       break;
     case 4:
       cl->sort(Register::Contact::MT_ERDATE, dir);
-      sorted_by_ = 4;
       break;
     case 5:
       cl->sort(Register::Contact::MT_REGISTRAR_HANDLE, dir);
-      sorted_by_ = 5;
       break;
   }
 }

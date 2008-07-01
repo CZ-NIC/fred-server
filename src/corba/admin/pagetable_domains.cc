@@ -63,46 +63,39 @@ ccReg::TableRow* ccReg_Domains_i::getRow(CORBA::Short row)
 
 void ccReg_Domains_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
   TRACE(boost::format("[CALL] ccReg_Domains_i::sortByColumn(%1%, %2%)") % column % dir);
+  /* save sort state */
+  ccReg_PageTable_i::sortByColumn(column, dir);
+
   switch (column) {
   case 0:
     dl->sort(Register::Domain::MT_FQDN, dir);
-    sorted_by_ = 0;
     break;      
   case 1:
     dl->sort(Register::Domain::MT_CRDATE, dir);
-    sorted_by_ = 1;
     break;
   case 2:
     dl->sort(Register::Domain::MT_ERDATE, dir);
-    sorted_by_ = 2;
     break;
   case 3:
     dl->sort(Register::Domain::MT_REGISTRANT_HANDLE, dir);
-    sorted_by_ = 3;
     break;
   case 4:
     dl->sort(Register::Domain::MT_REGISTRANT_NAME, dir);
-    sorted_by_ = 4;
     break;
   case 5:
     dl->sort(Register::Domain::MT_REGISTRAR_HANDLE, dir);
-    sorted_by_ = 5;
     break;
   case 6:
     dl->sort(Register::Domain::MT_ZONE_STATUS, dir);
-    sorted_by_ = 6;
     break;
   case 7:
     dl->sort(Register::Domain::MT_EXDATE, dir);
-    sorted_by_ = 7;
     break;
   case 8:
     dl->sort(Register::Domain::MT_OUTZONEDATE, dir);
-    sorted_by_ = 8;
     break;
   case 9:
     dl->sort(Register::Domain::MT_CANCELDATE, dir);
-    sorted_by_ = 9;
     break;
   }
 }

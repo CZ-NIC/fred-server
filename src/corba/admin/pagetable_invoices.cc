@@ -57,34 +57,30 @@ ccReg::TableRow* ccReg_Invoices_i::getRow(CORBA::Short row)
 
 void ccReg_Invoices_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
   TRACE(boost::format("[CALL] ccReg_Invoices_i::sortByColumn(%1%, %2%)") % _column % _dir);
+  /* save sort state */
+  ccReg_PageTable_i::sortByColumn(_column, _dir);
+
   switch (_column) {
     case 0:
       invoice_list_->sort(Register::Invoicing::MT_CRDATE, _dir);
-      sorted_by_ = 0;
       break;
     case 1:
       invoice_list_->sort(Register::Invoicing::MT_NUMBER, _dir);
-      sorted_by_ = 1;
       break;
     case 2:
       invoice_list_->sort(Register::Invoicing::MT_REGISTRAR, _dir);
-      sorted_by_ = 2;
       break;
     case 3:
       invoice_list_->sort(Register::Invoicing::MT_TOTAL, _dir);
-      sorted_by_ = 3;
       break;
     case 4:
       invoice_list_->sort(Register::Invoicing::MT_CREDIT, _dir);
-      sorted_by_ = 4;
       break;
     case 5:
       invoice_list_->sort(Register::Invoicing::MT_TYPE, _dir);
-      sorted_by_ = 5;
       break;
     case 6:
       invoice_list_->sort(Register::Invoicing::MT_ZONE, _dir);
-      sorted_by_ = 6;
       break;
   }
 }

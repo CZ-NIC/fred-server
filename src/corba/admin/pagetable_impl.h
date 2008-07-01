@@ -54,7 +54,6 @@ using namespace DBase;
   ccReg::Table::ColumnHeaders* getColumnHeaders(); \
   ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);\
   ccReg::TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);\
-  void sortByColumn(CORBA::Short column, CORBA::Boolean dir);\
   char* outputCSV();\
   CORBA::Short numRows();\
   CORBA::Short numColumns();\
@@ -62,7 +61,8 @@ using namespace DBase;
   void clear();\
   CORBA::ULongLong resultSize();\
   void loadFilter(ccReg::TID _id);\
-  void saveFilter(const char* _name)
+  void saveFilter(const char* _name);\
+  void sortByColumn(CORBA::Short _column, CORBA::Boolean _dir)
 
 class ccReg_PageTable_i : virtual public POA_ccReg::PageTable {
   unsigned int aPageSize;
@@ -74,6 +74,7 @@ protected:
   DBase::Manager* dbm;
   ccReg::FilterType filterType;
   int sorted_by_;
+  bool sorted_dir_;
 
 public:
   ccReg_PageTable_i();
@@ -98,7 +99,8 @@ public:
   void clear();
   void loadFilter(ccReg::TID _id);
   void saveFilter(const char* _name);
-  CORBA::Short getSortedBy();
+  void sortByColumn(CORBA::Short _column, CORBA::Boolean _dir);
+  void getSortedBy(CORBA::Short &_column, CORBA::Boolean &_dir);
 };
 
 #endif /*PAGETABLE_IMPL_H_*/

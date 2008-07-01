@@ -42,22 +42,22 @@ ccReg::TableRow* ccReg_Files_i::getRow(CORBA::Short _row)
 }
 
 void ccReg_Files_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
+  TRACE(boost::format("[CALL] ccReg_Files_i::sortByColumn(%1%, %2%)") % _column % _dir);
+  /* save sort state */
+  ccReg_PageTable_i::sortByColumn(_column, _dir);
+
   switch (_column) {
     case 0:
       file_list_->sort(Register::File::MT_NAME, _dir);
-      sorted_by_ = 0;
       break;
     case 1:
       file_list_->sort(Register::File::MT_CRDATE, _dir);
-      sorted_by_ = 1;
       break;
     case 2:
       file_list_->sort(Register::File::MT_TYPE, _dir);
-      sorted_by_ = 2;
       break;
     case 3:
       file_list_->sort(Register::File::MT_SIZE, _dir);
-      sorted_by_ = 3;
       break;
   }
 }

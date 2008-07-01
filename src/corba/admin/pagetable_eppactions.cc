@@ -49,34 +49,30 @@ ccReg::TableRow* ccReg_EPPActions_i::getRow(CORBA::Short row)
 void ccReg_EPPActions_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
   TRACE(boost::format("[CALL] ccReg_EPPActions_i::sortByColumn(%1%, %2%)")
       % column % dir);
+  /* save sort state */
+  ccReg_PageTable_i::sortByColumn(column, dir);
+  
   switch (column) {
     case 0:
       eal->sort(Register::Registrar::MT_SVTRID, dir);
-      sorted_by_ = 0;
       break;
     case 1:
       eal->sort(Register::Registrar::MT_CLTRID, dir);
-      sorted_by_ = 1;
       break;
     case 2:
       eal->sort(Register::Registrar::MT_TYPE, dir);
-      sorted_by_ = 2;
       break;
     case 3:
       eal->sort(Register::Registrar::MT_OBJECT_HANDLE, dir);
-      sorted_by_ = 3;
       break;
     case 4:
       eal->sort(Register::Registrar::MT_REGISTRAR_HANDLE, dir);
-      sorted_by_ = 4;
       break;
     case 5:
       eal->sort(Register::Registrar::MT_TIME, dir);
-      sorted_by_ = 5;
       break;
     case 6:
       eal->sort(Register::Registrar::MT_RESULT, dir);
-      sorted_by_ = 6;
       break;
   }
 }

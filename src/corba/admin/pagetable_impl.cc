@@ -124,6 +124,12 @@ void
 ccReg_PageTable_i::saveFilter(const char*  _name) {
 }
 
-CORBA::Short ccReg_PageTable_i::getSortedBy() {
-  return sorted_by_;
+void ccReg_PageTable_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
+  sorted_by_ = _column;
+  sorted_dir_ = _dir;
+}
+
+void ccReg_PageTable_i::getSortedBy(CORBA::Short &_column, CORBA::Boolean &_dir) {
+  _column = sorted_by_;
+  _dir = sorted_dir_;
 }

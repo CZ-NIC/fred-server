@@ -48,22 +48,21 @@ ccReg::TableRow* ccReg_PublicRequests_i::getRow(CORBA::Short _row)
 
 void ccReg_PublicRequests_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
   TRACE(boost::format("[CALL] ccReg_PublicRequests_i::sortByColumn(%1%, %2%)") % _column % _dir);
+  /* save sort state */
+  ccReg_PageTable_i::sortByColumn(_column, _dir);
+
   switch (_column) {
     case 0:
       request_list_->sort(Register::PublicRequest::MT_CRDATE, _dir);
-      sorted_by_ = 0;
       break;
     case 1:
       request_list_->sort(Register::PublicRequest::MT_RDATE, _dir);
-      sorted_by_ = 1;
       break;
     case 2:
       request_list_->sort(Register::PublicRequest::MT_TYPE, _dir);
-      sorted_by_ = 2;
       break;
     case 3:
       request_list_->sort(Register::PublicRequest::MT_STATUS, _dir);
-      sorted_by_ = 3;
       break;
   }
 }

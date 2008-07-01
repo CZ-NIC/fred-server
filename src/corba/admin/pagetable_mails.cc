@@ -40,18 +40,19 @@ ccReg::TableRow* ccReg_Mails_i::getRow(CORBA::Short _row)
 }
 
 void ccReg_Mails_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
+  TRACE(boost::format("[CALL] ccReg_Mails_i::sortByColumn(%1%, %2%)") % _column % _dir);
+  /* save sort state */
+  ccReg_PageTable_i::sortByColumn(_column, _dir);
+  
   switch (_column) {
     case 0:
       mail_list_->sort(Register::Mail::MT_CRDATE, _dir);
-      sorted_by_ = 0;
       break;
     case 1:
       mail_list_->sort(Register::Mail::MT_TYPE, _dir);
-      sorted_by_ = 1;
       break;
     case 2:
       mail_list_->sort(Register::Mail::MT_STATUS, _dir);
-      sorted_by_ = 2;
       break;
   }
 }
