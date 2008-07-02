@@ -212,7 +212,7 @@ ccReg::DomainDetail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
   } else {
     LOGGER("corba").debug(boost::format("constructing domain filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr <Register::Domain::List>
+    std::auto_ptr<Register::Domain::List>
         tmp_domain_list(m_register_manager->getDomainManager()->createList());
 
     DBase::Filters::Union uf;
@@ -236,7 +236,7 @@ ccReg::ContactDetail* ccReg_Session_i::getContactDetail(ccReg::TID _id) {
   } else {
     LOGGER("corba").debug(boost::format("constructing contact filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr <Register::Contact::List>
+    std::auto_ptr<Register::Contact::List>
         tmp_contact_list(m_register_manager->getContactManager()->createList());
 
     DBase::Filters::Union uf;
@@ -260,7 +260,7 @@ ccReg::NSSetDetail* ccReg_Session_i::getNSSetDetail(ccReg::TID _id) {
   } else {
     LOGGER("corba").debug(boost::format("constructing nsset filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr <Register::NSSet::List>
+    std::auto_ptr<Register::NSSet::List>
         tmp_nsset_list(m_register_manager->getNSSetManager()->createList());
 
     DBase::Filters::Union uf;
@@ -308,7 +308,7 @@ ccReg::PublicRequest::Detail* ccReg_Session_i::getPublicRequestDetail(ccReg::TID
   } else {
     LOGGER("corba").debug(boost::format("constructing public request filter for object id=%1%' detail")
         % _id);
-    Register::PublicRequest::List *tmp_request_list = m_publicrequest_manager->createList();
+    std::auto_ptr<Register::PublicRequest::List> tmp_request_list(m_publicrequest_manager->createList());
 
     DBase::Filters::Union union_filter;
     DBase::Filters::PublicRequest *filter = new DBase::Filters::PublicRequestImpl();
@@ -331,7 +331,7 @@ ccReg::Invoicing::Invoice* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
   } else {
     LOGGER("corba").debug(boost::format("constructing invoice filter for object id=%1%' detail")
         % _id);
-    Register::Invoicing::List *tmp_invoice_list = m_invoicing_manager->createList();
+    std::auto_ptr<Register::Invoicing::List> tmp_invoice_list(m_invoicing_manager->createList());
 
     DBase::Filters::Union union_filter;
     DBase::Filters::Invoice *filter = new DBase::Filters::InvoiceImpl();
@@ -354,7 +354,7 @@ ccReg::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
   } else {
     LOGGER("corba").debug(boost::format("constructing mail filter for object id=%1%' detail")
         % _id);
-    Register::Mail::List *tmp_mail_list = mail_manager_->createList();
+    std::auto_ptr<Register::Mail::List> tmp_mail_list(mail_manager_->createList());
 
     DBase::Filters::Union union_filter;
     DBase::Filters::Mail *filter = new DBase::Filters::MailImpl();
