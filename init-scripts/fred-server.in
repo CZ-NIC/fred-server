@@ -39,22 +39,27 @@ fred_start() {
 	    /bin/su - postgres -c "$DB_MANAGER install"
         fi
 	if [ $? -ne 0 ]; then 
-            log_failure_msg ${MSG_START}
+            log_failure_msg "${MSG_START}"
             exit 1; 
         fi
     fi
     if [ ! -d $VARRUN_PATH ]; then
 	mkdir -p ${VARRUN_PATH}
     fi
+    NUM=0
     START_SUCCEDED=1
-    if check_pidfile ${VARRUN_PATH}/pyfred.pid; then /bin/true; else
-        @BINDIR@/pyfredctl start > /dev/null
-        START_SUCCEDED=$(($START_SUCCEDED * $?))
+    if check_pidfile ${VARRUN_PATH}/pyfred.pid; then NUM=$(($NUM+1)); else
+        @BINDIR@/pyfredctl start >/dev/null 2>&1
+	if [ $? -eq 0 ]; then
+            START_SUCCEDED=0
+	    NUM=$(($NUM+1))
+	fi
     fi
     if check_pidfile ${VARRUN_PATH}/fred-rifd.pid; then /bin/true; else
         ${FRED_PATH}/fred-rifd ${OPTIONS}${RIFD_PORT} 2>/dev/null &
         if [ $? -eq 0 ]; then
             START_SUCCEDED=0
+	    NUM=$(($NUM+1))
 	    echo `pidof ${FRED_PATH}/fred-rifd` > ${VARRUN_PATH}/fred-rifd.pid
         fi
     fi
@@ -62,6 +67,7 @@ fred_start() {
         ${FRED_PATH}/fred-pifd ${OPTIONS}${PIFD_PORT} 2>/dev/null &
         if [ $? -eq 0 ]; then
             START_SUCCEDED=0
+	    NUM=$(($NUM+1))
 	    echo `pidof ${FRED_PATH}/fred-pifd` > ${VARRUN_PATH}/fred-pifd.pid
         fi
     fi
@@ -69,13 +75,14 @@ fred_start() {
         ${FRED_PATH}/fred-adifd ${OPTIONS}${ADIFD_PORT} 2>/dev/null &
         if [ $? -eq 0 ]; then
             START_SUCCEDED=0
+	    NUM=$(($NUM+1))
 	    echo `pidof ${FRED_PATH}/fred-adifd` > ${VARRUN_PATH}/fred-adifd.pid
         fi
     fi
-    if [ $START_SUCCEDED -eq 0 ]; then
-        log_success_msg ${MSG_START}
+    if [ $START_SUCCEDED -eq 0 -a $NUM -eq 4 ]; then
+        log_success_msg "${MSG_START}"
     else
-	log_failure_msg ${MSG_START}
+	log_failure_msg "${MSG_START}"
     fi
 }
 
@@ -120,9 +127,9 @@ fred_stop() {
     STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
     if [ $STOP_SUCCEDED -eq 0 ]
     then
-        log_success_msg ${MSG_STOP}
+        log_success_msg "${MSG_STOP}"
     else
-        log_failure_msg ${MSG_STOP}
+        log_failure_msg "${MSG_STOP}"
     fi
 }
 
@@ -141,7 +148,8 @@ case "$1" in
         fred_status
         ;;
     *)
-	echo "Usage: @SYSCONFDIR@/init.d/fred-server {start|stop|restart}"
+	echo -n "Usage: @SYSCONFDIR@/init.d/fred-server "
+	echo "{start|stop|restart|status}"
 	exit 1
 esac
 
