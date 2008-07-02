@@ -133,6 +133,7 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
   ccReg::PublicRequest::Detail *pr_detail = 0;
   ccReg::Invoicing::Invoice *i_detail = 0;
   ccReg::Mailing::Detail *m_detail = 0;
+  ccReg::EPPAction *a_detail = 0;
 
   switch (_type) {
     case ccReg::FT_CONTACT:
@@ -170,9 +171,13 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
       *result <<= m_detail;
       break;
 
+    case ccReg::FT_ACTION:
+      a_detail = getEppActionDetail(_id);
+      *result <<= a_detail;
+      break;
+      
     case ccReg::FT_FILTER:
     case ccReg::FT_OBJ:
-    case ccReg::FT_ACTION:
     case ccReg::FT_FILE:
       LOGGER("corba").error("Calling method with not implemented parameter!");
     default:
@@ -362,6 +367,29 @@ ccReg::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
       throw ccReg::Admin::ObjectNotFound();
     }
     return createMailDetail(tmp_mail_list->get(0));
+  }
+}
+
+ccReg::EPPAction* ccReg_Session_i::getEppActionDetail(ccReg::TID _id) {
+  Register::Registrar::EPPAction *action = m_eppactions->findId(_id);
+  if (action && !action->getEPPMessage().empty()) {
+    return createEppActionDetail(action);
+  } else {
+    LOGGER("corba").debug(boost::format("constructing eppaction filter for object id=%1%' detail")
+        % _id);
+    std::auto_ptr<Register::Registrar::EPPActionList> tmp_action_list(m_register_manager->getRegistrarManager()->createEPPActionList());
+
+    DBase::Filters::Union union_filter;
+    DBase::Filters::EppAction *filter = new DBase::Filters::EppActionImpl();
+    filter->addId().setValue(DBase::ID(_id));
+    union_filter.addFilter(filter);
+
+    tmp_action_list->reload2(union_filter, m_db_manager.get());
+
+    if (tmp_action_list->size() != 1) {
+      throw ccReg::Admin::ObjectNotFound();
+    }
+    return createEppActionDetail(tmp_action_list->get(0));
   }
 }
 
@@ -764,6 +792,22 @@ ccReg::Mailing::Detail* ccReg_Session_i::createMailDetail(Register::Mail::Mail *
   detail->attachments.length(_mail->getAttachmentSize());
   for (unsigned i = 0; i < _mail->getAttachmentSize(); ++i)
     detail->attachments[i] = _mail->getAttachment(i);
+  
+  return detail;
+}
+
+ccReg::EPPAction* ccReg_Session_i::createEppActionDetail(Register::Registrar::EPPAction *_action) {
+  ccReg::EPPAction *detail = new ccReg::EPPAction;
+  
+  detail->id = _action->getId();
+  detail->xml = DUPSTRFUN(_action->getEPPMessage);
+  detail->time = DUPSTRDATE(_action->getStartTime);
+  detail->type = DUPSTRFUN(_action->getTypeName);
+  detail->objectHandle = DUPSTRFUN(_action->getHandle);
+  detail->registrarHandle = DUPSTRFUN(_action->getRegistrarHandle);
+  detail->result = _action->getResult();
+  detail->clTRID = DUPSTRFUN(_action->getClientTransactionId);
+  detail->svTRID = DUPSTRFUN(_action->getServerTransactionId);
   
   return detail;
 }

@@ -307,6 +307,8 @@ public:
   virtual RegistrarList *getList() = 0;
   /// Return list of EPP actions
   virtual EPPActionList *getEPPActionList() = 0;
+  /// Return new empty list of EPP actions
+  virtual EPPActionList *createEPPActionList() = 0;
   /// Return count of EPP action types
   virtual unsigned getEPPActionTypeCount() = 0;
   /// Return EPP action type by index

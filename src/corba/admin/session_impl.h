@@ -67,7 +67,14 @@ private:
   ccReg::PublicRequest::Detail* getPublicRequestDetail(ccReg::TID _id);
   ccReg::Invoicing::Invoice* getInvoiceDetail(ccReg::TID _id);
   ccReg::Mailing::Detail* getMailDetail(ccReg::TID _id);
+  ccReg::EPPAction* getEppActionDetail(ccReg::TID _id);
   
+  
+  /*
+   * TODO:
+   * this should be rather in separate library - it is only general CORBA-to-Register
+   * mapping
+   */
   ccReg::DomainDetail* createDomainDetail(Register::Domain::Domain* _domain);
   ccReg::ContactDetail* createContactDetail(Register::Contact::Contact* _contact);
   ccReg::NSSetDetail* createNSSetDetail(Register::NSSet::NSSet* _contact);
@@ -75,6 +82,7 @@ private:
   ccReg::PublicRequest::Detail* createPublicRequestDetail(Register::PublicRequest::PublicRequest* _request);
   ccReg::Invoicing::Invoice* createInvoiceDetail(Register::Invoicing::Invoice *_invoice);
   ccReg::Mailing::Detail* createMailDetail(Register::Mail::Mail *_mail);
+  ccReg::EPPAction* createEppActionDetail(Register::Registrar::EPPAction *_action);
   
   void _createUpdateRegistrar(const ccReg::Registrar& _registrar);
 

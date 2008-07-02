@@ -16,6 +16,13 @@ Table& EppActionImpl::joinActionTable() {
   return joinTable("action");
 }
 
+Value<DBase::ID>& EppActionImpl::addId() {
+  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("id", joinActionTable()));
+  tmp->setName("Id");
+  add(tmp);
+  return *tmp;
+}
+
 EppSession& EppActionImpl::addSession() {
   EppSessionImpl* tmp = new EppSessionImpl();
   add(tmp);

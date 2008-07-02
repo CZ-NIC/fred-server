@@ -1043,16 +1043,28 @@ public:
         << "t_1.id, t_1.clientid, t_1.action, t_2.status, t_1.startdate, "
         << "t_1.servertrid, t_1.clienttrid, t_1.response, "
         << "t_4.registrarid, MIN(t_5.value)";
+        if (!partialLoad) {
+          object_info_query.select() << ", t_6.xml";
+        }
+        else {
+          object_info_query.select() << ", ''";
+        }
     object_info_query.from() << "tmp_eppaction_filter_result tmp "
         << "JOIN action t_1 ON(tmp.id = t_1.id) "
         << "JOIN enum_action t_2 ON (t_1.action = t_2.id) "
         << "JOIN enum_error t_3 ON (t_1.response = t_3.id) "
         << "JOIN login t_4 ON (t_1.clientid = t_4.id) "
         << "LEFT JOIN action_elements t_5 ON (t_1.id = t_5.actionid)";
+    if (!partialLoad)
+      object_info_query.from() << "LEFT JOIN action_xml t_6 ON (t_1.id = t_6.actionid) ";
+
     object_info_query.order_by() << "tmp.id";
     object_info_query.group_by() << "t_1.id, t_1.clientid, t_1.action, "
         << "tmp.id, t_2.status, t_1.startdate, t_1.servertrid, t_1.clienttrid, "
         << "t_1.response, t_4.registrarid";
+    if (!partialLoad) {
+      object_info_query.group_by() << ", t_6.xml";
+    }
 
     try {
       std::auto_ptr<DBase::Connection> conn(dbm->getConnection());
@@ -1081,11 +1093,11 @@ public:
         DBase::DateTime start_time = it->getNextValue();
         std::string server_trid = it->getNextValue();
         std::string client_trid = it->getNextValue();
-        std::string message = "not filled";
         unsigned result = it->getNextValue();
         DBase::ID registrar_id = it->getNextValue();
         std::string registrar_handle = registrars_table[registrar_id];
         std::string object_handle = it->getNextValue();
+        std::string message = it->getNextValue();
 
         data_.push_back(
             new EPPActionImpl(
@@ -1184,6 +1196,10 @@ public:
   virtual EPPActionList *getEPPActionList() {
     return &eal;
   }
+  virtual EPPActionList *createEPPActionList() {
+    return new EPPActionListImpl(db);
+  }
+  
   virtual unsigned getEPPActionTypeCount() {
     return actionTypes.size();
   }

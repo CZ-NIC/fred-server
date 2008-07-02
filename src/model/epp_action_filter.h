@@ -14,6 +14,7 @@ public:
   }
 
   virtual Table& joinActionTable() = 0;
+  virtual Value<DBase::ID>& addId() = 0;
   virtual Interval<DateTimeInterval>& addTime() = 0;
   virtual Value<std::string>& addClTRID() = 0;
   virtual Value<std::string>& addSvTRID() = 0;
@@ -37,6 +38,7 @@ public:
   virtual ~EppActionImpl();
 
   virtual Table& joinActionTable();
+  virtual Value<DBase::ID>& addId();
   virtual Interval<DateTimeInterval>& addTime();
   virtual Value<std::string>& addClTRID();
   virtual Value<std::string>& addSvTRID();
