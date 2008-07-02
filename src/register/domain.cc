@@ -63,13 +63,14 @@ public:
              const std::string& _nssetHandle, TID _registrant,
              const std::string& _registrantHandle,
              const std::string& _registrantName, TID _registrar,
-             const std::string& _registrarHandle, ptime _crDate, ptime _trDate,
-             ptime _upDate, date _erDate, TID _createRegistrar,
+             const std::string& _registrarHandle, const ptime& _crDate, const ptime& _trDate,
+             const ptime& _upDate, const date& _erDate, TID _createRegistrar,
              const std::string& _createRegistrarHandle, TID _updateRegistrar,
              const std::string& _updateRegistrarHandle,
              const std::string& _authPw, const std::string& _roid,
-             date _exDate, date _valExDate, unsigned _zoneStatus,
-             ptime _zoneStatusTime, Zone::Manager *zm) :
+             const date& _exDate, const date& _valExDate, unsigned _zoneStatus,
+             const ptime& _zoneStatusTime, const date& _outZoneDate, const date& _cancelDate, 
+             Zone::Manager *zm) :
     ObjectImpl(_id, _crDate, _trDate, _upDate, _erDate, _registrar,
                _registrarHandle, _createRegistrar, _createRegistrarHandle,
                _updateRegistrar, _updateRegistrarHandle, _authPw, _roid),
@@ -77,9 +78,8 @@ public:
         registrant(_registrant), registrantHandle(_registrantHandle),
         registrantName(_registrantName), exDate(_exDate),
         valExDate(_valExDate), zoneStatus(_zoneStatus),
-        zoneStatusTime(_zoneStatusTime) {
-    outZoneDate = exDate + days(30);
-    cancelDate = exDate + days(45);
+        zoneStatusTime(_zoneStatusTime), 
+        outZoneDate(_outZoneDate), cancelDate(_cancelDate) {
   }
   virtual const std::string& getFQDN() const {
     return fqdn;
@@ -453,7 +453,9 @@ public:
     object_info_query.select() << "t_1.id, t_1.name, t_2.zone, t_2.nsset, "
         << "t_3.id, t_3.name, t_4.name, t_5.clid, "
         << "t_1.crdate, t_5.trdate, t_5.update, t_1.erdate, t_1.crid, t_5.upid, "
-        << "t_5.authinfopw, t_1.roid, t_2.exdate, NULL";
+        << "t_5.authinfopw, t_1.roid, t_2.exdate, "
+        << "(t_2.exdate + (SELECT val from enum_parameters where id = 4)::int) as outzonedate, "
+        << "(t_2.exdate + (SELECT val from enum_parameters where id = 6)::int) as canceldate";
     //    object_info_query.from() << getTempTableName()
     //        << " tmp JOIN domain t_2 ON (tmp.id = t_2.id) "
     //        << "JOIN object t_5 ON (t_2.id = t_5.id) "
@@ -513,9 +515,11 @@ public:
         std::string authPw = it->getNextValue();
         std::string roid = it->getNextValue();
         DBase::Date exDate = it->getNextValue();
-        DBase::Date valExDate = it->getNextValue();
+        DBase::Date valExDate = DBase::Date();
         unsigned zoneStatus = 1;
         ptime zoneStatusTime = ptime();
+        DBase::Date outZoneDate = it->getNextValue();
+        DBase::Date cancelDate = it->getNextValue();
 
         data_.push_back (
             new DomainImpl(
@@ -543,6 +547,8 @@ public:
                 valExDate,
                 zoneStatus,
                 zoneStatusTime,
+                outZoneDate,
+                cancelDate,
                 zm
             ));
       }
@@ -661,7 +667,11 @@ public:
     // repository data
         << "o.authinfopw,obr.roid,"
     // expiration and validation dates (validation in seperate query)
-        << "d.exdate,NULL " << "FROM " 
+        << "d.exdate,NULL,"
+    // outzone data and cancel date from enum_parameters compute
+        << "(d.exdate + (SELECT val from enum_parameters where id = 4)::int) as outzonedate,"
+        << "(d.exdate + (SELECT val from enum_parameters where id = 6)::int) as canceldate "
+        << "FROM " 
         << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
         << "contact c, object_registry cor, " << "object_registry obr, "
         << "object o, " << "domain d "
@@ -700,7 +710,9 @@ public:
           MAKE_DATE(i,16), // exdate
           MAKE_DATE(i,17), // valexdate
           true, // zone status
-          ptime(), // zone status time 
+          ptime(), // zone status time
+          MAKE_DATE(i,18),
+          MAKE_DATE(i,19),
           zm
       );
       data_.push_back(d);
