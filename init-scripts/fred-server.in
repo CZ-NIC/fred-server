@@ -1,14 +1,13 @@
 #!/bin/sh
 
-if [ -d /lib/lsb/ ]; then
-	uselsb=1
+if [ -x /lib/lsb/init-functions ]; then
+    . /lib/lsb/init-functions
 else
-	uselsb=0
+    log_failure_msg() { echo "ERROR: $1"; }
+    log_success_msg() { echo "SUCCESS: $1"; }
 fi
 
-if [ $uselsb -eq 1 ]; then
-	. /lib/lsb/init-functions
-fi
+PATH=$PATH:/sbin # to find pidof on redhat
 
 FRED_PATH=@SBINDIR@
 VARRUN_PATH=@LOCALSTATEDIR@/run/
@@ -25,6 +24,10 @@ MSG_STOP="Stopping FRED central registry CORBA servers..."
 DB_INIT=1
 DB_MANAGER=@SBINDIR@/fred-dbmanager
 
+check_pidfile() {
+    ps -p $(cat $1 2>/dev/null) >/dev/null 2>&1
+}
+
 fred_start() {
     if [ $DB_INIT -eq 1 -a -x $DB_MANAGER ]
     then
@@ -32,89 +35,113 @@ fred_start() {
         if $DB_MANAGER testuser
         then
             $DB_MANAGER install
-        else
+        elif [ "$(whoami)" == "root" ]; then
 	    /bin/su - postgres -c "$DB_MANAGER install"
         fi
-	if [ $? -ne 0 ]; then exit 1; fi
+	if [ $? -ne 0 ]; then 
+            log_failure_msg ${MSG_START}
+            exit 1; 
+        fi
     fi
-    @BINDIR@/pyfredctl start > /dev/null
-    ${FRED_PATH}/fred-rifd ${OPTIONS}${RIFD_PORT} 2>/dev/null &
-    ${FRED_PATH}/fred-pifd ${OPTIONS}${PIFD_PORT} 2>/dev/null &
-    ${FRED_PATH}/fred-adifd ${OPTIONS}${ADIFD_PORT} 2>/dev/null &
-
-    if [ $? != 0 ]; then
-		if [ $uselsb -eq 1 ]; then
-			log_failure_msg ${MSG_START}
-		else
-			echo "ERROR: ${MSG_START}"
-		fi
+    if [ ! -d $VARRUN_PATH ]; then
+	mkdir -p ${VARRUN_PATH}
+    fi
+    START_SUCCEDED=1
+    if check_pidfile ${VARRUN_PATH}/pyfred.pid; then /bin/true; else
+        @BINDIR@/pyfredctl start > /dev/null
+        START_SUCCEDED=$(($START_SUCCEDED * $?))
+    fi
+    if check_pidfile ${VARRUN_PATH}/fred-rifd.pid; then /bin/true; else
+        ${FRED_PATH}/fred-rifd ${OPTIONS}${RIFD_PORT} 2>/dev/null &
+        if [ $? -eq 0 ]; then
+            START_SUCCEDED=0
+	    echo `pidof ${FRED_PATH}/fred-rifd` > ${VARRUN_PATH}/fred-rifd.pid
+        fi
+    fi
+    if check_pidfile ${VARRUN_PATH}/fred-pifd.pid; then /bin/true; else
+        ${FRED_PATH}/fred-pifd ${OPTIONS}${PIFD_PORT} 2>/dev/null &
+        if [ $? -eq 0 ]; then
+            START_SUCCEDED=0
+	    echo `pidof ${FRED_PATH}/fred-pifd` > ${VARRUN_PATH}/fred-pifd.pid
+        fi
+    fi
+    if check_pidfile ${VARRUN_PATH}/fred-adifd.pid; then /bin/true; else
+        ${FRED_PATH}/fred-adifd ${OPTIONS}${ADIFD_PORT} 2>/dev/null &
+        if [ $? -eq 0 ]; then
+            START_SUCCEDED=0
+	    echo `pidof ${FRED_PATH}/fred-adifd` > ${VARRUN_PATH}/fred-adifd.pid
+        fi
+    fi
+    if [ $START_SUCCEDED -eq 0 ]; then
+        log_success_msg ${MSG_START}
     else
-		if [ $uselsb -eq 1 ]; then
-			log_success_msg ${MSG_START}
-		else
-			echo "SUCCESS: ${MSG_START}"
-		fi
-
-		if [ ! -d $VARRUN_PATH ]; then
-			mkdir -p ${VARRUN_PATH}
-		fi
-                if [ -x /bin/pidof ]
-                then
-                    PIDOF=/bin/pidof
-                elif [ -x /sbin/pidof ]
-                then
-                    PIDOF=/sbin/pidof
-                fi                
-                if [ $PIDOF != "" ]
-                then
-		    echo `$PIDOF ${FRED_PATH}/fred-rifd` > ${VARRUN_PATH}/fred-rifd.pid
-		    echo `$PIDOF ${FRED_PATH}/fred-pifd` > ${VARRUN_PATH}/fred-pifd.pid
-		    echo `$PIDOF ${FRED_PATH}/fred-adifd` > ${VARRUN_PATH}/fred-adifd.pid
-                fi
+	log_failure_msg ${MSG_START}
     fi
 }
 
+check_server_status() {
+    echo -n "$1 is ";
+    if check_pidfile $2
+    then
+        echo "running"
+    else
+        echo "stopped"
+    fi
+}
+
+fred_status() {
+    check_server_status "fred-pyfred" "${VARRUN_PATH}/pyfred.pid"
+    check_server_status "fred-rifd" "${VARRUN_PATH}/fred-rifd.pid"
+    check_server_status "fred-pifd" "${VARRUN_PATH}/fred-pifd.pid"
+    check_server_status "fred-adifd" "${VARRUN_PATH}/fred-adifd.pid"
+}
+
 fred_stop() {
+    STOP_SUCCEDED=1
     if [ -f ${VARRUN_PATH}/fred-rifd.pid ]
     then
         kill -TERM `cat ${VARRUN_PATH}/fred-rifd.pid` 2>/dev/null
+        STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
 	rm -f ${VARRUN_PATH}/fred-rifd.pid
     fi
     if [ -f ${VARRUN_PATH}/fred-pifd.pid ]
     then
 	kill -TERM `cat ${VARRUN_PATH}/fred-pifd.pid` 2>/dev/null
+        STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
 	rm -f ${VARRUN_PATH}/fred-pifd.pid
     fi
     if [ -f ${VARRUN_PATH}/fred-adifd.pid ]
     then
 	kill -TERM `cat ${VARRUN_PATH}/fred-adifd.pid` 2>/dev/null
+        STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
 	rm -f ${VARRUN_PATH}/fred-adifd.pid
     fi
     @BINDIR@/pyfredctl stop > /dev/null
-	if [ $uselsb -eq 1 ]; then
-		log_success_msg ${MSG_STOP}
-	else
-		echo ${MSG_STOP}
-	fi
+    STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
+    if [ $STOP_SUCCEDED -eq 0 ]
+    then
+        log_success_msg ${MSG_STOP}
+    else
+        log_failure_msg ${MSG_STOP}
+    fi
 }
+
 case "$1" in
-start)
+    start)
 	fred_start
-  ;;
-restart)
+        ;;
+    restart)
 	fred_stop
-	sleep 3
 	fred_start
-  ;;
-stop)
+        ;;
+    stop)
 	fred_stop
-  ;;
-*)
-	if [ $uselsb -eq 1 ];then
-		log_success_msg "Usage: @SYSCONFDIR@/init.d/fred-server {start|stop|restart}"
-	else
-		echo "Usage: @SYSCONFDIR@/init.d/fred-server {start|stop|restart}"
-	fi
+        ;;
+    status)
+        fred_status
+        ;;
+    *)
+	echo "Usage: @SYSCONFDIR@/init.d/fred-server {start|stop|restart}"
 	exit 1
 esac
 
