@@ -641,6 +641,7 @@ public:
       credit_query.group_by() << "registrarid, zone";
       credit_query.order_by() << "registrarid";
 
+      resetIDSequence();
       std::auto_ptr<DBase::Result> r_credit(conn->exec(credit_query));
       std::auto_ptr<DBase::ResultIterator> cit(r_credit->getIterator());
       for (cit->first(); !cit->isDone(); cit->next()) {
@@ -649,7 +650,7 @@ public:
         unsigned long credit = cit->getNextValue();
         
         try {
-          RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findId(registrar_id));
+          RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
           registrar_ptr->setCredit(zone_id, credit);
         }
         catch (Register::NOT_FOUND) {
@@ -657,6 +658,7 @@ public:
         }
       }
       
+      resetIDSequence();
       DBase::SelectQuery acl_query;
       acl_query.select() << "id, registrarid, cert, password ";
       acl_query.from() << "registraracl";
@@ -671,7 +673,7 @@ public:
         std::string password = ait->getNextValue();
 
         try {
-          RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findId(registrar_id));
+          RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
           registrar_ptr->putACL(acl_id, cert_md5, password);
         }
         catch (Register::NOT_FOUND) {

@@ -1245,6 +1245,7 @@ public:
          * 
          * append list of sources to all selected invoices
          */
+        resetIDSequence();
         DBase::SelectQuery source_query;
         source_query.select() << "tmp.id, ipm.credit * 100, sri.vat, sri.prefix, "
                               << "ipm.balance * 100, sri.id, sri.total * 100, "
@@ -1285,13 +1286,15 @@ public:
                               << "JOIN invoice i ON (ipm.invoiceid = i.id) ";
           action_query.group_by() << "tmp.id, o.name, ior.crdate, ior.exdate, "
                                   << "ior.operation, ior.period, o.id, i.vat";
-          
+          action_query.order_by() << "tmp.id";
+        
+          resetIDSequence();
           std::auto_ptr<DBase::Result> r_actions(conn->exec(action_query));
           std::auto_ptr<DBase::ResultIterator> ait(r_actions->getIterator());
           for (ait->first(); !ait->isDone(); ait->next()) {
             DBase::ID invoice_id = ait->getNextValue();
             
-            InvoiceImpl *invoice_ptr = dynamic_cast<InvoiceImpl* >(findId(invoice_id));
+            InvoiceImpl *invoice_ptr = dynamic_cast<InvoiceImpl* >(findIDSequence(invoice_id));
             if (invoice_ptr) 
               invoice_ptr->addAction(ait.get());
           }
