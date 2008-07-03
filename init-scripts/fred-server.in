@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ -x /lib/lsb/init-functions ]; then
+if [ -f /lib/lsb/init-functions ]; then
     . /lib/lsb/init-functions
 else
     log_failure_msg() { echo "ERROR: $1"; }
