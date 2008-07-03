@@ -561,8 +561,8 @@ public:
     }
     db->FreeSelect();
   }
-  virtual void reload2(DBase::Filters::Union &uf, DBase::Manager *dbm) {
-    TRACE("[CALL] RegistrarListImpl::reload2()");
+  virtual void reload(DBase::Filters::Union &uf, DBase::Manager *dbm) {
+    TRACE("[CALL] RegistrarListImpl::reload()");
     clear();
     uf.clearQueries();
 
@@ -1013,8 +1013,8 @@ public:
     result = EARF_ALL;
     partialLoad = false;
   }
-  virtual void reload2(DBase::Filters::Union &uf, DBase::Manager *dbm) {
-    TRACE("[CALL] EPPActionListImpl::reload2()");
+  virtual void reload(DBase::Filters::Union &uf, DBase::Manager *dbm) {
+    TRACE("[CALL] EPPActionListImpl::reload()");
     clear();
     uf.clearQueries();
 

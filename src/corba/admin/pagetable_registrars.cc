@@ -12,7 +12,7 @@ ccReg_Registrars_i::~ccReg_Registrars_i() {
 void 
 ccReg_Registrars_i::reload() {
   TRACE("[CALL] void ccReg_Registrars_i::reload()");
-  rl->reload2(uf,dbm);
+  rl->reload(uf,dbm);
 }
 
 ccReg::Filters::Compound_ptr 

@@ -100,7 +100,7 @@ CORBA::Short ccReg_EPPActions_i::numColumns() {
 void ccReg_EPPActions_i::reload() {
   TRACE("[CALL] ccReg_EPPActions_i::reload()");
   eal->setPartialLoad(true);
-  eal->reload2(uf, dbm);
+  eal->reload(uf, dbm);
 }
 
 void ccReg_EPPActions_i::clear() {

@@ -516,7 +516,7 @@ ccReg::ContactDetail* ccReg_Admin_i::getContactById(ccReg::TID id)
   DBase::Filters::Contact *cf = new DBase::Filters::ContactImpl();
   cf->addId().setValue(DBase::ID(id));
   uf.addFilter(cf);
-  cl->reload2(uf, m_db_manager.get());
+  cl->reload(uf, m_db_manager.get());
 
   //cl->setIdFilter(id);
   //cl->reload();
@@ -609,7 +609,7 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetById(ccReg::TID id)
   DBase::Filters::NSSet *nf = new DBase::Filters::NSSetImpl();
   nf->addId().setValue(DBase::ID(id));
   uf.addFilter(nf);
-  nl->reload2(uf, m_db_manager.get());
+  nl->reload(uf, m_db_manager.get());
 
   // nl->setIdFilter(id);
   // nl->reload();
@@ -770,7 +770,7 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainById(ccReg::TID id)
   DBase::Filters::Domain *df = new DBase::Filters::DomainImpl();
   df->addId().setValue(DBase::ID(id));
   uf.addFilter(df);
-  dl->reload2(uf, m_db_manager.get());
+  dl->reload(uf, m_db_manager.get());
 
   //dl->setIdFilter(id);
   //dl->reload();

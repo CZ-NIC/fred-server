@@ -144,7 +144,7 @@ public:
   /// set filter for zone generation status
   virtual void setZoneStatusFilter(unsigned status) = 0;
   /// testing new reload function
-  virtual void reload2(DBase::Filters::Union &uf, DBase::Manager* dbm) = 0;
+  virtual void reload(DBase::Filters::Union &uf, DBase::Manager* dbm) = 0;
   /// reload list with current filter
   virtual void reload() throw (SQL_ERROR) = 0;
   /// clear filter data

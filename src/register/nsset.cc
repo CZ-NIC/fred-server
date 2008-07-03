@@ -341,24 +341,32 @@ public:
     db->FreeSelect();
     ObjectListImpl::reload(useTempTable ? NULL : handle.c_str(),2);
   }
-  virtual void reload2(DBase::Filters::Union &uf, DBase::Manager* dbm) {
-    TRACE("[CALL] NSSet::ListImpl::reload2()");
+  virtual void reload(DBase::Filters::Union &uf, DBase::Manager* dbm) {
+    TRACE("[CALL] NSSet::ListImpl::reload()");
     clear();
     uf.clearQueries();
 
     // TEMP: should be cached for quicker
     std::map<DBase::ID, std::string> registrars_table;
 
+    bool at_least_one = false;
     DBase::SelectQuery id_query;
     std::auto_ptr<DBase::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next()) {
-      DBase::Filters::NSSet *df = dynamic_cast<DBase::Filters::NSSet* >(fit->get());
+      DBase::Filters::NSSet *df = dynamic_cast<DBase::Filters::NSSetHistoryImpl* >(fit->get());
       if (!df)
         continue;
+      
       DBase::SelectQuery *tmp = new DBase::SelectQuery();
       tmp->addSelect(new DBase::Column("historyid", df->joinNSSetTable(), "DISTINCT"));
       uf.addQuery(tmp);
+      at_least_one = true;
     }
+    if (!at_least_one) {
+      LOGGER("register").error("wrong filter passed for reload!");
+      return;
+    }
+    
     id_query.limit(5000);
     uf.serialize(id_query);
 
@@ -490,7 +498,7 @@ public:
       }
       
       /// load object state
-      ObjectListImpl::reload2(conn.get());
+      ObjectListImpl::reload(conn.get());
     }
     catch (DBase::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());

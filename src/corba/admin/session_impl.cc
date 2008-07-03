@@ -220,7 +220,7 @@ ccReg::DomainDetail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
     filter->addId().setValue(DBase::ID(_id));
     uf.addFilter(filter);
 
-    tmp_domain_list->reload2(uf, m_db_manager.get());
+    tmp_domain_list->reload(uf, m_db_manager.get());
 
     if (tmp_domain_list->getCount() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -244,7 +244,7 @@ ccReg::ContactDetail* ccReg_Session_i::getContactDetail(ccReg::TID _id) {
     filter->addId().setValue(DBase::ID(_id));
     uf.addFilter(filter);
 
-    tmp_contact_list->reload2(uf, m_db_manager.get());
+    tmp_contact_list->reload(uf, m_db_manager.get());
 
     if (tmp_contact_list->getCount() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -268,7 +268,7 @@ ccReg::NSSetDetail* ccReg_Session_i::getNSSetDetail(ccReg::TID _id) {
     filter->addId().setValue(DBase::ID(_id));
     uf.addFilter(filter);
 
-    tmp_nsset_list->reload2(uf, m_db_manager.get());
+    tmp_nsset_list->reload(uf, m_db_manager.get());
 
     if (tmp_nsset_list->getCount() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -292,7 +292,7 @@ ccReg::Registrar* ccReg_Session_i::getRegistrarDetail(ccReg::TID _id) {
     filter->addId().setValue(DBase::ID(_id));
     uf.addFilter(filter);
 
-    tmp_registrar_list->reload2(uf, m_db_manager.get());
+    tmp_registrar_list->reload(uf, m_db_manager.get());
 
     if (tmp_registrar_list->size() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -384,7 +384,7 @@ ccReg::EPPAction* ccReg_Session_i::getEppActionDetail(ccReg::TID _id) {
     filter->addId().setValue(DBase::ID(_id));
     union_filter.addFilter(filter);
 
-    tmp_action_list->reload2(union_filter, m_db_manager.get());
+    tmp_action_list->reload(union_filter, m_db_manager.get());
 
     if (tmp_action_list->size() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -595,7 +595,7 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar) {
     filter->addId().setValue(DBase::ID(_registrar.id));
     uf.addFilter(filter);
 
-    tmp_registrar_list->reload2(uf, m_db_manager.get());
+    tmp_registrar_list->reload(uf, m_db_manager.get());
 
     if (tmp_registrar_list->size() != 1) {
       throw ccReg::Admin::ObjectNotFound();

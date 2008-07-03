@@ -91,7 +91,7 @@ CORBA::Short ccReg_Contacts_i::numColumns() {
 
 void ccReg_Contacts_i::reload() {
 //  cl->makeRealCount();
-  cl->reload2(uf, dbm);
+  cl->reload(uf, dbm);
 }
 
 void ccReg_Contacts_i::clear() {

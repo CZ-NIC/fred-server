@@ -377,24 +377,32 @@ public:
     db->FreeSelect();
     ObjectListImpl::reload(useTempTable ? NULL : handle.c_str(),1);
   }
-  void reload2(DBase::Filters::Union &uf, DBase::Manager* dbm) {
-    TRACE("[CALL] ContactListImpl::reload2()");
+  void reload(DBase::Filters::Union &uf, DBase::Manager* dbm) {
+    TRACE("[CALL] ContactListImpl::reload()");
     clear();
     DBase::SelectQuery id_query;
 
     // TEMP: should be cached
     std::map<DBase::ID, std::string> registrars_table;
 
+    bool at_least_one = false;
     std::auto_ptr<DBase::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next()) {
       DBase::Filters::Contact *cf =
-          dynamic_cast<DBase::Filters::Contact* >(fit->get());
+          dynamic_cast<DBase::Filters::ContactHistoryImpl* >(fit->get());
       if (!cf)
         continue;
+      
       DBase::SelectQuery *tmp = new DBase::SelectQuery();
       tmp->addSelect(new DBase::Column("historyid", cf->joinContactTable(), "DISTINCT"));
       uf.addQuery(tmp);
+      at_least_one = true;
     }
+    if (!at_least_one) {
+      LOGGER("register").error("wrong filter passed for reload!");
+      return;
+    }
+    
     id_query.limit(5000);
     uf.serialize(id_query);
 
@@ -529,7 +537,7 @@ public:
       }
       
       /// load object state
-      ObjectListImpl::reload2(conn.get());
+      ObjectListImpl::reload(conn.get());
     }
     catch (DBase::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());

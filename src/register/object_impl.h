@@ -104,7 +104,7 @@ namespace Register
     virtual void addStateFilter(TID state, bool stateIsOn);
     virtual void clearStateFilter(TID state);
     void reload(const char *handle = NULL, int type=0) throw (SQL_ERROR);
-    void reload2(DBase::Connection* _conn);
+    void reload(DBase::Connection* _conn);
   }; // class ObjectListImpl
    
 } // namespace register

@@ -96,7 +96,7 @@ ccReg_NSSets_i::reload()
 {
   TRACE("[CALL] ccReg_NSSets_i::reload()");
 //  nl->makeRealCount();  
-  nl->reload2(uf, dbm);
+  nl->reload(uf, dbm);
 }
 
 void

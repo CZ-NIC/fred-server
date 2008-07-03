@@ -19,7 +19,7 @@ ccReg::Filters::Compound_ptr ccReg_Domains_i::add() {
 void ccReg_Domains_i::reload() {
   TRACE("[CALL] ccReg_Domains_i::reload()");
 //  dl->makeRealCount();
-  dl->reload2(uf, dbm);
+  dl->reload(uf, dbm);
 }
 
 ccReg::Table::ColumnHeaders* ccReg_Domains_i::getColumnHeaders() {

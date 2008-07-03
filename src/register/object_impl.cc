@@ -259,7 +259,7 @@ void Register::ObjectListImpl::reload(const char *handle, int type)
   db->FreeSelect();
 }
 
-void Register::ObjectListImpl::reload2(DBase::Connection* _conn) {
+void Register::ObjectListImpl::reload(DBase::Connection* _conn) {
   DBase::SelectQuery states_query;
   states_query.select() << "tmp.id, t_1.object_id, t_1.state_id, t_1.valid_from";
   states_query.from() << getTempTableName() << " tmp "
@@ -289,5 +289,4 @@ void Register::ObjectListImpl::reload2(DBase::Connection* _conn) {
   catch (std::exception& ex) {
     LOGGER("db").error(boost::format("%1%") % ex.what());
   }
-
 }
