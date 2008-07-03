@@ -354,7 +354,7 @@ int main(int argc, char **argv)
       ("object_regular_procedure",
        "shortcut for 2x update_object_states, notify_state_changes, "
        "poll_create_statechanges, object_delete_candidates, "
-       "poll_create_lowcredit, "
+       "poll_create_lowcredit, notify_letters_create"
        );
 
     po::options_description notDesc("Notification options");
@@ -680,6 +680,7 @@ int main(int argc, char **argv)
       // delete objects are removed from non-history tables
       deleteObjects(&cc,&db,vm["object_delete_types"].as<std::string>(),0,NULL);
       pollMan->createLowCreditMessages();
+      notifyMan->generateLetters();
     }
     if (vm.count("object_list")) {
       std::auto_ptr<Register::Domain::List> dl(domMan->createList());
