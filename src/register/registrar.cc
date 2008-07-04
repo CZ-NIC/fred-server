@@ -635,6 +635,9 @@ public:
                 credit));
       }
 
+      if (data_.empty())
+        return;
+      
       DBase::SelectQuery credit_query;
       credit_query.select() << "zone, registrarid, COALESCE(SUM(credit), 0)";
       credit_query.from() << "invoice";
@@ -649,12 +652,9 @@ public:
         DBase::ID registrar_id = cit->getNextValue();
         unsigned long credit = cit->getNextValue();
         
-        try {
-          RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
+        RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
+        if (registrar_ptr) {
           registrar_ptr->setCredit(zone_id, credit);
-        }
-        catch (Register::NOT_FOUND) {
-          continue;
         }
       }
       
@@ -672,14 +672,10 @@ public:
         std::string cert_md5 = ait->getNextValue();
         std::string password = ait->getNextValue();
 
-        try {
-          RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
+        RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
+        if (registrar_ptr) {
           registrar_ptr->putACL(acl_id, cert_md5, password);
         }
-        catch (Register::NOT_FOUND) {
-          continue;
-        }
-
       }      
     }
     catch (DBase::Exception& ex) {
