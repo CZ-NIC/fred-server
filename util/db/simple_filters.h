@@ -230,7 +230,9 @@ public:
       if (t_value.getSpecial() < PAST_HOUR) {
         beg << "date_trunc('" << what << "', current_timestamp + interval '"
             << t_value.getSpecialOffset() << " " << what <<"')";
-        end << beg.str() << " + interval '1 "<< what << "'";
+        end << "(" << beg.str() << " + interval '1 "<< what << "')";
+        beg << value_post_;
+        end << value_post_;
       } else {
         if (t_value.getSpecialOffset() < 0) {
           beg << "current_timestamp + interval '" << t_value.getSpecialOffset()
@@ -293,7 +295,9 @@ public:
       if (t_value.getSpecial() < PAST_HOUR) {
         beg << "date_trunc('" << what << "', current_date + interval '"
             << t_value.getSpecialOffset() << " " << what <<"')";
-        end << beg.str() << " + interval '1 "<< what << "'";
+        end << "(" << beg.str() << " + interval '1 "<< what << "')";
+        beg << value_post_;
+        end << value_post_;
       } else {
         if (t_value.getSpecialOffset() < 0) {
           beg << "(current_date + interval '" << t_value.getSpecialOffset()
