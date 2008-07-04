@@ -78,6 +78,8 @@ ccReg_Admin_i::~ccReg_Admin_i() {
   db.Disconnect();
 
   session_garbage_active_ = false;
+  cond_.notify_one();
+  session_garbage_thread_->join();
   // session_garbage_thread_->join();
   delete session_garbage_thread_;
   
@@ -133,6 +135,8 @@ void ccReg_Admin_i::checkHandle(const char* handle,
 
 void ccReg_Admin_i::garbageSession() {
   LOGGER("corba").debug("session garbage thread started...");
+  
+  boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   while (session_garbage_active_) {
     LOGGER("corba").debug("session garbage procedure sleeped");
     
@@ -140,11 +144,11 @@ void ccReg_Admin_i::garbageSession() {
     boost::xtime sleep_time;
     boost::xtime_get(&sleep_time, boost::TIME_UTC);
     sleep_time.sec += 300;
-    boost::thread::sleep(sleep_time);
+    //boost::thread::sleep(sleep_time);
+    cond_.timed_wait(scoped_lock, sleep_time);
     
     TRACE("[CALL] ccReg_Admin_i::garbageSession()");
     LOGGER("corba").debug("session garbage procedure invoked");
-    boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
     bool found;
     do {
       found = false;

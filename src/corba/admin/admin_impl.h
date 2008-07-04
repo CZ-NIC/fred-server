@@ -8,6 +8,7 @@
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/condition.hpp>
 
 #include "session_impl.h"
 #include "corba/mailer_manager.h"
@@ -33,6 +34,7 @@ private:
   typedef std::map<std::string, ccReg_Session_i*> SessionListType;
   SessionListType m_session_list;
   boost::mutex m_session_list_mutex;
+  boost::condition cond_;
   bool session_garbage_active_;
   boost::thread *session_garbage_thread_;
 
