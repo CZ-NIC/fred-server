@@ -581,7 +581,7 @@ public:
       tmp->order_by() << "id";
       uf.addQuery(tmp);
     }
-    info_query.limit(5000);
+    info_query.limit(load_limit_);
     uf.serialize(info_query);
     try {
       std::auto_ptr<DBase::Connection> conn(dbm->getConnection());
@@ -1032,7 +1032,7 @@ public:
       tmp->addSelect("id", eaf->joinActionTable());
       uf.addQuery(tmp);
     }
-    id_query.limit(5000);
+    id_query.limit(load_limit_);
     uf.serialize(id_query);
 
     DBase::InsertQuery tmp_table_query =

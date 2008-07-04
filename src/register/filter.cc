@@ -25,6 +25,8 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 
+#include "common_object.h"
+#include "object.h"
 #include "filter.h"
 #include "db/dbs.h"
 #include "model/model_filters.h"
@@ -33,11 +35,12 @@
 namespace Register {
 namespace Filter {
 
-class FilterImpl : virtual public Filter {
+class FilterImpl : public Register::CommonObjectImpl,
+                   virtual public Filter {
 public:
   FilterImpl(DBase::ID _id, FilterType _type, const std::string& _name,
       DBase::ID _user_id, DBase::ID _group_id) :
-    m_id(_id), m_type(_type), m_name(_name), m_user_id(_user_id),
+    CommonObjectImpl(_id), m_type(_type), m_name(_name), m_user_id(_user_id),
         m_group_id(_group_id) {
   }
   FilterImpl(FilterType _type, const std::string& _name, DBase::ID _user_id,
@@ -51,9 +54,6 @@ public:
         m_group_id(_group_id), m_data(_data) {
   }
   virtual ~FilterImpl() {
-  }
-  virtual DBase::ID getId() const {
-    return m_id;
   }
   virtual const std::string& getName() const {
     return m_name;
@@ -113,13 +113,13 @@ private:
   std::string m_data;
 };
 
-class ListImpl : virtual public List {
+class ListImpl : public Register::CommonListImpl,
+                 virtual public List {
 public:
   ListImpl(DBase::Connection* _conn) :
-    m_conn(_conn) {
+    CommonListImpl(_conn) {
   }
   virtual ~ListImpl() {
-    delete m_conn;
   }
   virtual void reload(DBase::Filters::Union &uf) {
     TRACE("[CALL] Register::Filter::ListImpl::reload()");
@@ -137,11 +137,11 @@ public:
       tmp->addSelect("id type name userid groupid", ff->joinFilterTable());
       uf.addQuery(tmp);
     }
-    object_info_query.limit(5000);
+    object_info_query.limit(load_limit_);
     uf.serialize(object_info_query);
 
     try {
-      std::auto_ptr<DBase::Result> r_info(m_conn->exec(object_info_query));
+      std::auto_ptr<DBase::Result> r_info(conn_->exec(object_info_query));
       std::auto_ptr<DBase::ResultIterator> it(r_info->getIterator());
       for (it->first(); !it->isDone(); it->next()) {
         DBase::ID id = it->getNextValue();
@@ -150,7 +150,7 @@ public:
         DBase::ID userid = it->getNextValue();
         DBase::ID groupid = it->getNextValue();
 
-        m_data.push_back(
+        data_.push_back(
             new FilterImpl(
                 id,
                 type,
@@ -166,31 +166,40 @@ public:
     catch (std::exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
     }
+  }
 
-    // FilterImpl *filter_1_db = new FilterImpl(1, FT_DOMAIN, "Domains which expires next month", 1, 1);
-    // m_data.push_back(filter_1_db);
+  virtual Filter* get(unsigned _idx) const {
+    try {
+      Filter *filter = dynamic_cast<Filter* >(data_.at(_idx));
+      if (filter) 
+        return filter;
+      else
+        throw std::exception();
+    }
+    catch (...) {
+      throw std::exception();
+    } 
   }
-  virtual const unsigned size() const {
-    return m_data.size();
+  
+  virtual void makeQuery(bool, bool, std::stringstream&) const {
+    /* dummy implementation */
   }
-  virtual void clear() {
-    std::for_each(m_data.begin(), m_data.end(), boost::checked_deleter<FilterImpl>());
-		m_data.clear();
-	}
-	virtual const Filter* get(unsigned _idx) const {
-		return m_data.at(_idx);
-	}
-	
-private:
-	DBase::Connection			*m_conn;
-	std::vector<FilterImpl* > 	 m_data;
+  
+  virtual const char* getTempTableName() const {
+    return ""; /* dummy implementation */ 
+  }
+
+  virtual void reload() {
+    /* dummy implementation */
+  }
+
 };
 
 class ManagerImpl : virtual public Manager {
 public:
   ManagerImpl(DBase::Manager* _db_manager) : 
     m_db_manager(_db_manager), 
-	m_filter_list(m_db_manager->getConnection()) {
+	  m_filter_list(m_db_manager->getConnection()) {
   }
   virtual List& getList() {
     return m_filter_list;

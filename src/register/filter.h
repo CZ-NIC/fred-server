@@ -1,6 +1,7 @@
 #ifndef REGISTER_FILTER_H_
 #define REGISTER_FILTER_H_
 
+#include "common_impl.h"
 #include "types.h"
 #include "db/dbs.h"
 #include "model/model_filters.h"
@@ -22,11 +23,10 @@ enum FilterType {
   FT_FILE
 };
 
-class Filter {
+class Filter : virtual public Register::CommonObject {
 public:
   virtual ~Filter() {
   }
-  virtual DBase::ID getId() const = 0;
   virtual const std::string& getName() const = 0;
   virtual void setName(const std::string& _name) = 0;
   virtual FilterType getType() const = 0;
@@ -38,14 +38,17 @@ public:
   virtual void save(DBase::Connection *_conn) const = 0;
 };
 
-class List {
+class List : virtual public Register::CommonList {
 public:
   virtual ~List() {
   }
+  virtual Filter* get(unsigned _idx) const = 0;
   virtual void reload(DBase::Filters::Union &uf) = 0;
-  virtual const unsigned size() const = 0;
-  virtual void clear() = 0;
-  virtual const Filter* get(unsigned _idx) const = 0;
+  
+  /// from CommonList; propably will be removed in future
+  virtual const char* getTempTableName() const = 0;
+  virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
+  virtual void reload() = 0;
 };
 
 class Manager {

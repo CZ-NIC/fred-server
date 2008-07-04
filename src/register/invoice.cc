@@ -1138,7 +1138,7 @@ public:
         tmp->addSelect(new DBase::Column("id", inv_filter->joinInvoiceTable(), "DISTINCT"));
         _uf.addQuery(tmp);
       }
-      id_query.limit(5000);
+      id_query.limit(load_limit_);
       _uf.serialize(id_query);
 
       DBase::InsertQuery tmp_table_query = DBase::InsertQuery(getTempTableName(),

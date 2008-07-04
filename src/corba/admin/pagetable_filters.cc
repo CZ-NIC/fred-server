@@ -37,25 +37,39 @@ ccReg_Filters_i::getColumnHeaders() {
 ccReg::TableRow* 
 ccReg_Filters_i::getRow(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW) {
-  const Register::Filter::Filter *item = m_filter_list.get(row);
-  if (!item) 
-  	  throw ccReg::Table::INVALID_ROW();
-  ccReg::TableRow *tr = new ccReg::TableRow;
-  tr->length(4);
-  (*tr)[0] = DUPSTRC(Util::stream_cast<std::string>(item->getUserId().value));
-  (*tr)[1] = DUPSTRC(Util::stream_cast<std::string>(item->getGroupId().value));
-  (*tr)[2] = DUPSTRC(Util::stream_cast<std::string>(item->getType()));
-  (*tr)[3] = DUPSTRFUN(item->getName);
-  return tr;
+
+  try {
+    const Register::Filter::Filter *item = m_filter_list.get(row);
+    if (!item) 
+    	  throw ccReg::Table::INVALID_ROW();
+    
+    ccReg::TableRow *tr = new ccReg::TableRow;
+    tr->length(4);
+    (*tr)[0] = DUPSTRC(Util::stream_cast<std::string>(item->getUserId()));
+    (*tr)[1] = DUPSTRC(Util::stream_cast<std::string>(item->getGroupId()));
+    (*tr)[2] = DUPSTRC(Util::stream_cast<std::string>(item->getType()));
+    (*tr)[3] = DUPSTRFUN(item->getName);
+    return tr;
+  }
+  catch (...) {
+    throw ccReg::Table::INVALID_ROW();
+  }
 }
 
 ccReg::TID 
 ccReg_Filters_i::getRowId(CORBA::Short row)
   throw (ccReg::Table::INVALID_ROW) {
-  const Register::Filter::Filter *item = m_filter_list.get(row);
-  if (!item) 
-	  throw ccReg::Table::INVALID_ROW();
-  return item->getId().value;
+  
+  try {
+    const Register::Filter::Filter *item = m_filter_list.get(row);
+    if (!item) 
+  	  throw ccReg::Table::INVALID_ROW();
+    
+    return item->getId();
+  }
+  catch (...) {
+    throw ccReg::Table::INVALID_ROW();
+  }
 }
 
 void 

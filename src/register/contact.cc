@@ -403,7 +403,7 @@ public:
       return;
     }
     
-    id_query.limit(5000);
+    id_query.limit(load_limit_);
     uf.serialize(id_query);
 
     DBase::InsertQuery tmp_table_query = DBase::InsertQuery(getTempTableName(),
