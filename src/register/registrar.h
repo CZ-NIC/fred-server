@@ -201,6 +201,13 @@ enum EPPActionResultFilter {
   EARF_ALL ///< All EPP Actions
 };
 
+
+/// Action type
+struct EPPActionType {
+  DBase::ID   id;
+  std::string name;
+};
+
 /// Action made by registrar through EPP
 class EPPAction : virtual public Register::CommonObject {
 protected:
@@ -312,7 +319,7 @@ public:
   /// Return count of EPP action types
   virtual unsigned getEPPActionTypeCount() = 0;
   /// Return EPP action type by index
-  virtual const std::string& getEPPActionTypeByIdx(unsigned idx) const
+  virtual const EPPActionType& getEPPActionTypeByIdx(unsigned idx) const
       throw (NOT_FOUND) = 0;
   virtual bool checkHandle(const std::string) const throw (SQL_ERROR) = 0;
   virtual void addRegistrar(const std::string& registrarHandle)

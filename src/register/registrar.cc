@@ -1161,32 +1161,23 @@ class ManagerImpl : virtual public Manager {
   DB *db; ///< connection do db
   RegistrarListImpl rl;
   EPPActionListImpl eal;
-  std::vector<std::string> actionTypes;
+  std::vector<EPPActionType> actionTypes;
 public:
   ManagerImpl(DB *_db) :
     db(_db), rl(_db), eal(db) {
-    // TODO SQL load
-    actionTypes.push_back("DomainCreate");
-    actionTypes.push_back("ContactCreate");
-    actionTypes.push_back("NSSetCreate");
-    actionTypes.push_back("ContactUpdate");
-    actionTypes.push_back("DomainUpdate");
-    actionTypes.push_back("NSSetUpdate");
-    actionTypes.push_back("ContactDelete");
-    actionTypes.push_back("DomainDelete");
-    actionTypes.push_back("NSSetDelete");
-    actionTypes.push_back("ContactTransfer");
-    actionTypes.push_back("DomainTransfer");
-    actionTypes.push_back("NSSetTransfer");
-    actionTypes.push_back("ContactCheck");
-    actionTypes.push_back("DomainCheck");
-    actionTypes.push_back("NSSetCheck");
-    actionTypes.push_back("ContactInfo");
-    actionTypes.push_back("DomainInfo");
-    actionTypes.push_back("NSSetInfo");
-    actionTypes.push_back("DomainRenew");
-    actionTypes.push_back("ClientLogin");
-    actionTypes.push_back("ClientLogout");
+    
+    if (!db->ExecSelect("SELECT * FROM enum_action")) {
+      throw SQL_ERROR();
+    }
+    
+    actionTypes.clear();
+    for (unsigned i = 0; i < (unsigned)db->GetSelectRows(); i++) {
+      EPPActionType action;
+      action.id = STR_TO_ID(db->GetFieldValue(i, 0));
+      action.name = db->GetFieldValue(i, 1);
+      actionTypes.push_back(action);
+    }
+    db->FreeSelect();    
   }
   virtual RegistrarList *getList() {
     return &rl;
@@ -1201,7 +1192,7 @@ public:
   virtual unsigned getEPPActionTypeCount() {
     return actionTypes.size();
   }
-  virtual const std::string& getEPPActionTypeByIdx(unsigned idx) const
+  virtual const EPPActionType& getEPPActionTypeByIdx(unsigned idx) const
       throw (NOT_FOUND) {
     if (idx >= actionTypes.size())
       throw NOT_FOUND();

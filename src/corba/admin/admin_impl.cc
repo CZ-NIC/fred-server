@@ -1055,8 +1055,10 @@ ccReg::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
   ccReg::EPPActionTypeSeq *et = new ccReg::EPPActionTypeSeq;
   
   et->length(rm->getEPPActionTypeCount());
-  for (unsigned i=0; i<rm->getEPPActionTypeCount(); i++)
-    (*et)[i] = DUPSTRC(rm->getEPPActionTypeByIdx(i));
+  for (unsigned i=0; i<rm->getEPPActionTypeCount(); i++) {
+    (*et)[i].id = rm->getEPPActionTypeByIdx(i).id;
+    (*et)[i].name = DUPSTRC(rm->getEPPActionTypeByIdx(i).name);
+  }
   
   db.Disconnect();
   return et;
