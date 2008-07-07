@@ -631,7 +631,8 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetById(ccReg::TID id)
 void ccReg_Admin_i::fillEPPAction(ccReg::EPPAction* cea,
                                   const Register::Registrar::EPPAction *rea) {
   cea->id = rea->getId();
-  cea->xml = DUPSTRFUN(rea->getEPPMessage);
+  cea->xml = DUPSTRFUN(rea->getEPPMessageIn);
+  cea->xml_out = DUPSTRFUN(rea->getEPPMessageOut);
   cea->time = DUPSTRDATE(rea->getStartTime);
   cea->type = DUPSTRFUN(rea->getTypeName);
   cea->objectHandle = DUPSTRFUN(rea->getHandle);

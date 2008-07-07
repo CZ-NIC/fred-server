@@ -63,6 +63,18 @@ Object& EppActionImpl::addObject() {
   return *tmp;
 }
 
+Value<std::string>& EppActionImpl::addRequestHandle() {
+  addJoin(new Join(
+      Column("id", joinActionTable()),
+      SQL_OP_EQ,
+      Column("actionid", joinTable("action_elements"))
+  ));
+  Value<std::string> *tmp = new Value<std::string>(Column("value", joinTable("action_elements")));
+  add(tmp);
+  tmp->setName("RequestHandle");
+  return *tmp;  
+}
+
 Interval<DateTimeInterval>& EppActionImpl::addTime() {
   Interval<DateTimeInterval> *tmp = new Interval<DateTimeInterval>(
       Column("startdate", joinActionTable()));

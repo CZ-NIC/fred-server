@@ -372,7 +372,7 @@ ccReg::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
 
 ccReg::EPPAction* ccReg_Session_i::getEppActionDetail(ccReg::TID _id) {
   Register::Registrar::EPPAction *action = m_eppactions->findId(_id);
-  if (action && !action->getEPPMessage().empty()) {
+  if (action && !action->getEPPMessageIn().empty()) {
     return createEppActionDetail(action);
   } else {
     LOGGER("corba").debug(boost::format("constructing eppaction filter for object id=%1%' detail")
@@ -800,7 +800,8 @@ ccReg::EPPAction* ccReg_Session_i::createEppActionDetail(Register::Registrar::EP
   ccReg::EPPAction *detail = new ccReg::EPPAction;
   
   detail->id = _action->getId();
-  detail->xml = DUPSTRFUN(_action->getEPPMessage);
+  detail->xml = DUPSTRFUN(_action->getEPPMessageIn);
+  detail->xml_out = DUPSTRFUN(_action->getEPPMessageOut);
   detail->time = DUPSTRDATE(_action->getStartTime);
   detail->type = DUPSTRFUN(_action->getTypeName);
   detail->objectHandle = DUPSTRFUN(_action->getHandle);

@@ -14,5 +14,6 @@
 #define SQL_OP_LIKE     " LIKE "
 
 #define SQL_JOIN        " JOIN "
+#define SQL_LEFT_JOIN   " LEFT JOIN "
 
 #endif /*SQL_OPERATORS_H_*/

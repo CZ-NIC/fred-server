@@ -760,10 +760,12 @@ class EPPActionImpl : public CommonObjectImpl,
   ptime startTime;
   std::string serverTransactionId;
   std::string clientTransactionId;
-  std::string message;
   unsigned result;
   std::string registrarHandle;
   std::string handle;
+  std::string message;
+  std::string message_out;
+  
 public:
   EPPActionImpl(TID _id,
                 TID _sessionId,
@@ -772,14 +774,16 @@ public:
                 ptime _startTime,
                 const std::string& _serverTransactionId,
                 const std::string& _clientTransactionId,
-                const std::string& _message,
                 unsigned _result,
                 const std::string& _registrarHandle,
-                const std::string& _handle) :
+                const std::string& _handle,
+                const std::string& _message = std::string(),
+                const std::string& _message_out = std::string()) :
     CommonObjectImpl(_id), sessionId(_sessionId), type(_type), typeName(_typeName),
         startTime(_startTime), serverTransactionId(_serverTransactionId),
-        clientTransactionId(_clientTransactionId), message(_message),
-        result(_result), registrarHandle(_registrarHandle), handle(_handle) {
+        clientTransactionId(_clientTransactionId), result(_result), 
+        registrarHandle(_registrarHandle), handle(_handle), 
+        message(_message), message_out(_message_out) {
   }
   
   virtual TID getSessionId() const {
@@ -800,8 +804,11 @@ public:
   virtual const std::string& getClientTransactionId() const {
     return clientTransactionId;
   }
-  virtual const std::string& getEPPMessage() const {
+  virtual const std::string& getEPPMessageIn() const {
     return message;
+  }
+  virtual const std::string& getEPPMessageOut() const {
+    return message_out;
   }
   virtual unsigned getResult() const {
     return result;
@@ -926,12 +933,12 @@ public:
     clear();
     std::ostringstream sql;
     sql << "SELECT a.id,a.clientid,a.action,ea.status,a.startdate,"
-        << "a.servertrid,a.clienttrid,";
+        << "a.servertrid,a.clienttrid, a.response,r.handle,MIN(al.value) ";
     if (partialLoad)
-      sql << "'',";
+      sql << ",'','' ";
     else
-      sql << "ax.xml,";
-    sql << "a.response,r.handle,MIN(al.value) " << "FROM action a "
+      sql << ",ax.xml,ax.xml_out ";
+    sql << "FROM action a "
         << "JOIN enum_action ea ON (a.action=ea.id) "
         << "JOIN enum_error er ON (a.response=er.id) "
         << "JOIN login l ON (l.id=a.clientid) "
@@ -958,7 +965,7 @@ public:
     sql << "GROUP BY a.id,a.clientid,a.action,ea.status,a.startdate,"
         << "a.servertrid,a.clienttrid,a.response,r.handle ";
     if (!partialLoad)
-      sql << ",ax.xml ";
+      sql << ",ax.xml,ax.xml_out ";
     sql << "LIMIT 1000";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
@@ -971,10 +978,11 @@ public:
           ptime(time_from_string(db->GetFieldValue(i,4))),
           db->GetFieldValue(i,5),
           db->GetFieldValue(i,6),
-          DB_NULL_STR(i,7),
-          DB_NULL_INT(i,8),
+          DB_NULL_INT(i,7),
+          DB_NULL_STR(i,8),
           DB_NULL_STR(i,9),
-          DB_NULL_STR(i,10)
+          DB_NULL_STR(i,10),
+          DB_NULL_STR(i,11)
       ));
     }
     db->FreeSelect();
@@ -1042,10 +1050,10 @@ public:
         << "t_1.servertrid, t_1.clienttrid, t_1.response, "
         << "t_4.registrarid, MIN(t_5.value)";
         if (!partialLoad) {
-          object_info_query.select() << ", t_6.xml";
+          object_info_query.select() << ", t_6.xml, t_6.xml_out";
         }
         else {
-          object_info_query.select() << ", ''";
+          object_info_query.select() << ", '', ''";
         }
     object_info_query.from() << "tmp_eppaction_filter_result tmp "
         << "JOIN action t_1 ON(tmp.id = t_1.id) "
@@ -1061,7 +1069,7 @@ public:
         << "tmp.id, t_2.status, t_1.startdate, t_1.servertrid, t_1.clienttrid, "
         << "t_1.response, t_4.registrarid";
     if (!partialLoad) {
-      object_info_query.group_by() << ", t_6.xml";
+      object_info_query.group_by() << ", t_6.xml, t_6.xml_out";
     }
 
     try {
@@ -1096,6 +1104,7 @@ public:
         std::string registrar_handle = registrars_table[registrar_id];
         std::string object_handle = it->getNextValue();
         std::string message = it->getNextValue();
+        std::string message_out = it->getNextValue();
 
         data_.push_back(
             new EPPActionImpl(
@@ -1106,10 +1115,11 @@ public:
                 start_time,
                 server_trid,
                 client_trid,
-                message,
                 result,
                 registrar_handle,
-                object_handle
+                object_handle,
+                message,
+                message_out
             ));
       }
     }

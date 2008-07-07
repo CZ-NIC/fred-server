@@ -230,7 +230,9 @@ public:
   /// Return client provided transaction id
   virtual const std::string& getClientTransactionId() const = 0;
   /// Return xml of EPP message
-  virtual const std::string& getEPPMessage() const = 0;
+  virtual const std::string& getEPPMessageIn() const = 0;
+  /// Return xml of EPP message
+  virtual const std::string& getEPPMessageOut() const = 0;
   /// Return result of action
   virtual unsigned getResult() const = 0;
   /// Return result message

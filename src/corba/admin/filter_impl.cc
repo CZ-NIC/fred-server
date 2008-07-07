@@ -314,6 +314,7 @@ COMPOUND_CLASS(Action, EppAction, Compound,
     FILTER_ADD(DateTime, addTime);
     FILTER_ADD(Str, addClTRID);
     FILTER_ADD(Str, addSvTRID);
+    FILTER_ADD(Str, addRequestHandle);
 );
 
 COMPOUND_CLASS(Filter, FilterFilter, Compound,

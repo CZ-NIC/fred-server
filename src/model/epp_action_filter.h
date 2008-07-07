@@ -23,6 +23,9 @@ public:
   virtual EppSession& addSession() = 0;
   virtual Registrar& addRegistrar() = 0;
   virtual Object& addObject() = 0;
+  /* filter on requested object handle - it doesn't need to be in register
+   * done by using action_elements table  */
+  virtual Value<std::string>& addRequestHandle() = 0;
   
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -47,6 +50,7 @@ public:
   virtual EppSession& addSession();
   virtual Registrar& addRegistrar();
   virtual Object& addObject();
+  virtual Value<std::string>& addRequestHandle();
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
