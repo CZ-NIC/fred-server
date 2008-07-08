@@ -412,7 +412,7 @@ public:
     // default is to do nothing special
   }
   /// process request (or just close in case of invalid flag)
-  virtual void process(bool invalid, bool check) throw (REQUEST_BLOCKED) {
+  virtual void process(bool invalid, bool check) throw (REQUEST_BLOCKED, Mailer::NOT_SEND) {
     DBase::Transaction process_request_transaction = conn_->getTransaction(); 
     if (invalid) status_ = PRS_INVALID;
     else {

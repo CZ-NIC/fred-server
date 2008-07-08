@@ -43,7 +43,11 @@ MailerManager::sendEmail(
   Register::Mailer::Attachments attach
 ) throw (Register::Mailer::NOT_SEND)
 {
-  if (to.empty()) return 0;
+  LOGGER("mailer").debug(boost::format("recipients = '%1%'") % to);
+  if (to.empty() || to == "NULL ") {
+    LOGGER("mailer").error("recipients empty!? not sending");
+    throw Register::Mailer::NOT_SEND();
+  }
   // prepare header
   ccReg::MailHeader header;
   header.h_from = CORBA::string_dup(from.c_str());

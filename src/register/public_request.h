@@ -127,7 +127,7 @@ public:
   /// send email with answer 
 	virtual TID sendEmail() const throw (Mailer::NOT_SEND) = 0;
 	/// process request (or just close in case of invalid flag)
-	virtual void process(bool invalid, bool check) throw (REQUEST_BLOCKED)= 0;
+	virtual void process(bool invalid, bool check) throw (REQUEST_BLOCKED, Mailer::NOT_SEND)= 0;
 	/// concrete action taken during request processing
 	virtual void processAction(bool check) throw (REQUEST_BLOCKED) = 0;
 	/// return proper type for PDF template generation
