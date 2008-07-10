@@ -515,6 +515,7 @@ public:
     sql << "GROUP BY r.id,r.handle,r.name,r.url,r.organization,"
         << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
         << "r.postalcode,r.country,r.telephone,r.fax,r.email,r.system ";
+    sql << "ORDER BY r.id ";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -545,18 +546,17 @@ public:
     }
     db->FreeSelect();
     sql.str("");
-    sql << "SELECT registrarid,cert,password " << "FROM registraracl";
+    sql << "SELECT registrarid,cert,password " << "FROM registraracl ORDER BY registrarid";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
+
+    resetIDSequence();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
       // find associated registrar
       unsigned registrarId = STR_TO_ID(db->GetFieldValue(i, 0));
-      try {
-        RegistrarImpl *r = dynamic_cast<RegistrarImpl* >(findId(registrarId));
+      RegistrarImpl *r = dynamic_cast<RegistrarImpl* >(findIDSequence(registrarId));
+      if (r) {
         r->putACL(0, db->GetFieldValue(i, 1), db->GetFieldValue(i, 2));
-      }
-      catch (Register::NOT_FOUND) {
-        continue;
       }
     }
     db->FreeSelect();
