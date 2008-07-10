@@ -149,3 +149,7 @@ Register::NSSet::NSSet* ccReg_NSSets_i::findId(ccReg::TID _id) {
     return 0;
   }
 }
+
+CORBA::Boolean ccReg_NSSets_i::numRowsOverLimit() {
+  return nl->isLimited(); 
+}

@@ -156,3 +156,7 @@ Register::Registrar::Registrar* ccReg_Registrars_i::findId(ccReg::TID _id) {
     return 0;
   }
 }
+
+CORBA::Boolean ccReg_Registrars_i::numRowsOverLimit() {
+  return rl->isLimited(); 
+}

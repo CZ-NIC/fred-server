@@ -7,7 +7,7 @@
 #include "log/logger.h"
 
 ccReg_PageTable_i::ccReg_PageTable_i()
-  : aPageSize(10), aPage(0), sorted_by_(-1)
+  : aPageSize(10), aPage(0), sorted_by_(-1), sorted_dir_(false)
 {
 }
 
@@ -133,3 +133,8 @@ void ccReg_PageTable_i::getSortedBy(CORBA::Short &_column, CORBA::Boolean &_dir)
   _column = sorted_by_;
   _dir = sorted_dir_;
 }
+
+CORBA::Boolean ccReg_PageTable_i::numRowsOverLimit() {
+  return false; 
+}
+

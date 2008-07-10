@@ -138,3 +138,6 @@ Register::Contact::Contact* ccReg_Contacts_i::findId(ccReg::TID _id) {
   }
 }
 
+CORBA::Boolean ccReg_Contacts_i::numRowsOverLimit() {
+  return cl->isLimited(); 
+}

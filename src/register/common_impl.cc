@@ -86,6 +86,14 @@ void CommonListImpl::setLimit(unsigned _limit) {
   load_limit_ = _limit;
 }
 
+unsigned CommonListImpl::getLimit() const {
+  return load_limit_;
+}
+
+bool CommonListImpl::isLimited() const {
+  return load_limit_active_;
+}
+
 CommonObject* CommonListImpl::get(unsigned _idx) const {
   return _idx >= getCount() ? NULL : data_[_idx];
 }
@@ -241,6 +249,14 @@ void CommonListImpl::fillTempTable(bool _limit) const throw (SQL_ERROR) {
   sql << "ANALYZE " << getTempTableName();
   if (!db->ExecSQL(sql.str().c_str()))
     throw SQL_ERROR();
+}
+
+void CommonListImpl::reload() {
+  load_limit_active_ = false;
+  if (size() > load_limit_) {
+    data_.pop_back();
+    load_limit_active_ = true;
+  }
 }
 
 void CommonListImpl::setWildcardExpansion(bool _wcheck) {

@@ -130,3 +130,7 @@ Register::PublicRequest::PublicRequest* ccReg_PublicRequests_i::findId(ccReg::TI
     return 0;
   }
 }
+
+CORBA::Boolean ccReg_PublicRequests_i::numRowsOverLimit() {
+  return request_list_->isLimited(); 
+}

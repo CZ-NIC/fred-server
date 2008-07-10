@@ -165,3 +165,7 @@ Register::Domain::Domain* ccReg_Domains_i::findId(ccReg::TID _id) {
     return 0;
   }
 }
+
+CORBA::Boolean ccReg_Domains_i::numRowsOverLimit() {
+  return dl->isLimited(); 
+}

@@ -62,7 +62,8 @@ using namespace DBase;
   CORBA::ULongLong resultSize();\
   void loadFilter(ccReg::TID _id);\
   void saveFilter(const char* _name);\
-  void sortByColumn(CORBA::Short _column, CORBA::Boolean _dir)
+  void sortByColumn(CORBA::Short _column, CORBA::Boolean _dir);\
+  CORBA::Boolean numRowsOverLimit();
 
 class ccReg_PageTable_i : virtual public POA_ccReg::PageTable {
   unsigned int aPageSize;
@@ -101,6 +102,8 @@ public:
   void saveFilter(const char* _name);
   void sortByColumn(CORBA::Short _column, CORBA::Boolean _dir);
   void getSortedBy(CORBA::Short &_column, CORBA::Boolean &_dir);
+  CORBA::Boolean numRowsOverLimit();
 };
+
 
 #endif /*PAGETABLE_IMPL_H_*/

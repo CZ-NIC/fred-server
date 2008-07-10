@@ -130,3 +130,7 @@ Register::File::File* ccReg_Files_i::findId(ccReg::TID _id) {
     return 0;
   }
 }
+
+CORBA::Boolean ccReg_Files_i::numRowsOverLimit() {
+  return file_list_->isLimited(); 
+}

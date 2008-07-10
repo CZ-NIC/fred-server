@@ -153,3 +153,7 @@ Register::Invoicing::Invoice* ccReg_Invoices_i::findId(ccReg::TID _id) {
     return 0;
   }
 }
+
+CORBA::Boolean ccReg_Invoices_i::numRowsOverLimit() {
+  return invoice_list_->isLimited(); 
+}

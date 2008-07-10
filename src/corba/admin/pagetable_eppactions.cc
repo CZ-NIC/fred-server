@@ -146,3 +146,7 @@ Register::Registrar::EPPAction* ccReg_EPPActions_i::findId(ccReg::TID _id) {
     return 0;
   }
 }
+
+CORBA::Boolean ccReg_EPPActions_i::numRowsOverLimit() {
+  return eal->isLimited(); 
+}

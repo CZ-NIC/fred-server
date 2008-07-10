@@ -676,7 +676,9 @@ public:
         if (registrar_ptr) {
           registrar_ptr->putACL(acl_id, cert_md5, password);
         }
-      }      
+      }
+      /* checks if row number result load limit is active and set flag */ 
+      CommonListImpl::reload();
     }
     catch (DBase::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
@@ -1058,8 +1060,8 @@ public:
     object_info_query.from() << "tmp_eppaction_filter_result tmp "
         << "JOIN action t_1 ON(tmp.id = t_1.id) "
         << "JOIN enum_action t_2 ON (t_1.action = t_2.id) "
-        << "JOIN enum_error t_3 ON (t_1.response = t_3.id) "
-        << "JOIN login t_4 ON (t_1.clientid = t_4.id) "
+        << "LEFT JOIN enum_error t_3 ON (t_1.response = t_3.id) "
+        << "LEFT JOIN login t_4 ON (t_1.clientid = t_4.id) "
         << "LEFT JOIN action_elements t_5 ON (t_1.id = t_5.actionid)";
     if (!partialLoad)
       object_info_query.from() << "LEFT JOIN action_xml t_6 ON (t_1.id = t_6.actionid) ";
@@ -1122,6 +1124,8 @@ public:
                 message_out
             ));
       }
+      /* checks if row number result load limit is active and set flag */ 
+      CommonListImpl::reload();
     }
     catch (DBase::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());

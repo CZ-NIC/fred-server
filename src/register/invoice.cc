@@ -1299,6 +1299,8 @@ public:
               invoice_ptr->addAction(ait.get());
           }
         }
+        /* checks if row number result load limit is active and set flag */ 
+        CommonListImpl::reload();
       }
       catch (DBase::Exception& ex) {
         LOGGER("db").error(boost::format("%1%") % ex.what());

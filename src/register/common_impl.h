@@ -58,6 +58,7 @@ protected:
   unsigned load_limit_;
   unsigned long long real_size_;
   bool real_size_initialized_;
+  bool load_limit_active_;
 
   int ptr_idx_;
   bool add;
@@ -73,6 +74,8 @@ public:
   size_type size() const;
   unsigned long long sizeDb();
   virtual void setLimit(unsigned _limit);
+  virtual unsigned getLimit() const;
+  virtual bool isLimited() const;
   
   CommonObject* get(unsigned _idx) const;
   CommonObject* findId(TID _id) const throw (Register::NOT_FOUND);
@@ -88,6 +91,8 @@ public:
   virtual void makeRealCount() throw (SQL_ERROR);
   virtual unsigned long long getRealCount(DBase::Filters::Union &_filter);
   virtual void makeRealCount(DBase::Filters::Union &_filter);
+
+  virtual void reload();
 
   
   virtual void setWildcardExpansion(bool _wcheck);

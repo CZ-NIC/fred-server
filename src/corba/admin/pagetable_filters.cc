@@ -110,3 +110,7 @@ ccReg_Filters_i::loadFilter(ccReg::TID _id) {
 void
 ccReg_Filters_i::saveFilter(const char* _name) {
 }
+
+CORBA::Boolean ccReg_Filters_i::numRowsOverLimit() {
+  return m_filter_list.isLimited(); 
+}

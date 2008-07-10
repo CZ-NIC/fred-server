@@ -125,3 +125,7 @@ Register::Mail::Mail* ccReg_Mails_i::findId(ccReg::TID _id) {
     return 0;
   }
 }
+
+CORBA::Boolean ccReg_Mails_i::numRowsOverLimit() {
+  return mail_list_->isLimited(); 
+}

@@ -183,3 +183,7 @@ ccReg_AIRequests_i::loadFilter(ccReg::TID _id) {
 void
 ccReg_AIRequests_i::saveFilter(const char* _name) {
 }
+
+CORBA::Boolean ccReg_AIRequests_i::numRowsOverLimit() {
+  return false; 
+}

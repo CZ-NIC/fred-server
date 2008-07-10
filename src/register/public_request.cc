@@ -813,8 +813,8 @@ public:
         if (request_ptr)
           request_ptr->addObject(OID(object_id, object_handle, object_type));
       }
-
-      
+      /* checks if row number result load limit is active and set flag */ 
+      CommonListImpl::reload();
     }
     catch (DBase::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
@@ -944,7 +944,7 @@ public:
   virtual PublicRequest* createRequest(
     Type _type, DBase::Connection* _conn
   ) const throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) {
-    TRACE("[CALL] Register::Request::Manager::createRequest()");
+    // TRACE("[CALL] Register::Request::Manager::createRequest()");
     PublicRequestImpl *request;
     switch(_type) {
       case PRT_AUTHINFO_AUTO_RIF :

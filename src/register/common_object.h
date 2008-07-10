@@ -35,6 +35,10 @@ public:
   virtual unsigned long long sizeDb() = 0;
   /// set limit for result
   virtual void setLimit(unsigned _limit) = 0;
+  /// get load lomit
+  virtual unsigned getLimit() const = 0;
+  /// true if result size has been limited by load_limit_ value
+  virtual bool isLimited() const = 0;
 
   /// get detail of loaded objects  
   virtual CommonObject *get(unsigned _idx) const = 0;

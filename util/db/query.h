@@ -87,7 +87,11 @@ public:
 		return order_by_s;
 	}
 	void limit(unsigned _n) {
-		limit_r = _n;
+	  /*
+	   *  HACK: + 1 added to get to know if load limit value is used or not
+	   *  it should be propably at the callee side
+	   */
+		limit_r = _n + 1;
 	}
 	
 	void clear();
