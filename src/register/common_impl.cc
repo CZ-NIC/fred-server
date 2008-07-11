@@ -46,12 +46,12 @@ TID CommonObjectImpl::getId() const {
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 CommonListImpl::CommonListImpl(DB *_db) :
-  db(_db), conn_(0), load_limit_(5000), real_size_(0), real_size_initialized_(false),
+  db(_db), conn_(0), load_limit_(1000), real_size_(0), real_size_initialized_(false),
   ptr_idx_(-1), add(false), wcheck(true), idFilter(0) {
 }
 
 CommonListImpl::CommonListImpl(DBase::Connection *_conn) :
-  conn_(_conn), load_limit_(5000), real_size_(0), real_size_initialized_(false),
+  conn_(_conn), load_limit_(1000), real_size_(0), real_size_initialized_(false),
   ptr_idx_(-1), add(false), wcheck(true), idFilter(0) {
 }
 

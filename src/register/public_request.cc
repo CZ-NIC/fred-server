@@ -211,9 +211,11 @@ public:
       }
       catch (DBase::Exception& ex) {
         LOGGER("db").error(boost::format("%1%") % ex.what());
+        throw;
       }
       catch (std::exception& ex) {
         LOGGER("db").error(boost::format("%1%") % ex.what());
+        throw;
       }
       
     }
@@ -255,9 +257,11 @@ public:
       }
       catch (DBase::Exception& ex) {
         LOGGER("db").error(boost::format("%1%") % ex.what());
+        throw;
       }
       catch (std::exception& ex) {
         LOGGER("db").error(boost::format("%1%") % ex.what());
+        throw;
       }
     }
   }
@@ -408,11 +412,11 @@ public:
     ); // can throw Mailer::NOT_SEND exception
   }
   /// concrete resolution action
-  virtual void processAction(bool check) throw (REQUEST_BLOCKED) {
+  virtual void processAction(bool check) throw (REQUEST_BLOCKED, DBase::Exception) {
     // default is to do nothing special
   }
   /// process request (or just close in case of invalid flag)
-  virtual void process(bool invalid, bool check) throw (REQUEST_BLOCKED, Mailer::NOT_SEND) {
+  virtual void process(bool invalid, bool check) throw (REQUEST_BLOCKED, Mailer::NOT_SEND, DBase::Exception) {
     DBase::Transaction process_request_transaction = conn_->getTransaction(); 
     if (invalid) status_ = PRS_INVALID;
     else {
@@ -452,10 +456,10 @@ public:
      res = !checkState(getObject(i).id,SERVER_TRANSFER_PROHIBITED,conn_);
     return res;
   }
-  virtual void processAction(bool _check) throw (REQUEST_BLOCKED) {
+  virtual void processAction(bool _check) throw (REQUEST_BLOCKED, DBase::Exception) {
     if (_check && !check()) throw REQUEST_BLOCKED();
   }
-  std::string getAuthInfo() const throw (SQL_ERROR) {
+  std::string getAuthInfo() const throw (DBase::Exception) {
     // just one object is supported
     if (!getObjectSize() || getObjectSize() > 1) return "";
     DBase::SelectQuery sql;
@@ -584,7 +588,7 @@ public:
   virtual short blockAction() const {
   	return 2;
   }
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED){
+	virtual void processAction(bool check) throw (REQUEST_BLOCKED, DBase::Exception){
     for (unsigned i=0; i<getObjectSize(); i++) {
     	if (!checkState(getObject(i).id,SERVER_UPDATE_PROHIBITED,conn_) &&
     	      queryBlockRequest(getObject(i).id,getId(),"3",false,conn_)) {
@@ -612,7 +616,7 @@ public:
   virtual short blockAction() const {
   	return 1;
   }
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED){
+	virtual void processAction(bool check) throw (REQUEST_BLOCKED, DBase::Exception){
     for (unsigned i=0; i<getObjectSize(); i++) {
     	if (!checkState(getObject(i).id,SERVER_UPDATE_PROHIBITED,conn_) &&
     	      queryBlockRequest(getObject(i).id,getId(),"3,4",false,conn_)) {
@@ -640,7 +644,7 @@ public:
   virtual short blockAction() const {
   	return 2;
   }
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED){
+	virtual void processAction(bool check) throw (REQUEST_BLOCKED, DBase::Exception){
     for (unsigned i=0; i<getObjectSize(); i++) {
     	if (!queryBlockRequest(getObject(i).id,getId(),"3",true,conn_))
         throw REQUEST_BLOCKED();
@@ -665,7 +669,7 @@ public:
   virtual short blockAction() const {
   	return 1;
   }
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED){
+	virtual void processAction(bool check) throw (REQUEST_BLOCKED, DBase::Exception){
     for (unsigned i=0; i<getObjectSize(); i++) {
     	if (!queryBlockRequest(getObject(i).id,getId(),"3,4",true,conn_))
         throw REQUEST_BLOCKED();
