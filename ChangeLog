@@ -1,3 +1,23 @@
+2008-07-13 Jiri Sadek (version 1.11.0)
+
+   * Bugfix - Fixed exception handling in public requests
+
+   * Changes to implement IDL numRowsOverLimit()
+     method in all pagetables. It detect if number of rows in result set 
+     was limited by defined constant (load_limit_ in CommonList).
+
+   * EppAction
+     - filter for Requested Handle -> object doesn't need to be in registry 
+     - output xml added to detail
+     - EppActionType changed from string only to id - name pair for proper 
+       filtering
+     - EppActionTypeList is now loaded from database (not hardcoded)
+
+   * Bugfix - Registrar reload() badly handled findIDSequence()
+
+   * Bugfix - Cancel/OutZone Domain filter handles badly special 
+	type LAST_DAY +- offset
+
 2008-06-26 Jaromir Talir, Jiri Sadek (version 1.10.0)
 
     * querying invoices, mails, files
