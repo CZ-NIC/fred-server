@@ -212,6 +212,11 @@ public:
     active = true;
   }
   
+  void setNULL() {
+    value = DBase::Null<DateTimeInterval>();
+    active = true;
+  }
+  
   void serialize(DBase::SelectQuery& _sq) {
     TRACE("[CALL] Interval<DateTime>::serialize()");
     std::stringstream &prep = _sq.where_prepared_string();
@@ -275,6 +280,11 @@ public:
   }
   
   Interval() {
+  }
+  
+  void setNULL() {
+    value = DBase::Null<DateInterval>();
+    active = true;
   }
 
   void serialize(DBase::SelectQuery& _sq) {
@@ -350,6 +360,11 @@ public:
     op = _op;
   }
 
+  void setNULL() {
+    value = DBase::Null<Tp>();
+    active = true;
+  }
+  
   virtual void setValue(const Null<Tp>& _value) {
     TRACE("[CALL] Value<Tp>::setValue()");
     active = true;
