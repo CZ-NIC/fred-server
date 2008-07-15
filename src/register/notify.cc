@@ -314,6 +314,7 @@ namespace Register
             << "WHERE ns.state_id ISNULL ";
         if (!exceptList.empty())
         	sql << "AND nt.type NOT IN (" << exceptList << ") ";
+        sql << "ORDER BY nt.state_id ASC ";
         if (limit)
         	sql << "LIMIT " << limit;
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();

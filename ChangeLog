@@ -1,3 +1,7 @@
+2008-07-15 Jaromir Talir
+
+   * Bugfix - Missing ORDER BY in notification component
+
 2008-07-13 Jiri Sadek (version 1.11.0)
 
    * Bugfix - Fixed exception handling in public requests
