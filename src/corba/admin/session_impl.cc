@@ -54,8 +54,6 @@ ccReg_Session_i::ccReg_Session_i(const std::string& database,
   m_mails = new ccReg_Mails_i(mail_manager_->createList(), ns);
   m_files = new ccReg_Files_i(file_manager_->createList());
 
-  // m_user = new ccReg_User_i(1, "superuser", "Pepa", "Zdepa");  
-
   m_eppactions->setDB(m_db_manager.get());
   m_registrars->setDB(m_db_manager.get());
   m_contacts->setDB(m_db_manager.get());

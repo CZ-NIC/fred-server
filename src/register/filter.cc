@@ -119,8 +119,11 @@ public:
   ListImpl(DBase::Connection* _conn) :
     CommonListImpl(_conn) {
   }
+
   virtual ~ListImpl() {
+    boost::checked_delete<DBase::Connection>(conn_);
   }
+
   virtual void reload(DBase::Filters::Union &uf) {
     TRACE("[CALL] Register::Filter::ListImpl::reload()");
     clear();

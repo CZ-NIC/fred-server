@@ -92,6 +92,8 @@ ccReg_Admin_i::~ccReg_Admin_i() {
     m_session_list.erase(it++);
     LOGGER("corba").debug(boost::format("session '%1%' destroyed") % session_id);
   }
+
+  TRACE("Admin object completely destroyed.");
 }
 
 #define SWITCH_CONVERT(x) case Register::x : ch->handleClass = ccReg::x; break
@@ -135,7 +137,7 @@ void ccReg_Admin_i::checkHandle(const char* handle,
 
 void ccReg_Admin_i::garbageSession() {
   LOGGER("corba").debug("session garbage thread started...");
-  
+
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   while (session_garbage_active_) {
     LOGGER("corba").debug("session garbage procedure sleeped");
@@ -143,25 +145,25 @@ void ccReg_Admin_i::garbageSession() {
     /// TODO: thread sleep interval should be in configuration
     boost::xtime sleep_time;
     boost::xtime_get(&sleep_time, boost::TIME_UTC);
-    sleep_time.sec += 300;
-    //boost::thread::sleep(sleep_time);
+    sleep_time.sec += 150;
     cond_.timed_wait(scoped_lock, sleep_time);
     
     TRACE("[CALL] ccReg_Admin_i::garbageSession()");
     LOGGER("corba").debug("session garbage procedure invoked");
-    bool found;
-    do {
-      found = false;
-      SessionListType::iterator it = m_session_list.begin();
-      for (; it != m_session_list.end() && !it->second->isTimeouted(); ++it);
-      if (it != m_session_list.end()) {
-        LOGGER("corba").debug(boost::format("admin session '%1%' deleted -- remains '%2%' session(s)")
-            % it->first % (m_session_list.size() - 1));
+  
+    SessionListType::iterator it = m_session_list.begin();
+    while (it != m_session_list.end()) {
+      if (it->second->isTimeouted()) {
+        std::string session_id = it->first;
         delete it->second;
-        m_session_list.erase(it);
-        found = true;
+        m_session_list.erase(it++);
+        LOGGER("corba").debug(boost::format("session '%1%' deleted -- remains '%2%'") 
+            % session_id % m_session_list.size());
       }
-    } while (found);
+      else {
+        ++it;
+      }
+    }
   }
   LOGGER("corba").debug("session garbage thread stopped");
 }
