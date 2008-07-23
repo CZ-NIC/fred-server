@@ -31,6 +31,9 @@
 #include "admin/admin_impl.h"
 #endif
 
+#include <cstdlib>
+#include <time.h>
+
 #include <signal.h>
 #include <unistd.h>
 #include <iostream>
@@ -125,6 +128,9 @@ int main(
     Logging::Manager::instance_ref().get("rifd").setLevel(Logging::Log::LL_DEBUG);
 
     TRACE("tracer on");
+
+    /* Seed random number generator (need for authinfo generation!) */
+    srand(time(NULL));
 
     // database string
     strcpy( db , config.GetDBconninfo() );
