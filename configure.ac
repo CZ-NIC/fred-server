@@ -155,6 +155,9 @@ AS_AC_EXPAND([LOCALSTATEDIR], [$localstatedir])
 #put context name into config.h file
 AC_DEFINE_UNQUOTED([CONFIG_FILE], [["]$SYSCONFDIR/fred/server.conf["]], [location of fred config file])
 
+AC_DEFINE_UNQUOTED([HAVE_LOGGER], [1], [compile libraries with logging messages])
+
+
 #location of idl files, when user use this option during configuration
 #process, exactly given path will be used, otherwise will be used
 #`$datarootdir/idl/fred/', where dataroot dir is `$prefix/share'
@@ -215,6 +218,7 @@ fi
 
 AC_CONFIG_FILES([Makefile
                  util/Makefile
+                 util/types/Makefile
                  util/db/Makefile
 		 util/log/Makefile
 		 util/conf/Makefile

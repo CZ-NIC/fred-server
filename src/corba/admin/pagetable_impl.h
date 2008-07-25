@@ -21,10 +21,10 @@
 #include "old_utils/conf.h"
 
 #include "log/logger.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "model/model_filters.h"
 
-using namespace DBase;
+using namespace Database;
 
 #define DECL_ATTRIBUTE(name,type,settype,gettype) \
  private: \
@@ -70,9 +70,9 @@ class ccReg_PageTable_i : virtual public POA_ccReg::PageTable {
   unsigned int aPage;
 
 protected:
-  DBase::Filters::Union uf;
+  Database::Filters::Union uf;
   FilterIteratorImpl it;
-  DBase::Manager* dbm;
+  Database::Manager* dbm;
   ccReg::FilterType filterType;
   int sorted_by_;
   bool sorted_dir_;
@@ -80,7 +80,7 @@ protected:
 public:
   ccReg_PageTable_i();
   virtual ~ccReg_PageTable_i();
-  void setDB(DBase::Manager* dbm);
+  void setDB(Database::Manager* dbm);
   CORBA::Short pageSize();
   void pageSize(CORBA::Short _v);
   CORBA::Short page();

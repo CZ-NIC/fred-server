@@ -11,7 +11,7 @@ ccReg_PublicRequests_i::~ccReg_PublicRequests_i() {
 ccReg::Filters::Compound_ptr ccReg_PublicRequests_i::add() {
   TRACE("[CALL] ccReg_PublicRequests_i::add()");
   it.clearF();
-  DBase::Filters::PublicRequest *f = new DBase::Filters::PublicRequestImpl();
+  Database::Filters::PublicRequest *f = new Database::Filters::PublicRequestImpl();
   uf.addFilter(f);
   return it.addE(f);
 }
@@ -102,9 +102,9 @@ void ccReg_PublicRequests_i::loadFilter(ccReg::TID _id) {
   TRACE(boost::format("[CALL] ccReg_PublicRequests_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
-  DBase::Filters::Union::iterator uit = uf.begin();
+  Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
-    DBase::Filters::PublicRequest *tmp = dynamic_cast<DBase::Filters::PublicRequest* >(*uit);
+    Database::Filters::PublicRequest *tmp = dynamic_cast<Database::Filters::PublicRequest* >(*uit);
     it.addE(tmp);
     TRACE(boost::format("[IN] ccReg_PublicRequests_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
   }

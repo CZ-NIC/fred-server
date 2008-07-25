@@ -4,7 +4,7 @@
 #include "db/base_filters.h"
 #include "registrar_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 class EppSession : virtual public Compound {
@@ -14,7 +14,7 @@ public:
 
   virtual Table& joinLoginTable() = 0;
   virtual Registrar& addRegistrar() = 0;
-  virtual Interval<DBase::DateInterval>& addLogin() = 0;
+  virtual Interval<Database::DateInterval>& addLogin() = 0;
 };
 
 class EppSessionImpl : virtual public EppSession {
@@ -24,7 +24,7 @@ public:
 
   virtual Table& joinLoginTable();
   virtual Registrar& addRegistrar();
-  virtual Interval<DBase::DateInterval>& addLogin();
+  virtual Interval<Database::DateInterval>& addLogin();
 };
 
 }

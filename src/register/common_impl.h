@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "common_object.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 
 class DB;
 
@@ -52,7 +52,7 @@ struct CheckId {
 class CommonListImpl : virtual public CommonList {
 protected:
   DB *db;
-  DBase::Connection *conn_;
+  Database::Connection *conn_;
 
   list_type data_;
   unsigned load_limit_;
@@ -67,7 +67,7 @@ protected:
 
 public:
   CommonListImpl(DB *_db);
-  CommonListImpl(DBase::Connection *_conn);
+  CommonListImpl(Database::Connection *_conn);
   ~CommonListImpl();
   virtual void clear();
   
@@ -83,14 +83,14 @@ public:
   void resetIDSequence();
   CommonObject* findIDSequence(TID _id);
 
-  virtual void fillTempTable(DBase::InsertQuery& _query);
+  virtual void fillTempTable(Database::InsertQuery& _query);
   virtual void fillTempTable(bool _limit) const throw (SQL_ERROR);
   
   unsigned getCount() const;
   virtual unsigned long long getRealCount();
   virtual void makeRealCount() throw (SQL_ERROR);
-  virtual unsigned long long getRealCount(DBase::Filters::Union &_filter);
-  virtual void makeRealCount(DBase::Filters::Union &_filter);
+  virtual unsigned long long getRealCount(Database::Filters::Union &_filter);
+  virtual void makeRealCount(Database::Filters::Union &_filter);
 
   virtual void reload();
 

@@ -6,7 +6,7 @@
 #include "zone.h"
 #include "object.h"
 #include "exceptions.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "model/model_filters.h"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -144,7 +144,7 @@ public:
   /// set filter for zone generation status
   virtual void setZoneStatusFilter(unsigned status) = 0;
   /// testing new reload function
-  virtual void reload(DBase::Filters::Union &uf, DBase::Manager* dbm) = 0;
+  virtual void reload(Database::Filters::Union &uf, Database::Manager* dbm) = 0;
   /// reload list with current filter
   virtual void reload() throw (SQL_ERROR) = 0;
   /// clear filter data

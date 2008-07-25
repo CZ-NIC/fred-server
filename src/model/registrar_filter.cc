@@ -1,6 +1,6 @@
 #include "registrar_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 RegistrarImpl::RegistrarImpl(bool _set_active) {
@@ -15,8 +15,8 @@ Table& RegistrarImpl::joinRegistrarTable() {
   return joinTable("registrar");
 }
 
-Value<DBase::ID>& RegistrarImpl::addId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("id", joinRegistrarTable()));
+Value<Database::ID>& RegistrarImpl::addId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("id", joinRegistrarTable()));
   tmp->setName("Id");
   add(tmp);
   return *tmp;

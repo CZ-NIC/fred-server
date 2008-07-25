@@ -5,7 +5,7 @@
 #include <vector>
 #include "object.h"
 #include "exceptions.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "model/model_filters.h"
 
 /// forward declared parameter type 
@@ -107,7 +107,7 @@ public:
   /// set filter for VAT number
   virtual void setVATFilter(const std::string& vat) = 0;
   /// testing new reload function
-  virtual void reload(DBase::Filters::Union &uf, DBase::Manager* dbm) = 0;
+  virtual void reload(Database::Filters::Union &uf, Database::Manager* dbm) = 0;
   /// reload list with current filter
   virtual void reload() throw (SQL_ERROR) = 0;
   /// clear filter data

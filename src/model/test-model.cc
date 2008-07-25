@@ -9,98 +9,39 @@
 #include <boost/archive/xml_oarchive.hpp>
 
 #include "model_filters.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "log/logger.h"
 
-using namespace DBase;
-using namespace DBase::Filters;
+using namespace Database;
+using namespace Database::Filters;
 
 Connection* init_connection() {
   std::string conninfo = "host=localhost dbname=fred user=fred";
-  std::auto_ptr<Manager> m(new PSQLManager(conninfo));
-  Connection *conn = m->getConnection();
+  Manager db_manager(conninfo);
+  Connection *conn = db_manager.getConnection();
   return conn;
-}
-
-void print(Result *r) {
-  std::auto_ptr<ResultIterator> it(r->getIterator());
-  it->first();
-
-  while (!it->isDone()) {
-    while (it->isNextValue()) {
-      std::cout << it->getNextValue() << " ";
-    }
-    it->next();
-    std::cout << std::endl;
-  }
-  std::cout << "(" << r->getNumRows() << " rows)" << std::endl << std::endl;
-}
-
-void exec_and_print(SelectQuery& _q) {
-  std::auto_ptr<Connection> conn(init_connection());
-  std::auto_ptr<Result> r(conn->exec(_q));
-  print(r.get());
 }
 
 void exec_and_print(SelectQuery& _q, Union& _f) {
   _f.serialize(_q);
-  //Transaction t1 = conn->getTransaction();
-
-  Connection *conn = init_connection();
-  std::auto_ptr<Result> r(conn->exec(_q));
-
-  //std::auto_ptr<Result__> r1__(conn->exec__(q));
-  //Result__::Iterator it__ = r1__->begin();
-  //std::cout << it__.getValue() << std::endl;
-  //t1.commit();
-
-  //	ID _id = it->getNextValue();
-  //	std::string _roid = it->getNextValue();
-  //	int _type = it->getNextValue();
-  //	std::string _name = it->getNextValue();
-  //	int _crid = it->getNextValue();
-  //	DateTime _crdate = it->getNextValue();
-  //	Null<DateTime> _erdate = it->getNextValue();
-  //	int _crhistoryid = it->getNextValue();
-  //	int _historyid = it->getNextValue();
-  //	std::string _org = it->getNextValue();
-  //	std::string _city = it->getNextValue();
-
-  print(r.get());
-  delete conn;
-}
-
-void exec_and_print__(SelectQuery& _q, Union& _f) {
-  _f.serialize(_q);
-  //_q.make();
 
   std::auto_ptr<Connection> conn(init_connection());
-  //std::auto_ptr<Result> r(conn->exec(_q));  
-  std::auto_ptr<Result__> r(conn->exec__(_q));
+  Result result = conn->exec(_q);
 
-  Result__::Iterator it = r->begin();
-  while (!it.isDone()) {
-    Row row = it.getValue();
-    for (Row::Iterator col_it = row.begin(); col_it != row.end(); ++col_it) {
-      std::cout << *col_it << " ";
+  for (Result::Iterator it = result.begin(); it != result.end(); ++it) {
+    Row row = *it;
+    for (Row::Iterator column = row.begin(); column != row.end(); ++column) {
+      std::cout << *column << " ";
     }
-    it.next();
     std::cout << std::endl;
   }
-  std::cout << "(" << r->getNumRows() << " rows)" << std::endl << std::endl;
-
+  std::cout << "(" << result.size() << " rows)" << std::endl << std::endl;
 }
 
-void fill_and_print_formater(const std::vector<std::string>& _store,
-    boost::format& _frmt) {
-  _frmt.clear();
-  for (unsigned i = 0; i < _store.size(); ++i) {
-    _frmt.bind_arg(i + 1, _store[i]);
-  }
-}
 
 int main(int argc, char *argv[]) {
   try {
+
     Logging::Manager::instance_ref().get("db").addHandler(Logging::Log::LT_CONSOLE);
     Logging::Manager::instance_ref().get("db").setLevel(Logging::Log::LL_DEBUG);
     Logging::Manager::instance_ref().get("tracer").addHandler(Logging::Log::LT_CONSOLE);
@@ -141,7 +82,7 @@ int main(int argc, char *argv[]) {
     //    uf.clear();
     //    uf.addFilter(ff);
     //    uf.addQuery(sq1);
-    //    exec_and_print__(sq, uf);
+    //    exec_and_print(sq, uf);
     //    sq.clear();
     //    uf.clear();
     //
@@ -160,8 +101,8 @@ int main(int argc, char *argv[]) {
     //    uf.addQuery(sq1);
     //    uf.addFilter(r2);
     //    uf.addQuery(sq2);
-    //    exec_and_print__(sq, uf);
-    //    exec_and_print__(sq, uf);
+    //    exec_and_print(sq, uf);
+    //    exec_and_print(sq, uf);
     //    sq.clear();
     //    uf.clear();
 
@@ -188,7 +129,7 @@ int main(int argc, char *argv[]) {
     //    uf.clear();
     //    uf.addFilter(f);
     //    uf.addQuery(sq1);
-    //    exec_and_print__(sq, uf);
+    //    exec_and_print(sq, uf);
     //    sq.clear();
     //    uf.clear();
     //
@@ -202,12 +143,12 @@ int main(int argc, char *argv[]) {
 //    sq1->addSelect("id", f->joinFileTable());
 //    uf.addQuery(sq1);
 //      
-//    exec_and_print__(sq, uf);
+//    exec_and_print(sq, uf);
 //      
 //    return 1;
 //    
 //    Mail *m = new MailImpl();
-//    //m->addId().setValue(DBase::ID(28));
+//    //m->addId().setValue(Database::ID(28));
 //    //m->addMessage().setValue("Contact data change");
 //    //m->addHandle().setValue("CID:JIRI");
 //    //m->addType().setValue(1);
@@ -218,7 +159,7 @@ int main(int argc, char *argv[]) {
 //    sq1->addSelect("id", m->joinMailTable());
 //    uf.addQuery(sq1);
 //    
-//    exec_and_print__(sq, uf);
+//    exec_and_print(sq, uf);
 //    
 //    return 1;
     
@@ -233,54 +174,31 @@ int main(int argc, char *argv[]) {
     sq1->addSelect("*", i->joinInvoiceTable());
     uf.addQuery(sq1);
 
-    exec_and_print__(sq, uf);
+    exec_and_print(sq, uf);
    
     return 1;    
 
-    DBase::InsertQuery iq("public_request");
-    iq.add("state", DBase::Value(10));
-    iq.add("name", DBase::Value("blabla"));
+    Database::InsertQuery iq("public_request");
+    iq.add("state", Database::Value(10));
+    iq.add("name", Database::Value("blabla"));
     iq.make();
     std::cout << iq.str() << std::endl;
     return 1;
 
 
-    DBase::SelectQuery sq1__("*", "domain");
-    DBase::SelectQuery sq2__("discloseemail", "contact");
+    Database::SelectQuery sq1__("*", "domain");
+    Database::SelectQuery sq2__("discloseemail", "contact");
     Connection *c__ = init_connection();
-    Result *r1__ = c__->exec(sq1__);
-    Result *r2__ = c__->exec(sq2__);
-    
-    std::auto_ptr<ResultIterator> it(r2__->getIterator());
-    it->first();
+    Result r1__ = c__->exec(sq1__);
+    Result r2__ = c__->exec(sq2__);
 
-    while (!it->isDone()) {
-      while (it->isNextValue()) {
-        bool flag =  it->getNextValue();
-        std::cout << (flag ? "true" : "false");
-      }
-      it->next();
-      std::cout << std::endl;
-    }
-    std::cout << "(" << r2__->getNumRows() << " rows)" << std::endl << std::endl;
-    
-    
-    std::auto_ptr<ResultIterator> it1(r1__->getIterator());
-    it1->first();
+    std::cout << "result 1 has " << r1__.size() << " rows" << std::endl;
+    std::cout << "result 2 has " << r2__.size() << " rows" << std::endl;
 
-    while (!it1->isDone()) {
-      while (it1->isNextValue()) {
-        std::cout << it1->getNextValue() << " ";
-      }
-      it1->next();
-      std::cout << std::endl;
-    }
-    std::cout << "(" << r1__->getNumRows() << " rows)" << std::endl << std::endl;
-              
-
+    
     return 1;
     
-    DBase::Filters::PublicRequest *r = new DBase::Filters::PublicRequestImpl();
+    Database::Filters::PublicRequest *r = new Database::Filters::PublicRequestImpl();
     r->addCreateTime().setValue(DateTimeInterval(LAST_WEEK, -1));
     Object &ro = r->addObject();
     ro.addHandle().setValue("CID:MAN4");
@@ -292,19 +210,19 @@ int main(int argc, char *argv[]) {
     sq1->addSelect("*", r->joinRequestTable());
     uf.addQuery(sq1);
 
-    exec_and_print__(sq, uf);
+    exec_and_print(sq, uf);
 
     return 1;
 
 
     Domain *d1 = new DomainHistoryImpl();
     ObjectState &s = d1->addState();
-    s.addId().setValue(DBase::Null<int>(14));
+    s.addId().setValue(Database::Null<int>(14));
     //d1->addExpirationDate(DateInterval(PAST_MONTH, 1));
     
     Contact &d1c = d1->addRegistrant();
     d1c.addName().setValue("Ondřej*");
-    // Filters::Value<std::string>& v2 = d1c->addCity(DBase::Null<std::string>("Lysa nad Labem"));
+    // Filters::Value<std::string>& v2 = d1c->addCity(Database::Null<std::string>("Lysa nad Labem"));
     // v2.setValue("Praha 2");
     
     // NSSet *d1n = d1->addNSSet();
@@ -316,7 +234,7 @@ int main(int argc, char *argv[]) {
     sq1 = new SelectQuery();
     sq1->addSelect("id name", d1->joinObjectRegistryTable());
     uf.addQuery(sq1);
-    exec_and_print__(sq, uf);
+    exec_and_print(sq, uf);
     return 1;
    
     std::ofstream ofsd;
@@ -347,7 +265,7 @@ int main(int argc, char *argv[]) {
     sq1->addSelect("id", d2->joinDomainTable());
 
     uf2.addQuery(sq1);
-    exec_and_print__(sq, uf2);
+    exec_and_print(sq, uf2);
     
     return 1;
 
@@ -378,7 +296,7 @@ int main(int argc, char *argv[]) {
     sq1->addSelect("id crid name erdate", c2->joinObjectRegistryTable());
 
     uf.addQuery(sq1);
-    exec_and_print__(sq, uf);
+    exec_and_print(sq, uf);
 
     //
     //		EppAction eaf;
@@ -398,7 +316,7 @@ int main(int argc, char *argv[]) {
     //		sq.clear();
 
   }
-  catch (Exception& e) {
+  catch (Database::Exception& e) {
     std::cout << e.what() << std::endl;
   }
   catch (std::exception& e) {

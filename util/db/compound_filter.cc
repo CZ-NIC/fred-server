@@ -5,7 +5,7 @@
 #include "filter_it.h"
 #include "log/logger.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 Compound::~Compound() {
@@ -16,7 +16,7 @@ Compound::~Compound() {
  * not using getConjuction() problem with first simple filter in filter_list and
  * brackets (conjuction priority)
  */
-void Compound::serialize(DBase::SelectQuery& _sq) {
+void Compound::serialize(Database::SelectQuery& _sq) {
   TRACE("[CALL] Compound::serialize()");
   LOGGER("db").debug(boost::format("serializing filter '%1%'") % getName());
   

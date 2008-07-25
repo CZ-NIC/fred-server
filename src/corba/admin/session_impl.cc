@@ -15,22 +15,22 @@
 ccReg_Session_i::ccReg_Session_i(const std::string& database,
                                  NameService *ns,
                                  Conf& cfg,
-                                 ccReg_User_i* _user) :
-  m_user(_user), m_mailer_manager(ns) {
+                                 ccReg_User_i* _user) : m_user(_user),
+                                                        m_db_manager(cfg.GetDBconninfo()),
+                                                        m_mailer_manager(ns) {
   
   db.OpenDatabase(database.c_str());
-  m_db_manager.reset(new DBase::PSQLManager(cfg.GetDBconninfo()));
 
   m_register_manager.reset(Register::Manager::create(&db,
                                                      cfg.GetRestrictedHandles()));
-  m_register_manager->dbManagerInit(m_db_manager.get());
+  m_register_manager->dbManagerInit(&m_db_manager);
   m_register_manager->initStates();
 
   m_document_manager.reset(Register::Document::Manager::create(cfg.GetDocGenPath(),
                                                                cfg.GetDocGenTemplatePath(),
                                                                cfg.GetFileClientPath(),
                                                                ns->getHostName()));
-  m_publicrequest_manager.reset(Register::PublicRequest::Manager::create(m_db_manager.get(),
+  m_publicrequest_manager.reset(Register::PublicRequest::Manager::create(&m_db_manager,
                                                                          m_register_manager->getDomainManager(),
                                                                          m_register_manager->getContactManager(),
                                                                          m_register_manager->getNSSetManager(),
@@ -40,8 +40,8 @@ ccReg_Session_i::ccReg_Session_i(const std::string& database,
                                                                  m_document_manager.get(),
                                                                  &m_mailer_manager));
   
-  mail_manager_.reset(Register::Mail::Manager::create(m_db_manager.get()));
-  file_manager_.reset(Register::File::Manager::create(m_db_manager.get()));
+  mail_manager_.reset(Register::Mail::Manager::create(&m_db_manager));
+  file_manager_.reset(Register::File::Manager::create(&m_db_manager));
 
   m_registrars = new ccReg_Registrars_i(m_register_manager->getRegistrarManager()->getList());
   m_eppactions = new ccReg_EPPActions_i(m_register_manager->getRegistrarManager()->getEPPActionList());
@@ -54,13 +54,13 @@ ccReg_Session_i::ccReg_Session_i(const std::string& database,
   m_mails = new ccReg_Mails_i(mail_manager_->createList(), ns);
   m_files = new ccReg_Files_i(file_manager_->createList());
 
-  m_eppactions->setDB(m_db_manager.get());
-  m_registrars->setDB(m_db_manager.get());
-  m_contacts->setDB(m_db_manager.get());
-  m_domains->setDB(m_db_manager.get());
-  m_nssets->setDB(m_db_manager.get());
-  m_publicrequests->setDB(m_db_manager.get());
-  m_invoices->setDB(m_db_manager.get());
+  m_eppactions->setDB(&m_db_manager);
+  m_registrars->setDB(&m_db_manager);
+  m_contacts->setDB(&m_db_manager);
+  m_domains->setDB(&m_db_manager);
+  m_nssets->setDB(&m_db_manager);
+  m_publicrequests->setDB(&m_db_manager);
+  m_invoices->setDB(&m_db_manager);
 
   updateActivity();
 }
@@ -213,12 +213,12 @@ ccReg::DomainDetail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
     std::auto_ptr<Register::Domain::List>
         tmp_domain_list(m_register_manager->getDomainManager()->createList());
 
-    DBase::Filters::Union uf;
-    DBase::Filters::Domain *filter = new DBase::Filters::DomainHistoryImpl();
-    filter->addId().setValue(DBase::ID(_id));
+    Database::Filters::Union uf;
+    Database::Filters::Domain *filter = new Database::Filters::DomainHistoryImpl();
+    filter->addId().setValue(Database::ID(_id));
     uf.addFilter(filter);
 
-    tmp_domain_list->reload(uf, m_db_manager.get());
+    tmp_domain_list->reload(uf, &m_db_manager);
 
     if (tmp_domain_list->getCount() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -237,12 +237,12 @@ ccReg::ContactDetail* ccReg_Session_i::getContactDetail(ccReg::TID _id) {
     std::auto_ptr<Register::Contact::List>
         tmp_contact_list(m_register_manager->getContactManager()->createList());
 
-    DBase::Filters::Union uf;
-    DBase::Filters::Contact *filter = new DBase::Filters::ContactHistoryImpl();
-    filter->addId().setValue(DBase::ID(_id));
+    Database::Filters::Union uf;
+    Database::Filters::Contact *filter = new Database::Filters::ContactHistoryImpl();
+    filter->addId().setValue(Database::ID(_id));
     uf.addFilter(filter);
 
-    tmp_contact_list->reload(uf, m_db_manager.get());
+    tmp_contact_list->reload(uf, &m_db_manager);
 
     if (tmp_contact_list->getCount() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -261,12 +261,12 @@ ccReg::NSSetDetail* ccReg_Session_i::getNSSetDetail(ccReg::TID _id) {
     std::auto_ptr<Register::NSSet::List>
         tmp_nsset_list(m_register_manager->getNSSetManager()->createList());
 
-    DBase::Filters::Union uf;
-    DBase::Filters::NSSet *filter = new DBase::Filters::NSSetHistoryImpl();
-    filter->addId().setValue(DBase::ID(_id));
+    Database::Filters::Union uf;
+    Database::Filters::NSSet *filter = new Database::Filters::NSSetHistoryImpl();
+    filter->addId().setValue(Database::ID(_id));
     uf.addFilter(filter);
 
-    tmp_nsset_list->reload(uf, m_db_manager.get());
+    tmp_nsset_list->reload(uf, &m_db_manager);
 
     if (tmp_nsset_list->getCount() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -285,12 +285,12 @@ ccReg::Registrar* ccReg_Session_i::getRegistrarDetail(ccReg::TID _id) {
     Register::Registrar::RegistrarList * tmp_registrar_list =
         m_register_manager->getRegistrarManager()->getList();
 
-    DBase::Filters::Union uf;
-    DBase::Filters::Registrar *filter = new DBase::Filters::RegistrarImpl();
-    filter->addId().setValue(DBase::ID(_id));
+    Database::Filters::Union uf;
+    Database::Filters::Registrar *filter = new Database::Filters::RegistrarImpl();
+    filter->addId().setValue(Database::ID(_id));
     uf.addFilter(filter);
 
-    tmp_registrar_list->reload(uf, m_db_manager.get());
+    tmp_registrar_list->reload(uf, &m_db_manager);
 
     if (tmp_registrar_list->size() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -308,9 +308,9 @@ ccReg::PublicRequest::Detail* ccReg_Session_i::getPublicRequestDetail(ccReg::TID
         % _id);
     std::auto_ptr<Register::PublicRequest::List> tmp_request_list(m_publicrequest_manager->createList());
 
-    DBase::Filters::Union union_filter;
-    DBase::Filters::PublicRequest *filter = new DBase::Filters::PublicRequestImpl();
-    filter->addId().setValue(DBase::ID(_id));
+    Database::Filters::Union union_filter;
+    Database::Filters::PublicRequest *filter = new Database::Filters::PublicRequestImpl();
+    filter->addId().setValue(Database::ID(_id));
     union_filter.addFilter(filter);
 
     tmp_request_list->reload(union_filter);
@@ -331,12 +331,12 @@ ccReg::Invoicing::Invoice* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
         % _id);
     std::auto_ptr<Register::Invoicing::List> tmp_invoice_list(m_invoicing_manager->createList());
 
-    DBase::Filters::Union union_filter;
-    DBase::Filters::Invoice *filter = new DBase::Filters::InvoiceImpl();
-    filter->addId().setValue(DBase::ID(_id));
+    Database::Filters::Union union_filter;
+    Database::Filters::Invoice *filter = new Database::Filters::InvoiceImpl();
+    filter->addId().setValue(Database::ID(_id));
     union_filter.addFilter(filter);
 
-    tmp_invoice_list->reload(union_filter, m_db_manager.get());
+    tmp_invoice_list->reload(union_filter, &m_db_manager);
 
     if (tmp_invoice_list->size() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -354,9 +354,9 @@ ccReg::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
         % _id);
     std::auto_ptr<Register::Mail::List> tmp_mail_list(mail_manager_->createList());
 
-    DBase::Filters::Union union_filter;
-    DBase::Filters::Mail *filter = new DBase::Filters::MailImpl();
-    filter->addId().setValue(DBase::ID(_id));
+    Database::Filters::Union union_filter;
+    Database::Filters::Mail *filter = new Database::Filters::MailImpl();
+    filter->addId().setValue(Database::ID(_id));
     union_filter.addFilter(filter);
 
     tmp_mail_list->reload(union_filter);
@@ -377,12 +377,12 @@ ccReg::EPPAction* ccReg_Session_i::getEppActionDetail(ccReg::TID _id) {
         % _id);
     std::auto_ptr<Register::Registrar::EPPActionList> tmp_action_list(m_register_manager->getRegistrarManager()->createEPPActionList());
 
-    DBase::Filters::Union union_filter;
-    DBase::Filters::EppAction *filter = new DBase::Filters::EppActionImpl();
-    filter->addId().setValue(DBase::ID(_id));
+    Database::Filters::Union union_filter;
+    Database::Filters::EppAction *filter = new Database::Filters::EppActionImpl();
+    filter->addId().setValue(Database::ID(_id));
     union_filter.addFilter(filter);
 
-    tmp_action_list->reload(union_filter, m_db_manager.get());
+    tmp_action_list->reload(union_filter, &m_db_manager);
 
     if (tmp_action_list->size() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -588,12 +588,12 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar) {
   else {
     LOGGER("corba").debug(boost::format("registrar '%1%' id=%2% specified; updating registrar...") 
       % _registrar.handle % _registrar.id);
-    DBase::Filters::Union uf;
-    DBase::Filters::Registrar *filter = new DBase::Filters::RegistrarImpl();
-    filter->addId().setValue(DBase::ID(_registrar.id));
+    Database::Filters::Union uf;
+    Database::Filters::Registrar *filter = new Database::Filters::RegistrarImpl();
+    filter->addId().setValue(Database::ID(_registrar.id));
     uf.addFilter(filter);
 
-    tmp_registrar_list->reload(uf, m_db_manager.get());
+    tmp_registrar_list->reload(uf, &m_db_manager);
 
     if (tmp_registrar_list->size() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -736,7 +736,7 @@ ccReg::Invoicing::Invoice* ccReg_Session_i::createInvoiceDetail(Register::Invoic
   detail->toDate = DUPSTRDATED(_invoice->getAccountPeriod().end);
   detail->type = (_invoice->getType() == Register::Invoicing::IT_DEPOSIT ? ccReg::Invoicing::IT_ADVANCE
                                                                          : ccReg::Invoicing::IT_ACCOUNT);
-  detail->number = DUPSTRC(Util::stream_cast<std::string>(_invoice->getNumber()));
+  detail->number = DUPSTRC(Conversion<long long unsigned>::to_string(_invoice->getNumber()));
   detail->registrarId = _invoice->getRegistrar();
   detail->registrarHandle = DUPSTRC(_invoice->getClient()->getHandle());
   detail->credit = DUPSTRC(formatMoney(_invoice->getCredit()));
@@ -754,7 +754,7 @@ ccReg::Invoicing::Invoice* ccReg_Session_i::createInvoiceDetail(Register::Invoic
     detail->payments[n].id = ps->getId();
     detail->payments[n].price = DUPSTRC(formatMoney(ps->getPrice()));
     detail->payments[n].balance = DUPSTRC(formatMoney(ps->getCredit()));
-    detail->payments[n].number = DUPSTRC(Util::stream_cast<std::string>(ps->getNumber()));
+    detail->payments[n].number = DUPSTRC(Conversion<long long unsigned>::to_string(ps->getNumber()));
   }
   
   detail->actions.length(_invoice->getActionCount());

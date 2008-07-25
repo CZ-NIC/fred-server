@@ -24,7 +24,7 @@
 #include "zone.h"
 #include "domain.h"
 #include "filter.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "log/logger.h"
 
 namespace Register {
@@ -84,7 +84,7 @@ public:
 
 class ManagerImpl : virtual public Manager {
   DB *db;
-  DBase::Manager *m_db_manager;
+  Database::Manager *m_db_manager;
   bool m_restricted_handles;
 
   std::auto_ptr<Zone::Manager> m_zone_manager;
@@ -109,7 +109,7 @@ public:
     m_nsset_manager.reset(NSSet::Manager::create(db,
                                                  m_zone_manager.get(),
                                                  m_restricted_handles));
-    // TEMP: this will be ok when DBase::Manager ptr will be initilized
+    // TEMP: this will be ok when Database::Manager ptr will be initilized
     // here in constructor (not in dbManagerInit method)
     // m_filter_manager.reset(Filter::Manager::create(m_db_manager));
 
@@ -122,7 +122,7 @@ public:
     m_countries.push_back(cd);
   }
   /// upper constructor replacement
-  ManagerImpl(DBase::Manager *_db_manager, bool _restricted_handles) :
+  ManagerImpl(Database::Manager *_db_manager, bool _restricted_handles) :
     m_db_manager(_db_manager), m_restricted_handles(_restricted_handles) {
     /// initialize all other managers
     /// TODO: db -> change to db_manager; needs other constructor update
@@ -250,31 +250,31 @@ public:
 
   virtual void loadCountryDesc() {
     TRACE("[CALL] Register::Manager::loadCountryDesc()");
-    DBase::SelectQuery country_query;
+    Database::SelectQuery country_query;
     country_query.select() << "id, country_cs, country";
     country_query.from() << "enum_country";
 
     try {
-      std::auto_ptr<DBase::Connection> conn(m_db_manager->getConnection());
-      std::auto_ptr<DBase::Result> r_country(conn->exec(country_query));
-      std::auto_ptr<DBase::ResultIterator> it(r_country->getIterator());
+      std::auto_ptr<Database::Connection> conn(m_db_manager->getConnection());
+      Database::Result r_country = conn->exec(country_query);
       
       m_countries.clear();
-      for (it->first(); !it->isDone(); it->next()) {
+      for (Database::Result::Iterator it = r_country.begin(); it != r_country.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
         CountryDesc desc;
         
-        std::string cc = it->getNextValue();
-        std::string name_cs = it->getNextValue();
-        std::string name = it->getNextValue();
+        std::string cc      = *col;
+        std::string name_cs = *(++col);
+        std::string name    = *(++col);
         
         desc.cc = cc;
         desc.name = (!name_cs.empty() ? name_cs : name);
         m_countries.push_back(desc);
       }
       LOGGER("register").debug(boost::format("loaded '%1%' country codes "
-              "description from database") % r_country->getNumRows());
+              "description from database") % r_country.size());
     }
-    catch (DBase::Exception& ex) {
+    catch (Database::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
     }
     catch (std::exception& ex) {
@@ -355,7 +355,7 @@ public:
   }
 
   /// TEMP: method for initialization new Database manager
-  virtual void dbManagerInit(DBase::Manager *_db_manager) {
+  virtual void dbManagerInit(Database::Manager *_db_manager) {
     m_db_manager = _db_manager;
     m_filter_manager.reset(Filter::Manager::create(m_db_manager));
     
@@ -370,7 +370,7 @@ Manager *Manager::create(DB *db, bool _restrictedHandles) {
 }
 
 /// upper create factory method replacement
-Manager *create(DBase::Manager *_db_manager, bool _restricted_handles) {
+Manager *create(Database::Manager *_db_manager, bool _restricted_handles) {
   TRACE(boost::format("[CALL] Register::Manager::create(%1%, %2%)")
       % _db_manager % _restricted_handles);
   return new ManagerImpl(_db_manager, _restricted_handles);

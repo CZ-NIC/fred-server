@@ -10,7 +10,7 @@
 #include "register/register.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/conf.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "model/model_filters.h"
 
 class FilterBaseImpl;
@@ -22,25 +22,25 @@ public:
   
   ccReg::Filters::Base_ptr getFilter();
   
-  ccReg::Filters::Int_ptr addE(DBase::Filters::Value<unsigned>* f);
-  ccReg::Filters::Int_ptr addE(DBase::Filters::Value<int>* f);
-  ccReg::Filters::Id_ptr addE(DBase::Filters::Value<DBase::ID>* f);
-  ccReg::Filters::Str_ptr addE(DBase::Filters::Value<std::string>* f);
-  ccReg::Filters::Date_ptr addE(DBase::Filters::Interval<DBase::DateInterval>* f);
-  ccReg::Filters::DateTime_ptr addE(DBase::Filters::Interval<DBase::DateTimeInterval>* f);
-  ccReg::Filters::Filter_ptr addE(DBase::Filters::FilterFilter* f);
-  ccReg::Filters::Obj_ptr addE(DBase::Filters::Object* f);
-  ccReg::Filters::Contact_ptr addE(DBase::Filters::Contact* f);
-  ccReg::Filters::Domain_ptr addE(DBase::Filters::Domain* f);
-  ccReg::Filters::NSSet_ptr addE(DBase::Filters::NSSet* f);
-  ccReg::Filters::Registrar_ptr addE(DBase::Filters::Registrar* f);
-  ccReg::Filters::Action_ptr addE(DBase::Filters::EppAction* f);
-  ccReg::Filters::PublicRequest_ptr addE(DBase::Filters::PublicRequest* f);
-  ccReg::Filters::Invoice_ptr addE(DBase::Filters::Invoice* f);
-  ccReg::Filters::Mail_ptr addE(DBase::Filters::Mail* f);
-  ccReg::Filters::File_ptr addE(DBase::Filters::File* f);
+  ccReg::Filters::Int_ptr addE(Database::Filters::Value<unsigned>* f);
+  ccReg::Filters::Int_ptr addE(Database::Filters::Value<int>* f);
+  ccReg::Filters::Id_ptr addE(Database::Filters::Value<Database::ID>* f);
+  ccReg::Filters::Str_ptr addE(Database::Filters::Value<std::string>* f);
+  ccReg::Filters::Date_ptr addE(Database::Filters::Interval<Database::DateInterval>* f);
+  ccReg::Filters::DateTime_ptr addE(Database::Filters::Interval<Database::DateTimeInterval>* f);
+  ccReg::Filters::Filter_ptr addE(Database::Filters::FilterFilter* f);
+  ccReg::Filters::Obj_ptr addE(Database::Filters::Object* f);
+  ccReg::Filters::Contact_ptr addE(Database::Filters::Contact* f);
+  ccReg::Filters::Domain_ptr addE(Database::Filters::Domain* f);
+  ccReg::Filters::NSSet_ptr addE(Database::Filters::NSSet* f);
+  ccReg::Filters::Registrar_ptr addE(Database::Filters::Registrar* f);
+  ccReg::Filters::Action_ptr addE(Database::Filters::EppAction* f);
+  ccReg::Filters::PublicRequest_ptr addE(Database::Filters::PublicRequest* f);
+  ccReg::Filters::Invoice_ptr addE(Database::Filters::Invoice* f);
+  ccReg::Filters::Mail_ptr addE(Database::Filters::Mail* f);
+  ccReg::Filters::File_ptr addE(Database::Filters::File* f);
     
-  void addFilter(DBase::Filters::Filter* f);
+  void addFilter(Database::Filters::Filter* f);
     
   void clearF();
   void reset();

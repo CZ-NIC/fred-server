@@ -1,6 +1,6 @@
 #include "simple_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 Simple::~Simple() {

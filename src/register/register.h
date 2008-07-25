@@ -93,11 +93,11 @@ public:
   /// globaly update all states of all objects
   virtual void updateObjectStates() const throw (SQL_ERROR) = 0;
   /// temporary for new database manager init
-  virtual void dbManagerInit(DBase::Manager *_db_manager) = 0;
+  virtual void dbManagerInit(Database::Manager *_db_manager) = 0;
   /// factory method
   static Manager *create(DB *db, bool _restrictedHandles);
   /// factory method
-  static Manager *create(DBase::Manager *_db_manager, bool _restricted_handles);
+  static Manager *create(Database::Manager *_db_manager, bool _restricted_handles);
 };
 }
 ;

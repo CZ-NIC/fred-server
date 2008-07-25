@@ -1,6 +1,6 @@
 #include "public_request_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 PublicRequestImpl::PublicRequestImpl() : Compound() {
@@ -15,8 +15,8 @@ Table& PublicRequestImpl::joinRequestTable() {
   return joinTable("public_request");
 }
 
-Value<DBase::ID>& PublicRequestImpl::addId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("id", joinRequestTable()));
+Value<Database::ID>& PublicRequestImpl::addId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("id", joinRequestTable()));
   tmp->setName("Id");
   add(tmp);
   return *tmp;
@@ -64,15 +64,15 @@ Value<std::string>& PublicRequestImpl::addEmailToAnswer() {
   return *tmp;
 }
 
-Value<DBase::ID>& PublicRequestImpl::addAnswerEmailId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("answer_email_id", joinRequestTable()));
+Value<Database::ID>& PublicRequestImpl::addAnswerEmailId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("answer_email_id", joinRequestTable()));
   tmp->setName("AnswerEmailId");
   add(tmp);
   return *tmp;
 }
 
-Value<DBase::ID>& PublicRequestImpl::addEppActionId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("epp_action_id", joinRequestTable()));
+Value<Database::ID>& PublicRequestImpl::addEppActionId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("epp_action_id", joinRequestTable()));
   tmp->setName("EppActionId");
   add(tmp);
   return *tmp;

@@ -8,7 +8,7 @@
 #include "object_filter.h"
 #include "contact_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 class NSSet : virtual public Object {

@@ -3,7 +3,7 @@
 
 #include "object.h"
 #include "common_impl.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 
 class DB;
 
@@ -104,7 +104,7 @@ namespace Register
     virtual void addStateFilter(TID state, bool stateIsOn);
     virtual void clearStateFilter(TID state);
     void reload(const char *handle = NULL, int type=0) throw (SQL_ERROR);
-    void reload(DBase::Connection* _conn);
+    void reload(Database::Connection* _conn);
   }; // class ObjectListImpl
    
 } // namespace register

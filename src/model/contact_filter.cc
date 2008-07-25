@@ -1,6 +1,6 @@
 #include "contact_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 /*
@@ -9,13 +9,13 @@ namespace Filters {
 ContactImpl::ContactImpl() :
   ObjectImpl() {
   setName("Contact");
-  setType(getType());
+  addType().setValue(getType());
 }
 
 ContactImpl::~ContactImpl() {
 }
 
-Value<DBase::ID>& ContactImpl::addId() {
+Value<Database::ID>& ContactImpl::addId() {
   Value<ID> *tmp = new Value<ID>(Column("id", joinContactTable()));
   tmp->setName("Id");
   add(tmp);
@@ -93,13 +93,13 @@ void ContactImpl::_joinPolymorphicTables() {
 ContactHistoryImpl::ContactHistoryImpl() :
   ObjectHistoryImpl() {
   setName("ContactHistory");
-  setType(getType());
+  addType().setValue(getType());
 }
 
 ContactHistoryImpl::~ContactHistoryImpl() {
 }
 
-Value<DBase::ID>& ContactHistoryImpl::addId() {
+Value<Database::ID>& ContactHistoryImpl::addId() {
   Value<ID> *tmp = new Value<ID>(Column("id", joinContactTable()));
   tmp->setName("Id");
   add(tmp);

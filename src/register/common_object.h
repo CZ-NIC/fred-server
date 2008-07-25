@@ -4,7 +4,7 @@
 #include "types.h"
 #include "exceptions.h"
 #include "model/model_filters.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 
 namespace Register {
 class CommonObject {
@@ -53,9 +53,9 @@ public:
   /// fill variable with count of select objects
   virtual void makeRealCount() throw (SQL_ERROR) = 0;
   /// get variable with count of select objects
-  virtual unsigned long long getRealCount(DBase::Filters::Union &_filter) = 0;
+  virtual unsigned long long getRealCount(Database::Filters::Union &_filter) = 0;
   /// make real count for new filters
-  virtual void makeRealCount(DBase::Filters::Union &_filter) = 0;
+  virtual void makeRealCount(Database::Filters::Union &_filter) = 0;
   
   /// fill temporary table with selected ids 
   virtual void fillTempTable(bool _limit) const throw (SQL_ERROR) = 0;

@@ -11,7 +11,7 @@
 #include "sql_operators.h"
 #include "filter.h"
 
-namespace DBase {
+namespace Database {
 
 class SelectQuery;
 
@@ -52,8 +52,8 @@ public:
     allowed_wildcard = false;
   }
   
-  // virtual void serialize(DBase::SelectQuery& _sq) = 0;
-  virtual void serialize(DBase::SelectQuery& _sq) {
+  // virtual void serialize(Database::SelectQuery& _sq) = 0;
+  virtual void serialize(Database::SelectQuery& _sq) {
   }
   
   virtual void addPostValueString(const std::string& _str) {

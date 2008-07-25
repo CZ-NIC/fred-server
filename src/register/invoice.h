@@ -11,7 +11,7 @@
 #include "exceptions.h"
 #include "documents.h"
 #include "mailer.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "model/model_filters.h"
 
 class DB;
@@ -184,7 +184,7 @@ public:
   /// reload invoices with selected filter
   virtual void reload() throw (SQL_ERROR) = 0;
   /// new reload method
-  virtual void reload(DBase::Filters::Union& _uf, DBase::Manager *_db_manager) = 0;
+  virtual void reload(Database::Filters::Union& _uf, Database::Manager *_db_manager) = 0;
   /// subsequential reload will not load any action 
   virtual void setPartialLoad(bool partialLoad) = 0;
   /// return invoice by index
@@ -248,7 +248,7 @@ public:
                          Document::Manager *docman,
                          Mailer::Manager *mailman);
   
-  static Manager *create(DBase::Manager *_db_manager,
+  static Manager *create(Database::Manager *_db_manager,
                          Document::Manager *_doc_manager,
                          Mailer::Manager *_mail_manager);
 

@@ -1,6 +1,6 @@
 #include "invoice_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 InvoiceImpl::InvoiceImpl() :
@@ -16,15 +16,15 @@ Table& InvoiceImpl::joinInvoiceTable() {
   return joinTable("invoice");
 }
 
-Value<DBase::ID>& InvoiceImpl::addId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("id", joinInvoiceTable()));
+Value<Database::ID>& InvoiceImpl::addId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("id", joinInvoiceTable()));
   tmp->setName("Id");
   add(tmp);
   return *tmp;
 }
 
-Value<DBase::ID>& InvoiceImpl::addZoneId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("zone", joinInvoiceTable()));
+Value<Database::ID>& InvoiceImpl::addZoneId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("zone", joinInvoiceTable()));
   tmp->setName("ZoneId");
   add(tmp);
   return *tmp;
@@ -51,15 +51,15 @@ Value<std::string>& InvoiceImpl::addNumber() {
   return *tmp;
 }
 
-Interval<DBase::DateTimeInterval>& InvoiceImpl::addCreateTime() {
-  Interval<DBase::DateTimeInterval> *tmp = new Interval<DBase::DateTimeInterval>(Column("crdate", joinInvoiceTable()));
+Interval<Database::DateTimeInterval>& InvoiceImpl::addCreateTime() {
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("crdate", joinInvoiceTable()));
   add(tmp);
   tmp->setName("CreateTime");
   return *tmp;
 }
 
-Interval<DBase::DateInterval>& InvoiceImpl::addTaxDate() {
-  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("taxdate", joinInvoiceTable()));
+Interval<Database::DateInterval>& InvoiceImpl::addTaxDate() {
+  Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("taxdate", joinInvoiceTable()));
   add(tmp);
   tmp->setName("TaxDate");
   return *tmp;

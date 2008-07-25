@@ -1,112 +1,115 @@
+/*  
+ * Copyright (C) 2007  CZ.NIC, z.s.p.o.
+ * 
+ * This file is part of FRED.
+ * 
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ * 
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ *  @file result.h
+ *  Interface definition of result object.
+ */
+
+
 #ifndef RESULT_H_
 #define RESULT_H_
 
 #include <string>
-#include <vector>
-#include "query.h"
-#include "connection.h"
-#include "result_it.h"
-#include "row.h"
+#include "base_exception.h"
 
-namespace DBase {
+#include "config.h"
 
-class PSQLResult;
+#ifdef HAVE_LOGGER
+#include "log/logger.h"
+#endif
+
+namespace Database {
 
 /**
- * Abstract interface for result class 
+ * \class Result_
+ * \brief Base template class for represent database result object
+ *
+ * template for result object used as a return value of connection
+ * exec method parametrized by concrete _ResultType
+ *
+ * Result object (which should be finally used) is defined in \file database.h
+ * file.
+ *
  */
-class Result {
+template<class _ResultType>
+class Result_ {
 public:
-	/**
-	 * C-tor, D-tor
-	 */
-	Result(const Connection *_conn, const Query& _query) :
-		conn(_conn), query(_query) {
-	}
-	virtual ~Result();
-	/**
-	 * Returns query corresponding with result object
-	 */
-	const Query& getQuery() const {
-		return query;
-	}
-	/**
-	 * Getting iterator for iterating over result object
-	 */
-	virtual ResultIterator* getIterator() = 0;
-	/**
-	 * Getting number of rows and cols
-	 */
-	virtual unsigned getNumRows() = 0;
-	virtual unsigned getNumCols() = 0;
+  typedef _ResultType result_type;
+  typedef typename result_type::size_type size_type;
+  typedef typename result_type::Iterator Iterator;
+  typedef typename result_type::Row      Row;
+  
+
+  /**
+   * Constructors and destructor
+   */
+  Result_(const result_type &_result) : result_(_result) {
+#ifdef HAVE_LOGGER
+      LOGGER("db").debug(boost::format("result has %1% rows") % size());
+#endif
+  }
+
+  virtual ~Result_() {
+    result_.clear();
+#ifdef HAVE_LOGGER
+    TRACE("<CALL> Database::~Result_()");
+#endif
+  }
+
+  /**
+   * @return size of result (number of rows)
+   */
+  size_type size() const {
+    return result_.size();
+  }
+
+
+  /**
+   * @return Iterator pointing at first row
+   */
+  Iterator begin() const {
+    return result_.begin();
+  }
+
+
+  /**
+   * @return Iterator pointing at last row
+   */
+  Iterator end() const {
+    return result_.end();
+  }
+
+  /**
+   * @param _n  requested row from result
+   * @return    row
+   */
+  Row operator[](size_type _n) const {
+    return *(begin() + _n);
+  }
 
 protected:
-	/**
-	 * Pointer for connection to which result object belongs to
-	 */
-	const Connection *conn;
-	/**
-	 * Result query 
-	 */
-	Query query;
-};
+  result_type result_; /**< pointer on concrete result object */
 
-template<class _Tp> class IteratorProxy;
-
-class Result__ {
-public:
-	Result__(const Connection *_conn, const Query& _query);
-	virtual ~Result__();
-
-	class Iterator__;
-	friend class Iterator__;
-	class Iterator__ :
-		public std::iterator<std::forward_iterator_tag, Row> {
-	public:
-		Iterator__() {
-		}
-		virtual ~Iterator__() {
-		}
-		virtual value_type getValue() = 0;
-		virtual void next() = 0;
-		virtual bool isDone() = 0;
-	};
-
-	typedef IteratorProxy<Row> Iterator;
-
-	const Query& getQuery() const;
-
-	virtual Iterator begin() = 0;
-	virtual unsigned getNumRows() = 0;
-	virtual unsigned getNumCols() = 0;
-
-protected:
-	const Connection *conn;
-	Query query;
-
-};
-
-template<class _Tp> class IteratorProxy {
-public:
-	IteratorProxy(Result__::Iterator__ *_it) :
-		value(_it) {
-	}
-	virtual ~IteratorProxy() {
-		delete value;
-	}
-	virtual _Tp getValue() {
-		return value->getValue();
-	}
-	virtual void next() {
-		return value->next();
-	}
-	virtual bool isDone() {
-		return value->isDone();
-	}
-protected:
-	Result__::Iterator__ *value;
 };
 
 }
 
+
 #endif /*RESULT_H_*/
+

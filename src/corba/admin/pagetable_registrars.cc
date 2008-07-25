@@ -19,7 +19,7 @@ ccReg::Filters::Compound_ptr
 ccReg_Registrars_i::add() {
   TRACE("[CALL] ccReg_Registrars_i::add()");
   it.clearF();
-  DBase::Filters::Registrar *f = new DBase::Filters::RegistrarImpl(true);
+  Database::Filters::Registrar *f = new Database::Filters::RegistrarImpl(true);
   uf.addFilter(f);
   return it.addE(f); 
 }
@@ -49,7 +49,7 @@ ccReg_Registrars_i::getRow(CORBA::Short row)
   (*tr)[1] = DUPSTRFUN(r->getHandle); 
   (*tr)[2] = DUPSTRFUN(r->getURL);
   (*tr)[3] = DUPSTRFUN(r->getEmail);
-  (*tr)[4] = DUPSTRC(Util::stream_cast<std::string>(r->getCredit()));
+  (*tr)[4] = DUPSTRC(Conversion<long unsigned>::to_string(r->getCredit()));
   return tr;
 }
 
@@ -127,9 +127,9 @@ ccReg_Registrars_i::loadFilter(ccReg::TID _id) {
   TRACE(boost::format("[CALL] ccReg_Registrars_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
-  DBase::Filters::Union::iterator uit = uf.begin();
+  Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
-    DBase::Filters::Registrar *tmp = dynamic_cast<DBase::Filters::Registrar* >(*uit);
+    Database::Filters::Registrar *tmp = dynamic_cast<Database::Filters::Registrar* >(*uit);
     it.addE(tmp);
     TRACE(boost::format("[IN] ccReg_Registrars_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
   }

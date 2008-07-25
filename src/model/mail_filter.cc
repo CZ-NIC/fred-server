@@ -1,6 +1,6 @@
 #include "mail_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 MailImpl::MailImpl() : 
@@ -16,8 +16,8 @@ Table& MailImpl::joinMailTable() {
   return joinTable("mail_archive");
 }
 
-Value<DBase::ID>& MailImpl::addId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("id", joinMailTable()));
+Value<Database::ID>& MailImpl::addId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("id", joinMailTable()));
   add(tmp);
   tmp->setName("Id");
   return *tmp;
@@ -42,16 +42,16 @@ Value<std::string>& MailImpl::addHandle() {
   return *tmp;
 }
 
-Interval<DBase::DateTimeInterval>& MailImpl::addCreateTime() {
-  Interval<DBase::DateTimeInterval> *tmp = new Interval<DBase::DateTimeInterval>(
+Interval<Database::DateTimeInterval>& MailImpl::addCreateTime() {
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(
                                                   Column("crdate", joinMailTable()));
   add(tmp);
   tmp->setName("CreateTime");
   return *tmp;
 }
 
-Interval<DBase::DateTimeInterval>& MailImpl::addModifyTime() {
-  Interval<DBase::DateTimeInterval> *tmp = new Interval<DBase::DateTimeInterval>(
+Interval<Database::DateTimeInterval>& MailImpl::addModifyTime() {
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(
                                                   Column("moddate", joinMailTable()));
   add(tmp);
   tmp->setName("ModifyTime");

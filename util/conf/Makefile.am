@@ -1,4 +1,4 @@
-AM_CPPFLAGS = ${BOOST_CPPFLAGS} $(AM_CFLAGS) -I$(top_srcdir)/util
+AM_CPPFLAGS = ${BOOST_CPPFLAGS} $(AM_CFLAGS) -I$(top_srcdir)/util 
 
 noinst_LIBRARIES = libconf.a
 libconf_a_SOURCES = manager.cc conf.cc manager.h conf.h

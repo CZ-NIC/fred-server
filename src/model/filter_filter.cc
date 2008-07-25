@@ -1,6 +1,6 @@
 #include "filter_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 FilterFilterImpl::FilterFilterImpl() {
@@ -14,22 +14,22 @@ Table& FilterFilterImpl::joinFilterTable() {
   return joinTable("filters");
 }
 
-Value<DBase::ID>& FilterFilterImpl::addId() {
-  Value<DBase::ID> *tmp = new Value<ID>(Column("id", joinFilterTable()));
+Value<Database::ID>& FilterFilterImpl::addId() {
+  Value<Database::ID> *tmp = new Value<ID>(Column("id", joinFilterTable()));
   add(tmp);
   tmp->setName("Id");
   return *tmp;
 }
 
-Value<DBase::ID>& FilterFilterImpl::addUserId() {
-  Value<DBase::ID> *tmp = new Value<ID>(Column("userid", joinFilterTable()));
+Value<Database::ID>& FilterFilterImpl::addUserId() {
+  Value<Database::ID> *tmp = new Value<ID>(Column("userid", joinFilterTable()));
   add(tmp);
   tmp->setName("UserId");
   return *tmp;
 }
 
-Value<DBase::ID>& FilterFilterImpl::addGroupId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("groupid", joinFilterTable()));
+Value<Database::ID>& FilterFilterImpl::addGroupId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("groupid", joinFilterTable()));
   add(tmp);
   tmp->setName("GroupId");
   return *tmp;

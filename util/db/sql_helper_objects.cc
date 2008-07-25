@@ -1,6 +1,6 @@
 #include "sql_helper_objects.h"
 
-namespace DBase {
+namespace Database {
 
 std::ostream& operator<<(std::ostream& _os, Table& _t) {
 	return _os << _t.name << " " << _t.alias;

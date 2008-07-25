@@ -11,7 +11,7 @@
 #include <map>
 
 #include "common_object.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
@@ -25,7 +25,7 @@ struct NameIdPair {
 };
 
 /// name, id pair - replacement for NameIdPair structure
-typedef std::pair<std::string, DBase::ID> OID;
+typedef std::pair<std::string, Database::ID> OID;
 
 
 /// status attributes

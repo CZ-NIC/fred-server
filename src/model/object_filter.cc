@@ -1,6 +1,6 @@
 #include "object_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 /*
@@ -14,15 +14,15 @@ ObjectImpl::ObjectImpl() :
 ObjectImpl::~ObjectImpl() {
 }
 
-Interval<DBase::DateTimeInterval>& ObjectImpl::addTransferTime() {
-  Interval<DBase::DateTimeInterval> *tmp = new Interval<DBase::DateTimeInterval>(Column("trdate", joinObjectTable()));
+Interval<Database::DateTimeInterval>& ObjectImpl::addTransferTime() {
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("trdate", joinObjectTable()));
   add(tmp);
   tmp->setName("TransferTime");
   return *tmp;
 }
 
-Interval<DBase::DateTimeInterval>& ObjectImpl::addUpdateTime() {
-  Interval<DBase::DateTimeInterval> *tmp = new Interval<DBase::DateTimeInterval>(Column("update", joinObjectTable()));
+Interval<Database::DateTimeInterval>& ObjectImpl::addUpdateTime() {
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("update", joinObjectTable()));
   add(tmp);
   tmp->setName("UpdateTime");
   return *tmp;
@@ -35,15 +35,15 @@ Value<std::string>& ObjectImpl::addAuthInfo() {
   return *tmp;
 }
 
-Value<DBase::ID>& ObjectImpl::addRegistrarId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("clid", joinObjectTable()));
+Value<Database::ID>& ObjectImpl::addRegistrarId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("clid", joinObjectTable()));
   add(tmp);
   tmp->setName("RegistrarId");
   return *tmp;
 }
 
-Value<DBase::ID>& ObjectImpl::addUpdateRegistrarId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("upid", joinObjectTable()));
+Value<Database::ID>& ObjectImpl::addUpdateRegistrarId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("upid", joinObjectTable()));
   add(tmp);
   tmp->setName("UpdateRegistrarId");
   return *tmp;
@@ -94,15 +94,15 @@ ObjectHistoryImpl::ObjectHistoryImpl() : ObjectRegistryImpl() {
 ObjectHistoryImpl::~ObjectHistoryImpl() {
 }
 
-Interval<DBase::DateTimeInterval>& ObjectHistoryImpl::addTransferTime() {
-  Interval<DBase::DateTimeInterval> *tmp = new Interval<DBase::DateTimeInterval>(Column("trdate", joinObjectTable()));
+Interval<Database::DateTimeInterval>& ObjectHistoryImpl::addTransferTime() {
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("trdate", joinObjectTable()));
   add(tmp);
   tmp->setName("TransferTime");
   return *tmp;
 }
 
-Interval<DBase::DateTimeInterval>& ObjectHistoryImpl::addUpdateTime() {
-  Interval<DBase::DateTimeInterval> *tmp = new Interval<DBase::DateTimeInterval>(Column("update", joinObjectTable()));
+Interval<Database::DateTimeInterval>& ObjectHistoryImpl::addUpdateTime() {
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("update", joinObjectTable()));
   add(tmp);
   tmp->setName("UpdateTime");
   return *tmp;
@@ -115,15 +115,15 @@ Value<std::string>& ObjectHistoryImpl::addAuthInfo() {
   return *tmp;
 }
 
-Value<DBase::ID>& ObjectHistoryImpl::addRegistrarId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("clid", joinObjectTable()));
+Value<Database::ID>& ObjectHistoryImpl::addRegistrarId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("clid", joinObjectTable()));
   add(tmp);
   tmp->setName("RegistrarId");
   return *tmp;
 }
 
-Value<DBase::ID>& ObjectHistoryImpl::addUpdateRegistrarId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("upid", joinObjectTable()));
+Value<Database::ID>& ObjectHistoryImpl::addUpdateRegistrarId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("upid", joinObjectTable()));
   add(tmp);
   tmp->setName("UpdateRegistrarId");
   return *tmp;

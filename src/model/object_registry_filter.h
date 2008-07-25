@@ -9,7 +9,9 @@
 #include "registrar_filter.h"
 #include "object_state_filter.h"
 
-namespace DBase {
+#include "types/conversions.h"
+
+namespace Database {
 namespace Filters {
 
 enum ObjectType {
@@ -19,6 +21,7 @@ enum ObjectType {
   TDOMAIN = 3
 };
 
+
 class ObjectRegistry : public Compound {
 public:
   virtual ~ObjectRegistry() {
@@ -27,10 +30,10 @@ public:
   virtual ObjectType getType() const = 0;
   
   virtual Table& joinObjectRegistryTable() = 0;
-  virtual Value<ObjectType>& setType(const DBase::Null<ObjectType> _type) = 0;
+  virtual Value<ObjectType>& addType() = 0;
   virtual Value<std::string>& addHandle() = 0;
-  virtual Interval<DBase::DateTimeInterval>& addCreateTime() = 0;
-  virtual Interval<DBase::DateTimeInterval>& addDeleteTime() = 0;
+  virtual Interval<Database::DateTimeInterval>& addCreateTime() = 0;
+  virtual Interval<Database::DateTimeInterval>& addDeleteTime() = 0;
   virtual Registrar& addCreateRegistrar() = 0;
   virtual ObjectState& addState() = 0;
 
@@ -52,10 +55,10 @@ public:
   }
   
   virtual Table& joinObjectRegistryTable();
-  virtual Value<ObjectType>& setType(const DBase::Null<ObjectType> _type);
+  virtual Value<ObjectType>& addType();
   virtual Value<std::string>& addHandle();
-  virtual Interval<DBase::DateTimeInterval>& addCreateTime();
-  virtual Interval<DBase::DateTimeInterval>& addDeleteTime();
+  virtual Interval<Database::DateTimeInterval>& addCreateTime();
+  virtual Interval<Database::DateTimeInterval>& addDeleteTime();
   virtual Registrar& addCreateRegistrar();
   virtual ObjectState& addState();
 
@@ -68,6 +71,18 @@ public:
 };
 
 }
+
+
+CONVERSION_DECLARATION(Filters::ObjectType)
+
+inline Filters::ObjectType Conversion<Filters::ObjectType>::from_string(const std::string& _value) {
+  return (Filters::ObjectType)atoi(_value.c_str());
+}
+
+inline std::string Conversion<Filters::ObjectType>::to_string(const Filters::ObjectType& _value) {
+  return signed2string((int)_value);
+}
+
 }
 
 #endif /*OBJECT_REGISTRY_FILTER_H_*/

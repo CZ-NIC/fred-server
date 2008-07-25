@@ -7,7 +7,7 @@
 
 #include "db/base_filters.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 class Registrar : virtual public Compound {
@@ -16,7 +16,7 @@ public:
   }
 
   virtual Table& joinRegistrarTable() = 0;
-  virtual Value<DBase::ID>& addId() = 0;
+  virtual Value<Database::ID>& addId() = 0;
   virtual Value<std::string>& addHandle() = 0;
   virtual Value<std::string>& addName() = 0;
   virtual Value<std::string>& addOrganization() = 0;
@@ -38,7 +38,7 @@ public:
   virtual ~RegistrarImpl();
 
   virtual Table& joinRegistrarTable();
-  virtual Value<DBase::ID>& addId();
+  virtual Value<Database::ID>& addId();
   virtual Value<std::string>& addHandle();
   virtual Value<std::string>& addName();
   virtual Value<std::string>& addOrganization();

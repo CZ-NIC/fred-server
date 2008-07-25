@@ -10,10 +10,11 @@
 #include <cstring>
 #include <boost/utility.hpp>
 #include <boost/format.hpp>
-#include "sql_helper_objects.h"
-#include "db_value.h"
 
-namespace DBase {
+#include "sql_helper_objects.h"
+#include "value.h"
+
+namespace Database {
 
 /*
  * Base Query class

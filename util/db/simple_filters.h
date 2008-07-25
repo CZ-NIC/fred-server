@@ -13,11 +13,11 @@
 #include "boost/date_time/c_local_time_adjustor.hpp"
 
 #include "simple_filter.h"
-#include "dbexceptions.h"
 #include "log/logger.h"
 #include "util.h"
+#include "base_exception.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 // TODO Null value
@@ -46,7 +46,7 @@ public:
     return 0;
   }
 
-  virtual void serialize(DBase::SelectQuery& _sq) {
+  virtual void serialize(Database::SelectQuery& _sq) {
     std::stringstream &prep = _sq.where_prepared_string();
     std::vector<std::string> &store = _sq.where_prepared_values();
 
@@ -109,7 +109,7 @@ public:
     }
   }
 
-  virtual void serialize(DBase::SelectQuery& _sq) {
+  virtual void serialize(Database::SelectQuery& _sq) {
     TRACE("[CALL] _BaseDTInterval::serialize()");
     std::stringstream &prep = _sq.where_prepared_string();
     std::vector<std::string> &store = _sq.where_prepared_values();
@@ -153,7 +153,7 @@ public:
   }
 
 public:
-  _BaseDTInterval(const Column& _col, const DBase::Null<DTp>& _value,
+  _BaseDTInterval(const Column& _col, const Database::Null<DTp>& _value,
       const std::string& _conj = SQL_OP_AND) :
     Simple(_conj), column(_col), value(_value) {
   }
@@ -166,7 +166,7 @@ public:
 
 protected:
   Column column;
-  DBase::Null<DTp> value;
+  Database::Null<DTp> value;
 };
 
 #define BOOST_SERIALIZATION_BASE_TEMPLATE(name, base)               \
@@ -176,7 +176,7 @@ protected:
 template<> class Interval<DateTimeInterval> :
   public _BaseDTInterval<DateTimeInterval> {
 public:
-  Interval(const Column& _col, const DBase::Null<DateTimeInterval>& _value,
+  Interval(const Column& _col, const Database::Null<DateTimeInterval>& _value,
       const std::string& _conj = SQL_OP_AND) :
     _BaseDTInterval<DateTimeInterval>(_col, _value, _conj) {
   }
@@ -213,11 +213,11 @@ public:
   }
   
   void setNULL() {
-    value = DBase::Null<DateTimeInterval>();
+    value = Database::Null<DateTimeInterval>();
     active = true;
   }
   
-  void serialize(DBase::SelectQuery& _sq) {
+  void serialize(Database::SelectQuery& _sq) {
     TRACE("[CALL] Interval<DateTime>::serialize()");
     std::stringstream &prep = _sq.where_prepared_string();
     const DateTimeInterval& t_value = value.getValue();
@@ -271,7 +271,7 @@ public:
 
 template<> class Interval<DateInterval> : public _BaseDTInterval<DateInterval> {
 public:
-  Interval(const Column& _col, const DBase::Null<DateInterval>& _value,
+  Interval(const Column& _col, const Database::Null<DateInterval>& _value,
       const std::string& _conj = SQL_OP_AND) :
     _BaseDTInterval<DateInterval>(_col, _value, _conj) {
   }
@@ -283,11 +283,11 @@ public:
   }
   
   void setNULL() {
-    value = DBase::Null<DateInterval>();
+    value = Database::Null<DateInterval>();
     active = true;
   }
 
-  void serialize(DBase::SelectQuery& _sq) {
+  void serialize(Database::SelectQuery& _sq) {
     TRACE("[CALL] Interval<Date>::serialize()");
     std::stringstream &prep = _sq.where_prepared_string();
     const DateInterval& t_value = value.getValue();
@@ -361,7 +361,7 @@ public:
   }
 
   void setNULL() {
-    value = DBase::Null<Tp>();
+    value = Database::Null<Tp>();
     active = true;
   }
   
@@ -379,7 +379,7 @@ public:
     return 0;
   }
 
-  virtual void serialize(DBase::SelectQuery& _sq) {
+  virtual void serialize(Database::SelectQuery& _sq) {
     std::stringstream &prep = _sq.where_prepared_string();
     std::vector<std::string> &store = _sq.where_prepared_values();
 
@@ -388,7 +388,8 @@ public:
       prep << SQL_OP_IS << value;
     } else {
       prep << op << "'%" << store.size() + 1 << "%'";
-      store.push_back(Util::stream_cast<std::string>(value.getValue()));
+      store.push_back(Conversion<Tp>::to_string(value.getValue()));
+      // store.push_back(Util::stream_cast<std::string>(value.getValue()));
     }
     prep << " )";
   }
@@ -405,7 +406,7 @@ public:
 protected:
   Column column;
   std::string op;
-  DBase::Null<Tp> value;
+  Database::Null<Tp> value;
 };
 
 template<> class Value<std::string> : public Simple {
@@ -444,7 +445,7 @@ public:
     return 0;
   }
 
-  virtual void serialize(DBase::SelectQuery& _sq) {
+  virtual void serialize(Database::SelectQuery& _sq) {
     std::stringstream &prep = _sq.where_prepared_string();
     std::vector<std::string> &store = _sq.where_prepared_values();
 
@@ -478,7 +479,7 @@ public:
 protected:
   Column column;
   std::string op;
-  DBase::Null<std::string> value;
+  Database::Null<std::string> value;
 };
 
 template<class Tp> class Null : public Simple {
@@ -491,13 +492,13 @@ public:
   virtual ~Null() {
   }
 
-  virtual void serialize(DBase::SelectQuery& _sq) {
+  virtual void serialize(Database::SelectQuery& _sq) {
     _sq.where_prepared_string() << getConjuction() << column.str() << SQL_OP_IS
         << "NULL";
   }
 protected:
   Column column;
-  DBase::Null<Tp> value;
+  Database::Null<Tp> value;
 };
 
 }

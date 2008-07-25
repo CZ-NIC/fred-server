@@ -9,7 +9,7 @@
 #include "contact_filter.h"
 #include "nsset_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 class Domain : virtual public Object {
@@ -18,13 +18,13 @@ public:
   }
 
   virtual Table& joinDomainTable() = 0;
-  virtual Value<DBase::ID>& addId() = 0;
-  virtual Value<DBase::ID>& addNSSetId() = 0;
-  virtual Value<DBase::ID>& addZoneId() = 0;
-  virtual Value<DBase::ID>& addRegistrantId() = 0;
-  virtual Interval<DBase::DateInterval>& addExpirationDate() = 0;
-  virtual Interval<DBase::DateInterval>& addOutZoneDate() = 0;
-  virtual Interval<DBase::DateInterval>& addCancelDate() = 0;
+  virtual Value<Database::ID>& addId() = 0;
+  virtual Value<Database::ID>& addNSSetId() = 0;
+  virtual Value<Database::ID>& addZoneId() = 0;
+  virtual Value<Database::ID>& addRegistrantId() = 0;
+  virtual Interval<Database::DateInterval>& addExpirationDate() = 0;
+  virtual Interval<Database::DateInterval>& addOutZoneDate() = 0;
+  virtual Interval<Database::DateInterval>& addCancelDate() = 0;
   virtual Contact& addRegistrant() = 0;
   virtual Contact& addAdminContact() = 0;
   virtual Contact& addTempContact() = 0;
@@ -49,13 +49,13 @@ public:
   Table& joinDomainTable();
   virtual void _joinPolymorphicTables();
 
-  virtual Value<DBase::ID>& addId();
-  virtual Value<DBase::ID>& addNSSetId();
-  virtual Value<DBase::ID>& addZoneId();
-  virtual Value<DBase::ID>& addRegistrantId();
-  virtual Interval<DBase::DateInterval>& addExpirationDate();
-  virtual Interval<DBase::DateInterval>& addOutZoneDate();
-  virtual Interval<DBase::DateInterval>& addCancelDate();
+  virtual Value<Database::ID>& addId();
+  virtual Value<Database::ID>& addNSSetId();
+  virtual Value<Database::ID>& addZoneId();
+  virtual Value<Database::ID>& addRegistrantId();
+  virtual Interval<Database::DateInterval>& addExpirationDate();
+  virtual Interval<Database::DateInterval>& addOutZoneDate();
+  virtual Interval<Database::DateInterval>& addCancelDate();
   virtual Contact& addRegistrant();
   virtual Contact& addAdminContact();
   virtual Contact& addTempContact();
@@ -83,13 +83,13 @@ public:
   Table& joinDomainTable();
   virtual void _joinPolymorphicTables();
 
-  virtual Value<DBase::ID>& addId();
-  virtual Value<DBase::ID>& addNSSetId();
-  virtual Value<DBase::ID>& addZoneId();
-  virtual Value<DBase::ID>& addRegistrantId();
-  virtual Interval<DBase::DateInterval>& addExpirationDate();
-  virtual Interval<DBase::DateInterval>& addOutZoneDate();
-  virtual Interval<DBase::DateInterval>& addCancelDate();
+  virtual Value<Database::ID>& addId();
+  virtual Value<Database::ID>& addNSSetId();
+  virtual Value<Database::ID>& addZoneId();
+  virtual Value<Database::ID>& addRegistrantId();
+  virtual Interval<Database::DateInterval>& addExpirationDate();
+  virtual Interval<Database::DateInterval>& addOutZoneDate();
+  virtual Interval<Database::DateInterval>& addCancelDate();
   virtual Contact& addRegistrant();
   virtual Contact& addAdminContact();
   virtual Contact& addTempContact();

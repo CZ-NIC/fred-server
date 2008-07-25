@@ -1,6 +1,6 @@
 #include "nsset_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 /*
@@ -9,7 +9,7 @@ namespace Filters {
 NSSetImpl::NSSetImpl() :
   ObjectImpl() {
   setName("NSSet");
-  setType(getType());
+  addType().setValue(getType());
 }
 
 NSSetImpl::~NSSetImpl() {
@@ -81,7 +81,7 @@ void NSSetImpl::_joinPolymorphicTables() {
 NSSetHistoryImpl::NSSetHistoryImpl() :
   ObjectHistoryImpl() {
   setName("NSSetHistory");
-  setType(getType());
+  addType().setValue(getType());
 }
 
 NSSetHistoryImpl::~NSSetHistoryImpl() {

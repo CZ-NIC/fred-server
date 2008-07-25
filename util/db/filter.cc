@@ -1,6 +1,6 @@
 #include "filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 Filter::~Filter() {

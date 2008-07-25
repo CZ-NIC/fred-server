@@ -12,17 +12,17 @@ namespace Mail {
 class MailImpl : public Register::CommonObjectImpl,
                  virtual public Mail {
 private:
-  DBase::DateTime create_time_;
-  DBase::DateTime mod_time_;
+  Database::DateTime create_time_;
+  Database::DateTime mod_time_;
   long type_;
   std::string type_desc_;
   long status_;
   std::string content_;
   std::vector<std::string> handles_;
-  std::vector<DBase::ID> attachments_;   
+  std::vector<Database::ID> attachments_;   
 
 public:
-  MailImpl(DBase::ID& _id, DBase::DateTime& _create_time, DBase::DateTime& _mod_time,
+  MailImpl(Database::ID& _id, Database::DateTime& _create_time, Database::DateTime& _mod_time,
            long _type, std::string& _type_desc, long _status, std::string& _content) :
              CommonObjectImpl(_id),
              create_time_(_create_time),
@@ -33,11 +33,11 @@ public:
              content_(_content) {
   }
   
-  virtual const DBase::DateTime& getCreateTime() const {
+  virtual const Database::DateTime& getCreateTime() const {
     return create_time_;
   }
   
-  virtual const DBase::DateTime& getModTime() const {
+  virtual const Database::DateTime& getModTime() const {
     return mod_time_;
   }
   
@@ -69,7 +69,7 @@ public:
     return handles_.at(_idx);
   }
   
-  virtual void addAttachment(const DBase::ID& _id) {
+  virtual void addAttachment(const Database::ID& _id) {
     attachments_.push_back(_id);
   }
   
@@ -77,7 +77,7 @@ public:
     return attachments_.size();
   }
   
-  virtual const DBase::ID& getAttachment(unsigned _idx) const {
+  virtual const Database::ID& getAttachment(unsigned _idx) const {
     return attachments_.at(_idx);
   }
 };
@@ -93,7 +93,7 @@ private:
   Manager *manager_;
   
 public:
-  ListImpl(DBase::Connection *_conn, Manager *_manager) : CommonListImpl(_conn),
+  ListImpl(Database::Connection *_conn, Manager *_manager) : CommonListImpl(_conn),
                                                           manager_(_manager) {
   }
   
@@ -110,30 +110,30 @@ public:
     }
   }
   
-  virtual void reload(DBase::Filters::Union& _filter) {
+  virtual void reload(Database::Filters::Union& _filter) {
     TRACE("[CALL] Register::Mail::ListImpl::reload()");
     clear();
     _filter.clearQueries();
     
-    DBase::SelectQuery id_query;
-    DBase::Filters::Compound::iterator fit = _filter.begin();
+    Database::SelectQuery id_query;
+    Database::Filters::Compound::iterator fit = _filter.begin();
     for (; fit != _filter.end(); ++fit) {
-      DBase::Filters::Mail *mf = dynamic_cast<DBase::Filters::Mail* >(*fit);
+      Database::Filters::Mail *mf = dynamic_cast<Database::Filters::Mail* >(*fit);
       if (!mf)
         continue;
-      DBase::SelectQuery *tmp = new DBase::SelectQuery();
-      tmp->addSelect(new DBase::Column("id", mf->joinMailTable(), "DISTINCT"));
+      Database::SelectQuery *tmp = new Database::SelectQuery();
+      tmp->addSelect(new Database::Column("id", mf->joinMailTable(), "DISTINCT"));
       _filter.addQuery(tmp);
     }
     id_query.limit(load_limit_);
     _filter.serialize(id_query);
     
-    DBase::InsertQuery tmp_table_query = DBase::InsertQuery(getTempTableName(),
+    Database::InsertQuery tmp_table_query = Database::InsertQuery(getTempTableName(),
                                                             id_query);
     LOGGER("db").debug(boost::format("temporary table '%1%' generated sql = %2%")
         % getTempTableName() % tmp_table_query.str());
 
-    DBase::SelectQuery object_info_query;
+    Database::SelectQuery object_info_query;
     object_info_query.select() << "t_1.id, t_1.mailtype, t_1.crdate, t_1.moddate, "
                                << "t_1.status, t_1.message, t_2.name";
     object_info_query.from() << getTempTableName() << " tmp "
@@ -143,16 +143,17 @@ public:
     try {
       fillTempTable(tmp_table_query);
       
-      std::auto_ptr<DBase::Result> r_info(conn_->exec(object_info_query));
-      std::auto_ptr<DBase::ResultIterator> it(r_info->getIterator());
-      for (it->first(); !it->isDone(); it->next()) {
-        DBase::ID id = it->getNextValue();
-        long type = (long)it->getNextValue();
-        DBase::DateTime crdate = it->getNextValue();
-        DBase::DateTime moddate = it->getNextValue();
-        long status = (long)it->getNextValue();
-        std::string msg = it->getNextValue();
-        std::string type_desc = it->getNextValue();
+      Database::Result r_info = conn_->exec(object_info_query);
+      for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID       id        = *col;
+        long               type      = *(++col);
+        Database::DateTime crdate    = *(++col);
+        Database::DateTime moddate   = *(++col);
+        long               status    = *(++col);
+        std::string        msg       = *(++col);
+        std::string        type_desc = *(++col);
         
         data_.push_back(new MailImpl(id,
                                      crdate,
@@ -174,17 +175,16 @@ public:
        */      
       resetIDSequence();
       
-      DBase::SelectQuery handles_query;
+      Database::SelectQuery handles_query;
       handles_query.select() << "t_1.mailid, t_1.associd";
       handles_query.from() << getTempTableName() << " tmp "
-                          << "JOIN mail_handles t_1 ON (tmp.id = t_1.mailid)";
+                           << "JOIN mail_handles t_1 ON (tmp.id = t_1.mailid)";
       handles_query.order_by() << "tmp.id";
       
-      std::auto_ptr<DBase::Result> r_handles(conn_->exec(handles_query));
-      std::auto_ptr<DBase::ResultIterator> hit(r_handles->getIterator());
-      for (hit->first(); !hit->isDone(); hit->next()) {
-        DBase::ID mail_id = hit->getNextValue();
-        std::string handle = hit->getNextValue();
+      Database::Result r_handles = conn_->exec(handles_query);
+      for (Database::Result::Iterator it = r_handles.begin(); it != r_handles.end(); ++it) {
+        Database::ID mail_id = (*it)[0];
+        std::string  handle  = (*it)[1];
              
         MailImpl *mail_ptr = dynamic_cast<MailImpl *>(findIDSequence(mail_id));
         if (mail_ptr)
@@ -196,17 +196,16 @@ public:
        */      
       resetIDSequence();
       
-      DBase::SelectQuery files_query;
+      Database::SelectQuery files_query;
       files_query.select() << "t_1.mailid, t_1.attachid";
       files_query.from() << getTempTableName() << " tmp "
-                          << "JOIN mail_attachments t_1 ON (tmp.id = t_1.mailid)";
+                         << "JOIN mail_attachments t_1 ON (tmp.id = t_1.mailid)";
       files_query.order_by() << "tmp.id";
       
-      std::auto_ptr<DBase::Result> r_files(conn_->exec(files_query));
-      std::auto_ptr<DBase::ResultIterator> ait(r_files->getIterator());
-      for (ait->first(); !ait->isDone(); ait->next()) {
-        DBase::ID mail_id = ait->getNextValue();
-        DBase::ID file_id = ait->getNextValue();
+      Database::Result r_files = conn_->exec(files_query);
+      for (Database::Result::Iterator it = r_files.begin(); it != r_files.end(); ++it) {
+        Database::ID mail_id = (*it)[0];
+        Database::ID file_id = (*it)[1];
              
         MailImpl *mail_ptr = dynamic_cast<MailImpl *>(findIDSequence(mail_id));
         if (mail_ptr)
@@ -215,7 +214,7 @@ public:
       /* checks if row number result load limit is active and set flag */ 
       CommonListImpl::reload();
     }
-    catch (DBase::Exception& ex) {
+    catch (Database::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
       clear();
     }
@@ -253,16 +252,16 @@ public:
 
 class ManagerImpl : virtual public Manager {
 private:
-  DBase::Manager *db_manager_;
-  DBase::Connection *conn_;
+  Database::Manager *db_manager_;
+  Database::Connection *conn_;
   
 public:
-  ManagerImpl(DBase::Manager *_db_manager) : db_manager_(_db_manager),
+  ManagerImpl(Database::Manager *_db_manager) : db_manager_(_db_manager),
                                              conn_(db_manager_->getConnection()) {
   }
   
   virtual ~ManagerImpl() {
-    boost::checked_delete<DBase::Connection>(conn_);
+    boost::checked_delete<Database::Connection>(conn_);
   }  
   
   List* createList() const {
@@ -271,7 +270,7 @@ public:
   
 };
 
-Manager* Manager::create(DBase::Manager *_db_manager) {
+Manager* Manager::create(Database::Manager *_db_manager) {
     TRACE("[CALL] Register::Mail::Manager::create()");
     return new ManagerImpl(_db_manager);
 }

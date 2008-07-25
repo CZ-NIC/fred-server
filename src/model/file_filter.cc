@@ -1,6 +1,6 @@
 #include "file_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 FileImpl::FileImpl(bool _set_active) :
@@ -16,8 +16,8 @@ Table& FileImpl::joinFileTable() {
   return joinTable("files");
 }
 
-Value<DBase::ID>& FileImpl::addId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("id", joinFileTable()));
+Value<Database::ID>& FileImpl::addId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("id", joinFileTable()));
   add(tmp);
   tmp->setName("Id");
   return *tmp;
@@ -44,8 +44,8 @@ Value<std::string>& FileImpl::addMimeType() {
   return *tmp;
 }
 
-Interval<DBase::DateTimeInterval>& FileImpl::addCreateTime() {
-  Interval<DBase::DateTimeInterval> *tmp = new Interval<DBase::DateTimeInterval>(
+Interval<Database::DateTimeInterval>& FileImpl::addCreateTime() {
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(
                                                   Column("crdate", joinFileTable()));
   add(tmp);
   tmp->setName("CreateTime");

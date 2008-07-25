@@ -9,7 +9,7 @@
 
 #include "sql_operators.h"
 
-namespace DBase {
+namespace Database {
 
 class Table {
 public:

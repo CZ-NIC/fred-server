@@ -6,7 +6,7 @@
 #include "registrar_filter.h"
 #include "file_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 /// invoice type
@@ -22,12 +22,12 @@ public:
   }
 
   virtual Table& joinInvoiceTable() = 0;
-  virtual Value<DBase::ID>& addId() = 0;
-  virtual Value<DBase::ID>& addZoneId() = 0;
+  virtual Value<Database::ID>& addId() = 0;
+  virtual Value<Database::ID>& addZoneId() = 0;
   virtual Value<int>& addType() = 0;
   virtual Value<std::string>& addNumber() = 0;
-  virtual Interval<DBase::DateTimeInterval>& addCreateTime() = 0;
-  virtual Interval<DBase::DateInterval>& addTaxDate() = 0;
+  virtual Interval<Database::DateTimeInterval>& addCreateTime() = 0;
+  virtual Interval<Database::DateInterval>& addTaxDate() = 0;
   virtual Registrar& addRegistrar() = 0;
   virtual Object& addObject() = 0;
   virtual File& addFile() = 0;
@@ -39,12 +39,12 @@ public:
   virtual ~InvoiceImpl();
   
   virtual Table& joinInvoiceTable();
-  virtual Value<DBase::ID>& addId();
-  virtual Value<DBase::ID>& addZoneId();
+  virtual Value<Database::ID>& addId();
+  virtual Value<Database::ID>& addZoneId();
   virtual Value<int>& addType();
   virtual Value<std::string>& addNumber();
-  virtual Interval<DBase::DateTimeInterval>& addCreateTime();
-  virtual Interval<DBase::DateInterval>& addTaxDate();
+  virtual Interval<Database::DateTimeInterval>& addCreateTime();
+  virtual Interval<Database::DateInterval>& addTaxDate();
   virtual Registrar& addRegistrar();
   virtual Object& addObject();
   virtual File& addFile();

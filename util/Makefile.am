@@ -1,7 +1,7 @@
-SUBDIRS = db log conf
-# EXTRA_DIST = singleton.h
+SUBDIRS = log types db conf
+
+AM_CPPFLAGS = ${BOOST_CPPFLAGS} $(AM_CFLAGS)
 
 noinst_LIBRARIES = libutil.a
-AM_CPPFLAGS = ${BOOST_CPPFLAGS} $(AM_CFLAGS)
-libutil_a_SOURCES = util.cc util.h singleton.h time_clock.h
+libutil_a_SOURCES = util.h singleton.h time_clock.h base_exception.h
 

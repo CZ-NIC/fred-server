@@ -1,6 +1,6 @@
 #include "domain_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 /*
@@ -9,57 +9,57 @@ namespace Filters {
 DomainImpl::DomainImpl() :
   ObjectImpl() {
   setName("Domain");
-  setType(getType());
+  addType().setValue(getType());
 }
 
 DomainImpl::~DomainImpl() {
 }
 
-Value<DBase::ID>& DomainImpl::addId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("id", joinDomainTable()));
+Value<Database::ID>& DomainImpl::addId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("id", joinDomainTable()));
   tmp->setName("Id");
   add(tmp);
   return *tmp;
 }
 
-Value<DBase::ID>& DomainImpl::addNSSetId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("nsset", joinDomainTable()));
+Value<Database::ID>& DomainImpl::addNSSetId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("nsset", joinDomainTable()));
   tmp->setName("NSSetId");
   add(tmp);
   return *tmp;
 }
 
-Value<DBase::ID>& DomainImpl::addRegistrantId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("registrant", joinDomainTable()));
+Value<Database::ID>& DomainImpl::addRegistrantId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("registrant", joinDomainTable()));
   tmp->setName("RegistrantId");
   add(tmp);
   return *tmp;
 }
 
-Value<DBase::ID>& DomainImpl::addZoneId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("zone", joinDomainTable()));
+Value<Database::ID>& DomainImpl::addZoneId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("zone", joinDomainTable()));
   tmp->setName("ZoneId");
   add(tmp);
   return *tmp;
 }
 
-Interval<DBase::DateInterval>& DomainImpl::addExpirationDate() {
-  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate", joinDomainTable()));
+Interval<Database::DateInterval>& DomainImpl::addExpirationDate() {
+  Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
   tmp->setName("ExpirationDate");
   add(tmp);
   return *tmp;
 }
 
-Interval<DBase::DateInterval>& DomainImpl::addOutZoneDate() {
-  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate", joinDomainTable()));
+Interval<Database::DateInterval>& DomainImpl::addOutZoneDate() {
+  Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
   tmp->addPostValueString("::date - (select val from enum_parameters where id = 4)::int");
   tmp->setName("OutZoneDate");
   add(tmp);
   return *tmp;
 }
 
-Interval<DBase::DateInterval>& DomainImpl::addCancelDate() {
-  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate", joinDomainTable()));
+Interval<Database::DateInterval>& DomainImpl::addCancelDate() {
+  Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
   tmp->addPostValueString("::date - (select val from enum_parameters where id = 6)::int");
   tmp->setName("CancelDate");
   add(tmp);
@@ -130,57 +130,57 @@ void DomainImpl::_joinPolymorphicTables() {
 DomainHistoryImpl::DomainHistoryImpl() :
   ObjectHistoryImpl() {
   setName("DomainHistory");
-  setType(getType());
+  addType().setValue(getType());
 }
 
 DomainHistoryImpl::~DomainHistoryImpl() {
 }
 
-Value<DBase::ID>& DomainHistoryImpl::addId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("id", joinDomainTable()));
+Value<Database::ID>& DomainHistoryImpl::addId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("id", joinDomainTable()));
   tmp->setName("Id");
   add(tmp);
   return *tmp;
 }
 
-Value<DBase::ID>& DomainHistoryImpl::addNSSetId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("nsset", joinDomainTable()));
+Value<Database::ID>& DomainHistoryImpl::addNSSetId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("nsset", joinDomainTable()));
   tmp->setName("NSSetId");
   add(tmp);
   return *tmp;
 }
 
-Value<DBase::ID>& DomainHistoryImpl::addRegistrantId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("registrant", joinDomainTable()));
+Value<Database::ID>& DomainHistoryImpl::addRegistrantId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("registrant", joinDomainTable()));
   tmp->setName("RegistrantId");
   add(tmp);
   return *tmp;
 }
 
-Value<DBase::ID>& DomainHistoryImpl::addZoneId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("zone", joinDomainTable()));
+Value<Database::ID>& DomainHistoryImpl::addZoneId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("zone", joinDomainTable()));
   tmp->setName("ZoneId");
   add(tmp);
   return *tmp;
 }
 
-Interval<DBase::DateInterval>& DomainHistoryImpl::addExpirationDate() {
-  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate", joinDomainTable()));
+Interval<Database::DateInterval>& DomainHistoryImpl::addExpirationDate() {
+  Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
   tmp->setName("ExpirationDate");
   add(tmp);
   return *tmp;
 }
 
-Interval<DBase::DateInterval>& DomainHistoryImpl::addOutZoneDate() {
-  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate", joinDomainTable()));
+Interval<Database::DateInterval>& DomainHistoryImpl::addOutZoneDate() {
+  Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
   tmp->addPostValueString("::date - (select val from enum_parameters where id = 4)::int");
   tmp->setName("OutZoneDate");
   add(tmp);
   return *tmp;
 }
 
-Interval<DBase::DateInterval>& DomainHistoryImpl::addCancelDate() {
-  Interval<DBase::DateInterval> *tmp = new Interval<DBase::DateInterval>(Column("exdate", joinDomainTable()));
+Interval<Database::DateInterval>& DomainHistoryImpl::addCancelDate() {
+  Interval<Database::DateInterval> *tmp = new Interval<Database::DateInterval>(Column("exdate", joinDomainTable()));
   tmp->addPostValueString("::date - (select val from enum_parameters where id = 6)::int");
   tmp->setName("CancelDate");
   add(tmp);

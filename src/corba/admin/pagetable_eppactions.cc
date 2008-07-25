@@ -11,7 +11,7 @@ ccReg_EPPActions_i::~ccReg_EPPActions_i() {
 ccReg::Filters::Compound_ptr ccReg_EPPActions_i::add() {
   TRACE("[CALL] ccReg_EPPActions_i::add()");
   it.clearF();
-  DBase::Filters::EppAction *f = new DBase::Filters::EppActionImpl();
+  Database::Filters::EppAction *f = new Database::Filters::EppActionImpl();
   uf.addFilter(f);
   return it.addE(f);
 }
@@ -118,9 +118,9 @@ void ccReg_EPPActions_i::loadFilter(ccReg::TID _id) {
   TRACE(boost::format("[CALL] ccReg_EPPActions_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
-  DBase::Filters::Union::iterator uit = uf.begin();
+  Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
-    DBase::Filters::EppAction *tmp = dynamic_cast<DBase::Filters::EppAction* >(*uit);
+    Database::Filters::EppAction *tmp = dynamic_cast<Database::Filters::EppAction* >(*uit);
     it.addE(tmp);
     TRACE(boost::format("[IN] ccReg_EPPActions_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
   }

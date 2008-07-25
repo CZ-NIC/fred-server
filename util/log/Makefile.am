@@ -1,4 +1,4 @@
-AM_CPPFLAGS = ${BOOST_CPPFLAGS} $(AM_CFLAGS) -I$(top_srcdir)/util
+AM_CPPFLAGS = ${BOOST_CPPFLAGS} $(AM_CFLAGS) -I$(top_srcdir)/util 
 
 noinst_LIBRARIES = liblog.a
 liblog_a_SOURCES = logger.cc log.cc log_types.cc log.h log_types.h logger.h 

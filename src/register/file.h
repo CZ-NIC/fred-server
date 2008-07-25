@@ -3,7 +3,7 @@
 
 #include "common_object.h"
 #include "object.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "model/model_filters.h"
 
 namespace Register {
@@ -24,7 +24,7 @@ public:
   virtual const std::string& getMimeType() const = 0;
   virtual const unsigned getType() const = 0;
   virtual const std::string& getTypeDesc() const = 0;
-  virtual const DBase::DateTime& getCreateTime() const = 0;
+  virtual const Database::DateTime& getCreateTime() const = 0;
   virtual const unsigned long getSize() const = 0;  
 };
 
@@ -32,7 +32,7 @@ public:
 class List : virtual public Register::CommonList {
 public:
   virtual File* get(unsigned _idx) const = 0;
-  virtual void reload(DBase::Filters::Union& _filter) = 0;
+  virtual void reload(Database::Filters::Union& _filter) = 0;
   virtual void sort(MemberType _member, bool _asc) = 0;
 
   /// from CommonList; propably will be removed in future
@@ -48,7 +48,7 @@ public:
   }
   
   virtual List* createList() const = 0;
-  static Manager* create(DBase::Manager *_db_manager);
+  static Manager* create(Database::Manager *_db_manager);
 };
 
 }

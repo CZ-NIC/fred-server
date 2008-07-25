@@ -24,7 +24,7 @@
 #include <boost/regex.hpp>
 #include <vector>
 #include "old_utils/log.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
 
@@ -377,24 +377,24 @@ public:
     db->FreeSelect();
     ObjectListImpl::reload(useTempTable ? NULL : handle.c_str(),1);
   }
-  void reload(DBase::Filters::Union &uf, DBase::Manager* dbm) {
+  void reload(Database::Filters::Union &uf, Database::Manager* dbm) {
     TRACE("[CALL] ContactListImpl::reload()");
     clear();
-    DBase::SelectQuery id_query;
+    Database::SelectQuery id_query;
 
     // TEMP: should be cached
-    std::map<DBase::ID, std::string> registrars_table;
+    std::map<Database::ID, std::string> registrars_table;
 
     bool at_least_one = false;
-    std::auto_ptr<DBase::Filters::Iterator> fit(uf.createIterator());
+    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next()) {
-      DBase::Filters::Contact *cf =
-          dynamic_cast<DBase::Filters::ContactHistoryImpl* >(fit->get());
+      Database::Filters::Contact *cf =
+          dynamic_cast<Database::Filters::ContactHistoryImpl* >(fit->get());
       if (!cf)
         continue;
       
-      DBase::SelectQuery *tmp = new DBase::SelectQuery();
-      tmp->addSelect(new DBase::Column("historyid", cf->joinContactTable(), "DISTINCT"));
+      Database::SelectQuery *tmp = new Database::SelectQuery();
+      tmp->addSelect(new Database::Column("historyid", cf->joinContactTable(), "DISTINCT"));
       uf.addQuery(tmp);
       at_least_one = true;
     }
@@ -406,12 +406,12 @@ public:
     id_query.limit(load_limit_);
     uf.serialize(id_query);
 
-    DBase::InsertQuery tmp_table_query = DBase::InsertQuery(getTempTableName(),
+    Database::InsertQuery tmp_table_query = Database::InsertQuery(getTempTableName(),
         id_query);
     LOGGER("db").debug(boost::format("temporary table '%1%' generated sql = %2%")
         % getTempTableName() % tmp_table_query.str());
 
-    DBase::SelectQuery object_info_query;
+    Database::SelectQuery object_info_query;
     object_info_query.select() << "t_1.id, t_1.name, t_2.name, t_3.clid, "
         << "t_1.crdate, t_3.trdate, t_3.update, t_1.erdate, t_1.crid, t_3.upid, "
         << "t_3.authinfopw, t_1.roid, t_2.organization, t_2.street1, "
@@ -433,64 +433,67 @@ public:
     object_info_query.order_by() << "t_1.id";
 
     try {
-      std::auto_ptr<DBase::Connection> conn(dbm->getConnection());
+      std::auto_ptr<Database::Connection> conn(dbm->getConnection());
 
-      DBase::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
-      std::auto_ptr<DBase::Result> r_create_tmp_table(conn->exec(create_tmp_table));
+      Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
+      conn->exec(create_tmp_table);
       conn->exec(tmp_table_query);
 
       // TEMP: should be cached somewhere
-      DBase::Query registrars_query("SELECT id, handle FROM registrar");
-      std::auto_ptr<DBase::Result> r_registrars(conn->exec(registrars_query));
-      std::auto_ptr<DBase::ResultIterator> rit(r_registrars->getIterator());
-      for (rit->first(); !rit->isDone(); rit->next()) {
-        DBase::ID id = rit->getNextValue();
-        std::string handle = rit->getNextValue();
+      Database::Query registrars_query("SELECT id, handle FROM registrar");
+      Database::Result r_registrars = conn->exec(registrars_query);
+      Database::Result::Iterator it = r_registrars.begin();
+      for (; it != r_registrars.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID id      = *col;
+        std::string  handle  = *(++col);
         registrars_table[id] = handle;
       }
 
-      std::auto_ptr<DBase::Result> r_info(conn->exec(object_info_query));
-      std::auto_ptr<DBase::ResultIterator> it(r_info->getIterator());
-      for (it->first(); !it->isDone(); it->next()) {
-        DBase::ID cid = it->getNextValue();
-        std::string handle = it->getNextValue();
-        std::string name = it->getNextValue();
-        DBase::ID registrar_id = it->getNextValue();
-        std::string registrar_handle = registrars_table[registrar_id];
-        DBase::DateTime cr_date = it->getNextValue();
-        DBase::DateTime tr_date = it->getNextValue();
-        DBase::DateTime up_date = it->getNextValue();
-        DBase::Date er_date = it->getNextValue();
-        DBase::ID crid = it->getNextValue();
-        std::string crid_handle = registrars_table[crid];
-        DBase::ID upid = it->getNextValue();
-        std::string upid_handle = registrars_table[upid];
-        std::string authinfo = it->getNextValue();
-        std::string roid = it->getNextValue();
-        std::string organization = it->getNextValue();
-        std::string street1 = it->getNextValue();
-        std::string street2 = it->getNextValue();
-        std::string street3 = it->getNextValue();
-        std::string province = it->getNextValue();
-        std::string postal_code = it->getNextValue();
-        std::string city = it->getNextValue();
-        std::string country = it->getNextValue();
-        std::string telephone = it->getNextValue();
-        std::string fax = it->getNextValue();
-        std::string email = it->getNextValue();
-        std::string notify_email = it->getNextValue();
-        std::string ssn = it->getNextValue();
-        unsigned ssn_type = it->getNextValue();
-        std::string vat = it->getNextValue();
-        bool disclose_name = ((std::string)it->getNextValue() == "t");
-        bool disclose_organization = ((std::string)it->getNextValue() == "t");
-        bool disclose_address = ((std::string)it->getNextValue() == "t");
-        bool disclose_email = ((std::string)it->getNextValue() == "t");
-        bool disclose_telephone = ((std::string)it->getNextValue() == "t");
-        bool disclose_fax = ((std::string)it->getNextValue() == "t");
-        bool disclose_vat = ((std::string)it->getNextValue() == "t");
-        bool disclose_ident = ((std::string)it->getNextValue() == "t");
-        bool disclose_notify_email = ((std::string)it->getNextValue() == "t");
+      Database::Result r_info = conn->exec(object_info_query);
+      for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID       cid              = *col;
+        std::string        handle           = *(++col);
+        std::string        name             = *(++col);
+        Database::ID       registrar_id     = *(++col);
+        std::string        registrar_handle = registrars_table[registrar_id];
+        Database::DateTime cr_date          = *(++col);
+        Database::DateTime tr_date          = *(++col);
+        Database::DateTime up_date          = *(++col);
+        Database::Date     er_date          = *(++col);
+        Database::ID       crid             = *(++col);
+        std::string        crid_handle      = registrars_table[crid];
+        Database::ID       upid             = *(++col);
+        std::string        upid_handle      = registrars_table[upid];
+        std::string        authinfo         = *(++col);
+        std::string        roid             = *(++col);
+        std::string        organization     = *(++col);
+        std::string        street1          = *(++col);
+        std::string        street2          = *(++col);
+        std::string        street3          = *(++col);
+        std::string        province         = *(++col);
+        std::string        postal_code      = *(++col);
+        std::string        city             = *(++col);
+        std::string        country          = *(++col);
+        std::string        telephone        = *(++col);
+        std::string        fax              = *(++col);
+        std::string        email            = *(++col);
+        std::string        notify_email     = *(++col);
+        std::string        ssn              = *(++col);
+        unsigned           ssn_type         = *(++col);
+        std::string        vat              = *(++col);
+        bool               disclose_name         = *(++col);
+        bool               disclose_organization = *(++col);
+        bool               disclose_address      = *(++col);
+        bool               disclose_email        = *(++col);
+        bool               disclose_telephone    = *(++col);
+        bool               disclose_fax          = *(++col);
+        bool               disclose_vat          = *(++col);
+        bool               disclose_ident        = *(++col);
+        bool               disclose_notify_email = *(++col);
 
         data_.push_back(
             new ContactImpl(
@@ -541,7 +544,7 @@ public:
       /* checks if row number result load limit is active and set flag */ 
       CommonListImpl::reload();
     }
-    catch (DBase::Exception& ex) {
+    catch (Database::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
     }
     catch (std::exception& ex) {

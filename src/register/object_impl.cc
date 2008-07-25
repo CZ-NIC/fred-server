@@ -259,8 +259,8 @@ void Register::ObjectListImpl::reload(const char *handle, int type)
   db->FreeSelect();
 }
 
-void Register::ObjectListImpl::reload(DBase::Connection* _conn) {
-  DBase::SelectQuery states_query;
+void Register::ObjectListImpl::reload(Database::Connection* _conn) {
+  Database::SelectQuery states_query;
   states_query.select() << "tmp.id, t_1.object_id, t_1.state_id, t_1.valid_from";
   states_query.from() << getTempTableName() << " tmp "
                       << "JOIN object_registry t_2 ON (tmp.id = t_2.historyid) "
@@ -270,20 +270,21 @@ void Register::ObjectListImpl::reload(DBase::Connection* _conn) {
 
   resetIDSequence();
   try {
-    std::auto_ptr<DBase::Result> r_states(_conn->exec(states_query));
-    std::auto_ptr<DBase::ResultIterator> rit(r_states->getIterator());
-    for (rit->first(); !rit->isDone(); rit->next()) {
-      DBase::ID object_historyid = rit->getNextValue();
-      DBase::ID object_id = rit->getNextValue();
-      DBase::ID state_id = rit->getNextValue();
-      DBase::DateTime valid_from = rit->getNextValue();
+    Database::Result r_states = _conn->exec(states_query);
+    for (Database::Result::Iterator it = r_states.begin(); it != r_states.end(); ++it) {
+      Database::Row::Iterator col = (*it).begin();
+
+      Database::ID       object_historyid = *col;
+      Database::ID       object_id        = *(++col);
+      Database::ID       state_id         = *(++col);
+      Database::DateTime valid_from       = *(++col);
       
       ObjectImpl *object_ptr = dynamic_cast<ObjectImpl *>(findIDSequence(object_id));
       if (object_ptr)
         object_ptr->insertStatus(state_id, valid_from, ptime());
     }
   }
-  catch (DBase::Exception& ex) {
+  catch (Database::Exception& ex) {
     LOGGER("db").error(boost::format("%1%") % ex.what());
   }
   catch (std::exception& ex) {

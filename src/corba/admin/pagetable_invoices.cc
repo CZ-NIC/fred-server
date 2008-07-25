@@ -11,7 +11,7 @@ ccReg_Invoices_i::~ccReg_Invoices_i() {
 ccReg::Filters::Compound_ptr ccReg_Invoices_i::add() {
   TRACE("[CALL] ccReg_Invoices_i::add()");
   it.clearF();
-  DBase::Filters::Invoice *filter = new DBase::Filters::InvoiceImpl();
+  Database::Filters::Invoice *filter = new Database::Filters::InvoiceImpl();
   uf.addFilter(filter);
   return it.addE(filter);
 }
@@ -44,14 +44,14 @@ ccReg::TableRow* ccReg_Invoices_i::getRow(CORBA::Short row)
   std::string credit = (invoice_type == Register::Invoicing::IT_DEPOSIT ? formatMoney(inv->getCredit()) : "");
   
   (*tr)[0] = DUPSTRDATE(inv->getCrTime);
-  (*tr)[1] = DUPSTRC(Util::stream_cast<std::string>(inv->getNumber()));
+  (*tr)[1] = DUPSTRC(Conversion<long long unsigned>::to_string(inv->getNumber()));
   (*tr)[2] = DUPSTRFUN(inv->getClient()->getHandle);
   (*tr)[3] = DUPSTRC(formatMoney(inv->getPrice()));
   (*tr)[4] = DUPSTRC(credit);
   (*tr)[5] = DUPSTR(invoice_type == Register::Invoicing::IT_DEPOSIT ? "DEPOSIT" : "ACCOUNT");
   (*tr)[6] = DUPSTRC(inv->getZoneName());
-  (*tr)[7] = DUPSTRC(Util::stream_cast<std::string>(inv->getFilePDF()));
-  (*tr)[8] = DUPSTRC(Util::stream_cast<std::string>(inv->getFileXML()));
+  (*tr)[7] = DUPSTRC(Conversion<long long unsigned>::to_string(inv->getFilePDF()));
+  (*tr)[8] = DUPSTRC(Conversion<long long unsigned>::to_string(inv->getFileXML()));
   return tr;
 }
 
@@ -125,9 +125,9 @@ void ccReg_Invoices_i::loadFilter(ccReg::TID _id) {
   TRACE(boost::format("[CALL] ccReg_Invoices_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
-  DBase::Filters::Union::iterator uit = uf.begin();
+  Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
-    DBase::Filters::Invoice *tmp = dynamic_cast<DBase::Filters::Invoice* >(*uit);
+    Database::Filters::Invoice *tmp = dynamic_cast<Database::Filters::Invoice* >(*uit);
     it.addE(tmp);
     TRACE(boost::format("[IN] ccReg_Invoices_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
   }

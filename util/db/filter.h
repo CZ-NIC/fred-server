@@ -9,13 +9,13 @@
 #include <boost/serialization/string.hpp>
 
 #include "query.h"
-#include "data_types.h"
+#include "types/data_types.h"
 #include "sql_helper_objects.h"
 #include "sql_operators.h"
 #include "log/logger.h"
 //#include "visitor.h"
 
-namespace DBase {
+namespace Database {
 
 class SelectQuery;
 
@@ -67,7 +67,7 @@ public:
   /**
    * Query data filling
    */
-  virtual void serialize(DBase::SelectQuery& _sq) = 0;
+  virtual void serialize(Database::SelectQuery& _sq) = 0;
   
   friend class boost::serialization::access;
   template<class Archive>

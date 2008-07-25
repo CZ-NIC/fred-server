@@ -5,7 +5,7 @@
 #include "epp_action_filter.h"
 #include "object_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 class PublicRequest : virtual public Compound {
@@ -14,7 +14,7 @@ public:
   }
   
   virtual Table& joinRequestTable() = 0;
-  virtual Value<DBase::ID>& addId() = 0;
+  virtual Value<Database::ID>& addId() = 0;
 //  virtual Value<Register::Request::Type>& addType() = 0;
 //  virtual Value<Register::Request::Status>& addStatus() = 0;
   virtual Value<int>& addType() = 0;
@@ -23,8 +23,8 @@ public:
   virtual Interval<DateTimeInterval>& addResolveTime() = 0;
   virtual Value<std::string>& addReason() = 0;
   virtual Value<std::string>& addEmailToAnswer() = 0;
-  virtual Value<DBase::ID>& addAnswerEmailId() = 0;
-  virtual Value<DBase::ID>& addEppActionId() = 0;
+  virtual Value<Database::ID>& addAnswerEmailId() = 0;
+  virtual Value<Database::ID>& addEppActionId() = 0;
   virtual Object& addObject() = 0;
   virtual EppAction& addEppAction() = 0;
   
@@ -43,15 +43,15 @@ public:
   virtual ~PublicRequestImpl();
   
   virtual Table& joinRequestTable();
-  virtual Value<DBase::ID>& addId();
+  virtual Value<Database::ID>& addId();
   virtual Value<int>& addType();
   virtual Value<int>& addStatus();
   virtual Interval<DateTimeInterval>& addCreateTime();
   virtual Interval<DateTimeInterval>& addResolveTime();
   virtual Value<std::string>& addReason();
   virtual Value<std::string>& addEmailToAnswer();
-  virtual Value<DBase::ID>& addAnswerEmailId();
-  virtual Value<DBase::ID>& addEppActionId();
+  virtual Value<Database::ID>& addAnswerEmailId();
+  virtual Value<Database::ID>& addEppActionId();
   virtual Object& addObject();
   virtual EppAction& addEppAction();
   

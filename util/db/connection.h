@@ -1,72 +1,199 @@
-#ifndef DB_CONNECTION_H_
-#define DB_CONNECTION_H_
-
-#include <string>
-#include "dbexceptions.h"
-#include "query.h"
-
-namespace DBase {
-
-class Result;
-class Result__;
-class Transaction;
+/*  
+ * Copyright (C) 2007  CZ.NIC, z.s.p.o.
+ * 
+ * This file is part of FRED.
+ * 
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ * 
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 /**
- * Abstract interface for connection class
+ *  @file connection.h
+ *  Interface definition of connection object.
  */
-class Connection {
+
+
+#ifndef CONNECTION_HPP_
+#define CONNECTION_HPP_
+
+#include <boost/noncopyable.hpp>
+#include <string>
+#include "db_exceptions.h"
+#include "result.h"
+#include "query.h"
+
+#include "config.h"
+
+#ifdef HAVE_LOGGER
+#include "log/logger.h"
+#endif
+
+namespace Database {
+
+template<class _Type>
+class Transaction_;
+/**
+ * \class Connection_
+ * \brief Base template class for represent database connection
+ *
+ * template for connection object which uses _ConnType class 
+ * as a concrete driver.
+ *
+ * Connection object (which should be used) is defined in \file database.h
+ * file.
+ */
+template<class _ConnType>
+class Connection_ : private boost::noncopyable {
 public:
-	/**
-	 * C-tor, D-tor
-	 */
-	Connection(std::string _conn_info) throw (ConnectionFailed) :
-		conn_info(_conn_info), transaction_active(false) {
-	}
-	virtual ~Connection();
-	/**
-	 * Execute query given as parameter
-	 */
-	virtual Result* exec(Query& _query) = 0;
-	virtual void exec(InsertQuery& _query) = 0;
-	virtual Result__* exec__(Query& _query) = 0;
-	/**
-	 * Local transaction support
-	 */
-	virtual Transaction getTransaction() = 0;
-	friend class Transaction;
-	/**
-	 * Info about database backend
-	 * (not so important if it isnt't available in library can have
-	 * some dummy implementation)
-	 */
-	virtual int serverVersion() const = 0;
-	virtual int protocolVersion() const = 0;
+  typedef _ConnType                                  connection_type;
+  typedef typename connection_type::transaction_type transaction_type;
+  typedef typename connection_type::result_type      result_type;
 
-protected:
-	/**
-	 * Interface for internal transaction implementation
-	 * called by Transaction object 
-	 */
-	virtual void beginTransaction() = 0;
-	virtual void endTransaction() = 0;
-	virtual void rollbackTransaction() = 0;
-	virtual void commitTransaction() = 0;
+  friend class Transaction_<transaction_type>;
 
-	/**
-	 * Escaping string support (not in use now)
-	 */
-	virtual std::string escapeString(const std::string& _str) const = 0;
+  class ResultFailed : public Exception {
+  public:
+    ResultFailed(const std::string& _query) : Exception("Result failed: " + _query) { }
+  };
 
-	/**
-	 * Stored connection string
-	 */
-	std::string conn_info;
-	/**
-	 * Transaction status (active or not)
-	 */
-	bool transaction_active;
+  /**
+   * Constructors and destructor
+   */
+  Connection_() {
+  }
+
+  /**
+   * @param _conn_info is connection string used to open database 
+   */
+  Connection_(const std::string& _conn_info) throw (ConnectionFailed) : conn_info_(_conn_info)  {
+    conn_.open(conn_info_);
+  }
+
+
+  virtual ~Connection_() {
+#ifdef HAVE_LOGGER
+    TRACE("<CALL> Database::~Connection_()");
+#endif
+  }
+
+  /**
+   * @param _conn_info is connetion string used to open database
+   */
+  virtual void open(const std::string& _conn_info) throw (ConnectionFailed) {
+    conn_info_ = _conn_info;
+    conn_.close();
+    conn_.open(conn_info_);
+#ifdef HAVE_LOGGER
+    LOGGER("db").info(boost::format("connection established; (%1%)") % conn_info_);
+#endif
+  }
+
+
+  virtual void close() {
+    conn_.close();
+  }
+
+  /**
+   * Query executors
+   */
+
+  /**
+   * @param _query object representing query
+   * @return       result
+   */
+  virtual Result_<result_type> exec(Query& _query) throw (ResultFailed) {
+    try {
+      /* check if query is fully constructed */
+      if (!_query.initialized()) {
+        _query.make();
+      }
+      return exec(_query.str());
+    }
+    catch (...) {
+      throw ResultFailed(_query.str());
+    }
+  }
+
+
+  /**
+   * @param _query string representation of query
+   * @return       result
+   */
+  virtual Result_<result_type> exec(const std::string& _query) throw (ResultFailed) {
+    try {
+#ifdef HAVE_LOGGER
+      LOGGER("db").debug(boost::format("exec query [%1%]") % _query);
+#endif
+      return Result_<result_type>(conn_.exec(_query));
+    }
+    catch (...) {
+      throw ResultFailed(_query);
+    }
+  }
+
+
+private:
+  connection_type conn_;      /**< connection driver */
+  std::string     conn_info_; /**< connection string used to open connection */
 };
+
+
+
+/**
+ * \class Transaction_ 
+ * \brief Base template class representing local transaction
+ */
+template<class _Type>
+class Transaction_ {
+public:
+  typedef _Type                                       transaction_type;
+  typedef typename transaction_type::connection_type  connection_type;
+  typedef typename connection_type::result_type       result_type;
+	
+  Transaction_(Connection_<connection_type> &_conn) : conn_(_conn),
+                                                      success_(false) {
+    Query _q(transaction_.start());
+    exec(_q);
+  }
+
+
+	virtual ~Transaction_() {
+    if (!success_) {
+      Query _q = transaction_.rollback();
+      exec(_q);
+    }
+  }
+
+
+	void commit() {
+    Query _q = transaction_.commit();
+    exec(_q);
+    success_ = true;
+  }
+
+  
+  Result_<result_type> exec(Query &_query) {
+    return conn_.exec(_query);
+  }
+
+
+private:
+  Connection_<connection_type> &conn_;
+  transaction_type             transaction_;
+  bool                         success_;
+};
+
 
 }
 
-#endif /*DB_CONNECTION_H_*/
+#endif /*CONNECTION_HPP_*/
+

@@ -11,7 +11,7 @@ ccReg_Files_i::~ccReg_Files_i() {
 ccReg::Filters::Compound_ptr ccReg_Files_i::add() {
   TRACE("[CALL] ccReg_Files_i::add()");
   it.clearF();
-  DBase::Filters::File *f = new DBase::Filters::FileImpl(true);
+  Database::Filters::File *f = new Database::Filters::FileImpl(true);
   uf.addFilter(f);
   return it.addE(f);
 }
@@ -37,7 +37,7 @@ ccReg::TableRow* ccReg_Files_i::getRow(CORBA::Short _row)
   (*tr)[0] = DUPSTRC(file->getName());
   (*tr)[1] = DUPSTRDATE(file->getCreateTime);
   (*tr)[2] = DUPSTRC(file->getTypeDesc());
-  (*tr)[3] = DUPSTRC(Util::stream_cast<std::string>(file->getSize()));
+  (*tr)[3] = DUPSTRC(Conversion<long unsigned>::to_string(file->getSize()));
   return tr;
 }
 
@@ -102,9 +102,9 @@ void ccReg_Files_i::loadFilter(ccReg::TID _id) {
   TRACE(boost::format("[CALL] ccReg_Files_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
-  DBase::Filters::Union::iterator uit = uf.begin();
+  Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
-    DBase::Filters::File *tmp = dynamic_cast<DBase::Filters::File* >(*uit);
+    Database::Filters::File *tmp = dynamic_cast<Database::Filters::File* >(*uit);
     it.addE(tmp);
     TRACE(boost::format("[IN] ccReg_Files_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
   }

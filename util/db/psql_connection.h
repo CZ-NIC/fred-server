@@ -1,62 +1,150 @@
+/*  
+ * Copyright (C) 2007  CZ.NIC, z.s.p.o.
+ * 
+ * This file is part of FRED.
+ * 
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ * 
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ *  @file psql_connection.h
+ *  Implementation of connection object for PSQL database.
+ */
+
+
 #ifndef PSQL_CONNECTION_H_
 #define PSQL_CONNECTION_H_
 
 #include <libpq-fe.h>
-#include "dbexceptions.h"
-#include "connection.h"
 #include "psql_result.h"
-#include "transaction.h"
+#include "query.h"
+#include "db_exceptions.h"
 
-namespace DBase {
+namespace Database {
+
+
+class PSQLTransaction;
 
 /**
- * Connection implementation for PSQL database - OO-wrapper for libpq
- * library.
+ * \class PSQLConnection
+ * \brief PSQL connection driver for Connection_ template
  */
-class PSQLConnection : public Connection {
-public:
-	/**
-	 * Implementing Connection class interface see connection.h
-	 */
-	PSQLConnection(std::string _conn_info) throw (ConnectionFailed);
-	PSQLConnection(const PSQLConnection& _conn);
-	~PSQLConnection();
-	Result* exec(Query& _query) throw (FatalError, ResultQueryFailed);
-	void exec(InsertQuery& _query) throw (FatalError, ResultQueryFailed);
-	Result__* exec__(Query& _query) throw (FatalError, ResultQueryFailed);
-	Transaction getTransaction();
-	
-	int serverVersion() const;
-	int protocolVersion() const;
-
-protected:
-	/**
-	 * Implementing Connection class interface see connection.h
-	 */
-	void beginTransaction();
-	void endTransaction();
-	void rollbackTransaction();
-	void commitTransaction();
-	/**
-	 * String escaping using libpq function
-	 */
-	std::string escapeString(const std::string& _str) const;
-
+class PSQLConnection {
 private:
-	/**
-	 * Object initialization
-	 */
-	void _init(const std::string& _conn_info) throw (ConnectionFailed);
-	/**
-	 * Execution method
-	 */
-	PGresult* _exec(Query& _query) throw (FatalError, ResultQueryFailed);
+  PGconn *psql_conn_; /**< wrapped connection structure from libpq library */
 
-	/**
-	 * libpq PGconn object pointer representing connection
-	 */
-	PGconn *psql_conn;
+public:
+  typedef PSQLResult       result_type;
+  typedef PSQLTransaction  transaction_type;
+
+  /**
+   * Constructors and destructor
+   */
+  PSQLConnection() : psql_conn_(0) {
+  }
+
+
+  PSQLConnection(const std::string& _conn_info) throw (ConnectionFailed) : psql_conn_(0) {
+    open(_conn_info);
+  }
+
+
+  virtual ~PSQLConnection() {
+    close();
+    // std::cout << "(CALL) PSQLConnection destructor" << std::endl;
+  }
+
+
+  /**
+   * Implementation of coresponding methods called by Connection_ template
+   */
+
+  virtual void open(const std::string& _conn_info) throw (ConnectionFailed) {
+    psql_conn_ = PQconnectdb(_conn_info.c_str());
+    if (PQstatus(psql_conn_) != CONNECTION_OK) {
+      throw ConnectionFailed(_conn_info);
+    }
+  }
+
+
+  virtual void close() {
+    if (psql_conn_) {
+      PQfinish(psql_conn_);
+      psql_conn_ = 0;
+    }
+  }
+
+
+  virtual result_type exec(Query& _query) throw (ResultFailed) {
+    /* check if query is fully constructed */
+    if (!_query.initialized()) {
+      _query.make();
+    }
+    return exec(_query.str());
+  }
+  
+
+  virtual result_type exec(const std::string& _query) throw (ResultFailed) {
+    PGresult *tmp = PQexec(psql_conn_, _query.c_str());
+
+    ExecStatusType status = PQresultStatus(tmp);
+    if (status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK) {
+      return PSQLResult(tmp);
+    }
+    else {
+      PQclear(tmp);
+      throw ResultFailed(_query);
+    }
+  }
 };
 
+
+
+/**
+ * \class PSQLTransaction
+ * \brief Implementation of local transaction for PSQL driver
+ */
+class PSQLTransaction {
+public:
+  typedef PSQLConnection connection_type;
+
+
+	PSQLTransaction() {
+  }
+
+
+	~PSQLTransaction() {
+  }
+
+
+  std::string start() {
+    return "START TRANSACTION  ISOLATION LEVEL READ COMMITTED";
+  }
+
+
+  Query rollback() {
+    return Query("ROLLBACK TRANSACTION");
+  }
+  
+
+	Query commit() {
+    return Query("COMMIT TRANSACTION");
+  }
+};
+
+
+
 }
-#endif /*PSQL_CONNECTION_H_*/
+
+#endif /*PSQL_CONNECTION_H*/
+

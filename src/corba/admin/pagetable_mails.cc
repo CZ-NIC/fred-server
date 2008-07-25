@@ -11,7 +11,7 @@ ccReg_Mails_i::~ccReg_Mails_i() {
 ccReg::Filters::Compound_ptr ccReg_Mails_i::add() {
   TRACE("[CALL] ccReg_Mails_i::add()");
   it.clearF();
-  DBase::Filters::Mail *f = new DBase::Filters::MailImpl();
+  Database::Filters::Mail *f = new Database::Filters::MailImpl();
   uf.addFilter(f);
   return it.addE(f);
 }
@@ -35,7 +35,7 @@ ccReg::TableRow* ccReg_Mails_i::getRow(CORBA::Short _row)
   tr->length(3);
   (*tr)[0] = DUPSTRDATE(mail->getCreateTime);
   (*tr)[1] = DUPSTRC(mail->getTypeDesc());
-  (*tr)[2] = DUPSTRC(Util::stream_cast<std::string>(mail->getStatus()));
+  (*tr)[2] = DUPSTRC(Conversion<long int>::to_string(mail->getStatus()));
   return tr;
 }
 
@@ -97,9 +97,9 @@ void ccReg_Mails_i::loadFilter(ccReg::TID _id) {
   TRACE(boost::format("[CALL] ccReg_Mails_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
-  DBase::Filters::Union::iterator uit = uf.begin();
+  Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
-    DBase::Filters::Mail *tmp = dynamic_cast<DBase::Filters::Mail* >(*uit);
+    Database::Filters::Mail *tmp = dynamic_cast<Database::Filters::Mail* >(*uit);
     it.addE(tmp);
     TRACE(boost::format("[IN] ccReg_Mails_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
   }

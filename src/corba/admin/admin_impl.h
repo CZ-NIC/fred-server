@@ -16,7 +16,7 @@
 #include "register/invoice.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/conf.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "model/model_filters.h"
 
 class NameService;
@@ -29,7 +29,7 @@ private:
   Conf& cfg;
   DB db;
   std::auto_ptr<Register::Manager> register_manager_;
-  std::auto_ptr<DBase::Manager> m_db_manager;
+  Database::Manager m_db_manager;
 
   typedef std::map<std::string, ccReg_Session_i*> SessionListType;
   SessionListType m_session_list;

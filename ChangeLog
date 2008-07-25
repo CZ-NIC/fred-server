@@ -1,3 +1,9 @@
+2008-07-25 Jiri Sadek
+
+   * Database library (util/db) slightly rewitten
+	   - required appropriate changes in other modules
+    	 (need testing if something is not broken!)
+
 2008-07-15 Jaromir Talir
 
    * Bugfix - Missing ORDER BY in notification component

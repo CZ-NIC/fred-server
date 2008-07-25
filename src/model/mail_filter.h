@@ -4,7 +4,7 @@
 #include "db/base_filters.h"
 #include "file_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 class Mail : virtual public Compound {
@@ -13,11 +13,11 @@ public:
   }
 
   virtual Table& joinMailTable() = 0;
-  virtual Value<DBase::ID>& addId() = 0;
+  virtual Value<Database::ID>& addId() = 0;
   virtual Value<int>& addType() = 0;
   virtual Value<std::string>& addHandle() = 0;
-  virtual Interval<DBase::DateTimeInterval>& addCreateTime() = 0;
-  virtual Interval<DBase::DateTimeInterval>& addModifyTime() = 0;
+  virtual Interval<Database::DateTimeInterval>& addCreateTime() = 0;
+  virtual Interval<Database::DateTimeInterval>& addModifyTime() = 0;
   virtual Value<int>& addStatus() = 0;
   virtual Value<int>& addAttempt() = 0;
   virtual Value<std::string>& addMessage() = 0;
@@ -37,11 +37,11 @@ public:
   virtual ~MailImpl();
 
   virtual Table& joinMailTable();
-  virtual Value<DBase::ID>& addId();
+  virtual Value<Database::ID>& addId();
   virtual Value<int>& addType();
   virtual Value<std::string>& addHandle();
-  virtual Interval<DBase::DateTimeInterval>& addCreateTime();
-  virtual Interval<DBase::DateTimeInterval>& addModifyTime();
+  virtual Interval<Database::DateTimeInterval>& addCreateTime();
+  virtual Interval<Database::DateTimeInterval>& addModifyTime();
   virtual Value<int>& addStatus();
   virtual Value<int>& addAttempt();
   virtual Value<std::string>& addMessage();

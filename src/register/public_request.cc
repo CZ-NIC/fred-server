@@ -5,6 +5,7 @@
 #include "public_request.h"
 #include "log/logger.h"
 #include "util.h"
+#include "db/manager.h"
 
 namespace Register {
 namespace PublicRequest {
@@ -38,50 +39,48 @@ std::string Status2Str(Status _status) {
 }
 
 
-static bool checkState(
-  DBase::ID objectId, unsigned state, DBase::Connection *c
-) {
-  DBase::Query sql;
+static bool checkState(Database::ID objectId, 
+                       unsigned state, 
+                       Database::Connection *c) {
+  Database::Query sql;
   sql.buffer() << "SELECT COUNT(*) FROM object_state WHERE state_id=" 
-             << state << " AND object_id=" << objectId 
-             << " AND valid_to ISNULL";
-  std::auto_ptr<DBase::Result> r_objects(c->exec(sql));
-  std::auto_ptr<DBase::ResultIterator> oit(r_objects->getIterator());
-  int res = oit->isDone() ? 0 : (int)oit->getNextValue();
+               << state << " AND object_id=" << objectId 
+               << " AND valid_to ISNULL";
+  Database::Result r_objects = c->exec(sql);
+  int res = (r_objects.size() == 0 ? 0 : (int)r_objects[0][0]);
   return res > 0;
 }
 
-// static DBase::ID insertNewStateRequest(
-static void insertNewStateRequest(
-  DBase::ID blockRequestID, DBase::ID objectId, 
-  unsigned state, DBase::Connection *c
-) {
-  DBase::InsertQuery osr("object_state_request");
-  osr.add("object_id",objectId);
-  osr.add("state_id",state);  
+// static Database::ID insertNewStateRequest(
+static void insertNewStateRequest(Database::ID blockRequestID, 
+                                  Database::ID objectId,
+                                  unsigned state, Database::Connection *c) {
+  Database::InsertQuery osr("object_state_request");
+  osr.add("object_id", objectId);
+  osr.add("state_id", state);  
   c->exec(osr);
-  DBase::Query prsrm;
+  Database::Query prsrm;
   prsrm.buffer() << "INSERT INTO public_request_state_request_map ("
                  << " state_request_id, block_request_id "
                  << ") VALUES ( " 
                  << "CURRVAL('object_state_request_id_seq')," 
                  << blockRequestID << ")";
-  std::auto_ptr<DBase::Result> prsrmResult(c->exec(prsrm));               
+  c->exec(prsrm);               
 }
 
 /** check if already blocked request interfere with requested states
  this is true in every situation other then when actual states are
  smaller subset of requested states. if requested by setting parameter 
  blockRequestID, all states in subset are closed */
-static bool queryBlockRequest(
-  DBase::ID objectId, DBase::ID blockRequestID, 
-  const std::string& states, bool unblock,
-  DBase::Connection *c
-) {
+static bool queryBlockRequest(Database::ID objectId, 
+                              Database::ID blockRequestID, 
+                              const std::string& states, 
+                              bool unblock, 
+                              Database::Connection *c) {
   // number of states in csv list of states
   unsigned numStates = count(states.begin(),states.end(),',') + 1; 
   
-  DBase::Query sql;
+  Database::Query sql;
   sql.buffer() << "SELECT " // ?? FOR UPDATE ??
                << "  osr.state_id IN (" << states << ") AS st, "
                << "  state_request_id "
@@ -91,45 +90,55 @@ static bool queryBlockRequest(
                << "  ON (osr.id=ps.state_request_id AND osr.canceled ISNULL) " 
                << "WHERE osr.object_id=" << objectId << " "                 
                << "ORDER BY st ASC ";
-  std::auto_ptr<DBase::Result> result(c->exec(sql));
-  std::auto_ptr<DBase::ResultIterator> it(result->getIterator());
+
+  Database::Result result = c->exec(sql);
   // in case of unblocking, it's error when no block request states are found
-  if (!result->getNumRows() && unblock) return false;
-  for (it->first(); !it->isDone(); it->next()) {
-    if (!(bool)it->getNextValue()) return false;
-    if ((result->getNumRows() == numStates && !unblock) ||
-    	(result->getNumRows() != numStates && unblock)) return false;
-    if (!blockRequestID) return true;
-    DBase::ID stateRequestID = it->getNextValue();
+  if (!result.size() && unblock) 
+    return false;
+
+  for (Database::Result::Iterator it = result.begin(); it != result.end(); ++it) {
+    Database::Row::Iterator col = (*it).begin();
+
+    if (!(bool)*col) 
+      return false;
+
+    if ((result.size() == numStates && !unblock) || (result.size() != numStates && unblock)) 
+      return false;
+
+    if (!blockRequestID) 
+      return true;
+
+    Database::ID stateRequestID = *(++col);
     // close
-    DBase::Query sql1;
+    Database::Query sql1;
     sql1.buffer() << "UPDATE public_request_state_request_map "
                   << "SET block_request_id=" << blockRequestID << " "  
-                  << "WHERE state_request_id=" << stateRequestID; 
-    std::auto_ptr<DBase::Result> result1(c->exec(sql1));
-    DBase::Query sql2;
+                  << "WHERE state_request_id=" << stateRequestID;
+    c->exec(sql1);
+
+    Database::Query sql2;
     sql2.buffer() << "UPDATE object_state_request "
                   << "SET canceled=CURRENT_TIMESTAMP "
                   << "WHERE id= " << stateRequestID;
-    std::auto_ptr<DBase::Result> result2(c->exec(sql2));  
+    c->exec(sql2);  
   }
   return true;
 }
  
 class PublicRequestImpl : public Register::CommonObjectImpl,
-                    virtual public PublicRequest {
+                          virtual public PublicRequest {
 private:
   Register::PublicRequest::Type type_;
-  DBase::ID epp_action_id_;
-  DBase::DateTime create_time_;
+  Database::ID epp_action_id_;
+  Database::DateTime create_time_;
   Register::PublicRequest::Status status_;
-  DBase::DateTime resolve_time_;
+  Database::DateTime resolve_time_;
   std::string reason_;
   std::string email_to_answer_;
-  DBase::ID answer_email_id_;
+  Database::ID answer_email_id_;
   
   std::string svtrid_;
-  DBase::ID registrar_id_;
+  Database::ID registrar_id_;
   std::string registrar_handle_;
   std::string registrar_name_;
   std::string registrar_url_;
@@ -138,23 +147,23 @@ private:
   
 protected:
   Manager* man_;
-  DBase::Connection* conn_;
+  Database::Connection* conn_;
   
 public:
   PublicRequestImpl() : CommonObjectImpl(0), status_(PRS_NEW) {
   }
   
-  PublicRequestImpl(DBase::ID _id,
+  PublicRequestImpl(Database::ID _id,
               Register::PublicRequest::Type _type,
-              DBase::ID _epp_action_id,
-              DBase::DateTime _create_time,
+              Database::ID _epp_action_id,
+              Database::DateTime _create_time,
               Register::PublicRequest::Status _status,
-              DBase::DateTime _resolve_time,
+              Database::DateTime _resolve_time,
               std::string _reason,
               std::string _email_to_answer,
-              DBase::ID _answer_email_id,
+              Database::ID _answer_email_id,
               std::string _svtrid,
-              DBase::ID _registrar_id,
+              Database::ID _registrar_id,
               std::string _registrar_handle,
               std::string _registrar_name,
               std::string _registrar_url
@@ -168,28 +177,28 @@ public:
               registrar_name_(_registrar_name), registrar_url_(_registrar_url) {
   }
   
-  void setManager(Manager* _man, DBase::Connection* _conn) {
+  void setManager(Manager* _man, Database::Connection* _conn) {
     man_ = _man;
     conn_ = _conn;
   }
   
-  void init(DBase::ResultIterator *_it) {
-    id_ = (unsigned long long)_it->getNextValue();
-    epp_action_id_ = _it->getNextValue();
-    create_time_ = _it->getNextValue();
-    status_ = (Register::PublicRequest::Status)(int)_it->getNextValue();
-    resolve_time_ = _it->getNextValue();
-    reason_ = (std::string)_it->getNextValue();
-    email_to_answer_ = (std::string)_it->getNextValue();
-    answer_email_id_ = _it->getNextValue();
-    svtrid_ = (std::string)_it->getNextValue();
-    registrar_id_ = _it->getNextValue();
-    registrar_handle_ = (std::string)_it->getNextValue();
-    registrar_name_ = (std::string)_it->getNextValue();
-    registrar_url_ = (std::string)_it->getNextValue();
+  void init(Database::Row::Iterator& _it) {
+    id_               = (unsigned long long)*_it;
+    epp_action_id_    = *(++_it);
+    create_time_      = *(++_it);
+    status_           = (Register::PublicRequest::Status)(int)*(++_it);
+    resolve_time_     = *(++_it);
+    reason_           = (std::string)*(++_it);
+    email_to_answer_  = (std::string)*(++_it);
+    answer_email_id_  = *(++_it);
+    svtrid_           = (std::string)*(++_it);
+    registrar_id_     = *(++_it);
+    registrar_handle_ = (std::string)*(++_it);
+    registrar_name_   = (std::string)*(++_it);
+    registrar_url_    = (std::string)*(++_it);
   }
   
-  virtual void save(DBase::Connection *_conn) {
+  virtual void save(Database::Connection *_conn) {
     TRACE("[CALL] Register::Request::RequestImpl::save()");
     if (objects_.empty()) {
       LOGGER("register").error("can't create or update request with no object specified!");
@@ -197,19 +206,19 @@ public:
     }
 
     if (id_) {
-      DBase::Query update_request;
+      Database::Query update_request;
       update_request.buffer() << "UPDATE public_request SET "
                               << "status = " << status_ << ", "
                               << "resolve_time = now(), "
-                              << "answer_email_id = " << DBase::Value(answer_email_id_) << " "
+                              << "answer_email_id = " << Database::Value(answer_email_id_) << " "
                               << "WHERE id = " << id_;
       try {
-        std::auto_ptr<DBase::Result> result(_conn->exec(update_request));
+        _conn->exec(update_request);
   
         LOGGER("db").info(boost::format("request id='%1%' updated successfully -- %2%") % 
                           id_ % (status_ == PRS_INVALID ? "invalidated" : "answered"));
       }
-      catch (DBase::Exception& ex) {
+      catch (Database::Exception& ex) {
         LOGGER("db").error(boost::format("%1%") % ex.what());
         throw;
       }
@@ -221,7 +230,7 @@ public:
     }
     else {    
       
-      DBase::InsertQuery insert_request("public_request");
+      Database::InsertQuery insert_request("public_request");
       
       insert_request.add("request_type", type_);
       insert_request.add("epp_action_id", epp_action_id_);
@@ -230,32 +239,31 @@ public:
       insert_request.add("email_to_answer", email_to_answer_);
         
       try {
-        DBase::Transaction new_request_transaction = _conn->getTransaction();
-        
-        _conn->exec(insert_request);
-        std::string objects_str = "{";
+        Database::Transaction transaction(*_conn);
+        transaction.exec(insert_request);
+
+        std::string objects_str = "";
         std::vector<OID>::iterator it = objects_.begin();
         for (; it != objects_.end(); ++it) {
-          DBase::Query insert_object;
+          Database::Query insert_object;
           insert_object.buffer() << "INSERT INTO public_request_objects_map "
                                  << "(request_id, object_id) VALUES ("
                                  << "currval('public_request_id_seq')" << ", "
                                  << it->id << ")";
-          std::auto_ptr<DBase::Result> r_object(_conn->exec(insert_object));
-          objects_str += " " + Util::stream_cast<std::string>(it->id);
+          transaction.exec(insert_object);
+          objects_str += it->id.to_string() + (it == objects_.end() - 1 ? "" : " ");
         }
-        objects_str += " }";
         
-        DBase::Sequence pp_seq(_conn, "public_request_id_seq");
+        Database::Sequence pp_seq(*_conn, "public_request_id_seq");
         id_ = pp_seq.getCurrent();
         
-        new_request_transaction.commit();
-        LOGGER("db").info(boost::format("request id='%1%' for objects=%2% created successfully")
+        transaction.commit();
+        LOGGER("db").info(boost::format("request id='%1%' for objects={%2%} created successfully")
                   % id_ % objects_str);
         // handle special behavior (i.e. processing request after creation)
         postCreate(); 
       }
-      catch (DBase::Exception& ex) {
+      catch (Database::Exception& ex) {
         LOGGER("db").error(boost::format("%1%") % ex.what());
         throw;
       }
@@ -310,15 +318,15 @@ public:
     modified_ = true;
   }
   
-  virtual const DBase::ID getAnswerEmailId() const {
+  virtual const Database::ID getAnswerEmailId() const {
     return answer_email_id_;
   }
   
-  virtual const DBase::ID getEppActionId() const {
+  virtual const Database::ID getEppActionId() const {
     return epp_action_id_;
   }
 
-  virtual void setEppActionId(const DBase::ID& _epp_action_id) {
+  virtual void setEppActionId(const Database::ID& _epp_action_id) {
     epp_action_id_ = _epp_action_id;
     modified_ = true;
   }
@@ -355,9 +363,10 @@ public:
 
   /// default destination emails for answer are from objects 
   virtual std::string getEmails() const {    
-    DBase::Filters::Union uf;
-    std::stringstream emails;
-    DBase::SelectQuery sql;
+    Database::Filters::Union uf;
+    Database::SelectQuery sql;
+    std::string emails;
+
     for (unsigned i=0; i<getObjectSize(); i++) {
       switch (getObject(i).type) {
         case OT_DOMAIN:
@@ -381,16 +390,18 @@ public:
             << "FROM nsset_contact_map ncm, contact c "
             << "WHERE ncm.contactid=c.id AND ncm.nssetid=" << getObject(i).id;
           break;
-	case OT_UNKNOWN:
-	  break;
-      };
-      std::auto_ptr<DBase::Result> r_emails(conn_->exec(sql));
-      std::auto_ptr<DBase::ResultIterator> it(r_emails->getIterator());
-      for (it->first(); !it->isDone(); it->next()) {
-        emails << it->getNextValue() << " ";
+	      case OT_UNKNOWN:
+	        break;
+      }
+
+      Database::Result r_emails = conn_->exec(sql);
+      for (Database::Result::Iterator it = r_emails.begin(); it != r_emails.end(); ++it) {
+        emails += (std::string)(*it)[0] + (it == r_emails.end() - 1 ? "" : " ");
       }
     }
-    return emails.str();
+    LOGGER("register").debug(boost::format("for request id=%1% -- found notification recipients '%2%'")
+                             % id_ % emails);
+    return emails;
   }
 
   /// send email with answer and return its id
@@ -411,14 +422,19 @@ public:
       getTemplateName(),params,handles,attach
     ); // can throw Mailer::NOT_SEND exception
   }
+
   /// concrete resolution action
-  virtual void processAction(bool check) throw (REQUEST_BLOCKED, DBase::Exception) {
+  virtual void processAction(bool check) throw (REQUEST_BLOCKED, Database::Exception) {
     // default is to do nothing special
   }
+
   /// process request (or just close in case of invalid flag)
-  virtual void process(bool invalid, bool check) throw (REQUEST_BLOCKED, Mailer::NOT_SEND, DBase::Exception) {
-    DBase::Transaction process_request_transaction = conn_->getTransaction(); 
-    if (invalid) status_ = PRS_INVALID;
+  virtual void process(bool invalid, bool check) throw (REQUEST_BLOCKED, Mailer::NOT_SEND, Database::Exception) {
+    Database::Transaction transaction(*conn_); 
+
+    if (invalid) {
+      status_ = PRS_INVALID;
+    }
     else {
     	processAction(check);
       status_ = PRS_ANSWERED;
@@ -426,7 +442,7 @@ public:
     }
     resolve_time_ = ptime(boost::posix_time::second_clock::local_time());
     save(conn_);
-    process_request_transaction.commit();
+    transaction.commit();
   }
 
   /// type for PDF letter template in case there is no template
@@ -456,20 +472,21 @@ public:
      res = !checkState(getObject(i).id,SERVER_TRANSFER_PROHIBITED,conn_);
     return res;
   }
-  virtual void processAction(bool _check) throw (REQUEST_BLOCKED, DBase::Exception) {
+  virtual void processAction(bool _check) throw (REQUEST_BLOCKED, Database::Exception) {
     if (_check && !check()) throw REQUEST_BLOCKED();
   }
-  std::string getAuthInfo() const throw (DBase::Exception) {
+  std::string getAuthInfo() const throw (Database::Exception) {
     // just one object is supported
     if (!getObjectSize() || getObjectSize() > 1) return "";
-    DBase::SelectQuery sql;
+    Database::SelectQuery sql;
     sql.buffer() << "SELECT o.AuthInfoPw "
                  << "FROM object o "
                  << "WHERE o.id=" << getObject(0).id;
-    std::auto_ptr<DBase::Result> res(conn_->exec(sql));
-    std::auto_ptr<DBase::ResultIterator> it(res->getIterator());
-    if (it->isDone()) return "";
-    return it->getNextValue();
+    Database::Result res = conn_->exec(sql);
+    if (!res.size()) {
+      return "";
+    }
+    return (*res.begin())[0];
   }
   /// fill mail template with common param for authinfo requeste templates
   virtual void fillTemplateParams(Mailer::Parameters& params) const {    
@@ -588,15 +605,16 @@ public:
   virtual short blockAction() const {
   	return 2;
   }
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED, DBase::Exception){
-    for (unsigned i=0; i<getObjectSize(); i++) {
-    	if (!checkState(getObject(i).id,SERVER_UPDATE_PROHIBITED,conn_) &&
-    	      queryBlockRequest(getObject(i).id,getId(),"3",false,conn_)) {
-    		insertNewStateRequest(getId(),getObject(i).id,3,conn_);
+	virtual void processAction(bool check) throw (REQUEST_BLOCKED, Database::Exception){
+    for (unsigned i = 0; i < getObjectSize(); i++) {
+    	if (!checkState(getObject(i).id, SERVER_UPDATE_PROHIBITED, conn_) &&
+    	      queryBlockRequest(getObject(i).id, getId(), "3", false, conn_)) {
+    		insertNewStateRequest(getId(),getObject(i).id, 3, conn_);
     	} else throw REQUEST_BLOCKED();
-      DBase::Query q;
+
+      Database::Query q;
       q.buffer() << "SELECT update_object_states(" << getObject(i).id << ")";      
-      std::auto_ptr<DBase::Result> res(conn_->exec(q));
+      conn_->exec(q);
     }
 	}
 };
@@ -605,9 +623,9 @@ class BlockUpdateRequestPIFImpl : public BlockUnblockRequestPIFImpl {
 public:
   virtual bool check() const {
     bool res = true;
-    for (unsigned i=0; res && i<getObjectSize(); i++)
-     res = !checkState(getObject(i).id,SERVER_UPDATE_PROHIBITED,conn_) &&
-      queryBlockRequest(getObject(i).id,0,"3,4",false,conn_);
+    for (unsigned i = 0; res && i < getObjectSize(); i++)
+     res = !checkState(getObject(i).id, SERVER_UPDATE_PROHIBITED, conn_) &&
+      queryBlockRequest(getObject(i).id, 0, "3,4", false, conn_);
     return res;    
   }
   virtual short blockType() const {
@@ -616,16 +634,16 @@ public:
   virtual short blockAction() const {
   	return 1;
   }
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED, DBase::Exception){
-    for (unsigned i=0; i<getObjectSize(); i++) {
-    	if (!checkState(getObject(i).id,SERVER_UPDATE_PROHIBITED,conn_) &&
-    	      queryBlockRequest(getObject(i).id,getId(),"3,4",false,conn_)) {
-    		insertNewStateRequest(getId(),getObject(i).id,SERVER_TRANSFER_PROHIBITED,conn_);
-    		insertNewStateRequest(getId(),getObject(i).id,SERVER_UPDATE_PROHIBITED,conn_);
+	virtual void processAction(bool check) throw (REQUEST_BLOCKED, Database::Exception){
+    for (unsigned i = 0; i < getObjectSize(); i++) {
+    	if (!checkState(getObject(i).id, SERVER_UPDATE_PROHIBITED, conn_) &&
+    	      queryBlockRequest(getObject(i).id, getId(), "3,4", false, conn_)) {
+    		insertNewStateRequest(getId(),getObject(i).id, SERVER_TRANSFER_PROHIBITED, conn_);
+    		insertNewStateRequest(getId(),getObject(i).id, SERVER_UPDATE_PROHIBITED, conn_);
     	} else throw REQUEST_BLOCKED();
-      DBase::Query q;
+      Database::Query q;
       q.buffer() << "SELECT update_object_states(" << getObject(i).id << ")";      
-      std::auto_ptr<DBase::Result> res(conn_->exec(q));
+      conn_->exec(q);
     }
 	}
 };
@@ -644,13 +662,13 @@ public:
   virtual short blockAction() const {
   	return 2;
   }
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED, DBase::Exception){
-    for (unsigned i=0; i<getObjectSize(); i++) {
-    	if (!queryBlockRequest(getObject(i).id,getId(),"3",true,conn_))
+	virtual void processAction(bool check) throw (REQUEST_BLOCKED, Database::Exception){
+    for (unsigned i = 0; i < getObjectSize(); i++) {
+    	if (!queryBlockRequest(getObject(i).id, getId(), "3", true, conn_))
         throw REQUEST_BLOCKED();
-      DBase::Query q;
+      Database::Query q;
       q.buffer() << "SELECT update_object_states(" << getObject(i).id << ")";      
-      std::auto_ptr<DBase::Result> res(conn_->exec(q));
+      conn_->exec(q);
     }
 	}
 };
@@ -659,8 +677,8 @@ class UnBlockUpdateRequestPIFImpl : public BlockUnblockRequestPIFImpl {
 public:
   virtual bool check() const {
     bool res = true;
-    for (unsigned i=0; res && i<getObjectSize(); i++)
-     res = queryBlockRequest(getObject(i).id,0,"3,4",true,conn_);
+    for (unsigned i = 0; res && i < getObjectSize(); i++)
+     res = queryBlockRequest(getObject(i).id, 0, "3,4", true, conn_);
     return res;    
   }
   virtual short blockType() const {
@@ -669,13 +687,13 @@ public:
   virtual short blockAction() const {
   	return 1;
   }
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED, DBase::Exception){
-    for (unsigned i=0; i<getObjectSize(); i++) {
-    	if (!queryBlockRequest(getObject(i).id,getId(),"3,4",true,conn_))
+	virtual void processAction(bool check) throw (REQUEST_BLOCKED, Database::Exception){
+    for (unsigned i = 0; i < getObjectSize(); i++) {
+    	if (!queryBlockRequest(getObject(i).id, getId(), "3,4", true, conn_))
         throw REQUEST_BLOCKED();
-      DBase::Query q;
+      Database::Query q;
       q.buffer() << "SELECT update_object_states(" << getObject(i).id << ")";      
-      std::auto_ptr<DBase::Result> res(conn_->exec(q));
+      conn_->exec(q);
     }
 	}
 };
@@ -719,8 +737,8 @@ private:
   Manager *manager_;
   
 public:
-  ListImpl(DBase::Connection *_conn, Manager *_manager) : CommonListImpl(_conn),
-                                                          manager_(_manager) {
+  ListImpl(Database::Connection *_conn, Manager *_manager) : CommonListImpl(_conn),
+                                                             manager_(_manager) {
   }
   
   virtual ~ListImpl() {
@@ -743,30 +761,30 @@ public:
     } 
   }
   
-  virtual void reload(DBase::Filters::Union& _filter) {
+  virtual void reload(Database::Filters::Union& _filter) {
     TRACE("[CALL] Register::Request::ListImpl::reload()");
     clear();
     _filter.clearQueries();
     
-    DBase::SelectQuery id_query;
-    DBase::Filters::Compound::iterator fit = _filter.begin();
+    Database::SelectQuery id_query;
+    Database::Filters::Compound::iterator fit = _filter.begin();
     for (; fit != _filter.end(); ++fit) {
-      DBase::Filters::PublicRequest *rf = dynamic_cast<DBase::Filters::PublicRequest* >(*fit);
+      Database::Filters::PublicRequest *rf = dynamic_cast<Database::Filters::PublicRequest* >(*fit);
       if (!rf)
         continue;
-      DBase::SelectQuery *tmp = new DBase::SelectQuery();
-      tmp->addSelect(new DBase::Column("id", rf->joinRequestTable(), "DISTINCT"));
+      Database::SelectQuery *tmp = new Database::SelectQuery();
+      tmp->addSelect(new Database::Column("id", rf->joinRequestTable(), "DISTINCT"));
       _filter.addQuery(tmp);
     }
     id_query.limit(load_limit_);
     _filter.serialize(id_query);
     
-    DBase::InsertQuery tmp_table_query = DBase::InsertQuery(getTempTableName(),
+    Database::InsertQuery tmp_table_query = Database::InsertQuery(getTempTableName(),
                                                             id_query);
     LOGGER("db").debug(boost::format("temporary table '%1%' generated sql = %2%")
         % getTempTableName() % tmp_table_query.str());
 
-    DBase::SelectQuery object_info_query;
+    Database::SelectQuery object_info_query;
     object_info_query.select() << "t_1.request_type, t_1.id, t_1.epp_action_id, "
                                << "t_1.create_time, t_1.status, t_1.resolve_time, "
                                << "t_1.reason, t_1.email_to_answer, t_1.answer_email_id, "
@@ -781,12 +799,13 @@ public:
     try {
       fillTempTable(tmp_table_query);
       
-      std::auto_ptr<DBase::Result> r_info(conn_->exec(object_info_query));
-      std::auto_ptr<DBase::ResultIterator> it(r_info->getIterator());
-      for (it->first(); !it->isDone(); it->next()) {
-        Register::PublicRequest::Type type = (Register::PublicRequest::Type)(int)it->getNextValue();
-        PublicRequest* request = manager_->createRequest(type,conn_);
-        request->init(it.get());
+      Database::Result r_info = conn_->exec(object_info_query);
+      for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Register::PublicRequest::Type type = (Register::PublicRequest::Type)(int)*col;
+        PublicRequest* request = manager_->createRequest(type, conn_);
+        request->init(++col);
         data_.push_back(request);
       }
       
@@ -798,20 +817,21 @@ public:
        */      
       resetIDSequence();
       
-      DBase::SelectQuery objects_query;
+      Database::SelectQuery objects_query;
       objects_query.select() << "tmp.id, t_1.object_id, t_2.name, t_2.type";
       objects_query.from() << getTempTableName() << " tmp "
                            << "JOIN public_request_objects_map t_1 ON (tmp.id = t_1.request_id) "
                            << "JOIN object_registry t_2 ON (t_1.object_id = t_2.id)";
       objects_query.order_by() << "tmp.id";
 
-      std::auto_ptr<DBase::Result> r_objects(conn_->exec(objects_query));
-      std::auto_ptr<DBase::ResultIterator> oit(r_objects->getIterator());
-      for (oit->first(); !oit->isDone(); oit->next()) {
-        DBase::ID request_id = oit->getNextValue();
-        DBase::ID object_id = oit->getNextValue();
-        std::string object_handle = oit->getNextValue(); 
-        ObjectType object_type = (ObjectType)(int)oit->getNextValue();
+      Database::Result r_objects = conn_->exec(objects_query);
+      for (Database::Result::Iterator it = r_objects.begin(); it != r_objects.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID request_id    = *col;
+        Database::ID object_id     = *(++col);
+        std::string  object_handle = *(++col); 
+        ObjectType   object_type   = (ObjectType)(int)*(++col);
              
         PublicRequestImpl *request_ptr = dynamic_cast<PublicRequestImpl *>(findIDSequence(request_id));
         if (request_ptr)
@@ -820,7 +840,7 @@ public:
       /* checks if row number result load limit is active and set flag */ 
       CommonListImpl::reload();
     }
-    catch (DBase::Exception& ex) {
+    catch (Database::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
       clear();
     }
@@ -861,17 +881,17 @@ public:
 
 class ManagerImpl : virtual public Manager {
 private:
-  DBase::Manager *db_manager_;
+  Database::Manager *db_manager_;
   Domain::Manager *domain_manager_;
   Contact::Manager *contact_manager_;
   NSSet::Manager *nsset_manager_;
   Mailer::Manager *mailer_manager_;
   Document::Manager *doc_manager_;
   
-  DBase::Connection *conn_;
+  Database::Connection *conn_;
     
 public:
-  ManagerImpl(DBase::Manager *_db_manager,
+  ManagerImpl(Database::Manager *_db_manager,
               Domain::Manager *_domain_manager,
               Contact::Manager *_contact_manager,
               NSSet::Manager *_nsset_manager,
@@ -887,7 +907,7 @@ public:
   }
 
   virtual ~ManagerImpl() {
-    boost::checked_delete<DBase::Connection>(conn_);
+    boost::checked_delete<Database::Connection>(conn_);
   }
   
   virtual Mailer::Manager* getMailerManager() const {
@@ -906,7 +926,7 @@ public:
     return new ListImpl(conn_, (Manager *)this);
   }
   
-  virtual void getPdf(DBase::ID _id, 
+  virtual void getPdf(Database::ID _id, 
                       const std::string& _lang, 
                       std::ostream& _output) const
     throw (NOT_FOUND, SQL_ERROR, Document::Generator::ERROR) {
@@ -946,7 +966,7 @@ public:
   }
   
   virtual PublicRequest* createRequest(
-    Type _type, DBase::Connection* _conn
+    Type _type, Database::Connection* _conn
   ) const throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) {
     // TRACE("[CALL] Register::Request::Manager::createRequest()");
     PublicRequestImpl *request;
@@ -981,10 +1001,10 @@ public:
     return request;
   }
   
-  List *loadRequest(DBase::ID id) const throw (NOT_FOUND) {
-    DBase::Filters::PublicRequestImpl prf;
+  List *loadRequest(Database::ID id) const throw (NOT_FOUND) {
+    Database::Filters::PublicRequestImpl prf;
     prf.addId().setValue(id);
-    DBase::Filters::Union uf;
+    Database::Filters::Union uf;
     uf.addFilter(&prf);
     List *l = createList();
     l->reload(uf);
@@ -992,7 +1012,7 @@ public:
     return l;
   }
   
-  virtual void processRequest(DBase::ID _id, bool _invalidate, 
+  virtual void processRequest(Database::ID _id, bool _invalidate, 
                               bool check) const 
     throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) {
     TRACE(boost::format("[CALL] Register::Request::Manager::processRequest(%1%, %2%)") %
@@ -1001,12 +1021,12 @@ public:
       std::auto_ptr<List> l(loadRequest(_id));
       l->get(0)->process(_invalidate,check);
     } 
-    catch (DBase::Exception) { throw SQL_ERROR(); }
+    catch (Database::Exception) { throw SQL_ERROR(); }
   }
   
 };
 
-Manager* Manager::create(DBase::Manager *_db_manager,
+Manager* Manager::create(Database::Manager *_db_manager,
                          Domain::Manager *_domain_manager,
                          Contact::Manager *_contact_manager,
                          NSSet::Manager *_nsset_manager,

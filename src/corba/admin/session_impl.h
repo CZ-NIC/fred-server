@@ -27,7 +27,7 @@
 #include "register/register.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/conf.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "model/model_filters.h"
 
 using namespace boost::posix_time;
@@ -48,7 +48,7 @@ private:
   ccReg_User_i* m_user;
   ccReg_Files_i* m_files;
 
-  std::auto_ptr<DBase::Manager> m_db_manager;
+  Database::Manager m_db_manager;
   std::auto_ptr<Register::Manager> m_register_manager;
   std::auto_ptr<Register::PublicRequest::Manager> m_publicrequest_manager;
   std::auto_ptr<Register::Document::Manager> m_document_manager;

@@ -3,7 +3,7 @@
 
 #include "db/base_filters.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 class File : virtual public Compound {
@@ -12,11 +12,11 @@ public:
   }
   
   virtual Table& joinFileTable() = 0;
-  virtual Value<DBase::ID>& addId() = 0;
+  virtual Value<Database::ID>& addId() = 0;
   virtual Value<std::string>& addName() = 0;
   virtual Value<std::string>& addPath() = 0;
   virtual Value<std::string>& addMimeType() = 0;
-  virtual Interval<DBase::DateTimeInterval>& addCreateTime() = 0;
+  virtual Interval<Database::DateTimeInterval>& addCreateTime() = 0;
   virtual Value<int>& addSize() = 0;
   virtual Value<int>& addType() = 0;
   
@@ -34,11 +34,11 @@ public:
   virtual ~FileImpl();
   
   virtual Table& joinFileTable();
-  virtual Value<DBase::ID>& addId();
+  virtual Value<Database::ID>& addId();
   virtual Value<std::string>& addName();
   virtual Value<std::string>& addPath();
   virtual Value<std::string>& addMimeType();
-  virtual Interval<DBase::DateTimeInterval>& addCreateTime();
+  virtual Interval<Database::DateTimeInterval>& addCreateTime();
   virtual Value<int>& addSize();
   virtual Value<int>& addType();
   

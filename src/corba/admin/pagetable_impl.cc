@@ -97,7 +97,7 @@ ccReg_PageTable_i::getIterator()
 }
 
 void 
-ccReg_PageTable_i::setDB(DBase::Manager* _dbm)
+ccReg_PageTable_i::setDB(Database::Manager* _dbm)
 {
   dbm = _dbm;
 }

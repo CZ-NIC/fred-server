@@ -1,6 +1,6 @@
 #include "object_registry_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 ObjectRegistryImpl::ObjectRegistryImpl() :
@@ -15,11 +15,10 @@ Table& ObjectRegistryImpl::joinObjectRegistryTable() {
   return joinTable("object_registry");
 }
 
-Value<ObjectType>& ObjectRegistryImpl::setType(const DBase::Null<ObjectType> _type) {
-  Value<ObjectType> *tmp = new Value<ObjectType>(Column("type", joinObjectRegistryTable()), _type);
+Value<ObjectType>& ObjectRegistryImpl::addType() {
+  Value<ObjectType> *tmp = new Value<ObjectType>(Column("type", joinObjectRegistryTable()));
   add(tmp);
   tmp->setName("Type");
-  tmp->setValue(_type);
   return *tmp;
 }
 
@@ -30,15 +29,15 @@ Value<std::string>& ObjectRegistryImpl::addHandle() {
   return *tmp;
 }
 
-Interval<DBase::DateTimeInterval>& ObjectRegistryImpl::addCreateTime() {
-  Interval<DBase::DateTimeInterval> *tmp = new Interval<DBase::DateTimeInterval>(Column("crdate", joinObjectRegistryTable()));
+Interval<Database::DateTimeInterval>& ObjectRegistryImpl::addCreateTime() {
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("crdate", joinObjectRegistryTable()));
   add(tmp);
   tmp->setName("CreateTime");
   return *tmp;
 }
 
-Interval<DBase::DateTimeInterval>& ObjectRegistryImpl::addDeleteTime() {
-  Interval<DBase::DateTimeInterval> *tmp = new Interval<DBase::DateTimeInterval>(Column("erdate", joinObjectRegistryTable()));
+Interval<Database::DateTimeInterval>& ObjectRegistryImpl::addDeleteTime() {
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("erdate", joinObjectRegistryTable()));
   add(tmp);
   tmp->setName("DeleteTime");
   return *tmp;
@@ -62,3 +61,4 @@ ObjectState& ObjectRegistryImpl::addState() {
 
 }
 }
+

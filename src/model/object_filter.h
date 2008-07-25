@@ -8,7 +8,7 @@
 #include "object_registry_filter.h"
 #include "registrar_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 class Object : virtual public ObjectRegistry {
@@ -17,11 +17,11 @@ public:
   }
 
   virtual Table& joinObjectTable() = 0;
-  virtual Interval<DBase::DateTimeInterval>& addTransferTime() = 0;
-  virtual Interval<DBase::DateTimeInterval>& addUpdateTime() = 0;
+  virtual Interval<Database::DateTimeInterval>& addTransferTime() = 0;
+  virtual Interval<Database::DateTimeInterval>& addUpdateTime() = 0;
   virtual Value<std::string>& addAuthInfo() = 0;
-  virtual Value<DBase::ID>& addRegistrarId() = 0;
-  virtual Value<DBase::ID>& addUpdateRegistrarId() = 0;
+  virtual Value<Database::ID>& addRegistrarId() = 0;
+  virtual Value<Database::ID>& addUpdateRegistrarId() = 0;
   virtual Registrar& addRegistrar() = 0;
   virtual Registrar& addUpdateRegistrar() = 0;
 
@@ -40,11 +40,11 @@ public:
   virtual Table& joinObjectTable();
   virtual void _joinPolymorphicTables();
   
-  virtual Interval<DBase::DateTimeInterval>& addTransferTime();
-  virtual Interval<DBase::DateTimeInterval>& addUpdateTime();
+  virtual Interval<Database::DateTimeInterval>& addTransferTime();
+  virtual Interval<Database::DateTimeInterval>& addUpdateTime();
   virtual Value<std::string>& addAuthInfo();
-  virtual Value<DBase::ID>& addRegistrarId();
-  virtual Value<DBase::ID>& addUpdateRegistrarId();
+  virtual Value<Database::ID>& addRegistrarId();
+  virtual Value<Database::ID>& addUpdateRegistrarId();
   virtual Registrar& addRegistrar();
   virtual Registrar& addUpdateRegistrar();
   
@@ -63,11 +63,11 @@ public:
   virtual Table& joinObjectTable();
   virtual void _joinPolymorphicTables();
   
-  virtual Interval<DBase::DateTimeInterval>& addTransferTime();
-  virtual Interval<DBase::DateTimeInterval> & addUpdateTime();
+  virtual Interval<Database::DateTimeInterval>& addTransferTime();
+  virtual Interval<Database::DateTimeInterval> & addUpdateTime();
   virtual Value<std::string>& addAuthInfo();
-  virtual Value<DBase::ID>& addRegistrarId();
-  virtual Value<DBase::ID>& addUpdateRegistrarId();
+  virtual Value<Database::ID>& addRegistrarId();
+  virtual Value<Database::ID>& addUpdateRegistrarId();
   virtual Registrar& addRegistrar();
   virtual Registrar& addUpdateRegistrar();
 

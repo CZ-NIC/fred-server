@@ -17,7 +17,7 @@ ccReg_Filters_i::reload() {
 ccReg::Filters::Compound_ptr ccReg_Filters_i::add() {
   TRACE("[CALL] ccReg_Filters_i::add()");
   it.clearF();
-  DBase::Filters::FilterFilter *f = new DBase::Filters::FilterFilterImpl();
+  Database::Filters::FilterFilter *f = new Database::Filters::FilterFilterImpl();
   uf.addFilter(f);
   return it.addE(f); 
 }
@@ -45,9 +45,9 @@ ccReg_Filters_i::getRow(CORBA::Short row)
     
     ccReg::TableRow *tr = new ccReg::TableRow;
     tr->length(4);
-    (*tr)[0] = DUPSTRC(Util::stream_cast<std::string>(item->getUserId()));
-    (*tr)[1] = DUPSTRC(Util::stream_cast<std::string>(item->getGroupId()));
-    (*tr)[2] = DUPSTRC(Util::stream_cast<std::string>(item->getType()));
+    (*tr)[0] = DUPSTRC(item->getUserId().to_string());
+    (*tr)[1] = DUPSTRC(item->getGroupId().to_string());
+    (*tr)[2] = DUPSTRC(Conversion<int>::to_string(item->getType()));
     (*tr)[3] = DUPSTRFUN(item->getName);
     return tr;
   }

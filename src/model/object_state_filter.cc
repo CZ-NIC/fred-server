@@ -1,6 +1,6 @@
 #include "object_state_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 ObjectStateImpl::ObjectStateImpl() {
@@ -19,14 +19,14 @@ Value<int>& ObjectStateImpl::addId() {
   return *tmp;
 }
 
-Interval<DBase::DateTimeInterval>& ObjectStateImpl::addValidFrom() {
-  Interval<DBase::DateTimeInterval> *tmp = new Interval<DBase::DateTimeInterval>(Column("valid_from", joinObjectStateTable()));
+Interval<Database::DateTimeInterval>& ObjectStateImpl::addValidFrom() {
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("valid_from", joinObjectStateTable()));
   add(tmp);
   return *tmp;
 }
 
-Interval<DBase::DateTimeInterval>& ObjectStateImpl::addValidTo() {
-  Interval<DBase::DateTimeInterval> *tmp = new Interval<DBase::DateTimeInterval>(Column("valid_to", joinObjectStateTable()));
+Interval<Database::DateTimeInterval>& ObjectStateImpl::addValidTo() {
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("valid_to", joinObjectStateTable()));
   add(tmp);
   return *tmp;
 }

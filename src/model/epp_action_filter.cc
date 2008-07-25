@@ -1,6 +1,6 @@
 #include "epp_action_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 EppActionImpl::EppActionImpl() :
@@ -16,8 +16,8 @@ Table& EppActionImpl::joinActionTable() {
   return joinTable("action");
 }
 
-Value<DBase::ID>& EppActionImpl::addId() {
-  Value<DBase::ID> *tmp = new Value<DBase::ID>(Column("id", joinActionTable()));
+Value<Database::ID>& EppActionImpl::addId() {
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("id", joinActionTable()));
   tmp->setName("Id");
   add(tmp);
   return *tmp;

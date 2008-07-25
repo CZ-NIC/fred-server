@@ -3,7 +3,7 @@
 
 #include "db/base_filters.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 class FilterFilter : virtual public Compound {
@@ -12,9 +12,9 @@ public:
   }
 
   virtual Table& joinFilterTable() = 0;
-  virtual Value<DBase::ID>& addId() = 0;
-  virtual Value<DBase::ID>& addUserId() = 0;
-  virtual Value<DBase::ID>& addGroupId() = 0;
+  virtual Value<Database::ID>& addId() = 0;
+  virtual Value<Database::ID>& addUserId() = 0;
+  virtual Value<Database::ID>& addGroupId() = 0;
   virtual Value<int>& addType() = 0;
 };
 
@@ -24,9 +24,9 @@ public:
   virtual ~FilterFilterImpl();
 
   virtual Table& joinFilterTable();
-  virtual Value<DBase::ID>& addId();
-  virtual Value<DBase::ID>& addUserId();
-  virtual Value<DBase::ID>& addGroupId();
+  virtual Value<Database::ID>& addId();
+  virtual Value<Database::ID>& addUserId();
+  virtual Value<Database::ID>& addGroupId();
   virtual Value<int>& addType();
 };
 

@@ -43,7 +43,7 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
                              NameService *_ns,
                              Conf& _cfg,
                              bool _session_garbage) throw (DB_CONNECT_FAILED) :
-  m_connection_string(_database), ns(_ns), cfg(_cfg) {
+  m_connection_string(_database), ns(_ns), cfg(_cfg), m_db_manager(m_connection_string) {
   // these object are shared between threads (CAUTION)
   if (!db.OpenDatabase(m_connection_string.c_str())) {
     LOG(ALERT_LOG,
@@ -51,7 +51,7 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
         m_connection_string.c_str());
     throw DB_CONNECT_FAILED();
   }
-  m_db_manager.reset(new DBase::PSQLManager(m_connection_string));
+
   register_manager_.reset(Register::Manager::create(&db, cfg.GetRestrictedHandles()));
   register_manager_->initStates();
 
@@ -518,11 +518,11 @@ ccReg::ContactDetail* ccReg_Admin_i::getContactById(ccReg::TID id)
   Register::Contact::Manager *cr = r->getContactManager();
   std::auto_ptr<Register::Contact::List> cl(cr->createList());
 
-  DBase::Filters::Union uf;
-  DBase::Filters::Contact *cf = new DBase::Filters::ContactImpl();
-  cf->addId().setValue(DBase::ID(id));
+  Database::Filters::Union uf;
+  Database::Filters::Contact *cf = new Database::Filters::ContactImpl();
+  cf->addId().setValue(Database::ID(id));
   uf.addFilter(cf);
-  cl->reload(uf, m_db_manager.get());
+  cl->reload(uf, &m_db_manager);
 
   //cl->setIdFilter(id);
   //cl->reload();
@@ -611,11 +611,11 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetById(ccReg::TID id)
   Register::NSSet::Manager *nr = r->getNSSetManager();
   std::auto_ptr<Register::NSSet::List> nl(nr->createList());
 
-  DBase::Filters::Union uf;
-  DBase::Filters::NSSet *nf = new DBase::Filters::NSSetImpl();
-  nf->addId().setValue(DBase::ID(id));
+  Database::Filters::Union uf;
+  Database::Filters::NSSet *nf = new Database::Filters::NSSetImpl();
+  nf->addId().setValue(Database::ID(id));
   uf.addFilter(nf);
-  nl->reload(uf, m_db_manager.get());
+  nl->reload(uf, &m_db_manager);
 
   // nl->setIdFilter(id);
   // nl->reload();
@@ -773,11 +773,11 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainById(ccReg::TID id)
   Register::Domain::Manager *dm = r->getDomainManager();
   std::auto_ptr<Register::Domain::List> dl(dm->createList());
 
-  DBase::Filters::Union uf;
-  DBase::Filters::Domain *df = new DBase::Filters::DomainImpl();
-  df->addId().setValue(DBase::ID(id));
+  Database::Filters::Union uf;
+  Database::Filters::Domain *df = new Database::Filters::DomainImpl();
+  df->addId().setValue(Database::ID(id));
   uf.addFilter(df);
-  dl->reload(uf, m_db_manager.get());
+  dl->reload(uf, &m_db_manager);
 
   //dl->setIdFilter(id);
   //dl->reload();
@@ -1075,7 +1075,7 @@ ccReg::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
    * TEMP: this is for loading country codes from database - until new database 
    * library is not fully integrated into registrar library 
    */ 
-  r->dbManagerInit(m_db_manager.get());
+  r->dbManagerInit(&m_db_manager);
   
   ccReg::CountryDescSeq *cd = new ccReg::CountryDescSeq;
   cd->length(r->getCountryDescSize());
@@ -1212,19 +1212,19 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
     ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR,
     ccReg::Admin::INVALID_INPUT, ccReg::Admin::REQUEST_BLOCKED
   ) {
-  TRACE(boost::format("[CALL] ccReg_Admin_i::createPublicRequest(%1%, %2%, '%3%', '%4%, %5%") % 
+  TRACE(boost::format("[CALL] ccReg_Admin_i::createPublicRequest(%1%, %2%, '%3%', '%4%, %5%)") % 
         _type % _epp_action_id % _reason % _email_to_answer % &_object_ids);
   
   MailerManager mailer_manager(ns);
   
-  std::auto_ptr<DBase::Connection> conn(m_db_manager->getConnection());
+  std::auto_ptr<Database::Connection> conn(m_db_manager.getConnection());
   std::auto_ptr<Register::Document::Manager> doc_manager(
                      Register::Document::Manager::create(cfg.GetDocGenPath(),
                                                          cfg.GetDocGenTemplatePath(),
                                                          cfg.GetFileClientPath(),
                                                          ns->getHostName()));
   std::auto_ptr<Register::PublicRequest::Manager> request_manager(
-                         Register::PublicRequest::Manager::create(m_db_manager.get(),
+                         Register::PublicRequest::Manager::create(&m_db_manager,
                                                             register_manager_->getDomainManager(),
                                                             register_manager_->getContactManager(),
                                                             register_manager_->getNSSetManager(),
@@ -1287,7 +1287,7 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
                                                          cfg.GetFileClientPath(),
                                                          ns->getHostName()));
   std::auto_ptr<Register::PublicRequest::Manager> request_manager(
-                         Register::PublicRequest::Manager::create(m_db_manager.get(),
+                         Register::PublicRequest::Manager::create(&m_db_manager,
                                                             register_manager_->getDomainManager(),
                                                             register_manager_->getContactManager(),
                                                             register_manager_->getNSSetManager(),
@@ -1317,14 +1317,14 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
 
   MailerManager mailer_manager(ns);
    
-  std::auto_ptr<DBase::Connection> conn(m_db_manager->getConnection());
+  std::auto_ptr<Database::Connection> conn(m_db_manager.getConnection());
   std::auto_ptr<Register::Document::Manager> doc_manager(
                        Register::Document::Manager::create(cfg.GetDocGenPath(),
                                                            cfg.GetDocGenTemplatePath(),
                                                            cfg.GetFileClientPath(),
                                                            ns->getHostName()));
   std::auto_ptr<Register::PublicRequest::Manager> request_manager(
-                           Register::PublicRequest::Manager::create(m_db_manager.get(),
+                           Register::PublicRequest::Manager::create(&m_db_manager,
                                                               register_manager_->getDomainManager(),
                                                               register_manager_->getContactManager(),
                                                               register_manager_->getNSSetManager(),

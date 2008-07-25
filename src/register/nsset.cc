@@ -25,7 +25,7 @@
 #include "sql.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/util.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
 
@@ -341,24 +341,24 @@ public:
     db->FreeSelect();
     ObjectListImpl::reload(useTempTable ? NULL : handle.c_str(),2);
   }
-  virtual void reload(DBase::Filters::Union &uf, DBase::Manager* dbm) {
+  virtual void reload(Database::Filters::Union &uf, Database::Manager* dbm) {
     TRACE("[CALL] NSSet::ListImpl::reload()");
     clear();
     uf.clearQueries();
 
     // TEMP: should be cached for quicker
-    std::map<DBase::ID, std::string> registrars_table;
+    std::map<Database::ID, std::string> registrars_table;
 
     bool at_least_one = false;
-    DBase::SelectQuery id_query;
-    std::auto_ptr<DBase::Filters::Iterator> fit(uf.createIterator());
+    Database::SelectQuery id_query;
+    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next()) {
-      DBase::Filters::NSSet *df = dynamic_cast<DBase::Filters::NSSetHistoryImpl* >(fit->get());
+      Database::Filters::NSSet *df = dynamic_cast<Database::Filters::NSSetHistoryImpl* >(fit->get());
       if (!df)
         continue;
       
-      DBase::SelectQuery *tmp = new DBase::SelectQuery();
-      tmp->addSelect(new DBase::Column("historyid", df->joinNSSetTable(), "DISTINCT"));
+      Database::SelectQuery *tmp = new Database::SelectQuery();
+      tmp->addSelect(new Database::Column("historyid", df->joinNSSetTable(), "DISTINCT"));
       uf.addQuery(tmp);
       at_least_one = true;
     }
@@ -370,12 +370,12 @@ public:
     id_query.limit(load_limit_);
     uf.serialize(id_query);
 
-    DBase::InsertQuery tmp_table_query = DBase::InsertQuery(getTempTableName(),
+    Database::InsertQuery tmp_table_query = Database::InsertQuery(getTempTableName(),
         id_query);
     LOGGER("db").debug(boost::format("temporary table '%1%' generated sql = %2%")
         % getTempTableName() % tmp_table_query.str());
 
-    DBase::SelectQuery object_info_query;
+    Database::SelectQuery object_info_query;
     object_info_query.select() << "t_1.id, t_1.name, t_2.clid, t_1.crdate, "
         << "t_2.trdate, t_2.update, t_1.erdate, t_1.crid, t_2.upid, "
         << "t_2.authinfopw, t_1.roid, t_3.checklevel";
@@ -390,40 +390,43 @@ public:
     object_info_query.order_by() << "t_1.id";
 
     try {
-      std::auto_ptr<DBase::Connection> conn(dbm->getConnection());
+      std::auto_ptr<Database::Connection> conn(dbm->getConnection());
 
-      DBase::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
-      std::auto_ptr<DBase::Result> r_create_tmp_table(conn->exec(create_tmp_table));
+      Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
+      conn->exec(create_tmp_table);
       conn->exec(tmp_table_query);
 
       // TEMP: should be cached somewhere
-      DBase::Query registrars_query("SELECT id, handle FROM registrar");
-      std::auto_ptr<DBase::Result> r_registrars(conn->exec(registrars_query));
-      std::auto_ptr<DBase::ResultIterator> rit(r_registrars->getIterator());
-      for (rit->first(); !rit->isDone(); rit->next()) {
-        DBase::ID id = rit->getNextValue();
-        std::string handle = rit->getNextValue();
+      Database::Query registrars_query("SELECT id, handle FROM registrar");
+      Database::Result r_registrars = conn->exec(registrars_query);
+      Database::Result::Iterator it = r_registrars.begin();
+      for (; it != r_registrars.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID id      = *col;
+        std::string  handle  = *(++col);
         registrars_table[id] = handle;
       }
 
-      std::auto_ptr<DBase::Result> r_info(conn->exec(object_info_query));
-      std::auto_ptr<DBase::ResultIterator> it(r_info->getIterator());
-      for (it->first(); !it->isDone(); it->next()) {
-        DBase::ID nid = it->getNextValue();
-        std::string handle = it->getNextValue();
-        DBase::ID registrar_id = it->getNextValue();
-        std::string registrar_handle = registrars_table[registrar_id];
-        DBase::DateTime cr_date = it->getNextValue();
-        DBase::DateTime tr_date = it->getNextValue();
-        DBase::DateTime up_date = it->getNextValue();
-        DBase::Date er_date = it->getNextValue();
-        DBase::ID crid = it->getNextValue();
-        std::string crid_handle = registrars_table[crid];
-        DBase::ID upid = it->getNextValue();
-        std::string upid_handle = registrars_table[upid];
-        std::string authinfo = it->getNextValue();
-        std::string roid = it->getNextValue();
-        unsigned check_level = it->getNextValue();
+      Database::Result r_info = conn->exec(object_info_query);
+      for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID       nid              = *col;
+        std::string        handle           = *(++col);
+        Database::ID       registrar_id     = *(++col);
+        std::string        registrar_handle = registrars_table[registrar_id];
+        Database::DateTime cr_date          = *(++col);
+        Database::DateTime tr_date          = *(++col);
+        Database::DateTime up_date          = *(++col);
+        Database::Date     er_date          = *(++col);
+        Database::ID       crid             = *(++col);
+        std::string        crid_handle      = registrars_table[crid];
+        Database::ID       upid             = *(++col);
+        std::string        upid_handle      = registrars_table[upid];
+        std::string        authinfo         = *(++col);
+        std::string        roid             = *(++col);
+        unsigned           check_level      = *(++col);
         data_.push_back(
             new NSSetImpl(
                 nid,
@@ -449,7 +452,7 @@ public:
         return;
       
       resetIDSequence();
-      DBase::SelectQuery contacts_query;
+      Database::SelectQuery contacts_query;
       contacts_query.select() << "tmp.id, t_1.nssetid, t_2.name";
       //  contacts_query.from() << getTempTableName() << " tmp "
       //                        << "JOIN nsset_contact_map t_1 ON (tmp.id = t_1.nssetid) "
@@ -459,12 +462,13 @@ public:
                             << "JOIN object_registry t_2 ON (t_1.contactid = t_2.id)";
       contacts_query.order_by() << "t_1.nssetid, t_2.id ";
       
-      std::auto_ptr<DBase::Result> r_contacts(conn->exec(contacts_query));
-      std::auto_ptr<DBase::ResultIterator> cit(r_contacts->getIterator());
-      for (cit->first(); !cit->isDone(); cit->next()) {
-        DBase::ID nsset_historyid = cit->getNextValue();
-        DBase::ID nsset_id = cit->getNextValue();
-        std::string contact_handle = cit->getNextValue();
+      Database::Result r_contacts = conn->exec(contacts_query);
+      for (Database::Result::Iterator it = r_contacts.begin(); it != r_contacts.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID nsset_historyid = *col;
+        Database::ID nsset_id        = *(++col);
+        std::string  contact_handle  = *(++col);
         
         NSSetImpl *nsset_ptr = dynamic_cast<NSSetImpl *>(findIDSequence(nsset_id));
         if (nsset_ptr)
@@ -472,7 +476,7 @@ public:
       }
       
       resetIDSequence();
-      DBase::SelectQuery hosts_query;
+      Database::SelectQuery hosts_query;
       hosts_query.select() << "tmp.id, t_1.nssetid, t_1.fqdn, t_2.ipaddr";
       //  hosts_query.from() << getTempTableName() << " tmp "
       //                     << "JOIN host t_1 ON (tmp.id = t_1.nssetid) "
@@ -482,13 +486,14 @@ public:
                          << "LEFT JOIN host_ipaddr_map_history t_2 ON (t_1.historyid = t_2.historyid AND t_1.id = t_2.hostid)";
       hosts_query.order_by() << "t_1.nssetid, t_1.id, t_2.id";
       
-      std::auto_ptr<DBase::Result> r_hosts(conn->exec(hosts_query));
-      std::auto_ptr<DBase::ResultIterator> hit(r_hosts->getIterator());
-      for (hit->first(); !hit->isDone(); hit->next()) {
-        DBase::ID nsset_historyid = hit->getNextValue();
-        DBase::ID nsset_id = hit->getNextValue();
-        std::string host_fqdn = hit->getNextValue();
-        std::string host_ip = hit->getNextValue();
+      Database::Result r_hosts = conn->exec(hosts_query);
+      for (Database::Result::Iterator it = r_hosts.begin(); it != r_hosts.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID nsset_historyid = *col;
+        Database::ID nsset_id        = *(++col);
+        std::string  host_fqdn       = *(++col);
+        std::string  host_ip         = *(++col);
         
         NSSetImpl *nsset_ptr = dynamic_cast<NSSetImpl *>(findIDSequence(nsset_id));
         if (nsset_ptr) {
@@ -502,7 +507,7 @@ public:
       /* checks if row number result load limit is active and set flag */ 
       CommonListImpl::reload();
     }
-    catch (DBase::Exception& ex) {
+    catch (Database::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
     }
     catch (std::exception& ex) {

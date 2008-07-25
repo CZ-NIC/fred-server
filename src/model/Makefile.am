@@ -20,6 +20,7 @@ noinst_PROGRAMS = test-model
 test_model_SOURCES  = test-model.cc
 test_model_LDFLAGS  = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
 test_model_LDADD    = libmodel.a \
+                      $(top_builddir)/util/types/libtypes.a \
                       $(top_builddir)/util/db/libdb.a \
                       $(top_builddir)/util/libutil.a \
                       $(top_builddir)/util/log/liblog.a \

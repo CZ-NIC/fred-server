@@ -3,7 +3,7 @@
 
 #include "db/base_filters.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 class ObjectState : virtual public Compound {
@@ -13,8 +13,8 @@ public:
 
   virtual Table& joinObjectStateTable() = 0;
   virtual Value<int>& addId() = 0;
-  virtual Interval<DBase::DateTimeInterval>& addValidFrom() = 0;
-  virtual Interval<DBase::DateTimeInterval>& addValidTo() = 0;
+  virtual Interval<Database::DateTimeInterval>& addValidFrom() = 0;
+  virtual Interval<Database::DateTimeInterval>& addValidTo() = 0;
   //TODO: more methods
 };
 
@@ -25,8 +25,8 @@ public:
 
   virtual Table& joinObjectStateTable();
   virtual Value<int>& addId();
-  virtual Interval<DBase::DateTimeInterval>& addValidFrom();
-  virtual Interval<DBase::DateTimeInterval>& addValidTo();
+  virtual Interval<Database::DateTimeInterval>& addValidFrom();
+  virtual Interval<Database::DateTimeInterval>& addValidTo();
 };
 
 }

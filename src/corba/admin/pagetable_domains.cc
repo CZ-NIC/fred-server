@@ -11,7 +11,7 @@ ccReg_Domains_i::~ccReg_Domains_i() {
 ccReg::Filters::Compound_ptr ccReg_Domains_i::add() {
   TRACE("[CALL] ccReg_Domains_i::add()");
   it.clearF();
-  DBase::Filters::Domain *f = new DBase::Filters::DomainHistoryImpl();
+  Database::Filters::Domain *f = new Database::Filters::DomainHistoryImpl();
   uf.addFilter(f);
   return it.addE(f);
 }
@@ -137,9 +137,9 @@ void ccReg_Domains_i::loadFilter(ccReg::TID _id) {
   TRACE(boost::format("[CALL] ccReg_Domains_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
-  DBase::Filters::Union::iterator uit = uf.begin();
+  Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
-    DBase::Filters::Domain *tmp = dynamic_cast<DBase::Filters::Domain* >(*uit);
+    Database::Filters::Domain *tmp = dynamic_cast<Database::Filters::Domain* >(*uit);
     it.addE(tmp);
     TRACE(boost::format("[IN] ccReg_Domains_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
   }

@@ -17,12 +17,12 @@
 #include "filter.h"
 #include "simple_filter.h"
 #include "query.h"
-#include "data_types.h"
+#include "types/data_types.h"
 #include "sql_helper_objects.h"
 #include "sql_operators.h"
 #include "filter_it.h"
 
-namespace DBase {
+namespace Database {
 
 class SelectQuery;
 
@@ -82,7 +82,7 @@ public:
     return filter_list.end();
   }
 
-  virtual void serialize(DBase::SelectQuery& _sq);
+  virtual void serialize(Database::SelectQuery& _sq);
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,

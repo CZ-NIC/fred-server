@@ -50,7 +50,7 @@ CommonListImpl::CommonListImpl(DB *_db) :
   ptr_idx_(-1), add(false), wcheck(true), idFilter(0) {
 }
 
-CommonListImpl::CommonListImpl(DBase::Connection *_conn) :
+CommonListImpl::CommonListImpl(Database::Connection *_conn) :
   conn_(_conn), load_limit_(1000), real_size_(0), real_size_initialized_(false),
   ptr_idx_(-1), add(false), wcheck(true), idFilter(0) {
 }
@@ -141,7 +141,7 @@ unsigned long long CommonListImpl::getRealCount() {
   return real_size_;
 }
 
-unsigned long long CommonListImpl::getRealCount(DBase::Filters::Union &_filter) {
+unsigned long long CommonListImpl::getRealCount(Database::Filters::Union &_filter) {
   TRACE("[CALL] CommonListImpl::getRealCount()");
 
   if (!real_size_initialized_)
@@ -150,7 +150,7 @@ unsigned long long CommonListImpl::getRealCount(DBase::Filters::Union &_filter) 
   return real_size_;
 }
 
-void CommonListImpl::makeRealCount(DBase::Filters::Union &_filter) {
+void CommonListImpl::makeRealCount(Database::Filters::Union &_filter) {
   TRACE("[CALL] CommonListImpl::makeRealCount()");
   
   if (_filter.empty()) {
@@ -162,24 +162,23 @@ void CommonListImpl::makeRealCount(DBase::Filters::Union &_filter) {
 
   _filter.clearQueries();
 
-  DBase::Filters::Union::iterator it = _filter.begin();
+  Database::Filters::Union::iterator it = _filter.begin();
   for (; it != _filter.end(); ++it) {
-    DBase::SelectQuery *tmp = new DBase::SelectQuery();
+    Database::SelectQuery *tmp = new Database::SelectQuery();
     tmp->select() << "COUNT(*)";
     _filter.addQuery(tmp);
   }
 
-  DBase::SelectQuery count_query;
+  Database::SelectQuery count_query;
   _filter.serialize(count_query);
  
   if (conn_) {
     try {
-      std::auto_ptr<DBase::Result> r_count(conn_->exec(count_query));
-      std::auto_ptr<DBase::ResultIterator> r_it(r_count->getIterator());
-      real_size_ = r_it->getNextValue();
+      Database::Result r_count = conn_->exec(count_query);
+      real_size_ = (*(r_count.begin()))[0];
       real_size_initialized_ = true;
     }
-    catch (DBase::Exception& ex) {
+    catch (Database::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
     }
     catch (std::exception& ex) {
@@ -210,17 +209,16 @@ void CommonListImpl::makeRealCount() throw (SQL_ERROR) {
   real_size_initialized_ = true;
 }
 
-void CommonListImpl::fillTempTable(DBase::InsertQuery& _query) {
+void CommonListImpl::fillTempTable(Database::InsertQuery& _query) {
   try {
-    DBase::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
-    std::auto_ptr<DBase::Result> r_create_tmp_table(conn_->exec(create_tmp_table));
-  
+    Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
+    conn_->exec(create_tmp_table);
     conn_->exec(_query);
     
-    DBase::Query analyze("ANALYZE " + std::string(getTempTableName()));
+    Database::Query analyze("ANALYZE " + std::string(getTempTableName()));
     conn_->exec(analyze);
   }
-  catch (DBase::Exception& ex) {
+  catch (Database::Exception& ex) {
     LOGGER("db").error(boost::format("%1%") % ex.what());
     throw;
   }

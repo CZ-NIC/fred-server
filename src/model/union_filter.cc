@@ -6,10 +6,10 @@
 #include "db/filter_it.h"
 #include "log/logger.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
-void Union::serialize(DBase::SelectQuery& _q) {
+void Union::serialize(Database::SelectQuery& _q) {
   TRACE("[CALL] Union::serialize()");
   if (_q.initialized()) {
     return;

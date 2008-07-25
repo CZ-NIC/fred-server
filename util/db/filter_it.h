@@ -4,7 +4,7 @@
 #include <vector>
 #include "filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 class Iterator {

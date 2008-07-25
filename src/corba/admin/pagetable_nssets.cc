@@ -10,7 +10,7 @@ ccReg_NSSets_i::~ccReg_NSSets_i() {
 ccReg::Filters::Compound_ptr ccReg_NSSets_i::add() {
   TRACE("[CALL] ccReg_NSSets_i::add()");
   it.clearF();
-  DBase::Filters::NSSet *f = new DBase::Filters::NSSetHistoryImpl();
+  Database::Filters::NSSet *f = new Database::Filters::NSSetHistoryImpl();
   uf.addFilter(f);
   return it.addE(f); 
 }
@@ -121,9 +121,9 @@ ccReg_NSSets_i::loadFilter(ccReg::TID _id) {
   TRACE(boost::format("[CALL] ccReg_NSSets_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
-  DBase::Filters::Union::iterator uit = uf.begin();
+  Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
-    it.addE(dynamic_cast<DBase::Filters::NSSet* >(*uit));
+    it.addE(dynamic_cast<Database::Filters::NSSet* >(*uit));
   }
 }
 

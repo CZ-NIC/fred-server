@@ -28,7 +28,7 @@
 #include "common_object.h"
 #include "object.h"
 #include "filter.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
 
@@ -38,18 +38,18 @@ namespace Filter {
 class FilterImpl : public Register::CommonObjectImpl,
                    virtual public Filter {
 public:
-  FilterImpl(DBase::ID _id, FilterType _type, const std::string& _name,
-      DBase::ID _user_id, DBase::ID _group_id) :
+  FilterImpl(Database::ID _id, FilterType _type, const std::string& _name,
+      Database::ID _user_id, Database::ID _group_id) :
     CommonObjectImpl(_id), m_type(_type), m_name(_name), m_user_id(_user_id),
         m_group_id(_group_id) {
   }
-  FilterImpl(FilterType _type, const std::string& _name, DBase::ID _user_id,
-      DBase::ID _group_id) :
+  FilterImpl(FilterType _type, const std::string& _name, Database::ID _user_id,
+      Database::ID _group_id) :
     m_id(0), m_type(_type), m_name(_name), m_user_id(_user_id),
         m_group_id(_group_id) {
   }
-  FilterImpl(FilterType _type, const std::string& _name, DBase::ID _user_id,
-      DBase::ID _group_id, const std::string& _data) :
+  FilterImpl(FilterType _type, const std::string& _name, Database::ID _user_id,
+      Database::ID _group_id, const std::string& _data) :
     m_id(0), m_type(_type), m_name(_name), m_user_id(_user_id),
         m_group_id(_group_id), m_data(_data) {
   }
@@ -67,20 +67,20 @@ public:
   virtual void setType(FilterType _type) {
     m_type = _type;
   }
-  virtual DBase::ID getUserId() const {
+  virtual Database::ID getUserId() const {
     return m_user_id;
   }
-  virtual void setUserId(DBase::ID _id) {
+  virtual void setUserId(Database::ID _id) {
     m_user_id = _id;
   }
-  virtual DBase::ID getGroupId() const {
+  virtual Database::ID getGroupId() const {
     return m_group_id;
   }
-  virtual void setGroupId(DBase::ID _id) {
+  virtual void setGroupId(Database::ID _id) {
     m_group_id = _id;
   }
-  virtual void save(DBase::Connection *_conn) const {
-    DBase::Query insert;
+  virtual void save(Database::Connection *_conn) const {
+    Database::Query insert;
     if (m_data.empty()) {
       LOGGER("db").error("can't save filter; reason: data empty");
       return;
@@ -92,11 +92,11 @@ public:
 
     try {
       //TRACE(boost::format("[IN] Register::FilterImpl::save(): going to inserting data SQL = %1%") % insert.str());
-      std::auto_ptr<DBase::Result> result(_conn->exec(insert));
+      Database::Result result = _conn->exec(insert);
       LOGGER("db").info(boost::format("filter '%1%' saved successfully")
           % m_name);
     }
-    catch (DBase::Exception& ex) {
+    catch (Database::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
     }
     catch (std::exception& ex) {
@@ -105,38 +105,38 @@ public:
   }
 
 private:
-  DBase::ID m_id;
+  Database::ID m_id;
   FilterType m_type;
   std::string m_name;
-  DBase::ID m_user_id;
-  DBase::ID m_group_id;
+  Database::ID m_user_id;
+  Database::ID m_group_id;
   std::string m_data;
 };
 
 class ListImpl : public Register::CommonListImpl,
                  virtual public List {
 public:
-  ListImpl(DBase::Connection* _conn) :
+  ListImpl(Database::Connection* _conn) :
     CommonListImpl(_conn) {
   }
 
   virtual ~ListImpl() {
-    boost::checked_delete<DBase::Connection>(conn_);
+    boost::checked_delete<Database::Connection>(conn_);
   }
 
-  virtual void reload(DBase::Filters::Union &uf) {
+  virtual void reload(Database::Filters::Union &uf) {
     TRACE("[CALL] Register::Filter::ListImpl::reload()");
     clear();
     uf.clearQueries();
 
-    DBase::SelectQuery object_info_query;
-    std::auto_ptr<DBase::Filters::Iterator> fit(uf.createIterator());
+    Database::SelectQuery object_info_query;
+    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next()) {
-      DBase::Filters::FilterFilter *ff =
-          dynamic_cast<DBase::Filters::FilterFilter* >(fit->get());
+      Database::Filters::FilterFilter *ff =
+          dynamic_cast<Database::Filters::FilterFilter* >(fit->get());
       if (!ff)
         continue;
-      DBase::SelectQuery *tmp = new DBase::SelectQuery();
+      Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect("id type name userid groupid", ff->joinFilterTable());
       uf.addQuery(tmp);
     }
@@ -144,14 +144,15 @@ public:
     uf.serialize(object_info_query);
 
     try {
-      std::auto_ptr<DBase::Result> r_info(conn_->exec(object_info_query));
-      std::auto_ptr<DBase::ResultIterator> it(r_info->getIterator());
-      for (it->first(); !it->isDone(); it->next()) {
-        DBase::ID id = it->getNextValue();
-        FilterType type = (FilterType)(int)it->getNextValue();
-        std::string name = it->getNextValue();
-        DBase::ID userid = it->getNextValue();
-        DBase::ID groupid = it->getNextValue();
+      Database::Result r_info = conn_->exec(object_info_query);
+      for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID id      = *col;
+        FilterType   type    = (FilterType)(int)*(++col);
+        std::string  name    = *(++col);
+        Database::ID userid  = *(++col);
+        Database::ID groupid = *(++col);
 
         data_.push_back(
             new FilterImpl(
@@ -165,7 +166,7 @@ public:
       /* checks if row number result load limit is active and set flag */ 
       CommonListImpl::reload();
     }
-    catch (DBase::Exception& ex) {
+    catch (Database::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
     }
     catch (std::exception& ex) {
@@ -202,39 +203,39 @@ public:
 
 class ManagerImpl : virtual public Manager {
 public:
-  ManagerImpl(DBase::Manager* _db_manager) : 
+  ManagerImpl(Database::Manager* _db_manager) : 
     m_db_manager(_db_manager), 
 	  m_filter_list(m_db_manager->getConnection()) {
   }
   virtual List& getList() {
     return m_filter_list;
   }
-  virtual void load(DBase::ID _id, DBase::Filters::Union& _uf) const {
+  virtual void load(Database::ID _id, Database::Filters::Union& _uf) const {
     TRACE(boost::format("[CALL] Register::Filter::ManagerImpl::load(%1%)") % _id);
-    std::auto_ptr<DBase::Filters::FilterFilter> data_filter(new DBase::Filters::FilterFilterImpl());
+    std::auto_ptr<Database::Filters::FilterFilter> data_filter(new Database::Filters::FilterFilterImpl());
     data_filter->addId().setValue(_id);
     
-    DBase::SelectQuery data_query;
+    Database::SelectQuery data_query;
     data_query.addSelect("data", data_filter->joinFilterTable());
     data_filter->serialize(data_query);
     
     try {
-      std::auto_ptr<DBase::Connection> conn(m_db_manager->getConnection());
-      std::auto_ptr<DBase::Result> r_data(conn->exec(data_query));
-      std::auto_ptr<DBase::ResultIterator> it(r_data->getIterator());
-      std::stringstream xml_data(it->getNextValue());
+      std::auto_ptr<Database::Connection> conn(m_db_manager->getConnection());
+      
+      Database::Result r_data = conn->exec(data_query);
+      std::stringstream xml_data((*r_data.begin())[0]);
       
       boost::archive::xml_iarchive load(xml_data);
       load >> BOOST_SERIALIZATION_NVP(_uf);
       
       std::string content;
-      DBase::Filters::Union::iterator uit = _uf.begin();
+      Database::Filters::Union::iterator uit = _uf.begin();
       for (; uit != _uf.end(); ++uit) {
         content += "'" + (*uit)->getName() + "' ";
       }
       LOGGER("db").debug(boost::format("loaded filter content = %1%") % content);
     }
-    catch (DBase::Exception& ex) {
+    catch (Database::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
     }
     catch (std::exception& ex) {
@@ -242,7 +243,7 @@ public:
     }
   }
   
-  virtual void save(FilterType _type, const std::string& _name, DBase::Filters::Union& _uf) {
+  virtual void save(FilterType _type, const std::string& _name, Database::Filters::Union& _uf) {
     TRACE(boost::format("[CALL] Register::Filter::ManagerImpl::save(%1%, '%2%')") % _type % _name);
     try {
       std::stringstream xml_data;
@@ -259,11 +260,11 @@ public:
   }
 	
 private:
-	DBase::Manager* m_db_manager;
+	Database::Manager* m_db_manager;
 	ListImpl		m_filter_list;
 };
 
-Manager* Manager::create(DBase::Manager* _db_manager) {
+Manager* Manager::create(Database::Manager* _db_manager) {
 	TRACE("[CALL] Register::Filter::Manager::create()");
 	return new ManagerImpl(_db_manager);
 }

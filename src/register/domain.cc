@@ -27,7 +27,7 @@
 #include "object_impl.h"
 #include "sql.h"
 #include "old_utils/dbsql.h"
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
 
@@ -422,25 +422,25 @@ public:
     sql << from.rdbuf();
     sql << where.rdbuf();
   }
-  virtual void reload(DBase::Filters::Union &uf, DBase::Manager* dbm) {
+  virtual void reload(Database::Filters::Union &uf, Database::Manager* dbm) {
     TRACE("[CALL] Domain::ListImpl::reload()");
     clear();
     uf.clearQueries();
 
     // TEMP: should be cached for quicker
-    std::map<DBase::ID, std::string> registrars_table;
+    std::map<Database::ID, std::string> registrars_table;
 
     bool at_least_one = false;
-    DBase::SelectQuery id_query;
-    std::auto_ptr<DBase::Filters::Iterator> fit(uf.createIterator());
+    Database::SelectQuery id_query;
+    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next()) {
-      DBase::Filters::Domain *df =
-          dynamic_cast<DBase::Filters::DomainHistoryImpl*>(fit->get());
+      Database::Filters::Domain *df =
+          dynamic_cast<Database::Filters::DomainHistoryImpl*>(fit->get());
       if (!df)
         continue;
       
-      DBase::SelectQuery *tmp = new DBase::SelectQuery();
-      tmp->addSelect(new DBase::Column("historyid", df->joinDomainTable(), "DISTINCT"));
+      Database::SelectQuery *tmp = new Database::SelectQuery();
+      tmp->addSelect(new Database::Column("historyid", df->joinDomainTable(), "DISTINCT"));
       uf.addQuery(tmp);
       at_least_one = true;
     }
@@ -452,12 +452,12 @@ public:
     id_query.limit(load_limit_);
     uf.serialize(id_query);
 
-    DBase::InsertQuery tmp_table_query = DBase::InsertQuery(getTempTableName(),
+    Database::InsertQuery tmp_table_query = Database::InsertQuery(getTempTableName(),
                                                             id_query);
     LOGGER("db").debug(boost::format("temporary table '%1%' generated sql = %2%")
         % getTempTableName() % tmp_table_query.str());
 
-    DBase::SelectQuery object_info_query;
+    Database::SelectQuery object_info_query;
     object_info_query.select() << "t_1.id, t_1.name, t_2.zone, t_2.nsset, "
         << "t_3.id, t_3.name, t_4.name, t_5.clid, "
         << "t_1.crdate, t_5.trdate, t_5.update, t_1.erdate, t_1.crid, t_5.upid, "
@@ -480,54 +480,56 @@ public:
     object_info_query.order_by() << "t_1.id";
 
     try {
-      std::auto_ptr<DBase::Connection> conn(dbm->getConnection());
+      std::auto_ptr<Database::Connection> conn(dbm->getConnection());
       
-      DBase::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
-      std::auto_ptr<DBase::Result> r_create_tmp_table(conn->exec(create_tmp_table));
+      Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
+      conn->exec(create_tmp_table);
       conn->exec(tmp_table_query);
       
       // TODO: use this and rewrite conn to conn_ specified in CommonListImpl
       // fillTempTable(tmp_table_query);
 
       // TEMP: should be cached somewhere
-      DBase::Query registrars_query("SELECT id, handle FROM registrar");
-      std::auto_ptr<DBase::Result> r_registrars(conn->exec(registrars_query));
-      std::auto_ptr<DBase::ResultIterator> rit(r_registrars->getIterator());
-      for (rit->first(); !rit->isDone(); rit->next()) {
-        DBase::ID id = rit->getNextValue();
-        std::string handle = rit->getNextValue();
+      Database::Query registrars_query("SELECT id, handle FROM registrar");
+      Database::Result r_registrars = conn->exec(registrars_query);
+      for (Database::Result::Iterator it = r_registrars.begin(); it != r_registrars.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID id      = *col; 
+        std::string handle   = *(++col);
         registrars_table[id] = handle;
       }
 
-      std::auto_ptr<DBase::Result> r_info(conn->exec(object_info_query));
-      std::auto_ptr<DBase::ResultIterator> it(r_info->getIterator());
-      for (it->first(); !it->isDone(); it->next()) {
-        DBase::ID did = it->getNextValue();
-        std::string fqdn = it->getNextValue();
-        DBase::ID zone = it->getNextValue();
-        DBase::ID nsset = it->getNextValue();
-        std::string nssetHandle = ""; //it->getNextValue();
-        DBase::ID registrant = it->getNextValue();
-        std::string registrantHandle = it->getNextValue();
-        std::string registrantName = it->getNextValue();
-        DBase::ID registrar = it->getNextValue();
-        std::string registrarHandle = registrars_table[registrar];
-        DBase::DateTime crDate = it->getNextValue();
-        DBase::DateTime trDate = it->getNextValue();
-        DBase::DateTime upDate = it->getNextValue();
-        DBase::Date erDate = it->getNextValue();
-        DBase::ID createRegistrar = it->getNextValue();
-        std::string createRegistrarHandle = registrars_table[createRegistrar];
-        DBase::ID updateRegistrar = it->getNextValue();
-        std::string updateRegistrarHandle = registrars_table[updateRegistrar];
-        std::string authPw = it->getNextValue();
-        std::string roid = it->getNextValue();
-        DBase::Date exDate = it->getNextValue();
-        DBase::Date valExDate = DBase::Date();
-        unsigned zoneStatus = 1;
-        ptime zoneStatusTime = ptime();
-        DBase::Date outZoneDate = it->getNextValue();
-        DBase::Date cancelDate = it->getNextValue();
+      Database::Result r_info = conn->exec(object_info_query);
+      for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID       did                   = *col;
+        std::string        fqdn                  = *(++col);
+        Database::ID       zone                  = *(++col);
+        Database::ID       nsset                 = *(++col);
+        std::string        nssetHandle           = ""; //*(++col);
+        Database::ID       registrant            = *(++col);
+        std::string        registrantHandle      = *(++col);
+        std::string        registrantName        = *(++col);
+        Database::ID       registrar             = *(++col);
+        std::string        registrarHandle       = registrars_table[registrar];
+        Database::DateTime crDate                = *(++col);
+        Database::DateTime trDate                = *(++col);
+        Database::DateTime upDate                = *(++col);
+        Database::Date     erDate                = *(++col);
+        Database::ID       createRegistrar       = *(++col);
+        std::string        createRegistrarHandle = registrars_table[createRegistrar];
+        Database::ID       updateRegistrar       = *(++col);
+        std::string        updateRegistrarHandle = registrars_table[updateRegistrar];
+        std::string        authPw                = *(++col);
+        std::string        roid                  = *(++col);
+        Database::Date     exDate                = *(++col);
+        Database::Date     valExDate             = Database::Date();
+        unsigned           zoneStatus            = 1;
+        ptime              zoneStatusTime        = ptime();
+        Database::Date     outZoneDate           = *(++col);
+        Database::Date     cancelDate            = *(++col);
 
         data_.push_back (
             new DomainImpl(
@@ -566,24 +568,25 @@ public:
 
       /// load admin contacts info
       resetIDSequence();
-      DBase::SelectQuery admins_query;
+      Database::SelectQuery admins_query;
       admins_query.select() << "tmp.id, t_2.domainid, t_1.id, t_1.name, t_2.role";
       // admins_query.from() << getTempTableName() << " tmp "
       //                     << "JOIN domain_contact_map t_2 ON (tmp.id = t_2.domainid) "
       //                     << "JOIN object_registry t_1 ON (t_2.contactid = t_1.id)";
       admins_query.from() << getTempTableName() << " tmp "
-      << "JOIN domain_contact_map_history t_2 ON (tmp.id = t_2.historyid) "
-      << "JOIN object_registry t_1 ON (t_2.contactid = t_1.id)";
+                          << "JOIN domain_contact_map_history t_2 ON (tmp.id = t_2.historyid) "
+                          << "JOIN object_registry t_1 ON (t_2.contactid = t_1.id)";
       admins_query.order_by() << "t_2.domainid";
 
-      std::auto_ptr<DBase::Result> r_admins(conn->exec(admins_query));
-      std::auto_ptr<DBase::ResultIterator> ait(r_admins->getIterator());
-      for (ait->first(); !ait->isDone(); ait->next()) {
-        DBase::ID domain_historyid = ait->getNextValue();
-        DBase::ID domain_id = ait->getNextValue();
-        DBase::ID admin_id = ait->getNextValue();
-        std::string admin_handle = ait->getNextValue();
-        unsigned admin_role = ait->getNextValue();
+      Database::Result r_admins = conn->exec(admins_query);
+      for (Database::Result::Iterator it = r_admins.begin(); it != r_admins.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID domain_historyid = *col;
+        Database::ID domain_id        = *(++col);
+        Database::ID admin_id         = *(++col);
+        std::string  admin_handle     = *(++col);
+        unsigned     admin_role       = *(++col);
 
         DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findIDSequence(domain_id));
         if (domain_ptr)
@@ -592,7 +595,7 @@ public:
 
       /// load nssets info
       resetIDSequence();
-      DBase::SelectQuery nssets_query;
+      Database::SelectQuery nssets_query;
 
       nssets_query.select() << "tmp.id, t_2.id, t_1.name";
       // nssets_query.from() << getTempTableName() << " tmp "
@@ -603,35 +606,39 @@ public:
       << "JOIN object_registry t_1 ON (t_1.id = t_2.nsset)";
       nssets_query.order_by() << "t_2.id";
 
-      std::auto_ptr<DBase::Result> r_nssets(conn->exec(nssets_query));
-      std::auto_ptr<DBase::ResultIterator> nit(r_nssets->getIterator());
-      for (nit->first(); !nit->isDone(); nit->next()) {
-        DBase::ID domain_historyid = nit->getNextValue();
-        DBase::ID domain_id = nit->getNextValue();
-        std::string nsset_handle = nit->getNextValue();
+      Database::Result r_nssets = conn->exec(nssets_query);
+      for (Database::Result::Iterator it = r_nssets.begin(); it != r_nssets.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID domain_historyid = *col;
+        Database::ID domain_id        = *(++col);
+        std::string  nsset_handle     = *(++col);
 
         DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findIDSequence(domain_id));
         if (domain_ptr)
-        domain_ptr->addNSSetHandle(nsset_handle);
+          domain_ptr->addNSSetHandle(nsset_handle);
       }
 
       /// load validation (for enum domains)
       resetIDSequence();
-      DBase::SelectQuery validation_query;
+      Database::SelectQuery validation_query;
       validation_query.select() << "tmp.id, t_1.domainid, t_1.exdate";
       validation_query.from() << getTempTableName() << " tmp "
-      << "JOIN enumval_history t_1 ON (tmp.id = t_1.historyid)";
+                              << "JOIN enumval_history t_1 ON (tmp.id = t_1.historyid)";
       validation_query.order_by() << "t_1.domainid";
-      std::auto_ptr<DBase::Result> r_validation(conn->exec(validation_query));
-      std::auto_ptr<DBase::ResultIterator> vit(r_validation->getIterator());
-      for (vit->first(); !vit->isDone(); vit->next()) {
-        DBase::ID domain_historyid = vit->getNextValue();
-        DBase::ID domain_id = vit->getNextValue();
-        DBase::Date validation_date = vit->getNextValue();
+
+      Database::Result r_validation = conn->exec(validation_query);
+      Database::Result::Iterator it = r_validation.begin();
+      for (; it != r_validation.end(); ++it) {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID   domain_historyid = *col;
+        Database::ID   domain_id        = *(++col);
+        Database::Date validation_date  = *(++col);
 
         DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findIDSequence(domain_id));
         if (domain_ptr)
-        domain_ptr->setValExDate(validation_date);
+          domain_ptr->setValExDate(validation_date);
       }
 
       /// load object state
@@ -639,7 +646,7 @@ public:
       /* checks if row number result load limit is active and set flag */ 
       CommonListImpl::reload();
     }
-    catch (DBase::Exception& ex) {
+    catch (Database::Exception& ex) {
       LOGGER("db").error(boost::format("%1%") % ex.what());
     }
     catch (std::exception& ex) {

@@ -1,6 +1,6 @@
 #include "epp_session_filter.h"
 
-namespace DBase {
+namespace Database {
 namespace Filters {
 
 EppSessionImpl::EppSessionImpl() {
@@ -26,8 +26,8 @@ Registrar& EppSessionImpl::addRegistrar() {
   return *tmp;
 }
 
-Interval<DBase::DateInterval>& EppSessionImpl::addLogin() {
-  Interval<DBase::DateInterval> *tmp(new Interval<DBase::DateInterval>(
+Interval<Database::DateInterval>& EppSessionImpl::addLogin() {
+  Interval<Database::DateInterval> *tmp(new Interval<Database::DateInterval>(
       Column("logindate", joinLoginTable())));
   tmp->setName("Login");
   add(tmp);

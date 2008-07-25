@@ -8,7 +8,7 @@
 #include "object.h"
 #include "types.h"
 #include "exceptions.h" 
-#include "db/dbs.h"
+#include "db/manager.h"
 #include "model/model_filters.h"
 
 using namespace boost::posix_time;
@@ -131,9 +131,9 @@ public:
   /// Get actual credit 
   virtual unsigned long getCredit() const = 0;
   /// Get credit for specific zone
-  virtual unsigned long getCredit(DBase::ID _zone_id) = 0;
+  virtual unsigned long getCredit(Database::ID _zone_id) = 0;
   /// Set credit for specific zone
-  virtual void setCredit(DBase::ID _zone_id, unsigned long _credit) = 0;
+  virtual void setCredit(Database::ID _zone_id, unsigned long _credit) = 0;
   /// Create new ACL record
   virtual ACL* newACL() = 0;
   /// Return ACL list size
@@ -166,7 +166,7 @@ public:
   /// Reload actual list of registrars
   virtual void reload() throw (SQL_ERROR) = 0;
   /// testing new reload function
-  virtual void reload(DBase::Filters::Union &uf, DBase::Manager* dbm) = 0;
+  virtual void reload(Database::Filters::Union &uf, Database::Manager* dbm) = 0;
   /// Get registrar detail object by list index
 //  virtual const Registrar* get(unsigned idx) const = 0;
   /// Get registrar detail object by list index for update
@@ -204,7 +204,7 @@ enum EPPActionResultFilter {
 
 /// Action type
 struct EPPActionType {
-  DBase::ID   id;
+  Database::ID   id;
   std::string name;
 };
 
@@ -277,7 +277,7 @@ public:
   /// Reload list according actual filter settings
   virtual void reload() = 0;
   /// testing new reload function
-  virtual void reload(DBase::Filters::Union &uf, DBase::Manager* dbm) = 0;
+  virtual void reload(Database::Filters::Union &uf, Database::Manager* dbm) = 0;
   /// Return deatil of action by index in list
   virtual EPPAction* get(unsigned idx) const = 0;
   /// clear filter data

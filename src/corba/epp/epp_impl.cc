@@ -5498,8 +5498,8 @@ ccReg::Response* ccReg_EPP_i::ObjectSendAuthInfo(
   
   ParsedAction paction;
   paction.add(1,(const char*)name);
-  DBase::PSQLManager db(database);
-  std::auto_ptr<DBase::Connection> conn;
+  Database::Manager db(database);
+  std::auto_ptr<Database::Connection> conn;
   try { conn.reset(db.getConnection()); } catch (...) {}
 
   //LOG( NOTICE_LOG , "ObjectSendAuthInfo type %d  object [%s]  clientID -> %d clTRID [%s] " , act , name , (int ) clientID , clTRID );

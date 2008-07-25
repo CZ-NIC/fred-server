@@ -15,7 +15,8 @@
 #include "nsset.h"
 #include "mailer.h"
 #include "documents.h"
-#include "db/dbs.h"
+
+#include "db/database.h"
 #include "model/model_filters.h"
 
 using namespace boost::posix_time;
@@ -71,11 +72,11 @@ enum ObjectType {
  * Object info
  */
 struct OID {
-  OID(DBase::ID _id) : id(_id) { }
-  OID(DBase::ID _id, std::string _handle, ObjectType _type) : id(_id),
+  OID(Database::ID _id) : id(_id) { }
+  OID(Database::ID _id, std::string _handle, ObjectType _type) : id(_id),
                                                               handle(_handle),
                                                               type(_type) { }
-  DBase::ID   id;
+  Database::ID   id;
   std::string handle;
   ObjectType  type;
 };
@@ -90,8 +91,8 @@ public:
   virtual ~PublicRequest() {
   }
   
-  virtual void init(DBase::ResultIterator *_it) = 0; 
-  virtual void save(DBase::Connection *_conn) = 0;
+  virtual void init(Database::Row::Iterator& _it) = 0; 
+  virtual void save(Database::Connection *_conn) = 0;
   
   virtual Register::PublicRequest::Type getType() const = 0;
   virtual void setType(Register::PublicRequest::Type _type) = 0;
@@ -103,9 +104,9 @@ public:
   virtual void setReason(const std::string& _reason) = 0;
   virtual const std::string& getEmailToAnswer() const = 0;
   virtual void setEmailToAnswer(const std::string& _email) = 0;
-  virtual const DBase::ID getAnswerEmailId() const = 0;
-  virtual const DBase::ID getEppActionId() const = 0;
-  virtual void setEppActionId(const DBase::ID& _epp_action_id) = 0;
+  virtual const Database::ID getAnswerEmailId() const = 0;
+  virtual const Database::ID getEppActionId() const = 0;
+  virtual void setEppActionId(const Database::ID& _epp_action_id) = 0;
   
   virtual void addObject(const OID& _oid) = 0;
   virtual const OID& getObject(unsigned _idx) const = 0;
@@ -127,9 +128,9 @@ public:
   /// send email with answer 
 	virtual TID sendEmail() const throw (Mailer::NOT_SEND) = 0;
 	/// process request (or just close in case of invalid flag)
-	virtual void process(bool invalid, bool check) throw (REQUEST_BLOCKED, Mailer::NOT_SEND, DBase::Exception)= 0;
+	virtual void process(bool invalid, bool check) throw (REQUEST_BLOCKED, Mailer::NOT_SEND, Database::Exception)= 0;
 	/// concrete action taken during request processing
-	virtual void processAction(bool check) throw (REQUEST_BLOCKED, DBase::Exception) = 0;
+	virtual void processAction(bool check) throw (REQUEST_BLOCKED, Database::Exception) = 0;
 	/// return proper type for PDF template generation
 	virtual unsigned getPDFType() const = 0;
 };
@@ -141,7 +142,7 @@ public:
   
   virtual const char* getTempTableName() const = 0;
   virtual PublicRequest* get(unsigned _idx) const = 0;
-  virtual void reload(DBase::Filters::Union& _filter) = 0;
+  virtual void reload(Database::Filters::Union& _filter) = 0;
   
   /// from CommonList; propably will be removed in future
   virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
@@ -155,7 +156,7 @@ public:
   virtual ~Manager() {
   }
   
-  static Manager* create(DBase::Manager *_db_manager,
+  static Manager* create(Database::Manager *_db_manager,
                          Domain::Manager *_domain_manager,
                          Contact::Manager *_contact_manager,
                          NSSet::Manager *_nsset_manager,
@@ -164,16 +165,16 @@ public:
   
   virtual Mailer::Manager* getMailerManager() const = 0;
   virtual List* createList() const = 0;
-  virtual void getPdf(DBase::ID _id, 
+  virtual void getPdf(Database::ID _id, 
                       const std::string& _lang, 
                       std::ostream& _output) const 
     throw (NOT_FOUND, SQL_ERROR, Document::Generator::ERROR) = 0;
   
   virtual PublicRequest* createRequest(Type _type,
-                                       DBase::Connection* _conn) const
+                                       Database::Connection* _conn) const
     throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) = 0;
 
-  virtual void processRequest(DBase::ID _id, 
+  virtual void processRequest(Database::ID _id, 
                               bool _invalidate, bool _check) const 
     throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) = 0;
 
