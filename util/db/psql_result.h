@@ -52,6 +52,7 @@ public:
   typedef Row_<PSQLResult, value_type> Row;
 
   friend class Row_<PSQLResult, value_type>;
+  friend class Row_<PSQLResult, value_type>::Iterator;
 
 
   /**
