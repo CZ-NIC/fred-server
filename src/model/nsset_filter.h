@@ -40,6 +40,7 @@ public:
 
   virtual Table& joinNSSetTable();
   virtual void _joinPolymorphicTables();
+  virtual Value<std::string>& addHandle();
 
   virtual Value<ID>& addId();
   virtual Value<std::string>& addHostFQDN();
@@ -65,6 +66,7 @@ public:
   virtual Table& joinNSSetTable();
   virtual void _joinPolymorphicTables();
 
+  virtual Value<std::string>& addHandle();
   virtual Value<ID>& addId();
   virtual Value<std::string>& addHostFQDN();
   virtual Value<std::string>& addHostIP();

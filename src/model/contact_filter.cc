@@ -15,6 +15,15 @@ ContactImpl::ContactImpl() :
 ContactImpl::~ContactImpl() {
 }
 
+Value<std::string>& ContactImpl::addHandle() {
+  Value<std::string> *tmp = new Value<std::string>(Column("name", joinObjectRegistryTable()));
+  add(tmp);
+  tmp->addPreValueString("UPPER(");
+  tmp->addPostValueString(")");
+  tmp->setName("Handle");
+  return *tmp;
+}
+
 Value<Database::ID>& ContactImpl::addId() {
   Value<ID> *tmp = new Value<ID>(Column("id", joinContactTable()));
   tmp->setName("Id");
@@ -97,6 +106,15 @@ ContactHistoryImpl::ContactHistoryImpl() :
 }
 
 ContactHistoryImpl::~ContactHistoryImpl() {
+}
+
+Value<std::string>& ContactHistoryImpl::addHandle() {
+  Value<std::string> *tmp = new Value<std::string>(Column("name", joinObjectRegistryTable()));
+  add(tmp);
+  tmp->addPreValueString("UPPER(");
+  tmp->addPostValueString(")");
+  tmp->setName("Handle");
+  return *tmp;
 }
 
 Value<Database::ID>& ContactHistoryImpl::addId() {

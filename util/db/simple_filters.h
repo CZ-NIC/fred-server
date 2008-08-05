@@ -460,7 +460,7 @@ public:
         store.push_back(v);
       }
       else {
-        prep << op << "'%" << store.size() + 1 << "%'";
+        prep << op << " " << value_pre_ << "'%" << store.size() + 1 << "%'" << value_post_;
         store.push_back(v);
       }
     }

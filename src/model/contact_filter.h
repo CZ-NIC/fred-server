@@ -44,6 +44,7 @@ public:
   virtual Table& joinContactTable();
   virtual void _joinPolymorphicTables();
 
+  virtual Value<std::string>& addHandle();
   virtual Value<Database::ID>& addId();
   virtual Value<std::string>& addName();
   virtual Value<std::string>& addOrganization();
@@ -72,6 +73,7 @@ public:
   virtual Table& joinContactTable();
   virtual void _joinPolymorphicTables();
 
+  virtual Value<std::string>& addHandle();
   virtual Value<Database::ID>& addId();
   virtual Value<std::string>& addName();
   virtual Value<std::string>& addOrganization();

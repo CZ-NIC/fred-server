@@ -19,6 +19,15 @@ Table& NSSetImpl::joinNSSetTable() {
   return joinTable("nsset");
 }
 
+Value<std::string>& NSSetImpl::addHandle() {
+  Value<std::string> *tmp = new Value<std::string>(Column("name", joinObjectRegistryTable()));
+  add(tmp);
+  tmp->addPreValueString("UPPER(");
+  tmp->addPostValueString(")");
+  tmp->setName("Handle");
+  return *tmp;
+}
+
 Value<ID>& NSSetImpl::addId() {
   Value<ID> *tmp = new Value<ID>(Column("id", joinNSSetTable()));
   tmp->setName("Id");
@@ -89,6 +98,15 @@ NSSetHistoryImpl::~NSSetHistoryImpl() {
 
 Table& NSSetHistoryImpl::joinNSSetTable() {
   return joinTable("nsset_history");
+}
+
+Value<std::string>& NSSetHistoryImpl::addHandle() {
+  Value<std::string> *tmp = new Value<std::string>(Column("name", joinObjectRegistryTable()));
+  add(tmp);
+  tmp->addPreValueString("UPPER(");
+  tmp->addPostValueString(")");
+  tmp->setName("Handle");
+  return *tmp;
 }
 
 Value<ID>& NSSetHistoryImpl::addId() {

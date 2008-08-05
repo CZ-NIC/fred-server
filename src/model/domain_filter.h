@@ -49,6 +49,7 @@ public:
   Table& joinDomainTable();
   virtual void _joinPolymorphicTables();
 
+  virtual Value<std::string>& addHandle();
   virtual Value<Database::ID>& addId();
   virtual Value<Database::ID>& addNSSetId();
   virtual Value<Database::ID>& addZoneId();
@@ -83,6 +84,7 @@ public:
   Table& joinDomainTable();
   virtual void _joinPolymorphicTables();
 
+  virtual Value<std::string>& addHandle();
   virtual Value<Database::ID>& addId();
   virtual Value<Database::ID>& addNSSetId();
   virtual Value<Database::ID>& addZoneId();

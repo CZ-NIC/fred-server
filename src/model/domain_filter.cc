@@ -15,6 +15,15 @@ DomainImpl::DomainImpl() :
 DomainImpl::~DomainImpl() {
 }
 
+Value<std::string>& DomainImpl::addHandle() {
+  Value<std::string> *tmp = new Value<std::string>(Column("name", joinObjectRegistryTable()));
+  add(tmp);
+  tmp->addPreValueString("LOWER(");
+  tmp->addPostValueString(")");
+  tmp->setName("Handle");
+  return *tmp;
+}
+
 Value<Database::ID>& DomainImpl::addId() {
   Value<Database::ID> *tmp = new Value<Database::ID>(Column("id", joinDomainTable()));
   tmp->setName("Id");
@@ -134,6 +143,15 @@ DomainHistoryImpl::DomainHistoryImpl() :
 }
 
 DomainHistoryImpl::~DomainHistoryImpl() {
+}
+
+Value<std::string>& DomainHistoryImpl::addHandle() {
+  Value<std::string> *tmp = new Value<std::string>(Column("name", joinObjectRegistryTable()));
+  add(tmp);
+  tmp->addPreValueString("LOWER(");
+  tmp->addPostValueString(")");
+  tmp->setName("Handle");
+  return *tmp;
 }
 
 Value<Database::ID>& DomainHistoryImpl::addId() {
