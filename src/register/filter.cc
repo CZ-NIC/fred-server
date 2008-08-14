@@ -123,7 +123,7 @@ public:
   virtual ~ListImpl() {
     boost::checked_delete<Database::Connection>(conn_);
   }
-
+  
   virtual void reload(Database::Filters::Union &uf) {
     TRACE("[CALL] Register::Filter::ListImpl::reload()");
     clear();

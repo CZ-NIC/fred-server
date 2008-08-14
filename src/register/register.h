@@ -6,6 +6,7 @@
 #include "registrar.h"
 #include "contact.h"
 #include "nsset.h"
+#include "keyset.h"
 #include "auth_info.h"
 #include "public_request.h"
 #include "invoice.h"
@@ -25,6 +26,7 @@ enum HandleType
   HT_DOMAIN, ///< Handle is non enum domain
   HT_CONTACT, ///< Handle is contact
   HT_NSSET, ///< Handle is nsset
+  HT_KEYSET, ///< Handle is keyset
   HT_REGISTRAR, ///< Handle is registrar
   HT_OTHER ///< Invalid handle    
 };
@@ -73,6 +75,8 @@ public:
   virtual Contact::Manager *getContactManager() const = 0;
   /// return nsset manager
   virtual NSSet::Manager *getNSSetManager() const = 0;
+  /// return KeySet manager
+  virtual KeySet::Manager *getKeySetManager() const = 0;
   /// return filter manager
   virtual Filter::Manager* getFilterManager() const = 0;
   /// loads country codes description from database

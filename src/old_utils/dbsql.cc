@@ -140,6 +140,10 @@ bool DB::SaveEPPTransferMessage(
       schema_contact[] =
           " xmlns:contact=\"http://www.nic.cz/xml/epp/contact-1.4\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/contact-1.4 contact-1.4.xsd\" ";
 
+  char
+      schema_keyset[] = 
+      " xmlns:keyset=\"http://www.nic.cz/xml/epp/keyset-1.4\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.nic.cz/xml/epp/keyset-1.4 keyset-1.4.xsd\" ";
+
   LOG( NOTICE_LOG , "EPPTransferMessage to registrar : %d trasfer objectID %d new registar %d" , oldregID , objectID , regID );
 
   xmlString[0] = 0; // empty string
@@ -181,6 +185,17 @@ bool DB::SaveEPPTransferMessage(
             schema_domain, GetFieldValueName("Name", 0) ,
             GetFieldDateTimeValueName("TrDate", 0) , regHandle);
         FreeSelect();
+      }
+      break;
+    case 4: // keyset
+      if (SELECTOBJECTID("KEYSET", "handle", objectID)) {
+          snprintf(
+                  xmlString,
+                  sizeof(xmlString),
+                  "<keyset:trnData %s > <keyset:id>%s</keyset:id><keyset:trDate>%s</keyset:trDate><keyset:clID>%s</keyset:clID></keyset:trnData> ",
+                  schema_keyset, GetFieldValueName("Name", 0),
+                  GetFieldDateTimeValueName("TrDate", 0), regHandle);
+          FreeSelect();
       }
       break;
     default:
@@ -646,6 +661,56 @@ int DB::GetNSSetHosts(
   return num;
 }
 
+// get number of dsrecords associated to keyset
+int 
+DB::GetKeySetDSRecords(int keysetID)
+{
+    char sqlString[128];
+    int num = 0;
+
+    sprintf(sqlString, "SELECT id FROM dsrecord WHERE keysetid=%d;", keysetID);
+
+    if (ExecSelect(sqlString)) {
+        num = GetSelectRows();
+        LOG(SQL_LOG, "keyset %d num %d", keysetID, num);
+        FreeSelect();
+    }
+
+    return num;
+}
+// get id of dsrecord
+int 
+DB::GetDSRecordId(
+        int keysetId,
+        int keyTag,
+        int alg,
+        int digestType,
+        const char *digest,
+        int maxSigLife)
+{
+    char query[512];
+    int id = 0;
+    sprintf(query, "SELECT id FROM dsrecord WHERE keysetid=%d AND "
+            "keytag=%d AND alg=%d AND digesttype=%d AND digest='%s'",
+            keysetId, keyTag, alg, digestType, digest);
+    if (maxSigLife != -1)
+        sprintf(query, "%s AND maxsiglife=%d", query, maxSigLife);
+
+    if (ExecSelect(query)) {
+        id = atoi(GetFieldValue(0, 0));
+        sprintf(query, "Found DSRecord id: %d for entry keysetId(%d), keyTag(%d), alg(%d), "
+                "digestType(%d), digest('%s'), maxSigLife",
+                id, keysetId, keyTag, alg, digestType, digest);
+        if (maxSigLife == -1)
+            sprintf(query, "%s(NULL)", query);
+        else
+            sprintf(query, "%s(%d)", query, maxSigLife);
+        LOG(SQL_LOG, query);
+        FreeSelect();
+    }
+    return id;
+}
+
 // if the registrar is client of the object
 bool DB::TestObjectClientID(
   int id, int regID)
@@ -698,6 +763,17 @@ int DB::GetNSSetID(
     return GetObjectID( 2, HANDLE);
 }
 
+int
+DB::GetKeySetID(const char *handle)
+{
+    char HANDLE[64];
+    // to upper case and test
+    if (get_KEYSETHANDLE(HANDLE, handle) == false)
+        return -1;
+    else
+        return GetObjectID(4, HANDLE);
+}
+
 int DB::GetObjectID(
   int type, const char *name)
 {
@@ -737,6 +813,24 @@ int DB::GetNSSetContacts(
   }
 
   return num;
+}
+
+// get number of tech contact associated to keyset
+int
+DB::GetKeySetContacts(int keysetid)
+{
+    char sqlString[128];
+    int num = 0;
+    sprintf(sqlString, "SELECT * FROM keyset_contact_map WHERE keysetid=%d;",
+            keysetid);
+
+    if (ExecSelect(sqlString)) {
+        num = GetSelectRows();
+        LOG(SQL_LOG, " keyset_contact_map num %d", num);
+        FreeSelect();
+    }
+
+    return num;
 }
 
 // save object as deleted
@@ -779,6 +873,12 @@ bool DB::TestDomainFQDNHistory(
   const char * fqdn, int days)
 {
   return TestObjectHistory(fqdn, days);
+}
+
+bool
+DB::TestKeySetHandleHistory(const char *handle, int days)
+{
+    return TestObjectHistory(handle, days);
 }
 
 // test protected period 
@@ -824,6 +924,9 @@ int DB::CreateObject(
       break;
     case 'D':
       itype = 3;
+      break;
+    case 'K':
+      itype = 4;
       break;
     default:
       return 0;
@@ -1091,6 +1194,22 @@ bool DB::TestNSSetRelations(
   return ret;
 }
 
+// test for keyset is linked to domain
+bool
+DB::TestKeySetRelations(int id)
+{
+    bool ret = false;
+    char sqlString[128];
+
+    sprintf(sqlString, "SELECT id FROM DOMAIN WHERE keyset=%d;", id);
+    if (ExecSelect(sqlString)) {
+        if (GetSelectRows() > 0)
+            ret = true;
+        FreeSelect();
+    }
+    return ret;
+}
+
 bool DB::TestContactRelations(
   int id)
 {
@@ -1111,6 +1230,16 @@ bool DB::TestContactRelations(
   if (ExecSelect(sqlString) ) {
     count = atoi(GetFieldValue( 0, 0) );
     FreeSelect();
+  }
+
+  if (count > 0)
+    return true;
+
+  sprintf(sqlString,
+          "SELECT count(keysetID) from KEYSET_CONTACT_MAP WHERE contactid=%d;", id);
+  if (ExecSelect(sqlString)) {
+      count = atoi(GetFieldValue(0, 0));
+      FreeSelect();
   }
 
   if (count > 0)
@@ -2076,6 +2205,19 @@ bool DB::SaveNSSetHistory(
   return 0;
 }
 
+bool
+DB::SaveKeySetHistory(int id)
+{
+    // save to history
+    if (MakeHistory(id))
+        if (SaveHistory("KEYSET", "id", id))
+            if (SaveHistory("DSRECORD", "keysetid", id))
+                if (SaveHistory("keyset_contact_map", "keysetid", id))
+                    return true;
+    return false;
+}
+
+
 bool DB::DeleteNSSetObject(
   int id)
 {
@@ -2089,6 +2231,18 @@ bool DB::DeleteNSSetObject(
             return true;
 
   return false;
+}
+
+bool
+DB::DeleteKeySetObject(int id)
+{
+    // first delete tech contact
+    if (DeleteFromTable("keyset_contact_map", "keysetid", id))
+        if (DeleteFromTable("dsrecord", "keysetid", id))
+            if (DeleteFromTable("keyset", "id", id))
+                if (DeleteFromTable("object", "id", id))
+                    return true;
+    return false;
 }
 
 bool DB::SaveDomainHistory(

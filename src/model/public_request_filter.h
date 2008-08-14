@@ -34,6 +34,7 @@ public:
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
   }
   
+  static PublicRequest* create();
 };
 
 
@@ -60,7 +61,7 @@ public:
       const unsigned int _version) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(PublicRequest);
   }
-
+  
 };
 
 }

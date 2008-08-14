@@ -42,6 +42,10 @@ bool get_CONTACTHANDLE(
 bool get_NSSETHANDLE(
   char * HANDLE, const char *handle);
 
+// keyset handle
+bool get_KEYSETHANDLE(
+        char *HANDLE, const char *handle);
+
 // obecny handle
 bool get_HANDLE(
   char * HANDLE, const char *handle);

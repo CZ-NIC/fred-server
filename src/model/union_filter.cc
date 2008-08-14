@@ -15,7 +15,7 @@ void Union::serialize(Database::SelectQuery& _q) {
     return;
   }
   if (filter_list.size() > query_list.size()) {
-    LOGGER("db").error(boost::format("assert(filter_list.size() > query_list.size());  %1% >! %2%")
+    LOGGER("db").error(boost::format("assert(filter_list.size() > query_list.size());  %1% <! %2%")
         % filter_list.size() % query_list.size());
     throw; // TODO: throw something more meaningfull
   }
@@ -25,7 +25,7 @@ void Union::serialize(Database::SelectQuery& _q) {
   std::vector<SelectQuery*>::iterator it_q = query_list.begin();
   for (; it_f != filter_list.end(); ++it_f, ++it_q) {
     if ((*it_f)->isActive()) {
-      (*it_f)->serialize(*(*it_q));
+      (*it_f)->serialize(*(*it_q), settings_ptr_);
       (*it_q)->make();
       _q.buffer() << (it_f != filter_list.begin() ? " UNION " : "" );
       _q.buffer() << (*it_q)->buffer().str();

@@ -1,7 +1,7 @@
 #include "pagetable_domains.h"
 
-ccReg_Domains_i::ccReg_Domains_i(Register::Domain::List *_dl) :
-  dl(_dl) {
+ccReg_Domains_i::ccReg_Domains_i(Register::Domain::List *_dl, const Settings *_ptr) : dl(_dl) {
+  uf.settings(_ptr);
 }
 
 ccReg_Domains_i::~ccReg_Domains_i() {
@@ -18,25 +18,24 @@ ccReg::Filters::Compound_ptr ccReg_Domains_i::add() {
 
 void ccReg_Domains_i::reload() {
   TRACE("[CALL] ccReg_Domains_i::reload()");
-//  dl->makeRealCount();
   dl->reload(uf, dbm);
+  dl->deleteDuplicatesId();
 }
 
 ccReg::Table::ColumnHeaders* ccReg_Domains_i::getColumnHeaders() {
   TRACE("[CALL] ccReg_Domains_i::getColumnHeaders()");
   ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
-  ch->length(11);
+  ch->length(10);
   COLHEAD(ch, 0, "FQDN", CT_DOMAIN_HANDLE);
-  COLHEAD(ch, 1, "Create date", CT_OTHER);
-  COLHEAD(ch, 2, "Delete date", CT_OTHER);
-  COLHEAD(ch, 3, "Registrant", CT_CONTACT_HANDLE);
-  COLHEAD(ch, 4, "Registrant name", CT_OTHER);
-  COLHEAD(ch, 5, "Registrar", CT_REGISTRAR_HANDLE);
-  COLHEAD(ch, 6, "In zone", CT_OTHER);
-  COLHEAD(ch, 7, "Expiration date", CT_OTHER);
-  COLHEAD(ch, 8, "Out Zone date", CT_OTHER);
-  COLHEAD(ch, 9, "Cancel date", CT_OTHER);
-  COLHEAD(ch, 10, "Validation", CT_OTHER);
+  COLHEAD(ch, 1, "Registrant", CT_CONTACT_HANDLE);
+  COLHEAD(ch, 2, "Registrant name", CT_OTHER);
+  COLHEAD(ch, 3, "Registrar", CT_REGISTRAR_HANDLE);
+  COLHEAD(ch, 4, "In zone", CT_OTHER);
+  COLHEAD(ch, 5, "Create date", CT_OTHER);
+  COLHEAD(ch, 6, "Expiration date", CT_OTHER);
+  COLHEAD(ch, 7, "Out Zone date", CT_OTHER);
+  COLHEAD(ch, 8, "Delete date", CT_OTHER);
+  COLHEAD(ch, 9, "Validation", CT_OTHER);
   return ch;
 }
 
@@ -46,18 +45,17 @@ ccReg::TableRow* ccReg_Domains_i::getRow(CORBA::Short row)
   if (!d)
     throw ccReg::Table::INVALID_ROW();
   ccReg::TableRow *tr = new ccReg::TableRow;
-  tr->length(11);
+  tr->length(10);
   (*tr)[0] = DUPSTRFUN(d->getFQDN); // fqdn
-  (*tr)[1] = DUPSTRDATE(d->getCreateDate); // crdate
-  (*tr)[2] = DUPSTRDATED(d->getDeleteDate); // zruseni ??
-  (*tr)[3] = DUPSTRFUN(d->getRegistrantHandle); // registrant handle
-  (*tr)[4] = DUPSTRFUN(d->getRegistrantName); // registrant name
-  (*tr)[5] = DUPSTRFUN(d->getRegistrarHandle); // registrar handle 
-  (*tr)[6] = DUPSTR(d->getZoneStatus() == 1 ? "IN" : "OUT"); // zone generation 
-  (*tr)[7] = DUPSTRDATED(d->getExpirationDate); // expiration date 
-  (*tr)[8] = DUPSTRDATED(d->getOutZoneDate); // vyrazeni z dns
-  (*tr)[9] = DUPSTRDATED(d->getCancelDate); // vyrazeni z dns
-  (*tr)[10] = DUPSTRDATED(d->getValExDate); // validace
+  (*tr)[1] = DUPSTRFUN(d->getRegistrantHandle); // registrant handle
+  (*tr)[2] = DUPSTRFUN(d->getRegistrantName); // registrant name
+  (*tr)[3] = DUPSTRFUN(d->getRegistrarHandle); // registrar handle 
+  (*tr)[4] = DUPSTR(d->getZoneStatus() == 1 ? "IN" : "OUT"); // zone generation 
+  (*tr)[5] = DUPSTRDATE(d->getCreateDate); // crdate
+  (*tr)[6] = DUPSTRDATED(d->getExpirationDate); // expiration date
+  (*tr)[7] = DUPSTRDATE(d->getOutZoneDate); // vyrazeni z dns
+  (*tr)[8] = DUPSTRDATE(d->getCancelDate);  // delete from register
+  (*tr)[9] = DUPSTRDATED(d->getValExDate); // validace
   return tr;
 }
 
@@ -71,31 +69,30 @@ void ccReg_Domains_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
     dl->sort(Register::Domain::MT_FQDN, dir);
     break;      
   case 1:
-    dl->sort(Register::Domain::MT_CRDATE, dir);
-    break;
-  case 2:
-    dl->sort(Register::Domain::MT_ERDATE, dir);
-    break;
-  case 3:
     dl->sort(Register::Domain::MT_REGISTRANT_HANDLE, dir);
     break;
-  case 4:
+  case 2:
     dl->sort(Register::Domain::MT_REGISTRANT_NAME, dir);
     break;
-  case 5:
+  case 3:
     dl->sort(Register::Domain::MT_REGISTRAR_HANDLE, dir);
     break;
-  case 6:
+  case 4:
     dl->sort(Register::Domain::MT_ZONE_STATUS, dir);
     break;
-  case 7:
+  case 5:
+    dl->sort(Register::Domain::MT_CRDATE, dir);
+    break;
+  case 6:
     dl->sort(Register::Domain::MT_EXDATE, dir);
     break;
-  case 8:
+  case 7:
     dl->sort(Register::Domain::MT_OUTZONEDATE, dir);
     break;
-  case 9:
+  case 8:
     dl->sort(Register::Domain::MT_CANCELDATE, dir);
+    // dl->sort(Register::Domain::MT_CANCELDATE, dir);
+    // dl->sort(Register::Domain::MT_ERDATE, dir);
     break;
   }
 }
@@ -117,7 +114,7 @@ CORBA::Short ccReg_Domains_i::numRows() {
 }
 
 CORBA::Short ccReg_Domains_i::numColumns() {
-  return 11;
+  return 10;
 }
 
 void ccReg_Domains_i::clear() {

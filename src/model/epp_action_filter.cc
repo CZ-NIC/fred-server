@@ -3,8 +3,12 @@
 namespace Database {
 namespace Filters {
 
-EppActionImpl::EppActionImpl() :
-  Compound() {
+EppAction* EppAction::create() {
+  return new EppActionImpl();
+}
+
+
+EppActionImpl::EppActionImpl() : Compound() {
   setName("EppAction");
   active = true;
 }
@@ -42,7 +46,7 @@ Registrar& EppActionImpl::addRegistrar() {
 }
 
 Object& EppActionImpl::addObject() {
-  Object* tmp = new ObjectHistoryImpl();
+  Object* tmp = Object::create();
   addJoin(new Join(
       Column("id", joinActionTable()),
       SQL_OP_EQ,

@@ -66,8 +66,11 @@ makeBoostDate(const ccReg::DateType& t) {
 }
 
 ccReg::DateTimeType
-makeCorbaTime(ptime p)
+makeCorbaTime(ptime p, bool _to_local)
 {
+  if (_to_local) {
+    p = boost::date_time::c_local_adjustor<ptime>::utc_to_local(p);
+  }
   ccReg::DateTimeType d;
   if (p.is_special()) {
     d.date.day = 0;

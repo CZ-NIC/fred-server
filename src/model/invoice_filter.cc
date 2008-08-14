@@ -3,8 +3,11 @@
 namespace Database {
 namespace Filters {
 
-InvoiceImpl::InvoiceImpl() :
-  Compound() {
+Invoice* Invoice::create() {
+  return new InvoiceImpl();
+}
+
+InvoiceImpl::InvoiceImpl() : Compound() {
   setName("Invoice");
   active = true;
 }
@@ -77,7 +80,7 @@ Registrar& InvoiceImpl::addRegistrar() {
 }
 
 Object& InvoiceImpl::addObject() {
-  Object *tmp = new ObjectHistoryImpl();
+  Object *tmp = Object::create();
   add(tmp);
   addJoin(new Join(
                    Column("id", joinInvoiceTable()),

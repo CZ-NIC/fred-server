@@ -1,4 +1,4 @@
-#include <algorithm>
+
 #include <boost/utility.hpp>
 
 #include "common_impl.h"
@@ -390,14 +390,22 @@ public:
             << "FROM nsset_contact_map ncm, contact c "
             << "WHERE ncm.contactid=c.id AND ncm.nssetid=" << getObject(i).id;
           break;
-	      case OT_UNKNOWN:
-	        break;
-      }
+        case OT_KEYSET:
+          sql.buffer()
+            << "SELECT DISTINCT c.email "
+            << "FROM keyset_contact_map kcm, contact c "
+            << "WHERE kcm.contactid=c.id AND kcm.keysetid="
+            << getObject(i).id;
+          break;
+        case OT_UNKNOWN:
+          break;
+      };
 
       Database::Result r_emails = conn_->exec(sql);
       for (Database::Result::Iterator it = r_emails.begin(); it != r_emails.end(); ++it) {
         emails += (std::string)(*it)[0] + (it == r_emails.end() - 1 ? "" : " ");
       }
+      
     }
     LOGGER("register").debug(boost::format("for request id=%1% -- found notification recipients '%2%'")
                              % id_ % emails);
@@ -882,25 +890,28 @@ public:
 class ManagerImpl : virtual public Manager {
 private:
   Database::Manager *db_manager_;
-  Domain::Manager *domain_manager_;
-  Contact::Manager *contact_manager_;
-  NSSet::Manager *nsset_manager_;
-  Mailer::Manager *mailer_manager_;
+  Domain::Manager   *domain_manager_;
+  Contact::Manager  *contact_manager_;
+  NSSet::Manager    *nsset_manager_;
+  KeySet::Manager   *keyset_manager_;
+  Mailer::Manager   *mailer_manager_;
   Document::Manager *doc_manager_;
   
   Database::Connection *conn_;
     
 public:
   ManagerImpl(Database::Manager *_db_manager,
-              Domain::Manager *_domain_manager,
-              Contact::Manager *_contact_manager,
-              NSSet::Manager *_nsset_manager,
-              Mailer::Manager *_mailer_manager,
+              Domain::Manager   *_domain_manager,
+              Contact::Manager  *_contact_manager,
+              NSSet::Manager    *_nsset_manager,
+              KeySet::Manager   *_keyset_manager,
+              Mailer::Manager   *_mailer_manager,
               Document::Manager *_doc_manager) :
               db_manager_(_db_manager),
               domain_manager_(_domain_manager),
               contact_manager_(_contact_manager),
               nsset_manager_(_nsset_manager),
+              keyset_manager_(_keyset_manager),
               mailer_manager_(_mailer_manager),
               doc_manager_(_doc_manager),
               conn_(db_manager_->getConnection()) {
@@ -1026,17 +1037,23 @@ public:
   
 };
 
-Manager* Manager::create(Database::Manager *_db_manager,
-                         Domain::Manager *_domain_manager,
-                         Contact::Manager *_contact_manager,
-                         NSSet::Manager *_nsset_manager,
-                         Mailer::Manager *_mailer_manager,
-                         Document::Manager *_doc_manager) {
+Manager* Manager::create(Database::Manager  *_db_manager,
+                         Domain::Manager    *_domain_manager,
+                         Contact::Manager   *_contact_manager,
+                         NSSet::Manager     *_nsset_manager,
+                         KeySet::Manager    *_keyset_manager,
+                         Mailer::Manager    *_mailer_manager,
+                         Document::Manager  *_doc_manager) {
     
     TRACE("[CALL] Register::Request::Manager::create()");
     return new ManagerImpl(
-      _db_manager, _domain_manager, _contact_manager, 
-      _nsset_manager, _mailer_manager, _doc_manager
+      _db_manager,
+      _domain_manager,
+      _contact_manager, 
+      _nsset_manager,
+      _keyset_manager,
+      _mailer_manager,
+      _doc_manager
     );
 }
 

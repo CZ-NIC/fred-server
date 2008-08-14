@@ -30,7 +30,8 @@ namespace Register
     {
       OT_DOMAIN, ///< Object of request is domain
       OT_CONTACT, ///< Object of request is contact
-      OT_NSSET ///< Object of request is nsset
+      OT_NSSET, ///< Object of request is nsset
+      OT_KEYSET ///< Object of request is keyset
     };
     /// Status of request
     enum RequestStatus

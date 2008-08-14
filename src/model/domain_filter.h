@@ -8,6 +8,7 @@
 #include "object_filter.h"
 #include "contact_filter.h"
 #include "nsset_filter.h"
+#include "keyset_filter.h"
 
 namespace Database {
 namespace Filters {
@@ -19,7 +20,9 @@ public:
 
   virtual Table& joinDomainTable() = 0;
   virtual Value<Database::ID>& addId() = 0;
+  virtual Value<std::string>& addFQDN() = 0;
   virtual Value<Database::ID>& addNSSetId() = 0;
+  virtual Value<Database::ID>& addKeySetId() = 0;
   virtual Value<Database::ID>& addZoneId() = 0;
   virtual Value<Database::ID>& addRegistrantId() = 0;
   virtual Interval<Database::DateInterval>& addExpirationDate() = 0;
@@ -29,12 +32,15 @@ public:
   virtual Contact& addAdminContact() = 0;
   virtual Contact& addTempContact() = 0;
   virtual NSSet& addNSSet() = 0;
+  virtual KeySet& addKeySet() = 0;
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
       const unsigned int _version) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Object);
   }
+  
+  static Domain* create();
 };
 
 class DomainImpl : public ObjectImpl, virtual public Domain {
@@ -51,7 +57,9 @@ public:
 
   virtual Value<std::string>& addHandle();
   virtual Value<Database::ID>& addId();
+  virtual Value<std::string>& addFQDN();
   virtual Value<Database::ID>& addNSSetId();
+  virtual Value<Database::ID>& addKeySetId();
   virtual Value<Database::ID>& addZoneId();
   virtual Value<Database::ID>& addRegistrantId();
   virtual Interval<Database::DateInterval>& addExpirationDate();
@@ -61,6 +69,7 @@ public:
   virtual Contact& addAdminContact();
   virtual Contact& addTempContact();
   virtual NSSet& addNSSet();
+  virtual KeySet& addKeySet();
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -86,7 +95,9 @@ public:
 
   virtual Value<std::string>& addHandle();
   virtual Value<Database::ID>& addId();
+  virtual Value<std::string>& addFQDN();
   virtual Value<Database::ID>& addNSSetId();
+  virtual Value<Database::ID>& addKeySetId();
   virtual Value<Database::ID>& addZoneId();
   virtual Value<Database::ID>& addRegistrantId();
   virtual Interval<Database::DateInterval>& addExpirationDate();
@@ -96,6 +107,7 @@ public:
   virtual Contact& addAdminContact();
   virtual Contact& addTempContact();
   virtual NSSet& addNSSet();
+  virtual KeySet &addKeySet();
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,

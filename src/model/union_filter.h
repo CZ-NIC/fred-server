@@ -20,8 +20,9 @@ namespace Filters {
 
 class Union {
 public:
-  Union() {
+  Union(const Settings *_ptr = 0) : settings_ptr_(_ptr) {
   }
+
   virtual ~Union() {
   }
 
@@ -95,13 +96,21 @@ public:
     _ar.register_type(static_cast<InvoiceImpl *>(NULL));
     _ar.register_type(static_cast<FileImpl *>(NULL));
     _ar.register_type(static_cast<MailImpl *>(NULL));
+    _ar.register_type(static_cast<KeySetImpl *>(NULL));
+    _ar.register_type(static_cast<KeySetHistoryImpl *>(NULL));
 
     _ar & BOOST_SERIALIZATION_NVP(filter_list);
   }
 
+  void settings(const Settings *_ptr) {
+    settings_ptr_ = _ptr;
+  }
+  
 protected:
   std::vector<Filter*> filter_list;
   std::vector<Database::SelectQuery*> query_list;
+
+  const Settings *settings_ptr_;
 };
 
 }

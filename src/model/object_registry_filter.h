@@ -9,6 +9,8 @@
 #include "registrar_filter.h"
 #include "object_state_filter.h"
 
+#include "log/logger.h"
+#include "settings.h"
 #include "types/conversions.h"
 
 namespace Database {
@@ -18,7 +20,8 @@ enum ObjectType {
   TUNKNOWN = 0,
   TCONTACT = 1,
   TNSSET = 2,
-  TDOMAIN = 3
+  TDOMAIN = 3,
+  TKEYSET = 4
 };
 
 
@@ -43,6 +46,7 @@ public:
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
   }
 
+  static ObjectRegistry* create();
 };
 
 class ObjectRegistryImpl : virtual public ObjectRegistry {
@@ -67,7 +71,29 @@ public:
                                          const unsigned int _version) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ObjectRegistry);
   }
+  
+  void serialize(SelectQuery& _sq, const Settings *_settings) {
+    if (!polymorphic_joined_) {
+      _joinPolymorphicTables();
+    }
 
+    Table *obr = findTable("object_registry");
+    Table *o = findTable("object_history");
+
+    std::string history = (_settings ? _settings->get("filter.history") : "not_set");
+    LOGGER("db").debug(boost::format("attribute `filter.history' is set to `%1%'") 
+                                     % history);
+    if (history == "off" || history == "not_set") {
+      // addDeleteTime().setNULL();
+      if (obr) {
+        _sq.where_prepared_string() << " AND ( " << obr->getAlias() << ".erdate IS NULL )";
+        if (o) {
+          _sq.where_prepared_string() << " AND ( " << o->getAlias() << ".historyid = " << obr->getAlias() << ".historyid )";
+        }
+      }
+    }
+    Compound::serialize(_sq, _settings);
+  }
 };
 
 }

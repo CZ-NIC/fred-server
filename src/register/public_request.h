@@ -13,6 +13,7 @@
 #include "domain.h"
 #include "contact.h"
 #include "nsset.h"
+#include "keyset.h"
 #include "mailer.h"
 #include "documents.h"
 
@@ -64,7 +65,8 @@ enum ObjectType {
   OT_UNKNOWN = 0,
   OT_CONTACT = 1,
   OT_NSSET   = 2,
-  OT_DOMAIN  = 3
+  OT_DOMAIN  = 3,
+  OT_KEYSET  = 4
 };
 
 
@@ -156,12 +158,13 @@ public:
   virtual ~Manager() {
   }
   
-  static Manager* create(Database::Manager *_db_manager,
-                         Domain::Manager *_domain_manager,
-                         Contact::Manager *_contact_manager,
-                         NSSet::Manager *_nsset_manager,
-                         Mailer::Manager *_mailer_manager,
-                         Document::Manager *_doc_manager);
+  static Manager* create(Database::Manager  *_db_manager,
+                         Domain::Manager    *_domain_manager,
+                         Contact::Manager   *_contact_manager,
+                         NSSet::Manager     *_nsset_manager,
+                         KeySet::Manager    *_keyset_manager,
+                         Mailer::Manager    *_mailer_manager,
+                         Document::Manager  *_doc_manager);
   
   virtual Mailer::Manager* getMailerManager() const = 0;
   virtual List* createList() const = 0;

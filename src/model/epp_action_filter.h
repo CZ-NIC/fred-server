@@ -33,6 +33,7 @@ public:
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
   }
 
+  static EppAction* create();
 };
 
 class EppActionImpl : virtual public EppAction {
@@ -56,10 +57,6 @@ public:
   template<class Archive> void serialize(Archive& _ar,
       const unsigned int _version) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(EppAction);
-  }
-  
-  EppAction* clone() {
-    return dynamic_cast<EppAction*>(Compound::clone());
   }
 };
 

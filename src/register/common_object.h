@@ -20,7 +20,7 @@ class CommonList {
 protected:
   typedef std::vector<CommonObject *> list_type;
   typedef list_type::size_type size_type;
-  typedef list_type::iterator iterator;  
+  typedef list_type::iterator Iterator;  
 
 public:
   /// D-tor
@@ -70,8 +70,8 @@ public:
   /// reload data according to filter
   virtual void reload() = 0;
   
-  virtual iterator begin() = 0;
-  virtual iterator end() = 0;
+  virtual Iterator begin() = 0;
+  virtual Iterator end() = 0;
 };
 
 }

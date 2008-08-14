@@ -75,9 +75,9 @@ class ContactImpl : public ObjectImpl, public virtual Contact {
   bool discloseIdent;
   bool discloseNotifyEmail;
 public:
-  ContactImpl(TID _id, const std::string& _handle, const std::string& _name,
+  ContactImpl(TID _id, const Database::ID& _history_id, const std::string& _handle, const std::string& _name,
       TID _registrar, const std::string& _registrarHandle, ptime _crDate,
-      ptime _trDate, ptime _upDate, date _erDate, TID _createRegistrar,
+      ptime _trDate, ptime _upDate, ptime _erDate, TID _createRegistrar,
       const std::string& _createRegistrarHandle, TID _updateRegistrar,
       const std::string& _updateRegistrarHandle, const std::string& _authPw,
       const std::string& _roid, const std::string& _organization,
@@ -91,7 +91,7 @@ public:
       bool _discloseOrganization, bool _discloseAddr, bool _discloseEmail,
       bool _discloseTelephone, bool _discloseFax, bool _discloseVat,
       bool _discloseIdent, bool _discloseNotifyEmail) :
-    ObjectImpl(_id, _crDate, _trDate, _upDate, _erDate, _registrar, 
+    ObjectImpl(_id, _history_id, _crDate, _trDate, _upDate, _erDate, _registrar, 
                _registrarHandle, _createRegistrar, _createRegistrarHandle, 
                _updateRegistrar, _updateRegistrarHandle, _authPw, _roid), 
                handle(_handle), name(_name), organization(_organization), 
@@ -334,6 +334,7 @@ public:
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
       data_.push_back(new ContactImpl(
           STR_TO_ID(db->GetFieldValue(i,0)), // id
+          (Database::ID)(0), // history_id
           db->GetFieldValue(i,1), // handle
           db->GetFieldValue(i,2), // name
           STR_TO_ID(db->GetFieldValue(i,3)), // registrar id
@@ -341,7 +342,7 @@ public:
           MAKE_TIME(i,4), // crdate
           MAKE_TIME(i,5), // trdate
           MAKE_TIME(i,6), // update
-          date(not_a_date_time),
+          ptime(not_a_date_time),
           STR_TO_ID(db->GetFieldValue(i,7)), // crid
           registrars[STR_TO_ID(db->GetFieldValue(i,7))], // crid handle
           STR_TO_ID(db->GetFieldValue(i,8)), // upid
@@ -412,7 +413,7 @@ public:
         % getTempTableName() % tmp_table_query.str());
 
     Database::SelectQuery object_info_query;
-    object_info_query.select() << "t_1.id, t_1.name, t_2.name, t_3.clid, "
+    object_info_query.select() << "t_1.id, tmp.id, t_1.name, t_2.name, t_3.clid, "
         << "t_1.crdate, t_3.trdate, t_3.update, t_1.erdate, t_1.crid, t_3.upid, "
         << "t_3.authinfopw, t_1.roid, t_2.organization, t_2.street1, "
         << "t_2.street2, t_2.street3, t_2.stateorprovince, t_2.postalcode, "
@@ -428,9 +429,8 @@ public:
     object_info_query.from() << getTempTableName() << " tmp "
         << "JOIN contact_history t_2 ON (tmp.id = t_2.historyid) "
         << "JOIN object_history t_3 ON (t_2.historyid = t_3.historyid) "
-        << "JOIN object_registry t_1 ON (t_3.historyid = t_1.historyid)";
-    
-    object_info_query.order_by() << "t_1.id";
+        << "JOIN object_registry t_1 ON (t_3.id = t_1.id)";
+    object_info_query.order_by() << "tmp.id";
 
     try {
       std::auto_ptr<Database::Connection> conn(dbm->getConnection());
@@ -456,6 +456,7 @@ public:
         Database::Row::Iterator col = (*it).begin();
 
         Database::ID       cid              = *col;
+        Database::ID       history_id       = *(++col);
         std::string        handle           = *(++col);
         std::string        name             = *(++col);
         Database::ID       registrar_id     = *(++col);
@@ -463,7 +464,7 @@ public:
         Database::DateTime cr_date          = *(++col);
         Database::DateTime tr_date          = *(++col);
         Database::DateTime up_date          = *(++col);
-        Database::Date     er_date          = *(++col);
+        Database::DateTime er_date          = *(++col);
         Database::ID       crid             = *(++col);
         std::string        crid_handle      = registrars_table[crid];
         Database::ID       upid             = *(++col);
@@ -498,6 +499,7 @@ public:
         data_.push_back(
             new ContactImpl(
                 cid,
+                history_id,
                 handle,
                 name,
                 registrar_id,

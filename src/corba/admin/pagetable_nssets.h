@@ -9,7 +9,7 @@ private:
   std::auto_ptr<Register::NSSet::List> nl;
   
 public:
-  ccReg_NSSets_i(Register::NSSet::List *nl);
+  ccReg_NSSets_i(Register::NSSet::List *nl, const Settings *_ptr);
   ~ccReg_NSSets_i();
   DECL_PAGETABLE_I;
 

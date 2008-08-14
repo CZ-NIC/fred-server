@@ -30,6 +30,8 @@ public:
       const unsigned int _version) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ObjectRegistry);
   }
+  
+  static Object* create();
 };
 
 class ObjectImpl : public ObjectRegistryImpl, virtual public Object {

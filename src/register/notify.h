@@ -5,6 +5,7 @@
 #include "contact.h"
 #include "nsset.h"
 #include "domain.h"
+#include "keyset.h"
 #include "documents.h"
 #include "exceptions.h"
 #include "registrar.h"
@@ -32,6 +33,7 @@ namespace Register
         Mailer::Manager *mm,
         Contact::Manager *cm,
         NSSet::Manager *nm,
+        KeySet::Manager *km,
         Domain::Manager *dm,
         Document::Manager *docm,
         Registrar::Manager *rm

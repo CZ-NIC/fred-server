@@ -3,6 +3,11 @@
 namespace Database {
 namespace Filters {
 
+ObjectRegistry* ObjectRegistry::create() {
+  return new ObjectRegistryImpl();
+}
+
+
 ObjectRegistryImpl::ObjectRegistryImpl() :
   ObjectRegistry() {
   setName("ObjectRegistry");

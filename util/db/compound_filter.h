@@ -44,7 +44,6 @@ public:
     filter_list.push_back(_f);
   }
 
-  virtual Compound* clone() const;
   virtual void _joinPolymorphicTables() {
     polymorphic_joined_ = true;
   }
@@ -82,7 +81,7 @@ public:
     return filter_list.end();
   }
 
-  virtual void serialize(Database::SelectQuery& _sq);
+  virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings = 0); 
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,

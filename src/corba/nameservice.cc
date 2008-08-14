@@ -21,6 +21,10 @@
 #include "nameservice.h"
 #include "log/logger.h"
 
+#ifndef CONTEXT_NAME
+#define CONTEXT_NAME "fred"
+#endif
+
 NameService::NameService(CORBA::ORB_ptr orb)
   throw (NOT_RUNNING)
 {
@@ -67,7 +71,7 @@ NameService::bind(const std::string& name, CORBA::Object_ptr objref)
   try {
     CosNaming::Name contextName;
     contextName.length(1);
-    contextName[0].id   = (const char*) CONTEXTNAME;  // string copied
+    contextName[0].id   = (const char*) CONTEXT_NAME;  // string copied
     contextName[0].kind = (const char*) "context"; // string copied
     CosNaming::NamingContext_var testContext;
     try {
@@ -112,7 +116,7 @@ CORBA::Object_ptr NameService::resolve(  const std::string& name )
   CosNaming::Name contextName;
   contextName.length(2);
 
-  contextName[0].id   =  (const char*) CONTEXTNAME; 
+  contextName[0].id   =  (const char*) CONTEXT_NAME; 
   contextName[0].kind = (const char*) "context"; // string copied
   contextName[1].id   = name.c_str();
   contextName[1].kind = (const char*) "Object";

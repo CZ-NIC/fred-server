@@ -91,12 +91,12 @@ BOOST_SERIALIZATION_LIB = -lboost_serialization
 BOOST_THREAD_LIB = -lboost_thread
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -ggdb -Wall
+CFLAGS = -g -O2
 CPP = gcc -E
 CPPFLAGS = 
 CXX = g++
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -ggdb -Wall
+CXXFLAGS = -g -O2
 CYGPATH_W = echo
 DATAROOTDIR = /usr/local/share
 DBHOST = localhost

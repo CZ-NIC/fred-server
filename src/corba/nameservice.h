@@ -4,9 +4,6 @@
 #include <string>
 #include <omniORB4/CORBA.h>
 
-#ifndef CONTEXTNAME
-#define CONTEXTNAME "fred"
-#endif
 class NameService
 {
   CORBA::ORB_ptr orb;

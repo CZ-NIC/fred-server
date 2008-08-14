@@ -172,7 +172,14 @@ bool get_NSSETHANDLE(
   return get_handle(HANDLE, handle, 2);
 }
 
-// general handle
+// keyset handle
+bool get_KEYSETHANDLE(
+        char *HANDLE, const char *handle)
+{
+    return get_handle(HANDLE, handle, 4);
+}
+
+// general handle 
 bool get_HANDLE(
   char * HANDLE, const char *handle)
 {
@@ -221,6 +228,12 @@ bool get_handle(
           return true;
         } else
           return false;
+      case 4:
+        if (strncmp(HANDLE, "KEYID:", 6) == 0) {
+            LOG(LOG_DEBUG, "OK KEYSET HANDLE [%s] ", HANDLE);
+            return true;
+        } else
+            return false;
       default:
         LOG( LOG_DEBUG , "OK HANDLE [%s] " , HANDLE );
         return true;

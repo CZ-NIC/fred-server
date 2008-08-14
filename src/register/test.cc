@@ -18,7 +18,6 @@
 #include <memory>
 #include <iostream>
 #include <string>
-#include "invoice.h"
 #include "register.h"
 #include "old_utils/dbsql.h"
 

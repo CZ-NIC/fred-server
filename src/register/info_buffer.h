@@ -6,6 +6,7 @@
 #include "domain.h"
 #include "contact.h"
 #include "nsset.h"
+#include "keyset.h"
 #include "exceptions.h" 
 
 namespace Register
@@ -19,10 +20,13 @@ namespace Register
       T_LIST_CONTACTS, ///< list contact that belongs to particular registrar
       T_LIST_DOMAINS, ///< list domains that belongs to particular registrar
       T_LIST_NSSETS, ///< list nssets that belongs to particular registrar
+      T_LIST_KEYSETS, ///< list keysets that belongs to particular registrar
       T_DOMAINS_BY_NSSET, ///< list domains that are using specified nsset
       T_DOMAINS_BY_CONTACT, ///< list domains somewhat connected to contact
+      T_DOMAINS_BY_KEYSET, ///< list domains which are using specified keyset
       T_NSSETS_BY_CONTACT, ///< list nssets with specified admin contact
-      T_NSSETS_BY_NS ///< list nssets containing specified host as nameserver
+      T_NSSETS_BY_NS, ///< list nssets containing specified host as nameserver
+      T_KEYSETS_BY_CONTACT, ///< list keysets with specifies admin contact
     };
     /// one chunk of data returned by one call of retrieving function
     class Chunk
@@ -43,7 +47,10 @@ namespace Register
       virtual ~Manager() {}
       /// factory method
       static Manager *create(
-        DB *db, Domain::Manager *dm, NSSet::Manager *nm, Contact::Manager *cm
+        DB *db, Domain::Manager *dm, 
+        NSSet::Manager *nm, 
+        Contact::Manager *cm, 
+        KeySet::Manager *km
       );
       /// fill buffer with result of info command and reset pointer to start
       virtual unsigned long info(

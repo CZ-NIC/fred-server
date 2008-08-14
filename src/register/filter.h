@@ -15,6 +15,7 @@ enum FilterType {
   FT_OBJ,
   FT_CONTACT,
   FT_NSSET,
+  FT_KEYSET,
   FT_DOMAIN,
   FT_ACTION,
   FT_INVOICE,

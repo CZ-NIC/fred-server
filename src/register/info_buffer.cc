@@ -113,11 +113,12 @@ namespace Register
       Domain::Manager *dm;
       Contact::Manager *cm;
       NSSet::Manager *nm;
+      KeySet::Manager *km;
      public:
       ManagerImpl(
         DB *_db, Domain::Manager *_dm, 
-        NSSet::Manager *_nm, Contact::Manager *_cm
-      ) : db(_db), dm(_dm), cm(_cm), nm(_nm)
+        NSSet::Manager *_nm, Contact::Manager *_cm, KeySet::Manager *_km
+      ) : db(_db), dm(_dm), cm(_cm), nm(_nm), km(_km)
       {}
       #define LIST(type) (dynamic_cast<type *>(list.get()))
       virtual unsigned long info(
@@ -148,13 +149,25 @@ namespace Register
             LIST(Register::Domain::List)->setAdminHandleFilter("");
             LIST(Register::Domain::List)->setTempHandleFilter(request);
             break;
+          case T_DOMAINS_BY_KEYSET:
+            list.reset(dm->createList());
+            LIST(Register::Domain::List)->setKeySetHandleFilter(request);
+            break;
           case T_LIST_NSSETS:
             list.reset(nm->createList());
             LIST(Register::NSSet::List)->setRegistrarFilter(registrar);
             break;
+          case T_LIST_KEYSETS:
+            list.reset(km->createList());
+            LIST(Register::KeySet::List)->setRegistrarFilter(registrar);
+            break;
           case T_NSSETS_BY_CONTACT:
             list.reset(nm->createList());
             LIST(Register::NSSet::List)->setAdminFilter(request);
+            break;
+          case T_KEYSETS_BY_CONTACT:
+            list.reset(km->createList());
+            LIST(Register::KeySet::List)->setAdminFilter(request);
             break;
           case T_NSSETS_BY_NS:
             list.reset(nm->createList());
@@ -221,10 +234,10 @@ namespace Register
       }
     };
     Manager *Manager::create(
-      DB *db, Domain::Manager *dm, NSSet::Manager *nm, Contact::Manager *cm
+      DB *db, Domain::Manager *dm, NSSet::Manager *nm, Contact::Manager *cm, KeySet::Manager *km
     )
     {
-      return new ManagerImpl(db,dm,nm,cm);
+      return new ManagerImpl(db,dm,nm,cm, km);
     }
   };
 };

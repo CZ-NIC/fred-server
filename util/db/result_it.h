@@ -3,7 +3,7 @@
 
 #include "db_value.h"
 
-namespace DBase {
+namespace Database {
 
 class ResultIterator {
 protected:

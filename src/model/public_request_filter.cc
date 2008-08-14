@@ -3,6 +3,10 @@
 namespace Database {
 namespace Filters {
 
+PublicRequest* PublicRequest::create() {
+  return new PublicRequestImpl();
+}
+
 PublicRequestImpl::PublicRequestImpl() : Compound() {
   setName("Request");
   active = true;
@@ -79,7 +83,7 @@ Value<Database::ID>& PublicRequestImpl::addEppActionId() {
 }
 
 Object& PublicRequestImpl::addObject() {
-  Object* tmp = new ObjectHistoryImpl();
+  Object* tmp = Object::create();
   addJoin(new Join(
                    Column("id", joinRequestTable()),
                    SQL_OP_EQ,
@@ -96,7 +100,7 @@ Object& PublicRequestImpl::addObject() {
 }
 
 EppAction& PublicRequestImpl::addEppAction() {
-  EppAction *tmp = new EppActionImpl();
+  EppAction *tmp = EppAction::create();
   tmp->joinOn(new Join(
                        Column("epp_action_id", joinRequestTable()),
                        SQL_OP_EQ,

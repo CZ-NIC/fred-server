@@ -1456,7 +1456,7 @@ public:
     
     /// export all invoices on the list using given exporter
     void doExport(Exporter *_exporter) {
-      iterator it = data_.begin();
+      Iterator it = data_.begin();
       for (; it != data_.end(); ++it) {
         InvoiceImpl *invoice = dynamic_cast<InvoiceImpl*>(*it);
         if (invoice)

@@ -9,7 +9,7 @@ private:
   std::auto_ptr<Register::Contact::List> cl;
 
 public:
-  ccReg_Contacts_i(Register::Contact::List *cl);
+  ccReg_Contacts_i(Register::Contact::List *cl, const Settings *_ptr);
   ~ccReg_Contacts_i();
   DECL_PAGETABLE_I;
   

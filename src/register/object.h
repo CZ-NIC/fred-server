@@ -83,14 +83,20 @@ class Object : virtual public CommonObject {
 public:
   virtual ~Object() {
   }
+
+  virtual Database::ID getHistoryId() const = 0;
+  virtual Database::ID getActionId() const = 0; 
+  virtual Database::DateTime getActionStartTime() const = 0;
+  virtual void setAction(const Database::ID& _id, const Database::DateTime& _start_time) = 0;
+
   /// Return time of object registration
   virtual ptime getCreateDate() const = 0;
   /// Return time of last transfer
   virtual ptime getTransferDate() const = 0;
   /// Return time of last update
   virtual ptime getUpdateDate() const = 0;
-  /// Return time of object delete
-  virtual date getDeleteDate() const = 0;
+  /// Return time of object delete - database field erdate
+  virtual ptime getDeleteDate() const = 0;
   /// Return handle of dedicated registrar
   virtual const std::string& getRegistrarHandle() const = 0;
   /// Return id of dedicated registrar
@@ -144,6 +150,8 @@ public:
   virtual void addStateFilter(TID state, bool stateIsOn) = 0;
   /// clear filter for one of states
   virtual void clearStateFilter(TID state) = 0;
+  /// delete duplicate records with same ID
+  virtual void deleteDuplicatesId() = 0;
 };
 
 }

@@ -6,10 +6,11 @@
 #define ID unsigned  int
 #endif
 
-// type of object  1 contact  2 nsset 3 domain
+// type of object  1 contact  2 nsset 3 domain 4 keyset
 #define OBJECT_CONTACT 1
 #define OBJECT_NSSET   2
 #define OBJECT_DOMAIN  3
+#define OBJECT_KEYSET  4
 
 #define OLD -1
 #define NEW  1
@@ -18,6 +19,7 @@
 #define ADMIN_CONTACT     2 // admin-c at the domain  
 #define TECH_CONTACT      3 // tech-c at  nsset
 #define MAIL_CONTACT      4 // transformed contacts 
+#define KEY_CONTACT       5 // tech-c at keyset
 typedef struct
 {
   ID contactID; // id of the constact
@@ -61,6 +63,10 @@ public:
     ID domainID); // add ale tech-c of the nsset linked with domain with  SQL query
   void AddNSSetTech(
     ID nssetID); // add all tech-c with nsset  with  SQL query
+  void AddKeySetTechByDomain(
+          ID domainID); //add all tech-c of keyset linket with domain with SQL query
+  void AddKeySetTech(
+          ID keysetID); //add all tech-c with keyset with sql query
   void AddDomainAdmin(
     ID domainID); // add all admin-c at domain with  SQL query
   void AddDomainRegistrant(
@@ -150,6 +156,12 @@ private:
       case EPP_NSsetTransfer:
         AddNSSetTech(objectID); // tech-c of the nsset
         break;
+      case EPP_KeySetCreate:
+      case EPP_KeySetUpdate:
+      case EPP_KeySetDelete:
+      case EPP_KeySetTransfer:
+        AddKeySetTech(objectID); // tech-c of keyset
+        break;
     }
 
   }
@@ -192,16 +204,19 @@ private:
       case EPP_ContactUpdate:
       case EPP_NSsetUpdate:
       case EPP_DomainUpdate:
+      case EPP_KeySetUpdate:
         return "notification_update";
 
       case EPP_ContactTransfer:
       case EPP_NSsetTransfer:
       case EPP_DomainTransfer:
+      case EPP_KeySetTransfer:
         return "notification_transfer";
 
       case EPP_ContactCreate:
       case EPP_NSsetCreate:
       case EPP_DomainCreate:
+      case EPP_KeySetCreate:
         return "notification_create";
 
       case EPP_DomainRenew:
@@ -210,6 +225,7 @@ private:
       case EPP_DomainDelete:
       case EPP_NSsetDelete:
       case EPP_ContactDelete:
+      case EPP_KeySetDelete:
         return "notification_delete";
 
       default:

@@ -37,10 +37,16 @@ class DomainImpl : public ObjectImpl, public virtual Domain {
   struct AdminInfo {
     TID id;
     std::string handle;
+
     AdminInfo(TID _id, const std::string& _handle) :
       id(_id), handle(_handle) {
     }
+
+    bool operator==(const AdminInfo& _ai) const {
+      return (id == _ai.id && handle == _ai.handle);
+    }
   };
+
   typedef std::vector<AdminInfo> AdminInfoList;
   std::string fqdn;
   std::string fqdnIDN;
@@ -56,22 +62,25 @@ class DomainImpl : public ObjectImpl, public virtual Domain {
   date valExDate;
   unsigned zoneStatus;
   ptime zoneStatusTime;
-  date outZoneDate;
-  date cancelDate;
+  ptime outZoneDate;
+  ptime cancelDate;
+
+  TID keyset;
+  std::string keysetHandle;
 public:
-  DomainImpl(TID _id, const std::string& _fqdn, TID _zone, TID _nsset,
+  DomainImpl(TID _id, const Database::ID& _history_id, const std::string& _fqdn, TID _zone, TID _nsset,
              const std::string& _nssetHandle, TID _registrant,
              const std::string& _registrantHandle,
              const std::string& _registrantName, TID _registrar,
              const std::string& _registrarHandle, const ptime& _crDate, const ptime& _trDate,
-             const ptime& _upDate, const date& _erDate, TID _createRegistrar,
+             const ptime& _upDate, const ptime& _erDate, TID _createRegistrar,
              const std::string& _createRegistrarHandle, TID _updateRegistrar,
              const std::string& _updateRegistrarHandle,
              const std::string& _authPw, const std::string& _roid,
              const date& _exDate, const date& _valExDate, unsigned _zoneStatus,
-             const ptime& _zoneStatusTime, const date& _outZoneDate, const date& _cancelDate, 
-             Zone::Manager *zm) :
-    ObjectImpl(_id, _crDate, _trDate, _upDate, _erDate, _registrar,
+             const ptime& _zoneStatusTime, const ptime& _outZoneDate, const ptime& _cancelDate, 
+             Zone::Manager *zm, TID _keyset, const std::string &_keysetHandle) :
+    ObjectImpl(_id, _history_id, _crDate, _trDate, _upDate, _erDate, _registrar,
                _registrarHandle, _createRegistrar, _createRegistrarHandle,
                _updateRegistrar, _updateRegistrarHandle, _authPw, _roid),
         fqdn(_fqdn), fqdnIDN(zm->decodeIDN(fqdn)), zone(_zone), nsset(_nsset), nssetHandle(_nssetHandle),
@@ -79,10 +88,14 @@ public:
         registrantName(_registrantName), exDate(_exDate),
         valExDate(_valExDate), zoneStatus(_zoneStatus),
         zoneStatusTime(_zoneStatusTime), 
-        outZoneDate(_outZoneDate), cancelDate(_cancelDate) {
+        outZoneDate(_outZoneDate), cancelDate(_cancelDate),
+        keyset(_keyset), keysetHandle(_keysetHandle) {
   }
   virtual const std::string& getFQDN() const {
     return fqdn;
+  }
+  virtual const std::string& getHandle() const {
+    return getFQDN();
   }
   virtual const std::string& getFQDNIDN() const {
 		return fqdnIDN;
@@ -100,6 +113,19 @@ public:
     // check existance and set handle
     this->nsset = nsset;
     modified_ = true;
+  }
+  virtual const std::string &getKeySetHandle() const
+  {
+      return keysetHandle;
+  }
+  virtual TID getKeySetId() const
+  {
+      return keyset;
+  }
+  virtual void setKeySetId(TID keyset)
+  {
+      this->keyset = keyset;
+      modified_ = true;
   }
   virtual const std::string& getRegistrantHandle() const {
     return registrantHandle;
@@ -125,10 +151,10 @@ public:
   virtual ptime getZoneStatusTime() const {
     return zoneStatusTime;
   }
-  virtual date getOutZoneDate() const {
+  virtual ptime getOutZoneDate() const {
     return outZoneDate;
   }
-  virtual date getCancelDate() const {
+  virtual ptime getCancelDate() const {
     return cancelDate;
   }
   virtual unsigned getAdminCount(unsigned role) const {
@@ -157,7 +183,7 @@ public:
     return id_ == id;
   }
   /// add one admin handle - for domain intialization
-  void addAdminHandle(TID id, const std::string& handle, unsigned role=1) {
+      void addAdminHandle(TID id, const std::string& handle, unsigned role=1) {
     if (role == 1)
       adminList.push_back(AdminInfo(id, handle));
     else
@@ -166,6 +192,11 @@ public:
   /// add nsset handle - for domain intialization
   void addNSSetHandle(const std::string& handle) {
     nssetHandle = handle;
+  }
+  ///add keyset handle - for domain initialization
+  void addKeySetHandle(const std::string &handle)
+  {
+      keysetHandle = handle;
   }
   /// setting validation date - for domain initialization
   void setValExDate(date _valExDate) {
@@ -213,13 +244,15 @@ class ListImpl : virtual public List, public ObjectListImpl {
   std::string hostIP;
   unsigned zoneStatus;
   Zone::Manager *zm;
+  TID keyset;
+  std::string keysetHandle;
 public:
   ListImpl(DB *_db, Zone::Manager *_zm) :
     ObjectListImpl(_db), zoneFilter(0), registrantFilter(0), nsset(0),
         admin(0), temp(0), contactFilter(0), exDate(ptime(neg_infin),
                                                     ptime(pos_infin)),
         valExDate(ptime(neg_infin), ptime(pos_infin)), zoneStatus(0),
-        zm(_zm) {
+        zm(_zm), keyset(0) {
   }
   virtual Domain *getDomain(unsigned idx) const {
     return dynamic_cast<DomainImpl *>(get(idx));
@@ -248,6 +281,18 @@ public:
     nssetHandle = _nssetHandle;
     setFilterModified();
     nonHandleFilterSet = true;
+  }
+  virtual void setKeySetFilter(TID _keysetId)
+  {
+      keyset = _keysetId;
+      setFilterModified();
+      nonHandleFilterSet = true;
+  }
+  virtual void setKeySetHandleFilter(const std::string &_keysetHandle)
+  {
+      keysetHandle = _keysetHandle;
+      setFilterModified();
+      nonHandleFilterSet = true;
   }
   virtual void setAdminFilter(TID _adminId) {
     admin = _adminId;
@@ -322,6 +367,7 @@ public:
     SQL_DATE_FILTER(where, "d.exdate", exDate)
     ;
     SQL_ID_FILTER(where, "d.nsset", nsset);
+    SQL_ID_FILTER(where, "d.keyset", keyset);
     SQL_ID_FILTER(where, "d.registrant", registrantFilter);
     if (registrarFilter || !registrarHandleFilter.empty()
         || updateRegistrarFilter || !updateRegistrarHandleFilter.empty()
@@ -401,6 +447,11 @@ public:
       where << "AND d.nsset=nor.id AND nor.type=2 ";
       SQL_HANDLE_WILDCHECK_FILTER(where, "nor.name", nssetHandle, wcheck, true);
     }
+    if (!keysetHandle.empty()) {
+        from << ", object_registry kor ";
+        where << "AND d.keyset=kor.id AND kor.type=4";
+        SQL_HANDLE_WILDCHECK_FILTER(where, "kor.name", keysetHandle, wcheck, true);
+    }
     if (!techAdmin.empty()) {
       from << ",nsset_contact_map ncm, object_registry tcor ";
       where << "AND d.nsset=ncm.nssetid AND ncm.contactid=tcor.id "
@@ -458,12 +509,12 @@ public:
         % getTempTableName() % tmp_table_query.str());
 
     Database::SelectQuery object_info_query;
-    object_info_query.select() << "t_1.id, t_1.name, t_2.zone, t_2.nsset, "
+    object_info_query.select() << "t_1.id, tmp.id, t_1.name, t_2.zone, t_2.nsset, t_2.keyset, "
         << "t_3.id, t_3.name, t_4.name, t_5.clid, "
         << "t_1.crdate, t_5.trdate, t_5.update, t_1.erdate, t_1.crid, t_5.upid, "
         << "t_5.authinfopw, t_1.roid, t_2.exdate, "
-        << "(t_2.exdate + (SELECT val from enum_parameters where id = 4)::int) as outzonedate, "
-        << "(t_2.exdate + (SELECT val from enum_parameters where id = 6)::int) as canceldate";
+        << "(((t_2.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 4)::interval)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as outzonedate, "
+        << "(((t_2.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 6)::interval)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate";
     //    object_info_query.from() << getTempTableName()
     //        << " tmp JOIN domain t_2 ON (tmp.id = t_2.id) "
     //        << "JOIN object t_5 ON (t_2.id = t_5.id) "
@@ -473,11 +524,11 @@ public:
     object_info_query.from() << getTempTableName()
         << " tmp JOIN domain_history t_2 ON (tmp.id = t_2.historyid) "
         << "JOIN object_history t_5 ON (t_2.historyid = t_5.historyid) "
+        << "JOIN object_registry t_1 ON (t_5.id = t_1.id) "
         << "JOIN contact_history t_4 ON (t_2.registrant = t_4.id) "
         << "JOIN object_registry t_3 ON (t_4.historyid = t_3.historyid) "
-        << "JOIN object_registry t_1 ON (t_5.historyid = t_1.historyid)";
-
-    object_info_query.order_by() << "t_1.id";
+        << "JOIN history h ON (tmp.id = h.id) JOIN action a ON (a.id = h.action) ";
+    object_info_query.order_by() << "tmp.id";
 
     try {
       std::auto_ptr<Database::Connection> conn(dbm->getConnection());
@@ -505,10 +556,13 @@ public:
         Database::Row::Iterator col = (*it).begin();
 
         Database::ID       did                   = *col;
+        Database::ID       history_id            = *(++col);
         std::string        fqdn                  = *(++col);
         Database::ID       zone                  = *(++col);
         Database::ID       nsset                 = *(++col);
         std::string        nssetHandle           = ""; //*(++col);
+        Database::ID       keyset                = *(++col);
+        std::string        keysetHandle          = ""; //*(++col);
         Database::ID       registrant            = *(++col);
         std::string        registrantHandle      = *(++col);
         std::string        registrantName        = *(++col);
@@ -517,7 +571,7 @@ public:
         Database::DateTime crDate                = *(++col);
         Database::DateTime trDate                = *(++col);
         Database::DateTime upDate                = *(++col);
-        Database::Date     erDate                = *(++col);
+        Database::DateTime erDate                = *(++col);
         Database::ID       createRegistrar       = *(++col);
         std::string        createRegistrarHandle = registrars_table[createRegistrar];
         Database::ID       updateRegistrar       = *(++col);
@@ -528,12 +582,25 @@ public:
         Database::Date     valExDate             = Database::Date();
         unsigned           zoneStatus            = 1;
         ptime              zoneStatusTime        = ptime();
-        Database::Date     outZoneDate           = *(++col);
-        Database::Date     cancelDate            = *(++col);
+        Database::DateTime outZoneDate           = *(++col);
+        Database::DateTime cancelDate            = *(++col);
+
+        /**
+         * check erdate date with default parameters selected outzone and cancel dates
+         * and compute right ones
+         */
+        if (!erDate.is_special()) {
+          if (erDate < outZoneDate) {
+            outZoneDate = erDate;
+          }
+          /* if erDate is set in database it is also canceldate */
+          cancelDate = erDate;
+        }
 
         data_.push_back (
             new DomainImpl(
                 did,
+                history_id,
                 fqdn,
                 zone,
                 nsset,
@@ -559,7 +626,9 @@ public:
                 zoneStatusTime,
                 outZoneDate,
                 cancelDate,
-                zm
+                zm,
+                keyset,
+                keysetHandle
             ));
       }
 
@@ -567,7 +636,7 @@ public:
       return;
 
       /// load admin contacts info
-      resetIDSequence();
+      resetHistoryIDSequence();
       Database::SelectQuery admins_query;
       admins_query.select() << "tmp.id, t_2.domainid, t_1.id, t_1.name, t_2.role";
       // admins_query.from() << getTempTableName() << " tmp "
@@ -576,7 +645,7 @@ public:
       admins_query.from() << getTempTableName() << " tmp "
                           << "JOIN domain_contact_map_history t_2 ON (tmp.id = t_2.historyid) "
                           << "JOIN object_registry t_1 ON (t_2.contactid = t_1.id)";
-      admins_query.order_by() << "t_2.domainid";
+      admins_query.order_by() << "tmp.id";
 
       Database::Result r_admins = conn->exec(admins_query);
       for (Database::Result::Iterator it = r_admins.begin(); it != r_admins.end(); ++it) {
@@ -588,13 +657,13 @@ public:
         std::string  admin_handle     = *(++col);
         unsigned     admin_role       = *(++col);
 
-        DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findIDSequence(domain_id));
+        DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findHistoryIDSequence(domain_historyid));
         if (domain_ptr)
-        domain_ptr->addAdminHandle(admin_id, admin_handle, admin_role);
+          domain_ptr->addAdminHandle(admin_id, admin_handle, admin_role);
       }
 
       /// load nssets info
-      resetIDSequence();
+      resetHistoryIDSequence();
       Database::SelectQuery nssets_query;
 
       nssets_query.select() << "tmp.id, t_2.id, t_1.name";
@@ -604,7 +673,7 @@ public:
       nssets_query.from() << getTempTableName() << " tmp "
       << "JOIN domain_history t_2 ON (tmp.id = t_2.historyid) "
       << "JOIN object_registry t_1 ON (t_1.id = t_2.nsset)";
-      nssets_query.order_by() << "t_2.id";
+      nssets_query.order_by() << "tmp.id";
 
       Database::Result r_nssets = conn->exec(nssets_query);
       for (Database::Result::Iterator it = r_nssets.begin(); it != r_nssets.end(); ++it) {
@@ -614,19 +683,43 @@ public:
         Database::ID domain_id        = *(++col);
         std::string  nsset_handle     = *(++col);
 
-        DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findIDSequence(domain_id));
+        DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findHistoryIDSequence(domain_historyid));
         if (domain_ptr)
           domain_ptr->addNSSetHandle(nsset_handle);
       }
 
+      /// load keyset info 
+      resetHistoryIDSequence();
+      Database::SelectQuery keysets_query;
+
+      keysets_query.select() << "tmp.id, t_2.id, t_1.name";
+      keysets_query.from()
+          << getTempTableName() << " tmp "
+          << "JOIN domain_history t_2 ON (tmp.id = t_2.historyid) "
+          << "JOIN object_registry t_1 ON (t_1.id = t_2.keyset)";
+      keysets_query.order_by() << "tmp.id";
+
+      Database::Result r_keysets = conn->exec(keysets_query);
+      for (Database::Result::Iterator it = r_keysets.begin(); it != r_keysets.end(); ++it) {
+          Database::Row::Iterator col = (*it).begin();
+
+          Database::ID domain_historyid = *col;
+          Database::ID domain_id        = *(++col);
+          std::string  keyset_handle    = *(++col);
+
+          DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findHistoryIDSequence(domain_id));
+          if (domain_ptr)
+              domain_ptr->addKeySetHandle(keyset_handle);
+      }
+
       /// load validation (for enum domains)
-      resetIDSequence();
+      resetHistoryIDSequence();
       Database::SelectQuery validation_query;
       validation_query.select() << "tmp.id, t_1.domainid, t_1.exdate";
       validation_query.from() << getTempTableName() << " tmp "
                               << "JOIN enumval_history t_1 ON (tmp.id = t_1.historyid)";
-      validation_query.order_by() << "t_1.domainid";
-
+      validation_query.order_by() << "tmp.id";
+        
       Database::Result r_validation = conn->exec(validation_query);
       Database::Result::Iterator it = r_validation.begin();
       for (; it != r_validation.end(); ++it) {
@@ -636,7 +729,7 @@ public:
         Database::ID   domain_id        = *(++col);
         Database::Date validation_date  = *(++col);
 
-        DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findIDSequence(domain_id));
+        DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findHistoryIDSequence(domain_historyid));
         if (domain_ptr)
           domain_ptr->setValExDate(validation_date);
       }
@@ -686,8 +779,10 @@ public:
     // expiration and validation dates (validation in seperate query)
         << "d.exdate,NULL,"
     // outzone data and cancel date from enum_parameters compute
-        << "(d.exdate + (SELECT val from enum_parameters where id = 4)::int) as outzonedate,"
-        << "(d.exdate + (SELECT val from enum_parameters where id = 6)::int) as canceldate "
+        << "(((d.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 4)::interval)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as outzonedate, "
+        << "(((d.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 6)::interval)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate, "
+    // keyset id and keyset handle
+        << "d.keyset, '' "
         << "FROM " 
         << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
         << "contact c, object_registry cor, " << "object_registry obr, "
@@ -705,6 +800,7 @@ public:
       DomainImpl *d;
       d = new DomainImpl(
           STR_TO_ID(db->GetFieldValue(i,0)), // id
+          (Database::ID)(0), // history_id
           db->GetFieldValue(i,1), // fqdn
           STR_TO_ID(db->GetFieldValue(i,2)), // zone
           STR_TO_ID(db->GetFieldValue(i,3)), // nsset id
@@ -717,7 +813,7 @@ public:
           MAKE_TIME(i,9), // crdate
           MAKE_TIME(i,10), // trdate
           MAKE_TIME(i,11), // update
-          date(not_a_date_time),
+          ptime(not_a_date_time),
           STR_TO_ID(db->GetFieldValue(i,12)), // crid
           registrars[STR_TO_ID(db->GetFieldValue(i,12))], // crid handle
           STR_TO_ID(db->GetFieldValue(i,13)), // upid
@@ -728,9 +824,11 @@ public:
           MAKE_DATE(i,17), // valexdate
           true, // zone status
           ptime(), // zone status time
-          MAKE_DATE(i,18),
-          MAKE_DATE(i,19),
-          zm
+          MAKE_TIME(i,18),
+          MAKE_TIME(i,19),
+          zm,
+          STR_TO_ID(db->GetFieldValue(i, 20)), // keyset id
+          db->GetFieldValue(i, 21) // keyset handle
       );
       data_.push_back(d);
     }
@@ -784,6 +882,30 @@ public:
       dom->addNSSetHandle(db->GetFieldValue(i, 1) );
     }
     db->FreeSelect();
+    
+    // add keyset handles
+    resetIDSequence();
+    sql.str("");
+    sql << "SELECT " << "tmp.id, kor.name " << "FROM "
+        << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
+        << "domain d, object_registry kor "
+        << "WHERE tmp.id=d.id AND d.keyset=kor.id ";
+    if (!useTempTable) {
+        sql << "AND tmp.name=LOWER('" << db->Escape2(fqdn) << "') "
+            << "AND tmp.erdate ISNULL AND tmp.type=3 ";
+    }
+    sql << "ORDER BY tmp.id";
+    if (!db->ExecSelect(sql.str().c_str()))
+        throw SQL_ERROR();
+    for (unsigned int i = 0; i < (unsigned int)db->GetSelectRows(); i++) {
+        DomainImpl *dom = dynamic_cast<DomainImpl *>(findIDSequence(STR_TO_ID(db->GetFieldValue(
+                            i, 0))));
+        if (!dom)
+            throw SQL_ERROR();
+        dom->addKeySetHandle(db->GetFieldValue(i, 1));
+    }
+    db->FreeSelect();
+
     // add validation (for enum domains)
     resetIDSequence();
     sql.str("");
@@ -820,6 +942,8 @@ public:
     techAdmin = "";
     hostIP = "";
     zoneStatus = 0;
+    keyset = 0;
+    keysetHandle = "";
   }
 
   virtual void sort(MemberType member, bool asc) {
@@ -962,7 +1086,7 @@ public:
 Manager *Manager::create(DB *db, Zone::Manager *zm) {
   return new ManagerImpl(db,zm);
 }
+
 }
-;
 }
-;
+

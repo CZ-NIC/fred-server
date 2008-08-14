@@ -479,6 +479,10 @@ int main(int argc, char **argv)
         }
         il->setArchivedFilter(af);
       }
+
+      if (vm.count("object_list")) {
+      }
+
       if (vm.count("object_id")) 
         il->setObjectIdFilter(vm["object_id"].as<Register::TID>());
       if (vm.count("object_name")) 
@@ -536,10 +540,19 @@ int main(int argc, char **argv)
         &db,zoneMan.get(),vm["restricted_handles"].as<unsigned>()
       )
     );
+    std::auto_ptr<Register::KeySet::Manager> keyMan(
+            Register::KeySet::Manager::create(
+                &db, vm["restricted_handles"].as<unsigned>()
+                )
+            );
     // infoBuffer
     std::auto_ptr<Register::InfoBuffer::Manager> infoBufMan(
       Register::InfoBuffer::Manager::create(
-        &db, domMan.get(), nssMan.get(), conMan.get()
+        &db,
+        domMan.get(),
+        nssMan.get(),
+        conMan.get(),
+        keyMan.get()
       )
     );
     if (vm.count("info_buffer_make_info")) {
@@ -651,7 +664,13 @@ int main(int argc, char **argv)
     );
     std::auto_ptr<Register::Notify::Manager> notifyMan(
       Register::Notify::Manager::create(
-        &db, &mm, conMan.get(), nssMan.get(), domMan.get(), docman.get(),
+        &db,
+        &mm,
+        conMan.get(),
+        nssMan.get(),
+        keyMan.get(),
+        domMan.get(),
+        docman.get(),
         rMan.get()
       )
     );

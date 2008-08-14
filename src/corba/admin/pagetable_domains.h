@@ -9,7 +9,7 @@ private:
   std::auto_ptr<Register::Domain::List> dl;
 
 public:
-  ccReg_Domains_i(Register::Domain::List *dl);
+  ccReg_Domains_i(Register::Domain::List *dl, const Settings *_ptr);
   ~ccReg_Domains_i();
   DECL_PAGETABLE_I;
   

@@ -8,6 +8,8 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 
+#include "settings.h"
+#include "keyset_filter.h"
 #include "model_filters.h"
 #include "db/manager.h"
 #include "log/logger.h"
@@ -163,11 +165,38 @@ int main(int argc, char *argv[]) {
 //    
 //    return 1;
     
+    Domain *df_test = new DomainHistoryImpl();
+    df_test->addHandle().setValue("d*");
+    df_test->addZoneId().setValue(Database::ID(3));
+    df_test->addRegistrant().addHandle().setValue("CID:TOM");
+
+    uf.addFilter(df_test);
+    sq1 = new SelectQuery();
+    sq1->addSelect(new Column("historyid", df_test->joinObjectTable(), "DISTINCT"));
+    sq1->addSelect("id roid name", df_test->joinObjectRegistryTable());
+    uf.addQuery(sq1);
+
+    exec_and_print(sq, uf);
+
+
+
+    return 1;
+
+    // KeySet *k = new KeySetImpl();
+    // k->addTechContact().addCity().setValue("Jihlava");
+    // k->addId().setValue(DBase::ID(18));
+    // k->addDomain().addId().setValue(DBase::ID(16));
+    // uf.addFilter(k);
+    // sq1 = new SelectQuery();
+    // sq1->addSelect("*", k->joinKeySetTable());
+    // uf.addQuery(sq1);
+    // exec_and_print__(sq, uf);
+
+    return 1;
     
     Invoice *i = new InvoiceImpl();
-    //i->addType().setValue(0);
-    i->addNumber().setValue("1*");
-    //i->addFile().addName().setValue("150800001.pdf");
+    //i->addFile().addName().setValue("soubor.pdf");
+    i->addRegistrar().addHandle().setValue("REG-FRED_A");
    
     uf.addFilter(i);
     sq1 = new SelectQuery();

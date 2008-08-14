@@ -118,6 +118,7 @@ void ccReg_Admin_i::checkHandle(const char* handle,
       SWITCH_CONVERT_T(HT_DOMAIN);
       SWITCH_CONVERT_T(HT_CONTACT);
       SWITCH_CONVERT_T(HT_NSSET);
+      SWITCH_CONVERT_T(HT_KEYSET);
       SWITCH_CONVERT_T(HT_REGISTRAR);
       SWITCH_CONVERT_T(HT_OTHER);
     }
@@ -137,7 +138,7 @@ void ccReg_Admin_i::checkHandle(const char* handle,
 
 void ccReg_Admin_i::garbageSession() {
   LOGGER("corba").debug("session garbage thread started...");
-
+  
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   while (session_garbage_active_) {
     LOGGER("corba").debug("session garbage procedure sleeped");
@@ -146,6 +147,7 @@ void ccReg_Admin_i::garbageSession() {
     boost::xtime sleep_time;
     boost::xtime_get(&sleep_time, boost::TIME_UTC);
     sleep_time.sec += 150;
+    //boost::thread::sleep(sleep_time);
     cond_.timed_wait(scoped_lock, sleep_time);
     
     TRACE("[CALL] ccReg_Admin_i::garbageSession()");
@@ -203,7 +205,7 @@ char* ccReg_Admin_i::createSession(const char* username)
 
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   
-  ccReg_Session_i *session = new ccReg_Session_i(m_connection_string, ns, cfg, user_info);
+  ccReg_Session_i *session = new ccReg_Session_i(session_id, m_connection_string, ns, cfg, user_info);
   m_session_list[session_id] = session; 
   LOGGER("corba").notice(boost::format("admin session '%1%' created -- total number of sessions is '%2%'")
       % session_id % m_session_list.size());
@@ -519,7 +521,7 @@ ccReg::ContactDetail* ccReg_Admin_i::getContactById(ccReg::TID id)
   std::auto_ptr<Register::Contact::List> cl(cr->createList());
 
   Database::Filters::Union uf;
-  Database::Filters::Contact *cf = new Database::Filters::ContactImpl();
+  Database::Filters::Contact *cf = new Database::Filters::ContactHistoryImpl();
   cf->addId().setValue(Database::ID(id));
   uf.addFilter(cf);
   cl->reload(uf, &m_db_manager);
@@ -603,6 +605,7 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetByHandle(const char* handle)
 
 ccReg::NSSetDetail* ccReg_Admin_i::getNSSetById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
+  TRACE(boost::format("[CALL] ccReg_Admin_i::getNSSetById('%1%')") % id);
   DB db;
   if (!id)
     throw ccReg::Admin::ObjectNotFound();
@@ -612,7 +615,7 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetById(ccReg::TID id)
   std::auto_ptr<Register::NSSet::List> nl(nr->createList());
 
   Database::Filters::Union uf;
-  Database::Filters::NSSet *nf = new Database::Filters::NSSetImpl();
+  Database::Filters::NSSet *nf = new Database::Filters::NSSetHistoryImpl();
   nf->addId().setValue(Database::ID(id));
   uf.addFilter(nf);
   nl->reload(uf, &m_db_manager);
@@ -629,6 +632,131 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetById(ccReg::TID id)
   db.Disconnect();
   return cn;
 }
+
+void
+ccReg_Admin_i::fillKeySet(ccReg::KeySetDetail *ck, Register::KeySet::KeySet *k)
+{
+    ck->id = k->getId();
+    ck->handle          = DUPSTRFUN(k->getHandle);
+    ck->roid            = DUPSTRFUN(k->getROID);
+    ck->registrarHandle = DUPSTRFUN(k->getRegistrarHandle);
+    ck->transferDate    = DUPSTRDATE(k->getTransferDate);
+    ck->updateDate      = DUPSTRDATE(k->getUpdateDate);
+    ck->createDate      = DUPSTRDATE(k->getCreateDate);
+    ck->createRegistrarHandle = DUPSTRFUN(k->getCreateRegistrarHandle);
+    ck->updateRegistrarHandle = DUPSTRFUN(k->getUpdateRegistrarHandle);
+    ck->authInfo        = DUPSTRFUN(k->getAuthPw);
+    ck->admins.length(k->getAdminCount());
+    try {
+        for (unsigned int i = 0; i < k->getAdminCount(); i++)
+            ck->admins[i] = DUPSTRC(k->getAdminByIdx(i));
+    }
+    catch (Register::NOT_FOUND) {
+        // TODO implement error handling
+    }
+
+    ck->dsrecords.length(k->getDSRecordCount());
+    for (unsigned int i = 0; i < k->getDSRecordCount(); i++) {
+        ck->dsrecords[i].keyTag = k->getDSRecordByIdx(i)->getKeyTag();
+        ck->dsrecords[i].alg = k->getDSRecordByIdx(i)->getAlg();
+        ck->dsrecords[i].digestType = k->getDSRecordByIdx(i)->getDigestType();
+        ck->dsrecords[i].digest = DUPSTRC(k->getDSRecordByIdx(i)->getDigest());
+        ck->dsrecords[i].maxSigLife = k->getDSRecordByIdx(i)->getMaxSigLife();
+    }
+
+    std::vector<unsigned int> slist;
+    for (unsigned int i = 0; i < k->getStatusCount(); i++)
+        if (register_manager_->getStatusDesc(
+                    k->getStatusByIdx(i)->getStatusId())->getExternal())
+            slist.push_back(k->getStatusByIdx(i)->getStatusId());
+
+    ck->statusList.length(slist.size());
+    for (unsigned int i = 0; i < slist.size(); i++)
+        ck->statusList[i] = slist[i];
+}
+
+ccReg::KeySetDetail *
+ccReg_Admin_i::getKeySetByHandle(const char *handle)
+    throw (ccReg::Admin::ObjectNotFound)
+{
+    TRACE(boost::format(
+                "[CALL] ccReg_Admin_i::getKeySetByHandle('%1%')") % handle);
+
+    DB db;
+    if (!handle || !*handle)
+        throw ccReg::Admin::ObjectNotFound();
+
+    db.OpenDatabase(m_connection_string.c_str());
+    std::auto_ptr<Register::Manager> r(Register::Manager::create(
+                &db,
+                cfg.GetRestrictedHandles()));
+    Register::KeySet::Manager *kr = r->getKeySetManager();
+    std::auto_ptr<Register::KeySet::List> kl(kr->createList());
+    kl->setWildcardExpansion(false);
+    kl->setHandleFilter(handle);
+    kl->reload();
+
+    if (kl->getCount() != 1) {
+        db.Disconnect();
+        throw ccReg::Admin::ObjectNotFound();
+    }
+
+    ccReg::KeySetDetail *ck = new ccReg::KeySetDetail;
+    fillKeySet(ck, kl->getKeySet(0));
+    db.Disconnect();
+    return ck;
+}
+
+ccReg::KeySetDetail *
+ccReg_Admin_i::getKeySetById(ccReg::TID id)
+    throw (ccReg::Admin::ObjectNotFound)
+{
+    TRACE(boost::format(
+                "[CALL] ccReg_Admin_i::getKeySetById('%1%')") % id);
+    DB db;
+    if (!id)
+        throw ccReg::Admin::ObjectNotFound();
+    db.OpenDatabase(m_connection_string.c_str());
+
+    std::auto_ptr<Register::Manager> r(
+            Register::Manager::create(&db, cfg.GetRestrictedHandles()));
+    Register::KeySet::Manager *kr = r->getKeySetManager();
+    std::auto_ptr<Register::KeySet::List> kl(kr->createList());
+
+    Database::Filters::Union uf;
+    Database::Filters::KeySet *kf = new Database::Filters::KeySetHistoryImpl();
+    kf->addId().setValue(Database::ID(id));
+    uf.addFilter(kf);
+    kl->reload(uf, &m_db_manager);
+
+    if (kl->getCount() != 1) {
+        db.Disconnect();
+        throw ccReg::Admin::ObjectNotFound();
+    }
+
+    ccReg::KeySetDetail *ck = new ccReg::KeySetDetail;
+    fillKeySet(ck, kl->getKeySet(0));
+    db.Disconnect();
+    return ck;
+}
+// ccReg::KeySetDetail *
+// ccReg_Admin_i::getKeySetByDomainFQDN(const char *fqdn)
+    // throw (ccReg::Admin::ObjectNotFound)
+// {
+    // DB db;
+    // if (!fqdn)
+        // throw ccReg::Admin::ObjectNotFound();
+    // db.OpenDatabase(m_connection_string.c_str());
+// 
+    // std::auto_ptr<Register::Manager> regMan(
+            // Register::Manager::create(&db, cfg.GetRestrictedHandles()));
+    // Register::KeySet::Manager *keyR = regMan->getKeySetManager();
+    // std::auto_ptr<Register::KeySet::List> klist(keyR->createList());
+    // 
+    // Database::Filters::Union uf;
+    // Database::Filters::KeySet *keyF = new Database::Filters::KeySetHistoryImpl();
+    // kf-
+// }
 
 void ccReg_Admin_i::fillEPPAction(ccReg::EPPAction* cea,
                                   const Register::Registrar::EPPAction *rea) {
@@ -716,6 +844,7 @@ void ccReg_Admin_i::fillDomain(ccReg::DomainDetail* cd,
   cd->expirationDate = DUPSTRDATED(d->getExpirationDate);
   cd->valExDate = DUPSTRDATED(d->getValExDate);
   cd->nssetHandle = DUPSTRFUN(d->getNSSetHandle);
+  cd->keysetHandle = DUPSTRFUN(d->getKeySetHandle);
   cd->admins.length(d->getAdminCount(1));
   cd->temps.length(d->getAdminCount(2));
   std::vector<unsigned> slist;
@@ -765,22 +894,25 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
 
 ccReg::DomainDetail* ccReg_Admin_i::getDomainById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
+  TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainById('%1%')") % id);
   DB db;
   if (!id)
     throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(m_connection_string.c_str());
+
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
   Register::Domain::Manager *dm = r->getDomainManager();
   std::auto_ptr<Register::Domain::List> dl(dm->createList());
 
   Database::Filters::Union uf;
-  Database::Filters::Domain *df = new Database::Filters::DomainImpl();
+  Database::Filters::Domain *df = new Database::Filters::DomainHistoryImpl();
   df->addId().setValue(Database::ID(id));
   uf.addFilter(df);
   dl->reload(uf, &m_db_manager);
 
   //dl->setIdFilter(id);
   //dl->reload();
+
 
   if (dl->getCount() != 1) {
     db.Disconnect();
@@ -791,6 +923,73 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainById(ccReg::TID id)
   db.Disconnect();
   return cd;
 }
+ccReg::DomainDetails *
+ccReg_Admin_i::getDomainsByKeySetId(ccReg::TID id, CORBA::Long limit)
+    throw (ccReg::Admin::ObjectNotFound)
+{
+    DB db;
+    if (!id)
+        throw ccReg::Admin::ObjectNotFound();
+    db.OpenDatabase(m_connection_string.c_str());
+    std::auto_ptr<Register::Manager> r(
+            Register::Manager::create(
+                &db,
+                cfg.GetRestrictedHandles())
+            );
+    Register::Domain::Manager *dm = r->getDomainManager();
+    std::auto_ptr<Register::Domain::List> dl(dm->createList());
+
+    Database::Filters::Union uf;
+    Database::Filters::Domain *df = new Database::Filters::DomainHistoryImpl();
+    df->addKeySetId().setValue(Database::ID(id));
+    uf.addFilter(df);
+    dl->setLimit(limit);
+    dl->reload(uf, &m_db_manager);
+
+    ccReg::DomainDetails_var dlist = new ccReg::DomainDetails;
+    dlist->length(dl->getCount());
+    for (unsigned int i = 0; i < dl->getCount(); i++)
+        fillDomain(&dlist[i], dl->getDomain(i));
+    db.Disconnect();
+    return dlist._retn();
+}
+
+ccReg::DomainDetails *
+ccReg_Admin_i::getDomainsByKeySetHandle(const char *handle, CORBA::Long limit)
+    throw (ccReg::Admin::ObjectNotFound)
+{
+    TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainsByKeySetHandle('%1%')")
+                % handle);
+    DB db;
+    if (!handle || !*handle)
+        throw ccReg::Admin::ObjectNotFound();
+    db.OpenDatabase(m_connection_string.c_str());
+    std::auto_ptr<Register::Manager> r(
+            Register::Manager::create(
+                &db,
+                cfg.GetRestrictedHandles())
+            );
+    Register::Domain::Manager *dm = r->getDomainManager();
+    std::auto_ptr<Register::Domain::List> dl(dm->createList());
+
+    Database::Filters::Union uf;
+    Database::Filters::Domain *df = new Database::Filters::DomainHistoryImpl();
+
+    df->addKeySet().addHandle().setValue(
+            std::string(handle));
+    uf.addFilter(df);
+    dl->setLimit(limit);
+    dl->reload(uf, &m_db_manager);
+    
+    ccReg::DomainDetails_var dlist = new ccReg::DomainDetails;
+    dlist->length(dl->getCount());
+    for (unsigned int i = 0; i < dl->getCount(); i++)
+        fillDomain(&dlist[i], dl->getDomain(i));
+
+    db.Disconnect();
+    return dlist._retn();
+}
+
 
 ccReg::DomainDetails* ccReg_Admin_i::getDomainsByInverseKey(const char* key,
                                                             ccReg::DomainInvKeyType type,
@@ -815,6 +1014,9 @@ ccReg::DomainDetails* ccReg_Admin_i::getDomainsByInverseKey(const char* key,
       break;
     case ccReg::DIKT_NSSET:
       dl->setNSSetHandleFilter(key);
+      break;
+    case ccReg::DIKT_KEYSET:
+      dl->setKeySetHandleFilter(key);
       break;
   }
   dl->setLimit(limit);
@@ -848,6 +1050,95 @@ ccReg::NSSetDetails* ccReg_Admin_i::getNSSetsByInverseKey(const char* key,
     fillNSSet(&nlist[i], nl->getNSSet(i));
   db.Disconnect();
   return nlist._retn();
+}
+
+ccReg::KeySetDetails *
+ccReg_Admin_i::getKeySetsByInverseKey(
+        const char *key,
+        ccReg::KeySetInvKeyType type,
+        CORBA::Long limit)
+{
+    DB db;
+    db.OpenDatabase(m_connection_string.c_str());
+    std::auto_ptr<Register::Manager> r(
+            Register::Manager::create(&db, cfg.GetRestrictedHandles()));
+    Register::KeySet::Manager *km = r->getKeySetManager();
+    std::auto_ptr<Register::KeySet::List> kl(km->createList());
+    switch (type) {
+        case ccReg::KIKT_TECH:
+            kl->setAdminFilter(key);
+            break;
+    }
+    kl->setLimit(limit);
+    kl->reload();
+    ccReg::KeySetDetails_var klist = new ccReg::KeySetDetails;
+    klist->length(kl->getCount());
+    for (unsigned int i = 0; i < kl->getCount(); i++)
+        fillKeySet(&klist[i], kl->getKeySet(i));
+    db.Disconnect();
+    return klist._retn();
+}
+
+ccReg::KeySetDetails *
+ccReg_Admin_i::getKeySetsByContactId(ccReg::TID id, CORBA::Long limit)
+  throw (ccReg::Admin::ObjectNotFound)
+{
+    DB db;
+    if (!id)
+        throw ccReg::Admin::ObjectNotFound();
+    db.OpenDatabase(m_connection_string.c_str());
+    std::auto_ptr<Register::Manager> r(
+            Register::Manager::create(
+                &db,
+                cfg.GetRestrictedHandles())
+            );
+    Register::KeySet::Manager *km = r->getKeySetManager();
+    std::auto_ptr<Register::KeySet::List> kl(km->createList());
+
+    Database::Filters::Union uf;
+    Database::Filters::KeySet *kf = new Database::Filters::KeySetHistoryImpl();
+    kf->addTechContact().addId().setValue(Database::ID(id));
+    uf.addFilter(kf);
+    kl->setLimit(limit);
+    kl->reload(uf, &m_db_manager);
+
+    ccReg::KeySetDetails_var klist = new ccReg::KeySetDetails;
+    klist->length(kl->getCount());
+    for (unsigned int i = 0; i < kl->getCount(); i++)
+        fillKeySet(&klist[i], kl->getKeySet(i));
+    db.Disconnect();
+    return klist._retn();
+}
+
+ccReg::KeySetDetails *
+ccReg_Admin_i::getKeySetsByContactHandle(const char *handle, CORBA::Long limit)
+  throw (ccReg::Admin::ObjectNotFound)
+{
+    DB db;
+    if (!handle || !*handle)
+        throw ccReg::Admin::ObjectNotFound();
+    db.OpenDatabase(m_connection_string.c_str());
+    std::auto_ptr<Register::Manager> r(
+            Register::Manager::create(
+                &db,
+                cfg.GetRestrictedHandles())
+            );
+    Register::KeySet::Manager *km = r->getKeySetManager();
+    std::auto_ptr<Register::KeySet::List> kl(km->createList());
+
+    Database::Filters::Union uf;
+    Database::Filters::KeySet *kf = new Database::Filters::KeySetHistoryImpl();
+    kf->addTechContact().addHandle().setValue(std::string(handle));
+    uf.addFilter(kf);
+    kl->setLimit(limit);
+    kl->reload(uf, &m_db_manager);
+
+    ccReg::KeySetDetails_var klist = new ccReg::KeySetDetails;
+    klist->length(kl->getCount());
+    for (unsigned int i = 0; i < kl->getCount(); i++)
+        fillKeySet(&klist[i], kl->getKeySet(i));
+    db.Disconnect();
+    return klist._retn();
 }
 
 void ccReg_Admin_i::fillAuthInfoRequest(ccReg::AuthInfoRequest::Detail *carid,
@@ -894,6 +1185,9 @@ void ccReg_Admin_i::fillAuthInfoRequest(ccReg::AuthInfoRequest::Detail *carid,
       break;
     case Register::AuthInfoRequest::OT_NSSET:
       carid->oType = ccReg::AuthInfoRequest::OT_NSSET;
+      break;
+    case Register::AuthInfoRequest::OT_KEYSET:
+      carid->oType = ccReg::AuthInfoRequest::OT_KEYSET;
       break;
   }
   carid->objectId = rarid->getObjectId();
@@ -1146,6 +1440,27 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getNSSetStatusDescList(const char *la
   return o;
 }
 
+ccReg::ObjectStatusDescSeq *
+ccReg_Admin_i::getKeySetStatusDescList(const char *lang)
+{
+    ccReg::ObjectStatusDescSeq *o = new ccReg::ObjectStatusDescSeq;
+    for (unsigned int i = 0; i < register_manager_->getStatusDescCount(); i++) {
+        const Register::StatusDesc *sd = register_manager_->getStatusDescByIdx(i);
+        if (sd->getExternal() && sd->isForType(4)) {
+            o->length(o->length() + 1);
+            try {
+                (*o)[o->length()-1].name = DUPSTRC(sd->getDesc(lang));
+            }
+            catch (...) {
+                //unknown lang
+                (*o)[o->length()-1].name = CORBA::string_dup("");
+            }
+            (*o)[o->length()-1].id = sd->getId();
+        }
+    }
+    return o;
+}
+
 char* ccReg_Admin_i::getCreditByZone(const char*registrarHandle, ccReg::TID zone) {
   DB ldb;
   try {
@@ -1184,6 +1499,10 @@ void ccReg_Admin_i::generateLetters() {
         Register::NSSet::Manager::create(&ldb,
                                          zoneMan.get(),
                                          cfg.GetRestrictedHandles()));
+    std::auto_ptr<Register::KeySet::Manager> keyMan(
+            Register::KeySet::Manager::create(
+                &ldb,
+                cfg.GetRestrictedHandles()));
     std::auto_ptr<Register::Registrar::Manager> rMan(
         Register::Registrar::Manager::create(&ldb));
     std::auto_ptr<Register::Notify::Manager> notifyMan(
@@ -1191,6 +1510,7 @@ void ccReg_Admin_i::generateLetters() {
                                           &mm,
                                           conMan.get(),
                                           nssMan.get(),
+                                          keyMan.get(),
                                           domMan.get(), 
                                           docman.get(),
                                           rMan.get()));
@@ -1219,17 +1539,22 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
   
   std::auto_ptr<Database::Connection> conn(m_db_manager.getConnection());
   std::auto_ptr<Register::Document::Manager> doc_manager(
-                     Register::Document::Manager::create(cfg.GetDocGenPath(),
-                                                         cfg.GetDocGenTemplatePath(),
-                                                         cfg.GetFileClientPath(),
-                                                         ns->getHostName()));
+          Register::Document::Manager::create(
+              cfg.GetDocGenPath(),
+              cfg.GetDocGenTemplatePath(),
+              cfg.GetFileClientPath(),
+              ns->getHostName())
+          );
   std::auto_ptr<Register::PublicRequest::Manager> request_manager(
-                         Register::PublicRequest::Manager::create(&m_db_manager,
-                                                            register_manager_->getDomainManager(),
-                                                            register_manager_->getContactManager(),
-                                                            register_manager_->getNSSetManager(),
-                                                            &mailer_manager,
-                                                            doc_manager.get()));
+          Register::PublicRequest::Manager::create(
+              &m_db_manager,
+              register_manager_->getDomainManager(),
+              register_manager_->getContactManager(),
+              register_manager_->getNSSetManager(),
+              register_manager_->getKeySetManager(),
+              &mailer_manager,
+              doc_manager.get())
+          );
   
 #define REQUEST_TYPE_CORBA2DB_CASE(type)            \
   case ccReg::PublicRequest::type:                  \
@@ -1282,17 +1607,22 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
 
   MailerManager mailer_manager(ns);  
   std::auto_ptr<Register::Document::Manager> doc_manager(
-                     Register::Document::Manager::create(cfg.GetDocGenPath(),
-                                                         cfg.GetDocGenTemplatePath(),
-                                                         cfg.GetFileClientPath(),
-                                                         ns->getHostName()));
+          Register::Document::Manager::create(
+              cfg.GetDocGenPath(),
+              cfg.GetDocGenTemplatePath(),
+              cfg.GetFileClientPath(),
+              ns->getHostName())
+          );
   std::auto_ptr<Register::PublicRequest::Manager> request_manager(
-                         Register::PublicRequest::Manager::create(&m_db_manager,
-                                                            register_manager_->getDomainManager(),
-                                                            register_manager_->getContactManager(),
-                                                            register_manager_->getNSSetManager(),
-                                                            &mailer_manager,
-                                                            doc_manager.get()));
+          Register::PublicRequest::Manager::create(
+              &m_db_manager,
+              register_manager_->getDomainManager(),
+              register_manager_->getContactManager(),
+              register_manager_->getNSSetManager(),
+              register_manager_->getKeySetManager(),
+              &mailer_manager,
+              doc_manager.get())
+          );
   try {
     request_manager->processRequest(id,invalid,true);
   }
@@ -1319,17 +1649,23 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
    
   std::auto_ptr<Database::Connection> conn(m_db_manager.getConnection());
   std::auto_ptr<Register::Document::Manager> doc_manager(
-                       Register::Document::Manager::create(cfg.GetDocGenPath(),
-                                                           cfg.GetDocGenTemplatePath(),
-                                                           cfg.GetFileClientPath(),
-                                                           ns->getHostName()));
+          Register::Document::Manager::create(
+              cfg.GetDocGenPath(),
+              cfg.GetDocGenTemplatePath(),
+              cfg.GetFileClientPath(),
+              ns->getHostName())
+          );
   std::auto_ptr<Register::PublicRequest::Manager> request_manager(
-                           Register::PublicRequest::Manager::create(&m_db_manager,
-                                                              register_manager_->getDomainManager(),
-                                                              register_manager_->getContactManager(),
-                                                              register_manager_->getNSSetManager(),
-                                                              &mailer_manager,
-                                                              doc_manager.get()));  DB db;
+          Register::PublicRequest::Manager::create(
+              &m_db_manager,
+              register_manager_->getDomainManager(),
+              register_manager_->getContactManager(),
+              register_manager_->getNSSetManager(),
+              register_manager_->getKeySetManager(),
+              &mailer_manager,
+              doc_manager.get())
+          );  
+  DB db;
   try {
     std::stringstream outstr;
     request_manager-> getPdf(id,lang,outstr);

@@ -24,8 +24,7 @@ public:
   virtual File& addAttachment() = 0;
   
   friend class boost::serialization::access;
-  template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
+  template<class Archive> void serialize(Archive& _ar, const unsigned int _version) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
   }
 

@@ -6,9 +6,18 @@
 #include "db/manager.h"
 
 class DB;
+namespace Register {
 
-namespace Register
-{
+  class SortByHistoryId {
+  public:
+    bool operator()(CommonObject *_left, CommonObject *_right) const {
+      if (_left->getId() == _right->getId()) {
+        return dynamic_cast<Object*>(_left)->getHistoryId() <= dynamic_cast<Object*>(_right)->getHistoryId();
+      }
+      return _left->getId() < _right->getId();
+    }
+  };
+
   /// Implementation of simple status object
   class StatusImpl : virtual public Status
   {
@@ -26,10 +35,11 @@ namespace Register
   class ObjectImpl : public CommonObjectImpl, virtual public Object
   {
    protected:
+    Database::ID history_id;
     ptime crDate;
     ptime trDate;
     ptime upDate;
-    date erDate;
+    ptime erDate;
     TID registrar;
     std::string registrarHandle;
     TID createRegistrar;
@@ -40,19 +50,29 @@ namespace Register
     std::string roid;
     typedef std::vector<StatusImpl> StatusList;
     StatusList slist;
+
+    Database::ID action_id;
+    Database::DateTime action_start_time;
+
    public:
     ObjectImpl();
     ObjectImpl(
-      TID _id, ptime _crDate, ptime _trDate, ptime _upDate, date _erDate, 
+      TID _id, const Database::ID& _history_id, ptime _crDate, ptime _trDate, ptime _upDate, ptime _erDate, 
       TID registrar, const std::string registrarHandle,
       TID updateRegistrar, const std::string updateRegistrarHandle,
       TID createRegistrar, const std::string createRegistrarHandle,
       const std::string& authPw, const std::string roid
     );
+
+    Database::ID getHistoryId() const;
+    Database::ID getActionId() const; 
+    Database::DateTime getActionStartTime() const;
+    void setAction(const Database::ID& _id, const Database::DateTime& _start_time);
+
     ptime getCreateDate() const;
     ptime getTransferDate() const;
     ptime getUpdateDate() const;
-    date getDeleteDate() const;
+    ptime getDeleteDate() const;
     TID getRegistrarId() const;
     const std::string& getRegistrarHandle() const;
     TID getUpdateRegistrarId() const;
@@ -83,6 +103,9 @@ namespace Register
     typedef std::vector<StatusFilter> StatusFilterList;
     StatusFilterList sflist;
     bool nonHandleFilterSet; // set if other then handle(fqdn) filtr is set
+
+    int ptr_history_idx_;
+
    public:
     ObjectListImpl(DB *db);
     virtual void clearFilter();
@@ -105,6 +128,10 @@ namespace Register
     virtual void clearStateFilter(TID state);
     void reload(const char *handle = NULL, int type=0) throw (SQL_ERROR);
     void reload(Database::Connection* _conn);
+
+    void resetHistoryIDSequence();
+    Object* findHistoryIDSequence(const Database::ID& _history_id);
+    void deleteDuplicatesId();
   }; // class ObjectListImpl
    
 } // namespace register

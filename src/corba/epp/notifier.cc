@@ -77,7 +77,7 @@ bool EPPNotifier::Send()
   params["handle"] = db->GetValueFromTable("object_registry", "name", "id",
       objectID); // name of the object
   params["type"] = db->GetValueFromTable("object_registry", "type", "id",
-      objectID); // type 1 contact 2 nsset 3 domain
+      objectID); // type 1 contact 2 nsset 3 domain 4 keyset
 
   LOG( DEBUG_LOG ,"EPPNotifier: Send object %d  enum_action %d regID %d ticket %s" , objectID , enum_action , registrarID , db->GetsvTRID() );
 
@@ -150,6 +150,31 @@ void EPPNotifier::AddNSSetTech(
   }
 
 }
+
+//add all tech contact of keyset linked with domain (identified by domainID)
+void
+EPPNotifier::AddKeySetTechByDomain(ID domainID)
+{
+    AddKeySetTech(db->GetNumericFromTable("domain", "keyset", "id", domainID));
+}
+void
+EPPNotifier::AddKeySetTech(ID keysetID)
+{
+    int i, num;
+    char sqlString[128];
+
+    sprintf(sqlString,
+            "SELECT contactid FROM keyset_contact_map WHERE keysetid=%d",
+            keysetID);
+
+    if (db->ExecSQL(sqlString)) {
+        num = db->GetSelectRows();
+        for (i = 0; i < num; i++)
+            AddContactID(atoi(db->GetFieldValue(i, 0)), KEY_CONTACT, 0);
+        db->FreeSelect();
+    }
+}
+
 
 void EPPNotifier::AddDomainAdmin(
   ID domainID)

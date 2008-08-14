@@ -25,6 +25,8 @@ private:
   // destructor non-public
   //virtual ~ccReg_EPP_i();
   MailerManager *mm;
+  Database::Manager *dbman;
+  
   NameService *ns;
   Conf& conf;
   DB db;
@@ -161,6 +163,8 @@ public:
     int lang);
   short SetReasonDomainFQDN(ccReg::Errors_var& err, const char *fqdn, int zone,
     int lang);
+  short int SetReasonKeySetHandle(ccReg::Errors_var &err, const char *handle,
+          int lang);
 
   short SetReasonProtectedPeriod(ccReg::Errors_var& err, const char *value,
     int lang, ccReg::ParamError paramCode=ccReg::contact_handle);
@@ -183,11 +187,24 @@ public:
     int adminID, int lang, short position);
   short SetReasonDomainTempCREM(ccReg::Errors_var& err, const char * handle,
     int adminID, int lang, short position);
+  short int SetReasonDomainKeySet(ccReg::Errors_var &err, const char *keyset_handle,
+          int keysetid, int lang);
+
+  short int SetReasonKeySetTech(ccReg::Errors_var &err, const char *handle,
+          int techID, int lang, short int position);
+  short int SetReasonKeySetTechADD(ccReg::Errors_var &err, const char *handle,
+          int techID, int lang, short int position);
+  short int SetReasonKeySetTechREM(ccReg::Errors_var &err, const char *handle,
+          int techID, int lang, short int position);
 
   short SetReasonNSSetTechExistMap(ccReg::Errors_var& err, const char * handle,
     int lang, short position);
   short SetReasonNSSetTechNotExistMap(ccReg::Errors_var& err,
     const char * handle, int lang, short position);
+  short int SetReasonKeySetTechExistMap(ccReg::Errors_var &err, const char *handle,
+          int lang, short int position);
+  short int SetReasonKeySetTechNotExistMap(ccReg::Errors_var &err, const char *handle,
+          int lang, short int position);
 
   short SetReasonDomainAdminExistMap(ccReg::Errors_var& err,
     const char * handle, int lang, short position);
@@ -258,24 +275,80 @@ public:
     CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* ContactTransfer(const char* handle, const char* authInfo,
     CORBA::Long clientID, const char* clTRID, const char* XML);
+
   ccReg::Response* NSSetCheck(const ccReg::Check& handle,
     ccReg::CheckResp_out a, CORBA::Long clientID, const char* clTRID,
     const char* XML);
+
   ccReg::Response* NSSetInfo(const char* handle, ccReg::NSSet_out n,
     CORBA::Long clientID, const char* clTRID, const char* XML);
+
   ccReg::Response* NSSetDelete(const char* handle, CORBA::Long clientID,
     const char* clTRID, const char* XML);
+
   ccReg::Response* NSSetCreate(const char* handle, const char* authInfoPw,
     const ccReg::TechContact& tech, const ccReg::DNSHost& dns,
     CORBA::Short level, ccReg::timestamp_out crDate, CORBA::Long clientID,
     const char* clTRID, const char* XML);
+
   ccReg::Response* NSSetUpdate(const char* handle, const char* authInfo_chg,
     const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem,
     const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem,
     CORBA::Short level, CORBA::Long clientID, const char* clTRID,
     const char* XML);
+
   ccReg::Response* NSSetTransfer(const char* handle, const char* authInfo,
     CORBA::Long clientID, const char* clTRID, const char* XML);
+
+  ccReg::Response *KeySetCheck(
+          const ccReg::Check &handle,
+          ccReg::CheckResp_out a,
+          CORBA::Long clientID,
+          const char *clTRID,
+          const char *XML);
+
+  ccReg::Response *KeySetInfo(
+          const char *handle,
+          ccReg::KeySet_out k,
+          CORBA::Long clientID,
+          const char *clTRID,
+          const char *XML);
+
+  ccReg::Response *KeySetDelete(
+          const char *handle,
+          CORBA::Long clientID,
+          const char *clTRID,
+          const char *XML);
+
+  // TODO add DSRecord
+  ccReg::Response *KeySetCreate(
+          const char *handle,
+          const char *authInfoPw,
+          const ccReg::TechContact &tech,
+          const ccReg::DSRecord &dsrec,
+          ccReg::timestamp_out crDate,
+          CORBA::Long clientID,
+          const char *clTRID,
+          const char *XML);
+
+  ccReg::Response *KeySetUpdate(
+          const char *handle,
+          const char *authInfo_chg,
+          const ccReg::TechContact &tech_add,
+          const ccReg::TechContact &tech_rem,
+          const ccReg::DSRecord &dsrec_add,
+          const ccReg::DSRecord &dsrec_rem,
+          CORBA::Long clientID,
+          const char *clTRID,
+          const char *XML);
+
+  ccReg::Response *KeySetTransfer(
+          const char *handle,
+          const char *authInfo,
+          CORBA::Long clientID,
+          const char *clTRID,
+          const char *XML);
+
   ccReg::Response* DomainCheck(const ccReg::Check& fqdn,
     ccReg::CheckResp_out a, CORBA::Long clientID, const char* clTRID,
     const char* XML);
@@ -283,13 +356,15 @@ public:
     CORBA::Long clientID, const char* clTRID, const char* XML);
   ccReg::Response* DomainDelete(const char* fqdn, CORBA::Long clientID,
     const char* clTRID, const char* XML);
+  // TODO add keyset to domain
   ccReg::Response* DomainUpdate(const char* fqdn, const char* registrant_chg,
-    const char* authInfo_chg, const char* nsset_chg,
+    const char* authInfo_chg, const char* nsset_chg, const char *keyset_chg,
     const ccReg::AdminContact& admin_add, const ccReg::AdminContact& admin_rem,
     const ccReg::AdminContact& tmpcontact_rem, CORBA::Long clientID,
     const char* clTRID, const char* XML, const ccReg::ExtensionList& ext);
   ccReg::Response* DomainCreate(const char* fqdn, const char* Registrant,
-    const char* nsset, const char* AuthInfoPw, const ccReg::Period_str& period,
+    const char* nsset, const char *keyset,
+    const char* AuthInfoPw, const ccReg::Period_str& period,
     const ccReg::AdminContact& admin, ccReg::timestamp_out crDate,
     ccReg::date_out exDate, CORBA::Long clientID, const char* clTRID,
     const char* XML, const ccReg::ExtensionList& ext);
@@ -318,6 +393,12 @@ public:
   ccReg::Response* nssetSendAuthInfo(const char* handle, CORBA::Long clientID,
     const char* clTRID, const char* XML);
 
+  ccReg::Response *keysetSendAuthInfo(
+          const char *handle,
+          CORBA::Long clientID,
+          const char *clTRID,
+          const char *XML);
+
   // EPP print out
   ccReg::Response* ContactList(ccReg::Lists_out contacts, CORBA::Long clientID,
     const char* clTRID, const char* XML);
@@ -325,6 +406,12 @@ public:
     const char* clTRID, const char* XML);
   ccReg::Response* DomainList(ccReg::Lists_out domains, CORBA::Long clientID,
     const char* clTRID, const char* XML);
+
+  ccReg::Response *KeySetList(
+          ccReg::Lists_out keysets,
+          CORBA::Long clientID,
+          const char *clTRID,
+          const char *XML);
 
   // Info messages
   ccReg::Response* info(ccReg::InfoType type, const char* handle,

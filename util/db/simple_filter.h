@@ -29,10 +29,6 @@ public:
   
   virtual ~Simple();
 
-  virtual Simple* clone() {
-    return 0;
-  }
-
   virtual bool isSimple() const {
     return true;
   }
@@ -52,8 +48,7 @@ public:
     allowed_wildcard = false;
   }
   
-  // virtual void serialize(Database::SelectQuery& _sq) = 0;
-  virtual void serialize(Database::SelectQuery& _sq) {
+  virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
   }
   
   virtual void addPostValueString(const std::string& _str) {

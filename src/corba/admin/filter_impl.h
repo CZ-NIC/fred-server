@@ -33,6 +33,7 @@ public:
   ccReg::Filters::Contact_ptr addE(Database::Filters::Contact* f);
   ccReg::Filters::Domain_ptr addE(Database::Filters::Domain* f);
   ccReg::Filters::NSSet_ptr addE(Database::Filters::NSSet* f);
+  ccReg::Filters::KeySet_ptr addE(Database::Filters::KeySet* f);
   ccReg::Filters::Registrar_ptr addE(Database::Filters::Registrar* f);
   ccReg::Filters::Action_ptr addE(Database::Filters::EppAction* f);
   ccReg::Filters::PublicRequest_ptr addE(Database::Filters::PublicRequest* f);

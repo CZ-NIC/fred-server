@@ -3,6 +3,10 @@
 namespace Database {
 namespace Filters {
 
+Contact* Contact::create() {
+  return new ContactHistoryImpl();
+}
+
 /*
  * CONTACT IMPLEMENTATION
  */
@@ -178,15 +182,15 @@ Table& ContactHistoryImpl::joinContactTable() {
 }
 
 void ContactHistoryImpl::_joinPolymorphicTables() {
-  ObjectHistoryImpl::_joinPolymorphicTables();
   Table *c = findTable("contact_history");
   if (c) {
     joins.push_back(new Join(
-        Column("historyid", joinTable("object_registry")),
+        Column("historyid", joinTable("object_history")),
         SQL_OP_EQ,
         Column("historyid", *c)
     ));
   }
+  ObjectHistoryImpl::_joinPolymorphicTables();
 }
 
 

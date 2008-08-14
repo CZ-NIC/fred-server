@@ -1,7 +1,7 @@
 #include "pagetable_contacts.h"
 
-ccReg_Contacts_i::ccReg_Contacts_i(Register::Contact::List *_cl) :
-  cl(_cl) {
+ccReg_Contacts_i::ccReg_Contacts_i(Register::Contact::List *_cl, const Settings *_ptr) : cl(_cl) {
+  uf.settings(_ptr);
 }
 
 ccReg_Contacts_i::~ccReg_Contacts_i() {
@@ -38,7 +38,7 @@ ccReg::TableRow* ccReg_Contacts_i::getRow(CORBA::Short row)
   (*tr)[1] = DUPSTRFUN(c->getName);
   (*tr)[2] = DUPSTRFUN(c->getOrganization);
   (*tr)[3] = DUPSTRDATE(c->getCreateDate);
-  (*tr)[4] = DUPSTRDATED(c->getDeleteDate);
+  (*tr)[4] = DUPSTRDATE(c->getDeleteDate);
   (*tr)[5] = DUPSTRFUN(c->getRegistrarHandle);
   return tr;
 }
@@ -92,6 +92,7 @@ CORBA::Short ccReg_Contacts_i::numColumns() {
 void ccReg_Contacts_i::reload() {
 //  cl->makeRealCount();
   cl->reload(uf, dbm);
+  cl->deleteDuplicatesId();
 }
 
 void ccReg_Contacts_i::clear() {

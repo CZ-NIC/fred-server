@@ -52,6 +52,7 @@ namespace Register
       Mailer::Manager *mm;
       Contact::Manager *cm;
       NSSet::Manager *nm;
+      KeySet::Manager *km;
       Domain::Manager *dm;
       Document::Manager *docm;
       Registrar::Manager *rm;
@@ -61,6 +62,7 @@ namespace Register
         Mailer::Manager *_mm,
         Contact::Manager *_cm,
         NSSet::Manager *_nm,
+        KeySet::Manager *_km,
         Domain::Manager *_dm,
         Document::Manager *_docm,
         Registrar::Manager *_rm
@@ -134,6 +136,15 @@ namespace Register
             << "FROM nsset_contact_map ncm, contact c "
             << "WHERE ncm.contactid=c.id AND ncm.nssetid=" << nsset;
         return getEmailList(sql);
+      }
+      std::string getKeySetTechEmails(TID keyset)
+      {
+          std::stringstream sql;
+          sql << "SELECT c.email "
+              << "FROM keyset_contact_map kcm, contact c "
+              << "WHERE kcm.contactid=c.id NAD kcm.keysetid="
+              << keyset;
+          return getEmailList(sql);
       }
       std::string getContactEmails(TID contact)
       {
@@ -496,12 +507,13 @@ namespace Register
       Mailer::Manager *mm,
       Contact::Manager *cm,
       NSSet::Manager *nm,
+      KeySet::Manager *km,
       Domain::Manager *dm,
       Document::Manager *docm,
       Registrar::Manager *rm
     )
     {
-      return new ManagerImpl(db,mm,cm,nm,dm,docm,rm);
+      return new ManagerImpl(db,mm,cm,nm, km, dm,docm,rm);
     }
   }
 }

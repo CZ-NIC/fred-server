@@ -73,28 +73,55 @@ public:
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
   void putRegistrar(const ccReg::Registrar& regData);
   
-  // object detail
+  // contact detail
   void fillContact(ccReg::ContactDetail* cv, Register::Contact::Contact* c);
   ccReg::ContactDetail* getContactByHandle(const char* handle)
       throw (ccReg::Admin::ObjectNotFound);
   ccReg::ContactDetail* getContactById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound);
+
+  // nsset
   void fillNSSet(ccReg::NSSetDetail* cn, Register::NSSet::NSSet* n);
   ccReg::NSSetDetail* getNSSetByHandle(const char* handle)
       throw (ccReg::Admin::ObjectNotFound);
   ccReg::NSSetDetail* getNSSetById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound);
+
+  // keyset
+  void fillKeySet(ccReg::KeySetDetail* cn, Register::KeySet::KeySet* n);
+  ccReg::KeySetDetail *getKeySetByHandle(const char* handle)
+      throw (ccReg::Admin::ObjectNotFound);
+  ccReg::KeySetDetail *getKeySetById(ccReg::TID id)
+      throw (ccReg::Admin::ObjectNotFound);
+  // ccReg::KeySetDetail *getKeySetByDomainFQDN(const char *fqdn)
+      // throw (ccReg::Admin::ObjectNotFound);
+  ccReg::KeySetDetails *getKeySetsByContactId(ccReg::TID id, CORBA::Long limit)
+      throw (ccReg::Admin::ObjectNotFound);
+  ccReg::KeySetDetails *getKeySetsByContactHandle(const char *handle, CORBA::Long limit)
+      throw (ccReg::Admin::ObjectNotFound);
+
+  // domain
   void fillDomain(ccReg::DomainDetail* cd, Register::Domain::Domain* d);
   ccReg::DomainDetail* getDomainByFQDN(const char* fqdn)
       throw (ccReg::Admin::ObjectNotFound);
   ccReg::DomainDetail* getDomainById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound);
+  ccReg::DomainDetails *getDomainsByKeySetId(ccReg::TID id, CORBA::Long limit)
+      throw (ccReg::Admin::ObjectNotFound);
+  ccReg::DomainDetails *getDomainsByKeySetHandle(const char *handle, CORBA::Long limit)
+      throw (ccReg::Admin::ObjectNotFound);
+
   ccReg::DomainDetails* getDomainsByInverseKey(const char* key,
                                                ccReg::DomainInvKeyType type,
                                                CORBA::Long limit);
   ccReg::NSSetDetails* getNSSetsByInverseKey(const char* key,
                                              ccReg::NSSetInvKeyType type,
                                              CORBA::Long limit);
+  ccReg::KeySetDetails *getKeySetsByInverseKey(
+          const char *key,
+          ccReg::KeySetInvKeyType type,
+          CORBA::Long limit);
+
   void fillEPPAction(ccReg::EPPAction* cea,
                      const Register::Registrar::EPPAction *rea);
   ccReg::EPPAction* getEPPActionById(ccReg::TID id)
@@ -117,6 +144,7 @@ public:
   ccReg::ObjectStatusDescSeq* getDomainStatusDescList(const char *lang);
   ccReg::ObjectStatusDescSeq* getContactStatusDescList(const char *lang);
   ccReg::ObjectStatusDescSeq* getNSSetStatusDescList(const char *lang);
+  ccReg::ObjectStatusDescSeq *getKeySetStatusDescList(const char *lang);
   /// testovaci fce na typ objektu
   void checkHandle(const char* handle, ccReg::CheckHandleTypeSeq_out ch);
 

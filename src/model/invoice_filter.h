@@ -31,6 +31,14 @@ public:
   virtual Registrar& addRegistrar() = 0;
   virtual Object& addObject() = 0;
   virtual File& addFile() = 0;
+  
+  friend class boost::serialization::access;
+  template<class Archive> void serialize(Archive& _ar,
+      const unsigned int _version) {
+    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
+  }
+
+  static Invoice* create();
 };
 
 class InvoiceImpl : virtual public Invoice {
@@ -48,6 +56,12 @@ public:
   virtual Registrar& addRegistrar();
   virtual Object& addObject();
   virtual File& addFile();
+  
+  friend class boost::serialization::access;
+  template<class Archive> void serialize(Archive& _ar,
+      const unsigned int _version) {
+    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Invoice);
+  }
 };
 
 }

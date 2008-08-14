@@ -3,6 +3,10 @@
 namespace Database {
 namespace Filters {
 
+Object* Object::create() {
+  return new ObjectHistoryImpl();
+}
+
 /*
  * OBJECT IMPLEMENTATION
  */
@@ -81,7 +85,6 @@ void ObjectImpl::_joinPolymorphicTables() {
       ));
     }
   }
-  Compound::_joinPolymorphicTables();
 }
 
 /*
@@ -155,13 +158,12 @@ void ObjectHistoryImpl::_joinPolymorphicTables() {
     Table *o = findTable("object_history");
     if (o) {
       joins.push_front(new Join(
-          Column("historyid", joinTable("object_registry")),
+          Column("id", joinTable("object_registry")),
           SQL_OP_EQ,
-          Column("historyid", *o)
+          Column("id", *o)
       ));
     }
   }
-  Compound::_joinPolymorphicTables();
 }
 
 }

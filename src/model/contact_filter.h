@@ -14,7 +14,7 @@ class Contact : virtual public Object {
 public:
   virtual ~Contact() {
   }
-  
+
   virtual Table& joinContactTable() = 0;
   virtual Value<Database::ID>& addId() = 0;
   virtual Value<std::string>& addName() = 0;
@@ -30,6 +30,8 @@ public:
       const unsigned int _version) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Object);
   }
+  
+  static Contact* create();
 };
 
 class ContactImpl : public ObjectImpl, virtual public Contact {
@@ -44,8 +46,8 @@ public:
   virtual Table& joinContactTable();
   virtual void _joinPolymorphicTables();
 
-  virtual Value<std::string>& addHandle();
   virtual Value<Database::ID>& addId();
+  virtual Value<std::string>& addHandle();
   virtual Value<std::string>& addName();
   virtual Value<std::string>& addOrganization();
   virtual Value<std::string>& addCity();
@@ -73,8 +75,8 @@ public:
   virtual Table& joinContactTable();
   virtual void _joinPolymorphicTables();
 
-  virtual Value<std::string>& addHandle();
   virtual Value<Database::ID>& addId();
+  virtual Value<std::string>& addHandle();
   virtual Value<std::string>& addName();
   virtual Value<std::string>& addOrganization();
   virtual Value<std::string>& addCity();

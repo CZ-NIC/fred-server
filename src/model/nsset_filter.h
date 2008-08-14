@@ -21,32 +21,34 @@ public:
   virtual Value<std::string>& addHostFQDN() = 0;
   virtual Value<std::string>& addHostIP() = 0;
   virtual Contact& addTechContact() = 0;
-  
+
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
       const unsigned int _version) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Object);
   }
+  
+  static NSSet* create();
 };
 
 class NSSetImpl : public ObjectImpl, virtual public NSSet {
 public:
   NSSetImpl();
   virtual ~NSSetImpl();
-  
+
   virtual ObjectType getType() {
     return TNSSET;
   }
 
   virtual Table& joinNSSetTable();
   virtual void _joinPolymorphicTables();
-  virtual Value<std::string>& addHandle();
 
   virtual Value<ID>& addId();
+  virtual Value<std::string>& addHandle();
   virtual Value<std::string>& addHostFQDN();
   virtual Value<std::string>& addHostIP();
   virtual Contact& addTechContact();
-  
+
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
       const unsigned int _version) {
@@ -58,7 +60,7 @@ class NSSetHistoryImpl : public ObjectHistoryImpl, virtual public NSSet {
 public:
   NSSetHistoryImpl();
   virtual ~NSSetHistoryImpl();
-  
+
   virtual ObjectType getType() {
     return TNSSET;
   }
@@ -66,12 +68,12 @@ public:
   virtual Table& joinNSSetTable();
   virtual void _joinPolymorphicTables();
 
-  virtual Value<std::string>& addHandle();
   virtual Value<ID>& addId();
+  virtual Value<std::string> &addHandle();
   virtual Value<std::string>& addHostFQDN();
   virtual Value<std::string>& addHostIP();
   virtual Contact& addTechContact();
-  
+
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
       const unsigned int _version) {

@@ -20,7 +20,7 @@ std::string formatTime(ptime p, bool date);
 std::string formatMoney(Register::Invoicing::Money m);
 ptime makeBoostTime(const ccReg::DateTimeType& t);
 date makeBoostDate(const ccReg::DateType& t);
-ccReg::DateTimeType makeCorbaTime(ptime p);
+ccReg::DateTimeType makeCorbaTime(ptime p, bool _to_local = false);
 ccReg::DateType makeCorbaDate(date p);
 time_period setPeriod(const ccReg::DateTimeInterval& _v);
 time_period setPeriod(const ccReg::DateInterval& _v);
@@ -48,5 +48,57 @@ void FUNC(PTYPESET _v) { MEMBER = _v; SETF; }
 
 
 // #define DUPSTRDATE(f) DUPSTR(to_simple_string(f()).c_str())
+
+
+/* detail library -> corba mappings macros */
+#define CHANGED(method) (act->method() != prev->method()) || (act == prev)
+
+#define ADD_NEW_HISTORY_RECORD(_field, _value)                                        \
+unsigned i = detail->_field.length();                                                 \
+detail->_field.length(i + 1);                                                         \
+detail->_field[i].value  <<= _value;                                                  \
+detail->_field[i].actionId = act->getActionId();                                      \
+detail->_field[i].from     = makeCorbaTime(act->getActionStartTime(), true);          \
+detail->_field[i].to       = (i > 0 ? makeCorbaTime(prev->getActionStartTime(), true) \
+                                    : makeCorbaTime(ptime(not_a_date_time)));    
+
+#define MODIFY_LAST_HISTORY_RECORD(_field)                                            \
+unsigned i = detail->_field.length();                                                 \
+detail->_field[i - 1].actionId = act->getActionId();                                  \
+detail->_field[i - 1].from     = makeCorbaTime(act->getActionStartTime(), true);
+
+
+#define MAP_HISTORY_VARIABLE(_field, _method, _conv)                                  \
+if (CHANGED(_method)) {                                                               \
+  ADD_NEW_HISTORY_RECORD(_field, _conv(act->_method))                                 \
+}                                                                                     \
+else {                                                                                \
+  MODIFY_LAST_HISTORY_RECORD(_field)                                                  \
+}
+
+#define MAP_HISTORY_BOOL(_field, _method)                                             \
+if (CHANGED(_method)) {                                                               \
+  ADD_NEW_HISTORY_RECORD(_field, CORBA::Any::from_boolean(act->_method()))            \
+}                                                                                     \
+else {                                                                                \
+  MODIFY_LAST_HISTORY_RECORD(_field)                                                  \
+}
+
+#define MAP_HISTORY_OID(_field, _get_id, _get_handle, _type)                          \
+if (CHANGED(_get_id)) {                                                               \
+  Registry::OID oid;                                                                  \
+  oid.id = act->_get_id();                                                            \
+  oid.handle = DUPSTRFUN(act->_get_handle);                                           \
+  oid.type = _type;                                                                   \
+  ADD_NEW_HISTORY_RECORD(_field, oid)                                                 \
+}                                                                                     \
+else {                                                                                \
+  MODIFY_LAST_HISTORY_RECORD(_field)                                                  \
+}
+
+#define MAP_HISTORY_STRING(_field, _method)    MAP_HISTORY_VARIABLE(_field, _method, DUPSTRFUN)
+#define MAP_HISTORY_DATE(_field, _method)      MAP_HISTORY_VARIABLE(_field, _method, DUPSTRDATED)
+#define MAP_HISTORY_DATETIME(_field, _method)  MAP_HISTORY_VARIABLE(_field, _method, DUPSTRDATE)
+
 
 #endif /*UTILS_H_*/

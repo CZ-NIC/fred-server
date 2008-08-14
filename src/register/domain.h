@@ -3,13 +3,16 @@
 
 #include <string>
 #include <vector>
+#include <boost/date_time/gregorian/gregorian.hpp>
+
 #include "zone.h"
 #include "object.h"
 #include "exceptions.h"
 #include "db/manager.h"
 #include "model/model_filters.h"
 
-#include <boost/date_time/gregorian/gregorian.hpp>
+#include "settings.h"
+
 
 using namespace boost::gregorian;
 
@@ -55,6 +58,8 @@ public:
   }
   /// return fully qualified domain name
   virtual const std::string& getFQDN() const = 0;
+  ///
+  virtual const std::string& getHandle() const = 0;
   /// return fully qualified domain name translated from IDN encoded form
   virtual const std::string& getFQDNIDN() const = 0;
   /// return id of zone
@@ -65,6 +70,12 @@ public:
   virtual TID getNSSetId() const = 0;
   /// set nsset
   virtual void setNSSetId(TID nsset) = 0;
+  /// return handle of keyset
+  virtual const std::string &getKeySetHandle() const = 0;
+  /// return id of keyset
+  virtual TID getKeySetId() const = 0;
+  /// set keyset
+  virtual void setKeySetId(TID keyset) = 0;
   /// return handle of registrant
   virtual const std::string& getRegistrantHandle() const = 0;
   /// return name of registrant
@@ -92,10 +103,10 @@ public:
   virtual date getValExDate() const = 0;
   /// return time of last change in zone generation status
   virtual ptime getZoneStatusTime() const = 0;
-  /// return date when domain will not be generated in zone (= expiration date + 30 days)
-  virtual date getOutZoneDate() const = 0;
-  /// return true time object delete from registry (= expiration date + 45 days)
-  virtual date getCancelDate() const = 0;
+  /// return date when domain will not be generated in zone (= expiration date + 30 days) or erdate (see reload())
+  virtual ptime getOutZoneDate() const = 0;
+  /// return true time object delete from registry (= expiration date + 45 days) or erdate (see reload())
+  virtual ptime getCancelDate() const = 0;
   /// return zone generation status
   virtual unsigned getZoneStatus() const = 0;
 };
@@ -119,6 +130,11 @@ public:
   virtual void setNSSetFilter(TID nssetId) = 0;
   /// set filter for nsset handle
   virtual void setNSSetHandleFilter(const std::string& nssetHandle) = 0;
+  /// set filter for keyset
+  virtual void setKeySetFilter(TID keysetId) = 0;
+  /// set filter for keyset handle
+  virtual void setKeySetHandleFilter(const std::string &keysetHandle) = 0;
+  //virtual void setKeysetHandleFilter(const std::string &_keysetHandle) = 0;
   /// set filter for admin
   virtual void setAdminFilter(TID adminId) = 0;
   /// set filter for admin handle

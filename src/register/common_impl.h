@@ -103,8 +103,8 @@ public:
   virtual void
       makeQuery(bool count, bool limit, std::stringstream& sql) const = 0;
   
-  virtual iterator begin();
-  virtual iterator end();
+  virtual Iterator begin();
+  virtual Iterator end();
 };
 
 }

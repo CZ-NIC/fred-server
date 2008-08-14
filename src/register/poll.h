@@ -32,7 +32,9 @@ namespace Register
       MT_EXPIRATION = 10,
       MT_IMP_VALIDATION = 11,
       MT_VALIDATION = 12,
-      MT_OUTZONE = 13
+      MT_OUTZONE = 13,
+      MT_TRANSFER_KEYSET = 14,
+      MT_DELETE_KEYSET = 15
     };
 
     class Message

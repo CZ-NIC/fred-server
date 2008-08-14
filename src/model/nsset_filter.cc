@@ -3,8 +3,12 @@
 namespace Database {
 namespace Filters {
 
+NSSet* NSSet::create() {
+  return new NSSetHistoryImpl();
+}
+
 /*
- * NSSET IMPLEMENTATION 
+ * NSSET IMPLEMENTATION
  */
 NSSetImpl::NSSetImpl() :
   ObjectImpl() {
@@ -85,7 +89,7 @@ void NSSetImpl::_joinPolymorphicTables() {
 }
 
 /*
- * NSSET HISTORY IMPLEMENTATION 
+ * NSSET HISTORY IMPLEMENTATION
  */
 NSSetHistoryImpl::NSSetHistoryImpl() :
   ObjectHistoryImpl() {
@@ -139,7 +143,7 @@ Value<std::string>& NSSetHistoryImpl::addHostIP() {
 }
 
 Contact& NSSetHistoryImpl::addTechContact() {
-  Contact *tmp = new ContactHistoryImpl();
+  Contact *tmp = Contact::create();
   add(tmp);
   tmp->setName("TechContact");
   tmp->addJoin(new Join(
@@ -154,15 +158,15 @@ Contact& NSSetHistoryImpl::addTechContact() {
 }
 
 void NSSetHistoryImpl::_joinPolymorphicTables() {
-  ObjectHistoryImpl::_joinPolymorphicTables();
   Table *n = findTable("nsset_history");
   if (n) {
     joins.push_front(new Join(
-        Column("historyid", joinTable("object_registry")),
+        Column("historyid", joinTable("object_history")),
         SQL_OP_EQ,
         Column("historyid", *n)
     ));
   }
+  ObjectHistoryImpl::_joinPolymorphicTables();
 }
 
 }

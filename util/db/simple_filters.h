@@ -46,7 +46,7 @@ public:
     return 0;
   }
 
-  virtual void serialize(Database::SelectQuery& _sq) {
+  virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
     std::stringstream &prep = _sq.where_prepared_string();
     std::vector<std::string> &store = _sq.where_prepared_values();
 
@@ -109,7 +109,7 @@ public:
     }
   }
 
-  virtual void serialize(Database::SelectQuery& _sq) {
+  virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
     TRACE("[CALL] _BaseDTInterval::serialize()");
     std::stringstream &prep = _sq.where_prepared_string();
     std::vector<std::string> &store = _sq.where_prepared_values();
@@ -217,7 +217,7 @@ public:
     active = true;
   }
   
-  void serialize(Database::SelectQuery& _sq) {
+  void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
     TRACE("[CALL] Interval<DateTime>::serialize()");
     std::stringstream &prep = _sq.where_prepared_string();
     const DateTimeInterval& t_value = value.getValue();
@@ -256,7 +256,7 @@ public:
       prep << " )";
     }
     else {
-      _BaseDTInterval<DateTimeInterval>::serialize(_sq);
+      _BaseDTInterval<DateTimeInterval>::serialize(_sq, _settings);
     }
   }
 
@@ -287,7 +287,7 @@ public:
     active = true;
   }
 
-  void serialize(Database::SelectQuery& _sq) {
+  void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
     TRACE("[CALL] Interval<Date>::serialize()");
     std::stringstream &prep = _sq.where_prepared_string();
     const DateInterval& t_value = value.getValue();
@@ -326,7 +326,7 @@ public:
       prep << " )";
     }
     else {
-      _BaseDTInterval<DateInterval>::serialize(_sq);
+      _BaseDTInterval<DateInterval>::serialize(_sq, _settings);
     }
   }
   
@@ -379,7 +379,7 @@ public:
     return 0;
   }
 
-  virtual void serialize(Database::SelectQuery& _sq) {
+  virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
     std::stringstream &prep = _sq.where_prepared_string();
     std::vector<std::string> &store = _sq.where_prepared_values();
 
@@ -445,7 +445,7 @@ public:
     return 0;
   }
 
-  virtual void serialize(Database::SelectQuery& _sq) {
+  virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
     std::stringstream &prep = _sq.where_prepared_string();
     std::vector<std::string> &store = _sq.where_prepared_values();
 
@@ -492,7 +492,7 @@ public:
   virtual ~Null() {
   }
 
-  virtual void serialize(Database::SelectQuery& _sq) {
+  virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
     _sq.where_prepared_string() << getConjuction() << column.str() << SQL_OP_IS
         << "NULL";
   }

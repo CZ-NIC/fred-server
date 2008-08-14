@@ -297,6 +297,7 @@ COMPOUND_CLASS(Domain, Domain, Obj,
     FILTER_ADD(Contact, addAdminContact);
     FILTER_ADD(Contact, addTempContact);
     FILTER_ADD(NSSet, addNSSet);
+    FILTER_ADD(KeySet, addKeySet);
 );
 
 COMPOUND_CLASS(NSSet, NSSet, Obj,
@@ -304,6 +305,11 @@ COMPOUND_CLASS(NSSet, NSSet, Obj,
     FILTER_ADD(Str, addHostFQDN);
     FILTER_ADD(Str, addHostIP);
     FILTER_ADD(Contact, addTechContact);
+);
+
+COMPOUND_CLASS(KeySet, KeySet, Obj,
+        FILTER_ADD(Id, addId);
+        FILTER_ADD(Contact, addTechContact);
 );
 
 COMPOUND_CLASS(Action, EppAction, Compound,
@@ -432,6 +438,7 @@ ITERATOR_ADD_E_METHOD_IMPL(Filter,FilterFilter);
 ITERATOR_ADD_E_METHOD_IMPL(Contact,Contact);
 ITERATOR_ADD_E_METHOD_IMPL(Domain,Domain);
 ITERATOR_ADD_E_METHOD_IMPL(NSSet,NSSet);
+ITERATOR_ADD_E_METHOD_IMPL(KeySet,KeySet);
 ITERATOR_ADD_E_METHOD_IMPL(PublicRequest,PublicRequest);
 ITERATOR_ADD_E_METHOD_IMPL(File,File);
 ITERATOR_ADD_E_METHOD_IMPL(Invoice,Invoice);
@@ -456,6 +463,7 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(Contact,Contact);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Domain,Domain);
   ITERATOR_ADD_FILTER_METHOD_IMPL(NSSet,NSSet);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(KeySet,KeySet);
   ITERATOR_ADD_FILTER_METHOD_IMPL(PublicRequest,PublicRequest);
   ITERATOR_ADD_FILTER_METHOD_IMPL(File,File);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Invoice,Invoice);

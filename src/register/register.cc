@@ -37,6 +37,7 @@ class StatusDescImpl : public virtual StatusDesc {
   bool contact;
   bool nsset;
   bool domain;
+  bool keyset;
 
 public:
   StatusDescImpl(TID _id,
@@ -47,6 +48,7 @@ public:
     contact = types.find("1") != std::string::npos;
     nsset = types.find("2") != std::string::npos;
     domain = types.find("3") != std::string::npos;
+    keyset = types.find("4") != std::string::npos;
   }
 
   void addDesc(const std::string& lang, const std::string text) {
@@ -78,7 +80,8 @@ public:
   }
 
   virtual bool isForType(short type) const {
-    return type == 1 ? contact : type == 2 ? nsset : domain;
+    //return type == 1 ? contact : type == 2 ? nsset : domain;
+    return type == 1 ? contact : type == 2 ? nsset : type == 3 ? domain : keyset;
   }
 };
 
@@ -92,6 +95,7 @@ class ManagerImpl : virtual public Manager {
   std::auto_ptr<Registrar::Manager> m_registrar_manager;
   std::auto_ptr<Contact::Manager> m_contact_manager;
   std::auto_ptr<NSSet::Manager> m_nsset_manager;
+  std::auto_ptr<KeySet::Manager> m_keyset_manager;
   std::auto_ptr<Filter::Manager> m_filter_manager;
 
   std::vector<CountryDesc> m_countries;
@@ -109,7 +113,8 @@ public:
     m_nsset_manager.reset(NSSet::Manager::create(db,
                                                  m_zone_manager.get(),
                                                  m_restricted_handles));
-    // TEMP: this will be ok when Database::Manager ptr will be initilized
+    m_keyset_manager.reset(KeySet::Manager::create(db, m_restricted_handles));
+    // TEMP: this will be ok when DBase::Manager ptr will be initilized
     // here in constructor (not in dbManagerInit method)
     // m_filter_manager.reset(Filter::Manager::create(m_db_manager));
 
@@ -133,6 +138,7 @@ public:
     m_nsset_manager.reset(NSSet::Manager::create(db,
                                                  m_zone_manager.get(),
                                                  m_restricted_handles));
+    m_keyset_manager.reset(KeySet::Manager::create(db, m_restricted_handles));
     m_filter_manager.reset(Filter::Manager::create(m_db_manager));
 
     /// load country codes descrition from database
@@ -157,6 +163,11 @@ public:
 
   NSSet::Manager *getNSSetManager() const {
     return m_nsset_manager.get();
+  }
+
+  KeySet::Manager *getKeySetManager() const
+  {
+      return m_keyset_manager.get();
   }
 
   Filter::Manager* getFilterManager() const {
@@ -231,6 +242,15 @@ public:
       chNss.type = HT_NSSET;
       chNss.handleClass= CH_REGISTRED;
       chl.push_back(chNss);
+    }
+    // check if handle is registered keyset
+    NameIdPair conflictKeySet;
+    if (getKeySetManager()->checkAvail(handle, conflictKeySet) ==
+            KeySet::Manager::CA_REGISTRED) {
+        CheckHandle chKey;
+        chKey.type = HT_KEYSET;
+        chKey.handleClass = CH_REGISTRED;
+        chl.push_back(chKey);
     }
     // check if handle is registrant   
     if (getRegistrarManager()->checkHandle(handle)) {

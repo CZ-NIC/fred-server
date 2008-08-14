@@ -273,11 +273,11 @@ void CommonListImpl::setFilterModified() {
   real_size_initialized_ = false;
 }
 
-CommonList::iterator CommonListImpl::begin() {
+CommonList::Iterator CommonListImpl::begin() {
   return data_.begin();
 }
 
-CommonList::iterator CommonListImpl::end() {
+CommonList::Iterator CommonListImpl::end() {
   return data_.end();
 }
 

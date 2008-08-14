@@ -16,12 +16,12 @@ Compound::~Compound() {
  * not using getConjuction() problem with first simple filter in filter_list and
  * brackets (conjuction priority)
  */
-void Compound::serialize(Database::SelectQuery& _sq) {
+void Compound::serialize(Database::SelectQuery& _sq, const Settings *_settings) {
   TRACE("[CALL] Compound::serialize()");
   LOGGER("db").debug(boost::format("serializing filter '%1%'") % getName());
   
-  if (!polymorphic_joined_) 
-    _joinPolymorphicTables();
+//  if (!polymorphic_joined_) 
+//    _joinPolymorphicTables();
 
   TRACE("[IN] Compound::serialize(): (+)join_on");
   _sq.from() << (join_on ? join_on->getType() : "");
@@ -52,7 +52,7 @@ void Compound::serialize(Database::SelectQuery& _sq) {
     }
     TRACE(boost::format("[ER] Compound::serialize(): (+)inner '%1%' filter")
         % (*it)->getName());
-    (*it)->serialize(_sq);
+    (*it)->serialize(_sq, _settings);
     TRACE(boost::format("[RR] Compound::serialize(): (+)inner '%1%' filter")
         % (*it)->getName());
   }
@@ -79,20 +79,6 @@ Table* Compound::findTable(const std::string& _t) {
   } else {
     return 0;
   }
-}
-
-Compound* Compound::clone() const {
-  Compound *tmp = new Compound();
-  tmp->tables = std::map<std::string, Table>(tables.begin(), tables.end());
-  std::vector<Filter*>::const_iterator it;
-  for (it = filter_list.begin(); it != filter_list.end(); ++it) {
-    Compound *iscf = dynamic_cast<Compound*>(*it);
-    if (iscf) {
-      Compound *c = iscf->clone();
-      tmp->filter_list.push_back(c);
-    }
-  }
-  return tmp;
 }
 
 void Compound::clear() {

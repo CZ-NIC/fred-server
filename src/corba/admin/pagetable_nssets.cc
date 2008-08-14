@@ -1,6 +1,7 @@
 #include "pagetable_nssets.h"
 
-ccReg_NSSets_i::ccReg_NSSets_i(Register::NSSet::List *_nl) : nl(_nl) {
+ccReg_NSSets_i::ccReg_NSSets_i(Register::NSSet::List *_nl, const Settings *_ptr) : nl(_nl) {
+  uf.settings(_ptr);
 }
 
 ccReg_NSSets_i::~ccReg_NSSets_i() {
@@ -37,7 +38,7 @@ ccReg_NSSets_i::getRow(CORBA::Short row)
   tr->length(4);
   (*tr)[0] = DUPSTRFUN(n->getHandle);
   (*tr)[1] = DUPSTRDATE(n->getCreateDate);
-  (*tr)[2] = DUPSTRDATED(n->getDeleteDate);
+  (*tr)[2] = DUPSTRDATE(n->getDeleteDate);
   (*tr)[3] = DUPSTRFUN(n->getRegistrarHandle); 
   return tr;
 }
@@ -97,6 +98,7 @@ ccReg_NSSets_i::reload()
   TRACE("[CALL] ccReg_NSSets_i::reload()");
 //  nl->makeRealCount();  
   nl->reload(uf, dbm);
+  nl->deleteDuplicatesId();
 }
 
 void
