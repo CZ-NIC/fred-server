@@ -148,17 +148,17 @@ KeySetHistoryImpl::addTechContact()
 void
 KeySetHistoryImpl::_joinPolymorphicTables()
 {
-    ObjectHistoryImpl::_joinPolymorphicTables();
     Table *n = findTable("keyset_history");
     if (n) {
         joins.push_front(
                 new Join(
-                    Column("historyid", joinTable("object_registry")),
+                    Column("historyid", joinTable("object_history")),
                     SQL_OP_EQ,
                     Column("historyid", *n)
                     )
                 );
     }
+    ObjectHistoryImpl::_joinPolymorphicTables();
 }
 
 } // namespace Filters
