@@ -1,3 +1,20 @@
+2008-08-15 Jiri Sadek, Ales Dolezal, Jaromir Talir
+   * Merged history and dnssec branches
+   
+	 * ADIFD
+     - history for domain, contact, nsset, keyset added to administation 
+	   interface
+		 - history details method
+		 - filter serialization accept setting structure (for history on/off handling)
+	   - deleted hardcoded user list (until user management authentication will
+		   be done in frontend)
+
+   * RIFD
+	   - implementation of DNSSEC extension features
+		 - new object KEYSET
+		 - implemented EPP commands 
+		 	 - create_keyset, update_keyset, info_keyset, check_keyset,  delete_keyset, list_keysets
+
 2008-07-25 Jiri Sadek
 
    * Database library (util/db) slightly rewitten

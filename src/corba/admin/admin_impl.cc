@@ -55,18 +55,6 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
   register_manager_.reset(Register::Manager::create(&db, cfg.GetRestrictedHandles()));
   register_manager_->initStates();
 
-  m_user_list.push_back("superuser");
-  m_user_list.push_back("martin");
-  m_user_list.push_back("pavel");
-  m_user_list.push_back("jara");
-  m_user_list.push_back("zuzka");
-  m_user_list.push_back("david");
-  m_user_list.push_back("feela");
-  m_user_list.push_back("ondrej");
-  m_user_list.push_back("tdivis");
-  m_user_list.push_back("jsadek");
-  m_user_list.push_back("helpdesk");
-  
   if (_session_garbage) {
     session_garbage_active_ = true;
     session_garbage_thread_ = new boost::thread(boost::bind(&ccReg_Admin_i::garbageSession, this));
@@ -173,32 +161,18 @@ void ccReg_Admin_i::garbageSession() {
 void ccReg_Admin_i::authenticateUser(const char* _username,
                                      const char* _password)
     throw (ccReg::Admin::AuthFailed) {
-  TRACE(boost::format("[CALL] ccReg_Admin_i::authenticateUser('%1%', '%2%')")
-      % _username % _password);
+  TRACE(boost::format("[CALL] ccReg_Admin_i::authenticateUser('%1%', '******')")
+      % _username);
 
-  if (std::string(_password) != "superuser123")
-    throw ccReg::Admin::AuthFailed();
+  /* for now we let everybody in :) */
 
-  std::vector<std::string>::const_iterator i = find(m_user_list.begin(),
-                                                    m_user_list.end(),
-                                                    _username);
-  if (i == m_user_list.end())
-    throw ccReg::Admin::AuthFailed();
 }
 
 char* ccReg_Admin_i::createSession(const char* username)
     throw (ccReg::Admin::AuthFailed) {
   TRACE(boost::format("[CALL] ccReg_Admin_i::createSession('%1%')") % username);
 
-  std::vector<std::string>::const_iterator i = find(m_user_list.begin(),
-                                                    m_user_list.end(),
-                                                    username);
-  if (i == m_user_list.end())
-    throw ccReg::Admin::AuthFailed();
-
-  // garbageSession();
-
-  ccReg_User_i *user_info = new ccReg_User_i(i - m_user_list.begin(), username, username, username);
+  ccReg_User_i *user_info = new ccReg_User_i(1 /* dummy id until user management */, username, username, username);
 
   std::string session_id = to_iso_string(microsec_clock::local_time()) + "/"
       + username;
