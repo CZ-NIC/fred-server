@@ -1,7 +1,8 @@
-2008-08-15 Jiri Sadek, Ales Dolezal, Jaromir Talir
+2008-08-15 Jiri Sadek, Ales Dolezal, Jaromir Talir (version 2.0.0)
+
    * Merged history and dnssec branches
    
-	 * ADIFD
+   * ADIFD
      - history for domain, contact, nsset, keyset added to administation 
 	   interface
 		 - history details method
