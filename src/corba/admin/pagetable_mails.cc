@@ -16,8 +16,8 @@ ccReg::Filters::Compound_ptr ccReg_Mails_i::add() {
   return it.addE(f);
 }
 
-ccReg::Table::ColumnHeaders* ccReg_Mails_i::getColumnHeaders() {
-  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+Registry::Table::ColumnHeaders* ccReg_Mails_i::getColumnHeaders() {
+  Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(3);
   COLHEAD(ch, 0, "Create Time", CT_OTHER);
   COLHEAD(ch, 1, "Type", CT_OTHER);
@@ -25,17 +25,18 @@ ccReg::Table::ColumnHeaders* ccReg_Mails_i::getColumnHeaders() {
   return ch;
 }
 
-ccReg::TableRow* ccReg_Mails_i::getRow(CORBA::Short _row)
+Registry::TableRow* ccReg_Mails_i::getRow(CORBA::Short _row)
     throw (ccReg::Table::INVALID_ROW) {
   const Register::Mail::Mail *mail = mail_list_->get(_row);
   if (!mail)
     throw ccReg::Table::INVALID_ROW();
 
-  ccReg::TableRow *tr = new ccReg::TableRow;
+  Registry::TableRow *tr = new Registry::TableRow;
   tr->length(3);
-  (*tr)[0] = DUPSTRDATE(mail->getCreateTime);
-  (*tr)[1] = DUPSTRC(mail->getTypeDesc());
-  (*tr)[2] = DUPSTRC(Conversion<long int>::to_string(mail->getStatus()));
+
+  (*tr)[0] <<= DUPSTRDATE(mail->getCreateTime);
+  (*tr)[1] <<= DUPSTRC(mail->getTypeDesc());
+  (*tr)[2] <<= DUPSTRC(Conversion<long int>::to_string(mail->getStatus()));
   return tr;
 }
 

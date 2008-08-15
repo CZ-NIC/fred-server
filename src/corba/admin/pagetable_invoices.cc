@@ -17,41 +17,46 @@ ccReg::Filters::Compound_ptr ccReg_Invoices_i::add() {
 }
 
 
-ccReg::Table::ColumnHeaders* ccReg_Invoices_i::getColumnHeaders() {
-  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+Registry::Table::ColumnHeaders* ccReg_Invoices_i::getColumnHeaders() {
+  Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(9);
   COLHEAD(ch,0,"Create Date",CT_OTHER);
   COLHEAD(ch,1,"Number",CT_OTHER);
-  COLHEAD(ch,2,"Registrar",CT_REGISTRAR_HANDLE);
+  COLHEAD(ch,2,"Registrar",CT_OID);
   COLHEAD(ch,3,"Total",CT_OTHER);
   COLHEAD(ch,4,"Credit",CT_OTHER);
   COLHEAD(ch,5,"Type",CT_OTHER);
   COLHEAD(ch,6,"Zone",CT_OTHER);
-  COLHEAD(ch,7,"PDF",CT_FILE_ID);
-  COLHEAD(ch,8,"XML",CT_FILE_ID);
+  COLHEAD(ch,7,"PDF",CT_OID_ICON);
+  COLHEAD(ch,8,"XML",CT_OID_ICON);
   return ch;
 }
 
-ccReg::TableRow* ccReg_Invoices_i::getRow(CORBA::Short row)
+Registry::TableRow* ccReg_Invoices_i::getRow(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW) {
   const Register::Invoicing::Invoice *inv = invoice_list_->get(row);
   if (!inv)
     throw ccReg::Table::INVALID_ROW();
   
-  ccReg::TableRow *tr = new ccReg::TableRow;
+  Registry::TableRow *tr = new Registry::TableRow;
   tr->length(9);
   Register::Invoicing::Type invoice_type = inv->getType();
   std::string credit = (invoice_type == Register::Invoicing::IT_DEPOSIT ? formatMoney(inv->getCredit()) : "");
   
-  (*tr)[0] = DUPSTRDATE(inv->getCrTime);
-  (*tr)[1] = DUPSTRC(Conversion<long long unsigned>::to_string(inv->getNumber()));
-  (*tr)[2] = DUPSTRFUN(inv->getClient()->getHandle);
-  (*tr)[3] = DUPSTRC(formatMoney(inv->getPrice()));
-  (*tr)[4] = DUPSTRC(credit);
-  (*tr)[5] = DUPSTR(invoice_type == Register::Invoicing::IT_DEPOSIT ? "DEPOSIT" : "ACCOUNT");
-  (*tr)[6] = DUPSTRC(inv->getZoneName());
-  (*tr)[7] = DUPSTRC(Conversion<long long unsigned>::to_string(inv->getFilePDF()));
-  (*tr)[8] = DUPSTRC(Conversion<long long unsigned>::to_string(inv->getFileXML()));
+  MAKE_OID(oid_registrar, inv->getClient()->getId(), DUPSTRFUN(inv->getClient()->getHandle), FT_REGISTRAR)
+  MAKE_OID(oid_pdf, inv->getFilePDF(), "", FT_FILE)
+  MAKE_OID(oid_xml, inv->getFileXML(), "", FT_FILE)
+
+
+  (*tr)[0] <<= DUPSTRDATE(inv->getCrTime);
+  (*tr)[1] <<= DUPSTRC(Conversion<long long unsigned>::to_string(inv->getNumber()));
+  (*tr)[2] <<= oid_registrar; 
+  (*tr)[3] <<= DUPSTRC(formatMoney(inv->getPrice()));
+  (*tr)[4] <<= DUPSTRC(credit);
+  (*tr)[5] <<= DUPSTR(invoice_type == Register::Invoicing::IT_DEPOSIT ? "DEPOSIT" : "ACCOUNT");
+  (*tr)[6] <<= DUPSTRC(inv->getZoneName());
+  (*tr)[7] <<= oid_pdf;
+  (*tr)[8] <<= oid_xml;
   return tr;
 }
 

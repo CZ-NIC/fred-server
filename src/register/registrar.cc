@@ -766,6 +766,7 @@ class EPPActionImpl : public CommonObjectImpl,
   std::string serverTransactionId;
   std::string clientTransactionId;
   unsigned result;
+  TID registrarId;
   std::string registrarHandle;
   std::string handle;
   std::string message;
@@ -780,13 +781,14 @@ public:
                 const std::string& _serverTransactionId,
                 const std::string& _clientTransactionId,
                 unsigned _result,
+                TID _registrarId,
                 const std::string& _registrarHandle,
                 const std::string& _handle,
                 const std::string& _message = std::string(),
                 const std::string& _message_out = std::string()) :
     CommonObjectImpl(_id), sessionId(_sessionId), type(_type), typeName(_typeName),
         startTime(_startTime), serverTransactionId(_serverTransactionId),
-        clientTransactionId(_clientTransactionId), result(_result), 
+        clientTransactionId(_clientTransactionId), result(_result), registrarId(_registrarId),
         registrarHandle(_registrarHandle), handle(_handle), 
         message(_message), message_out(_message_out) {
   }
@@ -820,6 +822,9 @@ public:
   }
   virtual std::string getResultStatus() const {
     return (result < 2000 && result) ? "OK" : "FAILED";
+  }
+  virtual TID getRegistrarId() const {
+    return registrarId;
   }
   virtual const std::string& getRegistrarHandle() const {
     return registrarHandle;
@@ -938,7 +943,7 @@ public:
     clear();
     std::ostringstream sql;
     sql << "SELECT a.id,a.clientid,a.action,ea.status,a.startdate,"
-        << "a.servertrid,a.clienttrid, a.response,r.handle,MIN(al.value) ";
+        << "a.servertrid,a.clienttrid, a.response,r.id,r.handle,MIN(al.value) ";
     if (partialLoad)
       sql << ",'','' ";
     else
@@ -984,10 +989,11 @@ public:
           db->GetFieldValue(i,5),
           db->GetFieldValue(i,6),
           DB_NULL_INT(i,7),
-          DB_NULL_STR(i,8),
+          STR_TO_ID(db->GetFieldValue(i,8)),
           DB_NULL_STR(i,9),
           DB_NULL_STR(i,10),
-          DB_NULL_STR(i,11)
+          DB_NULL_STR(i,11),
+          DB_NULL_STR(i,12)
       ));
     }
     db->FreeSelect();
@@ -1123,6 +1129,7 @@ public:
                 server_trid,
                 client_trid,
                 result,
+                registrar_id,
                 registrar_handle,
                 object_handle,
                 message,

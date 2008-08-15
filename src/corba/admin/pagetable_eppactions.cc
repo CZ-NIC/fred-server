@@ -16,33 +16,36 @@ ccReg::Filters::Compound_ptr ccReg_EPPActions_i::add() {
   return it.addE(f);
 }
 
-ccReg::Table::ColumnHeaders* ccReg_EPPActions_i::getColumnHeaders() {
-  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+Registry::Table::ColumnHeaders* ccReg_EPPActions_i::getColumnHeaders() {
+  Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(7);
   COLHEAD(ch,0,"SvTRID",CT_OTHER);
   COLHEAD(ch,1,"ClTRID",CT_OTHER);
   COLHEAD(ch,2,"Type",CT_OTHER);
   COLHEAD(ch,3,"Handle",CT_OTHER);
-  COLHEAD(ch,4,"Registrar",CT_REGISTRAR_HANDLE);
+  COLHEAD(ch,4,"Registrar",CT_OID);
   COLHEAD(ch,5,"Time",CT_OTHER);
   COLHEAD(ch,6,"Result",CT_OTHER);
   return ch;
 }
 
-ccReg::TableRow* ccReg_EPPActions_i::getRow(CORBA::Short row)
+Registry::TableRow* ccReg_EPPActions_i::getRow(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW) {
   const Register::Registrar::EPPAction *a = eal->get(row);
   if (!a)
     throw ccReg::Table::INVALID_ROW();
-  ccReg::TableRow *tr = new ccReg::TableRow;
+  Registry::TableRow *tr = new Registry::TableRow;
   tr->length(7);
-  (*tr)[0] = DUPSTRFUN(a->getServerTransactionId);
-  (*tr)[1] = DUPSTRFUN(a->getClientTransactionId);
-  (*tr)[2] = DUPSTRFUN(a->getTypeName);
-  (*tr)[3] = DUPSTRFUN(a->getHandle);
-  (*tr)[4] = DUPSTRFUN(a->getRegistrarHandle);
-  (*tr)[5] = DUPSTRDATE(a->getStartTime);
-  (*tr)[6] = DUPSTRFUN(a->getResultStatus);
+
+  MAKE_OID(oid_registrar, a->getRegistrarId(), DUPSTRFUN(a->getRegistrarHandle), FT_REGISTRAR)
+
+  (*tr)[0] <<= DUPSTRFUN(a->getServerTransactionId);
+  (*tr)[1] <<= DUPSTRFUN(a->getClientTransactionId);
+  (*tr)[2] <<= DUPSTRFUN(a->getTypeName);
+  (*tr)[3] <<= DUPSTRFUN(a->getHandle);
+  (*tr)[4] <<= oid_registrar;
+  (*tr)[5] <<= DUPSTRDATE(a->getStartTime);
+  (*tr)[6] <<= DUPSTRFUN(a->getResultStatus);
   return tr;
 }
 

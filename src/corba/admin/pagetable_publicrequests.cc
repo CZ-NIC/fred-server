@@ -21,9 +21,9 @@ void ccReg_PublicRequests_i::reload() {
   request_list_->reload(uf);
 }
 
-ccReg::Table::ColumnHeaders* ccReg_PublicRequests_i::getColumnHeaders() {
+Registry::Table::ColumnHeaders* ccReg_PublicRequests_i::getColumnHeaders() {
   TRACE("[CALL] ccReg_PublicRequests_i::getColumnHeaders()");
-  ccReg::Table::ColumnHeaders *columns = new ccReg::Table::ColumnHeaders();
+  Registry::Table::ColumnHeaders *columns = new Registry::Table::ColumnHeaders();
   columns->length(4);
   COLHEAD(columns, 0, "Create Time", CT_OTHER);
   COLHEAD(columns, 1, "Resolve Time", CT_OTHER);
@@ -32,17 +32,17 @@ ccReg::Table::ColumnHeaders* ccReg_PublicRequests_i::getColumnHeaders() {
   return columns;
 }
 
-ccReg::TableRow* ccReg_PublicRequests_i::getRow(CORBA::Short _row)
+Registry::TableRow* ccReg_PublicRequests_i::getRow(CORBA::Short _row)
     throw (ccReg::Table::INVALID_ROW) {
   const Register::PublicRequest::PublicRequest *request = request_list_->get(_row);
   if (!request)
     throw ccReg::Table::INVALID_ROW();
-  ccReg::TableRow *row = new ccReg::TableRow;
+  Registry::TableRow *row = new Registry::TableRow();
   row->length(4);
-  (*row)[0] = DUPSTRDATE(request->getCreateTime);
-  (*row)[1] = DUPSTRDATE(request->getResolveTime);
-  (*row)[2] = DUPSTRC(Register::PublicRequest::Type2Str(request->getType()));
-  (*row)[3] = DUPSTRC(Register::PublicRequest::Status2Str(request->getStatus()));
+  (*row)[0] <<= DUPSTRDATE(request->getCreateTime);
+  (*row)[1] <<= DUPSTRDATE(request->getResolveTime);
+  (*row)[2] <<= DUPSTRC(Register::PublicRequest::Type2Str(request->getType()));
+  (*row)[3] <<= DUPSTRC(Register::PublicRequest::Status2Str(request->getStatus()));
   return row;
 }
 

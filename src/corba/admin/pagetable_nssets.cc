@@ -17,29 +17,33 @@ ccReg::Filters::Compound_ptr ccReg_NSSets_i::add() {
 }
 
 
-ccReg::Table::ColumnHeaders* ccReg_NSSets_i::getColumnHeaders() {
+Registry::Table::ColumnHeaders* ccReg_NSSets_i::getColumnHeaders() {
   TRACE("[CALL] ccReg_NSSets_i::getColumnHeaders()");
-  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+  Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(4);
-  COLHEAD(ch,0,"Handle",CT_NSSET_HANDLE);
+  COLHEAD(ch,0,"Handle",CT_OID);
   COLHEAD(ch,1,"Create date",CT_OTHER);
   COLHEAD(ch,2,"Delete date",CT_OTHER);
-  COLHEAD(ch,3,"Registrar",CT_REGISTRAR_HANDLE);
+  COLHEAD(ch,3,"Registrar",CT_OID);
   return ch;
 }
 
-ccReg::TableRow* 
+Registry::TableRow* 
 ccReg_NSSets_i::getRow(CORBA::Short row)
   throw (ccReg::Table::INVALID_ROW)
 {
   const Register::NSSet::NSSet *n = nl->getNSSet(row);
   if (!n) throw ccReg::Table::INVALID_ROW();
-  ccReg::TableRow *tr = new ccReg::TableRow;
+  Registry::TableRow *tr = new Registry::TableRow;
   tr->length(4);
-  (*tr)[0] = DUPSTRFUN(n->getHandle);
-  (*tr)[1] = DUPSTRDATE(n->getCreateDate);
-  (*tr)[2] = DUPSTRDATE(n->getDeleteDate);
-  (*tr)[3] = DUPSTRFUN(n->getRegistrarHandle); 
+
+  MAKE_OID(oid_handle, n->getId(), DUPSTRFUN(n->getHandle), FT_NSSET)
+  MAKE_OID(oid_registrar, n->getRegistrarId(), DUPSTRFUN(n->getRegistrarHandle), FT_REGISTRAR)
+
+  (*tr)[0] <<= oid_handle;
+  (*tr)[1] <<= DUPSTRDATE(n->getCreateDate);
+  (*tr)[2] <<= DUPSTRDATE(n->getDeleteDate);
+  (*tr)[3] <<= oid_registrar; 
   return tr;
 }
 

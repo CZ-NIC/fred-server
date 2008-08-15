@@ -8,6 +8,9 @@
 		 - filter serialization accept setting structure (for history on/off handling)
 	   - deleted hardcoded user list (until user management authentication will
 		   be done in frontend)
+		 - changed TableRow to IDL module Register and all fields 
+		   rewritten to CORBA Any type
+     - links in PageTable are done by OID structure (id, handle, type)
 
    * RIFD
 	   - implementation of DNSSEC extension features

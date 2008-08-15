@@ -16,8 +16,8 @@ ccReg::Filters::Compound_ptr ccReg_Files_i::add() {
   return it.addE(f);
 }
 
-ccReg::Table::ColumnHeaders* ccReg_Files_i::getColumnHeaders() {
-  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+Registry::Table::ColumnHeaders* ccReg_Files_i::getColumnHeaders() {
+  Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(4);
   COLHEAD(ch, 0, "Name", CT_OTHER);
   COLHEAD(ch, 1, "Create Time",CT_OTHER);
@@ -26,18 +26,18 @@ ccReg::Table::ColumnHeaders* ccReg_Files_i::getColumnHeaders() {
   return ch;
 }
 
-ccReg::TableRow* ccReg_Files_i::getRow(CORBA::Short _row)
+Registry::TableRow* ccReg_Files_i::getRow(CORBA::Short _row)
     throw (ccReg::Table::INVALID_ROW) {
   const Register::File::File *file = file_list_->get(_row);
   if (!file)
     throw ccReg::Table::INVALID_ROW();
 
-  ccReg::TableRow *tr = new ccReg::TableRow;
+  Registry::TableRow *tr = new Registry::TableRow;
   tr->length(4);
-  (*tr)[0] = DUPSTRC(file->getName());
-  (*tr)[1] = DUPSTRDATE(file->getCreateTime);
-  (*tr)[2] = DUPSTRC(file->getTypeDesc());
-  (*tr)[3] = DUPSTRC(Conversion<long unsigned>::to_string(file->getSize()));
+  (*tr)[0] <<= DUPSTRC(file->getName());
+  (*tr)[1] <<= DUPSTRDATE(file->getCreateTime);
+  (*tr)[2] <<= DUPSTRC(file->getTypeDesc());
+  (*tr)[3] <<= DUPSTRC(Conversion<long unsigned>::to_string(file->getSize()));
   return tr;
 }
 

@@ -22,40 +22,45 @@ void ccReg_Domains_i::reload() {
   dl->deleteDuplicatesId();
 }
 
-ccReg::Table::ColumnHeaders* ccReg_Domains_i::getColumnHeaders() {
+Registry::Table::ColumnHeaders* ccReg_Domains_i::getColumnHeaders() {
   TRACE("[CALL] ccReg_Domains_i::getColumnHeaders()");
-  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+  Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(10);
-  COLHEAD(ch, 0, "FQDN", CT_DOMAIN_HANDLE);
-  COLHEAD(ch, 1, "Registrant", CT_CONTACT_HANDLE);
+  COLHEAD(ch, 0, "FQDN",            CT_OID);
+  COLHEAD(ch, 1, "Registrant",      CT_OID);
   COLHEAD(ch, 2, "Registrant name", CT_OTHER);
-  COLHEAD(ch, 3, "Registrar", CT_REGISTRAR_HANDLE);
-  COLHEAD(ch, 4, "In zone", CT_OTHER);
-  COLHEAD(ch, 5, "Create date", CT_OTHER);
+  COLHEAD(ch, 3, "Registrar",       CT_OID);
+  COLHEAD(ch, 4, "In zone",         CT_OTHER);
+  COLHEAD(ch, 5, "Create date",     CT_OTHER);
   COLHEAD(ch, 6, "Expiration date", CT_OTHER);
-  COLHEAD(ch, 7, "Out Zone date", CT_OTHER);
-  COLHEAD(ch, 8, "Delete date", CT_OTHER);
-  COLHEAD(ch, 9, "Validation", CT_OTHER);
+  COLHEAD(ch, 7, "Out Zone date",   CT_OTHER);
+  COLHEAD(ch, 8, "Delete date",     CT_OTHER);
+  COLHEAD(ch, 9, "Validation",      CT_OTHER);
   return ch;
 }
 
-ccReg::TableRow* ccReg_Domains_i::getRow(CORBA::Short row)
+Registry::TableRow* ccReg_Domains_i::getRow(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW) {
   const Register::Domain::Domain *d = dl->getDomain(row);
   if (!d)
     throw ccReg::Table::INVALID_ROW();
-  ccReg::TableRow *tr = new ccReg::TableRow;
+  Registry::TableRow *tr = new Registry::TableRow;
   tr->length(10);
-  (*tr)[0] = DUPSTRFUN(d->getFQDN); // fqdn
-  (*tr)[1] = DUPSTRFUN(d->getRegistrantHandle); // registrant handle
-  (*tr)[2] = DUPSTRFUN(d->getRegistrantName); // registrant name
-  (*tr)[3] = DUPSTRFUN(d->getRegistrarHandle); // registrar handle 
-  (*tr)[4] = DUPSTR(d->getZoneStatus() == 1 ? "IN" : "OUT"); // zone generation 
-  (*tr)[5] = DUPSTRDATE(d->getCreateDate); // crdate
-  (*tr)[6] = DUPSTRDATED(d->getExpirationDate); // expiration date
-  (*tr)[7] = DUPSTRDATE(d->getOutZoneDate); // vyrazeni z dns
-  (*tr)[8] = DUPSTRDATE(d->getCancelDate);  // delete from register
-  (*tr)[9] = DUPSTRDATED(d->getValExDate); // validace
+  
+  MAKE_OID(oid_fqdn, d->getId(), DUPSTRFUN(d->getFQDN), FT_DOMAIN)
+  MAKE_OID(oid_registrant, d->getRegistrantId(), DUPSTRFUN(d->getRegistrantHandle), FT_CONTACT)
+  MAKE_OID(oid_registrar, d->getRegistrarId(), DUPSTRFUN(d->getRegistrarHandle), FT_REGISTRAR)
+
+  (*tr)[0] <<= oid_fqdn;                                       // fqdn
+  (*tr)[1] <<= oid_registrant;                                 // registrant handle
+  (*tr)[2] <<= DUPSTRFUN(d->getRegistrantName);                // registrant name
+  (*tr)[3] <<= oid_registrar;                                  // registrar handle 
+  (*tr)[4] <<= DUPSTR(d->getZoneStatus() == 1 ? "IN" : "OUT"); // zone generation 
+  (*tr)[5] <<= DUPSTRDATE(d->getCreateDate);                   // crdate
+  (*tr)[6] <<= DUPSTRDATED(d->getExpirationDate);              // expiration date
+  (*tr)[7] <<= DUPSTRDATE(d->getOutZoneDate);                  // vyrazeni z dns
+  (*tr)[8] <<= DUPSTRDATE(d->getCancelDate);                   // delete from register
+  (*tr)[9] <<= DUPSTRDATED(d->getValExDate);                   // validace
   return tr;
 }
 

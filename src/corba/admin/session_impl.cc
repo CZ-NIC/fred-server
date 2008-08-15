@@ -48,6 +48,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_domains = new ccReg_Domains_i(m_register_manager->getDomainManager()->createList(), &settings_);
   m_contacts = new ccReg_Contacts_i(m_register_manager->getContactManager()->createList(), &settings_);
   m_nssets = new ccReg_NSSets_i(m_register_manager->getNSSetManager()->createList(), &settings_);
+  m_keysets = new ccReg_KeySets_i(m_register_manager->getKeySetManager()->createList(), &settings_);
   m_registrars = new ccReg_Registrars_i(m_register_manager->getRegistrarManager()->getList());
   m_eppactions = new ccReg_EPPActions_i(m_register_manager->getRegistrarManager()->getEPPActionList());
   m_invoices = new ccReg_Invoices_i(m_invoicing_manager->createList());
@@ -55,7 +56,6 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_publicrequests = new ccReg_PublicRequests_i(m_publicrequest_manager->createList());
   m_mails = new ccReg_Mails_i(mail_manager_->createList(), ns);
   m_files = new ccReg_Files_i(file_manager_->createList());
-  m_keysets = new ccReg_KeySets_i(m_register_manager->getKeySetManager()->createList());
 
   m_eppactions->setDB(&m_db_manager);
   m_registrars->setDB(&m_db_manager);
@@ -94,7 +94,7 @@ ccReg::User_ptr ccReg_Session_i::getUser() {
   return m_user->_this();
 }
 
-ccReg::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
+Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
   TRACE(boost::format("[CALL] ccReg_Session_i::getPageTable(%1%)") % _type);
   switch (_type) {
     case ccReg::FT_FILTER:
@@ -102,7 +102,7 @@ ccReg::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
     case ccReg::FT_REGISTRAR:
       return m_registrars->_this();
     case ccReg::FT_OBJ:
-      return ccReg::PageTable::_nil();
+      return Registry::PageTable::_nil();
     case ccReg::FT_CONTACT:
       return m_contacts->_this();
     case ccReg::FT_NSSET:
@@ -125,7 +125,7 @@ ccReg::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
   }
   LOGGER("corba").debug(boost::format("[ERROR] ccReg_Session_i::getPageTable(%1%): unknown type specified")
       % _type);
-  return ccReg::PageTable::_nil();
+  return Registry::PageTable::_nil();
 }
 
 CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) {

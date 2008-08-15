@@ -12,10 +12,10 @@ ccReg_AIRequests_i::~ccReg_AIRequests_i()
   TRACE("[CALL] ccReg_AIRequests_i::~ccReg_AIRequests_i");
 }
 
-ccReg::Table::ColumnHeaders* 
+Registry::Table::ColumnHeaders* 
 ccReg_AIRequests_i::getColumnHeaders()
 {
-  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+  Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(5);
   COLHEAD(ch,0,"RequestId",CT_OTHER);
   COLHEAD(ch,1,"CrDate",CT_OTHER);
@@ -25,13 +25,13 @@ ccReg_AIRequests_i::getColumnHeaders()
   return ch;
 }
 
-ccReg::TableRow* 
+Registry::TableRow* 
 ccReg_AIRequests_i::getRow(CORBA::Short row)
   throw (ccReg::Table::INVALID_ROW)
 {
   const Register::AuthInfoRequest::Detail *aird = airl->get(row);
   if (!aird) throw ccReg::Table::INVALID_ROW();
-  ccReg::TableRow *tr = new ccReg::TableRow;
+  Registry::TableRow *tr = new Registry::TableRow;
   tr->length(5);
   std::stringstream id;
   id << aird->getId();

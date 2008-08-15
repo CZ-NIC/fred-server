@@ -237,6 +237,8 @@ public:
   virtual unsigned getResult() const = 0;
   /// Return result message
   virtual std::string getResultStatus() const = 0;
+  /// Return id of registrar who made this action
+  virtual TID getRegistrarId() const = 0; 
   /// Return handle of registrar who made this action
   virtual const std::string& getRegistrarHandle() const = 0;
 };

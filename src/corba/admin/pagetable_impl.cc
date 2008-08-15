@@ -54,7 +54,7 @@ ccReg_PageTable_i::numPages()
   return (unsigned)ceil((double)numRows()/aPageSize);
 }
 
-ccReg::TableRow* 
+Registry::TableRow* 
 ccReg_PageTable_i::getPageRow(CORBA::Short pageRow)
   throw (ccReg::Table::INVALID_ROW)
 {

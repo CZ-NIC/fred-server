@@ -16,30 +16,34 @@ ccReg::Filters::Compound_ptr ccReg_Contacts_i::add() {
   return it.addE(f);
 }
 
-ccReg::Table::ColumnHeaders* ccReg_Contacts_i::getColumnHeaders() {
-  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+Registry::Table::ColumnHeaders* ccReg_Contacts_i::getColumnHeaders() {
+  Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(6);
-  COLHEAD(ch, 0, "Handle", CT_CONTACT_HANDLE);
+  COLHEAD(ch, 0, "Handle", CT_OID);
   COLHEAD(ch, 1, "Name", CT_OTHER);
   COLHEAD(ch, 2, "Organization", CT_OTHER);
   COLHEAD(ch, 3, "Create date", CT_OTHER);
   COLHEAD(ch, 4, "Delete date", CT_OTHER);
-  COLHEAD(ch, 5, "Registrar", CT_REGISTRAR_HANDLE);
+  COLHEAD(ch, 5, "Registrar", CT_OID);
   return ch;
 }
 
-ccReg::TableRow* ccReg_Contacts_i::getRow(CORBA::Short row)
+Registry::TableRow* ccReg_Contacts_i::getRow(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW) {
   const Register::Contact::Contact *c = cl->getContact(row);
   if (!c) throw ccReg::Table::INVALID_ROW();
-  ccReg::TableRow *tr = new ccReg::TableRow;
+  Registry::TableRow *tr = new Registry::TableRow;
   tr->length(6);
-  (*tr)[0] = DUPSTRFUN(c->getHandle);
-  (*tr)[1] = DUPSTRFUN(c->getName);
-  (*tr)[2] = DUPSTRFUN(c->getOrganization);
-  (*tr)[3] = DUPSTRDATE(c->getCreateDate);
-  (*tr)[4] = DUPSTRDATE(c->getDeleteDate);
-  (*tr)[5] = DUPSTRFUN(c->getRegistrarHandle);
+
+  MAKE_OID(oid_handle, c->getId(), DUPSTRFUN(c->getHandle), FT_CONTACT)
+  MAKE_OID(oid_registrar, c->getRegistrarId(), DUPSTRFUN(c->getRegistrarHandle), FT_REGISTRAR)
+
+  (*tr)[0] <<= oid_handle;
+  (*tr)[1] <<= DUPSTRFUN(c->getName);
+  (*tr)[2] <<= DUPSTRFUN(c->getOrganization);
+  (*tr)[3] <<= DUPSTRDATE(c->getCreateDate);
+  (*tr)[4] <<= DUPSTRDATE(c->getDeleteDate);
+  (*tr)[5] <<= oid_registrar;
   return tr;
 }
 

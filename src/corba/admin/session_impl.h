@@ -115,7 +115,7 @@ public:
   
   ccReg::User_ptr getUser();
   
-  ccReg::PageTable_ptr getPageTable(ccReg::FilterType _type);
+  Registry::PageTable_ptr getPageTable(ccReg::FilterType _type);
   CORBA::Any* getDetail(ccReg::FilterType _type, ccReg::TID _id);
   
   void updateRegistrar(const ccReg::Registrar& _registrar);

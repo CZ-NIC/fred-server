@@ -51,8 +51,8 @@ using namespace Database;
                  const ccReg::DateTimeInterval&,ccReg::DateTimeInterval)
 
 #define DECL_PAGETABLE_I \
-  ccReg::Table::ColumnHeaders* getColumnHeaders(); \
-  ccReg::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);\
+  Registry::Table::ColumnHeaders* getColumnHeaders(); \
+  Registry::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);\
   ccReg::TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);\
   char* outputCSV();\
   CORBA::Short numRows();\
@@ -65,7 +65,7 @@ using namespace Database;
   void sortByColumn(CORBA::Short _column, CORBA::Boolean _dir);\
   CORBA::Boolean numRowsOverLimit();
 
-class ccReg_PageTable_i : virtual public POA_ccReg::PageTable {
+class ccReg_PageTable_i : virtual public POA_Registry::PageTable {
   unsigned int aPageSize;
   unsigned int aPage;
 
@@ -87,8 +87,7 @@ public:
   void setPage(CORBA::Short page) throw (ccReg::PageTable::INVALID_PAGE);
   CORBA::Short start();
   CORBA::Short numPages();
-  ccReg::TableRow* getPageRow(CORBA::Short pageRow)
-      throw (ccReg::Table::INVALID_ROW);
+  Registry::TableRow* getPageRow(CORBA::Short pageRow) throw (ccReg::Table::INVALID_ROW);
   CORBA::Short numPageRows();
   ccReg::TID getPageRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);
   void reloadF();

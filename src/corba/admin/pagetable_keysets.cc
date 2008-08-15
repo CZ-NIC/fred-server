@@ -1,7 +1,8 @@
 #include "pagetable_keysets.h"
 
-ccReg_KeySets_i::ccReg_KeySets_i(Register::KeySet::List *kl) : m_kl(kl)
+ccReg_KeySets_i::ccReg_KeySets_i(Register::KeySet::List *kl, const Settings *_ptr) : m_kl(kl)
 {
+    uf.settings(_ptr);
 }
 
 ccReg_KeySets_i::~ccReg_KeySets_i()
@@ -19,32 +20,36 @@ ccReg_KeySets_i::add()
     return it.addE(f);
 }
 
-ccReg::Table::ColumnHeaders *
+Registry::Table::ColumnHeaders *
 ccReg_KeySets_i::getColumnHeaders()
 {
     TRACE("[CALL] ccReg_KeySets_i::getColumnHeaders()");
-    ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+    Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
     ch->length(4);
-    COLHEAD(ch, 0, "Handle", CT_KEYSET_HANDLE);
+    COLHEAD(ch, 0, "Handle", CT_OID);
     COLHEAD(ch, 1, "Create date", CT_OTHER);
     COLHEAD(ch, 2, "Delete date", CT_OTHER);
-    COLHEAD(ch, 3, "Registrar", CT_REGISTRAR_HANDLE);
+    COLHEAD(ch, 3, "Registrar", CT_OID);
     return ch;
 }
 
-ccReg::TableRow *
+Registry::TableRow *
 ccReg_KeySets_i::getRow(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW)
 {
     const Register::KeySet::KeySet *k = m_kl->getKeySet(row);
     if (!k)
         throw ccReg::Table::INVALID_ROW();
-    ccReg::TableRow *tr = new ccReg::TableRow;
+    Registry::TableRow *tr = new Registry::TableRow;
     tr->length(4);
-    (*tr)[0] = DUPSTRFUN(k->getHandle);
-    (*tr)[1] = DUPSTRDATE(k->getCreateDate);
-    (*tr)[2] = DUPSTRDATE(k->getDeleteDate);
-    (*tr)[3] = DUPSTRFUN(k->getRegistrarHandle);
+
+    MAKE_OID(oid_handle, k->getId(), DUPSTRFUN(k->getHandle), FT_KEYSET)
+    MAKE_OID(oid_registrar, k->getRegistrarId(), DUPSTRFUN(k->getRegistrarHandle), FT_REGISTRAR)
+
+    (*tr)[0] <<= oid_handle;
+    (*tr)[1] <<= DUPSTRDATE(k->getCreateDate);
+    (*tr)[2] <<= DUPSTRDATE(k->getDeleteDate);
+    (*tr)[3] <<= oid_registrar;
     return tr;
 }
 
@@ -106,6 +111,7 @@ ccReg_KeySets_i::reload()
 {
     TRACE("[CALL] ccReg_KeySets_i::reload()");
     m_kl->reload(uf, dbm);
+    m_kl->deleteDuplicatesId();
 }
 
 void

@@ -34,7 +34,7 @@ void clearPeriod(ccReg::DateTimeInterval& _v);
 #define DUPSTRDATESHORT(f) DUPSTRC(formatTime(f(),false))
 #define COLHEAD(x,i,title,tp) \
   (*x)[i].name = DUPSTR(title); \
-  (*x)[i].type = ccReg::Table::tp 
+  (*x)[i].type = Registry::Table::tp 
 
 #define FILTER_IMPL(FUNC,PTYPEGET,PTYPESET,MEMBER,MEMBERG, SETF) \
 PTYPEGET FUNC() { return MEMBERG; } \
@@ -51,6 +51,12 @@ void FUNC(PTYPESET _v) { MEMBER = _v; SETF; }
 
 
 /* detail library -> corba mappings macros */
+#define MAKE_OID(_name, _id, _handle, _type) \
+Registry::OID _name;                         \
+_name.id     = _id;                          \
+_name.handle = _handle;                      \
+_name.type   = ccReg::_type;
+
 #define CHANGED(method) (act->method() != prev->method()) || (act == prev)
 
 #define ADD_NEW_HISTORY_RECORD(_field, _value)                                        \

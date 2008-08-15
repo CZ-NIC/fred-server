@@ -24,32 +24,35 @@ ccReg_Registrars_i::add() {
   return it.addE(f); 
 }
 
-ccReg::Table::ColumnHeaders* 
+Registry::Table::ColumnHeaders* 
 ccReg_Registrars_i::getColumnHeaders()
 {
-  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+  Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(5);
   COLHEAD(ch,0,"Name",CT_OTHER);
-  COLHEAD(ch,1,"Handle",CT_REGISTRAR_HANDLE); 
+  COLHEAD(ch,1,"Handle",CT_OID); 
   COLHEAD(ch,2,"URL",CT_OTHER);
   COLHEAD(ch,3,"Mail",CT_OTHER);
   COLHEAD(ch,4,"Credit",CT_OTHER);
   return ch;
 }
 
-ccReg::TableRow* 
+Registry::TableRow* 
 ccReg_Registrars_i::getRow(CORBA::Short row)
   throw (ccReg::Table::INVALID_ROW)
 {
   const Register::Registrar::Registrar *r = rl->get(row);
   if (!r) throw ccReg::Table::INVALID_ROW();
-  ccReg::TableRow *tr = new ccReg::TableRow;
+  Registry::TableRow *tr = new Registry::TableRow;
   tr->length(5);
-  (*tr)[0] = DUPSTRFUN(r->getName); 
-  (*tr)[1] = DUPSTRFUN(r->getHandle); 
-  (*tr)[2] = DUPSTRFUN(r->getURL);
-  (*tr)[3] = DUPSTRFUN(r->getEmail);
-  (*tr)[4] = DUPSTRC(Conversion<long unsigned>::to_string(r->getCredit()));
+
+  MAKE_OID(oid_handle, r->getId(), DUPSTRFUN(r->getHandle), FT_REGISTRAR)
+
+  (*tr)[0] <<= DUPSTRFUN(r->getName); 
+  (*tr)[1] <<= oid_handle;
+  (*tr)[2] <<= DUPSTRFUN(r->getURL);
+  (*tr)[3] <<= DUPSTRFUN(r->getEmail);
+  (*tr)[4] <<= DUPSTRC(Conversion<long unsigned>::to_string(r->getCredit()));
   return tr;
 }
 

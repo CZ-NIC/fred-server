@@ -22,10 +22,10 @@ ccReg::Filters::Compound_ptr ccReg_Filters_i::add() {
   return it.addE(f); 
 }
 
-ccReg::Table::ColumnHeaders* 
+Registry::Table::ColumnHeaders* 
 ccReg_Filters_i::getColumnHeaders() {
   TRACE("[CALL] ccReg_Filters_i::getColumnHeaders()");
-  ccReg::Table::ColumnHeaders *ch = new ccReg::Table::ColumnHeaders();
+  Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(4);
   COLHEAD(ch,0,"UserID", CT_OTHER);
   COLHEAD(ch,1,"GroupID", CT_OTHER);
@@ -34,7 +34,7 @@ ccReg_Filters_i::getColumnHeaders() {
   return ch;
 }
 
-ccReg::TableRow* 
+Registry::TableRow* 
 ccReg_Filters_i::getRow(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW) {
 
@@ -43,12 +43,12 @@ ccReg_Filters_i::getRow(CORBA::Short row)
     if (!item) 
     	  throw ccReg::Table::INVALID_ROW();
     
-    ccReg::TableRow *tr = new ccReg::TableRow;
+    Registry::TableRow *tr = new Registry::TableRow;
     tr->length(4);
-    (*tr)[0] = DUPSTRC(item->getUserId().to_string());
-    (*tr)[1] = DUPSTRC(item->getGroupId().to_string());
-    (*tr)[2] = DUPSTRC(Conversion<int>::to_string(item->getType()));
-    (*tr)[3] = DUPSTRFUN(item->getName);
+    (*tr)[0] <<= DUPSTRC(item->getUserId().to_string());
+    (*tr)[1] <<= DUPSTRC(item->getGroupId().to_string());
+    (*tr)[2] <<= DUPSTRC(Conversion<int>::to_string(item->getType()));
+    (*tr)[3] <<= DUPSTRFUN(item->getName);
     return tr;
   }
   catch (...) {
