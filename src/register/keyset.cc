@@ -87,12 +87,12 @@ public:
     {
         return m_maxSigLife;
     }
-    bool operator==(const DSRecord& _other) const 
+    bool operator==(const DSRecord& _other) const
     {
         /* this should be enough */
-        return (m_id == _other.getId());     
+        return (m_id == _other.getId());
     }
-    bool operator!=(const DSRecord& _other) const 
+    bool operator!=(const DSRecord& _other) const
     {
         return !(*this == _other);
     }
@@ -102,11 +102,11 @@ class KeySetImpl : public ObjectImpl, public virtual KeySet {
     struct AdminInfo {
       TID id;
       std::string handle;
-  
+
       AdminInfo(TID _id, const std::string& _handle) :
         id(_id), handle(_handle) {
       }
-  
+
       bool operator==(const AdminInfo& _ai) const {
         return (id == _ai.id && handle == _ai.handle);
       }
@@ -152,14 +152,14 @@ public:
             return m_admins[idx].handle;
     }
 
-    const std::string& getAdminHandleByIdx(unsigned idx) const throw (NOT_FOUND) 
+    const std::string& getAdminHandleByIdx(unsigned idx) const throw (NOT_FOUND)
     {
         if (idx >= getAdminCount())
            throw NOT_FOUND();
         return m_admins[idx].handle;
     }
 
-    TID getAdminIdByIdx(unsigned idx) const throw (NOT_FOUND) 
+    TID getAdminIdByIdx(unsigned idx) const throw (NOT_FOUND)
     {
         if (idx >= getAdminCount())
             throw NOT_FOUND();
@@ -572,7 +572,7 @@ ListImpl::reload(
             << getTempTableName() << " tmp "
             << "JOIN dsrecord_history t_1 ON (tmp.id = t_1.historyid)";
         dsrecord_query.order_by()
-            << "t_1.keysetid, tmp.id";
+            << "t_1.keysetid, tmp.id, t_1.id";
 
         Database::Result r_dsrecords = conn->exec(dsrecord_query);
         for (Database::Result::Iterator it = r_dsrecords.begin(); it != r_dsrecords.end(); ++it) {
