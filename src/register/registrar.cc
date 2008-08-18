@@ -566,21 +566,28 @@ public:
     clear();
     uf.clearQueries();
 
+    bool at_least_one = false;
     Database::SelectQuery info_query;
-
     std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next()) {
       Database::Filters::Registrar *rf =
           dynamic_cast<Database::Filters::Registrar*>(fit->get());
       if (!rf)
         continue;
+
       Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect("id ico dic varsymb vat handle name url organization street1 street2 street3 "
                        "city stateorprovince postalcode country telephone fax email system",
                      rf->joinRegistrarTable());
       tmp->order_by() << "id";
       uf.addQuery(tmp);
+      at_least_one = true;
     }
+    if (!at_least_one) {
+      LOGGER("register").error("wrong filter passed for reload!");
+      return;
+    }
+
     info_query.limit(load_limit_);
     uf.serialize(info_query);
     try {
@@ -1036,6 +1043,7 @@ public:
     // TEMP: should be cached for quicker
     std::map<Database::ID, std::string> registrars_table;
 
+    bool at_least_one = false;
     Database::SelectQuery id_query;
     Database::Filters::Union::iterator fit = uf.begin();
     for (; fit != uf.end(); ++fit) {
@@ -1043,10 +1051,17 @@ public:
           dynamic_cast<Database::Filters::EppAction*>(*fit);
       if (!eaf)
         continue;
+
       Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect("id", eaf->joinActionTable());
       uf.addQuery(tmp);
+      at_least_one = true;
     }
+    if (!at_least_one) {
+      LOGGER("register").error("wrong filter passed for reload!");
+      return;
+    }
+
     id_query.limit(load_limit_);
     uf.serialize(id_query);
 

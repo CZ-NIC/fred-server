@@ -1127,17 +1127,25 @@ public:
       clear();
       _uf.clearQueries();
 
+      bool at_least_one = false;
       Database::SelectQuery id_query;
       std::auto_ptr<Database::Filters::Iterator> fit(_uf.createIterator());
       for (fit->first(); !fit->isDone(); fit->next()) {
         Database::Filters::Invoice *inv_filter =
-        dynamic_cast<Database::Filters::Invoice*>(fit->get());
+            dynamic_cast<Database::Filters::Invoice*>(fit->get());
         if (!inv_filter)
-        continue;
+          continue;
+
         Database::SelectQuery *tmp = new Database::SelectQuery();
         tmp->addSelect(new Database::Column("id", inv_filter->joinInvoiceTable(), "DISTINCT"));
         _uf.addQuery(tmp);
+        at_least_one = true;
       }
+      if (!at_least_one) {
+        LOGGER("register").error("wrong filter passed for reload!");
+        return;
+      }
+
       id_query.limit(load_limit_);
       _uf.serialize(id_query);
 

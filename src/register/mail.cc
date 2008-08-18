@@ -115,16 +115,24 @@ public:
     clear();
     _filter.clearQueries();
     
+    bool at_least_one = false;
     Database::SelectQuery id_query;
     Database::Filters::Compound::iterator fit = _filter.begin();
     for (; fit != _filter.end(); ++fit) {
       Database::Filters::Mail *mf = dynamic_cast<Database::Filters::Mail* >(*fit);
       if (!mf)
         continue;
+
       Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect(new Database::Column("id", mf->joinMailTable(), "DISTINCT"));
       _filter.addQuery(tmp);
+      at_least_one = true;
     }
+    if (!at_least_one) {
+      LOGGER("register").error("wrong filter passed for reload!");
+      return;
+    }
+
     id_query.limit(load_limit_);
     _filter.serialize(id_query);
     
