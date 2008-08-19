@@ -17,7 +17,6 @@
  */
 
 #include <memory> ///< auto_ptr<>
-#include <cctype>
 #include <algorithm>
 #include <boost/shared_ptr.hpp>
 
@@ -75,8 +74,8 @@ public:
 
   virtual const std::string& getDesc(const std::string& lang) const
       throw (BAD_LANG) {
-    std::string lang_upper;
-    std::transform(lang.begin(), lang.end(), std::back_inserter(lang_upper), (int(*)(int))std::toupper);
+    std::string lang_upper = lang;
+    boost::algorithm::to_upper(lang_upper);
     std::map<std::string,std::string>::const_iterator i = desc.find(lang_upper);
     if (i == desc.end())
       throw BAD_LANG();
