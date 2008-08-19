@@ -17,6 +17,8 @@
  */
 
 #include <memory> ///< auto_ptr<>
+#include <cctype>
+#include <algorithm>
 #include <boost/shared_ptr.hpp>
 
 #include "old_utils/dbsql.h"
@@ -73,7 +75,9 @@ public:
 
   virtual const std::string& getDesc(const std::string& lang) const
       throw (BAD_LANG) {
-    std::map<std::string,std::string>::const_iterator i = desc.find(lang);
+    std::string lang_upper;
+    std::transform(lang.begin(), lang.end(), std::back_inserter(lang_upper), (int(*)(int))std::toupper);
+    std::map<std::string,std::string>::const_iterator i = desc.find(lang_upper);
     if (i == desc.end())
       throw BAD_LANG();
     return i->second;
@@ -342,7 +346,7 @@ public:
     db->FreeSelect();
     
     /// HACK: OK state
-    statusList.push_back(StatusDescImpl(0, "ok", true, "1,2,3"));
+    statusList.push_back(StatusDescImpl(0, "ok", true, "1,2,3,4"));
     statusList.back().addDesc("CS", "Objekt je bez omezení");
     statusList.back().addDesc("EN", "Objekt is without restrictions");
     LOGGER("register").debug(boost::format("loaded '%1%' object states description from database")
