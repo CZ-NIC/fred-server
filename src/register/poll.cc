@@ -672,7 +672,7 @@ public:
               // MT_DELETE_NSSET
               "      WHEN os.state_id=17 AND ob.type=2 THEN 7 "
               // MT_DELETE_DOMAIN
-              "      WHEN os.state_id=17 AND ob.type=3 THEN 8 ";
+              "      WHEN os.state_id=17 AND ob.type=3 THEN 8 "
               // MT_DELETE_DOMAIN
               "      WHEN os.state_id=17 AND ob.type=4 THEN 15 END ";
     std::stringstream insertSelect;
