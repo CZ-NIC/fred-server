@@ -25,8 +25,16 @@ template<class Tp> class Interval : public Simple {
 public:
   Interval(const Column& _col, const Tp& _value_beg, const Tp& _value_end,
       const std::string& _conj = SQL_OP_AND) :
-    Simple(_conj), column(_col), value_beg(_value_beg), value_end(_value_end) {
+    Simple(_conj), column(_col), value_beg(_value_beg), value_end(_value_end), beg_set(false),
+    end_set(false) {
   }
+
+  Interval(const Column& _col, const std::string& _conj = SQL_OP_AND) : Simple(_conj),
+                                                                        column(_col),
+                                                                        beg_set(false),
+                                                                        end_set(false) {
+  }
+
   virtual ~Interval() {
   }
 
@@ -34,12 +42,22 @@ public:
     TRACE("[CALL] Interval::setValueBeg()");
     active = true;
     value_beg = _value;
+    beg_set = true;
   }
 
   virtual void setValueEnd(const Tp& _value) {
     TRACE("[CALL] Interval::setValueEnd()");
     active = true;
     value_end = _value;
+    end_set = true;
+  }
+
+  virtual void setValue(const Tp& _beg, const Tp& _end) {
+    TRACE("[CALL] Interval::setValue()");
+    active = true;
+    value_beg = _beg;
+    value_end = _end;
+    beg_set = end_set = true;
   }
 
   Interval<Tp>* clone() const {
@@ -51,11 +69,18 @@ public:
     std::vector<std::string> &store = _sq.where_prepared_values();
 
     prep << getConjuction() << "( ";
-    prep << column.str() << SQL_OP_GE << "'%" << store.size() + 1 << "%'";
-    store.push_back(Util::stream_cast<std::string>(value_beg));
-    prep << SQL_OP_AND << column.str() << SQL_OP_LT << "'" << store.size() + 1
-        << "' )";
-    store.push_back(Util::stream_cast<std::string>(value_end));
+    if (beg_set) {
+      prep << column.str() << SQL_OP_GE << "'%" << store.size() + 1 << "%'";
+      store.push_back(Conversion<Tp>::to_string(value_beg));
+    }
+    if (beg_set && end_set) {
+      prep << SQL_OP_AND;
+    }
+    if (end_set) {
+      prep << column.str() << SQL_OP_LT << "'" << store.size() + 1
+           << "' )";
+      store.push_back(Conversion<Tp>::to_string(value_end));
+    }
   }
 
   friend class boost::serialization::access;
@@ -71,6 +96,8 @@ protected:
   Column column;
   Tp value_beg;
   Tp value_end;
+  bool beg_set;
+  bool end_set;
 };
 
 template<class DTp> class _BaseDTInterval : public Simple {

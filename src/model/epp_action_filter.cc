@@ -75,6 +75,8 @@ Value<std::string>& EppActionImpl::addRequestHandle() {
   ));
   Value<std::string> *tmp = new Value<std::string>(Column("value", joinTable("action_elements")));
   add(tmp);
+  tmp->addPreValueString("LOWER(");
+  tmp->addPostValueString(")");
   tmp->setName("RequestHandle");
   return *tmp;  
 }
@@ -98,6 +100,13 @@ Value<std::string>& EppActionImpl::addSvTRID() {
   Value<std::string> *tmp = new Value<std::string>(Column("servertrid", joinActionTable()));
   add(tmp);
   tmp->setName("SvTRID");
+  return *tmp;
+}
+
+Interval<int>& EppActionImpl::addEppCodeResponse() {
+  Interval<int> *tmp = new Interval<int>(Column("response", joinActionTable()));
+  add(tmp);
+  tmp->setName("EppCodeResponse");
   return *tmp;
 }
 

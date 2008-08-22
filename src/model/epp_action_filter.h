@@ -18,6 +18,7 @@ public:
   virtual Interval<DateTimeInterval>& addTime() = 0;
   virtual Value<std::string>& addClTRID() = 0;
   virtual Value<std::string>& addSvTRID() = 0;
+  virtual Interval<int>& addEppCodeResponse() = 0;
   virtual Value<int>& addResponse() = 0;
   virtual Value<int>& addType() = 0;
   virtual EppSession& addSession() = 0;
@@ -46,6 +47,7 @@ public:
   virtual Interval<DateTimeInterval>& addTime();
   virtual Value<std::string>& addClTRID();
   virtual Value<std::string>& addSvTRID();
+  virtual Interval<int>& addEppCodeResponse();
   virtual Value<int>& addResponse();
   virtual Value<int>& addType();
   virtual EppSession& addSession();

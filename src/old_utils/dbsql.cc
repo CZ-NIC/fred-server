@@ -44,7 +44,7 @@ ParsedAction::executeSQL(Register::TID actionid, DB* db)
   for (i=elements.begin();i!=elements.end();i++) {
     std::stringstream sql;
     sql << "INSERT INTO action_elements (actionid,elementid,value) VALUES ("
-        << actionid << "," << i->first << ",'" << db->Escape2(i->second) << "')";
+        << actionid << "," << i->first << ", LOWER('" << db->Escape2(i->second) << "'))";
     if (!db->ExecSQL(sql.str().c_str())) return false;
     return true;  
   }
