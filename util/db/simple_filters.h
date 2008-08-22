@@ -77,8 +77,7 @@ public:
       prep << SQL_OP_AND;
     }
     if (end_set) {
-      prep << column.str() << SQL_OP_LT << "'" << store.size() + 1
-           << "' )";
+      prep << column.str() << SQL_OP_LT << "'%" << store.size() + 1 << "%' )";
       store.push_back(Conversion<Tp>::to_string(value_end));
     }
   }
