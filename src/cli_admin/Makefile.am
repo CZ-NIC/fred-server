@@ -1,5 +1,7 @@
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
-AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) -I$(top_srcdir)/util -I$(top_srcdir)/src -I$(top_builddir)/src -I$(top_srcdir)
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) \
+			  -I$(top_srcdir)/util -I$(top_srcdir)/src -I$(top_builddir)/src \
+			  -I$(top_srcdir)
 LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
 	$(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
@@ -14,14 +16,16 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB)
 CLEANFILES=banking.sh
 
-sbin_PROGRAMS = fred-banking fred-admin simple-client
+sbin_PROGRAMS = fred-banking fred-admin #simple-client
 dist_sbin_SCRIPTS = banking.sh
 
 fred_banking_SOURCES = gpc.cc banking.cc csv.cc gpc.h csv.h
 
-fred_admin_SOURCES   = client.cc
+#fred_admin_SOURCES   = client.cc
 
-simple_client_SOURCES = simple.cc common.cc keyset.cc nsset.cc domain.cc contact.cc authinfo.cc bank.cc \
-						invoice.cc pollclient.cc registrarclient.cc notifyclient.cc objectclient.cc \
+fred_admin_SOURCES = simple.cc commonclient.cc keysetclient.cc nssetclient.cc \
+						domainclient.cc contactclient.cc authinfoclient.cc \
+						bankclient.cc invoiceclient.cc pollclient.cc \
+						registrarclient.cc notifyclient.cc objectclient.cc \
 						infobuffclient.cc
 

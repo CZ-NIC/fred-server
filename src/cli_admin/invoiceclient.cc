@@ -17,12 +17,12 @@
  */
 
 #include "register/register.h"
-#include "common.h"
-#include "invoice.h"
+#include "commonclient.h"
+#include "invoiceclient.h"
 
 namespace Admin {
 
-#define LOGIN_INVOICE \
+#define LOGIN_INVOICECLIENT \
 CorbaClient cc(0, NULL, m_nsAddr.c_str()); \
 CORBA::Object_var o = cc.getNS()->resolve("EPP"); \
 ccReg::EPP_var epp; \
@@ -48,10 +48,10 @@ if (r->code != 1000 || !clientId) { \
     return -1; \
 }
 
-#define LOGOUT_INVOICE \
+#define LOGOUT_INVOICECLIENT \
     epp->ClientLogout(clientId,"system_delete_logout","<system_delete_logout/>");
 
-Invoice::Invoice():
+InvoiceClient::InvoiceClient():
     m_connstring(""), m_nsAddr("")
 {
     m_options = new boost::program_options::options_description(
@@ -81,7 +81,7 @@ Invoice::Invoice():
         ADD_OPT_TYPE(INVOICE_ADV_NUMBER_NAME, "advance number", std::string)
         ADD_OPT(INVOICE_DONT_SEND_NAME, "dont send mails with invoices during archivation");
 }
-Invoice::Invoice(
+InvoiceClient::InvoiceClient(
         std::string connstring,
         std::string nsAddr,
         boost::program_options::variables_map varMap):
@@ -94,12 +94,12 @@ Invoice::Invoice(
     m_optionsInvis = NULL;
 }
 
-Invoice::~Invoice()
+InvoiceClient::~InvoiceClient()
 {
 }
 
 void
-Invoice::init(
+InvoiceClient::init(
         std::string connstring,
         std::string nsAddr,
         boost::program_options::variables_map varMap)
@@ -112,19 +112,19 @@ Invoice::init(
 }
 
 boost::program_options::options_description *
-Invoice::getVisibleOptions() const
+InvoiceClient::getVisibleOptions() const
 {
     return m_options;
 }
 
 boost::program_options::options_description *
-Invoice::getInvisibleOptions() const
+InvoiceClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
 }
 
 int
-Invoice::list()
+InvoiceClient::list()
 {
     std::ofstream stdout("/dev/stdout",std::ios::out);   
 
@@ -202,7 +202,7 @@ Invoice::list()
 }
 
 int
-Invoice::archive()
+InvoiceClient::archive()
 {
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
@@ -224,7 +224,7 @@ Invoice::archive()
 }
 
 void
-Invoice::list_help()
+InvoiceClient::list_help()
 {
     std::cout <<
         "** List invoices **\n\n"
@@ -247,7 +247,7 @@ Invoice::list_help()
 }
 
 void
-Invoice::archive_help()
+InvoiceClient::archive_help()
 {
     std::cout <<
         "** Invoice archive **\n\n"

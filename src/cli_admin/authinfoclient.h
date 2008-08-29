@@ -16,8 +16,12 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _INVOICE_H_
-#define _INVOICE_H_
+#ifndef _AUTHINFOCLIENT_H_
+#define _AUTHINFOCLIENT_H_
+
+#define AUTHINFO_PDF_NAME         "authinfo-pdf"
+
+#define AUTHINFO_PDF_HELP_NAME    "authinfo-pdf-help"
 
 #include <iostream>
 #include <boost/program_options.hpp>
@@ -29,28 +33,9 @@
 #include "corba/admin/admin_impl.h"
 #include "corba/mailer_manager.h"
 
-#define INVOICE_LIST_NAME           "invoice-list"
-#define INVOICE_ARCHIVE_NAME        "invoice-archive"
-
-#define INVOICE_LIST_HELP_NAME      "invoice-list-help"
-#define INVOICE_ARCHIVE_HELP_NAME   "invoice-archive-help"
-
-#define INVOICE_TYPE_NAME           "type"
-#define INVOICE_VAR_SYMBOL_NAME     "var-symbol"
-#define INVOICE_NUMBER_NAME         "number"
-#define INVOICE_CRDATE_FROM_NAME    "crdate-from"
-#define INVOICE_CRDATE_TO_NAME      "crdate-to"
-#define INVOICE_TAXDATE_FROM_NAME   "taxdate-from"
-#define INVOICE_TAXDATE_TO_NAME     "taxdate-to"
-#define INVOICE_ARCHIVED_NAME       "archived"
-#define INVOICE_OBJECT_ID_NAME      "object-id"
-#define INVOICE_OBJECT_NAME_NAME    "object-name"
-#define INVOICE_ADV_NUMBER_NAME     "adv-number"
-#define INVOICE_DONT_SEND_NAME      "dont-send"
-
 namespace Admin {
 
-class Invoice {
+class AuthInfoClient {
 private:
     std::string m_connstring;
     std::string m_nsAddr;
@@ -63,11 +48,11 @@ private:
     boost::program_options::options_description *m_options;
     boost::program_options::options_description *m_optionsInvis;
 public:
-    Invoice();
-    Invoice(std::string connstring,
+    AuthInfoClient();
+    AuthInfoClient(std::string connstring,
             std::string nsAddr,
             boost::program_options::variables_map varMap);
-    ~Invoice();
+    ~AuthInfoClient();
     void init(std::string connstring,
             std::string nsAddr,
             boost::program_options::variables_map varMap);
@@ -75,14 +60,13 @@ public:
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
 
-    int list();
-    int archive();
+    int pdf();
 
-    void list_help();
-    void archive_help();
+    void pdf_help();
+
+    //int list();
 };
 
 } // namespace Admin;
 
-#endif // _INVOICE_H_
-
+#endif // _AUTHINFOCLIENT_H_

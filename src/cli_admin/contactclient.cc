@@ -17,12 +17,12 @@
  */
 
 #include "register/register.h"
-#include "common.h"
-#include "contact.h"
+#include "commonclient.h"
+#include "contactclient.h"
 
 namespace Admin {
 
-#define LOGIN_CONTACT \
+#define LOGIN_CONTACTCLIENT \
 CorbaClient cc(0, NULL, m_nsAddr.c_str()); \
 CORBA::Object_var o = cc.getNS()->resolve("EPP"); \
 ccReg::EPP_var epp; \
@@ -48,10 +48,10 @@ if (r->code != 1000 || !clientId) { \
     return -1; \
 }
 
-#define LOGOUT_CONTACT \
+#define LOGOUT_CONTACTCLIENT \
     epp->ClientLogout(clientId,"system_delete_logout","<system_delete_logout/>");
 
-Contact::Contact():
+ContactClient::ContactClient():
     m_connstring(""), m_nsAddr("")
 {
     m_options = new boost::program_options::options_description(
@@ -67,7 +67,7 @@ Contact::Contact():
     m_optionsInvis->add_options();
 }
 
-Contact::Contact(
+ContactClient::ContactClient(
         std::string connstring,
         std::string nsAddr,
         boost::program_options::variables_map varMap):
@@ -80,12 +80,12 @@ Contact::Contact(
     m_optionsInvis = NULL;
 }
 
-Contact::~Contact()
+ContactClient::~ContactClient()
 {
 }
 
 void
-Contact::init(
+ContactClient::init(
         std::string connstring,
         std::string nsAddr,
         boost::program_options::variables_map varMap)
@@ -98,27 +98,27 @@ Contact::init(
 }
 
 boost::program_options::options_description *
-Contact::getVisibleOptions() const
+ContactClient::getVisibleOptions() const
 {
     return m_options;
 }
 
 boost::program_options::options_description *
-Contact::getInvisibleOptions() const
+ContactClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
 }
 
 int
-Contact::info2()
+ContactClient::info2()
 {
     return 0;
 }
 
 int
-Contact::info()
+ContactClient::info()
 {
-    LOGIN_CONTACT;
+    LOGIN_CONTACTCLIENT;
 
     std::string name = m_varMap[CONTACT_INFO_NAME].as<std::string>();
     std::string cltrid;
@@ -132,12 +132,12 @@ Contact::info()
 
     std::cout << c->Name << std::endl;
 
-    LOGOUT_CONTACT;
+    LOGOUT_CONTACTCLIENT;
     return 0;
 }
 
 int
-Contact::list()
+ContactClient::list()
 {
     std::auto_ptr<Register::Contact::Manager> conMan(
             Register::Contact::Manager::create(&m_db, true));

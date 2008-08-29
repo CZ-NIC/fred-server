@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _COMMON_H_
-#define _COMMON_H_
+#ifndef _COMMONCLIENT_H_
+#define _COMMONCLIENT_H_
 
 #include <iostream>
 #include <vector>
@@ -114,4 +114,4 @@ std::vector<std::string> separateSpaces(const char *string);
 void print_version();
 void print_moo();
 
-#endif // _COMMON_H_
+#endif // _COMMONCLIENT_H_

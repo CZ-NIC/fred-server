@@ -16,5 +16,5 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common.h"
-#include "nsset.h"
+#include "commonclient.h"
+#include "nssetclient.h"

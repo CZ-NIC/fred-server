@@ -16,8 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _CONTACT_H_
-#define _CONTACT_H_
+#ifndef _DOMAINCLIENT_H_
+#define _DOMAINCLIENT_H_
 
 #include <iostream>
 #include <boost/program_options.hpp>
@@ -29,14 +29,24 @@
 #include "corba/admin/admin_impl.h"
 #include "corba/mailer_manager.h"
 
-#define CONTACT_INFO_NAME           "contact-info"
-#define CONTACT_INFO2_NAME          "contact-info2"
-#define CONTACT_LIST_NAME           "contact-list"
-#define CONTACT_LIST_PLAIN_NAME     "contact-list-plain"
+#define DOMAIN_CREATE_NAME          "domain-create"
+#define DOMAIN_UPDATE_NAME          "domain-update"
+#define DOMAIN_LIST_NAME            "domain-list"
+#define DOMAIN_LIST_PLAIN_NAME      "domain-list-plain"
+#define DOMAIN_INFO_NAME            "domain-info"
+
+
+#define DOMAIN_CREATE_HELP_NAME     "domain-create-help"
+#define DOMAIN_UPDATE_HELP_NAME     "domain-update-help"
+
+#define DOMAIN_REGISTRANT_NAME      "registrant"
+#define DOMAIN_NSSET_NAME           "nsset"
+#define DOMAIN_KEYSET_NAME          "keyset"
+#define DOMAIN_PERIOD_NAME          "period"
 
 namespace Admin {
 
-class Contact {
+class DomainClient {
 private:
     std::string m_connstring;
     std::string m_nsAddr;
@@ -49,11 +59,11 @@ private:
     boost::program_options::options_description *m_options;
     boost::program_options::options_description *m_optionsInvis;
 public:
-    Contact();
-    Contact(std::string connstring,
+    DomainClient();
+    DomainClient(std::string connstring,
             std::string nsAddr,
             boost::program_options::variables_map varMap);
-    ~Contact();
+    ~DomainClient();
     void init(std::string connstring,
             std::string nsAddr,
             boost::program_options::variables_map varMap);
@@ -61,12 +71,20 @@ public:
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
 
-    int list();
-    int info();
-    int info2();
+    int domain_list();
+
+    int domain_list_plain();
+
+    int domain_create();
+
+    int domain_update();
+
+    int domain_info();
+
+    void domain_update_help();
+    void domain_create_help();
 };
 
 } // namespace Admin;
 
-
-#endif // _CONTACT_H_
+#endif // _DOMAINCLIENT_H_

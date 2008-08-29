@@ -16,7 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _NSSET_H_
-#define _NSSET_H_
+#ifndef _NSSETCLIENT_H_
+#define _NSSETCLIENT_H_
 
-#endif // _NSSET_H_
+#endif // _NSSETCLIENT_H_

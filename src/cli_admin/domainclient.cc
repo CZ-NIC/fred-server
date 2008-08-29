@@ -17,12 +17,12 @@
  */
 
 #include "register/register.h"
-#include "common.h"
-#include "domain.h"
+#include "commonclient.h"
+#include "domainclient.h"
 
 namespace Admin {
 
-#define LOGIN_DOMAIN \
+#define LOGIN_DOMAINCLIENT \
 CorbaClient cc(0, NULL, m_nsAddr.c_str()); \
 CORBA::Object_var o = cc.getNS()->resolve("EPP"); \
 ccReg::EPP_var epp; \
@@ -48,10 +48,10 @@ if (r->code != 1000 || !clientId) { \
     return -1; \
 }
 
-#define LOGOUT_DOMAIN \
+#define LOGOUT_DOMAINCLIENT \
     epp->ClientLogout(clientId,"system_delete_logout","<system_delete_logout/>");
 
-Domain::Domain():
+DomainClient::DomainClient():
     m_connstring(""), m_nsAddr("")
 {
     m_options = new boost::program_options::options_description(
@@ -74,7 +74,7 @@ Domain::Domain():
         ADD_OPT_DEF(DOMAIN_PERIOD_NAME, "period (in months)", unsigned int, 0);
 }
 
-Domain::Domain(
+DomainClient::DomainClient(
         std::string connstring,
         std::string nsAddr,
         boost::program_options::variables_map varMap):
@@ -86,12 +86,12 @@ Domain::Domain(
     m_options = NULL;
     m_optionsInvis = NULL;
 }
-Domain::~Domain()
+DomainClient::~DomainClient()
 {
 }
 
 void
-Domain::init(
+DomainClient::init(
         std::string connstring,
         std::string nsAddr,
         boost::program_options::variables_map varMap)
@@ -104,19 +104,19 @@ Domain::init(
 }
 
 boost::program_options::options_description *
-Domain::getVisibleOptions() const
+DomainClient::getVisibleOptions() const
 {
     return m_options;
 }
 
 boost::program_options::options_description *
-Domain::getInvisibleOptions() const
+DomainClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
 }
 
 int
-Domain::domain_list()
+DomainClient::domain_list()
 {
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
@@ -196,7 +196,7 @@ Domain::domain_list()
 }
 
 int
-Domain::domain_create()
+DomainClient::domain_create()
 {
     std::string fqdn = m_varMap[DOMAIN_CREATE_NAME].as<std::string>().c_str();
     std::string registrant = m_varMap[DOMAIN_REGISTRANT_NAME].as<std::string>().c_str();
@@ -257,7 +257,7 @@ Domain::domain_create()
     ccReg::ExtensionList extList;
     extList.length(0);
 
-    LOGIN_DOMAIN;
+    LOGIN_DOMAINCLIENT;
 
     r = epp->DomainCreate(fqdn.c_str(), registrant.c_str(),
             nsset.c_str(), keyset.c_str(), authInfoPw.c_str(),
@@ -266,12 +266,12 @@ Domain::domain_create()
 
     std::cout << "return code: " << r->code << std::endl;
 
-    LOGOUT_DOMAIN;
+    LOGOUT_DOMAINCLIENT;
     return 0;
 }
 
 int
-Domain::domain_update()
+DomainClient::domain_update()
 {
     std::string fqdn = m_varMap[DOMAIN_UPDATE_NAME].as<std::string>();
     std::string registrant = m_varMap[REGISTRANT_HANDLE_NAME].as<std::string>();
@@ -335,7 +335,7 @@ Domain::domain_update()
     ccReg::ExtensionList extList;
     extList.length(0);
 
-    LOGIN_DOMAIN;
+    LOGIN_DOMAINCLIENT;
 
     std::string cltrid;
     std::string xml;
@@ -348,15 +348,15 @@ Domain::domain_update()
             clientId, cltrid.c_str(), xml.c_str(), extList);
 
     std::cout << "return code: " << r->code << std::endl;
-    LOGOUT_DOMAIN;
+    LOGOUT_DOMAINCLIENT;
     return 0;
 }
 int
-Domain::domain_info()
+DomainClient::domain_info()
 {
     std::string name = m_varMap[DOMAIN_INFO_NAME].as<std::string>();
 
-    LOGIN_DOMAIN;
+    LOGIN_DOMAINCLIENT;
     std::string cltrid;
     std::string xml;
     xml = "<fqdn>" + name + "</fqdn>";
@@ -370,13 +370,13 @@ Domain::domain_info()
     std::cout << k->ROID << std::endl;
     std::cout << k->keyset << std::endl;
 
-    LOGOUT_DOMAIN;
+    LOGOUT_DOMAINCLIENT;
     return 0;
 }
 int
-Domain::domain_list_plain()
+DomainClient::domain_list_plain()
 {
-    LOGIN_DOMAIN;
+    LOGIN_DOMAINCLIENT;
     std::string name = m_varMap[DOMAIN_LIST_PLAIN_NAME].as<std::string>().c_str();
     std::string cltrid;
     std::string xml;
@@ -390,12 +390,12 @@ Domain::domain_list_plain()
     for (int i = 0; i < (int)k->length(); i++)
         std::cout << (*k)[i] << std::endl;
 
-    LOGOUT_DOMAIN;
+    LOGOUT_DOMAINCLIENT;
     return 0;
 }
 
 void
-Domain::domain_update_help()
+DomainClient::domain_update_help()
 {
     std::cout
         << "** Domain update **\n\n"
@@ -411,7 +411,7 @@ Domain::domain_update_help()
 }
 
 void
-Domain::domain_create_help()
+DomainClient::domain_create_help()
 {
     std::cout
         << "** Domain create **\n\n"

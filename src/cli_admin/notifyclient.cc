@@ -16,7 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common.h"
+#include "commonclient.h"
 #include "notifyclient.h"
 
 #include "register/bank.h"

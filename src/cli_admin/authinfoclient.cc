@@ -17,12 +17,12 @@
  */
 
 #include "register/register.h"
-#include "common.h"
-#include "authinfo.h"
+#include "commonclient.h"
+#include "authinfoclient.h"
 
 namespace Admin {
 
-#define LOGIN_AUTHINFO \
+#define LOGIN_AUTHINFOCLIENT \
 CorbaClient cc(0, NULL, m_nsAddr.c_str()); \
 CORBA::Object_var o = cc.getNS()->resolve("EPP"); \
 ccReg::EPP_var epp; \
@@ -48,10 +48,10 @@ if (r->code != 1000 || !clientId) { \
     return -1; \
 }
 
-#define LOGOUT_AUTHINFO \
+#define LOGOUT_AUTHINFOCLIENT \
     epp->ClientLogout(clientId,"system_delete_logout","<system_delete_logout/>");
 
-Authinfo::Authinfo():
+AuthInfoClient::AuthInfoClient():
     m_connstring(""), m_nsAddr("")
 {
     m_options = new boost::program_options::options_description(
@@ -64,7 +64,7 @@ Authinfo::Authinfo():
             "Authinfo related invisible options");
     m_optionsInvis->add_options();
 }
-Authinfo::Authinfo(
+AuthInfoClient::AuthInfoClient(
         std::string connstring,
         std::string nsAddr,
         boost::program_options::variables_map varMap):
@@ -77,12 +77,12 @@ Authinfo::Authinfo(
     m_optionsInvis = NULL;
 }
 
-Authinfo::~Authinfo()
+AuthInfoClient::~AuthInfoClient()
 {
 }
 
 void
-Authinfo::init(
+AuthInfoClient::init(
         std::string connstring,
         std::string nsAddr,
         boost::program_options::variables_map varMap)
@@ -95,19 +95,19 @@ Authinfo::init(
 }
 
 boost::program_options::options_description *
-Authinfo::getVisibleOptions() const
+AuthInfoClient::getVisibleOptions() const
 {
     return m_options;
 }
 
 boost::program_options::options_description *
-Authinfo::getInvisibleOptions() const
+AuthInfoClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
 }
 
 int
-Authinfo::pdf()
+AuthInfoClient::pdf()
 {
     std::ofstream stdout("/dev/stdout",std::ios::out);   
 
@@ -136,7 +136,7 @@ Authinfo::pdf()
 }
 
 void
-Authinfo::pdf_help()
+AuthInfoClient::pdf_help()
 {
     std::cout <<
         "** Generate PDF for authorization requests **\n\n"

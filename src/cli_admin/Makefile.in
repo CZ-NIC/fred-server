@@ -32,8 +32,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
-sbin_PROGRAMS = fred-banking$(EXEEXT) fred-admin$(EXEEXT) \
-	simple-client$(EXEEXT)
+sbin_PROGRAMS = fred-banking$(EXEEXT) fred-admin$(EXEEXT)
 subdir = src/cli_admin
 DIST_COMMON = $(dist_sbin_SCRIPTS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/banking.sh.in
@@ -55,7 +54,13 @@ CONFIG_CLEAN_FILES = banking.sh
 am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(sbindir)"
 sbinPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(sbin_PROGRAMS)
-am_fred_admin_OBJECTS = client.$(OBJEXT)
+am_fred_admin_OBJECTS = simple.$(OBJEXT) commonclient.$(OBJEXT) \
+	keysetclient.$(OBJEXT) nssetclient.$(OBJEXT) \
+	domainclient.$(OBJEXT) contactclient.$(OBJEXT) \
+	authinfoclient.$(OBJEXT) bankclient.$(OBJEXT) \
+	invoiceclient.$(OBJEXT) pollclient.$(OBJEXT) \
+	registrarclient.$(OBJEXT) notifyclient.$(OBJEXT) \
+	objectclient.$(OBJEXT) infobuffclient.$(OBJEXT)
 fred_admin_OBJECTS = $(am_fred_admin_OBJECTS)
 fred_admin_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
@@ -87,26 +92,6 @@ fred_banking_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(top_builddir)/util/log/liblog.a \
 	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
-am_simple_client_OBJECTS = simple.$(OBJEXT) common.$(OBJEXT) \
-	keyset.$(OBJEXT) nsset.$(OBJEXT) domain.$(OBJEXT) \
-	contact.$(OBJEXT) authinfo.$(OBJEXT) bank.$(OBJEXT) \
-	invoice.$(OBJEXT) pollclient.$(OBJEXT) \
-	registrarclient.$(OBJEXT) notifyclient.$(OBJEXT) \
-	objectclient.$(OBJEXT) infobuffclient.$(OBJEXT)
-simple_client_OBJECTS = $(am_simple_client_OBJECTS)
-simple_client_LDADD = $(LDADD)
-simple_client_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(top_builddir)/src/register/libfred.a \
-	$(top_builddir)/src/model/libmodel.a \
-	$(top_builddir)/util/db/libdb.a \
-	$(top_builddir)/util/types/libtypes.a \
-	$(top_builddir)/src/corba/libcorba.a \
-	$(top_builddir)/src/old_utils/liboldutils.a \
-	$(top_builddir)/util/log/liblog.a \
-	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
 dist_sbinSCRIPT_INSTALL = $(INSTALL_SCRIPT)
 SCRIPTS = $(dist_sbin_SCRIPTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -121,10 +106,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(fred_admin_SOURCES) $(fred_banking_SOURCES) \
-	$(simple_client_SOURCES)
-DIST_SOURCES = $(fred_admin_SOURCES) $(fred_banking_SOURCES) \
-	$(simple_client_SOURCES)
+SOURCES = $(fred_admin_SOURCES) $(fred_banking_SOURCES)
+DIST_SOURCES = $(fred_admin_SOURCES) $(fred_banking_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -278,7 +261,10 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
-AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) -I$(top_srcdir)/util -I$(top_srcdir)/src -I$(top_builddir)/src -I$(top_srcdir)
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) \
+			  -I$(top_srcdir)/util -I$(top_srcdir)/src -I$(top_builddir)/src \
+			  -I$(top_srcdir)
+
 LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
 	$(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
@@ -295,9 +281,12 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 CLEANFILES = banking.sh
 dist_sbin_SCRIPTS = banking.sh
 fred_banking_SOURCES = gpc.cc banking.cc csv.cc gpc.h csv.h
-fred_admin_SOURCES = client.cc
-simple_client_SOURCES = simple.cc common.cc keyset.cc nsset.cc domain.cc contact.cc authinfo.cc bank.cc \
-						invoice.cc pollclient.cc registrarclient.cc notifyclient.cc objectclient.cc \
+
+#fred_admin_SOURCES   = client.cc
+fred_admin_SOURCES = simple.cc commonclient.cc keysetclient.cc nssetclient.cc \
+						domainclient.cc contactclient.cc authinfoclient.cc \
+						bankclient.cc invoiceclient.cc pollclient.cc \
+						registrarclient.cc notifyclient.cc objectclient.cc \
 						infobuffclient.cc
 
 all: all-am
@@ -364,9 +353,6 @@ fred-admin$(EXEEXT): $(fred_admin_OBJECTS) $(fred_admin_DEPENDENCIES)
 fred-banking$(EXEEXT): $(fred_banking_OBJECTS) $(fred_banking_DEPENDENCIES) 
 	@rm -f fred-banking$(EXEEXT)
 	$(CXXLINK) $(fred_banking_OBJECTS) $(fred_banking_LDADD) $(LIBS)
-simple-client$(EXEEXT): $(simple_client_OBJECTS) $(simple_client_DEPENDENCIES) 
-	@rm -f simple-client$(EXEEXT)
-	$(CXXLINK) $(simple_client_OBJECTS) $(simple_client_LDADD) $(LIBS)
 install-dist_sbinSCRIPTS: $(dist_sbin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	test -z "$(sbindir)" || $(MKDIR_P) "$(DESTDIR)$(sbindir)"
@@ -393,20 +379,19 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/authinfo.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bank.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/authinfoclient.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bankclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/banking.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/client.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/contact.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commonclient.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/contactclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csv.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/domain.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/domainclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gpc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/infobuffclient.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/invoice.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keyset.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/invoiceclient.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keysetclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/notifyclient.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nsset.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nssetclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/objectclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pollclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registrarclient.Po@am__quote@

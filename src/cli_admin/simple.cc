@@ -29,15 +29,15 @@
 #include "corba/admin/admin_impl.h"
 #include "corba/mailer_manager.h"
 
-#include "common.h"
-#include "keyset.h"
-#include "nsset.h"
-#include "domain.h"
-#include "contact.h"
-#include "simple.h"
-#include "invoice.h"
-#include "authinfo.h"
-#include "bank.h"
+#include "simpleclient.h"
+#include "commonclient.h"
+#include "keysetclient.h"
+#include "nssetclient.h"
+#include "domainclient.h"
+#include "contactclient.h"
+#include "invoiceclient.h"
+#include "authinfoclient.h"
+#include "bankclient.h"
 #include "pollclient.h"
 #include "registrarclient.h"
 #include "notifyclient.h"
@@ -50,12 +50,12 @@ using namespace boost::posix_time;
 int
 main(int argc, char **argv)
 {
-    Admin::keyset keyset;
-    Admin::Domain domain;
-    Admin::Contact contact;
-    Admin::Invoice invoice;
-    Admin::Authinfo authinfo;
-    Admin::Bank bank;
+    Admin::KeysetClient keyset;
+    Admin::DomainClient domain;
+    Admin::ContactClient contact;
+    Admin::InvoiceClient invoice;
+    Admin::AuthInfoClient authinfo;
+    Admin::BankClient bank;
     Admin::PollClient poll;
     Admin::RegistrarClient registrar;
     Admin::NotifyClient notify;
