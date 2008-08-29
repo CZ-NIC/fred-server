@@ -16,19 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _SIMPLE_H_
-#define _SIMPLE_H_
+#ifndef _NSSET_H_
+#define _NSSET_H_
 
-void domain_create_help();
-void domain_update_help();
-
-void keyset_info_help();
-void keyset_check_help();
-void keyset_create_help();
-void keyset_update_help();
-void keyset_delete_help();
-
-void print_version();
-void print_moo();
-
-#endif // _SIMPLE_H_
+#endif // _NSSET_H_
