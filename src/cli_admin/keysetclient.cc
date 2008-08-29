@@ -17,12 +17,12 @@
  */
 
 #include "register/register.h"
-#include "common.h"
-#include "keyset.h"
+#include "commonclient.h"
+#include "keysetclient.h"
 
 namespace Admin {
 
-#define LOGIN_KEYSET \
+#define LOGIN_KEYSETCLIENT \
 CorbaClient cc(0, NULL, m_nsAddr.c_str()); \
 CORBA::Object_var o = cc.getNS()->resolve("EPP"); \
 ccReg::EPP_var epp; \
@@ -48,10 +48,10 @@ if (r->code != 1000 || !clientId) { \
     return -1; \
 }
 
-#define LOGOUT_KEYSET \
+#define LOGOUT_KEYSETCLIENT \
     epp->ClientLogout(clientId,"system_delete_logout","<system_delete_logout/>");
 
-keyset::keyset():
+KeysetClient::KeysetClient():
     m_connstring(""), m_nsAddr("")
 {
     m_options = new boost::program_options::options_description(
@@ -81,7 +81,7 @@ keyset::keyset():
         ADD_OPT_DEF(KEYSET_DSREC_REM_NAME, "list of dsrecords to rem (update keyset)", std::string, "");
 }
 
-keyset::keyset(
+KeysetClient::KeysetClient(
         std::string connstring,
         std::string nsAddr,
         boost::program_options::variables_map varMap):
@@ -116,13 +116,13 @@ keyset::keyset(
         // throw std::runtime_error("cannot connect");
 }
 
-keyset::~keyset()
+KeysetClient::~KeysetClient()
 {
     //m_epp->ClientLogout(m_clientId, "system_delete_logout", "<system_delete_logout/>");
 }
 
 void
-keyset::init(
+KeysetClient::init(
         std::string connstring,
         std::string nsAddr,
         boost::program_options::variables_map varMap)
@@ -135,19 +135,19 @@ keyset::init(
 }
 
 boost::program_options::options_description *
-keyset::getVisibleOptions() const
+KeysetClient::getVisibleOptions() const
 {
     return m_options;
 }
 
 boost::program_options::options_description *
-keyset::getInvisibleOptions() const
+KeysetClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
 }
 
 int
-keyset::keyset_list()
+KeysetClient::keyset_list()
 {
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(&m_db, true));
@@ -211,7 +211,7 @@ keyset::keyset_list()
 }
 
 int
-keyset::keyset_list_plain()
+KeysetClient::keyset_list_plain()
 {
     std::string xml;
     std::string cltrid;
@@ -219,7 +219,7 @@ keyset::keyset_list_plain()
     xml = "<handle>" + m_varMap[KEYSET_LIST_PLAIN_NAME].as<std::string>() + "</handle>";
     cltrid = "list_keysets";
     ccReg::Lists *k;
-    LOGIN_KEYSET;
+    LOGIN_KEYSETCLIENT;
 
     r = epp->KeySetList(k, clientId, cltrid.c_str(), xml.c_str());
 
@@ -230,12 +230,12 @@ keyset::keyset_list_plain()
     for (int i = 0; i < (int)k->length(); i++)
         std::cout << (*k)[i] << std::endl;
 
-    LOGOUT_KEYSET;
+    LOGOUT_KEYSETCLIENT;
     return 0;
 }
 
 int
-keyset::keyset_check()
+KeysetClient::keyset_check()
 {
     std::string xml;
     std::string cltrid;
@@ -251,19 +251,19 @@ keyset::keyset_check()
     names.length(1);
     names[0] = CORBA::string_dup(name.c_str());
 
-    LOGIN_KEYSET;
+    LOGIN_KEYSETCLIENT;
 
     r = epp->KeySetCheck(names, a, clientId, cltrid.c_str(), xml.c_str());
 
     std::cout << (*a)[0].avail << std::endl;
     std::cout << (*a)[0].reason << std::endl;
 
-    LOGOUT_KEYSET;
+    LOGOUT_KEYSETCLIENT;
     return 0;
 }
 
 int
-keyset::keyset_send_auth_info()
+KeysetClient::keyset_send_auth_info()
 {
     std::string name = m_varMap[KEYSET_SEND_AUTH_INFO_NAME].as<std::string>().c_str();
     std::string cltrid;
@@ -271,17 +271,17 @@ keyset::keyset_send_auth_info()
     xml = "<handle>" + name + "</handle>";
     cltrid = "keyset_send_auth_info";
 
-    LOGIN_KEYSET;
+    LOGIN_KEYSETCLIENT;
     r = epp->keysetSendAuthInfo(name.c_str(), clientId, cltrid.c_str(), xml.c_str());
 
     std::cout << r->code << std::endl;
 
-    LOGOUT_KEYSET;
+    LOGOUT_KEYSETCLIENT;
     return 0;
 }
 
 int
-keyset::keyset_transfer()
+KeysetClient::keyset_transfer()
 {
     std::string key_handle = m_varMap[KEYSET_TRANSFER_NAME].as<std::string>().c_str();
     std::string authinfopw = m_varMap[AUTH_INFO_PW_NAME].as<std::string>().c_str();
@@ -292,7 +292,7 @@ keyset::keyset_transfer()
     xml = "<handle>" + key_handle + "</handle>";
     cltrid = "transfer_keyset";
 
-    LOGIN_KEYSET;
+    LOGIN_KEYSETCLIENT;
 
     r = epp->KeySetTransfer(
             key_handle.c_str(),
@@ -302,12 +302,12 @@ keyset::keyset_transfer()
             xml.c_str());
     std::cout << r->code << std::endl;
 
-    LOGOUT_KEYSET;
+    LOGOUT_KEYSETCLIENT;
     return 0;
 }
 
 int
-keyset::keyset_update()
+KeysetClient::keyset_update()
 {
     std::string key_handle = m_varMap[KEYSET_UPDATE_NAME].as<std::string>().c_str();
     std::string authinfopw = m_varMap[AUTH_INFO_PW_NAME].as<std::string>().c_str();
@@ -370,7 +370,7 @@ keyset::keyset_update()
     std::string xml;
     xml = "<handle>" + key_handle + "</handle>";
     cltrid = "keyset_update";
-    LOGIN_KEYSET;
+    LOGIN_KEYSETCLIENT;
 
     r = epp->KeySetUpdate(
             key_handle.c_str(),
@@ -384,12 +384,12 @@ keyset::keyset_update()
             xml.c_str());
     std::cout << "return code: " << r->code << std::endl;
 
-    LOGOUT_KEYSET;
+    LOGOUT_KEYSETCLIENT;
     return 0;
 }
 
 int
-keyset::keyset_delete()
+KeysetClient::keyset_delete()
 {
     std::string key_handle = m_varMap[KEYSET_DELETE_NAME].as<std::string>().c_str();
 
@@ -400,7 +400,7 @@ keyset::keyset_delete()
     xml = "<handle>" + key_handle + "</handle>";
     cltrid = "keyset_delete";
 
-    LOGIN_KEYSET;
+    LOGIN_KEYSETCLIENT;
 
     r = epp->KeySetDelete(
             key_handle.c_str(),
@@ -408,12 +408,12 @@ keyset::keyset_delete()
             cltrid.c_str(),
             xml.c_str());
     std::cout << "return code: " << r->code << std::endl;
-    LOGOUT_KEYSET;
+    LOGOUT_KEYSETCLIENT;
     return 0;
 }
 
 int
-keyset::keyset_create()
+KeysetClient::keyset_create()
 {
     std::string key_handle = m_varMap[KEYSET_CREATE_NAME].as<std::string>().c_str();
     std::string admins = m_varMap[ADMIN_NAME].as<std::string>().c_str();
@@ -451,7 +451,7 @@ keyset::keyset_create()
 
     ccReg::timestamp crData;
 
-    LOGIN_KEYSET;
+    LOGIN_KEYSETCLIENT;
 
     r = epp->KeySetCreate(
             key_handle.c_str(),
@@ -464,12 +464,12 @@ keyset::keyset_create()
 
     std::cout << "return code: " << r->code << std::endl;
 
-    LOGOUT_KEYSET;
+    LOGOUT_KEYSETCLIENT;
     return 0;
 }
 
 int
-keyset::keyset_info()
+KeysetClient::keyset_info()
 {
     std::string name = m_varMap[KEYSET_INFO_NAME].as<std::string>();
     std::string cltrid;
@@ -479,9 +479,9 @@ keyset::keyset_info()
 
     ccReg::KeySet *k = new ccReg::KeySet;
 
-    LOGIN_KEYSET;
+    LOGIN_KEYSETCLIENT;
     epp->KeySetInfo(name.c_str(), k, clientId, cltrid.c_str(), xml.c_str());
-    LOGOUT_KEYSET;
+    LOGOUT_KEYSETCLIENT;
 
     std::cout << k->handle << std::endl;
     std::cout << k->AuthInfoPw << std::endl;
@@ -493,7 +493,7 @@ keyset::keyset_info()
 }
 
 int
-keyset::keyset_info2()
+KeysetClient::keyset_info2()
 {
     std::string key_handle = m_varMap[KEYSET_INFO2_NAME].as<std::string>();
     std::string cltrid;
@@ -504,7 +504,7 @@ keyset::keyset_info2()
     cltrid = "info_keyset_2";
     ccReg::InfoType type = ccReg::IT_LIST_KEYSETS;
 
-    LOGIN_KEYSET;
+    LOGIN_KEYSETCLIENT;
 
     r = epp->info(
             type,
@@ -517,12 +517,12 @@ keyset::keyset_info2()
     std::cout << "return code: " << r->code << std::endl;
 
 
-    LOGOUT_KEYSET;
+    LOGOUT_KEYSETCLIENT;
     return 0;
 }
 
 void
-keyset::keyset_create_help()
+KeysetClient::keyset_create_help()
 {
     std::cout
         << "** KeySet create **\n\n"
@@ -538,7 +538,7 @@ keyset::keyset_create_help()
         << std::endl;
 }
 void
-keyset::keyset_update_help()
+KeysetClient::keyset_update_help()
 {
     std::cout
         << "** KeySet update **\n\n"
@@ -558,7 +558,7 @@ keyset::keyset_update_help()
         << std::endl;
 }
 void
-keyset::keyset_delete_help()
+KeysetClient::keyset_delete_help()
 {
     std::cout
         << "** Keyset delete **\n\n"
@@ -570,7 +570,7 @@ keyset::keyset_delete_help()
         << std::endl;
 }
 void
-keyset::keyset_info_help()
+KeysetClient::keyset_info_help()
 {
     std::cout
         << "** Keyset info **\n\n"
@@ -582,7 +582,7 @@ keyset::keyset_info_help()
         << std::endl;
 }
 void
-keyset::keyset_check_help()
+KeysetClient::keyset_check_help()
 {
     std::cout
         << "** Keyset check **\n\n"
