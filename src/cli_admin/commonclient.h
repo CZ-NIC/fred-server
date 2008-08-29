@@ -21,9 +21,8 @@
 
 #include <iostream>
 #include <vector>
-#include "old_utils/dbsql.h"
+
 #include "corba/nameservice.h"
-#include "corba/ccReg.hh"
 
 #define ID_NAME                 "id"
 #define NAME_NAME               "name"
@@ -82,9 +81,13 @@
 #define FILECLIENT_PATH_NAME    "fileclient-path"
 #define RESTRICTED_HANDLES_NAME "restricted-handles"
 
-#define ADD_OPT(name, desc)  (name, desc)
-#define ADD_OPT_TYPE(name, desc, type) (name, boost::program_options::value<type>(), desc)
-#define ADD_OPT_DEF(name, desc, type, def) (name, boost::program_options::value<type>()->default_value(def), desc)
+#define ADD_OPT(name, desc)                 (name, desc)
+#define ADD_OPT_TYPE(name, desc, type)      (name, boost::program_options::value<type>(), desc)
+#define ADD_OPT_DEF(name, desc, type, def)  (name, boost::program_options::value<type>()->default_value(def), desc)
+
+#define add_opt(name)                       ADD_OPT(name, name##_DESC)
+#define add_opt_type(name, type)            ADD_OPT_TYPE(name, name##_DESC, type)
+#define add_opt_def(name, type, def)        ADD_OPT_DEF(name, name##_DESC, type, def)
 
 extern const char *corbaOpts[][2];
 extern const char g_prog_name[];

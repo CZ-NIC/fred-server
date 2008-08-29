@@ -20,18 +20,17 @@
 #define _AUTHINFOCLIENT_H_
 
 #define AUTHINFO_PDF_NAME         "authinfo-pdf"
+#define AUTHINFO_PDF_NAME_DESC    "generate pdf of authorization info request"
 
 #define AUTHINFO_PDF_HELP_NAME    "authinfo-pdf-help"
+#define AUTHINFO_PDF_HELP_NAME_DESC "help for authinfo pdf creation"
 
-#include <iostream>
+
 #include <boost/program_options.hpp>
-#include "old_utils/dbsql.h"
+#include <iostream>
 
-#include "old_utils/log.h"
-#include "old_utils/conf.h"
-#include "register/register.h"
 #include "corba/admin/admin_impl.h"
-#include "corba/mailer_manager.h"
+#include "old_utils/dbsql.h"
 
 namespace Admin {
 

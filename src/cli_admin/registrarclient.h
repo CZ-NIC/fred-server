@@ -28,15 +28,13 @@
 #define REGISTRAR_REGISTRAR_ADD_ZONE_HELP_NAME   "add-registrar-to-zone-help"
 
 
-#include <iostream>
 #include <boost/program_options.hpp>
-#include "old_utils/dbsql.h"
+#include <iostream>
 
-#include "old_utils/log.h"
-#include "old_utils/conf.h"
+#include "old_utils/dbsql.h"
 #include "register/register.h"
+
 #include "corba/admin/admin_impl.h"
-#include "corba/mailer_manager.h"
 
 namespace Admin {
 

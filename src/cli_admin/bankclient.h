@@ -21,17 +21,16 @@
 
 
 #define BANK_ONLINE_LIST_NAME       "bank-online-list"
+#define BANK_ONLINE_LIST_NAME_DESC  "list of online payments"
 #define BANK_STATEMENT_LIST_NAME    "bank-statement-list"
+#define BANK_STATEMENT_LIST_NAME_DESC "list of bank statements"
 
-#include <iostream>
 #include <boost/program_options.hpp>
+#include <iostream>
+
+#include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
 
-#include "old_utils/log.h"
-#include "old_utils/conf.h"
-#include "register/register.h"
-#include "corba/admin/admin_impl.h"
-#include "corba/mailer_manager.h"
 
 namespace Admin {
 

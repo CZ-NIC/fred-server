@@ -276,7 +276,11 @@ main(int argc, char **argv)
     object.init(connstring.str(), nsAddr.str(), varMap);
     infobuff.init(connstring.str(), nsAddr.str(), varMap);
 
-    if (varMap.count(CONTACT_INFO2_NAME)) {
+    // if (varMap.count(CONTACT_INFO2_NAME)) {
+        // contact.info2();
+    if (1 == 0) {
+        ;
+    } else if (varMap.count(CONTACT_INFO2_NAME)) {
         contact.info2();
     } else if (varMap.count(CONTACT_INFO_NAME)) {
         contact.info();

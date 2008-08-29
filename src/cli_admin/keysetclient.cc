@@ -16,7 +16,6 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "register/register.h"
 #include "commonclient.h"
 #include "keysetclient.h"
 

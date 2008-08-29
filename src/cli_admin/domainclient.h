@@ -19,15 +19,11 @@
 #ifndef _DOMAINCLIENT_H_
 #define _DOMAINCLIENT_H_
 
-#include <iostream>
 #include <boost/program_options.hpp>
-#include "old_utils/dbsql.h"
+#include <iostream>
 
-#include "old_utils/log.h"
-#include "old_utils/conf.h"
-#include "register/register.h"
 #include "corba/admin/admin_impl.h"
-#include "corba/mailer_manager.h"
+#include "old_utils/dbsql.h"
 
 #define DOMAIN_CREATE_NAME          "domain-create"
 #define DOMAIN_UPDATE_NAME          "domain-update"

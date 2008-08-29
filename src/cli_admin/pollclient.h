@@ -33,15 +33,11 @@
 #define POLL_DRY_RUN_NAME           "dry-run"
 #define POLL_EXCEPT_TYPES_NAME      "except-types"
 
-#include <iostream>
 #include <boost/program_options.hpp>
-#include "old_utils/dbsql.h"
+#include <iostream>
 
-#include "old_utils/log.h"
-#include "old_utils/conf.h"
-#include "register/register.h"
 #include "corba/admin/admin_impl.h"
-#include "corba/mailer_manager.h"
+#include "old_utils/dbsql.h"
 
 namespace Admin {
 

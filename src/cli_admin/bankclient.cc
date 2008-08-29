@@ -16,41 +16,12 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "register/register.h"
-#include "register/bank.h"
-#include "commonclient.h"
 #include "bankclient.h"
+#include "commonclient.h"
+#include "register/bank.h"
+#include "register/register.h"
 
 namespace Admin {
-
-#define LOGIN_BANKCLIENT \
-CorbaClient cc(0, NULL, m_nsAddr.c_str()); \
-CORBA::Object_var o = cc.getNS()->resolve("EPP"); \
-ccReg::EPP_var epp; \
-epp = ccReg::EPP::_narrow(o); \
-CORBA::Long clientId = 0; \
-ccReg::Response_var r; \
-if (!m_db.ExecSelect( \
-            "SELECT r.handle,ra.cert,ra.password " \
-            "FROM registrar r, registraracl ra " \
-            "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1 ") \
-        ) \
-    return -1; \
-if (!m_db.GetSelectRows()) \
-    return -1; \
-std::string handle = m_db.GetFieldValue(0,0); \
-std::string cert = m_db.GetFieldValue(0,1); \
-std::string password = m_db.GetFieldValue(0,2); \
-m_db.FreeSelect(); \
-r = epp->ClientLogin(handle.c_str(),password.c_str(),"","system_delete_login","<system_delete_login/>", \
-        clientId,cert.c_str(),ccReg::EN); \
-if (r->code != 1000 || !clientId) { \
-    std::cerr << "Cannot connect: " << r->code << std::endl; \
-    return -1; \
-}
-
-#define LOGOUT_BANKCLIENT \
-    epp->ClientLogout(clientId,"system_delete_logout","<system_delete_logout/>");
 
 BankClient::BankClient():
     m_connstring(""), m_nsAddr("")
@@ -58,8 +29,8 @@ BankClient::BankClient():
     m_options = new boost::program_options::options_description(
             "Bank related options");
     m_options->add_options()
-        ADD_OPT(BANK_ONLINE_LIST_NAME, "list of online payments")
-        ADD_OPT(BANK_STATEMENT_LIST_NAME, "list of bank statements");
+        add_opt(BANK_ONLINE_LIST_NAME)
+        add_opt(BANK_STATEMENT_LIST_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Bank related invisible options");

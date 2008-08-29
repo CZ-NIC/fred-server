@@ -19,15 +19,12 @@
 #ifndef _INVOICECLIENT_H_
 #define _INVOICECLIENT_H_
 
-#include <iostream>
 #include <boost/program_options.hpp>
-#include "old_utils/dbsql.h"
+#include <iostream>
 
-#include "old_utils/log.h"
-#include "old_utils/conf.h"
-#include "register/register.h"
 #include "corba/admin/admin_impl.h"
-#include "corba/mailer_manager.h"
+#include "register/register.h"
+#include "old_utils/dbsql.h"
 
 #define INVOICE_LIST_NAME           "invoice-list"
 #define INVOICE_ARCHIVE_NAME        "invoice-archive"

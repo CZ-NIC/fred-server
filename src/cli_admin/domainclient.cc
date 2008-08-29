@@ -16,9 +16,9 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "register/register.h"
 #include "commonclient.h"
 #include "domainclient.h"
+#include "register/register.h"
 
 namespace Admin {
 
