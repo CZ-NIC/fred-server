@@ -103,8 +103,8 @@ Value<std::string>& EppActionImpl::addSvTRID() {
   return *tmp;
 }
 
-Interval<int>& EppActionImpl::addEppCodeResponse() {
-  Interval<int> *tmp = new Interval<int>(Column("response", joinActionTable()));
+Value<int>& EppActionImpl::addEppCodeResponse() {
+  Value<int> *tmp = new Value<int>(Column("response", joinActionTable()));
   add(tmp);
   tmp->setName("EppCodeResponse");
   return *tmp;
@@ -112,6 +112,8 @@ Interval<int>& EppActionImpl::addEppCodeResponse() {
 
 Value<int>& EppActionImpl::addResponse() {
   Value<int> *tmp = new Value<int>(Column("response", joinActionTable()));
+  tmp->addModifier(new ValueModifier<int>(0, 2000, SQL_OP_GE));
+  tmp->addModifier(new ValueModifier<int>(1, 2000, SQL_OP_LT));
   add(tmp);
   tmp->setName("Response");
   return *tmp;

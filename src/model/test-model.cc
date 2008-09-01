@@ -166,7 +166,7 @@ int main(int argc, char *argv[]) {
 //    return 1;
 
     EppAction *epp_filter = new EppActionImpl();
-    epp_filter->addEppCodeResponse().setValue(2000, 2504);
+    epp_filter->addEppCodeResponse().setValue(2504);
 
     uf.addFilter(epp_filter);
     sq1 = new SelectQuery();

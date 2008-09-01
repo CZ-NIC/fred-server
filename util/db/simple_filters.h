@@ -373,6 +373,8 @@ public:
   }
 };
 
+
+template<class Tp> class ValueModifier;
 template<class Tp> class Value : public Simple {
 public:
   Value(const Column& _col, const Null<Tp>& _value,
@@ -403,6 +405,12 @@ public:
     TRACE("[CALL] Value<Tp>::setValue()");
     active = true;
     value = _value;
+
+    if (!modifiers_.empty()) {
+      for (unsigned i = 0; i < modifiers_.size(); ++i) {
+        modifiers_[i]->modify(*this);
+      }
+    }
   }
 
   virtual const Null<Tp>& getValue() const {
@@ -437,10 +445,16 @@ public:
     _ar & BOOST_SERIALIZATION_NVP(value);
   }
 
+  void addModifier(ValueModifier<Tp> *_modifier) {
+    modifiers_.push_back(_modifier);
+  }
+
 protected:
   Column column;
   std::string op;
   Database::Null<Tp> value;
+
+  std::vector<ValueModifier<Tp> *> modifiers_;
 };
 
 template<> class Value<std::string> : public Simple {
@@ -533,6 +547,39 @@ public:
 protected:
   Column column;
   Database::Null<Tp> value;
+};
+
+
+template<class Tp>
+class Modifier {
+public:
+  Modifier(const Tp& _value) : value_cmp_(_value) {
+  }
+
+protected:
+  Tp value_cmp_;
+};
+
+template<class Tp>
+class ValueModifier : public Modifier<Tp> {
+public:
+  ValueModifier(const Tp& _value,
+                const Tp& _to_value, 
+                const std::string& _to_operator) : Modifier<Tp>(_value),
+                                                   to_value_(_to_value),
+                                                   to_operator_(_to_operator) {
+  }
+
+  void modify(Value<Tp>& _filter) {
+    if (_filter.getValue().getValue() == this->value_cmp_) {
+      _filter.setOperator(to_operator_);
+      _filter.setValue(to_value_);
+    }
+  }
+
+private:
+  Tp to_value_;
+  std::string to_operator_;
 };
 
 }

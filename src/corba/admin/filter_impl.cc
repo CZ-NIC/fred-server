@@ -341,7 +341,7 @@ COMPOUND_CLASS(Action, EppAction, Compound,
     FILTER_ADD(Str, addClTRID);
     FILTER_ADD(Str, addSvTRID);
     FILTER_ADD(Str, addRequestHandle);
-    FILTER_ADD(IntInterval, addEppCodeResponse);
+    FILTER_ADD(Int, addEppCodeResponse);
 );
 
 COMPOUND_CLASS(Filter, FilterFilter, Compound,
@@ -475,7 +475,6 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(Str,Value<std::string>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Int,Value<unsigned>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Int,Value<int>);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(IntInterval,Interval<int>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Id,Value<Database::ID>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Action,EppAction);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Date,Interval<Database::DateInterval>);
@@ -491,4 +490,5 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(File,File);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Invoice,Invoice);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Mail,Mail);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(IntInterval,Interval<int>);
 }
