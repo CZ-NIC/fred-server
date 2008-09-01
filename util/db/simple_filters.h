@@ -60,6 +60,14 @@ public:
     beg_set = end_set = true;
   }
 
+  virtual Tp getValueBeg() const {
+    return value_beg;
+  }
+
+  virtual Tp getValueEnd() const {
+    return value_end;
+  }
+
   Interval<Tp>* clone() const {
     return 0;
   }

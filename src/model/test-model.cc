@@ -164,7 +164,20 @@ int main(int argc, char *argv[]) {
 //    exec_and_print(sq, uf);
 //    
 //    return 1;
+
+    EppAction *epp_filter = new EppActionImpl();
+    epp_filter->addEppCodeResponse().setValue(2000, 2504);
+
+    uf.addFilter(epp_filter);
+    sq1 = new SelectQuery();
+    sq1->addSelect("*", epp_filter->joinActionTable());
+    uf.addQuery(sq1);
+
+    exec_and_print(sq, uf);   
     
+    return 1;
+
+
     Domain *df_test = new DomainHistoryImpl();
     df_test->addHandle().setValue("d*");
     df_test->addZoneId().setValue(Database::ID(3));

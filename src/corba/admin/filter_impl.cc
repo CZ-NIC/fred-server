@@ -102,6 +102,26 @@ public:
   }
 };
 
+class FilterIntIntervalImpl : virtual public POA_ccReg::Filters::IntInterval,
+                              public FilterSimpleImpl {
+  Database::Filters::Interval<int>* get() {
+    return dynamic_cast<Database::Filters::Interval<int>*>(f);
+  }
+
+public:
+  FilterIntIntervalImpl(Database::Filters::Interval<int>* f) : FilterSimpleImpl(f) {
+  }
+  ccReg::IntInterval value() {
+    ccReg::IntInterval v;
+    v.from = get()->getValueBeg();
+    v.to   = get()->getValueEnd();
+    return v;
+  }
+  void value(const ccReg::IntInterval& v) {
+    get()->setValue(v.from, v.to);
+  }
+};
+
 class FilterDateImpl : virtual public POA_ccReg::Filters::Date,
   public FilterSimpleImpl {
   Database::Filters::Interval<Database::DateInterval>* get() {
@@ -321,6 +341,7 @@ COMPOUND_CLASS(Action, EppAction, Compound,
     FILTER_ADD(Str, addClTRID);
     FILTER_ADD(Str, addSvTRID);
     FILTER_ADD(Str, addRequestHandle);
+    FILTER_ADD(IntInterval, addEppCodeResponse);
 );
 
 COMPOUND_CLASS(Filter, FilterFilter, Compound,
@@ -428,6 +449,7 @@ ccReg::Filters::Base_ptr FilterIteratorImpl::getFilter() {
 ITERATOR_ADD_E_METHOD_IMPL(Str,Value<std::string>);
 ITERATOR_ADD_E_METHOD_IMPL(Int,Value<unsigned>);
 ITERATOR_ADD_E_METHOD_IMPL(Int,Value<int>);
+ITERATOR_ADD_E_METHOD_IMPL(IntInterval,Interval<int>);
 ITERATOR_ADD_E_METHOD_IMPL(Id,Value<Database::ID>);
 ITERATOR_ADD_E_METHOD_IMPL(Action,EppAction);
 ITERATOR_ADD_E_METHOD_IMPL(Date,Interval<Database::DateInterval>);
@@ -453,6 +475,7 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(Str,Value<std::string>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Int,Value<unsigned>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Int,Value<int>);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(IntInterval,Interval<int>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Id,Value<Database::ID>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Action,EppAction);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Date,Interval<Database::DateInterval>);
