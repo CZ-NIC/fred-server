@@ -66,6 +66,7 @@ KeysetClient::KeysetClient():
         ADD_OPT_TYPE(KEYSET_DELETE_NAME, "delete keyset", std::string)
         ADD_OPT_TYPE(KEYSET_UPDATE_NAME, "update keyset", std::string)
         ADD_OPT_TYPE(KEYSET_TRANSFER_NAME, "transfer keyset", std::string)
+        ADD_OPT(KEYSET_LIST_HELP_NAME, "help for keyset list")
         ADD_OPT(KEYSET_CREATE_HELP_NAME, "help for keyset creating")
         ADD_OPT(KEYSET_UPDATE_HELP_NAME, "help for keyset updating")
         ADD_OPT(KEYSET_DELETE_HELP_NAME, "help for keyset deleting")
@@ -75,6 +76,14 @@ KeysetClient::KeysetClient():
     m_optionsInvis = new boost::program_options::options_description(
             "KeySet related invisible options");
     m_optionsInvis->add_options()
+        add_opt_type(ID_NAME, unsigned int)
+        add_opt_type(HANDLE_NAME, std::string)
+        add_opt_type(ADMIN_ID_NAME, unsigned int)
+        add_opt_type(ADMIN_HANDLE_NAME, std::string)
+        add_opt_type(ADMIN_NAME_NAME, std::string)
+        add_opt_type(REGISTRAR_ID_NAME, unsigned int)
+        add_opt_type(REGISTRAR_HANDLE_NAME, std::string)
+        add_opt_type(REGISTRAR_NAME_NAME, std::string)
         ADD_OPT_TYPE(KEYSET_DSRECORDS_NAME, "list of dsrecords (create keyset)", std::string)
         ADD_OPT_DEF(KEYSET_DSREC_ADD_NAME, "list of dsrecords to add (update keyset)", std::string, "")
         ADD_OPT_DEF(KEYSET_DSREC_REM_NAME, "list of dsrecords to rem (update keyset)", std::string, "");
@@ -91,33 +100,13 @@ KeysetClient::KeysetClient(
     m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
-
-    // CorbaClient cc(0, NULL, m_nsAddr.c_str());
-    // CORBA::Object_var o = cc.getNS()->resolve("EPP");
-    // m_clientId = 0;
-    // ccReg::Response_var r;
-    // if (!m_db.ExecSelect(
-                // "SELECT r.handle, ra.cert, ra.password "
-                // "FROM registrar r, registraracl ra "
-                // "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1 ")
-            // )
-        // throw std::runtime_error("some weird sql error");
-    // if (!m_db.GetSelectRows())
-        // throw std::runtime_error("no rows in result");
-    // std::string handle = m_db.GetFieldValue(0, 0);
-    // std::string cert = m_db.GetFieldValue(0, 1);
-    // std::string pass = m_db.GetFieldValue(0, 2);
-// 
-    // m_db.FreeSelect();
-    // r = m_epp->ClientLogin(handle.c_str(), pass.c_str(), "", "system_delete_login",
-            // "<system_detele_login/>", m_clientId, cert.c_str(), ccReg::EN);
-    // if (r->code != 1000 || !m_clientId)
-        // throw std::runtime_error("cannot connect");
 }
 
 KeysetClient::~KeysetClient()
 {
-    //m_epp->ClientLogout(m_clientId, "system_delete_logout", "<system_delete_logout/>");
+    delete m_dbman;
+    delete m_options;
+    delete m_optionsInvis;
 }
 
 void
@@ -146,7 +135,7 @@ KeysetClient::getInvisibleOptions() const
 }
 
 int
-KeysetClient::keyset_list()
+KeysetClient::list()
 {
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(&m_db, true));
@@ -155,6 +144,7 @@ KeysetClient::keyset_list()
 
     Database::Filters::KeySet *keyFilter;
     keyFilter = new Database::Filters::KeySetHistoryImpl();
+
     if (m_varMap.count(ID_NAME))
         keyFilter->addId().setValue(
                 Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
@@ -162,15 +152,25 @@ KeysetClient::keyset_list()
         keyFilter->addHandle().setValue(
                 m_varMap[HANDLE_NAME].as<std::string>());
 
-    if (m_varMap.count(CONTACT_ID_NAME))
+    if (m_varMap.count(ADMIN_ID_NAME))
         keyFilter->addTechContact().addId().setValue(
-                Database::ID(m_varMap[CONTACT_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(CONTACT_NAME_NAME))
-        keyFilter->addTechContact().addName().setValue(
-                m_varMap[CONTACT_NAME_NAME].as<std::string>());
-    if (m_varMap.count(CONTACT_HANDLE_NAME))
+                Database::ID(m_varMap[ADMIN_ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(ADMIN_HANDLE_NAME))
         keyFilter->addTechContact().addHandle().setValue(
-                m_varMap[CONTACT_HANDLE_NAME].as<std::string>());
+                m_varMap[ADMIN_HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(ADMIN_NAME_NAME))
+        keyFilter->addTechContact().addName().setValue(
+                m_varMap[ADMIN_NAME_NAME].as<std::string>());
+
+    if (m_varMap.count(REGISTRAR_ID_NAME))
+        keyFilter->addRegistrar().addId().setValue(
+                Database::ID(m_varMap[REGISTRAR_ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(REGISTRAR_HANDLE_NAME))
+        keyFilter->addRegistrar().addHandle().setValue(
+                m_varMap[REGISTRAR_HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(REGISTRAR_NAME_NAME))
+        keyFilter->addRegistrar().addName().setValue(
+                m_varMap[REGISTRAR_NAME_NAME].as<std::string>());
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
@@ -179,27 +179,63 @@ KeysetClient::keyset_list()
     keyList->setLimit(m_varMap[LIMIT_NAME].as<unsigned int>());
 
     keyList->reload(*unionFilter, m_dbman);
+
     std::cout << "<objects>" << std::endl;
     for (unsigned int i = 0; i < keyList->getCount(); i++) {
+        Register::KeySet::KeySet *keyset = keyList->getKeySet(i);
         std::cout
             << "\t<keyset>\n"
-            << "\t\t<id>" << keyList->getKeySet(i)->getId() << "</id>\n"
-            << "\t\t<handle>" << keyList->getKeySet(i)->getHandle() << "</handle>\n";
-        for (unsigned int j = 0; j < keyList->getKeySet(i)->getAdminCount(); j++)
+            << "\t\t<id>" << keyset->getId() << "</id>\n"
+            << "\t\t<handle>" << keyset->getHandle() << "</handle>\n";
+        for (unsigned int j = 0; j < keyset->getAdminCount(); j++) {
             std::cout
-                << "\t\t<admin>" << keyList->getKeySet(i)->getAdminByIdx(j) << "</admin>\n";
-        std::cout
-            << "\t\t<dsrecord>\n";
-        for (unsigned int j = 0; j < keyList->getKeySet(i)->getDSRecordCount(); j++)
+                << "\t\t<admin>\n"
+                << "\t\t\t<id>" << keyset->getAdminIdByIdx(j) << "</id>\n"
+                << "\t\t\t<handle>" << keyset->getAdminHandleByIdx(j) << "</handle>\n"
+                << "\t\t</admin>\n";
+        }
+        for (unsigned int j = 0; j < keyset->getDSRecordCount(); j++) {
+            Register::KeySet::DSRecord *dsrec = (Register::KeySet::DSRecord *)keyset->getDSRecordByIdx(j);
             std::cout
-                << "\t\t\t<id>" << keyList->getKeySet(i)->getDSRecordByIdx(j)->getId() << "</id>\n"
-                << "\t\t\t<keytag>" << keyList->getKeySet(i)->getDSRecordByIdx(j)->getKeyTag() << "</keytag>\n"
-                << "\t\t\t<alg>" << keyList->getKeySet(i)->getDSRecordByIdx(j)->getAlg() << "</alg>\n"
-                << "\t\t\t<digesttype>" << keyList->getKeySet(i)->getDSRecordByIdx(j)->getDigestType() << "</digesttype>\n"
-                << "\t\t\t<digest>" << keyList->getKeySet(i)->getDSRecordByIdx(j)->getDigest() << "</digest>\n"
-                << "\t\t\t<maxsiglife>" << keyList->getKeySet(i)->getDSRecordByIdx(j)->getMaxSigLife() << "</maxsiglife>\n";
-        std::cout
-            << "\t\t</dsrecord>\n";
+                << "\t\t<dsrecord>\n"
+                << "\t\t\t<id>" << dsrec->getId() << "</id>\n"
+                << "\t\t\t<keytag>" << dsrec->getKeyTag() << "</keytag>\n"
+                << "\t\t\t<alg>" << dsrec->getAlg() << "</alg>\n"
+                << "\t\t\t<digesttype>" << dsrec->getDigestType() << "</digesttype>\n"
+                << "\t\t\t<digest>" << dsrec->getDigest() << "</digest>\n"
+                << "\t\t\t<maxsiglife>" << dsrec->getMaxSigLife() << "</maxsiglife>\n"
+                << "\t\t</dsrecord>\n";
+        }
+        if (m_varMap.count(FULL_LIST_NAME)) {
+            std::cout
+                << "\t\t<create_date>" << keyset->getCreateDate() << "</create_date>\n"
+                << "\t\t<transfer_date>" << keyset->getTransferDate() << "</transfer_date>\n"
+                << "\t\t<update_date>" << keyset->getUpdateDate() << "</update_date>\n"
+                << "\t\t<delete_date>" << keyset->getDeleteDate() << "</delete_date>\n"
+                << "\t\t<registrar>\n"
+                << "\t\t\t<id>" << keyset->getRegistrarId() << "</id>\n"
+                << "\t\t\t<handle>" << keyset->getRegistrarHandle() << "</handle>\n"
+                << "\t\t</registrar>\n"
+                << "\t\t<create_registrar>\n"
+                << "\t\t\t<id>" << keyset->getCreateRegistrarId() << "</id>\n"
+                << "\t\t\t<handle>" << keyset->getCreateRegistrarHandle() << "</handle>\n"
+                << "\t\t</create_registrar>\n"
+                << "\t\t<update_registrar>\n"
+                << "\t\t\t<id>" << keyset->getUpdateRegistrarId() << "</id>\n"
+                << "\t\t\t<handle>" << keyset->getUpdateRegistrarHandle() << "</handle>\n"
+                << "\t\t</update_registrar>\n"
+                << "\t\t<auth_password>" << keyset->getAuthPw() << "</auth_password>\n"
+                << "\t\t<ROID>" << keyset->getROID() << "</ROID>\n";
+            for (unsigned int j = 0; j < keyset->getStatusCount(); j++) {
+                Register::Status *status = (Register::Status *)keyset->getStatusByIdx(j);
+                std::cout
+                    << "\t\t<status>\n"
+                    << "\t\t\t<id>" << status->getStatusId() << "</id>\n"
+                    << "\t\t\t<from>" << status->getFrom() << "</from>\n"
+                    << "\t\t\t<to>" << status->getTo() << "</to>\n"
+                    << "\t\t</status>\n";
+            }
+        }
         std::cout
             << "\t</keyset>\n";
     }
@@ -210,7 +246,7 @@ KeysetClient::keyset_list()
 }
 
 int
-KeysetClient::keyset_list_plain()
+KeysetClient::list_plain()
 {
     std::string xml;
     std::string cltrid;
@@ -234,7 +270,7 @@ KeysetClient::keyset_list_plain()
 }
 
 int
-KeysetClient::keyset_check()
+KeysetClient::check()
 {
     std::string xml;
     std::string cltrid;
@@ -262,7 +298,7 @@ KeysetClient::keyset_check()
 }
 
 int
-KeysetClient::keyset_send_auth_info()
+KeysetClient::send_auth_info()
 {
     std::string name = m_varMap[KEYSET_SEND_AUTH_INFO_NAME].as<std::string>().c_str();
     std::string cltrid;
@@ -280,7 +316,7 @@ KeysetClient::keyset_send_auth_info()
 }
 
 int
-KeysetClient::keyset_transfer()
+KeysetClient::transfer()
 {
     std::string key_handle = m_varMap[KEYSET_TRANSFER_NAME].as<std::string>().c_str();
     std::string authinfopw = m_varMap[AUTH_INFO_PW_NAME].as<std::string>().c_str();
@@ -306,7 +342,7 @@ KeysetClient::keyset_transfer()
 }
 
 int
-KeysetClient::keyset_update()
+KeysetClient::update()
 {
     std::string key_handle = m_varMap[KEYSET_UPDATE_NAME].as<std::string>().c_str();
     std::string authinfopw = m_varMap[AUTH_INFO_PW_NAME].as<std::string>().c_str();
@@ -388,7 +424,7 @@ KeysetClient::keyset_update()
 }
 
 int
-KeysetClient::keyset_delete()
+KeysetClient::del()
 {
     std::string key_handle = m_varMap[KEYSET_DELETE_NAME].as<std::string>().c_str();
 
@@ -412,7 +448,7 @@ KeysetClient::keyset_delete()
 }
 
 int
-KeysetClient::keyset_create()
+KeysetClient::create()
 {
     std::string key_handle = m_varMap[KEYSET_CREATE_NAME].as<std::string>().c_str();
     std::string admins = m_varMap[ADMIN_NAME].as<std::string>().c_str();
@@ -468,7 +504,7 @@ KeysetClient::keyset_create()
 }
 
 int
-KeysetClient::keyset_info()
+KeysetClient::info()
 {
     std::string name = m_varMap[KEYSET_INFO_NAME].as<std::string>();
     std::string cltrid;
@@ -492,7 +528,7 @@ KeysetClient::keyset_info()
 }
 
 int
-KeysetClient::keyset_info2()
+KeysetClient::info2()
 {
     std::string key_handle = m_varMap[KEYSET_INFO2_NAME].as<std::string>();
     std::string cltrid;
@@ -521,7 +557,16 @@ KeysetClient::keyset_info2()
 }
 
 void
-KeysetClient::keyset_create_help()
+KeysetClient::list_help()
+{
+    std::cout
+        << "** KeySet help **\n\n"
+        << "  $ " << g_prog_name << " --" << KEYSET_LIST_HELP_NAME << " \\\n"
+        << std::endl;
+}
+
+void
+KeysetClient::create_help()
 {
     std::cout
         << "** KeySet create **\n\n"
@@ -537,7 +582,7 @@ KeysetClient::keyset_create_help()
         << std::endl;
 }
 void
-KeysetClient::keyset_update_help()
+KeysetClient::update_help()
 {
     std::cout
         << "** KeySet update **\n\n"
@@ -557,7 +602,7 @@ KeysetClient::keyset_update_help()
         << std::endl;
 }
 void
-KeysetClient::keyset_delete_help()
+KeysetClient::delete_help()
 {
     std::cout
         << "** Keyset delete **\n\n"
@@ -569,7 +614,7 @@ KeysetClient::keyset_delete_help()
         << std::endl;
 }
 void
-KeysetClient::keyset_info_help()
+KeysetClient::info_help()
 {
     std::cout
         << "** Keyset info **\n\n"
@@ -581,7 +626,7 @@ KeysetClient::keyset_info_help()
         << std::endl;
 }
 void
-KeysetClient::keyset_check_help()
+KeysetClient::check_help()
 {
     std::cout
         << "** Keyset check **\n\n"

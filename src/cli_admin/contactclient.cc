@@ -57,8 +57,8 @@ ContactClient::ContactClient():
     m_options = new boost::program_options::options_description(
             "Contact related options");
     m_options->add_options()
-        ADD_OPT_TYPE(CONTACT_INFO_NAME, "keyset info (via epp_impl", std::string)
-        ADD_OPT_TYPE(CONTACT_INFO2_NAME, "keyset info (via ccReg_i)", std::string)
+        ADD_OPT_TYPE(CONTACT_INFO_NAME, "contact info (via epp_impl", std::string)
+        ADD_OPT_TYPE(CONTACT_INFO2_NAME, "contact info (via ccReg_i)", std::string)
         ADD_OPT(CONTACT_LIST_NAME, "list of all contacts (via filters)")
         ADD_OPT(CONTACT_LIST_PLAIN_NAME, "list of all contacts (via epp_impl)");
 
@@ -150,35 +150,103 @@ ContactClient::list()
     if (m_varMap.count(ID_NAME))
         conFilter->addId().setValue(
                 Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
-
     if (m_varMap.count(HANDLE_NAME))
         conFilter->addHandle().setValue(
                 m_varMap[HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(NAME_NAME))
+        conFilter->addName().setValue(
+                m_varMap[NAME_NAME].as<std::string>());
+    if (m_varMap.count(ORGANIZATION_NAME))
+        conFilter->addOrganization().setValue(
+                m_varMap[ORGANIZATION_NAME].as<std::string>());
+    if (m_varMap.count(CITY_NAME))
+        conFilter->addCity().setValue(
+                m_varMap[CITY_NAME].as<std::string>());
+    if (m_varMap.count(EMAIL_NAME))
+        conFilter->addEmail().setValue(
+                m_varMap[EMAIL_NAME].as<std::string>());
+    if (m_varMap.count(NOTIFY_EMAIL_NAME))
+        conFilter->addNotifyEmail().setValue(
+                m_varMap[NOTIFY_EMAIL_NAME].as<std::string>());
+    if (m_varMap.count(VAT_NAME))
+        conFilter->addVat().setValue(
+                m_varMap[VAT_NAME].as<std::string>());
+    if (m_varMap.count(SSN_NAME))
+        conFilter->addSsn().setValue(
+                m_varMap[SSN_NAME].as<std::string>());
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
-    unionFilter->addFilter(conFilter);
 
+    unionFilter->addFilter(conFilter);
     conList->setLimit(m_varMap[LIMIT_NAME].as<unsigned int>());
+
     conList->reload(*unionFilter, m_dbman);
+
     std::cout << "<objects>" << std::endl;
     for (unsigned int i = 0; i < conList->getCount(); i++) {
+        Register::Contact::Contact *contact = conList->getContact(i);
         std::cout
             << "\t<contact>\n"
-            << "\t\t<id>" << conList->getContact(i)->getId() << "</id>\n"
-            << "\t\t<handle>" << conList->getContact(i)->getHandle() << "</handle>\n"
-            << "\t\t<name>" << conList->getContact(i)->getName() << "</name>\n"
-            << "\t\t<street1>" << conList->getContact(i)->getStreet1() << "</street1>\n"
-            << "\t\t<street2>" << conList->getContact(i)->getStreet2() << "</street2>\n"
-            << "\t\t<street3>" << conList->getContact(i)->getStreet3() << "</street3>\n"
-            << "\t\t<city>" << conList->getContact(i)->getCity() << "</city>\n"
-            << "\t\t<postal_code>" << conList->getContact(i)->getPostalCode() << "</postal_code>\n"
-            << "\t\t<province>" << conList->getContact(i)->getProvince() << "</province>\n"
-            << "\t\t<country>" << conList->getContact(i)->getCountry() << "</country>\n"
-            << "\t\t<telephone>" << conList->getContact(i)->getTelephone() << "</telephone>\n"
-            << "\t\t<fax>" << conList->getContact(i)->getFax() << "</fax>\n"
-            << "\t\t<email>" << conList->getContact(i)->getEmail() << "</email>\n"
-            << "\t\t<notify_email>" << conList->getContact(i)->getNotifyEmail() << "</notify_email>\n"
+            << "\t\t<id>" << contact->getId() << "</id>\n"
+            << "\t\t<handle>" << contact->getHandle() << "</handle>\n"
+            << "\t\t<name>" << contact->getName() << "</name>\n"
+            << "\t\t<street1>" << contact->getStreet1() << "</street1>\n"
+            << "\t\t<street2>" << contact->getStreet2() << "</street2>\n"
+            << "\t\t<street3>" << contact->getStreet3() << "</street3>\n"
+            << "\t\t<province>" << contact->getProvince() << "</province>\n"
+            << "\t\t<postal_code>" << contact->getPostalCode() << "</postal_code>\n"
+            << "\t\t<city>" << contact->getCity() << "</city>\n"
+            << "\t\t<province>" << contact->getProvince() << "</province>\n"
+            << "\t\t<country>" << contact->getCountry() << "</country>\n"
+            << "\t\t<telephone>" << contact->getTelephone() << "</telephone>\n"
+            << "\t\t<fax>" << contact->getFax() << "</fax>\n"
+            << "\t\t<email>" << contact->getEmail() << "</email>\n"
+            << "\t\t<notify_email>" << contact->getNotifyEmail() << "</notify_email>\n"
+            << "\t\t<ssn>" << contact->getSSN() << "</ssn>\n"
+            << "\t\t<ssn_type>" << contact->getSSNType() << "</ssn_type>\n"
+            << "\t\t<ssn_type_id>" << contact->getSSNTypeId() << "</ssn_type_id>\n"
+            << "\t\t<vat>" << contact->getVAT() << "</vat>\n"
+            << "\t\t<disclose_name>" << contact->getDiscloseName() << "</disclose_name>\n"
+            << "\t\t<disclose_organization>" << contact->getDiscloseOrganization() << "</disclose_organization>\n"
+            << "\t\t<disclose_addr>" << contact->getDiscloseAddr() << "</disclose_addr>\n"
+            << "\t\t<disclose_email>" << contact->getDiscloseEmail() << "</disclose_email>\n"
+            << "\t\t<disclose_telephone>" << contact->getDiscloseTelephone() << "</disclose_telephone>\n"
+            << "\t\t<disclose_fax>" << contact->getDiscloseFax() << "</disclose_fax>\n"
+            << "\t\t<disclose_vat>" << contact->getDiscloseVat() << "</disclose_vat>\n"
+            << "\t\t<disclose_ident>" << contact->getDiscloseIdent() << "</disclose_ident>\n"
+            << "\t\t<disclose_notify_email>" << contact->getDiscloseNotifyEmail() << "</disclose_notify_email>\n";
+        if (m_varMap.count(FULL_LIST_NAME)) {
+            std::cout
+                << "\t\t<create_date>" << contact->getCreateDate() << "</create_date>\n"
+                << "\t\t<transfer_date>" << contact->getTransferDate() << "</transfer_date>\n"
+                << "\t\t<update_date>" << contact->getUpdateDate() << "</update_date>\n"
+                << "\t\t<delete_date>" << contact->getDeleteDate() << "</delete_date>\n"
+                << "\t\t<registrar>\n"
+                << "\t\t\t<id>" << contact->getRegistrarId() << "</id>\n"
+                << "\t\t\t<handle>" << contact->getRegistrarHandle() << "</handle>\n"
+                << "\t\t</registrar>\n"
+                << "\t\t<create_registrar>\n"
+                << "\t\t\t<id>" << contact->getCreateRegistrarId() << "</id>\n"
+                << "\t\t\t<handle>" << contact->getCreateRegistrarHandle() << "</handle>\n"
+                << "\t\t</create_registrar>\n"
+                << "\t\t<update_registrar>\n"
+                << "\t\t\t<id>" << contact->getUpdateRegistrarId() << "</id>\n"
+                << "\t\t\t<handle>" << contact->getUpdateRegistrarHandle() << "</handle>\n"
+                << "\t\t</update_registrar>\n"
+                << "\t\t<auth_password>" << contact->getAuthPw() << "</auth_password>\n"
+                << "\t\t<ROID>" << contact->getROID() << "</ROID>\n";
+            for (unsigned int j = 0; j < contact->getStatusCount(); j++) {
+                Register::Status *status = (Register::Status *)contact->getStatusByIdx(j);
+                std::cout
+                    << "\t\t<status>\n"
+                    << "\t\t\t<id>" << status->getStatusId() << "</id>\n"
+                    << "\t\t\t<from>" << status->getFrom() << "</from>\n"
+                    << "\t\t\t<to>" << status->getTo() << "</to>\n"
+                    << "\t\t</status>\n";
+            }
+        }
+        std::cout
             << "\t</contact>\n";
     }
     std::cout << "</object>" << std::endl;

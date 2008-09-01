@@ -68,10 +68,24 @@ DomainClient::DomainClient():
     m_optionsInvis = new boost::program_options::options_description(
             "Domain related invisible options");
     m_optionsInvis->add_options()
-        ADD_OPT_TYPE(DOMAIN_REGISTRANT_NAME, "domain registrant", std::string)
-        ADD_OPT_DEF(DOMAIN_NSSET_NAME, "domain NSSet", std::string, "")
-        ADD_OPT_DEF(DOMAIN_KEYSET_NAME, "domain Keyset", std::string, "")
-        ADD_OPT_DEF(DOMAIN_PERIOD_NAME, "period (in months)", unsigned int, 0);
+        add_opt_type(ID_NAME, unsigned int)
+        add_opt_type(FQDN_NAME, std::string)
+        add_opt_type(NSSET_ID_NAME, unsigned int)
+        add_opt_type(NSSET_HANDLE_NAME, std::string)
+        add_opt(ANY_NSSET_NAME)
+        add_opt_type(KEYSET_ID_NAME, unsigned int)
+        add_opt_type(KEYSET_HANDLE_NAME, std::string)
+        add_opt(ANY_KEYSET_NAME)
+        add_opt_type(REGISTRANT_ID_NAME, unsigned int)
+        add_opt_type(REGISTRANT_HANDLE_NAME, std::string)
+        add_opt_type(REGISTRANT_NAME_NAME, std::string)
+        add_opt_type(ADMIN_ID_NAME, unsigned int)
+        add_opt_type(ADMIN_HANDLE_NAME, std::string)
+        add_opt_type(ADMIN_NAME_NAME, std::string)
+        add_opt_type(REGISTRAR_ID_NAME, unsigned int)
+        add_opt_type(REGISTRAR_HANDLE_NAME, std::string)
+        add_opt_type(REGISTRAR_NAME_NAME, std::string);
+    // TODO dates, updateregistrar, createregistrar, authpw, type, state, ...
 }
 
 DomainClient::DomainClient(
@@ -88,6 +102,9 @@ DomainClient::DomainClient(
 }
 DomainClient::~DomainClient()
 {
+    delete m_dbman;
+    delete m_options;
+    delete m_optionsInvis;
 }
 
 void
@@ -129,17 +146,30 @@ DomainClient::domain_list()
     Database::Filters::Domain *domFilter;
     domFilter = new Database::Filters::DomainHistoryImpl();
 
-    if (m_varMap.count(KEYSET_ID_NAME))
-        domFilter->addKeySetId().setValue(
-                Database::ID(m_varMap[KEYSET_ID_NAME].as<unsigned int>()));
-
-    if (m_varMap.count(KEYSET_HANDLE_NAME))
-        domFilter->addKeySet().addHandle().setValue(
-                m_varMap[KEYSET_HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(ID_NAME))
+        domFilter->addId().setValue(
+                Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(FQDN_NAME))
+        domFilter->addFQDN().setValue(
+                m_varMap[FQDN_NAME].as<std::string>());
 
     if (m_varMap.count(NSSET_ID_NAME))
         domFilter->addNSSetId().setValue(
                 Database::ID(m_varMap[NSSET_ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(NSSET_HANDLE_NAME))
+        domFilter->addNSSet().addHandle().setValue(
+                m_varMap[NSSET_HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(ANY_NSSET_NAME))
+        domFilter->addNSSet();
+
+    if (m_varMap.count(KEYSET_ID_NAME))
+        domFilter->addKeySetId().setValue(
+                Database::ID(m_varMap[KEYSET_ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(KEYSET_HANDLE_NAME))
+        domFilter->addKeySet().addHandle().setValue(
+                m_varMap[KEYSET_HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(ANY_KEYSET_NAME))
+        domFilter->addKeySet();
 
     if (m_varMap.count(ZONE_ID_NAME))
         domFilter->addZoneId().setValue(
@@ -148,21 +178,32 @@ DomainClient::domain_list()
     if (m_varMap.count(REGISTRANT_ID_NAME))
         domFilter->addRegistrantId().setValue(
                 Database::ID(m_varMap[REGISTRANT_ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(REGISTRANT_HANDLE_NAME))
+        domFilter->addRegistrant().addHandle().setValue(
+                m_varMap[REGISTRANT_HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(REGISTRANT_NAME_NAME))
+        domFilter->addRegistrant().addName().setValue(
+                m_varMap[REGISTRANT_NAME_NAME].as<std::string>());
 
-    if (m_varMap.count(ID_NAME))
-        domFilter->addId().setValue(
-                Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(ADMIN_ID_NAME))
+        domFilter->addAdminContact().addId().setValue(
+                Database::ID(m_varMap[ADMIN_ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(ADMIN_HANDLE_NAME))
+        domFilter->addAdminContact().addHandle().setValue(
+                m_varMap[ADMIN_HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(ADMIN_NAME_NAME))
+        domFilter->addAdminContact().addName().setValue(
+                m_varMap[ADMIN_NAME_NAME].as<std::string>());
 
-    if (m_varMap.count(FQDN_NAME))
-        domFilter->addFQDN().setValue(
-                m_varMap[FQDN_NAME].as<std::string>());
-    
-    if (m_varMap.count(ANY_KEYSET_NAME))
-        domFilter->addKeySet();
-
-    // TODO implement addNSSet in backend (?)
-    // if (m_varMap.count(ANY_NSSET_NAME))
-        // domFilter->addNSSet();
+    if (m_varMap.count(REGISTRAR_ID_NAME))
+        domFilter->addRegistrar().addId().setValue(
+                Database::ID(m_varMap[REGISTRAR_ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(REGISTRAR_HANDLE_NAME))
+        domFilter->addRegistrar().addHandle().setValue(
+                m_varMap[REGISTRAR_HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(REGISTRAR_NAME_NAME))
+        domFilter->addRegistrar().addName().setValue(
+                m_varMap[REGISTRAR_NAME_NAME].as<std::string>());
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
@@ -172,23 +213,68 @@ DomainClient::domain_list()
     domList->reload(*unionFilter, m_dbman);
     std::cout << "<objects>" << std::endl;
     for (unsigned int i = 0; i < domList->getCount(); i++) {
+        Register::Domain::Domain *domain = domList->getDomain(i);
         std::cout
             << "\t<domain>\n"
-            << "\t\t<id>" << domList->getDomain(i)->getId() << "</id>\n"
-            << "\t\t<fqdn>" << domList->getDomain(i)->getFQDN() << "</fqdn>\n"
-            << "\t\t<zone>" << domList->getDomain(i)->getZoneId() << "</zone>\n"
-            << "\t\t<nsset>" << domList->getDomain(i)->getNSSetId() << "</nsset>\n"
-            << "\t\t<nsset_h>" << domList->getDomain(i)->getNSSetHandle() << "</nsset_h>\n"
-            << "\t\t<keyset>" << domList->getDomain(i)->getKeySetId() << "</keyset>\n"
-            << "\t\t<keyset_h>" << domList->getDomain(i)->getKeySetHandle() << "</keyset_h>\n"
-            << "\t\t<registrant>" << domList->getDomain(i)->getRegistrantId() << "</registrant>\n"
-            << "\t\t<registrant_h>" << domList->getDomain(i)->getRegistrantHandle() << "</registrant_h>\n";
-        for (unsigned int j = 0; j < domList->getDomain(i)->getAdminCount(); j++)
+            << "\t\t<id>" << domain->getId() << "</id>\n"
+            << "\t\t<fqdn>" << domain->getFQDN() << "</fqdn>\n"
+            << "\t\t<fqdn_idn>" << domain->getFQDNIDN() << "</fqdn_idn>\n"
+            << "\t\t<zone>" << domain->getZoneId() << "</zone>\n"
+            << "\t\t<nsset>\n"
+            << "\t\t\t<id>" << domain->getNSSetId() << "</id>\n"
+            << "\t\t\t<handle>" << domain->getNSSetHandle() << "</handle>\n"
+            << "\t\t</nsset>\n"
+            << "\t\t<keyset>\n"
+            << "\t\t\t<id>" << domain->getKeySetId() << "</id>\n"
+            << "\t\t\t<handle>" << domain->getKeySetHandle() << "</handle>\n"
+            << "\t\t</keyset>\n"
+            << "\t\t<registrant>\n"
+            << "\t\t\t<id>" << domain->getRegistrantId() << "</id>\n"
+            << "\t\t\t<handle>" << domain->getRegistrantHandle() << "</handle>\n"
+            << "\t\t\t<name>" << domain->getRegistrantName() << "</name>\n"
+            << "\t\t</registrant>\n";
+        for (unsigned int j = 0; j < domain->getAdminCount(); j++)
             std::cout
-                << "\t\t<admin>" << domList->getDomain(i)->getAdminIdByIdx(j) << "</admin>\n"
-                << "\t\t<admin_h>" << domList->getDomain(i)->getAdminHandleByIdx(j) << "</admin_h>\n";
+                << "\t\t<admin>\n"
+                << "\t\t\t<id>" << domain->getAdminIdByIdx(j) << "</id>\n"
+                << "\t\t\t<handle>" << domain->getAdminHandleByIdx(j) << "</handle>\n"
+                << "\t\t</admin>\n";
+        if (m_varMap.count(FULL_LIST_NAME)) {
+            std::cout
+                << "\t\t<exp_date>" << domain->getExpirationDate() << "</exp_date>\n"
+                << "\t\t<val_ex_date>" << domain->getValExDate() << "</val_ex_date>\n"
+                << "\t\t<zone_stat_time>" << domain->getZoneStatusTime() << "</zone_stat_time>\n"
+                << "\t\t<out_zone_date>" << domain->getOutZoneDate() << "</out_zone_date>\n"
+                << "\t\t<cancel_date>" << domain->getCancelDate() << "</cancel_date>\n"
+                << "\t\t<create_date>" << domain->getCreateDate() << "</create_date>\n"
+                << "\t\t<transfer_date>" << domain->getTransferDate() << "</transfer_date>\n"
+                << "\t\t<update_date>" << domain->getUpdateDate() << "</update_date>\n"
+                << "\t\t<delete_date>" << domain->getDeleteDate() << "</delete_date>\n"
+                << "\t\t<registrar>\n"
+                << "\t\t\t<id>" << domain->getRegistrarId() << "</id>\n"
+                << "\t\t\t<handle>" << domain->getRegistrarHandle() << "</handle>\n"
+                << "\t\t</registrar>\n"
+                << "\t\t<create_registrar>\n"
+                << "\t\t\t<id>" << domain->getCreateRegistrarId() << "</id>\n"
+                << "\t\t\t<handle>" << domain->getCreateRegistrarHandle() << "</handle>\n"
+                << "\t\t</create_registrar>\n"
+                << "\t\t<update_registrar>\n"
+                << "\t\t\t<id>" << domain->getUpdateRegistrarId() << "</id>\n"
+                << "\t\t\t<handle>" << domain->getUpdateRegistrarHandle() << "</handle>\n"
+                << "\t\t</update_registrar>\n"
+                << "\t\t<auth_password>" << domain->getAuthPw() << "</auth_password>\n"
+                << "\t\t<ROID>" << domain->getROID() << "</ROID>\n";
+            for (unsigned int j = 0; j < domain->getStatusCount(); j++) {
+                Register::Status *status = (Register::Status *)domain->getStatusByIdx(j);
+                std::cout
+                    << "\t\t<status>\n"
+                    << "\t\t\t<id>" << status->getStatusId() << "</id>\n"
+                    << "\t\t\t<from>" << status->getFrom() << "</from>\n"
+                    << "\t\t\t<to>" << status->getTo() << "</to>\n"
+                    << "\t\t</status>\n";
+            }
+        }
         std::cout
-            << "\t\t<exp_date>" << domList->getDomain(i)->getExpirationDate() << "</exp_date>\n"
             << "\t</domain>\n";
     }
     std::cout << "</object>" << std::endl;

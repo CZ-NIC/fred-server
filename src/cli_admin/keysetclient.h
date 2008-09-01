@@ -42,6 +42,7 @@
 #define KEYSET_DSREC_ADD_NAME       "dsrec-add"
 #define KEYSET_DSREC_REM_NAME       "dsrec-rem"
 
+#define KEYSET_LIST_HELP_NAME       "keyset-list-help"
 #define KEYSET_UPDATE_HELP_NAME     "keyset-update-help"
 #define KEYSET_CREATE_HELP_NAME     "keyset-create-help"
 #define KEYSET_DELETE_HELP_NAME     "keyset-delete-help"
@@ -75,31 +76,32 @@ public:
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
 
-    int keyset_list();
+    int list();
 
-    int keyset_list_plain();
+    int list_plain();
 
-    int keyset_check();
+    int check();
 
-    int keyset_send_auth_info();
+    int send_auth_info();
 
-    int keyset_transfer();
+    int transfer();
 
-    int keyset_update();
+    int update();
 
-    int keyset_delete();
+    int del();
 
-    int keyset_create();
+    int create();
 
-    int keyset_info();
+    int info();
 
-    int keyset_info2();
+    int info2();
 
-    void keyset_create_help();
-    void keyset_update_help();
-    void keyset_delete_help();
-    void keyset_info_help();
-    void keyset_check_help();
+    void list_help();
+    void create_help();
+    void update_help();
+    void delete_help();
+    void info_help();
+    void check_help();
 };
 
 } // namespace Admin;

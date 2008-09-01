@@ -35,11 +35,14 @@ NssetClient::NssetClient():
     m_optionsInvis->add_options()
         add_opt_type(ID_NAME, unsigned int)
         add_opt_type(HANDLE_NAME, std::string)
-        add_opt_type(CONTACT_ID_NAME, unsigned int)
-        add_opt_type(CONTACT_HANDLE_NAME, std::string)
-        add_opt_type(CONTACT_NAME_NAME, std::string)
         add_opt_type(FQDN_NAME, std::string)
-        add_opt_type(IP_NAME, std::string);
+        add_opt_type(IP_NAME, std::string)
+        add_opt_type(ADMIN_ID_NAME, unsigned int)
+        add_opt_type(ADMIN_HANDLE_NAME, std::string)
+        add_opt_type(ADMIN_NAME_NAME, std::string)
+        add_opt_type(REGISTRAR_ID_NAME, unsigned int)
+        add_opt_type(REGISTRAR_HANDLE_NAME, std::string)
+        add_opt_type(REGISTRAR_NAME_NAME, std::string);
 }
 
 NssetClient::NssetClient(
@@ -107,6 +110,7 @@ NssetClient::list()
     if (m_varMap.count(HANDLE_NAME))
         nssFilter->addHandle().setValue(
                 m_varMap[HANDLE_NAME].as<std::string>());
+    
     if (m_varMap.count(CONTACT_ID_NAME))
         nssFilter->addTechContact().addId().setValue(
                 Database::ID(m_varMap[CONTACT_ID_NAME].as<unsigned int>()));
@@ -116,12 +120,24 @@ NssetClient::list()
     if (m_varMap.count(CONTACT_NAME_NAME))
         nssFilter->addTechContact().addName().setValue(
                 m_varMap[CONTACT_NAME_NAME].as<std::string>());
+
     if (m_varMap.count(FQDN_NAME))
         nssFilter->addHostFQDN().setValue(
                 m_varMap[FQDN_NAME].as<std::string>());
+
     if (m_varMap.count(IP_NAME))
         nssFilter->addHostIP().setValue(
                 m_varMap[IP_NAME].as<std::string>());
+
+    if (m_varMap.count(REGISTRAR_ID_NAME))
+        nssFilter->addRegistrar().addId().setValue(
+                Database::ID(m_varMap[REGISTRAR_ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(REGISTRAR_HANDLE_NAME))
+        nssFilter->addRegistrar().addHandle().setValue(
+                m_varMap[REGISTRAR_HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(REGISTRAR_NAME_NAME))
+        nssFilter->addRegistrar().addName().setValue(
+                m_varMap[REGISTRAR_NAME_NAME].as<std::string>());
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
@@ -158,6 +174,36 @@ NssetClient::list()
             }
             std::cout
                 << "\t\t</host>\n";
+        }
+        if (m_varMap.count(FULL_LIST_NAME)) {
+            std::cout
+                << "\t\t<create_date>" << nsset->getCreateDate() << "</create_date>\n"
+                << "\t\t<transfer_date>" << nsset->getTransferDate() << "</transfer_date>\n"
+                << "\t\t<update_date>" << nsset->getUpdateDate() << "</update_date>\n"
+                << "\t\t<delete_date>" << nsset->getDeleteDate() << "</delete_date>\n"
+                << "\t\t<registrar>\n"
+                << "\t\t\t<id>" << nsset->getRegistrarId() << "</id>\n"
+                << "\t\t\t<handle>" << nsset->getRegistrarHandle() << "</handle>\n"
+                << "\t\t</registrar>\n"
+                << "\t\t<create_registrar>\n"
+                << "\t\t\t<id>" << nsset->getCreateRegistrarId() << "</id>\n"
+                << "\t\t\t<handle>" << nsset->getCreateRegistrarHandle() << "</handle>\n"
+                << "\t\t</create_registrar>\n"
+                << "\t\t<update_registrar>\n"
+                << "\t\t\t<id>" << nsset->getUpdateRegistrarId() << "</id>\n"
+                << "\t\t\t<handle>" << nsset->getUpdateRegistrarHandle() << "</handle>\n"
+                << "\t\t</update_registrar>\n"
+                << "\t\t<auth_password>" << nsset->getAuthPw() << "</auth_password>\n"
+                << "\t\t<ROID>" << nsset->getROID() << "</ROID>\n";
+            for (unsigned int j = 0; j < nsset->getStatusCount(); j++) {
+                Register::Status *status = (Register::Status *)nsset->getStatusByIdx(j);
+                std::cout
+                    << "\t\t<status>\n"
+                    << "\t\t\t<id>" << status->getStatusId() << "</id>\n"
+                    << "\t\t\t<from>" << status->getFrom() << "</from>\n"
+                    << "\t\t\t<to>" << status->getTo() << "</to>\n"
+                    << "\t\t</status>\n";
+            }
         }
         std::cout
             << "\t</nsset>\n";

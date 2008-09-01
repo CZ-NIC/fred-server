@@ -31,14 +31,13 @@
 #define DOMAIN_LIST_PLAIN_NAME      "domain-list-plain"
 #define DOMAIN_INFO_NAME            "domain-info"
 
-
-#define DOMAIN_CREATE_HELP_NAME     "domain-create-help"
-#define DOMAIN_UPDATE_HELP_NAME     "domain-update-help"
-
 #define DOMAIN_REGISTRANT_NAME      "registrant"
 #define DOMAIN_NSSET_NAME           "nsset"
 #define DOMAIN_KEYSET_NAME          "keyset"
 #define DOMAIN_PERIOD_NAME          "period"
+
+#define DOMAIN_CREATE_HELP_NAME     "domain-create-help"
+#define DOMAIN_UPDATE_HELP_NAME     "domain-update-help"
 
 namespace Admin {
 

@@ -140,7 +140,8 @@ main(int argc, char **argv)
     commonOpts.add_options()
         (LIMIT_NAME, boost::program_options::value<unsigned int>()->default_value(50),
          "limit for output")
-        ("show-opts", "bla bla bla");
+        (FULL_LIST_NAME,
+         FULL_LIST_NAME_DESC);
 
     boost::program_options::options_description commonOptsInvis("Common invisible options");
     commonOptsInvis.add_options()
@@ -154,16 +155,6 @@ main(int argc, char **argv)
          "sequence of removed admin contacts")
         (ADMIN_REM_TEMP_NAME, boost::program_options::value<std::string>()->default_value(""),
          "sequence of removed temporary admin contact ");
-
-    boost::program_options::options_description conOpts("Contact related options");
-    conOpts.add_options()
-        ("contact-list", "list of all contacts")
-        ("contact-id", boost::program_options::value<unsigned int>(),
-         "list contact with specific id")
-        ("contact-handle", boost::program_options::value<std::string>(),
-         "list contact with specifig handle")
-        ("contact-info", boost::program_options::value<std::string>(),
-         "detailed contact info");
 
     boost::program_options::variables_map varMap;
 
@@ -305,35 +296,37 @@ main(int argc, char **argv)
     }
 
     if (varMap.count(KEYSET_LIST_NAME)) {
-        keyset.keyset_list();
+        keyset.list();
     } else if (varMap.count(KEYSET_CHECK_NAME)) {
-        keyset.keyset_check();
+        keyset.check();
     } else if (varMap.count(KEYSET_SEND_AUTH_INFO_NAME)) {
-        keyset.keyset_send_auth_info();
+        keyset.send_auth_info();
     } else if (varMap.count(KEYSET_TRANSFER_NAME)) {
-        keyset.keyset_transfer();
+        keyset.transfer();
     } else if (varMap.count(KEYSET_LIST_PLAIN_NAME)) {
-        keyset.keyset_list_plain();
+        keyset.list_plain();
     } else if (varMap.count(KEYSET_UPDATE_NAME)) {
-        keyset.keyset_update();
+        keyset.update();
     } else if (varMap.count(KEYSET_DELETE_NAME)) {
-        keyset.keyset_delete();
+        keyset.del();
     } else if (varMap.count(KEYSET_UPDATE_HELP_NAME)) {
-        keyset.keyset_update_help();
+        keyset.update_help();
     } else if (varMap.count(KEYSET_CREATE_HELP_NAME)) {
-        keyset.keyset_create_help();
+        keyset.create_help();
     } else if (varMap.count(KEYSET_DELETE_HELP_NAME)) {
-        keyset.keyset_delete_help();
+        keyset.delete_help();
     } else if (varMap.count(KEYSET_INFO_HELP_NAME)) {
-        keyset.keyset_info_help();
+        keyset.info_help();
     } else if (varMap.count(KEYSET_CHECK_HELP_NAME)) {
-        keyset.keyset_check_help();
+        keyset.check_help();
+    } else if (varMap.count(KEYSET_LIST_HELP_NAME)) {
+        keyset.list_help();
     } else if (varMap.count(KEYSET_CREATE_NAME)) {
-        keyset.keyset_create();
+        keyset.create();
     } else if (varMap.count(KEYSET_INFO2_NAME)) {
-        keyset.keyset_info2();
+        keyset.info2();
     } else if (varMap.count(KEYSET_INFO_NAME)) {
-        keyset.keyset_info();
+        keyset.info();
     } else if (varMap.count(DOMAIN_LIST_NAME)) {
         domain.domain_list();
     }
