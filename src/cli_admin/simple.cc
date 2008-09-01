@@ -61,6 +61,7 @@ main(int argc, char **argv)
     Admin::NotifyClient notify;
     Admin::ObjectClient object;
     Admin::InfoBuffClient infobuff;
+    Admin::NssetClient nsset;
 
     try {
     boost::program_options::options_description generalOpts("General options");
@@ -96,14 +97,17 @@ main(int argc, char **argv)
          boost::program_options::value<std::string>()->default_value("localhost"),
          "database host address")
         (DBPORT_NAME, 
-         boost::program_options::value<unsigned int>()->default_value(22345),
+         boost::program_options::value<unsigned int>()->default_value(5432),
          "database port")
         (NSHOST_NAME, 
          boost::program_options::value<std::string>()->default_value("localhost"),
          "CORBA nameservice host")
         (NSPORT_NAME, 
-         boost::program_options::value<unsigned int>()->default_value(22346),
+         boost::program_options::value<unsigned int>()->default_value(2809),
          "CORBA nameservice port")
+        (NSSERVICE_NAME,
+         boost::program_options::value<std::string>()->default_value("localhost:2809"),
+         "CORBA nameservice address")
         (LOG_LEVEL_NAME, 
          boost::program_options::value<unsigned int>()->default_value(ERROR_LOG),
          "minimal level of logging")
@@ -135,7 +139,8 @@ main(int argc, char **argv)
     boost::program_options::options_description commonOpts("Common options");
     commonOpts.add_options()
         (LIMIT_NAME, boost::program_options::value<unsigned int>()->default_value(50),
-         "limit for output");
+         "limit for output")
+        ("show-opts", "bla bla bla");
 
     boost::program_options::options_description commonOptsInvis("Common invisible options");
     commonOptsInvis.add_options()
@@ -189,6 +194,8 @@ main(int argc, char **argv)
         add(*object.getInvisibleOptions()).
         add(*infobuff.getVisibleOptions()).
         add(*infobuff.getInvisibleOptions()).
+        add(*nsset.getVisibleOptions()).
+        add(*nsset.getInvisibleOptions()).
         add(commonOpts).
         add(commonOptsInvis);
 
@@ -207,6 +214,7 @@ main(int argc, char **argv)
         add(*notify.getVisibleOptions()).
         add(*object.getVisibleOptions()).
         add(*infobuff.getVisibleOptions()).
+        add(*nsset.getVisibleOptions()).
         add(commonOpts);
 
 
@@ -217,7 +225,6 @@ main(int argc, char **argv)
                 all
                 ),
             varMap);
-
 
     std::ifstream configFile(varMap["conf"].as<std::string>().c_str());
     boost::program_options::store(
@@ -252,17 +259,16 @@ main(int argc, char **argv)
     std::stringstream connstring;
     std::stringstream nsAddr;
 
-    nsAddr << varMap["nshost"].as<std::string>() << ":" <<
-        varMap["nsport"].as<unsigned int>();
+    nsAddr << varMap[NSSERVICE_NAME].as<std::string>();
 
-    connstring << "dbname=" << varMap["dbname"].as<std::string>() 
-               << " user=" << varMap["dbuser"].as<std::string>();
-    if (varMap.count("dbhost"))
-        connstring << " host=" << varMap["dbhost"].as<std::string>();
-    if (varMap.count("dbport"))
-        connstring << " port=" << varMap["dbport"].as<unsigned int>();
-    if (varMap.count("dbpass"))
-        connstring << " password=" << varMap["dbpass"].as<std::string>();
+    connstring << "dbname=" << varMap[DBNAME_NAME].as<std::string>() 
+               << " user=" << varMap[DBUSER_NAME].as<std::string>();
+    if (varMap.count(DBHOST_NAME))
+        connstring << " host=" << varMap[DBHOST_NAME].as<std::string>();
+    if (varMap.count(DBPORT_NAME))
+        connstring << " port=" << varMap[DBPORT_NAME].as<unsigned int>();
+    if (varMap.count(DBPASS_NAME))
+        connstring << " password=" << varMap[DBPASS_NAME].as<std::string>();
 
     keyset.init(connstring.str(), nsAddr.str(), varMap);
     domain.init(connstring.str(), nsAddr.str(), varMap);
@@ -275,19 +281,30 @@ main(int argc, char **argv)
     notify.init(connstring.str(), nsAddr.str(), varMap);
     object.init(connstring.str(), nsAddr.str(), varMap);
     infobuff.init(connstring.str(), nsAddr.str(), varMap);
+    nsset.init(connstring.str(), nsAddr.str(), varMap);
 
-    // if (varMap.count(CONTACT_INFO2_NAME)) {
-        // contact.info2();
-    if (1 == 0) {
-        ;
-    } else if (varMap.count(CONTACT_INFO2_NAME)) {
+    if (varMap.count("show-opts")) {
+        std::cout << "config: " << varMap["conf"].as<std::string>() << std::endl;
+        std::cout << "dbname: " << varMap[DBNAME_NAME].as<std::string>() << std::endl;
+        std::cout << "dbuser: " << varMap[DBUSER_NAME].as<std::string>() << std::endl;
+        std::cout << "dbpass: " << (varMap.count(DBPASS_NAME) ?
+            varMap[DBPASS_NAME].as<std::string>() : "")
+            << std::endl;
+        std::cout << "dbhost: " << varMap[DBHOST_NAME].as<std::string>() << std::endl;
+        std::cout << "dbport: " << varMap[DBPORT_NAME].as<unsigned int>() << std::endl;
+        std::cout << "nameservice: " << varMap[NSSERVICE_NAME].as<std::string>() << std::endl;
+        std::exit(0);
+    }
+
+    if (varMap.count(CONTACT_INFO2_NAME)) {
         contact.info2();
     } else if (varMap.count(CONTACT_INFO_NAME)) {
         contact.info();
     } else if (varMap.count(CONTACT_LIST_NAME)) {
         contact.list();
+    }
 
-    } else if (varMap.count(KEYSET_LIST_NAME)) {
+    if (varMap.count(KEYSET_LIST_NAME)) {
         keyset.keyset_list();
     } else if (varMap.count(KEYSET_CHECK_NAME)) {
         keyset.keyset_check();
@@ -319,8 +336,9 @@ main(int argc, char **argv)
         keyset.keyset_info();
     } else if (varMap.count(DOMAIN_LIST_NAME)) {
         domain.domain_list();
-
-    } else if (varMap.count(DOMAIN_LIST_PLAIN_NAME)) {
+    }
+    
+    if (varMap.count(DOMAIN_LIST_PLAIN_NAME)) {
         domain.domain_list_plain();
     } else if (varMap.count(DOMAIN_CREATE_HELP_NAME)) {
         domain.domain_create_help();
@@ -333,7 +351,9 @@ main(int argc, char **argv)
     } else if (varMap.count(DOMAIN_INFO_NAME)) {
         domain.domain_info();
     
-    } else if (varMap.count(INVOICE_LIST_NAME)) {
+    }
+    
+    if (varMap.count(INVOICE_LIST_NAME)) {
         invoice.list();
     } else if (varMap.count(INVOICE_ARCHIVE_NAME)) {
         invoice.archive();
@@ -341,18 +361,21 @@ main(int argc, char **argv)
         invoice.list_help();
     } else if (varMap.count(INVOICE_ARCHIVE_HELP_NAME)) {
         invoice.archive_help();
-    
-    } else if (varMap.count(AUTHINFO_PDF_NAME)) {
+    }
+
+    if (varMap.count(AUTHINFO_PDF_NAME)) {
         authinfo.pdf();
     } else if (varMap.count(AUTHINFO_PDF_HELP_NAME)) {
         authinfo.pdf_help();
-
-    } else if (varMap.count(BANK_ONLINE_LIST_NAME)) {
+    }
+    
+    if (varMap.count(BANK_ONLINE_LIST_NAME)) {
         bank.online_list();
     } else if (varMap.count(BANK_STATEMENT_LIST_NAME)) {
         bank.statement_list();
+    }
 
-    } else if (varMap.count(POLL_LIST_ALL_NAME)) {
+    if (varMap.count(POLL_LIST_ALL_NAME)) {
         poll.list_all();
     } else if (varMap.count(POLL_LIST_NEXT_NAME)) {
         poll.list_next();
@@ -362,8 +385,9 @@ main(int argc, char **argv)
         poll.create_low_credit();
     } else if (varMap.count(POLL_SET_SEEN_NAME)) {
         poll.set_seen();
+    }
     
-    } else if (varMap.count(REGISTRAR_ZONE_ADD_NAME)) {
+    if (varMap.count(REGISTRAR_ZONE_ADD_NAME)) {
         registrar.zone_add();
     } else if (varMap.count(REGISTRAR_REGISTRAR_ADD_NAME)) {
         registrar.registrar_add();
@@ -375,13 +399,15 @@ main(int argc, char **argv)
         registrar.registrar_add_help();
     } else if (varMap.count(REGISTRAR_REGISTRAR_ADD_ZONE_HELP_NAME)) {
         registrar.registrar_add_zone_help();
+    }
     
-    } else if (varMap.count(NOTIFY_STATE_CHANGES_NAME)) {
+    if (varMap.count(NOTIFY_STATE_CHANGES_NAME)) {
         notify.state_changes();
     } else if (varMap.count(NOTIFY_LETTERS_CREATE_NAME)) {
         notify.letters_create();
-    
-    } else if (varMap.count(OBJECT_NEW_STATE_REQUEST_NAME)) {
+    }
+
+    if (varMap.count(OBJECT_NEW_STATE_REQUEST_NAME)) {
         object.new_state_request();
     } else if (varMap.count(OBJECT_LIST_NAME)) {
         object.list();
@@ -389,6 +415,12 @@ main(int argc, char **argv)
         object.update_states();
     } else if (varMap.count(OBJECT_DELETE_CANDIDATES_NAME)) {
         object.delete_candidates();
+    }
+    
+    if (varMap.count(NSSET_LIST_NAME)) {
+        nsset.list();
+    } else if (varMap.count(NSSET_LIST_HELP_NAME)) {
+        nsset.list_help();
     }
 
 
