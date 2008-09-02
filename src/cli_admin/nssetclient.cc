@@ -111,15 +111,15 @@ NssetClient::list()
         nssFilter->addHandle().setValue(
                 m_varMap[HANDLE_NAME].as<std::string>());
     
-    if (m_varMap.count(CONTACT_ID_NAME))
+    if (m_varMap.count(ADMIN_ID_NAME))
         nssFilter->addTechContact().addId().setValue(
-                Database::ID(m_varMap[CONTACT_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(CONTACT_HANDLE_NAME))
+                Database::ID(m_varMap[ADMIN_ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(ADMIN_HANDLE_NAME))
         nssFilter->addTechContact().addHandle().setValue(
-                m_varMap[CONTACT_HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(CONTACT_NAME_NAME))
+                m_varMap[ADMIN_HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(ADMIN_NAME_NAME))
         nssFilter->addTechContact().addName().setValue(
-                m_varMap[CONTACT_NAME_NAME].as<std::string>());
+                m_varMap[ADMIN_NAME_NAME].as<std::string>());
 
     if (m_varMap.count(FQDN_NAME))
         nssFilter->addHostFQDN().setValue(
@@ -223,11 +223,15 @@ NssetClient::list_help()
         << "  $ " << g_prog_name << " --" << NSSET_LIST_NAME << " \\\n"
         << "    [--" << ID_NAME << "=<id_nubmer>] \\\n"
         << "    [--" << HANDLE_NAME << "=<handle>] \\\n"
-        << "    [--" << CONTACT_ID_NAME << "=<contact_id_number>] \\\n"
-        << "    [--" << CONTACT_HANDLE_NAME << "=<contact_handle>] \\\n"
-        << "    [--" << CONTACT_NAME_NAME << "=<contact_name>] \\\n"
+        << "    [--" << ADMIN_ID_NAME << "=<admin_id_number>] \\\n"
+        << "    [--" << ADMIN_HANDLE_NAME << "=<admin_handle>] \\\n"
+        << "    [--" << ADMIN_NAME_NAME << "=<admin_name>] \\\n"
+        << "    [--" << REGISTRAR_ID_NAME << "=<registrar_id_number>] \\\n"
+        << "    [--" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
+        << "    [--" << REGISTRAR_NAME_NAME << "=<registrar_name>] \\\n"
         << "    [--" << FQDN_NAME << "=<fqdn>] \\\n"
-        << "    [--" << IP_NAME << "=<ip>]\n"
+        << "    [--" << IP_NAME << "=<ip>] \\\n"
+        << "    [--" << FULL_LIST_NAME << "]\n"
         << std::endl;
 }
 

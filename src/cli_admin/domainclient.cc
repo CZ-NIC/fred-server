@@ -63,7 +63,8 @@ DomainClient::DomainClient():
         ADD_OPT_TYPE(DOMAIN_CREATE_NAME, "create domain", std::string)
         ADD_OPT_TYPE(DOMAIN_UPDATE_NAME, "update domain", std::string)
         ADD_OPT(DOMAIN_CREATE_HELP_NAME, "help for domain creating")
-        ADD_OPT(DOMAIN_UPDATE_HELP_NAME, "help for domain updating");
+        ADD_OPT(DOMAIN_UPDATE_HELP_NAME, "help for domain updating")
+        add_opt(DOMAIN_LIST_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Domain related invisible options");
@@ -515,6 +516,34 @@ DomainClient::domain_create_help()
         << "will create domain with FQDN ``example.cz'', administrator contacts "
         << "``CON::001'' and ``CON::005'', with NSSet ``NSS::137'', valid for "
         << "2 years and without any keyset."
+        << std::endl;
+}
+
+void
+DomainClient::list_help()
+{
+    std::cout
+        << "** Domain list **\n\n"
+        << "  $ " << g_prog_name << " --" << DOMAIN_LIST_NAME << " \\\n"
+        << "    [--" << ID_NAME << "=<id_nubmer>] \\\n"
+        << "    [--" << HANDLE_NAME << "=<handle>] \\\n"
+        << "    [--" << NSSET_ID_NAME << "=<id_number>] \\\n"
+        << "    [--" << NSSET_HANDLE_NAME << "=<handle>] \\\n"
+        << "    [--" << ANY_NSSET_NAME << "] \\\n"
+        << "    [--" << KEYSET_ID_NAME << "=<id_number>] \\\n"
+        << "    [--" << KEYSET_HANDLE_NAME << "=<handle>] \\\n"
+        << "    [--" << ANY_KEYSET_NAME << "] \\\n"
+        << "    [--" << ZONE_ID_NAME << "=<id_number>] \\\n"
+        << "    [--" << REGISTRANT_ID_NAME << "=<id_number>] \\\n"
+        << "    [--" << REGISTRANT_HANDLE_NAME << "=<handle>] \\\n"
+        << "    [--" << REGISTRANT_NAME_NAME << "=<name>] \\\n"
+        << "    [--" << ADMIN_ID_NAME << "=<admin_id_number>] \\\n"
+        << "    [--" << ADMIN_HANDLE_NAME << "=<admin_handle>] \\\n"
+        << "    [--" << ADMIN_NAME_NAME << "=<admin_name>] \\\n"
+        << "    [--" << REGISTRAR_ID_NAME << "=<registrar_id_number>] \\\n"
+        << "    [--" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
+        << "    [--" << REGISTRAR_NAME_NAME << "=<registrar_name>] \\\n"
+        << "    [--" << FULL_LIST_NAME << "]\n"
         << std::endl;
 }
 

@@ -560,8 +560,17 @@ void
 KeysetClient::list_help()
 {
     std::cout
-        << "** KeySet help **\n\n"
+        << "** KeySet list **\n\n"
         << "  $ " << g_prog_name << " --" << KEYSET_LIST_HELP_NAME << " \\\n"
+        << "    [--" << ID_NAME << "=<id_nubmer>] \\\n"
+        << "    [--" << HANDLE_NAME << "=<handle>] \\\n"
+        << "    [--" << ADMIN_ID_NAME << "=<admin_id_number>] \\\n"
+        << "    [--" << ADMIN_HANDLE_NAME << "=<admin_handle>] \\\n"
+        << "    [--" << ADMIN_NAME_NAME << "=<admin_name>] \\\n"
+        << "    [--" << REGISTRAR_ID_NAME << "=<registrar_id_number>] \\\n"
+        << "    [--" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
+        << "    [--" << REGISTRAR_NAME_NAME << "=<registrar_name>] \\\n"
+        << "    [--" << FULL_LIST_NAME << "]\n"
         << std::endl;
 }
 

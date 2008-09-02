@@ -293,6 +293,8 @@ main(int argc, char **argv)
         contact.info();
     } else if (varMap.count(CONTACT_LIST_NAME)) {
         contact.list();
+    } else if (varMap.count(CONTACT_LIST_HELP_NAME)) {
+        contact.list_help();
     }
 
     if (varMap.count(KEYSET_LIST_NAME)) {
@@ -343,7 +345,8 @@ main(int argc, char **argv)
         domain.domain_update();
     } else if (varMap.count(DOMAIN_INFO_NAME)) {
         domain.domain_info();
-    
+    } else if (varMap.count(DOMAIN_LIST_HELP_NAME)) {
+        domain.list_help();
     }
     
     if (varMap.count(INVOICE_LIST_NAME)) {

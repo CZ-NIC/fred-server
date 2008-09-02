@@ -25,10 +25,16 @@
 #include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
 
-#define CONTACT_INFO_NAME           "contact-info"
-#define CONTACT_INFO2_NAME          "contact-info2"
-#define CONTACT_LIST_NAME           "contact-list"
-#define CONTACT_LIST_PLAIN_NAME     "contact-list-plain"
+#define CONTACT_INFO_NAME               "contact-info"
+#define CONTACT_INFO_NAME_DESC          "contact info"
+#define CONTACT_INFO2_NAME              "contact-info2"
+#define CONTACT_INFO2_NAME_DESC         "contact info 2"
+#define CONTACT_LIST_NAME               "contact-list"
+#define CONTACT_LIST_NAME_DESC          "list of all contacts (via filters)"
+#define CONTACT_LIST_PLAIN_NAME         "contact-list-plain"
+#define CONTACT_LIST_PLAIN_NAME_DESC    "list of all contacts (via epp_impl)"
+#define CONTACT_LIST_HELP_NAME          "contact-list-help"
+#define CONTACT_LIST_HELP_NAME_DESC     "help for contact list"
 
 namespace Admin {
 
@@ -60,6 +66,8 @@ public:
     int list();
     int info();
     int info2();
+
+    void list_help();
 };
 
 } // namespace Admin;

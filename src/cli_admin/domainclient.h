@@ -25,19 +25,32 @@
 #include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
 
-#define DOMAIN_CREATE_NAME          "domain-create"
-#define DOMAIN_UPDATE_NAME          "domain-update"
-#define DOMAIN_LIST_NAME            "domain-list"
-#define DOMAIN_LIST_PLAIN_NAME      "domain-list-plain"
-#define DOMAIN_INFO_NAME            "domain-info"
+#define DOMAIN_CREATE_NAME              "domain-create"
+#define DOMAIN_CREATE_NAME_DESC         "create domain"
+#define DOMAIN_UPDATE_NAME              "domain-update"
+#define DOMAIN_UPDATE_NAME_DESC         "update domain"
+#define DOMAIN_LIST_NAME                "domain-list"
+#define DOMAIN_LIST_NAME_DESC           "list of all domains (via filters)"
+#define DOMAIN_LIST_PLAIN_NAME          "domain-list-plain"
+#define DOMAIN_LIST_PLAIN_NAME_DESC     "list of all domains"
+#define DOMAIN_INFO_NAME                "domain-info"
+#define DOMAIN_INFO_NAME_DESC           "info on domain"
 
-#define DOMAIN_REGISTRANT_NAME      "registrant"
-#define DOMAIN_NSSET_NAME           "nsset"
-#define DOMAIN_KEYSET_NAME          "keyset"
-#define DOMAIN_PERIOD_NAME          "period"
+#define DOMAIN_REGISTRANT_NAME          "registrant"
+#define DOMAIN_REGISTRANT_NAME_DESC     "registrant description"
+#define DOMAIN_NSSET_NAME               "nsset"
+#define DOMAIN_NSSET_NAME_DESC          "nsset description"
+#define DOMAIN_KEYSET_NAME              "keyset"
+#define DOMAIN_KEYSET_NAME_DESC         "keyset description"
+#define DOMAIN_PERIOD_NAME              "period"
+#define DOMAIN_PERIOD_NAME_DESC         "period description"
 
-#define DOMAIN_CREATE_HELP_NAME     "domain-create-help"
-#define DOMAIN_UPDATE_HELP_NAME     "domain-update-help"
+#define DOMAIN_CREATE_HELP_NAME         "domain-create-help"
+#define DOMAIN_CREATE_HELP_NAME_DESC    "help on domain create"
+#define DOMAIN_UPDATE_HELP_NAME         "domain-update-help"
+#define DOMAIN_UPDATE_HELP_NAME_DESC    "help on domain update"
+#define DOMAIN_LIST_HELP_NAME           "domain-list-help"
+#define DOMAIN_LIST_HELP_NAME_DESC      "help on domain list"
 
 namespace Admin {
 
@@ -76,8 +89,10 @@ public:
 
     int domain_info();
 
+    void domain_list_help();
     void domain_update_help();
     void domain_create_help();
+    void list_help();
 };
 
 } // namespace Admin;

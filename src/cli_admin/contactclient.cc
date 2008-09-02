@@ -57,14 +57,27 @@ ContactClient::ContactClient():
     m_options = new boost::program_options::options_description(
             "Contact related options");
     m_options->add_options()
-        ADD_OPT_TYPE(CONTACT_INFO_NAME, "contact info (via epp_impl", std::string)
-        ADD_OPT_TYPE(CONTACT_INFO2_NAME, "contact info (via ccReg_i)", std::string)
-        ADD_OPT(CONTACT_LIST_NAME, "list of all contacts (via filters)")
-        ADD_OPT(CONTACT_LIST_PLAIN_NAME, "list of all contacts (via epp_impl)");
+        add_opt_type(CONTACT_INFO_NAME, std::string)
+        add_opt_type(CONTACT_INFO2_NAME, std::string)
+        add_opt(CONTACT_LIST_NAME)
+        add_opt(CONTACT_LIST_HELP_NAME)
+        add_opt(CONTACT_LIST_PLAIN_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Contact related invisible options");
-    m_optionsInvis->add_options();
+    m_optionsInvis->add_options()
+        add_opt_type(ID_NAME, unsigned int)
+        add_opt_type(HANDLE_NAME, std::string)
+        add_opt_type(NAME_NAME, std::string)
+        add_opt_type(ORGANIZATION_NAME, std::string)
+        add_opt_type(CITY_NAME, std::string)
+        add_opt_type(EMAIL_NAME, std::string)
+        add_opt_type(NOTIFY_EMAIL_NAME, std::string)
+        add_opt_type(VAT_NAME, std::string)
+        add_opt_type(SSN_NAME, std::string)
+        add_opt_type(REGISTRAR_ID_NAME, unsigned int)
+        add_opt_type(REGISTRAR_HANDLE_NAME, std::string)
+        add_opt_type(REGISTRAR_NAME_NAME, std::string);
 }
 
 ContactClient::ContactClient(
@@ -175,6 +188,16 @@ ContactClient::list()
         conFilter->addSsn().setValue(
                 m_varMap[SSN_NAME].as<std::string>());
 
+    if (m_varMap.count(REGISTRAR_ID_NAME))
+        conFilter->addRegistrar().addId().setValue(
+                Database::ID(m_varMap[REGISTRAR_ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(REGISTRAR_HANDLE_NAME))
+        conFilter->addRegistrar().addHandle().setValue(
+                m_varMap[REGISTRAR_HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(REGISTRAR_NAME_NAME))
+        conFilter->addRegistrar().addName().setValue(
+                m_varMap[REGISTRAR_NAME_NAME].as<std::string>());
+
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
 
@@ -252,6 +275,28 @@ ContactClient::list()
     std::cout << "</object>" << std::endl;
     unionFilter->clear();
     return 0;
+}
+
+void
+ContactClient::list_help()
+{
+    std::cout
+        << "** Contact list **\n\n"
+        << "  $ " << g_prog_name << " --" << CONTACT_LIST_NAME << " \\\n"
+        << "    [--" << ID_NAME << "=<id_nubmer>] \\\n"
+        << "    [--" << HANDLE_NAME << "=<handle>] \\\n"
+        << "    [--" << NAME_NAME << "=<name>] \\\n"
+        << "    [--" << ORGANIZATION_NAME << "=<organization>] \\\n"
+        << "    [--" << CITY_NAME << "=<city>] \\\n"
+        << "    [--" << EMAIL_NAME << "=<email>] \\\n"
+        << "    [--" << NOTIFY_EMAIL_NAME << "=<email>] \\\n"
+        << "    [--" << VAT_NAME << "=<vat>] \\\n"
+        << "    [--" << SSN_NAME << "=<ssn>] \\\n"
+        << "    [--" << REGISTRAR_ID_NAME << "=<registrar_id_number>] \\\n"
+        << "    [--" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
+        << "    [--" << REGISTRAR_NAME_NAME << "=<registrar_name>] \\\n"
+        << "    [--" << FULL_LIST_NAME << "]\n"
+        << std::endl;
 }
 
 } // namespace Admin;
