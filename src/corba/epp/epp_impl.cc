@@ -5973,6 +5973,33 @@ ccReg_EPP_i::KeySetCreate(
                             }
                         }
                     }
+                    
+                    // test if dsrecord already exists in database
+                    if (ret->code == 0) {
+                        for (int ii = 0; ii < (int)dsrec.length(); ii++) {
+                            int id = DBsql.GetDSRecordId(
+                                    dsrec[ii].keyTag,
+                                    dsrec[ii].alg,
+                                    dsrec[ii].digestType,
+                                    dsrec[ii].digest,
+                                    dsrec[ii].maxSigLife);
+                            if (id > 0) {
+                                LOG(WARNING_LOG,
+                                        "DSRecord already exist, cannot create it: id(%d) (%d %d %d '%s' %s)",
+                                        id, dsrec[ii].keyTag, dsrec[ii].alg, dsrec[ii].digestType,
+                                        CORBA::string_dup(dsrec[ii].digest), dsrec[ii].maxSigLife);
+                                ret->code = SetErrorReason(
+                                        errors,
+                                        COMMAND_PARAMETR_ERROR,
+                                        ccReg::keyset_dsrecord,
+                                        ii,
+                                        REASON_MSG_DUPLICITY_DSRECORD,
+                                        GetRegistrarLang(clientID));
+                                break;
+                            }
+                        }
+                    }
+
                     // dsrecord digest type test
                     if (ret->code == 0) {
                         // digest type must be 1 (sha-1) - see RFC 4034 for details:

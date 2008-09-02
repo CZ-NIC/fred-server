@@ -711,6 +711,39 @@ DB::GetDSRecordId(
     return id;
 }
 
+// get id of dsrecord, dont care about keyset id
+int 
+DB::GetDSRecordId(
+        int keyTag,
+        int alg,
+        int digestType,
+        const char *digest,
+        int maxSigLife)
+{
+    char query[512];
+    int id = 0;
+    sprintf(query, "SELECT id FROM dsrecord WHERE "
+            "keytag=%d AND alg=%d AND digesttype=%d AND digest='%s'",
+            keyTag, alg, digestType, digest);
+    if (maxSigLife != -1)
+        sprintf(query, "%s AND maxsiglife=%d", query, maxSigLife);
+
+    if (ExecSelect(query)) {
+        id = atoi(GetFieldValue(0, 0));
+        int keysetId = atoi(GetFieldValue(0, 1));
+        sprintf(query, "Found DSRecord id: %d for entry keysetId(%d), keyTag(%d), alg(%d), "
+                "digestType(%d), digest('%s'), maxSigLife",
+                id, keysetId, keyTag, alg, digestType, digest);
+        if (maxSigLife == -1)
+            sprintf(query, "%s(NULL)", query);
+        else
+            sprintf(query, "%s(%d)", query, maxSigLife);
+        LOG(SQL_LOG, query);
+        FreeSelect();
+    }
+    return id;
+}
+
 // if the registrar is client of the object
 bool DB::TestObjectClientID(
   int id, int regID)

@@ -259,6 +259,7 @@ public:
   int GetKeySetID(const char *handle);
   // return id of dsrecord
   int GetDSRecordId(int keysetId, int keytag, int alg, int digesttype, const char *digest, int maxsiglife);
+  int GetDSRecordId(int keytag, int alg, int digesttype, const char *digest, int maxsiglife);
 
   //  save update for   object  id  by registrar regID and optionly save authInfo ( password)
   bool ObjectUpdate(
