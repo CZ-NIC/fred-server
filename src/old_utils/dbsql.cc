@@ -696,7 +696,7 @@ DB::GetDSRecordId(
         << " WHERE keysetid=" << keysetId
         << " AND keytag=" << keyTag
         << " AND alg=" << alg
-        << " AND digest=" << digest;
+        << " AND digest='" << digest << "'";
     if (maxSigLife != -1)
         query << " AND maxsiglife=" << maxSigLife;
 
@@ -736,14 +736,15 @@ DB::GetDSRecordId(
         << " FROM dsrecord"
         << " WHERE keytag=" << keyTag
         << " AND alg=" << alg
-        << " AND digest=" << digest;
+        << " AND digest='" << digest << "'";
     if (maxSigLife != -1)
         query << " AND maxsiglife=" << maxSigLife;
 
     if (ExecSelect(query.str().c_str())) {
         id = atoi(GetFieldValue(0, 0));
         int keysetId = atoi(GetFieldValue(0, 1));
-        query
+        std::stringstream tolog;
+        tolog
             << "Found DSRecord, id: " << id
             << " for entry: keysetId(" << keysetId
             << "), keyTag(" << keyTag
@@ -751,11 +752,11 @@ DB::GetDSRecordId(
             << "), digest(" << digest
             << "), maxsiglife(";
         if (maxSigLife == -1)
-            query << "NULL)";
+            tolog << "NULL)";
         else
-            query << maxSigLife << ")";
+            tolog << maxSigLife << ")";
 
-        LOG(SQL_LOG, query.str().c_str());
+        LOG(SQL_LOG, tolog.str().c_str());
         FreeSelect();
     }
     return id;
