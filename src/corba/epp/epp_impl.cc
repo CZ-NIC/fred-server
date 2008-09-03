@@ -5985,7 +5985,7 @@ ccReg_EPP_i::KeySetCreate(
                                     dsrec[ii].maxSigLife);
                             if (id > 0) {
                                 LOG(WARNING_LOG,
-                                        "DSRecord already exist, cannot create it: id(%d) (%d %d %d '%s' %s)",
+                                        "DSRecord already exist, cannot create it: id(%d) (%d %d %d '%s' %d)",
                                         id, dsrec[ii].keyTag, dsrec[ii].alg, dsrec[ii].digestType,
                                         CORBA::string_dup(dsrec[ii].digest), dsrec[ii].maxSigLife);
                                 ret->code = SetErrorReason(
