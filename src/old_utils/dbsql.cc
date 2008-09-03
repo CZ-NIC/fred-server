@@ -688,24 +688,33 @@ DB::GetDSRecordId(
         const char *digest,
         int maxSigLife)
 {
-    char query[512];
+    std::stringstream query;
     int id = 0;
-    sprintf(query, "SELECT id FROM dsrecord WHERE keysetid=%d AND "
-            "keytag=%d AND alg=%d AND digesttype=%d AND digest='%s'",
-            keysetId, keyTag, alg, digestType, digest);
+    query
+        << "SELECT id"
+        << " FROM dsrecord"
+        << " WHERE keysetid=" << keysetId
+        << " AND keytag=" << keyTag
+        << " AND alg=" << alg
+        << " AND digest=" << digest;
     if (maxSigLife != -1)
-        sprintf(query, "%s AND maxsiglife=%d", query, maxSigLife);
+        query << " AND maxsiglife=" << maxSigLife;
 
-    if (ExecSelect(query)) {
+    if (ExecSelect(query.str().c_str())) {
         id = atoi(GetFieldValue(0, 0));
-        sprintf(query, "Found DSRecord id: %d for entry keysetId(%d), keyTag(%d), alg(%d), "
-                "digestType(%d), digest('%s'), maxSigLife",
-                id, keysetId, keyTag, alg, digestType, digest);
+        query
+            << "Found DSRecord, id: " << id
+            << " for entry: keysetId(" << keysetId
+            << "), keyTag(" << keyTag
+            << "), alg(" << alg
+            << "), digest(" << digest
+            << "), maxsiglife(";
         if (maxSigLife == -1)
-            sprintf(query, "%s(NULL)", query);
+            query << "NULL)";
         else
-            sprintf(query, "%s(%d)", query, maxSigLife);
-        LOG(SQL_LOG, query);
+            query << maxSigLife << ")";
+
+        LOG(SQL_LOG, query.str().c_str());
         FreeSelect();
     }
     return id;
@@ -720,25 +729,33 @@ DB::GetDSRecordId(
         const char *digest,
         int maxSigLife)
 {
-    char query[512];
+    std::stringstream query;
     int id = 0;
-    sprintf(query, "SELECT id FROM dsrecord WHERE "
-            "keytag=%d AND alg=%d AND digesttype=%d AND digest='%s'",
-            keyTag, alg, digestType, digest);
+    query
+        << "SELECT id, keysetid"
+        << " FROM dsrecord"
+        << " WHERE keytag=" << keyTag
+        << " AND alg=" << alg
+        << " AND digest=" << digest;
     if (maxSigLife != -1)
-        sprintf(query, "%s AND maxsiglife=%d", query, maxSigLife);
+        query << " AND maxsiglife=" << maxSigLife;
 
-    if (ExecSelect(query)) {
+    if (ExecSelect(query.str().c_str())) {
         id = atoi(GetFieldValue(0, 0));
         int keysetId = atoi(GetFieldValue(0, 1));
-        sprintf(query, "Found DSRecord id: %d for entry keysetId(%d), keyTag(%d), alg(%d), "
-                "digestType(%d), digest('%s'), maxSigLife",
-                id, keysetId, keyTag, alg, digestType, digest);
+        query
+            << "Found DSRecord, id: " << id
+            << " for entry: keysetId(" << keysetId
+            << "), keyTag(" << keyTag
+            << "), alg(" << alg
+            << "), digest(" << digest
+            << "), maxsiglife(";
         if (maxSigLife == -1)
-            sprintf(query, "%s(NULL)", query);
+            query << "NULL)";
         else
-            sprintf(query, "%s(%d)", query, maxSigLife);
-        LOG(SQL_LOG, query);
+            query << maxSigLife << ")";
+
+        LOG(SQL_LOG, query.str().c_str());
         FreeSelect();
     }
     return id;
