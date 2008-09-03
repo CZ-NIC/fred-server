@@ -22,14 +22,25 @@ namespace Register {
   class StatusImpl : virtual public Status
   {
     TID id;
+    TID status_id;
     ptime timeFrom;
     ptime timeTo;
+    TID ohid_from;
+    TID ohid_to;
    public:
-    StatusImpl(TID _id, ptime _timeFrom, ptime _timeTo);
+    StatusImpl(const TID& _id, 
+               const TID& _status_id,
+               const ptime& _timeFrom, 
+               const ptime& _timeTo, 
+               const TID& _ohid_from,
+               const TID& _ohid_to);
     ~StatusImpl();
+    virtual TID getId() const;
     virtual TID getStatusId() const;
     virtual ptime getFrom() const;
     virtual ptime getTo() const;
+    Register::TID getHistoryIdFrom() const;
+    Register::TID getHistoryIdTo() const;
   };
   /// Implementation of common register object properties
   class ObjectImpl : public CommonObjectImpl, virtual public Object
@@ -84,7 +95,7 @@ namespace Register {
     const std::string& getROID() const;
     unsigned getStatusCount() const;
     const Status* getStatusByIdx(unsigned idx) const;
-    virtual void insertStatus(TID id, ptime timeFrom, ptime timeTo);
+    virtual void insertStatus(const StatusImpl& _state);
   }; // class ObjectImpl
   
   /// Implementation of common register object list properties

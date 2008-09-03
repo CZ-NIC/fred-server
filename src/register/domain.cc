@@ -202,12 +202,12 @@ public:
   void setValExDate(date _valExDate) {
     valExDate = _valExDate;
   }
-  virtual void insertStatus(TID id, ptime timeFrom, ptime timeTo) {
-    ObjectImpl::insertStatus(id, timeFrom, timeTo);
+  virtual void insertStatus(const StatusImpl& _state) {
+    ObjectImpl::insertStatus(_state);
     // trigger setting ouzone status TODO: make define
-    if (id == 15) {
+    if (_state.getStatusId() == 15) {
       zoneStatus = 0;
-      zoneStatusTime = timeFrom;
+      zoneStatusTime = _state.getFrom();
     }
   }
 };

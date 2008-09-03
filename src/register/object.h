@@ -69,12 +69,17 @@ protected:
   }
 
 public:
+  virtual TID getId() const = 0;
   /// Return id of status 
   virtual TID getStatusId() const = 0;
   /// Return timestamp when object entered this state
   virtual ptime getFrom() const = 0;
   /// Return timestamp when object leaved this state
   virtual ptime getTo() const = 0;
+  /// Return object history id from state was active
+  virtual Register::TID getHistoryIdFrom() const = 0;
+  /// Return object history id to state was active
+  virtual Register::TID getHistoryIdTo() const = 0;
 };
 
 

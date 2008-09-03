@@ -1,6 +1,7 @@
 #include <math.h>
 #include <memory>
 #include <iomanip>
+#include <algorithm>
 #include <corba/ccReg.hh>
 
 #include "session_impl.h"
@@ -133,61 +134,41 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
       % _id);
   CORBA::Any *result = new CORBA::Any;
   
-  Registry::Domain::Detail     *d_detail = 0;
-  Registry::Contact::Detail    *c_detail = 0;
-  Registry::NSSet::Detail      *n_detail = 0;
-  Registry::KeySet::Detail     *k_detail = 0;
-  Registry::Registrar::Detail  *r_detail = 0;
-  ccReg::PublicRequest::Detail *pr_detail = 0;
-  ccReg::Invoicing::Invoice    *i_detail = 0;
-  ccReg::Mailing::Detail       *m_detail = 0;
-  ccReg::EPPAction             *a_detail = 0;
-  void *detail = 0;
-
   switch (_type) {
     case ccReg::FT_CONTACT:
-      c_detail = getContactDetail(_id);
-      *result <<= c_detail;
+      *result <<= getContactDetail(_id);
       break;
 
     case ccReg::FT_NSSET:
-      n_detail = getNSSetDetail(_id);
-      *result <<= n_detail;
+      *result <<= getNSSetDetail(_id);
       break;
 
     case ccReg::FT_KEYSET:
-      k_detail = getKeySetDetail(_id);
-      *result <<= k_detail;
+      *result <<= getKeySetDetail(_id);
       break;
 
     case ccReg::FT_DOMAIN:
-      d_detail = getDomainDetail(_id);
-      *result <<= d_detail;
+      *result <<= getDomainDetail(_id);
       break;
 
     case ccReg::FT_REGISTRAR:
-      r_detail = getRegistrarDetail(_id);
-      *result <<= r_detail;
+      *result <<= getRegistrarDetail(_id);
       break;
       
     case ccReg::FT_PUBLICREQUEST:
-      pr_detail = getPublicRequestDetail(_id);
-      *result <<= pr_detail;
+      *result <<= getPublicRequestDetail(_id);
       break;
       
     case ccReg::FT_INVOICE:
-      i_detail = getInvoiceDetail(_id);
-      *result <<= i_detail;
+      *result <<= getInvoiceDetail(_id);
       break;
       
     case ccReg::FT_MAIL:
-      m_detail = getMailDetail(_id);
-      *result <<= m_detail;
+      *result <<= getMailDetail(_id);
       break;
 
     case ccReg::FT_ACTION:
-      a_detail = getEppActionDetail(_id);
-      *result <<= a_detail;
+      *result <<= getEppActionDetail(_id);
       break;
       
     case ccReg::FT_FILTER:
@@ -512,6 +493,9 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
   TRACE("[CALL] ccReg_Session_i::createHistoryDomainDetail()");
   Registry::Domain::Detail *detail = new Registry::Domain::Detail();
 
+  /* array for object external states already assigned */
+  std::vector<Register::TID> ext_states_ids;
+
   /* we going backwards because at the end there are latest data */
   for (int n = _list->size() - 1; n >= 0; --n) {
     Register::Domain::Domain *act  = _list->getDomain(n);
@@ -548,6 +532,33 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
 
     /* object status */
     // get only external assigned states ...
+    for (unsigned s = 0; s < act->getStatusCount(); ++s) {
+      const Register::Status *tmp = act->getStatusByIdx(s);
+
+      LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
+      /* if history is off show only active states */
+      if ((settings_.get("filter.history") != "on") && !tmp->getTo().is_special()) {
+        LOGGER("corba").debug(boost::format("history detail -- state is not active already (to_time=%1%)") % tmp->getTo());
+        continue;
+      }
+       
+      if (m_register_manager->getStatusDesc(tmp->getStatusId())->getExternal()) {
+        LOGGER("corba").debug(boost::format("history detail -- state %1% is external") % tmp->getStatusId());
+
+        std::vector<Register::TID>::iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
+        if (it == ext_states_ids.end()) {
+          ext_states_ids.push_back(tmp->getId());
+          LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
+
+          unsigned sl = detail->statusList.length();
+          detail->statusList.length(sl + 1);
+          detail->statusList[sl].value  <<= tmp->getStatusId();
+          detail->statusList[sl].actionId = 0;
+          detail->statusList[sl].from     = makeCorbaTime(tmp->getFrom(), true);
+          detail->statusList[sl].to       = makeCorbaTime(tmp->getTo(), true);
+        }
+      }
+    }
 
     /* domain specific follows */
 
@@ -676,11 +687,16 @@ ccReg::ContactDetail* ccReg_Session_i::createContactDetail(Register::Contact::Co
 Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register::Contact::List* _list) {
   TRACE("[CALL] ccReg_Session_i::createHistoryContactDetail()");
   Registry::Contact::Detail *detail = new Registry::Contact::Detail();
+  
+  /* array for object external states already assigned */
+  std::vector<Register::TID> ext_states_ids;
 
   /* we going backwards because at the end there are latest data */
   for (int n = _list->size() - 1; n >= 0; --n) {
     Register::Contact::Contact *act  = _list->getContact(n);
     Register::Contact::Contact *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getContact(n + 1));
+
+    LOGGER("corba").debug(boost::format("history detail -- iteration left %1%, history id is %2%") % n % act->getHistoryId());
 
     /* just copy static data */
     if (act == prev) {
@@ -708,7 +724,35 @@ Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register:
 
     /* object status */
     // get only external assigned states ...
- 
+    for (unsigned s = 0; s < act->getStatusCount(); ++s) {
+      const Register::Status *tmp = act->getStatusByIdx(s);
+
+      LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
+      /* if history is off show only active states */
+      if ((settings_.get("filter.history") != "on") && !tmp->getTo().is_special()) {
+        LOGGER("corba").debug(boost::format("history detail -- state is not active already (to_time=%1%)") % tmp->getTo());
+        continue;
+      }
+
+      if (m_register_manager->getStatusDesc(tmp->getStatusId())->getExternal()) {
+        LOGGER("corba").debug(boost::format("history detail -- state %1% is external") % tmp->getStatusId());
+
+        std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
+
+        if (it == ext_states_ids.end()) {
+          ext_states_ids.push_back(tmp->getId());
+          LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
+
+          unsigned sl = detail->statusList.length();
+          detail->statusList.length(sl + 1);
+          detail->statusList[sl].value  <<= tmp->getStatusId();
+          detail->statusList[sl].actionId = 0;
+          detail->statusList[sl].from     = makeCorbaTime(tmp->getFrom(), true);
+          detail->statusList[sl].to       = makeCorbaTime(tmp->getTo(), true);
+        }
+      }
+    }
+
     /* contact specific data follows */
  
     MAP_HISTORY_STRING(name, getName)
@@ -799,6 +843,9 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
   TRACE("[CALL] ccReg_Session_i::createHistoryNSSetDetail()");
   Registry::NSSet::Detail *detail = new Registry::NSSet::Detail();
 
+  /* array for object external states already assigned */
+  std::vector<Register::TID> ext_states_ids;
+
   /* we going backwards because at the end there are latest data */
   for (int n = _list->size() - 1; n >= 0; --n) {
     Register::NSSet::NSSet *act  = _list->getNSSet(n);
@@ -823,37 +870,40 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
       detail->updateRegistrar.type   = ccReg::FT_REGISTRAR;
     }
 
-   /* macros are defined in common.h */
+    /* macros are defined in common.h */
 
     MAP_HISTORY_OID(registrar, getRegistrarId, getRegistrarHandle, ccReg::FT_REGISTRAR)
     MAP_HISTORY_STRING(authInfo, getAuthPw)
 
     /* object status */
     // get only external assigned states ...
-    // std::vector<unsigned> act_status_list;
-    // for (unsigned i = 0; i < act->getStatusCount(); i++) {
-    //   if (m_register_manager->getStatusDesc(act->getStatusByIdx(i)->getStatusId())->getExternal())
-    //     act_status_list.push_back(act->getStatusByIdx(i)->getStatusId());
-    // }
-    // std::vector<unsigned> prev_status_list;
-    // for (unsigned i = 0; i < prev->getStatusCount(); i++) {
-    //   if (m_register_manager->getStatusDesc(prev->getStatusByIdx(i)->getStatusId())->getExternal())
-    //     prev_status_list.push_back(prev->getStatusByIdx(i)->getStatusId());
-    // }
-    // // ... compare with previous
-    // bool status_changed = (act_status_list != prev_status_list) || (act == prev);
-    // if (status_changed) {
-    //   // ... and copy them to detail
-    //   ccReg::ObjectStatusSeq status;
-    //   status.length(act_status_list.size());
-    //   for (unsigned i = 0; i < act_status_list.size(); i++) {
-    //     status[i] = act_status_list[i];
-    //   }
-    //   ADD_NEW_HISTORY_RECORD(statusList, status)
-    //   detail->statusList[i].actionId = 0;
-    //   detail->statusList[i].from     = makeCorbaTime(ptime(not_a_date_time));
-    //   detail->statusList[i].to       = makeCorbaTime(ptime(not_a_date_time));
-    // }
+    for (unsigned s = 0; s < act->getStatusCount(); ++s) {
+      const Register::Status *tmp = act->getStatusByIdx(s);
+
+      LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
+      /* if history is off show only active states */
+      if ((settings_.get("filter.history") != "on") && !tmp->getTo().is_special()) {
+        LOGGER("corba").debug(boost::format("history detail -- state is not active already (to_time=%1%)") % tmp->getTo());
+        continue;
+      }
+
+      if (m_register_manager->getStatusDesc(tmp->getStatusId())->getExternal()) {
+        LOGGER("corba").debug(boost::format("history detail -- state %1% is external") % tmp->getStatusId());
+
+        std::vector<Register::TID>::iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
+        if (it == ext_states_ids.end()) {
+          ext_states_ids.push_back(tmp->getId());
+          LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
+
+          unsigned sl = detail->statusList.length();
+          detail->statusList.length(sl + 1);
+          detail->statusList[sl].value  <<= tmp->getStatusId();
+          detail->statusList[sl].actionId = 0;
+          detail->statusList[sl].from     = makeCorbaTime(tmp->getFrom(), true);
+          detail->statusList[sl].to       = makeCorbaTime(tmp->getTo(), true);
+        }
+      }
+    }
 
     /* nsset specific data follows */
 
@@ -976,6 +1026,9 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
   TRACE("[CALL] ccReg_Session_i::createHistoryKeySetDetail()");
   Registry::KeySet::Detail *detail = new Registry::KeySet::Detail();
 
+  /* array for object external states already assigned */
+  std::vector<Register::TID> ext_states_ids;
+
   /* we going backwards because at the end there are latest data */
   for (int n = _list->size() - 1; n >= 0; --n) {
     Register::KeySet::KeySet *act  = _list->getKeySet(n);
@@ -1007,30 +1060,33 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
 
     /* object status */
     // get only external assigned states ...
-    // std::vector<unsigned> act_status_list;
-    // for (unsigned i = 0; i < act->getStatusCount(); i++) {
-    //   if (m_register_manager->getStatusDesc(act->getStatusByIdx(i)->getStatusId())->getExternal())
-    //     act_status_list.push_back(act->getStatusByIdx(i)->getStatusId());
-    // }
-    // std::vector<unsigned> prev_status_list;
-    // for (unsigned i = 0; i < prev->getStatusCount(); i++) {
-    //   if (m_register_manager->getStatusDesc(prev->getStatusByIdx(i)->getStatusId())->getExternal())
-    //     prev_status_list.push_back(prev->getStatusByIdx(i)->getStatusId());
-    // }
-    // // ... compare with previous
-    // bool status_changed = (act_status_list != prev_status_list) || (act == prev);
-    // if (status_changed) {
-    //   // ... and copy them to detail
-    //   ccReg::ObjectStatusSeq status;
-    //   status.length(act_status_list.size());
-    //   for (unsigned i = 0; i < act_status_list.size(); i++) {
-    //     status[i] = act_status_list[i];
-    //   }
-    //   ADD_NEW_HISTORY_RECORD(statusList, status)
-    //   detail->statusList[i].actionId = 0;
-    //   detail->statusList[i].from     = makeCorbaTime(ptime(not_a_date_time));
-    //   detail->statusList[i].to       = makeCorbaTime(ptime(not_a_date_time));
-    // }
+    for (unsigned s = 0; s < act->getStatusCount(); ++s) {
+      const Register::Status *tmp = act->getStatusByIdx(s);
+
+      LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
+      /* if history is off show only active states */
+      if ((settings_.get("filter.history") != "on") && !tmp->getTo().is_special()) {
+        LOGGER("corba").debug(boost::format("history detail -- state is not active already (to_time=%1%)") % tmp->getTo());
+        continue;
+      }
+
+      if (m_register_manager->getStatusDesc(tmp->getStatusId())->getExternal()) {
+        LOGGER("corba").debug(boost::format("history detail -- state %1% is external") % tmp->getStatusId());
+
+        std::vector<Register::TID>::iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
+        if (it == ext_states_ids.end()) {
+          ext_states_ids.push_back(tmp->getId());
+          LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
+
+          unsigned sl = detail->statusList.length();
+          detail->statusList.length(sl + 1);
+          detail->statusList[sl].value  <<= tmp->getStatusId();
+          detail->statusList[sl].actionId = 0;
+          detail->statusList[sl].from     = makeCorbaTime(tmp->getFrom(), true);
+          detail->statusList[sl].to       = makeCorbaTime(tmp->getTo(), true);
+        }
+      }
+    }
 
     /* keyset specific data follows */
 

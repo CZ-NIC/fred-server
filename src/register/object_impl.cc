@@ -26,15 +26,28 @@
 //     Register::StatusImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-Register::StatusImpl::StatusImpl(TID _id, ptime _timeFrom, ptime _timeTo) :
-  id(_id), timeFrom(_timeFrom), timeTo(_timeTo) {
+Register::StatusImpl::StatusImpl(const TID& _id, 
+                                 const TID& _status_id,
+                                 const ptime& _timeFrom, 
+                                 const ptime& _timeTo, 
+                                 const TID& _ohid_from,
+                                 const TID& _ohid_to) : id(_id),
+                                                        status_id(_status_id),
+                                                        timeFrom(_timeFrom), 
+                                                        timeTo(_timeTo),
+                                                        ohid_from(_ohid_from),
+                                                        ohid_to(_ohid_to) {
 }
 
 Register::StatusImpl::~StatusImpl() {
 }
 
-Register::TID Register::StatusImpl::getStatusId() const {
+Register::TID Register::StatusImpl::getId() const {
   return id;
+}
+
+Register::TID Register::StatusImpl::getStatusId() const {
+  return status_id;
 }
 
 ptime Register::StatusImpl::getFrom() const {
@@ -43,6 +56,14 @@ ptime Register::StatusImpl::getFrom() const {
 
 ptime Register::StatusImpl::getTo() const {
   return timeTo;
+}
+
+Register::TID Register::StatusImpl::getHistoryIdFrom() const {
+  return ohid_from;
+}
+
+Register::TID Register::StatusImpl::getHistoryIdTo() const {
+  return ohid_to;
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -150,8 +171,8 @@ const Register::Status* Register::ObjectImpl::getStatusByIdx(unsigned idx) const
     return &slist[idx];
 }
 
-void Register::ObjectImpl::insertStatus(TID id, ptime timeFrom, ptime timeTo) {
-  slist.push_back(StatusImpl(id, timeFrom, timeTo));
+void Register::ObjectImpl::insertStatus(const StatusImpl& _state) {
+  slist.push_back(_state);
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -272,8 +293,8 @@ void Register::ObjectListImpl::reload(const char *handle, int type)
             i, 0)) ));
     if (!o)
       throw SQL_ERROR();
-    o->insertStatus(STR_TO_ID(db->GetFieldValue(i, 1)), MAKE_TIME(i, 2),
-        ptime() );
+    o->insertStatus(StatusImpl(0 /* dummy state db id */, STR_TO_ID(db->GetFieldValue(i, 1)), MAKE_TIME(i, 2),
+        ptime(), 0, 0 /* dummy history ids */));
   }
   db->FreeSelect();
 }
@@ -288,10 +309,11 @@ void Register::ObjectListImpl::reload(Database::Connection* _conn) {
 //  states_query.order_by() << "t_1.object_id";
 
   Database::SelectQuery states_query;
-  states_query.select() << "tmp.id, t_1.object_id, t_1.state_id, t_1.valid_from, t_1.valid_to";
+  states_query.select() << "tmp.id, t_1.object_id, t_1.id, t_1.state_id, t_1.valid_from, t_1.valid_to, t_1.ohid_from, t_1.ohid_to";
   states_query.from() << getTempTableName() << " tmp "
                       << "JOIN object_history t_2 ON (tmp.id = t_2.historyid) "
-                      << "JOIN object_state t_1 ON (t_2.historyid = t_1.ohid_from)";
+                      << "JOIN object_state t_1 ON (t_2.historyid >= t_1.ohid_from AND (t_2.historyid <= t_1.ohid_to OR t_1.ohid_to IS NULL)) "
+                      << "AND t_2.id = t_1.object_id";
   states_query.order_by() << "tmp.id";
 
   Database::SelectQuery actions_query;
@@ -311,13 +333,16 @@ void Register::ObjectListImpl::reload(Database::Connection* _conn) {
 
       Database::ID       object_historyid = *col;
       Database::ID       object_id        = *(++col);
+      Database::ID       state_db_id      = *(++col);
       Database::ID       state_id         = *(++col);
       Database::DateTime valid_from       = *(++col);
       Database::DateTime valid_to         = *(++col);
-      
+      Database::ID       ohid_from        = *(++col);
+      Database::ID       ohid_to          = *(++col);
+
       ObjectImpl *object_ptr = dynamic_cast<ObjectImpl *>(findHistoryIDSequence(object_historyid));
       if (object_ptr)
-        object_ptr->insertStatus(state_id, valid_from, valid_to);
+        object_ptr->insertStatus(StatusImpl(state_db_id, state_id, valid_from, valid_to, ohid_from, ohid_to));
     }
 
     /* load object history actions */
