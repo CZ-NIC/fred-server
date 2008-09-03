@@ -43,7 +43,8 @@
 #include "notifyclient.h"
 #include "objectclient.h"
 #include "infobuffclient.h"
-
+#include "fileclient.h"
+#include "mailclient.h"
 
 using namespace boost::posix_time;
 
@@ -62,6 +63,8 @@ main(int argc, char **argv)
     Admin::ObjectClient object;
     Admin::InfoBuffClient infobuff;
     Admin::NssetClient nsset;
+    Admin::FileClient file;
+    Admin::MailClient mail;
 
     try {
     boost::program_options::options_description generalOpts("General options");
@@ -187,6 +190,10 @@ main(int argc, char **argv)
         add(*infobuff.getInvisibleOptions()).
         add(*nsset.getVisibleOptions()).
         add(*nsset.getInvisibleOptions()).
+        add(*file.getVisibleOptions()).
+        add(*file.getInvisibleOptions()).
+        add(*mail.getVisibleOptions()).
+        add(*mail.getInvisibleOptions()).
         add(commonOpts).
         add(commonOptsInvis);
 
@@ -206,6 +213,8 @@ main(int argc, char **argv)
         add(*object.getVisibleOptions()).
         add(*infobuff.getVisibleOptions()).
         add(*nsset.getVisibleOptions()).
+        add(*file.getVisibleOptions()).
+        add(*mail.getVisibleOptions()).
         add(commonOpts);
 
 
@@ -273,6 +282,8 @@ main(int argc, char **argv)
     object.init(connstring.str(), nsAddr.str(), varMap);
     infobuff.init(connstring.str(), nsAddr.str(), varMap);
     nsset.init(connstring.str(), nsAddr.str(), varMap);
+    file.init(connstring.str(), nsAddr.str(), varMap);
+    mail.init(connstring.str(), nsAddr.str(), varMap);
 
     if (varMap.count("show-opts")) {
         std::cout << "config: " << varMap["conf"].as<std::string>() << std::endl;
@@ -419,6 +430,17 @@ main(int argc, char **argv)
         nsset.list_help();
     }
 
+    if (varMap.count(FILE_LIST_NAME)) {
+        file.list();
+    } else if (varMap.count(FILE_LIST_HELP_NAME)) {
+        file.list_help();
+    }
+
+    if (varMap.count(MAIL_LIST_NAME)) {
+        mail.list();
+    } else if (varMap.count(MAIL_LIST_HELP_NAME)) {
+        file.list_help();
+    }
 
 
     }

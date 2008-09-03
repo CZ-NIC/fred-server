@@ -16,16 +16,14 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB)
 CLEANFILES=banking.sh
 
-sbin_PROGRAMS = fred-banking fred-admin #simple-client
+sbin_PROGRAMS = fred-banking fred-admin
 dist_sbin_SCRIPTS = banking.sh
 
 fred_banking_SOURCES = gpc.cc banking.cc csv.cc gpc.h csv.h
-
-#fred_admin_SOURCES   = client.cc
 
 fred_admin_SOURCES = simple.cc commonclient.cc keysetclient.cc nssetclient.cc \
 						domainclient.cc contactclient.cc authinfoclient.cc \
 						bankclient.cc invoiceclient.cc pollclient.cc \
 						registrarclient.cc notifyclient.cc objectclient.cc \
-						infobuffclient.cc
+						infobuffclient.cc fileclient.cc mailclient.cc
 

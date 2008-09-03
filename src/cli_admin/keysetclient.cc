@@ -134,7 +134,7 @@ KeysetClient::getInvisibleOptions() const
     return m_optionsInvis;
 }
 
-int
+void
 KeysetClient::list()
 {
     std::auto_ptr<Register::KeySet::Manager> keyMan(
@@ -242,7 +242,8 @@ KeysetClient::list()
     std::cout << "</object>" << std::endl;
 
     unionFilter->clear();
-    return 0;
+    //delete keyFilter;
+    //delete unionFilter;
 }
 
 int
@@ -465,7 +466,7 @@ KeysetClient::create()
     
     if ((dsrecords_list.size() % 5) != 0) {
         std::cerr << "Bad nubmer of ``dsrecords'' items." << std::endl;
-        exit(1);
+        return 1;
     }
     ccReg::DSRecord dsrec;
     dsrec.length(dsrecords_list.size() / 5);
@@ -524,6 +525,7 @@ KeysetClient::info()
     std::cout << k->dsrec[0].digest << std::endl;
     std::cout << k->tech[0] << std::endl;
 
+    delete k;
     return 0;
 }
 

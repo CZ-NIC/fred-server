@@ -55,6 +55,9 @@ RegistrarClient::RegistrarClient(
 
 RegistrarClient::~RegistrarClient()
 {
+    delete m_dbman;
+    delete m_options;
+    delete m_optionsInvis;
 }
 
 void

@@ -60,7 +60,8 @@ am_fred_admin_OBJECTS = simple.$(OBJEXT) commonclient.$(OBJEXT) \
 	authinfoclient.$(OBJEXT) bankclient.$(OBJEXT) \
 	invoiceclient.$(OBJEXT) pollclient.$(OBJEXT) \
 	registrarclient.$(OBJEXT) notifyclient.$(OBJEXT) \
-	objectclient.$(OBJEXT) infobuffclient.$(OBJEXT)
+	objectclient.$(OBJEXT) infobuffclient.$(OBJEXT) \
+	fileclient.$(OBJEXT) mailclient.$(OBJEXT)
 fred_admin_OBJECTS = $(am_fred_admin_OBJECTS)
 fred_admin_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
@@ -281,13 +282,11 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 CLEANFILES = banking.sh
 dist_sbin_SCRIPTS = banking.sh
 fred_banking_SOURCES = gpc.cc banking.cc csv.cc gpc.h csv.h
-
-#fred_admin_SOURCES   = client.cc
 fred_admin_SOURCES = simple.cc commonclient.cc keysetclient.cc nssetclient.cc \
 						domainclient.cc contactclient.cc authinfoclient.cc \
 						bankclient.cc invoiceclient.cc pollclient.cc \
 						registrarclient.cc notifyclient.cc objectclient.cc \
-						infobuffclient.cc
+						infobuffclient.cc fileclient.cc mailclient.cc
 
 all: all-am
 
@@ -386,10 +385,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/contactclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csv.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/domainclient.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gpc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/infobuffclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/invoiceclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keysetclient.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mailclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/notifyclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nssetclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/objectclient.Po@am__quote@

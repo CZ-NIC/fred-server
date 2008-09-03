@@ -76,7 +76,7 @@ public:
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
 
-    int list();
+    void list();
 
     int list_plain();
 
