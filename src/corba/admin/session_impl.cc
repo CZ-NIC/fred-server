@@ -420,7 +420,7 @@ ccReg::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
   }
 }
 
-ccReg::EPPAction* ccReg_Session_i::getEppActionDetail(ccReg::TID _id) {
+Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id) {
   Register::Registrar::EPPAction *action = m_eppactions->findId(_id);
   if (action && !action->getEPPMessageIn().empty()) {
     return createEppActionDetail(action);
@@ -1411,19 +1411,22 @@ ccReg::Mailing::Detail* ccReg_Session_i::createMailDetail(Register::Mail::Mail *
   return detail;
 }
 
-ccReg::EPPAction* ccReg_Session_i::createEppActionDetail(Register::Registrar::EPPAction *_action) {
-  ccReg::EPPAction *detail = new ccReg::EPPAction;
+Registry::EPPAction::Detail* ccReg_Session_i::createEppActionDetail(Register::Registrar::EPPAction *_action) {
+  Registry::EPPAction::Detail *detail = new Registry::EPPAction::Detail();
   
-  detail->id = _action->getId();
-  detail->xml = DUPSTRFUN(_action->getEPPMessageIn);
-  detail->xml_out = DUPSTRFUN(_action->getEPPMessageOut);
-  detail->time = DUPSTRDATE(_action->getStartTime);
-  detail->type = DUPSTRFUN(_action->getTypeName);
-  detail->objectHandle = DUPSTRFUN(_action->getHandle);
-  detail->registrarHandle = DUPSTRFUN(_action->getRegistrarHandle);
-  detail->result = _action->getResult();
-  detail->clTRID = DUPSTRFUN(_action->getClientTransactionId);
-  detail->svTRID = DUPSTRFUN(_action->getServerTransactionId);
+  detail->id               = _action->getId();
+  detail->xml              = DUPSTRFUN(_action->getEPPMessageIn);
+  detail->xml_out          = DUPSTRFUN(_action->getEPPMessageOut);
+  detail->time             = DUPSTRDATE(_action->getStartTime);
+  detail->type             = DUPSTRFUN(_action->getTypeName);
+  detail->objectHandle     = DUPSTRFUN(_action->getHandle);
+  detail->result           = _action->getResult();
+  detail->clTRID           = DUPSTRFUN(_action->getClientTransactionId);
+  detail->svTRID           = DUPSTRFUN(_action->getServerTransactionId);
+  
+  detail->registrar.id     = _action->getRegistrarId();
+  detail->registrar.handle = DUPSTRFUN(_action->getRegistrarHandle);
+  detail->registrar.type   = ccReg::FT_REGISTRAR;
   
   return detail;
 }
