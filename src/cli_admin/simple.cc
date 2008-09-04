@@ -77,7 +77,7 @@ main(int argc, char **argv)
          boost::program_options::value<std::string>()->default_value(CONFIG_FILE),
          "configuration file")
         (LANGUAGE_NAME,
-         boost::program_options::value<std::string>()->default_value("cs"),
+         boost::program_options::value<std::string>()->default_value("CS"),
          "communication language");
 
     boost::program_options::options_description generalOptsInvis("General invisible options");
@@ -146,19 +146,6 @@ main(int argc, char **argv)
         (FULL_LIST_NAME,
          FULL_LIST_NAME_DESC);
 
-    boost::program_options::options_description commonOptsInvis("Common invisible options");
-    commonOptsInvis.add_options()
-        (AUTH_INFO_PW_NAME, boost::program_options::value<std::string>()->default_value(""),
-         "password")
-        (ADMIN_NAME, boost::program_options::value<std::string>()->default_value(""),
-         "sequence of administration contacts")
-        (ADMIN_ADD_NAME, boost::program_options::value<std::string>()->default_value(""),
-         "seqeuence of added admin contacts")
-        (ADMIN_REM_NAME, boost::program_options::value<std::string>()->default_value(""),
-         "sequence of removed admin contacts")
-        (ADMIN_REM_TEMP_NAME, boost::program_options::value<std::string>()->default_value(""),
-         "sequence of removed temporary admin contact ");
-
     boost::program_options::variables_map varMap;
 
     // all valid options - including invisible
@@ -194,8 +181,7 @@ main(int argc, char **argv)
         add(*file.getInvisibleOptions()).
         add(*mail.getVisibleOptions()).
         add(*mail.getInvisibleOptions()).
-        add(commonOpts).
-        add(commonOptsInvis);
+        add(commonOpts);
 
     // only visible options
     boost::program_options::options_description visible("Allowed options");
@@ -406,6 +392,8 @@ main(int argc, char **argv)
         registrar.registrar_add_help();
     } else if (varMap.count(REGISTRAR_REGISTRAR_ADD_ZONE_HELP_NAME)) {
         registrar.registrar_add_zone_help();
+    } else if (varMap.count(REGISTRAR_LIST_NAME)) {
+        registrar.list();
     }
     
     if (varMap.count(NOTIFY_STATE_CHANGES_NAME)) {
@@ -442,17 +430,14 @@ main(int argc, char **argv)
         file.list_help();
     }
 
-
-    }
-    catch (std::exception& e) {
-        std::cerr << e.what() << "\n";
-    return 2;
-    }
-    catch (Register::SQL_ERROR) {
-        std::cerr << "SQL ERROR \n";
-    return 1;
+    } catch (std::exception& e) {
+        std::cerr << e.what() << std::endl;;
+        std::exit(2);
+    } catch (Register::SQL_ERROR) {
+        std::cerr << "SQL ERROR" << std::endl;
+        std::exit(1);
     }
 
-    return 0;
+    std::exit(0);
 }
 

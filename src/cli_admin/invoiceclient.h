@@ -28,6 +28,8 @@
 
 #define INVOICE_LIST_NAME               "invoice-list"
 #define INVOICE_LIST_NAME_DESC          "list of all invoices (via filters)"
+#define INVOICE_LIST_PLAIN              "invoice-list-plain"
+#define INVOICE_LIST_PLAIN_DESC         "list of all invoices"
 #define INVOICE_LIST_PLAIN_NAME         "invoice-list-plain"
 #define INVOICE_LIST_PLAIN_NAME_DESC    "list of all invoices (via ccReg)"
 #define INVOICE_ARCHIVE_NAME            "invoice-archive"
@@ -80,7 +82,7 @@ public:
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
 
-    int list();
+    void list();
     int archive();
 
     void list_help();

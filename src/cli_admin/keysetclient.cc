@@ -84,9 +84,12 @@ KeysetClient::KeysetClient():
         add_opt_type(REGISTRAR_ID_NAME, unsigned int)
         add_opt_type(REGISTRAR_HANDLE_NAME, std::string)
         add_opt_type(REGISTRAR_NAME_NAME, std::string)
-        ADD_OPT_TYPE(KEYSET_DSRECORDS_NAME, "list of dsrecords (create keyset)", std::string)
-        ADD_OPT_DEF(KEYSET_DSREC_ADD_NAME, "list of dsrecords to add (update keyset)", std::string, "")
-        ADD_OPT_DEF(KEYSET_DSREC_REM_NAME, "list of dsrecords to rem (update keyset)", std::string, "");
+        add_opt_type(KEYSET_DSRECORDS_NAME, std::string)
+        add_opt_type(KEYSET_DSREC_ADD_NAME, std::string)
+        add_opt_type(KEYSET_DSREC_REM_NAME, std::string)
+        add_opt_type(ADMIN_NAME, std::string)
+        add_opt_type(ADMIN_ADD_NAME, std::string)
+        add_opt_type(ADMIN_REM_NAME, std::string);
 }
 
 KeysetClient::KeysetClient(
@@ -180,7 +183,7 @@ KeysetClient::list()
 
     keyList->reload(*unionFilter, m_dbman);
 
-    std::cout << "<objects>" << std::endl;
+    std::cout << "<object>" << std::endl;
     for (unsigned int i = 0; i < keyList->getCount(); i++) {
         Register::KeySet::KeySet *keyset = keyList->getKeySet(i);
         std::cout
@@ -242,8 +245,7 @@ KeysetClient::list()
     std::cout << "</object>" << std::endl;
 
     unionFilter->clear();
-    //delete keyFilter;
-    //delete unionFilter;
+    delete unionFilter;
 }
 
 int
@@ -320,7 +322,7 @@ int
 KeysetClient::transfer()
 {
     std::string key_handle = m_varMap[KEYSET_TRANSFER_NAME].as<std::string>().c_str();
-    std::string authinfopw = m_varMap[AUTH_INFO_PW_NAME].as<std::string>().c_str();
+    std::string authinfopw = m_varMap[AUTH_PW_NAME].as<std::string>().c_str();
 
     std::string cltrid;
     std::string xml;
@@ -346,7 +348,7 @@ int
 KeysetClient::update()
 {
     std::string key_handle = m_varMap[KEYSET_UPDATE_NAME].as<std::string>().c_str();
-    std::string authinfopw = m_varMap[AUTH_INFO_PW_NAME].as<std::string>().c_str();
+    std::string authinfopw = m_varMap[AUTH_PW_NAME].as<std::string>().c_str();
     std::string admins_add = m_varMap[ADMIN_ADD_NAME].as<std::string>().c_str();
     std::string admins_rem = m_varMap[ADMIN_REM_NAME].as<std::string>().c_str();
     std::string dsrec_add = m_varMap[KEYSET_DSREC_ADD_NAME].as<std::string>().c_str();
@@ -453,7 +455,7 @@ KeysetClient::create()
 {
     std::string key_handle = m_varMap[KEYSET_CREATE_NAME].as<std::string>().c_str();
     std::string admins = m_varMap[ADMIN_NAME].as<std::string>().c_str();
-    std::string authinfopw = m_varMap[AUTH_INFO_PW_NAME].as<std::string>().c_str();
+    std::string authinfopw = m_varMap[AUTH_PW_NAME].as<std::string>().c_str();
     std::string dsrecords = m_varMap[KEYSET_DSRECORDS_NAME].as<std::string>().c_str();
 
     std::vector<std::string> admins_list = separateSpaces(admins.c_str());

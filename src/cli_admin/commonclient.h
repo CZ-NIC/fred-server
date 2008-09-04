@@ -27,7 +27,7 @@
 // all
 #define ID_NAME                 "id"
 #define ID_NAME_DESC            "filter records with specific id nubmer"
-// contact, domain, file, invoice, keyset, nsset
+// contact, domain, file, invoice, keyset, nsset, registrar
 #define NAME_NAME               "name-name"
 #define NAME_NAME_DESC          "filter records with specific name"
 // contact, domain, keyset, mail, nsset, registrar
@@ -40,13 +40,13 @@
 #define IP_NAME                 "ip"
 #define IP_NAME_DESC            "show only records with specific ip address"
 
-// contact
+// contact, registrar
 #define ORGANIZATION_NAME       "organization"
 #define ORGANIZATION_NAME_DESC  "show only records with specific organization name"
-// contact
+// contact, registrar
 #define CITY_NAME               "city"
 #define CITY_NAME_DESC          "show only records with specific city"
-// contact
+// contact, registrar
 #define EMAIL_NAME              "email"
 #define EMAIL_NAME_DESC         "show only records with specific email address"
 // contcat
@@ -59,25 +59,9 @@
 #define SSN_NAME                "ssn"
 #define SSN_NAME_DESC           "show only records with ..."
 
-// none
-#define CONTACT_ID_NAME         "contact-id"
-#define CONTACT_ID_NAME_DESC    "filter records with specific contact id number"
-// none
-#define CONTACT_HANDLE_NAME     "contact-handle"
-#define CONTACT_HANDLE_NAME_DESC "filter records with specific contact handle"
-// none
-#define CONTACT_NAME_NAME       "contact-name"
-#define CONTACT_NAME_NAME_DESC  "filter records with specific contact name"
-
-// none
-#define DOMAIN_ID_NAME          "domain-id"
-#define DOMAIN_ID_NAME_DESC     "show only records with specific domain id number"
-// none
-#define DOMAIN_FQDN_NAME        "domain-fqdn"
-#define DOMAIN_FQDN_NAME_DESC   "show only records with specific domain fqdn"
-// none
-#define DOMAIN_HANDLE_NAME      DOMAIN_FQDN_NAME
-#define DOMAIN_HANDLE_NAME_DESC DOMAIN_FQDN_NAME_DESC
+// registrar
+#define COUNTRY_NAME            "country"
+#define COUNTRY_NAME_DESC       "show only records with specific country"
 
 // domain
 #define KEYSET_ID_NAME          "keyset-id"
@@ -146,17 +130,18 @@
 #define TYPE_NAME                   "type"
 #define TYPE_NAME_DESC              "show only records with specific type"
 
-// domain, keyset
-#define AUTH_INFO_PW_NAME       "auth-info-pw"
-
 // domain, keyset, nsset
-#define ADMIN_NAME             "admin"
+#define ADMIN_NAME                  "admins"
+#define ADMIN_NAME_DESC             "list of admins"
 // domain, keyset
-#define ADMIN_ADD_NAME         "admin-add"
+#define ADMIN_ADD_NAME              "admin-add"
+#define ADMIN_ADD_NAME_DESC         "list of admins to add"
 // domain, keyset
-#define ADMIN_REM_NAME         "admin-rem"
+#define ADMIN_REM_NAME              "admin-rem"
+#define ADMIN_REM_NAME_DESC         "list of admins to remove"
 // domain
-#define ADMIN_REM_TEMP_NAME    "admin-rem-temp"
+#define ADMIN_REM_TEMP_NAME         "admin-rem-temp"
+#define ADMIN_REM_TEMP_NAME_DESC    "list of temporary admins to remove"
 
 // domain
 #define ANY_KEYSET_NAME         "any-keyset"

@@ -27,10 +27,11 @@ InvoiceClient::InvoiceClient():
     m_options = new boost::program_options::options_description(
             "Invoice related options");
     m_options->add_options()
-        ADD_OPT(INVOICE_LIST_NAME, "List of all invoices")
-        ADD_OPT(INVOICE_ARCHIVE_NAME, "Archive unarchived invoices")
-        ADD_OPT(INVOICE_LIST_HELP_NAME, "invoice list help")
-        ADD_OPT(INVOICE_ARCHIVE_HELP_NAME, "invoice archive help");
+        add_opt(INVOICE_LIST_NAME)
+        // add_opt(INVOICE_LIST_PLAIN_NAME)
+        add_opt(INVOICE_ARCHIVE_NAME)
+        add_opt(INVOICE_LIST_HELP_NAME);
+        // add_opt(INVOICE_LIST_PLAIN_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Invoice related invisible options");
@@ -96,7 +97,7 @@ InvoiceClient::getInvisibleOptions() const
     return m_optionsInvis;
 }
 
-int
+void
 InvoiceClient::list()
 {
     std::ofstream stdout("/dev/stdout",std::ios::out);   
@@ -171,7 +172,6 @@ InvoiceClient::list()
 
     invList->reload();
     invList->exportXML(stdout);
-    return 0;
 }
 
 int

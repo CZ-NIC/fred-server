@@ -61,8 +61,8 @@ public:
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
 
-    int state_changes();
-    int letters_create();
+    void state_changes();
+    void letters_create();
 };
 
 } // namespace Admin;

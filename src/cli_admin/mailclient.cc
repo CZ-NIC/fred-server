@@ -160,7 +160,7 @@ MailClient::list()
     unionFilter->clear();
     // XXX this delete cause segfault :(
     // delete mailFilter;
-    // delete unionFilter;
+    delete unionFilter;
 }
 
 void

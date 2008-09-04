@@ -27,6 +27,7 @@ RegistrarClient::RegistrarClient():
     m_options = new boost::program_options::options_description(
             "Registrar related options");
     m_options->add_options()
+        add_opt(REGISTRAR_LIST_NAME)
         ADD_OPT_TYPE(REGISTRAR_ZONE_ADD_NAME, "Add new zone", std::string)
         ADD_OPT_TYPE(REGISTRAR_REGISTRAR_ADD_NAME, "Add new registrar (make a copy of REG-FRED_A)", std::string)
         ADD_OPT(REGISTRAR_REGISTRAR_ADD_ZONE_NAME, "Add access rights right for registrar to zone")
@@ -83,6 +84,80 @@ boost::program_options::options_description *
 RegistrarClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
+}
+#define reg(i)  regMan->getList()->get(i)
+
+void
+RegistrarClient::list()
+{
+    std::auto_ptr<Register::Registrar::Manager> regMan(
+            Register::Registrar::Manager::create(&m_db));
+
+    Database::Filters::Registrar *regFilter;
+    regFilter = new Database::Filters::RegistrarImpl();
+
+    if (m_varMap.count(ID_NAME))
+        regFilter->addId().setValue(
+                Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(HANDLE_NAME))
+        regFilter->addHandle().setValue(
+                m_varMap[HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(NAME_NAME))
+        regFilter->addOrganization().setValue(
+                m_varMap[ORGANIZATION_NAME].as<std::string>());
+    if (m_varMap.count(CITY_NAME))
+        regFilter->addCity().setValue(
+                m_varMap[CITY_NAME].as<std::string>());
+    if (m_varMap.count(EMAIL_NAME))
+        regFilter->addEmail().setValue(
+                m_varMap[EMAIL_NAME].as<std::string>());
+    if (m_varMap.count(COUNTRY_NAME))
+        regFilter->addCountry().setValue(
+                m_varMap[COUNTRY_NAME].as<std::string>());
+
+    Database::Filters::Union *unionFilter;
+    unionFilter = new Database::Filters::Union();
+
+    unionFilter->addFilter(regFilter);
+    regMan->getList()->setLimit(m_varMap[LIMIT_NAME].as<unsigned int>());
+
+    regMan->getList()->reload(*unionFilter, m_dbman);
+
+    std::cout << "<object>\n";
+    for (unsigned int i = 0; i < regMan->getList()->getCount(); i++) {
+        std::cout
+            << "\t<registrar>\n"
+            << "\t\t<id>" << regMan->getList()->get(i)->getId() << "</id>\n"
+            << "\t\t<handle>" << reg(i)->getHandle() << "</handle>\n"
+            << "\t\t<name>" << reg(i)->getName() << "</name>\n"
+            << "\t\t<url>" << reg(i)->getURL() << "</url>\n"
+            << "\t\t<organization>" << reg(i)->getOrganization() << "</organization>\n"
+            << "\t\t<street1>" << reg(i)->getStreet1() << "</street1>\n"
+            << "\t\t<street2>" << reg(i)->getStreet2() << "</street2>\n"
+            << "\t\t<street3>" << reg(i)->getStreet3() << "</street3>\n"
+            << "\t\t<city>" << reg(i)->getCity() << "</city>\n"
+            << "\t\t<province>" << reg(i)->getProvince() << "</province>\n"
+            << "\t\t<postal_code>" << reg(i)->getPostalCode() << "</postal_code>\n"
+            << "\t\t<country>" << reg(i)->getCountry() << "</country>\n"
+            << "\t\t<telephone>" << reg(i)->getTelephone() << "</telephone>\n"
+            << "\t\t<fax>" << reg(i)->getFax() << "</fax>\n"
+            << "\t\t<email>" << reg(i)->getEmail() << "</email>\n"
+            << "\t\t<system>" << reg(i)->getSystem() << "</system>\n"
+            << "\t\t<credit>" << reg(i)->getCredit() << "</credit>\n";
+        for (unsigned int j = 0; j < reg(i)->getACLSize(); j++) {
+            std::cout
+                << "\t\t<ACL>"
+                << "\t\t\t<cert_md5>" << reg(i)->getACL(j)->getCertificateMD5() << "</cert_md5>\n"
+                << "\t\t\t<pass>" << reg(i)->getACL(j)->getPassword() << "</pass>\n"
+                << "\t\t</ACL>\n";
+        }
+        std::cout
+            << std::endl;
+    }
+    std::cout << "</object>" << std::endl;
+
+    unionFilter->clear();
+    delete unionFilter;
 }
 
 int

@@ -28,7 +28,7 @@ ObjectClient::ObjectClient():
             "Object related options");
     m_options->add_options()
         ADD_OPT_TYPE(OBJECT_NEW_STATE_REQUEST_NAME, "set request for object state with specified state id", unsigned int)
-        ADD_OPT(OBJECT_LIST_NAME, "list xml of object according to filter")
+        // ADD_OPT(OBJECT_LIST_NAME, "list xml of object according to filter")
         ADD_OPT(OBJECT_UPDATE_STATES_NAME, "globally update all states of all objects")
         ADD_OPT_DEF(OBJECT_DELETE_CANDIDATES_NAME, "delete all object marked with delete candidate status", std::string, "3");
 
@@ -130,34 +130,11 @@ ObjectClient::new_state_request()
     return 0;
 }
 
-int
+void
 ObjectClient::list()
 {
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create(&m_db)
-    );
-    std::auto_ptr<Register::Domain::Manager> domMan(
-            Register::Domain::Manager::create(&m_db, zoneMan.get())
-    );
-    std::auto_ptr<Register::Domain::List> domList(domMan->createList());
-    if (m_varMap.count(ID_NAME))
-        domList->setIdFilter(m_varMap[ID_NAME].as<Register::TID>());
-    if (m_varMap.count(FQDN_NAME))
-        domList->setFQDNFilter(m_varMap[FQDN_NAME].as<std::string>());
-    domList->setLimit(m_varMap[LIMIT_NAME].as<unsigned int>());
-    domList->reload();
-
-    std::cout << "<objects>" << std::endl;
-    for (unsigned int i = 0; i < domList->getCount(); i++) {
-    std::cout
-        << "<object>" 
-        << "<id>" << domList->getDomain(i)->getId() << "</id>"
-        << "<name>" << domList->getDomain(i)->getFQDN() << "</name>"
-        << "</object>";
-    }
-    std::cout << "</objects>" << std::endl;
-    return 0;
 }
+
 int
 ObjectClient::update_states()
 {

@@ -79,7 +79,7 @@ public:
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
 
-    int domain_list();
+    void domain_list();
 
     int domain_list_plain();
 

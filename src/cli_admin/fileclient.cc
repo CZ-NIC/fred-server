@@ -173,7 +173,7 @@ FileClient::list()
     unionFilter->clear();
     // XXX this delete cause segfault :(
     // delete fileFilter;
-    // delete unionFilter;
+    delete unionFilter;
 }
 
 void

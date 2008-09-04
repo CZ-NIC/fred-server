@@ -85,7 +85,10 @@ DomainClient::DomainClient():
         add_opt_type(ADMIN_NAME_NAME, std::string)
         add_opt_type(REGISTRAR_ID_NAME, unsigned int)
         add_opt_type(REGISTRAR_HANDLE_NAME, std::string)
-        add_opt_type(REGISTRAR_NAME_NAME, std::string);
+        add_opt_type(REGISTRAR_NAME_NAME, std::string)
+        add_opt_type(ADMIN_NAME, std::string)
+        add_opt_type(ADMIN_ADD_NAME, std::string)
+        add_opt_type(ADMIN_REM_NAME, std::string);
     // TODO dates, updateregistrar, createregistrar, authpw, type, state, ...
 }
 
@@ -133,7 +136,7 @@ DomainClient::getInvisibleOptions() const
     return m_optionsInvis;
 }
 
-int
+void
 DomainClient::domain_list()
 {
     std::auto_ptr<Register::Zone::Manager> zoneMan(
@@ -279,7 +282,9 @@ DomainClient::domain_list()
             << "\t</domain>\n";
     }
     std::cout << "</object>" << std::endl;
-    return 0;
+
+    unionFilter->clear();
+    delete unionFilter;
 }
 
 int
@@ -289,7 +294,8 @@ DomainClient::domain_create()
     std::string registrant = m_varMap[DOMAIN_REGISTRANT_NAME].as<std::string>().c_str();
     std::string nsset = m_varMap[DOMAIN_NSSET_NAME].as<std::string>().c_str();
     std::string keyset = m_varMap[DOMAIN_KEYSET_NAME].as<std::string>().c_str();
-    std::string authInfoPw = m_varMap[AUTH_INFO_PW_NAME].as<std::string>().c_str();
+    //std::string authInfoPw = m_varMap[AUTH_INFO_PW_NAME].as<std::string>().c_str();
+    std::string authInfoPw = m_varMap[AUTH_PW_NAME].as<std::string>().c_str();
     std::string admins = m_varMap[ADMIN_NAME].as<std::string>().c_str();
     unsigned int period = m_varMap[DOMAIN_PERIOD_NAME].as<unsigned int>();
 
@@ -364,7 +370,7 @@ DomainClient::domain_update()
     std::string registrant = m_varMap[REGISTRANT_HANDLE_NAME].as<std::string>();
     std::string nsset = m_varMap[NSSET_HANDLE_NAME].as<std::string>();
     std::string keyset = m_varMap[KEYSET_HANDLE_NAME].as<std::string>();
-    std::string authinfopw = m_varMap[AUTH_INFO_PW_NAME].as<std::string>();
+    std::string authinfopw = m_varMap[AUTH_PW_NAME].as<std::string>();
     std::string admins_add = m_varMap[ADMIN_ADD_NAME].as<std::string>();
     std::string admins_rem = m_varMap[ADMIN_REM_NAME].as<std::string>();
     std::string admins_rem_temp = m_varMap[ADMIN_REM_TEMP_NAME].as<std::string>();

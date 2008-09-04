@@ -152,7 +152,7 @@ ContactClient::info()
     return 0;
 }
 
-int
+void
 ContactClient::list()
 {
     std::auto_ptr<Register::Contact::Manager> conMan(
@@ -277,7 +277,7 @@ ContactClient::list()
     }
     std::cout << "</object>" << std::endl;
     unionFilter->clear();
-    return 0;
+    delete unionFilter;
 }
 
 void

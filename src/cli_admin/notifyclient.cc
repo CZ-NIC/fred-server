@@ -85,7 +85,7 @@ NotifyClient::getInvisibleOptions() const
     return m_optionsInvis;
 }
 
-int
+void
 NotifyClient::state_changes()
 {
     std::auto_ptr<Register::Document::Manager> docMan(
@@ -97,12 +97,6 @@ NotifyClient::state_changes()
             );
     CorbaClient cc(0, NULL, m_nsAddr);
     MailerManager mailMan(cc.getNS());
-    // std::auto_ptr<Register::Invoicing::Manager> invMan(
-            // Register::Invoicing::Manager::create(&m_db, docMan.get(), &mailMan));
-    // std::auto_ptr<Register::AuthInfoRequest::Manager> authMan(
-            // Register::AuthInfoRequest::Manager::create(&m_db, &mailMan, docMan.get()));
-    // std::auto_ptr<Register::Banking::Manager> bankMan(
-            // Register::Banking::Manager::create(&m_db));
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
     std::auto_ptr<Register::Domain::Manager> domMan(
@@ -123,14 +117,6 @@ NotifyClient::state_changes()
                 &m_db,
                 (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
             );
-    // std::auto_ptr<Register::InfoBuffer::Manager> infoBufMan(
-            // Register::InfoBuffer::Manager::create(
-                // &m_db,
-                // domMan.get(),
-                // nssMan.get(),
-                // conMan.get(),
-                // keyMan.get())
-            // );
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
     std::auto_ptr<Register::Notify::Manager> notifyMan(
@@ -149,9 +135,9 @@ NotifyClient::state_changes()
             m_varMap[NOTIFY_LIMIT_NAME].as<unsigned int>(),
             m_varMap.count(DEBUG_NAME) ? &std::cout : NULL,
             m_varMap.count(NOTIFY_USE_HISTORY_TABLES_NAME));
-    return 0;
 }
-int
+
+void
 NotifyClient::letters_create()
 {
     std::auto_ptr<Register::Document::Manager> docMan(
@@ -197,7 +183,6 @@ NotifyClient::letters_create()
                 regMan.get())
             );
     notifyMan->generateLetters();
-    return 0;
 }
 
 } // namespace Admin;

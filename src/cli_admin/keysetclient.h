@@ -39,8 +39,11 @@
 #define KEYSET_INFO2_NAME           "keyset-info2"
 
 #define KEYSET_DSRECORDS_NAME       "dsrecords"
+#define KEYSET_DSRECORDS_NAME_DESC  "list of dsrecords (used with --keyset-create commnad)"
 #define KEYSET_DSREC_ADD_NAME       "dsrec-add"
+#define KEYSET_DSREC_ADD_NAME_DESC  "list of dsrecords to add"
 #define KEYSET_DSREC_REM_NAME       "dsrec-rem"
+#define KEYSET_DSREC_REM_NAME_DESC  "list of dsrecords to remove"
 
 #define KEYSET_LIST_HELP_NAME       "keyset-list-help"
 #define KEYSET_UPDATE_HELP_NAME     "keyset-update-help"

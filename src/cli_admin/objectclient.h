@@ -64,7 +64,7 @@ public:
     int deleteObjects(const std::string &typeList);
 
     int new_state_request();
-    int list();
+    void list();
     int update_states();
     int delete_candidates();
 

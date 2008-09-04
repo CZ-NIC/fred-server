@@ -90,7 +90,7 @@ NssetClient::getInvisibleOptions() const
     return m_optionsInvis;
 }
 
-int
+void
 NssetClient::list()
 {
     std::auto_ptr<Register::Zone::Manager> zoneMan(
@@ -213,8 +213,7 @@ NssetClient::list()
 
     std::cout << "<objects>" << std::endl;
     unionFilter->clear();
-
-    return 0;
+    delete unionFilter;
 }
 
 void
