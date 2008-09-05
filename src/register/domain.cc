@@ -734,8 +734,13 @@ public:
           domain_ptr->setValExDate(validation_date);
       }
 
+      bool history = false;
+      if (uf.settings()) {
+        history = uf.settings()->get("filter.history") == "on";
+      }
+
       /// load object state
-      ObjectListImpl::reload(conn.get());
+      ObjectListImpl::reload(conn.get(), history);
       /* checks if row number result load limit is active and set flag */ 
       CommonListImpl::reload();
     }

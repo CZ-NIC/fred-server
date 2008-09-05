@@ -299,7 +299,7 @@ void Register::ObjectListImpl::reload(const char *handle, int type)
   db->FreeSelect();
 }
 
-void Register::ObjectListImpl::reload(Database::Connection* _conn) {
+void Register::ObjectListImpl::reload(Database::Connection* _conn, bool _history) {
 //  Database::SelectQuery states_query;
 //  states_query.select() << "tmp.id, t_1.object_id, t_1.state_id, t_1.valid_from";
 //  states_query.from() << getTempTableName() << " tmp "
@@ -314,6 +314,9 @@ void Register::ObjectListImpl::reload(Database::Connection* _conn) {
                       << "JOIN object_history t_2 ON (tmp.id = t_2.historyid) "
                       << "JOIN object_state t_1 ON (t_2.historyid >= t_1.ohid_from AND (t_2.historyid <= t_1.ohid_to OR t_1.ohid_to IS NULL)) "
                       << "AND t_2.id = t_1.object_id";
+  if (!_history) {
+    states_query.where() << "AND t_1.ohid_to IS NULL";
+  }
   states_query.order_by() << "tmp.id";
 
   Database::SelectQuery actions_query;

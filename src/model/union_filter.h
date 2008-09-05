@@ -105,6 +105,10 @@ public:
   void settings(const Settings *_ptr) {
     settings_ptr_ = _ptr;
   }
+
+  const Settings* settings() const {
+    return settings_ptr_;
+  }
   
 protected:
   std::vector<Filter*> filter_list;

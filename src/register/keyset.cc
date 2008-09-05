@@ -601,8 +601,14 @@ ListImpl::reload(
             }
         }
 
+        
+        bool history = false;
+        if (uf.settings()) {
+          history = uf.settings()->get("filter.history") == "on";
+        }
+
         /// load object state
-        ObjectListImpl::reload(conn.get());
+        ObjectListImpl::reload(conn.get(), history);
         // check if row number result load limit is active and flag is set
         CommonListImpl::reload();
     }

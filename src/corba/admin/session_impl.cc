@@ -536,12 +536,6 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
       const Register::Status *tmp = act->getStatusByIdx(s);
 
       LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
-      /* if history is off show only active states */
-      if ((settings_.get("filter.history") != "on") && !tmp->getTo().is_special()) {
-        LOGGER("corba").debug(boost::format("history detail -- state is not active already (to_time=%1%)") % tmp->getTo());
-        continue;
-      }
-       
       if (m_register_manager->getStatusDesc(tmp->getStatusId())->getExternal()) {
         LOGGER("corba").debug(boost::format("history detail -- state %1% is external") % tmp->getStatusId());
 
@@ -550,12 +544,11 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
           ext_states_ids.push_back(tmp->getId());
           LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
 
-          unsigned sl = detail->statusList.length();
-          detail->statusList.length(sl + 1);
-          detail->statusList[sl].value  <<= tmp->getStatusId();
-          detail->statusList[sl].actionId = 0;
-          detail->statusList[sl].from     = makeCorbaTime(tmp->getFrom(), true);
-          detail->statusList[sl].to       = makeCorbaTime(tmp->getTo(), true);
+          unsigned sl = detail->states.length();
+          detail->states.length(sl + 1);
+          detail->states[sl].id    = tmp->getStatusId();
+          detail->states[sl].from  = makeCorbaTime(tmp->getFrom(), true);
+          detail->states[sl].to    = makeCorbaTime(tmp->getTo(), true);
         }
       }
     }
@@ -728,12 +721,6 @@ Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register:
       const Register::Status *tmp = act->getStatusByIdx(s);
 
       LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
-      /* if history is off show only active states */
-      if ((settings_.get("filter.history") != "on") && !tmp->getTo().is_special()) {
-        LOGGER("corba").debug(boost::format("history detail -- state is not active already (to_time=%1%)") % tmp->getTo());
-        continue;
-      }
-
       if (m_register_manager->getStatusDesc(tmp->getStatusId())->getExternal()) {
         LOGGER("corba").debug(boost::format("history detail -- state %1% is external") % tmp->getStatusId());
 
@@ -743,12 +730,11 @@ Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register:
           ext_states_ids.push_back(tmp->getId());
           LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
 
-          unsigned sl = detail->statusList.length();
-          detail->statusList.length(sl + 1);
-          detail->statusList[sl].value  <<= tmp->getStatusId();
-          detail->statusList[sl].actionId = 0;
-          detail->statusList[sl].from     = makeCorbaTime(tmp->getFrom(), true);
-          detail->statusList[sl].to       = makeCorbaTime(tmp->getTo(), true);
+          unsigned sl = detail->states.length();
+          detail->states.length(sl + 1);
+          detail->states[sl].id    = tmp->getStatusId();
+          detail->states[sl].from  = makeCorbaTime(tmp->getFrom(), true);
+          detail->states[sl].to    = makeCorbaTime(tmp->getTo(), true);
         }
       }
     }
@@ -881,12 +867,6 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
       const Register::Status *tmp = act->getStatusByIdx(s);
 
       LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
-      /* if history is off show only active states */
-      if ((settings_.get("filter.history") != "on") && !tmp->getTo().is_special()) {
-        LOGGER("corba").debug(boost::format("history detail -- state is not active already (to_time=%1%)") % tmp->getTo());
-        continue;
-      }
-
       if (m_register_manager->getStatusDesc(tmp->getStatusId())->getExternal()) {
         LOGGER("corba").debug(boost::format("history detail -- state %1% is external") % tmp->getStatusId());
 
@@ -895,12 +875,11 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
           ext_states_ids.push_back(tmp->getId());
           LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
 
-          unsigned sl = detail->statusList.length();
-          detail->statusList.length(sl + 1);
-          detail->statusList[sl].value  <<= tmp->getStatusId();
-          detail->statusList[sl].actionId = 0;
-          detail->statusList[sl].from     = makeCorbaTime(tmp->getFrom(), true);
-          detail->statusList[sl].to       = makeCorbaTime(tmp->getTo(), true);
+          unsigned sl = detail->states.length();
+          detail->states.length(sl + 1);
+          detail->states[sl].id    = tmp->getStatusId();
+          detail->states[sl].from  = makeCorbaTime(tmp->getFrom(), true);
+          detail->states[sl].to    = makeCorbaTime(tmp->getTo(), true);
         }
       }
     }
@@ -1064,12 +1043,6 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
       const Register::Status *tmp = act->getStatusByIdx(s);
 
       LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
-      /* if history is off show only active states */
-      if ((settings_.get("filter.history") != "on") && !tmp->getTo().is_special()) {
-        LOGGER("corba").debug(boost::format("history detail -- state is not active already (to_time=%1%)") % tmp->getTo());
-        continue;
-      }
-
       if (m_register_manager->getStatusDesc(tmp->getStatusId())->getExternal()) {
         LOGGER("corba").debug(boost::format("history detail -- state %1% is external") % tmp->getStatusId());
 
@@ -1078,12 +1051,11 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
           ext_states_ids.push_back(tmp->getId());
           LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
 
-          unsigned sl = detail->statusList.length();
-          detail->statusList.length(sl + 1);
-          detail->statusList[sl].value  <<= tmp->getStatusId();
-          detail->statusList[sl].actionId = 0;
-          detail->statusList[sl].from     = makeCorbaTime(tmp->getFrom(), true);
-          detail->statusList[sl].to       = makeCorbaTime(tmp->getTo(), true);
+          unsigned sl = detail->states.length();
+          detail->states.length(sl + 1);
+          detail->states[sl].id    = tmp->getStatusId();
+          detail->states[sl].from  = makeCorbaTime(tmp->getFrom(), true);
+          detail->states[sl].to    = makeCorbaTime(tmp->getTo(), true);
         }
       }
     }
