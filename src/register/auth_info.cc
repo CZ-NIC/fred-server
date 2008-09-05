@@ -21,6 +21,7 @@
 #include "old_utils/dbsql.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <sstream>
+#include "log/logger.h"
 
 using namespace boost::gregorian;
 
@@ -542,8 +543,8 @@ namespace Register
       ) throw (REQUEST_NOT_FOUND, SQL_ERROR, Document::Generator::ERROR)
       {
         if (!docman) {
-          // TODO: log error
-          return;
+            LOGGER("register").error("docman is wrong!");
+            return;
         }
         ListImpl l(mm,db);
         l.setIdFilter(id);

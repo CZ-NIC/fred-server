@@ -68,6 +68,7 @@ enum ObjectType {
   OT_DOMAIN  = 3,
   OT_KEYSET  = 4
 };
+std::string ObjectType2Str(ObjectType type);
 
 
 /*

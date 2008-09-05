@@ -38,6 +38,25 @@ std::string Status2Str(Status _status) {
   }
 }
 
+std::string
+ObjectType2Str(ObjectType type)
+{
+    switch (type) {
+        case OT_UNKNOWN:
+            return "Unknown";
+        case OT_CONTACT:
+            return "Contact";
+        case OT_NSSET:
+            return "NSSet";
+        case OT_DOMAIN:
+            return "Domain";
+        case OT_KEYSET:
+            return "KeySet";
+        default:
+            return "Type unknown";
+    }
+}
+
 
 static bool checkState(Database::ID objectId, 
                        unsigned state, 
