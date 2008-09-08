@@ -25,5 +25,5 @@ fred_admin_SOURCES = simple.cc commonclient.cc keysetclient.cc nssetclient.cc \
 						domainclient.cc contactclient.cc authinfoclient.cc \
 						bankclient.cc invoiceclient.cc pollclient.cc \
 						registrarclient.cc notifyclient.cc objectclient.cc \
-						infobuffclient.cc fileclient.cc mailclient.cc
-
+						infobuffclient.cc fileclient.cc mailclient.cc \
+						publicreqclient.cc

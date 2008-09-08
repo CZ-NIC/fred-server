@@ -24,6 +24,11 @@
 
 #include "corba/nameservice.h"
 
+#define CRDATE_FROM_NAME        "crdate-from"
+#define CRDATE_FROM_NAME_DESC   "show only records with create date and date after input (date format: YYYY-MM-DD [hh:mm:ss])"
+#define CRDATE_TO_NAME          "crdate-to"
+#define CRDATE_TO_NAME_DESC     "show only records with create date and date before input (date format: YYYY-MM-DD [hh:mm:ss])"
+
 // all
 #define ID_NAME                 "id"
 #define ID_NAME_DESC            "filter records with specific id nubmer"

@@ -29,7 +29,6 @@
 #include "corba/admin/admin_impl.h"
 #include "corba/mailer_manager.h"
 
-#include "simpleclient.h"
 #include "commonclient.h"
 #include "keysetclient.h"
 #include "nssetclient.h"
@@ -45,6 +44,7 @@
 #include "infobuffclient.h"
 #include "fileclient.h"
 #include "mailclient.h"
+#include "publicreqclient.h"
 
 using namespace boost::posix_time;
 
@@ -65,6 +65,7 @@ main(int argc, char **argv)
     Admin::NssetClient nsset;
     Admin::FileClient file;
     Admin::MailClient mail;
+    Admin::PublicRequestClient publicrequest;
 
     try {
     boost::program_options::options_description generalOpts("General options");
@@ -181,6 +182,8 @@ main(int argc, char **argv)
         add(*file.getInvisibleOptions()).
         add(*mail.getVisibleOptions()).
         add(*mail.getInvisibleOptions()).
+        add(*publicrequest.getVisibleOptions()).
+        add(*publicrequest.getInvisibleOptions()).
         add(commonOpts);
 
     // only visible options
@@ -201,6 +204,7 @@ main(int argc, char **argv)
         add(*nsset.getVisibleOptions()).
         add(*file.getVisibleOptions()).
         add(*mail.getVisibleOptions()).
+        add(*publicrequest.getVisibleOptions()).
         add(commonOpts);
 
 
@@ -270,6 +274,7 @@ main(int argc, char **argv)
     nsset.init(connstring.str(), nsAddr.str(), varMap);
     file.init(connstring.str(), nsAddr.str(), varMap);
     mail.init(connstring.str(), nsAddr.str(), varMap);
+    publicrequest.init(connstring.str(), nsAddr.str(), varMap);
 
     if (varMap.count("show-opts")) {
         std::cout << "config: " << varMap["conf"].as<std::string>() << std::endl;
@@ -430,8 +435,14 @@ main(int argc, char **argv)
         file.list_help();
     }
 
+    if (varMap.count(PUBLICREQ_LIST_NAME)) {
+        publicrequest.list();
+    } else if (varMap.count(PUBLICREQ_LIST_HELP_NAME)) {
+        publicrequest.list_help();
+    }
+
     } catch (std::exception& e) {
-        std::cerr << e.what() << std::endl;;
+        std::cerr << "Error: " << e.what() << std::endl;;
         std::exit(2);
     } catch (Register::SQL_ERROR) {
         std::cerr << "SQL ERROR" << std::endl;
