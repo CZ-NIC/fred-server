@@ -24,10 +24,6 @@ struct NameIdPair {
   TID id;
 };
 
-/// name, id pair - replacement for NameIdPair structure
-typedef std::pair<std::string, Database::ID> OID;
-
-
 /// status attributes
 class StatusDesc {
 protected:

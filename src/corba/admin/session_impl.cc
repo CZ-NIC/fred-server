@@ -328,10 +328,14 @@ ccReg_Session_i::getKeySetDetail(ccReg::TID _id)
 }
 
 Registry::Registrar::Detail* ccReg_Session_i::getRegistrarDetail(ccReg::TID _id) {
-  Register::Registrar::Registrar *registrar = m_registrars->findId(_id);
-  if (registrar) {
-    return createRegistrarDetail(registrar);
-  } else {
+  // Register::Registrar::Registrar *registrar = m_registrars->findId(_id);
+  // if (registrar) {
+  //   return createRegistrarDetail(registrar);
+  // } else {
+  /* disable cache */
+  if (0) {
+  }
+  else {
     LOGGER("corba").debug(boost::format("constructing registrar filter for object id=%1%' detail")
         % _id);
     Register::Registrar::RegistrarList * tmp_registrar_list =
@@ -378,11 +382,15 @@ Registry::PublicRequest::Detail* ccReg_Session_i::getPublicRequestDetail(ccReg::
   }
 }
 
-ccReg::Invoicing::Invoice* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
-  Register::Invoicing::Invoice *invoice = m_invoices->findId(_id);
-  if (invoice && invoice->getActionCount()) {
-    return createInvoiceDetail(invoice);
-  } else {
+Registry::Invoicing::Detail* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
+  // Register::Invoicing::Invoice *invoice = m_invoices->findId(_id);
+  // if (invoice && invoice->getActionCount()) {
+  //   return createInvoiceDetail(invoice);
+  // } else {
+  /* disable cache */
+  if (0) {
+  }
+  else {
     LOGGER("corba").debug(boost::format("constructing invoice filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Register::Invoicing::List> tmp_invoice_list(m_invoicing_manager->createList());
@@ -401,11 +409,15 @@ ccReg::Invoicing::Invoice* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
   }
 }
 
-ccReg::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
-  Register::Mail::Mail *mail = m_mails->findId(_id);
-  if (mail) {
-    return createMailDetail(mail);
-  } else {
+Registry::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
+  // Register::Mail::Mail *mail = m_mails->findId(_id);
+  // if (mail) {
+  //   return createMailDetail(mail);
+  // } else {
+  /* disable cache */
+  if (0) {
+  }
+  else {
     LOGGER("corba").debug(boost::format("constructing mail filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Register::Mail::List> tmp_mail_list(mail_manager_->createList());
@@ -425,10 +437,14 @@ ccReg::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
 }
 
 Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id) {
-  Register::Registrar::EPPAction *action = m_eppactions->findId(_id);
-  if (action && !action->getEPPMessageIn().empty()) {
-    return createEppActionDetail(action);
-  } else {
+  // Register::Registrar::EPPAction *action = m_eppactions->findId(_id);
+  // if (action && !action->getEPPMessageIn().empty()) {
+  //   return createEppActionDetail(action);
+  // } else {
+  /* disable cache */
+  if (0) {
+  }
+  else {
     LOGGER("corba").debug(boost::format("constructing eppaction filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Register::Registrar::EPPActionList> tmp_action_list(m_register_manager->getRegistrarManager()->createEPPActionList());
@@ -1328,29 +1344,37 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Regi
   return detail;
 }
 
-ccReg::Invoicing::Invoice* ccReg_Session_i::createInvoiceDetail(Register::Invoicing::Invoice *_invoice) {
-  ccReg::Invoicing::Invoice *detail = new ccReg::Invoicing::Invoice;
+Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invoicing::Invoice *_invoice) {
+  Registry::Invoicing::Detail *detail = new Registry::Invoicing::Detail();
   
   detail->id = _invoice->getId();
   detail->zone = _invoice->getZone();
-  detail->crTime = DUPSTRDATE(_invoice->getCrTime);
+  detail->createTime = DUPSTRDATE(_invoice->getCrTime);
   detail->taxDate = DUPSTRDATED(_invoice->getTaxDate);
   detail->fromDate = DUPSTRDATED(_invoice->getAccountPeriod().begin);
   detail->toDate = DUPSTRDATED(_invoice->getAccountPeriod().end);
-  detail->type = (_invoice->getType() == Register::Invoicing::IT_DEPOSIT ? ccReg::Invoicing::IT_ADVANCE
-                                                                         : ccReg::Invoicing::IT_ACCOUNT);
+  detail->type = (_invoice->getType() == Register::Invoicing::IT_DEPOSIT ? Registry::Invoicing::IT_ADVANCE
+                                                                         : Registry::Invoicing::IT_ACCOUNT);
   detail->number = DUPSTRC(Conversion<long long unsigned>::to_string(_invoice->getNumber()));
-  detail->registrarId = _invoice->getRegistrar();
-  detail->registrarHandle = DUPSTRC(_invoice->getClient()->getHandle());
   detail->credit = DUPSTRC(formatMoney(_invoice->getCredit()));
   detail->price = DUPSTRC(formatMoney(_invoice->getPrice()));
   detail->vatRate = _invoice->getVatRate();
   detail->total = DUPSTRC(formatMoney(_invoice->getTotal()));
   detail->totalVAT = DUPSTRC(formatMoney(_invoice->getTotalVAT()));
   detail->varSymbol = DUPSTRC(_invoice->getVarSymbol());
-  detail->filePDF = _invoice->getFilePDF();
-  detail->fileXML = _invoice->getFileXML();
   
+  detail->registrar.id     = _invoice->getRegistrar();
+  detail->registrar.handle = DUPSTRC(_invoice->getClient()->getHandle());
+  detail->registrar.type   = ccReg::FT_REGISTRAR;
+
+  detail->filePDF.id     = _invoice->getFilePDF();
+  detail->filePDF.handle = "";
+  detail->filePDF.type   = ccReg::FT_FILE;
+
+  detail->fileXML.id     = _invoice->getFileXML();
+  detail->fileXML.handle = "";
+  detail->fileXML.type   = ccReg::FT_FILE;
+
   detail->payments.length(_invoice->getSourceCount());
   for (unsigned n = 0; n < _invoice->getSourceCount(); ++n) {
     const Register::Invoicing::PaymentSource *ps = _invoice->getSource(n);
@@ -1376,24 +1400,34 @@ ccReg::Invoicing::Invoice* ccReg_Session_i::createInvoiceDetail(Register::Invoic
   return detail;
 }
 
-ccReg::Mailing::Detail* ccReg_Session_i::createMailDetail(Register::Mail::Mail *_mail) {
-  ccReg::Mailing::Detail *detail = new ccReg::Mailing::Detail;
+Registry::Mailing::Detail* ccReg_Session_i::createMailDetail(Register::Mail::Mail *_mail) {
+  Registry::Mailing::Detail *detail = new Registry::Mailing::Detail();
   
   detail->id = _mail->getId();
   detail->type = _mail->getType();
   detail->status = _mail->getStatus();
   detail->createTime = DUPSTRDATE(_mail->getCreateTime);
-  detail->modTime = DUPSTRDATE(_mail->getModTime);
+  detail->modifyTime = DUPSTRDATE(_mail->getModTime);
   detail->content = DUPSTRC(_mail->getContent());
   
-  detail->handles.length(_mail->getHandleSize());
-  for (unsigned i = 0; i < _mail->getHandleSize(); ++i)
-    detail->handles[i] = DUPSTRC(_mail->getHandle(i));
+  detail->objects.length(_mail->getHandleSize());
+  for (unsigned i = 0; i < _mail->getHandleSize(); ++i) {
+    /* TODO: don't know object id and type - add support for this to database */
+    // detail->objects[i].id     = 0;
+    // detail->objects[i].handle = DUPSTRC(_mail->getHandle(i));
+    // detail->objects[i].type   = ccReg::FT_OBJ;
+    detail->objects[i] = DUPSTRC(_mail->getHandle(i));
+  }
   
   detail->attachments.length(_mail->getAttachmentSize());
-  for (unsigned i = 0; i < _mail->getAttachmentSize(); ++i)
-    detail->attachments[i] = _mail->getAttachment(i);
-  
+  for (unsigned i = 0; i < _mail->getAttachmentSize(); ++i) {
+    const Register::OID attachment = _mail->getAttachment(i);
+
+    detail->attachments[i].id     = attachment.id;
+    detail->attachments[i].handle = attachment.handle.c_str();
+    detail->attachments[i].type   = ccReg::FT_FILE;
+  }
+     
   return detail;
 }
 

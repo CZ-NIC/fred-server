@@ -29,9 +29,9 @@ public:
   virtual unsigned getHandleSize() const = 0;
   virtual const std::string& getHandle(unsigned _idx) const = 0;
   
-  virtual void addAttachment(const Database::ID& _id) = 0;
+  virtual void addAttachment(const Register::OID& _oid) = 0;
   virtual unsigned getAttachmentSize() const = 0;
-  virtual const Database::ID& getAttachment(unsigned _idx) const = 0;
+  virtual const Register::OID& getAttachment(unsigned _idx) const = 0;
 };
 
 

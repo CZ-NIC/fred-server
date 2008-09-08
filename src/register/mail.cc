@@ -19,7 +19,7 @@ private:
   long status_;
   std::string content_;
   std::vector<std::string> handles_;
-  std::vector<Database::ID> attachments_;   
+  std::vector<Register::OID> attachments_;   
 
 public:
   MailImpl(Database::ID& _id, Database::DateTime& _create_time, Database::DateTime& _mod_time,
@@ -69,15 +69,15 @@ public:
     return handles_.at(_idx);
   }
   
-  virtual void addAttachment(const Database::ID& _id) {
-    attachments_.push_back(_id);
+  virtual void addAttachment(const Register::OID& _oid) {
+    attachments_.push_back(_oid);
   }
   
   virtual unsigned getAttachmentSize() const {
     return attachments_.size();
   }
   
-  virtual const Database::ID& getAttachment(unsigned _idx) const {
+  virtual const Register::OID& getAttachment(unsigned _idx) const {
     return attachments_.at(_idx);
   }
 };
@@ -205,19 +205,21 @@ public:
       resetIDSequence();
       
       Database::SelectQuery files_query;
-      files_query.select() << "t_1.mailid, t_1.attachid";
+      files_query.select() << "t_1.mailid, t_1.attachid, t_2.name";
       files_query.from() << getTempTableName() << " tmp "
-                         << "JOIN mail_attachments t_1 ON (tmp.id = t_1.mailid)";
+                         << "JOIN mail_attachments t_1 ON (tmp.id = t_1.mailid) "
+                         << "JOIN files t_2 ON (t_1.attachid = t_2.id)";
       files_query.order_by() << "tmp.id";
       
       Database::Result r_files = conn_->exec(files_query);
       for (Database::Result::Iterator it = r_files.begin(); it != r_files.end(); ++it) {
-        Database::ID mail_id = (*it)[0];
-        Database::ID file_id = (*it)[1];
+        Database::ID mail_id   = (*it)[0];
+        Database::ID file_id   = (*it)[1];
+        std::string file_name  = (*it)[2];
              
         MailImpl *mail_ptr = dynamic_cast<MailImpl *>(findIDSequence(mail_id));
         if (mail_ptr)
-          mail_ptr->addAttachment(file_id);
+          mail_ptr->addAttachment(Register::OID(file_id, file_name, FT_FILE));
       }
       /* checks if row number result load limit is active and set flag */ 
       CommonListImpl::reload();

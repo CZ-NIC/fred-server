@@ -7,6 +7,42 @@
 #include "db/manager.h"
 
 namespace Register {
+
+/**
+ * Type of searchable objects
+ */
+enum FilterType {
+  FT_FILTER,
+  FT_REGISTRAR,
+  FT_OBJ,
+  FT_CONTACT,
+  FT_NSSET,
+  FT_KEYSET,
+  FT_DOMAIN,
+  FT_ACTION,
+  FT_INVOICE,
+  FT_PUBLICREQUEST,
+  FT_MAIL,
+  FT_FILE
+};
+
+/*
+ * Object info (for links between objects)
+ */
+struct OID {
+  OID(Database::ID _id) : id(_id) { }
+  OID(Database::ID _id, std::string _handle, FilterType _type) : id(_id),
+                                                                 handle(_handle),
+                                                                 type(_type) { }
+  Database::ID   id;
+  std::string handle;
+  FilterType  type;
+};
+
+
+/**
+ * Top of the objects hierarchy
+ */
 class CommonObject {
 public:
   /// D-tor

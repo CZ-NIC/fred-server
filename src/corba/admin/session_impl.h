@@ -75,9 +75,9 @@ private:
   Registry::Registrar::Detail* getRegistrarDetail(ccReg::TID _id);
   Registry::EPPAction::Detail* getEppActionDetail(ccReg::TID _id);
   Registry::PublicRequest::Detail* getPublicRequestDetail(ccReg::TID _id);
+  Registry::Mailing::Detail* getMailDetail(ccReg::TID _id);
+  Registry::Invoicing::Detail* getInvoiceDetail(ccReg::TID _id);
 
-  ccReg::Invoicing::Invoice* getInvoiceDetail(ccReg::TID _id);
-  ccReg::Mailing::Detail* getMailDetail(ccReg::TID _id);
   
   
   /*
@@ -89,8 +89,6 @@ private:
   ccReg::ContactDetail* createContactDetail(Register::Contact::Contact* _contact);
   ccReg::NSSetDetail* createNSSetDetail(Register::NSSet::NSSet* _contact);
   ccReg::KeySetDetail *createKeySetDetail(Register::KeySet::KeySet *_contact);
-  ccReg::Invoicing::Invoice* createInvoiceDetail(Register::Invoicing::Invoice *_invoice);
-  ccReg::Mailing::Detail* createMailDetail(Register::Mail::Mail *_mail);
 
   Registry::Domain::Detail* createHistoryDomainDetail(Register::Domain::List* _list); 
   Registry::Contact::Detail* createHistoryContactDetail(Register::Contact::List* _list);
@@ -99,6 +97,8 @@ private:
   Registry::Registrar::Detail* createRegistrarDetail(Register::Registrar::Registrar* _registrar);
   Registry::EPPAction::Detail* createEppActionDetail(Register::Registrar::EPPAction *_action); 
   Registry::PublicRequest::Detail* createPublicRequestDetail(Register::PublicRequest::PublicRequest* _request);
+  Registry::Mailing::Detail* createMailDetail(Register::Mail::Mail *_mail);
+  Registry::Invoicing::Detail* createInvoiceDetail(Register::Invoicing::Invoice *_invoice);
 
   void _createUpdateRegistrar(const ccReg::Registrar& _registrar);
 

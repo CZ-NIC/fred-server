@@ -150,7 +150,7 @@ MailClient::list()
         }
         for (unsigned int j = 0; j < mail->getAttachmentSize(); j++) {
             std::cout
-                << "\t\t<attachment>" << mail->getAttachment(j) << "</attachment>\n";
+                << "\t\t<attachment>" << mail->getAttachment(j).id << "</attachment>\n";
         }
         std::cout
             << "\t</mail>\n";
