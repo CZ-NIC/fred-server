@@ -1285,9 +1285,15 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Regi
   detail->createTime = DUPSTRDATE(_request->getCreateTime);
   detail->resolveTime = DUPSTRDATE(_request->getResolveTime);
   detail->reason = _request->getReason().c_str();
-  detail->svTRID = _request->getSvTRID().c_str();
   detail->email = _request->getEmailToAnswer().c_str();
-  detail->answerEmailId = _request->getAnswerEmailId();
+
+  detail->answerEmail.id     = _request->getAnswerEmailId();
+  detail->answerEmail.handle = DUPSTRC(Conversion<long long unsigned>::to_string(_request->getAnswerEmailId())); 
+  detail->answerEmail.type   = ccReg::FT_MAIL;
+
+  detail->action.id     = _request->getEppActionId();
+  detail->action.handle = DUPSTRFUN(_request->getSvTRID);
+  detail->action.type   = ccReg::FT_ACTION;
 
   detail->registrar.id     = _request->getRegistrarId();
   detail->registrar.handle = DUPSTRFUN(_request->getRegistrarHandle);
