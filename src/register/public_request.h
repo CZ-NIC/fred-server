@@ -116,6 +116,8 @@ public:
   virtual unsigned getObjectSize() const = 0;
   
   virtual const std::string getSvTRID() const = 0;
+
+  virtual const Database::ID getRegistrarId() const = 0;
   virtual const std::string getRegistrarHandle() const = 0;
   virtual const std::string getRegistrarName() const = 0;
   virtual const std::string getRegistrarUrl() const = 0;

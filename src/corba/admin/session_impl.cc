@@ -351,11 +351,15 @@ Registry::Registrar::Detail* ccReg_Session_i::getRegistrarDetail(ccReg::TID _id)
   }
 }
 
-ccReg::PublicRequest::Detail* ccReg_Session_i::getPublicRequestDetail(ccReg::TID _id) {
-  Register::PublicRequest::PublicRequest *request = m_publicrequests->findId(_id);
-  if (request) {
-    return createPublicRequestDetail(request);
-  } else {
+Registry::PublicRequest::Detail* ccReg_Session_i::getPublicRequestDetail(ccReg::TID _id) {
+  // Register::PublicRequest::PublicRequest *request = m_publicrequests->findId(_id);
+  // if (request) {
+  //   return createPublicRequestDetail(request);
+  // } else {
+  /* disable cache */
+  if (0) {
+  }
+  else {
     LOGGER("corba").debug(boost::format("constructing public request filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Register::PublicRequest::List> tmp_request_list(m_publicrequest_manager->createList());
@@ -1221,59 +1225,59 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar) {
       % update_registrar->getId());
 }
 
-ccReg::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Register::PublicRequest::PublicRequest* _request) {
-  ccReg::PublicRequest::Detail *detail = new ccReg::PublicRequest::Detail;
+Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Register::PublicRequest::PublicRequest* _request) {
+  Registry::PublicRequest::Detail *detail = new Registry::PublicRequest::Detail();
   
   detail->id = _request->getId();
 
   switch (_request->getStatus()) {
     case Register::PublicRequest::PRS_NEW:
-      detail->status = ccReg::PublicRequest::PRS_NEW;
+      detail->status = Registry::PublicRequest::PRS_NEW;
       break;
     case Register::PublicRequest::PRS_ANSWERED:
-      detail->status = ccReg::PublicRequest::PRS_ANSWERED;
+      detail->status = Registry::PublicRequest::PRS_ANSWERED;
       break;
     case Register::PublicRequest::PRS_INVALID:
-      detail->status = ccReg::PublicRequest::PRS_INVALID;
+      detail->status = Registry::PublicRequest::PRS_INVALID;
       break;
   }
   
   switch (_request->getType()) {
     case Register::PublicRequest::PRT_AUTHINFO_AUTO_RIF:
-      detail->type = ccReg::PublicRequest::PRT_AUTHINFO_AUTO_RIF;
+      detail->type = Registry::PublicRequest::PRT_AUTHINFO_AUTO_RIF;
       break;
     case Register::PublicRequest::PRT_AUTHINFO_AUTO_PIF:
-      detail->type = ccReg::PublicRequest::PRT_AUTHINFO_AUTO_PIF;
+      detail->type = Registry::PublicRequest::PRT_AUTHINFO_AUTO_PIF;
       break;
     case Register::PublicRequest::PRT_AUTHINFO_EMAIL_PIF:
-      detail->type = ccReg::PublicRequest::PRT_AUTHINFO_EMAIL_PIF;
+      detail->type = Registry::PublicRequest::PRT_AUTHINFO_EMAIL_PIF;
       break;
     case Register::PublicRequest::PRT_AUTHINFO_POST_PIF:
-      detail->type = ccReg::PublicRequest::PRT_AUTHINFO_POST_PIF;
+      detail->type = Registry::PublicRequest::PRT_AUTHINFO_POST_PIF;
       break;
     case Register::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF:
-      detail->type = ccReg::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF;
+      detail->type = Registry::PublicRequest::PRT_BLOCK_CHANGES_EMAIL_PIF;
       break;
     case Register::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF:
-      detail->type = ccReg::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF;
+      detail->type = Registry::PublicRequest::PRT_BLOCK_CHANGES_POST_PIF;
       break;
     case Register::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF:
-      detail->type = ccReg::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF;
+      detail->type = Registry::PublicRequest::PRT_BLOCK_TRANSFER_EMAIL_PIF;
       break;
     case Register::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF:
-      detail->type = ccReg::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF;
+      detail->type = Registry::PublicRequest::PRT_BLOCK_TRANSFER_POST_PIF;
       break;
     case Register::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF:
-      detail->type = ccReg::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF;
+      detail->type = Registry::PublicRequest::PRT_UNBLOCK_CHANGES_EMAIL_PIF;
       break;
     case Register::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF:
-      detail->type = ccReg::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF;
+      detail->type = Registry::PublicRequest::PRT_UNBLOCK_CHANGES_POST_PIF;
       break;
     case Register::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF:
-      detail->type = ccReg::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF;
+      detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_EMAIL_PIF;
       break;
     case Register::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF:
-      detail->type = ccReg::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF;
+      detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF;
       break;
       
   }
@@ -1284,8 +1288,11 @@ ccReg::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Registe
   detail->svTRID = _request->getSvTRID().c_str();
   detail->email = _request->getEmailToAnswer().c_str();
   detail->answerEmailId = _request->getAnswerEmailId();
-  detail->registrar = _request->getRegistrarHandle().c_str();
-  
+
+  detail->registrar.id     = _request->getRegistrarId();
+  detail->registrar.handle = DUPSTRFUN(_request->getRegistrarHandle);
+  detail->registrar.type   = ccReg::FT_REGISTRAR;
+
   unsigned objects_size = _request->getObjectSize();
   detail->objects.length(objects_size);
   for (unsigned i = 0; i < objects_size; ++i) {  
@@ -1294,18 +1301,19 @@ ccReg::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Registe
     detail->objects[i].handle = oid.handle.c_str();
     switch (oid.type) {
       case Register::PublicRequest::OT_DOMAIN:
-        detail->objects[i].type = ccReg::PublicRequest::OT_DOMAIN;
+        detail->objects[i].type = ccReg::FT_DOMAIN;
         break;
       case Register::PublicRequest::OT_CONTACT:
-        detail->objects[i].type = ccReg::PublicRequest::OT_CONTACT;
+        detail->objects[i].type = ccReg::FT_CONTACT;
         break;
       case Register::PublicRequest::OT_NSSET:
-        detail->objects[i].type = ccReg::PublicRequest::OT_NSSET;
+        detail->objects[i].type = ccReg::FT_NSSET;
         break;
       case Register::PublicRequest::OT_KEYSET:
-        detail->objects[i].type = ccReg::PublicRequest::OT_KEYSET;
+        detail->objects[i].type = ccReg::FT_KEYSET;
         break;
-      case Register::PublicRequest::OT_UNKNOWN:
+
+      default:
         LOGGER("corba").error("Not allowed object type for PublicRequest detail!");
         break;
     }

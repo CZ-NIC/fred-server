@@ -367,6 +367,10 @@ public:
   virtual const std::string getSvTRID() const {
     return svtrid_;
   }
+
+  virtual const Database::ID getRegistrarId() const {
+    return registrar_id_;
+  }
   
   virtual const std::string getRegistrarHandle() const {
     return registrar_handle_;
