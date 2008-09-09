@@ -1387,8 +1387,10 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
   detail->paymentActions.length(_invoice->getActionCount());
   for (unsigned n = 0; n < _invoice->getActionCount(); ++n) {
     const Register::Invoicing::PaymentAction *pa = _invoice->getAction(n);
-    detail->paymentActions[n].objectId = pa->getObjectId();
-    detail->paymentActions[n].objectName = DUPSTRFUN(pa->getObjectName);
+    detail->paymentActions[n].paidObject.id     = pa->getObjectId();
+    detail->paymentActions[n].paidObject.handle = DUPSTRFUN(pa->getObjectName);
+    detail->paymentActions[n].paidObject.type   = ccReg::FT_DOMAIN;
+
     detail->paymentActions[n].actionTime = DUPSTRDATE(pa->getActionTime);
     detail->paymentActions[n].expirationDate = DUPSTRDATED(pa->getExDate);
     detail->paymentActions[n].actionType = pa->getAction();
