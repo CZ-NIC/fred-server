@@ -1384,17 +1384,17 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
     detail->payments[n].number = DUPSTRC(Conversion<long long unsigned>::to_string(ps->getNumber()));
   }
   
-  detail->actions.length(_invoice->getActionCount());
+  detail->paymentActions.length(_invoice->getActionCount());
   for (unsigned n = 0; n < _invoice->getActionCount(); ++n) {
     const Register::Invoicing::PaymentAction *pa = _invoice->getAction(n);
-    detail->actions[n].objectId = pa->getObjectId();
-    detail->actions[n].objectName = DUPSTRFUN(pa->getObjectName);
-    detail->actions[n].actionTime = DUPSTRDATE(pa->getActionTime);
-    detail->actions[n].exDate = DUPSTRDATED(pa->getExDate);
-    detail->actions[n].actionType = pa->getAction();
-    detail->actions[n].unitsCount = pa->getUnitsCount();
-    detail->actions[n].pricePerUnit = DUPSTRC(formatMoney(pa->getPricePerUnit()));
-    detail->actions[n].price = DUPSTRC(formatMoney(pa->getPrice()));
+    detail->paymentActions[n].objectId = pa->getObjectId();
+    detail->paymentActions[n].objectName = DUPSTRFUN(pa->getObjectName);
+    detail->paymentActions[n].actionTime = DUPSTRDATE(pa->getActionTime);
+    detail->paymentActions[n].expirationDate = DUPSTRDATED(pa->getExDate);
+    detail->paymentActions[n].actionType = pa->getAction();
+    detail->paymentActions[n].unitsCount = pa->getUnitsCount();
+    detail->paymentActions[n].pricePerUnit = DUPSTRC(formatMoney(pa->getPricePerUnit()));
+    detail->paymentActions[n].price = DUPSTRC(formatMoney(pa->getPrice()));
   }
   
   return detail;
