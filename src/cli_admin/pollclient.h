@@ -32,6 +32,7 @@
 #define POLL_DEBUG_NAME             "debug"
 #define POLL_DRY_RUN_NAME           "dry-run"
 #define POLL_EXCEPT_TYPES_NAME      "except-types"
+#define POLL_LIMIT_NAME             "poll-limit"
 
 #include <boost/program_options.hpp>
 #include <iostream>

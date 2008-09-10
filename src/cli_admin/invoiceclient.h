@@ -34,6 +34,8 @@
 #define INVOICE_LIST_PLAIN_NAME_DESC    "list of all invoices (via ccReg)"
 #define INVOICE_ARCHIVE_NAME            "invoice-archive"
 #define INVOICE_ARCHIVE_NAME_DESC       "Archive unarchived invoices"
+#define INVOICE_ARCHIVE2_NAME           "invoice_archive"
+#define INVOICE_ARCHIVE2_NAME_DESC      "Archive unarchived invoices"
 
 #define INVOICE_LIST_HELP_NAME          "invoice-list-help"
 #define INVOICE_LIST_HELP_NAME_DESC     "invoice list help"

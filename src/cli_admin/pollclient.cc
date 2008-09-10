@@ -41,7 +41,8 @@ PollClient::PollClient():
         ADD_OPT_TYPE(REGISTRAR_ID_NAME, "set filter for registrar id", unsigned int)
         ADD_OPT(POLL_NONSEEN_NAME, "set filter for non seen messages")
         ADD_OPT(POLL_NONEX_NAME, "set filter for non expired messages")
-        ADD_OPT_DEF(POLL_EXCEPT_TYPES_NAME, "list of poll message types ignored in creation (only states now)", std::string, "6,7");
+        ADD_OPT_DEF(POLL_EXCEPT_TYPES_NAME, "list of poll message types ignored in creation (only states now)", std::string, "6,7")
+        ADD_OPT_DEF(POLL_LIMIT_NAME, "some poll limitation", unsigned int, 0);
 }
 PollClient::PollClient(
         std::string connstring,
@@ -159,8 +160,8 @@ PollClient::create_state_changes()
                 &m_db)
             );
     pollMan->createStateMessages(
-            m_varMap["poll_except_types"].as<std::string>(),
-            m_varMap[LIMIT_NAME].as<unsigned int>(),
+            m_varMap[POLL_EXCEPT_TYPES_NAME].as<std::string>(),
+            m_varMap[POLL_LIMIT_NAME].as<unsigned int>(),
             m_varMap.count(DEBUG_NAME) ? &std::cout : NULL
     );
     return 0;

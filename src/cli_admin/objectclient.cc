@@ -18,6 +18,10 @@
 
 #include "commonclient.h"
 #include "objectclient.h"
+#include "register/register.h"
+#include "register/poll.h"
+#include "old_utils/log.h"
+#include "log/logger.h"
 
 namespace Admin {
 
@@ -27,14 +31,18 @@ ObjectClient::ObjectClient():
     m_options = new boost::program_options::options_description(
             "Object related options");
     m_options->add_options()
-        ADD_OPT_TYPE(OBJECT_NEW_STATE_REQUEST_NAME, "set request for object state with specified state id", unsigned int)
-        // ADD_OPT(OBJECT_LIST_NAME, "list xml of object according to filter")
-        ADD_OPT(OBJECT_UPDATE_STATES_NAME, "globally update all states of all objects")
-        ADD_OPT_DEF(OBJECT_DELETE_CANDIDATES_NAME, "delete all object marked with delete candidate status", std::string, "3");
+        add_opt_type(OBJECT_NEW_STATE_REQUEST_NAME, unsigned int)
+        add_opt(OBJECT_REGULAR_PROCEDURE_NAME)
+        add_opt(OBJECT_DELETE_CANDIDATES_NAME)
+        add_opt(OBJECT_UPDATE_STATES_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Object related invisible options");
-    m_optionsInvis->add_options();
+    m_optionsInvis->add_options()
+        add_opt_def(OBJECT_DELETE_TYPES_NAME, std::string, std::string("3"))
+        add_opt_def(OBJECT_NOTIFY_EXCEPT_TYPES_NAME, std::string, std::string("4,5"))
+        add_opt_def(OBJECT_POLL_EXCEPT_TYPES_NAME, std::string, std::string("6,7"))
+        add_opt_def(OBJECT_DELETE_LIMIT_NAME, unsigned int, 0);
 }
 ObjectClient::ObjectClient(
         std::string connstring,
@@ -43,6 +51,7 @@ ObjectClient::ObjectClient(
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
+    m_dbman = NULL;
     m_db.OpenDatabase(connstring.c_str());
     m_varMap = varMap;
     m_options = NULL;
@@ -141,7 +150,7 @@ ObjectClient::update_states()
     std::auto_ptr<Register::Manager> regMan(
             Register::Manager::create(
                 &m_db,
-                m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     regMan->updateObjectStates();
     return 0;
@@ -178,13 +187,14 @@ ObjectClient::deleteObjects(
         "FROM object_state s "
         "JOIN object_registry o ON ( "
         " o.erdate ISNULL AND o.id=s.object_id "
-        " AND s.state_id=17 AND s.valid_to ISNULL ) "
+        " AND s.state_id=17 AND s.valid_to ISNULL) "
         "LEFT JOIN domain d ON (d.id=o.id)";
     if (!typeList.empty())
         sql << "WHERE o.type IN (" << typeList << ") ";
     sql << "ORDER BY s.id ";
-    if (m_varMap.count(LIMIT_NAME))
-        sql << "LIMIT " << m_varMap[LIMIT_NAME].as<unsigned int>();
+    unsigned int limit = m_varMap[OBJECT_DELETE_LIMIT_NAME].as<unsigned int>();
+    if (limit > 0)
+        sql << "LIMIT " << limit;
     if (!m_db.ExecSelect(sql.str().c_str()))
         return -1;
     if (!m_db.GetSelectRows()) 
@@ -269,7 +279,96 @@ ObjectClient::deleteObjects(
 int
 ObjectClient::delete_candidates()
 {
-    return deleteObjects(m_varMap[OBJECT_DELETE_CANDIDATES_NAME].as<std::string>());
+    return deleteObjects(m_varMap[OBJECT_DELETE_TYPES_NAME].as<std::string>());
+}
+
+int
+ObjectClient::regular_procedure()
+{
+    std::auto_ptr<Register::Document::Manager> docMan(
+            Register::Document::Manager::create(
+                m_varMap[DOCGEN_PATH_NAME].as<std::string>(),
+                m_varMap[DOCGEN_TEMPLATE_PATH_NAME].as<std::string>(),
+                m_varMap[FILECLIENT_PATH_NAME].as<std::string>(),
+                m_nsAddr)
+            );
+    TRACE("001");
+    CorbaClient cc(0, NULL, m_nsAddr);
+    TRACE("002");
+    MailerManager mailMan(cc.getNS());
+    TRACE("003");
+    std::auto_ptr<Register::Zone::Manager> zoneMan(
+            Register::Zone::Manager::create(&m_db));
+    TRACE("004");
+    std::auto_ptr<Register::Domain::Manager> domMan(
+            Register::Domain::Manager::create(&m_db, zoneMan.get()));
+    TRACE("005");
+    std::auto_ptr<Register::Contact::Manager> conMan(
+            Register::Contact::Manager::create(
+                &m_db,
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+            );
+    TRACE("006");
+    std::auto_ptr<Register::NSSet::Manager> nssMan(
+            Register::NSSet::Manager::create(
+                &m_db,
+                zoneMan.get(),
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+            );
+    TRACE("007");
+    std::auto_ptr<Register::KeySet::Manager> keyMan(
+            Register::KeySet::Manager::create(
+                &m_db,
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+            );
+    TRACE("008");
+    std::auto_ptr<Register::Poll::Manager> pollMan(
+            Register::Poll::Manager::create(
+                &m_db)
+            );
+    TRACE("009");
+    std::auto_ptr<Register::Manager> registerMan(
+            Register::Manager::create(
+                &m_db,
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+            );
+    TRACE("010");
+    std::auto_ptr<Register::Registrar::Manager> regMan(
+            Register::Registrar::Manager::create(&m_db));
+    TRACE("011");
+    std::auto_ptr<Register::Notify::Manager> notifyMan(
+            Register::Notify::Manager::create(
+                &m_db,
+                &mailMan,
+                conMan.get(),
+                nssMan.get(),
+                keyMan.get(),
+                domMan.get(),
+                docMan.get(),
+                regMan.get())
+            );
+
+    TRACE("012");
+
+    registerMan->updateObjectStates();
+    TRACE("013");
+    registerMan->updateObjectStates();
+    TRACE("014");
+    notifyMan->notifyStateChanges(
+            m_varMap[OBJECT_NOTIFY_EXCEPT_TYPES_NAME].as<std::string>(),
+            0, NULL, false);
+    TRACE("015");
+    pollMan->createStateMessages(
+            m_varMap[OBJECT_POLL_EXCEPT_TYPES_NAME].as<std::string>(),
+            0, NULL);
+    TRACE("016");
+    deleteObjects(m_varMap[OBJECT_DELETE_TYPES_NAME].as<std::string>());
+    TRACE("017");
+    pollMan->createLowCreditMessages();
+    TRACE("018");
+    notifyMan->generateLetters();
+    TRACE("019");
+    return 0;
 }
 
 } // namespace Admin;

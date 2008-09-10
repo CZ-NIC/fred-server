@@ -104,18 +104,18 @@ NotifyClient::state_changes()
     std::auto_ptr<Register::Contact::Manager> conMan(
             Register::Contact::Manager::create(
                 &m_db,
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
             Register::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
                 &m_db,
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
@@ -156,18 +156,18 @@ NotifyClient::letters_create()
     std::auto_ptr<Register::Contact::Manager> conMan(
             Register::Contact::Manager::create(
                 &m_db,
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
             Register::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
                 &m_db,
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));

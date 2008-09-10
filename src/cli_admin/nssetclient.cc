@@ -99,7 +99,7 @@ NssetClient::list()
             Register::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::NSSet::List> nssList(
             nssMan->createList());

@@ -46,7 +46,9 @@ PublicRequestClient::PublicRequestClient():
         add_opt_type(PUBLICREQ_EPP_RESPONSE_NAME, unsigned int)
         add_opt_type(PUBLICREQ_EPP_TYPE_NAME, unsigned int)
         add_opt_type(CRDATE_FROM_NAME, std::string)
-        add_opt_type(CRDATE_TO_NAME, std::string);
+        add_opt_type(CRDATE_TO_NAME, std::string)
+        add_opt_type(PUBLICREQ_RESDATE_FROM_NAME, std::string)
+        add_opt_type(PUBLICREQ_RESDATE_TO_NAME, std::string);
 }
 PublicRequestClient::PublicRequestClient(
         std::string connstring,
@@ -112,18 +114,18 @@ PublicRequestClient::list()
     std::auto_ptr<Register::Contact::Manager> conMan(
             Register::Contact::Manager::create(
                 &m_db,
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
             Register::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
                 &m_db,
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
@@ -183,10 +185,6 @@ PublicRequestClient::list()
 
     ptime crDateFrom(boost::posix_time::time_from_string("1401-01-01 00:00:00"));
     ptime crDateTo(boost::posix_time::max_date_time);
-    // ptime crDateFrom(boost::posix_time::neg_infin);
-    // ptime crDateTo(boost::posix_time::pos_infin);
-    // std::cout << boost::posix_time::to_simple_string(crDateFrom) << "\n";
-    // std::cout << boost::posix_time::to_simple_string(crDateTo) << "\n";
     if (m_varMap.count(CRDATE_FROM_NAME))
         crDateFrom = boost::posix_time::time_from_string(
                 m_varMap[CRDATE_FROM_NAME].as<std::string>());
@@ -195,6 +193,17 @@ PublicRequestClient::list()
                 m_varMap[CRDATE_TO_NAME].as<std::string>());
     prFilter->addCreateTime().setValue(
             Database::DateTimeInterval(crDateFrom, crDateTo));
+
+    ptime resDateFrom(boost::posix_time::time_from_string("1401-01-01 00:00:00"));
+    ptime resDateTo(boost::posix_time::max_date_time);
+    if (m_varMap.count(PUBLICREQ_RESDATE_FROM_NAME))
+        resDateFrom = boost::posix_time::time_from_string(
+                m_varMap[PUBLICREQ_RESDATE_FROM_NAME].as<std::string>());
+    if (m_varMap.count(PUBLICREQ_RESDATE_TO_NAME))
+        resDateTo = boost::posix_time::time_from_string(
+                m_varMap[PUBLICREQ_RESDATE_TO_NAME].as<std::string>());
+    prFilter->addResolveTime().setValue(
+            Database::DateTimeInterval(resDateFrom, resDateTo));
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();

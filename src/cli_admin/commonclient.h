@@ -24,10 +24,26 @@
 
 #include "corba/nameservice.h"
 
-#define CRDATE_FROM_NAME        "crdate-from"
-#define CRDATE_FROM_NAME_DESC   "show only records with create date and date after input (date format: YYYY-MM-DD [hh:mm:ss])"
-#define CRDATE_TO_NAME          "crdate-to"
-#define CRDATE_TO_NAME_DESC     "show only records with create date and date before input (date format: YYYY-MM-DD [hh:mm:ss])"
+// dates use almost all
+#define CRDATE_FROM_NAME        "cr-date-from"
+#define CRDATE_FROM_NAME_DESC   "show only records with create date and date after input value (date format: YYYY-MM-DD [hh:mm:ss])"
+#define CRDATE_TO_NAME          "cr-date-to"
+#define CRDATE_TO_NAME_DESC     "show only records with create date and date before input value (date format: YYYY-MM-DD [hh:mm:ss])"
+
+#define DELDATE_FROM_NAME       "del-date-from"
+#define DELDATE_FROM_NAME_DESC  "show only record with delete date and time after input value"
+#define DELDATE_TO_NAME         "del-date-to"
+#define DELDATE_TO_NAME_DESC    "show only records with delete date and time before input value"
+
+#define TRANSDATE_FROM_NAME     "trans-date-from"
+#define TRANSDATE_FROM_NAME_DESC "show only records with transfer date and time after input value"
+#define TRANSDATE_TO_NAME       "trans-date-to"
+#define TRANSDATE_TO_NAME_DESC  "show only records with transfer date and time before input value"
+
+#define UPDATE_FROM_NAME        "up-date-from"
+#define UPDATE_FROM_NAME_DESC   "show only records with transfer date and time after input value"
+#define UPDATE_TO_NAME          "up-date-to"
+#define UPDATE_TO_NAME_DESC     "show only records with transfer date and time before input value"
 
 // all
 #define ID_NAME                 "id"

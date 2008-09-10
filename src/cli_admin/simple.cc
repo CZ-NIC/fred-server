@@ -113,7 +113,7 @@ main(int argc, char **argv)
          boost::program_options::value<std::string>()->default_value("localhost:2809"),
          "CORBA nameservice address")
         (LOG_LEVEL_NAME, 
-         boost::program_options::value<unsigned int>()->default_value(ERROR_LOG),
+         boost::program_options::value<unsigned int>()->default_value(DEBUG_LOG),
          "minimal level of logging")
         (LOG_LOCAL_NAME, 
          boost::program_options::value<unsigned int>()->default_value(2),
@@ -128,7 +128,7 @@ main(int argc, char **argv)
          boost::program_options::value<std::string>()->default_value("/usr/bin/filemanager_client"),
          "path to corba client file manager")
         (RESTRICTED_HANDLES_NAME,
-         boost::program_options::value<unsigned int>()->default_value(1),
+         boost::program_options::value<int>()->default_value(1),
          "restricted format for handles")
         (DEBUG_NAME,
          //boost::program_options::value<unsigned int>(),
@@ -207,13 +207,11 @@ main(int argc, char **argv)
         add(*publicrequest.getVisibleOptions()).
         add(commonOpts);
 
-
     boost::program_options::store(
             boost::program_options::parse_command_line(
                 argc,
                 argv,
-                all
-                ),
+                all),
             varMap);
 
     std::ifstream configFile(varMap["conf"].as<std::string>().c_str());
@@ -222,6 +220,8 @@ main(int argc, char **argv)
                 configFile,
                 fileDesc),
             varMap);
+
+    boost::program_options::notify(varMap);
 
     if (varMap.count("help") || argc == 1) {
         std::cout << visible << std::endl;
@@ -237,14 +237,21 @@ main(int argc, char **argv)
     }
 
     SysLogger::get().setLevel(
-            varMap["log-level"].as<unsigned int>());
+            varMap[LOG_LEVEL_NAME].as<unsigned int>());
     SysLogger::get().setFacility(
-            varMap["log-local"].as<unsigned int>());    
+            varMap[LOG_LOCAL_NAME].as<unsigned int>());    
 
     Logging::Manager::instance_ref().get("tracer").addHandler(Logging::Log::LT_SYSLOG);
     Logging::Manager::instance_ref().get("tracer").setLevel(Logging::Log::LL_TRACE);
     Logging::Manager::instance_ref().get("db").addHandler(Logging::Log::LT_SYSLOG);
-    Logging::Manager::instance_ref().get("db").setLevel(Logging::Log::LL_DEBUG);    
+    Logging::Manager::instance_ref().get("db").setLevel(Logging::Log::LL_TRACE);    
+
+    Logging::Manager::instance_ref().get("register").addHandler(Logging::Log::LT_SYSLOG);
+    Logging::Manager::instance_ref().get("register").setLevel(Logging::Log::LL_TRACE);
+    Logging::Manager::instance_ref().get("corba").addHandler(Logging::Log::LT_SYSLOG);
+    Logging::Manager::instance_ref().get("corba").setLevel(Logging::Log::LL_TRACE);
+    Logging::Manager::instance_ref().get("mailer").addHandler(Logging::Log::LT_SYSLOG);
+    Logging::Manager::instance_ref().get("mailer").setLevel(Logging::Log::LL_TRACE);
 
     std::stringstream connstring;
     std::stringstream nsAddr;
@@ -415,6 +422,8 @@ main(int argc, char **argv)
         object.update_states();
     } else if (varMap.count(OBJECT_DELETE_CANDIDATES_NAME)) {
         object.delete_candidates();
+    } else if (varMap.count(OBJECT_REGULAR_PROCEDURE_NAME)) {
+        object.regular_procedure();
     }
     
     if (varMap.count(NSSET_LIST_NAME)) {
@@ -441,6 +450,8 @@ main(int argc, char **argv)
         publicrequest.list_help();
     }
 
+    } catch (CORBA::Exception &e) {
+        std::cerr << "CORBA error" << std::endl;
     } catch (std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;;
         std::exit(2);

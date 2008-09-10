@@ -77,7 +77,13 @@ ContactClient::ContactClient():
         add_opt_type(SSN_NAME, std::string)
         add_opt_type(REGISTRAR_ID_NAME, unsigned int)
         add_opt_type(REGISTRAR_HANDLE_NAME, std::string)
-        add_opt_type(REGISTRAR_NAME_NAME, std::string);
+        add_opt_type(REGISTRAR_NAME_NAME, std::string)
+        add_opt_type(CRDATE_FROM_NAME, std::string)
+        add_opt_type(CRDATE_TO_NAME, std::string)
+        add_opt_type(UPDATE_FROM_NAME, std::string)
+        add_opt_type(UPDATE_TO_NAME, std::string)
+        add_opt_type(TRANSDATE_FROM_NAME, std::string)
+        add_opt_type(TRANSDATE_TO_NAME, std::string);
 }
 
 ContactClient::ContactClient(
@@ -200,6 +206,52 @@ ContactClient::list()
     if (m_varMap.count(REGISTRAR_NAME_NAME))
         conFilter->addRegistrar().addName().setValue(
                 m_varMap[REGISTRAR_NAME_NAME].as<std::string>());
+
+    ptime crDateFrom(boost::posix_time::time_from_string("1401-01-01 00:00:00"));
+    ptime crDateTo(boost::posix_time::max_date_time);
+    if (m_varMap.count(CRDATE_FROM_NAME))
+        crDateFrom = boost::posix_time::time_from_string(
+                m_varMap[CRDATE_FROM_NAME].as<std::string>());
+    if (m_varMap.count(CRDATE_TO_NAME))
+        crDateTo = boost::posix_time::time_from_string(
+                m_varMap[CRDATE_TO_NAME].as<std::string>());
+    conFilter->addCreateTime().setValue(
+            Database::DateTimeInterval(crDateFrom, crDateTo));
+
+    if (m_varMap.count(UPDATE_FROM_NAME) || m_varMap.count(UPDATE_TO_NAME)) {
+        ptime upDateFrom(boost::posix_time::time_from_string("1401-01-01 00:00:00"));
+        ptime upDateTo(boost::posix_time::max_date_time);
+        if (m_varMap.count(UPDATE_FROM_NAME))
+            upDateFrom = boost::posix_time::time_from_string(
+                    m_varMap[UPDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(UPDATE_TO_NAME))
+            upDateTo = boost::posix_time::time_from_string(
+                    m_varMap[UPDATE_TO_NAME].as<std::string>());
+        conFilter->addUpdateTime().setValue(
+                Database::DateTimeInterval(upDateFrom, upDateTo));
+    }
+    if (m_varMap.count(TRANSDATE_FROM_NAME) || m_varMap.count(TRANSDATE_TO_NAME)) {
+        ptime transDateFrom(boost::posix_time::time_from_string("1401-01-01 00:00:00"));
+        ptime transDateTo(boost::posix_time::max_date_time);
+        if (m_varMap.count(TRANSDATE_FROM_NAME))
+            transDateFrom = boost::posix_time::time_from_string(
+                    m_varMap[TRANSDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(TRANSDATE_TO_NAME))
+            transDateTo = boost::posix_time::time_from_string(
+                    m_varMap[TRANSDATE_TO_NAME].as<std::string>());
+        conFilter->addTransferTime().setValue(
+                Database::DateTimeInterval(transDateFrom, transDateTo));
+    }
+    if (m_varMap.count(DELDATE_FROM_NAME) || m_varMap.count(DELDATE_TO_NAME)) {
+        ptime delDateFrom(boost::posix_time::time_from_string("1401-01-01 00:00:00"));
+        ptime delDateTo(boost::posix_time::max_date_time);
+        if (m_varMap.count(DELDATE_FROM_NAME))
+            delDateFrom = boost::posix_time::time_from_string("1401-01-01 00:00:00");
+        if (m_varMap.count(DELDATE_TO_NAME))
+            delDateTo = boost::posix_time::time_from_string("1401-01-01 00:00:00");
+        conFilter->addDeleteTime().setValue(
+                Database::DateTimeInterval(delDateFrom, delDateTo));
+    }
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();

@@ -177,6 +177,8 @@ InvoiceClient::list()
 int
 InvoiceClient::archive()
 {
+    std::cout << "invoice archive" << std::endl;
+    return 1;
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
                 m_varMap["docgen-path"].as<std::string>(),

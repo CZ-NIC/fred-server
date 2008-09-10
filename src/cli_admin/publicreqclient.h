@@ -46,6 +46,11 @@
 #define PUBLICREQ_EPP_TYPE_NAME             "epp-type"
 #define PUBLICREQ_EPP_TYPE_NAME_DESC        "epp type description"
 
+#define PUBLICREQ_RESDATE_FROM_NAME         "res-date-from"
+#define PUBLICREQ_RESDATE_FROM_NAME_DESC    "response datetime from"
+#define PUBLICREQ_RESDATE_TO_NAME           "res-date-to"
+#define PUBLICREQ_RESDATE_TO_NAME_DESC      "response datetime to"
+
 #include <iostream>
 #include <boost/program_options.hpp>
 #include "old_utils/dbsql.h"

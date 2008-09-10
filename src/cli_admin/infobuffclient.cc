@@ -91,18 +91,18 @@ InfoBuffClient::make_info()
     std::auto_ptr<Register::Contact::Manager> conMan(
             Register::Contact::Manager::create(
                 &m_db,
-                m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
             Register::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
-                m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
                 &m_db,
-                m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::InfoBuffer::Manager> infoBuffMan(
             Register::InfoBuffer::Manager::create(
@@ -142,18 +142,18 @@ InfoBuffClient::get_chunk()
     std::auto_ptr<Register::Contact::Manager> conMan(
             Register::Contact::Manager::create(
                 &m_db,
-                m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
             Register::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
-                m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
                 &m_db,
-                m_varMap[RESTRICTED_HANDLES_NAME].as<unsigned int>())
+                m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
             );
     std::auto_ptr<Register::InfoBuffer::Manager> infoBuffMan(
             Register::InfoBuffer::Manager::create(
