@@ -16,20 +16,20 @@
 ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  const std::string& database,
                                  NameService *ns,
-                                 Conf& cfg,
+                                 Config::Conf& cfg,
                                  ccReg_User_i* _user) :
-  session_id_(_session_id), m_user(_user), m_db_manager(cfg.GetDBconninfo()), m_mailer_manager(ns) {
+  session_id_(_session_id), cfg_(cfg), m_user(_user), m_db_manager(database), m_mailer_manager(ns) {
   
   db.OpenDatabase(database.c_str());
 
   m_register_manager.reset(Register::Manager::create(&db,
-                                                     cfg.GetRestrictedHandles()));
+                                                     cfg.get<bool>("registry.restricted_handles")));
   m_register_manager->dbManagerInit(&m_db_manager);
   m_register_manager->initStates();
 
-  m_document_manager.reset(Register::Document::Manager::create(cfg.GetDocGenPath(),
-                                                               cfg.GetDocGenTemplatePath(),
-                                                               cfg.GetFileClientPath(),
+  m_document_manager.reset(Register::Document::Manager::create(cfg.get<std::string>("registry.docgen_path"),
+                                                               cfg.get<std::string>("registry.docgen_template_path"),
+                                                               cfg.get<std::string>("registry.fileclient_path"),
                                                                ns->getHostName()));
   m_publicrequest_manager.reset(Register::PublicRequest::Manager::create(&m_db_manager,
                                                                          m_register_manager->getDomainManager(),
@@ -192,7 +192,7 @@ void ccReg_Session_i::updateActivity() {
 
 bool ccReg_Session_i::isTimeouted() const {
   /* TODO: Timeout value should be in configuration */
-  ptime threshold = second_clock::local_time() - minutes(60);
+  ptime threshold = second_clock::local_time() - seconds(cfg_.get<unsigned>("adifd.session_timeout"));
   bool timeout = m_last_activity < threshold;
   LOGGER("corba").debug(boost::format("session `%1%' will timeout in %2% -- session %3%")
       % session_id_ % to_simple_string(m_last_activity - threshold)

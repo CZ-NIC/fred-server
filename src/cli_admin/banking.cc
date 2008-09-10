@@ -26,6 +26,7 @@
 #include "old_utils/dbsql.h"
 #include "old_utils/util.h"
 #include "old_utils/log.h"
+#include "log/logger.h"
 
 // make advane invoice from bank statement
 struct invBANK

@@ -16,11 +16,11 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<time.h>
-#include<string.h>
-#include<ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+#include <ctype.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -28,6 +28,7 @@
 
 #include "util.h"
 #include "log.h"
+#include "log/logger.h"
 #include "corba/epp/action.h"
 
 // generate randoma password contains characters  [a-z] [A-Z] and [0-9] with length PASS_LEN

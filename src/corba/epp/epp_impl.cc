@@ -188,11 +188,11 @@ static std::string formatTime(
 
 /// replace GetContactID
 static long int getIdOfContact(
-  DB *db, const char *handle, Conf& c, bool lock = false)
+  DB *db, const char *handle, Config::Conf& c, bool lock = false)
 {
-  if (lock && !c.GetLockEPPCommands()) lock = false;
+  if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
   std::auto_ptr<Register::Contact::Manager>
-      cman(Register::Contact::Manager::create(db, c.GetRestrictedHandles()) );
+      cman(Register::Contact::Manager::create(db, c.get<bool>("registry.restricted_handles")) );
   Register::Contact::Manager::CheckAvailType caType;
   long int ret = -1;
   try {
@@ -207,13 +207,13 @@ static long int getIdOfContact(
 
 /// replace GetNSSetID
 static long int getIdOfNSSet(
-  DB *db, const char *handle, Conf& c, bool lock = false)
+  DB *db, const char *handle, Config::Conf& c, bool lock = false)
 {
-  if (lock && !c.GetLockEPPCommands()) lock = false;
+  if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
   std::auto_ptr<Register::Zone::Manager>
       zman(Register::Zone::Manager::create(db) );
   std::auto_ptr<Register::NSSet::Manager> man(Register::NSSet::Manager::create(
-      db, zman.get(), c.GetRestrictedHandles()) );
+      db, zman.get(), c.get<bool>("registry.restricted_handles")) );
   Register::NSSet::Manager::CheckAvailType caType;
   long int ret = -1;
   try {
@@ -228,12 +228,12 @@ static long int getIdOfNSSet(
 
 /// replace GetKeySetID
 static long int
-getIdOfKeySet(DB *db, const char *handle, Conf &c, bool lock = false)
+getIdOfKeySet(DB *db, const char *handle, Config::Conf &c, bool lock = false)
 {
-    if (lock && !c.GetLockEPPCommands())
+    if (lock && !c.get<bool>("registry.lock_epp_commands"))
         lock = false;
     std::auto_ptr<Register::KeySet::Manager> man(
-            Register::KeySet::Manager::create(db, c.GetRestrictedHandles()));
+            Register::KeySet::Manager::create(db, c.get<bool>("registry.restricted_handles")));
     Register::KeySet::Manager::CheckAvailType caType;
     long int ret = -1;
     try {
@@ -248,9 +248,9 @@ getIdOfKeySet(DB *db, const char *handle, Conf &c, bool lock = false)
 
 /// replace GetDomainID
 static long int getIdOfDomain(
-  DB *db, const char *handle, Conf& c, bool lock = false, int* zone = NULL)
+  DB *db, const char *handle, Config::Conf& c, bool lock = false, int* zone = NULL)
 {
-  if (lock && !c.GetLockEPPCommands()) lock = false;
+  if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
   std::auto_ptr<Register::Zone::Manager> zm(
     Register::Zone::Manager::create(db)
   );
@@ -288,18 +288,21 @@ static long int getIdOfDomain(
 // Example implementational code for IDL interface ccReg::EPP
 //
 ccReg_EPP_i::ccReg_EPP_i(
-  const char *_db, MailerManager *_mm, NameService *_ns, Conf& _conf)
-    throw (DB_CONNECT_FAILED) :
-  mm(_mm), ns(_ns), conf(_conf), zone(NULL), testInfo(false)
+  const std::string &_db, MailerManager *_mm, NameService *_ns, Config::Conf& _conf)
+    throw (DB_CONNECT_FAILED) : database(_db),
+                                mm(_mm), 
+                                ns(_ns), 
+                                conf(_conf), 
+                                zone(NULL), 
+                                testInfo(false)
 {
   // objects are shared between threads!!!
   // init at the beginning and do not change
-  strncpy(database, _db, sizeof(database)-1);
   if (!db.OpenDatabase(database)) {
-    LOG(ALERT_LOG, "can not connect to DATABASE %s", database);
+    LOG(ALERT_LOG, "can not connect to DATABASE %s", database.c_str());
     throw DB_CONNECT_FAILED();
   }
-  LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database);
+  LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database.c_str());
   regMan.reset(Register::Manager::create(&db, false)); //TODO: replace 'false'
   regMan->initStates();
 }
@@ -370,7 +373,7 @@ bool ccReg_EPP_i::LoginSession(
     for (i=0; i<maxSession; i++)
       if (session[i].registrarID == registrarID)
         count++;
-    if ((int)count >= conf.GetSessionRegistrarMax()) {
+    if (count >= conf.get<unsigned>("rifd.session_registrar_max")) {
       LOG( DEBUG_LOG , "SESSION max per registrar exceeded clientID %d registrarID %d lang %d" , loginID , registrarID , language );
       //
       return false;
@@ -485,12 +488,12 @@ int ccReg_EPP_i::GetRegistrarLang(
 
 // test connection to database when server starting
 bool ccReg_EPP_i::TestDatabaseConnect(
-  const char *db)
+  const std::string& db)
 {
   DB DBsql;
 
   // connection info
-  strncpy(database, db, sizeof(database)-1);
+  database = db;
 
   if (DBsql.OpenDatabase(database) ) {
     LOG( NOTICE_LOG , "successfully  connect to DATABASE" );
@@ -2063,7 +2066,7 @@ ccReg::Response* ccReg_EPP_i::ObjectCheck(
         switch (act) {
           case EPP_ContactCheck:
             try {
-              std::auto_ptr<Register::Contact::Manager> cman( Register::Contact::Manager::create(&DBsql,conf.GetRestrictedHandles()) );
+              std::auto_ptr<Register::Contact::Manager> cman( Register::Contact::Manager::create(&DBsql,conf.get<bool>("registry.restricted_handles")) );
 
               LOG( NOTICE_LOG , "contact checkAvail handle [%s]" , (const char * ) chck[i] );
 
@@ -2106,7 +2109,7 @@ ccReg::Response* ccReg_EPP_i::ObjectCheck(
             try {
                 std::auto_ptr<Register::KeySet::Manager> kman(
                         Register::KeySet::Manager::create(
-                            &DBsql, conf.GetRestrictedHandles()));
+                            &DBsql, conf.get<bool>("registry.restricted_handles")));
                 LOG(NOTICE_LOG, "keyset checkAvail handle [%s]",
                         (const char *)chck[i]);
 
@@ -2161,7 +2164,7 @@ ccReg::Response* ccReg_EPP_i::ObjectCheck(
 
             try {
               std::auto_ptr<Register::Zone::Manager> zman( Register::Zone::Manager::create(&DBsql) );
-              std::auto_ptr<Register::NSSet::Manager> nman( Register::NSSet::Manager::create(&DBsql,zman.get(),conf.GetRestrictedHandles()) );
+              std::auto_ptr<Register::NSSet::Manager> nman( Register::NSSet::Manager::create(&DBsql,zman.get(),conf.get<bool>("registry.restricted_handles")) );
 
               LOG( NOTICE_LOG , "nsset checkAvail handle [%s]" , (const char * ) chck[i] );
 
@@ -2353,7 +2356,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
   // initialize managers for contact manipulation
   std::auto_ptr<Register::Contact::Manager>
       cman(Register::Contact::Manager::create(a.getDB(),
-          conf.GetRestrictedHandles()) );
+          conf.get<bool>("registry.restricted_handles")) );
   // first check handle for proper format
   if (!cman->checkHandleFormat(handle))
     // failure in handle check, throw exception
@@ -2542,7 +2545,7 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
           }
           if (!ret->code) {
 
-            ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id )); // notifier maneger before delete
+            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , id )); // notifier maneger before delete
 
             // test to  table  domain domain_contact_map and nsset_contact_map for relations
             if (DBsql.TestContactRelations(id) ) // can not be deleted
@@ -2641,7 +2644,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
           // for notification to old notify address, this address must be
           // discovered before change happen
           std::string oldNotifyEmail;
-          if (strlen(c.NotifyEmail) && !conf.GetDisableEPPNotifier())
+          if (strlen(c.NotifyEmail) && !conf.get<bool>("registry.disable_epp_notifier"))
             oldNotifyEmail = DBsql.GetValueFromTable(
               "contact", "notifyemail", "id", id
             );
@@ -2764,7 +2767,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
           }
           if (ret->code == COMMAND_OK) // run notifier
           {
-            ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
+            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , id ));
             ntf->addExtraEmails(oldNotifyEmail);
             ntf->Send(); // send messages with objectID
           }
@@ -2844,7 +2847,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
         Register::Contact::Manager::CheckAvailType caType;
         try {
           std::auto_ptr<Register::Contact::Manager> cman(
-              Register::Contact::Manager::create(&DBsql,conf.GetRestrictedHandles())
+              Register::Contact::Manager::create(&DBsql,conf.get<bool>("registry.restricted_handles"))
           );
           Register::NameIdPair nameId;
           caType = cman->checkAvail(handle,nameId);
@@ -2991,7 +2994,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
 
           if (ret->code == COMMAND_OK) // run notifier
           {
-            ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
+            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , id ));
             ntf->Send(); // send message with  objectID
           }
 
@@ -3234,7 +3237,7 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
 
             if (ret->code == COMMAND_OK) // run notifier
             {
-              ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
+              ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , id ));
               ntf->Send();
             }
 
@@ -3329,7 +3332,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
       zman(Register::Zone::Manager::create(a.getDB()) );
   std::auto_ptr<Register::NSSet::Manager>
       nman(Register::NSSet::Manager::create(a.getDB(), zman.get(),
-          conf.GetRestrictedHandles() ) );
+          conf.get<bool>("registry.restricted_handles") ) );
   // first check handle for proper format
   if (!nman->checkHandleFormat(handle))
     // failure in handle check, throw exception
@@ -3468,7 +3471,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
           }
           if (!ret->code) {
             // create notifier
-            ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
+            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , id ));
 
             // test to  table domain if relations to nsset
             if (DBsql.TestNSSetRelations(id) ) //  can not be delete
@@ -3564,7 +3567,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
       std::auto_ptr<Register::Zone::Manager> zman(
         Register::Zone::Manager::create(&DBsql));
       std::auto_ptr<Register::NSSet::Manager> nman(
-        Register::NSSet::Manager::create(&DBsql,zman.get(),conf.GetRestrictedHandles()));
+        Register::NSSet::Manager::create(&DBsql,zman.get(),conf.get<bool>("registry.restricted_handles")));
 
       if ( (DBsql.BeginAction(clientID, EPP_NSsetCreate, clTRID, XML, &paction) )) {
         if (DBsql.BeginTransaction() ) {
@@ -3617,7 +3620,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
             // test tech-c
             std::auto_ptr<Register::Contact::Manager>
                 cman(Register::Contact::Manager::create(&DBsql,
-                    conf.GetRestrictedHandles()) );
+                    conf.get<bool>("registry.restricted_handles")) );
             for (i = 0; i < tech.length() ; i++) {
               Register::Contact::Manager::CheckAvailType caType;
               try {
@@ -3745,7 +3748,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
             } else {
 
               if (level<0)
-                level = atoi(conf.GetNSSetLevel());
+                level = conf.get<int>("registry.nsset_level");
               // write to nsset table
               DBsql.INSERT("NSSET");
               DBsql.INTO("id");
@@ -3833,7 +3836,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
 
               if (ret->code == COMMAND_OK) // run notifier
               {
-                ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
+                ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , id ));
                 ntf->Send(); //send messages
               }
 
@@ -3924,7 +3927,7 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(
       std::auto_ptr<Register::Zone::Manager> zman(
         Register::Zone::Manager::create(&DBsql));
       std::auto_ptr<Register::NSSet::Manager> nman(
-        Register::NSSet::Manager::create(&DBsql,zman.get(),conf.GetRestrictedHandles()));
+        Register::NSSet::Manager::create(&DBsql,zman.get(),conf.get<bool>("registry.restricted_handles")));
 
       if ( (DBsql.BeginAction(clientID, EPP_NSsetUpdate, clTRID, XML, &paction) )) {
 
@@ -4133,7 +4136,7 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(
               if (DBsql.ObjectUpdate(nssetID, regID, authInfo_chg) ) {
 
                 // notifier
-                ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , nssetID ));
+                ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , nssetID ));
                 //  add to current tech-c added tech-c
                 for (i = 0; i < tech_add.length(); i++)
                   ntf->AddTechNew(tch_add[i]);
@@ -4514,7 +4517,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
           }
           if (!ret->code) {
                 // run notifier
-                ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
+                ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , id ));
 
                 if (DBsql.SaveObjectDelete(id) ) //save object as delete
                 {
@@ -4804,7 +4807,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
 
               // BEGIN notifier
               // notify default contacts
-              ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
+              ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , id ));
 
               for (i = 0; i < admin_add.length(); i++)
                 ntf->AddAdminNew(ac_add[i]); // notifier new ADMIN contact
@@ -5313,7 +5316,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
 
                     if (ret->code == COMMAND_OK) // run notifier
                     {
-                      ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
+                      ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , id ));
                       ntf->Send(); // send messages
                     }
 
@@ -5569,7 +5572,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew(
               }
             if (ret->code == COMMAND_OK) // run notifier
             {
-              ntf.reset(new EPPNotifier(conf.GetDisableEPPNotifier(),mm , &DBsql, regID , id ));
+              ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , id ));
               ntf->Send(); // send mesages to default contats
             }
             DBsql.QuitTransaction(ret->code);
@@ -5616,7 +5619,7 @@ ccReg_EPP_i::KeySetInfo(
 
     std::auto_ptr<Register::KeySet::Manager> kman(
             Register::KeySet::Manager::create(
-                a.getDB(), conf.GetRestrictedHandles())
+                a.getDB(), conf.get<bool>("registry.restricted_handles"))
             );
     // first check handle for proper format
     if (!kman->checkHandleFormat(handle))
@@ -5773,7 +5776,7 @@ ccReg_EPP_i::KeySetDelete(
                     if (!ret->code) {
                         //create notifier
                         ntf.reset(new EPPNotifier(
-                                    conf.GetDisableEPPNotifier(),
+                                    conf.get<bool>("registry.disable_epp_notifier"),
                                     mm,
                                     &DBsql,
                                     regID,
@@ -5870,7 +5873,7 @@ ccReg_EPP_i::KeySetCreate(
             std::auto_ptr<Register::KeySet::Manager> keyMan(
                     Register::KeySet::Manager::create(
                         &DBsql,
-                        conf.GetRestrictedHandles())
+                        conf.get<bool>("registry.restricted_handles"))
                     );
             if ((DBsql.BeginAction(
                             clientID,
@@ -5931,7 +5934,7 @@ ccReg_EPP_i::KeySetCreate(
                         std::auto_ptr<Register::Contact::Manager> cman(
                                 Register::Contact::Manager::create(
                                     &DBsql,
-                                    conf.GetRestrictedHandles())
+                                    conf.get<bool>("registry.restricted_handles"))
                                 );
                         for (i = 0; i < tech.length(); i++) {
                             Register::Contact::Manager::CheckAvailType caType;
@@ -6141,7 +6144,7 @@ ccReg_EPP_i::KeySetCreate(
                             if (ret->code == COMMAND_OK) {
                                 // run notifier and send notify (suprisingly) message
                                 ntf.reset(new EPPNotifier(
-                                            conf.GetDisableEPPNotifier(),
+                                            conf.get<bool>("registry.disable_epp_notifier"),
                                             mm,
                                             &DBsql,
                                             regID,
@@ -6217,7 +6220,7 @@ ccReg_EPP_i::KeySetUpdate(
         if (DbSql.OpenDatabase(database)) {
             std::auto_ptr<Register::KeySet::Manager> kMan(
                     Register::KeySet::Manager::create(
-                        &DbSql, conf.GetRestrictedHandles())
+                        &DbSql, conf.get<bool>("registry.restricted_handles"))
                     );
             if ((DbSql.BeginAction(clientId, EPP_KeySetUpdate, clTRID, XML, &paction))) {
                 if (DbSql.BeginTransaction()) {
@@ -6451,7 +6454,7 @@ ccReg_EPP_i::KeySetUpdate(
                         if (ret->code == 0) {
                             if (DbSql.ObjectUpdate(keysetId, regId, authInfo_chg)) {
                                 ntf.reset(new EPPNotifier(
-                                            conf.GetDisableEPPNotifier(), mm, &DbSql, regId, keysetId));
+                                            conf.get<bool>("registry.disable_epp_notifier"), mm, &DbSql, regId, keysetId));
 
                                 for (int i = 0; i < (int)tech_add.length(); i++)
                                     ntf->AddTechNew(techAdd[i]);
@@ -6847,9 +6850,9 @@ ccReg::Response* ccReg_EPP_i::ObjectSendAuthInfo(
         if (ret->code == 0) {
           std::auto_ptr<Register::Document::Manager> doc_manager(
             Register::Document::Manager::create(
-              conf.GetDocGenPath(),
-              conf.GetDocGenTemplatePath(),
-              conf.GetFileClientPath(),
+              conf.get<std::string>("registry.docgen_path"),
+              conf.get<std::string>("registry.docgen_template_path"),
+              conf.get<std::string>("registry.fileclient_path"),
               ns->getHostName()
             )
           );
@@ -6950,16 +6953,16 @@ ccReg::Response* ccReg_EPP_i::info(
         Register::Domain::Manager::create(a.getDB(), zoneMan.get())
     );
     std::auto_ptr<Register::Contact::Manager> conMan(
-        Register::Contact::Manager::create(a.getDB(),conf.GetRestrictedHandles())
+        Register::Contact::Manager::create(a.getDB(),conf.get<bool>("registry.restricted_handles"))
     );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
         Register::NSSet::Manager::create(
-            a.getDB(),zoneMan.get(),conf.GetRestrictedHandles()
+            a.getDB(),zoneMan.get(),conf.get<bool>("registry.restricted_handles")
         )
     );
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
-                a.getDB(), conf.GetRestrictedHandles()
+                a.getDB(), conf.get<bool>("registry.restricted_handles")
                 )
             );
     std::auto_ptr<Register::InfoBuffer::Manager> infoBufMan(
@@ -7017,16 +7020,16 @@ ccReg::Response* ccReg_EPP_i::getInfoResults(
         Register::Domain::Manager::create(a.getDB(), zoneMan.get())
     );
     std::auto_ptr<Register::Contact::Manager> conMan(
-        Register::Contact::Manager::create(a.getDB(),conf.GetRestrictedHandles())
+        Register::Contact::Manager::create(a.getDB(),conf.get<bool>("registry.restricted_handles"))
     );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
         Register::NSSet::Manager::create(
-            a.getDB(),zoneMan.get(),conf.GetRestrictedHandles()
+            a.getDB(),zoneMan.get(),conf.get<bool>("registry.restricted_handles")
         )
     );
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
-                a.getDB(), conf.GetRestrictedHandles()
+                a.getDB(), conf.get<bool>("registry.restricted_handles")
                 )
             );
     std::auto_ptr<Register::InfoBuffer::Manager> infoBufMan(
@@ -7050,7 +7053,7 @@ ccReg::Response* ccReg_EPP_i::getInfoResults(
   return a.getRet()._retn();
 }
 
-const char * ccReg_EPP_i::getDatabaseString()
+const std::string& ccReg_EPP_i::getDatabaseString()
 {
   return database;
 }

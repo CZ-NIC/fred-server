@@ -152,6 +152,7 @@ LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
 NSHOST = @NSHOST@
+NSPORT = @NSPORT@
 OBJEXT = @OBJEXT@
 OMNIORB4_CFLAGS = @OMNIORB4_CFLAGS@
 OMNIORB4_LIBS = @OMNIORB4_LIBS@
@@ -168,6 +169,7 @@ PKG_CONFIG = @PKG_CONFIG@
 POSTGRESQL_CFLAGS = @POSTGRESQL_CFLAGS@
 POSTGRESQL_LDFLAGS = @POSTGRESQL_LDFLAGS@
 POSTGRESQL_VERSION = @POSTGRESQL_VERSION@
+PREFIX = @PREFIX@
 RANLIB = @RANLIB@
 RIFDPORT = @RIFDPORT@
 SBINDIR = @SBINDIR@
@@ -224,8 +226,12 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LIBRARIES = liboldutils.a
-liboldutils_a_SOURCES = conf.cc dbsql.cc log.cc pqsql.cc timeclock.cc util.cc conf.h dbsql.h log.h pqsql.h timeclock.h util.h
-AM_CPPFLAGS = $(AM_CFLAGS) $(POSTGRESQL_CFLAGS) ${BOOST_CPPFLAGS} -I$(top_srcdir)/src 
+AM_CPPFLAGS = $(AM_CFLAGS) $(POSTGRESQL_CFLAGS) ${BOOST_CPPFLAGS}     \
+							-I$(top_srcdir)/src -I$(top_srcdir)/util 
+
+liboldutils_a_SOURCES = conf.cc dbsql.cc log.cc pqsql.cc timeclock.cc \
+												util.cc conf.h dbsql.h log.h pqsql.h timeclock.h util.h
+
 all: all-am
 
 .SUFFIXES:

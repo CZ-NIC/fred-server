@@ -31,6 +31,8 @@
 #include "db/manager.h"
 #include "model/model_filters.h"
 
+#include "conf/manager.h"
+
 #include "settings.h"
 
 using namespace boost::posix_time;
@@ -40,6 +42,7 @@ class ccReg_Session_i: public POA_ccReg::Session,
                        public PortableServer::RefCountServantBase {
 private:
   std::string session_id_;
+  Config::Conf& cfg_;
 
   ccReg_Registrars_i* m_registrars;
   ccReg_EPPActions_i* m_eppactions;
@@ -106,7 +109,7 @@ public:
   ccReg_Session_i(const std::string& _session_id, 
                   const std::string& database,
                   NameService *ns,
-                  Conf& cfg,
+                  Config::Conf& cfg,
                   ccReg_User_i* _user);
   ~ccReg_Session_i();
 

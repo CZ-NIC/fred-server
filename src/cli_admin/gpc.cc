@@ -22,6 +22,7 @@
 #include <errno.h>
 #include "gpc.h"
 #include "old_utils/log.h"
+#include "log/logger.h"
 
 void convert_date(
   char *dateStr, const char *date)
@@ -155,16 +156,16 @@ void GPC::ParseItem(
   seek= CopyString(gpc_item[numrecItem].date, tmp, seek, GPC_MAX_DATE);
 
 #ifdef DEBUG
-  debug("cislo protiuctu: %s\n" , gpc_item[numrecItem].accountOther );
-  debug("cislo dokladu  : %s\n" , gpc_item[numrecItem].evidNum );
-  debug("castka  %s kod zauctovani[%c]\n" , gpc_item[numrecItem].price , gpc_item[numrecItem].accountCode );
-  debug("VS [%s] KS [%s] SS[%s]\n" , gpc_item[numrecItem].varSymbol , gpc_item[numrecItem].konstSymbol , gpc_item[numrecItem].specSymbol );
-  debug("valuta date [%s]\n" , gpc_item[numrecItem].dateValuta );
-  debug("doplnujici udaj %s\n" , gpc_item[numrecItem].memo );
+  debug_print("cislo protiuctu: %s\n" , gpc_item[numrecItem].accountOther );
+  debug_print("cislo dokladu  : %s\n" , gpc_item[numrecItem].evidNum );
+  debug_print("castka  %s kod zauctovani[%c]\n" , gpc_item[numrecItem].price , gpc_item[numrecItem].accountCode );
+  debug_print("VS [%s] KS [%s] SS[%s]\n" , gpc_item[numrecItem].varSymbol , gpc_item[numrecItem].konstSymbol , gpc_item[numrecItem].specSymbol );
+  debug_print("valuta date [%s]\n" , gpc_item[numrecItem].dateValuta );
+  debug_print("doplnujici udaj %s\n" , gpc_item[numrecItem].memo );
 
-  debug("kod zmeny [%c]  druh dat[%c%c%c%c] \n" , gpc_item[numrecItem].changeCode ,
+  debug_print("kod zmeny [%c]  druh dat[%c%c%c%c] \n" , gpc_item[numrecItem].changeCode ,
       gpc_item[numrecItem].dataType[0] , gpc_item[numrecItem].dataType[1] , gpc_item[numrecItem].dataType[2] , gpc_item[numrecItem].dataType[3] );
-  debug("datum zuctovani [%s]\n" , gpc_item[numrecItem].date );
+  debug_print("datum zuctovani [%s]\n" , gpc_item[numrecItem].date );
 #endif
 
   numrecItem++;
@@ -207,13 +208,13 @@ void GPC::ParseHead(
   seek = CopyString(gpc_head.dateList, tmp, seek, GPC_MAX_DATE);
 
 #ifdef DEBUG
-  debug("cislo uctu klienta: %s\n" , gpc_head.accountNumber );
-  debug("nazev uctu klienta: %s\n" , gpc_head.accountName );
-  debug("stary zustatek: [%c]%s datum [%s]\n" , gpc_head.oldBalanceSign , gpc_head.oldBalance , gpc_head.dateOldBalance );
-  debug("novy zustatek: [%c]%s\n" , gpc_head.newBalanceSign , gpc_head.newBalance );
-  debug("kreditni obrat: [%c]%s\n" , gpc_head.creditSign , gpc_head.credit );
-  debug("debetni obrat: [%c]%s\n" , gpc_head.debetSign , gpc_head.debet );
-  debug("datum vypisu  [%s] poradi %d\n" , gpc_head.dateList , gpc_head.num );
+  debug_print("cislo uctu klienta: %s\n" , gpc_head.accountNumber );
+  debug_print("nazev uctu klienta: %s\n" , gpc_head.accountName );
+  debug_print("stary zustatek: [%c]%s datum [%s]\n" , gpc_head.oldBalanceSign , gpc_head.oldBalance , gpc_head.dateOldBalance );
+  debug_print("novy zustatek: [%c]%s\n" , gpc_head.newBalanceSign , gpc_head.newBalance );
+  debug_print("kreditni obrat: [%c]%s\n" , gpc_head.creditSign , gpc_head.credit );
+  debug_print("debetni obrat: [%c]%s\n" , gpc_head.debetSign , gpc_head.debet );
+  debug_print("datum vypisu  [%s] poradi %d\n" , gpc_head.dateList , gpc_head.num );
 #endif
 
 }

@@ -14,9 +14,9 @@
 #define GPC_MAX_MEMO 20
 
 #ifdef DEBUG
-#define debug printf
+#define debug_print printf
 #else
-#define debug  /* printf */
+#define debug_print  /* printf */
 #endif
 
 #define MAX_ITEMS 256 // maximum amount of list item

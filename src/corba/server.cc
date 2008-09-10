@@ -17,8 +17,8 @@
  */
 
 #include "config.h"
-
 #include "ccReg.hh"
+
 #ifdef RIFD
 #include "epp/epp_impl.h"
 #endif
@@ -43,65 +43,90 @@
 #include "old_utils/conf.h"
 #include "nameservice.h"
 
+#include "conf/manager.h"
 #include "log/logger.h"
 
-// proper cleanup in case of signal
-static CORBA::ORB_ptr orbToShutdown= NULL;
-static void signalHandler(
-  int signal)
-{
-  LOG(ERROR_LOG, "Daemon is closing");
-  if (orbToShutdown)
-    orbToShutdown->shutdown(0);
+/* pointer to ORB which have to be destroyed on signal received */
+static CORBA::ORB_ptr orb_to_shutdown = NULL;
+
+/* proper cleanup in case of SIGINT signal */
+static void sigint_handler(int signal) {
+  LOGGER("server").info("server is closing...");
+  if (orb_to_shutdown)
+    orb_to_shutdown->shutdown(0);
 }
 
-int main(
-  int argc, char** argv)
-{
 
-  try {
-    // database connection settings
-    char db[256];
+int main(int argc, char** argv) {
+    /* program options definition */
+    po::options_description cmd_opts;
+    cmd_opts.add_options()
+      ("config-test", "Run configuration check and view actual configuration");
 
-    Conf config; // READ CONFIG  file
-    bool readConfig=false;
-    int i;
-    // read config file
-    for( i = 1; i < argc; i ++ )
-    {
-      if( strcmp( argv[i] , "-C" ) == 0 || strcmp( argv[i] , "--config" ) == 0 )
-      {
-        if( i +1< argc ) // test for more parametr
-        {
-          std::cerr << "Read config file" << argv[i+1] << std::endl;
+    po::options_description database_opts("Database");
+    database_opts.add_options()
+      ("database.host",     po::value<std::string>(), "Database hostname")
+      ("database.port",     po::value<unsigned>(),    "Database port")
+      ("database.name",     po::value<std::string>(), "Database name")
+      ("database.user",     po::value<std::string>(), "Database username")
+      ("database.password", po::value<std::string>(), "Database password")
+      ("database.timeout",  po::value<unsigned>(),    "Database connection timeout");
+    po::options_description nameservice_opts("CORBA Nameservice");
+    nameservice_opts.add_options()
+      ("nameservice.host",  po::value<std::string>(), "CORBA nameservice hostname")
+      ("nameservice.port",  po::value<unsigned>(),    "CORBA nameservice port");
+    po::options_description log_opts("Logging");
+    log_opts.add_options()
+      ("log.type",          po::value<unsigned>(),    "Log type")
+      ("log.level",         po::value<unsigned>(),    "Log level");
+    po::options_description registry_opts("Registry");
+    registry_opts.add_options()
+      ("registry.restricted_handles",   po::value<bool>(),        "To force using restricted handles for NSSETs and CONTACTs")
+      ("registry.disable_epp_notifier", po::value<bool>(),        "Disable EPP notifier subsystem")
+      ("registry.lock_epp_commands",    po::value<bool>(),        "Database locking of multiple update epp commands on one object")
+      ("registry.nsset_level",          po::value<unsigned>(),    "Default report level of new NSSET")
+      ("registry.docgen_path",          po::value<std::string>(), "PDF generator path")
+      ("registry.docgen_template_path", po::value<std::string>(), "PDF generator template path")
+      ("registry.fileclient_path",      po::value<std::string>(), "File manager client path");
+    po::options_description rifd_opts("RIFD specific");
+    rifd_opts.add_options()
+      ("rifd.session_max",           po::value<unsigned>(), "RIFD maximum number of sessions")
+      ("rifd.session_timeout",       po::value<unsigned>(), "RIFD session timeout")
+      ("rifd.session_registrar_max", po::value<unsigned>(), "RIFD maximum munber active sessions per registrar");
+    po::options_description adifd_opts("ADIFD specific");
+    adifd_opts.add_options()
+      ("adifd.session_max",     po::value<unsigned>(), "ADIFD maximum number of sessions")
+      ("adifd.session_timeout", po::value<unsigned>(), "ADIFD session timeout")
+      ("adifd.session_garbage", po::value<unsigned>(), "ADIFD session garbage interval");    
 
-          if (config.ReadConfigFile(argv[i+1])) readConfig=true;
-          else
-          {
-            std::cerr << "Cannot read config file: " << argv[i+1] << std::endl;
-            exit(-1);
-          }
-        }
-      }
+    po::options_description file_opts;
+    file_opts.add(database_opts).add(nameservice_opts).add(log_opts).add(registry_opts).add(rifd_opts).add(adifd_opts);
+
+    Config::Manager cfm = Config::ConfigManager::instance_ref();
+    try {
+      cfm.init(argc, argv);
+      cfm.setCmdLineOptions(cmd_opts);
+      cfm.setCfgFileOptions(file_opts, CONFIG_FILE);
+      cfm.parse();
+    }
+    catch (Config::Manager::ConfigParseError &_err) {
+      std::cerr << "config parse error: " << _err.what() << std::endl;
+      exit(-20);
     }
 
-    if( !readConfig ) // if config is not read try read default config
-    {
-      if ( config.ReadConfigFile( CONFIG_FILE ) ) readConfig=true;
-      else {
-        std::cerr << "Cannot read default config file:" << CONFIG_FILE << std::endl;
-        exit(-1);
-      }
+    if (cfm.isHelp()) {
+      std::cout << "Usage: " << argv[0] << " [options]" << std::endl;
+      std::cout << "Options:" << std::endl;
+      cfm.printAvailableOptions(std::cout);
+      return 0;
     }
-
-    // 	    std::cerr << "start syslog at level " 
-    // 		      <<  config.GetSYSLOGlevel()   << std::endl;
-    // 	    std::cerr << "start syslog facility local" 
-    // 		      <<  config.GetSYSLOGlocal()   << std::endl;
-    // 	    setlogmask ( LOG_UPTO(  config.GetSYSLOGlevel()  )   );
-    // 	    openlog ( argv[0] , LOG_CONS | LOG_PID | LOG_NDELAY,  config.GetSYSLOGfacility() );
-    SysLogger::get().setLevel(config.GetSYSLOGlevel());
-    SysLogger::get().setFacility(config.GetSYSLOGlocal());
+   
+    if (cfm.isVersion()) {
+      std::cout << PACKAGE_STRING 
+                << " (built " << __DATE__ << " " << __TIME__ << ")" 
+                << std::endl;
+      return 0;
+    }
 
 #ifdef ADIF
     Logging::Manager::instance_ref().prefix("adifd");
@@ -112,171 +137,207 @@ int main(
 #ifdef RIFD
     Logging::Manager::instance_ref().prefix("rifd");
 #endif
-    
-    Logging::Manager::instance_ref().get("tracer").addHandler(Logging::Log::LT_SYSLOG);
-    Logging::Manager::instance_ref().get("tracer").setLevel(Logging::Log::LL_TRACE);
-    Logging::Manager::instance_ref().get("db").addHandler(Logging::Log::LT_SYSLOG);
-    Logging::Manager::instance_ref().get("db").setLevel(Logging::Log::LL_DEBUG);
-    Logging::Manager::instance_ref().get("register").addHandler(Logging::Log::LT_SYSLOG);
-    Logging::Manager::instance_ref().get("register").setLevel(Logging::Log::LL_DEBUG);
-    Logging::Manager::instance_ref().get("corba").addHandler(Logging::Log::LT_SYSLOG);
-    Logging::Manager::instance_ref().get("corba").setLevel(Logging::Log::LL_DEBUG);
-    Logging::Manager::instance_ref().get("mailer").addHandler(Logging::Log::LT_SYSLOG);
-    Logging::Manager::instance_ref().get("mailer").setLevel(Logging::Log::LL_DEBUG);
-    
-    Logging::Manager::instance_ref().get("rifd").addHandler(Logging::Log::LT_SYSLOG);
-    Logging::Manager::instance_ref().get("rifd").setLevel(Logging::Log::LL_DEBUG);
 
-    TRACE("tracer on");
+    /* get parsed configuration options */
+    Config::Conf cfg = cfm.get();
+
+    /* setting up logger */
+    Logging::Log::Level log_level = static_cast<Logging::Log::Level>(cfg.get<unsigned>("log.level"));
+    Logging::Log::Type  log_type  = static_cast<Logging::Log::Type>(cfg.get<unsigned>("log.type"));
+
+    Logging::Manager::instance_ref().get("tracer").addHandler(log_type);
+    Logging::Manager::instance_ref().get("tracer").setLevel(log_level);
+    Logging::Manager::instance_ref().get("db").addHandler(log_type);
+    Logging::Manager::instance_ref().get("db").setLevel(log_level);
+    Logging::Manager::instance_ref().get("register").addHandler(log_type);
+    Logging::Manager::instance_ref().get("register").setLevel(log_level);
+    Logging::Manager::instance_ref().get("corba").addHandler(log_type);
+    Logging::Manager::instance_ref().get("corba").setLevel(log_level);
+    Logging::Manager::instance_ref().get("mailer").addHandler(log_type);
+    Logging::Manager::instance_ref().get("mailer").setLevel(log_level);
+    Logging::Manager::instance_ref().get("old_log").addHandler(log_type);
+    Logging::Manager::instance_ref().get("old_log").setLevel(log_level);
+    
+    Logging::Manager::instance_ref().get("server").addHandler(log_type);
+    Logging::Manager::instance_ref().get("server").setLevel(Logging::Log::LL_DEBUG);
+    if (log_type != Logging::Log::LT_CONSOLE) {
+      Logging::Manager::instance_ref().get("server").addHandler(Logging::Log::LT_CONSOLE);
+    }
+
+    /* print some server settings info */
+    LOGGER("server").info(boost::format("configuration succesfully read from `%1%'")
+                                        % cfg.get<std::string>("conf"));
+
+    std::string conn_info = str(boost::format("host=%1% port=%2% dbname=%3% user=%4% password=%5% connect_timeout=%6%")
+                                          % cfg.get<std::string>("database.host")
+                                          % cfg.get<unsigned>("database.port")
+                                          % cfg.get<std::string>("database.name")
+                                          % cfg.get<std::string>("database.user")
+                                          % cfg.get<std::string>("database.password")
+                                          % cfg.get<unsigned>("database.timeout"));
+                              
+    LOGGER("server").info(boost::format("database connection set to: `%1%'")
+                                        % conn_info);
 
     /* Seed random number generator (need for authinfo generation!) */
+    LOGGER("server").info("initialization of random seed generator");
     srand(time(NULL));
 
-    // database string
-    strcpy( db , config.GetDBconninfo() );
-    LOGGER("db").info(boost::format("connection: %1%") % db);
-
-    // Initialise the ORB.
+  try {
+    /* initialize ORB */
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
-    orbToShutdown = orb;
-    signal(SIGINT,signalHandler);
-    // Obtain a reference to the root POA.
+    orb_to_shutdown = orb;
+    signal(SIGINT, sigint_handler);
+
+    /* obtain a reference to the root POA */
     CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
     PortableServer::POA_var rootPOA = PortableServer::POA::_narrow(obj);
 
-    // create POA for persistent references
+    /* create POA for persistent references */
     PortableServer::POAManager_var mgr = rootPOA->the_POAManager();
     CORBA::PolicyList pols;
     pols.length(2);
     pols[0] = rootPOA->create_lifespan_policy(PortableServer::PERSISTENT);
     pols[1] = rootPOA->create_id_assignment_policy(PortableServer::USER_ID);
-    PortableServer::POA_var poa =
-    rootPOA->create_POA("RegistryPOA",mgr.in(),pols);
+    PortableServer::POA_var poa = rootPOA->create_POA("RegistryPOA", mgr.in(), pols);
 
-    // prepare NameService object
-    std::string nameService = config.GetNameServiceHost();
-    LOGGER("corba").info(boost::format("nameservice host: %1%") % nameService );
-    //std::cerr << "nameService host: " << nameService << std::endl;
-    NameService ns(orb,nameService);
+    /* configure CORBA nameservice */
+    std::string nameservice = str(boost::format("%1%:%2%")
+                                                % cfg.get<std::string>("nameservice.host") 
+                                                % cfg.get<unsigned>("nameservice.port"));
 
+    LOGGER("server").info(boost::format("nameservice host set to: `%1%'") % nameservice);
+    NameService ns(orb, nameservice);
+
+    /* register specific object at nameservice */
 #ifdef ADIF
-    PortableServer::ObjectId_var adminObjectId =
-    PortableServer::string_to_ObjectId("Admin");
-    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db,&ns,config);
-    poa->activate_object_with_id(adminObjectId,myccReg_Admin_i);
+    PortableServer::ObjectId_var adminObjectId = PortableServer::string_to_ObjectId("Admin");
+    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(conn_info, &ns, cfg);
+    poa->activate_object_with_id(adminObjectId, myccReg_Admin_i);
     CORBA::Object_var adminObj = myccReg_Admin_i->_this();
     myccReg_Admin_i->_remove_ref();
-    ns.bind("Admin",adminObj);
+    ns.bind("Admin", adminObj);
 #endif
 
 #ifdef PIFD
-    PortableServer::ObjectId_var webWhoisObjectId =
-    PortableServer::string_to_ObjectId("WebWhois");
-    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(db,&ns,config,false);
-    poa->activate_object_with_id(webWhoisObjectId,myccReg_Admin_i);
+    PortableServer::ObjectId_var webWhoisObjectId = PortableServer::string_to_ObjectId("WebWhois");
+    ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(conn_info, &ns, cfg, false);
+    poa->activate_object_with_id(webWhoisObjectId, myccReg_Admin_i);
     CORBA::Object_var webWhoisObj = myccReg_Admin_i->_this();
     myccReg_Admin_i->_remove_ref();
-    ns.bind("WebWhois",webWhoisObj);
+    ns.bind("WebWhois", webWhoisObj);
 #endif
 
 #ifdef RIFD
     MailerManager mm(&ns);
-    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(db,&mm,&ns,config);
+    ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(conn_info, &mm, &ns, cfg);
 
-    // create session  use values from config
-    // std::cerr << "CreateSession: max " << config.GetSessionMax() << " timeout " << config.GetSessionWait() << std::endl;
-    LOGGER("rifd").info(boost::format("sessions max: %1%; timeout: %2%") % config.GetSessionMax() % config.GetSessionWait());
-    myccReg_EPP_i->CreateSession( config.GetSessionMax() , config.GetSessionWait() );
+    /* create session use values from config */
+    unsigned rifd_session_max     = cfg.get<unsigned>("rifd.session_max");
+    unsigned rifd_session_timeout = cfg.get<unsigned>("rifd.session_timeout");
+    LOGGER("server").info(boost::format("sessions max: %1%; timeout: %2%") 
+                                        % rifd_session_max
+                                        % rifd_session_timeout);
+    myccReg_EPP_i->CreateSession(rifd_session_max, rifd_session_timeout);
 
     ccReg::timestamp_var ts;
-    //std::cerr << "version: " << myccReg_EPP_i->version(ts) << std::endl;
-    //std::cerr << "timestamp: " << ts << std::endl;
-    LOGGER("rifd").notice(boost::format("version: %1% (%2%)") % myccReg_EPP_i->version(ts) % ts);
+    LOGGER("server").info(boost::format("RIFD server version: %1% (%2%)") 
+                                          % myccReg_EPP_i->version(ts)
+                                          % ts);
 
-    // load zone parametrs 
-    if( myccReg_EPP_i->loadZones() <= 0 ) {
-      LOG( ALERT_LOG , "Database error: load zones");
+    /* load zone parametrs */
+    if (myccReg_EPP_i->loadZones() <= 0) {
+      LOGGER("server").alert("database error: load zones");
       exit(-4);
     }
-
-    if( myccReg_EPP_i->LoadCountryCode() <= 0 ) { /// load all county code from table enum_country
-      LOG( ALERT_LOG , "Database error: load country code");
+    
+    /* load all county code from table enum_country */
+    if (myccReg_EPP_i->LoadCountryCode() <= 0) {
+      LOGGER("server").alert("database error: load country code");
       exit(-5);
     }
 
-    if( myccReg_EPP_i->LoadErrorMessages() <= 0 ) { // load error messages to memory
-      LOG( ALERT_LOG , "Database error: load  error messages");
+    /* load error messages to memory */
+    if (myccReg_EPP_i->LoadErrorMessages() <= 0) { 
+      LOGGER("server").alert("database error: load error messages");
       exit(-6);
     }
 
-    if( myccReg_EPP_i->LoadReasonMessages() <= 0 ) { // loead reason messages to memory
-      LOG( ALERT_LOG , "Database error: load reason messages" );
+    /* loead reason messages to memory */
+    if (myccReg_EPP_i->LoadReasonMessages() <= 0) { 
+      LOGGER("server").alert("database error: load reason messages" );
       exit(-7);
     }
 
-    PortableServer::ObjectId_var myccReg_EPP_iid =
-    PortableServer::string_to_ObjectId("Register");
-    poa->activate_object_with_id(myccReg_EPP_iid,myccReg_EPP_i);
+    PortableServer::ObjectId_var myccReg_EPP_iid = PortableServer::string_to_ObjectId("Register");
+    poa->activate_object_with_id(myccReg_EPP_iid, myccReg_EPP_i);
     myccReg_EPP_i->_remove_ref();
-    ns.bind("EPP",myccReg_EPP_i->_this());
+    ns.bind("EPP", myccReg_EPP_i->_this());
 #endif
 
-    // Obtain a POAManager, and tell the POA to start accepting
-    // requests on its objects.
+    /** 
+     * obtain a POAManager, and tell the POA to start accepting
+     * requests on its objects
+     */
     PortableServer::POAManager_var pman = poa->the_POAManager();
     pman->activate();
-    LOG(NOTICE_LOG , "Starting server %s" , argv[0] );
-    LOGGER("corba").notice(boost::format("starting server %1%") % argv[0]);
-    // disconnect from terminal
+    LOGGER("server").notice(boost::format("starting server %1%") % argv[0]);
+
+    /* disconnect from terminal */
     setsid();
     orb->run();
     orb->destroy();
   }
   catch (NameService::NOT_RUNNING&) {
-    LOG(ERROR_LOG, "Nameservice connection error");
+    LOGGER("server").error("nameservice: connection error");
     exit(-8);
   }
-
   catch (MailerManager::RESOLVE_FAILED) {
-    LOG(ERROR_LOG, "Cannot connect to mailer");
+    LOGGER("server").error("mailer: connection error");
     exit(-9);
   }
-
   catch (CORBA::SystemException& ex) {
-    LOG(ERROR_LOG, "Caught a CORBA:: %s " , ex._name() );
+    LOGGER("server").error(boost::format("CORBA system exception: %1%") % ex._name());
   }
   catch (CORBA::Exception& ex) {
-    LOG(ERROR_LOG, "Caught CORBA::Exception: %s " , ex._name() );
+    LOGGER("server").error(boost::format("CORBA exception: %1%") % ex._name());
   }
   catch (omniORB::fatalException& fe) {
-    LOG(ERROR_LOG,
-        "Caught  omniORB::fatalException: %s line: %d mesg: %s" ,
-        fe.file(), fe.line(), fe.errmsg()
-    );
+    LOGGER("server").error(boost::format("omniORB fatal exception: %1% line: %2% mesg: %3%")
+                                         % fe.file()
+                                         % fe.line()
+                                         % fe.errmsg());
   }
+  /* catch specific exception for each server */
 #ifdef RIFD
   catch (ccReg_EPP_i::DB_CONNECT_FAILED&) {
-    std::cerr << "Error: can't connect to database." << std::endl;
+    LOGGER("server").error("database: connection error");
     exit(-10);
   }
 #endif
 #ifdef ADIF
   catch (ccReg_Admin_i::DB_CONNECT_FAILED&) {
-    std::cerr << "Error: can't connect to database." << std::endl;
+    LOGGER("server").error("database: connection error");
     exit(-10);
   }
 #endif
 #ifdef PIFD 
   catch (ccReg_Admin_i::DB_CONNECT_FAILED&) {
-    std::cerr << "Error: can't connect to database." << std::endl;
+    LOGGER("server").error("database: connection error");
     exit(-10);
   }
 #endif
+  catch (Config::Conf::OptionNotFound &_err) {
+    LOGGER("server").error(boost::format("config: %1%") % _err.what());
+    exit(-11);
+  }
   catch (...) {
-    LOG(ERROR_LOG, "Unhandled exception");
+    LOGGER("server").error("ERROR: unhandled exception");
+    exit(-12);
   }
 
-  /* Do a cleanup */
-  LOG(INFO_LOG, "Exiting...");
+  /* do a cleanup */
+  LOGGER("server").info("exiting...");
   return 0;
 }
+

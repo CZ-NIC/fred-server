@@ -6,6 +6,9 @@
 #include <boost/format.hpp>
 #include <deque>
 
+#include <stdio.h>
+#include <stdarg.h>
+
 namespace Logging {
 
 class BaseLogType;
@@ -56,6 +59,11 @@ public:
 	void alert(const boost::format& _frmt);
 	void emerg(const std::string& _msg);
 	void emerg(const boost::format& _frmt);
+
+  /**
+   * support for old style formatting log
+   */
+  void message(int _prio, const char *_format, ...);
 	
 protected:	
 	std::deque<BaseLogType* > handlers;

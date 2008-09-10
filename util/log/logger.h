@@ -32,4 +32,6 @@ typedef Singleton<Logger> Manager;
 #define LOGGER(name) Logging::Manager::instance_ref().get(name)
 #define TRACE(msg) LOGGER("tracer").trace(msg)
 
+#define LOG LOGGER("old_log").message
+
 #endif /*LOGGER_H_*/

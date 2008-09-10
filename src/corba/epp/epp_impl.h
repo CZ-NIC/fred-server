@@ -5,6 +5,8 @@
 #include "old_utils/dbsql.h"
 #include "register/register.h"
 
+#include "conf/manager.h"
+
 struct Session
 {
   int clientID;
@@ -18,17 +20,18 @@ class Conf;
 //  class implementing IDL interface ccReg::EPP
 //
 class ccReg_EPP_i : public POA_ccReg::EPP,
-  public PortableServer::RefCountServantBase
+                    public PortableServer::RefCountServantBase
 {
 private:
   // Make sure all instances are built on the heap by making the
   // destructor non-public
   //virtual ~ccReg_EPP_i();
+  std::string database; // connection string to database
   MailerManager *mm;
   Database::Manager *dbman;
   
   NameService *ns;
-  Conf& conf;
+  Config::Conf& conf;
   DB db;
   std::auto_ptr<Register::Manager> regMan;
 public:
@@ -36,12 +39,12 @@ public:
   {
   };
   // standard constructor
-      ccReg_EPP_i(const char *db, MailerManager *_mm, NameService *_ns,
-        Conf& _conf) throw (DB_CONNECT_FAILED);
+      ccReg_EPP_i(const std::string &db, MailerManager *_mm, NameService *_ns,
+        Config::Conf& _conf) throw (DB_CONNECT_FAILED);
   virtual ~ccReg_EPP_i();
 
   // test connection 
-  bool TestDatabaseConnect(const char *db);
+  bool TestDatabaseConnect(const std::string& db);
 
   // load zones paremetrs from table zone
   int loadZones(); // load zones
@@ -420,7 +423,7 @@ public:
   ccReg::Response* getInfoResults(ccReg::Lists_out handles,
     CORBA::Long clientID, const char* clTRID, const char* XML);
 
-  const char *getDatabaseString();
+  const std::string& getDatabaseString();
 private:
   Session *session;
   int numSession; // number of active session
@@ -429,7 +432,6 @@ private:
   Mesg *ErrorMsg;
   Mesg *ReasonMsg;
   CountryCode *CC;
-  char database[128]; // connection string to database
   ccReg::Zones *zone;
   int max_zone;
   bool testInfo; // TODO: remove 

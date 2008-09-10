@@ -22,8 +22,8 @@
  */
 
 
-#ifndef MANAGER_H_
-#define MANAGER_H_
+#ifndef DB_MANAGER_H_
+#define DB_MANAGER_H_
 
 #include <string>
 #include "database.h"
@@ -82,4 +82,4 @@ protected:
 
 
 }
-#endif /*MANAGER_H_*/
+#endif /*DB_MANAGER_H_*/

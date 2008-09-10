@@ -63,6 +63,11 @@ public:
   }
 };
 
-#define LOG SysLogger::get().log
+/**
+ * commented out old style logger
+ *
+ *  #define LOG SysLogger::get().log
+ */
 
 #endif
+

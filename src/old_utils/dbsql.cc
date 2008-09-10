@@ -26,6 +26,7 @@
 #include "dbsql.h"
 #include "util.h"
 #include "log.h"
+#include "log/logger.h"
 #include "corba/epp/action.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>

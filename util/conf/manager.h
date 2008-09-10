@@ -1,5 +1,5 @@
-#ifndef MANAGER_H_
-#define MANAGER_H_
+#ifndef CONFIG_MANAGER_H_
+#define CONFIG_MANAGER_H_
 
 #include <vector>
 #include <string>
@@ -59,4 +59,4 @@ typedef Singleton<Config::Manager> ConfigManager;
 
 }
 
-#endif /*MANAGER_H_*/
+#endif /*CONFIG_MANAGER_H_*/

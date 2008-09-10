@@ -19,6 +19,8 @@
 #include "db/manager.h"
 #include "model/model_filters.h"
 
+#include "conf/manager.h"
+
 class NameService;
 
 class ccReg_Admin_i : public POA_ccReg::Admin,
@@ -26,7 +28,7 @@ class ccReg_Admin_i : public POA_ccReg::Admin,
 private:
   std::string m_connection_string;
   NameService *ns;
-  Conf& cfg;
+  Config::Conf& cfg;
   DB db;
   std::auto_ptr<Register::Manager> register_manager_;
   Database::Manager m_db_manager;
@@ -50,7 +52,7 @@ public:
   struct DB_CONNECT_FAILED {
   };
   // TEMP: bool _session_garbage - until splitting Whois and Admin interface 
-  ccReg_Admin_i(const std::string database, NameService *ns, Conf& _cfg, bool _session_garbage = true)
+  ccReg_Admin_i(const std::string database, NameService *ns, Config::Conf& _cfg, bool _session_garbage = true)
       throw (DB_CONNECT_FAILED);
   virtual ~ccReg_Admin_i();
   virtual void authenticateUser(const char* _username, const char* _password)

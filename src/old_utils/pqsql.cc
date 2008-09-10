@@ -31,6 +31,7 @@
 #include "pqsql.h"
 
 #include "log.h" // logger via syslog
+#include "log/logger.h"
 // constructor 
 PQ::PQ()
 {
@@ -81,6 +82,10 @@ bool PQ::OpenDatabase(
     return true;
   }
 
+}
+
+bool PQ::OpenDatabase(const std::string& conninfo) {
+  return OpenDatabase(conninfo.c_str());
 }
 
 // get number of selected rows and cols

@@ -21,6 +21,7 @@
 
 #include "messages.h"
 #include "old_utils/log.h"
+#include "log/logger.h"
 
 Mesg::Mesg(
   int num)

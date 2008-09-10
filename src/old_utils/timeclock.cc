@@ -20,6 +20,7 @@
 #include <time.h>
 
 #include "log.h"
+#include "log/logger.h"
 
 unsigned long long total_clock;
 unsigned long long time_clock;

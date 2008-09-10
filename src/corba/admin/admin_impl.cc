@@ -41,7 +41,7 @@
 
 ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
                              NameService *_ns,
-                             Conf& _cfg,
+                             Config::Conf& _cfg,
                              bool _session_garbage) throw (DB_CONNECT_FAILED) :
   m_connection_string(_database), ns(_ns), cfg(_cfg), m_db_manager(m_connection_string) {
   // these object are shared between threads (CAUTION)
@@ -52,7 +52,7 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
     throw DB_CONNECT_FAILED();
   }
 
-  register_manager_.reset(Register::Manager::create(&db, cfg.GetRestrictedHandles()));
+  register_manager_.reset(Register::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
   register_manager_->initStates();
 
   if (_session_garbage) {
@@ -90,7 +90,7 @@ void ccReg_Admin_i::checkHandle(const char* handle,
                                 ccReg::CheckHandleTypeSeq_out chso) {
   DB ldb;
   ldb.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&ldb,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&ldb, cfg.get<bool>("registry.restricted_handles")));
   ccReg::CheckHandleTypeSeq* chs = new ccReg::CheckHandleTypeSeq;
   Register::CheckHandleList chl;
   r->checkHandle(handle, chl, true); // allow IDN in whois queries
@@ -131,11 +131,9 @@ void ccReg_Admin_i::garbageSession() {
   while (session_garbage_active_) {
     LOGGER("corba").debug("session garbage procedure sleeped");
     
-    /// TODO: thread sleep interval should be in configuration
     boost::xtime sleep_time;
     boost::xtime_get(&sleep_time, boost::TIME_UTC);
-    sleep_time.sec += 150;
-    //boost::thread::sleep(sleep_time);
+    sleep_time.sec += cfg.get<unsigned>("adifd.session_garbage");
     cond_.timed_wait(scoped_lock, sleep_time);
     
     TRACE("[CALL] ccReg_Admin_i::garbageSession()");
@@ -254,7 +252,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
   }
   try { 
     std::auto_ptr<Register::Manager> regm(
-        Register::Manager::create(&ldb,cfg.GetRestrictedHandles())
+        Register::Manager::create(&ldb, cfg.get<bool>("registry.restricted_handles"))
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
     Register::Registrar::RegistrarList *rl = rm->getList();
@@ -281,7 +279,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
   }
   try {
     std::auto_ptr<Register::Manager> regm(
-        Register::Manager::create(&ldb,cfg.GetRestrictedHandles())
+        Register::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles"))
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
     Register::Registrar::RegistrarList *rl = rm->getList();
@@ -311,7 +309,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
   }
   try {
     std::auto_ptr<Register::Manager> regm(
-        Register::Manager::create(&ldb,cfg.GetRestrictedHandles())
+        Register::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles"))
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
     Register::Registrar::RegistrarList *rl = rm->getList();
@@ -342,7 +340,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
   }
   try {
     std::auto_ptr<Register::Manager> regm(
-        Register::Manager::create(&ldb,cfg.GetRestrictedHandles())
+        Register::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles"))
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
     Register::Registrar::RegistrarList *rl = rm->getList();
@@ -366,7 +364,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
 void ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData) {
   DB db;
   db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   Register::Registrar::Manager *rm = r->getRegistrarManager();
   Register::Registrar::RegistrarList *rl = rm->getList();
   Register::Registrar::Registrar *reg; // registrar to be created or updated
@@ -467,7 +465,7 @@ ccReg::ContactDetail* ccReg_Admin_i::getContactByHandle(const char* handle)
   if (!handle || !*handle)
     throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   Register::Contact::Manager *cr = r->getContactManager();
   std::auto_ptr<Register::Contact::List> cl(cr->createList());
   cl->setWildcardExpansion(false);
@@ -490,7 +488,7 @@ ccReg::ContactDetail* ccReg_Admin_i::getContactById(ccReg::TID id)
   if (!id)
     throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   Register::Contact::Manager *cr = r->getContactManager();
   std::auto_ptr<Register::Contact::List> cl(cr->createList());
 
@@ -561,7 +559,7 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetByHandle(const char* handle)
   if (!handle || !*handle)
     throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   Register::NSSet::Manager *nr = r->getNSSetManager();
   std::auto_ptr<Register::NSSet::List> nl(nr->createList());
   nl->setWildcardExpansion(false);
@@ -584,7 +582,7 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetById(ccReg::TID id)
   if (!id)
     throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   Register::NSSet::Manager *nr = r->getNSSetManager();
   std::auto_ptr<Register::NSSet::List> nl(nr->createList());
 
@@ -663,7 +661,7 @@ ccReg_Admin_i::getKeySetByHandle(const char *handle)
     db.OpenDatabase(m_connection_string.c_str());
     std::auto_ptr<Register::Manager> r(Register::Manager::create(
                 &db,
-                cfg.GetRestrictedHandles()));
+                cfg.get<bool>("registry.restricted_handles")));
     Register::KeySet::Manager *kr = r->getKeySetManager();
     std::auto_ptr<Register::KeySet::List> kl(kr->createList());
     kl->setWildcardExpansion(false);
@@ -693,7 +691,7 @@ ccReg_Admin_i::getKeySetById(ccReg::TID id)
     db.OpenDatabase(m_connection_string.c_str());
 
     std::auto_ptr<Register::Manager> r(
-            Register::Manager::create(&db, cfg.GetRestrictedHandles()));
+            Register::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
     Register::KeySet::Manager *kr = r->getKeySetManager();
     std::auto_ptr<Register::KeySet::List> kl(kr->createList());
 
@@ -723,7 +721,7 @@ ccReg_Admin_i::getKeySetById(ccReg::TID id)
     // db.OpenDatabase(m_connection_string.c_str());
 // 
     // std::auto_ptr<Register::Manager> regMan(
-            // Register::Manager::create(&db, cfg.GetRestrictedHandles()));
+            // Register::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
     // Register::KeySet::Manager *keyR = regMan->getKeySetManager();
     // std::auto_ptr<Register::KeySet::List> klist(keyR->createList());
     // 
@@ -752,7 +750,7 @@ ccReg::EPPAction* ccReg_Admin_i::getEPPActionBySvTRID(const char* svTRID)
   if (!svTRID || !*svTRID)
     throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   Register::Registrar::Manager *rm = r->getRegistrarManager();
   Register::Registrar::EPPActionList *eal = rm->getEPPActionList();
   eal->setSvTRIDFilter(svTRID);
@@ -779,7 +777,7 @@ ccReg::EPPAction* ccReg_Admin_i::getEPPActionById(ccReg::TID id)
     throw ccReg::Admin::SQL_ERROR();
   }  
   try {
-    std::auto_ptr<Register::Manager> r(Register::Manager::create(&ldb,cfg.GetRestrictedHandles()));
+    std::auto_ptr<Register::Manager> r(Register::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles")));
     Register::Registrar::Manager *rm = r->getRegistrarManager();
     Register::Registrar::EPPActionList *eal = rm->getEPPActionList();
     eal->setIdFilter(id);
@@ -850,7 +848,7 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
   if (!fqdn || !*fqdn)
     throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   Register::Domain::Manager *dm = r->getDomainManager();
   std::auto_ptr<Register::Domain::List> dl(dm->createList());
   dl->setWildcardExpansion(false);
@@ -874,7 +872,7 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainById(ccReg::TID id)
     throw ccReg::Admin::ObjectNotFound();
   db.OpenDatabase(m_connection_string.c_str());
 
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   Register::Domain::Manager *dm = r->getDomainManager();
   std::auto_ptr<Register::Domain::List> dl(dm->createList());
 
@@ -908,7 +906,7 @@ ccReg_Admin_i::getDomainsByKeySetId(ccReg::TID id, CORBA::Long limit)
     std::auto_ptr<Register::Manager> r(
             Register::Manager::create(
                 &db,
-                cfg.GetRestrictedHandles())
+                cfg.get<bool>("registry.restricted_handles"))
             );
     Register::Domain::Manager *dm = r->getDomainManager();
     std::auto_ptr<Register::Domain::List> dl(dm->createList());
@@ -941,7 +939,7 @@ ccReg_Admin_i::getDomainsByKeySetHandle(const char *handle, CORBA::Long limit)
     std::auto_ptr<Register::Manager> r(
             Register::Manager::create(
                 &db,
-                cfg.GetRestrictedHandles())
+                cfg.get<bool>("registry.restricted_handles"))
             );
     Register::Domain::Manager *dm = r->getDomainManager();
     std::auto_ptr<Register::Domain::List> dl(dm->createList());
@@ -973,7 +971,7 @@ ccReg::DomainDetails* ccReg_Admin_i::getDomainsByInverseKey(const char* key,
 
   DB db;
   db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   Register::Domain::Manager *dm = r->getDomainManager();
   std::auto_ptr<Register::Domain::List> dl(dm->createList());
   switch (type) {
@@ -1008,7 +1006,7 @@ ccReg::NSSetDetails* ccReg_Admin_i::getNSSetsByInverseKey(const char* key,
                                                           CORBA::Long limit) {
   DB db;
   db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   Register::Zone::Manager *zm = r->getZoneManager();
   Register::NSSet::Manager *nm = r->getNSSetManager();
   std::auto_ptr<Register::NSSet::List> nl(nm->createList());
@@ -1035,7 +1033,7 @@ ccReg_Admin_i::getKeySetsByInverseKey(
     DB db;
     db.OpenDatabase(m_connection_string.c_str());
     std::auto_ptr<Register::Manager> r(
-            Register::Manager::create(&db, cfg.GetRestrictedHandles()));
+            Register::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
     Register::KeySet::Manager *km = r->getKeySetManager();
     std::auto_ptr<Register::KeySet::List> kl(km->createList());
     switch (type) {
@@ -1064,7 +1062,7 @@ ccReg_Admin_i::getKeySetsByContactId(ccReg::TID id, CORBA::Long limit)
     std::auto_ptr<Register::Manager> r(
             Register::Manager::create(
                 &db,
-                cfg.GetRestrictedHandles())
+                cfg.get<bool>("registry.restricted_handles"))
             );
     Register::KeySet::Manager *km = r->getKeySetManager();
     std::auto_ptr<Register::KeySet::List> kl(km->createList());
@@ -1095,7 +1093,7 @@ ccReg_Admin_i::getKeySetsByContactHandle(const char *handle, CORBA::Long limit)
     std::auto_ptr<Register::Manager> r(
             Register::Manager::create(
                 &db,
-                cfg.GetRestrictedHandles())
+                cfg.get<bool>("registry.restricted_handles"))
             );
     Register::KeySet::Manager *km = r->getKeySetManager();
     std::auto_ptr<Register::KeySet::List> kl(km->createList());
@@ -1176,9 +1174,9 @@ ccReg::AuthInfoRequest::Detail* ccReg_Admin_i::getAuthInfoRequestById(ccReg::TID
   db.OpenDatabase(m_connection_string.c_str());
   MailerManager mm(ns);
   std::auto_ptr<Register::Document::Manager>
-      docman(Register::Document::Manager::create(cfg.GetDocGenPath(),
-                                                 cfg.GetDocGenTemplatePath(),
-                                                 cfg.GetFileClientPath(),
+      docman(Register::Document::Manager::create(cfg.get<std::string>("registry.docgen_path"),
+                                                 cfg.get<std::string>("registry.docgen_template_path"),
+                                                 cfg.get<std::string>("registry.fileclient_path"),
                                                  ns->getHostName() ) );
   std::auto_ptr<Register::AuthInfoRequest::Manager>
       r(Register::AuthInfoRequest::Manager::create(&db,&mm,docman.get()));
@@ -1279,9 +1277,9 @@ ccReg::Invoicing::Invoice* ccReg_Admin_i::getInvoiceById(ccReg::TID id)
   db.OpenDatabase(m_connection_string.c_str());
   MailerManager mm(ns);
   std::auto_ptr<Register::Document::Manager>
-      docman(Register::Document::Manager::create(cfg.GetDocGenPath(),
-                                                 cfg.GetDocGenTemplatePath(),
-                                                 cfg.GetFileClientPath(),
+      docman(Register::Document::Manager::create(cfg.get<std::string>("registry.docgen_path"),
+                                                 cfg.get<std::string>("registry.docgen_template_path"),
+                                                 cfg.get<std::string>("registry.fileclient_path"),
                                                  ns->getHostName() ) );
   std::auto_ptr<Register::Invoicing::Manager>
       invman(Register::Invoicing::Manager::create(&db,docman.get(),&mm));
@@ -1301,7 +1299,7 @@ ccReg::Invoicing::Invoice* ccReg_Admin_i::getInvoiceById(ccReg::TID id)
 CORBA::Long ccReg_Admin_i::getDomainCount(const char *zone) {
   DB db;
   db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   Register::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getDomainCount(zone);
   db.Disconnect();
@@ -1311,7 +1309,7 @@ CORBA::Long ccReg_Admin_i::getDomainCount(const char *zone) {
 CORBA::Long ccReg_Admin_i::getEnumNumberCount() {
   DB db;
   db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   Register::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getEnumNumberCount();
   db.Disconnect();
@@ -1321,7 +1319,7 @@ CORBA::Long ccReg_Admin_i::getEnumNumberCount() {
 ccReg::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
   DB db;
   db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   Register::Registrar::Manager *rm = r->getRegistrarManager();
   ccReg::EPPActionTypeSeq *et = new ccReg::EPPActionTypeSeq;
   
@@ -1338,7 +1336,7 @@ ccReg::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
 ccReg::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
   DB db;
   db.OpenDatabase(m_connection_string.c_str());
-  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.GetRestrictedHandles()));
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
   /* 
    * TEMP: this is for loading country codes from database - until new database 
    * library is not fully integrated into registrar library 
@@ -1457,9 +1455,9 @@ void ccReg_Admin_i::generateLetters() {
     
     MailerManager mm(ns);
     std::auto_ptr<Register::Document::Manager> docman(
-        Register::Document::Manager::create(cfg.GetDocGenPath(), 
-                                            cfg.GetDocGenTemplatePath(),
-                                            cfg.GetFileClientPath(), 
+        Register::Document::Manager::create(cfg.get<std::string>("registry.docgen_path"), 
+                                            cfg.get<std::string>("registry.docgen_template_path"),
+                                            cfg.get<std::string>("registry.fileclient_path"), 
                                             ns->getHostName()));
     std::auto_ptr<Register::Zone::Manager> zoneMan(
         Register::Zone::Manager::create(&ldb));
@@ -1468,15 +1466,15 @@ void ccReg_Admin_i::generateLetters() {
                                           zoneMan.get()));
     std::auto_ptr<Register::Contact::Manager> conMan(
         Register::Contact::Manager::create(&ldb,
-                                           cfg.GetRestrictedHandles()));
+                                           cfg.get<bool>("registry.restricted_handles")));
     std::auto_ptr<Register::NSSet::Manager> nssMan(
         Register::NSSet::Manager::create(&ldb,
                                          zoneMan.get(),
-                                         cfg.GetRestrictedHandles()));
+                                         cfg.get<bool>("registry.restricted_handles")));
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
                 &ldb,
-                cfg.GetRestrictedHandles()));
+                cfg.get<bool>("registry.restricted_handles")));
     std::auto_ptr<Register::Registrar::Manager> rMan(
         Register::Registrar::Manager::create(&ldb));
     std::auto_ptr<Register::Notify::Manager> notifyMan(
@@ -1514,9 +1512,9 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
   std::auto_ptr<Database::Connection> conn(m_db_manager.getConnection());
   std::auto_ptr<Register::Document::Manager> doc_manager(
           Register::Document::Manager::create(
-              cfg.GetDocGenPath(),
-              cfg.GetDocGenTemplatePath(),
-              cfg.GetFileClientPath(),
+              cfg.get<std::string>("registry.docgen_path"),
+              cfg.get<std::string>("registry.docgen_template_path"),
+              cfg.get<std::string>("registry.fileclient_path"),
               ns->getHostName())
           );
   std::auto_ptr<Register::PublicRequest::Manager> request_manager(
@@ -1582,9 +1580,9 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
   MailerManager mailer_manager(ns);  
   std::auto_ptr<Register::Document::Manager> doc_manager(
           Register::Document::Manager::create(
-              cfg.GetDocGenPath(),
-              cfg.GetDocGenTemplatePath(),
-              cfg.GetFileClientPath(),
+              cfg.get<std::string>("registry.docgen_path"),
+              cfg.get<std::string>("registry.docgen_template_path"),
+              cfg.get<std::string>("registry.fileclient_path"),
               ns->getHostName())
           );
   std::auto_ptr<Register::PublicRequest::Manager> request_manager(
@@ -1624,9 +1622,9 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
   std::auto_ptr<Database::Connection> conn(m_db_manager.getConnection());
   std::auto_ptr<Register::Document::Manager> doc_manager(
           Register::Document::Manager::create(
-              cfg.GetDocGenPath(),
-              cfg.GetDocGenTemplatePath(),
-              cfg.GetFileClientPath(),
+              cfg.get<std::string>("registry.docgen_path"),
+              cfg.get<std::string>("registry.docgen_template_path"),
+              cfg.get<std::string>("registry.fileclient_path"),
               ns->getHostName())
           );
   std::auto_ptr<Register::PublicRequest::Manager> request_manager(

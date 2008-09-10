@@ -792,6 +792,7 @@ DBNAME
 DBUSER
 DBPASS
 NSHOST
+NSPORT
 contextname
 RIFDPORT
 PIFDPORT
@@ -801,6 +802,7 @@ DATAROOTDIR
 SBINDIR
 SYSCONFDIR
 LOCALSTATEDIR
+PREFIX
 IDLDIR
 LIBIDN_CFLAGS
 LIBIDN_LIBS
@@ -1452,6 +1454,7 @@ Optional Packages:
   --with-dbuser           Database user name [fred]
   --with-dbpass           Database access password [password]
   --with-nshost           CORBA nameservice host name [localhost]
+  --with-nsport           CORBA nameservice port [2809]
   --with-nscontext        CORBA nameservice context name [fred]
   --with-rifdport         CORBA fred-rifd port [2222]
   --with-pifdport         CORBA fred-pifd port [2223]
@@ -6432,11 +6435,10 @@ pkg_failed=no
 { echo "$as_me:$LINENO: checking for OMNIORB4" >&5
 echo $ECHO_N "checking for OMNIORB4... $ECHO_C" >&6; }
 
-if test -n "$PKG_CONFIG"; then
-    if test -n "$OMNIORB4_CFLAGS"; then
-        pkg_cv_OMNIORB4_CFLAGS="$OMNIORB4_CFLAGS"
-    else
-        if test -n "$PKG_CONFIG" && \
+if test -n "$OMNIORB4_CFLAGS"; then
+    pkg_cv_OMNIORB4_CFLAGS="$OMNIORB4_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"omniORB4, omniDynamic4, omnithread3\"") >&5
   ($PKG_CONFIG --exists --print-errors "omniORB4, omniDynamic4, omnithread3") 2>&5
   ac_status=$?
@@ -6446,15 +6448,13 @@ if test -n "$PKG_CONFIG"; then
 else
   pkg_failed=yes
 fi
-    fi
-else
-	pkg_failed=untried
+ else
+    pkg_failed=untried
 fi
-if test -n "$PKG_CONFIG"; then
-    if test -n "$OMNIORB4_LIBS"; then
-        pkg_cv_OMNIORB4_LIBS="$OMNIORB4_LIBS"
-    else
-        if test -n "$PKG_CONFIG" && \
+if test -n "$OMNIORB4_LIBS"; then
+    pkg_cv_OMNIORB4_LIBS="$OMNIORB4_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"omniORB4, omniDynamic4, omnithread3\"") >&5
   ($PKG_CONFIG --exists --print-errors "omniORB4, omniDynamic4, omnithread3") 2>&5
   ac_status=$?
@@ -6464,9 +6464,8 @@ if test -n "$PKG_CONFIG"; then
 else
   pkg_failed=yes
 fi
-    fi
-else
-	pkg_failed=untried
+ else
+    pkg_failed=untried
 fi
 
 
@@ -6479,9 +6478,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "omniORB4, omniDynamic4, omnithread3"`
+	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "omniORB4, omniDynamic4, omnithread3" 2>&1`
         else
-	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "omniORB4, omniDynamic4, omnithread3"`
+	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --print-errors "omniORB4, omniDynamic4, omnithread3" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$OMNIORB4_PKG_ERRORS" >&5
@@ -11061,6 +11060,18 @@ else
 fi
 
 
+# corba nameservice port
+
+# Check whether --with-nsport was given.
+if test "${with_nsport+set}" = set; then
+  withval=$with_nsport; NSPORT=$withval
+
+else
+  NSPORT=2809
+
+fi
+
+
 # corba nameservice context
 
 # Check whether --with-nscontext was given.
@@ -11295,6 +11306,39 @@ echo "${ECHO_T}yes" >&6; }
   exec_prefix=$exec_prefix_save
 
 
+  EXP_VAR=PREFIX
+  FROM_VAR=$prefix
+
+    prefix_save=$prefix
+  exec_prefix_save=$exec_prefix
+
+    if test "x$prefix" = "xNONE"; then
+    prefix="$ac_default_prefix"
+  fi
+    if test "x$exec_prefix" = "xNONE"; then
+    exec_prefix=$prefix
+  fi
+
+  full_var="$FROM_VAR"
+
+  if test "x$FROM_VAR" = "xNONE"; then
+      full_var=$prefix
+  fi
+
+    while true; do
+    new_full_var="`eval echo $full_var`"
+    if test "x$new_full_var" = "x$full_var"; then break; fi
+    full_var=$new_full_var
+  done
+
+    full_var=$new_full_var
+  PREFIX="$full_var"
+
+
+    prefix=$prefix_save
+  exec_prefix=$exec_prefix_save
+
+
 #put context name into config.h file
 
 cat >>confdefs.h <<_ACEOF
@@ -11375,11 +11419,10 @@ pkg_failed=no
 { echo "$as_me:$LINENO: checking for LIBIDN" >&5
 echo $ECHO_N "checking for LIBIDN... $ECHO_C" >&6; }
 
-if test -n "$PKG_CONFIG"; then
-    if test -n "$LIBIDN_CFLAGS"; then
-        pkg_cv_LIBIDN_CFLAGS="$LIBIDN_CFLAGS"
-    else
-        if test -n "$PKG_CONFIG" && \
+if test -n "$LIBIDN_CFLAGS"; then
+    pkg_cv_LIBIDN_CFLAGS="$LIBIDN_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"libidn >= 0.5.18\"") >&5
   ($PKG_CONFIG --exists --print-errors "libidn >= 0.5.18") 2>&5
   ac_status=$?
@@ -11389,15 +11432,13 @@ if test -n "$PKG_CONFIG"; then
 else
   pkg_failed=yes
 fi
-    fi
-else
-	pkg_failed=untried
+ else
+    pkg_failed=untried
 fi
-if test -n "$PKG_CONFIG"; then
-    if test -n "$LIBIDN_LIBS"; then
-        pkg_cv_LIBIDN_LIBS="$LIBIDN_LIBS"
-    else
-        if test -n "$PKG_CONFIG" && \
+if test -n "$LIBIDN_LIBS"; then
+    pkg_cv_LIBIDN_LIBS="$LIBIDN_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"libidn >= 0.5.18\"") >&5
   ($PKG_CONFIG --exists --print-errors "libidn >= 0.5.18") 2>&5
   ac_status=$?
@@ -11407,9 +11448,8 @@ if test -n "$PKG_CONFIG"; then
 else
   pkg_failed=yes
 fi
-    fi
-else
-	pkg_failed=untried
+ else
+    pkg_failed=untried
 fi
 
 
@@ -11422,9 +11462,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBIDN_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "libidn >= 0.5.18"`
+	        LIBIDN_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libidn >= 0.5.18" 2>&1`
         else
-	        LIBIDN_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "libidn >= 0.5.18"`
+	        LIBIDN_PKG_ERRORS=`$PKG_CONFIG --print-errors "libidn >= 0.5.18" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBIDN_PKG_ERRORS" >&5
@@ -11657,7 +11697,7 @@ echo "$as_me: error: Libidn not found" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
-ac_config_files="$ac_config_files Makefile util/Makefile util/types/Makefile util/db/Makefile util/log/Makefile util/conf/Makefile src/Makefile src/old_utils/Makefile src/model/Makefile src/register/Makefile src/corba/Makefile src/corba/admin/Makefile src/corba/epp/Makefile src/cli_admin/Makefile fred-server.spec conf/server.conf init-scripts/fred-server src/cli_admin/banking.sh"
+ac_config_files="$ac_config_files Makefile util/Makefile util/types/Makefile util/db/Makefile util/log/Makefile util/conf/Makefile src/Makefile src/old_utils/Makefile src/model/Makefile src/register/Makefile src/corba/Makefile src/corba/admin/Makefile src/corba/epp/Makefile src/cli_admin/Makefile fred-server.spec config/server.conf init-scripts/fred-server src/cli_admin/banking.sh"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -12414,7 +12454,7 @@ do
     "src/corba/epp/Makefile") CONFIG_FILES="$CONFIG_FILES src/corba/epp/Makefile" ;;
     "src/cli_admin/Makefile") CONFIG_FILES="$CONFIG_FILES src/cli_admin/Makefile" ;;
     "fred-server.spec") CONFIG_FILES="$CONFIG_FILES fred-server.spec" ;;
-    "conf/server.conf") CONFIG_FILES="$CONFIG_FILES conf/server.conf" ;;
+    "config/server.conf") CONFIG_FILES="$CONFIG_FILES config/server.conf" ;;
     "init-scripts/fred-server") CONFIG_FILES="$CONFIG_FILES init-scripts/fred-server" ;;
     "src/cli_admin/banking.sh") CONFIG_FILES="$CONFIG_FILES src/cli_admin/banking.sh" ;;
 
@@ -12697,6 +12737,7 @@ DBNAME!$DBNAME$ac_delim
 DBUSER!$DBUSER$ac_delim
 DBPASS!$DBPASS$ac_delim
 NSHOST!$NSHOST$ac_delim
+NSPORT!$NSPORT$ac_delim
 contextname!$contextname$ac_delim
 RIFDPORT!$RIFDPORT$ac_delim
 PIFDPORT!$PIFDPORT$ac_delim
@@ -12706,13 +12747,14 @@ DATAROOTDIR!$DATAROOTDIR$ac_delim
 SBINDIR!$SBINDIR$ac_delim
 SYSCONFDIR!$SYSCONFDIR$ac_delim
 LOCALSTATEDIR!$LOCALSTATEDIR$ac_delim
+PREFIX!$PREFIX$ac_delim
 IDLDIR!$IDLDIR$ac_delim
 LIBIDN_CFLAGS!$LIBIDN_CFLAGS$ac_delim
 LIBIDN_LIBS!$LIBIDN_LIBS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 93; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 95; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
@@ -13113,21 +13155,22 @@ echo "$as_me: $ac_file is unchanged" >&6;}
   fi
   rm -f "$tmp/out12"
 # Compute $ac_file's index in $config_headers.
+_am_arg=$ac_file
 _am_stamp_count=1
 for _am_header in $config_headers :; do
   case $_am_header in
-    $ac_file | $ac_file:* )
+    $_am_arg | $_am_arg:* )
       break ;;
     * )
       _am_stamp_count=`expr $_am_stamp_count + 1` ;;
   esac
 done
-echo "timestamp for $ac_file" >`$as_dirname -- $ac_file ||
-$as_expr X$ac_file : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X$ac_file : 'X\(//\)[^/]' \| \
-	 X$ac_file : 'X\(//\)$' \| \
-	 X$ac_file : 'X\(/\)' \| . 2>/dev/null ||
-echo X$ac_file |
+echo "timestamp for $_am_arg" >`$as_dirname -- "$_am_arg" ||
+$as_expr X"$_am_arg" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$_am_arg" : 'X\(//\)[^/]' \| \
+	 X"$_am_arg" : 'X\(//\)$' \| \
+	 X"$_am_arg" : 'X\(/\)' \| . 2>/dev/null ||
+echo X"$_am_arg" |
     sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
 	    s//\1/
 	    q
@@ -13164,7 +13207,7 @@ echo "$as_me: executing $ac_file commands" >&6;}
   # each Makefile.in and add a new line on top of each file to say so.
   # Grep'ing the whole file is not good either: AIX grep has a line
   # limit of 2048, but all sed's we know have understand at least 4000.
-  if sed 10q "$mf" | grep '^#.*generated by automake' > /dev/null 2>&1; then
+  if sed -n 's,^#.*generated by automake.*,X,p' "$mf" | grep X >/dev/null 2>&1; then
     dirpart=`$as_dirname -- "$mf" ||
 $as_expr X"$mf" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
 	 X"$mf" : 'X\(//\)[^/]' \| \

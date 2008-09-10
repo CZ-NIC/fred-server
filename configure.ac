@@ -119,6 +119,12 @@ AC_ARG_WITH([nshost], [AS_HELP_STRING([--with-nshost],
 			[AC_SUBST([NSHOST], [$withval])],
 			[AC_SUBST([NSHOST], [localhost])])
 
+# corba nameservice port
+AC_ARG_WITH([nsport], [AS_HELP_STRING([--with-nsport],
+			[CORBA nameservice port [2809]])],
+			[AC_SUBST([NSPORT], [$withval])],
+			[AC_SUBST([NSPORT], [2809])])
+
 # corba nameservice context
 AC_ARG_WITH([nscontext], [AS_HELP_STRING([--with-nscontext],
 			[CORBA nameservice context name [fred]])],
@@ -151,6 +157,7 @@ AS_AC_EXPAND([DATAROOTDIR], [$datarootdir])
 AS_AC_EXPAND([SBINDIR], [$sbindir])
 AS_AC_EXPAND([SYSCONFDIR], [$sysconfdir])
 AS_AC_EXPAND([LOCALSTATEDIR], [$localstatedir])
+AS_AC_EXPAND([PREFIX], [$prefix])
 
 #put context name into config.h file
 AC_DEFINE_UNQUOTED([CONFIG_FILE], [["]$SYSCONFDIR/fred/server.conf["]], [location of fred config file])
@@ -220,18 +227,18 @@ AC_CONFIG_FILES([Makefile
                  util/Makefile
                  util/types/Makefile
                  util/db/Makefile
-		 util/log/Makefile
-		 util/conf/Makefile
-		 src/Makefile
-		 src/old_utils/Makefile
-		 src/model/Makefile
-		 src/register/Makefile
-		 src/corba/Makefile
-		 src/corba/admin/Makefile
-		 src/corba/epp/Makefile
-		 src/cli_admin/Makefile
-		 fred-server.spec
-		 conf/server.conf
-		 init-scripts/fred-server
-		 src/cli_admin/banking.sh])
+                 util/log/Makefile
+                 util/conf/Makefile
+                 src/Makefile
+                 src/old_utils/Makefile
+                 src/model/Makefile
+                 src/register/Makefile
+                 src/corba/Makefile
+                 src/corba/admin/Makefile
+                 src/corba/epp/Makefile
+                 src/cli_admin/Makefile
+                 fred-server.spec
+                 config/server.conf
+                 init-scripts/fred-server
+                 src/cli_admin/banking.sh])
 AC_OUTPUT

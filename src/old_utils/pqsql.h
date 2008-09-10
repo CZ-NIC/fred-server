@@ -14,6 +14,8 @@ public:
   //  connect to database whith  conninfo string
   bool OpenDatabase(
     const char *conninfo);
+  bool OpenDatabase(
+    const std::string& conninfo);
   // exec sqlString 
   bool ExecSQL(
     const char *sqlString);

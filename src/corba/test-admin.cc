@@ -5,6 +5,8 @@
 #include "corba/ccReg.hh"
 #include "log/logger.h"
 
+#include "conf/manager.h"
+
 const char *corbaOpts[][2] = {
     {"nativeCharCodeSet", "UTF-8"},
     {NULL, NULL},
@@ -38,8 +40,8 @@ main(int argc, char *argv[])
     database << "dbname=fred user=fred host=localhost port=22345";
     CorbaClient cc(argc, argv, nsAddr.str());
     CORBA::Object_var o = cc.getNS()->resolve("EPP");
-    Conf cfg;
-    ccReg_Admin_i *adminImpl = new ccReg_Admin_i(database.str(), cc.getNS(), cfg );
+    Config::Conf cfg;
+    ccReg_Admin_i *adminImpl = new ccReg_Admin_i(database.str(), cc.getNS(), cfg);
     ccReg::DomainDetails *ddets;
     ccReg::DomainDetail *ddet;
     ccReg::KeySetDetails *kdets;

@@ -22,6 +22,7 @@
 
 #include "notifier.h"
 #include "old_utils/log.h"
+#include "log/logger.h"
 
 // mailer manager
 #include "register/mailer.h"

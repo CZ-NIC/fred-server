@@ -22,6 +22,7 @@
 #include <time.h>
 
 #include "log.h"
+#include "log/logger.h"
 
 #define MAX_LINE 256
 #define KEY_MAX 30

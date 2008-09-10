@@ -22,13 +22,16 @@ void Manager::init(int _argc, char* _argv[]) {
 }
 
 void Manager::_init() {
-	basic_opts.add_options() ("help,h", "Show this help") ("version,v",
-			"Print version and exit");
+	basic_opts.add_options() 
+    ("help,h", "Show this help")
+    ("version,v", "Print version and exit");
 }
 
 void Manager::_parseCmdLine(Conf &_conf) {
-	po::store(po::parse_command_line(argc, argv, basic_opts), _conf);
-	po::notify(_conf);
+  po::parsed_options cmd_parsed = po::command_line_parser(argc, argv).options(basic_opts).allow_unregistered().run();
+  po::store(cmd_parsed, _conf);
+	// po::store(po::parse_command_line(argc, argv, basic_opts), _conf);
+	// po::notify(_conf);
 }
 
 void Manager::_parseCfgFile(const std::string& _name, Conf &_conf) throw(ConfigParseError) {
@@ -38,7 +41,7 @@ void Manager::_parseCfgFile(const std::string& _name, Conf &_conf) throw(ConfigP
 	}
 	try {
 		po::store(po::parse_config_file(cfg_file, cfg_file_opts), _conf);
-		po::notify(_conf);
+		// po::notify(_conf);
 		cfg_file.close();
 	}
 	catch (std::exception& ex) {
@@ -52,7 +55,7 @@ void Manager::setCmdLineOptions(const po::options_description& _opts) {
 }
 
 void Manager::setCfgFileOptions(const po::options_description& _opts,
-		const std::string& _default) {
+                                const std::string& _default) {
 	cfg_file_opts.add(_opts);
 
 	if (!_default.empty()) {
@@ -66,8 +69,9 @@ void Manager::_parse(Conf &_conf) throw(ConfigParseError) {
 	try {
 		_parseCmdLine(_conf);
 		if (data.count("conf")) {
-			std::cout << "parsing given config file: " << _conf["conf"].as<std::string>() << std::endl;
+			// std::cout << "parsing given config file: " << _conf["conf"].as<std::string>() << std::endl;
 			_parseCfgFile(_conf["conf"].as<std::string>(), _conf);
+      po::notify(_conf);
 		}
 	}
 	catch (std::exception& ex) {

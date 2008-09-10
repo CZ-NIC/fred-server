@@ -1,3 +1,12 @@
+2008-09-20 Jiri Sadek
+
+   * Both logging methods merged to new logger by LOG macro redefinion
+	 
+   * New configuration format and storage class processing (used
+	 boost's program_options approach)
+
+   * New configuration options added (see config/server.conf.in for details)
+
 2008-08-15 Jiri Sadek, Ales Dolezal, Jaromir Talir (version 2.0.0)
 
    * Merged history and dnssec branches

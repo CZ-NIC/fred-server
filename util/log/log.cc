@@ -158,4 +158,22 @@ void Log::emerg(const boost::format& _frmt) {
 	emerg(_frmt.str());
 }
 
+
+void Log::message(int _prio, const char *_format, ...) {
+  if (level < _prio)
+    return;
+
+  char msg[2048];
+  va_list args;
+  va_start(args, _format);
+  vsnprintf(msg, 2047, _format, args);
+
+ 	std::deque<BaseLogType*>::iterator it = handlers.begin();
+	for (; it != handlers.end(); ++it) {
+		(*it)->msg(static_cast<Logging::Log::Level>(_prio), msg, context);
+	}
+
+  va_end(args);
+}
+
 }
