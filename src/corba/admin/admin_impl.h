@@ -146,7 +146,9 @@ public:
   ccReg::ObjectStatusDescSeq* getDomainStatusDescList(const char *lang);
   ccReg::ObjectStatusDescSeq* getContactStatusDescList(const char *lang);
   ccReg::ObjectStatusDescSeq* getNSSetStatusDescList(const char *lang);
-  ccReg::ObjectStatusDescSeq *getKeySetStatusDescList(const char *lang);
+  ccReg::ObjectStatusDescSeq* getKeySetStatusDescList(const char *lang);
+  ccReg::ObjectStatusDescSeq* getObjectStatusDescList(const char *lang);
+
   /// testovaci fce na typ objektu
   void checkHandle(const char* handle, ccReg::CheckHandleTypeSeq_out ch);
 

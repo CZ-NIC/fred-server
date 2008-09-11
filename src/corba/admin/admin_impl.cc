@@ -1370,7 +1370,8 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getDomainStatusDescList(const char *l
         // unknown language
         (*o)[o->length()-1].name = CORBA::string_dup("");
       }
-      (*o)[o->length()-1].id = sd->getId();
+      (*o)[o->length()-1].id    = sd->getId();
+      (*o)[o->length()-1].abbrv = DUPSTRFUN(sd->getName);
     }
   }
   return o;
@@ -1388,7 +1389,8 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getContactStatusDescList(const char *
         // unknown language
         (*o)[o->length()-1].name = CORBA::string_dup("");
       }
-      (*o)[o->length()-1].id = sd->getId();
+      (*o)[o->length()-1].id    = sd->getId();
+      (*o)[o->length()-1].abbrv = DUPSTRFUN(sd->getName);
     }
   }
   return o;
@@ -1406,7 +1408,8 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getNSSetStatusDescList(const char *la
         // unknown language
         (*o)[o->length()-1].name = CORBA::string_dup("");
       }
-      (*o)[o->length()-1].id = sd->getId();
+      (*o)[o->length()-1].id    = sd->getId();
+      (*o)[o->length()-1].abbrv = DUPSTRFUN(sd->getName);
     }
   }
   return o;
@@ -1427,10 +1430,24 @@ ccReg_Admin_i::getKeySetStatusDescList(const char *lang)
                 //unknown lang
                 (*o)[o->length()-1].name = CORBA::string_dup("");
             }
-            (*o)[o->length()-1].id = sd->getId();
+            (*o)[o->length()-1].id    = sd->getId();
+            (*o)[o->length()-1].abbrv = DUPSTRFUN(sd->getName);
         }
     }
     return o;
+}
+
+ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *lang) {
+  ccReg::ObjectStatusDescSeq *o = new ccReg::ObjectStatusDescSeq;
+  unsigned states_count = register_manager_->getStatusDescCount();
+  o->length(states_count);
+  for (unsigned i = 0; i < states_count; ++i) {
+    const Register::StatusDesc *sd = register_manager_->getStatusDescByIdx(i);
+    (*o)[i].id    = sd->getId();
+    (*o)[i].abbrv = DUPSTRFUN(sd->getName);
+    (*o)[i].name  = DUPSTRC(sd->getDesc(lang));
+  }
+  return o;
 }
 
 char* ccReg_Admin_i::getCreditByZone(const char*registrarHandle, ccReg::TID zone) {
