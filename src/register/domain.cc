@@ -56,6 +56,7 @@ class DomainImpl : public ObjectImpl, public virtual Domain {
   TID registrant;
   std::string registrantHandle;
   std::string registrantName;
+  std::string registrantOrganization;
   AdminInfoList adminList;
   AdminInfoList tempList;
   date exDate;
@@ -71,7 +72,9 @@ public:
   DomainImpl(TID _id, const Database::ID& _history_id, const std::string& _fqdn, TID _zone, TID _nsset,
              const std::string& _nssetHandle, TID _registrant,
              const std::string& _registrantHandle,
-             const std::string& _registrantName, TID _registrar,
+             const std::string& _registrantName, 
+             const std::string& _registrantOrganization,
+             TID _registrar,
              const std::string& _registrarHandle, const ptime& _crDate, const ptime& _trDate,
              const ptime& _upDate, const ptime& _erDate, TID _createRegistrar,
              const std::string& _createRegistrarHandle, TID _updateRegistrar,
@@ -84,8 +87,8 @@ public:
                _registrarHandle, _createRegistrar, _createRegistrarHandle,
                _updateRegistrar, _updateRegistrarHandle, _authPw, _roid),
         fqdn(_fqdn), fqdnIDN(zm->decodeIDN(fqdn)), zone(_zone), nsset(_nsset), nssetHandle(_nssetHandle),
-        registrant(_registrant), registrantHandle(_registrantHandle),
-        registrantName(_registrantName), exDate(_exDate),
+        registrant(_registrant), registrantHandle(_registrantHandle), 
+        registrantName(_registrantName), registrantOrganization(_registrantOrganization), exDate(_exDate),
         valExDate(_valExDate), zoneStatus(_zoneStatus),
         zoneStatusTime(_zoneStatusTime), 
         outZoneDate(_outZoneDate), cancelDate(_cancelDate),
@@ -132,6 +135,9 @@ public:
   }
   virtual const std::string& getRegistrantName() const {
     return registrantName;
+  }
+  virtual const std::string& getRegistrantOrganization() const {
+    return registrantOrganization;
   }
   virtual TID getRegistrantId() const {
     return registrant;
@@ -218,6 +224,7 @@ COMPARE_CLASS_IMPL(DomainImpl, CreateDate)
 COMPARE_CLASS_IMPL(DomainImpl, DeleteDate)
 COMPARE_CLASS_IMPL(DomainImpl, RegistrantHandle)
 COMPARE_CLASS_IMPL(DomainImpl, RegistrantName)
+COMPARE_CLASS_IMPL(DomainImpl, RegistrantOrganization)
 COMPARE_CLASS_IMPL(DomainImpl, RegistrarHandle)
 COMPARE_CLASS_IMPL(DomainImpl, ZoneStatus)
 COMPARE_CLASS_IMPL(DomainImpl, ExpirationDate)
@@ -510,7 +517,7 @@ public:
 
     Database::SelectQuery object_info_query;
     object_info_query.select() << "t_1.id, tmp.id, t_1.name, t_2.zone, t_2.nsset, t_2.keyset, "
-        << "t_3.id, t_3.name, t_4.name, t_5.clid, "
+        << "t_3.id, t_3.name, t_4.name, t_4.organization, t_5.clid, "
         << "t_1.crdate, t_5.trdate, t_5.update, t_1.erdate, t_1.crid, t_5.upid, "
         << "t_5.authinfopw, t_1.roid, t_2.exdate, "
         << "(((t_2.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 4)::interval)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as outzonedate, "
@@ -566,6 +573,7 @@ public:
         Database::ID       registrant            = *(++col);
         std::string        registrantHandle      = *(++col);
         std::string        registrantName        = *(++col);
+        std::string        registrantOrg         = *(++col);
         Database::ID       registrar             = *(++col);
         std::string        registrarHandle       = registrars_table[registrar];
         Database::DateTime crDate                = *(++col);
@@ -608,6 +616,7 @@ public:
                 registrant,
                 registrantHandle,
                 registrantName,
+                registrantOrg,
                 registrar,
                 registrarHandle,
                 crDate,
@@ -772,7 +781,7 @@ public:
     // domain, zone, nsset
         << "obr.id,obr.name,d.zone,d.nsset,'',"
     // registrant
-        << "cor.id,cor.name,c.name,"
+        << "cor.id,cor.name,c.name,c.organization"
     // registrar
         << "o.clid,"
     // registration dates
@@ -812,28 +821,29 @@ public:
           db->GetFieldValue(i,4), // nsset handle
           STR_TO_ID(db->GetFieldValue(i,5)), // registrant id
           db->GetFieldValue(i,6), // registrant handle
-          db->GetFieldValue(i,7), // registrant name
-          STR_TO_ID(db->GetFieldValue(i,8)), // registrar
-          registrars[STR_TO_ID(db->GetFieldValue(i,8))], // registrar handle
-          MAKE_TIME(i,9), // crdate
-          MAKE_TIME(i,10), // trdate
-          MAKE_TIME(i,11), // update
+          db->GetFieldValue(i,7), // registrant organization
+          db->GetFieldValue(i,8), // registrant name
+          STR_TO_ID(db->GetFieldValue(i,9)), // registrar
+          registrars[STR_TO_ID(db->GetFieldValue(i,9))], // registrar handle
+          MAKE_TIME(i,10), // crdate
+          MAKE_TIME(i,11), // trdate
+          MAKE_TIME(i,12), // update
           ptime(not_a_date_time),
-          STR_TO_ID(db->GetFieldValue(i,12)), // crid
-          registrars[STR_TO_ID(db->GetFieldValue(i,12))], // crid handle
-          STR_TO_ID(db->GetFieldValue(i,13)), // upid
-          registrars[STR_TO_ID(db->GetFieldValue(i,13))], // upid handle
-          db->GetFieldValue(i,14), // authinfo
-          db->GetFieldValue(i,15), // roid
-          MAKE_DATE(i,16), // exdate
-          MAKE_DATE(i,17), // valexdate
+          STR_TO_ID(db->GetFieldValue(i,13)), // crid
+          registrars[STR_TO_ID(db->GetFieldValue(i,13))], // crid handle
+          STR_TO_ID(db->GetFieldValue(i,14)), // upid
+          registrars[STR_TO_ID(db->GetFieldValue(i,14))], // upid handle
+          db->GetFieldValue(i,15), // authinfo
+          db->GetFieldValue(i,16), // roid
+          MAKE_DATE(i,17), // exdate
+          MAKE_DATE(i,18), // valexdate
           true, // zone status
           ptime(), // zone status time
-          MAKE_TIME(i,18),
           MAKE_TIME(i,19),
+          MAKE_TIME(i,20),
           zm,
-          STR_TO_ID(db->GetFieldValue(i, 20)), // keyset id
-          db->GetFieldValue(i, 21) // keyset handle
+          STR_TO_ID(db->GetFieldValue(i, 21)), // keyset id
+          db->GetFieldValue(i, 22) // keyset handle
       );
       data_.push_back(d);
     }
@@ -967,6 +977,9 @@ public:
         break;
       case MT_REGISTRANT_NAME:
         stable_sort(data_.begin(), data_.end(), CompareRegistrantName(asc));
+        break;
+      case MT_REGISTRANT_ORG:
+        stable_sort(data_.begin(), data_.end(), CompareRegistrantOrganization(asc));
         break;
       case MT_REGISTRAR_HANDLE:
         stable_sort(data_.begin(), data_.end(), CompareRegistrarHandle(asc));

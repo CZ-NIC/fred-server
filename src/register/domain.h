@@ -29,6 +29,7 @@ enum MemberType {
   MT_ERDATE, ///< delete date
   MT_REGISTRANT_HANDLE, ///< registrant
   MT_REGISTRANT_NAME, ///< registratn name
+  MT_REGISTRANT_ORG, ///< registrant organization
   MT_REGISTRAR_HANDLE, ///< registrar handle
   MT_ZONE_STATUS, ///< in/out zone flag
   MT_EXDATE, ///< expiration date
@@ -80,6 +81,8 @@ public:
   virtual const std::string& getRegistrantHandle() const = 0;
   /// return name of registrant
   virtual const std::string& getRegistrantName() const = 0;
+  /// return registrant organization
+  virtual const std::string& getRegistrantOrganization() const = 0;
   /// return id of registrant
   virtual TID getRegistrantId() const = 0;
   /// set registrant 
