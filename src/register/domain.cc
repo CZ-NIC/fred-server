@@ -781,7 +781,7 @@ public:
     // domain, zone, nsset
         << "obr.id,obr.name,d.zone,d.nsset,'',"
     // registrant
-        << "cor.id,cor.name,c.name,c.organization"
+        << "cor.id,cor.name,c.name,c.organization,"
     // registrar
         << "o.clid,"
     // registration dates
