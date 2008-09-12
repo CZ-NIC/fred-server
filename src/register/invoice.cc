@@ -60,6 +60,27 @@ using namespace boost::posix_time;
 
 namespace Register {
 namespace Invoicing {
+
+std::string
+Type2Str(Type _type)
+{
+    switch (_type) {
+        case IT_DEPOSIT:    return "Deposit";
+        case IT_ACCOUNT:    return "Account";
+        default:            return "TYPE UNKNOWN";
+    }
+}
+
+std::string
+PaymentActionType2Str(PaymentActionType type)
+{
+    switch (type) {
+        case PAT_CREATE_DOMAIN: return "Create domain";
+        case PAT_RENEW_DOMAIN:  return "Renew domain";
+        default:                return "TYPE UNKNOWN";
+    }
+}
+
 // hold vat rates for time periods
 class VAT {
 public:

@@ -37,6 +37,8 @@ enum Type {
   IT_DEPOSIT, ///< depositing invoice
   IT_ACCOUNT ///< accounting invoice
 };
+std::string Type2Str(Type _type);
+
 /// subject of invoicing (supplier or client)
 class Subject {
 protected:
@@ -95,10 +97,13 @@ public:
   /// creation time of source invoice
   virtual boost::posix_time::ptime getCrTime() const = 0;
 };
+
 enum PaymentActionType {
   PAT_CREATE_DOMAIN,
   PAT_RENEW_DOMAIN
 };
+std::string PaymentActionType2Str(PaymentActionType type);
+
 class PaymentAction : virtual public Payment {
 protected:
   virtual ~PaymentAction() {
