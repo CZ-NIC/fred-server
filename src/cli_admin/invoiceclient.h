@@ -57,6 +57,11 @@
 #define INVOICE_ADV_NUMBER_NAME         "adv-number"
 #define INVOICE_DONT_SEND_NAME          "dont-send"
 
+#define INVOICE_FILE_ID_NAME            "invoice-file-id"
+#define INVOICE_FILE_ID_NAME_DESC       "lsdjfl"
+#define INVOICE_FILE_NAME_NAME          "invoice-file-name"
+#define INVOICE_FILE_NAME_NAME_DESC     "lsfjds"
+
 namespace Admin {
 
 class InvoiceClient {

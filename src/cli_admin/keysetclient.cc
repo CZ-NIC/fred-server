@@ -89,7 +89,13 @@ KeysetClient::KeysetClient():
         add_opt_type(KEYSET_DSREC_REM_NAME, std::string)
         add_opt_type(ADMIN_NAME, std::string)
         add_opt_type(ADMIN_ADD_NAME, std::string)
-        add_opt_type(ADMIN_REM_NAME, std::string);
+        add_opt_type(ADMIN_REM_NAME, std::string)
+        add_opt_type(CRDATE_FROM_NAME, std::string)
+        add_opt_type(CRDATE_TO_NAME, std::string)
+        add_opt_type(UPDATE_FROM_NAME, std::string)
+        add_opt_type(UPDATE_TO_NAME, std::string)
+        add_opt_type(TRANSDATE_FROM_NAME, std::string)
+        add_opt_type(TRANSDATE_TO_NAME, std::string);
 }
 
 KeysetClient::KeysetClient(
@@ -175,6 +181,56 @@ KeysetClient::list()
         keyFilter->addRegistrar().addName().setValue(
                 m_varMap[REGISTRAR_NAME_NAME].as<std::string>());
 
+    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+        Database::DateTime crDateFrom("1901-01-01 00:00:00");
+        Database::DateTime crDateTo("2101-01-01 00:00:00");
+        if (m_varMap.count(CRDATE_FROM_NAME))
+            crDateFrom.from_string(
+                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(CRDATE_TO_NAME))
+            crDateTo.from_string(
+                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+        keyFilter->addCreateTime().setValue(
+                Database::DateTimeInterval(crDateFrom, crDateTo));
+    }
+
+    if (m_varMap.count(UPDATE_FROM_NAME) || m_varMap.count(UPDATE_TO_NAME)) {
+        Database::DateTime upDateFrom("1901-01-01 00:00:00");
+        Database::DateTime upDateTo("2101-01-01 00:00:00");
+        if (m_varMap.count(UPDATE_FROM_NAME))
+            upDateFrom.from_string(
+                    m_varMap[UPDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(UPDATE_TO_NAME))
+            upDateTo.from_string(
+                    m_varMap[UPDATE_TO_NAME].as<std::string>());
+        keyFilter->addUpdateTime().setValue(
+                Database::DateTimeInterval(upDateFrom, upDateTo));
+    }
+    if (m_varMap.count(TRANSDATE_FROM_NAME) || m_varMap.count(TRANSDATE_TO_NAME)) {
+        Database::DateTime transDateFrom("1901-01-01 00:00:00");
+        Database::DateTime transDateTo("2101-01-01 00:00:00");
+        if (m_varMap.count(TRANSDATE_FROM_NAME))
+            transDateFrom.from_string(
+                    m_varMap[TRANSDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(TRANSDATE_TO_NAME))
+            transDateTo.from_string(
+                    m_varMap[TRANSDATE_TO_NAME].as<std::string>());
+        keyFilter->addTransferTime().setValue(
+                Database::DateTimeInterval(transDateFrom, transDateTo));
+    }
+    if (m_varMap.count(DELDATE_FROM_NAME) || m_varMap.count(DELDATE_TO_NAME)) {
+        Database::DateTime delDateFrom("1901-01-01 00:00:00");
+        Database::DateTime delDateTo("2101-01-01 00:00:00");
+        if (m_varMap.count(DELDATE_FROM_NAME))
+            delDateFrom.from_string(
+                    m_varMap[DELDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(DELDATE_TO_NAME))
+            delDateTo.from_string(
+                    m_varMap[DELDATE_TO_NAME].as<std::string>());
+        keyFilter->addDeleteTime().setValue(
+                Database::DateTimeInterval(delDateFrom, delDateTo));
+    }
+
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
     
@@ -183,7 +239,7 @@ KeysetClient::list()
 
     keyList->reload(*unionFilter, m_dbman);
 
-    std::cout << "<object>" << std::endl;
+    std::cout << "<object>\n";
     for (unsigned int i = 0; i < keyList->getCount(); i++) {
         Register::KeySet::KeySet *keyset = keyList->getKeySet(i);
         std::cout

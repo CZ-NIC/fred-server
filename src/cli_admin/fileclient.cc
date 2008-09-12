@@ -67,7 +67,9 @@ FileClient::FileClient():
         add_opt_type(TYPE_NAME, int)
         add_opt_type(FILE_PATH_NAME, std::string)
         add_opt_type(FILE_MIME_NAME, std::string)
-        add_opt_type(FILE_SIZE_NAME, int);
+        add_opt_type(FILE_SIZE_NAME, int)
+        add_opt_type(CRDATE_FROM_NAME, std::string)
+        add_opt_type(CRDATE_TO_NAME, std::string);
 
 }
 FileClient::FileClient(
@@ -144,6 +146,18 @@ FileClient::list()
     if (m_varMap.count(TYPE_NAME))
         fileFilter->addType().setValue(
                 m_varMap[TYPE_NAME].as<int>());
+    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+        Database::DateTime crDateFrom("1901-01-01 00:00:00");
+        Database::DateTime crDateTo("2101-01-01 00:00:00");
+        if (m_varMap.count(CRDATE_FROM_NAME))
+            crDateFrom.from_string(
+                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(CRDATE_TO_NAME))
+            crDateTo.from_string(
+                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+        fileFilter->addCreateTime().setValue(
+                Database::DateTimeInterval(crDateFrom, crDateTo));
+    }
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();

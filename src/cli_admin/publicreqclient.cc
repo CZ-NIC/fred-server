@@ -183,27 +183,30 @@ PublicRequestClient::list()
         prFilter->addEppAction().addType().setValue(
                 m_varMap[PUBLICREQ_EPP_TYPE_NAME].as<unsigned int>());
 
-    ptime crDateFrom(boost::posix_time::time_from_string("1401-01-01 00:00:00"));
-    ptime crDateTo(boost::posix_time::max_date_time);
-    if (m_varMap.count(CRDATE_FROM_NAME))
-        crDateFrom = boost::posix_time::time_from_string(
-                m_varMap[CRDATE_FROM_NAME].as<std::string>());
-    if (m_varMap.count(CRDATE_TO_NAME))
-        crDateTo = boost::posix_time::time_from_string(
-                m_varMap[CRDATE_TO_NAME].as<std::string>());
-    prFilter->addCreateTime().setValue(
-            Database::DateTimeInterval(crDateFrom, crDateTo));
-
-    ptime resDateFrom(boost::posix_time::time_from_string("1401-01-01 00:00:00"));
-    ptime resDateTo(boost::posix_time::max_date_time);
-    if (m_varMap.count(PUBLICREQ_RESDATE_FROM_NAME))
-        resDateFrom = boost::posix_time::time_from_string(
-                m_varMap[PUBLICREQ_RESDATE_FROM_NAME].as<std::string>());
-    if (m_varMap.count(PUBLICREQ_RESDATE_TO_NAME))
-        resDateTo = boost::posix_time::time_from_string(
-                m_varMap[PUBLICREQ_RESDATE_TO_NAME].as<std::string>());
-    prFilter->addResolveTime().setValue(
-            Database::DateTimeInterval(resDateFrom, resDateTo));
+    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+        Database::DateTime crDateFrom("1901-01-01 00:00:00");
+        Database::DateTime crDateTo("2101-01-01 00:00:00");
+        if (m_varMap.count(CRDATE_FROM_NAME))
+            crDateFrom.from_string(
+                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(CRDATE_TO_NAME))
+            crDateTo.from_string(
+                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+        prFilter->addCreateTime().setValue(
+                Database::DateTimeInterval(crDateFrom, crDateTo));
+    }
+    if (m_varMap.count(PUBLICREQ_RESDATE_FROM_NAME) || m_varMap.count(PUBLICREQ_RESDATE_TO_NAME)) {
+        Database::DateTime resDateFrom("1901-01-01 00:00:00");
+        Database::DateTime resDateTo("2101-01-01 00:00:00");
+        if (m_varMap.count(PUBLICREQ_RESDATE_FROM_NAME))
+            resDateFrom.from_string(
+                    m_varMap[PUBLICREQ_RESDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(PUBLICREQ_RESDATE_TO_NAME))
+            resDateTo.from_string(
+                    m_varMap[PUBLICREQ_RESDATE_TO_NAME].as<std::string>());
+        prFilter->addResolveTime().setValue(
+                Database::DateTimeInterval(resDateFrom, resDateTo));
+    }
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();

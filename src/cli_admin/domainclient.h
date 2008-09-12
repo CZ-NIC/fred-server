@@ -52,6 +52,19 @@
 #define DOMAIN_LIST_HELP_NAME           "domain-list-help"
 #define DOMAIN_LIST_HELP_NAME_DESC      "help on domain list"
 
+#define DOMAIN_EXP_DATE_FROM_NAME       "exp-date-from"
+#define DOMAIN_EXP_DATE_FROM_NAME_DESC  "expiration date from (date format: \"YYYY-MM-DD\")"
+#define DOMAIN_EXP_DATE_TO_NAME         "exp-date-to"
+#define DOMAIN_EXP_DATE_TO_NAME_DESC    "expiration date to (date format: \"YYYY-MM-DD\")"
+#define DOMAIN_OUT_DATE_FROM_NAME       "out-zone-date-from"
+#define DOMAIN_OUT_DATE_FROM_NAME_DESC  "out zone date from (date format: \"YYYY-MM-DD\")"
+#define DOMAIN_OUT_DATE_TO_NAME         "out-zone-date-to"
+#define DOMAIN_OUT_DATE_TO_NAME_DESC    "out zone date to (date format: \"YYYY-MM-DD\")"
+#define DOMAIN_CANC_DATE_FROM_NAME      "cancel-date-from"
+#define DOMAIN_CANC_DATE_FROM_NAME_DESC "cancel date from (date format: \"YYYY-MM-DD\")"
+#define DOMAIN_CANC_DATE_TO_NAME        "cancel-date-to"
+#define DOMAIN_CANC_DATE_TO_NAME_DESC   "cancel date to (date format: \"YYYY-MM-DD\")"
+
 namespace Admin {
 
 class DomainClient {

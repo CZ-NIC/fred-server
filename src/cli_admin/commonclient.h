@@ -45,6 +45,12 @@
 #define UPDATE_TO_NAME          "up-date-to"
 #define UPDATE_TO_NAME_DESC     "show only records with transfer date and time before input value"
 
+// only email
+#define MODDATE_FROM_NAME       "mod-date-from"
+#define MODDATE_FROM_NAME_DESC  "show only records with modify date and time after input value (date format: YYYY-MM-DD hh:mm:ss)"
+#define MODDATE_TO_NAME         "mod-date-to"
+#define MODDATE_TO_NAME_DESC    "show only records with modify date and time before input value"
+
 // all
 #define ID_NAME                 "id"
 #define ID_NAME_DESC            "filter records with specific id nubmer"

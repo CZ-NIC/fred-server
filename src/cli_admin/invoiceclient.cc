@@ -50,7 +50,9 @@ InvoiceClient::InvoiceClient():
         ADD_OPT_TYPE(INVOICE_OBJECT_ID_NAME, "object id", Register::TID)
         ADD_OPT_TYPE(INVOICE_OBJECT_NAME_NAME, "object name", std::string)
         ADD_OPT_TYPE(INVOICE_ADV_NUMBER_NAME, "advance number", std::string)
-        ADD_OPT(INVOICE_DONT_SEND_NAME, "dont send mails with invoices during archivation");
+        ADD_OPT(INVOICE_DONT_SEND_NAME, "dont send mails with invoices during archivation")
+        add_opt_type(INVOICE_FILE_ID_NAME, unsigned int)
+        add_opt_type(INVOICE_FILE_NAME_NAME, std::string);
 }
 InvoiceClient::InvoiceClient(
         std::string connstring,
@@ -100,8 +102,6 @@ InvoiceClient::getInvisibleOptions() const
 void
 InvoiceClient::list()
 {
-    std::ofstream stdout("/dev/stdout",std::ios::out);   
-
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
                 m_varMap[DOCGEN_PATH_NAME].as<std::string>(),
@@ -109,69 +109,197 @@ InvoiceClient::list()
                 m_varMap[FILECLIENT_PATH_NAME].as<std::string>(),
                 m_nsAddr)
             );
+
     CorbaClient cc(0, NULL, m_nsAddr);
     MailerManager mailMan(cc.getNS());
+
     std::auto_ptr<Register::Invoicing::Manager> invMan(
             Register::Invoicing::Manager::create(
                 &m_db,
                 docMan.get(),
-                &mailMan)
-            );
-    std::auto_ptr<Register::Invoicing::List> invList(invMan->createList());
+                &mailMan));
+
+    std::auto_ptr<Register::Invoicing::List> invList(
+            invMan->createList());
+
+    Database::Filters::Invoice *invFilter;
+    invFilter = new Database::Filters::InvoiceImpl();
+
     if (m_varMap.count(ID_NAME))
-        invList->setIdFilter(m_varMap[ID_NAME].as<unsigned int>());
-    if (m_varMap.count(REGISTRAR_ID_NAME))
-        invList->setRegistrarFilter(m_varMap[REGISTRAR_ID_NAME].as<unsigned int>());
+        invFilter->addId().setValue(
+                Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
+
     if (m_varMap.count(ZONE_ID_NAME))
-        invList->setZoneFilter(m_varMap[ZONE_ID_NAME].as<unsigned int>());
+        invFilter->addZoneId().setValue(
+                Database::ID(m_varMap[ZONE_ID_NAME].as<unsigned int>()));
     if (m_varMap.count(INVOICE_TYPE_NAME))
-        invList->setTypeFilter(m_varMap[INVOICE_TYPE_NAME].as<unsigned int>());
-    if (m_varMap.count(INVOICE_VAR_SYMBOL_NAME))
-        invList->setVarSymbolFilter(m_varMap[INVOICE_VAR_SYMBOL_NAME].as<std::string>());
+        invFilter->addType().setValue(
+                m_varMap[INVOICE_TYPE_NAME].as<int>());
     if (m_varMap.count(INVOICE_NUMBER_NAME))
-        invList->setNumberFilter(m_varMap[INVOICE_NUMBER_NAME].as<std::string>());
+        invFilter->addNumber().setValue(
+                m_varMap[INVOICE_NUMBER_NAME].as<std::string>());
 
-    ptime crDateFrom(neg_infin);
-    if (m_varMap.count(INVOICE_CRDATE_FROM_NAME))
-        crDateFrom = time_from_string(m_varMap[INVOICE_CRDATE_FROM_NAME].as<std::string>());
-    ptime crDateTo(pos_infin);
-    if (m_varMap.count(INVOICE_CRDATE_TO_NAME))
-        crDateTo = time_from_string(m_varMap[INVOICE_CRDATE_TO_NAME].as<std::string>());
-    invList->setCrDateFilter(time_period(crDateFrom, crDateTo));
-
-    ptime taxDateFrom(neg_infin);
-    if (m_varMap.count(INVOICE_TAXDATE_FROM_NAME))
-        taxDateFrom = time_from_string(m_varMap[INVOICE_TAXDATE_FROM_NAME].as<std::string>());
-    ptime taxDateTo(pos_infin);
-    if (m_varMap.count(INVOICE_TAXDATE_TO_NAME))
-        taxDateTo = time_from_string(m_varMap[INVOICE_TAXDATE_TO_NAME].as<std::string>());
-    invList->setTaxDateFilter(time_period(taxDateFrom, taxDateTo));
-    
-    if (m_varMap.count(INVOICE_ARCHIVED_NAME)) {
-        Register::Invoicing::List::ArchiveFilter archFilt;
-        switch (m_varMap[INVOICE_ARCHIVED_NAME].as<unsigned int>()) {
-            case 0:
-                archFilt = Register::Invoicing::List::AF_UNSET;
-                break;
-            case 1:
-                archFilt = Register::Invoicing::List::AF_SET;
-                break;
-            default:
-                archFilt = Register::Invoicing::List::AF_IGNORE;
-                break;
-        }
-        invList->setArchivedFilter(archFilt);
+    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+        Database::DateTime crDateFrom("1901-01-01 00:00:00");
+        Database::DateTime crDateTo("2101-01-01 00:00:00");
+        if (m_varMap.count(CRDATE_FROM_NAME))
+            crDateFrom.from_string(
+                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(CRDATE_TO_NAME))
+            crDateTo.from_string(
+                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+        invFilter->addCreateTime().setValue(
+                Database::DateTimeInterval(crDateFrom, crDateTo));
+    }
+    if (m_varMap.count(INVOICE_TAXDATE_FROM_NAME) || m_varMap.count(INVOICE_TAXDATE_TO_NAME)) {
+        Database::Date taxDateFrom("1901-01-01");
+        Database::Date taxDateTo("2101-01-01");
+        if (m_varMap.count(INVOICE_TAXDATE_FROM_NAME))
+            taxDateFrom.from_string(
+                    m_varMap[INVOICE_TAXDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(INVOICE_TAXDATE_TO_NAME))
+            taxDateTo.from_string(
+                    m_varMap[INVOICE_TAXDATE_TO_NAME].as<std::string>());
+        invFilter->addTaxDate().setValue(
+                Database::DateInterval(taxDateFrom, taxDateTo));
     }
 
-    if (m_varMap.count(INVOICE_OBJECT_ID_NAME))
-        invList->setObjectIdFilter(m_varMap[INVOICE_OBJECT_ID_NAME].as<Register::TID>());
-    if (m_varMap.count(INVOICE_OBJECT_NAME_NAME))
-        invList->setObjectNameFilter(m_varMap[INVOICE_OBJECT_NAME_NAME].as<std::string>());
-    if (m_varMap.count(INVOICE_ADV_NUMBER_NAME))
-        invList->setAdvanceNumberFilter(m_varMap[INVOICE_ADV_NUMBER_NAME].as<std::string>());
+    if (m_varMap.count(REGISTRAR_ID_NAME))
+        invFilter->addRegistrar().addId().setValue(
+                Database::ID(m_varMap[REGISTRAR_ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(REGISTRAR_HANDLE_NAME))
+        invFilter->addRegistrar().addHandle().setValue(
+                m_varMap[REGISTRAR_HANDLE_NAME].as<std::string>());
+    if (m_varMap.count(INVOICE_FILE_ID_NAME))
+        invFilter->addFile().addId().setValue(
+                Database::ID(m_varMap[INVOICE_FILE_ID_NAME].as<unsigned int>()));
+    if (m_varMap.count(INVOICE_FILE_NAME_NAME))
+        invFilter->addFile().addName().setValue(
+                m_varMap[INVOICE_FILE_NAME_NAME].as<std::string>());
 
-    invList->reload();
-    invList->exportXML(stdout);
+    Database::Filters::Union *unionFilter;
+    unionFilter = new Database::Filters::Union();
+    unionFilter->addFilter(invFilter);
+
+    invList->setLimit(m_varMap[LIMIT_NAME].as<unsigned int>());
+    invList->reload(*unionFilter, m_dbman);
+
+    std::cout << "<objects>\n";
+    for (unsigned int i = 0; i < invList->getCount(); i++) {
+        Register::Invoicing::Invoice *inv = invList->get(i);
+        std::cout
+            << "\t<invoice>\n"
+            << "\t\t<id>" << inv->getId() << "</id>\n"
+            << "\t\t<zone>\n"
+            << "\t\t\t<id>" << inv->getZone() << "</id>\n"
+            << "\t\t\t<name>" << inv->getZoneName() << "</name>\n"
+            << "\t\t</zone>\n"
+            << "\t\t<cr_date>" << inv->getCrTime() << "</cr_date>\n"
+            << "\t\t<tax_date>" << inv->getTaxDate() << "</tax_date>\n"
+            << "\t\t<account_period>" << inv->getAccountPeriod() << "</account_period>\n"
+            << "\t\t<type>" << Register::Invoicing::Type2Str(inv->getType()) << "</type>\n"
+            << "\t\t<number>" << inv->getNumber() << "</number>\n"
+            << "\t\t<registrar_id>" << inv->getRegistrar() << "</registrar_id>\n"
+            << "\t\t<credit>" << inv->getCredit() << "</credit>\n"
+            << "\t\t<price>" << inv->getPrice() << "</price>\n"
+            << "\t\t<vat_rate>" << inv->getVatRate() << "</vat_rate>\n"
+            << "\t\t<total>" << inv->getTotal() << "</total>\n"
+            << "\t\t<total_vat>" << inv->getTotalVAT() << "</total_vat>\n"
+            << "\t\t<var_symbol>" << inv->getVarSymbol() << "</var_symbol>\n"
+            << "\t\t<file_pdf_id>" << inv->getFilePDF() << "</file_pdf_id>\n"
+            << "\t\t<file_xml_id>" << inv->getFileXML() << "</file_xml_id>\n";
+        for (unsigned int j = 0; j < inv->getSourceCount(); j++) {
+            Register::Invoicing::PaymentSource *source = 
+                (Register::Invoicing::PaymentSource *)inv->getSource(j);
+            std::cout
+                << "\t\t<payment_source>\n"
+                << "\t\t\t<id>" << source->getId() << "</id>\n"
+                << "\t\t\t<number>" << source->getNumber() << "</number>\n"
+                << "\t\t\t<credit>" << source->getCredit() << "</credit>\n"
+                << "\t\t\t<total_price>" << source->getTotalPrice() << "</total_price>\n"
+                << "\t\t\t<total_vat>" << source->getTotalVat() << "</total_vat>\n"
+                << "\t\t\t<total_price_with_vat>" << source->getTotalPriceWithVat() << "</total_price_with_vat>\n"
+                << "\t\t\t<cr_time>" << source->getCrTime() << "</cr_time>\n"
+                << "\t\t</payment_source>\n";
+        }
+        for (unsigned int j = 0; j < inv->getActionCount(); j++) {
+            Register::Invoicing::PaymentAction *act =
+                (Register::Invoicing::PaymentAction *)inv->getAction(j);
+            std::cout
+                << "\t\t<payment_action>\n"
+                << "\t\t\t<id>" << act->getObjectId() << "</id>\n"
+                << "\t\t\t<name>" << act->getObjectName() << "</name>\n"
+                << "\t\t\t<action_time>" << act->getActionTime() << "</action_time>\n"
+                << "\t\t\t<ex_date>" << act->getExDate() << "</ex_date>\n"
+                << "\t\t\t<action>"
+                << Register::Invoicing::PaymentActionType2Str(act->getAction())
+                << "</action>\n"
+                << "\t\t\t<units_count>" << act->getUnitsCount() << "</units_count>\n"
+                << "\t\t\t<price_per_unit>" << act->getPricePerUnit() << "</price_per_unit>\n"
+                << "\t\t</payment_action>\n";
+        }
+        for (unsigned int j = 0; j < inv->getPaymentCount(); j++) {
+            Register::Invoicing::Payment *pay = 
+                (Register::Invoicing::Payment *)inv->getPaymentByIdx(j);
+            std::cout
+                << "\t\t<payment>\n"
+                << "\t\t\t<price>" << pay->getPrice() << "</price>\n"
+                << "\t\t\t<vat_rate>" << pay->getVatRate() << "</vat_rate>\n"
+                << "\t\t\t<vat>" << pay->getVat() << "</vat>\n"
+                << "\t\t\t<price_with_vat>" << pay->getPriceWithVat() << "</price_with_vat>\n"
+                << "\t\t</payment>\n";
+        }
+        Register::Invoicing::Subject *sup =
+            (Register::Invoicing::Subject *)inv->getSupplier();
+        std::cout
+            << "\t\t<supplier>\n"
+            << "\t\t\t<id>" << sup->getId() << "</id>\n"
+            << "\t\t\t<handle>" << sup->getHandle() << "</handle>\n"
+            << "\t\t\t<name>" << sup->getName() << "</name>\n"
+            << "\t\t\t<full_name>" << sup->getFullname() << "</full_name>\n"
+            << "\t\t\t<street>" << sup->getStreet() << "</street>\n"
+            << "\t\t\t<city>" << sup->getCity() << "</city>\n"
+            << "\t\t\t<zip>" << sup->getZip() << "</zip>\n"
+            << "\t\t\t<country>" << sup->getCountry() << "</country>\n"
+            << "\t\t\t<ico>" << sup->getICO() << "</ico>\n"
+            << "\t\t\t<vat_num>" << sup->getVatNumber() << "</vat_num>\n"
+            << "\t\t\t<apply_vat>" << sup->getVatApply() << "</apply_vat>\n"
+            << "\t\t\t<registration>" << sup->getRegistration() << "</registration>\n"
+            << "\t\t\t<reclamation>" << sup->getReclamation() << "</reclamation>\n"
+            << "\t\t\t<email>" << sup->getEmail() << "</email>\n"
+            << "\t\t\t<url>" << sup->getURL() << "</url>\n"
+            << "\t\t\t<phome>" << sup->getPhone() << "</phone>\n"
+            << "\t\t\t<fax>" << sup->getFax() << "</fax>\n"
+            << "\t\t</supplier>\n";
+        Register::Invoicing::Subject *cli =
+            (Register::Invoicing::Subject *)inv->getClient();
+        std::cout
+            << "\t\t<client>\n"
+            << "\t\t\t<id>" << cli->getId() << "</id>\n"
+            << "\t\t\t<handle>" << cli->getHandle() << "</handle>\n"
+            << "\t\t\t<name>" << cli->getName() << "</name>\n"
+            << "\t\t\t<full_name>" << cli->getFullname() << "</full_name>\n"
+            << "\t\t\t<street>" << cli->getStreet() << "</street>\n"
+            << "\t\t\t<city>" << cli->getCity() << "</city>\n"
+            << "\t\t\t<zip>" << cli->getZip() << "</zip>\n"
+            << "\t\t\t<country>" << cli->getCountry() << "</country>\n"
+            << "\t\t\t<ico>" << cli->getICO() << "</ico>\n"
+            << "\t\t\t<vat_num>" << cli->getVatNumber() << "</vat_num>\n"
+            << "\t\t\t<apply_vat>" << cli->getVatApply() << "</apply_vat>\n"
+            << "\t\t\t<registration>" << cli->getRegistration() << "</registration>\n"
+            << "\t\t\t<reclamation>" << cli->getReclamation() << "</reclamation>\n"
+            << "\t\t\t<email>" << cli->getEmail() << "</email>\n"
+            << "\t\t\t<url>" << cli->getURL() << "</url>\n"
+            << "\t\t\t<phome>" << cli->getPhone() << "</phone>\n"
+            << "\t\t\t<fax>" << cli->getFax() << "</fax>\n"
+            << "\t\t</client>\n";
+        std::cout
+            << std::endl;
+    }
+    std::cout << "</objects>" << std::endl;
+
+    unionFilter->clear();
+    delete unionFilter;
 }
 
 int

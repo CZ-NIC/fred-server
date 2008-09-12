@@ -257,6 +257,7 @@ main(int argc, char **argv)
     std::stringstream nsAddr;
 
     nsAddr << varMap[NSSERVICE_NAME].as<std::string>();
+    
 
     connstring << "dbname=" << varMap[DBNAME_NAME].as<std::string>() 
                << " user=" << varMap[DBUSER_NAME].as<std::string>();

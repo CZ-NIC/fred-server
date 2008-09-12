@@ -207,48 +207,52 @@ ContactClient::list()
         conFilter->addRegistrar().addName().setValue(
                 m_varMap[REGISTRAR_NAME_NAME].as<std::string>());
 
-    ptime crDateFrom(boost::posix_time::time_from_string("1401-01-01 00:00:00"));
-    ptime crDateTo(boost::posix_time::max_date_time);
-    if (m_varMap.count(CRDATE_FROM_NAME))
-        crDateFrom = boost::posix_time::time_from_string(
-                m_varMap[CRDATE_FROM_NAME].as<std::string>());
-    if (m_varMap.count(CRDATE_TO_NAME))
-        crDateTo = boost::posix_time::time_from_string(
-                m_varMap[CRDATE_TO_NAME].as<std::string>());
-    conFilter->addCreateTime().setValue(
-            Database::DateTimeInterval(crDateFrom, crDateTo));
+    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+        Database::DateTime crDateFrom("1901-01-01 00:00:00");
+        Database::DateTime crDateTo("2101-01-01 00:00:00");
+        if (m_varMap.count(CRDATE_FROM_NAME))
+            crDateFrom.from_string(
+                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(CRDATE_TO_NAME))
+            crDateTo.from_string(
+                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+        conFilter->addCreateTime().setValue(
+                Database::DateTimeInterval(crDateFrom, crDateTo));
+    }
 
     if (m_varMap.count(UPDATE_FROM_NAME) || m_varMap.count(UPDATE_TO_NAME)) {
-        ptime upDateFrom(boost::posix_time::time_from_string("1401-01-01 00:00:00"));
-        ptime upDateTo(boost::posix_time::max_date_time);
+        Database::DateTime upDateFrom("1901-01-01 00:00:00");
+        Database::DateTime upDateTo("2101-01-01 00:00:00");
         if (m_varMap.count(UPDATE_FROM_NAME))
-            upDateFrom = boost::posix_time::time_from_string(
+            upDateFrom.from_string(
                     m_varMap[UPDATE_FROM_NAME].as<std::string>());
         if (m_varMap.count(UPDATE_TO_NAME))
-            upDateTo = boost::posix_time::time_from_string(
+            upDateTo.from_string(
                     m_varMap[UPDATE_TO_NAME].as<std::string>());
         conFilter->addUpdateTime().setValue(
                 Database::DateTimeInterval(upDateFrom, upDateTo));
     }
     if (m_varMap.count(TRANSDATE_FROM_NAME) || m_varMap.count(TRANSDATE_TO_NAME)) {
-        ptime transDateFrom(boost::posix_time::time_from_string("1401-01-01 00:00:00"));
-        ptime transDateTo(boost::posix_time::max_date_time);
+        Database::DateTime transDateFrom("1901-01-01 00:00:00");
+        Database::DateTime transDateTo("2101-01-01 00:00:00");
         if (m_varMap.count(TRANSDATE_FROM_NAME))
-            transDateFrom = boost::posix_time::time_from_string(
+            transDateFrom.from_string(
                     m_varMap[TRANSDATE_FROM_NAME].as<std::string>());
         if (m_varMap.count(TRANSDATE_TO_NAME))
-            transDateTo = boost::posix_time::time_from_string(
+            transDateTo.from_string(
                     m_varMap[TRANSDATE_TO_NAME].as<std::string>());
         conFilter->addTransferTime().setValue(
                 Database::DateTimeInterval(transDateFrom, transDateTo));
     }
     if (m_varMap.count(DELDATE_FROM_NAME) || m_varMap.count(DELDATE_TO_NAME)) {
-        ptime delDateFrom(boost::posix_time::time_from_string("1401-01-01 00:00:00"));
-        ptime delDateTo(boost::posix_time::max_date_time);
+        Database::DateTime delDateFrom("1901-01-01 00:00:00");
+        Database::DateTime delDateTo("2101-01-01 00:00:00");
         if (m_varMap.count(DELDATE_FROM_NAME))
-            delDateFrom = boost::posix_time::time_from_string("1401-01-01 00:00:00");
+            delDateFrom.from_string(
+                    m_varMap[DELDATE_FROM_NAME].as<std::string>());
         if (m_varMap.count(DELDATE_TO_NAME))
-            delDateTo = boost::posix_time::time_from_string("1401-01-01 00:00:00");
+            delDateTo.from_string(
+                    m_varMap[DELDATE_TO_NAME].as<std::string>());
         conFilter->addDeleteTime().setValue(
                 Database::DateTimeInterval(delDateFrom, delDateTo));
     }
@@ -261,7 +265,7 @@ ContactClient::list()
 
     conList->reload(*unionFilter, m_dbman);
 
-    std::cout << "<objects>" << std::endl;
+    std::cout << "<objects>\n";
     for (unsigned int i = 0; i < conList->getCount(); i++) {
         Register::Contact::Contact *contact = conList->getContact(i);
         std::cout

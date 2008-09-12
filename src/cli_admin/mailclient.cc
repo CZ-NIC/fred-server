@@ -38,7 +38,11 @@ MailClient::MailClient():
         add_opt_type(TYPE_NAME, int)
         add_opt_type(MAIL_STATUS_NAME, int)
         add_opt_type(MAIL_ATTEMPT_NAME, int)
-        add_opt_type(MAIL_MESSAGE_NAME, std::string);
+        add_opt_type(MAIL_MESSAGE_NAME, std::string)
+        add_opt_type(CRDATE_FROM_NAME, std::string)
+        add_opt_type(CRDATE_TO_NAME, std::string)
+        add_opt_type(MODDATE_FROM_NAME, std::string)
+        add_opt_type(MODDATE_TO_NAME, std::string);
 
 }
 MailClient::MailClient(
@@ -121,6 +125,30 @@ MailClient::list()
     if (m_varMap.count(MAIL_ATTACHMENT_NAME_NAME))
         mailFilter->addAttachment().addName().setValue(
                 m_varMap[MAIL_ATTACHMENT_NAME_NAME].as<std::string>());
+    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+        Database::Date crDateFrom("1901-01-01 00:00:00");
+        Database::Date crDateTo("2101-01-01 00:00:00");
+        if (m_varMap.count(CRDATE_FROM_NAME))
+            crDateFrom.from_string(
+                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(CRDATE_TO_NAME))
+            crDateTo.from_string(
+                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+        mailFilter->addCreateTime().setValue(
+                Database::DateTimeInterval(crDateFrom, crDateTo));
+    }
+    if (m_varMap.count(MODDATE_FROM_NAME) || m_varMap.count(MODDATE_TO_NAME)) {
+        Database::Date modDateFrom("1901-01-01 00:00:00");
+        Database::Date modDateTo("2101-01-01 00:00:00");
+        if (m_varMap.count(MODDATE_FROM_NAME))
+            modDateFrom.from_string(
+                    m_varMap[MODDATE_FROM_NAME].as<std::string>());
+        if (m_varMap.count(MODDATE_TO_NAME))
+            modDateTo.from_string(
+                    m_varMap[MODDATE_TO_NAME].as<std::string>());
+        mailFilter->addModifyTime().setValue(
+                Database::DateTimeInterval(modDateFrom, modDateTo));
+    }
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
