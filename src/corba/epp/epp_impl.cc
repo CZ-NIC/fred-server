@@ -290,10 +290,10 @@ static long int getIdOfDomain(
 ccReg_EPP_i::ccReg_EPP_i(
   const std::string &_db, MailerManager *_mm, NameService *_ns, Config::Conf& _conf)
     throw (DB_CONNECT_FAILED) : database(_db),
-                                mm(_mm), 
-                                ns(_ns), 
-                                conf(_conf), 
-                                zone(NULL), 
+                                mm(_mm),
+                                ns(_ns),
+                                conf(_conf),
+                                zone(NULL),
                                 testInfo(false)
 {
   // objects are shared between threads!!!
@@ -3748,7 +3748,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
             } else {
 
               if (level<0)
-                level = conf.get<int>("registry.nsset_level");
+                level = conf.get<unsigned>("registry.nsset_level");
               // write to nsset table
               DBsql.INSERT("NSSET");
               DBsql.INTO("id");
@@ -5976,7 +5976,7 @@ ccReg_EPP_i::KeySetCreate(
                             }
                         }
                     }
-                    
+
                     // test if dsrecord already exists in database
                     if (ret->code == 0) {
                         for (int ii = 0; ii < (int)dsrec.length(); ii++) {
@@ -6006,7 +6006,7 @@ ccReg_EPP_i::KeySetCreate(
                     // dsrecord digest type test
                     if (ret->code == 0) {
                         // digest type must be 1 (sha-1) - see RFC 4034 for details:
-                        // http://rfc-ref.org/RFC-TEXTS/4034/kw-dnssec_digest_type.html 
+                        // http://rfc-ref.org/RFC-TEXTS/4034/kw-dnssec_digest_type.html
                         for (int ii = 0; ii < (int)dsrec.length(); ii++) {
                             if (dsrec[ii].digestType != 1) {
                                 LOG(WARNING_LOG,
@@ -6029,7 +6029,7 @@ ccReg_EPP_i::KeySetCreate(
                         // digest must be 40 characters length (because SHA-1 is used)
                         for (int ii = 0; ii < (int)dsrec.length(); i++) {
                             if (strlen(dsrec[ii].digest) != 40) {
-                                LOG(WARNING_LOG, 
+                                LOG(WARNING_LOG,
                                         "Digest length is %d char (must be 40)",
                                         strlen(dsrec[ii].digest));
                                 ret->code = SetErrorReason(
