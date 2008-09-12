@@ -29,8 +29,9 @@ port = @NSPORT@
 #
 # supported log types:
 #   0 ... console
-#   1 ... syslog  (parameter `syslog_facility' for syslog local settings) 
-#   2 ... file    (parameter `file' for filename (with path) where to log)
+#   1 ... file    (parameter `file' for filename (with path) where to log)
+#   2 ... syslog  (parameter `syslog_facility' for syslog local settings) 
+#
 #
 # supported log levels:
 #   0 ... LL_EMERG
@@ -45,9 +46,10 @@ port = @NSPORT@
 ##
 
 [log]
-type = 0
+type = 1
 level = 8
-
+file = @LOCALSTATEDIR@/fred.log
+syslog_facility = 1
 
 ##
 # GENERAL REGISTRY settings

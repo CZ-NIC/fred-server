@@ -77,8 +77,10 @@ int main(int argc, char** argv) {
       ("nameservice.port",  po::value<unsigned>(),    "CORBA nameservice port");
     po::options_description log_opts("Logging");
     log_opts.add_options()
-      ("log.type",          po::value<unsigned>(),    "Log type")
-      ("log.level",         po::value<unsigned>(),    "Log level");
+      ("log.type",            po::value<unsigned>(),    "Log type")
+      ("log.level",           po::value<unsigned>(),    "Log level")
+      ("log.file",            po::value<std::string>(), "Log file path (for log.type = 1)")
+      ("log.syslog_facility", po::value<unsigned>(),    "Syslog facility (for log.type = 2)");
     po::options_description registry_opts("Registry");
     registry_opts.add_options()
       ("registry.restricted_handles",   po::value<bool>(),        "To force using restricted handles for NSSETs and CONTACTs")
@@ -144,21 +146,28 @@ int main(int argc, char** argv) {
     /* setting up logger */
     Logging::Log::Level log_level = static_cast<Logging::Log::Level>(cfg.get<unsigned>("log.level"));
     Logging::Log::Type  log_type  = static_cast<Logging::Log::Type>(cfg.get<unsigned>("log.type"));
+    boost::any param;          
+    if (log_type == Logging::Log::LT_FILE) {
+      param = cfg.get<std::string>("log.file");
+    }
+    if (log_type == Logging::Log::LT_SYSLOG) {
+      param = cfg.get<unsigned>("log.syslog_facility");
+    }
 
-    Logging::Manager::instance_ref().get("tracer").addHandler(log_type);
+    Logging::Manager::instance_ref().get("tracer").addHandler(log_type, param);
     Logging::Manager::instance_ref().get("tracer").setLevel(log_level);
-    Logging::Manager::instance_ref().get("db").addHandler(log_type);
+    Logging::Manager::instance_ref().get("db").addHandler(log_type, param);
     Logging::Manager::instance_ref().get("db").setLevel(log_level);
-    Logging::Manager::instance_ref().get("register").addHandler(log_type);
+    Logging::Manager::instance_ref().get("register").addHandler(log_type, param);
     Logging::Manager::instance_ref().get("register").setLevel(log_level);
-    Logging::Manager::instance_ref().get("corba").addHandler(log_type);
+    Logging::Manager::instance_ref().get("corba").addHandler(log_type, param);
     Logging::Manager::instance_ref().get("corba").setLevel(log_level);
-    Logging::Manager::instance_ref().get("mailer").addHandler(log_type);
+    Logging::Manager::instance_ref().get("mailer").addHandler(log_type, param);
     Logging::Manager::instance_ref().get("mailer").setLevel(log_level);
-    Logging::Manager::instance_ref().get("old_log").addHandler(log_type);
+    Logging::Manager::instance_ref().get("old_log").addHandler(log_type, param);
     Logging::Manager::instance_ref().get("old_log").setLevel(log_level);
     
-    Logging::Manager::instance_ref().get("server").addHandler(log_type);
+    Logging::Manager::instance_ref().get("server").addHandler(log_type, param);
     Logging::Manager::instance_ref().get("server").setLevel(Logging::Log::LL_DEBUG);
     if (log_type != Logging::Log::LT_CONSOLE) {
       Logging::Manager::instance_ref().get("server").addHandler(Logging::Log::LT_CONSOLE);

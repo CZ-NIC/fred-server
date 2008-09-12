@@ -13,17 +13,17 @@ Log::~Log() {
                 handlers.end(),
                 boost::checked_deleter<BaseLogType>());}
 
-void Log::addHandler(Log::Type _type, const std::string& _params) {
+void Log::addHandler(Log::Type _type, const boost::any& _param) {
   BaseLogType *type = 0;
   switch (_type) {
 	  case Log::LT_CONSOLE:
 	    type = new Logging::ConsoleLog();
 	    break;
 	  case Log::LT_SYSLOG:
-	    type = new Logging::SysLog();
+	    type = new Logging::SysLog(boost::any_cast<unsigned>(_param));
 	    break;
 	  case Log::LT_FILE:
-	    type = new Logging::FileLog(_params);
+	    type = new Logging::FileLog(boost::any_cast<std::string>(_param));
 	    break;
 	}
 	handlers.push_back(type);

@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <boost/format.hpp>
+#include <boost/any.hpp>
 #include <deque>
 
 #include <stdio.h>
@@ -35,7 +36,7 @@ public:
 
 	Log(const std::string& _ctx = "");
 	~Log();
-	void addHandler(Log::Type _type, const std::string& _params = std::string());
+	void addHandler(Log::Type _type, const boost::any& _param = boost::any());
 
 	void setLevel(Log::Level _ll);
 	Log::Level getLevel() const;

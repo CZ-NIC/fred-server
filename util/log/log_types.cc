@@ -54,10 +54,10 @@ void FileLog::msg(Log::Level _ll, const std::string& _msg,
 //	     << "[" << level2str(_ll) << "] " << _msg << std::endl;
 	
 	if (_ctx.empty())  
-	  std::cout << boost::format("[%1%] %|5t|[%2%] %|20t|%3%\n")
+	  _ofs << boost::format("[%1%] %|5t|[%2%] %|20t|%3%\n")
 	      % str_now % level2str(_ll) % _msg;
 	else
-	  std::cout << boost::format("[%1%] %|20t|[%2%] %|40t|[%3%] %|50t|%4%\n")
+	  _ofs << boost::format("[%1%] %|20t|[%2%] %|40t|[%3%] %|50t|%4%\n")
 	      % str_now % _ctx % level2str(_ll) % _msg;
 }
 
