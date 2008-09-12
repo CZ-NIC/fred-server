@@ -41,6 +41,7 @@ public:
   ccReg::Filters::Invoice_ptr addE(Database::Filters::Invoice* f);
   ccReg::Filters::Mail_ptr addE(Database::Filters::Mail* f);
   ccReg::Filters::File_ptr addE(Database::Filters::File* f);
+  ccReg::Filters::ObjectState_ptr addE(Database::Filters::ObjectState* f);
     
   void addFilter(Database::Filters::Filter* f);
     

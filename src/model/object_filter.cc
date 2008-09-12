@@ -69,6 +69,14 @@ Registrar& ObjectImpl::addUpdateRegistrar() {
   return *tmp;
 }
 
+ObjectState& ObjectImpl::addObjectState() {
+  ObjectStateImpl *tmp = new ObjectStateImpl();
+  add(tmp);
+  tmp->joinOn(new Join(Column("id", joinObjectTable()), SQL_OP_EQ, Column("object_id", tmp->joinObjectStateTable())));
+  tmp->setName("ObjectState");
+  return *tmp;
+}
+
 Table& ObjectImpl::joinObjectTable() {
   return joinTable("object");
 }
@@ -145,6 +153,14 @@ Registrar& ObjectHistoryImpl::addUpdateRegistrar() {
   add(tmp);
   tmp->joinOn(new Join(Column("upid", joinObjectTable()), SQL_OP_EQ, Column("id", tmp->joinRegistrarTable())));
   tmp->setName("UpdateRegistar");
+  return *tmp;
+}
+
+ObjectState& ObjectHistoryImpl::addObjectState() {
+  ObjectStateImpl *tmp = new ObjectStateImpl();
+  add(tmp);
+  tmp->joinOn(new Join(Column("id", joinObjectTable()), SQL_OP_EQ, Column("object_id", tmp->joinObjectStateTable())));
+  tmp->setName("ObjectState");
   return *tmp;
 }
 

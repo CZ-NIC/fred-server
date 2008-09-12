@@ -165,25 +165,29 @@ int main(int argc, char *argv[]) {
 //    
 //    return 1;
 
-    EppAction *epp_filter = new EppActionImpl();
-    epp_filter->addEppCodeResponse().setValue(2504);
+//    EppAction *epp_filter = new EppActionImpl();
+//    epp_filter->addEppCodeResponse().setValue(2504);
+//
+//    uf.addFilter(epp_filter);
+//    sq1 = new SelectQuery();
+//    sq1->addSelect("*", epp_filter->joinActionTable());
+//    uf.addQuery(sq1);
+//
+//    exec_and_print(sq, uf);   
+//    
+//    return 1;
 
-    uf.addFilter(epp_filter);
-    sq1 = new SelectQuery();
-    sq1->addSelect("*", epp_filter->joinActionTable());
-    uf.addQuery(sq1);
-
-    exec_and_print(sq, uf);   
-    
-    return 1;
-
+    Settings sett;
+    sett.set("filter.history", "on");
 
     Domain *df_test = new DomainHistoryImpl();
     df_test->addHandle().setValue("d*");
     df_test->addZoneId().setValue(Database::ID(3));
     df_test->addRegistrant().addHandle().setValue("CID:TOM");
+    df_test->addObjectState().addStateId().setValue(Database::ID(15));
 
     uf.addFilter(df_test);
+    uf.settings(&sett);
     sq1 = new SelectQuery();
     sq1->addSelect(new Column("historyid", df_test->joinObjectTable(), "DISTINCT"));
     sq1->addSelect("id roid name", df_test->joinObjectRegistryTable());
@@ -258,8 +262,7 @@ int main(int argc, char *argv[]) {
 
 
     Domain *d1 = new DomainHistoryImpl();
-    ObjectState &s = d1->addState();
-    s.addId().setValue(Database::Null<int>(14));
+    d1->addObjectState().addStateId().setValue(Database::ID(14));
     //d1->addExpirationDate(DateInterval(PAST_MONTH, 1));
     
     Contact &d1c = d1->addRegistrant();

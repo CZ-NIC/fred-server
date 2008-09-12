@@ -7,6 +7,7 @@
 
 #include "object_registry_filter.h"
 #include "registrar_filter.h"
+#include "object_state_filter.h"
 
 namespace Database {
 namespace Filters {
@@ -24,6 +25,7 @@ public:
   virtual Value<Database::ID>& addUpdateRegistrarId() = 0;
   virtual Registrar& addRegistrar() = 0;
   virtual Registrar& addUpdateRegistrar() = 0;
+  virtual ObjectState& addObjectState() = 0;
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -49,6 +51,7 @@ public:
   virtual Value<Database::ID>& addUpdateRegistrarId();
   virtual Registrar& addRegistrar();
   virtual Registrar& addUpdateRegistrar();
+  virtual ObjectState& addObjectState();
   
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -72,6 +75,7 @@ public:
   virtual Value<Database::ID>& addUpdateRegistrarId();
   virtual Registrar& addRegistrar();
   virtual Registrar& addUpdateRegistrar();
+  virtual ObjectState& addObjectState();
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,

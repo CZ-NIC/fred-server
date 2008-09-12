@@ -285,6 +285,12 @@ COMPOUND_CLASS(Registrar, Registrar, Compound,
     FILTER_ADD(Str, addCountry);
 );
 
+COMPOUND_CLASS(ObjectState, ObjectState, Compound,
+    FILTER_ADD(Id, addStateId);
+    FILTER_ADD(DateTime, addValidFrom);
+    FILTER_ADD(DateTime, addValidTo);
+);
+
 COMPOUND_CLASS(Obj, Object, Compound,
     FILTER_ADD(Str, addHandle);
     FILTER_ADD(DateTime, addCreateTime);
@@ -295,6 +301,7 @@ COMPOUND_CLASS(Obj, Object, Compound,
     FILTER_ADD(Registrar, addCreateRegistrar);
     FILTER_ADD(Registrar, addUpdateRegistrar);
     FILTER_ADD(Registrar, addRegistrar);
+    FILTER_ADD(ObjectState, addObjectState);
 );
 
 COMPOUND_CLASS(Contact, Contact, Obj,
@@ -465,6 +472,7 @@ ITERATOR_ADD_E_METHOD_IMPL(PublicRequest,PublicRequest);
 ITERATOR_ADD_E_METHOD_IMPL(File,File);
 ITERATOR_ADD_E_METHOD_IMPL(Invoice,Invoice);
 ITERATOR_ADD_E_METHOD_IMPL(Mail,Mail);
+ITERATOR_ADD_E_METHOD_IMPL(ObjectState,ObjectState);
 
 #define ITERATOR_ADD_FILTER_METHOD_IMPL(ct,dt) \
   { Database::Filters::dt *rf = dynamic_cast<Database::Filters::dt *>(f); \
@@ -490,5 +498,6 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(File,File);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Invoice,Invoice);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Mail,Mail);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(ObjectState,ObjectState);
   ITERATOR_ADD_FILTER_METHOD_IMPL(IntInterval,Interval<int>);
 }
