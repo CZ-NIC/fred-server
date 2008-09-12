@@ -1371,7 +1371,7 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getDomainStatusDescList(const char *l
         (*o)[o->length()-1].name = CORBA::string_dup("");
       }
       (*o)[o->length()-1].id    = sd->getId();
-      (*o)[o->length()-1].abbrev = DUPSTRFUN(sd->getName);
+      (*o)[o->length()-1].shortName = DUPSTRFUN(sd->getName);
     }
   }
   return o;
@@ -1390,7 +1390,7 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getContactStatusDescList(const char *
         (*o)[o->length()-1].name = CORBA::string_dup("");
       }
       (*o)[o->length()-1].id    = sd->getId();
-      (*o)[o->length()-1].abbrev = DUPSTRFUN(sd->getName);
+      (*o)[o->length()-1].shortName = DUPSTRFUN(sd->getName);
     }
   }
   return o;
@@ -1409,7 +1409,7 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getNSSetStatusDescList(const char *la
         (*o)[o->length()-1].name = CORBA::string_dup("");
       }
       (*o)[o->length()-1].id    = sd->getId();
-      (*o)[o->length()-1].abbrev = DUPSTRFUN(sd->getName);
+      (*o)[o->length()-1].shortName = DUPSTRFUN(sd->getName);
     }
   }
   return o;
@@ -1431,7 +1431,7 @@ ccReg_Admin_i::getKeySetStatusDescList(const char *lang)
                 (*o)[o->length()-1].name = CORBA::string_dup("");
             }
             (*o)[o->length()-1].id    = sd->getId();
-            (*o)[o->length()-1].abbrev = DUPSTRFUN(sd->getName);
+            (*o)[o->length()-1].shortName = DUPSTRFUN(sd->getName);
         }
     }
     return o;
@@ -1444,7 +1444,7 @@ ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *l
   for (unsigned i = 0; i < states_count; ++i) {
     const Register::StatusDesc *sd = register_manager_->getStatusDescByIdx(i);
     (*o)[i].id    = sd->getId();
-    (*o)[i].abbrev = DUPSTRFUN(sd->getName);
+    (*o)[i].shortName = DUPSTRFUN(sd->getName);
     (*o)[i].name  = DUPSTRC(sd->getDesc(lang));
   }
   return o;
