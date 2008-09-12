@@ -318,10 +318,17 @@ public:
 
   virtual void initStates() throw (SQL_ERROR) {
     TRACE("[CALL] Register::Manager::initStates()");
-    if (!db->ExecSelect("SELECT id, name, external, ARRAY_TO_STRING(types,',') "
-      "FROM enum_object_states") )
-      throw SQL_ERROR();
+
     statusList.clear();
+
+    /// HACK: OK state
+    statusList.push_back(StatusDescImpl(0, "ok", true, "1,2,3,4"));
+    statusList.back().addDesc("CS", "Objekt je bez omezení");
+    statusList.back().addDesc("EN", "Objekt is without restrictions");
+
+    if (!db->ExecSelect("SELECT id, name, external, ARRAY_TO_STRING(types,',') "
+      "FROM enum_object_states ORDER BY id") )
+      throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
       statusList.push_back(StatusDescImpl(
       STR_TO_ID(db->GetFieldValue(i,0)),
@@ -344,10 +351,6 @@ public:
     }
     db->FreeSelect();
     
-    /// HACK: OK state
-    statusList.push_back(StatusDescImpl(0, "ok", true, "1,2,3,4"));
-    statusList.back().addDesc("CS", "Objekt je bez omezení");
-    statusList.back().addDesc("EN", "Objekt is without restrictions");
     LOGGER("register").debug(boost::format("loaded '%1%' object states description from database")
         % states_loaded);
   }
