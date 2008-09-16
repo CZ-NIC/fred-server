@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "commonclient.h"
 #include "mailclient.h"
 
@@ -27,33 +28,30 @@ MailClient::MailClient():
     m_options = new boost::program_options::options_description(
             "Mail related options");
     m_options->add_options()
-        add_opt(MAIL_LIST_NAME)
-        add_opt(MAIL_LIST_HELP_NAME);
+        addOpt(MAIL_LIST_NAME)
+        addOpt(MAIL_LIST_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Mail related invisible options");
     m_optionsInvis->add_options()
-        add_opt_type(ID_NAME, unsigned int)
-        add_opt_type(HANDLE_NAME, std::string)
-        add_opt_type(TYPE_NAME, int)
-        add_opt_type(MAIL_STATUS_NAME, int)
-        add_opt_type(MAIL_ATTEMPT_NAME, int)
-        add_opt_type(MAIL_MESSAGE_NAME, std::string)
-        add_opt_type(CRDATE_FROM_NAME, std::string)
-        add_opt_type(CRDATE_TO_NAME, std::string)
-        add_opt_type(MODDATE_FROM_NAME, std::string)
-        add_opt_type(MODDATE_TO_NAME, std::string);
-
+        add_ID()
+        add_HANDLE()
+        add_TYPE()
+        addOptInt(MAIL_STATUS_NAME)
+        addOptInt(MAIL_ATTEMPT_NAME)
+        addOptStr(MAIL_MESSAGE_NAME)
+        add_CRDATE()
+        addOptStr(MAIL_MODDATE_FROM_NAME)
+        addOptStr(MAIL_MODDATE_TO_NAME);
 }
+
 MailClient::MailClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -69,13 +67,13 @@ void
 MailClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *
@@ -101,51 +99,51 @@ MailClient::list()
     Database::Filters::Mail *mailFilter;
     mailFilter = new Database::Filters::MailImpl();
 
-    if (m_varMap.count(ID_NAME))
+    if (m_conf.hasOpt(ID_NAME))
         mailFilter->addId().setValue(
-                Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
+    if (m_conf.hasOpt(HANDLE_NAME))
         mailFilter->addHandle().setValue(
-                m_varMap[HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(TYPE_NAME))
+                m_conf.get<std::string>(HANDLE_NAME));
+    if (m_conf.hasOpt(TYPE_NAME))
         mailFilter->addType().setValue(
-                m_varMap[TYPE_NAME].as<int>());
-    if (m_varMap.count(MAIL_STATUS_NAME))
+                m_conf.get<int>(TYPE_NAME));
+    if (m_conf.hasOpt(MAIL_STATUS_NAME))
         mailFilter->addStatus().setValue(
-                m_varMap[MAIL_STATUS_NAME].as<int>());
-    if (m_varMap.count(MAIL_ATTEMPT_NAME))
+                m_conf.get<int>(MAIL_STATUS_NAME));
+    if (m_conf.hasOpt(MAIL_ATTEMPT_NAME))
         mailFilter->addAttempt().setValue(
-                m_varMap[MAIL_ATTEMPT_NAME].as<int>());
-    if (m_varMap.count(MAIL_MESSAGE_NAME))
+                m_conf.get<int>(MAIL_ATTEMPT_NAME));
+    if (m_conf.hasOpt(MAIL_MESSAGE_NAME))
         mailFilter->addMessage().setValue(
-                m_varMap[MAIL_MESSAGE_NAME].as<std::string>());
-    if (m_varMap.count(MAIL_ATTACHMENT_ID_NAME))
+                m_conf.get<std::string>(MAIL_MESSAGE_NAME));
+    if (m_conf.hasOpt(MAIL_ATTACHMENT_ID_NAME))
         mailFilter->addAttachment().addId().setValue(
-                Database::ID(m_varMap[MAIL_ATTACHMENT_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(MAIL_ATTACHMENT_NAME_NAME))
+                Database::ID(m_conf.get<unsigned int>(MAIL_ATTACHMENT_ID_NAME)));
+    if (m_conf.hasOpt(MAIL_ATTACHMENT_NAME_NAME))
         mailFilter->addAttachment().addName().setValue(
-                m_varMap[MAIL_ATTACHMENT_NAME_NAME].as<std::string>());
-    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+                m_conf.get<std::string>(MAIL_ATTACHMENT_NAME_NAME));
+    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
         Database::Date crDateFrom("1901-01-01 00:00:00");
         Database::Date crDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(CRDATE_FROM_NAME))
+        if (m_conf.hasOpt(CRDATE_FROM_NAME))
             crDateFrom.from_string(
-                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(CRDATE_TO_NAME))
+                    m_conf.get<std::string>(CRDATE_FROM_NAME));
+        if (m_conf.hasOpt(CRDATE_TO_NAME))
             crDateTo.from_string(
-                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(CRDATE_TO_NAME));
         mailFilter->addCreateTime().setValue(
                 Database::DateTimeInterval(crDateFrom, crDateTo));
     }
-    if (m_varMap.count(MODDATE_FROM_NAME) || m_varMap.count(MODDATE_TO_NAME)) {
+    if (m_conf.hasOpt(MAIL_MODDATE_FROM_NAME) || m_conf.hasOpt(MAIL_MODDATE_TO_NAME)) {
         Database::Date modDateFrom("1901-01-01 00:00:00");
         Database::Date modDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(MODDATE_FROM_NAME))
+        if (m_conf.hasOpt(MAIL_MODDATE_FROM_NAME))
             modDateFrom.from_string(
-                    m_varMap[MODDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(MODDATE_TO_NAME))
+                    m_conf.get<std::string>(MAIL_MODDATE_FROM_NAME));
+        if (m_conf.hasOpt(MAIL_MODDATE_TO_NAME))
             modDateTo.from_string(
-                    m_varMap[MODDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(MAIL_MODDATE_TO_NAME));
         mailFilter->addModifyTime().setValue(
                 Database::DateTimeInterval(modDateFrom, modDateTo));
     }
@@ -154,7 +152,7 @@ MailClient::list()
     unionFilter = new Database::Filters::Union();
 
     unionFilter->addFilter(mailFilter);
-    mailList->setLimit(m_varMap[LIMIT_NAME].as<unsigned int>());
+    mailList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
 
     mailList->reload(*unionFilter);
 
@@ -169,7 +167,7 @@ MailClient::list()
             << "\t\t<type>" << mail->getType() << "</type>\n"
             << "\t\t<type_desc>" << mail->getTypeDesc() << "</type_desc>\n"
             << "\t\t<status>" << mail->getStatus() << "</status>\n";
-        if (m_varMap.count(FULL_LIST_NAME))
+        if (m_conf.hasOpt(FULL_LIST_NAME))
             std::cout 
                 << "\t\t<content>" << mail->getContent() << "</content>\n";
         for (unsigned int j = 0; j < mail->getHandleSize(); j++) {

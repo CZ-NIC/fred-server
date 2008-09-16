@@ -19,10 +19,10 @@
 #ifndef _AUTHINFOCLIENT_H_
 #define _AUTHINFOCLIENT_H_
 
-#define AUTHINFO_PDF_NAME         "authinfo-pdf"
+#define AUTHINFO_PDF_NAME         "authinfopdf"
 #define AUTHINFO_PDF_NAME_DESC    "generate pdf of authorization info request"
 
-#define AUTHINFO_PDF_HELP_NAME    "authinfo-pdf-help"
+#define AUTHINFO_PDF_HELP_NAME    "authinfopdf-help"
 #define AUTHINFO_PDF_HELP_NAME_DESC "help for authinfo pdf creation"
 
 
@@ -41,20 +41,19 @@ private:
     CORBA::Long m_clientId;
     DB m_db;
     Database::Manager *m_dbman;
-    boost::program_options::variables_map m_varMap;
     ccReg::EPP_var m_epp;
+    Config::Conf m_conf;
 
     boost::program_options::options_description *m_options;
     boost::program_options::options_description *m_optionsInvis;
 public:
     AuthInfoClient();
     AuthInfoClient(std::string connstring,
-            std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            std::string nsAddr);
     ~AuthInfoClient();
     void init(std::string connstring,
             std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            Config::Conf &conf);
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;

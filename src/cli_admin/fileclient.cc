@@ -16,39 +16,11 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "commonclient.h"
 #include "fileclient.h"
 
 namespace Admin {
-
-#define LOGIN_FILECLIENT \
-CorbaClient cc(0, NULL, m_nsAddr.c_str()); \
-CORBA::Object_var o = cc.getNS()->resolve("EPP"); \
-ccReg::EPP_var epp; \
-epp = ccReg::EPP::_narrow(o); \
-CORBA::Long clientId = 0; \
-ccReg::Response_var r; \
-if (!m_db.ExecSelect( \
-            "SELECT r.handle,ra.cert,ra.password " \
-            "FROM registrar r, registraracl ra " \
-            "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1 ") \
-        ) \
-    return -1; \
-if (!m_db.GetSelectRows()) \
-    return -1; \
-std::string handle = m_db.GetFieldValue(0,0); \
-std::string cert = m_db.GetFieldValue(0,1); \
-std::string password = m_db.GetFieldValue(0,2); \
-m_db.FreeSelect(); \
-r = epp->ClientLogin(handle.c_str(),password.c_str(),"","system_delete_login","<system_delete_login/>", \
-        clientId,cert.c_str(),ccReg::EN); \
-if (r->code != 1000 || !clientId) { \
-    std::cerr << "Cannot connect: " << r->code << std::endl; \
-    return -1; \
-}
-
-#define LOGOUT_FILECLIENT \
-    epp->ClientLogout(clientId,"system_delete_logout","<system_delete_logout/>");
 
 FileClient::FileClient():
     m_connstring(""), m_nsAddr("")
@@ -56,31 +28,28 @@ FileClient::FileClient():
     m_options = new boost::program_options::options_description(
             "File related options");
     m_options->add_options()
-        add_opt(FILE_LIST_NAME)
-        add_opt(FILE_LIST_HELP_NAME);
+        addOpt(FILE_LIST_NAME)
+        addOpt(FILE_LIST_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "File related invisible options");
     m_optionsInvis->add_options()
-        add_opt_type(ID_NAME, unsigned int)
-        add_opt_type(NAME_NAME, std::string)
-        add_opt_type(TYPE_NAME, int)
-        add_opt_type(FILE_PATH_NAME, std::string)
-        add_opt_type(FILE_MIME_NAME, std::string)
-        add_opt_type(FILE_SIZE_NAME, int)
-        add_opt_type(CRDATE_FROM_NAME, std::string)
-        add_opt_type(CRDATE_TO_NAME, std::string);
+        add_ID()
+        add_NAME()
+        add_TYPE()
+        addOptStr(FILE_PATH_NAME)
+        addOptStr(FILE_MIME_NAME)
+        addOptInt(FILE_SIZE_NAME)
+        add_CRDATE();
 
 }
 FileClient::FileClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -96,13 +65,13 @@ void
 FileClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *
@@ -128,33 +97,33 @@ FileClient::list()
     Database::Filters::File *fileFilter;
     fileFilter = new Database::Filters::FileImpl();
 
-    if (m_varMap.count(ID_NAME))
+    if (m_conf.hasOpt(ID_NAME))
         fileFilter->addId().setValue(
-                Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(NAME_NAME))
+                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
+    if (m_conf.hasOpt(NAME_NAME))
         fileFilter->addName().setValue(
-                m_varMap[NAME_NAME].as<std::string>());
-    if (m_varMap.count(FILE_PATH_NAME))
+                m_conf.get<std::string>(NAME_NAME));
+    if (m_conf.hasOpt(FILE_PATH_NAME))
         fileFilter->addPath().setValue(
-                m_varMap[FILE_PATH_NAME].as<std::string>());
-    if (m_varMap.count(FILE_MIME_NAME))
+                m_conf.get<std::string>(FILE_PATH_NAME));
+    if (m_conf.hasOpt(FILE_MIME_NAME))
         fileFilter->addPath().setValue(
-                m_varMap[FILE_MIME_NAME].as<std::string>());
-    if (m_varMap.count(FILE_SIZE_NAME))
+                m_conf.get<std::string>(FILE_MIME_NAME));
+    if (m_conf.hasOpt(FILE_SIZE_NAME))
         fileFilter->addSize().setValue(
-                m_varMap[FILE_SIZE_NAME].as<int>());
-    if (m_varMap.count(TYPE_NAME))
+                m_conf.get<int>(FILE_SIZE_NAME));
+    if (m_conf.hasOpt(TYPE_NAME))
         fileFilter->addType().setValue(
-                m_varMap[TYPE_NAME].as<int>());
-    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+                m_conf.get<int>(TYPE_NAME));
+    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
         Database::DateTime crDateFrom("1901-01-01 00:00:00");
         Database::DateTime crDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(CRDATE_FROM_NAME))
+        if (m_conf.hasOpt(CRDATE_FROM_NAME))
             crDateFrom.from_string(
-                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(CRDATE_TO_NAME))
+                    m_conf.get<std::string>(CRDATE_FROM_NAME));
+        if (m_conf.hasOpt(CRDATE_TO_NAME))
             crDateTo.from_string(
-                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(CRDATE_TO_NAME));
         fileFilter->addCreateTime().setValue(
                 Database::DateTimeInterval(crDateFrom, crDateTo));
     }
@@ -163,7 +132,7 @@ FileClient::list()
     unionFilter = new Database::Filters::Union();
 
     unionFilter->addFilter(fileFilter);
-    fileList->setLimit(m_varMap[LIMIT_NAME].as<unsigned int>());
+    fileList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
 
     fileList->reload(*unionFilter);
 

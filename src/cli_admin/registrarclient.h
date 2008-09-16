@@ -19,16 +19,24 @@
 #ifndef _REGISTRARCLIENT_H_
 #define _REGISTRARCLIENT_H_
 
-#define REGISTRAR_LIST_NAME                 "registrar-list"
+#define REGISTRAR_LIST_NAME                 "registrar_list"
 #define REGISTRAR_LIST_NAME_DESC            "list all registrars (via filters)"
-#define REGISTRAR_ZONE_ADD_NAME             "add-zone"
-#define REGISTRAR_REGISTRAR_ADD_NAME        "add-registrar"
-#define REGISTRAR_REGISTRAR_ADD_ZONE_NAME   "add-registrar-to-zone"
+#define REGISTRAR_ZONE_ADD_NAME             "zone_add"
+#define REGISTRAR_ZONE_ADD_NAME_DESC        "add new zone"
+#define REGISTRAR_REGISTRAR_ADD_NAME        "registrar_add"
+#define REGISTRAR_REGISTRAR_ADD_NAME_DESC   "add new registrar (make a copy of REG-FRED_A)"
+#define REGISTRAR_REGISTRAR_ADD_ZONE_NAME       "registrar_add_zone"
+#define REGISTRAR_REGISTRAR_ADD_ZONE_NAME_DESC  "add access right for registrar to zone"
 
-#define REGISTRAR_ZONE_ADD_HELP_NAME             "add-zone-help"
-#define REGISTRAR_REGISTRAR_ADD_HELP_NAME        "add-registrar-help"
-#define REGISTRAR_REGISTRAR_ADD_ZONE_HELP_NAME   "add-registrar-to-zone-help"
+#define REGISTRAR_ZONE_ADD_HELP_NAME                "zone_add_help"
+#define REGISTRAR_ZONE_ADD_HELP_NAME_DESC           "help for zone_add"
+#define REGISTRAR_REGISTRAR_ADD_HELP_NAME           "registrar_add_help"
+#define REGISTRAR_REGISTRAR_ADD_HELP_NAME_DESC      "help for registrar_add"
+#define REGISTRAR_REGISTRAR_ADD_ZONE_HELP_NAME      "registrar_add_zone_help"
+#define REGISTRAR_REGISTRAR_ADD_ZONE_HELP_NAME_DESC "help for registrar_add_zone"
 
+#define REGISTRAR_ZONE_FQDN_NAME        "zone_fqdn"
+#define REGISTRAR_ZONE_FQDN_NAME_DESC   "fqdn of new zone"
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -47,20 +55,19 @@ private:
     CORBA::Long m_clientId;
     DB m_db;
     Database::Manager *m_dbman;
-    boost::program_options::variables_map m_varMap;
     ccReg::EPP_var m_epp;
+    Config::Conf m_conf;
 
     boost::program_options::options_description *m_options;
     boost::program_options::options_description *m_optionsInvis;
 public:
     RegistrarClient();
     RegistrarClient(std::string connstring,
-            std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            std::string nsAddr);
     ~RegistrarClient();
     void init(std::string connstring,
             std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            Config::Conf &conf);
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;

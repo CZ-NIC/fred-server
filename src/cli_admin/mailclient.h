@@ -34,13 +34,15 @@
 #define MAIL_ATTACHMENT_ID_NAME_DESC      "attachment-id desc"
 #define MAIL_ATTACHMENT_NAME_NAME         "attachment-name"
 #define MAIL_ATTACHMENT_NAME_NAME_DESC    "attachment-name desc"
+#define MAIL_MODDATE_FROM_NAME            "mod_date_from"
+#define MAIL_MODDATE_FROM_NAME_DESC       "mod date from"
+#define MAIL_MODDATE_TO_NAME              "mod_date_to"
+#define MAIL_MODDATE_TO_NAME_DESC         "mod date to"
 
 #include <iostream>
 #include <boost/program_options.hpp>
 #include "old_utils/dbsql.h"
 
-#include "old_utils/log.h"
-#include "old_utils/conf.h"
 #include "register/register.h"
 #include "corba/admin/admin_impl.h"
 #include "corba/mailer_manager.h"
@@ -54,20 +56,19 @@ private:
     CORBA::Long m_clientId;
     DB m_db;
     Database::Manager *m_dbman;
-    boost::program_options::variables_map m_varMap;
     ccReg::EPP_var m_epp;
+    Config::Conf m_conf;
 
     boost::program_options::options_description *m_options;
     boost::program_options::options_description *m_optionsInvis;
 public:
     MailClient();
     MailClient(std::string connstring,
-            std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            std::string nsAddr);
     ~MailClient();
     void init(std::string connstring,
             std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            Config::Conf &conf);
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;

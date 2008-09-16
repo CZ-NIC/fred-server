@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "commonclient.h"
 #include "infobuffclient.h"
 #include "register/info_buffer.h"
@@ -28,23 +29,22 @@ InfoBuffClient::InfoBuffClient():
     m_options = new boost::program_options::options_description(
             "Info buffer related options");
     m_options->add_options()
-        ADD_OPT_TYPE(INFOBUFF_MAKE_INFO_NAME, "invoke generation of list of o for given registrar", unsigned int)
-        ADD_OPT_TYPE(INFOBUFF_GET_CHUNK_NAME, "output chunk of buffer for given registrar", unsigned int);
+        addOptUInt(INFOBUFF_MAKE_INFO_NAME)
+        addOptUInt(INFOBUFF_GET_CHUNK_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Info buffer related invisible options");
     m_optionsInvis->add_options()
-        ADD_OPT_DEF(INFOBUFF_REQUEST_NAME, "handle for query", std::string, "");
+        addOptUInt(INFOBUFF_REGISTRAR_NAME)
+        addOptStrDef(INFOBUFF_REQUEST_NAME, "");
 }
 InfoBuffClient::InfoBuffClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -60,13 +60,13 @@ void
 InfoBuffClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *
@@ -91,18 +91,18 @@ InfoBuffClient::make_info()
     std::auto_ptr<Register::Contact::Manager> conMan(
             Register::Contact::Manager::create(
                 &m_db,
-                m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
             Register::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
-                m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
                 &m_db,
-                m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::InfoBuffer::Manager> infoBuffMan(
             Register::InfoBuffer::Manager::create(
@@ -112,12 +112,12 @@ InfoBuffClient::make_info()
                 conMan.get(),
                 keyMan.get())
             );
-    unsigned int type = m_varMap[INFOBUFF_MAKE_INFO_NAME].as<unsigned int>();
+    unsigned int type = m_conf.get<unsigned int>(INFOBUFF_MAKE_INFO_NAME);
     if (type < 1 || type > 7)
         std::cerr << INFOBUFF_MAKE_INFO_NAME << " must be number between 1 and 7" << std::endl;
     else {
         infoBuffMan->info(
-                m_varMap[REGISTRAR_ID_NAME].as<unsigned int>(),
+                m_conf.get<unsigned int>(REGISTRAR_ID_NAME),
                 type == 1 ? Register::InfoBuffer::T_LIST_CONTACTS :
                 type == 2 ? Register::InfoBuffer::T_LIST_DOMAINS :
                 type == 3 ? Register::InfoBuffer::T_LIST_NSSETS :
@@ -128,7 +128,7 @@ InfoBuffClient::make_info()
                 type == 8 ? Register::InfoBuffer::T_NSSETS_BY_CONTACT :
                 type == 9 ? Register::InfoBuffer::T_NSSETS_BY_NS :
                 Register::InfoBuffer::T_KEYSETS_BY_CONTACT,      
-                m_varMap[INFOBUFF_REQUEST_NAME].as<std::string>());
+                m_conf.get<std::string>(INFOBUFF_REQUEST_NAME));
     }
     return 0;
 }
@@ -142,18 +142,18 @@ InfoBuffClient::get_chunk()
     std::auto_ptr<Register::Contact::Manager> conMan(
             Register::Contact::Manager::create(
                 &m_db,
-                m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
             Register::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
-                m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
                 &m_db,
-                m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::InfoBuffer::Manager> infoBuffMan(
             Register::InfoBuffer::Manager::create(
@@ -165,8 +165,8 @@ InfoBuffClient::get_chunk()
             );
     std::auto_ptr<Register::InfoBuffer::Chunk> chunk(
             infoBuffMan->getChunk(
-                m_varMap[REGISTRAR_ID_NAME].as<unsigned int>(),
-                m_varMap[INFOBUFF_GET_CHUNK_NAME].as<unsigned int>())
+                m_conf.get<unsigned int>(REGISTRAR_ID_NAME),
+                m_conf.get<unsigned int>(INFOBUFF_GET_CHUNK_NAME))
             );
     for (unsigned long i = 0; i < chunk->getCount(); i++)
         std::cout << chunk->getNext() << std::endl;

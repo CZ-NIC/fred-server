@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "commonclient.h"
 #include "registrarclient.h"
 
@@ -27,29 +28,31 @@ RegistrarClient::RegistrarClient():
     m_options = new boost::program_options::options_description(
             "Registrar related options");
     m_options->add_options()
-        add_opt(REGISTRAR_LIST_NAME)
-        ADD_OPT_TYPE(REGISTRAR_ZONE_ADD_NAME, "Add new zone", std::string)
-        ADD_OPT_TYPE(REGISTRAR_REGISTRAR_ADD_NAME, "Add new registrar (make a copy of REG-FRED_A)", std::string)
-        ADD_OPT(REGISTRAR_REGISTRAR_ADD_ZONE_NAME, "Add access rights right for registrar to zone")
-        ADD_OPT(REGISTRAR_ZONE_ADD_HELP_NAME, "")
-        ADD_OPT(REGISTRAR_REGISTRAR_ADD_HELP_NAME, "")
-        ADD_OPT(REGISTRAR_REGISTRAR_ADD_ZONE_HELP_NAME, "");
+        addOpt(REGISTRAR_LIST_NAME)
+        addOpt(REGISTRAR_ZONE_ADD_NAME)
+        addOpt(REGISTRAR_REGISTRAR_ADD_NAME)
+        addOpt(REGISTRAR_REGISTRAR_ADD_ZONE_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Registrar related invisible options");
     m_optionsInvis->add_options()
-        ADD_OPT_TYPE(ZONE_HANDLE_NAME, "Zone handle", std::string)
-        ADD_OPT_TYPE(REGISTRAR_HANDLE_NAME, "Registrar handle", std::string);
+        add_ID()
+        add_HANDLE()
+        add_NAME()
+        add_CITY()
+        add_EMAIL()
+        add_COUNTRY()
+        addOptStr(REGISTRAR_ZONE_FQDN_NAME)
+        addOptStr(REGISTRAR_HANDLE_NAME);
 }
+
 RegistrarClient::RegistrarClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -65,13 +68,13 @@ void
 RegistrarClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *
@@ -96,30 +99,30 @@ RegistrarClient::list()
     Database::Filters::Registrar *regFilter;
     regFilter = new Database::Filters::RegistrarImpl();
 
-    if (m_varMap.count(ID_NAME))
+    if (m_conf.hasOpt(ID_NAME))
         regFilter->addId().setValue(
-                Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
+    if (m_conf.hasOpt(HANDLE_NAME))
         regFilter->addHandle().setValue(
-                m_varMap[HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(NAME_NAME))
+                m_conf.get<std::string>(HANDLE_NAME));
+    if (m_conf.hasOpt(NAME_NAME))
         regFilter->addOrganization().setValue(
-                m_varMap[ORGANIZATION_NAME].as<std::string>());
-    if (m_varMap.count(CITY_NAME))
+                m_conf.get<std::string>(ORGANIZATION_NAME));
+    if (m_conf.hasOpt(CITY_NAME))
         regFilter->addCity().setValue(
-                m_varMap[CITY_NAME].as<std::string>());
-    if (m_varMap.count(EMAIL_NAME))
+                m_conf.get<std::string>(CITY_NAME));
+    if (m_conf.hasOpt(EMAIL_NAME))
         regFilter->addEmail().setValue(
-                m_varMap[EMAIL_NAME].as<std::string>());
-    if (m_varMap.count(COUNTRY_NAME))
+                m_conf.get<std::string>(EMAIL_NAME));
+    if (m_conf.hasOpt(COUNTRY_NAME))
         regFilter->addCountry().setValue(
-                m_varMap[COUNTRY_NAME].as<std::string>());
+                m_conf.get<std::string>(COUNTRY_NAME));
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
 
     unionFilter->addFilter(regFilter);
-    regMan->getList()->setLimit(m_varMap[LIMIT_NAME].as<unsigned int>());
+    regMan->getList()->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
 
     regMan->getList()->reload(*unionFilter, m_dbman);
 
@@ -165,7 +168,7 @@ RegistrarClient::zone_add()
 {
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
-    std::string fqdn = m_varMap[REGISTRAR_ZONE_ADD_NAME].as<std::string>();
+    std::string fqdn = m_conf.get<std::string>(REGISTRAR_ZONE_ADD_NAME);
     try {
         zoneMan->addZone(fqdn);
     } catch (Register::ALREADY_EXISTS) {
@@ -178,7 +181,7 @@ RegistrarClient::registrar_add()
 {
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
-    regMan->addRegistrar(m_varMap[REGISTRAR_REGISTRAR_ADD_NAME].as<std::string>());
+    regMan->addRegistrar(m_conf.get<std::string>(REGISTRAR_REGISTRAR_ADD_NAME));
     return 0;
 }
 int
@@ -186,8 +189,8 @@ RegistrarClient::registrar_add_zone()
 {
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
-    std::string zone = m_varMap[ZONE_HANDLE_NAME].as<std::string>();
-    std::string registrar = m_varMap[REGISTRAR_HANDLE_NAME].as<std::string>();
+    std::string zone = m_conf.get<std::string>(ZONE_HANDLE_NAME);
+    std::string registrar = m_conf.get<std::string>(REGISTRAR_HANDLE_NAME);
     regMan->addRegistrarZone(registrar, zone);
     return 0;
 }

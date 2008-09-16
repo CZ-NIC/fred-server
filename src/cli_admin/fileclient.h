@@ -19,9 +19,9 @@
 #ifndef _FILECLIENT_H_
 #define _FILECLIENT_H_
 
-#define FILE_LIST_NAME              "file-list"
+#define FILE_LIST_NAME              "file_list"
 #define FILE_LIST_NAME_DESC         "list all files"
-#define FILE_LIST_HELP_NAME         "file-list-help"
+#define FILE_LIST_HELP_NAME         "file_list_help"
 #define FILE_LIST_HELP_NAME_DESC    "help for file list"
 
 #define FILE_PATH_NAME              "path"
@@ -35,8 +35,6 @@
 #include <boost/program_options.hpp>
 #include "old_utils/dbsql.h"
 
-#include "old_utils/log.h"
-#include "old_utils/conf.h"
 #include "register/register.h"
 #include "corba/admin/admin_impl.h"
 #include "corba/mailer_manager.h"
@@ -50,20 +48,19 @@ private:
     CORBA::Long m_clientId;
     DB m_db;
     Database::Manager *m_dbman;
-    boost::program_options::variables_map m_varMap;
     ccReg::EPP_var m_epp;
+    Config::Conf m_conf;
 
     boost::program_options::options_description *m_options;
     boost::program_options::options_description *m_optionsInvis;
 public:
     FileClient();
     FileClient(std::string connstring,
-            std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            std::string nsAddr);
     ~FileClient();
     void init(std::string connstring,
             std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            Config::Conf &conf);
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;

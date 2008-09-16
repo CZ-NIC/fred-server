@@ -20,9 +20,9 @@
 #define _BANKCLIENT_H_
 
 
-#define BANK_ONLINE_LIST_NAME       "bank-online-list"
+#define BANK_ONLINE_LIST_NAME       "bank_online_list"
 #define BANK_ONLINE_LIST_NAME_DESC  "list of online payments"
-#define BANK_STATEMENT_LIST_NAME    "bank-statement-list"
+#define BANK_STATEMENT_LIST_NAME    "bank_statement_list"
 #define BANK_STATEMENT_LIST_NAME_DESC "list of bank statements"
 
 #include <boost/program_options.hpp>
@@ -41,20 +41,19 @@ private:
     CORBA::Long m_clientId;
     DB m_db;
     Database::Manager *m_dbman;
-    boost::program_options::variables_map m_varMap;
     ccReg::EPP_var m_epp;
+    Config::Conf m_conf;
 
     boost::program_options::options_description *m_options;
     boost::program_options::options_description *m_optionsInvis;
 public:
     BankClient();
     BankClient(std::string connstring,
-            std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            std::string nsAddr);
     ~BankClient();
     void init(std::string connstring,
             std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            Config::Conf &conf);
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;

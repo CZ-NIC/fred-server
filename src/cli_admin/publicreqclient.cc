@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "commonclient.h"
 #include "publicreqclient.h"
 #include "register/public_request.h"
@@ -28,37 +29,34 @@ PublicRequestClient::PublicRequestClient():
     m_options = new boost::program_options::options_description(
             "Public request related options");
     m_options->add_options()
-        add_opt(PUBLICREQ_LIST_NAME)
-        add_opt(PUBLICREQ_LIST_HELP_NAME);
+        addOpt(PUBLICREQ_LIST_NAME)
+        addOpt(PUBLICREQ_LIST_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Public request related invisible options");
     m_optionsInvis->add_options()
-        add_opt_type(ID_NAME, unsigned int)
-        add_opt_type(TYPE_NAME, unsigned int)
-        add_opt_type(PUBLICREQ_STATUS_NAME, unsigned int)
-        add_opt_type(PUBLICREQ_ANSWER_EMAIL_NAME, std::string)
-        add_opt_type(PUBLICREQ_ANSWER_EMAIL_ID_NAME, unsigned int)
-        add_opt_type(PUBLICREQ_EPP_ID_NAME, unsigned int)
-        add_opt_type(PUBLICREQ_EPP_CLTRID_NAME, std::string)
-        add_opt_type(PUBLICREQ_EPP_SVTRID_NAME, std::string)
-        add_opt_type(PUBLICREQ_EPP_CODE_RESPONSE_NAME, unsigned int)
-        add_opt_type(PUBLICREQ_EPP_RESPONSE_NAME, unsigned int)
-        add_opt_type(PUBLICREQ_EPP_TYPE_NAME, unsigned int)
-        add_opt_type(CRDATE_FROM_NAME, std::string)
-        add_opt_type(CRDATE_TO_NAME, std::string)
-        add_opt_type(PUBLICREQ_RESDATE_FROM_NAME, std::string)
-        add_opt_type(PUBLICREQ_RESDATE_TO_NAME, std::string);
+        add_ID()
+        add_NAME()
+        addOptUInt(PUBLICREQ_STATUS_NAME)
+        addOptStr(PUBLICREQ_ANSWER_EMAIL_NAME)
+        addOptUInt(PUBLICREQ_ANSWER_EMAIL_ID_NAME)
+        addOptUInt(PUBLICREQ_EPP_ID_NAME)
+        addOptStr(PUBLICREQ_EPP_CLTRID_NAME)
+        addOptStr(PUBLICREQ_EPP_SVTRID_NAME)
+        addOptUInt(PUBLICREQ_EPP_CODE_RESPONSE_NAME)
+        addOptUInt(PUBLICREQ_EPP_RESPONSE_NAME)
+        addOptUInt(PUBLICREQ_EPP_TYPE_NAME)
+        add_CRDATE()
+        addOptStr(PUBLICREQ_RESDATE_FROM_NAME)
+        addOptStr(PUBLICREQ_RESDATE_TO_NAME);
 }
 PublicRequestClient::PublicRequestClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -71,13 +69,13 @@ void
 PublicRequestClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *
@@ -100,9 +98,9 @@ PublicRequestClient::list()
 
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
-                m_varMap[DOCGEN_PATH_NAME].as<std::string>(),
-                m_varMap[DOCGEN_TEMPLATE_PATH_NAME].as<std::string>(),
-                m_varMap[FILECLIENT_PATH_NAME].as<std::string>(),
+                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
+                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
+                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
                 m_nsAddr)
             );
     CorbaClient cc(0, NULL, m_nsAddr);
@@ -114,18 +112,18 @@ PublicRequestClient::list()
     std::auto_ptr<Register::Contact::Manager> conMan(
             Register::Contact::Manager::create(
                 &m_db,
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
             Register::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
                 &m_db,
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
@@ -143,67 +141,67 @@ PublicRequestClient::list()
     std::auto_ptr<Register::PublicRequest::List> prList(
             prMan->createList());
 
-    if (m_varMap.count(ID_NAME))
+    if (m_conf.hasOpt(ID_NAME))
         prFilter->addId().setValue(
-                Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(TYPE_NAME))
+                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
+    if (m_conf.hasOpt(TYPE_NAME))
         prFilter->addType().setValue(
-                m_varMap[TYPE_NAME].as<unsigned int>());
-    if (m_varMap.count(PUBLICREQ_STATUS_NAME))
+                m_conf.get<unsigned int>(TYPE_NAME));
+    if (m_conf.hasOpt(PUBLICREQ_STATUS_NAME))
         prFilter->addType().setValue(
-                m_varMap[PUBLICREQ_STATUS_NAME].as<unsigned int>());
-    if (m_varMap.count(PUBLICREQ_STATUS_NAME))
+                m_conf.get<unsigned int>(PUBLICREQ_STATUS_NAME));
+    if (m_conf.hasOpt(PUBLICREQ_STATUS_NAME))
         prFilter->addStatus().setValue(
-                m_varMap[PUBLICREQ_STATUS_NAME].as<unsigned int>());
-    if (m_varMap.count(PUBLICREQ_ANSWER_EMAIL_NAME))
+                m_conf.get<unsigned int>(PUBLICREQ_STATUS_NAME));
+    if (m_conf.hasOpt(PUBLICREQ_ANSWER_EMAIL_NAME))
         prFilter->addEmailToAnswer().setValue(
-                m_varMap[PUBLICREQ_ANSWER_EMAIL_NAME].as<std::string>());
-    if (m_varMap.count(PUBLICREQ_ANSWER_EMAIL_ID_NAME))
+                m_conf.get<std::string>(PUBLICREQ_ANSWER_EMAIL_NAME));
+    if (m_conf.hasOpt(PUBLICREQ_ANSWER_EMAIL_ID_NAME))
         prFilter->addAnswerEmailId().setValue(
-                Database::ID(m_varMap[PUBLICREQ_ANSWER_EMAIL_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(PUBLICREQ_REASON_NAME))
+                Database::ID(m_conf.get<unsigned int>(PUBLICREQ_ANSWER_EMAIL_ID_NAME)));
+    if (m_conf.hasOpt(PUBLICREQ_REASON_NAME))
         prFilter->addReason().setValue(
-                m_varMap[PUBLICREQ_REASON_NAME].as<std::string>());
-    if (m_varMap.count(PUBLICREQ_EPP_ID_NAME))
+                m_conf.get<std::string>(PUBLICREQ_REASON_NAME));
+    if (m_conf.hasOpt(PUBLICREQ_EPP_ID_NAME))
         prFilter->addEppAction().addId().setValue(
-                Database::ID(m_varMap[PUBLICREQ_EPP_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(PUBLICREQ_EPP_CLTRID_NAME))
+                Database::ID(m_conf.get<unsigned int>(PUBLICREQ_EPP_ID_NAME)));
+    if (m_conf.hasOpt(PUBLICREQ_EPP_CLTRID_NAME))
         prFilter->addEppAction().addClTRID().setValue(
-                m_varMap[PUBLICREQ_EPP_CLTRID_NAME].as<std::string>());
-    if (m_varMap.count(PUBLICREQ_EPP_SVTRID_NAME))
+                m_conf.get<std::string>(PUBLICREQ_EPP_CLTRID_NAME));
+    if (m_conf.hasOpt(PUBLICREQ_EPP_SVTRID_NAME))
         prFilter->addEppAction().addSvTRID().setValue(
-                m_varMap[PUBLICREQ_EPP_SVTRID_NAME].as<std::string>());
-    if (m_varMap.count(PUBLICREQ_EPP_CODE_RESPONSE_NAME))
+                m_conf.get<std::string>(PUBLICREQ_EPP_SVTRID_NAME));
+    if (m_conf.hasOpt(PUBLICREQ_EPP_CODE_RESPONSE_NAME))
         prFilter->addEppAction().addEppCodeResponse().setValue(
-                m_varMap[PUBLICREQ_EPP_CODE_RESPONSE_NAME].as<unsigned int>());
-    if (m_varMap.count(PUBLICREQ_EPP_RESPONSE_NAME))
+                m_conf.get<unsigned int>(PUBLICREQ_EPP_CODE_RESPONSE_NAME));
+    if (m_conf.hasOpt(PUBLICREQ_EPP_RESPONSE_NAME))
         prFilter->addEppAction().addResponse().setValue(
-                m_varMap[PUBLICREQ_EPP_RESPONSE_NAME].as<unsigned int>());
-    if (m_varMap.count(PUBLICREQ_EPP_TYPE_NAME))
+                m_conf.get<unsigned int>(PUBLICREQ_EPP_RESPONSE_NAME));
+    if (m_conf.hasOpt(PUBLICREQ_EPP_TYPE_NAME))
         prFilter->addEppAction().addType().setValue(
-                m_varMap[PUBLICREQ_EPP_TYPE_NAME].as<unsigned int>());
+                m_conf.get<unsigned int>(PUBLICREQ_EPP_TYPE_NAME));
 
-    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
         Database::DateTime crDateFrom("1901-01-01 00:00:00");
         Database::DateTime crDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(CRDATE_FROM_NAME))
+        if (m_conf.hasOpt(CRDATE_FROM_NAME))
             crDateFrom.from_string(
-                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(CRDATE_TO_NAME))
+                    m_conf.get<std::string>(CRDATE_FROM_NAME));
+        if (m_conf.hasOpt(CRDATE_TO_NAME))
             crDateTo.from_string(
-                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(CRDATE_TO_NAME));
         prFilter->addCreateTime().setValue(
                 Database::DateTimeInterval(crDateFrom, crDateTo));
     }
-    if (m_varMap.count(PUBLICREQ_RESDATE_FROM_NAME) || m_varMap.count(PUBLICREQ_RESDATE_TO_NAME)) {
+    if (m_conf.hasOpt(PUBLICREQ_RESDATE_FROM_NAME) || m_conf.hasOpt(PUBLICREQ_RESDATE_TO_NAME)) {
         Database::DateTime resDateFrom("1901-01-01 00:00:00");
         Database::DateTime resDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(PUBLICREQ_RESDATE_FROM_NAME))
+        if (m_conf.hasOpt(PUBLICREQ_RESDATE_FROM_NAME))
             resDateFrom.from_string(
-                    m_varMap[PUBLICREQ_RESDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(PUBLICREQ_RESDATE_TO_NAME))
+                    m_conf.get<std::string>(PUBLICREQ_RESDATE_FROM_NAME));
+        if (m_conf.hasOpt(PUBLICREQ_RESDATE_TO_NAME))
             resDateTo.from_string(
-                    m_varMap[PUBLICREQ_RESDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(PUBLICREQ_RESDATE_TO_NAME));
         prFilter->addResolveTime().setValue(
                 Database::DateTimeInterval(resDateFrom, resDateTo));
     }

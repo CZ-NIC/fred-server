@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "bankclient.h"
 #include "commonclient.h"
 #include "register/bank.h"
@@ -29,8 +30,8 @@ BankClient::BankClient():
     m_options = new boost::program_options::options_description(
             "Bank related options");
     m_options->add_options()
-        add_opt(BANK_ONLINE_LIST_NAME)
-        add_opt(BANK_STATEMENT_LIST_NAME);
+        addOpt(BANK_ONLINE_LIST_NAME)
+        addOpt(BANK_STATEMENT_LIST_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Bank related invisible options");
@@ -38,13 +39,11 @@ BankClient::BankClient():
 }
 BankClient::BankClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -60,13 +59,13 @@ void
 BankClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *

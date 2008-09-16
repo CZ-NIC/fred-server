@@ -76,6 +76,7 @@ fred_admin_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/src/corba/libcorba.a \
 	$(top_builddir)/src/old_utils/liboldutils.a \
 	$(top_builddir)/util/log/liblog.a \
+	$(top_builddir)/util/conf/libconf.a \
 	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am_fred_banking_OBJECTS = gpc.$(OBJEXT) banking.$(OBJEXT) \
@@ -92,6 +93,7 @@ fred_banking_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(top_builddir)/src/corba/libcorba.a \
 	$(top_builddir)/src/old_utils/liboldutils.a \
 	$(top_builddir)/util/log/liblog.a \
+	$(top_builddir)/util/conf/libconf.a \
 	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 dist_sbinSCRIPT_INSTALL = $(INSTALL_SCRIPT)
@@ -279,6 +281,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	$(top_builddir)/src/corba/libcorba.a \
 	$(top_builddir)/src/old_utils/liboldutils.a \
 	$(top_builddir)/util/log/liblog.a \
+	$(top_builddir)/util/conf/libconf.a \
 	$(top_builddir)/util/libutil.a \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB)
 

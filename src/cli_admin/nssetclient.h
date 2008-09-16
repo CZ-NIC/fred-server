@@ -26,14 +26,14 @@
 #include "old_utils/dbsql.h"
 #include "register/register.h"
 
-#define NSSET_LIST_NAME             "nsset-list"
+#define NSSET_LIST_NAME             "nsset_list"
 #define NSSET_LIST_NAME_DESC        "List all nsset objects"
 #define NSSET_LIST_HELP_NAME        "nsset-list-help"
 #define NSSET_LIST_HELP_NAME_DESC   "Help for nsset list"
 
-#define NSSET_HOST_FQDN_NAME        "host-fqdn"
+#define NSSET_HOST_FQDN_NAME        "host_fqdn"
 #define NSSET_HOST_FQDN_NAME_DESC   "filter records with specific host FQDN"
-#define NSSET_HOST_IP_NAME          "host-ip"
+#define NSSET_HOST_IP_NAME          "host_ip"
 #define NSSET_HOST_IP_NAME_DESC     "filter records with specific host ip address"
 
 namespace Admin {
@@ -45,20 +45,19 @@ private:
     CORBA::Long m_clientId;
     DB m_db;
     Database::Manager *m_dbman;
-    boost::program_options::variables_map m_varMap;
     ccReg::EPP_var m_epp;
+    Config::Conf m_conf;
 
     boost::program_options::options_description *m_options;
     boost::program_options::options_description *m_optionsInvis;
 public:
     NssetClient();
     NssetClient(std::string connstring,
-            std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            std::string nsAddr);
     ~NssetClient();
     void init(std::string connstring,
             std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            Config::Conf &conf);
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;

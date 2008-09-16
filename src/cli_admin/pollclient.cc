@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "commonclient.h"
 #include "pollclient.h"
 #include "register/poll.h"
@@ -28,31 +29,30 @@ PollClient::PollClient():
     m_options = new boost::program_options::options_description(
             "Poll related options");
     m_options->add_options()
-        ADD_OPT(POLL_LIST_ALL_NAME, "List all poll messages")
-        ADD_OPT_TYPE(POLL_LIST_NEXT_NAME, "List next message for given registrar", unsigned int)
-        ADD_OPT_TYPE(POLL_SET_SEEN_NAME, "Set given message as seen", unsigned int)
-        ADD_OPT(POLL_CREATE_STATE_CHANGES_NAME, "Create messages for state changes")
-        ADD_OPT(POLL_CREATE_LOW_CREDIT_NAME, "Create message for low credit");
+        addOpt(POLL_LIST_ALL_NAME)
+        addOptUInt(POLL_LIST_NEXT_NAME)
+        addOptUInt(POLL_SET_SEEN_NAME)
+        addOpt(POLL_CREATE_STATE_CHANGES_NAME)
+        addOpt(POLL_CREATE_LOW_CREDIT_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Poll related invisible options");
     m_optionsInvis->add_options()
-        ADD_OPT_TYPE(POLL_TYPE_NAME, "set filter for poll type", unsigned int)
-        ADD_OPT_TYPE(REGISTRAR_ID_NAME, "set filter for registrar id", unsigned int)
-        ADD_OPT(POLL_NONSEEN_NAME, "set filter for non seen messages")
-        ADD_OPT(POLL_NONEX_NAME, "set filter for non expired messages")
-        ADD_OPT_DEF(POLL_EXCEPT_TYPES_NAME, "list of poll message types ignored in creation (only states now)", std::string, "6,7")
-        ADD_OPT_DEF(POLL_LIMIT_NAME, "some poll limitation", unsigned int, 0);
+        addOptUInt(POLL_TYPE_NAME)
+        addOptUInt(POLL_REGID_NAME)
+        addOpt(POLL_NONSEEN_NAME)
+        addOpt(POLL_NONEX_NAME)
+        addOpt(POLL_DEBUG_NAME)
+        addOptStrDef(POLL_EXCEPT_TYPES_NAME, "6,7")
+        addOptUIntDef(POLL_LIMIT_NAME, 0);
 }
 PollClient::PollClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -68,13 +68,13 @@ void
 PollClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *
@@ -97,13 +97,13 @@ PollClient::list_all()
                 &m_db)
             );
     std::auto_ptr<Register::Poll::List> pmList(pollMan->createList());
-    if (m_varMap.count(POLL_TYPE_NAME))
-        pmList->setTypeFilter(m_varMap[POLL_TYPE_NAME].as<unsigned int>());
-    if (m_varMap.count(REGISTRAR_ID_NAME))
-        pmList->setRegistrarFilter(m_varMap[REGISTRAR_ID_NAME].as<unsigned int>());
-    if (m_varMap.count(POLL_NONSEEN_NAME))
+    if (m_conf.hasOpt(POLL_TYPE_NAME))
+        pmList->setTypeFilter(m_conf.get<unsigned int>(POLL_TYPE_NAME));
+    if (m_conf.hasOpt(REGISTRAR_ID_NAME))
+        pmList->setRegistrarFilter(m_conf.get<unsigned int>(REGISTRAR_ID_NAME));
+    if (m_conf.hasOpt(POLL_NONSEEN_NAME))
         pmList->setNonSeenFilter(true);
-    if (m_varMap.count(POLL_NONEX_NAME))
+    if (m_conf.hasOpt(POLL_NONEX_NAME))
         pmList->setNonExpiredFilter(true);
     pmList->reload();
     for (unsigned int i = 0; i < pmList->getCount(); i++) {
@@ -122,7 +122,7 @@ PollClient::list_next()
             Register::Poll::Manager::create(
                 &m_db)
             );
-    Register::TID reg = m_varMap[POLL_LIST_NEXT_NAME].as<unsigned int>();
+    Register::TID reg = m_conf.get<unsigned int>(POLL_LIST_NEXT_NAME);
     unsigned int count = pollMan->getMessageCount(reg);
     if (!count) {
         std::cout << "No message" << std::endl;
@@ -142,9 +142,9 @@ PollClient::set_seen()
                 &m_db)
             );
     try {
-        Register::TID reg = m_varMap[REGISTRAR_ID_NAME].as<unsigned int>();
+        Register::TID reg = m_conf.get<unsigned int>(REGISTRAR_ID_NAME);
         if (!reg) std::cout << "Owning registar must be set." << std::endl;
-        Register::TID messageId = m_varMap[POLL_SET_SEEN_NAME].as<unsigned int>(); 
+        Register::TID messageId = m_conf.get<unsigned int>(POLL_SET_SEEN_NAME); 
         pollMan->setMessageSeen(messageId, reg);
         std::cout << "NextId:" << pollMan->getNextMessageId(reg) << std::endl;
     } catch (...) {
@@ -160,9 +160,9 @@ PollClient::create_state_changes()
                 &m_db)
             );
     pollMan->createStateMessages(
-            m_varMap[POLL_EXCEPT_TYPES_NAME].as<std::string>(),
-            m_varMap[POLL_LIMIT_NAME].as<unsigned int>(),
-            m_varMap.count(DEBUG_NAME) ? &std::cout : NULL
+            m_conf.get<std::string>(POLL_EXCEPT_TYPES_NAME),
+            m_conf.get<unsigned int>(POLL_LIMIT_NAME),
+            m_conf.hasOpt(POLL_DEBUG_NAME) ? &std::cout : NULL
     );
     return 0;
 }

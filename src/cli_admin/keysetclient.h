@@ -27,16 +27,27 @@
 #include "register/register.h"
 
 #define KEYSET_LIST_NAME            "keyset-list"
+#define KEYSET_LIST_NAME_DESC       "list of all keysets (via filters)"
 #define KEYSET_LIST_PLAIN_NAME      "keyset-list-plain"
+#define KEYSET_LIST_PLAIN_NAME_DESC "list of all keysets (via ccReg_i)"
 #define KEYSET_CHECK_NAME           "keyset-check"
-#define KEYSET_SEND_AUTH_INFO_NAME  "keyset-send-auth-info"
+#define KEYSET_CHECK_NAME_DESC      "check keyset state"
+#define KEYSET_SEND_AUTH_INFO_NAME      "keyset-send-auth-info"
+#define KEYSET_SEND_AUTH_INFO_NAME_DESC "send authorization info"
 #define KEYSET_TRANSFER_NAME        "keyset-transfer"
+#define KEYSET_TRANSFER_NAME_DESC   "transfer keyset"
 #define KEYSET_UPDATE_NAME          "keyset-update"
+#define KEYSET_UPDATE_NAME_DESC     "update keyset"
 #define KEYSET_DELETE_NAME          "keyset-delete"
+#define KEYSET_DELETE_NAME_DESC     "delete keyset"
 #define KEYSET_CREATE_NAME          "keyset-create"
+#define KEYSET_CREATE_NAME_DESC     "create keyset"
 #define KEYSET_CREATE2_NAME         "keyset-create2"
 #define KEYSET_INFO_NAME            "keyset-info"
+#define KEYSET_INFO_NAME_DESC       "keyset info (via epp_impl)"
 #define KEYSET_INFO2_NAME           "keyset-info2"
+#define KEYSET_INFO2_NAME_DESC      "keyset info (via ccReg_i::info method)"
+
 
 #define KEYSET_DSRECORDS_NAME       "dsrecords"
 #define KEYSET_DSRECORDS_NAME_DESC  "list of dsrecords (used with --keyset-create commnad)"
@@ -45,12 +56,18 @@
 #define KEYSET_DSREC_REM_NAME       "dsrec-rem"
 #define KEYSET_DSREC_REM_NAME_DESC  "list of dsrecords to remove"
 
-#define KEYSET_LIST_HELP_NAME       "keyset-list-help"
-#define KEYSET_UPDATE_HELP_NAME     "keyset-update-help"
-#define KEYSET_CREATE_HELP_NAME     "keyset-create-help"
-#define KEYSET_DELETE_HELP_NAME     "keyset-delete-help"
-#define KEYSET_INFO_HELP_NAME       "keyset-info-help"
-#define KEYSET_CHECK_HELP_NAME      "keyset-check-help"
+#define KEYSET_LIST_HELP_NAME           "keyset-list-help"
+#define KEYSET_LIST_HELP_NAME_DESC      "help for keyset list"
+#define KEYSET_UPDATE_HELP_NAME         "keyset-update-help"
+#define KEYSET_UPDATE_HELP_NAME_DESC    "help for keyset updating"
+#define KEYSET_CREATE_HELP_NAME         "keyset-create-help"
+#define KEYSET_CREATE_HELP_NAME_DESC    "help for keyset creating"
+#define KEYSET_DELETE_HELP_NAME         "keyset-delete-help"
+#define KEYSET_DELETE_HELP_NAME_DESC    "help for keyset deleting"
+#define KEYSET_INFO_HELP_NAME           "keyset-info-help"
+#define KEYSET_INFO_HELP_NAME_DESC      "help for keyset info"
+#define KEYSET_CHECK_HELP_NAME          "keyset-check-help"
+#define KEYSET_CHECK_HELP_NAME_DESC     "help for keyset checking"
 
 namespace Admin {
 
@@ -61,20 +78,19 @@ private:
     CORBA::Long m_clientId;
     DB m_db;
     Database::Manager *m_dbman;
-    boost::program_options::variables_map m_varMap;
     ccReg::EPP_var m_epp;
+    Config::Conf m_conf;
 
     boost::program_options::options_description *m_options;
     boost::program_options::options_description *m_optionsInvis;
 public:
     KeysetClient();
     KeysetClient(std::string connstring,
-            std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            std::string nsAddr);
     ~KeysetClient();
     void init(std::string connstring,
             std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            Config::Conf &conf);
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;

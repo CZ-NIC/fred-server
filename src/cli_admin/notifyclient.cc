@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "commonclient.h"
 #include "notifyclient.h"
 #include "register/bank.h"
@@ -29,26 +30,24 @@ NotifyClient::NotifyClient():
     m_options = new boost::program_options::options_description(
             "Notify related options");
     m_options->add_options()
-        ADD_OPT(NOTIFY_STATE_CHANGES_NAME, "send emails to contacts about object state changes")
-        ADD_OPT(NOTIFY_LETTERS_CREATE_NAME, "generate pdf with domain registration warning");
+        addOpt(NOTIFY_STATE_CHANGES_NAME)
+        addOpt(NOTIFY_LETTERS_CREATE_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Notify related invisible options");
     m_optionsInvis->add_options()
-        ADD_OPT_DEF(NOTIFY_EXCEPT_TYPES_NAME, "list of notification types ignored in notification", std::string, "4,5")
-        ADD_OPT(NOTIFY_USE_HISTORY_TABLES_NAME, "slower queries into history tables, but can handle deleted objects")
-        ADD_OPT_DEF(NOTIFY_LIMIT_NAME, "limit for nubmer of emails generated in one pass (0=no limit)", unsigned int, 0);
-
+        addOpt(NOTIFY_DEBUG_NAME)
+        addOptStrDef(NOTIFY_EXCEPT_TYPES_NAME, "4,5")
+        addOpt(NOTIFY_EXCEPT_TYPES_NAME)
+        addOptUIntDef(NOTIFY_LIMIT_NAME, 0);
 }
 NotifyClient::NotifyClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -64,13 +63,13 @@ void
 NotifyClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *
@@ -90,9 +89,9 @@ NotifyClient::state_changes()
 {
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
-                m_varMap[DOCGEN_PATH_NAME].as<std::string>(),
-                m_varMap[DOCGEN_TEMPLATE_PATH_NAME].as<std::string>(),
-                m_varMap[FILECLIENT_PATH_NAME].as<std::string>(),
+                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
+                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
+                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
                 m_nsAddr)
             );
     CorbaClient cc(0, NULL, m_nsAddr);
@@ -104,18 +103,18 @@ NotifyClient::state_changes()
     std::auto_ptr<Register::Contact::Manager> conMan(
             Register::Contact::Manager::create(
                 &m_db,
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
             Register::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
                 &m_db,
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
@@ -131,10 +130,10 @@ NotifyClient::state_changes()
                 regMan.get())
             );
     notifyMan->notifyStateChanges(
-            m_varMap[NOTIFY_EXCEPT_TYPES_NAME].as<std::string>(),
-            m_varMap[NOTIFY_LIMIT_NAME].as<unsigned int>(),
-            m_varMap.count(DEBUG_NAME) ? &std::cout : NULL,
-            m_varMap.count(NOTIFY_USE_HISTORY_TABLES_NAME));
+            m_conf.get<std::string>(NOTIFY_EXCEPT_TYPES_NAME),
+            m_conf.get<unsigned int>(NOTIFY_LIMIT_NAME),
+            m_conf.hasOpt(NOTIFY_DEBUG_NAME) ? &std::cout : NULL,
+            m_conf.hasOpt(NOTIFY_USE_HISTORY_TABLES_NAME));
 }
 
 void
@@ -142,9 +141,9 @@ NotifyClient::letters_create()
 {
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
-                m_varMap[DOCGEN_PATH_NAME].as<std::string>(),
-                m_varMap[DOCGEN_TEMPLATE_PATH_NAME].as<std::string>(),
-                m_varMap[FILECLIENT_PATH_NAME].as<std::string>(),
+                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
+                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
+                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
                 m_nsAddr)
             );
     CorbaClient cc(0, NULL, m_nsAddr);
@@ -156,18 +155,18 @@ NotifyClient::letters_create()
     std::auto_ptr<Register::Contact::Manager> conMan(
             Register::Contact::Manager::create(
                 &m_db,
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::NSSet::Manager> nssMan(
             Register::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
                 &m_db,
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));

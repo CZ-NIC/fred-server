@@ -26,41 +26,45 @@
 #include "register/register.h"
 #include "old_utils/dbsql.h"
 
-#define INVOICE_LIST_NAME               "invoice-list"
+#define INVOICE_LIST_NAME               "invoice_list"
 #define INVOICE_LIST_NAME_DESC          "list of all invoices (via filters)"
-#define INVOICE_LIST_PLAIN              "invoice-list-plain"
-#define INVOICE_LIST_PLAIN_DESC         "list of all invoices"
-#define INVOICE_LIST_PLAIN_NAME         "invoice-list-plain"
+#define INVOICE_LIST_PLAIN_NAME         "invoice_list_plain"
 #define INVOICE_LIST_PLAIN_NAME_DESC    "list of all invoices (via ccReg)"
-#define INVOICE_ARCHIVE_NAME            "invoice-archive"
+#define INVOICE_ARCHIVE_NAME            "invoice_archive"
 #define INVOICE_ARCHIVE_NAME_DESC       "Archive unarchived invoices"
-#define INVOICE_ARCHIVE2_NAME           "invoice_archive"
-#define INVOICE_ARCHIVE2_NAME_DESC      "Archive unarchived invoices"
 
-#define INVOICE_LIST_HELP_NAME          "invoice-list-help"
-#define INVOICE_LIST_HELP_NAME_DESC     "invoice list help"
-#define INVOICE_LIST_PLAIN_HELP         "invoice-list-plain-help"
+#define INVOICE_LIST_HELP_NAME          "invoice_list_help"
+#define INVOICE_LIST_HELP_NAME_DESC     "invoice_list help"
+#define INVOICE_LIST_PLAIN_HELP         "invoice_list_plain-help"
 #define INVOICE_LIST_PLAIN_HELP_DESC    "invoice plain list help"
-#define INVOICE_ARCHIVE_HELP_NAME       "invoice-archive-help"
+#define INVOICE_ARCHIVE_HELP_NAME       "invoice_archive_help"
 #define INVOICE_ARCHIVE_HELP_NAME_DESC  "invoice archive help"
 
 #define INVOICE_TYPE_NAME               "type"
-#define INVOICE_VAR_SYMBOL_NAME         "var-symbol"
+#define INVOICE_TYPE_NAME_DESC          "invoice type (1=advanced, 2=account)"
+#define INVOICE_VAR_SYMBOL_NAME         "var_symbol"
+#define INVOICE_VAR_SYMBOL_NAME_DESC    "variable symbol of payment"
 #define INVOICE_NUMBER_NAME             "number"
-#define INVOICE_CRDATE_FROM_NAME        "crdate-from"
-#define INVOICE_CRDATE_TO_NAME          "crdate-to"
+#define INVOICE_NUMBER_NAME_DESC        "invoice number"
 #define INVOICE_TAXDATE_FROM_NAME       "taxdate-from"
+#define INVOICE_TAXDATE_FROM_NAME_DESC  "show only invoices with tax date after input (YYYY-MM-DD hh:mm:ss)"
 #define INVOICE_TAXDATE_TO_NAME         "taxdate-to"
+#define INVOICE_TAXDATE_TO_NAME_DESC    "show only invoices with tax date before input (YYYY-MM-DD hh:mm:ss)"
 #define INVOICE_ARCHIVED_NAME           "archived"
+#define INVOICE_ARCHIVED_NAME_DESC      "archived flag"
 #define INVOICE_OBJECT_ID_NAME          "object-id"
+#define INVOICE_OBJECT_ID_NAME_DESC     "object id"
 #define INVOICE_OBJECT_NAME_NAME        "object-name"
-#define INVOICE_ADV_NUMBER_NAME         "adv-number"
-#define INVOICE_DONT_SEND_NAME          "dont-send"
+#define INVOICE_OBJECT_NAME_NAME_DESC   "object name"
+#define INVOICE_ADV_NUMBER_NAME         "adv_number"
+#define INVOICE_ADV_NUMBER_NAME_DESC    "advance number"
+#define INVOICE_DONT_SEND_NAME          "invoice_dont_send"
+#define INVOICE_DONT_SEND_NAME_DESC     "don't send mails with invoices during archivation"
 
 #define INVOICE_FILE_ID_NAME            "invoice-file-id"
-#define INVOICE_FILE_ID_NAME_DESC       "lsdjfl"
+#define INVOICE_FILE_ID_NAME_DESC       "invoice file id"
 #define INVOICE_FILE_NAME_NAME          "invoice-file-name"
-#define INVOICE_FILE_NAME_NAME_DESC     "lsfjds"
+#define INVOICE_FILE_NAME_NAME_DESC     "invoice file name"
 
 namespace Admin {
 
@@ -71,20 +75,19 @@ private:
     CORBA::Long m_clientId;
     DB m_db;
     Database::Manager *m_dbman;
-    boost::program_options::variables_map m_varMap;
     ccReg::EPP_var m_epp;
+    Config::Conf m_conf;
 
     boost::program_options::options_description *m_options;
     boost::program_options::options_description *m_optionsInvis;
 public:
     InvoiceClient();
     InvoiceClient(std::string connstring,
-            std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            std::string nsAddr);
     ~InvoiceClient();
     void init(std::string connstring,
             std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            Config::Conf &conf);
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;

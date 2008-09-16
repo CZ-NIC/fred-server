@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "commonclient.h"
 #include "invoiceclient.h"
 
@@ -27,42 +28,35 @@ InvoiceClient::InvoiceClient():
     m_options = new boost::program_options::options_description(
             "Invoice related options");
     m_options->add_options()
-        add_opt(INVOICE_LIST_NAME)
-        // add_opt(INVOICE_LIST_PLAIN_NAME)
-        add_opt(INVOICE_ARCHIVE_NAME)
-        add_opt(INVOICE_LIST_HELP_NAME);
-        // add_opt(INVOICE_LIST_PLAIN_HELP_NAME);
+        addOpt(INVOICE_LIST_NAME)
+        addOpt(INVOICE_ARCHIVE_NAME)
+        addOpt(INVOICE_LIST_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Invoice related invisible options");
     m_optionsInvis->add_options()
-        ADD_OPT_TYPE(ID_NAME, "id id", unsigned int)
-        ADD_OPT_TYPE(REGISTRANT_ID_NAME, "registrar id number", unsigned int)
-        ADD_OPT_TYPE(ZONE_ID_NAME, "zone id number", unsigned int)
-        ADD_OPT_TYPE(INVOICE_TYPE_NAME, "invoice type", unsigned int)
-        ADD_OPT_TYPE(INVOICE_VAR_SYMBOL_NAME, "invoice var symbol", std::string)
-        ADD_OPT_TYPE(INVOICE_NUMBER_NAME, "invoice number", std::string)
-        ADD_OPT_TYPE(INVOICE_CRDATE_FROM_NAME, "invoice create date from", std::string)
-        ADD_OPT_TYPE(INVOICE_CRDATE_TO_NAME, "invoice create date to", std::string)
-        ADD_OPT_TYPE(INVOICE_TAXDATE_FROM_NAME, "invoice tax date from", std::string)
-        ADD_OPT_TYPE(INVOICE_TAXDATE_TO_NAME, "invoice tax date to", std::string)
-        ADD_OPT_TYPE(INVOICE_ARCHIVED_NAME, "archived flag", unsigned int)
-        ADD_OPT_TYPE(INVOICE_OBJECT_ID_NAME, "object id", Register::TID)
-        ADD_OPT_TYPE(INVOICE_OBJECT_NAME_NAME, "object name", std::string)
-        ADD_OPT_TYPE(INVOICE_ADV_NUMBER_NAME, "advance number", std::string)
-        ADD_OPT(INVOICE_DONT_SEND_NAME, "dont send mails with invoices during archivation")
-        add_opt_type(INVOICE_FILE_ID_NAME, unsigned int)
-        add_opt_type(INVOICE_FILE_NAME_NAME, std::string);
+        add_ID()
+        add_REGISTRAR_ID()
+        add_ZONE_ID()
+        addOptUInt(INVOICE_TYPE_NAME)
+        addOptStr(INVOICE_VAR_SYMBOL_NAME)
+        add_CRDATE()
+        addOptStr(INVOICE_TAXDATE_FROM_NAME)
+        addOptStr(INVOICE_TAXDATE_TO_NAME)
+        addOptStr(INVOICE_ARCHIVED_NAME)
+        addOptStr(INVOICE_OBJECT_ID_NAME)
+        addOptStr(INVOICE_OBJECT_NAME_NAME)
+        addOptStr(INVOICE_ADV_NUMBER_NAME)
+        addOptUInt(INVOICE_FILE_ID_NAME)
+        addOptStr(INVOICE_FILE_NAME_NAME);
 }
 InvoiceClient::InvoiceClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -78,13 +72,13 @@ void
 InvoiceClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *
@@ -104,9 +98,9 @@ InvoiceClient::list()
 {
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
-                m_varMap[DOCGEN_PATH_NAME].as<std::string>(),
-                m_varMap[DOCGEN_TEMPLATE_PATH_NAME].as<std::string>(),
-                m_varMap[FILECLIENT_PATH_NAME].as<std::string>(),
+                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
+                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
+                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
                 m_nsAddr)
             );
 
@@ -125,63 +119,63 @@ InvoiceClient::list()
     Database::Filters::Invoice *invFilter;
     invFilter = new Database::Filters::InvoiceImpl();
 
-    if (m_varMap.count(ID_NAME))
+    if (m_conf.hasOpt(ID_NAME))
         invFilter->addId().setValue(
-                Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
+                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
 
-    if (m_varMap.count(ZONE_ID_NAME))
+    if (m_conf.hasOpt(ZONE_ID_NAME))
         invFilter->addZoneId().setValue(
-                Database::ID(m_varMap[ZONE_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(INVOICE_TYPE_NAME))
+                Database::ID(m_conf.get<unsigned int>(ZONE_ID_NAME)));
+    if (m_conf.hasOpt(INVOICE_TYPE_NAME))
         invFilter->addType().setValue(
-                m_varMap[INVOICE_TYPE_NAME].as<int>());
-    if (m_varMap.count(INVOICE_NUMBER_NAME))
+                m_conf.get<int>(INVOICE_TYPE_NAME));
+    if (m_conf.hasOpt(INVOICE_NUMBER_NAME))
         invFilter->addNumber().setValue(
-                m_varMap[INVOICE_NUMBER_NAME].as<std::string>());
+                m_conf.get<std::string>(INVOICE_NUMBER_NAME));
 
-    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
         Database::DateTime crDateFrom("1901-01-01 00:00:00");
         Database::DateTime crDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(CRDATE_FROM_NAME))
+        if (m_conf.hasOpt(CRDATE_FROM_NAME))
             crDateFrom.from_string(
-                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(CRDATE_TO_NAME))
+                    m_conf.get<std::string>(CRDATE_FROM_NAME));
+        if (m_conf.hasOpt(CRDATE_TO_NAME))
             crDateTo.from_string(
-                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(CRDATE_TO_NAME));
         invFilter->addCreateTime().setValue(
                 Database::DateTimeInterval(crDateFrom, crDateTo));
     }
-    if (m_varMap.count(INVOICE_TAXDATE_FROM_NAME) || m_varMap.count(INVOICE_TAXDATE_TO_NAME)) {
+    if (m_conf.hasOpt(INVOICE_TAXDATE_FROM_NAME) || m_conf.hasOpt(INVOICE_TAXDATE_TO_NAME)) {
         Database::Date taxDateFrom("1901-01-01");
         Database::Date taxDateTo("2101-01-01");
-        if (m_varMap.count(INVOICE_TAXDATE_FROM_NAME))
+        if (m_conf.hasOpt(INVOICE_TAXDATE_FROM_NAME))
             taxDateFrom.from_string(
-                    m_varMap[INVOICE_TAXDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(INVOICE_TAXDATE_TO_NAME))
+                    m_conf.get<std::string>(INVOICE_TAXDATE_FROM_NAME));
+        if (m_conf.hasOpt(INVOICE_TAXDATE_TO_NAME))
             taxDateTo.from_string(
-                    m_varMap[INVOICE_TAXDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(INVOICE_TAXDATE_TO_NAME));
         invFilter->addTaxDate().setValue(
                 Database::DateInterval(taxDateFrom, taxDateTo));
     }
 
-    if (m_varMap.count(REGISTRAR_ID_NAME))
+    if (m_conf.hasOpt(REGISTRAR_ID_NAME))
         invFilter->addRegistrar().addId().setValue(
-                Database::ID(m_varMap[REGISTRAR_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(REGISTRAR_HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(REGISTRAR_ID_NAME)));
+    if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME))
         invFilter->addRegistrar().addHandle().setValue(
-                m_varMap[REGISTRAR_HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(INVOICE_FILE_ID_NAME))
+                m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
+    if (m_conf.hasOpt(INVOICE_FILE_ID_NAME))
         invFilter->addFile().addId().setValue(
-                Database::ID(m_varMap[INVOICE_FILE_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(INVOICE_FILE_NAME_NAME))
+                Database::ID(m_conf.get<unsigned int>(INVOICE_FILE_ID_NAME)));
+    if (m_conf.hasOpt(INVOICE_FILE_NAME_NAME))
         invFilter->addFile().addName().setValue(
-                m_varMap[INVOICE_FILE_NAME_NAME].as<std::string>());
+                m_conf.get<std::string>(INVOICE_FILE_NAME_NAME));
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
     unionFilter->addFilter(invFilter);
 
-    invList->setLimit(m_varMap[LIMIT_NAME].as<unsigned int>());
+    invList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
     invList->reload(*unionFilter, m_dbman);
 
     std::cout << "<objects>\n";
@@ -305,13 +299,12 @@ InvoiceClient::list()
 int
 InvoiceClient::archive()
 {
-    std::cout << "invoice archive" << std::endl;
     return 1;
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
-                m_varMap["docgen-path"].as<std::string>(),
-                m_varMap["docgen-template-path"].as<std::string>(),
-                m_varMap["fileclient-path"].as<std::string>(),
+                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
+                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
+                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
                 m_nsAddr)
             );
     CorbaClient cc(0, NULL, m_nsAddr);
@@ -322,7 +315,7 @@ InvoiceClient::archive()
                 docMan.get(),
                 &mailMan)
             );
-    invMan->archiveInvoices(!m_varMap.count(INVOICE_DONT_SEND_NAME));
+    invMan->archiveInvoices(!m_conf.hasOpt(INVOICE_DONT_SEND_NAME));
     return 0;
 }
 
@@ -338,14 +331,16 @@ InvoiceClient::list_help()
         "    [--" << INVOICE_TYPE_NAME << "=<invoice_type>] \\\n"
         "    [--" << INVOICE_VAR_SYMBOL_NAME << "=<invoice_var_symbol>] \\\n"
         "    [--" << INVOICE_NUMBER_NAME << "=<invoice_number>] \\\n"
-        "    [--" << INVOICE_CRDATE_FROM_NAME << "=<invoice_create_date_from>] \\\n"
-        "    [--" << INVOICE_CRDATE_TO_NAME << "=<invoice_create_date_to>] \\\n"
+        "    [--" << CRDATE_FROM_NAME << "=<invoice_create_date_from>] \\\n"
+        "    [--" << CRDATE_TO_NAME << "=<invoice_create_date_to>] \\\n"
         "    [--" << INVOICE_TAXDATE_FROM_NAME << "=<invoice_taxdate_from>] \\\n"
         "    [--" << INVOICE_TAXDATE_TO_NAME << "=<invoice_taxdate_to>] \\\n"
         "    [--" << INVOICE_ARCHIVED_NAME << "=<invoice_archive_flag(0=not archived,1=archived,other=ignore>] \\\n"
         "    [--" << INVOICE_OBJECT_ID_NAME << "=<invoice_object_id_number>] \\\n"
         "    [--" << INVOICE_OBJECT_NAME_NAME << "=<invoice_object_name>] \\\n"
-        "    [--" << INVOICE_ADV_NUMBER_NAME << "=<invoice_advance_number>] \n"
+        "    [--" << INVOICE_ADV_NUMBER_NAME << "=<invoice_advance_number>] \\\n"
+        "    [--" << INVOICE_FILE_ID_NAME << "=<file_id>] \\\n"
+        "    [--" << INVOICE_FILE_NAME_NAME << "=<file_name>] \n"
         << std::endl;
 }
 

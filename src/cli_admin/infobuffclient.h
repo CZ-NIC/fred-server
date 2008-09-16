@@ -19,9 +19,14 @@
 #ifndef _INFOBUFFCLIENT_H_
 #define _INFOBUFFCLIENT_H_
 
-#define INFOBUFF_MAKE_INFO_NAME     "infobuff-make-info"
-#define INFOBUFF_GET_CHUNK_NAME     "infobuff-get-chunk"
-#define INFOBUFF_REQUEST_NAME       "infobuff-request"
+#define INFOBUFF_MAKE_INFO_NAME         "info_buffer_make_info"
+#define INFOBUFF_MAKE_INFO_NAME_DESC    "invoke generation if list of o for given registrar"
+#define INFOBUFF_GET_CHUNK_NAME         "info_buffer_get_chunk"
+#define INFOBUFF_GET_CHUNK_NAME_DESC    "output chunk of buffer for given registrar"
+#define INFOBUFF_REQUEST_NAME           "info_buffer_request"
+#define INFOBUFF_REQUEST_NAME_DESC      "handle for query"
+#define INFOBUFF_REGISTRAR_NAME         "info_buffer_registrar"
+#define INFOBUFF_REGISTRAR_NAME_DESC    "id of registrar for buffer selection"
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -38,20 +43,19 @@ private:
     CORBA::Long m_clientId;
     DB m_db;
     Database::Manager *m_dbman;
-    boost::program_options::variables_map m_varMap;
     ccReg::EPP_var m_epp;
+    Config::Conf m_conf;
 
     boost::program_options::options_description *m_options;
     boost::program_options::options_description *m_optionsInvis;
 public:
     InfoBuffClient();
     InfoBuffClient(std::string connstring,
-            std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            std::string nsAddr);
     ~InfoBuffClient();
     void init(std::string connstring,
             std::string nsAddr,
-            boost::program_options::variables_map varMap);
+            Config::Conf &conf);
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;

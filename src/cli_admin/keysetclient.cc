@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "commonclient.h"
 #include "keysetclient.h"
 
@@ -56,57 +57,51 @@ KeysetClient::KeysetClient():
     m_options = new boost::program_options::options_description(
             "KeySet related options");
     m_options->add_options()
-        ADD_OPT(KEYSET_LIST_NAME, "list of all keysets (via filters)")
-        ADD_OPT(KEYSET_LIST_PLAIN_NAME, "list of all keysets (via ccReg_i)")
-        ADD_OPT_TYPE(KEYSET_INFO_NAME, "keyset info (via epp_impl)", std::string)
-        ADD_OPT_TYPE(KEYSET_INFO2_NAME, "keyset info (via ccReg_i::info method)", std::string)
-        ADD_OPT_TYPE(KEYSET_CHECK_NAME, "check keyset state", std::string)
-        ADD_OPT_TYPE(KEYSET_SEND_AUTH_INFO_NAME, "send authorization info", std::string)
-        ADD_OPT_TYPE(KEYSET_CREATE_NAME, "create keyset", std::string)
-        ADD_OPT_TYPE(KEYSET_DELETE_NAME, "delete keyset", std::string)
-        ADD_OPT_TYPE(KEYSET_UPDATE_NAME, "update keyset", std::string)
-        ADD_OPT_TYPE(KEYSET_TRANSFER_NAME, "transfer keyset", std::string)
-        ADD_OPT(KEYSET_LIST_HELP_NAME, "help for keyset list")
-        ADD_OPT(KEYSET_CREATE_HELP_NAME, "help for keyset creating")
-        ADD_OPT(KEYSET_UPDATE_HELP_NAME, "help for keyset updating")
-        ADD_OPT(KEYSET_DELETE_HELP_NAME, "help for keyset deleting")
-        ADD_OPT(KEYSET_CHECK_HELP_NAME, "help for keyset checking")
-        ADD_OPT(KEYSET_INFO_HELP_NAME, "help for keyset info");
+        addOpt(KEYSET_LIST_NAME)
+        addOpt(KEYSET_LIST_PLAIN_NAME)
+        addOptStr(KEYSET_INFO_NAME)
+        addOptStr(KEYSET_INFO2_NAME)
+        addOptStr(KEYSET_SEND_AUTH_INFO_NAME)
+        addOptStr(KEYSET_CREATE_NAME)
+        addOptStr(KEYSET_DELETE_NAME)
+        addOptStr(KEYSET_UPDATE_NAME)
+        addOptStr(KEYSET_TRANSFER_NAME)
+        addOpt(KEYSET_CREATE_HELP_NAME)
+        addOpt(KEYSET_UPDATE_HELP_NAME)
+        addOpt(KEYSET_DELETE_HELP_NAME)
+        addOpt(KEYSET_CHECK_HELP_NAME)
+        addOpt(KEYSET_INFO_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "KeySet related invisible options");
     m_optionsInvis->add_options()
-        add_opt_type(ID_NAME, unsigned int)
-        add_opt_type(HANDLE_NAME, std::string)
-        add_opt_type(ADMIN_ID_NAME, unsigned int)
-        add_opt_type(ADMIN_HANDLE_NAME, std::string)
-        add_opt_type(ADMIN_NAME_NAME, std::string)
-        add_opt_type(REGISTRAR_ID_NAME, unsigned int)
-        add_opt_type(REGISTRAR_HANDLE_NAME, std::string)
-        add_opt_type(REGISTRAR_NAME_NAME, std::string)
-        add_opt_type(KEYSET_DSRECORDS_NAME, std::string)
-        add_opt_type(KEYSET_DSREC_ADD_NAME, std::string)
-        add_opt_type(KEYSET_DSREC_REM_NAME, std::string)
-        add_opt_type(ADMIN_NAME, std::string)
-        add_opt_type(ADMIN_ADD_NAME, std::string)
-        add_opt_type(ADMIN_REM_NAME, std::string)
-        add_opt_type(CRDATE_FROM_NAME, std::string)
-        add_opt_type(CRDATE_TO_NAME, std::string)
-        add_opt_type(UPDATE_FROM_NAME, std::string)
-        add_opt_type(UPDATE_TO_NAME, std::string)
-        add_opt_type(TRANSDATE_FROM_NAME, std::string)
-        add_opt_type(TRANSDATE_TO_NAME, std::string);
+        addOptStr(KEYSET_DSRECORDS_NAME)
+        addOptStr(KEYSET_DSREC_ADD_NAME)
+        addOptStr(KEYSET_DSREC_REM_NAME)
+        add_ID()
+        add_HANDLE()
+        add_ADMIN_ID()
+        add_ADMIN_HANDLE()
+        add_ADMIN_NAME()
+        add_REGISTRAR_ID()
+        add_REGISTRAR_HANDLE()
+        add_REGISTRAR_NAME()
+        add_ADMIN_NAME()
+        add_ADMIN_ADD()
+        add_ADMIN_REM()
+        add_CRDATE()
+        add_UPDATE()
+        add_TRANSDATE()
+        add_DELDATE();
 }
 
 KeysetClient::KeysetClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -122,13 +117,13 @@ void
 KeysetClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *
@@ -154,79 +149,79 @@ KeysetClient::list()
     Database::Filters::KeySet *keyFilter;
     keyFilter = new Database::Filters::KeySetHistoryImpl();
 
-    if (m_varMap.count(ID_NAME))
+    if (m_conf.hasOpt(ID_NAME))
         keyFilter->addId().setValue(
-                Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
+    if (m_conf.hasOpt(HANDLE_NAME))
         keyFilter->addHandle().setValue(
-                m_varMap[HANDLE_NAME].as<std::string>());
+                m_conf.get<std::string>(HANDLE_NAME));
 
-    if (m_varMap.count(ADMIN_ID_NAME))
+    if (m_conf.hasOpt(ADMIN_ID_NAME))
         keyFilter->addTechContact().addId().setValue(
-                Database::ID(m_varMap[ADMIN_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(ADMIN_HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(ADMIN_ID_NAME)));
+    if (m_conf.hasOpt(ADMIN_HANDLE_NAME))
         keyFilter->addTechContact().addHandle().setValue(
-                m_varMap[ADMIN_HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(ADMIN_NAME_NAME))
+                m_conf.get<std::string>(ADMIN_HANDLE_NAME));
+    if (m_conf.hasOpt(ADMIN_NAME_NAME))
         keyFilter->addTechContact().addName().setValue(
-                m_varMap[ADMIN_NAME_NAME].as<std::string>());
+                m_conf.get<std::string>(ADMIN_NAME_NAME));
 
-    if (m_varMap.count(REGISTRAR_ID_NAME))
+    if (m_conf.hasOpt(REGISTRAR_ID_NAME))
         keyFilter->addRegistrar().addId().setValue(
-                Database::ID(m_varMap[REGISTRAR_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(REGISTRAR_HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(REGISTRAR_ID_NAME)));
+    if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME))
         keyFilter->addRegistrar().addHandle().setValue(
-                m_varMap[REGISTRAR_HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(REGISTRAR_NAME_NAME))
+                m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
+    if (m_conf.hasOpt(REGISTRAR_NAME_NAME))
         keyFilter->addRegistrar().addName().setValue(
-                m_varMap[REGISTRAR_NAME_NAME].as<std::string>());
+                m_conf.get<std::string>(REGISTRAR_NAME_NAME));
 
-    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
         Database::DateTime crDateFrom("1901-01-01 00:00:00");
         Database::DateTime crDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(CRDATE_FROM_NAME))
+        if (m_conf.hasOpt(CRDATE_FROM_NAME))
             crDateFrom.from_string(
-                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(CRDATE_TO_NAME))
+                    m_conf.get<std::string>(CRDATE_FROM_NAME));
+        if (m_conf.hasOpt(CRDATE_TO_NAME))
             crDateTo.from_string(
-                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(CRDATE_TO_NAME));
         keyFilter->addCreateTime().setValue(
                 Database::DateTimeInterval(crDateFrom, crDateTo));
     }
 
-    if (m_varMap.count(UPDATE_FROM_NAME) || m_varMap.count(UPDATE_TO_NAME)) {
+    if (m_conf.hasOpt(UPDATE_FROM_NAME) || m_conf.hasOpt(UPDATE_TO_NAME)) {
         Database::DateTime upDateFrom("1901-01-01 00:00:00");
         Database::DateTime upDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(UPDATE_FROM_NAME))
+        if (m_conf.hasOpt(UPDATE_FROM_NAME))
             upDateFrom.from_string(
-                    m_varMap[UPDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(UPDATE_TO_NAME))
+                    m_conf.get<std::string>(UPDATE_FROM_NAME));
+        if (m_conf.hasOpt(UPDATE_TO_NAME))
             upDateTo.from_string(
-                    m_varMap[UPDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(UPDATE_TO_NAME));
         keyFilter->addUpdateTime().setValue(
                 Database::DateTimeInterval(upDateFrom, upDateTo));
     }
-    if (m_varMap.count(TRANSDATE_FROM_NAME) || m_varMap.count(TRANSDATE_TO_NAME)) {
+    if (m_conf.hasOpt(TRANSDATE_FROM_NAME) || m_conf.hasOpt(TRANSDATE_TO_NAME)) {
         Database::DateTime transDateFrom("1901-01-01 00:00:00");
         Database::DateTime transDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(TRANSDATE_FROM_NAME))
+        if (m_conf.hasOpt(TRANSDATE_FROM_NAME))
             transDateFrom.from_string(
-                    m_varMap[TRANSDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(TRANSDATE_TO_NAME))
+                    m_conf.get<std::string>(TRANSDATE_FROM_NAME));
+        if (m_conf.hasOpt(TRANSDATE_TO_NAME))
             transDateTo.from_string(
-                    m_varMap[TRANSDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(TRANSDATE_TO_NAME));
         keyFilter->addTransferTime().setValue(
                 Database::DateTimeInterval(transDateFrom, transDateTo));
     }
-    if (m_varMap.count(DELDATE_FROM_NAME) || m_varMap.count(DELDATE_TO_NAME)) {
+    if (m_conf.hasOpt(DELDATE_FROM_NAME) || m_conf.hasOpt(DELDATE_TO_NAME)) {
         Database::DateTime delDateFrom("1901-01-01 00:00:00");
         Database::DateTime delDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(DELDATE_FROM_NAME))
+        if (m_conf.hasOpt(DELDATE_FROM_NAME))
             delDateFrom.from_string(
-                    m_varMap[DELDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(DELDATE_TO_NAME))
+                    m_conf.get<std::string>(DELDATE_FROM_NAME));
+        if (m_conf.hasOpt(DELDATE_TO_NAME))
             delDateTo.from_string(
-                    m_varMap[DELDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(DELDATE_TO_NAME));
         keyFilter->addDeleteTime().setValue(
                 Database::DateTimeInterval(delDateFrom, delDateTo));
     }
@@ -235,7 +230,7 @@ KeysetClient::list()
     unionFilter = new Database::Filters::Union();
     
     unionFilter->addFilter(keyFilter);
-    keyList->setLimit(m_varMap[LIMIT_NAME].as<unsigned int>());
+    keyList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
 
     keyList->reload(*unionFilter, m_dbman);
 
@@ -265,7 +260,7 @@ KeysetClient::list()
                 << "\t\t\t<maxsiglife>" << dsrec->getMaxSigLife() << "</maxsiglife>\n"
                 << "\t\t</dsrecord>\n";
         }
-        if (m_varMap.count(FULL_LIST_NAME)) {
+        if (m_conf.hasOpt(FULL_LIST_NAME)) {
             std::cout
                 << "\t\t<create_date>" << keyset->getCreateDate() << "</create_date>\n"
                 << "\t\t<transfer_date>" << keyset->getTransferDate() << "</transfer_date>\n"
@@ -310,7 +305,7 @@ KeysetClient::list_plain()
     std::string xml;
     std::string cltrid;
 
-    xml = "<handle>" + m_varMap[KEYSET_LIST_PLAIN_NAME].as<std::string>() + "</handle>";
+    xml = "<handle>" + m_conf.get<std::string>(KEYSET_LIST_PLAIN_NAME) + "</handle>";
     cltrid = "list_keysets";
     ccReg::Lists *k;
     LOGIN_KEYSETCLIENT;
@@ -336,7 +331,7 @@ KeysetClient::check()
 
     ccReg::CheckResp *a;
     
-    std::string name = m_varMap[KEYSET_CHECK_NAME].as<std::string>().c_str();
+    std::string name = m_conf.get<std::string>(KEYSET_CHECK_NAME).c_str();
 
     cltrid = "keyset_check";
     xml = "<handle>" + name + "</handle>";
@@ -359,7 +354,7 @@ KeysetClient::check()
 int
 KeysetClient::send_auth_info()
 {
-    std::string name = m_varMap[KEYSET_SEND_AUTH_INFO_NAME].as<std::string>().c_str();
+    std::string name = m_conf.get<std::string>(KEYSET_SEND_AUTH_INFO_NAME).c_str();
     std::string cltrid;
     std::string xml;
     xml = "<handle>" + name + "</handle>";
@@ -377,8 +372,8 @@ KeysetClient::send_auth_info()
 int
 KeysetClient::transfer()
 {
-    std::string key_handle = m_varMap[KEYSET_TRANSFER_NAME].as<std::string>().c_str();
-    std::string authinfopw = m_varMap[AUTH_PW_NAME].as<std::string>().c_str();
+    std::string key_handle = m_conf.get<std::string>(KEYSET_TRANSFER_NAME).c_str();
+    std::string authinfopw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
 
     std::string cltrid;
     std::string xml;
@@ -403,12 +398,12 @@ KeysetClient::transfer()
 int
 KeysetClient::update()
 {
-    std::string key_handle = m_varMap[KEYSET_UPDATE_NAME].as<std::string>().c_str();
-    std::string authinfopw = m_varMap[AUTH_PW_NAME].as<std::string>().c_str();
-    std::string admins_add = m_varMap[ADMIN_ADD_NAME].as<std::string>().c_str();
-    std::string admins_rem = m_varMap[ADMIN_REM_NAME].as<std::string>().c_str();
-    std::string dsrec_add = m_varMap[KEYSET_DSREC_ADD_NAME].as<std::string>().c_str();
-    std::string dsrec_rem = m_varMap[KEYSET_DSREC_REM_NAME].as<std::string>().c_str();
+    std::string key_handle = m_conf.get<std::string>(KEYSET_UPDATE_NAME).c_str();
+    std::string authinfopw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
+    std::string admins_add = m_conf.get<std::string>(ADMIN_ADD_NAME).c_str();
+    std::string admins_rem = m_conf.get<std::string>(ADMIN_REM_NAME).c_str();
+    std::string dsrec_add = m_conf.get<std::string>(KEYSET_DSREC_ADD_NAME).c_str();
+    std::string dsrec_rem = m_conf.get<std::string>(KEYSET_DSREC_REM_NAME).c_str();
 
     std::vector<std::string> admins_add_list = separateSpaces(admins_add.c_str());
     std::vector<std::string> admins_rem_list = separateSpaces(admins_rem.c_str());
@@ -485,7 +480,7 @@ KeysetClient::update()
 int
 KeysetClient::del()
 {
-    std::string key_handle = m_varMap[KEYSET_DELETE_NAME].as<std::string>().c_str();
+    std::string key_handle = m_conf.get<std::string>(KEYSET_DELETE_NAME).c_str();
 
     std::cout << key_handle << std::endl;
 
@@ -509,10 +504,10 @@ KeysetClient::del()
 int
 KeysetClient::create()
 {
-    std::string key_handle = m_varMap[KEYSET_CREATE_NAME].as<std::string>().c_str();
-    std::string admins = m_varMap[ADMIN_NAME].as<std::string>().c_str();
-    std::string authinfopw = m_varMap[AUTH_PW_NAME].as<std::string>().c_str();
-    std::string dsrecords = m_varMap[KEYSET_DSRECORDS_NAME].as<std::string>().c_str();
+    std::string key_handle = m_conf.get<std::string>(KEYSET_CREATE_NAME).c_str();
+    std::string admins = m_conf.get<std::string>(ADMIN_NAME).c_str();
+    std::string authinfopw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
+    std::string dsrecords = m_conf.get<std::string>(KEYSET_DSRECORDS_NAME).c_str();
 
     std::vector<std::string> admins_list = separateSpaces(admins.c_str());
     std::vector<std::string> dsrecords_list = separateSpaces(dsrecords.c_str());
@@ -565,7 +560,7 @@ KeysetClient::create()
 int
 KeysetClient::info()
 {
-    std::string name = m_varMap[KEYSET_INFO_NAME].as<std::string>();
+    std::string name = m_conf.get<std::string>(KEYSET_INFO_NAME);
     std::string cltrid;
     std::string xml;
     xml = "<handle>" + name + "</handle>";
@@ -590,7 +585,7 @@ KeysetClient::info()
 int
 KeysetClient::info2()
 {
-    std::string key_handle = m_varMap[KEYSET_INFO2_NAME].as<std::string>();
+    std::string key_handle = m_conf.get<std::string>(KEYSET_INFO2_NAME);
     std::string cltrid;
     std::string xml;
 

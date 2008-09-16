@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "authinfoclient.h"
 #include "commonclient.h"
 #include "corba/mailer_manager.h"
@@ -29,8 +30,8 @@ AuthInfoClient::AuthInfoClient():
     m_options = new boost::program_options::options_description(
             "Authinfo related options");
     m_options->add_options()
-        add_opt_type(AUTHINFO_PDF_NAME, unsigned int)
-        add_opt(AUTHINFO_PDF_HELP_NAME);
+        addOptUInt(AUTHINFO_PDF_NAME)
+        addOpt(AUTHINFO_PDF_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Authinfo related invisible options");
@@ -38,13 +39,11 @@ AuthInfoClient::AuthInfoClient():
 }
 AuthInfoClient::AuthInfoClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -60,13 +59,13 @@ void
 AuthInfoClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *
@@ -88,9 +87,9 @@ AuthInfoClient::pdf()
 
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
-                m_varMap[DOCGEN_PATH_NAME].as<std::string>(),
-                m_varMap[DOCGEN_TEMPLATE_PATH_NAME].as<std::string>(),
-                m_varMap[FILECLIENT_PATH_NAME].as<std::string>(),
+                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
+                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
+                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
                 m_nsAddr)
             );
 
@@ -104,8 +103,8 @@ AuthInfoClient::pdf()
                 docMan.get())
             );
     authMan->getRequestPDF(
-            m_varMap[AUTHINFO_PDF_NAME].as<unsigned int>(),
-            m_varMap[LANGUAGE_NAME].as<std::string>(),
+            m_conf.get<unsigned int>(AUTHINFO_PDF_NAME),
+            m_conf.get<std::string>(CLI_LANGUAGE_NAME),
             stdout);
     return 0;
 }
@@ -116,7 +115,7 @@ AuthInfoClient::pdf_help()
     std::cout <<
         "** Generate PDF for authorization requests **\n\n"
         "  $ " << g_prog_name << " --" << AUTHINFO_PDF_NAME << "=<number> \\\n"
-        "    --" << LANGUAGE_NAME << "=<lang_code> \n"
+        "    --" << CLI_LANGUAGE_NAME << "=<lang_code> \n"
         << std::endl;
 }
 

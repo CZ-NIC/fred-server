@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "commonclient.h"
 #include "nssetclient.h"
 
@@ -27,39 +28,35 @@ NssetClient::NssetClient():
     m_options = new boost::program_options::options_description(
             "NSSet related options");
     m_options->add_options()
-        add_opt(NSSET_LIST_NAME)
-        add_opt(NSSET_LIST_HELP_NAME);
+        addOpt(NSSET_LIST_NAME)
+        addOpt(NSSET_LIST_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "NSSet related invisible options");
     m_optionsInvis->add_options()
-        add_opt_type(ID_NAME, unsigned int)
-        add_opt_type(HANDLE_NAME, std::string)
-        add_opt_type(FQDN_NAME, std::string)
-        add_opt_type(IP_NAME, std::string)
-        add_opt_type(ADMIN_ID_NAME, unsigned int)
-        add_opt_type(ADMIN_HANDLE_NAME, std::string)
-        add_opt_type(ADMIN_NAME_NAME, std::string)
-        add_opt_type(REGISTRAR_ID_NAME, unsigned int)
-        add_opt_type(REGISTRAR_HANDLE_NAME, std::string)
-        add_opt_type(REGISTRAR_NAME_NAME, std::string)
-        add_opt_type(CRDATE_FROM_NAME, std::string)
-        add_opt_type(CRDATE_TO_NAME, std::string)
-        add_opt_type(UPDATE_FROM_NAME, std::string)
-        add_opt_type(UPDATE_TO_NAME, std::string)
-        add_opt_type(TRANSDATE_FROM_NAME, std::string)
-        add_opt_type(TRANSDATE_TO_NAME, std::string);
+        add_ID()
+        add_HANDLE()
+        add_FQDN()
+        add_IP()
+        add_ADMIN_ID()
+        add_ADMIN_HANDLE()
+        add_ADMIN_NAME()
+        add_REGISTRAR_ID()
+        add_REGISTRAR_HANDLE()
+        add_REGISTRAR_NAME()
+        add_CRDATE()
+        add_UPDATE()
+        add_TRANSDATE()
+        add_DELDATE();
 }
 
 NssetClient::NssetClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -75,13 +72,13 @@ void
 NssetClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *
@@ -105,94 +102,94 @@ NssetClient::list()
             Register::NSSet::Manager::create(
                 &m_db,
                 zoneMan.get(),
-                (bool)m_varMap[RESTRICTED_HANDLES_NAME].as<int>())
+                m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     std::auto_ptr<Register::NSSet::List> nssList(
             nssMan->createList());
     Database::Filters::NSSet *nssFilter;
     nssFilter = new Database::Filters::NSSetHistoryImpl();
 
-    if (m_varMap.count(ID_NAME))
+    if (m_conf.hasOpt(ID_NAME))
         nssFilter->addId().setValue(
-                Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
+    if (m_conf.hasOpt(HANDLE_NAME))
         nssFilter->addHandle().setValue(
-                m_varMap[HANDLE_NAME].as<std::string>());
+                m_conf.get<std::string>(HANDLE_NAME));
     
-    if (m_varMap.count(ADMIN_ID_NAME))
+    if (m_conf.hasOpt(ADMIN_ID_NAME))
         nssFilter->addTechContact().addId().setValue(
-                Database::ID(m_varMap[ADMIN_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(ADMIN_HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(ADMIN_ID_NAME)));
+    if (m_conf.hasOpt(ADMIN_HANDLE_NAME))
         nssFilter->addTechContact().addHandle().setValue(
-                m_varMap[ADMIN_HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(ADMIN_NAME_NAME))
+                m_conf.get<std::string>(ADMIN_HANDLE_NAME));
+    if (m_conf.hasOpt(ADMIN_NAME_NAME))
         nssFilter->addTechContact().addName().setValue(
-                m_varMap[ADMIN_NAME_NAME].as<std::string>());
+                m_conf.get<std::string>(ADMIN_NAME_NAME));
 
-    if (m_varMap.count(FQDN_NAME))
+    if (m_conf.hasOpt(FQDN_NAME))
         nssFilter->addHostFQDN().setValue(
-                m_varMap[FQDN_NAME].as<std::string>());
+                m_conf.get<std::string>(FQDN_NAME));
 
-    if (m_varMap.count(IP_NAME))
+    if (m_conf.hasOpt(IP_NAME))
         nssFilter->addHostIP().setValue(
-                m_varMap[IP_NAME].as<std::string>());
+                m_conf.get<std::string>(IP_NAME));
 
-    if (m_varMap.count(REGISTRAR_ID_NAME))
+    if (m_conf.hasOpt(REGISTRAR_ID_NAME))
         nssFilter->addRegistrar().addId().setValue(
-                Database::ID(m_varMap[REGISTRAR_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(REGISTRAR_HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(REGISTRAR_ID_NAME)));
+    if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME))
         nssFilter->addRegistrar().addHandle().setValue(
-                m_varMap[REGISTRAR_HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(REGISTRAR_NAME_NAME))
+                m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
+    if (m_conf.hasOpt(REGISTRAR_NAME_NAME))
         nssFilter->addRegistrar().addName().setValue(
-                m_varMap[REGISTRAR_NAME_NAME].as<std::string>());
+                m_conf.get<std::string>(REGISTRAR_NAME_NAME));
 
-    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
         Database::DateTime crDateFrom("1901-01-01 00:00:00");
         Database::DateTime crDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(CRDATE_FROM_NAME))
+        if (m_conf.hasOpt(CRDATE_FROM_NAME))
             crDateFrom.from_string(
-                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(CRDATE_TO_NAME))
+                    m_conf.get<std::string>(CRDATE_FROM_NAME));
+        if (m_conf.hasOpt(CRDATE_TO_NAME))
             crDateTo.from_string(
-                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(CRDATE_TO_NAME));
         nssFilter->addCreateTime().setValue(
                 Database::DateTimeInterval(crDateFrom, crDateTo));
     }
 
-    if (m_varMap.count(UPDATE_FROM_NAME) || m_varMap.count(UPDATE_TO_NAME)) {
+    if (m_conf.hasOpt(UPDATE_FROM_NAME) || m_conf.hasOpt(UPDATE_TO_NAME)) {
         Database::DateTime upDateFrom("1901-01-01 00:00:00");
         Database::DateTime upDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(UPDATE_FROM_NAME))
+        if (m_conf.hasOpt(UPDATE_FROM_NAME))
             upDateFrom.from_string(
-                    m_varMap[UPDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(UPDATE_TO_NAME))
+                    m_conf.get<std::string>(UPDATE_FROM_NAME));
+        if (m_conf.hasOpt(UPDATE_TO_NAME))
             upDateTo.from_string(
-                    m_varMap[UPDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(UPDATE_TO_NAME));
         nssFilter->addUpdateTime().setValue(
                 Database::DateTimeInterval(upDateFrom, upDateTo));
     }
-    if (m_varMap.count(TRANSDATE_FROM_NAME) || m_varMap.count(TRANSDATE_TO_NAME)) {
+    if (m_conf.hasOpt(TRANSDATE_FROM_NAME) || m_conf.hasOpt(TRANSDATE_TO_NAME)) {
         Database::DateTime transDateFrom("1901-01-01 00:00:00");
         Database::DateTime transDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(TRANSDATE_FROM_NAME))
+        if (m_conf.hasOpt(TRANSDATE_FROM_NAME))
             transDateFrom.from_string(
-                    m_varMap[TRANSDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(TRANSDATE_TO_NAME))
+                    m_conf.get<std::string>(TRANSDATE_FROM_NAME));
+        if (m_conf.hasOpt(TRANSDATE_TO_NAME))
             transDateTo.from_string(
-                    m_varMap[TRANSDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(TRANSDATE_TO_NAME));
         nssFilter->addTransferTime().setValue(
                 Database::DateTimeInterval(transDateFrom, transDateTo));
     }
-    if (m_varMap.count(DELDATE_FROM_NAME) || m_varMap.count(DELDATE_TO_NAME)) {
+    if (m_conf.hasOpt(DELDATE_FROM_NAME) || m_conf.hasOpt(DELDATE_TO_NAME)) {
         Database::DateTime delDateFrom("1901-01-01 00:00:00");
         Database::DateTime delDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(DELDATE_FROM_NAME))
+        if (m_conf.hasOpt(DELDATE_FROM_NAME))
             delDateFrom.from_string(
-                    m_varMap[DELDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(DELDATE_TO_NAME))
+                    m_conf.get<std::string>(DELDATE_FROM_NAME));
+        if (m_conf.hasOpt(DELDATE_TO_NAME))
             delDateTo.from_string(
-                    m_varMap[DELDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(DELDATE_TO_NAME));
         nssFilter->addDeleteTime().setValue(
                 Database::DateTimeInterval(delDateFrom, delDateTo));
     }
@@ -201,7 +198,7 @@ NssetClient::list()
     unionFilter = new Database::Filters::Union();
 
     unionFilter->addFilter(nssFilter);
-    nssList->setLimit(m_varMap[LIMIT_NAME].as<unsigned int>());
+    nssList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
 
     nssList->reload(*unionFilter, m_dbman);
 
@@ -233,7 +230,7 @@ NssetClient::list()
             std::cout
                 << "\t\t</host>\n";
         }
-        if (m_varMap.count(FULL_LIST_NAME)) {
+        if (m_conf.hasOpt(FULL_LIST_NAME)) {
             std::cout
                 << "\t\t<create_date>" << nsset->getCreateDate() << "</create_date>\n"
                 << "\t\t<transfer_date>" << nsset->getTransferDate() << "</transfer_date>\n"

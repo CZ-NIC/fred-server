@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "commonclient.h"
 #include "domainclient.h"
 #include "register/register.h"
@@ -57,56 +58,52 @@ DomainClient::DomainClient():
     m_options = new boost::program_options::options_description(
             "Domain related options");
     m_options->add_options()
-        ADD_OPT(DOMAIN_LIST_NAME, "list of all domains (via filters)")
-        ADD_OPT(DOMAIN_LIST_PLAIN_NAME, "list of all domains (via ccReg_i)")
-        ADD_OPT_TYPE(DOMAIN_INFO_NAME, "keyset info (via epp_impl)", std::string)
-        ADD_OPT_TYPE(DOMAIN_CREATE_NAME, "create domain", std::string)
-        ADD_OPT_TYPE(DOMAIN_UPDATE_NAME, "update domain", std::string)
-        ADD_OPT(DOMAIN_CREATE_HELP_NAME, "help for domain creating")
-        ADD_OPT(DOMAIN_UPDATE_HELP_NAME, "help for domain updating")
-        add_opt(DOMAIN_LIST_HELP_NAME);
+        addOpt(DOMAIN_LIST_NAME)
+        addOpt(DOMAIN_LIST_PLAIN_NAME)
+        addOptStr(DOMAIN_INFO_NAME)
+        addOptStr(DOMAIN_CREATE_NAME)
+        addOptStr(DOMAIN_UPDATE_NAME)
+        addOpt(DOMAIN_CREATE_HELP_NAME)
+        addOpt(DOMAIN_UPDATE_HELP_NAME)
+        addOpt(DOMAIN_LIST_PLAIN_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Domain related invisible options");
     m_optionsInvis->add_options()
-        add_opt_type(ID_NAME, unsigned int)
-        add_opt_type(FQDN_NAME, std::string)
-        add_opt_type(NSSET_ID_NAME, unsigned int)
-        add_opt_type(NSSET_HANDLE_NAME, std::string)
-        add_opt(ANY_NSSET_NAME)
-        add_opt_type(KEYSET_ID_NAME, unsigned int)
-        add_opt_type(KEYSET_HANDLE_NAME, std::string)
-        add_opt(ANY_KEYSET_NAME)
-        add_opt_type(REGISTRANT_ID_NAME, unsigned int)
-        add_opt_type(REGISTRANT_HANDLE_NAME, std::string)
-        add_opt_type(REGISTRANT_NAME_NAME, std::string)
-        add_opt_type(ADMIN_ID_NAME, unsigned int)
-        add_opt_type(ADMIN_HANDLE_NAME, std::string)
-        add_opt_type(ADMIN_NAME_NAME, std::string)
-        add_opt_type(REGISTRAR_ID_NAME, unsigned int)
-        add_opt_type(REGISTRAR_HANDLE_NAME, std::string)
-        add_opt_type(REGISTRAR_NAME_NAME, std::string)
-        add_opt_type(ADMIN_NAME, std::string)
-        add_opt_type(ADMIN_ADD_NAME, std::string)
-        add_opt_type(ADMIN_REM_NAME, std::string)
-        add_opt_type(CRDATE_FROM_NAME, std::string)
-        add_opt_type(CRDATE_TO_NAME, std::string)
-        add_opt_type(UPDATE_FROM_NAME, std::string)
-        add_opt_type(UPDATE_TO_NAME, std::string)
-        add_opt_type(TRANSDATE_FROM_NAME, std::string)
-        add_opt_type(TRANSDATE_TO_NAME, std::string);
+        add_ID()
+        add_FQDN()
+        add_NSSET_ID()
+        add_NSSET_HANDLE()
+        add_ANY_NSSET()
+        add_KEYSET_ID()
+        add_KEYSET_HANDLE()
+        add_ANY_KEYSET()
+        add_REGISTRANT_ID()
+        add_REGISTRANT_NAME()
+        add_REGISTRANT_HANDLE()
+        add_ADMIN_ID()
+        add_ADMIN_HANDLE()
+        add_ADMIN_NAME()
+        add_REGISTRAR_ID()
+        add_REGISTRAR_HANDLE()
+        add_REGISTRAR_NAME()
+        add_ADMIN()
+        add_ADMIN_ADD()
+        add_ADMIN_REM()
+        add_CRDATE()
+        add_UPDATE()
+        add_DELDATE()
+        add_TRANSDATE();
     // TODO updateregistrar, createregistrar, authpw, type, state, ...
 }
 
 DomainClient::DomainClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -121,13 +118,13 @@ void
 DomainClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *
@@ -156,147 +153,147 @@ DomainClient::domain_list()
     Database::Filters::Domain *domFilter;
     domFilter = new Database::Filters::DomainHistoryImpl();
 
-    if (m_varMap.count(ID_NAME))
+    if (m_conf.hasOpt(ID_NAME))
         domFilter->addId().setValue(
-                Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(FQDN_NAME))
+                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
+    if (m_conf.hasOpt(FQDN_NAME))
         domFilter->addFQDN().setValue(
-                m_varMap[FQDN_NAME].as<std::string>());
+                m_conf.get<std::string>(FQDN_NAME));
 
-    if (m_varMap.count(NSSET_ID_NAME))
+    if (m_conf.hasOpt(NSSET_ID_NAME))
         domFilter->addNSSetId().setValue(
-                Database::ID(m_varMap[NSSET_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(NSSET_HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(NSSET_ID_NAME)));
+    if (m_conf.hasOpt(NSSET_HANDLE_NAME))
         domFilter->addNSSet().addHandle().setValue(
-                m_varMap[NSSET_HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(ANY_NSSET_NAME))
+                m_conf.get<std::string>(NSSET_HANDLE_NAME));
+    if (m_conf.hasOpt(ANY_NSSET_NAME))
         domFilter->addNSSet();
 
-    if (m_varMap.count(KEYSET_ID_NAME))
+    if (m_conf.hasOpt(KEYSET_ID_NAME))
         domFilter->addKeySetId().setValue(
-                Database::ID(m_varMap[KEYSET_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(KEYSET_HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(KEYSET_ID_NAME)));
+    if (m_conf.hasOpt(KEYSET_HANDLE_NAME))
         domFilter->addKeySet().addHandle().setValue(
-                m_varMap[KEYSET_HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(ANY_KEYSET_NAME))
+                m_conf.get<std::string>(KEYSET_HANDLE_NAME));
+    if (m_conf.hasOpt(ANY_KEYSET_NAME))
         domFilter->addKeySet();
 
-    if (m_varMap.count(ZONE_ID_NAME))
+    if (m_conf.hasOpt(ZONE_ID_NAME))
         domFilter->addZoneId().setValue(
-                Database::ID(m_varMap[ZONE_ID_NAME].as<unsigned int>()));
+                Database::ID(m_conf.get<unsigned int>(ZONE_ID_NAME)));
 
-    if (m_varMap.count(REGISTRANT_ID_NAME))
+    if (m_conf.hasOpt(REGISTRANT_ID_NAME))
         domFilter->addRegistrantId().setValue(
-                Database::ID(m_varMap[REGISTRANT_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(REGISTRANT_HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(REGISTRANT_ID_NAME)));
+    if (m_conf.hasOpt(REGISTRANT_HANDLE_NAME))
         domFilter->addRegistrant().addHandle().setValue(
-                m_varMap[REGISTRANT_HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(REGISTRANT_NAME_NAME))
+                m_conf.get<std::string>(REGISTRANT_HANDLE_NAME));
+    if (m_conf.hasOpt(REGISTRANT_NAME_NAME))
         domFilter->addRegistrant().addName().setValue(
-                m_varMap[REGISTRANT_NAME_NAME].as<std::string>());
+                m_conf.get<std::string>(REGISTRANT_NAME_NAME));
 
-    if (m_varMap.count(ADMIN_ID_NAME))
+    if (m_conf.hasOpt(ADMIN_ID_NAME))
         domFilter->addAdminContact().addId().setValue(
-                Database::ID(m_varMap[ADMIN_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(ADMIN_HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(ADMIN_ID_NAME)));
+    if (m_conf.hasOpt(ADMIN_HANDLE_NAME))
         domFilter->addAdminContact().addHandle().setValue(
-                m_varMap[ADMIN_HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(ADMIN_NAME_NAME))
+                m_conf.get<std::string>(ADMIN_HANDLE_NAME));
+    if (m_conf.hasOpt(ADMIN_NAME_NAME))
         domFilter->addAdminContact().addName().setValue(
-                m_varMap[ADMIN_NAME_NAME].as<std::string>());
+                m_conf.get<std::string>(ADMIN_NAME_NAME));
 
-    if (m_varMap.count(REGISTRAR_ID_NAME))
+    if (m_conf.hasOpt(REGISTRAR_ID_NAME))
         domFilter->addRegistrar().addId().setValue(
-                Database::ID(m_varMap[REGISTRAR_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(REGISTRAR_HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(REGISTRAR_ID_NAME)));
+    if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME))
         domFilter->addRegistrar().addHandle().setValue(
-                m_varMap[REGISTRAR_HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(REGISTRAR_NAME_NAME))
+                m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
+    if (m_conf.hasOpt(REGISTRAR_NAME_NAME))
         domFilter->addRegistrar().addName().setValue(
-                m_varMap[REGISTRAR_NAME_NAME].as<std::string>());
+                m_conf.get<std::string>(REGISTRAR_NAME_NAME));
 
-    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
         Database::DateTime crDateFrom("1901-01-01 00:00:00");
         Database::DateTime crDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(CRDATE_FROM_NAME))
+        if (m_conf.hasOpt(CRDATE_FROM_NAME))
             crDateFrom.from_string(
-                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(CRDATE_TO_NAME))
+                    m_conf.get<std::string>(CRDATE_FROM_NAME));
+        if (m_conf.hasOpt(CRDATE_TO_NAME))
             crDateTo.from_string(
-                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(CRDATE_TO_NAME));
         domFilter->addCreateTime().setValue(
                 Database::DateTimeInterval(crDateFrom, crDateTo));
     }
 
-    if (m_varMap.count(UPDATE_FROM_NAME) || m_varMap.count(UPDATE_TO_NAME)) {
+    if (m_conf.hasOpt(UPDATE_FROM_NAME) || m_conf.hasOpt(UPDATE_TO_NAME)) {
         Database::DateTime upDateFrom("1901-01-01 00:00:00");
         Database::DateTime upDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(UPDATE_FROM_NAME))
+        if (m_conf.hasOpt(UPDATE_FROM_NAME))
             upDateFrom.from_string(
-                    m_varMap[UPDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(UPDATE_TO_NAME))
+                    m_conf.get<std::string>(UPDATE_FROM_NAME));
+        if (m_conf.hasOpt(UPDATE_TO_NAME))
             upDateTo.from_string(
-                    m_varMap[UPDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(UPDATE_TO_NAME));
         domFilter->addUpdateTime().setValue(
                 Database::DateTimeInterval(upDateFrom, upDateTo));
     }
-    if (m_varMap.count(TRANSDATE_FROM_NAME) || m_varMap.count(TRANSDATE_TO_NAME)) {
+    if (m_conf.hasOpt(TRANSDATE_FROM_NAME) || m_conf.hasOpt(TRANSDATE_TO_NAME)) {
         Database::DateTime transDateFrom("1901-01-01 00:00:00");
         Database::DateTime transDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(TRANSDATE_FROM_NAME))
+        if (m_conf.hasOpt(TRANSDATE_FROM_NAME))
             transDateFrom.from_string(
-                    m_varMap[TRANSDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(TRANSDATE_TO_NAME))
+                    m_conf.get<std::string>(TRANSDATE_FROM_NAME));
+        if (m_conf.hasOpt(TRANSDATE_TO_NAME))
             transDateTo.from_string(
-                    m_varMap[TRANSDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(TRANSDATE_TO_NAME));
         domFilter->addTransferTime().setValue(
                 Database::DateTimeInterval(transDateFrom, transDateTo));
     }
-    if (m_varMap.count(DELDATE_FROM_NAME) || m_varMap.count(DELDATE_TO_NAME)) {
+    if (m_conf.hasOpt(DELDATE_FROM_NAME) || m_conf.hasOpt(DELDATE_TO_NAME)) {
         Database::DateTime delDateFrom("1901-01-01 00:00:00");
         Database::DateTime delDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(DELDATE_FROM_NAME))
+        if (m_conf.hasOpt(DELDATE_FROM_NAME))
             delDateFrom.from_string(
-                    m_varMap[DELDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(DELDATE_TO_NAME))
+                    m_conf.get<std::string>(DELDATE_FROM_NAME));
+        if (m_conf.hasOpt(DELDATE_TO_NAME))
             delDateTo.from_string(
-                    m_varMap[DELDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(DELDATE_TO_NAME));
         domFilter->addDeleteTime().setValue(
                 Database::DateTimeInterval(delDateFrom, delDateTo));
     }
-    if (m_varMap.count(DOMAIN_EXP_DATE_FROM_NAME) || m_varMap.count(DOMAIN_EXP_DATE_TO_NAME)) {
+    if (m_conf.hasOpt(DOMAIN_EXP_DATE_FROM_NAME) || m_conf.hasOpt(DOMAIN_EXP_DATE_TO_NAME)) {
         Database::Date expDateFrom(NEG_INF);
         Database::Date expDateTo(POS_INF);
-        if (m_varMap.count(DOMAIN_EXP_DATE_FROM_NAME))
+        if (m_conf.hasOpt(DOMAIN_EXP_DATE_FROM_NAME))
             expDateFrom.from_string(
-                    m_varMap[DOMAIN_EXP_DATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(DOMAIN_EXP_DATE_TO_NAME))
+                    m_conf.get<std::string>(DOMAIN_EXP_DATE_FROM_NAME));
+        if (m_conf.hasOpt(DOMAIN_EXP_DATE_TO_NAME))
             expDateTo.from_string(
-                    m_varMap[DOMAIN_EXP_DATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(DOMAIN_EXP_DATE_TO_NAME));
         domFilter->addExpirationDate().setValue(
                 Database::DateInterval(expDateFrom, expDateTo));
     }
-    if (m_varMap.count(DOMAIN_OUT_DATE_FROM_NAME) || m_varMap.count(DOMAIN_OUT_DATE_TO_NAME)) {
+    if (m_conf.hasOpt(DOMAIN_OUT_DATE_FROM_NAME) || m_conf.hasOpt(DOMAIN_OUT_DATE_TO_NAME)) {
         Database::Date outDateFrom(NEG_INF);
         Database::Date outDateTo(POS_INF);
-        if (m_varMap.count(DOMAIN_OUT_DATE_FROM_NAME))
+        if (m_conf.hasOpt(DOMAIN_OUT_DATE_FROM_NAME))
             outDateFrom.from_string(
-                    m_varMap[DOMAIN_OUT_DATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(DOMAIN_OUT_DATE_TO_NAME))
+                    m_conf.get<std::string>(DOMAIN_OUT_DATE_FROM_NAME));
+        if (m_conf.hasOpt(DOMAIN_OUT_DATE_TO_NAME))
             outDateTo.from_string(
-                    m_varMap[DOMAIN_OUT_DATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(DOMAIN_OUT_DATE_TO_NAME));
         domFilter->addOutZoneDate().setValue(
                 Database::DateInterval(outDateFrom, outDateTo));
     }
-    if (m_varMap.count(DOMAIN_CANC_DATE_FROM_NAME) || m_varMap.count(DOMAIN_CANC_DATE_TO_NAME)) {
+    if (m_conf.hasOpt(DOMAIN_CANC_DATE_FROM_NAME) || m_conf.hasOpt(DOMAIN_CANC_DATE_TO_NAME)) {
         Database::Date cancDateFrom(NEG_INF);
         Database::Date cancDateTo(POS_INF);
-        if (m_varMap.count(DOMAIN_CANC_DATE_FROM_NAME))
+        if (m_conf.hasOpt(DOMAIN_CANC_DATE_FROM_NAME))
             cancDateFrom.from_string(
-                    m_varMap[DOMAIN_CANC_DATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(DOMAIN_CANC_DATE_TO_NAME))
+                    m_conf.get<std::string>(DOMAIN_CANC_DATE_FROM_NAME));
+        if (m_conf.hasOpt(DOMAIN_CANC_DATE_TO_NAME))
             cancDateTo.from_string(
-                    m_varMap[DOMAIN_CANC_DATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(DOMAIN_CANC_DATE_TO_NAME));
         domFilter->addCancelDate().setValue(
                 Database::DateInterval(cancDateFrom, cancDateTo));
     }
@@ -305,7 +302,7 @@ DomainClient::domain_list()
     unionFilter = new Database::Filters::Union();
     unionFilter->addFilter(domFilter);
 
-    domList->setLimit(m_varMap[LIMIT_NAME].as<unsigned int>());
+    domList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
     domList->reload(*unionFilter, m_dbman);
 
     std::cout << "<objects>\n";
@@ -336,7 +333,7 @@ DomainClient::domain_list()
                 << "\t\t\t<id>" << domain->getAdminIdByIdx(j) << "</id>\n"
                 << "\t\t\t<handle>" << domain->getAdminHandleByIdx(j) << "</handle>\n"
                 << "\t\t</admin>\n";
-        if (m_varMap.count(FULL_LIST_NAME)) {
+        if (m_conf.hasOpt(FULL_LIST_NAME)) {
             std::cout
                 << "\t\t<exp_date>" << domain->getExpirationDate() << "</exp_date>\n"
                 << "\t\t<val_ex_date>" << domain->getValExDate() << "</val_ex_date>\n"
@@ -383,14 +380,14 @@ DomainClient::domain_list()
 int
 DomainClient::domain_create()
 {
-    std::string fqdn = m_varMap[DOMAIN_CREATE_NAME].as<std::string>().c_str();
-    std::string registrant = m_varMap[DOMAIN_REGISTRANT_NAME].as<std::string>().c_str();
-    std::string nsset = m_varMap[DOMAIN_NSSET_NAME].as<std::string>().c_str();
-    std::string keyset = m_varMap[DOMAIN_KEYSET_NAME].as<std::string>().c_str();
-    //std::string authInfoPw = m_varMap[AUTH_INFO_PW_NAME].as<std::string>().c_str();
-    std::string authInfoPw = m_varMap[AUTH_PW_NAME].as<std::string>().c_str();
-    std::string admins = m_varMap[ADMIN_NAME].as<std::string>().c_str();
-    unsigned int period = m_varMap[DOMAIN_PERIOD_NAME].as<unsigned int>();
+    std::string fqdn = m_conf.get<std::string>(DOMAIN_CREATE_NAME).c_str();
+    std::string registrant = m_conf.get<std::string>(DOMAIN_REGISTRANT_NAME).c_str();
+    std::string nsset = m_conf.get<std::string>(DOMAIN_NSSET_NAME).c_str();
+    std::string keyset = m_conf.get<std::string>(DOMAIN_KEYSET_NAME).c_str();
+    //std::string authInfoPw = m_conf.get<std::string>(AUTH_INFO_PW_NAME).c_str();
+    std::string authInfoPw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
+    std::string admins = m_conf.get<std::string>(ADMIN_NAME).c_str();
+    unsigned int period = m_conf.get<unsigned int>(DOMAIN_PERIOD_NAME);
 
     bool empty_param = false;
     if (registrant.empty()) {
@@ -459,14 +456,14 @@ DomainClient::domain_create()
 int
 DomainClient::domain_update()
 {
-    std::string fqdn = m_varMap[DOMAIN_UPDATE_NAME].as<std::string>();
-    std::string registrant = m_varMap[REGISTRANT_HANDLE_NAME].as<std::string>();
-    std::string nsset = m_varMap[NSSET_HANDLE_NAME].as<std::string>();
-    std::string keyset = m_varMap[KEYSET_HANDLE_NAME].as<std::string>();
-    std::string authinfopw = m_varMap[AUTH_PW_NAME].as<std::string>();
-    std::string admins_add = m_varMap[ADMIN_ADD_NAME].as<std::string>();
-    std::string admins_rem = m_varMap[ADMIN_REM_NAME].as<std::string>();
-    std::string admins_rem_temp = m_varMap[ADMIN_REM_TEMP_NAME].as<std::string>();
+    std::string fqdn = m_conf.get<std::string>(DOMAIN_UPDATE_NAME);
+    std::string registrant = m_conf.get<std::string>(REGISTRANT_HANDLE_NAME);
+    std::string nsset = m_conf.get<std::string>(NSSET_HANDLE_NAME);
+    std::string keyset = m_conf.get<std::string>(KEYSET_HANDLE_NAME);
+    std::string authinfopw = m_conf.get<std::string>(AUTH_PW_NAME);
+    std::string admins_add = m_conf.get<std::string>(ADMIN_ADD_NAME);
+    std::string admins_rem = m_conf.get<std::string>(ADMIN_REM_NAME);
+    std::string admins_rem_temp = m_conf.get<std::string>(ADMIN_REM_TEMP_NAME);
 
     std::vector<std::string> admins_add_list;
     std::vector<std::string> admins_rem_list;
@@ -540,7 +537,7 @@ DomainClient::domain_update()
 int
 DomainClient::domain_info()
 {
-    std::string name = m_varMap[DOMAIN_INFO_NAME].as<std::string>();
+    std::string name = m_conf.get<std::string>(DOMAIN_INFO_NAME);
 
     LOGIN_DOMAINCLIENT;
     std::string cltrid;
@@ -563,7 +560,7 @@ int
 DomainClient::domain_list_plain()
 {
     LOGIN_DOMAINCLIENT;
-    std::string name = m_varMap[DOMAIN_LIST_PLAIN_NAME].as<std::string>().c_str();
+    std::string name = m_conf.get<std::string>(DOMAIN_LIST_PLAIN_NAME).c_str();
     std::string cltrid;
     std::string xml;
     xml = "<fqdn>" + name + "</fqdn>";

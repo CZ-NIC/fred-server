@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simple.h"
 #include "commonclient.h"
 #include "contactclient.h"
 #include "register/register.h"
@@ -57,44 +58,40 @@ ContactClient::ContactClient():
     m_options = new boost::program_options::options_description(
             "Contact related options");
     m_options->add_options()
-        add_opt_type(CONTACT_INFO_NAME, std::string)
-        add_opt_type(CONTACT_INFO2_NAME, std::string)
-        add_opt(CONTACT_LIST_NAME)
-        add_opt(CONTACT_LIST_HELP_NAME)
-        add_opt(CONTACT_LIST_PLAIN_NAME);
+        addOptStr(CONTACT_INFO_NAME)
+        addOpt(CONTACT_INFO2_NAME)
+        addOpt(CONTACT_LIST_NAME)
+        addOpt(CONTACT_LIST_HELP_NAME)
+        addOpt(CONTACT_LIST_PLAIN_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Contact related invisible options");
     m_optionsInvis->add_options()
-        add_opt_type(ID_NAME, unsigned int)
-        add_opt_type(HANDLE_NAME, std::string)
-        add_opt_type(NAME_NAME, std::string)
-        add_opt_type(ORGANIZATION_NAME, std::string)
-        add_opt_type(CITY_NAME, std::string)
-        add_opt_type(EMAIL_NAME, std::string)
-        add_opt_type(NOTIFY_EMAIL_NAME, std::string)
-        add_opt_type(VAT_NAME, std::string)
-        add_opt_type(SSN_NAME, std::string)
-        add_opt_type(REGISTRAR_ID_NAME, unsigned int)
-        add_opt_type(REGISTRAR_HANDLE_NAME, std::string)
-        add_opt_type(REGISTRAR_NAME_NAME, std::string)
-        add_opt_type(CRDATE_FROM_NAME, std::string)
-        add_opt_type(CRDATE_TO_NAME, std::string)
-        add_opt_type(UPDATE_FROM_NAME, std::string)
-        add_opt_type(UPDATE_TO_NAME, std::string)
-        add_opt_type(TRANSDATE_FROM_NAME, std::string)
-        add_opt_type(TRANSDATE_TO_NAME, std::string);
+        add_ID()
+        add_HANDLE()
+        add_NAME()
+        add_ORGANIZATION()
+        add_CITY()
+        add_EMAIL()
+        add_NOTIFY_EMAIL()
+        add_VAT()
+        add_SSN()
+        add_REGISTRAR_ID()
+        add_REGISTRAR_HANDLE()
+        add_REGISTRAR_NAME()
+        add_CRDATE()
+        add_UPDATE()
+        add_TRANSDATE()
+        add_DELDATE();
 }
 
 ContactClient::ContactClient(
         std::string connstring,
-        std::string nsAddr,
-        boost::program_options::variables_map varMap):
+        std::string nsAddr):
     m_connstring(connstring), m_nsAddr(nsAddr)
 {
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
     m_options = NULL;
     m_optionsInvis = NULL;
 }
@@ -110,13 +107,13 @@ void
 ContactClient::init(
         std::string connstring,
         std::string nsAddr,
-        boost::program_options::variables_map varMap)
+        Config::Conf &conf)
 {
     m_connstring = connstring;
     m_nsAddr = nsAddr;
     m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
-    m_varMap = varMap;
+    m_conf = conf;
 }
 
 boost::program_options::options_description *
@@ -142,7 +139,7 @@ ContactClient::info()
 {
     LOGIN_CONTACTCLIENT;
 
-    std::string name = m_varMap[CONTACT_INFO_NAME].as<std::string>();
+    std::string name = m_conf.get<std::string>(CONTACT_INFO_NAME);
     std::string cltrid;
     std::string xml;
     xml = "<fqdn>" + name + "</fqdn>";
@@ -169,90 +166,90 @@ ContactClient::list()
     Database::Filters::Contact *conFilter;
     conFilter = new Database::Filters::ContactHistoryImpl();
 
-    if (m_varMap.count(ID_NAME))
+    if (m_conf.hasOpt(ID_NAME))
         conFilter->addId().setValue(
-                Database::ID(m_varMap[ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
+    if (m_conf.hasOpt(HANDLE_NAME))
         conFilter->addHandle().setValue(
-                m_varMap[HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(NAME_NAME))
+                m_conf.get<std::string>(HANDLE_NAME));
+    if (m_conf.hasOpt(NAME_NAME))
         conFilter->addName().setValue(
-                m_varMap[NAME_NAME].as<std::string>());
-    if (m_varMap.count(ORGANIZATION_NAME))
+                m_conf.get<std::string>(NAME_NAME));
+    if (m_conf.hasOpt(ORGANIZATION_NAME))
         conFilter->addOrganization().setValue(
-                m_varMap[ORGANIZATION_NAME].as<std::string>());
-    if (m_varMap.count(CITY_NAME))
+                m_conf.get<std::string>(ORGANIZATION_NAME));
+    if (m_conf.hasOpt(CITY_NAME))
         conFilter->addCity().setValue(
-                m_varMap[CITY_NAME].as<std::string>());
-    if (m_varMap.count(EMAIL_NAME))
+                m_conf.get<std::string>(CITY_NAME));
+    if (m_conf.hasOpt(EMAIL_NAME))
         conFilter->addEmail().setValue(
-                m_varMap[EMAIL_NAME].as<std::string>());
-    if (m_varMap.count(NOTIFY_EMAIL_NAME))
+                m_conf.get<std::string>(EMAIL_NAME));
+    if (m_conf.hasOpt(NOTIFY_EMAIL_NAME))
         conFilter->addNotifyEmail().setValue(
-                m_varMap[NOTIFY_EMAIL_NAME].as<std::string>());
-    if (m_varMap.count(VAT_NAME))
+                m_conf.get<std::string>(NOTIFY_EMAIL_NAME));
+    if (m_conf.hasOpt(VAT_NAME))
         conFilter->addVat().setValue(
-                m_varMap[VAT_NAME].as<std::string>());
-    if (m_varMap.count(SSN_NAME))
+                m_conf.get<std::string>(VAT_NAME));
+    if (m_conf.hasOpt(SSN_NAME))
         conFilter->addSsn().setValue(
-                m_varMap[SSN_NAME].as<std::string>());
+                m_conf.get<std::string>(SSN_NAME));
 
-    if (m_varMap.count(REGISTRAR_ID_NAME))
+    if (m_conf.hasOpt(REGISTRAR_ID_NAME))
         conFilter->addRegistrar().addId().setValue(
-                Database::ID(m_varMap[REGISTRAR_ID_NAME].as<unsigned int>()));
-    if (m_varMap.count(REGISTRAR_HANDLE_NAME))
+                Database::ID(m_conf.get<unsigned int>(REGISTRAR_ID_NAME)));
+    if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME))
         conFilter->addRegistrar().addHandle().setValue(
-                m_varMap[REGISTRAR_HANDLE_NAME].as<std::string>());
-    if (m_varMap.count(REGISTRAR_NAME_NAME))
+                m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
+    if (m_conf.hasOpt(REGISTRAR_NAME_NAME))
         conFilter->addRegistrar().addName().setValue(
-                m_varMap[REGISTRAR_NAME_NAME].as<std::string>());
+                m_conf.get<std::string>(REGISTRAR_NAME_NAME));
 
-    if (m_varMap.count(CRDATE_FROM_NAME) || m_varMap.count(CRDATE_TO_NAME)) {
+    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
         Database::DateTime crDateFrom("1901-01-01 00:00:00");
         Database::DateTime crDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(CRDATE_FROM_NAME))
+        if (m_conf.hasOpt(CRDATE_FROM_NAME))
             crDateFrom.from_string(
-                    m_varMap[CRDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(CRDATE_TO_NAME))
+                    m_conf.get<std::string>(CRDATE_FROM_NAME));
+        if (m_conf.hasOpt(CRDATE_TO_NAME))
             crDateTo.from_string(
-                    m_varMap[CRDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(CRDATE_TO_NAME));
         conFilter->addCreateTime().setValue(
                 Database::DateTimeInterval(crDateFrom, crDateTo));
     }
 
-    if (m_varMap.count(UPDATE_FROM_NAME) || m_varMap.count(UPDATE_TO_NAME)) {
+    if (m_conf.hasOpt(UPDATE_FROM_NAME) || m_conf.hasOpt(UPDATE_TO_NAME)) {
         Database::DateTime upDateFrom("1901-01-01 00:00:00");
         Database::DateTime upDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(UPDATE_FROM_NAME))
+        if (m_conf.hasOpt(UPDATE_FROM_NAME))
             upDateFrom.from_string(
-                    m_varMap[UPDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(UPDATE_TO_NAME))
+                    m_conf.get<std::string>(UPDATE_FROM_NAME));
+        if (m_conf.hasOpt(UPDATE_TO_NAME))
             upDateTo.from_string(
-                    m_varMap[UPDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(UPDATE_TO_NAME));
         conFilter->addUpdateTime().setValue(
                 Database::DateTimeInterval(upDateFrom, upDateTo));
     }
-    if (m_varMap.count(TRANSDATE_FROM_NAME) || m_varMap.count(TRANSDATE_TO_NAME)) {
+    if (m_conf.hasOpt(TRANSDATE_FROM_NAME) || m_conf.hasOpt(TRANSDATE_TO_NAME)) {
         Database::DateTime transDateFrom("1901-01-01 00:00:00");
         Database::DateTime transDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(TRANSDATE_FROM_NAME))
+        if (m_conf.hasOpt(TRANSDATE_FROM_NAME))
             transDateFrom.from_string(
-                    m_varMap[TRANSDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(TRANSDATE_TO_NAME))
+                    m_conf.get<std::string>(TRANSDATE_FROM_NAME));
+        if (m_conf.hasOpt(TRANSDATE_TO_NAME))
             transDateTo.from_string(
-                    m_varMap[TRANSDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(TRANSDATE_TO_NAME));
         conFilter->addTransferTime().setValue(
                 Database::DateTimeInterval(transDateFrom, transDateTo));
     }
-    if (m_varMap.count(DELDATE_FROM_NAME) || m_varMap.count(DELDATE_TO_NAME)) {
+    if (m_conf.hasOpt(DELDATE_FROM_NAME) || m_conf.hasOpt(DELDATE_TO_NAME)) {
         Database::DateTime delDateFrom("1901-01-01 00:00:00");
         Database::DateTime delDateTo("2101-01-01 00:00:00");
-        if (m_varMap.count(DELDATE_FROM_NAME))
+        if (m_conf.hasOpt(DELDATE_FROM_NAME))
             delDateFrom.from_string(
-                    m_varMap[DELDATE_FROM_NAME].as<std::string>());
-        if (m_varMap.count(DELDATE_TO_NAME))
+                    m_conf.get<std::string>(DELDATE_FROM_NAME));
+        if (m_conf.hasOpt(DELDATE_TO_NAME))
             delDateTo.from_string(
-                    m_varMap[DELDATE_TO_NAME].as<std::string>());
+                    m_conf.get<std::string>(DELDATE_TO_NAME));
         conFilter->addDeleteTime().setValue(
                 Database::DateTimeInterval(delDateFrom, delDateTo));
     }
@@ -261,7 +258,7 @@ ContactClient::list()
     unionFilter = new Database::Filters::Union();
 
     unionFilter->addFilter(conFilter);
-    conList->setLimit(m_varMap[LIMIT_NAME].as<unsigned int>());
+    conList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
 
     conList->reload(*unionFilter, m_dbman);
 
@@ -298,7 +295,7 @@ ContactClient::list()
             << "\t\t<disclose_vat>" << contact->getDiscloseVat() << "</disclose_vat>\n"
             << "\t\t<disclose_ident>" << contact->getDiscloseIdent() << "</disclose_ident>\n"
             << "\t\t<disclose_notify_email>" << contact->getDiscloseNotifyEmail() << "</disclose_notify_email>\n";
-        if (m_varMap.count(FULL_LIST_NAME)) {
+        if (m_conf.hasOpt(FULL_LIST_NAME)) {
             std::cout
                 << "\t\t<create_date>" << contact->getCreateDate() << "</create_date>\n"
                 << "\t\t<transfer_date>" << contact->getTransferDate() << "</transfer_date>\n"

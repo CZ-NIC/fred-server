@@ -23,12 +23,11 @@
 #include <boost/program_options.hpp>
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include "log/logger.h"
-#include "old_utils/log.h"
-#include "old_utils/conf.h"
 #include "register/register.h"
 #include "corba/admin/admin_impl.h"
 #include "corba/mailer_manager.h"
 
+#include "simple.h"
 #include "commonclient.h"
 #include "keysetclient.h"
 #include "nssetclient.h"
@@ -70,73 +69,33 @@ main(int argc, char **argv)
     try {
     boost::program_options::options_description generalOpts("General options");
     generalOpts.add_options()
-        ("help,h",
-         "print this help and quit")
-        ("version,V",
-         "print version and license information and quit")
-        ("conf",
-         boost::program_options::value<std::string>()->default_value(CONFIG_FILE),
-         "configuration file")
-        (LANGUAGE_NAME,
-         boost::program_options::value<std::string>()->default_value("CS"),
-         "communication language");
+        addOptStrDef(CLI_LANGUAGE_NAME, "CS");
 
     boost::program_options::options_description generalOptsInvis("General invisible options");
     generalOptsInvis.add_options()
-        ("moo",
-         "moo");
+        addOpt(CLI_MOO_NAME);
 
     boost::program_options::options_description configurationOpts("Configuration options");
     configurationOpts.add_options()
-        (DBNAME_NAME, 
-         boost::program_options::value<std::string>()->default_value("fred"),
-         "database name")
-        (DBUSER_NAME, 
-         boost::program_options::value<std::string>()->default_value("fred"),
-         "database user")
-        (DBPASS_NAME, 
-         boost::program_options::value<std::string>(),
-         "database password")
-        (DBHOST_NAME, 
-         boost::program_options::value<std::string>()->default_value("localhost"),
-         "database host address")
-        (DBPORT_NAME, 
-         boost::program_options::value<unsigned int>()->default_value(5432),
-         "database port")
-        (NSHOST_NAME, 
-         boost::program_options::value<std::string>()->default_value("localhost"),
-         "CORBA nameservice host")
-        (NSPORT_NAME, 
-         boost::program_options::value<unsigned int>()->default_value(2809),
-         "CORBA nameservice port")
-        (NSSERVICE_NAME,
-         boost::program_options::value<std::string>()->default_value("localhost:2809"),
-         "CORBA nameservice address")
-        (LOG_LEVEL_NAME, 
-         boost::program_options::value<unsigned int>()->default_value(DEBUG_LOG),
-         "minimal level of logging")
-        (LOG_LOCAL_NAME, 
-         boost::program_options::value<unsigned int>()->default_value(2),
-         "syslog local facility number")
-        (DOCGEN_PATH_NAME,
-         boost::program_options::value<std::string>()->default_value("/usr/bin/fred-doc2pdf"),
-         "path to fred2pdf document generator")
-        (DOCGEN_TEMPLATE_PATH_NAME,
-         boost::program_options::value<std::string>()->default_value("/usr/share/fred2pdf/templates"),
-         "path to fred2pdf document generator templates")
-        (FILECLIENT_PATH_NAME, 
-         boost::program_options::value<std::string>()->default_value("/usr/bin/filemanager_client"),
-         "path to corba client file manager")
-        (RESTRICTED_HANDLES_NAME,
-         boost::program_options::value<int>()->default_value(1),
-         "restricted format for handles")
-        (DEBUG_NAME,
-         //boost::program_options::value<unsigned int>(),
-         "debug");
+        addOptStr(DB_NAME_NAME)
+        addOptStr(DB_USER_NAME)
+        addOptStr(DB_PASS_NAME)
+        addOptStr(DB_HOST_NAME)
+        addOptUInt(DB_PORT_NAME)
+        addOptStr(NS_HOST_NAME)
+        addOptUInt(NS_PORT_NAME)
+        addOptUInt(LOG_TYPE_NAME)
+        addOptUInt(LOG_LEVEL_NAME)
+        addOptStr(LOG_FILE_NAME)
+        addOptUInt(LOG_SYSLOG_NAME)
+        addOptStr(REG_FILECLIENT_PATH_NAME)
+        addOptBool(REG_RESTRICTED_HANDLES_NAME)
+        addOptStr(REG_DOCGEN_PATH_NAME)
+        addOptStr(REG_DOCGEN_TEMPLATE_PATH_NAME);
 
-    boost::program_options::options_description fileDesc("");
-    fileDesc.add(configurationOpts);
-    fileDesc.add_options()
+    boost::program_options::options_description fileOpts("");
+    fileOpts.add(configurationOpts);
+    fileOpts.add_options()
         ("*", boost::program_options::value<std::string>(),
          "other-options");
 
@@ -207,247 +166,253 @@ main(int argc, char **argv)
         add(*publicrequest.getVisibleOptions()).
         add(commonOpts);
 
-    boost::program_options::store(
-            boost::program_options::parse_command_line(
-                argc,
-                argv,
-                all),
-            varMap);
+    Config::Manager confMan = Config::ConfigManager::instance_ref();
+    try {
+        confMan.init(argc, argv);
+        confMan.setCmdLineOptions(all);
+        confMan.setCfgFileOptions(fileOpts, CONFIG_FILE);
+        confMan.parse();
+    } catch (Config::Manager::ConfigParseError &err) {
+        std::cerr << "Config parser error: " << err.what() << std::endl;
+        exit(1);
+    }
 
-    std::ifstream configFile(varMap["conf"].as<std::string>().c_str());
-    boost::program_options::store(
-            boost::program_options::parse_config_file(
-                configFile,
-                fileDesc),
-            varMap);
-
-    boost::program_options::notify(varMap);
-
-    if (varMap.count("help") || argc == 1) {
+    if (argc == 1 || confMan.isHelp()) {
+        std::cout << "Usage: " << argv[0] << " [options]" << std::endl;
+        std::cout << "Options:" << std::endl;
         std::cout << visible << std::endl;
         exit(0);
     }
-    if (varMap.count("version")) {
+
+    if (confMan.isVersion()) {
         print_version();
         exit(0);
     }
-    if (varMap.count("moo")) {
-        print_moo();
-        exit(0);
+
+    Config::Conf conf = confMan.get();
+
+    Logging::Log::Level log_level;
+    Logging::Log::Type log_type;
+
+    if (conf.hasOpt(LOG_LEVEL_NAME)) {
+         log_level = static_cast<Logging::Log::Level>(
+                conf.get<unsigned int>(LOG_LEVEL_NAME));
+    } else {
+        log_level = static_cast<Logging::Log::Level>(8);
     }
 
-    SysLogger::get().setLevel(
-            varMap[LOG_LEVEL_NAME].as<unsigned int>());
-    SysLogger::get().setFacility(
-            varMap[LOG_LOCAL_NAME].as<unsigned int>());    
+    if (conf.hasOpt(LOG_TYPE_NAME)) {
+        log_type = static_cast<Logging::Log::Type>(
+                conf.get<unsigned int>(LOG_TYPE_NAME));
+    } else {
+        log_type = static_cast<Logging::Log::Type>(Logging::Log::LT_FILE);
+    }
 
-    Logging::Manager::instance_ref().get("tracer").addHandler(Logging::Log::LT_SYSLOG);
-    Logging::Manager::instance_ref().get("tracer").setLevel(Logging::Log::LL_TRACE);
-    Logging::Manager::instance_ref().get("db").addHandler(Logging::Log::LT_SYSLOG);
-    Logging::Manager::instance_ref().get("db").setLevel(Logging::Log::LL_TRACE);    
+    boost::any param;          
+    if (log_type == Logging::Log::LT_FILE) {
+        param = conf.get<std::string>(LOG_FILE_NAME);
+    }
+    if (log_type == Logging::Log::LT_SYSLOG) {
+        param = conf.get<unsigned>(LOG_SYSLOG_NAME);
+    }
+    conf.print(std::cout);
 
-    Logging::Manager::instance_ref().get("register").addHandler(Logging::Log::LT_SYSLOG);
-    Logging::Manager::instance_ref().get("register").setLevel(Logging::Log::LL_TRACE);
-    Logging::Manager::instance_ref().get("corba").addHandler(Logging::Log::LT_SYSLOG);
-    Logging::Manager::instance_ref().get("corba").setLevel(Logging::Log::LL_TRACE);
-    Logging::Manager::instance_ref().get("mailer").addHandler(Logging::Log::LT_SYSLOG);
-    Logging::Manager::instance_ref().get("mailer").setLevel(Logging::Log::LL_TRACE);
+    Logging::Manager::instance_ref().get("tracer").addHandler(log_type, param);
+    Logging::Manager::instance_ref().get("tracer").setLevel(log_level);
+    Logging::Manager::instance_ref().get("db").addHandler(log_type, param);
+    Logging::Manager::instance_ref().get("db").setLevel(log_level);
+    Logging::Manager::instance_ref().get("register").addHandler(log_type, param);
+    Logging::Manager::instance_ref().get("register").setLevel(log_level);
+    Logging::Manager::instance_ref().get("corba").addHandler(log_type, param);
+    Logging::Manager::instance_ref().get("corba").setLevel(log_level);
+    Logging::Manager::instance_ref().get("mailer").addHandler(log_type, param);
+    Logging::Manager::instance_ref().get("mailer").setLevel(log_level);
+    Logging::Manager::instance_ref().get("old_log").addHandler(log_type, param);
+    Logging::Manager::instance_ref().get("old_log").setLevel(log_level);
 
     std::stringstream connstring;
     std::stringstream nsAddr;
 
-    nsAddr << varMap[NSSERVICE_NAME].as<std::string>();
-    
+    nsAddr << conf.get<std::string>(NS_HOST_NAME);
+    if (conf.hasOpt(NS_PORT_NAME))
+        nsAddr << ":" << conf.get<unsigned int>(NS_PORT_NAME);
 
-    connstring << "dbname=" << varMap[DBNAME_NAME].as<std::string>() 
-               << " user=" << varMap[DBUSER_NAME].as<std::string>();
-    if (varMap.count(DBHOST_NAME))
-        connstring << " host=" << varMap[DBHOST_NAME].as<std::string>();
-    if (varMap.count(DBPORT_NAME))
-        connstring << " port=" << varMap[DBPORT_NAME].as<unsigned int>();
-    if (varMap.count(DBPASS_NAME))
-        connstring << " password=" << varMap[DBPASS_NAME].as<std::string>();
+    connstring << "dbname=" << conf.get<std::string>(DB_NAME_NAME) 
+               << " user=" << conf.get<std::string>(DB_USER_NAME);
+    if (conf.hasOpt(DB_HOST_NAME))
+        connstring << " host=" << conf.get<std::string>(DB_HOST_NAME);
+    if (conf.hasOpt(DB_PORT_NAME))
+        connstring << " port=" << conf.get<unsigned int>(DB_PORT_NAME);
+    if (conf.hasOpt(DB_PASS_NAME))
+        connstring << " password=" << conf.get<std::string>(DB_PASS_NAME);
 
-    keyset.init(connstring.str(), nsAddr.str(), varMap);
-    domain.init(connstring.str(), nsAddr.str(), varMap);
-    contact.init(connstring.str(), nsAddr.str(), varMap);
-    invoice.init(connstring.str(), nsAddr.str(), varMap);
-    authinfo.init(connstring.str(), nsAddr.str(), varMap);
-    bank.init(connstring.str(), nsAddr.str(), varMap);
-    poll.init(connstring.str(), nsAddr.str(), varMap);
-    registrar.init(connstring.str(), nsAddr.str(), varMap);
-    notify.init(connstring.str(), nsAddr.str(), varMap);
-    object.init(connstring.str(), nsAddr.str(), varMap);
-    infobuff.init(connstring.str(), nsAddr.str(), varMap);
-    nsset.init(connstring.str(), nsAddr.str(), varMap);
-    file.init(connstring.str(), nsAddr.str(), varMap);
-    mail.init(connstring.str(), nsAddr.str(), varMap);
-    publicrequest.init(connstring.str(), nsAddr.str(), varMap);
+    keyset.init(connstring.str(), nsAddr.str(), conf);
+    domain.init(connstring.str(), nsAddr.str(), conf);
+    contact.init(connstring.str(), nsAddr.str(), conf);
+    invoice.init(connstring.str(), nsAddr.str(), conf);
+    authinfo.init(connstring.str(), nsAddr.str(), conf);
+    bank.init(connstring.str(), nsAddr.str(), conf);
+    poll.init(connstring.str(), nsAddr.str(), conf);
+    registrar.init(connstring.str(), nsAddr.str(), conf);
+    notify.init(connstring.str(), nsAddr.str(), conf);
+    object.init(connstring.str(), nsAddr.str(), conf);
+    infobuff.init(connstring.str(), nsAddr.str(), conf);
+    nsset.init(connstring.str(), nsAddr.str(), conf);
+    file.init(connstring.str(), nsAddr.str(), conf);
+    mail.init(connstring.str(), nsAddr.str(), conf);
+    publicrequest.init(connstring.str(), nsAddr.str(), conf);
 
-    if (varMap.count("show-opts")) {
-        std::cout << "config: " << varMap["conf"].as<std::string>() << std::endl;
-        std::cout << "dbname: " << varMap[DBNAME_NAME].as<std::string>() << std::endl;
-        std::cout << "dbuser: " << varMap[DBUSER_NAME].as<std::string>() << std::endl;
-        std::cout << "dbpass: " << (varMap.count(DBPASS_NAME) ?
-            varMap[DBPASS_NAME].as<std::string>() : "")
-            << std::endl;
-        std::cout << "dbhost: " << varMap[DBHOST_NAME].as<std::string>() << std::endl;
-        std::cout << "dbport: " << varMap[DBPORT_NAME].as<unsigned int>() << std::endl;
-        std::cout << "nameservice: " << varMap[NSSERVICE_NAME].as<std::string>() << std::endl;
-        std::exit(0);
-    }
-
-    if (varMap.count(CONTACT_INFO2_NAME)) {
+    if (conf.hasOpt(CONTACT_INFO2_NAME)) {
         contact.info2();
-    } else if (varMap.count(CONTACT_INFO_NAME)) {
+    } else if (conf.hasOpt(CONTACT_INFO_NAME)) {
         contact.info();
-    } else if (varMap.count(CONTACT_LIST_NAME)) {
+    } else if (conf.hasOpt(CONTACT_LIST_NAME)) {
         contact.list();
-    } else if (varMap.count(CONTACT_LIST_HELP_NAME)) {
+    } else if (conf.hasOpt(CONTACT_LIST_HELP_NAME)) {
         contact.list_help();
     }
 
-    if (varMap.count(KEYSET_LIST_NAME)) {
+    if (conf.hasOpt(KEYSET_LIST_NAME)) {
         keyset.list();
-    } else if (varMap.count(KEYSET_CHECK_NAME)) {
+    } else if (conf.hasOpt(KEYSET_CHECK_NAME)) {
         keyset.check();
-    } else if (varMap.count(KEYSET_SEND_AUTH_INFO_NAME)) {
+    } else if (conf.hasOpt(KEYSET_SEND_AUTH_INFO_NAME)) {
         keyset.send_auth_info();
-    } else if (varMap.count(KEYSET_TRANSFER_NAME)) {
+    } else if (conf.hasOpt(KEYSET_TRANSFER_NAME)) {
         keyset.transfer();
-    } else if (varMap.count(KEYSET_LIST_PLAIN_NAME)) {
+    } else if (conf.hasOpt(KEYSET_LIST_PLAIN_NAME)) {
         keyset.list_plain();
-    } else if (varMap.count(KEYSET_UPDATE_NAME)) {
+    } else if (conf.hasOpt(KEYSET_UPDATE_NAME)) {
         keyset.update();
-    } else if (varMap.count(KEYSET_DELETE_NAME)) {
+    } else if (conf.hasOpt(KEYSET_DELETE_NAME)) {
         keyset.del();
-    } else if (varMap.count(KEYSET_UPDATE_HELP_NAME)) {
+    } else if (conf.hasOpt(KEYSET_UPDATE_HELP_NAME)) {
         keyset.update_help();
-    } else if (varMap.count(KEYSET_CREATE_HELP_NAME)) {
+    } else if (conf.hasOpt(KEYSET_CREATE_HELP_NAME)) {
         keyset.create_help();
-    } else if (varMap.count(KEYSET_DELETE_HELP_NAME)) {
+    } else if (conf.hasOpt(KEYSET_DELETE_HELP_NAME)) {
         keyset.delete_help();
-    } else if (varMap.count(KEYSET_INFO_HELP_NAME)) {
+    } else if (conf.hasOpt(KEYSET_INFO_HELP_NAME)) {
         keyset.info_help();
-    } else if (varMap.count(KEYSET_CHECK_HELP_NAME)) {
+    } else if (conf.hasOpt(KEYSET_CHECK_HELP_NAME)) {
         keyset.check_help();
-    } else if (varMap.count(KEYSET_LIST_HELP_NAME)) {
+    } else if (conf.hasOpt(KEYSET_LIST_HELP_NAME)) {
         keyset.list_help();
-    } else if (varMap.count(KEYSET_CREATE_NAME)) {
+    } else if (conf.hasOpt(KEYSET_CREATE_NAME)) {
         keyset.create();
-    } else if (varMap.count(KEYSET_INFO2_NAME)) {
+    } else if (conf.hasOpt(KEYSET_INFO2_NAME)) {
         keyset.info2();
-    } else if (varMap.count(KEYSET_INFO_NAME)) {
+    } else if (conf.hasOpt(KEYSET_INFO_NAME)) {
         keyset.info();
-    } else if (varMap.count(DOMAIN_LIST_NAME)) {
+    } else if (conf.hasOpt(DOMAIN_LIST_NAME)) {
         domain.domain_list();
     }
     
-    if (varMap.count(DOMAIN_LIST_PLAIN_NAME)) {
+    if (conf.hasOpt(DOMAIN_LIST_PLAIN_NAME)) {
         domain.domain_list_plain();
-    } else if (varMap.count(DOMAIN_CREATE_HELP_NAME)) {
+    } else if (conf.hasOpt(DOMAIN_CREATE_HELP_NAME)) {
         domain.domain_create_help();
-    } else if (varMap.count(DOMAIN_UPDATE_HELP_NAME)) {
+    } else if (conf.hasOpt(DOMAIN_UPDATE_HELP_NAME)) {
         domain.domain_update_help();
-    } else if (varMap.count(DOMAIN_CREATE_NAME)) {
+    } else if (conf.hasOpt(DOMAIN_CREATE_NAME)) {
         domain.domain_create();
-    } else if (varMap.count(DOMAIN_UPDATE_NAME)) {
+    } else if (conf.hasOpt(DOMAIN_UPDATE_NAME)) {
         domain.domain_update();
-    } else if (varMap.count(DOMAIN_INFO_NAME)) {
+    } else if (conf.hasOpt(DOMAIN_INFO_NAME)) {
         domain.domain_info();
-    } else if (varMap.count(DOMAIN_LIST_HELP_NAME)) {
+    } else if (conf.hasOpt(DOMAIN_LIST_HELP_NAME)) {
         domain.list_help();
     }
     
-    if (varMap.count(INVOICE_LIST_NAME)) {
+    if (conf.hasOpt(INVOICE_LIST_NAME)) {
         invoice.list();
-    } else if (varMap.count(INVOICE_ARCHIVE_NAME)) {
+    } else if (conf.hasOpt(INVOICE_ARCHIVE_NAME)) {
         invoice.archive();
-    } else if (varMap.count(INVOICE_LIST_HELP_NAME)) {
+    } else if (conf.hasOpt(INVOICE_LIST_HELP_NAME)) {
         invoice.list_help();
-    } else if (varMap.count(INVOICE_ARCHIVE_HELP_NAME)) {
+    } else if (conf.hasOpt(INVOICE_ARCHIVE_HELP_NAME)) {
         invoice.archive_help();
     }
 
-    if (varMap.count(AUTHINFO_PDF_NAME)) {
+    if (conf.hasOpt(AUTHINFO_PDF_NAME)) {
         authinfo.pdf();
-    } else if (varMap.count(AUTHINFO_PDF_HELP_NAME)) {
+    } else if (conf.hasOpt(AUTHINFO_PDF_HELP_NAME)) {
         authinfo.pdf_help();
     }
     
-    if (varMap.count(BANK_ONLINE_LIST_NAME)) {
+    if (conf.hasOpt(BANK_ONLINE_LIST_NAME)) {
         bank.online_list();
-    } else if (varMap.count(BANK_STATEMENT_LIST_NAME)) {
+    } else if (conf.hasOpt(BANK_STATEMENT_LIST_NAME)) {
         bank.statement_list();
     }
 
-    if (varMap.count(POLL_LIST_ALL_NAME)) {
+    if (conf.hasOpt(POLL_LIST_ALL_NAME)) {
         poll.list_all();
-    } else if (varMap.count(POLL_LIST_NEXT_NAME)) {
+    } else if (conf.hasOpt(POLL_LIST_NEXT_NAME)) {
         poll.list_next();
-    } else if (varMap.count(POLL_CREATE_STATE_CHANGES_NAME)) {
+    } else if (conf.hasOpt(POLL_CREATE_STATE_CHANGES_NAME)) {
         poll.create_state_changes();
-    } else if (varMap.count(POLL_CREATE_LOW_CREDIT_NAME)) {
+    } else if (conf.hasOpt(POLL_CREATE_LOW_CREDIT_NAME)) {
         poll.create_low_credit();
-    } else if (varMap.count(POLL_SET_SEEN_NAME)) {
+    } else if (conf.hasOpt(POLL_SET_SEEN_NAME)) {
         poll.set_seen();
     }
     
-    if (varMap.count(REGISTRAR_ZONE_ADD_NAME)) {
+    if (conf.hasOpt(REGISTRAR_ZONE_ADD_NAME)) {
         registrar.zone_add();
-    } else if (varMap.count(REGISTRAR_REGISTRAR_ADD_NAME)) {
+    } else if (conf.hasOpt(REGISTRAR_REGISTRAR_ADD_NAME)) {
         registrar.registrar_add();
-    } else if (varMap.count(REGISTRAR_REGISTRAR_ADD_ZONE_NAME)) {
+    } else if (conf.hasOpt(REGISTRAR_REGISTRAR_ADD_ZONE_NAME)) {
         registrar.registrar_add_zone();
-    } else if (varMap.count(REGISTRAR_ZONE_ADD_HELP_NAME)) {
+    } else if (conf.hasOpt(REGISTRAR_ZONE_ADD_HELP_NAME)) {
         registrar.zone_add_help();
-    } else if (varMap.count(REGISTRAR_REGISTRAR_ADD_HELP_NAME)) {
+    } else if (conf.hasOpt(REGISTRAR_REGISTRAR_ADD_HELP_NAME)) {
         registrar.registrar_add_help();
-    } else if (varMap.count(REGISTRAR_REGISTRAR_ADD_ZONE_HELP_NAME)) {
+    } else if (conf.hasOpt(REGISTRAR_REGISTRAR_ADD_ZONE_HELP_NAME)) {
         registrar.registrar_add_zone_help();
-    } else if (varMap.count(REGISTRAR_LIST_NAME)) {
+    } else if (conf.hasOpt(REGISTRAR_LIST_NAME)) {
         registrar.list();
     }
     
-    if (varMap.count(NOTIFY_STATE_CHANGES_NAME)) {
+    if (conf.hasOpt(NOTIFY_STATE_CHANGES_NAME)) {
         notify.state_changes();
-    } else if (varMap.count(NOTIFY_LETTERS_CREATE_NAME)) {
+    } else if (conf.hasOpt(NOTIFY_LETTERS_CREATE_NAME)) {
         notify.letters_create();
     }
 
-    if (varMap.count(OBJECT_NEW_STATE_REQUEST_NAME)) {
+    if (conf.hasOpt(OBJECT_NEW_STATE_REQUEST_NAME)) {
         object.new_state_request();
-    } else if (varMap.count(OBJECT_LIST_NAME)) {
+    } else if (conf.hasOpt(OBJECT_LIST_NAME)) {
         object.list();
-    } else if (varMap.count(OBJECT_UPDATE_STATES_NAME)) {
+    } else if (conf.hasOpt(OBJECT_UPDATE_STATES_NAME)) {
         object.update_states();
-    } else if (varMap.count(OBJECT_DELETE_CANDIDATES_NAME)) {
+    } else if (conf.hasOpt(OBJECT_DELETE_CANDIDATES_NAME)) {
         object.delete_candidates();
-    } else if (varMap.count(OBJECT_REGULAR_PROCEDURE_NAME)) {
+    } else if (conf.hasOpt(OBJECT_REGULAR_PROCEDURE_NAME)) {
         object.regular_procedure();
     }
     
-    if (varMap.count(NSSET_LIST_NAME)) {
+    if (conf.hasOpt(NSSET_LIST_NAME)) {
         nsset.list();
-    } else if (varMap.count(NSSET_LIST_HELP_NAME)) {
+    } else if (conf.hasOpt(NSSET_LIST_HELP_NAME)) {
         nsset.list_help();
     }
 
-    if (varMap.count(FILE_LIST_NAME)) {
+    if (conf.hasOpt(FILE_LIST_NAME)) {
         file.list();
-    } else if (varMap.count(FILE_LIST_HELP_NAME)) {
+    } else if (conf.hasOpt(FILE_LIST_HELP_NAME)) {
         file.list_help();
     }
 
-    if (varMap.count(MAIL_LIST_NAME)) {
+    if (conf.hasOpt(MAIL_LIST_NAME)) {
         mail.list();
-    } else if (varMap.count(MAIL_LIST_HELP_NAME)) {
+    } else if (conf.hasOpt(MAIL_LIST_HELP_NAME)) {
         file.list_help();
     }
 
-    if (varMap.count(PUBLICREQ_LIST_NAME)) {
+    if (conf.hasOpt(PUBLICREQ_LIST_NAME)) {
         publicrequest.list();
-    } else if (varMap.count(PUBLICREQ_LIST_HELP_NAME)) {
+    } else if (conf.hasOpt(PUBLICREQ_LIST_HELP_NAME)) {
         publicrequest.list_help();
     }
 
