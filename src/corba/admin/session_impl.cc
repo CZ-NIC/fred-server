@@ -556,20 +556,16 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
       const Register::Status *tmp = act->getStatusByIdx(s);
 
       LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
-      if (m_register_manager->getStatusDesc(tmp->getStatusId())->getExternal()) {
-        LOGGER("corba").debug(boost::format("history detail -- state %1% is external") % tmp->getStatusId());
+      std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
+      if (it == ext_states_ids.end()) {
+        ext_states_ids.push_back(tmp->getId());
+        LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
 
-        std::vector<Register::TID>::iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
-        if (it == ext_states_ids.end()) {
-          ext_states_ids.push_back(tmp->getId());
-          LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
-
-          unsigned sl = detail->states.length();
-          detail->states.length(sl + 1);
-          detail->states[sl].id    = tmp->getStatusId();
-          detail->states[sl].from  = makeCorbaTime(tmp->getFrom(), true);
-          detail->states[sl].to    = makeCorbaTime(tmp->getTo(), true);
-        }
+        unsigned sl = detail->states.length();
+        detail->states.length(sl + 1);
+        detail->states[sl].id    = tmp->getStatusId();
+        detail->states[sl].from  = makeCorbaTime(tmp->getFrom(), true);
+        detail->states[sl].to    = makeCorbaTime(tmp->getTo(), true);
       }
     }
 
@@ -741,21 +737,16 @@ Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register:
       const Register::Status *tmp = act->getStatusByIdx(s);
 
       LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
-      if (m_register_manager->getStatusDesc(tmp->getStatusId())->getExternal()) {
-        LOGGER("corba").debug(boost::format("history detail -- state %1% is external") % tmp->getStatusId());
+      std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
+      if (it == ext_states_ids.end()) {
+        ext_states_ids.push_back(tmp->getId());
+        LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
 
-        std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
-
-        if (it == ext_states_ids.end()) {
-          ext_states_ids.push_back(tmp->getId());
-          LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
-
-          unsigned sl = detail->states.length();
-          detail->states.length(sl + 1);
-          detail->states[sl].id    = tmp->getStatusId();
-          detail->states[sl].from  = makeCorbaTime(tmp->getFrom(), true);
-          detail->states[sl].to    = makeCorbaTime(tmp->getTo(), true);
-        }
+        unsigned sl = detail->states.length();
+        detail->states.length(sl + 1);
+        detail->states[sl].id    = tmp->getStatusId();
+        detail->states[sl].from  = makeCorbaTime(tmp->getFrom(), true);
+        detail->states[sl].to    = makeCorbaTime(tmp->getTo(), true);
       }
     }
 
@@ -887,20 +878,16 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
       const Register::Status *tmp = act->getStatusByIdx(s);
 
       LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
-      if (m_register_manager->getStatusDesc(tmp->getStatusId())->getExternal()) {
-        LOGGER("corba").debug(boost::format("history detail -- state %1% is external") % tmp->getStatusId());
+      std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
+      if (it == ext_states_ids.end()) {
+        ext_states_ids.push_back(tmp->getId());
+        LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
 
-        std::vector<Register::TID>::iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
-        if (it == ext_states_ids.end()) {
-          ext_states_ids.push_back(tmp->getId());
-          LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
-
-          unsigned sl = detail->states.length();
-          detail->states.length(sl + 1);
-          detail->states[sl].id    = tmp->getStatusId();
-          detail->states[sl].from  = makeCorbaTime(tmp->getFrom(), true);
-          detail->states[sl].to    = makeCorbaTime(tmp->getTo(), true);
-        }
+        unsigned sl = detail->states.length();
+        detail->states.length(sl + 1);
+        detail->states[sl].id    = tmp->getStatusId();
+        detail->states[sl].from  = makeCorbaTime(tmp->getFrom(), true);
+        detail->states[sl].to    = makeCorbaTime(tmp->getTo(), true);
       }
     }
 
@@ -1052,7 +1039,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
       detail->updateRegistrar.type   = ccReg::FT_REGISTRAR;
     }
 
-   /* macros are defined in common.h */
+    /* macros are defined in common.h */
 
     MAP_HISTORY_OID(registrar, getRegistrarId, getRegistrarHandle, ccReg::FT_REGISTRAR)
     MAP_HISTORY_STRING(authInfo, getAuthPw)
@@ -1063,20 +1050,16 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
       const Register::Status *tmp = act->getStatusByIdx(s);
 
       LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
-      if (m_register_manager->getStatusDesc(tmp->getStatusId())->getExternal()) {
-        LOGGER("corba").debug(boost::format("history detail -- state %1% is external") % tmp->getStatusId());
+      std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
+      if (it == ext_states_ids.end()) {
+        ext_states_ids.push_back(tmp->getId());
+        LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
 
-        std::vector<Register::TID>::iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
-        if (it == ext_states_ids.end()) {
-          ext_states_ids.push_back(tmp->getId());
-          LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
-
-          unsigned sl = detail->states.length();
-          detail->states.length(sl + 1);
-          detail->states[sl].id    = tmp->getStatusId();
-          detail->states[sl].from  = makeCorbaTime(tmp->getFrom(), true);
-          detail->states[sl].to    = makeCorbaTime(tmp->getTo(), true);
-        }
+        unsigned sl = detail->states.length();
+        detail->states.length(sl + 1);
+        detail->states[sl].id    = tmp->getStatusId();
+        detail->states[sl].from  = makeCorbaTime(tmp->getFrom(), true);
+        detail->states[sl].to    = makeCorbaTime(tmp->getTo(), true);
       }
     }
 
