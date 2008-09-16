@@ -39,6 +39,11 @@ public:
 			throw OptionNotFound("option value '" + _what + "' not found in configuration");
 		}
 	}
+
+    bool hasOpt(std::string name) const
+    {
+        return po::variables_map::count(name);
+    }
 };
 
 }
