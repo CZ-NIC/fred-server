@@ -16,6 +16,12 @@ public:
   virtual Interval<Database::DateTimeInterval>& addValidFrom() = 0;
   virtual Interval<Database::DateTimeInterval>& addValidTo() = 0;
   //TODO: more methods
+  
+  friend class boost::serialization::access;
+  template<class Archive> void serialize(Archive& _ar, const unsigned int _version) {
+    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
+  }
+
 };
 
 class ObjectStateImpl : virtual public ObjectState {
@@ -27,6 +33,11 @@ public:
   virtual Value<Database::ID>& addStateId();
   virtual Interval<Database::DateTimeInterval>& addValidFrom();
   virtual Interval<Database::DateTimeInterval>& addValidTo();
+
+  friend class boost::serialization::access;
+  template<class Archive> void serialize(Archive& _ar, const unsigned int _version) {
+    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ObjectState);
+  }
 
   void serialize(SelectQuery& _sq, const Settings *_settings) {
     std::string history = (_settings ? _settings->get("filter.history") : "not_set");

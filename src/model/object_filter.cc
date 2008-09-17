@@ -65,7 +65,7 @@ Registrar& ObjectImpl::addUpdateRegistrar() {
   RegistrarImpl* tmp = new RegistrarImpl();
   add(tmp);
   tmp->joinOn(new Join(Column("upid", joinObjectTable()), SQL_OP_EQ, Column("id", tmp->joinRegistrarTable())));
-  tmp->setName("UpdateRegistar");
+  tmp->setName("UpdateRegistrar");
   return *tmp;
 }
 
@@ -152,7 +152,7 @@ Registrar& ObjectHistoryImpl::addUpdateRegistrar() {
   RegistrarImpl* tmp = new RegistrarImpl();
   add(tmp);
   tmp->joinOn(new Join(Column("upid", joinObjectTable()), SQL_OP_EQ, Column("id", tmp->joinRegistrarTable())));
-  tmp->setName("UpdateRegistar");
+  tmp->setName("UpdateRegistrar");
   return *tmp;
 }
 

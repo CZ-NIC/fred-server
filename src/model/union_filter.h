@@ -71,7 +71,7 @@ public:
      * last otherwise saved filters will be unable to load
      */
     _ar.register_type(static_cast<Simple *>(NULL));
-//    _ar.register_type(static_cast<Value<ObjectType> *>(NULL));
+    _ar.register_type(static_cast<Value<ObjectType> *>(NULL));
     _ar.register_type(static_cast<Value<int> *>(NULL));
     _ar.register_type(static_cast<Value<unsigned> *>(NULL));
     _ar.register_type(static_cast<Value<std::string> *>(NULL));
@@ -98,6 +98,8 @@ public:
     _ar.register_type(static_cast<MailImpl *>(NULL));
     _ar.register_type(static_cast<KeySetImpl *>(NULL));
     _ar.register_type(static_cast<KeySetHistoryImpl *>(NULL));
+    _ar.register_type(static_cast<ObjectStateImpl *>(NULL));
+
 
     _ar & BOOST_SERIALIZATION_NVP(filter_list);
   }
