@@ -36,7 +36,7 @@ MailClient::MailClient():
     m_optionsInvis->add_options()
         add_ID()
         add_HANDLE()
-        add_TYPE()
+        addOptInt(MAIL_TYPE_NAME)
         addOptInt(MAIL_STATUS_NAME)
         addOptInt(MAIL_ATTEMPT_NAME)
         addOptStr(MAIL_MESSAGE_NAME)
@@ -99,15 +99,13 @@ MailClient::list()
     Database::Filters::Mail *mailFilter;
     mailFilter = new Database::Filters::MailImpl();
 
-    if (m_conf.hasOpt(ID_NAME))
-        mailFilter->addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
-    if (m_conf.hasOpt(HANDLE_NAME))
-        mailFilter->addHandle().setValue(
-                m_conf.get<std::string>(HANDLE_NAME));
-    if (m_conf.hasOpt(TYPE_NAME))
+    apply_ID(mailFilter);
+    apply_HANDLE(mailFilter);
+    apply_CRDATE(mailFilter);
+
+    if (m_conf.hasOpt(MAIL_TYPE_NAME))
         mailFilter->addType().setValue(
-                m_conf.get<int>(TYPE_NAME));
+                m_conf.get<int>(MAIL_TYPE_NAME));
     if (m_conf.hasOpt(MAIL_STATUS_NAME))
         mailFilter->addStatus().setValue(
                 m_conf.get<int>(MAIL_STATUS_NAME));
@@ -123,18 +121,7 @@ MailClient::list()
     if (m_conf.hasOpt(MAIL_ATTACHMENT_NAME_NAME))
         mailFilter->addAttachment().addName().setValue(
                 m_conf.get<std::string>(MAIL_ATTACHMENT_NAME_NAME));
-    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
-        Database::Date crDateFrom("1901-01-01 00:00:00");
-        Database::Date crDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(CRDATE_FROM_NAME))
-            crDateFrom.from_string(
-                    m_conf.get<std::string>(CRDATE_FROM_NAME));
-        if (m_conf.hasOpt(CRDATE_TO_NAME))
-            crDateTo.from_string(
-                    m_conf.get<std::string>(CRDATE_TO_NAME));
-        mailFilter->addCreateTime().setValue(
-                Database::DateTimeInterval(crDateFrom, crDateTo));
-    }
+
     if (m_conf.hasOpt(MAIL_MODDATE_FROM_NAME) || m_conf.hasOpt(MAIL_MODDATE_TO_NAME)) {
         Database::Date modDateFrom("1901-01-01 00:00:00");
         Database::Date modDateTo("2101-01-01 00:00:00");

@@ -118,11 +118,18 @@ RegistrarClient::list()
         regFilter->addCountry().setValue(
                 m_conf.get<std::string>(COUNTRY_NAME));
 
+    // apply_ID(regFilter);
+    // apply_HANDLE(regFilter);
+    // apply_NAME(regFilter);
+    // apply_CITY(regFilter);
+    // apply_EMAIL(regFilter);
+    // apply_COUNTRY(regFilter);
+
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
 
     unionFilter->addFilter(regFilter);
-    regMan->getList()->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
+    //regMan->getList()->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
 
     regMan->getList()->reload(*unionFilter, m_dbman);
 

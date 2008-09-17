@@ -153,44 +153,18 @@ DomainClient::domain_list()
     Database::Filters::Domain *domFilter;
     domFilter = new Database::Filters::DomainHistoryImpl();
 
-    if (m_conf.hasOpt(ID_NAME))
-        domFilter->addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
-    if (m_conf.hasOpt(FQDN_NAME))
-        domFilter->addFQDN().setValue(
-                m_conf.get<std::string>(FQDN_NAME));
-
-    if (m_conf.hasOpt(NSSET_ID_NAME))
-        domFilter->addNSSetId().setValue(
-                Database::ID(m_conf.get<unsigned int>(NSSET_ID_NAME)));
-    if (m_conf.hasOpt(NSSET_HANDLE_NAME))
-        domFilter->addNSSet().addHandle().setValue(
-                m_conf.get<std::string>(NSSET_HANDLE_NAME));
-    if (m_conf.hasOpt(ANY_NSSET_NAME))
-        domFilter->addNSSet();
-
-    if (m_conf.hasOpt(KEYSET_ID_NAME))
-        domFilter->addKeySetId().setValue(
-                Database::ID(m_conf.get<unsigned int>(KEYSET_ID_NAME)));
-    if (m_conf.hasOpt(KEYSET_HANDLE_NAME))
-        domFilter->addKeySet().addHandle().setValue(
-                m_conf.get<std::string>(KEYSET_HANDLE_NAME));
-    if (m_conf.hasOpt(ANY_KEYSET_NAME))
-        domFilter->addKeySet();
-
-    if (m_conf.hasOpt(ZONE_ID_NAME))
-        domFilter->addZoneId().setValue(
-                Database::ID(m_conf.get<unsigned int>(ZONE_ID_NAME)));
-
-    if (m_conf.hasOpt(REGISTRANT_ID_NAME))
-        domFilter->addRegistrantId().setValue(
-                Database::ID(m_conf.get<unsigned int>(REGISTRANT_ID_NAME)));
-    if (m_conf.hasOpt(REGISTRANT_HANDLE_NAME))
-        domFilter->addRegistrant().addHandle().setValue(
-                m_conf.get<std::string>(REGISTRANT_HANDLE_NAME));
-    if (m_conf.hasOpt(REGISTRANT_NAME_NAME))
-        domFilter->addRegistrant().addName().setValue(
-                m_conf.get<std::string>(REGISTRANT_NAME_NAME));
+    apply_ID(domFilter);
+    apply_FQDN(domFilter);
+    apply_NSSET_ID(domFilter);
+    apply_NSSET_HANDLE(domFilter);
+    apply_ANY_NSSET(domFilter);
+    apply_KEYSET_ID(domFilter);
+    apply_KEYSET_HANDLE(domFilter);
+    apply_ANY_KEYSET(domFilter);
+    apply_ZONE_ID(domFilter);
+    apply_REGISTRANT_ID(domFilter);
+    apply_REGISTRANT_HANDLE(domFilter);
+    apply_REGISTRANT_NAME(domFilter);
 
     if (m_conf.hasOpt(ADMIN_ID_NAME))
         domFilter->addAdminContact().addId().setValue(
@@ -202,65 +176,6 @@ DomainClient::domain_list()
         domFilter->addAdminContact().addName().setValue(
                 m_conf.get<std::string>(ADMIN_NAME_NAME));
 
-    if (m_conf.hasOpt(REGISTRAR_ID_NAME))
-        domFilter->addRegistrar().addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(REGISTRAR_ID_NAME)));
-    if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME))
-        domFilter->addRegistrar().addHandle().setValue(
-                m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
-    if (m_conf.hasOpt(REGISTRAR_NAME_NAME))
-        domFilter->addRegistrar().addName().setValue(
-                m_conf.get<std::string>(REGISTRAR_NAME_NAME));
-
-    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
-        Database::DateTime crDateFrom("1901-01-01 00:00:00");
-        Database::DateTime crDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(CRDATE_FROM_NAME))
-            crDateFrom.from_string(
-                    m_conf.get<std::string>(CRDATE_FROM_NAME));
-        if (m_conf.hasOpt(CRDATE_TO_NAME))
-            crDateTo.from_string(
-                    m_conf.get<std::string>(CRDATE_TO_NAME));
-        domFilter->addCreateTime().setValue(
-                Database::DateTimeInterval(crDateFrom, crDateTo));
-    }
-
-    if (m_conf.hasOpt(UPDATE_FROM_NAME) || m_conf.hasOpt(UPDATE_TO_NAME)) {
-        Database::DateTime upDateFrom("1901-01-01 00:00:00");
-        Database::DateTime upDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(UPDATE_FROM_NAME))
-            upDateFrom.from_string(
-                    m_conf.get<std::string>(UPDATE_FROM_NAME));
-        if (m_conf.hasOpt(UPDATE_TO_NAME))
-            upDateTo.from_string(
-                    m_conf.get<std::string>(UPDATE_TO_NAME));
-        domFilter->addUpdateTime().setValue(
-                Database::DateTimeInterval(upDateFrom, upDateTo));
-    }
-    if (m_conf.hasOpt(TRANSDATE_FROM_NAME) || m_conf.hasOpt(TRANSDATE_TO_NAME)) {
-        Database::DateTime transDateFrom("1901-01-01 00:00:00");
-        Database::DateTime transDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(TRANSDATE_FROM_NAME))
-            transDateFrom.from_string(
-                    m_conf.get<std::string>(TRANSDATE_FROM_NAME));
-        if (m_conf.hasOpt(TRANSDATE_TO_NAME))
-            transDateTo.from_string(
-                    m_conf.get<std::string>(TRANSDATE_TO_NAME));
-        domFilter->addTransferTime().setValue(
-                Database::DateTimeInterval(transDateFrom, transDateTo));
-    }
-    if (m_conf.hasOpt(DELDATE_FROM_NAME) || m_conf.hasOpt(DELDATE_TO_NAME)) {
-        Database::DateTime delDateFrom("1901-01-01 00:00:00");
-        Database::DateTime delDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(DELDATE_FROM_NAME))
-            delDateFrom.from_string(
-                    m_conf.get<std::string>(DELDATE_FROM_NAME));
-        if (m_conf.hasOpt(DELDATE_TO_NAME))
-            delDateTo.from_string(
-                    m_conf.get<std::string>(DELDATE_TO_NAME));
-        domFilter->addDeleteTime().setValue(
-                Database::DateTimeInterval(delDateFrom, delDateTo));
-    }
     if (m_conf.hasOpt(DOMAIN_EXP_DATE_FROM_NAME) || m_conf.hasOpt(DOMAIN_EXP_DATE_TO_NAME)) {
         Database::Date expDateFrom(NEG_INF);
         Database::Date expDateTo(POS_INF);
@@ -302,7 +217,7 @@ DomainClient::domain_list()
     unionFilter = new Database::Filters::Union();
     unionFilter->addFilter(domFilter);
 
-    domList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
+    apply_LIMIT(domList);
     domList->reload(*unionFilter, m_dbman);
 
     std::cout << "<objects>\n";

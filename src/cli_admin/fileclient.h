@@ -30,6 +30,8 @@
 #define FILE_MIME_NAME_DESC         "mime"
 #define FILE_SIZE_NAME              "size"
 #define FILE_SIZE_NAME_DESC         "size"
+#define FILE_TYPE_NAME              "file_type"
+#define FILE_TYPE_NAME_DESC         "file type"
 
 #include <iostream>
 #include <boost/program_options.hpp>

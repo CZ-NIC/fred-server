@@ -19,37 +19,39 @@
 #ifndef _PUBLICREQCLIENT_H_
 #define _PUBLICREQCLIENT_H_
 
-#define PUBLICREQ_LIST_NAME             "public-request-list"
+#define PUBLICREQ_LIST_NAME             "public_request_list"
 #define PUBLICREQ_LIST_NAME_DESC        "list of all public requests"
 
-#define PUBLICREQ_LIST_HELP_NAME        "public-request-list-name"
+#define PUBLICREQ_LIST_HELP_NAME        "public_request_list_name"
 #define PUBLICREQ_LIST_HELP_NAME_DESC   "help for public request list"
 
 #define PUBLICREQ_STATUS_NAME               "status"
 #define PUBLICREQ_STATUS_NAME_DESC          "status description"
-#define PUBLICREQ_ANSWER_EMAIL_NAME         "answer-email"
+#define PUBLICREQ_ANSWER_EMAIL_NAME         "answer_email"
 #define PUBLICREQ_ANSWER_EMAIL_NAME_DESC    "answer email description"
-#define PUBLICREQ_ANSWER_EMAIL_ID_NAME      "answer-email-id"
+#define PUBLICREQ_ANSWER_EMAIL_ID_NAME      "answer_email_id"
 #define PUBLICREQ_ANSWER_EMAIL_ID_NAME_DESC "answer email id description"
 #define PUBLICREQ_REASON_NAME               "reason"
 #define PUBLICREQ_REASON_NAME_DESC          "reason description"
-#define PUBLICREQ_EPP_ID_NAME               "epp-id"
+#define PUBLICREQ_EPP_ID_NAME               "epp_id"
 #define PUBLICREQ_EPP_ID_NAME_DESC          "epp id description"
-#define PUBLICREQ_EPP_CLTRID_NAME           "epp-cltrid"
+#define PUBLICREQ_EPP_CLTRID_NAME           "epp_cltrid"
 #define PUBLICREQ_EPP_CLTRID_NAME_DESC      "epp clTRID description"
-#define PUBLICREQ_EPP_SVTRID_NAME           "epp-svtrid"
+#define PUBLICREQ_EPP_SVTRID_NAME           "epp_svtrid"
 #define PUBLICREQ_EPP_SVTRID_NAME_DESC      "epp svTRID description"
-#define PUBLICREQ_EPP_CODE_RESPONSE_NAME    "epp-code-response"
-#define PUBLICREQ_EPP_CODE_RESPONSE_NAME_DESC "epp-code-response description"
-#define PUBLICREQ_EPP_RESPONSE_NAME         "epp-response"
+#define PUBLICREQ_EPP_CODE_RESPONSE_NAME    "epp_code_response"
+#define PUBLICREQ_EPP_CODE_RESPONSE_NAME_DESC "epp_code_response description"
+#define PUBLICREQ_EPP_RESPONSE_NAME         "epp_response"
 #define PUBLICREQ_EPP_RESPONSE_NAME_DESC    "epp response description"
-#define PUBLICREQ_EPP_TYPE_NAME             "epp-type"
+#define PUBLICREQ_EPP_TYPE_NAME             "epp_type"
 #define PUBLICREQ_EPP_TYPE_NAME_DESC        "epp type description"
 
-#define PUBLICREQ_RESDATE_FROM_NAME         "res-date-from"
+#define PUBLICREQ_RESDATE_FROM_NAME         "res_date_from"
 #define PUBLICREQ_RESDATE_FROM_NAME_DESC    "response datetime from"
-#define PUBLICREQ_RESDATE_TO_NAME           "res-date-to"
+#define PUBLICREQ_RESDATE_TO_NAME           "res_date_to"
 #define PUBLICREQ_RESDATE_TO_NAME_DESC      "response datetime to"
+#define PUBLICREQ_TYPE_NAME                 "public_request_type"
+#define PUBLICREQ_TYPE_NAME_DESC            "......."
 
 #include <iostream>
 #include <boost/program_options.hpp>

@@ -37,6 +37,7 @@ PublicRequestClient::PublicRequestClient():
     m_optionsInvis->add_options()
         add_ID()
         add_NAME()
+        addOptInt(PUBLICREQ_TYPE_NAME)
         addOptUInt(PUBLICREQ_STATUS_NAME)
         addOptStr(PUBLICREQ_ANSWER_EMAIL_NAME)
         addOptUInt(PUBLICREQ_ANSWER_EMAIL_ID_NAME)
@@ -105,6 +106,7 @@ PublicRequestClient::list()
             );
     CorbaClient cc(0, NULL, m_nsAddr);
     MailerManager mailMan(cc.getNS());
+
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
     std::auto_ptr<Register::Domain::Manager> domMan(
@@ -141,12 +143,11 @@ PublicRequestClient::list()
     std::auto_ptr<Register::PublicRequest::List> prList(
             prMan->createList());
 
-    if (m_conf.hasOpt(ID_NAME))
-        prFilter->addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
-    if (m_conf.hasOpt(TYPE_NAME))
+    apply_ID(prFilter);
+    if (m_conf.hasOpt(PUBLICREQ_TYPE_NAME))
         prFilter->addType().setValue(
-                m_conf.get<unsigned int>(TYPE_NAME));
+                m_conf.get<unsigned int>(PUBLICREQ_TYPE_NAME));
+    
     if (m_conf.hasOpt(PUBLICREQ_STATUS_NAME))
         prFilter->addType().setValue(
                 m_conf.get<unsigned int>(PUBLICREQ_STATUS_NAME));
@@ -181,18 +182,7 @@ PublicRequestClient::list()
         prFilter->addEppAction().addType().setValue(
                 m_conf.get<unsigned int>(PUBLICREQ_EPP_TYPE_NAME));
 
-    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
-        Database::DateTime crDateFrom("1901-01-01 00:00:00");
-        Database::DateTime crDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(CRDATE_FROM_NAME))
-            crDateFrom.from_string(
-                    m_conf.get<std::string>(CRDATE_FROM_NAME));
-        if (m_conf.hasOpt(CRDATE_TO_NAME))
-            crDateTo.from_string(
-                    m_conf.get<std::string>(CRDATE_TO_NAME));
-        prFilter->addCreateTime().setValue(
-                Database::DateTimeInterval(crDateFrom, crDateTo));
-    }
+    apply_CRDATE(prFilter);
     if (m_conf.hasOpt(PUBLICREQ_RESDATE_FROM_NAME) || m_conf.hasOpt(PUBLICREQ_RESDATE_TO_NAME)) {
         Database::DateTime resDateFrom("1901-01-01 00:00:00");
         Database::DateTime resDateTo("2101-01-01 00:00:00");

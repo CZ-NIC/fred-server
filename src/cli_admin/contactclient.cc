@@ -166,99 +166,28 @@ ContactClient::list()
     Database::Filters::Contact *conFilter;
     conFilter = new Database::Filters::ContactHistoryImpl();
 
-    if (m_conf.hasOpt(ID_NAME))
-        conFilter->addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
-    if (m_conf.hasOpt(HANDLE_NAME))
-        conFilter->addHandle().setValue(
-                m_conf.get<std::string>(HANDLE_NAME));
-    if (m_conf.hasOpt(NAME_NAME))
-        conFilter->addName().setValue(
-                m_conf.get<std::string>(NAME_NAME));
-    if (m_conf.hasOpt(ORGANIZATION_NAME))
-        conFilter->addOrganization().setValue(
-                m_conf.get<std::string>(ORGANIZATION_NAME));
-    if (m_conf.hasOpt(CITY_NAME))
-        conFilter->addCity().setValue(
-                m_conf.get<std::string>(CITY_NAME));
-    if (m_conf.hasOpt(EMAIL_NAME))
-        conFilter->addEmail().setValue(
-                m_conf.get<std::string>(EMAIL_NAME));
-    if (m_conf.hasOpt(NOTIFY_EMAIL_NAME))
-        conFilter->addNotifyEmail().setValue(
-                m_conf.get<std::string>(NOTIFY_EMAIL_NAME));
-    if (m_conf.hasOpt(VAT_NAME))
-        conFilter->addVat().setValue(
-                m_conf.get<std::string>(VAT_NAME));
-    if (m_conf.hasOpt(SSN_NAME))
-        conFilter->addSsn().setValue(
-                m_conf.get<std::string>(SSN_NAME));
-
-    if (m_conf.hasOpt(REGISTRAR_ID_NAME))
-        conFilter->addRegistrar().addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(REGISTRAR_ID_NAME)));
-    if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME))
-        conFilter->addRegistrar().addHandle().setValue(
-                m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
-    if (m_conf.hasOpt(REGISTRAR_NAME_NAME))
-        conFilter->addRegistrar().addName().setValue(
-                m_conf.get<std::string>(REGISTRAR_NAME_NAME));
-
-    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
-        Database::DateTime crDateFrom("1901-01-01 00:00:00");
-        Database::DateTime crDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(CRDATE_FROM_NAME))
-            crDateFrom.from_string(
-                    m_conf.get<std::string>(CRDATE_FROM_NAME));
-        if (m_conf.hasOpt(CRDATE_TO_NAME))
-            crDateTo.from_string(
-                    m_conf.get<std::string>(CRDATE_TO_NAME));
-        conFilter->addCreateTime().setValue(
-                Database::DateTimeInterval(crDateFrom, crDateTo));
-    }
-
-    if (m_conf.hasOpt(UPDATE_FROM_NAME) || m_conf.hasOpt(UPDATE_TO_NAME)) {
-        Database::DateTime upDateFrom("1901-01-01 00:00:00");
-        Database::DateTime upDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(UPDATE_FROM_NAME))
-            upDateFrom.from_string(
-                    m_conf.get<std::string>(UPDATE_FROM_NAME));
-        if (m_conf.hasOpt(UPDATE_TO_NAME))
-            upDateTo.from_string(
-                    m_conf.get<std::string>(UPDATE_TO_NAME));
-        conFilter->addUpdateTime().setValue(
-                Database::DateTimeInterval(upDateFrom, upDateTo));
-    }
-    if (m_conf.hasOpt(TRANSDATE_FROM_NAME) || m_conf.hasOpt(TRANSDATE_TO_NAME)) {
-        Database::DateTime transDateFrom("1901-01-01 00:00:00");
-        Database::DateTime transDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(TRANSDATE_FROM_NAME))
-            transDateFrom.from_string(
-                    m_conf.get<std::string>(TRANSDATE_FROM_NAME));
-        if (m_conf.hasOpt(TRANSDATE_TO_NAME))
-            transDateTo.from_string(
-                    m_conf.get<std::string>(TRANSDATE_TO_NAME));
-        conFilter->addTransferTime().setValue(
-                Database::DateTimeInterval(transDateFrom, transDateTo));
-    }
-    if (m_conf.hasOpt(DELDATE_FROM_NAME) || m_conf.hasOpt(DELDATE_TO_NAME)) {
-        Database::DateTime delDateFrom("1901-01-01 00:00:00");
-        Database::DateTime delDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(DELDATE_FROM_NAME))
-            delDateFrom.from_string(
-                    m_conf.get<std::string>(DELDATE_FROM_NAME));
-        if (m_conf.hasOpt(DELDATE_TO_NAME))
-            delDateTo.from_string(
-                    m_conf.get<std::string>(DELDATE_TO_NAME));
-        conFilter->addDeleteTime().setValue(
-                Database::DateTimeInterval(delDateFrom, delDateTo));
-    }
+    apply_ID(conFilter);
+    apply_HANDLE(conFilter);
+    apply_NAME(conFilter);
+    apply_ORGANIZATION(conFilter);
+    apply_CITY(conFilter);
+    apply_EMAIL(conFilter);
+    apply_NOTIFY_EMAIL(conFilter);
+    apply_VAT(conFilter);
+    apply_SSN(conFilter);
+    apply_REGISTRAR_ID(conFilter);
+    apply_REGISTRAR_HANDLE(conFilter);
+    apply_REGISTRAR_NAME(conFilter);
+    apply_CRDATE(conFilter);
+    apply_DELDATE(conFilter);
+    apply_UPDATE(conFilter);
+    apply_TRANSDATE(conFilter);
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
 
     unionFilter->addFilter(conFilter);
-    conList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
+    apply_LIMIT(conList);
 
     conList->reload(*unionFilter, m_dbman);
 

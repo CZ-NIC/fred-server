@@ -19,9 +19,9 @@
 #ifndef _MAILCLIENT_H_
 #define _MAILCLIENT_H_
 
-#define MAIL_LIST_NAME              "mail-list"
+#define MAIL_LIST_NAME              "mail_list"
 #define MAIL_LIST_NAME_DESC         "list all mails"
-#define MAIL_LIST_HELP_NAME         "mail-list-help"
+#define MAIL_LIST_HELP_NAME         "mail_list_help"
 #define MAIL_LIST_HELP_NAME_DESC    "help for mail list"
 
 #define MAIL_STATUS_NAME            "status"
@@ -30,14 +30,16 @@
 #define MAIL_ATTEMPT_NAME_DESC      "attempt description"
 #define MAIL_MESSAGE_NAME           "message"
 #define MAIL_MESSAGE_NAME_DESC      "message desc"
-#define MAIL_ATTACHMENT_ID_NAME           "attachment-id"
-#define MAIL_ATTACHMENT_ID_NAME_DESC      "attachment-id desc"
-#define MAIL_ATTACHMENT_NAME_NAME         "attachment-name"
-#define MAIL_ATTACHMENT_NAME_NAME_DESC    "attachment-name desc"
+#define MAIL_ATTACHMENT_ID_NAME           "attachment_id"
+#define MAIL_ATTACHMENT_ID_NAME_DESC      "attachment_id desc"
+#define MAIL_ATTACHMENT_NAME_NAME         "attachment_name"
+#define MAIL_ATTACHMENT_NAME_NAME_DESC    "attachment_name desc"
 #define MAIL_MODDATE_FROM_NAME            "mod_date_from"
 #define MAIL_MODDATE_FROM_NAME_DESC       "mod date from"
 #define MAIL_MODDATE_TO_NAME              "mod_date_to"
 #define MAIL_MODDATE_TO_NAME_DESC         "mod date to"
+#define MAIL_TYPE_NAME              "mail_type"
+#define MAIL_TYPE_NAME_DESC         "mail type"
 
 #include <iostream>
 #include <boost/program_options.hpp>

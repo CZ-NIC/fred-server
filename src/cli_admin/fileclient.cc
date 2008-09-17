@@ -36,7 +36,7 @@ FileClient::FileClient():
     m_optionsInvis->add_options()
         add_ID()
         add_NAME()
-        add_TYPE()
+        addOptInt(FILE_TYPE_NAME)
         addOptStr(FILE_PATH_NAME)
         addOptStr(FILE_MIME_NAME)
         addOptInt(FILE_SIZE_NAME)
@@ -97,12 +97,10 @@ FileClient::list()
     Database::Filters::File *fileFilter;
     fileFilter = new Database::Filters::FileImpl();
 
-    if (m_conf.hasOpt(ID_NAME))
-        fileFilter->addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
-    if (m_conf.hasOpt(NAME_NAME))
-        fileFilter->addName().setValue(
-                m_conf.get<std::string>(NAME_NAME));
+    apply_ID(fileFilter);
+    apply_NAME(fileFilter);
+    apply_CRDATE(fileFilter);
+
     if (m_conf.hasOpt(FILE_PATH_NAME))
         fileFilter->addPath().setValue(
                 m_conf.get<std::string>(FILE_PATH_NAME));
@@ -112,21 +110,9 @@ FileClient::list()
     if (m_conf.hasOpt(FILE_SIZE_NAME))
         fileFilter->addSize().setValue(
                 m_conf.get<int>(FILE_SIZE_NAME));
-    if (m_conf.hasOpt(TYPE_NAME))
+    if (m_conf.hasOpt(FILE_TYPE_NAME))
         fileFilter->addType().setValue(
-                m_conf.get<int>(TYPE_NAME));
-    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
-        Database::DateTime crDateFrom("1901-01-01 00:00:00");
-        Database::DateTime crDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(CRDATE_FROM_NAME))
-            crDateFrom.from_string(
-                    m_conf.get<std::string>(CRDATE_FROM_NAME));
-        if (m_conf.hasOpt(CRDATE_TO_NAME))
-            crDateTo.from_string(
-                    m_conf.get<std::string>(CRDATE_TO_NAME));
-        fileFilter->addCreateTime().setValue(
-                Database::DateTimeInterval(crDateFrom, crDateTo));
-    }
+                m_conf.get<int>(FILE_TYPE_NAME));
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
