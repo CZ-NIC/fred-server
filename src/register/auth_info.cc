@@ -543,7 +543,7 @@ namespace Register
       ) throw (REQUEST_NOT_FOUND, SQL_ERROR, Document::Generator::ERROR)
       {
         if (!docman) {
-            LOGGER("register").error("docman is wrong!");
+            LOGGER(PACKAGE).error("docman is wrong!");
             return;
         }
         ListImpl l(mm,db);

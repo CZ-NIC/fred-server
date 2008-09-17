@@ -220,7 +220,7 @@ public:
   virtual void save(Database::Connection *_conn) {
     TRACE("[CALL] Register::Request::RequestImpl::save()");
     if (objects_.empty()) {
-      LOGGER("register").error("can't create or update request with no object specified!");
+      LOGGER(PACKAGE).error("can't create or update request with no object specified!");
       throw;
     }
 
@@ -234,15 +234,15 @@ public:
       try {
         _conn->exec(update_request);
   
-        LOGGER("db").info(boost::format("request id='%1%' updated successfully -- %2%") % 
+        LOGGER(PACKAGE).info(boost::format("request id='%1%' updated successfully -- %2%") % 
                           id_ % (status_ == PRS_INVALID ? "invalidated" : "answered"));
       }
       catch (Database::Exception& ex) {
-        LOGGER("db").error(boost::format("%1%") % ex.what());
+        LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
         throw;
       }
       catch (std::exception& ex) {
-        LOGGER("db").error(boost::format("%1%") % ex.what());
+        LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
         throw;
       }
       
@@ -277,17 +277,17 @@ public:
         id_ = pp_seq.getCurrent();
         
         transaction.commit();
-        LOGGER("db").info(boost::format("request id='%1%' for objects={%2%} created successfully")
+        LOGGER(PACKAGE).info(boost::format("request id='%1%' for objects={%2%} created successfully")
                   % id_ % objects_str);
         // handle special behavior (i.e. processing request after creation)
         postCreate(); 
       }
       catch (Database::Exception& ex) {
-        LOGGER("db").error(boost::format("%1%") % ex.what());
+        LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
         throw;
       }
       catch (std::exception& ex) {
-        LOGGER("db").error(boost::format("%1%") % ex.what());
+        LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
         throw;
       }
     }
@@ -430,7 +430,7 @@ public:
       }
       
     }
-    LOGGER("register").debug(boost::format("for request id=%1% -- found notification recipients '%2%'")
+    LOGGER(PACKAGE).debug(boost::format("for request id=%1% -- found notification recipients '%2%'")
                              % id_ % emails);
     return emails;
   }
@@ -811,7 +811,7 @@ public:
       at_least_one = true;
     }
     if (!at_least_one) {
-      LOGGER("register").error("wrong filter passed for reload!");
+      LOGGER(PACKAGE).error("wrong filter passed for reload!");
       return;
     }
 
@@ -820,7 +820,7 @@ public:
     
     Database::InsertQuery tmp_table_query = Database::InsertQuery(getTempTableName(),
                                                             id_query);
-    LOGGER("db").debug(boost::format("temporary table '%1%' generated sql = %2%")
+    LOGGER(PACKAGE).debug(boost::format("temporary table '%1%' generated sql = %2%")
         % getTempTableName() % tmp_table_query.str());
 
     Database::SelectQuery object_info_query;
@@ -880,11 +880,11 @@ public:
       CommonListImpl::reload();
     }
     catch (Database::Exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
       clear();
     }
     catch (std::exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
       clear();
     }
     

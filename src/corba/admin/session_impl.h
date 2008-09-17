@@ -35,6 +35,7 @@
 
 #include "settings.h"
 
+
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
@@ -65,6 +66,12 @@ private:
   std::auto_ptr<Register::Mail::Manager> mail_manager_;
   std::auto_ptr<Register::File::Manager> file_manager_;
   MailerManager m_mailer_manager;
+
+  /**
+   * context with session object was created - need for futher call on object
+   * which are done in separate threads 
+   */
+  std::string base_context_;
 
   ptime m_last_activity;
   DB db;

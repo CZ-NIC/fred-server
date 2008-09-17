@@ -445,7 +445,7 @@ ListImpl::reload(
         at_least_one = true;
     }
     if (!at_least_one) {
-        LOGGER("register").error("wrong filter passed for reload!");
+        LOGGER(PACKAGE).error("wrong filter passed for reload!");
         return;
     }
 
@@ -455,7 +455,7 @@ ListImpl::reload(
     Database::InsertQuery tmp_table_query = Database::InsertQuery(
             getTempTableName(), id_query);
 
-    LOGGER("db").debug(boost::format("temporary table '%1%' generated sql = %2%")
+    LOGGER(PACKAGE).debug(boost::format("temporary table '%1%' generated sql = %2%")
             % getTempTableName() % tmp_table_query.str());
 
     Database::SelectQuery object_info_query;
@@ -589,7 +589,7 @@ ListImpl::reload(
 
             KeySetImpl *keyset_ptr = dynamic_cast<KeySetImpl *>(findHistoryIDSequence(keyset_historyid));
             if (keyset_ptr) {
-                // LOGGER("db").debug(boost::format("dsrec: id: %1% digest: %2%") %
+                // LOGGER(PACKAGE).debug(boost::format("dsrec: id: %1% digest: %2%") %
                         // dsrecord_id % digest);
                 keyset_ptr->addDSRecord(
                         dsrecord_id,
@@ -613,10 +613,10 @@ ListImpl::reload(
         CommonListImpl::reload();
     }
     catch (Database::Exception &ex) {
-        LOGGER("db").error(boost::format("%1%") % ex.what());
+        LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
     catch (std::exception &ex) {
-        LOGGER("db").error(boost::format("%1%") % ex.what());
+        LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
 }
 

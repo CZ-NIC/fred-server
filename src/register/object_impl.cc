@@ -364,10 +364,10 @@ void Register::ObjectListImpl::reload(Database::Connection* _conn, bool _history
     }
   }
   catch (Database::Exception& ex) {
-    LOGGER("db").error(boost::format("%1%") % ex.what());
+    LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
   }
   catch (std::exception& ex) {
-    LOGGER("db").error(boost::format("%1%") % ex.what());
+    LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
   }
 }
 
@@ -383,7 +383,7 @@ Register::Object* Register::ObjectListImpl::findHistoryIDSequence(const Database
 
   for (; ptr_history_idx_ < (int)data_.size() && dynamic_cast<Register::Object*>(data_[ptr_history_idx_])->getHistoryId() < _history_id; ptr_history_idx_++);
   if (ptr_history_idx_ == (int)data_.size() || dynamic_cast<Register::Object*>(data_[ptr_history_idx_])->getHistoryId() != _history_id) {
-    LOGGER("register").debug(boost::format("find_history_sequence: history_id=%1%, ptr=%2%") % _history_id % ptr_history_idx_);
+    LOGGER(PACKAGE).debug(boost::format("find_history_sequence: history_id=%1%, ptr=%2%") % _history_id % ptr_history_idx_);
     resetHistoryIDSequence();
     return NULL;
   }
@@ -395,7 +395,7 @@ void Register::ObjectListImpl::deleteDuplicatesId() {
   TRACE("<CALL> Register::ObjectListImpl::deleteDuplicatesId()");
 
   std::stable_sort(data_.begin(), data_.end(), SortByHistoryId());
-  LOGGER("register").debug(boost::format("%1% record(s) in result sorted") % data_.size());
+  LOGGER(PACKAGE).debug(boost::format("%1% record(s) in result sorted") % data_.size());
   list_type::iterator it = data_.begin();
   while (data_.begin() != data_.end() && it < data_.end() - 1) {
     if ((*it)->getId() == (*(it + 1))->getId()) {
@@ -406,5 +406,5 @@ void Register::ObjectListImpl::deleteDuplicatesId() {
       ++it;
     }
   }
-  LOGGER("register").debug(boost::format("%1% record(s) in result after removing duplicates") % data_.size());
+  LOGGER(PACKAGE).debug(boost::format("%1% record(s) in result after removing duplicates") % data_.size());
 }

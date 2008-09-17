@@ -129,7 +129,7 @@ public:
       at_least_one = true;
     }
     if (!at_least_one) {
-      LOGGER("register").error("wrong filter passed for reload!");
+      LOGGER(PACKAGE).error("wrong filter passed for reload!");
       return;
     }
 
@@ -138,7 +138,7 @@ public:
     
     Database::InsertQuery tmp_table_query = Database::InsertQuery(getTempTableName(),
                                                             id_query);
-    LOGGER("db").debug(boost::format("temporary table '%1%' generated sql = %2%")
+    LOGGER(PACKAGE).debug(boost::format("temporary table '%1%' generated sql = %2%")
         % getTempTableName() % tmp_table_query.str());
 
     Database::SelectQuery object_info_query;
@@ -225,11 +225,11 @@ public:
       CommonListImpl::reload();
     }
     catch (Database::Exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
       clear();
     }
     catch (std::exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
       clear();
     }
   }

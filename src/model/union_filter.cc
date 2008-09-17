@@ -15,7 +15,7 @@ void Union::serialize(Database::SelectQuery& _q) {
     return;
   }
   if (filter_list.size() > query_list.size()) {
-    LOGGER("db").error(boost::format("assert(filter_list.size() > query_list.size());  %1% <! %2%")
+    LOGGER(PACKAGE).error(boost::format("assert(filter_list.size() > query_list.size());  %1% <! %2%")
         % filter_list.size() % query_list.size());
     throw; // TODO: throw something more meaningfull
   }

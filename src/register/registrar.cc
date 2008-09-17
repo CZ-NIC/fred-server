@@ -584,7 +584,7 @@ public:
       at_least_one = true;
     }
     if (!at_least_one) {
-      LOGGER("register").error("wrong filter passed for reload!");
+      LOGGER(PACKAGE).error("wrong filter passed for reload!");
       return;
     }
 
@@ -691,7 +691,7 @@ public:
       CommonListImpl::reload();
     }
     catch (Database::Exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
   }
 //  virtual const Registrar* get(unsigned idx) const {
@@ -718,11 +718,11 @@ public:
 //                                                        data_.end(),
 //                                                        CheckId(_id));
 //    if (it != data_.end()) {
-//      LOGGER("register").debug(boost::format("object list hit! object id=%1% found")
+//      LOGGER(PACKAGE).debug(boost::format("object list hit! object id=%1% found")
 //          % _id);
 //      return *it;
 //    }
-//    LOGGER("register").debug(boost::format("object list miss! object id=%1% not found")
+//    LOGGER(PACKAGE).debug(boost::format("object list miss! object id=%1% not found")
 //        % _id);
 //    throw Register::NOT_FOUND();
 //  }
@@ -1058,7 +1058,7 @@ public:
       at_least_one = true;
     }
     if (!at_least_one) {
-      LOGGER("register").error("wrong filter passed for reload!");
+      LOGGER(PACKAGE).error("wrong filter passed for reload!");
       return;
     }
 
@@ -1066,7 +1066,7 @@ public:
     uf.serialize(id_query);
 
     Database::InsertQuery tmp_table_query = Database::InsertQuery("tmp_eppaction_filter_result", id_query);
-    LOGGER("db").debug(boost::format("temporary table '%1%' generated sql = %2%")
+    LOGGER(PACKAGE).debug(boost::format("temporary table '%1%' generated sql = %2%")
         % "tmp_eppaction_filter_result" % tmp_table_query.str());
 
     Database::SelectQuery object_info_query;
@@ -1155,7 +1155,7 @@ public:
       CommonListImpl::reload();
     }
     catch (Database::Exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
   }
   virtual void setPartialLoad(bool _partialLoad) {

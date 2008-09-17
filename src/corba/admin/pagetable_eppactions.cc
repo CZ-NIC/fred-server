@@ -5,10 +5,14 @@ ccReg_EPPActions_i::ccReg_EPPActions_i(Register::Registrar::EPPActionList *_eal)
 }
 
 ccReg_EPPActions_i::~ccReg_EPPActions_i() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_EPPActions_i::~ccReg_EPPActions_i()");
 }
 
 ccReg::Filters::Compound_ptr ccReg_EPPActions_i::add() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_EPPActions_i::add()");
   it.clearF();
   Database::Filters::EppAction *f = new Database::Filters::EppActionImpl();
@@ -17,6 +21,8 @@ ccReg::Filters::Compound_ptr ccReg_EPPActions_i::add() {
 }
 
 Registry::Table::ColumnHeaders* ccReg_EPPActions_i::getColumnHeaders() {
+  Logging::Context ctx(base_context_);
+
   Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(7);
   COLHEAD(ch,0,"SvTRID",CT_OTHER);
@@ -31,6 +37,8 @@ Registry::Table::ColumnHeaders* ccReg_EPPActions_i::getColumnHeaders() {
 
 Registry::TableRow* ccReg_EPPActions_i::getRow(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW) {
+  Logging::Context ctx(base_context_);
+
   try {
     const Register::Registrar::EPPAction *a = eal->get(row);
     Registry::TableRow *tr = new Registry::TableRow;
@@ -53,6 +61,8 @@ Registry::TableRow* ccReg_EPPActions_i::getRow(CORBA::Short row)
 }
 
 void ccReg_EPPActions_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_EPPActions_i::sortByColumn(%1%, %2%)")
       % column % dir);
   /* save sort state */
@@ -85,6 +95,8 @@ void ccReg_EPPActions_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 
 ccReg::TID ccReg_EPPActions_i::getRowId(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW) {
+  Logging::Context ctx(base_context_);
+
   const Register::Registrar::EPPAction *a = eal->get(row);
   if (!a)
     throw ccReg::Table::INVALID_ROW();
@@ -96,31 +108,43 @@ char* ccReg_EPPActions_i::outputCSV() {
 }
 
 CORBA::Short ccReg_EPPActions_i::numRows() {
+  Logging::Context ctx(base_context_);
+
   return eal->size();
 }
 
 CORBA::Short ccReg_EPPActions_i::numColumns() {
+  Logging::Context ctx(base_context_);
+
   return 7;
 }
 
 void ccReg_EPPActions_i::reload() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_EPPActions_i::reload()");
   eal->setPartialLoad(true);
   eal->reload(uf, dbm);
 }
 
 void ccReg_EPPActions_i::clear() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_EPPActions_i::clear()");
   ccReg_PageTable_i::clear();
   eal->clear();
 }
 
 CORBA::ULongLong ccReg_EPPActions_i::resultSize() {
+  Logging::Context ctx(base_context_);
+
   TRACE("ccReg_EPPActions_i::resultSize()");
   return eal->getRealCount(uf);
 }
 
 void ccReg_EPPActions_i::loadFilter(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_EPPActions_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
@@ -133,6 +157,8 @@ void ccReg_EPPActions_i::loadFilter(ccReg::TID _id) {
 }
 
 void ccReg_EPPActions_i::saveFilter(const char* _name) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_EPPActions_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
@@ -141,6 +167,8 @@ void ccReg_EPPActions_i::saveFilter(const char* _name) {
 }
 
 Register::Registrar::EPPAction* ccReg_EPPActions_i::findId(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   try {
     Register::Registrar::EPPAction *epp_action = dynamic_cast<Register::Registrar::EPPAction* >(eal->findId(_id));
     if (epp_action) {
@@ -154,5 +182,8 @@ Register::Registrar::EPPAction* ccReg_EPPActions_i::findId(ccReg::TID _id) {
 }
 
 CORBA::Boolean ccReg_EPPActions_i::numRowsOverLimit() {
+  Logging::Context ctx(base_context_);
+
   return eal->isLimited(); 
 }
+

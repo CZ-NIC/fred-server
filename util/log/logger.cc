@@ -12,32 +12,24 @@ Logger::~Logger() {
   }
 }
 
-Log& Logger::get(const std::string& _ctx) {
-  std::string prefixed_ctx = ctx_prefix + (ctx_prefix.empty() ? "" : "/") + _ctx;
-  std::map<std::string, Log*>::iterator it = logs.find(prefixed_ctx);
+Log& Logger::get(const std::string& _name) {
+  std::map<std::string, Log*>::iterator it = logs.find(_name);
   if (it != logs.end()) {
     return *it->second;
   } else {
-    Log *l = new Log();
-    l->setContext(prefixed_ctx);
-    logs.insert(std::make_pair<std::string, Log*>(prefixed_ctx, l));
+    Log *l = new Log(_name);
+    logs.insert(std::make_pair<std::string, Log*>(_name, l));
     return *l;
   }
 }
 
-void Logger::add(const std::string& _ctx, Log *_l) {
-  std::string prefixed_ctx = ctx_prefix + (ctx_prefix.empty() ? "" : "/") + _ctx;
-  std::map<std::string, Log*>::iterator it = logs.find(prefixed_ctx);
+void Logger::add(const std::string& _name, Log *_l) {
+  std::map<std::string, Log*>::iterator it = logs.find(_name);
   if (it == logs.end()) {
-    _l->setContext(prefixed_ctx);
-    logs.insert(std::make_pair<std::string, Log*>(prefixed_ctx, _l));
+    _l->setName(_name);
+    logs.insert(std::make_pair<std::string, Log*>(_name, _l));
   }
 }
 
-void Logger::prefix(const std::string& _prefix) {
-  if (ctx_prefix.empty()) {
-    ctx_prefix = _prefix;
-  }
-}
 
 }

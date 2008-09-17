@@ -18,7 +18,7 @@ Compound::~Compound() {
  */
 void Compound::serialize(Database::SelectQuery& _sq, const Settings *_settings) {
   TRACE("[CALL] Compound::serialize()");
-  LOGGER("db").debug(boost::format("serializing filter '%1%'") % getName());
+  LOGGER(PACKAGE).debug(boost::format("serializing filter '%1%'") % getName());
   
 //  if (!polymorphic_joined_) 
 //    _joinPolymorphicTables();

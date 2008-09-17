@@ -150,12 +150,12 @@ public:
     const DTp& t_value = value.getValue();
 
     if (value.isNull()) {
-      LOGGER("tracer").trace("[IN] _BaseDTInterval::serialize(): value is 'NULL'");
+      LOGGER(PACKAGE).trace("[IN] _BaseDTInterval::serialize(): value is 'NULL'");
       prep << getConjuction() << "( ";
       prep << column.str() << SQL_OP_IS << value;
       prep << " )";
     } else {
-      LOGGER("tracer").trace(boost::format("[IN] _BaseDTInterval::serialize(): value is normal (special_flag='%1%')")
+      LOGGER(PACKAGE).trace(boost::format("[IN] _BaseDTInterval::serialize(): value is normal (special_flag='%1%')")
           % t_value.getSpecial());
       
       std::string second_operator = (t_value.getSpecial() == INTERVAL ? SQL_OP_LE : SQL_OP_LT); 
@@ -260,7 +260,7 @@ public:
         && t_value.isSpecial() 
         && (t_value.getSpecial() != DAY && t_value.getSpecial() != INTERVAL)) {
       
-      LOGGER("tracer").trace(boost::format("[IN] Interval<DateTime>::serialize(): value is special (special_flag='%1%')")
+      LOGGER(PACKAGE).trace(boost::format("[IN] Interval<DateTime>::serialize(): value is special (special_flag='%1%')")
           % t_value.getSpecial());
       
       std::stringstream beg, end;
@@ -330,7 +330,7 @@ public:
         && t_value.isSpecial() 
         && (t_value.getSpecial() != DAY && t_value.getSpecial() != INTERVAL)) {
       
-      LOGGER("tracer").trace(boost::format("[IN] Interval<Date>::serialize(): value is special (special_flag='%1%')")
+      LOGGER(PACKAGE).trace(boost::format("[IN] Interval<Date>::serialize(): value is special (special_flag='%1%')")
           % t_value.getSpecial());
       
       std::stringstream beg, end;

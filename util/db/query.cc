@@ -83,7 +83,7 @@ void SelectQuery::make() {
   if (!order_by_s.str().empty())
   sql_buffer << " ORDER BY " << order_by_s.str();
   finalize();
-  LOGGER("db").debug(boost::format("generated select SQL = %1%") % sql_buffer.str());
+  LOGGER(PACKAGE).debug(boost::format("generated select SQL = %1%") % sql_buffer.str());
 }
 
 void SelectQuery::join(const std::string& _cols, const std::string& _tables,

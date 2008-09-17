@@ -56,7 +56,7 @@ ARFLAGS = cru
 liblog_a_AR = $(AR) $(ARFLAGS)
 liblog_a_LIBADD =
 am_liblog_a_OBJECTS = logger.$(OBJEXT) log.$(OBJEXT) \
-	log_types.$(OBJEXT)
+	log_types.$(OBJEXT) context.$(OBJEXT)
 liblog_a_OBJECTS = $(am_liblog_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
 am_test_log_OBJECTS = test-log.$(OBJEXT)
@@ -236,7 +236,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CPPFLAGS = ${BOOST_CPPFLAGS} $(AM_CFLAGS) -I$(top_srcdir)/util 
 noinst_LIBRARIES = liblog.a
-liblog_a_SOURCES = logger.cc log.cc log_types.cc log.h log_types.h logger.h 
+liblog_a_SOURCES = logger.cc log.cc log_types.cc context.cc log.h log_types.h logger.h context.h
 liblog_a_ADD = $(BOOST_THREAD_LIB)
 test_log_SOURCES = test-log.cc
 test_log_LDFLAGS = $(BOOST_LDFLAGS) $(AM_LDFLAGS)
@@ -294,6 +294,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/context.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log_types.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/logger.Po@am__quote@

@@ -5,10 +5,14 @@ ccReg_Contacts_i::ccReg_Contacts_i(Register::Contact::List *_cl, const Settings 
 }
 
 ccReg_Contacts_i::~ccReg_Contacts_i() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Contacts_i::~ccReg_Contacts_i()");
 }
 
 ccReg::Filters::Compound_ptr ccReg_Contacts_i::add() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Contacts_i::add()");
   it.clearF();
   Database::Filters::Contact *f = new Database::Filters::ContactHistoryImpl();
@@ -17,6 +21,8 @@ ccReg::Filters::Compound_ptr ccReg_Contacts_i::add() {
 }
 
 Registry::Table::ColumnHeaders* ccReg_Contacts_i::getColumnHeaders() {
+  Logging::Context ctx(base_context_);
+
   Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(6);
   COLHEAD(ch, 0, "Handle", CT_OID);
@@ -30,6 +36,8 @@ Registry::Table::ColumnHeaders* ccReg_Contacts_i::getColumnHeaders() {
 
 Registry::TableRow* ccReg_Contacts_i::getRow(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW) {
+  Logging::Context ctx(base_context_);
+
   const Register::Contact::Contact *c = cl->getContact(row);
   if (!c) throw ccReg::Table::INVALID_ROW();
   Registry::TableRow *tr = new Registry::TableRow;
@@ -48,6 +56,8 @@ Registry::TableRow* ccReg_Contacts_i::getRow(CORBA::Short row)
 }
 
 void ccReg_Contacts_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Contacts_i::sortByColumn(%1%, %2%)") % column % dir);
   /* save sort state */
   ccReg_PageTable_i::sortByColumn(column, dir);
@@ -76,6 +86,8 @@ void ccReg_Contacts_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 
 ccReg::TID ccReg_Contacts_i::getRowId(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW) {
+  Logging::Context ctx(base_context_);
+
   const Register::Contact::Contact *c = cl->getContact(row);
   if (!c) throw ccReg::Table::INVALID_ROW();
   return c->getId();
@@ -86,20 +98,28 @@ char* ccReg_Contacts_i::outputCSV() {
 }
 
 CORBA::Short ccReg_Contacts_i::numRows() {
+  Logging::Context ctx(base_context_);
+
   return cl->getCount();
 }
 
 CORBA::Short ccReg_Contacts_i::numColumns() {
+  Logging::Context ctx(base_context_);
+
   return 6;
 }
 
 void ccReg_Contacts_i::reload() {
+  Logging::Context ctx(base_context_);
+
 //  cl->makeRealCount();
   cl->reload(uf, dbm);
   cl->deleteDuplicatesId();
 }
 
 void ccReg_Contacts_i::clear() {
+  Logging::Context ctx(base_context_);
+
   cl->clearFilter();
   
   ccReg_PageTable_i::clear();
@@ -107,11 +127,15 @@ void ccReg_Contacts_i::clear() {
 }
 
 CORBA::ULongLong ccReg_Contacts_i::resultSize() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Contacts_i::resultSize()");
   return cl->getRealCount(uf);
 }
 
 void ccReg_Contacts_i::loadFilter(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Contacts_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
@@ -122,6 +146,8 @@ void ccReg_Contacts_i::loadFilter(ccReg::TID _id) {
 }
 
 void ccReg_Contacts_i::saveFilter(const char* _name) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Contacts_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
@@ -130,6 +156,8 @@ void ccReg_Contacts_i::saveFilter(const char* _name) {
 }
 
 Register::Contact::Contact* ccReg_Contacts_i::findId(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   try {
     Register::Contact::Contact *contact =
         dynamic_cast<Register::Contact::Contact*> (cl->findId(_id));
@@ -144,5 +172,8 @@ Register::Contact::Contact* ccReg_Contacts_i::findId(ccReg::TID _id) {
 }
 
 CORBA::Boolean ccReg_Contacts_i::numRowsOverLimit() {
+  Logging::Context ctx(base_context_);
+
   return cl->isLimited(); 
 }
+

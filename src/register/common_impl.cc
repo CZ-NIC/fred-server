@@ -103,11 +103,11 @@ CommonObject* CommonListImpl::findId(TID _id) const throw (Register::NOT_FOUND) 
                                               data_.end(),
                                               CheckId(_id));
   if (it != data_.end()) {
-    LOGGER("register").debug(boost::format("object list hit! object id=%1% found")
+    LOGGER(PACKAGE).debug(boost::format("object list hit! object id=%1% found")
         % _id);
     return *it;
   }
-  LOGGER("register").debug(boost::format("object list miss! object id=%1% should be loaded from db")
+  LOGGER(PACKAGE).debug(boost::format("object list miss! object id=%1% should be loaded from db")
       % _id);
   throw Register::NOT_FOUND();
 }
@@ -156,7 +156,7 @@ void CommonListImpl::makeRealCount(Database::Filters::Union &_filter) {
   if (_filter.empty()) {
     real_size_ = 0;
     real_size_initialized_ = false;
-    LOGGER("register").warning("can't make real filter data count -- no filter specified...");
+    LOGGER(PACKAGE).warning("can't make real filter data count -- no filter specified...");
     return;
   }
 
@@ -179,15 +179,15 @@ void CommonListImpl::makeRealCount(Database::Filters::Union &_filter) {
       real_size_initialized_ = true;
     }
     catch (Database::Exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
     catch (std::exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
   }
   else {
     if (!db->ExecSelect(count_query.c_str())) {
-      LOGGER("register").error("filter data count failed - old database library connection used");
+      LOGGER(PACKAGE).error("filter data count failed - old database library connection used");
     }
     else {
       real_size_ = atoll(db->GetFieldValue(0, 0));
@@ -219,11 +219,11 @@ void CommonListImpl::fillTempTable(Database::InsertQuery& _query) {
     conn_->exec(analyze);
   }
   catch (Database::Exception& ex) {
-    LOGGER("db").error(boost::format("%1%") % ex.what());
+    LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     throw;
   }
   catch (std::exception& ex) {
-    LOGGER("db").error(boost::format("%1%") % ex.what());
+    LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     throw;
   }
 }

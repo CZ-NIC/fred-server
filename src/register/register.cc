@@ -294,14 +294,14 @@ public:
         desc.name = (!name_cs.empty() ? name_cs : name);
         m_countries.push_back(desc);
       }
-      LOGGER("register").debug(boost::format("loaded '%1%' country codes "
+      LOGGER(PACKAGE).debug(boost::format("loaded '%1%' country codes "
               "description from database") % r_country.size());
     }
     catch (Database::Exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
     catch (std::exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
   }
 
@@ -351,7 +351,7 @@ public:
     }
     db->FreeSelect();
     
-    LOGGER("register").debug(boost::format("loaded '%1%' object states description from database")
+    LOGGER(PACKAGE).debug(boost::format("loaded '%1%' object states description from database")
         % states_loaded);
   }
 

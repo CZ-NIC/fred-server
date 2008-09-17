@@ -1,41 +1,73 @@
-//#include <boost/thread/thread.hpp>
-//#include <boost/thread/mutex.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
 #include <boost/format.hpp>
+#include <boost/any.hpp>
+#include <iostream>
+#include <string>
+
 #include "logger.h"
+#include "context.h"
 
-//struct TestLogger {
-//	TestLogger(int _id) : m_id(_id) { }
-//	void operator()() {
-//		Logging::Manager::instance_ref()->get("file").info(boost::format("msg from thread id %1%") % m_id);
-//		Logging::Manager::instance_ref()->get("console").alert(boost::format("msg from thread id %1%") % m_id);
-//		sleep(2);
-//		Logging::Manager::instance_ref()->get("syslog").error(boost::format("msg from thread id %1%") % m_id);
-//		sleep(5);
-//	}
-//	
-//	int m_id;
-//};
+class TestA {
+public:
+  TestA() : ctx_("TestA") {
+  }
 
+  void meth1() {
+    ctx_.push("meth1");
+    LOGGER("test-log").info("call");
+    ctx_.pop();
+  }
+
+  void meth2() {
+    ctx_.push("meth2");
+    LOGGER("test-log").info("call");
+    meth3();
+    ctx_.pop();
+  }
+
+  void meth3() {
+    ctx_.push("meth3");
+    LOGGER("test-log").info("call");
+    ctx_.pop();
+  }
+
+private:
+  Logging::Context ctx_;
+};
+
+struct TestContext {
+  TestContext(int _id) : id_(_id) { }
+  void operator()() {
+    std::stringstream tmp;
+    tmp << id_;
+    Logging::Context ctx("thread-" + tmp.str());
+    LOGGER("test-log").trace(boost::format("start"));
+
+    TestA ta;
+    ta.meth1();
+    ta.meth2();
+    ta.meth3();
+
+    LOGGER("test-log").trace(boost::format("finish"));
+  }
+
+  int id_;
+};
 
 int main() {
-	
-//	Logging::Manager::instance_ref()->add("file", new Log(new FileLog("filelog.log")));
-//	Logging::Manager::instance_ref()->add("console", new Log(new ConsoleLog()));
-//	Logging::Manager::instance_ref()->add("syslog", new Log(new SysLog(2)));
-//	
-	Logging::Logger &l = Logging::Manager::instance_ref();
-	//l.add("console", new Logging::Log(new Logging::ConsoleLog()));
-	l.get("console").addHandler(Logging::Log::LT_CONSOLE);
-	l.get("console").addHandler(Logging::Log::LT_FILE);
-	l.get("console").setLevel(Logging::Log::LL_DEBUG);
-	l.get("console").debug("singleton template message");
-	l.get("console").info("singleton template message 2");
-	
-//	boost::thread_group threads;
-//	for (int i = 0; i < 100; ++i) {
-//		threads.create_thread(TestLogger(i)); 
-//	}
-//	threads.join_all();
+
+  Logging::Logger &l = Logging::Manager::instance_ref();
+  l.get("test-log").addHandler(Logging::Log::LT_CONSOLE);
+  l.get("test-log").setLevel(Logging::Log::LL_TRACE);
+
+  LOGGER("test-log").trace("creating threads");
+
+  boost::thread_group threads;
+  for (int i = 0; i < 5; ++i) {
+  	threads.create_thread(TestContext(i)); 
+  }
+  threads.join_all();
 	
 	return 0;
 }

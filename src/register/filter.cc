@@ -82,7 +82,7 @@ public:
   virtual void save(Database::Connection *_conn) const {
     Database::Query insert;
     if (m_data.empty()) {
-      LOGGER("db").error("can't save filter; reason: data empty");
+      LOGGER(PACKAGE).error("can't save filter; reason: data empty");
       return;
     }
 
@@ -93,14 +93,14 @@ public:
     try {
       //TRACE(boost::format("[IN] Register::FilterImpl::save(): going to inserting data SQL = %1%") % insert.str());
       Database::Result result = _conn->exec(insert);
-      LOGGER("db").info(boost::format("filter '%1%' saved successfully")
+      LOGGER(PACKAGE).info(boost::format("filter '%1%' saved successfully")
           % m_name);
     }
     catch (Database::Exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
     catch (std::exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
   }
 
@@ -167,10 +167,10 @@ public:
       CommonListImpl::reload();
     }
     catch (Database::Exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
     catch (std::exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
   }
 
@@ -233,13 +233,13 @@ public:
       for (; uit != _uf.end(); ++uit) {
         content += "'" + (*uit)->getName() + "' ";
       }
-      LOGGER("db").debug(boost::format("loaded filter content = %1%") % content);
+      LOGGER(PACKAGE).debug(boost::format("loaded filter content = %1%") % content);
     }
     catch (Database::Exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
     catch (std::exception& ex) {
-      LOGGER("db").error(boost::format("%1%") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
   }
   
@@ -255,7 +255,7 @@ public:
       new_filter.save(m_db_manager->getConnection());
     }
     catch (std::exception& ex) {
-      LOGGER("db").error(boost::format("can't save filter (reason: %1%)") % ex.what());
+      LOGGER(PACKAGE).error(boost::format("can't save filter (reason: %1%)") % ex.what());
     }
   }
 	

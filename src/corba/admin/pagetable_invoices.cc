@@ -5,10 +5,14 @@ ccReg_Invoices_i::ccReg_Invoices_i(Register::Invoicing::List *_invoice_list) :
 }
 
 ccReg_Invoices_i::~ccReg_Invoices_i() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Invoices_i::~ccReg_Invoices_i()");
 }
 
 ccReg::Filters::Compound_ptr ccReg_Invoices_i::add() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Invoices_i::add()");
   it.clearF();
   Database::Filters::Invoice *filter = new Database::Filters::InvoiceImpl();
@@ -18,6 +22,8 @@ ccReg::Filters::Compound_ptr ccReg_Invoices_i::add() {
 
 
 Registry::Table::ColumnHeaders* ccReg_Invoices_i::getColumnHeaders() {
+  Logging::Context ctx(base_context_);
+
   Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(9);
   COLHEAD(ch,0,"Create Date",CT_OTHER);
@@ -34,6 +40,8 @@ Registry::Table::ColumnHeaders* ccReg_Invoices_i::getColumnHeaders() {
 
 Registry::TableRow* ccReg_Invoices_i::getRow(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW) {
+  Logging::Context ctx(base_context_);
+
   const Register::Invoicing::Invoice *inv = invoice_list_->get(row);
   if (!inv)
     throw ccReg::Table::INVALID_ROW();
@@ -61,6 +69,8 @@ Registry::TableRow* ccReg_Invoices_i::getRow(CORBA::Short row)
 }
 
 void ccReg_Invoices_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Invoices_i::sortByColumn(%1%, %2%)") % _column % _dir);
   /* save sort state */
   ccReg_PageTable_i::sortByColumn(_column, _dir);
@@ -92,6 +102,8 @@ void ccReg_Invoices_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
 
 ccReg::TID ccReg_Invoices_i::getRowId(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW) {
+  Logging::Context ctx(base_context_);
+
   const Register::Invoicing::Invoice *inv = invoice_list_->get(row);
   if (!inv)
     throw ccReg::Table::INVALID_ROW();
@@ -103,30 +115,42 @@ char* ccReg_Invoices_i::outputCSV() {
 }
 
 CORBA::Short ccReg_Invoices_i::numRows() {
+  Logging::Context ctx(base_context_);
+
   return invoice_list_->getCount();
 }
 
 CORBA::Short ccReg_Invoices_i::numColumns() {
+  Logging::Context ctx(base_context_);
+
   return 9;
 }
 
 void ccReg_Invoices_i::reload() {
+  Logging::Context ctx(base_context_);
+
   invoice_list_->setPartialLoad(true);
   invoice_list_->reload(uf, dbm);
 }
 
 void ccReg_Invoices_i::clear() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Invoices_i::clear()");
   ccReg_PageTable_i::clear();
   invoice_list_->clear();
 }
 
 CORBA::ULongLong ccReg_Invoices_i::resultSize() {
+  Logging::Context ctx(base_context_);
+
   TRACE("ccReg_Invoices_i::resultSize()");
   return invoice_list_->getRealCount(uf);
 }
 
 void ccReg_Invoices_i::loadFilter(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Invoices_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
@@ -139,6 +163,8 @@ void ccReg_Invoices_i::loadFilter(ccReg::TID _id) {
 }
 
 void ccReg_Invoices_i::saveFilter(const char* _name) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_PublicRequests_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
@@ -147,6 +173,8 @@ void ccReg_Invoices_i::saveFilter(const char* _name) {
 }
 
 Register::Invoicing::Invoice* ccReg_Invoices_i::findId(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   try {
     Register::Invoicing::Invoice *invoice = dynamic_cast<Register::Invoicing::Invoice* >(invoice_list_->findId(_id));
     if (invoice) {
@@ -160,5 +188,8 @@ Register::Invoicing::Invoice* ccReg_Invoices_i::findId(ccReg::TID _id) {
 }
 
 CORBA::Boolean ccReg_Invoices_i::numRowsOverLimit() {
+  Logging::Context ctx(base_context_);
+
   return invoice_list_->isLimited(); 
 }
+

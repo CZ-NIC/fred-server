@@ -5,10 +5,14 @@ ccReg_NSSets_i::ccReg_NSSets_i(Register::NSSet::List *_nl, const Settings *_ptr)
 }
 
 ccReg_NSSets_i::~ccReg_NSSets_i() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_NSSets_i::~ccReg_NSSets_i()");
 }
 
 ccReg::Filters::Compound_ptr ccReg_NSSets_i::add() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_NSSets_i::add()");
   it.clearF();
   Database::Filters::NSSet *f = new Database::Filters::NSSetHistoryImpl();
@@ -18,6 +22,8 @@ ccReg::Filters::Compound_ptr ccReg_NSSets_i::add() {
 
 
 Registry::Table::ColumnHeaders* ccReg_NSSets_i::getColumnHeaders() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_NSSets_i::getColumnHeaders()");
   Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(4);
@@ -32,6 +38,8 @@ Registry::TableRow*
 ccReg_NSSets_i::getRow(CORBA::Short row)
   throw (ccReg::Table::INVALID_ROW)
 {
+  Logging::Context ctx(base_context_);
+
   const Register::NSSet::NSSet *n = nl->getNSSet(row);
   if (!n) throw ccReg::Table::INVALID_ROW();
   Registry::TableRow *tr = new Registry::TableRow;
@@ -49,6 +57,8 @@ ccReg_NSSets_i::getRow(CORBA::Short row)
 
 void 
 ccReg_NSSets_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_NSSets_i::sortByColumn(%1%, %2%)") % column % dir);
   /* save sort state */
   ccReg_PageTable_i::sortByColumn(column, dir);
@@ -73,6 +83,8 @@ ccReg::TID
 ccReg_NSSets_i::getRowId(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW)
 {
+  Logging::Context ctx(base_context_);
+
   const Register::NSSet::NSSet *n = nl->getNSSet(row);
   if (!n) throw ccReg::Table::INVALID_ROW();
   return n->getId();
@@ -87,18 +99,24 @@ ccReg_NSSets_i::outputCSV()
 CORBA::Short 
 ccReg_NSSets_i::numRows()
 {
+  Logging::Context ctx(base_context_);
+
   return nl->getCount();
 }
 
 CORBA::Short 
 ccReg_NSSets_i::numColumns()
 {
+  Logging::Context ctx(base_context_);
+
   return 4;
 }
 
 void 
 ccReg_NSSets_i::reload()
 {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_NSSets_i::reload()");
 //  nl->makeRealCount();  
   nl->reload(uf, dbm);
@@ -108,6 +126,8 @@ ccReg_NSSets_i::reload()
 void
 ccReg_NSSets_i::clear()
 {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_NSSets_i::clear()");
   nl->clearFilter();
   
@@ -118,12 +138,16 @@ ccReg_NSSets_i::clear()
 CORBA::ULongLong 
 ccReg_NSSets_i::resultSize()
 {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_NSSets_i::resultSize()");
   return nl->getRealCount(uf);
 }
 
 void
 ccReg_NSSets_i::loadFilter(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_NSSets_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
@@ -135,6 +159,8 @@ ccReg_NSSets_i::loadFilter(ccReg::TID _id) {
 
 void
 ccReg_NSSets_i::saveFilter(const char* _name) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_NSSets_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
@@ -143,6 +169,8 @@ ccReg_NSSets_i::saveFilter(const char* _name) {
 }
 
 Register::NSSet::NSSet* ccReg_NSSets_i::findId(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   try {
     Register::NSSet::NSSet *nsset =
         dynamic_cast<Register::NSSet::NSSet*> (nl->findId(_id));
@@ -157,5 +185,8 @@ Register::NSSet::NSSet* ccReg_NSSets_i::findId(ccReg::TID _id) {
 }
 
 CORBA::Boolean ccReg_NSSets_i::numRowsOverLimit() {
+  Logging::Context ctx(base_context_);
+
   return nl->isLimited(); 
 }
+

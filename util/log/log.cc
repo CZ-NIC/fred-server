@@ -1,11 +1,12 @@
 #include <boost/utility.hpp>
 #include "log.h"
 #include "log_types.h"
+#include "context.h"
 
 namespace Logging {
 
-Log::Log(const std::string& _ctx) :
-	level(LL_INFO), context(_ctx) {
+Log::Log(const std::string& _name) :
+	level(LL_INFO), name(_name) {
 }
 
 Log::~Log() {
@@ -33,8 +34,8 @@ void Log::setLevel(Log::Level _ll) {
 	level = _ll;
 }
 
-void Log::setContext(const std::string& _ctx) {
-	context = _ctx;
+void Log::setName(const std::string& _name) {
+	name = _name;
 }
 
 Log::Level Log::getLevel() const {
@@ -46,7 +47,7 @@ void Log::trace(const std::string& _msg) {
 		return;
 	std::deque<BaseLogType*>::iterator it = handlers.begin();
 	for (; it != handlers.end(); ++it) {
-		(*it)->msg(LL_TRACE, _msg, context);
+		(*it)->msg(LL_TRACE, _msg, name);
 	}
 }
 
@@ -55,7 +56,7 @@ void Log::debug(const std::string& _msg) {
 		return;
 	std::deque<BaseLogType*>::iterator it = handlers.begin();
 	for (; it != handlers.end(); ++it) {
-		(*it)->msg(LL_DEBUG, _msg, context);
+		(*it)->msg(LL_DEBUG, _msg, name);
 	}
 }
 
@@ -64,7 +65,7 @@ void Log::info(const std::string& _msg) {
 		return;
 	std::deque<BaseLogType*>::iterator it = handlers.begin();
 	for (; it != handlers.end(); ++it) {
-		(*it)->msg(LL_INFO, _msg, context);
+		(*it)->msg(LL_INFO, _msg, name);
 	}
 }
 
@@ -73,7 +74,7 @@ void Log::notice(const std::string& _msg) {
 		return;
 	std::deque<BaseLogType*>::iterator it = handlers.begin();
 	for (; it != handlers.end(); ++it) {
-		(*it)->msg(LL_NOTICE, _msg, context);
+		(*it)->msg(LL_NOTICE, _msg, name);
 	}
 }
 
@@ -82,7 +83,7 @@ void Log::warning(const std::string& _msg) {
 		return;
 	std::deque<BaseLogType*>::iterator it = handlers.begin();
 	for (; it != handlers.end(); ++it) {
-		(*it)->msg(LL_WARNING, _msg, context);
+		(*it)->msg(LL_WARNING, _msg, name);
 	}
 }
 
@@ -91,7 +92,7 @@ void Log::error(const std::string& _msg) {
 		return;
 	std::deque<BaseLogType*>::iterator it = handlers.begin();
 	for (; it != handlers.end(); ++it) {
-		(*it)->msg(LL_ERR, _msg, context);
+		(*it)->msg(LL_ERR, _msg, name);
 	}
 }
 
@@ -100,7 +101,7 @@ void Log::critical(const std::string& _msg) {
 		return;
 	std::deque<BaseLogType*>::iterator it = handlers.begin();
 	for (; it != handlers.end(); ++it) {
-		(*it)->msg(LL_CRIT, _msg, context);
+		(*it)->msg(LL_CRIT, _msg, name);
 	}
 }
 
@@ -109,7 +110,7 @@ void Log::alert(const std::string& _msg) {
 		return;
 	std::deque<BaseLogType*>::iterator it = handlers.begin();
 	for (; it != handlers.end(); ++it) {
-		(*it)->msg(LL_ALERT, _msg, context);
+		(*it)->msg(LL_ALERT, _msg, name);
 	}
 }
 
@@ -118,7 +119,7 @@ void Log::emerg(const std::string& _msg) {
 		return;
 	std::deque<BaseLogType*>::iterator it = handlers.begin();
 	for (; it != handlers.end(); ++it) {
-		(*it)->msg(LL_EMERG, _msg, context);
+		(*it)->msg(LL_EMERG, _msg, name);
 	}
 }
 
@@ -170,7 +171,7 @@ void Log::message(int _prio, const char *_format, ...) {
 
  	std::deque<BaseLogType*>::iterator it = handlers.begin();
 	for (; it != handlers.end(); ++it) {
-		(*it)->msg(static_cast<Logging::Log::Level>(_prio), msg, context);
+		(*it)->msg(static_cast<Logging::Log::Level>(_prio), msg, name);
 	}
 
   va_end(args);

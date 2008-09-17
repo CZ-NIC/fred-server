@@ -43,6 +43,7 @@
 #include "action.h"    // code of the EPP operations
 #include "response.h"  // errors code
 #include "reason.h"  // reason messages code
+
 // logger
 #include "old_utils/log.h"
 
@@ -62,6 +63,10 @@
 
 // Notifier
 #include "notifier.h"
+
+// logger
+#include "log/logger.h"
+#include "log/context.h"
 
 #define FLAG_serverDeleteProhibited 1
 #define FLAG_serverRenewProhibited 2
@@ -102,6 +107,9 @@ public:
     ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
     regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID)
   {
+    Logging::Context::push(str(boost::format("action-%1%") % action));
+
+
     if (!db.OpenDatabase(epp->getDatabaseString()))
       epp->ServerInternalError("Cannot connect to DB");
     if (!db.BeginAction(clientID, action, clTRID, xml, paction)) {
@@ -122,12 +130,17 @@ public:
           CORBA::string_dup(db.GetsvTRID()) );
     }
     code = ret->code = COMMAND_OK;
+
+    Logging::Context::push(str(boost::format("%1%") % db.GetsvTRID()));
   }
   ~EPPAction()
   {
     db.QuitTransaction(code);
     db.EndAction(code);
     db.Disconnect();
+
+    Logging::Context::pop();
+    Logging::Context::pop();
   }
   DB *getDB()
   {
@@ -296,6 +309,8 @@ ccReg_EPP_i::ccReg_EPP_i(
                                 zone(NULL),
                                 testInfo(false)
 {
+  Logging::Context ctx("rifd");
+
   // objects are shared between threads!!!
   // init at the beginning and do not change
   if (!db.OpenDatabase(database)) {
@@ -308,6 +323,8 @@ ccReg_EPP_i::ccReg_EPP_i(
 }
 ccReg_EPP_i::~ccReg_EPP_i()
 {
+  Logging::Context ctx("rifd");
+
   db.Disconnect();
   LOG( ERROR_LOG, "EPP_i destructor");
   if (zone)
@@ -510,6 +527,8 @@ bool ccReg_EPP_i::TestDatabaseConnect(
 
 int ccReg_EPP_i::LoadReasonMessages()
 {
+  Logging::Context ctx("rifd");
+
   DB DBsql;
   int i, rows;
 
@@ -533,6 +552,8 @@ int ccReg_EPP_i::LoadReasonMessages()
 
 int ccReg_EPP_i::LoadErrorMessages()
 {
+  Logging::Context ctx("rifd");
+
   DB DBsql;
   int i, rows;
 
@@ -896,6 +917,8 @@ short ccReg_EPP_i::SetReasonDomainTempCNotExistMap(
 // load country code table  enum_country from database
 int ccReg_EPP_i::LoadCountryCode()
 {
+  Logging::Context ctx("rifd");
+
   DB DBsql;
   int i, rows;
 
@@ -939,6 +962,8 @@ bool ccReg_EPP_i::TestCountryCode(
 char* ccReg_EPP_i::version(
   ccReg::timestamp_out datetime)
 {
+  Logging::Context ctx("rifd");
+
   time_t t;
   char dateStr[MAX_DATE+1];
 
@@ -1102,6 +1127,8 @@ bool ccReg_EPP_i::setvalue_DISCLOSE(
 
 int ccReg_EPP_i::loadZones() // load zones
 {
+  Logging::Context ctx("rifd");
+
   int rows=0, i;
   DB DBsql;
 
@@ -1292,6 +1319,8 @@ int ccReg_EPP_i::getZZ(
 bool ccReg_EPP_i::testFQDN(
   const char *fqdn)
 {
+  Logging::Context ctx("rifd");
+
   char FQDN[164];
 
   if (getFQDN(FQDN, fqdn) > 0)
@@ -1407,6 +1436,9 @@ int ccReg_EPP_i::getFQDN(
 void ccReg_EPP_i::sessionClosed(
   CORBA::Long clientID)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   LOG( DEBUG_LOG , "SESSION CLOSED by clientID %ld, Calling SESSION LOGOUT", clientID );
   LogoutSession(clientID);
 }
@@ -1428,6 +1460,9 @@ void ccReg_EPP_i::sessionClosed(
 CORBA::Boolean ccReg_EPP_i::SaveOutXML(
   const char* svTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("%1%") % svTRID));
+
   DB DBsql;
   int ok;
 
@@ -1469,6 +1504,8 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
   CORBA::Short errCode, CORBA::Long clientID, const char* clTRID,
   const ccReg::XmlErrors& errorCodes, ccReg::ErrorStrings_out errStrings)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
 
   DB DBsql;
   ccReg::Response_var ret;
@@ -1558,6 +1595,9 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
   const char* msgID, CORBA::Short& count, CORBA::String_out newmsgID,
   CORBA::Long clientID, const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   LOG(
       NOTICE_LOG,
       "PollAcknowledgement: clientID -> %d clTRID [%s] msgID -> %s",
@@ -1617,6 +1657,9 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
   ccReg::PollType& type, CORBA::Any_OUT_arg msg, CORBA::Long clientID,
   const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   LOG(
       NOTICE_LOG,
       "PollRequest: clientID -> %d clTRID [%s]", (int ) clientID, clTRID
@@ -1769,6 +1812,9 @@ ccReg::Response* ccReg_EPP_i::ClientCredit(
   ccReg::ZoneCredit_out credit, CORBA::Long clientID, const char* clTRID,
   const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   DB DBsql;
   ccReg::Response_var ret;
   int regID;
@@ -1836,6 +1882,9 @@ ccReg::Response* ccReg_EPP_i::ClientCredit(
 ccReg::Response * ccReg_EPP_i::ClientLogout(
   CORBA::Long clientID, const char *clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   DB DBsql;
   ccReg::Response_var ret;
   int lang=0; // default
@@ -1900,6 +1949,8 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
   const char *clTRID, const char* XML, CORBA::Long & clientID,
   const char *certID, ccReg::Languages lang)
 {
+  Logging::Context ctx("rifd");
+
   DB DBsql;
   int regID=0, id=0;
   int language=0;
@@ -1930,11 +1981,9 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
     } else
 
     if (DBsql.BeginTransaction() ) {
-
       id = DBsql.GetSequenceID("login"); // get sequence ID from login table
 
       // write to table
-
       DBsql.INSERT("Login");
       DBsql.INTO("id");
       DBsql.INTO("registrarid");
@@ -1946,6 +1995,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
       if (DBsql.EXEC() ) // if sucess write
       {
         clientID = id;
+
         LOG( NOTICE_LOG, "GET clientID  -> %d", (int ) clientID );
 
         // change language
@@ -1980,7 +2030,6 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
             ret->code =COMMAND_MAX_SESSION_LIMIT; // maximal limit of connection sessions
           }
         }
-
       }
 
       // end of transaction
@@ -2295,6 +2344,9 @@ ccReg::Response* ccReg_EPP_i::ContactCheck(
   const ccReg::Check& handle, ccReg::CheckResp_out a, CORBA::Long clientID,
   const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   return ObjectCheck( EPP_ContactCheck , "CONTACT" , "handle" , handle , a , clientID , clTRID , XML);
 }
 
@@ -2302,6 +2354,9 @@ ccReg::Response* ccReg_EPP_i::NSSetCheck(
   const ccReg::Check& handle, ccReg::CheckResp_out a, CORBA::Long clientID,
   const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   return ObjectCheck( EPP_NSsetCheck , "NSSET" , "handle" , handle , a , clientID , clTRID , XML);
 }
 
@@ -2309,6 +2364,9 @@ ccReg::Response* ccReg_EPP_i::DomainCheck(
   const ccReg::Check& fqdn, ccReg::CheckResp_out a, CORBA::Long clientID,
   const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   return ObjectCheck( EPP_DomainCheck , "DOMAIN" , "fqdn" , fqdn , a , clientID , clTRID , XML);
 }
 
@@ -2320,6 +2378,9 @@ ccReg_EPP_i::KeySetCheck(
         const char *clTRID,
         const char *XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
     return ObjectCheck(
             EPP_KeySetCheck, "KEYSET", "handle", handle,
             a, clientID, clTRID, XML);
@@ -2344,6 +2405,9 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
   const char* handle, ccReg::Contact_out c, CORBA::Long clientID,
   const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   LOG(
       NOTICE_LOG ,
       "ContactInfo: clientID -> %d clTRID [%s] handle [%s] ",
@@ -2493,6 +2557,9 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
 ccReg::Response* ccReg_EPP_i::ContactDelete(
   const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   std::auto_ptr<EPPNotifier> ntf;
   ccReg::Response_var ret;
   ccReg::Errors_var errors;
@@ -2611,6 +2678,9 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
   const char *handle, const ccReg::ContactChange & c, CORBA::Long clientID,
   const char *clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   ccReg::Response_var ret;
   ccReg::Errors_var errors;
   DB DBsql;
@@ -2815,6 +2885,9 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
   ccReg::timestamp_out crDate, CORBA::Long clientID, const char *clTRID,
   const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   std::auto_ptr<EPPNotifier> ntf;
   DB DBsql;
   ccReg::Response_var ret;
@@ -3268,6 +3341,9 @@ ccReg::Response* ccReg_EPP_i::ContactTransfer(
   const char* handle, const char* authInfo, CORBA::Long clientID,
   const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   return ObjectTransfer( EPP_ContactTransfer , "CONTACT" , "handle" , handle, authInfo, clientID, clTRID , XML);
 }
 
@@ -3275,6 +3351,9 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(
   const char* handle, const char* authInfo, CORBA::Long clientID,
   const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   return ObjectTransfer( EPP_NSsetTransfer , "NSSET" , "handle" , handle, authInfo, clientID, clTRID , XML);
 }
 
@@ -3282,6 +3361,9 @@ ccReg::Response* ccReg_EPP_i::DomainTransfer(
   const char* fqdn, const char* authInfo, CORBA::Long clientID,
   const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   return ObjectTransfer( EPP_DomainTransfer , "DOMAIN" , "fqdn" , fqdn, authInfo, clientID, clTRID , XML);
 }
 
@@ -3293,6 +3375,9 @@ ccReg_EPP_i::KeySetTransfer(
         const char *clTRID,
         const char *XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
     return ObjectTransfer(EPP_KeySetTransfer, "KEYSET", "handle", handle,
             authInfo, clientID, clTRID, XML);
 }
@@ -3318,6 +3403,9 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
   const char* handle, ccReg::NSSet_out n, CORBA::Long clientID,
   const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   LOG(
       NOTICE_LOG,
       "NSSetInfo: clientID -> %d clTRID [%s] handle [%s] ",
@@ -3419,6 +3507,9 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
 ccReg::Response* ccReg_EPP_i::NSSetDelete(
   const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   ccReg::Response_var ret;
   ccReg::Errors_var errors;
   DB DBsql;
@@ -3536,6 +3627,9 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
   const ccReg::DNSHost & dns, CORBA::Short level, ccReg::timestamp_out crDate,
   CORBA::Long clientID, const char *clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   DB DBsql;
   std::auto_ptr<EPPNotifier> ntf;
   char NAME[256]; // to upper case of name of DNS hosts
@@ -3895,6 +3989,9 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(
   const ccReg::TechContact& tech_rem, CORBA::Short level, CORBA::Long clientID,
   const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   ccReg::Response_var ret;
   ccReg::Errors_var errors;
   std::auto_ptr<EPPNotifier> ntf;
@@ -4349,6 +4446,9 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
   const char* fqdn, ccReg::Domain_out d, CORBA::Long clientID,
   const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   LOG(
       NOTICE_LOG, "DomainInfo: clientID -> %d clTRID [%s] fqdn  [%s] ",
       (int) clientID, clTRID, fqdn
@@ -4464,6 +4564,9 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
 ccReg::Response* ccReg_EPP_i::DomainDelete(
   const char* fqdn, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   ccReg::Response_var ret;
   ccReg::Errors_var errors;
   DB DBsql;
@@ -4577,6 +4680,9 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
   const ccReg::AdminContact& tmpcontact_rem, CORBA::Long clientID,
   const char *clTRID, const char* XML, const ccReg::ExtensionList & ext)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   ccReg::Response_var ret;
   ccReg::Errors_var errors;
   std::auto_ptr<EPPNotifier> ntf;
@@ -4985,6 +5091,9 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
         const ccReg::ExtensionList & ext
         )
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   DB DBsql;
   std::auto_ptr<EPPNotifier> ntf;
   char valexpiryDate[MAX_DATE+1];
@@ -5379,6 +5488,9 @@ ccReg::Response * ccReg_EPP_i::DomainRenew(
   ccReg::timestamp_out exDate, CORBA::Long clientID, const char *clTRID,
   const char* XML, const ccReg::ExtensionList & ext)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   DB DBsql;
   std::auto_ptr<EPPNotifier> ntf;
   char valexpiryDate[MAX_DATE+1];
@@ -5610,6 +5722,9 @@ ccReg_EPP_i::KeySetInfo(
         const char *clTRID,
         const char *XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
     LOG(NOTICE_LOG, "KeySetInfo: clientID -> %d clTRID [%s] handle [%s] ",
             (int)clientID, clTRID, handle);
     ParsedAction paction;
@@ -5726,6 +5841,9 @@ ccReg_EPP_i::KeySetDelete(
         const char *clTRID,
         const char *XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
     ccReg::Response_var ret;
     ccReg::Errors_var   errors;
     DB                  DBsql;
@@ -5846,6 +5964,9 @@ ccReg_EPP_i::KeySetCreate(
         const char *clTRID,
         const char *XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
     DB                          DBsql;
     std::auto_ptr<EPPNotifier>  ntf;
     ccReg::Response_var         ret;
@@ -6195,6 +6316,8 @@ ccReg_EPP_i::KeySetUpdate(
         const char *clTRID,
         const char *XML)
 {
+  Logging::Context ctx("rifd");
+
     std::auto_ptr<EPPNotifier> ntf;
     DB DbSql;
     int regId, keysetId, techId;
@@ -6692,6 +6815,9 @@ ccReg::Response* ccReg_EPP_i::ContactList(
   ccReg::Lists_out contacts, CORBA::Long clientID, const char* clTRID,
   const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   return FullList( EPP_ListContact , "CONTACT" , "HANDLE" , contacts , clientID, clTRID, XML);
 }
 
@@ -6699,6 +6825,9 @@ ccReg::Response* ccReg_EPP_i::NSSetList(
   ccReg::Lists_out nssets, CORBA::Long clientID, const char* clTRID,
   const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   return FullList( EPP_ListNSset , "NSSET" , "HANDLE" , nssets , clientID, clTRID, XML);
 }
 
@@ -6706,6 +6835,9 @@ ccReg::Response* ccReg_EPP_i::DomainList(
   ccReg::Lists_out domains, CORBA::Long clientID, const char* clTRID,
   const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   return FullList( EPP_ListDomain , "DOMAIN" , "fqdn" , domains , clientID, clTRID, XML);
 }
 
@@ -6716,6 +6848,9 @@ ccReg_EPP_i::KeySetList(
         const char *clTRID,
         const char *XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
     return FullList(
             EPP_ListKeySet, "KEYSET", "HANDLE", keysets, clientID, clTRID, XML);
 }
@@ -6725,6 +6860,9 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
   const char* handle, CORBA::Short level, const ccReg::Lists& fqdns,
   CORBA::Long clientID, const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   DB DBsql;
   ccReg::Response_var ret = new ccReg::Response;
   int regID;
@@ -6910,16 +7048,25 @@ ccReg::Response* ccReg_EPP_i::ObjectSendAuthInfo(
 ccReg::Response* ccReg_EPP_i::domainSendAuthInfo(
   const char* fqdn, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   return ObjectSendAuthInfo( EPP_DomainSendAuthInfo , "DOMAIN" , "fqdn" , fqdn , clientID , clTRID, XML);
 }
 ccReg::Response* ccReg_EPP_i::contactSendAuthInfo(
   const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   return ObjectSendAuthInfo( EPP_ContactSendAuthInfo , "CONTACT" , "handle" , handle , clientID , clTRID, XML);
 }
 ccReg::Response* ccReg_EPP_i::nssetSendAuthInfo(
   const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   return ObjectSendAuthInfo( EPP_NSSetSendAuthInfo , "NSSET" , "handle" , handle , clientID , clTRID, XML);
 }
 
@@ -6930,6 +7077,9 @@ ccReg_EPP_i::keysetSendAuthInfo(
         const char *clTRID,
         const char *XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
     return ObjectSendAuthInfo(
             EPP_KeySetSendAuthInfo, "KEYSET",
             "handle", handle, clientID, clTRID, XML);
@@ -6939,6 +7089,9 @@ ccReg::Response* ccReg_EPP_i::info(
   ccReg::InfoType type, const char* handle, CORBA::Long& count,
   CORBA::Long clientID, const char* clTRID, const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   LOG(
       NOTICE_LOG,
       "Info: clientID -> %d clTRID [%s]", (int ) clientID, clTRID
@@ -7006,6 +7159,9 @@ ccReg::Response* ccReg_EPP_i::getInfoResults(
   ccReg::Lists_out handles, CORBA::Long clientID, const char* clTRID,
   const char* XML)
 {
+  Logging::Context ctx("rifd");
+  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+
   LOG(
       NOTICE_LOG,
       "getResults: clientID -> %d clTRID [%s]", (int ) clientID, clTRID

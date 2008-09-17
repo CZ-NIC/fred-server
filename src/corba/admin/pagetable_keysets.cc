@@ -7,12 +7,16 @@ ccReg_KeySets_i::ccReg_KeySets_i(Register::KeySet::List *kl, const Settings *_pt
 
 ccReg_KeySets_i::~ccReg_KeySets_i()
 {
+  Logging::Context ctx(base_context_);
+
     TRACE("[CALL] ccReg_KeySets_i::~ccReg_KeySets_i()");
 }
 
 ccReg::Filters::Compound_ptr
 ccReg_KeySets_i::add()
 {
+  Logging::Context ctx(base_context_);
+
     TRACE("[CALL] ccReg_KeySets_i::add()");
     it.clearF();
     Database::Filters::KeySet *f = new Database::Filters::KeySetHistoryImpl();
@@ -23,6 +27,8 @@ ccReg_KeySets_i::add()
 Registry::Table::ColumnHeaders *
 ccReg_KeySets_i::getColumnHeaders()
 {
+  Logging::Context ctx(base_context_);
+
     TRACE("[CALL] ccReg_KeySets_i::getColumnHeaders()");
     Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
     ch->length(4);
@@ -37,6 +43,8 @@ Registry::TableRow *
 ccReg_KeySets_i::getRow(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW)
 {
+  Logging::Context ctx(base_context_);
+
     const Register::KeySet::KeySet *k = m_kl->getKeySet(row);
     if (!k)
         throw ccReg::Table::INVALID_ROW();
@@ -56,6 +64,8 @@ ccReg_KeySets_i::getRow(CORBA::Short row)
 void
 ccReg_KeySets_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 {
+  Logging::Context ctx(base_context_);
+
     TRACE(boost::format("[CALL] ccReg_KeySets_i::sortByColumn(%1%, %2%)")
             % column % dir);
     switch (column) {
@@ -82,6 +92,8 @@ ccReg::TID
 ccReg_KeySets_i::getRowId(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW)
 {
+  Logging::Context ctx(base_context_);
+
     const Register::KeySet::KeySet *k = m_kl->getKeySet(row);
     if (!k)
         throw ccReg::Table::INVALID_ROW();
@@ -97,18 +109,24 @@ ccReg_KeySets_i::outputCSV()
 CORBA::Short
 ccReg_KeySets_i::numRows()
 {
+  Logging::Context ctx(base_context_);
+
     return m_kl->getCount();
 }
 
 CORBA::Short
 ccReg_KeySets_i::numColumns()
 {
+  Logging::Context ctx(base_context_);
+
     return 4;
 }
 
 void
 ccReg_KeySets_i::reload()
 {
+  Logging::Context ctx(base_context_);
+
     TRACE("[CALL] ccReg_KeySets_i::reload()");
     m_kl->reload(uf, dbm);
     m_kl->deleteDuplicatesId();
@@ -117,6 +135,8 @@ ccReg_KeySets_i::reload()
 void
 ccReg_KeySets_i::clear()
 {
+  Logging::Context ctx(base_context_);
+
     TRACE("[CALL] ccReg_KeySets_i::clear()");
     m_kl->clearFilter();
 
@@ -127,6 +147,8 @@ ccReg_KeySets_i::clear()
 CORBA::ULongLong
 ccReg_KeySets_i::resultSize()
 {
+  Logging::Context ctx(base_context_);
+
     TRACE("[CALL] ccReg_KeySets_i::resultSize()");
     return m_kl->getRealCount(uf);
 }
@@ -134,6 +156,8 @@ ccReg_KeySets_i::resultSize()
 void
 ccReg_KeySets_i::loadFilter(ccReg::TID id)
 {
+  Logging::Context ctx(base_context_);
+
     TRACE(boost::format("[CALL] ccReg_KeySets_i::loadFilter(%1%)") % id);
 
     ccReg_PageTable_i::loadFilter(id);
@@ -146,6 +170,8 @@ ccReg_KeySets_i::loadFilter(ccReg::TID id)
 void
 ccReg_KeySets_i::saveFilter(const char *name)
 {
+  Logging::Context ctx(base_context_);
+
     TRACE(boost::format("[CALL] ccReg_KeySets_i::saveFilter('%1%')") % name);
     
     std::auto_ptr<Register::Filter::Manager> tmp_filter_manager(
@@ -156,6 +182,8 @@ ccReg_KeySets_i::saveFilter(const char *name)
 Register::KeySet::KeySet *
 ccReg_KeySets_i::findId(ccReg::TID id)
 {
+  Logging::Context ctx(base_context_);
+
     try {
         Register::KeySet::KeySet *keyset =
             dynamic_cast<Register::KeySet::KeySet *>(m_kl->findId(id));
@@ -170,5 +198,8 @@ ccReg_KeySets_i::findId(ccReg::TID id)
 CORBA::Boolean
 ccReg_KeySets_i::numRowsOverLimit()
 {
+  Logging::Context ctx(base_context_);
+
     return m_kl->isLimited();
 }
+

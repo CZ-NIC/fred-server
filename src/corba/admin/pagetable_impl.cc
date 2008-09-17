@@ -9,6 +9,7 @@
 ccReg_PageTable_i::ccReg_PageTable_i()
   : aPageSize(10), aPage(0), sorted_by_(-1), sorted_dir_(false)
 {
+  base_context_ = Logging::Context::get();
 }
 
 ccReg_PageTable_i::~ccReg_PageTable_i()

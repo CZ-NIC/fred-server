@@ -6,17 +6,23 @@ ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::RegistrarList *_rl)
 }
 
 ccReg_Registrars_i::~ccReg_Registrars_i() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Registrars_i::~ccReg_Registrars_i()");
 }
 
 void 
 ccReg_Registrars_i::reload() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] void ccReg_Registrars_i::reload()");
   rl->reload(uf,dbm);
 }
 
 ccReg::Filters::Compound_ptr 
 ccReg_Registrars_i::add() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Registrars_i::add()");
   it.clearF();
   Database::Filters::Registrar *f = new Database::Filters::RegistrarImpl(true);
@@ -27,6 +33,8 @@ ccReg_Registrars_i::add() {
 Registry::Table::ColumnHeaders* 
 ccReg_Registrars_i::getColumnHeaders()
 {
+  Logging::Context ctx(base_context_);
+
   Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(5);
   COLHEAD(ch,0,"Name",CT_OTHER);
@@ -41,6 +49,8 @@ Registry::TableRow*
 ccReg_Registrars_i::getRow(CORBA::Short row)
   throw (ccReg::Table::INVALID_ROW)
 {
+  Logging::Context ctx(base_context_);
+
   const Register::Registrar::Registrar *r = rl->get(row);
   if (!r) throw ccReg::Table::INVALID_ROW();
   Registry::TableRow *tr = new Registry::TableRow;
@@ -58,6 +68,8 @@ ccReg_Registrars_i::getRow(CORBA::Short row)
 
 void 
 ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Registrars_i::sortByColumn(%1%, %2%)") % column % dir);
   /* save sort state */
   ccReg_PageTable_i::sortByColumn(column, dir);
@@ -85,6 +97,8 @@ ccReg::TID
 ccReg_Registrars_i::getRowId(CORBA::Short row) 
   throw (ccReg::Table::INVALID_ROW)
 {
+  Logging::Context ctx(base_context_);
+
   const Register::Registrar::Registrar *r = rl->get(row);
   if (!r) throw ccReg::Table::INVALID_ROW();
   return r->getId();  
@@ -99,18 +113,24 @@ ccReg_Registrars_i::outputCSV()
 CORBA::Short 
 ccReg_Registrars_i::numRows()
 {
+  Logging::Context ctx(base_context_);
+
   return rl->size();
 }
 
 CORBA::Short 
 ccReg_Registrars_i::numColumns()
 {
+  Logging::Context ctx(base_context_);
+
   return 5;
 }
 
 void
 ccReg_Registrars_i::clear()
 {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Registrars_i::clear()");
   rl->clearFilter();
   
@@ -121,12 +141,16 @@ ccReg_Registrars_i::clear()
 CORBA::ULongLong 
 ccReg_Registrars_i::resultSize()
 {
+  Logging::Context ctx(base_context_);
+
   TRACE("ccReg_Registrars_i::resultSize()");
   return rl->getRealCount(uf);
 }
 
 void
 ccReg_Registrars_i::loadFilter(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Registrars_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
@@ -140,6 +164,8 @@ ccReg_Registrars_i::loadFilter(ccReg::TID _id) {
 
 void
 ccReg_Registrars_i::saveFilter(const char* _name) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Registrars_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
@@ -148,6 +174,8 @@ ccReg_Registrars_i::saveFilter(const char* _name) {
 }
 
 Register::Registrar::Registrar* ccReg_Registrars_i::findId(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   try {
     Register::Registrar::Registrar *registrar = dynamic_cast<Register::Registrar::Registrar* >(rl->findId(_id));
     if (registrar) {
@@ -161,5 +189,8 @@ Register::Registrar::Registrar* ccReg_Registrars_i::findId(ccReg::TID _id) {
 }
 
 CORBA::Boolean ccReg_Registrars_i::numRowsOverLimit() {
+  Logging::Context ctx(base_context_);
+
   return rl->isLimited(); 
 }
+

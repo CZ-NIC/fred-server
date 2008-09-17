@@ -5,10 +5,14 @@ ccReg_Domains_i::ccReg_Domains_i(Register::Domain::List *_dl, const Settings *_p
 }
 
 ccReg_Domains_i::~ccReg_Domains_i() {
+  Logging::Context ctx(base_context_);
+  
   TRACE("[CALL] ccReg_Domains_i::~ccReg_Domains_i()");
 }
 
 ccReg::Filters::Compound_ptr ccReg_Domains_i::add() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Domains_i::add()");
   it.clearF();
   Database::Filters::Domain *f = new Database::Filters::DomainHistoryImpl();
@@ -17,12 +21,16 @@ ccReg::Filters::Compound_ptr ccReg_Domains_i::add() {
 }
 
 void ccReg_Domains_i::reload() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Domains_i::reload()");
   dl->reload(uf, dbm);
   dl->deleteDuplicatesId();
 }
 
 Registry::Table::ColumnHeaders* ccReg_Domains_i::getColumnHeaders() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Domains_i::getColumnHeaders()");
   Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(11);
@@ -42,6 +50,8 @@ Registry::Table::ColumnHeaders* ccReg_Domains_i::getColumnHeaders() {
 
 Registry::TableRow* ccReg_Domains_i::getRow(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW) {
+  Logging::Context ctx(base_context_);
+
   const Register::Domain::Domain *d = dl->getDomain(row);
   if (!d)
     throw ccReg::Table::INVALID_ROW();
@@ -67,6 +77,8 @@ Registry::TableRow* ccReg_Domains_i::getRow(CORBA::Short row)
 }
 
 void ccReg_Domains_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Domains_i::sortByColumn(%1%, %2%)") % column % dir);
   /* save sort state */
   ccReg_PageTable_i::sortByColumn(column, dir);
@@ -109,6 +121,8 @@ void ccReg_Domains_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 
 ccReg::TID ccReg_Domains_i::getRowId(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW) {
+  Logging::Context ctx(base_context_);
+
   const Register::Domain::Domain *d = dl->getDomain(row);
   if (!d)
     throw ccReg::Table::INVALID_ROW();
@@ -120,14 +134,20 @@ char* ccReg_Domains_i::outputCSV() {
 }
 
 CORBA::Short ccReg_Domains_i::numRows() {
+  Logging::Context ctx(base_context_);
+
   return dl->getCount();
 }
 
 CORBA::Short ccReg_Domains_i::numColumns() {
+  Logging::Context ctx(base_context_);
+
   return 11;
 }
 
 void ccReg_Domains_i::clear() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Domains_i::clear()");
   dl->clearFilter();
   
@@ -136,11 +156,15 @@ void ccReg_Domains_i::clear() {
 }
 
 CORBA::ULongLong ccReg_Domains_i::resultSize() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Domains_i::resultSize()");
   return dl->getRealCount(uf);
 }
 
 void ccReg_Domains_i::loadFilter(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Domains_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
@@ -153,6 +177,8 @@ void ccReg_Domains_i::loadFilter(ccReg::TID _id) {
 }
 
 void ccReg_Domains_i::saveFilter(const char* _name) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Domains_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
@@ -161,6 +187,8 @@ void ccReg_Domains_i::saveFilter(const char* _name) {
 }
 
 Register::Domain::Domain* ccReg_Domains_i::findId(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   try {
     Register::Domain::Domain *domain = dynamic_cast<Register::Domain::Domain* >(dl->findId(_id));
     if (domain) {
@@ -174,5 +202,8 @@ Register::Domain::Domain* ccReg_Domains_i::findId(ccReg::TID _id) {
 }
 
 CORBA::Boolean ccReg_Domains_i::numRowsOverLimit() {
+  Logging::Context ctx(base_context_);
+
   return dl->isLimited(); 
 }
+

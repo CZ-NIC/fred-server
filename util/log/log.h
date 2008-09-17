@@ -34,14 +34,15 @@ public:
 	  LT_SYSLOG
 	};
 
-	Log(const std::string& _ctx = "");
+	Log(const std::string& _name);
 	~Log();
+
+  void setName(const std::string &_name);
 	void addHandler(Log::Type _type, const boost::any& _param = boost::any());
 
 	void setLevel(Log::Level _ll);
 	Log::Level getLevel() const;
-	void setContext(const std::string &_ctx);
-	
+		
 	void trace(const std::string& _msg);
 	void trace(const boost::format& _frmt);
 	void debug(const std::string& _msg);
@@ -69,7 +70,7 @@ public:
 protected:	
 	std::deque<BaseLogType* > handlers;
 	Log::Level level;
-	std::string context;
+  std::string name;
 };
 
 }

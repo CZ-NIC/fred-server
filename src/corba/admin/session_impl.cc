@@ -11,6 +11,7 @@
 #include "register/notify.h"
 
 #include "log/logger.h"
+#include "log/context.h"
 #include "util.h"
 
 ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
@@ -20,8 +21,10 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  ccReg_User_i* _user) :
   session_id_(_session_id), cfg_(cfg), m_user(_user), m_db_manager(database), m_mailer_manager(ns) {
   
-  db.OpenDatabase(database.c_str());
+  base_context_ = Logging::Context::get() + "/" + session_id_;
+  Logging::Context ctx(session_id_);
 
+  db.OpenDatabase(database.c_str());
   m_register_manager.reset(Register::Manager::create(&db,
                                                      cfg.get<bool>("registry.restricted_handles")));
   m_register_manager->dbManagerInit(&m_db_manager);
@@ -73,6 +76,8 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
 }
 
 ccReg_Session_i::~ccReg_Session_i() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Session_i::~ccReg_Session_i()");
 
   delete m_registrars;
@@ -92,10 +97,14 @@ ccReg_Session_i::~ccReg_Session_i() {
 }
 
 ccReg::User_ptr ccReg_Session_i::getUser() {
+  Logging::Context ctx(base_context_);
+
   return m_user->_this();
 }
 
 Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Session_i::getPageTable(%1%)") % _type);
   switch (_type) {
     case ccReg::FT_FILTER:
@@ -124,12 +133,14 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
       return m_files->_this();
       break;
   }
-  LOGGER("corba").debug(boost::format("[ERROR] ccReg_Session_i::getPageTable(%1%): unknown type specified")
+  LOGGER(PACKAGE).debug(boost::format("[ERROR] ccReg_Session_i::getPageTable(%1%): unknown type specified")
       % _type);
   return Registry::PageTable::_nil();
 }
 
 CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Session_i::getDetail(%1%, %2%)") % _type
       % _id);
   CORBA::Any *result = new CORBA::Any;
@@ -174,7 +185,7 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
     case ccReg::FT_FILTER:
     case ccReg::FT_OBJ:
     case ccReg::FT_FILE:
-      LOGGER("corba").error("Calling method with not implemented parameter!");
+      LOGGER(PACKAGE).error("Calling method with not implemented parameter!");
     default:
       throw ccReg::Admin::OBJECT_NOT_FOUND();
       break;
@@ -186,17 +197,17 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
 void ccReg_Session_i::updateActivity() {
   ptime tmp = m_last_activity;
   m_last_activity = second_clock::local_time();
-  LOGGER("corba").debug(boost::format("session activity update: %1% (was %2%)")
+  LOGGER(PACKAGE).debug(boost::format("session activity update: %1% (was %2%)")
       % m_last_activity % tmp);
 }
 
 bool ccReg_Session_i::isTimeouted() const {
-  /* TODO: Timeout value should be in configuration */
   ptime threshold = second_clock::local_time() - seconds(cfg_.get<unsigned>("adifd.session_timeout"));
   bool timeout = m_last_activity < threshold;
-  LOGGER("corba").debug(boost::format("session `%1%' will timeout in %2% -- session %3%")
-      % session_id_ % to_simple_string(m_last_activity - threshold)
-      % (timeout ? "timeout" : "alive"));
+  LOGGER(PACKAGE).debug(boost::format("session `%1%' will timeout in %2% -- session %3%")
+                                      % session_id_ 
+                                      % to_simple_string(m_last_activity - threshold)
+                                      % (timeout ? "timeout" : "alive"));
   return timeout;
 }
 
@@ -209,7 +220,7 @@ Registry::Domain::Detail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
   if (0) {
   }
   else {
-    LOGGER("corba").debug(boost::format("constructing domain filter for object id=%1%' detail")
+    LOGGER(PACKAGE).debug(boost::format("constructing domain filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Register::Domain::List>
         tmp_domain_list(m_register_manager->getDomainManager()->createList());
@@ -240,7 +251,7 @@ Registry::Contact::Detail* ccReg_Session_i::getContactDetail(ccReg::TID _id) {
   if (0) {
   }
   else {
-    LOGGER("corba").debug(boost::format("constructing contact filter for object id=%1%' detail")
+    LOGGER(PACKAGE).debug(boost::format("constructing contact filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Register::Contact::List>
         tmp_contact_list(m_register_manager->getContactManager()->createList());
@@ -272,7 +283,7 @@ Registry::NSSet::Detail* ccReg_Session_i::getNSSetDetail(ccReg::TID _id) {
   if (0) {
   }
   else {
-    LOGGER("corba").debug(boost::format("constructing nsset filter for object id=%1%' detail")
+    LOGGER(PACKAGE).debug(boost::format("constructing nsset filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Register::NSSet::List>
         tmp_nsset_list(m_register_manager->getNSSetManager()->createList());
@@ -305,7 +316,7 @@ ccReg_Session_i::getKeySetDetail(ccReg::TID _id)
     if (0) {
     }
     else {
-        LOGGER("corba").debug(boost::format("constructing keyset filter for object id=%1%' detail") % _id);
+        LOGGER(PACKAGE).debug(boost::format("constructing keyset filter for object id=%1%' detail") % _id);
 
         std::auto_ptr <Register::KeySet::List>
             tmp_keyset_list(m_register_manager->getKeySetManager()->createList());
@@ -336,7 +347,7 @@ Registry::Registrar::Detail* ccReg_Session_i::getRegistrarDetail(ccReg::TID _id)
   if (0) {
   }
   else {
-    LOGGER("corba").debug(boost::format("constructing registrar filter for object id=%1%' detail")
+    LOGGER(PACKAGE).debug(boost::format("constructing registrar filter for object id=%1%' detail")
         % _id);
     Register::Registrar::RegistrarList * tmp_registrar_list =
         m_register_manager->getRegistrarManager()->getList();
@@ -364,7 +375,7 @@ Registry::PublicRequest::Detail* ccReg_Session_i::getPublicRequestDetail(ccReg::
   if (0) {
   }
   else {
-    LOGGER("corba").debug(boost::format("constructing public request filter for object id=%1%' detail")
+    LOGGER(PACKAGE).debug(boost::format("constructing public request filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Register::PublicRequest::List> tmp_request_list(m_publicrequest_manager->createList());
 
@@ -391,7 +402,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
   if (0) {
   }
   else {
-    LOGGER("corba").debug(boost::format("constructing invoice filter for object id=%1%' detail")
+    LOGGER(PACKAGE).debug(boost::format("constructing invoice filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Register::Invoicing::List> tmp_invoice_list(m_invoicing_manager->createList());
 
@@ -418,7 +429,7 @@ Registry::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
   if (0) {
   }
   else {
-    LOGGER("corba").debug(boost::format("constructing mail filter for object id=%1%' detail")
+    LOGGER(PACKAGE).debug(boost::format("constructing mail filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Register::Mail::List> tmp_mail_list(mail_manager_->createList());
 
@@ -445,7 +456,7 @@ Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id)
   if (0) {
   }
   else {
-    LOGGER("corba").debug(boost::format("constructing eppaction filter for object id=%1%' detail")
+    LOGGER(PACKAGE).debug(boost::format("constructing eppaction filter for object id=%1%' detail")
         % _id);
     std::auto_ptr<Register::Registrar::EPPActionList> tmp_action_list(m_register_manager->getRegistrarManager()->createEPPActionList());
 
@@ -465,7 +476,7 @@ Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id)
 
 ccReg::DomainDetail* ccReg_Session_i::createDomainDetail(Register::Domain::Domain* _domain) {
   TRACE("[CALL] ccReg_Session_i::createDomainDetail()");
-  LOGGER("corba").debug(boost::format("generating domain detail for object id=%1%")
+  LOGGER(PACKAGE).debug(boost::format("generating domain detail for object id=%1%")
       % _domain->getId());
   ccReg::DomainDetail *detail = new ccReg::DomainDetail;
 
@@ -555,7 +566,7 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
     for (unsigned s = 0; s < act->getStatusCount(); ++s) {
       const Register::Status *tmp = act->getStatusByIdx(s);
 
-      LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
+      LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
       std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
@@ -601,7 +612,7 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
       }
     }
     catch (Register::NOT_FOUND) {
-      LOGGER("corba").error(boost::format("domain id=%1% detail lib -> CORBA: request for admin contact out of range 0..%2%")
+      LOGGER(PACKAGE).error(boost::format("domain id=%1% detail lib -> CORBA: request for admin contact out of range 0..%2%")
                                            % act->getId() % act->getAdminCount(1));
     }
 
@@ -629,7 +640,7 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
       }
     }
     catch (Register::NOT_FOUND) {
-      LOGGER("corba").error(boost::format("domain id=%1% detail lib -> CORBA: request for temp contact out of range 0..%2%")
+      LOGGER(PACKAGE).error(boost::format("domain id=%1% detail lib -> CORBA: request for temp contact out of range 0..%2%")
                                            % act->getId() % act->getAdminCount(2));
     }
   }
@@ -639,7 +650,7 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
 
 ccReg::ContactDetail* ccReg_Session_i::createContactDetail(Register::Contact::Contact* _contact) {
   TRACE("[CALL] ccReg_Session_i::createContactDetail()");
-  LOGGER("corba").debug(boost::format("generating contact detail for object id=%1%")
+  LOGGER(PACKAGE).debug(boost::format("generating contact detail for object id=%1%")
       % _contact->getId());
   ccReg::ContactDetail *detail = new ccReg::ContactDetail;
 
@@ -705,7 +716,7 @@ Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register:
     Register::Contact::Contact *act  = _list->getContact(n);
     Register::Contact::Contact *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getContact(n + 1));
 
-    LOGGER("corba").debug(boost::format("history detail -- iteration left %1%, history id is %2%") % n % act->getHistoryId());
+    LOGGER(PACKAGE).debug(boost::format("history detail -- iteration left %1%, history id is %2%") % n % act->getHistoryId());
 
     /* just copy static data */
     if (act == prev) {
@@ -736,7 +747,7 @@ Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register:
     for (unsigned s = 0; s < act->getStatusCount(); ++s) {
       const Register::Status *tmp = act->getStatusByIdx(s);
 
-      LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
+      LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
       std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
@@ -790,7 +801,7 @@ Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register:
 
 ccReg::NSSetDetail* ccReg_Session_i::createNSSetDetail(Register::NSSet::NSSet* _nsset) {
   TRACE("[CALL] ccReg_Session_i::createNSSetDetail()");
-  LOGGER("corba").debug(boost::format("generating nsset detail for object id=%1%")
+  LOGGER(PACKAGE).debug(boost::format("generating nsset detail for object id=%1%")
       % _nsset->getId());
   ccReg::NSSetDetail *detail = new ccReg::NSSetDetail;
 
@@ -877,7 +888,7 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
     for (unsigned s = 0; s < act->getStatusCount(); ++s) {
       const Register::Status *tmp = act->getStatusByIdx(s);
 
-      LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
+      LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
       std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
@@ -917,7 +928,7 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
       }
     }
     catch (Register::NOT_FOUND) {
-      LOGGER("corba").error(boost::format("nsset id=%1% detail lib -> CORBA: request for admin contact out of range 0..%2%")
+      LOGGER(PACKAGE).error(boost::format("nsset id=%1% detail lib -> CORBA: request for admin contact out of range 0..%2%")
                                            % act->getId() % act->getAdminCount());
     }
 
@@ -936,7 +947,7 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
         for (unsigned k = 0; k < act->getHostCount(); ++k) {
           dns_hosts[k].fqdn = DUPSTRFUN(act->getHostByIdx(k)->getName);
           dns_hosts[k].inet.length(act->getHostByIdx(k)->getAddrCount());
-          LOGGER("corba").debug(boost::format("nsset id=%1% detail lib -> CORBA: dns host `%2%' has %3% ip addresses")
+          LOGGER(PACKAGE).debug(boost::format("nsset id=%1% detail lib -> CORBA: dns host `%2%' has %3% ip addresses")
                                                % act->getId() % act->getHostByIdx(k)->getName() % act->getHostByIdx(k)->getAddrCount());
           for (unsigned j = 0; j < act->getHostByIdx(k)->getAddrCount(); ++j) {
             dns_hosts[k].inet[j] = DUPSTRC(act->getHostByIdx(k)->getAddrByIdx(j));
@@ -949,7 +960,7 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
       }
     }
     catch (Register::NOT_FOUND) {
-      LOGGER("corba").error(boost::format("nsset id=%1% detail lib -> CORBA: request for host out of range 0..%2%")
+      LOGGER(PACKAGE).error(boost::format("nsset id=%1% detail lib -> CORBA: request for host out of range 0..%2%")
                                            % act->getId() % act->getHostCount());
     }
 
@@ -962,7 +973,7 @@ ccReg::KeySetDetail *
 ccReg_Session_i::createKeySetDetail(Register::KeySet::KeySet *_keyset)
 {
     TRACE("[CALL] ccReg_Session_i::createKeySetDetail()");
-    LOGGER("corba").debug(boost::format(
+    LOGGER(PACKAGE).debug(boost::format(
                 "generating keyset detail for object id=%1%")
             % _keyset->getId());
     ccReg::KeySetDetail *detail = new ccReg::KeySetDetail;
@@ -1049,7 +1060,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
     for (unsigned s = 0; s < act->getStatusCount(); ++s) {
       const Register::Status *tmp = act->getStatusByIdx(s);
 
-      LOGGER("corba").debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
+      LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
       std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
@@ -1089,7 +1100,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
       }
     }
     catch (Register::NOT_FOUND) {
-      LOGGER("corba").error(boost::format("keyset id=%1% detail lib -> CORBA: request for admin contact out of range 0..%2%")
+      LOGGER(PACKAGE).error(boost::format("keyset id=%1% detail lib -> CORBA: request for admin contact out of range 0..%2%")
                                            % act->getId() % act->getAdminCount());
     }
 
@@ -1119,7 +1130,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
       }
     }
     catch (Register::NOT_FOUND) {
-      LOGGER("corba").error(boost::format("keyset id=%1% detail lib -> CORBA: request for dsrecord out of range 0..%2%")
+      LOGGER(PACKAGE).error(boost::format("keyset id=%1% detail lib -> CORBA: request for dsrecord out of range 0..%2%")
                                            % act->getId() % act->getDSRecordCount());
     }
 
@@ -1130,7 +1141,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
 
 Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Register::Registrar::Registrar* _registrar) {
   TRACE("[CALL] ccReg_Session_i::createRegistrarDetail()");
-  LOGGER("corba").debug(boost::format("generating registrar detail for object id=%1%")
+  LOGGER(PACKAGE).debug(boost::format("generating registrar detail for object id=%1%")
       % _registrar->getId());
   Registry::Registrar::Detail *detail = new Registry::Registrar::Detail();
 
@@ -1166,16 +1177,18 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Register::Re
 }
 
 void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar) {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
   Register::Registrar::RegistrarList *tmp_registrar_list =
       m_register_manager->getRegistrarManager()->getList();
   Register::Registrar::Registrar *update_registrar; // registrar to be created or updated
   if (!_registrar.id) {
-    LOGGER("corba").debug("no registrar id specified; creating new registrar...");
+    LOGGER(PACKAGE).debug("no registrar id specified; creating new registrar...");
     update_registrar = tmp_registrar_list->create();
   }
   else {
-    LOGGER("corba").debug(boost::format("registrar '%1%' id=%2% specified; updating registrar...") 
+    LOGGER(PACKAGE).debug(boost::format("registrar '%1%' id=%2% specified; updating registrar...") 
       % _registrar.handle % _registrar.id);
     Database::Filters::Union uf;
     Database::Filters::Registrar *filter = new Database::Filters::RegistrarImpl();
@@ -1220,7 +1233,7 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar) {
   } catch (...) {
     throw ccReg::Admin::UpdateFailed();
   }
-  LOGGER("corba").debug(boost::format("registrar with id=%1% saved") 
+  LOGGER(PACKAGE).debug(boost::format("registrar with id=%1% saved") 
       % update_registrar->getId());
 }
 
@@ -1319,7 +1332,7 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Regi
         break;
 
       default:
-        LOGGER("corba").error("Not allowed object type for PublicRequest detail!");
+        LOGGER(PACKAGE).error("Not allowed object type for PublicRequest detail!");
         break;
     }
   }
@@ -1437,6 +1450,8 @@ Registry::EPPAction::Detail* ccReg_Session_i::createEppActionDetail(Register::Re
 }
 
 void ccReg_Session_i::setHistory(CORBA::Boolean _flag) {
+  Logging::Context ctx(base_context_);
+
   if (_flag) {
     settings_.set("filter.history", "on");
   }

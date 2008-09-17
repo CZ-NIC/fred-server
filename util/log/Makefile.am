@@ -1,7 +1,7 @@
 AM_CPPFLAGS = ${BOOST_CPPFLAGS} $(AM_CFLAGS) -I$(top_srcdir)/util 
 
 noinst_LIBRARIES = liblog.a
-liblog_a_SOURCES = logger.cc log.cc log_types.cc log.h log_types.h logger.h 
+liblog_a_SOURCES = logger.cc log.cc log_types.cc context.cc log.h log_types.h logger.h context.h
 liblog_a_ADD 	 = $(BOOST_THREAD_LIB)
 
 noinst_PROGRAMS = test-log

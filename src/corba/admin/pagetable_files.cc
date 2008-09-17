@@ -5,10 +5,14 @@ ccReg_Files_i::ccReg_Files_i(Register::File::List *_list) :
 }
 
 ccReg_Files_i::~ccReg_Files_i() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Files_i::~ccReg_Files_i()");
 }
 
 ccReg::Filters::Compound_ptr ccReg_Files_i::add() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Files_i::add()");
   it.clearF();
   Database::Filters::File *f = new Database::Filters::FileImpl(true);
@@ -17,6 +21,8 @@ ccReg::Filters::Compound_ptr ccReg_Files_i::add() {
 }
 
 Registry::Table::ColumnHeaders* ccReg_Files_i::getColumnHeaders() {
+  Logging::Context ctx(base_context_);
+
   Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(4);
   COLHEAD(ch, 0, "Name", CT_OTHER);
@@ -28,6 +34,8 @@ Registry::Table::ColumnHeaders* ccReg_Files_i::getColumnHeaders() {
 
 Registry::TableRow* ccReg_Files_i::getRow(CORBA::Short _row)
     throw (ccReg::Table::INVALID_ROW) {
+  Logging::Context ctx(base_context_);
+
   const Register::File::File *file = file_list_->get(_row);
   if (!file)
     throw ccReg::Table::INVALID_ROW();
@@ -42,6 +50,8 @@ Registry::TableRow* ccReg_Files_i::getRow(CORBA::Short _row)
 }
 
 void ccReg_Files_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Files_i::sortByColumn(%1%, %2%)") % _column % _dir);
   /* save sort state */
   ccReg_PageTable_i::sortByColumn(_column, _dir);
@@ -64,6 +74,8 @@ void ccReg_Files_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
 
 ccReg::TID ccReg_Files_i::getRowId(CORBA::Short _row)
     throw (ccReg::Table::INVALID_ROW) {
+  Logging::Context ctx(base_context_);
+
   const Register::File::File *file = file_list_->get(_row);
   if (!file)
     throw ccReg::Table::INVALID_ROW();
@@ -75,30 +87,42 @@ char* ccReg_Files_i::outputCSV() {
 }
 
 CORBA::Short ccReg_Files_i::numRows() {
+  Logging::Context ctx(base_context_);
+
   return file_list_->getCount();
 }
 
 CORBA::Short ccReg_Files_i::numColumns() {
+  Logging::Context ctx(base_context_);
+
   return 4;
 }
 
 void ccReg_Files_i::reload() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Files_i::reload()");
   file_list_->reload(uf);
 }
 
 void ccReg_Files_i::clear() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_Files_i::clear()");
   ccReg_PageTable_i::clear();
   file_list_->clear();
 }
 
 CORBA::ULongLong ccReg_Files_i::resultSize() {
+  Logging::Context ctx(base_context_);
+
   TRACE("ccReg_Files_i::resultSize()");
   return file_list_->getRealCount(uf);
 }
 
 void ccReg_Files_i::loadFilter(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Files_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
@@ -111,6 +135,8 @@ void ccReg_Files_i::loadFilter(ccReg::TID _id) {
 }
 
 void ccReg_Files_i::saveFilter(const char* _name) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_Files_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
@@ -119,6 +145,8 @@ void ccReg_Files_i::saveFilter(const char* _name) {
 }
 
 Register::File::File* ccReg_Files_i::findId(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   try {
     Register::File::File *file = dynamic_cast<Register::File::File* >(file_list_->findId(_id));
     if (file) {
@@ -132,5 +160,8 @@ Register::File::File* ccReg_Files_i::findId(ccReg::TID _id) {
 }
 
 CORBA::Boolean ccReg_Files_i::numRowsOverLimit() {
+  Logging::Context ctx(base_context_);
+
   return file_list_->isLimited(); 
 }
+

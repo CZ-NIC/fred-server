@@ -21,6 +21,8 @@
 #include "old_utils/conf.h"
 
 #include "log/logger.h"
+#include "log/context.h"
+
 #include "db/manager.h"
 #include "model/model_filters.h"
 
@@ -76,6 +78,12 @@ protected:
   ccReg::FilterType filterType;
   int sorted_by_;
   bool sorted_dir_;
+
+  /**
+   * context with session object was created - need for futher call on object
+   * which are done in separate threads 
+   */
+  std::string base_context_;
 
 public:
   ccReg_PageTable_i();

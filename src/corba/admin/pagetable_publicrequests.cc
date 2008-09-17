@@ -5,10 +5,14 @@ ccReg_PublicRequests_i::ccReg_PublicRequests_i(Register::PublicRequest::List *_l
 }
 
 ccReg_PublicRequests_i::~ccReg_PublicRequests_i() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_PublicRequests_i::~ccReg_PublicRequests_i()");
 }
 
 ccReg::Filters::Compound_ptr ccReg_PublicRequests_i::add() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_PublicRequests_i::add()");
   it.clearF();
   Database::Filters::PublicRequest *f = new Database::Filters::PublicRequestImpl();
@@ -17,11 +21,15 @@ ccReg::Filters::Compound_ptr ccReg_PublicRequests_i::add() {
 }
 
 void ccReg_PublicRequests_i::reload() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_PublicRequests_i::reload()");
   request_list_->reload(uf);
 }
 
 Registry::Table::ColumnHeaders* ccReg_PublicRequests_i::getColumnHeaders() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_PublicRequests_i::getColumnHeaders()");
   Registry::Table::ColumnHeaders *columns = new Registry::Table::ColumnHeaders();
   columns->length(4);
@@ -34,6 +42,8 @@ Registry::Table::ColumnHeaders* ccReg_PublicRequests_i::getColumnHeaders() {
 
 Registry::TableRow* ccReg_PublicRequests_i::getRow(CORBA::Short _row)
     throw (ccReg::Table::INVALID_ROW) {
+  Logging::Context ctx(base_context_);
+
   const Register::PublicRequest::PublicRequest *request = request_list_->get(_row);
   if (!request)
     throw ccReg::Table::INVALID_ROW();
@@ -47,6 +57,8 @@ Registry::TableRow* ccReg_PublicRequests_i::getRow(CORBA::Short _row)
 }
 
 void ccReg_PublicRequests_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_PublicRequests_i::sortByColumn(%1%, %2%)") % _column % _dir);
   /* save sort state */
   ccReg_PageTable_i::sortByColumn(_column, _dir);
@@ -69,6 +81,8 @@ void ccReg_PublicRequests_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _
 
 ccReg::TID ccReg_PublicRequests_i::getRowId(CORBA::Short _row)
     throw (ccReg::Table::INVALID_ROW) {
+  Logging::Context ctx(base_context_);
+
   const Register::PublicRequest::PublicRequest *request = request_list_->get(_row);
   if (!request)
     throw ccReg::Table::INVALID_ROW();
@@ -80,25 +94,35 @@ char* ccReg_PublicRequests_i::outputCSV() {
 }
 
 CORBA::Short ccReg_PublicRequests_i::numRows() {
+  Logging::Context ctx(base_context_);
+
   return request_list_->getCount();
 }
 
 CORBA::Short ccReg_PublicRequests_i::numColumns() {
+  Logging::Context ctx(base_context_);
+
   return 4;
 }
 
 void ccReg_PublicRequests_i::clear() {
+  Logging::Context ctx(base_context_);
+
   TRACE("[CALL] ccReg_PublicRequests_i::clear()");
   ccReg_PageTable_i::clear();
   request_list_->clear();
 }
 
 CORBA::ULongLong ccReg_PublicRequests_i::resultSize() {
+  Logging::Context ctx(base_context_);
+
   TRACE("ccReg_PublicRequests_i::resultSize()");
   return request_list_->getRealCount(uf);
 }
 
 void ccReg_PublicRequests_i::loadFilter(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_PublicRequests_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
 
@@ -111,6 +135,8 @@ void ccReg_PublicRequests_i::loadFilter(ccReg::TID _id) {
 }
 
 void ccReg_PublicRequests_i::saveFilter(const char* _name) {
+  Logging::Context ctx(base_context_);
+
   TRACE(boost::format("[CALL] ccReg_PublicRequests_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
@@ -119,6 +145,8 @@ void ccReg_PublicRequests_i::saveFilter(const char* _name) {
 }
 
 Register::PublicRequest::PublicRequest* ccReg_PublicRequests_i::findId(ccReg::TID _id) {
+  Logging::Context ctx(base_context_);
+
   try {
     Register::PublicRequest::PublicRequest *request = dynamic_cast<Register::PublicRequest::PublicRequest* >(request_list_->findId(_id));
     if (request) {
@@ -132,5 +160,8 @@ Register::PublicRequest::PublicRequest* ccReg_PublicRequests_i::findId(ccReg::TI
 }
 
 CORBA::Boolean ccReg_PublicRequests_i::numRowsOverLimit() {
+  Logging::Context ctx(base_context_);
+
   return request_list_->isLimited(); 
 }
+
