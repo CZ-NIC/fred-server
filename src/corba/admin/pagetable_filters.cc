@@ -5,8 +5,6 @@ ccReg_Filters_i::ccReg_Filters_i(Register::Filter::List& _filter_list) :
 }
 
 ccReg_Filters_i::~ccReg_Filters_i() {
-  Logging::Context ctx(base_context_);
-
   TRACE("[CALL] ccReg_Filters_i::~ccReg_Filters_i()");
 }
 

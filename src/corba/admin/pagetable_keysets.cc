@@ -7,8 +7,6 @@ ccReg_KeySets_i::ccReg_KeySets_i(Register::KeySet::List *kl, const Settings *_pt
 
 ccReg_KeySets_i::~ccReg_KeySets_i()
 {
-  Logging::Context ctx(base_context_);
-
     TRACE("[CALL] ccReg_KeySets_i::~ccReg_KeySets_i()");
 }
 

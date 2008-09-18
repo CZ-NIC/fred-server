@@ -5,8 +5,6 @@ ccReg_EPPActions_i::ccReg_EPPActions_i(Register::Registrar::EPPActionList *_eal)
 }
 
 ccReg_EPPActions_i::~ccReg_EPPActions_i() {
-  Logging::Context ctx(base_context_);
-
   TRACE("[CALL] ccReg_EPPActions_i::~ccReg_EPPActions_i()");
 }
 

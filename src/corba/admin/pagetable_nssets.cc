@@ -5,8 +5,6 @@ ccReg_NSSets_i::ccReg_NSSets_i(Register::NSSet::List *_nl, const Settings *_ptr)
 }
 
 ccReg_NSSets_i::~ccReg_NSSets_i() {
-  Logging::Context ctx(base_context_);
-
   TRACE("[CALL] ccReg_NSSets_i::~ccReg_NSSets_i()");
 }
 

@@ -5,8 +5,6 @@ ccReg_Contacts_i::ccReg_Contacts_i(Register::Contact::List *_cl, const Settings 
 }
 
 ccReg_Contacts_i::~ccReg_Contacts_i() {
-  Logging::Context ctx(base_context_);
-
   TRACE("[CALL] ccReg_Contacts_i::~ccReg_Contacts_i()");
 }
 

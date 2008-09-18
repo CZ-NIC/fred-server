@@ -5,8 +5,6 @@ ccReg_PublicRequests_i::ccReg_PublicRequests_i(Register::PublicRequest::List *_l
 }
 
 ccReg_PublicRequests_i::~ccReg_PublicRequests_i() {
-  Logging::Context ctx(base_context_);
-
   TRACE("[CALL] ccReg_PublicRequests_i::~ccReg_PublicRequests_i()");
 }
 

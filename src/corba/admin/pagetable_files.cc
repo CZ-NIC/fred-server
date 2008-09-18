@@ -5,8 +5,6 @@ ccReg_Files_i::ccReg_Files_i(Register::File::List *_list) :
 }
 
 ccReg_Files_i::~ccReg_Files_i() {
-  Logging::Context ctx(base_context_);
-
   TRACE("[CALL] ccReg_Files_i::~ccReg_Files_i()");
 }
 

@@ -5,8 +5,6 @@ ccReg_Domains_i::ccReg_Domains_i(Register::Domain::List *_dl, const Settings *_p
 }
 
 ccReg_Domains_i::~ccReg_Domains_i() {
-  Logging::Context ctx(base_context_);
-  
   TRACE("[CALL] ccReg_Domains_i::~ccReg_Domains_i()");
 }
 

@@ -34,6 +34,7 @@ FileLog::FileLog(const std::string& _name) :
 }
 
 FileLog::~FileLog() {
+  _ofs.flush();
 	_ofs.close();
 }
 
@@ -51,18 +52,35 @@ void FileLog::msg(Log::Level _ll, const std::string& _msg,
 
 	boost::mutex::scoped_lock scoped_lock(mutex);
 	
-	if (_name.empty())  
-	  _ofs << boost::format("[%1%] %|5t|[%2%] %|20t|%3%\n")
-	      % str_now % level2str(_ll) % _msg;
-	else
-	  _ofs << boost::format("[%1%] %|20t|[%2%] %|40t|[%3%] %|50t|%4%\n")
-	      % str_now % _name % level2str(_ll) % _msg;
+	if (_name.empty()) {	
+	  _ofs << boost::format("[%1%] %|5t|[%2%] %|20t|%3%")
+	                        % str_now 
+                          % level2str(_ll) 
+                          % _msg;
+  }
+	else if (!Context::get().empty()) {
+	  _ofs << boost::format("[%1%] %|20t|[%2%] %|40t|[%3%] %|50t|[%4%] -- %5%")
+	                        % str_now 
+                          % _name 
+                          % level2str(_ll)
+                          % Context::get()
+                          % _msg;
+  }
+  else {
+	  _ofs << boost::format("[%1%] %|20t|[%2%] %|40t|[%3%] %|50t|%4%")
+	                        % str_now 
+                          % _name 
+                          % level2str(_ll)
+                          % _msg;
+  }
+  _ofs << std::endl;
 }
 
 ConsoleLog::ConsoleLog() {
 }
 
 ConsoleLog::~ConsoleLog() {
+  std::cout.flush();
 }
 
 void ConsoleLog::msg(Log::Level _ll, const std::string& _msg,
@@ -80,13 +98,13 @@ void ConsoleLog::msg(Log::Level _ll, const std::string& _msg,
 	boost::mutex::scoped_lock scoped_lock(mutex);
   
 	if (_name.empty()) {	
-	  std::cout << boost::format("[%1%] %|5t|[%2%] %|20t|%3%\n")
+	  std::cout << boost::format("[%1%] %|5t|[%2%] %|20t|%3%")
 	                             % str_now 
                                % level2str(_ll) 
                                % _msg;
   }
 	else if (!Context::get().empty()) {
-	  std::cout << boost::format("[%1%] %|20t|[%2%] %|40t|[%3%] %|50t|[%4%] -- %5% \n")
+	  std::cout << boost::format("[%1%] %|20t|[%2%] %|40t|[%3%] %|50t|[%4%] -- %5%")
 	                             % str_now 
                                % _name 
                                % level2str(_ll)
@@ -94,12 +112,13 @@ void ConsoleLog::msg(Log::Level _ll, const std::string& _msg,
                                % _msg;
   }
   else {
-	  std::cout << boost::format("[%1%] %|20t|[%2%] %|40t|[%3%] %|50t|%4% \n")
+	  std::cout << boost::format("[%1%] %|20t|[%2%] %|40t|[%3%] %|50t|%4%")
 	                             % str_now 
                                % _name 
                                % level2str(_ll)
                                % _msg;
   }
+  std::cout << std::endl;
 }
 
 SysLog::SysLog(int _facility) :
@@ -111,11 +130,11 @@ SysLog::~SysLog() {
 
 void SysLog::msg(Log::Level _ll, const std::string& _msg,
 		const std::string& _name) {
-	std::string ctx = (_name.empty() ? "" : "[" + _name + "] ");
+	std::string prefix = (Context::get().empty() ? "" : "[" + Context::get() + "] -- ");
 	if (_ll == Log::LL_TRACE)
 	  _ll = Log::LL_DEBUG;
 	
-	syslog(_ll | ((LOG_FAC(LOG_LOCAL0) + facility) << 3), std::string(ctx + _msg).c_str());
+	syslog(_ll | ((LOG_FAC(LOG_LOCAL0) + facility) << 3), std::string(prefix + _msg).c_str());
 }
 
 }

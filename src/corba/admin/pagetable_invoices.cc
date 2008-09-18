@@ -5,8 +5,6 @@ ccReg_Invoices_i::ccReg_Invoices_i(Register::Invoicing::List *_invoice_list) :
 }
 
 ccReg_Invoices_i::~ccReg_Invoices_i() {
-  Logging::Context ctx(base_context_);
-
   TRACE("[CALL] ccReg_Invoices_i::~ccReg_Invoices_i()");
 }
 

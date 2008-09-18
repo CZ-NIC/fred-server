@@ -73,8 +73,6 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
 }
 
 ccReg_Admin_i::~ccReg_Admin_i() {
-  Logging::Context ctx(server_name_);
-
   TRACE("[CALL] ccReg_Admin_i::~ccReg_Admin_i()");
   db.Disconnect();
 

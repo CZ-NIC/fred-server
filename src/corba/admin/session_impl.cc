@@ -76,7 +76,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
 }
 
 ccReg_Session_i::~ccReg_Session_i() {
-  Logging::Context ctx(base_context_);
+  Logging::Context ctx(session_id_);
 
   TRACE("[CALL] ccReg_Session_i::~ccReg_Session_i()");
 

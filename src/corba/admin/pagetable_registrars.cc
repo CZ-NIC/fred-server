@@ -6,8 +6,6 @@ ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::RegistrarList *_rl)
 }
 
 ccReg_Registrars_i::~ccReg_Registrars_i() {
-  Logging::Context ctx(base_context_);
-
   TRACE("[CALL] ccReg_Registrars_i::~ccReg_Registrars_i()");
 }
 

@@ -5,8 +5,6 @@ ccReg_Mails_i::ccReg_Mails_i(Register::Mail::List *_list, NameService *ns) :
 }
 
 ccReg_Mails_i::~ccReg_Mails_i() {
-  Logging::Context ctx(base_context_);
-
   TRACE("[CALL] ccReg_Mails_i::~ccReg_Mails_i()");
 }
 
