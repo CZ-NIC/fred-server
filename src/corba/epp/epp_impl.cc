@@ -6141,14 +6141,14 @@ ccReg_EPP_i::KeySetCreate(
                                         REASON_MSG_DSRECORD_BAD_DIGEST_TYPE,
                                         GetRegistrarLang(clientID)
                                         );
+                                break;
                             }
-                            break;
                         }
                     }
                     // dsrecord digest length test
                     if (ret->code == 0) {
                         // digest must be 40 characters length (because SHA-1 is used)
-                        for (int ii = 0; ii < (int)dsrec.length(); i++) {
+                        for (int ii = 0; ii < (int)dsrec.length(); ii++) {
                             if (strlen(dsrec[ii].digest) != 40) {
                                 LOG(WARNING_LOG,
                                         "Digest length is %d char (must be 40)",
@@ -6161,8 +6161,8 @@ ccReg_EPP_i::KeySetCreate(
                                         REASON_MSG_DSRECORD_BAD_DIGEST_LENGTH,
                                         GetRegistrarLang(clientID)
                                         );
+                                break;
                             }
-                            break;
                         }
                     }
 
@@ -6328,10 +6328,10 @@ ccReg_EPP_i::KeySetUpdate(
     ret->code = 0;
     errors->length(0);
 
-    int *techAdd = new int[tech_add.length()];
-    int *techRem = new int[tech_rem.length()];
-    // int *dsrecAdd = new int[dsrec_add.length()];
-    // int *dsrecRem = new int[dsrec_rem.length()];
+    int *techAdd = NULL;
+    int *techRem = NULL;
+    techAdd = new int[tech_add.length()];
+    techRem = new int[tech_rem.length()];
 
     ParsedAction paction;
     paction.add(1, (const char *)handle);

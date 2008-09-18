@@ -299,7 +299,6 @@ InvoiceClient::list()
 int
 InvoiceClient::archive()
 {
-    return 1;
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),

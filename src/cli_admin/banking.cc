@@ -128,12 +128,11 @@ bool factoring_all(const char *database, const char *zone_fqdn,
               }
 
             }
-            delete[] regID;
           }
-
+          delete[] regID;
         }
       } else
-        LOG( LOG_ERR , "unkow zone %s\n" , zone_fqdn );
+        LOG( LOG_ERR , "unkown zone %s\n" , zone_fqdn );
 
       db.QuitTransaction(ret);
     }

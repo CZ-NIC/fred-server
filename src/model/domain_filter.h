@@ -48,7 +48,7 @@ public:
   DomainImpl();
   virtual ~DomainImpl();
 
-  virtual ObjectType getType() {
+  virtual ObjectType getType() const {
     return TDOMAIN;
   }
 
@@ -86,7 +86,7 @@ public:
   DomainHistoryImpl();
   virtual ~DomainHistoryImpl();
 
-  virtual ObjectType getType() {
+  virtual ObjectType getType() const {
     return TDOMAIN;
   }
 

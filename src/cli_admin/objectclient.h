@@ -37,8 +37,8 @@
 #define OBJECT_DELETE_CANDIDATES_NAME       "object_delete_candidates"
 #define OBJECT_DELETE_CANDIDATES_NAME_DESC  "delete all objects marked with ``deleteCandidate'' state"
 #define OBJECT_REGULAR_PROCEDURE_NAME       "object_regular_procedure"
-#define OBJECT_REGULAR_PROCEDURE_NAME_DESC  "shortcut for 2x update-object-states, notify-state changes, " \
-    "poll-create-statechanges, object-delete-candidates, poll-create-low-credit, notify-letters-create"
+#define OBJECT_REGULAR_PROCEDURE_NAME_DESC  "shortcut for 2x update_object_states, notify_state changes, " \
+    "poll_create_statechanges, object_delete_candidates, poll_create_low_credit, notify_letters_create"
 #define OBJECT_NOTIFY_EXCEPT_TYPES_NAME     "notify_except_types"
 #define OBJECT_NOTIFY_EXCEPT_TYPES_NAME_DESC "list of notification types ignored in notification"
 #define OBJECT_POLL_EXCEPT_TYPES_NAME       "poll_except_types"

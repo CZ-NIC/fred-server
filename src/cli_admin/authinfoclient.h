@@ -22,7 +22,7 @@
 #define AUTHINFO_PDF_NAME         "authinfopdf"
 #define AUTHINFO_PDF_NAME_DESC    "generate pdf of authorization info request"
 
-#define AUTHINFO_PDF_HELP_NAME    "authinfopdf-help"
+#define AUTHINFO_PDF_HELP_NAME    "authinfopdf_help"
 #define AUTHINFO_PDF_HELP_NAME_DESC "help for authinfo pdf creation"
 
 

@@ -36,7 +36,7 @@ public:
   NSSetImpl();
   virtual ~NSSetImpl();
 
-  virtual ObjectType getType() {
+  virtual ObjectType getType() const {
     return TNSSET;
   }
 
@@ -61,7 +61,7 @@ public:
   NSSetHistoryImpl();
   virtual ~NSSetHistoryImpl();
 
-  virtual ObjectType getType() {
+  virtual ObjectType getType() const {
     return TNSSET;
   }
 

@@ -32,7 +32,7 @@ namespace Register
       bool closed;
       LocalTransaction(DB *_db) : db(_db), closed(false)
       {
-        db->BeginTransaction();
+        (void)db->BeginTransaction();
       }
       ~LocalTransaction()
       {

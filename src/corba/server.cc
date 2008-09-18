@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
       ("log.syslog_facility", po::value<unsigned>(),    "Syslog facility (for log.type = 2)");
     po::options_description registry_opts("Registry");
     registry_opts.add_options()
-      ("registry.restricted_handles",   po::value<bool>(),        "To force using restricted handles for NSSETs and CONTACTs")
+      ("registry.restricted_handles",   po::value<bool>(),        "To force using restricted handles for NSSETs, KEYSETs and CONTACTs")
       ("registry.disable_epp_notifier", po::value<bool>(),        "Disable EPP notifier subsystem")
       ("registry.lock_epp_commands",    po::value<bool>(),        "Database locking of multiple update epp commands on one object")
       ("registry.nsset_level",          po::value<unsigned>(),    "Default report level of new NSSET")

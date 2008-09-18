@@ -32,7 +32,7 @@ public:
     KeySetImpl();
     virtual ~KeySetImpl();
 
-    virtual ObjectType getType() {
+    virtual ObjectType getType() const {
         return TKEYSET;
     }
 
@@ -55,7 +55,7 @@ class KeySetHistoryImpl: public ObjectHistoryImpl, virtual public KeySet {
         KeySetHistoryImpl();
         virtual ~KeySetHistoryImpl();
 
-        virtual ObjectType getType() {
+        virtual ObjectType getType() const {
             return TKEYSET;
         }
 

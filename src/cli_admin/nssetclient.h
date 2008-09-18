@@ -28,7 +28,7 @@
 
 #define NSSET_LIST_NAME             "nsset_list"
 #define NSSET_LIST_NAME_DESC        "List all nsset objects"
-#define NSSET_LIST_HELP_NAME        "nsset-list-help"
+#define NSSET_LIST_HELP_NAME        "nsset_list_help"
 #define NSSET_LIST_HELP_NAME_DESC   "Help for nsset list"
 
 #define NSSET_HOST_FQDN_NAME        "host_fqdn"

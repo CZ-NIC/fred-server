@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
 
 
     return 1;
-
+#if 0
     // KeySet *k = new KeySetImpl();
     // k->addTechContact().addCity().setValue("Jihlava");
     // k->addId().setValue(DBase::ID(18));
@@ -360,6 +360,7 @@ int main(int argc, char *argv[]) {
     //		exec_and_print(sq, cf2);
     //		sq.clear();
 
+#endif // #if 0
   }
   catch (Database::Exception& e) {
     std::cout << e.what() << std::endl;
