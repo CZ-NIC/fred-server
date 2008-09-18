@@ -94,8 +94,9 @@ int main(int argc, char** argv) {
       ("database.timeout",  po::value<unsigned>(),    "Database connection timeout");
     po::options_description nameservice_opts("CORBA Nameservice");
     nameservice_opts.add_options()
-      ("nameservice.host",  po::value<std::string>(), "CORBA nameservice hostname")
-      ("nameservice.port",  po::value<unsigned>(),    "CORBA nameservice port");
+      ("nameservice.host",    po::value<std::string>(), "CORBA nameservice hostname")
+      ("nameservice.port",    po::value<unsigned>(),    "CORBA nameservice port")
+      ("nameservice.context", po::value<std::string>(), "CORBA nameservice context");
     po::options_description log_opts("Logging");
     log_opts.add_options()
       ("log.type",            po::value<unsigned>(),    "Log type")
@@ -210,8 +211,10 @@ int main(int argc, char** argv) {
                                                 % cfg.get<std::string>("nameservice.host") 
                                                 % cfg.get<unsigned>("nameservice.port"));
 
-    LOGGER(PACKAGE).info(boost::format("nameservice host set to: `%1%'") % nameservice);
-    NameService ns(orb, nameservice);
+    LOGGER(PACKAGE).info(boost::format("nameservice host set to: `%1%' context used: `%2%'") 
+                                       % nameservice
+                                       % cfg.get<std::string>("nameservice.context"));
+    NameService ns(orb, nameservice, cfg.get<std::string>("nameservice.context"));
 
     /* register specific object at nameservice */
 #ifdef ADIF

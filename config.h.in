@@ -3,7 +3,7 @@
 /* location of fred config file */
 #undef CONFIG_FILE
 
-/* name of CORBA context */
+/* name of CORBA Nameservice context */
 #undef CONTEXT_NAME
 
 /* Define to 1 if you have the `alarm' function. */

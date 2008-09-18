@@ -29,16 +29,34 @@ public:
    */
   NameService(CORBA::ORB_ptr orb) throw (NOT_RUNNING);
 
-	NameService(CORBA::ORB_ptr orb, const std::string& hostname) throw (NOT_RUNNING);
-  /// bind object into ccReg.context/'name'.Object
-  void bind(const std::string& name, CORBA::Object_ptr objref)
-    throw (NOT_RUNNING, BAD_CONTEXT);
-  /// resolve object into ccReg.context/'name'.Object get IOR
-  CORBA::Object_ptr resolve(    const std::string& name   ) 
-    throw (NOT_RUNNING, BAD_CONTEXT);
+  /**
+   * config rootContext from supplied orb and hostname
+   */
+	NameService(CORBA::ORB_ptr orb, 
+              const std::string& hostname, 
+              const std::string& _context) throw (NOT_RUNNING);
+
+  /**
+   * d-tor
+   */	
+  virtual ~NameService();
+
+  /**
+   * bind object into nameservice.context/'name'.Object
+   */
+  void bind(const std::string& name, 
+            CORBA::Object_ptr objref) throw (NOT_RUNNING, BAD_CONTEXT);
+
+  /**
+   * resolve object from nameservice.context/'name'.Object get IOR
+   */
+  CORBA::Object_ptr resolve(const std::string& name) throw (NOT_RUNNING, BAD_CONTEXT);
+
+  /**
+   * get nameservice hostname used
+   */
   const std::string& getHostName();
-  /// destroy NameServiceObject
-	virtual ~NameService();
+
 };
 
 #endif /*NAMESERVICE_H_*/

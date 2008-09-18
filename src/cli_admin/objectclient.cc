@@ -164,7 +164,7 @@ int
 ObjectClient::deleteObjects(
         const std::string& typeList)
 {
-    CorbaClient cc(0, NULL, m_nsAddr);
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
     // temporary done by using EPP corba interface
     // should be instead somewhere in register library (object.cc?)
     // get login information for first system registrar
@@ -295,7 +295,7 @@ ObjectClient::regular_procedure()
                 m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
                 m_nsAddr)
             );
-    CorbaClient *cc = new CorbaClient(0, NULL, m_nsAddr);
+    CorbaClient *cc = new CorbaClient(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
     MailerManager mailMan(cc->getNS());
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));

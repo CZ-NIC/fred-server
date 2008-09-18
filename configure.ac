@@ -128,10 +128,10 @@ AC_ARG_WITH([nsport], [AS_HELP_STRING([--with-nsport],
 # corba nameservice context
 AC_ARG_WITH([nscontext], [AS_HELP_STRING([--with-nscontext],
 			[CORBA nameservice context name [fred]])],
-			[AC_SUBST([contextname], [$withval])],
-			[AC_SUBST([contextname], [fred])])
+			[AC_SUBST([NSCONTEXT], [$withval])],
+			[AC_SUBST([NSCONTEXT], [fred])])
 #put context name into config.h file
-AC_DEFINE_UNQUOTED([CONTEXT_NAME], [["]$contextname["]], [name of CORBA context])
+AC_DEFINE_UNQUOTED([CONTEXT_NAME], [["]$NSCONTEXT["]], [name of CORBA Nameservice context])
 
 # cirba rifd port
 AC_ARG_WITH([rifdport], [AS_HELP_STRING([--with-rifdport],

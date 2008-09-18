@@ -17,71 +17,84 @@
  */
 
 #include <iostream>
-#include "config.h"
 #include "nameservice.h"
 #include "log/logger.h"
+#include "log/context.h"
 
-#ifndef CONTEXT_NAME
-#define CONTEXT_NAME "fred"
-#endif
-
-NameService::NameService(CORBA::ORB_ptr orb)
-  throw (NOT_RUNNING)
-{
+NameService::NameService(CORBA::ORB_ptr orb) throw (NOT_RUNNING) {
   try {
-    // Obtain a reference to the root context of the Name service:
+    /* Obtain a reference to the root context of the Name service */
     CORBA::Object_var obj;
     obj = orb->resolve_initial_references("NameService");
 
-    // Narrow the reference returned.
+    /* Narrow the reference returned */
     rootContext = CosNaming::NamingContext::_narrow(obj);
     if( CORBA::is_nil(rootContext) ) throw NOT_RUNNING();
- }
+  }
   catch (CORBA::NO_RESOURCES&) {
     throw NOT_RUNNING();
   }
   catch (CORBA::ORB::InvalidName&) {
     throw NOT_RUNNING();
   }
-
 }
 
-NameService::NameService(CORBA::ORB_ptr orb, const std::string& _hostname)
-  throw (NOT_RUNNING)
- : hostname(_hostname)
-{
+
+NameService::NameService(CORBA::ORB_ptr orb,
+                         const std::string& _hostname,
+                         const std::string& _context) throw (NOT_RUNNING) 
+                                                      : hostname(_hostname),
+                                                        context(_context) {
   try {
     CORBA::Object_var obj;
-    if (hostname.empty())
+
+    if (hostname.empty()) {
       obj = orb->resolve_initial_references("NameService");
-    else
+    }
+    else {
       obj = orb->string_to_object(("corbaname::" + hostname).c_str());
+    }
+
     rootContext = CosNaming::NamingContext::_narrow(obj);
-    if( CORBA::is_nil(rootContext) ) throw NOT_RUNNING();
+
+    if (CORBA::is_nil(rootContext)) {
+      throw NOT_RUNNING();
+    }
   }
   catch (...) {
     throw NOT_RUNNING();
   }
 }
 
-void 
-NameService::bind(const std::string& name, CORBA::Object_ptr objref)
-  throw (NOT_RUNNING, BAD_CONTEXT)
-{
+
+NameService::~NameService() {
+}
+
+
+void NameService::bind(const std::string& name, 
+                       CORBA::Object_ptr objref) throw (NOT_RUNNING, BAD_CONTEXT) {
   try {
+    Logging::Context ctx("nameservice");
+
+    LOGGER(PACKAGE).debug(boost::format("requested object bind: %1%/%2%")
+                                        % context
+                                        % name);
+
     CosNaming::Name contextName;
     contextName.length(1);
-    contextName[0].id   = (const char*) CONTEXT_NAME;  // string copied
-    contextName[0].kind = (const char*) "context"; // string copied
+    contextName[0].id   = (const char*) context.c_str(); 
+    contextName[0].kind = (const char*) "context";
     CosNaming::NamingContext_var testContext;
     try {
-      // Bind the context to root.
+      /* Bind the context to root */
       testContext = rootContext->bind_new_context(contextName);
     }
     catch (CosNaming::NamingContext::AlreadyBound& ex) {
-      // If the context already exists, this exception will be raised.
-      // In this case, just resolve the name and assign testContext
-      // to the object returned:
+      /**
+       * If the context already exists, this exception will be raised.
+       * In this case, just resolve the name and assign testContext
+       * to the object returned
+       */
       CORBA::Object_var obj;
       obj = rootContext->resolve(contextName);
       testContext = CosNaming::NamingContext::_narrow(obj);
@@ -89,11 +102,12 @@ NameService::bind(const std::string& name, CORBA::Object_ptr objref)
     }
     CosNaming::Name objectName;
     objectName.length(1);
-    objectName[0].id   = name.c_str(); // string copied
-    objectName[0].kind = (const char*) "Object"; // string copied
+    objectName[0].id   = name.c_str();
+    objectName[0].kind = (const char*) "Object";
+
     try {
       testContext->bind(objectName, objref);
-    }
+   }
     catch(CosNaming::NamingContext::AlreadyBound& ex) {
       testContext->rebind(objectName, objref);
     }
@@ -107,37 +121,45 @@ NameService::bind(const std::string& name, CORBA::Object_ptr objref)
 }
 
 
+CORBA::Object_ptr NameService::resolve(const std::string& name)
+    throw (NOT_RUNNING, BAD_CONTEXT) {
 
-CORBA::Object_ptr NameService::resolve(  const std::string& name )
- throw (NOT_RUNNING, BAD_CONTEXT)
-{
+  Logging::Context ctx("nameservice");
 
-  // Create a name object, containing the name test/context:
+  LOGGER(PACKAGE).debug(boost::format("requested object resolve: %1%/%2%")
+                                      % context
+                                      % name);
+
+  /* Create a name object, containing the name test/context */
   CosNaming::Name contextName;
   contextName.length(2);
 
-  contextName[0].id   =  (const char*) CONTEXT_NAME; 
-  contextName[0].kind = (const char*) "context"; // string copied
+  contextName[0].id   = (const char*) context.c_str(); 
+  contextName[0].kind = (const char*) "context";
   contextName[1].id   = name.c_str();
   contextName[1].kind = (const char*) "Object";
-  // Note on kind: The kind field is used to indicate the type
-  // of the object. This is to avoid conventions such as that used
-  // by files (name.type -- e.g. test.ps = postscript etc.)
+  /**
+   * Note on kind: The kind field is used to indicate the type
+   * of the object. This is to avoid conventions such as that used
+   * by files (name.type -- e.g. test.ps = postscript etc.)
+   */
 
   try {
-    // Resolve the name to an object reference.
+    /* Resolve the name to an object reference */
     return rootContext->resolve(contextName);
   }
 
   catch(CosNaming::NamingContext::NotFound& ex) {
-    // This exception is thrown if any of the components of the
-    // path [contexts or the object] aren't found:
+    /**
+     * This exception is thrown if any of the components of the
+     * path [contexts or the object] aren't found
+     */
     CosNaming::Name name = ex.rest_of_name;
     std::string name_str;
     for (unsigned i = 0; i < name.length(); ++i) {
       name_str += std::string(name[i].id) + "(" + std::string(name[i].kind) + ")" + (name.length() != i + 1 ? "/" : "" );
     }
-    LOGGER("corba").error(boost::format("Context [%1%] not found.") % name_str);
+    LOGGER(PACKAGE).error(boost::format("Context [%1%] not found.") % name_str);
     throw BAD_CONTEXT();
   }
 
@@ -151,12 +173,8 @@ CORBA::Object_ptr NameService::resolve(  const std::string& name )
   return CORBA::Object::_nil();
 }
 
-const std::string& 
-NameService::getHostName()
-{
+
+const std::string& NameService::getHostName() {
   return hostname;
 }
 
-NameService::~NameService()
-{
-}

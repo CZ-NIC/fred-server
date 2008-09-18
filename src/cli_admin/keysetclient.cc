@@ -22,35 +22,6 @@
 
 namespace Admin {
 
-#define LOGIN_KEYSETCLIENT \
-CorbaClient cc(0, NULL, m_nsAddr.c_str()); \
-CORBA::Object_var o = cc.getNS()->resolve("EPP"); \
-ccReg::EPP_var epp; \
-epp = ccReg::EPP::_narrow(o); \
-CORBA::Long clientId = 0; \
-ccReg::Response_var r; \
-if (!m_db.ExecSelect( \
-            "SELECT r.handle,ra.cert,ra.password " \
-            "FROM registrar r, registraracl ra " \
-            "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1 ") \
-        ) \
-    return -1; \
-if (!m_db.GetSelectRows()) \
-    return -1; \
-std::string handle = m_db.GetFieldValue(0,0); \
-std::string cert = m_db.GetFieldValue(0,1); \
-std::string password = m_db.GetFieldValue(0,2); \
-m_db.FreeSelect(); \
-r = epp->ClientLogin(handle.c_str(),password.c_str(),"","system_delete_login","<system_delete_login/>", \
-        clientId,cert.c_str(),ccReg::EN); \
-if (r->code != 1000 || !clientId) { \
-    std::cerr << "Cannot connect: " << r->code << std::endl; \
-    return -1; \
-}
-
-#define LOGOUT_KEYSETCLIENT \
-    epp->ClientLogout(clientId,"system_delete_logout","<system_delete_logout/>");
-
 KeysetClient::KeysetClient():
     m_connstring(""), m_nsAddr("")
 {
@@ -253,7 +224,7 @@ KeysetClient::list_plain()
     xml = "<handle>" + m_conf.get<std::string>(KEYSET_LIST_PLAIN_NAME) + "</handle>";
     cltrid = "list_keysets";
     ccReg::Lists *k;
-    LOGIN_KEYSETCLIENT;
+    CLIENT_LOGIN;
 
     r = epp->KeySetList(k, clientId, cltrid.c_str(), xml.c_str());
 
@@ -264,7 +235,7 @@ KeysetClient::list_plain()
     for (int i = 0; i < (int)k->length(); i++)
         std::cout << (*k)[i] << std::endl;
 
-    LOGOUT_KEYSETCLIENT;
+    CLIENT_LOGOUT;
     return 0;
 }
 
@@ -285,14 +256,14 @@ KeysetClient::check()
     names.length(1);
     names[0] = CORBA::string_dup(name.c_str());
 
-    LOGIN_KEYSETCLIENT;
+    CLIENT_LOGIN;
 
     r = epp->KeySetCheck(names, a, clientId, cltrid.c_str(), xml.c_str());
 
     std::cout << (*a)[0].avail << std::endl;
     std::cout << (*a)[0].reason << std::endl;
 
-    LOGOUT_KEYSETCLIENT;
+    CLIENT_LOGOUT;
     return 0;
 }
 
@@ -305,12 +276,12 @@ KeysetClient::send_auth_info()
     xml = "<handle>" + name + "</handle>";
     cltrid = "keyset_send_auth_info";
 
-    LOGIN_KEYSETCLIENT;
+    CLIENT_LOGIN;
     r = epp->keysetSendAuthInfo(name.c_str(), clientId, cltrid.c_str(), xml.c_str());
 
     std::cout << r->code << std::endl;
 
-    LOGOUT_KEYSETCLIENT;
+    CLIENT_LOGOUT;
     return 0;
 }
 
@@ -326,7 +297,7 @@ KeysetClient::transfer()
     xml = "<handle>" + key_handle + "</handle>";
     cltrid = "transfer_keyset";
 
-    LOGIN_KEYSETCLIENT;
+    CLIENT_LOGIN;
 
     r = epp->KeySetTransfer(
             key_handle.c_str(),
@@ -336,7 +307,7 @@ KeysetClient::transfer()
             xml.c_str());
     std::cout << r->code << std::endl;
 
-    LOGOUT_KEYSETCLIENT;
+    CLIENT_LOGOUT;
     return 0;
 }
 
@@ -404,7 +375,7 @@ KeysetClient::update()
     std::string xml;
     xml = "<handle>" + key_handle + "</handle>";
     cltrid = "keyset_update";
-    LOGIN_KEYSETCLIENT;
+    CLIENT_LOGIN;
 
     r = epp->KeySetUpdate(
             key_handle.c_str(),
@@ -418,7 +389,7 @@ KeysetClient::update()
             xml.c_str());
     std::cout << "return code: " << r->code << std::endl;
 
-    LOGOUT_KEYSETCLIENT;
+    CLIENT_LOGOUT;
     return 0;
 }
 
@@ -434,7 +405,7 @@ KeysetClient::del()
     xml = "<handle>" + key_handle + "</handle>";
     cltrid = "keyset_delete";
 
-    LOGIN_KEYSETCLIENT;
+    CLIENT_LOGIN;
 
     r = epp->KeySetDelete(
             key_handle.c_str(),
@@ -442,7 +413,7 @@ KeysetClient::del()
             cltrid.c_str(),
             xml.c_str());
     std::cout << "return code: " << r->code << std::endl;
-    LOGOUT_KEYSETCLIENT;
+    CLIENT_LOGOUT;
     return 0;
 }
 
@@ -485,7 +456,7 @@ KeysetClient::create()
 
     ccReg::timestamp crData;
 
-    LOGIN_KEYSETCLIENT;
+    CLIENT_LOGIN;
 
     r = epp->KeySetCreate(
             key_handle.c_str(),
@@ -498,7 +469,7 @@ KeysetClient::create()
 
     std::cout << "return code: " << r->code << std::endl;
 
-    LOGOUT_KEYSETCLIENT;
+    CLIENT_LOGOUT;
     return 0;
 }
 
@@ -513,9 +484,9 @@ KeysetClient::info()
 
     ccReg::KeySet *k = new ccReg::KeySet;
 
-    LOGIN_KEYSETCLIENT;
+    CLIENT_LOGIN;
     epp->KeySetInfo(name.c_str(), k, clientId, cltrid.c_str(), xml.c_str());
-    LOGOUT_KEYSETCLIENT;
+    CLIENT_LOGOUT;
 
     std::cout << k->handle << std::endl;
     std::cout << k->AuthInfoPw << std::endl;
@@ -539,7 +510,7 @@ KeysetClient::info2()
     cltrid = "info_keyset_2";
     ccReg::InfoType type = ccReg::IT_LIST_KEYSETS;
 
-    LOGIN_KEYSETCLIENT;
+    CLIENT_LOGIN;
 
     r = epp->info(
             type,
@@ -552,7 +523,7 @@ KeysetClient::info2()
     std::cout << "return code: " << r->code << std::endl;
 
 
-    LOGOUT_KEYSETCLIENT;
+    CLIENT_LOGOUT;
     return 0;
 }
 

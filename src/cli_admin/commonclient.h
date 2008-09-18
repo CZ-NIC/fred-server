@@ -32,10 +32,10 @@ class CorbaClient {
     CORBA::ORB_var orb;
     std::auto_ptr<NameService> ns;
 public:
-    CorbaClient(int argc, char **argv, const std::string &nshost)
+    CorbaClient(int argc, char **argv, const std::string &nshost, const std::string &nscontext)
     {
         orb = CORBA::ORB_init(argc, argv, "", corbaOpts);
-        ns.reset(new NameService(orb, nshost));
+        ns.reset(new NameService(orb, nshost, nscontext));
     }
     ~CorbaClient()
     {

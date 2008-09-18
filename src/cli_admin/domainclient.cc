@@ -23,35 +23,6 @@
 
 namespace Admin {
 
-#define LOGIN_DOMAINCLIENT \
-CorbaClient cc(0, NULL, m_nsAddr.c_str()); \
-CORBA::Object_var o = cc.getNS()->resolve("EPP"); \
-ccReg::EPP_var epp; \
-epp = ccReg::EPP::_narrow(o); \
-CORBA::Long clientId = 0; \
-ccReg::Response_var r; \
-if (!m_db.ExecSelect( \
-            "SELECT r.handle,ra.cert,ra.password " \
-            "FROM registrar r, registraracl ra " \
-            "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1 ") \
-        ) \
-    return -1; \
-if (!m_db.GetSelectRows()) \
-    return -1; \
-std::string handle = m_db.GetFieldValue(0,0); \
-std::string cert = m_db.GetFieldValue(0,1); \
-std::string password = m_db.GetFieldValue(0,2); \
-m_db.FreeSelect(); \
-r = epp->ClientLogin(handle.c_str(),password.c_str(),"","system_delete_login","<system_delete_login/>", \
-        clientId,cert.c_str(),ccReg::EN); \
-if (r->code != 1000 || !clientId) { \
-    std::cerr << "Cannot connect: " << r->code << std::endl; \
-    return -1; \
-}
-
-#define LOGOUT_DOMAINCLIENT \
-    epp->ClientLogout(clientId,"system_delete_logout","<system_delete_logout/>");
-
 DomainClient::DomainClient():
     m_connstring(""), m_nsAddr("")
 {
@@ -355,7 +326,7 @@ DomainClient::domain_create()
     ccReg::ExtensionList extList;
     extList.length(0);
 
-    LOGIN_DOMAINCLIENT;
+    CLIENT_LOGIN;
 
     r = epp->DomainCreate(fqdn.c_str(), registrant.c_str(),
             nsset.c_str(), keyset.c_str(), authInfoPw.c_str(),
@@ -364,7 +335,7 @@ DomainClient::domain_create()
 
     std::cout << "return code: " << r->code << std::endl;
 
-    LOGOUT_DOMAINCLIENT;
+    CLIENT_LOGOUT;
     return 0;
 }
 
@@ -433,7 +404,7 @@ DomainClient::domain_update()
     ccReg::ExtensionList extList;
     extList.length(0);
 
-    LOGIN_DOMAINCLIENT;
+    CLIENT_LOGIN;
 
     std::string cltrid;
     std::string xml;
@@ -446,7 +417,7 @@ DomainClient::domain_update()
             clientId, cltrid.c_str(), xml.c_str(), extList);
 
     std::cout << "return code: " << r->code << std::endl;
-    LOGOUT_DOMAINCLIENT;
+    CLIENT_LOGOUT;
     return 0;
 }
 int
@@ -454,7 +425,7 @@ DomainClient::domain_info()
 {
     std::string name = m_conf.get<std::string>(DOMAIN_INFO_NAME);
 
-    LOGIN_DOMAINCLIENT;
+    CLIENT_LOGIN;
     std::string cltrid;
     std::string xml;
     xml = "<fqdn>" + name + "</fqdn>";
@@ -468,13 +439,13 @@ DomainClient::domain_info()
     std::cout << k->ROID << std::endl;
     std::cout << k->keyset << std::endl;
 
-    LOGOUT_DOMAINCLIENT;
+    CLIENT_LOGOUT;
     return 0;
 }
 int
 DomainClient::domain_list_plain()
 {
-    LOGIN_DOMAINCLIENT;
+    CLIENT_LOGIN;
     std::string name = m_conf.get<std::string>(DOMAIN_LIST_PLAIN_NAME).c_str();
     std::string cltrid;
     std::string xml;
@@ -488,7 +459,7 @@ DomainClient::domain_list_plain()
     for (int i = 0; i < (int)k->length(); i++)
         std::cout << (*k)[i] << std::endl;
 
-    LOGOUT_DOMAINCLIENT;
+    CLIENT_LOGOUT;
     return 0;
 }
 

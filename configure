@@ -793,7 +793,7 @@ DBUSER
 DBPASS
 NSHOST
 NSPORT
-contextname
+NSCONTEXT
 RIFDPORT
 PIFDPORT
 ADIFDPORT
@@ -11076,17 +11076,17 @@ fi
 
 # Check whether --with-nscontext was given.
 if test "${with_nscontext+set}" = set; then
-  withval=$with_nscontext; contextname=$withval
+  withval=$with_nscontext; NSCONTEXT=$withval
 
 else
-  contextname=fred
+  NSCONTEXT=fred
 
 fi
 
 #put context name into config.h file
 
 cat >>confdefs.h <<_ACEOF
-#define CONTEXT_NAME "$contextname"
+#define CONTEXT_NAME "$NSCONTEXT"
 _ACEOF
 
 
@@ -12738,7 +12738,7 @@ DBUSER!$DBUSER$ac_delim
 DBPASS!$DBPASS$ac_delim
 NSHOST!$NSHOST$ac_delim
 NSPORT!$NSPORT$ac_delim
-contextname!$contextname$ac_delim
+NSCONTEXT!$NSCONTEXT$ac_delim
 RIFDPORT!$RIFDPORT$ac_delim
 PIFDPORT!$PIFDPORT$ac_delim
 ADIFDPORT!$ADIFDPORT$ac_delim

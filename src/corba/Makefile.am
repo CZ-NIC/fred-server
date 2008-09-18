@@ -44,5 +44,4 @@ fred_pifd_CPPFLAGS  = $(AM_CPPFLAGS) -DPIFD
 ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:
 	omniidl -bcxx -Wba -Wbinline $(IDLFILE)
 
-noinst_PROGRAMS = test-admin
-test_admin_SOURCES = test-admin.cc
+

@@ -104,7 +104,7 @@ InvoiceClient::list()
                 m_nsAddr)
             );
 
-    CorbaClient cc(0, NULL, m_nsAddr);
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
     MailerManager mailMan(cc.getNS());
 
     std::auto_ptr<Register::Invoicing::Manager> invMan(
@@ -306,7 +306,7 @@ InvoiceClient::archive()
                 m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
                 m_nsAddr)
             );
-    CorbaClient cc(0, NULL, m_nsAddr);
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
     MailerManager mailMan(cc.getNS());
     std::auto_ptr<Register::Invoicing::Manager> invMan(
             Register::Invoicing::Manager::create(

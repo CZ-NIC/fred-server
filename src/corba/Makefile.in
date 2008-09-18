@@ -34,7 +34,6 @@ POST_UNINSTALL = :
 build_triplet = @build@
 sbin_PROGRAMS = fred-rifd$(EXEEXT) fred-adifd$(EXEEXT) \
 	fred-pifd$(EXEEXT)
-noinst_PROGRAMS = test-admin$(EXEEXT)
 subdir = src/corba
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -63,7 +62,7 @@ libcorba_a_OBJECTS = $(am_libcorba_a_OBJECTS) \
 	$(nodist_libcorba_a_OBJECTS)
 am__installdirs = "$(DESTDIR)$(sbindir)"
 sbinPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
-PROGRAMS = $(noinst_PROGRAMS) $(sbin_PROGRAMS)
+PROGRAMS = $(sbin_PROGRAMS)
 am_fred_adifd_OBJECTS = fred_adifd-server.$(OBJEXT)
 fred_adifd_OBJECTS = $(am_fred_adifd_OBJECTS)
 fred_adifd_LDADD = $(LDADD)
@@ -113,22 +112,6 @@ fred_rifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/util/conf/libconf.a \
 	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
-am_test_admin_OBJECTS = test-admin.$(OBJEXT)
-test_admin_OBJECTS = $(am_test_admin_OBJECTS)
-test_admin_LDADD = $(LDADD)
-test_admin_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	admin/libadmin_impl.a epp/libepp_impl.a libcorba.a \
-	$(top_builddir)/src/register/libfred.a \
-	$(top_builddir)/src/model/libmodel.a \
-	$(top_builddir)/util/db/libdb.a \
-	$(top_builddir)/util/types/libtypes.a \
-	$(top_builddir)/src/old_utils/liboldutils.a \
-	$(top_builddir)/util/log/liblog.a \
-	$(top_builddir)/util/conf/libconf.a \
-	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -143,10 +126,9 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(libcorba_a_SOURCES) $(nodist_libcorba_a_SOURCES) \
 	$(fred_adifd_SOURCES) $(fred_pifd_SOURCES) \
-	$(fred_rifd_SOURCES) $(test_admin_SOURCES)
+	$(fred_rifd_SOURCES)
 DIST_SOURCES = $(libcorba_a_SOURCES) $(fred_adifd_SOURCES) \
-	$(fred_pifd_SOURCES) $(fred_rifd_SOURCES) \
-	$(test_admin_SOURCES)
+	$(fred_pifd_SOURCES) $(fred_rifd_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -237,6 +219,7 @@ LOCALSTATEDIR = @LOCALSTATEDIR@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
+NSCONTEXT = @NSCONTEXT@
 NSHOST = @NSHOST@
 NSPORT = @NSPORT@
 OBJEXT = @OBJEXT@
@@ -282,7 +265,6 @@ build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
 builddir = @builddir@
-contextname = @contextname@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
@@ -343,7 +325,6 @@ fred_adifd_SOURCES = server.cc
 fred_adifd_CPPFLAGS = $(AM_CPPFLAGS) -DADIF
 fred_pifd_SOURCES = server.cc
 fred_pifd_CPPFLAGS = $(AM_CPPFLAGS) -DPIFD
-test_admin_SOURCES = test-admin.cc
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -385,9 +366,6 @@ libcorba.a: $(libcorba_a_OBJECTS) $(libcorba_a_DEPENDENCIES)
 	-rm -f libcorba.a
 	$(libcorba_a_AR) libcorba.a $(libcorba_a_OBJECTS) $(libcorba_a_LIBADD)
 	$(RANLIB) libcorba.a
-
-clean-noinstPROGRAMS:
-	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
 install-sbinPROGRAMS: $(sbin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(sbindir)" || $(MKDIR_P) "$(DESTDIR)$(sbindir)"
@@ -420,9 +398,6 @@ fred-pifd$(EXEEXT): $(fred_pifd_OBJECTS) $(fred_pifd_DEPENDENCIES)
 fred-rifd$(EXEEXT): $(fred_rifd_OBJECTS) $(fred_rifd_DEPENDENCIES) 
 	@rm -f fred-rifd$(EXEEXT)
 	$(CXXLINK) $(fred_rifd_OBJECTS) $(fred_rifd_LDADD) $(LIBS)
-test-admin$(EXEEXT): $(test_admin_OBJECTS) $(test_admin_DEPENDENCIES) 
-	@rm -f test-admin$(EXEEXT)
-	$(CXXLINK) $(test_admin_OBJECTS) $(test_admin_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -437,7 +412,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fred_rifd-server.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mailer_manager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nameservice.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-admin.Po@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -706,8 +680,8 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-recursive
 
-clean-am: clean-generic clean-noinstLIBRARIES clean-noinstPROGRAMS \
-	clean-sbinPROGRAMS mostlyclean-am
+clean-am: clean-generic clean-noinstLIBRARIES clean-sbinPROGRAMS \
+	mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -rf ./$(DEPDIR)
@@ -767,19 +741,18 @@ uninstall-am: uninstall-sbinPROGRAMS
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am check check-am clean clean-generic \
-	clean-noinstLIBRARIES clean-noinstPROGRAMS clean-sbinPROGRAMS \
-	ctags ctags-recursive distclean distclean-compile \
-	distclean-generic distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-sbinPROGRAMS install-strip \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
-	tags tags-recursive uninstall uninstall-am \
-	uninstall-sbinPROGRAMS
+	clean-noinstLIBRARIES clean-sbinPROGRAMS ctags ctags-recursive \
+	distclean distclean-compile distclean-generic distclean-tags \
+	distdir dvi dvi-am html html-am info info-am install \
+	install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-sbinPROGRAMS install-strip installcheck \
+	installcheck-am installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-am uninstall-sbinPROGRAMS
 
 
 ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:

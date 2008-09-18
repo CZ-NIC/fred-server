@@ -1,4 +1,11 @@
-2008-09-20 Jiri Sadek
+2008-09-18 Jiri Sadek
+
+   * Logging system rewritten to support context (known NDC, MDC) messaging
+	 because of multithreading
+
+   * Added server configuration for CORBA Nameservice context
+
+2008-09-10 Jiri Sadek
 
    * Both logging methods merged to new logger by LOG macro redefinion
 	 
