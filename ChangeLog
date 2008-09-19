@@ -1,9 +1,15 @@
+2008-09-18 Ales Dolezal (2.0.1)
+
+   * Refactoring fred-admin 
+
 2008-09-18 Jiri Sadek
 
    * Logging system rewritten to support context (known NDC, MDC) messaging
 	 because of multithreading
 
    * Added server configuration for CORBA Nameservice context
+
+   * Object state information in Daphne
 
 2008-09-10 Jiri Sadek
 
