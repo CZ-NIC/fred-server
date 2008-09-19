@@ -79,6 +79,18 @@ static void sighup_handler(int signal) {
 }
 
 int main(int argc, char** argv) {
+
+  // orb must be initialized before options are parsed to eat all omniorb
+  // program options
+  CORBA::ORB_var orb;
+  try {
+    /* initialize ORB */
+    orb = CORBA::ORB_init(argc, argv);
+  } catch (...) {
+    std::cerr << "ORB_init failed\n";
+    exit(-1);
+  }
+
     /* program options definition */
     po::options_description cmd_opts;
     cmd_opts.add_options()
@@ -189,8 +201,6 @@ int main(int argc, char** argv) {
     srand(time(NULL));
 
   try {
-    /* initialize ORB */
-    CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
     orb_to_shutdown = orb;
     signal(SIGINT, sigint_handler);
 
