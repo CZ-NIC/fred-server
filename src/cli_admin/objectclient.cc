@@ -43,9 +43,9 @@ ObjectClient::ObjectClient():
         addOpt(OBJECT_DEBUG_NAME)
         addOptUInt(OBJECT_ID_NAME)
         addOptStr(OBJECT_NAME_NAME)
-        addOptStrDef(OBJECT_DELETE_TYPES_NAME, "3")
-        addOptStrDef(OBJECT_NOTIFY_EXCEPT_TYPES_NAME, "4,5")
-        addOptStrDef(OBJECT_POLL_EXCEPT_TYPES_NAME, "6,7")
+        addOptStrDef(OBJECT_DELETE_TYPES_NAME, "")
+        addOptStrDef(OBJECT_NOTIFY_EXCEPT_TYPES_NAME, "")
+        addOptStrDef(OBJECT_POLL_EXCEPT_TYPES_NAME, "")
         addOptUIntDef(OBJECT_DELETE_LIMIT_NAME, 0);
 }
 ObjectClient::ObjectClient(
@@ -99,21 +99,21 @@ ObjectClient::createObjectStateRequest(
 {
       std::stringstream sql;
       sql << "SELECT COUNT(*) FROM object_state_request "
-          << "WHERE object_id=" << object << " AND state_id=" << state 
+          << "WHERE object_id=" << object << " AND state_id=" << state
           << " AND canceled ISNULL "
           << " AND (valid_to ISNULL OR valid_to>CURRENT_TIMESTAMP) ";
-      if (!m_db.ExecSelect(sql.str().c_str())) 
+      if (!m_db.ExecSelect(sql.str().c_str()))
           return -1;
-      if (atoi(m_db.GetFieldValue(0,0))) 
+      if (atoi(m_db.GetFieldValue(0,0)))
           return -2;
       m_db.FreeSelect();
       sql.str("");
       sql << "INSERT INTO object_state_request "
           << "(object_id,state_id,crdate, valid_from,valid_to) VALUES "
-          << "(" << object << "," << state 
+          << "(" << object << "," << state
           << ",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "
           << "CURRENT_TIMESTAMP + INTERVAL '7 days');";
-      if (!m_db.ExecSQL(sql.str().c_str())) 
+      if (!m_db.ExecSQL(sql.str().c_str()))
           return -1;
       return 0;
 }
@@ -174,13 +174,13 @@ ObjectClient::deleteObjects(
                 "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1 ")
             )
         return -1;
-    if (!m_db.GetSelectRows()) 
+    if (!m_db.GetSelectRows())
         return -1;
     std::string handle = m_db.GetFieldValue(0, 0);
     std::string cert = m_db.GetFieldValue(0, 1);
     std::string password = m_db.GetFieldValue(0, 2);
     m_db.FreeSelect();
-    
+
     // before connection load all objects, zones are needed to
     // put zone id into cltrid (used in statistics - need to fix)
     std::stringstream sql;
@@ -199,7 +199,7 @@ ObjectClient::deleteObjects(
         sql << "LIMIT " << limit;
     if (!m_db.ExecSelect(sql.str().c_str()))
         return -1;
-    if (!m_db.GetSelectRows()) 
+    if (!m_db.GetSelectRows())
         return 0;
 
     std::ostream *debug;
@@ -254,13 +254,13 @@ ObjectClient::deleteObjects(
                         break;
                 }
                 if (r->code != 1000)
-                    std::cerr << "Cannot delete: " << name << " code: " << r->code;
+                    std::cerr << "Cannot " << cltrid << ": " << name << " code: " << r->code;
                 else
-                    std::cerr << "Deleted: " << name;
+                    std::cerr << cltrid << ": " << name;
                 std::cerr << std::endl;
             }
             catch (...) {
-                std::cerr << "Cannot delete: " << name << std::endl;
+                std::cerr << "Cannot " << cltrid << ": " << name << std::endl;
                 // proceed with next domain
             }
         }

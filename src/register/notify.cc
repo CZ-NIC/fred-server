@@ -245,30 +245,16 @@ namespace Register
         }
         params["registrar"] = reg.str();
       }
-      void fillContactParams(
+      void fillSimpleObjectParams(
         TID id,
         Register::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
         std::stringstream sql;
-        sql << "SELECT c.name FROM object_registry c WHERE c.id=" << id;
+        sql << "SELECT c.name, c.type FROM object_registry c WHERE c.id=" << id;
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        params["type"] = "1";
         params["handle"] = db->GetFieldValue(0,0);
-        params["deldate"] = to_iso_extended_string(
-          date(day_clock::local_day())
-        );
-      }
-      void fillNSSetParams(
-        TID id,
-        Register::Mailer::Parameters& params
-      ) throw (SQL_ERROR)
-      {
-        std::stringstream sql;
-        sql << "SELECT n.name FROM object_registry n WHERE n.id=" << id;
-        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        params["type"] = "2";
-        params["handle"] = db->GetFieldValue(0,0);
+        params["type"] = atoi(db->GetFieldValue(0,1));
         params["deldate"] = to_iso_extended_string(
           date(day_clock::local_day())
         );
@@ -353,11 +339,11 @@ namespace Register
           try {
             switch (i->obj_type) {
              case 1: // contact
-              fillContactParams(i->obj_id,params);
+              fillSimpleObjectParams(i->obj_id,params);
               emails = getContactEmails(i->obj_id);
               break;
              case 2: // nsset
-              fillNSSetParams(i->obj_id,params);
+              fillSimpleObjectParams(i->obj_id,params);
               emails = getNSSetTechEmails(i->obj_id);
               break;
              case 3: // domain
@@ -373,6 +359,9 @@ namespace Register
                    (i->emails == 1 ? getDomainAdminEmails(i->obj_id) :
                     getDomainTechEmails(i->obj_id));
                }
+             case 4: // keyset
+              fillSimpleObjectParams(i->obj_id,params);
+              emails = getKeySetTechEmails(i->obj_id);
               break;
             }
             if (debugOutput) {
