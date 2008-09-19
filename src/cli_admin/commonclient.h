@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <vector>
+#include <memory>
 
 #include "corba/nameservice.h"
 
