@@ -512,7 +512,8 @@ bool DB::BeginAction(
 
   bool ret = false;
 
-  BeginTransaction();
+  if (!BeginTransaction())
+      return false;
 
   // actionID for loging all action
   actionID = GetSequenceID("action");

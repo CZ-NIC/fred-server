@@ -1551,17 +1551,16 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
 
   if (DBsql.OpenDatabase(database) ) {
     if (errCode > 0) {
-      DBsql.BeginAction(clientID, EPP_UnknowAction, clTRID, "") ;
+      if (DBsql.BeginAction(clientID, EPP_UnknowAction, clTRID, "")) {
+          // error code
+          ret->code = errCode;
+          // write to the  action table
+          ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) );
+          ret->msg = CORBA::string_dup(GetErrorMessage(ret->code,
+              GetRegistrarLang(clientID) ) );
 
-      // error code
-      ret->code = errCode;
-      // write to the  action table
-      ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) );
-      ret->msg = CORBA::string_dup(GetErrorMessage(ret->code,
-          GetRegistrarLang(clientID) ) );
-
-      LOG( NOTICE_LOG, "GetTransaction: svTRID [%s] errCode -> %d msg [%s] ", ( char * ) ret->svTRID, ret->code, ( char * ) ret->msg );
-
+          LOG( NOTICE_LOG, "GetTransaction: svTRID [%s] errCode -> %d msg [%s] ", ( char * ) ret->svTRID, ret->code, ( char * ) ret->msg );
+      }
     }
 
     DBsql.Disconnect();
