@@ -215,7 +215,7 @@ main(int argc, char **argv)
     if (log_type == Logging::Log::LT_SYSLOG) {
         param = conf.get<unsigned>(LOG_SYSLOG_NAME);
     }
-    conf.print(std::cout);
+    //conf.print(std::cout);
 
     Logging::Manager::instance_ref().get("tracer").addHandler(log_type, param);
     Logging::Manager::instance_ref().get("tracer").setLevel(log_level);
@@ -229,6 +229,8 @@ main(int argc, char **argv)
     Logging::Manager::instance_ref().get("mailer").setLevel(log_level);
     Logging::Manager::instance_ref().get("old_log").addHandler(log_type, param);
     Logging::Manager::instance_ref().get("old_log").setLevel(log_level);
+    Logging::Manager::instance_ref().get("fred-server").addHandler(log_type, param);
+    Logging::Manager::instance_ref().get("fred-server").setLevel(log_level);
 
     std::stringstream connstring;
     std::stringstream nsAddr;

@@ -164,7 +164,8 @@ int
 ObjectClient::deleteObjects(
         const std::string& typeList)
 {
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
+    LOGGER("tracer").trace("ObjectClient::deleteObjects");
+    ccReg::EPP_var epp;
     // temporary done by using EPP corba interface
     // should be instead somewhere in register library (object.cc?)
     // get login information for first system registrar
@@ -215,9 +216,10 @@ ObjectClient::deleteObjects(
         return 0;
     }
     try {
-        CORBA::Object_var o = cc.getNS()->resolve("EPP");
-        ccReg::EPP_var epp = ccReg::EPP::_narrow(o);
         CORBA::Long clientId = 0;
+        CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
+        CORBA::Object_var o = cc.getNS()->resolve("EPP");
+        epp = ccReg::EPP::_narrow(o);
         ccReg::Response_var r = epp->ClientLogin(
                 handle.c_str(),password.c_str(),"","system_delete_login",
                 "<system_delete_login/>",clientId,cert.c_str(),ccReg::EN);
@@ -297,6 +299,7 @@ ObjectClient::regular_procedure()
             );
     CorbaClient *cc = new CorbaClient(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
     MailerManager mailMan(cc->getNS());
+
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
     std::auto_ptr<Register::Domain::Manager> domMan(
@@ -350,6 +353,7 @@ ObjectClient::regular_procedure()
             m_conf.get<std::string>(OBJECT_POLL_EXCEPT_TYPES_NAME),
             0, NULL);
     deleteObjects(m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME));
+
     pollMan->createLowCreditMessages();
     notifyMan->generateLetters();
 try {
