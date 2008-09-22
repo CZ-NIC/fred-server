@@ -142,7 +142,7 @@ namespace Register
           std::stringstream sql;
           sql << "SELECT c.email "
               << "FROM keyset_contact_map kcm, contact c "
-              << "WHERE kcm.contactid=c.id NAD kcm.keysetid="
+              << "WHERE kcm.contactid=c.id AND kcm.keysetid="
               << keyset;
           return getEmailList(sql);
       }
@@ -294,6 +294,7 @@ namespace Register
         bool useHistory
       ) throw (SQL_ERROR)
       {
+        TRACE("notifyStateChanges");
         std::stringstream sql;
         sql << "SELECT nt.state_id, nt.type, "
             << "nt.mtype, nt.emails, nt.obj_id, nt.obj_type, nt.valid_from "
