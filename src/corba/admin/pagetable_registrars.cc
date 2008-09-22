@@ -155,8 +155,10 @@ ccReg_Registrars_i::loadFilter(ccReg::TID _id) {
   Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
     Database::Filters::Registrar *tmp = dynamic_cast<Database::Filters::Registrar* >(*uit);
-    it.addE(tmp);
-    TRACE(boost::format("[IN] ccReg_Registrars_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
+    if (tmp) {
+      it.addE(tmp);
+      TRACE(boost::format("[IN] ccReg_Registrars_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
+    }
   }
 }
 

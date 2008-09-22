@@ -161,8 +161,13 @@ ccReg_KeySets_i::loadFilter(ccReg::TID id)
     ccReg_PageTable_i::loadFilter(id);
 
     Database::Filters::Union::iterator uit = uf.begin();
-    for (; uit != uf.end(); ++uit)
-        it.addE(dynamic_cast<Database::Filters::KeySet *>(*uit));
+    for (; uit != uf.end(); ++uit) {
+        Database::Filters::KeySet *tmp = dynamic_cast<Database::Filters::KeySet *>(*uit);
+        if (tmp) {
+            it.addE(tmp);
+            TRACE(boost::format("[IN] ccReg_KeySets_i::loadFilter(%1%): loaded filter content = %2%") % id % tmp->getContent());
+        }
+    }
 }
 
 void

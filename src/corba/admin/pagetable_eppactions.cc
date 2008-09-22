@@ -149,8 +149,10 @@ void ccReg_EPPActions_i::loadFilter(ccReg::TID _id) {
   Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
     Database::Filters::EppAction *tmp = dynamic_cast<Database::Filters::EppAction* >(*uit);
-    it.addE(tmp);
-    TRACE(boost::format("[IN] ccReg_EPPActions_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
+    if (tmp) {
+      it.addE(tmp);
+      TRACE(boost::format("[IN] ccReg_EPPActions_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
+    }
   }
 }
 

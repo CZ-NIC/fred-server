@@ -139,7 +139,11 @@ void ccReg_Contacts_i::loadFilter(ccReg::TID _id) {
 
   Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
-    it.addE(dynamic_cast<Database::Filters::Contact*>(*uit));
+    Database::Filters::Contact *tmp = dynamic_cast<Database::Filters::Contact*>(*uit);
+    if (tmp) {
+      it.addE(tmp);
+      TRACE(boost::format("[IN] ccReg_Contacts_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
+    }
   }
 }
 

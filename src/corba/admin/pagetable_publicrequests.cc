@@ -127,8 +127,10 @@ void ccReg_PublicRequests_i::loadFilter(ccReg::TID _id) {
   Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
     Database::Filters::PublicRequest *tmp = dynamic_cast<Database::Filters::PublicRequest* >(*uit);
-    it.addE(tmp);
-    TRACE(boost::format("[IN] ccReg_PublicRequests_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
+    if (tmp) {
+      it.addE(tmp);
+      TRACE(boost::format("[IN] ccReg_PublicRequests_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
+    }
   }
 }
 

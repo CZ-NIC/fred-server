@@ -151,7 +151,11 @@ ccReg_NSSets_i::loadFilter(ccReg::TID _id) {
 
   Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
-    it.addE(dynamic_cast<Database::Filters::NSSet* >(*uit));
+    Database::Filters::NSSet *tmp = dynamic_cast<Database::Filters::NSSet* >(*uit);
+    if (tmp) {
+      it.addE(tmp);
+      TRACE(boost::format("[IN] ccReg_NSSets_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
+    }
   }
 }
 
