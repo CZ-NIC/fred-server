@@ -569,7 +569,7 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
       std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
-        LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
+        LOGGER(PACKAGE).debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
 
         unsigned sl = detail->states.length();
         detail->states.length(sl + 1);
@@ -749,7 +749,7 @@ Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register:
       std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
-        LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
+        LOGGER(PACKAGE).debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
 
         unsigned sl = detail->states.length();
         detail->states.length(sl + 1);
@@ -888,7 +888,7 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
       std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
-        LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
+        LOGGER(PACKAGE).debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
 
         unsigned sl = detail->states.length();
         detail->states.length(sl + 1);
@@ -1059,7 +1059,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
       std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
-        LOGGER("corba").debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
+        LOGGER(PACKAGE).debug(boost::format("history detail -- state %1% is added for output") % tmp->getStatusId());
 
         unsigned sl = detail->states.length();
         detail->states.length(sl + 1);

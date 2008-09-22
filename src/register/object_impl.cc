@@ -377,17 +377,30 @@ void Register::ObjectListImpl::resetHistoryIDSequence() {
 
 
 Register::Object* Register::ObjectListImpl::findHistoryIDSequence(const Database::ID& _history_id) {
-  // must be sorted by ID to make sence
+  /* data_ container must be sorted by ID to make sence */
   if (ptr_history_idx_ < 0)
     ptr_history_idx_ = 0;
 
-  for (; ptr_history_idx_ < (int)data_.size() && dynamic_cast<Register::Object*>(data_[ptr_history_idx_])->getHistoryId() < _history_id; ptr_history_idx_++);
-  if (ptr_history_idx_ == (int)data_.size() || dynamic_cast<Register::Object*>(data_[ptr_history_idx_])->getHistoryId() != _history_id) {
-    LOGGER(PACKAGE).debug(boost::format("find_history_sequence: history_id=%1%, ptr=%2%") % _history_id % ptr_history_idx_);
-    resetHistoryIDSequence();
-    return NULL;
+  while (ptr_history_idx_ < (int)data_.size()) {
+    Register::Object *ptr_object = dynamic_cast<Register::Object*>(data_[ptr_history_idx_]);
+    if (ptr_object && ptr_object->getHistoryId() < _history_id) {
+      ++ptr_history_idx_;
+    }
+    else {
+      break;
+    }
   }
-  return dynamic_cast<Object*>(data_[ptr_history_idx_]);
+
+  Register::Object *ptr_object = dynamic_cast<Register::Object*>(data_[ptr_history_idx_]);
+  if (ptr_history_idx_ == (int)data_.size() || (ptr_object && (ptr_object->getHistoryId() != _history_id))) {
+    LOGGER(PACKAGE).debug(boost::format("find history id sequence: not found in result set. (historyid=%1%, ptr_idx=%2%)")
+                                        % _history_id % ptr_idx_);
+    resetHistoryIDSequence();
+    return 0;
+  }
+  else {
+    return ptr_object;
+  }
 }
 
 

@@ -1664,6 +1664,10 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
     REQUEST_TYPE_CORBA2DB_CASE(PRT_UNBLOCK_CHANGES_POST_PIF)
     REQUEST_TYPE_CORBA2DB_CASE(PRT_UNBLOCK_TRANSFER_EMAIL_PIF)
     REQUEST_TYPE_CORBA2DB_CASE(PRT_UNBLOCK_TRANSFER_POST_PIF)
+    default:
+      LOGGER(PACKAGE).error(boost::format("can't create new public request - unknown request type (%1%)")
+                                          % _type);
+      throw ccReg::Admin::INVALID_INPUT();
   }
   
   Register::PublicRequest::PublicRequest *new_request = 

@@ -120,10 +120,10 @@ CommonObject* CommonListImpl::findIDSequence(TID _id) {
   // must be sorted by ID to make sence
   if (ptr_idx_ < 0)
     ptr_idx_ = 0;
-  for (; ptr_idx_ < (int)data_.size() && data_[ptr_idx_]->getId()<_id; ptr_idx_++)
-    ;
+  for (; ptr_idx_ < (int)data_.size() && data_[ptr_idx_]->getId()<_id; ptr_idx_++);
   if (ptr_idx_ == (int)data_.size() || data_[ptr_idx_]->getId() != _id) {
-    LOG(ERROR_LOG, "find_sequence: id %ull, ptr %d", _id, ptr_idx_);
+    LOGGER(PACKAGE).debug(boost::format("find id sequence: not found in result set. (id=%1%, ptr_idx=%2%)")
+                                        % _id % ptr_idx_);
     resetIDSequence();
     return NULL;
   }
