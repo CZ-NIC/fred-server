@@ -562,11 +562,10 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
     MAP_HISTORY_STRING(authInfo, getAuthPw)
 
     /* object status */
-    // get only external assigned states ...
     for (unsigned s = 0; s < act->getStatusCount(); ++s) {
       const Register::Status *tmp = act->getStatusByIdx(s);
 
-      LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
+      LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2%") % tmp->getId() % tmp->getStatusId());
       std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
@@ -743,11 +742,10 @@ Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register:
     MAP_HISTORY_STRING(authInfo, getAuthPw)
 
     /* object status */
-    // get only external assigned states ...
     for (unsigned s = 0; s < act->getStatusCount(); ++s) {
       const Register::Status *tmp = act->getStatusByIdx(s);
 
-      LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
+      LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2%") % tmp->getId() % tmp->getStatusId());
       std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
@@ -791,7 +789,6 @@ Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register:
     MAP_HISTORY_BOOL(discloseIdent, getDiscloseIdent)
     MAP_HISTORY_BOOL(discloseVat, getDiscloseVat)
     MAP_HISTORY_BOOL(discloseNotifyEmail, getDiscloseNotifyEmail)
-    MAP_HISTORY_BOOL(discloseName, getDiscloseName)
 
   }
 
@@ -884,11 +881,10 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Register::NSS
     MAP_HISTORY_STRING(authInfo, getAuthPw)
 
     /* object status */
-    // get only external assigned states ...
     for (unsigned s = 0; s < act->getStatusCount(); ++s) {
       const Register::Status *tmp = act->getStatusByIdx(s);
 
-      LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
+      LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2%") % tmp->getId() % tmp->getStatusId());
       std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
@@ -1056,11 +1052,10 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
     MAP_HISTORY_STRING(authInfo, getAuthPw)
 
     /* object status */
-    // get only external assigned states ...
     for (unsigned s = 0; s < act->getStatusCount(); ++s) {
       const Register::Status *tmp = act->getStatusByIdx(s);
 
-      LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2% for external flag") % tmp->getId() % tmp->getStatusId());
+      LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2%") % tmp->getId() % tmp->getStatusId());
       std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
