@@ -6332,6 +6332,13 @@ ccReg_EPP_i::KeySetUpdate(
     techAdd = new int[tech_add.length()];
     techRem = new int[tech_rem.length()];
 
+    for (int i = 0; i < tech_add.length(); i++) {
+        techAdd[i] = 0;
+    }
+    for (int i = 0; i < tech_rem.length(); i++) {
+        techRem[i] = 0;
+    }
+
     ParsedAction paction;
     paction.add(1, (const char *)handle);
 
