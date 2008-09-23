@@ -12,7 +12,15 @@ namespace Register {
   public:
     bool operator()(CommonObject *_left, CommonObject *_right) const {
       if (_left->getId() == _right->getId()) {
-        return dynamic_cast<Object*>(_left)->getHistoryId() <= dynamic_cast<Object*>(_right)->getHistoryId();
+        Object *l_casted = dynamic_cast<Object*>(_left);
+        Object *r_casted = dynamic_cast<Object*>(_right);
+
+        if (l_casted == 0 || r_casted == 0) {
+          /* this should never happen */
+          throw std::bad_cast();
+        }
+
+        return l_casted->getHistoryId() <= r_casted->getHistoryId();
       }
       return _left->getId() < _right->getId();
     }

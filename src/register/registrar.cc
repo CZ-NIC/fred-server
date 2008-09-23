@@ -849,16 +849,24 @@ public:
  */
 
 #undef COMPARE_CLASS_IMPL
-#define COMPARE_CLASS_IMPL(_object_type, _by_what)                     \
-class EPPActionCompare##_by_what {                                     \
-public:                                                                \
-  EPPActionCompare##_by_what(bool _asc) : m_asc(_asc) { }              \
-  bool operator()(Register::CommonObject *_left, Register::CommonObject *_right) const {   \
-    bool result = (dynamic_cast<_object_type* >(_left)->get##_by_what() <= dynamic_cast<_object_type* >(_right)->get##_by_what()); \
-    return (m_asc && result) || (!m_asc && !result);                   \
-}                                                                      \
-private:                                                               \
-  bool m_asc;                                                          \
+#define COMPARE_CLASS_IMPL(_object_type, _by_what)                        \
+class EPPActionCompare##_by_what {                                        \
+public:                                                                   \
+  EPPActionCompare##_by_what(bool _asc) : asc_(_asc) { }                  \
+  bool operator()(Register::CommonObject *_left,                          \
+                  Register::CommonObject *_right) const {                 \
+    _object_type *l_casted = dynamic_cast<_object_type *>(_left);         \
+    _object_type *r_casted = dynamic_cast<_object_type *>(_right);        \
+    if (l_casted == 0 || r_casted == 0) {                                 \
+      /* this should never happen */                                      \
+      throw std::bad_cast();                                              \
+    }                                                                     \
+                                                                          \
+    bool result = l_casted->get##_by_what() <= r_casted->get##_by_what(); \
+    return (asc_ && result) || (!asc_ && !result);  	                    \
+}                                                                         \
+private:                                                                  \
+  bool asc_;                                                              \
 };
 
 
