@@ -7,8 +7,8 @@
 namespace Util {
 
 inline std::string escape(std::string _input,
-                   const std::string _what = "'\\",
-                   const std::string _esc_char = "'\\") {
+                          const std::string _what = "'\\",
+                          const std::string _esc_char = "\\") {
 
   size_t i = 0;
   while ((i = _input.find_first_of(_what, i)) != _input.npos) {
