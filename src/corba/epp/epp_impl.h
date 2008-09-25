@@ -224,6 +224,8 @@ public:
   short SetReasonContactDuplicity(ccReg::Errors_var& err, const char * handle,
     int lang, short position, ccReg::ParamError paramCode);
 
+  short SetReasonWrongRegistrar(ccReg::Errors_var &err, int registrarId, int lang);
+
   // general list function
   ccReg::Response* FullList(short act, const char *table, const char *fname,
     ccReg::Lists_out list, CORBA::Long clientID, const char* clTRID,

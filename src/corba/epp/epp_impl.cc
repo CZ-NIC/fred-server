@@ -914,6 +914,22 @@ short ccReg_EPP_i::SetReasonDomainTempCNotExistMap(
       position+1, REASON_MSG_ADMIN_NOTEXIST, lang);
 }
 
+short
+ccReg_EPP_i::SetReasonWrongRegistrar(
+        ccReg::Errors_var &err,
+        int registrarId,
+        int lang)
+{
+    //ret->code = SetErrorReason(errors, 2200, ccReg::domain_keyset, 0, REASON_MSG_CAN_NOT_REM_DSRECORD, GetRegistrarLang(clientID));
+    return SetErrorReason(
+            err,
+            COMMAND_AUTOR_ERROR,
+            ccReg::registrar_autor,
+            0,
+            REASON_MSG_REGISTRAR_AUTOR,
+            lang);
+}
+
 // load country code table  enum_country from database
 int ccReg_EPP_i::LoadCountryCode()
 {
@@ -4713,6 +4729,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
   GetValExpDateFromExtension(valexpiryDate, ext);
 
   if ( (regID = GetRegistrarID(clientID) ))
+      LOG(NOTICE_LOG, "registrarID: %d", regID);
 
     if (DBsql.OpenDatabase(database) ) {
 
@@ -4733,18 +4750,21 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
           }
           // if not client of the domain
           else if ( !DBsql.TestObjectClientID(id, regID) ) {
-            LOG( WARNING_LOG, "bad autorization not  client of domain [%s]", fqdn );
-            ret->code = COMMAND_AUTOR_ERROR;
+            LOG( WARNING_LOG, "bad autorization not client of domain [%s]", fqdn );
+            ret->code = SetReasonWrongRegistrar(errors, regID, GetRegistrarLang(clientID));
           }
-          try {
-            if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited))
-            {
-              LOG( WARNING_LOG, "update of object %s is prohibited" , fqdn );
-              ret->code = COMMAND_STATUS_PROHIBITS_OPERATION;
-            }
-          } catch (...) {
-            ret->code = COMMAND_FAILED;
+
+          if (!ret->code) {
+              try {
+                  if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited)) {
+                      LOG( WARNING_LOG, "update of object %s is prohibited" , fqdn );
+                      ret->code = COMMAND_STATUS_PROHIBITS_OPERATION;
+                  }
+              } catch (...) {
+                  ret->code = COMMAND_FAILED;
+              }
           }
+
           if ( !ret->code) {
 
             // test  ADD admin-c
@@ -5028,8 +5048,8 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
 
             }
 
-            DBsql.QuitTransaction(ret->code);
           }
+          DBsql.QuitTransaction(ret->code);
         }
 
         ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) );
@@ -6332,10 +6352,10 @@ ccReg_EPP_i::KeySetUpdate(
     techAdd = new int[tech_add.length()];
     techRem = new int[tech_rem.length()];
 
-    for (int i = 0; i < tech_add.length(); i++) {
+    for (int i = 0; i < (int)tech_add.length(); i++) {
         techAdd[i] = 0;
     }
-    for (int i = 0; i < tech_rem.length(); i++) {
+    for (int i = 0; i < (int)tech_rem.length(); i++) {
         techRem[i] = 0;
     }
 
