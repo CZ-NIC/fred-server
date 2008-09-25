@@ -914,22 +914,6 @@ short ccReg_EPP_i::SetReasonDomainTempCNotExistMap(
       position+1, REASON_MSG_ADMIN_NOTEXIST, lang);
 }
 
-short
-ccReg_EPP_i::SetReasonWrongRegistrar(
-        ccReg::Errors_var &err,
-        int registrarId,
-        int lang)
-{
-    //ret->code = SetErrorReason(errors, 2200, ccReg::domain_keyset, 0, REASON_MSG_CAN_NOT_REM_DSRECORD, GetRegistrarLang(clientID));
-    return SetErrorReason(
-            err,
-            COMMAND_AUTOR_ERROR,
-            ccReg::registrar_autor,
-            0,
-            REASON_MSG_REGISTRAR_AUTOR,
-            lang);
-}
-
 // load country code table  enum_country from database
 int ccReg_EPP_i::LoadCountryCode()
 {
@@ -2611,7 +2595,7 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
           if (!ret->code && !DBsql.TestObjectClientID(id, regID) ) //  if registrar is not client of the object
           {
             LOG( WARNING_LOG, "bad autorization not  creator of handle [%s]", handle );
-            ret->code = SetReasonWrongRegistrar(errors, regID, GetRegistrarLang(clientID));
+            ret->code = COMMAND_AUTOR_ERROR; // bad autorization
           }
           try {
             if (!ret->code && (
@@ -2742,7 +2726,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
           }
           if (!ret->code && !DBsql.TestObjectClientID(id, regID) ) {
             LOG( WARNING_LOG, "bad autorization not  client of contact [%s]", handle );
-            ret->code = SetReasonWrongRegistrar(errors, regID, GetRegistrarLang(clientID));
+            ret->code = COMMAND_AUTOR_ERROR;
           }
           try {
             if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited))
@@ -3561,7 +3545,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
           if (!ret->code &&  !DBsql.TestObjectClientID(id, regID) ) // if not client od the object
           {
             LOG( WARNING_LOG, "bad autorization not client of nsset [%s]", handle );
-            ret->code = SetReasonWrongRegistrar(errors, regID, GetRegistrarLang(clientID));
+            ret->code = COMMAND_AUTOR_ERROR; // bad autorization
           }
           try {
             if (!ret->code && (
@@ -4054,7 +4038,7 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(
           // registrar of the object
           if (!ret->code && !DBsql.TestObjectClientID(nssetID, regID) ) {
             LOG( WARNING_LOG, "bad autorization not  client of nsset [%s]", handle );
-            ret->code = SetReasonWrongRegistrar(errors, regID, GetRegistrarLang(clientID));
+            ret->code = COMMAND_AUTOR_ERROR;
           }
           try {
             if (!ret->code && testObjectHasState(&DBsql,nssetID,FLAG_serverUpdateProhibited))
@@ -4619,7 +4603,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
           }
           else if ( !DBsql.TestObjectClientID(id, regID) ) {
             LOG( WARNING_LOG, "bad autorization not client of fqdn [%s]", fqdn );
-            ret->code = SetReasonWrongRegistrar(errors, regID, GetRegistrarLang(clientID));
+            ret->code = COMMAND_AUTOR_ERROR;
           }
           try {
             if (!ret->code && (
@@ -4729,7 +4713,6 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
   GetValExpDateFromExtension(valexpiryDate, ext);
 
   if ( (regID = GetRegistrarID(clientID) ))
-      LOG(NOTICE_LOG, "registrarID: %d", regID);
 
     if (DBsql.OpenDatabase(database) ) {
 
@@ -4750,21 +4733,20 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
           }
           // if not client of the domain
           else if ( !DBsql.TestObjectClientID(id, regID) ) {
-            LOG( WARNING_LOG, "bad autorization not client of domain [%s]", fqdn );
-            ret->code = SetReasonWrongRegistrar(errors, regID, GetRegistrarLang(clientID));
+            LOG( WARNING_LOG, "bad autorization not  client of domain [%s]", fqdn );
+            ret->code = COMMAND_AUTOR_ERROR;
           }
-
           if (!ret->code) {
               try {
-                  if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited)) {
-                      LOG( WARNING_LOG, "update of object %s is prohibited" , fqdn );
-                      ret->code = COMMAND_STATUS_PROHIBITS_OPERATION;
-                  }
+                if (!ret->code && testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited))
+                {
+                  LOG( WARNING_LOG, "update of object %s is prohibited" , fqdn );
+                  ret->code = COMMAND_STATUS_PROHIBITS_OPERATION;
+                }
               } catch (...) {
-                  ret->code = COMMAND_FAILED;
+                ret->code = COMMAND_FAILED;
               }
           }
-
           if ( !ret->code) {
 
             // test  ADD admin-c
@@ -5647,7 +5629,7 @@ ccReg::Response * ccReg_EPP_i::DomainRenew(
                   // test client of the object
                   if ( !DBsql.TestObjectClientID(id, regID) ) {
                     LOG( WARNING_LOG, "bad autorization not client of domain [%s]", fqdn );
-                    ret->code = SetReasonWrongRegistrar(errors, regID, GetRegistrarLang(clientID));
+                    ret->code = COMMAND_AUTOR_ERROR;
                   }
                   try {
                     if (!ret->code && (
@@ -5897,7 +5879,7 @@ ccReg_EPP_i::KeySetDelete(
                     }
                     if (!ret->code && !DBsql.TestObjectClientID(id, regID)) {
                         LOG(WARNING_LOG, "bad authorisation not client of KeySet [%s]", handle);
-                        ret->code = SetReasonWrongRegistrar(errors, regID, GetRegistrarLang(clientID));
+                        ret->code = COMMAND_AUTOR_ERROR; // bad authorization
                     }
                     try {
                         if (!ret->code && (
@@ -6383,7 +6365,7 @@ ccReg_EPP_i::KeySetUpdate(
                     // registrar of the object
                     if (!ret->code && !DbSql.TestObjectClientID(keysetId, regId)) {
                         LOG(WARNING_LOG, "bad authorization not client of KeySet [%s]", handle);
-                        ret->code = SetReasonWrongRegistrar(errors, regId, GetRegistrarLang(clientId));
+                        ret->code = COMMAND_AUTOR_ERROR;
                     }
                     try {
                         if (!ret->code && testObjectHasState(&DbSql, keysetId, FLAG_serverUpdateProhibited)) {
