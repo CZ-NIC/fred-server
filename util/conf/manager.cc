@@ -1,14 +1,19 @@
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/erase.hpp>
+
 #include <fstream>
 #include "manager.h"
 
 namespace Config {
 
-Manager::Manager(int _argc, char* _argv[]) : m_initialized(true), 
-	argc(_argc), argv(_argv) {
+Manager::Manager(int _argc,
+                 char* _argv[]) : initialized_(true), 
+                                  argc(_argc), 
+                                  argv(_argv) { 
 	_init();
 }
 
-Manager::Manager() : m_initialized(false) {
+Manager::Manager() : initialized_(false) {
 }
 
 Manager::~Manager() {
@@ -17,7 +22,7 @@ Manager::~Manager() {
 void Manager::init(int _argc, char* _argv[]) {
 	argc = _argc;
 	argv = _argv;
-	m_initialized = true;
+	initialized_ = true;
 	_init();
 }
 
@@ -28,10 +33,16 @@ void Manager::_init() {
 }
 
 void Manager::_parseCmdLine(Conf &_conf) {
-  po::parsed_options cmd_parsed = po::command_line_parser(argc, argv).options(basic_opts).allow_unregistered().run();
+  po::options_description tmp;
+  /* command-line options should be parsed always */
+  tmp.add(basic_opts);
+  if (allow_file_opts_override_) {
+    /* we want to file options be overriden by command-line ones */
+    tmp.add(cfg_file_opts);
+  }
+
+  po::parsed_options cmd_parsed = po::command_line_parser(argc, argv).options(tmp).allow_unregistered().run();
   po::store(cmd_parsed, _conf);
-	// po::store(po::parse_command_line(argc, argv, basic_opts), _conf);
-	// po::notify(_conf);
 }
 
 void Manager::_parseCfgFile(const std::string& _name, Conf &_conf) throw(ConfigParseError) {
@@ -41,12 +52,59 @@ void Manager::_parseCfgFile(const std::string& _name, Conf &_conf) throw(ConfigP
 	}
 	try {
 		po::store(po::parse_config_file(cfg_file, cfg_file_opts), _conf);
-		// po::notify(_conf);
 		cfg_file.close();
 	}
 	catch (std::exception& ex) {
 		throw ConfigParseError(ex.what());
 	}
+}
+
+void Manager::_parseCfgFileManual(const std::string& _name, Conf &_conf) throw (ConfigParseError) {
+  std::ifstream cfg_file(_name.c_str());
+  if (cfg_file.fail()) {
+    throw ConfigParseError("config file '" + _name + "' not found");
+  }
+
+  int resultc = 0;
+  std::string line, opt_prefix;
+  std::vector<std::string> result;
+
+  while (std::getline(cfg_file, line)) {
+    /* strip whitepsace */
+    boost::algorithm::trim(line);
+    /* ignore empty line and comments */
+    if (!line.empty() && line[0] != '#') {
+      if (line[0] == '[' && line[line.size() - 1] == ']') {
+        /* this is option prefix */
+        opt_prefix = line;
+        boost::algorithm::erase_first(opt_prefix, "[");
+        boost::algorithm::erase_last(opt_prefix,  "]");
+      }
+      else {
+        /* this is normal option */
+        std::string::size_type sep = line.find("=");
+        if (sep != std::string::npos) {
+          /* get name and value couple without any whitespace */
+          std::string name  = boost::algorithm::trim_copy(line.substr(0, sep));
+          std::string value = boost::algorithm::trim_copy(line.substr(sep + 1, line.size() - 1));
+
+          if (!value.empty()) {
+            /* push appropriate commnad-line string */
+            result.push_back("--" + opt_prefix + "." + name + "=" + value);
+            resultc += 1;
+          }
+        }
+      }
+    }
+  }
+
+  try {
+    po::parsed_options file_parsed = po::command_line_parser(result).options(cfg_file_opts).allow_unregistered().run();
+    po::store(file_parsed, _conf);
+  }
+  catch (std::exception &ex) {
+    throw ConfigParseError(ex.what());
+  }
 }
 
 void Manager::setCmdLineOptions(const po::options_description& _opts) {
@@ -55,7 +113,9 @@ void Manager::setCmdLineOptions(const po::options_description& _opts) {
 }
 
 void Manager::setCfgFileOptions(const po::options_description& _opts,
-                                const std::string& _default) {
+                                const std::string& _default, 
+                                bool _override) {
+  allow_file_opts_override_ = _override;
 	cfg_file_opts.add(_opts);
 
 	if (!_default.empty()) {
@@ -69,10 +129,9 @@ void Manager::_parse(Conf &_conf) throw(ConfigParseError) {
 	try {
 		_parseCmdLine(_conf);
 		if (data.count("conf")) {
-			// std::cout << "parsing given config file: " << _conf["conf"].as<std::string>() << std::endl;
-			_parseCfgFile(_conf["conf"].as<std::string>(), _conf);
-      po::notify(_conf);
+			_parseCfgFileManual(_conf["conf"].as<std::string>(), _conf);
 		}
+    po::notify(_conf);
 	}
 	catch (std::exception& ex) {
 		throw ConfigParseError(ex.what());

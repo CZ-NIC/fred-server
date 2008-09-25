@@ -94,46 +94,46 @@ int main(int argc, char** argv) {
     /* program options definition */
     po::options_description cmd_opts;
     cmd_opts.add_options()
-      ("config-test", "Run configuration check and view actual configuration");
+      ("view-config", "View actual configuration");
 
     po::options_description database_opts("Database");
     database_opts.add_options()
-      ("database.host",     po::value<std::string>(), "Database hostname")
-      ("database.port",     po::value<unsigned>(),    "Database port")
-      ("database.name",     po::value<std::string>(), "Database name")
-      ("database.user",     po::value<std::string>(), "Database username")
-      ("database.password", po::value<std::string>(), "Database password")
-      ("database.timeout",  po::value<unsigned>(),    "Database connection timeout");
+      ("database.host",     po::value<std::string>()->default_value(""),     "Database hostname")
+      ("database.port",     po::value<unsigned>()->default_value(5432),      "Database port")
+      ("database.name",     po::value<std::string>()->default_value("fred"), "Database name")
+      ("database.user",     po::value<std::string>()->default_value("fred"), "Database username")
+      ("database.password", po::value<std::string>()->default_value(""),     "Database password")
+      ("database.timeout",  po::value<unsigned>()->default_value(0),         "Database connection timeout");
     po::options_description nameservice_opts("CORBA Nameservice");
     nameservice_opts.add_options()
-      ("nameservice.host",    po::value<std::string>(), "CORBA nameservice hostname")
-      ("nameservice.port",    po::value<unsigned>(),    "CORBA nameservice port")
-      ("nameservice.context", po::value<std::string>(), "CORBA nameservice context");
+      ("nameservice.host",    po::value<std::string>()->default_value("localhost"), "CORBA nameservice hostname")
+      ("nameservice.port",    po::value<unsigned>()->default_value(2809),           "CORBA nameservice port")
+      ("nameservice.context", po::value<std::string>()->default_value("fred"),      "CORBA nameservice context");
     po::options_description log_opts("Logging");
     log_opts.add_options()
-      ("log.type",            po::value<unsigned>(),    "Log type")
-      ("log.level",           po::value<unsigned>(),    "Log level")
-      ("log.file",            po::value<std::string>(), "Log file path (for log.type = 1)")
-      ("log.syslog_facility", po::value<unsigned>(),    "Syslog facility (for log.type = 2)");
+      ("log.type",            po::value<unsigned>()->default_value(1),             "Log type")
+      ("log.level",           po::value<unsigned>()->default_value(8),             "Log level")
+      ("log.file",            po::value<std::string>()->default_value("fred.log"), "Log file path (for log.type = 1)")
+      ("log.syslog_facility", po::value<unsigned>()->default_value(1),             "Syslog facility (for log.type = 2)");
     po::options_description registry_opts("Registry");
     registry_opts.add_options()
-      ("registry.restricted_handles",   po::value<bool>(),        "To force using restricted handles for NSSETs, KEYSETs and CONTACTs")
-      ("registry.disable_epp_notifier", po::value<bool>(),        "Disable EPP notifier subsystem")
-      ("registry.lock_epp_commands",    po::value<bool>(),        "Database locking of multiple update epp commands on one object")
-      ("registry.nsset_level",          po::value<unsigned>(),    "Default report level of new NSSET")
-      ("registry.docgen_path",          po::value<std::string>(), "PDF generator path")
-      ("registry.docgen_template_path", po::value<std::string>(), "PDF generator template path")
-      ("registry.fileclient_path",      po::value<std::string>(), "File manager client path");
+      ("registry.restricted_handles",   po::value<bool>()->default_value(false), "To force using restricted handles for NSSETs, KEYSETs and CONTACTs")
+      ("registry.disable_epp_notifier", po::value<bool>()->default_value(false), "Disable EPP notifier subsystem")
+      ("registry.lock_epp_commands",    po::value<bool>()->default_value(true),  "Database locking of multiple update epp commands on one object")
+      ("registry.nsset_level",          po::value<unsigned>()->default_value(3), "Default report level of new NSSET")
+      ("registry.docgen_path",          po::value<std::string>()->default_value("/usr/local/bin/fred-doc2pdf"),       "PDF generator path")
+      ("registry.docgen_template_path", po::value<std::string>()->default_value("/usr/local/share/fred-doc2pdf/"),    "PDF generator template path")
+      ("registry.fileclient_path",      po::value<std::string>()->default_value("/usr/local/bin/filemanager_client"), "File manager client path");
     po::options_description rifd_opts("RIFD specific");
     rifd_opts.add_options()
-      ("rifd.session_max",           po::value<unsigned>(), "RIFD maximum number of sessions")
-      ("rifd.session_timeout",       po::value<unsigned>(), "RIFD session timeout")
-      ("rifd.session_registrar_max", po::value<unsigned>(), "RIFD maximum munber active sessions per registrar");
+      ("rifd.session_max",           po::value<unsigned>()->default_value(200), "RIFD maximum number of sessions")
+      ("rifd.session_timeout",       po::value<unsigned>()->default_value(300), "RIFD session timeout")
+      ("rifd.session_registrar_max", po::value<unsigned>()->default_value(5), "RIFD maximum munber active sessions per registrar");
     po::options_description adifd_opts("ADIFD specific");
     adifd_opts.add_options()
-      ("adifd.session_max",     po::value<unsigned>(), "ADIFD maximum number of sessions")
-      ("adifd.session_timeout", po::value<unsigned>(), "ADIFD session timeout")
-      ("adifd.session_garbage", po::value<unsigned>(), "ADIFD session garbage interval");    
+      ("adifd.session_max",     po::value<unsigned>()->default_value(0),    "ADIFD maximum number of sessions (0 mean not limited)")
+      ("adifd.session_timeout", po::value<unsigned>()->default_value(3600), "ADIFD session timeout")
+      ("adifd.session_garbage", po::value<unsigned>()->default_value(150),  "ADIFD session garbage interval");    
 
     po::options_description file_opts;
     file_opts.add(database_opts).add(nameservice_opts).add(log_opts).add(registry_opts).add(rifd_opts).add(adifd_opts);
@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
     try {
       cfm.init(argc, argv);
       cfm.setCmdLineOptions(cmd_opts);
-      cfm.setCfgFileOptions(file_opts, CONFIG_FILE);
+      cfm.setCfgFileOptions(file_opts, CONFIG_FILE, true);
       cfm.parse();
     }
     catch (Config::Manager::ConfigParseError &_err) {
@@ -167,6 +167,11 @@ int main(int argc, char** argv) {
     /* get parsed configuration options */
     Config::Conf cfg = cfm.get();
 
+    if (cfg.hasOpt("view-config")) {
+      cfg.print(std::cout);
+      exit(0);
+    }
+
     /* setting up logger */
     Logging::Log::Level log_level = static_cast<Logging::Log::Level>(cfg.get<unsigned>("log.level"));
     Logging::Log::Type  log_type  = static_cast<Logging::Log::Type>(cfg.get<unsigned>("log.type"));
@@ -185,13 +190,22 @@ int main(int argc, char** argv) {
     LOGGER(PACKAGE).info(boost::format("configuration succesfully read from `%1%'")
                                         % cfg.get<std::string>("conf"));
 
-    std::string conn_info = str(boost::format("host=%1% port=%2% dbname=%3% user=%4% password=%5% connect_timeout=%6%")
-                                          % cfg.get<std::string>("database.host")
-                                          % cfg.get<unsigned>("database.port")
-                                          % cfg.get<std::string>("database.name")
-                                          % cfg.get<std::string>("database.user")
-                                          % cfg.get<std::string>("database.password")
-                                          % cfg.get<unsigned>("database.timeout"));
+    /* construct connection string */
+    std::string dbhost = cfg.get<std::string>("database.host");
+    dbhost = (dbhost.empty() ? "" : "host=" + dbhost + " ");
+    std::string dbpass = cfg.get<std::string>("database.password");
+    dbpass = (dbpass.empty() ? "" : "password=" + dbpass + " ");
+    std::string dbname = cfg.get<std::string>("database.name");
+    std::string dbuser = cfg.get<std::string>("database.user");
+    unsigned    dbport = cfg.get<unsigned>("database.port");
+    unsigned    dbtime = cfg.get<unsigned>("database.timeout");
+    std::string conn_info = str(boost::format("%1%port=%2% dbname=%3% user=%4% %5%connect_timeout=%6%")
+                                              % dbhost
+                                              % dbport 
+                                              % dbname
+                                              % dbuser
+                                              % dbpass
+                                              % dbtime);
                               
     LOGGER(PACKAGE).info(boost::format("database connection set to: `%1%'")
                                         % conn_info);
