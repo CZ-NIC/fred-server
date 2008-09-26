@@ -40,6 +40,8 @@
 #include "log/logger.h"
 #include "log/context.h"
 
+#include "rand_string.h"
+
 ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
                              NameService *_ns,
                              Config::Conf& _cfg,
@@ -191,8 +193,7 @@ char* ccReg_Admin_i::createSession(const char* username)
 
   ccReg_User_i *user_info = new ccReg_User_i(1 /* dummy id until user management */, username, username, username);
 
-  std::string session_id = to_iso_string(microsec_clock::local_time()) + "-"
-      + username;
+  std::string session_id = "sessid#" + RandStringGenerator::generate(5) + "-" + username;
 
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   
