@@ -254,7 +254,7 @@ namespace Register
         sql << "SELECT c.name, c.type FROM object_registry c WHERE c.id=" << id;
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         params["handle"] = db->GetFieldValue(0,0);
-        params["type"] = atoi(db->GetFieldValue(0,1));
+        params["type"] = db->GetFieldValue(0,1);
         params["deldate"] = to_iso_extended_string(
           date(day_clock::local_day())
         );
