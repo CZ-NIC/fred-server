@@ -324,11 +324,15 @@ ccReg_EPP_i::ccReg_EPP_i(
 ccReg_EPP_i::~ccReg_EPP_i()
 {
   Logging::Context ctx("rifd");
+  
+  delete CC;
+  delete ReasonMsg;
+  delete ErrorMsg;
+  delete zone;
+  delete [] session;
 
   db.Disconnect();
   LOG( ERROR_LOG, "EPP_i destructor");
-  if (zone)
-    delete zone;
 }
 
 // HANDLE EXCEPTIONS
@@ -536,7 +540,7 @@ int ccReg_EPP_i::LoadReasonMessages()
     rows=0;
     if (DBsql.ExecSelect("SELECT id , reason , reason_cs FROM enum_reason order by id;") ) {
       rows = DBsql.GetSelectRows();
-      ReasonMsg = new Mesg( rows );
+      ReasonMsg = new Mesg();
       for (i = 0; i < rows; i ++)
         ReasonMsg->AddMesg(atoi(DBsql.GetFieldValue(i, 0) ),
             DBsql.GetFieldValue(i, 1) , DBsql.GetFieldValue(i, 2) );
@@ -561,7 +565,7 @@ int ccReg_EPP_i::LoadErrorMessages()
     rows=0;
     if (DBsql.ExecSelect("SELECT id , status , status_cs FROM enum_error order by id;") ) {
       rows = DBsql.GetSelectRows();
-      ErrorMsg = new Mesg( rows );
+      ErrorMsg = new Mesg();
       for (i = 0; i < rows; i ++)
         ErrorMsg->AddMesg(atoi(DBsql.GetFieldValue(i, 0) ) ,
             DBsql.GetFieldValue(i, 1) , DBsql.GetFieldValue(i, 2));
@@ -579,18 +583,18 @@ const char * ccReg_EPP_i::GetReasonMessage(
   int err, int lang)
 {
   if (lang == LANG_CS)
-    return ReasonMsg->GetMesg_CS(err);
+    return ReasonMsg->GetMesg_CS(err).c_str();
   else
-    return ReasonMsg->GetMesg(err);
+    return ReasonMsg->GetMesg(err).c_str();
 }
 
 const char * ccReg_EPP_i::GetErrorMessage(
   int err, int lang)
 {
   if (lang == LANG_CS)
-    return ErrorMsg->GetMesg_CS(err);
+    return ErrorMsg->GetMesg_CS(err).c_str();
   else
-    return ErrorMsg->GetMesg(err);
+    return ErrorMsg->GetMesg(err).c_str();
 }
 
 short ccReg_EPP_i::SetErrorReason(
@@ -989,7 +993,7 @@ char* ccReg_EPP_i::version(
   get_rfc3339_timestamp(t, dateStr, false);
   datetime = CORBA::string_dup(dateStr);
 
-  // TODO: OS: check for memory leak
+  // XXX there was memory leak in server.cc (main:277): free() added there
   return strdup("DSDng");
 }
 

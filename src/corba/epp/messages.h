@@ -1,3 +1,8 @@
+#ifndef _MESSAGES_H_
+#define _MESSAGES_H_
+
+#include <iostream>
+#include <vector>
 
 #define LANG_EN 0
 #define LANG_CS 1
@@ -5,41 +10,37 @@
 class Mesg
 {
 public:
-  Mesg(
-    int num);
+  Mesg();
   ~Mesg();
 
   void SetLang(
     int l)
   {
     if (l == LANG_CS)
-      l = LANG_CS;
+      m_lang = LANG_CS;
     else
-      l = 0; // default EN
+      m_lang = LANG_EN; // default EN
   }
 
   int GetLang()
   {
-    return lang;
+    return m_lang;
   }
   int GetNum()
   {
-    return numMsg;
+    return m_errID.size();
   }
 
-  void AddMesg(
-    int id, const char *msg, const char *msg_cs);
-  const char * GetMesg(
-    int id);
-  const char * GetMesg_CS(
-    int id);
+  void AddMesg(const int id, const char *msg, const char *msg_cs);
+  void AddMesg(const int id, const std::string msg, const std::string msg_cs);
+  std::string GetMesg(int id);
+  std::string GetMesg_CS(int id);
 
 private:
-  int lang;
-  int *errID;
-  char **errMsg;
-  char **errMsg_cs;
-  int numMsg; // 
-  int add;
+  std::vector<std::string> m_errMsg;
+  std::vector<std::string> m_errMsg_cs;
+  std::vector<int> m_errID;
+  int m_lang;
 };
 
+#endif // _MESSAGES_H_
