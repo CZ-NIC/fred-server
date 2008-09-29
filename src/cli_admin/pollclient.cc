@@ -43,7 +43,7 @@ PollClient::PollClient():
         addOpt(POLL_NONSEEN_NAME)
         addOpt(POLL_NONEX_NAME)
         addOpt(POLL_DEBUG_NAME)
-        addOptStrDef(POLL_EXCEPT_TYPES_NAME, "6,7")
+        addOptStrDef(POLL_EXCEPT_TYPES_NAME, "")
         addOptUIntDef(POLL_LIMIT_NAME, 0);
 }
 PollClient::PollClient(

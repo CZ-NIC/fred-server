@@ -37,7 +37,7 @@ NotifyClient::NotifyClient():
             "Notify related invisible options");
     m_optionsInvis->add_options()
         addOpt(NOTIFY_DEBUG_NAME)
-        addOptStrDef(NOTIFY_EXCEPT_TYPES_NAME, "4,5")
+        addOptStrDef(NOTIFY_EXCEPT_TYPES_NAME, "")
         addOpt(NOTIFY_EXCEPT_TYPES_NAME)
         addOptUIntDef(NOTIFY_LIMIT_NAME, 0);
 }
