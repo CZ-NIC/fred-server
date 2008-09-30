@@ -217,6 +217,7 @@ main(int argc, char **argv)
     }
     //conf.print(std::cout);
 
+   
     Logging::Manager::instance_ref().get("tracer").addHandler(log_type, param);
     Logging::Manager::instance_ref().get("tracer").setLevel(log_level);
     Logging::Manager::instance_ref().get("db").addHandler(log_type, param);
@@ -231,6 +232,7 @@ main(int argc, char **argv)
     Logging::Manager::instance_ref().get("old_log").setLevel(log_level);
     Logging::Manager::instance_ref().get("fred-server").addHandler(log_type, param);
     Logging::Manager::instance_ref().get("fred-server").setLevel(log_level);
+    
 
     std::stringstream connstring;
     std::stringstream nsAddr;
@@ -418,6 +420,8 @@ main(int argc, char **argv)
         publicrequest.list_help();
     }
 
+    } catch (ccReg::EPP::EppError &e) {
+        std::cerr << "EppError code: " << e.errCode << ", message: " << e.errMsg << std::endl;
     } catch (CORBA::Exception &e) {
         std::cerr << "CORBA error" << std::endl;
     } catch (std::exception& e) {

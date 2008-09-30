@@ -63,7 +63,8 @@ KeysetClient::KeysetClient():
         add_CRDATE()
         add_UPDATE()
         add_TRANSDATE()
-        add_DELDATE();
+        add_DELDATE()
+        add_AUTH_PW();
 }
 
 KeysetClient::KeysetClient(
