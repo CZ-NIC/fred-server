@@ -224,7 +224,8 @@ public:
   void setValue(const DateTimeInterval& _value) {
     TRACE("[CALL] Inteval<DateTime>::setValue()");
 
-    if (_value.isSpecial()) {
+    if (_value.isSpecial() && _value.getSpecial() != INTERVAL 
+                           && _value.getSpecial() != DAY) {
       value = _value;
     }
     else {
