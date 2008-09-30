@@ -36,6 +36,10 @@ separateSpaces(const char *string)
     char *tok;
     char *str;
 
+    if (strlen(string) == 0) {
+        return ret;
+    }
+
     if ((str = (char *)std::malloc(sizeof(char) * std::strlen(string))) == NULL) {
         std::cerr << "Cannot alocate memory (separateSpace)" << std::endl;
         exit(1);

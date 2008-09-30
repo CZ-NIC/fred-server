@@ -316,11 +316,21 @@ int
 KeysetClient::update()
 {
     std::string key_handle = m_conf.get<std::string>(KEYSET_UPDATE_NAME).c_str();
-    std::string authinfopw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
-    std::string admins_add = m_conf.get<std::string>(ADMIN_ADD_NAME).c_str();
-    std::string admins_rem = m_conf.get<std::string>(ADMIN_REM_NAME).c_str();
-    std::string dsrec_add = m_conf.get<std::string>(KEYSET_DSREC_ADD_NAME).c_str();
-    std::string dsrec_rem = m_conf.get<std::string>(KEYSET_DSREC_REM_NAME).c_str();
+    std::string authinfopw("");
+    if (m_conf.hasOpt(AUTH_PW_NAME))
+         authinfopw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
+    std::string admins_add("");
+    if (m_conf.hasOpt(ADMIN_ADD_NAME))
+        admins_add = m_conf.get<std::string>(ADMIN_ADD_NAME).c_str();
+    std::string admins_rem("");
+    if (m_conf.hasOpt(ADMIN_REM_NAME))
+        admins_rem = m_conf.get<std::string>(ADMIN_REM_NAME).c_str();
+    std::string dsrec_add("");
+    if (m_conf.hasOpt(KEYSET_DSREC_ADD_NAME))
+        dsrec_add = m_conf.get<std::string>(KEYSET_DSREC_ADD_NAME).c_str();
+    std::string dsrec_rem("");
+    if (m_conf.hasOpt(KEYSET_DSREC_REM_NAME))
+        dsrec_rem = m_conf.get<std::string>(KEYSET_DSREC_REM_NAME).c_str();
 
     std::vector<std::string> admins_add_list = separateSpaces(admins_add.c_str());
     std::vector<std::string> admins_rem_list = separateSpaces(admins_rem.c_str());
@@ -423,7 +433,9 @@ KeysetClient::create()
 {
     std::string key_handle = m_conf.get<std::string>(KEYSET_CREATE_NAME).c_str();
     std::string admins = m_conf.get<std::string>(ADMIN_NAME).c_str();
-    std::string authinfopw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
+    std::string authinfopw("");
+    if (m_conf.hasOpt(AUTH_PW_NAME))
+        authinfopw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
     std::string dsrecords = m_conf.get<std::string>(KEYSET_DSRECORDS_NAME).c_str();
 
     std::vector<std::string> admins_list = separateSpaces(admins.c_str());
