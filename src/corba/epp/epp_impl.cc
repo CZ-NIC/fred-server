@@ -6121,6 +6121,7 @@ ccReg_EPP_i::KeySetCreate(
                     }
 
                     // test if dsrecord already exists in database
+                    /*
                     if (ret->code == 0) {
                         for (int ii = 0; ii < (int)dsrec.length(); ii++) {
                             int id = DBsql.GetDSRecordId(
@@ -6145,6 +6146,7 @@ ccReg_EPP_i::KeySetCreate(
                             }
                         }
                     }
+                    */
 
                     // dsrecord digest type test
                     if (ret->code == 0) {
@@ -6187,7 +6189,6 @@ ccReg_EPP_i::KeySetCreate(
                             }
                         }
                     }
-
                     // dsrecord duplicity test
                     if (ret->code == 0) {
                         if (dsrec.length() >= 2) {
