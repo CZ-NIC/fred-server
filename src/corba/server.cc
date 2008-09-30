@@ -188,7 +188,7 @@ int main(int argc, char** argv) {
 
     /* print some server settings info */
     LOGGER(PACKAGE).info(boost::format("configuration succesfully read from `%1%'")
-                                        % cfg.get<std::string>("conf"));
+                                        % cfg.get<std::string>("config"));
 
     /* construct connection string */
     std::string dbhost = cfg.get<std::string>("database.host");

@@ -119,17 +119,17 @@ void Manager::setCfgFileOptions(const po::options_description& _opts,
 	cfg_file_opts.add(_opts);
 
 	if (!_default.empty()) {
-		basic_opts.add_options()("conf", po::value<std::string>()->default_value(_default), "Path to configuration file");
+		basic_opts.add_options()("config,C", po::value<std::string>()->default_value(_default), "Path to configuration file");
 	} else {
-		basic_opts.add_options()("conf", po::value<std::string>(), "Path to configuration file");
+		basic_opts.add_options()("config,C", po::value<std::string>(), "Path to configuration file");
 	}
 }
 
 void Manager::_parse(Conf &_conf) throw(ConfigParseError) {
 	try {
 		_parseCmdLine(_conf);
-		if (data.count("conf")) {
-			_parseCfgFileManual(_conf["conf"].as<std::string>(), _conf);
+		if (data.count("config")) {
+			_parseCfgFileManual(_conf["config"].as<std::string>(), _conf);
 		}
     po::notify(_conf);
 	}
