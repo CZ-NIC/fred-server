@@ -51,18 +51,20 @@ Mesg::~Mesg()
 std::string
 Mesg::GetMesg(const int id)
 {
-    try {
-        return m_errMsg.at(id);
-    } catch (std::out_of_range()) {
-        return std::string("");
+    for (int i = 0; i < (int)m_errID.size(); i++) {
+        if (id == m_errID.at(i)) {
+            return m_errMsg.at(i);
+        }
     }
+    return "";
 }
 std::string
 Mesg::GetMesg_CS(const int id)
 {
-    try {
-        return m_errMsg_cs.at(id);
-    } catch (std::out_of_range()) {
-        return std::string("");
+    for (int i = 0; i < (int)m_errID.size(); i++) {
+        if (id == m_errID.at(i)) {
+            return m_errMsg_cs.at(i);
+        }
     }
+    return "";
 }
