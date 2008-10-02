@@ -1129,6 +1129,42 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
                                            % act->getId() % act->getDSRecordCount());
     }
 
+    /* dnskey list */
+    try {
+      bool dnslist_changed = (act->getDNSKeyCount() != prev->getDNSKeyCount()) || (act == prev);
+      for (unsigned i = 0; dnslist_changed != true && i < act->getDNSKeyCount(); ++i) {
+        if (*(act->getDNSKeyByIdx(i)) != *(prev->getDNSKeyByIdx(i))) {
+          dnslist_changed = true;
+          break;
+        }
+      }
+      if (dnslist_changed) {
+        ccReg::DNSKey dnskeys;
+        dnskeys.length(act->getDNSKeyCount());
+        for (unsigned k = 0; k < act->getDNSKeyCount(); ++k) {
+          dnskeys[k].flags     = act->getDNSKeyByIdx(k)->getFlags();
+          dnskeys[k].protocol  = act->getDNSKeyByIdx(k)->getProtocol();
+          dnskeys[k].alg       = act->getDNSKeyByIdx(k)->getAlg();
+          dnskeys[k].key       = DUPSTRFUN(act->getDNSKeyByIdx(k)->getKey);
+          LOGGER(PACKAGE).debug(boost::format("keyset id=%1% detail lib -> CORBA: dnskey added to output " 
+                                              "(flags=%2% protocol=%3% alg=%4% key=%5%)")
+                                              % act->getId()
+                                              % act->getDNSKeyByIdx(k)->getFlags()
+                                              % act->getDNSKeyByIdx(k)->getProtocol()
+                                              % act->getDNSKeyByIdx(k)->getAlg()
+                                              % act->getDNSKeyByIdx(k)->getKey());
+        }
+        ADD_NEW_HISTORY_RECORD(dnskeys, dnskeys)
+      }
+      else {
+        MODIFY_LAST_HISTORY_RECORD(dnskeys)
+      }
+    }
+    catch (Register::NOT_FOUND) {
+      LOGGER(PACKAGE).error(boost::format("keyset id=%1% detail lib -> CORBA: request for dnskey out of range 0..%2%")
+                                           % act->getId() % act->getDNSKeyCount());
+    }
+
   }
 
   return detail;

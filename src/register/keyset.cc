@@ -98,6 +98,55 @@ public:
     }
 };
 
+class DNSKeyImpl : public virtual DNSKey {
+private:
+    Database::ID id_;
+    unsigned int flags_;
+    unsigned int protocol_;
+    unsigned int alg_;
+    std::string  key_;
+
+public:
+    DNSKeyImpl(const Database::ID& _id,
+               const unsigned int  _flags,
+               const unsigned int  _protocol,
+               const unsigned int  _alg,
+               const std::string   _key) : id_(_id),
+                                           flags_(_flags),
+                                           protocol_(_protocol),
+                                           alg_(_alg),
+                                           key_(_key) {}
+    virtual ~DNSKeyImpl() {}
+    virtual const unsigned int getId() const {
+        return id_;
+    }
+
+    virtual const unsigned int getFlags() const {
+        return flags_;
+    }
+
+    virtual const unsigned int getProtocol() const {
+        return protocol_;
+    }
+
+    virtual const unsigned int getAlg() const {
+        return alg_;
+    }
+
+    virtual const std::string  getKey() const {
+        return key_;
+    }
+
+    virtual bool operator==(const DNSKey& _other) const {
+        /* this should be enough */
+        return (id_ == _other.getId());
+    }
+
+    virtual bool operator!=(const DNSKey& _other) const {
+        return !(*this == _other);
+    }
+};
+
 class KeySetImpl : public ObjectImpl, public virtual KeySet {
     struct AdminInfo {
       TID id;
@@ -114,10 +163,13 @@ class KeySetImpl : public ObjectImpl, public virtual KeySet {
 
     typedef std::vector<AdminInfo>    ContactListType;
     typedef std::vector<DSRecordImpl> DSRecordListType;
+    typedef std::vector<DNSKeyImpl>   DNSKeyListType;
+
 
     std::string         m_handle;
     ContactListType     m_admins;
     DSRecordListType    m_DSRecords;
+    DNSKeyListType      m_DNSKeys;
 
 public:
 
@@ -171,6 +223,11 @@ public:
         return m_DSRecords.size();
     }
 
+    unsigned int getDNSKeyCount() const
+    {
+        return m_DNSKeys.size();
+    }
+
     const DSRecord *getDSRecordByIdx(unsigned int idx) const throw (NOT_FOUND)
     {
         if (idx >= m_DSRecords.size())
@@ -178,6 +235,15 @@ public:
             // return NULL; <-- it is not checked anywhere!!
         else
             return &m_DSRecords[idx];
+    }
+
+    const DNSKey *getDNSKeyByIdx(unsigned int idx) const throw (NOT_FOUND)
+    {
+        if (idx >= m_DNSKeys.size())
+            throw NOT_FOUND();
+            // return NULL; <-- it is not checked anywhere!!
+        else
+            return &m_DNSKeys[idx];
     }
 
     void addAdminHandle(TID id, const std::string &admin)
@@ -198,6 +264,12 @@ public:
                 DSRecordImpl(id, keytag, alg,
                     digestType, digest, maxSigLife));
         return &m_DSRecords.at(m_DSRecords.size() - 1);
+    }
+
+    DNSKeyImpl *addDNSKey(const DNSKeyImpl& _dnskey)
+    {
+        m_DNSKeys.push_back(_dnskey);
+        return &m_DNSKeys.at(m_DNSKeys.size() - 1);
     }
 
     /// id lookup method
@@ -412,6 +484,34 @@ ListImpl::reload() throw (SQL_ERROR)
                 atoi(db->GetFieldValue(i, 6)));
     }
     db->FreeSelect();
+
+    /* load dnskey records */
+    resetIDSequence();
+    sql.str("");
+    sql << "SELECT d.keysetid, d.id, d.flags, d.protocol, d.alg, d.key FROM "
+        << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
+        << "dnskey d "
+        << "WHERE tmp.id=d.keysetid ";
+    if (!useTempTable)
+        sql << "AND tmp.name=UPPER('" << db->Escape2(m_handle) << "') "
+            << "AND tmp.erdate ISNULL AND tmp.type=4 ";
+    sql << "ORDER BY tmp.id, d.id ";
+    if (!db->ExecSelect(sql.str().c_str()))
+        throw SQL_ERROR();
+    for (unsigned int i = 0; i < (unsigned int)db->GetSelectRows(); i++) {
+        KeySetImpl *ks =
+            dynamic_cast<KeySetImpl *>(findIDSequence(STR_TO_ID(
+                            db->GetFieldValue(i, 0))));
+        if (!ks)
+            throw SQL_ERROR();
+        ks->addDNSKey(DNSKeyImpl(STR_TO_ID(db->GetFieldValue(i, 1)),
+                                 atoi(db->GetFieldValue(i, 2)),
+                                 atoi(db->GetFieldValue(i, 3)),
+                                 atoi(db->GetFieldValue(i, 4)),
+                                 db->GetFieldValue(i, 5)));
+    }
+    db->FreeSelect();
+
     ObjectListImpl::reload(useTempTable ? NULL : m_handle.c_str(), 4);
 }
 
@@ -601,7 +701,42 @@ ListImpl::reload(
             }
         }
 
+        /* load dnskey records */
+        resetHistoryIDSequence();
+        Database::SelectQuery dnskey_query;
+        dnskey_query.select()
+            << "tmp.id, t_1.keysetid, t_1.id, t_1.flags, t_1.protocol, t_1.alg, t_1.key ";
+        dnskey_query.from()
+            << getTempTableName() << " tmp "
+            << "JOIN dnskey_history t_1 ON (tmp.id = t_1.historyid)";
+        dnskey_query.order_by()
+            << "t_1.keysetid, tmp.id, t_1.id";
+
+        Database::Result r_dnskeys = conn->exec(dnskey_query);
+        for (Database::Result::Iterator it = r_dnskeys.begin(); it != r_dnskeys.end(); ++it) {
+            Database::Row::Iterator col = (*it).begin();
+
+            Database::ID keyset_historyid  = *col;
+            Database::ID keyset_id         = *(++col);
+            Database::ID dnskey_id         = *(++col);
+            unsigned int flags             = *(++col);
+            unsigned int protocol          = *(++col);
+            unsigned int alg               = *(++col);
+            std::string  key               = *(++col);
+
+            KeySetImpl *keyset_ptr = dynamic_cast<KeySetImpl *>(findHistoryIDSequence(keyset_historyid));
+            if (keyset_ptr) {
+                // LOGGER(PACKAGE).debug(boost::format("dsrec: id: %1% digest: %2%") %
+                        // dsrecord_id % digest);
+                keyset_ptr->addDNSKey(DNSKeyImpl(dnskey_id,
+                                                 flags,
+                                                 protocol,
+                                                 alg,
+                                                 key));
+            }
+        }
         
+
         bool history = false;
         if (uf.settings()) {
           history = uf.settings()->get("filter.history") == "on";

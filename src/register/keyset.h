@@ -45,6 +45,25 @@ public:
     virtual bool operator!=(const DSRecord& _other) const = 0;
 };
 
+class DNSKey {
+public:
+    virtual ~DNSKey() {}
+    /* return id of dnskey */
+    virtual const unsigned int getId() const = 0;
+    /* following refer to RFC 4034 - DNSKEY RDATA format */
+    /* return dnskey flags */
+    virtual const unsigned int getFlags() const = 0;
+    /* return protocol */
+    virtual const unsigned int getProtocol() const = 0;
+    /* return used algorithm */
+    virtual const unsigned int getAlg() const = 0;
+    /* return public key */
+    virtual const std::string  getKey() const = 0;
+    /* comparison operators */
+    virtual bool operator==(const DNSKey& _other) const = 0;
+    virtual bool operator!=(const DNSKey& _other) const = 0;
+};
+
 class KeySet: virtual public Register::Object {
 public:
     /// public d-tor
@@ -63,6 +82,10 @@ public:
     virtual unsigned int getDSRecordCount() const = 0;
     /// return appropriate DS record by index
     virtual const DSRecord *getDSRecordByIdx(unsigned int idx) const throw (NOT_FOUND) = 0;
+    /// return count of DNSKey records
+    virtual unsigned int getDNSKeyCount() const = 0;
+    /// return appropriate DNSKey record by index
+    virtual const DNSKey *getDNSKeyByIdx(unsigned int idx) const throw (NOT_FOUND) = 0;
 };
 
 /// list of keysets
