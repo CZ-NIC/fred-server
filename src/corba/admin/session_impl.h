@@ -39,6 +39,7 @@
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
+
 class ccReg_Session_i: public POA_ccReg::Session,
                        public PortableServer::RefCountServantBase {
 private:
@@ -120,8 +121,11 @@ public:
                   ccReg_User_i* _user);
   ~ccReg_Session_i();
 
+  const std::string& getId() const;
+
   void updateActivity();
   bool isTimeouted() const;
+  const ptime& getLastActivity() const;
   
   ccReg::User_ptr getUser();
   
@@ -133,5 +137,14 @@ public:
 
   void setHistory(CORBA::Boolean _flag);
 };
+
+
+class CompareSessionsByLastActivity {
+public:
+  bool operator()(const ccReg_Session_i *_left, const ccReg_Session_i *_right) {
+    return _left->getLastActivity() < _right->getLastActivity();
+  }
+};
+
 
 #endif /*SESSION_IMPL_H_*/

@@ -191,11 +191,33 @@ char* ccReg_Admin_i::createSession(const char* username)
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::createSession('%1%')") % username);
 
+  boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
+  unsigned sess_max = cfg.get<unsigned>("adifd.session_max");
+  if (sess_max && m_session_list.size() == sess_max) {
+    LOGGER(PACKAGE).info(boost::format("session limit (max=%1%) exceeded") % sess_max);
+
+    SessionListType::iterator it        = m_session_list.begin();
+    SessionListType::iterator it_oldest = m_session_list.begin();
+    for (; it != m_session_list.end(); ++it) {
+      LOGGER(PACKAGE).debug(boost::format("session %1% - last activity at %2%")
+                                          % it->second->getId()
+                                          % it->second->getLastActivity());
+      if (it_oldest->second->getLastActivity() > it->second->getLastActivity()) {
+        it_oldest = it;
+      }
+    }
+
+    LOGGER(PACKAGE).info(boost::format("destroying oldest session -- %1% (last activity at %2%)") 
+                                       % it_oldest->second->getId()
+                                       % it_oldest->second->getLastActivity());
+    delete it_oldest->second;
+    m_session_list.erase(it_oldest);
+  }
+
   ccReg_User_i *user_info = new ccReg_User_i(1 /* dummy id until user management */, username, username, username);
 
   std::string session_id = "sessid#" + RandStringGenerator::generate(5) + "-" + username;
 
-  boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   
   ccReg_Session_i *session = new ccReg_Session_i(session_id, m_connection_string, ns, cfg, user_info);
   m_session_list[session_id] = session; 

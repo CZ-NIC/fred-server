@@ -19,8 +19,8 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  NameService *ns,
                                  Config::Conf& cfg,
                                  ccReg_User_i* _user) :
-  session_id_(_session_id), cfg_(cfg), m_user(_user), m_db_manager(database), m_mailer_manager(ns) {
-  
+  session_id_(_session_id), cfg_(cfg), m_user(_user), m_db_manager(database), m_mailer_manager(ns), m_last_activity(second_clock::local_time()) {
+
   base_context_ = Logging::Context::get() + "/" + session_id_;
   Logging::Context ctx(session_id_);
 
@@ -71,7 +71,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_invoices->setDB(&m_db_manager);
 
   settings_.set("filter.history", "off");
-  
+
   updateActivity();
 }
 
@@ -194,6 +194,10 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
   return result;
 }
 
+const std::string& ccReg_Session_i::getId() const {
+  return session_id_;
+}
+
 void ccReg_Session_i::updateActivity() {
   ptime tmp = m_last_activity;
   m_last_activity = second_clock::local_time();
@@ -209,6 +213,10 @@ bool ccReg_Session_i::isTimeouted() const {
                                       % to_simple_string(m_last_activity - threshold)
                                       % (timeout ? "timeout" : "alive"));
   return timeout;
+}
+
+const ptime& ccReg_Session_i::getLastActivity() const {
+  return m_last_activity;
 }
 
 Registry::Domain::Detail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
