@@ -1,4 +1,14 @@
-2008-09-30 Ales Dolezal, Jaromir Talir, Jiri Sadek (2.0.2, 2.0.3)
+2008-09-30 Ales Dolezal, Jiri Sadek (2.0.5)
+
+   * Number of admin corba sessions limited
+	
+   * Database connection management improved
+
+   * Fixing fred-admin --invoice_list option
+
+   * Fixing interval filter SQL serialization
+
+2008-09-30 Ales Dolezal, Jaromir Talir, Jiri Sadek (2.0.2, 2.0.3, 2.0.4)
 
    * Reverted change of --conf parameter to --config
 	
