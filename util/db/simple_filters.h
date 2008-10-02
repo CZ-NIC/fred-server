@@ -237,9 +237,12 @@ public:
       typedef boost::date_time::local_adjustor<ptime, 1, calc_engine> adjustor;
       
       ptime beg = _value.get().begin();
-      ptime end = _value.get().end();    
-      beg = adjustor::local_to_utc(beg);
-      end = adjustor::local_to_utc(end);
+      ptime end = _value.get().end();
+
+      if (!beg.is_special())
+        beg = adjustor::local_to_utc(beg);
+      if (!end.is_special())
+        end = adjustor::local_to_utc(end);
       
       value = DateTimeInterval(time_period(beg, end));
     }
