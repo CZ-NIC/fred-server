@@ -80,3 +80,14 @@
 #define REASON_MSG_DSRECORD_BAD_DIGEST_LENGTH 47
 
 #define REASON_MSG_REGISTRAR_AUTOR 48
+
+#define REASON_MSG_TECHADMIN_LIMIT              49
+#define REASON_MSG_DSRECORD_LIMIT               50
+#define REASON_MSG_DNSKEY_LIMIT                 51
+#define REASON_MSG_NSSET_LIMIT                  52
+
+#define REASON_MSG_NO_DNSKEY                    53
+#define REASON_MSG_DNSKEY_BAD_FLAGS             54
+#define REASON_MSG_DNSKEY_BAD_PROTOCOL          55
+#define REASON_MSG_DNSKEY_BAD_ALG               56
+#define REASON_MSG_DUPLICITY_DNSKEY             57

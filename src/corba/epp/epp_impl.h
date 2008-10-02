@@ -325,12 +325,12 @@ public:
           const char *clTRID,
           const char *XML);
 
-  // TODO add DSRecord
   ccReg::Response *KeySetCreate(
           const char *handle,
           const char *authInfoPw,
           const ccReg::TechContact &tech,
           const ccReg::DSRecord &dsrec,
+          const ccReg::DNSKey &dnsk,
           ccReg::timestamp_out crDate,
           CORBA::Long clientID,
           const char *clTRID,

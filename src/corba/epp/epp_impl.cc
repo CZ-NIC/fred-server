@@ -3688,13 +3688,20 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
             ret->code = SetErrorReason(errors, COMMAND_PARAMETR_MISSING,
                 ccReg::nsset_tech, 0, REASON_MSG_TECH_NOTEXIST,
                 GetRegistrarLang(clientID) );
-          } else if (dns.length() < 2) //  minimal two dns hosts
-          {
-            if (dns.length() == 1) {
+          } else if (tech.length() > 9) {
+              LOG(WARNING_LOG, "NSSetCreate: too many tech contacts (max is 9)");
+              ret->code = SetErrorReason(errors,
+                      COMMAND_PARAMETR_VALUE_POLICY_ERROR,
+                      ccReg::nsset_tech, 0,
+                      REASON_MSG_TECHADMIN_LIMIT,
+                      GetRegistrarLang(clientID));
+          } else if (dns.length() < 2) {
+            //  minimal two dns hosts
+              if (dns.length() == 1) {
               LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s" , (const char *) dns[0].fqdn );
               ret->code = SetErrorReason(errors,
-              COMMAND_PARAMETR_VALUE_POLICY_ERROR, ccReg::nsset_dns_name, 1,
-              REASON_MSG_MIN_TWO_DNS_SERVER, GetRegistrarLang(clientID) );
+                      COMMAND_PARAMETR_VALUE_POLICY_ERROR, ccReg::nsset_dns_name, 1,
+                      REASON_MSG_MIN_TWO_DNS_SERVER, GetRegistrarLang(clientID) );
             } else {
               LOG( WARNING_LOG, "NSSetCreate: minimal two dns DNS hosts" );
               ret->code = SetErrorReason(errors, COMMAND_PARAMETR_MISSING,
@@ -3702,6 +3709,13 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
                   GetRegistrarLang(clientID) );
             }
 
+          } else if (dns.length() > 9) {
+              LOG(WARNING_LOG, "NSSetCreate: too many dns hosts (maximum is 9)");
+              ret->code = SetErrorReason(errors,
+                      COMMAND_PARAMETR_VALUE_POLICY_ERROR,
+                      ccReg::nsset_dns_name, 0,
+                      REASON_MSG_NSSET_LIMIT,
+                      GetRegistrarLang(clientID));
           }
           if (ret->code == 0) {
             Register::NSSet::Manager::CheckAvailType caType;
@@ -5970,6 +5984,24 @@ testDSRecordDuplicity(ccReg::DSRecord_str first, ccReg::DSRecord_str second)
     return false;
 }
 
+/*
+ * testDNSKeyDuplicity
+ *
+ * returns true if ``first'' and ``second'' dnskey records are same (e.g. has same
+ * values)
+ */
+bool
+testDNSKeyDuplicity(ccReg::DNSKey_str first, ccReg::DNSKey_str second)
+{
+    if (first.flags == second.flags &&
+            first.protocol == second.protocol &&
+            first.alg == second.alg &&
+            std::strcmp(first.key, second.key) == 0) {
+        return true;
+    }
+    return false;
+}
+
 /*************************************************************
  *
  * Function:    KeySetCreate
@@ -5981,13 +6013,14 @@ ccReg_EPP_i::KeySetCreate(
         const char *authInfoPw,
         const ccReg::TechContact &tech,
         const ccReg::DSRecord &dsrec,
+        const ccReg::DNSKey &dnsk,
         ccReg::timestamp_out crDate,
         CORBA::Long clientID,
         const char *clTRID,
         const char *XML)
 {
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx("rifd");
+    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
 
     DB                          DBsql;
     std::auto_ptr<EPPNotifier>  ntf;
@@ -6034,14 +6067,52 @@ ccReg_EPP_i::KeySetCreate(
                                 0,
                                 REASON_MSG_TECH_NOTEXIST,
                                 GetRegistrarLang(clientID));
-                    } else if (dsrec.length() < 1) {
-                        LOG(WARNING_LOG, "KeySetCreate: not any DSRecord ");
+                    } else if (tech.length() > 9) {
+                        LOG(WARNING_LOG, "KeySetCreate: too many tech contacts (maximum is 9)");
                         ret->code = SetErrorReason(
                                 errors,
-                                COMMAND_PARAMETR_MISSING,
+                                COMMAND_PARAMETR_RANGE_ERROR,
+                                ccReg::keyset_tech,
+                                0,
+                                REASON_MSG_TECHADMIN_LIMIT,
+                                GetRegistrarLang(clientID));
+                    } else if (dsrec.length() < 1 && dnsk.length() < 1) {
+                        if (dsrec.length() < 1) {
+                            LOG(WARNING_LOG, "KeySetCreate: not any DS record");
+                            ret->code = SetErrorReason(
+                                    errors,
+                                    COMMAND_PARAMETR_MISSING,
+                                    ccReg::keyset_dsrecord,
+                                    0,
+                                    REASON_MSG_NO_DSRECORD,
+                                    GetRegistrarLang(clientID));
+                        }
+                        if (dnsk.length() < 1) {
+                            LOG(WARNING_LOG, "KeySetCreate: not any DNSKey record");
+                            ret->code = SetErrorReason(
+                                    errors,
+                                    COMMAND_PARAMETR_MISSING,
+                                    ccReg::keyset_dnskey,
+                                    0,
+                                    REASON_MSG_NO_DNSKEY,
+                                    GetRegistrarLang(clientID));
+                        }
+                    } else if (dsrec.length() > 9) {
+                        LOG(WARNING_LOG, "KeySetCreate: too many ds-records (maximum is 9)");
+                        ret->code = SetErrorReason(
+                                errors,
+                                COMMAND_PARAMETR_RANGE_ERROR,
                                 ccReg::keyset_dsrecord,
                                 0,
-                                REASON_MSG_NO_DSRECORD,
+                                REASON_MSG_DSRECORD_LIMIT,
+                                GetRegistrarLang(clientID));
+                    } else if (dnsk.length() > 9) {
+                        ret->code = SetErrorReason(
+                                errors,
+                                COMMAND_PARAMETR_RANGE_ERROR,
+                                ccReg::keyset_dnskey,
+                                0,
+                                REASON_MSG_DNSKEY_LIMIT,
                                 GetRegistrarLang(clientID));
                     }
                     if (ret->code == 0) {
@@ -6212,8 +6283,95 @@ ccReg_EPP_i::KeySetCreate(
                             }
                         }
                     }
-                    // TODO more DSRecord tests?!?
 
+                    LOG(WARNING_LOG, "before flag");
+                    // dnskey flag field (must be 0, 256 or 267)
+                    // http://rfc-ref.org/RFC-TEXTS/4034/kw-flags_field.html
+                    if (ret->code == 0) {
+                        for (int ii = 0; ii < (int)dnsk.length(); ii++) {
+                            if (!(dnsk[ii].flags == 0 || dnsk[ii].flags == 256 || dnsk[ii].flags == 257)) {
+                                LOG(WARNING_LOG,
+                                        "dnskey flag is %d (must be 0, 256 or 257)",
+                                        dnsk[ii].flags);
+                                ret->code = SetErrorReason(
+                                        errors,
+                                        COMMAND_PARAMETR_ERROR,
+                                        ccReg::keyset_dnskey,
+                                        ii,
+                                        REASON_MSG_DNSKEY_BAD_FLAGS,
+                                        GetRegistrarLang(clientID));
+                                break;
+                            }
+                        }
+                    }
+                    LOG(WARNING_LOG, "before protocol");
+                    // dnskey protocol field (must be 3)
+                    // http://rfc-ref.org/RFC-TEXTS/4034/kw-protocol_field.html
+                    if (ret->code == 0) {
+                        for (int ii = 0; ii < (int)dnsk.length(); ii++) {
+                            if (dnsk[ii].protocol != 3) {
+                                LOG(WARNING_LOG,
+                                        "dnskey protocol is %d (must be 3)",
+                                        dnsk[ii].protocol);
+                                ret->code = SetErrorReason(
+                                        errors,
+                                        COMMAND_PARAMETR_ERROR,
+                                        ccReg::keyset_dnskey,
+                                        ii,
+                                        REASON_MSG_DNSKEY_BAD_PROTOCOL,
+                                        GetRegistrarLang(clientID));
+                                break;
+                            }
+                        }
+                    }
+                    LOG(WARNING_LOG, "before algorithm");
+                    // dnskey algorithm type (must be 1, 2, 3, 4, 5, 252, 253, 254 or 255)
+                    // http://rfc-ref.org/RFC-TEXTS/4034/kw-dnssec_algorithm_type.html
+                    // http://rfc-ref.org/RFC-TEXTS/4034/chapter7.html#d4e446172
+                    if (ret->code == 0) {
+                        for (int ii = 0; ii < (int)dnsk.length(); ii++) {
+                            if (!((dnsk[ii].alg >= 1 && dnsk[ii].alg <= 5) ||
+                                        (dnsk[ii].alg >= 252 && dnsk[ii].alg <=255))) {
+                                LOG(WARNING_LOG,
+                                        "dnskey algorithm is %d (must be 1,2,3,4,5,252,253,254 or 255)",
+                                        dnsk[ii].alg);
+                                ret->code = SetErrorReason(
+                                        errors,
+                                        COMMAND_PARAMETR_ERROR,
+                                        ccReg::keyset_dnskey,
+                                        ii,
+                                        REASON_MSG_DNSKEY_BAD_ALG,
+                                        GetRegistrarLang(clientID));
+                                break;
+                            }
+                        }
+                    }
+                    LOG(WARNING_LOG, "before duplicity test");
+                    // dnskey duplicity test 
+                    if (ret->code == 0) {
+                        if (dnsk.length() >= 2) {
+                            for (int ii = 0; ii < (int)dnsk.length(); ii++) {
+                                for (int jj = ii + 1; jj < (int)dnsk.length(); jj++) {
+                                    if (testDNSKeyDuplicity(dnsk[ii], dnsk[jj])) {
+                                        LOG(WARNING_LOG,
+                                                "Found DSNKey duplicity: %d x %d (%d %d %d %s)",
+                                                ii, jj, dnsk[ii].flags, dnsk[ii].protocol,
+                                                dnsk[ii].alg, CORBA::string_dup(dnsk[ii].key));
+                                        ret->code = SetErrorReason(
+                                                errors,
+                                                COMMAND_PARAMETR_ERROR,
+                                                ccReg::keyset_dnskey,
+                                                jj,
+                                                REASON_MSG_DUPLICITY_DNSKEY,
+                                                GetRegistrarLang(clientID));
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // keyset creating
                     if (ret->code == 0) {
                         id = DBsql.CreateObject("K", regID, handle, authInfoPw);
                         if (id <= 0) {
@@ -6240,6 +6398,31 @@ ccReg_EPP_i::KeySetCreate(
                                     LOG(DEBUG_LOG, "KeySetCreate: add tech contact %s id %d",
                                             (const char *)tech[i], tch[i]);
                                     if (!DBsql.AddContactMap("keyset", id, tch[i])) {
+                                        ret->code = COMMAND_FAILED;
+                                        break;
+                                    }
+                                }
+                                // insert dnskey(s)
+                                for (int ii = 0; ii < (int)dnsk.length(); ii++) {
+                                    LOG(NOTICE_LOG, "KeySetCreate: dnskey");
+
+                                    int dnskeyId = DBsql.GetSequenceID("dnskey");
+
+                                    DBsql.INSERT("dnskey");
+                                    DBsql.INTO("id");
+                                    DBsql.INTO("keysetid");
+                                    DBsql.INTO("flags");
+                                    DBsql.INTO("protocol");
+                                    DBsql.INTO("alg");
+                                    DBsql.INTO("key");
+
+                                    DBsql.VALUE(dnskeyId);
+                                    DBsql.VALUE(id);
+                                    DBsql.VALUE(dnsk[ii].flags);
+                                    DBsql.VALUE(dnsk[ii].protocol);
+                                    DBsql.VALUE(dnsk[ii].alg);
+                                    DBsql.VALUE(dnsk[ii].key);
+                                    if (!DBsql.EXEC()) {
                                         ret->code = COMMAND_FAILED;
                                         break;
                                     }
@@ -6339,7 +6522,7 @@ ccReg_EPP_i::KeySetUpdate(
         const char *clTRID,
         const char *XML)
 {
-  Logging::Context ctx("rifd");
+    Logging::Context ctx("rifd");
 
     std::auto_ptr<EPPNotifier> ntf;
     DB DbSql;
@@ -7243,3 +7426,4 @@ const std::string& ccReg_EPP_i::getDatabaseString()
 {
   return database;
 }
+/* vi:set ts=4 sw=4: */
