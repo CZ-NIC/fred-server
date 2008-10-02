@@ -343,6 +343,8 @@ public:
           const ccReg::TechContact &tech_rem,
           const ccReg::DSRecord &dsrec_add,
           const ccReg::DSRecord &dsrec_rem,
+          const ccReg::DNSKey &dnsk_add,
+          const ccReg::DNSKey &dnsk_rem,
           CORBA::Long clientID,
           const char *clTRID,
           const char *XML);

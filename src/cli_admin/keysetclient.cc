@@ -361,6 +361,11 @@ KeysetClient::update()
     ccReg::DSRecord dsrecord_rem;
     dsrecord_rem.length(dsrec_rem_list.size() / 5);
 
+    ccReg::DNSKey dnskey_add;
+    dnskey_add.length(0);
+    ccReg::DNSKey dnskey_rem;
+    dnskey_rem.length(0);
+
     for (int i = 0; i < (int)(dsrec_add_list.size() / 5); i++) {
         dsrecord_add[i].keyTag = atol(dsrec_add_list[i * 5 + 0].c_str());
         dsrecord_add[i].alg = atol(dsrec_add_list[i * 5 + 1].c_str());
@@ -395,6 +400,8 @@ KeysetClient::update()
             admin_rem,
             dsrecord_add,
             dsrecord_rem,
+            dnskey_add,
+            dnskey_rem,
             clientId,
             cltrid.c_str(),
             xml.c_str());
@@ -453,6 +460,9 @@ KeysetClient::create()
     ccReg::DSRecord dsrec;
     dsrec.length(dsrecords_list.size() / 5);
 
+    ccReg::DNSKey dnsk;
+    dnsk.length(0);
+
     for (int i = 0; i < (int)(dsrecords_list.size() / 5); i++) {
         dsrec[i].keyTag = atol(dsrecords_list[i * 5 + 0].c_str());
         dsrec[i].alg = atol(dsrecords_list[i * 5 + 1].c_str());
@@ -476,6 +486,7 @@ KeysetClient::create()
             authinfopw.c_str(),
             admin,
             dsrec,
+            dnsk,
             crData,
             clientId,
             cltrid.c_str(), xml.c_str());
