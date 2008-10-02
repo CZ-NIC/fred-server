@@ -46,7 +46,7 @@ void Compound::serialize(Database::SelectQuery& _sq, const Settings *_settings) 
   for (std::vector<Filter*>::const_iterator it = filter_list.begin(); it
       != filter_list.end(); ++it) {
     if (!(*it)->isActive()) {
-      LOGGER("debug").debug(boost::format("filter '%1%' is not set; skipping")
+      LOGGER(PACKAGE).debug(boost::format("filter '%1%' is not set; skipping")
           % (*it)->getName());
       continue;
     }

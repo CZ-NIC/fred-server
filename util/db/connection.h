@@ -93,7 +93,7 @@ public:
     conn_.close();
     conn_.open(conn_info_);
 #ifdef HAVE_LOGGER
-    LOGGER("db").info(boost::format("connection established; (%1%)") % conn_info_);
+    LOGGER(PACKAGE).info(boost::format("connection established; (%1%)") % conn_info_);
 #endif
   }
 
@@ -131,7 +131,7 @@ public:
   virtual Result_<result_type> exec(const std::string& _query) throw (ResultFailed) {
     try {
 #ifdef HAVE_LOGGER
-      LOGGER("db").debug(boost::format("exec query [%1%]") % _query);
+      LOGGER(PACKAGE).debug(boost::format("exec query [%1%]") % _query);
 #endif
       return Result_<result_type>(conn_.exec(_query));
     }
