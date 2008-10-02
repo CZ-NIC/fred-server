@@ -262,7 +262,7 @@ InvoiceClient::list()
             << "\t\t\t<reclamation>" << sup->getReclamation() << "</reclamation>\n"
             << "\t\t\t<email>" << sup->getEmail() << "</email>\n"
             << "\t\t\t<url>" << sup->getURL() << "</url>\n"
-            << "\t\t\t<phome>" << sup->getPhone() << "</phone>\n"
+            << "\t\t\t<phone>" << sup->getPhone() << "</phone>\n"
             << "\t\t\t<fax>" << sup->getFax() << "</fax>\n"
             << "\t\t</supplier>\n";
         Register::Invoicing::Subject *cli =
@@ -284,11 +284,11 @@ InvoiceClient::list()
             << "\t\t\t<reclamation>" << cli->getReclamation() << "</reclamation>\n"
             << "\t\t\t<email>" << cli->getEmail() << "</email>\n"
             << "\t\t\t<url>" << cli->getURL() << "</url>\n"
-            << "\t\t\t<phome>" << cli->getPhone() << "</phone>\n"
+            << "\t\t\t<phone>" << cli->getPhone() << "</phone>\n"
             << "\t\t\t<fax>" << cli->getFax() << "</fax>\n"
             << "\t\t</client>\n";
         std::cout
-            << std::endl;
+            << "\t</invoice>\n";
     }
     std::cout << "</objects>" << std::endl;
 
