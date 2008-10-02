@@ -68,14 +68,15 @@ public:
   /**
    * Constructors and destructor
    */
-  Connection_() {
+  Connection_() : opened_(false) {
   }
 
   /**
    * @param _conn_info is connection string used to open database 
    */
-  Connection_(const std::string& _conn_info) throw (ConnectionFailed) : conn_info_(_conn_info)  {
-    conn_.open(conn_info_);
+  Connection_(const std::string& _conn_info) throw (ConnectionFailed) : conn_info_(_conn_info), opened_(false)  {
+     /* commented out for lazy connection open */
+     // conn_.open(conn_info_);
   }
 
 
@@ -130,6 +131,10 @@ public:
    */
   virtual Result_<result_type> exec(const std::string& _query) throw (ResultFailed) {
     try {
+      if (!opened_) {
+        conn_.open(conn_info_);
+        opened_ = true;
+      }
 #ifdef HAVE_LOGGER
       LOGGER(PACKAGE).debug(boost::format("exec query [%1%]") % _query);
 #endif
@@ -144,6 +149,7 @@ public:
 private:
   connection_type conn_;      /**< connection driver */
   std::string     conn_info_; /**< connection string used to open connection */
+  bool            opened_;    /**< whether is connection opened or not (for lazy connect) */
 };
 
 
