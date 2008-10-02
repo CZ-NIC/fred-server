@@ -257,9 +257,14 @@ public:
     const char *fqdn, bool enum_zone);
   // return id of keyset
   int GetKeySetID(const char *handle);
+
   // return id of dsrecord
   int GetDSRecordId(int keysetId, int keytag, int alg, int digesttype, const char *digest, int maxsiglife);
   int GetDSRecordId(int keytag, int alg, int digesttype, const char *digest, int maxsiglife);
+  
+  // return id of dnskey
+  int GetDNSKeyId(int keysetId, int flags, int protocol, int alg, const char *key);
+  int GetDNSKeyId(int flags, int protocol, int alg, const char *key);
 
   //  save update for   object  id  by registrar regID and optionly save authInfo ( password)
   bool ObjectUpdate(
@@ -314,6 +319,7 @@ public:
 
   int GetKeySetDSRecords(int keysetID);
   int GetKeySetContacts(int keysetid);
+  int GetKeySetDNSKeys(int keysetID);
 
   int GetRegistrarID(
     const char *handle)

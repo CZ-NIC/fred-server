@@ -674,7 +674,7 @@ DB::GetKeySetDSRecords(int keysetID)
 
     if (ExecSelect(sqlString)) {
         num = GetSelectRows();
-        LOG(SQL_LOG, "keyset %d num %d", keysetID, num);
+        LOG(SQL_LOG, "keyset id(%d) has %d dsrecord(s)", keysetID, num);
         FreeSelect();
     }
 
@@ -763,6 +763,75 @@ DB::GetDSRecordId(
     }
     return id;
 }
+
+// returns number of dnskey records associated to keyset
+int
+DB::GetKeySetDNSKeys(int keysetId)
+{
+    std::stringstream query;
+    int ret = 0;
+
+    query << "SELECT id FROM dnskey WHERE keysetid=" << keysetId << ";";
+    if (ExecSelect(query.str().c_str())) {
+        ret = GetSelectRows();
+        LOG(SQL_LOG, "Keyset id(%d) has %d dnskey(s)",
+                keysetId, ret);
+        FreeSelect();
+    }
+    return ret;
+}
+
+// get id of dnskey
+int
+DB::GetDNSKeyId(
+        int keysetId,
+        int flags,
+        int protocol,
+        int alg,
+        const char *key)
+{
+    std::stringstream query;
+    int id = 0;
+    query
+        << "SELECT id"
+        << " FROM dnskey"
+        << " WHERE keysetid=" << keysetId
+        << " AND flags=" << flags
+        << " AND protocol=" << protocol
+        << " AND alg=" << alg
+        << " AND key='" << key << "'";
+    if (ExecSelect(query.str().c_str())) {
+        id = atoi(GetFieldValue(0, 0));
+        LOG(SQL_LOG, "Found dnskey id(%d) with same values", id);
+        FreeSelect();
+    }
+    return id;
+}
+// get id of dnskey, don't care about keyset id
+int
+DB::GetDNSKeyId(
+        int flags,
+        int protocol,
+        int alg,
+        const char *key)
+{
+    std::stringstream query;
+    int id = 0;
+    query
+        << "SELECT id"
+        << " FROM dnskey"
+        << " WHERE flags=" << flags
+        << " AND protocol=" << protocol
+        << " AND alg=" << alg
+        << " AND key='" << key << "'";
+    if (ExecSelect(query.str().c_str())) {
+        id = atoi(GetFieldValue(0, 0));
+        LOG(SQL_LOG, "Found dnskey id(%d) with same values", id);
+        FreeSelect();
+    }
+    return id;
+}
+
 
 // if the registrar is client of the object
 bool DB::TestObjectClientID(
@@ -2265,8 +2334,9 @@ DB::SaveKeySetHistory(int id)
     if (MakeHistory(id))
         if (SaveHistory("KEYSET", "id", id))
             if (SaveHistory("DSRECORD", "keysetid", id))
-                if (SaveHistory("keyset_contact_map", "keysetid", id))
-                    return true;
+                if (SaveHistory("dnskey", "keysetid", id))
+                    if (SaveHistory("keyset_contact_map", "keysetid", id))
+                        return true;
     return false;
 }
 
@@ -2291,10 +2361,11 @@ DB::DeleteKeySetObject(int id)
 {
     // first delete tech contact
     if (DeleteFromTable("keyset_contact_map", "keysetid", id))
-        if (DeleteFromTable("dsrecord", "keysetid", id))
-            if (DeleteFromTable("keyset", "id", id))
-                if (DeleteFromTable("object", "id", id))
-                    return true;
+        if (DeleteFromTable("dnskey", "keysetid", id))
+            if (DeleteFromTable("dsrecord", "keysetid", id))
+                if (DeleteFromTable("keyset", "id", id))
+                    if (DeleteFromTable("object", "id", id))
+                        return true;
     return false;
 }
 
