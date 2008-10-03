@@ -49,6 +49,9 @@ KeysetClient::KeysetClient():
         addOptStr(KEYSET_DSRECORDS_NAME)
         addOptStr(KEYSET_DSREC_ADD_NAME)
         addOptStr(KEYSET_DSREC_REM_NAME)
+        addOptStr(KEYSET_DNSKEY_NAME)
+        addOptStr(KEYSET_DNSKEY_ADD_NAME)
+        addOptStr(KEYSET_DNSKEY_REM_NAME)
         add_ID()
         add_HANDLE()
         add_ADMIN_ID()
@@ -176,6 +179,17 @@ KeysetClient::list()
                 << "\t\t\t<digest>" << dsrec->getDigest() << "</digest>\n"
                 << "\t\t\t<maxsiglife>" << dsrec->getMaxSigLife() << "</maxsiglife>\n"
                 << "\t\t</dsrecord>\n";
+        }
+        for (unsigned int j = 0; j < keyset->getDNSKeyCount(); j++) {
+            Register::KeySet::DNSKey *dnskey = (Register::KeySet::DNSKey *)keyset->getDNSKeyByIdx(j);
+            std::cout
+                << "\t\t<dnskey>\n"
+                << "\t\t\t<id>" << dnskey->getId() << "</id>\n"
+                << "\t\t\t<flags>" << dnskey->getFlags() << "</flags>\n"
+                << "\t\t\t<protocol>" << dnskey->getProtocol() << "</protocol>\n"
+                << "\t\t\t<alg>" << dnskey->getAlg() << "</alg>\n"
+                << "\t\t\t<key>" << dnskey->getKey() << "</key>\n"
+                << "\t\t</dnskey>\n";
         }
         if (m_conf.hasOpt(FULL_LIST_NAME)) {
             std::cout
@@ -363,6 +377,7 @@ KeysetClient::update()
 
     ccReg::DNSKey dnskey_add;
     dnskey_add.length(0);
+
     ccReg::DNSKey dnskey_rem;
     dnskey_rem.length(0);
 
@@ -443,10 +458,16 @@ KeysetClient::create()
     std::string authinfopw("");
     if (m_conf.hasOpt(AUTH_PW_NAME))
         authinfopw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
-    std::string dsrecords = m_conf.get<std::string>(KEYSET_DSRECORDS_NAME).c_str();
+    std::string dsrecords("");
+    if (m_conf.hasOpt(KEYSET_DSRECORDS_NAME))
+        dsrecords = m_conf.get<std::string>(KEYSET_DSRECORDS_NAME);
+    std::string dnskeys("");
+    if (m_conf.hasOpt(KEYSET_DNSKEY_NAME))
+        dnskeys = m_conf.get<std::string>(KEYSET_DNSKEY_NAME);
 
     std::vector<std::string> admins_list = separateSpaces(admins.c_str());
     std::vector<std::string> dsrecords_list = separateSpaces(dsrecords.c_str());
+    std::vector<std::string> dnskey_list = separateSpaces(dnskeys.c_str());
 
     ccReg::TechContact admin;
     admin.length(admins_list.size());
@@ -460,15 +481,25 @@ KeysetClient::create()
     ccReg::DSRecord dsrec;
     dsrec.length(dsrecords_list.size() / 5);
 
-    ccReg::DNSKey dnsk;
-    dnsk.length(0);
-
     for (int i = 0; i < (int)(dsrecords_list.size() / 5); i++) {
-        dsrec[i].keyTag = atol(dsrecords_list[i * 5 + 0].c_str());
-        dsrec[i].alg = atol(dsrecords_list[i * 5 + 1].c_str());
+        dsrec[i].keyTag     = atol(dsrecords_list[i * 5 + 0].c_str());
+        dsrec[i].alg        = atol(dsrecords_list[i * 5 + 1].c_str());
         dsrec[i].digestType = atol(dsrecords_list[i * 5 + 2].c_str());
-        dsrec[i].digest = CORBA::string_dup(dsrecords_list[i * 5 + 3].c_str());
+        dsrec[i].digest     = CORBA::string_dup(dsrecords_list[i * 5 + 3].c_str());
         dsrec[i].maxSigLife = atol(dsrecords_list[i * 5 + 4].c_str());
+    }
+    if ((dnskey_list.size() % 4) != 0) {
+        std::cerr << "Bad number of ``dnskey'' items." << std::endl;
+        return 1;
+    }
+    ccReg::DNSKey dnskey;
+    dnskey.length(dnskey_list.size() / 4);
+
+    for (int i = 0; i < (int)(dnskey_list.size() / 4); i++) {
+        dnskey[i].flags     = atoi(dnskey_list[i * 4 + 0].c_str());
+        dnskey[i].protocol  = atoi(dnskey_list[i * 4 + 1].c_str());
+        dnskey[i].alg       = atoi(dnskey_list[i * 4 + 2].c_str());
+        dnskey[i].key       = CORBA::string_dup(dnskey_list[i * 4 + 3].c_str());
     }
 
     std::string cltrid;
@@ -486,7 +517,7 @@ KeysetClient::create()
             authinfopw.c_str(),
             admin,
             dsrec,
-            dnsk,
+            dnskey,
             crData,
             clientId,
             cltrid.c_str(), xml.c_str());

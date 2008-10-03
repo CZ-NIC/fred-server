@@ -56,6 +56,13 @@
 #define KEYSET_DSREC_REM_NAME       "dsrec_rem"
 #define KEYSET_DSREC_REM_NAME_DESC  "list of dsrecords to remove"
 
+#define KEYSET_DNSKEY_NAME          "dnskeys"
+#define KEYSET_DNSKEY_NAME_DESC     "list of dnskey records"
+#define KEYSET_DNSKEY_ADD_NAME      "dnskey_add"
+#define KEYSET_DNSKEY_ADD_NAME_DESC "list of dnskeys to add"
+#define KEYSET_DNSKEY_REM_NAME      "dnskey_rem"
+#define KEYSET_DNSKEY_REM_NAME_DESC "list of dnskeys to remove"
+
 #define KEYSET_LIST_HELP_NAME           "keyset_list_help"
 #define KEYSET_LIST_HELP_NAME_DESC      "help for keyset list"
 #define KEYSET_UPDATE_HELP_NAME         "keyset_update_help"
