@@ -40,7 +40,6 @@ ObjectClient::ObjectClient():
             "Object related invisible options");
     m_optionsInvis->add_options()
         addOpt(OBJECT_DEBUG_NAME)
-        addOpt(OBJECT_DEBUG_NAME)
         addOptUInt(OBJECT_ID_NAME)
         addOptStr(OBJECT_NAME_NAME)
         addOptStrDef(OBJECT_DELETE_TYPES_NAME, "")
@@ -121,9 +120,10 @@ ObjectClient::createObjectStateRequest(
 int
 ObjectClient::new_state_request()
 {
+    Register::TID id = m_conf.get<unsigned int>(OBJECT_ID_NAME);
+    unsigned int state = m_conf.get<unsigned int>(OBJECT_NEW_STATE_REQUEST_NAME);
     int res = createObjectStateRequest(
-            m_conf.get<Register::TID>(OBJECT_ID_NAME),
-            m_conf.get<unsigned int>(OBJECT_NEW_STATE_REQUEST_NAME)
+            id, state
             );
     switch (res) {
         case -1:

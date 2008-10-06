@@ -52,7 +52,7 @@
 #define INVOICE_TAXDATE_TO_NAME_DESC    "show only invoices with tax date before input (YYYY-MM-DD hh:mm:ss)"
 #define INVOICE_ARCHIVED_NAME           "archived"
 #define INVOICE_ARCHIVED_NAME_DESC      "archived flag"
-#define INVOICE_OBJECT_ID_NAME          "object_id"
+#define INVOICE_OBJECT_ID_NAME          "invoice_object_id"
 #define INVOICE_OBJECT_ID_NAME_DESC     "object id"
 #define INVOICE_OBJECT_NAME_NAME        "object_name"
 #define INVOICE_OBJECT_NAME_NAME_DESC   "object name"
