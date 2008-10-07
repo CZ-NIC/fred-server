@@ -90,7 +90,7 @@ bool operator<(const DateTime &_left, const DateTime &_right) {
 
 
 bool operator>(const DateTime &_left, const DateTime &_right) {
-  return _left.value < _right.value;
+  return _left.value > _right.value;
 }
 
 
