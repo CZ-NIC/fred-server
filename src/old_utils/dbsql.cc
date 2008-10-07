@@ -704,19 +704,9 @@ DB::GetDSRecordId(
 
     if (ExecSelect(query.str().c_str())) {
         id = atoi(GetFieldValue(0, 0));
-        query
-            << "Found DSRecord, id: " << id
-            << " for entry: keysetId(" << keysetId
-            << "), keyTag(" << keyTag
-            << "), alg(" << alg
-            << "), digest(" << digest
-            << "), maxsiglife(";
-        if (maxSigLife == -1)
-            query << "NULL)";
-        else
-            query << maxSigLife << ")";
-
-        LOG(SQL_LOG, query.str().c_str());
+        if (id != 0) {
+            LOG(SQL_LOG, "Found dsrecord id(%d) with same values", id);
+        }
         FreeSelect();
     }
     return id;
@@ -734,7 +724,7 @@ DB::GetDSRecordId(
     std::stringstream query;
     int id = 0;
     query
-        << "SELECT id, keysetid"
+        << "SELECT id"
         << " FROM dsrecord"
         << " WHERE keytag=" << keyTag
         << " AND alg=" << alg
@@ -744,21 +734,9 @@ DB::GetDSRecordId(
 
     if (ExecSelect(query.str().c_str())) {
         id = atoi(GetFieldValue(0, 0));
-        int keysetId = atoi(GetFieldValue(0, 1));
-        std::stringstream tolog;
-        tolog
-            << "Found DSRecord, id: " << id
-            << " for entry: keysetId(" << keysetId
-            << "), keyTag(" << keyTag
-            << "), alg(" << alg
-            << "), digest(" << digest
-            << "), maxsiglife(";
-        if (maxSigLife == -1)
-            tolog << "NULL)";
-        else
-            tolog << maxSigLife << ")";
-
-        LOG(SQL_LOG, tolog.str().c_str());
+        if (id != 0) {
+            LOG(SQL_LOG, "Found dsrecord id(%d) with same values", id);
+        }
         FreeSelect();
     }
     return id;
@@ -802,7 +780,9 @@ DB::GetDNSKeyId(
         << " AND key='" << key << "'";
     if (ExecSelect(query.str().c_str())) {
         id = atoi(GetFieldValue(0, 0));
-        LOG(SQL_LOG, "Found dnskey id(%d) with same values", id);
+        if (id != 0) {
+            LOG(SQL_LOG, "Found dnskey id(%d) with same values", id);
+        }
         FreeSelect();
     }
     return id;
@@ -826,7 +806,9 @@ DB::GetDNSKeyId(
         << " AND key='" << key << "'";
     if (ExecSelect(query.str().c_str())) {
         id = atoi(GetFieldValue(0, 0));
-        LOG(SQL_LOG, "Found dnskey id(%d) with same values", id);
+        if (id != 0) {
+            LOG(SQL_LOG, "Found dnskey id(%d) with same values", id);
+        }
         FreeSelect();
     }
     return id;
