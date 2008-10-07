@@ -6357,6 +6357,40 @@ ccReg_EPP_i::KeySetCreate(
                             }
                         }
                     }
+                    // test if key is valid base64 encoded string
+                    // further details in rfc4043 section 2.2
+                    if (ret->code == 0) {
+                        int ret1, ret2;
+                        for (int ii = 0; ii < (int)dnsk.length(); ii++) {
+                            if ((ret1 = isValidBase64((const char *)dnsk[ii].key, &ret2)) != BASE64_OK) {
+                                if (ret1 == BASE64_BAD_LENGTH) {
+                                    LOG(WARNING_LOG, "dnskey key length is %d (must be dividable by 4), dnskey: '%s'",
+                                            ret2, (const char *)dnsk[ii].key);
+                                    ret->code = SetErrorReason(
+                                            errors,
+                                            COMMAND_PARAMETR_ERROR,
+                                            ccReg::keyset_dnskey,
+                                            ii,
+                                            REASON_MSG_DNSKEY_BAD_KEY_LEN,
+                                            GetRegistrarLang(clientID));
+                                } else if (ret1 == BASE64_BAD_CHAR) {
+                                    LOG(WARNING_LOG, "dnskkey key contain invalid character at position %d, dnskey: '%s'",
+                                            ret2, (const char *)dnsk[ii].key);
+                                    ret->code = SetErrorReason(
+                                            errors,
+                                            COMMAND_PARAMETR_ERROR,
+                                            ccReg::keyset_dnskey,
+                                            ii,
+                                            REASON_MSG_DNSKEY_BAD_KEY_CHAR,
+                                            GetRegistrarLang(clientID));
+                                } else {
+                                    LOG(WARNING_LOG, "isValidBase64() return unknown value (%d)",
+                                            ret1);
+                                    ret->code = COMMAND_FAILED;
+                                }
+                            }
+                        }
+                    }
                     // dnskey duplicity test 
                     if (ret->code == 0) {
                         if (dnsk.length() >= 2) {
