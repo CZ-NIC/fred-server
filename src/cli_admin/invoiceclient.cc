@@ -128,7 +128,7 @@ InvoiceClient::list()
                 Database::ID(m_conf.get<unsigned int>(ZONE_ID_NAME)));
     if (m_conf.hasOpt(INVOICE_TYPE_NAME))
         invFilter->addType().setValue(
-                m_conf.get<int>(INVOICE_TYPE_NAME));
+                m_conf.get<unsigned int>(INVOICE_TYPE_NAME));
     if (m_conf.hasOpt(INVOICE_NUMBER_NAME))
         invFilter->addNumber().setValue(
                 m_conf.get<std::string>(INVOICE_NUMBER_NAME));
