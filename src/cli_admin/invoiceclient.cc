@@ -178,6 +178,8 @@ InvoiceClient::list()
     invList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
     invList->reload(*unionFilter, m_dbman);
 
+    invList->exportXML(std::cout);
+    /*
     std::cout << "<objects>\n";
     for (unsigned int i = 0; i < invList->getCount(); i++) {
         Register::Invoicing::Invoice *inv = invList->get(i);
@@ -291,6 +293,7 @@ InvoiceClient::list()
             << "\t</invoice>\n";
     }
     std::cout << "</objects>" << std::endl;
+    */
 
     unionFilter->clear();
     delete unionFilter;
