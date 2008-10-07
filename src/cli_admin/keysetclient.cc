@@ -329,37 +329,49 @@ KeysetClient::transfer()
 int
 KeysetClient::update()
 {
-    std::string key_handle = m_conf.get<std::string>(KEYSET_UPDATE_NAME).c_str();
     std::string authinfopw("");
+    std::string admins_add("");
+    std::string admins_rem("");
+    std::string dsrec_add("");
+    std::string dsrec_rem("");
+    std::string dnsk_add("");
+    std::string dnsk_rem("");
+    
+    std::string key_handle = m_conf.get<std::string>(KEYSET_UPDATE_NAME).c_str();
     if (m_conf.hasOpt(AUTH_PW_NAME))
          authinfopw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
-    std::string admins_add("");
     if (m_conf.hasOpt(ADMIN_ADD_NAME))
         admins_add = m_conf.get<std::string>(ADMIN_ADD_NAME).c_str();
-    std::string admins_rem("");
     if (m_conf.hasOpt(ADMIN_REM_NAME))
         admins_rem = m_conf.get<std::string>(ADMIN_REM_NAME).c_str();
-    std::string dsrec_add("");
     if (m_conf.hasOpt(KEYSET_DSREC_ADD_NAME))
         dsrec_add = m_conf.get<std::string>(KEYSET_DSREC_ADD_NAME).c_str();
-    std::string dsrec_rem("");
     if (m_conf.hasOpt(KEYSET_DSREC_REM_NAME))
         dsrec_rem = m_conf.get<std::string>(KEYSET_DSREC_REM_NAME).c_str();
+    if (m_conf.hasOpt(KEYSET_DNSKEY_ADD_NAME))
+        dnsk_add = m_conf.get<std::string>(KEYSET_DNSKEY_ADD_NAME);
+    if (m_conf.hasOpt(KEYSET_DNSKEY_REM_NAME))
+        dnsk_rem = m_conf.get<std::string>(KEYSET_DNSKEY_REM_NAME);
 
-    std::vector<std::string> admins_add_list = separateSpaces(admins_add.c_str());
-    std::vector<std::string> admins_rem_list = separateSpaces(admins_rem.c_str());
+    std::vector<std::string> admins_add_list = separate(admins_add);
+    std::vector<std::string> admins_rem_list = separate(admins_rem);
 
-    std::vector<std::string> dsrec_add_list = separateSpaces(dsrec_add.c_str());
-    std::vector<std::string> dsrec_rem_list = separateSpaces(dsrec_rem.c_str());
+    std::vector<std::string> dsrec_add_list = separate(dsrec_add);
+    std::vector<std::string> dsrec_rem_list = separate(dsrec_rem);
+
+    std::vector<std::string> dnskey_add_list = separate(dnsk_add);
+    std::vector<std::string> dnskey_rem_list = separate(dnsk_rem);
 
     ccReg::TechContact admin_add;
     admin_add.length(admins_add_list.size());
-    for (int i = 0; i < (int)admins_add_list.size(); i++)
+    for (int i = 0; i < (int)admins_add_list.size(); i++) {
         admin_add[i] = CORBA::string_dup(admins_add_list[i].c_str());
+    }
     ccReg::TechContact admin_rem;
     admin_rem.length(admins_rem_list.size());
-    for (int i = 0; i < (int)admins_rem_list.size(); i++)
+    for (int i = 0; i < (int)admins_rem_list.size(); i++) {
         admin_rem[i] = CORBA::string_dup(admins_rem_list[i].c_str());
+    }
 
     if ((dsrec_add_list.size() % 5) != 0) {
         std::cout << "Bad number of ``dsrec-add'' items." << std::endl;
@@ -369,6 +381,14 @@ KeysetClient::update()
         std::cout << "Bad number of ``dsrec-rem'' items." << std::endl;
         return 1;
     }
+    if ((dnskey_add_list.size() % 4) != 0) {
+        std::cerr << "Bad number of ``" << KEYSET_DNSKEY_ADD_NAME << "'' items." << std::endl;
+        return 1;
+    }
+    if ((dnskey_rem_list.size() % 4) != 0) {
+        std::cerr << "Bad number of ``" << KEYSET_DNSKEY_REM_NAME << "'' items." << std::endl;
+        return 1;
+    }
     ccReg::DSRecord dsrecord_add;
     dsrecord_add.length(dsrec_add_list.size() / 5);
 
@@ -376,10 +396,10 @@ KeysetClient::update()
     dsrecord_rem.length(dsrec_rem_list.size() / 5);
 
     ccReg::DNSKey dnskey_add;
-    dnskey_add.length(0);
+    dnskey_add.length(dnskey_add_list.size() / 4);
 
     ccReg::DNSKey dnskey_rem;
-    dnskey_rem.length(0);
+    dnskey_rem.length(dnskey_rem_list.size() / 4);
 
     for (int i = 0; i < (int)(dsrec_add_list.size() / 5); i++) {
         dsrecord_add[i].keyTag = atol(dsrec_add_list[i * 5 + 0].c_str());
@@ -401,6 +421,38 @@ KeysetClient::update()
         else
             dsrecord_rem[i].maxSigLife = atol(dsrec_rem_list[i * 5 + 4].c_str());
     }
+    for (int i = 0; i < (int)(dnskey_add_list.size() / 4); i++) {
+        dnskey_add[i].flags     = atoi(dnskey_add_list[i * 4 + 0].c_str());
+        dnskey_add[i].protocol  = atoi(dnskey_add_list[i * 4 + 1].c_str());
+        dnskey_add[i].alg       = atoi(dnskey_add_list[i * 4 + 2].c_str());
+        dnskey_add[i].key       = CORBA::string_dup(dnskey_add_list[i * 4 + 3].c_str());
+    }
+    for (int i = 0; i < (int)(dnskey_rem_list.size() / 4); i++) {
+        dnskey_rem[i].flags     = atoi(dnskey_rem_list[i * 4 + 0].c_str());
+        dnskey_rem[i].protocol  = atoi(dnskey_rem_list[i * 4 + 1].c_str());
+        dnskey_rem[i].alg       = atoi(dnskey_rem_list[i * 4 + 2].c_str());
+        dnskey_rem[i].key       = CORBA::string_dup(dnskey_rem_list[i * 4 + 3].c_str());
+    }
+
+#if 0
+    for (int i = 0; i < (int)dnskey_add.length(); i++) {
+        std::cout << "add {\n";
+        std::cout << dnskey_add[i].flags << std::endl;
+        std::cout << dnskey_add[i].protocol << std::endl;
+        std::cout << dnskey_add[i].alg << std::endl;
+        std::cout << dnskey_add[i].key << std::endl;
+        std::cout << "}\n";
+    }
+
+    for (int i = 0; i < (int)dnskey_rem.length(); i++) {
+        std::cout << "rem {\n";
+        std::cout << dnskey_rem[i].flags << std::endl;
+        std::cout << dnskey_rem[i].protocol << std::endl;
+        std::cout << dnskey_rem[i].alg << std::endl;
+        std::cout << dnskey_rem[i].key << std::endl;
+        std::cout << "}\n";
+    }
+#endif
 
     std::string cltrid;
     std::string xml;
@@ -608,7 +660,8 @@ KeysetClient::create_help()
         << "  " << g_prog_name << " --keyset-create=<keyset_handle> \\\n"
         << "    --admins=<list_of_admins> \\\n"
         << "    [--authinfopw=<authinfo_password>] \\\n"
-        << "    --dsrecords=<list_of_dsrecords>\n\n"
+        << "    --dsrecords=<list_of_dsrecords> \\\n"
+        << "    --" << KEYSET_DNSKEY_NAME << "=<list_od_dnskeys>\n\n"
         << "example:\n"
         << "\t$ " << g_prog_name << " --keyset-create2=\"KEY::234\" --admins=\"CON::100 CON::50\" --dsrecords=\"0 0 0 348975238 -1\"\n"
         << "Commmand create keyset with handle ``KEY::234'' and with admin contacts selected by handles (``CON::100'' and ``CON::50'')\n"
@@ -626,7 +679,9 @@ KeysetClient::update_help()
         << "    [--admins_add=<list_of_admins_to_add>] \\\n"
         << "    [--admins_rem=<list_of_admins_to_rem>] \\\n"
         << "    [--dsrec-add=<list_of_dsrecords_to_add>] \\\n"
-        << "    [--dsrec-rem=<list_of_dsrecords_to_rem>]\n\n"
+        << "    [--dsrec-rem=<list_of_dsrecords_to_rem>] \\\n"
+        << "    [--" << KEYSET_DNSKEY_ADD_NAME << "=<list_of_dnskeys_to_add>] \\\n"
+        << "    [--" << KEYSET_DNSKEY_REM_NAME << "=<list_of_dnskeys_to_rem>]\n\n"
         << "List of DSRecords to remove or add (parameters ``--dsrec-add'' and ``--dsrec-rem'')"
         << "must look like:\n"
         << "\t --dsrec-add=\"keytag alg digesttype digest maxsiglife [keytag2 alg2...]\n"

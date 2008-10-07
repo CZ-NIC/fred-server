@@ -421,7 +421,12 @@ main(int argc, char **argv)
     }
 
     } catch (ccReg::EPP::EppError &e) {
-        std::cerr << "EppError code: " << e.errCode << ", message: " << e.errMsg << std::endl;
+        std::cerr << "EppError code: " << e.errCode << ", message: " 
+            << e.errMsg << std::endl;
+        for (int ii = 0; ii < e.errorList.length(); ii++) {
+            std::cerr << "Reason code: " << e.errorList[ii].code << ", message: " 
+                << e.errorList[ii].reason << std::endl;
+        }
     } catch (CORBA::Exception &e) {
         std::cerr << "CORBA error" << std::endl;
     } catch (std::exception& e) {

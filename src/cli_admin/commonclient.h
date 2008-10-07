@@ -50,6 +50,7 @@ public:
     }
 };
 
+std::vector<std::string> separate(const std::string str, int ch = ' ');
 std::vector<std::string> separateSpaces(const char *string);
 
 void print_version();

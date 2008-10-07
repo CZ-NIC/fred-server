@@ -58,6 +58,32 @@ separateSpaces(const char *string)
     
     return ret;
 }
+
+std::vector<std::string>
+separate(const std::string str, int ch)
+{
+    size_t pos = 0;
+    size_t initial = 0;
+    std::vector<std::string> ret;
+
+    if (str.empty()) {
+        return ret;
+    }
+    
+    pos = str.find(ch, initial);
+    if (pos == std::string::npos) {
+        ret.push_back(str);
+        return ret;
+    }
+    while (pos != std::string::npos) {
+        ret.push_back(str.substr(initial, pos - initial));
+        initial = pos + 1;
+        pos = str.find(ch, initial);
+    }
+    ret.push_back(str.substr(initial));
+    return ret;
+}
+
 void
 print_version()
 {
