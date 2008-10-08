@@ -496,6 +496,8 @@ class InvoiceImpl : public Register::CommonObjectImpl,
   TID fileXML;
   std::string varSymbol;
   SubjectImpl client;
+  std::string filepdf_name;
+  std::string filexml_name;
   static SubjectImpl supplier;
   std::vector<PaymentSourceImpl *> sources;
   std::vector<PaymentActionImpl *> actions;
@@ -503,6 +505,7 @@ class InvoiceImpl : public Register::CommonObjectImpl,
   AnnualPartitioningImpl ap; ///< total prices partitioned by year
   std::vector<PaymentImpl> paid; ///< list of paid vat rates
   ManagerImpl *man; ///< backlink to manager for VAT and others
+
   void clearLists() {
     for (unsigned i=0; i<sources.size(); i++)
       delete sources[i];
@@ -556,27 +559,30 @@ public:
               date_period& _accountPeriod, Type _type, unsigned long long _number,
               TID _registrar, Money _credit, Money _price, short _vatRate, Money _total,
               Money _totalVAT, TID _filePDF, TID _fileXML, std::string& _varSymbol,
-              SubjectImpl& _client, ManagerImpl *_manager) : CommonObjectImpl(_id),
-                                                             zone(_zone),
-                                                             zoneName(_zoneName),
-                                                             crTime(_crTime),
-                                                             taxDate(_taxDate),
-                                                             accountPeriod(_accountPeriod),
-                                                             type(_type),
-                                                             number(_number),
-                                                             registrar(_registrar),
-                                                             credit(_credit),
-                                                             price(_price),
-                                                             vatRate(_vatRate),
-                                                             total(_total),
-                                                             totalVAT(_totalVAT),
-                                                             filePDF(_filePDF),
-                                                             fileXML(_fileXML),
-                                                             varSymbol(_varSymbol),
-                                                             client(_client),
-                                                             storeFileFlag(false),
-                                                             ap(_manager),
-                                                             man(_manager) {
+              SubjectImpl& _client, const std::string &_filepdf_name, const std::string &_filexml_name,
+              ManagerImpl *_manager) : CommonObjectImpl(_id),
+                                       zone(_zone),
+                                       zoneName(_zoneName),
+                                       crTime(_crTime),
+                                       taxDate(_taxDate),
+                                       accountPeriod(_accountPeriod),
+                                       type(_type),
+                                       number(_number),
+                                       registrar(_registrar),
+                                       credit(_credit),
+                                       price(_price),
+                                       vatRate(_vatRate),
+                                       total(_total),
+                                       totalVAT(_totalVAT),
+                                       filePDF(_filePDF),
+                                       fileXML(_fileXML),
+                                       varSymbol(_varSymbol),
+                                       client(_client),
+                                       filepdf_name(_filepdf_name),
+                                       filexml_name(_filexml_name),
+                                       storeFileFlag(false),
+                                       ap(_manager),
+                                       man(_manager) {
   }
   
   ~InvoiceImpl() {
@@ -635,6 +641,12 @@ public:
   }
   TID getFileXML() const {
     return fileXML;
+  }
+  std::string getFileNamePDF() const {
+    return filepdf_name;
+  }
+  std::string getFileNameXML() const {
+    return filexml_name;
   }
   unsigned getSourceCount() const {
     return sources.size();
@@ -1183,14 +1195,17 @@ public:
                                  << "t_1.file, t_1.fileXML, t_3.organization, t_3.street1, "
                                  << "t_3.city, t_3.postalcode, "
                                  << "TRIM(t_3.ico), TRIM(t_3.dic), TRIM(t_3.varsymb), "
-                                 << "t_3.handle, t_3.vat, t_3.id, t_3.country ";
+                                 << "t_3.handle, t_3.vat, t_3.id, t_3.country, "
+                                 << "t_6.name as file_name, t_7.name as filexml_name";
 
       object_info_query.from() << "tmp_invoice_filter_result tmp "
                                << "JOIN invoice t_1 ON (tmp.id = t_1.id) "
                                << "JOIN zone t_2 ON (t_1.zone = t_2.id) "
                                << "JOIN registrar t_3 ON (t_1.registrarid = t_3.id) "
                                << "JOIN invoice_prefix t_4 ON (t_4.id = t_1.prefix_type) "
-                               << "LEFT JOIN invoice_generation t_5 ON (t_1.id = t_5.invoiceid) ";
+                               << "LEFT JOIN invoice_generation t_5 ON (t_1.id = t_5.invoiceid) "
+                               << "LEFT JOIN files t_6 ON (t_1.file = t_6.id) "
+                               << "LEFT JOIN files t_7 ON (t_1.filexml = t_7.id)";
 
       object_info_query.order_by() << "tmp.id";
 
@@ -1237,6 +1252,8 @@ public:
           bool               c_vat          = *(++col);
           TID                c_id           = *(++col);
           std::string        c_country      = *(++col);
+          std::string        filepdf_name   = *(++col);
+          std::string        filexml_name   = *(++col);
 
           date_period account_period(from_date, to_date);
           SubjectImpl client(c_id, c_handle, c_organization, "", c_street1,
@@ -1261,6 +1278,8 @@ public:
                                           fileXML,
                                           c_var_symb,
                                           client,
+                                          filepdf_name,
+                                          filexml_name,
                                           man));
           
         }

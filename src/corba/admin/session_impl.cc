@@ -1403,11 +1403,11 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
   detail->registrar.type   = ccReg::FT_REGISTRAR;
 
   detail->filePDF.id     = _invoice->getFilePDF();
-  detail->filePDF.handle = "";
+  detail->filePDF.handle = _invoice->getFileNamePDF().c_str(); 
   detail->filePDF.type   = ccReg::FT_FILE;
 
   detail->fileXML.id     = _invoice->getFileXML();
-  detail->fileXML.handle = "";
+  detail->fileXML.handle = _invoice->getFileNameXML().c_str();
   detail->fileXML.type   = ccReg::FT_FILE;
 
   detail->payments.length(_invoice->getSourceCount());

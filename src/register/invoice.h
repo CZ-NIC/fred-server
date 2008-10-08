@@ -162,6 +162,8 @@ public:
   virtual const std::string& getVarSymbol() const = 0;
   virtual TID getFilePDF() const = 0;
   virtual TID getFileXML() const = 0;
+  virtual std::string getFileNamePDF() const = 0;
+  virtual std::string getFileNameXML() const = 0;
   virtual unsigned getSourceCount() const = 0;
   virtual const PaymentSource *getSource(unsigned idx) const = 0;
   virtual unsigned getActionCount() const = 0;
