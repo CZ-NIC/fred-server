@@ -74,9 +74,14 @@ public:
   /**
    * @param _conn_info is connection string used to open database 
    */
-  Connection_(const std::string& _conn_info) throw (ConnectionFailed) : conn_info_(_conn_info), opened_(false)  {
-     /* commented out for lazy connection open */
-     // conn_.open(conn_info_);
+  Connection_(const std::string& _conn_info,
+              bool _lazy_connect = true) throw (ConnectionFailed) : conn_info_(_conn_info), 
+                                                                    opened_(false) {
+     /* lazy connection open */
+     if (!_lazy_connect) {
+      open(conn_info_);
+      opened_ = true;
+     }
   }
 
 
@@ -108,6 +113,8 @@ public:
    */
 
   /**
+   * This call is converted to stringize method call
+   *
    * @param _query object representing query
    * @return       result
    */
@@ -132,7 +139,7 @@ public:
   virtual Result_<result_type> exec(const std::string& _query) throw (ResultFailed) {
     try {
       if (!opened_) {
-        conn_.open(conn_info_);
+        open(conn_info_);
         opened_ = true;
       }
 #ifdef HAVE_LOGGER
@@ -143,6 +150,14 @@ public:
     catch (...) {
       throw ResultFailed(_query);
     }
+  }
+
+
+  /**
+   * Reset connection to state after connect
+   */
+  virtual void reset() {
+    conn_.reset(conn_info_);
   }
 
 

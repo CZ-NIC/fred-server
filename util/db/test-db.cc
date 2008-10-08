@@ -6,20 +6,58 @@
 #include "manager.h"
 #include "types/datetime.h"
 
+#include <boost/thread/thread.hpp>
+#include <boost/bind.hpp>
+
+struct TestPooler {
+public:
+  TestPooler(Database::ConnectionPool *p) : pool_(p) { }
+  void operator()() {
+    Database::Connection *c = pool_->acquire();
+    c->exec("SELECT * FROM object_registry");
+    pool_->release(c);
+  }
+
+  Database::ConnectionPool *pool_;
+};
+
+
 int main() {
   using namespace Database;
 
-  Logging::Manager::instance_ref().get("db").addHandler(Logging::Log::LT_CONSOLE); 
-  Logging::Manager::instance_ref().get("db").setLevel(Logging::Log::LL_DEBUG);
+  Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_CONSOLE); 
+  Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_DEBUG);
 
-  Connection conn;
+  Database::ConnectionPool pool("host=localhost dbname=fred user=fred", 20, 30);
+
+  boost::thread_group tg;
+  for (unsigned i = 0; i < 40; ++i) {
+    TestPooler tp(&pool);
+    tg.create_thread(tp);    
+  }
+  tg.join_all();
+
+  return 0;
+
+
+
   try {
-    conn.open("host=localhost dbname=fred user=fred");
-    
-    Transaction t(conn);
+    Connection *c = pool.acquire();
+    Result r = c->exec("SELECT roid, name, crdate FROM object_registry");
 
-    Result r = conn.exec("SELECT roid, name, crdate FROM object_registry");
-    std::cout << "size: " << r.size() << std::endl;
+    Connection *c2 = pool.acquire();
+    Result r2 = c2->exec("SELECT * FROM domain");
+    pool.release(c2);
+
+    
+    {
+      Transaction t(*c);
+      c->exec("SELECT * FROM files");
+      pool.release(c);
+      c->exec("SELECT * FROM contact");
+    }
+
+    pool.release(c);
 
     std::string str = r[0][0];
     std::cout << r[0][0] << "  " << str << std::endl;
@@ -62,6 +100,9 @@ int main() {
   }
   catch (Database::Exception& ex) {
     std::cout << ex.what() << std::endl;
+  }
+  catch (...) {
+    std::cout << "ERROR" << std::endl;
   }
  
 //  for (; it1 != r.end(); ++it1) {

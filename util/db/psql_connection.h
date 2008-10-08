@@ -106,6 +106,24 @@ public:
       throw ResultFailed(_query);
     }
   }
+
+
+  virtual void reset(const std::string _conn_info) {
+    ConnStatusType status = PQstatus(psql_conn_);
+    PGTransactionStatusType tstatus = PQtransactionStatus(psql_conn_);
+#ifdef HAVE_LOGGER
+    LOGGER(PACKAGE).debug(boost::format("connection status=%1%  transaction status=%2%")
+                                        % status
+                                        % tstatus);
+#endif
+    if (status != CONNECTION_OK || tstatus != PQTRANS_IDLE) {
+#ifdef HAVE_LOGGER
+    LOGGER(PACKAGE).debug("connection not ok or active transaction -- reseting connection");
+#endif
+      close();
+      open(_conn_info);
+    }
+  }
 };
 
 
