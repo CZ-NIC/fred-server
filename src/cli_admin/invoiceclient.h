@@ -27,7 +27,9 @@
 #include "old_utils/dbsql.h"
 
 #define INVOICE_LIST_NAME               "invoice_list"
-#define INVOICE_LIST_NAME_DESC          "list of all invoices (via filters)"
+#define INVOICE_LIST_NAME_DESC          "list of all invoices (via buildin ``exportXML()'' function)"
+#define INVOICE_LIST_FILTERS_NAME       "invoice_list_filters"
+#define INVOICE_LIST_FILTERS_NAME_DESC  "list of all invoices (via filters)"
 #define INVOICE_LIST_PLAIN_NAME         "invoice_list_plain"
 #define INVOICE_LIST_PLAIN_NAME_DESC    "list of all invoices (via ccReg)"
 #define INVOICE_ARCHIVE_NAME            "invoice_archive"
@@ -93,6 +95,7 @@ public:
     boost::program_options::options_description *getInvisibleOptions() const;
 
     void list();
+    void list_filters();
     int archive();
 
     void list_help();

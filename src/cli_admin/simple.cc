@@ -336,6 +336,8 @@ main(int argc, char **argv)
         invoice.list_help();
     } else if (conf.hasOpt(INVOICE_ARCHIVE_HELP_NAME)) {
         invoice.archive_help();
+    } else if (conf.hasOpt(INVOICE_LIST_FILTERS_NAME)) {
+        invoice.list_filters();
     }
 
     if (conf.hasOpt(AUTHINFO_PDF_NAME)) {
