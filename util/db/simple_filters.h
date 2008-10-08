@@ -221,35 +221,6 @@ public:
   Interval() {
   }
   
-  void setValue(const DateTimeInterval& _value) {
-    TRACE("[CALL] Inteval<DateTime>::setValue()");
-
-    if (_value.isSpecial() && _value.getSpecial() != INTERVAL 
-                           && _value.getSpecial() != DAY) {
-      value = _value;
-    }
-    else {
-      using namespace boost::posix_time;
-      using namespace boost::gregorian;
-      
-      typedef boost::date_time::eu_dst_trait<date> eu_dst_traits;
-      typedef boost::date_time::dst_calc_engine<date, time_duration, eu_dst_traits> calc_engine; 
-      typedef boost::date_time::local_adjustor<ptime, 1, calc_engine> adjustor;
-      
-      ptime beg = _value.get().begin();
-      ptime end = _value.get().end();
-
-      if (!beg.is_special())
-        beg = adjustor::local_to_utc(beg);
-      if (!end.is_special())
-        end = adjustor::local_to_utc(end);
-      
-      value = DateTimeInterval(time_period(beg, end));
-    }
-    
-    active = true;
-  }
-  
   void setNULL() {
     value = Database::Null<DateTimeInterval>();
     active = true;
@@ -294,7 +265,36 @@ public:
       prep << " )";
     }
     else {
-      _BaseDTInterval<DateTimeInterval>::serialize(_sq, _settings);
+      /* notice: took from parent class and added time conversion */
+      std::vector<std::string> &store = _sq.where_prepared_values();
+  
+      if (value.isNull()) {
+        LOGGER(PACKAGE).trace("[IN] _BaseDTInterval::serialize(): value is 'NULL'");
+        prep << getConjuction() << "( ";
+        prep << column.str() << SQL_OP_IS << value;
+        prep << " )";
+      } else {
+        LOGGER(PACKAGE).trace(boost::format("[IN] _BaseDTInterval::serialize(): value is normal (special_flag='%1%')")
+            % t_value.getSpecial());
+        
+        std::string second_operator = (t_value.getSpecial() == INTERVAL ? SQL_OP_LE : SQL_OP_LT); 
+        bool b = false;
+  
+        if (!t_value.begin().is_special()) {
+          prep << getConjuction() << "( ";
+          prep << column.str() << SQL_OP_GE << "(('%" << store.size() + 1 << "%'::timestamp AT TIME ZONE 'CET') AT TIME ZONE 'UTC')" + value_post_;
+          store.push_back(t_value.begin().iso_str());
+          b = true;
+        }
+        if (!t_value.end().is_special()) {
+          prep << (b ? SQL_OP_AND : getConjuction() + "( ") << column.str()
+              << second_operator << "(('%" << store.size() + 1 << "%'::timestamp AT TIME ZONE 'CET') AT TIME ZONE 'UTC')" + value_post_;
+          prep << " )";
+          store.push_back(t_value.end().iso_str());
+        } else if (b) {
+          prep << " )";
+        }
+      }
     }
   }
 
