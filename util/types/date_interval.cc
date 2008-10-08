@@ -9,7 +9,7 @@ DateInterval::DateInterval() : value(date(neg_infin), date(pos_infin)),
 
 
 DateInterval::DateInterval(const Date& _start, const Date& _stop) : value(_start.value, _stop.value),
-                                                                    special(NONE),
+                                                                    special(INTERVAL),
                                                                     offset(0) {
 }
 
@@ -32,7 +32,7 @@ DateInterval::DateInterval(DateTimeIntervalSpecial _s,
  */ 
 
 DateInterval::DateInterval(const date_period& _v) : value(_v),
-                                      special(NONE),
+                                      special(INTERVAL),
       				offset(0) {
 }
 

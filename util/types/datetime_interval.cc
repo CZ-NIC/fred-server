@@ -12,7 +12,7 @@ DateTimeInterval::DateTimeInterval() : value(ptime(neg_infin), ptime(pos_infin))
 
 
 DateTimeInterval::DateTimeInterval(const DateTime& _start, const DateTime& _stop) : value(_start.get(), _stop.get()),
-                                                                                    special(NONE) {
+                                                                                    special(INTERVAL) {
 }
 
 
@@ -34,7 +34,7 @@ DateTimeInterval::DateTimeInterval(DateTimeIntervalSpecial _s,
  */
 
 DateTimeInterval::DateTimeInterval(const time_period& _v) : value(_v), 
-                                                            special(NONE) {
+                                                            special(INTERVAL) {
 }
 
 
