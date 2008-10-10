@@ -41,10 +41,11 @@ KeysetClient::KeysetClient():
         addOpt(KEYSET_UPDATE_HELP_NAME)
         addOpt(KEYSET_DELETE_HELP_NAME)
         addOpt(KEYSET_CHECK_HELP_NAME)
-        addOpt(KEYSET_INFO_HELP_NAME);
+        addOpt(KEYSET_INFO_HELP_NAME)
+        addOpt(KEYSET_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "KeySet related invisible options");
+            "KeySet related sub options");
     m_optionsInvis->add_options()
         addOptStr(KEYSET_DSRECORDS_NAME)
         addOptStr(KEYSET_DSREC_ADD_NAME)
@@ -111,6 +112,13 @@ boost::program_options::options_description *
 KeysetClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
+}
+
+void
+KeysetClient::show_opts() const
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
 }
 
 void

@@ -31,10 +31,11 @@ BankClient::BankClient():
             "Bank related options");
     m_options->add_options()
         addOpt(BANK_ONLINE_LIST_NAME)
-        addOpt(BANK_STATEMENT_LIST_NAME);
+        addOpt(BANK_STATEMENT_LIST_NAME)
+        addOpt(BANK_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "Bank related invisible options");
+            "Bank related sub options");
     m_optionsInvis->add_options();
 }
 BankClient::BankClient(
@@ -78,6 +79,13 @@ boost::program_options::options_description *
 BankClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
+}
+
+void
+BankClient::show_opts() const
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
 }
 
 int

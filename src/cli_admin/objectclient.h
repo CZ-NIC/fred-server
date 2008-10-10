@@ -19,6 +19,8 @@
 #ifndef _OBJECTCLIENT_H_
 #define _OBJECTCLIENT_H_
 
+#define OBJECT_SHOW_OPTS_NAME               "object_show_opts"
+#define OBJECT_SHOW_OPTS_NAME_DESC          "show all object command line options"
 #define OBJECT_NEW_STATE_REQUEST_NAME       "object_new_state_request"
 #define OBJECT_NEW_STATE_REQUEST_NAME_DESC  "set request for object state with specified state id"
 #define OBJECT_LIST_NAME                    "object_list"
@@ -84,6 +86,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
     
     int createObjectStateRequest(Register::TID object, unsigned state);
     int deleteObjects(const std::string &typeList);

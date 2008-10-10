@@ -19,6 +19,8 @@
 #ifndef _INFOBUFFCLIENT_H_
 #define _INFOBUFFCLIENT_H_
 
+#define INFOBUFF_SHOW_OPTS_NAME         "info_buffer_show_opts"
+#define INFOBUFF_SHOW_OPTS_NAME_DESC    "show all info buffer command line options"
 #define INFOBUFF_MAKE_INFO_NAME         "info_buffer_make_info"
 #define INFOBUFF_MAKE_INFO_NAME_DESC    "invoke generation if list of o for given registrar"
 #define INFOBUFF_GET_CHUNK_NAME         "info_buffer_get_chunk"
@@ -59,6 +61,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
 
     int make_info();
     int get_chunk();

@@ -25,6 +25,9 @@
 #define AUTHINFO_PDF_HELP_NAME    "authinfopdf_help"
 #define AUTHINFO_PDF_HELP_NAME_DESC "help for authinfo pdf creation"
 
+#define AUTHINFO_SHOW_OPTS_NAME     "authinfo_show_opts"
+#define AUTHINFO_SHOW_OPTS_NAME_DESC "show all authinfo command line options"
+
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -57,6 +60,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
 
     int pdf();
 

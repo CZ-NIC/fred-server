@@ -96,7 +96,7 @@ InvoiceClient::getInvisibleOptions() const
 }
 
 void
-InvoiceClient::show_opts()
+InvoiceClient::show_opts() const
 {
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;

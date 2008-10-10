@@ -19,6 +19,8 @@
 #ifndef _POLLCLIENT_H_
 #define _POLLCLIENT_H_
 
+#define POLL_SHOW_OPTS_NAME         "poll_show_opts"
+#define POLL_SHOW_OPTS_NAME_DESC    "show all poll command line options"
 #define POLL_LIST_ALL_NAME          "poll_list_all"
 #define POLL_LIST_ALL_NAME_DESC     "list all poll messages"
 #define POLL_LIST_NEXT_NAME         "poll_list_next"
@@ -81,6 +83,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
 
     int list_all();
     int list_next();

@@ -19,6 +19,8 @@
 #ifndef _PUBLICREQCLIENT_H_
 #define _PUBLICREQCLIENT_H_
 
+#define PUBLICREQ_SHOW_OPTS_NAME        "public_request_show_opts"
+#define PUBLICREQ_SHOW_OPTS_NAME_DESC   "show all public request command line options"
 #define PUBLICREQ_LIST_NAME             "public_request_list"
 #define PUBLICREQ_LIST_NAME_DESC        "list of all public requests"
 
@@ -86,6 +88,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
 
     void list();
     void list_help();

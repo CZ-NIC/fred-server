@@ -266,6 +266,15 @@ main(int argc, char **argv)
     mail.init(connstring.str(), nsAddr.str(), conf);
     publicrequest.init(connstring.str(), nsAddr.str(), conf);
 
+    if (conf.hasUnknown()) {
+        std::vector<std::string> unknown(conf.getUnknown());
+        std::cout << "Unknown options:" << std::endl;
+        for (int i = 0; i < (int)unknown.size(); i++) {
+            std::cout << unknown[i] << std::endl;
+        }
+        return 0;
+    }
+
     if (conf.hasOpt(CONTACT_INFO2_NAME)) {
         contact.info2();
     } else if (conf.hasOpt(CONTACT_INFO_NAME)) {
@@ -274,6 +283,8 @@ main(int argc, char **argv)
         contact.list();
     } else if (conf.hasOpt(CONTACT_LIST_HELP_NAME)) {
         contact.list_help();
+    } else if (conf.hasOpt(CONTACT_SHOW_OPTS_NAME)) {
+        contact.show_opts();
     }
 
     if (conf.hasOpt(KEYSET_LIST_NAME)) {
@@ -308,8 +319,8 @@ main(int argc, char **argv)
         keyset.info2();
     } else if (conf.hasOpt(KEYSET_INFO_NAME)) {
         keyset.info();
-    } else if (conf.hasOpt(DOMAIN_LIST_NAME)) {
-        domain.domain_list();
+    } else if (conf.hasOpt(KEYSET_SHOW_OPTS_NAME)) {
+        keyset.show_opts();
     }
     
     if (conf.hasOpt(DOMAIN_LIST_PLAIN_NAME)) {
@@ -326,6 +337,10 @@ main(int argc, char **argv)
         domain.domain_info();
     } else if (conf.hasOpt(DOMAIN_LIST_HELP_NAME)) {
         domain.list_help();
+    } else if (conf.hasOpt(DOMAIN_LIST_NAME)) {
+        domain.domain_list();
+    } else if (conf.hasOpt(DOMAIN_SHOW_OPTS_NAME)) {
+        domain.show_opts();
     }
     
     if (conf.hasOpt(INVOICE_LIST_NAME)) {
@@ -346,12 +361,16 @@ main(int argc, char **argv)
         authinfo.pdf();
     } else if (conf.hasOpt(AUTHINFO_PDF_HELP_NAME)) {
         authinfo.pdf_help();
+    } else if (conf.hasOpt(AUTHINFO_SHOW_OPTS_NAME)) {
+        authinfo.show_opts();
     }
     
     if (conf.hasOpt(BANK_ONLINE_LIST_NAME)) {
         bank.online_list();
     } else if (conf.hasOpt(BANK_STATEMENT_LIST_NAME)) {
         bank.statement_list();
+    } else if (conf.hasOpt(BANK_SHOW_OPTS_NAME)) {
+        bank.show_opts();
     }
 
     if (conf.hasOpt(POLL_LIST_ALL_NAME)) {
@@ -366,6 +385,8 @@ main(int argc, char **argv)
         poll.create_low_credit();
     } else if (conf.hasOpt(POLL_SET_SEEN_NAME)) {
         poll.set_seen();
+    } else if (conf.hasOpt(POLL_SHOW_OPTS_NAME)) {
+        poll.show_opts();
     }
     
     if (conf.hasOpt(REGISTRAR_ZONE_ADD_NAME)) {
@@ -382,12 +403,16 @@ main(int argc, char **argv)
         registrar.registrar_add_zone_help();
     } else if (conf.hasOpt(REGISTRAR_LIST_NAME)) {
         registrar.list();
+    } else if (conf.hasOpt(REGISTRAR_SHOW_OPTS_NAME)) {
+        registrar.show_opts();
     }
     
     if (conf.hasOpt(NOTIFY_STATE_CHANGES_NAME)) {
         notify.state_changes();
     } else if (conf.hasOpt(NOTIFY_LETTERS_CREATE_NAME)) {
         notify.letters_create();
+    } else if (conf.hasOpt(NOTIFY_SHOW_OPTS_NAME)) {
+        notify.show_opts();
     }
 
     if (conf.hasOpt(OBJECT_NEW_STATE_REQUEST_NAME)) {
@@ -400,30 +425,40 @@ main(int argc, char **argv)
         object.delete_candidates();
     } else if (conf.hasOpt(OBJECT_REGULAR_PROCEDURE_NAME)) {
         object.regular_procedure();
+    } else if (conf.hasOpt(OBJECT_SHOW_OPTS_NAME)) {
+        object.show_opts();
     }
     
     if (conf.hasOpt(NSSET_LIST_NAME)) {
         nsset.list();
     } else if (conf.hasOpt(NSSET_LIST_HELP_NAME)) {
         nsset.list_help();
+    } else if (conf.hasOpt(NSSET_SHOW_OPTS_NAME)) {
+        nsset.show_opts();
     }
 
     if (conf.hasOpt(FILE_LIST_NAME)) {
         file.list();
     } else if (conf.hasOpt(FILE_LIST_HELP_NAME)) {
         file.list_help();
+    } else if (conf.hasOpt(FILE_SHOW_OPTS_NAME)) {
+        file.show_opts();
     }
 
     if (conf.hasOpt(MAIL_LIST_NAME)) {
         mail.list();
     } else if (conf.hasOpt(MAIL_LIST_HELP_NAME)) {
-        file.list_help();
+        mail.list_help();
+    } else if (conf.hasOpt(MAIL_SHOW_OPTS_NAME)) {
+        mail.show_opts();
     }
 
     if (conf.hasOpt(PUBLICREQ_LIST_NAME)) {
         publicrequest.list();
     } else if (conf.hasOpt(PUBLICREQ_LIST_HELP_NAME)) {
         publicrequest.list_help();
+    } else if (conf.hasOpt(PUBLICREQ_SHOW_OPTS_NAME)) {
+        publicrequest.show_opts();
     }
 
     } catch (ccReg::EPP::EppError &e) {

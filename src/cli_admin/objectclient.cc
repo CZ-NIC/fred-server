@@ -37,10 +37,11 @@ ObjectClient::ObjectClient():
         addOptUInt(OBJECT_NEW_STATE_REQUEST_NAME)
         addOpt(OBJECT_REGULAR_PROCEDURE_NAME)
         addOpt(OBJECT_DELETE_CANDIDATES_NAME)
-        addOpt(OBJECT_UPDATE_STATES_NAME);
+        addOpt(OBJECT_UPDATE_STATES_NAME)
+        addOpt(OBJECT_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "Object related invisible options");
+            "Object related sub options");
     m_optionsInvis->add_options()
         addOpt(OBJECT_DEBUG_NAME)
         addOptUInt(OBJECT_ID_NAME)
@@ -92,6 +93,13 @@ boost::program_options::options_description *
 ObjectClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
+}
+
+void
+ObjectClient::show_opts() const
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
 }
 
 int

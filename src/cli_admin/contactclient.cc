@@ -33,10 +33,11 @@ ContactClient::ContactClient():
         addOpt(CONTACT_INFO2_NAME)
         addOpt(CONTACT_LIST_NAME)
         addOpt(CONTACT_LIST_HELP_NAME)
-        addOpt(CONTACT_LIST_PLAIN_NAME);
+        addOpt(CONTACT_LIST_PLAIN_NAME)
+        addOpt(CONTACT_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "Contact related invisible options");
+            "Contact related sub options");
     m_optionsInvis->add_options()
         add_ID()
         add_HANDLE()
@@ -103,6 +104,13 @@ int
 ContactClient::info2()
 {
     return 0;
+}
+
+void
+ContactClient::show_opts() const
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
 }
 
 int

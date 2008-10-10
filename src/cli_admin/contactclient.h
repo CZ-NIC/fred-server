@@ -25,6 +25,8 @@
 #include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
 
+#define CONTACT_SHOW_OPTS_NAME          "contact_show_opts"
+#define CONTACT_SHOW_OPTS_NAME_DESC     "show all contact command line options"
 #define CONTACT_INFO_NAME               "contact_info"
 #define CONTACT_INFO_NAME_DESC          "contact info"
 #define CONTACT_INFO2_NAME              "contact_info2"
@@ -61,6 +63,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
 
     void list();
     int info();

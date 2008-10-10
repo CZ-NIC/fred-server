@@ -19,6 +19,8 @@
 #ifndef _NOTIFYCLIENT_H_
 #define _NOTIFYCLIENT_H_
 
+#define NOTIFY_SHOW_OPTS_NAME           "notify_show_options"
+#define NOTIFY_SHOW_OPTS_NAME_DESC      "show all notify command line options"
 #define NOTIFY_STATE_CHANGES_NAME       "notify_state_changes"
 #define NOTIFY_STATE_CHANGES_NAME_DESC  "send emails to contacts abou object state changes"
 #define NOTIFY_LETTERS_CREATE_NAME      "notify_letters_create"
@@ -67,6 +69,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
 
     void state_changes();
     void letters_create();

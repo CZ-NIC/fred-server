@@ -97,7 +97,7 @@ public:
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
 
-    void show_opts();
+    void show_opts() const;
     void list();
     void list_filters();
     int archive();

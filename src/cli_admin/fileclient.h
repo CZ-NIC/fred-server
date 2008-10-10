@@ -24,6 +24,8 @@
 #define FILE_LIST_HELP_NAME         "file_list_help"
 #define FILE_LIST_HELP_NAME_DESC    "help for file list"
 
+#define FILE_SHOW_OPTS_NAME         "file_show_opts"
+#define FILE_SHOW_OPTS_NAME_DESC    "show all file command line options"
 #define FILE_PATH_NAME              "path"
 #define FILE_PATH_NAME_DESC         "path"
 #define FILE_MIME_NAME              "mime"
@@ -66,6 +68,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
 
     void list();
     void list_help();

@@ -25,6 +25,8 @@
 #include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
 
+#define DOMAIN_SHOW_OPTS_NAME           "domain_show_opts"
+#define DOMAIN_SHOW_OPTS_NAME_DESC      "show all domain command line options"
 #define DOMAIN_CREATE_NAME              "domain_create"
 #define DOMAIN_CREATE_NAME_DESC         "create domain"
 #define DOMAIN_UPDATE_NAME              "domain_update"
@@ -90,6 +92,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
 
     void domain_list();
 

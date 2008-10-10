@@ -31,10 +31,11 @@ AuthInfoClient::AuthInfoClient():
             "Authinfo related options");
     m_options->add_options()
         addOptUInt(AUTHINFO_PDF_NAME)
-        addOpt(AUTHINFO_PDF_HELP_NAME);
+        addOpt(AUTHINFO_PDF_HELP_NAME)
+        addOpt(AUTHINFO_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "Authinfo related invisible options");
+            "Authinfo related sub options");
     m_optionsInvis->add_options();
 }
 AuthInfoClient::AuthInfoClient(
@@ -78,6 +79,13 @@ boost::program_options::options_description *
 AuthInfoClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
+}
+
+void
+AuthInfoClient::show_opts() const
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
 }
 
 int

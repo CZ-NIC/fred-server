@@ -19,6 +19,8 @@
 #ifndef _REGISTRARCLIENT_H_
 #define _REGISTRARCLIENT_H_
 
+#define REGISTRAR_SHOW_OPTS_NAME            "registrar_show_opts"
+#define REGISTRAR_SHOW_OPTS_NAME_DESC       "show all registrar command line options"
 #define REGISTRAR_LIST_NAME                 "registrar_list"
 #define REGISTRAR_LIST_NAME_DESC            "list all registrars (via filters)"
 #define REGISTRAR_ZONE_ADD_NAME             "zone_add"
@@ -71,6 +73,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
 
     void list();
     int zone_add();

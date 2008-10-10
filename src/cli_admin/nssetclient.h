@@ -26,6 +26,8 @@
 #include "old_utils/dbsql.h"
 #include "register/register.h"
 
+#define NSSET_SHOW_OPTS_NAME        "nsset_show_opts"
+#define NSSET_SHOW_OPTS_NAME_DESC   "show all nsset command line options parameter"
 #define NSSET_LIST_NAME             "nsset_list"
 #define NSSET_LIST_NAME_DESC        "List all nsset objects"
 #define NSSET_LIST_HELP_NAME        "nsset_list_help"
@@ -61,6 +63,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
 
     void list();
     void list_help();

@@ -36,10 +36,11 @@ DomainClient::DomainClient():
         addOptStr(DOMAIN_UPDATE_NAME)
         addOpt(DOMAIN_CREATE_HELP_NAME)
         addOpt(DOMAIN_UPDATE_HELP_NAME)
-        addOpt(DOMAIN_LIST_PLAIN_NAME);
+        addOpt(DOMAIN_LIST_PLAIN_NAME)
+        addOpt(DOMAIN_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "Domain related invisible options");
+            "Domain related sub options");
     m_optionsInvis->add_options()
         add_ID()
         add_FQDN()
@@ -108,6 +109,13 @@ boost::program_options::options_description *
 DomainClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
+}
+
+void
+DomainClient::show_opts() const
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
 }
 
 void

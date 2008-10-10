@@ -35,10 +35,11 @@ PollClient::PollClient():
         addOpt(POLL_CREATE_STATE_CHANGES_NAME)
         addOpt(POLL_CREATE_STATE_CHANGES_2_NAME)
         addOpt(POLL_CREATE_LOW_CREDIT_NAME)
-        addOpt(POLL_CREATE_LOW_CREDIT_2_NAME);
+        addOpt(POLL_CREATE_LOW_CREDIT_2_NAME)
+        addOpt(POLL_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "Poll related invisible options");
+            "Poll related sub options");
     m_optionsInvis->add_options()
         addOptUInt(POLL_TYPE_NAME)
         addOptUInt(POLL_REGID_NAME)
@@ -89,6 +90,13 @@ boost::program_options::options_description *
 PollClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
+}
+
+void
+PollClient::show_opts() const
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
 }
 
 int

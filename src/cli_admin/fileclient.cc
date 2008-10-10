@@ -29,10 +29,11 @@ FileClient::FileClient():
             "File related options");
     m_options->add_options()
         addOpt(FILE_LIST_NAME)
-        addOpt(FILE_LIST_HELP_NAME);
+        addOpt(FILE_LIST_HELP_NAME)
+        addOpt(FILE_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "File related invisible options");
+            "File related sub options");
     m_optionsInvis->add_options()
         add_ID()
         add_NAME()
@@ -84,6 +85,13 @@ boost::program_options::options_description *
 FileClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
+}
+
+void
+FileClient::show_opts() const
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
 }
 
 void

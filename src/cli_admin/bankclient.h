@@ -20,6 +20,8 @@
 #define _BANKCLIENT_H_
 
 
+#define BANK_SHOW_OPTS_NAME         "bank_show_opts"
+#define BANK_SHOW_OPTS_NAME_DESC    "show all banking options"
 #define BANK_ONLINE_LIST_NAME       "bank_online_list"
 #define BANK_ONLINE_LIST_NAME_DESC  "list of online payments"
 #define BANK_STATEMENT_LIST_NAME    "bank_statement_list"
@@ -57,6 +59,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
 
     int online_list();
     int statement_list();

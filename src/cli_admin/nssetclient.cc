@@ -29,10 +29,11 @@ NssetClient::NssetClient():
             "NSSet related options");
     m_options->add_options()
         addOpt(NSSET_LIST_NAME)
-        addOpt(NSSET_LIST_HELP_NAME);
+        addOpt(NSSET_LIST_HELP_NAME)
+        addOpt(NSSET_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "NSSet related invisible options");
+            "NSSet related sub options");
     m_optionsInvis->add_options()
         add_ID()
         add_HANDLE()
@@ -91,6 +92,13 @@ boost::program_options::options_description *
 NssetClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
+}
+
+void
+NssetClient::show_opts() const
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
 }
 
 void

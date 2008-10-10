@@ -31,10 +31,11 @@ NotifyClient::NotifyClient():
             "Notify related options");
     m_options->add_options()
         addOpt(NOTIFY_STATE_CHANGES_NAME)
-        addOpt(NOTIFY_LETTERS_CREATE_NAME);
+        addOpt(NOTIFY_LETTERS_CREATE_NAME)
+        addOpt(NOTIFY_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "Notify related invisible options");
+            "Notify related sub options");
     m_optionsInvis->add_options()
         addOpt(NOTIFY_DEBUG_NAME)
         addOptStrDef(NOTIFY_EXCEPT_TYPES_NAME, "")
@@ -82,6 +83,13 @@ boost::program_options::options_description *
 NotifyClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
+}
+
+void
+NotifyClient::show_opts() const
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
 }
 
 void

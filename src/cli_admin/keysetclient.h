@@ -26,6 +26,8 @@
 #include "old_utils/dbsql.h"
 #include "register/register.h"
 
+#define KEYSET_SHOW_OPTS_NAME       "keyset_show_opts"
+#define KEYSET_SHOW_OPTS_NAME_DESC  "show all keyset command line options"
 #define KEYSET_LIST_NAME            "keyset_list"
 #define KEYSET_LIST_NAME_DESC       "list of all keysets (via filters)"
 #define KEYSET_LIST_PLAIN_NAME      "keyset_list_plain"
@@ -101,6 +103,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
 
     void list();
 

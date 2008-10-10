@@ -31,10 +31,11 @@ RegistrarClient::RegistrarClient():
         addOpt(REGISTRAR_LIST_NAME)
         addOpt(REGISTRAR_ZONE_ADD_NAME)
         addOpt(REGISTRAR_REGISTRAR_ADD_NAME)
-        addOpt(REGISTRAR_REGISTRAR_ADD_ZONE_NAME);
+        addOpt(REGISTRAR_REGISTRAR_ADD_ZONE_NAME)
+        addOpt(REGISTRAR_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "Registrar related invisible options");
+            "Registrar related sub options");
     m_optionsInvis->add_options()
         add_ID()
         add_HANDLE()
@@ -81,6 +82,13 @@ boost::program_options::options_description *
 RegistrarClient::getVisibleOptions() const
 {
     return m_options;
+}
+
+void
+RegistrarClient::show_opts() const
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
 }
 
 boost::program_options::options_description *

@@ -30,10 +30,11 @@ InfoBuffClient::InfoBuffClient():
             "Info buffer related options");
     m_options->add_options()
         addOptUInt(INFOBUFF_MAKE_INFO_NAME)
-        addOptUInt(INFOBUFF_GET_CHUNK_NAME);
+        addOptUInt(INFOBUFF_GET_CHUNK_NAME)
+        addOpt(INFOBUFF_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "Info buffer related invisible options");
+            "Info buffer related sub options");
     m_optionsInvis->add_options()
         addOptUInt(INFOBUFF_REGISTRAR_NAME)
         addOptStrDef(INFOBUFF_REQUEST_NAME, "");
@@ -79,6 +80,13 @@ boost::program_options::options_description *
 InfoBuffClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
+}
+
+void
+InfoBuffClient::show_opts() const
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
 }
 
 int

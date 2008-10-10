@@ -19,6 +19,8 @@
 #ifndef _MAILCLIENT_H_
 #define _MAILCLIENT_H_
 
+#define MAIL_SHOW_OPTS_NAME         "mail_show_opts"
+#define MAIL_SHOW_OPTS_NAME_DESC    "show all mail command line options"
 #define MAIL_LIST_NAME              "mail_list"
 #define MAIL_LIST_NAME_DESC         "list all mails"
 #define MAIL_LIST_HELP_NAME         "mail_list_help"
@@ -74,6 +76,7 @@ public:
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
+    void show_opts() const;
 
     void list();
     void list_help();

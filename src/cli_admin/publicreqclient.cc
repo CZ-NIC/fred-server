@@ -30,10 +30,11 @@ PublicRequestClient::PublicRequestClient():
             "Public request related options");
     m_options->add_options()
         addOpt(PUBLICREQ_LIST_NAME)
-        addOpt(PUBLICREQ_LIST_HELP_NAME);
+        addOpt(PUBLICREQ_LIST_HELP_NAME)
+        addOpt(PUBLICREQ_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "Public request related invisible options");
+            "Public request related sub options");
     m_optionsInvis->add_options()
         add_ID()
         add_NAME()
@@ -89,6 +90,13 @@ boost::program_options::options_description *
 PublicRequestClient::getInvisibleOptions() const
 {
     return m_optionsInvis;
+}
+
+void
+PublicRequestClient::show_opts() const 
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
 }
 
 void
