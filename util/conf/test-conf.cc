@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 		
 		cfm.init(argc, argv);
 		cfm.setCmdLineOptions(cmd);
-		cfm.setCfgFileOptions(file);
+		cfm.setCfgFileOptions(file, CONFIG_FILE);
 		cfm.parse();
 		signal(SIGHUP, sighup_handler);
 		
@@ -55,6 +55,14 @@ int main(int argc, char *argv[]) {
 		}
 								
 		const Config::Conf &cfg1 = cfm.get();
+        if (cfg1.hasUnknown()) {
+            std::vector<std::string> un(cfg1.getUnknown());
+            std::cout << "Unknown options: " << std::endl;
+            for (int i = 0; i < (int)un.size(); i++) {
+                std::cout << un[i] << std::endl;
+            }
+            std::cout << std::endl;
+        }
 		const std::string &db_host = cfg1.get<std::string>("database.host");
 		
 		while (1) {

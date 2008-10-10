@@ -2,6 +2,7 @@
 #include <boost/algorithm/string/erase.hpp>
 
 #include <fstream>
+#include <vector>
 #include "manager.h"
 
 namespace Config {
@@ -42,7 +43,9 @@ void Manager::_parseCmdLine(Conf &_conf) {
   }
 
   po::parsed_options cmd_parsed = po::command_line_parser(argc, argv).options(tmp).allow_unregistered().run();
+  std::vector<std::string> unknown = po::collect_unrecognized(cmd_parsed.options, po::include_positional);
   po::store(cmd_parsed, _conf);
+  _conf.setUnknown(unknown);
 }
 
 void Manager::_parseCfgFile(const std::string& _name, Conf &_conf) throw(ConfigParseError) {
