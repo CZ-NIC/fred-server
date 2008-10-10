@@ -33,7 +33,9 @@ PollClient::PollClient():
         addOptUInt(POLL_LIST_NEXT_NAME)
         addOptUInt(POLL_SET_SEEN_NAME)
         addOpt(POLL_CREATE_STATE_CHANGES_NAME)
-        addOpt(POLL_CREATE_LOW_CREDIT_NAME);
+        addOpt(POLL_CREATE_STATE_CHANGES_2_NAME)
+        addOpt(POLL_CREATE_LOW_CREDIT_NAME)
+        addOpt(POLL_CREATE_LOW_CREDIT_2_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Poll related invisible options");

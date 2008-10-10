@@ -338,6 +338,8 @@ main(int argc, char **argv)
         invoice.archive_help();
     } else if (conf.hasOpt(INVOICE_LIST_FILTERS_NAME)) {
         invoice.list_filters();
+    } else if (conf.hasOpt(INVOICE_SHOW_OPTS_NAME)) {
+        invoice.show_opts();
     }
 
     if (conf.hasOpt(AUTHINFO_PDF_NAME)) {
@@ -356,9 +358,11 @@ main(int argc, char **argv)
         poll.list_all();
     } else if (conf.hasOpt(POLL_LIST_NEXT_NAME)) {
         poll.list_next();
-    } else if (conf.hasOpt(POLL_CREATE_STATE_CHANGES_NAME)) {
+    } else if (conf.hasOpt(POLL_CREATE_STATE_CHANGES_NAME) ||
+            conf.hasOpt(POLL_CREATE_STATE_CHANGES_2_NAME)) {
         poll.create_state_changes();
-    } else if (conf.hasOpt(POLL_CREATE_LOW_CREDIT_NAME)) {
+    } else if (conf.hasOpt(POLL_CREATE_LOW_CREDIT_NAME) ||
+            conf.hasOpt(POLL_CREATE_LOW_CREDIT_2_NAME)) {
         poll.create_low_credit();
     } else if (conf.hasOpt(POLL_SET_SEEN_NAME)) {
         poll.set_seen();

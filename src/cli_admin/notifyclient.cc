@@ -94,7 +94,7 @@ NotifyClient::state_changes()
                 m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
                 m_nsAddr)
             );
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
@@ -146,7 +146,7 @@ NotifyClient::letters_create()
                 m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
                 m_nsAddr)
             );
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));

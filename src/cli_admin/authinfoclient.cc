@@ -93,7 +93,7 @@ AuthInfoClient::pdf()
                 m_nsAddr)
             );
 
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
 
     std::auto_ptr<Register::AuthInfoRequest::Manager> authMan(

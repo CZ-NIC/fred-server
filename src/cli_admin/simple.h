@@ -67,6 +67,8 @@
 #define NS_HOST_NAME_DESC   "CORBA nameservice hostname"
 #define NS_PORT_NAME        "nameservice.port"
 #define NS_PORT_NAME_DESC   "CORBA nameservice port number"
+#define NS_CONTEXT_NAME     "nameservice.context"
+#define NS_CONTEXT_NAME_DESC "CORBA nameservice context name"
 
 #define LOG_TYPE_NAME       "log.type"
 #define LOG_TYPE_NAME_DESC  "log type"
@@ -331,7 +333,7 @@
 
 // client login
 #define CLIENT_LOGIN \
-CorbaClient cc(0, NULL, m_nsAddr.c_str(), m_conf.get<std::string>("nameservice.context")); \
+CorbaClient cc(0, NULL, m_nsAddr.c_str(), m_conf.get<std::string>(NS_CONTEXT_NAME)); \
 CORBA::Object_var o = cc.getNS()->resolve("EPP"); \
 ccReg::EPP_var epp; \
 epp = ccReg::EPP::_narrow(o); \

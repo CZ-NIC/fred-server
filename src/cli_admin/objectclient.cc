@@ -230,7 +230,7 @@ ObjectClient::deleteObjects(
 
         for (int i = 0; i < RESOLVE_TRY; i++) {
             try {
-                CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
+                CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
                 CORBA::Object_var o = cc.getNS()->resolve("EPP");
                 if ((epp = ccReg::EPP::_narrow(o)) != NULL) {
                     break;
@@ -321,7 +321,6 @@ ObjectClient::regular_procedure()
 {
     int i;
     CorbaClient *cc = NULL;
-    LOG(NOTICE_LOG, "1");
     try {
         std::auto_ptr<Register::Document::Manager> docMan(
                 Register::Document::Manager::create(
@@ -332,7 +331,7 @@ ObjectClient::regular_procedure()
                 );
         for (i = 0; i < RESOLVE_TRY; i++) {
             try {
-                cc = new CorbaClient(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
+                cc = new CorbaClient(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
                 if (cc != NULL) {
                     break;
                 }
@@ -346,44 +345,36 @@ ObjectClient::regular_procedure()
 
         std::auto_ptr<Register::Zone::Manager> zoneMan(
                 Register::Zone::Manager::create(&m_db));
-        LOG(NOTICE_LOG, "5");
         std::auto_ptr<Register::Domain::Manager> domMan(
                 Register::Domain::Manager::create(&m_db, zoneMan.get()));
 
-        LOG(NOTICE_LOG, "6");
         std::auto_ptr<Register::Contact::Manager> conMan(
                 Register::Contact::Manager::create(
                     &m_db,
                     m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
                 );
-        LOG(NOTICE_LOG, "7");
         std::auto_ptr<Register::NSSet::Manager> nssMan(
                 Register::NSSet::Manager::create(
                     &m_db,
                     zoneMan.get(),
                     m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
                 );
-        LOG(NOTICE_LOG, "8");
         std::auto_ptr<Register::KeySet::Manager> keyMan(
                 Register::KeySet::Manager::create(
                     &m_db,
                     m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
                 );
-        LOG(NOTICE_LOG, "9");
         std::auto_ptr<Register::Poll::Manager> pollMan(
                 Register::Poll::Manager::create(
                     &m_db)
                 );
-        LOG(NOTICE_LOG, "10");
         std::auto_ptr<Register::Manager> registerMan(
                 Register::Manager::create(
                     &m_db,
                     m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
                 );
-        LOG(NOTICE_LOG, "11");
         std::auto_ptr<Register::Registrar::Manager> regMan(
                 Register::Registrar::Manager::create(&m_db));
-        LOG(NOTICE_LOG, "12");
         std::auto_ptr<Register::Notify::Manager> notifyMan(
                 Register::Notify::Manager::create(
                     &m_db,
@@ -396,9 +387,7 @@ ObjectClient::regular_procedure()
                     regMan.get())
                 );
 
-        LOG(NOTICE_LOG, "13");
         registerMan->updateObjectStates();
-        LOG(NOTICE_LOG, "14");
         registerMan->updateObjectStates();
         notifyMan->notifyStateChanges(
                 m_conf.get<std::string>(OBJECT_NOTIFY_EXCEPT_TYPES_NAME),

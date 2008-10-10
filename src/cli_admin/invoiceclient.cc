@@ -28,13 +28,14 @@ InvoiceClient::InvoiceClient():
     m_options = new boost::program_options::options_description(
             "Invoice related options");
     m_options->add_options()
+        addOpt(INVOICE_SHOW_OPTS_NAME)
         addOpt(INVOICE_LIST_NAME)
         addOpt(INVOICE_LIST_FILTERS_NAME)
         addOpt(INVOICE_ARCHIVE_NAME)
         addOpt(INVOICE_LIST_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
-            "Invoice related invisible options");
+            "Invoice related sub options");
     m_optionsInvis->add_options()
         add_ID()
         add_REGISTRAR_ID()
@@ -95,6 +96,13 @@ InvoiceClient::getInvisibleOptions() const
 }
 
 void
+InvoiceClient::show_opts()
+{
+    std::cout << *m_options << std::endl;
+    std::cout << *m_optionsInvis << std::endl;
+}
+
+void
 InvoiceClient::list()
 {
     std::auto_ptr<Register::Document::Manager> docMan(
@@ -105,7 +113,7 @@ InvoiceClient::list()
                 m_nsAddr)
             );
 
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
 
     std::auto_ptr<Register::Invoicing::Manager> invMan(
@@ -196,7 +204,7 @@ InvoiceClient::list_filters()
                 m_nsAddr)
             );
 
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
 
     std::auto_ptr<Register::Invoicing::Manager> invMan(
@@ -397,7 +405,7 @@ InvoiceClient::archive()
                 m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
                 m_nsAddr)
             );
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>("nameservice.context"));
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
     std::auto_ptr<Register::Invoicing::Manager> invMan(
             Register::Invoicing::Manager::create(

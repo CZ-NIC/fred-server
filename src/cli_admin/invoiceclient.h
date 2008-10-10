@@ -26,6 +26,9 @@
 #include "register/register.h"
 #include "old_utils/dbsql.h"
 
+
+#define INVOICE_SHOW_OPTS_NAME          "invoice_show_opts"
+#define INVOICE_SHOW_OPTS_NAME_DESC     "show all invoice command line options"
 #define INVOICE_LIST_NAME               "invoice_list"
 #define INVOICE_LIST_NAME_DESC          "list of all invoices (via buildin ``exportXML()'' function)"
 #define INVOICE_LIST_FILTERS_NAME       "invoice_list_filters"
@@ -94,6 +97,7 @@ public:
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
 
+    void show_opts();
     void list();
     void list_filters();
     int archive();
