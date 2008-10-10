@@ -31,6 +31,8 @@
 #include <algorithm>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/condition.hpp>
+
 
 #include "database.h"
 #include "sequence.h"
@@ -117,9 +119,10 @@ protected:
   unsigned     init_conn_;   /**< connections established at init */
   unsigned     max_conn_;    /**< maximum number of connection */
 
-  storage_type pool_;        /**< connection pool (conn and info data) */
-  queue_type   free_;        /**< free conns for quick acces */
-  boost::mutex pool_lock_;   /**< thread safety */
+  storage_type             pool_;        /**< connection pool (conn and info data) */
+  queue_type               free_;        /**< free conns for quick acces */
+  mutable boost::mutex     pool_lock_;   /**< thread safety */
+  mutable boost::condition has_free_;    /**< wait condition when no connection available */
 
 
 public:
@@ -160,6 +163,13 @@ public:
       relax_(pool_.size() + std::min((unsigned)5, max_conn_ - pool_.size()));
     }
 
+    while (!free_.size()) {
+#ifdef HAVE_LOGGER
+      LOGGER(PACKAGE).debug("waiting for free connection...");
+#endif
+      has_free_.wait(scoped_lock);
+    }
+
     if (free_.size()) {
       connection_type *conn = free_.front();
       free_.pop();
@@ -182,7 +192,11 @@ public:
       }
     }
     else {
-      /* no connection available */
+      /**
+       * no connection available 
+       * should not happend - when connection is not available
+       * thread is sleeped until another released one and notify it
+       */
       throw Exception("No free connection available!");
     }
     
@@ -239,6 +253,7 @@ public:
       LOGGER(PACKAGE).debug(boost::format("released connection id=%1%") % it->second.id);
       logStatus_();
 #endif
+      has_free_.notify_one();
     }
   }
 
@@ -249,7 +264,7 @@ public:
    * @return  string representation of 
    *          actual state of pool (size, used, free)
    */
-  virtual std::string status() {
+  virtual std::string status() const {
     boost::mutex::scoped_lock scoped_lock(pool_lock_);
     std::string ret = status_();
     return ret;

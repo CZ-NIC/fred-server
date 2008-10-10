@@ -3,6 +3,8 @@
 #include <algorithm>
 
 #include "log/logger.h"
+#include "log/context.h"
+
 #include "manager.h"
 #include "types/datetime.h"
 
@@ -11,14 +13,17 @@
 
 struct TestPooler {
 public:
-  TestPooler(Database::ConnectionPool *p) : pool_(p) { }
+  TestPooler(Database::ConnectionPool *p, int i) : pool_(p), id_(i) { }
   void operator()() {
+    Logging::Context ctx(str(boost::format("threadid-%1%") % id_));
+
     Database::Connection *c = pool_->acquire();
     c->exec("SELECT * FROM object_registry");
     pool_->release(c);
   }
 
   Database::ConnectionPool *pool_;
+  int id_;
 };
 
 
@@ -28,11 +33,11 @@ int main() {
   Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_CONSOLE); 
   Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_DEBUG);
 
-  Database::ConnectionPool pool("host=localhost dbname=fred user=fred", 20, 30);
+  Database::ConnectionPool pool("host=localhost dbname=fred user=fred", 5, 20);
 
   boost::thread_group tg;
-  for (unsigned i = 0; i < 40; ++i) {
-    TestPooler tp(&pool);
+  for (unsigned i = 0; i < 200; ++i) {
+    TestPooler tp(&pool, i);
     tg.create_thread(tp);    
   }
   tg.join_all();
