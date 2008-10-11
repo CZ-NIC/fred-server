@@ -160,7 +160,7 @@ public:
      * we will relax pool size
      */
     if (!free_.size() && pool_.size() < max_conn_) {
-      relax_(pool_.size() + std::min((unsigned)5, max_conn_ - pool_.size()));
+      relax_(pool_.size() + std::min<unsigned>((unsigned)5, max_conn_ - pool_.size()));
     }
 
     while (!free_.size()) {
