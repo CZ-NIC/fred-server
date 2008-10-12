@@ -6435,37 +6435,41 @@ pkg_failed=no
 { echo "$as_me:$LINENO: checking for OMNIORB4" >&5
 echo $ECHO_N "checking for OMNIORB4... $ECHO_C" >&6; }
 
-if test -n "$OMNIORB4_CFLAGS"; then
-    pkg_cv_OMNIORB4_CFLAGS="$OMNIORB4_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"omniORB4, omniDynamic4, omnithread3\"") >&5
-  ($PKG_CONFIG --exists --print-errors "omniORB4, omniDynamic4, omnithread3") 2>&5
+if test -n "$PKG_CONFIG"; then
+    if test -n "$OMNIORB4_CFLAGS"; then
+        pkg_cv_OMNIORB4_CFLAGS="$OMNIORB4_CFLAGS"
+    else
+        if test -n "$PKG_CONFIG" && \
+    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"omniORB4 >= 4.1.2, omniDynamic4, omnithread3\"") >&5
+  ($PKG_CONFIG --exists --print-errors "omniORB4 >= 4.1.2, omniDynamic4, omnithread3") 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
-  pkg_cv_OMNIORB4_CFLAGS=`$PKG_CONFIG --cflags "omniORB4, omniDynamic4, omnithread3" 2>/dev/null`
+  pkg_cv_OMNIORB4_CFLAGS=`$PKG_CONFIG --cflags "omniORB4 >= 4.1.2, omniDynamic4, omnithread3" 2>/dev/null`
 else
   pkg_failed=yes
 fi
- else
-    pkg_failed=untried
+    fi
+else
+	pkg_failed=untried
 fi
-if test -n "$OMNIORB4_LIBS"; then
-    pkg_cv_OMNIORB4_LIBS="$OMNIORB4_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"omniORB4, omniDynamic4, omnithread3\"") >&5
-  ($PKG_CONFIG --exists --print-errors "omniORB4, omniDynamic4, omnithread3") 2>&5
+if test -n "$PKG_CONFIG"; then
+    if test -n "$OMNIORB4_LIBS"; then
+        pkg_cv_OMNIORB4_LIBS="$OMNIORB4_LIBS"
+    else
+        if test -n "$PKG_CONFIG" && \
+    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"omniORB4 >= 4.1.2, omniDynamic4, omnithread3\"") >&5
+  ($PKG_CONFIG --exists --print-errors "omniORB4 >= 4.1.2, omniDynamic4, omnithread3") 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
-  pkg_cv_OMNIORB4_LIBS=`$PKG_CONFIG --libs "omniORB4, omniDynamic4, omnithread3" 2>/dev/null`
+  pkg_cv_OMNIORB4_LIBS=`$PKG_CONFIG --libs "omniORB4 >= 4.1.2, omniDynamic4, omnithread3" 2>/dev/null`
 else
   pkg_failed=yes
 fi
- else
-    pkg_failed=untried
+    fi
+else
+	pkg_failed=untried
 fi
 
 
@@ -6478,14 +6482,14 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "omniORB4, omniDynamic4, omnithread3" 2>&1`
+	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "omniORB4 >= 4.1.2, omniDynamic4, omnithread3"`
         else
-	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --print-errors "omniORB4, omniDynamic4, omnithread3" 2>&1`
+	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "omniORB4 >= 4.1.2, omniDynamic4, omnithread3"`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$OMNIORB4_PKG_ERRORS" >&5
 
-	{ { echo "$as_me:$LINENO: error: Package requirements (omniORB4, omniDynamic4, omnithread3) were not met:
+	{ { echo "$as_me:$LINENO: error: Package requirements (omniORB4 >= 4.1.2, omniDynamic4, omnithread3) were not met:
 
 $OMNIORB4_PKG_ERRORS
 
@@ -6496,7 +6500,7 @@ Alternatively, you may set the environment variables OMNIORB4_CFLAGS
 and OMNIORB4_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 " >&5
-echo "$as_me: error: Package requirements (omniORB4, omniDynamic4, omnithread3) were not met:
+echo "$as_me: error: Package requirements (omniORB4 >= 4.1.2, omniDynamic4, omnithread3) were not met:
 
 $OMNIORB4_PKG_ERRORS
 
@@ -11419,10 +11423,11 @@ pkg_failed=no
 { echo "$as_me:$LINENO: checking for LIBIDN" >&5
 echo $ECHO_N "checking for LIBIDN... $ECHO_C" >&6; }
 
-if test -n "$LIBIDN_CFLAGS"; then
-    pkg_cv_LIBIDN_CFLAGS="$LIBIDN_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
+if test -n "$PKG_CONFIG"; then
+    if test -n "$LIBIDN_CFLAGS"; then
+        pkg_cv_LIBIDN_CFLAGS="$LIBIDN_CFLAGS"
+    else
+        if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"libidn >= 0.5.18\"") >&5
   ($PKG_CONFIG --exists --print-errors "libidn >= 0.5.18") 2>&5
   ac_status=$?
@@ -11432,13 +11437,15 @@ if test -n "$LIBIDN_CFLAGS"; then
 else
   pkg_failed=yes
 fi
- else
-    pkg_failed=untried
+    fi
+else
+	pkg_failed=untried
 fi
-if test -n "$LIBIDN_LIBS"; then
-    pkg_cv_LIBIDN_LIBS="$LIBIDN_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
+if test -n "$PKG_CONFIG"; then
+    if test -n "$LIBIDN_LIBS"; then
+        pkg_cv_LIBIDN_LIBS="$LIBIDN_LIBS"
+    else
+        if test -n "$PKG_CONFIG" && \
     { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"libidn >= 0.5.18\"") >&5
   ($PKG_CONFIG --exists --print-errors "libidn >= 0.5.18") 2>&5
   ac_status=$?
@@ -11448,8 +11455,9 @@ if test -n "$LIBIDN_LIBS"; then
 else
   pkg_failed=yes
 fi
- else
-    pkg_failed=untried
+    fi
+else
+	pkg_failed=untried
 fi
 
 
@@ -11462,9 +11470,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBIDN_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libidn >= 0.5.18" 2>&1`
+	        LIBIDN_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "libidn >= 0.5.18"`
         else
-	        LIBIDN_PKG_ERRORS=`$PKG_CONFIG --print-errors "libidn >= 0.5.18" 2>&1`
+	        LIBIDN_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "libidn >= 0.5.18"`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBIDN_PKG_ERRORS" >&5
@@ -13155,22 +13163,21 @@ echo "$as_me: $ac_file is unchanged" >&6;}
   fi
   rm -f "$tmp/out12"
 # Compute $ac_file's index in $config_headers.
-_am_arg=$ac_file
 _am_stamp_count=1
 for _am_header in $config_headers :; do
   case $_am_header in
-    $_am_arg | $_am_arg:* )
+    $ac_file | $ac_file:* )
       break ;;
     * )
       _am_stamp_count=`expr $_am_stamp_count + 1` ;;
   esac
 done
-echo "timestamp for $_am_arg" >`$as_dirname -- "$_am_arg" ||
-$as_expr X"$_am_arg" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X"$_am_arg" : 'X\(//\)[^/]' \| \
-	 X"$_am_arg" : 'X\(//\)$' \| \
-	 X"$_am_arg" : 'X\(/\)' \| . 2>/dev/null ||
-echo X"$_am_arg" |
+echo "timestamp for $ac_file" >`$as_dirname -- $ac_file ||
+$as_expr X$ac_file : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X$ac_file : 'X\(//\)[^/]' \| \
+	 X$ac_file : 'X\(//\)$' \| \
+	 X$ac_file : 'X\(/\)' \| . 2>/dev/null ||
+echo X$ac_file |
     sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
 	    s//\1/
 	    q
@@ -13207,7 +13214,7 @@ echo "$as_me: executing $ac_file commands" >&6;}
   # each Makefile.in and add a new line on top of each file to say so.
   # Grep'ing the whole file is not good either: AIX grep has a line
   # limit of 2048, but all sed's we know have understand at least 4000.
-  if sed -n 's,^#.*generated by automake.*,X,p' "$mf" | grep X >/dev/null 2>&1; then
+  if sed 10q "$mf" | grep '^#.*generated by automake' > /dev/null 2>&1; then
     dirpart=`$as_dirname -- "$mf" ||
 $as_expr X"$mf" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
 	 X"$mf" : 'X\(//\)[^/]' \| \
