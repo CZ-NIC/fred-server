@@ -337,7 +337,7 @@ ccReg_EPP_i::ccReg_EPP_i(
 ccReg_EPP_i::~ccReg_EPP_i()
 {
   Logging::Context ctx("rifd");
-  
+
   delete CC;
   delete ReasonMsg;
   delete ErrorMsg;
@@ -5874,6 +5874,16 @@ ccReg_EPP_i::KeySetInfo(
         k->dsrec[i].maxSigLife = dsr->getMaxSigLife();
     }
 
+    // dnskey record
+    k->dnsk.length(kss->getDNSKeyCount());
+    for (unsigned int i = 0; i < kss->getDNSKeyCount(); i++) {
+        const Register::KeySet::DNSKey *dnsk = kss->getDNSKeyByIdx(i);
+        k->dnsk[i].flags = dnsk->getFlags();
+        k->dnsk[i].protocol = dnsk->getProtocol();
+        k->dnsk[i].alg = dnsk->getAlg();
+        k->dnsk[i].key = CORBA::string_dup(dnsk->getKey().c_str());
+    }
+
     return a.getRet()._retn();
 }
 
@@ -6391,7 +6401,7 @@ ccReg_EPP_i::KeySetCreate(
                             }
                         }
                     }
-                    // dnskey duplicity test 
+                    // dnskey duplicity test
                     if (ret->code == 0) {
                         if (dnsk.length() >= 2) {
                             for (int ii = 0; ii < (int)dnsk.length(); ii++) {
@@ -6931,7 +6941,7 @@ ccReg_EPP_i::KeySetUpdate(
                                         (const char *)dsrec_rem[i].digest, dsrec_rem[i].maxSigLife);
                             }
                         }
-                        
+
                         // dnsk_add tests - if exact same exist for this keyset
                         if (ret->code == 0) {
                             for (int ii = 0; ii < (int)dnsk_add.length(); ii++) {
@@ -7043,7 +7053,7 @@ ccReg_EPP_i::KeySetUpdate(
                                         dnsk_add[ii].alg,
                                         (const char *)dnsk_add[ii].key);
                             }
-                            
+
                         }
 
                         // test dnskey to rem (if this dnskey exist for this keyset)
