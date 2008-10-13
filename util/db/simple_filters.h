@@ -282,15 +282,15 @@ public:
   
         if (!t_value.begin().is_special()) {
           prep << getConjuction() << "( ";
-          prep << column.str() << SQL_OP_GE << "(('%" << store.size() + 1 << "%'::timestamp AT TIME ZONE 'CET') AT TIME ZONE 'UTC')" + value_post_;
-          store.push_back(t_value.begin().iso_str());
+          prep << column.str() << SQL_OP_GE << "('%" << store.size() + 1 << "% Europe/Prague' AT TIME ZONE 'UTC')" + value_post_;
+          store.push_back(t_value.begin().str());
           b = true;
         }
         if (!t_value.end().is_special()) {
           prep << (b ? SQL_OP_AND : getConjuction() + "( ") << column.str()
-              << second_operator << "(('%" << store.size() + 1 << "%'::timestamp AT TIME ZONE 'CET') AT TIME ZONE 'UTC')" + value_post_;
+              << second_operator << "('%" << store.size() + 1 << "% Europe/Prague' AT TIME ZONE 'UTC')" + value_post_;
           prep << " )";
-          store.push_back(t_value.end().iso_str());
+          store.push_back(t_value.end().str());
         } else if (b) {
           prep << " )";
         }
