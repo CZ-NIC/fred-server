@@ -702,6 +702,14 @@ ccReg_Admin_i::fillKeySet(ccReg::KeySetDetail *ck, Register::KeySet::KeySet *k)
         ck->dsrecords[i].maxSigLife = k->getDSRecordByIdx(i)->getMaxSigLife();
     }
 
+    ck->dnskeys.length(k->getDNSKeyCount());
+    for (unsigned int i = 0; i < k->getDNSKeyCount(); i++) {
+        ck->dnskeys[i].flags = k->getDNSKeyByIdx(i)->getFlags();
+        ck->dnskeys[i].protocol = k->getDNSKeyByIdx(i)->getProtocol();
+        ck->dnskeys[i].alg = k->getDNSKeyByIdx(i)->getAlg();
+        ck->dnskeys[i].key = DUPSTRFUN(k->getDNSKeyByIdx(i)->getKey);
+    }
+
     std::vector<unsigned int> slist;
     for (unsigned int i = 0; i < k->getStatusCount(); i++)
         if (register_manager_->getStatusDesc(
