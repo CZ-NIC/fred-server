@@ -375,8 +375,11 @@ public:
   }
 
   virtual void updateObjectStates() const throw (SQL_ERROR) {
-    if (!db->ExecSelect("SELECT update_object_states(0)"))
+    TRACE("[CALL] Register::Manager::updateObjectStates()");
+    if (!db->ExecSelect("SELECT update_object_states(0)")) {
+      LOGGER(PACKAGE).error("updateObjectStates(): throwing SQL_ERROR");
       throw SQL_ERROR();
+    }
     db->FreeSelect();
   }
 

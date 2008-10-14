@@ -650,6 +650,7 @@ public:
   virtual void createStateMessages(const std::string& exceptList,
                                    int limit,
                                    std::ostream* debug) throw (SQL_ERROR) {
+    TRACE("[CALL] Register::Poll::createStateMessages()");
     // transaction is needed for 'ON COMMIT DROP' functionality
     LocalTransaction trans(db);
     // for each new state appearance of state type (expirationWarning,

@@ -294,7 +294,7 @@ namespace Register
         bool useHistory
       ) throw (SQL_ERROR)
       {
-        TRACE("notifyStateChanges");
+        TRACE("[CALL] Register::Notify::notifyStateChanges()");
         std::stringstream sql;
         sql << "SELECT nt.state_id, nt.type, "
             << "nt.mtype, nt.emails, nt.obj_id, nt.obj_type, nt.valid_from "
@@ -396,6 +396,7 @@ namespace Register
       virtual void generateLetters()
         throw (SQL_ERROR)
       {
+        TRACE("[CALL] Register::Notify::generateLetters()");
     	// transaction is needed for 'ON COMMIT DROP' functionality
     	LocalTransaction trans(db);
     	// because every expiration date is
