@@ -87,7 +87,7 @@
  * -if return value is BASE64_BAD_CHAR then ret is zero based position
  *  of first invalid character
  */
-int isValidBase64(const char *encoded, int *ret);
+int isValidBase64(const char *str, int *ret);
 char *removeWhitespaces(const char *encoded);
 
 static bool testObjectHasState(
@@ -6370,7 +6370,6 @@ ccReg_EPP_i::KeySetCreate(
                         }
                     }
                     // test if key is valid base64 encoded string
-                    // further details in rfc4043 section 2.2
                     if (ret->code == 0) {
                         int ret1, ret2;
                         for (int ii = 0; ii < (int)dnsk.length(); ii++) {
@@ -7292,54 +7291,42 @@ ccReg_EPP_i::KeySetUpdate(
         || (c) >= '0' && (c) <= '9' || (c) == '+' || (c) == '/')
 
 int
-isValidBase64(const char *encoded, int *ret)
+countTailPads(const char *key)
 {
-    int len = 0;
-    int last_valid = 0;
-    char ch;
-    int i;
-    *ret = -1;
-    for (i = 0; i < (int)strlen(encoded); i++) {
-        ch = encoded[i];
-        if (!(isbase64char(ch) || isspace(ch) || ch == '=')) {
-            *ret = i;
-            return BASE64_BAD_CHAR;
-        }
+    char *str;
+    int count;
+    str = strchr(key, '=');
+    if (str == NULL) {
+        return 0;
     }
-
-    for (i = 0; i < (int)strlen(encoded); i++) {
-        /* in one case this validator evalute bad data as valid:
-         * for explanation see RFC 3548 section 2.3
-         * lets have some base64 encoded text: ``1234567='' (produce some nonsense when decoded).
-         * but this wrong typed text: ``1234q567='' (``q'' is extra character) is also valid.
-         * This is because equals sign is considered as non-alphabet character and is ignored.
-         */
-        ch = encoded[i];
-        if (isbase64char(ch)) {
-            len++;
-            last_valid = i;
-        } else if (ch != '=') {
-            last_valid = i;
-        }
-    }
-
-    if (len % 4 == 0) {
-        return BASE64_OK;
-    } else if (len % 4 == 1) {
-        *ret = len;
-        return BASE64_BAD_LENGTH;
-    } else if (len % 4 == 2) {
-        if (encoded[last_valid + 1] == '=' && encoded[last_valid + 2] == '=') {
-            return BASE64_OK;
-        }
-    } else if (len % 4 == 3) {
-        if (encoded[last_valid + 1] == '=') {
-            return BASE64_OK;
-        }
-    }
-    *ret = len;
-    return BASE64_BAD_LENGTH;
+    for (count = 0; *str != '\0'; str++, count++)
+        ;
+    return count;
 }
+/*
+ * test if ``key'' contains equal character (``='') only at the end
+ * return -1 if no ``='' character is present or if all ``='' characters
+ * are at the end.
+ * Otherwise return index of first invalid ``='' character.
+ */
+int
+testPad(const char *key)
+{
+    char *str;
+    if ((str = strchr(key, '=')) == NULL) {
+        return -1;
+    }
+    for ( ; *str != '\0'; str++) {
+        if (*str != '=') {
+            return str - key - 1;
+        }
+    }
+    if (countTailPads(key) >= 3) {
+        return strchr(key, '=') - key;
+    }
+    return -1;
+}
+
 
 char *
 removeWhitespaces(const char *encoded)
@@ -7363,6 +7350,48 @@ removeWhitespaces(const char *encoded)
     }
     ret[j] = '\0';
     return ret;
+}
+
+/*
+ * decide if ``str'' is valid base64 encoded string
+ * - there must be only valid characters in the string (a-z, A-Z, 0-9, + and /)
+ * - at the end could be zero, one or two pad characters (=)
+ * - string lenght (including padding) must be dividable by 4
+ * for further details see RFC 4648 chapter 3
+ */
+int
+isValidBase64(const char *str, int *ret)
+{
+    char *key;
+    int i;
+    int len;
+    int ch;
+    if ((key = removeWhitespaces(str)) == NULL) {
+        return BASE64_UNKNOWN;
+    }
+    if ((*ret = testPad(key)) != -1) {
+        free(key);
+        (*ret)--;
+        return BASE64_BAD_CHAR;
+    }
+    for (i = 0, len = 0; i < (int)strlen(key); i++) {
+        ch = key[i];
+        if (isbase64char(ch) || ch == '=') {
+            len++;
+        } else {
+            free(key);
+            *ret = i;
+            return BASE64_BAD_CHAR;
+        }
+    }
+    if (len % 4 == 0) {
+        free(key);
+        *ret = -1;
+        return BASE64_OK;
+    }
+    *ret = len;
+    free(key);
+    return BASE64_BAD_LENGTH;
 }
 
 // primitive list of objects
