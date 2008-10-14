@@ -79,6 +79,7 @@
 #define BASE64_OK               0
 #define BASE64_BAD_LENGTH       1
 #define BASE64_BAD_CHAR         2
+#define BASE64_UNKNOWN          3
 /*
  * isValidBase64 - returns 0 if some string is valid base64 encoded.
  * -if return value is BASE64_OK then ret is -1
@@ -87,7 +88,7 @@
  *  of first invalid character
  */
 int isValidBase64(const char *encoded, int *ret);
-int isValidBase64(const char *encoded);
+char *removeWhitespaces(const char *encoded);
 
 static bool testObjectHasState(
   DB *db, Register::TID object_id, unsigned state_id)
@@ -6371,18 +6372,27 @@ ccReg_EPP_i::KeySetCreate(
                     // test if key is valid base64 encoded string
                     // further details in rfc4043 section 2.2
                     if (ret->code == 0) {
-                        int ret1;
+                        int ret1, ret2;
                         for (int ii = 0; ii < (int)dnsk.length(); ii++) {
-                            if ((ret1 = isValidBase64((const char *)dnsk[ii].key)) != BASE64_OK) {
+                            if ((ret1 = isValidBase64((const char *)dnsk[ii].key, &ret2)) != BASE64_OK) {
                                 if (ret1 == BASE64_BAD_LENGTH) {
-                                    LOG(WARNING_LOG, "dnskey key length is wrong (must be dividable by 4), dnskey: '%s'",
-                                            (const char *)dnsk[ii].key);
+                                    LOG(WARNING_LOG, "dnskey key length is wrong (must be dividable by 4)");
                                     ret->code = SetErrorReason(
                                             errors,
                                             COMMAND_PARAMETR_ERROR,
                                             ccReg::keyset_dnskey,
                                             ii,
                                             REASON_MSG_DNSKEY_BAD_KEY_LEN,
+                                            GetRegistrarLang(clientID));
+                                } else if (ret1 == BASE64_BAD_CHAR) {
+                                    LOG(WARNING_LOG, "dnskey key contain invalid character '%c' at position %d",
+                                            ((const char *)dnsk[ii].key)[ret2], ret2);
+                                    ret->code = SetErrorReason(
+                                            errors,
+                                            COMMAND_PARAMETR_ERROR,
+                                            ccReg::keyset_dnskey,
+                                            ii,
+                                            REASON_MSG_DNSKEY_BAD_KEY_CHAR,
                                             GetRegistrarLang(clientID));
                                 } else {
                                     LOG(WARNING_LOG, "isValidBase64() return unknown value (%d)",
@@ -6449,6 +6459,12 @@ ccReg_EPP_i::KeySetCreate(
                                 }
                                 // insert dnskey(s)
                                 for (int ii = 0; ii < (int)dnsk.length(); ii++) {
+                                    char *key;
+                                    if ((key = removeWhitespaces((const char *)dnsk[ii].key)) == NULL) {
+                                        LOG(WARNING_LOG, "removeWhitespaces fails (memory problem)");
+                                        ret->code = COMMAND_FAILED;
+                                        break;
+                                    }
                                     LOG(NOTICE_LOG, "KeySetCreate: dnskey");
 
                                     int dnskeyId = DBsql.GetSequenceID("dnskey");
@@ -6466,11 +6482,13 @@ ccReg_EPP_i::KeySetCreate(
                                     DBsql.VALUE(dnsk[ii].flags);
                                     DBsql.VALUE(dnsk[ii].protocol);
                                     DBsql.VALUE(dnsk[ii].alg);
-                                    DBsql.VALUE(dnsk[ii].key);
+                                    DBsql.VALUE(key);
                                     if (!DBsql.EXEC()) {
                                         ret->code = COMMAND_FAILED;
+                                        free(key);
                                         break;
                                     }
+                                    free(key);
                                 }
 
                                 // insert DSRecord(s)
@@ -7004,20 +7022,27 @@ ccReg_EPP_i::KeySetUpdate(
                                     pass = false;
                                     break;
                                 }
-                                // dnskey key test (key is base64 encoded text,
-                                // therefore valid characters are A-Z,a-z,0-9,+,/ and =.
-                                // Length of string must be dividable by 4.
-                                int ret1;
-                                if ((ret1 = isValidBase64((const char *)dnsk_add[ii].key)) != BASE64_OK) {
+                                // dnskey key test - see isValidBase64 function for details
+                                int ret1, ret2;
+                                if ((ret1 = isValidBase64((const char *)dnsk_add[ii].key, &ret2)) != BASE64_OK) {
                                     if (ret1 == BASE64_BAD_LENGTH) {
-                                        LOG(WARNING_LOG, "dnskey key length is wrong (must be dividable by 4), dnskey: '%s'",
-                                                (const char *)dnsk_add[ii].key);
+                                        LOG(WARNING_LOG, "dnskey key length is wrong (must be dividable by 4)");
                                         ret->code = SetErrorReason(
                                                 errors,
                                                 COMMAND_PARAMETR_ERROR,
                                                 ccReg::keyset_dnskey_add,
                                                 ii,
                                                 REASON_MSG_DNSKEY_BAD_KEY_LEN,
+                                                GetRegistrarLang(clientId));
+                                    } if (ret1 == BASE64_BAD_CHAR) {
+                                        LOG(WARNING_LOG, "dnskey key contain bad character '%c' at position %d",
+                                                ((const char *)dnsk_add[ii].key)[ret2], ret2);
+                                        ret->code = SetErrorReason(
+                                                errors,
+                                                COMMAND_PARAMETR_ERROR,
+                                                ccReg::keyset_dnskey_add,
+                                                ii,
+                                                REASON_MSG_DNSKEY_BAD_KEY_CHAR,
                                                 GetRegistrarLang(clientId));
                                     } else {
                                         LOG(WARNING_LOG, "isValidBase64() return unknown value (%d)",
@@ -7199,6 +7224,12 @@ ccReg_EPP_i::KeySetUpdate(
 
                                 // add dnskey(s)
                                 for (int ii = 0; ii < (int)dnsk_add.length(); ii++) {
+                                    char *key;
+                                    if ((key = removeWhitespaces((const char *)dnsk_add[ii].key)) == NULL) {
+                                        LOG(WARNING_LOG, "removeWhitespaces fails (memory problem)");
+                                        ret->code = COMMAND_FAILED;
+                                        break;
+                                    }
                                     LOG(NOTICE_LOG,
                                             "KeySetUpdate: add DNSKey (flags:%d,protocol:%d,"
                                             "alg:%d,key:%s to keyset (handle:%d)",
@@ -7218,11 +7249,13 @@ ccReg_EPP_i::KeySetUpdate(
                                     DbSql.VALUE(dnsk_add[ii].flags);
                                     DbSql.VALUE(dnsk_add[ii].protocol);
                                     DbSql.VALUE(dnsk_add[ii].alg);
-                                    DbSql.VALUE(dnsk_add[ii].key);
+                                    DbSql.VALUE(key);
                                     if (!DbSql.EXEC()) {
                                         ret->code = COMMAND_FAILED;
+                                        free(key);
                                         break;
                                     }
+                                    free(key);
                                 }
                                 // save to history if no errors
                                 if (ret->code == 0) {
@@ -7254,13 +7287,26 @@ ccReg_EPP_i::KeySetUpdate(
 
     return ret._retn();
 }
+
+#define isbase64char(c)     ((c) >= 'a' && (c) <= 'z' || (c) >= 'A' && (c) <= 'Z' \
+        || (c) >= '0' && (c) <= '9' || (c) == '+' || (c) == '/')
+
 int
-isValidBase64(const char *encoded)
+isValidBase64(const char *encoded, int *ret)
 {
     int len = 0;
     int last_valid = 0;
     char ch;
     int i;
+    *ret = -1;
+    for (i = 0; i < (int)strlen(encoded); i++) {
+        ch = encoded[i];
+        if (!(isbase64char(ch) || isspace(ch) || ch == '=')) {
+            *ret = i;
+            return BASE64_BAD_CHAR;
+        }
+    }
+
     for (i = 0; i < (int)strlen(encoded); i++) {
         /* in one case this validator evalute bad data as valid:
          * for explanation see RFC 3548 section 2.3
@@ -7269,7 +7315,7 @@ isValidBase64(const char *encoded)
          * This is because equals sign is considered as non-alphabet character and is ignored.
          */
         ch = encoded[i];
-        if (ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '+' || ch == '/') {
+        if (isbase64char(ch)) {
             len++;
             last_valid = i;
         } else if (ch != '=') {
@@ -7280,6 +7326,7 @@ isValidBase64(const char *encoded)
     if (len % 4 == 0) {
         return BASE64_OK;
     } else if (len % 4 == 1) {
+        *ret = len;
         return BASE64_BAD_LENGTH;
     } else if (len % 4 == 2) {
         if (encoded[last_valid + 1] == '=' && encoded[last_valid + 2] == '=') {
@@ -7290,52 +7337,32 @@ isValidBase64(const char *encoded)
             return BASE64_OK;
         }
     }
+    *ret = len;
     return BASE64_BAD_LENGTH;
 }
 
-int
-isValidBase64(const char *encoded, int *ret)
+char *
+removeWhitespaces(const char *encoded)
 {
-    /* length of base64 encoded text must be dividable by 4
-     * for details see rfc1421 section 4.3.2.4
-     */
     int len = 0;
-    int last_valid = 0;
-    char ch;
-    for (int i = 0; i < (int)std::strlen(encoded); i++) {
-        ch = encoded[i];
-        if (ch >= 'a' && ch <= 'z' || ch >= 'A' || ch < 'Z' || ch >= '0' && ch <= '9'
-                || ch == '+' || ch == '/') {
+    char *ret;
+    int i, j;
+    for (i = 0; i < (int)strlen(encoded); i++) {
+        if (!isspace(encoded[i])) {
             len++;
-            last_valid = i;
         }
     }
-    if (len % 4 == 3) {
-        if (encoded[last_valid + 1] != '=') {
-            return BASE64_BAD_LENGTH;
-        }
-    } else if (len % 4 == 2) {
-        if (encoded[last_valid + 1] != '=' && encoded[last_valid + 2] != '=') {
-            return BASE64_BAD_LENGTH;
-        }
-    } else {
-        return BASE64_BAD_LENGTH;
+    if ((ret = (char *)malloc(len + 1)) == NULL) {
+        return NULL;
     }
-#if 0
-    for (int i = 0; i < (int)std::strlen(encoded); i++) {
-        ch = encoded[i];
-        /* base64 valid characters are a-z, A-Z, 0-9, +, / and = as padding character.
-         * for details see rfc1421.
-         */
-        if (!(ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9'
-                    || ch == '+' || ch == '/' || ch == '=')) {
-            *ret = i;
-            return BASE64_BAD_CHAR;
+    for (i = 0, j = 0; i < (int)strlen(encoded); i++) {
+        if (!isspace(encoded[i])) {
+            ret[j] = encoded[i];
+            j++;
         }
     }
-#endif
-    *ret = -1;
-    return BASE64_OK;
+    ret[j] = '\0';
+    return ret;
 }
 
 // primitive list of objects
