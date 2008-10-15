@@ -1,3 +1,15 @@
+2008-10-15 Ales Dolezal, Jiri Sadek (2.0.6)
+
+   * Fixing table sorting by datetime fields (DateTime operator)
+
+   * Fixing loading of filter containing datetime interval
+       - missing filter type specification
+       - timezone conversion (rewritten from boost to SQL)
+
+   * Fixing reference to PDF and XML file in invoice detail
+
+   * Fixing XML output of fred-admin --invoice_list command
+
 2008-09-30 Ales Dolezal, Jiri Sadek (2.0.5)
 
    * Number of admin corba sessions limited
