@@ -6700,6 +6700,21 @@ ccReg_EPP_i::KeySetUpdate(
                                     GetRegistrarLang(clientId));
                         }
                     }
+                    if (!ret->code) {
+                        if ((DbSql.GetKeySetDSRecords(keysetId) + DbSql.GetKeySetDNSKeys(keysetId) +
+                                    dsrec_add.length() + dnsk_add.length() - dsrec_rem.length() -
+                                    dnsk_rem.length()) <= 0) {
+                            LOG(WARNING_LOG, "KeySetUpdate: there must remain one DNSKey or one DSRecord");
+                            ret->code = SetErrorReason(
+                                    errors,
+                                    COMMAND_PARAMETR_RANGE_ERROR,
+                                    ccReg::keyset_dnskey,
+                                    0,
+                                    REASON_MSG_NO_DNSKEY_DSRECORD,
+                                    GetRegistrarLang(clientId));
+                            ret->code = COMMAND_FAILED;
+                        }
+                    }
 
                     if (!ret->code) {
                         // test ADD tech-c
@@ -6980,7 +6995,7 @@ ccReg_EPP_i::KeySetUpdate(
                                             COMMAND_PARAMETR_ERROR,
                                             ccReg::keyset_dnskey_add,
                                             ii,
-                                            REASON_MSG_DSRECORD_EXIST,
+                                            REASON_MSG_DNSKEY_EXIST,
                                             GetRegistrarLang(clientId));
                                     pass = false;
                                     break;
@@ -7074,12 +7089,21 @@ ccReg_EPP_i::KeySetUpdate(
                         // test dnskey to rem (if this dnskey exist for this keyset)
                         for (int ii = 0; ii < (int)dnsk_rem.length(); ii++) {
                             int id;
+                            char *key;
+                            // keys are inserted into database without whitespaces
+                            if ((key = removeWhitespaces(dnsk_rem[ii].key)) == NULL) {
+                                ret->code = COMMAND_FAILED;
+                                LOG(WARNING_LOG, "removeWhitespaces failed");
+                                free(key);
+                                break;
+                            }
                             id = DbSql.GetDNSKeyId(
                                     keysetId,
                                     dnsk_rem[ii].flags,
                                     dnsk_rem[ii].protocol,
                                     dnsk_rem[ii].alg,
-                                    dnsk_rem[ii].key);
+                                    key);
+                                    //dnsk_rem[ii].key);
                             if (id <= 0) {
                                 LOG(WARNING_LOG, "This DNSKey not exists for keyset [%d] (%d %d %d %s)",
                                         keysetId,
@@ -7094,6 +7118,7 @@ ccReg_EPP_i::KeySetUpdate(
                                         ii,
                                         REASON_MSG_DNSKEY_NOTEXIST,
                                         GetRegistrarLang(clientId));
+                                free(key);
                                 break;
                             } else {
                                 LOG(NOTICE_LOG, "DNSKey (id:%d) will be removed from keyset [%d] (%d %d %d %s)",
@@ -7104,6 +7129,7 @@ ccReg_EPP_i::KeySetUpdate(
                                         dnsk_rem[ii].alg,
                                         (const char *)dnsk_rem[ii].key);
                             }
+                            free(key);
                         }
 
                         // if no errors occured run update
@@ -7178,6 +7204,14 @@ ccReg_EPP_i::KeySetUpdate(
                                 }
                                 // delete dnskey(s)
                                 for (int ii = 0; ii < (int)dnsk_rem.length(); ii++) {
+                                    char *key;
+                                    // keys are inserted into database without whitespaces
+                                    if ((key = removeWhitespaces(dnsk_rem[ii].key)) == NULL) {
+                                        ret->code = COMMAND_FAILED;
+                                        LOG(WARNING_LOG, "removeWhitespaces failed");
+                                        free(key);
+                                        break;
+                                    }
                                     LOG(NOTICE_LOG,
                                             "KeySetUpdate: delete DNSKey (flags:%d,protocol:%d,"
                                             "alg:%d,key:%s from keyset (handle:%d)",
@@ -7186,15 +7220,21 @@ ccReg_EPP_i::KeySetUpdate(
                                             (const char *)handle);
                                     int dnskeyId = DbSql.GetDNSKeyId(keysetId, dnsk_rem[ii].flags,
                                             dnsk_rem[ii].protocol, dnsk_rem[ii].alg,
-                                            dnsk_rem[ii].key);
+                                            key);
                                     if (dnskeyId == -1) {
                                         ret->code = COMMAND_FAILED;
+                                        free(key);
                                         break;
                                     }
                                     LOG(NOTICE_LOG, "KeySetUpdate: delete DNSKey id found: %d",
                                             dnskeyId);
-                                    if (!DbSql.DeleteFromTable("dnskey", "id", dnskeyId))
+                                    if (!DbSql.DeleteFromTable("dnskey", "id", dnskeyId)) {
+                                        LOG(WARNING_LOG, "during deleting dnskeys command failed");
                                         ret->code = COMMAND_FAILED;
+                                        free(key);
+                                        break;
+                                    }
+                                    free(key);
                                 }
 
                                 // add dsrecords

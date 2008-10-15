@@ -96,3 +96,5 @@
 #define REASON_MSG_DNSKEY_EXIST                 59
 #define REASON_MSG_DNSKEY_NOTEXIST              60
 #define REASON_MSG_DUPLICITY_DNSKEY             61 
+
+#define REASON_MSG_NO_DNSKEY_DSRECORD           62
