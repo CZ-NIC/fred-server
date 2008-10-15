@@ -6955,12 +6955,22 @@ ccReg_EPP_i::KeySetUpdate(
                             for (int ii = 0; ii < (int)dnsk_add.length(); ii++) {
                                 bool pass = true;
                                 int id;
+                                char *key;
+                                // keys are inserted into database without whitespaces
+                                if ((key = removeWhitespaces(dnsk_add[ii].key)) == NULL) {
+                                    ret->code = COMMAND_FAILED;
+                                    LOG(WARNING_LOG, "removeWhitespaces failed");
+                                    free(key);
+                                    pass = false;
+                                    break;
+                                }
                                 id = DbSql.GetDNSKeyId(
                                         keysetId,
                                         dnsk_add[ii].flags,
                                         dnsk_add[ii].protocol,
                                         dnsk_add[ii].alg,
-                                        dnsk_add[ii].key);
+                                        key);
+                                free(key);
                                 if (id > 0) {
                                     LOG(WARNING_LOG, "Same DNSKey already exist for keyset [%d]: (%d %d %d '%s') with id %d",
                                             keysetId, dnsk_add[ii].flags, dnsk_add[ii].protocol, dnsk_add[ii].alg,
@@ -6968,7 +6978,7 @@ ccReg_EPP_i::KeySetUpdate(
                                     ret->code = SetErrorReason(
                                             errors,
                                             COMMAND_PARAMETR_ERROR,
-                                            ccReg::keyset_dsrecord_add,
+                                            ccReg::keyset_dnskey_add,
                                             ii,
                                             REASON_MSG_DSRECORD_EXIST,
                                             GetRegistrarLang(clientId));
@@ -7080,7 +7090,7 @@ ccReg_EPP_i::KeySetUpdate(
                                 ret->code = SetErrorReason(
                                         errors,
                                         COMMAND_PARAMETR_ERROR,
-                                        ccReg::keyset_dsrecord_rem,
+                                        ccReg::keyset_dnskey_rem,
                                         ii,
                                         REASON_MSG_DNSKEY_NOTEXIST,
                                         GetRegistrarLang(clientId));
