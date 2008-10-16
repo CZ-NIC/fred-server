@@ -6092,8 +6092,8 @@ ccReg_EPP_i::KeySetCreate(
                                 0,
                                 REASON_MSG_TECH_NOTEXIST,
                                 GetRegistrarLang(clientID));
-                    } else if (tech.length() > 9) {
-                        LOG(WARNING_LOG, "KeySetCreate: too many tech contacts (maximum is 9)");
+                    } else if (tech.length() > 10) {
+                        LOG(WARNING_LOG, "KeySetCreate: too many tech contacts (maximum is 10)");
                         ret->code = SetErrorReason(
                                 errors,
                                 COMMAND_PARAMETR_RANGE_ERROR,
@@ -6122,8 +6122,8 @@ ccReg_EPP_i::KeySetCreate(
                                     REASON_MSG_NO_DNSKEY,
                                     GetRegistrarLang(clientID));
                         }
-                    } else if (dsrec.length() > 9) {
-                        LOG(WARNING_LOG, "KeySetCreate: too many ds-records (maximum is 9)");
+                    } else if (dsrec.length() > 10) {
+                        LOG(WARNING_LOG, "KeySetCreate: too many ds-records (maximum is 10)");
                         ret->code = SetErrorReason(
                                 errors,
                                 COMMAND_PARAMETR_RANGE_ERROR,
@@ -6131,8 +6131,8 @@ ccReg_EPP_i::KeySetCreate(
                                 0,
                                 REASON_MSG_DSRECORD_LIMIT,
                                 GetRegistrarLang(clientID));
-                    } else if (dnsk.length() > 9) {
-                        LOG(WARNING_LOG, "KeySetCreate: too many dnskeys (maximum is 9)");
+                    } else if (dnsk.length() > 10) {
+                        LOG(WARNING_LOG, "KeySetCreate: too many dnskeys (maximum is 10)");
                         ret->code = SetErrorReason(
                                 errors,
                                 COMMAND_PARAMETR_RANGE_ERROR,
@@ -6649,10 +6649,259 @@ ccReg_EPP_i::KeySetUpdate(
                         ret->code = COMMAND_FAILED;
                     }
 
+                    ///////////////////////////////////////////////////////////
+                    //
+                    //  ** KeySetUpdate() - TESTS **
+                    //
+                    ///////////////////////////////////////////////////////////
+
+                    // duplicity test of dsrec_add in given parameters
+                    if (!ret->code) {
+                        for (int ii = 0; ii < (int)dsrec_add.length(); ii++) {
+                            for (int jj = ii + 1; jj < (int)dsrec_add.length(); jj++) {
+                                if (testDSRecordDuplicity(dsrec_add[ii], dsrec_add[jj])) {
+                                    LOG(WARNING_LOG, "Found DSRecord add duplicity: 1:(%d %d %d '%s' %d) 2:(%d %d %d '%s' %d)",
+                                            dsrec_add[ii].keyTag, dsrec_add[ii].alg, dsrec_add[ii].digestType,
+                                            (const char *)dsrec_add[ii].digest, dsrec_add[ii].maxSigLife,
+                                            dsrec_add[jj].keyTag, dsrec_add[jj].alg, dsrec_add[jj].digestType,
+                                            (const char *)dsrec_add[jj].digest, dsrec_add[jj].maxSigLife);
+                                    ret->code = SetErrorReason(
+                                            errors,
+                                            COMMAND_PARAMETR_ERROR,
+                                            ccReg::keyset_dsrecord_add,
+                                            jj,
+                                            REASON_MSG_DUPLICITY_DSRECORD,
+                                            GetRegistrarLang(clientId));
+                                    break;
+                                }
+                            }
+                            LOG(NOTICE_LOG, "ADD keyset DSRecord (%d %d %d '%s' %d)",
+                                    dsrec_add[ii].keyTag, dsrec_add[ii].alg, dsrec_add[ii].digestType,
+                                    (const char *)dsrec_add[ii].digest, dsrec_add[ii].maxSigLife);
+                        }
+                    }
+
+                    // duplicity test of dsrec_rem in given parameters
+                    if (!ret->code) {
+                        for (int ii = 0; ii < (int)dsrec_rem.length(); ii++) {
+                            for (int jj = ii + 1; jj < (int)dsrec_rem.length(); jj++) {
+                                if (testDSRecordDuplicity(dsrec_rem[ii], dsrec_rem[jj])) {
+                                    LOG(WARNING_LOG, "Found DSRecord rem duplicity: 1:(%d %d %d '%s' %d) 2:(%d %d %d '%s' %d)",
+                                            dsrec_rem[ii].keyTag, dsrec_rem[ii].alg, dsrec_rem[ii].digestType,
+                                            (const char *)dsrec_rem[ii].digest, dsrec_rem[ii].maxSigLife,
+                                            dsrec_rem[jj].keyTag, dsrec_rem[jj].alg, dsrec_rem[jj].digestType,
+                                            (const char *)dsrec_rem[jj].digest, dsrec_rem[jj].maxSigLife);
+                                    ret->code = SetErrorReason(
+                                            errors,
+                                            COMMAND_PARAMETR_ERROR,
+                                            ccReg::keyset_dsrecord_rem,
+                                            jj,
+                                            REASON_MSG_DUPLICITY_DSRECORD,
+                                            GetRegistrarLang(clientId));
+                                    break;
+                                }
+                            }
+                            LOG(NOTICE_LOG, "REM keyset DSRecord (%d %d %d '%s' %d)",
+                                    dsrec_rem[ii].keyTag, dsrec_rem[ii].alg, dsrec_rem[ii].digestType,
+                                    (const char *)dsrec_rem[ii].digest, dsrec_rem[ii].maxSigLife);
+                        }
+                    }
+
+                    // duplicity test for dnsk_add in given parameters
+                    if (!ret->code) {
+                        for (int ii = 0; ii < (int)dnsk_add.length(); ii++) {
+                            for (int jj = ii + 1; jj < (int)dnsk_add.length(); jj++) {
+                                if (testDNSKeyDuplicity(dnsk_add[ii], dnsk_add[jj])) {
+                                    LOG(WARNING_LOG, "Found DNSKey add duplicity: %d x %d (%d %d %d %s)",
+                                            ii, jj, dnsk_add[ii].flags, dnsk_add[ii].protocol,
+                                            dnsk_add[ii].alg, (const char *)dnsk_add[ii].key);
+                                    ret->code = SetErrorReason(
+                                            errors,
+                                            COMMAND_PARAMETR_ERROR,
+                                            ccReg::keyset_dnskey_add,
+                                            jj,
+                                            REASON_MSG_DUPLICITY_DNSKEY,
+                                            GetRegistrarLang(clientId));
+                                    break;
+                                }
+                            }
+                            LOG(NOTICE_LOG, "ADD keyset DNSKey (%d %d %d %s)",
+                                    dnsk_add[ii].flags, dnsk_add[ii].protocol,
+                                    dnsk_add[ii].alg, (const char *)dnsk_add[ii].key);
+                        }
+                    }
+
+                    // duplicity test for dnsk_rem in given parameters
+                    if (!ret->code) {
+                        for (int ii = 0; ii < (int)dnsk_rem.length(); ii++) {
+                            for (int jj = ii + 1; jj < (int)dnsk_rem.length(); jj++) {
+                                if (testDNSKeyDuplicity(dnsk_rem[ii], dnsk_rem[jj])) {
+                                    LOG(WARNING_LOG, "Found DNSKey rem duplicity: %d x %d (%d %d %d %s)",
+                                            ii, jj, dnsk_rem[ii].flags, dnsk_rem[ii].protocol,
+                                            dnsk_rem[ii].alg, (const char *)dnsk_rem[ii].key);
+                                    ret->code = SetErrorReason(
+                                            errors,
+                                            COMMAND_PARAMETR_ERROR,
+                                            ccReg::keyset_dnskey_rem,
+                                            jj,
+                                            REASON_MSG_DUPLICITY_DNSKEY,
+                                            GetRegistrarLang(clientId));
+                                    break;
+                                }
+                            }
+                            LOG(NOTICE_LOG, "REM keyset DNSKey (%d %d %d %s)",
+                                    dnsk_rem[ii].flags, dnsk_rem[ii].protocol,
+                                    dnsk_rem[ii].alg, (const char *)dnsk_rem[ii].key);
+                        }
+                    }
+
+                    // test dsrecord to add (if same exist for this keyset)
+                    if (!ret->code) {
+                        for (int i = 0; i < (int)dsrec_add.length(); i++) {
+                            int id;
+                            id = DbSql.GetDSRecordId(
+                                    keysetId,
+                                    dsrec_add[i].keyTag,
+                                    dsrec_add[i].alg,
+                                    dsrec_add[i].digestType,
+                                    dsrec_add[i].digest,
+                                    dsrec_add[i].maxSigLife);
+                            // GetDSRecordId returns id number (equal or bigger than zero) if
+                            // record is found, otherwise returns -1 (record not found)
+                            if (id > 0) {
+                                LOG(WARNING_LOG, "Same DSRecord already exist for keyset [%d]: (%d %d %d '%s' %d) with id %d",
+                                        keysetId,
+                                        dsrec_add[i].keyTag,
+                                        dsrec_add[i].alg,
+                                        dsrec_add[i].digestType,
+                                        (const char *)dsrec_add[i].digest,
+                                        dsrec_add[i].maxSigLife,
+                                        id);
+                                ret->code = SetErrorReason(
+                                        errors,
+                                        COMMAND_PARAMETR_ERROR,
+                                        ccReg::keyset_dsrecord_add,
+                                        i,
+                                        REASON_MSG_DSRECORD_EXIST,
+                                        GetRegistrarLang(clientId));
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // test dsrecord to rem (if this dsrecord exist for this keyset)
+                    if (!ret->code) {
+                        for (int i = 0; i < (int)dsrec_rem.length(); i++) {
+                            int id;
+                            id = DbSql.GetDSRecordId(
+                                    keysetId,
+                                    dsrec_rem[i].keyTag,
+                                    dsrec_rem[i].alg,
+                                    dsrec_rem[i].digestType,
+                                    dsrec_rem[i].digest,
+                                    dsrec_rem[i].maxSigLife);
+                            if (id <= 0) {
+                                LOG(WARNING_LOG, "This DSRecord not exist for keyset [%d]: (%d %d %d '%s' %d)",
+                                        keysetId,
+                                        dsrec_rem[i].keyTag,
+                                        dsrec_rem[i].alg,
+                                        dsrec_rem[i].digestType,
+                                        (const char *)dsrec_rem[i].digest,
+                                        dsrec_rem[i].maxSigLife);
+                                ret->code = SetErrorReason(
+                                        errors,
+                                        COMMAND_PARAMETR_ERROR,
+                                        ccReg::keyset_dsrecord_rem,
+                                        i,
+                                        REASON_MSG_DSRECORD_NOTEXIST,
+                                        GetRegistrarLang(clientId));
+                                break;
+                            }
+                        }
+                    }
+
+                    // dnsk_add tests - if exact same exist for this keyset
+                    if (!ret->code) {
+                        for (int ii = 0; ii < (int)dnsk_add.length(); ii++) {
+                            bool pass = true;
+                            int id;
+                            char *key;
+                            // keys are inserted into database without whitespaces
+                            if ((key = removeWhitespaces(dnsk_add[ii].key)) == NULL) {
+                                ret->code = COMMAND_FAILED;
+                                LOG(WARNING_LOG, "removeWhitespaces failed");
+                                free(key);
+                                pass = false;
+                                break;
+                            }
+                            id = DbSql.GetDNSKeyId(
+                                    keysetId,
+                                    dnsk_add[ii].flags,
+                                    dnsk_add[ii].protocol,
+                                    dnsk_add[ii].alg,
+                                    key);
+                            free(key);
+                            if (id > 0) {
+                                LOG(WARNING_LOG, "Same DNSKey already exist for keyset [%d]: (%d %d %d '%s') with id %d",
+                                        keysetId, dnsk_add[ii].flags, dnsk_add[ii].protocol, dnsk_add[ii].alg,
+                                        (const char *)dnsk_add[ii].key);
+                                ret->code = SetErrorReason(
+                                        errors,
+                                        COMMAND_PARAMETR_ERROR,
+                                        ccReg::keyset_dnskey_add,
+                                        ii,
+                                        REASON_MSG_DNSKEY_EXIST,
+                                        GetRegistrarLang(clientId));
+                                pass = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    // test dnskey to rem (if this dnskey exist for this keyset)
+                    if (!ret->code) {
+                        for (int ii = 0; ii < (int)dnsk_rem.length(); ii++) {
+                            int id;
+                            char *key;
+                            // keys are inserted into database without whitespaces
+                            if ((key = removeWhitespaces(dnsk_rem[ii].key)) == NULL) {
+                                ret->code = COMMAND_FAILED;
+                                LOG(WARNING_LOG, "removeWhitespaces failed");
+                                free(key);
+                                break;
+                            }
+                            id = DbSql.GetDNSKeyId(
+                                    keysetId,
+                                    dnsk_rem[ii].flags,
+                                    dnsk_rem[ii].protocol,
+                                    dnsk_rem[ii].alg,
+                                    key);
+                                    //dnsk_rem[ii].key);
+                            if (id <= 0) {
+                                LOG(WARNING_LOG, "This DNSKey not exists for keyset [%d] (%d %d %d %s)",
+                                        keysetId,
+                                        dnsk_rem[ii].flags,
+                                        dnsk_rem[ii].protocol,
+                                        dnsk_rem[ii].alg,
+                                        (const char *)dnsk_rem[ii].key);
+                                ret->code = SetErrorReason(
+                                        errors,
+                                        COMMAND_PARAMETR_ERROR,
+                                        ccReg::keyset_dnskey_rem,
+                                        ii,
+                                        REASON_MSG_DNSKEY_NOTEXIST,
+                                        GetRegistrarLang(clientId));
+                                free(key);
+                                break;
+                            }
+                            free(key);
+                        }
+                    }
+
                     // test maximum values - technical contacts
                     if (!ret->code) {
-                        if ((DbSql.GetKeySetContacts(keysetId) + tech_add.length() - tech_rem.length()) > 9) {
-                            LOG(WARNING_LOG, "KeySetUpdate: too may tech contacts (maximum is 9)"
+                        if ((DbSql.GetKeySetContacts(keysetId) + tech_add.length() - tech_rem.length()) > 10) {
+                            LOG(WARNING_LOG, "KeySetUpdate: too may tech contacts (maximum is 10)"
                                     "(existing:%d, to add:%d, to rem:%d)",
                                     DbSql.GetKeySetContacts(keysetId),
                                     tech_add.length(),
@@ -6666,10 +6915,11 @@ ccReg_EPP_i::KeySetUpdate(
                                     GetRegistrarLang(clientId));
                         }
                     }
+
                     // test maximum values - dsrecords
                     if (!ret->code) {
-                        if ((DbSql.GetKeySetDSRecords(keysetId) + dsrec_add.length() - dsrec_rem.length()) > 9) {
-                            LOG(WARNING_LOG, "KeySetUpdate: too many ds-records (maximum is 9)"
+                        if ((DbSql.GetKeySetDSRecords(keysetId) + dsrec_add.length() - dsrec_rem.length()) > 10) {
+                            LOG(WARNING_LOG, "KeySetUpdate: too many ds-records (maximum is 10)"
                                     "(existing:%d, to add:%d, to rem:%d)",
                                     DbSql.GetKeySetDSRecords(keysetId),
                                     dsrec_add.length(),
@@ -6683,10 +6933,11 @@ ccReg_EPP_i::KeySetUpdate(
                                     GetRegistrarLang(clientId));
                         }
                     }
+
                     // test maximum values - dnskeys
                     if (!ret->code) {
-                        if ((DbSql.GetKeySetDNSKeys(keysetId) + dnsk_add.length() - dnsk_rem.length()) > 9) {
-                            LOG(WARNING_LOG, "KeySetUpdate: too many dnskeys (maximum is 9)"
+                        if ((DbSql.GetKeySetDNSKeys(keysetId) + dnsk_add.length() - dnsk_rem.length()) > 10) {
+                            LOG(WARNING_LOG, "KeySetUpdate: too many dnskeys (maximum is 10)"
                                     "(existing:%d, to add:%d, to rem:%d)",
                                     DbSql.GetKeySetDNSKeys(keysetId),
                                     dnsk_add.length(),
@@ -6700,6 +6951,8 @@ ccReg_EPP_i::KeySetUpdate(
                                     GetRegistrarLang(clientId));
                         }
                     }
+
+                    // test minimum value - there must be at least one from the pair dnskey-dsrecord
                     if (!ret->code) {
                         if ((DbSql.GetKeySetDSRecords(keysetId) + DbSql.GetKeySetDNSKeys(keysetId) +
                                     dsrec_add.length() + dnsk_add.length() - dsrec_rem.length() -
@@ -6707,7 +6960,7 @@ ccReg_EPP_i::KeySetUpdate(
                             LOG(WARNING_LOG, "KeySetUpdate: there must remain one DNSKey or one DSRecord");
                             ret->code = SetErrorReason(
                                     errors,
-                                    COMMAND_PARAMETR_RANGE_ERROR,
+                                    COMMAND_FAILED,
                                     ccReg::keyset_dnskey,
                                     0,
                                     REASON_MSG_NO_DNSKEY_DSRECORD,
@@ -6749,257 +7002,79 @@ ccReg_EPP_i::KeySetUpdate(
                             LOG(NOTICE_LOG, "ADD tech  techid -> %d [%s]",
                                     techId, (const char *)tech_add[i]);
                         }
+
                         // test REM tech-c
-                        for (int i = 0; i < (int)tech_rem.length(); i++) {
-                            if ((techId = getIdOfContact(&DbSql, tech_rem[i], conf)) <= 0)
-                                ret->code = SetReasonKeySetTechREM(
-                                        errors,
-                                        tech_rem[i],
-                                        techId,
-                                        GetRegistrarLang(clientId),
-                                        i);
-                            else if (!DbSql.CheckContactMap("keyset", keysetId, techId, 0))
-                                ret->code = SetReasonKeySetTechNotExistMap(
-                                        errors,
-                                        tech_rem[i],
-                                        GetRegistrarLang(clientId),
-                                        i);
-                            else {
-                                techRem[i] = techId;
-                                for (int j = 0; j < i; j++) {
-                                    if (techRem[j] == techId && techRem[j] > 0) {
-                                        techRem[j] = 0;
-                                        ret->code = SetReasonContactDuplicity(
-                                                errors,
-                                                tech_rem[i],
-                                                GetRegistrarLang(clientId),
-                                                i,
-                                                ccReg::keyset_tech_rem);
+                        if (!ret->code) {
+                            for (int i = 0; i < (int)tech_rem.length(); i++) {
+                                if ((techId = getIdOfContact(&DbSql, tech_rem[i], conf)) <= 0)
+                                    ret->code = SetReasonKeySetTechREM(
+                                            errors,
+                                            tech_rem[i],
+                                            techId,
+                                            GetRegistrarLang(clientId),
+                                            i);
+                                else if (!DbSql.CheckContactMap("keyset", keysetId, techId, 0))
+                                    ret->code = SetReasonKeySetTechNotExistMap(
+                                            errors,
+                                            tech_rem[i],
+                                            GetRegistrarLang(clientId),
+                                            i);
+                                else {
+                                    techRem[i] = techId;
+                                    for (int j = 0; j < i; j++) {
+                                        if (techRem[j] == techId && techRem[j] > 0) {
+                                            techRem[j] = 0;
+                                            ret->code = SetReasonContactDuplicity(
+                                                    errors,
+                                                    tech_rem[i],
+                                                    GetRegistrarLang(clientId),
+                                                    i,
+                                                    ccReg::keyset_tech_rem);
+                                        }
                                     }
                                 }
+                                LOG(NOTICE_LOG, "REM tech  techid -> %d [%s]",
+                                        techId, (const char *)tech_rem[i]);
                             }
-                            LOG(NOTICE_LOG, "REM tech  techid -> %d [%s]",
-                                    techId, (const char *)tech_rem[i]);
                         }
-                        // duplicity test of dsrec_add
-                        for (int ii = 0; ii < (int)dsrec_add.length(); ii++) {
-                            for (int jj = ii + 1; jj < (int)dsrec_add.length(); jj++) {
-                                if (testDSRecordDuplicity(dsrec_add[ii], dsrec_add[jj])) {
-                                    LOG(WARNING_LOG, "Found DSRecord add duplicity: 1:(%d %d %d '%s' %d) 2:(%d %d %d '%s' %d)",
-                                            dsrec_add[ii].keyTag, dsrec_add[ii].alg, dsrec_add[ii].digestType,
-                                            (const char *)dsrec_add[ii].digest, dsrec_add[ii].maxSigLife,
-                                            dsrec_add[jj].keyTag, dsrec_add[jj].alg, dsrec_add[jj].digestType,
-                                            (const char *)dsrec_add[jj].digest, dsrec_add[jj].maxSigLife);
+
+                        // DSRecord member tests
+                        if (!ret->code) {
+                            for (int i = 0; i < (int)dsrec_add.length(); i++) {
+                                // test digest type
+                                if (dsrec_add[i].digestType != 1) {
+                                    LOG(WARNING_LOG, "Bad digest type: %d (must be 1)",
+                                            dsrec_add[i].digestType);
                                     ret->code = SetErrorReason(
                                             errors,
                                             COMMAND_PARAMETR_ERROR,
                                             ccReg::keyset_dsrecord_add,
-                                            jj,
-                                            REASON_MSG_DUPLICITY_DSRECORD,
-                                            GetRegistrarLang(clientId));
+                                            i,
+                                            REASON_MSG_DSRECORD_BAD_DIGEST_TYPE,
+                                            GetRegistrarLang(clientId)
+                                            );
                                     break;
                                 }
-                            }
-                            LOG(NOTICE_LOG, "ADD keyset DSRecord (%d %d %d '%s' %d)",
-                                    dsrec_add[ii].keyTag, dsrec_add[ii].alg, dsrec_add[ii].digestType,
-                                    (const char *)dsrec_add[ii].digest, dsrec_add[ii].maxSigLife);
-                        }
-
-                        // duplicity test of dsrec_rem
-                        for (int ii = 0; ii < (int)dsrec_rem.length(); ii++) {
-                            for (int jj = ii + 1; jj < (int)dsrec_rem.length(); jj++) {
-                                if (testDSRecordDuplicity(dsrec_rem[ii], dsrec_rem[jj])) {
-                                    LOG(WARNING_LOG, "Found DSRecord rem duplicity: 1:(%d %d %d '%s' %d) 2:(%d %d %d '%s' %d)",
-                                            dsrec_rem[ii].keyTag, dsrec_rem[ii].alg, dsrec_rem[ii].digestType,
-                                            (const char *)dsrec_rem[ii].digest, dsrec_rem[ii].maxSigLife,
-                                            dsrec_rem[jj].keyTag, dsrec_rem[jj].alg, dsrec_rem[jj].digestType,
-                                            (const char *)dsrec_rem[jj].digest, dsrec_rem[jj].maxSigLife);
+                                // test digest length
+                                if (strlen(dsrec_add[i].digest) != 40) {
+                                    LOG(WARNING_LOG, "Bad digest length: %d (must be 40)",
+                                            strlen(dsrec_add[i].digest));
                                     ret->code = SetErrorReason(
                                             errors,
                                             COMMAND_PARAMETR_ERROR,
-                                            ccReg::keyset_dsrecord_rem,
-                                            jj,
-                                            REASON_MSG_DUPLICITY_DSRECORD,
-                                            GetRegistrarLang(clientId));
+                                            ccReg::keyset_dsrecord_add,
+                                            i,
+                                            REASON_MSG_DSRECORD_BAD_DIGEST_LENGTH,
+                                            GetRegistrarLang(clientId)
+                                            );
                                     break;
                                 }
                             }
-                            LOG(NOTICE_LOG, "REM keyset DSRecord (%d %d %d '%s' %d)",
-                                    dsrec_rem[ii].keyTag, dsrec_rem[ii].alg, dsrec_rem[ii].digestType,
-                                    (const char *)dsrec_rem[ii].digest, dsrec_rem[ii].maxSigLife);
                         }
 
-                        // duplicity test for dnsk_add
-                        for (int ii = 0; ii < (int)dnsk_add.length(); ii++) {
-                            for (int jj = ii + 1; jj < (int)dnsk_add.length(); jj++) {
-                                if (testDNSKeyDuplicity(dnsk_add[ii], dnsk_add[jj])) {
-                                    LOG(WARNING_LOG, "Found DNSKey add duplicity: %d x %d (%d %d %d %s)",
-                                            ii, jj, dnsk_add[ii].flags, dnsk_add[ii].protocol,
-                                            dnsk_add[ii].alg, (const char *)dnsk_add[ii].key);
-                                    ret->code = SetErrorReason(
-                                            errors,
-                                            COMMAND_PARAMETR_ERROR,
-                                            ccReg::keyset_dnskey_add,
-                                            jj,
-                                            REASON_MSG_DUPLICITY_DNSKEY,
-                                            GetRegistrarLang(clientId));
-                                    break;
-                                }
-                            }
-                            LOG(NOTICE_LOG, "ADD keyset DNSKey (%d %d %d %s)",
-                                    dnsk_add[ii].flags, dnsk_add[ii].protocol,
-                                    dnsk_add[ii].alg, (const char *)dnsk_add[ii].key);
-                        }
-                        // duplicity test for dnsk_rem
-                        for (int ii = 0; ii < (int)dnsk_rem.length(); ii++) {
-                            for (int jj = ii + 1; jj < (int)dnsk_rem.length(); jj++) {
-                                if (testDNSKeyDuplicity(dnsk_rem[ii], dnsk_rem[jj])) {
-                                    LOG(WARNING_LOG, "Found DNSKey rem duplicity: %d x %d (%d %d %d %s)",
-                                            ii, jj, dnsk_rem[ii].flags, dnsk_rem[ii].protocol,
-                                            dnsk_rem[ii].alg, (const char *)dnsk_rem[ii].key);
-                                    ret->code = SetErrorReason(
-                                            errors,
-                                            COMMAND_PARAMETR_ERROR,
-                                            ccReg::keyset_dnskey_rem,
-                                            jj,
-                                            REASON_MSG_DUPLICITY_DNSKEY,
-                                            GetRegistrarLang(clientId));
-                                    break;
-                                }
-                            }
-                            LOG(NOTICE_LOG, "REM keyset DNSKey (%d %d %d %s)",
-                                    dnsk_rem[ii].flags, dnsk_rem[ii].protocol,
-                                    dnsk_rem[ii].alg, (const char *)dnsk_rem[ii].key);
-                        }
-
-                        // test dsrecord to add (if same exist for this keyset)
-                        for (int i = 0; i < (int)dsrec_add.length(); i++) {
-                            bool pass = true;
-                            int id;
-                            id = DbSql.GetDSRecordId(
-                                    keysetId,
-                                    dsrec_add[i].keyTag,
-                                    dsrec_add[i].alg,
-                                    dsrec_add[i].digestType,
-                                    dsrec_add[i].digest,
-                                    dsrec_add[i].maxSigLife);
-                            // GetDSRecordId returns id number (equal or bigger than zero) if
-                            // record is found, otherwise returns -1 (record not found)
-                            if (id > 0) {
-                                LOG(WARNING_LOG, "Same DSRecord already exist for keyset [%d]: (%d %d %d '%s' %d) with id %d",
-                                        keysetId, dsrec_add[i].keyTag, dsrec_add[i].alg, dsrec_add[i].digestType,
-                                        (const char *)dsrec_add[i].digest, dsrec_add[i].maxSigLife, id);
-                                ret->code = SetErrorReason(
-                                        errors,
-                                        COMMAND_PARAMETR_ERROR,
-                                        ccReg::keyset_dsrecord_add,
-                                        i,
-                                        REASON_MSG_DSRECORD_EXIST,
-                                        GetRegistrarLang(clientId));
-                                pass = false;
-                                break;
-                            }
-                            // test digest type
-                            if (dsrec_add[i].digestType != 1) {
-                                LOG(WARNING_LOG, "Bad digest type: %d (must be 1)",
-                                        dsrec_add[i].digestType);
-                                ret->code = SetErrorReason(
-                                        errors,
-                                        COMMAND_PARAMETR_ERROR,
-                                        ccReg::keyset_dsrecord_add,
-                                        i,
-                                        REASON_MSG_DSRECORD_BAD_DIGEST_TYPE,
-                                        GetRegistrarLang(clientId)
-                                        );
-                                pass = false;
-                                break;
-                            }
-                            // test digest length
-                            if (strlen(dsrec_add[i].digest) != 40) {
-                                LOG(WARNING_LOG, "Bad digest length: %d (must be 40)",
-                                        strlen(dsrec_add[i].digest));
-                                ret->code = SetErrorReason(
-                                        errors,
-                                        COMMAND_PARAMETR_ERROR,
-                                        ccReg::keyset_dsrecord_add,
-                                        i,
-                                        REASON_MSG_DSRECORD_BAD_DIGEST_LENGTH,
-                                        GetRegistrarLang(clientId)
-                                        );
-                                pass = false;
-                                break;
-                            }
-                            if (pass) {
-                                LOG(NOTICE_LOG, "DSRecord can be added to keyset [%d] (%d %d %d '%s' %d)",
-                                        keysetId, dsrec_add[i].keyTag, dsrec_add[i].alg, dsrec_add[i].digestType,
-                                        (const char *)dsrec_add[i].digest, dsrec_add[i].maxSigLife);
-                            }
-                        }
-                        // test dsrecord to rem (if this dsrecord exist for this keyset)
-                        for (int i = 0; i < (int)dsrec_rem.length(); i++) {
-                            int id;
-                            id = DbSql.GetDSRecordId(
-                                    keysetId,
-                                    dsrec_rem[i].keyTag,
-                                    dsrec_rem[i].alg,
-                                    dsrec_rem[i].digestType,
-                                    dsrec_rem[i].digest,
-                                    dsrec_rem[i].maxSigLife);
-                            if (id <= 0) {
-                                LOG(WARNING_LOG, "This DSRecord not exist for keyset [%d]: (%d %d %d '%s' %d)",
-                                        keysetId, dsrec_rem[i].keyTag, dsrec_rem[i].alg, dsrec_rem[i].digestType,
-                                        (const char *)dsrec_rem[i].digest, dsrec_rem[i].maxSigLife);
-                                // dsrecord not found - so it's fail
-                                ret->code = SetErrorReason(
-                                        errors,
-                                        COMMAND_PARAMETR_ERROR,
-                                        ccReg::keyset_dsrecord_rem,
-                                        i,
-                                        REASON_MSG_DSRECORD_NOTEXIST,
-                                        GetRegistrarLang(clientId));
-                                break;
-                            } else {
-                                LOG(NOTICE_LOG, "DSRecord (id:%d) can be removed from keyset [%d] (%d %d %d '%s' %d)",
-                                        id, keysetId, dsrec_rem[i].keyTag, dsrec_rem[i].alg, dsrec_rem[i].digestType,
-                                        (const char *)dsrec_rem[i].digest, dsrec_rem[i].maxSigLife);
-                            }
-                        }
-
-                        // dnsk_add tests - if exact same exist for this keyset
-                        if (ret->code == 0) {
+                        // DNSKey member tests
+                        if (!ret->code) {
                             for (int ii = 0; ii < (int)dnsk_add.length(); ii++) {
-                                bool pass = true;
-                                int id;
-                                char *key;
-                                // keys are inserted into database without whitespaces
-                                if ((key = removeWhitespaces(dnsk_add[ii].key)) == NULL) {
-                                    ret->code = COMMAND_FAILED;
-                                    LOG(WARNING_LOG, "removeWhitespaces failed");
-                                    free(key);
-                                    pass = false;
-                                    break;
-                                }
-                                id = DbSql.GetDNSKeyId(
-                                        keysetId,
-                                        dnsk_add[ii].flags,
-                                        dnsk_add[ii].protocol,
-                                        dnsk_add[ii].alg,
-                                        key);
-                                free(key);
-                                if (id > 0) {
-                                    LOG(WARNING_LOG, "Same DNSKey already exist for keyset [%d]: (%d %d %d '%s') with id %d",
-                                            keysetId, dnsk_add[ii].flags, dnsk_add[ii].protocol, dnsk_add[ii].alg,
-                                            (const char *)dnsk_add[ii].key);
-                                    ret->code = SetErrorReason(
-                                            errors,
-                                            COMMAND_PARAMETR_ERROR,
-                                            ccReg::keyset_dnskey_add,
-                                            ii,
-                                            REASON_MSG_DNSKEY_EXIST,
-                                            GetRegistrarLang(clientId));
-                                    pass = false;
-                                    break;
-                                }
                                 // dnskey flag field test (must be 0, 256, 257)
                                 if (!(dnsk_add[ii].flags == 0 || dnsk_add[ii].flags == 256 || dnsk_add[ii].flags == 257)) {
                                     LOG(WARNING_LOG,
@@ -7012,7 +7087,6 @@ ccReg_EPP_i::KeySetUpdate(
                                             ii,
                                             REASON_MSG_DNSKEY_BAD_FLAGS,
                                             GetRegistrarLang(clientId));
-                                    pass = false;
                                     break;
                                 }
                                 // dnskey protocol test (must be 3)
@@ -7027,7 +7101,6 @@ ccReg_EPP_i::KeySetUpdate(
                                             ii,
                                             REASON_MSG_DNSKEY_BAD_PROTOCOL,
                                             GetRegistrarLang(clientId));
-                                    pass = false;
                                     break;
                                 }
                                 // dnskey algorithm type test (must be 1,2,3,4,5,252,253,254,255)
@@ -7043,7 +7116,6 @@ ccReg_EPP_i::KeySetUpdate(
                                             ii,
                                             REASON_MSG_DNSKEY_BAD_ALG,
                                             GetRegistrarLang(clientId));
-                                    pass = false;
                                     break;
                                 }
                                 // dnskey key test - see isValidBase64 function for details
@@ -7073,64 +7145,17 @@ ccReg_EPP_i::KeySetUpdate(
                                                 ret1);
                                         ret->code = COMMAND_FAILED;
                                     }
-                                    pass = false;
                                     break;
                                 }
-                                LOG(NOTICE_LOG, "DNSKey can be added to keyset[%d] (%d %d %d %s)",
-                                        id,
-                                        dnsk_add[ii].flags,
-                                        dnsk_add[ii].protocol,
-                                        dnsk_add[ii].alg,
-                                        (const char *)dnsk_add[ii].key);
                             }
 
                         }
 
-                        // test dnskey to rem (if this dnskey exist for this keyset)
-                        for (int ii = 0; ii < (int)dnsk_rem.length(); ii++) {
-                            int id;
-                            char *key;
-                            // keys are inserted into database without whitespaces
-                            if ((key = removeWhitespaces(dnsk_rem[ii].key)) == NULL) {
-                                ret->code = COMMAND_FAILED;
-                                LOG(WARNING_LOG, "removeWhitespaces failed");
-                                free(key);
-                                break;
-                            }
-                            id = DbSql.GetDNSKeyId(
-                                    keysetId,
-                                    dnsk_rem[ii].flags,
-                                    dnsk_rem[ii].protocol,
-                                    dnsk_rem[ii].alg,
-                                    key);
-                                    //dnsk_rem[ii].key);
-                            if (id <= 0) {
-                                LOG(WARNING_LOG, "This DNSKey not exists for keyset [%d] (%d %d %d %s)",
-                                        keysetId,
-                                        dnsk_rem[ii].flags,
-                                        dnsk_rem[ii].protocol,
-                                        dnsk_rem[ii].alg,
-                                        (const char *)dnsk_rem[ii].key);
-                                ret->code = SetErrorReason(
-                                        errors,
-                                        COMMAND_PARAMETR_ERROR,
-                                        ccReg::keyset_dnskey_rem,
-                                        ii,
-                                        REASON_MSG_DNSKEY_NOTEXIST,
-                                        GetRegistrarLang(clientId));
-                                free(key);
-                                break;
-                            } else {
-                                LOG(NOTICE_LOG, "DNSKey (id:%d) will be removed from keyset [%d] (%d %d %d %s)",
-                                        id,
-                                        keysetId,
-                                        dnsk_rem[ii].flags,
-                                        dnsk_rem[ii].protocol,
-                                        dnsk_rem[ii].alg,
-                                        (const char *)dnsk_rem[ii].key);
-                            }
-                            free(key);
-                        }
+                        ///////////////////////////////////////////////////////
+                        //
+                        //  ** KeySetUpdate() - UPDATE **
+                        //
+                        ///////////////////////////////////////////////////////
 
                         // if no errors occured run update
                         if (ret->code == 0) {
