@@ -134,6 +134,7 @@ DomainClient::domain_list()
 
     apply_ID(domFilter);
     apply_FQDN(domFilter);
+    apply_HANDLE(domFilter);
     apply_NSSET_ID(domFilter);
     apply_NSSET_HANDLE(domFilter);
     apply_ANY_NSSET(domFilter);
@@ -265,7 +266,7 @@ DomainClient::domain_list()
         std::cout
             << "\t</domain>\n";
     }
-    std::cout << "</object>" << std::endl;
+    std::cout << "</objects>" << std::endl;
 
     unionFilter->clear();
     delete unionFilter;
