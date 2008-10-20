@@ -1,3 +1,9 @@
+2008-10-20 Ales Dolezal, Jaromir Talir (2.1.0)
+   * Configure script minor changes to support omniORB 4.0
+
+   * EPP - number of dsrecords, dnskeys and techcontacts fixed
+         - reason and response messages revised
+
 2008-10-15 Ales Dolezal, Jiri Sadek (2.0.6)
 
    * Fixing table sorting by datetime fields (DateTime operator)
