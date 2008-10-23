@@ -145,6 +145,10 @@ DomainClient::domain_list()
     apply_REGISTRANT_ID(domFilter);
     apply_REGISTRANT_HANDLE(domFilter);
     apply_REGISTRANT_NAME(domFilter);
+    apply_CRDATE(domFilter);
+    apply_DELDATE(domFilter);
+    apply_TRANSDATE(domFilter);
+    apply_UPDATE(domFilter);
 
     if (m_conf.hasOpt(ADMIN_ID_NAME))
         domFilter->addAdminContact().addId().setValue(
