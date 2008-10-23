@@ -69,7 +69,8 @@ main(int argc, char **argv)
     try {
     boost::program_options::options_description generalOpts("General options");
     generalOpts.add_options()
-        addOptStrDef(CLI_LANGUAGE_NAME, "CS");
+        addOptStrDef(CLI_LANGUAGE_NAME, "CS")
+        addOpt(CLI_HELP_DATES_NAME);
 
     boost::program_options::options_description generalOptsInvis("General invisible options");
     generalOptsInvis.add_options()
@@ -273,6 +274,14 @@ main(int argc, char **argv)
             std::cout << unknown[i] << std::endl;
         }
         return 0;
+    }
+
+    if (conf.hasOpt(CLI_MOO_NAME)) {
+        print_moo();
+        exit(0);
+    } else if (conf.hasOpt(CLI_HELP_DATES_NAME)) {
+        help_dates();
+        exit(0);
     }
 
     if (conf.hasOpt(CONTACT_INFO2_NAME)) {

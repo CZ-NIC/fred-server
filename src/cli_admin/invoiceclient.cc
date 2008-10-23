@@ -142,18 +142,7 @@ InvoiceClient::list()
         invFilter->addNumber().setValue(
                 m_conf.get<std::string>(INVOICE_NUMBER_NAME));
 
-    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
-        Database::DateTime crDateFrom("1901-01-01 00:00:00");
-        Database::DateTime crDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(CRDATE_FROM_NAME))
-            crDateFrom.from_string(
-                    m_conf.get<std::string>(CRDATE_FROM_NAME));
-        if (m_conf.hasOpt(CRDATE_TO_NAME))
-            crDateTo.from_string(
-                    m_conf.get<std::string>(CRDATE_TO_NAME));
-        invFilter->addCreateTime().setValue(
-                Database::DateTimeInterval(crDateFrom, crDateTo));
-    }
+    apply_CRDATE(invFilter);
     if (m_conf.hasOpt(INVOICE_TAXDATE_FROM_NAME) || m_conf.hasOpt(INVOICE_TAXDATE_TO_NAME)) {
         Database::Date taxDateFrom("1901-01-01");
         Database::Date taxDateTo("2101-01-01");
@@ -233,18 +222,7 @@ InvoiceClient::list_filters()
         invFilter->addNumber().setValue(
                 m_conf.get<std::string>(INVOICE_NUMBER_NAME));
 
-    if (m_conf.hasOpt(CRDATE_FROM_NAME) || m_conf.hasOpt(CRDATE_TO_NAME)) {
-        Database::DateTime crDateFrom("1901-01-01 00:00:00");
-        Database::DateTime crDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(CRDATE_FROM_NAME))
-            crDateFrom.from_string(
-                    m_conf.get<std::string>(CRDATE_FROM_NAME));
-        if (m_conf.hasOpt(CRDATE_TO_NAME))
-            crDateTo.from_string(
-                    m_conf.get<std::string>(CRDATE_TO_NAME));
-        invFilter->addCreateTime().setValue(
-                Database::DateTimeInterval(crDateFrom, crDateTo));
-    }
+    apply_CRDATE(invFilter);
     if (m_conf.hasOpt(INVOICE_TAXDATE_FROM_NAME) || m_conf.hasOpt(INVOICE_TAXDATE_TO_NAME)) {
         Database::Date taxDateFrom("1901-01-01");
         Database::Date taxDateTo("2101-01-01");
@@ -429,8 +407,7 @@ InvoiceClient::list_help()
         "    [--" << INVOICE_TYPE_NAME << "=<invoice_type>] \\\n"
         "    [--" << INVOICE_VAR_SYMBOL_NAME << "=<invoice_var_symbol>] \\\n"
         "    [--" << INVOICE_NUMBER_NAME << "=<invoice_number>] \\\n"
-        "    [--" << CRDATE_FROM_NAME << "=<invoice_create_date_from>] \\\n"
-        "    [--" << CRDATE_TO_NAME << "=<invoice_create_date_to>] \\\n"
+        "    [--" << CRDATE_NAME << "=<invoice_create_date>] \\\n"
         "    [--" << INVOICE_TAXDATE_FROM_NAME << "=<invoice_taxdate_from>] \\\n"
         "    [--" << INVOICE_TAXDATE_TO_NAME << "=<invoice_taxdate_to>] \\\n"
         "    [--" << INVOICE_ARCHIVED_NAME << "=<invoice_archive_flag(0=not archived,1=archived,other=ignore>] \\\n"

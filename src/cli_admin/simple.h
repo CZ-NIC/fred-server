@@ -30,16 +30,10 @@
 #define get_Str(filter, name, option)       checkGetOpt(filter->add##name().setValue(getOptStr(option)), option)
 #define get_Bool(filter, name, option)      checkGetOpt(filter->add##name().setValue(getOptStr(option)), option)
 
-#define apply_DATETIME(filter, name, nameFrom, nameTo, varFrom, varTo)      \
-    if (m_conf.hasOpt(nameFrom) || m_conf.hasOpt(nameTo)) {                 \
-        Database::DateTime varFrom("1901-01-01 00:00:00");                  \
-        Database::DateTime varTo("2101-01-01 00:00:00");                    \
-        if (m_conf.hasOpt(nameFrom))                                        \
-            varFrom.from_string(m_conf.get<std::string>(nameFrom));         \
-        if (m_conf.hasOpt(nameTo))                                          \
-            varTo.from_string(m_conf.get<std::string>(nameTo));             \
-        filter->add##name##Time().setValue(                                 \
-                Database::DateTimeInterval(varFrom, varTo));                \
+#define apply_DATETIME(filter, name, innerName)                            \
+    if (m_conf.hasOpt(name)) {                                              \
+        filter->add##innerName##Time().setValue(                            \
+                *parseDateTime(m_conf.get<std::string>(name)));             \
     }
 
 #define CLI_HELP_NAME           "help,h"
@@ -49,6 +43,8 @@
 #define CLI_CONF_NAME_DESC      "configuration file"
 #define CLI_LANGUAGE_NAME       "lang,l"
 #define CLI_LANGUAGE_NAME_DESC  "communication language"
+#define CLI_HELP_DATES_NAME     "help_dates"
+#define CLI_HELP_DATES_NAME_DESC "help on date/time format"
 #define CLI_MOO_NAME            "moo"
 #define CLI_MOO_NAME_DESC       "moo"
 
@@ -88,42 +84,26 @@
 #define REG_FILECLIENT_PATH_NAME            "registry.fileclient_path"
 #define REG_FILECLIENT_PATH_NAME_DESC       "file manager client path"
 
-// dates use almost all
-#define CRDATE_FROM_NAME        "cr_date_from"
-#define CRDATE_FROM_NAME_DESC   "show only records with create date and date after input value (date format: YYYY-MM-DD [hh:mm:ss])"
-#define CRDATE_TO_NAME          "cr_date_to"
-#define CRDATE_TO_NAME_DESC     "show only records with create date and date before input value (date format: YYYY-MM-DD [hh:mm:ss])"
-#define add_CRDATE_FROM()       addOptStr(CRDATE_FROM_NAME)
-#define add_CRDATE_TO()         addOptStr(CRDATE_TO_NAME)
-#define add_CRDATE()            add_CRDATE_FROM() add_CRDATE_TO()
-#define apply_CRDATE(filter)    apply_DATETIME(filter, Create, CRDATE_FROM_NAME, CRDATE_TO_NAME, crDateFrom, crDateTo)
+// almost all
+#define CRDATE_NAME             "crdate"
+#define CRDATE_NAME_DESC        "create date (type ``./fred-admin --help_dates'' for further date&time information)" 
+#define add_CRDATE()            addOptStr(CRDATE_NAME)
+#define apply_CRDATE(filter)    apply_DATETIME(filter, CRDATE_NAME, Create)
 
-#define DELDATE_FROM_NAME       "del_date_from"
-#define DELDATE_FROM_NAME_DESC  "show only record with delete date and time after input value (date format: YYYY-MM-DD hh:mm:ss)"
-#define DELDATE_TO_NAME         "del_date_to"
-#define DELDATE_TO_NAME_DESC    "show only records with delete date and time before input value (date format: YYYY-MM-DD hh:mm:ss)"
-#define add_DELDATE_FROM()      addOptStr(DELDATE_FROM_NAME)
-#define add_DELDATE_TO()        addOptStr(DELDATE_TO_NAME)
-#define add_DELDATE()           add_DELDATE_FROM() add_DELDATE_TO()           
-#define apply_DELDATE(filter)   apply_DATETIME(filter, Delete, DELDATE_FROM_NAME, DELDATE_TO_NAME, delDateFrom, delDateTo)
+#define DELDATE_NAME            "deldate"
+#define DELDATE_NAME_DESC       "delete date (type ``./fred-admin --help_dates'' for further date&time information)"
+#define add_DELDATE()           addOptStr(DELDATE_NAME)
+#define apply_DELDATE(filter)   apply_DATETIME(filter, DELDATE_NAME, Delete)
 
-#define TRANSDATE_FROM_NAME     "trans_date_from"
-#define TRANSDATE_FROM_NAME_DESC "show only records with transfer date and time after input value (date format: YYYY-MM-DD hh:mm:ss)"
-#define TRANSDATE_TO_NAME       "trans_date_to"
-#define TRANSDATE_TO_NAME_DESC  "show only records with transfer date and time before input value (date format: YYYY-MM-DD hh:mm:ss)"
-#define add_TRANSDATE_FROM()    addOptStr(TRANSDATE_FROM_NAME)
-#define add_TRANSDATE_TO()      addOptStr(TRANSDATE_TO_NAME)
-#define add_TRANSDATE()         add_TRANSDATE_FROM() add_TRANSDATE_TO()           
-#define apply_TRANSDATE(filter) apply_DATETIME(filter, Transfer, TRANSDATE_FROM_NAME, TRANSDATE_TO_NAME, transDateFrom, transDateTo)
+#define TRANSDATE_NAME          "transdate"
+#define TRANSDATE_NAME_DESC     "transfer date (type ``./fred-admin --help_dates'' for further date&time information)"
+#define add_TRANSDATE()         addOptStr(TRANSDATE_NAME)
+#define apply_TRANSDATE(filter) apply_DATETIME(filter, TRANSDATE_NAME, Transfer)
 
-#define UPDATE_FROM_NAME        "up_date_from"
-#define UPDATE_FROM_NAME_DESC   "show only records with transfer date and time after input value (date format: YYYY-MM-DD hh:mm:ss)"
-#define UPDATE_TO_NAME          "up_date_to"
-#define UPDATE_TO_NAME_DESC     "show only records with transfer date and time before input value (date format: YYYY-MM-DD hh:mm:ss)"
-#define add_UPDATE_FROM()       addOptStr(UPDATE_FROM_NAME)
-#define add_UPDATE_TO()         addOptStr(UPDATE_TO_NAME)
-#define add_UPDATE()            add_UPDATE_FROM() add_UPDATE_TO()           
-#define apply_UPDATE(filter)    apply_DATETIME(filter, Update, UPDATE_FROM_NAME, UPDATE_TO_NAME, upDatefrom, upDateTo)
+#define UPDATE_NAME             "update"
+#define UPDATE_NAME_DESC        "update date (type ``./fred-admin --help_dates'' for further date&time information)"
+#define add_UPDATE()            addOptStr(UPDATE_NAME)
+#define apply_UPDATE(filter)    apply_DATETIME(filter, UPDATE_NAME, Update)
 
 // all
 #define ID_NAME                 "id"
