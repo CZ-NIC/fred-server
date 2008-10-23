@@ -183,7 +183,7 @@ RegistrarClient::zone_add()
 {
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
-    std::string fqdn = m_conf.get<std::string>(REGISTRAR_ZONE_ADD_NAME);
+    std::string fqdn = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
     try {
         zoneMan->addZone(fqdn);
     } catch (Register::ALREADY_EXISTS) {
