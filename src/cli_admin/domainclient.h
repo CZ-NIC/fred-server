@@ -54,18 +54,12 @@
 #define DOMAIN_LIST_HELP_NAME           "domain_list_help"
 #define DOMAIN_LIST_HELP_NAME_DESC      "help on domain list"
 
-#define DOMAIN_EXP_DATE_FROM_NAME       "exp_date_from"
-#define DOMAIN_EXP_DATE_FROM_NAME_DESC  "expiration date from (date format: \"YYYY-MM-DD\")"
-#define DOMAIN_EXP_DATE_TO_NAME         "exp_date_to"
-#define DOMAIN_EXP_DATE_TO_NAME_DESC    "expiration date to (date format: \"YYYY-MM-DD\")"
-#define DOMAIN_OUT_DATE_FROM_NAME       "out_zone_date_from"
-#define DOMAIN_OUT_DATE_FROM_NAME_DESC  "out zone date from (date format: \"YYYY-MM-DD\")"
-#define DOMAIN_OUT_DATE_TO_NAME         "out_zone_date_to"
-#define DOMAIN_OUT_DATE_TO_NAME_DESC    "out zone date to (date format: \"YYYY-MM-DD\")"
-#define DOMAIN_CANC_DATE_FROM_NAME      "cancel_date_from"
-#define DOMAIN_CANC_DATE_FROM_NAME_DESC "cancel date from (date format: \"YYYY-MM-DD\")"
-#define DOMAIN_CANC_DATE_TO_NAME        "cancel_date_to"
-#define DOMAIN_CANC_DATE_TO_NAME_DESC   "cancel date to (date format: \"YYYY-MM-DD\")"
+#define DOMAIN_EXP_DATE_NAME            "exp_date"
+#define DOMAIN_EXP_DATE_NAME_DESC       "expiration date (type ``./fred-admin --help_dates'' for further date&time information)"
+#define DOMAIN_OUT_DATE_NAME            "out_zone_date"
+#define DOMAIN_OUT_DATE_NAME_DESC       "out zone date (type ``./fred-admin --help_dates'' for further date&time information)"
+#define DOMAIN_CANC_DATE_NAME           "cancel_date"
+#define DOMAIN_CANC_DATE_NAME_DESC      "cancel date (type ``./fred-admin --help_dates'' for further date&time information)"
 
 namespace Admin {
 

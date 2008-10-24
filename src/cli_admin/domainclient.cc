@@ -42,6 +42,9 @@ DomainClient::DomainClient():
     m_optionsInvis = new boost::program_options::options_description(
             "Domain related sub options");
     m_optionsInvis->add_options()
+        addOptStr(DOMAIN_OUT_DATE_NAME)
+        addOptStr(DOMAIN_EXP_DATE_NAME)
+        addOptStr(DOMAIN_CANC_DATE_NAME)
         add_ID()
         add_FQDN()
         add_NSSET_ID()
@@ -160,42 +163,9 @@ DomainClient::domain_list()
         domFilter->addAdminContact().addName().setValue(
                 m_conf.get<std::string>(ADMIN_NAME_NAME));
 
-    if (m_conf.hasOpt(DOMAIN_EXP_DATE_FROM_NAME) || m_conf.hasOpt(DOMAIN_EXP_DATE_TO_NAME)) {
-        Database::Date expDateFrom(NEG_INF);
-        Database::Date expDateTo(POS_INF);
-        if (m_conf.hasOpt(DOMAIN_EXP_DATE_FROM_NAME))
-            expDateFrom.from_string(
-                    m_conf.get<std::string>(DOMAIN_EXP_DATE_FROM_NAME));
-        if (m_conf.hasOpt(DOMAIN_EXP_DATE_TO_NAME))
-            expDateTo.from_string(
-                    m_conf.get<std::string>(DOMAIN_EXP_DATE_TO_NAME));
-        domFilter->addExpirationDate().setValue(
-                Database::DateInterval(expDateFrom, expDateTo));
-    }
-    if (m_conf.hasOpt(DOMAIN_OUT_DATE_FROM_NAME) || m_conf.hasOpt(DOMAIN_OUT_DATE_TO_NAME)) {
-        Database::Date outDateFrom(NEG_INF);
-        Database::Date outDateTo(POS_INF);
-        if (m_conf.hasOpt(DOMAIN_OUT_DATE_FROM_NAME))
-            outDateFrom.from_string(
-                    m_conf.get<std::string>(DOMAIN_OUT_DATE_FROM_NAME));
-        if (m_conf.hasOpt(DOMAIN_OUT_DATE_TO_NAME))
-            outDateTo.from_string(
-                    m_conf.get<std::string>(DOMAIN_OUT_DATE_TO_NAME));
-        domFilter->addOutZoneDate().setValue(
-                Database::DateInterval(outDateFrom, outDateTo));
-    }
-    if (m_conf.hasOpt(DOMAIN_CANC_DATE_FROM_NAME) || m_conf.hasOpt(DOMAIN_CANC_DATE_TO_NAME)) {
-        Database::Date cancDateFrom(NEG_INF);
-        Database::Date cancDateTo(POS_INF);
-        if (m_conf.hasOpt(DOMAIN_CANC_DATE_FROM_NAME))
-            cancDateFrom.from_string(
-                    m_conf.get<std::string>(DOMAIN_CANC_DATE_FROM_NAME));
-        if (m_conf.hasOpt(DOMAIN_CANC_DATE_TO_NAME))
-            cancDateTo.from_string(
-                    m_conf.get<std::string>(DOMAIN_CANC_DATE_TO_NAME));
-        domFilter->addCancelDate().setValue(
-                Database::DateInterval(cancDateFrom, cancDateTo));
-    }
+    apply_DATE(domFilter, DOMAIN_OUT_DATE_NAME, OutZone);
+    apply_DATE(domFilter, DOMAIN_EXP_DATE_NAME, Expiration);
+    apply_DATE(domFilter, DOMAIN_CANC_DATE_NAME, Cancel);
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();

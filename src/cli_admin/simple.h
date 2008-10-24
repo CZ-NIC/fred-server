@@ -30,10 +30,16 @@
 #define get_Str(filter, name, option)       checkGetOpt(filter->add##name().setValue(getOptStr(option)), option)
 #define get_Bool(filter, name, option)      checkGetOpt(filter->add##name().setValue(getOptStr(option)), option)
 
-#define apply_DATETIME(filter, name, innerName)                            \
+#define apply_DATETIME(filter, name, innerName)                             \
     if (m_conf.hasOpt(name)) {                                              \
         filter->add##innerName##Time().setValue(                            \
                 *parseDateTime(m_conf.get<std::string>(name)));             \
+    }
+
+#define apply_DATE(filter, name, innerName)                                 \
+    if (m_conf.hasOpt(name)) {                                              \
+        filter->add##innerName##Date().setValue(                            \
+                *parseDate(m_conf.get<std::string>(name)));                 \
     }
 
 #define CLI_HELP_NAME           "help,h"

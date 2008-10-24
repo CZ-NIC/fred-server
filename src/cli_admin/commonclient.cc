@@ -137,20 +137,31 @@ help_dates()
 #define DATETIME_FROM   1
 #define DATETIME_TO     2
 
+#define PARSE_DATETIME  1
+#define PARSE_DATEONLY  2
+
 char dnyMesice[12][3] = { "31", "28", "31", "30", "31", "30", "31", "31", "30", "31", "30", "31" };
 
 std::string
-createDateTime(std::string datetime, int whichOne)
+createDateTime(std::string datetime, int interval, int type=PARSE_DATEONLY)
 {
     std::string ret;
     ret = datetime;
     switch (datetime.length()) {
         case 4:
             // "2008"
-            if (whichOne == DATETIME_TO) {
-                ret += "-12-31 23:59:59";
-            } else if (whichOne == DATETIME_FROM) {
-                ret += "-01-01 00:00:00";
+            if (interval == DATETIME_TO) {
+                if (type == PARSE_DATETIME) {
+                    ret += "-12-31 23:59:59";
+                } else {
+                    ret += "-12-31";
+                }
+            } else if (interval == DATETIME_FROM) {
+                if (type == PARSE_DATETIME) {
+                    ret += "-01-01 00:00:00";
+                } else {
+                    ret += "-01-01";
+                }
             }
             break;
         case 7:
@@ -158,7 +169,7 @@ createDateTime(std::string datetime, int whichOne)
             {
                 int mesic   = atoi((datetime.substr(5, 2)).c_str()) - 1;
                 int rok     = atoi((datetime.substr(0, 4)).c_str());
-                if (whichOne == DATETIME_TO) {
+                if (interval == DATETIME_TO) {
                     ret += "-";
                     if (rok % 100 == 0 && rok % 400 != 0) {
                         ret += dnyMesice[mesic];
@@ -167,33 +178,50 @@ createDateTime(std::string datetime, int whichOne)
                     } else {
                         ret += dnyMesice[mesic];
                     }
-                    ret += " 23:59:59";
-                } else if (whichOne == DATETIME_FROM) {
-                    ret += "-01 00:00:00";
+                    if (type == PARSE_DATETIME) {
+                        ret += " 23:59:59";
+                    }
+                } else if (interval == DATETIME_FROM) {
+                    if (type == PARSE_DATETIME) {
+                        ret += "-01 00:00:00";
+                    } else {
+                        ret += "-01";
+                    }
                 }
             }
             break;
         case 10:
             // "2008-05-15"
-            if (whichOne == DATETIME_TO) {
+            if (type == PARSE_DATEONLY) {
+                break;
+            }
+            if (interval == DATETIME_TO) {
                 ret += " 23:59:59";
-            } else if (whichOne == DATETIME_FROM) {
+            } else if (interval == DATETIME_FROM) {
                 ret += " 00:00:00";
             }
             break;
         case 13:
             // "2008-05-15 19"
-            if (whichOne == DATETIME_TO) {
+            if (type == PARSE_DATEONLY) {
+                ret = datetime.substr(0, 10);
+                break;
+            }
+            if (interval == DATETIME_TO) {
                 ret += ":59:59";
-            } else if (whichOne == DATETIME_FROM) {
+            } else if (interval == DATETIME_FROM) {
                 ret += ":00:00";
             }
             break;
         case 16:
             // "2008-05-15 19:22"
-            if (whichOne == DATETIME_TO) {
+            if (type == PARSE_DATEONLY) {
+                ret = datetime.substr(0, 10);
+                break;
+            }
+            if (interval == DATETIME_TO) {
                 ret += ":59";
-            } else if (whichOne == DATETIME_FROM) {
+            } else if (interval == DATETIME_FROM) {
                 ret += ":00";
             }
             break;
@@ -204,6 +232,76 @@ createDateTime(std::string datetime, int whichOne)
             // some crap
             break;
     }
+    return ret;
+}
+
+Database::DateInterval *
+parseDate(std::string str)
+{
+    Database::DateInterval  *ret;
+    Database::Date          dateFrom(Database::NEG_INF);
+    Database::Date          dateTo(Database::POS_INF);
+
+    if (str[0] == ';') {
+        dateTo.from_string(
+                createDateTime(
+                    str.substr(1, std::string::npos),
+                    DATETIME_TO, PARSE_DATEONLY)
+                );
+    } else if (str[str.length() - 1] == ';') {
+        dateFrom.from_string(
+                createDateTime(
+                    str.substr(0, str.length() - 1),
+                    DATETIME_FROM, PARSE_DATEONLY)
+                );
+    } else if (islower(str[0])) {
+        std::string specStr = str.substr(0, str.find(';'));
+        int offset = 0;
+        if (str.find(';') != std::string::npos) {
+            offset = atoi((str.substr(str.find(';') + 1, std::string::npos)).c_str());
+        }
+        Database::DateTimeIntervalSpecial spec = Database::NONE;
+        if (specStr.compare("last_hour") == 0) {
+            spec = Database::LAST_HOUR;
+        } else if (specStr.compare("last_day") == 0) {
+            spec = Database::LAST_DAY;
+        } else if (specStr.compare("last_week") == 0) {
+            spec = Database::LAST_WEEK;
+        } else if (specStr.compare("last_month") == 0) {
+            spec = Database::LAST_MONTH;
+        } else if (specStr.compare("last_year") == 0) {
+            spec = Database::LAST_YEAR;
+        } else if (specStr.compare("past_hour") == 0) {
+            spec = Database::PAST_HOUR;
+        } else if (specStr.compare("past_day") == 0) {
+            spec = Database::PAST_DAY;
+        } else if (specStr.compare("past_week") == 0) {
+            spec = Database::PAST_WEEK;
+        } else if (specStr.compare("past_month") == 0) {
+            spec = Database::PAST_MONTH;
+        } else if (specStr.compare("past_year") == 0) {
+            spec = Database::PAST_YEAR;
+        }
+        ret = new Database::DateInterval(spec, offset);
+        return ret;
+    } else if (str.find(';') == std::string::npos) {
+        dateFrom.from_string(
+                createDateTime(str, DATETIME_FROM, PARSE_DATEONLY));
+        dateTo.from_string(
+                createDateTime(str, DATETIME_TO, PARSE_DATEONLY));
+    } else if (isdigit(str[0])) {
+        dateFrom.from_string(
+                createDateTime(
+                    str.substr(0, str.find(';')),
+                    DATETIME_FROM, PARSE_DATEONLY)
+                );
+        dateTo.from_string(
+                createDateTime(
+                    str.substr(str.find(';') + 1, std::string::npos),
+                    DATETIME_TO, PARSE_DATEONLY)
+                );
+    }
+    ret = new Database::DateInterval(dateFrom, dateTo);
     return ret;
 }
 

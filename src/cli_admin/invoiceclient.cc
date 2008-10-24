@@ -43,8 +43,7 @@ InvoiceClient::InvoiceClient():
         addOptUInt(INVOICE_TYPE_NAME)
         addOptStr(INVOICE_VAR_SYMBOL_NAME)
         add_CRDATE()
-        addOptStr(INVOICE_TAXDATE_FROM_NAME)
-        addOptStr(INVOICE_TAXDATE_TO_NAME)
+        addOptStr(INVOICE_TAXDATE_NAME)
         addOptStr(INVOICE_ARCHIVED_NAME)
         addOptStr(INVOICE_OBJECT_ID_NAME)
         addOptStr(INVOICE_OBJECT_NAME_NAME)
@@ -143,18 +142,7 @@ InvoiceClient::list()
                 m_conf.get<std::string>(INVOICE_NUMBER_NAME));
 
     apply_CRDATE(invFilter);
-    if (m_conf.hasOpt(INVOICE_TAXDATE_FROM_NAME) || m_conf.hasOpt(INVOICE_TAXDATE_TO_NAME)) {
-        Database::Date taxDateFrom("1901-01-01");
-        Database::Date taxDateTo("2101-01-01");
-        if (m_conf.hasOpt(INVOICE_TAXDATE_FROM_NAME))
-            taxDateFrom.from_string(
-                    m_conf.get<std::string>(INVOICE_TAXDATE_FROM_NAME));
-        if (m_conf.hasOpt(INVOICE_TAXDATE_TO_NAME))
-            taxDateTo.from_string(
-                    m_conf.get<std::string>(INVOICE_TAXDATE_TO_NAME));
-        invFilter->addTaxDate().setValue(
-                Database::DateInterval(taxDateFrom, taxDateTo));
-    }
+    apply_DATE(invFilter, INVOICE_TAXDATE_NAME, Tax);
 
     if (m_conf.hasOpt(REGISTRAR_ID_NAME))
         invFilter->addRegistrar().addId().setValue(
@@ -223,18 +211,7 @@ InvoiceClient::list_filters()
                 m_conf.get<std::string>(INVOICE_NUMBER_NAME));
 
     apply_CRDATE(invFilter);
-    if (m_conf.hasOpt(INVOICE_TAXDATE_FROM_NAME) || m_conf.hasOpt(INVOICE_TAXDATE_TO_NAME)) {
-        Database::Date taxDateFrom("1901-01-01");
-        Database::Date taxDateTo("2101-01-01");
-        if (m_conf.hasOpt(INVOICE_TAXDATE_FROM_NAME))
-            taxDateFrom.from_string(
-                    m_conf.get<std::string>(INVOICE_TAXDATE_FROM_NAME));
-        if (m_conf.hasOpt(INVOICE_TAXDATE_TO_NAME))
-            taxDateTo.from_string(
-                    m_conf.get<std::string>(INVOICE_TAXDATE_TO_NAME));
-        invFilter->addTaxDate().setValue(
-                Database::DateInterval(taxDateFrom, taxDateTo));
-    }
+    apply_DATE(invFilter, INVOICE_TAXDATE_NAME, Tax);
 
     if (m_conf.hasOpt(REGISTRAR_ID_NAME))
         invFilter->addRegistrar().addId().setValue(
@@ -408,8 +385,7 @@ InvoiceClient::list_help()
         "    [--" << INVOICE_VAR_SYMBOL_NAME << "=<invoice_var_symbol>] \\\n"
         "    [--" << INVOICE_NUMBER_NAME << "=<invoice_number>] \\\n"
         "    [--" << CRDATE_NAME << "=<invoice_create_date>] \\\n"
-        "    [--" << INVOICE_TAXDATE_FROM_NAME << "=<invoice_taxdate_from>] \\\n"
-        "    [--" << INVOICE_TAXDATE_TO_NAME << "=<invoice_taxdate_to>] \\\n"
+        "    [--" << INVOICE_TAXDATE_NAME << "=<invoice_taxdate>] \\\n"
         "    [--" << INVOICE_ARCHIVED_NAME << "=<invoice_archive_flag(0=not archived,1=archived,other=ignore>] \\\n"
         "    [--" << INVOICE_OBJECT_ID_NAME << "=<invoice_object_id_number>] \\\n"
         "    [--" << INVOICE_OBJECT_NAME_NAME << "=<invoice_object_name>] \\\n"

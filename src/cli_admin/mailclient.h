@@ -36,10 +36,8 @@
 #define MAIL_ATTACHMENT_ID_NAME_DESC      "attachment_id desc"
 #define MAIL_ATTACHMENT_NAME_NAME         "attachment_name"
 #define MAIL_ATTACHMENT_NAME_NAME_DESC    "attachment_name desc"
-#define MAIL_MODDATE_FROM_NAME            "mod_date_from"
-#define MAIL_MODDATE_FROM_NAME_DESC       "mod date from"
-#define MAIL_MODDATE_TO_NAME              "mod_date_to"
-#define MAIL_MODDATE_TO_NAME_DESC         "mod date to"
+#define MAIL_MODDATE_NAME                   "mod_date"
+#define MAIL_MODDATE_NAME_DESC              "email modification date"
 #define MAIL_TYPE_NAME              "mail_type"
 #define MAIL_TYPE_NAME_DESC         "mail type"
 

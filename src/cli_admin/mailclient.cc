@@ -42,8 +42,7 @@ MailClient::MailClient():
         addOptInt(MAIL_ATTEMPT_NAME)
         addOptStr(MAIL_MESSAGE_NAME)
         add_CRDATE()
-        addOptStr(MAIL_MODDATE_FROM_NAME)
-        addOptStr(MAIL_MODDATE_TO_NAME);
+        addOptStr(MAIL_MODDATE_NAME);
 }
 
 MailClient::MailClient(
@@ -130,18 +129,7 @@ MailClient::list()
         mailFilter->addAttachment().addName().setValue(
                 m_conf.get<std::string>(MAIL_ATTACHMENT_NAME_NAME));
 
-    if (m_conf.hasOpt(MAIL_MODDATE_FROM_NAME) || m_conf.hasOpt(MAIL_MODDATE_TO_NAME)) {
-        Database::Date modDateFrom("1901-01-01 00:00:00");
-        Database::Date modDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(MAIL_MODDATE_FROM_NAME))
-            modDateFrom.from_string(
-                    m_conf.get<std::string>(MAIL_MODDATE_FROM_NAME));
-        if (m_conf.hasOpt(MAIL_MODDATE_TO_NAME))
-            modDateTo.from_string(
-                    m_conf.get<std::string>(MAIL_MODDATE_TO_NAME));
-        mailFilter->addModifyTime().setValue(
-                Database::DateTimeInterval(modDateFrom, modDateTo));
-    }
+    apply_DATETIME(mailFilter, MAIL_MODDATE_NAME, Modify);
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
