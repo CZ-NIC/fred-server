@@ -360,6 +360,7 @@ namespace Register
                    (i->emails == 1 ? getDomainAdminEmails(i->obj_id) :
                     getDomainTechEmails(i->obj_id));
                }
+               break;
              case 4: // keyset
               fillSimpleObjectParams(i->obj_id,params);
               emails = getKeySetTechEmails(i->obj_id);
