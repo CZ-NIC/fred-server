@@ -260,6 +260,10 @@ ContactClient::list_help()
         << "    [--" << REGISTRAR_ID_NAME << "=<registrar_id_number>] \\\n"
         << "    [--" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
         << "    [--" << REGISTRAR_NAME_NAME << "=<registrar_name>] \\\n"
+        << "    [--" << CRDATE_NAME << "=<create_date>] \\\n"
+        << "    [--" << DELDATE_NAME << "=<delete_date>] \\\n"
+        << "    [--" << UPDATE_NAME << "=<update_date>] \\\n"
+        << "    [--" << TRANSDATE_NAME << "=<transfer_date>] \\\n"
         << "    [--" << FULL_LIST_NAME << "]\n"
         << std::endl;
 }

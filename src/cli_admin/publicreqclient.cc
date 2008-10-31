@@ -49,8 +49,7 @@ PublicRequestClient::PublicRequestClient():
         addOptUInt(PUBLICREQ_EPP_RESPONSE_NAME)
         addOptUInt(PUBLICREQ_EPP_TYPE_NAME)
         add_CRDATE()
-        addOptStr(PUBLICREQ_RESDATE_FROM_NAME)
-        addOptStr(PUBLICREQ_RESDATE_TO_NAME);
+        addOptStr(PUBLICREQ_RESDATE_NAME);
 }
 PublicRequestClient::PublicRequestClient(
         std::string connstring,
@@ -191,18 +190,7 @@ PublicRequestClient::list()
                 m_conf.get<unsigned int>(PUBLICREQ_EPP_TYPE_NAME));
 
     apply_CRDATE(prFilter);
-    if (m_conf.hasOpt(PUBLICREQ_RESDATE_FROM_NAME) || m_conf.hasOpt(PUBLICREQ_RESDATE_TO_NAME)) {
-        Database::DateTime resDateFrom("1901-01-01 00:00:00");
-        Database::DateTime resDateTo("2101-01-01 00:00:00");
-        if (m_conf.hasOpt(PUBLICREQ_RESDATE_FROM_NAME))
-            resDateFrom.from_string(
-                    m_conf.get<std::string>(PUBLICREQ_RESDATE_FROM_NAME));
-        if (m_conf.hasOpt(PUBLICREQ_RESDATE_TO_NAME))
-            resDateTo.from_string(
-                    m_conf.get<std::string>(PUBLICREQ_RESDATE_TO_NAME));
-        prFilter->addResolveTime().setValue(
-                Database::DateTimeInterval(resDateFrom, resDateTo));
-    }
+    apply_DATETIME(prFilter, PUBLICREQ_RESDATE_NAME, Resolve);
 
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
@@ -254,7 +242,21 @@ void
 PublicRequestClient::list_help()
 {
     std::cout
-        << "** list authorizatin info **\n"
+        << "** list authorizatin info **\n\n"
+        << "  $ " << g_prog_name << " --" << PUBLICREQ_LIST_NAME << " \\\n"
+        << "    [--" << PUBLICREQ_TYPE_NAME << "=<public_request_type>] \\\n"
+        << "    [--" << PUBLICREQ_STATUS_NAME << "=<public_request_status>] \\\n"
+        << "    [--" << PUBLICREQ_ANSWER_EMAIL_NAME << "=<answer_email>] \\\n"
+        << "    [--" << PUBLICREQ_ANSWER_EMAIL_ID_NAME << "=<answer_email_id>] \\\n"
+        << "    [--" << PUBLICREQ_REASON_NAME << "=<public_request_reason>] \\\n"
+        << "    [--" << PUBLICREQ_EPP_ID_NAME << "=<epp_id>] \\\n"
+        << "    [--" << PUBLICREQ_EPP_CLTRID_NAME << "=<epp_client_transaction_id>] \\\n"
+        << "    [--" << PUBLICREQ_EPP_SVTRID_NAME << "=<epp_server_transaction_id>] \\\n"
+        << "    [--" << PUBLICREQ_EPP_CODE_RESPONSE_NAME << "=<epp_response_code>] \\\n"
+        << "    [--" << PUBLICREQ_EPP_RESPONSE_NAME << "=<epp_response>] \\\n"
+        << "    [--" << PUBLICREQ_EPP_TYPE_NAME << "=<epp_type>] \\\n"
+        << "    [--" << CRDATE_NAME << "=<create_date>] \\\n"
+        << "    [--" << PUBLICREQ_RESDATE_NAME << "=<resolve_date>] \n"
         << std::endl;
 }
 

@@ -30,6 +30,7 @@ DomainClient::DomainClient():
             "Domain related options");
     m_options->add_options()
         addOpt(DOMAIN_LIST_NAME)
+        addOpt(DOMAIN_LIST_HELP_NAME)
         addOpt(DOMAIN_LIST_PLAIN_NAME)
         addOptStr(DOMAIN_INFO_NAME)
         addOptStr(DOMAIN_CREATE_NAME)
@@ -253,7 +254,6 @@ DomainClient::domain_create()
     std::string registrant = m_conf.get<std::string>(DOMAIN_REGISTRANT_NAME).c_str();
     std::string nsset = m_conf.get<std::string>(DOMAIN_NSSET_NAME).c_str();
     std::string keyset = m_conf.get<std::string>(DOMAIN_KEYSET_NAME).c_str();
-    //std::string authInfoPw = m_conf.get<std::string>(AUTH_INFO_PW_NAME).c_str();
     std::string authInfoPw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
     std::string admins = m_conf.get<std::string>(ADMIN_NAME).c_str();
     unsigned int period = m_conf.get<unsigned int>(DOMAIN_PERIOD_NAME);
@@ -451,14 +451,14 @@ DomainClient::domain_update_help()
 {
     std::cout
         << "** Domain update **\n\n"
-        << "  " << g_prog_name << " --domain-update=<domain_fqdn> \\\n"
-        << "    [--registrant-handle=<registrant_handle> \\\n"
-        << "    [--nsset-handle<new_nsset>] \\\n"
-        << "    [--keyset-handle=<new_keyset>] \\\n"
-        << "    [--auth-info-pw=<new_authinfo_password>] \\\n"
-        << "    [--admins-add=<list_of_admins_to_add>] \\\n"
-        << "    [--admins-rem=<list_of_admins_to_rem>] \\\n"
-        << "    [--admins-rem-temp=<list_of_temp_admins_to_rem>]"
+        << "  " << g_prog_name << " --" << DOMAIN_UPDATE_NAME << "=<domain_fqdn> \\\n"
+        << "    [--" << REGISTRAR_HANDLE_NAME << "=<registrant_handle> \\\n"
+        << "    [--" << NSSET_HANDLE_NAME << "=<new_nsset>] \\\n"
+        << "    [--" << KEYSET_HANDLE_NAME << "=<new_keyset>] \\\n"
+        << "    [--" << AUTH_PW_NAME << "=<new_authinfo_password>] \\\n"
+        << "    [--" << ADMIN_ADD_NAME << "=<list_of_admins_to_add>] \\\n"
+        << "    [--" << ADMIN_REM_NAME << "=<list_of_admins_to_rem>] \\\n"
+        << "    [--" << ADMIN_REM_TEMP_NAME << "=<list_of_temp_admins_to_rem>]"
         << std::endl;
 }
 
@@ -467,17 +467,18 @@ DomainClient::domain_create_help()
 {
     std::cout
         << "** Domain create **\n\n"
-        << "  " << g_prog_name << " --domain-create=<domain_fqdn> \\\n"
-        << "    --registrant-handle=<registrant_handle> \\\n"
-        << "    [--nsset-handle=<nsset_handle>] \\\n"
-        << "    [--keyset-handle=<keyset_handle>] \\\n"
-        << "    [--auth-info-pw=<authinfo_password>] \\\n"
-        << "    --admins=<list_of_admins_contact_handles> \\\n"
-        << "    --period=<period_in_months>\n\n"
+        << "  " << g_prog_name << " --" << DOMAIN_CREATE_NAME << "=<domain_fqdn> \\\n"
+        << "    --" << DOMAIN_REGISTRANT_NAME << "=<registrant_handle> \\\n"
+        << "    [--" << NSSET_HANDLE_NAME << "=<nsset_handle>] \\\n"
+        << "    [--" << KEYSET_HANDLE_NAME << "=<keyset_handle>] \\\n"
+        << "    [--" << AUTH_PW_NAME << "=<authinfo_password>] \\\n"
+        << "    --" << ADMIN_NAME_DESC << "=<list_of_admins_contact_handles> \\\n"
+        << "    --" << DOMAIN_PERIOD_NAME << "=<period_in_months>\n\n"
         << "Domain creation example:\n"
-        << "\t$ " << g_prog_name << " --domain-create=example.cz "
-        << "--admins=\"CON::001 CON::005\" --nsset-handle=\"NSS::137\" "
-        << "--period=24 --registrar-handle=\"CON::005\"\n"
+        << "\t$ " << g_prog_name << " --" << DOMAIN_CREATE_NAME << "=example.cz "
+        << "--" << ADMIN_NAME_DESC << "=\"CON::001 CON::005\" --"
+        << NSSET_HANDLE_NAME << "\"NSS::137\" "
+        << "--" << DOMAIN_PERIOD_NAME << "=24 --" << DOMAIN_REGISTRANT_NAME << "=\"CON::005\"\n"
         << "will create domain with FQDN ``example.cz'', administrator contacts "
         << "``CON::001'' and ``CON::005'', with NSSet ``NSS::137'', valid for "
         << "2 years and without any keyset."
@@ -508,6 +509,10 @@ DomainClient::list_help()
         << "    [--" << REGISTRAR_ID_NAME << "=<registrar_id_number>] \\\n"
         << "    [--" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
         << "    [--" << REGISTRAR_NAME_NAME << "=<registrar_name>] \\\n"
+        << "    [--" << CRDATE_NAME << "=<create_date>] \\\n"
+        << "    [--" << DELDATE_NAME << "=<delete_date>] \\\n"
+        << "    [--" << UPDATE_NAME << "=<update_date>] \\\n"
+        << "    [--" << TRANSDATE_NAME << "=<transfer_date>] \\\n"
         << "    [--" << FULL_LIST_NAME << "]\n"
         << std::endl;
 }

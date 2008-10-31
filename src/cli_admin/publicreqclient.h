@@ -24,7 +24,7 @@
 #define PUBLICREQ_LIST_NAME             "public_request_list"
 #define PUBLICREQ_LIST_NAME_DESC        "list of all public requests"
 
-#define PUBLICREQ_LIST_HELP_NAME        "public_request_list_name"
+#define PUBLICREQ_LIST_HELP_NAME        "public_request_list_help"
 #define PUBLICREQ_LIST_HELP_NAME_DESC   "help for public request list"
 
 #define PUBLICREQ_STATUS_NAME               "status"
@@ -48,10 +48,8 @@
 #define PUBLICREQ_EPP_TYPE_NAME             "epp_type"
 #define PUBLICREQ_EPP_TYPE_NAME_DESC        "epp type description"
 
-#define PUBLICREQ_RESDATE_FROM_NAME         "res_date_from"
-#define PUBLICREQ_RESDATE_FROM_NAME_DESC    "response datetime from"
-#define PUBLICREQ_RESDATE_TO_NAME           "res_date_to"
-#define PUBLICREQ_RESDATE_TO_NAME_DESC      "response datetime to"
+#define PUBLICREQ_RESDATE_NAME              "resdate"
+#define PUBLICREQ_RESDATE_NAME_DESC         "response date"
 #define PUBLICREQ_TYPE_NAME                 "public_request_type"
 #define PUBLICREQ_TYPE_NAME_DESC            "......."
 

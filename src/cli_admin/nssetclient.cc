@@ -237,6 +237,10 @@ NssetClient::list_help()
         << "    [--" << REGISTRAR_NAME_NAME << "=<registrar_name>] \\\n"
         << "    [--" << FQDN_NAME << "=<fqdn>] \\\n"
         << "    [--" << IP_NAME << "=<ip>] \\\n"
+        << "    [--" << CRDATE_NAME << "=<create_date>] \\\n"
+        << "    [--" << DELDATE_NAME << "=<delete_date>] \\\n"
+        << "    [--" << UPDATE_NAME << "=<update_date>] \\\n"
+        << "    [--" << TRANSDATE_NAME << "=<transfer_date>] \\\n"
         << "    [--" << FULL_LIST_NAME << "]\n"
         << std::endl;
 }

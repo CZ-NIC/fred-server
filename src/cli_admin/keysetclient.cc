@@ -344,7 +344,7 @@ KeysetClient::update()
     std::string dsrec_rem("");
     std::string dnsk_add("");
     std::string dnsk_rem("");
-    
+
     std::string key_handle = m_conf.get<std::string>(KEYSET_UPDATE_NAME).c_str();
     if (m_conf.hasOpt(AUTH_PW_NAME))
          authinfopw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
@@ -442,26 +442,6 @@ KeysetClient::update()
         dnskey_rem[i].key       = CORBA::string_dup(dnskey_rem_list[i * 4 + 3].c_str());
     }
 
-#if 0
-    for (int i = 0; i < (int)dnskey_add.length(); i++) {
-        std::cout << "add {\n";
-        std::cout << dnskey_add[i].flags << std::endl;
-        std::cout << dnskey_add[i].protocol << std::endl;
-        std::cout << dnskey_add[i].alg << std::endl;
-        std::cout << dnskey_add[i].key << std::endl;
-        std::cout << "}\n";
-    }
-
-    for (int i = 0; i < (int)dnskey_rem.length(); i++) {
-        std::cout << "rem {\n";
-        std::cout << dnskey_rem[i].flags << std::endl;
-        std::cout << dnskey_rem[i].protocol << std::endl;
-        std::cout << dnskey_rem[i].alg << std::endl;
-        std::cout << dnskey_rem[i].key << std::endl;
-        std::cout << "}\n";
-    }
-#endif
-
     std::string cltrid;
     std::string xml;
     xml = "<handle>" + key_handle + "</handle>";
@@ -525,9 +505,9 @@ KeysetClient::create()
     if (m_conf.hasOpt(KEYSET_DNSKEY_NAME))
         dnskeys = m_conf.get<std::string>(KEYSET_DNSKEY_NAME);
 
-    std::vector<std::string> admins_list = separateSpaces(admins.c_str());
-    std::vector<std::string> dsrecords_list = separateSpaces(dsrecords.c_str());
-    std::vector<std::string> dnskey_list = separateSpaces(dnskeys.c_str());
+    std::vector<std::string> admins_list = separate(admins);
+    std::vector<std::string> dsrecords_list = separate(dsrecords);
+    std::vector<std::string> dnskey_list = separate(dnskeys);
 
     ccReg::TechContact admin;
     admin.length(admins_list.size());
@@ -656,6 +636,10 @@ KeysetClient::list_help()
         << "    [--" << REGISTRAR_ID_NAME << "=<registrar_id_number>] \\\n"
         << "    [--" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
         << "    [--" << REGISTRAR_NAME_NAME << "=<registrar_name>] \\\n"
+        << "    [--" << CRDATE_NAME << "=<create_date>] \\\n"
+        << "    [--" << DELDATE_NAME << "=<delete_date>] \\\n"
+        << "    [--" << UPDATE_NAME << "=<update_date>] \\\n"
+        << "    [--" << TRANSDATE_NAME << "<transfer_date>] \\\n"
         << "    [--" << FULL_LIST_NAME << "]\n"
         << std::endl;
 }
@@ -665,13 +649,15 @@ KeysetClient::create_help()
 {
     std::cout
         << "** KeySet create **\n\n"
-        << "  " << g_prog_name << " --keyset-create=<keyset_handle> \\\n"
-        << "    --admins=<list_of_admins> \\\n"
-        << "    [--authinfopw=<authinfo_password>] \\\n"
-        << "    --dsrecords=<list_of_dsrecords> \\\n"
-        << "    --" << KEYSET_DNSKEY_NAME << "=<list_od_dnskeys>\n\n"
+        << "  " << g_prog_name << " --" << KEYSET_CREATE_NAME << "=<keyset_handle> \\\n"
+        << "    --" << ADMIN_NAME << "=<list_of_admins> \\\n"
+        << "    [--" << AUTH_PW_NAME << "=<authinfo_password>] \\\n"
+        << "    [--" << KEYSET_DSRECORDS_NAME << "=<list_of_dsrecords> \\|\n"
+        << "    --" << KEYSET_DNSKEY_NAME << "=<list_of_dnskeys>] \\\n"
         << "example:\n"
-        << "\t$ " << g_prog_name << " --keyset-create2=\"KEY::234\" --admins=\"CON::100 CON::50\" --dsrecords=\"0 0 0 348975238 -1\"\n"
+        << "\t$ " << g_prog_name << " --" << KEYSET_CREATE_NAME << "=\"KEY::234\""
+        << "--" << ADMIN_NAME <<  "=\"CON::100 CON::50\" --" << KEYSET_DSRECORDS_NAME
+        << "=\"0 0 0 348975238 -1\"\n"
         << "Commmand create keyset with handle ``KEY::234'' and with admin contacts selected by handles (``CON::100'' and ``CON::50'')\n"
         << "and dsrecord with NULL value for maxSigLife (structure of dsrecord is: ``keytag alg digesttype digest maxsiglife'')\n"
         << "dsrecord can also look like: ``0 0 0 348975238 -1 0 0 1 sdfioure 1000'' to create two dsrecords"
@@ -682,20 +668,25 @@ KeysetClient::update_help()
 {
     std::cout
         << "** KeySet update **\n\n"
-        << "  " << g_prog_name << " --keyset-update=<keyset_handle> \\\n"
-        << "    [--authinfopw=<new_authinfo_password>] \\\n"
-        << "    [--admins_add=<list_of_admins_to_add>] \\\n"
-        << "    [--admins_rem=<list_of_admins_to_rem>] \\\n"
-        << "    [--dsrec-add=<list_of_dsrecords_to_add>] \\\n"
-        << "    [--dsrec-rem=<list_of_dsrecords_to_rem>] \\\n"
+        << "  " << g_prog_name << " --" << KEYSET_UPDATE_NAME << "=<keyset_handle> \\\n"
+        << "    [--" << AUTH_PW_NAME << "=<new_authinfo_password>] \\\n"
+        << "    [--" << ADMIN_ADD_NAME << "=<list_of_admins_to_add>] \\\n"
+        << "    [--" << ADMIN_REM_NAME << "=<list_of_admins_to_rem>] \\\n"
+        << "    [--" << KEYSET_DSREC_ADD_NAME << "=<list_of_dsrecords_to_add>] \\\n"
+        << "    [--" << KEYSET_DSREC_REM_NAME << "=<list_of_dsrecords_to_rem>] \\\n"
         << "    [--" << KEYSET_DNSKEY_ADD_NAME << "=<list_of_dnskeys_to_add>] \\\n"
         << "    [--" << KEYSET_DNSKEY_REM_NAME << "=<list_of_dnskeys_to_rem>]\n\n"
-        << "List of DSRecords to remove or add (parameters ``--dsrec-add'' and ``--dsrec-rem'')"
+        << "List of DSRecords to remove or add (parameters ``--" << KEYSET_DSREC_ADD_NAME
+        << "'' and ``--" << KEYSET_DSREC_REM_NAME << "'')"
         << "must look like:\n"
-        << "\t --dsrec-add=\"keytag alg digesttype digest maxsiglife [keytag2 alg2...]\n"
+        << "\t --"<< KEYSET_DSREC_ADD_NAME << "=\"keytag alg digesttype digest maxsiglife [keytag2 alg2...]\n"
+        << "List of DNSKeys to remove or add (parameters ``--" << KEYSET_DNSKEY_ADD_NAME
+        << "'' and ``--" << KEYSET_DSREC_REM_NAME << "'') must look like:\n"
+        << "\t --"<< KEYSET_DNSKEY_ADD_NAME << "=\"flags protocol alg key [flags2 protocol2 ...]\n"
         << "To input NULL value just pass ``NULL'' or ``-1''  string instead of some meaningful number or string\n\n"
         << "Example:\n"
-        << "\t $ " << g_prog_name << " --keyset-update=\"KEY::002\" --dsrec-add=\"0 1 0 oJB1W6WNGv+ldvQ3WDG0MQkg5IEhjRip8WTr== NULL\"\n"
+        << "\t $ " << g_prog_name << " --" << KEYSET_UPDATE_NAME << "=\"KEY::002\" --"
+        << KEYSET_DSREC_ADD_NAME << "=\"0 1 0 oJB1W6WNGv+ldvQ3WDG0MQkg5IEhjRip8WTr== NULL\"\n"
         << "This means, that keyset with handle ``KEY::002'' is updated. New DSRecord is added (with NULL value as maxSigLife)"
         << std::endl;
 }
@@ -704,9 +695,9 @@ KeysetClient::delete_help()
 {
     std::cout
         << "** Keyset delete **\n\n"
-        << "  " << g_prog_name << " --keyset-delete=<keyset_handle>\n\n"
+        << "  " << g_prog_name << " --" << KEYSET_DELETE_NAME << "=<keyset_handle>\n\n"
         << "Example:\n"
-        << "\t$ " << g_prog_name << " --delete-keyset=\"KEY::100\"\n"
+        << "\t$ " << g_prog_name << " --" << KEYSET_DELETE_NAME << "=\"KEY::100\"\n"
         << "This command delete keyset and all of its dsrecords assuming keyset it not assigned to any domain (use domain-update options\n"
         << "to set or unset keyset (not only) for domain"
         << std::endl;
@@ -716,9 +707,9 @@ KeysetClient::info_help()
 {
     std::cout
         << "** Keyset info **\n\n"
-        << "  " << g_prog_name << " --keyset-info=<keyset_handle>\n\n"
+        << "  " << g_prog_name << " --" << KEYSET_INFO_NAME << "=<keyset_handle>\n\n"
         << "Example:\n"
-        << "\t$ " << g_prog_name << " --keyset-info=\"KEY::001\"\n"
+        << "\t$ " << g_prog_name << " --" << KEYSET_INFO_NAME << "=\"KEY::001\"\n"
         << "Command print on screen some informatins about keyset (identified by handle) such as handle, auth info password, roid,\n"
         << "tech contact handles, and dsrecord informations"
         << std::endl;
@@ -728,9 +719,9 @@ KeysetClient::check_help()
 {
     std::cout
         << "** Keyset check **\n\n"
-        << "  " << g_prog_name << " --keyset-check=<keyset_handle>\n\n"
+        << "  " << g_prog_name << " --" << KEYSET_CHECK_NAME << "=<keyset_handle>\n\n"
         << "Example:\n"
-        << "\t$ " << g_prog_name << " --keyset-check=\"K:02344\"\n"
+        << "\t$ " << g_prog_name << " --" << KEYSET_CHECK_NAME << "=\"K:02344\"\n"
         << "Command return 1 if keyset handle is free for registration and 0 if is already used in registry."
         << std::endl;
 }
