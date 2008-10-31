@@ -53,7 +53,6 @@ public:
 };
 
 std::vector<std::string> separate(const std::string str, int ch = ' ');
-std::vector<std::string> separateSpaces(const char *string);
 
 std::string createDateTime(std::string datetime, int interval, int type);
 Database::DateInterval *parseDate(std::string str);

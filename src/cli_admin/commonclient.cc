@@ -30,36 +30,6 @@ const char g_prog_name[]    = "fred-admin";
 const char g_version[]      = "0.2";
 
 std::vector<std::string>
-separateSpaces(const char *string)
-{
-    std::vector<std::string> ret;
-    char *tok;
-    char *str;
-
-    if (strlen(string) == 0) {
-        return ret;
-    }
-
-    if ((str = (char *)std::malloc(sizeof(char) * std::strlen(string))) == NULL) {
-        std::cerr << "Cannot alocate memory (separateSpace)" << std::endl;
-        exit(1);
-    }
-    if ((str = std::strcpy(str, string)) == NULL) {
-        std::cerr << "Cannot alocate memory (separateSpace)" << std::endl;
-        exit(1);
-    }
-
-    tok = std::strtok(str, " ");
-    while (tok != NULL) {
-        ret.push_back(std::string(tok));
-        tok = std::strtok(NULL, " ");
-    }
-    std::free(str);
-    
-    return ret;
-}
-
-std::vector<std::string>
 separate(const std::string str, int ch)
 {
     size_t pos = 0;
