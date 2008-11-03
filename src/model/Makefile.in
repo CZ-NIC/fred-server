@@ -63,7 +63,7 @@ am_libmodel_a_OBJECTS = object_registry_filter.$(OBJEXT) \
 	object_state_filter.$(OBJEXT) invoice_filter.$(OBJEXT) \
 	public_request_filter.$(OBJEXT) mail_filter.$(OBJEXT) \
 	file_filter.$(OBJEXT) keyset_filter.$(OBJEXT) \
-	log_filter.$(OBJEXT) union_filter.$(OBJEXT)
+	union_filter.$(OBJEXT)
 libmodel_a_OBJECTS = $(am_libmodel_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
 am_test_model_OBJECTS = test-model.$(OBJEXT)
@@ -253,13 +253,13 @@ libmodel_a_SOURCES = object_registry_filter.cc object_filter.cc domain_filter.cc
                      epp_action_filter.cc epp_session_filter.cc filter_filter.cc \
                      object_state_filter.cc invoice_filter.cc public_request_filter.cc \
                      mail_filter.cc file_filter.cc keyset_filter.cc \
-          				log_filter.cc union_filter.cc \
+          					 union_filter.cc \
                      contact_filter.h epp_action_filter.h nsset_filter.h \
                      object_registry_filter.h registrar_filter.h domain_filter.h \
                      epp_session_filter.h model_filters.h object_filter.h \
                      object_state_filter.h filter_filter.h invoice_filter.h \
                      public_request_filter.h mail_filter.h file_filter.h \
-                     keyset_filter.h union_filter.h log_filter.h
+                     keyset_filter.h union_filter.h
 
 test_model_SOURCES = test-model.cc
 test_model_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
@@ -331,7 +331,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filter_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/invoice_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keyset_filter.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mail_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nsset_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/object_filter.Po@am__quote@

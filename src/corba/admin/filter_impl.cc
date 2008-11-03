@@ -102,45 +102,6 @@ public:
   }
 };
 
-class FilterLogEventTypeImpl : virtual public POA_ccReg::Filters::LogEventType, public FilterSimpleImpl {
-  Database::Filters::Value<Database::LogEventType>* get() {
-    return dynamic_cast<Database::Filters::Value<Database::LogEventType>*>(f);
-  }
-
-public:
-  FilterLogEventTypeImpl(Database::Filters::Value<Database::LogEventType>* f) : FilterSimpleImpl(f) {
-  }
-  ccReg::LogEventType value() {
-    int val;
-    val = (int)get()->getValue().getValue();
-    return ccReg::LogEventType(val);
-  }
-  void value(ccReg::LogEventType v) {
-    get()->setValue((Database::LogEventType)v);
-  }
-};
-
-class FilterLogComponentImpl : virtual public POA_ccReg::Filters::LogComponent, public FilterSimpleImpl {
-  Database::Filters::Value<Database::LogComponent>* get() {
-    return dynamic_cast<Database::Filters::Value<Database::LogComponent>*>(f);
-  }
-
-public:
-  FilterLogComponentImpl(Database::Filters::Value<Database::LogComponent>* f) :
-    FilterSimpleImpl(f) {
-  }
-
-  ccReg::LogComponent value() {
-    int val;
-    val = (int)get()->getValue().getValue();
-    return ccReg::LogComponent(val);
-  }
-
-  void value(ccReg::LogComponent v) {
-    get()->setValue(Database::LogComponent(v));
-  }
-};
-
 class FilterIntIntervalImpl : virtual public POA_ccReg::Filters::IntInterval,
                               public FilterSimpleImpl {
   Database::Filters::Interval<int>* get() {
@@ -441,16 +402,6 @@ COMPOUND_CLASS(Mail, Mail, Compound,
     FILTER_ADD(File, addAttachment);
 );
 
-COMPOUND_CLASS(LogEntry, LogEntry, Compound,
-    FILTER_ADD(Id, addId);
-    FILTER_ADD(DateTime, addDateTime);
-    FILTER_ADD(Str, addSourceIp);
-    FILTER_ADD(LogEventType, addFlag);
-    FILTER_ADD(LogComponent, addComponent);
-    FILTER_ADD(Str, addContent);
-    FILTER_ADD(Int, addClientId);
-);
-
 FilterIteratorImpl::FilterIteratorImpl() :
   i(flist.end()) {
   TRACE("[CALL] FilterIteratorImpl::FilterIteratorImpl()");
@@ -510,9 +461,6 @@ ITERATOR_ADD_E_METHOD_IMPL(Id,Value<Database::ID>);
 ITERATOR_ADD_E_METHOD_IMPL(Action,EppAction);
 ITERATOR_ADD_E_METHOD_IMPL(Date,Interval<Database::DateInterval>);
 ITERATOR_ADD_E_METHOD_IMPL(DateTime,Interval<Database::DateTimeInterval>);
-ITERATOR_ADD_E_METHOD_IMPL(LogEventType,Value<Database::LogEventType>);
-ITERATOR_ADD_E_METHOD_IMPL(LogComponent,Value<Database::LogComponent>);
-
 ITERATOR_ADD_E_METHOD_IMPL(Obj,Object);
 ITERATOR_ADD_E_METHOD_IMPL(Registrar,Registrar);
 ITERATOR_ADD_E_METHOD_IMPL(Filter,FilterFilter);
@@ -525,7 +473,6 @@ ITERATOR_ADD_E_METHOD_IMPL(File,File);
 ITERATOR_ADD_E_METHOD_IMPL(Invoice,Invoice);
 ITERATOR_ADD_E_METHOD_IMPL(Mail,Mail);
 ITERATOR_ADD_E_METHOD_IMPL(ObjectState,ObjectState);
-ITERATOR_ADD_E_METHOD_IMPL(LogEntry,LogEntry);
 
 #define ITERATOR_ADD_FILTER_METHOD_IMPL(ct,dt) \
   { Database::Filters::dt *rf = dynamic_cast<Database::Filters::dt *>(f); \
@@ -552,9 +499,5 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(Invoice,Invoice);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Mail,Mail);
   ITERATOR_ADD_FILTER_METHOD_IMPL(ObjectState,ObjectState);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(LogEntry,LogEntry);
   ITERATOR_ADD_FILTER_METHOD_IMPL(IntInterval,Interval<int>);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(LogEventType,Value<Database::LogEventType>);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(LogComponent,Value<Database::LogComponent>);
 }
-

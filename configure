@@ -11705,7 +11705,7 @@ echo "$as_me: error: Libidn not found" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
-ac_config_files="$ac_config_files Makefile util/Makefile util/types/Makefile util/db/Makefile util/log/Makefile util/conf/Makefile src/Makefile src/old_utils/Makefile src/model/Makefile src/register/Makefile src/corba/Makefile src/corba/admin/Makefile src/corba/epp/Makefile src/corba/log/Makefile src/cli_admin/Makefile fred-server.spec config/server.conf init-scripts/fred-server src/cli_admin/banking.sh"
+ac_config_files="$ac_config_files Makefile util/Makefile util/types/Makefile util/db/Makefile util/log/Makefile util/conf/Makefile src/Makefile src/old_utils/Makefile src/model/Makefile src/register/Makefile src/corba/Makefile src/corba/admin/Makefile src/corba/epp/Makefile src/cli_admin/Makefile fred-server.spec config/server.conf init-scripts/fred-server src/cli_admin/banking.sh"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -12460,7 +12460,6 @@ do
     "src/corba/Makefile") CONFIG_FILES="$CONFIG_FILES src/corba/Makefile" ;;
     "src/corba/admin/Makefile") CONFIG_FILES="$CONFIG_FILES src/corba/admin/Makefile" ;;
     "src/corba/epp/Makefile") CONFIG_FILES="$CONFIG_FILES src/corba/epp/Makefile" ;;
-    "src/corba/log/Makefile") CONFIG_FILES="$CONFIG_FILES src/corba/log/Makefile" ;;
     "src/cli_admin/Makefile") CONFIG_FILES="$CONFIG_FILES src/cli_admin/Makefile" ;;
     "fred-server.spec") CONFIG_FILES="$CONFIG_FILES fred-server.spec" ;;
     "config/server.conf") CONFIG_FILES="$CONFIG_FILES config/server.conf" ;;

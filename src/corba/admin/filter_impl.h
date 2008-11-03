@@ -42,9 +42,6 @@ public:
   ccReg::Filters::Mail_ptr addE(Database::Filters::Mail* f);
   ccReg::Filters::File_ptr addE(Database::Filters::File* f);
   ccReg::Filters::ObjectState_ptr addE(Database::Filters::ObjectState* f);
-  ccReg::Filters::LogEntry_ptr addE(Database::Filters::LogEntry* f);
-  ccReg::Filters::LogEventType_ptr addE(Database::Filters::Value<Database::LogEventType> *f);
-  ccReg::Filters::LogComponent_ptr addE(Database::Filters::Value<Database::LogComponent> *f);
     
   void addFilter(Database::Filters::Filter* f);
     
