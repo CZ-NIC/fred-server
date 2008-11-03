@@ -310,10 +310,20 @@ int main(int argc, char** argv) {
     ns.bind("EPP", myccReg_EPP_i->_this());
 #endif
 
-    /** 
-     * obtain a POAManager, and tell the POA to start accepting
-     * requests on its objects
-     */
+#ifdef LOGD
+    PortableServer::ObjectId_var loggerObjectId = 
+    PortableServer::string_to_ObjectId("Logger");
+    ccReg_Log_i* myccReg_Log_i = new ccReg_Log_i(conn_info,&ns,cfg, false);
+    // ccReg_Log_i* myccReg_Log_i = new ccReg_Log_i("host=localhost dbname=fred_log user=fred port=22345" ,&ns,config, false);
+    poa->activate_object_with_id(loggerObjectId,myccReg_Log_i);
+    CORBA::Object_var loggerObj = myccReg_Log_i->_this();
+    myccReg_Log_i->_remove_ref();
+    ns.bind("Logger",loggerObj);
+#endif
+
+    // Obtain a POAManager, and tell the POA to start accepting
+    // requests on its objects.
+
     PortableServer::POAManager_var pman = poa->the_POAManager();
     poa_manager = pman;
     // signal(SIGHUP, sighup_handler);
@@ -338,8 +348,7 @@ int main(int argc, char** argv) {
   }
   catch (CORBA::Exception& ex) {
     LOGGER(PACKAGE).error(boost::format("CORBA exception: %1%") % ex._name());
-  }
-  catch (omniORB::fatalException& fe) {
+  } catch (omniORB::fatalException& fe) {
     LOGGER(PACKAGE).error(boost::format("omniORB fatal exception: %1% line: %2% mesg: %3%")
                                          % fe.file()
                                          % fe.line()

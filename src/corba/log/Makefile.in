@@ -31,7 +31,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
-subdir = util/types
+subdir = src/corba/log
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/acinclude.m4 \
@@ -51,12 +51,10 @@ CONFIG_CLEAN_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
 AR = ar
 ARFLAGS = cru
-libtypes_a_AR = $(AR) $(ARFLAGS)
-libtypes_a_LIBADD =
-am_libtypes_a_OBJECTS = conversions.$(OBJEXT) date.$(OBJEXT) \
-	date_interval.$(OBJEXT) datetime.$(OBJEXT) \
-	datetime_interval.$(OBJEXT) id.$(OBJEXT) money.$(OBJEXT)
-libtypes_a_OBJECTS = $(am_libtypes_a_OBJECTS)
+liblog_impl_a_AR = $(AR) $(ARFLAGS)
+liblog_impl_a_LIBADD =
+am_liblog_impl_a_OBJECTS = log_impl.$(OBJEXT)
+liblog_impl_a_OBJECTS = $(am_liblog_impl_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -69,8 +67,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libtypes_a_SOURCES)
-DIST_SOURCES = $(libtypes_a_SOURCES)
+SOURCES = $(liblog_impl_a_SOURCES)
+DIST_SOURCES = $(liblog_impl_a_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -225,23 +223,11 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-noinst_LIBRARIES = libtypes.a
-AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) ${BOOST_CPPFLAGS} $(AM_CFLAGS) \
-              -I$(top_srcdir)/util -I$(top_srcdir)
+noinst_LIBRARIES = liblog_impl.a
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(AM_CFLAGS) -I$(top_srcdir)/util \
+              -I$(top_srcdir)/src -I$(top_builddir)/src -I$(top_srcdir)
 
-libtypes_a_SOURCES = conversions.cc                     \
-		 date.cc date_interval.cc           \
-		 datetime.cc datetime_interval.cc   \
-                 id.cc money.cc                     \
-		 logging.h			    \
-		 conversions.h                      \
-                 date.h date_interval.h             \
-                 datetime.h datetime_interval.h     \
-                 id.h money.h                       \
-		 datetime_common.h common.h         \
-		 null.h                             \
-		 data_types.h
-
+liblog_impl_a_SOURCES = log_impl.h log_impl.cc
 all: all-am
 
 .SUFFIXES:
@@ -255,9 +241,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  util/types/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/corba/log/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  util/types/Makefile
+	  $(AUTOMAKE) --gnu  src/corba/log/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -278,10 +264,10 @@ $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 
 clean-noinstLIBRARIES:
 	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
-libtypes.a: $(libtypes_a_OBJECTS) $(libtypes_a_DEPENDENCIES) 
-	-rm -f libtypes.a
-	$(libtypes_a_AR) libtypes.a $(libtypes_a_OBJECTS) $(libtypes_a_LIBADD)
-	$(RANLIB) libtypes.a
+liblog_impl.a: $(liblog_impl_a_OBJECTS) $(liblog_impl_a_DEPENDENCIES) 
+	-rm -f liblog_impl.a
+	$(liblog_impl_a_AR) liblog_impl.a $(liblog_impl_a_OBJECTS) $(liblog_impl_a_LIBADD)
+	$(RANLIB) liblog_impl.a
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -289,13 +275,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/conversions.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/date.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/date_interval.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/datetime.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/datetime_interval.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/id.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/money.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log_impl.Po@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

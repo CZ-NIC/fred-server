@@ -227,18 +227,19 @@ AC_CONFIG_FILES([Makefile
                  util/Makefile
                  util/types/Makefile
                  util/db/Makefile
-                 util/log/Makefile
-                 util/conf/Makefile
-                 src/Makefile
-                 src/old_utils/Makefile
-                 src/model/Makefile
-                 src/register/Makefile
-                 src/corba/Makefile
-                 src/corba/admin/Makefile
-                 src/corba/epp/Makefile
-                 src/cli_admin/Makefile
-                 fred-server.spec
-                 config/server.conf
-                 init-scripts/fred-server
-                 src/cli_admin/banking.sh])
+		 util/log/Makefile
+		 util/conf/Makefile
+		 src/Makefile
+		 src/old_utils/Makefile
+		 src/model/Makefile
+		 src/register/Makefile
+		 src/corba/Makefile
+		 src/corba/admin/Makefile
+		 src/corba/epp/Makefile
+		 src/corba/log/Makefile
+		 src/cli_admin/Makefile
+		 fred-server.spec
+		 config/server.conf
+		 init-scripts/fred-server
+		 src/cli_admin/banking.sh])
 AC_OUTPUT
