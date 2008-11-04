@@ -47,60 +47,23 @@
 #include "old_utils/conf.h"
 // database 
 #include "db/database.h"
+// util (for escape)
+#include "util.h"
 
 using namespace Database;
 
-// stolen & modified from admin/common.cc
 
-// 
-/*
-const char *
-formatTime(ptime p, bool date)
-{
-  if (p.is_special()) return "--special--";
-  std::ostringstream stime;
-  stime << std::setfill('0') << std::setw(2)
-        << p.date().day() << "." 
-        << std::setw(2)
-        << (int)p.date().month() << "." 
-        << std::setw(2)
-        << p.date().year();
-  if (date) 
-   stime << " "
-         << std::setw(2)
-         << p.time_of_day().hours() << ":"
-         << std::setw(2)
-         << p.time_of_day().minutes() << ":"
-         << std::setw(2)
-         << p.time_of_day().seconds() << "."
-	 << std::setw(3)
-	 << p.time_of_day().milliseconds();
-  return stime.str().c_str();
-}
-*/
-
-ccReg_Log_i::ccReg_Log_i(const std::string database, NameService *ns, Conf& _cfg, bool _session_garbage)
+ccReg_Log_i::ccReg_Log_i(const std::string database, NameService *ns, Config::Conf& _cfg, bool _session_garbage)
       throw (DB_CONNECT_FAILED) {
-
-// objects are shared between threads!!!
-  // init at the beginning and do not change
-  /*
-  strncpy(database, _db, sizeof(database)-1);
-  if (!db.OpenDatabase(database)) {
-    LOG(ALERT_LOG, "can not connect to DATABASE %s", database);
-    throw DB_CONNECT_FAILED();
-  }
-
-  LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database);
-*/
 
   try {
 	conn.open(database);  
   } catch (Database::Exception &ex) {
-	LOGGER("db").error(ex.what());	
+	LOG(ALERT_LOG, "can not connect to DATABASE %s : %s", database.c_str(), ex.what());
+	// LOGGER("db").error(ex.what());	
   }
 
-  LOG(NOTICE_LOG, "ccReg_Log_i constructor successful ");
+  LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database.c_str());
 
 }
 
@@ -109,34 +72,21 @@ ccReg_Log_i::ccReg_Log_i(const std::string database, NameService *ns, Conf& _cfg
 	  LOG( ERROR_LOG, "EPP_i destructor");
   } 
 
-
-  int getPropID(Database::Connection &c, ::CORBA::String_member name) throw (Database::Exception) {
-	std::ostringstream sel;
-
-	sel << "select id from property where name = '" << name << "'";
-	Result r = c.exec(sel.str());
-	if (r.size() == 0) return -1;
-	return r[0][0];
-  }
-
-  void insProperty(Database::Connection &c, ::CORBA::String_member name) throw (Database::Exception) {
-	std::ostringstream ins;
-	ins << "insert into property (name) values ('" << name << "')"; 
-	c.exec(ins.str());
-  }
-  
-  CORBA::Boolean ccReg_Log_i::message(const char* sourceIP, ccReg::LogComponent comp, ccReg::LogEventType event, const char* content, const ccReg::Properties& props, CORBA::Long clientID) {
+  CORBA::Boolean ccReg_Log_i::message(const char* sourceIP, ccReg::LogComponent comp, ccReg::LogEventType event, const char* content, const ccReg::LogProperties& props) {
 
 	std::ostringstream query;
-	std::string time;
+	std::string time, s_sourceIP, s_content;
 
 	// get formatted UTC with microseconds
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
 	
 	try {
-		query << "insert into log_entry (time, source_ip, flag, component, content, client_id) values ('" << time << "', '" << sourceIP << "', "
-			<< event << ", " << comp << ", '" << content << "', " << clientID << ")";
-		// snprintf(query, QUERY_BUF_SIZE, "insert into log_entry (time, source_ip, flag, component, content, client_id) values ('%s', '%s', %i, %i, '%s', %li)", time.c_str(), sourceIP, event, comp, content, (long)clientID);
+		// make sure these values can be safely used in an SQL statement
+		s_sourceIP = Util::escape(std::string(sourceIP));
+		s_content = Util::escape(std::string(content));
+
+		query << "insert into log_entry (time, source_ip, flag, component, content) values ('" << time << "', '" << s_sourceIP << "', "
+			<< event << ", " << comp << ", '" << s_content << "')";
 
 		conn.exec(query.str());
 		// log entry inserted
@@ -146,43 +96,30 @@ ccReg_Log_i::ccReg_Log_i(const std::string database, NameService *ns, Conf& _cfg
 		// snprintf(query, QUERY_BUF_SIZE, "select id from log_entry where	time='%s' and content='%s'", time.c_str(), content);
 
 		query.str("");
-		query << "select id from log_entry where time='" << time << "' and content='" << content << "'";
+		query << "select id from log_entry where time='" << time << "' and content='" << Util::escape(std::string(content)) << "'";
+
+		LOGGER("fred-logd").debug(query.str());
+
 		Result res=conn.exec(query.str());
 		int entry_id = res[0][0]; 
 
-		std::ostringstream os;
-		os << "Log entry id: " << entry_id;
-		LOGGER("db").info(os.str());
+		// LOGGER("fred-logd").error(ex.what());	
 
-		// insert the property into the table
+		// insert the property into the table log_property
 		for (unsigned i=0;i<props.length();i++) {
 
-			int prop_id = getPropID(conn, props[i].name);
-
-			if(prop_id == -1) {
-				insProperty(conn, props[i].name);
-				prop_id = getPropID(conn, props[i].name);
-			}
-			// prop_id really shouldn't be -1 now
-
-			std::ostringstream msg;
-			msg << "Prop entry id: " << prop_id;
-			LOGGER("db").info(msg.str());
-
 			query.str("");
-			query << "insert into property_value (entry_id, property_id, value) values (" <<  entry_id << ", " << prop_id << ", '" << props[i].value << "')";
+			query << "insert into log_property (entry_id, name, value) values (" << entry_id << ", '" <<  Util::escape((const char*)props[i].name)
+				<< "', '" << Util::escape((const char*)props[i].value) << "')";
+
+			LOGGER("fred-logd").debug(query.str());
 			conn.exec(query.str());
 		}	
 
 		// t.commit();
 	} catch (Database::Exception &ex) {
-		LOGGER("db").error(ex.what());	
+		LOGGER("fred-logd").error(ex.what());	
 	}
-	LOGGER("corba").info ( "-----inside message. "); // source IP: %s, content: %s ", sourceIP, content);
 	return true;
-  }
-
-  void ccReg_Log_i::testconn(const char *message) {
-	  LOGGER("corba").info("-------- Test connection. ");
   }
 

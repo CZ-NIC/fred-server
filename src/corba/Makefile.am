@@ -1,4 +1,4 @@
-SUBDIRS = admin epp
+SUBDIRS = admin epp log
 CLEANFILES=ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh
 
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
@@ -8,7 +8,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
 	$(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
 	admin/libadmin_impl.a epp/libepp_impl.a \
-	libcorba.a \
+	log/liblog_impl.a libcorba.a \
         $(top_builddir)/src/register/libfred.a \
 	$(top_builddir)/src/model/libmodel.a \
 	$(top_builddir)/util/db/libdb.a \
@@ -23,7 +23,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 
 IDLFILE = $(IDLDIR)/ccReg.idl
 
-sbin_PROGRAMS = fred-rifd fred-adifd fred-pifd 
+sbin_PROGRAMS = fred-rifd fred-adifd fred-pifd fred-logd
 
 noinst_LIBRARIES   = libcorba.a
 BUILT_SOURCES      = ccRegSK.cc ccRegDynSK.cc ccReg.hh
@@ -40,6 +40,9 @@ fred_adifd_CPPFLAGS = $(AM_CPPFLAGS) -DADIF
 
 fred_pifd_SOURCES   = server.cc
 fred_pifd_CPPFLAGS  = $(AM_CPPFLAGS) -DPIFD
+
+fred_logd_SOURCES   = server.cc
+fred_logd_CPPFLAGS  = $(AM_CPPFLAGS) -DLOGD
 
 ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:
 	omniidl -bcxx -Wba -Wbinline $(IDLFILE)

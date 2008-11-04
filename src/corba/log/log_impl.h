@@ -5,16 +5,18 @@
 // #include "old_utils/dbsql.h"
 
 #include "db/manager.h"
+#include "old_utils/conf.h"
 #include "corba/mailer_manager.h"
 #include <corba/ccReg.hh>
+
+#include "conf/manager.h"
 
 using namespace Database;
 
 class NameService;
-class Conf;
 
-class ccReg_Log_i : public POA_ccReg::Log, 
-  public PortableServer::RefCountServantBase 
+class ccReg_Log_i : public POA_ccReg::Log,
+  public PortableServer::RefCountServantBase
 {
 private:
 
@@ -43,13 +45,11 @@ public:
   {
   };
 
-  ccReg_Log_i(const std::string database, NameService *ns, Conf& _cfg, bool _session_garbage = true)
+  ccReg_Log_i(const std::string database, NameService *ns, Config::Conf& _cfg, bool _session_garbage = true)
       throw (DB_CONNECT_FAILED);
   virtual ~ccReg_Log_i();
 
-  CORBA::Boolean message(const char* sourceIP, ccReg::LogComponent comp, ccReg::LogEventType event, const char* content, const ccReg::Properties& props, CORBA::Long clientID);
-
-  void testconn(const char *message); 
+  CORBA::Boolean message(const char* sourceIP, ccReg::LogComponent comp, ccReg::LogEventType event, const char* content, const ccReg::LogProperties& props);
 
 };
 
