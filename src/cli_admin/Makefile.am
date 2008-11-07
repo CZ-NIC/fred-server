@@ -22,9 +22,11 @@ dist_sbin_SCRIPTS = banking.sh
 
 fred_banking_SOURCES = gpc.cc banking.cc csv.cc gpc.h csv.h
 
-fred_admin_SOURCES = simple.cc commonclient.cc keysetclient.cc nssetclient.cc \
-						domainclient.cc contactclient.cc authinfoclient.cc \
-						bankclient.cc invoiceclient.cc pollclient.cc \
-						registrarclient.cc notifyclient.cc objectclient.cc \
-						infobuffclient.cc fileclient.cc mailclient.cc \
-						publicreqclient.cc
+fred_admin_SOURCES = simple.cc simple.h commonclient.cc commonclient.h \
+ keysetclient.cc keysetclient.h nssetclient.cc nssetclient.h domainclient.cc \
+ domainclient.h contactclient.cc contactclient.h authinfoclient.cc \
+ authinfoclient.h bankclient.cc bankclient.h invoiceclient.cc invoiceclient.h \
+ pollclient.cc pollclient.h registrarclient.cc registrarclient.h \
+ notifyclient.cc notifyclient.h objectclient.cc objectclient.h \
+ infobuffclient.cc infobuffclient.h fileclient.cc fileclient.h mailclient.cc \
+ mailclient.h publicreqclient.cc publicreqclient.h
