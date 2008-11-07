@@ -1,4 +1,17 @@
+2008-11-07 Ales Dolezal, Jaromir Talir (2.0.8, 2.1.1)
+  
+   * Sorting of domains in PDF warning letter (by country, org, name)
+   
+   * Bugfix in email notification (domain notification failed) (in 2.0.7)
+   
+   * Bugfix fred-admin registrar api (--zone_add --registrar_add 
+      --registrar_add_zone) 
+
+   * Update config file with [banking] section (must be at the end!) 
+     to allow fred-banking work with default /etc/fred/server.conf
+
 2008-10-20 Ales Dolezal, Jaromir Talir (2.1.0)
+
    * Configure script minor changes to support omniORB 4.0
 
    * EPP - number of dsrecords, dnskeys and techcontacts fixed
