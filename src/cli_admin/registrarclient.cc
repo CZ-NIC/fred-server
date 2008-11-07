@@ -196,7 +196,7 @@ RegistrarClient::registrar_add()
 {
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
-    regMan->addRegistrar(m_conf.get<std::string>(REGISTRAR_REGISTRAR_ADD_NAME));
+    regMan->addRegistrar(m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
     return 0;
 }
 int
@@ -204,7 +204,7 @@ RegistrarClient::registrar_add_zone()
 {
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
-    std::string zone = m_conf.get<std::string>(ZONE_HANDLE_NAME);
+    std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
     std::string registrar = m_conf.get<std::string>(REGISTRAR_HANDLE_NAME);
     regMan->addRegistrarZone(registrar, zone);
     return 0;
@@ -215,25 +215,27 @@ RegistrarClient::zone_add_help()
 {
     std::cout <<
         "** Add new zone **\n\n"
-        "  $ " << g_prog_name << " --" << REGISTRAR_ZONE_ADD_NAME << "=<zone_fqdn>\n"
+        "  $ " << g_prog_name << " --" << REGISTRAR_ZONE_ADD_NAME
+               << " --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn>\n"
         << std::endl;
 }
 
-void 
+void
 RegistrarClient::registrar_add_help()
 {
     std::cout <<
         "** Add new registrar **\n\n"
-        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_ADD_NAME << "=<registrar_handle>\n"
+        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_ADD_NAME
+               << " --" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>\n"
         << std::endl;
 }
-void 
+void
 RegistrarClient::registrar_add_zone_help()
 {
     std::cout <<
         "** Add registrar to zone **\n\n"
         "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_ADD_ZONE_NAME << " \\\n"
-        "    --" << ZONE_HANDLE_NAME << "=<zone_fqdn> \\\n"
+        "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> \\\n"
         "    --" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>\n"
         << std::endl;
 }

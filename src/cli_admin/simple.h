@@ -92,7 +92,7 @@
 
 // almost all
 #define CRDATE_NAME             "crdate"
-#define CRDATE_NAME_DESC        "create date (type ``./fred-admin --help_dates'' for further date&time information)" 
+#define CRDATE_NAME_DESC        "create date (type ``./fred-admin --help_dates'' for further date&time information)"
 #define add_CRDATE()            addOptStr(CRDATE_NAME)
 #define apply_CRDATE(filter)    apply_DATETIME(filter, CRDATE_NAME, Create)
 
@@ -202,12 +202,6 @@
 #define ZONE_ID_NAME_DESC           "show only records with specific zone id number"
 #define add_ZONE_ID()               addOptUInt(ZONE_ID_NAME)
 #define apply_ZONE_ID(filter)       get_DID(filter, ZoneId, ZONE_ID_NAME)
-
-// registrar
-#define ZONE_HANDLE_NAME            "zone_handle"
-#define ZONE_HANDLE_NAME_DESC       "bla bla"
-#define add_ZONE_HANDLE()           addOptStr(ZONE_HANDLE_NAME)
-#define apply_ZONE_HANDLE(filter)   get_Str(filter, Zone, ZONE_ID_NAME)
 
 // almost all
 #define AUTH_PW_NAME                "auth_pw"
