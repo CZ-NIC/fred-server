@@ -429,11 +429,11 @@ main(int argc, char **argv)
     } else if (conf.hasOpt(OBJECT_LIST_NAME)) {
         object.list();
     } else if (conf.hasOpt(OBJECT_UPDATE_STATES_NAME)) {
-        object.update_states();
+        return object.update_states();
     } else if (conf.hasOpt(OBJECT_DELETE_CANDIDATES_NAME)) {
-        object.delete_candidates();
+        return object.delete_candidates();
     } else if (conf.hasOpt(OBJECT_REGULAR_PROCEDURE_NAME)) {
-        object.regular_procedure();
+        return object.regular_procedure();
     } else if (conf.hasOpt(OBJECT_SHOW_OPTS_NAME)) {
         object.show_opts();
     }

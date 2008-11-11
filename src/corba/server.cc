@@ -108,7 +108,13 @@ int main(int argc, char** argv) {
       ("database.name",     po::value<std::string>()->default_value("fred"), "Database name")
       ("database.user",     po::value<std::string>()->default_value("fred"), "Database username")
       ("database.password", po::value<std::string>()->default_value(""),     "Database password")
-      ("database.timeout",  po::value<unsigned>()->default_value(0),         "Database connection timeout");
+      ("database.timeout",  po::value<unsigned>()->default_value(0),         "Database connection timeout")
+      ("banking.host",     po::value<std::string>()->default_value(""),     "Database hostname (obsolete)")
+      ("banking.port",     po::value<unsigned>()->default_value(5432),      "Database port (obsolete)")
+      ("banking.dbname",   po::value<std::string>()->default_value("fred"), "Database name (obsolete)")
+      ("banking.log_level",  po::value<unsigned>()->default_value(7),         "Old logging level (obsolete)")
+      ("banking.log_local",  po::value<unsigned>()->default_value(1),         "Old logging facility (obsolete)");
+
     po::options_description nameservice_opts("CORBA Nameservice");
     nameservice_opts.add_options()
       ("nameservice.host",    po::value<std::string>()->default_value("localhost"), "CORBA nameservice hostname")

@@ -177,6 +177,7 @@ ObjectClient::deleteObjects(
 {
     LOGGER("tracer").trace("ObjectClient::deleteObjects");
     ccReg::EPP_var epp = NULL;
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     // temporary done by using EPP corba interface
     // should be instead somewhere in register library (object.cc?)
     // get login information for first system registrar
@@ -238,16 +239,24 @@ ObjectClient::deleteObjects(
 
         for (int i = 0; i < RESOLVE_TRY; i++) {
             try {
-                CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
                 CORBA::Object_var o = cc.getNS()->resolve("EPP");
                 if ((epp = ccReg::EPP::_narrow(o)) != NULL) {
                     break;
                 }
             } catch (NameService::NOT_RUNNING) {
                 LOG(ERROR_LOG, "deleteObjects(): resolve attempt %d of %d catching NOT_RUNNING", i + 1, RESOLVE_TRY);
+                return -1;
             } catch (NameService::BAD_CONTEXT) {
                 LOG(ERROR_LOG, "deleteObjects(): resolve attempt %d of %d catching BAD_CONTEXT", i + 1, RESOLVE_TRY);
-            }
+                return -1;
+	    } catch (std::exception& ex) {
+    	        LOG(ERROR_LOG, "deleteObjects(): resolve attempt %d of %d catching %s", ex.what());
+		return -1;
+	    } catch (...) {
+    	        LOG(ERROR_LOG, "deleteObjects(): resolve attempt catching unknown exception");
+		return -1;
+	    }
+
         }
 
         ccReg::Response_var r = epp->ClientLogin(
@@ -309,6 +318,16 @@ ObjectClient::deleteObjects(
         LOG(ERROR_LOG, "deleteObjects(): Exception catched: %d", i);
         m_db.FreeSelect();
         return i;
+    }
+    catch (CORBA::Exception& e) {
+        LOG(ERROR_LOG, "deleteObjects(): Exception catched: %s", e._name());
+        m_db.FreeSelect();
+        return -4;
+    }
+    catch (std::exception& e) {
+        LOG(ERROR_LOG, "deleteObjects(): Exception catched: %s", e.what());
+        m_db.FreeSelect();
+        return -4;
     }
     catch (...) {
         LOG(ERROR_LOG, "deleteObjects(): Unknown exception catched");
@@ -404,6 +423,7 @@ ObjectClient::regular_procedure()
                 0, NULL);
         if ((i = deleteObjects(m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME))) != 0) {
             LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): Error has occured in deleteObject: %d", i);
+	    return i;
         }
 
         pollMan->createLowCreditMessages();
