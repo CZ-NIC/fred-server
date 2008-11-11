@@ -250,7 +250,6 @@ ObjectClient::deleteObjects(
             }
         }
 
-        return 0;
         ccReg::Response_var r = epp->ClientLogin(
                 handle.c_str(),password.c_str(),"","system_delete_login",
                 "<system_delete_login/>",clientId,cert.c_str(),ccReg::EN);
