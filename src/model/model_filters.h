@@ -16,6 +16,8 @@
 #include "mail_filter.h"
 #include "file_filter.h"
 #include "keyset_filter.h"
+#include "statement_filter.h"
+#include "online_statement_filter.h"
 #include "union_filter.h"
 #include "log_filter.h"
 
