@@ -99,6 +99,8 @@ public:
     _ar.register_type(static_cast<KeySetImpl *>(NULL));
     _ar.register_type(static_cast<KeySetHistoryImpl *>(NULL));
     _ar.register_type(static_cast<ObjectStateImpl *>(NULL));
+    _ar.register_type(static_cast<StatementImpl *>(NULL));
+    _ar.register_type(static_cast<OnlineStatementImpl *>(NULL));
 
 
     _ar & BOOST_SERIALIZATION_NVP(filter_list);
