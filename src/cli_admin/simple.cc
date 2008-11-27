@@ -374,12 +374,16 @@ main(int argc, char **argv)
         authinfo.show_opts();
     }
     
-    if (conf.hasOpt(BANK_ONLINE_LIST_NAME)) {
-        bank.online_list();
-    } else if (conf.hasOpt(BANK_STATEMENT_LIST_NAME)) {
-        bank.statement_list();
+    if (conf.hasOpt(BANK_OLD_ONLINE_LIST_NAME)) {
+        bank.old_online_list();
+    } else if (conf.hasOpt(BANK_OLD_STATEMENT_LIST_NAME)) {
+        bank.old_statement_list();
     } else if (conf.hasOpt(BANK_SHOW_OPTS_NAME)) {
         bank.show_opts();
+    } else if (conf.hasOpt(BANK_LIST_NAME)) {
+        bank.list();
+    } else if (conf.hasOpt(BANK_ONLINE_LIST_NAME)) {
+        bank.online_list();
     }
 
     if (conf.hasOpt(POLL_LIST_ALL_NAME)) {
@@ -474,8 +478,11 @@ main(int argc, char **argv)
         std::cerr << "EppError code: " << e.errCode << ", message: " 
             << e.errMsg << std::endl;
         for (int ii = 0; ii < (int)e.errorList.length(); ii++) {
-            std::cerr << "Reason code: " << e.errorList[ii].code << ", message: " 
-                << e.errorList[ii].reason << std::endl;
+            std::cerr
+                << "Reason code: " << e.errorList[ii].code
+                << ", message: " 
+                << e.errorList[ii].reason
+                << ", Position: " << e.errorList[ii].position << std::endl;
         }
     } catch (CORBA::Exception &e) {
         std::cerr << "CORBA error" << std::endl;

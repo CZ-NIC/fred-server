@@ -8,6 +8,7 @@
 #define addOptTID(name)                     (name, boost::program_options::value<Register::TID>(), name##_DESC)
 #define addOptBool(name)                    (name, boost::program_options::value<bool>(), name##_DESC)
 #define addOptType(name, type)              (name, boost::program_options::value<type>(), name##_DESC)
+#define addOptDID(name)                     (name, boost::program_options::value<unsigned int>(), name##_DESC)
 
 #define addOptStrDef(name, val)           (name, boost::program_options::value<std::string>()->default_value(val), name##_DESC)
 #define addOptIntDef(name, val)           (name, boost::program_options::value<int>()->default_value(val), name##_DESC)

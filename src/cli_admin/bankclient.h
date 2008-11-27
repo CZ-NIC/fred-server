@@ -20,12 +20,36 @@
 #define _BANKCLIENT_H_
 
 
-#define BANK_SHOW_OPTS_NAME         "bank_show_opts"
-#define BANK_SHOW_OPTS_NAME_DESC    "show all banking options"
-#define BANK_ONLINE_LIST_NAME       "bank_online_list"
-#define BANK_ONLINE_LIST_NAME_DESC  "list of online payments"
-#define BANK_STATEMENT_LIST_NAME    "bank_statement_list"
-#define BANK_STATEMENT_LIST_NAME_DESC "list of bank statements"
+#define BANK_SHOW_OPTS_NAME             "bank_show_opts"
+#define BANK_SHOW_OPTS_NAME_DESC        "show all banking options"
+#define BANK_OLD_ONLINE_LIST_NAME           "bank_old_online_list"
+#define BANK_OLD_ONLINE_LIST_NAME_DESC      "xml with all payments (from table ``bank_ebanka_list'')"
+#define BANK_OLD_STATEMENT_LIST_NAME        "bank_old_statement_list"
+#define BANK_OLD_STATEMENT_LIST_NAME_DESC   "xml with all payments (from tables ``bank_statement_head'' and ``bank_statement_item'')"
+#define BANK_LIST_NAME                  "bank_list"
+#define BANK_LIST_NAME_DESC             "list of payments (filterable)"
+#define BANK_ONLINE_LIST_NAME          "bank_online_list"
+#define BANK_ONLINE_LIST_NAME_DESC     "list of online payments (filterable)"
+#define BANK_DATE_NAME                  "bank_date"
+#define BANK_DATE_NAME_DESC             "bank create date"
+#define BANK_ID_NAME                    "bank_id"
+#define BANK_ID_NAME_DESC               "bank_id_desc"
+#define BANK_ACCOUNT_ID_NAME            "bank_account_id"
+#define BANK_ACCOUNT_ID_NAME_DESC       "bank_account_id description"
+#define BANK_OLD_BALANCE_DATE_NAME      "bank_old_balance_date"
+#define BANK_OLD_BALANCE_DATE_NAME_DESC "bank_old_balance_date description"
+#define BANK_ACCOUNT_NUMBER_NAME        "bank_account_number"
+#define BANK_ACCOUNT_NUMBER_NAME_DESC   "bank_account_number description"
+#define BANK_BANK_CODE_NAME             "bank_code"
+#define BANK_BANK_CODE_NAME_DESC        "bank_code description"
+#define BANK_CONST_SYMBOL_NAME          "bank_const_symbol"
+#define BANK_CONST_SYMBOL_NAME_DESC     "bank const symbol desctription"
+#define BANK_SORT_NAME                  "bank_sort"
+#define BANK_SORT_NAME_DESC             "sort statement list"
+#define BANK_SORT_DESC_NAME             "sort_desc"
+#define BANK_SORT_DESC_NAME_DESC        "sort descending (default is ascending)"
+#define BANK_INVOICE_ID_NAME            "bank_invoice_id"
+#define BANK_INVOICE_ID_NAME_DESC       "invoice id"
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -48,6 +72,7 @@ private:
 
     boost::program_options::options_description *m_options;
     boost::program_options::options_description *m_optionsInvis;
+    bool parse_line(const char *line, std::vector<std::string> &vec);
 public:
     BankClient();
     BankClient(std::string connstring,
@@ -61,8 +86,11 @@ public:
     boost::program_options::options_description *getInvisibleOptions() const;
     void show_opts() const;
 
-    int online_list();
-    int statement_list();
+    int old_online_list();
+    int old_statement_list();
+
+    void list();
+    void online_list();
 };
 
 } // namespace Admin;
