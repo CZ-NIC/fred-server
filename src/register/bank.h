@@ -1,151 +1,128 @@
-#ifndef _BANKING_H_
-#define _BANKING_H_
-#include "invoice.h"
+/*
+ *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-namespace Register
-{
-  namespace Banking 
-  {
-    class Payment
-    {
-     protected:
-      /// protected destructor
-      virtual ~Payment() {}
-     public:
-      /// unique identification of record
-      virtual TID getId() const = 0;
-      /// account number of other side
-      virtual const std::string& getAccountNumber() const = 0;
-      /// bank of account of other side
-      virtual const std::string& getAccountBankCode() const = 0;
-      /// constant symbol of payment
-      virtual const std::string& getConstSymbol() const = 0;
-      /// variable symbol of payment
-      virtual const std::string& getVarSymbol() const = 0;
-      /// specific symbol of payment
-      virtual const std::string& getSpecSymbol() const = 0;
-      /// transfering amount
-      virtual Invoicing::Money getPrice() const = 0;
-      /// note
-      virtual const std::string& getMemo() const = 0;
-      /// id of invoice if matching registrar was found
-      virtual TID getInvoiceId() const = 0;
-    };
-    /// payment downloaded online 
-    class OnlinePayment : virtual public Payment 
-    {      
-     protected:
-      /// protected destructor
-      virtual ~OnlinePayment() {}
-     public:
-      /// id of our account identification 
-      virtual TID getAccountId() const = 0;
-      /// timestamp of record creation
-      virtual boost::posix_time::ptime getCrDate() const = 0;
-      /// name of account of other side
-      virtual const std::string& getAccountName() const = 0;
-      /// unique identification of record on bank side
-      virtual const std::string& getIdent() const = 0;
-    };
-    /// list of online payments
-    class OnlinePaymentList 
-    {
-     public:
-      /// public destructor
-      virtual ~OnlinePaymentList() {}
-      /// reload statements with selected filter
-      virtual void reload() throw (SQL_ERROR) = 0;
-      /// return count of statements in list 
-      virtual unsigned long getCount() const = 0;
-      /// return statement by index
-      virtual OnlinePayment *get(unsigned idx) const = 0;
-      /// clear filter settings
-      virtual void clearFilter() = 0;            
-      /// export in XML
-      virtual void exportXML(std::ostream& out) = 0;
-    };
-    /// one item on the bank statement
-    class StatementItem : virtual public Payment
-    {
-     protected:
-      /// protected destructor
-      virtual ~StatementItem() {}
-     public:
-      /// Types of operations 
-      enum Codes {
-        C_CREDIT, //< incoming money 
-        C_DEBET, //< outgoing money
-        C_CREDIT_STORNO, //< storno of incoming money
-        C_DEBET_STORNO //< storno of outgoing money
-      };
-      /// code of operation
-      virtual Codes getCode() const = 0;
-      /// evidence number associated to payment
-      virtual const std::string& getEvidenceNumber() const = 0;
-      /// date of accepting payment
-      virtual boost::gregorian::date getDate() const = 0;
-    };
-    /// bank statement for given period of time 
-    class Statement
-    {
-     protected:
-      /// protected destructor
-      virtual ~Statement() {}
-     public:
-      /// unique identification of record
-      virtual TID getId() const = 0;
-      /// id of our account the statement is for 
-      virtual TID getAccountId() const = 0;
-      /// increasing number of statement
-      virtual unsigned getNumber() const = 0;
-      /// date of checking balance
-      virtual boost::gregorian::date getDate() const = 0;
-      /// balance in date
-      virtual Invoicing::Money getBalance() const = 0;
-      /// date of last statement
-      virtual boost::gregorian::date getOldDate() const = 0;
-      /// balance in oldDate
-      virtual Invoicing::Money getOldBalance() const = 0;
-      /// summarize all credits on statement
-      virtual Invoicing::Money getCredit() const = 0;
-      /// summarize all debets on statement 
-      virtual Invoicing::Money getDebet() const = 0;
-      /// number of items in statment
-      virtual unsigned getItemsCount() const = 0;
-      /// get item by index into list od items
-      virtual StatementItem *getItem(unsigned idx) const = 0;
-    };
-    /// list of statements conforming to specified filter   
-    class StatementList
-    {
-     public:
-      /// public destructor
-      virtual ~StatementList() {}
-      /// reload statements with selected filter
-      virtual void reload() throw (SQL_ERROR) = 0;
-      /// return count of statements in list 
-      virtual unsigned long getCount() const = 0;
-      /// return statement by index
-      virtual Statement *get(unsigned idx) const = 0;
-      /// clear filter settings
-      virtual void clearFilter() = 0;            
-      /// export in XML
-      virtual void exportXML(std::ostream& out) = 0;
-    };
-    /// facade of banking subsystem
-    class Manager
-    {
-     public:
-      /// public destructor - client is responsible for destroying manager
-      virtual ~Manager() {}
-      /// create list of statements
-      virtual StatementList *createStatementList() const = 0;
-      /// create list of online payments
-      virtual OnlinePaymentList *createOnlinePaymentList() const = 0;
-      /// factory method
-      static Manager *create(DB *db);      
-    };    
-  }
-}
+#ifndef _BANK_H_
+#define _BANK_H_
 
-#endif // _BANKING_H_
+#include "common_object.h"
+#include "object.h"
+#include "db/manager.h"
+#include "model/model_filters.h"
+
+namespace Register {
+namespace Banking {
+
+enum MemberType {
+    MT_ACCOUNT_NUMBER,
+    MT_BANK_CODE,
+    MT_PRICE,
+    MT_INVOICE_ID,
+};
+
+// data which are same for bank_ebanka_list and bank_statement_item
+class Payment {
+public:
+    virtual const std::string &getAccountNumber() const = 0;
+    virtual const std::string &getBankCode() const = 0;
+    virtual const std::string &getConstSymbol() const = 0;
+    virtual const std::string &getVarSymbol() const = 0;
+    virtual const Database::Money &getPrice() const = 0;
+    virtual const std::string &getMemo() const = 0;
+    virtual const Database::ID &getInvoiceId() const = 0;
+};
+
+// data from bank_ebanka_list
+class OnlineStatement:
+    virtual public Payment,
+    virtual public Register::CommonObject {
+public:
+    virtual const Database::ID &getAccountId() const = 0;
+    virtual const Database::DateTime &getCrDate() const = 0;
+    virtual const std::string &getAccountName() const = 0;
+    virtual const std::string &getIdent() const = 0;
+};
+
+// data from bank_statement_item table
+class StatementItem:
+    virtual public Payment {
+public:
+    virtual const Database::ID &getId() const = 0;
+    virtual const Database::ID &getStatementId() const = 0;
+    virtual const int getCode() const = 0;
+    virtual const std::string &getEvidenceNumber() const = 0;
+    virtual const Database::Date &getDate() const = 0;
+    virtual const std::string &getSpecSymbol() const = 0;
+};
+
+// date from bank_statement_head table
+class Statement:
+    virtual public Register::CommonObject {
+public:
+    virtual const Database::ID &getAccountId() const = 0;
+    virtual const int getNumber() const = 0;
+    virtual const Database::Date &getDate() const = 0;
+    virtual const Database::Date &getOldDate() const = 0;
+    virtual const Database::Money &getBalance() const = 0;
+    virtual const Database::Money &getOldBalance() const = 0;
+    virtual const Database::Money &getCredit() const = 0;
+    virtual const Database::Money &getDebet() const = 0;
+    virtual unsigned int getStatementItemCount() const = 0;
+    virtual const StatementItem *getStatementItemByIdx(unsigned int idx) const
+        throw (NOT_FOUND) = 0;
+};
+
+// list of online payments
+class OnlineList:
+    virtual public Register::CommonList {
+public:
+    virtual OnlineStatement *get(unsigned int index) const = 0;
+    virtual void reload(Database::Filters::Union &filter) = 0;
+    virtual void sort(MemberType member, bool asc) = 0;
+
+    virtual const char *getTempTableName() const = 0;
+    virtual void makeQuery(bool, bool, std::stringstream &) const = 0;
+    virtual void reload() = 0;
+    virtual void exportXML(std::ostream &out) = 0;
+};
+
+// list of payments
+class List:
+    virtual public Register::CommonList {
+public:
+    virtual Statement *get(unsigned int index) const = 0;
+    virtual void reload(Database::Filters::Union &filter) = 0;
+    virtual void sort(MemberType member, bool asc) = 0;
+
+    virtual const char *getTempTableName() const = 0;
+    virtual void makeQuery(bool, bool, std::stringstream &) const = 0;
+    virtual void reload() = 0;
+    virtual void exportXML(std::ostream &out) = 0;
+};
+
+// banking manager
+class Manager {
+public:
+    virtual List *createList() const = 0;
+    virtual OnlineList *createOnlineList() const = 0;
+    static Manager *create(Database::Manager *dbMan);
+};
+
+} // namespace Bank
+} // namespace Register
+
+#endif // _BANK_H_

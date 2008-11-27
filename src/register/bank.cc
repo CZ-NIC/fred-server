@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2007  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -16,486 +16,656 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
+#include <boost/utility.hpp>
+
+#include "common_impl.h"
 #include "bank.h"
-#include "old_utils/dbsql.h"
-#include <boost/date_time/posix_time/time_parsers.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include "log/logger.h"
 
-#define MAKE_TIME_DEF(ROW,COL,DEF)  \
-  (boost::posix_time::ptime(db->IsNotNull(ROW,COL) ? \
-  boost::posix_time::time_from_string(\
-  db->GetFieldValue(ROW,COL)) : DEF))         
-#define MAKE_TIME(ROW,COL) \
-  MAKE_TIME_DEF(ROW,COL,boost::posix_time::not_a_date_time)         
-#define MAKE_TIME_NEG(ROW,COL) \
-  MAKE_TIME_DEF(ROW,COL,boost::posix_time::neg_infin)         
-#define MAKE_TIME_POS(ROW,COL) \
-  MAKE_TIME_DEF(ROW,COL,boost::posix_time::pos_infin)         
-#define MAKE_DATE(ROW,COL)  \
- (boost::gregorian::date(db->IsNotNull(ROW,COL) ? \
- boost::gregorian::from_string(\
- db->GetFieldValue(ROW,COL)) : \
- (boost::gregorian::date)boost::gregorian::not_a_date_time))
+namespace Register {
+namespace Banking {
 
-#define STR_TO_MONEY(x) atol(x)
+#define TAGSTART(tag) "<"#tag">"
+#define TAGEND(tag) "</"#tag">"
+#define TAG(tag,f) TAGSTART(tag) << f << TAGEND(tag)
+#define OUTMONEY(f) (f)/100 << "." << \
+    std::setfill('0') << std::setw(2) << (f)%100      
 
-namespace Register
-{
-  namespace Banking
-  {
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    //    PaymentImpl
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    class PaymentImpl : virtual public Payment
+
+class PaymentImpl:
+    virtual public Payment {
+private:
+    std::string     m_accountNumber;
+    std::string     m_bankCode;
+    std::string     m_constSymb;
+    std::string     m_varSymb;
+    Database::Money m_price;
+    std::string     m_accountMemo;
+    Database::ID    m_invoiceId;
+public:
+    PaymentImpl(const std::string accountNumber,
+            const std::string bankCode, const std::string constSymb,
+            const std::string varSymb, const Database::Money price,
+            const std::string accountMemo, const Database::ID invoiceId):
+        m_accountNumber(accountNumber), m_bankCode(bankCode),
+        m_constSymb(constSymb), m_varSymb(varSymb), m_price(price),
+        m_accountMemo(accountMemo), m_invoiceId(invoiceId)
+    { }
+    virtual const std::string &getAccountNumber() const
     {
-      TID id;
-      std::string accountNumber;
-      std::string accountBankCode;
-      std::string constSymbol;
-      std::string varSymbol;
-      std::string specSymbol;
-      Invoicing::Money price;
-      std::string memo;
-      TID invoiceId;
-     public:
-      PaymentImpl() :
-        id(0), price(0), invoiceId(0)
-      {}
-      PaymentImpl(DB *db, unsigned l) :
-        id(STR_TO_ID(db->GetFieldValue(l,0))),
-        accountNumber(db->GetFieldValue(l,1)),
-        accountBankCode(db->GetFieldValue(l,2)),
-        constSymbol(db->GetFieldValue(l,3)),
-        varSymbol(db->GetFieldValue(l,4)),
-        specSymbol(db->GetFieldValue(l,5)),
-        price(STR_TO_MONEY(db->GetFieldValue(l,6))),
-        memo(db->GetFieldValue(l,7)),
-        invoiceId(STR_TO_ID(db->GetFieldValue(l,8)))
-      {}
-      virtual TID getId() const
-      {
-        return id;
-      }
-      virtual const std::string& getAccountNumber() const
-      {
-        return accountNumber;
-      }
-      virtual const std::string& getAccountBankCode() const
-      {
-        return accountBankCode;
-      }
-      virtual const std::string& getConstSymbol() const
-      {
-        return constSymbol;
-      }
-      virtual const std::string& getVarSymbol() const
-      {
-        return varSymbol;
-      }
-      virtual const std::string& getSpecSymbol() const
-      {
-        return specSymbol;
-      }
-      virtual Invoicing::Money getPrice() const
-      {
-        return price;
-      }
-      virtual const std::string& getMemo() const
-      {
-        return memo;
-      }
-      virtual TID getInvoiceId() const
-      {
-        return invoiceId;
-      } 
-    };
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    //    OnlinePaymentImpl
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    class OnlinePaymentImpl : virtual public OnlinePayment, public PaymentImpl
+        return m_accountNumber;
+    }
+    virtual const std::string &getBankCode() const
     {
-      TID accountId;
-      boost::posix_time::ptime crDate;
-      std::string accountName;
-      std::string ident;
-     public:
-      OnlinePaymentImpl() :
-        PaymentImpl(), accountId(0)
-      {}
-      OnlinePaymentImpl(DB *db, unsigned l) :
-        PaymentImpl(db,l), 
-        accountId(STR_TO_ID(db->GetFieldValue(l,9))),
-        crDate(MAKE_TIME(l,10)),
-        accountName(db->GetFieldValue(l,11)),
-        ident(db->GetFieldValue(l,12))
-      {}
-      virtual TID getAccountId() const
-      {
-        return accountId;
-      }
-      virtual boost::posix_time::ptime getCrDate() const
-      {
-        return crDate;
-      }
-      virtual const std::string& getAccountName() const
-      {
-        return accountName;
-      }
-      virtual const std::string& getIdent() const
-      {
-        return ident;
-      }      
-    };
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    //    OnlinePaymentListImpl
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    class OnlinePaymentListImpl : virtual public OnlinePaymentList 
+        return m_bankCode;
+    }
+    virtual const std::string &getConstSymbol() const 
     {
-      typedef std::vector<OnlinePaymentImpl *> ListType;
-      ListType payments;
-      DB *db;
-      void clear()
-      {
-        for (unsigned i=0; i<payments.size(); i++)
-          delete payments[i];
-        payments.clear();
-      }
-     public:
-      OnlinePaymentListImpl(DB *_db) :
-        db(_db)
-      {}
-      ~OnlinePaymentListImpl()
-      {
+        return m_constSymb;
+    }
+    virtual const std::string &getVarSymbol() const 
+    {
+        return m_varSymb;
+    }
+    virtual const Database::Money &getPrice() const 
+    {
+        return m_price;
+    }
+    virtual const std::string &getMemo() const 
+    {
+        return m_accountMemo;
+    }
+    virtual const Database::ID &getInvoiceId() const 
+    {
+        return m_invoiceId;
+    }
+}; // class PaymentImpl
+
+class OnlineStatementImpl:
+    public Register::CommonObjectImpl,
+    virtual public OnlineStatement,
+    virtual public PaymentImpl {
+private:
+    Database::ID m_accountId;
+    Database::DateTime m_crDate;
+    std::string m_accountName;
+    std::string m_ident;
+public:
+    OnlineStatementImpl(const Database::ID id, const Database::ID accountId,
+            const Database::Money price, const Database::DateTime crDate,
+            const std::string accountNumber, const std::string bankCode,
+            const std::string constSymb, const std::string varSymb,
+            const std::string memo, const std::string accountName,
+            const std::string ident, Database::ID invoiceId):
+        PaymentImpl(accountNumber, bankCode, constSymb, varSymb,
+                price, memo, invoiceId),
+        CommonObjectImpl(id),
+        m_accountId(accountId), m_crDate(crDate), m_accountName(accountName),
+        m_ident(ident)
+    { }
+    virtual const Database::ID &getAccountId() const 
+    {
+        return m_accountId;
+    }
+    virtual const Database::DateTime &getCrDate() const 
+    {
+        return m_crDate;
+    }
+    virtual const std::string &getAccountName() const 
+    {
+        return m_accountName;
+    }
+    virtual const std::string &getIdent() const 
+    {
+        return m_ident;
+    }
+}; // class OnlineStatementImpl
+
+class StatementItemImpl:
+    virtual public PaymentImpl, 
+    virtual public StatementItem {
+private:
+    Database::ID    m_id;
+    Database::ID    m_statementId;
+    int             m_code;
+    std::string     m_specSymb;
+    std::string     m_accountEvid;
+    Database::Date  m_accountDate;
+public:
+    StatementItemImpl(const Database::ID id, const Database::ID statementId,
+            const std::string accountNumber, const std::string bankCode,
+            const int code, const std::string constSymb,
+            const std::string varSymb, const std::string specSymb,
+            const Database::Money price,
+            const std::string accountEvid, const Database::Date accountDate,
+            const std::string accountMemo, const Database::ID invoiceId):
+        PaymentImpl(accountNumber, bankCode, constSymb, varSymb,
+                price, accountMemo, invoiceId),
+        m_id(id), m_statementId(statementId), m_code(code), m_specSymb(specSymb),
+        m_accountEvid(accountEvid), m_accountDate(accountDate)
+    { }
+    virtual const Database::ID &getId() const
+    {
+        return m_id;
+    }
+    virtual const Database::ID &getStatementId() const
+    {
+        return m_statementId;
+    }
+    virtual const int getCode() const 
+    {
+        return m_code;
+    }
+    virtual const std::string &getSpecSymbol() const
+    {
+        return m_specSymb;
+    }
+    virtual const std::string &getEvidenceNumber() const 
+    {
+        return m_accountEvid;
+    }
+    virtual const Database::Date &getDate() const 
+    {
+        return m_accountDate;
+    }
+}; // class StatementItemImpl
+
+class StatementImpl:
+    public Register::CommonObjectImpl,
+    virtual public Statement {
+private:
+    Database::ID    m_accountId;
+    int             m_number;
+    Database::Date  m_createDate;
+    Database::Date  m_balanceOldDate;
+    Database::Money m_balanceOld;
+    Database::Money m_balanceNew;
+    Database::Money m_balanceCredit;
+    Database::Money m_balanceDebet;
+
+    typedef std::vector<StatementItemImpl>  StatementItemListType;
+    StatementItemListType   m_statementItems;
+protected:
+    Database::Connection *m_conn;
+public:
+    StatementImpl(Database::ID id, Database::ID accountId, int number,
+            Database::Date &balanceOldDate, Database::Date &balanceNewDate,
+            Database::Money &balanceOld, Database::Money &balanceNew,
+            Database::Money &balanceCredit, Database::Money &balanceDebet):
+        CommonObjectImpl(id), m_accountId(accountId), m_number(number),
+        m_createDate(balanceNewDate), m_balanceOldDate(balanceOldDate),
+        m_balanceOld(balanceOld), m_balanceNew(balanceNew),
+        m_balanceCredit(balanceCredit), m_balanceDebet(balanceDebet)
+    { }
+    virtual const Database::ID &getAccountId() const
+    {
+        return m_accountId;
+    }
+    virtual const int getNumber() const
+    {
+        return m_number;
+    }
+    virtual const Database::Date &getDate() const
+    {
+        return m_createDate;
+    }
+    virtual const Database::Date &getOldDate() const
+    {
+        return m_balanceOldDate;
+    }
+    virtual const Database::Money &getBalance() const
+    {
+        return m_balanceNew;
+    }
+    virtual const Database::Money &getOldBalance() const
+    {
+        return m_balanceOld;
+    }
+    virtual const Database::Money &getCredit() const
+    {
+        return m_balanceCredit;
+    }
+    virtual const Database::Money &getDebet() const
+    {
+        return m_balanceDebet;
+    }
+    virtual unsigned int getStatementItemCount() const 
+    {
+        return m_statementItems.size();
+    }
+    virtual const StatementItem *getStatementItemByIdx(unsigned int idx) const
+        throw (NOT_FOUND)
+    {
+        if (idx >= getStatementItemCount()) {
+           throw NOT_FOUND();
+        }
+        return &m_statementItems[idx];
+    }
+    StatementItemImpl *addStatementItem(const StatementItemImpl &statementItem)
+    {
+        m_statementItems.push_back(statementItem);
+        return &m_statementItems.at(m_statementItems.size() - 1);
+    }
+}; // class StatementImpl
+
+COMPARE_CLASS_IMPL(PaymentImpl, AccountNumber);
+COMPARE_CLASS_IMPL(PaymentImpl, BankCode)
+COMPARE_CLASS_IMPL(PaymentImpl, Price)
+COMPARE_CLASS_IMPL(PaymentImpl, InvoiceId)
+
+class OnlineListImpl:
+    public Register::CommonListImpl,
+    virtual public OnlineList {
+private:
+    Manager *m_manager;
+public:
+    OnlineListImpl(Database::Connection *conn, Manager *manager):
+        CommonListImpl(conn),
+        m_manager(manager)
+    { }
+
+    virtual OnlineStatement *get(unsigned int index) const
+    {
+        try {
+            OnlineStatement *stat =
+                dynamic_cast<OnlineStatement *>(data_.at(index));
+            if (stat) {
+                return stat;
+            } else {
+                throw std::exception();
+            }
+        } catch (...) {
+            throw std::exception();
+        }
+    }
+
+    virtual void reload(Database::Filters::Union &filter)
+    {
+        TRACE("[CALL] Bank2::OnlineListImpl::reload(Database::Filters::Union &)");
         clear();
-      }
-      virtual void reload() throw (SQL_ERROR)
-      {
-        clear();
-        std::stringstream sql;
-        sql << "SELECT "
-            << "id, account_number, bank_code, konstsym, varsymb, '', "
-            << "price * 100, memo, invoice_id, "
-            << "account_id, crdate, name, ident "
-            << "FROM bank_ebanka_list";
-        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
-          payments.push_back(new OnlinePaymentImpl(db,i));
-        db->FreeSelect();
-      }
-      virtual unsigned long getCount() const
-      {
-        return payments.size();
-      }
-      virtual OnlinePayment *get(unsigned idx) const
-      {
-        return payments.size() < idx ? payments[idx] : NULL;
-      }
-      virtual void clearFilter()
-      {
-      }
-      #define TAGSTART(tag) "<"#tag">"
-      #define TAGEND(tag) "</"#tag">"
-      #define TAG(tag,f) TAGSTART(tag) << f << TAGEND(tag)
-      #define OUTMONEY(f) (f)/100 << "." << \
-                          std::setfill('0') << std::setw(2) << (f)%100      
-      virtual void exportXML(std::ostream& out)
-      {
+        filter.clearQueries();
+
+        bool at_least_one = false;
+        Database::SelectQuery id_query;
+        Database::Filters::Compound::iterator osit = filter.begin();
+        for (; osit != filter.end(); ++osit) {
+            Database::Filters::OnlineStatement *statFilter =
+                dynamic_cast<Database::Filters::OnlineStatement *>(*osit);
+            if (!statFilter) {
+                continue;
+            }
+            Database::SelectQuery *tmp = new Database::SelectQuery();
+            tmp->addSelect(new Database::Column(
+                        "id", statFilter->joinOnlineStatementTable(), "DISTINCT"));
+            filter.addQuery(tmp);
+            at_least_one = true;
+        }
+        if (!at_least_one) {
+            LOGGER(PACKAGE).error("wrong filter passed for reload!");
+            return;
+        }
+        id_query.limit(load_limit_);
+        filter.serialize(id_query);
+        Database::InsertQuery tmp_table_query =
+            Database::InsertQuery(getTempTableName(), id_query);
+
+        LOGGER(PACKAGE).debug(boost::format(
+                    "temporary table '%1%' generated sql = %2%")
+                % getTempTableName() % tmp_table_query.str());
+        Database::SelectQuery object_info_query;
+        object_info_query.select()
+            << "t_1.id, t_1.account_id, t_1.price * 100, t_1.crdate, "
+            << "t_1.account_number, t_1.bank_code, t_1.konstsym, "
+            << "t_1.varsymb, t_1.memo, t_1.name, t_1.ident, "
+            << "t_1.invoice_id";
+        object_info_query.from()
+            << getTempTableName() << " tmp "
+            << "JOIN bank_ebanka_list t_1 ON (tmp.id = t_1.id)";
+        object_info_query.order_by()
+            << "tmp.id";
+        try {
+            fillTempTable(tmp_table_query);
+
+            Database::Result r_info = conn_->exec(object_info_query);
+            Database::Result::Iterator it = r_info.begin();
+            for (; it != r_info.end(); ++it) {
+                Database::Row::Iterator col = (*it).begin();
+
+                Database::ID id             = *col;
+                Database::ID accountId      = *(++col);
+                Database::Money price       = *(++col);
+                Database::DateTime crDate   = *(++col);
+                std::string accountNumber   = *(++col);
+                std::string bankCode        = *(++col);
+                std::string constSymbol     = *(++col);
+                std::string varSymbol       = *(++col);
+                std::string memo            = *(++col);
+                std::string name            = *(++col);
+                std::string ident           = *(++col);
+                Database::ID invoiceId      = *(++col);
+
+                OnlineStatementImpl *stat = new OnlineStatementImpl(id, accountId, price,
+                        crDate, accountNumber, bankCode, constSymbol,
+                        varSymbol, memo, name, ident, invoiceId);
+                data_.push_back(stat);
+            }
+            CommonListImpl::reload();
+        } catch (Database::Exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            clear();
+        } catch (std::exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            clear();
+        }
+    } // void reload(Database::Filters::Union &filter)
+
+    virtual void sort(MemberType member, bool asc)
+    {
+        switch (member) {
+            case MT_ACCOUNT_NUMBER:
+                stable_sort(data_.begin(), data_.end(), CompareAccountNumber(asc));
+                break;
+            case MT_BANK_CODE:
+                stable_sort(data_.begin(), data_.end(), CompareBankCode(asc));
+                break;
+            case MT_PRICE:
+                stable_sort(data_.begin(), data_.end(), ComparePrice(asc));
+                break;
+            case MT_INVOICE_ID:
+                stable_sort(data_.begin(), data_.end(), CompareInvoiceId(asc));
+                break;
+        }
+    }
+
+    virtual const char *getTempTableName() const 
+    {
+        return "tmp_online_statement_filter_result";
+    }
+
+    virtual void makeQuery(bool, bool, std::stringstream &) const
+    { }
+
+    virtual void reload()
+    { }
+
+    virtual void exportXML(std::ostream &out)
+    {
         out << TAGSTART(online_payments);
-        for (unsigned i=0; i<payments.size(); i++) {
-          OnlinePayment *p = payments[i];
-          out << TAGSTART(online_payment)
-              << TAG(id,p->getId())
-              << TAG(accout_number,p->getAccountNumber())
-              << TAG(accout_bank_code,p->getAccountBankCode())
-              << TAG(const_symbol,p->getConstSymbol())
-              << TAG(var_symbol,p->getVarSymbol())
-              << TAG(spec_symbol,p->getSpecSymbol())
-              << TAG(price,OUTMONEY(p->getPrice()))
-              << TAG(memo,p->getMemo())
-              << TAG(invoice_id,p->getInvoiceId())
-              << TAG(accout_id,p->getAccountId())
-              << TAG(cr_date,p->getCrDate())
-              << TAG(accout_name,p->getAccountName())
-              << TAG(ident,p->getIdent())
-              << TAGEND(online_payment);
+        for (int i = 0; i < (int)getCount(); i++) {
+            OnlineStatement *stat = get(i);
+            out << TAGSTART(online_payment)
+                << TAG(id, stat->getId())
+                << TAG(accout_number, stat->getAccountNumber())
+                << TAG(accout_bank_code, stat->getBankCode())
+                << TAG(const_symbol, stat->getConstSymbol())
+                << TAG(var_symbol, stat->getVarSymbol())
+                // XXX spec symbol is not in bank_ebanka_list,
+                // but this line is present in old
+                // Register::Banking::OnlinePaymentListImpl
+                << TAG(spec_symbol, "")
+                << TAG(price, OUTMONEY(stat->getPrice()))
+                << TAG(memo, stat->getMemo())
+                << TAG(invoice_id, stat->getInvoiceId())
+                << TAG(accout_id, stat->getAccountId())
+                << TAG(cr_date, stat->getCrDate())
+                << TAG(accout_name, stat->getAccountName())
+                << TAG(ident, stat->getIdent())
+                << TAGEND(online_payment);
         }
-        out << TAGEND(online_payments);
-      }      
-    };
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    //    StatementItemImpl
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    class StatementItemImpl : virtual public StatementItem, public PaymentImpl
+        out <<
+            TAGEND(online_payments);
+    } // void exportXML(std::ostream &out)
+}; // class OnlineListImpl
+
+class ListImpl:
+    public Register::CommonListImpl,
+    virtual public List {
+private:
+    Manager *m_manager;
+public:
+    ListImpl(Database::Connection *conn, Manager *manager):
+        CommonListImpl(conn),
+        m_manager(manager)
+    { }
+    virtual Statement *get(unsigned int index) const
     {
-      Codes code;
-      std::string evidenceNumber;
-      boost::gregorian::date date;
-      Codes codeFromInt(unsigned i)
-      {
-        switch (i) {
-          case 1: return C_CREDIT;
-          case 2: return C_DEBET;
-          case 3: return C_CREDIT_STORNO;
-          case 4: return C_DEBET_STORNO;
-          default : 
-           //TODO: log error what to do?
-           return C_CREDIT;
-        };
-      }
-     public:
-      StatementItemImpl() :
-        code(C_CREDIT)
-      {}
-      StatementItemImpl(DB* db, unsigned l) :
-        PaymentImpl(db,l),
-        code(codeFromInt(atoi(db->GetFieldValue(l,9)))),
-        evidenceNumber(db->GetFieldValue(l,10)),
-        date(MAKE_DATE(l,11))
-      {}
-      virtual Codes getCode() const
-      {
-        return code;
-      }
-      virtual const std::string& getEvidenceNumber() const
-      {
-        return evidenceNumber;
-      }
-      virtual boost::gregorian::date getDate() const
-      {
-        return date;
-      }
-    };
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    //    StatementImpl
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    class StatementImpl : virtual public Statement
-    {
-      TID id;
-      TID accountId;
-      unsigned number;
-      boost::gregorian::date date;
-      Invoicing::Money balance;
-      boost::gregorian::date oldDate;
-      Invoicing::Money oldBalance;
-      Invoicing::Money credit;
-      Invoicing::Money debet;
-      typedef std::vector<StatementItemImpl *> ItemList;
-      ItemList items;
-      void clear()
-      {
-        for (unsigned i=0; i<items.size(); i++)
-          delete items[i];
-        items.clear();
-      }
-     public:
-      StatementImpl() : 
-        id(0), accountId(0), number(0), balance(0), oldBalance(0), 
-        credit(0), debet(0)
-      {}
-      StatementImpl(DB* db, unsigned l) :
-        id(STR_TO_ID(db->GetFieldValue(l,0))),
-        accountId(STR_TO_ID(db->GetFieldValue(l,1))),
-        number(atoi(db->GetFieldValue(l,2))),
-        date(MAKE_DATE(l,3)),
-        balance(STR_TO_MONEY(db->GetFieldValue(l,4))),
-        oldDate(MAKE_DATE(l,5)),
-        oldBalance(STR_TO_MONEY(db->GetFieldValue(l,6))),
-        credit(STR_TO_MONEY(db->GetFieldValue(l,7))),
-        debet(STR_TO_MONEY(db->GetFieldValue(l,8)))
-      {}
-      ~StatementImpl()
-      {
-        clear();
-      }
-      virtual TID getId() const
-      {
-        return id;
-      }
-      virtual TID getAccountId() const
-      {
-        return accountId;
-      }
-      virtual unsigned getNumber() const
-      {
-        return number;
-      }
-      virtual boost::gregorian::date getDate() const
-      {
-        return date;
-      }
-      virtual Invoicing::Money getBalance() const
-      {
-        return balance;
-      }
-      virtual boost::gregorian::date getOldDate() const
-      {
-        return oldDate;
-      }
-      virtual Invoicing::Money getOldBalance() const
-      {
-        return oldBalance;
-      }
-      virtual Invoicing::Money getCredit() const
-      {
-        return credit;
-      }
-      virtual Invoicing::Money getDebet() const
-      {
-        return debet;
-      }
-      virtual unsigned getItemsCount() const
-      {
-        return items.size();
-      }
-      virtual StatementItem *getItem(unsigned idx) const
-      {
-        return idx < items.size() ? items[idx] : NULL;
-      }
-      void addItem(DB* db, unsigned l)
-      {
-        items.push_back(new StatementItemImpl(db,l));
-      }
-      bool hasId(TID _id) const
-      {
-        return id == _id;
-      }
-    };
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    //   StatementListImpl
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    class StatementListImpl : virtual public StatementList
-    {
-      typedef std::vector<StatementImpl *> ListType;
-      ListType statements;
-      DB *db;
-      void clear()
-      {
-        for (unsigned i=0; i<statements.size(); i++)
-          delete statements[i];
-        statements.clear();
-      }
-     public:
-      StatementListImpl(DB *_db) :
-        db(_db)
-      {}
-      ~StatementListImpl()
-      {
-        clear();
-      }
-      virtual void reload() throw (SQL_ERROR)
-      {
-        clear();
-        std::stringstream sql;
-        sql << "SELECT "
-            << "id, account_id, num, create_date, balance_old * 100, "
-            << "balance_old_date, balance_new * 100, "
-            << "balance_credit * 100, balance_debet * 100 "
-            << "FROM bank_statement_head";
-        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
-          statements.push_back(new StatementImpl(db,i));
-        db->FreeSelect();
-        sql.str("");
-        sql << "SELECT "
-            << "id, account_number, bank_code, konstsym, varsymb, specsymb, "
-            << "price * 100, account_memo, invoice_id, "
-            << "code, account_evid, account_date, "
-            << "statement_id "
-            << "FROM bank_statement_item";
-        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          StatementImpl *si = findById(STR_TO_ID(db->GetFieldValue(i,12)));
-          if (si) si->addItem(db,i);
+        try {
+            Statement *stat =
+                dynamic_cast<Statement *>(data_.at(index));
+            if (stat) {
+                return stat;
+            } else {
+                throw std::exception();
+            }
+        } catch (...) {
+            throw std::exception();
         }
-        db->FreeSelect();
-      }
-      virtual unsigned long getCount() const
-      {
-        return statements.size();
-      }
-      virtual Statement *get(unsigned idx) const
-      {
-        return statements.size() < idx ? statements[idx] : NULL;
-      }
-      virtual StatementImpl *findById(TID id) const
-      {
-        ListType::const_iterator i = find_if(
-          statements.begin(), statements.end(),
-          std::bind2nd(std::mem_fun(&StatementImpl::hasId),id)
-        );
-        return i != statements.end() ? *i : NULL;
-      }
-      virtual void clearFilter()
-      {
-      }
-      virtual void exportXML(std::ostream& out)
-      {
+    }
+    virtual void reload(Database::Filters::Union &filter)
+    {
+        TRACE("[CALL] Bank2::StatementListImpl::reload(Database::Filters::Union &)");
+        clear();
+        filter.clearQueries();
+
+        bool at_least_one = false;
+        Database::SelectQuery id_query;
+        Database::Filters::Compound::iterator sit = filter.begin();
+        for (; sit != filter.end(); ++sit) {
+            Database::Filters::Statement *sf =
+                dynamic_cast<Database::Filters::Statement *>(*sit);
+            if (!sf) {
+                continue;
+            }
+            Database::SelectQuery *tmp = new Database::SelectQuery();
+            tmp->addSelect(new Database::Column(
+                        "id", sf->joinStatementTable(), "DISTINCT"));
+            filter.addQuery(tmp);
+            at_least_one = true;
+        }
+        if (!at_least_one) {
+            LOGGER(PACKAGE).error("wrong filter passed for reload!");
+            return;
+        }
+        id_query.limit(load_limit_);
+        filter.serialize(id_query);
+        Database::InsertQuery tmp_table_query =
+            Database::InsertQuery(getTempTableName(), id_query);
+
+        LOGGER(PACKAGE).debug(boost::format(
+                    "temporary table '%1%' generated sql = %2%")
+                % getTempTableName() % tmp_table_query.str());
+
+        Database::SelectQuery object_info_query;
+        object_info_query.select()
+            << "t_1.id, t_1.account_id, t_1.num, t_1.create_date, "
+            << "t_1.balance_old_date, t_1.balance_old * 100, "
+            << "t_1.balance_new * 100, t_1.balance_credit * 100, "
+            << "t_1.balance_debet * 100";
+        object_info_query.from()
+            << getTempTableName() << " tmp "
+            << "JOIN bank_statement_head t_1 ON (tmp.id = t_1.id)";
+        object_info_query.order_by()
+            << "tmp.id";
+        try {
+            fillTempTable(tmp_table_query);
+
+            Database::Result r_info = conn_->exec(object_info_query);
+            Database::Result::Iterator it = r_info.begin();
+            for (; it != r_info.end(); ++it) {
+                Database::Row::Iterator col = (*it).begin();
+
+                Database::ID id             = *col;
+                Database::ID accountId      = *(++col);
+                int number                  = *(++col);
+                Database::Date crDate       = *(++col);
+                Database::Date oldDate      = *(++col);
+                Database::Money balance     = *(++col);
+                Database::Money oldBalance  = *(++col);
+                Database::Money credit      = *(++col);
+                Database::Money debet       = *(++col);
+
+                StatementImpl *stat = new StatementImpl(id, accountId,
+                        number, crDate, oldDate,
+                        balance, oldBalance, credit, debet);
+                if (!stat) {
+                    LOGGER(PACKAGE).error("not stat");
+                } else {
+                    LOGGER(PACKAGE).error("yes stat");
+                }
+                data_.push_back(stat);
+            }
+            if (data_.empty()) {
+                return;
+            }
+            resetIDSequence();
+            Database::SelectQuery StatementItemQuery;
+            StatementItemQuery.select()
+                << "tmp.id, t_1.statement_id, t_1.account_number, t_1.bank_code, "
+                << "t_1.code, t_1.konstSym, t_1.varSymb, t_1.specsymb, t_1.price * 100, "
+                << "t_1.account_evid, t_1.account_date, t_1.account_memo, "
+                << "t_1.invoice_id";
+            StatementItemQuery.from()
+                << getTempTableName() << " tmp "
+                << "JOIN bank_statement_item t_1 ON (tmp.id = t_1.statement_id)";
+            StatementItemQuery.order_by()
+                << "tmp.id";
+            Database::Result r_stat = conn_->exec(StatementItemQuery);
+            Database::Result::Iterator statIt = r_stat.begin();
+            for (; statIt != r_stat.end(); ++statIt) {
+                Database::Row::Iterator col = (*statIt).begin();
+                Database::ID id             = *col;
+                Database::ID statementId    = *(++col);
+                std::string accountNumber   = *(++col);
+                std::string bankCode        = *(++col);
+                int code                    = *(++col);
+                std::string konstSymb       = *(++col);
+                std::string varSymb         = *(++col);
+                std::string specSymb        = *(++col);
+                Database::Money price       = *(++col);
+                std::string accountEvid     = *(++col);
+                Database::Date accountDate  = *(++col);
+                std::string accountMemo     = *(++col);
+                Database::ID invoiceId      = *(++col);
+
+                StatementImpl *statPtr =
+                    dynamic_cast<StatementImpl *>(findIDSequence(statementId));
+                if (statPtr) {
+                    statPtr->addStatementItem(StatementItemImpl(id, statementId,
+                                accountNumber, bankCode, code, konstSymb,
+                                varSymb, specSymb, price, accountEvid, accountDate,
+                                accountMemo, invoiceId));
+                }
+            }
+            CommonListImpl::reload();
+        } catch (Database::Exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            clear();
+        } catch (std::exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            clear();
+        }
+    } // void reload(Database::Filters::Union &filter)
+
+    virtual void sort(MemberType member, bool asc)
+    {
+        switch (member) {
+            case MT_ACCOUNT_NUMBER:
+                stable_sort(data_.begin(), data_.end(), CompareAccountNumber(asc));
+                break;
+            case MT_BANK_CODE:
+                stable_sort(data_.begin(), data_.end(), CompareBankCode(asc));
+                break;
+            case MT_PRICE:
+                stable_sort(data_.begin(), data_.end(), ComparePrice(asc));
+                break;
+            case MT_INVOICE_ID:
+                stable_sort(data_.begin(), data_.end(), CompareInvoiceId(asc));
+                break;
+        }
+    }
+
+    virtual const char *getTempTableName() const 
+    {
+        return "tmp_statement_filter_result";
+    }
+
+    virtual void makeQuery(bool, bool, std::stringstream &) const
+    { }
+
+    virtual void reload()
+    { }
+
+    virtual void exportXML(std::ostream &out)
+    {
         out << TAGSTART(statements);
-        for (unsigned i=0; i<statements.size(); i++) {
-          Statement *s = statements[i];
-          out << TAGSTART(statement)
-              << TAG(id,s->getId())
-              << TAG(accout_id,s->getAccountId())
-              << TAG(number,s->getNumber())
-              << TAG(date,s->getDate())
-              << TAG(balance,OUTMONEY(s->getBalance()))
-              << TAG(old_date,s->getOldDate())
-              << TAG(oldBalance,OUTMONEY(s->getOldBalance()))
-              << TAG(credit,OUTMONEY(s->getCredit()))
-              << TAG(debet,OUTMONEY(s->getDebet()))
-              << TAGSTART(items);
-          for (unsigned k=0; k<s->getItemsCount(); k++) {
-            StatementItem *i = s->getItem(k);      
-            out << TAGSTART(item)
-                << TAG(id,i->getId())
-                << TAG(accout_number,i->getAccountNumber())
-                << TAG(accout_bank_code,i->getAccountBankCode())
-                << TAG(const_symbol,i->getConstSymbol())
-                << TAG(var_symbol,i->getVarSymbol())
-                << TAG(spec_symbol,i->getSpecSymbol())
-                << TAG(price,OUTMONEY(i->getPrice()))
-                << TAG(memo,i->getMemo())
-                << TAG(invoice_id,i->getInvoiceId())
-                << TAG(code,i->getCode())
-                << TAG(evidence_number,i->getEvidenceNumber())
-                << TAG(date,i->getDate())
-                << TAGEND(item);
-          }
-          out << TAGEND(items)  
-              << TAGEND(statement);
+        for (int i = 0; i < (int)getCount(); i++) {
+            Statement *stat = get(i);
+            out << TAGSTART(statement)
+                << TAG(id, stat->getId())
+                << TAG(accout_id, stat->getAccountId())
+                << TAG(number, stat->getNumber())
+                << TAG(date, stat->getDate())
+                << TAG(balance, OUTMONEY(stat->getBalance()))
+                << TAG(old_date, stat->getOldDate())
+                << TAG(oldBalance, OUTMONEY(stat->getOldBalance()))
+                << TAG(credit, OUTMONEY(stat->getCredit()))
+                << TAG(debet, OUTMONEY(stat->getDebet()))
+                << TAGSTART(items);
+            for (int j = 0; j < (int)stat->getStatementItemCount(); j++) {
+                StatementItem *itm = (StatementItem *)stat->getStatementItemByIdx(j);
+                out << TAGSTART(item)
+                    << TAG(id, itm->getId())
+                    << TAG(accout_number,itm->getAccountNumber())
+                    << TAG(accout_bank_code,itm->getBankCode())
+                    << TAG(const_symbol,itm->getConstSymbol())
+                    << TAG(var_symbol,itm->getVarSymbol())
+                    << TAG(spec_symbol,itm->getSpecSymbol())
+                    << TAG(price,OUTMONEY(itm->getPrice()))
+                    << TAG(memo,itm->getMemo())
+                    << TAG(invoice_id,itm->getInvoiceId())
+                    << TAG(code,itm->getCode())
+                    << TAG(evidence_number,itm->getEvidenceNumber())
+                    << TAG(date,itm->getDate())
+                    << TAGEND(item);
+            }
+            out << TAGEND(items)
+                << TAGEND(statement);
         }
         out << TAGEND(statements);
-      }      
-       
-    };
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    //   ManagerImpl
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    /// implementation for Manager interface
-    class ManagerImpl : virtual public Manager
+    } // void exportXML(std::ostream &out)
+
+}; // class ListImpl
+
+class ManagerImpl:
+    virtual public Manager {
+private:
+    Database::Connection *m_conn;
+public:
+    ManagerImpl(Database::Manager *dbMan):
+        m_conn(dbMan->getConnection())
+    { }
+    virtual ~ManagerImpl()
     {
-      DB *db;
-     public:
-      ManagerImpl(
-        DB *_db
-      ) : db(_db)
-      {}
-      /// create empty list of statements      
-      virtual StatementList* createStatementList() const
-      {
-        return new StatementListImpl(db);
-      }
-      /// create empty list of statements      
-      virtual OnlinePaymentList* createOnlinePaymentList() const
-      {
-        return new OnlinePaymentListImpl(db);
-      }
-    }; // ManagerImpl
-    Manager *Manager::create(
-      DB *db
-    )
+        boost::checked_delete<Database::Connection>(m_conn);
+    }
+    List *createList() const
     {
-      return new ManagerImpl(db);
-    }    
-  }; // Invoicing
-}; // Register
+        return new ListImpl(m_conn, (Manager *)this);
+    }
+    OnlineList *createOnlineList() const
+    {
+        return new OnlineListImpl(m_conn, (Manager *)this);
+    }
+}; // class ManagerImpl
+
+Manager *
+Manager::create(Database::Manager *dbMan)
+{
+    TRACE("[CALL] Register::Bank2::Manager::create()");
+    return new ManagerImpl(dbMan);
+}
+
+} // namespace Bank
+} // namespace Register
+
