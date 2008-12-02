@@ -20,7 +20,6 @@
 #include "bankclient.h"
 #include "commonclient.h"
 #include "register/bank.h"
-#include "register/online_bank.h"
 #include "register/register.h"
 
 #include <iostream>
