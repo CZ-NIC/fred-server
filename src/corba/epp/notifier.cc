@@ -72,7 +72,7 @@ bool EPPNotifier::Send()
     "registrar", "name", "id",registrarID
   );
   registrarInfo << " ("
-                << db->GetValueFromTable("registrar", "url", "id",registrarID) 
+                << db->GetValueFromTable("registrar", "url", "id",registrarID)
                 << ")";
   params["registrar"] = registrarInfo.str(); // registrar name and url
   params["handle"] = db->GetValueFromTable("object_registry", "name", "id",
@@ -107,7 +107,7 @@ bool EPPNotifier::Send()
   }
   LOG( DEBUG_LOG , "EPPNotifier: TO: %s" , emails.str().c_str() );
   try {
-    // Mailer manager send emailes 
+    // Mailer manager send emailes
     mm->sendEmail( "" , emails.str() , "", getTemplate() ,params,handles,attach );
   }
   catch (...) {return false;}
@@ -126,7 +126,7 @@ void EPPNotifier::AddContactID(
   notify.push_back(n);
 }
 
-// addall  tech contact of  nsset  linked with domain with  domainID 
+// addall  tech contact of  nsset  linked with domain with  domainID
 void EPPNotifier::AddNSSetTechByDomain(
   ID domainID)
 {
@@ -168,7 +168,7 @@ EPPNotifier::AddKeySetTech(ID keysetID)
             "SELECT contactid FROM keyset_contact_map WHERE keysetid=%d",
             keysetID);
 
-    if (db->ExecSQL(sqlString)) {
+    if (db->ExecSelect(sqlString)) {
         num = db->GetSelectRows();
         for (i = 0; i < num; i++)
             AddContactID(atoi(db->GetFieldValue(i, 0)), KEY_CONTACT, 0);
