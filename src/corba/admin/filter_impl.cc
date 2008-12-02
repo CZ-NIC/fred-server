@@ -102,42 +102,24 @@ public:
   }
 };
 
-class FilterLogEventTypeImpl : virtual public POA_ccReg::Filters::LogEventType, public FilterSimpleImpl {
-  Database::Filters::Value<Database::LogEventType>* get() {
-    return dynamic_cast<Database::Filters::Value<Database::LogEventType>*>(f);
+class FilterLogServiceTypeImpl : virtual public POA_ccReg::Filters::LogServiceType, public FilterSimpleImpl {
+  Database::Filters::Value<Database::LogServiceType>* get() {
+    return dynamic_cast<Database::Filters::Value<Database::LogServiceType>*>(f);
   }
 
 public:
-  FilterLogEventTypeImpl(Database::Filters::Value<Database::LogEventType>* f) : FilterSimpleImpl(f) {
-  }
-  ccReg::LogEventType value() {
-    int val;
-    val = (int)get()->getValue().getValue();
-    return ccReg::LogEventType(val);
-  }
-  void value(ccReg::LogEventType v) {
-    get()->setValue((Database::LogEventType)v);
-  }
-};
-
-class FilterLogComponentImpl : virtual public POA_ccReg::Filters::LogComponent, public FilterSimpleImpl {
-  Database::Filters::Value<Database::LogComponent>* get() {
-    return dynamic_cast<Database::Filters::Value<Database::LogComponent>*>(f);
-  }
-
-public:
-  FilterLogComponentImpl(Database::Filters::Value<Database::LogComponent>* f) :
+  FilterLogServiceTypeImpl(Database::Filters::Value<Database::LogServiceType>* f) :
     FilterSimpleImpl(f) {
   }
 
-  ccReg::LogComponent value() {
+  ccReg::LogServiceType value() {
     int val;
     val = (int)get()->getValue().getValue();
-    return ccReg::LogComponent(val);
+    return ccReg::LogServiceType(val);
   }
 
-  void value(ccReg::LogComponent v) {
-    get()->setValue(Database::LogComponent(v));
+  void value(ccReg::LogServiceType v) {
+    get()->setValue(Database::LogServiceType(v));
   }
 };
 
@@ -380,7 +362,7 @@ COMPOUND_CLASS(KeySet, KeySet, Obj,
 
 COMPOUND_CLASS(Action, EppAction, Compound,
     FILTER_ADD(Registrar, addRegistrar);
-    FILTER_ADD(Obj, addObject);    
+    FILTER_ADD(Obj, addObject);
     FILTER_ADD(Int, addType);
     FILTER_ADD(Int, addResponse);
     FILTER_ADD(DateTime, addTime);
@@ -443,11 +425,10 @@ COMPOUND_CLASS(Mail, Mail, Compound,
 
 COMPOUND_CLASS(LogEntry, LogEntry, Compound,
     FILTER_ADD(Id, addId);
-    FILTER_ADD(DateTime, addDateTime);
+    FILTER_ADD(DateTime, addTimeBegin);
+    FILTER_ADD(DateTime, addTimeEnd);
     FILTER_ADD(Str, addSourceIp);
-    FILTER_ADD(LogEventType, addFlag);
-    FILTER_ADD(LogComponent, addComponent);
-    FILTER_ADD(Str, addContent);
+    FILTER_ADD(LogServiceType, addServiceType);
 );
 
 FilterIteratorImpl::FilterIteratorImpl() :
@@ -509,9 +490,7 @@ ITERATOR_ADD_E_METHOD_IMPL(Id,Value<Database::ID>);
 ITERATOR_ADD_E_METHOD_IMPL(Action,EppAction);
 ITERATOR_ADD_E_METHOD_IMPL(Date,Interval<Database::DateInterval>);
 ITERATOR_ADD_E_METHOD_IMPL(DateTime,Interval<Database::DateTimeInterval>);
-ITERATOR_ADD_E_METHOD_IMPL(LogEventType,Value<Database::LogEventType>);
-ITERATOR_ADD_E_METHOD_IMPL(LogComponent,Value<Database::LogComponent>);
-
+ITERATOR_ADD_E_METHOD_IMPL(LogServiceType,Value<Database::LogServiceType>);
 ITERATOR_ADD_E_METHOD_IMPL(Obj,Object);
 ITERATOR_ADD_E_METHOD_IMPL(Registrar,Registrar);
 ITERATOR_ADD_E_METHOD_IMPL(Filter,FilterFilter);
@@ -553,7 +532,6 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(ObjectState,ObjectState);
   ITERATOR_ADD_FILTER_METHOD_IMPL(LogEntry,LogEntry);
   ITERATOR_ADD_FILTER_METHOD_IMPL(IntInterval,Interval<int>);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(LogEventType,Value<Database::LogEventType>);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(LogComponent,Value<Database::LogComponent>);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(LogServiceType,Value<Database::LogServiceType>);
 }
 

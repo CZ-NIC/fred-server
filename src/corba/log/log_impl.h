@@ -9,6 +9,12 @@
 #include "corba/mailer_manager.h"
 #include <corba/ccReg.hh>
 
+// TODO - we need hash map
+#include <map>
+/*
+ * #include <
+ */
+
 #include "conf/manager.h"
 
 using namespace Database;
@@ -20,7 +26,17 @@ class ccReg_Log_i : public POA_ccReg::Log,
 {
 private:
 
+  /** Limit the number of entries read from log_property_name table
+   * (which is supposed to contain limited number of distinct property names )
+   */
+  static const int PROP_NAMES_SIZE_LIMIT = 10000;
+
   Connection conn;
+
+  /*
+  std::tr1::unordered_map<std::string, ccReg::TID> property_names
+  */
+  std::map<std::string, ccReg::TID> property_names;
 /*
   std::string m_connection_string;
   NameService *ns;
@@ -49,7 +65,13 @@ public:
       throw (DB_CONNECT_FAILED);
   virtual ~ccReg_Log_i();
 
-  CORBA::Boolean message(const char* sourceIP, ccReg::LogComponent comp, ccReg::LogEventType event, const char* content, const ccReg::LogProperties& props);
+
+  ccReg::TID new_event(const char *sourceIP, ccReg::LogServiceType service, const char *content_in, const ccReg::LogProperties& props);
+  CORBA::Boolean update_event(ccReg::TID id, const ccReg::LogProperties &props);
+  CORBA::Boolean update_event_close(ccReg::TID id, const char *content_out, const ccReg::LogProperties &props);
+
+private:
+  void insert_props(ccReg::TID entry_id, const ccReg::LogProperties& props);
 
 };
 

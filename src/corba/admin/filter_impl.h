@@ -19,9 +19,9 @@ class FilterIteratorImpl : virtual public POA_ccReg::Filters::Iterator
 public:
   FilterIteratorImpl();
   ~FilterIteratorImpl();
-  
+
   ccReg::Filters::Base_ptr getFilter();
-  
+
   ccReg::Filters::Int_ptr addE(Database::Filters::Value<unsigned>* f);
   ccReg::Filters::Int_ptr addE(Database::Filters::Value<int>* f);
   ccReg::Filters::IntInterval_ptr addE(Database::Filters::Interval<int>* f);
@@ -43,19 +43,18 @@ public:
   ccReg::Filters::File_ptr addE(Database::Filters::File* f);
   ccReg::Filters::ObjectState_ptr addE(Database::Filters::ObjectState* f);
   ccReg::Filters::LogEntry_ptr addE(Database::Filters::LogEntry* f);
-  ccReg::Filters::LogEventType_ptr addE(Database::Filters::Value<Database::LogEventType> *f);
-  ccReg::Filters::LogComponent_ptr addE(Database::Filters::Value<Database::LogComponent> *f);
-    
+  ccReg::Filters::LogServiceType_ptr addE(Database::Filters::Value<Database::LogServiceType> *f);
+
   void addFilter(Database::Filters::Filter* f);
-    
+
   void clearF();
   void reset();
   void setNext();
   bool hasNext();
-    
+
 protected:
   void addF(FilterBaseImpl* f);
-  
+
 private:
   std::vector<FilterBaseImpl*> flist;
   std::vector<FilterBaseImpl*>::iterator i;

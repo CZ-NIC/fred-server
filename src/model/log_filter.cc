@@ -3,14 +3,14 @@
 namespace Database {
 namespace Filters {
 
-LogEntry* LogEntry::create() { 
-	return new LogEntryImpl(true); 
-} 
+LogEntry* LogEntry::create() {
+	return new LogEntryImpl(true);
+}
 
-LogEntryImpl::LogEntryImpl(bool set_active) : Compound() { 
-	setName("LogEntry"); 
-	active = set_active; 
-} 
+LogEntryImpl::LogEntryImpl(bool set_active) : Compound() {
+	setName("LogEntry");
+	active = set_active;
+}
 
 Table& LogEntryImpl::joinLogEntryTable()
 {
@@ -24,10 +24,19 @@ Value<Database::ID>& LogEntryImpl::addId()
   add(tmp);
   return *tmp;
 }
-Interval<Database::DateTimeInterval>& LogEntryImpl::addDateTime()
+
+Interval<Database::DateTimeInterval>& LogEntryImpl::addTimeBegin()
 {
   Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("time", joinLogEntryTable()));
-  tmp->setName("Timestamp");
+  tmp->setName("TimeBegin");
+  add(tmp);
+  return *tmp;
+}
+
+Interval<Database::DateTimeInterval>& LogEntryImpl::addTimeEnd()
+{
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("time", joinLogEntryTable()));
+  tmp->setName("TimeEnd");
   add(tmp);
   return *tmp;
 }
@@ -40,79 +49,153 @@ Value<std::string>& LogEntryImpl::addSourceIp()
   return *tmp;
 }
 
-Value<Database::LogEventType>& LogEntryImpl::addFlag()
+Value<Database::LogServiceType>& LogEntryImpl::addServiceType()
 {
-  Value<Database::LogEventType> *tmp = new Value<Database::LogEventType>(Column("flag", joinLogEntryTable()));
-  tmp->setName("Flag");
+  Value<Database::LogServiceType> *tmp = new Value<Database::LogServiceType>(Column("ServiceType", joinLogEntryTable()));
+  tmp->setName("ServiceType");
   add(tmp);
   return *tmp;
 }
 
-Value<Database::LogComponent>& LogEntryImpl::addComponent()
+Value<Database::ID>& LogEntryImpl::addLogRawContentId()
 {
-  Value<Database::LogComponent> *tmp = new Value<Database::LogComponent>(Column("component", joinLogEntryTable()));
-  tmp->setName("Component");
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("entry_id", joinTable("log_raw_content")));
+  tmp->setName("LogRawContentId");
   add(tmp);
   return *tmp;
 }
 
-Value<std::string>& LogEntryImpl::addContent()
+Value<Database::ID>& LogEntryImpl::addLogPropertyValueId()
 {
-  Value<std::string> *tmp = new Value<std::string>(Column("content", joinLogEntryTable()));
-  tmp->setName("Content");
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("entry_id", joinTable("log_property_value")));
+  tmp->setName("LogPropertyValueId");
   add(tmp);
   return *tmp;
 }
 
-Value<Database::ID>& LogEntryImpl::addLogPropertyId()
+LogPropertyValue& LogEntryImpl::addLogPropertyValue()
 {
-  Value<Database::ID> *tmp = new Value<Database::ID>(Column("entry_id", joinTable("log_property")));
-  tmp->setName("LogPropertyId");
+  LogPropertyValue *tmp = new LogPropertyValueImpl(true);
+  tmp->setName("LogPropertyValue");
+
+  tmp->joinOn(new Join(Column("id", joinLogEntryTable()), SQL_OP_EQ,  Column("entry_id", tmp->joinLogPropertyValueTable())));
   add(tmp);
   return *tmp;
 }
 
-LogProperty& LogEntryImpl::addLogProperty()
+LogPropertyName& LogPropertyValueImpl::addLogPropertyName()
 {
-  LogProperty *tmp = new LogPropertyImpl(true);
-  tmp->setName("LogProperty");
+  LogPropertyName *tmp = new LogPropertyNameImpl(true);
+  tmp->setName("LogPropertyName");
 
-  tmp->joinOn(new Join(Column("id", joinLogEntryTable()), SQL_OP_EQ,  Column("entry_id", tmp->joinLogPropertyTable())));
+  tmp->joinOn(new Join(Column("named_id", joinLogPropertyValueTable()), SQL_OP_EQ,  Column("id", tmp->joinLogPropertyNameTable())));
   add(tmp);
   return *tmp;
 }
 
-LogPropertyImpl::LogPropertyImpl(bool set_active) {
-  setName("LogProperty");
+LogRawContent& LogEntryImpl::addLogRawContent()
+{
+	LogRawContent *tmp = new LogRawContentImpl(true);
+	tmp->setName("LogRawContent");
+
+	tmp->joinOn(new Join(Column("id", joinLogEntryTable()), SQL_OP_EQ, Column("entry_id", joinTable("log_raw_content"))));
+	add(tmp);
+	return *tmp;
+}
+
+LogPropertyValueImpl::LogPropertyValueImpl(bool set_active) {
+  setName("LogPropertyValue");
   active = set_active;
 }
 
-LogProperty *LogProperty::create()
+LogPropertyValue *LogPropertyValue::create()
 {
-  return new LogPropertyImpl(true);
+  return new LogPropertyValueImpl(true);
 }
 
-Table &LogPropertyImpl::joinLogPropertyTable()
+Table &LogPropertyValueImpl::joinLogPropertyValueTable()
 {
-  return joinTable("log_property");     
+  return joinTable("log_property_value");
 }
 
-Value<std::string> &LogPropertyImpl::addValue()
+Value<std::string> &LogPropertyValueImpl::addValue()
 {
-  Value<std::string> *tmp = new Value<std::string>(Column("value", joinLogPropertyTable()));
+  Value<std::string> *tmp = new Value<std::string>(Column("value", joinLogPropertyValueTable()));
   tmp->setName("Value");
   add(tmp);
   return *tmp;
 }
 
-Value<std::string> &LogPropertyImpl::addName()
+Value<Database::ID>& LogPropertyValueImpl::addLogPropertyNameId()
 {
-  Value<std::string> *tmp = new Value<std::string>(Column("name", joinLogPropertyTable()));
+  Value<Database::ID> *tmp = new Value<Database::ID>(Column("name_id", joinLogPropertyValueTable()));
+  tmp->setName("NameId");
+  add(tmp);
+  return *tmp;
+}
+
+Value<bool>& LogPropertyValueImpl::addOutputFlag()
+{
+  Value<bool> *tmp = new Value<bool>(Column("output", joinLogPropertyValueTable()));
+  tmp->setName("Output");
+  add(tmp);
+  return *tmp;
+}
+
+LogPropertyNameImpl::LogPropertyNameImpl(bool set_active)
+{
+	setName("LogPropertyName");
+	active = set_active;
+}
+
+LogPropertyName *LogPropertyName::create()
+{
+  return new LogPropertyNameImpl(true);
+}
+
+Table &LogPropertyNameImpl::joinLogPropertyNameTable()
+{
+	return joinTable("log_property_name");
+}
+
+Value<std::string>& LogPropertyNameImpl::addName()
+{
+  Value<std::string> *tmp = new Value<std::string>(Column("name", joinLogPropertyNameTable()));
   tmp->setName("Name");
   add(tmp);
   return *tmp;
 }
 
+LogRawContentImpl::LogRawContentImpl(bool set_active) {
+  setName("LogRawContentImpl");
+  active = set_active;
 }
+
+Table &LogRawContentImpl::joinLogRawContentTable()
+{
+	return joinTable("log_raw_content");
 }
+
+Value<std::string>& LogRawContentImpl::addResponse()
+{
+  Value<std::string>* tmp = new Value<std::string>(Column("response", joinLogRawContentTable()));
+  setName("Response");
+  add(tmp);
+  return *tmp;
+}
+
+Value<std::string>& LogRawContentImpl::addRequest()
+{
+  Value<std::string>* tmp = new Value<std::string>(Column("request", joinLogRawContentTable()));
+  setName("Request");
+  add(tmp);
+  return *tmp;
+}
+
+}
+
+
+}
+
+
 

@@ -27,7 +27,7 @@ Connection* init_connection() {
   Connection *conn;
   try {
   	conn = new Connection("host=localhost dbname=fred user=fred port=22345");
-  } catch (Database::Exception& ex) {  
+  } catch (Database::Exception& ex) {
 	std::cout << "Error while connecting to the database " << ex.what() << std::endl;
 	return NULL;
   }
@@ -39,7 +39,7 @@ void exec_and_print(SelectQuery& _q, Union& _f) {
   _f.serialize(_q);
 
   std::auto_ptr<Connection> conn(init_connection());
-  if(conn.get() == NULL) return; 
+  if(conn.get() == NULL) return;
   Result result = conn->exec(_q);
 
   for (Result::Iterator it = result.begin(); it != result.end(); ++it) {
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
 
     SelectQuery sq;
     Union uf;
-    //		
+    //
     //		EppAction *ef = new EppActionImpl();
     //		Object *of = ef->addObject();
     //		ef->addSession();
@@ -147,35 +147,35 @@ int main(int argc, char *argv[]) {
     //    uf.clear();
     //
     //    return 1;
-    
+
 //    File *f = new FileImpl();
 //    f->addMimeType().setValue("*/pdf");
-//    
+//
 //    uf.addFilter(f);
 //    sq1 = new SelectQuery();
 //    sq1->addSelect("id", f->joinFileTable());
 //    uf.addQuery(sq1);
-//      
+//
 //    exec_and_print(sq, uf);
-//      
+//
 //    return 1;
-//    
+//
 //    Mail *m = new MailImpl();
 //    //m->addId().setValue(Database::ID(28));
 //    //m->addMessage().setValue("Contact data change");
 //    //m->addHandle().setValue("CID:JIRI");
 //    //m->addType().setValue(1);
 //    m->addAttachment().addName().setValue("150800001.pdf");
-//    
+//
 //    uf.addFilter(m);
 //    sq1 = new SelectQuery();
 //    sq1->addSelect("id", m->joinMailTable());
 //    uf.addQuery(sq1);
-//    
+//
 //    exec_and_print(sq, uf);
-//    
+//
 //    return 1;
-    
+
 
 /*
     Domain *df_test = new DomainHistoryImpl();
@@ -206,19 +206,19 @@ int main(int argc, char *argv[]) {
     // exec_and_print__(sq, uf);
 
     return 1;
-    
+
     Invoice *i = new InvoiceImpl();
     //i->addFile().addName().setValue("soubor.pdf");
     i->addRegistrar().addHandle().setValue("REG-FRED_A");
-   
+
     uf.addFilter(i);
     sq1 = new SelectQuery();
     sq1->addSelect("*", i->joinInvoiceTable());
     uf.addQuery(sq1);
 
     exec_and_print(sq, uf);
-   
-    return 1;    
+
+    return 1;
 
     Database::InsertQuery iq("public_request");
     iq.add("state", Database::Value(10));
@@ -237,16 +237,16 @@ int main(int argc, char *argv[]) {
     std::cout << "result 1 has " << r1__.size() << " rows" << std::endl;
     std::cout << "result 2 has " << r2__.size() << " rows" << std::endl;
 
-    
+
     return 1;
-    
+
     Database::Filters::PublicRequest *r = new Database::Filters::PublicRequestImpl();
     r->addCreateTime().setValue(DateTimeInterval(LAST_WEEK, -1));
     Object &ro = r->addObject();
     ro.addHandle().setValue("CID:MAN4");
 //    EppAction &re = r->addEppAction();
 //    re.addSvTRID().setValue("ccReg-0000000058");
-   
+
     uf.addFilter(r);
     sq1 = new SelectQuery();
     sq1->addSelect("*", r->joinRequestTable());
@@ -259,36 +259,36 @@ int main(int argc, char *argv[]) {
 
 // logging
     LogEntryImpl *le = new LogEntryImpl(true);
-    
+
     // DateTimeInterval di(Date(2008, 9, 17), DateTime("2008-09-18 12:41:13"));
     // DateTimeInterval di(DateTime("2008-10-23 11:00:30"), DateTime("2008-10-25 15:41:13"));
-    
+
 
     DateTimeInterval di(DateTime("2008-10-23 13:16:30"), DateTime("2008-11-23 13:20:13"));
-    le->addDateTime().setValue(di);
+    le->addTimeBegin().setValue(di);
 
  //   le->addComponent().setValue(LC_UNIX_WHOIS);
 
-    LogProperty &pv = le->addLogProperty();
+    LogPropertyValue &pv = le->addLogPropertyValue();
 
     pv.addValue().setValue("registrant");
-    pv.addName().setValue("search axis");
+    pv.addLogPropertyName().addName().setValue("search axis");
 
     uf.addFilter(le);
     sq1 = new SelectQuery();
-    
+
 /*
-    le->addJoin (new Join( Column("id", le->joinTable("log_entry")), 
+    le->addJoin (new Join( Column("id", le->joinTable("log_entry")),
 			SQL_OP_EQ,
 			Column("entry_id", le->joinTable("property_value"))
 			));
-    le->addJoin (new Join( Column("property_id", le->joinTable("property_value")), 
+    le->addJoin (new Join( Column("property_id", le->joinTable("property_value")),
 			SQL_OP_EQ,
 			Column("id", le->joinTable("property"))
 			));
 */
 
-    sq1->addSelect("name value", pv.joinLogPropertyTable());
+    sq1->addSelect("name value", pv.joinLogPropertyValueTable());
     sq1->addSelect("time source_ip flag component", le->joinLogEntryTable());
     // sq1->addSelect("name", le->joinTable("property"));
 
@@ -305,28 +305,28 @@ int main(int argc, char *argv[]) {
     Domain *d1 = new DomainHistoryImpl();
     // ObjectState &s = d1->addState();
     // s.addId().setValue(Database::Null<int>(14));
-    
+
     DateTimeInterval di(Date(2008, 8, 01), Date(2008, 9, 13));
-    
+
     d1->addCreateTime().setValue(di);
     // d1->addExpirationDate(DateInterval(PAST_MONTH, 1));
     // d1->addExpirationDate() << di;
-    
+
     Contact &d1c = d1->addRegistrant();
     //d1c.addName().setValue("Ondřej*");
     d1c.addName().setValue("Jan*");
     // Filters::Value<std::string>& v2 = d1c->addCity(Database::Null<std::string>("Lysa nad Labem"));
     // v2.setValue("Praha 2");
-    
+
     // NSSet *d1n = d1->addNSSet();
     // Filters::Value<std::string>& v3 = d1n->addHostFQDN("");
     // v3.setValue("ns3.domain.cz");
-    
+
     uf.addFilter(d1);
-    
+
     sq1 = new SelectQuery();
     // sq1->addSelect("*", d1->joinObjectRegistryTable());
-    
+
     uf.addQuery(sq1);
 
     std::cout << "-------------- exec_and_print: " << std::endl;
@@ -342,11 +342,11 @@ int main(int argc, char *argv[]) {
     boost::archive::xml_oarchive save_d(ofsd);
     save_d << BOOST_SERIALIZATION_NVP(uf);
     ofsd.close();
-   
- 
+
+
     sq.clear();
     uf.clear();
-    
+
     Union uf2;
 
     std::ifstream ifsd("test-d-filter.xml");
@@ -357,7 +357,7 @@ int main(int argc, char *argv[]) {
 
     Union::iterator dfit = uf2.begin();
     Domain *d2 = dynamic_cast<DomainHistoryImpl *>(*dfit);
-    
+
     sq1 = new SelectQuery();
     sq1->addSelect("id crid name erdate", d2->joinObjectRegistryTable());
     sq1->addSelect("clid", d2->joinObjectTable());
@@ -365,7 +365,7 @@ int main(int argc, char *argv[]) {
 
     uf2.addQuery(sq1);
     exec_and_print(sq, uf2);
-    
+
     return 1;
 
     /*************************************************************************/
@@ -383,10 +383,10 @@ int main(int argc, char *argv[]) {
 
     // std::ifstream ifsc("test-c-filter.xml");
     // assert(ifsc.good());
-    
+
     sq1 = new SelectQuery();
     sq1->addSelect("id crid name erdate", c1->joinObjectRegistryTable());
-    
+
     uf.addQuery(sq1);
 
     exec_and_print(sq, uf);
@@ -435,7 +435,7 @@ int main(int argc, char *argv[]) {
 
     sq1 = new SelectQuery();
     sq1->addSelect("sourceIP component Timestamp name value", lr->joinProperties());
-    
+
     uf.addQuery(sq1);
     exec_and_print(sq, uf);
     */

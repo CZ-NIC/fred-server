@@ -45,7 +45,7 @@
 #include "old_utils/log.h"
 //config
 #include "old_utils/conf.h"
-// database 
+// database
 #include "db/database.h"
 // util (for escape)
 #include "util.h"
@@ -56,70 +56,221 @@ using namespace Database;
 ccReg_Log_i::ccReg_Log_i(const std::string database, NameService *ns, Config::Conf& _cfg, bool _session_garbage)
       throw (DB_CONNECT_FAILED) {
 
+
   try {
-	conn.open(database);  
+	conn.open(database);
   } catch (Database::Exception &ex) {
 	LOG(ALERT_LOG, "can not connect to DATABASE %s : %s", database.c_str(), ex.what());
-	// LOGGER("db").error(ex.what());	
+	// LOGGER("db").error(ex.what());
   }
 
   LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database.c_str());
 
+  // now fill the property_names map:
+
+	try {
+		Result res = conn.exec("select id, name from log_property_name");
+
+		if (res.size() > PROP_NAMES_SIZE_LIMIT) {
+			LOGGER("fred-logd").error(" Number of entries in log_property_name is over the limit.");
+			return;
+		}
+
+		for(Result::Iterator it = res.begin(); it != res.end(); ++it) {
+			Row row = *it;
+
+			property_names[row[1]] = row[0];
+
+			// std::cout << "member " << row[0] << row[1] << std::endl;
+		}
+	} catch (Database::Exception &ex) {
+		LOGGER("fred-logd").error(ex.what());
+	}
+
 }
 
-  ccReg_Log_i::~ccReg_Log_i() {
-	  // db.Disconnect();
-	  LOG( ERROR_LOG, "EPP_i destructor");
-  } 
+ccReg_Log_i::~ccReg_Log_i() {
+  // db.Disconnect();
+  LOG( ERROR_LOG, "EPP_i destructor");
+}
 
-  CORBA::Boolean ccReg_Log_i::message(const char* sourceIP, ccReg::LogComponent comp, ccReg::LogEventType event, const char* content, const ccReg::LogProperties& props) {
 
+void ccReg_Log_i::insert_props(ccReg::TID entry_id, const ccReg::LogProperties& props)
+{
+	std::string s_val, s_name;
+	std::ostringstream query;
+	ccReg::TID name_id;
+	// std::tr1::unordered_map<std::string, ccReg::TID>::iterator; 	// TODO
+	std::map<std::string, ccReg::TID>::iterator iter;
+
+	for (unsigned i = 0; i < props.length(); i++) {
+		s_name = Util::escape((const char*) props[i].name);
+		s_val = Util::escape((const char*) props[i].value);
+
+		// TODO this should be changed
+		iter = property_names.find(s_name);
+
+		if(iter != property_names.end()) {
+			name_id = iter->second;
+		} else {
+			query.str("");
+			query << "select id from log_property_name where name='" << s_name
+					<< "'";
+			LOG(NOTICE_LOG, query.str().c_str());
+			Result res = conn.exec(query.str());
+
+			if (res.size() > 0) {
+				name_id = res[0][0];
+			} else if (res.size() == 0) {
+				query.str("");
+				query << "insert into log_property_name (name) values ('" << s_name
+						<< "')";
+				LOG(NOTICE_LOG, query.str().c_str());
+				conn.exec(query.str());
+
+				// TODO sequence
+				query.str("");
+
+				// query << "select id from log_property_name where name='" << s_name
+				//		<< "'";
+
+				query << "select currval('log_property_name_id_seq'::regclass)";
+				LOG(NOTICE_LOG, query.str().c_str());
+				Result res2 = conn.exec(query.str());
+
+				name_id = res2[0][0];
+			}
+		}
+		// end of TODO zone
+
+		query.str("");
+		query
+				<< "insert into log_property_value (entry_id, name_id, value, output) values ("
+				<< entry_id << ", " << name_id << ", '" << s_val << "', "
+				<< (props[i].output ? "true" : "false") << ")";
+
+		LOG(NOTICE_LOG, query.str().c_str());
+		conn.exec(query.str());
+	}
+}
+
+ccReg::TID ccReg_Log_i::new_event(const char *sourceIP, ccReg::LogServiceType service, const char *content_in, const ccReg::LogProperties& props)
+{
 	std::ostringstream query;
 	std::string time, s_sourceIP, s_content;
+	ccReg::TID entry_id;
 
 	// get formatted UTC with microseconds
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
-	
+
 	try {
-		// make sure these values can be safely used in an SQL statement
-		s_sourceIP = Util::escape(std::string(sourceIP));
-		s_content = Util::escape(std::string(content));
-
-		query << "insert into log_entry (time, source_ip, flag, component, content) values ('" << time << "', '" << s_sourceIP << "', "
-			<< event << ", " << comp << ", '" << s_content << "')";
-
-		conn.exec(query.str());
-		// log entry inserted
-		
 		// Transaction t(conn);
-		
-		// snprintf(query, QUERY_BUF_SIZE, "select id from log_entry where	time='%s' and content='%s'", time.c_str(), content);
+		if(sourceIP != NULL) {
+			// make sure these values can be safely used in an SQL statement
+			s_sourceIP = Util::escape(std::string(sourceIP));
+			query << "insert into log_entry (time_begin, source_ip, service) values ('" << time << "', '" << s_sourceIP << "', "
+				<< service << ")";
+		} else {
+			query << "insert into log_entry (time_begin, service) values ('"
+				<< time << "', " << service << ")";
+		}
+	 	LOG(DEBUG_LOG, query.str().c_str());
+		conn.exec(query.str());
 
+		// get the id of the new entry
 		query.str("");
-		query << "select id from log_entry where time='" << time << "' and content='" << Util::escape(std::string(content)) << "'";
+		// query << "select id from log_entry where time_begin='" << time << "'";
+		query << "select currval('log_entry_id_seq'::regclass)";
+		Result res = conn.exec(query.str());
+		entry_id = res[0][0];
 
-		LOGGER("fred-logd").debug(query.str());
+		// "select
 
-		Result res=conn.exec(query.str());
-		int entry_id = res[0][0]; 
-
-		// LOGGER("fred-logd").error(ex.what());	
-
-		// insert the property into the table log_property
-		for (unsigned i=0;i<props.length();i++) {
-
+		// insert into log_raw_content
+		if(content_in != NULL) {
+			s_content = Util::escape(std::string(content_in));
 			query.str("");
-			query << "insert into log_property (entry_id, name, value) values (" << entry_id << ", '" <<  Util::escape((const char*)props[i].name)
-				<< "', '" << Util::escape((const char*)props[i].value) << "')";
+			query << "insert into log_raw_content (entry_id, request) values (" << entry_id << ", '" << s_content << "')";
 
-			LOGGER("fred-logd").debug(query.str());
+			LOG(DEBUG_LOG, query.str().c_str());
+			// LOGGER("fred-logd").debug(query.str());
 			conn.exec(query.str());
-		}	
+		}
+
+		// inserting properties
+		insert_props(entry_id, props);
 
 		// t.commit();
 	} catch (Database::Exception &ex) {
-		LOGGER("fred-logd").error(ex.what());	
+		LOGGER("fred-logd").error(ex.what());
+		return 0; 	// TODO throw a corba exception
+	}
+	return entry_id;
+}
+
+CORBA::Boolean ccReg_Log_i::update_event(ccReg::TID id, const ccReg::LogProperties &props)
+{
+	std::ostringstream query;
+
+	try {
+		// perform debug check (is it necessary?) TODO
+		query << "select time_end from log_entry id=" << id;
+		Result res = conn.exec(query.str());
+		// is it correct? TODO
+		if(res.size() != 0) {
+			LOGGER("fred-logd").error("Tried to modify already complete logging record");
+			return false;
+		}
+
+		insert_props(id, props);
+	} catch (Database::Exception &ex) {
+		LOGGER("fred-logd").error(ex.what());
+		return false;
 	}
 	return true;
-  }
+
+}
+
+CORBA::Boolean ccReg_Log_i::update_event_close(ccReg::TID id, const char *content_out, const ccReg::LogProperties &props)
+{
+	std::ostringstream query;
+	std::string s_content;
+
+	try {
+		// perform debug check (is it necessary?) TODO
+		query << "select time_end from log_entry where id=" << id;
+		Result res = conn.exec(query.str());
+		// is it correct? TODO
+		if(res.size() != 0) {
+			LOGGER("fred-logd").error("Tried to modify already complete logging record");
+			return false;
+		}
+
+		if(content_out != NULL) {
+			s_content = Util::escape(std::string(content_out));
+
+			query.str("");
+			query << "select id from log_raw_content where entry_id = " << id;
+
+			Result res = conn.exec(query.str());
+
+			query.str("");
+			if(res.size() > 0) {
+				query << "update log_raw_content set response = '" << s_content << "' where entry_id=" << id << ")";
+			} else {
+				query << "insert into log_raw_content (entry_id, response) values (" << id << ", '" << s_content << "')";
+			}
+			conn.exec(query.str());
+		}
+
+		// inserting properties
+		insert_props(id, props);
+
+	} catch (Database::Exception &ex) {
+		LOGGER("fred-logd").error(ex.what());
+		return false;
+	}
+	return true;
+}
+
 
