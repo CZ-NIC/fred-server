@@ -38,6 +38,7 @@ PQ::PQ()
 #ifdef TIMECLOCK
   timeclock_start();
 #endif
+  result = NULL;
 }
 
 // destructor
@@ -58,6 +59,7 @@ bool PQ::OpenDatabase(
 {
 
   LOG( NOTICE_LOG , "PQ: connectdb  %s" , conninfo);
+  result = NULL;
   connection = PQconnectdb(conninfo);
 
   // Check to see that the backend connection was successfully made 
@@ -197,6 +199,10 @@ bool PQ::ExecSelect(
 
   LOG( SQL_LOG , "SELECT: [%s]" , sqlString );
 
+  if (result != NULL) {
+      PQclear(result);
+      result = NULL;
+  }
   result = PQexec(connection, sqlString);
 
   if (PQresultStatus(result) != PGRES_TUPLES_OK) {
@@ -223,6 +229,7 @@ void PQ::FreeSelect()
 {
   LOG( SQL_LOG , "Free  select" );
   PQclear(result);
+  result = NULL;
 
 }
 
