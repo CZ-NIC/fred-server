@@ -165,8 +165,13 @@ void InsertQuery::make() {
     columns_part << "(" << it->first;
     values_part << "VALUES (" << it->second;
     for (++it; it != values_.end(); ++it) {
+      std::stringstream value;
+      value << it->second;
+
       columns_part << ", " << it->first;
-      values_part  << ", " << (it->second.quoted() ? "'" : "") << it->second << (it->second.quoted() ? "'" : "");
+      values_part  << ", " << (it->second.quoted() ? "E'" : "") 
+                   << (it->second.quoted() ? Util::escape(value.str()) : value.str())
+                   << (it->second.quoted() ? "'" : "");
     }
     columns_part << ")";
     values_part  << ")";

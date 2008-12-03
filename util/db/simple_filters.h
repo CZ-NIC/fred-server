@@ -508,11 +508,11 @@ public:
     else {
       std::string v = value.getValue();
       if (allowed_wildcard && (v.find('*') != std::string::npos || v.find('?') != std::string::npos)) {
-        prep << " ILIKE TRANSLATE('%" << store.size() + 1 << "%','*?','%%_')";
+        prep << " ILIKE TRANSLATE(E'%" << store.size() + 1 << "%','*?','%%_')";
         store.push_back(v);
       }
       else {
-        prep << op << " " << value_pre_ << "'%" << store.size() + 1 << "%'" << value_post_;
+        prep << op << " " << value_pre_ << "E'%" << store.size() + 1 << "%'" << value_post_;
         store.push_back(v);
       }
     }
