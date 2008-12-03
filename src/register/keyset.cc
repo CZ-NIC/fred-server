@@ -530,13 +530,14 @@ ListImpl::reload(
     bool at_least_one = false;
     Database::SelectQuery id_query;
     std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+    Database::SelectQuery *tmp;
 
     for (fit->first(); !fit->isDone(); fit->next()) {
         Database::Filters::KeySet *kf =
             dynamic_cast<Database::Filters::KeySetHistoryImpl *>(fit->get());
         if (!kf)
             continue;
-        Database::SelectQuery *tmp = new Database::SelectQuery();
+        tmp = new Database::SelectQuery();
         tmp->addSelect(new Database::Column(
                     "historyid",
                     kf->joinKeySetTable(),
@@ -546,6 +547,7 @@ ListImpl::reload(
     }
     if (!at_least_one) {
         LOGGER(PACKAGE).error("wrong filter passed for reload!");
+        delete tmp;
         return;
     }
 
@@ -634,8 +636,10 @@ ListImpl::reload(
                     );
         }
 
-        if (data_.empty())
+        if (data_.empty()) {
+            delete tmp;
             return;
+        }
 
         resetHistoryIDSequence();
         Database::SelectQuery contacts_query;
@@ -748,11 +752,14 @@ ListImpl::reload(
         CommonListImpl::reload();
     }
     catch (Database::Exception &ex) {
+        delete tmp;
         LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
     catch (std::exception &ex) {
+        delete tmp;
         LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
+    delete tmp;
 }
 
 void
