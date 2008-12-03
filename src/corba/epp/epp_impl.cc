@@ -145,7 +145,7 @@ public:
       db.EndAction(COMMAND_FAILED);
       db.Disconnect();
       epp->ServerInternalError("Cannot start transaction",
-          CORBA::string_dup(db.GetsvTRID()) );
+              (const char *)db.GetsvTRID());
     }
     code = ret->code = COMMAND_OK;
 
@@ -6192,7 +6192,7 @@ ccReg_EPP_i::KeySetCreate(
 
                             if (caType != Register::Contact::Manager::CA_REGISTRED) {
                                 LOG(DEBUG_LOG, "Tech contact doesn't exist: %s",
-                                        CORBA::string_dup(tech[i]));
+                                        (const char *)tech[i]);
                                 ret->code = SetReasonKeySetTech(
                                         errors,
                                         tech[i],
@@ -6298,7 +6298,7 @@ ccReg_EPP_i::KeySetCreate(
                                         LOG(WARNING_LOG,
                                                 "Found DSRecord duplicity: %d x %d (%d %d %d '%s' %s)",
                                                 ii, jj, dsrec[ii].keyTag, dsrec[ii].alg, dsrec[ii].digestType,
-                                                CORBA::string_dup(dsrec[ii].digest), dsrec[ii].maxSigLife);
+                                                (const char *)dsrec[ii].digest, dsrec[ii].maxSigLife);
                                         ret->code = SetErrorReason(
                                                 errors,
                                                 COMMAND_PARAMETR_ERROR,
@@ -6413,7 +6413,7 @@ ccReg_EPP_i::KeySetCreate(
                                         LOG(WARNING_LOG,
                                                 "Found DSNKey duplicity: %d x %d (%d %d %d %s)",
                                                 ii, jj, dnsk[ii].flags, dnsk[ii].protocol,
-                                                dnsk[ii].alg, CORBA::string_dup(dnsk[ii].key));
+                                                dnsk[ii].alg, (const char *)dnsk[ii].key);
                                         ret->code = SetErrorReason(
                                                 errors,
                                                 COMMAND_PARAMETR_ERROR,
