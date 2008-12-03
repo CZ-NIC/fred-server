@@ -5888,6 +5888,8 @@ ccReg_EPP_i::KeySetInfo(
         k->dnsk[i].alg = dnsk->getAlg();
         k->dnsk[i].key = CORBA::string_dup(dnsk->getKey().c_str());
     }
+    delete keyFilter;
+    delete dbman;
 
     return a.getRet()._retn();
 }
