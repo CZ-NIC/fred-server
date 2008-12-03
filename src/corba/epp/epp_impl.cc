@@ -94,12 +94,15 @@ static bool testObjectHasState(
   DB *db, Register::TID object_id, unsigned state_id)
     throw (Register::SQL_ERROR)
 {
+  bool returnState;
   std::stringstream sql;
   sql << "SELECT COUNT(*) FROM object_state " << "WHERE object_id="
       << object_id << " AND state_id=" << state_id << " AND valid_to ISNULL";
   if (!db->ExecSelect(sql.str().c_str()))
     throw Register::SQL_ERROR();
-  return atoi(db->GetFieldValue(0, 0));
+  returnState = atoi(db->GetFieldValue(0, 0));
+  db->FreeSelect();
+  return returnState;
 }
 
 class EPPAction
