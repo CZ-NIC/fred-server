@@ -56,7 +56,6 @@ using namespace Database;
 ccReg_Log_i::ccReg_Log_i(const std::string database, NameService *ns, Config::Conf& _cfg, bool _session_garbage)
       throw (DB_CONNECT_FAILED) {
 
-
   try {
 	conn.open(database);
   } catch (Database::Exception &ex) {
@@ -213,14 +212,13 @@ CORBA::Boolean ccReg_Log_i::update_event(ccReg::TID id, const ccReg::LogProperti
 	std::ostringstream query;
 
 	try {
-		// perform debug check (is it necessary?) TODO
+		// TODO perform debug check. this function mustn't be call on a complete record
+		/*
 		query << "select time_end from log_entry id=" << id;
 		Result res = conn.exec(query.str());
-		// is it correct? TODO
-		if(res.size() != 0) {
-			LOGGER("fred-logd").error("Tried to modify already complete logging record");
-			return false;
-		}
+
+		// false should be returned if time_end is not null
+		*/
 
 		insert_props(id, props);
 	} catch (Database::Exception &ex) {
@@ -234,29 +232,31 @@ CORBA::Boolean ccReg_Log_i::update_event(ccReg::TID id, const ccReg::LogProperti
 CORBA::Boolean ccReg_Log_i::update_event_close(ccReg::TID id, const char *content_out, const ccReg::LogProperties &props)
 {
 	std::ostringstream query;
-	std::string s_content;
+	std::string s_content, time;
+
+	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
 
 	try {
-		// perform debug check (is it necessary?) TODO
+		query << "update log_entry set time_end='" << time << "' where id=" << id;
+		Result res = conn.exec(query.str());
+
+		/* TODO
 		query << "select time_end from log_entry where id=" << id;
 		Result res = conn.exec(query.str());
-		// is it correct? TODO
-		if(res.size() != 0) {
-			LOGGER("fred-logd").error("Tried to modify already complete logging record");
-			return false;
-		}
+
+		// false should be returned if time_end is not null
+		*/
 
 		if(content_out != NULL) {
 			s_content = Util::escape(std::string(content_out));
 
 			query.str("");
-			query << "select id from log_raw_content where entry_id = " << id;
-
+			query << "select * from log_raw_content where entry_id = " << id;
 			Result res = conn.exec(query.str());
 
 			query.str("");
 			if(res.size() > 0) {
-				query << "update log_raw_content set response = '" << s_content << "' where entry_id=" << id << ")";
+				query << "update log_raw_content set response = '" << s_content << "' where entry_id=" << id;
 			} else {
 				query << "insert into log_raw_content (entry_id, response) values (" << id << ", '" << s_content << "')";
 			}

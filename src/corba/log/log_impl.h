@@ -25,6 +25,12 @@ class ccReg_Log_i : public POA_ccReg::Log,
   public PortableServer::RefCountServantBase
 {
 private:
+    struct strCmp {
+		bool operator()(const std::string &s1, const std::string &s2) const {
+			return s1 < s2;
+		}
+	};
+
 
   /** Limit the number of entries read from log_property_name table
    * (which is supposed to contain limited number of distinct property names )
@@ -36,7 +42,7 @@ private:
   /*
   std::tr1::unordered_map<std::string, ccReg::TID> property_names
   */
-  std::map<std::string, ccReg::TID> property_names;
+  std::map<std::string, ccReg::TID, strCmp> property_names;
 /*
   std::string m_connection_string;
   NameService *ns;
@@ -53,7 +59,6 @@ private:
   bool session_garbage_active_;
   boost::thread *session_garbage_thread_;
 */
-
 
 public:
 //  void garbageSession();
