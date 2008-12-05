@@ -547,7 +547,6 @@ ListImpl::reload(
     }
     if (!at_least_one) {
         LOGGER(PACKAGE).error("wrong filter passed for reload!");
-        delete tmp;
         return;
     }
 
@@ -637,7 +636,6 @@ ListImpl::reload(
         }
 
         if (data_.empty()) {
-            delete tmp;
             return;
         }
 
@@ -752,14 +750,11 @@ ListImpl::reload(
         CommonListImpl::reload();
     }
     catch (Database::Exception &ex) {
-        delete tmp;
         LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
     catch (std::exception &ex) {
-        delete tmp;
         LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
-    delete tmp;
 }
 
 void
