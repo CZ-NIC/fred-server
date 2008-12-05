@@ -32,6 +32,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
+#include <boost/format.hpp>
 
 
 #include "database.h"
@@ -46,36 +47,36 @@
 namespace Database {
 
 /**
- * \class Manager
+ * \class ManagerBase
  * \brief Base class representing database manager
  *
- * Manager object (which should be used) is defined in \file database.h
+ * ManagerBase object (which should be used) is defined in \file database.h
  * file.
  *
  * This class can be subclassed to more specific Manager behaviour
  * i.e. for support connection pooling
  */
-class Manager {
+class ManagerBase {
 public:
   typedef Connection connection_type;
 
   /**
    * Constuctors and destructor
    */
-  Manager(const std::string& _conn_info) : conn_info_(_conn_info) {
+  ManagerBase(const std::string& _conn_info) : conn_info_(_conn_info) {
 #ifdef HAVE_LOGGER
-    TRACE(boost::format("<CALL> Database::Manager::Manager('%1%')") % conn_info_);
+    TRACE(boost::format("<CALL> Database::ManagerBase::ManagerBase('%1%')") % conn_info_);
 #endif
   }
 
 
-  Manager(const char* _conn_info) : conn_info_(_conn_info) {
+  ManagerBase(const char* _conn_info) : conn_info_(_conn_info) {
   }
 
 
-  virtual ~Manager() {
+  virtual ~ManagerBase() {
 #ifdef HAVE_LOGGER
-    TRACE("<CALL> Database::Manager::~Manager()");
+    TRACE("<CALL> Database::ManagerBase::~ManagerBase()");
 #endif
   }
 
@@ -99,7 +100,7 @@ protected:
  *
  * Specialized database manager implementing connection pooling
  */
-class ConnectionPool : public Manager {
+class ConnectionPool : public ManagerBase {
 protected:
   /**
    * internal data structure for storing information about connection
@@ -130,19 +131,21 @@ public:
    * constuctor and destructor
    */
   ConnectionPool(const std::string &_conn_info,
-       unsigned _init_conn = 0,
-       unsigned _max_conn = 1) : Manager(_conn_info),
-                                 init_conn_(_init_conn),
-				 max_conn_(_max_conn) {
+                 unsigned _init_conn = 0,
+                 unsigned _max_conn = 1) 
+               : ManagerBase(_conn_info),
+                 init_conn_(_init_conn),
+        				 max_conn_(_max_conn) {
     relax_(init_conn_);
   }
 
 
   virtual ~ConnectionPool() {
+    boost::mutex::scoped_lock scoped_lock(pool_lock_);
+
     storage_type::iterator it = pool_.begin();
     for (; it != pool_.end(); ++it) {
       delete it->first;
-      pool_.erase(it);
     }
   }
 
@@ -341,6 +344,14 @@ private:
   }
 #endif
 };
+
+
+
+/* ManagerBase (managers base class) is also a very simple manager */
+typedef ManagerBase     SimpleManager;
+
+/* Default manager */
+typedef SimpleManager   Manager;
 
 }
 #endif /*DB_MANAGER_H_*/

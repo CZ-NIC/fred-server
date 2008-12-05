@@ -15,7 +15,7 @@ struct TestPooler {
 public:
   TestPooler(Database::ConnectionPool *p, int i) : pool_(p), id_(i) { }
   void operator()() {
-    Logging::Context ctx(str(boost::format("threadid-%1%") % id_));
+    Logging::Context ctx(str(boost::format("threadid-%1%(real=%2%)") % id_ % boost::this_thread::get_id()));
 
     Database::Connection *c = pool_->acquire();
     c->exec("SELECT * FROM object_registry");
@@ -42,7 +42,7 @@ int main() {
   }
   tg.join_all();
 
-  return 0;
+  //return 0;
 
 
 
@@ -58,7 +58,6 @@ int main() {
     {
       Transaction t(*c);
       c->exec("SELECT * FROM files");
-      pool.release(c);
       c->exec("SELECT * FROM contact");
     }
 
@@ -67,6 +66,8 @@ int main() {
     std::string str = r[0][0];
     std::cout << r[0][0] << "  " << str << std::endl;
   
+    return 0;
+
     Result::Iterator it1 = r.begin();
     Result::Iterator it2 = r.end();
 
