@@ -24,6 +24,7 @@ public:
   }
 
   virtual ~Union() {
+    clear();
   }
 
   virtual void addFilter(Compound *cf) {
