@@ -40,9 +40,9 @@ Registry::TableRow* ccReg_Mails_i::getRow(CORBA::Short _row)
   Registry::TableRow *tr = new Registry::TableRow;
   tr->length(3);
 
-  (*tr)[0] <<= DUPSTRDATE(mail->getCreateTime);
-  (*tr)[1] <<= DUPSTRC(mail->getTypeDesc());
-  (*tr)[2] <<= DUPSTRC(Conversion<long int>::to_string(mail->getStatus()));
+  (*tr)[0] <<= str_corbaout(mail->getCreateTime());
+  (*tr)[1] <<= str_corbaout(mail->getTypeDesc());
+  (*tr)[2] <<= str_corbaout(mail->getStatus());
   return tr;
 }
 

@@ -56,11 +56,11 @@ ccReg_Registrars_i::getRow(CORBA::Short row)
 
   MAKE_OID(oid_handle, r->getId(), DUPSTRFUN(r->getHandle), FT_REGISTRAR)
 
-  (*tr)[0] <<= DUPSTRFUN(r->getName); 
+  (*tr)[0] <<= str_corbaout(r->getName()); 
   (*tr)[1] <<= oid_handle;
-  (*tr)[2] <<= DUPSTRFUN(r->getURL);
-  (*tr)[3] <<= DUPSTRFUN(r->getEmail);
-  (*tr)[4] <<= DUPSTRC(Conversion<long unsigned>::to_string(r->getCredit()));
+  (*tr)[2] <<= str_corbaout(r->getURL());
+  (*tr)[3] <<= str_corbaout(r->getEmail());
+  (*tr)[4] <<= str_corbaout(r->getCredit());
   return tr;
 }
 

@@ -53,8 +53,8 @@ ccReg_KeySets_i::getRow(CORBA::Short row)
     MAKE_OID(oid_registrar, k->getRegistrarId(), DUPSTRFUN(k->getRegistrarHandle), FT_REGISTRAR)
 
     (*tr)[0] <<= oid_handle;
-    (*tr)[1] <<= DUPSTRDATE(k->getCreateDate);
-    (*tr)[2] <<= DUPSTRDATE(k->getDeleteDate);
+    (*tr)[1] <<= str_corbaout(k->getCreateDate());
+    (*tr)[2] <<= str_corbaout(k->getDeleteDate());
     (*tr)[3] <<= oid_registrar;
     return tr;
 }

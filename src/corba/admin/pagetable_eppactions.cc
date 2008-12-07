@@ -44,13 +44,13 @@ Registry::TableRow* ccReg_EPPActions_i::getRow(CORBA::Short row)
 
     MAKE_OID(oid_registrar, a->getRegistrarId(), DUPSTRFUN(a->getRegistrarHandle), FT_REGISTRAR)
 
-    (*tr)[0] <<= DUPSTRFUN(a->getServerTransactionId);
-    (*tr)[1] <<= DUPSTRFUN(a->getClientTransactionId);
-    (*tr)[2] <<= DUPSTRFUN(a->getTypeName);
-    (*tr)[3] <<= DUPSTRFUN(a->getHandle);
+    (*tr)[0] <<= str_corbaout(a->getServerTransactionId());
+    (*tr)[1] <<= str_corbaout(a->getClientTransactionId());
+    (*tr)[2] <<= str_corbaout(a->getTypeName());
+    (*tr)[3] <<= str_corbaout(a->getHandle());
     (*tr)[4] <<= oid_registrar;
-    (*tr)[5] <<= DUPSTRDATE(a->getStartTime);
-    (*tr)[6] <<= DUPSTRFUN(a->getResultStatus);
+    (*tr)[5] <<= str_corbaout(a->getStartTime());
+    (*tr)[6] <<= str_corbaout(a->getResultStatus());
     return tr;
   }
   catch (...) {

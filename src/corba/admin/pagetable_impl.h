@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "common.h"
+#include "str_corbaout.h"
 #include "filter_impl.h"
 #include "corba/mailer_manager.h"
 

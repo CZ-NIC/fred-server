@@ -45,10 +45,10 @@ Registry::TableRow* ccReg_Contacts_i::getRow(CORBA::Short row)
   MAKE_OID(oid_registrar, c->getRegistrarId(), DUPSTRFUN(c->getRegistrarHandle), FT_REGISTRAR)
 
   (*tr)[0] <<= oid_handle;
-  (*tr)[1] <<= DUPSTRFUN(c->getName);
-  (*tr)[2] <<= DUPSTRFUN(c->getOrganization);
-  (*tr)[3] <<= DUPSTRDATE(c->getCreateDate);
-  (*tr)[4] <<= DUPSTRDATE(c->getDeleteDate);
+  (*tr)[1] <<= str_corbaout(c->getName());
+  (*tr)[2] <<= str_corbaout(c->getOrganization());
+  (*tr)[3] <<= str_corbaout(c->getCreateDate());
+  (*tr)[4] <<= str_corbaout(c->getDeleteDate());
   (*tr)[5] <<= oid_registrar;
   return tr;
 }

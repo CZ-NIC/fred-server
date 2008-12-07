@@ -47,10 +47,10 @@ Registry::TableRow* ccReg_PublicRequests_i::getRow(CORBA::Short _row)
     throw ccReg::Table::INVALID_ROW();
   Registry::TableRow *row = new Registry::TableRow();
   row->length(4);
-  (*row)[0] <<= DUPSTRDATE(request->getCreateTime);
-  (*row)[1] <<= DUPSTRDATE(request->getResolveTime);
-  (*row)[2] <<= DUPSTRC(Register::PublicRequest::Type2Str(request->getType()));
-  (*row)[3] <<= DUPSTRC(Register::PublicRequest::Status2Str(request->getStatus()));
+  (*row)[0] <<= str_corbaout(request->getCreateTime());
+  (*row)[1] <<= str_corbaout(request->getResolveTime());
+  (*row)[2] <<= str_corbaout(Register::PublicRequest::Type2Str(request->getType()));
+  (*row)[3] <<= str_corbaout(Register::PublicRequest::Status2Str(request->getStatus()));
   return row;
 }
 

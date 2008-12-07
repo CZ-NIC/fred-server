@@ -48,19 +48,20 @@ Registry::TableRow* ccReg_Invoices_i::getRow(CORBA::Short row)
   tr->length(9);
   Register::Invoicing::Type invoice_type = inv->getType();
   std::string credit = (invoice_type == Register::Invoicing::IT_DEPOSIT ? formatMoney(inv->getCredit()) : "");
-  
+  std::string itype  = (invoice_type == Register::Invoicing::IT_DEPOSIT ? "DEPOSIT" : "ACCOUNT");
+
   MAKE_OID(oid_registrar, inv->getClient()->getId(), DUPSTRFUN(inv->getClient()->getHandle), FT_REGISTRAR)
   MAKE_OID(oid_pdf, inv->getFilePDF(), "", FT_FILE)
   MAKE_OID(oid_xml, inv->getFileXML(), "", FT_FILE)
 
 
-  (*tr)[0] <<= DUPSTRDATE(inv->getCrTime);
-  (*tr)[1] <<= DUPSTRC(Conversion<long long unsigned>::to_string(inv->getNumber()));
-  (*tr)[2] <<= oid_registrar; 
-  (*tr)[3] <<= DUPSTRC(formatMoney(inv->getPrice()));
-  (*tr)[4] <<= DUPSTRC(credit);
-  (*tr)[5] <<= DUPSTR(invoice_type == Register::Invoicing::IT_DEPOSIT ? "DEPOSIT" : "ACCOUNT");
-  (*tr)[6] <<= DUPSTRC(inv->getZoneName());
+  (*tr)[0] <<= str_corbaout(inv->getCrTime());
+  (*tr)[1] <<= str_corbaout(inv->getNumber());
+  (*tr)[2] <<= oid_registrar;
+  (*tr)[3] <<= formatMoney(inv->getPrice()).c_str();
+  (*tr)[4] <<= str_corbaout(credit);
+  (*tr)[5] <<= str_corbaout(itype);
+  (*tr)[6] <<= str_corbaout(inv->getZoneName());
   (*tr)[7] <<= oid_pdf;
   (*tr)[8] <<= oid_xml;
   return tr;
