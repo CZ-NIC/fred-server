@@ -44,6 +44,13 @@ public:
     virtual const Database::Money &getPrice() const = 0;
     virtual const std::string &getMemo() const = 0;
     virtual const Database::ID &getInvoiceId() const = 0;
+    virtual void setAccountNumber(std::string accountNumber) = 0;
+    virtual void setBankCode(std::string bankCode) = 0;
+    virtual void setConstSymbol(std::string constSymbol) = 0;
+    virtual void setVarSymbol(std::string varSymbol) = 0;
+    virtual void setPrice(Database::Money price) = 0;
+    virtual void setMemo(std::string memo) = 0;
+    virtual void setInvoiceId(Database::ID invoiceId) = 0;
 };
 
 // data from bank_ebanka_list
@@ -55,6 +62,14 @@ public:
     virtual const Database::DateTime &getCrDate() const = 0;
     virtual const std::string &getAccountName() const = 0;
     virtual const std::string &getIdent() const = 0;
+    virtual void setAccountId(Database::ID accountId) = 0;
+    virtual void setCrDate(Database::DateTime crDate) = 0;
+    virtual void setCrDate(std::string crDate) = 0;
+    virtual void setAccountName(std::string accountName) = 0;
+    virtual void setIdent(std::string ident) = 0;
+    virtual void setConn(Database::Connection *conn) = 0;
+    virtual Database::Connection *getConn() const = 0;
+    virtual void save() = 0;
 };
 
 // data from bank_statement_item table
@@ -67,6 +82,16 @@ public:
     virtual const std::string &getEvidenceNumber() const = 0;
     virtual const Database::Date &getDate() const = 0;
     virtual const std::string &getSpecSymbol() const = 0;
+    virtual void setId(Database::ID id) = 0;
+    virtual void setStatementId(Database::ID statementId) = 0;
+    virtual void setCode(int code) = 0;
+    virtual void setEvidenceNumber(std::string evidenceNumber) = 0;
+    virtual void setDate(Database::Date date) = 0;
+    virtual void setDate(std::string date) = 0;
+    virtual void setSpecSymbol(std::string specSymbol) = 0;
+    virtual void setConn(Database::Connection *conn) = 0;
+    virtual Database::Connection *getConn() const = 0;
+    virtual void save() = 0;
 };
 
 // date from bank_statement_head table
@@ -81,9 +106,23 @@ public:
     virtual const Database::Money &getOldBalance() const = 0;
     virtual const Database::Money &getCredit() const = 0;
     virtual const Database::Money &getDebet() const = 0;
+    virtual void setAccountId(Database::ID accountId) = 0;
+    virtual void setNumber(int number) = 0;
+    virtual void setDate(Database::Date date) = 0;
+    virtual void setDate(std::string date) = 0;
+    virtual void setOldDate(Database::Date oldDate) = 0;
+    virtual void setOldDate(std::string oldDate) = 0;
+    virtual void setBalance(Database::Money balance) = 0;
+    virtual void setOldBalance(Database::Money oldBalance) = 0;
+    virtual void setCredit(Database::Money credit) = 0;
+    virtual void setDebet(Database::Money debet) = 0;
     virtual unsigned int getStatementItemCount() const = 0;
     virtual const StatementItem *getStatementItemByIdx(unsigned int idx) const
         throw (NOT_FOUND) = 0;
+    virtual void setConn(Database::Connection *conn) = 0;
+    virtual Database::Connection *getConn() const = 0;
+    virtual void save() = 0;
+    virtual StatementItem *createStatementItem() = 0;
 };
 
 // list of online payments
@@ -120,6 +159,8 @@ public:
     virtual List *createList() const = 0;
     virtual OnlineList *createOnlineList() const = 0;
     static Manager *create(Database::Manager *dbMan);
+    virtual OnlineStatement *createOnlineStatement() const = 0;
+    virtual Statement *createStatement() const = 0;
 };
 
 } // namespace Bank
