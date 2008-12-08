@@ -1753,9 +1753,6 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
     hdm->date = CORBA::string_dup(to_iso_extended_string(mer->getEventDate()).c_str() );
     hdm->clID = CORBA::string_dup(mer->getRegistrarHandle().c_str());
     *msg <<= hdm;
-    if (m) {
-        delete m;
-    }
     return a.getRet()._retn();
   }
   Register::Poll::MessageEvent *me =
