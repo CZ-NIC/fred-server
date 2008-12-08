@@ -32,6 +32,12 @@ namespace Banking {
 #define OUTMONEY(f) (f)/100 << "." << \
     std::setfill('0') << std::setw(2) << (f)%100      
 
+#define transformString(str)    \
+    ((str.empty()) ? "NULL" : "'" + str + "'")
+#define transformId(id)         \
+    ((id.to_string().compare("0") == 0) ? "NULL" : id.to_string())
+#define transformMoney(money)   \
+    (money / 100)
 
 class PaymentImpl:
     virtual public Payment {
@@ -51,6 +57,10 @@ public:
         m_accountNumber(accountNumber), m_bankCode(bankCode),
         m_constSymb(constSymb), m_varSymb(varSymb), m_price(price),
         m_accountMemo(accountMemo), m_invoiceId(invoiceId)
+    { }
+    PaymentImpl():
+        m_accountNumber(), m_bankCode(), m_constSymb(), m_varSymb(),
+        m_price(), m_accountMemo(), m_invoiceId()
     { }
     virtual const std::string &getAccountNumber() const
     {
@@ -80,6 +90,34 @@ public:
     {
         return m_invoiceId;
     }
+    virtual void setAccountNumber(std::string accountNumber) 
+    {
+        m_accountNumber = accountNumber;
+    }
+    virtual void setBankCode(std::string bankCode)
+    {
+        m_bankCode = bankCode;
+    }
+    virtual void setConstSymbol(std::string constSymbol) 
+    {
+        m_constSymb = constSymbol;
+    }
+    virtual void setVarSymbol(std::string varSymbol) 
+    {
+        m_varSymb = varSymbol;
+    }
+    virtual void setPrice(Database::Money price) 
+    {
+        m_price = price;
+    }
+    virtual void setMemo(std::string memo) 
+    {
+        m_accountMemo = memo;
+    }
+    virtual void setInvoiceId(Database::ID invoiceId) 
+    {
+        m_invoiceId = invoiceId;
+    }
 }; // class PaymentImpl
 
 class OnlineStatementImpl:
@@ -91,6 +129,7 @@ private:
     Database::DateTime m_crDate;
     std::string m_accountName;
     std::string m_ident;
+    Database::Connection *m_conn;
 public:
     OnlineStatementImpl(const Database::ID id, const Database::ID accountId,
             const Database::Money price, const Database::DateTime crDate,
@@ -102,7 +141,12 @@ public:
                 price, memo, invoiceId),
         CommonObjectImpl(id),
         m_accountId(accountId), m_crDate(crDate), m_accountName(accountName),
-        m_ident(ident)
+        m_ident(ident), m_conn(NULL)
+    { }
+    OnlineStatementImpl(Database::Connection *conn):
+        PaymentImpl(),
+        CommonObjectImpl(),
+        m_accountId(), m_crDate(), m_accountName(), m_ident(), m_conn(conn)
     { }
     virtual const Database::ID &getAccountId() const 
     {
@@ -120,6 +164,124 @@ public:
     {
         return m_ident;
     }
+    virtual void setAccountId(Database::ID accountId) 
+    {
+        m_accountId = accountId;
+    }
+    virtual void setCrDate(Database::DateTime crDate) 
+    {
+        m_crDate = crDate;
+    }
+    virtual void setCrDate(std::string crDate)
+    {
+        m_crDate = Database::DateTime(crDate);
+    }
+    virtual void setAccountName(std::string accountName) 
+    {
+        m_accountName = accountName;
+    }
+    virtual void setIdent(std::string ident) 
+    {
+        m_ident = ident;
+    }
+    virtual void setConn(Database::Connection *conn)
+    {
+        m_conn = conn;
+    }
+    virtual Database::Connection *getConn() const
+    {
+        return m_conn;
+    }
+    void update()
+    {
+        TRACE("[CALL] Register::Banking::OnlineStatement::update()");
+        std::auto_ptr<Database::Query> updateStat(new Database::Query());
+        updateStat->buffer()
+            << "UPDATE bank_ebanka_list SET"
+            << " account_id = " << transformId(getAccountId())
+            << ", price = " << getPrice() / 100
+            << ", crdate = '" << getCrDate() << "'"
+            << ", account_number = " << transformString(getAccountNumber())
+            << ", bank_code = " << transformString(getBankCode())
+            << ", konstsym = " << transformString(getConstSymbol())
+            << ", varsymb = " << transformString(getVarSymbol())
+            << ", memo = " << transformString(getMemo())
+            << ", name = " << transformString(getAccountName())
+            << ", ident = " << transformString(getIdent())
+            << ", invoice_id = " << transformId(getInvoiceId())
+            << " WHERE id = " << id_;
+        try {
+            assert(m_conn);
+            Database::Transaction transaction(*m_conn);
+            transaction.exec(*updateStat);
+            transaction.commit();
+            LOGGER(PACKAGE).info(boost::format(
+                        "online payment item id='%1%' updated successfully")
+                    % id_);
+        } catch (Database::Exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        } catch (std::exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        }
+    } // void update()
+    void insert()
+    {
+        TRACE("[CALL] Register::Banking::OnlineStatement::insert()");
+        Database::InsertQuery insertStat("bank_ebanka_list");
+        insertStat.add("account_id", getAccountId());
+        insertStat.add("price", getPrice());
+        insertStat.add("crdate", getCrDate());
+        if (!getAccountNumber().empty()) {
+            insertStat.add("account_number", getAccountNumber());
+        }
+        if (!getBankCode().empty()) {
+            insertStat.add("bank_code", getBankCode());
+        }
+        if (!getConstSymbol().empty()) {
+            insertStat.add("konstsym", getConstSymbol());
+        }
+        if (!getVarSymbol().empty()) {
+            insertStat.add("varsymb", getVarSymbol());
+        }
+        if (!getMemo().empty()) {
+            insertStat.add("memo", getMemo());
+        }
+        if (!getAccountName().empty()) {
+            insertStat.add("name", getAccountName());
+        }
+        if (!getIdent().empty()) {
+            insertStat.add("ident", getIdent());
+        }
+        insertStat.add("invoice_id", getInvoiceId());
+        try {
+            assert(m_conn);
+            Database::Transaction transaction(*m_conn);
+            transaction.exec(insertStat);
+            transaction.commit();
+            Database::Sequence seq(*m_conn, "bank_ebanka_list_id_seq");
+            id_ = seq.getCurrent();
+            LOGGER(PACKAGE).info(boost::format(
+                        "online statement item id='%1%' created successfully")
+                    % id_);
+        } catch (Database::Exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        } catch (std::exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        }
+    } // void insert()
+    virtual void save() 
+    {
+        TRACE("[CALL] Register::Banking::OnlineStatement::save()");
+        if (id_) {
+            update();
+        } else {
+            insert();
+        }
+    }
 }; // class OnlineStatementImpl
 
 class StatementItemImpl:
@@ -132,6 +294,8 @@ private:
     std::string     m_specSymb;
     std::string     m_accountEvid;
     Database::Date  m_accountDate;
+protected:
+    Database::Connection *m_conn;
 public:
     StatementItemImpl(const Database::ID id, const Database::ID statementId,
             const std::string accountNumber, const std::string bankCode,
@@ -139,11 +303,17 @@ public:
             const std::string varSymb, const std::string specSymb,
             const Database::Money price,
             const std::string accountEvid, const Database::Date accountDate,
-            const std::string accountMemo, const Database::ID invoiceId):
+            const std::string accountMemo, const Database::ID invoiceId,
+            Database::Connection *conn = NULL):
         PaymentImpl(accountNumber, bankCode, constSymb, varSymb,
                 price, accountMemo, invoiceId),
         m_id(id), m_statementId(statementId), m_code(code), m_specSymb(specSymb),
-        m_accountEvid(accountEvid), m_accountDate(accountDate)
+        m_accountEvid(accountEvid), m_accountDate(accountDate), m_conn(conn)
+    { }
+    StatementItemImpl(Database::Connection *conn):
+        PaymentImpl(),
+        m_id(), m_statementId(), m_code(), m_specSymb(), m_accountEvid(),
+        m_accountDate(), m_conn(conn)
     { }
     virtual const Database::ID &getId() const
     {
@@ -169,6 +339,130 @@ public:
     {
         return m_accountDate;
     }
+    virtual void setId(Database::ID id) 
+    {
+        m_id = id;
+    }
+    virtual void setStatementId(Database::ID statementId) 
+    {
+        m_statementId = statementId;
+    }
+    virtual void setCode(int code) 
+    {
+        m_code = code;
+    }
+    virtual void setEvidenceNumber(std::string evidenceNumber) 
+    {
+        m_accountEvid = evidenceNumber;
+    }
+    virtual void setDate(Database::Date date) 
+    {
+        m_accountDate = date;
+    }
+    virtual void setDate(std::string date)
+    {
+        m_accountDate = Database::Date(date);
+    }
+    virtual void setSpecSymbol(std::string specSymbol) 
+    {
+        m_specSymb = specSymbol;
+    }
+    virtual void setConn(Database::Connection *conn)
+    {
+        m_conn = conn;
+    }
+    virtual Database::Connection *getConn() const
+    {
+        return m_conn;
+    }
+    void update()
+    {
+        TRACE("[CALL] Register::Banking::StatementItemImpl::update()");
+        std::auto_ptr<Database::Query> update (new Database::Query());
+        update->buffer()
+            << "UPDATE bank_statement_item SET"
+            << " statement_id = " << transformId(getStatementId())
+            << ", account_number = " << transformString(getAccountNumber())
+            << ", bank_code = " << transformString(getBankCode())
+            << ", code = " << getCode()
+            << ", konstsym = " << transformString(getConstSymbol())
+            << ", varsymb = " << transformString(getVarSymbol())
+            << ", price = " << transformMoney(getPrice())
+            << ", account_evid = " << transformString(getEvidenceNumber())
+            << ", account_date = '" << getDate() << "'"
+            << ", account_memo = " << transformString(getMemo())
+            << ", invoice_id = " << transformId(getInvoiceId())
+            << " WHERE id = " << m_id;
+        try {
+            assert(m_conn);
+            Database::Transaction transaction(*m_conn);
+            transaction.exec(*update);
+            transaction.commit();
+            LOGGER(PACKAGE).info(boost::format(
+                        "statement item id='%1%' updated successfully")
+                    % m_id);
+        } catch (Database::Exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        } catch (std::exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        }
+    } // void update
+    void insert()
+    {
+        TRACE("[CALL] Register::Banking::StatementItemImpl::insert()");
+        Database::InsertQuery insertItem("bank_statement_item");
+        insertItem.add("statement_id", getStatementId());
+        if (!getAccountNumber().empty()) {
+            insertItem.add("account_number", getAccountNumber());
+        }
+        if (!getBankCode().empty()) {
+            insertItem.add("bank_code", getBankCode());
+        }
+        insertItem.add("code", getCode());
+        if (!getConstSymbol().empty()) {
+            insertItem.add("konstsym", getConstSymbol());
+        }
+        if (!getVarSymbol().empty()) {
+            insertItem.add("varsymb", getVarSymbol());
+        }
+        insertItem.add("price", getPrice());
+        if (!getEvidenceNumber().empty()) {
+            insertItem.add("account_evid", getEvidenceNumber());
+        }
+        insertItem.add("account_date", getDate());
+        if (!getMemo().empty()) {
+            insertItem.add("account_memo", getMemo());
+        }
+        insertItem.add("invoice_id", getInvoiceId());
+        try {
+            assert(m_conn);
+            Database::Transaction transaction(*m_conn);
+            transaction.exec(insertItem);
+            transaction.commit();
+            Database::Sequence seq(*m_conn, "bank_statement_item_id_seq");
+            m_id = seq.getCurrent();
+            LOGGER(PACKAGE).info(boost::format(
+                        "statement item id='%1%' created successfully")
+                    % m_id);
+        } catch (Database::Exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        } catch (std::exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        }
+    } // void insert
+    void save()
+    {
+        TRACE("[CALL] Register::Banking::StatementItemImpl::save()");
+        if (m_id) {
+            update();
+        } else {
+            insert();
+        }
+    }
 }; // class StatementItemImpl
 
 class StatementImpl:
@@ -179,8 +473,8 @@ private:
     int             m_number;
     Database::Date  m_createDate;
     Database::Date  m_balanceOldDate;
-    Database::Money m_balanceOld;
     Database::Money m_balanceNew;
+    Database::Money m_balanceOld;
     Database::Money m_balanceCredit;
     Database::Money m_balanceDebet;
 
@@ -190,13 +484,19 @@ protected:
     Database::Connection *m_conn;
 public:
     StatementImpl(Database::ID id, Database::ID accountId, int number,
-            Database::Date &balanceOldDate, Database::Date &balanceNewDate,
-            Database::Money &balanceOld, Database::Money &balanceNew,
+            Database::Date &balanceNewDate, Database::Date &balanceOldDate,
+            Database::Money &balanceNew, Database::Money &balanceOld,
             Database::Money &balanceCredit, Database::Money &balanceDebet):
         CommonObjectImpl(id), m_accountId(accountId), m_number(number),
         m_createDate(balanceNewDate), m_balanceOldDate(balanceOldDate),
-        m_balanceOld(balanceOld), m_balanceNew(balanceNew),
+        m_balanceNew(balanceNew), m_balanceOld(balanceOld),
         m_balanceCredit(balanceCredit), m_balanceDebet(balanceDebet)
+    { }
+    StatementImpl(Database::Connection *conn):
+        CommonObjectImpl(),
+        m_accountId(), m_number(), m_createDate(), m_balanceOldDate(),
+        m_balanceNew(), m_balanceOld(), m_balanceCredit(), m_balanceDebet(),
+        m_conn(conn)
     { }
     virtual const Database::ID &getAccountId() const
     {
@@ -246,6 +546,139 @@ public:
     {
         m_statementItems.push_back(statementItem);
         return &m_statementItems.at(m_statementItems.size() - 1);
+    }
+    virtual void setAccountId(Database::ID accountId) 
+    {
+        m_accountId = accountId;
+    }
+    virtual void setNumber(int number) 
+    {
+        m_number = number;
+    }
+    virtual void setDate(Database::Date date)
+    {
+        m_createDate = date;
+    }
+    virtual void setDate(std::string date)
+    {
+        m_createDate = Database::Date(date);
+    }
+    virtual void setOldDate(Database::Date oldDate) 
+    {
+        m_balanceOldDate = oldDate;
+    }
+    virtual void setOldDate(std::string oldDate)
+    {
+        m_balanceOldDate = Database::Date(oldDate);
+    }
+    virtual void setBalance(Database::Money balance) 
+    {
+        m_balanceNew = balance;
+    }
+    virtual void setOldBalance(Database::Money oldBalance) 
+    {
+        m_balanceOld = oldBalance;
+    }
+    virtual void setCredit(Database::Money credit) 
+    {
+        m_balanceCredit = credit;
+    }
+    virtual void setDebet(Database::Money debet) 
+    {
+        m_balanceDebet = debet;
+    }
+    virtual void setConn(Database::Connection *conn)
+    {
+        m_conn = conn;
+    }
+    virtual Database::Connection *getConn() const
+    {
+        return m_conn;
+    }
+    void update()
+    {
+        TRACE("[CALL] Register::Banking::StatementImpl::update()");
+        std::auto_ptr<Database::Query> update(new Database::Query());
+        update->buffer()
+            << "UPDATE bank_statement_head SET"
+            << " account_id = " << transformId(getAccountId())
+            << ", num = " << getNumber()
+            << ", create_date = '" << getDate() << "'"
+            << ", balance_old_date = '" << getOldDate() << "'"
+            << ", balance_old = " << transformMoney(getOldBalance())
+            << ", balance_new = " << transformMoney(getBalance())
+            << ", balance_credit = " << transformMoney(getCredit())
+            << ", balance_debet = " << transformMoney(getDebet())
+            << " WHERE id = " << id_;
+        try {
+            assert(m_conn);
+            Database::Transaction transaction(*m_conn);
+            transaction.exec(*update);
+            transaction.commit();
+            LOGGER(PACKAGE).info(boost::format(
+                        "online payment item id='%1%' updated successfully")
+                    % id_);
+            for (int i = 0; i < (int)getStatementItemCount(); i++) {
+                StatementItem *item = (StatementItem *)getStatementItemByIdx(i);
+                item->setStatementId(id_);
+                item->setConn(getConn());
+                item->save();
+            }
+        } catch (Database::Exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        } catch (std::exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        }
+    } // void update
+    void insert()
+    {
+        TRACE("[CALL] Register::Banking::StatementImpl::insert()");
+        Database::InsertQuery insertHead("bank_statement_head");
+        insertHead.add("account_id", getAccountId());
+        insertHead.add("num", getNumber());
+        insertHead.add("create_date", getDate());
+        insertHead.add("balance_old_date", getOldDate());
+        insertHead.add("balance_old", getOldBalance());
+        insertHead.add("balance_new", getBalance());
+        insertHead.add("balance_credit", getCredit());
+        insertHead.add("balance_debet", getDebet());
+        try {
+            assert(m_conn);
+            Database::Transaction transaction(*m_conn);
+            transaction.exec(insertHead);
+            transaction.commit();
+            Database::Sequence seq(*m_conn, "bank_statement_head_id_seq");
+            id_ = seq.getCurrent();
+            LOGGER(PACKAGE).info(boost::format(
+                        "statement head id='%1%' created successfully")
+                    % id_);
+            for (int i = 0; i < (int)getStatementItemCount(); i++) {
+                StatementItem *item = (StatementItem *)getStatementItemByIdx(i);
+                item->setStatementId(id_);
+                item->save();
+            }
+        } catch (Database::Exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        } catch (std::exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        }
+    } // void insert
+    virtual void save()
+    {
+        TRACE("[CALL] Register::Banking::StatementImpl::save()");
+        if (id_) {
+            update();
+        } else {
+            insert();
+        }
+    }
+    virtual StatementItem *createStatementItem()
+    {
+        return addStatementItem(StatementItemImpl(m_conn));
     }
 }; // class StatementImpl
 
@@ -348,6 +781,7 @@ public:
                 OnlineStatementImpl *stat = new OnlineStatementImpl(id, accountId, price,
                         crDate, accountNumber, bankCode, constSymbol,
                         varSymbol, memo, name, ident, invoiceId);
+                stat->setConn(conn_);
                 data_.push_back(stat);
             }
             CommonListImpl::reload();
@@ -508,11 +942,7 @@ public:
                 StatementImpl *stat = new StatementImpl(id, accountId,
                         number, crDate, oldDate,
                         balance, oldBalance, credit, debet);
-                if (!stat) {
-                    LOGGER(PACKAGE).error("not stat");
-                } else {
-                    LOGGER(PACKAGE).error("yes stat");
-                }
+                stat->setConn(conn_);
                 data_.push_back(stat);
             }
             if (data_.empty()) {
@@ -521,7 +951,7 @@ public:
             resetIDSequence();
             Database::SelectQuery StatementItemQuery;
             StatementItemQuery.select()
-                << "tmp.id, t_1.statement_id, t_1.account_number, t_1.bank_code, "
+                << "t_1.id, t_1.statement_id, t_1.account_number, t_1.bank_code, "
                 << "t_1.code, t_1.konstSym, t_1.varSymb, t_1.specsymb, t_1.price * 100, "
                 << "t_1.account_evid, t_1.account_date, t_1.account_memo, "
                 << "t_1.invoice_id";
@@ -554,7 +984,7 @@ public:
                     statPtr->addStatementItem(StatementItemImpl(id, statementId,
                                 accountNumber, bankCode, code, konstSymb,
                                 varSymb, specSymb, price, accountEvid, accountDate,
-                                accountMemo, invoiceId));
+                                accountMemo, invoiceId, conn_));
                 }
             }
             CommonListImpl::reload();
@@ -656,6 +1086,14 @@ public:
     OnlineList *createOnlineList() const
     {
         return new OnlineListImpl(m_conn, (Manager *)this);
+    }
+    virtual OnlineStatement *createOnlineStatement() const
+    {
+        return new OnlineStatementImpl(m_conn);
+    }
+    virtual Statement *createStatement() const
+    {
+        return new StatementImpl(m_conn);
     }
 }; // class ManagerImpl
 
