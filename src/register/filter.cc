@@ -86,13 +86,16 @@ public:
       return;
     }
 
-    insert.buffer() << "INSERT INTO filters VALUES (DEFAULT, " << m_type
-        << ", '" << m_name << "', " << m_user_id << ", " << m_group_id << ", '"
-        << m_data << "')";
+    Database::InsertQuery insert_filter("filters");
+    insert_filter.add("type", m_type);
+    insert_filter.add("name", m_name);
+    insert_filter.add("userid", m_user_id);
+    insert_filter.add("groupid", m_group_id);
+    insert_filter.add("data", m_data);
 
     try {
       //TRACE(boost::format("[IN] Register::FilterImpl::save(): going to inserting data SQL = %1%") % insert.str());
-      Database::Result result = _conn->exec(insert);
+      Database::Result result = _conn->exec(insert_filter);
       LOGGER(PACKAGE).info(boost::format("filter '%1%' saved successfully")
           % m_name);
     }
@@ -251,8 +254,10 @@ public:
         boost::archive::xml_oarchive save(xml_data);
         save << BOOST_SERIALIZATION_NVP(_uf);
       }
+      std::auto_ptr<Database::Connection> conn(m_db_manager->getConnection());
+
       Register::Filter::FilterImpl new_filter(_type, _name, 1, 1, xml_data.str());
-      new_filter.save(m_db_manager->getConnection());
+      new_filter.save(conn.get());
     }
     catch (std::exception& ex) {
       LOGGER(PACKAGE).error(boost::format("can't save filter (reason: %1%)") % ex.what());
