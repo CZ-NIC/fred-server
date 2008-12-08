@@ -76,7 +76,7 @@ detail->_field[i - 1].from     = makeCorbaTime(act->getActionStartTime(), true);
 
 #define MAP_HISTORY_VARIABLE(_field, _method, _conv)                                  \
 if (CHANGED(_method)) {                                                               \
-  ADD_NEW_HISTORY_RECORD(_field, _conv(act->_method))                                 \
+  ADD_NEW_HISTORY_RECORD(_field, _conv(act->_method()))                               \
 }                                                                                     \
 else {                                                                                \
   MODIFY_LAST_HISTORY_RECORD(_field)                                                  \
@@ -102,9 +102,9 @@ else {                                                                          
   MODIFY_LAST_HISTORY_RECORD(_field)                                                  \
 }
 
-#define MAP_HISTORY_STRING(_field, _method)    MAP_HISTORY_VARIABLE(_field, _method, DUPSTRFUN)
-#define MAP_HISTORY_DATE(_field, _method)      MAP_HISTORY_VARIABLE(_field, _method, DUPSTRDATED)
-#define MAP_HISTORY_DATETIME(_field, _method)  MAP_HISTORY_VARIABLE(_field, _method, DUPSTRDATE)
+#define MAP_HISTORY_STRING(_field, _method)    MAP_HISTORY_VARIABLE(_field, _method, str_corbaout)
+#define MAP_HISTORY_DATE(_field, _method)      MAP_HISTORY_VARIABLE(_field, _method, str_corbaout)
+#define MAP_HISTORY_DATETIME(_field, _method)  MAP_HISTORY_VARIABLE(_field, _method, str_corbaout)
 
 
 #endif /*UTILS_H_*/
