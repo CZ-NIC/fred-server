@@ -252,7 +252,9 @@ void CommonListImpl::fillTempTable(bool _limit) const throw (SQL_ERROR) {
 void CommonListImpl::reload() {
   load_limit_active_ = false;
   if (size() > load_limit_) {
+    CommonObject *tmp = data_.back();
     data_.pop_back();
+    delete tmp;
     load_limit_active_ = true;
   }
 }
