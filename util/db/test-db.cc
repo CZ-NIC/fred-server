@@ -15,7 +15,7 @@ struct TestPooler {
 public:
   TestPooler(Database::ConnectionPool *p, int i) : pool_(p), id_(i) { }
   void operator()() {
-    Logging::Context ctx(str(boost::format("threadid-%1%(real=%2%)") % id_ % boost::this_thread::get_id()));
+    Logging::Context ctx(str(boost::format("threadid-%1%") % id_));
 
     Database::Connection *c = pool_->acquire();
     c->exec("SELECT * FROM object_registry");
