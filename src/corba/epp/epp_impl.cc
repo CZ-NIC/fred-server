@@ -1702,7 +1702,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
   );
   // start EPP action - this will handle all init stuff
   EPPAction a(this, clientID, EPP_PollResponse, clTRID, XML);
-  Register::Poll::Message *m= NULL;
+  std::auto_ptr<Register::Poll::Message> m;
   try {
     std::auto_ptr<Register::Poll::Manager> pollMan(
         Register::Poll::Manager::create(a.getDB())
@@ -1710,11 +1710,11 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
     // fill count
     count = pollMan->getMessageCount(a.getRegistrar());
     if (!count) a.NoMessage(); // throw exception NoMessage
-    m = pollMan->getNextMessage(a.getRegistrar());
+    m.reset(pollMan->getNextMessage(a.getRegistrar()));
   }
   catch (ccReg::EPP::NoMessages) {throw;}
   catch (...) {a.failedInternal("Connection problems");}
-  if (!m)
+  if (m.get())
     a.failedInternal("Cannot get message"); // throw internal exception
   a.setCode(COMMAND_ACK_MESG);
   msg = new CORBA::Any;
@@ -1730,7 +1730,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
   // check MessageEventReg before MessageEvent because
   // MessageEvent is ancestor of MessageEventReg
   Register::Poll::MessageEventReg *mer =
-      dynamic_cast<Register::Poll::MessageEventReg *>(m);
+      dynamic_cast<Register::Poll::MessageEventReg *>(m.get());
   if (mer) {
     switch (m->getType()) {
       case Register::Poll::MT_TRANSFER_CONTACT:
@@ -1756,7 +1756,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
     return a.getRet()._retn();
   }
   Register::Poll::MessageEvent *me =
-      dynamic_cast<Register::Poll::MessageEvent *>(m);
+      dynamic_cast<Register::Poll::MessageEvent *>(m.get());
   if (me) {
     switch (m->getType()) {
       case Register::Poll::MT_DELETE_CONTACT:
@@ -1796,7 +1796,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
     return a.getRet()._retn();
   }
   Register::Poll::MessageLowCredit *mlc =
-      dynamic_cast<Register::Poll::MessageLowCredit *>(m);
+      dynamic_cast<Register::Poll::MessageLowCredit *>(m.get());
   if (mlc) {
     type = ccReg::polltype_lowcredit;
     ccReg::PollMsg_LowCredit *hdm = new ccReg::PollMsg_LowCredit;
@@ -1807,7 +1807,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
     return a.getRet()._retn();
   }
   Register::Poll::MessageTechCheck *mtc =
-      dynamic_cast<Register::Poll::MessageTechCheck *>(m);
+      dynamic_cast<Register::Poll::MessageTechCheck *>(m.get());
   if (mtc) {
     type = ccReg::polltype_techcheck;
     ccReg::PollMsg_Techcheck *hdm = new ccReg::PollMsg_Techcheck;
