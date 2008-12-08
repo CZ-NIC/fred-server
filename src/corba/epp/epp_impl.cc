@@ -5805,9 +5805,9 @@ ccReg_EPP_i::KeySetInfo(
     keyFilter->addHandle().setValue(std::string(handle));
     keyFilter->addDeleteTime().setNULL();
     unionFilter.addFilter(keyFilter);
-    Database::Manager *dbman = new Database::Manager(database);
+    Database::Manager dbman(database);
+    klist->reload(unionFilter, &dbman);
 
-    klist->reload(unionFilter, dbman);
 
     //klist->setHandleFilter(handle);
     // try {
