@@ -1714,7 +1714,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
   }
   catch (ccReg::EPP::NoMessages) {throw;}
   catch (...) {a.failedInternal("Connection problems");}
-  if (m.get())
+  if (!m.get())
     a.failedInternal("Cannot get message"); // throw internal exception
   a.setCode(COMMAND_ACK_MESG);
   msg = new CORBA::Any;
