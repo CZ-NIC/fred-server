@@ -715,7 +715,7 @@ public:
 
     virtual void reload(Database::Filters::Union &filter)
     {
-        TRACE("[CALL] Bank2::OnlineListImpl::reload(Database::Filters::Union &)");
+        TRACE("[CALL] Register::Banking::OnlineListImpl::reload(Database::Filters::Union &)");
         clear();
         filter.clearQueries();
 
@@ -878,7 +878,7 @@ public:
     }
     virtual void reload(Database::Filters::Union &filter)
     {
-        TRACE("[CALL] Bank2::StatementListImpl::reload(Database::Filters::Union &)");
+        TRACE("[CALL] Register::Banking::StatementListImpl::reload(Database::Filters::Union &)");
         clear();
         filter.clearQueries();
 
@@ -1100,7 +1100,7 @@ public:
 Manager *
 Manager::create(Database::Manager *dbMan)
 {
-    TRACE("[CALL] Register::Bank2::Manager::create()");
+    TRACE("[CALL] Register::Banking::Manager::create()");
     return new ManagerImpl(dbMan);
 }
 
