@@ -50,7 +50,7 @@ Registry::TableRow* ccReg_Invoices_i::getRow(CORBA::Short row)
   std::string credit = (invoice_type == Register::Invoicing::IT_DEPOSIT ? formatMoney(inv->getCredit()) : "");
   std::string itype  = (invoice_type == Register::Invoicing::IT_DEPOSIT ? "DEPOSIT" : "ACCOUNT");
 
-  MAKE_OID(oid_registrar, inv->getClient()->getId(), DUPSTRFUN(inv->getClient()->getHandle), FT_REGISTRAR)
+  MAKE_OID(oid_registrar, inv->getClient()->getId(), str_corbaout(inv->getClient()->getHandle()), FT_REGISTRAR)
   MAKE_OID(oid_pdf, inv->getFilePDF(), "", FT_FILE)
   MAKE_OID(oid_xml, inv->getFileXML(), "", FT_FILE)
 

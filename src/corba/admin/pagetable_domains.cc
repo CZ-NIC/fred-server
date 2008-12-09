@@ -56,9 +56,9 @@ Registry::TableRow* ccReg_Domains_i::getRow(CORBA::Short row)
   Registry::TableRow *tr = new Registry::TableRow;
   tr->length(11);
   
-  MAKE_OID(oid_fqdn, d->getId(), DUPSTRFUN(d->getFQDN), FT_DOMAIN)
-  MAKE_OID(oid_registrant, d->getRegistrantId(), DUPSTRFUN(d->getRegistrantHandle), FT_CONTACT)
-  MAKE_OID(oid_registrar, d->getRegistrarId(), DUPSTRFUN(d->getRegistrarHandle), FT_REGISTRAR)
+  MAKE_OID(oid_fqdn, d->getId(), str_corbaout(d->getFQDN()), FT_DOMAIN)
+  MAKE_OID(oid_registrant, d->getRegistrantId(), str_corbaout(d->getRegistrantHandle()), FT_CONTACT)
+  MAKE_OID(oid_registrar, d->getRegistrarId(), str_corbaout(d->getRegistrarHandle()), FT_REGISTRAR)
 
   (*tr)[0]  <<= oid_fqdn;                                              // fqdn
   (*tr)[1]  <<= oid_registrant;                                        // registrant handle

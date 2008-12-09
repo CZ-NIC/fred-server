@@ -42,7 +42,7 @@ Registry::TableRow* ccReg_EPPActions_i::getRow(CORBA::Short row)
     Registry::TableRow *tr = new Registry::TableRow;
     tr->length(7);
 
-    MAKE_OID(oid_registrar, a->getRegistrarId(), DUPSTRFUN(a->getRegistrarHandle), FT_REGISTRAR)
+    MAKE_OID(oid_registrar, a->getRegistrarId(), str_corbaout(a->getRegistrarHandle()), FT_REGISTRAR)
 
     (*tr)[0] <<= str_corbaout(a->getServerTransactionId());
     (*tr)[1] <<= str_corbaout(a->getClientTransactionId());

@@ -41,8 +41,8 @@ Registry::TableRow* ccReg_Contacts_i::getRow(CORBA::Short row)
   Registry::TableRow *tr = new Registry::TableRow;
   tr->length(6);
 
-  MAKE_OID(oid_handle, c->getId(), DUPSTRFUN(c->getHandle), FT_CONTACT)
-  MAKE_OID(oid_registrar, c->getRegistrarId(), DUPSTRFUN(c->getRegistrarHandle), FT_REGISTRAR)
+  MAKE_OID(oid_handle, c->getId(), str_corbaout(c->getHandle()), FT_CONTACT)
+  MAKE_OID(oid_registrar, c->getRegistrarId(), str_corbaout(c->getRegistrarHandle()), FT_REGISTRAR)
 
   (*tr)[0] <<= oid_handle;
   (*tr)[1] <<= str_corbaout(c->getName());

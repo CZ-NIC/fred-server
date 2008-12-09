@@ -49,8 +49,8 @@ ccReg_KeySets_i::getRow(CORBA::Short row)
     Registry::TableRow *tr = new Registry::TableRow;
     tr->length(4);
 
-    MAKE_OID(oid_handle, k->getId(), DUPSTRFUN(k->getHandle), FT_KEYSET)
-    MAKE_OID(oid_registrar, k->getRegistrarId(), DUPSTRFUN(k->getRegistrarHandle), FT_REGISTRAR)
+    MAKE_OID(oid_handle, k->getId(), str_corbaout(k->getHandle()), FT_KEYSET)
+    MAKE_OID(oid_registrar, k->getRegistrarId(), str_corbaout(k->getRegistrarHandle()), FT_REGISTRAR)
 
     (*tr)[0] <<= oid_handle;
     (*tr)[1] <<= str_corbaout(k->getCreateDate());
