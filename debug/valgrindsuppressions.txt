@@ -1,5 +1,39 @@
 {
    <insert a suppression name here>
+   Memcheck:Cond
+   fun:gaih_inet
+   fun:getaddrinfo
+   fun:_ZN4omni11LibcWrapper11getAddrInfoEPKct
+   fun:_ZNK4omni10tcpAddress7ConnectEmmm
+   fun:_ZN4omni10giopStream9sendChunkEPNS_17giopStream_BufferE
+   fun:_ZN4omni10giopImpl1016outputMessageEndEPNS_10giopStreamE
+   fun:_ZN4omni6GIOP_C17InitialiseRequestEv
+   fun:_ZN18omniRemoteIdentity8dispatchER18omniCallDescriptor
+   fun:_ZN10omniObjRef7_invokeER18omniCallDescriptorb
+   fun:_ZN10omniObjRef12_remote_is_aEPKc
+   fun:_ZN10omniObjRef10_real_is_aEPKc
+   fun:_ZN10omniObjRef11_realNarrowEPKc
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:gaih_inet
+   fun:getaddrinfo
+   fun:_ZN4omni11LibcWrapper11getAddrInfoEPKct
+   fun:_ZNK4omni10tcpAddress7ConnectEmmm
+   fun:_ZN4omni10giopStream9sendChunkEPNS_17giopStream_BufferE
+   fun:_ZN4omni10giopImpl1016outputMessageEndEPNS_10giopStreamE
+   fun:_ZN4omni6GIOP_C17InitialiseRequestEv
+   fun:_ZN18omniRemoteIdentity8dispatchER18omniCallDescriptor
+   fun:_ZN10omniObjRef7_invokeER18omniCallDescriptorb
+   fun:_ZN10omniObjRef12_remote_is_aEPKc
+   fun:_ZN10omniObjRef10_real_is_aEPKc
+   fun:_ZN10omniObjRef11_realNarrowEPKc
+}
+
+{
+   <insert a suppression name here>
    Memcheck:Param
    socketcall.send(msg)
    fun:send
@@ -12,22 +46,110 @@
    fun:_ZN10omniObjRef10_real_is_aEPKc
    fun:_ZN10omniObjRef11_realNarrowEPKc
    fun:_ZN9CosNaming13NamingContext7_narrowEPN5CORBA6ObjectE
-   fun:_ZN11NameServiceC1EPN5CORBA3ORBERKSs
-   fun:_ZN11CorbaClientC1EiPPcRKSs
+   fun:_ZN11NameServiceC1EPN5CORBA3ORBERKSsS4_
+   fun:main
 }
+
 {
    <insert a suppression name here>
-   Memcheck:Leak
-   fun:_vgrZU_libcZdsoZa_malloc
-   fun:_dl_map_object_deps
-   fun:dl_open_worker
-   fun:_dl_catch_error
-   fun:_dl_open
-   fun:do_dlopen
-   fun:_dl_catch_error
-   fun:__libc_dlopen_mode
-   fun:pthread_cancel_init
-   fun:_Unwind_ForcedUnwind
-   fun:__pthread_unwind
-   fun:pthread_exit
+   Memcheck:Param
+   socketcall.send(msg)
+   fun:send
+   fun:_ZN4omni10giopStream9sendChunkEPNS_17giopStream_BufferE
+   fun:_ZN4omni10giopImpl1216outputMessageEndEPNS_10giopStreamE
+   fun:_ZN4omni10giopImpl1217sendLocateRequestEPNS_10giopStreamE
+   fun:_ZN4omni6GIOP_C18IssueLocateRequestEv
+   fun:_ZN18omniRemoteIdentity13locateRequestER18omniCallDescriptor
+   fun:_ZN10omniObjRef14_locateRequestEv
+   fun:_ZN10omniObjRef28_assertExistsAndTypeVerifiedEv
+   fun:_ZN10omniObjRef7_invokeER18omniCallDescriptorb
+   fun:_ZN9CosNaming21_objref_NamingContext4bindERKNS_4NameEPN5CORBA6ObjectE
+   fun:_ZN11NameService4bindERKSsPN5CORBA6ObjectE
+   fun:main
+}
+
+{
+   <insert a suppression name here>
+   Memcheck:Param
+   socketcall.send(msg)
+   fun:send
+   fun:_ZN4omni10giopStream9sendChunkEPNS_17giopStream_BufferE
+   fun:_ZN4omni10giopImpl1216outputMessageEndEPNS_10giopStreamE
+   fun:_ZN4omni6GIOP_C17InitialiseRequestEv
+   fun:_ZN18omniRemoteIdentity8dispatchER18omniCallDescriptor
+   fun:_ZN10omniObjRef7_invokeER18omniCallDescriptorb
+   fun:_ZN9CosNaming21_objref_NamingContext4bindERKNS_4NameEPN5CORBA6ObjectE
+   fun:_ZN11NameService4bindERKSsPN5CORBA6ObjectE
+   fun:main
+}
+
+{
+   After_EPP_Client_Start_1
+   Memcheck:Param
+   socketcall.send(msg)
+   fun:send
+   fun:_ZN4omni10giopStream9sendChunkEPNS_17giopStream_BufferE
+   fun:_ZN4omni10giopImpl1216outputMessageEndEPNS_10giopStreamE
+   fun:_ZN4omni6GIOP_S9SendReplyEv
+   fun:_ZN14omniCallHandle6upcallEP11omniServantR18omniCallDescriptor
+   fun:_ZN5ccReg9_impl_EPP9_dispatchER14omniCallHandle
+   fun:_ZN4omni10omniOrbPOA8dispatchER14omniCallHandleP17omniLocalIdentity
+   fun:_ZN17omniLocalIdentity8dispatchER14omniCallHandle
+   fun:_ZN4omni6GIOP_S13handleRequestEv
+   fun:_ZN4omni6GIOP_S10dispatcherEv
+   fun:_ZN4omni10giopWorker12real_executeEv
+   fun:_ZN4omni14giopWorkerInfo3runEv
+}
+
+{
+   After_EPP_Client_Start_2
+   Memcheck:Free
+   fun:_ZdaPv
+   fun:_ZN20_CORBA_String_helper4freeEPc
+   fun:_ZN17_CORBA_String_varD1Ev
+   fun:_ZN33_0RL_cd_5c5a30f2339daf0f_22200000D1Ev
+   fun:_ZN5ccReg9_impl_EPP9_dispatchER14omniCallHandle
+   fun:_ZN4omni10omniOrbPOA8dispatchER14omniCallHandleP17omniLocalIdentity
+   fun:_ZN17omniLocalIdentity8dispatchER14omniCallHandle
+   fun:_ZN4omni6GIOP_S13handleRequestEv
+   fun:_ZN4omni6GIOP_S10dispatcherEv
+   fun:_ZN4omni10giopWorker12real_executeEv
+   fun:_ZN4omni14giopWorkerInfo3runEv
+   fun:_ZN4omni10giopWorker7executeEv
+}
+
+{
+   OmniOrbPadding_sendSystemException
+   Memcheck:Param
+   socketcall.send(msg)
+   fun:send
+   fun:_ZN4omni10giopStream9sendChunkEPNS_17giopStream_BufferE
+   fun:_ZN4omni10giopImpl1216outputMessageEndEPNS_10giopStreamE
+   fun:_ZN4omni10giopImpl1219sendSystemExceptionEPNS_10giopStreamERKN5CORBA15SystemExceptionE
+   fun:_ZN4omni6GIOP_S13handleRequestEv
+   fun:_ZN4omni6GIOP_S10dispatcherEv
+   fun:_ZN4omni10giopWorker12real_executeEv
+   fun:_ZN4omni14giopWorkerInfo3runEv
+   fun:_ZN4omni10giopWorker7executeEv
+   fun:_ZN15omniAsyncWorker8real_runEv
+   fun:_ZN19omniAsyncWorkerInfo3runEv
+   fun:_ZN15omniAsyncWorker3runEPv
+}
+
+{
+   OmniOrbPadding_sendUserException
+   Memcheck:Param
+   socketcall.send(msg)
+   fun:send
+   fun:_ZN4omni10giopStream9sendChunkEPNS_17giopStream_BufferE
+   fun:_ZN4omni10giopImpl1216outputMessageEndEPNS_10giopStreamE
+   fun:_ZN4omni10giopImpl1217sendUserExceptionEPNS_10giopStreamERKN5CORBA13UserExceptionE
+   fun:_ZN4omni6GIOP_S13handleRequestEv
+   fun:_ZN4omni6GIOP_S10dispatcherEv
+   fun:_ZN4omni10giopWorker12real_executeEv
+   fun:_ZN4omni14giopWorkerInfo3runEv
+   fun:_ZN4omni10giopWorker7executeEv
+   fun:_ZN15omniAsyncWorker8real_runEv
+   fun:_ZN19omniAsyncWorkerInfo3runEv
+   fun:_ZN15omniAsyncWorker3runEPv
 }
