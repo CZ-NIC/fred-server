@@ -52,10 +52,10 @@ ccReg_Filters_i::getRow(CORBA::Short row)
     
     Registry::TableRow *tr = new Registry::TableRow;
     tr->length(4);
-    (*tr)[0] <<= str_corbaout(item->getUserId());
-    (*tr)[1] <<= str_corbaout(item->getGroupId());
-    (*tr)[2] <<= str_corbaout<int>(item->getType());
-    (*tr)[3] <<= str_corbaout(item->getName());
+    (*tr)[0] <<= C_STR(str_corbaout(item->getUserId()));
+    (*tr)[1] <<= C_STR(str_corbaout(item->getGroupId()));
+    (*tr)[2] <<= C_STR(str_corbaout<int>(item->getType()));
+    (*tr)[3] <<= C_STR(str_corbaout(item->getName()));
     return tr;
   }
   catch (...) {

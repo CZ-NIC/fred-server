@@ -43,12 +43,12 @@ ccReg_NSSets_i::getRow(CORBA::Short row)
   Registry::TableRow *tr = new Registry::TableRow;
   tr->length(4);
 
-  MAKE_OID(oid_handle, n->getId(), str_corbaout(n->getHandle()), FT_NSSET)
-  MAKE_OID(oid_registrar, n->getRegistrarId(), str_corbaout(n->getRegistrarHandle()), FT_REGISTRAR)
+  MAKE_OID(oid_handle, n->getId(), C_STR(str_corbaout(n->getHandle())), FT_NSSET)
+  MAKE_OID(oid_registrar, n->getRegistrarId(), C_STR(str_corbaout(n->getRegistrarHandle())), FT_REGISTRAR)
 
   (*tr)[0] <<= oid_handle;
-  (*tr)[1] <<= str_corbaout(n->getCreateDate());
-  (*tr)[2] <<= str_corbaout(n->getDeleteDate());
+  (*tr)[1] <<= C_STR(str_corbaout(n->getCreateDate()));
+  (*tr)[2] <<= C_STR(str_corbaout(n->getDeleteDate()));
   (*tr)[3] <<= oid_registrar; 
   return tr;
 }

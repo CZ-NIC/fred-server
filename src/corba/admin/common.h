@@ -50,6 +50,8 @@ void FUNC(PTYPESET _v) { MEMBER = _v; SETF; }
 // #define DUPSTRDATE(f) DUPSTR(to_simple_string(f()).c_str())
 
 
+#define C_STR(_str)  _str.c_str()
+
 /* detail library -> corba mappings macros */
 #define MAKE_OID(_name, _id, _handle, _type) \
 Registry::OID _name;                         \
@@ -76,7 +78,7 @@ detail->_field[i - 1].from     = makeCorbaTime(act->getActionStartTime(), true);
 
 #define MAP_HISTORY_VARIABLE(_field, _method, _conv)                                  \
 if (CHANGED(_method)) {                                                               \
-  ADD_NEW_HISTORY_RECORD(_field, _conv(act->_method()))                               \
+  ADD_NEW_HISTORY_RECORD(_field, C_STR(_conv(act->_method())))                        \
 }                                                                                     \
 else {                                                                                \
   MODIFY_LAST_HISTORY_RECORD(_field)                                                  \
