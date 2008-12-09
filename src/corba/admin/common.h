@@ -50,7 +50,7 @@ void FUNC(PTYPESET _v) { MEMBER = _v; SETF; }
 // #define DUPSTRDATE(f) DUPSTR(to_simple_string(f()).c_str())
 
 
-#define C_STR(_str)  _str.c_str()
+#define C_STR(_val)  str_corbaout(_val).c_str()
 
 /* detail library -> corba mappings macros */
 #define MAKE_OID(_name, _id, _handle, _type) \
@@ -78,7 +78,7 @@ detail->_field[i - 1].from     = makeCorbaTime(act->getActionStartTime(), true);
 
 #define MAP_HISTORY_VARIABLE(_field, _method, _conv)                                  \
 if (CHANGED(_method)) {                                                               \
-  ADD_NEW_HISTORY_RECORD(_field, C_STR(_conv(act->_method())))                        \
+  ADD_NEW_HISTORY_RECORD(_field, _conv(act->_method()))                               \
 }                                                                                     \
 else {                                                                                \
   MODIFY_LAST_HISTORY_RECORD(_field)                                                  \
@@ -104,9 +104,9 @@ else {                                                                          
   MODIFY_LAST_HISTORY_RECORD(_field)                                                  \
 }
 
-#define MAP_HISTORY_STRING(_field, _method)    MAP_HISTORY_VARIABLE(_field, _method, str_corbaout)
-#define MAP_HISTORY_DATE(_field, _method)      MAP_HISTORY_VARIABLE(_field, _method, str_corbaout)
-#define MAP_HISTORY_DATETIME(_field, _method)  MAP_HISTORY_VARIABLE(_field, _method, str_corbaout)
+#define MAP_HISTORY_STRING(_field, _method)    MAP_HISTORY_VARIABLE(_field, _method, C_STR)
+#define MAP_HISTORY_DATE(_field, _method)      MAP_HISTORY_VARIABLE(_field, _method, C_STR)
+#define MAP_HISTORY_DATETIME(_field, _method)  MAP_HISTORY_VARIABLE(_field, _method, C_STR)
 
 
 #endif /*UTILS_H_*/

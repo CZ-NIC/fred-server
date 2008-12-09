@@ -40,10 +40,10 @@ Registry::TableRow* ccReg_Files_i::getRow(CORBA::Short _row)
 
   Registry::TableRow *tr = new Registry::TableRow;
   tr->length(4);
-  (*tr)[0] <<= C_STR(str_corbaout(file->getName()));
-  (*tr)[1] <<= C_STR(str_corbaout(file->getCreateTime()));
-  (*tr)[2] <<= C_STR(str_corbaout(file->getTypeDesc()));
-  (*tr)[3] <<= C_STR(str_corbaout(file->getSize()));
+  (*tr)[0] <<= C_STR(file->getName());
+  (*tr)[1] <<= C_STR(file->getCreateTime());
+  (*tr)[2] <<= C_STR(file->getTypeDesc());
+  (*tr)[3] <<= C_STR(file->getSize());
   return tr;
 }
 
