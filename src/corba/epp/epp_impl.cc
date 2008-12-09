@@ -4057,7 +4057,7 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(
   errors = new ccReg::Errors;
 
   tch_add = new int[ tech_add.length() ];
-  tch_rem = new int[ tech_add.length() ];
+  tch_rem = new int[ tech_rem.length() ];
 
   ret->code=0;
   errors->length(0);
@@ -6791,7 +6791,7 @@ ccReg_EPP_i::KeySetUpdate(
                             }
                         }
                     }
-                    
+
                     // test dsrecord to rem (if this dsrecord exist for this keyset)
                     if (!ret->code) {
                         for (int i = 0; i < (int)dsrec_rem.length(); i++) {
