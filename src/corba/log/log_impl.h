@@ -9,10 +9,9 @@
 #include "corba/mailer_manager.h"
 #include <corba/ccReg.hh>
 
-// TODO - we need hash map
 #include <map>
 /*
- * #include <
+ * #include <tr1/unordered_map>
  */
 
 #include "conf/manager.h"
@@ -77,6 +76,7 @@ public:
 
 private:
   void insert_props(ccReg::TID entry_id, const ccReg::LogProperties& props);
+  bool record_check(ccReg::TID id);
 
 };
 

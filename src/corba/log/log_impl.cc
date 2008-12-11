@@ -23,24 +23,7 @@
 #include <stdlib.h>
 
 #include <corba/ccReg.hh>
-/*
-#include "boost/date_time/posix_time/posix_time.hpp"
-#include "boost/date_time/local_time_adjustor.hpp"
-#include "boost/date_time/c_local_time_adjustor.hpp"
 
-#include <string.h>
-#include <time.h>
-#include "epp_impl.h"
-
-#include "config.h"
-// database functions
-#include "old_utils/dbsql.h"
-#include "db/manager.h"
-
-// support function
-#include "old_utils/util.h"
-
-*/
 // logger
 #include "old_utils/log.h"
 //config
@@ -56,32 +39,41 @@ using namespace Database;
 ccReg_Log_i::ccReg_Log_i(const std::string database, NameService *ns, Config::Conf& _cfg, bool _session_garbage)
       throw (DB_CONNECT_FAILED) {
 
-  try {
-	conn.open(database);
-  } catch (Database::Exception &ex) {
-	LOG(ALERT_LOG, "can not connect to DATABASE %s : %s", database.c_str(), ex.what());
-	// LOGGER("db").error(ex.what());
-  }
+	try {
+		conn.open(database);
+	} catch (Database::Exception &ex) {
+		LOG(ALERT_LOG, "can not connect to DATABASE %s : %s", database.c_str(),
+				ex.what());
+		// LOGGER("db").error(ex.what());
+	}
 
-  LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database.c_str());
+	LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database.c_str());
 
-  // now fill the property_names map:
+	// now fill the property_names map:
 
 	try {
 		Result res = conn.exec("select id, name from log_property_name");
 
 		if (res.size() > PROP_NAMES_SIZE_LIMIT) {
-			LOGGER("fred-logd").error(" Number of entries in log_property_name is over the limit.");
+			LOGGER("fred-logd").error(
+					" Number of entries in log_property_name is over the limit.");
 			return;
 		}
 
-		for(Result::Iterator it = res.begin(); it != res.end(); ++it) {
+		for (Result::Iterator it = res.begin(); it != res.end(); ++it) {
 			Row row = *it;
 
 			property_names[row[1]] = row[0];
-
-			// std::cout << "member " << row[0] << row[1] << std::endl;
 		}
+		// debug TODO remove
+		std::cout << "---------- Map content: " << std::endl;
+
+		for (std::map<std::string, ccReg::TID, strCmp>::iterator iter = property_names.begin();
+			iter != property_names.end(); ++iter) {
+
+			std::cout << "key: " << iter->first << " value: " << iter->second << std::endl;
+		}
+
 	} catch (Database::Exception &ex) {
 		LOGGER("fred-logd").error(ex.what());
 	}
@@ -90,65 +82,82 @@ ccReg_Log_i::ccReg_Log_i(const std::string database, NameService *ns, Config::Co
 
 ccReg_Log_i::~ccReg_Log_i() {
   // db.Disconnect();
-  LOG( ERROR_LOG, "EPP_i destructor");
+  LOG( ERROR_LOG, "ccReg_Log_i destructor");
 }
 
+bool ccReg_Log_i::record_check(ccReg::TID id)
+{
+	std::ostringstream query;
+
+	query << "select time_end from log_entry where id=" << id;
+	Result res = conn.exec(query.str());
+
+	// if there is no record with specified ID
+	if(res.size() == 0) {
+		LOGGER("fred-logd").error(boost::format("record with ID %1% doesn't exist") % id);
+		return false;
+	}
+
+	// if the time_end is already filled (so the record
+	// is complete and cannot be modified)
+	if(!res[0][0]) {
+		LOGGER("fred-logd").error(boost::format("record with ID %1% was already completed") % id);
+		return false;
+	}
+
+	return true;
+}
 
 void ccReg_Log_i::insert_props(ccReg::TID entry_id, const ccReg::LogProperties& props)
 {
 	std::string s_val, s_name;
 	std::ostringstream query;
 	ccReg::TID name_id;
-	// std::tr1::unordered_map<std::string, ccReg::TID>::iterator; 	// TODO
+	// std::tr1::unordered_map<std::string, ccReg::TID>::iterator;
 	std::map<std::string, ccReg::TID>::iterator iter;
 
 	for (unsigned i = 0; i < props.length(); i++) {
 		s_name = Util::escape((const char*) props[i].name);
 		s_val = Util::escape((const char*) props[i].value);
 
-		// TODO this should be changed
 		iter = property_names.find(s_name);
 
 		if(iter != property_names.end()) {
 			name_id = iter->second;
 		} else {
+			// if the name isn't cached in the memory, try to find it in the database
 			query.str("");
 			query << "select id from log_property_name where name='" << s_name
 					<< "'";
-			LOG(NOTICE_LOG, query.str().c_str());
 			Result res = conn.exec(query.str());
 
 			if (res.size() > 0) {
+				// okay, it was found in the database
 				name_id = res[0][0];
 			} else if (res.size() == 0) {
+				// if not, add it to the database
 				query.str("");
 				query << "insert into log_property_name (name) values ('" << s_name
 						<< "')";
-				LOG(NOTICE_LOG, query.str().c_str());
 				conn.exec(query.str());
 
-				// TODO sequence
 				query.str("");
-
-				// query << "select id from log_property_name where name='" << s_name
-				//		<< "'";
-
 				query << "select currval('log_property_name_id_seq'::regclass)";
-				LOG(NOTICE_LOG, query.str().c_str());
-				Result res2 = conn.exec(query.str());
+				res = conn.exec(query.str());
 
-				name_id = res2[0][0];
+				name_id = res[0][0];
 			}
+
+			// now that we know the right database id of the name
+			// we can add it to the map
+			property_names[s_name] = name_id;
 		}
-		// end of TODO zone
 
 		query.str("");
-		query
-				<< "insert into log_property_value (entry_id, name_id, value, output) values ("
+		query   << "insert into log_property_value (entry_id, name_id, value, output) values ("
 				<< entry_id << ", " << name_id << ", '" << s_val << "', "
 				<< (props[i].output ? "true" : "false") << ")";
 
-		LOG(NOTICE_LOG, query.str().c_str());
 		conn.exec(query.str());
 	}
 }
@@ -183,6 +192,12 @@ ccReg::TID ccReg_Log_i::new_event(const char *sourceIP, ccReg::LogServiceType se
 		Result res = conn.exec(query.str());
 		entry_id = res[0][0];
 
+	} catch (Database::Exception &ex) {
+		LOGGER("fred-logd").error(ex.what());
+		return 0; 	// TODO throw a corba exception
+	}
+
+	try {
 		// "select
 
 		// insert into log_raw_content
@@ -199,11 +214,11 @@ ccReg::TID ccReg_Log_i::new_event(const char *sourceIP, ccReg::LogServiceType se
 		// inserting properties
 		insert_props(entry_id, props);
 
-		// t.commit();
 	} catch (Database::Exception &ex) {
 		LOGGER("fred-logd").error(ex.what());
-		return 0; 	// TODO throw a corba exception
 	}
+
+	// t.commit();
 	return entry_id;
 }
 
@@ -212,13 +227,8 @@ CORBA::Boolean ccReg_Log_i::update_event(ccReg::TID id, const ccReg::LogProperti
 	std::ostringstream query;
 
 	try {
-		// TODO perform debug check. this function mustn't be call on a complete record
-		/*
-		query << "select time_end from log_entry id=" << id;
-		Result res = conn.exec(query.str());
-
-		// false should be returned if time_end is not null
-		*/
+		// perform check
+		if (!record_check(id)) return false;
 
 		insert_props(id, props);
 	} catch (Database::Exception &ex) {
@@ -237,15 +247,11 @@ CORBA::Boolean ccReg_Log_i::update_event_close(ccReg::TID id, const char *conten
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
 
 	try {
+		// first perform checks:
+		if (!record_check(id)) return false;
+
 		query << "update log_entry set time_end='" << time << "' where id=" << id;
-		Result res = conn.exec(query.str());
-
-		/* TODO
-		query << "select time_end from log_entry where id=" << id;
-		Result res = conn.exec(query.str());
-
-		// false should be returned if time_end is not null
-		*/
+		conn.exec(query.str());
 
 		if(content_out != NULL) {
 			s_content = Util::escape(std::string(content_out));
