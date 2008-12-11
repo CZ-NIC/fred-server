@@ -1,17 +1,17 @@
-/*  
+/*
  * Copyright (C) 2007  CZ.NIC, z.s.p.o.
- * 
+ *
  * This file is part of FRED.
- * 
+ *
  * FRED is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 2 of the License.
- * 
+ *
  * FRED is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -117,7 +117,7 @@ public:
   }
   CAST_OPERATOR_FROM_DEFINED_TYPE(Database::ID, from_string)
 // HANDLE_TYPE(ID, to_string, from_string, false)
-  
+
 
   /**
    * definitions of construtors and conversion operators to POD types
@@ -142,17 +142,20 @@ public:
 
 
   /* assigment */
-  Value& operator=(const Value &_other) {
+  const Value& operator=(const Value &_other) {
     is_null_ = _other.is_null_;
     value_ = _other.value_;
     quoted_output_ = _other.quoted_output_;
     return *this;
   }
 
+  bool operator!() const {
+	return is_null_;
+  }
 
   /* value output operator */
   friend std::ostream& operator<<(std::ostream& _os, const Value& _value);
-  
+
   /**
    * @return  flag if this value should be quoted in SQL statement or not
    */
