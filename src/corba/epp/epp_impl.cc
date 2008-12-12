@@ -2593,105 +2593,83 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
 ccReg::Response* ccReg_EPP_i::ContactDelete(
   const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx("rifd");
+    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
 
-  std::auto_ptr<EPPNotifier> ntf;
-  ccReg::Response_var ret;
-  ccReg::Errors_var errors;
-  DB DBsql;
-  int regID, id;
+    std::auto_ptr<EPPNotifier> ntf;
+    int id;
+    short int code;
 
-  ret = new ccReg::Response;
-  errors = new ccReg::Errors;
+    ParsedAction paction;
+    paction.add(1,(const char *)handle);
 
-  ret->code=0;
-  errors->length(0);
+    EPPAction action(this, clientID, EPP_ContactDelete, clTRID, XML, &paction);
 
-  ParsedAction paction;
-  paction.add(1,(const char *)handle);
+    LOG( NOTICE_LOG , "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (int ) clientID , clTRID , handle );
 
-  LOG( NOTICE_LOG , "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (int ) clientID , clTRID , handle );
+    id = getIdOfContact(action.getDB(), handle, conf, true);
 
-  if ( (regID = GetRegistrarID(clientID) ))
+    if (id < 0) {
+        LOG(WARNING_LOG, "bad format of contact [%s]", handle);
+        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
+                ccReg::contact_handle, 1,
+                REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
+    } else if (id ==0) {
+        LOG( WARNING_LOG, "contact handle [%s] NOT_EXIST", handle );
+        code= COMMAND_OBJECT_NOT_EXIST;
+    }
+    if (!code && !action.getDB()->TestObjectClientID(id, action.getRegistrar()) ) //  if registrar is not client of the object
+    {
+        LOG( WARNING_LOG, "bad autorization not  creator of handle [%s]", handle );
+        code = action.setErrorReason(COMMAND_AUTOR_ERROR,
+                ccReg::registrar_autor, 0,
+                REASON_MSG_REGISTRAR_AUTOR);
+    }
+    try {
+        if (!code && (
+                    testObjectHasState(action.getDB(),id,FLAG_serverDeleteProhibited) ||
+                    testObjectHasState(action.getDB(),id,FLAG_serverUpdateProhibited)
+                    ))
+        {
+            LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
+            code = COMMAND_STATUS_PROHIBITS_OPERATION;
+        }
+    } catch (...) {
+        code = COMMAND_FAILED;
+    }
+    if (!code) {
 
-    if (DBsql.OpenDatabase(database) ) {
-      if ( (DBsql.BeginAction(clientID, EPP_ContactDelete, clTRID, XML, &paction) )) {
-        if (DBsql.BeginTransaction() ) {
+        ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id )); // notifier maneger before delete
 
-          // lock
-          id = getIdOfContact(&DBsql, handle, conf, true);
-
-          if (id < 0)
-            ret->code= SetReasonContactHandle(errors, handle,
-                GetRegistrarLang(clientID) );
-          else if (id ==0) {
-            LOG( WARNING_LOG, "contact handle [%s] NOT_EXIST", handle );
-            ret->code= COMMAND_OBJECT_NOT_EXIST;
-          }
-          if (!ret->code && !DBsql.TestObjectClientID(id, regID) ) //  if registrar is not client of the object
-          {
-            LOG( WARNING_LOG, "bad autorization not  creator of handle [%s]", handle );
-            ret->code = SetReasonWrongRegistrar(errors, regID, GetRegistrarLang(clientID));
-          }
-          try {
-            if (!ret->code && (
-                  testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited) ||
-                  testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited)
-               ))
+        // test to  table  domain domain_contact_map and nsset_contact_map for relations
+        if (action.getDB()->TestContactRelations(id) ) // can not be deleted
+        {
+            LOG( WARNING_LOG, "test contact handle [%s] relations: PROHIBITS_OPERATION", handle );
+            code = COMMAND_PROHIBITS_OPERATION;
+        } else {
+            if (action.getDB()->SaveObjectDelete(id) ) // save to delete object object_registry.ErDate
             {
-              LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
-              ret->code = COMMAND_STATUS_PROHIBITS_OPERATION;
-            }
-          } catch (...) {
-            ret->code = COMMAND_FAILED;
-          }
-          if (!ret->code) {
-
-            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , id )); // notifier maneger before delete
-
-            // test to  table  domain domain_contact_map and nsset_contact_map for relations
-            if (DBsql.TestContactRelations(id) ) // can not be deleted
-            {
-              LOG( WARNING_LOG, "test contact handle [%s] relations: PROHIBITS_OPERATION", handle );
-              ret->code = COMMAND_PROHIBITS_OPERATION;
-            } else {
-              if (DBsql.SaveObjectDelete(id) ) // save to delete object object_registry.ErDate
-              {
-                if (DBsql.DeleteContactObject(id) )
-                  ret->code = COMMAND_OK; // if deleted successfully
-              }
-
+                if (action.getDB()->DeleteContactObject(id) )
+                    code = COMMAND_OK; // if deleted successfully
             }
 
-            if (ret->code == COMMAND_OK)
-              ntf->Send(); // run notifier
-
-          }
-
-          // end of transaction  commit or  rollback
-          DBsql.QuitTransaction(ret->code);
         }
 
-        ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) );
-        ParsedAction paction;
-        paction.add(1,(const char *)handle);
-      }
+        if (code == COMMAND_OK)
+            ntf->Send(); // run notifier
 
-      ret->msg = CORBA::string_dup(GetErrorMessage(ret->code,
-          GetRegistrarLang(clientID) ) );
-
-      DBsql.Disconnect();
     }
 
-  // EPP exception
-  if (ret->code > COMMAND_EXCEPTION)
-    EppError(ret->code, ret->msg, ret->svTRID, errors);
+    // EPP exception
+    if (code > COMMAND_EXCEPTION) {
+        action.failed(code);
+    }
 
-  if (ret->code == 0)
-    ServerInternalError("ContactDelete");
+    if (code == 0) {
+        action.failedInternal("ContactDelete");
+    }
 
-  return ret._retn();
+    return action.getRet()._retn();
 }
 
 /***********************************************************************
@@ -3498,100 +3476,80 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
 ccReg::Response* ccReg_EPP_i::NSSetDelete(
   const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx("rifd");
+    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
 
-  ccReg::Response_var ret;
-  ccReg::Errors_var errors;
-  DB DBsql;
-  std::auto_ptr<EPPNotifier> ntf;
-  int regID, id;
+    std::auto_ptr<EPPNotifier> ntf;
+    int id;
+    short int code = 0;
 
-  ret = new ccReg::Response;
-  errors = new ccReg::Errors;
+    ParsedAction paction;
+    paction.add(1,(const char*)handle);
 
-  ret->code=0;
-  errors->length(0);
+    EPPAction action(this, clientID, EPP_NSsetDelete, clTRID, XML, &paction);
 
-  ParsedAction paction;
-  paction.add(1,(const char*)handle);
+    LOG( NOTICE_LOG , "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int ) clientID , clTRID , handle );
 
-  LOG( NOTICE_LOG , "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int ) clientID , clTRID , handle );
+    // lock row
+    id = getIdOfNSSet(action.getDB(), handle, conf, true);
+    if (id < 0) {
+        LOG(WARNING_LOG, "bad format of nsset [%s]", handle);
+        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
+                ccReg::nsset_handle, 1,
+                REASON_MSG_BAD_FORMAT_NSSET_HANDLE);
+    } else if (id == 0) {
+        LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
+        code = COMMAND_OBJECT_NOT_EXIST;
+    }
+    if (!code &&  !action.getDB()->TestObjectClientID(id, action.getRegistrar()) ) // if not client od the object
+    {
+        LOG( WARNING_LOG, "bad autorization not client of nsset [%s]", handle );
+        code = action.setErrorReason(COMMAND_AUTOR_ERROR,
+                ccReg::registrar_autor, 0, REASON_MSG_REGISTRAR_AUTOR);
+    }
+    try {
+        if (!code && (
+                    testObjectHasState(action.getDB(),id,FLAG_serverDeleteProhibited) ||
+                    testObjectHasState(action.getDB(),id,FLAG_serverUpdateProhibited)
+                    ))
+        {
+            LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
+            code = COMMAND_STATUS_PROHIBITS_OPERATION;
+        }
+    } catch (...) {
+        code = COMMAND_FAILED;
+    }
+    if (!code) {
+        // create notifier
+        ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
 
-  if ( (regID = GetRegistrarID(clientID) ))
-
-    if (DBsql.OpenDatabase(database) ) {
-
-      if ( (DBsql.BeginAction(clientID, EPP_NSsetDelete, clTRID, XML, &paction) )) {
-
-        if (DBsql.BeginTransaction() ) {
-          // lock row
-          id = getIdOfNSSet(&DBsql, handle, conf, true);
-          if (id < 0)
-            ret->code = SetReasonNSSetHandle(errors, handle,
-              GetRegistrarLang(clientID) );
-          else if (id == 0) {
-            LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
-            ret->code = COMMAND_OBJECT_NOT_EXIST;
-          }
-          if (!ret->code &&  !DBsql.TestObjectClientID(id, regID) ) // if not client od the object
-          {
-            LOG( WARNING_LOG, "bad autorization not client of nsset [%s]", handle );
-            ret->code = SetReasonWrongRegistrar(errors, regID, GetRegistrarLang(clientID));
-          }
-          try {
-            if (!ret->code && (
-                  testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited) ||
-                  testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited)
-                ))
+        // test to  table domain if relations to nsset
+        if (action.getDB()->TestNSSetRelations(id) ) //  can not be delete
+        {
+            LOG( WARNING_LOG, "database relations" );
+            code = COMMAND_PROHIBITS_OPERATION;
+        } else {
+            if (action.getDB()->SaveObjectDelete(id) ) // save to delete object
             {
-              LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
-              ret->code = COMMAND_STATUS_PROHIBITS_OPERATION;
+                if (action.getDB()->DeleteNSSetObject(id) )
+                    code = COMMAND_OK; // if is OK
             }
-          } catch (...) {
-            ret->code = COMMAND_FAILED;
-          }
-          if (!ret->code) {
-            // create notifier
-            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , id ));
-
-            // test to  table domain if relations to nsset
-            if (DBsql.TestNSSetRelations(id) ) //  can not be delete
-            {
-              LOG( WARNING_LOG, "database relations" );
-              ret->code = COMMAND_PROHIBITS_OPERATION;
-            } else {
-              if (DBsql.SaveObjectDelete(id) ) // save to delete object
-              {
-                if (DBsql.DeleteNSSetObject(id) )
-                  ret->code = COMMAND_OK; // if is OK
-              }
-            }
-
-            if (ret->code == COMMAND_OK)
-              ntf->Send(); // send messages by notifier
-          }
-
-          DBsql.QuitTransaction(ret->code);
         }
 
-        ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) );
-      }
-
-      ret->msg = CORBA::string_dup(GetErrorMessage(ret->code,
-          GetRegistrarLang(clientID) ) );
-
-      DBsql.Disconnect();
+        if (code == COMMAND_OK)
+            ntf->Send(); // send messages by notifier
     }
 
-  // EPP exception
-  if (ret->code > COMMAND_EXCEPTION)
-    EppError(ret->code, ret->msg, ret->svTRID, errors);
+    // EPP exception
+    if (code > COMMAND_EXCEPTION) {
+        action.failed(code);
+    }
 
-  if (ret->code == 0)
-    ServerInternalError("NSSetDelete");
+    if (code == 0) {
+        action.failedInternal("NSSetDelete");
+    }
 
-  return ret._retn();
+    return action.getRet()._retn();
 }
 
 /***********************************************************************
@@ -4544,92 +4502,75 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
 ccReg::Response* ccReg_EPP_i::DomainDelete(
   const char* fqdn, CORBA::Long clientID, const char* clTRID, const char* XML)
 {
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx("rifd");
+    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
 
-  ccReg::Response_var ret;
-  ccReg::Errors_var errors;
-  DB DBsql;
-  std::auto_ptr<EPPNotifier> ntf;
-  int regID, id, zone;
-  ret = new ccReg::Response;
-  errors = new ccReg::Errors;
+    std::auto_ptr<EPPNotifier> ntf;
+    int id, zone;
+    short int code = 0;
 
-  // default
-  ret->code=0;
-  errors->length(0);
+    ParsedAction paction;
+    paction.add(1,(const char*)fqdn);
 
-  ParsedAction paction;
-  paction.add(1,(const char*)fqdn);
+    EPPAction action(this, clientID, EPP_ContactDelete, clTRID, XML, &paction);
 
-  LOG( NOTICE_LOG , "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int ) clientID , clTRID , fqdn );
+    LOG( NOTICE_LOG , "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int ) clientID , clTRID , fqdn );
 
-  if ( (regID = GetRegistrarID(clientID) ))
-
-    if (DBsql.OpenDatabase(database) ) {
-
-      if ( (DBsql.BeginAction(clientID, EPP_DomainDelete, clTRID, XML, &paction) )) {
-
-        if (DBsql.BeginTransaction() ) {
-          if ( (id = getIdOfDomain(&DBsql, fqdn, conf, true, &zone) ) < 0)
-            ret->code=SetReasonDomainFQDN(errors, fqdn, id == -1,
-                GetRegistrarLang(clientID) );
-          else if (id == 0) {
-            LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
-            ret->code=COMMAND_OBJECT_NOT_EXIST;
-          }
-          else if (DBsql.TestRegistrarZone(regID, zone) == false) {
-            LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
-            ret->code = COMMAND_AUTHENTICATION_ERROR;
-          }
-          else if ( !DBsql.TestObjectClientID(id, regID) ) {
-            LOG( WARNING_LOG, "bad autorization not client of fqdn [%s]", fqdn );
-            ret->code = SetReasonWrongRegistrar(errors, regID, GetRegistrarLang(clientID));
-          }
-          try {
-            if (!ret->code && (
-                 testObjectHasState(&DBsql,id,FLAG_serverDeleteProhibited) ||
-                 testObjectHasState(&DBsql,id,FLAG_serverUpdateProhibited)
-               ))
-            {
-              LOG( WARNING_LOG, "delete of object %s is prohibited" , fqdn );
-              ret->code = COMMAND_STATUS_PROHIBITS_OPERATION;
-            }
-          } catch (...) {
-            ret->code = COMMAND_FAILED;
-          }
-          if (!ret->code) {
-                // run notifier
-                ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , &DBsql, regID , id ));
-
-                if (DBsql.SaveObjectDelete(id) ) //save object as delete
-                {
-                  if (DBsql.DeleteDomainObject(id) )
-                    ret->code = COMMAND_OK; // if succesfully deleted
-                }
-                if (ret->code == COMMAND_OK)
-                  ntf->Send(); // if is ok send messages
-          }
-
-            DBsql.QuitTransaction(ret->code);
-          }
-
-        ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code) );
-      }
-
-      ret->msg =CORBA::string_dup(GetErrorMessage(ret->code,
-          GetRegistrarLang(clientID) ) );
-
-      DBsql.Disconnect();
+    if ( (id = getIdOfDomain(action.getDB(), fqdn, conf, true, &zone) ) < 0) {
+        if (id != -1) {
+            LOG(WARNING_LOG, "domain in zone %s", fqdn);
+            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
+                    ccReg::domain_fqdn, 1,
+                    REASON_MSG_NOT_APPLICABLE_DOMAIN);
+        }
+    } else if (id == 0) {
+        LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
+        code=COMMAND_OBJECT_NOT_EXIST;
     }
-  // EPP exception
-  if (ret->code > COMMAND_EXCEPTION)
-    EppError(ret->code, ret->msg, ret->svTRID, errors);
+    else if (action.getDB()->TestRegistrarZone(action.getRegistrar(), zone) == false) {
+        LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
+        code = COMMAND_AUTHENTICATION_ERROR;
+    }
+    else if ( !action.getDB()->TestObjectClientID(id, action.getRegistrar()) ) {
+        LOG( WARNING_LOG, "bad autorization not client of fqdn [%s]", fqdn );
+        code = action.setErrorReason(COMMAND_AUTOR_ERROR,
+                ccReg::registrar_autor, 0, REASON_MSG_REGISTRAR_AUTOR);
+    }
+    try {
+        if (!code && (
+                    testObjectHasState(action.getDB(),id,FLAG_serverDeleteProhibited) ||
+                    testObjectHasState(action.getDB(),id,FLAG_serverUpdateProhibited)
+                    ))
+        {
+            LOG( WARNING_LOG, "delete of object %s is prohibited" , fqdn );
+            code = COMMAND_STATUS_PROHIBITS_OPERATION;
+        }
+    } catch (...) {
+        code = COMMAND_FAILED;
+    }
+    if (!code) {
+        // run notifier
+        ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
 
-  if (ret->code == 0)
-    ServerInternalError("DomainDelete");
+        if (action.getDB()->SaveObjectDelete(id) ) //save object as delete
+        {
+            if (action.getDB()->DeleteDomainObject(id) )
+                code = COMMAND_OK; // if succesfully deleted
+        }
+        if (code == COMMAND_OK)
+            ntf->Send(); // if is ok send messages
+    }
 
-  return ret._retn();
+    // EPP exception
+    if (code > COMMAND_EXCEPTION) {
+        action.failed(code);
+    }
+
+    if (code == 0) {
+        action.failedInternal("DomainDelete");
+    }
+
+    return action.getRet()._retn();
 }
 
 /***********************************************************************
@@ -5860,92 +5801,73 @@ ccReg_EPP_i::KeySetDelete(
         const char *clTRID,
         const char *XML)
 {
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx("rifd");
+    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
 
-    ccReg::Response_var ret;
-    ccReg::Errors_var   errors;
-    DB                  DBsql;
-    int                 regID, id;
+    int                 id;
     std::auto_ptr<EPPNotifier> ntf;
-
-    ret = new ccReg::Response;
-    errors = new ccReg::Errors;
-
-    ret->code = 0;
-    errors->length(0);
+    short int code;
 
     ParsedAction paction;
     paction.add(1, (const char *)handle);
 
+    EPPAction action(this, clientID, EPP_KeySetDelete, clTRID, XML, &paction);
+
     LOG(NOTICE_LOG, "KeySetDelete: clientID -> %d clTRID [%s] handle [%s]",
             (int)clientID, clTRID, handle);
 
-    if ((regID = GetRegistrarID(clientID))) {
-        if (DBsql.OpenDatabase(database)) {
-            if (DBsql.BeginAction(clientID, EPP_KeySetDelete, clTRID, XML, &paction)) {
-                if (DBsql.BeginTransaction()) {
-                    id = getIdOfKeySet(&DBsql, handle, conf, true);
-                    if (id < 0)
-                        ret->code = SetReasonKeySetHandle(
-                                errors,
-                                handle,
-                                GetRegistrarLang(clientID));
-                    else if (id == 0) {
-                        LOG(WARNING_LOG, "KeySet handle [%s] NOT_EXISTS", handle);
-                        ret->code = COMMAND_OBJECT_NOT_EXIST;
-                    }
-                    if (!ret->code && !DBsql.TestObjectClientID(id, regID)) {
-                        LOG(WARNING_LOG, "bad authorisation not client of KeySet [%s]", handle);
-                        ret->code = SetReasonWrongRegistrar(errors, regID, GetRegistrarLang(clientID));
-                    }
-                    try {
-                        if (!ret->code && (
-                                    testObjectHasState(&DBsql, id, FLAG_serverDeleteProhibited) ||
-                                    testObjectHasState(&DBsql, id, FLAG_serverUpdateProhibited)
-                                    )) {
-                            LOG(WARNING_LOG, "delete of object %s is prohibited", handle);
-                            ret->code = COMMAND_STATUS_PROHIBITS_OPERATION;
-                        }
-                    } catch (...) {
-                        ret->code = COMMAND_FAILED;
-                    }
-                    if (!ret->code) {
-                        //create notifier
-                        ntf.reset(new EPPNotifier(
-                                    conf.get<bool>("registry.disable_epp_notifier"),
-                                    mm,
-                                    &DBsql,
-                                    regID,
-                                    id));
-                        if (DBsql.TestKeySetRelations(id)) {
-                            LOG(WARNING_LOG, "KeySet can't be deleted - relations in db");
-                            ret->code = COMMAND_PROHIBITS_OPERATION;
-                        } else {
-                            if (DBsql.SaveObjectDelete(id))
-                                if (DBsql.DeleteKeySetObject(id))
-                                    ret->code = COMMAND_OK;
-                        }
-                        if (ret->code == COMMAND_OK)
-                            ntf->Send();
-                    }
-                    DBsql.QuitTransaction(ret->code);
-                }
-                ret->svTRID = CORBA::string_dup(DBsql.EndAction(ret->code));
-            }
-            ret->msg = CORBA::string_dup(
-                    GetErrorMessage(
-                        ret->code,
-                        GetRegistrarLang(clientID))
-                    );
-            DBsql.Disconnect();
-        }
+    id = getIdOfKeySet(action.getDB(), handle, conf, true);
+    if (id < 0) {
+        LOG(WARNING_LOG, "bad format of keyset [%s]", handle);
+        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
+                ccReg::keyset_handle, 1,
+                REASON_MSG_BAD_FORMAT_KEYSET_HANDLE);
+    } else if (id == 0) {
+        LOG(WARNING_LOG, "KeySet handle [%s] NOT_EXISTS", handle);
+        code = COMMAND_OBJECT_NOT_EXIST;
     }
-    if (ret->code > COMMAND_EXCEPTION)
-        EppError(ret->code, ret->msg, ret->svTRID, errors);
-    if (ret->code == 0)
-        ServerInternalError("KeySetDelete");
-    return ret._retn();
+    if (!code && !action.getDB()->TestObjectClientID(id, action.getRegistrar())) {
+        LOG(WARNING_LOG, "bad authorisation not client of KeySet [%s]", handle);
+        code = action.setErrorReason(COMMAND_AUTOR_ERROR,
+                ccReg::registrar_autor, 0, REASON_MSG_REGISTRAR_AUTOR);
+    }
+    try {
+        if (!code && (
+                    testObjectHasState(action.getDB(), id, FLAG_serverDeleteProhibited) ||
+                    testObjectHasState(action.getDB(), id, FLAG_serverUpdateProhibited)
+                    )) {
+            LOG(WARNING_LOG, "delete of object %s is prohibited", handle);
+            code = COMMAND_STATUS_PROHIBITS_OPERATION;
+        }
+    } catch (...) {
+        code = COMMAND_FAILED;
+    }
+    if (!code) {
+        //create notifier
+        ntf.reset(new EPPNotifier(
+                    conf.get<bool>("registry.disable_epp_notifier"),
+                    mm,
+                    action.getDB(),
+                    action.getRegistrar(),
+                    id));
+        if (action.getDB()->TestKeySetRelations(id)) {
+            LOG(WARNING_LOG, "KeySet can't be deleted - relations in db");
+            code = COMMAND_PROHIBITS_OPERATION;
+        } else {
+            if (action.getDB()->SaveObjectDelete(id))
+                if (action.getDB()->DeleteKeySetObject(id))
+                    code = COMMAND_OK;
+        }
+        if (code == COMMAND_OK)
+            ntf->Send();
+    }
+    if (code > COMMAND_EXCEPTION) {
+        action.failed(code);
+    }
+    if (code == 0) {
+        action.failedInternal("KeySetDelete");
+    }
+    return action.getRet()._retn();
 }
 
 /*
