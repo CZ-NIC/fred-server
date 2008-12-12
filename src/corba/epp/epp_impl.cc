@@ -1853,7 +1853,7 @@ ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, CORBA::Long clientID,
 
     long price;
     unsigned int z, seq, zoneID;
-    short int code;
+    short int code = 0;
 
     credit = new ccReg::ZoneCredit;
     credit->length(0);
@@ -2555,7 +2555,7 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
 
     std::auto_ptr<EPPNotifier> ntf;
     int id;
-    short int code;
+    short int code = 0;
 
     ParsedAction paction;
     paction.add(1,(const char *)handle);
@@ -5728,7 +5728,7 @@ ccReg_EPP_i::KeySetDelete(
 
     int                 id;
     std::auto_ptr<EPPNotifier> ntf;
-    short int code;
+    short int code = 0;
 
     ParsedAction paction;
     paction.add(1, (const char *)handle);
