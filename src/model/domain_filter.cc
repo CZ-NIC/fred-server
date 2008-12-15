@@ -275,9 +275,9 @@ Contact& DomainHistoryImpl::_addDCMFilter(unsigned _role) {
   add(role_filter);
   add(tmp);
   tmp->addJoin(new Join(
-      Column("contactid", joinTable("domain_contact_map_history")),
+      Column("id", tmp->joinObjectRegistryTable()),
       SQL_OP_EQ,
-      Column("id", tmp->joinObjectRegistryTable())));
+      Column("contactid", joinTable("domain_contact_map_history"))));
   tmp->joinOn(new Join(
       Column("historyid", joinDomainTable()),
       SQL_OP_EQ,

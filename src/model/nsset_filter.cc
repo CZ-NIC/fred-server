@@ -147,9 +147,9 @@ Contact& NSSetHistoryImpl::addTechContact() {
   add(tmp);
   tmp->setName("TechContact");
   tmp->addJoin(new Join(
-      Column("contactid", joinTable("nsset_contact_map_history")),
+      Column("id", tmp->joinObjectRegistryTable()),
       SQL_OP_EQ,
-      Column("id", tmp->joinObjectRegistryTable())));
+      Column("contactid", joinTable("nsset_contact_map_history"))));
   tmp->joinOn(new Join(
       Column("historyid", joinNSSetTable()),
       SQL_OP_EQ,
