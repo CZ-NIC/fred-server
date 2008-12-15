@@ -5163,7 +5163,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                     if (GetZoneEnum(zone) ) {
                         LOG( WARNING_LOG, "DomainCreate: validity exp date MISSING" );
                         code = action.setErrorReason(COMMAND_PARAMETR_MISSING,
-                                ccReg::domain_ext_valDate, 0,
+                                ccReg::domain_ext_valDate_missing, 0,
                                 REASON_MSG_VALEXPDATE_REQUIRED);
                     }
                 } else {
