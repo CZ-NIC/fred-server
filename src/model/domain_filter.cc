@@ -248,6 +248,7 @@ Contact& DomainHistoryImpl::addRegistrant() {
 
 NSSet& DomainHistoryImpl::addNSSet() {
   NSSet *tmp = NSSet::create();
+  tmp->setName("NSSet");
   tmp->joinOn(new Join(Column("nsset", joinDomainTable()), SQL_OP_EQ, Column("id", tmp->joinNSSetTable())));
   add(tmp);
   return *tmp;
@@ -257,6 +258,7 @@ KeySet &
 DomainHistoryImpl::addKeySet()
 {
     KeySet *tmp = new KeySetHistoryImpl();
+    tmp->setName("KeySet");
     tmp->joinOn(
             new Join(
                 Column("keyset", joinDomainTable()),
