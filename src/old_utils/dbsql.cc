@@ -1885,7 +1885,7 @@ int DB::MakeFactoring(
         for (i = 0; i < num; i ++) {
           credit = GetInvoiceSumaPrice(invoiceID, aID[i]);
           balance = GetInvoiceBalance(aID[i], credit); // actual available balance
-          if (credit>= 0 && balance >=0) {
+          if (balance >=0) {
             LOG( LOG_DEBUG ,"zalohova FA  %d credit %ld balance %ld" , aID[i] , credit , balance );
             INSERT("invoice_credit_payment_map");
             INTO("invoiceid");

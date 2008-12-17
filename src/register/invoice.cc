@@ -812,7 +812,7 @@ SubjectImpl
 #define TAG(tag,f) TAGSTART(tag) \
                        << "<![CDATA[" << f << "]]>" << TAGEND(tag)
 #define OUTMONEY(f) (f)/100 << "." << \
-                        std::setfill('0') << std::setw(2) << (f)%100
+                        std::setfill('0') << std::setw(2) << abs(f)%100
 // builder that export xml of invoice into given stream
 class ExporterXML : public Exporter {
   std::ostream& out;

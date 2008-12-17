@@ -478,6 +478,15 @@ int main(int argc, char *argv[])
 
   printf("connect DB string [%s]\n", config.GetDBconninfo() );
 
+  /* setting up new logger */
+  boost::any param = (unsigned)config.GetSYSLOGlocal();
+  Logging::Manager::instance_ref().get(PACKAGE).addHandler(
+    Logging::Log::LT_SYSLOG, param
+  );
+  Logging::Manager::instance_ref().get(PACKAGE).setLevel(
+    static_cast<Logging::Log::Level>(config.GetSYSLOGlevel())
+  );
+
   // print usage
   if (argc == 1)
     printf(
@@ -496,15 +505,15 @@ int main(int argc, char *argv[])
     }
 
     if (strcmp(argv[i], "--factoring") == 0) {
-      if (i +3< argc)
-        factoring_all(config.GetDBconninfo() , argv[i+1], argv[i+2], argv[i+3]);
+      if (i +4< argc)
+        factoring(config.GetDBconninfo() , argv[i+1], argv[i+2], argv[i+3],
+          argv[i+4]);
       break;
     }
 
     if (strcmp(argv[i], "--factoring") == 0) {
-      if (i +4< argc)
-        factoring(config.GetDBconninfo() , argv[i+1], argv[i+2], argv[i+3],
-          argv[i+4]);
+      if (i +3< argc)
+        factoring_all(config.GetDBconninfo() , argv[i+1], argv[i+2], argv[i+3]);
       break;
     }
 
