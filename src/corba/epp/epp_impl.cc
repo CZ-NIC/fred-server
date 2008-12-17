@@ -1011,8 +1011,7 @@ char* ccReg_EPP_i::version(
   get_rfc3339_timestamp(t, dateStr, false);
   datetime = CORBA::string_dup(dateStr);
 
-  // XXX there was memory leak in server.cc (main:277): free() added there
-  return strdup("DSDng");
+  return CORBA::string_dup("DSDng");
 }
 
 // parse extension fom domain.ValExDate

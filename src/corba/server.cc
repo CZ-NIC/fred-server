@@ -283,13 +283,12 @@ int main(int argc, char** argv) {
     myccReg_EPP_i->CreateSession(rifd_session_max, rifd_session_timeout);
 
     ccReg::timestamp_var ts;
-    char *version;
-    version = myccReg_EPP_i->version(ts);
+    char *version = myccReg_EPP_i->version(ts);
     LOGGER(PACKAGE).info(boost::format("RIFD server version: %1% (%2%)") 
                                           % version
                                           % ts);
 
-    free(version);
+    CORBA::string_free(version);
 
     /* load zone parametrs */
     if (myccReg_EPP_i->loadZones() <= 0) {
