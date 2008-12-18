@@ -1701,8 +1701,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
       throw ccReg::Admin::INVALID_INPUT();
   }
   
-  Register::PublicRequest::PublicRequest *new_request = 
-    request_manager->createRequest(request_type,conn.get());
+  std::auto_ptr<Register::PublicRequest::PublicRequest> new_request(request_manager->createRequest(request_type, conn.get()));
   new_request->setType(request_type);
   new_request->setEppActionId(_epp_action_id);
   new_request->setReason(_reason);

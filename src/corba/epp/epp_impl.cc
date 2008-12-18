@@ -7319,10 +7319,10 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                     NOTICE_LOG , "createRequest objectID %d actionID %d" ,
                     id,action.getDB()->GetActionID()
                );
-            Register::PublicRequest::PublicRequest *new_request =
-                request_manager->createRequest(
-                        Register::PublicRequest::PRT_AUTHINFO_AUTO_RIF,conn.get()
-                        );
+            std::auto_ptr<Register::PublicRequest::PublicRequest> new_request(request_manager->createRequest(
+                        Register::PublicRequest::PRT_AUTHINFO_AUTO_RIF,
+                        conn.get()));
+
             new_request->setEppActionId(action.getDB()->GetActionID());
             new_request->addObject(Register::PublicRequest::OID(id));
             if (!new_request->check()) {

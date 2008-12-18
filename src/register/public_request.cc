@@ -386,7 +386,6 @@ public:
 
   /// default destination emails for answer are from objects 
   virtual std::string getEmails() const {    
-    Database::Filters::Union uf;
     Database::SelectQuery sql;
     std::string emails;
 
@@ -1044,10 +1043,10 @@ public:
   }
   
   List *loadRequest(Database::ID id) const throw (NOT_FOUND) {
-    Database::Filters::PublicRequestImpl prf;
-    prf.addId().setValue(id);
+    Database::Filters::PublicRequest *prf = new Database::Filters::PublicRequestImpl();
+    prf->addId().setValue(id);
     Database::Filters::Union uf;
-    uf.addFilter(&prf);
+    uf.addFilter(prf);
     List *l = createList();
     l->reload(uf);
     if (l->getCount() != 1) throw NOT_FOUND();
