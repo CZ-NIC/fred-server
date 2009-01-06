@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <netinet/in.h> // to support build on FreeBSD
 
 #include "util.h"
 #include "log.h"
@@ -180,7 +181,7 @@ bool get_KEYSETHANDLE(
     return get_handle(HANDLE, handle, 4);
 }
 
-// general handle 
+// general handle
 bool get_HANDLE(
   char * HANDLE, const char *handle)
 {
