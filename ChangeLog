@@ -1,3 +1,7 @@
+2009-01-06 Jiri Sadek (2.1.5)
+
+   * Bugfix in creation of public request
+	
 2008-12-17 Jaromir Talir (2.1.4)
 
    * Bugfixes in admin backend
