@@ -213,7 +213,10 @@ BankClient::list()
             << "\t\t<account_id>" << stat->getAccountId() << "</account_id>\n"
             << "\t\t<date>" << stat->getDate() << "</date>\n"
             << "\t\t<old_date>" << stat->getOldDate() << "</old_date>\n"
-            << "\t\t<balance>" << stat->getBalance() << "</balance>\n";
+            << "\t\t<balance>" << stat->getBalance().format() << "</balance>\n"
+            << "\t\t<balance_old>" << stat->getOldBalance().format() << "</balance_old>\n"
+            << "\t\t<credit>" << stat->getCredit().format() << "</credit>\n"
+            << "\t\t<debet>" << stat->getDebet().format() << "</debet>\n";
         for (int j = 0; j < (int)stat->getStatementItemCount(); j++) {
             Register::Banking::StatementItem *statItem =
                 (Register::Banking::StatementItem *)stat->getStatementItemByIdx(j);
@@ -226,7 +229,7 @@ BankClient::list()
                 << "\t\t\t<const_symb>" << statItem->getConstSymbol() << "</const_symb>\n"
                 << "\t\t\t<var_symb>" << statItem->getVarSymbol() << "</var_symb>\n"
                 << "\t\t\t<spec_symb>" << statItem->getSpecSymbol() << "</spec_symb>\n"
-                << "\t\t\t<price>" << statItem->getPrice() << "</price>\n"
+                << "\t\t\t<price>" << statItem->getPrice().format() << "</price>\n"
                 << "\t\t\t<evid_number>" << statItem->getEvidenceNumber() << "</evid_number>\n"
                 << "\t\t\t<account_date>" << statItem->getDate() << "</account_date>\n"
                 << "\t\t\t<account_memo>" << statItem->getMemo() << "</account_memo>\n"
@@ -234,7 +237,6 @@ BankClient::list()
                 << "\t\t</statement_item>\n";
         }
         std::cout
-            << "\t\t</statement_item>\n"
             << "\t</payment>\n";
     }
     std::cout << "</object>" << std::endl;
