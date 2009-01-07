@@ -29,15 +29,11 @@ namespace Banking {
 #define TAGSTART(tag) "<"#tag">"
 #define TAGEND(tag) "</"#tag">"
 #define TAG(tag,f) TAGSTART(tag) << f << TAGEND(tag)
-#define OUTMONEY(f) (f)/100 << "." << \
-    std::setfill('0') << std::setw(2) << (f)%100      
 
 #define transformString(str)    \
     ((str.empty()) ? "NULL" : "'" + str + "'")
 #define transformId(id)         \
     ((id.to_string().compare("0") == 0) ? "NULL" : id.to_string())
-#define transformMoney(money)   \
-    (money / 100)
 
 class PaymentImpl:
     virtual public Payment {
@@ -199,7 +195,7 @@ public:
         updateStat->buffer()
             << "UPDATE bank_ebanka_list SET"
             << " account_id = " << transformId(getAccountId())
-            << ", price = " << getPrice() / 100
+            << ", price = " << getPrice().format() 
             << ", crdate = '" << getCrDate() << "'"
             << ", account_number = " << transformString(getAccountNumber())
             << ", bank_code = " << transformString(getBankCode())
@@ -387,7 +383,7 @@ public:
             << ", code = " << getCode()
             << ", konstsym = " << transformString(getConstSymbol())
             << ", varsymb = " << transformString(getVarSymbol())
-            << ", price = " << transformMoney(getPrice())
+            << ", price = " << getPrice().format()
             << ", account_evid = " << transformString(getEvidenceNumber())
             << ", account_date = '" << getDate() << "'"
             << ", account_memo = " << transformString(getMemo())
@@ -605,10 +601,10 @@ public:
             << ", num = " << getNumber()
             << ", create_date = '" << getDate() << "'"
             << ", balance_old_date = '" << getOldDate() << "'"
-            << ", balance_old = " << transformMoney(getOldBalance())
-            << ", balance_new = " << transformMoney(getBalance())
-            << ", balance_credit = " << transformMoney(getCredit())
-            << ", balance_debet = " << transformMoney(getDebet())
+            << ", balance_old = " << getOldBalance().format()
+            << ", balance_new = " << getBalance().format()
+            << ", balance_credit = " << getCredit().format()
+            << ", balance_debet = " << getDebet().format()
             << " WHERE id = " << id_;
         try {
             assert(m_conn);
@@ -838,7 +834,7 @@ public:
                 // but this line is present in old
                 // Register::Banking::OnlinePaymentListImpl
                 << TAG(spec_symbol, "")
-                << TAG(price, OUTMONEY(stat->getPrice()))
+                << TAG(price, stat->getPrice().format())
                 << TAG(memo, stat->getMemo())
                 << TAG(invoice_id, stat->getInvoiceId())
                 << TAG(accout_id, stat->getAccountId())
@@ -1036,11 +1032,11 @@ public:
                 << TAG(accout_id, stat->getAccountId())
                 << TAG(number, stat->getNumber())
                 << TAG(date, stat->getDate())
-                << TAG(balance, OUTMONEY(stat->getBalance()))
+                << TAG(balance, stat->getBalance().format())
                 << TAG(old_date, stat->getOldDate())
-                << TAG(oldBalance, OUTMONEY(stat->getOldBalance()))
-                << TAG(credit, OUTMONEY(stat->getCredit()))
-                << TAG(debet, OUTMONEY(stat->getDebet()))
+                << TAG(oldBalance, stat->getOldBalance().format())
+                << TAG(credit, stat->getCredit().format())
+                << TAG(debet, stat->getDebet().format())
                 << TAGSTART(items);
             for (int j = 0; j < (int)stat->getStatementItemCount(); j++) {
                 StatementItem *itm = (StatementItem *)stat->getStatementItemByIdx(j);
@@ -1051,7 +1047,7 @@ public:
                     << TAG(const_symbol,itm->getConstSymbol())
                     << TAG(var_symbol,itm->getVarSymbol())
                     << TAG(spec_symbol,itm->getSpecSymbol())
-                    << TAG(price,OUTMONEY(itm->getPrice()))
+                    << TAG(price,itm->getPrice().format())
                     << TAG(memo,itm->getMemo())
                     << TAG(invoice_id,itm->getInvoiceId())
                     << TAG(code,itm->getCode())
