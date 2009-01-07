@@ -34,6 +34,7 @@ public:
   /* string construct and getter */
   void from_string(const std::string& _value);
   const std::string to_string() const;
+  const std::string format() const;
 
   /* comparison operators */
   friend bool operator<(const Money& _left, const Money& _right);

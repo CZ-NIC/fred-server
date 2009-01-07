@@ -1,5 +1,6 @@
 #include "money.h"
 #include "conversions.h"
+#include <sstream>
 
 namespace Database {
 
@@ -16,6 +17,13 @@ const std::string Money::to_string() const {
   return Conversion<value_type>::to_string(value_);
 }
 
+const std::string
+Money::format() const
+{
+    std::stringstream ss;
+    ss << value_ / 100 << "." << std::setfill('0') << std::setw(2) << value_ % 100;
+    return ss.str();
+}
 
 /*
  * output operator
