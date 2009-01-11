@@ -28,7 +28,7 @@
 #include <boost/checked_delete.hpp>
 
 #include "common_impl.h"
-#include "old_utils/dbsql.h" 
+#include "old_utils/dbsql.h"
 #include "invoice.h"
 #include "documents.h"
 #include "sql.h"
@@ -40,21 +40,21 @@ using namespace boost::posix_time;
 
 #define MAKE_TIME_DEF(ROW,COL,DEF)  \
   (ptime(db->IsNotNull(ROW,COL) ? \
-   time_from_string(db->GetFieldValue(ROW,COL)) : DEF))         
+   time_from_string(db->GetFieldValue(ROW,COL)) : DEF))
 #define MAKE_TIME(ROW,COL) \
-  MAKE_TIME_DEF(ROW,COL,ptime(not_a_date_time))         
+  MAKE_TIME_DEF(ROW,COL,ptime(not_a_date_time))
 #define MAKE_TIME_NEG(ROW,COL) \
-  MAKE_TIME_DEF(ROW,COL,ptime(neg_infin))         
+  MAKE_TIME_DEF(ROW,COL,ptime(neg_infin))
 #define MAKE_TIME_POS(ROW,COL) \
-  MAKE_TIME_DEF(ROW,COL,ptime(pos_infin))         
+  MAKE_TIME_DEF(ROW,COL,ptime(pos_infin))
 #define MAKE_DATE_DEF(ROW,COL,DEF)  \
  (date(db->IsNotNull(ROW,COL) ? from_string(db->GetFieldValue(ROW,COL)) : DEF))
 #define MAKE_DATE(ROW,COL)  \
   MAKE_DATE_DEF(ROW,COL,date(not_a_date_time))
 #define MAKE_DATE_NEG(ROW,COL) \
-  MAKE_DATE_DEF(ROW,COL,date(neg_infin))         
+  MAKE_DATE_DEF(ROW,COL,date(neg_infin))
 #define MAKE_DATE_POS(ROW,COL) \
-  MAKE_DATE_DEF(ROW,COL,date(pos_infin))         
+  MAKE_DATE_DEF(ROW,COL,date(pos_infin))
 
 #define STR_TO_MONEY(x) atol(x)
 
@@ -102,19 +102,19 @@ class ManagerImpl : public Manager {
   DB *db;
   Database::Manager *db_manager_;
   Database::Connection *conn_;
-  
+
   Document::Manager *docman;
   Mailer::Manager *mailman;
   std::vector<VAT> vatList;
-  
+
   void initVATList() throw (SQL_ERROR);
-  
+
 public:
   ManagerImpl(DB *_db, Document::Manager *_docman, Mailer::Manager *_mailman) :
     db(_db), docman(_docman), mailman(_mailman) {
     initVATList();
   }
-  
+
   ManagerImpl(Database::Manager *_db_manager, Document::Manager *_doc_manager, Mailer::Manager *_mail_manager) :
     db_manager_(_db_manager), conn_(_db_manager->getConnection()), docman(_doc_manager), mailman(_mail_manager) {
     initVATList();
@@ -125,7 +125,7 @@ public:
   const VAT *getVAT(unsigned rate) const;
   /// find unarchived invoices. archive then and send them by email
   void archiveInvoices(bool send) const;
-  /// create empty list of invoices      
+  /// create empty list of invoices
   virtual List* createList() const;
   /// return credit for registrar by zone
   virtual Money
@@ -136,7 +136,7 @@ public:
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 //   SubjecImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-/// implementation of Subject interface 
+/// implementation of Subject interface
 class SubjectImpl : public Subject {
   TID id;
   std::string handle;
@@ -236,7 +236,7 @@ public:
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 /// implementation of Payment interface
 class PaymentImpl : virtual public Payment {
-  Money price; ///< money that come from this advance invoice  
+  Money price; ///< money that come from this advance invoice
   unsigned vatRate; ///< vatRate of this advance invoice
   Money vat; ///< total vat - approx. (price * vatRate/100)
 public:
@@ -272,11 +272,11 @@ public:
 /// implementation of PaymentSource interface
 class PaymentSourceImpl : public PaymentImpl, virtual public PaymentSource {
   unsigned long long number; ///< number of source advance invoice
-  Money credit; ///< credit remaining on this advance invoice 
+  Money credit; ///< credit remaining on this advance invoice
   TID id; ///< id of source advance invoice
   Money totalPrice; ///< total price without vat on advance invoice
   Money totalVat; ///< total vat on advance invoice
-  ptime crtime; ///< creation time of advance invoice 
+  ptime crtime; ///< creation time of advance invoice
 public:
   /// init content from sql result (ignore first column)
   PaymentSourceImpl(DB *db, unsigned l, ManagerImpl *man) :
@@ -289,8 +289,8 @@ public:
         true
     )), number(atoll(db->GetFieldValue(l, 1))), credit(STR_TO_MONEY(db->GetFieldValue(l,3))), id(STR_TO_ID(db->GetFieldValue(l,4))), totalPrice(STR_TO_MONEY(db->GetFieldValue(l,5))), totalVat(STR_TO_MONEY(db->GetFieldValue(l,7))), crtime(MAKE_TIME(l,8)) {
   }
-  
-  PaymentSourceImpl(Money _price, unsigned _vat_rate, Money _vat, 
+
+  PaymentSourceImpl(Money _price, unsigned _vat_rate, Money _vat,
                     unsigned long long _number, Money _credit, TID _id,
                     Money _total_price, Money _total_vat, ptime _crtime) :
                       PaymentImpl(_price, _vat_rate, _vat),
@@ -299,9 +299,9 @@ public:
                       id(_id),
                       totalPrice(_total_price),
                       totalVat(_total_vat),
-                      crtime(_crtime) {    
+                      crtime(_crtime) {
   }
-  
+
   virtual unsigned long long getNumber() const {
     return number;
   }
@@ -332,7 +332,7 @@ public:
 class PaymentActionImpl : public PaymentImpl, virtual public PaymentAction {
   std::string objectName; ///< name of object affected by payment action
   ptime actionTime; ///< time of payment action
-  date exDate; ///< exdate of domain 
+  date exDate; ///< exdate of domain
   PaymentActionType action; ///< type of action that is subject of payment
   unsigned unitsCount; ///< number of months to expiration of domain
   Money pricePerUnit; ///< copy of price from price list
@@ -351,8 +351,8 @@ public:
                                                          : PAT_RENEW_DOMAIN),
         unitsCount(atoi(db->GetFieldValue(l, 5))), pricePerUnit(STR_TO_MONEY(db->GetFieldValue(l,6))), objectId(STR_TO_ID(db->GetFieldValue(l,8))) {
   }
-  
-  PaymentActionImpl(Money _price, unsigned _vat_rate, Money _vat, 
+
+  PaymentActionImpl(Money _price, unsigned _vat_rate, Money _vat,
                     std::string& _object_name, ptime _action_time, date _exdate,
                     PaymentActionType _type, unsigned _units, Money _price_per_unit, TID _id) :
                       PaymentImpl(_price, _vat_rate, _vat),
@@ -362,9 +362,9 @@ public:
                       action(_type),
                       unitsCount(_units),
                       pricePerUnit(_price_per_unit),
-                      objectId(_id) {                        
+                      objectId(_id) {
   }
-  
+
   virtual TID getObjectId() const {
     return objectId;
   }
@@ -391,9 +391,9 @@ public:
 class AnnualPartitioningImpl : public virtual AnnualPartitioning {
   /// type for mapping year to sum of money
   typedef std::map<unsigned, Money> RecordsType;
-  RecordsType::const_iterator i; ///< for walkthrough in results 
+  RecordsType::const_iterator i; ///< for walkthrough in results
   typedef std::map<unsigned, RecordsType> vatRatesRecordsType;
-  vatRatesRecordsType::const_iterator j; ///< for walkthrough in results 
+  vatRatesRecordsType::const_iterator j; ///< for walkthrough in results
   vatRatesRecordsType records; ///< list of years by vat rate
   ManagerImpl *man; ///< need to count vat
   bool noVatRate; ///< there is not vat rate asked in resetIterator()
@@ -401,8 +401,8 @@ public:
   AnnualPartitioningImpl(ManagerImpl* _man) :
     man(_man), noVatRate(true) {
   }
-  /** for every year in period from exdate-unitsCount to exdate 
-   * count proportional part of price according to days that belong 
+  /** for every year in period from exdate-unitsCount to exdate
+   * count proportional part of price according to days that belong
    * to relevant year */
   /// partition action prices into years
   void addAction(PaymentAction *pa) {
@@ -411,8 +411,12 @@ public:
       return;
     // lastdate will be subtracted down in every iteration
     date lastdate = pa->getExDate();
+    // in case the price is negative period is from exdate to future
+    int dir = pa->getPrice() > 0 ? 1 : -1;
     // firstdate is for detection when to stop and for portion counting
-    date firstdate = pa->getExDate() - months(pa->getUnitsCount());
+    date firstdate = pa->getExDate() - months(dir * pa->getUnitsCount());
+    // in case the price is negative the dates must be switched
+    if (dir) std::swap(lastdate,firstdate);
     // money that still need to be partitioned
     Money remains = pa->getPrice();
     while (remains) {
@@ -465,7 +469,7 @@ public:
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 //   Exporter
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-/// common exporter interface 
+/// common exporter interface
 class Exporter {
 public:
   virtual ~Exporter() {
@@ -476,7 +480,7 @@ public:
 //   InvoiceImpl
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 /// implementation of interface Invoice
-class InvoiceImpl : public Register::CommonObjectImpl, 
+class InvoiceImpl : public Register::CommonObjectImpl,
                     virtual public Invoice {
   DB *dbc;
   TID zone;
@@ -513,26 +517,26 @@ class InvoiceImpl : public Register::CommonObjectImpl,
       delete actions[i];
   }
 public:
-  /// initialize invoice from result set=db with row=l 
+  /// initialize invoice from result set=db with row=l
   InvoiceImpl(DB *db, ManagerImpl *_man, unsigned l) :
       CommonObjectImpl(STR_TO_ID(db->GetFieldValue(l,0))),
-      dbc(db),  
-      zone(STR_TO_ID(db->GetFieldValue(l,1))), 
-      zoneName(db->GetFieldValue(l, 26)), 
-      crTime(MAKE_TIME(l,2)), 
-      taxDate(MAKE_DATE(l,3)), 
-      accountPeriod(MAKE_DATE_NEG(l,4),MAKE_DATE_POS(l,5)), 
+      dbc(db),
+      zone(STR_TO_ID(db->GetFieldValue(l,1))),
+      zoneName(db->GetFieldValue(l, 26)),
+      crTime(MAKE_TIME(l,2)),
+      taxDate(MAKE_DATE(l,3)),
+      accountPeriod(MAKE_DATE_NEG(l,4),MAKE_DATE_POS(l,5)),
       type(atoi(db->GetFieldValue(l, 6)) == 0 ? IT_DEPOSIT : IT_ACCOUNT),
-      number(atoll(db->GetFieldValue(l, 7))), 
+      number(atoll(db->GetFieldValue(l, 7))),
       registrar(STR_TO_ID(db->GetFieldValue(l,8))),
-      credit(STR_TO_MONEY(db->GetFieldValue(l,9))), 
-      price(STR_TO_MONEY(db->GetFieldValue(l,10))), 
+      credit(STR_TO_MONEY(db->GetFieldValue(l,9))),
+      price(STR_TO_MONEY(db->GetFieldValue(l,10))),
       vatRate(atoi(db->GetFieldValue(l, 11))),
-      total(STR_TO_MONEY(db->GetFieldValue(l,12))), 
-      totalVAT(STR_TO_MONEY(db->GetFieldValue(l,13))), 
-      filePDF(STR_TO_ID(db->GetFieldValue(l,14))), 
-      fileXML(STR_TO_ID(db->GetFieldValue(l,15))), 
-      varSymbol(db->GetFieldValue(l, 22)), 
+      total(STR_TO_MONEY(db->GetFieldValue(l,12))),
+      totalVAT(STR_TO_MONEY(db->GetFieldValue(l,13))),
+      filePDF(STR_TO_ID(db->GetFieldValue(l,14))),
+      fileXML(STR_TO_ID(db->GetFieldValue(l,15))),
+      varSymbol(db->GetFieldValue(l, 22)),
       client(STR_TO_ID(db->GetFieldValue(l,25)),
              db->GetFieldValue(l,23),
              db->GetFieldValue(l,16),
@@ -549,12 +553,12 @@ public:
              "", // email is empty
              "", // phone is empty
              "", // fax is empty
-             db->GetFieldValue(l,24)[0] == 't'), 
-      storeFileFlag(false), 
-      ap(_man), 
+             db->GetFieldValue(l,24)[0] == 't'),
+      storeFileFlag(false),
+      ap(_man),
       man(_man) {
   }
-  
+
   InvoiceImpl(TID _id, TID _zone, std::string& _zoneName, ptime _crTime, date _taxDate,
               date_period& _accountPeriod, Type _type, unsigned long long _number,
               TID _registrar, Money _credit, Money _price, short _vatRate, Money _total,
@@ -584,7 +588,7 @@ public:
                                        ap(_manager),
                                        man(_manager) {
   }
-  
+
   ~InvoiceImpl() {
     clearLists();
   }
@@ -666,7 +670,7 @@ public:
       filePDF = _filePDF;
       fileXML = _fileXML;
       // intention was separate setting of file id and it's storage
-      // outside of document generation process. temporary 
+      // outside of document generation process. temporary
       // combined into setting function
       storeFileFlag = true;
       try {
@@ -702,14 +706,14 @@ public:
     Database::Money    price       = *_col;
     unsigned           vat_rate    = *(++_col);
     std::string        object_name = *(++_col);
-    Database::DateTime action_time = *(++_col); 
+    Database::DateTime action_time = *(++_col);
     Database::Date     exdate      = *(++_col);
-    PaymentActionType  type        = (int)*(++_col) == 1 ? PAT_CREATE_DOMAIN 
+    PaymentActionType  type        = (int)*(++_col) == 1 ? PAT_CREATE_DOMAIN
                                                          : PAT_RENEW_DOMAIN;
-    unsigned           units          = *(++_col); 
+    unsigned           units          = *(++_col);
     Database::Money    price_per_unit = *(++_col);
     Database::ID       id             = *(++_col);
-                          
+
     PaymentActionImpl *new_action = new PaymentActionImpl(price,
                                                           vat_rate,
                                                           man->countVAT(price, vat_rate, true),
@@ -739,13 +743,13 @@ public:
   void addSource(Database::Row::Iterator& _col) {
     Database::Money price       = *_col;
     unsigned vat_rate           = *(++_col);
-    unsigned long long number   = *(++_col);  
+    unsigned long long number   = *(++_col);
     Database::Money credit      = *(++_col);
     Database::ID id             = *(++_col);
     Database::Money total_price = *(++_col);
     Database::Money total_vat   = *(++_col);
     Database::DateTime crtime   = *(++_col);
-    
+
     PaymentSourceImpl *new_source = new PaymentSourceImpl(price,
                                                           vat_rate,
                                                           man->countVAT(price, vat_rate, true),
@@ -756,7 +760,7 @@ public:
                                                           total_vat,
                                                           crtime);
     sources.push_back(new_source);
-    
+
     // init vat groups, if vat rate exists, add it, otherwise create new
     std::vector<PaymentImpl>::iterator i = find(paid.begin(),
                                                 paid.end(),
@@ -764,9 +768,9 @@ public:
     if (i != paid.end())
       i->add(new_source);
     else
-      paid.push_back(PaymentImpl(new_source));    
+      paid.push_back(PaymentImpl(new_source));
   }
-  
+
   virtual AnnualPartitioning *getAnnualPartitioning() {
     return &ap;
   }
@@ -816,13 +820,13 @@ SubjectImpl
 // builder that export xml of invoice into given stream
 class ExporterXML : public Exporter {
   std::ostream& out;
-  bool xmlDec; ///< whether to include xml declaration 
+  bool xmlDec; ///< whether to include xml declaration
 public:
   ExporterXML(std::ostream& _out, bool _xmlDec) :
     out(_out), xmlDec(_xmlDec) {
   }
   std::ostream& doExport(const Subject* s) {
-    out << TAG(id,s->getId()) << TAG(name,s->getName()) << TAG(fullname,s->getFullname()) << TAGSTART(address) << TAG(street,s->getStreet()) << TAG(city,s->getCity()) << TAG(zip,s->getZip()) << TAG(country,s->getCountry()) << TAGEND(address) << TAG(ico,s->getICO()) << TAG(vat_number,s->getVatNumber()) << TAG(registration,s->getRegistration()) << TAG(reclamation,s->getReclamation()) << TAG(url,s->getURL()) << TAG(email,s->getEmail()) << TAG(phone,s->getPhone()) << TAG(fax,s->getFax()) << TAG(vat_not_apply,(s->getVatApply() ? 0 : 1)); return out;} 
+    out << TAG(id,s->getId()) << TAG(name,s->getName()) << TAG(fullname,s->getFullname()) << TAGSTART(address) << TAG(street,s->getStreet()) << TAG(city,s->getCity()) << TAG(zip,s->getZip()) << TAG(country,s->getCountry()) << TAGEND(address) << TAG(ico,s->getICO()) << TAG(vat_number,s->getVatNumber()) << TAG(registration,s->getRegistration()) << TAG(reclamation,s->getReclamation()) << TAG(url,s->getURL()) << TAG(email,s->getEmail()) << TAG(phone,s->getPhone()) << TAG(fax,s->getFax()) << TAG(vat_not_apply,(s->getVatApply() ? 0 : 1)); return out;}
     virtual void doExport(Invoice *i)
     {
       // setting locale for proper date and time format
@@ -940,8 +944,8 @@ public:
       out << TAGEND(invoice);
     }
   };
-#define INVOICE_PDF_FILE_TYPE 1 
-#define INVOICE_XML_FILE_TYPE 2 
+#define INVOICE_PDF_FILE_TYPE 1
+#define INVOICE_XML_FILE_TYPE 2
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   //   ExporterArchiver
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -960,7 +964,7 @@ public:
     virtual void doExport(Invoice *i)
     {
       try {
-        // create generator for pdf 
+        // create generator for pdf
         std::auto_ptr<Document::Generator> gPDF(
             docman->createSavingGenerator(
                 i->getType() == IT_DEPOSIT ?
@@ -996,7 +1000,7 @@ public:
       }
     }
   };
-  
+
   COMPARE_CLASS_IMPL(InvoiceImpl, CrTime)
   COMPARE_CLASS_IMPL(InvoiceImpl, Number)
   COMPARE_CLASS_IMPL(InvoiceImpl, Registrar)
@@ -1004,17 +1008,17 @@ public:
   COMPARE_CLASS_IMPL(InvoiceImpl, Credit)
   COMPARE_CLASS_IMPL(InvoiceImpl, Type)
   COMPARE_CLASS_IMPL(InvoiceImpl, ZoneName)
-  
-  
+
+
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   //   InvoiceListImpl
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   /// implementation of interface InvoiceList
   class ListImpl : public Register::CommonListImpl,
   virtual public List {
-    TID idFilter; ///< filter for invoice id 
+    TID idFilter; ///< filter for invoice id
     TID registrarFilter; ///< filter for registrar recieving invoice
-    std::string registrarHandleFilter; ///< filter for registrar by handle 
+    std::string registrarHandleFilter; ///< filter for registrar by handle
     TID zoneFilter; ///< filter for id of associated zone
     unsigned typeFilter; ///< filter for invoice type (advance or normal)
     std::string varSymbolFilter; ///< filter for variable symbol of payment
@@ -1036,14 +1040,14 @@ public:
     archiveFilter(AF_IGNORE), objectIdFilter(0), partialLoad(false),
     man(_man)
     {}
-    
+
     ListImpl(Database::Connection *_conn, ManagerImpl *_manager) : CommonListImpl(_conn),
                                                                 crDateFilter(ptime(neg_infin),ptime(pos_infin)),
                                                                 taxDateFilter(ptime(neg_infin),ptime(pos_infin)),
                                                                 partialLoad(false),
                                                                 man(_manager) {
     }
-    
+
     ~ListImpl() {
       clearList();
     }
@@ -1051,7 +1055,7 @@ public:
     virtual const char* getTempTableName() const {
       return "tmp_invoice_filter_result";
     }
-    
+
     virtual void sort(MemberType _member, bool _asc) {
       switch (_member) {
         case MT_CRDATE:
@@ -1083,7 +1087,7 @@ public:
       delete data_[i];
       data_.clear();
     }
-    
+
     virtual void clearFilter() {
       idFilter = 0;
       registrarFilter = 0;
@@ -1098,63 +1102,63 @@ public:
       objectIdFilter = 0;
       partialLoad = false;
     }
-    
+
     virtual void setIdFilter(TID id) {
       idFilter = id;
     }
-    
+
     virtual void setRegistrarFilter(TID registrar) {
       registrarFilter = registrar;
     }
-    
+
     virtual void setRegistrarHandleFilter(const std::string& handle) {
       registrarHandleFilter = handle;
     }
-    
+
     virtual void setZoneFilter(TID zone) {
       zoneFilter = zone;
     }
-    
+
     virtual void setTypeFilter(unsigned type) {
       typeFilter = type;
     }
-    
+
     virtual void setVarSymbolFilter(const std::string& varSymbol) {
       varSymbolFilter = varSymbol;
     }
-    
+
     virtual void setNumberFilter(const std::string& number) {
       numberFilter = number;
     }
-    
+
     virtual void setCrDateFilter(const time_period& crDatePeriod) {
       crDateFilter = crDatePeriod;
     }
-    
+
     virtual void setTaxDateFilter(const time_period& taxDatePeriod) {
       taxDateFilter = taxDatePeriod;
     }
-    
+
     virtual void setArchivedFilter(ArchiveFilter archive) {
       archiveFilter = archive;
     }
-    
+
     virtual void setObjectIdFilter(TID objectId) {
       objectIdFilter = objectId;
     }
-    
+
     virtual void setObjectNameFilter(const std::string& objectName) {
       objectNameFilter = objectName;
     }
-    
+
     virtual void setAdvanceNumberFilter(const std::string& number) {
       advanceNumberFilter = number;
     }
-    
+
     virtual void setPartialLoad(bool _partialLoad) {
       partialLoad = _partialLoad;
     }
-    
+
     virtual void reload(Database::Filters::Union& _uf, Database::Manager *_db_manager) {
       TRACE("[CALL] Invoicing::ListImpl::reload()");
       clear();
@@ -1211,11 +1215,11 @@ public:
 
       try {
         std::auto_ptr<Database::Connection> conn(_db_manager->getConnection());
-              
+
         Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
         conn->exec(create_tmp_table);
         conn->exec(tmp_table_query);
- 
+
         // TODO: use this and rewrite conn to conn_ specified in CommonListImpl
         // fillTempTable(tmp_table_query);
 
@@ -1230,7 +1234,7 @@ public:
           Database::Date     tax_date       = *(++col);
           Database::Date     from_date      = *(++col);
           Database::Date     to_date        = *(++col);
-          Type               type           = (int)*(++col) == 0 ? IT_DEPOSIT 
+          Type               type           = (int)*(++col) == 0 ? IT_DEPOSIT
                                                                  : IT_ACCOUNT;
           unsigned long long number         = *(++col);
           Database::ID       registrar_id   = *(++col);
@@ -1259,7 +1263,7 @@ public:
           SubjectImpl client(c_id, c_handle, c_organization, "", c_street1,
               c_city, c_postal_code, c_country, c_ico, c_dic,
               "", "", "", "", "", "", c_vat);
-                                                                     
+
           data_.push_back(new InvoiceImpl(id,
                                           zone,
                                           fqdn,
@@ -1281,18 +1285,18 @@ public:
                                           filepdf_name,
                                           filexml_name,
                                           man));
-          
+
         }
-        
+
         LOGGER(PACKAGE).debug(boost::format("list of invoices size: %1%") % data_.size());
-        
+
         if (data_.empty())
           return;
-        
+
         /*
          * load details to each invoice...
-         * 
-         * 
+         *
+         *
          * append list of sources to all selected invoices
          */
         resetIDSequence();
@@ -1304,18 +1308,18 @@ public:
                             << "JOIN invoice_credit_payment_map ipm ON (tmp.id = ipm.invoiceid) "
                             << "JOIN invoice sri ON (ipm.ainvoiceid = sri.id) ";
         source_query.order_by() << "tmp.id";
-        
+
         resetIDSequence();
         Database::Result r_sources = conn->exec(source_query);
         for (Database::Result::Iterator it = r_sources.begin(); it != r_sources.end(); ++it) {
           Database::Row::Iterator col = (*it).begin();
           Database::ID invoice_id = *col;
-                    
+
           InvoiceImpl *invoice_ptr = dynamic_cast<InvoiceImpl*>(findIDSequence(invoice_id));
-          if (invoice_ptr) 
+          if (invoice_ptr)
             invoice_ptr->addSource(++col);
         }
-                  
+
         /* append list of actions to all selected invoices
          * it handle situation when action come from source advance invoices
          * with different vat rates by grouping
@@ -1337,19 +1341,19 @@ public:
           action_query.group_by() << "tmp.id, o.name, ior.crdate, ior.exdate, "
                                   << "ior.operation, ior.period, o.id, i.vat";
           action_query.order_by() << "tmp.id";
-        
+
           resetIDSequence();
           Database::Result r_actions = conn->exec(action_query);
           for (Database::Result::Iterator it = r_actions.begin(); it != r_actions.end(); ++it) {
             Database::Row::Iterator col = (*it).begin();
             Database::ID invoice_id = *col;
-            
+
             InvoiceImpl *invoice_ptr = dynamic_cast<InvoiceImpl* >(findIDSequence(invoice_id));
-            if (invoice_ptr) 
+            if (invoice_ptr)
               invoice_ptr->addAction(++col);
           }
         }
-        /* checks if row number result load limit is active and set flag */ 
+        /* checks if row number result load limit is active and set flag */
         CommonListImpl::reload();
       }
       catch (Database::Exception& ex) {
@@ -1362,20 +1366,20 @@ public:
       }
 
     }
-    
+
     virtual void reload() throw (SQL_ERROR) {
       clearList();
       std::stringstream sql;
       // id that conform to filter will be stored in temporary table
       // sql is contructed from two sections 'from' and 'where'
-      // that are pasted into final 'sql' stream 
+      // that are pasted into final 'sql' stream
       sql << "SELECT DISTINCT i.id "
       << "INTO TEMPORARY tmp_invoice_filter_result ";
       std::stringstream from;
       from << "FROM invoice i ";
       std::stringstream where;
       where << "WHERE 1=1 "; // must be for the case of empty filter
-      // process individual filters 
+      // process individual filters
       SQL_ID_FILTER(where,"i.id",idFilter);
       SQL_ID_FILTER(where,"i.registrarid",registrarFilter);
       SQL_ID_FILTER(where,"i.zone",zoneFilter);
@@ -1424,7 +1428,7 @@ public:
       if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
       if (!db->ExecSQL("ANALYZE tmp_invoice_filter_result"))
       throw SQL_ERROR();
-      // initialize list of invoices using temporary table 
+      // initialize list of invoices using temporary table
       if (!db->ExecSelect(
               "SELECT "
               " i.id, i.zone, i.crdate, i.taxdate, ig.fromdate, "
@@ -1474,7 +1478,7 @@ public:
           InvoiceImpl *inv = dynamic_cast<InvoiceImpl*>(findId(STR_TO_ID(db->GetFieldValue(i,0))));
           if (inv) inv->addAction(db,i);
           else {
-            // TODO: log error - some database problem 
+            // TODO: log error - some database problem
           }
         }
         db->FreeSelect();
@@ -1493,7 +1497,7 @@ public:
         InvoiceImpl *inv = dynamic_cast<InvoiceImpl*>(findId(STR_TO_ID(db->GetFieldValue(i,0))));
         if (inv) inv->addSource(db,i);
         else {
-          // TODO: log error - some database problem 
+          // TODO: log error - some database problem
         }
       }
       db->FreeSelect();
@@ -1501,7 +1505,7 @@ public:
       if (!db->ExecSQL("DROP TABLE tmp_invoice_filter_result "))
       throw SQL_ERROR();
     }
-    
+
     /// export all invoices on the list using given exporter
     void doExport(Exporter *_exporter) {
       Iterator it = data_.begin();
@@ -1532,55 +1536,55 @@ public:
       doExport(&xml);
       if (getCount()!=1) out << TAGEND(list);
     }
-    
+
     /// dummy implementation of method from CommonObjet
     virtual void makeQuery(bool, bool, std::stringstream&) const {
-      
+
     }
-    
-  }; // ListImpl 
-  
-  
+
+  }; // ListImpl
+
+
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   //   Mails
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-  /// send mails with invoices to registrars 
+  /// send mails with invoices to registrars
   class Mails {
     /// describe one email notification about invoice or invoice generation
     struct Item {
       std::string registrarEmail; ///< address to deliver email
-      date from; ///< start of invoicing period 
-      date to; ///< end of invoicing period 
+      date from; ///< start of invoicing period
+      date to; ///< end of invoicing period
       TID filePDF; ///< id of pdf file with invoice attached in email
       TID fileXML; ///< id of xml file with invoice attached in email
       TID generation; ///< filled if source is invoice generation
       TID invoice; ///< filled if successful generation or advance invoice
       TID mail; ///< id of generated email
-      
+
       const char *getTemplateName() {
         if (!generation) return "invoice_deposit";
         if (!invoice) return "invoice_noaudit";
         return "invoice_audit";
       }
-      
+
       Item(const std::string& _registrarEmail, date _from, date _to,
            TID _filePDF, TID _fileXML, TID _generation, TID _invoice, TID _mail) :
-               registrarEmail(_registrarEmail), 
-               from(_from), 
+               registrarEmail(_registrarEmail),
+               from(_from),
                to(_to),
-               filePDF(_filePDF), 
+               filePDF(_filePDF),
                fileXML(_fileXML),
-               generation(_generation), 
-               invoice(_invoice), 
+               generation(_generation),
+               invoice(_invoice),
                mail(_mail) {
       }
     };
-    
+
     typedef std::vector<Item> MailItems; ///< type for notification list
     MailItems items; ///< list of notifications to send
     Mailer::Manager *mm; ///< mail sending interface
     DB *db; ///< database connectivity
-    /// store information about sending email 
+    /// store information about sending email
     void store(unsigned idx) throw (SQL_ERROR) {
       std::stringstream sql;
       sql << "INSERT INTO invoice_mails (invoiceid,genid,mailid) VALUES (";
@@ -1594,7 +1598,7 @@ public:
       << ")";
       if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
     }
-    
+
   public:
     Mails(Mailer::Manager *_mm, DB *_db) : mm(_mm), db(_db) {
     }
@@ -1619,14 +1623,14 @@ public:
         if (it->filePDF) attach.push_back(it->filePDF);
         if (it->fileXML) attach.push_back(it->fileXML);
         it->mail = mm->sendEmail(
-            "", // default sender according to template 
+            "", // default sender according to template
             it->registrarEmail,
             "", // default subject according to template
             it->getTemplateName(),
             params, handles, attach
         );
         if (!it->mail) {
-          // TODO: LOG ERROR 
+          // TODO: LOG ERROR
         }
         store(i);
       }
@@ -1663,8 +1667,8 @@ public:
       db->FreeSelect();
     }
   }; // Mails
-  
-  
+
+
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   //   ManagerImpl - impl.
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -1684,13 +1688,13 @@ public:
       db->FreeSelect();
     }
   }
-  
+
   Money ManagerImpl::countVAT(Money price, unsigned vatRate, bool base) {
     const VAT *v = getVAT(vatRate);
     unsigned coef = v ? v->koef : 0;
     return price * coef / (10000 - (base ? coef : 0));
   }
-  
+
   const VAT * ManagerImpl::getVAT(unsigned rate) const {
     // late initialization would brake constness
     ((ManagerImpl *)this)->initVATList();
@@ -1699,7 +1703,7 @@ public:
     );
     return ci == vatList.end() ? NULL : &(*ci);
   }
-  
+
   void ManagerImpl::archiveInvoices(bool send) const {
     try {
       // archive unarchived invoices
@@ -1718,12 +1722,12 @@ public:
       //TODO: LOG ERROR
     }
   }
-  
+
   List* ManagerImpl::createList() const {
     return new ListImpl(db, (ManagerImpl *)this);
     // return new ListImpl(conn_, (ManagerImpl *)this);
   }
-  
+
   Money ManagerImpl::getCreditByZone(const std::string& registrarHandle, TID zone) const throw (SQL_ERROR) {
     std::stringstream sql;
     sql << "SELECT SUM(credit)*100 "
@@ -1735,16 +1739,16 @@ public:
     db->FreeSelect();
     return result;
   }
-  
+
   Manager* Manager::create(DB *db, Document::Manager *docman, Mailer::Manager *mailman) {
     return new ManagerImpl(db,docman,mailman);
   }
-  
-  Manager* Manager::create(Database::Manager *_db_manager, 
-                           Document::Manager *_doc_manager, 
+
+  Manager* Manager::create(Database::Manager *_db_manager,
+                           Document::Manager *_doc_manager,
                            Mailer::Manager *_mail_manager) {
     return new ManagerImpl(_db_manager, _doc_manager, _mail_manager);
   }
-  
+
 }; // Invoicing
 }; // Register
