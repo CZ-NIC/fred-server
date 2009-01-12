@@ -54,6 +54,22 @@ Value<std::string>& InvoiceImpl::addNumber() {
   return *tmp;
 }
 
+Value<Database::ID>& InvoiceImpl::addFileXML() {
+  Column column = Column("filexml", joinInvoiceTable());
+  Value<Database::ID> *tmp = new Value<Database::ID>(column);
+  add(tmp);
+  tmp->setName("FileXML");
+  return *tmp;
+}
+
+Value<Database::ID>& InvoiceImpl::addFilePDF() {
+  Column column = Column("file", joinInvoiceTable());
+  Value<Database::ID> *tmp = new Value<Database::ID>(column);
+  add(tmp);
+  tmp->setName("FilePDF");
+  return *tmp;
+}
+
 Interval<Database::DateTimeInterval>& InvoiceImpl::addCreateTime() {
   Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("crdate", joinInvoiceTable()));
   add(tmp);

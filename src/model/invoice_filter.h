@@ -26,6 +26,8 @@ public:
   virtual Value<Database::ID>& addZoneId() = 0;
   virtual Value<int>& addType() = 0;
   virtual Value<std::string>& addNumber() = 0;
+  virtual Value<Database::ID>& addFileXML() = 0;
+  virtual Value<Database::ID>& addFilePDF() = 0;
   virtual Interval<Database::DateTimeInterval>& addCreateTime() = 0;
   virtual Interval<Database::DateInterval>& addTaxDate() = 0;
   virtual Registrar& addRegistrar() = 0;
@@ -51,6 +53,8 @@ public:
   virtual Value<Database::ID>& addZoneId();
   virtual Value<int>& addType();
   virtual Value<std::string>& addNumber();
+  virtual Value<Database::ID>& addFileXML();
+  virtual Value<Database::ID>& addFilePDF();
   virtual Interval<Database::DateTimeInterval>& addCreateTime();
   virtual Interval<Database::DateInterval>& addTaxDate();
   virtual Registrar& addRegistrar();
