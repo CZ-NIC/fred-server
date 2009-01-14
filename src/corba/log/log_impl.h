@@ -77,6 +77,8 @@ public:
 private:
   void insert_props(ccReg::TID entry_id, const ccReg::LogProperties& props);
   bool record_check(ccReg::TID id);
+  ccReg::TID find_property_name_id(const char *name);
+  inline ccReg::TID find_last_property_value_id();
 
 };
 

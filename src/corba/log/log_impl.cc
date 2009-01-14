@@ -35,7 +35,7 @@
 
 using namespace Database;
 
-
+// ccReg_Log_i ctor: connect to the database and fill property_names map
 ccReg_Log_i::ccReg_Log_i(const std::string database, NameService *ns, Config::Conf& _cfg, bool _session_garbage)
       throw (DB_CONNECT_FAILED) {
 
@@ -50,7 +50,7 @@ ccReg_Log_i::ccReg_Log_i(const std::string database, NameService *ns, Config::Co
 	LOG(NOTICE_LOG, "successfully  connect to DATABASE %s", database.c_str());
 
 	// now fill the property_names map:
-
+	
 	try {
 		Result res = conn.exec("select id, name from log_property_name");
 
@@ -67,7 +67,7 @@ ccReg_Log_i::ccReg_Log_i(const std::string database, NameService *ns, Config::Co
 		}
 		// debug TODO remove
 		std::cout << "---------- Map content: " << std::endl;
-
+		
 		for (std::map<std::string, ccReg::TID, strCmp>::iterator iter = property_names.begin();
 			iter != property_names.end(); ++iter) {
 
@@ -85,6 +85,7 @@ ccReg_Log_i::~ccReg_Log_i() {
   LOG( ERROR_LOG, "ccReg_Log_i destructor");
 }
 
+// check if a log record with the specified ID exists and if it can be modified (time_end isn't set yet)
 bool ccReg_Log_i::record_check(ccReg::TID id)
 {
 	std::ostringstream query;
@@ -108,60 +109,118 @@ bool ccReg_Log_i::record_check(ccReg::TID id)
 	return true;
 }
 
-void ccReg_Log_i::insert_props(ccReg::TID entry_id, const ccReg::LogProperties& props)
+// find ID for the given name of a property
+ccReg::TID ccReg_Log_i::find_property_name_id(const char *name)
 {
-	std::string s_val, s_name;
-	std::ostringstream query;
 	ccReg::TID name_id;
-	// std::tr1::unordered_map<std::string, ccReg::TID>::iterator;
+	std::ostringstream query;
 	std::map<std::string, ccReg::TID>::iterator iter;
 
-	for (unsigned i = 0; i < props.length(); i++) {
-		s_name = Util::escape((const char*) props[i].name);
-		s_val = Util::escape((const char*) props[i].value);
+	iter = property_names.find(name);
 
-		iter = property_names.find(s_name);
+	if(iter != property_names.end()) {
+		name_id = iter->second;
+	} else {
+		// if the name isn't cached in the memory, try to find it in the database
+		std::string s_name = Util::escape(name);
 
-		if(iter != property_names.end()) {
-			name_id = iter->second;
-		} else {
-			// if the name isn't cached in the memory, try to find it in the database
+		query << "select id from log_property_name where name='" << s_name
+				<< "'";
+		Result res = conn.exec(query.str());
+
+		if (res.size() > 0) {
+			// okay, it was found in the database
+			name_id = res[0][0];
+		} else if (res.size() == 0) {
+			// if not, add it to the database
 			query.str("");
-			query << "select id from log_property_name where name='" << s_name
-					<< "'";
-			Result res = conn.exec(query.str());
+			query << "insert into log_property_name (name) values ('" << s_name
+					<< "')";
+			conn.exec(query.str());
 
-			if (res.size() > 0) {
-				// okay, it was found in the database
-				name_id = res[0][0];
-			} else if (res.size() == 0) {
-				// if not, add it to the database
-				query.str("");
-				query << "insert into log_property_name (name) values ('" << s_name
-						<< "')";
-				conn.exec(query.str());
+			query.str("");
+			query << "select currval('log_property_name_id_seq'::regclass)";
+			res = conn.exec(query.str());
 
-				query.str("");
-				query << "select currval('log_property_name_id_seq'::regclass)";
-				res = conn.exec(query.str());
-
-				name_id = res[0][0];
-			}
-
-			// now that we know the right database id of the name
-			// we can add it to the map
-			property_names[s_name] = name_id;
+			name_id = res[0][0];
 		}
 
-		query.str("");
-		query   << "insert into log_property_value (entry_id, name_id, value, output) values ("
-				<< entry_id << ", " << name_id << ", '" << s_val << "', "
-				<< (props[i].output ? "true" : "false") << ")";
+		// now that we know the right database id of the name
+		// we can add it to the map
+		property_names[name] = name_id;
+	}
 
-		conn.exec(query.str());
+	return name_id;
+}
+
+/**
+ * Find last ID used in log_property_value table
+ */
+inline ccReg::TID ccReg_Log_i::find_last_property_value_id()
+{
+	Result res = conn.exec("select currval('log_property_value_id_seq'::regclass)");
+	// TODO faster way how to find last_id....
+	return res[0][0];
+}
+
+// insert properties for the given log_entry record
+void ccReg_Log_i::insert_props(ccReg::TID entry_id, const ccReg::LogProperties& props)
+{
+	std::string s_val;
+	std::ostringstream query;
+	ccReg::TID name_id, last_id = 0;
+
+	if(props.length() == 0) {
+		return;
+	}
+
+	// process the first record
+	s_val = Util::escape((const char*) props[0].value);
+	name_id = find_property_name_id(props[0].name);
+
+	query.str("");
+	if (props[0].child) {
+		std::ostringstream msg;
+		msg << "entry ID " << entry_id << ": first property marked as child. Ignoring this flag ";
+		// the first property is set to child - this is an error
+		LOGGER("fred-logd").error(msg.str());
+	}
+	query   << "insert into log_property_value (entry_id, name_id, value, output, parent_id) values ("
+			<< entry_id << ", " << name_id << ", '" << s_val << "', "
+			<< (props[0].output ? "true" : "false") << ", null)";
+	conn.exec(query.str());
+
+	// obtain last_id
+	last_id = find_last_property_value_id();
+
+	// process the rest of the sequence
+	for (unsigned i = 1; i < props.length(); i++) {
+
+		s_val = Util::escape((const char*) props[i].value);
+		name_id = find_property_name_id(props[i].name);
+
+		query.str("");
+		if(props[i].child) {
+			// child property set and parent id available
+			query   << "insert into log_property_value (entry_id, name_id, value, output, parent_id) values ("
+					<< entry_id << ", " << name_id << ", '" << s_val << "', "
+					<< (props[i].output ? "true" : "false") << ", " << last_id << ")";
+
+			conn.exec(query.str());
+		} else {
+			// not a child property
+			query   << "insert into log_property_value (entry_id, name_id, value, output, parent_id) values ("
+					<< entry_id << ", " << name_id << ", '" << s_val << "', "
+					<< (props[i].output ? "true" : "false") << ", null)";
+			conn.exec(query.str());
+
+			last_id = find_last_property_value_id();
+		}
+
 	}
 }
 
+// log a new event, return the database ID of the record
 ccReg::TID ccReg_Log_i::new_event(const char *sourceIP, ccReg::LogServiceType service, const char *content_in, const ccReg::LogProperties& props)
 {
 	std::ostringstream query;
@@ -204,7 +263,7 @@ ccReg::TID ccReg_Log_i::new_event(const char *sourceIP, ccReg::LogServiceType se
 		if(content_in != NULL) {
 			s_content = Util::escape(std::string(content_in));
 			query.str("");
-			query << "insert into log_raw_content (entry_id, request) values (" << entry_id << ", '" << s_content << "')";
+			query << "insert into log_raw_content (entry_id, content, is_response) values (" << entry_id << ", '" << s_content << "', false)";
 
 			LOG(DEBUG_LOG, query.str().c_str());
 			// LOGGER("fred-logd").debug(query.str());
@@ -222,6 +281,7 @@ ccReg::TID ccReg_Log_i::new_event(const char *sourceIP, ccReg::LogServiceType se
 	return entry_id;
 }
 
+// update existing log record with given ID
 CORBA::Boolean ccReg_Log_i::update_event(ccReg::TID id, const ccReg::LogProperties &props)
 {
 	std::ostringstream query;
@@ -239,6 +299,7 @@ CORBA::Boolean ccReg_Log_i::update_event(ccReg::TID id, const ccReg::LogProperti
 
 }
 
+// close the record with given ID (end time is filled thus no further modification is possible after this call )
 CORBA::Boolean ccReg_Log_i::update_event_close(ccReg::TID id, const char *content_out, const ccReg::LogProperties &props)
 {
 	std::ostringstream query;
@@ -257,15 +318,8 @@ CORBA::Boolean ccReg_Log_i::update_event_close(ccReg::TID id, const char *conten
 			s_content = Util::escape(std::string(content_out));
 
 			query.str("");
-			query << "select * from log_raw_content where entry_id = " << id;
-			Result res = conn.exec(query.str());
-
-			query.str("");
-			if(res.size() > 0) {
-				query << "update log_raw_content set response = '" << s_content << "' where entry_id=" << id;
-			} else {
-				query << "insert into log_raw_content (entry_id, response) values (" << id << ", '" << s_content << "')";
-			}
+			
+			query << "insert into log_raw_content (entry_id, content, is_response) values (" << id << ", '" << s_content << "', true)";
 			conn.exec(query.str());
 		}
 
