@@ -55,7 +55,7 @@ AR = ar
 ARFLAGS = cru
 libdb_a_AR = $(AR) $(ARFLAGS)
 libdb_a_LIBADD =
-am_libdb_a_OBJECTS = query.$(OBJEXT) filter.$(OBJEXT) \
+am_libdb_a_OBJECTS = query_old.$(OBJEXT) filter.$(OBJEXT) \
 	compound_filter.$(OBJEXT) simple_filter.$(OBJEXT)
 libdb_a_OBJECTS = $(am_libdb_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
@@ -238,17 +238,17 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LIBRARIES = libdb.a
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
-AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) ${BOOST_CPPFLAGS} $(AM_CFLAGS)     \
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) ${BOOST_CPPFLAGS} $(AM_CFLAGS)        \
               -I$(top_srcdir)/util -I$(top_srcdir) 
 
-libdb_a_SOURCES = query.cc                                            \
-                  filter.cc compound_filter.cc simple_filter.cc       \
-                  base_filters.h                                      \
-                  connection.h result.h row.h value.h                 \
-                  psql_connection.h psql_result.h                     \
-                  query.h sequence.h manager.h                        \
-                  filter.h compound_filter.h simple_filter.h          \
-                  simple_filters.h sql_helper_objects.h filter_it.h   \
+libdb_a_SOURCES = query_old.cc                                           \
+                  filter.cc compound_filter.cc simple_filter.cc          \
+                  base_filters.h                                         \
+                  connection.h result.h row.h value.h                    \
+                  psql_connection.h psql_result.h                        \
+                  query.h query_old.h sequence.h manager.h manager_tss.h \
+                  filter.h compound_filter.h simple_filter.h             \
+                  simple_filters.h sql_helper_objects.h filter_it.h      \
                   sql_operators.h db_exceptions.h database.h
 
 test_db_SOURCES = test-db.cc
@@ -309,7 +309,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compound_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filter.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/query.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/query_old.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simple_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-db.Po@am__quote@
 

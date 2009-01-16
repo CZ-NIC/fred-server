@@ -27,7 +27,6 @@
 
 #include <vector>
 #include <sstream>
-#include "base_exception.h"
 
 namespace Database {
 

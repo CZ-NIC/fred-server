@@ -11,7 +11,7 @@
 #include "exceptions.h"
 #include "documents.h"
 #include "mailer.h"
-#include "db/manager.h"
+#include "db/database.h"
 #include "model/model_filters.h"
 
 class DB;

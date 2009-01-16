@@ -10,7 +10,6 @@
 #include "register/register.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/conf.h"
-#include "db/manager.h"
 #include "model/model_filters.h"
 
 class FilterBaseImpl;

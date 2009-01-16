@@ -16,7 +16,6 @@
 #include "register/invoice.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/conf.h"
-#include "db/manager.h"
 #include "model/model_filters.h"
 
 #include "conf/manager.h"

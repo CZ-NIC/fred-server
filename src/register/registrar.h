@@ -8,7 +8,7 @@
 #include "object.h"
 #include "types.h"
 #include "exceptions.h" 
-#include "db/manager.h"
+#include "db/database.h"
 #include "model/model_filters.h"
 
 using namespace boost::posix_time;

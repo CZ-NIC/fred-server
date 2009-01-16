@@ -5,7 +5,7 @@
 #include "log/logger.h"
 #include "log/context.h"
 
-#include "manager.h"
+#include "database.h"
 #include "types/datetime.h"
 
 #include <boost/thread/thread.hpp>
@@ -31,7 +31,7 @@ int main() {
   using namespace Database;
 
   Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_CONSOLE); 
-  Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_DEBUG);
+  Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
 
   Database::ConnectionPool pool("host=localhost dbname=fred user=fred", 5, 20);
 
@@ -48,61 +48,26 @@ int main() {
 
   try {
     Connection *c = pool.acquire();
-    Result r = c->exec("SELECT roid, name, crdate FROM object_registry");
-
-    Connection *c2 = pool.acquire();
-    Result r2 = c2->exec("SELECT * FROM domain");
-    pool.release(c2);
-
-    
     {
       Transaction t(*c);
-      c->exec("SELECT * FROM files");
-      c->exec("SELECT * FROM contact");
-    }
-
-    pool.release(c);
-
-    std::string str = r[0][0];
-    std::cout << r[0][0] << "  " << str << std::endl;
+      Result r = c->exec("SELECT roid, name, crdate FROM object_registry");
   
-    return 0;
-
-    Result::Iterator it1 = r.begin();
-    Result::Iterator it2 = r.end();
-
-    for (; it1 != it2; ++it1) {
-      for (Row::size_type i = 0; i < (*it1).size(); ++i) {
-        std::cout << (*it1)[i] << "   ";
+      Connection *c2 = pool.acquire();
+      Result r2 = c2->exec("SELECT * FROM domain");
+      pool.release(c2);
+  
+      
+      {
+        Transaction t(*c);
+        c->exec("SELECT * FROM files");
+        c->exec("SELECT * FROM contact");
       }
-      std::cout << std::endl;
+  
+      
+      std::string str = r[0][0];
+      std::cout << r[0][0] << "  " << str << std::endl;
     }
-  
-  //  it1 = r.begin();
-  //  for (; it1 != it2; ++it1) {
-  //    for (Row::Iterator it3 = (*it1).begin(); it3 != (*it1).end(); ++it3) {
-  //      std::cout << *it3 << "   ";
-  //    }
-  //    std::cout << std::endl;
-  //  }
-  
-    it1 = r.begin();
-    for (; it1 != it2; ++it1) {
-      Row::Iterator col = (*it1).begin();
-
-      std::string roid = *col;
-      std::string name = *(++col);
-      DateTime crdate  = *(++col);
-      // std::string roid = row["roid"];
-      // std::string name = row["name"];
-      // DateTime crdate  = row["crdate"];
-  
-      std::cout << Value(roid) << std::endl;
-      // << "     " << name << "     " << crdate << std::endl;
-    }
-
-    //t.commit();
-    
+    pool.release(c);
   }
   catch (Database::Exception& ex) {
     std::cout << ex.what() << std::endl;

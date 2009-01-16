@@ -27,7 +27,7 @@
 #include "object_impl.h"
 #include "sql.h"
 #include "old_utils/dbsql.h"
-#include "db/manager.h"
+#include "db/database.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
 

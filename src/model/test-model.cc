@@ -11,7 +11,7 @@
 #include "settings.h"
 #include "keyset_filter.h"
 #include "model_filters.h"
-#include "db/manager.h"
+#include "db/database.h"
 #include "log/logger.h"
 
 using namespace Database;

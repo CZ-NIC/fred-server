@@ -8,7 +8,7 @@
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/string.hpp>
 
-#include "query.h"
+#include "query_old.h"
 #include "types/data_types.h"
 #include "sql_helper_objects.h"
 #include "sql_operators.h"

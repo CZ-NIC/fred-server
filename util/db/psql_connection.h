@@ -27,7 +27,7 @@
 
 #include <libpq-fe.h>
 #include "psql_result.h"
-#include "query.h"
+#include "statement.h"
 #include "db_exceptions.h"
 
 namespace Database {
@@ -85,16 +85,12 @@ public:
   }
 
 
-  virtual result_type exec(Query& _query) throw (ResultFailed) {
-    /* check if query is fully constructed */
-    if (!_query.initialized()) {
-      _query.make();
-    }
-    return exec(_query.str());
+  virtual inline result_type exec(Statement& _query) throw (ResultFailed) {
+    return exec(_query.toSql(boost::bind(&PSQLConnection::escape, this, _1)));
   }
   
 
-  virtual result_type exec(const std::string& _query) throw (ResultFailed) {
+  virtual inline result_type exec(const std::string& _query) throw (ResultFailed) {
     PGresult *tmp = PQexec(psql_conn_, _query.c_str());
 
     ExecStatusType status = PQresultStatus(tmp);
@@ -103,26 +99,37 @@ public:
     }
     else {
       PQclear(tmp);
-      throw ResultFailed(_query);
+      throw ResultFailed(_query + " (" + PQerrorMessage(psql_conn_) + ")");
     }
   }
 
 
   virtual void reset(const std::string _conn_info) {
-    ConnStatusType status = PQstatus(psql_conn_);
-    PGTransactionStatusType tstatus = PQtransactionStatus(psql_conn_);
-#ifdef HAVE_LOGGER
-    LOGGER(PACKAGE).debug(boost::format("connection status=%1%  transaction status=%2%")
-                                        % status
-                                        % tstatus);
-#endif
-    if (status != CONNECTION_OK || tstatus != PQTRANS_IDLE) {
-#ifdef HAVE_LOGGER
-    LOGGER(PACKAGE).debug("connection not ok or active transaction -- reseting connection");
-#endif
-      close();
-      open(_conn_info);
+    PQreset(psql_conn_);
+  }
+
+
+  virtual std::string escape(const std::string &_in) const {
+    std::string ret;
+    char *esc = new char [2*_in.size() + 1];
+    int err;
+
+    PQescapeStringConn(psql_conn_, esc, _in.c_str(), _in.size(), &err);
+    ret = esc;
+    delete [] esc;
+    
+    if (err) {
+      /* error */
+      LOGGER(PACKAGE).error(boost::format("error in escape function: %1%") % PQerrorMessage(psql_conn_));
     }
+
+    return ret; 
+  }
+
+
+  bool inTransaction() const {
+    PGTransactionStatusType ts = PQtransactionStatus(psql_conn_);
+    return ts == PQTRANS_INTRANS || ts == PQTRANS_INERROR;
   }
 };
 
@@ -145,18 +152,18 @@ public:
   }
 
 
-  std::string start() {
+  inline std::string start() {
     return "START TRANSACTION  ISOLATION LEVEL READ COMMITTED";
   }
 
 
-  Query rollback() {
-    return Query("ROLLBACK TRANSACTION");
+  inline std::string rollback() {
+    return "ROLLBACK TRANSACTION";
   }
   
 
-	Query commit() {
-    return Query("COMMIT TRANSACTION");
+	inline std::string commit() {
+    return "COMMIT TRANSACTION";
   }
 };
 

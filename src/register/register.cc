@@ -25,7 +25,7 @@
 #include "zone.h"
 #include "domain.h"
 #include "filter.h"
-#include "db/manager.h"
+#include "db/database.h"
 #include "log/logger.h"
 
 namespace Register {

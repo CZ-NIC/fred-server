@@ -33,16 +33,16 @@
 #include "epp_impl.h"
 
 #include "config.h"
+
 // database functions
 #include "old_utils/dbsql.h"
-#include "db/manager.h"
 
 // support function
 #include "old_utils/util.h"
 
 #include "action.h"    // code of the EPP operations
 #include "response.h"  // errors code
-#include "reason.h"  // reason messages code
+#include "reason.h"    // reason messages code
 
 // logger
 #include "old_utils/log.h"

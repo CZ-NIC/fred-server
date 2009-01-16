@@ -26,7 +26,6 @@
 #define SEQUENCE_H_
 
 #include <string>
-#include "query.h"
 #include "types/id.h"
 
 namespace Database {
@@ -52,9 +51,7 @@ public:
    * @return current sequence value
    */
   ID getCurrent() {
-    Query q;
-    q.buffer() << "SELECT currval('" << name_ << "')";
-    return execute_(q);
+    return execute_("SELECT currval('" + name_ + "')");
   }
   
 
@@ -62,13 +59,11 @@ public:
    * @return next sequence value
    */
   ID getNext() {
-    Query q;
-    q.buffer() << "SELECT nextval('" << name_ << "')";
-    return execute_(q);
+    return execute_("SELECT nextval('" + name_ + "')");
   }
   
 private:
-  ID execute_(Query& _query) {
+  ID execute_(const std::string& _query) {
     Result result = conn_.exec(_query);
     return (*(result.begin()))[0];
   }

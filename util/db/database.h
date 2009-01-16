@@ -26,21 +26,39 @@
 #define DATABASE_H_
 
 #include "connection.h"
-#include "result.h"
 #include "psql_connection.h"
-#include "db_exceptions.h"
+#include "manager.h"
+#include "manager_tss.h"
 
 namespace Database {
 
-/**
- * Definition for specific objects with PSQL driver
+
+/* ManagerBase (managers base class) is also a very simple manager 
+ * for backward compatibility (DEPRECATED) 
  */
-typedef Connection_<PSQLConnection> Connection;
-typedef Result_<PSQLResult> Result;
-typedef Transaction_<PSQLTransaction> Transaction;
-typedef Result::result_type::Row Row;
+typedef ManagerBase<PSQLConnection>                SimpleManager;
+
+/* default manager will be connection pooler */
+typedef ConnectionPoolManager<PSQLConnection>      ConnectionPool;
+typedef SimpleManager                              Manager;
+// typedef TSSManager<ConnectionPool>                 Manager;
+// typedef ConnectionPoolManager<PSQLConnection>      Manager;
+
+
+/**
+ * Definition for specific database objects with driver specified
+ * in manager above
+ */
+typedef Manager::connection_type        Connection;
+typedef Manager::transaction_type       Transaction;
+typedef Manager::result_type            Result;
+typedef Manager::row_type               Row;
+
 
 }
+
+#include "sequence.h"
+#include "query.h"
 
 #endif /*DATABASE_H_*/
 

@@ -3,7 +3,7 @@
 
 #include "common_impl.h"
 #include "types.h"
-#include "db/manager.h"
+#include "db/database.h"
 #include "model/model_filters.h"
 
 namespace Register {

@@ -3,7 +3,7 @@
 
 #include "object.h"
 #include "common_impl.h"
-#include "db/manager.h"
+#include "db/database.h"
 
 class DB;
 namespace Register {

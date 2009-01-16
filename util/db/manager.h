@@ -35,8 +35,8 @@
 #include <boost/format.hpp>
 
 
-#include "database.h"
-#include "sequence.h"
+#include "connection.h"
+#include "result.h"
 
 #include "config.h"
 
@@ -50,15 +50,19 @@ namespace Database {
  * \class ManagerBase
  * \brief Base class representing database manager
  *
- * ManagerBase object (which should be used) is defined in \file database.h
- * file.
+ * ManagerBase object with given connection driver specifies other types
+ * respectively. See \file database.h for details.
  *
  * This class can be subclassed to more specific Manager behaviour
  * i.e. for support connection pooling
  */
+template<class _ConnType>
 class ManagerBase {
 public:
-  typedef Connection connection_type;
+  typedef Connection_<_ConnType>                                    connection_type;
+  typedef Transaction_<typename connection_type::transaction_type>  transaction_type;
+  typedef Result_<typename connection_type::result_type>            result_type;
+  typedef typename result_type::Row                                 row_type;
 
   /**
    * Constuctors and destructor
@@ -82,10 +86,30 @@ public:
 
 
   /**
+   * Connection factory method
+   *
    * @return  connection
    */
   virtual connection_type* getConnection() {
+    return acquire();
+  }
+
+
+  virtual connection_type* acquire() {
     return new connection_type(conn_info_);
+  }
+
+
+  /**
+   * Simple connection releaser - delete it
+   *
+   * @param _conn  connection pointer
+   */
+  virtual void release(connection_type *_conn) {
+    if (_conn) {
+      delete _conn;
+      _conn = 0;
+    }
   }
 
 protected:
@@ -100,7 +124,16 @@ protected:
  *
  * Specialized database manager implementing connection pooling
  */
-class ConnectionPool : public ManagerBase {
+template<class _ConnType>
+class ConnectionPoolManager : public ManagerBase<_ConnType> {
+public:
+  typedef ManagerBase<_ConnType>           super;
+  typedef typename super::connection_type  connection_type;
+  typedef typename super::transaction_type transaction_type;
+  typedef typename super::result_type      result_type;
+  typedef typename super::row_type         row_type;
+
+
 protected:
   /**
    * internal data structure for storing information about connection
@@ -130,20 +163,20 @@ public:
   /**
    * constuctor and destructor
    */
-  ConnectionPool(const std::string &_conn_info,
-                 unsigned _init_conn = 0,
-                 unsigned _max_conn = 1) 
-               : ManagerBase(_conn_info),
-                 init_conn_(_init_conn),
-        				 max_conn_(_max_conn) {
+  ConnectionPoolManager(const std::string &_conn_info,
+                        unsigned _init_conn = 0,
+                        unsigned _max_conn = 1) 
+                      : ManagerBase<_ConnType>(_conn_info),
+                        init_conn_(_init_conn),
+                        max_conn_(_max_conn) {
     relax_(init_conn_);
   }
 
 
-  virtual ~ConnectionPool() {
+  virtual ~ConnectionPoolManager() {
     boost::mutex::scoped_lock scoped_lock(pool_lock_);
 
-    storage_type::iterator it = pool_.begin();
+    typename storage_type::iterator it = pool_.begin();
     for (; it != pool_.end(); ++it) {
       delete it->first;
     }
@@ -177,7 +210,7 @@ public:
       connection_type *conn = free_.front();
       free_.pop();
 
-      storage_type::iterator it = pool_.find(conn);
+      typename storage_type::iterator it = pool_.find(conn);
       if (it != pool_.end()) {
         it->second.used = true;
 #ifdef HAVE_LOGGER
@@ -197,7 +230,7 @@ public:
     else {
       /**
        * no connection available 
-       * should not happend - when connection is not available
+       * should not happen - when connection is not available
        * thread is sleeped until another released one and notify it
        */
       throw Exception("No free connection available!");
@@ -225,7 +258,7 @@ public:
     boost::mutex::scoped_lock scoped_lock(pool_lock_);
 
     /* find connection data */
-    storage_type::iterator it = pool_.find(_conn);
+    typename storage_type::iterator it = pool_.find(_conn);
     if (it == pool_.end()) {
       /**
        * connection is not in the pool
@@ -291,7 +324,7 @@ private:
                                           % _to);
 #endif
     if (_to < pool_.size()) {
-      /* TODO: */
+      /* TODO: relax down pool (base on what? some usage statistic?) :) */
 #ifdef HAVE_LOGGER
       if (_to != pool_.size()) {
         LOGGER(PACKAGE).warning("can't relax pool size down - not enough free connections");
@@ -302,10 +335,10 @@ private:
 
     for (unsigned i = pool_.size(); i < _to; ++i) {
       /* create new connection and its info data */
-      connection_type *conn = new connection_type(conn_info_, false);
+      connection_type *conn = new connection_type(this->conn_info_, false);
       conn_data_ cd(i, false);
       /* store it in pool and enqueue into free */
-      pool_.insert(std::make_pair<connection_type*, conn_data_>(conn, cd));
+      pool_.insert(std::make_pair(conn, cd));
       free_.push(conn);
 #ifdef HAVE_LOGGER
       LOGGER(PACKAGE).debug(boost::format("added new connection id=%1%") % i);
@@ -325,7 +358,7 @@ private:
     unsigned used = 0;
     unsigned free = 0;
 
-    storage_type::const_iterator it = pool_.begin();
+    typename storage_type::const_iterator it = pool_.begin();
     for (; it != pool_.end(); ++it) {
       if (it->second.used == true)
         used += 1;
@@ -347,11 +380,8 @@ private:
 
 
 
-/* ManagerBase (managers base class) is also a very simple manager */
-typedef ManagerBase     SimpleManager;
-
-/* Default manager */
-typedef SimpleManager   Manager;
-
 }
+
+
 #endif /*DB_MANAGER_H_*/
+

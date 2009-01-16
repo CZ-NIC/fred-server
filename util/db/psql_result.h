@@ -29,10 +29,12 @@
 #include <cstdlib>
 #include <string>
 #include <iterator>
+#include <boost/shared_ptr.hpp>
 
 #include "row.h"
 #include "value.h"
 #include "db_exceptions.h"
+
 
 namespace Database {
 
@@ -43,8 +45,8 @@ namespace Database {
  */
 class PSQLResult {
 protected:
-  PGresult         *psql_result_; /**< wrapped result structure from lipq library */
-  mutable bool     clear_on_destruct_;
+  boost::shared_ptr<PGresult>  psql_result_; /**< wrapped result structure from lipq library */
+
 
 public:
   typedef unsigned                     size_type;
@@ -53,39 +55,32 @@ public:
 
   friend class Row_<PSQLResult, value_type>;
   friend class Row_<PSQLResult, value_type>::Iterator;
+  friend class Result_<PSQLResult>;
 
 
   /**
    * Constructors and destructor
    */
-  PSQLResult() : psql_result_(0), clear_on_destruct_(true) {
+  PSQLResult() {
   }
 
 
-  PSQLResult(PGresult *_psql_result) : psql_result_(_psql_result), clear_on_destruct_(true) {
+  PSQLResult(PGresult *_psql_result) {
+    psql_result_.reset(_psql_result, PQclear);
   }
 
 
   PSQLResult(const PSQLResult &_other) {
     psql_result_ = _other.psql_result_;
-    clear_on_destruct_ = true;
-
-    _other.clear_on_destruct_ = false;
   }
 
 
   virtual ~PSQLResult() {
-    if (clear_on_destruct_)
-      clear();
+    clear();
   }
 
 
   virtual void clear() {
-    if (psql_result_) {
-      PQclear(psql_result_);
-      psql_result_ = 0;
-    }
-    // std::cout << "CALL PSQLResult destructor" << std::endl;
   }
 
   /**
@@ -93,7 +88,7 @@ public:
    */
 
   size_type size() const {
-    return PQntuples(psql_result_);
+    return PQntuples(psql_result_.get());
   }
 
   /**
@@ -179,7 +174,7 @@ protected:
    * @return number of columns
    */
   size_type cols_() const {
-    return PQnfields(psql_result_);
+    return PQnfields(psql_result_.get());
   }
 
 
@@ -187,7 +182,7 @@ protected:
    * @return number of rows
    */
   size_type rows_() const {
-    return PQntuples(psql_result_);
+    return PQntuples(psql_result_.get());
   }
 
 
@@ -203,7 +198,7 @@ protected:
     if (_c >= cols_()) {
       throw OutOfRange(0, cols_(), _c);
     }
-    return PQgetvalue(psql_result_, _r, _c);
+    return PQgetvalue(psql_result_.get(), _r, _c);
   }
 
   /**
@@ -212,7 +207,7 @@ protected:
    * @return    value from result at position [_r, _c] 
    */
   std::string value_(size_type _r, const std::string _c) const throw(NoSuchField) {
-    int field = PQfnumber(psql_result_, _c.c_str());
+    int field = PQfnumber(psql_result_.get(), _c.c_str());
     if (field == -1) {
       throw NoSuchField(_c);
     }

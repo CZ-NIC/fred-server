@@ -26,7 +26,6 @@
 #define RESULT_H_
 
 #include <string>
-#include "base_exception.h"
 
 #include "config.h"
 

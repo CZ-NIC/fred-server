@@ -24,7 +24,7 @@
 #include <boost/regex.hpp>
 #include <vector>
 #include "old_utils/log.h"
-#include "db/manager.h"
+#include "db/database.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
 

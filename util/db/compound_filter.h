@@ -16,7 +16,7 @@
 
 #include "filter.h"
 #include "simple_filter.h"
-#include "query.h"
+#include "query_old.h"
 #include "types/data_types.h"
 #include "sql_helper_objects.h"
 #include "sql_operators.h"

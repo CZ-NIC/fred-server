@@ -7,7 +7,7 @@
 #include <boost/serialization/version.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include "db/query.h"
+#include "db/query_old.h"
 #include "db/simple_filter.h"
 #include "db/simple_filters.h"
 #include "db/compound_filter.h"

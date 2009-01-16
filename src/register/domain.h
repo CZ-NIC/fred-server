@@ -8,7 +8,7 @@
 #include "zone.h"
 #include "object.h"
 #include "exceptions.h"
-#include "db/manager.h"
+#include "db/database.h"
 #include "model/model_filters.h"
 
 #include "settings.h"
