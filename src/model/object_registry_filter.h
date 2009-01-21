@@ -5,7 +5,7 @@
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/version.hpp>
 
-#include "db/base_filters.h"
+#include "db/query/base_filters.h"
 #include "registrar_filter.h"
 #include "object_state_filter.h"
 

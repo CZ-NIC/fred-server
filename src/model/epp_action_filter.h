@@ -1,7 +1,7 @@
 #ifndef EPP_ACTION_FILTER_H_
 #define EPP_ACTION_FILTER_H_
 
-#include "db/base_filters.h"
+#include "db/query/base_filters.h"
 #include "epp_session_filter.h"
 #include "object_filter.h"
 

@@ -1,7 +1,7 @@
 #ifndef INVOICE_FILTER_H_
 #define INVOICE_FILTER_H_
 
-#include "db/base_filters.h"
+#include "db/query/base_filters.h"
 #include "object_filter.h"
 #include "registrar_filter.h"
 #include "file_filter.h"

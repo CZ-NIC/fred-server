@@ -1,7 +1,7 @@
 #ifndef PUBLIC_REQUEST_FILTER_H_
 #define PUBLIC_REQUEST_FILTER_H_
 
-#include "db/base_filters.h"
+#include "db/query/base_filters.h"
 #include "epp_action_filter.h"
 #include "object_filter.h"
 

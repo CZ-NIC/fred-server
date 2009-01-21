@@ -27,7 +27,7 @@
 
 #include "connection.h"
 #include "connection_factory.h"
-#include "psql_connection.h"
+#include "psql/psql_connection.h"
 #include "manager.h"
 #include "manager_tss.h"
 
@@ -61,7 +61,7 @@ typedef Manager::row_type               Row;
 }
 
 #include "sequence.h"
-#include "query.h"
+#include "query/query.h"
 
 #endif /*DATABASE_H_*/
 

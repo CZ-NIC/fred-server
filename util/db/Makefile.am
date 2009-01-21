@@ -4,16 +4,33 @@ AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
 AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) ${BOOST_CPPFLAGS} $(AM_CFLAGS)        \
               -I$(top_srcdir)/util -I$(top_srcdir) 
 
-libdb_a_SOURCES = query_old.cc                                           \
-                  filter.cc compound_filter.cc simple_filter.cc          \
-                  base_filters.h                                         \
-									connection_factory.h transaction.h                     \
-                  connection.h result.h row.h value.h                    \
-                  psql_connection.h psql_result.h                        \
-                  query.h query_old.h sequence.h manager.h manager_tss.h \
-                  filter.h compound_filter.h simple_filter.h             \
-                  simple_filters.h sql_helper_objects.h filter_it.h      \
-                  sql_operators.h db_exceptions.h database.h
+libdb_a_SOURCES = query/query_old.cc             \
+                  query/filter.cc                \
+									query/compound_filter.cc       \
+									query/simple_filter.cc         \
+                  query/base_filters.h           \
+									query/query.h                  \
+									query/query_old.h              \
+								  query/filter.h                 \
+									query/compound_filter.h        \
+									query/simple_filter.h          \
+                  query/simple_filters.h         \
+									query/sql_helper_objects.h     \
+									query/filter_it.h              \
+                  query/sql_operators.h          \
+									psql/psql_connection.h         \
+									psql/psql_result.h             \
+									connection_factory.h           \
+									transaction.h                  \
+                  connection.h                   \
+									result.h                       \
+									row.h                          \
+									value.h                        \
+                  sequence.h                     \
+									manager.h                      \
+									manager_tss.h                  \
+                  db_exceptions.h                \
+									database.h
 
 noinst_PROGRAMS = test-db
 test_db_SOURCES  = test-db.cc
