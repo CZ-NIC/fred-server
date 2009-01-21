@@ -25,6 +25,7 @@
 #include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
 #include "register/register.h"
+#include "baseclient.h"
 
 #define NSSET_SHOW_OPTS_NAME        "nsset_show_opts"
 #define NSSET_SHOW_OPTS_NAME_DESC   "show all nsset command line options parameter"
@@ -40,13 +41,10 @@
 
 namespace Admin {
 
-class NssetClient {
+class NssetClient : public BaseClient {
 private:
-    std::string m_connstring;
-    std::string m_nsAddr;
     CORBA::Long m_clientId;
     DB m_db;
-    Database::Manager *m_dbman;
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 

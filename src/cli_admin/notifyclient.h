@@ -42,16 +42,14 @@
 #include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
 #include "register/register.h"
+#include "baseclient.h"
 
 namespace Admin {
 
-class NotifyClient {
+class NotifyClient : public BaseClient {
 private:
-    std::string m_connstring;
-    std::string m_nsAddr;
     CORBA::Long m_clientId;
     DB m_db;
-    Database::Manager *m_dbman;
     boost::program_options::variables_map m_varMap;
     ccReg::EPP_var m_epp;
 

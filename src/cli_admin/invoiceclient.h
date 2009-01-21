@@ -25,6 +25,7 @@
 #include "corba/admin/admin_impl.h"
 #include "register/register.h"
 #include "old_utils/dbsql.h"
+#include "baseclient.h"
 
 
 #define INVOICE_SHOW_OPTS_NAME          "invoice_show_opts"
@@ -71,13 +72,10 @@
 
 namespace Admin {
 
-class InvoiceClient {
+class InvoiceClient : public BaseClient {
 private:
-    std::string m_connstring;
-    std::string m_nsAddr;
     CORBA::Long m_clientId;
     DB m_db;
-    Database::Manager *m_dbman;
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 

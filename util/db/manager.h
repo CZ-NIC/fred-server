@@ -18,25 +18,18 @@
 
 /**
  *  @file manager.h
- *  Manager for database connections.
+ *  Manager_ for database connections.
  */
 
 
-#ifndef DB_MANAGER_H_
-#define DB_MANAGER_H_
+#ifndef DATABASE_MANAGER_H_
+#define DATABASE_MANAGER_H_
 
 #include <string>
-#include <queue>
-#include <map>
-#include <algorithm>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
-#include <boost/format.hpp>
 
-
-#include "connection.h"
 #include "result.h"
+#include "connection.h"
+#include "transaction.h"
 
 #include "config.h"
 
@@ -47,341 +40,64 @@
 namespace Database {
 
 /**
- * \class ManagerBase
- * \brief Base class representing database manager
+ * \class Manager_
+ * \brief Simple database manager
  *
- * ManagerBase object with given connection driver specifies other types
- * respectively. See \file database.h for details.
- *
- * This class can be subclassed to more specific Manager behaviour
- * i.e. for support connection pooling
+ * This object populated with specific connection factory can be used as 
+ * connection manager
  */
-template<class _ConnType>
-class ManagerBase {
+template<class connection_factory>
+class Manager_ {
 public:
-  typedef Connection_<_ConnType>                                    connection_type;
-  typedef Transaction_<typename connection_type::transaction_type>  transaction_type;
-  typedef Result_<typename connection_type::result_type>            result_type;
-  typedef typename result_type::Row                                 row_type;
+  typedef typename connection_factory::connection_driver                        connection_driver;
+  typedef Connection_<connection_driver, Manager_>                              connection_type;
+  typedef Transaction_<typename connection_driver::transaction_type, Manager_>  transaction_type;
+  typedef Result_<typename connection_driver::result_type>                      result_type;
+  typedef typename result_type::Row                                             row_type;
 
   /**
    * Constuctors and destructor
    */
-  ManagerBase(const std::string& _conn_info) : conn_info_(_conn_info) {
-#ifdef HAVE_LOGGER
-    TRACE(boost::format("<CALL> Database::ManagerBase::ManagerBase('%1%')") % conn_info_);
-#endif
+  Manager_(connection_factory *_conn_factory) : conn_factory_(_conn_factory) {
   }
 
-
-  ManagerBase(const char* _conn_info) : conn_info_(_conn_info) {
-  }
-
-
-  virtual ~ManagerBase() {
-#ifdef HAVE_LOGGER
-    TRACE("<CALL> Database::ManagerBase::~ManagerBase()");
-#endif
+  virtual ~Manager_() {
+    if (conn_factory_) {
+      delete conn_factory_;
+    }
   }
 
 
   /**
-   * Connection factory method
+   * Connection factory methods
    *
-   * @return  connection
+   * @return  connection pointer
+   *          TODO: this is for bacward compatibility with fred server
+   *                it should return automanaged connection
    */
   virtual connection_type* getConnection() {
     return acquire();
-  }
-
-
-  virtual connection_type* acquire() {
-    return new connection_type(conn_info_);
-  }
-
-
-  /**
-   * Simple connection releaser - delete it
-   *
-   * @param _conn  connection pointer
-   */
-  virtual void release(connection_type *_conn) {
-    if (_conn) {
-      delete _conn;
-      _conn = 0;
-    }
-  }
-
-protected:
-  std::string conn_info_; /**< connection string (host, database name, user, password ...) */
-};
-
-
-
-/**
- * \class Pool
- * \brief Pool of connections
- *
- * Specialized database manager implementing connection pooling
- */
-template<class _ConnType>
-class ConnectionPoolManager : public ManagerBase<_ConnType> {
-public:
-  typedef ManagerBase<_ConnType>           super;
-  typedef typename super::connection_type  connection_type;
-  typedef typename super::transaction_type transaction_type;
-  typedef typename super::result_type      result_type;
-  typedef typename super::row_type         row_type;
-
-
-protected:
-  /**
-   * internal data structure for storing information about connection
-   */
-  struct conn_data_ {
-    conn_data_(unsigned _id, bool _used) :
-               id(_id), used(_used) {
-    }
-
-    unsigned         id;     /**< connection id */
-    bool             used;   /**< flag if connection is used or not */
-  };
-
-  typedef std::map<connection_type*, conn_data_> storage_type;
-  typedef std::queue<connection_type*>           queue_type;
-
-  unsigned     init_conn_;   /**< connections established at init */
-  unsigned     max_conn_;    /**< maximum number of connection */
-
-  storage_type             pool_;        /**< connection pool (conn and info data) */
-  queue_type               free_;        /**< free conns for quick acces */
-  mutable boost::mutex     pool_lock_;   /**< thread safety */
-  mutable boost::condition has_free_;    /**< wait condition when no connection available */
-
-
-public:
-  /**
-   * constuctor and destructor
-   */
-  ConnectionPoolManager(const std::string &_conn_info,
-                        unsigned _init_conn = 0,
-                        unsigned _max_conn = 1) 
-                      : ManagerBase<_ConnType>(_conn_info),
-                        init_conn_(_init_conn),
-                        max_conn_(_max_conn) {
-    relax_(init_conn_);
-  }
-
-
-  virtual ~ConnectionPoolManager() {
-    boost::mutex::scoped_lock scoped_lock(pool_lock_);
-
-    typename storage_type::iterator it = pool_.begin();
-    for (; it != pool_.end(); ++it) {
-      delete it->first;
-    }
-  }
-
-
-  /**
-   * get connection from pool
-   *
-   * @return  connection
-   */
-  virtual connection_type* acquire() {
-    boost::mutex::scoped_lock scoped_lock(pool_lock_);
-
-    /**
-     * if no connection is free and pool has enough capacity
-     * we will relax pool size
-     */
-    if (!free_.size() && pool_.size() < max_conn_) {
-      relax_(pool_.size() + std::min<unsigned>((unsigned)5, max_conn_ - pool_.size()));
-    }
-
-    while (!free_.size()) {
-#ifdef HAVE_LOGGER
-      LOGGER(PACKAGE).debug("waiting for free connection...");
-#endif
-      has_free_.wait(scoped_lock);
-    }
-
-    if (free_.size()) {
-      connection_type *conn = free_.front();
-      free_.pop();
-
-      typename storage_type::iterator it = pool_.find(conn);
-      if (it != pool_.end()) {
-        it->second.used = true;
-#ifdef HAVE_LOGGER
-        LOGGER(PACKAGE).debug(boost::format("acquired connection id=%1%") % it->second.id);
-        logStatus_();
-#endif
-        return it->first;
-      }
-      else {
-        /**
-         * free connection queue and storage map is not synchronized?!
-         * should not happen!
-         */
-        throw Exception("Oops! Bug in connection pool management!");
-      }
-    }
-    else {
-      /**
-       * no connection available 
-       * should not happen - when connection is not available
-       * thread is sleeped until another released one and notify it
-       */
-      throw Exception("No free connection available!");
-    }
-    
-  }
-
-
-  /**
-   * overriden method from Database::Manager for getting connection
-   * see above
-   */
-  virtual connection_type* getConnection() {
-    return acquire();
-  }
-
-
-  /**
-   * release connection back to pool; there can't be any transaction
-   * active on the connection!
-   *
-   * @param _conn  connection acquired from this pool
-   */
-  virtual void release(connection_type *_conn) {
-    boost::mutex::scoped_lock scoped_lock(pool_lock_);
-
-    /* find connection data */
-    typename storage_type::iterator it = pool_.find(_conn);
-    if (it == pool_.end()) {
-      /**
-       * connection is not in the pool
-       * should not happen!
-       */
-#ifdef HAVE_LOGGER
-      LOGGER(PACKAGE).warning("connection to release is not in the pool!");
-#endif
-      return;
-    }
-
-    if (it->second.used == false) {
-      /**
-       * Trying to release not used connection
-       * should not happen!
-       */
-#ifdef HAVE_LOGGER
-      LOGGER(PACKAGE).warning(boost::format("try to release unused connection id=%1%!?") % it->second.id);
-#endif
-      return;
-    }
-    else {
-      /* flag and reset released connection */
-      it->second.used = false;
-      _conn->reset();
-      free_.push(_conn);
-#ifdef HAVE_LOGGER
-      LOGGER(PACKAGE).debug(boost::format("released connection id=%1%") % it->second.id);
-      logStatus_();
-#endif
-      has_free_.notify_one();
-    }
   }
 
   
-  /**
-   * thread safe usage of internal method
-   *
-   * @return  string representation of 
-   *          actual state of pool (size, used, free)
-   */
-  virtual std::string status() const {
-    boost::mutex::scoped_lock scoped_lock(pool_lock_);
-    std::string ret = status_();
-    return ret;
+  virtual connection_type* acquire() {
+    /* get the connection string from configured factory to support
+     * lazy connection opening 
+     *
+     * TODO: use connection factory acquire() method and pass manager pointer
+     *       for specific factory destruct callback
+     * */
+    return new connection_type(conn_factory_->getConnectionString()); 
   }
 
 
-private:
-  /**
-   * internal method for relaxing pool size up and down
-   * for downsize there should be enough of free connections
-   * for upsize actual pool size should be lesser then maximum connection allowed
-   *
-   * should be called when pool lock is acquired!
-   *
-   * @param  _to  design number of connection in pool
-   */
-  virtual void relax_(unsigned _to) {
-#ifdef HAVE_LOGGER
-      LOGGER(PACKAGE).debug(boost::format("relaxing pool size %1% --> %2%") 
-                                          % pool_.size()
-                                          % _to);
-#endif
-    if (_to < pool_.size()) {
-      /* TODO: relax down pool (base on what? some usage statistic?) :) */
-#ifdef HAVE_LOGGER
-      if (_to != pool_.size()) {
-        LOGGER(PACKAGE).warning("can't relax pool size down - not enough free connections");
-      }
-#endif
-      return;
-    }
-
-    for (unsigned i = pool_.size(); i < _to; ++i) {
-      /* create new connection and its info data */
-      connection_type *conn = new connection_type(this->conn_info_, false);
-      conn_data_ cd(i, false);
-      /* store it in pool and enqueue into free */
-      pool_.insert(std::make_pair(conn, cd));
-      free_.push(conn);
-#ifdef HAVE_LOGGER
-      LOGGER(PACKAGE).debug(boost::format("added new connection id=%1%") % i);
-#endif
-    }
-  }
-
-
-  /**
-   * internal method
-   * should be called when pool lock is acquired!
-   * 
-   * @param  _to  design number of connection in pool
-   */
-  std::string status_() const {
-    unsigned total = pool_.size();
-    unsigned used = 0;
-    unsigned free = 0;
-
-    typename storage_type::const_iterator it = pool_.begin();
-    for (; it != pool_.end(); ++it) {
-      if (it->second.used == true)
-        used += 1;
-      else
-        free += 1;
-    }
-
-    return str(boost::format("connection pool summary: "
-                             "total=%1% (used=%2% free=%3%)")
-                             % total % used % free);
-  }
-
-#ifdef HAVE_LOGGER
-  inline void logStatus_() const {
-    LOGGER(PACKAGE).info(status_());
-  }
-#endif
+protected:
+  connection_factory *conn_factory_;
 };
-
 
 
 }
 
 
-#endif /*DB_MANAGER_H_*/
+#endif /*DATABASE_MANAGER_H_*/
 

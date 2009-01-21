@@ -5622,7 +5622,7 @@ ccReg_EPP_i::KeySetInfo(
     keyFilter->addHandle().setValue(std::string(handle));
     keyFilter->addDeleteTime().setNULL();
     unionFilter.addFilter(keyFilter);
-    Database::Manager dbman(database);
+    Database::Manager dbman(new Database::ConnectionFactory(database));
     klist->reload(unionFilter, &dbman);
 
 
@@ -7240,7 +7240,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
 
     EPPAction action(this, clientID, act, clTRID, XML, &paction);
 
-    Database::Manager db(database);
+    Database::Manager db(new Database::ConnectionFactory(database));
     std::auto_ptr<Database::Connection> conn;
     try { conn.reset(db.getConnection()); } catch (...) {}
 

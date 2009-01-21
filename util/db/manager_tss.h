@@ -17,46 +17,40 @@
  */
 
 /**
- *  @file connection_tss.h
+ *  @file manager_tss.h
  *  \brief Storing Connection as a thread specific data
  */
 
-#ifndef MANAGER_TSS_H_
-#define MANAGER_TSS_H_
+#ifndef DATABASE_MANAGER_TSS_H_
+#define DATABASE_MANAGER_TSS_H_
 
 #include <string>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/tss.hpp>
 
-#include "singleton.h"
-#include "connection.h"
 #include "result.h"
+#include "connection.h"
+#include "transaction.h"
 
 
 namespace Database {
 
 
-/* forward declaration */
-template<class _Type, class _ConnFactory>
-class TSSTransaction_; 
-
-
-
 /**
- * \class TSSManager
+ * \class TSSManager_
  * \brief Database connection manager for storing and retrieving connections
  *        from thread local data
  *
- * @param _ConnFactory  connection factory class
+ * @param connection_factory  connection factory class
  */
-template<class _ConnFactory>
-class TSSManager {
+template<class connection_factory>
+class TSSManager_ {
 public:
-  typedef _ConnFactory                                                                          connection_factory_type;
-  typedef typename connection_factory_type::connection_type                                     connection_type;
-  typedef TSSTransaction_<typename connection_type::transaction_type, connection_factory_type>  transaction_type;
-  typedef typename connection_factory_type::result_type                                         result_type;
-  typedef typename connection_factory_type::row_type                                            row_type;
+  typedef typename connection_factory::connection_driver                               connection_driver;
+  typedef TSSConnection_<connection_driver, TSSManager_>                               connection_type;
+  typedef Transaction_<typename connection_driver::transaction_type, TSSManager_>      transaction_type;
+  typedef Result_<typename connection_driver::result_type>                             result_type;
+  typedef typename result_type::Row                                                    row_type;
 
 
   /**
@@ -64,7 +58,7 @@ public:
    *
    * @param _conn_factory  factory to be assigned to manager; it has to be already initialized
    */
-  static void init(connection_factory_type *_conn_factory) {
+  static void init(connection_factory *_conn_factory) {
     conn_factory_ = _conn_factory;
     init_ = true;
   }
@@ -74,14 +68,14 @@ public:
    *
    * @return  database connection handler pointer
    */
-  static connection_type* acquire() {
+  static connection_type acquire() {
     PerThreadData_ *tmp = data_.get();
     if (tmp) {
-      return getConnection_(tmp);
+      return connection_type(getConnection_(tmp));
     }
     else {
       data_.reset(new PerThreadData_());
-      return getConnection_(data_.get());
+      return connection_type(getConnection_(data_.get()));
     }
   }
 
@@ -89,21 +83,25 @@ public:
   /**
    * Explicit release database connection for actual thread
    * back to pool
+   *
+   * TODO: release policy - 1. do nothing (connection stay in thread until it exits)
+   *                        2. factory release (i.e. to pool)
    */
   static void release() {
-    PerThreadData_ *tmp = data_.get();
-    if (tmp && tmp->conn) {
-        conn_factory_->release(tmp->conn);
-    }
+    // PerThreadData_ *tmp = data_.get();
+    // if (tmp && tmp->conn) {
+    //   conn_factory_->release(tmp->conn);
+    //   tmp->conn = 0;
+    // }
   }
 
 
 private:
-  TSSManager() {
+  TSSManager_() {
   }
 
 
-  ~TSSManager() {
+  ~TSSManager_() {
   }
 
 
@@ -121,14 +119,14 @@ private:
       }
     }
 
-    connection_type *conn;
+    connection_driver *conn;
   };
 
 
   /**
    * Helper method for acquiring database connection
    */
-  static connection_type* getConnection_(PerThreadData_ *_data) {
+  static connection_driver* getConnection_(PerThreadData_ *_data) {
     if (!_data->conn) {
       _data->conn = conn_factory_->acquire();
     }
@@ -136,43 +134,27 @@ private:
   }
   
 
-  static connection_factory_type                    *conn_factory_; /**< connection factory */
+  static connection_factory                         *conn_factory_; /**< connection factory */
   static boost::thread_specific_ptr<PerThreadData_>  data_;         /**< data per thread structure */
   static bool                                        init_;         /**< data ready initialized internal flag */
 };
 
-template<class _ConnFactory> _ConnFactory* TSSManager<_ConnFactory>::conn_factory_(0);
-template<class _ConnFactory> boost::thread_specific_ptr<typename TSSManager<_ConnFactory>::PerThreadData_> TSSManager<_ConnFactory>::data_;
-template<class _ConnFactory> bool TSSManager<_ConnFactory>::init_ = false;
-
-
 
 /**
- * \class TSSTransaction
- * \brief Transaction extension for using TSSManager 
- *        - default parameter assigned (connection retrived by TSSManager)
- *
- * @param _Type         transaction type - driver
- * @param _ConnFactory  connection factory type
+ * static members initialization
  */
-template<class _Type, class _ConnFactory>
-class TSSTransaction_ : public Transaction_<_Type> {
-public:
-  typedef TSSManager<_ConnFactory>          manager_type;
-  typedef Transaction_<_Type>               super;
-  typedef typename super::transaction_type  transaction_type;
-  typedef typename super::connection_type   connection_type;
-  typedef typename super::result_type       result_type;
+template<class connection_factory> connection_factory* 
+  TSSManager_<connection_factory>::conn_factory_(0);
 
-  /**
-   * Constructor with default parameter
-   */
-  TSSTransaction_(Connection_<connection_type> &_conn = *(manager_type::acquire()))
-                : super(_conn) { }
-};
+template<class connection_factory> boost::thread_specific_ptr<typename TSSManager_<connection_factory>::PerThreadData_>
+  TSSManager_<connection_factory>::data_;
+
+template<class connection_factory> bool 
+  TSSManager_<connection_factory>::init_ = false;
+
 
 }
 
 
-#endif /*MANAGER_TSS_H_*/
+#endif /*DATABASE_MANAGER_TSS_H_*/
 

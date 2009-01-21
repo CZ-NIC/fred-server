@@ -29,4 +29,4 @@ fred_admin_SOURCES = simple.cc simple.h commonclient.cc commonclient.h \
  pollclient.cc pollclient.h registrarclient.cc registrarclient.h \
  notifyclient.cc notifyclient.h objectclient.cc objectclient.h \
  infobuffclient.cc infobuffclient.h fileclient.cc fileclient.h mailclient.cc \
- mailclient.h publicreqclient.cc publicreqclient.h
+ mailclient.h publicreqclient.cc publicreqclient.h baseclient.h

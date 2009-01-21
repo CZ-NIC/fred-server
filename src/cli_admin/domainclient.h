@@ -24,6 +24,7 @@
 
 #include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
+#include "baseclient.h"
 
 #define DOMAIN_SHOW_OPTS_NAME           "domain_show_opts"
 #define DOMAIN_SHOW_OPTS_NAME_DESC      "show all domain command line options"
@@ -63,13 +64,10 @@
 
 namespace Admin {
 
-class DomainClient {
+class DomainClient : public BaseClient {
 private:
-    std::string m_connstring;
-    std::string m_nsAddr;
     CORBA::Long m_clientId;
     DB m_db;
-    Database::Manager *m_dbman;
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 

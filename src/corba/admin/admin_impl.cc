@@ -46,7 +46,7 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
                              NameService *_ns,
                              Config::Conf& _cfg,
                              bool _session_garbage) throw (DB_CONNECT_FAILED) :
-  m_connection_string(_database), ns(_ns), cfg(_cfg), m_db_manager(m_connection_string) {
+  m_connection_string(_database), ns(_ns), cfg(_cfg), m_db_manager(new ConnectionFactory(m_connection_string)) {
 
   /* HACK: to recognize ADIFD and PIFD until separation of objects */
   if (_session_garbage) {

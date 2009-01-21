@@ -244,6 +244,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) ${BOOST_CPPFLAGS} $(AM_CFLAGS)        \
 libdb_a_SOURCES = query_old.cc                                           \
                   filter.cc compound_filter.cc simple_filter.cc          \
                   base_filters.h                                         \
+									connection_factory.h transaction.h                     \
                   connection.h result.h row.h value.h                    \
                   psql_connection.h psql_result.h                        \
                   query.h query_old.h sequence.h manager.h manager_tss.h \

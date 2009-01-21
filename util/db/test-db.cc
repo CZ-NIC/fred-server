@@ -13,16 +13,20 @@
 
 struct TestPooler {
 public:
-  TestPooler(Database::ConnectionPool *p, int i) : pool_(p), id_(i) { }
+  TestPooler(Database::Manager *p, int i) : pool_(p), id_(i) { }
   void operator()() {
     Logging::Context ctx(str(boost::format("threadid-%1%") % id_));
 
-    Database::Connection *c = pool_->acquire();
+    try {
+    std::auto_ptr<Database::Connection> c(pool_->acquire());
     c->exec("SELECT * FROM object_registry");
-    pool_->release(c);
+    }
+    catch(...) {
+      LOGGER(PACKAGE).error("no free connection");
+    }
   }
 
-  Database::ConnectionPool *pool_;
+  Database::Manager *pool_;
   int id_;
 };
 
@@ -33,48 +37,49 @@ int main() {
   Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_CONSOLE); 
   Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
 
-  Database::ConnectionPool pool("host=localhost dbname=fred user=fred", 5, 20);
+  Database::Manager *pool = new Database::Manager(new ConnectionFactory("host=localhost dbname=fred user=fred"));
 
   boost::thread_group tg;
-  for (unsigned i = 0; i < 200; ++i) {
-    TestPooler tp(&pool, i);
+  for (unsigned i = 0; i < 50; ++i) {
+    TestPooler tp(pool, i);
     tg.create_thread(tp);    
   }
   tg.join_all();
 
-  //return 0;
+  delete pool;
+
+  return 0;
 
 
 
-  try {
-    Connection *c = pool.acquire();
-    {
-      Transaction t(*c);
-      Result r = c->exec("SELECT roid, name, crdate FROM object_registry");
-  
-      Connection *c2 = pool.acquire();
-      Result r2 = c2->exec("SELECT * FROM domain");
-      pool.release(c2);
-  
-      
-      {
-        Transaction t(*c);
-        c->exec("SELECT * FROM files");
-        c->exec("SELECT * FROM contact");
-      }
-  
-      
-      std::string str = r[0][0];
-      std::cout << r[0][0] << "  " << str << std::endl;
-    }
-    pool.release(c);
-  }
-  catch (Database::Exception& ex) {
-    std::cout << ex.what() << std::endl;
-  }
-  catch (...) {
-    std::cout << "ERROR" << std::endl;
-  }
+//  try {
+//    Connection *c = pool.acquire();
+//    {
+//      Transaction t(*c);
+//      Result r = c->exec("SELECT roid, name, crdate FROM object_registry");
+//  
+//      Connection *c2 = pool.acquire();
+//      Result r2 = c2->exec("SELECT * FROM domain");
+//      delete c2; 
+//      
+//      {
+//        Transaction t(*c);
+//        c->exec("SELECT * FROM files");
+//        c->exec("SELECT * FROM contact");
+//      }
+//  
+//      
+//      std::string str = r[0][0];
+//      std::cout << r[0][0] << "  " << str << std::endl;
+//    }
+//    delete c;
+//  }
+//  catch (Database::Exception& ex) {
+//    std::cout << ex.what() << std::endl;
+//  }
+//  catch (...) {
+//    std::cout << "ERROR" << std::endl;
+//  }
  
 //  for (; it1 != r.end(); ++it1) {
 //    Value o_roid = (*it1)["roid"];

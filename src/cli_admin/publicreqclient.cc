@@ -23,8 +23,7 @@
 
 namespace Admin {
 
-PublicRequestClient::PublicRequestClient():
-    m_connstring(""), m_nsAddr("")
+PublicRequestClient::PublicRequestClient()
 {
     m_options = new boost::program_options::options_description(
             "Public request related options");
@@ -53,10 +52,8 @@ PublicRequestClient::PublicRequestClient():
 }
 PublicRequestClient::PublicRequestClient(
         std::string connstring,
-        std::string nsAddr):
-    m_connstring(connstring), m_nsAddr(nsAddr)
+        std::string nsAddr) : BaseClient(connstring, nsAddr)
 {
-    m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
     m_options = NULL;
     m_optionsInvis = NULL;
@@ -64,6 +61,8 @@ PublicRequestClient::PublicRequestClient(
 
 PublicRequestClient::~PublicRequestClient()
 {
+  delete m_options;
+  delete m_optionsInvis;
 }
 
 void
@@ -72,9 +71,7 @@ PublicRequestClient::init(
         std::string nsAddr,
         Config::Conf &conf)
 {
-    m_connstring = connstring;
-    m_nsAddr = nsAddr;
-    m_dbman = new Database::Manager(m_connstring);
+    BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
 }

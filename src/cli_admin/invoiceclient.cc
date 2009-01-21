@@ -22,8 +22,7 @@
 
 namespace Admin {
 
-InvoiceClient::InvoiceClient():
-    m_connstring(""), m_nsAddr("")
+InvoiceClient::InvoiceClient()
 {
     m_options = new boost::program_options::options_description(
             "Invoice related options");
@@ -53,10 +52,8 @@ InvoiceClient::InvoiceClient():
 }
 InvoiceClient::InvoiceClient(
         std::string connstring,
-        std::string nsAddr):
-    m_connstring(connstring), m_nsAddr(nsAddr)
+        std::string nsAddr) : BaseClient(connstring, nsAddr)
 {
-    m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
     m_options = NULL;
     m_optionsInvis = NULL;
@@ -64,7 +61,6 @@ InvoiceClient::InvoiceClient(
 
 InvoiceClient::~InvoiceClient()
 {
-    delete m_dbman;
     delete m_options;
     delete m_optionsInvis;
 }
@@ -75,9 +71,7 @@ InvoiceClient::init(
         std::string nsAddr,
         Config::Conf &conf)
 {
-    m_connstring = connstring;
-    m_nsAddr = nsAddr;
-    m_dbman = new Database::Manager(m_connstring);
+    BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
 }

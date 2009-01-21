@@ -26,29 +26,32 @@
 #define DATABASE_H_
 
 #include "connection.h"
+#include "connection_factory.h"
 #include "psql_connection.h"
 #include "manager.h"
 #include "manager_tss.h"
 
+
 namespace Database {
 
 
-/* ManagerBase (managers base class) is also a very simple manager 
- * for backward compatibility (DEPRECATED) 
- */
-typedef ManagerBase<PSQLConnection>                SimpleManager;
-
 /* default manager will be connection pooler */
-typedef ConnectionPoolManager<PSQLConnection>      ConnectionPool;
-typedef SimpleManager                              Manager;
-// typedef TSSManager<ConnectionPool>                 Manager;
-// typedef ConnectionPoolManager<PSQLConnection>      Manager;
+typedef Factory::ConnectionPool<PSQLConnection>    ConnectionPool;
+typedef TSSManager_<ConnectionPool>                TSSManager;
+
+typedef Factory::Simple<PSQLConnection>            ConnectionFactory;
+typedef Manager_<ConnectionFactory>                Manager;
 
 
 /**
  * Definition for specific database objects with driver specified
  * in manager above
  */
+// typedef TSSManager::connection_type     Connection;
+// typedef TSSManager::transaction_type    Transaction;
+// typedef TSSManager::result_type         Result;
+// typedef TSSManager::row_type            Row;
+
 typedef Manager::connection_type        Connection;
 typedef Manager::transaction_type       Transaction;
 typedef Manager::result_type            Result;

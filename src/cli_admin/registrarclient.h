@@ -47,16 +47,15 @@
 #include "register/register.h"
 
 #include "corba/admin/admin_impl.h"
+#include "baseclient.h"
+
 
 namespace Admin {
 
-class RegistrarClient {
+class RegistrarClient : public BaseClient {
 private:
-    std::string m_connstring;
-    std::string m_nsAddr;
     CORBA::Long m_clientId;
     DB m_db;
-    Database::Manager *m_dbman;
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 

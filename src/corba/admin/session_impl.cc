@@ -19,7 +19,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  NameService *ns,
                                  Config::Conf& cfg,
                                  ccReg_User_i* _user) :
-  session_id_(_session_id), cfg_(cfg), m_user(_user), m_db_manager(database), m_mailer_manager(ns), m_last_activity(second_clock::local_time()) {
+  session_id_(_session_id), cfg_(cfg), m_user(_user), m_db_manager(new ConnectionFactory(database)), m_mailer_manager(ns), m_last_activity(second_clock::local_time()) {
 
   base_context_ = Logging::Context::get() + "/" + session_id_;
   Logging::Context ctx(session_id_);

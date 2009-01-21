@@ -22,8 +22,7 @@
 
 namespace Admin {
 
-MailClient::MailClient():
-    m_connstring(""), m_nsAddr("")
+MailClient::MailClient()
 {
     m_options = new boost::program_options::options_description(
             "Mail related options");
@@ -47,10 +46,8 @@ MailClient::MailClient():
 
 MailClient::MailClient(
         std::string connstring,
-        std::string nsAddr):
-    m_connstring(connstring), m_nsAddr(nsAddr)
+        std::string nsAddr) : BaseClient(connstring, nsAddr)
 {
-    m_dbman = new Database::Manager(m_connstring);
     m_db.OpenDatabase(connstring.c_str());
     m_options = NULL;
     m_optionsInvis = NULL;
@@ -58,7 +55,6 @@ MailClient::MailClient(
 
 MailClient::~MailClient()
 {
-    delete m_dbman;
     delete m_options;
     delete m_optionsInvis;
 }
@@ -69,9 +65,7 @@ MailClient::init(
         std::string nsAddr,
         Config::Conf &conf)
 {
-    m_connstring = connstring;
-    m_nsAddr = nsAddr;
-    m_dbman = new Database::Manager(m_connstring);
+    BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
 }

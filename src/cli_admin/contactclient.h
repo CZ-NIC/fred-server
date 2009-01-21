@@ -24,6 +24,7 @@
 
 #include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
+#include "baseclient.h"
 
 #define CONTACT_SHOW_OPTS_NAME          "contact_show_opts"
 #define CONTACT_SHOW_OPTS_NAME_DESC     "show all contact command line options"
@@ -40,14 +41,11 @@
 
 namespace Admin {
 
-class ContactClient {
+class ContactClient : public BaseClient {
 private:
     Config::Conf m_conf;
-    std::string m_connstring;
-    std::string m_nsAddr;
     CORBA::Long m_clientId;
     DB m_db;
-    Database::Manager *m_dbman;
     ccReg::EPP_var m_epp;
 
     boost::program_options::options_description *m_options;

@@ -41,7 +41,8 @@ class PSQLTransaction;
  */
 class PSQLConnection {
 private:
-  PGconn *psql_conn_; /**< wrapped connection structure from libpq library */
+  std::string   conn_info_;
+  PGconn       *psql_conn_; /**< wrapped connection structure from libpq library */
 
 public:
   typedef PSQLResult       result_type;
@@ -54,7 +55,8 @@ public:
   }
 
 
-  PSQLConnection(const std::string& _conn_info) throw (ConnectionFailed) : psql_conn_(0) {
+  PSQLConnection(const std::string& _conn_info) throw (ConnectionFailed) 
+               : conn_info_(_conn_info), psql_conn_(0) {
     open(_conn_info);
   }
 
@@ -72,6 +74,7 @@ public:
   virtual void open(const std::string& _conn_info) throw (ConnectionFailed) {
     psql_conn_ = PQconnectdb(_conn_info.c_str());
     if (PQstatus(psql_conn_) != CONNECTION_OK) {
+      PQfinish(psql_conn_);
       throw ConnectionFailed(_conn_info);
     }
   }
@@ -104,7 +107,7 @@ public:
   }
 
 
-  virtual void reset(const std::string _conn_info) {
+  virtual void reset() {
     PQreset(psql_conn_);
   }
 

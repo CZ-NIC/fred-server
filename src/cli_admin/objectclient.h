@@ -59,17 +59,15 @@
 #include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
 #include "register/register.h"
+#include "baseclient.h"
 //#include "corba/mailer_manager.h"
 
 namespace Admin {
 
-class ObjectClient {
+class ObjectClient : public BaseClient {
 private:
-    std::string m_connstring;
-    std::string m_nsAddr;
     CORBA::Long m_clientId;
     DB m_db;
-    Database::Manager *m_dbman;
     ccReg::EPP_var m_epp;
 
     boost::program_options::options_description *m_options;
