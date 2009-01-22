@@ -241,33 +241,16 @@ AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
 AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) ${BOOST_CPPFLAGS} $(AM_CFLAGS)        \
               -I$(top_srcdir)/util -I$(top_srcdir) 
 
-libdb_a_SOURCES = query/query_old.cc             \
-                  query/filter.cc                \
-									query/compound_filter.cc       \
-									query/simple_filter.cc         \
-                  query/base_filters.h           \
-									query/query.h                  \
-									query/query_old.h              \
-								  query/filter.h                 \
-									query/compound_filter.h        \
-									query/simple_filter.h          \
-                  query/simple_filters.h         \
-									query/sql_helper_objects.h     \
-									query/filter_it.h              \
-                  query/sql_operators.h          \
-									psql/psql_connection.h         \
-									psql/psql_result.h             \
-									connection_factory.h           \
-									transaction.h                  \
-                  connection.h                   \
-									result.h                       \
-									row.h                          \
-									value.h                        \
-                  sequence.h                     \
-									manager.h                      \
-									manager_tss.h                  \
-                  db_exceptions.h                \
-									database.h
+libdb_a_SOURCES = query_old.cc                                           \
+                  filter.cc compound_filter.cc simple_filter.cc          \
+                  base_filters.h                                         \
+									connection_factory.h transaction.h                     \
+                  connection.h result.h row.h value.h                    \
+                  psql_connection.h psql_result.h                        \
+                  query.h query_old.h sequence.h manager.h manager_tss.h \
+                  filter.h compound_filter.h simple_filter.h             \
+                  simple_filters.h sql_helper_objects.h filter_it.h      \
+                  sql_operators.h db_exceptions.h database.h
 
 test_db_SOURCES = test-db.cc
 test_db_LDFLAGS = $(BOOST_LDFLAGS) $(AM_LDFLAGS)
@@ -344,62 +327,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-query_old.o: query/query_old.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT query_old.o -MD -MP -MF $(DEPDIR)/query_old.Tpo -c -o query_old.o `test -f 'query/query_old.cc' || echo '$(srcdir)/'`query/query_old.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/query_old.Tpo $(DEPDIR)/query_old.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='query/query_old.cc' object='query_old.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o query_old.o `test -f 'query/query_old.cc' || echo '$(srcdir)/'`query/query_old.cc
-
-query_old.obj: query/query_old.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT query_old.obj -MD -MP -MF $(DEPDIR)/query_old.Tpo -c -o query_old.obj `if test -f 'query/query_old.cc'; then $(CYGPATH_W) 'query/query_old.cc'; else $(CYGPATH_W) '$(srcdir)/query/query_old.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/query_old.Tpo $(DEPDIR)/query_old.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='query/query_old.cc' object='query_old.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o query_old.obj `if test -f 'query/query_old.cc'; then $(CYGPATH_W) 'query/query_old.cc'; else $(CYGPATH_W) '$(srcdir)/query/query_old.cc'; fi`
-
-filter.o: query/filter.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT filter.o -MD -MP -MF $(DEPDIR)/filter.Tpo -c -o filter.o `test -f 'query/filter.cc' || echo '$(srcdir)/'`query/filter.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/filter.Tpo $(DEPDIR)/filter.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='query/filter.cc' object='filter.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o filter.o `test -f 'query/filter.cc' || echo '$(srcdir)/'`query/filter.cc
-
-filter.obj: query/filter.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT filter.obj -MD -MP -MF $(DEPDIR)/filter.Tpo -c -o filter.obj `if test -f 'query/filter.cc'; then $(CYGPATH_W) 'query/filter.cc'; else $(CYGPATH_W) '$(srcdir)/query/filter.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/filter.Tpo $(DEPDIR)/filter.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='query/filter.cc' object='filter.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o filter.obj `if test -f 'query/filter.cc'; then $(CYGPATH_W) 'query/filter.cc'; else $(CYGPATH_W) '$(srcdir)/query/filter.cc'; fi`
-
-compound_filter.o: query/compound_filter.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT compound_filter.o -MD -MP -MF $(DEPDIR)/compound_filter.Tpo -c -o compound_filter.o `test -f 'query/compound_filter.cc' || echo '$(srcdir)/'`query/compound_filter.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/compound_filter.Tpo $(DEPDIR)/compound_filter.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='query/compound_filter.cc' object='compound_filter.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o compound_filter.o `test -f 'query/compound_filter.cc' || echo '$(srcdir)/'`query/compound_filter.cc
-
-compound_filter.obj: query/compound_filter.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT compound_filter.obj -MD -MP -MF $(DEPDIR)/compound_filter.Tpo -c -o compound_filter.obj `if test -f 'query/compound_filter.cc'; then $(CYGPATH_W) 'query/compound_filter.cc'; else $(CYGPATH_W) '$(srcdir)/query/compound_filter.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/compound_filter.Tpo $(DEPDIR)/compound_filter.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='query/compound_filter.cc' object='compound_filter.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o compound_filter.obj `if test -f 'query/compound_filter.cc'; then $(CYGPATH_W) 'query/compound_filter.cc'; else $(CYGPATH_W) '$(srcdir)/query/compound_filter.cc'; fi`
-
-simple_filter.o: query/simple_filter.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT simple_filter.o -MD -MP -MF $(DEPDIR)/simple_filter.Tpo -c -o simple_filter.o `test -f 'query/simple_filter.cc' || echo '$(srcdir)/'`query/simple_filter.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/simple_filter.Tpo $(DEPDIR)/simple_filter.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='query/simple_filter.cc' object='simple_filter.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o simple_filter.o `test -f 'query/simple_filter.cc' || echo '$(srcdir)/'`query/simple_filter.cc
-
-simple_filter.obj: query/simple_filter.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT simple_filter.obj -MD -MP -MF $(DEPDIR)/simple_filter.Tpo -c -o simple_filter.obj `if test -f 'query/simple_filter.cc'; then $(CYGPATH_W) 'query/simple_filter.cc'; else $(CYGPATH_W) '$(srcdir)/query/simple_filter.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/simple_filter.Tpo $(DEPDIR)/simple_filter.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='query/simple_filter.cc' object='simple_filter.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o simple_filter.obj `if test -f 'query/simple_filter.cc'; then $(CYGPATH_W) 'query/simple_filter.cc'; else $(CYGPATH_W) '$(srcdir)/query/simple_filter.cc'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
