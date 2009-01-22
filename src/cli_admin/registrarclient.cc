@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -31,7 +31,10 @@ RegistrarClient::RegistrarClient()
         addOpt(REGISTRAR_ZONE_ADD_NAME)
         addOpt(REGISTRAR_REGISTRAR_ADD_NAME)
         addOpt(REGISTRAR_REGISTRAR_ADD_ZONE_NAME)
-        addOpt(REGISTRAR_SHOW_OPTS_NAME);
+        addOpt(REGISTRAR_SHOW_OPTS_NAME)
+        addOpt(REGISTRAR_ZONE_ADD_HELP_NAME)
+        addOpt(REGISTRAR_REGISTRAR_ADD_HELP_NAME)
+        addOpt(REGISTRAR_REGISTRAR_ADD_ZONE_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Registrar related sub options");
