@@ -1,7 +1,7 @@
 #ifndef MAIL_FILTER_H_
 #define MAIL_FILTER_H_
 
-#include "db/base_filters.h"
+#include "db/query/base_filters.h"
 #include "file_filter.h"
 
 namespace Database {

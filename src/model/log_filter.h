@@ -12,7 +12,7 @@
 #include "keyset_filter.h"
 */
 
-#include "db/base_filters.h"
+#include "db/query/base_filters.h"
 
 #include "types/data_types.h"
 

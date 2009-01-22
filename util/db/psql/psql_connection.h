@@ -27,8 +27,8 @@
 
 #include <libpq-fe.h>
 #include "psql_result.h"
-#include "statement.h"
-#include "db_exceptions.h"
+#include "../statement.h"
+#include "../db_exceptions.h"
 
 namespace Database {
 

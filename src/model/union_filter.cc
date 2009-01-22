@@ -3,7 +3,6 @@
 #include <boost/utility.hpp>
 
 #include "union_filter.h"
-#include "db/filter_it.h"
 #include "log/logger.h"
 
 namespace Database {

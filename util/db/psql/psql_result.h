@@ -31,9 +31,9 @@
 #include <iterator>
 #include <boost/shared_ptr.hpp>
 
-#include "row.h"
-#include "value.h"
-#include "db_exceptions.h"
+#include "../row.h"
+#include "../value.h"
+#include "../db_exceptions.h"
 
 
 namespace Database {

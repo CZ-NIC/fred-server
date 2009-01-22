@@ -1,7 +1,7 @@
 #ifndef OBJECT_STATE_FILTER_H_
 #define OBJECT_STATE_FILTER_H_
 
-#include "db/base_filters.h"
+#include "db/query/base_filters.h"
 
 namespace Database {
 namespace Filters {

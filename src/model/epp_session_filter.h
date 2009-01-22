@@ -1,7 +1,7 @@
 #ifndef EPP_SESSION_FILTER_H_
 #define EPP_SESSION_FILTER_H_
 
-#include "db/base_filters.h"
+#include "db/query/base_filters.h"
 #include "registrar_filter.h"
 
 namespace Database {

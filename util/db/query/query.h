@@ -37,10 +37,9 @@
 #include <vector>
 #include <map>
 
-#include "statement.h"
+#include "../statement.h"
+#include "../value.h"
 #include "query_common.h"
-#include "value.h"
-
 #include "query_old.h"
 
 

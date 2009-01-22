@@ -11,9 +11,9 @@
 #include <boost/utility.hpp>
 #include <boost/format.hpp>
 
-#include "statement.h"
 #include "sql_helper_objects.h"
-#include "value.h"
+#include "../statement.h"
+#include "../value.h"
 
 namespace Database {
 
