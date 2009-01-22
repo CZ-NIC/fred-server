@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -1028,8 +1028,7 @@ public:
         for (int i = 0; i < (int)getCount(); i++) {
             Statement *stat = get(i);
             out << TAGSTART(statement)
-                << TAG(id, stat->getId())
-                << TAG(accout_id, stat->getAccountId())
+                << TAG(account_number, stat->getAccountId())
                 << TAG(number, stat->getNumber())
                 << TAG(date, stat->getDate())
                 << TAG(balance, stat->getBalance().format())
@@ -1041,7 +1040,6 @@ public:
             for (int j = 0; j < (int)stat->getStatementItemCount(); j++) {
                 StatementItem *itm = (StatementItem *)stat->getStatementItemByIdx(j);
                 out << TAGSTART(item)
-                    << TAG(id, itm->getId())
                     << TAG(accout_number,itm->getAccountNumber())
                     << TAG(accout_bank_code,itm->getBankCode())
                     << TAG(const_symbol,itm->getConstSymbol())
@@ -1049,9 +1047,6 @@ public:
                     << TAG(spec_symbol,itm->getSpecSymbol())
                     << TAG(price,itm->getPrice().format())
                     << TAG(memo,itm->getMemo())
-                    << TAG(invoice_id,itm->getInvoiceId())
-                    << TAG(code,itm->getCode())
-                    << TAG(evidence_number,itm->getEvidenceNumber())
                     << TAG(date,itm->getDate())
                     << TAGEND(item);
             }
