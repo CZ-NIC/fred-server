@@ -37,7 +37,7 @@
 #include "mem_ptr.h"
 #include "job_queue.h"
 
-#include "db/query.h"
+#include "db/query/query.h"
 #include "db/value.h"
 
 
@@ -343,7 +343,7 @@ public:
       conv1 << pk_l_.getValue(_object);
       conv2 << pk_r_.getValue(&_v);
 
-      Database::InsertQuery *tmp = new Database::InsertQuery(Table(mt_.name));
+      Database::InsertQuery *tmp = new Database::InsertQuery(mt_.name);
       tmp->add(mt_.left,  Database::Value(pk_l_.getValue(_object)));
       tmp->add(mt_.right, Database::Value(pk_r_.getValue(&_v)));
       

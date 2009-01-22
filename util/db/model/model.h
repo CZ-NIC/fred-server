@@ -37,7 +37,7 @@
 #include "job_queue.h"
 
 #include "db/database.h"
-#include "db/query.h"
+#include "db/query/query.h"
 
 #include "config.h"
 #ifdef HAVE_LOGGER
@@ -62,7 +62,7 @@ public:
     try {
 #endif
       JobQueue jobs;
-      Database::InsertQuery *iquery = new Database::InsertQuery(Table(_class::table_name));
+      Database::InsertQuery *iquery = new Database::InsertQuery(_class::table_name);
 
       jobs.push(iquery);
 
@@ -100,7 +100,7 @@ public:
     try {
 #endif
       JobQueue jobs;
-      Database::UpdateQuery *uquery = new Database::UpdateQuery(Table(_class::table_name));
+      Database::UpdateQuery *uquery = new Database::UpdateQuery(_class::table_name);
 
       jobs.push(uquery);
 
