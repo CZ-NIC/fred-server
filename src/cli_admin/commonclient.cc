@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -60,7 +60,7 @@ print_version()
     std::cout
         << g_prog_name << " version " << g_version << "\nFor list of all options type: ``$ "
         << g_prog_name << " --help''\n\n"
-        << "Copyright (c) 2008 CZ.NIC z.s.p.o.\n"
+        << "Copyright (c) 2008, 2009 CZ.NIC z.s.p.o.\n"
         << "This file is part of FRED (for details see fred.nic.cz)\n"
         << "Licence information:\n"
         << "FRED is free software: you can redistribute it and/or modify\n"
@@ -104,20 +104,23 @@ help_dates()
         << std::endl;
 }
 
-#define DATETIME_FROM   1
-#define DATETIME_TO     2
-
-#define PARSE_DATETIME  1
-#define PARSE_DATEONLY  2
-
 char dnyMesice[12][3] = { "31", "28", "31", "30", "31", "30", "31", "31", "30", "31", "30", "31" };
 
 std::string
-createDateTime(std::string datetime, int interval, int type=PARSE_DATEONLY)
+createDateTime(std::string datetime, int interval, int type)
 {
     std::string ret;
     ret = datetime;
     switch (datetime.length()) {
+        case 3:
+            if (datetime.compare("now") == 0) {
+                if (type == PARSE_DATETIME) {
+                    ret = Database::DateTime(Database::NOW).to_string();
+                } else {
+                    ret = Database::Date(Database::NOW).to_string();
+                }
+            }
+            break;
         case 4:
             // "2008"
             if (interval == DATETIME_TO) {
