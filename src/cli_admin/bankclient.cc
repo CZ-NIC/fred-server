@@ -136,6 +136,21 @@ BankClient::old_statement_list()
     Database::Filters::Union *unionFilter = 
         new Database::Filters::Union();
 
+    apply_ID(statementFilter);
+    apply_DATE(statementFilter, BANK_DATE_NAME, Create);
+    apply_DATE(statementFilter, BANK_OLD_BALANCE_DATE_NAME, BalanceOld);
+    get_DID(statementFilter, AccountId, BANK_ACCOUNT_ID_NAME);
+    get_Str(statementFilter, AccountNumber, BANK_ACCOUNT_NUMBER_NAME);
+    get_Str(statementFilter, BankCode, BANK_BANK_CODE_NAME);
+    get_Str(statementFilter, ConstSymbol, BANK_CONST_SYMBOL_NAME);
+    if (m_conf.hasOpt(BANK_INVOICE_ID_NAME)) {
+        if (m_conf.get<unsigned int>(BANK_INVOICE_ID_NAME) == 0) {
+            statementFilter->addInvoiceId().setNULL();
+        } else {
+            get_DID(statementFilter, InvoiceId, BANK_INVOICE_ID_NAME);
+        }
+    }
+
     unionFilter->addFilter(statementFilter);
     bankList->reload(*unionFilter);
     bankList->exportXML(stdout);
