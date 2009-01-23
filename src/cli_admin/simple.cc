@@ -364,6 +364,10 @@ main(int argc, char **argv)
         invoice.list_filters();
     } else if (conf.hasOpt(INVOICE_SHOW_OPTS_NAME)) {
         invoice.show_opts();
+    } else if (conf.hasOpt(INVOICE_CREDIT_NAME)) {
+        invoice.credit();
+    } else if (conf.hasOpt(INVOICE_FACTORING_NAME)) {
+        invoice.factoring();
     }
 
     if (conf.hasOpt(AUTHINFO_PDF_NAME)) {

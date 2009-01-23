@@ -9,6 +9,7 @@
 #define addOptBool(name)                    (name, boost::program_options::value<bool>(), name##_DESC)
 #define addOptType(name, type)              (name, boost::program_options::value<type>(), name##_DESC)
 #define addOptDID(name)                     (name, boost::program_options::value<unsigned int>(), name##_DESC)
+#define addOptDouble(name)                  (name, boost::program_options::value<double>(), name##_DESC)
 
 #define addOptStrDef(name, val)           (name, boost::program_options::value<std::string>()->default_value(val), name##_DESC)
 #define addOptIntDef(name, val)           (name, boost::program_options::value<int>()->default_value(val), name##_DESC)
@@ -16,6 +17,7 @@
 #define addOptTIDDef(name, val)           (name, boost::program_options::value<Register::TID>()->default_value(val), name##_DESC)
 #define addOptBoolDef(name, val)          (name, boost::program_options::value<bool>()->default_value(val), name##_DESC)
 #define addOptTypeDef(name, type, val)    (name, boost::program_options::value<type>()->default_value(val), name##_DESC)
+#define addOptDoubleDef(name, val)           (name, boost::program_options::value<double>()->default_value(val), name##_DESC)
 
 #define getOptUInt(option)          m_conf.get<unsigned int>(option)
 #define getOptInt(option)           m_conf.get<int>(option)
