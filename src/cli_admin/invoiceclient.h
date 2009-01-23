@@ -54,6 +54,8 @@
 #define INVOICE_NUMBER_NAME_DESC        "invoice number"
 #define INVOICE_TAXDATE_NAME            "taxdate"
 #define INVOICE_TAXDATE_NAME_DESC       "tax date (type ``./fred-admin --help_dates'' for further date&time information)"
+#define INVOICE_TODATE_NAME            "todate"
+#define INVOICE_TODATE_NAME_DESC       "to date (type ``./fred-admin --help_dates'' for further date&time information)"
 #define INVOICE_ARCHIVED_NAME           "archived"
 #define INVOICE_ARCHIVED_NAME_DESC      "archived flag"
 #define INVOICE_OBJECT_ID_NAME          "invoice_object_id"
@@ -70,6 +72,33 @@
 #define INVOICE_FILE_NAME_NAME          "invoice_file_name"
 #define INVOICE_FILE_NAME_NAME_DESC     "invoice file name"
 
+#define INVOICE_FILE_PDF_NAME           "invoice_file_pdf"
+#define INVOICE_FILE_PDF_NAME_DESC      "invoice_file_pdf"
+
+#define INVOICE_FILE_XML_NAME           "invoice_file_xml"
+#define INVOICE_FILE_XML_NAME_DESC      "invoice_file_xml"
+
+#define INVOICE_CREDIT_NAME             "invoice_credit"
+#define INVOICE_CREDIT_NAME_DESC        "create credit invoice for registrar"
+
+#define INVOICE_ZONE_ID_NAME            "zone_id"
+#define INVOICE_ZONE_ID_NAME_DESC       "zone identifier number"
+
+#define INVOICE_ZONE_NAME_NAME          "zone_name"
+#define INVOICE_ZONE_NAME_NAME_DESC     "zone name (e.g. cz, com)"
+
+#define INVOICE_REGISTRAR_ID_NAME       "registrar_id"
+#define INVOICE_REGISTRAR_ID_NAME_DESC  "registrar identifier number"
+
+#define INVOICE_REGISTRAR_HANDLE_NAME   "registrar_handle"
+#define INVOICE_REGISTRAR_HANDLE_NAME_DESC "registrar handle"
+
+#define INVOICE_PRICE_NAME              "price"
+#define INVOICE_PRICE_NAME_DESC         "price"
+
+#define INVOICE_FACTORING_NAME          "invoice_factoring"
+#define INVOICE_FACTORING_NAME_DESC     "invoice factoring"
+
 namespace Admin {
 
 class InvoiceClient : public BaseClient {
@@ -81,6 +110,12 @@ private:
 
     boost::program_options::options_description *m_options;
     boost::program_options::options_description *m_optionsInvis;
+
+    Database::ID getRegistrarId(std::string handle);
+    void factoring(Register::Invoicing::Manager *man, 
+            Database::ID zoneId, std::string zoneName, 
+            Database::ID regId, std::string regName, 
+            Database::Date toDate, Database::Date taxDate);
 public:
     InvoiceClient();
     InvoiceClient(std::string connstring,
@@ -100,6 +135,9 @@ public:
 
     void list_help();
     void archive_help();
+
+    void credit();
+    void factoring();
 };
 
 } // namespace Admin;
