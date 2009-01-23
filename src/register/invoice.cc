@@ -1657,12 +1657,8 @@ public:
         }
     }
 
-    /*! create new account invoice */
-    bool insertAccount()
+    bool testRegistrar()
     {
-        TRACE("[CALL] Register::Invoicing::Invoice::insertAccount()");
-        std::cout << getRegistrar() << std::endl;
-        std::cout << getRegistrarName() << std::endl;
         if (getRegistrar() == Database::ID() && getRegistrarName().empty()) {
             ERROR("Registrar not set");
             return false;
@@ -1698,22 +1694,25 @@ public:
                 << getRegistrar();
             Database::Result res = m_conn->exec(query);
             if (res.size() == 0) {
-                // ERROR("clash between registrar id and handle");
                 ERROR("clash between registrar id and handle");
                 return false;
             }
         }
+        return true;
+    }
 
-        if (m_zone == 0 && m_zoneName.empty()) {
+    bool testZone()
+    {
+        if (getZone() == 0 && getZoneName().empty()) {
             ERROR("Zone not set");
             return false;
-        } else if (m_zone == 0) {
+        } else if (getZone() == 0) {
             Database::SelectQuery zoneQuery;
             zoneQuery.buffer()
                 << "select zz.id from zone zz "
                 << "join registrarinvoice rr on (rr.zone = zz.id) "
-                << "where zz.fqdn='" << m_zoneName << "' "
-                << "and rr.registrarid=" << m_registrar << " "
+                << "where zz.fqdn='" << getZoneName() << "' "
+                << "and rr.registrarid=" << getRegistrar() << " "
                 << "and rr.fromdate <= date(now()) "
                 << "limit 1";
             Database::Result res = m_conn->exec(zoneQuery);
@@ -1721,15 +1720,15 @@ public:
                 ERROR("registrar do not belong to zone");
                 return false;
             } else {
-                m_zone = *(*res.begin()).begin();
+                setZone(*(*res.begin()).begin());
             }
-        } else if (m_zoneName.empty()) {
+        } else if (getZoneName().empty()) {
             Database::SelectQuery zoneQuery;
             zoneQuery.buffer()
                 << "select zz.id from zone zz "
                 << "join registrarinvoice rr on (rr.zone = zz.id) "
-                << "where zz.id=" << m_zone << " "
-                << "and rr.registrarid=" << m_registrar << " "
+                << "where zz.id='" << getZone() << " "
+                << "and rr.registrarid=" << getRegistrar() << " "
                 << "and rr.fromdate <= date(now()) "
                 << "limit 1";
             Database::Result res = m_conn->exec(zoneQuery);
@@ -1742,16 +1741,31 @@ public:
             zoneQuery.buffer()
                 << "select zz.id from zone zz "
                 << "join registrarinvoice rr on (rr.zone = zz.id) "
-                << "where zz.id=" << m_zone << " "
-                << "and zz.fqdn='" << m_zoneName << "' "
-                << "and rr.registrarid=" << m_registrar << " "
+                << "where zz.id=" << getZone() << " "
+                << "and zz.fqdn='" << getZoneName() << "' "
+                << "and rr.registrarid=" << getRegistrar() << " "
                 << "and rr.fromdate < date(now()) limit 1";
             Database::Result res = m_conn->exec(zoneQuery);
             if (res.size() == 0) {
-                ERROR("registrar do not belong to zone");
+                ERROR("zone name does not correspond to zone id");
                 return false;
             }
         }
+        return true;
+    }
+
+    /*! create new account invoice */
+    bool insertAccount()
+    {
+        TRACE("[CALL] Register::Invoicing::Invoice::insertAccount()");
+        
+        if (!testRegistrar()) {
+            return false;
+        }
+        if (!testZone()) {
+            return false;
+        }
+
         if (getTaxDate() == Database::Date()) {
             ERROR("taxdate is not set");
             return false;
@@ -1819,84 +1833,14 @@ public:
     bool insertDeposit()
     {
         TRACE("[CALL] Register::Invoicing::InvoiceImpl::insertDeposit()");
-        if (getRegistrar() == 0 && getRegistrarName().empty()) {
-            ERROR("Registrar not set");
-        } else if (getRegistrar() == 0) {
-            Database::SelectQuery regQuery;
-            regQuery.buffer()
-                << "select id from registrar where handle='"
-                << getRegistrarName()
-                << "'";
-            Database::Result res = m_conn->exec(regQuery);
-            if (res.size() == 0) {
-                ERROR("registrar do not exists");
-                return false;
-            } else {
-                setRegistrar(*(*res.begin()).begin());
-            }
-        } else {
-            Database::SelectQuery query;
-            query.buffer()
-                << "select id from registrar where handle='"
-                << getRegistrarName()
-                << "' and id="
-                << getRegistrar();
-            Database::Result res = m_conn->exec(query);
-            if (res.size() == 0) {
-                // ERROR("clash between registrar id and handle");
-                ERROR("clash between registrar id and handle");
-                return false;
-            }
+
+        if (!testRegistrar()) {
+            return false;
+        }
+        if (!testZone()) {
+            return false;
         }
 
-        if (getZone() == 0 && getZoneName().empty()) {
-            ERROR("Zone not set");
-            return false;
-        } else if (getZone() == 0) {
-            Database::SelectQuery zoneQuery;
-            zoneQuery.buffer()
-                << "select zz.id from zone zz "
-                << "join registrarinvoice rr on (rr.zone = zz.id) "
-                << "where zz.fqdn='" << m_zoneName << "' "
-                << "and rr.registrarid=" << m_registrar << " "
-                << "and rr.fromdate <= date(now()) "
-                << "limit 1";
-            Database::Result res = m_conn->exec(zoneQuery);
-            if (res.size() == 0) {
-                ERROR("registrar do not belong to zone");
-                return false;
-            } else {
-                setZone(*(*res.begin()).begin());
-            }
-        } else if (getZoneName().empty()) {
-            Database::SelectQuery zoneQuery;
-            zoneQuery.buffer()
-                << "select zz.id from zone zz "
-                << "join registrarinvoice rr on (rr.zone = zz.id) "
-                << "where zz.id='" << m_zone << " "
-                << "and rr.registrarid=" << m_registrar << " "
-                << "and rr.fromdate <= date(now()) "
-                << "limit 1";
-            Database::Result res = m_conn->exec(zoneQuery);
-            if (res.size() == 0) {
-                ERROR("registrar do not belong to zone");
-                return false;
-            }
-        } else {
-            Database::SelectQuery zoneQuery;
-            zoneQuery.buffer()
-                << "select zz.id from zone zz "
-                << "join registrarinvoice rr on (rr.zone = zz.id) "
-                << "where zz.id=" << m_zone << " "
-                << "and zz.fqdn='" << m_zoneName << "' "
-                << "and rr.registrarid=" << m_registrar << " "
-                << "and rr.fromdate < date(now()) limit 1";
-            Database::Result res = m_conn->exec(zoneQuery);
-            if (res.size() == 0) {
-                ERROR("zone name does not correspond to zone id");
-                return false;
-            }
-        }
         if (getVatRate() == -1) {
             Database::SelectQuery vatQuery;
             vatQuery.buffer()
