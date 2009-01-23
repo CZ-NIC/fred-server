@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "common_object.h"
-#include "db/database.h"
+#include "db_settings.h"
 
 class DB;
 

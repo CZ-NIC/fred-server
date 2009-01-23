@@ -26,7 +26,6 @@
 
 #include <queue>
 
-#include "db/database.h"
 #include "log/logger.h"
 
 
@@ -44,10 +43,11 @@ public:
   }
 
   
-  void execute(Database::Connection *_c = Database::Manager::acquire()) {
+  void execute() {
     while (!empty()) {
       Database::Statement *q = front();
-      _c->exec(*q);
+      Database::Connection c = Database::Manager::acquire();
+      c.exec(*q);
       pop();
       delete q;
     }

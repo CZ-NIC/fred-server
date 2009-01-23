@@ -11,7 +11,7 @@
 #include <map>
 
 #include "common_object.h"
-#include "db/database.h"
+#include "db_settings.h"
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;

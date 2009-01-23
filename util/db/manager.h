@@ -30,6 +30,7 @@
 #include "result.h"
 #include "connection.h"
 #include "transaction.h"
+#include "sequence.h"
 
 #include "config.h"
 
@@ -53,6 +54,7 @@ public:
   typedef Connection_<connection_driver, Manager_>                              connection_type;
   typedef Transaction_<typename connection_driver::transaction_type, Manager_>  transaction_type;
   typedef Result_<typename connection_driver::result_type>                      result_type;
+  typedef Sequence_<connection_type, Manager_>                                  sequence_type;
   typedef typename result_type::Row                                             row_type;
 
   /**

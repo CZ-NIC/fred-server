@@ -28,7 +28,7 @@
 #include "common_object.h"
 #include "object.h"
 #include "filter.h"
-#include "db/database.h"
+#include "db_settings.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
 

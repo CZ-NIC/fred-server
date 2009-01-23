@@ -11,6 +11,18 @@
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 
+namespace Database {
+  typedef Factory::Simple<PSQLConnection> ConnectionFactory;
+  typedef Manager_<ConnectionFactory>     Manager;
+
+  typedef Manager::connection_type        Connection;
+  typedef Manager::transaction_type       Transaction;
+  typedef Manager::result_type            Result;
+  typedef Manager::sequence_type          Sequence;
+  typedef Manager::row_type               Row;
+}
+
+
 struct TestPooler {
 public:
   TestPooler(Database::Manager *p, int i) : pool_(p), id_(i) { }

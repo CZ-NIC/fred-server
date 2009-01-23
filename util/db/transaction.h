@@ -59,8 +59,8 @@ public:
 
   
   Transaction_(connection_type &_conn) : conn_(_conn),
-                                                      ptransaction_(0),
-                                                      success_(false) {
+                                         ptransaction_(0),
+                                         success_(false) {
     if (!conn_.inTransaction()) {
 #ifdef HAVE_LOGGER
       LOGGER(PACKAGE).debug(boost::format("(%1%) start transaction request -- begin") % this);

@@ -4,7 +4,7 @@
 
 // #include "old_utils/dbsql.h"
 
-#include "db/database.h"
+#include "register/db_settings.h"
 #include "old_utils/conf.h"
 #include "corba/mailer_manager.h"
 #include <corba/ccReg.hh>

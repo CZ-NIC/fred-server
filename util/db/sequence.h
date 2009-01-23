@@ -34,16 +34,21 @@ namespace Database {
  * \class Sequence
  * \brief Implementation of database sequence manipulation
  */
-class Sequence {
+template<class connection_type, class manager_type>
+class Sequence_ {
 public:
+  typedef typename manager_type::result_type   result_type;
+
+
   /**
    * Constructor
    *
    * @param _conn  connection on which sequence will be managed
    * @param _name  database sequence name
    */
-  Sequence(Connection &_conn, const std::string _name) : conn_(_conn),
-                                                         name_(_name) {
+  Sequence_(connection_type &_conn,
+            const std::string _name) : conn_(_conn),
+                                       name_(_name) {
   }
 
   
@@ -61,15 +66,17 @@ public:
   ID getNext() {
     return execute_("SELECT nextval('" + name_ + "')");
   }
-  
+
+
 private:
   ID execute_(const std::string& _query) {
-    Result result = conn_.exec(_query);
-    return (*(result.begin()))[0];
+    result_type result = conn_.exec(_query);
+    return result[0][0];
   }
 
-  Connection &conn_; /**< connection */
-  std::string name_; /**< sequence name */
+
+  connection_type &conn_; /**< connection */
+  std::string      name_; /**< sequence name */
 };
 
 }

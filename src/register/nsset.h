@@ -6,7 +6,7 @@
 #include "object.h"
 #include "exceptions.h"
 #include "zone.h"
-#include "db/database.h"
+#include "db_settings.h"
 #include "model/model_filters.h"
 
 /// forward declared parameter type 

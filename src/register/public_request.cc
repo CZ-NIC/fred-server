@@ -5,7 +5,7 @@
 #include "public_request.h"
 #include "log/logger.h"
 #include "util.h"
-#include "db/database.h"
+#include "db_settings.h"
 
 namespace Register {
 namespace PublicRequest {

@@ -29,7 +29,7 @@
 #include "old_utils/dbsql.h"
 #include "old_utils/log.h"
 
-#include "db/database.h"
+#include "db_settings.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
 

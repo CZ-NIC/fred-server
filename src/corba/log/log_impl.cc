@@ -28,8 +28,6 @@
 #include "old_utils/log.h"
 //config
 #include "old_utils/conf.h"
-// database
-#include "db/database.h"
 // util (for escape)
 #include "util.h"
 

@@ -50,6 +50,7 @@ public:
   typedef TSSConnection_<connection_driver, TSSManager_>                               connection_type;
   typedef Transaction_<typename connection_driver::transaction_type, TSSManager_>      transaction_type;
   typedef Result_<typename connection_driver::result_type>                             result_type;
+  typedef Sequence_<connection_type, TSSManager_>                                      sequence_type;
   typedef typename result_type::Row                                                    row_type;
 
 

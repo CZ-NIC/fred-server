@@ -36,7 +36,6 @@
 #include "model_field_attrs.h"
 #include "job_queue.h"
 
-#include "db/database.h"
 #include "db/query/query.h"
 
 #include "config.h"

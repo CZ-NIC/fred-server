@@ -17,7 +17,7 @@
 #include "mailer.h"
 #include "documents.h"
 
-#include "db/database.h"
+#include "db_settings.h"
 #include "model/model_filters.h"
 
 using namespace boost::posix_time;
