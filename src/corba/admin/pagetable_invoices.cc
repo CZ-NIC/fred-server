@@ -129,7 +129,7 @@ void ccReg_Invoices_i::reload() {
   Logging::Context ctx(base_context_);
 
   invoice_list_->setPartialLoad(true);
-  invoice_list_->reload(uf, dbm);
+  invoice_list_->reload(uf);
 }
 
 void ccReg_Invoices_i::clear() {

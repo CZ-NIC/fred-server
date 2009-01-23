@@ -41,10 +41,11 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                                                          m_register_manager->getKeySetManager(),
                                                                          &m_mailer_manager,
                                                                          m_document_manager.get()));
-  m_invoicing_manager.reset(Register::Invoicing::Manager::create(&db,
+  std::auto_ptr<Database::Manager> dbman(new Database::Manager(
+              new Database::ConnectionFactory(database)));
+  m_invoicing_manager.reset(Register::Invoicing::Manager::create(dbman.get(),
                                                                  m_document_manager.get(),
                                                                  &m_mailer_manager));
-
   
   mail_manager_.reset(Register::Mail::Manager::create(&m_db_manager));
   file_manager_.reset(Register::File::Manager::create(&m_db_manager));

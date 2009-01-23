@@ -884,6 +884,7 @@ ccReg::EPPAction* ccReg_Admin_i::getEPPActionById(ccReg::TID id)
 
 void ccReg_Admin_i::fillDomain(ccReg::DomainDetail* cd,
                                Register::Domain::Domain* d) {
+  LOGGER(PACKAGE).info("--- alik --- fillDomain");
   cd->id = d->getId();
   cd->fqdn = DUPSTRFUN(d->getFQDNIDN);
   cd->roid = DUPSTRFUN(d->getROID);
@@ -925,6 +926,7 @@ void ccReg_Admin_i::fillDomain(ccReg::DomainDetail* cd,
 ccReg::DomainDetail* ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
+  LOGGER(PACKAGE).info("--- alik --- getdomainbyfqdn");
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainByFQDN('%1%')") % fqdn);
 
@@ -951,6 +953,7 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
 ccReg::DomainDetail* ccReg_Admin_i::getDomainById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
+  LOGGER(PACKAGE).info("--- alik --- getdomainbyid");
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainById('%1%')") % id);
   DB db;
@@ -1377,10 +1380,11 @@ ccReg::Invoicing::Invoice* ccReg_Admin_i::getInvoiceById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
 
-  DB db;
   if (!id)
     throw ccReg::Admin::ObjectNotFound();
-  db.OpenDatabase(m_connection_string.c_str());
+  std::auto_ptr<Database::Manager> dbMan(new Database::Manager(
+              new Database::ConnectionFactory(m_connection_string)));
+
   MailerManager mm(ns);
   std::auto_ptr<Register::Document::Manager>
       docman(Register::Document::Manager::create(cfg.get<std::string>("registry.docgen_path"),
@@ -1388,17 +1392,18 @@ ccReg::Invoicing::Invoice* ccReg_Admin_i::getInvoiceById(ccReg::TID id)
                                                  cfg.get<std::string>("registry.fileclient_path"),
                                                  ns->getHostName() ) );
   std::auto_ptr<Register::Invoicing::Manager>
-      invman(Register::Invoicing::Manager::create(&db,docman.get(),&mm));
+      invman(Register::Invoicing::Manager::create(dbMan.get(),docman.get(),&mm));
   Register::Invoicing::List *invl = invman->createList();
-  invl->setIdFilter(id);
-  invl->reload();
+  Database::Filters::Invoice *invFilter = new Database::Filters::InvoiceImpl();
+  Database::Filters::Union *unionFilter = new Database::Filters::Union();
+  invFilter->addId().setValue(Database::ID(id));
+  unionFilter->addFilter(invFilter);
+  invl->reload(*unionFilter);
   if (invl->getCount() != 1) {
-    db.Disconnect();
     throw ccReg::Admin::ObjectNotFound();
   }
   ccReg::Invoicing::Invoice* inv = new ccReg::Invoicing::Invoice;
   fillInvoice(inv, invl->get(0));
-  db.Disconnect();
   return inv;
 }
 
@@ -1578,19 +1583,12 @@ ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *l
 
 char* ccReg_Admin_i::getCreditByZone(const char*registrarHandle, ccReg::TID zone) {
   Logging::Context ctx(server_name_);
-
-  DB ldb;
-  try {
-    ldb.OpenDatabase(m_connection_string.c_str());
-    std::auto_ptr<Register::Invoicing::Manager> invman(Register::Invoicing::Manager::create(&ldb,NULL,NULL));
-    char *ret = DUPSTRC(formatMoney(invman->getCreditByZone(registrarHandle,zone)));
-    ldb.Disconnect();
-    return ret;
-  }
-  catch (...) {
-    ldb.Disconnect();
-    throw ccReg::Admin::SQL_ERROR();
-  }
+  std::auto_ptr<Database::Manager> dbMan(new Database::Manager(
+              new Database::ConnectionFactory(m_connection_string)));
+  std::auto_ptr<Register::Invoicing::Manager>
+      invman(Register::Invoicing::Manager::create(dbMan.get()));
+  char *ret = DUPSTRC(formatMoney(invman->getCreditByZone(registrarHandle, zone)));
+  return ret;
 }
 
 void ccReg_Admin_i::generateLetters() {
