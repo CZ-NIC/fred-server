@@ -34,6 +34,7 @@
 
 #include "model_field.h"
 #include "model_field_attrs.h"
+#include "model_field_list.h"
 #include "job_queue.h"
 
 #include "db/query/query.h"
