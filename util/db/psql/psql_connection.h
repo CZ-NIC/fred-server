@@ -72,6 +72,8 @@ public:
    */
 
   virtual void open(const std::string& _conn_info) throw (ConnectionFailed) {
+    conn_info_ = _conn_info;
+    close();
     psql_conn_ = PQconnectdb(_conn_info.c_str());
     if (PQstatus(psql_conn_) != CONNECTION_OK) {
       PQfinish(psql_conn_);
