@@ -46,7 +46,9 @@ PKG_PROG_PKG_CONFIG
 AC_CHECK_LIB([pthread], [pthread_exit])
 
 # Check for omniORB
-PKG_CHECK_MODULES(OMNIORB4, [omniORB4 != 4.1.1, omniDynamic4, omnithread3])
+PKG_CHECK_MODULES(OMNIORB4, [omniORB4 >= 4.1.1, omniDynamic4, omnithread3])
+# check for libxml2
+PKG_CHECK_MODULES(XML2, [libxml-2.0 >= 2.5.0])
 
 AX_BOOST_BASE
 AX_BOOST_DATE_TIME

@@ -1,9 +1,11 @@
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
 AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) \
+			  $(XML2_CFLAGS) \
 			  -I$(top_srcdir)/util -I$(top_srcdir)/src -I$(top_builddir)/src \
 			  -I$(top_srcdir)
 LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
+		$(XML2_LIBS) \
 	$(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
         $(top_builddir)/src/register/libfred.a \
 	$(top_builddir)/src/model/libmodel.a \
