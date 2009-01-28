@@ -22,9 +22,55 @@
 #include "common_impl.h"
 #include "bank.h"
 #include "log/logger.h"
+#include <libxml/xmlwriter.h>
+#include <libxml/parser.h>
+#include <libxml/xmlmemory.h>
+#include <libxml/tree.h>
+#include <libxml/encoding.h>
 
 namespace Register {
 namespace Banking {
+
+#define XML_NODE_NONE
+#define XML_NODE_ELEMENT
+#define XML_NODE_ATTRIBUTE
+#define XML_NODE_TEXT
+#define XML_NODE_CDATA
+#define XML_NODE_ENTITY_REFERENCE
+#define XML_NODE_ENTITY
+#define XML_NODE_PROCESSING_INSTRUCTION
+#define XML_NODE_COMMENT
+#define XML_NODE_DOCUMENT
+#define XML_NODE_DOCUMENT_TYPE
+#define XML_NODE_DOCUMENT_FRAGMENT
+#define XML_NODE_NOTATION
+#define XML_NODE_WHITESPACE
+#define XML_NODE_SIGNIFICANT_WHITESPACE
+#define XML_NODE_END_ELEMENT
+#define XML_NODE_END_ENTITY
+#define XML_NODE_XML_DECLARATION
+
+#define STATEMENTS_ROOT             "statements"
+#define STATEMENT_STATEMENT         "statement"
+#define STATEMENT_ACCOUNT_NUMBER    "account_number"
+#define STATEMENT_NUMBER            "number"
+#define STATEMENT_DATE              "date"
+#define STATEMENT_BALANCE           "balance"
+#define STATEMENT_OLD_DATE          "old_date"
+#define STATEMENT_OLD_BALANCE       "oldBalance"
+#define STATEMENT_CREDIT            "credit"
+#define STATEMENT_DEBET             "debet"
+#define STATEMENT_ITEMS             "items"
+#define ITEM_ITEM                   "item"
+#define ITEM_ACCOUNT_NUMBER         "account_number"
+#define ITEM_ACCOUNT_BANK_CODE      "account_bank_code"
+#define ITEM_CONST_SYMBOL           "const_symbol"
+#define ITEM_VAR_SYMBOL             "var_symbol"
+#define ITEM_SPEC_SYMBOL            "spec_symbol"
+#define ITEM_PRICE                  "price"
+#define ITEM_MEMO                   "memo"
+#define ITEM_DATE                   "date"
+
 
 #define TAGSTART(tag) "<"#tag">"
 #define TAGEND(tag) "</"#tag">"
@@ -34,6 +80,105 @@ namespace Banking {
     ((str.empty()) ? "NULL" : "'" + str + "'")
 #define transformId(id)         \
     ((id.to_string().compare("0") == 0) ? "NULL" : id.to_string())
+
+class XMLcreator {
+private:
+    xmlBuffer       *m_buffer;
+    xmlTextWriter   *m_writer;
+    bool            m_writeXmlHeader;
+public:
+    XMLcreator(): m_buffer(NULL), m_writer(NULL)
+    { }
+    ~XMLcreator()
+    {
+        if (m_writer != NULL) {
+            xmlFreeTextWriter(m_writer);
+        }
+        xmlBufferFree(m_buffer);
+    }
+    bool init(bool writeXmlHeader = false)
+    {
+        m_writeXmlHeader = writeXmlHeader;
+        m_buffer = xmlBufferCreate();
+        if (m_buffer == NULL) {
+            return false;
+        }
+        m_writer = xmlNewTextWriterMemory(m_buffer, 0);
+        if (m_writer == NULL) {
+            return false;
+        }
+        if (m_writeXmlHeader) {
+            xmlTextWriterStartDocument(m_writer, NULL, NULL, NULL);
+        }
+        return true;
+    }
+    void start(std::string name)
+    {
+        if (xmlTextWriterStartElement(
+                    m_writer, (const xmlChar *)name.c_str()) < 0) {
+            throw std::exception();
+        }
+    }
+    void start(const char *name)
+    {
+        if (xmlTextWriterStartElement(
+                    m_writer, (const xmlChar *)name) < 0) {
+            throw std::exception();
+        }
+    }
+    void end()
+    {
+        if (xmlTextWriterEndElement(m_writer) < 0) {
+            throw std::exception();
+        }
+    }
+    void text(std::string name, std::string value)
+    {
+        if (xmlTextWriterWriteFormatElement(
+                    m_writer, (const xmlChar *)name.c_str(), value.c_str()) < 0) {
+            throw std::exception();
+        }
+    }
+    void text(std::string name, const char *value)
+    {
+        if (xmlTextWriterWriteFormatElement(
+                    m_writer, (const xmlChar *)name.c_str(), value) < 0) {
+            throw std::exception();
+        }
+    }
+    void text(std::string name, int value)
+    {
+        if (xmlTextWriterWriteFormatElement(
+                    m_writer, (const xmlChar *)name.c_str(), "%d", value) < 0) {
+            throw std::exception();
+        }
+    }
+    void text(std::string name, double value)
+    {
+        if (xmlTextWriterWriteFormatElement(
+                    m_writer, (const xmlChar *)name.c_str(), "%lf", value) < 0) {
+            throw std::exception();
+        }
+    }
+    void text(std::string name, Database::ID value)
+    {
+        this->text(name, value.to_string());
+    }
+    void text(std::string name, Database::Date value)
+    {
+        this->text(name, value.to_string());
+    }
+    void text(std::string name, Database::Money value)
+    {
+        this->text(name, value.format());
+    }
+    std::string finalize()
+    {
+        xmlFreeTextWriter(m_writer);
+        m_writer = NULL;
+        return std::string((const char *)m_buffer->content);
+    }
+};
 
 class PaymentImpl:
     virtual public Payment {
@@ -1022,38 +1167,65 @@ public:
     virtual void reload()
     { }
 
-    virtual void exportXML(std::ostream &out)
+    void
+    writeItem(XMLcreator &xml, StatementItem *item)
     {
-        out << TAGSTART(statements);
+        xml.start(ITEM_ITEM);
+        xml.text(ITEM_ACCOUNT_NUMBER, item->getAccountNumber());
+        xml.text(ITEM_ACCOUNT_BANK_CODE, item->getBankCode());
+        xml.text(ITEM_CONST_SYMBOL, item->getConstSymbol());
+        xml.text(ITEM_VAR_SYMBOL, item->getVarSymbol());
+        xml.text(ITEM_SPEC_SYMBOL, item->getSpecSymbol());
+        xml.text(ITEM_PRICE, item->getPrice());
+        xml.text(ITEM_MEMO, item->getMemo());
+        xml.text(ITEM_DATE, item->getDate());
+        xml.end();
+    }
+
+    void
+    writeStatement(XMLcreator &xml, Statement *stat)
+    {
+        xml.start(STATEMENT_STATEMENT);
+        xml.text(STATEMENT_ACCOUNT_NUMBER, stat->getAccountId());
+        xml.text(STATEMENT_NUMBER, stat->getNumber());
+        xml.text(STATEMENT_DATE, stat->getDate());
+        xml.text(STATEMENT_BALANCE, stat->getBalance());
+        xml.text(STATEMENT_OLD_DATE, stat->getOldDate());
+        xml.text(STATEMENT_OLD_BALANCE, stat->getOldBalance());
+        xml.text(STATEMENT_CREDIT, stat->getCredit());
+        xml.text(STATEMENT_DEBET, stat->getDebet());
+        xml.start(STATEMENT_ITEMS);
+        for (int i = 0; i < (int)stat->getStatementItemCount(); i++) {
+            StatementItem *item = (StatementItem *)stat->getStatementItemByIdx(i);
+            writeItem(xml, item);
+        }
+        xml.end();
+        xml.end();
+    }
+
+    void
+    writeStatements(XMLcreator &xml)
+    {
+        xml.start(STATEMENTS_ROOT);
         for (int i = 0; i < (int)getCount(); i++) {
             Statement *stat = get(i);
-            out << TAGSTART(statement)
-                << TAG(account_number, stat->getAccountId())
-                << TAG(number, stat->getNumber())
-                << TAG(date, stat->getDate())
-                << TAG(balance, stat->getBalance().format())
-                << TAG(old_date, stat->getOldDate())
-                << TAG(oldBalance, stat->getOldBalance().format())
-                << TAG(credit, stat->getCredit().format())
-                << TAG(debet, stat->getDebet().format())
-                << TAGSTART(items);
-            for (int j = 0; j < (int)stat->getStatementItemCount(); j++) {
-                StatementItem *itm = (StatementItem *)stat->getStatementItemByIdx(j);
-                out << TAGSTART(item)
-                    << TAG(accout_number,itm->getAccountNumber())
-                    << TAG(accout_bank_code,itm->getBankCode())
-                    << TAG(const_symbol,itm->getConstSymbol())
-                    << TAG(var_symbol,itm->getVarSymbol())
-                    << TAG(spec_symbol,itm->getSpecSymbol())
-                    << TAG(price,itm->getPrice().format())
-                    << TAG(memo,itm->getMemo())
-                    << TAG(date,itm->getDate())
-                    << TAGEND(item);
-            }
-            out << TAGEND(items)
-                << TAGEND(statement);
+            writeStatement(xml, stat);
         }
-        out << TAGEND(statements);
+        xml.end();
+    }
+
+    virtual void exportXML(std::ostream &out)
+    {
+        XMLcreator xml;
+        if (!xml.init()) {
+            return;
+        }
+        try {
+            writeStatements(xml);
+        } catch (...) {
+            return;
+        }
+        out << xml.finalize();
     } // void exportXML(std::ostream &out)
 
 }; // class ListImpl
