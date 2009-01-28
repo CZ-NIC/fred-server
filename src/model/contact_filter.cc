@@ -157,7 +157,7 @@ Value<std::string>& ContactHistoryImpl::addEmail() {
 }
 
 Value<std::string>& ContactHistoryImpl::addNotifyEmail() {
-  Value<std::string> *tmp = new Value<std::string>(Column("email", joinContactTable()));
+  Value<std::string> *tmp = new Value<std::string>(Column("notifyemail", joinContactTable()));
   tmp->setName("NotifyEmail");
   add(tmp);
   return *tmp;
