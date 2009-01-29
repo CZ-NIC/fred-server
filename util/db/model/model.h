@@ -31,9 +31,12 @@
 #include <vector>
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
+#include <sstream>
 
 #include "model_field.h"
+#include "model_field_related.h"
 #include "model_field_attrs.h"
+#include "model_field_macros.h"
 #include "model_field_list.h"
 #include "job_queue.h"
 
@@ -66,7 +69,7 @@ public:
 
       jobs.push(iquery);
 
-      BOOST_FOREACH(Field::Base_<_class> *_field, _object->getFields()) {
+      BOOST_FOREACH(typename Field::List<_class>::value_type _field, _object->getFields()) {
         _field->serialize(jobs, *iquery, _object);
       }
 
@@ -104,7 +107,7 @@ public:
 
       jobs.push(uquery);
 
-      BOOST_FOREACH(Field::Base_<_class> *_field, _object->getFields()) {
+      BOOST_FOREACH(typename Field::List<_class>::value_type _field, _object->getFields()) {
         _field->serialize(jobs, *uquery, _object);
       }
 
@@ -153,6 +156,40 @@ public:
       throw;
     }
 #endif
+  }
+
+
+  /**
+   * TEST: load object by PK value
+   */
+  template<class _class, class _pk_type>
+  void load(_class *_object, const _pk_type &_value) {
+    try {
+      Field::PrimaryKey<_class, _pk_type> *pk = 0;
+      BOOST_FOREACH(typename Field::List<_class>::value_type _field, _object->getFields()) {
+        if (_field->getAttrs().isPrimaryKey())
+          pk = dynamic_cast<Field::PrimaryKey<_class, _pk_type>* >(_field);
+      }
+
+      std::stringstream query;
+
+      query << "SELECT * FROM " << _class::table_name << " WHERE "
+            << pk->getName() << " = " << _value;
+                    
+
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Result r = conn.exec(query.str());
+      
+      if (r.size() == 1) {
+        unsigned i = 0;
+        BOOST_FOREACH(Field::Base_<_class> *_field, _object->getFields()) {
+          _field->setValue(_object, r[0][i++]);
+        }
+      }
+    }
+    catch (Database::Exception &_err) {
+      LOGGER(PACKAGE).error(_err.what());
+    }
   }
 };
 

@@ -27,6 +27,7 @@
 
 #include <vector>
 #include <boost/assign/list_of.hpp>
+#include <boost/foreach.hpp>
 
 #include "model_field.h"
 
@@ -37,6 +38,9 @@ namespace Field {
 template<class model_class>
 class List : public std::vector<Base_<model_class>* > {
 public:
+  typedef std::vector<Base_<model_class>* >  super;
+
+
   /**
    * Constuctors and destructor
    */
@@ -55,6 +59,17 @@ public:
 
 
   virtual ~List() {
+  }
+
+
+  template<class _pk_type>
+  Field::PrimaryKey<model_class, _pk_type>* getPrimaryKey() const {
+    BOOST_FOREACH(typename super::value_type field, *this) {
+      if (field->getAttrs().isPrimaryKey()) {
+        return dynamic_cast<Field::PrimaryKey<model_class, _pk_type>* >(field);
+      }
+    }
+    return 0;
   }
 };
 

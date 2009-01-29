@@ -90,6 +90,9 @@ public:
 
   virtual void serialize(::Model::JobQueue &_jobs, Database::UpdateQuery &_query, class_name *_object) = 0; 
 
+
+  virtual void setValue(class_name *_object, const Database::Value &_value) = 0;
+
 protected:
   const std::string      &table_name_;
   std::string            name_;
@@ -156,6 +159,11 @@ public:
     else {
       _query.add(this->getName(), Database::Value(value_(*_object)));
     }
+  }
+
+
+  void setValue(class_name *_object, const Database::Value &_value) {
+    value_(*_object) = _value;
   }
 
 
@@ -270,26 +278,24 @@ protected:
 template<class _class, class _type>
 class OneToMany : public Basic<_class, Model::List<_type> > {
 public:
-  typedef Basic<_class, Model::List<_type> > super;
-  typedef typename super::class_name         class_name;
-  typedef typename super::value_type         value_type;
-  typedef typename super::field_type         field_type;
-  typedef typename super::variable_pointer   variable_pointer;
+  typedef Basic<_class, Model::List<_type> >  super;
+  typedef typename super::class_name          class_name;
+  typedef typename super::value_type          value_type;
+  typedef typename super::field_type          field_type;
+  typedef typename super::variable_pointer    variable_pointer;
 
-  OneToMany(const variable_pointer &_ptr) {
+  OneToMany(const variable_pointer &_ptr) : super(_ptr, "", "") {
   }
 
 
   void serialize(::Model::JobQueue &_jobs, Database::InsertQuery &_query, class_name *_object) {
-    BOOST_FOREACH(field_type *_model, this->value_(*_object)) {
-      _model->insert();
+    BOOST_FOREACH(typename value_type::value_type _model, this->value_(*_object).get()) {
     }
   }
 
 
   void serialize(::Model::JobQueue &_jobs, Database::UpdateQuery &_query, class_name *_object) {
   }
-
 };
 
 
@@ -367,20 +373,6 @@ protected:
 
 }
 }
-
-
-/**
- * Awful defining macros (but it save some typing anyway)
- */
-
-#define DEFINE_BASIC_FIELD(_class, _type, _name, _param1, _param2, _param3, _param4) \
-Model::Field::Basic<_class, _type> _class::_name = Model::Field::Basic<_class, _type>(&_class::_param1, _class::_param2, _param3, Model::Field::Attributes()_param4);
-
-#define DEFINE_PRIMARY_KEY(_class, _type, _name, _param1, _param2, _param3, _param4) \
-Model::Field::PrimaryKey<_class, _type> _class::_name = Model::Field::PrimaryKey<_class, _type>(&_class::_param1, _class::_param2, _param3, Model::Field::Attributes()_param4);
-
-#define DEFINE_FOREIGN_KEY(_class1, _class2, _type, _name, _param1, _param2, _param3, _param4, _param5) \
-Model::Field::ForeignKey<_class1, _type, _class2> _class1::_name = Model::Field::ForeignKey<_class1, _type, _class2>(&_class1::_param1, _class1::_param2, _param3, _class2::_param4, Model::Field::Attributes()_param5);
 
 
 #endif /*FIELD_MODEL_H_*/

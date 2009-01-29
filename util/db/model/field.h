@@ -45,7 +45,7 @@ public:
         is_set_(true) { }
 
 
-  ~Field() { }
+  virtual ~Field() { }
 
 
   operator value_type() const {
@@ -70,16 +70,11 @@ public:
   }
 
 
-  value_type& get() {
-    return value_;
-  }
-
-
   template<class __type>
   friend std::ostream& operator<<(std::ostream &_os, const Field<__type> &_field);
 
 
-private:
+protected:
   value_type value_;
   bool       is_set_;
 };
@@ -116,7 +111,7 @@ public:
         is_set_(true) { }
 
 
-  ~Field() { }
+  virtual ~Field() { }
 
 
   operator value_type() const {
@@ -152,7 +147,7 @@ public:
   friend std::ostream& operator<<(std::ostream &_os, const Field<std::string> &_field);
 
 
-private:
+protected:
   value_type value_;
   bool       is_set_;
 };
@@ -163,6 +158,34 @@ std::ostream& operator<<(std::ostream &_os, const Field<std::string> &_field) {
 }
 
 
+
+namespace Lazy {
+
+
+template<class _type>
+class Field : public ::Field::Field<_type> {
+public:
+  typedef ::Field::Field<_type>       super;
+  typedef typename super::value_type  value_type;
+
+
+  virtual ~Field() {
+    if (this->value_) {
+      delete this->value_;
+      this->value_ = 0;
+    }
+  }
+
+
+  Field<value_type>& operator =(const value_type &_value) {
+    this->value_ = _value;
+    this->is_set_ = true;
+    return *this;
+  }
+};
+
+
+}
 
 }
 
