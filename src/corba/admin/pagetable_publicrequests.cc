@@ -12,7 +12,6 @@ ccReg::Filters::Compound_ptr ccReg_PublicRequests_i::add() {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_PublicRequests_i::add()");
-  it.clearF();
   Database::Filters::PublicRequest *f = new Database::Filters::PublicRequestImpl();
   uf.addFilter(f);
   return it.addE(f);

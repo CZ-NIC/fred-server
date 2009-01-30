@@ -12,7 +12,6 @@ ccReg::Filters::Compound_ptr ccReg_Contacts_i::add() {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_Contacts_i::add()");
-  it.clearF();
   Database::Filters::Contact *f = new Database::Filters::ContactHistoryImpl();
   uf.addFilter(f);
   return it.addE(f);

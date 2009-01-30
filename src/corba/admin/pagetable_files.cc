@@ -12,7 +12,6 @@ ccReg::Filters::Compound_ptr ccReg_Files_i::add() {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_Files_i::add()");
-  it.clearF();
   Database::Filters::File *f = new Database::Filters::FileImpl(true);
   uf.addFilter(f);
   return it.addE(f);

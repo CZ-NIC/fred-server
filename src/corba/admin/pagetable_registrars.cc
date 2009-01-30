@@ -22,7 +22,6 @@ ccReg_Registrars_i::add() {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_Registrars_i::add()");
-  it.clearF();
   Database::Filters::Registrar *f = new Database::Filters::RegistrarImpl(true);
   uf.addFilter(f);
   return it.addE(f); 

@@ -12,7 +12,6 @@ ccReg::Filters::Compound_ptr ccReg_Invoices_i::add() {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_Invoices_i::add()");
-  it.clearF();
   Database::Filters::Invoice *filter = new Database::Filters::InvoiceImpl();
   uf.addFilter(filter);
   return it.addE(filter);

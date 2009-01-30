@@ -12,7 +12,6 @@ ccReg::Filters::Compound_ptr ccReg_Domains_i::add() {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_Domains_i::add()");
-  it.clearF();
   Database::Filters::Domain *f = new Database::Filters::DomainHistoryImpl();
   uf.addFilter(f);
   return it.addE(f);

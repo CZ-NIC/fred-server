@@ -16,7 +16,6 @@ ccReg_KeySets_i::add()
   Logging::Context ctx(base_context_);
 
     TRACE("[CALL] ccReg_KeySets_i::add()");
-    it.clearF();
     Database::Filters::KeySet *f = new Database::Filters::KeySetHistoryImpl();
     uf.addFilter(f);
     return it.addE(f);

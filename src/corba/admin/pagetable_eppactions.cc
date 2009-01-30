@@ -12,7 +12,6 @@ ccReg::Filters::Compound_ptr ccReg_EPPActions_i::add() {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_EPPActions_i::add()");
-  it.clearF();
   Database::Filters::EppAction *f = new Database::Filters::EppActionImpl();
   uf.addFilter(f);
   return it.addE(f);
