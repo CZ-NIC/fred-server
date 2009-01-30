@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -31,6 +32,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
+noinst_PROGRAMS = test-register$(EXEEXT)
 subdir = src/register
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -62,6 +64,21 @@ am_libfred_a_OBJECTS = register.$(OBJEXT) zone.$(OBJEXT) \
 	public_request.$(OBJEXT) mail.$(OBJEXT) file.$(OBJEXT) \
 	keyset.$(OBJEXT)
 libfred_a_OBJECTS = $(am_libfred_a_OBJECTS)
+PROGRAMS = $(noinst_PROGRAMS)
+am_test_register_OBJECTS = test.$(OBJEXT)
+test_register_OBJECTS = $(am_test_register_OBJECTS)
+am__DEPENDENCIES_1 =
+test_register_DEPENDENCIES = libfred.a \
+	$(top_builddir)/src/model/libmodel.a \
+	$(top_builddir)/util/libutil.a $(top_builddir)/util/db/libdb.a \
+	$(top_builddir)/util/log/liblog.a \
+	$(top_builddir)/util/conf/libconf.a \
+	$(top_builddir)/util/types/libtypes.a \
+	$(top_builddir)/src/old_utils/liboldutils.a \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+test_register_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(test_register_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -74,8 +91,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libfred_a_SOURCES)
-DIST_SOURCES = $(libfred_a_SOURCES)
+SOURCES = $(libfred_a_SOURCES) $(test_register_SOURCES)
+DIST_SOURCES = $(libfred_a_SOURCES) $(test_register_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -184,6 +201,8 @@ SHELL = @SHELL@
 STRIP = @STRIP@
 SYSCONFDIR = @SYSCONFDIR@
 VERSION = @VERSION@
+XML2_CFLAGS = @XML2_CFLAGS@
+XML2_LIBS = @XML2_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -228,12 +247,12 @@ sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LIBRARIES = libfred.a
-AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(LIBIDN_CFLAGS) -I$(top_srcdir)/src \
- 	      -I$(top_srcdir)/util -I$(top_srcdir)
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(LIBIDN_CFLAGS) \
+			  $(XML2_CFLAGS) -I$(top_srcdir)/src \
+			  -I$(top_srcdir)/util -I$(top_srcdir) 
 
 libfred_a_SOURCES = register.cc zone.cc blacklist.cc domain.cc registrar.cc \
                     object_impl.cc contact.cc nsset.cc auth_info.cc invoice.cc \
@@ -247,6 +266,21 @@ libfred_a_SOURCES = register.cc zone.cc blacklist.cc domain.cc registrar.cc \
                     domain.h invoice.h object.h registrar.h filter.h \
                     public_request.h mail.h file.h \
 					          keyset.h
+
+test_register_SOURCES = test.cc
+test_register_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+test_register_LDADD = libfred.a \
+						                $(top_builddir)/src/model/libmodel.a \
+										$(top_builddir)/util/libutil.a \
+            				    		$(top_builddir)/util/db/libdb.a \
+                						$(top_builddir)/util/log/liblog.a \
+										$(top_builddir)/util/conf/libconf.a \
+										$(top_builddir)/util/types/libtypes.a \
+                						$(top_builddir)/src/old_utils/liboldutils.a \
+                						$(BOOST_DATE_TIME_LIB) \
+                						$(BOOST_REGEX_LIB) \
+                						$(BOOST_THREAD_LIB) \
+										$(XML2_LIBS)
 
 all: all-am
 
@@ -289,6 +323,12 @@ libfred.a: $(libfred_a_OBJECTS) $(libfred_a_DEPENDENCIES)
 	$(libfred_a_AR) libfred.a $(libfred_a_OBJECTS) $(libfred_a_LIBADD)
 	$(RANLIB) libfred.a
 
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+test-register$(EXEEXT): $(test_register_OBJECTS) $(test_register_DEPENDENCIES) 
+	@rm -f test-register$(EXEEXT)
+	$(test_register_LINK) $(test_register_OBJECTS) $(test_register_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -315,6 +355,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/public_request.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/register.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registrar.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zone.Po@am__quote@
 
 .cc.o:
@@ -406,7 +447,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LIBRARIES)
+all-am: Makefile $(LIBRARIES) $(PROGRAMS)
 installdirs:
 install: install-am
 install-exec: install-exec-am
@@ -434,7 +475,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-noinstLIBRARIES mostlyclean-am
+clean-am: clean-generic clean-noinstLIBRARIES clean-noinstPROGRAMS \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -492,33 +534,18 @@ uninstall-am:
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-noinstLIBRARIES ctags distclean distclean-compile \
-	distclean-generic distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+	clean-noinstLIBRARIES clean-noinstPROGRAMS ctags distclean \
+	distclean-compile distclean-generic distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
 	uninstall-am
 
-
-### noinst_PROGRAMS = test-register
-### test_register_SOURCES = test.cc
-### test_register_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
-### test_register_LDADD   = libfred.a \
-#						                ### $(top_builddir)/src/model/libmodel.a \
-#										### $(top_builddir)/util/libutil.a \
-#            				    		### $(top_builddir)/util/db/libdb.a \
-#                						### $(top_builddir)/util/log/liblog.a \
-#										### $(top_builddir)/util/conf/libconf.a \
-#										### $(top_builddir)/util/types/libtypes.a \
-#                						### $(top_builddir)/src/old_utils/liboldutils.a \
-#                						### $(BOOST_DATE_TIME_LIB) \
-#                						### $(BOOST_REGEX_LIB) \
-#                						### $(BOOST_THREAD_LIB)
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

@@ -19,7 +19,9 @@ private:
   std::string type_desc_;
   Database::DateTime create_time_;
   unsigned long size_;
-  
+protected:
+  Database::Connection *conn_;
+  Manager *man_;
 public:
   FileImpl(Database::ID _id, const std::string& _name, const std::string& _path,
            const std::string& _mimetype, unsigned _type, 
@@ -31,8 +33,13 @@ public:
                                         type_(_type),
                                         type_desc_(_type_desc),
                                         create_time_(_create_time),
-                                        size_(_size) {
+                                        size_(_size),
+                     conn_(NULL), man_(NULL) {
   }
+  FileImpl(Database::Connection *conn, Manager *manager):
+      conn_(conn), man_(manager)
+  { }
+  FileImpl():CommonObjectImpl() {}
   
   virtual const std::string& getName() const {
     return name_;
@@ -60,6 +67,93 @@ public:
   
   virtual const unsigned long getSize() const {
     return size_;
+  }
+
+  virtual void setName(std::string name)
+  {
+      name_ = name;
+  }
+  virtual void setPath(std::string path)
+  {
+      path_ = path;
+  }
+  virtual void setMimeType(std::string mimetype)
+  {
+      mimetype_ = mimetype;
+  }
+  virtual void setType(unsigned int type)
+  {
+      type_ = type;
+  }
+  virtual void setCreateTime(Database::DateTime create_time)
+  {
+      create_time_ = create_time;
+  }
+  virtual void setCreateTime(std::string create_time)
+  {
+      create_time_ = Database::DateTime(create_time);
+  }
+  virtual void setSize(unsigned long size)
+  {
+      size_ = size;
+  }
+  void setManager(Manager* man, Database::Connection* conn) {
+    man_ = man;
+    conn_ = conn;
+  }
+  virtual void save()
+  {
+    TRACE("[CALL] Register::File::FileImpl::save()");
+    if (id_) {
+        Database::Query update_file;
+        update_file.buffer()
+            << "UPDATE files SET "
+            << "name = " << name_
+            << ", path = " << path_
+            << ", mimetype = " << mimetype_
+            << ", crdate = now()"
+            << ", filesize = " << size_
+            << ", filetype = " << type_
+            << " WHERE id = " << id_;
+        try {
+            conn_->exec(update_file);
+      
+            LOGGER(PACKAGE).info(
+                    boost::format("file id='%1%' updated successfully") % 
+                    id_);
+        }
+        catch (Database::Exception& ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        }
+        catch (std::exception& ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+      }
+    } else {
+        Database::InsertQuery insert_file("files");
+        insert_file.add("path", path_);
+        insert_file.add("name", name_);
+        insert_file.add("mimetype", mimetype_);
+        insert_file.add("filetype", type_);
+        insert_file.add("filesize", size_);
+        try {
+            Database::Transaction transaction(*conn_);
+            transaction.exec(insert_file);
+            transaction.commit();
+            Database::Sequence pp_seq(*conn_, "files_id_seq");
+            id_ = pp_seq.getCurrent();
+            LOGGER(PACKAGE).info(boost::format("file id='%1%' created successfully")
+                    % id_);
+        } catch (Database::Exception& ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        }
+        catch (std::exception& ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            throw;
+        }
+    }
   }
 };
 
@@ -205,10 +299,17 @@ public:
   ManagerImpl(Database::Manager *_db_manager) : db_manager_(_db_manager),
                                              conn_(db_manager_->getConnection()) {
   }
+  ManagerImpl(Database::Connection *_conn):
+      db_manager_(NULL), conn_(_conn)
+  { } 
   
   virtual ~ManagerImpl() {
     boost::checked_delete<Database::Connection>(conn_);
   }  
+  virtual File *createFile() const
+  {
+      return new FileImpl(conn_, (Manager *)this);
+  }
   
   List* createList() const {
     return new ListImpl(conn_, (Manager *)this);
@@ -217,8 +318,13 @@ public:
 };
 
 Manager* Manager::create(Database::Manager *_db_manager) {
-    TRACE("[CALL] Register::File::Manager::create()");
+    TRACE("[CALL] Register::File::Manager::create(Database::Manager *)");
     return new ManagerImpl(_db_manager);
+};
+
+Manager* Manager::create(Database::Connection *_conn) {
+    TRACE("[CALL] Register::File::Manager::create(Database::Connection *)");
+    return new ManagerImpl(_conn);
 };
 
 }

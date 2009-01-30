@@ -30,4 +30,5 @@ test_register_LDADD   = libfred.a \
                 						$(top_builddir)/src/old_utils/liboldutils.a \
                 						$(BOOST_DATE_TIME_LIB) \
                 						$(BOOST_REGEX_LIB) \
-                						$(BOOST_THREAD_LIB)
+                						$(BOOST_THREAD_LIB) \
+										$(XML2_LIBS)
