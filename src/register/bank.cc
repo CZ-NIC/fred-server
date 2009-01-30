@@ -81,6 +81,13 @@ namespace Banking {
 #define transformId(id)         \
     ((id.to_string().compare("0") == 0) ? "NULL" : id.to_string())
 
+#define TEST_NODE_PRESENCE(parent, name)                                \
+    if (!parent.hasChild(name)) {                                       \
+        LOGGER(PACKAGE).error(boost::format("``%1%'' node not found")   \
+                % name);                                                \
+        return false;                                                   \
+    }
+
 std::string
 loadInStream(std::istream &in)
 {
@@ -823,6 +830,25 @@ public:
             insert();
         }
     }
+    bool fromXML(XMLnode item)
+    {
+        TRACE("[CALL] Register::Banking;:StatementItemImpl::fromXML()");
+        TEST_NODE_PRESENCE(item, ITEM_ACCOUNT_NUMBER);
+        TEST_NODE_PRESENCE(item, ITEM_ACCOUNT_BANK_CODE);
+        TEST_NODE_PRESENCE(item, ITEM_PRICE);
+        setAccountNumber(item.getChild(ITEM_ACCOUNT_NUMBER).getValue());
+        setBankCode(item.getChild(ITEM_ACCOUNT_BANK_CODE).getValue());
+        setConstSymbol(item.getChild(ITEM_CONST_SYMBOL).getValue());
+        setVarSymbol(item.getChild(ITEM_VAR_SYMBOL).getValue());
+        setSpecSymbol(item.getChild(ITEM_SPEC_SYMBOL).getValue());
+        Database::Money money;
+        money.format(item.getChild(ITEM_PRICE).getValue());
+        setPrice(money);
+        setMemo(item.getChild(ITEM_MEMO).getValue());
+        setDate(Database::Date(item.getChild(ITEM_DATE).getValue()));
+        std::cout << "\titem OK" << std::endl;
+        return true;
+    }
 }; // class StatementItemImpl
 
 class StatementImpl:
@@ -991,7 +1017,7 @@ public:
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
             throw;
         }
-    } // void update
+    } // void StatementImpl::update()
     void insert()
     {
         TRACE("[CALL] Register::Banking::StatementImpl::insert()");
@@ -1026,7 +1052,7 @@ public:
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
             throw;
         }
-    } // void insert
+    } // void StatementImpl::insert()
     virtual void save()
     {
         TRACE("[CALL] Register::Banking::StatementImpl::save()");
@@ -1039,6 +1065,65 @@ public:
     virtual StatementItem *createStatementItem()
     {
         return addStatementItem(StatementItemImpl(m_conn));
+    }
+    Database::ID getBankNumberId(std::string account_num, std::string bank_code)
+    {
+        Database::Query query;
+        query.buffer()
+            << "select id from bank_account where account_number = '"
+            << account_num << "' and bank_code='"
+            << bank_code << "'";
+        Database::Result res = m_conn->exec(query);
+        if (res.size() == 0) {
+            return Database::ID();
+        }
+        return *(*res.begin()).begin();
+    }
+    Database::ID getBankNumberId(std::string account_num)
+    {
+        std::string account;
+        std::string code;
+        account = account_num.substr(0, account_num.find('/'));
+        code = account_num.substr(account_num.find('/') + 1, std::string::npos);
+        return getBankNumberId(account, code);
+    }
+    bool fromXML(XMLnode node)
+    {
+        TRACE("[CALL] Register::Banking::StatementImpl::fromXML()");
+        TEST_NODE_PRESENCE(node, STATEMENT_ACCOUNT_NUMBER);
+        TEST_NODE_PRESENCE(node, STATEMENT_DATE);
+        TEST_NODE_PRESENCE(node, STATEMENT_OLD_DATE);
+        TEST_NODE_PRESENCE(node, STATEMENT_OLD_BALANCE);
+        TEST_NODE_PRESENCE(node, STATEMENT_BALANCE);
+        TEST_NODE_PRESENCE(node, STATEMENT_CREDIT);
+        TEST_NODE_PRESENCE(node, STATEMENT_DEBET);
+        setAccountId(getBankNumberId(
+                    node.getChild(STATEMENT_ACCOUNT_NUMBER).getValue()));
+        if (getAccountId() == Database::ID()) {
+            LOGGER(PACKAGE).error("account number does not exist in db");
+            return false;
+        }
+        setDate(Database::Date(node.getChild(STATEMENT_DATE).getValue()));
+        setOldDate(Database::Date(node.getChild(STATEMENT_OLD_DATE).getValue()));
+        Database::Money money;
+        money.format(node.getChild(STATEMENT_BALANCE).getValue());
+        setOldBalance(money);
+        money.format(node.getChild(STATEMENT_OLD_BALANCE).getValue());
+        setBalance(money);
+        money.format(node.getChild(STATEMENT_CREDIT).getValue());
+        setCredit(money);
+        money.format(node.getChild(STATEMENT_DEBET).getValue());
+        setDebet(money);
+        XMLnode items = node.getChild(STATEMENT_ITEMS);
+        for (int i = 0; i < items.getChildrenSize(); i++) {
+            StatementItemImpl *item =
+                dynamic_cast<StatementItemImpl *>(createStatementItem());
+            if (!item->fromXML(items.getChild(i))) {
+                return false;
+            }
+        }
+        std::cout << "statement OK" << std::endl;
+        return true;
     }
 }; // class StatementImpl
 
@@ -1492,6 +1577,16 @@ public:
                         "XML: root element name is not ``%1%''")
                     % STATEMENTS_ROOT);
             return false;
+        }
+        for (int i = 0; i < root.getChildrenSize(); i++) {
+            XMLnode statement = root.getChild(i);
+            std::auto_ptr<StatementImpl> stat(
+                    dynamic_cast<StatementImpl *>(
+                        createStatement()));
+            if (!stat->fromXML(statement)) {
+                return false;
+            }
+            stat->save();
         }
         return true;
     } // ManagerImpl::importInvoiceXml()
