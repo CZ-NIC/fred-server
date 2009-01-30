@@ -81,18 +81,6 @@ namespace Banking {
 #define transformId(id)         \
     ((id.to_string().compare("0") == 0) ? "NULL" : id.to_string())
 
-std::string
-loadInStream(std::istream &in)
-{
-    char ch;
-    std::stringstream ss;
-    while (!in.eof()) {
-        in.get(ch);
-        ss << ch;
-    }
-    return ss.str();
-}
-
 class XMLcreator {
 private:
     xmlBuffer       *m_buffer;
@@ -190,152 +178,7 @@ public:
         m_writer = NULL;
         return std::string((const char *)m_buffer->content);
     }
-}; // class XMLcreator;
-
-class XMLnode {
-private:
-    std::string             m_name;
-    std::string             m_value;
-    std::vector<XMLnode>    m_children;
-public:
-    XMLnode()
-    { }
-    XMLnode(const XMLnode &sec)
-    {
-        m_name = sec.getName();
-        m_value = sec.getValue();
-        for (int i = 0; i < sec.getChildrenSize(); i++) {
-            addChild(sec.getChild(i));
-        }
-    }
-    ~XMLnode()
-    { }
-    XMLnode operator=(const XMLnode &sec)
-    {
-        m_name = sec.getName();
-        m_value = sec.getValue();
-        for (int i = 0; i < sec.getChildrenSize(); i++) {
-            addChild(sec.getChild(i));
-        }
-        return sec;
-    }
-    void setName(std::string name)
-    {
-        m_name = name;
-    }
-    void setValue(std::string value)
-    {
-        m_value = value;
-    }
-    void addChild(XMLnode node)
-    {
-        m_children.push_back(node);
-    }
-    std::string getName() const
-    {
-        return m_name;
-    }
-    std::string getValue() const
-    {
-        return m_value;
-    }
-    int getChildrenSize() const
-    {
-        return m_children.size();
-    }
-    int getChildrenSize(std::string name) const
-    {
-        int size = 0;
-        for (int i = 0; i < getChildrenSize(); i++) {
-            if (name.compare(getChild(i).getName()) == 0) {
-                size++;
-            }
-        }
-        return size;
-    }
-    XMLnode getChild(int i) const
-    {
-        if (i > (int)m_children.size()) {
-            throw std::exception();
-        }
-        return m_children[i];
-    }
-    bool hasChild(std::string name) const
-    {
-        for (int i = 0; i < getChildrenSize(); i++) {
-            if (name.compare(getChild(i).getName()) == 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-    XMLnode getChild(std::string name) const
-    {
-        for (int i = 0; i < getChildrenSize(); i++) {
-            if (name.compare(getChild(i).getName()) == 0) {
-                return getChild(i);
-            }
-        }
-        return XMLnode();
-    }
-}; // class XMLnode;
-
-class XMLparser {
-private:
-    xmlDoc      *m_doc;
-    xmlNode     *m_root;
-    XMLnode     m_rootNode;
-    XMLnode parseNode(xmlNode *node)
-    {
-        XMLnode ret;
-        xmlNode *child;
-        ret.setName((const char *)node->name);
-        child = node->children;
-        if (child) {
-            if (child->type == XML_TEXT_NODE) {
-                if (*child->content != '\n') {
-                    ret.setValue((const char *)child->content);
-                }
-            }
-            for (; child; child = child->next) {
-                if (child->type == XML_ELEMENT_NODE) {
-                    ret.addChild(parseNode(child));
-                } else if (child->type == XML_TEXT_NODE) {
-                }
-            }
-        }
-        return ret;
-    }
-public:
-    XMLparser(): m_doc(NULL), m_root(NULL)
-    { }
-    ~XMLparser()
-    {
-    }
-    bool parse(std::string xml)
-    {
-        m_doc = xmlReadMemory(xml.c_str(), xml.length(), "", NULL, 0);
-        if (m_doc == NULL) {
-            return false;
-        }
-        m_root = xmlDocGetRootElement(m_doc);
-        if (m_root == NULL) {
-            return false;
-        }
-        try {
-            m_rootNode = parseNode(m_root);
-        } catch (...) {
-            return false;
-        }
-        xmlFreeDoc(m_doc);
-        xmlCleanupParser();
-        return true;
-    }
-    XMLnode getRootNode() const
-    {
-        return m_rootNode;
-    }
-}; // class XMLparse;
+};
 
 class PaymentImpl:
     virtual public Payment {
@@ -523,7 +366,7 @@ public:
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
             throw;
         }
-    } // void OnlineStatementImpl::update()
+    } // void update()
     void insert()
     {
         TRACE("[CALL] Register::Banking::OnlineStatement::insert()");
@@ -570,78 +413,16 @@ public:
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
             throw;
         }
-    } // void OnlineStatementImpl::insert()
-    Database::ID getBankNumberId(std::string account_num, std::string bank_code)
-    {
-        Database::Query query;
-        query.buffer()
-            << "select id from bank_account where account_number = '"
-            << account_num << "' and bank_code='"
-            << bank_code << "'";
-        Database::Result res = m_conn->exec(query);
-        if (res.size() == 0) {
-            return Database::ID();
-        }
-        return *(*res.begin()).begin();
-    }
-    Database::ID getBankNumberId(std::string account_num)
-    {
-        std::string account;
-        std::string code;
-        account = account_num.substr(0, account_num.find('/'));
-        code = account_num.substr(account_num.find('/') + 1, std::string::npos);
-        return getBankNumberId(account, code);
-    }
+    } // void insert()
     virtual void save() 
     {
-        TRACE("[CALL] Register::Banking::OnlineStatementImpl::save()");
+        TRACE("[CALL] Register::Banking::OnlineStatement::save()");
         if (id_) {
             update();
         } else {
             insert();
         }
     }
-    bool fromXML(XMLnode statement, XMLnode item)
-    {
-        TRACE("[CALL] Register::Banking::OnlineStatementImpl::fromXML()");
-        if (!statement.hasChild(STATEMENT_ACCOUNT_NUMBER)) {
-            LOGGER(PACKAGE).error("account number not found");
-            return false;
-        }
-        if (!item.hasChild(ITEM_ACCOUNT_NUMBER)) {
-            LOGGER(PACKAGE).error("account number not found");
-            return false;
-        }
-        if (!item.hasChild(ITEM_ACCOUNT_BANK_CODE)) {
-            LOGGER(PACKAGE).error("bank code not found");
-            return false;
-        }
-        if (!item.hasChild(ITEM_PRICE)) {
-            LOGGER(PACKAGE).error("price not found");
-            return false;
-        }
-        if (!item.hasChild(ITEM_DATE)) {
-            LOGGER(PACKAGE).error("date not found");
-            return false;
-        }
-        setAccountId(getBankNumberId(
-                statement.getChild(STATEMENT_ACCOUNT_NUMBER).getValue()));
-        if (getAccountId() == Database::ID()) {
-            LOGGER(PACKAGE).error("account number does not exist in db");
-            return false;
-        }
-        setAccountNumber(item.getChild(ITEM_ACCOUNT_NUMBER).getValue());
-        setBankCode(item.getChild(ITEM_ACCOUNT_BANK_CODE).getValue());
-        setConstSymbol(item.getChild(ITEM_CONST_SYMBOL).getValue());
-        setVarSymbol(item.getChild(ITEM_VAR_SYMBOL).getValue());
-        Database::Money money;
-        money.format(item.getChild(ITEM_PRICE).getValue());
-        setPrice(money);
-        setMemo(item.getChild(ITEM_MEMO).getValue());
-        setCrDate(Database::Date(item.getChild(ITEM_DATE).getValue()));
-
-        return true;
-    } // bool OnlineStatementImpl::fromXML(XMLnode)
 }; // class OnlineStatementImpl
 
 class StatementItemImpl:
@@ -768,7 +549,7 @@ public:
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
             throw;
         }
-    } // void StatementItemImpl::update()
+    } // void update
     void insert()
     {
         TRACE("[CALL] Register::Banking::StatementItemImpl::insert()");
@@ -813,7 +594,7 @@ public:
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
             throw;
         }
-    } // void StatementItemImpl::insert()
+    } // void insert
     void save()
     {
         TRACE("[CALL] Register::Banking::StatementItemImpl::save()");
@@ -1355,7 +1136,7 @@ public:
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
             clear();
         }
-    } // void ListImpl::reload(Database::Filters::Union &filter)
+    } // void reload(Database::Filters::Union &filter)
 
     virtual void sort(MemberType member, bool asc)
     {
@@ -1399,7 +1180,7 @@ public:
         xml.text(ITEM_MEMO, item->getMemo());
         xml.text(ITEM_DATE, item->getDate());
         xml.end();
-    } // void ListImpl::writeItem()
+    }
 
     void
     writeStatement(XMLcreator &xml, Statement *stat)
@@ -1420,7 +1201,7 @@ public:
         }
         xml.end();
         xml.end();
-    } // void ListImpl::writeStatement()
+    }
 
     void
     writeStatements(XMLcreator &xml)
@@ -1431,7 +1212,7 @@ public:
             writeStatement(xml, stat);
         }
         xml.end();
-    } // void ListImpl::writeStatements()
+    }
 
     virtual void exportXML(std::ostream &out)
     {
@@ -1477,55 +1258,6 @@ public:
     {
         return new StatementImpl(m_conn);
     }
-    virtual bool importInvoiceXml(std::istream &in)
-    {
-        TRACE("[CALL] Register::Banking::Manager::importInvoiceXml("
-                "std::istream &)");
-        std::string xml = loadInStream(in);
-        XMLparser parser;
-        if (!parser.parse(xml)) {
-            return false;
-        }
-        XMLnode root = parser.getRootNode();
-        if (root.getName().compare(STATEMENTS_ROOT) != 0) {
-            LOGGER(PACKAGE).error(boost::format(
-                        "XML: root element name is not ``%1%''")
-                    % STATEMENTS_ROOT);
-            return false;
-        }
-        return true;
-    } // ManagerImpl::importInvoiceXml()
-    virtual bool importOnlineInvoiceXml(std::istream &in)
-    {
-        TRACE("[CALL] Register::Banking::Manager::importOnlineInvoiceXml("
-                "std::istream &)");
-        std::string xml = loadInStream(in);
-        XMLparser parser;
-        if (!parser.parse(xml)) {
-            return false;
-        }
-        XMLnode root = parser.getRootNode();
-        if (root.getName().compare(STATEMENTS_ROOT) != 0) {
-            LOGGER(PACKAGE).error(boost::format(
-                        "XML: root element name is not ``%1%''")
-                    % STATEMENTS_ROOT);
-            return false;
-        }
-        for (int i = 0; i < root.getChildrenSize(); i++) {
-            XMLnode statement = root.getChild(i);
-            XMLnode items = statement.getChild(STATEMENT_ITEMS);
-            for (int j = 0; j < items.getChildrenSize(); j++) {
-                std::auto_ptr<OnlineStatementImpl> stat(
-                        dynamic_cast<OnlineStatementImpl *>(
-                            createOnlineStatement()));
-                if (!stat->fromXML(statement, items.getChild(j))) {
-                    return false;
-                }
-                stat->save();
-            }
-        }
-        return true;
-    } // bool ManagerImpl::importOnlineInvoiceXml()
 }; // class ManagerImpl
 
 Manager *
@@ -1535,6 +1267,6 @@ Manager::create(Database::Manager *dbMan)
     return new ManagerImpl(dbMan);
 }
 
-} // namespace Banking
+} // namespace Bank
 } // namespace Register
 

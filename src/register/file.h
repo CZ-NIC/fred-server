@@ -26,15 +26,6 @@ public:
   virtual const std::string& getTypeDesc() const = 0;
   virtual const Database::DateTime& getCreateTime() const = 0;
   virtual const unsigned long getSize() const = 0;  
-
-  virtual void setName(std::string name) = 0;
-  virtual void setPath(std::string path) = 0;
-  virtual void setMimeType(std::string mimeType) = 0;
-  virtual void setType(unsigned int type) = 0;
-  virtual void setCreateTime(Database::DateTime create_time) = 0;
-  virtual void setCreateTime(std::string create_time) = 0;
-  virtual void setSize(unsigned long size) = 0;
-  virtual void save() = 0;
 };
 
 
@@ -57,9 +48,7 @@ public:
   }
   
   virtual List* createList() const = 0;
-  virtual File *createFile() const = 0;
-  static Manager *create(Database::Manager *_db_manager);
-  static Manager *create(Database::Connection *_conn);
+  static Manager* create(Database::Manager *_db_manager);
 };
 
 }

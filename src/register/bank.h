@@ -161,8 +161,6 @@ public:
     static Manager *create(Database::Manager *dbMan);
     virtual OnlineStatement *createOnlineStatement() const = 0;
     virtual Statement *createStatement() const = 0;
-    virtual bool importOnlineInvoiceXml(std::istream &in) = 0;
-    virtual bool importInvoiceXml(std::istream &in) = 0;
 };
 
 } // namespace Bank

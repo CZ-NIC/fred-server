@@ -108,8 +108,6 @@ namespace Register
     class List : virtual public CommonList
     {
      public:
-      virtual ~List() {
-      }
       /// return message by index
       virtual Message* getMessage(unsigned idx) = 0;
       /// set filter for type

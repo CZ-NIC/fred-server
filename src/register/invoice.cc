@@ -27,9 +27,6 @@
 #include "file.h"
 #include <cmath>
 #include "documents.h"
-#include <libxml/parser.h>
-#include <libxml/xmlmemory.h>
-#include <libxml/tree.h>
 
 namespace Register {
 namespace Invoicing {
