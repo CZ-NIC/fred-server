@@ -25,6 +25,17 @@ Money::format() const
     return ss.str();
 }
 
+void
+Money::format(std::string str)
+{
+    if (str.find('.')) {
+        value_ = atoll(str.substr(0, str.find('.')).c_str()) * 100 + 
+            atoll(str.substr(str.find('.') + 1, std::string::npos).c_str());
+    } else {
+        from_string(str);
+    }
+}
+
 /*
  * output operator
  */
