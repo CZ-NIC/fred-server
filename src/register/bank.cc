@@ -536,7 +536,7 @@ public:
         TRACE("[CALL] Register::Banking::OnlineStatement::insert()");
         Database::InsertQuery insertStat("bank_ebanka_list");
         insertStat.add("account_id", getAccountId());
-        insertStat.add("price", getPrice());
+        insertStat.add("price", getPrice().format());
         insertStat.add("crdate", getCrDate());
         if (!getAccountNumber().empty()) {
             insertStat.add("account_number", getAccountNumber());
@@ -794,7 +794,7 @@ public:
         if (!getVarSymbol().empty()) {
             insertItem.add("varsymb", getVarSymbol());
         }
-        insertItem.add("price", getPrice());
+        insertItem.add("price", getPrice().format());
         if (!getEvidenceNumber().empty()) {
             insertItem.add("account_evid", getEvidenceNumber());
         }
@@ -1026,10 +1026,10 @@ public:
         insertHead.add("num", getNumber());
         insertHead.add("create_date", getDate());
         insertHead.add("balance_old_date", getOldDate());
-        insertHead.add("balance_old", getOldBalance());
-        insertHead.add("balance_new", getBalance());
-        insertHead.add("balance_credit", getCredit());
-        insertHead.add("balance_debet", getDebet());
+        insertHead.add("balance_old", getOldBalance().format());
+        insertHead.add("balance_new", getBalance().format());
+        insertHead.add("balance_credit", getCredit().format());
+        insertHead.add("balance_debet", getDebet().format());
         try {
             assert(m_conn);
             Database::Transaction transaction(*m_conn);
