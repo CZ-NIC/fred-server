@@ -41,6 +41,11 @@ namespace Invoicing {
 #define OUTMONEY(f) (f)/100 << "." << \
     std::setfill('0') << std::setw(2) << abs(f)%100
 
+#define transformString(str)    \
+    ((str.empty()) ? "NULL" : "'" + str + "'")
+#define transformId(id)         \
+    ((id.to_string().compare("0") == 0) ? "NULL" : id.to_string())
+
 #define ERROR(values)                           \
     LOGGER(PACKAGE).error(values);              \
     addError(values);
@@ -504,7 +509,7 @@ public:
             Database::ID filePDF, Database::ID fileXML, std::string varSymbol,
             SubjectImpl &client, std::string filePDF_name, std::string fileXML_name,
             Database::Manager *dbMan, Database::Connection *conn, 
-            Manager *manager = NULL):
+            Manager *manager):
         CommonObjectImpl(id),
         m_zone(zone), m_zoneName(zoneName), m_crTime(crTime), m_taxDate(taxDate),
         m_accountPeriod(accountPeriod), m_type(type), m_number(number),
@@ -517,7 +522,7 @@ public:
     { }
 
     InvoiceImpl(Database::Manager *dbMan, Database::Connection *conn,
-            Manager *manager = NULL):
+            Manager *manager):
         CommonObjectImpl(),
         m_number(0),
         m_vatRate(-1),
@@ -885,10 +890,6 @@ public:
     virtual void setAccountPeriod(Database::DateInterval period)
     {
         m_accountPeriod = period;
-    }
-    void update()
-    {
-        TRACE("[CALL] Register::Invoicing::InvoiceImpl::update()");
     }
 
     /*! get operation (domain create or renew) price from database. */
@@ -1906,22 +1907,62 @@ public:
     bool updateAccount()
     {
         TRACE("[CALL] Register::Invoicing::Invoice::updateAccount()");
+        LOGGER(PACKAGE).debug("not implemented");
         return false;
     }
     bool updateDeposit()
     {
         TRACE("[CALL] Register::Invoicing::Invoice::updateDeposit()");
+        LOGGER(PACKAGE).debug("not implemented");
+        return false;
+    }
+    bool update()
+    {
+        TRACE("[CALL] Register::Invoicing::Invoice::update()");
+        Database::Query updateDeposit;
+        updateDeposit.buffer()
+            << "UPDATE invoice SET "
+            << "zone=" << getZone()
+            << ", crdate='" << getCrTime() << "'"
+            << ", taxdate='" << getTaxDate() << "'"
+            << ", prefix=" << getNumber()
+            << ", registrarid=" << getRegistrar()
+            << ", credit=" << getCredit().format()
+            << ", price=" << getPrice().format()
+            << ", vat=" << getVatRate()
+            << ", total=" << getTotal().format()
+            << ", totalvat=" << getTotalVAT().format()
+            << ", prefix_type=" << getInvoicePrefixTypeId()
+            << ", file=" << transformId(getFilePDF())
+            << ", filexml=" << transformId(getFileXML())
+            << " WHERE id=" << id_;
+        std::cout << updateDeposit << std::endl;
+        try {
+            Database::Transaction transaction(*m_conn);
+            transaction.exec(updateDeposit);
+            transaction.commit();
+            LOGGER(PACKAGE).info(boost::format(
+                        "invoice id='%1%' updated successfully")
+                    % id_);
+        } catch (Database::Exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            return false;
+        } catch (std::exception &ex) {
+            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+            return false;
+        }
         return true;
     }
     virtual bool save() 
     {
         TRACE("[CALL] Register::Invoicing::Invoice::save()");
         if (id_) {
-            if (getType() == IT_ACCOUNT) {
-                return updateAccount();
-            } else if (getType() == IT_DEPOSIT) {
-                return updateDeposit();
-            }
+            update();
+            // if (getType() == IT_ACCOUNT) {
+                // return updateAccount();
+            // } else if (getType() == IT_DEPOSIT) {
+                // return updateDeposit();
+            // }
         } else {
             if (getType() == IT_ACCOUNT) {
                 return insertAccount();
@@ -2169,6 +2210,7 @@ public:
         object_info_query.select()
             << "t_1.id, t_1.zone, t_2.fqdn, t_1.crdate, t_1.taxdate, "
             << "t_5.fromdate, t_5.todate, t_4.typ, t_1.prefix, "
+            << "t_1.prefix_type, "
             << "t_1.registrarid, t_1.credit * 100, t_1.price * 100, "
             << "t_1.vat, t_1.total * 100, t_1.totalvat * 100, "
             << "t_1.file, t_1.fileXML, t_3.organization, t_3.street1, "
@@ -2204,6 +2246,7 @@ public:
                 Type               type           =
                     (int)*(++col) == 0 ? IT_DEPOSIT : IT_ACCOUNT;
                 unsigned long long number         = *(++col);
+                int                prefix_type    = *(++col);
                 Database::ID       registrar_id   = *(++col);
                 Database::Money    credit         = *(++col);
                 Database::Money    price          = *(++col);
@@ -2232,13 +2275,14 @@ public:
                         "", "", "", "", "", "", c_vat);
 
                 assert(m_dbMan);
-                data_.push_back(
-                        new InvoiceImpl(id,
-                            zone, fqdn, create_time, tax_date, account_period,
-                            type, number, registrar_id, credit, price, vat_rate,
-                            total, total_vat, filePDF, fileXML, c_var_symb,
-                            client, filepdf_name, filexml_name, m_dbMan, conn_)
-                        );
+                InvoiceImpl *invoice = new InvoiceImpl(id,
+                        zone, fqdn, create_time, tax_date, account_period,
+                        type, number, registrar_id, credit, price, vat_rate,
+                        total, total_vat, filePDF, fileXML, c_var_symb,
+                        client, filepdf_name, filexml_name, m_dbMan, conn_,
+                        m_manager);
+                invoice->setInvoicePrefixTypeId(prefix_type);
+                data_.push_back(invoice);
                 LOGGER(PACKAGE).debug(boost::format(
                             "list of invoices size: %1%")
                         % data_.size());
@@ -2616,8 +2660,6 @@ public:
 
     List *createList() const
     {
-        assert(m_conn);
-        assert(m_dbMan);
         return new ListImpl(m_dbMan, m_conn, (Manager *)this);
     }
 
@@ -2626,8 +2668,6 @@ public:
              
     virtual Invoice *createInvoice(Type type)
     {
-        assert(m_dbMan);
-        assert(m_conn);
         InvoiceImpl *invoice = new InvoiceImpl(m_dbMan, m_conn, (Manager *)this);
         invoice->setType(type);
         return invoice;
