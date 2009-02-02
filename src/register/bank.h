@@ -136,7 +136,7 @@ public:
     virtual const char *getTempTableName() const = 0;
     virtual void makeQuery(bool, bool, std::stringstream &) const = 0;
     virtual void reload() = 0;
-    virtual void exportXML(std::ostream &out) = 0;
+    virtual bool exportXML(std::ostream &out) = 0;
 };
 
 // list of payments
@@ -150,7 +150,7 @@ public:
     virtual const char *getTempTableName() const = 0;
     virtual void makeQuery(bool, bool, std::stringstream &) const = 0;
     virtual void reload() = 0;
-    virtual void exportXML(std::ostream &out) = 0;
+    virtual bool exportXML(std::ostream &out) = 0;
 };
 
 // banking manager

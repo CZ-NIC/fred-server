@@ -187,6 +187,10 @@ public:
     {
         this->text(name, value.to_string());
     }
+    void text(std::string name, Database::DateTime value)
+    {
+        this->text(name, value.to_string());
+    }
     void text(std::string name, Database::Money value)
     {
         this->text(name, value.format());
@@ -1268,33 +1272,55 @@ public:
     virtual void reload()
     { }
 
-    virtual void exportXML(std::ostream &out)
+    void writeStatement(XMLcreator &xml, OnlineStatement *stat)
     {
-        out << TAGSTART(online_payments);
+        TRACE("Register::Banking::OnlineStatementImpl::writeStatement"
+                "(XMLcreator &, OnlineStatement *)");
+        xml.start(STATEMENT_STATEMENT);
+        xml.text(STATEMENT_ACCOUNT_NUMBER, stat->getAccountId());
+        xml.text(STATEMENT_NUMBER, "");
+        xml.text(STATEMENT_DATE, stat->getCrDate());
+        xml.text(STATEMENT_BALANCE, "");
+        xml.text(STATEMENT_OLD_DATE, "");
+        xml.text(STATEMENT_OLD_BALANCE, "");
+        xml.text(STATEMENT_CREDIT, "");
+        xml.text(STATEMENT_DEBET, "");
+        xml.start(STATEMENT_ITEMS);
+        xml.text(ITEM_ACCOUNT_NUMBER, stat->getAccountNumber());
+        xml.text(ITEM_ACCOUNT_BANK_CODE, stat->getBankCode());
+        xml.text(ITEM_CONST_SYMBOL, stat->getConstSymbol());
+        xml.text(ITEM_VAR_SYMBOL, stat->getVarSymbol());
+        xml.text(ITEM_SPEC_SYMBOL, "");
+        xml.text(ITEM_PRICE, stat->getPrice().format());
+        xml.text(ITEM_MEMO, stat->getMemo());
+        xml.text(ITEM_DATE, stat->getCrDate());
+        xml.end();
+        xml.end();
+    }
+    void writeStatements(XMLcreator &xml)
+    {
+        xml.start(STATEMENTS_ROOT);
         for (int i = 0; i < (int)getCount(); i++) {
             OnlineStatement *stat = get(i);
-            out << TAGSTART(online_payment)
-                << TAG(id, stat->getId())
-                << TAG(accout_number, stat->getAccountNumber())
-                << TAG(accout_bank_code, stat->getBankCode())
-                << TAG(const_symbol, stat->getConstSymbol())
-                << TAG(var_symbol, stat->getVarSymbol())
-                // XXX spec symbol is not in bank_ebanka_list,
-                // but this line is present in old
-                // Register::Banking::OnlinePaymentListImpl
-                << TAG(spec_symbol, "")
-                << TAG(price, stat->getPrice().format())
-                << TAG(memo, stat->getMemo())
-                << TAG(invoice_id, stat->getInvoiceId())
-                << TAG(accout_id, stat->getAccountId())
-                << TAG(cr_date, stat->getCrDate())
-                << TAG(accout_name, stat->getAccountName())
-                << TAG(ident, stat->getIdent())
-                << TAGEND(online_payment);
+            writeStatement(xml, stat);
         }
-        out <<
-            TAGEND(online_payments);
-    } // void exportXML(std::ostream &out)
+        xml.end();
+    }
+    virtual bool exportXML(std::ostream &out)
+    {
+        TRACE("Register::Banking::OnlineStatementImpl::exportXML(std::ostrem &)");
+        XMLcreator xml;
+        if (!xml.init()) {
+            return false;
+        }
+        try {
+            writeStatements(xml);
+        } catch (...) {
+            return false;
+        }
+        out << xml.finalize();
+        return true;
+    } // bool OnlineListImpl::exportXML()
 }; // class OnlineListImpl
 
 class ListImpl:
@@ -1489,6 +1515,8 @@ public:
     void
     writeStatement(XMLcreator &xml, Statement *stat)
     {
+        TRACE("Register::Banking::StatementImpl::writeStatement"
+                "(XMLcreator &, Statement *)");
         xml.start(STATEMENT_STATEMENT);
         xml.text(STATEMENT_ACCOUNT_NUMBER, stat->getAccountId());
         xml.text(STATEMENT_NUMBER, stat->getNumber());
@@ -1518,18 +1546,20 @@ public:
         xml.end();
     } // void ListImpl::writeStatements()
 
-    virtual void exportXML(std::ostream &out)
+    virtual bool exportXML(std::ostream &out)
     {
+        TRACE("Register::Banking::StatementImpl::exportXML(std::ostrem &)");
         XMLcreator xml;
         if (!xml.init()) {
-            return;
+            return false;
         }
         try {
             writeStatements(xml);
         } catch (...) {
-            return;
+            return false;
         }
         out << xml.finalize();
+        return true;
     } // void exportXML(std::ostream &out)
 
 }; // class ListImpl
