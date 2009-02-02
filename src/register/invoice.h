@@ -231,6 +231,7 @@ public:
 
 class Manager {
 public:
+    virtual ~Manager() { }
     virtual List *createList() const = 0;
     static Manager *create(
             Database::Manager *dbMan,
