@@ -668,7 +668,7 @@ public:
         } else {
             m_paid.push_back(PaymentImpl(new_source));    
         }
-    }
+    } // InvoiceImpl::addSource()
     void addSource(PaymentSourceImpl *source)
     {
         LOGGER(PACKAGE).debug(
@@ -683,7 +683,7 @@ public:
         } else {
             m_paid.push_back(PaymentImpl(source));
         }
-    }
+    } // InvoiceImpl::addSource()
     void addAction(PaymentActionImpl *action)
     {
         m_actions.push_back(action);
@@ -728,7 +728,7 @@ public:
                 PaymentImpl(getTotal(), getVatRate(), getTotalVAT()));
         }
         return m_paid.size();
-    }
+    } // InvoiceImpl::getPaymentCount()
     virtual const Payment *getPayment(unsigned int index) const
     {
         return (index >= m_paid.size()) ? NULL : &m_paid.at(index);
@@ -762,7 +762,7 @@ public:
             } catch (...)
             { }
         }
-    }
+    } // InvoiceImpl::setFile()
 
     void storeFile()
     {
@@ -786,7 +786,7 @@ public:
                 throw;
             }
         }
-    }
+    } // InvoiceImpl::storeFile()
 
     void doExport(Exporter *exp)
     {
@@ -921,7 +921,7 @@ public:
         } else {
             return money;
         }
-    }
+    } // InvoiceImpl::getPrice()
 
     /*! return true is registrar is system */
     bool isRegistrarSystem(Database::ID registrar)
@@ -944,10 +944,11 @@ public:
         } else {
             return false;
         }
-    }
+    } // InvoiceImpl::isRegistrarSystem()
 
-    std::vector<Database::Money>
-    countPayments(std::vector<Database::Money> credit, Database::Money price)
+    std::vector<Database::Money> countPayments(
+            std::vector<Database::Money> credit,
+            Database::Money price)
     {
         LOGGER(PACKAGE).debug(
                 "[CALL] Register::Invoicing::InvoiceImpl::countPayments("
@@ -968,7 +969,7 @@ public:
             payments.clear();
         }
         return payments;
-    }
+    } // InvoiceImpl::countPayments()
 
     /*! write new row into ``invoice_object_registry'' and return id
      * of newly added record
@@ -1001,7 +1002,7 @@ public:
         Database::Sequence seq(*m_conn, "invoice_object_registry");
         Database::ID id = seq.getCurrent();
         return id;
-    }
+    } // InvoiceImpl::newInvoiceObjectRegistry()
 
     /*! put new line into ``invoice_object_registry_price_map'', where
      * ``invObjRegId'' is id from table ``invoice_object_registry''
@@ -1030,10 +1031,12 @@ public:
             return false;
         }
         return true;
-    }
+    } // InvoiceImpl::newInvoiceObjectRegistryPriceMap()
 
-    bool updateInvoiceCredit(Database::Transaction &transaction,
-            Database::ID invoiceId, Database::Money price)
+    bool updateInvoiceCredit(
+            Database::Transaction &transaction,
+            Database::ID invoiceId,
+            Database::Money price)
     {
         LOGGER(PACKAGE).debug(
                 "[CALL] Register::Invoicing::InvoiceImpl::"
@@ -1053,7 +1056,7 @@ public:
             return false;
         }
         return true;
-    }
+    } // InvoiceImpl::updateInvoiceCredit()
 
     bool getCreditInvoicesId(
             std::vector<Database::ID> &vec_id,
@@ -1085,12 +1088,14 @@ public:
             vec_money.push_back(money);
         }
         return true;
-    }
+    } // InvoiceImpl::getCreditInvoicesId()
 
-    bool domainBilling(Database::Transaction &transaction,
+    bool domainBilling(
+            Database::Transaction &transaction,
             Database::ID zone, Database::ID registrar,
             Database::ID objectId,
-            Database::Date exDate, int units_count)
+            Database::Date exDate,
+            int units_count)
     {
         LOGGER(PACKAGE).debug("[CALL] Register::Invoicing::InvoiceImpl::"
                 "domainBilling(Database::Transaction &, Database::ID, "
@@ -1114,11 +1119,14 @@ public:
         }
         
         return true;
-    }
+    } // InvoiceImpl::DomainBilling()
 
-    bool domainBilling(Database::ID zone, Database::ID registrar,
+    bool domainBilling(
+            Database::ID zone,
+            Database::ID registrar,
             Database::ID objectId,
-            Database::Date exDate, int units_count)
+            Database::Date exDate,
+            int units_count)
     {
         LOGGER(PACKAGE).debug("[CALL] Register::Invoicing::InvoiceImpl::"
                 "domainBilling(Database::ID, Database::ID, "
@@ -1131,7 +1139,7 @@ public:
         }
         
         return false;
-    }
+    } // InvoiceImpl::domainBilling()
 
     bool domainBilling(Database::Transaction &transaction)
     {
@@ -1171,7 +1179,7 @@ public:
             }
         }
         return true;
-    }
+    } // InvoiceImpl::domainBilling()
 
     /*! return proper 'from date' */
     Database::Date getFromDateFromDB()
@@ -1205,7 +1213,7 @@ public:
             fromDate = *(*fromDateRes1.begin()).begin();
         }
         return fromDate;
-    }
+    } // InvoiceImpl::getFromDateFromDB()
 
     /*! return number of record shich is abou tto invoicing */
     int getRecordsCount()
@@ -1228,7 +1236,7 @@ public:
             recordsCount = *(*recordCountRes.begin()).begin();
         }
         return recordsCount;
-    }
+    } // InvoiceImpl::getRecordsCount()
 
     /*! return price of all invoiced items */
     bool getRecordsPrice()
@@ -1254,7 +1262,7 @@ public:
         }
         setPrice(recordsPrice);
         return true;
-    }
+    } // InvoiceImpl::getRecordsPrice()
     
     /*! return valid vat value from ''price_vat'' table */
     int getSystemVAT()
@@ -1274,7 +1282,7 @@ public:
             vat = *(*vatRes.begin()).begin();
         }
         return vat;
-    }
+    } // InvoiceImpl::getSystemVAT()
 
     /*! check if table ``invoice_prefix'' contain any row with given year */
     bool isYearInInvoicePrefix(int year)
@@ -1290,12 +1298,13 @@ public:
             return false;
         }
         return true;
-    }
+    } // InvoiceImpl::isYearInInvoicePrefix()
 
     /*! create new rows in ``invoice_prefix'' from some
      * default values
      */
-    void createNewYearInInvoicePrefix(int newYear, 
+    void createNewYearInInvoicePrefix(
+            int newYear, 
             Database::Transaction &transaction)
     {
         LOGGER(PACKAGE).debug(
@@ -1337,12 +1346,14 @@ public:
             ERROR(boost::format("%1%") % ex.what());
             throw;
         }
-    }
+    } // InvoiceImpl::createNewYearInInvoicePrefix()
 
     /*! create new rows in ``invoice_prefix'' table for new year
      * according oldYear
      */
-    void createNewYearInInvoicePrefix(int newYear, int oldYear,
+    void createNewYearInInvoicePrefix(
+            int newYear,
+            int oldYear,
             Database::Transaction &transaction)
     {
         LOGGER(PACKAGE).debug(
@@ -1389,7 +1400,7 @@ public:
                 throw;
             }
         }
-    }
+    } // InvoiceImpl::createNewYearInInvoicePrefix()
 
     /*! get and update (i.e. add 1 to it) invoice number, save 
      * invoice prefix using ``setNumber()'' method, also get
@@ -1447,7 +1458,7 @@ public:
         setNumber(invoicePrefix);
         setInvoicePrefixTypeId(id);
         return true;
-    }
+    } // InvoiceImpl::getInvoicePrefix()
 
     /*! create new invoice */
     bool createNewInvoice(Database::Transaction &transaction)
@@ -1501,7 +1512,7 @@ public:
         id_ = invoiceId;
 
         return true;
-    }
+    } // InvoiceImpl::createNewInvoice()
 
     /*! update record(s) in ''invoice_object_registry'' table - set id */
     void updateInvoiceObjectRegistry(Database::Transaction &transaction)
@@ -1526,7 +1537,7 @@ public:
             ERROR(boost::format("%1%") % ex.what());
             throw;
         }
-    }
+    } // InvoiceImpl::updateInvoiceObjectRegistry()
 
     /*! update record(s) in ''registrarinvoice'' table - set lastdate */
     void updateRegistrarInvoice(Database::Transaction &transaction)
@@ -1549,7 +1560,7 @@ public:
             ERROR(boost::format("%1%") % ex.what());
             throw;
         }
-    }
+    } // InvoiceImpl::updateRegistrarInvoice()
 
     /*! return numbers of account invoices from which are object payed */
     std::vector<int> getAccountInvoicesNumbers(Database::Transaction &transaction)
@@ -1573,7 +1584,7 @@ public:
             ret.push_back(id);
         }
         return ret;
-    }
+    } // InvoiceImpl::getAccountInvoicesNumbers()
 
     long getInvoiceSumPrice(int accountInvoiceId)
     {
@@ -1597,7 +1608,7 @@ public:
             sumPrice = *(*sumPriceRes.begin()).begin();
         }
         return sumPrice;
-    }
+    } // InvoiceImpl::getInvoiceSumPrice()
 
     long getInvoiceBalance(int accountInvoiceId, long invoiceSumPrice)
     {
@@ -1629,7 +1640,7 @@ public:
         }
         long price = total - sum - invoiceSumPrice;
         return price;
-    }
+    } // InvoiceImpl::getInvoiceBalance()
 
     void updateInvoiceCreditPaymentMap(std::vector<int> idNumbers,
             Database::Transaction &transaction)
@@ -1656,7 +1667,7 @@ public:
                 throw;
             }
         }
-    }
+    } // InvoiceImpl::updateInvoiceCreditPaymentMap()
 
     bool testRegistrar()
     {
@@ -1700,7 +1711,7 @@ public:
             }
         }
         return true;
-    }
+    } // InvoiceImpl::testRegistrar()
 
     bool testZone()
     {
@@ -1753,7 +1764,7 @@ public:
             }
         }
         return true;
-    }
+    } // InvoiceImpl::testZone()
 
     /*! create new account invoice */
     bool insertAccount()
@@ -1829,7 +1840,7 @@ public:
         updateInvoiceCreditPaymentMap(numbers, transaction);
         transaction.commit();
         return true;
-    }
+    } // InvoiceImpl::insertAccount()
 
     bool insertDeposit()
     {
@@ -1903,7 +1914,7 @@ public:
         }
         transaction.commit();
         return true;
-    }
+    } // InvoiceImpl::insertDeposit()
     bool updateAccount()
     {
         TRACE("[CALL] Register::Invoicing::Invoice::updateAccount()");
@@ -1952,7 +1963,7 @@ public:
             return false;
         }
         return true;
-    }
+    } // InvoiceImpl::update()
     virtual bool save() 
     {
         TRACE("[CALL] Register::Invoicing::Invoice::save()");
@@ -2518,7 +2529,7 @@ public:
             }
             store(i);
         }
-    }
+    } // Mails::send()
     void load()
     {
         Database::Query loadMailsQuery;
@@ -2553,7 +2564,7 @@ public:
             m_items.push_back(Item(email, from, to, filePDF, fileXML,
                         generation, invoice, mail));
         }
-    }
+    } // Mails::load()
 }; // class Mails
 
 class ExporterArchiver:
@@ -2601,7 +2612,7 @@ public:
                     "Register::Invoicing::ExporterArchiver::doExport("
                     "Invoice *): exception catched");
         }
-    }
+    } // ExporterArchiver::doExport()
 
 }; // class ExporterArchiver
 
@@ -2714,7 +2725,7 @@ ManagerImpl::getCreditByZone(
     Database::Money retval;
     retval = *(*getCreditRes.begin()).begin();
     return retval;
-}
+} // ManagerImpl::getCreditByZone()
 
 void
 ManagerImpl::archiveInvoices(bool send) const
@@ -2742,7 +2753,7 @@ ManagerImpl::archiveInvoices(bool send) const
     catch (...) {
         LOGGER(PACKAGE).error("Register::ManagerImpl::archiveInvoices(bool) error");
     }
-}
+} // ManagerImpl::archiveInvoices()
 
 void
 ManagerImpl::initVatList()
@@ -2762,7 +2773,7 @@ ManagerImpl::initVatList()
         Database::DateTime  validity    = *(++col);
         m_vatList.push_back(VAT(vatRate, koef, validity));
     }
-}
+} // ManagerImpl::initVatList()
 
 const VAT *
 ManagerImpl::getVat(unsigned int rate) const
@@ -2774,7 +2785,7 @@ ManagerImpl::getVat(unsigned int rate) const
     std::vector<VAT>::const_iterator it =
         find(m_vatList.begin(), m_vatList.end(), rate);
     return it == m_vatList.end() ? NULL : &(*it);
-}
+} // ManagerImpl::getVat()
 
 Database::Money 
 ManagerImpl::countVat(Database::Money price, unsigned int vatRate, bool base)
