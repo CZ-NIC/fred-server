@@ -69,7 +69,7 @@ am__DEPENDENCIES_1 =
 fred_admin_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(top_builddir)/src/register/libfred.a \
+	$(am__DEPENDENCIES_1) $(top_builddir)/src/register/libfred.a \
 	$(top_builddir)/src/model/libmodel.a \
 	$(top_builddir)/util/db/libdb.a \
 	$(top_builddir)/util/types/libtypes.a \
@@ -86,7 +86,8 @@ fred_banking_LDADD = $(LDADD)
 fred_banking_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(top_builddir)/src/register/libfred.a \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/register/libfred.a \
 	$(top_builddir)/src/model/libmodel.a \
 	$(top_builddir)/util/db/libdb.a \
 	$(top_builddir)/util/types/libtypes.a \
@@ -220,6 +221,8 @@ SHELL = @SHELL@
 STRIP = @STRIP@
 SYSCONFDIR = @SYSCONFDIR@
 VERSION = @VERSION@
+XML2_CFLAGS = @XML2_CFLAGS@
+XML2_LIBS = @XML2_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -264,16 +267,17 @@ sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
 AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) \
+			  $(XML2_CFLAGS) \
 			  -I$(top_srcdir)/util -I$(top_srcdir)/src -I$(top_builddir)/src \
 			  -I$(top_srcdir)
 
 LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
+		$(XML2_LIBS) \
 	$(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
         $(top_builddir)/src/register/libfred.a \
 	$(top_builddir)/src/model/libmodel.a \
