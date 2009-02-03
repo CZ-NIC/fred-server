@@ -125,6 +125,18 @@ std::string Context::get() {
   return getNDC() + (mdc.empty() ? "" : mdc);
 }
 
+
+void Context::clear() {
+  Context::Stack *stack = _getThreadStack();
+  Context::Map   *map   = _getThreadMap();
+
+  if (stack)
+    stack->clear();
+
+  if (map)
+    map->clear();
+}
+
 /**
  * storage init
  */

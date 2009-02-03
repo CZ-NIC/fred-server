@@ -41,6 +41,8 @@ public:
 
   static std::string get();
 
+  static void clear();
+
 private:
   typedef std::vector<std::string>           Stack;
   typedef std::map<std::string, std::string> Map;
