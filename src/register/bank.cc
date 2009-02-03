@@ -359,14 +359,6 @@ private:
     std::string     m_accountMemo;
     Database::ID    m_invoiceId;
 public:
-    PaymentImpl(const std::string accountNumber,
-            const std::string bankCode, const std::string constSymb,
-            const std::string varSymb, const Database::Money price,
-            const std::string accountMemo, const Database::ID invoiceId):
-        m_accountNumber(accountNumber), m_bankCode(bankCode),
-        m_constSymb(constSymb), m_varSymb(varSymb), m_price(price),
-        m_accountMemo(accountMemo), m_invoiceId(invoiceId)
-    { }
     PaymentImpl():
         m_accountNumber(), m_bankCode(), m_constSymb(), m_varSymb(),
         m_price(), m_accountMemo(), m_invoiceId()
@@ -440,18 +432,6 @@ private:
     std::string m_ident;
     Database::Connection *m_conn;
 public:
-    OnlineStatementImpl(const Database::ID id, const Database::ID accountId,
-            const Database::Money price, const Database::DateTime crDate,
-            const std::string accountNumber, const std::string bankCode,
-            const std::string constSymb, const std::string varSymb,
-            const std::string memo, const std::string accountName,
-            const std::string ident, Database::ID invoiceId):
-        PaymentImpl(accountNumber, bankCode, constSymb, varSymb,
-                price, memo, invoiceId),
-        CommonObjectImpl(id),
-        m_accountId(accountId), m_crDate(crDate), m_accountName(accountName),
-        m_ident(ident), m_conn(NULL)
-    { }
     OnlineStatementImpl(Database::Connection *conn):
         PaymentImpl(),
         CommonObjectImpl(),
@@ -668,19 +648,6 @@ private:
 protected:
     Database::Connection *m_conn;
 public:
-    StatementItemImpl(const Database::ID id, const Database::ID statementId,
-            const std::string accountNumber, const std::string bankCode,
-            const int code, const std::string constSymb,
-            const std::string varSymb, const std::string specSymb,
-            const Database::Money price,
-            const std::string accountEvid, const Database::Date accountDate,
-            const std::string accountMemo, const Database::ID invoiceId,
-            Database::Connection *conn = NULL):
-        PaymentImpl(accountNumber, bankCode, constSymb, varSymb,
-                price, accountMemo, invoiceId),
-        m_id(id), m_statementId(statementId), m_code(code), m_specSymb(specSymb),
-        m_accountEvid(accountEvid), m_accountDate(accountDate), m_conn(conn)
-    { }
     StatementItemImpl(Database::Connection *conn):
         PaymentImpl(),
         m_id(), m_statementId(), m_code(), m_specSymb(), m_accountEvid(),
@@ -710,6 +677,10 @@ public:
     {
         return m_accountDate;
     }
+    virtual const std::string &getAccountEvid() const
+    {
+        return m_accountEvid;
+    }
     virtual void setId(Database::ID id) 
     {
         m_id = id;
@@ -733,6 +704,10 @@ public:
     virtual void setDate(std::string date)
     {
         m_accountDate = Database::Date(date);
+    }
+    virtual void setAccountEvid(std::string accountEvid)
+    {
+        m_accountEvid = accountEvid;
     }
     virtual void setSpecSymbol(std::string specSymbol) 
     {
@@ -873,15 +848,6 @@ private:
 protected:
     Database::Connection *m_conn;
 public:
-    StatementImpl(Database::ID id, Database::ID accountId, int number,
-            Database::Date &balanceNewDate, Database::Date &balanceOldDate,
-            Database::Money &balanceNew, Database::Money &balanceOld,
-            Database::Money &balanceCredit, Database::Money &balanceDebet):
-        CommonObjectImpl(id), m_accountId(accountId), m_number(number),
-        m_createDate(balanceNewDate), m_balanceOldDate(balanceOldDate),
-        m_balanceNew(balanceNew), m_balanceOld(balanceOld),
-        m_balanceCredit(balanceCredit), m_balanceDebet(balanceDebet)
-    { }
     StatementImpl(Database::Connection *conn):
         CommonObjectImpl(),
         m_accountId(), m_number(), m_createDate(), m_balanceOldDate(),
@@ -1227,10 +1193,19 @@ public:
                 std::string ident           = *(++col);
                 Database::ID invoiceId      = *(++col);
 
-                OnlineStatementImpl *stat = new OnlineStatementImpl(id, accountId, price,
-                        crDate, accountNumber, bankCode, constSymbol,
-                        varSymbol, memo, name, ident, invoiceId);
-                stat->setConn(conn_);
+                OnlineStatementImpl *stat = new OnlineStatementImpl(conn_);
+                stat->setId(id);
+                stat->setAccountId(accountId);
+                stat->setPrice(price);
+                stat->setCrDate(crDate);
+                stat->setAccountNumber(accountNumber);
+                stat->setBankCode(bankCode);
+                stat->setConstSymbol(constSymbol);
+                stat->setVarSymbol(varSymbol);
+                stat->setMemo(memo);
+                stat->setAccountName(name);
+                stat->setIdent(ident);
+                stat->setInvoiceId(invoiceId);
                 data_.push_back(stat);
             }
             CommonListImpl::reload();
@@ -1241,7 +1216,7 @@ public:
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
             clear();
         }
-    } // void reload(Database::Filters::Union &filter)
+    } // void OnlineListImpl::reload(Database::Filters::Union &filter)
 
     virtual void sort(MemberType member, bool asc)
     {
@@ -1410,10 +1385,16 @@ public:
                 Database::Money credit      = *(++col);
                 Database::Money debet       = *(++col);
 
-                StatementImpl *stat = new StatementImpl(id, accountId,
-                        number, crDate, oldDate,
-                        balance, oldBalance, credit, debet);
-                stat->setConn(conn_);
+                StatementImpl *stat = new StatementImpl(conn_);
+                stat->setId(id);
+                stat->setAccountId(accountId);
+                stat->setNumber(number);
+                stat->setDate(crDate);
+                stat->setOldDate(oldDate);
+                stat->setBalance(balance);
+                stat->setOldBalance(oldBalance);
+                stat->setCredit(credit);
+                stat->setDebet(debet);
                 data_.push_back(stat);
             }
             if (data_.empty()) {
@@ -1440,7 +1421,7 @@ public:
                 std::string accountNumber   = *(++col);
                 std::string bankCode        = *(++col);
                 int code                    = *(++col);
-                std::string konstSymb       = *(++col);
+                std::string constSymb       = *(++col);
                 std::string varSymb         = *(++col);
                 std::string specSymb        = *(++col);
                 Database::Money price       = *(++col);
@@ -1452,10 +1433,21 @@ public:
                 StatementImpl *statPtr =
                     dynamic_cast<StatementImpl *>(findIDSequence(statementId));
                 if (statPtr) {
-                    statPtr->addStatementItem(StatementItemImpl(id, statementId,
-                                accountNumber, bankCode, code, konstSymb,
-                                varSymb, specSymb, price, accountEvid, accountDate,
-                                accountMemo, invoiceId, conn_));
+                    StatementItemImpl statementItem = StatementItemImpl(conn_);
+                    statementItem.setId(id);
+                    statementItem.setStatementId(statementId);
+                    statementItem.setAccountNumber(accountNumber);
+                    statementItem.setBankCode(bankCode);
+                    statementItem.setCode(code);
+                    statementItem.setConstSymbol(constSymb);
+                    statementItem.setVarSymbol(varSymb);
+                    statementItem.setSpecSymbol(specSymb);
+                    statementItem.setPrice(price);
+                    statementItem.setAccountEvid(accountEvid);
+                    statementItem.setDate(accountDate);
+                    statementItem.setMemo(accountMemo);
+                    statementItem.setInvoiceId(invoiceId);
+                    statPtr->addStatementItem(statementItem);
                 }
             }
             CommonListImpl::reload();

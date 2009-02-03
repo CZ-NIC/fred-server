@@ -81,6 +81,7 @@ public:
     virtual const int getCode() const = 0;
     virtual const std::string &getEvidenceNumber() const = 0;
     virtual const Database::Date &getDate() const = 0;
+    virtual const std::string &getAccountEvid() const = 0;
     virtual const std::string &getSpecSymbol() const = 0;
     virtual void setId(Database::ID id) = 0;
     virtual void setStatementId(Database::ID statementId) = 0;
@@ -88,6 +89,7 @@ public:
     virtual void setEvidenceNumber(std::string evidenceNumber) = 0;
     virtual void setDate(Database::Date date) = 0;
     virtual void setDate(std::string date) = 0;
+    virtual void setAccountEvid(std::string accountEvid) = 0;
     virtual void setSpecSymbol(std::string specSymbol) = 0;
     virtual void setConn(Database::Connection *conn) = 0;
     virtual Database::Connection *getConn() const = 0;
