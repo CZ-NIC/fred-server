@@ -75,7 +75,7 @@ void ccReg_Invoices_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
 
   switch (_column) {
     case 0:
-      invoice_list_->sort(Register::Invoicing::MT_CRDATE, _dir);
+      invoice_list_->sort(Register::Invoicing::MT_CRTIME, _dir);
       break;
     case 1:
       invoice_list_->sort(Register::Invoicing::MT_NUMBER, _dir);
