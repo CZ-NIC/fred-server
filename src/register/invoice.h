@@ -45,6 +45,8 @@ enum MemberType {
     MT_VARSYMBOL,
     MT_FILEPDF,
     MT_FILEXML,
+    MT_TYPE,
+    MT_TOTAL,
 };
 
 enum Type {
