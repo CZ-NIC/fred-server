@@ -1862,19 +1862,28 @@ ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, CORBA::Long clientID,
 
     EPPAction action(this, clientID, EPP_ClientCredit, clTRID, XML);
 
-    for (z = 0; z < GetZoneLength() ; z ++) {
-        zoneID = GetZoneID(z);
-        // credit of the registrar
-        price = action.getDB()->GetRegistrarCredit(action.getRegistrar(), zoneID);
-
-        //  return all not depend on            if( price >  0)
-        {
-            credit->length(seq+1);
-            credit[seq].price = price;
-            credit[seq].zone_fqdn = CORBA::string_dup(GetZoneFQDN(zoneID) );
-            seq++;
+    try {
+        for (z = 0; z < GetZoneLength() ; z ++) {
+            zoneID = GetZoneID(z);
+            // credit of the registrar
+            price = action.getDB()->GetRegistrarCredit(action.getRegistrar(), zoneID);
+    
+            //  return all not depend on            if( price >  0)
+            {
+                credit->length(seq+1);
+                credit[seq].price = price;
+                credit[seq].zone_fqdn = CORBA::string_dup(GetZoneFQDN(zoneID) );
+                seq++;
+            }
         }
+        code = COMMAND_OK;
+    }
+    catch (...) {
+        code = COMMAND_FAILED;
+    }
 
+    if (code > COMMAND_EXCEPTION) {
+        action.failed(code);
     }
 
     if (code == 0) {
