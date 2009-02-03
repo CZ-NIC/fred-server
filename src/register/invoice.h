@@ -33,13 +33,18 @@ namespace Invoicing {
 typedef long long Money;
 
 enum MemberType {
-  MT_CRDATE,
-  MT_NUMBER,
-  MT_REGISTRAR,
-  MT_TOTAL,
-  MT_CREDIT,
-  MT_TYPE,
-  MT_ZONE
+    MT_ZONE,
+    MT_CRTIME,
+    MT_TAXDATE,
+    MT_TODATE,
+    MT_FROMDATE,
+    MT_NUMBER,
+    MT_REGISTRAR,
+    MT_CREDIT,
+    MT_PRICE,
+    MT_VARSYMBOL,
+    MT_FILEPDF,
+    MT_FILEXML,
 };
 
 enum Type {

@@ -2146,6 +2146,18 @@ public:
     } // void doExport(Invoice *)
 }; // class ExporterXML
 
+COMPARE_CLASS_IMPL(InvoiceImpl, Zone);
+COMPARE_CLASS_IMPL(InvoiceImpl, CrTime);
+COMPARE_CLASS_IMPL(InvoiceImpl, TaxDate);
+COMPARE_CLASS_IMPL(InvoiceImpl, ToDate);
+COMPARE_CLASS_IMPL(InvoiceImpl, FromDate);
+COMPARE_CLASS_IMPL(InvoiceImpl, Number);
+COMPARE_CLASS_IMPL(InvoiceImpl, Registrar);
+COMPARE_CLASS_IMPL(InvoiceImpl, Credit);
+COMPARE_CLASS_IMPL(InvoiceImpl, Price);
+COMPARE_CLASS_IMPL(InvoiceImpl, VarSymbol);
+COMPARE_CLASS_IMPL(InvoiceImpl, FilePDF);
+COMPARE_CLASS_IMPL(InvoiceImpl, FileXML);
 
 class ListImpl:
     public Register::CommonListImpl,
@@ -2404,8 +2416,46 @@ public:
 
     virtual void sort(MemberType member, bool asc)
     {
-        // TODO!!!!!!sakra
-        LOGGER(PACKAGE).debug("Register::Invoicing::ListImpl::sort not implemented");
+        LOGGER(PACKAGE).debug("Register::Invoicing::ListImpl::sort()");
+        switch (member) {
+            case MT_ZONE:
+                stable_sort(data_.begin(), data_.end(), CompareZone(asc));
+                break;
+            case MT_CRTIME:
+                stable_sort(data_.begin(), data_.end(), CompareCrTime(asc));
+                break;
+
+            case MT_TAXDATE:
+                stable_sort(data_.begin(), data_.end(), CompareTaxDate(asc));
+                break;
+            case MT_TODATE:
+                stable_sort(data_.begin(), data_.end(), CompareToDate(asc));
+                break;
+            case MT_FROMDATE:
+                stable_sort(data_.begin(), data_.end(), CompareFromDate(asc));
+                break;
+            case MT_NUMBER:
+                stable_sort(data_.begin(), data_.end(), CompareNumber(asc));
+                break;
+            case MT_REGISTRAR:
+                stable_sort(data_.begin(), data_.end(), CompareRegistrar(asc));
+                break;
+            case MT_CREDIT:
+                stable_sort(data_.begin(), data_.end(), CompareCredit(asc));
+                break;
+            case MT_PRICE:
+                stable_sort(data_.begin(), data_.end(), ComparePrice(asc));
+                break;
+            case MT_VARSYMBOL:
+                stable_sort(data_.begin(), data_.end(), CompareVarSymbol(asc));
+                break;
+            case MT_FILEPDF:
+                stable_sort(data_.begin(), data_.end(), CompareFilePDF(asc));
+                break;
+            case MT_FILEXML:
+                stable_sort(data_.begin(), data_.end(), CompareFileXML(asc));
+                break;
+        }
     }
 
     void doExport(Exporter *exp)
