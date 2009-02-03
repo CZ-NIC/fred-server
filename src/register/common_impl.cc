@@ -40,6 +40,9 @@ CommonObjectImpl::CommonObjectImpl(TID _id) :
 TID CommonObjectImpl::getId() const {
   return id_;
 }
+void CommonObjectImpl::setId(TID id) {
+  id_ = id;
+}
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //     Register::CommonListImpl

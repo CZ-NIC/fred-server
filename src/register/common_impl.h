@@ -17,6 +17,7 @@ public:
   CommonObjectImpl();
   CommonObjectImpl(TID _id);
   TID getId() const;
+  void setId(TID id);
 
 protected:
   TID id_;
