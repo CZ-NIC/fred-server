@@ -2158,6 +2158,8 @@ COMPARE_CLASS_IMPL(InvoiceImpl, Price);
 COMPARE_CLASS_IMPL(InvoiceImpl, VarSymbol);
 COMPARE_CLASS_IMPL(InvoiceImpl, FilePDF);
 COMPARE_CLASS_IMPL(InvoiceImpl, FileXML);
+COMPARE_CLASS_IMPL(InvoiceImpl, Total);
+COMPARE_CLASS_IMPL(InvoiceImpl, Type);
 
 class ListImpl:
     public Register::CommonListImpl,
@@ -2454,6 +2456,12 @@ public:
                 break;
             case MT_FILEXML:
                 stable_sort(data_.begin(), data_.end(), CompareFileXML(asc));
+                break;
+            case MT_TOTAL:
+                stable_sort(data_.begin(), data_.end(), CompareTotal(asc));
+                break;
+            case MT_TYPE:
+                stable_sort(data_.begin(), data_.end(), CompareType(asc));
                 break;
         }
     }
