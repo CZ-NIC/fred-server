@@ -51,6 +51,18 @@
 #define BANK_INVOICE_ID_NAME            "bank_invoice_id"
 #define BANK_INVOICE_ID_NAME_DESC       "invoice id"
 
+#define BANK_IMPORT_XML_NAME            "bank_import_xml"
+#define BANK_IMPORT_XML_NAME_DESC       "xml file with bank statement(s)"
+
+#define BANK_IMPORT_XML_HELP_NAME       "bank_import_xml_help"
+#define BANK_IMPORT_XML_HELP_NAME_DESC  "bank_import_xml help"
+
+#define BANK_XML_FILE_NAME              "bank_xml"
+#define BANK_XML_FILE_NAME_DESC         "xml file name"
+
+#define BANK_ONLINE_NAME             "bank_online"
+#define BANK_ONLINE_NAME_DESC           "if imported bank statement is online"
+
 #include <boost/program_options.hpp>
 #include <iostream>
 
@@ -89,6 +101,9 @@ public:
 
     void list();
     void online_list();
+
+    void import_xml();
+    void import_xml_help();
 };
 
 } // namespace Admin;

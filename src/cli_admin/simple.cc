@@ -392,6 +392,10 @@ main(int argc, char **argv)
         bank.list();
     } else if (conf.hasOpt(BANK_ONLINE_LIST_NAME)) {
         bank.online_list();
+    } else if (conf.hasOpt(BANK_IMPORT_XML_NAME)) {
+        bank.import_xml();
+    } else if (conf.hasOpt(BANK_IMPORT_XML_HELP_NAME)) {
+        bank.import_xml_help();
     }
 
     if (conf.hasOpt(POLL_LIST_ALL_NAME)) {

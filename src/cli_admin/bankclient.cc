@@ -41,7 +41,9 @@ BankClient::BankClient()
         addOpt(BANK_OLD_STATEMENT_LIST_NAME)
         addOpt(BANK_SHOW_OPTS_NAME)
         addOpt(BANK_LIST_NAME)
-        addOpt(BANK_ONLINE_LIST_NAME);
+        addOpt(BANK_ONLINE_LIST_NAME)
+        addOpt(BANK_IMPORT_XML_NAME)
+        addOpt(BANK_IMPORT_XML_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Bank related sub options");
@@ -55,7 +57,9 @@ BankClient::BankClient()
         addOptStr(BANK_CONST_SYMBOL_NAME)
         addOptStr(BANK_SORT_NAME)
         addOpt(BANK_SORT_DESC_NAME)
-        addOptDID(BANK_INVOICE_ID_NAME);
+        addOptDID(BANK_INVOICE_ID_NAME)
+        addOptStr(BANK_XML_FILE_NAME)
+        addOpt(BANK_ONLINE_NAME);
 }
 BankClient::BankClient(
         std::string connstring,
@@ -325,6 +329,54 @@ BankClient::online_list()
     }
     std::cout << "</object>" << std::endl;
 }
+void
+BankClient::import_xml()
+{
+    std::string fileName;
+    bool fromFile = false;
+    bool isOnline = false;
+    if (m_conf.hasOpt(BANK_XML_FILE_NAME)) {
+        fromFile = true;
+        fileName = m_conf.get<std::string>(BANK_XML_FILE_NAME);
+    }
+    if (m_conf.hasOpt(BANK_ONLINE_NAME)) {
+        isOnline = true;
+    }
+
+    std::ifstream input;
+    if (fromFile) {
+        input.open(fileName.c_str(), std::ios::in);
+    } else {
+        input.open("/dev/stdin", std::ios::in);
+    }
+    std::auto_ptr<Register::Banking::Manager>
+        bankMan(Register::Banking::Manager::create(m_dbman));
+    bool retval;
+    if (isOnline) {
+        retval = bankMan->importOnlineStatementXml(input);
+    } else {
+        retval = bankMan->importStatementXml(input);
+    }
+    if (!retval) {
+        std::cout << "Error occured!" << std::endl;
+    }
+}
+
+void
+BankClient::import_xml_help()
+{
+    std::cout <<
+        "** Import xml **\n\n"
+        "  $ " << g_prog_name << " --" << BANK_IMPORT_XML_NAME << " \\\n"
+        "    [--" << BANK_XML_FILE_NAME << "=<file_name>] \\\n"
+        "    [--" << BANK_ONLINE_NAME << "] \n" 
+        << std::endl;
+    std::cout << "If no xml file name is provided, program reads from stdin."
+        << std::endl
+        << "``--" << BANK_ONLINE_NAME << "'' specified if statement is normal or online."
+        << std::endl;
+}
+
 
 } // namespace Admin;
 
