@@ -1,3 +1,9 @@
+2009-01-06 Jiri Sadek (2.1.6)
+
+   * Bugfix in modification of OR-connected filters
+
+   * Bugfix in search by notifyemail in history filter - wrong column specified 
+
 2009-01-06 Jiri Sadek (2.1.5)
 
    * Bugfix in creation of public request
