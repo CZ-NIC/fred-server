@@ -130,6 +130,27 @@ public:
         m_reclamation(_reclamation), m_email(_email), m_url(_url), m_phone(_phone),
         m_fax(_fax), m_vatApply(_vatApply)
     { }
+    SubjectImpl operator=(const SubjectImpl &sec)
+    {
+        m_id = sec.getId();
+        m_handle = sec.getHandle();
+        m_name = sec.getName();
+        m_fullname = sec.getFullname();
+        m_street = sec.getStreet();
+        m_city = sec.getCity();
+        m_zip = sec.getZip();
+        m_country = sec.getCountry();
+        m_ico = sec.getICO();
+        m_vatNumber = sec.getVatNumber();
+        m_registration = sec.getRegistration();
+        m_reclamation = sec.getReclamation();
+        m_email = sec.getEmail();
+        m_url = sec.getURL();
+        m_phone = sec.getPhone();
+        m_fax = sec.getFax();
+        m_vatApply = sec.getVatApply();
+        return sec;
+    }
     Database::ID getId() const 
     {
         return m_id;
@@ -259,7 +280,6 @@ public:
         m_id(id), m_number(number), m_credit(credit), m_totalPrice(totalPrice),
         m_totalVat(totalVat), m_crTime(crTime)
     { }
-
     virtual Database::ID getId() const
     {
         return m_id;
@@ -419,12 +439,10 @@ public:
     {
         m_i++;
     }
-
     unsigned int getYear() const
     {
         return end() ? 0 : m_i->first;
     }
-
     Database::Money getPrice() const
     {
         return end() ? Database::Money(0) : m_i->second;
@@ -500,27 +518,6 @@ private:
     std::vector<std::string>    m_errors;
     Database::Date              m_fromDate;
 public:
-    InvoiceImpl(Database::ID id, Database::ID zone, std::string zoneName,
-            Database::DateTime crTime, Database::Date taxDate, 
-            Database::DateInterval accountPeriod, Type type,
-            unsigned long long number, Database::ID registrar,
-            Database::Money credit, Database::Money price, int vatRate,
-            Database::Money total, Database::Money totalVAT,
-            Database::ID filePDF, Database::ID fileXML, std::string varSymbol,
-            SubjectImpl &client, std::string filePDF_name, std::string fileXML_name,
-            Database::Manager *dbMan, Database::Connection *conn, 
-            Manager *manager):
-        CommonObjectImpl(id),
-        m_zone(zone), m_zoneName(zoneName), m_crTime(crTime), m_taxDate(taxDate),
-        m_accountPeriod(accountPeriod), m_type(type), m_number(number),
-        m_registrar(registrar), m_credit(credit), m_price(price), m_vatRate(vatRate),
-        m_total(total), m_totalVAT(totalVAT), m_filePDF(filePDF), m_fileXML(fileXML),
-        m_varSymbol(varSymbol), m_client(client), m_filePDF_name(filePDF_name), 
-        m_fileXML_name(fileXML_name), m_conn(conn),
-        m_annualPartitioning(manager), m_dbMan(dbMan), m_manager(manager),
-        m_storeFileFlag(false)
-    { }
-
     InvoiceImpl(Database::Manager *dbMan, Database::Connection *conn,
             Manager *manager):
         CommonObjectImpl(),
@@ -737,6 +734,10 @@ public:
     {
         return &m_client;
     }
+    virtual void setClient(Subject &client)
+    {
+        m_client = dynamic_cast<SubjectImpl &>(client);
+    }
     virtual const Subject *getSupplier() const 
     {
         return &m_supplier;
@@ -871,13 +872,25 @@ public:
     {
         m_type = type;
     }
-    virtual void setFileIdPDF(Database::ID id) 
+    virtual void setVarSymbol(std::string varSymbol)
+    {
+        m_varSymbol = varSymbol;
+    }
+    virtual void setFilePDF(Database::ID id) 
     {
         m_filePDF = id;
     }
-    virtual void setFileIdXML(Database::ID id) 
+    virtual void setFileXML(Database::ID id) 
     {
         m_fileXML = id;
+    }
+    virtual void setFileNamePDF(std::string name)
+    {
+        m_filePDF_name = name;
+    }
+    virtual void setFileNameXML(std::string name) 
+    {
+        m_fileXML_name = name;
     }
     virtual void setManager(Manager *manager)
     {
@@ -2263,7 +2276,7 @@ public:
 
                 Database::ID       id             = *col;
                 Database::ID       zone           = *(++col);
-                std::string        fqdn           = *(++col);
+                std::string        zoneName       = *(++col);
                 Database::DateTime create_time    = *(++col);
                 Database::Date     tax_date       = *(++col);
                 Database::Date     from_date      = *(++col);
@@ -2300,12 +2313,26 @@ public:
                         "", "", "", "", "", "", c_vat);
 
                 assert(m_dbMan);
-                InvoiceImpl *invoice = new InvoiceImpl(id,
-                        zone, fqdn, create_time, tax_date, account_period,
-                        type, number, registrar_id, credit, price, vat_rate,
-                        total, total_vat, filePDF, fileXML, c_var_symb,
-                        client, filepdf_name, filexml_name, m_dbMan, conn_,
-                        m_manager);
+                InvoiceImpl *invoice = new InvoiceImpl(m_dbMan, conn_, m_manager);
+                invoice->setZone(zone);
+                invoice->setZoneName(zoneName);
+                invoice->setCrTime(create_time);
+                invoice->setTaxDate(tax_date);
+                invoice->setAccountPeriod(account_period);
+                invoice->setType(type);
+                invoice->setNumber(number);
+                invoice->setRegistrar(registrar_id);
+                invoice->setCredit(credit);
+                invoice->setPrice(price);
+                invoice->setVATRate(vat_rate);
+                invoice->setTotal(total);
+                invoice->setTotalVAT(total_vat);
+                invoice->setFilePDF(filePDF);
+                invoice->setFileXML(fileXML);
+                invoice->setVarSymbol(c_var_symb);
+                invoice->setClient(client);
+                invoice->setFileNamePDF(filepdf_name);
+                invoice->setFileNameXML(filexml_name);
                 invoice->setInvoicePrefixTypeId(prefix_type);
                 data_.push_back(invoice);
                 LOGGER(PACKAGE).debug(boost::format(
@@ -2398,10 +2425,10 @@ public:
                         Database::Money     pricePerUnit= *(++col);
                         Database::ID        id          = *(++col);
                         Database::Money     vat         = m_manager->countVat(price, vatRate, true);
-                        PaymentActionImpl *action
-                            = new PaymentActionImpl(price, vatRate, vat,
-                                    objectName, actionTime, exDate, type,
-                                    units, pricePerUnit, id);
+                        PaymentActionImpl *action = new PaymentActionImpl(
+                                price, vatRate, vat, 
+                                objectName, actionTime, exDate, type, 
+                                units, pricePerUnit, id);
                         invoicePtr->addAction(action);
                     }
                 }

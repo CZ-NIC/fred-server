@@ -139,6 +139,7 @@ public:
     virtual bool end() const = 0;
     virtual void next() = 0;
     virtual unsigned int getYear() const = 0;
+    // virtual unsigned int setYear(unsigned int year) = 0;
 };
 
 class Invoice:
@@ -195,8 +196,11 @@ public:
     virtual void setTotal(Database::Money total) = 0;
     virtual void setTotalVAT(Database::Money totalVat) = 0;
     virtual void setType(Type type) = 0;
-    virtual void setFileIdPDF(Database::ID id) = 0;
-    virtual void setFileIdXML(Database::ID id) = 0;
+    virtual void setVarSymbol(std::string varSymbol) = 0;
+    virtual void setFilePDF(Database::ID id) = 0;
+    virtual void setFileXML(Database::ID id) = 0;
+    virtual void setFileNamePDF(std::string name) = 0;
+    virtual void setFileNameXML(std::string name) = 0;
     virtual void setInvoicePrefixTypeId(Database::ID id) = 0;
     virtual void setAccountPeriod(Database::DateInterval period) = 0;
 
@@ -209,6 +213,7 @@ public:
     virtual const Payment *getPayment(unsigned int index) const = 0;
 
     virtual const Subject *getClient() const = 0;
+    virtual void setClient(Subject &client) = 0;
     virtual const Subject *getSupplier() const = 0;
 
     virtual bool save() = 0;
