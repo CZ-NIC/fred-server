@@ -825,7 +825,6 @@ public:
         setPrice(money);
         setMemo(item.getChild(ITEM_MEMO).getValue());
         setDate(Database::Date(item.getChild(ITEM_DATE).getValue()));
-        std::cout << "\titem OK" << std::endl;
         return true;
     }
 }; // class StatementItemImpl
@@ -1092,7 +1091,6 @@ public:
                 return false;
             }
         }
-        std::cout << "statement OK" << std::endl;
         return true;
     }
 }; // class StatementImpl
@@ -1584,9 +1582,9 @@ public:
     {
         return new StatementImpl(m_conn);
     }
-    virtual bool importInvoiceXml(std::istream &in)
+    virtual bool importStatementXml(std::istream &in)
     {
-        TRACE("[CALL] Register::Banking::Manager::importInvoiceXml("
+        TRACE("[CALL] Register::Banking::Manager::importStatementXml("
                 "std::istream &)");
         std::string xml = loadInStream(in);
         XMLparser parser;
@@ -1611,10 +1609,10 @@ public:
             stat->save();
         }
         return true;
-    } // ManagerImpl::importInvoiceXml()
-    virtual bool importOnlineInvoiceXml(std::istream &in)
+    } // ManagerImpl::importStatementXml()
+    virtual bool importOnlineStatementXml(std::istream &in)
     {
-        TRACE("[CALL] Register::Banking::Manager::importOnlineInvoiceXml("
+        TRACE("[CALL] Register::Banking::Manager::importOnlineStatementXml("
                 "std::istream &)");
         std::string xml = loadInStream(in);
         XMLparser parser;
@@ -1642,7 +1640,7 @@ public:
             }
         }
         return true;
-    } // bool ManagerImpl::importOnlineInvoiceXml()
+    } // bool ManagerImpl::importOnlineStatementXml()
 }; // class ManagerImpl
 
 Manager *
