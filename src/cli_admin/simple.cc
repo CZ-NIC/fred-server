@@ -368,6 +368,10 @@ main(int argc, char **argv)
         invoice.credit();
     } else if (conf.hasOpt(INVOICE_FACTORING_NAME)) {
         invoice.factoring();
+    } else if (conf.hasOpt(INVOICE_CREDIT_HELP_NAME)) {
+        invoice.credit_help();
+    } else if (conf.hasOpt(INVOICE_FACTORING_HELP_NAME)) {
+        invoice.factoring_help();
     }
 
     if (conf.hasOpt(AUTHINFO_PDF_NAME)) {

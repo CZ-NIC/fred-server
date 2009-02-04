@@ -81,6 +81,9 @@
 #define INVOICE_CREDIT_NAME             "invoice_credit"
 #define INVOICE_CREDIT_NAME_DESC        "create credit invoice for registrar"
 
+#define INVOICE_CREDIT_HELP_NAME        "invoice_credit_help"
+#define INVOICE_CREDIT_HELP_NAME_DESC   "invoice credit help"
+
 #define INVOICE_ZONE_ID_NAME            "zone_id"
 #define INVOICE_ZONE_ID_NAME_DESC       "zone identifier number"
 
@@ -98,6 +101,9 @@
 
 #define INVOICE_FACTORING_NAME          "invoice_factoring"
 #define INVOICE_FACTORING_NAME_DESC     "invoice factoring"
+
+#define INVOICE_FACTORING_HELP_NAME     "invoice_factoring_help"
+#define INVOICE_FACTORING_HELP_NAME_DESC "invoice factoring help"
 
 namespace Admin {
 
@@ -135,6 +141,8 @@ public:
 
     void list_help();
     void archive_help();
+    void credit_help();
+    void factoring_help();
 
     void credit();
     void factoring();

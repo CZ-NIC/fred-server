@@ -33,7 +33,9 @@ InvoiceClient::InvoiceClient()
         addOpt(INVOICE_ARCHIVE_NAME)
         addOpt(INVOICE_CREDIT_NAME)
         addOpt(INVOICE_FACTORING_NAME)
-        addOpt(INVOICE_LIST_HELP_NAME);
+        addOpt(INVOICE_LIST_HELP_NAME)
+        addOpt(INVOICE_CREDIT_HELP_NAME)
+        addOpt(INVOICE_FACTORING_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Invoice related sub options");
@@ -594,6 +596,41 @@ InvoiceClient::archive_help()
         "** Invoice archive **\n\n"
         "  $ " << g_prog_name << " --" << INVOICE_ARCHIVE_NAME << " \\\n"
         "    --" << INVOICE_DONT_SEND_NAME << " \n"
+        << std::endl;
+}
+
+void
+InvoiceClient::credit_help()
+{
+    std::cout <<
+        "** Invoice credit **\n\n"
+        "  $ " << g_prog_name << " --" << INVOICE_CREDIT_NAME << " \\\n"
+        "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
+        "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_name> \\\n"
+        "    --" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
+        "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle> \\\n"
+        "    --" << INVOICE_PRICE_NAME << "=<price> \\\n"
+        "    [--" << INVOICE_TAXDATE_NAME << "=<tax_date>]\n"
+        << std::endl;
+    std::cout << "Default value for ``tax date'' is today."
+        << std::endl;
+}
+
+void
+InvoiceClient::factoring_help()
+{
+    std::cout <<
+        "** Invoice factoring **\n\n"
+        "  $ " << g_prog_name << " --" << INVOICE_FACTORING_NAME << " \\\n"
+        "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
+        "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_name> \\\n"
+        "    [--" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
+        "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
+        "    [--" << INVOICE_TODATE_NAME << "=<to_date>] \\\n"
+        "    [--" << INVOICE_TAXDATE_NAME << "=<tax_date>]\n"
+        << std::endl;
+    std::cout << "Default value for ``to date'' is last day of previous month "
+        "and for ``tax date'' it is first day of this month."
         << std::endl;
 }
 
