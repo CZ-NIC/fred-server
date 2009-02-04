@@ -392,6 +392,10 @@ main(int argc, char **argv)
         bank.import_xml();
     } else if (conf.hasOpt(BANK_IMPORT_XML_HELP_NAME)) {
         bank.import_xml_help();
+    } else if (conf.hasOpt(BANK_STATEMENT_LIST_HELP_NAME)) {
+        bank.statement_list_help();
+    } else if (conf.hasOpt(BANK_ONLINE_LIST_HELP_NAME)) {
+        bank.online_list_help();
     }
 
     if (conf.hasOpt(POLL_LIST_ALL_NAME)) {

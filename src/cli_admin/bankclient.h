@@ -59,6 +59,11 @@
 #define BANK_ONLINE_NAME                "bank_online"
 #define BANK_ONLINE_NAME_DESC           "if imported bank statement is online"
 
+#define BANK_STATEMENT_LIST_HELP_NAME       "bank_statement_list_help"
+#define BANK_STATEMENT_LIST_HELP_NAME_DESC  "bank statement list help"
+#define BANK_ONLINE_LIST_HELP_NAME          "bank_online_list_help"
+#define BANK_ONLINE_LIST_HELP_NAME_DESC     "bank_online_list_help"
+
 #include <boost/program_options.hpp>
 #include <iostream>
 

@@ -41,7 +41,9 @@ BankClient::BankClient()
         addOpt(BANK_ONLINE_LIST_NAME)
         addOpt(BANK_SHOW_OPTS_NAME)
         addOpt(BANK_IMPORT_XML_NAME)
-        addOpt(BANK_IMPORT_XML_HELP_NAME);
+        addOpt(BANK_IMPORT_XML_HELP_NAME)
+        addOpt(BANK_STATEMENT_LIST_HELP_NAME)
+        addOpt(BANK_ONLINE_LIST_HELP_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Bank related sub options");
@@ -53,8 +55,6 @@ BankClient::BankClient()
         addOptStr(BANK_ACCOUNT_NUMBER_NAME)
         addOptStr(BANK_BANK_CODE_NAME)
         addOptStr(BANK_CONST_SYMBOL_NAME)
-        addOptStr(BANK_SORT_NAME)
-        addOpt(BANK_SORT_DESC_NAME)
         addOptDID(BANK_INVOICE_ID_NAME)
         addOptStr(BANK_XML_FILE_NAME)
         addOpt(BANK_ONLINE_NAME)
