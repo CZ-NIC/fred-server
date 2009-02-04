@@ -382,14 +382,10 @@ main(int argc, char **argv)
         authinfo.show_opts();
     }
     
-    if (conf.hasOpt(BANK_OLD_ONLINE_LIST_NAME)) {
-        bank.old_online_list();
-    } else if (conf.hasOpt(BANK_OLD_STATEMENT_LIST_NAME)) {
-        bank.old_statement_list();
-    } else if (conf.hasOpt(BANK_SHOW_OPTS_NAME)) {
+    if (conf.hasOpt(BANK_SHOW_OPTS_NAME)) {
         bank.show_opts();
-    } else if (conf.hasOpt(BANK_LIST_NAME)) {
-        bank.list();
+    } else if (conf.hasOpt(BANK_STATEMENT_LIST_NAME)) {
+        bank.statement_list();
     } else if (conf.hasOpt(BANK_ONLINE_LIST_NAME)) {
         bank.online_list();
     } else if (conf.hasOpt(BANK_IMPORT_XML_NAME)) {

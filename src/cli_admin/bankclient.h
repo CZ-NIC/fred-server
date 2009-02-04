@@ -22,14 +22,10 @@
 
 #define BANK_SHOW_OPTS_NAME             "bank_show_opts"
 #define BANK_SHOW_OPTS_NAME_DESC        "show all banking options"
-#define BANK_OLD_ONLINE_LIST_NAME           "bank_old_online_list"
-#define BANK_OLD_ONLINE_LIST_NAME_DESC      "xml with all payments (from table ``bank_ebanka_list'')"
-#define BANK_OLD_STATEMENT_LIST_NAME        "bank_old_statement_list"
-#define BANK_OLD_STATEMENT_LIST_NAME_DESC   "xml with all payments (from tables ``bank_statement_head'' and ``bank_statement_item'')"
-#define BANK_LIST_NAME                  "bank_list"
-#define BANK_LIST_NAME_DESC             "list of payments (filterable)"
-#define BANK_ONLINE_LIST_NAME          "bank_online_list"
-#define BANK_ONLINE_LIST_NAME_DESC     "list of online payments (filterable)"
+#define BANK_STATEMENT_LIST_NAME        "bank_statement_list"
+#define BANK_STATEMENT_LIST_NAME_DESC   "list of payments (filterable)"
+#define BANK_ONLINE_LIST_NAME           "bank_online_list"
+#define BANK_ONLINE_LIST_NAME_DESC      "list of online payments (filterable)"
 #define BANK_DATE_NAME                  "bank_date"
 #define BANK_DATE_NAME_DESC             "bank create date"
 #define BANK_ID_NAME                    "bank_id"
@@ -60,7 +56,7 @@
 #define BANK_XML_FILE_NAME              "bank_xml"
 #define BANK_XML_FILE_NAME_DESC         "xml file name"
 
-#define BANK_ONLINE_NAME             "bank_online"
+#define BANK_ONLINE_NAME                "bank_online"
 #define BANK_ONLINE_NAME_DESC           "if imported bank statement is online"
 
 #include <boost/program_options.hpp>
@@ -96,14 +92,14 @@ public:
     boost::program_options::options_description *getInvisibleOptions() const;
     void show_opts() const;
 
-    int old_online_list();
-    int old_statement_list();
-
-    void list();
+    void statement_list();
     void online_list();
 
     void import_xml();
     void import_xml_help();
+
+    void online_list_help();
+    void statement_list_help();
 };
 
 } // namespace Admin;

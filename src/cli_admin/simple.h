@@ -1,4 +1,5 @@
 #ifndef _SIMPLE_H_
+
 #define _SIMPLE_H_
 
 #define addOpt(name)                        (name, name##_DESC)
@@ -313,6 +314,9 @@
 #define ANY_NSSET_NAME_DESC     "show only records with assigned nsset"
 #define add_ANY_NSSET()         addOpt(ANY_NSSET_NAME)
 #define apply_ANY_NSSET(filter) checkGetOpt(filter->addNSSet(), ANY_NSSET_NAME)
+
+#define OUTPUT_NAME             "output"
+#define OUTPUT_NAME_DESC        "output file name"
 
 // client login
 #define CLIENT_LOGIN \
