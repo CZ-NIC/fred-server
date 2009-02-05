@@ -55,7 +55,7 @@ public:
    * Constructor and destructor
    */
   ConnectionBase_(connection_driver *_conn) 
-            : conn_(_conn), trans_(0) {
+            : conn_(_conn) {
   }
 
 
@@ -123,37 +123,8 @@ public:
   }
 
 
-  template<class _transaction_type, class _manager_type>
-  friend class Transaction_;
-
-
 protected:
-  /**
-   * Trasaction support methods
-   */
-  virtual inline void setTransaction(transaction_type *_trans) {
-    trans_ = _trans;
-#ifdef HAVE_LOGGER
-    LOGGER(PACKAGE).debug(boost::format("(%1%) transaction assigned to connection") % trans_);
-#endif
-  }
-
-
-  virtual inline void unsetTransaction() {
-#ifdef HAVE_LOGGER
-    LOGGER(PACKAGE).debug(boost::format("(%1%) transaction released from connection") % trans_);
-#endif
-    trans_ = 0;
-  }
-
-
-  virtual inline transaction_type* getTransaction() const {
-    return trans_;
-  }
-
-
   connection_driver       *conn_;    /**< connection_driver instance */
-  transaction_type        *trans_;   /**< pointer to active transaction */
 };
 
 
@@ -167,19 +138,21 @@ class Connection_ : public ConnectionBase_<connection_driver, manager_type> {
 public:
   typedef ConnectionBase_<connection_driver, manager_type>   super;
   typedef typename super::result_type                        result_type;
+  typedef typename super::transaction_type                   transaction_type;
 
 
   /**
    * Conectructors
    */
-  Connection_() : super(0) {
+  Connection_() : super(0), trans_(0) {
   }
 
 
   Connection_(const std::string &_conn_info,
               bool _lazy_connect = true) throw (ConnectionFailed)
             : super(0),
-              conn_info_(_conn_info) {
+              conn_info_(_conn_info),
+              trans_(0) {
 
     /* lazy connection open */
     if (!_lazy_connect) {
@@ -188,7 +161,7 @@ public:
   }
 
 
-  Connection_(connection_driver *_conn) : super(_conn) {
+  Connection_(connection_driver *_conn) : super(_conn), trans_(0) {
   }
 
 
@@ -248,8 +221,40 @@ public:
   }
 
 
+  template<class _transaction_type, class _manager_type>
+  friend class Transaction_;
+
+
+protected:
+  /**
+   * Trasaction support methods
+   */
+  virtual inline void setTransaction(transaction_type *_trans) {
+    trans_ = _trans;
+#ifdef HAVE_LOGGER
+    LOGGER(PACKAGE).debug(boost::format("(%1%) transaction assigned to (%2%) connection") % trans_ % this->conn_);
+#endif
+  }
+
+
+  virtual inline void unsetTransaction() {
+#ifdef HAVE_LOGGER
+    LOGGER(PACKAGE).debug(boost::format("(%1%) transaction released from connection") % trans_);
+#endif
+    trans_ = 0;
+  }
+
+
+  virtual inline transaction_type* getTransaction() const {
+    return trans_;
+  }
+
+  
+  transaction_type *trans_;  /**< pointer to active transaction */
+
+
 private:
-  std::string conn_info_;  /**< connection string used to open connection */
+  std::string conn_info_;    /**< connection string used to open connection */
 };
 
 
@@ -263,18 +268,53 @@ template<class connection_driver, class manager_type>
 class TSSConnection_ : public ConnectionBase_<connection_driver, manager_type> {
 public:
   typedef ConnectionBase_<connection_driver, manager_type>   super;
+  typedef typename super::transaction_type                   transaction_type;
 
 
   /**
    * Constructor and destructor
    */
-  TSSConnection_(connection_driver *_conn) : super(_conn) {
+  TSSConnection_(connection_driver *_conn, transaction_type *&_trans) 
+               : super(_conn) {
+    this->trans_ = &_trans;
   }
 
 
   virtual ~TSSConnection_() {
     manager_type::release();
   }
+
+
+  template<class _transaction_type, class _manager_type>
+  friend class Transaction_;
+
+
+protected:
+  /**
+   * Trasaction support methods
+   */
+  virtual inline void setTransaction(transaction_type *_trans) {
+    *trans_ = _trans;
+#ifdef HAVE_LOGGER
+    LOGGER(PACKAGE).debug(boost::format("(%1%) transaction assigned to (%2%) connection") % trans_ % this->conn_);
+#endif
+  }
+
+
+  virtual inline void unsetTransaction() {
+#ifdef HAVE_LOGGER
+    LOGGER(PACKAGE).debug(boost::format("(%1%) transaction released from connection") % trans_);
+#endif
+    *trans_ = 0;
+  }
+
+
+  virtual inline transaction_type* getTransaction() const {
+    return *trans_;
+  }
+
+
+  transaction_type **trans_;  /**< pointer to active transaction */
 };
 
 

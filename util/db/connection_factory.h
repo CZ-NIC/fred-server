@@ -137,6 +137,8 @@ public:
                  max_conn_(_max_conn) {
 #ifdef HAVE_LOGGER
     TRACE("Database::Factory::ConnectionPool::ConnectionPool()");
+    LOGGER(PACKAGE).info(boost::format("connection pool configured; conn_info='%1%' (init=%2% max=%3%)")
+                                      % conn_info_ % init_conn_ % max_conn_);
 #endif
     relax_(init_conn_);
   }

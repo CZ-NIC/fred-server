@@ -72,11 +72,15 @@ public:
   static connection_type acquire() {
     PerThreadData_ *tmp = data_.get();
     if (tmp) {
-      return connection_type(getConnection_(tmp));
+      update_data_(tmp);
+#ifdef HAVE_LOGGER
+      LOGGER(PACKAGE).debug(boost::format("[tss] acquire state: conn=%1%  trans=%2%") % tmp->conn % &tmp->trans);
+#endif
+      return connection_type(tmp->conn, tmp->trans);
     }
     else {
       data_.reset(new PerThreadData_());
-      return connection_type(getConnection_(data_.get()));
+      return acquire();
     }
   }
 
@@ -89,6 +93,12 @@ public:
    *                        2. factory release (i.e. to pool)
    */
   static void release() {
+#ifdef HAVE_LOGGER
+    PerThreadData_ *tmp = data_.get();
+    if (tmp) {
+      LOGGER(PACKAGE).debug(boost::format("[tss] release state: conn=%1%  trans=%2%") % tmp->conn % &tmp->trans);
+    }
+#endif
     // PerThreadData_ *tmp = data_.get();
     // if (tmp && tmp->conn) {
     //   conn_factory_->release(tmp->conn);
@@ -107,12 +117,10 @@ private:
 
 
   /**
-   * Stucture to store per thread connection
-   * TODO: may be redundand - it could be enough to use `connection_type'
-   *       as a template parameter to boost::thread_specific_ptr<>
+   * Stucture to store per thread connection and transaction info
    */
   struct PerThreadData_ {
-    PerThreadData_() : conn(0) { }
+    PerThreadData_() : conn(0), trans(0) { }
 
     ~PerThreadData_() {
       if (conn) {
@@ -121,17 +129,18 @@ private:
     }
 
     connection_driver *conn;
+    transaction_type  *trans;
   };
 
 
   /**
    * Helper method for acquiring database connection
    */
-  static connection_driver* getConnection_(PerThreadData_ *_data) {
+  static void update_data_(PerThreadData_ *&_data) {
     if (!_data->conn) {
       _data->conn = conn_factory_->acquire();
+      _data->trans = 0;
     }
-    return _data->conn;
   }
   
 
