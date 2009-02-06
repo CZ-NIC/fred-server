@@ -151,8 +151,8 @@ public:
   Connection_(const std::string &_conn_info,
               bool _lazy_connect = true) throw (ConnectionFailed)
             : super(0),
-              conn_info_(_conn_info),
-              trans_(0) {
+              trans_(0),
+              conn_info_(_conn_info) {
 
     /* lazy connection open */
     if (!_lazy_connect) {
