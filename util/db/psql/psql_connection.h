@@ -1,17 +1,17 @@
-/*  
+/*
  * Copyright (C) 2007  CZ.NIC, z.s.p.o.
- * 
+ *
  * This file is part of FRED.
- * 
+ *
  * FRED is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 2 of the License.
- * 
+ *
  * FRED is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -55,7 +55,7 @@ public:
   }
 
 
-  PSQLConnection(const std::string& _conn_info) throw (ConnectionFailed) 
+  PSQLConnection(const std::string& _conn_info) throw (ConnectionFailed)
                : conn_info_(_conn_info), psql_conn_(0) {
     open(_conn_info);
   }
@@ -93,7 +93,7 @@ public:
   virtual inline result_type exec(Statement& _query) throw (ResultFailed) {
     return exec(_query.toSql(boost::bind(&PSQLConnection::escape, this, _1)));
   }
-  
+
 
   virtual inline result_type exec(const std::string& _query) throw (ResultFailed) {
     PGresult *tmp = PQexec(psql_conn_, _query.c_str());
@@ -122,13 +122,15 @@ public:
     PQescapeStringConn(psql_conn_, esc, _in.c_str(), _in.size(), &err);
     ret = esc;
     delete [] esc;
-    
+
     if (err) {
       /* error */
+#ifdef HAVE_LOGGER
       LOGGER(PACKAGE).error(boost::format("error in escape function: %1%") % PQerrorMessage(psql_conn_));
+#endif
     }
 
-    return ret; 
+    return ret;
   }
 
 
@@ -165,7 +167,7 @@ public:
   inline std::string rollback() {
     return "ROLLBACK TRANSACTION";
   }
-  
+
 
 	inline std::string commit() {
     return "COMMIT TRANSACTION";
