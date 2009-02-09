@@ -26,6 +26,7 @@
 
 #include <queue>
 
+#include "../database.h"
 #include "log/logger.h"
 
 

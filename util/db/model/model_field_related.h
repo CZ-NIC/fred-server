@@ -52,11 +52,41 @@ public:
 
 
 protected:
-  ForeignKey<_class, _type, _class_ref>        &fk_;
-  MemPtr<_class, ::Field::Field<_type> >        related_to_;
-  MemPtr<_class, ::Field::Lazy::Field<_class_ref*> >  related_;
+  ForeignKey<_class, _type, _class_ref>               &fk_;
+  MemPtr<_class, ::Field::Field<_type> >               related_to_;
+  MemPtr<_class, ::Field::Lazy::Field<_class_ref*> >   related_;
 };
 
+
+
+template<class _class, class _type, class _class_ref>
+class OneToMany {
+public:
+  OneToMany(ForeignKey<_class_ref, _type, _class> &_fk,
+            const MemPtr<_class, ::Field::Lazy::List<_class_ref> > &_related)
+          : fk_(_fk),
+            related_(_related) {
+  }
+
+
+  virtual ~OneToMany() {
+  }
+
+
+  void addRelated(_class *_obj, _class_ref *_value) {
+    related_(*_obj).push_back(_value);
+  }
+
+
+  void getRelated(const _class *_obj) {
+    /* do lazy list load propably based on filter */
+  }
+
+
+protected:
+  ForeignKey<_class_ref, _type, _class>              &fk_;
+  MemPtr<_class, ::Field::Lazy::List<_class_ref> >    related_;
+};
 
 }
 }

@@ -26,7 +26,9 @@
 #define FIELD_H_
 
 #include <ostream>
+
 #include "model_list.h"
+
 
 namespace Field {
 
@@ -80,16 +82,16 @@ protected:
 };
 
 
-template<class __type>
-std::ostream& operator<<(std::ostream &_os, const Field<__type> &_field) {
-  return (_field.is_set_ ? _os << _field.value_ : _os << "NULL");
-}
-
-
-template<class __type>
-std::ostream& operator<<(std::ostream &_os, const Field< ::Model::List<__type> > &_field) {
-  return _os;
-}
+// template<class __type>
+// std::ostream& operator<<(std::ostream &_os, const Field<__type> &_field) {
+//   return (_field.is_set_ ? _os << _field.value_ : _os << "NULL");
+// }
+// 
+// 
+// template<class __type>
+// std::ostream& operator<<(std::ostream &_os, const Field< ::Model::List<__type> > &_field) {
+//   return _os;
+// }
 
 
 template<>
@@ -153,9 +155,9 @@ protected:
 };
 
 
-std::ostream& operator<<(std::ostream &_os, const Field<std::string> &_field) {
-  return (_field.is_set_ ? _os << _field.value_ : _os << "NULL");
-}
+// std::ostream& operator<<(std::ostream &_os, const Field<std::string> &_field) {
+//   return (_field.is_set_ ? _os << _field.value_ : _os << "NULL");
+// }
 
 
 
@@ -181,6 +183,26 @@ public:
     this->value_ = _value;
     this->is_set_ = true;
     return *this;
+  }
+};
+
+
+
+template<class _type, class _container = std::deque<_type*> >
+class List : public _container {
+public:
+  typedef _container                  super;
+  typedef typename super::value_type  value_type;
+
+
+  List() : _container() {
+  }
+
+
+  virtual ~List() {
+    for (typename super::iterator it = this->begin(); it != this->end(); ++it) {
+      delete *it;
+    }
   }
 };
 
