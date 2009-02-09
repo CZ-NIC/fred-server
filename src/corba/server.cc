@@ -323,7 +323,7 @@ int main(int argc, char** argv) {
 #ifdef LOGD
     PortableServer::ObjectId_var loggerObjectId = 
     PortableServer::string_to_ObjectId("Logger");
-    ccReg_Log_i* myccReg_Log_i = new ccReg_Log_i(conn_info,&ns,cfg, false);
+    ccReg_Log_i* myccReg_Log_i = new ccReg_Log_i(conn_info,&ns,cfg);
     // ccReg_Log_i* myccReg_Log_i = new ccReg_Log_i("host=localhost dbname=fred_log user=fred port=22345" ,&ns,config, false);
     poa->activate_object_with_id(loggerObjectId,myccReg_Log_i);
     CORBA::Object_var loggerObj = myccReg_Log_i->_this();
