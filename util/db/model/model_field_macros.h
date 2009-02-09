@@ -59,5 +59,12 @@ Model::Field::Related::OneToOne<_class, _type2, _type1>                         
                                                                           &_class::_field1name);
 
 
+#define DEFINE_ONE_TO_MANY(_class, _name, _type1, _field1name, _class2, _field2name)               \
+Model::Field::Related::OneToMany<_class, _type1, _class2>                                          \
+  _class::_name = Model::Field::Related::OneToMany<_class, _type1, _class2>(_class2::_field2name,  \
+                                                                            &_class::_field1name);
+
+
+
 #endif /*MODEL_FIELD_MACROS_H_*/
 
