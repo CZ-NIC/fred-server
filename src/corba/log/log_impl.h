@@ -10,9 +10,6 @@
 #include <corba/ccReg.hh>
 
 #include <map>
-/*
- * #include <tr1/unordered_map>
- */
 
 #include "conf/manager.h"
 
@@ -30,34 +27,18 @@ private:
 		}
 	};
 
-
   /** Limit the number of entries read from log_property_name table
    * (which is supposed to contain limited number of distinct property names )
    */
   static const int PROP_NAMES_SIZE_LIMIT = 10000;
 
-  Connection conn;
+  Manager db_manager;
 
   /*
   std::tr1::unordered_map<std::string, ccReg::TID> property_names
   */
   std::map<std::string, ccReg::TID, strCmp> property_names;
-/*
-  std::string m_connection_string;
-  NameService *ns;
-  Conf& cfg;
-  DB db;
-  Database::Manager m_db_manager;
-*/
 
-/*
-  typedef std::map<std::string, ccReg_Session_i*> SessionListType;
-  SessionListType m_session_list;
-  boost::mutex m_session_list_mutex;
-  boost::condition cond_;
-  bool session_garbage_active_;
-  boost::thread *session_garbage_thread_;
-*/
 
 public:
 //  void garbageSession();
@@ -65,7 +46,7 @@ public:
   {
   };
 
-  ccReg_Log_i(const std::string database, NameService *ns, Config::Conf& _cfg, bool _session_garbage = true)
+  ccReg_Log_i(const std::string database, NameService *ns, Config::Conf& _cfg)
       throw (DB_CONNECT_FAILED);
   virtual ~ccReg_Log_i();
 
@@ -75,11 +56,14 @@ public:
   CORBA::Boolean update_event_close(ccReg::TID id, const char *content_out, const ccReg::LogProperties &props);
 
 private:
-  void insert_props(ccReg::TID entry_id, const ccReg::LogProperties& props);
-  bool record_check(ccReg::TID id);
-  ccReg::TID find_property_name_id(const char *name);
-  inline ccReg::TID find_last_property_value_id();
+  void insert_props(ccReg::TID entry_id, const ccReg::LogProperties& props, Connection &conn);
+  bool record_check(ccReg::TID id, Connection &conn);
+  ccReg::TID find_property_name_id(const char *name, Connection &conn);
+  inline ccReg::TID find_last_property_value_id(Connection &conn);
 
+  static const std::string LAST_PROPERTY_VALUE_ID;
+  static const std::string LAST_PROPERTY_NAME_ID;
+  static const std::string LAST_ENTRY_ID;
 };
 
 #endif
