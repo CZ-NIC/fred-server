@@ -54,8 +54,8 @@
 #define INVOICE_NUMBER_NAME_DESC        "invoice number"
 #define INVOICE_TAXDATE_NAME            "taxdate"
 #define INVOICE_TAXDATE_NAME_DESC       "tax date (type ``./fred-admin --help_dates'' for further date&time information)"
-#define INVOICE_TODATE_NAME            "todate"
-#define INVOICE_TODATE_NAME_DESC       "to date (type ``./fred-admin --help_dates'' for further date&time information)"
+#define INVOICE_TODATE_NAME             "todate"
+#define INVOICE_TODATE_NAME_DESC        "to date (type ``./fred-admin --help_dates'' for further date&time information)"
 #define INVOICE_ARCHIVED_NAME           "archived"
 #define INVOICE_ARCHIVED_NAME_DESC      "archived flag"
 #define INVOICE_OBJECT_ID_NAME          "invoice_object_id"
@@ -105,6 +105,9 @@
 #define INVOICE_FACTORING_HELP_NAME     "invoice_factoring_help"
 #define INVOICE_FACTORING_HELP_NAME_DESC "invoice factoring help"
 
+#define INVOICE_MAKE_PAIRS_NAME         "invoice_make_pairs"
+#define INVOICE_MAKE_PAIRS_NAME_DESC    "pair invoices with statements"
+
 namespace Admin {
 
 class InvoiceClient : public BaseClient {
@@ -146,6 +149,7 @@ public:
 
     void credit();
     void factoring();
+    void pair_invoices();
 };
 
 } // namespace Admin;
