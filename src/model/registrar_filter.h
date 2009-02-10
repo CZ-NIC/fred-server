@@ -23,6 +23,7 @@ public:
   virtual Value<std::string>& addCity() = 0;
   virtual Value<std::string>& addEmail() = 0;
   virtual Value<std::string>& addCountry() = 0;
+  virtual Value<std::string>& addVarSymbol() = 0;
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -45,6 +46,7 @@ public:
   virtual Value<std::string>& addCity();
   virtual Value<std::string>& addEmail();
   virtual Value<std::string>& addCountry();
+  virtual Value<std::string>& addVarSymbol();
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,

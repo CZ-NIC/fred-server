@@ -64,5 +64,15 @@ Value<std::string>& RegistrarImpl::addCountry() {
   return *tmp;
 }
 
+Value<std::string> &
+RegistrarImpl::addVarSymbol()
+{
+    Value<std::string> *tmp =
+        new Value<std::string>(Column("varsymb", joinRegistrarTable()));
+    add(tmp);
+    tmp->setName("VarSymbol");
+    return *tmp;
+}
+
 }
 }
