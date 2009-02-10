@@ -35,7 +35,8 @@ InvoiceClient::InvoiceClient()
         addOpt(INVOICE_FACTORING_NAME)
         addOpt(INVOICE_LIST_HELP_NAME)
         addOpt(INVOICE_CREDIT_HELP_NAME)
-        addOpt(INVOICE_FACTORING_HELP_NAME);
+        addOpt(INVOICE_FACTORING_HELP_NAME)
+        addOpt(INVOICE_MAKE_PAIRS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Invoice related sub options");
@@ -426,6 +427,10 @@ InvoiceClient::credit()
     } else {
         invoice->setTaxDate(Database::Date(Database::NOW));
     }
+    if (m_conf.hasOpt(CRDATE_NAME)) {
+        invoice->setCrTime(Database::DateTime(
+                    m_conf.get<std::string>(CRDATE_NAME)));
+    }
     if (!zoneFilled) {
         std::cerr << "Zone is not set, use ``--zone_id'' or "
             << "``--zone_name'' to set it" << std::endl;
@@ -466,11 +471,9 @@ InvoiceClient::factoring(Register::Invoicing::Manager *man,
     }
     if (regId != Database::ID()) {
         invoice->setRegistrar(regId);
-        std::cout << "regId: " << regId << std::endl;
     }
     if (!regName.empty()) {
         invoice->setRegistrarName(regName);
-        std::cout << "regName: " << regName << std::endl;
     }
     invoice->setToDate(toDate);
     invoice->setTaxDate(taxDate);
@@ -486,12 +489,6 @@ InvoiceClient::factoring(Register::Invoicing::Manager *man,
 void
 InvoiceClient::factoring()
 {
-    // Database::Date pokus(Database::NOW);
-    // std::cout << pokus << std::endl;
-    // Database::Date pokus2(pokus.get().year(), pokus.get().month(), 1);
-    // pokus2 = pokus2 - Database::Days(1);
-    // std::cout << pokus2 << std::endl;
-    // return;
     std::auto_ptr<Register::Invoicing::Manager>
         invMan(Register::Invoicing::Manager::create(m_dbman));
     std::auto_ptr<Register::Registrar::Manager>
@@ -545,9 +542,16 @@ InvoiceClient::factoring()
             << "``--zone_name'' to set it" << std::endl;
         return;
     }
-    std::cout << "tohle je admin: " << toDate << std::endl;
     if (!regFilled) {
+        std::cout << "sem tu!" << std::endl;
+
+        Database::Filters::Registrar *regFilter;
+        regFilter = new Database::Filters::RegistrarImpl(true);
+        Database::Filters::Union *unionFilter;
+        unionFilter = new Database::Filters::Union();
+        unionFilter->addFilter(regFilter);
         Register::Registrar::RegistrarList *list = regMan->getList();
+        list->reload(*unionFilter, m_dbman);
         int i = 0;
         Register::Registrar::Registrar *reg;
         while (1) {
@@ -564,6 +568,15 @@ InvoiceClient::factoring()
         factoring(invMan.get(), zoneId, zoneName, registrarId, registrarName,
                 toDate, taxDate);
     }
+}
+
+void
+InvoiceClient::pair_invoices()
+{
+    std::cout << "pair invoices" << std::endl;
+    std::auto_ptr<Register::Invoicing::Manager>
+        invMan(Register::Invoicing::Manager::create(m_dbman));
+    invMan->pairInvoices();
 }
 
 void
@@ -610,9 +623,11 @@ InvoiceClient::credit_help()
         "    --" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
         "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle> \\\n"
         "    --" << INVOICE_PRICE_NAME << "=<price> \\\n"
+        "    [--" << CRDATE_NAME << "=<create_time_stamp>] \\\n"
         "    [--" << INVOICE_TAXDATE_NAME << "=<tax_date>]\n"
         << std::endl;
-    std::cout << "Default value for ``tax date'' is today."
+    std::cout << "Default value for ``--" << CRDATE_NAME << "'' is current timestamp "
+        << "and today for ``--" << INVOICE_TAXDATE_NAME << "''."
         << std::endl;
 }
 
