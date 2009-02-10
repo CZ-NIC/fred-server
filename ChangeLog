@@ -1,4 +1,8 @@
-2009-01-06 Jiri Sadek (2.1.6)
+2009-02-10 Jaromir Talir (2.1.7)
+
+   * missing source file str_corbaout.h in distribution package
+	
+2009-02-06 Jiri Sadek (2.1.6)
 
    * Bugfix in modification of OR-connected filters
 
