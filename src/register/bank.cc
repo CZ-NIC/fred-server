@@ -21,6 +21,7 @@
 
 #include "common_impl.h"
 #include "bank.h"
+#include "invoice.h"
 #include "log/logger.h"
 #include <libxml/xmlwriter.h>
 #include <libxml/parser.h>
@@ -481,9 +482,10 @@ public:
     {
         return m_conn;
     }
-    void update()
+    void update(Database::Transaction &transaction)
     {
-        TRACE("[CALL] Register::Banking::OnlineStatement::update()");
+        TRACE("[CALL] Register::Banking::OnlineStatement::update("
+                "Database::Transaction &)");
         std::auto_ptr<Database::Query> updateStat(new Database::Query());
         updateStat->buffer()
             << "UPDATE bank_ebanka_list SET"
@@ -501,7 +503,6 @@ public:
             << " WHERE id = " << id_;
         try {
             assert(m_conn);
-            Database::Transaction transaction(*m_conn);
             transaction.exec(*updateStat);
             transaction.commit();
             LOGGER(PACKAGE).info(boost::format(
@@ -514,10 +515,19 @@ public:
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
             throw;
         }
-    } // void OnlineStatementImpl::update()
-    void insert()
+    } // void OnlineStatementImpl::update(Database::Transaction &)
+
+    void update()
     {
-        TRACE("[CALL] Register::Banking::OnlineStatement::insert()");
+        TRACE("[CALL] Register::Banking::OnlineStatement::update()");
+        Database::Transaction transaction(*m_conn);
+        update(transaction);
+    } // void OnlineStatementImpl::update()
+
+    void insert(Database::Transaction &transaction) 
+    {
+        TRACE("[CALL] Register::Banking::OnlineStatement::insert("
+                "Database::Transaction &)");
         Database::InsertQuery insertStat("bank_ebanka_list");
         insertStat.add("account_id", getAccountId());
         insertStat.add("price", getPrice().format());
@@ -546,7 +556,6 @@ public:
         insertStat.add("invoice_id", getInvoiceId());
         try {
             assert(m_conn);
-            Database::Transaction transaction(*m_conn);
             transaction.exec(insertStat);
             transaction.commit();
             Database::Sequence seq(*m_conn, "bank_ebanka_list_id_seq");
@@ -561,7 +570,15 @@ public:
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
             throw;
         }
+    } // void OnlineStatementImpl::insert(Database::Transaction &)
+
+    void insert()
+    {
+        TRACE("[CALL] Register::Banking::OnlineStatement::insert()");
+        Database::Transaction transaction(*m_conn);
+        insert(transaction);
     } // void OnlineStatementImpl::insert()
+
     Database::ID getBankNumberId(std::string account_num, std::string bank_code)
     {
         Database::Query query;
@@ -583,14 +600,34 @@ public:
         code = account_num.substr(account_num.find('/') + 1, std::string::npos);
         return getBankNumberId(account, code);
     }
-    virtual void save() 
+    virtual bool save(Database::Transaction &transaction)
+    {
+        TRACE("[CALL] Register::Banking::OnlineStatementImpl::save("
+                "Database::Transaction &)");
+        try {
+            if (id_) {
+                update(transaction);
+            } else {
+                insert(transaction);
+            }
+        } catch (...) {
+            return false;
+        }
+        return true;
+    }
+    virtual bool save() 
     {
         TRACE("[CALL] Register::Banking::OnlineStatementImpl::save()");
-        if (id_) {
-            update();
-        } else {
-            insert();
+        try {
+            if (id_) {
+                update();
+            } else {
+                insert();
+            }
+        } catch (...) {
+            return false;
         }
+        return true;
     }
     bool fromXML(XMLnode statement, XMLnode item)
     {
@@ -629,7 +666,7 @@ public:
         money.format(item.getChild(ITEM_PRICE).getValue());
         setPrice(money);
         setMemo(item.getChild(ITEM_MEMO).getValue());
-        setCrDate(Database::Date(item.getChild(ITEM_DATE).getValue()));
+        setCrDate(Database::DateTime(item.getChild(ITEM_DATE).getValue()));
 
         return true;
     } // bool OnlineStatementImpl::fromXML(XMLnode)
@@ -1557,10 +1594,12 @@ public:
 class ManagerImpl:
     virtual public Manager {
 private:
-    Database::Connection *m_conn;
+    Database::Connection    *m_conn;
+    Database::Manager       *m_dbMan;
 public:
     ManagerImpl(Database::Manager *dbMan):
-        m_conn(dbMan->getConnection())
+        m_conn(dbMan->getConnection()),
+        m_dbMan(dbMan)
     { }
     virtual ~ManagerImpl()
     {
@@ -1582,7 +1621,7 @@ public:
     {
         return new StatementImpl(m_conn);
     }
-    virtual bool importStatementXml(std::istream &in)
+    virtual bool importStatementXml(std::istream &in, bool createCreditInvoice)
     {
         TRACE("[CALL] Register::Banking::Manager::importStatementXml("
                 "std::istream &)");
@@ -1610,7 +1649,20 @@ public:
         }
         return true;
     } // ManagerImpl::importStatementXml()
-    virtual bool importOnlineStatementXml(std::istream &in)
+    Database::ID getRegistrarByVarSymb(const std::string varSymb)
+    {
+        Database::Query query;
+        query.buffer()
+            << "SELECT id FROM registrar WHERE varsymb='"
+            << varSymb << "'";
+        Database::Result res = m_conn->exec(query);
+        if (res.size() == 0) {
+            return Database::ID();
+        }
+        return *(*res.begin()).begin();
+    }
+
+    virtual bool importOnlineStatementXml(std::istream &in, bool createCreditInvoice)
     {
         TRACE("[CALL] Register::Banking::Manager::importOnlineStatementXml("
                 "std::istream &)");
@@ -1637,6 +1689,21 @@ public:
                     return false;
                 }
                 stat->save();
+                if (createCreditInvoice) {
+                    std::auto_ptr<Register::Invoicing::Manager>
+                        invMan(Register::Invoicing::Manager::create(m_dbMan));
+                    std::auto_ptr<Register::Invoicing::Invoice>
+                        invoice(invMan->createDepositInvoice());
+                    // TODO proper zone setting
+                    invoice->setZoneName("cz");
+                    invoice->setRegistrar(getRegistrarByVarSymb(stat->getVarSymbol()));
+                    invoice->setPrice(stat->getPrice());
+                    invoice->setTaxDate(stat->getCrDate().str());
+                    invoice->save();
+                    // pair online-statement with its invoice
+                    stat->setInvoiceId(invoice->getId());
+                    stat->save();
+                }
             }
         }
         return true;

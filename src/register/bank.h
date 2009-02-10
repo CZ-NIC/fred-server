@@ -69,7 +69,7 @@ public:
     virtual void setIdent(std::string ident) = 0;
     virtual void setConn(Database::Connection *conn) = 0;
     virtual Database::Connection *getConn() const = 0;
-    virtual void save() = 0;
+    virtual bool save() = 0;
 };
 
 // data from bank_statement_item table
@@ -163,8 +163,8 @@ public:
     static Manager *create(Database::Manager *dbMan);
     virtual OnlineStatement *createOnlineStatement() const = 0;
     virtual Statement *createStatement() const = 0;
-    virtual bool importOnlineStatementXml(std::istream &in) = 0;
-    virtual bool importStatementXml(std::istream &in) = 0;
+    virtual bool importOnlineStatementXml(std::istream &in, bool createCreditInvoice) = 0;
+    virtual bool importStatementXml(std::istream &in, bool createCreditInvoice) = 0;
 };
 
 } // namespace Bank
