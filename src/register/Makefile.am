@@ -9,13 +9,14 @@ libfred_a_SOURCES = register.cc zone.cc blacklist.cc domain.cc registrar.cc \
                     documents.cc bank.cc info_buffer.cc poll.cc common_impl.cc \
                     notify.cc filter.cc public_request.cc mail.cc file.cc \
                     auth_info.h common_object.h mailer.h \
-          					keyset.cc \
+                    keyset.cc \
                     object_impl.h sql.h bank.h contact.h exceptions.h \
                     notify.h poll.h types.h blacklist.h documents.h \
                     info_buffer.h nsset.h register.h zone.h common_impl.h \
                     domain.h invoice.h object.h registrar.h filter.h \
                     public_request.h mail.h file.h \
-					          keyset.h
+                    keyset.h \
+                    db_settings.h
 
 ### noinst_PROGRAMS = test-register
 ### test_register_SOURCES = test.cc
