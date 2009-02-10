@@ -56,13 +56,19 @@
 #define BANK_XML_FILE_NAME              "bank_xml"
 #define BANK_XML_FILE_NAME_DESC         "xml file name"
 
-#define BANK_ONLINE_NAME                "bank_online"
+#define BANK_ONLINE_NAME                "online"
 #define BANK_ONLINE_NAME_DESC           "if imported bank statement is online"
 
 #define BANK_STATEMENT_LIST_HELP_NAME       "bank_statement_list_help"
 #define BANK_STATEMENT_LIST_HELP_NAME_DESC  "bank statement list help"
 #define BANK_ONLINE_LIST_HELP_NAME          "bank_online_list_help"
 #define BANK_ONLINE_LIST_HELP_NAME_DESC     "bank_online_list_help"
+
+#define BANK_CREDIT_NAME                "bank_credit"
+#define BANK_CREDIT_NAME_DESC           "bank credit"
+
+#define BANK_CREATE_CREDIT_INVOICE_NAME     "create_credit_invoice"
+#define BANK_CREATE_CREDIT_INVOICE_NAME_DESC "create also credit invoice if appliable"
 
 #include <boost/program_options.hpp>
 #include <iostream>

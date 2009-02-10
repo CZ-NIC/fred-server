@@ -58,7 +58,9 @@ BankClient::BankClient()
         addOptDID(BANK_INVOICE_ID_NAME)
         addOptStr(BANK_XML_FILE_NAME)
         addOpt(BANK_ONLINE_NAME)
-        addOptStr(OUTPUT_NAME);
+        addOptStr(OUTPUT_NAME)
+        addOpt(BANK_CREDIT_NAME)
+        addOpt(BANK_CREATE_CREDIT_INVOICE_NAME);
 }
 BankClient::BankClient(
         std::string connstring,
@@ -189,12 +191,16 @@ BankClient::import_xml()
     std::string fileName;
     bool fromFile = false;
     bool isOnline = false;
+    bool createCredit = false;
     if (m_conf.hasOpt(BANK_XML_FILE_NAME)) {
         fromFile = true;
         fileName = m_conf.get<std::string>(BANK_XML_FILE_NAME);
     }
     if (m_conf.hasOpt(BANK_ONLINE_NAME)) {
         isOnline = true;
+    }
+    if (m_conf.hasOpt(BANK_CREATE_CREDIT_INVOICE_NAME)) {
+        createCredit = true;
     }
 
     std::ifstream input;
@@ -207,9 +213,9 @@ BankClient::import_xml()
         bankMan(Register::Banking::Manager::create(m_dbman));
     bool retval;
     if (isOnline) {
-        retval = bankMan->importOnlineStatementXml(input);
+        retval = bankMan->importOnlineStatementXml(input, createCredit);
     } else {
-        retval = bankMan->importStatementXml(input);
+        retval = bankMan->importStatementXml(input, createCredit);
     }
     if (!retval) {
         std::cout << "Error occured!" << std::endl;
@@ -253,6 +259,7 @@ BankClient::import_xml_help()
         "** Import xml **\n\n"
         "  $ " << g_prog_name << " --" << BANK_IMPORT_XML_NAME << " \\\n"
         "    [--" << BANK_XML_FILE_NAME << "=<file_name>] \\\n"
+        "    [--" << BANK_CREATE_CREDIT_INVOICE_NAME << "] \\\n"
         "    [--" << BANK_ONLINE_NAME << "] \n" 
         << std::endl;
     std::cout << "If no xml file name is provided, program reads from stdin."
