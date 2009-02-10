@@ -255,6 +255,7 @@ public:
     virtual Invoice *createAccountInvoice() = 0;
     virtual Invoice *createDepositInvoice() = 0;
     virtual Invoice *createInvoice(Type type) = 0;
+    virtual bool pairInvoices() = 0;
     virtual Database::Money getCreditByZone(
             const std::string &registrarHandle, Database::ID zoneId) const = 0;
 };

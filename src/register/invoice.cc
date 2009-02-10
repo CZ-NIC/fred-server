@@ -1742,7 +1742,8 @@ public:
                 << "limit 1";
             Database::Result res = m_conn->exec(zoneQuery);
             if (res.size() == 0) {
-                ERROR("registrar do not belong to zone");
+                ERROR(boost::format("registrar (id:%1%) do not belong to zone")
+                        % getRegistrar());
                 return false;
             } else {
                 setZone(*(*res.begin()).begin());
@@ -1758,7 +1759,8 @@ public:
                 << "limit 1";
             Database::Result res = m_conn->exec(zoneQuery);
             if (res.size() == 0) {
-                ERROR("registrar do not belong to zone");
+                ERROR(boost::format("registrar (id:%1%) do not belong to zone")
+                        % getRegistrar());
                 return false;
             }
         } else {
@@ -2774,9 +2776,74 @@ public:
         return createInvoice(IT_ACCOUNT);
     }
 
+    // aka credit invoice
     virtual Invoice *createDepositInvoice() 
     {
         return createInvoice(IT_DEPOSIT);
+    }
+    bool pairOnlineCreditInvoices()
+    {
+        TRACE("[CALL] Register::Invoicing::ManagerImpl::pairOnlineCreditInvoices()");
+        Database::Query query;
+        query.buffer()
+            << "select bb.id, ii.id from bank_ebanka_list bb "
+            << "join registrar rr on bb.varsymb=rr.varsymb "
+            << "join invoice ii on ii.registrarid=rr.id "
+            << "where ii.price=bb.price AND bb.invoice_id isnull "
+            << "and ii.taxdate=date(bb.crdate)";
+        Database::Result res = m_conn->exec(query);
+        Database::Result::Iterator it = res.begin();
+        for (; it != res.end(); ++it) {
+            Database::Row::Iterator col = (*it).begin();
+
+            Database::ID    statementId = *(col);
+            Database::ID    invoiceId = *(++col);
+            Database::Query update;
+            update.buffer()
+                << "UPDATE bank_ebanka_list SET invoice_id=" << invoiceId
+                << " WHERE id=" << statementId;
+            try {
+                Database::Transaction transaction(*m_conn);
+                transaction.exec(update);
+                transaction.commit();
+            } catch (...) {
+                LOGGER(PACKAGE).error("Unable to update bank_ebanka_list table");
+                return false;
+            }
+        }
+        return true;
+    }
+    bool pairNormalCreditInvoices()
+    {
+        TRACE("[CALL] Register::Invoicing::ManagerImpl::pairNormalCreditInvoices()");
+        return true;
+    }
+    bool pairCreditInvoices()
+    {
+        TRACE("[CALL] Register::Invoicing::ManagerImpl::pairCreditInvoices()");
+        if (!pairOnlineCreditInvoices()) {
+            return false;
+        }
+        if (!pairNormalCreditInvoices()) {
+            return false;
+        }
+        return true;
+    }
+    bool pairAccountInvoices()
+    {
+        TRACE("[CALL] Register::Invoicing::ManagerImpl::pairAccountInvoices()");
+        return true;
+    }
+    virtual bool pairInvoices()
+    {
+        TRACE("[CALL] Register::Invoicing::ManagerImpl::pairInvoices()");
+        if (!pairCreditInvoices()) {
+            return false;
+        }
+        if (!pairAccountInvoices()) {
+            return false;
+        }
+        return true;
     }
 
     virtual Database::Money getCreditByZone(
