@@ -94,6 +94,9 @@
 #define REG_FILECLIENT_PATH_NAME            "registry.fileclient_path"
 #define REG_FILECLIENT_PATH_NAME_DESC       "file manager client path"
 
+#define LOGIN_REGISTRAR_NAME                "login_registrar"
+#define LOGIN_REGISTRAR_NAME_DESC           "login registrar handle"
+
 // almost all
 #define CRDATE_NAME             "crdate"
 #define CRDATE_NAME_DESC        "create date (type ``./fred-admin --help_dates'' for further date&time information)"
@@ -318,34 +321,53 @@
 #define OUTPUT_NAME             "output"
 #define OUTPUT_NAME_DESC        "output file name"
 
-// client login
-#define CLIENT_LOGIN \
-CorbaClient cc(0, NULL, m_nsAddr.c_str(), m_conf.get<std::string>(NS_CONTEXT_NAME)); \
-CORBA::Object_var o = cc.getNS()->resolve("EPP"); \
-ccReg::EPP_var epp; \
-epp = ccReg::EPP::_narrow(o); \
-CORBA::Long clientId = 0; \
-ccReg::Response_var r; \
-if (!m_db.ExecSelect( \
-            "SELECT r.handle,ra.cert,ra.password " \
-            "FROM registrar r, registraracl ra " \
-            "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1 ") \
-        ) \
-    return -1; \
-if (!m_db.GetSelectRows()) \
-    return -1; \
-std::string handle = m_db.GetFieldValue(0,0); \
-std::string cert = m_db.GetFieldValue(0,1); \
-std::string password = m_db.GetFieldValue(0,2); \
-m_db.FreeSelect(); \
-r = epp->ClientLogin(handle.c_str(),password.c_str(),"","system_delete_login","<system_delete_login/>", \
-        clientId,cert.c_str(),ccReg::EN); \
-if (r->code != 1000 || !clientId) { \
-    std::cerr << "Cannot connect: " << r->code << std::endl; \
-    return -1; \
+
+
+#define CLIENT_LOGIN                                                        \
+CorbaClient cc(0, NULL, m_nsAddr.c_str(),                                   \
+        m_conf.get<std::string>(NS_CONTEXT_NAME));                          \
+CORBA::Object_var o = cc.getNS()->resolve("EPP");                           \
+ccReg::EPP_var epp;                                                         \
+epp = ccReg::EPP::_narrow(o);                                               \
+CORBA::Long clientId = 0;                                                   \
+ccReg::Response_var r;                                                      \
+std::string get_registrar_query;                                            \
+if (m_conf.hasOpt(LOGIN_REGISTRAR_NAME)) {                                  \
+    std::stringstream sss;                                                  \
+    sss << "SELECT r.handle, ra.cert, ra.password "                         \
+        << "FROM registrar r, registraracl ra "                             \
+        << "WHERE r.id=ra.registrarid AND r.handle='"                       \
+        << m_conf.get<std::string>(LOGIN_REGISTRAR_NAME)                    \
+        << "' LIMIT 1";                                                     \
+    get_registrar_query = sss.str();                                        \
+} else {                                                                    \
+    get_registrar_query = "SELECT r.handle,ra.cert,ra.password "            \
+        "FROM registrar r, registraracl ra "                                \
+        "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1";               \
+}                                                                           \
+if (!m_db.ExecSelect(get_registrar_query.c_str())) {                        \
+    std::cout << "error in exec" << std::endl;                              \
+    return -1;                                                              \
+}                                                                           \
+if (!m_db.GetSelectRows()) {                                                \
+    std::cout << "No result" << std::endl;                                  \
+    return -1;                                                              \
+}                                                                           \
+std::string gg_handle = m_db.GetFieldValue(0,0);                            \
+std::string gg_cert = m_db.GetFieldValue(0,1);                              \
+std::string gg_password = m_db.GetFieldValue(0,2);                          \
+m_db.FreeSelect();                                                          \
+r = epp->ClientLogin(gg_handle.c_str(),gg_password.c_str(),"",              \
+    "system_delete_login","<system_delete_login/>",                         \
+    clientId,gg_cert.c_str(),ccReg::EN);                                    \
+if (r->code != 1000 || !clientId) {                                         \
+    std::cerr << "Cannot connect: " << r->code << std::endl;                \
+    return -1;                                                              \
 }
 
-#define CLIENT_LOGOUT \
-    epp->ClientLogout(clientId,"system_delete_logout","<system_delete_logout/>");
+
+#define CLIENT_LOGOUT                                                       \
+    epp->ClientLogout(clientId,"system_delete_logout",                      \
+            "<system_delete_logout/>");
 
 #endif // _SIMPLE_H_

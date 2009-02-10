@@ -92,7 +92,8 @@ main(int argc, char **argv)
         addOptStr(REG_FILECLIENT_PATH_NAME)
         addOptBool(REG_RESTRICTED_HANDLES_NAME)
         addOptStr(REG_DOCGEN_PATH_NAME)
-        addOptStr(REG_DOCGEN_TEMPLATE_PATH_NAME);
+        addOptStr(REG_DOCGEN_TEMPLATE_PATH_NAME)
+        addOptStr(LOGIN_REGISTRAR_NAME);
 
     boost::program_options::options_description fileOpts("");
     fileOpts.add(configurationOpts);
@@ -372,6 +373,8 @@ main(int argc, char **argv)
         invoice.credit_help();
     } else if (conf.hasOpt(INVOICE_FACTORING_HELP_NAME)) {
         invoice.factoring_help();
+    } else if (conf.hasOpt(INVOICE_MAKE_PAIRS_NAME)) {
+        invoice.pair_invoices();
     }
 
     if (conf.hasOpt(AUTHINFO_PDF_NAME)) {
