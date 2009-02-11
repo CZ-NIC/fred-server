@@ -114,8 +114,15 @@ public:
    * default constructor for NULL value
    */
   Value() : is_null_(true),
-            value_("NULL"),
+            value_(),
             quoted_output_(false) {
+  }
+
+
+  Value(const std::string &_value, bool _is_null) 
+      : is_null_(_is_null),
+        value_(_value),
+        quoted_output_(true) {
   }
 
 
@@ -136,7 +143,7 @@ public:
 
   operator std::string() const {
     if (is_null_)
-      return "NULL";
+      return "";
     else
       return value_;
   }
@@ -271,13 +278,16 @@ public:
     return value_;
   }
 
+
   bool isnull() const {
-	  return (is_null_ == true);
+	  return is_null_;
   }
+
 
   bool operator !() const {
 	  return isnull();
   }
+
 
 protected:
   bool is_null_;        /**< flag if value is NULL */
@@ -287,7 +297,7 @@ protected:
 
 
 inline std::ostream& operator<<(std::ostream& _os, const Value& _value) {
-  return (_value.is_null_ ? _os << "NULL" : _os <<  _value.value_);
+  return (_value.is_null_ ? _os << "" : _os <<  _value.value_);
 }
 
 

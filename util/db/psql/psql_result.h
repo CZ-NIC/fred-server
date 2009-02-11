@@ -201,6 +201,23 @@ protected:
     return PQgetvalue(psql_result_.get(), _r, _c);
   }
 
+
+  /**
+   * @param  _r row number
+   * @param  _c column number
+   * @return    true if value from result at position [_r, _c] is null, false otherwise
+   */
+  bool value_is_null_(size_type _r, size_type _c) const throw(OutOfRange) {
+    if (_r >= rows_()) {
+      throw OutOfRange(0, rows_(), _r);
+    }
+    if (_c >= cols_()) {
+      throw OutOfRange(0, cols_(), _c);
+    }
+    return PQgetisnull(psql_result_.get(), _r, _c);
+  }
+
+
   /**
    * @param  _r row number
    * @param  _c column name
@@ -214,6 +231,19 @@ protected:
     return value_(_r, field);
   }
 
+
+  /**
+   * @param  _r row number
+   * @param  _c column name
+   * @return    true if value from result at position [_r, _c] is null, false otherwise
+   */
+  bool value_is_null_(size_type _r, const std::string _c) const throw(NoSuchField) {
+    int field = PQfnumber(psql_result_.get(), _c.c_str());
+    if (field == -1) {
+      throw NoSuchField(_c);
+    }
+    return value_is_null_(_r, field);
+  }
 };
 
 }
