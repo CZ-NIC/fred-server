@@ -143,7 +143,7 @@ public:
 
   operator std::string() const {
     if (is_null_)
-      return "";
+      return "NULL";
     else
       return value_;
   }
