@@ -69,6 +69,7 @@ namespace Banking {
 #define ITEM_VAR_SYMBOL             "var_symbol"
 #define ITEM_SPEC_SYMBOL            "spec_symbol"
 #define ITEM_PRICE                  "price"
+#define ITEM_CODE                   "code"
 #define ITEM_MEMO                   "memo"
 #define ITEM_DATE                   "date"
 
@@ -860,6 +861,7 @@ public:
         Database::Money money;
         money.format(item.getChild(ITEM_PRICE).getValue());
         setPrice(money);
+        setCode(atoi(item.getChild(ITEM_CODE).getValue().c_str()));
         setMemo(item.getChild(ITEM_MEMO).getValue());
         setDate(Database::Date(item.getChild(ITEM_DATE).getValue()));
         return true;
@@ -1129,7 +1131,7 @@ public:
             }
         }
         return true;
-    }
+    } // StatementImpl::fromXML(XMLnode)
 }; // class StatementImpl
 
 COMPARE_CLASS_IMPL(PaymentImpl, AccountNumber);
@@ -1302,6 +1304,8 @@ public:
         xml.text(ITEM_VAR_SYMBOL, stat->getVarSymbol());
         xml.text(ITEM_SPEC_SYMBOL, "");
         xml.text(ITEM_PRICE, stat->getPrice().format());
+        // code is always 2 (credit) for online payment
+        xml.text(ITEM_CODE, 2);
         xml.text(ITEM_MEMO, stat->getMemo());
         xml.text(ITEM_DATE, stat->getCrDate());
         xml.end();
@@ -1534,6 +1538,7 @@ public:
         xml.text(ITEM_VAR_SYMBOL, item->getVarSymbol());
         xml.text(ITEM_SPEC_SYMBOL, item->getSpecSymbol());
         xml.text(ITEM_PRICE, item->getPrice());
+        xml.text(ITEM_CODE, item->getCode());
         xml.text(ITEM_MEMO, item->getMemo());
         xml.text(ITEM_DATE, item->getDate());
         xml.end();
@@ -1621,6 +1626,20 @@ public:
     {
         return new StatementImpl(m_conn);
     }
+
+    Database::ID getRegistrarByVarSymb(const std::string varSymb)
+    {
+        Database::Query query;
+        query.buffer()
+            << "SELECT id FROM registrar WHERE varsymb='"
+            << varSymb << "'";
+        Database::Result res = m_conn->exec(query);
+        if (res.size() == 0) {
+            return Database::ID();
+        }
+        return *(*res.begin()).begin();
+    }
+
     virtual bool importStatementXml(std::istream &in, bool createCreditInvoice)
     {
         TRACE("[CALL] Register::Banking::Manager::importStatementXml("
@@ -1649,18 +1668,6 @@ public:
         }
         return true;
     } // ManagerImpl::importStatementXml()
-    Database::ID getRegistrarByVarSymb(const std::string varSymb)
-    {
-        Database::Query query;
-        query.buffer()
-            << "SELECT id FROM registrar WHERE varsymb='"
-            << varSymb << "'";
-        Database::Result res = m_conn->exec(query);
-        if (res.size() == 0) {
-            return Database::ID();
-        }
-        return *(*res.begin()).begin();
-    }
 
     virtual bool importOnlineStatementXml(std::istream &in, bool createCreditInvoice)
     {
