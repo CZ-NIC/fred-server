@@ -122,7 +122,7 @@ public:
   Value(const std::string &_value, bool _is_null) 
       : is_null_(_is_null),
         value_(_value),
-        quoted_output_(true) {
+        quoted_output_(_is_null ? false : true) {
   }
 
 
