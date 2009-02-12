@@ -62,6 +62,18 @@ public:
   }
 
 
+  Field<value_type>& operator =(const Database::Value &_value) {
+    if (!_value.isnull()) {
+      value_ = _value;
+      is_set_ = true;
+    }
+    else {
+      is_set_ = false;
+    }
+    return *this;
+  }
+
+
   bool isSet() const {
     return is_set_;
   }

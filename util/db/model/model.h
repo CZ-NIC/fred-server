@@ -74,6 +74,7 @@ public:
       }
 
       jobs.execute();
+      this->reloadByCurrentSequence_(_object);
 #ifdef HAVE_LOGGER 
     }
     catch (Field::SerializationError &_err) {
@@ -112,6 +113,7 @@ public:
       }
 
       jobs.execute();
+      //this->reload(_object);
 #ifdef HAVE_LOGGER
     }
     catch (Field::SerializationError &_err) {
@@ -162,19 +164,20 @@ public:
   /**
    * TEST: load object by PK value
    */
-  template<class _class, class _pk_type>
-  void load(_class *_object, const _pk_type &_value) {
+  template<class _class>
+  void load(_class *_object, const Database::Value &_value) {
     try {
-      Field::PrimaryKey<_class, _pk_type> *pk = 0;
-      BOOST_FOREACH(typename Field::List<_class>::value_type _field, _object->getFields()) {
-        if (_field->getAttrs().isPrimaryKey())
-          pk = dynamic_cast<Field::PrimaryKey<_class, _pk_type>* >(_field);
+      typedef typename Field::List<_class>::value_type  field_type;
+
+      field_type pk_field;
+      BOOST_FOREACH(pk_field, _object->getFields()) {
+        if (pk_field->getAttrs().isPrimaryKey())
+          break;
       }
 
       std::stringstream query;
-
-      query << "SELECT * FROM " << _class::table_name << " WHERE "
-            << pk->getName() << " = " << _value;
+      query << "SELECT * FROM " << pk_field->getTableName() << " WHERE "
+            << pk_field->getName() << " = " << static_cast<std::string>(_value);
                     
 
       Database::Connection conn = Database::Manager::acquire();
@@ -183,12 +186,72 @@ public:
       if (r.size() == 1) {
         unsigned i = 0;
         BOOST_FOREACH(Field::Base_<_class> *_field, _object->getFields()) {
-          _field->setValue(_object, r[0][i++]);
+          Database::Value v = r[0][i++];
+          if (!v.isnull()) {
+            _field->setValue(_object, v);
+          }
         }
       }
     }
     catch (Database::Exception &_err) {
       LOGGER(PACKAGE).error(_err.what());
+      throw;
+    }
+  }
+
+
+private:
+  template<class _class>
+  void reloadByCurrentSequence_(_class *_object) {
+    try {
+      typedef unsigned long long                        seq_type;
+      typedef typename Field::List<_class>::value_type  field_type;
+
+      std::string query = "SELECT * FROM %1% WHERE %2% = %3%";
+      Field::PrimaryKey<_class, seq_type> *pk = 0;
+
+      BOOST_FOREACH(field_type field, _object->getFields()) {
+        if (field->getAttrs().isPrimaryKey()) {
+          pk = dynamic_cast<Field::PrimaryKey<_class, seq_type>* >(field);
+          if (!pk) {
+            throw std::exception();
+          }
+          break;
+        }
+      }
+
+      if (!pk->getField(_object).isSet() && pk->getAttrs().isDefault()) {
+        /* reload data with current sequence */
+        std::string subquery = "(SELECT currval('" 
+                             + pk->getTableName() + "_" + pk->getName() + "_seq"
+                             + "'))";
+        query = (boost::format(query) % pk->getTableName() 
+                                      % pk->getName() 
+                                      % subquery).str();
+      }
+      else {
+        /* should have PK loaded */
+        query = (boost::format(query) % pk->getTableName() 
+                                      % pk->getName() 
+                                      % pk->getValue(_object)).str();
+      }
+
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Result r = conn.exec(query);
+      
+      if (r.size() == 1) {
+        unsigned i = 0;
+        BOOST_FOREACH(Field::Base_<_class> *field, _object->getFields()) {
+          Database::Value v = r[0][i++];
+          if (!v.isnull()) {
+            field->setValue(_object, v);
+          }
+        }
+      }
+    }
+    catch (Database::Exception &_err) {
+      LOGGER(PACKAGE).error(_err.what());
+      throw;
     }
   }
 };
