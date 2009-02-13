@@ -74,6 +74,12 @@ const std::string DateTime::str() const {
   return to_simple_string(value);
 }
 
+Date
+DateTime::date() const
+{
+    return Date(value.date());
+}
+
 
 bool DateTime::is_special() const {
   return value.is_special();

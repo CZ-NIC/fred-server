@@ -77,6 +77,24 @@ bool Date::is_special() const {
   return value.is_special();
 }
 
+int
+Date::year() const
+{
+    return value.year();
+}
+
+int
+Date::month() const
+{
+    return value.month();
+}
+
+int
+Date::day() const
+{
+    return value.day();
+}
+
 
 /* 
  * date comparison operators 

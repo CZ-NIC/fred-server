@@ -51,6 +51,9 @@ public:
   const std::string iso_str() const;
   const std::string str() const;
   bool is_special() const;
+  int year() const;
+  int month() const;
+  int day() const;
 
   /* date comparison operators */
   friend bool operator<(const Date &_left, const Date &_right);

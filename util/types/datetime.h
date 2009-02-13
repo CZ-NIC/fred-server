@@ -53,6 +53,7 @@ public:
   const std::string to_string() const;
   const std::string iso_str() const;
   const std::string str() const; 
+  Date date() const;
 
   bool is_special() const;
 
