@@ -275,31 +275,10 @@ protected:
 
 
 
-template<class _class, class _type>
-class OneToMany : public Basic<_class, Model::List<_type> > {
-public:
-  typedef Basic<_class, Model::List<_type> >  super;
-  typedef typename super::class_name          class_name;
-  typedef typename super::value_type          value_type;
-  typedef typename super::field_type          field_type;
-  typedef typename super::variable_pointer    variable_pointer;
-
-  OneToMany(const variable_pointer &_ptr) : super(_ptr, "", "") {
-  }
-
-
-  void serialize(::Model::JobQueue &_jobs, Database::InsertQuery &_query, class_name *_object) {
-    BOOST_FOREACH(typename value_type::value_type _model, this->value_(*_object).get()) {
-    }
-  }
-
-
-  void serialize(::Model::JobQueue &_jobs, Database::UpdateQuery &_query, class_name *_object) {
-  }
-};
-
-
-
+/**
+ * OBSOLETE:
+ * should be replaced by relations (model_field_related.h)
+ *
 struct MiddleTable {
   MiddleTable(const std::string &_name, 
               const std::string &_left,
@@ -369,6 +348,7 @@ protected:
   MiddleTable mt_;
 };
 
+*/
 
 
 }
