@@ -93,7 +93,7 @@ public:
     virtual void setSpecSymbol(std::string specSymbol) = 0;
     virtual void setConn(Database::Connection *conn) = 0;
     virtual Database::Connection *getConn() const = 0;
-    virtual void save() = 0;
+    virtual bool save() = 0;
 };
 
 // date from bank_statement_head table
@@ -123,7 +123,7 @@ public:
         throw (NOT_FOUND) = 0;
     virtual void setConn(Database::Connection *conn) = 0;
     virtual Database::Connection *getConn() const = 0;
-    virtual void save() = 0;
+    virtual bool save() = 0;
     virtual StatementItem *createStatementItem() = 0;
 };
 

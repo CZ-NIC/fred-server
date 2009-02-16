@@ -63,6 +63,7 @@ namespace Banking {
 #define STATEMENT_DEBET             "debet"
 #define STATEMENT_ITEMS             "items"
 #define ITEM_ITEM                   "item"
+#define ITEM_IDENT                  "ident"
 #define ITEM_ACCOUNT_NUMBER         "account_number"
 #define ITEM_ACCOUNT_BANK_CODE      "account_bank_code"
 #define ITEM_CONST_SYMBOL           "const_symbol"
@@ -483,7 +484,7 @@ public:
     {
         return m_conn;
     }
-    void update(Database::Transaction &transaction)
+    bool update(Database::Transaction &transaction)
     {
         TRACE("[CALL] Register::Banking::OnlineStatement::update("
                 "Database::Transaction &)");
@@ -511,21 +512,43 @@ public:
                     % id_);
         } catch (Database::Exception &ex) {
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         } catch (std::exception &ex) {
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         }
+        return true;
     } // void OnlineStatementImpl::update(Database::Transaction &)
 
-    void update()
+    bool update()
     {
         TRACE("[CALL] Register::Banking::OnlineStatement::update()");
         Database::Transaction transaction(*m_conn);
-        update(transaction);
+        return update(transaction);
     } // void OnlineStatementImpl::update()
 
-    void insert(Database::Transaction &transaction) 
+    void updateBankAccount()
+    {
+        TRACE("[CALL] Register::Banking::OnlineStatementImpl::"
+                "updateBankAccount()");
+        Database::Query query;
+        query.buffer()
+            << "UPDATE bank_account SET balance = balance + "
+            << getPrice().format()
+            // TODO now i have payment number format incopatible with
+            // last_num column - so do not update it
+            << ", last_date='" << getCrDate().date() << "'"//, last_num=" << getIdent()
+            << " WHERE id=" << getAccountId();
+        try {
+            Database::Transaction transaction(*m_conn);
+            transaction.exec(query);
+            transaction.commit();
+        } catch (...) {
+            LOGGER(PACKAGE).error("Unable to update ``bank_account'' table");
+        }
+    }
+
+    bool insert(Database::Transaction &transaction) 
     {
         TRACE("[CALL] Register::Banking::OnlineStatement::insert("
                 "Database::Transaction &)");
@@ -564,20 +587,22 @@ public:
             LOGGER(PACKAGE).info(boost::format(
                         "online statement item id='%1%' created successfully")
                     % id_);
+            updateBankAccount();
         } catch (Database::Exception &ex) {
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         } catch (std::exception &ex) {
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         }
+        return true;
     } // void OnlineStatementImpl::insert(Database::Transaction &)
 
-    void insert()
+    bool insert()
     {
         TRACE("[CALL] Register::Banking::OnlineStatement::insert()");
         Database::Transaction transaction(*m_conn);
-        insert(transaction);
+        return insert(transaction);
     } // void OnlineStatementImpl::insert()
 
     Database::ID getBankNumberId(std::string account_num, std::string bank_code)
@@ -659,6 +684,7 @@ public:
             LOGGER(PACKAGE).error("account number does not exist in db");
             return false;
         }
+        setIdent(item.getChild(ITEM_IDENT).getValue());
         setAccountNumber(item.getChild(ITEM_ACCOUNT_NUMBER).getValue());
         setBankCode(item.getChild(ITEM_ACCOUNT_BANK_CODE).getValue());
         setConstSymbol(item.getChild(ITEM_CONST_SYMBOL).getValue());
@@ -759,7 +785,7 @@ public:
     {
         return m_conn;
     }
-    void update()
+    bool update()
     {
         TRACE("[CALL] Register::Banking::StatementItemImpl::update()");
         std::auto_ptr<Database::Query> update (new Database::Query());
@@ -787,13 +813,34 @@ public:
                     % m_id);
         } catch (Database::Exception &ex) {
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         } catch (std::exception &ex) {
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         }
+        return true;
     } // void StatementItemImpl::update()
-    void insert()
+
+    /* test if statement is already present in database,
+     * ``account_id'' is ID of our own bank account
+     */
+    bool isExisting(Database::ID account_id)
+    {
+        Database::Query query;
+        query.buffer()
+            << "SELECT si.id FROM bank_statement_item si "
+            << "JOIN bank_statement_head sh ON si.statement_id=sh.id "
+            << "WHERE si.account_evid='" << getEvidenceNumber() << "' "
+            << "AND si.account_date='" << getDate() << "' "
+            << "AND sh.account_id=" << account_id;
+        Database::Result res = m_conn->exec(query);
+        if (res.size() == 0) {
+            return false;
+        }
+        return true;
+    }
+
+    bool insert()
     {
         TRACE("[CALL] Register::Banking::StatementItemImpl::insert()");
         Database::InsertQuery insertItem("bank_statement_item");
@@ -832,27 +879,32 @@ public:
                     % m_id);
         } catch (Database::Exception &ex) {
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         } catch (std::exception &ex) {
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         }
+        return true;
     } // void StatementItemImpl::insert()
-    void save()
+    bool save()
     {
         TRACE("[CALL] Register::Banking::StatementItemImpl::save()");
+        bool retval;
         if (m_id) {
-            update();
+            retval = update();
         } else {
-            insert();
+            retval = insert();
         }
+        return retval;
     }
     bool fromXML(XMLnode item)
     {
         TRACE("[CALL] Register::Banking;:StatementItemImpl::fromXML()");
+        TEST_NODE_PRESENCE(item, ITEM_IDENT);
         TEST_NODE_PRESENCE(item, ITEM_ACCOUNT_NUMBER);
         TEST_NODE_PRESENCE(item, ITEM_ACCOUNT_BANK_CODE);
         TEST_NODE_PRESENCE(item, ITEM_PRICE);
+        setAccountEvid(item.getChild(ITEM_IDENT).getValue());
         setAccountNumber(item.getChild(ITEM_ACCOUNT_NUMBER).getValue());
         setBankCode(item.getChild(ITEM_ACCOUNT_BANK_CODE).getValue());
         setConstSymbol(item.getChild(ITEM_CONST_SYMBOL).getValue());
@@ -989,7 +1041,21 @@ public:
     {
         return m_conn;
     }
-    void update()
+    bool isExisting()
+    {
+        Database::Query query;
+        query.buffer()
+            << "SELECT id FROM bank_statement_head "
+            << "WHERE num=" << getNumber()
+            << " AND account_id='" << getAccountId() << "' "
+            << " AND create_date='" << getDate() << "'";
+        Database::Result res = m_conn->exec(query);
+        if (res.size() == 0) {
+            return false;
+        }
+        return true;
+    }
+    bool update()
     {
         TRACE("[CALL] Register::Banking::StatementImpl::update()");
         std::auto_ptr<Database::Query> update(new Database::Query());
@@ -1020,13 +1086,36 @@ public:
             }
         } catch (Database::Exception &ex) {
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         } catch (std::exception &ex) {
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         }
+        return true;
     } // void StatementImpl::update()
-    void insert()
+
+    /* update columns in bank_account table: balance, last_date and
+     * last_num
+     */
+    void updateBankAccount()
+    {
+        TRACE("[CALL] Register::Banking::StatementImpl::updateBankAccount()");
+        Database::Query query;
+        query.buffer()
+            << "UPDATE bank_account SET balance = balance + " <<
+            ((getCredit() == Database::Money()) ? getDebet().format() : getCredit().format())
+            << ", last_date='" << getDate() << "', last_num=" << getNumber()
+            << " WHERE id=" << getAccountId();
+        try {
+            Database::Transaction transaction(*m_conn);
+            transaction.exec(query);
+            transaction.commit();
+        } catch (...) {
+            LOGGER(PACKAGE).error("Unable to update ``bank_account'' table");
+        }
+    }
+
+    bool insert()
     {
         TRACE("[CALL] Register::Banking::StatementImpl::insert()");
         Database::InsertQuery insertHead("bank_statement_head");
@@ -1038,6 +1127,11 @@ public:
         insertHead.add("balance_new", getBalance().format());
         insertHead.add("balance_credit", getCredit().format());
         insertHead.add("balance_debet", getDebet().format());
+        if (isExisting()) {
+            LOGGER(PACKAGE).warning("Payment with same number, account number and "
+                    "date already exists");
+            return true;
+        }
         try {
             assert(m_conn);
             Database::Transaction transaction(*m_conn);
@@ -1048,27 +1142,44 @@ public:
             LOGGER(PACKAGE).info(boost::format(
                         "statement head id='%1%' created successfully")
                     % id_);
+            int itemsStored = 0;
             for (int i = 0; i < (int)getStatementItemCount(); i++) {
-                StatementItem *item = (StatementItem *)getStatementItemByIdx(i);
+                StatementItemImpl *item = dynamic_cast<StatementItemImpl *>(
+                        const_cast<StatementItem *>(getStatementItemByIdx(i)));
                 item->setStatementId(id_);
-                item->save();
+                if (item->isExisting(getAccountId())) {
+                    LOGGER(PACKAGE).warning("Payment item with same number, account "
+                            "nubmer and date already exists");
+                } else {
+                    if (item->save()) {
+                        itemsStored++;
+                    }
+                }
+            }
+            if (itemsStored == 0) {
+                LOGGER(PACKAGE).warning("There are no stored payment items for this payment");
+            } else {
+                updateBankAccount();
             }
         } catch (Database::Exception &ex) {
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         } catch (std::exception &ex) {
             LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         }
+        return true;
     } // void StatementImpl::insert()
-    virtual void save()
+    virtual bool save()
     {
         TRACE("[CALL] Register::Banking::StatementImpl::save()");
+        bool retval;
         if (id_) {
-            update();
+            retval = update();
         } else {
-            insert();
+            retval = insert();
         }
+        return retval;
     }
     virtual StatementItem *createStatementItem()
     {
@@ -1111,6 +1222,7 @@ public:
             LOGGER(PACKAGE).error("account number does not exist in db");
             return false;
         }
+        setNumber(atoi(node.getChild(STATEMENT_NUMBER).getValue().c_str()));
         setDate(Database::Date(node.getChild(STATEMENT_DATE).getValue()));
         setOldDate(Database::Date(node.getChild(STATEMENT_OLD_DATE).getValue()));
         Database::Money money;
@@ -1298,6 +1410,7 @@ public:
         xml.text(STATEMENT_CREDIT, "");
         xml.text(STATEMENT_DEBET, "");
         xml.start(STATEMENT_ITEMS);
+        xml.text(ITEM_IDENT, stat->getIdent());
         xml.text(ITEM_ACCOUNT_NUMBER, stat->getAccountNumber());
         xml.text(ITEM_ACCOUNT_BANK_CODE, stat->getBankCode());
         xml.text(ITEM_CONST_SYMBOL, stat->getConstSymbol());
@@ -1532,6 +1645,7 @@ public:
     writeItem(XMLcreator &xml, StatementItem *item)
     {
         xml.start(ITEM_ITEM);
+        xml.text(ITEM_IDENT, item->getAccountEvid());
         xml.text(ITEM_ACCOUNT_NUMBER, item->getAccountNumber());
         xml.text(ITEM_ACCOUNT_BANK_CODE, item->getBankCode());
         xml.text(ITEM_CONST_SYMBOL, item->getConstSymbol());
@@ -1640,6 +1754,19 @@ public:
         return *(*res.begin()).begin();
     }
 
+    virtual Database::ID getZoneByAccountId(const Database::ID accountId)
+    {
+        Database::Query query;
+        query.buffer()
+            << "SELECT zone FROM bank_account WHERE id="
+            << accountId;
+        Database::Result res = m_conn->exec(query);
+        if (res.size() == 0) {
+            return Database::ID();
+        }
+        return *(*res.begin()).begin();
+    }
+
     virtual bool importStatementXml(std::istream &in, bool createCreditInvoice)
     {
         TRACE("[CALL] Register::Banking::Manager::importStatementXml("
@@ -1665,6 +1792,26 @@ public:
                 return false;
             }
             stat->save();
+            if (createCreditInvoice) {
+                std::auto_ptr<Register::Invoicing::Manager>
+                    invMan(Register::Invoicing::Manager::create(m_dbMan));
+                for (int i = 0; i < (int)stat->getStatementItemCount(); i++) {
+                    StatementItemImpl *item = dynamic_cast<StatementItemImpl *>(
+                            const_cast<StatementItem *>(stat->getStatementItemByIdx(i)));
+                    if (item->getCode() == 2) {
+                        std::auto_ptr<Register::Invoicing::Invoice>
+                            invoice(invMan->createDepositInvoice());
+                        invoice->setZone(getZoneByAccountId(stat->getAccountId()));
+                        invoice->setRegistrar(getRegistrarByVarSymb(item->getVarSymbol()));
+                        invoice->setPrice(item->getPrice());
+                        invoice->setTaxDate(item->getDate());
+                        invoice->save();
+                        // pair statement with its invoice
+                        item->setInvoiceId(invoice->getId());
+                        item->save();
+                    }
+                }
+            }
         }
         return true;
     } // ManagerImpl::importStatementXml()
@@ -1701,8 +1848,7 @@ public:
                         invMan(Register::Invoicing::Manager::create(m_dbMan));
                     std::auto_ptr<Register::Invoicing::Invoice>
                         invoice(invMan->createDepositInvoice());
-                    // TODO proper zone setting
-                    invoice->setZoneName("cz");
+                    invoice->setZone(getZoneByAccountId(stat->getAccountId()));
                     invoice->setRegistrar(getRegistrarByVarSymb(stat->getVarSymbol()));
                     invoice->setPrice(stat->getPrice());
                     invoice->setTaxDate(stat->getCrDate().str());
