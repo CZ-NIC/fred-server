@@ -1084,12 +1084,12 @@ public:
         selectQuery.buffer()
             << "SELECT id, credit * 100 FROM invoice WHERE "
             << "registrarid=" << getRegistrar()
-            << " and zone=" << getZone()
-            << " and credit > 0 order by id limit " << limit
+            << " and (zone=" << getZone() << " or zone isnull)"
+            << " and credit > 0 order by zone, id limit " << limit
             << " FOR UPDATE;";
         Database::Result res = m_conn->exec(selectQuery);
         if (res.size() == 0) {
-            ERROR("cannot get two credit invoices");
+            ERROR("cannot get credit invoices");
             return false;
         }
         Database::Result::Iterator it = res.begin();
