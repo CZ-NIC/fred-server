@@ -1430,7 +1430,15 @@ public:
         Database::SelectQuery invoicePrefixQuery;
         invoicePrefixQuery.buffer()
             << "SELECT id, prefix FROM invoice_prefix WHERE"
-            << " zone=" << getZone()
+            << " zone";
+        if (getZone() == Database::ID()) {
+            invoicePrefixQuery.buffer()
+                << " is null";
+        } else {
+            invoicePrefixQuery.buffer()
+                << "=" << getZone();
+        }
+        invoicePrefixQuery.buffer()
             << " AND typ=" << getType()
             << " AND year=\'" << getTaxDate().get().year() << "\';";
         Database::Result invoicePrefixRes = m_conn->exec(invoicePrefixQuery);
@@ -1753,7 +1761,7 @@ public:
             zoneQuery.buffer()
                 << "select zz.id from zone zz "
                 << "join registrarinvoice rr on (rr.zone = zz.id) "
-                << "where zz.id='" << getZone() << " "
+                << "where zz.id=" << getZone() << " "
                 << "and rr.registrarid=" << getRegistrar() << " "
                 << "and rr.fromdate <= date(now()) "
                 << "limit 1";
@@ -1864,8 +1872,11 @@ public:
         if (!testRegistrar()) {
             return false;
         }
-        if (!testZone()) {
-            return false;
+        // XXX this allow insert deposit invoice without zone
+        if (getZone() != Database::ID()) {
+            if (!testZone()) {
+                return false;
+            }
         }
 
         if (getVatRate() == -1) {
@@ -2786,11 +2797,11 @@ public:
         TRACE("[CALL] Register::Invoicing::ManagerImpl::pairOnlineCreditInvoices()");
         Database::Query query;
         query.buffer()
-            << "select bb.id, ii.id from bank_ebanka_list bb "
-            << "join registrar rr on bb.varsymb=rr.varsymb "
-            << "join invoice ii on ii.registrarid=rr.id "
-            << "where ii.price=bb.price AND bb.invoice_id isnull "
-            << "and ii.taxdate=date(bb.crdate)";
+            << "SELECT bb.id, ii.id FROM bank_ebanka_list bb "
+            << "JOIN registrar rr ON bb.varsymb=rr.varsymb "
+            << "JOIN invoice ii ON ii.registrarid=rr.id "
+            << "WHERE ii.price=bb.price AND bb.invoice_id isnull "
+            << "AND ii.taxdate=date(bb.crdate)";
         Database::Result res = m_conn->exec(query);
         Database::Result::Iterator it = res.begin();
         for (; it != res.end(); ++it) {
@@ -2816,6 +2827,33 @@ public:
     bool pairNormalCreditInvoices()
     {
         TRACE("[CALL] Register::Invoicing::ManagerImpl::pairNormalCreditInvoices()");
+        Database::Query query;
+        query.buffer()
+            << "SELECT bb.id, ii.id FROM bank_statement_item bb "
+            << "JOIN registrar rr ON bb.varsymb=rr.varsymb "
+            << "JOIN invoice ii ON ii.registrarid=rr.id "
+            << "WHERE ii.price=bb.price AND bb.invoice_id isnull "
+            << "AND ii.taxdate=bb.account_date AND code=2";
+        Database::Result res = m_conn->exec(query);
+        Database::Result::Iterator it = res.begin();
+        for (; it != res.end(); ++it) {
+            Database::Row::Iterator col = (*it).begin();
+
+            Database::ID    statementId = *(col);
+            Database::ID    invoiceId = *(++col);
+            Database::Query update;
+            update.buffer()
+                << "UPDATE bank_statement_item SET invoice_id=" << invoiceId
+                << " WHERE id=" << statementId;
+            try {
+                Database::Transaction transaction(*m_conn);
+                transaction.exec(update);
+                transaction.commit();
+            } catch (...) {
+                LOGGER(PACKAGE).error("Unable to update bank_statement_item table");
+                return false;
+            }
+        }
         return true;
     }
     bool pairCreditInvoices()
