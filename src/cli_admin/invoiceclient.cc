@@ -393,18 +393,15 @@ InvoiceClient::credit()
         invMan(Register::Invoicing::Manager::create(m_dbman));
     std::auto_ptr<Register::Invoicing::Invoice>
         invoice(invMan->createDepositInvoice());
-    bool zoneFilled = false;
     bool regFilled = false;
     bool priceFilled = false;
 
     if (m_conf.hasOpt(INVOICE_ZONE_NAME_NAME)) {
         invoice->setZoneName(m_conf.get<std::string>(INVOICE_ZONE_NAME_NAME));
-        zoneFilled = true;
     }
     if (m_conf.hasOpt(INVOICE_ZONE_ID_NAME)) {
         invoice->setZone(Database::ID(
                     m_conf.get<unsigned int>(INVOICE_ZONE_ID_NAME)));
-        zoneFilled = true;
     }
     if (m_conf.hasOpt(INVOICE_REGISTRAR_ID_NAME)) {
         invoice->setRegistrar(Database::ID(m_conf.get<unsigned int>(
@@ -430,11 +427,6 @@ InvoiceClient::credit()
     if (m_conf.hasOpt(CRDATE_NAME)) {
         invoice->setCrTime(Database::DateTime(
                     m_conf.get<std::string>(CRDATE_NAME)));
-    }
-    if (!zoneFilled) {
-        std::cerr << "Zone is not set, use ``--zone_id'' or "
-            << "``--zone_name'' to set it" << std::endl;
-        return;
     }
     if (!regFilled) {
         std::cerr << "Registrar is not set, use ``--registrar_id'' or "
@@ -543,8 +535,6 @@ InvoiceClient::factoring()
         return;
     }
     if (!regFilled) {
-        std::cout << "sem tu!" << std::endl;
-
         Database::Filters::Registrar *regFilter;
         regFilter = new Database::Filters::RegistrarImpl(true);
         Database::Filters::Union *unionFilter;
