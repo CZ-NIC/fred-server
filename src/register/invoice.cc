@@ -1316,7 +1316,7 @@ public:
     /*! create new rows in ``invoice_prefix'' from some
      * default values
      */
-    void createNewYearInInvoicePrefix(
+    bool createNewYearInInvoicePrefix(
             int newYear, 
             Database::Transaction &transaction)
     {
@@ -1354,17 +1354,18 @@ public:
             transaction.exec(insert4);
         } catch (Database::Exception &ex) {
             ERROR(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         } catch (std::exception &ex) {
             ERROR(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         }
+        return true;
     } // InvoiceImpl::createNewYearInInvoicePrefix()
 
     /*! create new rows in ``invoice_prefix'' table for new year
      * according oldYear
      */
-    void createNewYearInInvoicePrefix(
+    bool createNewYearInInvoicePrefix(
             int newYear,
             int oldYear,
             Database::Transaction &transaction)
@@ -1382,8 +1383,7 @@ public:
         Database::Result selectRes = m_conn->exec(selectQuery);
         if (selectRes.size() == 0) {
             // oops, there is no year, from which i can copy
-            createNewYearInInvoicePrefix(newYear, transaction);
-            return;
+            return createNewYearInInvoicePrefix(newYear, transaction);
         }
         Database::Result::Iterator it = selectRes.begin();
 
@@ -1407,12 +1407,13 @@ public:
                 transaction.exec(insertYear);
             } catch (Database::Exception &ex) {
                 ERROR(boost::format("%1%") % ex.what());
-                throw;
+                return false;
             } catch (std::exception &ex) {
                 ERROR(boost::format("%1%") % ex.what());
-                throw;
+                return false;
             }
         }
+        return true;
     } // InvoiceImpl::createNewYearInInvoicePrefix()
 
     /*! get and update (i.e. add 1 to it) invoice number, save 
@@ -1444,10 +1445,12 @@ public:
         Database::Result invoicePrefixRes = m_conn->exec(invoicePrefixQuery);
         if (invoicePrefixRes.size() == 0) {
             // try to create new prefix number(s) according rows from last year
-            createNewYearInInvoicePrefix(
+            if (!createNewYearInInvoicePrefix(
                     getTaxDate().get().year(), 
                     getTaxDate().get().year() - 1,
-                    transaction);
+                    transaction)) {
+                return false;
+            }
             Database::Result invoicePrefixRes = m_conn->exec(invoicePrefixQuery);
             if (invoicePrefixRes.size() == 0) {
                 return false;
@@ -1507,10 +1510,10 @@ public:
             transaction.exec(insertInvoice);
         } catch (Database::Exception &ex) {
             ERROR(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         } catch (std::exception &ex) {
             ERROR(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         }
         Database::Sequence seq(*m_conn, "invoice_id_seq");
         int invoiceId = seq.getCurrent();
@@ -1525,10 +1528,10 @@ public:
             transaction.exec(insertGeneration);
         } catch (Database::Exception &ex) {
             ERROR(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         } catch (std::exception &ex) {
             ERROR(boost::format("%1%") % ex.what());
-            throw;
+            return false;
         }
         id_ = invoiceId;
 
@@ -1873,7 +1876,7 @@ public:
             return false;
         }
         // XXX this allow insert deposit invoice without zone
-        if (getZone() != Database::ID()) {
+        if (getZone() != Database::ID() || !getZoneName().empty()) {
             if (!testZone()) {
                 return false;
             }
