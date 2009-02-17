@@ -579,7 +579,6 @@ public:
       tmp->addSelect("id ico dic varsymb vat handle name url organization street1 street2 street3 "
                        "city stateorprovince postalcode country telephone fax email system",
                      rf->joinRegistrarTable());
-      tmp->order_by() << "id";
       uf.addQuery(tmp);
       at_least_one = true;
     }
