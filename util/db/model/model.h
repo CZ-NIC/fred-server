@@ -77,8 +77,8 @@ public:
       this->reloadByCurrentSequence_(_object);
 #ifdef HAVE_LOGGER 
     }
-    catch (Field::SerializationError &_err) {
-      LOGGER(PACKAGE).error(_err.what());
+    catch (Model::Exception &_err) {
+      LOGGER(PACKAGE).alert(_err.what());
       throw;
     }
     catch (Database::Exception &_err) {
@@ -113,11 +113,11 @@ public:
       }
 
       jobs.execute();
-      //this->reload(_object);
+      this->reloadByCurrentSequence_(_object);
 #ifdef HAVE_LOGGER
     }
-    catch (Field::SerializationError &_err) {
-      LOGGER(PACKAGE).error(_err.what());
+    catch (Model::Exception &_err) {
+      LOGGER(PACKAGE).alert(_err.what());
       throw;
     }
     catch (Database::Exception &_err) {
@@ -145,7 +145,7 @@ public:
 
 #ifdef HAVE_LOGGER
     }
-    catch (Field::SerializationError &_err) {
+    catch (Model::Exception &_err) {
       LOGGER(PACKAGE).error(_err.what());
       throw;
     }
@@ -214,10 +214,15 @@ private:
         if (field->getAttrs().isPrimaryKey()) {
           pk = dynamic_cast<Field::PrimaryKey<_class, seq_type>* >(field);
           if (!pk) {
-            throw std::exception();
+            throw Model::DefinitionError(_class::table_name + "::" + field->getName(), "data type of primary key field doesn't fit");
           }
           break;
         }
+      }
+
+      if (pk == 0) {
+        /* primary key not found in list */
+        throw Model::DefinitionError(_class::table_name, "can't find primary key field");
       }
 
       if (!pk->getField(_object).isSet() && pk->getAttrs().isDefault()) {

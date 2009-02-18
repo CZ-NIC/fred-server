@@ -28,16 +28,33 @@
 
 
 namespace Model {
+
+
+class Exception : public ::Exception {
+public:
+  Exception(const std::string &_what) : ::Exception(_what) { }
+};
+
+
+class DefinitionError : public Exception {
+public:
+  DefinitionError(const std::string &_table,
+                       const std::string &_problem)
+                     : Exception("Model::Error definition: table=`" + _table + "' " + _problem) {
+  }
+};
+
+
 namespace Field {
 
 
-class SerializationError : public ::Exception {
+class SerializationError : public Model::Exception {
 public:
   SerializationError(const std::string &_qtype,
                      const std::string &_tname,
                      const std::string &_fname,
                      const std::string &_detail)
-                   : Exception("Model::Field serialization error:") {
+                   : Model::Exception("Model::Field serialization error:") {
     what_ += " query_type=`" + _qtype + "' " +
              " table_name=`" + _tname + "' " +
              " field_name=`" + _fname + "' " +
