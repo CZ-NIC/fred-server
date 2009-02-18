@@ -81,8 +81,9 @@ namespace Banking {
 
 #define transformString(str)    \
     ((str.empty()) ? "NULL" : "'" + str + "'")
-#define transformId(id)         \
-    ((id.to_string().compare("0") == 0) ? "NULL" : id.to_string())
+
+#define transformId(id) \
+    ((id == Database::ID()) ? "NULL" : Database::Conversion<Database::ID>::to_string(id))
 
 #define TEST_NODE_PRESENCE(parent, name)                                \
     if (!parent.hasChild(name)) {                                       \
@@ -1808,7 +1809,9 @@ public:
                         invoice->save();
                         // pair statement with its invoice
                         item->setInvoiceId(invoice->getId());
-                        item->save();
+                        if (!item->save()) {
+                            LOGGER(PACKAGE).error("error when creating credit invoice");
+                        }
                     }
                 }
             }
@@ -1855,7 +1858,9 @@ public:
                     invoice->save();
                     // pair online-statement with its invoice
                     stat->setInvoiceId(invoice->getId());
-                    stat->save();
+                    if (!stat->save()) {
+                        LOGGER(PACKAGE).error("error when creating credit invoice");
+                    }
                 }
             }
         }

@@ -43,8 +43,9 @@ namespace Invoicing {
 
 #define transformString(str)    \
     ((str.empty()) ? "NULL" : "'" + str + "'")
-#define transformId(id)         \
-    ((id.to_string().compare("0") == 0) ? "NULL" : id.to_string())
+
+#define transformId(id) \
+    ((id == Database::ID()) ? "NULL" : Database::Conversion<Database::ID>::to_string(id))
 
 #define ERROR(values)                           \
     LOGGER(PACKAGE).error(values);              \
@@ -1840,8 +1841,9 @@ public:
             return false;
         }
         if (recordsCount == 0) {
-            ERROR("no records to invoice");
-            return false;
+            LOGGER(PACKAGE).warning(boost::format("%1%: no records to invoice")
+                    % getRegistrarName());
+            return true;
         }
         if (!getRecordsPrice()) {
             ERROR("cannot get price of records to invoicing");
