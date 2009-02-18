@@ -27,6 +27,25 @@ public:
   Money(value_type _value) : value_(_value) {
   }
 
+  Money(const int value): value_(value)
+  { }
+  Money(const unsigned int value): value_(value)
+  { }
+  Money(const long int value): value_(value)
+  { }
+  Money(const unsigned long int value): value_(value)
+  { }
+  Money(const char *value)
+  {
+      from_string(std::string(value));
+  }
+  Money(const std::string &value)
+  {
+      from_string(value);
+  }
+
+  Money(const Money &sec): value_(sec.value_)
+  { }
   operator value_type() const {
     return value_;
   }
@@ -46,6 +65,7 @@ public:
   friend bool operator!=(const Money& _left, const Money& _right);
   friend Money operator+(const Money& _left, const Money& _right);
   friend Money operator-(const Money& _left, const Money& _right);
+  Money operator=(const Money& sec);
   
   /* output operator */
   friend std::ostream& operator<<(std::ostream &_os, const Money& _v);
