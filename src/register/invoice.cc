@@ -2784,6 +2784,7 @@ public:
     {
         TRACE("[CALL] Register::Invoicing::ManagerImpl::createInvoice(Type)");
         InvoiceImpl *invoice = new InvoiceImpl(m_dbMan, m_conn, (Manager *)this);
+        invoice->setType(type);
         return invoice;
     }
 
