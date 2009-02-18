@@ -914,9 +914,9 @@ public:
                 "getPrice(PaymentActionType, int)");
         Database::SelectQuery priceQuery;
         if (period > 0) {
-            priceQuery.buffer() << "SELECT price * 100, period";
+            priceQuery.buffer() << "SELECT price, period";
         } else {
-            priceQuery.buffer() << "SELECT price * 100";
+            priceQuery.buffer() << "SELECT price";
         }
         priceQuery.buffer()
             << " FROM price_list WHERE valid_from < 'now()' and "
@@ -1083,7 +1083,7 @@ public:
         std::vector<Database::ID> ret;
         Database::Query selectQuery;
         selectQuery.buffer()
-            << "SELECT id, credit * 100 FROM invoice WHERE "
+            << "SELECT id, credit FROM invoice WHERE "
             << "registrarid=" << getRegistrar()
             << " and (zone=" << getZone() << " or zone isnull)"
             << " and credit > 0 order by zone, id limit " << limit
@@ -1261,7 +1261,7 @@ public:
         long recordsPrice;
         Database::SelectQuery recordsPriceQuery;
         recordsPriceQuery.buffer()
-            << "SELECT CAST(sum(price)*100.0 AS INTEGER) FROM invoice_object_registry, "
+            << "SELECT CAST(sum(price) AS INTEGER) FROM invoice_object_registry, "
             << "invoice_object_registry_price_map WHERE "
             << "invoice_object_registry_price_map.id=invoice_object_registry.id"
             << " AND  crdate < \'" <<  getCrTime() << "\'"
@@ -1619,7 +1619,7 @@ public:
         long sumPrice;
         Database::SelectQuery sumPriceQuery;
         sumPriceQuery.buffer()
-            << "SELECT CAST(SUM(invoice_object_registry_price_map.price) * 100.0 AS INTEGER)"
+            << "SELECT SUM(invoice_object_registry_price_map.price) "
             << " FROM invoice_object_registry, invoice_object_registry_price_map"
             << " WHERE invoice_object_registry.id ="
             << " invoice_object_registry_price_map.id"
@@ -1642,7 +1642,7 @@ public:
                 "getInvoiceBalance(int, long)");
         Database::SelectQuery totalQuery;
         totalQuery.buffer()
-            << "SELECT CAST(total*100.0 AS INTEGER) FROM invoice "
+            << "SELECT CAST(total AS INTEGER) FROM invoice "
             << "WHERE id="<< accountInvoiceId << ";";
         Database::Result totalResult = m_conn->exec(totalQuery);
         long total;
@@ -1653,7 +1653,7 @@ public:
         }
         Database::SelectQuery sumQuery;
         sumQuery.buffer()
-            << "SELECT CAST(SUM(credit)*100.0 AS INTEGER) "
+            << "SELECT CAST(SUM(credit) AS INTEGER) "
             << "FROM invoice_credit_payment_map "
             << "WHERE ainvoiceid=" << accountInvoiceId << ";";
         Database::Result sumResult = m_conn->exec(sumQuery);
@@ -2267,8 +2267,8 @@ public:
             << "t_1.id, t_1.zone, t_2.fqdn, t_1.crdate, t_1.taxdate, "
             << "t_5.fromdate, t_5.todate, t_4.typ, t_1.prefix, "
             << "t_1.prefix_type, "
-            << "t_1.registrarid, t_1.credit * 100, t_1.price * 100, "
-            << "t_1.vat, t_1.total * 100, t_1.totalvat * 100, "
+            << "t_1.registrarid, t_1.credit, t_1.price, "
+            << "t_1.vat, t_1.total, t_1.totalvat, "
             << "t_1.file, t_1.fileXML, t_3.organization, t_3.street1, "
             << "t_3.city, t_3.postalcode, "
             << "TRIM(t_3.ico), TRIM(t_3.dic), TRIM(t_3.varsymb), "
@@ -2364,9 +2364,9 @@ public:
             resetIDSequence();
             Database::SelectQuery source_query;
             source_query.select()
-                << "tmp.id, ipm.credit * 100, sri.vat, sri.prefix, "
-                << "ipm.balance * 100, sri.id, sri.total * 100, "
-                << "sri.totalvat * 100, sri.crdate";
+                << "tmp.id, ipm.credit, sri.vat, sri.prefix, "
+                << "ipm.balance, sri.id, sri.total, "
+                << "sri.totalvat, sri.crdate";
             source_query.from()
                 << "tmp_invoice_filter_result tmp "
                 << "JOIN invoice_credit_payment_map ipm ON (tmp.id = ipm.invoiceid) "
@@ -2406,7 +2406,7 @@ public:
             if (!m_partialLoad) {
                 Database::SelectQuery actionQuery;
                 actionQuery.select()
-                    << "tmp.id, SUM(ipm.price) * 100, i.vat, o.name, "
+                    << "tmp.id, SUM(ipm.price), i.vat, o.name, "
                     << "ior.crdate, ior.exdate, ior.operation, ior.period, "
                     << "CASE "
                     << "  WHEN ior.period = 0 THEN 0 "
@@ -2782,8 +2782,8 @@ public:
              
     virtual Invoice *createInvoice(Type type)
     {
+        TRACE("[CALL] Register::Invoicing::ManagerImpl::createInvoice(Type)");
         InvoiceImpl *invoice = new InvoiceImpl(m_dbMan, m_conn, (Manager *)this);
-        invoice->setType(type);
         return invoice;
     }
 
@@ -2908,7 +2908,7 @@ ManagerImpl::getCreditByZone(
 {
     Database::SelectQuery getCreditQuery;
     getCreditQuery.buffer()
-        << "SELECT SUM(credit) * 100 FROM invoice i JOIN registrar r "
+        << "SELECT SUM(credit) FROM invoice i JOIN registrar r "
         << "ON (i.registrar=r.id) "
         << "WHERE i.zone=" << zoneId
         << " AND r.handle='" << registrarHandle << "';";

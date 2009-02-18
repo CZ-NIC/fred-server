@@ -1313,7 +1313,7 @@ public:
                 % getTempTableName() % tmp_table_query.str());
         Database::SelectQuery object_info_query;
         object_info_query.select()
-            << "t_1.id, t_1.account_id, t_1.price * 100, t_1.crdate, "
+            << "t_1.id, t_1.account_id, t_1.price, t_1.crdate, "
             << "t_1.account_number, t_1.bank_code, t_1.konstsym, "
             << "t_1.varsymb, t_1.memo, t_1.name, t_1.ident, "
             << "t_1.invoice_id";
@@ -1512,9 +1512,9 @@ public:
         Database::SelectQuery object_info_query;
         object_info_query.select()
             << "t_1.id, t_1.account_id, t_1.num, t_1.create_date, "
-            << "t_1.balance_old_date, t_1.balance_old * 100, "
-            << "t_1.balance_new * 100, t_1.balance_credit * 100, "
-            << "t_1.balance_debet * 100";
+            << "t_1.balance_old_date, t_1.balance_old, "
+            << "t_1.balance_new, t_1.balance_credit, "
+            << "t_1.balance_debet";
         object_info_query.from()
             << getTempTableName() << " tmp "
             << "JOIN bank_statement_head t_1 ON (tmp.id = t_1.id)";
@@ -1557,7 +1557,7 @@ public:
             Database::SelectQuery StatementItemQuery;
             StatementItemQuery.select()
                 << "t_1.id, t_1.statement_id, t_1.account_number, t_1.bank_code, "
-                << "t_1.code, t_1.konstSym, t_1.varSymb, t_1.specsymb, t_1.price * 100, "
+                << "t_1.code, t_1.konstSym, t_1.varSymb, t_1.specsymb, t_1.price, "
                 << "t_1.account_evid, t_1.account_date, t_1.account_memo, "
                 << "t_1.invoice_id";
             StatementItemQuery.from()
