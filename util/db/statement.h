@@ -36,7 +36,7 @@ namespace Database {
 class Statement {
 public:
   typedef std::string                                buffer_type;
-  typedef boost::function<std::string(std::string)> escape_function_type;
+  typedef boost::function<std::string(std::string)>  escape_function_type;
 
   
   Statement() {
@@ -75,6 +75,11 @@ public:
 
   virtual const std::string str() const {
     return buffer_;
+  }
+
+
+  virtual bool empty() const {
+    return buffer_.empty();
   }
 
 

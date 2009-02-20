@@ -240,6 +240,11 @@ public:
   }
 
 
+  virtual bool empty() const {
+    return values_.empty();
+  }
+
+
 protected:
   typedef std::pair<std::string, Value>    value_type;
   typedef std::vector<value_type>          value_list;
@@ -287,6 +292,11 @@ public:
 
 
     return buffer.str();
+  }
+
+
+  virtual bool empty() const {
+    return values_.empty();
   }
 
 
