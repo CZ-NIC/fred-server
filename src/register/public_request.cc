@@ -1010,7 +1010,7 @@ public:
     Type _type, Database::Connection* _conn
   ) const throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) {
     // TRACE("[CALL] Register::Request::Manager::createRequest()");
-    PublicRequestImpl *request;
+    PublicRequestImpl *request = 0;
     switch(_type) {
       case PRT_AUTHINFO_AUTO_RIF :
         request = new AuthInfoRequestEPPImpl(); break;
