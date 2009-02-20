@@ -30,6 +30,7 @@
 #include <boost/foreach.hpp>
 
 #include "model_field.h"
+#include "model_exception.h"
 
 
 namespace Model {
@@ -62,14 +63,32 @@ public:
   }
 
 
-  template<class _pk_type>
-  Field::PrimaryKey<model_class, _pk_type>* getPrimaryKey() const {
-    BOOST_FOREACH(typename super::value_type field, *this) {
+  /**
+   * Search list for primary key field of type <T>
+   *
+   * @return  primary key field from list
+   */
+  template<class T>
+  Field::PrimaryKey<model_class, T>* getPrimaryKey() const throw (Model::DefinitionError) {
+    Field::PrimaryKey<model_class, T> *ret = 0;
+
+    typename super::value_type field;
+    BOOST_FOREACH(field, *this) {
       if (field->getAttrs().isPrimaryKey()) {
-        return dynamic_cast<Field::PrimaryKey<model_class, _pk_type>* >(field);
+        ret = dynamic_cast<Field::PrimaryKey<model_class, T>* >(field);
+        if (!ret) {
+          throw Model::DefinitionError(field->getTableName() + "::" + field->getName(),
+                                       "data type of primary key field doesn't fit"); 
+        }
       }
     }
-    return 0;
+    
+    if (!ret) {
+      throw Model::DefinitionError(field->getTableName(),
+                                   "can't find primary key field");
+    }
+
+    return ret;
   }
 };
 

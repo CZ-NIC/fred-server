@@ -63,14 +63,19 @@ public:
 
 
   Field<value_type>& operator =(const Database::Value &_value) {
+    this->setValue(_value);
+    return *this;
+  }
+
+
+  void setValue(const Database::Value &_value, bool _is_set = true) {
     if (!_value.isnull()) {
       value_ = _value;
-      is_set_ = true;
+      is_set_ = _is_set;
     }
     else {
       is_set_ = false;
     }
-    return *this;
   }
 
 
@@ -146,6 +151,22 @@ public:
     return *this;
   }
 
+
+  Field<value_type>& operator =(const Database::Value &_value) {
+    this->setValue(_value);
+    return *this;
+  }
+
+
+  void setValue(const Database::Value &_value, bool _is_set = true) {
+    if (!_value.isnull()) {
+      value_ = static_cast<std::string>(_value);
+      is_set_ = _is_set;
+    }
+    else {
+      is_set_ = false;
+    }
+  }
 
 
   bool isSet() const {

@@ -57,6 +57,9 @@ class Base {
 public:
   /**
    * Insert operation
+   * insert all data to database if constrained criteria are ok and load primary key
+   * value of this new record
+   *
    * @param _object  instance pointer for data to insert
    */
   template<class _class> 
@@ -73,8 +76,10 @@ public:
         _field->serialize(jobs, *iquery, _object);
       }
 
-      jobs.execute();
-      this->reloadByCurrentSequence_(_object);
+      if (!iquery->empty()) {
+        jobs.execute();
+        this->reloadPrimaryKey_(_object);
+      }
 #ifdef HAVE_LOGGER 
     }
     catch (Model::Exception &_err) {
@@ -96,6 +101,7 @@ public:
   /**
    * Update operation
    * (where part of query is always generated from primary key so it should be set)
+   *
    * @param _object  instance pointer for data to update
    */
   template<class _class>
@@ -112,8 +118,9 @@ public:
         _field->serialize(jobs, *uquery, _object);
       }
 
-      jobs.execute();
-      this->reloadByCurrentSequence_(_object);
+      if (!uquery->empty()) {
+        jobs.execute();
+      }
 #ifdef HAVE_LOGGER
     }
     catch (Model::Exception &_err) {
@@ -135,6 +142,7 @@ public:
   /**
    * Remove operation
    * (where part of query is always generated from primary key so it should be set)
+   *
    * @param _object  instance pointer for data to remove
    */
   template<class _class>
@@ -158,6 +166,23 @@ public:
       throw;
     }
 #endif
+  }
+
+
+  /**
+   * Request reload data from database to synchronized it with object
+   *
+   * @param _object  instance pointer for data to load
+   */
+  template<class _class>
+  void reload(_class *_object) {
+    try {
+      this->reloadByPrimaryKey_(_object);
+    }
+    catch (Database::Exception &_err) {
+      LOGGER(PACKAGE).error(_err.what());
+      throw;
+    }
   }
 
 
@@ -202,54 +227,121 @@ public:
 
 private:
   template<class _class>
-  void reloadByCurrentSequence_(_class *_object) {
+  void reloadPrimaryKey_(_class *_object) {
+    typedef unsigned long long   sequence_type;
+
+    typename _class::field_list list = _object->getFields();
     try {
-      typedef unsigned long long                        seq_type;
-      typedef typename Field::List<_class>::value_type  field_type;
+      Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
+      this->reloadCurrentSequence_(_object);
+    }
+    catch (Model::Exception &_err) {
+      /* PK is not a sequence reload by PK value */
+    }
+  }
 
-      std::string query = "SELECT * FROM %1% WHERE %2% = %3%";
-      Field::PrimaryKey<_class, seq_type> *pk = 0;
+  /**
+   * Prepare query for reload current sequence id
+   * (for after insert reload)
+   *
+   * @param  _object  pointer to object receiving primary key value of new record
+   */
+  template<class _class>
+  void reloadCurrentSequence_(_class *_object) {
+    typedef unsigned long long   sequence_type;
 
-      BOOST_FOREACH(field_type field, _object->getFields()) {
-        if (field->getAttrs().isPrimaryKey()) {
-          pk = dynamic_cast<Field::PrimaryKey<_class, seq_type>* >(field);
-          if (!pk) {
-            throw Model::DefinitionError(_class::table_name + "::" + field->getName(), "data type of primary key field doesn't fit");
-          }
-          break;
-        }
-      }
+    typename _class::field_list list = _object->getFields();
+    Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
 
-      if (pk == 0) {
-        /* primary key not found in list */
-        throw Model::DefinitionError(_class::table_name, "can't find primary key field");
-      }
+    if (!pk->getField(_object).isSet() && pk->getAttrs().isDefault()) {
+      std::string pk_table = pk->getTableName();
+      std::string pk_field = pk->getName();
 
-      if (!pk->getField(_object).isSet() && pk->getAttrs().isDefault()) {
-        /* reload data with current sequence */
-        std::string subquery = "(SELECT currval('" 
-                             + pk->getTableName() + "_" + pk->getName() + "_seq"
-                             + "'))";
-        query = (boost::format(query) % pk->getTableName() 
-                                      % pk->getName() 
-                                      % subquery).str();
-      }
-      else {
-        /* should have PK loaded */
-        query = (boost::format(query) % pk->getTableName() 
-                                      % pk->getName() 
-                                      % pk->getValue(_object)).str();
-      }
+      std::string query = (boost::format("SELECT currval('%1%_%2%_seq')")
+                                       % pk_table % pk_field).str();
 
+      typename _class::field_list tmp;
+      tmp.push_back(pk);
+      this->reload__(_object, query, tmp);
+    }
+  }
+
+
+  /**
+   * Prepare query for reload by current sequence - the last added record
+   * (for after insert reload)
+   *
+   * @param  _object  pointer to object receiving database data
+   */
+  template<class _class>
+  void reloadByCurrentSequence_(_class *_object) {
+    typedef unsigned long long   sequence_type;
+
+    typename _class::field_list list = _object->getFields();
+    Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
+
+    if (!pk->getField(_object).isSet() && pk->getAttrs().isDefault()) {
+      std::string pk_table = pk->getTableName();
+      std::string pk_field = pk->getName();
+
+      std::string query = (boost::format("SELECT * FROM %1% WHERE %2% = (SELECT currval('%1%_%2%_seq'))")
+                                       % pk_table % pk_field).str();
+
+      this->reload__(_object, query, _object->getFields());
+    }
+  }
+
+
+  /**
+   * Prepare query for reload by primary key value
+   * (for after update reload)
+   *
+   * @param  _object  pointer to object receiving database data
+   */
+  template<class _class>
+  void reloadByPrimaryKey_(_class *_object) {
+    typedef unsigned long long   sequence_type;
+
+    typename _class::field_list list = _object->getFields();
+    Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
+
+    if (pk->getField(_object).isSet() || !pk->getAttrs().isDefault()) {
+      std::string pk_table = pk->getTableName();
+      std::string pk_field = pk->getName();
+
+      std::string query = (boost::format("SELECT * FROM %1% WHERE %2% = %3%")
+                                       % pk_table % pk_field % pk->getValue(_object)).str();
+
+      this->reload__(_object, query, _object->getFields());
+    }
+  }
+
+
+  /**
+   * Load data to object through executing query
+   *
+   * @param  _object  pointer to object receiving database data
+   * @param  _query   select query
+   *
+   * TODO: check number of columns and number of fields - should be same
+   */
+  template<class _class>
+  void reload__(_class *_object, const std::string &_query, const typename _class::field_list &_fields) {
+    try {
       Database::Connection conn = Database::Manager::acquire();
-      Database::Result r = conn.exec(query);
+      Database::Result data = conn.exec(_query);
       
-      if (r.size() == 1) {
+      if (data.size() == 1) {
         unsigned i = 0;
-        BOOST_FOREACH(Field::Base_<_class> *field, _object->getFields()) {
-          Database::Value v = r[0][i++];
+        BOOST_FOREACH(Field::Base_<_class> *field, _fields) {
+          Database::Value v = data[0][i++];
+          /* it is loaded to database so reset the is_set flag (false parameter) */
+          bool set_flag = false;
+          if (field->getAttrs().isPrimaryKey()) {
+            set_flag = true;
+          }
           if (!v.isnull()) {
-            field->setValue(_object, v);
+            field->setValue(_object, v, set_flag); 
           }
         }
       }

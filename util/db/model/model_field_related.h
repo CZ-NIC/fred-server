@@ -88,6 +88,57 @@ protected:
   MemPtr<_class, ::Field::Lazy::List<_class_ref> >    related_;
 };
 
+
+
+template<class _class, class _type, class _class_ref, class _type_ref>
+class ManyToMany {
+public:
+  ManyToMany(PrimaryKey<_class, _type> &_pk,
+             PrimaryKey<_class_ref, _type_ref> &_pk_ref,
+             const std::string &_middle_table,
+             const std::string &_left_name,
+             const std::string &_right_name,
+             const MemPtr<_class, ::Field::Lazy::List<_class_ref> > &_related)
+           : pk_(_pk),
+             pk_ref_(_pk_ref),
+             mt_(_middle_table, _left_name, _right_name),
+             related_(_related) {
+  }
+
+
+  void addRelated(_class *_obj, _class_ref *_value) {
+    related_(*_obj).push_back(_value);
+  }
+
+
+  void getRelated(_class *_obj) {
+    /* do lazy list load propably based on filter */
+    std::cout << "SELECT rel_table.* FROM " << pk_ref_.getTableName() << " rel_table JOIN " << mt_.name << " map ON (map." << mt_.right << " = rel_table." << pk_ref_.getName() << ")" << " WHERE map." << mt_.left << " = " << pk_.getValue(_obj) << std::endl;
+  }
+             
+
+  virtual ~ManyToMany() {
+  }
+
+
+protected:
+  struct MiddleTable {
+    MiddleTable(const std::string &_name, const std::string &_left, const std::string &_right) 
+              : name(_name), left(_left), right(_right) { }
+
+    std::string name;
+    std::string left;
+    std::string right;
+  };
+
+
+  PrimaryKey<_class, _type>                         &pk_;
+  PrimaryKey<_class_ref, _type_ref>                 &pk_ref_;
+  MiddleTable                                        mt_;
+  MemPtr<_class, ::Field::Lazy::List<_class_ref> >   related_;
+};
+
+
 }
 }
 }
