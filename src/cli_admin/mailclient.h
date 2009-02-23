@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -19,6 +19,7 @@
 #ifndef _MAILCLIENT_H_
 #define _MAILCLIENT_H_
 
+#define MAIL_CLIENT                 "mail_client"
 #define MAIL_SHOW_OPTS_NAME         "mail_show_opts"
 #define MAIL_SHOW_OPTS_NAME_DESC    "show all mail command line options"
 #define MAIL_LIST_NAME              "mail_list"
@@ -69,11 +70,14 @@ public:
     ~MailClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts() const;
+    void show_opts();
 
     void list();
     void list_help();

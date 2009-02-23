@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -19,6 +19,7 @@
 #ifndef _POLLCLIENT_H_
 #define _POLLCLIENT_H_
 
+#define POLL_CLIENT                 "poll_client"
 #define POLL_SHOW_OPTS_NAME         "poll_show_opts"
 #define POLL_SHOW_OPTS_NAME_DESC    "show all poll command line options"
 #define POLL_LIST_ALL_NAME          "poll_list_all"
@@ -77,17 +78,20 @@ public:
     ~PollClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts() const;
+    void show_opts();
 
-    int list_all();
-    int list_next();
-    int set_seen();
-    int create_state_changes();
-    int create_low_credit();
+    void list_all();
+    void list_next();
+    void set_seen();
+    void create_state_changes();
+    void create_low_credit();
 };
 
 } // namespace Admin;

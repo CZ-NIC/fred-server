@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -60,6 +60,10 @@ public:
     m_connstring = _conn_string;
     m_nsAddr     = _nsaddr;
     m_dbman      = new Database::Manager(new ConnectionFactory(m_connstring));
+  }
+  void no_help()
+  {
+    std::cout << "There is no help for this topic" << std::endl;
   }
 };
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -23,15 +23,16 @@
 
 namespace Admin {
 
+#define addMethod(methods, name) \
+    methods.insert(std::make_pair(name, CONTACT_CLIENT))
+
 ContactClient::ContactClient()
 {
     m_options = new boost::program_options::options_description(
             "Contact related options");
     m_options->add_options()
         addOptStr(CONTACT_INFO_NAME)
-        addOpt(CONTACT_INFO2_NAME)
         addOpt(CONTACT_LIST_NAME)
-        addOpt(CONTACT_LIST_HELP_NAME)
         addOpt(CONTACT_LIST_PLAIN_NAME)
         addOpt(CONTACT_SHOW_OPTS_NAME);
 
@@ -75,11 +76,33 @@ void
 ContactClient::init(
         std::string connstring,
         std::string nsAddr,
-        Config::Conf &conf)
+        Config::Conf &conf,
+        METHODS &methods)
 {
     BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
+    addMethods(methods);
+}
+
+void
+ContactClient::addMethods(METHODS &methods)
+{
+    addMethod(methods, CONTACT_SHOW_OPTS_NAME);
+    addMethod(methods, CONTACT_LIST_NAME);
+    addMethod(methods, CONTACT_INFO_NAME);
+}
+
+void
+ContactClient::runMethod()
+{
+    if (m_conf.hasOpt(CONTACT_INFO_NAME)) {
+        info();
+    } else if (m_conf.hasOpt(CONTACT_LIST_NAME)) {
+        list();
+    } else if (m_conf.hasOpt(CONTACT_SHOW_OPTS_NAME)) {
+        show_opts();
+    }
 }
 
 boost::program_options::options_description *
@@ -94,22 +117,18 @@ ContactClient::getInvisibleOptions() const
     return m_optionsInvis;
 }
 
-int
-ContactClient::info2()
-{
-    return 0;
-}
-
 void
-ContactClient::show_opts() const
+ContactClient::show_opts()
 {
+    callHelp(m_conf, no_help);
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;
 }
 
-int
+void
 ContactClient::info()
 {
+    callHelp(m_conf, no_help);
     CLIENT_LOGIN;
 
     std::string name = m_conf.get<std::string>(CONTACT_INFO_NAME);
@@ -126,12 +145,13 @@ ContactClient::info()
 
     CLIENT_LOGOUT;
 
-    return 0;
+    return;
 }
 
 void
 ContactClient::list()
 {
+    callHelp(m_conf, list_help);
     std::auto_ptr<Register::Contact::Manager> conMan(
             Register::Contact::Manager::create(&m_db, true));
     std::auto_ptr<Register::Contact::List> conList(

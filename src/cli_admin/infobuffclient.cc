@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -22,6 +22,9 @@
 #include "register/info_buffer.h"
 
 namespace Admin {
+
+#define addMethod(methods, name) \
+    methods.insert(std::make_pair(name, INFOBUFF_CLIENT))
 
 InfoBuffClient::InfoBuffClient()
 {
@@ -57,11 +60,33 @@ void
 InfoBuffClient::init(
         std::string connstring,
         std::string nsAddr,
-        Config::Conf &conf)
+        Config::Conf &conf,
+        METHODS &methods)
 {
     BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
+    addMethods(methods);
+}
+
+void
+InfoBuffClient::addMethods(METHODS &methods)
+{
+    addMethod(methods, INFOBUFF_SHOW_OPTS_NAME);
+    addMethod(methods, INFOBUFF_MAKE_INFO_NAME);
+    addMethod(methods, INFOBUFF_GET_CHUNK_NAME);
+}
+
+void
+InfoBuffClient::runMethod()
+{
+    if (m_conf.hasOpt(INFOBUFF_SHOW_OPTS_NAME)) {
+        show_opts();
+    } else if (m_conf.hasOpt(INFOBUFF_MAKE_INFO_NAME)) {
+        make_info();
+    } else if (m_conf.hasOpt(INFOBUFF_GET_CHUNK_NAME)) {
+        get_chunk();
+    }
 }
 
 boost::program_options::options_description *
@@ -77,15 +102,17 @@ InfoBuffClient::getInvisibleOptions() const
 }
 
 void
-InfoBuffClient::show_opts() const
+InfoBuffClient::show_opts() 
 {
+    callHelp(m_conf, no_help);
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;
 }
 
-int
+void
 InfoBuffClient::make_info()
 {
+    callHelp(m_conf, no_help);
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
     std::auto_ptr<Register::Domain::Manager> domMan(
@@ -132,11 +159,12 @@ InfoBuffClient::make_info()
                 Register::InfoBuffer::T_KEYSETS_BY_CONTACT,      
                 m_conf.get<std::string>(INFOBUFF_REQUEST_NAME));
     }
-    return 0;
+    return;
 }
-int
+void
 InfoBuffClient::get_chunk()
 {
+    callHelp(m_conf, no_help);
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
     std::auto_ptr<Register::Domain::Manager> domMan(
@@ -172,7 +200,7 @@ InfoBuffClient::get_chunk()
             );
     for (unsigned long i = 0; i < chunk->getCount(); i++)
         std::cout << chunk->getNext() << std::endl;
-    return 0;
+    return;
 }
 
 } // namespace Admin;

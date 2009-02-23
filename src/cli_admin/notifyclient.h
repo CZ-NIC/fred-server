@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -19,6 +19,7 @@
 #ifndef _NOTIFYCLIENT_H_
 #define _NOTIFYCLIENT_H_
 
+#define NOTIFY_CLIENT                   "notify_client"
 #define NOTIFY_SHOW_OPTS_NAME           "notify_show_options"
 #define NOTIFY_SHOW_OPTS_NAME_DESC      "show all notify command line options"
 #define NOTIFY_STATE_CHANGES_NAME       "notify_state_changes"
@@ -63,11 +64,14 @@ public:
     ~NotifyClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts() const;
+    void show_opts() ;
 
     void state_changes();
     void letters_create();

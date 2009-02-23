@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -27,6 +27,7 @@
 #include "register/register.h"
 #include "baseclient.h"
 
+#define KEYSET_CLIENT               "keyset_client"
 #define KEYSET_SHOW_OPTS_NAME       "keyset_show_opts"
 #define KEYSET_SHOW_OPTS_NAME_DESC  "show all keyset command line options"
 #define KEYSET_LIST_NAME            "keyset_list"
@@ -97,31 +98,34 @@ public:
     ~KeysetClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts() const;
+    void show_opts();
 
     void list();
 
-    int list_plain();
+    void list_plain();
 
-    int check();
+    void check();
 
-    int send_auth_info();
+    void send_auth_info();
 
-    int transfer();
+    void transfer();
 
-    int update();
+    void update();
 
-    int del();
+    void del();
 
-    int create();
+    void create();
 
-    int info();
+    void info();
 
-    int info2();
+    void info2();
 
     void list_help();
     void create_help();

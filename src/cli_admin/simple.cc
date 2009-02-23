@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -46,6 +46,18 @@
 #include "publicreqclient.h"
 
 using namespace boost::posix_time;
+
+std::string
+findRequestExecutor(Config::Conf &conf, METHODS &methods)
+{
+    METHODS_IT it = methods.begin();
+    for (; it != methods.end(); ++it) {
+        if (conf.hasOpt(it->first)) {
+            return it->second;
+        }
+    }
+    return "";
+}
 
 int
 main(int argc, char **argv)
@@ -179,7 +191,7 @@ main(int argc, char **argv)
         exit(1);
     }
 
-    if (argc == 1 || confMan.isHelp()) {
+    if (argc == 1 || (argc == 2 && confMan.isHelp())) {
         std::cout << "Usage: " << argv[0] << " [options]" << std::endl;
         std::cout << "Options:" << std::endl;
         std::cout << visible << std::endl;
@@ -252,21 +264,23 @@ main(int argc, char **argv)
     if (conf.hasOpt(DB_PASS_NAME))
         connstring << " password=" << conf.get<std::string>(DB_PASS_NAME);
 
-    keyset.init(connstring.str(), nsAddr.str(), conf);
-    domain.init(connstring.str(), nsAddr.str(), conf);
-    contact.init(connstring.str(), nsAddr.str(), conf);
-    invoice.init(connstring.str(), nsAddr.str(), conf);
-    authinfo.init(connstring.str(), nsAddr.str(), conf);
-    bank.init(connstring.str(), nsAddr.str(), conf);
-    poll.init(connstring.str(), nsAddr.str(), conf);
-    registrar.init(connstring.str(), nsAddr.str(), conf);
-    notify.init(connstring.str(), nsAddr.str(), conf);
-    object.init(connstring.str(), nsAddr.str(), conf);
-    infobuff.init(connstring.str(), nsAddr.str(), conf);
-    nsset.init(connstring.str(), nsAddr.str(), conf);
-    file.init(connstring.str(), nsAddr.str(), conf);
-    mail.init(connstring.str(), nsAddr.str(), conf);
-    publicrequest.init(connstring.str(), nsAddr.str(), conf);
+    METHODS methods_list;
+
+    keyset.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    domain.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    contact.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    invoice.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    authinfo.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    bank.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    poll.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    registrar.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    notify.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    object.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    infobuff.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    nsset.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    file.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    mail.init(connstring.str(), nsAddr.str(), conf, methods_list);
+    publicrequest.init(connstring.str(), nsAddr.str(), conf, methods_list);
 
     if (conf.hasUnknown()) {
         std::vector<std::string> unknown(conf.getUnknown());
@@ -285,208 +299,39 @@ main(int argc, char **argv)
         exit(0);
     }
 
-    if (conf.hasOpt(CONTACT_INFO2_NAME)) {
-        contact.info2();
-    } else if (conf.hasOpt(CONTACT_INFO_NAME)) {
-        contact.info();
-    } else if (conf.hasOpt(CONTACT_LIST_NAME)) {
-        contact.list();
-    } else if (conf.hasOpt(CONTACT_LIST_HELP_NAME)) {
-        contact.list_help();
-    } else if (conf.hasOpt(CONTACT_SHOW_OPTS_NAME)) {
-        contact.show_opts();
-    }
-
-    if (conf.hasOpt(KEYSET_LIST_NAME)) {
-        keyset.list();
-    } else if (conf.hasOpt(KEYSET_CHECK_NAME)) {
-        keyset.check();
-    } else if (conf.hasOpt(KEYSET_SEND_AUTH_INFO_NAME)) {
-        keyset.send_auth_info();
-    } else if (conf.hasOpt(KEYSET_TRANSFER_NAME)) {
-        keyset.transfer();
-    } else if (conf.hasOpt(KEYSET_LIST_PLAIN_NAME)) {
-        keyset.list_plain();
-    } else if (conf.hasOpt(KEYSET_UPDATE_NAME)) {
-        keyset.update();
-    } else if (conf.hasOpt(KEYSET_DELETE_NAME)) {
-        keyset.del();
-    } else if (conf.hasOpt(KEYSET_UPDATE_HELP_NAME)) {
-        keyset.update_help();
-    } else if (conf.hasOpt(KEYSET_CREATE_HELP_NAME)) {
-        keyset.create_help();
-    } else if (conf.hasOpt(KEYSET_DELETE_HELP_NAME)) {
-        keyset.delete_help();
-    } else if (conf.hasOpt(KEYSET_INFO_HELP_NAME)) {
-        keyset.info_help();
-    } else if (conf.hasOpt(KEYSET_CHECK_HELP_NAME)) {
-        keyset.check_help();
-    } else if (conf.hasOpt(KEYSET_LIST_HELP_NAME)) {
-        keyset.list_help();
-    } else if (conf.hasOpt(KEYSET_CREATE_NAME)) {
-        keyset.create();
-    } else if (conf.hasOpt(KEYSET_INFO2_NAME)) {
-        keyset.info2();
-    } else if (conf.hasOpt(KEYSET_INFO_NAME)) {
-        keyset.info();
-    } else if (conf.hasOpt(KEYSET_SHOW_OPTS_NAME)) {
-        keyset.show_opts();
-    }
-    
-    if (conf.hasOpt(DOMAIN_LIST_PLAIN_NAME)) {
-        domain.domain_list_plain();
-    } else if (conf.hasOpt(DOMAIN_CREATE_HELP_NAME)) {
-        domain.domain_create_help();
-    } else if (conf.hasOpt(DOMAIN_UPDATE_HELP_NAME)) {
-        domain.domain_update_help();
-    } else if (conf.hasOpt(DOMAIN_CREATE_NAME)) {
-        domain.domain_create();
-    } else if (conf.hasOpt(DOMAIN_UPDATE_NAME)) {
-        domain.domain_update();
-    } else if (conf.hasOpt(DOMAIN_INFO_NAME)) {
-        domain.domain_info();
-    } else if (conf.hasOpt(DOMAIN_LIST_HELP_NAME)) {
-        domain.list_help();
-    } else if (conf.hasOpt(DOMAIN_LIST_NAME)) {
-        domain.domain_list();
-    } else if (conf.hasOpt(DOMAIN_SHOW_OPTS_NAME)) {
-        domain.show_opts();
-    }
-    
-    if (conf.hasOpt(INVOICE_LIST_NAME)) {
-        invoice.list();
-    } else if (conf.hasOpt(INVOICE_ARCHIVE_NAME)) {
-        invoice.archive();
-    } else if (conf.hasOpt(INVOICE_LIST_HELP_NAME)) {
-        invoice.list_help();
-    } else if (conf.hasOpt(INVOICE_ARCHIVE_HELP_NAME)) {
-        invoice.archive_help();
-    } else if (conf.hasOpt(INVOICE_LIST_FILTERS_NAME)) {
-        invoice.list_filters();
-    } else if (conf.hasOpt(INVOICE_SHOW_OPTS_NAME)) {
-        invoice.show_opts();
-    } else if (conf.hasOpt(INVOICE_CREDIT_NAME)) {
-        invoice.credit();
-    } else if (conf.hasOpt(INVOICE_FACTORING_NAME)) {
-        invoice.factoring();
-    } else if (conf.hasOpt(INVOICE_CREDIT_HELP_NAME)) {
-        invoice.credit_help();
-    } else if (conf.hasOpt(INVOICE_FACTORING_HELP_NAME)) {
-        invoice.factoring_help();
-    } else if (conf.hasOpt(INVOICE_MAKE_PAIRS_NAME)) {
-        invoice.pair_invoices();
-    }
-
-    if (conf.hasOpt(AUTHINFO_PDF_NAME)) {
-        authinfo.pdf();
-    } else if (conf.hasOpt(AUTHINFO_PDF_HELP_NAME)) {
-        authinfo.pdf_help();
-    } else if (conf.hasOpt(AUTHINFO_SHOW_OPTS_NAME)) {
-        authinfo.show_opts();
-    }
-    
-    if (conf.hasOpt(BANK_SHOW_OPTS_NAME)) {
-        bank.show_opts();
-    } else if (conf.hasOpt(BANK_STATEMENT_LIST_NAME)) {
-        bank.statement_list();
-    } else if (conf.hasOpt(BANK_ONLINE_LIST_NAME)) {
-        bank.online_list();
-    } else if (conf.hasOpt(BANK_IMPORT_XML_NAME)) {
-        bank.import_xml();
-    } else if (conf.hasOpt(BANK_IMPORT_XML_HELP_NAME)) {
-        bank.import_xml_help();
-    } else if (conf.hasOpt(BANK_STATEMENT_LIST_HELP_NAME)) {
-        bank.statement_list_help();
-    } else if (conf.hasOpt(BANK_ONLINE_LIST_HELP_NAME)) {
-        bank.online_list_help();
-    }
-
-    if (conf.hasOpt(POLL_LIST_ALL_NAME)) {
-        poll.list_all();
-    } else if (conf.hasOpt(POLL_LIST_NEXT_NAME)) {
-        poll.list_next();
-    } else if (conf.hasOpt(POLL_CREATE_STATE_CHANGES_NAME) ||
-            conf.hasOpt(POLL_CREATE_STATE_CHANGES_2_NAME)) {
-        poll.create_state_changes();
-    } else if (conf.hasOpt(POLL_CREATE_LOW_CREDIT_NAME) ||
-            conf.hasOpt(POLL_CREATE_LOW_CREDIT_2_NAME)) {
-        poll.create_low_credit();
-    } else if (conf.hasOpt(POLL_SET_SEEN_NAME)) {
-        poll.set_seen();
-    } else if (conf.hasOpt(POLL_SHOW_OPTS_NAME)) {
-        poll.show_opts();
-    }
-    
-    if (conf.hasOpt(REGISTRAR_ZONE_ADD_NAME)) {
-        registrar.zone_add();
-    } else if (conf.hasOpt(REGISTRAR_REGISTRAR_ADD_NAME)) {
-        registrar.registrar_add();
-    } else if (conf.hasOpt(REGISTRAR_REGISTRAR_ADD_ZONE_NAME)) {
-        registrar.registrar_add_zone();
-    } else if (conf.hasOpt(REGISTRAR_ZONE_ADD_HELP_NAME)) {
-        registrar.zone_add_help();
-    } else if (conf.hasOpt(REGISTRAR_REGISTRAR_ADD_HELP_NAME)) {
-        registrar.registrar_add_help();
-    } else if (conf.hasOpt(REGISTRAR_REGISTRAR_ADD_ZONE_HELP_NAME)) {
-        registrar.registrar_add_zone_help();
-    } else if (conf.hasOpt(REGISTRAR_LIST_NAME)) {
-        registrar.list();
-    } else if (conf.hasOpt(REGISTRAR_SHOW_OPTS_NAME)) {
-        registrar.show_opts();
-    }
-    
-    if (conf.hasOpt(NOTIFY_STATE_CHANGES_NAME)) {
-        notify.state_changes();
-    } else if (conf.hasOpt(NOTIFY_LETTERS_CREATE_NAME)) {
-        notify.letters_create();
-    } else if (conf.hasOpt(NOTIFY_SHOW_OPTS_NAME)) {
-        notify.show_opts();
-    }
-
-    if (conf.hasOpt(OBJECT_NEW_STATE_REQUEST_NAME)) {
-        object.new_state_request();
-    } else if (conf.hasOpt(OBJECT_LIST_NAME)) {
-        object.list();
-    } else if (conf.hasOpt(OBJECT_UPDATE_STATES_NAME)) {
-        return object.update_states();
-    } else if (conf.hasOpt(OBJECT_DELETE_CANDIDATES_NAME)) {
-        return object.delete_candidates();
-    } else if (conf.hasOpt(OBJECT_REGULAR_PROCEDURE_NAME)) {
-        return object.regular_procedure();
-    } else if (conf.hasOpt(OBJECT_SHOW_OPTS_NAME)) {
-        object.show_opts();
-    }
-    
-    if (conf.hasOpt(NSSET_LIST_NAME)) {
-        nsset.list();
-    } else if (conf.hasOpt(NSSET_LIST_HELP_NAME)) {
-        nsset.list_help();
-    } else if (conf.hasOpt(NSSET_SHOW_OPTS_NAME)) {
-        nsset.show_opts();
-    }
-
-    if (conf.hasOpt(FILE_LIST_NAME)) {
-        file.list();
-    } else if (conf.hasOpt(FILE_LIST_HELP_NAME)) {
-        file.list_help();
-    } else if (conf.hasOpt(FILE_SHOW_OPTS_NAME)) {
-        file.show_opts();
-    }
-
-    if (conf.hasOpt(MAIL_LIST_NAME)) {
-        mail.list();
-    } else if (conf.hasOpt(MAIL_LIST_HELP_NAME)) {
-        mail.list_help();
-    } else if (conf.hasOpt(MAIL_SHOW_OPTS_NAME)) {
-        mail.show_opts();
-    }
-
-    if (conf.hasOpt(PUBLICREQ_LIST_NAME)) {
-        publicrequest.list();
-    } else if (conf.hasOpt(PUBLICREQ_LIST_HELP_NAME)) {
-        publicrequest.list_help();
-    } else if (conf.hasOpt(PUBLICREQ_SHOW_OPTS_NAME)) {
-        publicrequest.show_opts();
+    std::string executor = findRequestExecutor(conf, methods_list);
+    if (executor.compare(DOMAIN_CLIENT) == 0) {
+        domain.runMethod();
+    } else if (executor.compare(KEYSET_CLIENT) == 0) {
+        keyset.runMethod();
+    } else if (executor.compare(CONTACT_CLIENT) == 0) {
+        contact.runMethod();
+    } else if (executor.compare(INVOICE_CLIENT) == 0) {
+        invoice.runMethod();
+    } else if (executor.compare(AUTHINFO_CLIENT) == 0) {
+        authinfo.runMethod();
+    } else if (executor.compare(BANK_CLIENT) == 0) {
+        bank.runMethod();
+    } else if (executor.compare(POLL_CLIENT) == 0) {
+        poll.runMethod();
+    } else if (executor.compare(REGISTRAR_CLIENT) == 0) {
+        registrar.runMethod();
+    } else if (executor.compare(NOTIFY_CLIENT) == 0) {
+        notify.runMethod();
+    } else if (executor.compare(OBJECT_CLIENT) == 0) {
+        object.runMethod();
+    } else if (executor.compare(INFOBUFF_CLIENT) == 0) {
+        infobuff.runMethod();
+    } else if (executor.compare(NSSET_CLIENT) == 0) {
+        nsset.runMethod();
+    } else if (executor.compare(FILE_CLIENT) == 0) {
+        file.runMethod();
+    } else if (executor.compare(MAIL_CLIENT) == 0) {
+        mail.runMethod();
+    } else if (executor.compare(PUBLICREQUEST_CLIENT) == 0) {
+        publicrequest.runMethod();
+    } else {
+        std::cout << "sakrapes, tohle neznam" << std::endl;
     }
 
     } catch (ccReg::EPP::EppError &e) {

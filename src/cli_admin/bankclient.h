@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -20,6 +20,7 @@
 #define _BANKCLIENT_H_
 
 
+#define BANK_CLIENT                     "bank_client"
 #define BANK_SHOW_OPTS_NAME             "bank_show_opts"
 #define BANK_SHOW_OPTS_NAME_DESC        "show all banking options"
 #define BANK_STATEMENT_LIST_NAME        "bank_statement_list"
@@ -97,11 +98,14 @@ public:
     ~BankClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts() const;
+    void show_opts();
 
     void statement_list();
     void online_list();

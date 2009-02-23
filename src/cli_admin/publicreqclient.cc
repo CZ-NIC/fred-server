@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -23,13 +23,15 @@
 
 namespace Admin {
 
+#define addMethod(methods, name) \
+    methods.insert(std::make_pair(name, PUBLICREQUEST_CLIENT))
+
 PublicRequestClient::PublicRequestClient()
 {
     m_options = new boost::program_options::options_description(
             "Public request related options");
     m_options->add_options()
         addOpt(PUBLICREQ_LIST_NAME)
-        addOpt(PUBLICREQ_LIST_HELP_NAME)
         addOpt(PUBLICREQ_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
@@ -69,11 +71,30 @@ void
 PublicRequestClient::init(
         std::string connstring,
         std::string nsAddr,
-        Config::Conf &conf)
+        Config::Conf &conf,
+        METHODS &methods)
 {
     BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
+    addMethods(methods);
+}
+
+void
+PublicRequestClient::addMethods(METHODS &methods)
+{
+    addMethod(methods, PUBLICREQ_SHOW_OPTS_NAME);
+    addMethod(methods, PUBLICREQ_LIST_NAME);
+}
+
+void
+PublicRequestClient::runMethod()
+{
+    if (m_conf.hasOpt(PUBLICREQ_LIST_NAME)) {
+        list();
+    } else if (m_conf.hasOpt(PUBLICREQ_SHOW_OPTS_NAME)) {
+        show_opts();
+    }
 }
 
 boost::program_options::options_description *
@@ -89,8 +110,9 @@ PublicRequestClient::getInvisibleOptions() const
 }
 
 void
-PublicRequestClient::show_opts() const 
+PublicRequestClient::show_opts()
 {
+    callHelp(m_conf, no_help);
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;
 }
@@ -98,6 +120,7 @@ PublicRequestClient::show_opts() const
 void
 PublicRequestClient::list()
 {
+    callHelp(m_conf, list_help);
     Database::Filters::PublicRequest *prFilter;
     prFilter = new Database::Filters::PublicRequestImpl();
 

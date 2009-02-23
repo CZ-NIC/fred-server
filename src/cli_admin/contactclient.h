@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -26,12 +26,11 @@
 #include "old_utils/dbsql.h"
 #include "baseclient.h"
 
+#define CONTACT_CLIENT                  "contact_client"
 #define CONTACT_SHOW_OPTS_NAME          "contact_show_opts"
 #define CONTACT_SHOW_OPTS_NAME_DESC     "show all contact command line options"
 #define CONTACT_INFO_NAME               "contact_info"
 #define CONTACT_INFO_NAME_DESC          "contact info"
-#define CONTACT_INFO2_NAME              "contact_info2"
-#define CONTACT_INFO2_NAME_DESC         "contact info 2"
 #define CONTACT_LIST_NAME               "contact_list"
 #define CONTACT_LIST_NAME_DESC          "list of all contacts (via filters)"
 #define CONTACT_LIST_PLAIN_NAME         "contact_list_plain"
@@ -57,15 +56,17 @@ public:
     ~ContactClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts() const;
+    void show_opts();
 
     void list();
-    int info();
-    int info2();
+    void info();
 
     void list_help();
 };

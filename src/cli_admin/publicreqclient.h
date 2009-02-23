@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -19,6 +19,7 @@
 #ifndef _PUBLICREQCLIENT_H_
 #define _PUBLICREQCLIENT_H_
 
+#define PUBLICREQUEST_CLIENT            "publicrequest_client"
 #define PUBLICREQ_SHOW_OPTS_NAME        "public_request_show_opts"
 #define PUBLICREQ_SHOW_OPTS_NAME_DESC   "show all public request command line options"
 #define PUBLICREQ_LIST_NAME             "public_request_list"
@@ -81,11 +82,14 @@ public:
     ~PublicRequestClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts() const;
+    void show_opts();
 
     void list();
     void list_help();

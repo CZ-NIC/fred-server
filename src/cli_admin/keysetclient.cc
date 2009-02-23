@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -22,6 +22,9 @@
 
 namespace Admin {
 
+#define addMethod(methods, name) \
+    methods.insert(std::make_pair(name, KEYSET_CLIENT))
+
 KeysetClient::KeysetClient()
 {
     m_options = new boost::program_options::options_description(
@@ -36,11 +39,6 @@ KeysetClient::KeysetClient()
         addOptStr(KEYSET_DELETE_NAME)
         addOptStr(KEYSET_UPDATE_NAME)
         addOptStr(KEYSET_TRANSFER_NAME)
-        addOpt(KEYSET_CREATE_HELP_NAME)
-        addOpt(KEYSET_UPDATE_HELP_NAME)
-        addOpt(KEYSET_DELETE_HELP_NAME)
-        addOpt(KEYSET_CHECK_HELP_NAME)
-        addOpt(KEYSET_INFO_HELP_NAME)
         addOpt(KEYSET_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
@@ -89,11 +87,56 @@ void
 KeysetClient::init(
         std::string connstring,
         std::string nsAddr,
-        Config::Conf &conf)
+        Config::Conf &conf,
+        METHODS &methods)
 {
     BaseClient(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
+    addMethods(methods);
+}
+
+void
+KeysetClient::addMethods(METHODS &methods)
+{
+    addMethod(methods, KEYSET_SHOW_OPTS_NAME);
+    addMethod(methods, KEYSET_LIST_NAME);
+    addMethod(methods, KEYSET_SEND_AUTH_INFO_NAME);
+    addMethod(methods, KEYSET_TRANSFER_NAME);
+    addMethod(methods, KEYSET_LIST_PLAIN_NAME);
+    addMethod(methods, KEYSET_UPDATE_NAME);
+    addMethod(methods, KEYSET_DELETE_NAME);
+    addMethod(methods, KEYSET_CREATE_NAME);
+    addMethod(methods, KEYSET_INFO2_NAME);
+    addMethod(methods, KEYSET_INFO_NAME);
+}
+
+void
+KeysetClient::runMethod()
+{
+    if (m_conf.hasOpt(KEYSET_LIST_NAME)) {
+        list();
+    } else if (m_conf.hasOpt(KEYSET_CHECK_NAME)) {
+        check();
+    } else if (m_conf.hasOpt(KEYSET_SEND_AUTH_INFO_NAME)) {
+        send_auth_info();
+    } else if (m_conf.hasOpt(KEYSET_TRANSFER_NAME)) {
+        transfer();
+    } else if (m_conf.hasOpt(KEYSET_LIST_PLAIN_NAME)) {
+        list_plain();
+    } else if (m_conf.hasOpt(KEYSET_UPDATE_NAME)) {
+        update();
+    } else if (m_conf.hasOpt(KEYSET_DELETE_NAME)) {
+        del();
+    } else if (m_conf.hasOpt(KEYSET_CREATE_NAME)) {
+        create();
+    } else if (m_conf.hasOpt(KEYSET_INFO2_NAME)) {
+        info2();
+    } else if (m_conf.hasOpt(KEYSET_INFO_NAME)) {
+        info();
+    } else if (m_conf.hasOpt(KEYSET_SHOW_OPTS_NAME)) {
+        show_opts();
+    }
 }
 
 boost::program_options::options_description *
@@ -109,8 +152,9 @@ KeysetClient::getInvisibleOptions() const
 }
 
 void
-KeysetClient::show_opts() const
+KeysetClient::show_opts()
 {
+    callHelp(m_conf, no_help);
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;
 }
@@ -118,6 +162,7 @@ KeysetClient::show_opts() const
 void
 KeysetClient::list()
 {
+    callHelp(m_conf, list_help);
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(&m_db, true));
     std::auto_ptr<Register::KeySet::List> keyList(
@@ -232,9 +277,10 @@ KeysetClient::list()
     delete unionFilter;
 }
 
-int
+void
 KeysetClient::list_plain()
 {
+    callHelp(m_conf, no_help);
     std::string xml;
     std::string cltrid;
 
@@ -247,18 +293,19 @@ KeysetClient::list_plain()
 
     if (r->code != 1000) {
         std::cerr << "An error has occured: " << r->code;
-        return -1;
+        return;
     }
     for (int i = 0; i < (int)k->length(); i++)
         std::cout << (*k)[i] << std::endl;
 
     CLIENT_LOGOUT;
-    return 0;
+    return;
 }
 
-int
+void
 KeysetClient::check()
 {
+    callHelp(m_conf, check_help);
     std::string xml;
     std::string cltrid;
 
@@ -281,12 +328,13 @@ KeysetClient::check()
     std::cout << (*a)[0].reason << std::endl;
 
     CLIENT_LOGOUT;
-    return 0;
+    return;
 }
 
-int
+void
 KeysetClient::send_auth_info()
 {
+    callHelp(m_conf, no_help);
     std::string name = m_conf.get<std::string>(KEYSET_SEND_AUTH_INFO_NAME).c_str();
     std::string cltrid;
     std::string xml;
@@ -299,12 +347,13 @@ KeysetClient::send_auth_info()
     std::cout << r->code << std::endl;
 
     CLIENT_LOGOUT;
-    return 0;
+    return;
 }
 
-int
+void
 KeysetClient::transfer()
 {
+    callHelp(m_conf, no_help);
     std::string key_handle = m_conf.get<std::string>(KEYSET_TRANSFER_NAME).c_str();
     std::string authinfopw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
 
@@ -325,12 +374,13 @@ KeysetClient::transfer()
     std::cout << r->code << std::endl;
 
     CLIENT_LOGOUT;
-    return 0;
+    return;
 }
 
-int
+void
 KeysetClient::update()
 {
+    callHelp(m_conf, update_help);
     std::string authinfopw("");
     std::string admins_add("");
     std::string admins_rem("");
@@ -377,19 +427,19 @@ KeysetClient::update()
 
     if ((dsrec_add_list.size() % 5) != 0) {
         std::cout << "Bad number of ``dsrec-add'' items." << std::endl;
-        return 1;
+        return;
     }
     if ((dsrec_rem_list.size() % 5) != 0) {
         std::cout << "Bad number of ``dsrec-rem'' items." << std::endl;
-        return 1;
+        return;
     }
     if ((dnskey_add_list.size() % 4) != 0) {
         std::cerr << "Bad number of ``" << KEYSET_DNSKEY_ADD_NAME << "'' items." << std::endl;
-        return 1;
+        return;
     }
     if ((dnskey_rem_list.size() % 4) != 0) {
         std::cerr << "Bad number of ``" << KEYSET_DNSKEY_REM_NAME << "'' items." << std::endl;
-        return 1;
+        return;
     }
     ccReg::DSRecord dsrecord_add;
     dsrecord_add.length(dsrec_add_list.size() / 5);
@@ -457,12 +507,13 @@ KeysetClient::update()
     std::cout << "return code: " << r->code << std::endl;
 
     CLIENT_LOGOUT;
-    return 0;
+    return;
 }
 
-int
+void
 KeysetClient::del()
 {
+    callHelp(m_conf, delete_help);
     std::string key_handle = m_conf.get<std::string>(KEYSET_DELETE_NAME).c_str();
 
     std::cout << key_handle << std::endl;
@@ -481,12 +532,13 @@ KeysetClient::del()
             xml.c_str());
     std::cout << "return code: " << r->code << std::endl;
     CLIENT_LOGOUT;
-    return 0;
+    return;
 }
 
-int
+void
 KeysetClient::create()
 {
+    callHelp(m_conf, create_help);
     std::string key_handle = m_conf.get<std::string>(KEYSET_CREATE_NAME).c_str();
     std::string admins = m_conf.get<std::string>(ADMIN_NAME).c_str();
     std::string authinfopw("");
@@ -510,7 +562,7 @@ KeysetClient::create()
     
     if ((dsrecords_list.size() % 5) != 0) {
         std::cerr << "Bad nubmer of ``dsrecords'' items." << std::endl;
-        return 1;
+        return;
     }
     ccReg::DSRecord dsrec;
     dsrec.length(dsrecords_list.size() / 5);
@@ -524,7 +576,7 @@ KeysetClient::create()
     }
     if ((dnskey_list.size() % 4) != 0) {
         std::cerr << "Bad number of ``dnskey'' items." << std::endl;
-        return 1;
+        return;
     }
     ccReg::DNSKey dnskey;
     dnskey.length(dnskey_list.size() / 4);
@@ -559,12 +611,13 @@ KeysetClient::create()
     std::cout << "return code: " << r->code << std::endl;
 
     CLIENT_LOGOUT;
-    return 0;
+    return;
 }
 
-int
+void
 KeysetClient::info()
 {
+    callHelp(m_conf, info_help);
     std::string name = m_conf.get<std::string>(KEYSET_INFO_NAME);
     std::string cltrid;
     std::string xml;
@@ -584,12 +637,13 @@ KeysetClient::info()
     std::cout << k->tech[0] << std::endl;
 
     delete k;
-    return 0;
+    return;
 }
 
-int
+void
 KeysetClient::info2()
 {
+    callHelp(m_conf, no_help);
     std::string key_handle = m_conf.get<std::string>(KEYSET_INFO2_NAME);
     std::string cltrid;
     std::string xml;
@@ -613,7 +667,7 @@ KeysetClient::info2()
 
 
     CLIENT_LOGOUT;
-    return 0;
+    return;
 }
 
 void

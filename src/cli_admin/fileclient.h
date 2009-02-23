@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -19,6 +19,7 @@
 #ifndef _FILECLIENT_H_
 #define _FILECLIENT_H_
 
+#define FILE_CLIENT                 "file_client"
 #define FILE_LIST_NAME              "file_list"
 #define FILE_LIST_NAME_DESC         "list all files"
 #define FILE_LIST_HELP_NAME         "file_list_help"
@@ -62,11 +63,14 @@ public:
     ~FileClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts() const;
+    void show_opts();
 
     void list();
     void list_help();

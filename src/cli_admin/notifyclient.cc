@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -23,6 +23,9 @@
 #include "register/info_buffer.h"
 
 namespace Admin {
+
+#define addMethod(methods, name) \
+    methods.insert(std::make_pair(name, NOTIFY_CLIENT))
 
 NotifyClient::NotifyClient()
 {
@@ -60,11 +63,33 @@ void
 NotifyClient::init(
         std::string connstring,
         std::string nsAddr,
-        Config::Conf &conf)
+        Config::Conf &conf,
+        METHODS &methods)
 {
     BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
+    addMethods(methods);
+}
+
+void
+NotifyClient::addMethods(METHODS &methods)
+{
+    addMethod(methods, NOTIFY_SHOW_OPTS_NAME);
+    addMethod(methods, NOTIFY_STATE_CHANGES_NAME);
+    addMethod(methods, NOTIFY_LETTERS_CREATE_NAME);
+}
+
+void
+NotifyClient::runMethod()
+{
+    if (m_conf.hasOpt(NOTIFY_STATE_CHANGES_NAME)) {
+        state_changes();
+    } else if (m_conf.hasOpt(NOTIFY_LETTERS_CREATE_NAME)) {
+        letters_create();
+    } else if (m_conf.hasOpt(NOTIFY_SHOW_OPTS_NAME)) {
+        show_opts();
+    }
 }
 
 boost::program_options::options_description *
@@ -80,8 +105,9 @@ NotifyClient::getInvisibleOptions() const
 }
 
 void
-NotifyClient::show_opts() const
+NotifyClient::show_opts()
 {
+    callHelp(m_conf, no_help);
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;
 }
@@ -89,6 +115,7 @@ NotifyClient::show_opts() const
 void
 NotifyClient::state_changes()
 {
+    callHelp(m_conf, no_help);
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
@@ -141,6 +168,7 @@ NotifyClient::state_changes()
 void
 NotifyClient::letters_create()
 {
+    callHelp(m_conf, no_help);
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),

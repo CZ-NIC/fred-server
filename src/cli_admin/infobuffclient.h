@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -19,6 +19,7 @@
 #ifndef _INFOBUFFCLIENT_H_
 #define _INFOBUFFCLIENT_H_
 
+#define INFOBUFF_CLIENT                 "infobuff_client"
 #define INFOBUFF_SHOW_OPTS_NAME         "info_buffer_show_opts"
 #define INFOBUFF_SHOW_OPTS_NAME_DESC    "show all info buffer command line options"
 #define INFOBUFF_MAKE_INFO_NAME         "info_buffer_make_info"
@@ -55,14 +56,17 @@ public:
     ~InfoBuffClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts() const;
+    void show_opts() ;
 
-    int make_info();
-    int get_chunk();
+    void make_info();
+    void get_chunk();
 
 };
 

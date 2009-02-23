@@ -22,11 +22,14 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 
+#include "simple.h"
 #include "corba/admin/admin_impl.h"
 #include "register/register.h"
 #include "old_utils/dbsql.h"
 #include "baseclient.h"
 
+
+#define INVOICE_CLIENT                  "invoice_client"
 
 #define INVOICE_SHOW_OPTS_NAME          "invoice_show_opts"
 #define INVOICE_SHOW_OPTS_NAME_DESC     "show all invoice command line options"
@@ -132,24 +135,27 @@ public:
     ~InvoiceClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
 
-    void show_opts() const;
+    void show_opts();
     void list();
     void list_filters();
-    int archive();
+    void archive();
+
+    void credit();
+    void factoring();
+    void pair_invoices();
 
     void list_help();
     void archive_help();
     void credit_help();
     void factoring_help();
-
-    void credit();
-    void factoring();
-    void pair_invoices();
 };
 
 } // namespace Admin;

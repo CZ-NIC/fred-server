@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -25,6 +25,8 @@
 #include "corba/admin/admin_impl.h"
 #include "old_utils/dbsql.h"
 #include "baseclient.h"
+
+#define DOMAIN_CLIENT                   "domain_client"
 
 #define DOMAIN_SHOW_OPTS_NAME           "domain_show_opts"
 #define DOMAIN_SHOW_OPTS_NAME_DESC      "show all domain command line options"
@@ -80,21 +82,24 @@ public:
     ~DomainClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts() const;
+    void show_opts();
 
     void domain_list();
 
-    int domain_list_plain();
+    void domain_list_plain();
 
-    int domain_create();
+    void domain_create();
 
-    int domain_update();
+    void domain_update();
 
-    int domain_info();
+    void domain_info();
 
     void domain_list_help();
     void domain_update_help();

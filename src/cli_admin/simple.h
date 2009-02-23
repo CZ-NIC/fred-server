@@ -1,6 +1,29 @@
-#ifndef _SIMPLE_H_
+/*
+ *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
+#ifndef _SIMPLE_H_
 #define _SIMPLE_H_
+
+#include <map>
+
+typedef std::map<std::string, std::string> METHODS;
+typedef std::map<std::string, std::string>::iterator METHODS_IT;
+
 
 #define addOpt(name)                        (name, name##_DESC)
 #define addOptStr(name)                     (name, boost::program_options::value<std::string>(), name##_DESC)
@@ -46,6 +69,13 @@
                 *parseDate(m_conf.get<std::string>(name)));                 \
     }
 
+#define callHelp(conf, help_func)       \
+    if (conf.hasOpt("help")) {          \
+        help_func();                      \
+        return;                         \
+    }
+
+#define HELP                    "help"
 #define CLI_HELP_NAME           "help,h"
 #define CLI_VERSION_NAME        "version,V"
 #define CLI_VERSION_NAME_DESC   "print version and licence information"
@@ -347,11 +377,11 @@ if (m_conf.hasOpt(LOGIN_REGISTRAR_NAME)) {                                  \
 }                                                                           \
 if (!m_db.ExecSelect(get_registrar_query.c_str())) {                        \
     std::cout << "error in exec" << std::endl;                              \
-    return -1;                                                              \
+    return;                                                                 \
 }                                                                           \
 if (!m_db.GetSelectRows()) {                                                \
     std::cout << "No result" << std::endl;                                  \
-    return -1;                                                              \
+    return;                                                                 \
 }                                                                           \
 std::string gg_handle = m_db.GetFieldValue(0,0);                            \
 std::string gg_cert = m_db.GetFieldValue(0,1);                              \
@@ -362,7 +392,7 @@ r = epp->ClientLogin(gg_handle.c_str(),gg_password.c_str(),"",              \
     clientId,gg_cert.c_str(),ccReg::EN);                                    \
 if (r->code != 1000 || !clientId) {                                         \
     std::cerr << "Cannot connect: " << r->code << std::endl;                \
-    return -1;                                                              \
+    return;                                                                 \
 }
 
 

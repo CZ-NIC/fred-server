@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -21,6 +21,9 @@
 #include "domainclient.h"
 #include "register/register.h"
 
+#define addMethod(methods, name) \
+    methods.insert(std::make_pair(name, DOMAIN_CLIENT))
+
 namespace Admin {
 
 DomainClient::DomainClient()
@@ -29,13 +32,10 @@ DomainClient::DomainClient()
             "Domain related options");
     m_options->add_options()
         addOpt(DOMAIN_LIST_NAME)
-        addOpt(DOMAIN_LIST_HELP_NAME)
         addOpt(DOMAIN_LIST_PLAIN_NAME)
         addOptStr(DOMAIN_INFO_NAME)
         addOptStr(DOMAIN_CREATE_NAME)
         addOptStr(DOMAIN_UPDATE_NAME)
-        addOpt(DOMAIN_CREATE_HELP_NAME)
-        addOpt(DOMAIN_UPDATE_HELP_NAME)
         addOpt(DOMAIN_LIST_PLAIN_NAME)
         addOpt(DOMAIN_SHOW_OPTS_NAME);
 
@@ -90,11 +90,42 @@ void
 DomainClient::init(
         std::string connstring,
         std::string nsAddr,
-        Config::Conf &conf)
+        Config::Conf &conf,
+        METHODS &methods)
 {
     BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
+    addMethods(methods);
+}
+
+void
+DomainClient::addMethods(METHODS &methods)
+{
+    addMethod(methods, DOMAIN_SHOW_OPTS_NAME);
+    addMethod(methods, DOMAIN_LIST_PLAIN_NAME);
+    addMethod(methods, DOMAIN_CREATE_NAME);
+    addMethod(methods, DOMAIN_UPDATE_NAME);
+    addMethod(methods, DOMAIN_INFO_NAME);
+    addMethod(methods, DOMAIN_LIST_NAME);
+}
+
+void
+DomainClient::runMethod()
+{
+    if (m_conf.hasOpt(DOMAIN_LIST_PLAIN_NAME)) {
+        domain_list_plain();
+    } else if (m_conf.hasOpt(DOMAIN_CREATE_NAME)) {
+        domain_create();
+    } else if (m_conf.hasOpt(DOMAIN_UPDATE_NAME)) {
+        domain_update();
+    } else if (m_conf.hasOpt(DOMAIN_INFO_NAME)) {
+        domain_info();
+    } else if (m_conf.hasOpt(DOMAIN_LIST_NAME)) {
+        domain_list();
+    } else if (m_conf.hasOpt(DOMAIN_SHOW_OPTS_NAME)) {
+        show_opts();
+    }
 }
 
 boost::program_options::options_description *
@@ -110,8 +141,9 @@ DomainClient::getInvisibleOptions() const
 }
 
 void
-DomainClient::show_opts() const
+DomainClient::show_opts()
 {
+    callHelp(m_conf, no_help);
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;
 }
@@ -119,6 +151,7 @@ DomainClient::show_opts() const
 void
 DomainClient::domain_list()
 {
+    callHelp(m_conf, list_help);
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
 
@@ -241,9 +274,10 @@ DomainClient::domain_list()
     delete unionFilter;
 }
 
-int
+void
 DomainClient::domain_create()
 {
+    callHelp(m_conf, domain_create_help);
     std::string fqdn = m_conf.get<std::string>(DOMAIN_CREATE_NAME).c_str();
     std::string registrant = m_conf.get<std::string>(DOMAIN_REGISTRANT_NAME).c_str();
     std::string nsset = m_conf.get<std::string>(DOMAIN_NSSET_NAME).c_str();
@@ -313,12 +347,13 @@ DomainClient::domain_create()
     std::cout << "return code: " << r->code << std::endl;
 
     CLIENT_LOGOUT;
-    return 0;
+    return;
 }
 
-int
+void
 DomainClient::domain_update()
 {
+    callHelp(m_conf, domain_update_help);
     std::string fqdn = m_conf.get<std::string>(DOMAIN_UPDATE_NAME);
     std::string registrant = m_conf.get<std::string>(REGISTRANT_HANDLE_NAME);
     std::string nsset = m_conf.get<std::string>(NSSET_HANDLE_NAME);
@@ -395,11 +430,12 @@ DomainClient::domain_update()
 
     std::cout << "return code: " << r->code << std::endl;
     CLIENT_LOGOUT;
-    return 0;
+    return;
 }
-int
+void
 DomainClient::domain_info()
 {
+    callHelp(m_conf, no_help);
     std::string name = m_conf.get<std::string>(DOMAIN_INFO_NAME);
 
     CLIENT_LOGIN;
@@ -417,11 +453,12 @@ DomainClient::domain_info()
     std::cout << k->keyset << std::endl;
 
     CLIENT_LOGOUT;
-    return 0;
+    return;
 }
-int
+void
 DomainClient::domain_list_plain()
 {
+    callHelp(m_conf, no_help);
     CLIENT_LOGIN;
     std::string name = m_conf.get<std::string>(DOMAIN_LIST_PLAIN_NAME).c_str();
     std::string cltrid;
@@ -437,7 +474,7 @@ DomainClient::domain_list_plain()
         std::cout << (*k)[i] << std::endl;
 
     CLIENT_LOGOUT;
-    return 0;
+    return;
 }
 
 void

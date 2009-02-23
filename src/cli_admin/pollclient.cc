@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -22,6 +22,9 @@
 #include "register/poll.h"
 
 namespace Admin {
+
+#define addMethod(methods, name) \
+    methods.insert(std::make_pair(name, POLL_CLIENT))
 
 PollClient::PollClient()
 {
@@ -67,11 +70,46 @@ void
 PollClient::init(
         std::string connstring,
         std::string nsAddr,
-        Config::Conf &conf)
+        Config::Conf &conf,
+        METHODS &methods)
 {
     BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
+    addMethods(methods);
+}
+
+void
+PollClient::addMethods(METHODS &methods)
+{
+    addMethod(methods, POLL_SHOW_OPTS_NAME);
+    addMethod(methods, POLL_LIST_ALL_NAME);
+    addMethod(methods, POLL_LIST_NEXT_NAME);
+    addMethod(methods, POLL_CREATE_STATE_CHANGES_NAME);
+    addMethod(methods, POLL_CREATE_STATE_CHANGES_2_NAME);
+    addMethod(methods, POLL_CREATE_LOW_CREDIT_NAME);
+    addMethod(methods, POLL_CREATE_LOW_CREDIT_2_NAME);
+    addMethod(methods, POLL_SET_SEEN_NAME);
+}
+
+void
+PollClient::runMethod()
+{
+    if (m_conf.hasOpt(POLL_LIST_ALL_NAME)) {
+        list_all();
+    } else if (m_conf.hasOpt(POLL_LIST_NEXT_NAME)) {
+        list_next();
+    } else if (m_conf.hasOpt(POLL_CREATE_STATE_CHANGES_NAME) ||
+            m_conf.hasOpt(POLL_CREATE_STATE_CHANGES_2_NAME)) {
+        create_state_changes();
+    } else if (m_conf.hasOpt(POLL_CREATE_LOW_CREDIT_NAME) ||
+            m_conf.hasOpt(POLL_CREATE_LOW_CREDIT_2_NAME)) {
+        create_low_credit();
+    } else if (m_conf.hasOpt(POLL_SET_SEEN_NAME)) {
+        set_seen();
+    } else if (m_conf.hasOpt(POLL_SHOW_OPTS_NAME)) {
+        show_opts();
+    }
 }
 
 boost::program_options::options_description *
@@ -87,15 +125,17 @@ PollClient::getInvisibleOptions() const
 }
 
 void
-PollClient::show_opts() const
+PollClient::show_opts()
 {
+    callHelp(m_conf, no_help);
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;
 }
 
-int
+void
 PollClient::list_all()
 {
+    callHelp(m_conf, no_help);
     std::auto_ptr<Register::Poll::Manager> pollMan(
             Register::Poll::Manager::create(
                 &m_db)
@@ -117,11 +157,12 @@ PollClient::list_all()
             std::cout << std::endl;
         }
     }
-    return 0;
+    return;
 }
-int
+void
 PollClient::list_next()
 {
+    callHelp(m_conf, no_help);
     std::auto_ptr<Register::Poll::Manager> pollMan(
             Register::Poll::Manager::create(
                 &m_db)
@@ -136,11 +177,12 @@ PollClient::list_next()
         msg->textDump(std::cout);
         std::cout << std::endl;
     }
-    return 0;
+    return;
 }
-int
+void
 PollClient::set_seen()
 {
+    callHelp(m_conf, no_help);
     std::auto_ptr<Register::Poll::Manager> pollMan(
             Register::Poll::Manager::create(
                 &m_db)
@@ -154,11 +196,12 @@ PollClient::set_seen()
     } catch (...) {
         std::cout << "No message" << std::endl;
     }
-    return 0;
+    return;
 }
-int
+void
 PollClient::create_state_changes()
 {
+    callHelp(m_conf, no_help);
     std::auto_ptr<Register::Poll::Manager> pollMan(
             Register::Poll::Manager::create(
                 &m_db)
@@ -168,17 +211,18 @@ PollClient::create_state_changes()
             m_conf.get<unsigned int>(POLL_LIMIT_NAME),
             m_conf.hasOpt(POLL_DEBUG_NAME) ? &std::cout : NULL
     );
-    return 0;
+    return;
 }
-int
+void
 PollClient::create_low_credit()
 {
+    callHelp(m_conf, no_help);
     std::auto_ptr<Register::Poll::Manager> pollMan(
             Register::Poll::Manager::create(
                 &m_db)
             );
     pollMan->createLowCreditMessages();
-    return 0;
+    return;
 }
 
 } // namespace Admin;

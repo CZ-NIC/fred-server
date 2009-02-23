@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -24,13 +24,15 @@
 
 namespace Admin {
 
+#define addMethod(methods, name) \
+    methods.insert(std::make_pair(name, AUTHINFO_CLIENT))
+
 AuthInfoClient::AuthInfoClient()
 {
     m_options = new boost::program_options::options_description(
             "Authinfo related options");
     m_options->add_options()
         addOptUInt(AUTHINFO_PDF_NAME)
-        addOpt(AUTHINFO_PDF_HELP_NAME)
         addOpt(AUTHINFO_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
@@ -56,11 +58,30 @@ void
 AuthInfoClient::init(
         std::string connstring,
         std::string nsAddr,
-        Config::Conf &conf)
+        Config::Conf &conf,
+        METHODS &methods)
 {
     BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
+    addMethods(methods);
+}
+
+void
+AuthInfoClient::addMethods(METHODS &methods)
+{
+    addMethod(methods, AUTHINFO_SHOW_OPTS_NAME);
+    addMethod(methods, AUTHINFO_PDF_NAME);
+}
+
+void
+AuthInfoClient::runMethod()
+{
+    if (m_conf.hasOpt(AUTHINFO_PDF_NAME)) {
+        pdf();
+    } else if (m_conf.hasOpt(AUTHINFO_SHOW_OPTS_NAME)) {
+        show_opts();
+    }
 }
 
 boost::program_options::options_description *
@@ -76,15 +97,17 @@ AuthInfoClient::getInvisibleOptions() const
 }
 
 void
-AuthInfoClient::show_opts() const
+AuthInfoClient::show_opts()
 {
+    callHelp(m_conf, no_help);
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;
 }
 
-int
+void
 AuthInfoClient::pdf()
 {
+    callHelp(m_conf, pdf_help);
     std::ofstream stdout("/dev/stdout",std::ios::out);   
 
     std::auto_ptr<Register::Document::Manager> docMan(
@@ -108,7 +131,7 @@ AuthInfoClient::pdf()
             m_conf.get<unsigned int>(AUTHINFO_PDF_NAME),
             m_conf.get<std::string>(CLI_LANGUAGE_NAME),
             stdout);
-    return 0;
+    return;
 }
 
 void

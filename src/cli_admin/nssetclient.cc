@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -22,13 +22,15 @@
 
 namespace Admin {
 
+#define addMethod(methods, name) \
+    methods.insert(std::make_pair(name, NSSET_CLIENT))
+
 NssetClient::NssetClient()
 {
     m_options = new boost::program_options::options_description(
             "NSSet related options");
     m_options->add_options()
         addOpt(NSSET_LIST_NAME)
-        addOpt(NSSET_LIST_HELP_NAME)
         addOpt(NSSET_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
@@ -69,11 +71,30 @@ void
 NssetClient::init(
         std::string connstring,
         std::string nsAddr,
-        Config::Conf &conf)
+        Config::Conf &conf,
+        METHODS &methods)
 {
     BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
+    addMethods(methods);
+}
+
+void
+NssetClient::addMethods(METHODS &methods)
+{
+    addMethod(methods, NSSET_SHOW_OPTS_NAME);
+    addMethod(methods, NSSET_LIST_NAME);
+}
+
+void
+NssetClient::runMethod()
+{
+    if (m_conf.hasOpt(NSSET_LIST_NAME)) {
+        list();
+    } else if (m_conf.hasOpt(NSSET_SHOW_OPTS_NAME)) {
+        show_opts();
+    }
 }
 
 boost::program_options::options_description *
@@ -89,8 +110,9 @@ NssetClient::getInvisibleOptions() const
 }
 
 void
-NssetClient::show_opts() const
+NssetClient::show_opts() 
 {
+    callHelp(m_conf, no_help);
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;
 }
@@ -98,6 +120,7 @@ NssetClient::show_opts() const
 void
 NssetClient::list()
 {
+    callHelp(m_conf, list_help);
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
     std::auto_ptr<Register::NSSet::Manager> nssMan(

@@ -19,6 +19,7 @@
 #ifndef _REGISTRARCLIENT_H_
 #define _REGISTRARCLIENT_H_
 
+#define REGISTRAR_CLIENT                    "registrar_client"
 #define REGISTRAR_SHOW_OPTS_NAME            "registrar_show_opts"
 #define REGISTRAR_SHOW_OPTS_NAME_DESC       "show all registrar command line options"
 #define REGISTRAR_LIST_NAME                 "registrar_list"
@@ -68,16 +69,19 @@ public:
     ~RegistrarClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts() const;
+    void show_opts();
 
     void list();
-    int zone_add();
-    int registrar_add();
-    int registrar_add_zone();
+    void zone_add();
+    void registrar_add();
+    void registrar_add_zone();
 
     void zone_add_help();
     void registrar_add_help();

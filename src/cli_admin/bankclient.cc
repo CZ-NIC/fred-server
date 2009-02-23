@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -32,6 +32,9 @@
 
 namespace Admin {
 
+#define addMethod(methods, name) \
+    methods.insert(std::make_pair(name, BANK_CLIENT))
+
 BankClient::BankClient()
 {
     m_options = new boost::program_options::options_description(
@@ -40,10 +43,7 @@ BankClient::BankClient()
         addOpt(BANK_STATEMENT_LIST_NAME)
         addOpt(BANK_ONLINE_LIST_NAME)
         addOpt(BANK_SHOW_OPTS_NAME)
-        addOpt(BANK_IMPORT_XML_NAME)
-        addOpt(BANK_IMPORT_XML_HELP_NAME)
-        addOpt(BANK_STATEMENT_LIST_HELP_NAME)
-        addOpt(BANK_ONLINE_LIST_HELP_NAME);
+        addOpt(BANK_IMPORT_XML_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Bank related sub options");
@@ -78,14 +78,39 @@ BankClient::~BankClient()
 }
 
 void
+BankClient::addMethods(METHODS &methods)
+{
+    addMethod(methods, BANK_SHOW_OPTS_NAME);
+    addMethod(methods, BANK_STATEMENT_LIST_NAME);
+    addMethod(methods, BANK_ONLINE_LIST_NAME);
+    addMethod(methods, BANK_IMPORT_XML_NAME);
+}
+
+void
+BankClient::runMethod()
+{
+    if (m_conf.hasOpt(BANK_SHOW_OPTS_NAME)) {
+        show_opts();
+    } else if (m_conf.hasOpt(BANK_STATEMENT_LIST_NAME)) {
+        statement_list();
+    } else if (m_conf.hasOpt(BANK_ONLINE_LIST_NAME)) {
+        online_list();
+    } else if (m_conf.hasOpt(BANK_IMPORT_XML_NAME)) {
+        import_xml();
+    }
+}
+
+void
 BankClient::init(
         std::string connstring,
         std::string nsAddr,
-        Config::Conf &conf)
+        Config::Conf &conf,
+        METHODS &methods)
 {
     BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
+    addMethods(methods);
 }
 
 boost::program_options::options_description *
@@ -101,8 +126,9 @@ BankClient::getInvisibleOptions() const
 }
 
 void
-BankClient::show_opts() const
+BankClient::show_opts() 
 {
+    callHelp(m_conf, no_help);
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;
 }
@@ -110,6 +136,7 @@ BankClient::show_opts() const
 void
 BankClient::online_list()
 {
+    callHelp(m_conf, online_list_help);
     std::ofstream output;
     if (m_conf.hasOpt(OUTPUT_NAME)) {
         output.open(m_conf.get<std::string>(OUTPUT_NAME).c_str(), std::ios::out);
@@ -148,6 +175,7 @@ BankClient::online_list()
 void
 BankClient::statement_list()
 {
+    callHelp(m_conf, statement_list_help);
     std::ofstream output;
     if (m_conf.hasOpt(OUTPUT_NAME)) {
         output.open(m_conf.get<std::string>(OUTPUT_NAME).c_str(), std::ios::out);
@@ -188,6 +216,7 @@ BankClient::statement_list()
 void
 BankClient::import_xml()
 {
+    callHelp(m_conf, import_xml_help);
     std::string fileName;
     bool fromFile = false;
     bool isOnline = false;

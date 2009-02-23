@@ -22,6 +22,9 @@
 
 namespace Admin {
 
+#define addMethod(methods, name) \
+    methods.insert(std::make_pair(name, INVOICE_CLIENT))
+
 InvoiceClient::InvoiceClient()
 {
     m_options = new boost::program_options::options_description(
@@ -33,9 +36,6 @@ InvoiceClient::InvoiceClient()
         addOpt(INVOICE_ARCHIVE_NAME)
         addOpt(INVOICE_CREDIT_NAME)
         addOpt(INVOICE_FACTORING_NAME)
-        addOpt(INVOICE_LIST_HELP_NAME)
-        addOpt(INVOICE_CREDIT_HELP_NAME)
-        addOpt(INVOICE_FACTORING_HELP_NAME)
         addOpt(INVOICE_MAKE_PAIRS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
@@ -63,6 +63,7 @@ InvoiceClient::InvoiceClient()
         addOptUInt(INVOICE_PRICE_NAME)
         addOptStr(INVOICE_TODATE_NAME);
 }
+
 InvoiceClient::InvoiceClient(
         std::string connstring,
         std::string nsAddr) : BaseClient(connstring, nsAddr)
@@ -82,11 +83,44 @@ void
 InvoiceClient::init(
         std::string connstring,
         std::string nsAddr,
-        Config::Conf &conf)
+        Config::Conf &conf,
+        METHODS &methods)
 {
     BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
+    addMethods(methods);
+}
+
+void
+InvoiceClient::addMethods(METHODS &methods)
+{
+    addMethod(methods, INVOICE_SHOW_OPTS_NAME);
+    addMethod(methods, INVOICE_LIST_NAME);
+    addMethod(methods, INVOICE_LIST_FILTERS_NAME);
+    addMethod(methods, INVOICE_ARCHIVE_NAME);
+    addMethod(methods, INVOICE_CREDIT_NAME);
+    addMethod(methods, INVOICE_FACTORING_NAME);
+}
+
+void
+InvoiceClient::runMethod()
+{
+    if (m_conf.hasOpt(INVOICE_LIST_NAME)) {
+        list();
+    } else if (m_conf.hasOpt(INVOICE_ARCHIVE_NAME)) {
+        archive();
+    } else if (m_conf.hasOpt(INVOICE_LIST_FILTERS_NAME)) {
+        list_filters();
+    } else if (m_conf.hasOpt(INVOICE_SHOW_OPTS_NAME)) {
+        show_opts();
+    } else if (m_conf.hasOpt(INVOICE_CREDIT_NAME)) {
+        credit();
+    } else if (m_conf.hasOpt(INVOICE_FACTORING_NAME)) {
+        factoring();
+    } else if (m_conf.hasOpt(INVOICE_MAKE_PAIRS_NAME)) {
+        pair_invoices();
+    }
 }
 
 boost::program_options::options_description *
@@ -102,8 +136,9 @@ InvoiceClient::getInvisibleOptions() const
 }
 
 void
-InvoiceClient::show_opts() const
+InvoiceClient::show_opts()
 {
+    callHelp(m_conf, no_help);
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;
 }
@@ -111,6 +146,7 @@ InvoiceClient::show_opts() const
 void
 InvoiceClient::list()
 {
+    callHelp(m_conf, list_help);
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
@@ -174,6 +210,7 @@ InvoiceClient::list()
 void
 InvoiceClient::list_filters()
 {
+    callHelp(m_conf, list_help);
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
@@ -364,9 +401,10 @@ InvoiceClient::list_filters()
     unionFilter->clear();
     delete unionFilter;
 }
-int
+void
 InvoiceClient::archive()
 {
+    callHelp(m_conf, archive_help);
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
@@ -383,12 +421,13 @@ InvoiceClient::archive()
                 &mailMan)
             );
     invMan->archiveInvoices(!m_conf.hasOpt(INVOICE_DONT_SEND_NAME));
-    return 0;
+    return;
 }
 
 void
 InvoiceClient::credit()
 {
+    callHelp(m_conf, credit_help);
     std::auto_ptr<Register::Invoicing::Manager>
         invMan(Register::Invoicing::Manager::create(m_dbman));
     std::auto_ptr<Register::Invoicing::Invoice>
@@ -481,6 +520,7 @@ InvoiceClient::factoring(Register::Invoicing::Manager *man,
 void
 InvoiceClient::factoring()
 {
+    callHelp(m_conf, factoring_help);
     std::auto_ptr<Register::Invoicing::Manager>
         invMan(Register::Invoicing::Manager::create(m_dbman));
     std::auto_ptr<Register::Registrar::Manager>
@@ -563,6 +603,7 @@ InvoiceClient::factoring()
 void
 InvoiceClient::pair_invoices()
 {
+    callHelp(m_conf, no_help);
     std::cout << "pair invoices" << std::endl;
     std::auto_ptr<Register::Invoicing::Manager>
         invMan(Register::Invoicing::Manager::create(m_dbman));

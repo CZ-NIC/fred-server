@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -27,6 +27,9 @@
 #include "corba/nameservice.h"
 
 namespace Admin {
+
+#define addMethod(methods, name) \
+    methods.insert(std::make_pair(name, OBJECT_CLIENT))
 
 ObjectClient::ObjectClient()
 {
@@ -69,11 +72,42 @@ void
 ObjectClient::init(
         std::string connstring,
         std::string nsAddr,
-        Config::Conf &conf)
+        Config::Conf &conf,
+        METHODS &methods)
 {
     BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
+    addMethods(methods);
+}
+
+void
+ObjectClient::addMethods(METHODS &methods)
+{
+    addMethod(methods, OBJECT_SHOW_OPTS_NAME);
+    addMethod(methods, OBJECT_NEW_STATE_REQUEST_NAME);
+    addMethod(methods, OBJECT_DELETE_CANDIDATES_NAME);
+    addMethod(methods, OBJECT_REGULAR_PROCEDURE_NAME);
+    addMethod(methods, OBJECT_LIST_NAME);
+    addMethod(methods, OBJECT_UPDATE_STATES_NAME);
+}
+
+void
+ObjectClient::runMethod()
+{
+    if (m_conf.hasOpt(OBJECT_NEW_STATE_REQUEST_NAME)) {
+        new_state_request();
+    } else if (m_conf.hasOpt(OBJECT_LIST_NAME)) {
+        list();
+    } else if (m_conf.hasOpt(OBJECT_UPDATE_STATES_NAME)) {
+        update_states();
+    } else if (m_conf.hasOpt(OBJECT_DELETE_CANDIDATES_NAME)) {
+        delete_candidates();
+    } else if (m_conf.hasOpt(OBJECT_REGULAR_PROCEDURE_NAME)) {
+        regular_procedure();
+    } else if (m_conf.hasOpt(OBJECT_SHOW_OPTS_NAME)) {
+        show_opts();
+    }
 }
 
 boost::program_options::options_description *
@@ -89,8 +123,9 @@ ObjectClient::getInvisibleOptions() const
 }
 
 void
-ObjectClient::show_opts() const
+ObjectClient::show_opts() 
 {
+    callHelp(m_conf, no_help);
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;
 }
@@ -121,9 +156,10 @@ ObjectClient::createObjectStateRequest(
       return 0;
 }
 
-int
+void
 ObjectClient::new_state_request()
 {
+    callHelp(m_conf, no_help);
     Register::TID id = m_conf.get<unsigned int>(OBJECT_ID_NAME);
     unsigned int state = m_conf.get<unsigned int>(OBJECT_NEW_STATE_REQUEST_NAME);
     int res = createObjectStateRequest(
@@ -142,24 +178,27 @@ ObjectClient::new_state_request()
             std::cerr << "Unknown error" << std::endl;
             break;
     }
-    return 0;
+    return;
 }
 
 void
 ObjectClient::list()
 {
+    callHelp(m_conf, no_help);
+    std::cout << "not implemented" << std::endl;
 }
 
-int
+void
 ObjectClient::update_states()
 {
+    callHelp(m_conf, no_help);
     std::auto_ptr<Register::Manager> regMan(
             Register::Manager::create(
                 &m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
     regMan->updateObjectStates();
-    return 0;
+    return;
 }
 
 /// delete objects with status deleteCandidate
@@ -329,15 +368,17 @@ ObjectClient::deleteObjects(
     }
 }
 
-int
+void
 ObjectClient::delete_candidates()
 {
-    return deleteObjects(m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME));
+    callHelp(m_conf, no_help);
+    deleteObjects(m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME));
 }
 
-int
+void
 ObjectClient::regular_procedure()
 {
+    callHelp(m_conf, no_help);
     int i;
     CorbaClient *cc = NULL;
     try {
@@ -416,7 +457,7 @@ ObjectClient::regular_procedure()
                 0, NULL);
         if ((i = deleteObjects(m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME))) != 0) {
             LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): Error has occured in deleteObject: %d", i);
-	    return i;
+            return;
         }
 
         pollMan->createLowCreditMessages();
@@ -438,7 +479,7 @@ ObjectClient::regular_procedure()
     } catch (CORBA::Exception &e) {
         ;
     }
-    return 0;
+    return;
 }
 
 } // namespace Admin;

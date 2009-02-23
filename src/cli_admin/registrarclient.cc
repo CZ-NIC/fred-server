@@ -22,6 +22,9 @@
 
 namespace Admin {
 
+#define addMethod(methods, name) \
+    methods.insert(std::make_pair(name, REGISTRAR_CLIENT))
+
 RegistrarClient::RegistrarClient()
 {
     m_options = new boost::program_options::options_description(
@@ -31,10 +34,7 @@ RegistrarClient::RegistrarClient()
         addOpt(REGISTRAR_ZONE_ADD_NAME)
         addOpt(REGISTRAR_REGISTRAR_ADD_NAME)
         addOpt(REGISTRAR_REGISTRAR_ADD_ZONE_NAME)
-        addOpt(REGISTRAR_SHOW_OPTS_NAME)
-        addOpt(REGISTRAR_ZONE_ADD_HELP_NAME)
-        addOpt(REGISTRAR_REGISTRAR_ADD_HELP_NAME)
-        addOpt(REGISTRAR_REGISTRAR_ADD_ZONE_HELP_NAME);
+        addOpt(REGISTRAR_SHOW_OPTS_NAME);
 
     m_optionsInvis = new boost::program_options::options_description(
             "Registrar related sub options");
@@ -68,11 +68,39 @@ void
 RegistrarClient::init(
         std::string connstring,
         std::string nsAddr,
-        Config::Conf &conf)
+        Config::Conf &conf,
+        METHODS &methods)
 {
     BaseClient::init(connstring, nsAddr);
     m_db.OpenDatabase(connstring.c_str());
     m_conf = conf;
+    addMethods(methods);
+}
+
+void
+RegistrarClient::addMethods(METHODS &methods)
+{
+    addMethod(methods, REGISTRAR_SHOW_OPTS_NAME);
+    addMethod(methods, REGISTRAR_ZONE_ADD_NAME);
+    addMethod(methods, REGISTRAR_REGISTRAR_ADD_NAME);
+    addMethod(methods, REGISTRAR_REGISTRAR_ADD_ZONE_NAME);
+    addMethod(methods, REGISTRAR_LIST_NAME);
+}
+
+void
+RegistrarClient::runMethod()
+{
+    if (m_conf.hasOpt(REGISTRAR_ZONE_ADD_NAME)) {
+        zone_add();
+    } else if (m_conf.hasOpt(REGISTRAR_REGISTRAR_ADD_NAME)) {
+        registrar_add();
+    } else if (m_conf.hasOpt(REGISTRAR_REGISTRAR_ADD_ZONE_NAME)) {
+        registrar_add_zone();
+    } else if (m_conf.hasOpt(REGISTRAR_LIST_NAME)) {
+        list();
+    } else if (m_conf.hasOpt(REGISTRAR_SHOW_OPTS_NAME)) {
+        show_opts();
+    }
 }
 
 boost::program_options::options_description *
@@ -82,8 +110,9 @@ RegistrarClient::getVisibleOptions() const
 }
 
 void
-RegistrarClient::show_opts() const
+RegistrarClient::show_opts() 
 {
+    callHelp(m_conf, no_help);
     std::cout << *m_options << std::endl;
     std::cout << *m_optionsInvis << std::endl;
 }
@@ -98,11 +127,12 @@ RegistrarClient::getInvisibleOptions() const
 void
 RegistrarClient::list()
 {
+    callHelp(m_conf, no_help);
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
 
     Database::Filters::Registrar *regFilter;
-    regFilter = new Database::Filters::RegistrarImpl();
+    regFilter = new Database::Filters::RegistrarImpl(true);
 
     if (m_conf.hasOpt(ID_NAME))
         regFilter->addId().setValue(
@@ -175,9 +205,10 @@ RegistrarClient::list()
     delete unionFilter;
 }
 
-int
+void
 RegistrarClient::zone_add()
 {
+    callHelp(m_conf, zone_add_help);
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
     std::string fqdn = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
@@ -186,25 +217,27 @@ RegistrarClient::zone_add()
     } catch (Register::ALREADY_EXISTS) {
         std::cerr << "Zone '" << fqdn << "' already exists in configuratin" << std::endl;
     }
-    return 0;
+    return;
 }
-int
+void
 RegistrarClient::registrar_add()
 {
+    callHelp(m_conf, registrar_add_help);
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
     regMan->addRegistrar(m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
-    return 0;
+    return;
 }
-int
+void
 RegistrarClient::registrar_add_zone()
 {
+    callHelp(m_conf, registrar_add_zone_help);
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
     std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
     std::string registrar = m_conf.get<std::string>(REGISTRAR_HANDLE_NAME);
     regMan->addRegistrarZone(registrar, zone);
-    return 0;
+    return;
 }
 
 void

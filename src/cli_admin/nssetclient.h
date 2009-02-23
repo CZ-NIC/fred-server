@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -26,7 +26,7 @@
 #include "old_utils/dbsql.h"
 #include "register/register.h"
 #include "baseclient.h"
-
+#define NSSET_CLIENT                "nsset_client"
 #define NSSET_SHOW_OPTS_NAME        "nsset_show_opts"
 #define NSSET_SHOW_OPTS_NAME_DESC   "show all nsset command line options parameter"
 #define NSSET_LIST_NAME             "nsset_list"
@@ -57,11 +57,14 @@ public:
     ~NssetClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts() const;
+    void show_opts();
 
     void list();
     void list_help();

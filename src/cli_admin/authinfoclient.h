@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2008, 2009  CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -19,6 +19,7 @@
 #ifndef _AUTHINFOCLIENT_H_
 #define _AUTHINFOCLIENT_H_
 
+#define AUTHINFO_CLIENT             "authinfo_client"
 #define AUTHINFO_PDF_NAME         "authinfopdf"
 #define AUTHINFO_PDF_NAME_DESC    "generate pdf of authorization info request"
 
@@ -54,13 +55,16 @@ public:
     ~AuthInfoClient();
     void init(std::string connstring,
             std::string nsAddr,
-            Config::Conf &conf);
+            Config::Conf &conf,
+            METHODS &methods);
+    void addMethods(METHODS &methods);
+    void runMethod();
 
     boost::program_options::options_description *getVisibleOptions() const;
     boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts() const;
+    void show_opts();
 
-    int pdf();
+    void pdf();
 
     void pdf_help();
 
