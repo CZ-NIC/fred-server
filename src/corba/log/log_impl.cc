@@ -41,6 +41,7 @@ using namespace Database;
 const std::string ccReg_Log_i::LAST_PROPERTY_VALUE_ID = "select currval('log_property_value_id_seq'::regclass)";
 const std::string ccReg_Log_i::LAST_PROPERTY_NAME_ID = "select currval('log_property_name_id_seq'::regclass)";
 const std::string ccReg_Log_i::LAST_ENTRY_ID = "select currval('log_entry_id_seq'::regclass)";
+const std::string ccReg_Log_i::LAST_SESSION_ID = "select currval('log_session_id_seq'::regclass)";
 
 // ccReg_Log_i ctor: connect to the database and fill property_names map
 ccReg_Log_i::ccReg_Log_i(const std::string database, NameService *ns, Config::Conf& _cfg)
@@ -95,16 +96,18 @@ bool ccReg_Log_i::record_check(ccReg::TID id, Connection &conn)
 
 	// if there is no record with specified ID
 	if(res.size() == 0) {
-		LOGGER("fred-logd").error(boost::format("record with ID %1% doesn't exist") % id);
+		LOGGER("fred-logd").error(boost::format("record in log_entry with ID %1% doesn't exist") % id);
 		return false;
 	}
 
 	// if the time_end is already filled (so the record
 	// is complete and cannot be modified)
-	if(res[0][0].isnull()) {
+	/*   TODO -- this should be enabled
+	if(!res[0][0].isnull()) {
 		LOGGER("fred-logd").error(boost::format("record with ID %1% was already completed") % id);
 		return false;
 	}
+	*/
 
 	return true;
 }
@@ -159,7 +162,6 @@ ccReg::TID ccReg_Log_i::find_property_name_id(const char *name, Connection &conn
 inline ccReg::TID ccReg_Log_i::find_last_property_value_id(Connection &conn)
 {
 	Result res = conn.exec(LAST_PROPERTY_VALUE_ID);
-	// TODO faster way how to find last_id....
 	return res[0][0];
 }
 
@@ -237,8 +239,7 @@ ccReg::TID ccReg_Log_i::new_event(const char *sourceIP, ccReg::LogServiceType se
 		if(sourceIP != NULL) {
 			// make sure these values can be safely used in an SQL statement
 			s_sourceIP = Util::escape(std::string(sourceIP));
-			query << "insert into log_entry (time_begin, source_ip, service) values ('" << time << "', '" << s_sourceIP << "', "
-				<< service << ")";
+			query << "insert into log_entry (time_begin, source_ip, service) values ('" << time << "', '" << s_sourceIP << "', " << service << ")";
 		} else {
 			query << "insert into log_entry (time_begin, service) values ('"
 				<< time << "', " << service << ")";
@@ -249,13 +250,12 @@ ccReg::TID ccReg_Log_i::new_event(const char *sourceIP, ccReg::LogServiceType se
 		query.str("");
 		// query << "select id from log_entry where time_begin='" << time << "'";
 
-		query << LAST_ENTRY_ID;
-		Result res = conn->exec(query.str());
+		Result res = conn->exec(LAST_ENTRY_ID);
 		entry_id = res[0][0];
 
 	} catch (Database::Exception &ex) {
 		LOGGER("fred-logd").error(ex.what());
-		return 0; 	// TODO throw a corba exception
+		return 0; 	
 	}
 
 	try {
@@ -318,7 +318,7 @@ CORBA::Boolean ccReg_Log_i::update_event_close(ccReg::TID id, const char *conten
 		// first perform checks:
 		if (!record_check(id, *conn)) return false;
 
-		query << "update log_entry set time_end='" << time << "' where id=" << id;
+		query << "update log_entry set time_end=E'" << time << "' where id=" << id;
 		conn->exec(query.str());
 
 		if(content_out != NULL) {
@@ -337,6 +337,157 @@ CORBA::Boolean ccReg_Log_i::update_event_close(ccReg::TID id, const char *conten
 		LOGGER("fred-logd").error(ex.what());
 		return false;
 	}
+	return true;
+}
+
+ccReg::TID ccReg_Log_i::new_session(ccReg::Languages lang, const char *name, const char *clTRID)
+{
+	std::auto_ptr<Connection> conn(db_manager.getConnection());
+	Logging::Context ctx("logd");
+
+	std::ostringstream query;
+	std::string s_name, s_clTRID, time;
+	ccReg::TID id;
+
+	LOGGER("fred-logd").notice(boost::format("new_session: username-> [%1%] clTRID [%2%] lang [%3%]") % name % clTRID % lang);
+
+	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
+
+	if (name != NULL && *name != '\0') {
+		s_name = Util::escape(name);
+	} else {
+		LOGGER("fred-logd").error("new_session: name is empty!");
+		return 0;
+	}		
+
+	if (clTRID != NULL && *clTRID != '\0') {
+		s_clTRID = Util::escape(clTRID);
+		query << "insert into log_session (name, login_date, login_TRID) values (E'"
+		<< s_name << "', '" << time << "', E'" << s_clTRID << "') ";
+	} else {
+		query << "insert into log_session (name, login_date) values (E'" << s_name << "', '" << time << "') ";
+	}
+		
+	try {
+		conn->exec(query.str());	
+
+		Result res = conn->exec(LAST_SESSION_ID);	
+
+		id = res[0][0];
+
+		if (lang == ccReg::CS) {
+			query.str("");
+			query << "update log_session set lang = 'cs' where id=" << id;
+			conn->exec(query.str());
+		}
+
+	} catch (Database::Exception &ex) {
+		LOGGER("fred-logd").error(ex.what());
+		return 0;
+	}
+
+	return id;
+
+}
+
+/*
+ccReg::TID ccReg_Log_i::new_dummy(const char *name, const char *clTRID) 
+{
+	std::auto_ptr<Connection> conn(db_manager.getConnection());
+	Logging::Context ctx("logd");
+
+	std::ostringstream query;
+	std::string s_name, s_clTRID, time;
+	ccReg::TID id;
+
+	ccReg::Languages lang = ccReg::CS;
+
+	LOGGER("fred-logd").notice(boost::format("new_session: username-> [%1%] clTRID [%2%] lang [%3%]") % name % clTRID % lang);
+
+	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
+
+	if (name != NULL && *name != '\0') {
+		s_name = Util::escape(name);
+	} else {
+		LOGGER("fred-logd").error("new_session: name is empty!");
+		return 0;
+	}		
+
+	if (clTRID != NULL && *clTRID != '\0') {
+		s_clTRID = Util::escape(clTRID);
+		query << "insert into log_session (name, login_date, login_TRID) values (E'"
+		<< s_name << "', '" << time << "', E'" << s_clTRID << "') ";
+	} else {
+		query << "insert into log_session (name, login_date) values (E'" << s_name << "', '" << time << "') ";
+	}
+		
+	try {
+		conn->exec(query.str());	
+
+		Result res = conn->exec(LAST_SESSION_ID);	
+
+		id = res[0][0];
+
+		if (lang == ccReg::CS) {
+			query.str("");
+			query << "update log_session set lang = 'cs' where id=" << id;
+			conn->exec(query.str());
+		}
+
+	} catch (Database::Exception &ex) {
+		LOGGER("fred-logd").error(ex.what());
+		return 0;
+	}
+
+	return id;
+}
+*/
+
+CORBA::Boolean ccReg_Log_i::end_session(ccReg::TID id, const char *clTRID) 
+{
+	std::auto_ptr<Connection> conn(db_manager.getConnection());
+	Logging::Context ctx("logd");
+
+	std::ostringstream query;
+	std::string  time;
+
+	LOGGER("fred-logd").notice(boost::format("end_session: session_id -> [%1%] clTRID [%2%]") % id  % clTRID );
+
+
+	query << "select logout_date from log_session where id=" << id;
+
+	try {
+		Result res = conn->exec(query.str());
+
+		if(res.size() == 0) {
+			LOGGER("fred-logd").error(boost::format("record in log_session with ID %1% doesn't exist") % id);
+			return false;
+		}
+			/* TODO 
+		if(!res[0][0].isnull()) {
+			LOGGER("fred-logd").error(boost::format("record in log_session with ID %1% already closed") % id);
+			return false;
+		}
+			*/
+
+		query.str("");
+		time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
+
+		if (clTRID != NULL && clTRID != '\0') {
+			std::string s_clTRID;
+			s_clTRID = Util::escape(clTRID);
+			query << "update log_session set (logout_date, logout_TRID) = ('" << 
+			time << "', E'" << s_clTRID << "') where id=" << id;
+		} else {
+			query << "update log_session set logout_date = '" << time << "' where id=" << id;
+		}
+	
+		conn->exec(query.str());
+	} catch (Database::Exception &ex) {
+		LOGGER("fred-logd").error(ex.what());
+		return false;
+	}
+    
 	return true;
 }
 
