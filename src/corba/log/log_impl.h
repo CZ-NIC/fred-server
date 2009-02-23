@@ -17,7 +17,7 @@ using namespace Database;
 
 class NameService;
 
-class ccReg_Log_i : public POA_ccReg::Log,
+class ccReg_Log_i : public POA_ccReg::Logger,
   public PortableServer::RefCountServantBase
 {
 private:
@@ -54,6 +54,9 @@ public:
   ccReg::TID new_event(const char *sourceIP, ccReg::LogServiceType service, const char *content_in, const ccReg::LogProperties& props);
   CORBA::Boolean update_event(ccReg::TID id, const ccReg::LogProperties &props);
   CORBA::Boolean update_event_close(ccReg::TID id, const char *content_out, const ccReg::LogProperties &props);
+  ccReg::TID new_session(ccReg::Languages lang, const char *name, const char *clTRID);
+  // ccReg::TID new_dummy(const char *name, const char *clTRID);
+  CORBA::Boolean end_session(ccReg::TID id, const char *clTRID);
 
 private:
   void insert_props(ccReg::TID entry_id, const ccReg::LogProperties& props, Connection &conn);
@@ -64,6 +67,7 @@ private:
   static const std::string LAST_PROPERTY_VALUE_ID;
   static const std::string LAST_PROPERTY_NAME_ID;
   static const std::string LAST_ENTRY_ID;
+  static const std::string LAST_SESSION_ID;
 };
 
 #endif
