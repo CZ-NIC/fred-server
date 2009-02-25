@@ -56,7 +56,7 @@ void
 ObjectClient::show_opts() 
 {
     callHelp(m_conf, no_help);
-    // TODO
+    print_options("Object", getOpts(), getOptsCount());
 }
 
 int

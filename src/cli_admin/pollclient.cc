@@ -53,7 +53,7 @@ void
 PollClient::show_opts()
 {
     callHelp(m_conf, no_help);
-    // TODO
+    print_options("Poll", getOpts(), getOptsCount());
 }
 
 void
