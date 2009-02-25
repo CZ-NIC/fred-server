@@ -23,68 +23,10 @@
 
 namespace Admin {
 
-#define addMethod(methods, name) \
-    methods.insert(std::make_pair(name, PUBLICREQUEST_CLIENT))
-
-PublicRequestClient::PublicRequestClient()
+const struct options *
+PublicRequestClient::getOpts()
 {
-    m_options = new boost::program_options::options_description(
-            "Public request related options");
-    m_options->add_options()
-        addOpt(PUBLICREQ_LIST_NAME)
-        addOpt(PUBLICREQ_SHOW_OPTS_NAME);
-
-    m_optionsInvis = new boost::program_options::options_description(
-            "Public request related sub options");
-    m_optionsInvis->add_options()
-        add_ID()
-        add_NAME()
-        addOptInt(PUBLICREQ_TYPE_NAME)
-        addOptUInt(PUBLICREQ_STATUS_NAME)
-        addOptStr(PUBLICREQ_ANSWER_EMAIL_NAME)
-        addOptUInt(PUBLICREQ_ANSWER_EMAIL_ID_NAME)
-        addOptUInt(PUBLICREQ_EPP_ID_NAME)
-        addOptStr(PUBLICREQ_EPP_CLTRID_NAME)
-        addOptStr(PUBLICREQ_EPP_SVTRID_NAME)
-        addOptUInt(PUBLICREQ_EPP_CODE_RESPONSE_NAME)
-        addOptUInt(PUBLICREQ_EPP_RESPONSE_NAME)
-        addOptUInt(PUBLICREQ_EPP_TYPE_NAME)
-        add_CRDATE()
-        addOptStr(PUBLICREQ_RESDATE_NAME);
-}
-PublicRequestClient::PublicRequestClient(
-        std::string connstring,
-        std::string nsAddr) : BaseClient(connstring, nsAddr)
-{
-    m_db.OpenDatabase(connstring.c_str());
-    m_options = NULL;
-    m_optionsInvis = NULL;
-}
-
-PublicRequestClient::~PublicRequestClient()
-{
-  delete m_options;
-  delete m_optionsInvis;
-}
-
-void
-PublicRequestClient::init(
-        std::string connstring,
-        std::string nsAddr,
-        Config::Conf &conf,
-        METHODS &methods)
-{
-    BaseClient::init(connstring, nsAddr);
-    m_db.OpenDatabase(connstring.c_str());
-    m_conf = conf;
-    addMethods(methods);
-}
-
-void
-PublicRequestClient::addMethods(METHODS &methods)
-{
-    addMethod(methods, PUBLICREQ_SHOW_OPTS_NAME);
-    addMethod(methods, PUBLICREQ_LIST_NAME);
+    return m_opts;
 }
 
 void
@@ -97,24 +39,11 @@ PublicRequestClient::runMethod()
     }
 }
 
-boost::program_options::options_description *
-PublicRequestClient::getVisibleOptions() const
-{
-    return m_options;
-}
-
-boost::program_options::options_description *
-PublicRequestClient::getInvisibleOptions() const
-{
-    return m_optionsInvis;
-}
-
 void
 PublicRequestClient::show_opts()
 {
     callHelp(m_conf, no_help);
-    std::cout << *m_options << std::endl;
-    std::cout << *m_optionsInvis << std::endl;
+    print_options("Public request", getOpts(), getOptsCount());
 }
 
 void
@@ -280,6 +209,36 @@ PublicRequestClient::list_help()
         << std::endl;
 }
 
-} // namespace Admin;
+#define ADDOPT(name, type, callable, visible) \
+    {CLIENT_PUBLICREQUEST, name, name##_DESC, type, callable, visible}
 
+const struct options
+PublicRequestClient::m_opts[] = {
+    ADDOPT(PUBLICREQ_LIST_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(PUBLICREQ_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
+    add_ID,
+    add_NAME,
+    ADDOPT(PUBLICREQ_TYPE_NAME, TYPE_INT, false, false),
+    ADDOPT(PUBLICREQ_STATUS_NAME, TYPE_UINT, false, false),
+    ADDOPT(PUBLICREQ_ANSWER_EMAIL_NAME, TYPE_STRING, false, false),
+    ADDOPT(PUBLICREQ_ANSWER_EMAIL_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(PUBLICREQ_EPP_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(PUBLICREQ_EPP_CLTRID_NAME, TYPE_STRING, false, false),
+    ADDOPT(PUBLICREQ_EPP_SVTRID_NAME, TYPE_STRING, false, false),
+    ADDOPT(PUBLICREQ_EPP_CODE_RESPONSE_NAME, TYPE_UINT, false, false),
+    ADDOPT(PUBLICREQ_EPP_RESPONSE_NAME, TYPE_UINT, false, false),
+    ADDOPT(PUBLICREQ_EPP_TYPE_NAME, TYPE_UINT, false, false),
+    add_CRDATE,
+    ADDOPT(PUBLICREQ_RESDATE_NAME, TYPE_STRING, false, false),
+};
+
+#undef ADDOPT
+
+int 
+PublicRequestClient::getOptsCount()
+{
+    return sizeof(m_opts) / sizeof(options);
+}
+
+} // namespace Admin;
 

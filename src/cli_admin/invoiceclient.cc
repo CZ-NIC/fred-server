@@ -22,85 +22,10 @@
 
 namespace Admin {
 
-#define addMethod(methods, name) \
-    methods.insert(std::make_pair(name, INVOICE_CLIENT))
-
-InvoiceClient::InvoiceClient()
+const struct options *
+InvoiceClient::getOpts()
 {
-    m_options = new boost::program_options::options_description(
-            "Invoice related options");
-    m_options->add_options()
-        addOpt(INVOICE_SHOW_OPTS_NAME)
-        addOpt(INVOICE_LIST_NAME)
-        addOpt(INVOICE_LIST_FILTERS_NAME)
-        addOpt(INVOICE_ARCHIVE_NAME)
-        addOpt(INVOICE_CREDIT_NAME)
-        addOpt(INVOICE_FACTORING_NAME)
-        addOpt(INVOICE_MAKE_PAIRS_NAME);
-
-    m_optionsInvis = new boost::program_options::options_description(
-            "Invoice related sub options");
-    m_optionsInvis->add_options()
-        add_ID()
-        add_REGISTRAR_ID()
-        add_ZONE_ID()
-        addOptUInt(INVOICE_TYPE_NAME)
-        addOptStr(INVOICE_VAR_SYMBOL_NAME)
-        add_CRDATE()
-        addOptStr(INVOICE_TAXDATE_NAME)
-        addOptStr(INVOICE_ARCHIVED_NAME)
-        addOptStr(INVOICE_OBJECT_ID_NAME)
-        addOptStr(INVOICE_OBJECT_NAME_NAME)
-        addOptStr(INVOICE_ADV_NUMBER_NAME)
-        addOptUInt(INVOICE_FILE_ID_NAME)
-        addOptStr(INVOICE_FILE_NAME_NAME)
-        addOptUInt(INVOICE_FILE_XML_NAME)
-        addOptUInt(INVOICE_FILE_PDF_NAME)
-        addOptUInt(INVOICE_ZONE_ID_NAME)
-        addOptStr(INVOICE_ZONE_NAME_NAME)
-        addOptUInt(INVOICE_REGISTRAR_ID_NAME)
-        addOptStr(INVOICE_REGISTRAR_HANDLE_NAME)
-        addOptUInt(INVOICE_PRICE_NAME)
-        addOptStr(INVOICE_TODATE_NAME);
-}
-
-InvoiceClient::InvoiceClient(
-        std::string connstring,
-        std::string nsAddr) : BaseClient(connstring, nsAddr)
-{
-    m_db.OpenDatabase(connstring.c_str());
-    m_options = NULL;
-    m_optionsInvis = NULL;
-}
-
-InvoiceClient::~InvoiceClient()
-{
-    delete m_options;
-    delete m_optionsInvis;
-}
-
-void
-InvoiceClient::init(
-        std::string connstring,
-        std::string nsAddr,
-        Config::Conf &conf,
-        METHODS &methods)
-{
-    BaseClient::init(connstring, nsAddr);
-    m_db.OpenDatabase(connstring.c_str());
-    m_conf = conf;
-    addMethods(methods);
-}
-
-void
-InvoiceClient::addMethods(METHODS &methods)
-{
-    addMethod(methods, INVOICE_SHOW_OPTS_NAME);
-    addMethod(methods, INVOICE_LIST_NAME);
-    addMethod(methods, INVOICE_LIST_FILTERS_NAME);
-    addMethod(methods, INVOICE_ARCHIVE_NAME);
-    addMethod(methods, INVOICE_CREDIT_NAME);
-    addMethod(methods, INVOICE_FACTORING_NAME);
+    return m_opts;
 }
 
 void
@@ -123,24 +48,11 @@ InvoiceClient::runMethod()
     }
 }
 
-boost::program_options::options_description *
-InvoiceClient::getVisibleOptions() const
-{
-    return m_options;
-}
-
-boost::program_options::options_description *
-InvoiceClient::getInvisibleOptions() const
-{
-    return m_optionsInvis;
-}
-
 void
 InvoiceClient::show_opts()
 {
     callHelp(m_conf, no_help);
-    std::cout << *m_options << std::endl;
-    std::cout << *m_optionsInvis << std::endl;
+    print_options("Invoice", getOpts(), getOptsCount());
 }
 
 void
@@ -678,6 +590,50 @@ InvoiceClient::factoring_help()
     std::cout << "Default value for ``to date'' is last day of previous month "
         "and for ``tax date'' it is first day of this month."
         << std::endl;
+}
+
+
+#define ADDOPT(name, type, callable, visible) \
+    {CLIENT_INVOICE, name, name##_DESC, type, callable, visible}
+
+const struct options
+InvoiceClient::m_opts[] = {
+    ADDOPT(INVOICE_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(INVOICE_LIST_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(INVOICE_LIST_FILTERS_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(INVOICE_ARCHIVE_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(INVOICE_CREDIT_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(INVOICE_FACTORING_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(INVOICE_MAKE_PAIRS_NAME, TYPE_NOTYPE, true, true),
+    add_ID,
+    add_REGISTRAR_ID,
+    add_ZONE_ID,
+    add_CRDATE,
+    ADDOPT(INVOICE_TYPE_NAME, TYPE_UINT, false, false),
+    ADDOPT(INVOICE_VAR_SYMBOL_NAME, TYPE_STRING, false, false),
+    ADDOPT(INVOICE_TAXDATE_NAME, TYPE_STRING, false, false),
+    ADDOPT(INVOICE_ARCHIVED_NAME, TYPE_STRING, false, false),
+    ADDOPT(INVOICE_OBJECT_ID_NAME, TYPE_STRING, false, false),
+    ADDOPT(INVOICE_OBJECT_NAME_NAME, TYPE_STRING, false, false),
+    ADDOPT(INVOICE_ADV_NUMBER_NAME, TYPE_STRING, false, false),
+    ADDOPT(INVOICE_FILE_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(INVOICE_FILE_NAME_NAME, TYPE_STRING, false, false),
+    ADDOPT(INVOICE_FILE_XML_NAME, TYPE_UINT, false, false),
+    ADDOPT(INVOICE_FILE_PDF_NAME, TYPE_UINT, false, false),
+    ADDOPT(INVOICE_ZONE_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(INVOICE_ZONE_NAME_NAME, TYPE_STRING, false, false),
+    ADDOPT(INVOICE_REGISTRAR_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(INVOICE_REGISTRAR_HANDLE_NAME, TYPE_STRING, false, false),
+    ADDOPT(INVOICE_PRICE_NAME, TYPE_UINT, false, false),
+    ADDOPT(INVOICE_TODATE_NAME, TYPE_STRING, false, false)
+};
+
+#undef ADDOPT
+
+int 
+InvoiceClient::getOptsCount()
+{
+    return sizeof(m_opts) / sizeof(options);
 }
 
 } // namespace Admin;

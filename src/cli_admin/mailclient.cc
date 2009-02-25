@@ -22,63 +22,10 @@
 
 namespace Admin {
 
-#define addMethod(methods, name) \
-    methods.insert(std::make_pair(name, MAIL_CLIENT))
-
-MailClient::MailClient()
+const struct options *
+MailClient::getOpts()
 {
-    m_options = new boost::program_options::options_description(
-            "Mail related options");
-    m_options->add_options()
-        addOpt(MAIL_LIST_NAME)
-        addOpt(MAIL_SHOW_OPTS_NAME);
-
-    m_optionsInvis = new boost::program_options::options_description(
-            "Mail related sub options");
-    m_optionsInvis->add_options()
-        add_ID()
-        add_HANDLE()
-        addOptInt(MAIL_TYPE_NAME)
-        addOptInt(MAIL_STATUS_NAME)
-        addOptInt(MAIL_ATTEMPT_NAME)
-        addOptStr(MAIL_MESSAGE_NAME)
-        add_CRDATE()
-        addOptStr(MAIL_MODDATE_NAME);
-}
-
-MailClient::MailClient(
-        std::string connstring,
-        std::string nsAddr) : BaseClient(connstring, nsAddr)
-{
-    m_db.OpenDatabase(connstring.c_str());
-    m_options = NULL;
-    m_optionsInvis = NULL;
-}
-
-MailClient::~MailClient()
-{
-    delete m_options;
-    delete m_optionsInvis;
-}
-
-void
-MailClient::init(
-        std::string connstring,
-        std::string nsAddr,
-        Config::Conf &conf,
-        METHODS &methods)
-{
-    BaseClient::init(connstring, nsAddr);
-    m_db.OpenDatabase(connstring.c_str());
-    m_conf = conf;
-    addMethods(methods);
-}
-
-void
-MailClient::addMethods(METHODS &methods)
-{
-    addMethod(methods, MAIL_SHOW_OPTS_NAME);
-    addMethod(methods, MAIL_LIST_NAME);
+    return m_opts;
 }
 
 void
@@ -91,24 +38,11 @@ MailClient::runMethod()
     }
 }
 
-boost::program_options::options_description *
-MailClient::getVisibleOptions() const
-{
-    return m_options;
-}
-
-boost::program_options::options_description *
-MailClient::getInvisibleOptions() const
-{
-    return m_optionsInvis;
-}
-
 void
 MailClient::show_opts() 
 {
     callHelp(m_conf, no_help);
-    std::cout << *m_options << std::endl;
-    std::cout << *m_optionsInvis << std::endl;
+    print_options("Mail", getOpts(), getOptsCount());
 }
 
 void
@@ -184,8 +118,6 @@ MailClient::list()
     std::cout << "</object>" << std::endl;
 
     unionFilter->clear();
-    // XXX this delete cause segfault :(
-    // delete mailFilter;
     delete unionFilter;
 }
 
@@ -193,6 +125,31 @@ void
 MailClient::list_help()
 {
     std::cout << "mail client list help" << std::endl;
+}
+
+#define ADDOPT(name, type, callable, visible) \
+    {CLIENT_MAIL, name, name##_DESC, type, callable, visible}
+
+const struct options
+MailClient::m_opts[] = {
+    ADDOPT(MAIL_LIST_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(MAIL_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
+    add_ID,
+    add_HANDLE,
+    ADDOPT(MAIL_TYPE_NAME, TYPE_INT, false, false),
+    ADDOPT(MAIL_STATUS_NAME, TYPE_INT, false, false),
+    ADDOPT(MAIL_ATTEMPT_NAME, TYPE_INT, false, false),
+    ADDOPT(MAIL_MESSAGE_NAME, TYPE_STRING, false, false),
+    add_CRDATE,
+    ADDOPT(MAIL_MODDATE_NAME, TYPE_STRING, false, false),
+};
+
+#undef ADDOPT
+
+int 
+MailClient::getOptsCount()
+{
+    return sizeof(m_opts) / sizeof(options);
 }
 
 } // namespace Admin;

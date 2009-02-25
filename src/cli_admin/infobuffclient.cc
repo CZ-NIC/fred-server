@@ -23,58 +23,10 @@
 
 namespace Admin {
 
-#define addMethod(methods, name) \
-    methods.insert(std::make_pair(name, INFOBUFF_CLIENT))
-
-InfoBuffClient::InfoBuffClient()
+const struct options *
+InfoBuffClient::getOpts()
 {
-    m_options = new boost::program_options::options_description(
-            "Info buffer related options");
-    m_options->add_options()
-        addOptUInt(INFOBUFF_MAKE_INFO_NAME)
-        addOptUInt(INFOBUFF_GET_CHUNK_NAME)
-        addOpt(INFOBUFF_SHOW_OPTS_NAME);
-
-    m_optionsInvis = new boost::program_options::options_description(
-            "Info buffer related sub options");
-    m_optionsInvis->add_options()
-        addOptUInt(INFOBUFF_REGISTRAR_NAME)
-        addOptStrDef(INFOBUFF_REQUEST_NAME, "");
-}
-InfoBuffClient::InfoBuffClient(
-        std::string connstring,
-        std::string nsAddr) : BaseClient(connstring, nsAddr)
-{
-    m_db.OpenDatabase(connstring.c_str());
-    m_options = NULL;
-    m_optionsInvis = NULL;
-}
-
-InfoBuffClient::~InfoBuffClient()
-{
-    delete m_options;
-    delete m_optionsInvis;
-}
-
-void
-InfoBuffClient::init(
-        std::string connstring,
-        std::string nsAddr,
-        Config::Conf &conf,
-        METHODS &methods)
-{
-    BaseClient::init(connstring, nsAddr);
-    m_db.OpenDatabase(connstring.c_str());
-    m_conf = conf;
-    addMethods(methods);
-}
-
-void
-InfoBuffClient::addMethods(METHODS &methods)
-{
-    addMethod(methods, INFOBUFF_SHOW_OPTS_NAME);
-    addMethod(methods, INFOBUFF_MAKE_INFO_NAME);
-    addMethod(methods, INFOBUFF_GET_CHUNK_NAME);
+    return m_opts;
 }
 
 void
@@ -89,24 +41,11 @@ InfoBuffClient::runMethod()
     }
 }
 
-boost::program_options::options_description *
-InfoBuffClient::getVisibleOptions() const
-{
-    return m_options;
-}
-
-boost::program_options::options_description *
-InfoBuffClient::getInvisibleOptions() const
-{
-    return m_optionsInvis;
-}
-
 void
 InfoBuffClient::show_opts() 
 {
     callHelp(m_conf, no_help);
-    std::cout << *m_options << std::endl;
-    std::cout << *m_optionsInvis << std::endl;
+    print_options("InfoBuff", getOpts(), getOptsCount());
 }
 
 void
@@ -142,6 +81,10 @@ InfoBuffClient::make_info()
                 keyMan.get())
             );
     unsigned int type = m_conf.get<unsigned int>(INFOBUFF_MAKE_INFO_NAME);
+    std::string requestName("");
+    if (m_conf.hasOpt(INFOBUFF_REQUEST_NAME)) {
+        requestName = m_conf.get<std::string>(INFOBUFF_REQUEST_NAME);
+    }
     if (type < 1 || type > 7)
         std::cerr << INFOBUFF_MAKE_INFO_NAME << " must be number between 1 and 7" << std::endl;
     else {
@@ -157,7 +100,7 @@ InfoBuffClient::make_info()
                 type == 8 ? Register::InfoBuffer::T_NSSETS_BY_CONTACT :
                 type == 9 ? Register::InfoBuffer::T_NSSETS_BY_NS :
                 Register::InfoBuffer::T_KEYSETS_BY_CONTACT,      
-                m_conf.get<std::string>(INFOBUFF_REQUEST_NAME));
+                requestName);
     }
     return;
 }
@@ -201,8 +144,27 @@ InfoBuffClient::get_chunk()
     for (unsigned long i = 0; i < chunk->getCount(); i++)
         std::cout << chunk->getNext() << std::endl;
     return;
+} // InfoBuffClient::get_chunk()
+
+#define ADDOPT(name, type, callable, visible) \
+    {CLIENT_INFOBUFF, name, name##_DESC, type, callable, visible}
+
+const struct options
+InfoBuffClient::m_opts[] = {
+    ADDOPT(INFOBUFF_MAKE_INFO_NAME, TYPE_UINT, true, true),
+    ADDOPT(INFOBUFF_GET_CHUNK_NAME, TYPE_UINT, true, true),
+    ADDOPT(INFOBUFF_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(INFOBUFF_REGISTRAR_NAME, TYPE_UINT, false, false),
+    ADDOPT(INFOBUFF_REQUEST_NAME, TYPE_STRING, false, false),
+};
+
+#undef ADDOPT
+
+int 
+InfoBuffClient::getOptsCount()
+{
+    return sizeof(m_opts) / sizeof(options);
 }
 
 } // namespace Admin;
-
 

@@ -23,73 +23,10 @@
 
 namespace Admin {
 
-#define addMethod(methods, name) \
-    methods.insert(std::make_pair(name, POLL_CLIENT))
-
-PollClient::PollClient()
+const struct options *
+PollClient::getOpts()
 {
-    m_options = new boost::program_options::options_description(
-            "Poll related options");
-    m_options->add_options()
-        addOpt(POLL_LIST_ALL_NAME)
-        addOptUInt(POLL_LIST_NEXT_NAME)
-        addOptUInt(POLL_SET_SEEN_NAME)
-        addOpt(POLL_CREATE_STATE_CHANGES_NAME)
-        addOpt(POLL_CREATE_STATE_CHANGES_2_NAME)
-        addOpt(POLL_CREATE_LOW_CREDIT_NAME)
-        addOpt(POLL_CREATE_LOW_CREDIT_2_NAME)
-        addOpt(POLL_SHOW_OPTS_NAME);
-
-    m_optionsInvis = new boost::program_options::options_description(
-            "Poll related sub options");
-    m_optionsInvis->add_options()
-        addOptUInt(POLL_TYPE_NAME)
-        addOptUInt(POLL_REGID_NAME)
-        addOpt(POLL_NONSEEN_NAME)
-        addOpt(POLL_NONEX_NAME)
-        addOpt(POLL_DEBUG_NAME)
-        addOptStrDef(POLL_EXCEPT_TYPES_NAME, "")
-        addOptUIntDef(POLL_LIMIT_NAME, 0);
-}
-PollClient::PollClient(
-        std::string connstring,
-        std::string nsAddr) : BaseClient(connstring, nsAddr)
-{
-    m_db.OpenDatabase(connstring.c_str());
-    m_options = NULL;
-    m_optionsInvis = NULL;
-}
-
-PollClient::~PollClient()
-{
-    delete m_options;
-    delete m_optionsInvis;
-}
-
-void
-PollClient::init(
-        std::string connstring,
-        std::string nsAddr,
-        Config::Conf &conf,
-        METHODS &methods)
-{
-    BaseClient::init(connstring, nsAddr);
-    m_db.OpenDatabase(connstring.c_str());
-    m_conf = conf;
-    addMethods(methods);
-}
-
-void
-PollClient::addMethods(METHODS &methods)
-{
-    addMethod(methods, POLL_SHOW_OPTS_NAME);
-    addMethod(methods, POLL_LIST_ALL_NAME);
-    addMethod(methods, POLL_LIST_NEXT_NAME);
-    addMethod(methods, POLL_CREATE_STATE_CHANGES_NAME);
-    addMethod(methods, POLL_CREATE_STATE_CHANGES_2_NAME);
-    addMethod(methods, POLL_CREATE_LOW_CREDIT_NAME);
-    addMethod(methods, POLL_CREATE_LOW_CREDIT_2_NAME);
-    addMethod(methods, POLL_SET_SEEN_NAME);
+    return m_opts;
 }
 
 void
@@ -112,24 +49,11 @@ PollClient::runMethod()
     }
 }
 
-boost::program_options::options_description *
-PollClient::getVisibleOptions() const
-{
-    return m_options;
-}
-
-boost::program_options::options_description *
-PollClient::getInvisibleOptions() const
-{
-    return m_optionsInvis;
-}
-
 void
 PollClient::show_opts()
 {
     callHelp(m_conf, no_help);
-    std::cout << *m_options << std::endl;
-    std::cout << *m_optionsInvis << std::endl;
+    // TODO
 }
 
 void
@@ -206,9 +130,16 @@ PollClient::create_state_changes()
             Register::Poll::Manager::create(
                 &m_db)
             );
+    std::string exceptTypes("");
+    if (m_conf.hasOpt(POLL_EXCEPT_TYPES_NAME)) {
+        exceptTypes = m_conf.get<std::string>(POLL_EXCEPT_TYPES_NAME);
+    }
+    int limit = 0;
+    if (m_conf.hasOpt(POLL_LIMIT_NAME)) {
+        limit = m_conf.get<unsigned int>(POLL_LIMIT_NAME);
+    }
     pollMan->createStateMessages(
-            m_conf.get<std::string>(POLL_EXCEPT_TYPES_NAME),
-            m_conf.get<unsigned int>(POLL_LIMIT_NAME),
+            exceptTypes, limit,
             m_conf.hasOpt(POLL_DEBUG_NAME) ? &std::cout : NULL
     );
     return;
@@ -223,6 +154,35 @@ PollClient::create_low_credit()
             );
     pollMan->createLowCreditMessages();
     return;
+}
+#define ADDOPT(name, type, callable, visible) \
+    {CLIENT_POLL, name, name##_DESC, type, callable, visible}
+
+const struct options
+PollClient::m_opts[] = {
+    ADDOPT(POLL_LIST_ALL_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(POLL_LIST_NEXT_NAME, TYPE_UINT, true, true),
+    ADDOPT(POLL_SET_SEEN_NAME, TYPE_UINT, true, true),
+    ADDOPT(POLL_CREATE_STATE_CHANGES_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(POLL_CREATE_STATE_CHANGES_2_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(POLL_CREATE_LOW_CREDIT_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(POLL_CREATE_LOW_CREDIT_2_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(POLL_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(POLL_TYPE_NAME, TYPE_UINT, false, false),
+    ADDOPT(POLL_REGID_NAME, TYPE_UINT, false, false),
+    ADDOPT(POLL_NONSEEN_NAME, TYPE_NOTYPE, false, false),
+    ADDOPT(POLL_NONEX_NAME, TYPE_NOTYPE, false, false),
+    ADDOPT(POLL_DEBUG_NAME, TYPE_NOTYPE, false, false),
+    ADDOPT(POLL_EXCEPT_TYPES_NAME, TYPE_STRING, false, false),
+    ADDOPT(POLL_LIMIT_NAME, TYPE_UINT, false, false),
+};
+
+#undef ADDOPT
+
+int 
+PollClient::getOptsCount()
+{
+    return sizeof(m_opts) / sizeof(options);
 }
 
 } // namespace Admin;

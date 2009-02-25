@@ -22,69 +22,10 @@
 
 namespace Admin {
 
-#define addMethod(methods, name) \
-    methods.insert(std::make_pair(name, NSSET_CLIENT))
-
-NssetClient::NssetClient()
+const struct options *
+NssetClient::getOpts()
 {
-    m_options = new boost::program_options::options_description(
-            "NSSet related options");
-    m_options->add_options()
-        addOpt(NSSET_LIST_NAME)
-        addOpt(NSSET_SHOW_OPTS_NAME);
-
-    m_optionsInvis = new boost::program_options::options_description(
-            "NSSet related sub options");
-    m_optionsInvis->add_options()
-        add_ID()
-        add_HANDLE()
-        add_FQDN()
-        add_IP()
-        add_ADMIN_ID()
-        add_ADMIN_HANDLE()
-        add_ADMIN_NAME()
-        add_REGISTRAR_ID()
-        add_REGISTRAR_HANDLE()
-        add_REGISTRAR_NAME()
-        add_CRDATE()
-        add_UPDATE()
-        add_TRANSDATE()
-        add_DELDATE();
-}
-
-NssetClient::NssetClient(
-        std::string connstring,
-        std::string nsAddr) : BaseClient(connstring, nsAddr)
-{
-    m_db.OpenDatabase(connstring.c_str());
-    m_options = NULL;
-    m_optionsInvis = NULL;
-}
-
-NssetClient::~NssetClient()
-{
-    delete m_options;
-    delete m_optionsInvis;
-}
-
-void
-NssetClient::init(
-        std::string connstring,
-        std::string nsAddr,
-        Config::Conf &conf,
-        METHODS &methods)
-{
-    BaseClient::init(connstring, nsAddr);
-    m_db.OpenDatabase(connstring.c_str());
-    m_conf = conf;
-    addMethods(methods);
-}
-
-void
-NssetClient::addMethods(METHODS &methods)
-{
-    addMethod(methods, NSSET_SHOW_OPTS_NAME);
-    addMethod(methods, NSSET_LIST_NAME);
+    return m_opts;
 }
 
 void
@@ -97,24 +38,11 @@ NssetClient::runMethod()
     }
 }
 
-boost::program_options::options_description *
-NssetClient::getVisibleOptions() const
-{
-    return m_options;
-}
-
-boost::program_options::options_description *
-NssetClient::getInvisibleOptions() const
-{
-    return m_optionsInvis;
-}
-
 void
 NssetClient::show_opts() 
 {
     callHelp(m_conf, no_help);
-    std::cout << *m_options << std::endl;
-    std::cout << *m_optionsInvis << std::endl;
+    print_options("Nsset", getOpts(), getOptsCount());
 }
 
 void
@@ -260,6 +188,37 @@ NssetClient::list_help()
         << "    [--" << TRANSDATE_NAME << "=<transfer_date>] \\\n"
         << "    [--" << FULL_LIST_NAME << "]\n"
         << std::endl;
+}
+
+#define ADDOPT(name, type, callable, visible) \
+    {CLIENT_NSSET, name, name##_DESC, type, callable, visible}
+
+const struct options
+NssetClient::m_opts[] = {
+    ADDOPT(NSSET_LIST_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(NSSET_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
+    add_ID,
+    add_HANDLE,
+    add_FQDN,
+    add_IP,
+    add_ADMIN_ID,
+    add_ADMIN_HANDLE,
+    add_ADMIN_NAME,
+    add_REGISTRAR_ID,
+    add_REGISTRAR_HANDLE,
+    add_REGISTRAR_NAME,
+    add_CRDATE,
+    add_UPDATE,
+    add_TRANSDATE,
+    add_DELDATE,
+};
+
+#undef ADDOPT
+
+int 
+NssetClient::getOptsCount()
+{
+    return sizeof(m_opts) / sizeof(options);
 }
 
 } // namespace Admin;

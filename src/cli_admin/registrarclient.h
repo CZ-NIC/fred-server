@@ -19,7 +19,6 @@
 #ifndef _REGISTRARCLIENT_H_
 #define _REGISTRARCLIENT_H_
 
-#define REGISTRAR_CLIENT                    "registrar_client"
 #define REGISTRAR_SHOW_OPTS_NAME            "registrar_show_opts"
 #define REGISTRAR_SHOW_OPTS_NAME_DESC       "show all registrar command line options"
 #define REGISTRAR_LIST_NAME                 "registrar_list"
@@ -60,24 +59,27 @@ private:
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
+    static const struct options m_opts[];
 public:
-    RegistrarClient();
-    RegistrarClient(std::string connstring,
-            std::string nsAddr);
-    ~RegistrarClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
+    RegistrarClient()
+    { }
+    RegistrarClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+    ~RegistrarClient()
+    { }
+
+    static const struct options *getOpts();
+    static int getOptsCount();
     void runMethod();
 
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
     void show_opts();
-
     void list();
     void zone_add();
     void registrar_add();
@@ -86,7 +88,7 @@ public:
     void zone_add_help();
     void registrar_add_help();
     void registrar_add_zone_help();
-};
+}; // class RegistrarClient
 
 } // namespace Admin;
 

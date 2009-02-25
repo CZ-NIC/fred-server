@@ -19,7 +19,6 @@
 #ifndef _MAILCLIENT_H_
 #define _MAILCLIENT_H_
 
-#define MAIL_CLIENT                 "mail_client"
 #define MAIL_SHOW_OPTS_NAME         "mail_show_opts"
 #define MAIL_SHOW_OPTS_NAME_DESC    "show all mail command line options"
 #define MAIL_LIST_NAME              "mail_list"
@@ -61,27 +60,30 @@ private:
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
+    static const struct options m_opts[];
 public:
-    MailClient();
-    MailClient(std::string connstring,
-            std::string nsAddr);
-    ~MailClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
+    MailClient()
+    { }
+    MailClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+    ~MailClient()
+    { }
+
+    static const struct options *getOpts();
+    static int getOptsCount();
     void runMethod();
 
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
     void show_opts();
-
     void list();
     void list_help();
-};
+}; // class MailClient
 
 } // namespace Admin;
 

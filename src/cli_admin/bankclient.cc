@@ -32,58 +32,10 @@
 
 namespace Admin {
 
-#define addMethod(methods, name) \
-    methods.insert(std::make_pair(name, BANK_CLIENT))
-
-BankClient::BankClient()
+const struct options *
+BankClient::getOpts()
 {
-    m_options = new boost::program_options::options_description(
-            "Bank related options");
-    m_options->add_options()
-        addOpt(BANK_STATEMENT_LIST_NAME)
-        addOpt(BANK_ONLINE_LIST_NAME)
-        addOpt(BANK_SHOW_OPTS_NAME)
-        addOpt(BANK_IMPORT_XML_NAME);
-
-    m_optionsInvis = new boost::program_options::options_description(
-            "Bank related sub options");
-    m_optionsInvis->add_options()
-        addOptStr(BANK_DATE_NAME)
-        addOptDID(BANK_ID_NAME)
-        addOptDID(BANK_ACCOUNT_ID_NAME)
-        addOptStr(BANK_OLD_BALANCE_DATE_NAME)
-        addOptStr(BANK_ACCOUNT_NUMBER_NAME)
-        addOptStr(BANK_BANK_CODE_NAME)
-        addOptStr(BANK_CONST_SYMBOL_NAME)
-        addOptDID(BANK_INVOICE_ID_NAME)
-        addOptStr(BANK_XML_FILE_NAME)
-        addOpt(BANK_ONLINE_NAME)
-        addOptStr(OUTPUT_NAME)
-        addOpt(BANK_CREDIT_NAME)
-        addOpt(BANK_CREATE_CREDIT_INVOICE_NAME);
-}
-BankClient::BankClient(
-        std::string connstring,
-        std::string nsAddr) : BaseClient(connstring, nsAddr)
-{
-    m_db.OpenDatabase(connstring.c_str());
-    m_options = NULL;
-    m_optionsInvis = NULL;
-}
-
-BankClient::~BankClient()
-{
-    delete m_options;
-    delete m_optionsInvis;
-}
-
-void
-BankClient::addMethods(METHODS &methods)
-{
-    addMethod(methods, BANK_SHOW_OPTS_NAME);
-    addMethod(methods, BANK_STATEMENT_LIST_NAME);
-    addMethod(methods, BANK_ONLINE_LIST_NAME);
-    addMethod(methods, BANK_IMPORT_XML_NAME);
+    return m_opts;
 }
 
 void
@@ -101,36 +53,10 @@ BankClient::runMethod()
 }
 
 void
-BankClient::init(
-        std::string connstring,
-        std::string nsAddr,
-        Config::Conf &conf,
-        METHODS &methods)
-{
-    BaseClient::init(connstring, nsAddr);
-    m_db.OpenDatabase(connstring.c_str());
-    m_conf = conf;
-    addMethods(methods);
-}
-
-boost::program_options::options_description *
-BankClient::getVisibleOptions() const
-{
-    return m_options;
-}
-
-boost::program_options::options_description *
-BankClient::getInvisibleOptions() const
-{
-    return m_optionsInvis;
-}
-
-void
 BankClient::show_opts() 
 {
     callHelp(m_conf, no_help);
-    std::cout << *m_options << std::endl;
-    std::cout << *m_optionsInvis << std::endl;
+    print_options("Bank", getOpts(), getOptsCount());
 }
 
 void
@@ -297,6 +223,37 @@ BankClient::import_xml_help()
         << std::endl;
 }
 
+#define ADDOPT(name, type, callable, visible) \
+    {CLIENT_BANK, name, name##_DESC, type, callable, visible}
+
+const struct options
+BankClient::m_opts[] = {
+    ADDOPT(BANK_STATEMENT_LIST_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(BANK_ONLINE_LIST_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(BANK_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(BANK_IMPORT_XML_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(BANK_DATE_NAME, TYPE_STRING, false, false),
+    ADDOPT(BANK_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(BANK_ACCOUNT_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(BANK_OLD_BALANCE_DATE_NAME, TYPE_STRING, false, false),
+    ADDOPT(BANK_ACCOUNT_NUMBER_NAME, TYPE_STRING, false, false),
+    ADDOPT(BANK_BANK_CODE_NAME, TYPE_STRING, false, false),
+    ADDOPT(BANK_CONST_SYMBOL_NAME, TYPE_STRING, false, false),
+    ADDOPT(BANK_INVOICE_ID_NAME, TYPE_STRING, false, false),
+    ADDOPT(BANK_XML_FILE_NAME, TYPE_STRING, false, false),
+    ADDOPT(BANK_ONLINE_NAME, TYPE_NOTYPE, false, false),
+    ADDOPT(OUTPUT_NAME, TYPE_STRING, false, false),
+    ADDOPT(BANK_CREDIT_NAME, TYPE_NOTYPE, false, false),
+    ADDOPT(BANK_CREATE_CREDIT_INVOICE_NAME, TYPE_NOTYPE, false, false),
+};
+
+#undef ADDOPT
+
+int 
+BankClient::getOptsCount()
+{
+    return sizeof(m_opts) / sizeof(options);
+}
 
 } // namespace Admin;
 

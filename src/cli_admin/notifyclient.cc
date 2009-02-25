@@ -24,61 +24,12 @@
 
 namespace Admin {
 
-#define addMethod(methods, name) \
-    methods.insert(std::make_pair(name, NOTIFY_CLIENT))
-
-NotifyClient::NotifyClient()
+const struct options *
+NotifyClient::getOpts()
 {
-    m_options = new boost::program_options::options_description(
-            "Notify related options");
-    m_options->add_options()
-        addOpt(NOTIFY_STATE_CHANGES_NAME)
-        addOpt(NOTIFY_LETTERS_CREATE_NAME)
-        addOpt(NOTIFY_SHOW_OPTS_NAME);
-
-    m_optionsInvis = new boost::program_options::options_description(
-            "Notify related sub options");
-    m_optionsInvis->add_options()
-        addOpt(NOTIFY_DEBUG_NAME)
-        addOptStrDef(NOTIFY_EXCEPT_TYPES_NAME, "")
-        addOpt(NOTIFY_EXCEPT_TYPES_NAME)
-        addOptUIntDef(NOTIFY_LIMIT_NAME, 0);
-}
-NotifyClient::NotifyClient(
-        std::string connstring,
-        std::string nsAddr) : BaseClient(connstring, nsAddr)
-{
-    m_db.OpenDatabase(connstring.c_str());
-    m_options = NULL;
-    m_optionsInvis = NULL;
+    return m_opts;
 }
 
-NotifyClient::~NotifyClient()
-{
-    delete m_options;
-    delete m_optionsInvis;
-}
-
-void
-NotifyClient::init(
-        std::string connstring,
-        std::string nsAddr,
-        Config::Conf &conf,
-        METHODS &methods)
-{
-    BaseClient::init(connstring, nsAddr);
-    m_db.OpenDatabase(connstring.c_str());
-    m_conf = conf;
-    addMethods(methods);
-}
-
-void
-NotifyClient::addMethods(METHODS &methods)
-{
-    addMethod(methods, NOTIFY_SHOW_OPTS_NAME);
-    addMethod(methods, NOTIFY_STATE_CHANGES_NAME);
-    addMethod(methods, NOTIFY_LETTERS_CREATE_NAME);
-}
 
 void
 NotifyClient::runMethod()
@@ -92,24 +43,11 @@ NotifyClient::runMethod()
     }
 }
 
-boost::program_options::options_description *
-NotifyClient::getVisibleOptions() const
-{
-    return m_options;
-}
-
-boost::program_options::options_description *
-NotifyClient::getInvisibleOptions() const
-{
-    return m_optionsInvis;
-}
-
 void
 NotifyClient::show_opts()
 {
     callHelp(m_conf, no_help);
-    std::cout << *m_options << std::endl;
-    std::cout << *m_optionsInvis << std::endl;
+    // TODO
 }
 
 void
@@ -158,9 +96,16 @@ NotifyClient::state_changes()
                 docMan.get(),
                 regMan.get())
             );
+    std::string exceptTypes("");
+    if (m_conf.hasOpt(NOTIFY_EXCEPT_TYPES_NAME)) {
+        exceptTypes = m_conf.get<std::string>(NOTIFY_EXCEPT_TYPES_NAME);
+    }
+    int limit = 0;
+    if (m_conf.hasOpt(NOTIFY_LIMIT_NAME)) {
+        limit = m_conf.get<unsigned int>(NOTIFY_LIMIT_NAME);
+    }
     notifyMan->notifyStateChanges(
-            m_conf.get<std::string>(NOTIFY_EXCEPT_TYPES_NAME),
-            m_conf.get<unsigned int>(NOTIFY_LIMIT_NAME),
+            exceptTypes, limit,
             m_conf.hasOpt(NOTIFY_DEBUG_NAME) ? &std::cout : NULL,
             m_conf.hasOpt(NOTIFY_USE_HISTORY_TABLES_NAME));
 }
@@ -212,6 +157,27 @@ NotifyClient::letters_create()
                 regMan.get())
             );
     notifyMan->generateLetters();
+}
+
+#define ADDOPT(name, type, callable, visible) \
+    {CLIENT_NOTIFY, name, name##_DESC, type, callable, visible}
+
+const struct options
+NotifyClient::m_opts[] = {
+    ADDOPT(NOTIFY_STATE_CHANGES_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(NOTIFY_LETTERS_CREATE_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(NOTIFY_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(NOTIFY_DEBUG_NAME, TYPE_NOTYPE, false, false),
+    ADDOPT(NOTIFY_EXCEPT_TYPES_NAME, TYPE_STRING, false, false),
+    ADDOPT(NOTIFY_LIMIT_NAME, TYPE_UINT, false, false),
+};
+
+#undef ADDOPT
+
+int 
+NotifyClient::getOptsCount()
+{
+    return sizeof(m_opts) / sizeof(options);
 }
 
 } // namespace Admin;

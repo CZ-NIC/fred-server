@@ -26,88 +26,10 @@
 
 namespace Admin {
 
-DomainClient::DomainClient()
+const struct options *
+DomainClient::getOpts()
 {
-    m_options = new boost::program_options::options_description(
-            "Domain related options");
-    m_options->add_options()
-        addOpt(DOMAIN_LIST_NAME)
-        addOpt(DOMAIN_LIST_PLAIN_NAME)
-        addOptStr(DOMAIN_INFO_NAME)
-        addOptStr(DOMAIN_CREATE_NAME)
-        addOptStr(DOMAIN_UPDATE_NAME)
-        addOpt(DOMAIN_LIST_PLAIN_NAME)
-        addOpt(DOMAIN_SHOW_OPTS_NAME);
-
-    m_optionsInvis = new boost::program_options::options_description(
-            "Domain related sub options");
-    m_optionsInvis->add_options()
-        addOptStr(DOMAIN_OUT_DATE_NAME)
-        addOptStr(DOMAIN_EXP_DATE_NAME)
-        addOptStr(DOMAIN_CANC_DATE_NAME)
-        add_ID()
-        add_FQDN()
-        add_NSSET_ID()
-        add_NSSET_HANDLE()
-        add_ANY_NSSET()
-        add_KEYSET_ID()
-        add_KEYSET_HANDLE()
-        add_ANY_KEYSET()
-        add_REGISTRANT_ID()
-        add_REGISTRANT_NAME()
-        add_REGISTRANT_HANDLE()
-        add_ADMIN_ID()
-        add_ADMIN_HANDLE()
-        add_ADMIN_NAME()
-        add_REGISTRAR_ID()
-        add_REGISTRAR_HANDLE()
-        add_REGISTRAR_NAME()
-        add_ADMIN()
-        add_ADMIN_ADD()
-        add_ADMIN_REM()
-        add_CRDATE()
-        add_UPDATE()
-        add_DELDATE()
-        add_TRANSDATE();
-    // TODO updateregistrar, createregistrar, authpw, type, state, ...
-}
-
-DomainClient::DomainClient(
-        std::string connstring,
-        std::string nsAddr) : BaseClient(connstring, nsAddr)
-{
-    m_db.OpenDatabase(connstring.c_str());
-    m_options = NULL;
-    m_optionsInvis = NULL;
-}
-DomainClient::~DomainClient()
-{
-    delete m_options;
-    delete m_optionsInvis;
-}
-
-void
-DomainClient::init(
-        std::string connstring,
-        std::string nsAddr,
-        Config::Conf &conf,
-        METHODS &methods)
-{
-    BaseClient::init(connstring, nsAddr);
-    m_db.OpenDatabase(connstring.c_str());
-    m_conf = conf;
-    addMethods(methods);
-}
-
-void
-DomainClient::addMethods(METHODS &methods)
-{
-    addMethod(methods, DOMAIN_SHOW_OPTS_NAME);
-    addMethod(methods, DOMAIN_LIST_PLAIN_NAME);
-    addMethod(methods, DOMAIN_CREATE_NAME);
-    addMethod(methods, DOMAIN_UPDATE_NAME);
-    addMethod(methods, DOMAIN_INFO_NAME);
-    addMethod(methods, DOMAIN_LIST_NAME);
+    return m_opts;
 }
 
 void
@@ -128,24 +50,11 @@ DomainClient::runMethod()
     }
 }
 
-boost::program_options::options_description *
-DomainClient::getVisibleOptions() const
-{
-    return m_options;
-}
-
-boost::program_options::options_description *
-DomainClient::getInvisibleOptions() const
-{
-    return m_optionsInvis;
-}
-
 void
 DomainClient::show_opts()
 {
     callHelp(m_conf, no_help);
-    std::cout << *m_options << std::endl;
-    std::cout << *m_optionsInvis << std::endl;
+    print_options("Domain", getOpts(), getOptsCount());
 }
 
 void
@@ -548,4 +457,52 @@ DomainClient::list_help()
         << std::endl;
 }
 
+#define ADDOPT(name, type, callable, visible) \
+    {CLIENT_DOMAIN, name, name##_DESC, type, callable, visible}
+
+const struct options
+DomainClient::m_opts[] = {
+    ADDOPT(DOMAIN_LIST_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(DOMAIN_LIST_PLAIN_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(DOMAIN_INFO_NAME, TYPE_STRING, true, true),
+    ADDOPT(DOMAIN_CREATE_NAME, TYPE_STRING, true, true),
+    ADDOPT(DOMAIN_UPDATE_NAME, TYPE_STRING, true, true),
+    ADDOPT(DOMAIN_LIST_PLAIN_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(DOMAIN_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(DOMAIN_OUT_DATE_NAME, TYPE_STRING, false, false),
+    ADDOPT(DOMAIN_EXP_DATE_NAME, TYPE_STRING, false, false),
+    ADDOPT(DOMAIN_CANC_DATE_NAME, TYPE_STRING, false, false),
+    add_ID,
+    add_FQDN,
+    add_NSSET_ID,
+    add_NSSET_HANDLE,
+    add_ANY_NSSET,
+    add_KEYSET_ID,
+    add_KEYSET_HANDLE,
+    add_ANY_KEYSET,
+    add_REGISTRANT_ID,
+    add_REGISTRANT_NAME,
+    add_REGISTRANT_HANDLE,
+    add_ADMIN_ID,
+    add_ADMIN_HANDLE,
+    add_ADMIN_NAME,
+    add_REGISTRAR_ID,
+    add_REGISTRAR_HANDLE,
+    add_REGISTRAR_NAME,
+    add_ADMIN,
+    add_ADMIN_ADD,
+    add_ADMIN_REM,
+    add_CRDATE,
+    add_UPDATE,
+    add_DELDATE,
+    add_TRANSDATE
+};
+
+#undef ADDOPT
+
+int 
+DomainClient::getOptsCount()
+{
+    return sizeof(m_opts) / sizeof(options);
+}
 } // namespace Admin;

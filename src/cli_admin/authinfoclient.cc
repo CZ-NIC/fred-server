@@ -24,54 +24,10 @@
 
 namespace Admin {
 
-#define addMethod(methods, name) \
-    methods.insert(std::make_pair(name, AUTHINFO_CLIENT))
-
-AuthInfoClient::AuthInfoClient()
+const struct options *
+AuthInfoClient::getOpts()
 {
-    m_options = new boost::program_options::options_description(
-            "Authinfo related options");
-    m_options->add_options()
-        addOptUInt(AUTHINFO_PDF_NAME)
-        addOpt(AUTHINFO_SHOW_OPTS_NAME);
-
-    m_optionsInvis = new boost::program_options::options_description(
-            "Authinfo related sub options");
-    m_optionsInvis->add_options();
-}
-AuthInfoClient::AuthInfoClient(
-        std::string connstring,
-        std::string nsAddr) : BaseClient(connstring, nsAddr)
-{
-    m_db.OpenDatabase(connstring.c_str());
-    m_options = NULL;
-    m_optionsInvis = NULL;
-}
-
-AuthInfoClient::~AuthInfoClient()
-{
-    delete m_options;
-    delete m_optionsInvis;
-}
-
-void
-AuthInfoClient::init(
-        std::string connstring,
-        std::string nsAddr,
-        Config::Conf &conf,
-        METHODS &methods)
-{
-    BaseClient::init(connstring, nsAddr);
-    m_db.OpenDatabase(connstring.c_str());
-    m_conf = conf;
-    addMethods(methods);
-}
-
-void
-AuthInfoClient::addMethods(METHODS &methods)
-{
-    addMethod(methods, AUTHINFO_SHOW_OPTS_NAME);
-    addMethod(methods, AUTHINFO_PDF_NAME);
+    return m_opts;
 }
 
 void
@@ -84,24 +40,11 @@ AuthInfoClient::runMethod()
     }
 }
 
-boost::program_options::options_description *
-AuthInfoClient::getVisibleOptions() const
-{
-    return m_options;
-}
-
-boost::program_options::options_description *
-AuthInfoClient::getInvisibleOptions() const
-{
-    return m_optionsInvis;
-}
-
 void
 AuthInfoClient::show_opts()
 {
     callHelp(m_conf, no_help);
-    std::cout << *m_options << std::endl;
-    std::cout << *m_optionsInvis << std::endl;
+    print_options("AuthInfo", getOpts(), getOptsCount());
 }
 
 void
@@ -144,4 +87,20 @@ AuthInfoClient::pdf_help()
         << std::endl;
 }
 
+#define ADDOPT(name, type, callable, visible) \
+    {CLIENT_AUTHINFO, name, name##_DESC, type, callable, visible}
+
+const struct options
+AuthInfoClient::m_opts[] = {
+    ADDOPT(AUTHINFO_PDF_NAME, TYPE_UINT, true, true),
+    ADDOPT(AUTHINFO_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
+};
+
+#undef ADDOPT
+
+int 
+AuthInfoClient::getOptsCount()
+{
+    return sizeof(m_opts) / sizeof(options);
+}
 } // namespace Admin;

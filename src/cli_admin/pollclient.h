@@ -19,7 +19,6 @@
 #ifndef _POLLCLIENT_H_
 #define _POLLCLIENT_H_
 
-#define POLL_CLIENT                 "poll_client"
 #define POLL_SHOW_OPTS_NAME         "poll_show_opts"
 #define POLL_SHOW_OPTS_NAME_DESC    "show all poll command line options"
 #define POLL_LIST_ALL_NAME          "poll_list_all"
@@ -69,30 +68,33 @@ private:
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
+    static const struct options m_opts[];
 public:
-    PollClient();
-    PollClient(std::string connstring,
-            std::string nsAddr);
-    ~PollClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
+    PollClient()
+    { }
+    PollClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+    ~PollClient()
+    { }
+
+    static const struct options *getOpts();
+    static int getOptsCount();
     void runMethod();
 
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
     void show_opts();
-
     void list_all();
     void list_next();
     void set_seen();
     void create_state_changes();
     void create_low_credit();
-};
+}; // class PollClient
 
 } // namespace Admin;
 

@@ -47,7 +47,7 @@
 
 using namespace boost::posix_time;
 
-std::string
+int
 findRequestExecutor(Config::Conf &conf, METHODS &methods)
 {
     METHODS_IT it = methods.begin();
@@ -56,28 +56,74 @@ findRequestExecutor(Config::Conf &conf, METHODS &methods)
             return it->second;
         }
     }
-    return "";
+    return 0;
 }
+
+#define ADDOPT_NOTYPE(name, desc)   (name, desc)
+#define ADDOPT_STRING(name, desc)   (name, boost::program_options::value<std::string>(), desc)
+#define ADDOPT_INT(name, desc)   (name, boost::program_options::value<int>(), desc)
+#define ADDOPT_UINT(name, desc)   (name, boost::program_options::value<unsigned int>(), desc)
+
+void
+appendOptions(
+        boost::program_options::options_description &all,
+        boost::program_options::options_description &visible,
+        METHODS &methods,
+        const options *opts,
+        int optsCount)
+{
+    for (int i = 0; i < optsCount; i++) {
+        switch (opts[i].type) {
+            case TYPE_NOTYPE:
+                all.add_options()
+                    ADDOPT_NOTYPE(opts[i].name, opts[i].description);
+                if (opts[i].visible) {
+                    visible.add_options()
+                        ADDOPT_NOTYPE(opts[i].name, opts[i].description);
+                }
+                break;
+            case TYPE_STRING:
+                all.add_options()
+                    ADDOPT_STRING(opts[i].name, opts[i].description);
+                if (opts[i].visible) {
+                    visible.add_options()
+                        ADDOPT_STRING(opts[i].name, opts[i].description);
+                }
+                break;
+            case TYPE_INT:
+                all.add_options()
+                    ADDOPT_INT(opts[i].name, opts[i].description);
+                if (opts[i].visible) {
+                    visible.add_options()
+                        ADDOPT_INT(opts[i].name, opts[i].description);
+                }
+                break;
+            case TYPE_UINT:
+                all.add_options()
+                    ADDOPT_UINT(opts[i].name, opts[i].description);
+                if (opts[i].visible) {
+                    visible.add_options()
+                        ADDOPT_UINT(opts[i].name, opts[i].description);
+                }
+                break;
+            default:
+                std::cerr << "Unknown type" << std::endl;
+                exit(1);
+        }
+        if (opts[i].callable) {
+            methods.insert(std::make_pair(opts[i].name, opts[i].client));
+        }
+    }
+}
+
+#undef ADDOPT_NOTYPE
+#undef ADDOPT_STRING
+#undef ADDOPT_INT
+#undef ADDOPT_UINT
 
 int
 main(int argc, char **argv)
 {
-    Admin::KeysetClient keyset;
-    Admin::DomainClient domain;
-    Admin::ContactClient contact;
-    Admin::InvoiceClient invoice;
-    Admin::AuthInfoClient authinfo;
-    Admin::BankClient bank;
-    Admin::PollClient poll;
-    Admin::RegistrarClient registrar;
-    Admin::NotifyClient notify;
-    Admin::ObjectClient object;
-    Admin::InfoBuffClient infobuff;
-    Admin::NssetClient nsset;
-    Admin::FileClient file;
-    Admin::MailClient mail;
-    Admin::PublicRequestClient publicrequest;
-
     try {
     boost::program_options::options_description generalOpts("General options");
     generalOpts.add_options()
@@ -123,67 +169,39 @@ main(int argc, char **argv)
     boost::program_options::variables_map varMap;
 
     // all valid options - including invisible
-    boost::program_options::options_description all("All allowed options");
-    all.add(generalOpts).
+    boost::program_options::options_description allOpts("All allowed options");
+    allOpts.add(generalOpts).
         add(generalOptsInvis).
         add(configurationOpts).
-        add(*domain.getVisibleOptions()).
-        add(*domain.getInvisibleOptions()).
-        add(*keyset.getVisibleOptions()).
-        add(*keyset.getInvisibleOptions()).
-        add(*contact.getVisibleOptions()).
-        add(*contact.getInvisibleOptions()).
-        add(*invoice.getVisibleOptions()).
-        add(*invoice.getInvisibleOptions()).
-        add(*authinfo.getVisibleOptions()).
-        add(*authinfo.getInvisibleOptions()).
-        add(*bank.getVisibleOptions()).
-        add(*bank.getInvisibleOptions()).
-        add(*poll.getVisibleOptions()).
-        add(*poll.getInvisibleOptions()).
-        add(*registrar.getVisibleOptions()).
-        add(*registrar.getInvisibleOptions()).
-        add(*notify.getVisibleOptions()).
-        add(*notify.getInvisibleOptions()).
-        add(*object.getVisibleOptions()).
-        add(*object.getInvisibleOptions()).
-        add(*infobuff.getVisibleOptions()).
-        add(*infobuff.getInvisibleOptions()).
-        add(*nsset.getVisibleOptions()).
-        add(*nsset.getInvisibleOptions()).
-        add(*file.getVisibleOptions()).
-        add(*file.getInvisibleOptions()).
-        add(*mail.getVisibleOptions()).
-        add(*mail.getInvisibleOptions()).
-        add(*publicrequest.getVisibleOptions()).
-        add(*publicrequest.getInvisibleOptions()).
         add(commonOpts);
 
     // only visible options
-    boost::program_options::options_description visible("Allowed options");
-    visible.add(generalOpts).
-        add(configurationOpts).
-        add(*domain.getVisibleOptions()).
-        add(*keyset.getVisibleOptions()).
-        add(*contact.getVisibleOptions()).
-        add(*invoice.getVisibleOptions()).
-        add(*authinfo.getVisibleOptions()).
-        add(*bank.getVisibleOptions()).
-        add(*poll.getVisibleOptions()).
-        add(*registrar.getVisibleOptions()).
-        add(*notify.getVisibleOptions()).
-        add(*object.getVisibleOptions()).
-        add(*infobuff.getVisibleOptions()).
-        add(*nsset.getVisibleOptions()).
-        add(*file.getVisibleOptions()).
-        add(*mail.getVisibleOptions()).
-        add(*publicrequest.getVisibleOptions()).
-        add(commonOpts);
+    boost::program_options::options_description programOpts("Program options");
+    METHODS methods;
+
+#define APPENDOPTIONS(which)    appendOptions(allOpts, programOpts, methods, \
+        Admin::which::getOpts(), Admin::which::getOptsCount())
+    APPENDOPTIONS(DomainClient);
+    APPENDOPTIONS(KeysetClient);
+    APPENDOPTIONS(ContactClient);
+    APPENDOPTIONS(InvoiceClient);
+    APPENDOPTIONS(AuthInfoClient);
+    APPENDOPTIONS(BankClient);
+    APPENDOPTIONS(PollClient);
+    APPENDOPTIONS(RegistrarClient);
+    APPENDOPTIONS(NotifyClient);
+    APPENDOPTIONS(ObjectClient);
+    APPENDOPTIONS(InfoBuffClient);
+    APPENDOPTIONS(NssetClient);
+    APPENDOPTIONS(FileClient);
+    APPENDOPTIONS(MailClient);
+    APPENDOPTIONS(PublicRequestClient);
+#undef APPENDOPTIONS
 
     Config::Manager confMan = Config::ConfigManager::instance_ref();
     try {
         confMan.init(argc, argv);
-        confMan.setCmdLineOptions(all);
+        confMan.setCmdLineOptions(allOpts);
         confMan.setCfgFileOptions(fileOpts, CONFIG_FILE);
         confMan.parse();
     } catch (Config::Manager::ConfigParseError &err) {
@@ -192,9 +210,11 @@ main(int argc, char **argv)
     }
 
     if (argc == 1 || (argc == 2 && confMan.isHelp())) {
-        std::cout << "Usage: " << argv[0] << " [options]" << std::endl;
-        std::cout << "Options:" << std::endl;
-        std::cout << visible << std::endl;
+        std::cout << "Usage: " << argv[0] << " [options]" << std::endl << std::endl;;
+        std::cout << generalOpts << std::endl;
+        std::cout << configurationOpts << std::endl;
+        std::cout << commonOpts << std::endl;
+        std::cout << programOpts << std::endl;
         exit(0);
     }
 
@@ -202,7 +222,6 @@ main(int argc, char **argv)
         print_version();
         exit(0);
     }
-
     Config::Conf conf = confMan.get();
 
     Logging::Log::Level log_level;
@@ -229,8 +248,6 @@ main(int argc, char **argv)
     if (log_type == Logging::Log::LT_SYSLOG) {
         param = conf.get<unsigned>(LOG_SYSLOG_NAME);
     }
-    //conf.print(std::cout);
-
    
     Logging::Manager::instance_ref().get("tracer").addHandler(log_type, param);
     Logging::Manager::instance_ref().get("tracer").setLevel(log_level);
@@ -264,31 +281,13 @@ main(int argc, char **argv)
     if (conf.hasOpt(DB_PASS_NAME))
         connstring << " password=" << conf.get<std::string>(DB_PASS_NAME);
 
-    METHODS methods_list;
-
-    keyset.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    domain.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    contact.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    invoice.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    authinfo.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    bank.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    poll.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    registrar.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    notify.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    object.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    infobuff.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    nsset.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    file.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    mail.init(connstring.str(), nsAddr.str(), conf, methods_list);
-    publicrequest.init(connstring.str(), nsAddr.str(), conf, methods_list);
-
     if (conf.hasUnknown()) {
         std::vector<std::string> unknown(conf.getUnknown());
-        std::cout << "Unknown options:" << std::endl;
+        std::cout << "Unknown option(s):" << std::endl;
         for (int i = 0; i < (int)unknown.size(); i++) {
             std::cout << unknown[i] << std::endl;
         }
-        return 0;
+        exit(0);
     }
 
     if (conf.hasOpt(CLI_MOO_NAME)) {
@@ -299,40 +298,61 @@ main(int argc, char **argv)
         exit(0);
     }
 
-    std::string executor = findRequestExecutor(conf, methods_list);
-    if (executor.compare(DOMAIN_CLIENT) == 0) {
-        domain.runMethod();
-    } else if (executor.compare(KEYSET_CLIENT) == 0) {
-        keyset.runMethod();
-    } else if (executor.compare(CONTACT_CLIENT) == 0) {
-        contact.runMethod();
-    } else if (executor.compare(INVOICE_CLIENT) == 0) {
-        invoice.runMethod();
-    } else if (executor.compare(AUTHINFO_CLIENT) == 0) {
-        authinfo.runMethod();
-    } else if (executor.compare(BANK_CLIENT) == 0) {
-        bank.runMethod();
-    } else if (executor.compare(POLL_CLIENT) == 0) {
-        poll.runMethod();
-    } else if (executor.compare(REGISTRAR_CLIENT) == 0) {
-        registrar.runMethod();
-    } else if (executor.compare(NOTIFY_CLIENT) == 0) {
-        notify.runMethod();
-    } else if (executor.compare(OBJECT_CLIENT) == 0) {
-        object.runMethod();
-    } else if (executor.compare(INFOBUFF_CLIENT) == 0) {
-        infobuff.runMethod();
-    } else if (executor.compare(NSSET_CLIENT) == 0) {
-        nsset.runMethod();
-    } else if (executor.compare(FILE_CLIENT) == 0) {
-        file.runMethod();
-    } else if (executor.compare(MAIL_CLIENT) == 0) {
-        mail.runMethod();
-    } else if (executor.compare(PUBLICREQUEST_CLIENT) == 0) {
-        publicrequest.runMethod();
-    } else {
-        std::cout << "sakrapes, tohle neznam" << std::endl;
+#define INIT_AND_RUN(what) { \
+        Admin::what pom(connstring.str(), nsAddr.str(), conf); \
+        pom.runMethod(); \
     }
+    switch (findRequestExecutor(conf, methods)) {
+        case CLIENT_DOMAIN:
+            INIT_AND_RUN(DomainClient);
+            break;
+        case CLIENT_KEYSET:
+            INIT_AND_RUN(KeysetClient);
+            break;
+        case CLIENT_CONTACT:
+            INIT_AND_RUN(ContactClient);
+            break;
+        case CLIENT_INVOICE:
+            INIT_AND_RUN(InvoiceClient);
+            break;
+        case CLIENT_AUTHINFO:
+            INIT_AND_RUN(AuthInfoClient);
+            break;
+        case CLIENT_BANK:
+            INIT_AND_RUN(BankClient);
+            break;
+        case CLIENT_POLL:
+            INIT_AND_RUN(PollClient);
+            break;
+        case CLIENT_REGISTRAR:
+            INIT_AND_RUN(RegistrarClient);
+            break;
+        case CLIENT_NOTIFY:
+            INIT_AND_RUN(NotifyClient);
+            break;
+        case CLIENT_OBJECT:
+            INIT_AND_RUN(ObjectClient);
+            break;
+        case CLIENT_INFOBUFF:
+            INIT_AND_RUN(InfoBuffClient);
+            break;
+        case CLIENT_NSSET:
+            INIT_AND_RUN(NssetClient);
+            break;
+        case CLIENT_FILE:
+            INIT_AND_RUN(FileClient);
+            break;
+        case CLIENT_MAIL:
+            INIT_AND_RUN(MailClient);
+            break;
+        case CLIENT_PUBLICREQUEST:
+            INIT_AND_RUN(PublicRequestClient);
+            break;
+        default:
+            std::cout << "Unknown client" << std::endl;
+            break;
+    }
+#undef INIT_AND_RUN
 
     } catch (ccReg::EPP::EppError &e) {
         std::cerr << "EppError code: " << e.errCode << ", message: " 

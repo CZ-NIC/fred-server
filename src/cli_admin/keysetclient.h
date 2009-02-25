@@ -27,7 +27,6 @@
 #include "register/register.h"
 #include "baseclient.h"
 
-#define KEYSET_CLIENT               "keyset_client"
 #define KEYSET_SHOW_OPTS_NAME       "keyset_show_opts"
 #define KEYSET_SHOW_OPTS_NAME_DESC  "show all keyset command line options"
 #define KEYSET_LIST_NAME            "keyset_list"
@@ -51,7 +50,6 @@
 #define KEYSET_INFO_NAME_DESC       "keyset info (via epp_impl)"
 #define KEYSET_INFO2_NAME           "keyset_info2"
 #define KEYSET_INFO2_NAME_DESC      "keyset info (via ccReg_i::info method)"
-
 
 #define KEYSET_DSRECORDS_NAME       "dsrecords"
 #define KEYSET_DSRECORDS_NAME_DESC  "list of dsrecords (used with --keyset_create commnad)"
@@ -89,42 +87,38 @@ private:
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
+    static const struct options m_opts[];
 public:
-    KeysetClient();
-    KeysetClient(std::string connstring,
-            std::string nsAddr);
-    ~KeysetClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
+    KeysetClient()
+    { }
+    KeysetClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+    ~KeysetClient()
+    { }
+
+    static const struct options *getOpts();
+    static int getOptsCount();
+
     void runMethod();
 
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
     void show_opts();
 
     void list();
-
     void list_plain();
-
     void check();
-
     void send_auth_info();
-
     void transfer();
-
     void update();
-
     void del();
-
     void create();
-
     void info();
-
     void info2();
 
     void list_help();
@@ -133,7 +127,7 @@ public:
     void delete_help();
     void info_help();
     void check_help();
-};
+}; // class KeysetClient
 
 } // namespace Admin;
 

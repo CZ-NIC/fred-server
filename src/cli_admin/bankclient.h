@@ -20,7 +20,6 @@
 #define _BANKCLIENT_H_
 
 
-#define BANK_CLIENT                     "bank_client"
 #define BANK_SHOW_OPTS_NAME             "bank_show_opts"
 #define BANK_SHOW_OPTS_NAME_DESC        "show all banking options"
 #define BANK_STATEMENT_LIST_NAME        "bank_statement_list"
@@ -87,35 +86,37 @@ private:
     DB m_db;
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
-
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
     bool parse_line(const char *line, std::vector<std::string> &vec);
+
+    static const struct options m_opts[];
 public:
-    BankClient();
-    BankClient(std::string connstring,
-            std::string nsAddr);
-    ~BankClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
+    BankClient()
+    { }
+    BankClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+    ~BankClient()
+    { }
+
+    static const struct options *getOpts();
+    static int getOptsCount();
     void runMethod();
 
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
     void show_opts();
-
     void statement_list();
     void online_list();
-
     void import_xml();
     void import_xml_help();
 
     void online_list_help();
     void statement_list_help();
-};
+}; // class BankClient
 
 } // namespace Admin;
 

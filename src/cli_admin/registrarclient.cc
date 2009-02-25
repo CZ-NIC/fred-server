@@ -22,69 +22,10 @@
 
 namespace Admin {
 
-#define addMethod(methods, name) \
-    methods.insert(std::make_pair(name, REGISTRAR_CLIENT))
-
-RegistrarClient::RegistrarClient()
+const struct options *
+RegistrarClient::getOpts()
 {
-    m_options = new boost::program_options::options_description(
-            "Registrar related options");
-    m_options->add_options()
-        addOpt(REGISTRAR_LIST_NAME)
-        addOpt(REGISTRAR_ZONE_ADD_NAME)
-        addOpt(REGISTRAR_REGISTRAR_ADD_NAME)
-        addOpt(REGISTRAR_REGISTRAR_ADD_ZONE_NAME)
-        addOpt(REGISTRAR_SHOW_OPTS_NAME);
-
-    m_optionsInvis = new boost::program_options::options_description(
-            "Registrar related sub options");
-    m_optionsInvis->add_options()
-        add_ID()
-        add_HANDLE()
-        add_NAME()
-        add_CITY()
-        add_EMAIL()
-        add_COUNTRY()
-        addOptStr(REGISTRAR_ZONE_FQDN_NAME)
-        addOptStr(REGISTRAR_HANDLE_NAME);
-}
-
-RegistrarClient::RegistrarClient(
-        std::string connstring,
-        std::string nsAddr) : BaseClient(connstring, nsAddr)
-{
-    m_db.OpenDatabase(connstring.c_str());
-    m_options = NULL;
-    m_optionsInvis = NULL;
-}
-
-RegistrarClient::~RegistrarClient()
-{
-    delete m_options;
-    delete m_optionsInvis;
-}
-
-void
-RegistrarClient::init(
-        std::string connstring,
-        std::string nsAddr,
-        Config::Conf &conf,
-        METHODS &methods)
-{
-    BaseClient::init(connstring, nsAddr);
-    m_db.OpenDatabase(connstring.c_str());
-    m_conf = conf;
-    addMethods(methods);
-}
-
-void
-RegistrarClient::addMethods(METHODS &methods)
-{
-    addMethod(methods, REGISTRAR_SHOW_OPTS_NAME);
-    addMethod(methods, REGISTRAR_ZONE_ADD_NAME);
-    addMethod(methods, REGISTRAR_REGISTRAR_ADD_NAME);
-    addMethod(methods, REGISTRAR_REGISTRAR_ADD_ZONE_NAME);
-    addMethod(methods, REGISTRAR_LIST_NAME);
+    return m_opts;
 }
 
 void
@@ -103,25 +44,13 @@ RegistrarClient::runMethod()
     }
 }
 
-boost::program_options::options_description *
-RegistrarClient::getVisibleOptions() const
-{
-    return m_options;
-}
-
 void
 RegistrarClient::show_opts() 
 {
     callHelp(m_conf, no_help);
-    std::cout << *m_options << std::endl;
-    std::cout << *m_optionsInvis << std::endl;
+    print_options("Registrar", getOpts(), getOptsCount());
 }
 
-boost::program_options::options_description *
-RegistrarClient::getInvisibleOptions() const
-{
-    return m_optionsInvis;
-}
 #define reg(i)  regMan->getList()->get(i)
 
 void
@@ -268,6 +197,34 @@ RegistrarClient::registrar_add_zone_help()
         "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> \\\n"
         "    --" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>\n"
         << std::endl;
+}
+
+#define ADDOPT(name, type, callable, visible) \
+    {CLIENT_REGISTRAR, name, name##_DESC, type, callable, visible}
+
+const struct options
+RegistrarClient::m_opts[] = {
+    ADDOPT(REGISTRAR_LIST_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(REGISTRAR_ZONE_ADD_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(REGISTRAR_REGISTRAR_ADD_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(REGISTRAR_REGISTRAR_ADD_ZONE_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(REGISTRAR_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
+    add_ID,
+    add_HANDLE,
+    add_NAME,
+    add_CITY,
+    add_EMAIL,
+    add_COUNTRY,
+    ADDOPT(REGISTRAR_ZONE_FQDN_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_HANDLE_NAME, TYPE_STRING, false, false),
+};
+
+#undef ADDOPT
+
+int 
+RegistrarClient::getOptsCount()
+{
+    return sizeof(m_opts) / sizeof(options);
 }
 
 } // namespace Admin;

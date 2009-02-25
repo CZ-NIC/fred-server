@@ -26,8 +26,6 @@
 #include "old_utils/dbsql.h"
 #include "baseclient.h"
 
-#define DOMAIN_CLIENT                   "domain_client"
-
 #define DOMAIN_SHOW_OPTS_NAME           "domain_show_opts"
 #define DOMAIN_SHOW_OPTS_NAME_DESC      "show all domain command line options"
 #define DOMAIN_CREATE_NAME              "domain_create"
@@ -73,39 +71,40 @@ private:
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
+    static const struct options m_opts[];
 public:
-    DomainClient();
-    DomainClient(std::string connstring,
-            std::string nsAddr);
-    ~DomainClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
+    DomainClient()
+    { }
+    DomainClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+
+    ~DomainClient()
+    { }
+
+    static const struct options *getOpts();
+    static int getOptsCount();
+
     void runMethod();
 
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
     void show_opts();
-
     void domain_list();
-
     void domain_list_plain();
-
     void domain_create();
-
     void domain_update();
-
     void domain_info();
 
     void domain_list_help();
     void domain_update_help();
     void domain_create_help();
     void list_help();
-};
+}; // class DomainClient
 
 } // namespace Admin;
 

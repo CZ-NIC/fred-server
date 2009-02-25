@@ -22,62 +22,10 @@
 
 namespace Admin {
 
-#define addMethod(methods, name) \
-    methods.insert(std::make_pair(name, FILE_CLIENT))
-
-FileClient::FileClient()
+const struct options *
+FileClient::getOpts()
 {
-    m_options = new boost::program_options::options_description(
-            "File related options");
-    m_options->add_options()
-        addOpt(FILE_LIST_NAME)
-        addOpt(FILE_SHOW_OPTS_NAME);
-
-    m_optionsInvis = new boost::program_options::options_description(
-            "File related sub options");
-    m_optionsInvis->add_options()
-        add_ID()
-        add_NAME()
-        addOptInt(FILE_TYPE_NAME)
-        addOptStr(FILE_PATH_NAME)
-        addOptStr(FILE_MIME_NAME)
-        addOptInt(FILE_SIZE_NAME)
-        add_CRDATE();
-
-}
-FileClient::FileClient(
-        std::string connstring,
-        std::string nsAddr) : BaseClient(connstring, nsAddr)
-{
-    m_db.OpenDatabase(connstring.c_str());
-    m_options = NULL;
-    m_optionsInvis = NULL;
-}
-
-FileClient::~FileClient()
-{
-    delete m_options;
-    delete m_optionsInvis;
-}
-
-void
-FileClient::init(
-        std::string connstring,
-        std::string nsAddr,
-        Config::Conf &conf,
-        METHODS &methods)
-{
-    BaseClient::init(connstring, nsAddr);
-    m_db.OpenDatabase(connstring.c_str());
-    m_conf = conf;
-    addMethods(methods);
-}
-
-void
-FileClient::addMethods(METHODS &methods)
-{
-    addMethod(methods, FILE_LIST_NAME);
-    addMethod(methods, FILE_SHOW_OPTS_NAME);
+    return m_opts;
 }
 
 void
@@ -90,24 +38,11 @@ FileClient::runMethod()
     }
 }
 
-boost::program_options::options_description *
-FileClient::getVisibleOptions() const
-{
-    return m_options;
-}
-
-boost::program_options::options_description *
-FileClient::getInvisibleOptions() const
-{
-    return m_optionsInvis;
-}
-
 void
 FileClient::show_opts()
 {
     callHelp(m_conf, no_help);
-    std::cout << *m_options << std::endl;
-    std::cout << *m_optionsInvis << std::endl;
+    print_options("File", getOpts(), getOptsCount());
 }
 
 void
@@ -168,12 +103,36 @@ FileClient::list()
     // XXX this delete cause segfault :(
     // delete fileFilter;
     delete unionFilter;
-}
+} // FileClient::list
 
 void
 FileClient::list_help()
 {
     std::cout << "file client list help" << std::endl;
+}
+
+#define ADDOPT(name, type, callable, visible) \
+    {CLIENT_FILE, name, name##_DESC, type, callable, visible}
+
+const struct options
+FileClient::m_opts[] = {
+    ADDOPT(FILE_LIST_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(FILE_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
+    add_ID,
+    add_NAME,
+    ADDOPT(FILE_TYPE_NAME, TYPE_INT, false, false),
+    ADDOPT(FILE_PATH_NAME, TYPE_STRING, false, false),
+    ADDOPT(FILE_MIME_NAME, TYPE_STRING, false, false),
+    ADDOPT(FILE_SIZE_NAME, TYPE_INT, false, false),
+    add_CRDATE,
+};
+
+#undef ADDOPT
+
+int 
+FileClient::getOptsCount()
+{
+    return sizeof(m_opts) / sizeof(options);
 }
 
 } // namespace Admin;

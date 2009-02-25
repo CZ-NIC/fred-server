@@ -28,9 +28,6 @@
 #include "old_utils/dbsql.h"
 #include "baseclient.h"
 
-
-#define INVOICE_CLIENT                  "invoice_client"
-
 #define INVOICE_SHOW_OPTS_NAME          "invoice_show_opts"
 #define INVOICE_SHOW_OPTS_NAME_DESC     "show all invoice command line options"
 #define INVOICE_LIST_NAME               "invoice_list"
@@ -120,28 +117,31 @@ private:
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
-
     Database::ID getRegistrarId(std::string handle);
     void factoring(Register::Invoicing::Manager *man, 
             Database::ID zoneId, std::string zoneName, 
             Database::ID regId, std::string regName, 
             Database::Date toDate, Database::Date taxDate);
-public:
-    InvoiceClient();
-    InvoiceClient(std::string connstring,
-            std::string nsAddr);
-    ~InvoiceClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
-    void runMethod();
 
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
+    static const struct options m_opts[];
+public:
+    InvoiceClient()
+    { }
+    InvoiceClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+    ~InvoiceClient()
+    { }
+
+    static const struct options *getOpts();
+    static int getOptsCount();
+    void runMethod();
 
     void show_opts();
     void list();
@@ -156,7 +156,7 @@ public:
     void archive_help();
     void credit_help();
     void factoring_help();
-};
+}; // class InvoiceClient
 
 } // namespace Admin;
 

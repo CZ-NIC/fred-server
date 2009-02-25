@@ -19,7 +19,6 @@
 #ifndef _INFOBUFFCLIENT_H_
 #define _INFOBUFFCLIENT_H_
 
-#define INFOBUFF_CLIENT                 "infobuff_client"
 #define INFOBUFF_SHOW_OPTS_NAME         "info_buffer_show_opts"
 #define INFOBUFF_SHOW_OPTS_NAME_DESC    "show all info buffer command line options"
 #define INFOBUFF_MAKE_INFO_NAME         "info_buffer_make_info"
@@ -47,28 +46,31 @@ private:
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
+    static const struct options m_opts[];
 public:
-    InfoBuffClient();
-    InfoBuffClient(std::string connstring,
-            std::string nsAddr);
-    ~InfoBuffClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
+    InfoBuffClient()
+    { }
+    InfoBuffClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+    ~InfoBuffClient()
+    { }
+
+    static const struct options *getOpts();
+    static int getOptsCount();
     void runMethod();
 
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
     void show_opts() ;
-
     void make_info();
     void get_chunk();
 
-};
+}; // class InfoBuffClient
 
 } // namespace Admin;
 

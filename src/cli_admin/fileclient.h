@@ -19,7 +19,6 @@
 #ifndef _FILECLIENT_H_
 #define _FILECLIENT_H_
 
-#define FILE_CLIENT                 "file_client"
 #define FILE_LIST_NAME              "file_list"
 #define FILE_LIST_NAME_DESC         "list all files"
 #define FILE_LIST_HELP_NAME         "file_list_help"
@@ -54,27 +53,30 @@ private:
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
+    static const struct options m_opts[];
 public:
-    FileClient();
-    FileClient(std::string connstring,
-            std::string nsAddr);
-    ~FileClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
+    FileClient()
+    { }
+    FileClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+    ~FileClient()
+    { }
+
+    static const struct options *getOpts();
+    static int getOptsCount();
     void runMethod();
 
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
     void show_opts();
-
     void list();
     void list_help();
-};
+}; // class FileClient
 
 } // namespace Admin;
 

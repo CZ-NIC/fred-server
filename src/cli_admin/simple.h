@@ -21,9 +21,39 @@
 
 #include <map>
 
-typedef std::map<std::string, std::string> METHODS;
-typedef std::map<std::string, std::string>::iterator METHODS_IT;
+typedef std::map<std::string, int> METHODS;
+typedef std::map<std::string, int>::iterator METHODS_IT;
 
+#define CLIENT_COMMON           0
+#define CLIENT_DOMAIN           1
+#define CLIENT_KEYSET           2
+#define CLIENT_CONTACT          3
+#define CLIENT_INVOICE          4
+#define CLIENT_AUTHINFO         5
+#define CLIENT_BANK             6
+#define CLIENT_POLL             7
+#define CLIENT_REGISTRAR        8
+#define CLIENT_NOTIFY           9
+#define CLIENT_OBJECT           10
+#define CLIENT_INFOBUFF         11
+#define CLIENT_NSSET            12
+#define CLIENT_FILE             13
+#define CLIENT_MAIL             14
+#define CLIENT_PUBLICREQUEST    15
+
+#define TYPE_NOTYPE     0
+#define TYPE_STRING     1
+#define TYPE_INT        2
+#define TYPE_UINT       3
+
+struct options {
+    int         client;
+    const char  *name;
+    const char  *description;
+    int         type;
+    bool        callable;
+    bool        visible;
+};
 
 #define addOpt(name)                        (name, name##_DESC)
 #define addOptStr(name)                     (name, boost::program_options::value<std::string>(), name##_DESC)
@@ -69,10 +99,10 @@ typedef std::map<std::string, std::string>::iterator METHODS_IT;
                 *parseDate(m_conf.get<std::string>(name)));                 \
     }
 
-#define callHelp(conf, help_func)       \
-    if (conf.hasOpt("help")) {          \
-        help_func();                      \
-        return;                         \
+#define callHelp(conf, help_func)                                           \
+    if (conf.hasOpt("help")) {                                              \
+        help_func();                                                        \
+        return;                                                             \
     }
 
 #define HELP                    "help"
@@ -127,231 +157,233 @@ typedef std::map<std::string, std::string>::iterator METHODS_IT;
 #define LOGIN_REGISTRAR_NAME                "login_registrar"
 #define LOGIN_REGISTRAR_NAME_DESC           "login registrar handle"
 
+#define _ADDOPT(name, type) \
+    {CLIENT_COMMON, name, name##_DESC, type, false, false}
+
+#define add_CRDATE              _ADDOPT(CRDATE_NAME, TYPE_STRING)
+#define add_DELDATE             _ADDOPT(DELDATE_NAME, TYPE_STRING)
+#define add_TRANSDATE           _ADDOPT(TRANSDATE_NAME, TYPE_STRING)
+#define add_UPDATE              _ADDOPT(UPDATE_NAME, TYPE_STRING)
+#define add_ID                  _ADDOPT(ID_NAME, TYPE_UINT)
+#define add_NAME                _ADDOPT(NAME_NAME, TYPE_STRING)
+#define add_HANDLE              _ADDOPT(HANDLE_NAME, TYPE_STRING)
+#define add_FQDN                _ADDOPT(FQDN_NAME, TYPE_STRING)
+#define add_REGISTRAR_ID        _ADDOPT(REGISTRAR_ID_NAME, TYPE_UINT)
+#define add_REGISTRAR_HANDLE    _ADDOPT(REGISTRAR_HANDLE_NAME, TYPE_STRING)
+#define add_REGISTRAR_NAME      _ADDOPT(REGISTRAR_NAME_NAME, TYPE_STRING)
+#define add_REGISTRANT_ID       _ADDOPT(REGISTRANT_ID_NAME, TYPE_UINT)
+#define add_REGISTRANT_HANDLE   _ADDOPT(REGISTRANT_HANDLE_NAME, TYPE_STRING)
+#define add_REGISTRANT_NAME     _ADDOPT(REGISTRANT_NAME_NAME, TYPE_STRING)
+#define add_ADMIN_ID            _ADDOPT(ADMIN_ID_NAME, TYPE_UINT)
+#define add_ADMIN_HANDLE        _ADDOPT(ADMIN_HANDLE_NAME, TYPE_STRING)
+#define add_ADMIN_NAME          _ADDOPT(ADMIN_NAME_NAME, TYPE_STRING)
+#define add_LIMIT               _ADDOPT(LIMIT_NAME, TYPE_UINT)
+#define add_FULL_LIST           _ADDOPT(FULL_LIST_NAME, TYPE_NOTYPE)
+#define add_ZONE_ID             _ADDOPT(ZONE_ID_NAME, TYPE_UINT)
+#define add_AUTH_PW             _ADDOPT(AUTH_PW_NAME, TYPE_STRING)
+#define add_ADMIN               _ADDOPT(ADMIN_NAME, TYPE_STRING)
+#define add_ADMIN_ADD           _ADDOPT(ADMIN_ADD_NAME, TYPE_STRING)
+#define add_ADMIN_REM           _ADDOPT(ADMIN_REM_NAME, TYPE_STRING)
+#define add_ADMIN_REM_TEMP      _ADDOPT(ADMIN_REM_TEMP_NAME, TYPE_STRING)
+#define add_IP                  _ADDOPT(IP_NAME, TYPE_STRING)
+#define add_NSSET_ID            _ADDOPT(NSSET_ID_NAME, TYPE_UINT)
+#define add_NSSET_HANDLE        _ADDOPT(NSSET_HANDLE_NAME, TYPE_STRING)
+#define add_ANY_NSSET           _ADDOPT(ANY_NSSET_NAME, TYPE_NOTYPE)
+#define add_KEYSET_ID           _ADDOPT(KEYSET_ID_NAME, TYPE_UINT)
+#define add_KEYSET_HANDLE       _ADDOPT(KEYSET_HANDLE_NAME, TYPE_STRING)
+#define add_ANY_KEYSET          _ADDOPT(ANY_KEYSET_NAME, TYPE_NOTYPE)
+#define add_ORGANIZATION        _ADDOPT(ORGANIZATION_NAME, TYPE_STRING)
+#define add_CITY                _ADDOPT(CITY_NAME, TYPE_STRING)
+#define add_EMAIL               _ADDOPT(EMAIL_NAME, TYPE_STRING)
+#define add_NOTIFY_EMAIL        _ADDOPT(NOTIFY_EMAIL_NAME, TYPE_STRING)
+#define add_VAT                 _ADDOPT(VAT_NAME, TYPE_STRING)
+#define add_SSN                 _ADDOPT(SSN_NAME, TYPE_STRING)
+#define add_COUNTRY             _ADDOPT(COUNTRY_NAME, TYPE_STRING)
+
 // almost all
 #define CRDATE_NAME             "crdate"
 #define CRDATE_NAME_DESC        "create date (type ``./fred-admin --help_dates'' for further date&time information)"
-#define add_CRDATE()            addOptStr(CRDATE_NAME)
 #define apply_CRDATE(filter)    apply_DATETIME(filter, CRDATE_NAME, Create)
 
 #define DELDATE_NAME            "deldate"
 #define DELDATE_NAME_DESC       "delete date (type ``./fred-admin --help_dates'' for further date&time information)"
-#define add_DELDATE()           addOptStr(DELDATE_NAME)
 #define apply_DELDATE(filter)   apply_DATETIME(filter, DELDATE_NAME, Delete)
 
 #define TRANSDATE_NAME          "transdate"
 #define TRANSDATE_NAME_DESC     "transfer date (type ``./fred-admin --help_dates'' for further date&time information)"
-#define add_TRANSDATE()         addOptStr(TRANSDATE_NAME)
 #define apply_TRANSDATE(filter) apply_DATETIME(filter, TRANSDATE_NAME, Transfer)
 
 #define UPDATE_NAME             "update"
 #define UPDATE_NAME_DESC        "update date (type ``./fred-admin --help_dates'' for further date&time information)"
-#define add_UPDATE()            addOptStr(UPDATE_NAME)
 #define apply_UPDATE(filter)    apply_DATETIME(filter, UPDATE_NAME, Update)
 
 // all
 #define ID_NAME                 "id"
 #define ID_NAME_DESC            "filter records with specific id nubmer"
-#define add_ID()                addOptUInt(ID_NAME)
 #define apply_ID(filter)          get_DID(filter, Id, ID_NAME)
 
 // contact, domain, file, invoice, keyset, nsset, registrar
 #define NAME_NAME               "name_name"
 #define NAME_NAME_DESC          "filter records with specific name"
-#define add_NAME()              addOptStr(NAME_NAME)
 #define apply_NAME(filter)        get_Str(filter, Name, NAME_NAME)
 
 // contact, domain, keyset, mail, nsset, registrar
 #define HANDLE_NAME             "handle"
 #define HANDLE_NAME_DESC        "filter records with specific handle"
-#define add_HANDLE()            addOptStr(HANDLE_NAME)
 #define apply_HANDLE(filter)      get_Str(filter, Handle, HANDLE_NAME)
 
 // domain, nsset, object
 #define FQDN_NAME               "fqdn"
 #define FQDN_NAME_DESC          "filter records with specific fqdn"
-#define add_FQDN()              addOptStr(FQDN_NAME)
 #define apply_FQDN(filter)      get_Str(filter, FQDN, FQDN_NAME)
 
 // contact, domain, infobuffer, invoice, keyset, nsset, poll
 #define REGISTRAR_ID_NAME           "registrar_id"
 #define REGISTRAR_ID_NAME_DESC      "show only records with specific registrar id number"
-#define add_REGISTRAR_ID()          addOptUInt(REGISTRAR_ID_NAME)
 #define apply_REGISTRAR_ID(filter)  get_DID(filter, Registrar().addId, REGISTRAR_ID_NAME)
 
 // contact, domain, keyset, nsset, registrar
 #define REGISTRAR_HANDLE_NAME       "registrar_handle"
 #define REGISTRAR_HANDLE_NAME_DESC  "show only records with specific registrar handle"
-#define add_REGISTRAR_HANDLE()      addOptStr(REGISTRAR_HANDLE_NAME)
 #define apply_REGISTRAR_HANDLE(filter) get_Str(filter, Registrar().addHandle, REGISTRAR_HANDLE_NAME)
 
 // contact,  domain, keyset, nsset
 #define REGISTRAR_NAME_NAME         "registrar_name"
 #define REGISTRAR_NAME_NAME_DESC    "show only records with specific registrar name"
-#define add_REGISTRAR_NAME()        addOptStr(REGISTRAR_NAME_NAME)
 #define apply_REGISTRAR_NAME(filter) get_Str(filter, Registrar().addName, REGISTRAR_NAME_NAME)
 
 // domain, invoice
 #define REGISTRANT_ID_NAME          "registrant_id"
 #define REGISTRANT_ID_NAME_DESC     "show only records with specific registrant id number"
-#define add_REGISTRANT_ID()         addOptUInt(REGISTRANT_ID_NAME)
 #define apply_REGISTRANT_ID(filter) get_DID(filter, Registrant().addId, REGISTRANT_ID_NAME)
 
 // domain
 #define REGISTRANT_HANDLE_NAME      "registrant_handle"
 #define REGISTRANT_HANDLE_NAME_DESC "show only records with specific registrant handle"
-#define add_REGISTRANT_HANDLE()     addOptStr(REGISTRANT_HANDLE_NAME)
 #define apply_REGISTRANT_HANDLE(filter) get_Str(filter, Registrant().addHandle, REGISTRANT_HANDLE_NAME)
 
 // domain
 #define REGISTRANT_NAME_NAME        "registrant_name"
 #define REGISTRANT_NAME_NAME_DESC   "show only recorrds with specific registrant name"
-#define add_REGISTRANT_NAME()       addOptStr(REGISTRANT_NAME_NAME)
 #define apply_REGISTRANT_NAME(filter) get_Str(filter, Registrant().addName, REGISTRANT_NAME_NAME)
 
 // domain, keyset, nsset
 #define ADMIN_ID_NAME               "admin_id"
 #define ADMIN_ID_NAME_DESC          "show only records with specific admin contact id number"
-#define add_ADMIN_ID()              addOptUInt(ADMIN_ID_NAME)
 
 // domain, keyset, nsset
 #define ADMIN_HANDLE_NAME           "admin_handle"
 #define ADMIN_HANDLE_NAME_DESC      "show only records with specific admin contact handle"
-#define add_ADMIN_HANDLE()          addOptStr(ADMIN_HANDLE_NAME)
 
 // domain, keyset, nsset
 #define ADMIN_NAME_NAME             "admin_name"
 #define ADMIN_NAME_NAME_DESC        "show only records with specific admin contact name"
-#define add_ADMIN_NAME()            addOptStr(ADMIN_NAME_NAME)
 
 // all
 #define LIMIT_NAME                  "limit"
 #define LIMIT_NAME_DESC             "set output limit"
-#define add_LIMIT()                 addOptUInt(LIMIT_NAME)
 #define apply_LIMIT(list)           list->setLimit(getOptUInt(LIMIT_NAME))
 
 // domain, keyset, nsset, contact
 #define FULL_LIST_NAME              "full_list"
 #define FULL_LIST_NAME_DESC         "when do list show all available information"
-#define add_FULL_LIST()             addOpt(FULL_LIST_NAME)
 
 // domain, invoice
 #define ZONE_ID_NAME                "zone_id"
 #define ZONE_ID_NAME_DESC           "show only records with specific zone id number"
-#define add_ZONE_ID()               addOptUInt(ZONE_ID_NAME)
 #define apply_ZONE_ID(filter)       get_DID(filter, ZoneId, ZONE_ID_NAME)
 
 // almost all
 #define AUTH_PW_NAME                "auth_pw"
 #define AUTH_PW_NAME_DESC           "show only records with specific authorization password"
-#define add_AUTH_PW()               addOptStr(AUTH_PW_NAME)
 
 // domain, keyset, nsset
 #define ADMIN_NAME                  "admins"
 #define ADMIN_NAME_DESC             "list of admins"
-#define add_ADMIN()                 addOptStr(ADMIN_NAME)
 
 // domain, keyset
 #define ADMIN_ADD_NAME              "admin_add"
 #define ADMIN_ADD_NAME_DESC         "list of admins to add"
-#define add_ADMIN_ADD()             addOptStr(ADMIN_ADD_NAME)
 
 // domain, keyset
 #define ADMIN_REM_NAME              "admin_rem"
 #define ADMIN_REM_NAME_DESC         "list of admins to remove"
-#define add_ADMIN_REM()             addOptStr(ADMIN_REM_NAME)
 
 // domain
 #define ADMIN_REM_TEMP_NAME         "admin_rem_temp"
 #define ADMIN_REM_TEMP_NAME_DESC    "list of temporary admins to remove"
-#define add_REM_TEMP_ADMIN()        addOptStr(ADMIN_REM_TEMP_NAME)
 
 // nsset
 #define IP_NAME                 "ip"
 #define IP_NAME_DESC            "show only records with specific ip address"
-#define add_IP()                addOptStr(IP_NAME)
 
 // contact, registrar
 #define ORGANIZATION_NAME       "organization"
 #define ORGANIZATION_NAME_DESC  "show only records with specific organization name"
-#define add_ORGANIZATION()      addOptStr(ORGANIZATION_NAME)
 #define apply_ORGANIZATION(filter) get_Str(filter, Organization, ORGANIZATION_NAME)
 
 // contact, registrar
 #define CITY_NAME               "city"
 #define CITY_NAME_DESC          "show only records with specific city"
-#define add_CITY()              addOptStr(CITY_NAME)
 #define apply_CITY(filter)      get_Str(filter, City, CITY_NAME)
 
 // contact, registrar
 #define EMAIL_NAME              "email"
 #define EMAIL_NAME_DESC         "show only records with specific email address"
-#define add_EMAIL()             addOptStr(EMAIL_NAME)
 #define apply_EMAIL(filter)     get_Str(filter, Email, EMAIL_NAME)
 
 // contcat
 #define NOTIFY_EMAIL_NAME       "notify_email"
 #define NOTIFY_EMAIL_NAME_DESC  "show only records with specific notify email address"
-#define add_NOTIFY_EMAIL()      addOptStr(NOTIFY_EMAIL_NAME)
 #define apply_NOTIFY_EMAIL(filter) get_Str(filter, NotifyEmail, NOTIFY_EMAIL_NAME)
 
 // contact
 #define VAT_NAME                "vat"
 #define VAT_NAME_DESC           "show only records with ..."
-#define add_VAT()               addOptStr(VAT_NAME)
 #define apply_VAT(filter)       get_Str(filter, Vat, VAT_NAME)
 
 // contact
 #define SSN_NAME                "ssn"
 #define SSN_NAME_DESC           "show only records with ..."
-#define add_SSN()               addOptStr(SSN_NAME)
 #define apply_SSN(filter)       get_Str(filter, Ssn, SSN_NAME)
 
 // registrar
 #define COUNTRY_NAME            "country"
 #define COUNTRY_NAME_DESC       "show only records with specific country"
-#define add_COUNTRY()           addOptStr(COUNTRY_NAME)
 #define apply_COUNTRY(filter)   get_Str(filter, Country, COUNTRY_NAME)
 
 // domain
 #define KEYSET_ID_NAME          "keyset_id"
 #define KEYSET_ID_NAME_DESC     "show only records with specific keyset id number"
-#define add_KEYSET_ID()         addOptUInt(KEYSET_ID_NAME)
 #define apply_KEYSET_ID(filter) get_DID(filter, KeySet().addId, KEYSET_ID_NAME)
 
 // domain
 #define KEYSET_HANDLE_NAME      "keyset_handle"
 #define KEYSET_HANDLE_NAME_DESC "show only records with specific keyset handle"
-#define add_KEYSET_HANDLE()     addOptStr(KEYSET_HANDLE_NAME)
 #define apply_KEYSET_HANDLE(filter) get_Str(filter, KeySet().addHandle, KEYSET_HANDLE_NAME)
 
 // domain
 #define NSSET_ID_NAME           "nsset_id"
 #define NSSET_ID_NAME_DESC      "show only records with specific nsset id number"
-#define add_NSSET_ID()          addOptUInt(NSSET_ID_NAME)
 #define apply_NSSET_ID(filter)  get_DID(filter, NSSet().addId, NSSET_ID_NAME)
 
 // domain
 #define NSSET_HANDLE_NAME       "nsset_handle"
 #define NSSET_HANDLE_NAME_DESC  "show only records with specific nsset handle"
-#define add_NSSET_HANDLE()      addOptStr(NSSET_HANDLE_NAME)
 #define apply_NSSET_HANDLE(filter) get_Str(filter, NSSet().addHandle, NSSET_HANDLE_NAME)
 
 // domain
 #define ANY_KEYSET_NAME         "any_keyset"
 #define ANY_KEYSET_NAME_DESC    "show only records with assigned keyset"
-#define add_ANY_KEYSET()        addOpt(ANY_KEYSET_NAME)
 #define apply_ANY_KEYSET(filter) checkGetOpt(filter->addKeySet(), ANY_KEYSET_NAME)
 
 // domain
 #define ANY_NSSET_NAME          "any_nsset"
 #define ANY_NSSET_NAME_DESC     "show only records with assigned nsset"
-#define add_ANY_NSSET()         addOpt(ANY_NSSET_NAME)
 #define apply_ANY_NSSET(filter) checkGetOpt(filter->addNSSet(), ANY_NSSET_NAME)
 
 #define OUTPUT_NAME             "output"
 #define OUTPUT_NAME_DESC        "output file name"
-
-
 
 #define CLIENT_LOGIN                                                        \
 CorbaClient cc(0, NULL, m_nsAddr.c_str(),                                   \

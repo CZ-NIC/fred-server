@@ -19,7 +19,6 @@
 #ifndef _OBJECTCLIENT_H_
 #define _OBJECTCLIENT_H_
 
-#define OBJECT_CLIENT                       "object_client"
 #define OBJECT_SHOW_OPTS_NAME               "object_show_opts"
 #define OBJECT_SHOW_OPTS_NAME_DESC          "show all object command line options"
 #define OBJECT_NEW_STATE_REQUEST_NAME       "object_new_state_request"
@@ -70,36 +69,37 @@ private:
     CORBA::Long m_clientId;
     DB m_db;
     ccReg::EPP_var m_epp;
-
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
     Config::Conf m_conf;
-public:
-    ObjectClient();
-    ObjectClient(std::string connstring,
-            std::string nsAddr);
-    ~ObjectClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
-    void runMethod();
-
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts();
-    
     int createObjectStateRequest(Register::TID object, unsigned state);
     int deleteObjects(const std::string &typeList);
 
+    static const struct options m_opts[];
+public:
+    ObjectClient()
+    { }
+    ObjectClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+    ~ObjectClient()
+    { }
+
+    static const struct options *getOpts();
+    static int getOptsCount();
+    void runMethod();
+
+    void show_opts();
     void new_state_request();
     void list();
     void update_states();
     void delete_candidates();
-
     void regular_procedure();
-};
+}; // class Object
 
 } // namespace Admin;
 

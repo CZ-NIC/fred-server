@@ -19,7 +19,6 @@
 #ifndef _AUTHINFOCLIENT_H_
 #define _AUTHINFOCLIENT_H_
 
-#define AUTHINFO_CLIENT             "authinfo_client"
 #define AUTHINFO_PDF_NAME         "authinfopdf"
 #define AUTHINFO_PDF_NAME_DESC    "generate pdf of authorization info request"
 
@@ -46,30 +45,32 @@ private:
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
+    static const struct options m_opts[];
 public:
-    AuthInfoClient();
-    AuthInfoClient(std::string connstring,
-            std::string nsAddr);
-    ~AuthInfoClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
+    AuthInfoClient()
+    { }
+    AuthInfoClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+    ~AuthInfoClient()
+    { }
     void runMethod();
 
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
-    void show_opts();
+    static const struct options *getOpts();
+    static int getOptsCount();
 
+    void show_opts();
     void pdf();
 
     void pdf_help();
 
-    //int list();
-};
+}; // class AuthInfoClient
 
 } // namespace Admin;
 

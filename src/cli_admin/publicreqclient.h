@@ -19,7 +19,6 @@
 #ifndef _PUBLICREQCLIENT_H_
 #define _PUBLICREQCLIENT_H_
 
-#define PUBLICREQUEST_CLIENT            "publicrequest_client"
 #define PUBLICREQ_SHOW_OPTS_NAME        "public_request_show_opts"
 #define PUBLICREQ_SHOW_OPTS_NAME_DESC   "show all public request command line options"
 #define PUBLICREQ_LIST_NAME             "public_request_list"
@@ -73,27 +72,30 @@ private:
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
+    static const struct options m_opts[];
 public:
-    PublicRequestClient();
-    PublicRequestClient(std::string connstring,
-            std::string nsAddr);
-    ~PublicRequestClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
+    PublicRequestClient()
+    { }
+    PublicRequestClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+    ~PublicRequestClient()
+    { }
+
+    static const struct options *getOpts();
+    static int getOptsCount();
     void runMethod();
 
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
     void show_opts();
-
     void list();
     void list_help();
-};
+}; // class PublicRequestClient
 
 } // namespace Admin;
 

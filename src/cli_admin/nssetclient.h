@@ -26,7 +26,7 @@
 #include "old_utils/dbsql.h"
 #include "register/register.h"
 #include "baseclient.h"
-#define NSSET_CLIENT                "nsset_client"
+
 #define NSSET_SHOW_OPTS_NAME        "nsset_show_opts"
 #define NSSET_SHOW_OPTS_NAME_DESC   "show all nsset command line options parameter"
 #define NSSET_LIST_NAME             "nsset_list"
@@ -48,27 +48,30 @@ private:
     ccReg::EPP_var m_epp;
     Config::Conf m_conf;
 
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
+    static const struct options m_opts[];
 public:
-    NssetClient();
-    NssetClient(std::string connstring,
-            std::string nsAddr);
-    ~NssetClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
+    NssetClient()
+    { }
+    NssetClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+    ~NssetClient()
+    { }
+
+    static const struct options *getOpts();
+    static int getOptsCount();
     void runMethod();
 
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
     void show_opts();
-
     void list();
     void list_help();
-};
+}; // class NssetClient
 
 } // namespace Admin;
 

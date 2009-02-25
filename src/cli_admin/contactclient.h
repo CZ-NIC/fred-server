@@ -26,7 +26,6 @@
 #include "old_utils/dbsql.h"
 #include "baseclient.h"
 
-#define CONTACT_CLIENT                  "contact_client"
 #define CONTACT_SHOW_OPTS_NAME          "contact_show_opts"
 #define CONTACT_SHOW_OPTS_NAME_DESC     "show all contact command line options"
 #define CONTACT_INFO_NAME               "contact_info"
@@ -47,29 +46,33 @@ private:
     DB m_db;
     ccReg::EPP_var m_epp;
 
-    boost::program_options::options_description *m_options;
-    boost::program_options::options_description *m_optionsInvis;
+    static const struct options m_opts[];
 public:
-    ContactClient();
-    ContactClient(std::string connstring,
-            std::string nsAddr);
-    ~ContactClient();
-    void init(std::string connstring,
-            std::string nsAddr,
-            Config::Conf &conf,
-            METHODS &methods);
-    void addMethods(METHODS &methods);
+    ContactClient()
+    { }
+    ContactClient(
+            const std::string &connstring,
+            const std::string &nsAddr,
+            const Config::Conf &conf):
+        BaseClient(connstring, nsAddr),
+        m_conf(conf)
+    {
+        m_db.OpenDatabase(connstring.c_str());
+    }
+    ~ContactClient()
+    { }
+
+    static const struct options *getOpts();
+    static int getOptsCount();
+
     void runMethod();
 
-    boost::program_options::options_description *getVisibleOptions() const;
-    boost::program_options::options_description *getInvisibleOptions() const;
     void show_opts();
-
     void list();
     void info();
 
     void list_help();
-};
+}; // class ContactClient
 
 } // namespace Admin;
 

@@ -92,7 +92,7 @@ void
 help_dates()
 {
     std::cout
-        << "Possible dates format: (shown at create date option)\n"
+        << "Possible dates format: (shown for create date option)\n"
         << " ``--crdate=\"2008-10-16\"''        - one specific day (time is from 00:00:00 to 23:59:59)\n"
         << " ``--crdate=\"2008-10-16;\"''       - interval from '2008-10-16 00:00:00' to the biggest valid date\n"
         << " ``--crdate=\";2008-10-16\"''       - interval from the lowest valid date to '2008-10-16 23:59:59'\n"

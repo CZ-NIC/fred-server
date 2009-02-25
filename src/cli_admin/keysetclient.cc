@@ -22,93 +22,10 @@
 
 namespace Admin {
 
-#define addMethod(methods, name) \
-    methods.insert(std::make_pair(name, KEYSET_CLIENT))
-
-KeysetClient::KeysetClient()
+const struct options *
+KeysetClient::getOpts()
 {
-    m_options = new boost::program_options::options_description(
-            "KeySet related options");
-    m_options->add_options()
-        addOpt(KEYSET_LIST_NAME)
-        addOpt(KEYSET_LIST_PLAIN_NAME)
-        addOptStr(KEYSET_INFO_NAME)
-        addOptStr(KEYSET_INFO2_NAME)
-        addOptStr(KEYSET_SEND_AUTH_INFO_NAME)
-        addOptStr(KEYSET_CREATE_NAME)
-        addOptStr(KEYSET_DELETE_NAME)
-        addOptStr(KEYSET_UPDATE_NAME)
-        addOptStr(KEYSET_TRANSFER_NAME)
-        addOpt(KEYSET_SHOW_OPTS_NAME);
-
-    m_optionsInvis = new boost::program_options::options_description(
-            "KeySet related sub options");
-    m_optionsInvis->add_options()
-        addOptStr(KEYSET_DSRECORDS_NAME)
-        addOptStr(KEYSET_DSREC_ADD_NAME)
-        addOptStr(KEYSET_DSREC_REM_NAME)
-        addOptStr(KEYSET_DNSKEY_NAME)
-        addOptStr(KEYSET_DNSKEY_ADD_NAME)
-        addOptStr(KEYSET_DNSKEY_REM_NAME)
-        add_ID()
-        add_HANDLE()
-        add_ADMIN_ID()
-        add_ADMIN_HANDLE()
-        add_ADMIN_NAME()
-        add_REGISTRAR_ID()
-        add_REGISTRAR_HANDLE()
-        add_REGISTRAR_NAME()
-        add_ADMIN_NAME()
-        add_ADMIN_ADD()
-        add_ADMIN_REM()
-        add_CRDATE()
-        add_UPDATE()
-        add_TRANSDATE()
-        add_DELDATE()
-        add_AUTH_PW();
-}
-
-KeysetClient::KeysetClient(
-        std::string connstring,
-        std::string nsAddr) : BaseClient(connstring, nsAddr)
-{
-    m_db.OpenDatabase(connstring.c_str());
-    m_options = NULL;
-    m_optionsInvis = NULL;
-}
-
-KeysetClient::~KeysetClient()
-{
-    delete m_options;
-    delete m_optionsInvis;
-}
-
-void
-KeysetClient::init(
-        std::string connstring,
-        std::string nsAddr,
-        Config::Conf &conf,
-        METHODS &methods)
-{
-    BaseClient(connstring, nsAddr);
-    m_db.OpenDatabase(connstring.c_str());
-    m_conf = conf;
-    addMethods(methods);
-}
-
-void
-KeysetClient::addMethods(METHODS &methods)
-{
-    addMethod(methods, KEYSET_SHOW_OPTS_NAME);
-    addMethod(methods, KEYSET_LIST_NAME);
-    addMethod(methods, KEYSET_SEND_AUTH_INFO_NAME);
-    addMethod(methods, KEYSET_TRANSFER_NAME);
-    addMethod(methods, KEYSET_LIST_PLAIN_NAME);
-    addMethod(methods, KEYSET_UPDATE_NAME);
-    addMethod(methods, KEYSET_DELETE_NAME);
-    addMethod(methods, KEYSET_CREATE_NAME);
-    addMethod(methods, KEYSET_INFO2_NAME);
-    addMethod(methods, KEYSET_INFO_NAME);
+    return m_opts;
 }
 
 void
@@ -139,24 +56,11 @@ KeysetClient::runMethod()
     }
 }
 
-boost::program_options::options_description *
-KeysetClient::getVisibleOptions() const
-{
-    return m_options;
-}
-
-boost::program_options::options_description *
-KeysetClient::getInvisibleOptions() const
-{
-    return m_optionsInvis;
-}
-
 void
 KeysetClient::show_opts()
 {
     callHelp(m_conf, no_help);
-    std::cout << *m_options << std::endl;
-    std::cout << *m_optionsInvis << std::endl;
+    print_options("Keyset", getOpts(), getOptsCount());
 }
 
 void
@@ -774,4 +678,50 @@ KeysetClient::check_help()
         << std::endl;
 }
 
+#define ADDOPT(name, type, callable, visible) \
+    {CLIENT_KEYSET, name, name##_DESC, type, callable, visible}
+
+const struct options
+KeysetClient::m_opts[] = {
+    ADDOPT(KEYSET_LIST_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(KEYSET_LIST_PLAIN_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(KEYSET_INFO_NAME, TYPE_STRING, true, true),
+    ADDOPT(KEYSET_INFO2_NAME, TYPE_STRING, true, true),
+    ADDOPT(KEYSET_SEND_AUTH_INFO_NAME, TYPE_STRING, true, true),
+    ADDOPT(KEYSET_CREATE_NAME, TYPE_STRING, true, true),
+    ADDOPT(KEYSET_DELETE_NAME, TYPE_STRING, true, true),
+    ADDOPT(KEYSET_UPDATE_NAME, TYPE_STRING, true, true),
+    ADDOPT(KEYSET_TRANSFER_NAME, TYPE_STRING, true, true),
+    ADDOPT(KEYSET_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(KEYSET_DSRECORDS_NAME, TYPE_STRING, false, false),
+    ADDOPT(KEYSET_DSREC_ADD_NAME, TYPE_STRING, false, false),
+    ADDOPT(KEYSET_DSREC_REM_NAME, TYPE_STRING, false, false),
+    ADDOPT(KEYSET_DNSKEY_NAME, TYPE_STRING, false, false),
+    ADDOPT(KEYSET_DNSKEY_ADD_NAME, TYPE_STRING, false, false),
+    ADDOPT(KEYSET_DNSKEY_REM_NAME, TYPE_STRING, false, false),
+    add_ID,
+    add_HANDLE,
+    add_ADMIN_ID,
+    add_ADMIN_HANDLE,
+    add_ADMIN_NAME,
+    add_REGISTRAR_ID,
+    add_REGISTRAR_HANDLE,
+    add_REGISTRAR_NAME,
+    add_ADMIN_NAME,
+    add_ADMIN_ADD,
+    add_ADMIN_REM,
+    add_CRDATE,
+    add_UPDATE,
+    add_TRANSDATE,
+    add_DELDATE,
+    add_AUTH_PW,
+};
+
+#undef ADDOPT
+
+int 
+KeysetClient::getOptsCount()
+{
+    return sizeof(m_opts) / sizeof(options);
+}
 } //namespace Admin;
