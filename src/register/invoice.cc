@@ -2910,7 +2910,7 @@ ManagerImpl::getCreditByZone(
     Database::SelectQuery getCreditQuery;
     getCreditQuery.buffer()
         << "SELECT SUM(credit) FROM invoice i JOIN registrar r "
-        << "ON (i.registrar=r.id) "
+        << "ON (i.registrarid=r.id) "
         << "WHERE i.zone=" << zoneId
         << " AND r.handle='" << registrarHandle << "';";
     Database::Result getCreditRes = m_conn->exec(getCreditQuery);
