@@ -1797,28 +1797,11 @@ public:
                 return false;
             }
             stat->save();
-            if (createCreditInvoice) {
-                std::auto_ptr<Register::Invoicing::Manager>
-                    invMan(Register::Invoicing::Manager::create(m_dbMan));
-                for (int i = 0; i < (int)stat->getStatementItemCount(); i++) {
-                    StatementItemImpl *item = dynamic_cast<StatementItemImpl *>(
-                            const_cast<StatementItem *>(stat->getStatementItemByIdx(i)));
-                    if (item->getCode() == 2) {
-                        std::auto_ptr<Register::Invoicing::Invoice>
-                            invoice(invMan->createDepositInvoice());
-                        invoice->setZone(getZoneByAccountId(stat->getAccountId()));
-                        invoice->setRegistrar(getRegistrarByVarSymb(item->getVarSymbol()));
-                        invoice->setPrice(item->getPrice());
-                        invoice->setTaxDate(item->getDate());
-                        invoice->save();
-                        // pair statement with its invoice
-                        item->setInvoiceId(invoice->getId());
-                        if (!item->save()) {
-                            LOGGER(PACKAGE).error("error when creating credit invoice");
-                        }
-                    }
-                }
-            }
+        }
+        if (createCreditInvoice) {
+            std::auto_ptr<Invoicing::Manager>
+                invMan(Invoicing::Manager::create(m_dbMan));
+            return invMan->pairInvoices();
         }
         return true;
     } // ManagerImpl::importStatementXml()
@@ -1850,23 +1833,12 @@ public:
                     return false;
                 }
                 stat->save();
-                if (createCreditInvoice) {
-                    std::auto_ptr<Register::Invoicing::Manager>
-                        invMan(Register::Invoicing::Manager::create(m_dbMan));
-                    std::auto_ptr<Register::Invoicing::Invoice>
-                        invoice(invMan->createDepositInvoice());
-                    invoice->setZone(getZoneByAccountId(stat->getAccountId()));
-                    invoice->setRegistrar(getRegistrarByVarSymb(stat->getVarSymbol()));
-                    invoice->setPrice(stat->getPrice());
-                    invoice->setTaxDate(stat->getCrDate().str());
-                    invoice->save();
-                    // pair online-statement with its invoice
-                    stat->setInvoiceId(invoice->getId());
-                    if (!stat->save()) {
-                        LOGGER(PACKAGE).error("error when creating credit invoice");
-                    }
-                }
             }
+        }
+        if (createCreditInvoice) {
+            std::auto_ptr<Invoicing::Manager>
+                invMan(Invoicing::Manager::create(m_dbMan));
+            return invMan->pairInvoices();
         }
         return true;
     } // bool ManagerImpl::importOnlineStatementXml()
