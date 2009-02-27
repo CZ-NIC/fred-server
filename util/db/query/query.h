@@ -125,7 +125,7 @@ public:
   virtual ~QueryBase() { }
 
 
-  virtual std::string toSql(boost::function<std::string(std::string)> _esc_func) = 0;
+  virtual std::string toSql(escape_function_type _esc_func) = 0;
 
 
   virtual void regenerateTableAliases(unsigned &_num) {
@@ -174,7 +174,7 @@ public:
   virtual ~DeleteQuery() { }
 
 
-  std::string toSql(boost::function<std::string(std::string)> _esc_func) {
+  std::string toSql(escape_function_type _esc_func) {
     buffer_type buffer;
     buffer << "DELETE FROM " << table_.toSql();
     if (!where_.empty()) {
@@ -212,7 +212,7 @@ public:
   }
 
 
-  std::string toSql(boost::function<std::string(std::string)> _esc_func) {
+  std::string toSql(escape_function_type _esc_func) {
     /* HACK: old SelectQuery handling */
     if (!insert_select_.empty()) {
       return insert_select_;
@@ -222,13 +222,11 @@ public:
 
     if (!values_.empty()) {
       value_list::const_iterator it = values_.begin();
-      bool quoted = it->second.quoted();
       tmp_fields = it->first;
-      tmp_values = (quoted ? "E'" + _esc_func(it->second) + "'" : static_cast<std::string>(it->second));
+      tmp_values = it->second.toSql(_esc_func);
       for (++it; it != values_.end() && values_.size() > 1; ++it) {
-        bool quoted = it->second.quoted();
         tmp_fields += ", " + it->first;
-        tmp_values += ", " + (quoted ? "E'" + _esc_func(it->second) + "'" : static_cast<std::string>(it->second));
+        tmp_values += ", " + it->second.toSql(_esc_func);
       }
     }
 
@@ -271,18 +269,14 @@ public:
   }
 
 
-  std::string toSql(boost::function<std::string(std::string)> _esc_func) {
+  std::string toSql(escape_function_type _esc_func) {
     std::string tmp_set;
 
     if (!values_.empty()) {
       value_list::const_iterator it = values_.begin();
-      bool quoted = it->second.quoted();
-      std::string tmp_value = (quoted ? "E'" + _esc_func(it->second) + "'" : static_cast<std::string>(it->second));
-      tmp_set = it->first + " = " + tmp_value;
+      tmp_set = it->first + " = " + it->second.toSql(_esc_func);
       for (++it; it != values_.end() && values_.size() > 1; ++it) {
-        bool quoted = it->second.quoted();
-        std::string tmp_value = (quoted ? "E'" + _esc_func(it->second) + "'" : static_cast<std::string>(it->second));
-        tmp_set += ", " + it->first + " = " + tmp_value;
+        tmp_set += ", " + it->first + " = " + it->second.toSql(_esc_func);
       }
     }
 

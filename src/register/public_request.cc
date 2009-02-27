@@ -6,6 +6,9 @@
 #include "log/logger.h"
 #include "util.h"
 #include "db_settings.h"
+#include "types/convert_sql_db_types.h"
+#include "types/sqlize.h"
+
 
 namespace Register {
 namespace PublicRequest {
@@ -270,7 +273,7 @@ public:
                                  << "currval('public_request_id_seq')" << ", "
                                  << it->id << ")";
           transaction.exec(insert_object);
-          objects_str += it->id.to_string() + (it == objects_.end() - 1 ? "" : " ");
+          objects_str += sqlize(it->id) + (it == objects_.end() - 1 ? "" : " ");
         }
         
         Database::Sequence pp_seq(*_conn, "public_request_id_seq");

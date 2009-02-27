@@ -73,20 +73,20 @@ public:
   }
 
   virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
-    std::stringstream &prep = _sq.where_prepared_string();
-    std::vector<std::string> &store = _sq.where_prepared_values();
+    Database::SelectQuery::prepared_values_string  &prep  = _sq.where_prepared_string();
+    Database::SelectQuery::prepared_values_storage &store = _sq.where_prepared_values();
 
     prep << getConjuction() << "( ";
     if (beg_set) {
-      prep << column.str() << SQL_OP_GE << "'%" << store.size() + 1 << "%'";
-      store.push_back(Conversion<Tp>::to_string(value_beg));
+      prep << column.str() << SQL_OP_GE << "%" << store.size() + 1 << "%";
+      store.push_back(value_beg);
     }
     if (beg_set && end_set) {
       prep << SQL_OP_AND;
     }
     if (end_set) {
-      prep << column.str() << SQL_OP_LT << "'%" << store.size() + 1 << "%' )";
-      store.push_back(Conversion<Tp>::to_string(value_end));
+      prep << column.str() << SQL_OP_LT << "%" << store.size() + 1 << "% )";
+      store.push_back(value_end);
     }
   }
 
@@ -145,8 +145,8 @@ public:
 
   virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
     TRACE("[CALL] _BaseDTInterval::serialize()");
-    std::stringstream &prep = _sq.where_prepared_string();
-    std::vector<std::string> &store = _sq.where_prepared_values();
+    Database::SelectQuery::prepared_values_string  &prep  = _sq.where_prepared_string();
+    Database::SelectQuery::prepared_values_storage &store = _sq.where_prepared_values();
     const DTp& t_value = value.getValue();
 
     if (value.isNull()) {
@@ -163,15 +163,15 @@ public:
 
       if (!t_value.begin().is_special()) {
         prep << getConjuction() << "( ";
-        prep << column.str() << SQL_OP_GE << "'%" << store.size() + 1 << "%'" + value_post_;
-        store.push_back(t_value.begin().iso_str());
+        prep << column.str() << SQL_OP_GE << "%" << store.size() + 1 << "%" + value_post_;
+        store.push_back(t_value.begin());
         b = true;
       }
       if (!t_value.end().is_special()) {
         prep << (b ? SQL_OP_AND : getConjuction() + "( ") << column.str()
-            << second_operator << "'%" << store.size() + 1 << "%'" + value_post_;
+            << second_operator << "%" << store.size() + 1 << "%" + value_post_;
         prep << " )";
-        store.push_back(t_value.end().iso_str());
+        store.push_back(t_value.end());
       } else if (b) {
         prep << " )";
       }
@@ -203,9 +203,8 @@ protected:
   Database::Null<DTp> value;
 };
 
-#define BOOST_SERIALIZATION_BASE_TEMPLATE(name, base)               \
-  boost::serialization::make_nvp(name,                                     \
-  boost::serialization::base_object<base >(*this));
+#define BOOST_SERIALIZATION_BASE_TEMPLATE(name, base)    \
+  boost::serialization::make_nvp(name, boost::serialization::base_object<base >(*this));
 
 template<> class Interval<DateTimeInterval> :
   public _BaseDTInterval<DateTimeInterval> {
@@ -228,7 +227,9 @@ public:
   
   void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
     TRACE("[CALL] Interval<DateTime>::serialize()");
-    std::stringstream &prep = _sq.where_prepared_string();
+    Database::SelectQuery::prepared_values_string  &prep  = _sq.where_prepared_string();
+    Database::SelectQuery::prepared_values_storage &store = _sq.where_prepared_values();
+
     const DateTimeInterval& t_value = value.getValue();
   
     if (!value.isNull() 
@@ -266,8 +267,6 @@ public:
     }
     else {
       /* notice: took from parent class and added time conversion */
-      std::vector<std::string> &store = _sq.where_prepared_values();
-  
       if (value.isNull()) {
         LOGGER(PACKAGE).trace("[IN] _BaseDTInterval::serialize(): value is 'NULL'");
         prep << getConjuction() << "( ";
@@ -282,15 +281,15 @@ public:
   
         if (!t_value.begin().is_special()) {
           prep << getConjuction() << "( ";
-          prep << column.str() << SQL_OP_GE << "('%" << store.size() + 1 << "% Europe/Prague' AT TIME ZONE 'UTC')" + value_post_;
-          store.push_back(t_value.begin().str());
+          prep << column.str() << SQL_OP_GE << "((%" << store.size() + 1 << "% || ' Europe/Prague')::timestamptz AT TIME ZONE 'UTC')" + value_post_;
+          store.push_back(t_value.begin());
           b = true;
         }
         if (!t_value.end().is_special()) {
           prep << (b ? SQL_OP_AND : getConjuction() + "( ") << column.str()
-              << second_operator << "('%" << store.size() + 1 << "% Europe/Prague' AT TIME ZONE 'UTC')" + value_post_;
+              << second_operator << "((%" << store.size() + 1 << "% || ' Europe/Prague')::timestamptz AT TIME ZONE 'UTC')" + value_post_;
           prep << " )";
-          store.push_back(t_value.end().str());
+          store.push_back(t_value.end());
         } else if (b) {
           prep << " )";
         }
@@ -327,7 +326,8 @@ public:
 
   void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
     TRACE("[CALL] Interval<Date>::serialize()");
-    std::stringstream &prep = _sq.where_prepared_string();
+    Database::SelectQuery::prepared_values_string  &prep  = _sq.where_prepared_string();
+
     const DateInterval& t_value = value.getValue();
   
     if (!value.isNull() 
@@ -426,16 +426,15 @@ public:
   }
 
   virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
-    std::stringstream &prep = _sq.where_prepared_string();
-    std::vector<std::string> &store = _sq.where_prepared_values();
+    Database::SelectQuery::prepared_values_string  &prep  = _sq.where_prepared_string();
+    Database::SelectQuery::prepared_values_storage &store = _sq.where_prepared_values();
 
     prep << getConjuction() << "( " << column.str();
     if (value.isNull()) {
       prep << SQL_OP_IS << value;
     } else {
-      prep << op << "'%" << store.size() + 1 << "%'";
-      store.push_back(Conversion<Tp>::to_string(value.getValue()));
-      // store.push_back(Util::stream_cast<std::string>(value.getValue()));
+      prep << op << "%" << store.size() + 1 << "%";
+      store.push_back(value.getValue());
     }
     prep << " )";
   }
@@ -498,8 +497,8 @@ public:
   }
 
   virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
-    std::stringstream &prep = _sq.where_prepared_string();
-    std::vector<std::string> &store = _sq.where_prepared_values();
+    Database::SelectQuery::prepared_values_string  &prep  = _sq.where_prepared_string();
+    Database::SelectQuery::prepared_values_storage &store = _sq.where_prepared_values();
 
     prep << getConjuction() << "( " << column.str();
     if (value.isNull()) {
@@ -508,11 +507,11 @@ public:
     else {
       std::string v = value.getValue();
       if (allowed_wildcard && (v.find('*') != std::string::npos || v.find('?') != std::string::npos)) {
-        prep << " ILIKE TRANSLATE(E'%" << store.size() + 1 << "%','*?','%%_')";
+        prep << " ILIKE TRANSLATE(%" << store.size() + 1 << "%,'*?','%%_')";
         store.push_back(v);
       }
       else {
-        prep << op << " " << value_pre_ << "E'%" << store.size() + 1 << "%'" << value_post_;
+        prep << op << " " << value_pre_ << "%" << store.size() + 1 << "%" << value_post_;
         store.push_back(v);
       }
     }
@@ -545,8 +544,7 @@ public:
   }
 
   virtual void serialize(Database::SelectQuery& _sq, const Settings *_settings) {
-    _sq.where_prepared_string() << getConjuction() << column.str() << SQL_OP_IS
-        << "NULL";
+    _sq.where_prepared_string() << getConjuction() << column.str() << SQL_OP_IS << "NULL";
   }
 protected:
   Column column;

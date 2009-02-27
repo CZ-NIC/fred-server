@@ -2,6 +2,7 @@
 #define ID_H_
 
 #include <ostream>
+#include <istream>
 #include "config.h"
 
 #ifdef HAVE_BOOST_SERIALIZATION
@@ -26,9 +27,6 @@ public:
   ID(value_type _value) : value_(_value) {
   }
 
-  /* string construct and getters */
-  void from_string(const std::string& _value);
-  const std::string to_string() const;
 
   /* comparison operators */
 //  friend bool operator<(const ID& _left, const ID& _right);
@@ -40,6 +38,8 @@ public:
 
   /* output operator */
   friend std::ostream& operator<<(std::ostream &_os, const ID& _v);
+  friend std::istream& operator>>(std::istream &_is, ID& _v);
+
 
   operator value_type() const {
     return value_;

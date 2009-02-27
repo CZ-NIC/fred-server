@@ -2,7 +2,8 @@
 #define STR_CORBAOUT_H_
 
 #include "common.h"
-#include "types/conversions.h"
+#include "types/convert_str_pod.h"
+#include "types/stringify.h"
 
 
 inline std::string str_corbaout(const char *_value) {
@@ -12,7 +13,7 @@ inline std::string str_corbaout(const char *_value) {
 
 template<class T>
 inline std::string str_corbaout(const T &_value) {
-  return Database::Conversion<T>::to_string(_value);
+  return stringify(_value);
 }
 
 

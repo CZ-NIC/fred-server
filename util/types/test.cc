@@ -1,34 +1,76 @@
 #include <iostream>
-//#include "conversions.h"
 #include "id.h"
+#include "money.h"
+#include "convert_str_pod.h"
+#include "convert_sql_boost_datetime.h"
+#include "stringify.h"
+#include "sqlize.h"
+#include <limits>
+
+#define COUT(v)  std::cout << #v << " = " << v << std::endl;
+
 
 int main() {
-  #define COUT(v) \
-  std::cout << v << std::endl;
+
+  int maxint = std::numeric_limits<int>::max();
+  COUT(maxint);
+
+  int i = unstringify<int>(stringify(maxint + 1));
+  COUT(i);
+
+  Database::ID id;
+  id = unstringify<Database::ID>("3423");
+  COUT(id);
+
+  Database::Money m;
+  COUT("22.3")
+  m = unstringify<Database::Money>("22.3");
+  COUT(m);
+
+  COUT("221.23")
+  m = unstringify<Database::Money>("221.23");
+  COUT(m);
+
+  COUT("100")
+  m = unstringify<Database::Money>("100");
+  COUT(m);
+
+  COUT("221.2343")
+  m = unstringify<Database::Money>("221.2343");
+  COUT(m);
 
 
-//  std::string num1 = Conversion<int>::to_string(-1230000999);
-//  COUT(num1)
-//  COUT(Conversion<int>::from_string(num1))
-//
-//  std::string num2 = Conversion<unsigned>::to_string(112);
-//  COUT(num2)
-//  COUT(Conversion<unsigned>::from_string(num2))
-//
-//  std::string num3 = Conversion<long long>::to_string(317584931803LL);
-//  COUT(num3)
-//  COUT(Conversion<long long>::from_string(num3))
-//
-//  std::string num4 = Conversion<bool>::to_string(true);
-//  COUT(num4)
-//  COUT(Conversion<bool>::from_string(num4))
-//  bool num5 = Conversion<bool>::from_string("t");
-//  COUT(num5)
-//  COUT(Conversion<bool>::to_string(num5))
- 
+  try {
+    Database::Money m;
+    COUT("221.29803.43")
+    m = unstringify<Database::Money>("221.29803.43");
+    COUT(m);
+  }
+  catch(...) {
+    COUT("error");
+  }
 
-  ID id = 10;
-  COUT(id.to_string())
+  try {
+    Database::Money m;
+    COUT("221.2.9803.43")
+    m = unstringify<Database::Money>("221.2.9803.43");
+    COUT(m);
+  }
+  catch(...) {
+    COUT("error");
+  }
+
+  COUT(12322);
+  m = 12322;
+  COUT(stringify(m));
+
+
+  COUT("----");
+
+
+  COUT(sqlize(ptime(second_clock::local_time())));
+  COUT(sqlize(ptime(microsec_clock::local_time())));
+
 
   return 0;
 }

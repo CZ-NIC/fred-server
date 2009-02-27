@@ -3,7 +3,6 @@
 #include "query_old.h"
 #include "log/logger.h"
 
-#include "util.h"
 
 namespace Database {
 
@@ -54,7 +53,7 @@ void SelectQuery::finalize() {
 }
 
 
-void SelectQuery::make() {
+void SelectQuery::make(escape_function_type _esc_func) {
   TRACE("[CALL] SelectQuery::make()");
   if (m_initialized)
   return;
@@ -71,9 +70,10 @@ void SelectQuery::make() {
   if (m_where_prepared_values.size() > 0) {
     boost::format where_prepared_format(m_where_prepared_string.str());
 
-    for (std::vector<std::string>::iterator it = m_where_prepared_values.begin();
-    it != m_where_prepared_values.end(); ++it) {
-      where_prepared_format % Util::escape(*it);
+    for (std::vector<Database::Value>::iterator it = m_where_prepared_values.begin();
+         it != m_where_prepared_values.end();
+         ++it) {
+      where_prepared_format % (*it).toSql(_esc_func);
     }
     where_s.clear();
     where_s.str("");

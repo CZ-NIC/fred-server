@@ -2,6 +2,7 @@
 #define MONEY_H_
 
 #include <ostream>
+#include <istream>
 #include "config.h"
 
 #ifdef HAVE_BOOST_SERIALIZATION
@@ -69,6 +70,7 @@ public:
   
   /* output operator */
   friend std::ostream& operator<<(std::ostream &_os, const Money& _v);
+  friend std::istream& operator>>(std::istream &_is, Money& _v);
 
 #ifdef HAVE_BOOST_SERIALIZATION
   /* boost serialization */

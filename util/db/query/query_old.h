@@ -11,9 +11,11 @@
 #include <boost/utility.hpp>
 #include <boost/format.hpp>
 
+#include "util.h"
 #include "sql_helper_objects.h"
 #include "../statement.h"
 #include "../value.h"
+
 
 namespace Database {
 
@@ -70,19 +72,19 @@ public:
 	}
 
 
-	virtual void make() {
-		finalize();
-	}
-
-
 	virtual void clear() {
 		sql_buffer.clear();
 		sql_buffer.str("");
 	}
 
 
+	virtual void make(escape_function_type _esc_func = &Util::escape2) {
+    finalize();
+  };
+
+
   virtual std::string toSql(escape_function_type _esc_func) {
-    make();
+    make(_esc_func);
     return str();
   }
 
@@ -144,7 +146,7 @@ public:
 	void clear();
 
 
-	void make();
+  void make(escape_function_type _esc_func = &Util::escape2);
 
 
 	void finalize();
@@ -159,52 +161,35 @@ public:
 	void join(const std::string& _cols,
             const std::string& tables,
 	      		const std::string _cond);
-	
 
-	std::stringstream& where_prepared_string() {
+
+  typedef std::stringstream             prepared_values_string;
+  typedef std::vector<Database::Value>  prepared_values_storage;
+
+
+	prepared_values_string& where_prepared_string() {
 		return m_where_prepared_string;
 	}
 
 
-	std::vector<std::string>& where_prepared_values() {
+	prepared_values_storage& where_prepared_values() {
 		m_initialized = false;
 		return m_where_prepared_values;
 	}
 
 
-	const std::string debug() {
-		make();
-		return sql_buffer.str();
-	}
-
-
 protected:
-	std::stringstream select_s;
-	std::stringstream from_s;
-	std::stringstream where_s;
-	std::stringstream group_by_s;
-	std::stringstream order_by_s;
-	unsigned limit_r;
-	std::vector<Column*> select_v;
-	std::stringstream m_where_prepared_string;
-	std::vector<std::string> m_where_prepared_values;
+	std::stringstream         select_s;
+	std::stringstream         from_s;
+	std::stringstream         where_s;
+	std::stringstream         group_by_s;
+	std::stringstream         order_by_s;
+	unsigned                  limit_r;
+	std::vector<Column*>      select_v;
+	prepared_values_string    m_where_prepared_string;
+	prepared_values_storage   m_where_prepared_values;
 };
 
-// class InsertQuery : public Query {
-// protected:
-//   typedef std::vector<std::pair<std::string, Value> > ValueContainer;
-//   std::string table_;
-//   ValueContainer values_;
-//   
-// public:
-// 	InsertQuery() :
-// 		Query() {
-// 	}
-// 	InsertQuery(const std::string& _table, const SelectQuery& _sq);
-// 	InsertQuery(const std::string& _table);
-// 	void add(const std::string& _column, const Value& _value);
-// 	virtual void make();
-// };
 
 }
 #endif /*QUERY_H_*/

@@ -1,5 +1,5 @@
 #include "money.h"
-#include "conversions.h"
+#include <iomanip>
 #include <sstream>
 
 namespace Database {
@@ -43,6 +43,14 @@ Money::format(std::string str)
 std::ostream& operator<<(std::ostream &_os, const Money& _v) {
     return _os << _v.to_string();
 }
+
+std::istream& operator>>(std::istream &_is, Money& _v) {
+    std::string tmp;
+    _is >> tmp;
+    _v.from_string(tmp);
+    return _is;
+}
+
 
 
 /*

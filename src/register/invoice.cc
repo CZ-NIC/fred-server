@@ -23,6 +23,8 @@
 
 #include "common_impl.h"
 #include "log/logger.h"
+#include "types/convert_sql_db_types.h"
+#include "types/sqlize.h"
 
 #include "file.h"
 #include <cmath>
@@ -45,7 +47,7 @@ namespace Invoicing {
     ((str.empty()) ? "NULL" : "'" + str + "'")
 
 #define transformId(id) \
-    ((id == Database::ID()) ? "NULL" : Database::Conversion<Database::ID>::to_string(id))
+    ((id == Database::ID()) ? "NULL" : sqlize(id))
 
 #define ERROR(values)                           \
     LOGGER(PACKAGE).error(values);              \

@@ -31,73 +31,52 @@
 #include "types/data_types.h"
 #include "log/logger.h"
 
+#include "types/convert_sql_pod.h"
+#include "types/convert_sql_boost_datetime.h"
+#include "types/convert_sql_db_types.h"
+#include "types/sqlize.h"
+
 
 namespace Database {
 
 
 /**
- * Macros for defining constructors, cast operators and assignments operatror
+ * Macros for defining constructors, cast operators and assignments operator
  * from other types to string.
  *
  * Can be use only for simple conversions - calling function or method on
  * appropriate type. Special handling must be done manually.
  */
-#define CONSTRUCTOR_BY_CONV_METHOD(_type, _method, _quoted)     \
-Value(const _type& _value) : is_null_(false),                   \
-                             value_(_value._method()),          \
-                             quoted_output_(_quoted) {          \
+#define CONSTRUCTOR(_type, _quoted, _escaped)                \
+Value(const _type& _value) : is_null_(false),                \
+                             value_(sqlize(_value)),         \
+                             quoted_output_(_quoted),        \
+                             escaped_output_(_escaped)       \
+{                                                            \
 }
 
 
-#define CAST_OPERATOR_BY_CONV_METHOD(_type, _method)            \
-operator _type() const {                                        \
-  _type cast;                                                   \
-  cast._method(value_);                                         \
-  return cast;                                                  \
+#define ASSIGN_OPERATOR(_type, _quoted, _escaped)            \
+Value& operator =(const _type &_value) {                     \
+  value_ = sqlize(_value);                                   \
+  is_null_ = false;                                          \
+  quoted_output_ = _quoted;                                  \
+  escaped_output_ = _escaped;                                \
+  return *this;                                              \
 }
 
 
-#define ASSIGN_OPERATOR_BY_CONV_METHOD(_type, _method, _quoted) \
-Value& operator =(const _type &_value) {                        \
-  value_ = _value._method();                                    \
-  is_null_ = false;                                             \
-  quoted_output_ = _quoted;                                     \
-  return *this;                                                 \
+#define CAST_OPERATOR(_type, _init)                          \
+operator _type() const {                                     \
+  return is_null_ ? _init : unsqlize<_type>(value_);         \
 }
 
 
-#define CONSTRUCTOR_BY_CONV_FUNCT(_type, _funct, _quoted)       \
-Value(const _type& _value) : is_null_(false),                   \
-                             value_(_funct(_value)),            \
-                             quoted_output_(_quoted) {          \
-}
+#define HANDLE_TYPE(_type, _init, _quoted, _escaped)         \
+CONSTRUCTOR(_type, _quoted, _escaped)                        \
+ASSIGN_OPERATOR(_type, _quoted, _escaped)                    \
+CAST_OPERATOR(_type, _init)
 
-
-#define CAST_OPERATOR_BY_CONV_FUNCT(_type, _funct)              \
-operator _type() const {                                        \
-  return _funct(value_);                                        \
-}
-
-
-#define ASSIGN_OPERATOR_BY_CONV_FUNCT(_type, _funct, _quoted)   \
-Value& operator =(const _type &_value) {                        \
-  value_ = _funct(_value);                                      \
-  is_null_ = false;                                             \
-  quoted_output_ = _quoted;                                     \
-  return *this;                                                 \
-}
-
-
-#define HANDLE_TYPE_METHOD(_type, _to_str_fun, _from_str_fun, _quoted) \
-CONSTRUCTOR_BY_CONV_METHOD(_type, _to_str_fun, _quoted)                \
-CAST_OPERATOR_BY_CONV_METHOD(_type, _from_str_fun)                     \
-ASSIGN_OPERATOR_BY_CONV_METHOD(_type, _to_str_fun, _quoted)
-
-
-#define HANDLE_TYPE_FUNCT(_type, _to_str_fun, _from_str_fun, _quoted)  \
-CONSTRUCTOR_BY_CONV_FUNCT(_type, _to_str_fun, _quoted)                 \
-CAST_OPERATOR_BY_CONV_FUNCT(_type, _from_str_fun)                      \
-ASSIGN_OPERATOR_BY_CONV_FUNCT(_type, _to_str_fun, _quoted)
 
 
 /**
@@ -115,14 +94,19 @@ public:
    */
   Value() : is_null_(true),
             value_(),
-            quoted_output_(false) {
+            quoted_output_(false),
+            escaped_output_(false) {
   }
 
 
+  /**
+   * constructor for database result object
+   */
   Value(const std::string &_value, bool _is_null) 
       : is_null_(_is_null),
         value_(_value),
-        quoted_output_(_is_null ? false : true) {
+        quoted_output_(_is_null ? false : true),
+        escaped_output_(quoted_output_) {
   }
 
 
@@ -131,21 +115,20 @@ public:
    */
   Value(const std::string& _value) : is_null_(false),
                                      value_(_value),
-                                     quoted_output_(true) {
+                                     quoted_output_(true),
+                                     escaped_output_(true) {
   }
 
 
   Value(const char* _value) : is_null_(false),
                               value_(_value),
-                              quoted_output_(true) {
+                              quoted_output_(true),
+                              escaped_output_(true) {
   }
 
 
   operator std::string() const {
-    if (is_null_)
-      return "NULL";
-    else
-      return value_;
+    return (is_null_ ? "" : value_);
   }
 
 
@@ -153,47 +136,55 @@ public:
     value_ = _value;
     is_null_ = false;
     quoted_output_ = true;
+    escaped_output_ = true;
     return *this;
   }
 
+
   /**
-   * Database::ID need special handling in constructor
+   * Database::ID need special handling
    */
   Value(const Database::ID& _value) : is_null_(false),
-                                      value_(_value.to_string()),
-                                      quoted_output_(false) {
+                                      value_(sqlize(_value)),
+                                      quoted_output_(false),
+                                      escaped_output_(false) {
     /* do extra checking for NULL (zero value is not valid ID) */
     if (_value == 0)
       is_null_ = true;
   }
 
 
-  CAST_OPERATOR_BY_CONV_METHOD(Database::ID, from_string)
+  CAST_OPERATOR(Database::ID, Database::ID())
 
 
   /**
    * boost::ptime need special handling
    */
-  Value(const ptime &_value) : is_null_(false),
-                               value_(to_iso_extended_string(_value)),
-                               quoted_output_(true) {
-    if (_value.is_special()) {
-      is_null_ = true;
-      quoted_output_ = false;
-    }
-  }
-
-
-  CAST_OPERATOR_BY_CONV_FUNCT(ptime, time_from_string)
-
-
-  Value& operator =(const ptime &_value) {
+  Value(const ptime &_value) {
+    escaped_output_ = false;
     if (_value.is_special()) {
       is_null_ = true;
       quoted_output_ = false;
     }
     else {
-      value_ = to_iso_extended_string(_value);
+      value_ = sqlize(_value);
+      is_null_ = false;
+      quoted_output_ = true;
+    }
+  }
+
+
+  CAST_OPERATOR(ptime, ptime())
+
+
+  Value& operator =(const ptime &_value) {
+    escaped_output_ = false;
+    if (_value.is_special()) {
+      is_null_ = true;
+      quoted_output_ = false;
+    }
+    else {
+      value_ = sqlize(_value);
       is_null_ = false;
       quoted_output_ = true;
     }
@@ -204,26 +195,31 @@ public:
   /**
    * boost::date need special handling
    */
-  Value(const date &_value) : is_null_(false),
-                              value_(to_iso_extended_string(_value)),
-                              quoted_output_(true) {
-    if (_value.is_special()) {
-      is_null_ = true;
-      quoted_output_ = false;
-    }
-  }
-
-
-  CAST_OPERATOR_BY_CONV_FUNCT(date, boost::gregorian::from_string)
-
-
-  Value& operator =(const date &_value) {
+  Value(const date &_value) {
+    escaped_output_ = false;
     if (_value.is_special()) {
       is_null_ = true;
       quoted_output_ = false;
     }
     else {
-      value_ = to_iso_extended_string(_value);
+      value_ = sqlize(_value);
+      is_null_ = false;
+      quoted_output_ = true;
+    }
+  }
+
+
+  CAST_OPERATOR(date, date())
+
+
+  Value& operator =(const date &_value) {
+    escaped_output_ = false;
+    if (_value.is_special()) {
+      is_null_ = true;
+      quoted_output_ = false;
+    }
+    else {
+      value_ = sqlize(_value);
       is_null_ = false;
       quoted_output_ = true;
     }
@@ -231,27 +227,17 @@ public:
   }
 
 
-  /**
-   * definitions of construtors and conversion operators to POD types
-   * uses Conversion class
-   */
-  HANDLE_TYPE_FUNCT(short, Conversion<short>::to_string, Conversion<short>::from_string, false)
-  HANDLE_TYPE_FUNCT(int, Conversion<int>::to_string, Conversion<int>::from_string, false)
-  HANDLE_TYPE_FUNCT(long, Conversion<long>::to_string, Conversion<long>::from_string, false)
-  HANDLE_TYPE_FUNCT(long long, Conversion<long long>::to_string, Conversion<long long>::from_string, false)
-  HANDLE_TYPE_FUNCT(unsigned, Conversion<unsigned>::to_string, Conversion<unsigned>::from_string, false)
-  HANDLE_TYPE_FUNCT(unsigned long, Conversion<unsigned long>::to_string, Conversion<unsigned long>::from_string, false)
-  HANDLE_TYPE_FUNCT(unsigned long long, Conversion<unsigned long long>::to_string, Conversion<unsigned long long>::from_string, false)
-  HANDLE_TYPE_FUNCT(bool, Conversion<bool>::to_string, Conversion<bool>::from_string, true)
-
-
-  /**
-   * definition of constructors and conversion operator for user defined types
-   * uses Conversion class
-   */
-  HANDLE_TYPE_METHOD(DateTime, to_string, from_string, true)
-  HANDLE_TYPE_METHOD(Date, to_string, from_string, true)
-  HANDLE_TYPE_METHOD(Money, to_string, from_string, true)
+  HANDLE_TYPE(short,              0,          false, false)
+  HANDLE_TYPE(int,                0,          false, false)
+  HANDLE_TYPE(long,               0,          false, false)
+  HANDLE_TYPE(long long,          0,          false, false)
+  HANDLE_TYPE(unsigned,           0,          false, false)
+  HANDLE_TYPE(unsigned long,      0,          false, false)
+  HANDLE_TYPE(unsigned long long, 0,          false, false)
+  HANDLE_TYPE(bool,               0,          true,  false)
+  HANDLE_TYPE(DateTime,           DateTime(), true,  false)
+  HANDLE_TYPE(Date,               Date(),     true,  false)
+  HANDLE_TYPE(Money,              Money(),    true,  false)
 
 
   /* assigment */
@@ -259,12 +245,10 @@ public:
     is_null_ = _other.is_null_;
     value_ = _other.value_;
     quoted_output_ = _other.quoted_output_;
+    escaped_output_ = _other.escaped_output_;
     return *this;
   }
 
-
-  /* value output operator */
-  friend std::ostream& operator<<(std::ostream& _os, const Value& _value);
 
   /**
    * @return  flag if this value should be quoted in SQL statement or not
@@ -279,6 +263,9 @@ public:
   }
 
 
+  /**
+   * @return  whether is value null or not
+   */
   bool isnull() const {
 	  return is_null_;
   }
@@ -289,10 +276,30 @@ public:
   }
 
 
+  /**
+   * to sql string serialization
+   *
+   * @param _esc_func  string escape function pointer
+   */
+  std::string toSql(boost::function<std::string(std::string)> _esc_func) const {
+    if (is_null_) {
+      return "NULL";
+    }
+    else {
+      return (quoted_output_ ? (escaped_output_ ? "E'" : "'") + _esc_func(value_) + "'" : value_);
+    }
+  }
+
+
+  /* value output operator */
+  friend std::ostream& operator<<(std::ostream& _os, const Value& _value);
+
+
 protected:
-  bool is_null_;        /**< flag if value is NULL */
-  std::string value_;   /**< value in std::string representation */
-  bool quoted_output_;  /**< SQL value quotation flag */
+  bool        is_null_;        /**< flag if value is NULL */
+  std::string value_;          /**< value in std::string representation */
+  bool        quoted_output_;  /**< SQL value quotation flag */
+  bool        escaped_output_; /**< SQL value escape flag */
 };
 
 

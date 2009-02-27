@@ -11,7 +11,8 @@
 
 #include "log/logger.h"
 #include "settings.h"
-#include "types/conversions.h"
+#include "types/convert_sql_base.h"
+
 
 namespace Database {
 namespace Filters {
@@ -98,17 +99,11 @@ public:
 
 }
 
-
-CONVERSION_DECLARATION(Filters::ObjectType)
-
-inline Filters::ObjectType Conversion<Filters::ObjectType>::from_string(const std::string& _value) {
-  return (Filters::ObjectType)atoi(_value.c_str());
 }
 
-inline std::string Conversion<Filters::ObjectType>::to_string(const Filters::ObjectType& _value) {
-  return signed2string((int)_value);
-}
 
-}
+template<>
+struct SqlConvert<Database::Filters::ObjectType> : public NumericsConvertor<int> { };
+
 
 #endif /*OBJECT_REGISTRY_FILTER_H_*/

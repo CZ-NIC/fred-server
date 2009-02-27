@@ -20,6 +20,7 @@
 #define _SIMPLE_H_
 
 #include <map>
+#include <string>
 
 typedef std::map<std::string, int> METHODS;
 typedef std::map<std::string, int>::iterator METHODS_IT;

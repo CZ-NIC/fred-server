@@ -23,6 +23,10 @@
 #include "bank.h"
 #include "invoice.h"
 #include "log/logger.h"
+#include "types/convert_sql_db_types.h"
+#include "types/sqlize.h"
+#include "types/stringify.h"
+
 #include <libxml/xmlwriter.h>
 #include <libxml/parser.h>
 #include <libxml/xmlmemory.h>
@@ -83,7 +87,7 @@ namespace Banking {
     ((str.empty()) ? "NULL" : "'" + str + "'")
 
 #define transformId(id) \
-    ((id == Database::ID()) ? "NULL" : Database::Conversion<Database::ID>::to_string(id))
+    ((id == Database::ID()) ? "NULL" : sqlize(id))
 
 #define TEST_NODE_PRESENCE(parent, name)                                \
     if (!parent.hasChild(name)) {                                       \
@@ -185,19 +189,19 @@ public:
     }
     void text(std::string name, Database::ID value)
     {
-        this->text(name, value.to_string());
+        this->text(name, stringify(value));
     }
     void text(std::string name, Database::Date value)
     {
-        this->text(name, value.to_string());
+        this->text(name, stringify(value));
     }
     void text(std::string name, Database::DateTime value)
     {
-        this->text(name, value.to_string());
+        this->text(name, stringify(value));
     }
     void text(std::string name, Database::Money value)
     {
-        this->text(name, value.format());
+        this->text(name, stringify(value));
     }
     std::string finalize()
     {

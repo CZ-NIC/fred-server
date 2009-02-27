@@ -13,8 +13,7 @@
 */
 
 #include "db/query/base_filters.h"
-
-#include "types/data_types.h"
+#include "types/convert_sql_base.h"
 
 /*
 #include "model_filters.h"
@@ -201,16 +200,11 @@ public:
 
 }
 
-CONVERSION_DECLARATION(Database::LogServiceType)
-
-inline Database::LogServiceType Conversion<Database::LogServiceType>::from_string(const std::string& _value) {
-  return (Database::LogServiceType)atoi(_value.c_str());
 }
 
-inline std::string Conversion<Database::LogServiceType>::to_string(const Database::LogServiceType& _value) {
-  return signed2string((int)_value);
-}
 
-}
+template<>
+struct SqlConvert<Database::LogServiceType> : public NumericsConvertor<int> { };
+
 
 #endif

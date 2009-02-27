@@ -1340,7 +1340,7 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Regi
   detail->email = _request->getEmailToAnswer().c_str();
 
   detail->answerEmail.id     = _request->getAnswerEmailId();
-  detail->answerEmail.handle = DUPSTRC(Conversion<long long unsigned>::to_string(_request->getAnswerEmailId())); 
+  detail->answerEmail.handle = DUPSTRC(stringify(_request->getAnswerEmailId())); 
   detail->answerEmail.type   = ccReg::FT_MAIL;
 
   detail->action.id     = _request->getEppActionId();
@@ -1391,7 +1391,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
   detail->toDate = DUPSTRDATED(_invoice->getAccountPeriod().end);
   detail->type = (_invoice->getType() == Register::Invoicing::IT_DEPOSIT ? Registry::Invoicing::IT_ADVANCE
                                                                          : Registry::Invoicing::IT_ACCOUNT);
-  detail->number = DUPSTRC(Conversion<long long unsigned>::to_string(_invoice->getNumber()));
+  detail->number = DUPSTRC(stringify(_invoice->getNumber()));
   detail->credit = DUPSTRC(formatMoney(_invoice->getCredit()));
   detail->price = DUPSTRC(formatMoney(_invoice->getPrice()));
   detail->vatRate = _invoice->getVatRate();
@@ -1417,7 +1417,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
     detail->payments[n].id = ps->getId();
     detail->payments[n].price = DUPSTRC(formatMoney(ps->getPrice()));
     detail->payments[n].balance = DUPSTRC(formatMoney(ps->getCredit()));
-    detail->payments[n].number = DUPSTRC(Conversion<long long unsigned>::to_string(ps->getNumber()));
+    detail->payments[n].number = DUPSTRC(stringify(ps->getNumber()));
   }
   
   detail->paymentActions.length(_invoice->getActionCount());
