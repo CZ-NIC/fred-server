@@ -2,7 +2,7 @@
 #define QUERY_COMMON_
 
 #include <string>
-
+#include "../value.h"
 
 namespace Database {
 namespace Internal {
@@ -44,7 +44,7 @@ public:
   }
 
 
-  std::string toSql() const {
+  std::string toSql(boost::function<std::string(std::string)> _esc_func) const {
     return (alias_.empty() ? name_ : name_ + " " + alias_);
   }
 
@@ -90,7 +90,7 @@ public:
   }
 
 
-  std::string toSql() const {
+  std::string toSql(boost::function<std::string(std::string)> _esc_func) const {
     std::string alias = table_->getAlias();
     return (alias.empty() ? name_ : alias + "." + name_);
   }
@@ -122,8 +122,8 @@ public:
   }
 
 
-  std::string toSql() const {
-    return left_.toSql() + " " + op_;
+  std::string toSql(boost::function<std::string(std::string)> _esc_func) const {
+    return left_.toSql(_esc_func) + " " + op_;
   }
 
 
@@ -152,8 +152,8 @@ public:
   }
 
 
-  std::string toSql() const {
-    return Condition_::toSql() + " " + right_.toSql();
+  std::string toSql(boost::function<std::string(std::string)> _esc_func) const {
+    return Condition_::toSql(_esc_func) + " " + right_.toSql(_esc_func);
   }
 
 
@@ -165,7 +165,7 @@ protected:
 
 class ValueCondition : public Condition_ {
 public:
-  typedef std::string value_type;
+  typedef Database::Value value_type;
 
 
   ValueCondition(const Column &_l,
@@ -180,8 +180,8 @@ public:
   }
 
 
-  std::string toSql() const {
-    return Condition_::toSql() + " " + value_;
+  std::string toSql(boost::function<std::string(std::string)> _esc_func) const {
+    return Condition_::toSql(_esc_func) + " " + value_.toSql(_esc_func);
   }
 
 

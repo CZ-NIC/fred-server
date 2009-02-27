@@ -86,9 +86,9 @@ public:
 
     if (!conditions_.empty()) {
       condition_list::const_iterator it = conditions_.begin();
-      tmp = it->first + " " + it->second.toSql();
+      tmp = it->first + " " + it->second.toSql(_esc_func);
       for (++it; it != conditions_.end() && conditions_.size() > 1; ++it) {
-        tmp += " " + it->first + " " + it->second.toSql();
+        tmp += " " + it->first + " " + it->second.toSql(_esc_func);
       }
     }
 
@@ -176,7 +176,7 @@ public:
 
   std::string toSql(escape_function_type _esc_func) {
     buffer_type buffer;
-    buffer << "DELETE FROM " << table_.toSql();
+    buffer << "DELETE FROM " << table_.toSql(_esc_func);
     if (!where_.empty()) {
       buffer << " WHERE 1=1 " << where_.toSql(_esc_func);
     }
@@ -231,7 +231,7 @@ public:
     }
 
     buffer_type buffer;
-    buffer << "INSERT INTO " << table_.toSql() << " (" << tmp_fields << ") "
+    buffer << "INSERT INTO " << table_.toSql(_esc_func) << " (" << tmp_fields << ") "
            << "VALUES (" << tmp_values << ")";
 
     return buffer.str();
@@ -281,7 +281,7 @@ public:
     }
 
     buffer_type buffer;
-    buffer << "UPDATE " << table_.toSql() << " SET " << tmp_set
+    buffer << "UPDATE " << table_.toSql(_esc_func) << " SET " << tmp_set
            << (where_.empty() ? "" : " WHERE 1=1 " + where_.toSql(_esc_func));
 
 
