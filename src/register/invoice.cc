@@ -2805,21 +2805,32 @@ public:
         TRACE("[CALL] Register::Invoicing::ManagerImpl::pairOnlineCreditInvoices()");
         Database::Query query;
         query.buffer()
-            << "SELECT bb.id, ii.id FROM bank_ebanka_list bb "
-            << "JOIN registrar rr ON bb.varsymb=rr.varsymb "
-            << "JOIN invoice ii ON ii.registrarid=rr.id "
-            << "WHERE ii.price=bb.price AND bb.invoice_id isnull "
-            << "AND ii.taxdate=date(bb.crdate)";
+            << "SELECT bb.id, ba.zone, rr.id, bb.price, DATE(bb.crdate)"
+            << " FROM bank_ebanka_list bb"
+            << " JOIN bank_account ba ON bb.account_id=ba.id"
+            << " JOIN registrar rr ON bb.varsymb=rr.varsymb"
+            << " WHERE bb.invoice_id IS NULL;";
         Database::Result res = m_conn->exec(query);
         Database::Result::Iterator it = res.begin();
         for (; it != res.end(); ++it) {
             Database::Row::Iterator col = (*it).begin();
-
-            Database::ID    statementId = *(col);
-            Database::ID    invoiceId = *(++col);
+            std::auto_ptr<Invoice> invoice(createDepositInvoice());
+            Database::ID statementId = *(col);
+            Database::ID zoneId = *(++col);
+            Database::ID registrarId = *(++col);
+            Database::Money price = *(++col);
+            Database::Date taxDate = *(++col);
+            invoice->setZone(zoneId);
+            invoice->setRegistrar(registrarId);
+            invoice->setPrice(price);
+            invoice->setTaxDate(taxDate);
+            invoice->save();
+            Database::ID newId = invoice->getId();
+            LOGGER(PACKAGE).debug(boost::format("id of freshly created invoice: %1%")
+                    % newId);
             Database::Query update;
             update.buffer()
-                << "UPDATE bank_ebanka_list SET invoice_id=" << invoiceId
+                << "UPDATE bank_ebanka_list SET invoice_id=" << invoice->getId()
                 << " WHERE id=" << statementId;
             try {
                 Database::Transaction transaction(*m_conn);
