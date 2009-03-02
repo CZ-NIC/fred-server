@@ -36,7 +36,23 @@
 template<class T>
 struct SqlConvert {
   static T from(const std::string &_in);
+
+
   static std::string to(const T &_in);
+};
+
+
+
+template<>
+struct SqlConvert<std::string> {
+  static std::string from(const std::string &_in) {
+    return _in;
+  }
+
+
+  static std::string to(const std::string &_in) {
+    return _in;
+  }
 };
 
 

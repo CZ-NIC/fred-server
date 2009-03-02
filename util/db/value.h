@@ -28,9 +28,9 @@
 #include <stdio.h>
 #include <string>
 
-#include "types/data_types.h"
+#include "util.h"
 #include "log/logger.h"
-
+#include "types/data_types.h"
 #include "types/convert_sql_pod.h"
 #include "types/convert_sql_boost_datetime.h"
 #include "types/convert_sql_db_types.h"
@@ -304,7 +304,7 @@ protected:
 
 
 inline std::ostream& operator<<(std::ostream& _os, const Value& _value) {
-  return (_value.is_null_ ? _os << "" : _os <<  _value.value_);
+  return (_value.is_null_ ? _os << "NULL" : _os << _value.toSql(&Util::escape2));
 }
 
 
