@@ -77,6 +77,7 @@ namespace Banking {
 #define ITEM_CODE                   "code"
 #define ITEM_MEMO                   "memo"
 #define ITEM_DATE                   "date"
+#define ITEM_NAME                   "name"
 
 
 #define TAGSTART(tag) "<"#tag">"
@@ -698,6 +699,7 @@ public:
         setPrice(money);
         setMemo(item.getChild(ITEM_MEMO).getValue());
         setCrDate(Database::DateTime(item.getChild(ITEM_DATE).getValue()));
+        setAccountName(item.getChild(ITEM_NAME).getValue());
 
         return true;
     } // bool OnlineStatementImpl::fromXML(XMLnode)
@@ -1422,6 +1424,7 @@ public:
         xml.text(ITEM_CODE, 2);
         xml.text(ITEM_MEMO, stat->getMemo());
         xml.text(ITEM_DATE, stat->getCrDate());
+        xml.text(ITEM_NAME, stat->getAccountName());
         xml.end();
         xml.end();
     }
@@ -1656,6 +1659,7 @@ public:
         xml.text(ITEM_CODE, item->getCode());
         xml.text(ITEM_MEMO, item->getMemo());
         xml.text(ITEM_DATE, item->getDate());
+        xml.text(ITEM_NAME, "");
         xml.end();
     } // void ListImpl::writeItem()
 
