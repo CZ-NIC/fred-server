@@ -47,16 +47,17 @@ Context::Map* Context::_getThreadMap() {
  * stacked interface implementation
  */
 void Context::push(const std::string& _name) {
-//  std::cout << "CONTEXT::PUSH('" << _name << "')" << std::endl;
-
   Context::Stack *stack = _getThreadStack();
-  stack->push_back(_name);
+
+  NDCData_ new_ndc;
+  new_ndc.name = _name;
+  new_ndc.path = (!stack->empty() ? stack->back().path + ndc_separator 
+                                  : "") + _name;
+  stack->push_back(new_ndc);
 }
 
 
 void Context::pop() {
-//  std::cout << "CONTEXT::POP('" << top() <<"')" << std::endl;
-
   Context::Stack *stack = _getThreadStack();
   if (!stack->empty()) {
     stack->pop_back();
@@ -69,7 +70,7 @@ std::string Context::top() {
 
   std::string top;
   if (!stack->empty()) {
-    top = stack->back();
+    top = stack->back().name;
   }
   return top;
 }
@@ -77,12 +78,7 @@ std::string Context::top() {
 
 std::string Context::getNDC() {
   Context::Stack *stack = _getThreadStack();
-
-  std::string full_ctx; 
-  for (Context::Stack::iterator it = stack->begin(); it != stack->end(); ++it) {
-    full_ctx += (it != stack->begin() ? "/" : "") + *it;
-  }
-  return full_ctx;
+  return !stack->empty() ? stack->back().path : std::string();
 }
 
 
@@ -141,6 +137,6 @@ void Context::clear() {
  * storage init
  */
 boost::thread_specific_ptr<Context::PerThreadData_> Context::data_;
-
+const std::string                                   Context::ndc_separator = "/";
 }
 

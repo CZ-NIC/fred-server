@@ -44,8 +44,15 @@ public:
   static void clear();
 
 private:
-  typedef std::vector<std::string>           Stack;
-  typedef std::map<std::string, std::string> Map;
+  static const std::string ndc_separator;
+
+  struct NDCData_ {
+    std::string name;
+    std::string path;
+  };
+
+  typedef std::vector<NDCData_>               Stack;
+  typedef std::map<std::string, std::string>  Map;
   
   struct PerThreadData_ {
     Context::Stack stack_;
