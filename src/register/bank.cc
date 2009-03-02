@@ -494,23 +494,22 @@ public:
         TRACE("[CALL] Register::Banking::OnlineStatement::update("
                 "Database::Transaction &)");
         std::auto_ptr<Database::Query> updateStat(new Database::Query());
-        updateStat->buffer()
-            << "UPDATE bank_ebanka_list SET"
-            << " account_id = " << transformId(getAccountId())
-            << ", price = " << getPrice().format() 
-            << ", crdate = '" << getCrDate() << "'"
-            << ", account_number = " << transformString(getAccountNumber())
-            << ", bank_code = " << transformString(getBankCode())
-            << ", konstsym = " << transformString(getConstSymbol())
-            << ", varsymb = " << transformString(getVarSymbol())
-            << ", memo = " << transformString(getMemo())
-            << ", name = " << transformString(getAccountName())
-            << ", ident = " << transformString(getIdent())
-            << ", invoice_id = " << transformId(getInvoiceId())
-            << " WHERE id = " << id_;
+        Database::UpdateQuery uquery("bank_ebanka_list");
+        uquery.add("account_id", getAccountId());
+        uquery.add("price", getPrice());
+        uquery.add("crdate", getCrDate());
+        uquery.add("account_number", getAccountNumber());
+        uquery.add("bank_code", getBankCode());
+        uquery.add("konstsym", getConstSymbol());
+        uquery.add("varsymb", getVarSymbol());
+        uquery.add("memo", getMemo());
+        uquery.add("name", getAccountName());
+        uquery.add("ident", getIdent());
+        uquery.add("invoice_id", getInvoiceId());
+        uquery.where().add("id", "=", id_, "AND");
         try {
             assert(m_conn);
-            transaction.exec(*updateStat);
+            transaction.exec(uquery);
             transaction.commit();
             LOGGER(PACKAGE).info(boost::format(
                         "online payment item id='%1%' updated successfully")
@@ -539,11 +538,11 @@ public:
         Database::Query query;
         query.buffer()
             << "UPDATE bank_account SET balance = balance + "
-            << getPrice().format()
+            << Database::Value(getPrice())
             // TODO now i have payment number format incopatible with
             // last_num column - so do not update it
-            << ", last_date='" << getCrDate().date() << "'"//, last_num=" << getIdent()
-            << " WHERE id=" << getAccountId();
+            << ", last_date = " << Database::Value(getCrDate().date()) //, last_num=" << getIdent()
+            << " WHERE id=" << Database::Value(getAccountId());
         try {
             Database::Transaction transaction(*m_conn);
             transaction.exec(query);
@@ -614,9 +613,9 @@ public:
     {
         Database::Query query;
         query.buffer()
-            << "select id from bank_account where account_number = '"
-            << account_num << "' and bank_code='"
-            << bank_code << "'";
+            << "select id from bank_account where account_number = "
+            << Database::Value(account_num) << " and bank_code = "
+            << Database::Value(bank_code);
         Database::Result res = m_conn->exec(query);
         if (res.size() == 0) {
             return Database::ID();
@@ -793,25 +792,23 @@ public:
     bool update()
     {
         TRACE("[CALL] Register::Banking::StatementItemImpl::update()");
-        std::auto_ptr<Database::Query> update (new Database::Query());
-        update->buffer()
-            << "UPDATE bank_statement_item SET"
-            << " statement_id = " << transformId(getStatementId())
-            << ", account_number = " << transformString(getAccountNumber())
-            << ", bank_code = " << transformString(getBankCode())
-            << ", code = " << getCode()
-            << ", konstsym = " << transformString(getConstSymbol())
-            << ", varsymb = " << transformString(getVarSymbol())
-            << ", price = " << getPrice().format()
-            << ", account_evid = " << transformString(getEvidenceNumber())
-            << ", account_date = '" << getDate() << "'"
-            << ", account_memo = " << transformString(getMemo())
-            << ", invoice_id = " << transformId(getInvoiceId())
-            << " WHERE id = " << m_id;
+        Database::UpdateQuery uquery("bank_statement_item");
+        uquery.add("statement_id", getStatementId());
+        uquery.add("account_number", getAccountNumber());
+        uquery.add("bank_code", getBankCode());
+        uquery.add("code", getCode());
+        uquery.add("konstsym", getConstSymbol());
+        uquery.add("varsymb", getVarSymbol());
+        uquery.add("price", getPrice());
+        uquery.add("account_evid", getEvidenceNumber());
+        uquery.add("account_date", getDate());
+        uquery.add("account_memo", getMemo());
+        uquery.add("invoice_id", getInvoiceId());
+        uquery.where().add("id", "=", m_id, "AND");
         try {
             assert(m_conn);
             Database::Transaction transaction(*m_conn);
-            transaction.exec(*update);
+            transaction.exec(uquery);
             transaction.commit();
             LOGGER(PACKAGE).info(boost::format(
                         "statement item id='%1%' updated successfully")
@@ -835,9 +832,9 @@ public:
         query.buffer()
             << "SELECT si.id FROM bank_statement_item si "
             << "JOIN bank_statement_head sh ON si.statement_id=sh.id "
-            << "WHERE si.account_evid='" << getEvidenceNumber() << "' "
-            << "AND si.account_date='" << getDate() << "' "
-            << "AND sh.account_id=" << account_id;
+            << "WHERE si.account_evid = " << Database::Value(getEvidenceNumber())
+            << "AND si.account_date = " << Database::Value(getDate())
+            << "AND sh.account_id = " << Database::Value(account_id);
         Database::Result res = m_conn->exec(query);
         if (res.size() == 0) {
             return false;
@@ -1051,9 +1048,9 @@ public:
         Database::Query query;
         query.buffer()
             << "SELECT id FROM bank_statement_head "
-            << "WHERE num=" << getNumber()
-            << " AND account_id='" << getAccountId() << "' "
-            << " AND create_date='" << getDate() << "'";
+            << "WHERE num = " << Database::Value(getNumber())
+            << " AND account_id = " << Database::Value(getAccountId())
+            << " AND create_date = " << Database::Value(getDate());
         Database::Result res = m_conn->exec(query);
         if (res.size() == 0) {
             return false;
@@ -1063,22 +1060,20 @@ public:
     bool update()
     {
         TRACE("[CALL] Register::Banking::StatementImpl::update()");
-        std::auto_ptr<Database::Query> update(new Database::Query());
-        update->buffer()
-            << "UPDATE bank_statement_head SET"
-            << " account_id = " << transformId(getAccountId())
-            << ", num = " << getNumber()
-            << ", create_date = '" << getDate() << "'"
-            << ", balance_old_date = '" << getOldDate() << "'"
-            << ", balance_old = " << getOldBalance().format()
-            << ", balance_new = " << getBalance().format()
-            << ", balance_credit = " << getCredit().format()
-            << ", balance_debet = " << getDebet().format()
-            << " WHERE id = " << id_;
+        Database::UpdateQuery uquery("bank_statement_head");
+        uquery.add("account_id", getAccountId());
+        uquery.add("num", getNumber());
+        uquery.add("create_date", getDate());
+        uquery.add("balance_old_date", getOldDate());
+        uquery.add("balance_old", getOldBalance());
+        uquery.add("balance_new", getBalance());
+        uquery.add("balance_credit", getCredit());
+        uquery.add("balance_debet", getDebet());
+        uquery.where().add("id", "=", id_, "AND");
         try {
             assert(m_conn);
             Database::Transaction transaction(*m_conn);
-            transaction.exec(*update);
+            transaction.exec(uquery);
             transaction.commit();
             LOGGER(PACKAGE).info(boost::format(
                         "online payment item id='%1%' updated successfully")
@@ -1108,9 +1103,10 @@ public:
         Database::Query query;
         query.buffer()
             << "UPDATE bank_account SET balance = balance + " <<
-            ((getCredit() == Database::Money()) ? getDebet().format() : getCredit().format())
-            << ", last_date='" << getDate() << "', last_num=" << getNumber()
-            << " WHERE id=" << getAccountId();
+            ((getCredit() == Database::Money()) ? Database::Value(getDebet()) : Database::Value(getCredit()))
+            << ", last_date = " << Database::Value(getDate()) 
+            << ", last_num = " << Database::Value(getNumber())
+            << " WHERE id = " << Database::Value(getAccountId());
         try {
             Database::Transaction transaction(*m_conn);
             transaction.exec(query);
@@ -1194,9 +1190,9 @@ public:
     {
         Database::Query query;
         query.buffer()
-            << "select id from bank_account where account_number = '"
-            << account_num << "' and bank_code='"
-            << bank_code << "'";
+            << "select id from bank_account where" 
+            << " account_number = " << Database::Value(account_num)
+            << " and bank_code = " << Database::Value(bank_code);
         Database::Result res = m_conn->exec(query);
         if (res.size() == 0) {
             return Database::ID();
@@ -1750,8 +1746,8 @@ public:
     {
         Database::Query query;
         query.buffer()
-            << "SELECT id FROM registrar WHERE varsymb='"
-            << varSymb << "'";
+            << "SELECT id FROM registrar WHERE varsymb = " 
+            << Database::Value(varSymb);
         Database::Result res = m_conn->exec(query);
         if (res.size() == 0) {
             return Database::ID();
@@ -1763,8 +1759,8 @@ public:
     {
         Database::Query query;
         query.buffer()
-            << "SELECT zone FROM bank_account WHERE id="
-            << accountId;
+            << "SELECT zone FROM bank_account WHERE id = "
+            << Database::Value(accountId);
         Database::Result res = m_conn->exec(query);
         if (res.size() == 0) {
             return Database::ID();

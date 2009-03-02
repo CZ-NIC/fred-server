@@ -774,17 +774,14 @@ public:
                 "[CALL] Register::Invoicing::InvoiceImpl::"
                 "storeFile()");
         if (m_storeFileFlag && getFilePDF()) {
-            Database::Query updateFile;
-            updateFile.buffer()
-                << "UPDATE invoice SET file=" << getFilePDF();
+            Database::UpdateQuery uquery("invoice");
+            uquery.add("file", getFilePDF());
             if (getFileXML()) {
-                updateFile.buffer()
-                    << ", filexml=" << getFileXML();
+                uquery.add("filexml", getFileXML());
             };
-            updateFile.buffer()
-                << " WHERE id=" << getId();
+            uquery.where().add("id", "=", getId(), "AND");
             try {
-                m_conn->exec(updateFile);
+                m_conn->exec(uquery);
             } catch (...) {
                 LOGGER(PACKAGE).error("Register::InvoiceImpl::storeFile(): error");
                 throw;
@@ -923,8 +920,8 @@ public:
         priceQuery.buffer()
             << " FROM price_list WHERE valid_from < 'now()' and "
             << "(valid_to is NULL or valid_to > 'now()')  and "
-            << "operation=" << PaymentActionType2SqlType(operation)
-            << " and zone=" << getZone();
+            << "operation = " << PaymentActionType2SqlType(operation)
+            << " and zone = " << Database::Value(getZone());
         Database::Result priceResult = m_conn->exec(priceQuery);
         if (priceResult.size() == 0) {
             ERROR("Cannot get price from database");
@@ -948,7 +945,7 @@ public:
         Database::SelectQuery regQuery;
         regQuery.buffer()
             << "SELECT system FROM registrar WHERE "
-            << "id=" << registrar;
+            << "id = " << Database::Value(registrar);
         Database::Result regResult = m_conn->exec(regQuery);
         if (regResult.size() == 0) {
             ERROR("Cannot find out if registrar is system");
@@ -1060,8 +1057,8 @@ public:
                 "Database::ID, Database::Money)");
         Database::Query query;
         query.buffer()
-            << "UPDATE invoice SET credit=credit-" << price.format()
-            << " WHERE id=" << invoiceId;
+            << "UPDATE invoice SET credit=credit-" << Database::Value(price)
+            << " WHERE id=" << Database::Value(invoiceId);
         try {
             transaction.exec(query);
         } catch (Database::Exception &ex) {
@@ -1086,8 +1083,8 @@ public:
         Database::Query selectQuery;
         selectQuery.buffer()
             << "SELECT id, credit FROM invoice WHERE "
-            << "registrarid=" << getRegistrar()
-            << " and (zone=" << getZone() << " or zone isnull)"
+            << "registrarid = " << Database::Value(getRegistrar())
+            << " and (zone = " << Database::Value(getZone()) << " or zone isnull)"
             << " and credit > 0 order by zone, id limit " << limit
             << " FOR UPDATE;";
         Database::Result res = m_conn->exec(selectQuery);
@@ -1206,19 +1203,19 @@ public:
         Database::Date fromDate;
         Database::SelectQuery fromDateQuery;
         fromDateQuery.buffer()
-            << "SELECT date( todate + interval'1 day') "
+            << "SELECT date( todate + interval '1 day') "
             // << "SELECT todate "
-            << "from invoice_generation  WHERE "
-            << "zone=" << getZone()
-            << " AND registrarid =" << getRegistrar()
+            << "from invoice_generation  WHERE"
+            << " zone = " << Database::Value(getZone())
+            << " AND registrarid = " << Database::Value(getRegistrar())
             << " order by id desc limit 1;";
         Database::Result fromDateRes1 = m_conn->exec(fromDateQuery);
         if (fromDateRes1.size() == 0) {
             Database::SelectQuery fromDateQuery2;
             fromDateQuery2.buffer()
                 << "SELECT fromdate from registrarinvoice WHERE"
-                << " zone=" << getZone()
-                << " and registrarid=" << getRegistrar() << ";";
+                << " zone = " << Database::Value(getZone())
+                << " and registrarid = " << Database::Value(getRegistrar());
             Database::Result fromDateRes2 = m_conn->exec(fromDateQuery2);
             if (fromDateRes2.size() == 0) {
                 return fromDate;
@@ -1241,9 +1238,9 @@ public:
         Database::SelectQuery recordCountQuery;
         recordCountQuery.buffer()
             << "SELECT count(id) from invoice_object_registry where"
-            << " crdate < \'" << getCrTime() << "\'"
-            << " AND  zone=" << getZone() 
-            << " AND registrarid=" << getRegistrar()
+            << " crdate < " << Database::Value(getCrTime())
+            << " AND  zone = " << Database::Value(getZone())
+            << " AND registrarid = " << Database::Value(getRegistrar())
             << " AND invoiceid IS NULL;";
         Database::Result recordCountRes = m_conn->exec(recordCountQuery);
         if (recordCountRes.size() == 0) {
@@ -1266,10 +1263,10 @@ public:
             << "SELECT CAST(sum(price) AS INTEGER) FROM invoice_object_registry, "
             << "invoice_object_registry_price_map WHERE "
             << "invoice_object_registry_price_map.id=invoice_object_registry.id"
-            << " AND  crdate < \'" <<  getCrTime() << "\'"
-            << " AND zone=" << getZone()
-            << " AND registrarid=" << getRegistrar()
-            << " AND  invoice_object_registry.invoiceid is null;";
+            << " AND  crdate < " <<  Database::Value(getCrTime())
+            << " AND zone = " << Database::Value(getZone())
+            << " AND registrarid = " << Database::Value(getRegistrar())
+            << " AND  invoice_object_registry.invoiceid is null";
         Database::Result recordsPriceRes = m_conn->exec(recordsPriceQuery);
         if (recordsPriceRes.size() == 0) {
             return false;
@@ -1308,7 +1305,7 @@ public:
                 "isYearInInvoicePrefix(int)");
         Database::Query yearQuery;
         yearQuery.buffer()
-            << "SELECT id FROM invoice_prefix WHERE year=" << year;
+            << "SELECT id FROM invoice_prefix WHERE year = " << Database::Value(year);
         Database::Result yearRes = m_conn->exec(yearQuery);
         if (yearRes.size() == 0) {
             return false;
@@ -1381,7 +1378,7 @@ public:
             << "SELECT zone, typ, "
             << " CAST(substr(CAST(prefix AS varchar), 0, 3) AS integer) AS num"
             << " FROM invoice_prefix"
-            << " WHERE year=" << oldYear
+            << " WHERE year = " << Database::Value(oldYear)
             << " ORDER BY num;";
         Database::Result selectRes = m_conn->exec(selectQuery);
         if (selectRes.size() == 0) {
@@ -1433,18 +1430,17 @@ public:
         Database::ID id;
         Database::SelectQuery invoicePrefixQuery;
         invoicePrefixQuery.buffer()
-            << "SELECT id, prefix FROM invoice_prefix WHERE"
-            << " zone";
+            << "SELECT id, prefix FROM invoice_prefix WHERE zone";
         if (getZone() == Database::ID()) {
             invoicePrefixQuery.buffer()
                 << " is null";
         } else {
             invoicePrefixQuery.buffer()
-                << "=" << getZone();
+                << " = " << Database::Value(getZone());
         }
         invoicePrefixQuery.buffer()
-            << " AND typ=" << getType()
-            << " AND year=\'" << getTaxDate().get().year() << "\';";
+            << " AND typ = " << Database::Value(getType())
+            << " AND year = " << Database::Value(getTaxDate().get().year());
         Database::Result invoicePrefixRes = m_conn->exec(invoicePrefixQuery);
         if (invoicePrefixRes.size() == 0) {
             // try to create new prefix number(s) according rows from last year
@@ -1468,13 +1464,11 @@ public:
             invoicePrefix = *(++col);
         }
 
-        Database::Query updateInvoicePrefix;
-        updateInvoicePrefix.buffer()
-            << "update invoice_prefix "
-            << "set prefix=" << invoicePrefix + 1
-            << " where id=" << id << ";";
+        Database::UpdateQuery uquery("invoice_prefix");
+        uquery.add("prefix", invoicePrefix + 1);
+        uquery.where().add("id", "=", id, "AND");
         try {
-            transaction.exec(updateInvoicePrefix);
+            transaction.exec(uquery);
         } catch (Database::Exception &ex) {
             ERROR(boost::format("%1%") % ex.what());
             throw;
@@ -1547,16 +1541,14 @@ public:
         LOGGER(PACKAGE).debug(
                 "[CALL] Register::Invoicing::InvoiceImpl::"
                 "updateInvoiceObjectRegistry(Database::Transaction)");
-        Database::Query updateInvoiceObjectRegistryQuery;
-        updateInvoiceObjectRegistryQuery.buffer()
-            << "UPDATE invoice_object_registry"
-            << " set invoiceid=" << id_
-            << " WHERE crdate < \'" << getCrTime() << "\'"
-            << " AND zone=" << getZone()
-            << " and registrarid=" << getRegistrar()
-            << " AND invoiceid IS NULL;";
+        Database::UpdateQuery uquery("invoice_object_registry");
+        uquery.add("invoiceid", id_);
+        uquery.where().add("crdate", "<", getCrTime(), "AND");
+        uquery.where().add("zone", "=", getZone(), "AND");
+        uquery.where().add("registrarid", "=", getRegistrar(), "AND");
+        uquery.where().add("invoiceid", "IS", Database::Value(), "AND");
         try {
-            transaction.exec(updateInvoiceObjectRegistryQuery);
+            transaction.exec(uquery);
         } catch (Database::Exception &ex) {
             ERROR(boost::format("%1%") % ex.what());
             throw;
@@ -1572,14 +1564,12 @@ public:
         LOGGER(PACKAGE).debug(
                 "[CALL] Register::Invoicing::InvoiceImpl::"
                 "updateRegistrarInvoice(Database::Transaction)");
-        Database::Query updateRegistrarInvoiceQuery;
-        updateRegistrarInvoiceQuery.buffer()
-            << "UPDATE registrarinvoice SET"
-            << " lastdate=\'" << getToDate() << "\'"
-            << " WHERE zone=" << getZone()
-            << " and registrarid=" << getRegistrar() << ";";
+        Database::UpdateQuery uquery("registrarinvoice");
+        uquery.add("lastdate", getToDate());
+        uquery.where().add("zone", "=", getZone(), "AND");
+        uquery.where().add("registrarid", "=", getRegistrar(), "AND");
         try {
-            transaction.exec(updateRegistrarInvoiceQuery);
+            transaction.exec(uquery);
         } catch (Database::Exception &ex) {
             ERROR(boost::format("%1%") % ex.what());
             throw;
@@ -1602,8 +1592,8 @@ public:
             << " invoice_object_registry, invoice_object_registry_price_map"
             << " WHERE invoice_object_registry.id ="
             << " invoice_object_registry_price_map.id AND"
-            << " invoice_object_registry.invoiceid=" << id_
-            << " GROUP BY invoice_object_registry_price_map.invoiceid;" ;
+            << " invoice_object_registry.invoiceid = " << Database::Value(id_)
+            << " GROUP BY invoice_object_registry_price_map.invoiceid" ;
         Database::Result res = m_conn->exec(getInvoicesNumbersQuery);
         Database::Result::Iterator it = res.begin();
         for (;it != res.end(); ++it) {
@@ -1625,9 +1615,9 @@ public:
             << " FROM invoice_object_registry, invoice_object_registry_price_map"
             << " WHERE invoice_object_registry.id ="
             << " invoice_object_registry_price_map.id"
-            << " AND invoice_object_registry.invoiceid=" << id_
-            << " AND invoice_object_registry_price_map.invoiceid="
-            << accountInvoiceId << ";";
+            << " AND invoice_object_registry.invoiceid = " << Database::Value(id_)
+            << " AND invoice_object_registry_price_map.invoiceid = "
+            << Database::Value(accountInvoiceId);
         Database::Result sumPriceRes = m_conn->exec(sumPriceQuery);
         if (sumPriceRes.size() == 0) {
             return -1;
@@ -1644,8 +1634,8 @@ public:
                 "getInvoiceBalance(int, long)");
         Database::SelectQuery totalQuery;
         totalQuery.buffer()
-            << "SELECT CAST(total AS INTEGER) FROM invoice "
-            << "WHERE id="<< accountInvoiceId << ";";
+            << "SELECT CAST(total AS INTEGER) FROM invoice"
+            << " WHERE id = "<< Database::Value(accountInvoiceId);
         Database::Result totalResult = m_conn->exec(totalQuery);
         long total;
         if (totalResult.size() == 0) {
@@ -1655,9 +1645,9 @@ public:
         }
         Database::SelectQuery sumQuery;
         sumQuery.buffer()
-            << "SELECT CAST(SUM(credit) AS INTEGER) "
-            << "FROM invoice_credit_payment_map "
-            << "WHERE ainvoiceid=" << accountInvoiceId << ";";
+            << "SELECT CAST(SUM(credit) AS INTEGER)"
+            << " FROM invoice_credit_payment_map"
+            << " WHERE ainvoiceid = " << Database::Value(accountInvoiceId);
         Database::Result sumResult = m_conn->exec(sumQuery);
         long sum;
         if (sumResult.size() == 0) {
@@ -1682,8 +1672,8 @@ public:
             Database::InsertQuery insertQuery("invoice_credit_payment_map");
             insertQuery.add("invoiceid", id_);
             insertQuery.add("ainvoiceid", idNumbers[i]);
-            insertQuery.add("credit", Database::Money(invoiceSumPrice).format());
-            insertQuery.add("balance", Database::Money(invoiceBalance).format());
+            insertQuery.add("credit", Database::Money(invoiceSumPrice));
+            insertQuery.add("balance", Database::Money(invoiceBalance));
             try {
                 transaction.exec(insertQuery);
             } catch (Database::Exception &ex) {
@@ -1704,9 +1694,8 @@ public:
         } else if (getRegistrar() == Database::ID()) {
             Database::SelectQuery regQuery;
             regQuery.buffer()
-                << "select id from registrar where handle='"
-                << getRegistrarName()
-                << "'";
+                << "select id from registrar where handle = "
+                << Database::Value(getRegistrarName());
             Database::Result res = m_conn->exec(regQuery);
             if (res.size() == 0) {
                 ERROR("registrar do not exists");
@@ -1717,8 +1706,8 @@ public:
         } else if (getRegistrarName().empty()) {
             Database::SelectQuery query;
             query.buffer()
-                << "select id from registrar where id="
-                << getRegistrar();
+                << "select id from registrar where id = "
+                << Database::Value(getRegistrar());
             Database::Result res = m_conn->exec(query);
             if (res.size() == 0) {
                 ERROR("registrar do not exists");
@@ -1727,10 +1716,9 @@ public:
         } else {
             Database::SelectQuery query;
             query.buffer()
-                << "select id from registrar where handle='"
-                << getRegistrarName()
-                << "' and id="
-                << getRegistrar();
+                << "select id from registrar where"
+                << " handle = " << Database::Value(getRegistrarName())
+                << " and id = " << Database::Value(getRegistrar());
             Database::Result res = m_conn->exec(query);
             if (res.size() == 0) {
                 ERROR("clash between registrar id and handle");
@@ -1749,11 +1737,11 @@ public:
             Database::SelectQuery zoneQuery;
             zoneQuery.buffer()
                 << "select zz.id from zone zz "
-                << "join registrarinvoice rr on (rr.zone = zz.id) "
-                << "where zz.fqdn='" << getZoneName() << "' "
-                << "and rr.registrarid=" << getRegistrar() << " "
-                << "and rr.fromdate <= date(now()) "
-                << "limit 1";
+                << "join registrarinvoice rr on (rr.zone = zz.id)"
+                << " where zz.fqdn = " << Database::Value(getZoneName())
+                << " and rr.registrarid = " << Database::Value(getRegistrar())
+                << " and rr.fromdate <= date(now())"
+                << " limit 1";
             Database::Result res = m_conn->exec(zoneQuery);
             if (res.size() == 0) {
                 ERROR(boost::format("registrar (id:%1%) do not belong to zone")
@@ -1765,12 +1753,12 @@ public:
         } else if (getZoneName().empty()) {
             Database::SelectQuery zoneQuery;
             zoneQuery.buffer()
-                << "select zz.id from zone zz "
-                << "join registrarinvoice rr on (rr.zone = zz.id) "
-                << "where zz.id=" << getZone() << " "
-                << "and rr.registrarid=" << getRegistrar() << " "
-                << "and rr.fromdate <= date(now()) "
-                << "limit 1";
+                << "select zz.id from zone zz"
+                << " join registrarinvoice rr on (rr.zone = zz.id)"
+                << " where zz.id = " << Database::Value(getZone())
+                << " and rr.registrarid = " << Database::Value(getRegistrar())
+                << " and rr.fromdate <= date(now()) "
+                << " limit 1";
             Database::Result res = m_conn->exec(zoneQuery);
             if (res.size() == 0) {
                 ERROR(boost::format("registrar (id:%1%) do not belong to zone")
@@ -1780,12 +1768,12 @@ public:
         } else {
             Database::SelectQuery zoneQuery;
             zoneQuery.buffer()
-                << "select zz.id from zone zz "
-                << "join registrarinvoice rr on (rr.zone = zz.id) "
-                << "where zz.id=" << getZone() << " "
-                << "and zz.fqdn='" << getZoneName() << "' "
-                << "and rr.registrarid=" << getRegistrar() << " "
-                << "and rr.fromdate < date(now()) limit 1";
+                << "select zz.id from zone zz"
+                << " join registrarinvoice rr on (rr.zone = zz.id)"
+                << " where zz.id = " << Database::Value(getZone())
+                << " and zz.fqdn = " << Database::Value(getZoneName())
+                << " and rr.registrarid = " << Database::Value(getRegistrar())
+                << " and rr.fromdate < date(now()) limit 1";
             Database::Result res = m_conn->exec(zoneQuery);
             if (res.size() == 0) {
                 ERROR("zone name does not correspond to zone id");
@@ -1891,7 +1879,7 @@ public:
             vatQuery.buffer()
                 << "select pv.vat from price_vat pv, registrar r "
                 << "where r.vat=true and pv.valid_to isnull and "
-                << "r.id=" << m_registrar << " limit 1";
+                << "r.id = " << Database::Value(m_registrar) << " limit 1";
             Database::Result res = m_conn->exec(vatQuery);
             if (res.size() != 0) {
                 // get vat rate from database
@@ -1963,27 +1951,24 @@ public:
     bool update()
     {
         TRACE("[CALL] Register::Invoicing::Invoice::update()");
-        Database::Query updateDeposit;
-        updateDeposit.buffer()
-            << "UPDATE invoice SET "
-            << "zone=" << getZone()
-            << ", crdate='" << getCrTime() << "'"
-            << ", taxdate='" << getTaxDate() << "'"
-            << ", prefix=" << getNumber()
-            << ", registrarid=" << getRegistrar()
-            << ", credit=" << getCredit().format()
-            << ", price=" << getPrice().format()
-            << ", vat=" << getVatRate()
-            << ", total=" << getTotal().format()
-            << ", totalvat=" << getTotalVAT().format()
-            << ", prefix_type=" << getInvoicePrefixTypeId()
-            << ", file=" << transformId(getFilePDF())
-            << ", filexml=" << transformId(getFileXML())
-            << " WHERE id=" << id_;
-        std::cout << updateDeposit << std::endl;
+        Database::UpdateQuery uquery("invoice");
+        uquery.add("zone", getZone());
+        uquery.add("crdate", getCrTime());
+        uquery.add("taxdate", getTaxDate());
+        uquery.add("prefix", getNumber());
+        uquery.add("registrarid", getRegistrar());
+        uquery.add("credit", getCredit());
+        uquery.add("price",  getPrice());
+        uquery.add("vat", getVatRate());
+        uquery.add("total", getTotal());
+        uquery.add("totalvat", getTotalVAT());
+        uquery.add("prefix_type", getInvoicePrefixTypeId());
+        uquery.add("file", getFilePDF());
+        uquery.add("filexml", getFileXML());
+        uquery.where().add("id", "=", id_, "AND");
         try {
             Database::Transaction transaction(*m_conn);
-            transaction.exec(updateDeposit);
+            transaction.exec(uquery);
             transaction.commit();
             LOGGER(PACKAGE).info(boost::format(
                         "invoice id='%1%' updated successfully")
@@ -2642,15 +2627,15 @@ public:
             << "SELECT r.email, g.fromdate, g.todate, "
             << "i.file, i.fileXML, g.id, i.id "
             << "FROM registrar r, invoice i "
-            << "LEFT JOIN invoice_generation g ON (g.invoiceid=i.id) "
-            << "LEFT JOIN invoice_mails im ON (im.invoiceid=i.id)"
-            << "WHERE i.registrarid=r.id "
+            << "LEFT JOIN invoice_generation g ON (g.invoiceid = i.id) "
+            << "LEFT JOIN invoice_mails im ON (im.invoiceid = i.id)"
+            << "WHERE i.registrarid = r.id "
             << "AND im.mailid ISNULL "
             << "UNION "
             << "SELECT r.email, g.fromdate, g.todate, NULL, NULL, g.id, NULL "
             << "FROM registrar r, invoice_generation g "
-            << "LEFT JOIN invoice_mails im ON (im.genid=g.id) "
-            << "WHERE g.registrarid=r.id AND g.invoiceid ISNULL "
+            << "LEFT JOIN invoice_mails im ON (im.genid = g.id) "
+            << "WHERE g.registrarid = r.id AND g.invoiceid ISNULL "
             << "AND im.mailid ISNULL "
             << "AND NOT(r.email ISNULL OR TRIM(r.email)='')";
         Database::Result loadMailsResult = m_conn->exec(loadMailsQuery);
@@ -2807,8 +2792,8 @@ public:
         query.buffer()
             << "SELECT bb.id, ba.zone, rr.id, bb.price, DATE(bb.crdate)"
             << " FROM bank_ebanka_list bb"
-            << " JOIN bank_account ba ON bb.account_id=ba.id"
-            << " JOIN registrar rr ON bb.varsymb=rr.varsymb"
+            << " JOIN bank_account ba ON bb.account_id = ba.id"
+            << " JOIN registrar rr ON bb.varsymb = rr.varsymb"
             << " WHERE bb.invoice_id IS NULL;";
         Database::Result res = m_conn->exec(query);
         Database::Result::Iterator it = res.begin();
@@ -2830,8 +2815,8 @@ public:
                     % newId);
             Database::Query update;
             update.buffer()
-                << "UPDATE bank_ebanka_list SET invoice_id=" << invoice->getId()
-                << " WHERE id=" << statementId;
+                << "UPDATE bank_ebanka_list SET invoice_id=" << Database::Value(invoice->getId())
+                << " WHERE id=" << Database::Value(statementId);
             try {
                 Database::Transaction transaction(*m_conn);
                 transaction.exec(update);
@@ -2872,8 +2857,8 @@ public:
             Database::ID newId = invoice->getId();
             Database::Query update;
             update.buffer()
-                << "UPDATE bank_statement_item SET invoice_id=" << invoice->getId()
-                << " WHERE id=" << statementId;
+                << "UPDATE bank_statement_item SET invoice_id=" << Database::Value(invoice->getId())
+                << " WHERE id=" << Database::Value(statementId);
             try {
                 Database::Transaction transaction(*m_conn);
                 transaction.exec(update);
@@ -2934,8 +2919,8 @@ ManagerImpl::getCreditByZone(
     getCreditQuery.buffer()
         << "SELECT SUM(credit) FROM invoice i JOIN registrar r "
         << "ON (i.registrarid=r.id) "
-        << "WHERE i.zone=" << zoneId
-        << " AND r.handle='" << registrarHandle << "';";
+        << "WHERE i.zone = " << Database::Value(zoneId)
+        << " AND r.handle = " << Database::Value(registrarHandle);
     Database::Result getCreditRes = m_conn->exec(getCreditQuery);
     if (getCreditRes.size() == 0) {
         LOGGER(PACKAGE).error("Cannot get registrar credit from database");
