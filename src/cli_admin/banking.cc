@@ -505,16 +505,18 @@ int main(int argc, char *argv[])
     }
 
     if (strcmp(argv[i], "--factoring") == 0) {
-      if (i +4< argc)
+      if (i +4< argc) {
         factoring(config.GetDBconninfo() , argv[i+1], argv[i+2], argv[i+3],
           argv[i+4]);
-      break;
+        break;
+      }
     }
 
     if (strcmp(argv[i], "--factoring") == 0) {
-      if (i +3< argc)
+      if (i +3< argc) {
         factoring_all(config.GetDBconninfo() , argv[i+1], argv[i+2], argv[i+3]);
-      break;
+        break;
+      }
     }
 
     if (strcmp(argv[i], "--ebanka-csv") == 0) {
