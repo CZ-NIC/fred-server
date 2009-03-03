@@ -614,8 +614,10 @@ public:
     {
         Database::Query query;
         query.buffer()
-            << "select id from bank_account where account_number = "
-            << Database::Value(account_num) << " and bank_code = "
+            << "select id from bank_account where "
+            << "trim('0' from account_number) = "
+            << "trim('0' from "
+            << Database::Value(account_num) << ") and bank_code = "
             << Database::Value(bank_code);
         Database::Result res = m_conn->exec(query);
         if (res.size() == 0) {
@@ -1192,9 +1194,11 @@ public:
     {
         Database::Query query;
         query.buffer()
-            << "select id from bank_account where" 
-            << " account_number = " << Database::Value(account_num)
-            << " and bank_code = " << Database::Value(bank_code);
+            << "select id from bank_account where " 
+            << "trim('0' from account_number) = "
+            << "trim('0' from "
+            << Database::Value(account_num) << ") and bank_code = "
+            << Database::Value(bank_code);
         Database::Result res = m_conn->exec(query);
         if (res.size() == 0) {
             return Database::ID();
