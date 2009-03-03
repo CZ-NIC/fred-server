@@ -92,10 +92,11 @@ public:
   /**
    * default constructor for NULL value
    */
-  Value() : is_null_(true),
-            value_(),
-            quoted_output_(false),
-            escaped_output_(false) {
+  Value() 
+      : is_null_(true),
+        value_(),
+        quoted_output_(false),
+        escaped_output_(false) {
   }
 
 
@@ -111,19 +112,35 @@ public:
 
 
   /**
+   * full parameter constructor
+   */
+  Value(const std::string &_value,
+        bool _is_null,
+        bool _quoted,
+        bool _escaped)
+      : is_null_(_is_null),
+        value_(_value),
+        quoted_output_(_quoted),
+        escaped_output_(_escaped) {
+  }
+        
+
+  /**
    * construct and conversion operator for string values
    */
-  Value(const std::string& _value) : is_null_(false),
-                                     value_(_value),
-                                     quoted_output_(true),
-                                     escaped_output_(true) {
+  Value(const std::string& _value)
+      : is_null_(false),
+        value_(_value),
+        quoted_output_(true),
+        escaped_output_(true) {
   }
 
 
-  Value(const char* _value) : is_null_(false),
-                              value_(_value),
-                              quoted_output_(true),
-                              escaped_output_(true) {
+  Value(const char* _value) 
+      : is_null_(false),
+        value_(_value),
+        quoted_output_(true),
+        escaped_output_(true) {
   }
 
 
@@ -144,10 +161,11 @@ public:
   /**
    * Database::ID need special handling
    */
-  Value(const Database::ID& _value) : is_null_(false),
-                                      value_(sqlize(_value)),
-                                      quoted_output_(false),
-                                      escaped_output_(false) {
+  Value(const Database::ID& _value) 
+      : is_null_(false),
+        value_(sqlize(_value)),
+        quoted_output_(false),
+        escaped_output_(false) {
     /* do extra checking for NULL (zero value is not valid ID) */
     if (_value == 0)
       is_null_ = true;
@@ -161,16 +179,7 @@ public:
    * boost::ptime need special handling
    */
   Value(const ptime &_value) {
-    escaped_output_ = false;
-    if (_value.is_special()) {
-      is_null_ = true;
-      quoted_output_ = false;
-    }
-    else {
-      value_ = sqlize(_value);
-      is_null_ = false;
-      quoted_output_ = true;
-    }
+    __init_date_time(_value);
   }
 
 
@@ -178,16 +187,7 @@ public:
 
 
   Value& operator =(const ptime &_value) {
-    escaped_output_ = false;
-    if (_value.is_special()) {
-      is_null_ = true;
-      quoted_output_ = false;
-    }
-    else {
-      value_ = sqlize(_value);
-      is_null_ = false;
-      quoted_output_ = true;
-    }
+    __init_date_time(_value);
     return *this;
   }
 
@@ -196,16 +196,7 @@ public:
    * boost::date need special handling
    */
   Value(const date &_value) {
-    escaped_output_ = false;
-    if (_value.is_special()) {
-      is_null_ = true;
-      quoted_output_ = false;
-    }
-    else {
-      value_ = sqlize(_value);
-      is_null_ = false;
-      quoted_output_ = true;
-    }
+    __init_date_time(_value);
   }
 
 
@@ -213,16 +204,7 @@ public:
 
 
   Value& operator =(const date &_value) {
-    escaped_output_ = false;
-    if (_value.is_special()) {
-      is_null_ = true;
-      quoted_output_ = false;
-    }
-    else {
-      value_ = sqlize(_value);
-      is_null_ = false;
-      quoted_output_ = true;
-    }
+    __init_date_time(_value);
     return *this;
   }
 
@@ -293,6 +275,26 @@ public:
 
   /* value output operator */
   friend std::ostream& operator<<(std::ostream& _os, const Value& _value);
+
+
+private:
+  /**
+   * common initialization code for boost ptime
+   * and boost date types
+   */
+  template<class T>
+  void __init_date_time(const T _value) {
+    escaped_output_ = false;
+    if (_value.is_special()) {
+      is_null_ = true;
+      quoted_output_ = false;
+    }
+    else {
+      value_ = sqlize(_value);
+      is_null_ = false;
+      quoted_output_ = true;
+    }
+  }
 
 
 protected:
