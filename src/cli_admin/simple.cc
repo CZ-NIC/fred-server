@@ -34,7 +34,6 @@
 #include "domainclient.h"
 #include "contactclient.h"
 #include "invoiceclient.h"
-#include "authinfoclient.h"
 #include "bankclient.h"
 #include "pollclient.h"
 #include "registrarclient.h"
@@ -185,7 +184,6 @@ main(int argc, char **argv)
     APPENDOPTIONS(KeysetClient);
     APPENDOPTIONS(ContactClient);
     APPENDOPTIONS(InvoiceClient);
-    APPENDOPTIONS(AuthInfoClient);
     APPENDOPTIONS(BankClient);
     APPENDOPTIONS(PollClient);
     APPENDOPTIONS(RegistrarClient);
@@ -314,9 +312,6 @@ main(int argc, char **argv)
             break;
         case CLIENT_INVOICE:
             INIT_AND_RUN(InvoiceClient);
-            break;
-        case CLIENT_AUTHINFO:
-            INIT_AND_RUN(AuthInfoClient);
             break;
         case CLIENT_BANK:
             INIT_AND_RUN(BankClient);

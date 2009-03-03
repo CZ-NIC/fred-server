@@ -130,10 +130,6 @@ public:
       throw (ccReg::Admin::ObjectNotFound);
   ccReg::EPPAction* getEPPActionBySvTRID(const char* svTRID)
       throw (ccReg::Admin::ObjectNotFound);
-  void fillAuthInfoRequest(ccReg::AuthInfoRequest::Detail *carid,
-                           Register::AuthInfoRequest::Detail *rarid);
-  ccReg::AuthInfoRequest::Detail* getAuthInfoRequestById(ccReg::TID id)
-      throw (ccReg::Admin::ObjectNotFound);
   ccReg::Mailing::Detail* getEmailById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound);
   // statistics

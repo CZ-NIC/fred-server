@@ -51,7 +51,6 @@
 #include "old_utils/conf.h"
 
 // MailerManager is connected in constructor
-#include "register/auth_info.h"
 #include "register/domain.h"
 #include "register/contact.h"
 #include "register/nsset.h"
