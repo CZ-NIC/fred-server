@@ -84,7 +84,7 @@ void ccReg_Invoices_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
       invoice_list_->sort(Register::Invoicing::MT_REGISTRAR, _dir);
       break;
     case 3:
-      invoice_list_->sort(Register::Invoicing::MT_TOTAL, _dir);
+      invoice_list_->sort(Register::Invoicing::MT_PRICE, _dir);
       break;
     case 4:
       invoice_list_->sort(Register::Invoicing::MT_CREDIT, _dir);
