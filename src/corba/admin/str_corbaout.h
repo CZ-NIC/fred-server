@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "types/convert_str_pod.h"
+#include "types/convert_str_boost_datetime.h"
 #include "types/stringify.h"
 
 
@@ -25,14 +26,28 @@ inline std::string str_corbaout(const std::string &_value) {
 
 template<>
 inline std::string str_corbaout(const ptime &_value) {
-  return formatTime(_value, true);
+  ptime local = boost::date_time::c_local_adjustor<ptime>::utc_to_local(_value);
+  return local.is_special() ? std::string() : stringify(local);
+}
+
+
+template<>
+inline std::string str_corbaout(const Database::DateTime &_value) {
+  return str_corbaout<ptime>(_value);
 }
 
 
 template<>
 inline std::string str_corbaout(const date &_value) {
-  return formatDate(_value);
+  return _value.is_special() ? std::string() : stringify(_value);
 }
+
+
+template<>
+inline std::string str_corbaout(const Database::Date &_value) {
+  return str_corbaout<date>(_value);
+}
+
 
 
 #endif /*STR_CORBAOUT_H_*/
