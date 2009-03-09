@@ -269,7 +269,7 @@ public:
   virtual ~ForeignKey() { }
 
 
-  field_type_referenced& getReferencedField() {
+  field_type_referenced& getReferencedField() const {
     return field_referenced_;
   }
 

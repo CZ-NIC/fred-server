@@ -72,7 +72,7 @@ public:
   Field::PrimaryKey<model_class, T>* getPrimaryKey() const throw (Model::DefinitionError) {
     Field::PrimaryKey<model_class, T> *ret = 0;
 
-    typename super::value_type field;
+    typename super::value_type field = 0;
     BOOST_FOREACH(field, *this) {
       if (field->getAttrs().isPrimaryKey()) {
         ret = dynamic_cast<Field::PrimaryKey<model_class, T>* >(field);
