@@ -251,6 +251,7 @@ libtypes_a_SOURCES = date.cc                       \
                      convert_common.h              \
                      convert_str_base.h            \
                      convert_str_pod.h             \
+                     convert_str_boost_datetime.h  \
                      convert_sql_base.h            \
                      convert_sql_pod.h             \
                      convert_sql_boost_datetime.h  \
