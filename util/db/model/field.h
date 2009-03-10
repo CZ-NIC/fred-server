@@ -25,10 +25,6 @@
 #ifndef FIELD_H_
 #define FIELD_H_
 
-#include <ostream>
-
-#include "model_list.h"
-
 
 namespace Field {
 
@@ -89,26 +85,11 @@ public:
   }
 
 
-  template<class __type>
-  friend std::ostream& operator<<(std::ostream &_os, const Field<__type> &_field);
-
-
 protected:
   value_type value_;
   bool       is_set_;
 };
 
-
-// template<class __type>
-// std::ostream& operator<<(std::ostream &_os, const Field<__type> &_field) {
-//   return (_field.is_set_ ? _os << _field.value_ : _os << "NULL");
-// }
-// 
-// 
-// template<class __type>
-// std::ostream& operator<<(std::ostream &_os, const Field< ::Model::List<__type> > &_field) {
-//   return _os;
-// }
 
 
 template<>
@@ -179,18 +160,10 @@ public:
   }
 
 
-  friend std::ostream& operator<<(std::ostream &_os, const Field<std::string> &_field);
-
-
 protected:
   value_type value_;
   bool       is_set_;
 };
-
-
-// std::ostream& operator<<(std::ostream &_os, const Field<std::string> &_field) {
-//   return (_field.is_set_ ? _os << _field.value_ : _os << "NULL");
-// }
 
 
 
