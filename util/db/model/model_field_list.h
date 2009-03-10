@@ -43,7 +43,7 @@ public:
 
 
   /**
-   * Constuctors and destructor
+   * Constuctors
    */
   List() {
   }
@@ -59,6 +59,9 @@ public:
   }
 
 
+  /**
+   * Destructor
+   */
   virtual ~List() {
   }
 
@@ -66,29 +69,37 @@ public:
   /**
    * Search list for primary key field of type <T>
    *
-   * @return  primary key field from list
+   * @return  primary key field from list casted to Field::PrimayKey<model_type, T>
    */
   template<class T>
   Field::PrimaryKey<model_class, T>* getPrimaryKey() const throw (Model::DefinitionError) {
-    Field::PrimaryKey<model_class, T> *ret = 0;
+    Field::PrimaryKey<model_class, T> *ret   = 0;
+    Field::Base_<model_class>         *field = this->getPrimaryKey();
 
+    ret = dynamic_cast<Field::PrimaryKey<model_class, T>* >(field);
+    if (!ret) {
+      throw Model::DefinitionError(field->getTableName() + "::" + field->getName(),
+                                   "requested data type of primary key field doesn't fit"); 
+    }
+    return ret;
+  }
+
+
+  /**
+   * Search list for primary key
+   *
+   * @return  primary key field from list without cast to specific type
+   */
+  Field::Base_<model_class>* getPrimaryKey() const throw (Model::DefinitionError) {
     typename super::value_type field = 0;
     BOOST_FOREACH(field, *this) {
       if (field->getAttrs().isPrimaryKey()) {
-        ret = dynamic_cast<Field::PrimaryKey<model_class, T>* >(field);
-        if (!ret) {
-          throw Model::DefinitionError(field->getTableName() + "::" + field->getName(),
-                                       "data type of primary key field doesn't fit"); 
-        }
+        return field;
       }
     }
-    
-    if (!ret) {
-      throw Model::DefinitionError(field->getTableName(),
-                                   "can't find primary key field");
-    }
 
-    return ret;
+    throw Model::DefinitionError(field ? field->getTableName() : "<can't-get-table-name>",
+                                 "can't find primary key field");
   }
 };
 

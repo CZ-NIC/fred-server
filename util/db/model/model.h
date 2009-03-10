@@ -187,6 +187,17 @@ public:
 
 
   /**
+   * TEST: get table method for support table name generation
+   *       by overriding in concrete model method specialization
+   *       (should be usefull for table partitioning)
+   */
+  template<class _class>
+  static std::string getTableName() {
+    return _class::table_name;
+  }
+
+
+  /**
    * TEST: load object by PK value
    */
   template<class _class>
@@ -226,19 +237,23 @@ public:
 
 
 private:
+  typedef unsigned long long    sequence_type; /**< type used for database sequence */
+
+
   template<class _class>
   void reloadPrimaryKey_(_class *_object) {
-    typedef unsigned long long   sequence_type;
-
     typename _class::field_list list = _object->getFields();
     try {
       Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
-      this->reloadCurrentSequence_(_object);
+      if (pk)
+        this->reloadCurrentSequence_(_object);
     }
     catch (Model::Exception &_err) {
-      /* PK is not a sequence reload by PK value */
+      /* PK is not a sequence, PK should be already set */
+      LOGGER(PACKAGE).debug(boost::format("PK is not a sequence type: %1%") % _err.what());
     }
   }
+
 
   /**
    * Prepare query for reload current sequence id
@@ -248,8 +263,6 @@ private:
    */
   template<class _class>
   void reloadCurrentSequence_(_class *_object) {
-    typedef unsigned long long   sequence_type;
-
     typename _class::field_list list = _object->getFields();
     Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
 
@@ -275,8 +288,6 @@ private:
    */
   template<class _class>
   void reloadByCurrentSequence_(_class *_object) {
-    typedef unsigned long long   sequence_type;
-
     typename _class::field_list list = _object->getFields();
     Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
 
@@ -300,8 +311,6 @@ private:
    */
   template<class _class>
   void reloadByPrimaryKey_(_class *_object) {
-    typedef unsigned long long   sequence_type;
-
     typename _class::field_list list = _object->getFields();
     Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
 
