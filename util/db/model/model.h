@@ -197,44 +197,6 @@ public:
   }
 
 
-  /**
-   * TEST: load object by PK value
-   */
-  template<class _class>
-  void load(_class *_object, const Database::Value &_value) {
-    try {
-      typedef typename Field::List<_class>::value_type  field_type;
-
-      field_type pk_field;
-      BOOST_FOREACH(pk_field, _object->getFields()) {
-        if (pk_field->getAttrs().isPrimaryKey())
-          break;
-      }
-
-      std::stringstream query;
-      query << "SELECT * FROM " << pk_field->getTableName() << " WHERE "
-            << pk_field->getName() << " = " << static_cast<std::string>(_value);
-                    
-
-      Database::Connection conn = Database::Manager::acquire();
-      Database::Result r = conn.exec(query.str());
-      
-      if (r.size() == 1) {
-        unsigned i = 0;
-        BOOST_FOREACH(Field::Base_<_class> *_field, _object->getFields()) {
-          Database::Value v = r[0][i++];
-          if (!v.isnull()) {
-            _field->setValue(_object, v);
-          }
-        }
-      }
-    }
-    catch (Database::Exception &_err) {
-      LOGGER(PACKAGE).error(_err.what());
-      throw;
-    }
-  }
-
 
 private:
   typedef unsigned long long    sequence_type; /**< type used for database sequence */

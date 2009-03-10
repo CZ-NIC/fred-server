@@ -39,13 +39,14 @@ public:
 
 
   _class_ref* getRelated(_class *_obj) {
-    LOGGER(PACKAGE).debug("<CALL> getRelated()");
     if (related_to_(*_obj).isSet() && related_(*_obj).get() == 0) {
-      LOGGER(PACKAGE).debug("<CALL> getRelated() condition true");
+      _class_ref *loading = new _class_ref();
 
-      _class_ref *data = new _class_ref();
-      data->load(data, related_to_(*_obj).get());
-      setRelated(_obj, data);
+      Field::PrimaryKey<_class_ref, _type> *pk = _class_ref::getFields().template getPrimaryKey<_type>();
+      pk->setValue(loading, related_to_(*_obj).get());
+      loading->reload();
+
+      setRelated(_obj, loading);
     }
     return related_(*_obj);
   }

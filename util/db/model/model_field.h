@@ -146,21 +146,6 @@ public:
 
 
   void serialize(::Model::JobQueue &_jobs, Database::UpdateQuery &_query, class_name *_object) {
-//    if (!value_(*_object).isSet()) {
-//      if (this->attrs_.isNotNull()) {
-//        throw SerializationError("UPDATE", this->getTableName(), this->getName(), "attrs { isNotNull } && value { !isSet }");
-//      }
-//
-//      if (this->attrs_.isDefault()) {
-//        return;
-//      }
-//      
-//      _query.add(this->getName(), Database::Value());
-//    }
-//    else {
-//      _query.add(this->getName(), Database::Value(value_(*_object)));
-//    }
-
     if (value_(*_object).isSet()) {
       _query.add(this->getName(), Database::Value(value_(*_object)));
     }
@@ -235,6 +220,12 @@ public:
 
     _query.where().add(this->getName(), "=", Database::Value(this->value_(*_object)), "AND");
   }
+
+
+  void setValue(class_name *_object, const value_type &_value) {
+    this->value_(*_object) = _value;
+  }
+
 };
 
 
