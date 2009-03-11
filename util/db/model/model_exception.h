@@ -39,8 +39,16 @@ public:
 class DefinitionError : public Exception {
 public:
   DefinitionError(const std::string &_table,
-                       const std::string &_problem)
-                     : Exception("Model::Error definition: table=`" + _table + "' " + _problem) {
+                  const std::string &_problem)
+                : Exception("Model::Error definition: table=`" + _table + "' " + _problem) {
+  }
+};
+
+
+class DataLoadError : public ::Exception {
+public:
+  DataLoadError(const std::string &_reason)
+              : Exception("Model::DataLoadError: reason=`" + _reason +"'") {
   }
 };
 

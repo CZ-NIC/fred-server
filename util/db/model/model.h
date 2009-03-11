@@ -197,6 +197,15 @@ public:
   }
 
 
+  /**
+   * TEST: load by result
+   */
+  template<class _class>
+  void load(_class *_object, const Database::Row &_data) {
+    this->load__(_object, _data, _class::getFields());
+  }
+
+
 
 private:
   typedef unsigned long long    sequence_type; /**< type used for database sequence */
@@ -225,7 +234,7 @@ private:
    */
   template<class _class>
   void reloadCurrentSequence_(_class *_object) {
-    typename _class::field_list list = _object->getFields();
+    typename _class::field_list list = _class::getFields();
     Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
 
     if (!pk->getField(_object).isSet() && pk->getAttrs().isDefault()) {
@@ -250,7 +259,7 @@ private:
    */
   template<class _class>
   void reloadByCurrentSequence_(_class *_object) {
-    typename _class::field_list list = _object->getFields();
+    typename _class::field_list list = _class::getFields();
     Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
 
     if (!pk->getField(_object).isSet() && pk->getAttrs().isDefault()) {
@@ -260,7 +269,7 @@ private:
       std::string query = (boost::format("SELECT * FROM %1% WHERE %2% = (SELECT currval('%1%_%2%_seq'))")
                                        % pk_table % pk_field).str();
 
-      this->reload__(_object, query, _object->getFields());
+      this->reload__(_object, query, list);
     }
   }
 
@@ -273,7 +282,7 @@ private:
    */
   template<class _class>
   void reloadByPrimaryKey_(_class *_object) {
-    typename _class::field_list list = _object->getFields();
+    typename _class::field_list list = _class::getFields();
     Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
 
     if (pk->getField(_object).isSet() || !pk->getAttrs().isDefault()) {
@@ -283,7 +292,7 @@ private:
       std::string query = (boost::format("SELECT * FROM %1% WHERE %2% = %3%")
                                        % pk_table % pk_field % pk->getValue(_object)).str();
 
-      this->reload__(_object, query, _object->getFields());
+      this->reload__(_object, query, list);
     }
   }
 
@@ -293,6 +302,7 @@ private:
    *
    * @param  _object  pointer to object receiving database data
    * @param  _query   select query
+   * @param  _fields  model field list (what we expect to load from query)
    *
    * TODO: check number of columns and number of fields - should be same
    */
@@ -303,24 +313,49 @@ private:
       Database::Result data = conn.exec(_query);
       
       if (data.size() == 1) {
-        unsigned i = 0;
-        BOOST_FOREACH(Field::Base_<_class> *field, _fields) {
-          Database::Value v = data[0][i++];
-          /* it is loaded to database so reset the is_set flag (false parameter) */
-          bool set_flag = false;
-          if (field->getAttrs().isPrimaryKey()) {
-            set_flag = true;
-          }
-          if (!v.isnull()) {
-            field->setValue(_object, v, set_flag); 
-          }
-        }
+        load__(_object, *(data.begin()), _fields);
       }
     }
-    catch (Database::Exception &_err) {
-      LOGGER(PACKAGE).error(_err.what());
+    catch (::Exception &_err) {
       throw;
     }
+  }
+
+
+  /**
+   * Load data from database row object
+   *
+   * @param  _object  pointer to object receiving database data
+   * @param  _data    row data
+   * @param  _fields  model fields list (what we search for in row data)
+   *
+   */
+  template<class _class>
+  void load__(_class *_object, const Database::Row &_data, const typename _class::field_list &_fields) 
+    throw (Model::DataLoadError) {
+    try {
+      BOOST_FOREACH(typename _class::field_list::value_type field, _fields) {
+        /* it is loaded to database so reset the is_set flag (false parameter) */
+        bool set_flag = false;
+        if (field->getAttrs().isPrimaryKey())
+          set_flag = true;
+
+        Database::Value v = _data[field->getName()];
+        if (!v.isnull())
+          field->setValue(_object, v, set_flag);
+      }
+    }
+    catch (Database::NoSuchField &_err) {
+      throw Model::DataLoadError(str(boost::format("can't load all data from Database::Row (%1% in row data)") 
+                                 % _err.what()));
+    }
+    catch (Database::Exception &_err) {
+      throw Model::DataLoadError(str(boost::format("database error (%1%)") % _err.what()));
+    }
+    catch (...) {
+      throw Model::DataLoadError("unknown error");
+    }
+
   }
 };
 

@@ -79,8 +79,10 @@ public:
   }
 
 
-  void getRelated(const _class *_obj) {
+  void getRelated(_class *_obj) {
     /* do lazy list load propably based on filter */
+    std::cout << "SELECT rel_table.* FROM " << fk_.getTableName() << " rel_table WHERE rel_table." << fk_.getName()
+              << " = " << _class::getFields().template getPrimaryKey<_type>()->getValue(_obj) << std::endl;
   }
 
 
@@ -114,7 +116,9 @@ public:
 
   void getRelated(_class *_obj) {
     /* do lazy list load propably based on filter */
-    std::cout << "SELECT rel_table.* FROM " << pk_ref_.getTableName() << " rel_table JOIN " << mt_.name << " map ON (map." << mt_.right << " = rel_table." << pk_ref_.getName() << ")" << " WHERE map." << mt_.left << " = " << pk_.getValue(_obj) << std::endl;
+    std::cout << "SELECT rel_table.* FROM " << pk_ref_.getTableName() << " rel_table JOIN " 
+              << mt_.name << " map ON (map." << mt_.right << " = rel_table." << pk_ref_.getName() << ")" 
+              << " WHERE map." << mt_.left << " = " << pk_.getValue(_obj) << std::endl;
   }
              
 
