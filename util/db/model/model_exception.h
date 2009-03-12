@@ -45,7 +45,7 @@ public:
 };
 
 
-class DataLoadError : public ::Exception {
+class DataLoadError : public Exception {
 public:
   DataLoadError(const std::string &_reason)
               : Exception("Model::DataLoadError: reason=`" + _reason +"'") {

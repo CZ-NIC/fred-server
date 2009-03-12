@@ -241,8 +241,8 @@ private:
       std::string pk_table = pk->getTableName();
       std::string pk_field = pk->getName();
 
-      std::string query = (boost::format("SELECT currval('%1%_%2%_seq')")
-                                       % pk_table % pk_field).str();
+      std::string query = (boost::format("SELECT currval('%1%_%2%_seq') AS %3%")
+                                       % pk_table % pk_field % pk_field).str();
 
       typename _class::field_list tmp;
       tmp.push_back(pk);
