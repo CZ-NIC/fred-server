@@ -320,10 +320,9 @@ void Register::ObjectListImpl::reload(Database::Connection* _conn, bool _history
   states_query.order_by() << "tmp.id";
 
   Database::SelectQuery actions_query;
-  actions_query.select() << "tmp.id, a.id, a.startdate";
+  actions_query.select() << "tmp.id, h.action, h.valid_from";
   actions_query.from() << getTempTableName() << " tmp "
-                       << "JOIN history h ON (tmp.id = h.id) "
-                       << "JOIN action a ON (a.id = h.action)";
+                       << "JOIN history h ON (tmp.id = h.id)";
   actions_query.order_by() << "tmp.id";
 
   try {
