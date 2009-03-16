@@ -2535,6 +2535,10 @@ void DB::SQLCat(
   //  test for length buffer
   if (len + length < MAX_SQLBUFFER)
     strcat(sqlBuffer, str);
+  else
+    // if sql buffer would be valid sql query at this place
+    // and something fail to append it could have very bad consequences
+    throw;
 }
 
 void DB::SQLCatLower(

@@ -12,7 +12,7 @@
 #define LANG_CS 1
 #define CMD_OK 1000 // OK command to the commit transaction
 #define CMD_FAILED(x) (x<2000) // all successfull codes
-#define MAX_SQLBUFFER 4096*4 // maximal lenght od the sqlBuffer
+#define MAX_SQLBUFFER 4096*25 // maximal lenght od the sqlBuffer
 #define MAX_SVTID 32 // length of the server  ticket  svTRID
 
 class DB;
