@@ -515,11 +515,14 @@ InvoiceClient::factoring()
 void
 InvoiceClient::pair_invoices()
 {
-    callHelp(m_conf, no_help);
-    std::cout << "pair invoices" << std::endl;
+    callHelp(m_conf, pair_invoices_help);
     std::auto_ptr<Register::Invoicing::Manager>
         invMan(Register::Invoicing::Manager::create(m_dbman));
-    invMan->pairInvoices();
+    bool report = true;
+    if (m_conf.hasOpt(INVOICE_NO_REPORT_NAME)) {
+        report = false;
+    }
+    invMan->pairInvoices(report);
 }
 
 void
@@ -592,6 +595,15 @@ InvoiceClient::factoring_help()
         << std::endl;
 }
 
+void
+InvoiceClient::pair_invoices_help()
+{
+    std::cout <<
+        "** Pair invoices **\n\n"
+        "Create new credit invoice for statements (normal and online) without existing invoice\n"
+        "  $ " << g_prog_name << " --" << INVOICE_MAKE_PAIRS_NAME << std::endl;
+}
+
 
 #define ADDOPT(name, type, callable, visible) \
     {CLIENT_INVOICE, name, name##_DESC, type, callable, visible}
@@ -625,7 +637,8 @@ InvoiceClient::m_opts[] = {
     ADDOPT(INVOICE_REGISTRAR_ID_NAME, TYPE_UINT, false, false),
     ADDOPT(INVOICE_REGISTRAR_HANDLE_NAME, TYPE_STRING, false, false),
     ADDOPT(INVOICE_PRICE_NAME, TYPE_UINT, false, false),
-    ADDOPT(INVOICE_TODATE_NAME, TYPE_STRING, false, false)
+    ADDOPT(INVOICE_TODATE_NAME, TYPE_STRING, false, false),
+    ADDOPT(INVOICE_NO_REPORT_NAME, TYPE_NOTYPE, false, false)
 };
 
 #undef ADDOPT

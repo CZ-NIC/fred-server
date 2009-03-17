@@ -106,7 +106,10 @@
 #define INVOICE_FACTORING_HELP_NAME_DESC "invoice factoring help"
 
 #define INVOICE_MAKE_PAIRS_NAME         "invoice_make_pairs"
-#define INVOICE_MAKE_PAIRS_NAME_DESC    "pair invoices with statements"
+#define INVOICE_MAKE_PAIRS_NAME_DESC    "create credit invoices for statements without invoice"
+
+#define INVOICE_NO_REPORT_NAME          "no_report"
+#define INVOICE_NO_REPORT_NAME_DESC     "do not print list of payments without deposit invoice after pairing procedure"
 
 namespace Admin {
 
@@ -156,6 +159,7 @@ public:
     void archive_help();
     void credit_help();
     void factoring_help();
+    void pair_invoices_help();
 }; // class InvoiceClient
 
 } // namespace Admin;
