@@ -2785,7 +2785,7 @@ public:
     {
         return createInvoice(IT_DEPOSIT);
     }
-    bool pairOnlineCreditInvoices()
+    bool pairOnlineCreditInvoices(bool report = false)
     {
         TRACE("[CALL] Register::Invoicing::ManagerImpl::pairOnlineCreditInvoices()");
         Database::Query query;
@@ -2826,9 +2826,22 @@ public:
                 return false;
             }
         }
+        if (report) {
+            Database::Query query;
+            query.buffer()
+                << "SELECT id, memo FROM bank_ebanka_list WHERE invoice_id IS NULL;";
+            Database::Result res = m_conn->exec(query);
+            Database::Result::Iterator it = res.begin();
+            for (; it != res.end(); ++it) {
+                Database::Row::Iterator col = (*it).begin();
+                Database::ID id = *(col);
+                std::string memo = *(++col);
+                std::cerr << id << ": " << memo << std::endl;
+            }
+        }
         return true;
     }
-    bool pairNormalCreditInvoices()
+    bool pairNormalCreditInvoices(bool report = false)
     {
         TRACE("[CALL] Register::Invoicing::ManagerImpl::pairNormalCreditInvoices()");
         Database::Query query;
@@ -2868,31 +2881,44 @@ public:
                 return false;
             }
         }
+        if (report) {
+            Database::Query query;
+            query.buffer()
+                << "SELECT id, account_memo FROM bank_statement_item WHERE invoice_id IS NULL;";
+            Database::Result res = m_conn->exec(query);
+            Database::Result::Iterator it = res.begin();
+            for (; it != res.end(); ++it) {
+                Database::Row::Iterator col = (*it).begin();
+                Database::ID id = *(col);
+                std::string memo = *(++col);
+                std::cerr << id << ": " << memo << std::endl;
+            }
+        }
         return true;
     }
-    bool pairCreditInvoices()
+    bool pairCreditInvoices(bool report = false)
     {
         TRACE("[CALL] Register::Invoicing::ManagerImpl::pairCreditInvoices()");
-        if (!pairOnlineCreditInvoices()) {
+        if (!pairOnlineCreditInvoices(report)) {
             return false;
         }
-        if (!pairNormalCreditInvoices()) {
+        if (!pairNormalCreditInvoices(report)) {
             return false;
         }
         return true;
     }
-    bool pairAccountInvoices()
+    bool pairAccountInvoices(bool report = false)
     {
         TRACE("[CALL] Register::Invoicing::ManagerImpl::pairAccountInvoices()");
         return true;
     }
-    virtual bool pairInvoices()
+    virtual bool pairInvoices(bool report = false)
     {
         TRACE("[CALL] Register::Invoicing::ManagerImpl::pairInvoices()");
-        if (!pairCreditInvoices()) {
+        if (!pairCreditInvoices(report)) {
             return false;
         }
-        if (!pairAccountInvoices()) {
+        if (!pairAccountInvoices(report)) {
             return false;
         }
         return true;
