@@ -104,6 +104,29 @@ static bool testObjectHasState(
   return returnState;
 }
 
+
+/* HACK - for disable notification when delete commands called through cli_admin 
+ * Ticket #1622
+ */
+static bool disableNotification(DB *db, int _reg_id, const char* _cltrid)
+{
+  LOGGER(PACKAGE).debug(boost::format("disable delete command notification check (registrator=%1% cltrid=%2%)")
+                                      % _reg_id % _cltrid);
+
+  if (std::strcmp(_cltrid, "delete_contact")       != 0 && 
+      std::strcmp(_cltrid, "delete_nsset")         != 0 &&
+      std::strcmp(_cltrid, "delete_keyset")        != 0 &&
+      std::strcmp(_cltrid, "delete_unpaid_zone_0") != 0 &&
+      std::strcmp(_cltrid, "delete_unpaid_zone_1") != 0 &&
+      std::strcmp(_cltrid, "delete_unpaid_zone_2") != 0 &&
+      std::strcmp(_cltrid, "delete_unpaid_zone_3") != 0) 
+    return false;
+
+  return db->GetRegistrarSystem(_reg_id);
+}
+/* HACK END */
+
+
 class EPPAction
 {
   ccReg::Response_var ret;
@@ -2624,8 +2647,9 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
         code = COMMAND_FAILED;
     }
     if (!code) {
-
-        ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id )); // notifier maneger before delete
+        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), clTRID);
+        if (notify) 
+            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id )); // notifier maneger before delete
 
         // test to  table  domain domain_contact_map and nsset_contact_map for relations
         if (action.getDB()->TestContactRelations(id) ) // can not be deleted
@@ -2641,7 +2665,7 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
 
         }
 
-        if (code == COMMAND_OK)
+        if (code == COMMAND_OK && notify)
             ntf->Send(); // run notifier
 
     }
@@ -3515,7 +3539,9 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
     }
     if (!code) {
         // create notifier
-        ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
+        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), clTRID);
+        if (notify) 
+            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
 
         // test to  table domain if relations to nsset
         if (action.getDB()->TestNSSetRelations(id) ) //  can not be delete
@@ -3530,7 +3556,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
             }
         }
 
-        if (code == COMMAND_OK)
+        if (code == COMMAND_OK && notify)
             ntf->Send(); // send messages by notifier
     }
 
@@ -4537,14 +4563,16 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
     }
     if (!code) {
         // run notifier
-        ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
+        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), clTRID);
+        if (notify)
+            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
 
         if (action.getDB()->SaveObjectDelete(id) ) //save object as delete
         {
             if (action.getDB()->DeleteDomainObject(id) )
                 code = COMMAND_OK; // if succesfully deleted
         }
-        if (code == COMMAND_OK)
+        if (code == COMMAND_OK && notify)
             ntf->Send(); // if is ok send messages
     }
 
@@ -5812,12 +5840,14 @@ ccReg_EPP_i::KeySetDelete(
     }
     if (!code) {
         //create notifier
-        ntf.reset(new EPPNotifier(
-                    conf.get<bool>("registry.disable_epp_notifier"),
-                    mm,
-                    action.getDB(),
-                    action.getRegistrar(),
-                    id));
+        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), clTRID);
+        if (notify)
+            ntf.reset(new EPPNotifier(
+                      conf.get<bool>("registry.disable_epp_notifier"),
+                      mm,
+                      action.getDB(),
+                      action.getRegistrar(),
+                      id));
         if (action.getDB()->TestKeySetRelations(id)) {
             LOG(WARNING_LOG, "KeySet can't be deleted - relations in db");
             code = COMMAND_PROHIBITS_OPERATION;
@@ -5826,7 +5856,7 @@ ccReg_EPP_i::KeySetDelete(
                 if (action.getDB()->DeleteKeySetObject(id))
                     code = COMMAND_OK;
         }
-        if (code == COMMAND_OK)
+        if (code == COMMAND_OK && notify)
             ntf->Send();
     }
     if (code > COMMAND_EXCEPTION) {
