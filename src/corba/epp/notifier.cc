@@ -122,6 +122,8 @@ void EPPNotifier::constructMessages() {
     }
     emails << " " << extraEmails;
   }
+
+  messages_ready_ = true;
 }
 
 void EPPNotifier::AddContactID(
