@@ -39,6 +39,8 @@ EPPNotifier::EPPNotifier(
   objectID=objectid;
   registrarID=regid;
 
+  messages_ready_ = false;
+
   LOG( DEBUG_LOG ,"EPPNotifier:  object %d  enum_action %d regID %d " , objectID , enum_action , registrarID );
 
   LOG( DEBUG_LOG ,"EPPNotifier: add default contacts");
@@ -57,13 +59,28 @@ bool EPPNotifier::Send()
 {
   if (!notify.size() || disable)
     return true;
+
+  constructMessages();
+
+  LOG( DEBUG_LOG , "EPPNotifier: TO: %s" , emails.str().c_str() );
+  try {
+    // Mailer manager send emailes
+    mm->sendEmail( "" , emails.str() , "", getTemplate() ,params,handles,attach );
+  }
+  catch (...) {return false;}
+  return true;
+}
+
+/* Ticket #1622 */
+void EPPNotifier::constructMessages() {
+  /* check if messages have been constructed already */
+  if (messages_ready_)
+    return;
+
+  /* construct messages */
   unsigned int i, num;
   short type, mod;
   ID cID;
-  Register::Mailer::Parameters params;
-  Register::Mailer::Handles handles;
-  Register::Mailer::Attachments attach;
-  std::stringstream emails;
 
   // 4 parameters  type of the object name  ticket svTRID and  handle of  registrar
   params["ticket"] = db->GetsvTRID();
@@ -105,13 +122,6 @@ bool EPPNotifier::Send()
     }
     emails << " " << extraEmails;
   }
-  LOG( DEBUG_LOG , "EPPNotifier: TO: %s" , emails.str().c_str() );
-  try {
-    // Mailer manager send emailes
-    mm->sendEmail( "" , emails.str() , "", getTemplate() ,params,handles,attach );
-  }
-  catch (...) {return false;}
-  return true;
 }
 
 void EPPNotifier::AddContactID(

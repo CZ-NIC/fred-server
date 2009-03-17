@@ -42,6 +42,15 @@ class EPPNotifier
 
   bool disable; // for fast upload of objects
   std::string extraEmails; // for fixing notification of notifyEmail change
+
+  /* for separation sending and constructing messages 
+   * we need it for passing between methods (for Ticket #1622) */
+  bool messages_ready_;
+  Register::Mailer::Parameters params;
+  Register::Mailer::Handles handles;
+  Register::Mailer::Attachments attach;
+  std::stringstream emails;
+
 public:
   void addExtraEmails(const std::string& emails) 
   {
@@ -52,6 +61,7 @@ public:
     bool _disable, MailerManager *mailManager, DB *dbs, ID regid, ID objectid); // add default contacts for object ID
   ~EPPNotifier();
   bool Send(); // send e-mail messages by mailer manager
+  void constructMessages(); // construct messages - running all sql queries (Ticket #1622)
 
   ID GetObjectID() {return objectID;}
   ; // return ID of the object

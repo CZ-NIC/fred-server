@@ -2648,8 +2648,10 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
     }
     if (!code) {
         bool notify = !disableNotification(action.getDB(), action.getRegistrar(), clTRID);
-        if (notify) 
+        if (notify) {
             ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id )); // notifier maneger before delete
+            ntf->constructMessages(); // need to run all sql queries before delete take place (Ticket #1622)
+        }
 
         // test to  table  domain domain_contact_map and nsset_contact_map for relations
         if (action.getDB()->TestContactRelations(id) ) // can not be deleted
