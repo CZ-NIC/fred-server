@@ -28,7 +28,7 @@
 
 namespace Database {
 
-enum LogServiceType { LC_UNIX_WHOIS, LC_WEB_WHOIS, LC_EPP, LC_WEBADMIN };
+enum LogServiceType { LC_UNIX_WHOIS, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN };
 
 namespace Filters {
 
@@ -42,8 +42,7 @@ public:
 	virtual Value<std::string>& addName() = 0;
 
 	friend class boost::serialization::access;
-	  template<class Archive> void serialize(Archive& _ar,
-	      const unsigned int _version) {
+	  template<class Archive> void serialize(Archive& _ar, const unsigned int _version) {
 	    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
 	  }
 
@@ -116,8 +115,8 @@ public:
 	}
 
 	virtual Table & joinLogRawContentTable() = 0;
-	virtual Value<std::string>& addRequest() = 0;
-	virtual Value<std::string>& addResponse() = 0;
+	virtual Value<std::string>& addContent() = 0;
+	virtual Value<bool>& addResponseFlag() = 0;
 
 	friend class boost::serialization::access;
 	template<class Archive> void serialize(Archive& _ar,
@@ -130,13 +129,13 @@ public:
 
 class LogRawContentImpl : virtual public LogRawContent {
 public:
-	LogRawContentImpl(bool set_active=0);
+	LogRawContentImpl(bool set_active=false);
 	virtual ~LogRawContentImpl() {
 	}
 
-	virtual Table &joinLogRawContentTable();
-	virtual Value<std::string>& addRequest();
-	virtual Value<std::string>& addResponse();
+	virtual Table &joinLogRawContentTable(); 
+	virtual Value<std::string>& addContent();
+	virtual Value<bool>& addResponseFlag();
 
 	friend class boost::serialization::access;
 	template<class Archive> void serialize(Archive& _ar,
@@ -174,7 +173,7 @@ public:
 
 class LogEntryImpl : virtual public LogEntry {
 public:
-  LogEntryImpl(bool set_active);
+  LogEntryImpl(bool set_active = false);
   virtual ~LogEntryImpl() {
   }
 

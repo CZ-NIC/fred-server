@@ -27,7 +27,7 @@ Value<Database::ID>& LogEntryImpl::addId()
 
 Interval<Database::DateTimeInterval>& LogEntryImpl::addTimeBegin()
 {
-  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("time", joinLogEntryTable()));
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("time_begin", joinLogEntryTable()));
   tmp->setName("TimeBegin");
   add(tmp);
   return *tmp;
@@ -35,7 +35,7 @@ Interval<Database::DateTimeInterval>& LogEntryImpl::addTimeBegin()
 
 Interval<Database::DateTimeInterval>& LogEntryImpl::addTimeEnd()
 {
-  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("time", joinLogEntryTable()));
+  Interval<Database::DateTimeInterval> *tmp = new Interval<Database::DateTimeInterval>(Column("time_end", joinLogEntryTable()));
   tmp->setName("TimeEnd");
   add(tmp);
   return *tmp;
@@ -51,7 +51,7 @@ Value<std::string>& LogEntryImpl::addSourceIp()
 
 Value<Database::LogServiceType>& LogEntryImpl::addServiceType()
 {
-  Value<Database::LogServiceType> *tmp = new Value<Database::LogServiceType>(Column("ServiceType", joinLogEntryTable()));
+  Value<Database::LogServiceType> *tmp = new Value<Database::LogServiceType>(Column("service", joinLogEntryTable()));
   tmp->setName("ServiceType");
   add(tmp);
   return *tmp;
@@ -88,7 +88,7 @@ LogPropertyName& LogPropertyValueImpl::addLogPropertyName()
   LogPropertyName *tmp = new LogPropertyNameImpl(true);
   tmp->setName("LogPropertyName");
 
-  tmp->joinOn(new Join(Column("named_id", joinLogPropertyValueTable()), SQL_OP_EQ,  Column("id", tmp->joinLogPropertyNameTable())));
+  tmp->joinOn(new Join(Column("name_id", joinLogPropertyValueTable()), SQL_OP_EQ,  Column("id", tmp->joinLogPropertyNameTable())));
   add(tmp);
   return *tmp;
 }
@@ -98,7 +98,7 @@ LogRawContent& LogEntryImpl::addLogRawContent()
 	LogRawContent *tmp = new LogRawContentImpl(true);
 	tmp->setName("LogRawContent");
 
-	tmp->joinOn(new Join(Column("id", joinLogEntryTable()), SQL_OP_EQ, Column("entry_id", joinTable("log_raw_content"))));
+	tmp->joinOn(new Join(Column("id", joinLogEntryTable()), SQL_OP_EQ, Column("entry_id", tmp->joinLogRawContentTable())));
 	add(tmp);
 	return *tmp;
 }
@@ -176,18 +176,18 @@ Table &LogRawContentImpl::joinLogRawContentTable()
 	return joinTable("log_raw_content");
 }
 
-Value<std::string>& LogRawContentImpl::addResponse()
+Value<std::string>& LogRawContentImpl::addContent()
 {
-  Value<std::string>* tmp = new Value<std::string>(Column("response", joinLogRawContentTable()));
+  Value<std::string>* tmp = new Value<std::string>(Column("content", joinLogRawContentTable()));
   setName("Response");
   add(tmp);
   return *tmp;
 }
 
-Value<std::string>& LogRawContentImpl::addRequest()
+Value<bool>& LogRawContentImpl::addResponseFlag()
 {
-  Value<std::string>* tmp = new Value<std::string>(Column("request", joinLogRawContentTable()));
-  setName("Request");
+  Value<bool>* tmp = new Value<bool>(Column("is_response", joinLogRawContentTable()));
+  setName("RequestFlag");
   add(tmp);
   return *tmp;
 }
