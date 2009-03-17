@@ -82,6 +82,8 @@ public:
   /* datetime ouptut operator */
   friend std::ostream& operator<<(std::ostream &_os, const DateTime& _v);
 
+  DateTime operator=(const DateTime &sec);
+
 #ifdef HAVE_BOOST_SERIALIZATION
   /* boost serialization */
   friend class boost::serialization::access;
