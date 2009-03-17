@@ -2,31 +2,89 @@
 
 #define _LOG_IMPL_H_
 
-// #include "old_utils/dbsql.h"
 
+#include <boost/noncopyable.hpp>
 #include "register/db_settings.h"
-#include "old_utils/conf.h"
-#include "corba/mailer_manager.h"
-#include <corba/ccReg.hh>
+/* TODO : to remove  */
 
 #include <map>
 
-#include "conf/manager.h"
+
+#include "types/data_types.h"
 
 using namespace Database;
 
-class NameService;
 
-class ccReg_Log_i : public POA_ccReg::Logger,
-  public PortableServer::RefCountServantBase
-{
+// some CORBA types redefined here
+// to get rid of dependence on CORBA
+// .... NO we can use database types instead
+
+struct LogProperty : public boost::noncopyable {
+  std::string name;
+  std::string value;
+  bool output;
+  bool child;
+};
+
+class LogProperties : public boost::noncopyable {
+  int size;
+  LogProperty *buf;
+
+public:
+  LogProperties() : size(0) {
+	  buf = NULL;
+  }
+
+  LogProperties(int init_size) : size(init_size) {
+	if(init_size > 0) {
+		buf = new LogProperty[init_size];
+	} else {
+		buf = NULL;
+	}
+  }
+
+  virtual ~LogProperties() {
+	if (buf != NULL) delete [] buf;
+  }
+
+  LogProperty & operator[] (size_t idx) {
+	if (buf==NULL)   throw std::logic_error("No buffer allocated");
+	if (idx >= size) throw std::logic_error("Index out of bounds");
+	return buf[idx];
+  }
+
+  const LogProperty & operator[] (size_t idx) const throw (std::logic_error) {
+	if (buf==NULL)   throw std::logic_error("No buffer allocated");
+	if (idx >= size) throw std::logic_error("Index out of bounds");
+	return buf[idx];
+  }
+
+  size_t length() const {
+	return size;
+  }
+
+  void length(size_t l) {
+	size = l;
+  }
+  // TODO more methods
+};
+
+// TODO move to Database::
+enum Languages { EN, CS /*, __max_Languages=0xffffffff */ };
+
+// TODO this is duplicity (src/model/log_filter.h):
+enum LogServiceType { LC_UNIX_WHOIS, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN };
+
+// END of CORBA types,  ------------------------------------
+// for the rest, Database:: types are used
+
+class Impl_Log {
 private:
     struct strCmp {
 		bool operator()(const std::string &s1, const std::string &s2) const {
 			return s1 < s2;
 		}
 	};
-
   /** Limit the number of entries read from log_property_name table
    * (which is supposed to contain limited number of distinct property names )
    */
@@ -35,39 +93,39 @@ private:
   Manager db_manager;
 
   /*
-  std::tr1::unordered_map<std::string, ccReg::TID> property_names
+  std::tr1::unordered_map<std::string, Database::ID> property_names
   */
-  std::map<std::string, ccReg::TID, strCmp> property_names;
-
+  std::map<std::string, Database::ID, strCmp> property_names;
 
 public:
-//  void garbageSession();
-  struct DB_CONNECT_FAILED
-  {
-  };
 
-  ccReg_Log_i(const std::string database, NameService *ns, Config::Conf& _cfg)
-      throw (DB_CONNECT_FAILED);
-  virtual ~ccReg_Log_i();
+  struct DB_CONNECT_FAILED { };
+
+  Impl_Log(const std::string conn_db) throw(DB_CONNECT_FAILED);
+  virtual ~Impl_Log();
 
 
-  ccReg::TID new_event(const char *sourceIP, ccReg::LogServiceType service, const char *content_in, const ccReg::LogProperties& props);
-  CORBA::Boolean update_event(ccReg::TID id, const ccReg::LogProperties &props);
-  CORBA::Boolean update_event_close(ccReg::TID id, const char *content_out, const ccReg::LogProperties &props);
-  ccReg::TID new_session(ccReg::Languages lang, const char *name, const char *clTRID);
-  // ccReg::TID new_dummy(const char *name, const char *clTRID);
-  CORBA::Boolean end_session(ccReg::TID id, const char *clTRID);
+
+  Database::ID i_new_event(const char *sourceIP, LogServiceType service, const char *content_in, const LogProperties& props);
+  bool i_update_event(Database::ID id, const LogProperties &props);
+  bool i_update_event_close(Database::ID id, const char *content_out, const LogProperties &props);
+  Database::ID i_new_session(Languages lang, const char *name, const char *clTRID);
+  bool i_end_session(Database::ID id, const char *clTRID);
+
+  // used by unittest
+  inline Database::ID find_last_log_entry_id(Connection &conn);
 
 private:
-  void insert_props(ccReg::TID entry_id, const ccReg::LogProperties& props, Connection &conn);
-  bool record_check(ccReg::TID id, Connection &conn);
-  ccReg::TID find_property_name_id(const char *name, Connection &conn);
-  inline ccReg::TID find_last_property_value_id(Connection &conn);
+  void insert_props(Database::ID entry_id, const LogProperties& props, Connection &conn);
+  bool record_check(Database::ID id, Connection &conn);
+  Database::ID find_property_name_id(const std::string &name, Connection &conn);
+  inline Database::ID find_last_property_value_id(Connection &conn);
 
   static const std::string LAST_PROPERTY_VALUE_ID;
   static const std::string LAST_PROPERTY_NAME_ID;
   static const std::string LAST_ENTRY_ID;
   static const std::string LAST_SESSION_ID;
+
 };
 
 #endif
