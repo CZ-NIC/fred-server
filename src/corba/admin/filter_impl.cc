@@ -84,6 +84,24 @@ public:
   }
 };
 
+class FilterBoolImpl : virtual public POA_ccReg::Filters::Bool,
+  public FilterSimpleImpl {
+  Database::Filters::Value<bool>* get() {
+    return dynamic_cast<Database::Filters::Value<bool>*>(f);
+  }
+
+public:
+  FilterBoolImpl(Database::Filters::Value<bool>* f) :
+    FilterSimpleImpl(f) {
+  }
+  CORBA::Boolean value() {
+    return get()->getValue().getValue();
+  }
+  void value(CORBA::Boolean v) {
+    get()->setValue(v);
+  }
+};
+
 class FilterIdImpl : virtual public POA_ccReg::Filters::Id,
   public FilterSimpleImpl {
   Database::Filters::Value<Database::ID>* get() {
@@ -423,12 +441,30 @@ COMPOUND_CLASS(Mail, Mail, Compound,
     FILTER_ADD(File, addAttachment);
 );
 
+COMPOUND_CLASS(LogPropertyName, LogPropertyName, Compound,
+    FILTER_ADD(Str, addName);
+);
+
+COMPOUND_CLASS(LogPropertyValue, LogPropertyValue, Compound,
+    FILTER_ADD(Str, addValue);
+    FILTER_ADD(Id, addLogPropertyNameId);
+    FILTER_ADD(LogPropertyName, addLogPropertyName);
+    FILTER_ADD(Bool, addOutputFlag);
+);    
+
 COMPOUND_CLASS(LogEntry, LogEntry, Compound,
     FILTER_ADD(Id, addId);
     FILTER_ADD(DateTime, addTimeBegin);
     FILTER_ADD(DateTime, addTimeEnd);
     FILTER_ADD(Str, addSourceIp);
     FILTER_ADD(LogServiceType, addServiceType);
+    FILTER_ADD(LogRawContent, addLogRawContent);
+    FILTER_ADD(LogPropertyValue, addLogPropertyValue);
+);
+
+COMPOUND_CLASS(LogRawContent, LogRawContent, Compound,
+    FILTER_ADD(Str, addContent);
+    FILTER_ADD(Bool, addResponseFlag);
 );
 
 FilterIteratorImpl::FilterIteratorImpl() :
@@ -486,6 +522,7 @@ ITERATOR_ADD_E_METHOD_IMPL(Str,Value<std::string>);
 ITERATOR_ADD_E_METHOD_IMPL(Int,Value<unsigned>);
 ITERATOR_ADD_E_METHOD_IMPL(Int,Value<int>);
 ITERATOR_ADD_E_METHOD_IMPL(IntInterval,Interval<int>);
+ITERATOR_ADD_E_METHOD_IMPL(Bool,Value<bool>);
 ITERATOR_ADD_E_METHOD_IMPL(Id,Value<Database::ID>);
 ITERATOR_ADD_E_METHOD_IMPL(Action,EppAction);
 ITERATOR_ADD_E_METHOD_IMPL(Date,Interval<Database::DateInterval>);
@@ -503,6 +540,9 @@ ITERATOR_ADD_E_METHOD_IMPL(File,File);
 ITERATOR_ADD_E_METHOD_IMPL(Invoice,Invoice);
 ITERATOR_ADD_E_METHOD_IMPL(Mail,Mail);
 ITERATOR_ADD_E_METHOD_IMPL(ObjectState,ObjectState);
+ITERATOR_ADD_E_METHOD_IMPL(LogPropertyName,LogPropertyName);
+ITERATOR_ADD_E_METHOD_IMPL(LogPropertyValue,LogPropertyValue);
+ITERATOR_ADD_E_METHOD_IMPL(LogRawContent,LogRawContent);
 ITERATOR_ADD_E_METHOD_IMPL(LogEntry,LogEntry);
 
 #define ITERATOR_ADD_FILTER_METHOD_IMPL(ct,dt) \
@@ -515,6 +555,7 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(Int,Value<unsigned>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Int,Value<int>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Id,Value<Database::ID>);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(Bool,Value<bool>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Action,EppAction);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Date,Interval<Database::DateInterval>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(DateTime,Interval<Database::DateTimeInterval>);
@@ -530,6 +571,10 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(Invoice,Invoice);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Mail,Mail);
   ITERATOR_ADD_FILTER_METHOD_IMPL(ObjectState,ObjectState);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(ObjectState,ObjectState);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(LogPropertyValue,LogPropertyValue);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(LogPropertyName,LogPropertyName);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(LogRawContent,LogRawContent);
   ITERATOR_ADD_FILTER_METHOD_IMPL(LogEntry,LogEntry);
   ITERATOR_ADD_FILTER_METHOD_IMPL(IntInterval,Interval<int>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(LogServiceType,Value<Database::LogServiceType>);

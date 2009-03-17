@@ -27,6 +27,9 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   db.OpenDatabase(database.c_str());
   m_register_manager.reset(Register::Manager::create(&db,
                                                      cfg.get<bool>("registry.restricted_handles")));
+ 
+  m_logger_manager.reset(Register::Logger::Manager::create(&m_db_manager));
+
   m_register_manager->dbManagerInit(&m_db_manager);
   m_register_manager->initStates();
 
@@ -61,6 +64,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_publicrequests = new ccReg_PublicRequests_i(m_publicrequest_manager->createList());
   m_mails = new ccReg_Mails_i(mail_manager_->createList(), ns);
   m_files = new ccReg_Files_i(file_manager_->createList());
+  m_logger = new ccReg_Logger_i(m_logger_manager->createList());
 
   m_eppactions->setDB(&m_db_manager);
   m_registrars->setDB(&m_db_manager);
@@ -70,6 +74,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_keysets->setDB(&m_db_manager);
   m_publicrequests->setDB(&m_db_manager);
   m_invoices->setDB(&m_db_manager);
+  m_logger->setDB(&m_db_manager);
 
   settings_.set("filter.history", "off");
 
@@ -93,6 +98,7 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_filters;
   delete m_user;
   delete m_files;
+  delete m_logger;
 
   db.Disconnect();
 }
@@ -132,6 +138,9 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
       return m_mails->_this();
     case ccReg::FT_FILE:
       return m_files->_this();
+    case ccReg::FT_LOGGER:
+      return m_logger->_this();
+    default:
       break;
   }
   LOGGER(PACKAGE).debug(boost::format("[ERROR] ccReg_Session_i::getPageTable(%1%): unknown type specified")
@@ -183,6 +192,8 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
       *result <<= getEppActionDetail(_id);
       break;
       
+    case ccReg::FT_LOGGER:
+	// TODO
     case ccReg::FT_FILTER:
     case ccReg::FT_OBJ:
     case ccReg::FT_FILE:

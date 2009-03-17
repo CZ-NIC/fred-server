@@ -16,6 +16,7 @@
 #include "register/notify.h"
 #include "register/mail.h"
 #include "register/filter.h"
+#include "register/log_entry.h"
 
 #include "old_utils/log.h"
 #include "old_utils/dbsql.h"

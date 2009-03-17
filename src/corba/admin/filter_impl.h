@@ -25,6 +25,7 @@ public:
   ccReg::Filters::Int_ptr addE(Database::Filters::Value<int>* f);
   ccReg::Filters::IntInterval_ptr addE(Database::Filters::Interval<int>* f);
   ccReg::Filters::Id_ptr addE(Database::Filters::Value<Database::ID>* f);
+  ccReg::Filters::Bool_ptr addE(Database::Filters::Value<bool>* f);
   ccReg::Filters::Str_ptr addE(Database::Filters::Value<std::string>* f);
   ccReg::Filters::Date_ptr addE(Database::Filters::Interval<Database::DateInterval>* f);
   ccReg::Filters::DateTime_ptr addE(Database::Filters::Interval<Database::DateTimeInterval>* f);
@@ -42,6 +43,9 @@ public:
   ccReg::Filters::File_ptr addE(Database::Filters::File* f);
   ccReg::Filters::ObjectState_ptr addE(Database::Filters::ObjectState* f);
   ccReg::Filters::LogEntry_ptr addE(Database::Filters::LogEntry* f);
+  ccReg::Filters::LogPropertyValue_ptr addE(Database::Filters::LogPropertyValue *f);
+  ccReg::Filters::LogPropertyName_ptr addE(Database::Filters::LogPropertyName *f);
+  ccReg::Filters::LogRawContent_ptr addE(Database::Filters::LogRawContent* f);
   ccReg::Filters::LogServiceType_ptr addE(Database::Filters::Value<Database::LogServiceType> *f);
 
   void addFilter(Database::Filters::Filter* f);
