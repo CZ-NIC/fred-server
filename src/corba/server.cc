@@ -32,9 +32,10 @@
 #endif
 
 #ifdef LOGD
-#include "log/log_impl.h"
+#include "log/log_impl_wrap.h"
 #endif
 
+#include "corba/mailer_manager.h"
 
 #include <cstdlib>
 #include <time.h>
@@ -323,8 +324,7 @@ int main(int argc, char** argv) {
 #ifdef LOGD
     PortableServer::ObjectId_var loggerObjectId = 
     PortableServer::string_to_ObjectId("Logger");
-    ccReg_Log_i* myccReg_Log_i = new ccReg_Log_i(conn_info,&ns,cfg);
-    // ccReg_Log_i* myccReg_Log_i = new ccReg_Log_i("host=localhost dbname=fred_log user=fred port=22345" ,&ns,config, false);
+    ccReg_Log_i* myccReg_Log_i = new ccReg_Log_i(conn_info);
     poa->activate_object_with_id(loggerObjectId,myccReg_Log_i);
     CORBA::Object_var loggerObj = myccReg_Log_i->_this();
     myccReg_Log_i->_remove_ref();
