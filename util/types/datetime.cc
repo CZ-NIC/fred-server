@@ -119,6 +119,13 @@ bool operator!=(const DateTime &_left, const DateTime &_right) {
   return !(_left == _right);
 }
 
+DateTime
+DateTime::operator=(const DateTime &sec)
+{
+    value = sec.value;
+    return sec;
+}
+
 
 /*
  * datetime math operators 
@@ -182,7 +189,6 @@ DateTime operator-(const DateTime& _d, const Minutes& _minutes) {
 DateTime operator-(const DateTime& _d, const Seconds& _seconds) {
   return DateTime(_d.value - seconds((Seconds::value_type)_seconds));
 }
-
 
 /*
  * datetime output operator
