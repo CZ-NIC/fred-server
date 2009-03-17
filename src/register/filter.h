@@ -21,7 +21,8 @@ enum FilterType {
   FT_INVOICE,
   FT_PUBLICREQUEST,
   FT_MAIL,
-  FT_FILE
+  FT_FILE,
+  FT_LOGGER
 };
 
 class Filter : virtual public Register::CommonObject {
