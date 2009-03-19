@@ -134,11 +134,11 @@ ObjectClient::update_states()
 /** \return 0=OK -1=SQL ERROR -2=no system registrar -3=login failed */
 int
 ObjectClient::deleteObjects(
-        const std::string& typeList)
+        const std::string& typeList, CorbaClient &cc)
 {
     LOGGER("tracer").trace("ObjectClient::deleteObjects");
     ccReg::EPP_var epp = NULL;
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    // CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     // temporary done by using EPP corba interface
     // should be instead somewhere in register library (object.cc?)
     // get login information for first system registrar
@@ -308,7 +308,8 @@ ObjectClient::delete_candidates()
     if (m_conf.hasOpt(OBJECT_DELETE_TYPES_NAME)) {
         deleteTypes = m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME);
     }
-    deleteObjects(deleteTypes);
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    deleteObjects(deleteTypes, cc);
 }
 
 void
@@ -385,12 +386,6 @@ ObjectClient::regular_procedure()
 
         registerMan->updateObjectStates();
         registerMan->updateObjectStates();
-        std::string notifyExcept("");
-        if (m_conf.hasOpt(OBJECT_NOTIFY_EXCEPT_TYPES_NAME)) {
-            notifyExcept = m_conf.get<std::string>(OBJECT_NOTIFY_EXCEPT_TYPES_NAME);
-        }
-        notifyMan->notifyStateChanges(notifyExcept, 0, NULL, false);
-
         std::string pollExcept("");
         if (m_conf.hasOpt(OBJECT_POLL_EXCEPT_TYPES_NAME)) {
             pollExcept = m_conf.get<std::string>(OBJECT_POLL_EXCEPT_TYPES_NAME);
@@ -401,10 +396,16 @@ ObjectClient::regular_procedure()
         if (m_conf.hasOpt(OBJECT_DELETE_TYPES_NAME)) {
             deleteTypes = m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME);
         }
-        if ((i = deleteObjects(deleteTypes)) != 0) {
+        if ((i = deleteObjects(deleteTypes, *cc)) != 0) {
             LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): Error has occured in deleteObject: %d", i);
             return;
         }
+
+        std::string notifyExcept("");
+        if (m_conf.hasOpt(OBJECT_NOTIFY_EXCEPT_TYPES_NAME)) {
+            notifyExcept = m_conf.get<std::string>(OBJECT_NOTIFY_EXCEPT_TYPES_NAME);
+        }
+        notifyMan->notifyStateChanges(notifyExcept, 0, NULL, true);
 
         pollMan->createLowCreditMessages();
         notifyMan->generateLetters();
