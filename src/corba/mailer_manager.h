@@ -30,9 +30,9 @@ class MailerManager : public Register::Mailer::Manager
     const std::string& to,
     const std::string& subject,
     const std::string& mailTemplate,
-    Register::Mailer::Parameters params,
-    Register::Mailer::Handles handles,
-    Register::Mailer::Attachments attach
+    const Register::Mailer::Parameters &params,
+    const Register::Mailer::Handles &handles,
+    const Register::Mailer::Attachments &attach
   ) throw (Register::Mailer::NOT_SEND) ;
   bool checkEmailList(std::string &_email_list) const;
 
