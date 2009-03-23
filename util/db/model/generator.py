@@ -43,7 +43,8 @@ def get_table_info(pg_settings, table_name):
 
 # when some column name ends with any of these suffixes, then first letter
 # of the suffix will be capitalized
-suffixes = ['datetime', 'date', 'time', 'vat', 'xml', 'pdf', 'data_type']
+suffixes = ['datetime', 'date', 'time', 'vat', 'xml', 'pdf', 'data_type', 'type',
+        'code', 'number', 'symb', 'sym']
 
 # for example ``sakra_pes'' -> ``sakraPes''
 def create_camel_case(ident, first_capital=False):
