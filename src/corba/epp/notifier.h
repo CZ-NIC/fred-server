@@ -49,7 +49,7 @@ class EPPNotifier
   Register::Mailer::Parameters params;
   Register::Mailer::Handles handles;
   Register::Mailer::Attachments attach;
-  std::string emails;
+  std::stringstream emails;
 
 public:
   void addExtraEmails(const std::string& emails) 

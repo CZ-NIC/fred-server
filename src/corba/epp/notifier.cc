@@ -62,22 +62,12 @@ bool EPPNotifier::Send()
 
   constructMessages();
 
-  if (emails.empty()) {
-    LOG(DEBUG_LOG, "EPPNotifier: TO: no valid email found (%s) -> not sending", emails.c_str());
-    return false;
-  }
-  else {
-    LOG(DEBUG_LOG, "EPPNotifier: TO: %s", emails.c_str());
-  }
-
+  LOG( DEBUG_LOG , "EPPNotifier: TO: %s" , emails.str().c_str() );
   try {
     // Mailer manager send emailes
-    mm->sendEmail("", emails, "", getTemplate(), params, handles, attach);
+    mm->sendEmail( "" , emails.str() , "", getTemplate() ,params,handles,attach );
   }
-  catch (...) {
-    return false;
-  }
-
+  catch (...) {return false;}
   return true;
 }
 
@@ -95,16 +85,19 @@ void EPPNotifier::constructMessages() {
   // 4 parameters  type of the object name  ticket svTRID and  handle of  registrar
   params["ticket"] = db->GetsvTRID();
   std::stringstream registrarInfo;
-  registrarInfo << db->GetValueFromTable("registrar", "name", "id",registrarID);
+  registrarInfo << db->GetValueFromTable(
+    "registrar", "name", "id",registrarID
+  );
   registrarInfo << " ("
                 << db->GetValueFromTable("registrar", "url", "id",registrarID)
                 << ")";
   params["registrar"] = registrarInfo.str(); // registrar name and url
-  params["handle"] = db->GetValueFromTable("object_registry", "name", "id", objectID); // name of the object
-  params["type"] = db->GetValueFromTable("object_registry", "type", "id", objectID); // type 1 contact 2 nsset 3 domain 4 keyset
+  params["handle"] = db->GetValueFromTable("object_registry", "name", "id",
+      objectID); // name of the object
+  params["type"] = db->GetValueFromTable("object_registry", "type", "id",
+      objectID); // type 1 contact 2 nsset 3 domain 4 keyset
 
-  LOG(DEBUG_LOG, "EPPNotifier: constructing message for object %d enum_action %d regID %d ticket %s",
-      objectID, enum_action, registrarID, db->GetsvTRID());
+  LOG( DEBUG_LOG ,"EPPNotifier: Send object %d  enum_action %d regID %d ticket %s" , objectID , enum_action , registrarID , db->GetsvTRID() );
 
   num = notify.size();
   for (i = 0; i < num; i ++) {
@@ -112,25 +105,22 @@ void EPPNotifier::constructMessages() {
     type = notify[i].type;
     mod = notify[i].modify;
 
-    std::string objectName = db->GetValueFromTable("object_registry", "name", "id", cID);
-    LOG(DEBUG_LOG, "EPPNotifier: sendTo %s %s contactID %d [%s]",
-        GetContactType(type) , GetContactModify(mod) , cID , objectName.c_str());
+    std::string objectName = db->GetValueFromTable("object_registry", "name",
+        "id", cID);
+    LOG( DEBUG_LOG ,"EPPNotifier: sendTo  %s %s contactID %d [%s]" ,
+        GetContactType( type ) , GetContactModify( mod) , cID , objectName.c_str());
 
     std::string cEmail = db->GetValueFromTable("contact", "email", "id", cID);
-    std::string cNotifyEmail = db->GetValueFromTable("contact", "notifyemail", "id", cID);
-    LOG(DEBUG_LOG ,"EPPNotifier: email %s notifyEmail %s",
-        cEmail.c_str(), cNotifyEmail.c_str());
+    std::string cNotifyEmail = db->GetValueFromTable("contact", "notifyemail",
+        "id", cID);
+    LOG( DEBUG_LOG ,"EPPNotifier:  email %s notifyEmail %s " , cEmail.c_str(),cNotifyEmail.c_str());
 
-    std::string::size_type i = cNotifyEmail.find("@");
-    if (i != 0 && i != emails.size() && i != std::string::npos) {
-      if (!emails.empty())
-        emails += " ";
-      emails += cNotifyEmail;
+    if (!cNotifyEmail.empty()) {
+      if (!emails.str().empty())
+        emails << ", ";
+      emails << cNotifyEmail;
     }
-
-    if (!emails.empty())
-      emails += " ";
-    emails += extraEmails;
+    emails << " " << extraEmails;
   }
 
   messages_ready_ = true;
