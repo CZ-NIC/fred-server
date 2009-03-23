@@ -17,6 +17,7 @@
  */
 
 #include <exception>
+#include <boost/tokenizer.hpp>
 
 #include "mailer_manager.h"
 #include "old_utils/log.h"
@@ -204,3 +205,30 @@ MailerManager::_resolveInit() throw (RESOLVE_FAILED)
   }
   LOGGER("mailer").debug("resolving of corba 'Mailer' object ok");
 }
+
+
+bool
+MailerManager::checkEmailList(std::string &_email_list) const 
+{
+  LOGGER("mailer").debug(boost::format("checking email list '%1%'") % _email_list);
+  using namespace boost;
+  typedef tokenizer<char_separator<char> > token_list;
+
+  std::string list = _email_list;
+  _email_list.clear();
+
+  char_separator<char> sep(" ,");
+  token_list tokens(list, sep);
+  for (token_list::iterator token = tokens.begin(); token != tokens.end(); ++token) {
+    std::string::size_type i = (*token).find("@");
+    if (i != std::string::npos && i != (*token).size() && i != 0) {
+      if (!_email_list.empty())
+        _email_list += " ";
+      _email_list += *token;
+    }
+  }
+
+  LOGGER("mailer").debug(boost::format("check done; filtered email list '%1%'") % _email_list);
+  return !_email_list.empty();
+}
+

@@ -27,7 +27,8 @@ namespace Register
         Parameters params,
         Handles handles,
         Attachments attach
-      ) throw (NOT_SEND)= 0;
+      ) throw (NOT_SEND) = 0;
+      virtual bool checkEmailList(std::string &_email_list) const = 0;
     }; // Manager
   }; // Mailer
 }; // Register

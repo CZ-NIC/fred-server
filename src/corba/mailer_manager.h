@@ -34,6 +34,8 @@ class MailerManager : public Register::Mailer::Manager
     Register::Mailer::Handles handles,
     Register::Mailer::Attachments attach
   ) throw (Register::Mailer::NOT_SEND) ;
+  bool checkEmailList(std::string &_email_list) const;
+
   struct Filter 
   {
     Filter();

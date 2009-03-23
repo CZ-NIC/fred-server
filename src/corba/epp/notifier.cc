@@ -60,14 +60,24 @@ bool EPPNotifier::Send()
   if (!notify.size() || disable)
     return true;
 
-  constructMessages();
-
-  LOG( DEBUG_LOG , "EPPNotifier: TO: %s" , emails.str().c_str() );
   try {
-    // Mailer manager send emailes
-    mm->sendEmail( "" , emails.str() , "", getTemplate() ,params,handles,attach );
+    constructMessages();
+  
+    if (mm->checkEmailList(emails)) {
+      LOG(DEBUG_LOG, "EPPNotifier: TO: %s" , emails.c_str() );
+    }
+    else {
+      LOG(DEBUG_LOG, "EPPNotifier: TO: no valid email address found - not sending");
+      return false;
+    }
+
+    // mailer manager send emails
+    mm->sendEmail("", emails, "", getTemplate(), params, handles, attach);
   }
-  catch (...) {return false;}
+  catch (...) {
+    return false;
+  }
+
   return true;
 }
 
@@ -85,9 +95,7 @@ void EPPNotifier::constructMessages() {
   // 4 parameters  type of the object name  ticket svTRID and  handle of  registrar
   params["ticket"] = db->GetsvTRID();
   std::stringstream registrarInfo;
-  registrarInfo << db->GetValueFromTable(
-    "registrar", "name", "id",registrarID
-  );
+  registrarInfo << db->GetValueFromTable("registrar", "name", "id", registrarID);
   registrarInfo << " ("
                 << db->GetValueFromTable("registrar", "url", "id",registrarID)
                 << ")";
@@ -105,22 +113,21 @@ void EPPNotifier::constructMessages() {
     type = notify[i].type;
     mod = notify[i].modify;
 
-    std::string objectName = db->GetValueFromTable("object_registry", "name",
-        "id", cID);
-    LOG( DEBUG_LOG ,"EPPNotifier: sendTo  %s %s contactID %d [%s]" ,
-        GetContactType( type ) , GetContactModify( mod) , cID , objectName.c_str());
+    std::string objectName = db->GetValueFromTable("object_registry", "name", "id", cID);
+    LOG(DEBUG_LOG, "EPPNotifier: sendTo %s %s contactID %d [%s]",
+        GetContactType(type), GetContactModify(mod), cID, objectName.c_str());
 
     std::string cEmail = db->GetValueFromTable("contact", "email", "id", cID);
-    std::string cNotifyEmail = db->GetValueFromTable("contact", "notifyemail",
-        "id", cID);
-    LOG( DEBUG_LOG ,"EPPNotifier:  email %s notifyEmail %s " , cEmail.c_str(),cNotifyEmail.c_str());
+    std::string cNotifyEmail = db->GetValueFromTable("contact", "notifyemail", "id", cID);
+    LOG(DEBUG_LOG, "EPPNotifier: email %s notifyEmail %s ",
+        cEmail.c_str(), cNotifyEmail.c_str());
 
     if (!cNotifyEmail.empty()) {
-      if (!emails.str().empty())
-        emails << ", ";
-      emails << cNotifyEmail;
+      if (!emails.empty())
+        emails += ", ";
+      emails += cNotifyEmail;
     }
-    emails << " " << extraEmails;
+    emails += " " + extraEmails;
   }
 
   messages_ready_ = true;

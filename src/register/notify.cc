@@ -376,10 +376,11 @@ namespace Register
                              << "<value>" << ci->second << "</value></param>";
               *debugOutput << "</notify>" << std::endl;
             } else {
-              TID mail = emails.empty() ? 0 : mm->sendEmail(
-                "",emails,"",i->mtype,params,handles,attach
-              );
-              saveNotification(i->state_id,i->type,mail);
+              TID mail = 0;
+              if (mm->checkEmailList(emails)) {
+                mail = mm->sendEmail("", emails, "", i->mtype, params, handles, attach);
+              }
+              saveNotification(i->state_id, i->type, mail);
             }
           }
           catch (...) {
