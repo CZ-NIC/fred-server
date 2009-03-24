@@ -340,7 +340,7 @@ def write_defines(out, val, cap_name):
         #DEFINE_FOREIGN_KEY(ModelInvoice, Modelzone, unsigned long long, zoneId, m_zoneId, table_name, "zone", id,   )
         out.write('DEFINE_FOREIGN_KEY(%s%s, %s%s, %s, %sId, %s%sId%s, table_name, "%s", %s, %s)\n' % (
             prefix, cap_name, prefix, val['foreign_model'], val['data_type'], val['name'],
-            var_prefix, val['name'], var_suffix, val['name'], val['foreign_db_col_name'],
+            var_prefix, val['name'], var_suffix, val['db_col_name'], val['foreign_db_col_name'],
             get_special(val)))
     else:
         out.write('DEFINE_BASIC_FIELD(%s%s, %s, %s, %s%s%s, '
