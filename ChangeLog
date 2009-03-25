@@ -1,6 +1,26 @@
+2009-03-25 Jaromir Talir, Jiri Sadek (2.1.8)
+
+   * Bugfixes
+	* SQL for registrar list fixed
+	* Parameter --factoring in fred-banking now works
+	* Sorting generally and sorting of invoices in webadmin works 
+	  better now
+	* Fixed problem in storing long xml answers
+	* Fixed zone check in case of uppercased fqdn of host in nsset
+    
+   * Better handling of object changes in table 'history'
+
+   * Changes in notifications
+ 	* DeleteContact EPP command was not notified 
+	* Regular delete commands are not notified
+	* Better check of invalid emails in notification process 
+	
+   * Daily regular procedure now delete objects before notification to speed
+     up delete
+	
 2009-02-10 Jaromir Talir (2.1.7)
 
-   * missing source file str_corbaout.h in distribution package
+   * Missing source file str_corbaout.h in distribution package
 	
 2009-02-06 Jiri Sadek (2.1.6)
 
