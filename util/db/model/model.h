@@ -185,6 +185,28 @@ public:
     }
   }
 
+  
+  /**
+   * Dump all fields and its values to simple string
+   * (can be used for logging and debugging)
+   *
+   * @param _object  instance pointer to data to dump
+   * @return         stringized object data
+   */
+  template<class _class>
+  std::string toString(const _class *_object) const {
+    std::stringstream out;
+    
+    out << _class::table_name << " {";
+    BOOST_FOREACH(typename Field::List<_class>::value_type _field, _object->getFields()) {
+      out << " ";
+      _field->serialize(out, _object);
+    }
+    out << " } ";
+    
+    return out.str();
+  }
+
 
   /**
    * TEST: get table method for support table name generation

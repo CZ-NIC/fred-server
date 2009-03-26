@@ -85,6 +85,9 @@ public:
   }
 
 
+  virtual void serialize(std::ostream &_os, const class_name *_object) = 0;
+
+
   virtual void serialize(::Model::JobQueue &_jobs, Database::InsertQuery &_query, class_name *_object) = 0; 
 
 
@@ -125,6 +128,11 @@ public:
 
 
   virtual ~Basic() { }
+
+
+  void serialize(std::ostream &_os, const class_name *_object) {
+    _os << this->getName() << "=" << Database::Value(value_(*_object));
+  }
 
 
   void serialize(::Model::JobQueue &_jobs, Database::InsertQuery &_query, class_name *_object) {
