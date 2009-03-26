@@ -22,13 +22,23 @@
 
 using namespace Database;
 
+#ifdef PACKAGE
+#undef PACKAGE
+#endif
+
+#define PACKAGE "test_logd"
+
+
+
 const std::string DB_CONN_STR("host=localhost port=22345 dbname=fred user=fred password=password connect_timeout=2");
+
+
+std::list<ID> id_list;
 
 // TODO maybe it should inherit Impl_Log or be a friend class
 class TestImplLog {
 	Impl_Log logd;
 	Connection conn;
-	std::list<ID> id_list;
 	static LogProperties no_props;
 
 public:
@@ -52,6 +62,8 @@ inline bool has_content(const char *str) {
 	return (str && *str!= '\0');
 }
 
+struct MyFixture;
+
 LogProperties TestImplLog::no_props;
 
 Database::ID TestImplLog::new_event(const char *ip_addr, const LogServiceType serv, const char * content_in, const LogProperties &props)
@@ -74,12 +86,12 @@ Database::ID TestImplLog::new_event(const char *ip_addr, const LogServiceType se
 				BOOST_ERROR(boost::format(" Multiple records with id %1% after call to new_event! ") % ret);
 			}
 		} else {
-			if(has_content(ip_addr)) BOOST_CHECK(std::string(ip_addr) 	== (std::string)res[0][0]);	
+			if(has_content(ip_addr)) BOOST_CHECK(std::string(ip_addr) 	== (std::string)res[0][0]);
 			BOOST_CHECK((int)serv 			== (int)res[0][1]);
 		}
 
 	} else {
-		if(has_content(ip_addr)) BOOST_CHECK(std::string(ip_addr) 	== (std::string)res[0][0]);	
+		if(has_content(ip_addr)) BOOST_CHECK(std::string(ip_addr) 	== (std::string)res[0][0]);
 		BOOST_CHECK((int)serv 			== (int)res[0][1]);
 		BOOST_CHECK(std::string(content_in) 	== (std::string)res[0][2]);
 	}
@@ -87,6 +99,8 @@ Database::ID TestImplLog::new_event(const char *ip_addr, const LogServiceType se
 	check_db_properties(ret, props);
 
 	id_list.push_back(ret);
+	// TODO
+	// ::MyFixture::id_list.push_back(ret);
 
 	return ret;
 }
@@ -97,7 +111,7 @@ bool TestImplLog::update_event(const Database::ID id, const LogProperties &props
 
 	if (!result) return result;
 
-	// check_db_properties(id, props);	
+	// check_db_properties(id, props);
 	// TODO compare with database, again
 
 	return result;
@@ -138,7 +152,7 @@ std::auto_ptr<LogProperties> TestImplLog::create_generic_properties(int number, 
 // boost::format query = boost::format("select name, value, parent_id, output from log_property_value pv join log_property_name pn on pn.id=pv.name_id where pv.entry_id = %1% order by pv.id") % rec_id;
 // p is single property
 // these two are compared :)
-bool TestImplLog::property_match(const Row r, const LogProperty &p) 
+bool TestImplLog::property_match(const Row r, const LogProperty &p)
 {
 
 	if ( (std::string)r[0] != p.name)  return false;
@@ -159,14 +173,14 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const LogProperties &pro
 	if (props.length() == 0) return;
 
 	boost::format query = boost::format("select name, value, parent_id, output from log_property_value pv join log_property_name pn on pn.id=pv.name_id where pv.entry_id = %1% order by pv.id") % rec_id;
-	
+
 	Result res = conn.exec(query.str());
 
 	// this is expected for a *_subset function...
 	int pind = 0;
 	if(res.size() > props.length()) {
 		for(int i=0; i<res.size(); i++) {
-			// TODO this should definitely do something :)		
+			// TODO this should definitely do something :)
 			if(property_match(res[i], props[pind])) {
 				// property pind found in the sql result, proceed to another item in the list
 				pind++;
@@ -175,30 +189,30 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const LogProperties &pro
 				continue;
 			}
 		}
-	
+
 		if(pind < props.length()) {
 			BOOST_ERROR(boost::format(" Some properties were not found in database for record %1") % rec_id);
 		}
 	// but this is kinda' weird, something had to go wrong....
 	} else if(res.size() < props.length()) {
-		BOOST_ERROR(" Some properties were not stored... ");	
+		BOOST_ERROR(" Some properties were not stored... ");
 	} else if(res.size() == props.length()) {
 		// TODO something can be saved here - we have Result res already done
 		check_db_properties(rec_id, props);
 	}
 }
 
-// this func relies that the order of properties in the database 
+// this func relies that the order of properties in the database
 // (sorted by their ids) is the same as in the array
 // the properties in the database with entry_id=rec_id must match props exactly
 void TestImplLog::check_db_properties(ID rec_id, const LogProperties & props)
 {
 	boost::format query = boost::format("select name, value, parent_id, output from log_property_value pv join log_property_name pn on pn.id=pv.name_id where pv.entry_id = %1% order by pv.id") % rec_id;
-	
+
 	Result res = conn.exec(query.str());
 
 	if (res.size() != props.length() ) {
-		BOOST_ERROR(" Not all properties have been loaded into the database");	
+		BOOST_ERROR(" Not all properties have been loaded into the database");
 	}
 
 	// TODO more specific messages:
@@ -206,10 +220,10 @@ void TestImplLog::check_db_properties(ID rec_id, const LogProperties & props)
 		BOOST_CHECK( (std::string)res[i][0] 	== props[i].name );
 		BOOST_CHECK( (std::string)res[i][1] 	== props[i].value );
 		if(props[i].child) {
-			BOOST_CHECK(!res[i][2].isnull());	
+			BOOST_CHECK(!res[i][2].isnull());
 		} else {
-			BOOST_CHECK(res[i][2].isnull());	
-		}	
+			BOOST_CHECK(res[i][2].isnull());
+		}
 		BOOST_CHECK( (bool)res[i][3]		== props[i].output );
 
 		BOOST_CHECK( property_match(res[i], props[i]));
@@ -217,6 +231,45 @@ void TestImplLog::check_db_properties(ID rec_id, const LogProperties & props)
 }
 
 static int global_call_count = 0;
+
+
+struct MyFixture {
+	MyFixture() {
+		std::cout << "This is INIT func !!!!!!!!!!!!!" << std::endl;
+
+
+		Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_FILE, std::string("log_test_logd.txt"));
+		Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
+		LOGGER(PACKAGE).info("Logging initialized");
+	}
+
+	~MyFixture() {
+		std::list<ID>::iterator it = id_list.begin();
+
+		try {
+			Connection conn(DB_CONN_STR);
+
+			std::cout << "Deleting database records. " << std::endl;
+			while(it != id_list.end()) {
+				conn.exec( (boost::format("delete from log_raw_content where entry_id=%1%") % *it).str() );
+				conn.exec( (boost::format("delete from log_property_value where entry_id=%1%") % *it).str() );
+				conn.exec( (boost::format("delete from log_entry where id=%1%") % *it).str() );
+				std::cout << *it << std::endl;
+				it++;
+			}
+		} catch (Database::Exception &ex) {
+			std::cout << (boost::format("error when working with database (%1%) : %2%") % DB_CONN_STR % ex.what()).str();
+		}
+	}
+
+//	static std::list<ID> id_list;
+};
+
+// std::list<ID> MyFixture::id_list;
+
+
+BOOST_GLOBAL_FIXTURE( MyFixture );
+
 
 BOOST_AUTO_TEST_CASE( long_property_name)
 {
@@ -274,7 +327,7 @@ BOOST_AUTO_TEST_CASE( without_properties )
 	BOOST_CHECK(test.update_event(id1));
 	BOOST_CHECK(test.update_event_close(id1, "ZZZZZZZZZZZZZZZZZZZZZ"));
 
-	
+
 }
 
 BOOST_AUTO_TEST_CASE( service_types)
@@ -464,7 +517,7 @@ BOOST_AUTO_TEST_CASE( close_record_0 )
 }
 
 /* TODO
- 
+
 BOOST_MESSAGE(" Add some child properties. ");
 BOOST_MESSAGE(" Distinct input and output properties. ");
 

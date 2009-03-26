@@ -16,9 +16,11 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "log_impl.h"
+#include "manage_part_table.h"
 
 #include <fstream>
 #include <iostream>
+#include <ctime>
 
 #include <stdlib.h>
 
@@ -66,10 +68,18 @@ Impl_Log::Impl_Log(const std::string database)
 		LOGGER("fred-server").error( boost::format("cannot connect to database %1% : %2%") % database.c_str() % ex.what());
 #endif
 	}
-
 #ifdef HAVE_LOGGER
 	LOGGER("fred-server").notice(boost::format("successfully  connect to DATABASE %1%") % database.c_str());
 #endif
+
+	// set constraint exclusion (needed for faster queries on partitioned tables)
+	try {
+			conn->exec("set constraint_exclusion=on");
+	} catch (Database::Exception &ex) {
+#ifdef HAVE_LOGGER
+		LOGGER("fred-server").error( boost::format("couldn't set constraint exclusion on database %1% : %2%") % database.c_str() % ex.what());
+#endif
+	}
 
 	// now fill the property_names map:
 
@@ -138,8 +148,6 @@ ID Impl_Log::find_property_name_id(const std::string &name, Connection &conn)
 	std::ostringstream query;
 	std::map<std::string, ID>::iterator iter;
 
-	
-
 	iter = property_names.find(name);
 
 	if(iter != property_names.end()) {
@@ -193,7 +201,7 @@ inline ID Impl_Log::find_last_log_entry_id(Connection &conn)
 }
 
 // insert properties for the given log_entry record
-void Impl_Log::insert_props(ID entry_id, const LogProperties& props, Connection &conn)
+void Impl_Log::insert_props(std::string entry_time, ID entry_id, const LogProperties& props, Connection &conn)
 {
 	std::string s_val;
 	std::ostringstream query;
@@ -209,16 +217,14 @@ void Impl_Log::insert_props(ID entry_id, const LogProperties& props, Connection 
 
 	query.str("");
 	if (props[0].child) {
-		std::ostringstream msg;
-		msg << "entry ID " << entry_id << ": first property marked as child. Ignoring this flag ";
 		// the first property is set to child - this is an error
 #ifdef HAVE_LOGGER
-		LOGGER("fred-server").error(msg.str());
+		LOGGER("fred-server").error(boost::format("entry ID %1%: first property marked as child. Ignoring this flag ") % entry_id);
 #endif
 
 	}
-	query   << "insert into log_property_value (entry_id, name_id, value, output, parent_id) values ("
-			<< entry_id << ", " << name_id << ", '" << s_val << "', "
+	query   << "insert into log_property_value (entry_time_begin, entry_id, name_id, value, output, parent_id) values ('"
+			<< entry_time << "', " << entry_id << ", " << name_id << ", '" << s_val << "', "
 			<< (props[0].output ? "true" : "false") << ", null)";
 	conn.exec(query.str());
 
@@ -234,15 +240,15 @@ void Impl_Log::insert_props(ID entry_id, const LogProperties& props, Connection 
 		query.str("");
 		if(props[i].child) {
 			// child property set and parent id available
-			query   << "insert into log_property_value (entry_id, name_id, value, output, parent_id) values ("
-					<< entry_id << ", " << name_id << ", '" << s_val << "', "
+			query   << "insert into log_property_value (entry_time_begin, entry_id, name_id, value, output, parent_id) values ('"
+					<< entry_time << "', " << entry_id << ", " << name_id << ", '" << s_val << "', "
 					<< (props[i].output ? "true" : "false") << ", " << last_id << ")";
 
 			conn.exec(query.str());
 		} else {
 			// not a child property
-			query   << "insert into log_property_value (entry_id, name_id, value, output, parent_id) values ("
-					<< entry_id << ", " << name_id << ", '" << s_val << "', "
+			query   << "insert into log_property_value (entry_time_begin, entry_id, name_id, value, output, parent_id) values ('"
+					<< entry_time << "', " << entry_id << ", " << name_id << ", '" << s_val << "', "
 					<< (props[i].output ? "true" : "false") << ", null)";
 			conn.exec(query.str());
 
@@ -260,19 +266,36 @@ ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const cha
 	std::ostringstream query;
 	std::string time, s_sourceIP, s_content;
 	ID entry_id;
+	boost::posix_time::ptime micro_time;
+	tm str_time;
 
 	// get formatted UTC with microseconds
-	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
+	micro_time = microsec_clock::universal_time();
+	time = boost::posix_time::to_iso_string(micro_time);
+
+	str_time = boost::posix_time::to_tm(micro_time);
+
+	/* TODO - this should be used
+	if(!exist_tables(*conn, (2000 + str_time.tm_year), str_time.tm_mon)) {
+		create_table_set(*conn, (2000 + str_time.tm_year), str_time.tm_mon);
+	}
+*/
+	/* TODO -this is only a test.... */
+	if(!exist_tables(*conn, (2000 + str_time.tm_year), str_time.tm_mday)) {
+			create_table_set(*conn, (2000 + str_time.tm_year), str_time.tm_mday);
+	}
 
 	try {
 		// Transaction t(conn);
 		if(sourceIP != NULL && sourceIP[0] != '\0') {
 			// make sure these values can be safely used in an SQL statement
 			s_sourceIP = Util::escape(std::string(sourceIP));
-			query << "insert into log_entry (time_begin, source_ip, service) values ('" << time << "', '" << s_sourceIP << "', " << service << ")";
+			// TODO is_monitoring
+			query << "insert into log_entry (time_begin, source_ip, service, is_monitoring) values ('" << time << "', '" << s_sourceIP << "', " << service << ", false)";
 		} else {
-			query << "insert into log_entry (time_begin, service) values ('"
-				<< time << "', " << service << ")";
+			// TODO is_monitoring
+			query << "insert into log_entry (time_begin, service, is_monitoring) values ('"
+				<< time << "', " << service << ", false)";
 		}
 		conn->exec(query.str());
 
@@ -296,13 +319,13 @@ ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const cha
 		if(content_in != NULL && content_in[0] != '\0') {
 			s_content = Util::escape(std::string(content_in));
 			query.str("");
-			query << "insert into log_raw_content (entry_id, content, is_response) values (" << entry_id << ", E'" << s_content << "', false)";
+			query << "insert into log_raw_content (entry_time_begin, entry_id, content, is_response) values ('" << time << "', " << entry_id << ", E'" << s_content << "', false)";
 
 			conn->exec(query.str());
 		}
 
 		// inserting properties
-		insert_props(entry_id, props, *conn);
+		insert_props(time, entry_id, props, *conn);
 
 	} catch (Database::Exception &ex) {
 #ifdef HAVE_LOGGER
@@ -326,7 +349,18 @@ bool Impl_Log::i_update_event(ID id, const LogProperties &props)
 		// perform check
 		if (!record_check(id, *conn)) return false;
 
-		insert_props(id, props, *conn);
+		// TODO this is temporary workaround for partitioing
+		query << "select time_begin from log_entry where id = " << id;
+		Result res = conn->exec(query.str());
+
+		if(res.size() == 0) {
+#ifdef HAVE_LOGGER
+			LOGGER("fred-server").error("Impossible has just happened... ");
+#endif
+		}
+		// end of TODO
+
+		insert_props((std::string)res[0][0], id, props, *conn);
 	} catch (Database::Exception &ex) {
 #ifdef HAVE_LOGGER
 		LOGGER("fred-server").error(ex.what());
@@ -353,6 +387,18 @@ bool Impl_Log::i_update_event_close(ID id, const char *content_out, const LogPro
 		// first perform checks:
 		if (!record_check(id, *conn)) return false;
 
+		// TODO this is temporary workaround for partitioing
+		query << "select time_begin from log_entry where id = " << id;
+		Result res = conn->exec(query.str());
+
+		query.str("");
+		if(res.size() == 0) {
+#ifdef HAVE_LOGGER
+			LOGGER("fred-server").error("Impossible has just happened... ");
+#endif
+		}
+		// end of TODO
+
 		query << "update log_entry set time_end=E'" << time << "' where id=" << id;
 		conn->exec(query.str());
 
@@ -361,12 +407,12 @@ bool Impl_Log::i_update_event_close(ID id, const char *content_out, const LogPro
 
 			query.str("");
 
-			query << "insert into log_raw_content (entry_id, content, is_response) values (" << id << ", E'" << s_content << "', true)";
+			query << "insert into log_raw_content (entry_time_begin, entry_id, content, is_response) values ('" << (std::string)res[0][0] << "', " << id << ", E'" << s_content << "', true)";
 			conn->exec(query.str());
 		}
 
 		// inserting properties
-		insert_props(id, props, *conn);
+		insert_props((std::string)res[0][0], id, props, *conn);
 
 	} catch (Database::Exception &ex) {
 #ifdef HAVE_LOGGER

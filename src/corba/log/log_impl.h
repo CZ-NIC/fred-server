@@ -112,14 +112,12 @@ public:
   Database::ID i_new_session(Languages lang, const char *name, const char *clTRID);
   bool i_end_session(Database::ID id, const char *clTRID);
 
-  // used by unittest
-  inline Database::ID find_last_log_entry_id(Connection &conn);
-
 private:
-  void insert_props(Database::ID entry_id, const LogProperties& props, Connection &conn);
+  void insert_props(std::string entry_time, Database::ID entry_id, const LogProperties& props, Connection &conn);
   bool record_check(Database::ID id, Connection &conn);
   Database::ID find_property_name_id(const std::string &name, Connection &conn);
   inline Database::ID find_last_property_value_id(Connection &conn);
+  inline Database::ID find_last_log_entry_id(Connection &conn);
 
   static const std::string LAST_PROPERTY_VALUE_ID;
   static const std::string LAST_PROPERTY_NAME_ID;
