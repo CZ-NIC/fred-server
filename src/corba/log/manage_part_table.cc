@@ -125,6 +125,7 @@ void create_table(Database::Connection &conn, std::string table_base, int year, 
 	format create_table;
 	format spec_alter_table;
 	format create_rule;
+	format create_indexes;
 
 	if(table_base == "log_entry") {
 		create_table  = format( "CREATE TABLE %1%    ("
@@ -140,12 +141,18 @@ void create_table(Database::Connection &conn, std::string table_base, int year, 
 
 		spec_alter_table = format("ALTER TABLE %1% ADD PRIMARY KEY (id); ") % table_name;
 
+		create_indexes   = format("CREATE INDEX %1%_time_begin_idx ON %1%(time_begin); "
+								"CREATE INDEX %1%_time_end_idx ON %1%(time_end);"
+								"CREATE INDEX %1%_source_ip_idx ON %1%(source_ip);"
+								"CREATE INDEX %1%_service_idx ON %1%(service);"
+								"CREATE INDEX %1%_action_type_idx ON %1%(action_type);"
+								"CREATE INDEX %1%_monitoring_idx ON %1%(is_monitoring);") % table_name;
+
 	} else if (table_base == "log_session") {
 
 		create_table = format( "CREATE TABLE %1%    ("
 				  "	CHECK (login_date >= TIMESTAMP '%2%' and login_date < TIMESTAMP '%3%') )"
 				  " INHERITS (%4%) ") % table_name % lower % upper % table_base;
-
 
 		create_rule = format( "CREATE RULE %1% AS "
 										  "	ON INSERT TO %4% WHERE (login_date >= TIMESTAMP '%2%' and login_date < TIMESTAMP '%3%') "
@@ -153,6 +160,10 @@ void create_table(Database::Connection &conn, std::string table_base, int year, 
 										"INSERT INTO %1% VALUES ( NEW.id, NEW.name, NEW.login_date, NEW.logout_date, NEW.login_TRID, NEW.logout_TRID, NEW.lang); " ) % table_name % lower % upper % table_base;
 
 		spec_alter_table = format("ALTER TABLE %1% ADD PRIMARY KEY (id); ") % table_name;
+
+		create_indexes = format("CREATE INDEX %1%_name_idx ON %1%(name);"
+								"CREATE INDEX %1%_login_date_idx ON %1%(login_date);"
+								"CREATE INDEX %1%_lang_idx ON %1%(lang);") % table_name;
 
 	} else {
 		// create table is different for log_entry and for other tables...
@@ -170,6 +181,11 @@ void create_table(Database::Connection &conn, std::string table_base, int year, 
 
 			spec_alter_table = format("ALTER TABLE %1% ADD CONSTRAINT %1%_entry_id_fkey FOREIGN KEY (entry_id) REFERENCES log_entry_%2%(id); ") % table_name % table_postfix;
 
+			create_indexes = format("CREATE INDEX %1%_entry_time_begin_idx ON %1%(entry_time_begin);"
+			"CREATE INDEX %1%_entry_id_idx ON %1%(entry_id);"
+			"CREATE INDEX %1%_content_idx ON %1%(content);"
+			"CREATE INDEX %1%_is_response_idx ON %1%(is_response);") % table_name;
+
 		} else if(table_base == "log_property_value") {
 			// insert will be usually done directly
 			create_rule = format( "CREATE RULE %1% AS "
@@ -181,6 +197,14 @@ void create_table(Database::Connection &conn, std::string table_base, int year, 
 					"ALTER TABLE %1% ADD CONSTRAINT %1%_entry_id_fkey FOREIGN KEY (entry_id) REFERENCES log_entry_%2%(id); "
 					"ALTER TABLE %1% ADD CONSTRAINT %1%_name_id_fkey FOREIGN KEY (name_id) REFERENCES log_property_name(id); "
 					"ALTER TABLE %1% ADD CONSTRAINT %1%_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES %1%(id); ") % table_name % table_postfix;
+
+			create_indexes = format("CREATE INDEX %1%_entry_time_begin_idx ON %1%(entry_time_begin);"
+			"CREATE INDEX %1%_entry_id_idx ON %1%(entry_id);"
+			"CREATE INDEX %1%_name_id_idx ON %1%(name_id);"
+			"CREATE INDEX %1%_value_idx ON %1%(value);"
+			"CREATE INDEX %1%_output_idx ON %1%(output);"
+			"CREATE INDEX %1%_parent_id_idx ON %1%(parent_id);") % table_name;
+
 		} else {
 			// spec_alter_table = format(""); TODO is it ok?
 #ifdef HAVE_LOGGER
@@ -201,6 +225,7 @@ void create_table(Database::Connection &conn, std::string table_base, int year, 
 	conn.exec(create_rule.str());
 	conn.exec(spec_alter_table.str());
 	conn.exec(alter_table.str());
+	conn.exec(create_indexes.str());
 }
 
 void create_table_set(Database::Connection &conn, int year, int month)
