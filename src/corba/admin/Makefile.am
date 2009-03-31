@@ -35,8 +35,8 @@ libadmin_impl_a_SOURCES = admin_impl.cc                 \
                           pagetable_files.h             \
                           pagetable_keysets.cc          \
                           pagetable_keysets.h           \
-			  pagetable_logger.cc		\
-			  pagetable_logger.h		\
+			  			  pagetable_logger.cc		\
+			  			  pagetable_logger.h		\
                           str_corbaout.h                \
                           common.cc                     \
                           common.h 
