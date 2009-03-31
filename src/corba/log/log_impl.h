@@ -27,7 +27,7 @@ struct LogProperty : public boost::noncopyable {
 };
 
 class LogProperties : public boost::noncopyable {
-  int size;
+  size_t size;
   LogProperty *buf;
 
 public:
@@ -88,7 +88,7 @@ private:
   /** Limit the number of entries read from log_property_name table
    * (which is supposed to contain limited number of distinct property names )
    */
-  static const int PROP_NAMES_SIZE_LIMIT = 10000;
+  static const unsigned int PROP_NAMES_SIZE_LIMIT = 10000;
 
   Manager db_manager;
 
@@ -96,17 +96,17 @@ private:
   std::tr1::unordered_map<std::string, Database::ID> property_names
   */
   std::map<std::string, Database::ID, strCmp> property_names;
+  std::list<std::string> monitoring_ips;
 
 public:
 
   struct DB_CONNECT_FAILED { };
 
-  Impl_Log(const std::string conn_db) throw(DB_CONNECT_FAILED);
+  Impl_Log(const std::string conn_db, const std::string &monitoring_hosts_file = std::string()) throw(DB_CONNECT_FAILED);
+
   virtual ~Impl_Log();
 
-
-
-  Database::ID i_new_event(const char *sourceIP, LogServiceType service, const char *content_in, const LogProperties& props);
+  Database::ID i_new_event(const char *sourceIP, LogServiceType service, const char *content_in, const LogProperties& props, int action_type);
   bool i_update_event(Database::ID id, const LogProperties &props);
   bool i_update_event_close(Database::ID id, const char *content_out, const LogProperties &props);
   Database::ID i_new_session(Languages lang, const char *name, const char *clTRID);
