@@ -54,10 +54,11 @@ const std::string Impl_Log::LAST_ENTRY_ID = "select currval('log_entry_id_seq'::
 const std::string Impl_Log::LAST_SESSION_ID = "select currval('log_session_id_seq'::regclass)";
 
 // Impl_Log ctor: connect to the database and fill property_names map
-Impl_Log::Impl_Log(const std::string database)
-      throw (DB_CONNECT_FAILED) : db_manager(new ConnectionFactory(database)) {
-
+Impl_Log::Impl_Log(const std::string database, const std::string &monitoring_hosts_file)
+      throw (DB_CONNECT_FAILED) : db_manager(new ConnectionFactory(database))
+{
     std::auto_ptr<Connection> conn;
+    std::ifstream file;
 
   	LOG_CTX_INIT();
 
@@ -80,6 +81,31 @@ Impl_Log::Impl_Log(const std::string database)
 		LOGGER("fred-server").error( boost::format("couldn't set constraint exclusion on database %1% : %2%") % database.c_str() % ex.what());
 #endif
 	}
+
+	if (!monitoring_hosts_file.empty()) {
+		try {
+			file.open(monitoring_hosts_file.c_str());
+			file.exceptions(std::ios::badbit | std::ios::failbit);
+
+			while(file) {
+				std::string input;
+				file >> input;
+				monitoring_ips.push_back(input);
+			}
+
+		} catch(std::exception &e) {
+			LOGGER("fred-server").error(boost::format("Error while reading config file %1% : %2%") % monitoring_hosts_file % e.what());
+		}
+	}
+
+	// TODO debug:
+	std::list<std::string>::iterator it;
+
+	std::cout << "List of monitoring IP addresses: " << std::endl;
+	for (it = monitoring_ips.begin(); it != monitoring_ips.end(); it++) {
+		std::cout << *it << std::endl;
+	}
+	std::cout << std::endl;
 
 	// now fill the property_names map:
 
@@ -258,7 +284,7 @@ void Impl_Log::insert_props(std::string entry_time, ID entry_id, const LogProper
 }
 
 // log a new event, return the database ID of the record
-ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const char *content_in, const LogProperties& props)
+ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const char *content_in, const LogProperties& props, int action_type)
 {
 	std::auto_ptr<Connection> conn(db_manager.getConnection());
   	LOG_CTX_INIT()
@@ -276,13 +302,23 @@ ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const cha
 	str_time = boost::posix_time::to_tm(micro_time);
 
 	/* TODO - this should be used
-	if(!exist_tables(*conn, (2000 + str_time.tm_year), str_time.tm_mon)) {
-		create_table_set(*conn, (2000 + str_time.tm_year), str_time.tm_mon);
+	if(!exist_tables(*conn, (1900 + str_time.tm_year), str_time.tm_mon)) {
+		create_table_set(*conn, (1900 + str_time.tm_year), str_time.tm_mon);
 	}
 */
 	/* TODO -this is only a test.... */
-	if(!exist_tables(*conn, (2000 + str_time.tm_year), str_time.tm_mday)) {
-			create_table_set(*conn, (2000 + str_time.tm_year), str_time.tm_mday);
+	if(!exist_tables(*conn, (1900 + str_time.tm_year), str_time.tm_mday)) {
+			create_table_set(*conn, (1900 + str_time.tm_year), str_time.tm_mday);
+	}
+
+	std::list<std::string>::iterator it;
+
+	std::string monitoring = std::string("false");
+	for (it = monitoring_ips.begin(); it != monitoring_ips.end(); it++) {
+		if(sourceIP == *it) {
+			monitoring = std::string("true");
+			break;
+		}
 	}
 
 	try {
@@ -291,11 +327,12 @@ ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const cha
 			// make sure these values can be safely used in an SQL statement
 			s_sourceIP = Util::escape(std::string(sourceIP));
 			// TODO is_monitoring
-			query << "insert into log_entry (time_begin, source_ip, service, is_monitoring) values ('" << time << "', '" << s_sourceIP << "', " << service << ", false)";
+			query << "insert into log_entry (time_begin, source_ip, service, action_type, is_monitoring) values ('"
+				<< time << "', '" << s_sourceIP << "', " << service << ", " << action_type << ", " << monitoring << ")";
 		} else {
 			// TODO is_monitoring
-			query << "insert into log_entry (time_begin, service, is_monitoring) values ('"
-				<< time << "', " << service << ", false)";
+			query << "insert into log_entry (time_begin, service, action_type, is_monitoring) values ('"
+				<< time << "', " << service << ", " << action_type << ", " << monitoring << ")";
 		}
 		conn->exec(query.str());
 

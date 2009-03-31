@@ -68,7 +68,8 @@ LogProperties TestImplLog::no_props;
 
 Database::ID TestImplLog::new_event(const char *ip_addr, const LogServiceType serv, const char * content_in, const LogProperties &props)
 {
-	Database::ID ret = logd.i_new_event(ip_addr, serv, content_in, props);
+	// TODO replace constant 1000
+	Database::ID ret = logd.i_new_event(ip_addr, serv, content_in, props, 1000);
 	boost::format query;
 
 	if(ret == 0) return 0;

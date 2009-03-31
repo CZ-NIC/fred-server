@@ -120,6 +120,11 @@ AC_ARG_WITH([nshost], [AS_HELP_STRING([--with-nshost],
 			[CORBA nameservice host name [localhost]])],
 			[AC_SUBST([NSHOST], [$withval])],
 			[AC_SUBST([NSHOST], [localhost])])
+			
+AC_ARG_WITH([monitoring_hosts_file], [AS_HELP_STRING([--with-monitoring-hosts-file],
+			[File containing list of monitoring machines [$SYSCONFDIR/fred/monitoring_hosts.conf]])],
+			[AC_SUBST([MONITORINGIPS], [$withval])],
+			[AC_SUBST([MONITORINGIPS], [/usr/local/etc/fred/monitoring_hosts.conf])])
 
 # corba nameservice port
 AC_ARG_WITH([nsport], [AS_HELP_STRING([--with-nsport],
@@ -238,7 +243,8 @@ AC_CONFIG_FILES([Makefile
                  src/corba/Makefile
                  src/corba/admin/Makefile
                  src/corba/epp/Makefile
-                 src/corba/log/Makefile
+                 src/corba/log/Makefile                 
+                 src/corba/log/migration/Makefile
                  src/cli_admin/Makefile
                  fred-server.spec
                  config/server.conf

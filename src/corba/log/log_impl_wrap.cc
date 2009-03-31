@@ -18,10 +18,10 @@ std::auto_ptr<LogProperties> convert_properties(const ccReg::LogProperties &p)
 	return ret_ptr;
 }
 
-ccReg::TID ccReg_Log_i::new_event(const char *sourceIP, ccReg::LogServiceType service, const char *content_in, const ccReg::LogProperties& props)
+ccReg::TID ccReg_Log_i::new_event(const char *sourceIP, ccReg::LogServiceType service, const char *content_in, const ccReg::LogProperties& props, CORBA::Long action_type)
 {
 	std::auto_ptr<LogProperties> p (convert_properties(props));
-	return i_new_event(sourceIP, (LogServiceType)service, content_in, *(p.get()));
+	return i_new_event(sourceIP, (LogServiceType)service, content_in, *(p.get()), action_type);
 }
 
 CORBA::Boolean ccReg_Log_i::update_event(ccReg::TID id, const ccReg::LogProperties &props)
