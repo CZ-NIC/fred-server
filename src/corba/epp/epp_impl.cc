@@ -4527,7 +4527,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
     ParsedAction paction;
     paction.add(1,(const char*)fqdn);
 
-    EPPAction action(this, clientID, EPP_ContactDelete, clTRID, XML, &paction);
+    EPPAction action(this, clientID, EPP_DomainDelete, clTRID, XML, &paction);
 
     LOG( NOTICE_LOG , "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int ) clientID , clTRID , fqdn );
 
