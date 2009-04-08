@@ -1965,6 +1965,7 @@ ccReg_EPP_i::ClientLogout(CORBA::Long clientID, const char *clTRID, const char* 
 
         LogoutSession(clientID); // logout session
         code = COMMAND_LOGOUT; // succesfully logout
+        action.setCode(code);
     }
 
     if (code == 0) {
@@ -3711,7 +3712,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
                     if (tch[j] == techid && tch[j] > 0) {
                         tch[j]= 0;
                         LOG(WARNING_LOG, "Contact [%s] duplicity", (const char *)tech[i]);
-                        action.setErrorReason(COMMAND_PARAMETR_ERROR,
+                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                                 ccReg::nsset_tech, i, REASON_MSG_DUPLICITY_CONTACT);
                     }
                 }
@@ -4700,12 +4701,21 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
                         REASON_MSG_ADMIN_NOTEXIST);
             } else {
                 if (action.getDB()->CheckContactMap("domain", id, adminid, 1) ) {
+                    LOG(WARNING_LOG, "Admin Contact [%s] exist in contact map table",
+                            (const char *)admin_add[i]);
+                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
+                            ccReg::domain_admin_add, i + 1,
+                            REASON_MSG_ADMIN_EXIST);
                 } else {
                     ac_add[i] = adminid;
                     for (j = 0; j < i; j ++)
                         // test  duplicity
                         if (ac_add[j] == adminid && ac_add[j] > 0) {
                             ac_add[j] = 0;
+                            LOG( WARNING_LOG, "Contact [%s] duplicity " , (const char *) admin_add[i] );
+                            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
+                                    ccReg::domain_admin_add, i + 1,
+                                    REASON_MSG_DUPLICITY_CONTACT);
                         }
                 }
                 // admin cannot be added if there is equivalent id in temp-c
@@ -6671,12 +6681,12 @@ ccReg_EPP_i::KeySetUpdate(
             techId = getIdOfContact(action.getDB(), tech_add[i], conf);
             if (techId < 0) {
                 LOG(WARNING_LOG, "bad format of contact %s", (const char *)tech_add[i]);
-                action.setErrorReason(COMMAND_PARAMETR_ERROR,
+                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::keyset_tech_add, i + 1,
                         REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
             } else if (techId == 0) {
                 LOG(WARNING_LOG, "Contact %s not exist", (const char *)tech_add[i]);
-                action.setErrorReason(COMMAND_PARAMETR_ERROR,
+                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::keyset_tech_add, i,
                         REASON_MSG_TECH_NOTEXIST);
             } else if (action.getDB()->CheckContactMap("keyset", keysetId, techId, 0)) {
