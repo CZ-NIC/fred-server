@@ -1257,7 +1257,7 @@ public:
         LOGGER(PACKAGE).debug(
                 "[CALL] Register::Invoicing::InvoiceImpl::"
                 "getRecordsPrice()");
-        long recordsPrice;
+        Database::Money recordsPrice;
         Database::SelectQuery recordsPriceQuery;
         recordsPriceQuery.buffer()
             << "SELECT CAST(sum(price) AS INTEGER) FROM invoice_object_registry, "
@@ -1499,7 +1499,7 @@ public:
         insertInvoice.add("prefix_type", getInvoicePrefixTypeId());
         insertInvoice.add("file", Database::ID());
         insertInvoice.add("filexml", Database::ID());
-        insertInvoice.add("price", getPrice().format());
+        insertInvoice.add("price", Database::Value(getPrice()));
         insertInvoice.add("vat", getSystemVAT());
         // must insert NULL value
         insertInvoice.add("credit", Database::Value());
@@ -1603,12 +1603,12 @@ public:
         return ret;
     } // InvoiceImpl::getAccountInvoicesNumbers()
 
-    long getInvoiceSumPrice(int accountInvoiceId)
+    Database::Money getInvoiceSumPrice(int accountInvoiceId)
     {
         LOGGER(PACKAGE).debug(
                 "[CALL] Register::Invoicing::InvoiceImpl::"
                 "getInvoiceSumPrice(int)");
-        long sumPrice;
+        Database::Money sumPrice;
         Database::SelectQuery sumPriceQuery;
         sumPriceQuery.buffer()
             << "SELECT SUM(invoice_object_registry_price_map.price) "
@@ -1627,7 +1627,9 @@ public:
         return sumPrice;
     } // InvoiceImpl::getInvoiceSumPrice()
 
-    long getInvoiceBalance(int accountInvoiceId, long invoiceSumPrice)
+    Database::Money getInvoiceBalance(
+            int accountInvoiceId, 
+            Database::Money invoiceSumPrice)
     {
         LOGGER(PACKAGE).debug(
                 "[CALL] Register::Invoicing::InvoiceImpl::"
@@ -1637,7 +1639,7 @@ public:
             << "SELECT CAST(total AS INTEGER) FROM invoice"
             << " WHERE id = "<< Database::Value(accountInvoiceId);
         Database::Result totalResult = m_conn->exec(totalQuery);
-        long total;
+        Database::Money total;
         if (totalResult.size() == 0) {
             return -1;
         } else {
@@ -1649,13 +1651,13 @@ public:
             << " FROM invoice_credit_payment_map"
             << " WHERE ainvoiceid = " << Database::Value(accountInvoiceId);
         Database::Result sumResult = m_conn->exec(sumQuery);
-        long sum;
+        Database::Money sum;
         if (sumResult.size() == 0) {
             return -1;
         } else {
             sum = *(*sumResult.begin()).begin();
         }
-        long price = total - sum - invoiceSumPrice;
+        Database::Money price = total - sum - invoiceSumPrice;
         return price;
     } // InvoiceImpl::getInvoiceBalance()
 
@@ -1666,14 +1668,17 @@ public:
                 "[CALL] Register::Invoicing::InvoiceImpl::"
                 "updateInvoiceCreditPaymentMap("
                 "std::vector<int>, Database::Transaction)");
+
         for (int i = 0; i < (int)idNumbers.size(); i++) {
-            long invoiceSumPrice = getInvoiceSumPrice(idNumbers[i]);
-            long invoiceBalance = getInvoiceBalance(idNumbers[i], invoiceSumPrice);
+            Database::Money invoiceSumPrice(
+                    getInvoiceSumPrice(idNumbers[i]));
+            Database::Money invoiceBalance(
+                    getInvoiceBalance(idNumbers[i], invoiceSumPrice));
             Database::InsertQuery insertQuery("invoice_credit_payment_map");
             insertQuery.add("invoiceid", id_);
             insertQuery.add("ainvoiceid", idNumbers[i]);
-            insertQuery.add("credit", Database::Money(invoiceSumPrice));
-            insertQuery.add("balance", Database::Money(invoiceBalance));
+            insertQuery.add("credit", Database::Value(invoiceSumPrice));
+            insertQuery.add("balance", Database::Value(invoiceBalance));
             try {
                 transaction.exec(insertQuery);
             } catch (Database::Exception &ex) {
