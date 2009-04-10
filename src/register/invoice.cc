@@ -2551,6 +2551,7 @@ private:
         Database::ID    m_generation;
         Database::ID    m_invoice;
         Database::ID    m_mail;
+        std::string     m_zoneFqdn;
 
         std::string getTemplateName()
         {
@@ -2565,10 +2566,10 @@ private:
         Item(const std::string &registrarEmail, Database::Date from,
                 Database::Date to, Database::ID filePDF, Database::ID fileXML,
                 Database::ID generation, Database::ID invoice,
-                Database::ID mail):
+                Database::ID mail, const std::string zoneFqdn):
             m_registrarEmail(registrarEmail), m_from(from), m_to(to),
             m_filePDF(filePDF), m_fileXML(fileXML), m_generation(generation),
-            m_invoice(invoice), m_mail(mail)
+            m_invoice(invoice), m_mail(mail), m_zoneFqdn(zoneFqdn)
         { }
     }; // struct Item;
 
@@ -2610,6 +2611,7 @@ public:
             dateBuffer << item->m_to;
             params["todate"] = dateBuffer.str();
             Mailer::Handles handles;
+            params["zone"] = item->m_zoneFqdn;
             // TODO: include domain or registrar handles??
             Mailer::Attachments attach;
             if (item->m_filePDF) {
@@ -2632,16 +2634,19 @@ public:
         Database::Query loadMailsQuery;
         loadMailsQuery.buffer() 
             << "SELECT r.email, g.fromdate, g.todate, "
-            << "i.file, i.fileXML, g.id, i.id "
+            << "i.file, i.fileXML, g.id, i.id, z.fqdn "
             << "FROM registrar r, invoice i "
             << "LEFT JOIN invoice_generation g ON (g.invoiceid = i.id) "
-            << "LEFT JOIN invoice_mails im ON (im.invoiceid = i.id)"
+            << "LEFT JOIN invoice_mails im ON (im.invoiceid = i.id) "
+            << "LEFT JOIN zone z ON (z.id = g.zone) "
             << "WHERE i.registrarid = r.id "
             << "AND im.mailid ISNULL "
             << "UNION "
-            << "SELECT r.email, g.fromdate, g.todate, NULL, NULL, g.id, NULL "
+            << "SELECT r.email, g.fromdate, g.todate, NULL, NULL, g.id, "
+            << "NULL, z.fqdn "
             << "FROM registrar r, invoice_generation g "
             << "LEFT JOIN invoice_mails im ON (im.genid = g.id) "
+            << "LEFT JOIN zone z ON (z.id = g.zone) "
             << "WHERE g.registrarid = r.id AND g.invoiceid ISNULL "
             << "AND im.mailid ISNULL "
             << "AND NOT(r.email ISNULL OR TRIM(r.email)='')";
@@ -2658,8 +2663,9 @@ public:
             Database::ID        generation  = *(++col);
             Database::ID        invoice     = *(++col);
             Database::ID        mail        = 0;
+            std::string         zoneFqdn    = *(++col);
             m_items.push_back(Item(email, from, to, filePDF, fileXML,
-                        generation, invoice, mail));
+                        generation, invoice, mail, zoneFqdn));
         }
     } // Mails::load()
 }; // class Mails
