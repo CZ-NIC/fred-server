@@ -18,6 +18,7 @@
 
 #include <exception>
 #include <boost/tokenizer.hpp>
+#include <set>
 
 #include "mailer_manager.h"
 #include "old_utils/log.h"
@@ -214,18 +215,25 @@ MailerManager::checkEmailList(std::string &_email_list) const
   using namespace boost;
   typedef tokenizer<char_separator<char> > token_list;
 
+  std::set<std::string> valid;
   std::string list = _email_list;
   _email_list.clear();
-
+  
   char_separator<char> sep(" ,");
   token_list tokens(list, sep);
   for (token_list::iterator token = tokens.begin(); token != tokens.end(); ++token) {
+    /* validate email address */
     std::string::size_type i = (*token).find("@");
     if (i != std::string::npos && i != (*token).size() && i != 0) {
-      if (!_email_list.empty())
-        _email_list += " ";
-      _email_list += *token;
+      /* add to output set - this removes duplicates */
+      valid.insert(*token);
     }
+  }
+
+  for (std::set<std::string>::const_iterator address = valid.begin(); address != valid.end(); ++address) {
+    if (!_email_list.empty())
+      _email_list += " ";
+    _email_list += *address;
   }
 
   LOGGER("mailer").debug(boost::format("check done; filtered email list '%1%'") % _email_list);
