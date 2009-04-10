@@ -69,6 +69,10 @@ public:
   int GetSelectRows();
   int GetSelectCols();
 
+  PGconn* __getPGconn() {
+    return connection;
+  }
+
 private:
   PGconn *connection;
   PGresult *result;

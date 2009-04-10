@@ -32,7 +32,8 @@ libdb_a_SOURCES = query/query_old.cc             \
                   manager.h                      \
                   manager_tss.h                  \
                   db_exceptions.h                \
-                  database.h
+                  database.h                     \
+                  manager_old_db.h
 
 noinst_PROGRAMS = test-db
 test_db_SOURCES  = test-db.cc

@@ -47,6 +47,7 @@ namespace Database {
 template<class connection_driver, class manager_type>
 class ConnectionBase_ {
 public:
+  typedef connection_driver                        driver_type;
   typedef typename manager_type::transaction_type  transaction_type;
   typedef typename manager_type::result_type       result_type;
 
@@ -137,6 +138,7 @@ template<class connection_driver, class manager_type>
 class Connection_ : public ConnectionBase_<connection_driver, manager_type> {
 public:
   typedef ConnectionBase_<connection_driver, manager_type>   super;
+  typedef typename super::driver_type                        driver_type;
   typedef typename super::result_type                        result_type;
   typedef typename super::transaction_type                   transaction_type;
 

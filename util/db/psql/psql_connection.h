@@ -42,7 +42,8 @@ class PSQLTransaction;
 class PSQLConnection {
 private:
   std::string   conn_info_;
-  PGconn       *psql_conn_; /**< wrapped connection structure from libpq library */
+  PGconn       *psql_conn_;         /**< wrapped connection structure from libpq library */
+  bool          psql_conn_finish_;  /**< whether or not to finish PGconn at the destruct (close() method) */
 
 public:
   typedef PSQLResult       result_type;
@@ -51,13 +52,18 @@ public:
   /**
    * Constructors and destructor
    */
-  PSQLConnection() : psql_conn_(0) {
+  PSQLConnection() : psql_conn_(0),
+                     psql_conn_finish_(true) {
   }
 
 
   PSQLConnection(const std::string& _conn_info) throw (ConnectionFailed)
-               : conn_info_(_conn_info), psql_conn_(0) {
+               : conn_info_(_conn_info), psql_conn_(0), psql_conn_finish_(true) {
     open(_conn_info);
+  }
+
+
+  PSQLConnection(PGconn *_psql_conn) : psql_conn_(_psql_conn), psql_conn_finish_(false) {
   }
 
 
@@ -83,7 +89,7 @@ public:
 
 
   virtual void close() {
-    if (psql_conn_) {
+    if (psql_conn_ && psql_conn_finish_) {
       PQfinish(psql_conn_);
       psql_conn_ = 0;
     }
