@@ -2597,6 +2597,7 @@ public:
     { }
     void send()
     {
+        TRACE("[CALL] Register::Invoicing::Mails::send()");
         for (unsigned int i = 0; i < m_items.size(); i++) {
             Item *item = &m_items[i];
             Mailer::Parameters params;
@@ -2627,6 +2628,7 @@ public:
     } // Mails::send()
     void load()
     {
+        TRACE("[CALL] Register::Invoicing::Mails::load()");
         Database::Query loadMailsQuery;
         loadMailsQuery.buffer() 
             << "SELECT r.email, g.fromdate, g.todate, "
@@ -2655,7 +2657,7 @@ public:
             Database::ID        fileXML     = *(++col);
             Database::ID        generation  = *(++col);
             Database::ID        invoice     = *(++col);
-            Database::ID        mail        = *(++col);
+            Database::ID        mail        = 0;
             m_items.push_back(Item(email, from, to, filePDF, fileXML,
                         generation, invoice, mail));
         }
