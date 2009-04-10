@@ -8,6 +8,9 @@
 #include "m_epp_parser.h"
 #include "types.h"
 
+/* strlen, strcpy */ 
+#include <string.h> 
+
 using namespace std;
 
 char * wrap_str(const char *str)
