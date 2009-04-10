@@ -2638,7 +2638,7 @@ public:
             << "FROM registrar r, invoice i "
             << "LEFT JOIN invoice_generation g ON (g.invoiceid = i.id) "
             << "LEFT JOIN invoice_mails im ON (im.invoiceid = i.id) "
-            << "LEFT JOIN zone z ON (z.id = g.zone) "
+            << "LEFT JOIN zone z ON (z.id = i.zone) "
             << "WHERE i.registrarid = r.id "
             << "AND im.mailid ISNULL "
             << "UNION "
