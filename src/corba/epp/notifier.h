@@ -1,6 +1,7 @@
 #include "corba/mailer_manager.h"
 #include "action.h"
 #include "old_utils/dbsql.h"
+#include "register/register.h"
 
 #ifndef ID
 #define ID unsigned  int
@@ -40,6 +41,8 @@ class EPPNotifier
   ID registrarID; // idof registrar who make change
   ID objectID; // type of the object  where make change
 
+  Register::Manager *rm_;
+
   bool disable; // for fast upload of objects
   std::string extraEmails; // for fixing notification of notifyEmail change
 
@@ -57,8 +60,12 @@ public:
 	  extraEmails += " ";
 	  extraEmails += emails;
   }
-  EPPNotifier(
-    bool _disable, MailerManager *mailManager, DB *dbs, ID regid, ID objectid); // add default contacts for object ID
+  EPPNotifier(bool _disable, 
+              MailerManager *mailManager, 
+              DB *dbs, 
+              ID regid, 
+              ID objectid,
+              Register::Manager *_rm = 0); // add default contacts for object ID
   ~EPPNotifier();
   bool Send(); // send e-mail messages by mailer manager
   void constructMessages(); // construct messages - running all sql queries (Ticket #1622)

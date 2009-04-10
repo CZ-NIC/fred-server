@@ -2856,8 +2856,9 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     }
     if (code == COMMAND_OK) // run notifier
     {
-        ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),
-                    mm , action.getDB(), action.getRegistrar() , id ));
+        ntf.reset(new EPPNotifier(
+                      conf.get<bool>("registry.disable_epp_notifier"),
+                      mm, action.getDB(), action.getRegistrar(), id, regMan.get()));
         ntf->addExtraEmails(oldNotifyEmail);
         ntf->Send(); // send messages with objectID
     }
@@ -4200,7 +4201,10 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
             if (action.getDB()->ObjectUpdate(nssetID, action.getRegistrar(), authInfo_chg) ) {
 
                 // notifier
-                ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , nssetID ));
+                ntf.reset(new EPPNotifier(
+                              conf.get<bool>("registry.disable_epp_notifier"), 
+                              mm, action.getDB(), action.getRegistrar(), nssetID, regMan.get()));
+
                 //  add to current tech-c added tech-c
                 for (i = 0; i < tech_add.length(); i++)
                     ntf->AddTechNew(tch_add[i]);
@@ -4905,7 +4909,9 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
 
             // BEGIN notifier
             // notify default contacts
-            ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
+            ntf.reset(new EPPNotifier(
+                          conf.get<bool>("registry.disable_epp_notifier"), mm, action.getDB(),
+                          action.getRegistrar(), id, regMan.get()));
 
             for (i = 0; i < admin_add.length(); i++)
                 ntf->AddAdminNew(ac_add[i]); // notifier new ADMIN contact
@@ -6843,8 +6849,8 @@ ccReg_EPP_i::KeySetUpdate(
     if (code == 0) {
         if (action.getDB()->ObjectUpdate(keysetId, action.getRegistrar(), authInfo_chg)) {
             ntf.reset(new EPPNotifier(
-                        conf.get<bool>("registry.disable_epp_notifier"), 
-                        mm, action.getDB(), action.getRegistrar(), keysetId));
+                          conf.get<bool>("registry.disable_epp_notifier"), 
+                          mm, action.getDB(), action.getRegistrar(), keysetId, regMan.get()));
 
             for (int i = 0; i < (int)tech_add.length(); i++)
                 ntf->AddTechNew(techAdd[i]);
