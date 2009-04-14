@@ -4209,9 +4209,6 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
                 for (i = 0; i < tech_add.length(); i++)
                     ntf->AddTechNew(tch_add[i]);
 
-                ntf->Send(); // send messages to all
-
-
                 // update tech level
                 if (level >= 0) {
                     LOG( NOTICE_LOG, "update nsset check level %d ", (int ) level );
