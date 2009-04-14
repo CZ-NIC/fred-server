@@ -1260,7 +1260,7 @@ public:
         Database::Money recordsPrice;
         Database::SelectQuery recordsPriceQuery;
         recordsPriceQuery.buffer()
-            << "SELECT CAST(sum(price) AS INTEGER) FROM invoice_object_registry, "
+            << "SELECT sum(price) FROM invoice_object_registry, "
             << "invoice_object_registry_price_map WHERE "
             << "invoice_object_registry_price_map.id=invoice_object_registry.id"
             << " AND  crdate < " <<  Database::Value(getCrTime())
@@ -1620,7 +1620,8 @@ public:
             << Database::Value(accountInvoiceId);
         Database::Result sumPriceRes = m_conn->exec(sumPriceQuery);
         if (sumPriceRes.size() == 0) {
-            return -1;
+            ERROR("getInvoiceSumPrice: result size is zero");
+            throw;
         } else {
             sumPrice = *(*sumPriceRes.begin()).begin();
         }
@@ -1636,24 +1637,26 @@ public:
                 "getInvoiceBalance(int, long)");
         Database::SelectQuery totalQuery;
         totalQuery.buffer()
-            << "SELECT CAST(total AS INTEGER) FROM invoice"
+            << "SELECT total FROM invoice"
             << " WHERE id = "<< Database::Value(accountInvoiceId);
         Database::Result totalResult = m_conn->exec(totalQuery);
         Database::Money total;
         if (totalResult.size() == 0) {
-            return -1;
+            ERROR("getInvoiceBalance: result size is zero");
+            throw;
         } else {
             total = *(*totalResult.begin()).begin();
         }
         Database::SelectQuery sumQuery;
         sumQuery.buffer()
-            << "SELECT CAST(SUM(credit) AS INTEGER)"
+            << "SELECT SUM(credit)"
             << " FROM invoice_credit_payment_map"
             << " WHERE ainvoiceid = " << Database::Value(accountInvoiceId);
         Database::Result sumResult = m_conn->exec(sumQuery);
         Database::Money sum;
         if (sumResult.size() == 0) {
-            return -1;
+            ERROR("getInvoiceBalance: result size is zero");
+            throw;
         } else {
             sum = *(*sumResult.begin()).begin();
         }
@@ -1670,10 +1673,14 @@ public:
                 "std::vector<int>, Database::Transaction)");
 
         for (int i = 0; i < (int)idNumbers.size(); i++) {
-            Database::Money invoiceSumPrice(
-                    getInvoiceSumPrice(idNumbers[i]));
-            Database::Money invoiceBalance(
-                    getInvoiceBalance(idNumbers[i], invoiceSumPrice));
+            Database::Money invoiceSumPrice;
+            Database::Money invoiceBalance;
+            try {
+                invoiceSumPrice = getInvoiceSumPrice(idNumbers[i]);
+                invoiceBalance = getInvoiceBalance(idNumbers[i], invoiceSumPrice);
+            } catch (...) {
+                throw;
+            }
             Database::InsertQuery insertQuery("invoice_credit_payment_map");
             insertQuery.add("invoiceid", id_);
             insertQuery.add("ainvoiceid", idNumbers[i]);
