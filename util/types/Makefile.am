@@ -1,4 +1,5 @@
 noinst_LIBRARIES = libtypes.a
+noinst_PROGRAMS = test_money
 
 AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) ${BOOST_CPPFLAGS} $(AM_CFLAGS) \
               -I$(top_srcdir)/util -I$(top_srcdir)
@@ -30,3 +31,5 @@ libtypes_a_SOURCES = date.cc                       \
                      stringify.h                   \
 										 sqlize.h
 
+test_money_SOURCES = test_money.cc
+test_money_LDADD = libtypes.a

@@ -4,6 +4,9 @@
 
 namespace Database {
 
+// standard abs takes only long, not long long
+#define ABS(x) (((x) < 0) ? (-x) : (x))
+
 /*
  * string construct and getter
  */
@@ -21,7 +24,8 @@ const std::string
 Money::format() const
 {
     std::stringstream ss;
-    ss << value_ / 100 << "." << std::setfill('0') << std::setw(2) << value_ % 100;
+    ss << ((value_ < 0) ? "-" : "") << ABS(value_) / 100 << "."
+        << std::setfill('0') << std::setw(2) << ABS(value_) % 100;
     return ss.str();
 }
 
@@ -29,8 +33,15 @@ void
 Money::format(std::string str)
 {
     if (str.find('.') != std::string::npos) {
-        value_ = atoll(str.substr(0, str.find('.')).c_str()) * 100 + 
-            atoll(str.substr(str.find('.') + 1, std::string::npos).c_str());
+        value_ = ABS(atoll(str.substr(0, str.find('.')).c_str())) * 100;
+        if (str.substr(str.find('.') + 1, std::string::npos).length() == 1) {
+            value_ += 10 * ABS(atoll(str.substr(str.find('.') + 1, 1).c_str()));
+        } else {
+            value_ += ABS(atoll(str.substr(str.find('.') + 1, 2).c_str()));
+        }
+        if (str.find('-') != std::string::npos) {
+            value_ = -value_;
+        }
     } else {
         value_ = atoll(str.c_str()) * 100;
     }
