@@ -7,6 +7,7 @@
 
 
 #include <string>
+#include <signal.h>
 
 #include "migrate.h"
 
@@ -46,6 +47,14 @@ unsigned long long Conversion<unsigned long long>::from_string(const std::string
   return atoll(_value.c_str());
 }
 */
+
+void signal_handler(int signum);
+
+void signal_handler(int signum)
+{
+	std::cout << "Received signal " << signum << ", exiting. " << std::endl;	
+	exit(0);
+}
 
 // Backend ctor: connect to the database and fill property_names map
 Backend::Backend(const std::string database) : conn(), trans(NULL), transaction_counter(TRANS_LIMIT)
@@ -332,7 +341,9 @@ int main()
 
 	epp_parser_init(EPP_SCHEMA);
 
-	serv.test();
+	signal(15, signal_handler);
+	signal(11, signal_handler);
+	signal(6, signal_handler);
 
 	while(std::getline(std::cin, rawline)) {
 		size_t i;
