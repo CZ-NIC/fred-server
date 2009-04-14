@@ -6,9 +6,7 @@
  *      Author: jvicenik
  */
 
-
-#include <boost/format.hpp>
-#include <string>
+#include "manage_part_table.h"
 
 // TODO this shouldn't be here
 #include "log_impl.h"
@@ -21,13 +19,8 @@
 #include "log/logger.h"
 #include "log/context.h"
 
-// TODO : to be removed
-#define _TESTING_
-
-
 using namespace boost;
 
-void create_table(Database::Connection &conn, std::string table_base, int year, int month, LogServiceType type);
 
 
 format get_table_postfix(int year, int month)
@@ -37,13 +30,38 @@ format get_table_postfix(int year, int month)
 
 #ifdef _TESTING_
 	// month is in fact day in march in this case :)
-	// SERVICE format table_postfix = format("%1%_%2$02d_03_%3$02d") % service_name % shortyear % month;
-	table_postfix = format("%1$02d_03_%2$02d") % shortyear % month;
+	// SERVICE format table_postfix = format("%1%_%2$02d_04_%3$02d") % service_name % shortyear % month;
+	table_postfix = format("%1$02d_04_%2$02d") % shortyear % month;
 #else
 	table_postfix = format("%1%_%2$02d_%3$02d") % service_name % shortyear % month;
 #endif
 
 	return table_postfix;
+}
+
+
+void check_and_create_all(Database::Connection &conn, int year, int month)
+{
+	create_table_if_not_present(conn, "log_entry", year, month);
+	create_table_if_not_present(conn, "log_raw_content", year, month);
+	create_table_if_not_present(conn, "log_property_value", year, month);
+	create_table_if_not_present(conn, "log_session", year, month);
+}
+
+void create_table_if_not_present(Database::Connection &conn, std::string table_base, int year, int month)
+{
+	format table_name = format("%1%_%2%") % table_base % get_table_postfix(year, month);
+
+	format query = format("select * from pg_tables where tablename = '%1%'") % table_name;
+
+	Result res = conn.exec(query.str());
+
+	if(res.size() > 0) {
+		// table exists
+		return;	
+	} else {
+		create_table(conn, table_base, year, month);
+	}	
 }
 
 bool exist_tables(Database::Connection &conn, int year, int month)
@@ -59,8 +77,30 @@ bool exist_tables(Database::Connection &conn, int year, int month)
 	}
 }
 
+std::string create_date_str(int y, int m)
+{
+	boost::format ret;
+
+#ifdef _TESTING_
+	if (m == 32) {
+		ret  = boost::format("%1$02d-05-01") % (y+1);
+	} else {
+		ret  = boost::format("%1$02d-04-%2$02d") % y % m;
+	}
+#else
+	if (m == 13) {
+		ret  = boost::format("%1$02d-01-01") % (y+1);
+	} else {
+		ret  = boost::format("%1$02d-%2$02d-01") % y % m;
+	}
+
+#endif
+
+	return ret.str();
+}
+
 // create_table(Connection &conn, int year, int month, LogServiceType type)
-void create_table(Database::Connection &conn, std::string table_base, int year, int month, LogServiceType type = LC_EPP)
+void create_table(Database::Connection &conn, std::string table_base, int year, int month, LogServiceType type)
 {
 	format lower, upper;
 
@@ -69,17 +109,15 @@ void create_table(Database::Connection &conn, std::string table_base, int year, 
 	 * format service_condition;
 	 */
 
-
-
 	// TODO actually USE (full) year
 #ifdef _TESTING_
 	// month is in fact day in march in this case :)
-	lower  = format("%1$02d-03-%2$02d") % year % month;
+	lower  = format("%1$02d-04-%2$02d") % year % month;
 
 	if (month == 31) {
-		upper  = format("%1$02d-04-01") % (year+1);
+		upper  = format("%1$02d-05-01") % (year+1);
 	} else {
-		upper  = format("%1$02d-03-%2$02d") % year % (month+1);
+		upper  = format("%1$02d-04-%2$02d") % year % (month+1);
 	}
 #else
 	// lower  = format("%1%-%2%-01") % year % month;
@@ -92,6 +130,14 @@ void create_table(Database::Connection &conn, std::string table_base, int year, 
 	}
 
 #endif
+
+	// TODO remove debug code
+	std::string lower_check = create_date_str(year, month);
+	// it's OK if month is 13 :) 
+	std::string upper_check = create_date_str(year, month+1);
+
+	assert(lower_check == lower.str());	
+	assert(upper_check == upper.str());
 
 	/* SERVICE
 	switch (type) {
@@ -115,12 +161,6 @@ void create_table(Database::Connection &conn, std::string table_base, int year, 
 
 	format table_name = format("%1%_%2%") % table_base % table_postfix;
 	format rule_name = format ("%1%_insert_%2%") % table_base % table_postfix;
-
-	/* SERVICE
-		format create_table  = format( "CREATE TABLE %1%    ("
-								  "	CHECK (%2% and time_begin >= TIMESTAMP '%3%' and time_begin < TIMESTAMP '%4%') )"
-								  " INHERITS (%5%) ") % table_name % service_condition % lower % upper % table_base;
-		*/
 
 	format create_table;
 	format spec_alter_table;

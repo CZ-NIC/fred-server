@@ -1,11 +1,4 @@
 
-/* TODO :
- * property names should exist in the database - the test shouldn't create any new ones
- * database cleanup after testing
- * database querying during the test
- * - test child properties
- */
-
 #include <iostream>
 #define BOOST_TEST_MODULE Test fred-logd
 /*
@@ -14,36 +7,89 @@
  * */
 
 #include <boost/test/included/unit_test.hpp>
-
-
-// TODO - change -- configure your own loger a la server.cc
+#include <stdio.h>
 
 #include "log_impl.h"
+#include "manage_part_table.h"
 
 using namespace Database;
 
-#ifdef PACKAGE
-#undef PACKAGE
-#endif
+namespace TestLogd {
 
-#define PACKAGE "test_logd"
+// TODO : to be removed
 
+#ifdef _TESTING_
+	const int MONTHS_COUNT  = 30;
+#else 
+	const int MONTHS_COUNT  = 12;
+#endif 
 
+// value from database table log_action_type
+const int UNKNOWN_ACTION = 1000;
 
 const std::string DB_CONN_STR("host=localhost port=22345 dbname=fred user=fred password=password connect_timeout=2");
 
+struct MyFixture {
+	static std::list<ID> id_list_entry;
+	static std::list<ID> id_list_session;
 
-std::list<ID> id_list;
+	MyFixture() {
+		std::cout << "This is INIT func !!!!!!!!!!!!!" << std::endl;
 
-// TODO maybe it should inherit Impl_Log or be a friend class
+		Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_FILE, std::string("log_test_logd.txt"));
+		Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
+		LOGGER(PACKAGE).info("Logging initialized");
+	}
+
+	~MyFixture() {
+		try {
+			std::list<ID>::iterator it = id_list_entry.begin();
+			Connection conn(DB_CONN_STR);
+
+			std::cout << "Deleting database records from log_entry and related. " << std::endl;
+			while(it != id_list_entry.end()) {
+				conn.exec( (boost::format("delete from log_raw_content where entry_id=%1%") % *it).str() );
+				conn.exec( (boost::format("delete from log_property_value where entry_id=%1%") % *it).str() );
+				conn.exec( (boost::format("delete from log_entry where id=%1%") % *it).str() );
+				it++;
+			}
+			
+			std::cout << "Deleting database records from log_session." << std::endl;	
+			for(it = id_list_session.begin(); it != id_list_session.end();it++) {
+				conn.exec( (boost::format("delete from log_session where id=%1%") % *it).str() );
+			}
+		} catch (Database::Exception &ex) {
+			std::cout << (boost::format("error when working with database (%1%) : %2%") % DB_CONN_STR % ex.what()).str();
+		}
+	}
+
+};
+
+std::list<ID> MyFixture::id_list_entry;
+std::list<ID> MyFixture::id_list_session;
+
+BOOST_GLOBAL_FIXTURE( MyFixture );
+
+
 class TestImplLog {
 	Impl_Log logd;
 	Connection conn;
 	static LogProperties no_props;
 
 public:
-	TestImplLog (std::string connection_string) : logd(connection_string), conn(connection_string) {
+	TestImplLog (const std::string connection_string) : logd(connection_string), conn(connection_string) {
 	};
+
+	TestImplLog (const std::string connection_string, const std::string monitoring_file) : logd(connection_string, monitoring_file), 
+			conn(connection_string) {
+	};
+
+	Connection &get_conn() {
+		return conn;
+	};
+
+	Database::ID new_session(Languages lang, const char *name, const char *clTRID = "Test-clTRID");
+	bool         end_session(Database::ID id, const char *clTRID = "Test-clTRID-end");
 
 	Database::ID new_event(const char * ip_addr, const LogServiceType serv, const char * content_in,  const LogProperties &props = TestImplLog::no_props);
 	bool update_event(const Database::ID id, const LogProperties &props = TestImplLog::no_props);
@@ -66,10 +112,64 @@ struct MyFixture;
 
 LogProperties TestImplLog::no_props;
 
+
+// TODO maybe we should check if the correct partition was used....
+Database::ID TestImplLog::new_session(Languages lang, const char *name, const char *clTRID)
+{
+	Database::ID ret = logd.i_new_session(lang, name, clTRID);
+
+	if(ret == 0) return 0;
+
+	Result res = conn.exec((boost::format("select lang, name, login_TRID from log_session where id=%1%") % ret).str());
+
+	if (res.size() != 1) {
+		if (res.size() == 0) {
+			BOOST_ERROR(boost::format(" Record created with new_event with id %1% doesn't exist in the database! ") % ret);
+		} else if(res.size() > 1) {
+			BOOST_ERROR(boost::format(" Multiple records with id %1% after call to new_event! ") % ret);
+		}
+	} else {
+		if(lang == CS) {
+			BOOST_CHECK("cs" == (std::string)res[0][0]);
+		} else if(lang == EN) {
+			BOOST_CHECK("en" == (std::string)res[0][0]);
+		} else {
+			BOOST_FAIL(" Unknown language given. ");
+		}
+		BOOST_CHECK(std::string(name) == (std::string)res[0][1]);
+		BOOST_CHECK(std::string(clTRID) == (std::string)res[0][2]);
+	}
+
+	MyFixture::id_list_session.push_back(ret);		
+
+	return ret;
+}
+
+bool TestImplLog::end_session(Database::ID id, const char *clTRID)
+{
+	bool ret = logd.i_end_session(id, clTRID);
+
+	if (!ret) return ret;
+
+	Result res = conn.exec( (boost::format("select logout_date, logout_TRID from log_session where id=%1%") % id).str() );
+	
+	if (res.size() != 1) {
+		if (res.size() == 0) {
+			BOOST_ERROR(boost::format(" Record created with new_event with id %1% doesn't exist in the database! ") % id);
+		} else if(res.size() > 1) {
+			BOOST_ERROR(boost::format(" Multiple records with id %1% after call to new_event! ") % id);
+		}
+	} else {
+		BOOST_CHECK((std::string)res[0][1] == std::string(clTRID));
+	}
+
+	return ret;
+}
+
+// TODO maybe we should check if it was inserted into the correct partition 
 Database::ID TestImplLog::new_event(const char *ip_addr, const LogServiceType serv, const char * content_in, const LogProperties &props)
 {
-	// TODO replace constant 1000
-	Database::ID ret = logd.i_new_event(ip_addr, serv, content_in, props, 1000);
+	Database::ID ret = logd.i_new_event(ip_addr, serv, content_in, props, UNKNOWN_ACTION);
 	boost::format query;
 
 	if(ret == 0) return 0;
@@ -99,9 +199,7 @@ Database::ID TestImplLog::new_event(const char *ip_addr, const LogServiceType se
 
 	check_db_properties(ret, props);
 
-	id_list.push_back(ret);
-	// TODO
-	// ::MyFixture::id_list.push_back(ret);
+	MyFixture::id_list_entry.push_back(ret);
 
 	return ret;
 }
@@ -112,8 +210,7 @@ bool TestImplLog::update_event(const Database::ID id, const LogProperties &props
 
 	if (!result) return result;
 
-	// check_db_properties(id, props);
-	// TODO compare with database, again
+	check_db_properties_subset(id, props);
 
 	return result;
 }
@@ -124,10 +221,30 @@ bool TestImplLog::update_event_close(const Database::ID id, const char *content_
 
 	if(!result) return result;
 
+	boost::format query = boost::format ( "select time_end, raw.content from log_entry join log_raw_content raw on raw.entry_id=id where raw.is_response=true and id=%1%") % id;
+	Result res = conn.exec(query.str());
+
+	if (res.size() != 1) {
+		res = conn.exec( (boost::format("select time_end from log_entry where id=%1%") % id).str() );
+
+		if (res.size() != 1) {
+			if (res.size() == 0) {
+				BOOST_ERROR(boost::format(" Record created with new_event with id %1% doesn't exist in the database! ") % id);
+			} else if(res.size() > 1) {
+				BOOST_ERROR(boost::format(" Multiple records with id %1% after call to new_event! ") % id);
+			}
+		} else {
+			BOOST_CHECK(!res[0][0].isnull());
+		}
+
+	} else {
+		BOOST_CHECK(!res[0][0].isnull());
+		BOOST_CHECK(std::string(content_out) == (std::string)res[0][1]);
+	}
+
 	check_db_properties_subset(id, props);
 
 	return result;
-	// TODO as usual
 }
 
 std::auto_ptr<LogProperties> TestImplLog::create_generic_properties(int number, int value_id)
@@ -138,7 +255,6 @@ std::auto_ptr<LogProperties> TestImplLog::create_generic_properties(int number, 
 	ret->length(number);
 
 	for(int i=0;i<number;i++) {
-		// TODO more property names....
 		ref[i].name = "handle";
 		ref[i].value = (boost::format("val%1%.%2%") % value_id % i).str();
 
@@ -156,7 +272,7 @@ std::auto_ptr<LogProperties> TestImplLog::create_generic_properties(int number, 
 bool TestImplLog::property_match(const Row r, const LogProperty &p)
 {
 
-	if ( (std::string)r[0] != p.name)  return false;
+	if ( (std::string)r[0] != p.name.substr(0, Impl_Log::MAX_NAME_LENGTH))  return false;
 	if ( (std::string)r[1] != p.value) return false;
 	if ( (bool)r[3] != p.output) return false;
 
@@ -181,7 +297,6 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const LogProperties &pro
 	int pind = 0;
 	if(res.size() > props.length()) {
 		for(int i=0; i<res.size(); i++) {
-			// TODO this should definitely do something :)
 			if(property_match(res[i], props[pind])) {
 				// property pind found in the sql result, proceed to another item in the list
 				pind++;
@@ -216,61 +331,172 @@ void TestImplLog::check_db_properties(ID rec_id, const LogProperties & props)
 		BOOST_ERROR(" Not all properties have been loaded into the database");
 	}
 
-	// TODO more specific messages:
 	for(int i=0; i<res.size(); i++) {
-		BOOST_CHECK( (std::string)res[i][0] 	== props[i].name );
-		BOOST_CHECK( (std::string)res[i][1] 	== props[i].value );
-		if(props[i].child) {
-			BOOST_CHECK(!res[i][2].isnull());
-		} else {
-			BOOST_CHECK(res[i][2].isnull());
-		}
-		BOOST_CHECK( (bool)res[i][3]		== props[i].output );
-
 		BOOST_CHECK( property_match(res[i], props[i]));
 	}
 }
 
 static int global_call_count = 0;
 
+void test_monitoring_ip(const std::string &ip, TestImplLog &t, bool result)
+{
+	Connection &conn = t.get_conn();
+	Database::ID id;
 
-struct MyFixture {
-	MyFixture() {
-		std::cout << "This is INIT func !!!!!!!!!!!!!" << std::endl;
+	id = t.new_event(ip.c_str(), LC_EPP, "AAA");
 
+	boost::format query = boost::format ( "select is_monitoring from log_entry where id=%1%") % id;
+	Result res = conn.exec(query.str());
 
-		Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_FILE, std::string("log_test_logd.txt"));
-		Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
-		LOGGER(PACKAGE).info("Logging initialized");
+	if(res.size() == 0) {
+		BOOST_ERROR(" Record wasn't found. ");
+	} else {
+		BOOST_CHECK((bool)res[0][0] == result);
 	}
 
-	~MyFixture() {
-		std::list<ID>::iterator it = id_list.begin();
+}
+
+class ConfigFile {
+private:
+	std::ofstream conffile;
+	
+public:
+	ConfigFile(const std::string &filename, const std::string &content) {
+		
+		conffile.open("test_log_monitoring.conf");
+		conffile << content;
+		conffile.close();
+	}
+	
+	~ConfigFile() {
+		if (remove ("test_log_monitoring.conf") != 0) {
+			std::cout << "Failed to delete a file ." << std::endl;
+		}
+	}
+};
+
+BOOST_AUTO_TEST_CASE( test_session )
+{
+	BOOST_TEST_MESSAGE("Create and close single sessions with both available languages ");	
+
+	TestImplLog test(DB_CONN_STR);
+
+	Database::ID id = test.new_session(CS, "regid01", "TestclTRID-session1");
+
+	BOOST_CHECK(id != 0);
+	BOOST_CHECK(test.end_session(id, "TestclTRID-session1-end"));
+
+	id = test.new_session(EN, "regid02", "TestclTRID-session2");
+
+	BOOST_CHECK(id != 0);
+	BOOST_CHECK(test.end_session(id, "TestclTRID-session2-end"));
+}
+
+BOOST_AUTO_TEST_CASE( test_con_sessions )
+{
+	BOOST_TEST_MESSAGE("Create two concurrent sessions and close them");	
+
+	TestImplLog test(DB_CONN_STR);
+
+	Database::ID id  = test.new_session(CS, "regid03", "TestclTRID-session3");
+	Database::ID id1 = test.new_session(EN, "regid04", "TestclTRID-session3");
+
+	BOOST_CHECK(id  != 0);
+	BOOST_CHECK(id1 != 0);
+
+	BOOST_CHECK(test.end_session(id,  "TestclTRID-session3-end"));
+	BOOST_CHECK(test.end_session(id1, "TestclTRID-session3-end"));
+}
+
+BOOST_AUTO_TEST_CASE( close_session_twice )
+{
+	BOOST_TEST_MESSAGE("Try to close a session which is already closed");	
+
+	TestImplLog test(DB_CONN_STR);
+
+	Database::ID id = test.new_session(CS, "regid01", "TestclTRID-session5");
+
+	BOOST_CHECK(id != 0);
+	BOOST_CHECK(test.end_session(id, "TestclTRID-session5-end"));
+
+	BOOST_CHECK(!test.end_session(id, "TestclTRID-session5-end2"));
+}
+
+BOOST_AUTO_TEST_CASE( session_without_name )
+{
+	BOOST_TEST_MESSAGE("Try to create a session without providing the name of registrar/user");	
+
+	TestImplLog test(DB_CONN_STR);
+
+	Database::ID id = test.new_session(CS, NULL, "TestclTRID-session5");
+	BOOST_CHECK(id == 0);
+
+	id = test.new_session(CS, "", "TestclTRID-session5");
+	BOOST_CHECK(id == 0);
+
+}
+
+BOOST_AUTO_TEST_CASE( test_monitoring_flag )
+{
+	BOOST_TEST_MESSAGE("Test if the monitoring flag is set according to list of monitoring hosts");
+
+	// create monitoring file first 
+	const std::string CONF_FILENAME("test_log_monitoring.conf");
+	
+	ConfigFile file(CONF_FILENAME,  "127.0.0.1 0.0.0.0 216.16.16.1");
+	// create an instance of TestImplLog
+	
+	TestImplLog test(DB_CONN_STR, "test_log_monitoring.conf");
+
+	test_monitoring_ip("127.0.0.1", test, true);
+	test_monitoring_ip("127.0.0.2", test, false);
+	test_monitoring_ip("216.16.16.1", test, true);
+	test_monitoring_ip("216.16.16.2", test, false);
+	test_monitoring_ip("155.120.1.1", test, false);
+}
+
+BOOST_AUTO_TEST_CASE( partitions )
+{
+	BOOST_TEST_MESSAGE("Check if records with different dates are inserted into correct partitions. ");
+
+	Database::ID id;
+	TestImplLog test(DB_CONN_STR);
+
+	Connection &conn = test.get_conn();
+	boost::format time;
+
+	// i is also used as minutes in time
+	for(int i=1;i<MONTHS_COUNT;i++) {
+		std::string date = create_date_str(2009, i);		
 
 		try {
-			Connection conn(DB_CONN_STR);
+			if(!exist_tables(conn, 2009, i)) create_table(conn, "log_entry", 2009, i);
 
-			std::cout << "Deleting database records. " << std::endl;
-			while(it != id_list.end()) {
-				conn.exec( (boost::format("delete from log_raw_content where entry_id=%1%") % *it).str() );
-				conn.exec( (boost::format("delete from log_property_value where entry_id=%1%") % *it).str() );
-				conn.exec( (boost::format("delete from log_entry where id=%1%") % *it).str() );
-				std::cout << *it << std::endl;
-				it++;
+			time = boost::format("insert into log_entry (time_begin, service, is_monitoring) values ('%1% 9:%2%:00', 99, true)") % date % i;	
+
+			conn.exec(time.str());
+
+			Result res = conn.exec(Impl_Log::LAST_ENTRY_ID);
+
+			if(res.size() == 0) {
+				BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
 			}
+
+			id = res[0][0];
+
+			boost::format test = boost::format("select time_begin from log_entry_%1% where id = %2%") % get_table_postfix(2009, i) % id;
+			conn.exec(test.str());	
+
+			if(res.size() == 0) {
+				BOOST_ERROR(" Record not found in the correct partition ");
+			}
+
 		} catch (Database::Exception &ex) {
 			std::cout << (boost::format("error when working with database (%1%) : %2%") % DB_CONN_STR % ex.what()).str();
 		}
-	}
-
-//	static std::list<ID> id_list;
-};
-
-// std::list<ID> MyFixture::id_list;
-
-
-BOOST_GLOBAL_FIXTURE( MyFixture );
-
+	}	
+		
+}
 
 BOOST_AUTO_TEST_CASE( long_property_name)
 {
@@ -327,20 +553,16 @@ BOOST_AUTO_TEST_CASE( without_properties )
 	BOOST_CHECK(id1 != 0);
 	BOOST_CHECK(test.update_event(id1));
 	BOOST_CHECK(test.update_event_close(id1, "ZZZZZZZZZZZZZZZZZZZZZ"));
-
-
 }
 
 BOOST_AUTO_TEST_CASE( service_types)
 {
-	//TODO this should be different.... probably
 	BOOST_TEST_MESSAGE(" Try to use all possible service types");
 
 	TestImplLog test(DB_CONN_STR);
 	for (int i=0;i<30;i++) {
 		BOOST_CHECK(test.new_event("111.222.111.222", (LogServiceType)i, "aaa"));
 	}
-	// TODO check database
 }
 
 BOOST_AUTO_TEST_CASE( invalid_ip)
@@ -401,10 +623,8 @@ BOOST_AUTO_TEST_CASE( long_strings )
 	std::auto_ptr<LogProperties> props, props1;
 	props = test.create_generic_properties(3, global_call_count++);
 
-	// TODO the first argument is not a valid IP address
 	id1 = test.new_event(std::string(100, 'X').c_str(), LC_PUBLIC_REQUEST, std::string(5000, 'X').c_str(), *props);
 	BOOST_CHECK(id1 == 0);
-	// the previous shoul've failed
 
 	id1 = test.new_event("122.123.124.125", LC_PUBLIC_REQUEST, std::string(5000, 'X').c_str(), *props);
 	BOOST_CHECK(id1 != 0);
@@ -444,7 +664,6 @@ BOOST_AUTO_TEST_CASE( normal_event )
 
 BOOST_AUTO_TEST_CASE( no_props )
 {
-	// TODO duplicity?
 	BOOST_TEST_MESSAGE(" Create an event without any properties");
 
 	LogProperties no_props;
@@ -519,8 +738,9 @@ BOOST_AUTO_TEST_CASE( close_record_0 )
 
 /* TODO
 
-BOOST_MESSAGE(" Add some child properties. ");
 BOOST_MESSAGE(" Distinct input and output properties. ");
 
 */
+
+}  // namespace TestLogd 
 
