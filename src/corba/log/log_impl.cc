@@ -36,6 +36,7 @@
 #include "log/logger.h"
 #include "log/context.h"
 
+/* TODO remove
 #ifdef HAVE_LOGGER
 	#define LOG_CTX_INIT()			\
 	Logging::Context::clear();		\
@@ -44,7 +45,7 @@
 #else
 #define LOG_CTX_INIT()
 #endif
-
+*/
 
 using namespace Database;
 
@@ -52,21 +53,31 @@ const std::string Impl_Log::LAST_PROPERTY_VALUE_ID = "select currval('log_proper
 const std::string Impl_Log::LAST_PROPERTY_NAME_ID = "select currval('log_property_name_id_seq'::regclass)";
 const std::string Impl_Log::LAST_ENTRY_ID = "select currval('log_entry_id_seq'::regclass)";
 const std::string Impl_Log::LAST_SESSION_ID = "select currval('log_session_id_seq'::regclass)";
+const int Impl_Log::MAX_NAME_LENGTH = 30;
+
+
+inline void log_ctx_init()
+{
+#ifdef HAVE_LOGGER
+	Logging::Context::clear();		
+	Logging::Context ctx("logd");	
+#endif
+}
 
 // Impl_Log ctor: connect to the database and fill property_names map
 Impl_Log::Impl_Log(const std::string database, const std::string &monitoring_hosts_file)
       throw (DB_CONNECT_FAILED) : db_manager(new ConnectionFactory(database))
 {
-    std::auto_ptr<Connection> conn;
-    std::ifstream file;
+    	std::auto_ptr<Connection> conn;
+    	std::ifstream file;
 
-  	LOG_CTX_INIT();
+  	log_ctx_init();
 
 	try {
 		conn.reset(db_manager.getConnection());
 	} catch (Database::Exception &ex) {
 #ifdef HAVE_LOGGER
-		LOGGER("fred-server").error( boost::format("cannot connect to database %1% : %2%") % database.c_str() % ex.what());
+		LOGGER("fred-server").error(boost::format("cannot connect to database %1% : %2%") % database.c_str() % ex.what());
 #endif
 	}
 #ifdef HAVE_LOGGER
@@ -98,15 +109,6 @@ Impl_Log::Impl_Log(const std::string database, const std::string &monitoring_hos
 		}
 	}
 
-	// TODO debug:
-	std::list<std::string>::iterator it;
-
-	std::cout << "List of monitoring IP addresses: " << std::endl;
-	for (it = monitoring_ips.begin(); it != monitoring_ips.end(); it++) {
-		std::cout << *it << std::endl;
-	}
-	std::cout << std::endl;
-
 	// now fill the property_names map:
 
 	try {
@@ -134,7 +136,7 @@ Impl_Log::Impl_Log(const std::string database, const std::string &monitoring_hos
 
 Impl_Log::~Impl_Log() {
   // db.Disconnect();
-  LOG_CTX_INIT()
+  log_ctx_init();
 
 #ifdef HAVE_LOGGER
   LOGGER("fred-server").notice("Impl_Log destructor");
@@ -144,9 +146,7 @@ Impl_Log::~Impl_Log() {
 // check if a log record with the specified ID exists and if it can be modified (time_end isn't set yet)
 bool Impl_Log::record_check(ID id, Connection &conn)
 {
-	std::ostringstream query;
-
-	query << "select time_end from log_entry where id=" << id;
+	boost::format query = boost::format("select time_end from log_entry where id=%1%") % id;
 	Result res = conn.exec(query.str());
 
 	// if there is no record with specified ID
@@ -168,22 +168,23 @@ bool Impl_Log::record_check(ID id, Connection &conn)
 }
 
 // find ID for the given name of a property
+// if the name is tool long, it's truncated to the maximal length allowed by the database
 ID Impl_Log::find_property_name_id(const std::string &name, Connection &conn)
 {
 	ID name_id;
-	std::ostringstream query;
 	std::map<std::string, ID>::iterator iter;
 
-	iter = property_names.find(name);
+	std::string name_trunc = name.substr(0, MAX_NAME_LENGTH);
+
+	iter = property_names.find(name_trunc);
 
 	if(iter != property_names.end()) {
 		name_id = iter->second;
 	} else {
 		// if the name isn't cached in the memory, try to find it in the database
-		std::string s_name = Util::escape(name);
+		std::string s_name = Util::escape(name_trunc);
 
-		query << "select id from log_property_name where name='" << s_name
-				<< "'";
+		boost::format query = boost::format("select id from log_property_name where name='%1%'") % s_name;
 		Result res = conn.exec(query.str());
 
 		if (res.size() > 0) {
@@ -191,21 +192,16 @@ ID Impl_Log::find_property_name_id(const std::string &name, Connection &conn)
 			name_id = res[0][0];
 		} else if (res.size() == 0) {
 			// if not, add it to the database
-			query.str("");
-			query << "insert into log_property_name (name) values ('" << s_name
-					<< "')";
-			conn.exec(query.str());
+			conn.exec( (boost::format("insert into log_property_name (name) values ('%1%')") % s_name).str() );
 
-			query.str("");
-			query << LAST_PROPERTY_NAME_ID;
-			res = conn.exec(query.str());
+			res = conn.exec(LAST_PROPERTY_NAME_ID);
 
 			name_id = res[0][0];
 		}
 
 		// now that we know the right database id of the name
 		// we can add it to the map
-		property_names[name] = name_id;
+		property_names[name_trunc] = name_id;
 	}
 
 	return name_id;
@@ -230,7 +226,6 @@ inline ID Impl_Log::find_last_log_entry_id(Connection &conn)
 void Impl_Log::insert_props(std::string entry_time, ID entry_id, const LogProperties& props, Connection &conn)
 {
 	std::string s_val;
-	std::ostringstream query;
 	ID name_id, last_id = 0;
 
 	if(props.length() == 0) {
@@ -241,7 +236,6 @@ void Impl_Log::insert_props(std::string entry_time, ID entry_id, const LogProper
 	s_val = Util::escape(props[0].value.c_str());
 	name_id = find_property_name_id(props[0].name, conn);
 
-	query.str("");
 	if (props[0].child) {
 		// the first property is set to child - this is an error
 #ifdef HAVE_LOGGER
@@ -249,9 +243,9 @@ void Impl_Log::insert_props(std::string entry_time, ID entry_id, const LogProper
 #endif
 
 	}
-	query   << "insert into log_property_value (entry_time_begin, entry_id, name_id, value, output, parent_id) values ('"
-			<< entry_time << "', " << entry_id << ", " << name_id << ", '" << s_val << "', "
-			<< (props[0].output ? "true" : "false") << ", null)";
+	boost::format query = boost::format("insert into log_property_value (entry_time_begin, entry_id, name_id, value, output, parent_id) values ('%1%', %2%, %3%, '%4%', %5%, %6%)")
+			% entry_time % entry_id % name_id % s_val % (props[0].output ? "true" : "false") % "null" ;
+
 	conn.exec(query.str());
 
 	// obtain last_id
@@ -263,19 +257,15 @@ void Impl_Log::insert_props(std::string entry_time, ID entry_id, const LogProper
 		s_val = Util::escape(props[i].value.c_str());
 		name_id = find_property_name_id(props[i].name, conn);
 
-		query.str("");
 		if(props[i].child) {
 			// child property set and parent id available
-			query   << "insert into log_property_value (entry_time_begin, entry_id, name_id, value, output, parent_id) values ('"
-					<< entry_time << "', " << entry_id << ", " << name_id << ", '" << s_val << "', "
-					<< (props[i].output ? "true" : "false") << ", " << last_id << ")";
+			query % entry_time % entry_id % name_id % s_val % (props[i].output ? "true" : "false") % last_id;
 
 			conn.exec(query.str());
 		} else {
 			// not a child property
-			query   << "insert into log_property_value (entry_time_begin, entry_id, name_id, value, output, parent_id) values ('"
-					<< entry_time << "', " << entry_id << ", " << name_id << ", '" << s_val << "', "
-					<< (props[i].output ? "true" : "false") << ", null)";
+			query % entry_time % entry_id % name_id % s_val % (props[i].output ? "true" : "false") % "null";
+
 			conn.exec(query.str());
 
 			last_id = find_last_property_value_id(conn);
@@ -287,9 +277,8 @@ void Impl_Log::insert_props(std::string entry_time, ID entry_id, const LogProper
 ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const char *content_in, const LogProperties& props, int action_type)
 {
 	std::auto_ptr<Connection> conn(db_manager.getConnection());
-  	LOG_CTX_INIT()
+  	log_ctx_init();
 
-	std::ostringstream query;
 	std::string time, s_sourceIP, s_content;
 	ID entry_id;
 	boost::posix_time::ptime micro_time;
@@ -301,15 +290,28 @@ ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const cha
 
 	str_time = boost::posix_time::to_tm(micro_time);
 
-	/* TODO - this should be used
+#ifdef _TESTING_
+	/* TODO -this is only a test.... */
+	check_and_create_all(*conn, (1900 + str_time.tm_year), str_time.tm_mday);
+
+/*
+	if(!exist_tables(*conn, (1900 + str_time.tm_year), str_time.tm_mday)) {
+		// TODO this doesn't work (especially for testing) - these two functions are not compatible
+		create_table_set(*conn, (1900 + str_time.tm_year), str_time.tm_mday);
+	}
+*/
+#else 
+	// TODO - this should be used
+	check_and_create_all(*conn, (1900 + str_time.tm_year), str_time.tm_mon); 
+
+/*
 	if(!exist_tables(*conn, (1900 + str_time.tm_year), str_time.tm_mon)) {
+		// TODO this doesn't work (especially for testing) - these two functions are not compatible
 		create_table_set(*conn, (1900 + str_time.tm_year), str_time.tm_mon);
 	}
 */
-	/* TODO -this is only a test.... */
-	if(!exist_tables(*conn, (1900 + str_time.tm_year), str_time.tm_mday)) {
-			create_table_set(*conn, (1900 + str_time.tm_year), str_time.tm_mday);
-	}
+
+#endif
 
 	std::list<std::string>::iterator it;
 
@@ -322,23 +324,16 @@ ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const cha
 	}
 
 	try {
+		boost::format insert_log_entry;
 		// Transaction t(conn);
 		if(sourceIP != NULL && sourceIP[0] != '\0') {
 			// make sure these values can be safely used in an SQL statement
 			s_sourceIP = Util::escape(std::string(sourceIP));
-			// TODO is_monitoring
-			query << "insert into log_entry (time_begin, source_ip, service, action_type, is_monitoring) values ('"
-				<< time << "', '" << s_sourceIP << "', " << service << ", " << action_type << ", " << monitoring << ")";
+			insert_log_entry = boost::format("insert into log_entry (time_begin, source_ip, service, action_type, is_monitoring) values ('%1%', '%2%', %3%, %4%, %5%) ") % time % s_sourceIP % service % action_type % monitoring;
 		} else {
-			// TODO is_monitoring
-			query << "insert into log_entry (time_begin, service, action_type, is_monitoring) values ('"
-				<< time << "', " << service << ", " << action_type << ", " << monitoring << ")";
+			insert_log_entry = boost::format("insert into log_entry (time_begin, service, action_type, is_monitoring) values ('%1%', %2%, %3%, %4%) ") % time % service % action_type % monitoring;
 		}
-		conn->exec(query.str());
-
-		// get the id of the new entry
-		query.str("");
-		// query << "select id from log_entry where time_begin='" << time << "'";
+		conn->exec(insert_log_entry.str());
 
 		entry_id = find_last_log_entry_id(*conn);
 
@@ -350,15 +345,14 @@ ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const cha
 	}
 
 	try {
-		// "select
-
+		boost::format insert_raw;
 		// insert into log_raw_content
 		if(content_in != NULL && content_in[0] != '\0') {
 			s_content = Util::escape(std::string(content_in));
-			query.str("");
-			query << "insert into log_raw_content (entry_time_begin, entry_id, content, is_response) values ('" << time << "', " << entry_id << ", E'" << s_content << "', false)";
+		
+			insert_raw = boost::format("insert into log_raw_content (entry_time_begin, entry_id, content, is_response) values ('%1%', %2%, E'%3%', %4%)") % time % entry_id % s_content % "false";
 
-			conn->exec(query.str());
+			conn->exec(insert_raw.str());
 		}
 
 		// inserting properties
@@ -378,16 +372,17 @@ ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const cha
 bool Impl_Log::i_update_event(ID id, const LogProperties &props)
 {
 	std::auto_ptr<Connection> conn(db_manager.getConnection());
-	std::ostringstream query;
 
-  	LOG_CTX_INIT()
+  	log_ctx_init();
 
 	try {
 		// perform check
 		if (!record_check(id, *conn)) return false;
 
 		// TODO this is temporary workaround for partitioing
-		query << "select time_begin from log_entry where id = " << id;
+		//  - we need the time_begin of the entry in question in order for log_property_value to find the right partition
+		//  or do it in some other way
+		boost::format query = boost::format("select time_begin from log_entry where id = %1%") % id;
 		Result res = conn->exec(query.str());
 
 		if(res.size() == 0) {
@@ -413,9 +408,8 @@ bool Impl_Log::i_update_event_close(ID id, const char *content_out, const LogPro
 {
 	std::auto_ptr<Connection> conn(db_manager.getConnection());
 
-	LOG_CTX_INIT()
+	log_ctx_init();
 
-	std::ostringstream query;
 	std::string s_content, time;
 
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
@@ -425,10 +419,9 @@ bool Impl_Log::i_update_event_close(ID id, const char *content_out, const LogPro
 		if (!record_check(id, *conn)) return false;
 
 		// TODO this is temporary workaround for partitioing
-		query << "select time_begin from log_entry where id = " << id;
-		Result res = conn->exec(query.str());
+		boost::format select = boost::format("select time_begin from log_entry where id = %1%") % id;
+		Result res = conn->exec(select.str());
 
-		query.str("");
 		if(res.size() == 0) {
 #ifdef HAVE_LOGGER
 			LOGGER("fred-server").error("Impossible has just happened... ");
@@ -436,16 +429,14 @@ bool Impl_Log::i_update_event_close(ID id, const char *content_out, const LogPro
 		}
 		// end of TODO
 
-		query << "update log_entry set time_end=E'" << time << "' where id=" << id;
-		conn->exec(query.str());
+		boost::format update = boost::format("update log_entry set time_end=E'%1%' where id=%2%") % time % id;
+		conn->exec(update.str());
 
 		if(content_out != NULL) {
 			s_content = Util::escape(std::string(content_out));
 
-			query.str("");
-
-			query << "insert into log_raw_content (entry_time_begin, entry_id, content, is_response) values ('" << (std::string)res[0][0] << "', " << id << ", E'" << s_content << "', true)";
-			conn->exec(query.str());
+			boost::format insert = boost::format( "insert into log_raw_content (entry_time_begin, entry_id, content, is_response) values ('%1%', %2%, E'%3%', %4%) ") % (std::string)res[0][0] % id % s_content % "true";
+			conn->exec(insert.str());
 		}
 
 		// inserting properties
@@ -463,9 +454,8 @@ bool Impl_Log::i_update_event_close(ID id, const char *content_out, const LogPro
 ID Impl_Log::i_new_session(Languages lang, const char *name, const char *clTRID)
 {
 	std::auto_ptr<Connection> conn(db_manager.getConnection());
-	LOG_CTX_INIT()
+	log_ctx_init();
 
-	std::ostringstream query;
 	std::string s_name, s_clTRID, time;
 	ID id;
 
@@ -483,25 +473,25 @@ ID Impl_Log::i_new_session(Languages lang, const char *name, const char *clTRID)
 #endif
 		return 0;
 	}
-
+	
+	boost::format insert;
 	if (clTRID != NULL && *clTRID != '\0') {
 		s_clTRID = Util::escape(clTRID);
-		query << "insert into log_session (name, login_date, login_TRID) values (E'"
-		<< s_name << "', '" << time << "', E'" << s_clTRID << "') ";
+		insert = boost::format ("insert into log_session (name, login_date, login_TRID) values (E'%1%', '%2%', E'%3%')")
+				% s_name % time % s_clTRID;
 	} else {
-		query << "insert into log_session (name, login_date) values (E'" << s_name << "', '" << time << "') ";
+		insert = boost::format ("insert into log_session (name, login_date) values (E'%1%', '%2%')") % s_name % time;
 	}
 
 	try {
-		conn->exec(query.str());
+		conn->exec(insert.str());
 
 		Result res = conn->exec(LAST_SESSION_ID);
 
 		id = res[0][0];
 
 		if (lang == CS) {
-			query.str("");
-			query << "update log_session set lang = 'cs' where id=" << id;
+			boost::format query = boost::format("update log_session set lang = 'cs' where id=%1%") % id;
 			conn->exec(query.str());
 		}
 
@@ -511,7 +501,6 @@ ID Impl_Log::i_new_session(Languages lang, const char *name, const char *clTRID)
 #endif
 		return 0;
 	}
-
 	return id;
 
 }
@@ -520,16 +509,14 @@ bool Impl_Log::i_end_session(ID id, const char *clTRID)
 {
 	std::auto_ptr<Connection> conn(db_manager.getConnection());
 
-	LOG_CTX_INIT()
-
-	std::ostringstream query;
+	log_ctx_init();
 	std::string  time;
 
 #ifdef HAVE_LOGGER
 	LOGGER("fred-server").notice(boost::format("end_session: session_id -> [%1%] clTRID [%2%]") % id  % clTRID );
 #endif
 
-	query << "select logout_date from log_session where id=" << id;
+	boost::format query = boost::format("select logout_date from log_session where id=%1%") % id;
 
 	try {
 		Result res = conn->exec(query.str());
@@ -548,19 +535,19 @@ bool Impl_Log::i_end_session(ID id, const char *clTRID)
 			return false;
 		}
 
-		query.str("");
+		boost::format update;
 		time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
 
 		if (clTRID != NULL && clTRID != '\0') {
 			std::string s_clTRID;
 			s_clTRID = Util::escape(clTRID);
-			query << "update log_session set (logout_date, logout_TRID) = ('" <<
-			time << "', E'" << s_clTRID << "') where id=" << id;
+			update = boost::format("update log_session set (logout_date, logout_TRID) = ('%1%', E'%2%') where id=%3%")
+					% time % s_clTRID % id;
 		} else {
-			query << "update log_session set logout_date = '" << time << "' where id=" << id;
+			update = boost::format("update log_session set logout_date = '%1%' where id=%2%") % time % id;
 		}
 
-		conn->exec(query.str());
+		conn->exec(update.str());
 	} catch (Database::Exception &ex) {
 #ifdef HAVE_LOGGER
 		LOGGER("fred-server").error(ex.what());

@@ -14,7 +14,6 @@
 
 using namespace Database;
 
-
 // some CORBA types redefined here
 // to get rid of dependence on CORBA
 // .... NO we can use database types instead
@@ -119,10 +118,12 @@ private:
   inline Database::ID find_last_property_value_id(Connection &conn);
   inline Database::ID find_last_log_entry_id(Connection &conn);
 
+public:
   static const std::string LAST_PROPERTY_VALUE_ID;
   static const std::string LAST_PROPERTY_NAME_ID;
   static const std::string LAST_ENTRY_ID;
   static const std::string LAST_SESSION_ID;
+  static const int MAX_NAME_LENGTH;
 
 };
 
