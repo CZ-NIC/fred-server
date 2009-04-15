@@ -1482,45 +1482,51 @@ public:
     } // InvoiceImpl::getInvoicePrefix()
 
     /*! create new invoice */
-    bool createNewInvoice(Database::Transaction &transaction)
+    bool createNewInvoice(Database::Transaction &transaction, int recordsCount)
     {
         LOGGER(PACKAGE).debug(
                 "[CALL] Register::Invoicing::InvoiceImpl::createNewInvoice("
-                "Database::Transaction)");
-        if (!getInvoicePrefix(transaction)) {
-            return false;
+                "Database::Transaction, int)");
+        int invoiceId = 0;
+
+        if (recordsCount != 0) {
+            if (!getInvoicePrefix(transaction)) {
+                return false;
+            }
+            Database::InsertQuery insertInvoice("invoice");
+            insertInvoice.add("zone", getZone());
+            insertInvoice.add("crdate", getCrTime());
+            insertInvoice.add("taxdate", getTaxDate());
+            insertInvoice.add("prefix", getNumber());
+            insertInvoice.add("registrarid", getRegistrar());
+            insertInvoice.add("prefix_type", getInvoicePrefixTypeId());
+            insertInvoice.add("file", Database::ID());
+            insertInvoice.add("filexml", Database::ID());
+            insertInvoice.add("price", Database::Value(getPrice()));
+            insertInvoice.add("vat", getSystemVAT());
+            // must insert NULL value
+            insertInvoice.add("credit", Database::Value());
+            try {
+                transaction.exec(insertInvoice);
+            } catch (Database::Exception &ex) {
+                ERROR(boost::format("%1%") % ex.what());
+                return false;
+            } catch (std::exception &ex) {
+                ERROR(boost::format("%1%") % ex.what());
+                return false;
+            }
+            Database::Sequence seq(*m_conn, "invoice_id_seq");
+            invoiceId = seq.getCurrent();
         }
-        Database::InsertQuery insertInvoice("invoice");
-        insertInvoice.add("zone", getZone());
-        insertInvoice.add("crdate", getCrTime());
-        insertInvoice.add("taxdate", getTaxDate());
-        insertInvoice.add("prefix", getNumber());
-        insertInvoice.add("registrarid", getRegistrar());
-        insertInvoice.add("prefix_type", getInvoicePrefixTypeId());
-        insertInvoice.add("file", Database::ID());
-        insertInvoice.add("filexml", Database::ID());
-        insertInvoice.add("price", Database::Value(getPrice()));
-        insertInvoice.add("vat", getSystemVAT());
-        // must insert NULL value
-        insertInvoice.add("credit", Database::Value());
-        try {
-            transaction.exec(insertInvoice);
-        } catch (Database::Exception &ex) {
-            ERROR(boost::format("%1%") % ex.what());
-            return false;
-        } catch (std::exception &ex) {
-            ERROR(boost::format("%1%") % ex.what());
-            return false;
-        }
-        Database::Sequence seq(*m_conn, "invoice_id_seq");
-        int invoiceId = seq.getCurrent();
 
         Database::InsertQuery insertGeneration("invoice_generation");
         insertGeneration.add("fromdate", getFromDate());
         insertGeneration.add("todate", getToDate());
         insertGeneration.add("registrarid", getRegistrar());
         insertGeneration.add("zone", getZone());
-        insertGeneration.add("invoiceid", invoiceId);
+        if (invoiceId != 0) {
+            insertGeneration.add("invoiceid", invoiceId);
+        }
         try {
             transaction.exec(insertGeneration);
         } catch (Database::Exception &ex) {
@@ -1842,11 +1848,6 @@ public:
             ERROR("cannot get count of records to invoicing");
             return false;
         }
-        if (recordsCount == 0) {
-            LOGGER(PACKAGE).warning(boost::format("%1%: no records to invoice")
-                    % getRegistrarName());
-            return true;
-        }
         if (!getRecordsPrice()) {
             ERROR("cannot get price of records to invoicing");
             return false;
@@ -1858,7 +1859,7 @@ public:
                 % getPrice());
 
         Database::Transaction transaction(*m_conn);
-        if (!createNewInvoice(transaction)) {
+        if (!createNewInvoice(transaction, recordsCount)) {
             ERROR("cannot create new invoice");
             return false;
         }
@@ -1866,8 +1867,10 @@ public:
             updateInvoiceObjectRegistry(transaction);
         }
         updateRegistrarInvoice(transaction);
-        std::vector<int> numbers = getAccountInvoicesNumbers(transaction);
-        updateInvoiceCreditPaymentMap(numbers, transaction);
+        if (recordsCount > 0) {
+            std::vector<int> numbers = getAccountInvoicesNumbers(transaction);
+            updateInvoiceCreditPaymentMap(numbers, transaction);
+        }
         transaction.commit();
         return true;
     } // InvoiceImpl::insertAccount()
