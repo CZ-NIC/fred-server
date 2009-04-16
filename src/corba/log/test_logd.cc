@@ -17,7 +17,6 @@ using namespace Database;
 namespace TestLogd {
 
 // TODO : to be removed
-
 #ifdef _TESTING_
 	const int MONTHS_COUNT  = 30;
 #else 
@@ -108,25 +107,47 @@ inline bool has_content(const char *str) {
 	return (str && *str!= '\0');
 }
 
+boost::format get_table_postfix_for_now()
+{
+	boost::posix_time::ptime utime = microsec_clock::universal_time();
+	tm str_time = boost::posix_time::to_tm(utime);
+
+#ifdef _TESTING_
+	/* TODO -this is only a test.... */
+	return get_table_postfix((1900 + str_time.tm_year), str_time.tm_mday);
+#else 
+	return get_table_postfix((1900 + str_time.tm_year), str_time.tm_mon);
+#endif
+
+}
+
 struct MyFixture;
 
 LogProperties TestImplLog::no_props;
 
 
-// TODO maybe we should check if the correct partition was used....
 Database::ID TestImplLog::new_session(Languages lang, const char *name, const char *clTRID)
 {
 	Database::ID ret = logd.i_new_session(lang, name, clTRID);
 
 	if(ret == 0) return 0;
 
-	Result res = conn.exec((boost::format("select lang, name, login_TRID from log_session where id=%1%") % ret).str());
+	// first check if the correct partition was used ...
+	boost::format test = boost::format("select login_date from log_session_%1% where id = %2%") % get_table_postfix_for_now() % ret;
+	Result res = conn.exec(test.str());	
+
+	if(res.size() == 0) {
+		BOOST_ERROR(" Record not found in the correct partition ");
+	}
+
+	// now do a regular select from log_session
+	res = conn.exec((boost::format("select lang, name, login_TRID from log_session where id=%1%") % ret).str());
 
 	if (res.size() != 1) {
 		if (res.size() == 0) {
-			BOOST_ERROR(boost::format(" Record created with new_event with id %1% doesn't exist in the database! ") % ret);
+			BOOST_ERROR(boost::format(" Record created with new_session with id %1% doesn't exist in the database! ") % ret);
 		} else if(res.size() > 1) {
-			BOOST_ERROR(boost::format(" Multiple records with id %1% after call to new_event! ") % ret);
+			BOOST_ERROR(boost::format(" Multiple records with id %1% after call to new_session! ") % ret);
 		}
 	} else {
 		if(lang == CS) {
@@ -166,7 +187,6 @@ bool TestImplLog::end_session(Database::ID id, const char *clTRID)
 	return ret;
 }
 
-// TODO maybe we should check if it was inserted into the correct partition 
 Database::ID TestImplLog::new_event(const char *ip_addr, const LogServiceType serv, const char * content_in, const LogProperties &props)
 {
 	Database::ID ret = logd.i_new_event(ip_addr, serv, content_in, props, UNKNOWN_ACTION);
@@ -174,8 +194,19 @@ Database::ID TestImplLog::new_event(const char *ip_addr, const LogServiceType se
 
 	if(ret == 0) return 0;
 
+	// first check if the correct partition was used ...
+
+	boost::format test = boost::format("select time_begin from log_entry_%1% where id = %2%") % get_table_postfix_for_now() % ret;
+	Result res = conn.exec(test.str());	
+
+	if(res.size() == 0) {
+		BOOST_ERROR(" Record not found in the correct partition ");
+	}
+
+	// now a regular select
+
 	query = boost::format ( "select source_ip, service, raw.content from log_entry join log_raw_content raw on raw.entry_id=id where id=%1%") % ret;
-	Result res = conn.exec(query.str());
+	res = conn.exec(query.str());
 
 	if (res.size() != 1) {
 		res = conn.exec( (boost::format("select source_ip, service from log_entry where id=%1%") % ret).str() );
@@ -485,7 +516,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 			id = res[0][0];
 
 			boost::format test = boost::format("select time_begin from log_entry_%1% where id = %2%") % get_table_postfix(2009, i) % id;
-			conn.exec(test.str());	
+			res = conn.exec(test.str());	
 
 			if(res.size() == 0) {
 				BOOST_ERROR(" Record not found in the correct partition ");
@@ -736,11 +767,6 @@ BOOST_AUTO_TEST_CASE( close_record_0 )
 
 }
 
-/* TODO
-
-BOOST_MESSAGE(" Distinct input and output properties. ");
-
-*/
 
 }  // namespace TestLogd 
 
