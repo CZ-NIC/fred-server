@@ -33,6 +33,12 @@
 
 class MessageUpdateChanges {
 public:
+  class NoChangesFound { };
+
+
+  typedef std::map<std::string, std::pair<std::string, std::string> >  ChangesMap;
+
+
   MessageUpdateChanges(Database::Manager *_dbm,
                        Register::Manager *_rm, 
                        const unsigned long long &_object_id,
@@ -50,13 +56,7 @@ public:
   }
 
 
-  std::string compose() const;
-
-
-  class NoChangesFound { };
-
-
-  typedef std::map<std::string, std::pair<std::string, std::string> >  changes_map;
+  MessageUpdateChanges::ChangesMap compose() const;
 
 
 private:
@@ -67,39 +67,39 @@ private:
 
  
   
-  void _collectContactChanges(changes_map &_changes) const;
+  void _collectContactChanges(ChangesMap &_changes) const;
 
 
-  void _collectDomainChanges(changes_map &_changes) const;
+  void _collectDomainChanges(ChangesMap &_changes) const;
 
 
-  void _collectNSSetChanges(changes_map &_changes) const;
+  void _collectNSSetChanges(ChangesMap &_changes) const;
 
 
-  void _collectKeySetChanges(changes_map &_changes) const;
+  void _collectKeySetChanges(ChangesMap &_changes) const;
 
 
-  void _diffObject(changes_map &_changes, 
+  void _diffObject(ChangesMap &_changes, 
                    const Register::Object::Object *_prev,
                    const Register::Object::Object *_act) const;
 
 
-  void _diffContact(changes_map &_changes, 
+  void _diffContact(ChangesMap &_changes, 
                     const Register::Contact::Contact *_prev,
                     const Register::Contact::Contact *_act) const;
   
 
-  void _diffDomain(changes_map &_changes, 
+  void _diffDomain(ChangesMap &_changes, 
                    const Register::Domain::Domain *_prev,
                    const Register::Domain::Domain *_act) const;
 
 
-  void _diffNSSet(changes_map &_changes, 
+  void _diffNSSet(ChangesMap &_changes, 
                   const Register::NSSet::NSSet *_prev,
                   const Register::NSSet::NSSet *_act) const;
 
 
-  void _diffKeySet(changes_map &_changes, 
+  void _diffKeySet(ChangesMap &_changes, 
                    const Register::KeySet::KeySet *_prev,
                    const Register::KeySet::KeySet *_act) const; 
 

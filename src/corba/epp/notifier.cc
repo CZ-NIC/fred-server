@@ -110,10 +110,8 @@ void EPPNotifier::constructMessages() {
                 << db->GetValueFromTable("registrar", "url", "id",registrarID)
                 << ")";
   params["registrar"] = registrarInfo.str(); // registrar name and url
-  params["handle"] = db->GetValueFromTable("object_registry", "name", "id",
-      objectID); // name of the object
-  params["type"] = db->GetValueFromTable("object_registry", "type", "id",
-      objectID); // type 1 contact 2 nsset 3 domain 4 keyset
+  params["handle"] = db->GetValueFromTable("object_registry", "name", "id", objectID); // name of the object
+  params["type"] = db->GetValueFromTable("object_registry", "type", "id", objectID);   // type 1 contact 2 nsset 3 domain 4 keyset
 
   if (rm_ && (enum_action == EPP_ContactUpdate ||
               enum_action == EPP_DomainUpdate  ||
@@ -123,8 +121,14 @@ void EPPNotifier::constructMessages() {
       Database::OldDBManager dbm(db);
 
       MessageUpdateChanges changes(&dbm, rm_, objectID, enum_action);
-      params["changes"] = changes.compose();
-      LOGGER(PACKAGE).debug(boost::format("EPPNotifier: update changes\n%1%") % params["changes"]);
+      MessageUpdateChanges::ChangesMap values = changes.compose();
+
+      MessageUpdateChanges::ChangesMap::const_iterator it = values.begin();
+      for (; it != values.end(); ++it) {
+        params["changes." + it->first] = "1";
+        params["changes." + it->first + ".old"] = it->second.first;
+        params["changes." + it->first + ".new"] = it->second.second;
+      }
     }
     catch (MessageUpdateChanges::NoChangesFound &ex) {
       LOGGER(PACKAGE).error(boost::format("EPPNotifier: update changes - no history found (object_id=%1%)") % objectID);
