@@ -40,7 +40,7 @@ void compare_and_fill_admin_contacts(MessageUpdateChanges::ChangesMap &_changes,
     for (unsigned int i = 0; i < _act->getAdminCount(); ++i)
       act_admins  += _act->getAdminHandleByIdx(i) + " ";
 
-    _changes[_field_prefix + "admin-c"] = std::make_pair(prev_admins, act_admins);
+    _changes[_field_prefix + ".admin_c"] = std::make_pair(prev_admins, act_admins);
   }
 }
 
@@ -66,7 +66,7 @@ void compare_and_fill_temp_contacts(MessageUpdateChanges::ChangesMap &_changes,
     for (unsigned int i = 0; i < _act->getAdminCount(2); ++i)
       act_admins  += _act->getAdminHandleByIdx(i, 2) + " ";
 
-    _changes[_field_prefix + "temp-c"] = std::make_pair(prev_admins, act_admins);
+    _changes[_field_prefix + ".temp_c"] = std::make_pair(prev_admins, act_admins);
   }
 }
 
@@ -93,6 +93,79 @@ std::string nsset_host_list_to_simple_string(const Register::NSSet::NSSet *_nsse
 
   return ret;
 }
+
+
+std::string dsrecord_to_simple_string(const Register::KeySet::DSRecord *_ds)
+{
+  std::string ret;
+
+  ret += "(keytag: "       + stringify(_ds->getKeyTag())
+      + " algorithm: "     + stringify(_ds->getAlg())
+      + " digest type: "   + stringify(_ds->getDigestType())
+      + " digest: "        + stringify(_ds->getDigest())
+      + " max sig. life: " + stringify(_ds->getMaxSigLife())
+      + ")";
+
+  return ret;
+}
+
+
+std::string dsrecord_list_to_simple_string(const Register::KeySet::KeySet *_keyset)
+{
+  std::string ret;
+
+  for (unsigned int i = 0; i < _keyset->getDSRecordCount(); ++i) {
+    const Register::KeySet::DSRecord *ds = _keyset->getDSRecordByIdx(i);
+    
+    if (!ret.empty())
+      ret += " ";
+
+    ret += "(keytag: "       + stringify(ds->getKeyTag())
+        + " algorithm: "     + stringify(ds->getAlg())
+        + " digest type: "   + stringify(ds->getDigestType())
+        + " digest: "        + stringify(ds->getDigest())
+        + " max sig. life: " + stringify(ds->getMaxSigLife())
+        + ")";
+  }
+
+  return ret;
+}
+
+
+std::string dnskey_to_simple_string(const Register::KeySet::DNSKey *_dns)
+{
+  std::string ret;
+
+  ret += "(flags: "     + stringify(_dns->getFlags())
+      + " protocol: "   + stringify(_dns->getProtocol())
+      + " algorithm: "  + stringify(_dns->getAlg())
+      + " key: "        + stringify(_dns->getKey())
+      + ")";
+
+  return ret;
+}
+
+
+std::string dnskey_list_to_simple_string(const Register::KeySet::KeySet *_keyset)
+{
+  std::string ret;
+
+  for (unsigned int i = 0; i < _keyset->getDNSKeyCount(); ++i) {
+    const Register::KeySet::DNSKey *dns = _keyset->getDNSKeyByIdx(i);
+    
+    if (!ret.empty())
+      ret += " ";
+
+    ret += "(flags: "     + stringify(dns->getFlags())
+        + " protocol: "   + stringify(dns->getProtocol())
+        + " algorithm: "  + stringify(dns->getAlg())
+        + " key: "        + stringify(dns->getKey())
+        + ")";
+  }
+
+  return ret;
+}
+
 
 
 
@@ -346,5 +419,53 @@ void MessageUpdateChanges::_diffKeySet(ChangesMap &_changes,
     _diffObject(_changes, upcast_prev, upcast_act);
 
   compare_and_fill_admin_contacts(_changes, "keyset", _prev, _act);
+
+  try {
+    bool ds_changed = (_prev->getDSRecordCount() != _act->getDSRecordCount());
+    for (unsigned int i = 0; ds_changed != true && i < _prev->getDSRecordCount(); ++i) {
+      if (*(_prev->getDSRecordByIdx(i)) != *(_act->getDSRecordByIdx(i))) {
+        ds_changed = true;
+        break;
+      }
+    }
+    if (ds_changed) {
+      for (unsigned int j = 0; j < _prev->getDSRecordCount(); ++j) {
+        std::string ds_str = dsrecord_to_simple_string(_prev->getDSRecordByIdx(j));
+        _changes["keyset.ds." + stringify(j)].first = ds_str;
+      }
+      for (unsigned int j = 0; j < _act->getDSRecordCount(); ++j) {
+        std::string ds_str = dsrecord_to_simple_string(_act->getDSRecordByIdx(j));
+        _changes["keyset.ds." + stringify(j)].second = ds_str;
+      }
+    }
+  }
+  catch (Register::NOT_FOUND &_ex) {
+    // report code error
+  }
+
+  try {
+    bool key_changed = (_prev->getDNSKeyCount() != _act->getDNSKeyCount());
+    for (unsigned int i = 0; key_changed != true && i < _prev->getDNSKeyCount(); ++i) {
+      if (*(_prev->getDNSKeyByIdx(i)) != *(_act->getDNSKeyByIdx(i))) {
+        key_changed = true;
+        break;
+      }
+    }
+    if (key_changed) {
+      for (unsigned int j = 0; j < _prev->getDNSKeyCount(); ++j) {
+        std::string dns_str = dnskey_to_simple_string(_prev->getDNSKeyByIdx(j));
+        _changes["keyset.dnskey." + stringify(j)].first = dns_str;
+      }
+      for (unsigned int j = 0; j < _act->getDNSKeyCount(); ++j) {
+        std::string dns_str = dnskey_to_simple_string(_act->getDNSKeyByIdx(j));
+        _changes["keyset.dnskey." + stringify(j)].second = dns_str;
+      }
+    }
+  }
+  catch (Register::NOT_FOUND &_ex) {
+    // report code error
+  }
+
+
 }
 

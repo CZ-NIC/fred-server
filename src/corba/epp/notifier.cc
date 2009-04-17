@@ -123,6 +123,8 @@ void EPPNotifier::constructMessages() {
       MessageUpdateChanges changes(&dbm, rm_, objectID, enum_action);
       MessageUpdateChanges::ChangesMap values = changes.compose();
 
+      params["changes"] = values.size() > 0 ? "1" : "0";
+
       MessageUpdateChanges::ChangesMap::const_iterator it = values.begin();
       for (; it != values.end(); ++it) {
         params["changes." + it->first] = "1";
