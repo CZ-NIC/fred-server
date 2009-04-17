@@ -6852,8 +6852,6 @@ ccReg_EPP_i::KeySetUpdate(
             for (int i = 0; i < (int)tech_add.length(); i++)
                 ntf->AddTechNew(techAdd[i]);
 
-            ntf->Send(); // send message to all technical contacts
-
             // adding tech contacts
             for (int i = 0; i < (int)tech_add.length(); i++) {
                 LOG(NOTICE_LOG, "INSERT add techid -> %d [%s]",
