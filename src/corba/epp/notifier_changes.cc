@@ -187,6 +187,28 @@ std::string dnskey_list_to_simple_string(const Register::KeySet::KeySet *_keyset
 }
 
 
+std::string address_to_simple_string(const Register::Contact::Contact *_contact)
+{
+  std::string ret;
+
+  ret += _contact->getStreet1();
+  if (!_contact->getStreet2().empty())
+    ret += ", " + _contact->getStreet2();
+  if (!_contact->getStreet3().empty())
+    ret += ", " + _contact->getStreet3();
+  if (!_contact->getProvince().empty())
+    ret += ", " + _contact->getProvince();
+  if (!_contact->getPostalCode().empty())
+    ret += ", " + _contact->getPostalCode();
+  if (!_contact->getCity().empty())
+    ret += ", " + _contact->getCity();
+  if (!_contact->getCountry().empty())
+    ret += ", " + _contact->getCountry();
+
+  return ret;
+}
+
+
 
 
 
@@ -363,6 +385,8 @@ void MessageUpdateChanges::_diffContact(ChangesMap &_changes,
   compare_and_fill(_changes, "contact.disclose.notify_email", _prev->getDiscloseNotifyEmail(), _act->getDiscloseNotifyEmail());
   compare_and_fill(_changes, "contact.disclose.ident", _prev->getDiscloseIdent(), _act->getDiscloseIdent());
   compare_and_fill(_changes, "contact.disclose.vat", _prev->getDiscloseVat(), _act->getDiscloseVat());
+
+  _changes["contact.address"] = make_pair(address_to_simple_string(_prev), address_to_simple_string(_act));
 }
 
 
