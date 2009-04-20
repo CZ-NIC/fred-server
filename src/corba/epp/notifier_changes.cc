@@ -71,6 +71,26 @@ void compare_and_fill_temp_contacts(MessageUpdateChanges::ChangesMap &_changes,
 }
 
 
+std::string nsset_host_to_simple_string(const Register::NSSet::Host *_host)
+{
+  std::string ret;
+  unsigned int addr_size = _host->getAddrCount();
+
+  std::string tmp = _host->getName();
+  if (addr_size > 0)
+    tmp += " ( ";
+  for (unsigned int i = 0; i < addr_size; ++i) {
+    tmp += _host->getAddrByIdx(i) + " ";
+  }
+  if (addr_size > 0)
+    tmp += ") ";
+
+  ret += tmp;
+
+  return ret;
+}
+
+
 std::string nsset_host_list_to_simple_string(const Register::NSSet::NSSet *_nsset)
 {
   std::string ret;
@@ -333,16 +353,16 @@ void MessageUpdateChanges::_diffContact(ChangesMap &_changes,
   compare_and_fill(_changes, "contact.ident", _prev->getSSN(), _act->getSSN());
   compare_and_fill(_changes, "contact.ident_type", _prev->getSSNType(), _act->getSSNType());
   compare_and_fill(_changes, "contact.vat", _prev->getVAT(), _act->getVAT());
-  compare_and_fill(_changes, "contact.disclose_name", _prev->getDiscloseName(), _act->getDiscloseName());
-  compare_and_fill(_changes, "contact.disclose_org", _prev->getDiscloseOrganization(), _act->getDiscloseOrganization());
-  compare_and_fill(_changes, "contact.disclose_email", _prev->getDiscloseEmail(), _act->getDiscloseEmail());
-  compare_and_fill(_changes, "contact.disclose_address", _prev->getDiscloseAddr(), _act->getDiscloseAddr());
-  compare_and_fill(_changes, "contact.disclose_telephone", _prev->getDiscloseTelephone(), _act->getDiscloseTelephone());
-  compare_and_fill(_changes, "contact.disclose_fax", _prev->getDiscloseFax(), _act->getDiscloseFax());
-  compare_and_fill(_changes, "contact.disclose_email", _prev->getDiscloseEmail(), _act->getDiscloseEmail());
-  compare_and_fill(_changes, "contact.disclose_notify_email", _prev->getDiscloseNotifyEmail(), _act->getDiscloseNotifyEmail());
-  compare_and_fill(_changes, "contact.disclose_ident", _prev->getDiscloseIdent(), _act->getDiscloseIdent());
-  compare_and_fill(_changes, "contact.disclose_vat", _prev->getDiscloseVat(), _act->getDiscloseVat());
+  compare_and_fill(_changes, "contact.disclose.name", _prev->getDiscloseName(), _act->getDiscloseName());
+  compare_and_fill(_changes, "contact.disclose.org", _prev->getDiscloseOrganization(), _act->getDiscloseOrganization());
+  compare_and_fill(_changes, "contact.disclose.email", _prev->getDiscloseEmail(), _act->getDiscloseEmail());
+  compare_and_fill(_changes, "contact.disclose.address", _prev->getDiscloseAddr(), _act->getDiscloseAddr());
+  compare_and_fill(_changes, "contact.disclose.telephone", _prev->getDiscloseTelephone(), _act->getDiscloseTelephone());
+  compare_and_fill(_changes, "contact.disclose.fax", _prev->getDiscloseFax(), _act->getDiscloseFax());
+  compare_and_fill(_changes, "contact.disclose.email", _prev->getDiscloseEmail(), _act->getDiscloseEmail());
+  compare_and_fill(_changes, "contact.disclose.notify_email", _prev->getDiscloseNotifyEmail(), _act->getDiscloseNotifyEmail());
+  compare_and_fill(_changes, "contact.disclose.ident", _prev->getDiscloseIdent(), _act->getDiscloseIdent());
+  compare_and_fill(_changes, "contact.disclose.vat", _prev->getDiscloseVat(), _act->getDiscloseVat());
 }
 
 
@@ -362,7 +382,7 @@ void MessageUpdateChanges::_diffDomain(ChangesMap &_changes,
   compare_and_fill(_changes, "domain.val_ex_date", _prev->getValExDate(), _act->getValExDate());
   compare_and_fill(_changes, "domain.registrant", _prev->getRegistrantHandle(), _act->getRegistrantHandle());
   compare_and_fill(_changes, "domain.nsset", _prev->getNSSetHandle(), _act->getNSSetHandle());
-  compare_and_fill(_changes, "domain.keyset_id", _prev->getKeySetId(), _act->getKeySetId());
+  compare_and_fill(_changes, "domain.keyset", _prev->getKeySetHandle(), _act->getKeySetHandle());
   compare_and_fill_admin_contacts(_changes, "domain", _prev, _act);
   compare_and_fill_temp_contacts(_changes, "domain", _prev, _act);
 }
@@ -393,10 +413,14 @@ void MessageUpdateChanges::_diffNSSet(ChangesMap &_changes,
       }
     }
     if (dns_changed) {
-      std::string prev_dns = nsset_host_list_to_simple_string(_prev);
-      std::string act_dns  = nsset_host_list_to_simple_string(_act);
-  
-      _changes["nsset.dns"] = make_pair(prev_dns, act_dns);
+      for (unsigned int j = 0; j < _prev->getHostCount(); ++j) {
+        std::string dns_str = nsset_host_to_simple_string(_prev->getHostByIdx(j));
+        _changes["nsset.dns." + stringify(j)].first = dns_str;
+      }
+      for (unsigned int j = 0; j < _act->getHostCount(); ++j) {
+        std::string dns_str = nsset_host_to_simple_string(_act->getHostByIdx(j));
+        _changes["nsset.dns." + stringify(j)].second = dns_str;
+      }
     }
   }
   catch (Register::NOT_FOUND &_ex) {
