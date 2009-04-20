@@ -504,6 +504,7 @@ private:
 
     std::vector<PaymentSourceImpl *>    m_sources;
     std::vector<PaymentActionImpl *>    m_actions;
+    typedef std::vector<PaymentActionImpl *>::iterator actionsIterator;
     std::vector<PaymentImpl>            m_paid;
 
     Database::ID            m_invoicePrefixTypeId;
@@ -686,7 +687,8 @@ public:
     } // InvoiceImpl::addSource()
     void addAction(PaymentActionImpl *action)
     {
-        m_actions.push_back(action);
+        actionsIterator it = m_actions.begin();
+        m_actions.insert(it, action);
         m_annualPartitioning.addAction(m_actions.back());
     }
     virtual void addAction(PaymentActionType action, Database::ID objectId,
@@ -1012,7 +1014,7 @@ public:
             ERROR(boost::format("%1%") % ex.what());
             throw;
         }
-        Database::Sequence seq(*m_conn, "invoice_object_registry");
+        Database::Sequence seq(*m_conn, "invoice_object_registry_id_seq");
         Database::ID id = seq.getCurrent();
         return id;
     } // InvoiceImpl::newInvoiceObjectRegistry()
@@ -1174,8 +1176,13 @@ public:
             return false;
         }
 
-        Database::ID invoiceObjectRegistryId = newInvoiceObjectRegistry(
-                transaction);
+        Database::ID invoiceObjectRegistryId;
+        try {
+            invoiceObjectRegistryId = newInvoiceObjectRegistry(transaction);
+        } catch (...) {
+            ERROR("newInvoiceObjectRegistry failed");
+            return false;
+        }
         std::vector<Database::Money> vec_payments = countPayments(vec_money, price);
         if (vec_payments.empty()) {
             return false;
