@@ -57,6 +57,7 @@
 #include "register/keyset.h"
 #include "register/info_buffer.h"
 #include "register/poll.h"
+#include "register/invoice.h"
 #include <memory>
 #include "tech_check.h"
 
@@ -66,6 +67,8 @@
 // logger
 #include "log/logger.h"
 #include "log/context.h"
+
+#include "db/manager_old_db.h"
 
 #define FLAG_serverDeleteProhibited 1
 #define FLAG_serverRenewProhibited 2
@@ -3717,7 +3720,6 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
                                 ccReg::nsset_tech, i, REASON_MSG_DUPLICITY_CONTACT);
                     }
                 }
-
             }
         }
     }
@@ -5397,19 +5399,24 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                                 }
 
                             }
-
-                            //  billing credit from and save for invoicing
-                            // first operation billing domain-create
-                            if (action.getDB()->BillingCreateDomain(action.getRegistrar(), zone, id) == false)
-                                code = COMMAND_BILLING_FAILURE;
-                            else
-                                // next operation billing  domain-renew save Exdate
-                                if (action.getDB()->BillingRenewDomain(action.getRegistrar(), zone, id, period_count,
-                                            exDate) == false)
-                                    code = COMMAND_BILLING_FAILURE;
-                                else if (action.getDB()->SaveDomainHistory(id) ) // if is ok save to history
-                                    if (action.getDB()->SaveObjectCreate(id) )
+                            std::auto_ptr<Database::OldDBManager> dbMan(
+                                    new Database::OldDBManager(action.getDB()));
+                            std::auto_ptr<Register::Invoicing::Manager> invMan(
+                                    Register::Invoicing::Manager::create(dbMan.get()));
+                            std::auto_ptr<Register::Invoicing::Invoice> invoice(
+                                    invMan->createInvoice(Register::Invoicing::IT_NONE));
+                            if (invoice->domainBilling(zone, action.getRegistrar(),
+                                        id, Database::Date(std::string(exDate)), period_count)) {
+                                if (action.getDB()->SaveDomainHistory(id)) {
+                                    if (action.getDB()->SaveObjectCreate(id)) {
                                         code = COMMAND_OK;
+                                    }
+                                } else {
+                                    code = COMMAND_FAILED;
+                                }
+                            } else {
+                                code = COMMAND_BILLING_FAILURE;
+                            }
 
                         } else
                             code = COMMAND_FAILED;
