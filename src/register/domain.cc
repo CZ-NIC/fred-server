@@ -716,7 +716,7 @@ public:
           Database::ID domain_id        = *(++col);
           std::string  keyset_handle    = *(++col);
 
-          DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findHistoryIDSequence(domain_id));
+          DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findHistoryIDSequence(domain_historyid));
           if (domain_ptr)
               domain_ptr->addKeySetHandle(keyset_handle);
       }
