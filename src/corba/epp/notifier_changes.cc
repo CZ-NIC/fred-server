@@ -92,30 +92,6 @@ std::string nsset_host_to_simple_string(const Register::NSSet::Host *_host)
 }
 
 
-std::string nsset_host_list_to_simple_string(const Register::NSSet::NSSet *_nsset)
-{
-  std::string ret;
-
-  for (unsigned int i = 0; i < _nsset->getHostCount(); ++i) {
-    const Register::NSSet::Host *host = _nsset->getHostByIdx(i);
-    unsigned int addr_size = host->getAddrCount();
-
-    std::string tmp = host->getName();
-    if (addr_size > 0)
-      tmp += " ( ";
-    for (unsigned int n = 0; n < addr_size; ++n) {
-      tmp += host->getAddrByIdx(n) + " ";
-    }
-    if (addr_size > 0)
-      tmp += ") ";
-
-    ret += tmp;
-  }
-
-  return ret;
-}
-
-
 std::string dsrecord_to_simple_string(const Register::KeySet::DSRecord *_ds)
 {
   std::string ret;
@@ -131,28 +107,6 @@ std::string dsrecord_to_simple_string(const Register::KeySet::DSRecord *_ds)
 }
 
 
-std::string dsrecord_list_to_simple_string(const Register::KeySet::KeySet *_keyset)
-{
-  std::string ret;
-
-  for (unsigned int i = 0; i < _keyset->getDSRecordCount(); ++i) {
-    const Register::KeySet::DSRecord *ds = _keyset->getDSRecordByIdx(i);
-    
-    if (!ret.empty())
-      ret += " ";
-
-    ret += "(keytag: "       + stringify(ds->getKeyTag())
-        + " algorithm: "     + stringify(ds->getAlg())
-        + " digest type: "   + stringify(ds->getDigestType())
-        + " digest: "        + stringify(ds->getDigest())
-        + " max sig. life: " + stringify(ds->getMaxSigLife())
-        + ")";
-  }
-
-  return ret;
-}
-
-
 std::string dnskey_to_simple_string(const Register::KeySet::DNSKey *_dns)
 {
   std::string ret;
@@ -162,27 +116,6 @@ std::string dnskey_to_simple_string(const Register::KeySet::DNSKey *_dns)
       + " algorithm: "  + stringify(_dns->getAlg())
       + " key: "        + stringify(_dns->getKey())
       + ")";
-
-  return ret;
-}
-
-
-std::string dnskey_list_to_simple_string(const Register::KeySet::KeySet *_keyset)
-{
-  std::string ret;
-
-  for (unsigned int i = 0; i < _keyset->getDNSKeyCount(); ++i) {
-    const Register::KeySet::DNSKey *dns = _keyset->getDNSKeyByIdx(i);
-    
-    if (!ret.empty())
-      ret += " ";
-
-    ret += "(flags: "     + stringify(dns->getFlags())
-        + " protocol: "   + stringify(dns->getProtocol())
-        + " algorithm: "  + stringify(dns->getAlg())
-        + " key: "        + stringify(dns->getKey())
-        + ")";
-  }
 
   return ret;
 }
@@ -208,7 +141,6 @@ std::string address_to_simple_string(const Register::Contact::Contact *_contact)
 
   return ret;
 }
-
 
 
 
