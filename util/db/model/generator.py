@@ -112,6 +112,8 @@ def guess_type(type, pkey, fkey):
         return 'std::string'
     elif type == 'text':
         return 'std::string'
+    elif type == 'character':
+        return 'std::string'
     elif type == 'serial':
         return 'unsigned long long'
     else:
