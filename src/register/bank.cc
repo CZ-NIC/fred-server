@@ -1750,32 +1750,6 @@ public:
         return new StatementImpl(m_conn);
     }
 
-    Database::ID getRegistrarByVarSymb(const std::string varSymb)
-    {
-        Database::Query query;
-        query.buffer()
-            << "SELECT id FROM registrar WHERE varsymb = " 
-            << Database::Value(varSymb);
-        Database::Result res = m_conn->exec(query);
-        if (res.size() == 0) {
-            return Database::ID();
-        }
-        return *(*res.begin()).begin();
-    }
-
-    virtual Database::ID getZoneByAccountId(const Database::ID accountId)
-    {
-        Database::Query query;
-        query.buffer()
-            << "SELECT zone FROM bank_account WHERE id = "
-            << Database::Value(accountId);
-        Database::Result res = m_conn->exec(query);
-        if (res.size() == 0) {
-            return Database::ID();
-        }
-        return *(*res.begin()).begin();
-    }
-
     virtual bool importStatementXml(std::istream &in, bool createCreditInvoice)
     {
         TRACE("[CALL] Register::Banking::Manager::importStatementXml("
