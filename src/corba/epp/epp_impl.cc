@@ -3965,6 +3965,9 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
     tch_add = new int[ tech_add.length() ];
     tch_rem = new int[ tech_rem.length() ];
 
+    memset((void *)tch_add, 0, sizeof(tch_add));
+    memset((void *)tch_rem, 0, sizeof(tch_rem));
+
     ParsedAction paction;
     paction.add(1,(const char*)handle);
 
@@ -4610,7 +4613,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
   const char *clTRID, const char* XML, const ccReg::ExtensionList & ext)
 {
     Logging::Context::clear();
-  Logging::Context ctx("rifd");
+    Logging::Context ctx("rifd");
     Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
 
     std::auto_ptr<EPPNotifier> ntf;
