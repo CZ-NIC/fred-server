@@ -1167,8 +1167,8 @@ public:
         Database::Money price = getPrice(
                 getAction(0)->getAction(), getAction(0)->getUnitsCount());
         if (price == Database::Money()) {
-            ERROR("cannot retrieve price");
-            return false;
+            LOGGER(PACKAGE).warning("no domain create/renew price found - domain is for free");
+            return true;
         }
         std::vector<Database::ID> vec_invoiceId;
         std::vector<Database::Money> vec_money;
