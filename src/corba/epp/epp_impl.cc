@@ -3159,13 +3159,7 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
             break;
 
         case EPP_DomainTransfer:
-            if ( (id = getIdOfDomain(action.getDB(), name, conf, true, &zone) ) < 0) {
-                if (id != -1) {
-                    LOG(WARNING_LOG, "domain in zone %s", name);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::domain_fqdn, 1, REASON_MSG_NOT_APPLICABLE_DOMAIN);
-                }
-            } else if (id == 0) {
+            if ( (id = getIdOfDomain(action.getDB(), name, conf, true, &zone) ) <= 0) {
                 code=COMMAND_OBJECT_NOT_EXIST;
             }
             if (action.getDB()->TestRegistrarZone(action.getRegistrar(), zone) == false) {
@@ -4535,14 +4529,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
 
     LOG( NOTICE_LOG , "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int ) clientID , clTRID , fqdn );
 
-    if ( (id = getIdOfDomain(action.getDB(), fqdn, conf, true, &zone) ) < 0) {
-        if (id != -1) {
-            LOG(WARNING_LOG, "domain in zone %s", fqdn);
-            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                    ccReg::domain_fqdn, 1,
-                    REASON_MSG_NOT_APPLICABLE_DOMAIN);
-        }
-    } else if (id == 0) {
+    if ( (id = getIdOfDomain(action.getDB(), fqdn, conf, true, &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
         code=COMMAND_OBJECT_NOT_EXIST;
     }
@@ -4651,14 +4638,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
     // parse enum.Exdate extension
     GetValExpDateFromExtension(valexpiryDate, ext);
 
-    if ( (id = getIdOfDomain(action.getDB(), fqdn, conf, true, &zone) ) < 0) {
-        if (id != -1) {
-            LOG(WARNING_LOG, "domain in zone %s", fqdn);
-            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                    ccReg::domain_fqdn, 1,
-                    REASON_MSG_NOT_APPLICABLE_DOMAIN);
-        } 
-    } else if (id == 0) {
+    if ( (id = getIdOfDomain(action.getDB(), fqdn, conf, true, &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
         code=COMMAND_OBJECT_NOT_EXIST;
     }
@@ -5515,14 +5495,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     // parse enum.ExDate extension
     GetValExpDateFromExtension(valexpiryDate, ext);
 
-    if ((id = getIdOfDomain(action.getDB(), fqdn, conf, true, &zone) ) < 0) {
-        if (id != -1) {
-            LOG(WARNING_LOG, "domain in zone %s", fqdn);
-            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                    ccReg::domain_fqdn, 1,
-                    REASON_MSG_NOT_APPLICABLE_DOMAIN);
-        }
-    } else if (id == 0) {
+    if ((id = getIdOfDomain(action.getDB(), fqdn, conf, true, &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
         code=COMMAND_OBJECT_NOT_EXIST;
     }
