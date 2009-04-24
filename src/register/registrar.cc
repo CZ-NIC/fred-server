@@ -1272,6 +1272,11 @@ public:
     r->setHandle(registrarHandle);
     r->save();
   }
+  virtual Registrar *createRegistrar()
+  {
+      return dynamic_cast<RegistrarImpl *>(new RegistrarImpl(db));
+  }
+
   virtual void addRegistrarZone(const std::string& registrarHandle,
                                 const std::string zone) throw (SQL_ERROR) {
     std::stringstream sql;

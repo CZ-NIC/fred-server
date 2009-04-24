@@ -328,6 +328,7 @@ public:
   virtual bool checkHandle(const std::string) const throw (SQL_ERROR) = 0;
   virtual void addRegistrar(const std::string& registrarHandle)
       throw (SQL_ERROR) = 0;
+  virtual Registrar *createRegistrar() = 0;
   virtual void addRegistrarZone(const std::string& registrarHandle,
       const std::string zone) throw (SQL_ERROR) = 0;
   /// Factory method
