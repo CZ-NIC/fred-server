@@ -20,6 +20,9 @@
 #include "commonclient.h"
 #include "registrarclient.h"
 
+#include <string>
+#include <vector>
+
 namespace Admin {
 
 const struct options *
@@ -148,15 +151,64 @@ RegistrarClient::zone_add()
     }
     return;
 }
+
+#define SET_IF_PRESENT(setter, name)                        \
+    if (m_conf.hasOpt(name)) {                              \
+        registrar->setter(m_conf.get<std::string>(name));   \
+    }
 void
 RegistrarClient::registrar_add()
 {
     callHelp(m_conf, registrar_add_help);
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
-    regMan->addRegistrar(m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
-    return;
+    std::auto_ptr<Register::Registrar::Registrar> registrar(
+            regMan->createRegistrar());
+    registrar->setHandle(m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME));
+    registrar->setCountry(m_conf.get<std::string>(REGISTRAR_COUNTRY_NAME));
+    SET_IF_PRESENT(setIco, REGISTRAR_ICO_NAME);
+    SET_IF_PRESENT(setDic, REGISTRAR_DIC_NAME);
+    SET_IF_PRESENT(setVarSymb, REGISTRAR_VAR_SYMB_NAME);
+    SET_IF_PRESENT(setName, REGISTRAR_ADD_NAME_NAME);
+    SET_IF_PRESENT(setOrganization, REGISTRAR_ORGANIZATION_NAME);
+    SET_IF_PRESENT(setStreet1, REGISTRAR_STREET1_NAME);
+    SET_IF_PRESENT(setStreet2, REGISTRAR_STREET2_NAME);
+    SET_IF_PRESENT(setStreet3, REGISTRAR_STREET3_NAME);
+    SET_IF_PRESENT(setCity, REGISTRAR_CITY_NAME);
+    SET_IF_PRESENT(setProvince, REGISTRAR_STATEORPROVINCE_NAME);
+    SET_IF_PRESENT(setPostalCode, REGISTRAR_POSTALCODE_NAME);
+    SET_IF_PRESENT(setTelephone, REGISTRAR_TELEPHONE_NAME);
+    SET_IF_PRESENT(setFax, REGISTRAR_FAX_NAME);
+    SET_IF_PRESENT(setEmail, REGISTRAR_EMAIL_NAME);
+    SET_IF_PRESENT(setURL, REGISTRAR_URL_NAME);
+    if (m_conf.hasOpt(REGISTRAR_SYSTEM_NAME)) {
+        registrar->setSystem(true);
+    } else {
+        registrar->setSystem(false);
+    }
+    if (m_conf.hasOpt(REGISTRAR_NO_VAT_NAME)) {
+        registrar->setVat(false);
+    } else {
+        registrar->setVat(true);
+    }
+    std::vector<std::string> certs = separate(
+            m_conf.get<std::string>(REGISTRAR_CERT_NAME), ',');
+    std::vector<std::string> passwords = separate(
+            m_conf.get<std::string>(REGISTRAR_PASSWORD_NAME), ',');
+    if (certs.size() != passwords.size()) {
+        std::cerr << "passwords and certificates number is not same" << std::endl;
+        return;
+    }
+    for (int i = 0; i < (int)certs.size(); i++) {
+        Register::Registrar::ACL *acl = registrar->newACL();
+        acl->setCertificateMD5(certs[i]);
+        acl->setPassword(passwords[i]);
+    }
+    registrar->save();
 }
+
+#undef SET_IF_PRESENT
+
 void
 RegistrarClient::registrar_add_zone()
 {
@@ -184,8 +236,28 @@ RegistrarClient::registrar_add_help()
 {
     std::cout <<
         "** Add new registrar **\n\n"
-        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_ADD_NAME
-               << " --" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>\n"
+        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_ADD_NAME << " \\\n"
+        "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<registrar_handle> \\\n"
+        "    --" << REGISTRAR_COUNTRY_NAME << "=<country_code> \\\n"
+        "    --" << REGISTRAR_CERT_NAME << "=<certificate>[,<cetificate_2>, ...] \\\n"
+        "    --" << REGISTRAR_PASSWORD_NAME << "=<password>[,<password_2>, ...] \\\n"
+        "    [--" << REGISTRAR_ICO_NAME << "=<ico>] \\\n"
+        "    [--" << REGISTRAR_DIC_NAME << "=<dic>] \\\n"
+        "    [--" << REGISTRAR_VAR_SYMB_NAME << "=<var_symbol>] \\\n"
+        "    [--" << REGISTRAR_ADD_NAME_NAME << "=<name>] \\\n"
+        "    [--" << REGISTRAR_ORGANIZATION_NAME << "=<organizatin>] \\\n"
+        "    [--" << REGISTRAR_STREET1_NAME << "=<street1>] \\\n"
+        "    [--" << REGISTRAR_STREET2_NAME << "=<street2>] \\\n"
+        "    [--" << REGISTRAR_STREET3_NAME << "=<street3>] \\\n"
+        "    [--" << REGISTRAR_CITY_NAME << "=<city>] \\\n"
+        "    [--" << REGISTRAR_STATEORPROVINCE_NAME << "=<state_or_province>] \\\n"
+        "    [--" << REGISTRAR_POSTALCODE_NAME << "=<postal_code>] \\\n"
+        "    [--" << REGISTRAR_TELEPHONE_NAME << "=<telephone>] \\\n"
+        "    [--" << REGISTRAR_FAX_NAME << "=<fax>] \\\n"
+        "    [--" << REGISTRAR_EMAIL_NAME << "=<email>] \\\n"
+        "    [--" << REGISTRAR_URL_NAME << "=<url>] \\\n"
+        "    [--" << REGISTRAR_NO_VAT_NAME << "] \\\n"
+        "    [--" << REGISTRAR_SYSTEM_NAME << "]\n"
         << std::endl;
 }
 void
@@ -216,7 +288,30 @@ RegistrarClient::m_opts[] = {
     add_EMAIL,
     add_COUNTRY,
     ADDOPT(REGISTRAR_ZONE_FQDN_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_HANDLE_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_ADD_HANDLE_NAME, TYPE_STRING, false, false),
+
+
+
+    ADDOPT(REGISTRAR_ICO_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_DIC_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_VAR_SYMB_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_ADD_NAME_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_ORGANIZATION_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_STREET1_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_STREET2_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_STREET3_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_CITY_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_STATEORPROVINCE_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_POSTALCODE_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_COUNTRY_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_TELEPHONE_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_FAX_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_EMAIL_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_URL_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_CERT_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_PASSWORD_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_NO_VAT_NAME, TYPE_NOTYPE, false, false),
+    ADDOPT(REGISTRAR_SYSTEM_NAME, TYPE_NOTYPE, false, false)
 };
 
 #undef ADDOPT
