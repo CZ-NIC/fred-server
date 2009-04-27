@@ -884,7 +884,6 @@ ccReg::EPPAction* ccReg_Admin_i::getEPPActionById(ccReg::TID id)
 
 void ccReg_Admin_i::fillDomain(ccReg::DomainDetail* cd,
                                Register::Domain::Domain* d) {
-  LOGGER(PACKAGE).info("--- alik --- fillDomain");
   cd->id = d->getId();
   cd->fqdn = DUPSTRFUN(d->getFQDNIDN);
   cd->roid = DUPSTRFUN(d->getROID);
@@ -926,7 +925,6 @@ void ccReg_Admin_i::fillDomain(ccReg::DomainDetail* cd,
 ccReg::DomainDetail* ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
-  LOGGER(PACKAGE).info("--- alik --- getdomainbyfqdn");
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainByFQDN('%1%')") % fqdn);
 
@@ -953,7 +951,6 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
 ccReg::DomainDetail* ccReg_Admin_i::getDomainById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
-  LOGGER(PACKAGE).info("--- alik --- getdomainbyid");
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainById('%1%')") % id);
   DB db;
