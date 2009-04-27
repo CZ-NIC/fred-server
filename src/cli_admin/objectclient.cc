@@ -170,7 +170,7 @@ ObjectClient::deleteObjects(
         "LEFT JOIN domain d ON (d.id=o.id)";
     if (!typeList.empty())
         sql << "WHERE o.type IN (" << typeList << ") ";
-    sql << "ORDER BY s.id ";
+    sql << " ORDER BY CASE WHEN o.type = 3 THEN 1 ELSE 2 END ASC, s.id";
     unsigned int limit = 0;
     if (m_conf.hasOpt(OBJECT_DELETE_LIMIT_NAME)) {
         limit = m_conf.get<unsigned int>(OBJECT_DELETE_LIMIT_NAME);
