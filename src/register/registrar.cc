@@ -1277,11 +1277,27 @@ public:
       return dynamic_cast<RegistrarImpl *>(new RegistrarImpl(db));
   }
 
-  virtual void addRegistrarZone(const std::string& registrarHandle,
-                                const std::string zone) throw (SQL_ERROR) {
+  virtual void addRegistrarZone(
+          const std::string& registrarHandle,
+          const std::string zone,
+          const Database::Date &fromDate,
+          const Database::Date &toDate) throw (SQL_ERROR) {
+    std::string fromStr;
+    std::string toStr;
+
+    if (fromDate != Database::Date()) {
+        fromStr = "'" + fromDate.to_string() + "'";
+    } else {
+        fromStr = "CURRENT_DATE";
+    }
+    if (toDate != Database::Date()) {
+        toStr = "'" + toDate.to_string() + "'";
+    } else {
+        toStr = "NULL";
+    }
     std::stringstream sql;
-    sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate) "
-        << "SELECT r.id,z.id,CURRENT_DATE FROM ("
+    sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate,lastdate) "
+        << "SELECT r.id,z.id," << fromStr << "," << toStr << " FROM ("
         << "SELECT id FROM registrar WHERE handle='" << registrarHandle
         << "') r " << "JOIN (SELECT id FROM zone WHERE fqdn='" << zone
         << "') z ON (1=1) " << "LEFT JOIN registrarinvoice ri ON "

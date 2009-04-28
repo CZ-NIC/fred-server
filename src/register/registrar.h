@@ -329,8 +329,11 @@ public:
   virtual void addRegistrar(const std::string& registrarHandle)
       throw (SQL_ERROR) = 0;
   virtual Registrar *createRegistrar() = 0;
-  virtual void addRegistrarZone(const std::string& registrarHandle,
-      const std::string zone) throw (SQL_ERROR) = 0;
+  virtual void addRegistrarZone(
+          const std::string& registrarHandle, 
+          const std::string zone,
+          const Database::Date &fromDate,
+          const Database::Date &toDate) throw (SQL_ERROR) = 0;
   /// Factory method
   static Manager *create(DB *db);
 };
