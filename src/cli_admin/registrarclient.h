@@ -87,6 +87,27 @@
 #define REGISTRAR_TO_DATE_NAME          "to_date"
 #define REGISTRAR_TO_DATE_NAME_DESC     "to date (default not filled)"
 
+#define REGISTRAR_EX_PERIOD_MIN_NAME       "ex_period_min"
+#define REGISTRAR_EX_PERIOD_MIN_NAME_DESC  "ex_period_min"
+#define REGISTRAR_EX_PERIOD_MAX_NAME       "ex_period_max"
+#define REGISTRAR_EX_PERIOD_MAX_NAME_DESC  "ex_period_max"
+#define REGISTRAR_TTL_NAME                      "ttl"
+#define REGISTRAR_TTL_NAME_DESC                 "time to live"
+#define REGISTRAR_HOSTMASTER_NAME               "hostmaster"
+#define REGISTRAR_HOSTMASTER_NAME_DESC          "hostmaster"
+#define REGISTRAR_UPDATE_RETR_NAME              "update_retr"
+#define REGISTRAR_UPDATE_RETR_NAME_DESC         "update_retr"
+#define REGISTRAR_REFRESH_NAME                  "refresh"
+#define REGISTRAR_REFRESH_NAME_DESC             "refresh"
+#define REGISTRAR_EXPIRY_NAME                   "expiry"
+#define REGISTRAR_EXPIRY_NAME_DESC              "expiry"
+#define REGISTRAR_MINIMUM_NAME                  "minimum"
+#define REGISTRAR_MINIMUM_NAME_DESC             "minimum"
+#define REGISTRAR_NS_FQDN_NAME                  "ns_fqdn"
+#define REGISTRAR_NS_FQDN_NAME_DESC             "ns_fqdn"
+#define REGISTRAR_ADDR_NAME                     "addr"
+#define REGISTRAR_ADDR_NAME_DESC                "address"
+
 #include <boost/program_options.hpp>
 #include <iostream>
 

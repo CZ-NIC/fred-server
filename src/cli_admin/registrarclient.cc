@@ -137,6 +137,10 @@ RegistrarClient::list()
     delete unionFilter;
 }
 
+#define SET_IF_PRESENT(var, type, name)                     \
+    if (m_conf.hasOpt(name)) {                              \
+        var = m_conf.get<type>(name);                       \
+    }
 void
 RegistrarClient::zone_add()
 {
@@ -144,13 +148,36 @@ RegistrarClient::zone_add()
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
     std::string fqdn = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
+    int exPeriodMin = 12;
+    int exPeriodMax = 120;
+    int ttl = 18000;
+    std::string hostmaster = "hostmaster@localhost";
+    int updateRetr = 3600;
+    int refresh = 16000;
+    int expiry = 1209600;
+    int minimum = 7200;
+    std::string nsFqdn("localhost");
+    std::string addr("");
+
+    SET_IF_PRESENT(exPeriodMin, int, REGISTRAR_EX_PERIOD_MIN_NAME);
+    SET_IF_PRESENT(exPeriodMax, int, REGISTRAR_EX_PERIOD_MAX_NAME);
+    SET_IF_PRESENT(ttl, int, REGISTRAR_TTL_NAME);
+    SET_IF_PRESENT(hostmaster, std::string, REGISTRAR_HOSTMASTER_NAME);
+    SET_IF_PRESENT(updateRetr, int, REGISTRAR_UPDATE_RETR_NAME);
+    SET_IF_PRESENT(refresh, int, REGISTRAR_REFRESH_NAME);
+    SET_IF_PRESENT(expiry, int, REGISTRAR_EXPIRY_NAME);
+    SET_IF_PRESENT(minimum, int, REGISTRAR_MINIMUM_NAME);
+    SET_IF_PRESENT(nsFqdn, std::string, REGISTRAR_NS_FQDN_NAME);
+    SET_IF_PRESENT(addr, std::string, REGISTRAR_ADDR_NAME);
     try {
-        zoneMan->addZone(fqdn);
+        zoneMan->addZone(fqdn, exPeriodMin, exPeriodMax, ttl, hostmaster,
+                refresh, updateRetr, expiry, minimum, nsFqdn, addr);
     } catch (Register::ALREADY_EXISTS) {
-        std::cerr << "Zone '" << fqdn << "' already exists in configuratin" << std::endl;
+        std::cerr << "Zone '" << fqdn << "' already exists" << std::endl;
     }
     return;
 }
+#undef SET_IF_PRESENT
 
 #define SET_IF_PRESENT(setter, name)                        \
     if (m_conf.hasOpt(name)) {                              \
@@ -234,8 +261,18 @@ RegistrarClient::zone_add_help()
 {
     std::cout <<
         "** Add new zone **\n\n"
-        "  $ " << g_prog_name << " --" << REGISTRAR_ZONE_ADD_NAME
-               << " --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn>\n"
+        "  $ " << g_prog_name << " --" << REGISTRAR_ZONE_ADD_NAME << " \\\n"
+        "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> \\\n"
+        "    [--" << REGISTRAR_EX_PERIOD_MIN_NAME << "=<ex_period_min>] \\\n"
+        "    [--" << REGISTRAR_EX_PERIOD_MAX_NAME << "=<ex_period_max>] \\\n"
+        "    [--" << REGISTRAR_TTL_NAME << "=<ttl>] \\\n"
+        "    [--" << REGISTRAR_HOSTMASTER_NAME << "=<hostmaster>] \\\n"
+        "    [--" << REGISTRAR_UPDATE_RETR_NAME << "=<update_retr>] \\\n"
+        "    [--" << REGISTRAR_REFRESH_NAME << "=<refresh>] \\\n"
+        "    [--" << REGISTRAR_EXPIRY_NAME << "=<expiry>] \\\n"
+        "    [--" << REGISTRAR_MINIMUM_NAME << "=<minimum>] \\\n"
+        "    [--" << REGISTRAR_NS_FQDN_NAME << "=<ns_fqdn>] \\\n"
+        "    [--" << REGISTRAR_ADDR_NAME << "=<addr>]\n"
         << std::endl;
 }
 
@@ -323,7 +360,17 @@ RegistrarClient::m_opts[] = {
     ADDOPT(REGISTRAR_NO_VAT_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(REGISTRAR_SYSTEM_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(REGISTRAR_FROM_DATE_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_TO_DATE_NAME, TYPE_STRING, false, false)
+    ADDOPT(REGISTRAR_TO_DATE_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_EX_PERIOD_MAX_NAME, TYPE_INT, false, false),
+    ADDOPT(REGISTRAR_EX_PERIOD_MIN_NAME, TYPE_INT, false, false),
+    ADDOPT(REGISTRAR_TTL_NAME, TYPE_INT, false, false),
+    ADDOPT(REGISTRAR_HOSTMASTER_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_UPDATE_RETR_NAME, TYPE_INT, false, false),
+    ADDOPT(REGISTRAR_REFRESH_NAME, TYPE_INT, false, false),
+    ADDOPT(REGISTRAR_EXPIRY_NAME, TYPE_INT, false, false),
+    ADDOPT(REGISTRAR_MINIMUM_NAME, TYPE_INT, false, false),
+    ADDOPT(REGISTRAR_NS_FQDN_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_ADDR_NAME, TYPE_STRING, false, false)
 };
 
 #undef ADDOPT
