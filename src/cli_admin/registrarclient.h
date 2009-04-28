@@ -82,6 +82,10 @@
 #define REGISTRAR_CERT_NAME_DESC        "list of registrar MD5 certificate (splitted with ``;'')"
 #define REGISTRAR_PASSWORD_NAME         "password"
 #define REGISTRAR_PASSWORD_NAME_DESC    "list of registrar password"
+#define REGISTRAR_FROM_DATE_NAME        "from_date"
+#define REGISTRAR_FROM_DATE_NAME_DESC   "from date (default today)"
+#define REGISTRAR_TO_DATE_NAME          "to_date"
+#define REGISTRAR_TO_DATE_NAME_DESC     "to date (default not filled)"
 
 #include <boost/program_options.hpp>
 #include <iostream>

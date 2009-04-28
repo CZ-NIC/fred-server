@@ -216,8 +216,16 @@ RegistrarClient::registrar_add_zone()
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
     std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
-    std::string registrar = m_conf.get<std::string>(REGISTRAR_HANDLE_NAME);
-    regMan->addRegistrarZone(registrar, zone);
+    std::string registrar = m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME);
+    Database::Date fromDate;
+    Database::Date toDate;
+    if (m_conf.hasOpt(REGISTRAR_FROM_DATE_NAME)) {
+        fromDate.from_string(m_conf.get<std::string>(REGISTRAR_FROM_DATE_NAME));
+    }
+    if (m_conf.hasOpt(REGISTRAR_TO_DATE_NAME)) {
+        toDate.from_string(m_conf.get<std::string>(REGISTRAR_TO_DATE_NAME));
+    }
+    regMan->addRegistrarZone(registrar, zone, fromDate, toDate);
     return;
 }
 
@@ -267,7 +275,9 @@ RegistrarClient::registrar_add_zone_help()
         "** Add registrar to zone **\n\n"
         "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_ADD_ZONE_NAME << " \\\n"
         "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> \\\n"
-        "    --" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>\n"
+        "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<registrar_handle> \\\n"
+        "    [--" << REGISTRAR_FROM_DATE_NAME << "=<valid_from_date>] \\\n"
+        "    [--" << REGISTRAR_TO_DATE_NAME << "=<valid_to_date>]\n"
         << std::endl;
 }
 
@@ -311,7 +321,9 @@ RegistrarClient::m_opts[] = {
     ADDOPT(REGISTRAR_CERT_NAME, TYPE_STRING, false, false),
     ADDOPT(REGISTRAR_PASSWORD_NAME, TYPE_STRING, false, false),
     ADDOPT(REGISTRAR_NO_VAT_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(REGISTRAR_SYSTEM_NAME, TYPE_NOTYPE, false, false)
+    ADDOPT(REGISTRAR_SYSTEM_NAME, TYPE_NOTYPE, false, false),
+    ADDOPT(REGISTRAR_FROM_DATE_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_TO_DATE_NAME, TYPE_STRING, false, false)
 };
 
 #undef ADDOPT
