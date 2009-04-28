@@ -329,6 +329,11 @@ public:
   virtual void addRegistrar(const std::string& registrarHandle)
       throw (SQL_ERROR) = 0;
   virtual Registrar *createRegistrar() = 0;
+  virtual void addRegistrarAcl(
+          const std::string &registrarHandle,
+          const std::string &cert,
+          const std::string &pass)
+      throw (SQL_ERROR) = 0;
   virtual void addRegistrarZone(
           const std::string& registrarHandle, 
           const std::string zone,

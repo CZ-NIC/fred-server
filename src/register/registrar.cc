@@ -1272,6 +1272,20 @@ public:
     r->setHandle(registrarHandle);
     r->save();
   }
+  virtual void addRegistrarAcl(
+          const std::string &registrarHandle,
+          const std::string &cert,
+          const std::string &pass)
+      throw (SQL_ERROR)
+  {
+      std::stringstream sql;
+      sql << "INSERT INTO registraracl (registrarid, cert, password) "
+          << "SELECT r.id, '" << cert << "','" << pass << "' FROM registrar r "
+          << "WHERE r.handle='" << registrarHandle << "'";
+      if (!db->ExecSQL(sql.str().c_str())) {
+          throw SQL_ERROR();
+      }
+  }
   virtual Registrar *createRegistrar()
   {
       return dynamic_cast<RegistrarImpl *>(new RegistrarImpl(db));
