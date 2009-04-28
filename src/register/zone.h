@@ -65,7 +65,18 @@ namespace Register
       /// check fqdn agains list of toplevel domain (true=found) 
       virtual bool checkTLD(const DomainName& domain) const = 0;
       /// add zone
-      virtual void addZone(const std::string& fqdn) 
+      virtual void addZone(
+              const std::string& fqdn,
+              int ex_period_min=12,
+              int ex_period_max=120,
+              int ttl=18000,
+              const std::string &hostmaster="hostmaster@localhost",
+              int refresh=10600,
+              int update_retr=3600,
+              int expiry=1209600,
+              int minimum=7200,
+              const std::string &ns_fqdn="localhost",
+              const std::string &addr="localhost")
         throw (SQL_ERROR, ALREADY_EXISTS) = 0;
       /// create manager object
       static Manager *create(DB *db);

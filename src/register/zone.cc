@@ -246,7 +246,18 @@ namespace Register
         db->FreeSelect();
         return ret;
       }
-      virtual void addZone(const std::string& fqdn)
+      virtual void addZone(
+              const std::string& fqdn,
+              int ex_period_min,
+              int ex_period_max,
+              int ttl,
+              const std::string &hostmaster,
+              int refresh,
+              int update_retr,
+              int expiry,
+              int minimum,
+              const std::string &ns_fqdn,
+              const std::string &addr)
         throw (SQL_ERROR, ALREADY_EXISTS)
       {
         std::stringstream sql;
@@ -267,7 +278,8 @@ namespace Register
             << "  fqdn,ex_period_min,ex_period_max,val_period,"
             << "  dots_max,enum_zone"
             << ") VALUES ('"
-            << fqdn << "',12,120," << (enumZone ? "6," : "0,")
+            << fqdn << "'," << ex_period_min << "," << ex_period_max
+            << "," << (enumZone ? "6," : "0,")
             << dots << "," << (enumZone ? "'t'" : "'f'")
             << ")";
         if (!db->ExecSQL(sql.str().c_str()))
@@ -277,15 +289,16 @@ namespace Register
             << " zone,ttl,hostmaster,serial,refresh,update_retr,expiry,"
             << " minimum,ns_fqdn "
             << ") VALUES ( "
-            << " currval('zone_id_seq'),18000,'hostmaster@localhost',NULL,"
-            << " 10600,3600,1209600,7200,'localhost' "
+            << "currval('zone_id_seq')," << ttl << ",'" << hostmaster << "',NULL,"
+            << refresh << "," << update_retr << "," << expiry << ","
+            << minimum << ",'" << ns_fqdn << "'"
             << ")";
         if (!db->ExecSQL(sql.str().c_str()))
           throw SQL_ERROR();
         sql.str("");
         sql << "INSERT INTO zone_ns (zone,fqdn,addrs) VALUES ("
-            << " currval('zone_id_seq'),'localhost','{}' "
-            << ")";
+            << "currval('zone_id_seq'), '" << ns_fqdn
+            << "','{" << addr << "}')";
         if (!db->ExecSQL(sql.str().c_str()))
           throw SQL_ERROR();
       }
