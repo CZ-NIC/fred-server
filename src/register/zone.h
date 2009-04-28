@@ -75,9 +75,13 @@ namespace Register
               int update_retr=3600,
               int expiry=1209600,
               int minimum=7200,
-              const std::string &ns_fqdn="localhost",
-              const std::string &addr="localhost")
+              const std::string &ns_fqdn="localhost")
         throw (SQL_ERROR, ALREADY_EXISTS) = 0;
+      virtual void addZoneNs(
+              const std::string &zone,
+              const std::string &fqdn="localhost",
+              const std::string &addr="")
+          throw (SQL_ERROR) = 0;
       /// create manager object
       static Manager *create(DB *db);
     };

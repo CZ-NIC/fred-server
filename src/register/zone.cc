@@ -256,8 +256,7 @@ namespace Register
               int update_retr,
               int expiry,
               int minimum,
-              const std::string &ns_fqdn,
-              const std::string &addr)
+              const std::string &ns_fqdn)
         throw (SQL_ERROR, ALREADY_EXISTS)
       {
         std::stringstream sql;
@@ -295,12 +294,20 @@ namespace Register
             << ")";
         if (!db->ExecSQL(sql.str().c_str()))
           throw SQL_ERROR();
-        sql.str("");
-        sql << "INSERT INTO zone_ns (zone,fqdn,addrs) VALUES ("
-            << "currval('zone_id_seq'), '" << ns_fqdn
-            << "','{" << addr << "}')";
-        if (!db->ExecSQL(sql.str().c_str()))
-          throw SQL_ERROR();
+      }
+      virtual void addZoneNs(
+              const std::string &zone,
+              const std::string &fqdn,
+              const std::string &addr)
+          throw (SQL_ERROR)
+      {
+          std::stringstream sql;
+          sql << "INSERT INTO zone_ns (zone, fqdn, addrs) "
+              << "SELECT z.id, '" << fqdn << "','{" << addr << "}' "
+              << "FROM ZONE z WHERE z.fqdn='" << zone << "'";
+          if (!db->ExecSQL(sql.str().c_str())) {
+              throw SQL_ERROR();
+          }
       }
       virtual std::string encodeIDN(const std::string& fqdn) const
       {
