@@ -54,7 +54,8 @@ ARFLAGS = cru
 libepp_impl_a_AR = $(AR) $(ARFLAGS)
 libepp_impl_a_LIBADD =
 am_libepp_impl_a_OBJECTS = epp_impl.$(OBJEXT) messages.$(OBJEXT) \
-	notifier.$(OBJEXT) tech_check.$(OBJEXT) countrycode.$(OBJEXT)
+	notifier.$(OBJEXT) tech_check.$(OBJEXT) countrycode.$(OBJEXT) \
+	notifier_changes.$(OBJEXT)
 libepp_impl_a_OBJECTS = $(am_libepp_impl_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -225,15 +226,28 @@ sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
+top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LIBRARIES = libepp_impl.a
 AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(AM_CFLAGS) -I$(top_srcdir)/util \
               -I$(top_srcdir)/src -I$(top_builddir)/src -I$(top_srcdir)
 
-libepp_impl_a_SOURCES = epp_impl.cc messages.cc notifier.cc tech_check.cc countrycode.cc \
-                        epp_impl.h messages.h notifier.h tech_check.h countrycode.h \
-			action.h reason.h response.h
+libepp_impl_a_SOURCES = epp_impl.cc           \
+                        epp_impl.h            \
+                        messages.cc           \
+                        messages.h            \
+                        notifier.cc           \
+                        notifier.h            \
+                        tech_check.cc         \
+                        tech_check.h          \
+                        countrycode.cc        \
+                        countrycode.h         \
+                        action.h              \
+                        reason.h              \
+                        response.h            \
+                        notifier_changes.cc   \
+                        notifier_changes.h 
 
 all: all-am
 
@@ -286,6 +300,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/epp_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/messages.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/notifier.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/notifier_changes.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tech_check.Po@am__quote@
 
 .cc.o:
