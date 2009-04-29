@@ -26,8 +26,13 @@ inline std::string str_corbaout(const std::string &_value) {
 
 template<>
 inline std::string str_corbaout(const ptime &_value) {
-  ptime local = boost::date_time::c_local_adjustor<ptime>::utc_to_local(_value);
-  return local.is_special() ? std::string() : stringify(local);
+  if (_value.is_special()) {
+    return std::string();
+  }
+  else {
+    ptime local = boost::date_time::c_local_adjustor<ptime>::utc_to_local(_value);
+    return local.is_special() ? std::string() : stringify(local);
+  }
 }
 
 
