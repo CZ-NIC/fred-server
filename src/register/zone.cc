@@ -331,7 +331,9 @@ namespace Register
               << "SELECT z.id," << ((operation == CREATE) ? 1 : 2) << ","
               << validFromStr << "," << validToStr << "," << price
               << "," << period << " FROM zone z WHERE z.fqdn='" << zone << "'";
-          std::cout << sql.str() << std::endl;
+          if (!db->ExecSQL(sql.str().c_str())) {
+              throw SQL_ERROR();
+          }
       }
       virtual std::string encodeIDN(const std::string& fqdn) const
       {
