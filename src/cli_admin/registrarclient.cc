@@ -48,6 +48,8 @@ RegistrarClient::runMethod()
         zone_ns_add();
     } else if (m_conf.hasOpt(REGISTRAR_REGISTRAR_ACL_ADD_NAME)) {
         registrar_acl_add();
+    } else if (m_conf.hasOpt(REGISTRAR_PRICE_ADD_NAME)) {
+        price_add();
     }
 }
 
@@ -283,6 +285,31 @@ RegistrarClient::registrar_add_zone()
 }
 
 void
+RegistrarClient::price_add()
+{
+    callHelp(m_conf, price_add_help);
+    std::auto_ptr<Register::Zone::Manager> zoneMan(
+            Register::Zone::Manager::create(&m_db));
+    std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
+    Database::DateTime validFrom;
+    validFrom.from_string(m_conf.get<std::string>(REGISTRAR_VALID_FROM_NAME));
+    Database::DateTime validTo;
+    if (m_conf.hasOpt(REGISTRAR_VALID_TO_NAME)) {
+        validTo.from_string(m_conf.get<std::string>(REGISTRAR_VALID_TO_NAME));
+    }
+    Database::Money price(m_conf.get<int>(REGISTRAR_PRICE_NAME) * 100);
+    int period = m_conf.get<int>(REGISTRAR_PERIOD_NAME);
+    if (m_conf.hasOpt(REGISTRAR_CREATE_OPERATION_NAME)) {
+        zoneMan->addPrice(zone, Register::Zone::CREATE, validFrom,
+                validTo, price, period);
+    }
+    if (m_conf.hasOpt(REGISTRAR_RENEW_OPERATION_NAME)) {
+        zoneMan->addPrice(zone, Register::Zone::RENEW, validFrom,
+                validTo, price, period);
+    }
+}
+
+void
 RegistrarClient::zone_add_help()
 {
     std::cout <<
@@ -364,6 +391,22 @@ RegistrarClient::registrar_add_zone_help()
         << std::endl;
 }
 
+void
+RegistrarClient::price_add_help()
+{
+    std::cout <<
+        "** Add new price for the zone **\n\n"
+        "  $ " << g_prog_name << " --" << REGISTRAR_PRICE_ADD_NAME << " \\\n"
+        "    --" << REGISTRAR_CREATE_OPERATION_NAME << " | \\\n"
+        "    --" << REGISTRAR_RENEW_OPERATION_NAME << " \\\n"
+        "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> \\\n"
+        "    --" << REGISTRAR_VALID_FROM_NAME << "=<valid_from> \\\n"
+        "    --" << REGISTRAR_VALID_TO_NAME << "=<valid_to> \\\n"
+        "    --" << REGISTRAR_PRICE_NAME << "=<price> \\\n"
+        "    --" << REGISTRAR_PERIOD_NAME << "=<period>\n"
+        << std::endl;
+}
+
 #define ADDOPT(name, type, callable, visible) \
     {CLIENT_REGISTRAR, name, name##_DESC, type, callable, visible}
 
@@ -375,6 +418,7 @@ RegistrarClient::m_opts[] = {
     ADDOPT(REGISTRAR_REGISTRAR_ADD_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(REGISTRAR_REGISTRAR_ACL_ADD_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(REGISTRAR_REGISTRAR_ADD_ZONE_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(REGISTRAR_PRICE_ADD_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(REGISTRAR_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
     add_ID,
     add_HANDLE,
@@ -418,7 +462,13 @@ RegistrarClient::m_opts[] = {
     ADDOPT(REGISTRAR_EXPIRY_NAME, TYPE_INT, false, false),
     ADDOPT(REGISTRAR_MINIMUM_NAME, TYPE_INT, false, false),
     ADDOPT(REGISTRAR_NS_FQDN_NAME, TYPE_STRING, false, false),
-    ADDOPT(REGISTRAR_ADDR_NAME, TYPE_STRING, false, false)
+    ADDOPT(REGISTRAR_ADDR_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_CREATE_OPERATION_NAME, TYPE_NOTYPE, false, false),
+    ADDOPT(REGISTRAR_RENEW_OPERATION_NAME, TYPE_NOTYPE, false, false),
+    ADDOPT(REGISTRAR_VALID_FROM_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_VALID_TO_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_PRICE_NAME, TYPE_INT, false, false),
+    ADDOPT(REGISTRAR_PERIOD_NAME, TYPE_INT, false, false)
 };
 
 #undef ADDOPT

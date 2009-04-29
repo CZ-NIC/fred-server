@@ -33,6 +33,8 @@
 #define REGISTRAR_REGISTRAR_ACL_ADD_NAME_DESC   "add new certificate for registrar"
 #define REGISTRAR_REGISTRAR_ADD_ZONE_NAME       "registrar_add_zone"
 #define REGISTRAR_REGISTRAR_ADD_ZONE_NAME_DESC  "add access right for registrar to zone"
+#define REGISTRAR_PRICE_ADD_NAME            "price_add"
+#define REGISTRAR_PRICE_ADD_NAME_DESC       "add price"
 
 #define REGISTRAR_ZONE_ADD_HELP_NAME                "zone_add_help"
 #define REGISTRAR_ZONE_ADD_HELP_NAME_DESC           "help for zone_add"
@@ -111,6 +113,18 @@
 #define REGISTRAR_NS_FQDN_NAME_DESC             "ns_fqdn"
 #define REGISTRAR_ADDR_NAME                     "addr"
 #define REGISTRAR_ADDR_NAME_DESC                "address"
+#define REGISTRAR_CREATE_OPERATION_NAME         "create"
+#define REGISTRAR_CREATE_OPERATION_NAME_DESC    "domain create operation"
+#define REGISTRAR_RENEW_OPERATION_NAME          "renew"
+#define REGISTRAR_RENEW_OPERATION_NAME_DESC     "domain renew operation"
+#define REGISTRAR_VALID_FROM_NAME               "valid_from"
+#define REGISTRAR_VALID_FROM_NAME_DESC          "price valid from datetime"
+#define REGISTRAR_VALID_TO_NAME                 "valid_to"
+#define REGISTRAR_VALID_TO_NAME_DESC            "price valid to datetime"
+#define REGISTRAR_PRICE_NAME                    "operation_price"
+#define REGISTRAR_PRICE_NAME_DESC               "operation price"
+#define REGISTRAR_PERIOD_NAME                   "period"
+#define REGISTRAR_PERIOD_NAME_DESC              "period"
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -158,12 +172,14 @@ public:
     void registrar_add();
     void registrar_acl_add();
     void registrar_add_zone();
+    void price_add();
 
     void zone_add_help();
     void zone_ns_add_help();
     void registrar_add_help();
     void registrar_acl_add_help();
     void registrar_add_zone_help();
+    void price_add_help();
 }; // class RegistrarClient
 
 } // namespace Admin;
