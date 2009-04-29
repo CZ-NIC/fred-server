@@ -309,6 +309,30 @@ namespace Register
               throw SQL_ERROR();
           }
       }
+      virtual void addPrice(
+              const std::string &zone,
+              Operation operation,
+              const Database::DateTime &validFrom,
+              const Database::DateTime &validTo,
+              const Database::Money &price,
+              int period)
+          throw (SQL_ERROR)
+      {
+          std::string validFromStr = "'" + validFrom.to_string() + "'";
+          std::string validToStr;
+          if (validTo != Database::DateTime()) {
+              validToStr = "'" + validTo.to_string() + "'";
+          } else {
+              validToStr = "NULL";
+          }
+          std::stringstream sql;
+          sql << "INSERT INTO price_list (zone, operation, valid_from, valid_to, "
+              << "price, period) "
+              << "SELECT z.id," << ((operation == CREATE) ? 1 : 2) << ","
+              << validFromStr << "," << validToStr << "," << price
+              << "," << period << " FROM zone z WHERE z.fqdn='" << zone << "'";
+          std::cout << sql.str() << std::endl;
+      }
       virtual std::string encodeIDN(const std::string& fqdn) const
       {
         std::string result;
