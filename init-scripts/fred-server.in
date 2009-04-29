@@ -1,4 +1,10 @@
 #!/bin/sh
+# fred-server	This is the init script for starting up all FRED
+#		servers. Start and kill priority should be set up to
+#               start/stop after/before postgresql and omniNames
+#
+# chkconfig: - 91 09
+# description: Starts and stops all FRED backend daemon 
 
 if [ -f /lib/lsb/init-functions ]; then
     . /lib/lsb/init-functions
@@ -28,6 +34,27 @@ check_pidfile() {
     ps -p $(cat $1 2>/dev/null) >/dev/null 2>&1
 }
 
+#
+# Store pid of process described by regex $1 into filename $2
+#
+store_pid()
+{
+        RETRY_COUNT=2
+        while [ $RETRY_COUNT -gt 0 -a "$PID" == "" ]; do
+                PID=$(ps -e -o "pid args" | sed 's/^ *//g' | \
+                grep  "$1" | grep -v grep | cut -f1 -d' ')
+                if [ "$PID" == "" ]; then
+                        RETRY_COUNT=$(($RETRY_COUNT - 1))
+                        sleep 1
+                fi
+        done
+        if [ "$PID" != "" ]; then 
+	    echo $PID > $2; /bin/true; return
+	else 
+	    test -f $2 && rm $2; /bin/false; return
+	fi
+}
+
 fred_start() {
     if [ $DB_INIT -eq 1 -a -x $DB_MANAGER ]
     then
@@ -47,39 +74,34 @@ fred_start() {
 	mkdir -p ${VARRUN_PATH}
     fi
     NUM=0
-    START_SUCCEDED=1
     if check_pidfile ${VARRUN_PATH}/pyfred.pid; then NUM=$(($NUM+1)); else
         @BINDIR@/pyfredctl start >/dev/null 2>&1
 	if [ $? -eq 0 ]; then
-            START_SUCCEDED=0
 	    NUM=$(($NUM+1))
 	fi
     fi
-    if check_pidfile ${VARRUN_PATH}/fred-rifd.pid; then /bin/true; else
+    if check_pidfile ${VARRUN_PATH}/fred-rifd.pid; then NUM=$(($NUM+1)); else
         ${FRED_PATH}/fred-rifd ${OPTIONS}${RIFD_PORT} 2>/dev/null &
-        if [ $? -eq 0 ]; then
-            START_SUCCEDED=0
+        if store_pid "${FRED_PATH}/fred-rifd" ${VARRUN_PATH}/fred-rifd.pid
+	then
 	    NUM=$(($NUM+1))
-	    echo `pidof ${FRED_PATH}/fred-rifd` > ${VARRUN_PATH}/fred-rifd.pid
         fi
     fi
-    if check_pidfile ${VARRUN_PATH}/fred-pifd.pid; then /bin/true; else
+    if check_pidfile ${VARRUN_PATH}/fred-pifd.pid; then NUM=$(($NUM+1)); else
         ${FRED_PATH}/fred-pifd ${OPTIONS}${PIFD_PORT} 2>/dev/null &
-        if [ $? -eq 0 ]; then
-            START_SUCCEDED=0
+        if store_pid "${FRED_PATH}/fred-pifd" ${VARRUN_PATH}/fred-pifd.pid
+	then
 	    NUM=$(($NUM+1))
-	    echo `pidof ${FRED_PATH}/fred-pifd` > ${VARRUN_PATH}/fred-pifd.pid
         fi
     fi
-    if check_pidfile ${VARRUN_PATH}/fred-adifd.pid; then /bin/true; else
+    if check_pidfile ${VARRUN_PATH}/fred-adifd.pid; then NUM=$(($NUM+1)); else
         ${FRED_PATH}/fred-adifd ${OPTIONS}${ADIFD_PORT} 2>/dev/null &
-        if [ $? -eq 0 ]; then
-            START_SUCCEDED=0
+        if store_pid "${FRED_PATH}/fred-adifd" ${VARRUN_PATH}/fred-adifd.pid
+	then
 	    NUM=$(($NUM+1))
-	    echo `pidof ${FRED_PATH}/fred-adifd` > ${VARRUN_PATH}/fred-adifd.pid
         fi
     fi
-    if [ $START_SUCCEDED -eq 0 -a $NUM -eq 4 ]; then
+    if [ $NUM -eq 4 ]; then
         log_success_msg "${MSG_START}"
     else
 	log_failure_msg "${MSG_START}"
