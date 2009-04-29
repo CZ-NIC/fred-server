@@ -297,8 +297,7 @@ RegistrarClient::zone_add_help()
         "    [--" << REGISTRAR_REFRESH_NAME << "=<refresh>] \\\n"
         "    [--" << REGISTRAR_EXPIRY_NAME << "=<expiry>] \\\n"
         "    [--" << REGISTRAR_MINIMUM_NAME << "=<minimum>] \\\n"
-        "    [--" << REGISTRAR_NS_FQDN_NAME << "=<ns_fqdn>] \\\n"
-        "    [--" << REGISTRAR_ADDR_NAME << "=<addr>]\n"
+        "    [--" << REGISTRAR_NS_FQDN_NAME << "=<ns_fqdn>]\n"
         << std::endl;
 }
 
