@@ -54,7 +54,7 @@
 #define REGISTRAR_NO_VAT_NAME_DESC      "no vat"
 #define REGISTRAR_ADD_HANDLE_NAME           "handle"
 #define REGISTRAR_ADD_HANDLE_NAME_DESC      "registrar handle"
-#define REGISTRAR_ADD_NAME_NAME             "name"
+#define REGISTRAR_ADD_NAME_NAME             "reg_name"
 #define REGISTRAR_ADD_NAME_NAME_DESC        "registrar name"
 #define REGISTRAR_ORGANIZATION_NAME     "organization"
 #define REGISTRAR_ORGANIZATION_NAME_DESC "registrar organization"
