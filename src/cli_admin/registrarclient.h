@@ -25,8 +25,12 @@
 #define REGISTRAR_LIST_NAME_DESC            "list all registrars (via filters)"
 #define REGISTRAR_ZONE_ADD_NAME             "zone_add"
 #define REGISTRAR_ZONE_ADD_NAME_DESC        "add new zone"
+#define REGISTRAR_ZONE_NS_ADD_NAME          "zone_ns_add"
+#define REGISTRAR_ZONE_NS_ADD_NAME_DESC     "add new nameserver to the zone"
 #define REGISTRAR_REGISTRAR_ADD_NAME        "registrar_add"
 #define REGISTRAR_REGISTRAR_ADD_NAME_DESC   "add new registrar (make a copy of REG-FRED_A)"
+#define REGISTRAR_REGISTRAR_ACL_ADD_NAME        "registrar_acl_add"
+#define REGISTRAR_REGISTRAR_ACL_ADD_NAME_DESC   "add new certificate for registrar"
 #define REGISTRAR_REGISTRAR_ADD_ZONE_NAME       "registrar_add_zone"
 #define REGISTRAR_REGISTRAR_ADD_ZONE_NAME_DESC  "add access right for registrar to zone"
 
@@ -150,11 +154,15 @@ public:
     void show_opts();
     void list();
     void zone_add();
+    void zone_ns_add();
     void registrar_add();
+    void registrar_acl_add();
     void registrar_add_zone();
 
     void zone_add_help();
+    void zone_ns_add_help();
     void registrar_add_help();
+    void registrar_acl_add_help();
     void registrar_add_zone_help();
 }; // class RegistrarClient
 

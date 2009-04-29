@@ -44,6 +44,10 @@ RegistrarClient::runMethod()
         list();
     } else if (m_conf.hasOpt(REGISTRAR_SHOW_OPTS_NAME)) {
         show_opts();
+    } else if (m_conf.hasOpt(REGISTRAR_ZONE_NS_ADD_NAME)) {
+        zone_ns_add();
+    } else if (m_conf.hasOpt(REGISTRAR_REGISTRAR_ACL_ADD_NAME)) {
+        registrar_acl_add();
     }
 }
 
@@ -157,7 +161,6 @@ RegistrarClient::zone_add()
     int expiry = 1209600;
     int minimum = 7200;
     std::string nsFqdn("localhost");
-    std::string addr("");
 
     SET_IF_PRESENT(exPeriodMin, int, REGISTRAR_EX_PERIOD_MIN_NAME);
     SET_IF_PRESENT(exPeriodMax, int, REGISTRAR_EX_PERIOD_MAX_NAME);
@@ -168,16 +171,36 @@ RegistrarClient::zone_add()
     SET_IF_PRESENT(expiry, int, REGISTRAR_EXPIRY_NAME);
     SET_IF_PRESENT(minimum, int, REGISTRAR_MINIMUM_NAME);
     SET_IF_PRESENT(nsFqdn, std::string, REGISTRAR_NS_FQDN_NAME);
-    SET_IF_PRESENT(addr, std::string, REGISTRAR_ADDR_NAME);
     try {
         zoneMan->addZone(fqdn, exPeriodMin, exPeriodMax, ttl, hostmaster,
-                refresh, updateRetr, expiry, minimum, nsFqdn, addr);
+                refresh, updateRetr, expiry, minimum, nsFqdn);
     } catch (Register::ALREADY_EXISTS) {
         std::cerr << "Zone '" << fqdn << "' already exists" << std::endl;
     }
     return;
 }
 #undef SET_IF_PRESENT
+
+void
+RegistrarClient::zone_ns_add()
+{
+    callHelp(m_conf, zone_ns_add_help);
+    std::auto_ptr<Register::Zone::Manager> zoneMan(
+            Register::Zone::Manager::create(&m_db));
+    std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
+    std::string fqdn = m_conf.get<std::string>(REGISTRAR_NS_FQDN_NAME);
+    std::string addr;
+    if (m_conf.hasOpt(REGISTRAR_ADDR_NAME)) {
+        addr = m_conf.get<std::string>(REGISTRAR_ADDR_NAME);
+    } else {
+        addr = "";
+    }
+    try {
+        zoneMan->addZoneNs(zone, fqdn, addr);
+    } catch (...) {
+        std::cerr << "An error has occured" << std::endl;
+    }
+}
 
 #define SET_IF_PRESENT(setter, name)                        \
     if (m_conf.hasOpt(name)) {                              \
@@ -218,23 +241,26 @@ RegistrarClient::registrar_add()
     } else {
         registrar->setVat(true);
     }
-    std::vector<std::string> certs = separate(
-            m_conf.get<std::string>(REGISTRAR_CERT_NAME), ',');
-    std::vector<std::string> passwords = separate(
-            m_conf.get<std::string>(REGISTRAR_PASSWORD_NAME), ',');
-    if (certs.size() != passwords.size()) {
-        std::cerr << "passwords and certificates number is not same" << std::endl;
-        return;
-    }
-    for (int i = 0; i < (int)certs.size(); i++) {
-        Register::Registrar::ACL *acl = registrar->newACL();
-        acl->setCertificateMD5(certs[i]);
-        acl->setPassword(passwords[i]);
-    }
     registrar->save();
 }
 
 #undef SET_IF_PRESENT
+
+void
+RegistrarClient::registrar_acl_add()
+{
+    callHelp(m_conf, registrar_acl_add_help);
+    std::auto_ptr<Register::Registrar::Manager> regMan(
+            Register::Registrar::Manager::create(&m_db));
+    std::string handle = m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME);
+    std::string cert = m_conf.get<std::string>(REGISTRAR_CERT_NAME);
+    std::string pass = m_conf.get<std::string>(REGISTRAR_PASSWORD_NAME);
+    try {
+        regMan->addRegistrarAcl(handle, cert, pass);
+    } catch (...) {
+        std::cerr << "An error has occured" << std::endl;
+    }
+}
 
 void
 RegistrarClient::registrar_add_zone()
@@ -277,6 +303,18 @@ RegistrarClient::zone_add_help()
 }
 
 void
+RegistrarClient::zone_ns_add_help()
+{
+    std::cout <<
+        "** Add new nameserver to zone**\n\n"
+        "  $ " << g_prog_name << " --" << REGISTRAR_ZONE_NS_ADD_NAME << " \\\n"
+        "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> \\\n"
+        "    --" << REGISTRAR_NS_FQDN_NAME << "=<ns_fqdn> \\\n"
+        "    --" << REGISTRAR_ADDR_NAME << "=<addr>\n"
+        << std::endl;
+}
+
+void
 RegistrarClient::registrar_add_help()
 {
     std::cout <<
@@ -284,8 +322,6 @@ RegistrarClient::registrar_add_help()
         "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_ADD_NAME << " \\\n"
         "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<registrar_handle> \\\n"
         "    --" << REGISTRAR_COUNTRY_NAME << "=<country_code> \\\n"
-        "    --" << REGISTRAR_CERT_NAME << "=<certificate>[,<cetificate_2>, ...] \\\n"
-        "    --" << REGISTRAR_PASSWORD_NAME << "=<password>[,<password_2>, ...] \\\n"
         "    [--" << REGISTRAR_ICO_NAME << "=<ico>] \\\n"
         "    [--" << REGISTRAR_DIC_NAME << "=<dic>] \\\n"
         "    [--" << REGISTRAR_VAR_SYMB_NAME << "=<var_symbol>] \\\n"
@@ -303,6 +339,17 @@ RegistrarClient::registrar_add_help()
         "    [--" << REGISTRAR_URL_NAME << "=<url>] \\\n"
         "    [--" << REGISTRAR_NO_VAT_NAME << "] \\\n"
         "    [--" << REGISTRAR_SYSTEM_NAME << "]\n"
+        << std::endl;
+}
+void
+RegistrarClient::registrar_acl_add_help()
+{
+    std::cout << 
+        "** Add new certificate add password to registrar **\n\n"
+        "  $ " << g_prog_name << " --" << REGISTRAR_REGISTRAR_ACL_ADD_NAME << " \\\n"
+        "    --" << REGISTRAR_ADD_HANDLE_NAME << "=<handle> \\\n"
+        "    --" << REGISTRAR_CERT_NAME << "=<certificate> \\\n"
+        "    --" << REGISTRAR_PASSWORD_NAME << "=<password>\n"
         << std::endl;
 }
 void
@@ -325,7 +372,9 @@ const struct options
 RegistrarClient::m_opts[] = {
     ADDOPT(REGISTRAR_LIST_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(REGISTRAR_ZONE_ADD_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(REGISTRAR_ZONE_NS_ADD_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(REGISTRAR_REGISTRAR_ADD_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(REGISTRAR_REGISTRAR_ACL_ADD_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(REGISTRAR_REGISTRAR_ADD_ZONE_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(REGISTRAR_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
     add_ID,
