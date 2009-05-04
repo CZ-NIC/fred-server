@@ -129,12 +129,36 @@ namespace Register
             << "AND d.id=" << domain;
         return getEmailList(sql);
       }
+      std::string getNSSetTechEmailsHistory(TID nsset)
+      {
+        std::stringstream sql;
+        sql << "SELECT ch.email "
+            << "FROM contact_history ch "
+            << "JOIN object_registry cobr ON (cobr.historyid = ch.historyid) "
+            << "JOIN nsset_contact_map_history ncmap ON (ncmap.contactid = ch.id) "
+            << "JOIN nsset_history nh ON (ncmap.historyid = nh.historyid) "
+            << "JOIN object_registry nobr ON (nobr.historyid = nh.historyid) "
+            << "WHERE nobr.id = " << nsset;
+        return getEmailList(sql);
+      }
       std::string getNSSetTechEmails(TID nsset)
       {
         std::stringstream sql;
         sql << "SELECT c.email "
             << "FROM nsset_contact_map ncm, contact c "
             << "WHERE ncm.contactid=c.id AND ncm.nssetid=" << nsset;
+        return getEmailList(sql);
+      }
+      std::string getKeySetTechEmailsHistory(TID keyset)
+      {
+        std::stringstream sql;
+        sql << "SELECT ch.email "
+            << "FROM contact_history ch "
+            << "JOIN object_registry cobr ON (cobr.historyid = ch.historyid) "
+            << "JOIN keyset_contact_map_history kcmap ON (kcmap.contactid = ch.id) "
+            << "JOIN keyset_history kh ON (kcmap.historyid = kh.historyid) "
+            << "JOIN object_registry kobr ON (kobr.historyid = kh.historyid) "
+            << "WHERE kobr.id = " << keyset;
         return getEmailList(sql);
       }
       std::string getKeySetTechEmails(TID keyset)
@@ -145,6 +169,15 @@ namespace Register
               << "WHERE kcm.contactid=c.id AND kcm.keysetid="
               << keyset;
           return getEmailList(sql);
+      }
+      std::string getContactEmailsHistory(TID contact)
+      {
+        std::stringstream sql;
+        sql << "SELECT ch.email "
+            << "FROM contact_history ch "
+            << "JOIN object_registry cobr ON (ch.historyid = cobr.historyid) "
+            << "WHERE cobr.id = " << contact;
+        return getEmailList(sql);
       }
       std::string getContactEmails(TID contact)
       {
@@ -341,29 +374,44 @@ namespace Register
             switch (i->obj_type) {
              case 1: // contact
               fillSimpleObjectParams(i->obj_id,params);
-              emails = getContactEmails(i->obj_id);
+              if (useHistory) {
+                emails = getContactEmailsHistory(i->obj_id);
+              }
+              else {
+                emails = getContactEmails(i->obj_id);
+              }
               break;
              case 2: // nsset
               fillSimpleObjectParams(i->obj_id,params);
-              emails = getNSSetTechEmails(i->obj_id);
+              if (useHistory) {
+                emails = getNSSetTechEmailsHistory(i->obj_id);
+              }
+              else {
+                emails = getNSSetTechEmails(i->obj_id);
+              }
               break;
              case 3: // domain
                if (useHistory) {
                  fillDomainParamsHistory(i->obj_id,i->stamp,params);
                  emails =
-                   (i->emails == 1 ? getDomainAdminEmailsHistory(i->obj_id) :
-                                     getDomainTechEmailsHistory(i->obj_id));
+                   (i->emails == 1 ? getDomainAdminEmailsHistory(i->obj_id) 
+                                   : getDomainTechEmailsHistory(i->obj_id));
                }
                else {
                  fillDomainParams(i->obj_id,i->stamp,params);
                  emails =
-                   (i->emails == 1 ? getDomainAdminEmails(i->obj_id) :
-                    getDomainTechEmails(i->obj_id));
+                   (i->emails == 1 ? getDomainAdminEmails(i->obj_id) 
+                                   : getDomainTechEmails(i->obj_id));
                }
                break;
              case 4: // keyset
               fillSimpleObjectParams(i->obj_id,params);
-              emails = getKeySetTechEmails(i->obj_id);
+              if (useHistory) {
+                emails = getKeySetTechEmailsHistory(i->obj_id);
+              }
+              else {
+                emails = getKeySetTechEmails(i->obj_id);
+              }
               break;
             }
             if (debugOutput) {
