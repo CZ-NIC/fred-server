@@ -2951,7 +2951,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
         LOG(WARNING_LOG, "Reason: unknown country code: %s", (const char *)c.CC);
         code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                 ccReg::contact_cc, 1, REASON_MSG_COUNTRY_NOTEXIST);
-    } else {
+    } else if (code == 0) {
         // create object generate ROID
         id= action.getDB()->CreateObject("C", action.getRegistrar(), handle, c.AuthInfoPw);
         if (id<=0) {
