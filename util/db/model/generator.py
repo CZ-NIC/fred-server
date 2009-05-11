@@ -116,6 +116,10 @@ def guess_type(type, pkey, fkey):
         return 'std::string'
     elif type == 'serial':
         return 'unsigned long long'
+    elif type == 'inet':
+	return 'std::string'
+    elif type == 'boolean':
+	return 'bool'	
     else:
         print "Unknown type: %s" % (type)
         sys.exit(1)
@@ -222,7 +226,7 @@ def write_includes(out, val):
     if val['foreign'] == False:
         return
     out.write('#include "%s%s.h"\n' % (
-        file_prefix, val['foreign_model'].lower()))
+        file_prefix, val['foreign_model_fname'].lower()))
 
 def write_h_file(out, values, table_name):
     capital_name = table_name[0].upper() + create_camel_case(table_name)[1:]
@@ -376,7 +380,7 @@ def write_variables(out, val, cap_name):
 def write_c_file(out, values, table_name):
     capital_name = table_name[0].upper() + create_camel_case(table_name)[1:]
     out.write('#include "%s%s.h"\n' % (
-        file_prefix, create_camel_case(table_name).lower()))
+        file_prefix, table_name))
     out.write('\n')
     out.write('std::string %s%s::table_name = "%s";\n' % (
         prefix, capital_name, table_name))
@@ -413,7 +417,9 @@ def create_values(result):
         value['foreign'] = is_foreign(res[4])
         value['data_type'] = guess_type(res[1], value['primary'], value['foreign'])
         value['foreign_db_col_name'] = res[6]
+
         value['foreign_model'] = create_camel_case(res[5], True)
+        value['foreign_model_fname'] = res[5]
         retval.append(value)
     return retval
 
