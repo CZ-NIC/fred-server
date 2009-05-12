@@ -1,5 +1,3 @@
-SUBDIRS = migration
-
 noinst_LIBRARIES = liblog_impl.a
 
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
