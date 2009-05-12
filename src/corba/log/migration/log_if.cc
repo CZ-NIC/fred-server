@@ -6,10 +6,12 @@
  */
 #include <string>
 #include "m_epp_parser.h"
-#include "types.h"
+#include "migrate.h"
 
 /* strlen, strcpy */ 
 #include <string.h> 
+
+#define ALLOC_STEP 4
 
 using namespace std;
 
@@ -26,7 +28,7 @@ char * wrap_str(const char *str)
 }
 
 // this would be much nicer
-// typedef list<ccLogProperty> ccProperties;
+// typedef list<LogProperty> LogProperties;
 
 #define MAX_ERROR_MSG_LEN 1024
 /**
@@ -41,49 +43,24 @@ char * wrap_str(const char *str)
  *
  * @returns			NULL in case of an allocation error, modified c_props otherwise
  */
-ccProperties *epp_property_push(ccProperties *c_props, const  char *name, const char *value, bool output, bool child)
+LogProperties *epp_property_push(LogProperties *c_props, const  char *name, const char *value, bool output, bool child)
 {
 	if(c_props == NULL) {
-		c_props = new ccProperties;
-		if (c_props == NULL) {
-				return NULL;
-		}
-		c_props->_maximum = ALLOC_STEP;
-		c_props->_buffer = (ccLogProperty*)malloc(c_props->_maximum * sizeof(ccLogProperty));
-		if (c_props->_buffer == NULL) {
-				delete c_props;
-				return NULL;
-		}
-		c_props->_length = 0;
+		c_props = new LogProperties();
 	}
 
 	if (value != NULL) {
-		if(c_props->_length >= c_props->_maximum) {
-			c_props->_maximum += ALLOC_STEP;
-			c_props->_buffer = (ccLogProperty*)realloc(c_props->_buffer, c_props->_maximum*sizeof(ccLogProperty));
-			if (c_props->_buffer == NULL) {
-				delete c_props;
-				return NULL;
-			}
-		}
-		c_props->_buffer[c_props->_length].name = wrap_str(name);
-		if(c_props->_buffer[c_props->_length].name == NULL) {
-			delete c_props;
-			return NULL;
-		}
-		c_props->_buffer[c_props->_length].value = wrap_str(value);
-		if(c_props->_buffer[c_props->_length].value == NULL) {
-			delete c_props;
-			delete c_props->_buffer[c_props->_length].name;
-			return NULL;
-		}
-		c_props->_buffer[c_props->_length].output = output;   // TODO true if it's output
-		c_props->_buffer[c_props->_length].child = child;
-		c_props->_length++;
+		LogProperty p;
+
+		p.name =  wrap_str(name);
+		p.value = wrap_str(value);
+		p.output = output;
+		p.child = child;
+
+		c_props->push_back(p);
 	}
 	return c_props;
 }
-
 
 /**
  * Add the content of a qhead linked list to the properties.
@@ -101,9 +78,9 @@ ccProperties *epp_property_push(ccProperties *c_props, const  char *name, const 
  *
  */
 
-ccProperties *epp_property_push_qhead(ccProperties *c_props, qhead *list, const char *list_name, bool output, bool child)
+LogProperties *epp_property_push_qhead(LogProperties *c_props, qhead *list, const char *list_name, bool output, bool child)
 {
-	ccProperties *ret;
+	LogProperties *ret;
 
 	if (list->count == 0) {
 		return c_props;
@@ -131,54 +108,25 @@ ccProperties *epp_property_push_qhead(ccProperties *c_props, qhead *list, const 
  * @returns			NULL in case of an allocation error, modified c_props otherwise
  */
 
-ccProperties *epp_property_push_int(ccProperties *c_props, const char *name, int value, bool output)
+LogProperties *epp_property_push_int(LogProperties *c_props, const char *name, int value, bool output)
 {
+	LogProperty p;
 	char str[12];
 
 	if(c_props == NULL) {
-		c_props = new ccProperties;
-		if (c_props == NULL) {
-				return NULL;
-		}
-		c_props->_maximum = ALLOC_STEP;
-		c_props->_buffer = (ccLogProperty*)malloc(c_props->_maximum * sizeof(ccLogProperty));
-		if (c_props->_buffer == NULL) {
-				delete c_props;
-				return NULL;
-		}
-		c_props->_length = 0;
+		c_props = new LogProperties;
 	}
 
-
-	if(c_props->_length >= c_props->_maximum) {
-		c_props->_maximum += ALLOC_STEP;
-		c_props->_buffer = (ccLogProperty*)realloc(c_props->_buffer, c_props->_maximum*sizeof(ccLogProperty));
-		if (c_props->_buffer == NULL) {
-			delete c_props;
-			return NULL;
-		}
-	}
 	snprintf(str, 12, "%i", value);
-	c_props->_buffer[c_props->_length].name = wrap_str(name);
 
-	if(c_props->_buffer[c_props->_length].name == NULL) {
-		delete c_props;
-		return NULL;
-	}
-	c_props->_buffer[c_props->_length].value = wrap_str(str);
+	p.name = wrap_str(name);
+	p.value = wrap_str(str);
+	p.output = output;
+	p.child = false;
 
-	if(c_props->_buffer[c_props->_length].value == NULL) {
-		delete c_props;
-		delete c_props->_buffer[c_props->_length].name;
-		return NULL;
-	}
-
-	c_props->_buffer[c_props->_length].output = output;
-	c_props->_buffer[c_props->_length].child = false;
-	c_props->_length++;
+	c_props->push_back(p);
 
 	return c_props;
-
 }
 
 /**
@@ -189,7 +137,7 @@ ccProperties *epp_property_push_int(ccProperties *c_props, const char *name, int
  *      *
  *       *  @returns 	log entry properties or NULL in case of an allocation error
  *        */
-ccProperties *epp_log_postal_info(ccProperties *p, epp_postalInfo *pi)
+LogProperties *epp_log_postal_info(LogProperties *p, epp_postalInfo *pi)
 {
 	if(pi == NULL) return p;
 
@@ -219,7 +167,7 @@ ccProperties *epp_log_postal_info(ccProperties *p, epp_postalInfo *pi)
  *      *
  *       *  @returns 	log entry properties or NULL in case of an allocation error
  *        */
-ccProperties *epp_log_disclose_info(ccProperties *p, epp_discl *ed)
+LogProperties *epp_log_disclose_info(LogProperties *p, epp_discl *ed)
 {
 	if(ed->flag == 1) {
 		p = epp_property_push(p, "discl.policy", "private", false, false);
@@ -265,12 +213,12 @@ ccProperties *epp_log_disclose_info(ccProperties *p, epp_discl *ed)
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-ccProperties *epp_property_push_ds(ccProperties *c_props, qhead *list, const char *list_name)
+LogProperties *epp_property_push_ds(LogProperties *c_props, qhead *list, const char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
 	epp_ds *value;				/* ds record data structure */
-	ccProperties *ret;	/* return value in case the list is not empty	*/
+	LogProperties *ret;	/* return value in case the list is not empty	*/
 
 	if (q_length(*list) > 0) {
 
@@ -326,12 +274,12 @@ ccProperties *epp_property_push_ds(ccProperties *c_props, qhead *list, const cha
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-ccProperties *epp_property_push_valerr(ccProperties *c_props, qhead *list, char *list_name)
+LogProperties *epp_property_push_valerr(LogProperties *c_props, qhead *list, char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
 	epp_error *value;			/* ds record data structure */
-	ccProperties *ret;	/* return value in case the list is not empty	*/
+	LogProperties *ret;	/* return value in case the list is not empty	*/
 
 	if (q_length(*list) > 0) {
 
@@ -369,12 +317,12 @@ ccProperties *epp_property_push_valerr(ccProperties *c_props, qhead *list, char 
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-ccProperties *epp_property_push_nsset(ccProperties *c_props, qhead *list, const char *list_name)
+LogProperties *epp_property_push_nsset(LogProperties *c_props, qhead *list, const char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
 	epp_ns *value;				/* ds record data structure */
-	ccProperties *ret;	/* return value in case the list is not empty	*/
+	LogProperties *ret;	/* return value in case the list is not empty	*/
 
 	if (q_length(*list) > 0) {
 
@@ -411,11 +359,11 @@ ccProperties *epp_property_push_nsset(ccProperties *c_props, qhead *list, const 
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-ccProperties *epp_property_push_dnskey(ccProperties *c_props, qhead *list, const char *list_name)
+LogProperties *epp_property_push_dnskey(LogProperties *c_props, qhead *list, const char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH];
 	epp_dnskey *value;
-	ccProperties *ret;
+	LogProperties *ret;
 
 	if (q_length(*list) > 0) {
 		q_foreach(list) {
@@ -467,7 +415,7 @@ ccProperties *epp_property_push_dnskey(ccProperties *c_props, qhead *list, const
  *
  * @return  status
  */
-auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid)
+auto_ptr<LogProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *action_type)
 {
 #define PUSH_PROPERTY(seq, name, value)								\
 	seq = epp_property_push(seq, name, value, false, false);	\
@@ -491,8 +439,9 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 	const char *cmd_name = NULL;					/* command name to be used
 												one of the basic properties */
 	char errmsg[MAX_ERROR_MSG_LEN];			/* error message returned from corba call */
-	ccProperties *c_props = NULL;	/* properties to be sent to the log */
+	LogProperties *c_props = NULL;	/* properties to be sent to the log */
 	/* data structures for every command */
+	epps_sendAuthInfo *ai;
 	epps_create_contact *cc;
 	epps_create_domain *cd;
 	epps_create_nsset *cn;
@@ -507,33 +456,24 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 	epps_login *el;
 	epps_check *ec;
 
-	// first allocate some space for c_props
-	c_props = new ccProperties;
-	if (c_props == NULL) {
-			throw bad_alloc();
-	}
-	c_props->_maximum = ALLOC_STEP;
-	c_props->_buffer = (ccLogProperty*)malloc(c_props->_maximum * sizeof(ccLogProperty));
-	if (c_props->_buffer == NULL) {
-			delete c_props;
-			throw bad_alloc();
-	}
-	c_props->_length = 0;
-
+	c_props = new LogProperties;
+	
 	errmsg[0] = '\0';
 	if(cdata->type == EPP_DUMMY) {
+		*action_type = (epp_action_type)999900;
 		PUSH_PROPERTY (c_props, "command", "dummy");
 		PUSH_PROPERTY (c_props, "clTRID", cdata->clTRID);
 		PUSH_PROPERTY (c_props, "svTRID", cdata->svTRID);
 
 		// TODO
 		// res = epp_log_new_message(request, c_props, &errmsg);
-		return auto_ptr<ccProperties>(c_props);
+		return auto_ptr<LogProperties>(c_props);
 	}
 
 	switch(cmdtype) {
 		case EPP_RED_LOGIN:
 			if (cdata->type == EPP_LOGIN){
+				*action_type = ClientLogin;
 				cmd_name = "login";
 
 				el = static_cast<epps_login*>(cdata->data);
@@ -550,15 +490,55 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 				PUSH_PROPERTY(c_props, "password", el->pw);
 				PUSH_PROPERTY(c_props, "newPassword", el->newPW);
 			} else {
-				return auto_ptr<ccProperties>(c_props);
+				ai = static_cast<epps_sendAuthInfo*>(cdata->data);
+
+				switch(cdata->type) {
+					case EPP_SENDAUTHINFO_CONTACT:
+						*action_type = ContactSendAuthInfo;
+						cmd_name = "sendAuthInfoContact";
+						break;
+					case EPP_SENDAUTHINFO_DOMAIN:
+						*action_type = DomainSendAuthInfo;
+						cmd_name = "sendAuthInfoContact";
+						break;
+					case EPP_SENDAUTHINFO_NSSET:
+						*action_type = NSSetSendAuthInfo;
+						cmd_name = "sendAuthInfoContact";
+						break;
+					case EPP_SENDAUTHINFO_KEYSET:
+						*action_type = KeySetSendAuthInfo;
+						cmd_name = "sendAuthInfoContact";
+						break;
+					default:
+						break;
+				}
+
+				PUSH_PROPERTY(c_props, "id", ai->id);
+
+				return auto_ptr<LogProperties>(c_props);
 			}
 			break;
 
 		case EPP_RED_LOGOUT:
+			*action_type = ClientLogout;
 			cmd_name = "logout";
 			break;
 
 		case EPP_RED_CHECK:
+			switch(cdata->type) {
+				case EPP_CHECK_CONTACT:
+					*action_type = ContactCheck;
+					break;
+				case EPP_CHECK_DOMAIN:
+					*action_type = DomainCheck;
+					break;
+				case EPP_CHECK_NSSET:
+					*action_type = NSsetCheck;
+					break;
+				case EPP_CHECK_KEYSET:
+					*action_type = KeysetCheck;
+					break;
+			}
 			cmd_name = "check";
 			ec = static_cast<epps_check*>(cdata->data);
 			PUSH_QHEAD(c_props, &ec->ids, "checkId");
@@ -568,21 +548,26 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 
 			switch(cdata->type) {
 				case EPP_LIST_CONTACT:
+					*action_type = ListContact;
 					cmd_name = "listContact";
 					break;
 				case EPP_LIST_KEYSET:
+					*action_type = ListKeySet;
 					cmd_name = "listKeyset";
 					break;
 				case EPP_LIST_NSSET:
+					*action_type = ListNSset;
 					cmd_name = "listNsset";
 					break;
 				case EPP_LIST_DOMAIN:
+					*action_type = ListDomain;
 					cmd_name = "listDomain";
 					break;
 				case EPP_INFO_CONTACT: {
 					epps_info_contact *i = static_cast<epps_info_contact*>(cdata->data);
 
 					PUSH_PROPERTY(c_props, "id", i->id)
+					*action_type = ContactInfo;
 					cmd_name = "infoContact";
 					break;
 				}
@@ -590,6 +575,7 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 					epps_info_keyset *i = static_cast<epps_info_keyset*>(cdata->data);
 
 					PUSH_PROPERTY(c_props, "id", i->id)
+					*action_type = KeysetInfo;
 					cmd_name = "infoKeyset";
 					break;
 				}
@@ -597,6 +583,7 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 					epps_info_nsset *i = static_cast<epps_info_nsset*>(cdata->data);
 
 					PUSH_PROPERTY(c_props, "id", i->id)
+					*action_type = NSsetInfo;
 					cmd_name = "infoNsset";
 					break;
 				}
@@ -604,6 +591,7 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 					epps_info_domain *i = static_cast<epps_info_domain*>(cdata->data);
 
 					PUSH_PROPERTY(c_props, "name", i->name)
+					*action_type = DomainInfo;
 					cmd_name = "infoDomain";
 					break;
 				}
@@ -615,14 +603,18 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 		case EPP_RED_POLL:
 			cmd_name = "poll";
 			if(cdata->type == EPP_POLL_ACK) {
+				*action_type = PollAcknowledgement;
 				epps_poll_ack *pa = static_cast<epps_poll_ack*>(cdata->data);
 				PUSH_PROPERTY(c_props, "msgId", pa->msgid);
+			} else {
+				*action_type = PollResponse;
 			}
 			break;
 
 		case EPP_RED_CREATE:
 			switch(cdata->type) {
 				case EPP_CREATE_CONTACT:
+					*action_type = ContactCreate;
 					cmd_name = "createContact";
 					cc = static_cast<epps_create_contact*>(cdata->data);
 
@@ -659,6 +651,7 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 					break;
 
 				case EPP_CREATE_DOMAIN:
+					*action_type = DomainCreate;
 					cmd_name = "createDomain";
 					cd = static_cast<epps_create_domain*>(cdata->data);
 
@@ -681,6 +674,7 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 					break;
 
 				case EPP_CREATE_NSSET:
+					*action_type = NSsetCreate;
 					cmd_name = "createNsset";
 					cn = static_cast<epps_create_nsset*>(cdata->data);
 
@@ -696,6 +690,7 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 
 					break;
 				case EPP_CREATE_KEYSET:
+					*action_type = KeysetCreate;
 					cmd_name = "createKeyset";
 					ck = static_cast<epps_create_keyset*>(cdata->data);
 
@@ -714,11 +709,29 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 					PUSH_QHEAD(c_props, &ck->tech, "techContact");
 					break;
 				default:
+					*action_type = (epp_action_type)999901;
 					break;
 			}
 
 			break;
 		case EPP_RED_DELETE:
+			switch(cdata->type) {
+				case EPP_DELETE_CONTACT:
+					*action_type = ContactDelete;
+					break;
+				case EPP_DELETE_DOMAIN:
+					*action_type = DomainDelete;
+					break;
+				case EPP_DELETE_NSSET:
+					*action_type = NSsetDelete;
+					break;
+				case EPP_DELETE_KEYSET:
+					*action_type = KeysetDelete;
+					break;
+				default:
+					*action_type = (epp_action_type)999902;
+					break;
+			}
 			cmd_name = "delete";
 			ed = static_cast<epps_delete*>(cdata->data);
 
@@ -726,15 +739,17 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 			break;
 
 		case EPP_RED_RENEW:
+			*action_type = DomainRenew;
 			cmd_name = "renew";
 			er = static_cast<epps_renew*>(cdata->data);
 
 			PUSH_PROPERTY(c_props, "name", er->name);
 			PUSH_PROPERTY(c_props, "curExDate", er->curExDate);
 			PUSH_PROPERTY_INT(c_props, "renewPeriod", er->period);
+
 			if (er->unit == TIMEUNIT_MONTH) {
 				PUSH_PROPERTY(c_props, "timeunit", "Month");
-			} else if(cd->unit == TIMEUNIT_YEAR) {
+			} else if(er->unit == TIMEUNIT_YEAR) {
 				PUSH_PROPERTY(c_props, "timeunit", "Year");
 			}
 			PUSH_PROPERTY(c_props, "expirationDate", er->exDate);
@@ -744,6 +759,7 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 
 			switch(cdata->type) {
 				case EPP_UPDATE_CONTACT:
+					*action_type = ContactUpdate;
 					cmd_name = "updateContact";
 
 					uc = static_cast<epps_update_contact*>(cdata->data);
@@ -780,6 +796,7 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 					break;
 
 				case EPP_UPDATE_DOMAIN:
+					*action_type = DomainUpdate;
 					cmd_name = "updateDomain";
 
 					ud = static_cast<epps_update_domain*>(cdata->data);
@@ -799,6 +816,7 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 					break;
 
 				case EPP_UPDATE_NSSET:
+					*action_type = NSsetUpdate;
 					cmd_name = "updateNsset";
 					un = static_cast<epps_update_nsset*>(cdata->data);
 
@@ -817,6 +835,7 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 					break;
 
 				case EPP_UPDATE_KEYSET:
+					*action_type = KeysetUpdate;
 					cmd_name = "updateKeyset";
 					uk = static_cast<epps_update_keyset*>(cdata->data);
 
@@ -841,10 +860,31 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
 					}
 
 					break;
+				default:
+					// TODO remove these things  ...
+					*action_type = (epp_action_type)999903;
+					break;
 			}
 			break;
 
 		case EPP_RED_TRANSFER:
+			switch(cdata->type) {
+				case EPP_TRANSFER_CONTACT:
+					*action_type = ContactTransfer;
+					break;
+				case EPP_TRANSFER_DOMAIN:
+					*action_type = DomainTransfer;
+					break;
+				case EPP_TRANSFER_NSSET:
+					*action_type = NSsetTransfer;
+					break;
+				case EPP_TRANSFER_KEYSET:
+					*action_type = KeysetTransfer;
+					break;
+				default:
+					*action_type = (epp_action_type)999904;
+			}
+
 			cmd_name = "transfer";
 			et = static_cast<epps_transfer*>(cdata->data);
 
@@ -859,7 +899,9 @@ auto_ptr<ccProperties> log_epp_command(epp_command_data *cdata, epp_red_command_
   	PUSH_PROPERTY (c_props, "clTRID", cdata->clTRID);
 	PUSH_PROPERTY (c_props, "svTRID", cdata->svTRID);
 
-	return auto_ptr<ccProperties>(c_props);
+		// TODO : sessionid
+
+	return auto_ptr<LogProperties>(c_props);
 	// res = epp_log_new_message(  request, c_props, &errmsg);
 
 #undef PUSH_PROPERTY

@@ -13,15 +13,7 @@
 
 #include "old_utils/conf.h"
 
-/*
-#include "corba/mailer_manager.h"
-#include <corba/ccReg.hh>
-#include <corba/ccReg.hh>
-*/
-
 #include "conf/manager.h"
-
-
 
 #include "old_utils/log.h"
 #include "old_utils/conf.h"
@@ -37,16 +29,30 @@ static const char * EPP_SCHEMA = "/home/jvicenik/devel/fred_svn/fred/build/root/
 static const std::string TEST_QUERY = "insert into test_pv (entry_id, name_id, value) values (345, 608, 'ghgh')";
 static const std::string CONNECTION_STRING = "host=localhost port=22345 dbname=fred user=fred password=password connect_timeout=2";
 
-// constants from log_impl.cc
-const std::string Backend::LAST_PROPERTY_VALUE_ID = "select currval('log_property_value_id_seq1'::regclass)";
-const std::string Backend::LAST_PROPERTY_NAME_ID = "select currval('log_property_name_id_seq'::regclass)";
-const std::string Backend::LAST_ENTRY_ID = "select currval('log_entry_id_seq'::regclass)";
+/** length of date at the begining of an input line, input format is: date|xml */
+static const int INPUT_DATE_LENGTH = 20;
+static const std::string LOG_FILENAME = "log_migration_log.txt";
 
-/*
-unsigned long long Conversion<unsigned long long>::from_string(const std::string& _value) {
-  return atoll(_value.c_str());
+void logger(boost::format &fmt)
+{
+#ifdef HAVE_LOGGER
+	LOGGER("fred-server").error(fmt);
+#endif
 }
-*/
+
+void logger(std::string &str)
+{
+#ifdef HAVE_LOGGER
+	LOGGER("fred-server").error(str);
+#endif
+}
+
+void logger(const char *str)
+{
+#ifdef HAVE_LOGGER
+	LOGGER("fred-server").error(str);
+#endif
+}
 
 void signal_handler(int signum);
 
@@ -56,6 +62,7 @@ void signal_handler(int signum)
 	exit(0);
 }
 
+/*
 // Backend ctor: connect to the database and fill property_names map
 Backend::Backend(const std::string database) : conn(), trans(NULL), transaction_counter(TRANS_LIMIT)
 {
@@ -80,10 +87,10 @@ Backend::Backend(const std::string database) : conn(), trans(NULL), transaction_
 	} catch (Database::Exception &ex) {
 		logger(ex.what());
 		abort();
-/*
-		delete trans.release();
-		trans.reset(new Transaction(uconn));
-*/
+
+//		delete trans.release();
+//		trans.reset(new Transaction(uconn));
+
 		throw;
 	}
 
@@ -156,10 +163,13 @@ TID Backend::find_property_name_id(const char *name)
 
 	return name_id;
 }
+*/
 
 /**
  * Find last ID used in log_property_value table
  */
+
+/*
 inline TID Backend::find_last_property_value_id()
 {
 	Result res = trans->exec(LAST_PROPERTY_VALUE_ID);
@@ -167,7 +177,7 @@ inline TID Backend::find_last_property_value_id()
 }
 
 // insert properties for the given log_entry record
-void Backend::insert_props(TID entry_id, const ccProperties& props)
+void Backend::insert_props(TID entry_id, const LogProperties& props)
 {
 	std::string s_val;
 	std::ostringstream query;
@@ -220,7 +230,7 @@ void Backend::insert_props(TID entry_id, const ccProperties& props)
 }
 
 // log a new event, return the database ID of the record
-TID Backend::new_event(const char *sourceIP, LogServiceType service, const char *content_in, const ccProperties& props)
+TID Backend::new_event(const char *sourceIP, LogServiceType service, const char *content_in, const LogProperties& props)
 {
 	std::ostringstream query;
 	std::string time, s_sourceIP, s_content;
@@ -306,7 +316,7 @@ void Backend::test()
 }
 
 // update existing log record with given ID
-bool Backend::update_event(TID id, const ccProperties &props)
+bool Backend::update_event(TID id, const LogProperties &props)
 {
 	std::ostringstream query;
 
@@ -317,15 +327,16 @@ bool Backend::update_event(TID id, const ccProperties &props)
 		insert_props(id, props);
 	} catch (Database::Exception &ex) {
 		logger(ex.what());
-/*
-		delete trans.release();
-		trans.reset(new Transaction(uconn));
-*/
+
+//		delete trans.release();
+//		trans.reset(new Transaction(uconn));
+
 		return false;
 	}
 	return true;
 
 }
+*/
 
 int main()
 {
@@ -345,19 +356,34 @@ int main()
 	signal(11, signal_handler);
 	signal(6, signal_handler);
 
+	// setup loggin via LOGGER
+	Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_FILE, std::string(LOG_FILENAME));
+	Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
+	LOGGER(PACKAGE).info("Logging initialized for migration");
+
 	while(std::getline(std::cin, rawline)) {
 		size_t i;
+		epp_action_type action_type;
+
+		std::string date_str;
 		// if(cin.fail())
 
 		// remove spaces at the beginning
 
-		for (i=0; rawline[i] == ' ' && i<rawline.length(); i++)
-			;
-
+		for (i=0; rawline[i] == ' ' && i<rawline.length(); i++) ;
 		if (i == rawline.length()) continue;
-
 		line = rawline.substr(i);
+	
+		if(line[INPUT_DATE_LENGTH] != '|') {
+			logger("Error in input line: Date at the beginning doesn't have proper length");	
 
+			std::cout << "Error in input line: Date at the beginning doesn't have proper length" << std::endl;	
+			continue;
+		}
+
+		date_str = line.substr(0, INPUT_DATE_LENGTH);
+		line = line.substr(INPUT_DATE_LENGTH + 1);
+	
 		time1 = clock();
 		pstat = epp_parse_command(line.c_str(), line.length(), &cdata, &cmd_type);
 
@@ -369,31 +395,32 @@ int main()
 		if (pstat > PARSER_HELLO) {
 			switch (pstat) {
 				case PARSER_NOT_XML:
-					serv.logger("Request is not XML");
+					logger("Request is not XML");
 					continue;
 				case PARSER_NOT_COMMAND:
-					serv.logger("Request is neither a command nor hello");
+					logger("Request is neither a command nor hello");
 					continue;
 				case PARSER_ESCHEMA:
-					serv.logger("Schema's parser error - check correctness of schema");
+					logger("Schema's parser error - check correctness of schema");
 					continue;
 				case PARSER_EINTERNAL:
-					serv.logger("Internal parser error occured when processing request");
+					logger("Internal parser error occured when processing request");
 					continue;
 				default:
-					serv.logger("Unknown error occured during parsing stage");
+					logger("Unknown error occured during parsing stage");
 					continue;
 			}
 		}
 
 		time2 = clock();
 
-		std::auto_ptr<ccProperties> props = log_epp_command(cdata, cmd_type, -1);
+		action_type = UnknownAction;
+		std::auto_ptr<LogProperties> props = log_epp_command(cdata, cmd_type, -1, &action_type);
 
 		time3 = clock();
 		t_logcomm += time3 - time2;
 
-		serv.new_event(NULL, LC_EPP, line.c_str(), *props);
+ 		serv.i_new_event(NULL, LC_EPP, line.c_str(), *props, action_type, date_str);
 
 		t_backend += clock() - time3;
 

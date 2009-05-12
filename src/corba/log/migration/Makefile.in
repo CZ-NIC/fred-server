@@ -32,7 +32,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 sbin_PROGRAMS = migrate_log$(EXEEXT)
-subdir = src/corba/log/migration
+subdir = util/logd_migration
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/acinclude.m4 \
@@ -61,7 +61,8 @@ am__DEPENDENCIES_1 =
 migrate_log_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/util/log/liblog.a \
 	$(top_builddir)/util/db/libdb.a \
-	$(top_builddir)/util/types/libtypes.a
+	$(top_builddir)/util/types/libtypes.a \
+	$(top_builddir)/src/corba/log/liblog_impl.a
 migrate_log_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(migrate_log_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -238,12 +239,13 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(XML2_LIBS)
 AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(AM_CFLAGS) $(XML2_CFLAGS) -I$(top_srcdir)/util \
-              -I$(top_srcdir)/src -I$(top_builddir)/src -I$(top_srcdir)	
+              -I$(top_srcdir)/src -I$(top_builddir)/src -I$(top_srcdir)	-I$(top_srcdir)/src/corba/log
 
 LDADD = $(BOOST_DATE_TIME_LIB) $(BOOST_THREAD_LIB) \
 	$(top_builddir)/util/log/liblog.a \
 	$(top_builddir)/util/db/libdb.a   \
-	$(top_builddir)/util/types/libtypes.a   
+	$(top_builddir)/util/types/libtypes.a   \
+	$(top_builddir)/src/corba/log/liblog_impl.a
 
 migrate_log_SOURCES = migrate.cc log_if.cc m_epp_parser.cc migrate.h m_epp_parser.h types.h
 migrate_log_CPPFLAGS = $(AM_CPPFLAGS)
@@ -261,9 +263,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/corba/log/migration/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  util/logd_migration/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  src/corba/log/migration/Makefile
+	  $(AUTOMAKE) --gnu  util/logd_migration/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

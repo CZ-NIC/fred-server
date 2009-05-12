@@ -57,6 +57,8 @@
 #include <libxml/xpathInternals.h>
 #include <memory>
 
+#include "migrate.h"
+
 /** Standard EPP xml namespace */
 #define NS_EPP	"urn:ietf:params:xml:ns:epp-1.0"
 /** Our custom namespace used for contact object */
@@ -85,7 +87,6 @@
 #define LOC_FRED	NS_FRED " fred-1.3.xsd"
 /** Namespace + location of enumval xml schema */
 #define LOC_ENUMVAL	NS_ENUMVAL " enumval-1.1.xsd"
-
 
 /**
  * Enumaration of statuses returned by validator.
@@ -297,7 +298,7 @@ typedef enum {
 	KeysetUpdate = 603,
 	KeysetCreate = 604,
 	KeysetTransfer = 605,
-	UnknowAction = 1000,
+	UnknownAction = 1000,
 	ListContact = 1002,
 	ListNSset = 1004,
 	ListDomain = 1005,
@@ -311,6 +312,7 @@ typedef enum {
 	GetInfoResults = 1105,
 	KeySetSendAuthInfo = 1106
 } epp_action_type;
+
 
 /**
  * The struct represents one epp error in ExtValue element. It is either
@@ -1061,10 +1063,8 @@ epp_parse_command(
 void
 epp_parser_request_cleanup(void *cdata_arg);
 */
-class ccProperties;
 
-
-std::auto_ptr<ccProperties> log_epp_command( epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid);
+std::auto_ptr<LogProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *action_type);
 
 
 #endif /* M_EPP_PARSER_H */
