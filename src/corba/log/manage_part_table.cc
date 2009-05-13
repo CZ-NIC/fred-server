@@ -9,8 +9,7 @@
 #include "manage_part_table.h"
 
 // TODO this shouldn't be here
-#include "log_impl.h"
-/*
+#include "log_impl.h" /*
 #include "db/connection.h"
 */
 #include "register/db_settings.h"
@@ -21,8 +20,9 @@
 
 using namespace boost;
 
-
-
+/** This function determines how are the names of the partitions
+ *  generated
+ */
 format get_table_postfix(int year, int month)
 {
 	int shortyear = (year - 2000) % 100;
@@ -31,15 +31,42 @@ format get_table_postfix(int year, int month)
 #ifdef _TESTING_
 	// month is in fact day in march in this case :)
 	// SERVICE format table_postfix = format("%1%_%2$02d_04_%3$02d") % service_name % shortyear % month;
-	table_postfix = format("%1$02d_04_%2$02d") % shortyear % month;
+	table_postfix = format("%1$02d_%2$02d") % shortyear % month;
+	// OLD testing
+	// table_postfix = format("%1$02d_04_%2$02d") % shortyear % month;
 #else
-	table_postfix = format("%1%_%2$02d_%3$02d") % service_name % shortyear % month;
+	table_postfix = format("%1$02d_%2$02d") % shortyear % month;
+	// TODO - this is prolly how it should be done :
+	// table_postfix = format("%1%_%2$02d_%3$02d") % service_name % shortyear % month;
 #endif
 
 	return table_postfix;
 }
 
+std::string create_date_str(int y, int m)
+{
+	boost::format ret;
 
+#ifdef _TESTING_
+	if (m == 32) {
+		ret  = boost::format("%1$02d-05-01") % (y+1);
+	} else {
+		ret  = boost::format("%1$02d-04-%2$02d") % y % m;
+	}
+#else
+	if (m == 13) {
+		ret  = boost::format("%1$02d-01-01") % (y+1);
+	} else {
+		ret  = boost::format("%1$02d-%2$02d-01") % y % m;
+	}
+
+#endif
+
+	return ret.str();
+}
+
+
+/*
 void check_and_create_all(Database::Connection &conn, int year, int month)
 {
 	create_table_if_not_present(conn, "log_entry", year, month);
@@ -77,39 +104,17 @@ bool exist_tables(Database::Connection &conn, int year, int month)
 	}
 }
 
-std::string create_date_str(int y, int m)
-{
-	boost::format ret;
-
-#ifdef _TESTING_
-	if (m == 32) {
-		ret  = boost::format("%1$02d-05-01") % (y+1);
-	} else {
-		ret  = boost::format("%1$02d-04-%2$02d") % y % m;
-	}
-#else
-	if (m == 13) {
-		ret  = boost::format("%1$02d-01-01") % (y+1);
-	} else {
-		ret  = boost::format("%1$02d-%2$02d-01") % y % m;
-	}
-
-#endif
-
-	return ret.str();
-}
-
 // create_table(Connection &conn, int year, int month, LogServiceType type)
 void create_table(Database::Connection &conn, std::string table_base, int year, int month, LogServiceType type)
 {
 	format lower, upper;
 
-	/* SERVICE TODO
-	 * std::string service_name;
-	 * format service_condition;
-	 */
+	 SERVICE TODO
+	// std::string service_name;
+	// format service_condition;
 
 	// TODO actually USE (full) year
+	// this has to correspond with the get_table_postfix function
 #ifdef _TESTING_
 	// month is in fact day in march in this case :)
 	lower  = format("%1$02d-04-%2$02d") % year % month;
@@ -139,23 +144,22 @@ void create_table(Database::Connection &conn, std::string table_base, int year, 
 	assert(lower_check == lower.str());	
 	assert(upper_check == upper.str());
 
-	/* SERVICE
-	switch (type) {
-		case LC_UNIX_WHOIS:
-		case LC_WEB_WHOIS:
-			service_condition = format("(service = %1% or service = %2% )") % LC_UNIX_WHOIS % LC_WEB_WHOIS;
-			service_name = "whois";
-			break;
-		case LC_EPP:
-			service_condition = format( "(service = %1%)" ) % LC_EPP;
-			service_name = "epp";
-			break;
-		default:
-			service_condition = format( "(service <> %1% AND service <> %2% AND service <> %3%)" ) % LC_EPP % LC_UNIX_WHOIS % LC_WEB_WHOIS;
-			service_name = "other";
-			break;
-	}
-	*/
+	 SERVICE
+//	switch (type) {
+//		case LC_UNIX_WHOIS:
+//		case LC_WEB_WHOIS:
+//			service_condition = format("(service = %1% or service = %2% )") % LC_UNIX_WHOIS % LC_WEB_WHOIS;
+//			service_name = "whois";
+//			break;
+//		case LC_EPP:
+//			service_condition = format( "(service = %1%)" ) % LC_EPP;
+//			service_name = "epp";
+//			break;
+//		default:
+//			service_condition = format( "(service <> %1% AND service <> %2% AND service <> %3%)" ) % LC_EPP % LC_UNIX_WHOIS % LC_WEB_WHOIS;
+//			service_name = "other";
+//			break;
+//	}
 
 	format table_postfix = get_table_postfix(year, month);
 
@@ -177,6 +181,7 @@ void create_table(Database::Connection &conn, std::string table_base, int year, 
 								  "	ON INSERT TO %4% WHERE (time_begin >= TIMESTAMP '%2%' and time_begin < TIMESTAMP '%3%') "
 								  "DO INSTEAD "
 								  "INSERT INTO %1% VALUES ( NEW.id, NEW.time_begin, NEW.time_end, NEW.source_ip, NEW.service, NEW.action_type, NEW.is_monitoring); " ) % table_name % lower % upper % table_base;
+		// TODO ^ rule_name instead of table_name
 
 
 		spec_alter_table = format("ALTER TABLE %1% ADD PRIMARY KEY (id); ") % table_name;
@@ -260,12 +265,20 @@ void create_table(Database::Connection &conn, std::string table_base, int year, 
 	std::cout << "Create rule: " << create_rule << std::endl;
 	std::cout << "Alter table: " << alter_table << std::endl;
 	std::cout << "Specific alter table: " << spec_alter_table << std::endl;
+	std::cout << "Create indexes: " << create_indexes << std::endl;
 
-	conn.exec(create_table.str());
-	conn.exec(create_rule.str());
-	conn.exec(spec_alter_table.str());
-	conn.exec(alter_table.str());
-	conn.exec(create_indexes.str());
+
+	std::cout << " NOTE: nothing is really being created .........." << std::endl;
+
+
+  	TODO
+//	conn.exec(create_table.str());
+//	conn.exec(create_rule.str());
+//	conn.exec(spec_alter_table.str());
+//	conn.exec(alter_table.str());
+//	conn.exec(create_indexes.str());
+//
+
 }
 
 void create_table_set(Database::Connection &conn, int year, int month)
@@ -276,3 +289,4 @@ void create_table_set(Database::Connection &conn, int year, int month)
 	create_table(conn, "log_session", year, month);
 }
 
+*/

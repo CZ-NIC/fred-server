@@ -35,10 +35,13 @@ int main()
 		create_table_set(conn, 2009, 27);
 		create_table_set(conn, 2009, 28);
 		*/
-		for(int day=2; day<26; day++) {
+
+
+/*
+		for(int day=2; day<4; day++) {
 			create_table_set(conn, 2009, day);
 		}
-
+*/
 
 	} catch (Database::Exception &ex) {
 		std::cout << (boost::format("error when working with database (%1%) : %2%") % DB_CONN_STR % ex.what()).str();

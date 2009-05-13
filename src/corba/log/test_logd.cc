@@ -112,12 +112,16 @@ boost::format get_table_postfix_for_now()
 	boost::posix_time::ptime utime = microsec_clock::universal_time();
 	tm str_time = boost::posix_time::to_tm(utime);
 
+	// months in tm are numbered from 0
+	str_time.tm_mon++;
+
 #ifdef _TESTING_
 	/* TODO -this is only a test.... */
 	return get_table_postfix((1900 + str_time.tm_year), str_time.tm_mday);
 #else 
 	return get_table_postfix((1900 + str_time.tm_year), str_time.tm_mon);
 #endif
+	
 
 }
 
@@ -283,8 +287,6 @@ std::auto_ptr<LogProperties> TestImplLog::create_generic_properties(int number, 
 	std::auto_ptr<LogProperties> ret(new LogProperties(number));
 	LogProperties &ref = *ret;
 
-	ret->length(number);
-
 	for(int i=0;i<number;i++) {
 		ref[i].name = "handle";
 		ref[i].value = (boost::format("val%1%.%2%") % value_id % i).str();
@@ -318,7 +320,7 @@ bool TestImplLog::property_match(const Row r, const LogProperty &p)
 
 void TestImplLog::check_db_properties_subset(ID rec_id, const LogProperties &props)
 {
-	if (props.length() == 0) return;
+	if (props.size() == 0) return;
 
 	boost::format query = boost::format("select name, value, parent_id, output from log_property_value pv join log_property_name pn on pn.id=pv.name_id where pv.entry_id = %1% order by pv.id") % rec_id;
 
@@ -326,7 +328,7 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const LogProperties &pro
 
 	// this is expected for a *_subset function...
 	int pind = 0;
-	if(res.size() > props.length()) {
+	if(res.size() > props.size()) {
 		for(int i=0; i<res.size(); i++) {
 			if(property_match(res[i], props[pind])) {
 				// property pind found in the sql result, proceed to another item in the list
@@ -337,13 +339,13 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const LogProperties &pro
 			}
 		}
 
-		if(pind < props.length()) {
+		if(pind < props.size()) {
 			BOOST_ERROR(boost::format(" Some properties were not found in database for record %1") % rec_id);
 		}
 	// but this is kinda' weird, something had to go wrong....
-	} else if(res.size() < props.length()) {
+	} else if(res.size() < props.size()) {
 		BOOST_ERROR(" Some properties were not stored... ");
-	} else if(res.size() == props.length()) {
+	} else if(res.size() == props.size()) {
 		// TODO something can be saved here - we have Result res already done
 		check_db_properties(rec_id, props);
 	}
@@ -358,7 +360,7 @@ void TestImplLog::check_db_properties(ID rec_id, const LogProperties & props)
 
 	Result res = conn.exec(query.str());
 
-	if (res.size() != props.length() ) {
+	if (res.size() != props.size() ) {
 		BOOST_ERROR(" Not all properties have been loaded into the database");
 	}
 
@@ -501,7 +503,9 @@ BOOST_AUTO_TEST_CASE( partitions )
 		std::string date = create_date_str(2009, i);		
 
 		try {
+/* 		TODO database level partitioning 
 			if(!exist_tables(conn, 2009, i)) create_table(conn, "log_entry", 2009, i);
+*/
 
 			time = boost::format("insert into log_entry (time_begin, service, is_monitoring) values ('%1% 9:%2%:00', 99, true)") % date % i;	
 

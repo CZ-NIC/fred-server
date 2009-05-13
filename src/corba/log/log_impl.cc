@@ -36,31 +36,43 @@
 #include "log/logger.h"
 #include "log/context.h"
 
-/* TODO remove
-#ifdef HAVE_LOGGER
-	#define LOG_CTX_INIT()			\
-	Logging::Context::clear();		\
-	Logging::Context ctx("logd");	\
-
-#else
-#define LOG_CTX_INIT()
-#endif
-*/
-
 using namespace Database;
-
-const std::string Impl_Log::LAST_PROPERTY_VALUE_ID = "select currval('log_property_value_id_seq'::regclass)";
-const std::string Impl_Log::LAST_PROPERTY_NAME_ID = "select currval('log_property_name_id_seq'::regclass)";
-const std::string Impl_Log::LAST_ENTRY_ID = "select currval('log_entry_id_seq'::regclass)";
-const std::string Impl_Log::LAST_SESSION_ID = "select currval('log_session_id_seq'::regclass)";
-const int Impl_Log::MAX_NAME_LENGTH = 30;
-
 
 inline void log_ctx_init()
 {
 #ifdef HAVE_LOGGER
 	Logging::Context::clear();		
 	Logging::Context ctx("logd");	
+#endif
+}
+
+
+inline void logger_notice(const char *str);
+inline void logger_error(const char *str); 
+inline void logger_notice(boost::format fmt);
+inline void logger_error(boost::format fmt);
+
+inline void logger_notice(const char *str) 
+{
+	logger_notice(boost::format(str));
+}
+
+inline void logger_error(const char *str) 
+{
+	logger_error(boost::format(str));
+}
+
+inline void logger_notice(boost::format fmt) 
+{
+#ifdef HAVE_LOGGER
+	LOGGER("fred-server").notice(fmt);
+#endif
+}
+
+inline void logger_error(boost::format fmt) 
+{
+#ifdef HAVE_LOGGER
+	LOGGER("fred-server").error(fmt);
 #endif
 }
 
@@ -76,21 +88,16 @@ Impl_Log::Impl_Log(const std::string database, const std::string &monitoring_hos
 	try {
 		conn.reset(db_manager.getConnection());
 	} catch (Database::Exception &ex) {
-#ifdef HAVE_LOGGER
-		LOGGER("fred-server").error(boost::format("cannot connect to database %1% : %2%") % database.c_str() % ex.what());
-#endif
+		logger_error(boost::format("cannot connect to database %1% : %2%") % database.c_str() % ex.what());
 	}
-#ifdef HAVE_LOGGER
-	LOGGER("fred-server").notice(boost::format("successfully  connect to DATABASE %1%") % database.c_str());
-#endif
+
+	logger_notice(boost::format("successfully  connect to DATABASE %1%") % database.c_str());
 
 	// set constraint exclusion (needed for faster queries on partitioned tables)
 	try {
-			conn->exec("set constraint_exclusion=on");
+		conn->exec("set constraint_exclusion=on");
 	} catch (Database::Exception &ex) {
-#ifdef HAVE_LOGGER
-		LOGGER("fred-server").error( boost::format("couldn't set constraint exclusion on database %1% : %2%") % database.c_str() % ex.what());
-#endif
+		logger_error(boost::format("couldn't set constraint exclusion on database %1% : %2%") % database.c_str() % ex.what());
 	}
 
 	if (!monitoring_hosts_file.empty()) {
@@ -115,10 +122,8 @@ Impl_Log::Impl_Log(const std::string database, const std::string &monitoring_hos
 		Result res = conn->exec("select id, name from log_property_name");
 
 		if (res.size() > PROP_NAMES_SIZE_LIMIT) {
-#ifdef HAVE_LOGGER
-			LOGGER("fred-server").error(
-					" Number of entries in log_property_name is over the limit.");
-#endif
+			logger_error(" Number of entries in log_property_name is over the limit.");
+
 			return;
 		}
 
@@ -128,9 +133,7 @@ Impl_Log::Impl_Log(const std::string database, const std::string &monitoring_hos
 		}
 
 	} catch (Database::Exception &ex) {
-#ifdef HAVE_LOGGER
-		LOGGER("fred-server").error(ex.what());
-#endif
+		logger_error(ex.what());
 	}
 }
 
@@ -138,9 +141,7 @@ Impl_Log::~Impl_Log() {
   // db.Disconnect();
   log_ctx_init();
 
-#ifdef HAVE_LOGGER
-  LOGGER("fred-server").notice("Impl_Log destructor");
-#endif
+  logger_notice("Impl_Log destructor");
 }
 
 // check if a log record with the specified ID exists and if it can be modified (time_end isn't set yet)
@@ -151,16 +152,12 @@ bool Impl_Log::record_check(ID id, Connection &conn)
 
 	// if there is no record with specified ID
 	if(res.size() == 0) {
-#ifdef HAVE_LOGGER
-		LOGGER("fred-server").error(boost::format("record in log_entry with ID %1% doesn't exist") % id);
-#endif
+		logger_error(boost::format("record in log_entry with ID %1% doesn't exist") % id);
 		return false;
 	}
 
 	if(!res[0][0].isnull()) {
-#ifdef HAVE_LOGGER
-		LOGGER("fred-server").error(boost::format("record with ID %1% was already completed") % id);
-#endif
+		logger_error(boost::format("record with ID %1% was already completed") % id);
 		return false;
 	}
 
@@ -228,7 +225,7 @@ void Impl_Log::insert_props(std::string entry_time, ID entry_id, const LogProper
 	std::string s_val;
 	ID name_id, last_id = 0;
 
-	if(props.length() == 0) {
+	if(props.size() == 0) {
 		return;
 	}
 
@@ -238,9 +235,7 @@ void Impl_Log::insert_props(std::string entry_time, ID entry_id, const LogProper
 
 	if (props[0].child) {
 		// the first property is set to child - this is an error
-#ifdef HAVE_LOGGER
-		LOGGER("fred-server").error(boost::format("entry ID %1%: first property marked as child. Ignoring this flag ") % entry_id);
-#endif
+		logger_error(boost::format("entry ID %1%: first property marked as child. Ignoring this flag ") % entry_id);
 
 	}
 	boost::format query = boost::format("insert into log_property_value (entry_time_begin, entry_id, name_id, value, output, parent_id) values ('%1%', %2%, %3%, '%4%', %5%, %6%)")
@@ -252,7 +247,7 @@ void Impl_Log::insert_props(std::string entry_time, ID entry_id, const LogProper
 	last_id = find_last_property_value_id(conn);
 
 	// process the rest of the sequence
-	for (unsigned i = 1; i < props.length(); i++) {
+	for (unsigned i = 1; i < props.size(); i++) {
 
 		s_val = Util::escape(props[i].value.c_str());
 		name_id = find_property_name_id(props[i].name, conn);
@@ -274,44 +269,23 @@ void Impl_Log::insert_props(std::string entry_time, ID entry_id, const LogProper
 }
 
 // log a new event, return the database ID of the record
-ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const char *content_in, const LogProperties& props, int action_type)
+ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const char *content_in, const LogProperties& props, int action_type, std::string event_time)
 {
 	std::auto_ptr<Connection> conn(db_manager.getConnection());
   	log_ctx_init();
 
 	std::string time, s_sourceIP, s_content;
 	ID entry_id;
-	boost::posix_time::ptime micro_time;
-	tm str_time;
 
-	// get formatted UTC with microseconds
-	micro_time = microsec_clock::universal_time();
-	time = boost::posix_time::to_iso_string(micro_time);
+	if (event_time.empty()) {
+		boost::posix_time::ptime micro_time;
 
-	str_time = boost::posix_time::to_tm(micro_time);
-
-#ifdef _TESTING_
-	/* TODO -this is only a test.... */
-	check_and_create_all(*conn, (1900 + str_time.tm_year), str_time.tm_mday);
-
-/*
-	if(!exist_tables(*conn, (1900 + str_time.tm_year), str_time.tm_mday)) {
-		// TODO this doesn't work (especially for testing) - these two functions are not compatible
-		create_table_set(*conn, (1900 + str_time.tm_year), str_time.tm_mday);
+		// get formatted UTC with microseconds
+		micro_time = microsec_clock::universal_time();
+		time = boost::posix_time::to_iso_string(micro_time);
+	} else {
+		time = event_time;
 	}
-*/
-#else 
-	// TODO - this should be used
-	check_and_create_all(*conn, (1900 + str_time.tm_year), str_time.tm_mon); 
-
-/*
-	if(!exist_tables(*conn, (1900 + str_time.tm_year), str_time.tm_mon)) {
-		// TODO this doesn't work (especially for testing) - these two functions are not compatible
-		create_table_set(*conn, (1900 + str_time.tm_year), str_time.tm_mon);
-	}
-*/
-
-#endif
 
 	std::list<std::string>::iterator it;
 
@@ -338,9 +312,7 @@ ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const cha
 		entry_id = find_last_log_entry_id(*conn);
 
 	} catch (Database::Exception &ex) {
-#ifdef HAVE_LOGGER
-		LOGGER("fred-server").error(ex.what());
-#endif
+		logger_error(ex.what());
 		return 0;
 	}
 
@@ -359,9 +331,7 @@ ID Impl_Log::i_new_event(const char *sourceIP, LogServiceType service, const cha
 		insert_props(time, entry_id, props, *conn);
 
 	} catch (Database::Exception &ex) {
-#ifdef HAVE_LOGGER
-		LOGGER("fred-server").error(ex.what());
-#endif
+		logger_error(ex.what());
 	}
 
 	// t.commit();
@@ -386,17 +356,13 @@ bool Impl_Log::i_update_event(ID id, const LogProperties &props)
 		Result res = conn->exec(query.str());
 
 		if(res.size() == 0) {
-#ifdef HAVE_LOGGER
-			LOGGER("fred-server").error("Impossible has just happened... ");
-#endif
+			logger_error("Impossible has just happened... ");
 		}
 		// end of TODO
 
 		insert_props((std::string)res[0][0], id, props, *conn);
 	} catch (Database::Exception &ex) {
-#ifdef HAVE_LOGGER
-		LOGGER("fred-server").error(ex.what());
-#endif
+		logger_error(ex.what());
 		return false;
 	}
 	return true;
@@ -423,9 +389,7 @@ bool Impl_Log::i_update_event_close(ID id, const char *content_out, const LogPro
 		Result res = conn->exec(select.str());
 
 		if(res.size() == 0) {
-#ifdef HAVE_LOGGER
-			LOGGER("fred-server").error("Impossible has just happened... ");
-#endif
+			logger_error("Impossible has just happened... ");
 		}
 		// end of TODO
 
@@ -443,9 +407,7 @@ bool Impl_Log::i_update_event_close(ID id, const char *content_out, const LogPro
 		insert_props((std::string)res[0][0], id, props, *conn);
 
 	} catch (Database::Exception &ex) {
-#ifdef HAVE_LOGGER
-		LOGGER("fred-server").error(ex.what());
-#endif
+		logger_error(ex.what());
 		return false;
 	}
 	return true;
@@ -459,18 +421,14 @@ ID Impl_Log::i_new_session(Languages lang, const char *name, const char *clTRID)
 	std::string s_name, s_clTRID, time;
 	ID id;
 
-#ifdef HAVE_LOGGER
-	LOGGER("fred-server").notice(boost::format("new_session: username-> [%1%] clTRID [%2%] lang [%3%]") % name % clTRID % lang);
-#endif
+	logger_notice(boost::format("new_session: username-> [%1%] clTRID [%2%] lang [%3%]") % name % clTRID % lang);
 
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
 
 	if (name != NULL && *name != '\0') {
 		s_name = Util::escape(name);
 	} else {
-#ifdef HAVE_LOGGER
-		LOGGER("fred-server").error("new_session: name is empty!");
-#endif
+		logger_error("new_session: name is empty!");
 		return 0;
 	}
 	
@@ -496,9 +454,7 @@ ID Impl_Log::i_new_session(Languages lang, const char *name, const char *clTRID)
 		}
 
 	} catch (Database::Exception &ex) {
-#ifdef HAVE_LOGGER
-		LOGGER("fred-server").error(ex.what());
-#endif
+		logger_error(ex.what());
 		return 0;
 	}
 	return id;
@@ -512,9 +468,7 @@ bool Impl_Log::i_end_session(ID id, const char *clTRID)
 	log_ctx_init();
 	std::string  time;
 
-#ifdef HAVE_LOGGER
-	LOGGER("fred-server").notice(boost::format("end_session: session_id -> [%1%] clTRID [%2%]") % id  % clTRID );
-#endif
+	logger_notice(boost::format("end_session: session_id -> [%1%] clTRID [%2%]") % id  % clTRID );
 
 	boost::format query = boost::format("select logout_date from log_session where id=%1%") % id;
 
@@ -522,16 +476,12 @@ bool Impl_Log::i_end_session(ID id, const char *clTRID)
 		Result res = conn->exec(query.str());
 
 		if(res.size() == 0) {
-#ifdef HAVE_LOGGER
-			LOGGER("fred-server").error(boost::format("record in log_session with ID %1% doesn't exist") % id);
-#endif
+			logger_error(boost::format("record in log_session with ID %1% doesn't exist") % id);
 			return false;
 		}
 
 		if(!res[0][0].isnull()) {
-#ifdef HAVE_LOGGER
-			LOGGER("fred-server").error(boost::format("record in log_session with ID %1% already closed") % id);
-#endif
+			logger_error(boost::format("record in log_session with ID %1% already closed") % id);
 			return false;
 		}
 
@@ -549,13 +499,18 @@ bool Impl_Log::i_end_session(ID id, const char *clTRID)
 
 		conn->exec(update.str());
 	} catch (Database::Exception &ex) {
-#ifdef HAVE_LOGGER
-		LOGGER("fred-server").error(ex.what());
-#endif
+		logger_error(ex.what());
 		return false;
 	}
 
 	return true;
 }
+
+const std::string Impl_Log::LAST_PROPERTY_VALUE_ID = "select currval('log_property_value_id_seq'::regclass)";
+const std::string Impl_Log::LAST_PROPERTY_NAME_ID = "select currval('log_property_name_id_seq'::regclass)";
+const std::string Impl_Log::LAST_ENTRY_ID = "select currval('log_entry_id_seq'::regclass)";
+const std::string Impl_Log::LAST_SESSION_ID = "select currval('log_session_id_seq'::regclass)";
+const int Impl_Log::MAX_NAME_LENGTH = 30;
+
 
 

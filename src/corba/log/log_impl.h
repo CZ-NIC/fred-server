@@ -18,23 +18,43 @@ using namespace Database;
 // to get rid of dependence on CORBA
 // .... NO we can use database types instead
 
-struct LogProperty : public boost::noncopyable {
+struct LogProperty {
   std::string name;
   std::string value;
   bool output;
   bool child;
+
+  LogProperty() : name(), value() {
+  }
+
+  LogProperty(const LogProperty &p) : name(p.name), value(p.value), 
+				output(p.output), child(p.child) {
+
+  }
+  const LogProperty & operator = (LogProperty &p) {
+	name = p.name;
+	value = p.value;
+	output = p.output;
+	child = p.child;
+
+	return *this;
+  }
 };
 
+
+typedef std::vector<LogProperty> LogProperties;
+
+/*
 class LogProperties : public boost::noncopyable {
-  size_t size;
+  size_t alloc_size, size;
   LogProperty *buf;
 
 public:
-  LogProperties() : size(0) {
+  LogProperties() : alloc_size(0), size(0) {
 	  buf = NULL;
   }
 
-  LogProperties(int init_size) : size(init_size) {
+  LogProperties(int init_size) : alloc_size(init_size), size(0) {
 	if(init_size > 0) {
 		buf = new LogProperty[init_size];
 	} else {
@@ -48,25 +68,26 @@ public:
 
   LogProperty & operator[] (size_t idx) {
 	if (buf==NULL)   throw std::logic_error("No buffer allocated");
-	if (idx >= size) throw std::logic_error("Index out of bounds");
+	if (idx >= alloc_size) throw std::logic_error("Index out of bounds");
 	return buf[idx];
   }
 
   const LogProperty & operator[] (size_t idx) const throw (std::logic_error) {
 	if (buf==NULL)   throw std::logic_error("No buffer allocated");
-	if (idx >= size) throw std::logic_error("Index out of bounds");
+	if (idx >= alloc_size) throw std::logic_error("Index out of bounds");
 	return buf[idx];
   }
 
-  size_t length() const {
-	return size;
+  size_t maximum() const {
+	return alloc_size;
   }
 
-  void length(size_t l) {
-	size = l;
+  void maximum(size_t l) {
+	alloc_size = l;
   }
   // TODO more methods
 };
+*/
 
 // TODO move to Database::
 enum Languages { EN, CS /*, __max_Languages=0xffffffff */ };
@@ -105,7 +126,7 @@ public:
 
   virtual ~Impl_Log();
 
-  Database::ID i_new_event(const char *sourceIP, LogServiceType service, const char *content_in, const LogProperties& props, int action_type);
+  Database::ID i_new_event(const char *sourceIP, LogServiceType service, const  char *content_in, const LogProperties& props, int action_type, std::string event_time = std::string());
   bool i_update_event(Database::ID id, const LogProperties &props);
   bool i_update_event_close(Database::ID id, const char *content_out, const LogProperties &props);
   Database::ID i_new_session(Languages lang, const char *name, const char *clTRID);
@@ -126,5 +147,7 @@ public:
   static const int MAX_NAME_LENGTH;
 
 };
+
+
 
 #endif
