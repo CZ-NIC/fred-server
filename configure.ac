@@ -236,6 +236,7 @@ AC_CONFIG_FILES([Makefile
                  util/db/Makefile
                  util/log/Makefile
                  util/conf/Makefile
+                 util/logd_migration/Makefile
                  src/Makefile
                  src/old_utils/Makefile
                  src/model/Makefile
@@ -244,7 +245,6 @@ AC_CONFIG_FILES([Makefile
                  src/corba/admin/Makefile
                  src/corba/epp/Makefile
                  src/corba/log/Makefile                 
-                 src/corba/log/migration/Makefile
                  src/cli_admin/Makefile
                  fred-server.spec
                  config/server.conf
