@@ -3957,16 +3957,17 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
     int nssetID, techid, hostID;
     unsigned int i, j, k, l;
     short inetNum;
-    int *tch_add, *tch_rem;
     int hostNum, techNum;
     bool findRem; // test for change DNS hosts
     short int code = 0;
 
-    tch_add = new int[ tech_add.length() ];
-    tch_rem = new int[ tech_rem.length() ];
+    int *tch_add = new int[ tech_add.length() ];
+    if (tech_add.length() > 0)
+      memset((void *)tch_add, 0, sizeof(tch_add));
 
-    memset((void *)tch_add, 0, sizeof(tch_add));
-    memset((void *)tch_rem, 0, sizeof(tch_rem));
+    int *tch_rem = new int[ tech_rem.length() ];
+    if (tech_rem.length() > 0)
+      memset((void *)tch_rem, 0, sizeof(tch_rem));
 
     ParsedAction paction;
     paction.add(1,(const char*)handle);
@@ -6084,7 +6085,7 @@ ccReg_EPP_i::KeySetCreate(
                 for (int jj = ii + 1; jj < (int)dsrec.length(); jj++) {
                     if (testDSRecordDuplicity(dsrec[ii], dsrec[jj])) {
                         LOG(WARNING_LOG,
-                                "Found DSRecord duplicity: %d x %d (%d %d %d '%s' %s)",
+                                "Found DSRecord duplicity: %d x %d (%d %d %d '%s' %d)",
                                 ii, jj, dsrec[ii].keyTag, dsrec[ii].alg, dsrec[ii].digestType,
                                 (const char *)dsrec[ii].digest, dsrec[ii].maxSigLife);
                         code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -7175,13 +7176,10 @@ ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
         }
 
         action.getDB()->FreeSelect();
+        code = COMMAND_OK;
     }
 
     // command OK
-    if (code == 0) {
-        code=COMMAND_OK; // if is OK
-    }
-
     if (code == 0) {
         action.failedInternal("FullList");
     }

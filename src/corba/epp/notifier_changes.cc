@@ -318,8 +318,7 @@ void MessageUpdateChanges::_diffContact(ChangesMap &_changes,
   compare_and_fill(_changes, "contact.disclose.notify_email", _prev->getDiscloseNotifyEmail(), _act->getDiscloseNotifyEmail());
   compare_and_fill(_changes, "contact.disclose.ident", _prev->getDiscloseIdent(), _act->getDiscloseIdent());
   compare_and_fill(_changes, "contact.disclose.vat", _prev->getDiscloseVat(), _act->getDiscloseVat());
-
-  _changes["contact.address"] = make_pair(address_to_simple_string(_prev), address_to_simple_string(_act));
+  compare_and_fill(_changes, "contact.address", address_to_simple_string(_prev), address_to_simple_string(_act));
 }
 
 

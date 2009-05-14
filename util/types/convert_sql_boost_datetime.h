@@ -54,8 +54,11 @@ struct SqlConvert<ptime> {
   static std::string to(const ptime &_in) {
     try {
       std::string iso = to_iso_extended_string(_in);
-      iso.replace(iso.find("T"), 1, " ");
-      std::string::size_type i = 0;
+      std::string::size_type i = iso.find("T");
+      if (i != std::string::npos) {
+        iso.replace(i, 1, " ");
+      }
+      i = 0;
       if ((i = iso.find_last_of(",")) != std::string::npos) {
         iso.replace(i, 1, ".");
       }

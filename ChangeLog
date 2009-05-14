@@ -1,3 +1,21 @@
+2009-05-05 Jiri Sadek, Ales Dolezal, Jaromir Talir 
+
+	* Bugfixes in notifications
+
+	* Bugfixes in mailer manager subsystem
+
+	* Bugfix in update_domain and delete_domain (zone check handling)
+
+	* fred-admin regular object procedure changed in order to delete domains first
+
+	* Update notification improved - now includes changes made by update command
+	
+	* Refactoring of db library
+	  - restructualized
+		- type conversions - better separation of stringize for human readable
+		output and sqlize for serialization to queries
+		- old connection handling in new library for old code compatibility
+
 2009-03-25 Jaromir Talir, Jiri Sadek (2.1.8)
 
    * Bugfixes
