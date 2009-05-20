@@ -291,14 +291,19 @@ RegistrarClient::price_add()
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
     std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
-    Database::DateTime validFrom;
-    validFrom.from_string(m_conf.get<std::string>(REGISTRAR_VALID_FROM_NAME));
+    Database::DateTime validFrom(Database::NOW);
+    if (m_conf.hasOpt(REGISTRAR_VALID_FROM_NAME)) {
+        validFrom.from_string(m_conf.get<std::string>(REGISTRAR_VALID_FROM_NAME));
+    }
     Database::DateTime validTo;
     if (m_conf.hasOpt(REGISTRAR_VALID_TO_NAME)) {
         validTo.from_string(m_conf.get<std::string>(REGISTRAR_VALID_TO_NAME));
     }
     Database::Money price(m_conf.get<int>(REGISTRAR_PRICE_NAME) * 100);
-    int period = m_conf.get<int>(REGISTRAR_PERIOD_NAME);
+    int period = 12;
+    if (m_conf.hasOpt(REGISTRAR_PERIOD_NAME)) {
+        period = m_conf.get<int>(REGISTRAR_PERIOD_NAME);
+    }
     if (m_conf.hasOpt(REGISTRAR_CREATE_OPERATION_NAME)) {
         zoneMan->addPrice(zone, Register::Zone::CREATE, validFrom,
                 validTo, price, period);
@@ -400,11 +405,14 @@ RegistrarClient::price_add_help()
         "    --" << REGISTRAR_CREATE_OPERATION_NAME << " | \\\n"
         "    --" << REGISTRAR_RENEW_OPERATION_NAME << " \\\n"
         "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> \\\n"
-        "    --" << REGISTRAR_VALID_FROM_NAME << "=<valid_from> \\\n"
-        "    --" << REGISTRAR_VALID_TO_NAME << "=<valid_to> \\\n"
+        "    [--" << REGISTRAR_VALID_FROM_NAME << "=<valid_from_timestamp>] \\\n"
+        "    [--" << REGISTRAR_VALID_TO_NAME << "=<valid_to_timestamp>] \\\n"
         "    --" << REGISTRAR_PRICE_NAME << "=<price> \\\n"
-        "    --" << REGISTRAR_PERIOD_NAME << "=<period>\n"
+        "    [--" << REGISTRAR_PERIOD_NAME << "=<period>]\n"
         << std::endl;
+    std::cout <<
+        "Default value for the ``valid from'' is NOW and NULL for ``valid_to''.\n"
+        "Default pediod is 12 (it means twelve months).\n";
 }
 
 #define ADDOPT(name, type, callable, visible) \
