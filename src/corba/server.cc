@@ -314,8 +314,7 @@ int main(int argc, char** argv) {
 
     /* load zone parametrs */
     if (myccReg_EPP_i->loadZones() <= 0) {
-      LOGGER(PACKAGE).alert("database error: load zones");
-      exit(-4);
+      LOGGER(PACKAGE).warning("Unable to load zones from the database.");
     }
 
     /* load all county code from table enum_country */
