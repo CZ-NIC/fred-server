@@ -1423,16 +1423,18 @@ double DB::GetSystemKOEF() // return VAT count parametr for count price without 
 int DB::GetBankAccount(
   const char *accountStr, const char *codeStr)
 {
-  char sqlString[128];
+  std::stringstream sqlString;
   int accountID=0;
 
   LOG( LOG_DEBUG ,"GetBankAccount account %s , code %s" , accountStr ,codeStr );
-  sprintf(
-      sqlString,
-      "SELECT id FROM bank_account WHERE account_number=\'%s\' AND bank_code=\'%s\';",
-      accountStr, codeStr);
-
-  if (ExecSelect(sqlString) ) {
+  sqlString
+      << "SELECT id FROM bank_account WHERE trim(leading '0' from account_number)="
+      << "trim(leading '0' from '"
+      << accountStr
+      << "') AND bank_code='"
+      << codeStr
+      << "';";
+  if (ExecSelect(sqlString.str().c_str()) ) {
     if (GetSelectRows() == 1) {
       accountID=atoi(GetFieldValue( 0, 0) );
       LOG( LOG_DEBUG ,"get accountId %d" , accountID );
