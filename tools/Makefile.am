@@ -1,0 +1,1 @@
+SUBDIRS = logd_migration
