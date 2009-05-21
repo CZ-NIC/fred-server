@@ -1351,6 +1351,9 @@ int ccReg_EPP_i::getZZ(
   int max, i;
   int len, slen, l;
 
+  if (zone->length() == 0) {
+      loadZones();
+  }
   max = (int ) zone->length();
 
   len = strlen(fqdn);
