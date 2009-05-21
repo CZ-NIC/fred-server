@@ -1,4 +1,4 @@
-SUBDIRS = log types db conf logd_migration
+SUBDIRS = log types db conf
 
 AM_CPPFLAGS = ${BOOST_CPPFLAGS} $(AM_CFLAGS)
 noinst_LIBRARIES = libutil.a
