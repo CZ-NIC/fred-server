@@ -6,6 +6,7 @@
 #include "register/register.h"
 
 #include "conf/manager.h"
+#include <vector>
 
 struct Session
 {
@@ -46,8 +47,6 @@ public:
   // test connection 
   bool TestDatabaseConnect(const std::string& db);
 
-  // load zones paremetrs from table zone
-  int loadZones(); // load zones
   // get zones parametrs
   int GetZoneExPeriodMin(int id);
   int GetZoneExPeriodMax(int id);
@@ -55,16 +54,10 @@ public:
   int GetZoneDotsMax(int id);
   bool GetZoneEnum(int id);
   const char * GetZoneFQDN(int id);
-  unsigned int GetZoneID(unsigned int z);
-  unsigned int GetZoneLength();
+  std::vector<int> GetAllZonesIDs();
 
-  ccReg::Zones * getZones()
-  {
-    return zone;
-  }
   int getZone(const char *fqdn);
   int getZoneMax(const char *fqdn);
-  int getZZ(const char *fqdn, bool compare);
   int getFQDN(char *FQDN, const char *fqdn);
   bool testFQDN(const char *fqdn);
 
@@ -436,7 +429,6 @@ private:
   Mesg *ErrorMsg;
   Mesg *ReasonMsg;
   CountryCode *CC;
-  ccReg::Zones *zone;
   int max_zone;
   bool testInfo; // TODO: remove 
 };
