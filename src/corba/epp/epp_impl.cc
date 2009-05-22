@@ -1287,7 +1287,7 @@ int ccReg_EPP_i::getZone(
     std::string domain_fqdn(fqdn);
     zoneQuery
         << "SELECT id FROM zone WHERE lower(fqdn)=lower('"
-        << domain_fqdn.substr(domain_fqdn.find('.') + 1, std::string::npos)
+        << domain_fqdn.substr(getZoneMax(fqdn) + 1, std::string::npos)
         << "');";
     if (!db.ExecSelect(zoneQuery.str().c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve zone id from the database");
@@ -1301,8 +1301,27 @@ int ccReg_EPP_i::getZone(
 int ccReg_EPP_i::getZoneMax(
   const char *fqdn)
 {
-    std::string domain_fqdn(fqdn);
-    return domain_fqdn.find('.');
+    std::string query("SELECT fqdn FROM zone;");
+    if (!db.ExecSelect(query.c_str())) {
+        LOGGER(PACKAGE).error("cannot retrieve list of fqdn from the database");
+        return 0;
+    }
+    int len = strlen(fqdn);
+    for (int i = 0; i < db.GetSelectRows(); i++) {
+        int slen = strlen(db.GetFieldValue(i, 0));
+        int l = len - slen;
+        if (l > 0) {
+            if (fqdn[l - 1] == '.') {
+                return l - 1;
+            }
+        }
+    }
+    for (int l = len - 1; l > 0; l--) {
+        if (fqdn[l] == '.') {
+            return l - 1;
+        }
+    }
+    return 0;
 }
 
 bool ccReg_EPP_i::testFQDN(
