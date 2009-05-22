@@ -366,7 +366,6 @@ ccReg_EPP_i::ccReg_EPP_i(
                                 mm(_mm),
                                 ns(_ns),
                                 conf(_conf),
-                                zone(NULL),
                                 testInfo(false)
 {
   Logging::Context::clear();
@@ -390,7 +389,6 @@ ccReg_EPP_i::~ccReg_EPP_i()
   delete CC;
   delete ReasonMsg;
   delete ErrorMsg;
-  delete zone;
   delete [] session;
 
   db.Disconnect();
@@ -1190,201 +1188,121 @@ bool ccReg_EPP_i::setvalue_DISCLOSE(
   return false;
 }
 
-// ZONE manager to load zones into memory
-
-int ccReg_EPP_i::loadZones() // load zones
+std::vector<int>
+ccReg_EPP_i::GetAllZonesIDs()
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-
-  int rows=0, i;
-  DB DBsql;
-
-  LOG( NOTICE_LOG, "LOAD zones" );
-  zone = new ccReg::Zones;
-
-  if (DBsql.OpenDatabase(database) ) {
-
-    if (DBsql.ExecSelect("select * from zone order by length(fqdn) desc") ) {
-      rows = DBsql.GetSelectRows();
-      max_zone = rows;
-
-      LOG( NOTICE_LOG, "Max zone  -> %d " , max_zone );
-
-      zone->length(rows);
-
-      for (i = 0; i < rows; i ++) {
-        (*zone)[i].id=atoi(DBsql.GetFieldValueName("id", i));
-        (*zone)[i].fqdn
-            =CORBA::string_dup(DBsql.GetFieldValueName("fqdn", i) );
-        (*zone)[i].ex_period_min= atoi(DBsql.GetFieldValueName(
-            "ex_period_min", i));
-        (*zone)[i].ex_period_max= atoi(DBsql.GetFieldValueName(
-            "ex_period_max", i));
-        (*zone)[i].val_period
-            = atoi(DBsql.GetFieldValueName("val_period", i));
-        (*zone)[i].dots_max= atoi(DBsql.GetFieldValueName("dots_max", i) );
-        (*zone)[i].enum_zone
-            = DBsql.GetFieldBooleanValueName("enum_zone", i);
-        LOG( NOTICE_LOG, "Get ZONE %d fqdn [%s] ex_period_min %d ex_period_max %d val_period %d dots_max %d  enum_zone %d" , i+1 ,
-            ( char *) (*zone)[i].fqdn , (*zone)[i].ex_period_min , (*zone)[i].ex_period_max , (*zone)[i].val_period , (*zone)[i].dots_max , (*zone)[i].enum_zone );
-      }
-
-      DBsql.FreeSelect();
+    std::vector<int> ret;
+    std::string query("SELECT id FROM zone;");
+    if (!db.ExecSelect(query.c_str())) {
+        LOGGER(PACKAGE).error("cannot retrieve zones ids from the database");
+        return ret;
+    }
+    for (int i = 0; i < db.GetSelectRows(); i++) {
+        ret.push_back(atoi(db.GetFieldValue(i, 0)));
     }
 
-    DBsql.Disconnect();
-  }
-
-  if (rows == 0)
-    zone->length(rows);
-
-  return rows;
-}
-
-unsigned int ccReg_EPP_i::GetZoneLength()
-{
-  return zone->length() ;
-}
-unsigned int ccReg_EPP_i::GetZoneID(
-  unsigned int z)
-{
-  if (z < zone->length() )
-    return (*zone)[z].id;
-  else
-    return 0;
+    return ret;
 }
 
 // ZONE parameters
 int ccReg_EPP_i::GetZoneExPeriodMin(
   int id)
 {
-  unsigned int z;
-
-  for (z = 0; z < zone->length() ; z ++) {
-    if ((*zone)[z].id == id)
-      return (*zone)[z].ex_period_min;
-  }
-
-  return 0;
+    std::stringstream query;
+    query << "SELECT ex_period_min FROM zone WHERE id=" << id << ";";
+    if (!db.ExecSelect(query.str().c_str())) {
+        LOGGER(PACKAGE).error("Cannot retrieve ``ex_period_min'' from the database");
+        return 0;
+    }
+    return atoi(db.GetFieldValue(0, 0));
 }
 
 int ccReg_EPP_i::GetZoneExPeriodMax(
   int id)
 {
-  unsigned int z;
-
-  for (z = 0; z < zone->length() ; z ++) {
-    if ((*zone)[z].id == id)
-      return (*zone)[z].ex_period_max;
-  }
-
-  return 0;
+    std::stringstream query;
+    query << "SELECT ex_period_max FROM zone WHERE id=" << id << ";";
+    if (!db.ExecSelect(query.str().c_str())) {
+        LOGGER(PACKAGE).error("Cannot retrieve ``ex_period_max'' from the database");
+        return 0;
+    }
+    return atoi(db.GetFieldValue(0, 0));
 }
 
 int ccReg_EPP_i::GetZoneValPeriod(
   int id)
 {
-  unsigned int z;
-
-  for (z = 0; z < zone->length() ; z ++) {
-    if ((*zone)[z].id == id)
-      return (*zone)[z].val_period;
-  }
-
-  return 0;
+    std::stringstream query;
+    query << "SELECT val_period FROM zone WHERE id=" << id << ";";
+    if (!db.ExecSelect(query.str().c_str())) {
+        LOGGER(PACKAGE).error("Cannot retrieve ``val_period'' from the database");
+        return 0;
+    }
+    return atoi(db.GetFieldValue(0, 0));
 }
 
 bool ccReg_EPP_i::GetZoneEnum(
   int id)
 {
-  unsigned int z;
-
-  for (z = 0; z < zone->length() ; z ++) {
-    if ((*zone)[z].id == id)
-      return (*zone)[z].enum_zone;
-  }
-
-  return false;
+    std::stringstream query;
+    query << "SELECT enum_zone FROM zone WHERE id=" << id << ";";
+    if (!db.ExecSelect(query.str().c_str())) {
+        LOGGER(PACKAGE).error("cannot retrieve ``enum_zone'' from the database");
+        return false;
+    }
+    if (strcmp("t", db.GetFieldValue(0, 0)) == 0) {
+        return true;
+    }
+    return false;
 }
 
 int ccReg_EPP_i::GetZoneDotsMax(
   int id)
 {
-  unsigned int z;
-
-  for (z = 0; z < zone->length() ; z ++) {
-    if ((*zone)[z].id == id)
-      return (*zone)[z].dots_max;
-  }
-
-  return 0;
+    std::stringstream query;
+    query << "SELECT dots_max FROM zone WHERE id=" << id << ";";
+    if (!db.ExecSelect(query.str().c_str())) {
+        LOGGER(PACKAGE).error("cannot retrieve ``dots_max'' from the database");
+        return 0;
+    }
+    return atoi(db.GetFieldValue(0, 0));
 }
 
 const char * ccReg_EPP_i::GetZoneFQDN(
   int id)
 {
-  unsigned int z;
-  for (z = 0; z < zone->length() ; z ++) {
-    if ((*zone)[z].id == id)
-      return (char *) (*zone)[z].fqdn ;
-  }
-
-  return "";
+    std::stringstream query;
+    query << "SELECT fqdn FROM zone WHERE id=" << id << ";";
+    if (!db.ExecSelect(query.str().c_str())) {
+        LOGGER(PACKAGE).error("cannot retrieve ``fqdn'' from the database");
+        return "";
+    }
+    return db.GetFieldValue(0, 0);
 }
 
 int ccReg_EPP_i::getZone(
   const char *fqdn)
 {
-  return getZZ(fqdn, true);
+    std::stringstream zoneQuery;
+    std::string domain_fqdn(fqdn);
+    zoneQuery
+        << "SELECT id FROM zone WHERE lower(fqdn)=lower('"
+        << domain_fqdn.substr(domain_fqdn.find('.') + 1, std::string::npos)
+        << "');";
+    if (!db.ExecSelect(zoneQuery.str().c_str())) {
+        LOGGER(PACKAGE).error("cannot retrieve zone id from the database");
+        return 0;
+    } else {
+        return atoi(db.GetFieldValue(0, 0));
+    }
+    return 0;
 }
 
 int ccReg_EPP_i::getZoneMax(
   const char *fqdn)
 {
-  return getZZ(fqdn, false);
-}
-
-int ccReg_EPP_i::getZZ(
-  const char *fqdn, bool compare)
-{
-  int max, i;
-  int len, slen, l;
-
-  if (zone->length() == 0) {
-      loadZones();
-  }
-  max = (int ) zone->length();
-
-  len = strlen(fqdn);
-
-  for (i = 0; i < max; i ++) {
-
-    slen = strlen( (char *) (*zone)[i].fqdn );
-    l = len - slen;
-
-    if (l > 0) {
-      if (fqdn[l-1] == '.') // case less compare
-      {
-        if (compare) {
-          if (strncasecmp(fqdn+l, (char *) (*zone)[i].fqdn , slen) == 0)
-            return (*zone)[i].id; // place into zone, return ID
-        } else
-          return l -1; // return end of name
-      }
-    }
-
-  }
-
-  // v return end of domain without dot
-  if (compare == false) {
-    for (l = len-1; l > 0; l --) {
-      if (fqdn[l] == '.')
-        return l-1; //  return end of name
-    }
-  }
-
-  return 0;
+    std::string domain_fqdn(fqdn);
+    return domain_fqdn.find('.');
 }
 
 bool ccReg_EPP_i::testFQDN(
@@ -1905,8 +1823,9 @@ ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, CORBA::Long clientID,
     EPPAction action(this, clientID, EPP_ClientCredit, clTRID, XML);
 
     try {
-        for (z = 0; z < GetZoneLength() ; z ++) {
-            zoneID = GetZoneID(z);
+        std::vector<int> zones = GetAllZonesIDs();
+        for (z = 0; z < zones.size(); z++) {
+            zoneID = zones[z];
             // credit of the registrar
             price = action.getDB()->GetRegistrarCredit(action.getRegistrar(), zoneID);
     
