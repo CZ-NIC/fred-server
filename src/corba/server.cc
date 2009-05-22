@@ -312,11 +312,6 @@ int main(int argc, char** argv) {
 
     CORBA::string_free(version);
 
-    /* load zone parametrs */
-    if (myccReg_EPP_i->loadZones() <= 0) {
-      LOGGER(PACKAGE).warning("Unable to load zones from the database.");
-    }
-
     /* load all county code from table enum_country */
     if (myccReg_EPP_i->LoadCountryCode() <= 0) {
       LOGGER(PACKAGE).alert("database error: load country code");
