@@ -40,6 +40,7 @@ check_pidfile() {
 store_pid()
 {
         RETRY_COUNT=2
+        PID=""
         while [ $RETRY_COUNT -gt 0 -a "$PID" == "" ]; do
                 PID=$(ps -e -o "pid args" | sed 's/^ *//g' | \
                 grep  "$1" | grep -v grep | cut -f1 -d' ')
