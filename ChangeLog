@@ -1,4 +1,8 @@
-2009-05-05 Jiri Sadek, Ales Dolezal, Jaromir Talir 
+2009-05-05 Jiri Sadek, Ales Dolezal, Jaromir Talir (2.1.11)
+
+        * Init script updated with zone and registrar initialization
+	
+        * No restart needed when adding new zone
 
 	* Bugfixes in notifications
 
@@ -6,15 +10,18 @@
 
 	* Bugfix in update_domain and delete_domain (zone check handling)
 
-	* fred-admin regular object procedure changed in order to delete domains first
+	* fred-admin regular object procedure changed in order to 
+	  delete domains first
 
-	* Update notification improved - now includes changes made by update command
+	* Update notification improved - now includes changes made by 
+	  update command
 	
 	* Refactoring of db library
 	  - restructualized
-		- type conversions - better separation of stringize for human readable
-		output and sqlize for serialization to queries
-		- old connection handling in new library for old code compatibility
+	    - type conversions - better separation of stringize for 
+	                         human readable output and sqlize for 
+	                         serialization to queries
+	    - old connection handling in new library for old code compatibility
 
 2009-03-25 Jaromir Talir, Jiri Sadek (2.1.8)
 
