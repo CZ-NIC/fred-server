@@ -496,7 +496,7 @@ bool ccReg_EPP_i::LogoutSession(
     }
   }
 
-  LOG( ERROR_LOG , "SESSION LOGOUT UNKNOWN loginID %d" , loginID );
+  LOG( DEBUG_LOG , "SESSION LOGOUT UNKNOWN loginID %d" , loginID );
 
   return false;
 }
