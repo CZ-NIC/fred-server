@@ -156,6 +156,98 @@ fred_stop() {
     fi
 }
 
+init_cz()
+{
+    ADMCMD=${FRED_PATH}/fred-admin
+    # do nothing if there is already some registrar 
+    $ADMCMD --registrar_list | grep registrar > /dev/null
+    if [ $? -eq 0 ]; then exit 1; fi
+    # add zone .cz 
+    $ADMCMD --zone_add \
+       --zone_fqdn=cz \
+       --ex_period_min=12 \
+       --ex_period_max=120 \
+       --ttl=18000 \
+       --hostmaster=hostmaster@nic.cz \
+       --refresh=10600 \
+       --update_retr=3600 \
+       --expiry=1209600 \
+       --minimum=7200 \
+       --ns_fqdn=ns.tld.cz
+    # add ENUM zone .0.2.4.e164.arpa
+    $ADMCMD --zone_add \
+       --zone_fqdn=0.2.4.e164.arpa \
+       --ex_period_min=12 \
+       --ex_period_max=120 \
+       --ttl=18000 \
+       --hostmaster=hostmaster@nic.cz \
+       --refresh=10600 \
+       --update_retr=3600 \
+       --expiry=1209600 \
+       --minimum=7200 \
+       --ns_fqdn=a.ns.nic.cz
+    # add nameservers for .cz
+    $ADMCMD --zone_ns_add \
+       --zone_fqdn=cz --ns_fqdn=ns.tld.cz --addr=217.31.196.10
+    $ADMCMD --zone_ns_add \
+       --zone_fqdn=cz --ns_fqdn=ns2.nic.fr
+    $ADMCMD --zone_ns_add \
+        --zone_fqdn=cz --ns_fqdn=ns1.tld.cz --addr=195.66.241.202
+    $ADMCMD --zone_ns_add \
+        --zone_fqdn=cz --ns_fqdn=nss.tld.cz --addr=217.31.200.10
+    $ADMCMD --zone_ns_add \
+        --zone_fqdn=cz --ns_fqdn=ns-cz.ripe.net
+    $ADMCMD --zone_ns_add \
+        --zone_fqdn=cz --ns_fqdn=sunic.sunet.se
+    $ADMCMD --zone_ns_add \
+        --zone_fqdn=cz --ns_fqdn=ns-ext.vix.com
+    # add nameservers for .0.2.4.e164.arpa
+    $ADMCMD --zone_ns_add \
+        --zone_fqdn=0.2.4.e164.arpa --ns_fqdn=a.ns.nic.cz
+    $ADMCMD --zone_ns_add \
+        --zone_fqdn=0.2.4.e164.arpa --ns_fqdn=b.ns.cznic.org
+    $ADMCMD --zone_ns_add \
+        --zone_fqdn=0.2.4.e164.arpa --ns_fqdn=c.ns.nic.cz
+    $ADMCMD --zone_ns_add \
+        --zone_fqdn=0.2.4.e164.arpa --ns_fqdn=e.ns.nic.cz
+    # add some testing registrars
+    $ADMCMD --registrar_add \
+        --handle=REG-FRED_A \
+        --country=CZ \
+        --organization="Testing registrar A" \
+        --reg_name="Company l.t.d." \
+        --url=www.nic.cz
+    $ADMCMD --registrar_add \
+        --handle=REG-FRED_B \
+        --country=CZ \
+        --organization="Testing registrar B" \
+        --reg_name="Company l.t.d." \
+        --url=www.nic.cz
+    # add EPP autentication data to these testin registrars 
+    $ADMCMD --registrar_acl_add \
+        --handle=REG-FRED_A \
+        --certificate="39:D1:0C:CA:05:3A:CC:C0:0B:EC:6F:3F:81:0D:C7:9E" \
+        --password=passwd
+    $ADMCMD --registrar_acl_add \
+        --handle=REG-FRED_B \
+        --certificate="39:D1:0C:CA:05:3A:CC:C0:0B:EC:6F:3F:81:0D:C7:9E" \
+        --password=passwd
+    # add EPP access to both zones to both registrars
+    $ADMCMD --registrar_add_zone \
+        --zone_fqdn=0.2.4.e164.arpa --handle=REG-FRED_A \
+        --from_date="2007-01-01"
+    $ADMCMD --registrar_add_zone \
+        --zone_fqdn=cz --handle=REG-FRED_A \
+        --from_date="2007-01-01"
+    $ADMCMD --registrar_add_zone \
+        --zone_fqdn=0.2.4.e164.arpa --handle=REG-FRED_B \
+        --from_date="2007-01-01"
+    $ADMCMD --registrar_add_zone \
+        --zone_fqdn=cz --handle=REG-FRED_B \
+        --from_date="2007-01-01"
+    exit 0
+}
+
 case "$1" in
     start)
 	fred_start
@@ -170,9 +262,12 @@ case "$1" in
     status)
         fred_status
         ;;
+    init_cz)
+        init_cz
+        ;;
     *)
 	echo -n "Usage: @SYSCONFDIR@/init.d/fred-server "
-	echo "{start|stop|restart|status}"
+	echo "{start|stop|restart|status|init_cz}"
 	exit 1
 esac
 
