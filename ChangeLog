@@ -1,31 +1,51 @@
-2009-05-05 Jiri Sadek, Ales Dolezal, Jaromir Talir (2.1.11)
+2009-05-25 Ales Dolezal, Jaromir Talir (2.1.11)
 
-        * Init script updated with zone and registrar initialization
+  * Init script updated with zone and registrar initialization
 	
-        * No restart needed when adding new zone
+  * No restart needed when adding new zone
 
-	* Bugfixes in notifications
+2009-05-14 Jiri Sadek, Ales Dolezal (2.1.10)
 
-	* Bugfixes in mailer manager subsystem
+  * Minor bugfixes detected by coverity and valgrind
 
-	* Bugfix in update_domain and delete_domain (zone check handling)
+  * Bugfix in update notification
 
-	* fred-admin regular object procedure changed in order to 
-	  delete domains first
+  * Bugfix in logging message
 
-	* Update notification improved - now includes changes made by 
-	  update command
+  * Bugfix in fred-admin (command-line parameters issues)
+
+2009-05-05 Jiri Sadek, Ales Dolezal, Jaromir Talir (2.1.9) 
+  
+  * Bugfixes in notifications
+
+  * Update notification improved - now includes changes made by 
+     update command
 	
-	* Refactoring of db library
-	  - restructualized
+  * Refactoring of db library
+     - restructualized
 	    - type conversions - better separation of stringize for 
 	                         human readable output and sqlize for 
 	                         serialization to queries
 	    - old connection handling in new library for old code compatibility
 
+  * Bugfixes in mailer manager subsystem
+
+  * Bugfix in update_domain and delete_domain (zone check handling)
+
+  * fred-admin regular object procedure changed in order to delete 
+    domains first
+
+  * Update notification improved - now includes changes made by update command
+
+  * Refactoring of db library
+    - restructualized
+    - type conversions - better separation of stringize for human readable
+    output and sqlize for serialization to queries
+    - old connection handling in new library for old code compatibility
+
 2009-03-25 Jaromir Talir, Jiri Sadek (2.1.8)
 
-   * Bugfixes
+  * Bugfixes
 	* SQL for registrar list fixed
 	* Parameter --factoring in fred-banking now works
 	* Sorting generally and sorting of invoices in webadmin works 
@@ -33,14 +53,14 @@
 	* Fixed problem in storing long xml answers
 	* Fixed zone check in case of uppercased fqdn of host in nsset
     
-   * Better handling of object changes in table 'history'
+  * Better handling of object changes in table 'history'
 
-   * Changes in notifications
+  * Changes in notifications
  	* DeleteContact EPP command was not notified 
 	* Regular delete commands are not notified
 	* Better check of invalid emails in notification process 
 	
-   * Daily regular procedure now delete objects before notification to speed
+  * Daily regular procedure now delete objects before notification to speed
      up delete
 	
 2009-02-10 Jaromir Talir (2.1.7)
