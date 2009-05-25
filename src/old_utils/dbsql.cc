@@ -626,9 +626,11 @@ const char * DB::GetDomainExDate(
 const char * DB::GetDomainValExDate(
   int id)
 {
-  convert_rfc3339_date(dtStr, GetValueFromTable("enumval", "ExDate",
-      "domainid", id) );
-  return dtStr;
+  // now it is just a date - no conversion needed
+  return GetValueFromTable("enumval", "ExDate", "domainid", id);
+  // convert_rfc3339_date(dtStr, GetValueFromTable("enumval", "ExDate",
+  // "domainid", id) );
+  // return dtStr;
 }
 
 char * DB::GetFieldDateTimeValueName(
