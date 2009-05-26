@@ -45,6 +45,8 @@ InvoiceClient::runMethod()
         factoring();
     } else if (m_conf.hasOpt(INVOICE_MAKE_PAIRS_NAME)) {
         pair_invoices();
+    } else if (m_conf.hasOpt(INVOICE_ADD_PREFIX_NAME)) {
+        add_invoice_prefix();
     }
 }
 
@@ -526,6 +528,29 @@ InvoiceClient::pair_invoices()
 }
 
 void
+InvoiceClient::add_invoice_prefix()
+{
+    callHelp(m_conf, add_invoice_prefix_help);
+    std::auto_ptr<Register::Invoicing::Manager>
+        invMan(Register::Invoicing::Manager::create(m_dbman));
+    unsigned int zoneId = m_conf.get<unsigned int>(INVOICE_ZONE_ID_NAME);
+    unsigned int type = m_conf.get<unsigned int>(INVOICE_PREFIX_TYPE_NAME);
+    if (type > 1) {
+        std::cerr << "Type can be either 0 or 1." << std::endl;
+        return;
+    }
+    unsigned int year;
+    if (m_conf.hasOpt(INVOICE_PREFIX_YEAR_NAME)) {
+        year = m_conf.get<unsigned int>(INVOICE_PREFIX_YEAR_NAME);
+    } else {
+        Database::Date now(Database::NOW);
+        year = now.get().year();
+    }
+    unsigned long long prefix = m_conf.get<unsigned long long>(INVOICE_PREFIX_PREFIX_NAME);
+    invMan->insertInvoicePrefix(zoneId, type, year, prefix);
+}
+
+void
 InvoiceClient::list_help()
 {
     std::cout <<
@@ -604,6 +629,22 @@ InvoiceClient::pair_invoices_help()
         "  $ " << g_prog_name << " --" << INVOICE_MAKE_PAIRS_NAME << std::endl;
 }
 
+void
+InvoiceClient::add_invoice_prefix_help()
+{
+    std::cout <<
+        "** Invoice add prefix **\n\n"
+        "  $ " << g_prog_name << " --" << INVOICE_ADD_PREFIX_NAME << " \\\n"
+        "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> \\\n"
+        "    --" << INVOICE_PREFIX_TYPE_NAME << "=<type> \\\n"
+        "    [--" << INVOICE_PREFIX_YEAR_NAME << "=<year>] \\\n"
+        "    --" << INVOICE_PREFIX_PREFIX_NAME << "=<prefix_number>\n"
+        << std::endl <<
+        "Type is either 0 (for the deposit invoice) or 1 (for account invoice).\n"
+        "Default value for the year is the current year.\n"
+        << std::endl;
+}
+
 
 #define ADDOPT(name, type, callable, visible) \
     {CLIENT_INVOICE, name, name##_DESC, type, callable, visible}
@@ -617,6 +658,7 @@ InvoiceClient::m_opts[] = {
     ADDOPT(INVOICE_CREDIT_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(INVOICE_FACTORING_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(INVOICE_MAKE_PAIRS_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(INVOICE_ADD_PREFIX_NAME, TYPE_NOTYPE, true, true),
     add_ID,
     add_REGISTRAR_ID,
     add_ZONE_ID,
@@ -639,7 +681,10 @@ InvoiceClient::m_opts[] = {
     ADDOPT(INVOICE_PRICE_NAME, TYPE_UINT, false, false),
     ADDOPT(INVOICE_TODATE_NAME, TYPE_STRING, false, false),
     ADDOPT(INVOICE_NO_REPORT_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(INVOICE_DONT_SEND_NAME, TYPE_NOTYPE, false, false)
+    ADDOPT(INVOICE_DONT_SEND_NAME, TYPE_NOTYPE, false, false),
+    ADDOPT(INVOICE_PREFIX_TYPE_NAME, TYPE_UINT, false, false),
+    ADDOPT(INVOICE_PREFIX_YEAR_NAME, TYPE_UINT, false, false),
+    ADDOPT(INVOICE_PREFIX_PREFIX_NAME, TYPE_ULONGLONG, false, false),
 };
 
 #undef ADDOPT

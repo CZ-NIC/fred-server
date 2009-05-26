@@ -111,6 +111,17 @@
 #define INVOICE_NO_REPORT_NAME          "no_report"
 #define INVOICE_NO_REPORT_NAME_DESC     "do not print list of payments without deposit invoice after pairing procedure"
 
+#define INVOICE_ADD_PREFIX_NAME         "add_prefix"
+#define INVOICE_ADD_PREFIX_NAME_DESC    "add row into the ``invoice_prefix'' table"
+#define INVOICE_ADD_PREFIX_HELP_NAME        "add_prefix_help"
+#define INVOICE_ADD_PREFIX_HELP_NAME_DESC   "help for ``add_prefix''"
+#define INVOICE_PREFIX_TYPE_NAME        "type"
+#define INVOICE_PREFIX_TYPE_NAME_DESC   "type"
+#define INVOICE_PREFIX_YEAR_NAME        "year"
+#define INVOICE_PREFIX_YEAR_NAME_DESC   "year"
+#define INVOICE_PREFIX_PREFIX_NAME      "prefix"
+#define INVOICE_PREFIX_PREFIX_NAME_DESC "prefix"
+
 namespace Admin {
 
 class InvoiceClient : public BaseClient {
@@ -150,6 +161,7 @@ public:
     void list();
     void list_filters();
     void archive();
+    void add_invoice_prefix();
 
     void credit();
     void factoring();
@@ -160,6 +172,7 @@ public:
     void credit_help();
     void factoring_help();
     void pair_invoices_help();
+    void add_invoice_prefix_help();
 }; // class InvoiceClient
 
 } // namespace Admin;
