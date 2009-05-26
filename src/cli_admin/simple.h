@@ -46,6 +46,7 @@ typedef std::map<std::string, int>::iterator METHODS_IT;
 #define TYPE_STRING     1
 #define TYPE_INT        2
 #define TYPE_UINT       3
+#define TYPE_ULONGLONG  4
 
 struct options {
     int         client;
