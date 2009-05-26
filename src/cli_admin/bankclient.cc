@@ -49,6 +49,8 @@ BankClient::runMethod()
         online_list();
     } else if (m_conf.hasOpt(BANK_IMPORT_XML_NAME)) {
         import_xml();
+    } else if (m_conf.hasOpt(BANK_ADD_ACCOUNT_NAME)) {
+        add_bank_account();
     }
 }
 
@@ -178,6 +180,25 @@ BankClient::import_xml()
 }
 
 void
+BankClient::add_bank_account()
+{
+    callHelp(m_conf, add_bank_account_help);
+    Database::ID zoneId = m_conf.get<unsigned int>(BANK_ZONE_ID_NAME);
+    std::string account_number = m_conf.get<std::string>(BANK_ACCOUNT_NUMBER_NAME);
+    std::string account_name;
+    if (m_conf.hasOpt(BANK_ACCOUNT_NAME_NAME)) {
+        account_name = m_conf.get<std::string>(BANK_ACCOUNT_NAME_NAME);
+    }
+    std::string bank_code = m_conf.get<std::string>(BANK_BANK_CODE_NAME);
+    std::auto_ptr<Register::Banking::Manager>
+        bankMan(Register::Banking::Manager::create(m_dbman));
+    bool retval = bankMan->insertBankAccount(zoneId, account_number, account_name, bank_code);
+    if (!retval) {
+        std::cout << "Error occured!" << std::endl;
+    }
+}
+
+void
 BankClient::online_list_help()
 {
     std::cout <<
@@ -223,6 +244,19 @@ BankClient::import_xml_help()
         << std::endl;
 }
 
+void
+BankClient::add_bank_account_help()
+{
+    std::cout << 
+        "** Add new bank account **\n\n"
+        "  $ " << g_prog_name << " --" << BANK_ADD_ACCOUNT_NAME << " \\\n"
+        "    --" << BANK_ZONE_ID_NAME << "=<zone_id> \\\n"
+        "    --" << BANK_ACCOUNT_NUMBER_NAME << "=<account_number> \\\n"
+        "    --" << BANK_BANK_CODE_NAME << "=<bank_code> \\\n"
+        "    [--" << BANK_ACCOUNT_NAME_NAME << "=<account_name>]\n"
+        << std::endl;
+}
+
 #define ADDOPT(name, type, callable, visible) \
     {CLIENT_BANK, name, name##_DESC, type, callable, visible}
 
@@ -232,6 +266,7 @@ BankClient::m_opts[] = {
     ADDOPT(BANK_ONLINE_LIST_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(BANK_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(BANK_IMPORT_XML_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(BANK_ADD_ACCOUNT_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(BANK_DATE_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_ID_NAME, TYPE_UINT, false, false),
     ADDOPT(BANK_ACCOUNT_ID_NAME, TYPE_UINT, false, false),
@@ -245,6 +280,8 @@ BankClient::m_opts[] = {
     ADDOPT(OUTPUT_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_CREDIT_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(BANK_CREATE_CREDIT_INVOICE_NAME, TYPE_NOTYPE, false, false),
+    ADDOPT(BANK_ZONE_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(BANK_ACCOUNT_NAME_NAME, TYPE_STRING, false, false),
 };
 
 #undef ADDOPT
