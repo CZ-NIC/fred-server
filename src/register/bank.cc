@@ -1820,6 +1820,9 @@ public:
         }
         return true;
     } // bool ManagerImpl::importOnlineStatementXml()
+    virtual bool insertBankAccount(const Database::ID &zone, 
+        const std::string &account_number, const std::string &account_name,
+        const std::string &bank_code);
 }; // class ManagerImpl
 
 Manager *
@@ -1829,6 +1832,31 @@ Manager::create(Database::Manager *dbMan)
     return new ManagerImpl(dbMan);
 }
 
+bool 
+ManagerImpl::insertBankAccount(const Database::ID &zone, 
+        const std::string &account_number, const std::string &account_name,
+        const std::string &bank_code)
+{
+    TRACE("[CALL] Register::Banking::Manager::insertBankAccount(...)");
+    Database::InsertQuery insertAccount("bank_account");
+    insertAccount.add("zone", zone);
+    insertAccount.add("account_number", account_number);
+    insertAccount.add("account_name", account_name);
+    insertAccount.add("bank_code", bank_code);
+    try {
+        m_conn->exec(insertAccount);
+    } catch (Database::Exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+        return false;
+    } catch (std::exception &ex) {
+        LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+        return false;
+    } catch (...) {
+        LOGGER(PACKAGE).error("Cannot insert new account into the ``bank_account'' table");
+        return false;
+    }
+    return true;
+}
 } // namespace Banking
 } // namespace Register
 

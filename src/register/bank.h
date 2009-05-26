@@ -165,6 +165,8 @@ public:
     virtual Statement *createStatement() const = 0;
     virtual bool importOnlineStatementXml(std::istream &in, bool createCreditInvoice) = 0;
     virtual bool importStatementXml(std::istream &in, bool createCreditInvoice) = 0;
+    virtual bool insertBankAccount(const Database::ID &zone, const std::string &account_number,
+            const std::string &account_name, const std::string &bank_code) = 0;
 };
 
 } // namespace Bank
