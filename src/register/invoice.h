@@ -258,6 +258,8 @@ public:
     virtual bool pairInvoices(bool report = false) = 0;
     virtual Database::Money getCreditByZone(
             const std::string &registrarHandle, Database::ID zoneId) const = 0;
+    virtual bool insertInvoicePrefix(unsigned long long zoneId,
+            int type, int year, unsigned long long prefix) = 0;
 };
 
 } // namespace Invoicing

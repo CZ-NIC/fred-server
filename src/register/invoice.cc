@@ -2957,6 +2957,8 @@ public:
     virtual Database::Money getCreditByZone(
             const std::string &registrarHandle, Database::ID zoneId) const;
     virtual void archiveInvoices(bool send) const;
+    virtual bool insertInvoicePrefix(unsigned long long zoneId,
+            int type, int year, unsigned long long prefix);
 }; // class ManagerImpl
 
 Manager *
@@ -3053,6 +3055,23 @@ ManagerImpl::countVat(Database::Money price, unsigned int vatRate, bool base)
     const VAT *v = getVat(vatRate);
     unsigned koef = v ? v->getKoef() : 0;
     return price * koef / (10000 - (base ? koef : 0));
+}
+bool 
+ManagerImpl::insertInvoicePrefix(unsigned long long zoneId, 
+        int type, int year, unsigned long long prefix) 
+{
+  TRACE("Invoicing::ManagerImpl::insertInvoicePrefix(...)");
+  Database::InsertQuery insertPrefix("invoice_prefix");
+  insertPrefix.add("zone", zoneId);
+  insertPrefix.add("typ", type);
+  insertPrefix.add("year", year);
+  insertPrefix.add("prefix", prefix);
+  try {
+      m_conn->exec(insertPrefix);
+  } catch (...) {
+      return false;
+  }
+  return true;
 }
 
 } // namespace Invoicing
