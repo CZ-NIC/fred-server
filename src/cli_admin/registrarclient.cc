@@ -291,7 +291,7 @@ RegistrarClient::price_add()
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
     std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
-    Database::DateTime validFrom(Database::NOW);
+    Database::DateTime validFrom(Database::NOW_UTC);
     if (m_conf.hasOpt(REGISTRAR_VALID_FROM_NAME)) {
         validFrom.from_string(m_conf.get<std::string>(REGISTRAR_VALID_FROM_NAME));
     }

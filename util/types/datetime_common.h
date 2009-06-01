@@ -28,7 +28,8 @@ DATETIME_ELEMENT(Seconds, unsigned)
 enum DateTimeSpecial {
   NOW,         //< actual local date
   NEG_INF,     //< minus infinity
-  POS_INF      //< plus infinity
+  POS_INF,      //< plus infinity
+  NOW_UTC       //< actual UTC date
 };
 
 

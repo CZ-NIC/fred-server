@@ -26,6 +26,9 @@ Date::Date(DateTimeSpecial _s) {
     case NEG_INF:
       value = date(neg_infin);
       break;
+    case NOW_UTC:
+      value = day_clock::universal_day();
+      break;
     default:
       value = date(not_a_date_time);
   }

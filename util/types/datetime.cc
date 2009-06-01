@@ -25,6 +25,9 @@ DateTime::DateTime(DateTimeSpecial _s) {
     case NEG_INF:
       value = ptime(neg_infin);
       break;
+    case NOW_UTC:
+      value = microsec_clock::universal_time();
+      break;
     default:
       value = ptime(not_a_date_time);
   }
