@@ -9,7 +9,9 @@
 #include "manage_part_table.h"
 
 // TODO this shouldn't be here
-#include "log_impl.h" /*
+#include "log_impl.h" 
+
+/*
 #include "db/connection.h"
 */
 #include "register/db_settings.h"

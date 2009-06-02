@@ -16,12 +16,7 @@ using namespace Database;
 
 namespace TestLogd {
 
-// TODO : to be removed
-#ifdef _TESTING_
-	const int MONTHS_COUNT  = 30;
-#else 
-	const int MONTHS_COUNT  = 12;
-#endif 
+const int MONTHS_COUNT  = 12;
 
 // value from database table log_action_type
 const int UNKNOWN_ACTION = 1000;
@@ -38,12 +33,15 @@ struct MyFixture {
 		Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_FILE, std::string("log_test_logd.txt"));
 		Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
 		LOGGER(PACKAGE).info("Logging initialized");
+	
+		// initialize database connection manager
+		Manager::init(new ConnectionFactory(DB_CONN_STR));
 	}
 
 	~MyFixture() {
 		try {
 			std::list<ID>::iterator it = id_list_entry.begin();
-			Connection conn(DB_CONN_STR);
+			Connection conn = Manager::acquire();
 
 			std::cout << "Deleting database records from log_entry and related. " << std::endl;
 			while(it != id_list_entry.end()) {
@@ -76,11 +74,11 @@ class TestImplLog {
 	static LogProperties no_props;
 
 public:
-	TestImplLog (const std::string connection_string) : logd(connection_string), conn(connection_string) {
+	TestImplLog (const std::string connection_string) : logd(connection_string), conn(Manager::acquire()) {
 	};
 
 	TestImplLog (const std::string connection_string, const std::string monitoring_file) : logd(connection_string, monitoring_file), 
-			conn(connection_string) {
+			conn(Manager::acquire()) {
 	};
 
 	Connection &get_conn() {
@@ -115,13 +113,7 @@ boost::format get_table_postfix_for_now()
 	// months in tm are numbered from 0
 	str_time.tm_mon++;
 
-#ifdef _TESTING_
-	/* TODO -this is only a test.... */
-	return get_table_postfix((1900 + str_time.tm_year), str_time.tm_mday);
-#else 
 	return get_table_postfix((1900 + str_time.tm_year), str_time.tm_mon);
-#endif
-	
 
 }
 
@@ -373,10 +365,12 @@ static int global_call_count = 0;
 
 void test_monitoring_ip(const std::string &ip, TestImplLog &t, bool result)
 {
-	Connection &conn = t.get_conn();
+	Connection conn = Manager::acquire();
 	Database::ID id;
 
 	id = t.new_event(ip.c_str(), LC_EPP, "AAA");
+
+	std::cout << " Recent ID: " << id << std::endl;
 
 	boost::format query = boost::format ( "select is_monitoring from log_entry where id=%1%") % id;
 	Result res = conn.exec(query.str());
@@ -486,6 +480,7 @@ BOOST_AUTO_TEST_CASE( test_monitoring_flag )
 	test_monitoring_ip("216.16.16.1", test, true);
 	test_monitoring_ip("216.16.16.2", test, false);
 	test_monitoring_ip("155.120.1.1", test, false);
+
 }
 
 BOOST_AUTO_TEST_CASE( partitions )
@@ -495,7 +490,8 @@ BOOST_AUTO_TEST_CASE( partitions )
 	Database::ID id;
 	TestImplLog test(DB_CONN_STR);
 
-	Connection &conn = test.get_conn();
+	// this gets the very same connection which is used by test object above since this program is single-threaded
+	Connection conn = Manager::acquire();
 	boost::format time;
 
 	// i is also used as minutes in time
@@ -503,10 +499,6 @@ BOOST_AUTO_TEST_CASE( partitions )
 		std::string date = create_date_str(2009, i);		
 
 		try {
-/* 		TODO database level partitioning 
-			if(!exist_tables(conn, 2009, i)) create_table(conn, "log_entry", 2009, i);
-*/
-
 			time = boost::format("insert into log_entry (time_begin, service, is_monitoring) values ('%1% 9:%2%:00', 99, true)") % date % i;	
 
 			conn.exec(time.str());

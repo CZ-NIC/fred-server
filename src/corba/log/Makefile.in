@@ -56,14 +56,23 @@ ARFLAGS = cru
 liblog_impl_a_AR = $(AR) $(ARFLAGS)
 liblog_impl_a_LIBADD =
 am_liblog_impl_a_OBJECTS = log_impl.$(OBJEXT) log_impl_wrap.$(OBJEXT) \
-	manage_part_table.$(OBJEXT)
+	manage_part_table.$(OBJEXT) model_log_action_type.$(OBJEXT) \
+	model_log_entry.$(OBJEXT) model_log_property_name.$(OBJEXT) \
+	model_log_property_value.$(OBJEXT) \
+	model_log_raw_content.$(OBJEXT) model_log_session.$(OBJEXT)
 liblog_impl_a_OBJECTS = $(am_liblog_impl_a_OBJECTS)
 am__installdirs = "$(DESTDIR)$(sbindir)"
 sbinPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(sbin_PROGRAMS)
 am_test_logd_OBJECTS = test_logd-test_logd.$(OBJEXT) \
 	test_logd-log_impl.$(OBJEXT) \
-	test_logd-manage_part_table.$(OBJEXT)
+	test_logd-manage_part_table.$(OBJEXT) \
+	test_logd-model_log_action_type.$(OBJEXT) \
+	test_logd-model_log_entry.$(OBJEXT) \
+	test_logd-model_log_property_name.$(OBJEXT) \
+	test_logd-model_log_property_value.$(OBJEXT) \
+	test_logd-model_log_raw_content.$(OBJEXT) \
+	test_logd-model_log_session.$(OBJEXT)
 test_logd_OBJECTS = $(am_test_logd_OBJECTS)
 test_logd_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
@@ -257,8 +266,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LIBRARIES = liblog_impl.a
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
-AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(AM_CFLAGS) -I$(top_srcdir)/util \
-              -I$(top_srcdir)/src -I$(top_builddir)/src -I$(top_srcdir)
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(AM_CFLAGS) \
+-I. -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/util -I$(top_builddir)/src -I$(top_srcdir)/util/db/model
 
 LDADD = $(BOOST_DATE_TIME_LIB) $(BOOST_THREAD_LIB) \
 	$(top_builddir)/util/db/libdb.a   \
@@ -269,8 +278,8 @@ LDADD = $(BOOST_DATE_TIME_LIB) $(BOOST_THREAD_LIB) \
 #LDADD = liblog_impl.a 	\
 #	$(prefix)/util/db/libdb.a   \
 #	$(prefix)/util/types/libtypes.a   
-liblog_impl_a_SOURCES = log_impl.h log_impl.cc log_impl_wrap.h log_impl_wrap.cc manage_part_table.h manage_part_table.cc
-test_logd_SOURCES = test_logd.cc log_impl.cc log_impl.h manage_part_table.h manage_part_table.cc 
+liblog_impl_a_SOURCES = log_impl.h log_impl.cc log_impl_wrap.h log_impl_wrap.cc manage_part_table.h manage_part_table.cc model_log_action_type.cc model_log_entry.cc model_log_property_name.cc model_log_property_value.cc model_log_raw_content.cc model_log_session.cc
+test_logd_SOURCES = test_logd.cc log_impl.cc log_impl.h manage_part_table.h manage_part_table.cc model_log_action_type.cc model_log_entry.cc model_log_property_name.cc model_log_property_value.cc model_log_raw_content.cc model_log_session.cc
 test_logd_CPPFLAGS = $(AM_CPPFLAGS)
 test_logd_LDFLAGS = $(AM_LDFLAGS) -lboost_unit_test_framework
 test_manage_part_SOURCES = log_impl.h manage_part_table.h manage_part_table.cc test_manage_part.cc 
@@ -354,8 +363,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log_impl_wrap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/manage_part_table.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_log_action_type.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_log_entry.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_log_property_name.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_log_property_value.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_log_raw_content.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_log_session.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-log_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-manage_part_table.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_log_action_type.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_log_entry.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_log_property_name.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_log_property_value.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_log_raw_content.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_log_session.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-test_logd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_manage_part-manage_part_table.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_manage_part-test_manage_part.Po@am__quote@
@@ -415,6 +436,90 @@ test_logd-manage_part_table.obj: manage_part_table.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='manage_part_table.cc' object='test_logd-manage_part_table.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-manage_part_table.obj `if test -f 'manage_part_table.cc'; then $(CYGPATH_W) 'manage_part_table.cc'; else $(CYGPATH_W) '$(srcdir)/manage_part_table.cc'; fi`
+
+test_logd-model_log_action_type.o: model_log_action_type.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_action_type.o -MD -MP -MF $(DEPDIR)/test_logd-model_log_action_type.Tpo -c -o test_logd-model_log_action_type.o `test -f 'model_log_action_type.cc' || echo '$(srcdir)/'`model_log_action_type.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_action_type.Tpo $(DEPDIR)/test_logd-model_log_action_type.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_action_type.cc' object='test_logd-model_log_action_type.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_action_type.o `test -f 'model_log_action_type.cc' || echo '$(srcdir)/'`model_log_action_type.cc
+
+test_logd-model_log_action_type.obj: model_log_action_type.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_action_type.obj -MD -MP -MF $(DEPDIR)/test_logd-model_log_action_type.Tpo -c -o test_logd-model_log_action_type.obj `if test -f 'model_log_action_type.cc'; then $(CYGPATH_W) 'model_log_action_type.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_action_type.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_action_type.Tpo $(DEPDIR)/test_logd-model_log_action_type.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_action_type.cc' object='test_logd-model_log_action_type.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_action_type.obj `if test -f 'model_log_action_type.cc'; then $(CYGPATH_W) 'model_log_action_type.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_action_type.cc'; fi`
+
+test_logd-model_log_entry.o: model_log_entry.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_entry.o -MD -MP -MF $(DEPDIR)/test_logd-model_log_entry.Tpo -c -o test_logd-model_log_entry.o `test -f 'model_log_entry.cc' || echo '$(srcdir)/'`model_log_entry.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_entry.Tpo $(DEPDIR)/test_logd-model_log_entry.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_entry.cc' object='test_logd-model_log_entry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_entry.o `test -f 'model_log_entry.cc' || echo '$(srcdir)/'`model_log_entry.cc
+
+test_logd-model_log_entry.obj: model_log_entry.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_entry.obj -MD -MP -MF $(DEPDIR)/test_logd-model_log_entry.Tpo -c -o test_logd-model_log_entry.obj `if test -f 'model_log_entry.cc'; then $(CYGPATH_W) 'model_log_entry.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_entry.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_entry.Tpo $(DEPDIR)/test_logd-model_log_entry.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_entry.cc' object='test_logd-model_log_entry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_entry.obj `if test -f 'model_log_entry.cc'; then $(CYGPATH_W) 'model_log_entry.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_entry.cc'; fi`
+
+test_logd-model_log_property_name.o: model_log_property_name.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_property_name.o -MD -MP -MF $(DEPDIR)/test_logd-model_log_property_name.Tpo -c -o test_logd-model_log_property_name.o `test -f 'model_log_property_name.cc' || echo '$(srcdir)/'`model_log_property_name.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_property_name.Tpo $(DEPDIR)/test_logd-model_log_property_name.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_property_name.cc' object='test_logd-model_log_property_name.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_property_name.o `test -f 'model_log_property_name.cc' || echo '$(srcdir)/'`model_log_property_name.cc
+
+test_logd-model_log_property_name.obj: model_log_property_name.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_property_name.obj -MD -MP -MF $(DEPDIR)/test_logd-model_log_property_name.Tpo -c -o test_logd-model_log_property_name.obj `if test -f 'model_log_property_name.cc'; then $(CYGPATH_W) 'model_log_property_name.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_property_name.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_property_name.Tpo $(DEPDIR)/test_logd-model_log_property_name.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_property_name.cc' object='test_logd-model_log_property_name.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_property_name.obj `if test -f 'model_log_property_name.cc'; then $(CYGPATH_W) 'model_log_property_name.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_property_name.cc'; fi`
+
+test_logd-model_log_property_value.o: model_log_property_value.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_property_value.o -MD -MP -MF $(DEPDIR)/test_logd-model_log_property_value.Tpo -c -o test_logd-model_log_property_value.o `test -f 'model_log_property_value.cc' || echo '$(srcdir)/'`model_log_property_value.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_property_value.Tpo $(DEPDIR)/test_logd-model_log_property_value.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_property_value.cc' object='test_logd-model_log_property_value.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_property_value.o `test -f 'model_log_property_value.cc' || echo '$(srcdir)/'`model_log_property_value.cc
+
+test_logd-model_log_property_value.obj: model_log_property_value.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_property_value.obj -MD -MP -MF $(DEPDIR)/test_logd-model_log_property_value.Tpo -c -o test_logd-model_log_property_value.obj `if test -f 'model_log_property_value.cc'; then $(CYGPATH_W) 'model_log_property_value.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_property_value.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_property_value.Tpo $(DEPDIR)/test_logd-model_log_property_value.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_property_value.cc' object='test_logd-model_log_property_value.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_property_value.obj `if test -f 'model_log_property_value.cc'; then $(CYGPATH_W) 'model_log_property_value.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_property_value.cc'; fi`
+
+test_logd-model_log_raw_content.o: model_log_raw_content.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_raw_content.o -MD -MP -MF $(DEPDIR)/test_logd-model_log_raw_content.Tpo -c -o test_logd-model_log_raw_content.o `test -f 'model_log_raw_content.cc' || echo '$(srcdir)/'`model_log_raw_content.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_raw_content.Tpo $(DEPDIR)/test_logd-model_log_raw_content.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_raw_content.cc' object='test_logd-model_log_raw_content.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_raw_content.o `test -f 'model_log_raw_content.cc' || echo '$(srcdir)/'`model_log_raw_content.cc
+
+test_logd-model_log_raw_content.obj: model_log_raw_content.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_raw_content.obj -MD -MP -MF $(DEPDIR)/test_logd-model_log_raw_content.Tpo -c -o test_logd-model_log_raw_content.obj `if test -f 'model_log_raw_content.cc'; then $(CYGPATH_W) 'model_log_raw_content.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_raw_content.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_raw_content.Tpo $(DEPDIR)/test_logd-model_log_raw_content.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_raw_content.cc' object='test_logd-model_log_raw_content.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_raw_content.obj `if test -f 'model_log_raw_content.cc'; then $(CYGPATH_W) 'model_log_raw_content.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_raw_content.cc'; fi`
+
+test_logd-model_log_session.o: model_log_session.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_session.o -MD -MP -MF $(DEPDIR)/test_logd-model_log_session.Tpo -c -o test_logd-model_log_session.o `test -f 'model_log_session.cc' || echo '$(srcdir)/'`model_log_session.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_session.Tpo $(DEPDIR)/test_logd-model_log_session.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_session.cc' object='test_logd-model_log_session.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_session.o `test -f 'model_log_session.cc' || echo '$(srcdir)/'`model_log_session.cc
+
+test_logd-model_log_session.obj: model_log_session.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_session.obj -MD -MP -MF $(DEPDIR)/test_logd-model_log_session.Tpo -c -o test_logd-model_log_session.obj `if test -f 'model_log_session.cc'; then $(CYGPATH_W) 'model_log_session.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_session.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_session.Tpo $(DEPDIR)/test_logd-model_log_session.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_session.cc' object='test_logd-model_log_session.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_session.obj `if test -f 'model_log_session.cc'; then $(CYGPATH_W) 'model_log_session.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_session.cc'; fi`
 
 test_manage_part-manage_part_table.o: manage_part_table.cc
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_manage_part_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_manage_part-manage_part_table.o -MD -MP -MF $(DEPDIR)/test_manage_part-manage_part_table.Tpo -c -o test_manage_part-manage_part_table.o `test -f 'manage_part_table.cc' || echo '$(srcdir)/'`manage_part_table.cc

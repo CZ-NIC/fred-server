@@ -10,9 +10,9 @@
 
 int main()
 {
+/*
 	try {
 		Database::Connection conn(DB_CONN_STR);
-/*
 		create_table (conn, "log_entry", 2009, 3, LC_UNIX_WHOIS);
 		std::cout << std::endl;
 		create_table (conn, "log_raw_content", 2009, 3, LC_UNIX_WHOIS);
@@ -42,10 +42,12 @@ int main()
 			create_table_set(conn, 2009, day);
 		}
 */
+/*
 
 	} catch (Database::Exception &ex) {
 		std::cout << (boost::format("error when working with database (%1%) : %2%") % DB_CONN_STR % ex.what()).str();
 	}
+*/
 
 }
 
