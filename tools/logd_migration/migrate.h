@@ -6,7 +6,6 @@
 #include <map>
 
 
-#include "register/db_settings.h"
 #include "db/transaction.h"
 #include "log_impl.h"
 
