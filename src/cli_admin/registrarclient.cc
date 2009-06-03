@@ -135,7 +135,7 @@ RegistrarClient::list()
                 << "\t\t</ACL>\n";
         }
         std::cout
-            << std::endl;
+            << "\t</registrar>\n";
     }
     std::cout << "</object>" << std::endl;
 
