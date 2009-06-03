@@ -626,7 +626,9 @@ InvoiceClient::pair_invoices_help()
     std::cout <<
         "** Pair invoices **\n\n"
         "Create new credit invoice for statements (normal and online) without existing invoice\n"
-        "  $ " << g_prog_name << " --" << INVOICE_MAKE_PAIRS_NAME << std::endl;
+        "  $ " << g_prog_name << " --" << INVOICE_MAKE_PAIRS_NAME << " \\\n"
+        "    [--" << INVOICE_NO_REPORT_NAME << "]\n"
+        << std::endl;
 }
 
 void
