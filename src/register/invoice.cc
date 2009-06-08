@@ -2959,6 +2959,8 @@ public:
     virtual void archiveInvoices(bool send) const;
     virtual bool insertInvoicePrefix(unsigned long long zoneId,
             int type, int year, unsigned long long prefix);
+    virtual bool insertInvoicePrefix(std::string zoneName,
+            int type, int year, unsigned long long prefix);
 }; // class ManagerImpl
 
 Manager *
@@ -3056,6 +3058,29 @@ ManagerImpl::countVat(Database::Money price, unsigned int vatRate, bool base)
     unsigned koef = v ? v->getKoef() : 0;
     return price * koef / (10000 - (base ? koef : 0));
 }
+bool
+ManagerImpl::insertInvoicePrefix(std::string zoneName,
+        int type, int year, unsigned long long prefix)
+{
+    Database::Query query;
+    query.buffer()
+        << "SELECT id FROM zone WHERE fqdn=" << Database::Value(zoneName);
+    try {
+        Database::Result res = m_conn->exec(query);
+        if (res.size() == 0) {
+            LOGGER(PACKAGE).error(boost::format("Unknown zone fqdn (%1%)")
+                    % zoneName);
+            return false;
+        }
+        unsigned long long zoneId = res[0][0];
+        return insertInvoicePrefix(zoneId, type, year, prefix);
+    } catch (...) {
+        LOGGER(PACKAGE).error("An exception was catched.");
+        return false;
+    }
+    return false;
+}
+
 bool 
 ManagerImpl::insertInvoicePrefix(unsigned long long zoneId, 
         int type, int year, unsigned long long prefix) 

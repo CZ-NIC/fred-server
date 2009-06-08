@@ -260,6 +260,8 @@ public:
             const std::string &registrarHandle, Database::ID zoneId) const = 0;
     virtual bool insertInvoicePrefix(unsigned long long zoneId,
             int type, int year, unsigned long long prefix) = 0;
+    virtual bool insertInvoicePrefix(std::string zoneName,
+            int type, int year, unsigned long long prefix) = 0;
 };
 
 } // namespace Invoicing
