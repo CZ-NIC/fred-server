@@ -1823,6 +1823,9 @@ public:
     virtual bool insertBankAccount(const Database::ID &zone, 
         const std::string &account_number, const std::string &account_name,
         const std::string &bank_code);
+    virtual bool insertBankAccount(const std::string &zone, 
+        const std::string &account_number, const std::string &account_name,
+        const std::string &bank_code);
 }; // class ManagerImpl
 
 Manager *
@@ -1832,12 +1835,40 @@ Manager::create(Database::Manager *dbMan)
     return new ManagerImpl(dbMan);
 }
 
+bool
+ManagerImpl::insertBankAccount(const std::string &zone,
+        const std::string &account_number, const std::string &account_name,
+        const std::string &bank_code)
+{
+    TRACE("[CALL] Register::Banking::Manager::insertBankAccount("
+            "const std::string &, const std::string &, "
+            "const std::string &, const std::string &)");
+    Database::Query query;
+    query.buffer()
+        << "SELECT id FROM zone WHERE fqdn=" << Database::Value(zone);
+    try {
+        Database::Result res = m_conn->exec(query);
+        if (res.size() == 0) {
+            LOGGER(PACKAGE).error(boost::format("Unknown zone (%1%)") % zone);
+            return false;
+        }
+        Database::ID zoneId = res[0][0];
+        return insertBankAccount(zoneId, account_number, account_name, bank_code);
+    } catch (...) {
+        LOGGER(PACKAGE).error("An exception was catched");
+        return false;
+    }
+    return false;
+}
+
 bool 
 ManagerImpl::insertBankAccount(const Database::ID &zone, 
         const std::string &account_number, const std::string &account_name,
         const std::string &bank_code)
 {
-    TRACE("[CALL] Register::Banking::Manager::insertBankAccount(...)");
+    TRACE("[CALL] Register::Banking::Manager::insertBankAccount("
+            "const Database::ID &, const std::string &, "
+            "const std::string &, const std::string &)");
     Database::InsertQuery insertAccount("bank_account");
     insertAccount.add("zone", zone);
     insertAccount.add("account_number", account_number);
