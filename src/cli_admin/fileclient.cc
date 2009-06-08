@@ -108,7 +108,17 @@ FileClient::list()
 void
 FileClient::list_help()
 {
-    std::cout << "file client list help" << std::endl;
+    std::cout
+        << "** File list **\n\n"
+        << "  $ " << g_prog_name << " --" << FILE_LIST_NAME << " \\\n"
+        << "  [--" << ID_NAME << "=<id_number>] \\\n"
+        << "  [--" << NAME_NAME << "=<name>] \\\n"
+        << "  [--" << FILE_TYPE_NAME << "=<type_name>] \\\n"
+        << "  [--" << FILE_PATH_NAME << "=<path>] \\\n"
+        << "  [--" << FILE_MIME_NAME << "=<mime_type>] \\\n"
+        << "  [--" << FILE_SIZE_NAME << "=<size>] \\\n"
+        << "  [--" << CRDATE_NAME << "=<create_time>]\n"
+        << std::endl;
 }
 
 #define ADDOPT(name, type, callable, visible) \
