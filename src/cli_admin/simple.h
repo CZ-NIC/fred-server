@@ -182,6 +182,7 @@ struct options {
 #define add_LIMIT               _ADDOPT(LIMIT_NAME, TYPE_UINT)
 #define add_FULL_LIST           _ADDOPT(FULL_LIST_NAME, TYPE_NOTYPE)
 #define add_ZONE_ID             _ADDOPT(ZONE_ID_NAME, TYPE_UINT)
+#define add_ZONE_FQDN           _ADDOPT(ZONE_FQDN_NAME, TYPE_STRING)
 #define add_AUTH_PW             _ADDOPT(AUTH_PW_NAME, TYPE_STRING)
 #define add_ADMIN               _ADDOPT(ADMIN_NAME, TYPE_STRING)
 #define add_ADMIN_ADD           _ADDOPT(ADMIN_ADD_NAME, TYPE_STRING)
@@ -294,6 +295,10 @@ struct options {
 #define ZONE_ID_NAME                "zone_id"
 #define ZONE_ID_NAME_DESC           "show only records with specific zone id number"
 #define apply_ZONE_ID(filter)       get_DID(filter, ZoneId, ZONE_ID_NAME)
+
+#define ZONE_FQDN_NAME              "zone_fqdn"
+#define ZONE_FQDN_NAME_DESC         "zone fully qualified domain name"
+#define apply_ZONE_FQDN(filter)     get_Str(filter, ZoneFqdn, ZONE_FQDN_NAME)
 
 // almost all
 #define AUTH_PW_NAME                "auth_pw"
