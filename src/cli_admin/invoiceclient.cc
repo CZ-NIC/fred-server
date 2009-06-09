@@ -91,6 +91,10 @@ InvoiceClient::list()
     if (m_conf.hasOpt(ZONE_ID_NAME))
         invFilter->addZoneId().setValue(
                 Database::ID(m_conf.get<unsigned int>(ZONE_ID_NAME)));
+    if (m_conf.hasOpt(ZONE_FQDN_NAME)) {
+        invFilter->addZone().addFqdn().setValue(
+                m_conf.get<std::string>(ZONE_FQDN_NAME));
+    }
     if (m_conf.hasOpt(INVOICE_TYPE_NAME))
         invFilter->addType().setValue(
                 m_conf.get<unsigned int>(INVOICE_TYPE_NAME));
@@ -155,6 +159,10 @@ InvoiceClient::list_filters()
     if (m_conf.hasOpt(ZONE_ID_NAME))
         invFilter->addZoneId().setValue(
                 Database::ID(m_conf.get<unsigned int>(ZONE_ID_NAME)));
+    if (m_conf.hasOpt(ZONE_FQDN_NAME)) {
+        invFilter->addZone().addFqdn().setValue(
+                m_conf.get<std::string>(ZONE_FQDN_NAME));
+    }
     if (m_conf.hasOpt(INVOICE_TYPE_NAME))
         invFilter->addType().setValue(
                 m_conf.get<unsigned int>(INVOICE_TYPE_NAME));
@@ -564,6 +572,7 @@ InvoiceClient::list_help()
         "    [--" << ID_NAME << "=<id_number>] \\\n"
         "    [--" << REGISTRANT_ID_NAME << "=<id_number>] \\\n"
         "    [--" << ZONE_ID_NAME << "=<id_number>] \\\n"
+        "    [--" << ZONE_FQDN_NAME << "=<zone_fqdn>] \\\n"
         "    [--" << INVOICE_TYPE_NAME << "=<invoice_type>] \\\n"
         "    [--" << INVOICE_VAR_SYMBOL_NAME << "=<invoice_var_symbol>] \\\n"
         "    [--" << INVOICE_NUMBER_NAME << "=<invoice_number>] \\\n"
@@ -670,6 +679,7 @@ InvoiceClient::m_opts[] = {
     add_ID,
     add_REGISTRAR_ID,
     add_ZONE_ID,
+    add_ZONE_FQDN, 
     add_CRDATE,
     ADDOPT(INVOICE_TYPE_NAME, TYPE_UINT, false, false),
     ADDOPT(INVOICE_VAR_SYMBOL_NAME, TYPE_STRING, false, false),
