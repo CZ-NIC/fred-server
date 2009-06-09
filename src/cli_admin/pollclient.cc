@@ -36,6 +36,8 @@ PollClient::runMethod()
         list_all();
     } else if (m_conf.hasOpt(POLL_LIST_NEXT_NAME)) {
         list_next();
+    } else if (m_conf.hasOpt(POLL_LIST_NEXT_HANDLE_NAME)) {
+        list_next();
     } else if (m_conf.hasOpt(POLL_CREATE_STATE_CHANGES_NAME) ||
             m_conf.hasOpt(POLL_CREATE_STATE_CHANGES_2_NAME)) {
         create_state_changes();
@@ -91,17 +93,33 @@ PollClient::list_next()
             Register::Poll::Manager::create(
                 &m_db)
             );
-    Register::TID reg = m_conf.get<unsigned int>(POLL_LIST_NEXT_NAME);
-    unsigned int count = pollMan->getMessageCount(reg);
-    if (!count) {
-        std::cout << "No message" << std::endl;
+    if (m_conf.hasOpt(POLL_LIST_NEXT_NAME)) {
+        Register::TID reg = m_conf.get<unsigned int>(POLL_LIST_NEXT_NAME);
+        unsigned int count = pollMan->getMessageCount(reg);
+        if (!count) {
+            std::cout << "No message" << std::endl;
+        } else {
+            std::auto_ptr<Register::Poll::Message> msg(pollMan->getNextMessage(reg));
+            std::cout << "Messages:" << count << std::endl;
+            msg->textDump(std::cout);
+            std::cout << std::endl;
+        }
+    } else if (m_conf.hasOpt(POLL_LIST_NEXT_HANDLE_NAME)) {
+        std::string reg = m_conf.get<std::string>(POLL_LIST_NEXT_HANDLE_NAME);
+        unsigned int count = pollMan->getMessageCount(reg);
+        if (!count) {
+            std::cout << "No message" << std::endl;
+        } else {
+            std::auto_ptr<Register::Poll::Message> msg(pollMan->getNextMessage(reg));
+            std::cout << "Messages:" << count << std::endl;
+            msg->textDump(std::cout);
+            std::cout << std::endl;
+        }
     } else {
-        std::auto_ptr<Register::Poll::Message> msg(pollMan->getNextMessage(reg));
-        std::cout << "Messages:" << count << std::endl;
-        msg->textDump(std::cout);
-        std::cout << std::endl;
+        std::cerr << "Registrar is not set, use ``--" << REGISTRAR_ID_NAME
+            << "'' or ``--" << REGISTRAR_HANDLE_NAME << "''" << std::endl;
+        return;
     }
-    return;
 }
 void
 PollClient::set_seen()
@@ -112,15 +130,23 @@ PollClient::set_seen()
                 &m_db)
             );
     try {
-        Register::TID reg = m_conf.get<unsigned int>(REGISTRAR_ID_NAME);
-        if (!reg) std::cout << "Owning registar must be set." << std::endl;
         Register::TID messageId = m_conf.get<unsigned int>(POLL_SET_SEEN_NAME); 
-        pollMan->setMessageSeen(messageId, reg);
-        std::cout << "NextId:" << pollMan->getNextMessageId(reg) << std::endl;
+        if (m_conf.hasOpt(REGISTRAR_ID_NAME)) {
+            Register::TID reg = m_conf.get<unsigned int>(REGISTRAR_ID_NAME);
+            pollMan->setMessageSeen(messageId, reg);
+            std::cout << "NextId:" << pollMan->getNextMessageId(reg) << std::endl;
+        } else if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME)) {
+            std::string reg = m_conf.get<std::string>(REGISTRAR_ID_NAME);
+            pollMan->setMessageSeen(messageId, reg);
+            std::cout << "NextId:" << pollMan->getNextMessageId(reg) << std::endl;
+        } else {
+            std::cerr << "Registrar is not set, use ``--" << REGISTRAR_ID_NAME
+                << "'' or ``--" << REGISTRAR_HANDLE_NAME << "''" << std::endl;
+            return;
+        }
     } catch (...) {
         std::cout << "No message" << std::endl;
     }
-    return;
 }
 void
 PollClient::create_state_changes()
@@ -160,8 +186,11 @@ PollClient::create_low_credit()
 
 const struct options
 PollClient::m_opts[] = {
+    add_REGISTRAR_ID,
+    add_REGISTRAR_HANDLE,
     ADDOPT(POLL_LIST_ALL_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(POLL_LIST_NEXT_NAME, TYPE_UINT, true, true),
+    ADDOPT(POLL_LIST_NEXT_HANDLE_NAME, TYPE_STRING, true, true),
     ADDOPT(POLL_SET_SEEN_NAME, TYPE_UINT, true, true),
     ADDOPT(POLL_CREATE_STATE_CHANGES_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(POLL_CREATE_STATE_CHANGES_2_NAME, TYPE_NOTYPE, true, true),

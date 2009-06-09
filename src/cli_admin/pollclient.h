@@ -24,7 +24,9 @@
 #define POLL_LIST_ALL_NAME          "poll_list_all"
 #define POLL_LIST_ALL_NAME_DESC     "list all poll messages"
 #define POLL_LIST_NEXT_NAME         "poll_list_next"
-#define POLL_LIST_NEXT_NAME_DESC    "list next message for given registrar"
+#define POLL_LIST_NEXT_NAME_DESC    "list next message for given registrar id"
+#define POLL_LIST_NEXT_HANDLE_NAME  "poll_list_next_handle"
+#define POLL_LIST_NEXT_HANDLE_NAME_DESC "list next message for given registrar handle"
 #define POLL_SET_SEEN_NAME          "poll_set_seen"
 #define POLL_SET_SEEN_NAME_DESC     "set given message as seen"
 
