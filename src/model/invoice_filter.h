@@ -5,6 +5,7 @@
 #include "object_filter.h"
 #include "registrar_filter.h"
 #include "file_filter.h"
+#include "zone_filter.h"
 
 namespace Database {
 namespace Filters {
@@ -33,6 +34,7 @@ public:
   virtual Registrar& addRegistrar() = 0;
   virtual Object& addObject() = 0;
   virtual File& addFile() = 0;
+  virtual Zone &addZone() = 0;
   
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -60,6 +62,7 @@ public:
   virtual Registrar& addRegistrar();
   virtual Object& addObject();
   virtual File& addFile();
+  virtual Zone &addZone();
   
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,

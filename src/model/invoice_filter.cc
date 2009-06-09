@@ -33,6 +33,20 @@ Value<Database::ID>& InvoiceImpl::addZoneId() {
   return *tmp;
 }
 
+Zone &
+InvoiceImpl::addZone()
+{
+    Zone *tmp = new ZoneImpl();
+    tmp->joinOn(new Join(
+                Column("zone", joinInvoiceTable()),
+                SQL_OP_EQ,
+                Column("id", tmp->joinZoneTable())
+                ));
+    add(tmp);
+    tmp->setName("Zone");
+    return *tmp;
+}
+
 Value<int>& InvoiceImpl::addType() {
   addJoin(new Join(
                    Column("prefix_type", joinInvoiceTable()),
