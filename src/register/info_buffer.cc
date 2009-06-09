@@ -131,6 +131,26 @@ namespace Register
       #define LIST_DOWNCAST_CALL(_meth) tmp->_meth;
 
       virtual unsigned long info(
+              const std::string &registrar, Type infotype,
+              const std::string &request)
+          throw (SQL_ERROR, INVALID_REGISTRAR)
+      {
+          std::stringstream query;
+          query
+              << "SELECT id FROM registrar WHERE handle="
+              << Database::Value(registrar);
+          if (!db->ExecSelect(query.str().c_str())) {
+              throw SQL_ERROR();
+          }
+          if (db->GetSelectRows() != 1) {
+              throw INVALID_REGISTRAR();
+          }
+          TID registrarId = atoi(db->GetFieldValue(0, 0));
+          db->FreeSelect();
+          return info(registrarId, infotype, request);
+      }
+
+      virtual unsigned long info(
         TID registrar, Type infotype, const std::string& request
       ) throw (SQL_ERROR, INVALID_REGISTRAR)
       {
@@ -277,6 +297,24 @@ namespace Register
         db->FreeSelect();
         return result;    
       }
+      virtual Chunk *getChunk(const std::string &registrar, unsigned int size)
+          throw (SQL_ERROR, INVALID_REGISTRAR)
+      {
+          std::stringstream query;
+          query
+              << "SELECT id FROM registrar WHERE handle="
+              << Database::Value(registrar);
+          if (!db->ExecSelect(query.str().c_str())) {
+              throw SQL_ERROR();
+          }
+          if (db->GetSelectRows() != 1) {
+              throw INVALID_REGISTRAR();
+          }
+          TID registrarId = atoi(db->GetFieldValue(0, 0));
+          db->FreeSelect();
+          return getChunk(registrarId, size);
+      }
+
       virtual Chunk *getChunk(TID registrar, unsigned size)
         throw (SQL_ERROR, INVALID_REGISTRAR)
       {
