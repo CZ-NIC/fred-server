@@ -127,12 +127,17 @@ namespace Register
      public:
       virtual ~Manager() {}
       /// return count of messages in queue for registrar
+      virtual unsigned long getMessageCount(std::string registrar) const = 0;
       virtual unsigned long getMessageCount(TID registrar) const = 0;
       /// return next unseen and unexpired message for registrar
+      virtual Message* getNextMessage(std::string registrar) = 0; // const = 0;
       virtual Message* getNextMessage(TID registrar) = 0; // const = 0;
       /// return id of next unseen and unexpired message for registrar
+      virtual TID getNextMessageId(std::string registrar) const = 0;;
       virtual TID getNextMessageId(TID registrar) const = 0;;
       /// mark message as seen, check ownership to registrar and if unseen
+      virtual void setMessageSeen(TID message, std::string registrar) 
+        throw (NOT_FOUND) = 0;
       virtual void setMessageSeen(TID message, TID registrar) 
         throw (NOT_FOUND) = 0;
       /// create action poll message (used in EPP transfer commands)

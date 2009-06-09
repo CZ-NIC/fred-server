@@ -601,11 +601,19 @@ public:
   ManagerImpl(DB* _db) :
     db(_db) {
   }
+  unsigned long getMessageCount(std::string registrar) const
+  {
+      return getMessageCount(db->GetRegistrarID(registrar.c_str()));
+  }
   unsigned long getMessageCount(TID registrar) const {
     ListImpl l(db);
     prepareListWithNext(l, registrar);
     l.makeRealCount();
     return l.getRealCount();
+  }
+  Message *getNextMessage(std::string registrar)
+  {
+      return getNextMessage(db->GetRegistrarID(registrar.c_str()));
   }
   Message* getNextMessage(TID registrar) // const
   {
@@ -615,12 +623,20 @@ public:
     l.reload();
     return l.extractFirst();
   }
+  TID getNextMessageId(std::string registrar) const
+  {
+      return getNextMessageId(db->GetRegistrarID(registrar.c_str()));
+  }
   TID getNextMessageId(TID registrar) const {
     ListImpl l(db);
     prepareListWithNext(l, registrar);
     l.setLimit(1);
     l.reload();
     return l.getCount() ? l.getMessage(0)->getId() : 0;
+  }
+  void setMessageSeen(TID message, std::string registrar) throw (NOT_FOUND)
+  {
+      setMessageSeen(message, db->GetRegistrarID(registrar.c_str()));
   }
   void setMessageSeen(TID message, TID registrar) throw (NOT_FOUND) {
     ListImpl l(db);
