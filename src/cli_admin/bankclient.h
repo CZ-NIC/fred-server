@@ -70,7 +70,7 @@
 #define BANK_CREATE_CREDIT_INVOICE_NAME     "create_credit_invoice"
 #define BANK_CREATE_CREDIT_INVOICE_NAME_DESC "create also credit invoice if appliable"
 
-#define BANK_ADD_ACCOUNT_NAME           "add_account"
+#define BANK_ADD_ACCOUNT_NAME           "bank_add_account"
 #define BANK_ADD_ACCOUNT_NAME_DESC      "add bank account"
 #define BANK_ZONE_ID_NAME               "zone_id"
 #define BANK_ZONE_ID_NAME_DESC          "zone id"
