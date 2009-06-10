@@ -587,11 +587,13 @@ public:
       return;
     }
 
-    info_query.limit(load_limit_);
+    /* manually add query part to order result by id
+     * need for findIDSequence() */
     uf.serialize(info_query);
+    std::string info_query_str = str(boost::format("%1% ORDER BY id LIMIT %2%") % info_query.str() % load_limit_);
     try {
       std::auto_ptr<Database::Connection> conn(dbm->getConnection());
-      Database::Result r_info = conn->exec(info_query);
+      Database::Result r_info = conn->exec(info_query_str);
       for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
