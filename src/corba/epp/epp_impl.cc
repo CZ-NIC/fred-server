@@ -6965,7 +6965,7 @@ ccReg_EPP_i::KeySetUpdate(
 int
 countTailPads(const char *key)
 {
-    char *str;
+    const char *str;
     int count;
     str = strchr(key, '=');
     if (str == NULL) {
@@ -6984,7 +6984,7 @@ countTailPads(const char *key)
 int
 testPad(const char *key)
 {
-    char *str;
+    const char *str;
     if ((str = strchr(key, '=')) == NULL) {
         return -1;
     }
