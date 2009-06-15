@@ -635,8 +635,8 @@ class ManagerImpl : public virtual Manager {
   bool checkProtection(const std::string& name, unsigned type,
       const std::string& monthPeriodSQL) const throw (SQL_ERROR) {
     std::stringstream sql;
-    sql << "SELECT COALESCE(" << "MAX(erdate) + INTERVAL '" << monthPeriodSQL
-        << "'" << " > CURRENT_DATE, false) " << "FROM object_registry "
+    sql << "SELECT COALESCE(" << "MAX(erdate) + (" << monthPeriodSQL
+        << ")::interval" << " > CURRENT_TIMESTAMP, false) " << "FROM object_registry "
         << "WHERE NOT(erdate ISNULL) " << "AND type=" << type << " "
         << "AND UPPER(name)=UPPER('" << name << "')";
     if (!db->ExecSelect(sql.str().c_str())) {
@@ -662,7 +662,7 @@ public:
       return CA_INVALID_HANDLE;
     if (checkHandleRegistration(handle, conflict, lock))
       return CA_REGISTRED;
-    if (checkProtection(handle, 1, "2 month"))
+    if (checkProtection(handle, 1, "(SELECT val FROM enum_parameters WHERE id = 12) || ' month'"))
       return CA_PROTECTED;
     return CA_FREE;
   }
