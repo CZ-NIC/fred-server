@@ -6066,15 +6066,16 @@ ccReg_EPP_i::KeySetCreate(
             }
         }
     }
-    // dnskey algorithm type (must be 1, 2, 3, 4, 5, 252, 253, 254 or 255)
+    // dnskey algorithm type (must be 1, 2, 3, 4, 5, 6, 7, 252, 253, 254 or 255)
+    // http://www.bind9.net/dns-sec-algorithm-numbers
     // http://rfc-ref.org/RFC-TEXTS/4034/kw-dnssec_algorithm_type.html
     // http://rfc-ref.org/RFC-TEXTS/4034/chapter7.html#d4e446172
     if (code == 0) {
         for (int ii = 0; ii < (int)dnsk.length(); ii++) {
-            if (!((dnsk[ii].alg >= 1 && dnsk[ii].alg <= 5) ||
+            if (!((dnsk[ii].alg >= 1 && dnsk[ii].alg <= 7) ||
                         (dnsk[ii].alg >= 252 && dnsk[ii].alg <=255))) {
                 LOG(WARNING_LOG,
-                        "dnskey algorithm is %d (must be 1,2,3,4,5,252,253,254 or 255)",
+                        "dnskey algorithm is %d (must be 1,2,3,4,5,6,7,252,253,254 or 255)",
                         dnsk[ii].alg);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR, 
                         ccReg::keyset_dnskey, ii, REASON_MSG_DNSKEY_BAD_ALG);
@@ -6725,11 +6726,11 @@ ccReg_EPP_i::KeySetUpdate(
                         REASON_MSG_DNSKEY_BAD_PROTOCOL);
                 break;
             }
-            // dnskey algorithm type test (must be 1,2,3,4,5,252,253,254,255)
-            if (!((dnsk_add[ii].alg >= 1 && dnsk_add[ii].alg <= 5) ||
+            // dnskey algorithm type test (must be 1,2,3,4,5,6,7,252,253,254,255)
+            if (!((dnsk_add[ii].alg >= 1 && dnsk_add[ii].alg <= 7) ||
                         (dnsk_add[ii].alg >= 252 && dnsk_add[ii].alg <= 255))) {
                 LOG(WARNING_LOG,
-                        "dnskey algorithm is %d (must be 1,2,3,4,5,252,253,254 or 255)",
+                        "dnskey algorithm is %d (must be 1,2,3,4,5,6,7,252,253,254 or 255)",
                         dnsk_add[ii].alg);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::keyset_dnskey_add, ii,
