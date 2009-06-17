@@ -41,10 +41,10 @@ store_pid()
 {
         RETRY_COUNT=2
         PID=""
-        while [ $RETRY_COUNT -gt 0 -a "$PID" == "" ]; do
+        while [ $RETRY_COUNT -gt 0 -a "$PID" = "" ]; do
                 PID=$(ps -e -o "pid args" | sed 's/^ *//g' | \
                 grep  "$1" | grep -v grep | cut -f1 -d' ')
-                if [ "$PID" == "" ]; then
+                if [ "$PID" = "" ]; then
                         RETRY_COUNT=$(($RETRY_COUNT - 1))
                         sleep 1
                 fi
@@ -63,7 +63,7 @@ fred_start() {
         if $DB_MANAGER testuser
         then
             $DB_MANAGER install
-        elif [ "$(whoami)" == "root" ]; then
+        elif [ "$(whoami)" = "root" ]; then
 	    /bin/su - postgres -c "$DB_MANAGER install"
         fi
 	if [ $? -ne 0 ]; then 
