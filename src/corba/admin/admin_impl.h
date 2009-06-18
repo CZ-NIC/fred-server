@@ -154,6 +154,7 @@ public:
       throw (ccReg::Admin::ObjectNotFound);
   char* getCreditByZone(const char*registrarHandle, ccReg::TID zone);
   void generateLetters();
+  bool setInZoneStatus(ccReg::TID domainId);
 
   ccReg::TID createPublicRequest(ccReg::PublicRequest::Type _type,
                                  ccReg::TID _epp_action_id,
