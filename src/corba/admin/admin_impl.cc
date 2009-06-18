@@ -1554,6 +1554,51 @@ void ccReg_Admin_i::generateLetters() {
   }
 }
 
+bool
+ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
+{
+    TRACE(boost::format("[CALL] ccReg_Admin_i::setInZoneStatus(%1%)")
+            % domainId);
+    Database::Query query;
+    query.buffer()
+        << "SELECT id FROM object_state_request WHERE object_id="
+        << Database::Value(domainId) << " AND state_id=6;";
+    Database::Connection *conn = m_db_manager.acquire();
+    try {
+        Database::Result res = conn->exec(query);
+        if (res.size() != 0) {
+            LOGGER(PACKAGE).error("Already in ``object_state_request''");
+            return false;
+        }
+    } catch (...) {
+        LOGGER(PACKAGE).error("setInZoneStatus: an error has occured");
+        return false;
+    }
+    Database::InsertQuery insert("object_state_request");
+    Database::DateTime now = Database::NOW_UTC;
+    insert.add("object_id", Database::Value(domainId));
+    insert.add("state_id", 6);
+    insert.add("valid_from", Database::Value(now));
+    insert.add("valid_to", Database::Value(now + Database::Days(7)));
+    insert.add("crdate", Database::Value(now));
+    try {
+        conn->exec(insert);
+    } catch (...) {
+        LOGGER(PACKAGE).error("setInZoneStatus: failed to insert");
+        return false;
+    }
+    query.clear();
+    query.buffer()
+        << "SELECT update_object_states(" << domainId << ");";
+    try {
+        conn->exec(query);
+    } catch (...) {
+        LOGGER(PACKAGE).error("setInZoneStatus: failed to update object states");
+        return false;
+    }
+    return true;
+}
+
 ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
                                               ccReg::TID _epp_action_id,
                                               const char *_reason,
