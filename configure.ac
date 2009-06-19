@@ -245,6 +245,7 @@ AC_CONFIG_FILES([Makefile
                  src/corba/epp/Makefile
                  src/corba/log/Makefile                 
                  tools/logd_migration/Makefile
+                 tools/Makefile
                  src/cli_admin/Makefile
                  fred-server.spec
                  config/server.conf
