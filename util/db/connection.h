@@ -286,7 +286,8 @@ public:
 
 
   virtual ~TSSConnection_() {
-    manager_type::release();
+    // Connection should be returned to the pool either explicitly or at thread exit
+    // manager_type::release();
   }
 
 

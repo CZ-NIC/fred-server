@@ -99,11 +99,10 @@ public:
       LOGGER(PACKAGE).debug(boost::format("[tss] release state: conn=%1%  trans=%2%") % tmp->conn % &tmp->trans);
 #endif
     }
-    // PerThreadData_ *tmp = data_.get();
-    // if (tmp && tmp->conn) {
-    //   conn_factory_->release(tmp->conn);
-    //   tmp->conn = 0;
-    // }
+    if (tmp && tmp->conn) {
+       conn_factory_->release(tmp->conn);
+       tmp->conn = 0;
+    }
   }
 
 
