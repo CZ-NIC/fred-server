@@ -9,13 +9,13 @@ private:
 	std::auto_ptr<Register::Logger::List> m_lel;
 
 public:
-	//ccReg_Logger_i(Register::LogEntry::List *list, const Settings *_ptr);
+	//ccReg_Logger_i(Register::Request::List *list, const Settings *_ptr);
 	ccReg_Logger_i(Register::Logger::List *list);
 	~ccReg_Logger_i();
 	DECL_PAGETABLE_I;
 
 	ccReg::Filters::Compound_ptr add();
-	Register::Logger::LogEntry *findId(ccReg::TID _id);
+	Register::Logger::Request *findId(ccReg::TID _id);
 
 public: 
 	const static int NUM_COLUMNS;

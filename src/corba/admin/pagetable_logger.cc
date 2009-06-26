@@ -13,7 +13,7 @@ ccReg::Filters::Compound_ptr ccReg_Logger_i::add() {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_Logger_i::add()");
-  Database::Filters::LogEntry *f = new Database::Filters::LogEntryImpl();
+  Database::Filters::Request *f = new Database::Filters::RequestImpl();
   uf.addFilter(f);
   return it.addE(f);
 }
@@ -35,7 +35,7 @@ Registry::TableRow* ccReg_Logger_i::getRow(CORBA::Short row)
   Logging::Context ctx(base_context_);
 
   try {
-    const Register::Logger::LogEntry *a = m_lel->get(row);
+    const Register::Logger::Request *a = m_lel->get(row);
     Registry::TableRow *tr = new Registry::TableRow;
     tr->length(NUM_COLUMNS);
 
@@ -78,7 +78,7 @@ ccReg::TID ccReg_Logger_i::getRowId(CORBA::Short row)
     throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
-  const Register::Logger::LogEntry *a = m_lel->get(row);
+  const Register::Logger::Request *a = m_lel->get(row);
   if (!a)
     throw ccReg::Table::INVALID_ROW();
   return a->getId();
@@ -132,7 +132,7 @@ void ccReg_Logger_i::loadFilter(ccReg::TID _id) {
 
   Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
-    Database::Filters::LogEntry *tmp = dynamic_cast<Database::Filters::LogEntry* >(*uit);
+    Database::Filters::Request *tmp = dynamic_cast<Database::Filters::Request* >(*uit);
     if (tmp) {
       it.addE(tmp);
       TRACE(boost::format("[IN] ccReg_Logger_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
@@ -150,13 +150,13 @@ void ccReg_Logger_i::saveFilter(const char* _name) {
   tmp_filter_manager->save(Register::Filter::FT_LOGGER, _name, uf);
 }
 
-Register::Logger::LogEntry* ccReg_Logger_i::findId(ccReg::TID _id) {
+Register::Logger::Request* ccReg_Logger_i::findId(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
 
   try {
-    Register::Logger::LogEntry *log_entry = dynamic_cast<Register::Logger::LogEntry* >(m_lel->findId(_id));
-    if (log_entry) {
-      return log_entry;
+    Register::Logger::Request *request = dynamic_cast<Register::Logger::Request* >(m_lel->findId(_id));
+    if (request) {
+      return request;
     }
     return 0;
   }

@@ -42,11 +42,11 @@ public:
   ccReg::Filters::Mail_ptr addE(Database::Filters::Mail* f);
   ccReg::Filters::File_ptr addE(Database::Filters::File* f);
   ccReg::Filters::ObjectState_ptr addE(Database::Filters::ObjectState* f);
-  ccReg::Filters::LogEntry_ptr addE(Database::Filters::LogEntry* f);
-  ccReg::Filters::LogPropertyValue_ptr addE(Database::Filters::LogPropertyValue *f);
-  ccReg::Filters::LogPropertyName_ptr addE(Database::Filters::LogPropertyName *f);
-  ccReg::Filters::LogRawContent_ptr addE(Database::Filters::LogRawContent* f);
-  ccReg::Filters::LogServiceType_ptr addE(Database::Filters::Value<Database::LogServiceType> *f);
+  ccReg::Filters::Request_ptr addE(Database::Filters::Request* f);
+  ccReg::Filters::RequestPropertyValue_ptr addE(Database::Filters::RequestPropertyValue *f);
+  ccReg::Filters::RequestProperty_ptr addE(Database::Filters::RequestProperty *f);
+  ccReg::Filters::RequestData_ptr addE(Database::Filters::RequestData* f);
+  ccReg::Filters::RequestServiceType_ptr addE(Database::Filters::Value<Database::RequestServiceType> *f);
 
   void addFilter(Database::Filters::Filter* f);
 

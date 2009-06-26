@@ -120,24 +120,24 @@ public:
   }
 };
 
-class FilterLogServiceTypeImpl : virtual public POA_ccReg::Filters::LogServiceType, public FilterSimpleImpl {
-  Database::Filters::Value<Database::LogServiceType>* get() {
-    return dynamic_cast<Database::Filters::Value<Database::LogServiceType>*>(f);
+class FilterRequestServiceTypeImpl : virtual public POA_ccReg::Filters::RequestServiceType, public FilterSimpleImpl {
+  Database::Filters::Value<Database::RequestServiceType>* get() {
+    return dynamic_cast<Database::Filters::Value<Database::RequestServiceType>*>(f);
   }
 
 public:
-  FilterLogServiceTypeImpl(Database::Filters::Value<Database::LogServiceType>* f) :
+  FilterRequestServiceTypeImpl(Database::Filters::Value<Database::RequestServiceType>* f) :
     FilterSimpleImpl(f) {
   }
 
-  ccReg::LogServiceType value() {
+  ccReg::RequestServiceType value() {
     int val;
     val = (int)get()->getValue().getValue();
-    return ccReg::LogServiceType(val);
+    return ccReg::RequestServiceType(val);
   }
 
-  void value(ccReg::LogServiceType v) {
-    get()->setValue(Database::LogServiceType(v));
+  void value(ccReg::RequestServiceType v) {
+    get()->setValue(Database::RequestServiceType(v));
   }
 };
 
@@ -441,28 +441,28 @@ COMPOUND_CLASS(Mail, Mail, Compound,
     FILTER_ADD(File, addAttachment);
 );
 
-COMPOUND_CLASS(LogPropertyName, LogPropertyName, Compound,
+COMPOUND_CLASS(RequestProperty, RequestProperty, Compound,
     FILTER_ADD(Str, addName);
 );
 
-COMPOUND_CLASS(LogPropertyValue, LogPropertyValue, Compound,
+COMPOUND_CLASS(RequestPropertyValue, RequestPropertyValue, Compound,
     FILTER_ADD(Str, addValue);
-    FILTER_ADD(Id, addLogPropertyNameId);
-    FILTER_ADD(LogPropertyName, addLogPropertyName);
+    FILTER_ADD(Id, addRequestPropertyId);
+    FILTER_ADD(RequestProperty, addRequestProperty);
     FILTER_ADD(Bool, addOutputFlag);
 );    
 
-COMPOUND_CLASS(LogEntry, LogEntry, Compound,
+COMPOUND_CLASS(Request, Request, Compound,
     FILTER_ADD(Id, addId);
     FILTER_ADD(DateTime, addTimeBegin);
     FILTER_ADD(DateTime, addTimeEnd);
     FILTER_ADD(Str, addSourceIp);
-    FILTER_ADD(LogServiceType, addServiceType);
-    FILTER_ADD(LogRawContent, addLogRawContent);
-    FILTER_ADD(LogPropertyValue, addLogPropertyValue);
+    FILTER_ADD(RequestServiceType, addServiceType);
+    FILTER_ADD(RequestData, addRequestData);
+    FILTER_ADD(RequestPropertyValue, addRequestPropertyValue);
 );
 
-COMPOUND_CLASS(LogRawContent, LogRawContent, Compound,
+COMPOUND_CLASS(RequestData, RequestData, Compound,
     FILTER_ADD(Str, addContent);
     FILTER_ADD(Bool, addResponseFlag);
 );
@@ -527,7 +527,7 @@ ITERATOR_ADD_E_METHOD_IMPL(Id,Value<Database::ID>);
 ITERATOR_ADD_E_METHOD_IMPL(Action,EppAction);
 ITERATOR_ADD_E_METHOD_IMPL(Date,Interval<Database::DateInterval>);
 ITERATOR_ADD_E_METHOD_IMPL(DateTime,Interval<Database::DateTimeInterval>);
-ITERATOR_ADD_E_METHOD_IMPL(LogServiceType,Value<Database::LogServiceType>);
+ITERATOR_ADD_E_METHOD_IMPL(RequestServiceType,Value<Database::RequestServiceType>);
 ITERATOR_ADD_E_METHOD_IMPL(Obj,Object);
 ITERATOR_ADD_E_METHOD_IMPL(Registrar,Registrar);
 ITERATOR_ADD_E_METHOD_IMPL(Filter,FilterFilter);
@@ -540,10 +540,10 @@ ITERATOR_ADD_E_METHOD_IMPL(File,File);
 ITERATOR_ADD_E_METHOD_IMPL(Invoice,Invoice);
 ITERATOR_ADD_E_METHOD_IMPL(Mail,Mail);
 ITERATOR_ADD_E_METHOD_IMPL(ObjectState,ObjectState);
-ITERATOR_ADD_E_METHOD_IMPL(LogPropertyName,LogPropertyName);
-ITERATOR_ADD_E_METHOD_IMPL(LogPropertyValue,LogPropertyValue);
-ITERATOR_ADD_E_METHOD_IMPL(LogRawContent,LogRawContent);
-ITERATOR_ADD_E_METHOD_IMPL(LogEntry,LogEntry);
+ITERATOR_ADD_E_METHOD_IMPL(RequestProperty,RequestProperty);
+ITERATOR_ADD_E_METHOD_IMPL(RequestPropertyValue,RequestPropertyValue);
+ITERATOR_ADD_E_METHOD_IMPL(RequestData,RequestData);
+ITERATOR_ADD_E_METHOD_IMPL(Request,Request);
 
 #define ITERATOR_ADD_FILTER_METHOD_IMPL(ct,dt) \
   { Database::Filters::dt *rf = dynamic_cast<Database::Filters::dt *>(f); \
@@ -572,11 +572,11 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(Mail,Mail);
   ITERATOR_ADD_FILTER_METHOD_IMPL(ObjectState,ObjectState);
   ITERATOR_ADD_FILTER_METHOD_IMPL(ObjectState,ObjectState);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(LogPropertyValue,LogPropertyValue);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(LogPropertyName,LogPropertyName);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(LogRawContent,LogRawContent);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(LogEntry,LogEntry);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(RequestPropertyValue,RequestPropertyValue);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(RequestProperty,RequestProperty);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(RequestData,RequestData);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(Request,Request);
   ITERATOR_ADD_FILTER_METHOD_IMPL(IntInterval,Interval<int>);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(LogServiceType,Value<Database::LogServiceType>);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(RequestServiceType,Value<Database::RequestServiceType>);
 }
 
