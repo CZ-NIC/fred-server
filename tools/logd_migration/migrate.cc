@@ -35,6 +35,7 @@ static const std::string CONNECTION_STRING = "host=localhost port=22345 dbname=f
 /** length of date at the begining of an input line, input format is: date|xml */
 static const int INPUT_DATE_LENGTH = 26;
 static const int INPUT_ID_LENGTH   = 22;
+static const int INPUT_SERVICE_LENGTH = 2;
 static const std::string LOG_FILENAME = "log_migration_log.txt";
 
 void logger(boost::format &fmt)
@@ -74,14 +75,14 @@ int main()
 	parser_status pstat;
 	std::string line, rawline;
 	Backend serv(CONNECTION_STRING);
-	Transaction *serv_transaction = NULL;
+	void *schema;
 
 	clock_t time1, time2, time3, t_parser=0, t_logcomm=0, t_backend=0;
 
 	cdata = NULL;
 
 	// TODO -  check if the file EPP_SCHEMA exists (or better, create some config file for this thing with all the variables which are used
-	epp_parser_init(EPP_SCHEMA);
+	schema = epp_parser_init(EPP_SCHEMA);
 
 	signal(15, signal_handler);
 	signal(11, signal_handler);
@@ -95,12 +96,8 @@ int main()
 	// TODO is this safe?
 	Connection serv_conn = serv.get_connection();	
 
-		// TODO remove (it was only a test)
-	serv_conn.exec("insert into log_entry (time_begin, source_ip, service, is_monitoring) values ('2009-01-01 1:00:00', '127.1.2.3', 66, true)");
-
 	// TODO naopak to nejde
-	serv_transaction = new Transaction(serv_conn);
-
+	Transaction serv_transaction(serv_conn);
 
 	//here we're changing the approach:
 	//	accept action table id , | separator and xml like before
@@ -109,9 +106,9 @@ int main()
 	trans_count = 0;
 	while(std::getline(std::cin, line)) {
 		size_t i;
-		std::string id_str, date_str;
+		std::string id_str, date_str, service_str;
 		TID entry_id;
-		// if(cin.fail())
+		RequestServiceType service_number;
 
 		if (line.empty()) continue;
 	
@@ -124,6 +121,8 @@ int main()
 
 		id_str = line.substr(0, INPUT_ID_LENGTH);
 		line = line.substr(INPUT_ID_LENGTH + 1);
+		// TODO strtol or something better
+		entry_id = atoi(id_str.c_str());
 
 		if(line[INPUT_DATE_LENGTH] != '|') {
 			logger("Error in input line: Date at the beginning doesn't have proper length");	
@@ -134,9 +133,19 @@ int main()
 		date_str = line.substr(0, INPUT_DATE_LENGTH);
 		line = line.substr(INPUT_DATE_LENGTH + 1);
 
-		// TODO strtol
-		entry_id = atoi(id_str.c_str());
+		// fetch service number
+		if(line[INPUT_SERVICE_LENGTH] != '|') {
+			logger("Error in input line: service number doesn't have proper length");
+			std::cout << "Error in input line: Service number doesn't have proper length" << std::endl;	
+			continue;
+		}
 
+		service_str = line.substr(0, INPUT_SERVICE_LENGTH);
+		line = line.substr(INPUT_SERVICE_LENGTH + 1);
+
+		service_number = (RequestServiceType)atoi(service_str.c_str());	
+		std::cout << "service string: " << service_str << std::endl;
+		// OK, all 3 values found
 		time1 = clock();
 		pstat = epp_parse_command(line.c_str(), line.length(), &cdata, &cmd_type);
 
@@ -168,25 +177,24 @@ int main()
 
 		// we don't care about the action_type
 		epp_action_type action_type = UnknownAction;
-		std::auto_ptr<LogProperties> props = log_epp_command(cdata, cmd_type, -1, &action_type);
+		std::auto_ptr<RequestProperties> props = log_epp_command(cdata, cmd_type, -1, &action_type);
 
 		time3 = clock();
 		t_logcomm += time3 - time2;
+		epp_parser_request_cleanup(cdata);	
 
-		serv.insert_props_pub(date_str, entry_id, *props);
+		serv.insert_props_pub(date_str,  service_number, false, entry_id, *props);
 		trans_count++;
 
 		if((trans_count % COMMIT_INTERVAL) == 0) {
-			serv_transaction->commit();
+			serv_transaction.commit();
 		}
 
 		t_backend += clock() - time3;
 	}
 	
-	// do the final commit 
-	if(serv_transaction != NULL) {
-		serv_transaction->commit();
-	}
+	// TODO Is multiple commit OK?... 
+	serv_transaction.commit();
 
 	// TODO printf? :)
 	printf(" --------- REPORT: \n"
@@ -196,6 +204,8 @@ int main()
 		(int)t_parser,
 		(int)t_logcomm,
 		(int)t_backend);
+
+	free(schema);
 
 	// if the transaction wasn't commited in the previous command
 }

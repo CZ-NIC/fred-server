@@ -1064,7 +1064,8 @@ void
 epp_parser_request_cleanup(void *cdata_arg);
 */
 
-std::auto_ptr<LogProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *action_type);
+std::auto_ptr<RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *action_type);
 
+void epp_parser_request_cleanup(void *cdata_arg);
 
 #endif /* M_EPP_PARSER_H */

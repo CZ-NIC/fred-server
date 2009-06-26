@@ -16,7 +16,7 @@
 using namespace Database;
 
 /*
-enum LogServiceType {LC_UNIX_WHOIS, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN};
+enum RequestServiceType {LC_UNIX_WHOIS, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN};
 */
 
 /*
@@ -63,7 +63,7 @@ private:
 			return s1 < s2;
 		}
 	};
-  // Limit the number of entries read from log_property_name table
+  // Limit the number of entries read from request_property table
   // (which is supposed to contain limited number of distinct property names )
   
   static const unsigned int PROP_NAMES_SIZE_LIMIT = 1000;
@@ -117,9 +117,9 @@ public:
 	}
   }
 
-  TID new_event(const char *sourceIP, LogServiceType service, const char *content_in, const ccProperties& props);
-  bool update_event(TID id, const ccProperties &props);
-  bool update_event_close(TID id, const char *content_out, const ccProperties &props) { return false; };
+  TID CreateRequest(const char *sourceIP, RequestServiceType service, const char *content_in, const ccProperties& props);
+  bool UpdateRequest(TID id, const ccProperties &props);
+  bool CloseRequest(TID id, const char *content_out, const ccProperties &props) { return false; };
 
   inline void logger(std::string message) {
 	std::cerr << message << std::endl; 

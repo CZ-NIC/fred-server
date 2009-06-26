@@ -642,6 +642,7 @@ parse_login(void *pool, xmlXPathContextPtr xpathCtx, epp_command_data *cdata)
 		return;
 	}
 
+	free(str);
 	/* check if EPP version matches */
 	str = xpath_get1(pool, xpathCtx, "epp:options/epp:version", 1, &xerr);
 	CHK_XERR(xerr, error);
@@ -651,6 +652,7 @@ parse_login(void *pool, xmlXPathContextPtr xpathCtx, epp_command_data *cdata)
 		return;
 	}
 
+	free(str);
 	/* ok, checking done. now get input parameters for corba function call */
 	login->clID = xpath_get1(pool, xpathCtx, "epp:clID", 1, &xerr);
 	CHK_XERR(xerr, error);
@@ -3113,6 +3115,7 @@ epp_parse_command(
 	memcpy(cdata->xml_in, dumpedXML, dumpLength);
 	cdata->xml_in[dumpLength] = '\0';
 
+	free(dumpedXML);
 	/* validate the doc */
 	/*
 	val_ret = validate_doc(NULL, (xmlSchemaPtr) schema,

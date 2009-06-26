@@ -28,7 +28,7 @@ char * wrap_str(const char *str)
 }
 
 // this would be much nicer
-// typedef list<LogProperty> LogProperties;
+// typedef list<RequestProperty> RequestProperties;
 
 #define MAX_ERROR_MSG_LEN 1024
 /**
@@ -43,17 +43,17 @@ char * wrap_str(const char *str)
  *
  * @returns			NULL in case of an allocation error, modified c_props otherwise
  */
-LogProperties *epp_property_push(LogProperties *c_props, const  char *name, const char *value, bool output, bool child)
+RequestProperties *epp_property_push(RequestProperties *c_props, const  char *name, const char *value, bool output, bool child)
 {
 	if(c_props == NULL) {
-		c_props = new LogProperties();
+		c_props = new RequestProperties();
 	}
 
 	if (value != NULL) {
-		LogProperty p;
+		RequestProperty p;
 
-		p.name =  wrap_str(name);
-		p.value = wrap_str(value);
+		p.name =  name;
+		p.value = value;
 		p.output = output;
 		p.child = child;
 
@@ -78,9 +78,9 @@ LogProperties *epp_property_push(LogProperties *c_props, const  char *name, cons
  *
  */
 
-LogProperties *epp_property_push_qhead(LogProperties *c_props, qhead *list, const char *list_name, bool output, bool child)
+RequestProperties *epp_property_push_qhead(RequestProperties *c_props, qhead *list, const char *list_name, bool output, bool child)
 {
-	LogProperties *ret;
+	RequestProperties *ret;
 
 	if (list->count == 0) {
 		return c_props;
@@ -108,13 +108,13 @@ LogProperties *epp_property_push_qhead(LogProperties *c_props, qhead *list, cons
  * @returns			NULL in case of an allocation error, modified c_props otherwise
  */
 
-LogProperties *epp_property_push_int(LogProperties *c_props, const char *name, int value, bool output)
+RequestProperties *epp_property_push_int(RequestProperties *c_props, const char *name, int value, bool output)
 {
-	LogProperty p;
+	RequestProperty p;
 	char str[12];
 
 	if(c_props == NULL) {
-		c_props = new LogProperties;
+		c_props = new RequestProperties;
 	}
 
 	snprintf(str, 12, "%i", value);
@@ -137,7 +137,7 @@ LogProperties *epp_property_push_int(LogProperties *c_props, const char *name, i
  *      *
  *       *  @returns 	log entry properties or NULL in case of an allocation error
  *        */
-LogProperties *epp_log_postal_info(LogProperties *p, epp_postalInfo *pi)
+RequestProperties *epp_log_postal_info(RequestProperties *p, epp_postalInfo *pi)
 {
 	if(pi == NULL) return p;
 
@@ -167,7 +167,7 @@ LogProperties *epp_log_postal_info(LogProperties *p, epp_postalInfo *pi)
  *      *
  *       *  @returns 	log entry properties or NULL in case of an allocation error
  *        */
-LogProperties *epp_log_disclose_info(LogProperties *p, epp_discl *ed)
+RequestProperties *epp_log_disclose_info(RequestProperties *p, epp_discl *ed)
 {
 	if(ed->flag == 1) {
 		p = epp_property_push(p, "discl.policy", "private", false, false);
@@ -213,12 +213,12 @@ LogProperties *epp_log_disclose_info(LogProperties *p, epp_discl *ed)
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-LogProperties *epp_property_push_ds(LogProperties *c_props, qhead *list, const char *list_name)
+RequestProperties *epp_property_push_ds(RequestProperties *c_props, qhead *list, const char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
 	epp_ds *value;				/* ds record data structure */
-	LogProperties *ret;	/* return value in case the list is not empty	*/
+	RequestProperties *ret;	/* return value in case the list is not empty	*/
 
 	if (q_length(*list) > 0) {
 
@@ -274,12 +274,12 @@ LogProperties *epp_property_push_ds(LogProperties *c_props, qhead *list, const c
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-LogProperties *epp_property_push_valerr(LogProperties *c_props, qhead *list, char *list_name)
+RequestProperties *epp_property_push_valerr(RequestProperties *c_props, qhead *list, char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
 	epp_error *value;			/* ds record data structure */
-	LogProperties *ret;	/* return value in case the list is not empty	*/
+	RequestProperties *ret;	/* return value in case the list is not empty	*/
 
 	if (q_length(*list) > 0) {
 
@@ -317,12 +317,12 @@ LogProperties *epp_property_push_valerr(LogProperties *c_props, qhead *list, cha
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-LogProperties *epp_property_push_nsset(LogProperties *c_props, qhead *list, const char *list_name)
+RequestProperties *epp_property_push_nsset(RequestProperties *c_props, qhead *list, const char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH]; /* property name */
 
 	epp_ns *value;				/* ds record data structure */
-	LogProperties *ret;	/* return value in case the list is not empty	*/
+	RequestProperties *ret;	/* return value in case the list is not empty	*/
 
 	if (q_length(*list) > 0) {
 
@@ -359,11 +359,11 @@ LogProperties *epp_property_push_nsset(LogProperties *c_props, qhead *list, cons
  * @returns 		log entry properties or NULL in case of an allocation error
  *
  */
-LogProperties *epp_property_push_dnskey(LogProperties *c_props, qhead *list, const char *list_name)
+RequestProperties *epp_property_push_dnskey(RequestProperties *c_props, qhead *list, const char *list_name)
 {
 	char str[LOG_PROP_NAME_LENGTH];
 	epp_dnskey *value;
-	LogProperties *ret;
+	RequestProperties *ret;
 
 	if (q_length(*list) > 0) {
 		q_foreach(list) {
@@ -415,7 +415,7 @@ LogProperties *epp_property_push_dnskey(LogProperties *c_props, qhead *list, con
  *
  * @return  status
  */
-auto_ptr<LogProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *action_type)
+auto_ptr<RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *action_type)
 {
 #define PUSH_PROPERTY(seq, name, value)								\
 	seq = epp_property_push(seq, name, value, false, false);	\
@@ -439,7 +439,7 @@ auto_ptr<LogProperties> log_epp_command(epp_command_data *cdata, epp_red_command
 	const char *cmd_name = NULL;					/* command name to be used
 												one of the basic properties */
 	char errmsg[MAX_ERROR_MSG_LEN];			/* error message returned from corba call */
-	LogProperties *c_props = NULL;	/* properties to be sent to the log */
+	RequestProperties *c_props = NULL;	/* properties to be sent to the log */
 	/* data structures for every command */
 	epps_sendAuthInfo *ai;
 	epps_create_contact *cc;
@@ -456,7 +456,7 @@ auto_ptr<LogProperties> log_epp_command(epp_command_data *cdata, epp_red_command
 	epps_login *el;
 	epps_check *ec;
 
-	c_props = new LogProperties;
+	c_props = new RequestProperties;
 	
 	errmsg[0] = '\0';
 	if(cdata->type == EPP_DUMMY) {
@@ -467,7 +467,7 @@ auto_ptr<LogProperties> log_epp_command(epp_command_data *cdata, epp_red_command
 
 		// TODO
 		// res = epp_log_new_message(request, c_props, &errmsg);
-		return auto_ptr<LogProperties>(c_props);
+		return auto_ptr<RequestProperties>(c_props);
 	}
 
 	switch(cmdtype) {
@@ -515,7 +515,7 @@ auto_ptr<LogProperties> log_epp_command(epp_command_data *cdata, epp_red_command
 
 				PUSH_PROPERTY(c_props, "id", ai->id);
 
-				return auto_ptr<LogProperties>(c_props);
+				return auto_ptr<RequestProperties>(c_props);
 			}
 			break;
 
@@ -899,9 +899,8 @@ auto_ptr<LogProperties> log_epp_command(epp_command_data *cdata, epp_red_command
   	PUSH_PROPERTY (c_props, "clTRID", cdata->clTRID);
 	PUSH_PROPERTY (c_props, "svTRID", cdata->svTRID);
 
-		// TODO : sessionid
 
-	return auto_ptr<LogProperties>(c_props);
+	return auto_ptr<RequestProperties>(c_props);
 	// res = epp_log_new_message(  request, c_props, &errmsg);
 
 #undef PUSH_PROPERTY

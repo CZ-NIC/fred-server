@@ -4,7 +4,7 @@
 
 #define ALLOC_STEP 4
 
-enum LogServiceType {LC_UNIX_WHOIS, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN};
+enum RequestServiceType {LC_UNIX_WHOIS, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN};
 
 struct ccLogProperty {
 	char * name;
