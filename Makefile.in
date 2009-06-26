@@ -306,7 +306,7 @@ ACLOCAL_AMFLAGS = -I m4
 @DX_COND_doc_TRUE@    $(DX_CLEAN_LATEX)
 
 @DX_COND_doc_TRUE@@DX_COND_latex_TRUE@DX_CLEAN_LATEX = @DX_DOCDIR@/latex
-SUBDIRS = util src
+SUBDIRS = util src tools
 CLEANFILES = config/server.conf init-scripts/fred-server
 fredconfdir = $(sysconfdir)/fred
 rcconfdir = $(sysconfdir)/init.d
