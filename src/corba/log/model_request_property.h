@@ -1,29 +1,28 @@
-#ifndef _MODEL_LOGACTIONTYPE_H_
-#define _MODEL_LOGACTIONTYPE_H_
+#ifndef _MODEL_REQUESTPROPERTY_H_
+#define _MODEL_REQUESTPROPERTY_H_
 
-/* << include database library settings here >> */
 #include "db_settings.h"
 #include "model.h"
 
 
-class ModelLogActionType:
+class ModelRequestProperty:
     public Model::Base {
 public:
-    ModelLogActionType()
+    ModelRequestProperty()
     { }
-    virtual ~ModelLogActionType()
+    virtual ~ModelRequestProperty()
     { }
     const unsigned long long &getId() const {
         return m_id.get();
     }
-    const std::string &getStatus() const {
-        return m_status.get();
+    const std::string &getName() const {
+        return m_name.get();
     }
     void setId(const unsigned long long &id) {
         m_id = id;
     }
-    void setStatus(const std::string &status) {
-        m_status = status;
+    void setName(const std::string &name) {
+        m_name = name;
     }
 
     friend class Model::Base;
@@ -57,25 +56,25 @@ public:
         return Model::Base::toString(this);
     }
 
-    typedef Model::Field::List<ModelLogActionType>  field_list;
+    typedef Model::Field::List<ModelRequestProperty>  field_list;
     static const field_list& getFields() {
         return fields;
     }
 
 protected:
     Field::Field<unsigned long long> m_id;
-    Field::Field<std::string> m_status;
+    Field::Field<std::string> m_name;
 
 
 public:
-    static Model::Field::PrimaryKey<ModelLogActionType, unsigned long long> id;
-    static Model::Field::Basic<ModelLogActionType, std::string> status;
+    static Model::Field::PrimaryKey<ModelRequestProperty, unsigned long long> id;
+    static Model::Field::Basic<ModelRequestProperty, std::string> name;
 
 
 private:
     static std::string table_name;  /** < model table name */
     static field_list  fields;      /** < list of all model fields */
-}; // class ModelLogActionType
+}; // class ModelRequestProperty
 
-#endif // _MODEL_LOGACTIONTYPE_H_
+#endif // _MODEL_REQUESTPROPERTY_H_
 

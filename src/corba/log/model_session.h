@@ -1,17 +1,16 @@
-#ifndef _MODEL_LOGSESSION_H_
-#define _MODEL_LOGSESSION_H_
+#ifndef _MODEL_SESSION_H_
+#define _MODEL_SESSION_H_
 
-/* << include database library settings here >> */
 #include "db_settings.h"
 #include "model.h"
 
 
-class ModelLogSession:
+class ModelSession:
     public Model::Base {
 public:
-    ModelLogSession()
+    ModelSession()
     { }
-    virtual ~ModelLogSession()
+    virtual ~ModelSession()
     { }
     const unsigned long long &getId() const {
         return m_id.get();
@@ -24,12 +23,6 @@ public:
     }
     const Database::DateTime &getLogoutDate() const {
         return m_logoutDate.get();
-    }
-    const std::string &getLoginTr() const {
-        return m_loginTr.get();
-    }
-    const std::string &getLogoutTr() const {
-        return m_logoutTr.get();
     }
     const std::string &getLang() const {
         return m_lang.get();
@@ -45,12 +38,6 @@ public:
     }
     void setLogoutDate(const Database::DateTime &logoutDate) {
         m_logoutDate = logoutDate;
-    }
-    void setLoginTr(const std::string &loginTr) {
-        m_loginTr = loginTr;
-    }
-    void setLogoutTr(const std::string &logoutTr) {
-        m_logoutTr = logoutTr;
     }
     void setLang(const std::string &lang) {
         m_lang = lang;
@@ -87,7 +74,7 @@ public:
         return Model::Base::toString(this);
     }
 
-    typedef Model::Field::List<ModelLogSession>  field_list;
+    typedef Model::Field::List<ModelSession>  field_list;
     static const field_list& getFields() {
         return fields;
     }
@@ -97,25 +84,21 @@ protected:
     Field::Field<std::string> m_name;
     Field::Field<Database::DateTime> m_loginDate;
     Field::Field<Database::DateTime> m_logoutDate;
-    Field::Field<std::string> m_loginTr;
-    Field::Field<std::string> m_logoutTr;
     Field::Field<std::string> m_lang;
 
 
 public:
-    static Model::Field::PrimaryKey<ModelLogSession, unsigned long long> id;
-    static Model::Field::Basic<ModelLogSession, std::string> name;
-    static Model::Field::Basic<ModelLogSession, Database::DateTime> loginDate;
-    static Model::Field::Basic<ModelLogSession, Database::DateTime> logoutDate;
-    static Model::Field::Basic<ModelLogSession, std::string> loginTr;
-    static Model::Field::Basic<ModelLogSession, std::string> logoutTr;
-    static Model::Field::Basic<ModelLogSession, std::string> lang;
+    static Model::Field::PrimaryKey<ModelSession, unsigned long long> id;
+    static Model::Field::Basic<ModelSession, std::string> name;
+    static Model::Field::Basic<ModelSession, Database::DateTime> loginDate;
+    static Model::Field::Basic<ModelSession, Database::DateTime> logoutDate;
+    static Model::Field::Basic<ModelSession, std::string> lang;
 
 
 private:
     static std::string table_name;  /** < model table name */
     static field_list  fields;      /** < list of all model fields */
-}; // class ModelLogSession
+}; // class ModelSession
 
-#endif // _MODEL_LOGSESSION_H_
+#endif // _MODEL_SESSION_H_
 

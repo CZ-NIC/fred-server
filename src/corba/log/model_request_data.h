@@ -1,26 +1,31 @@
-#ifndef _MODEL_LOGRAWCONTENT_H_
-#define _MODEL_LOGRAWCONTENT_H_
+#ifndef _MODEL_REQUESTDATA_H_
+#define _MODEL_REQUESTDATA_H_
 
-/* << include database library settings here >> */
 #include "db_settings.h"
 #include "model.h"
-#include "model_log_entry.h"
+#include "model_request.h"
 
 
-class ModelLogRawContent:
+class ModelRequestData:
     public Model::Base {
 public:
-    ModelLogRawContent()
+    ModelRequestData()
     { }
-    virtual ~ModelLogRawContent()
+    virtual ~ModelRequestData()
     { }
     const Database::DateTime &getEntryTimeBegin() const {
         return m_entryTimeBegin.get();
     }
+    const int &getEntryService() const {
+        return m_entryService.get();
+    }
+    const bool &getEntryMonitoring() const {
+        return m_entryMonitoring.get();
+    }
     const unsigned long long &getEntryId() const {
         return m_entryId.get();
     }
-    ModelLogEntry *getEntry() {
+    ModelRequest *getEntry() {
         return entry.getRelated(this);
     }
     const std::string &getContent() const {
@@ -32,10 +37,16 @@ public:
     void setEntryTimeBegin(const Database::DateTime &entryTimeBegin) {
         m_entryTimeBegin = entryTimeBegin;
     }
+    void setEntryService(const int &entryService) {
+        m_entryService = entryService;
+    }
+    void setEntryMonitoring(const bool &entryMonitoring) {
+        m_entryMonitoring = entryMonitoring;
+    }
     void setEntryId(const unsigned long long &entryId) {
         m_entryId = entryId;
     }
-    void setEntry(ModelLogEntry *foreign_value) {
+    void setEntry(ModelRequest *foreign_value) {
         entry.setRelated(this, foreign_value);
     }
     void setContent(const std::string &content) {
@@ -76,31 +87,35 @@ public:
         return Model::Base::toString(this);
     }
 
-    typedef Model::Field::List<ModelLogRawContent>  field_list;
+    typedef Model::Field::List<ModelRequestData>  field_list;
     static const field_list& getFields() {
         return fields;
     }
 
 protected:
     Field::Field<Database::DateTime> m_entryTimeBegin;
+    Field::Field<int> m_entryService;
+    Field::Field<bool> m_entryMonitoring;
     Field::Field<unsigned long long> m_entryId;
     Field::Field<std::string> m_content;
     Field::Field<bool> m_isResponse;
 
-    Field::Lazy::Field<ModelLogEntry *> m_entry;
+    Field::Lazy::Field<ModelRequest *> m_entry;
 
 public:
-    static Model::Field::Basic<ModelLogRawContent, Database::DateTime> entryTimeBegin;
-    static Model::Field::ForeignKey<ModelLogRawContent, unsigned long long, ModelLogEntry> entryId;
-    static Model::Field::Basic<ModelLogRawContent, std::string> content;
-    static Model::Field::Basic<ModelLogRawContent, bool> isResponse;
+    static Model::Field::Basic<ModelRequestData, Database::DateTime> entryTimeBegin;
+    static Model::Field::Basic<ModelRequestData, int> entryService;
+    static Model::Field::Basic<ModelRequestData, bool> entryMonitoring;
+    static Model::Field::ForeignKey<ModelRequestData, unsigned long long, ModelRequest> entryId;
+    static Model::Field::Basic<ModelRequestData, std::string> content;
+    static Model::Field::Basic<ModelRequestData, bool> isResponse;
 
-    static Model::Field::Related::OneToOne<ModelLogRawContent, unsigned long long, ModelLogEntry> entry;
+    static Model::Field::Related::OneToOne<ModelRequestData, unsigned long long, ModelRequest> entry;
 
 private:
     static std::string table_name;  /** < model table name */
     static field_list  fields;      /** < list of all model fields */
-}; // class ModelLogRawContent
+}; // class ModelRequestData
 
-#endif // _MODEL_LOGRAWCONTENT_H_
+#endif // _MODEL_REQUESTDATA_H_
 

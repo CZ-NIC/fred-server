@@ -32,7 +32,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
-sbin_PROGRAMS = test_logd$(EXEEXT) test_manage_part$(EXEEXT)
+sbin_PROGRAMS = test_logd$(EXEEXT)
 subdir = src/corba/log
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -55,24 +55,25 @@ AR = ar
 ARFLAGS = cru
 liblog_impl_a_AR = $(AR) $(ARFLAGS)
 liblog_impl_a_LIBADD =
-am_liblog_impl_a_OBJECTS = log_impl.$(OBJEXT) log_impl_wrap.$(OBJEXT) \
-	manage_part_table.$(OBJEXT) model_log_action_type.$(OBJEXT) \
-	model_log_entry.$(OBJEXT) model_log_property_name.$(OBJEXT) \
-	model_log_property_value.$(OBJEXT) \
-	model_log_raw_content.$(OBJEXT) model_log_session.$(OBJEXT)
+am_liblog_impl_a_OBJECTS = log_impl_wrap.$(OBJEXT) log_impl.$(OBJEXT) \
+	model_request_type.$(OBJEXT) model_request.$(OBJEXT) \
+	model_request_property.$(OBJEXT) \
+	model_request_property_value.$(OBJEXT) \
+	model_request_data.$(OBJEXT) model_session.$(OBJEXT) \
+	model_service.$(OBJEXT)
 liblog_impl_a_OBJECTS = $(am_liblog_impl_a_OBJECTS)
 am__installdirs = "$(DESTDIR)$(sbindir)"
 sbinPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(sbin_PROGRAMS)
 am_test_logd_OBJECTS = test_logd-test_logd.$(OBJEXT) \
 	test_logd-log_impl.$(OBJEXT) \
-	test_logd-manage_part_table.$(OBJEXT) \
-	test_logd-model_log_action_type.$(OBJEXT) \
-	test_logd-model_log_entry.$(OBJEXT) \
-	test_logd-model_log_property_name.$(OBJEXT) \
-	test_logd-model_log_property_value.$(OBJEXT) \
-	test_logd-model_log_raw_content.$(OBJEXT) \
-	test_logd-model_log_session.$(OBJEXT)
+	test_logd-model_request_type.$(OBJEXT) \
+	test_logd-model_request.$(OBJEXT) \
+	test_logd-model_request_property.$(OBJEXT) \
+	test_logd-model_request_property_value.$(OBJEXT) \
+	test_logd-model_request_data.$(OBJEXT) \
+	test_logd-model_session.$(OBJEXT) \
+	test_logd-model_service.$(OBJEXT)
 test_logd_OBJECTS = $(am_test_logd_OBJECTS)
 test_logd_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
@@ -82,15 +83,6 @@ test_logd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/util/log/liblog.a
 test_logd_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(test_logd_LDFLAGS) $(LDFLAGS) -o $@
-am_test_manage_part_OBJECTS =  \
-	test_manage_part-manage_part_table.$(OBJEXT) \
-	test_manage_part-test_manage_part.$(OBJEXT)
-test_manage_part_OBJECTS = $(am_test_manage_part_OBJECTS)
-test_manage_part_LDADD = $(LDADD)
-test_manage_part_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(top_builddir)/util/db/libdb.a \
-	$(top_builddir)/util/types/libtypes.a \
-	$(top_builddir)/util/log/liblog.a
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -103,10 +95,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(liblog_impl_a_SOURCES) $(test_logd_SOURCES) \
-	$(test_manage_part_SOURCES)
-DIST_SOURCES = $(liblog_impl_a_SOURCES) $(test_logd_SOURCES) \
-	$(test_manage_part_SOURCES)
+SOURCES = $(liblog_impl_a_SOURCES) $(test_logd_SOURCES)
+DIST_SOURCES = $(liblog_impl_a_SOURCES) $(test_logd_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -264,7 +254,7 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-noinst_LIBRARIES = liblog_impl.a
+noinst_LIBRARIES = liblog_impl.a 
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
 AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(AM_CFLAGS) \
 -I. -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/util -I$(top_builddir)/src -I$(top_srcdir)/util/db/model
@@ -278,12 +268,12 @@ LDADD = $(BOOST_DATE_TIME_LIB) $(BOOST_THREAD_LIB) \
 #LDADD = liblog_impl.a 	\
 #	$(prefix)/util/db/libdb.a   \
 #	$(prefix)/util/types/libtypes.a   
-liblog_impl_a_SOURCES = log_impl.h log_impl.cc log_impl_wrap.h log_impl_wrap.cc manage_part_table.h manage_part_table.cc model_log_action_type.cc model_log_entry.cc model_log_property_name.cc model_log_property_value.cc model_log_raw_content.cc model_log_session.cc
-test_logd_SOURCES = test_logd.cc log_impl.cc log_impl.h manage_part_table.h manage_part_table.cc model_log_action_type.cc model_log_entry.cc model_log_property_name.cc model_log_property_value.cc model_log_raw_content.cc model_log_session.cc
+liblog_impl_a_SOURCES = log_impl_wrap.h log_impl_wrap.cc log_impl.h log_impl.cc model_request_type.cc model_request.cc model_request_property.cc model_request_property_value.cc model_request_data.cc model_session.cc model_service.cc model_request_type.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h model_service.h 
+liblog_impl_a_LDFLAGS = $(AM_LDFLAGS) 
+test_logd_SOURCES = test_logd.cc log_impl.h log_impl.cc model_request_type.cc model_request.cc model_request_property.cc model_request_property_value.cc model_request_data.cc model_session.cc model_service.cc model_request_type.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h model_service.h														
 test_logd_CPPFLAGS = $(AM_CPPFLAGS)
-test_logd_LDFLAGS = $(AM_LDFLAGS) -lboost_unit_test_framework
-test_manage_part_SOURCES = log_impl.h manage_part_table.h manage_part_table.cc test_manage_part.cc 
-test_manage_part_CPPFLAGS = $(AM_CPPFLAGS)
+# test_logd_LDFLAGS = $(AM_LDFLAGS) -lboost_unit_test_framework liblog_impl.a
+test_logd_LDFLAGS = $(AM_LDFLAGS) -lboost_unit_test_framework 
 all: all-am
 
 .SUFFIXES:
@@ -350,9 +340,6 @@ clean-sbinPROGRAMS:
 test_logd$(EXEEXT): $(test_logd_OBJECTS) $(test_logd_DEPENDENCIES) 
 	@rm -f test_logd$(EXEEXT)
 	$(test_logd_LINK) $(test_logd_OBJECTS) $(test_logd_LDADD) $(LIBS)
-test_manage_part$(EXEEXT): $(test_manage_part_OBJECTS) $(test_manage_part_DEPENDENCIES) 
-	@rm -f test_manage_part$(EXEEXT)
-	$(CXXLINK) $(test_manage_part_OBJECTS) $(test_manage_part_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -362,24 +349,22 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log_impl_wrap.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/manage_part_table.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_log_action_type.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_log_entry.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_log_property_name.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_log_property_value.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_log_raw_content.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_log_session.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_data.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_property.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_property_value.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_type.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_service.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_session.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-log_impl.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-manage_part_table.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_log_action_type.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_log_entry.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_log_property_name.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_log_property_value.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_log_raw_content.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_log_session.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_request.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_request_data.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_request_property.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_request_property_value.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_request_type.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_service.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-model_session.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd-test_logd.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_manage_part-manage_part_table.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_manage_part-test_manage_part.Po@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -423,131 +408,103 @@ test_logd-log_impl.obj: log_impl.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-log_impl.obj `if test -f 'log_impl.cc'; then $(CYGPATH_W) 'log_impl.cc'; else $(CYGPATH_W) '$(srcdir)/log_impl.cc'; fi`
 
-test_logd-manage_part_table.o: manage_part_table.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-manage_part_table.o -MD -MP -MF $(DEPDIR)/test_logd-manage_part_table.Tpo -c -o test_logd-manage_part_table.o `test -f 'manage_part_table.cc' || echo '$(srcdir)/'`manage_part_table.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-manage_part_table.Tpo $(DEPDIR)/test_logd-manage_part_table.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='manage_part_table.cc' object='test_logd-manage_part_table.o' libtool=no @AMDEPBACKSLASH@
+test_logd-model_request_type.o: model_request_type.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_request_type.o -MD -MP -MF $(DEPDIR)/test_logd-model_request_type.Tpo -c -o test_logd-model_request_type.o `test -f 'model_request_type.cc' || echo '$(srcdir)/'`model_request_type.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_request_type.Tpo $(DEPDIR)/test_logd-model_request_type.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_request_type.cc' object='test_logd-model_request_type.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-manage_part_table.o `test -f 'manage_part_table.cc' || echo '$(srcdir)/'`manage_part_table.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_request_type.o `test -f 'model_request_type.cc' || echo '$(srcdir)/'`model_request_type.cc
 
-test_logd-manage_part_table.obj: manage_part_table.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-manage_part_table.obj -MD -MP -MF $(DEPDIR)/test_logd-manage_part_table.Tpo -c -o test_logd-manage_part_table.obj `if test -f 'manage_part_table.cc'; then $(CYGPATH_W) 'manage_part_table.cc'; else $(CYGPATH_W) '$(srcdir)/manage_part_table.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-manage_part_table.Tpo $(DEPDIR)/test_logd-manage_part_table.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='manage_part_table.cc' object='test_logd-manage_part_table.obj' libtool=no @AMDEPBACKSLASH@
+test_logd-model_request_type.obj: model_request_type.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_request_type.obj -MD -MP -MF $(DEPDIR)/test_logd-model_request_type.Tpo -c -o test_logd-model_request_type.obj `if test -f 'model_request_type.cc'; then $(CYGPATH_W) 'model_request_type.cc'; else $(CYGPATH_W) '$(srcdir)/model_request_type.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_request_type.Tpo $(DEPDIR)/test_logd-model_request_type.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_request_type.cc' object='test_logd-model_request_type.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-manage_part_table.obj `if test -f 'manage_part_table.cc'; then $(CYGPATH_W) 'manage_part_table.cc'; else $(CYGPATH_W) '$(srcdir)/manage_part_table.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_request_type.obj `if test -f 'model_request_type.cc'; then $(CYGPATH_W) 'model_request_type.cc'; else $(CYGPATH_W) '$(srcdir)/model_request_type.cc'; fi`
 
-test_logd-model_log_action_type.o: model_log_action_type.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_action_type.o -MD -MP -MF $(DEPDIR)/test_logd-model_log_action_type.Tpo -c -o test_logd-model_log_action_type.o `test -f 'model_log_action_type.cc' || echo '$(srcdir)/'`model_log_action_type.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_action_type.Tpo $(DEPDIR)/test_logd-model_log_action_type.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_action_type.cc' object='test_logd-model_log_action_type.o' libtool=no @AMDEPBACKSLASH@
+test_logd-model_request.o: model_request.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_request.o -MD -MP -MF $(DEPDIR)/test_logd-model_request.Tpo -c -o test_logd-model_request.o `test -f 'model_request.cc' || echo '$(srcdir)/'`model_request.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_request.Tpo $(DEPDIR)/test_logd-model_request.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_request.cc' object='test_logd-model_request.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_action_type.o `test -f 'model_log_action_type.cc' || echo '$(srcdir)/'`model_log_action_type.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_request.o `test -f 'model_request.cc' || echo '$(srcdir)/'`model_request.cc
 
-test_logd-model_log_action_type.obj: model_log_action_type.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_action_type.obj -MD -MP -MF $(DEPDIR)/test_logd-model_log_action_type.Tpo -c -o test_logd-model_log_action_type.obj `if test -f 'model_log_action_type.cc'; then $(CYGPATH_W) 'model_log_action_type.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_action_type.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_action_type.Tpo $(DEPDIR)/test_logd-model_log_action_type.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_action_type.cc' object='test_logd-model_log_action_type.obj' libtool=no @AMDEPBACKSLASH@
+test_logd-model_request.obj: model_request.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_request.obj -MD -MP -MF $(DEPDIR)/test_logd-model_request.Tpo -c -o test_logd-model_request.obj `if test -f 'model_request.cc'; then $(CYGPATH_W) 'model_request.cc'; else $(CYGPATH_W) '$(srcdir)/model_request.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_request.Tpo $(DEPDIR)/test_logd-model_request.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_request.cc' object='test_logd-model_request.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_action_type.obj `if test -f 'model_log_action_type.cc'; then $(CYGPATH_W) 'model_log_action_type.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_action_type.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_request.obj `if test -f 'model_request.cc'; then $(CYGPATH_W) 'model_request.cc'; else $(CYGPATH_W) '$(srcdir)/model_request.cc'; fi`
 
-test_logd-model_log_entry.o: model_log_entry.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_entry.o -MD -MP -MF $(DEPDIR)/test_logd-model_log_entry.Tpo -c -o test_logd-model_log_entry.o `test -f 'model_log_entry.cc' || echo '$(srcdir)/'`model_log_entry.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_entry.Tpo $(DEPDIR)/test_logd-model_log_entry.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_entry.cc' object='test_logd-model_log_entry.o' libtool=no @AMDEPBACKSLASH@
+test_logd-model_request_property.o: model_request_property.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_request_property.o -MD -MP -MF $(DEPDIR)/test_logd-model_request_property.Tpo -c -o test_logd-model_request_property.o `test -f 'model_request_property.cc' || echo '$(srcdir)/'`model_request_property.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_request_property.Tpo $(DEPDIR)/test_logd-model_request_property.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_request_property.cc' object='test_logd-model_request_property.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_entry.o `test -f 'model_log_entry.cc' || echo '$(srcdir)/'`model_log_entry.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_request_property.o `test -f 'model_request_property.cc' || echo '$(srcdir)/'`model_request_property.cc
 
-test_logd-model_log_entry.obj: model_log_entry.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_entry.obj -MD -MP -MF $(DEPDIR)/test_logd-model_log_entry.Tpo -c -o test_logd-model_log_entry.obj `if test -f 'model_log_entry.cc'; then $(CYGPATH_W) 'model_log_entry.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_entry.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_entry.Tpo $(DEPDIR)/test_logd-model_log_entry.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_entry.cc' object='test_logd-model_log_entry.obj' libtool=no @AMDEPBACKSLASH@
+test_logd-model_request_property.obj: model_request_property.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_request_property.obj -MD -MP -MF $(DEPDIR)/test_logd-model_request_property.Tpo -c -o test_logd-model_request_property.obj `if test -f 'model_request_property.cc'; then $(CYGPATH_W) 'model_request_property.cc'; else $(CYGPATH_W) '$(srcdir)/model_request_property.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_request_property.Tpo $(DEPDIR)/test_logd-model_request_property.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_request_property.cc' object='test_logd-model_request_property.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_entry.obj `if test -f 'model_log_entry.cc'; then $(CYGPATH_W) 'model_log_entry.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_entry.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_request_property.obj `if test -f 'model_request_property.cc'; then $(CYGPATH_W) 'model_request_property.cc'; else $(CYGPATH_W) '$(srcdir)/model_request_property.cc'; fi`
 
-test_logd-model_log_property_name.o: model_log_property_name.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_property_name.o -MD -MP -MF $(DEPDIR)/test_logd-model_log_property_name.Tpo -c -o test_logd-model_log_property_name.o `test -f 'model_log_property_name.cc' || echo '$(srcdir)/'`model_log_property_name.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_property_name.Tpo $(DEPDIR)/test_logd-model_log_property_name.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_property_name.cc' object='test_logd-model_log_property_name.o' libtool=no @AMDEPBACKSLASH@
+test_logd-model_request_property_value.o: model_request_property_value.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_request_property_value.o -MD -MP -MF $(DEPDIR)/test_logd-model_request_property_value.Tpo -c -o test_logd-model_request_property_value.o `test -f 'model_request_property_value.cc' || echo '$(srcdir)/'`model_request_property_value.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_request_property_value.Tpo $(DEPDIR)/test_logd-model_request_property_value.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_request_property_value.cc' object='test_logd-model_request_property_value.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_property_name.o `test -f 'model_log_property_name.cc' || echo '$(srcdir)/'`model_log_property_name.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_request_property_value.o `test -f 'model_request_property_value.cc' || echo '$(srcdir)/'`model_request_property_value.cc
 
-test_logd-model_log_property_name.obj: model_log_property_name.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_property_name.obj -MD -MP -MF $(DEPDIR)/test_logd-model_log_property_name.Tpo -c -o test_logd-model_log_property_name.obj `if test -f 'model_log_property_name.cc'; then $(CYGPATH_W) 'model_log_property_name.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_property_name.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_property_name.Tpo $(DEPDIR)/test_logd-model_log_property_name.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_property_name.cc' object='test_logd-model_log_property_name.obj' libtool=no @AMDEPBACKSLASH@
+test_logd-model_request_property_value.obj: model_request_property_value.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_request_property_value.obj -MD -MP -MF $(DEPDIR)/test_logd-model_request_property_value.Tpo -c -o test_logd-model_request_property_value.obj `if test -f 'model_request_property_value.cc'; then $(CYGPATH_W) 'model_request_property_value.cc'; else $(CYGPATH_W) '$(srcdir)/model_request_property_value.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_request_property_value.Tpo $(DEPDIR)/test_logd-model_request_property_value.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_request_property_value.cc' object='test_logd-model_request_property_value.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_property_name.obj `if test -f 'model_log_property_name.cc'; then $(CYGPATH_W) 'model_log_property_name.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_property_name.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_request_property_value.obj `if test -f 'model_request_property_value.cc'; then $(CYGPATH_W) 'model_request_property_value.cc'; else $(CYGPATH_W) '$(srcdir)/model_request_property_value.cc'; fi`
 
-test_logd-model_log_property_value.o: model_log_property_value.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_property_value.o -MD -MP -MF $(DEPDIR)/test_logd-model_log_property_value.Tpo -c -o test_logd-model_log_property_value.o `test -f 'model_log_property_value.cc' || echo '$(srcdir)/'`model_log_property_value.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_property_value.Tpo $(DEPDIR)/test_logd-model_log_property_value.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_property_value.cc' object='test_logd-model_log_property_value.o' libtool=no @AMDEPBACKSLASH@
+test_logd-model_request_data.o: model_request_data.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_request_data.o -MD -MP -MF $(DEPDIR)/test_logd-model_request_data.Tpo -c -o test_logd-model_request_data.o `test -f 'model_request_data.cc' || echo '$(srcdir)/'`model_request_data.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_request_data.Tpo $(DEPDIR)/test_logd-model_request_data.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_request_data.cc' object='test_logd-model_request_data.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_property_value.o `test -f 'model_log_property_value.cc' || echo '$(srcdir)/'`model_log_property_value.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_request_data.o `test -f 'model_request_data.cc' || echo '$(srcdir)/'`model_request_data.cc
 
-test_logd-model_log_property_value.obj: model_log_property_value.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_property_value.obj -MD -MP -MF $(DEPDIR)/test_logd-model_log_property_value.Tpo -c -o test_logd-model_log_property_value.obj `if test -f 'model_log_property_value.cc'; then $(CYGPATH_W) 'model_log_property_value.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_property_value.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_property_value.Tpo $(DEPDIR)/test_logd-model_log_property_value.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_property_value.cc' object='test_logd-model_log_property_value.obj' libtool=no @AMDEPBACKSLASH@
+test_logd-model_request_data.obj: model_request_data.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_request_data.obj -MD -MP -MF $(DEPDIR)/test_logd-model_request_data.Tpo -c -o test_logd-model_request_data.obj `if test -f 'model_request_data.cc'; then $(CYGPATH_W) 'model_request_data.cc'; else $(CYGPATH_W) '$(srcdir)/model_request_data.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_request_data.Tpo $(DEPDIR)/test_logd-model_request_data.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_request_data.cc' object='test_logd-model_request_data.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_property_value.obj `if test -f 'model_log_property_value.cc'; then $(CYGPATH_W) 'model_log_property_value.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_property_value.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_request_data.obj `if test -f 'model_request_data.cc'; then $(CYGPATH_W) 'model_request_data.cc'; else $(CYGPATH_W) '$(srcdir)/model_request_data.cc'; fi`
 
-test_logd-model_log_raw_content.o: model_log_raw_content.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_raw_content.o -MD -MP -MF $(DEPDIR)/test_logd-model_log_raw_content.Tpo -c -o test_logd-model_log_raw_content.o `test -f 'model_log_raw_content.cc' || echo '$(srcdir)/'`model_log_raw_content.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_raw_content.Tpo $(DEPDIR)/test_logd-model_log_raw_content.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_raw_content.cc' object='test_logd-model_log_raw_content.o' libtool=no @AMDEPBACKSLASH@
+test_logd-model_session.o: model_session.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_session.o -MD -MP -MF $(DEPDIR)/test_logd-model_session.Tpo -c -o test_logd-model_session.o `test -f 'model_session.cc' || echo '$(srcdir)/'`model_session.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_session.Tpo $(DEPDIR)/test_logd-model_session.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_session.cc' object='test_logd-model_session.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_raw_content.o `test -f 'model_log_raw_content.cc' || echo '$(srcdir)/'`model_log_raw_content.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_session.o `test -f 'model_session.cc' || echo '$(srcdir)/'`model_session.cc
 
-test_logd-model_log_raw_content.obj: model_log_raw_content.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_raw_content.obj -MD -MP -MF $(DEPDIR)/test_logd-model_log_raw_content.Tpo -c -o test_logd-model_log_raw_content.obj `if test -f 'model_log_raw_content.cc'; then $(CYGPATH_W) 'model_log_raw_content.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_raw_content.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_raw_content.Tpo $(DEPDIR)/test_logd-model_log_raw_content.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_raw_content.cc' object='test_logd-model_log_raw_content.obj' libtool=no @AMDEPBACKSLASH@
+test_logd-model_session.obj: model_session.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_session.obj -MD -MP -MF $(DEPDIR)/test_logd-model_session.Tpo -c -o test_logd-model_session.obj `if test -f 'model_session.cc'; then $(CYGPATH_W) 'model_session.cc'; else $(CYGPATH_W) '$(srcdir)/model_session.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_session.Tpo $(DEPDIR)/test_logd-model_session.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_session.cc' object='test_logd-model_session.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_raw_content.obj `if test -f 'model_log_raw_content.cc'; then $(CYGPATH_W) 'model_log_raw_content.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_raw_content.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_session.obj `if test -f 'model_session.cc'; then $(CYGPATH_W) 'model_session.cc'; else $(CYGPATH_W) '$(srcdir)/model_session.cc'; fi`
 
-test_logd-model_log_session.o: model_log_session.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_session.o -MD -MP -MF $(DEPDIR)/test_logd-model_log_session.Tpo -c -o test_logd-model_log_session.o `test -f 'model_log_session.cc' || echo '$(srcdir)/'`model_log_session.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_session.Tpo $(DEPDIR)/test_logd-model_log_session.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_session.cc' object='test_logd-model_log_session.o' libtool=no @AMDEPBACKSLASH@
+test_logd-model_service.o: model_service.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_service.o -MD -MP -MF $(DEPDIR)/test_logd-model_service.Tpo -c -o test_logd-model_service.o `test -f 'model_service.cc' || echo '$(srcdir)/'`model_service.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_service.Tpo $(DEPDIR)/test_logd-model_service.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_service.cc' object='test_logd-model_service.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_session.o `test -f 'model_log_session.cc' || echo '$(srcdir)/'`model_log_session.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_service.o `test -f 'model_service.cc' || echo '$(srcdir)/'`model_service.cc
 
-test_logd-model_log_session.obj: model_log_session.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_log_session.obj -MD -MP -MF $(DEPDIR)/test_logd-model_log_session.Tpo -c -o test_logd-model_log_session.obj `if test -f 'model_log_session.cc'; then $(CYGPATH_W) 'model_log_session.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_session.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_log_session.Tpo $(DEPDIR)/test_logd-model_log_session.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_log_session.cc' object='test_logd-model_log_session.obj' libtool=no @AMDEPBACKSLASH@
+test_logd-model_service.obj: model_service.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_logd-model_service.obj -MD -MP -MF $(DEPDIR)/test_logd-model_service.Tpo -c -o test_logd-model_service.obj `if test -f 'model_service.cc'; then $(CYGPATH_W) 'model_service.cc'; else $(CYGPATH_W) '$(srcdir)/model_service.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_logd-model_service.Tpo $(DEPDIR)/test_logd-model_service.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='model_service.cc' object='test_logd-model_service.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_log_session.obj `if test -f 'model_log_session.cc'; then $(CYGPATH_W) 'model_log_session.cc'; else $(CYGPATH_W) '$(srcdir)/model_log_session.cc'; fi`
-
-test_manage_part-manage_part_table.o: manage_part_table.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_manage_part_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_manage_part-manage_part_table.o -MD -MP -MF $(DEPDIR)/test_manage_part-manage_part_table.Tpo -c -o test_manage_part-manage_part_table.o `test -f 'manage_part_table.cc' || echo '$(srcdir)/'`manage_part_table.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_manage_part-manage_part_table.Tpo $(DEPDIR)/test_manage_part-manage_part_table.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='manage_part_table.cc' object='test_manage_part-manage_part_table.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_manage_part_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_manage_part-manage_part_table.o `test -f 'manage_part_table.cc' || echo '$(srcdir)/'`manage_part_table.cc
-
-test_manage_part-manage_part_table.obj: manage_part_table.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_manage_part_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_manage_part-manage_part_table.obj -MD -MP -MF $(DEPDIR)/test_manage_part-manage_part_table.Tpo -c -o test_manage_part-manage_part_table.obj `if test -f 'manage_part_table.cc'; then $(CYGPATH_W) 'manage_part_table.cc'; else $(CYGPATH_W) '$(srcdir)/manage_part_table.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_manage_part-manage_part_table.Tpo $(DEPDIR)/test_manage_part-manage_part_table.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='manage_part_table.cc' object='test_manage_part-manage_part_table.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_manage_part_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_manage_part-manage_part_table.obj `if test -f 'manage_part_table.cc'; then $(CYGPATH_W) 'manage_part_table.cc'; else $(CYGPATH_W) '$(srcdir)/manage_part_table.cc'; fi`
-
-test_manage_part-test_manage_part.o: test_manage_part.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_manage_part_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_manage_part-test_manage_part.o -MD -MP -MF $(DEPDIR)/test_manage_part-test_manage_part.Tpo -c -o test_manage_part-test_manage_part.o `test -f 'test_manage_part.cc' || echo '$(srcdir)/'`test_manage_part.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_manage_part-test_manage_part.Tpo $(DEPDIR)/test_manage_part-test_manage_part.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test_manage_part.cc' object='test_manage_part-test_manage_part.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_manage_part_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_manage_part-test_manage_part.o `test -f 'test_manage_part.cc' || echo '$(srcdir)/'`test_manage_part.cc
-
-test_manage_part-test_manage_part.obj: test_manage_part.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_manage_part_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT test_manage_part-test_manage_part.obj -MD -MP -MF $(DEPDIR)/test_manage_part-test_manage_part.Tpo -c -o test_manage_part-test_manage_part.obj `if test -f 'test_manage_part.cc'; then $(CYGPATH_W) 'test_manage_part.cc'; else $(CYGPATH_W) '$(srcdir)/test_manage_part.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/test_manage_part-test_manage_part.Tpo $(DEPDIR)/test_manage_part-test_manage_part.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test_manage_part.cc' object='test_manage_part-test_manage_part.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_manage_part_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_manage_part-test_manage_part.obj `if test -f 'test_manage_part.cc'; then $(CYGPATH_W) 'test_manage_part.cc'; else $(CYGPATH_W) '$(srcdir)/test_manage_part.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_logd_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o test_logd-model_service.obj `if test -f 'model_service.cc'; then $(CYGPATH_W) 'model_service.cc'; else $(CYGPATH_W) '$(srcdir)/model_service.cc'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \

@@ -1,17 +1,16 @@
-#ifndef _MODEL_LOGPROPERTYNAME_H_
-#define _MODEL_LOGPROPERTYNAME_H_
+#ifndef _MODEL_SERVICE_H_
+#define _MODEL_SERVICE_H_
 
-/* << include database library settings here >> */
 #include "db_settings.h"
 #include "model.h"
 
 
-class ModelLogPropertyName:
+class ModelService:
     public Model::Base {
 public:
-    ModelLogPropertyName()
+    ModelService()
     { }
-    virtual ~ModelLogPropertyName()
+    virtual ~ModelService()
     { }
     const unsigned long long &getId() const {
         return m_id.get();
@@ -57,7 +56,7 @@ public:
         return Model::Base::toString(this);
     }
 
-    typedef Model::Field::List<ModelLogPropertyName>  field_list;
+    typedef Model::Field::List<ModelService>  field_list;
     static const field_list& getFields() {
         return fields;
     }
@@ -68,14 +67,14 @@ protected:
 
 
 public:
-    static Model::Field::PrimaryKey<ModelLogPropertyName, unsigned long long> id;
-    static Model::Field::Basic<ModelLogPropertyName, std::string> name;
+    static Model::Field::PrimaryKey<ModelService, unsigned long long> id;
+    static Model::Field::Basic<ModelService, std::string> name;
 
 
 private:
     static std::string table_name;  /** < model table name */
     static field_list  fields;      /** < list of all model fields */
-}; // class ModelLogPropertyName
+}; // class ModelService
 
-#endif // _MODEL_LOGPROPERTYNAME_H_
+#endif // _MODEL_SERVICE_H_
 
