@@ -46,8 +46,8 @@ libfred_a_SOURCES = register.cc          \
                     file.h               \
                     filter.cc            \
                     filter.h             \
-		    log_entry.cc	 \
-		    log_entry.h		 \
+		    request.cc	 \
+		    request.h		 \
                     mailer.h             \
                     sql.h                \
                     exceptions.h         \

@@ -28,17 +28,17 @@
 
 namespace Database {
 
-enum LogServiceType { LC_UNIX_WHOIS, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN };
+enum RequestServiceType { LC_UNIX_WHOIS, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN, LC_INTRANET, LC_MAX_SERVICE };
 
 namespace Filters {
 
-class LogPropertyName : virtual public Compound
+class RequestProperty : virtual public Compound
 {
 public:
-	virtual ~LogPropertyName() {
+	virtual ~RequestProperty() {
 	}
 
-	virtual Table& joinLogPropertyNameTable() = 0;
+	virtual Table& joinRequestPropertyTable() = 0;
 	virtual Value<std::string>& addName() = 0;
 
 	friend class boost::serialization::access;
@@ -46,20 +46,20 @@ public:
 	    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
 	  }
 
-	  static LogPropertyName* create();
+	  static RequestProperty* create();
 };
 
-class LogPropertyValue : virtual public Compound
+class RequestPropertyValue : virtual public Compound
 {
 	public:
-	virtual ~LogPropertyValue() {
+	virtual ~RequestPropertyValue() {
 	}
 
-  virtual Table& joinLogPropertyValueTable() = 0;
+  virtual Table& joinRequestPropertyValueTable() = 0;
   virtual Value<std::string>& addValue() = 0;
-  virtual Value<Database::ID>& addLogPropertyNameId() = 0;
+  virtual Value<Database::ID>& addRequestPropertyId() = 0;
     virtual Value<bool>& addOutputFlag()	= 0;
-    virtual LogPropertyName& addLogPropertyName()  = 0;
+    virtual RequestProperty& addRequestProperty()  = 0;
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive& _ar,
@@ -67,54 +67,54 @@ class LogPropertyValue : virtual public Compound
       _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
     }
 
-    static LogPropertyValue *create();
+    static RequestPropertyValue *create();
 };
 
-class LogPropertyNameImpl : virtual public LogPropertyName
+class RequestPropertyImpl : virtual public RequestProperty
 {
 public:
-	LogPropertyNameImpl(bool set_active);
-	virtual ~LogPropertyNameImpl() {
+	RequestPropertyImpl(bool set_active);
+	virtual ~RequestPropertyImpl() {
 	}
 
-	virtual Table& joinLogPropertyNameTable();
+	virtual Table& joinRequestPropertyTable();
 	virtual Value<std::string>& addName();
 
 	friend class boost::serialization::access;
 	template<class Archive> void serialize(Archive& _ar,
 		const unsigned int _version) {
-	  _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LogPropertyName);
+	  _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(RequestProperty);
 	}
 };
 
-class LogPropertyValueImpl : virtual public LogPropertyValue
+class RequestPropertyValueImpl : virtual public RequestPropertyValue
 {
 public:
-	LogPropertyValueImpl(bool set_active);
-	virtual ~LogPropertyValueImpl() {
+	RequestPropertyValueImpl(bool set_active);
+	virtual ~RequestPropertyValueImpl() {
 	}
 
-	virtual Table& joinLogPropertyValueTable();
+	virtual Table& joinRequestPropertyValueTable();
 	virtual Value<std::string>& addValue();
 	// virtual Value<Database::ID>& addNameId();
 	virtual Value<bool>& addOutputFlag();
-	virtual LogPropertyName&  addLogPropertyName();
-	virtual Value<Database::ID>& addLogPropertyNameId();
+	virtual RequestProperty&  addRequestProperty();
+	virtual Value<Database::ID>& addRequestPropertyId();
 
 	friend class boost::serialization::access;
 	template<class Archive> void serialize(Archive& _ar,
 		const unsigned int _version) {
-	  _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LogPropertyValue);
+	  _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(RequestPropertyValue);
 	}
 };
 
 
-class LogRawContent : virtual public Compound {
+class RequestData : virtual public Compound {
 public:
-	virtual ~LogRawContent () {
+	virtual ~RequestData () {
 	}
 
-	virtual Table & joinLogRawContentTable() = 0;
+	virtual Table & joinRequestDataTable() = 0;
 	virtual Value<std::string>& addContent() = 0;
 	virtual Value<bool>& addResponseFlag() = 0;
 
@@ -124,43 +124,43 @@ public:
 	  _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
 	}
 
-	static LogRawContent* create();
+	static RequestData* create();
 };
 
-class LogRawContentImpl : virtual public LogRawContent {
+class RequestDataImpl : virtual public RequestData {
 public:
-	LogRawContentImpl(bool set_active=false);
-	virtual ~LogRawContentImpl() {
+	RequestDataImpl(bool set_active=false);
+	virtual ~RequestDataImpl() {
 	}
 
-	virtual Table &joinLogRawContentTable(); 
+	virtual Table &joinRequestDataTable();
 	virtual Value<std::string>& addContent();
 	virtual Value<bool>& addResponseFlag();
 
 	friend class boost::serialization::access;
 	template<class Archive> void serialize(Archive& _ar,
 		const unsigned int _version) {
-	  _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LogRawContent);
+	  _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(RequestData);
 	}
 };
 
-class LogEntry : virtual public Compound
+class Request : virtual public Compound
 {
 public:
 
-  virtual ~LogEntry() {
+  virtual ~Request() {
   }
 
-  virtual Table& joinLogEntryTable() = 0;
+  virtual Table& joinRequestTable() = 0;
   virtual Value<Database::ID>& addId() = 0;
   virtual Interval<Database::DateTimeInterval>& addTimeBegin() = 0;
   virtual Interval<Database::DateTimeInterval>& addTimeEnd() = 0;
   virtual Value<std::string>& addSourceIp() = 0;
-  virtual Value<Database::LogServiceType>& addServiceType() = 0;
-  virtual Value<Database::ID>& addLogRawContentId()  = 0;
-  virtual Value<Database::ID>& addLogPropertyValueId() = 0;
-  virtual LogRawContent& addLogRawContent() = 0;
-  virtual LogPropertyValue&   addLogPropertyValue() = 0;
+  virtual Value<Database::RequestServiceType>& addServiceType() = 0;
+  virtual Value<Database::ID>& addRequestDataId()  = 0;
+  virtual Value<Database::ID>& addRequestPropertyValueId() = 0;
+  virtual RequestData& addRequestData() = 0;
+  virtual RequestPropertyValue&   addRequestPropertyValue() = 0;
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -168,31 +168,31 @@ public:
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
   }
 
-  static LogEntry* create();
+  static Request* create();
 };
 
-class LogEntryImpl : virtual public LogEntry {
+class RequestImpl : virtual public Request {
 public:
-  LogEntryImpl(bool set_active = false);
-  virtual ~LogEntryImpl() {
+  RequestImpl(bool set_active = false);
+  virtual ~RequestImpl() {
   }
 
-  virtual Table& joinLogEntryTable();
+  virtual Table& joinRequestTable();
   virtual Value<Database::ID>& addId();
   virtual Interval<Database::DateTimeInterval>& addTimeBegin();
   virtual Interval<Database::DateTimeInterval>& addTimeEnd();
   virtual Value<std::string>& addSourceIp();
-  virtual Value<Database::LogServiceType>& addServiceType();
-  virtual Value<Database::ID>& addLogRawContentId();
-  virtual Value<Database::ID>& addLogPropertyValueId();
-  virtual LogRawContent& addLogRawContent();
-  virtual LogPropertyValue& addLogPropertyValue();
+  virtual Value<Database::RequestServiceType>& addServiceType();
+  virtual Value<Database::ID>& addRequestDataId();
+  virtual Value<Database::ID>& addRequestPropertyValueId();
+  virtual RequestData& addRequestData();
+  virtual RequestPropertyValue& addRequestPropertyValue();
 
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
       const unsigned int _version) {
-    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LogEntry);
+    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Request);
   }
 
 };
@@ -203,7 +203,7 @@ public:
 
 
 template<>
-struct SqlConvert<Database::LogServiceType> : public NumericsConvertor<int> { };
+struct SqlConvert<Database::RequestServiceType> : public NumericsConvertor<int> { };
 
 
 #endif

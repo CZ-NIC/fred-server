@@ -59,7 +59,7 @@ am_libfred_a_OBJECTS = register.$(OBJEXT) common_impl.$(OBJEXT) \
 	public_request.$(OBJEXT) invoice.$(OBJEXT) zone.$(OBJEXT) \
 	blacklist.$(OBJEXT) documents.$(OBJEXT) info_buffer.$(OBJEXT) \
 	bank.$(OBJEXT) mail.$(OBJEXT) notify.$(OBJEXT) poll.$(OBJEXT) \
-	file.$(OBJEXT) filter.$(OBJEXT) log_entry.$(OBJEXT)
+	file.$(OBJEXT) filter.$(OBJEXT) request.$(OBJEXT)
 libfred_a_OBJECTS = $(am_libfred_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -279,8 +279,8 @@ libfred_a_SOURCES = register.cc          \
                     file.h               \
                     filter.cc            \
                     filter.h             \
-		    log_entry.cc	 \
-		    log_entry.h		 \
+		    request.cc	 \
+		    request.h		 \
                     mailer.h             \
                     sql.h                \
                     exceptions.h         \
@@ -345,7 +345,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/info_buffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/invoice.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keyset.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log_entry.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mail.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/notify.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nsset.Po@am__quote@
@@ -354,6 +353,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/public_request.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/register.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registrar.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/request.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zone.Po@am__quote@
 
 .cc.o:
