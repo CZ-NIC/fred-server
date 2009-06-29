@@ -270,7 +270,7 @@ int main(int argc, char *argv[]) {
 */
 
 // logging
-    LogEntryImpl *le = new LogEntryImpl(true);
+    RequestImpl *le = new RequestImpl(true);
 
     // DateTimeInterval di(Date(2008, 9, 17), DateTime("2008-09-18 12:41:13"));
     // DateTimeInterval di(DateTime("2008-10-23 11:00:30"), DateTime("2008-10-25 15:41:13"));
@@ -281,16 +281,16 @@ int main(int argc, char *argv[]) {
 
  //   le->addComponent().setValue(LC_UNIX_WHOIS);
 
-    LogPropertyValue &pv = le->addLogPropertyValue();
+    RequestPropertyValue &pv = le->addRequestPropertyValue();
 
     pv.addValue().setValue("registrant");
-    pv.addLogPropertyName().addName().setValue("search axis");
+    pv.addRequestProperty().addName().setValue("search axis");
 
     uf.addFilter(le);
     sq1 = new SelectQuery();
 
 /*
-    le->addJoin (new Join( Column("id", le->joinTable("log_entry")),
+    le->addJoin (new Join( Column("id", le->joinTable("request")),
 			SQL_OP_EQ,
 			Column("entry_id", le->joinTable("property_value"))
 			));
@@ -300,8 +300,8 @@ int main(int argc, char *argv[]) {
 			));
 */
 
-    sq1->addSelect("name value", pv.joinLogPropertyValueTable());
-    sq1->addSelect("time source_ip flag component", le->joinLogEntryTable());
+    sq1->addSelect("name value", pv.joinRequestPropertyValueTable());
+    sq1->addSelect("time source_ip flag component", le->joinRequestTable());
     // sq1->addSelect("name", le->joinTable("property"));
 
     uf.addQuery(sq1);
