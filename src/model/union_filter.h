@@ -103,8 +103,13 @@ public:
     _ar.register_type(static_cast<ObjectStateImpl *>(NULL));
     _ar.register_type(static_cast<StatementImpl *>(NULL));
     _ar.register_type(static_cast<OnlineStatementImpl *>(NULL));
-
-
+/*
+    _ar.register_type(static_cast<RequestImpl *>(NULL));
+    _ar.register_type(static_cast<RequestDataImpl *>(NULL));
+    _ar.register_type(static_cast<RequestPropertyImpl *>(NULL));
+    _ar.register_type(static_cast<RequestPropertyValueImpl *>(NULL));
+*/
+ 
     _ar & BOOST_SERIALIZATION_NVP(filter_list);
   }
 

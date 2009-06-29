@@ -16,18 +16,18 @@ class RequestImpl : public Register::CommonObjectImpl,
 private:
   Database::DateTime time_begin;
   Database::DateTime time_end;
-  std::string source_ip
+  std::string source_ip;
   Database::RequestServiceType serv_type;
   Database::RequestActionType action_type;
   Database::ID session_id;
   bool is_monitoring;
 
 public:
-  RequestImpl(Database::ID &_id, Database::DateTime &_time_begin, Database::DateTime &_time_end, std::string _source_ip, Database::RequestServiceType &_serv_type, Database::RequestActionType &_action_type, Database::ID &_session_id, bool &_is_monitoring) :
+  RequestImpl(Database::ID &_id, Database::DateTime &_time_begin, Database::DateTime &_time_end, Database::RequestServiceType &_serv_type, std::string _source_ip,  Database::RequestActionType &_action_type, Database::ID &_session_id, bool &_is_monitoring) :
 	CommonObjectImpl(_id),
 	time_begin(_time_begin),
 	time_end(_time_end),
-	source_ip(_source_ip) 
+	source_ip(_source_ip),
 	serv_type(_serv_type),
 	action_type(_action_type),
 	session_id(_session_id),
@@ -40,11 +40,11 @@ public:
   virtual const Database::DateTime&  getTimeEnd() const {
 	return time_end;
   }
-  virtual const std::string& getSourceIp() const {
-	return source_ip;
-  }
   virtual const Database::RequestServiceType& getServiceType() const {
 	return serv_type;
+  }
+  virtual const std::string& getSourceIp() const {
+	return source_ip;
   }
   virtual const Database::RequestActionType& getActionType() const {
 	return action_type;
@@ -55,7 +55,6 @@ public:
   virtual const bool& getIsMonitoring() const {
 	return is_monitoring;
   }
-
 };
 
 COMPARE_CLASS_IMPL(RequestImpl, TimeBegin)
@@ -65,7 +64,6 @@ COMPARE_CLASS_IMPL(RequestImpl, ServiceType)
 COMPARE_CLASS_IMPL(RequestImpl, ActionType)
 COMPARE_CLASS_IMPL(RequestImpl, SessionId)
 COMPARE_CLASS_IMPL(RequestImpl, IsMonitoring)
-
 
 class ListImpl : public Register::CommonListImpl,
                  virtual public List {
@@ -123,7 +121,7 @@ public:
 
 	// make the actual query for data
     Database::SelectQuery query;
-    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip";
+    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip, t_1.action_type, t_1.session_id, t_1.monitoring";
     query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id";
     query.order_by() << "t_1.time_begin desc";
 
@@ -142,14 +140,20 @@ public:
     		Database::ID 		id 		= *col;
     		Database::DateTime 	time_begin  	= *(++col);
     		Database::DateTime 	time_end  	= *(++col);
-    		Database::RequestServiceType serv_type  	= (Database::RequestServiceType)((int) *(++col));
+    		Database::RequestServiceType serv_type  	= (Database::RequestServiceType) *(++col);
     		std::string 		source_ip  	= *(++col);
+	 	Database::RequestActionType  action_type = *(++col);
+		Database::ID		session_id	= *(++col);
+		bool			is_monitoring	= *(++col);
 
     		data_.push_back(new RequestImpl(id,
     					time_begin,
     					time_end,
     					serv_type,
-    					source_ip));
+    					source_ip,
+					action_type,
+					session_id,
+					is_monitoring));
 
     	}
 
@@ -203,12 +207,18 @@ public:
 			Database::DateTime 	time_end  	= *(++col);
 			Database::RequestServiceType serv_type  	= (Database::RequestServiceType) ((int)*(++col));
 			std::string 		source_ip  	= *(++col);
+			Database::RequestActionType  action_type = *(++col);
+			Database::ID		session_id	= *(++col);
+			bool			is_monitoring	= *(++col);
 
 			data_.push_back(new RequestImpl(id,
-						time_begin,
-						time_end,
-						serv_type,
-						source_ip));
+    					time_begin,
+    					time_end,
+    					serv_type,
+    					source_ip,
+					action_type,
+					session_id,
+					is_monitoring));
 
 		}
 

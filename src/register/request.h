@@ -13,7 +13,10 @@ enum MemberType {
   MT_TIME_BEGIN,
   MT_TIME_END, 
   MT_SOURCE_IP,
-  MT_SERVICE
+  MT_SERVICE,
+  MT_ACTION,
+  MT_SESSION_ID,
+  MT_MONITORING
 };
 
 class Request : virtual public Register::CommonObject {
@@ -22,6 +25,9 @@ public:
   virtual const Database::DateTime&  getTimeEnd() const = 0;
   virtual const Database::RequestServiceType& getServiceType() const = 0;
   virtual const std::string& 		getSourceIp() const = 0;
+  virtual const Database::RequestActionType &getActionType() const = 0;
+  virtual const Database::ID& getSessionId() const = 0;
+  virtual const bool& getIsMonitoring() const = 0;
 
 };
 

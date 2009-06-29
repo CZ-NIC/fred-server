@@ -28,7 +28,8 @@
 
 namespace Database {
 
-enum RequestServiceType { LC_UNIX_WHOIS, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN, LC_INTRANET, LC_MAX_SERVICE };
+typedef long RequestServiceType;
+typedef long RequestActionType;
 
 namespace Filters {
 
@@ -201,9 +202,10 @@ public:
 
 }
 
-
+/*
 template<>
 struct SqlConvert<Database::RequestServiceType> : public NumericsConvertor<int> { };
+*/
 
 
 #endif

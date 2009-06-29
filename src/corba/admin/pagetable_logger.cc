@@ -1,6 +1,6 @@
 #include "pagetable_logger.h"
 
-const int ccReg_Logger_i::NUM_COLUMNS = 4;
+const int ccReg_Logger_i::NUM_COLUMNS = 7;
 
 ccReg_Logger_i::ccReg_Logger_i(Register::Logger::List *_list) : m_lel (_list)  {
 } 
@@ -27,6 +27,9 @@ Registry::Table::ColumnHeaders* ccReg_Logger_i::getColumnHeaders() {
   COLHEAD(ch,1,"time_end",CT_OTHER);
   COLHEAD(ch,2,"serv_type",CT_OTHER);
   COLHEAD(ch,3,"source_ip",CT_OTHER);
+  COLHEAD(ch,4,"action_type",CT_OTHER);
+  COLHEAD(ch,5,"session_id",CT_OTHER);
+  COLHEAD(ch,6,"is_monitoring",CT_OTHER);
   return ch;
 }
 
@@ -43,6 +46,9 @@ Registry::TableRow* ccReg_Logger_i::getRow(CORBA::Short row)
     (*tr)[1] <<= C_STR(a->getTimeEnd());
     (*tr)[2] <<= C_STR(a->getServiceType());
     (*tr)[3] <<= C_STR(a->getSourceIp());
+    (*tr)[4] <<= C_STR(a->getActionType());
+    (*tr)[5] <<= C_STR(a->getSessionId());
+    (*tr)[6] <<= C_STR(a->getIsMonitoring());
     return tr;
   }
   catch (...) {
@@ -71,6 +77,15 @@ void ccReg_Logger_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
     case 3:
       m_lel->sort(Register::Logger::MT_SERVICE, dir);
       break;
+    case 4:
+      m_lel->sort(Register::Logger::MT_ACTION, dir);
+      break;
+    case 5:
+      m_lel->sort(Register::Logger::MT_SESSION_ID, dir);
+      break;
+    case 6:
+      m_lel->sort(Register::Logger::MT_MONITORING, dir);
+      break;
   }
 }
 
@@ -85,7 +100,7 @@ ccReg::TID ccReg_Logger_i::getRowId(CORBA::Short row)
 }
 
 char* ccReg_Logger_i::outputCSV() {
-  return CORBA::string_dup("1,1,1");
+  return CORBA::string_dup("1,1,1,1,1,1");
 }
 
 CORBA::Short ccReg_Logger_i::numRows() {
