@@ -191,7 +191,7 @@ BankClient::add_bank_account()
     std::string bank_code = m_conf.get<std::string>(BANK_BANK_CODE_NAME);
     std::auto_ptr<Register::Banking::Manager>
         bankMan(Register::Banking::Manager::create(m_dbman));
-    bool retval;
+    bool retval = true;
     if (m_conf.hasOpt(BANK_ZONE_ID_NAME)) {
         Database::ID zoneId = m_conf.get<unsigned int>(BANK_ZONE_ID_NAME);
         retval = bankMan->insertBankAccount(zoneId, account_number, account_name, bank_code);

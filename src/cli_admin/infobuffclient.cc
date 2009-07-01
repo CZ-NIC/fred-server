@@ -85,8 +85,11 @@ InfoBuffClient::make_info()
     if (m_conf.hasOpt(INFOBUFF_REQUEST_NAME)) {
         requestName = m_conf.get<std::string>(INFOBUFF_REQUEST_NAME);
     }
-    if (type < 1 || type > 7) {
-        std::cerr << INFOBUFF_MAKE_INFO_NAME << " must be number between 1 and 7" << std::endl;
+    if (type < 1 || type > 10) {
+        std::cerr
+            << INFOBUFF_MAKE_INFO_NAME
+            << " must be number between 1 and 10 (inclusive border values)" 
+            << std::endl;
         return;
     }
 
