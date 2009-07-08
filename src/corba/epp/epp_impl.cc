@@ -1297,9 +1297,14 @@ int ccReg_EPP_i::getZone(
 {
     std::stringstream zoneQuery;
     std::string domain_fqdn(fqdn);
+    int pos = getZoneMax(db, fqdn);
+    if (pos == 0) {
+        LOGGER(PACKAGE).error("getZone: dot position is zero");
+        return 0;
+    }
     zoneQuery
         << "SELECT id FROM zone WHERE lower(fqdn)=lower('"
-        << domain_fqdn.substr(getZoneMax(db, fqdn) + 1, std::string::npos)
+        << domain_fqdn.substr(pos + 1, std::string::npos)
         << "');";
     if (!db->ExecSelect(zoneQuery.str().c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve zone id from the database");
@@ -1335,7 +1340,7 @@ int ccReg_EPP_i::getZoneMax(
     }
     for (int l = len - 1; l > 0; l--) {
         if (fqdn[l] == '.') {
-            return l - 1;
+            return l;
         }
     }
     return 0;
