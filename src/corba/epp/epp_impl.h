@@ -48,18 +48,18 @@ public:
   bool TestDatabaseConnect(const std::string& db);
 
   // get zones parametrs
-  int GetZoneExPeriodMin(int id);
-  int GetZoneExPeriodMax(int id);
-  int GetZoneValPeriod(int id);
-  int GetZoneDotsMax(int id);
-  bool GetZoneEnum(int id);
-  const char * GetZoneFQDN(int id);
-  std::vector<int> GetAllZonesIDs();
+  int GetZoneExPeriodMin(DB *db, int id);
+  int GetZoneExPeriodMax(DB *db, int id);
+  int GetZoneValPeriod(DB *db, int id);
+  int GetZoneDotsMax(DB *db, int id);
+  bool GetZoneEnum(DB *db, int id);
+  const char * GetZoneFQDN(DB *db, int id);
+  std::vector<int> GetAllZonesIDs(DB *db);
 
-  int getZone(const char *fqdn);
-  int getZoneMax(const char *fqdn);
-  int getFQDN(char *FQDN, const char *fqdn);
-  bool testFQDN(const char *fqdn);
+  int getZone(DB *db, const char *fqdn);
+  int getZoneMax(DB *db, const char *fqdn);
+  int getFQDN(DB *db, char *FQDN, const char *fqdn);
+  bool testFQDN(DB *db, const char *fqdn);
 
   // parse extension for domain enum.exdate
   void GetValExpDateFromExtension(char *valexpDate,
