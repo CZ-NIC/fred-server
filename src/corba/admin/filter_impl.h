@@ -46,7 +46,9 @@ public:
   ccReg::Filters::RequestPropertyValue_ptr addE(Database::Filters::RequestPropertyValue *f);
   ccReg::Filters::RequestProperty_ptr addE(Database::Filters::RequestProperty *f);
   ccReg::Filters::RequestData_ptr addE(Database::Filters::RequestData* f);
+
   ccReg::Filters::RequestServiceType_ptr addE(Database::Filters::Value<Database::RequestServiceType> *f);
+//  ccReg::Filters::RequestActionType_ptr addE(Database::Filters::Value<Database::RequestActionType> *f);
 
   void addFilter(Database::Filters::Filter* f);
 

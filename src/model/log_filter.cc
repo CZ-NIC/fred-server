@@ -1,6 +1,29 @@
 #include "log_filter.h"
 
 namespace Database {
+
+/*
+std::ostream& operator<<(std::ostream &_os, const RequestServiceType& _v) {
+  return _os << _v.value;
+}
+
+
+std::istream& operator>>(std::istream &_is, RequestServiceType& _v) {
+  return _is >> _v.value;
+}
+
+
+
+std::ostream& operator<<(std::ostream &_os, const RequestActionType& _v) {
+  return _os << _v.value;
+}
+
+
+std::istream& operator>>(std::istream &_is, RequestActionType& _v) {
+  return _is >> _v.value;
+}
+*/
+
 namespace Filters {
 
 Request* Request::create() {
@@ -49,13 +72,23 @@ Value<std::string>& RequestImpl::addSourceIp()
   return *tmp;
 }
 
-Value<Database::RequestServiceType>& RequestImpl::addServiceType()
+Value<Database::RequestServiceType>& RequestImpl::addService()
 {
   Value<Database::RequestServiceType> *tmp = new Value<Database::RequestServiceType>(Column("service", joinRequestTable()));
   tmp->setName("ServiceType");
   add(tmp);
   return *tmp;
 }
+
+/*
+Value<Database::RequestActionType>& RequestImpl::addActionType()
+{
+  Value<Database::RequestActionType> *tmp = new Value<Database::RequestActionType> (Column("action_type", joinRequestTable()));
+  tmp->setName("ActionType");
+  add(tmp);
+  return *tmp;
+}
+*/
 
 Value<Database::ID>& RequestImpl::addRequestDataId()
 {

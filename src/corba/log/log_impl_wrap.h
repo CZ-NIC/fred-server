@@ -4,6 +4,10 @@
 #include <corba/ccReg.hh>
 
 #include "log_impl.h"
+#include "src/corba/admin/usertype_conv.h"
+
+
+std::auto_ptr<Register::Logger::RequestProperties> convert_properties(const ccReg::RequestProperties &p);
 
 class ccReg_Log_i : public POA_ccReg::Logger,
   public PortableServer::RefCountServantBase,

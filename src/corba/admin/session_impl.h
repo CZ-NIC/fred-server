@@ -72,7 +72,7 @@ private:
 
   /**
    * context with session object was created - need for futher call on object
-   * which are done in separate threads 
+   * which are done in separate threads
    */
   std::string base_context_;
 
@@ -91,8 +91,11 @@ private:
   Registry::Mailing::Detail* getMailDetail(ccReg::TID _id);
   Registry::Invoicing::Detail* getInvoiceDetail(ccReg::TID _id);
 
-  
-  
+  Registry::Request::Detail*  getRequestDetail(ccReg::TID _id);
+
+
+
+
   /*
    * TODO:
    * this should be rather in separate library - it is only general CORBA-to-Register
@@ -103,20 +106,21 @@ private:
   ccReg::NSSetDetail* createNSSetDetail(Register::NSSet::NSSet* _contact);
   ccReg::KeySetDetail *createKeySetDetail(Register::KeySet::KeySet *_contact);
 
-  Registry::Domain::Detail* createHistoryDomainDetail(Register::Domain::List* _list); 
+  Registry::Domain::Detail* createHistoryDomainDetail(Register::Domain::List* _list);
   Registry::Contact::Detail* createHistoryContactDetail(Register::Contact::List* _list);
   Registry::NSSet::Detail* createHistoryNSSetDetail(Register::NSSet::List* _list);
-  Registry::KeySet::Detail* createHistoryKeySetDetail(Register::KeySet::List* _list); 
+  Registry::KeySet::Detail* createHistoryKeySetDetail(Register::KeySet::List* _list);
   Registry::Registrar::Detail* createRegistrarDetail(Register::Registrar::Registrar* _registrar);
-  Registry::EPPAction::Detail* createEppActionDetail(Register::Registrar::EPPAction *_action); 
+  Registry::EPPAction::Detail* createEppActionDetail(Register::Registrar::EPPAction *_action);
   Registry::PublicRequest::Detail* createPublicRequestDetail(Register::PublicRequest::PublicRequest* _request);
   Registry::Mailing::Detail* createMailDetail(Register::Mail::Mail *_mail);
   Registry::Invoicing::Detail* createInvoiceDetail(Register::Invoicing::Invoice *_invoice);
+  Registry::Request::Detail *createRequestDetail(Register::Logger::Request *req);
 
   void _createUpdateRegistrar(const ccReg::Registrar& _registrar);
 
 public:
-  ccReg_Session_i(const std::string& _session_id, 
+  ccReg_Session_i(const std::string& _session_id,
                   const std::string& database,
                   NameService *ns,
                   Config::Conf& cfg,
@@ -128,12 +132,12 @@ public:
   void updateActivity();
   bool isTimeouted() const;
   const ptime& getLastActivity() const;
-  
+
   ccReg::User_ptr getUser();
-  
+
   Registry::PageTable_ptr getPageTable(ccReg::FilterType _type);
   CORBA::Any* getDetail(ccReg::FilterType _type, ccReg::TID _id);
-  
+
   void updateRegistrar(const ccReg::Registrar& _registrar);
   void createRegistrar(const ccReg::Registrar& _registrar);
 

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "id.h"
+#include "request_types.h"
 #include "money.h"
 #include "convert_str_pod.h"
 #include "convert_sql_boost_datetime.h"

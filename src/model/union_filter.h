@@ -43,7 +43,7 @@ public:
   virtual bool empty() const {
     return filter_list.empty();
   }
-  
+
   void clearFilters();
   void clearQueries();
   void clear();
@@ -67,7 +67,7 @@ public:
   template<class Archive> void serialize(Archive& _ar,
       const unsigned int _version) {
     /*
-     * Need registering all classes which can be hold in 'filter_list' 
+     * Need registering all classes which can be hold in 'filter_list'
      * by Filter* pointer
      * CAUTION: Do not change the class order, append new clases after
      * last otherwise saved filters will be unable to load
@@ -103,13 +103,14 @@ public:
     _ar.register_type(static_cast<ObjectStateImpl *>(NULL));
     _ar.register_type(static_cast<StatementImpl *>(NULL));
     _ar.register_type(static_cast<OnlineStatementImpl *>(NULL));
-/*
-    _ar.register_type(static_cast<RequestImpl *>(NULL));
+    /*
+     * TODO
+    _ar.register_type(static_cast<::Database::Filters::RequestImpl *>(NULL));
     _ar.register_type(static_cast<RequestDataImpl *>(NULL));
     _ar.register_type(static_cast<RequestPropertyImpl *>(NULL));
     _ar.register_type(static_cast<RequestPropertyValueImpl *>(NULL));
 */
- 
+
     _ar & BOOST_SERIALIZATION_NVP(filter_list);
   }
 
@@ -120,7 +121,7 @@ public:
   const Settings* settings() const {
     return settings_ptr_;
   }
-  
+
 protected:
   std::vector<Filter*> filter_list;
   std::vector<Database::SelectQuery*> query_list;

@@ -49,7 +49,7 @@ using namespace Database;
 inline void log_ctx_init()
 {
 #ifdef HAVE_LOGGER
-	Logging::Context::clear(); 
+	Logging::Context::clear();
 	Logging::Context ctx("logd");
 
 #endif
@@ -85,11 +85,11 @@ inline void logger_error(boost::format fmt)
 }
 
 
-/** 
+/**
  *  Connection class designed for use in fred-logd with partitioned tables
  *  Class used to acquire database connection from the Manager, set constraint_exclusion parameter and explicitly release the connection in dtor
  *  It assumes that the system error logger is initialized (use of logger_error() function
- */ 
+ */
 class logd_auto_conn : public Connection {
 public:
 	explicit logd_auto_conn() : Connection(Manager::acquire()) {
@@ -110,7 +110,7 @@ public:
 
 Result Impl_Log::i_GetServiceActions(RequestServiceType service)
 {
-	logd_auto_conn conn;	
+	logd_auto_conn conn;
 	log_ctx_init();
 
 	boost::format query = boost::format("select id, status from request_type where service = %1%") % service;
@@ -179,7 +179,7 @@ Impl_Log::Impl_Log(const std::string database, const std::string &monitoring_hos
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
 	}
-	
+
 }
 
 Impl_Log::~Impl_Log() {
@@ -237,9 +237,13 @@ ID Impl_Log::find_property_name_id(const std::string &name, Connection &conn)
 			ModelRequestProperty pn;
 			pn.setName(name_trunc);
 
-			pn.insert();
-			res = conn.exec(LAST_PROPERTY_NAME_ID);
-			name_id = res[0][0];
+			try {
+				pn.insert();
+				res = conn.exec(LAST_PROPERTY_NAME_ID);
+				name_id = res[0][0];
+			} catch (Database::Exception &ex) {
+				logger_error(ex.what());
+			}
 		}
 
 		// now that we know the right database id of the name
@@ -266,7 +270,7 @@ inline ID Impl_Log::find_last_request_id(Connection &conn)
 }
 
 // insert properties for the given request record
-void Impl_Log::insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID entry_id,  const RequestProperties& props, Connection conn)
+void Impl_Log::insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID entry_id,  const Register::Logger::RequestProperties& props, Connection conn)
 {
 	std::string s_val;
 	ID name_id, last_id = 0;
@@ -322,7 +326,7 @@ void Impl_Log::insert_props(DateTime entry_time, RequestServiceType service, boo
 }
 
 // log a new event, return the database ID of the record
-ID Impl_Log::i_CreateRequest(const char *sourceIP, RequestServiceType service, const char *content_in, const RequestProperties& props, RequestActionType action_type, ID session_id)
+ID Impl_Log::i_CreateRequest(const char *sourceIP, RequestServiceType service, const char *content_in, const Register::Logger::RequestProperties& props, RequestActionType action_type, ID session_id)
 {
 	logd_auto_conn conn;
   	log_ctx_init();
@@ -396,9 +400,9 @@ ID Impl_Log::i_CreateRequest(const char *sourceIP, RequestServiceType service, c
 }
 
 // update existing log record with given ID
-bool Impl_Log::i_UpdateRequest(ID id, const RequestProperties &props)
+bool Impl_Log::i_UpdateRequest(ID id, const Register::Logger::RequestProperties &props)
 {
-	logd_auto_conn conn;	
+	logd_auto_conn conn;
 
   	log_ctx_init();
 
@@ -429,7 +433,7 @@ bool Impl_Log::i_UpdateRequest(ID id, const RequestProperties &props)
 
 }
 
-bool Impl_Log::close_request_worker(Connection &conn, ID id, const char *content_out, const RequestProperties &props)
+bool Impl_Log::close_request_worker(Connection &conn, ID id, const char *content_out, const Register::Logger::RequestProperties &props)
 {
 	std::string s_content, time;
 	RequestServiceType service;
@@ -484,21 +488,21 @@ bool Impl_Log::close_request_worker(Connection &conn, ID id, const char *content
 
 
 // close the record with given ID (end time is filled thus no further modification is possible after this call )
-bool Impl_Log::i_CloseRequest(ID id, const char *content_out, const RequestProperties &props)
+bool Impl_Log::i_CloseRequest(ID id, const char *content_out, const Register::Logger::RequestProperties &props)
 {
-	logd_auto_conn conn;	
+	logd_auto_conn conn;
 
 	log_ctx_init();
 
 	return close_request_worker(conn, id, content_out, props);
 }
-	
-	
-bool Impl_Log::i_CloseRequestLogin(ID id, const char *content_out, const RequestProperties &props, ID session_id)
+
+
+bool Impl_Log::i_CloseRequestLogin(ID id, const char *content_out, const Register::Logger::RequestProperties &props, ID session_id)
 {
 	bool ret;
 
-	logd_auto_conn conn;	
+	logd_auto_conn conn;
 
 	log_ctx_init();
 
@@ -535,7 +539,7 @@ bool Impl_Log::i_CloseRequestLogin(ID id, const char *content_out, const Request
 
 ID Impl_Log::i_CreateSession(Languages lang, const char *name)
 {
-	logd_auto_conn conn;	
+	logd_auto_conn conn;
 	log_ctx_init();
 
 	std::string time;
@@ -575,7 +579,7 @@ ID Impl_Log::i_CreateSession(Languages lang, const char *name)
 
 bool Impl_Log::i_CloseSession(ID id)
 {
-	logd_auto_conn conn;	
+	logd_auto_conn conn;
 
 	log_ctx_init();
 	std::string  time;

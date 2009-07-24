@@ -3,7 +3,7 @@
 const int ccReg_Logger_i::NUM_COLUMNS = 7;
 
 ccReg_Logger_i::ccReg_Logger_i(Register::Logger::List *_list) : m_lel (_list)  {
-} 
+}
 
 ccReg_Logger_i::~ccReg_Logger_i() {
   TRACE("[CALL] ccReg_Logger_i::~ccReg_Logger_i()");
@@ -63,7 +63,7 @@ void ccReg_Logger_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
       % column % dir);
   /* save sort state */
   ccReg_PageTable_i::sortByColumn(column, dir);
-  
+
   switch (column) {
     case 0:
       m_lel->sort(Register::Logger::MT_TIME_BEGIN, dir);
@@ -119,7 +119,7 @@ void ccReg_Logger_i::reload() {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_Logger_i::reload()");
-  // m_lel->setPartialLoad(true);
+  m_lel->setPartialLoad(true);
 //  m_lel->reload(uf, dbm);
   m_lel->reload(uf);
 }
@@ -183,7 +183,7 @@ Register::Logger::Request* ccReg_Logger_i::findId(ccReg::TID _id) {
 CORBA::Boolean ccReg_Logger_i::numRowsOverLimit() {
   Logging::Context ctx(base_context_);
 
-  return m_lel->isLimited(); 
+  return m_lel->isLimited();
 }
 
 

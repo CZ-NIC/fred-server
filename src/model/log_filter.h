@@ -31,6 +31,74 @@ namespace Database {
 typedef long RequestServiceType;
 typedef long RequestActionType;
 
+
+/*
+class RequestServiceType {
+public:
+  typedef long int value_type;
+
+  RequestServiceType() : value(0) {
+  }
+ 
+  RequestServiceType(value_type _value) : value(_value) {
+  }
+
+  // output operator 
+  friend std::ostream& operator<<(std::ostream &_os, const RequestServiceType& _v);
+  friend std::istream& operator>>(std::istream &_is, RequestServiceType& _v);
+
+  operator value_type() const {
+    return value;
+  }
+
+#ifdef HAVE_BOOST_SERIALIZATION
+  // boost serialization 
+  friend class boost::serialization::access;
+  template<class Archive> void serialize(Archive& _ar,
+      const unsigned int _version) {
+    _ar & BOOST_SERIALIZATION_NVP(value);
+  }
+#endif
+
+private:
+  value_type value;
+};
+
+class RequestActionType {
+public:
+  typedef long int value_type;
+
+  RequestActionType() : value(0) {
+  }
+ 
+  RequestActionType(value_type _value) : value(_value) {
+  }
+
+  // output operator 
+  friend std::ostream& operator<<(std::ostream &_os, const RequestActionType& _v);
+  friend std::istream& operator>>(std::istream &_is, RequestActionType& _v);
+
+  operator value_type() const {
+    return value;
+  }
+
+#ifdef HAVE_BOOST_SERIALIZATION
+  // boost serialization 
+  friend class boost::serialization::access;
+  template<class Archive> void serialize(Archive& _ar,
+      const unsigned int _version) {
+    _ar & BOOST_SERIALIZATION_NVP(value);
+  }
+#endif
+
+private:
+  value_type value;
+};
+*/
+
+
+
+
 namespace Filters {
 
 class RequestProperty : virtual public Compound
@@ -157,7 +225,8 @@ public:
   virtual Interval<Database::DateTimeInterval>& addTimeBegin() = 0;
   virtual Interval<Database::DateTimeInterval>& addTimeEnd() = 0;
   virtual Value<std::string>& addSourceIp() = 0;
-  virtual Value<Database::RequestServiceType>& addServiceType() = 0;
+  virtual Value<Database::RequestServiceType>& addService() = 0;
+  // virtual Value<Database::RequestActionType>&  addActionType() = 0;
   virtual Value<Database::ID>& addRequestDataId()  = 0;
   virtual Value<Database::ID>& addRequestPropertyValueId() = 0;
   virtual RequestData& addRequestData() = 0;
@@ -183,7 +252,8 @@ public:
   virtual Interval<Database::DateTimeInterval>& addTimeBegin();
   virtual Interval<Database::DateTimeInterval>& addTimeEnd();
   virtual Value<std::string>& addSourceIp();
-  virtual Value<Database::RequestServiceType>& addServiceType();
+  virtual Value<Database::RequestServiceType>& addService();
+  // virtual Value<Database::RequestActionType>& addActionType();
   virtual Value<Database::ID>& addRequestDataId();
   virtual Value<Database::ID>& addRequestPropertyValueId();
   virtual RequestData& addRequestData();
@@ -198,14 +268,10 @@ public:
 
 };
 
-}
 
 }
 
-/*
-template<>
-struct SqlConvert<Database::RequestServiceType> : public NumericsConvertor<int> { };
-*/
+}
 
 
 #endif

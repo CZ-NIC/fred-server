@@ -38,6 +38,7 @@ libadmin_impl_a_SOURCES = admin_impl.cc                 \
 			  			  pagetable_logger.cc		\
 			  			  pagetable_logger.h		\
                           str_corbaout.h                \
+			  usertype_conv.h		\
                           common.cc                     \
                           common.h 
 

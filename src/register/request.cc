@@ -5,8 +5,8 @@
 #include "request.h"
 #include "log/logger.h"
 
-
-// TODO incomplete
+using namespace boost::posix_time;
+using namespace boost::gregorian;
 
 namespace Register {
 namespace Logger {
@@ -21,9 +21,12 @@ private:
   Database::RequestActionType action_type;
   Database::ID session_id;
   bool is_monitoring;
+  std::string raw_request;
+  std::string raw_response;
+  std::auto_ptr<RequestProperties> props;
 
 public:
-  RequestImpl(Database::ID &_id, Database::DateTime &_time_begin, Database::DateTime &_time_end, Database::RequestServiceType &_serv_type, std::string _source_ip,  Database::RequestActionType &_action_type, Database::ID &_session_id, bool &_is_monitoring) :
+  RequestImpl(Database::ID &_id, Database::DateTime &_time_begin, Database::DateTime &_time_end, Database::RequestServiceType &_serv_type, std::string &_source_ip,  Database::RequestActionType &_action_type, Database::ID &_session_id, bool &_is_monitoring, std::string & _raw_request, std::string & _raw_response, std::auto_ptr<RequestProperties>  _props) :
 	CommonObjectImpl(_id),
 	time_begin(_time_begin),
 	time_end(_time_end),
@@ -31,13 +34,16 @@ public:
 	serv_type(_serv_type),
 	action_type(_action_type),
 	session_id(_session_id),
-	is_monitoring(_is_monitoring) {
+	is_monitoring(_is_monitoring),
+	raw_request(_raw_request),
+	raw_response(_raw_response),
+	props(_props) {
   }
 
-  virtual const Database::DateTime&  getTimeBegin() const {
+  virtual const ptime  getTimeBegin() const {
 	return time_begin;
   }
-  virtual const Database::DateTime&  getTimeEnd() const {
+  virtual const ptime  getTimeEnd() const {
 	return time_end;
   }
   virtual const Database::RequestServiceType& getServiceType() const {
@@ -55,6 +61,15 @@ public:
   virtual const bool& getIsMonitoring() const {
 	return is_monitoring;
   }
+  virtual const std::string& getRawRequest() const {
+	return raw_request;
+  }
+  virtual const std::string& getRawResponse() const {
+	return raw_response;
+  }
+  virtual       std::auto_ptr<RequestProperties> getProperties() {
+	return props;
+  }
 };
 
 COMPARE_CLASS_IMPL(RequestImpl, TimeBegin)
@@ -64,14 +79,18 @@ COMPARE_CLASS_IMPL(RequestImpl, ServiceType)
 COMPARE_CLASS_IMPL(RequestImpl, ActionType)
 COMPARE_CLASS_IMPL(RequestImpl, SessionId)
 COMPARE_CLASS_IMPL(RequestImpl, IsMonitoring)
+COMPARE_CLASS_IMPL(RequestImpl, RawRequest);
+COMPARE_CLASS_IMPL(RequestImpl, RawResponse);
+
 
 class ListImpl : public Register::CommonListImpl,
                  virtual public List {
 private:
   Manager *manager_;
+  bool partialLoad;
 
 public:
-  ListImpl(Database::Connection *_conn, Manager *_manager) : CommonListImpl(_conn), manager_(_manager) {
+  ListImpl(Database::Connection *_conn, Manager *_manager) : CommonListImpl(_conn), manager_(_manager), partialLoad(false) {
   }
 
   virtual Request* get(unsigned _idx) const {
@@ -87,7 +106,11 @@ public:
     }
   }
 
-  // TODO properties should be displayed only in detailed view (in normal - probably only one property - or none)
+  virtual void setPartialLoad(bool _partialLoad) {
+	partialLoad = _partialLoad;
+  }
+
+  // TODO properties should be displayed only in detailed view
   virtual void reload(Database::Filters::Union& _filter) {
     TRACE("[CALL] Register::Request::ListImpl::reload()");
     clear();
@@ -121,14 +144,24 @@ public:
 
 	// make the actual query for data
     Database::SelectQuery query;
-    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip, t_1.action_type, t_1.session_id, t_1.monitoring";
-    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id";
-    query.order_by() << "t_1.time_begin desc";
+
+    if(partialLoad) {
+	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip, t_1.action_type, t_1.session_id, t_1.is_monitoring";
+	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id ";
+	    query.order_by() << "t_1.time_begin desc";
+    } else {
+// hardcore optimizations have to be done on this statement
+	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip, t_1.action_type, t_1.session_id, t_1.is_monitoring, "
+						" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=tmp.id and is_response=false limit 1) as request, "
+						" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=tmp.id and is_response=true  limit 1) as response ";
+	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id";
+	    query.order_by() << "t_1.time_begin desc";
+    }
 
     try {
 
 	// run all the queries
-	Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
+    	Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
         conn_->exec(create_tmp_table);
         conn_->exec(tmp_table_query);
 
@@ -142,18 +175,32 @@ public:
     		Database::DateTime 	time_end  	= *(++col);
     		Database::RequestServiceType serv_type  	= (Database::RequestServiceType) *(++col);
     		std::string 		source_ip  	= *(++col);
-	 	Database::RequestActionType  action_type = *(++col);
-		Database::ID		session_id	= *(++col);
-		bool			is_monitoring	= *(++col);
+    		Database::RequestActionType  action_type = *(++col);
+			Database::ID		session_id	= *(++col);
+			bool				is_monitoring	= *(++col);
+			// fields dependent on partialLoad
+			std::string			request;
+			std::string			response;
 
-    		data_.push_back(new RequestImpl(id,
-    					time_begin,
-    					time_end,
-    					serv_type,
-    					source_ip,
+			std::auto_ptr<RequestProperties> props;
+
+			if(!partialLoad) {
+				request		= (std::string)*(++col);
+				response	= (std::string)*(++col);
+				props 		= getPropsForId(id);
+			}
+
+			data_.push_back(new RequestImpl(id,
+					time_begin,
+					time_end,
+					serv_type,
+					source_ip,
 					action_type,
 					session_id,
-					is_monitoring));
+					is_monitoring,
+					request,
+					response,
+					props));
 
     	}
 
@@ -176,6 +223,31 @@ public:
 	// TODO
   }
 
+  virtual std::auto_ptr<RequestProperties> getPropsForId(Database::ID id) {
+	// TODO
+	std::auto_ptr<RequestProperties> ret(new RequestProperties());
+	Database::SelectQuery query;
+
+	query.select() << "t_2.name, t_1.value, t_1.output, (t_1.parent_id is not null)";
+	query.from()   << "request_property_value t_1 join request_property t_2 on t_1.name_id=t_2.id";
+	query.where()  << "and t_1.entry_id = " << id;
+
+ 	Database::Result res = conn_->exec(query);
+
+    for(Database::Result::Iterator it = res.begin(); it != res.end(); ++it) {
+    	Database::Row::Iterator col = (*it).begin();
+
+		std::string 		name   = *col;
+		std::string 		value  = *(++col);
+		bool 			output = *(++col);
+		bool 			is_child = *(++col);
+
+		ret->push_back(RequestProperty(name, value, output, is_child));
+
+	}
+	return ret;
+  }
+
   /// from CommonList; propably will be removed in future
   virtual const char* getTempTableName() const {
 	return "tmp_request_filter_result";
@@ -192,39 +264,61 @@ public:
 
 	// here we go
 	    Database::SelectQuery query;
-	    query.select() << "t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip";
-	    query.from() << "request t_1";
-	    query.order_by() << "t_1.time_begin desc";
+
+	 if(partialLoad) {
+		    query.select() << "t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip, t_1.action_type, t_1.session_id, t_1.is_monitoring";
+		    query.from() << "request t_1";
+		    query.order_by() << "t_1.time_begin desc";
+	    } else {
+	    	   query.select() << "t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip, t_1.action_type, t_1.session_id, t_1.is_monitoring, "
+	    							" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=t_1.id and is_response=false limit 1) as request, "
+	    							" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=t_1.id and is_response=true  limit 1) as response ";
+	    		    query.from() << getTempTableName() << "request t_1";
+	    		    query.order_by() << "t_1.time_begin desc";
+
+	    }
 
 	    try {
-		Database::Result res = conn_->exec(query);
+			Database::Result res = conn_->exec(query);
 
-		for(Database::Result::Iterator it = res.begin(); it != res.end(); ++it) {
-			Database::Row::Iterator col = (*it).begin();
+			for(Database::Result::Iterator it = res.begin(); it != res.end(); ++it) {
+				Database::Row::Iterator col = (*it).begin();
 
-			Database::ID 		id 		= *col;
-			Database::DateTime 	time_begin  	= *(++col);
-			Database::DateTime 	time_end  	= *(++col);
-			Database::RequestServiceType serv_type  	= (Database::RequestServiceType) ((int)*(++col));
-			std::string 		source_ip  	= *(++col);
-			Database::RequestActionType  action_type = *(++col);
-			Database::ID		session_id	= *(++col);
-			bool			is_monitoring	= *(++col);
+				Database::ID 		id 		= *col;
+				Database::DateTime 	time_begin  	= *(++col);
+				Database::DateTime 	time_end  	= *(++col);
+				Database::RequestServiceType serv_type  = (Database::RequestServiceType) ((int)*(++col));
+				std::string 		source_ip  	= *(++col);
+				Database::RequestActionType  action_type = *(++col);
+				Database::ID		session_id	= *(++col);
+				bool			is_monitoring	= *(++col);
+				std::string		request;
+				std::string		response;
 
-			data_.push_back(new RequestImpl(id,
-    					time_begin,
-    					time_end,
-    					serv_type,
-    					source_ip,
-					action_type,
-					session_id,
-					is_monitoring));
+				std::auto_ptr<RequestProperties> props;
 
-		}
+				if(!partialLoad) {
+					request		= (std::string)*(++col);
+					response	= (std::string)*(++col);
+					props  		= getPropsForId(id);
+				}
 
-		if(data_.empty()) {
-			return;
-		}
+				data_.push_back(new RequestImpl(id,
+							time_begin,
+							time_end,
+							serv_type,
+							source_ip,
+							action_type,
+							session_id,
+							is_monitoring,
+							request,
+							response,
+							props));
+			}
+
+			if(data_.empty()) {
+				return;
+			}
 	    }
 	    catch (Database::Exception& ex) {
 	      LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
@@ -256,7 +350,7 @@ public:
 };
 
 Manager* Manager::create(Database::Manager *_db_manager) {
-  TRACE("[CALL] Register::Mail::Manager::create()");
+  TRACE("[CALL] Register::Logger::Manager::create()");
   return new ManagerImpl(_db_manager);
 }
 

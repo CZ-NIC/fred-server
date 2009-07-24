@@ -9,6 +9,7 @@
 #include "old_utils/dbsql.h"
 #include "register/register.h"
 #include "register/notify.h"
+#include "usertype_conv.h"
 
 #include "log/logger.h"
 #include "log/context.h"
@@ -27,7 +28,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   db.OpenDatabase(database.c_str());
   m_register_manager.reset(Register::Manager::create(&db,
                                                      cfg.get<bool>("registry.restricted_handles")));
- 
+
   m_logger_manager.reset(Register::Logger::Manager::create(&m_db_manager));
 
   m_register_manager->dbManagerInit(&m_db_manager);
@@ -49,7 +50,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_invoicing_manager.reset(Register::Invoicing::Manager::create(dbman.get(),
                                                                  m_document_manager.get(),
                                                                  &m_mailer_manager));
-  
+
   mail_manager_.reset(Register::Mail::Manager::create(&m_db_manager));
   file_manager_.reset(Register::File::Manager::create(&m_db_manager));
 
@@ -154,7 +155,7 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
   TRACE(boost::format("[CALL] ccReg_Session_i::getDetail(%1%, %2%)") % _type
       % _id);
   CORBA::Any *result = new CORBA::Any;
-  
+
   switch (_type) {
     case ccReg::FT_CONTACT:
       *result <<= getContactDetail(_id);
@@ -175,15 +176,15 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
     case ccReg::FT_REGISTRAR:
       *result <<= getRegistrarDetail(_id);
       break;
-      
+
     case ccReg::FT_PUBLICREQUEST:
       *result <<= getPublicRequestDetail(_id);
       break;
-      
+
     case ccReg::FT_INVOICE:
       *result <<= getInvoiceDetail(_id);
       break;
-      
+
     case ccReg::FT_MAIL:
       *result <<= getMailDetail(_id);
       break;
@@ -191,9 +192,11 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
     case ccReg::FT_ACTION:
       *result <<= getEppActionDetail(_id);
       break;
-      
+
     case ccReg::FT_LOGGER:
-	// TODO
+      *result <<= getRequestDetail(_id);
+      break;
+
     case ccReg::FT_FILTER:
     case ccReg::FT_OBJ:
     case ccReg::FT_FILE:
@@ -221,7 +224,7 @@ bool ccReg_Session_i::isTimeouted() const {
   ptime threshold = second_clock::local_time() - seconds(cfg_.get<unsigned>("adifd.session_timeout"));
   bool timeout = m_last_activity < threshold;
   LOGGER(PACKAGE).debug(boost::format("session `%1%' will timeout in %2% -- session %3%")
-                                      % session_id_ 
+                                      % session_id_
                                       % to_simple_string(m_last_activity - threshold)
                                       % (timeout ? "timeout" : "alive"));
   return timeout;
@@ -235,7 +238,7 @@ Registry::Domain::Detail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
   // Register::Domain::Domain *domain = m_domains->findId(_id);
   // if (domain) {
   //   return createDomainDetail(domain);
-  // } 
+  // }
   /* disable cache */
   if (0) {
   }
@@ -494,6 +497,58 @@ Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id)
   }
 }
 
+// Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
+Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
+	// Register::Logger::Request *request = m_logger->findId(_id);
+	// if (request) {
+	//		return createRequestDetail(request);
+	// } else {
+
+	LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
+
+	std::auto_ptr<Register::Logger::List> request_list(m_logger_manager->createList());
+
+	Database::Filters::Union union_filter;
+	// where is it deleted? TODO
+	Database::Filters::Request *filter = new Database::Filters::RequestImpl();
+
+	filter->addId().setValue(Database::ID(_id));
+	union_filter.addFilter(filter);
+
+	request_list->setPartialLoad(false);
+	// TODO make sure the db_manager is OK
+	//
+	// request_list->reload(union_filter, &m_db_manager);
+	request_list->reload(union_filter);
+	
+	if(request_list->size() != 1) {
+		throw ccReg::Admin::ObjectNotFound();
+	}
+	return createRequestDetail(request_list->get(0));
+
+}
+
+Registry::Request::Detail *ccReg_Session_i::createRequestDetail(Register::Logger::Request *req) {
+	Registry::Request::Detail *detail = new Registry::Request::Detail();
+
+	// TODO should it contain ID?
+	// detail->id		= req->id;
+
+	detail->timeBegin 	= DUPSTRDATE(req->getTimeBegin);
+	detail->timeEnd		= DUPSTRDATE(req->getTimeEnd);
+	detail->sourceIp	= DUPSTRFUN(req->getSourceIp);
+	detail->service_type	= req->getServiceType();
+	detail->action_type	= req->getActionType();
+	detail->session_id	= req->getSessionId();
+	detail->is_monitoring	= req->getIsMonitoring(); 
+	detail->raw_request	= DUPSTRFUN(req->getRawRequest);
+	detail->raw_response	= DUPSTRFUN(req->getRawResponse);
+
+	detail->props		= convert_properties_d2c(req->getProperties());
+
+	return detail;
+}
+
 ccReg::DomainDetail* ccReg_Session_i::createDomainDetail(Register::Domain::Domain* _domain) {
   TRACE("[CALL] ccReg_Session_i::createDomainDetail()");
   LOGGER(PACKAGE).debug(boost::format("generating domain detail for object id=%1%")
@@ -726,7 +781,7 @@ ccReg::ContactDetail* ccReg_Session_i::createContactDetail(Register::Contact::Co
 Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register::Contact::List* _list) {
   TRACE("[CALL] ccReg_Session_i::createHistoryContactDetail()");
   Registry::Contact::Detail *detail = new Registry::Contact::Detail();
-  
+
   /* array for object external states already assigned */
   std::vector<Register::TID> ext_states_ids;
 
@@ -757,15 +812,14 @@ Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register:
     }
 
     /* macros are defined in common.h */
- 
+
     MAP_HISTORY_OID(registrar, getRegistrarId, getRegistrarHandle, ccReg::FT_REGISTRAR)
     MAP_HISTORY_STRING(authInfo, getAuthPw)
 
     /* object status */
     for (unsigned s = 0; s < act->getStatusCount(); ++s) {
       const Register::Status *tmp = act->getStatusByIdx(s);
-
-      LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2%") % tmp->getId() % tmp->getStatusId());
+LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %2%") % tmp->getId() % tmp->getStatusId());
       std::vector<Register::TID>::const_iterator it = find(ext_states_ids.begin(), ext_states_ids.end(), tmp->getId());
       if (it == ext_states_ids.end()) {
         ext_states_ids.push_back(tmp->getId());
@@ -780,7 +834,7 @@ Registry::Contact::Detail* ccReg_Session_i::createHistoryContactDetail(Register:
     }
 
     /* contact specific data follows */
- 
+
     MAP_HISTORY_STRING(name, getName)
     MAP_HISTORY_STRING(organization, getOrganization)
     MAP_HISTORY_STRING(street1, getStreet1)
@@ -1166,7 +1220,7 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Register::K
           dnskeys[k].protocol  = act->getDNSKeyByIdx(k)->getProtocol();
           dnskeys[k].alg       = act->getDNSKeyByIdx(k)->getAlg();
           dnskeys[k].key       = DUPSTRFUN(act->getDNSKeyByIdx(k)->getKey);
-          LOGGER(PACKAGE).debug(boost::format("keyset id=%1% detail lib -> CORBA: dnskey added to output " 
+          LOGGER(PACKAGE).debug(boost::format("keyset id=%1% detail lib -> CORBA: dnskey added to output "
                                               "(flags=%2% protocol=%3% alg=%4% key=%5%)")
                                               % act->getId()
                                               % act->getDNSKeyByIdx(k)->getFlags()
@@ -1239,7 +1293,7 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar) {
     update_registrar = tmp_registrar_list->create();
   }
   else {
-    LOGGER(PACKAGE).debug(boost::format("registrar '%1%' id=%2% specified; updating registrar...") 
+    LOGGER(PACKAGE).debug(boost::format("registrar '%1%' id=%2% specified; updating registrar...")
       % _registrar.handle % _registrar.id);
     Database::Filters::Union uf;
     Database::Filters::Registrar *filter = new Database::Filters::RegistrarImpl();
@@ -1272,7 +1326,7 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar) {
   update_registrar->setFax((const char *)_registrar.fax);
   update_registrar->setEmail((const char *)_registrar.email);
   update_registrar->setSystem((bool)_registrar.hidden);
-  
+
   update_registrar->clearACLList();
   for (unsigned i = 0; i < _registrar.access.length(); i++) {
     Register::Registrar::ACL *registrar_acl = update_registrar->newACL();
@@ -1284,13 +1338,13 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar) {
   } catch (...) {
     throw ccReg::Admin::UpdateFailed();
   }
-  LOGGER(PACKAGE).debug(boost::format("registrar with id=%1% saved") 
+  LOGGER(PACKAGE).debug(boost::format("registrar with id=%1% saved")
       % update_registrar->getId());
 }
 
 Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Register::PublicRequest::PublicRequest* _request) {
   Registry::PublicRequest::Detail *detail = new Registry::PublicRequest::Detail();
-  
+
   detail->id = _request->getId();
 
   switch (_request->getStatus()) {
@@ -1304,7 +1358,7 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Regi
       detail->status = Registry::PublicRequest::PRS_INVALID;
       break;
   }
-  
+
   switch (_request->getType()) {
     case Register::PublicRequest::PRT_AUTHINFO_AUTO_RIF:
       detail->type = Registry::PublicRequest::PRT_AUTHINFO_AUTO_RIF;
@@ -1342,16 +1396,16 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Regi
     case Register::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF:
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF;
       break;
-      
+
   }
-  
+
   detail->createTime = DUPSTRDATE(_request->getCreateTime);
   detail->resolveTime = DUPSTRDATE(_request->getResolveTime);
   detail->reason = _request->getReason().c_str();
   detail->email = _request->getEmailToAnswer().c_str();
 
   detail->answerEmail.id     = _request->getAnswerEmailId();
-  detail->answerEmail.handle = DUPSTRC(stringify(_request->getAnswerEmailId())); 
+  detail->answerEmail.handle = DUPSTRC(stringify(_request->getAnswerEmailId()));
   detail->answerEmail.type   = ccReg::FT_MAIL;
 
   detail->action.id     = _request->getEppActionId();
@@ -1364,7 +1418,7 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Regi
 
   unsigned objects_size = _request->getObjectSize();
   detail->objects.length(objects_size);
-  for (unsigned i = 0; i < objects_size; ++i) {  
+  for (unsigned i = 0; i < objects_size; ++i) {
     Register::PublicRequest::OID oid = _request->getObject(0);
     detail->objects[i].id = oid.id;
     detail->objects[i].handle = oid.handle.c_str();
@@ -1387,13 +1441,13 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Regi
         break;
     }
   }
-  
+
   return detail;
 }
 
 Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invoicing::Invoice *_invoice) {
   Registry::Invoicing::Detail *detail = new Registry::Invoicing::Detail();
-  
+
   detail->id = _invoice->getId();
   detail->zone = _invoice->getZone();
   detail->createTime = DUPSTRDATE(_invoice->getCrTime);
@@ -1409,13 +1463,13 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
   detail->total = DUPSTRC(formatMoney(_invoice->getTotal()));
   detail->totalVAT = DUPSTRC(formatMoney(_invoice->getTotalVAT()));
   detail->varSymbol = DUPSTRC(_invoice->getVarSymbol());
-  
+
   detail->registrar.id     = _invoice->getRegistrar();
   detail->registrar.handle = DUPSTRC(_invoice->getClient()->getHandle());
   detail->registrar.type   = ccReg::FT_REGISTRAR;
 
   detail->filePDF.id     = _invoice->getFilePDF();
-  detail->filePDF.handle = _invoice->getFileNamePDF().c_str(); 
+  detail->filePDF.handle = _invoice->getFileNamePDF().c_str();
   detail->filePDF.type   = ccReg::FT_FILE;
 
   detail->fileXML.id     = _invoice->getFileXML();
@@ -1430,7 +1484,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
     detail->payments[n].balance = DUPSTRC(formatMoney(ps->getCredit()));
     detail->payments[n].number = DUPSTRC(stringify(ps->getNumber()));
   }
-  
+
   detail->paymentActions.length(_invoice->getActionCount());
   for (unsigned n = 0; n < _invoice->getActionCount(); ++n) {
     const Register::Invoicing::PaymentAction *pa = _invoice->getAction(n);
@@ -1445,20 +1499,20 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
     detail->paymentActions[n].pricePerUnit = DUPSTRC(formatMoney(pa->getPricePerUnit()));
     detail->paymentActions[n].price = DUPSTRC(formatMoney(pa->getPrice()));
   }
-  
+
   return detail;
 }
 
 Registry::Mailing::Detail* ccReg_Session_i::createMailDetail(Register::Mail::Mail *_mail) {
   Registry::Mailing::Detail *detail = new Registry::Mailing::Detail();
-  
+
   detail->id = _mail->getId();
   detail->type = _mail->getType();
   detail->status = _mail->getStatus();
   detail->createTime = DUPSTRDATE(_mail->getCreateTime);
   detail->modifyTime = DUPSTRDATE(_mail->getModTime);
   detail->content = DUPSTRC(_mail->getContent());
-  
+
   detail->objects.length(_mail->getHandleSize());
   for (unsigned i = 0; i < _mail->getHandleSize(); ++i) {
     /* TODO: don't know object id and type - add support for this to database */
@@ -1467,7 +1521,7 @@ Registry::Mailing::Detail* ccReg_Session_i::createMailDetail(Register::Mail::Mai
     // detail->objects[i].type   = ccReg::FT_OBJ;
     detail->objects[i] = DUPSTRC(_mail->getHandle(i));
   }
-  
+
   detail->attachments.length(_mail->getAttachmentSize());
   for (unsigned i = 0; i < _mail->getAttachmentSize(); ++i) {
     const Register::OID attachment = _mail->getAttachment(i);
@@ -1476,13 +1530,13 @@ Registry::Mailing::Detail* ccReg_Session_i::createMailDetail(Register::Mail::Mai
     detail->attachments[i].handle = attachment.handle.c_str();
     detail->attachments[i].type   = ccReg::FT_FILE;
   }
-     
+
   return detail;
 }
 
 Registry::EPPAction::Detail* ccReg_Session_i::createEppActionDetail(Register::Registrar::EPPAction *_action) {
   Registry::EPPAction::Detail *detail = new Registry::EPPAction::Detail();
-  
+
   detail->id               = _action->getId();
   detail->xml              = DUPSTRFUN(_action->getEPPMessageIn);
   detail->xml_out          = DUPSTRFUN(_action->getEPPMessageOut);
@@ -1492,11 +1546,11 @@ Registry::EPPAction::Detail* ccReg_Session_i::createEppActionDetail(Register::Re
   detail->result           = _action->getResult();
   detail->clTRID           = DUPSTRFUN(_action->getClientTransactionId);
   detail->svTRID           = DUPSTRFUN(_action->getServerTransactionId);
-  
+
   detail->registrar.id     = _action->getRegistrarId();
   detail->registrar.handle = DUPSTRFUN(_action->getRegistrarHandle);
   detail->registrar.type   = ccReg::FT_REGISTRAR;
-  
+
   return detail;
 }
 

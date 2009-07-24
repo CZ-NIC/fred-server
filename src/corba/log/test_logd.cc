@@ -98,18 +98,18 @@ public:
 	bool         CloseSession(Database::ID id);
 
 	// TODO change this and test combination of session / request (session)
-	Database::ID CreateRequest(const char *ip_addr, const RequestServiceType serv, const char * content_in, const RequestProperties &props = TestImplLog::no_props, bool is_monitoring = false);
-	bool UpdateRequest(const Database::ID id, const RequestProperties &props = TestImplLog::no_props);
-	bool CloseRequest(const Database::ID id, const char * content_out, const RequestProperties &props = TestImplLog::no_props);
-	std::auto_ptr<RequestProperties> create_generic_properties(int number, int value_id);
+	Database::ID CreateRequest(const char *ip_addr, const RequestServiceType serv, const char * content_in, const Register::Logger::RequestProperties &props = TestImplLog::no_props, bool is_monitoring = false);
+	bool UpdateRequest(const Database::ID id, const Register::Logger::RequestProperties &props = TestImplLog::no_props);
+	bool CloseRequest(const Database::ID id, const char * content_out, const Register::Logger::RequestProperties &props = TestImplLog::no_props);
+	std::auto_ptr<Register::Logger::RequestProperties> create_generic_properties(int number, int value_id);
 
-	void check_db_properties_subset(ID rec_id, const RequestProperties &props);
-	bool property_match(const Row r, const RequestProperty &p) ;
+	void check_db_properties_subset(ID rec_id, const Register::Logger::RequestProperties &props);
+	bool property_match(const Row r, const Register::Logger::RequestProperty &p) ;
 
 // different tests
-	void check_db_properties(ID rec_id, const RequestProperties & props);
+	void check_db_properties(ID rec_id, const Register::Logger::RequestProperties & props);
 
-	static RequestProperties no_props;
+	static Register::Logger::RequestProperties no_props;
 };
 
 inline bool has_content(const char *str) {
@@ -185,7 +185,7 @@ std::string create_date_str(int y, int m)
 
 struct MyFixture;
 
-RequestProperties TestImplLog::no_props;
+Register::Logger::RequestProperties TestImplLog::no_props;
 
 
 Database::ID TestImplLog::CreateSession(Languages lang, const char *name)
@@ -248,7 +248,7 @@ bool TestImplLog::CloseSession(Database::ID id)
 	return ret;
 }
 
-Database::ID TestImplLog::CreateRequest(const char *ip_addr, const RequestServiceType serv, const char * content_in, const RequestProperties &props, bool is_monitoring)
+Database::ID TestImplLog::CreateRequest(const char *ip_addr, const RequestServiceType serv, const char * content_in, const Register::Logger::RequestProperties &props, bool is_monitoring)
 {
 
 	if(serv > LC_MAX_SERVICE) {
@@ -302,7 +302,7 @@ Database::ID TestImplLog::CreateRequest(const char *ip_addr, const RequestServic
 	return ret;
 }
 
-bool TestImplLog::UpdateRequest(const Database::ID id, const RequestProperties &props)
+bool TestImplLog::UpdateRequest(const Database::ID id, const Register::Logger::RequestProperties &props)
 {
 	bool result = logd.i_UpdateRequest(id, props);
 
@@ -313,7 +313,7 @@ bool TestImplLog::UpdateRequest(const Database::ID id, const RequestProperties &
 	return result;
 }
 
-bool TestImplLog::CloseRequest(const Database::ID id, const char *content_out, const RequestProperties &props)
+bool TestImplLog::CloseRequest(const Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props)
 {
 	bool result = logd.i_CloseRequest(id, content_out, props);
 
@@ -345,10 +345,10 @@ bool TestImplLog::CloseRequest(const Database::ID id, const char *content_out, c
 	return result;
 }
 
-std::auto_ptr<RequestProperties> TestImplLog::create_generic_properties(int number, int value_id)
+std::auto_ptr<Register::Logger::RequestProperties> TestImplLog::create_generic_properties(int number, int value_id)
 {
-	std::auto_ptr<RequestProperties> ret(new RequestProperties(number));
-	RequestProperties &ref = *ret;
+	std::auto_ptr<Register::Logger::RequestProperties> ret(new Register::Logger::RequestProperties(number));
+	Register::Logger::RequestProperties &ref = *ret;
 
 	for(int i=0;i<number;i++) {
 		ref[i].name = "handle";
@@ -365,7 +365,7 @@ std::auto_ptr<RequestProperties> TestImplLog::create_generic_properties(int numb
 // boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property pn on pn.id=pv.name_id where pv.entry_id = %1% order by pv.id") % rec_id;
 // p is single property
 // these two are compared :)
-bool TestImplLog::property_match(const Row r, const RequestProperty &p)
+bool TestImplLog::property_match(const Row r, const Register::Logger::RequestProperty &p)
 {
 
 	if ( (std::string)r[0] != p.name.substr(0, Impl_Log::MAX_NAME_LENGTH))  return false;
@@ -381,7 +381,7 @@ bool TestImplLog::property_match(const Row r, const RequestProperty &p)
 	return true;
 }
 
-void TestImplLog::check_db_properties_subset(ID rec_id, const RequestProperties &props)
+void TestImplLog::check_db_properties_subset(ID rec_id, const Register::Logger::RequestProperties &props)
 {
 	if (props.size() == 0) return;
 
@@ -417,7 +417,7 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const RequestProperties 
 // this func relies that the order of properties in the database
 // (sorted by their ids) is the same as in the array
 // the properties in the database with entry_id=rec_id must match props exactly
-void TestImplLog::check_db_properties(ID rec_id, const RequestProperties & props)
+void TestImplLog::check_db_properties(ID rec_id, const Register::Logger::RequestProperties & props)
 {
 	boost::format query = boost::format("select name, value, parent_id, output from request_property_value pv join request_property pn on pn.id=pv.name_id where pv.entry_id = %1% order by pv.id") % rec_id;
 
@@ -624,7 +624,7 @@ BOOST_AUTO_TEST_CASE( long_property_name)
 
 	Database::ID id;
 	TestImplLog test(DB_CONN_STR);
-	std::auto_ptr<RequestProperties> props;
+	std::auto_ptr<Register::Logger::RequestProperties> props;
 
 	props = test.create_generic_properties(2, global_call_count++);
 
@@ -644,7 +644,7 @@ BOOST_AUTO_TEST_CASE( zero_property_name)
 
 	Database::ID id;
 	TestImplLog test(DB_CONN_STR);
-	std::auto_ptr<RequestProperties> props;
+	std::auto_ptr<Register::Logger::RequestProperties> props;
 
 	props = test.create_generic_properties(2, global_call_count++);
 
@@ -703,7 +703,7 @@ BOOST_AUTO_TEST_CASE( zero_length_strings )
 	TestImplLog test(DB_CONN_STR);
 	Database::ID id1;
 
-	std::auto_ptr<RequestProperties> props, props1;
+	std::auto_ptr<Register::Logger::RequestProperties> props, props1;
 	props = test.create_generic_properties(3, global_call_count++);
 
 	id1 = test.CreateRequest("", LC_PUBLIC_REQUEST, "", *props);
@@ -723,7 +723,7 @@ BOOST_AUTO_TEST_CASE( null_strings )
 	TestImplLog test(DB_CONN_STR);
 	Database::ID id1;
 
-	std::auto_ptr<RequestProperties> props, props1;
+	std::auto_ptr<Register::Logger::RequestProperties> props, props1;
 	props = test.create_generic_properties(3, global_call_count++);
 
 	id1 = test.CreateRequest(NULL, LC_PUBLIC_REQUEST, NULL, *props);
@@ -742,7 +742,7 @@ BOOST_AUTO_TEST_CASE( long_strings )
 	TestImplLog test(DB_CONN_STR);
 	Database::ID id1;
 
-	std::auto_ptr<RequestProperties> props, props1;
+	std::auto_ptr<Register::Logger::RequestProperties> props, props1;
 	props = test.create_generic_properties(3, global_call_count++);
 
 	id1 = test.CreateRequest(std::string(100, 'X').c_str(), LC_PUBLIC_REQUEST, std::string(5000, 'X').c_str(), *props);
@@ -767,7 +767,7 @@ BOOST_AUTO_TEST_CASE( normal_event )
 	TestImplLog test(DB_CONN_STR);
 	Database::ID id1;
 
-	std::auto_ptr<RequestProperties> props, props1, props2;
+	std::auto_ptr<Register::Logger::RequestProperties> props, props1, props2;
 	props = test.create_generic_properties(3, global_call_count++);
 
 	id1 = test.CreateRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props);
@@ -788,7 +788,7 @@ BOOST_AUTO_TEST_CASE( no_props )
 {
 	BOOST_TEST_MESSAGE(" Create an event without any properties");
 
-	RequestProperties no_props;
+	Register::Logger::RequestProperties no_props;
 	TestImplLog test(DB_CONN_STR);
 	Database::ID id1;
 
@@ -809,7 +809,7 @@ BOOST_AUTO_TEST_CASE( _2_events )
 	TestImplLog test(DB_CONN_STR);
 	Database::ID id1, id2;
 
-	std::auto_ptr<RequestProperties> props1, props2, props;
+	std::auto_ptr<Register::Logger::RequestProperties> props1, props2, props;
 	props1 = test.create_generic_properties(3, global_call_count++);
 	props2 = test.create_generic_properties(3, global_call_count++);
 
@@ -833,7 +833,7 @@ BOOST_AUTO_TEST_CASE( already_closed )
 
 	TestImplLog test(DB_CONN_STR);
 	Database::ID id1, id2;
-	std::auto_ptr<RequestProperties> props, props1;
+	std::auto_ptr<Register::Logger::RequestProperties> props, props1;
 
 	props = test.create_generic_properties(3, global_call_count++);
 

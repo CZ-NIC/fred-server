@@ -1,6 +1,6 @@
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(XML2_LIBS)
 AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(AM_CFLAGS) $(XML2_CFLAGS) -I$(top_srcdir)/util \
-              -I$(top_srcdir)/src -I$(top_builddir)/src -I$(top_srcdir)	-I$(top_srcdir)/src/corba/log
+              -I$(top_srcdir)/src/corba/log -I$(top_srcdir)/src -I$(top_builddir)/src -I$(top_srcdir)	
 
 sbin_PROGRAMS = migrate_log
 

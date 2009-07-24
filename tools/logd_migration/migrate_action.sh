@@ -1,7 +1,5 @@
 #!/bin/sh
 
-#. ./config_vars
-
 COLNAME="value_xml"
 DBNAME="fred"
 DBPORT=22345
@@ -36,7 +34,7 @@ echo "timestamp1 - finished direct table transfers ";  date
 
 # only using insert_props, otherwise database functions
 
-psql -U $DBNAME -p $DBPORT -c "select to_char(actionid, '99999999999999999999') || '|' || to_char(startdate, 'YYYY-MM-DD HH24:MI:SS.US') || '|03|' || replace(xml, E'\n', '') as $COLNAME from action_xml ax join action on id=ax.actionid where startdate >= '$DATE_LOW' and startdate < '$DATE_HIGH' order by startdate" | grep -v "^\-\+$\|^\s*$COLNAME\s*$\|([0-9]\+ rows)\|^\s*$"    |  ./migrate_log
+psql -U $DBNAME -p $DBPORT -c "select to_char(actionid, '99999999999999999999') || '|' || to_char(startdate, 'YYYY-MM-DD HH24:MI:SS.US') || '|' || replace(xml, E'\n', '') as $COLNAME from action_xml ax join action on id=ax.actionid where startdate >= '$DATE_LOW' and startdate < '$DATE_HIGH' order by startdate" | grep -v "^\-\+$\|^\s*$COLNAME\s*$\|([0-9]\+ rows)\|^\s*$"    |  ./migrate_log
 
 echo "timestamp2 - finished ";  date
 

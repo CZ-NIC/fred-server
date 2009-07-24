@@ -280,7 +280,7 @@ libfred_a_SOURCES = register.cc          \
                     file.h               \
                     filter.cc            \
                     filter.h             \
-		    request.cc	 \
+		    request.cc	 	 \
 		    request.h		 \
                     mailer.h             \
                     sql.h                \
