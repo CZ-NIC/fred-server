@@ -30,6 +30,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                                      cfg.get<bool>("registry.restricted_handles")));
 
   m_logger_manager.reset(Register::Logger::Manager::create(&m_db_manager));
+  m_logsession_manager.reset(Register::Session::Manager::create(&m_db_manager));
 
   m_register_manager->dbManagerInit(&m_db_manager);
   m_register_manager->initStates();
@@ -66,6 +67,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_mails = new ccReg_Mails_i(mail_manager_->createList(), ns);
   m_files = new ccReg_Files_i(file_manager_->createList());
   m_logger = new ccReg_Logger_i(m_logger_manager->createList());
+  m_logsession = new ccReg_LogSession_i(m_logsession_manager->createList());
 
   m_eppactions->setDB(&m_db_manager);
   m_registrars->setDB(&m_db_manager);
@@ -76,6 +78,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_publicrequests->setDB(&m_db_manager);
   m_invoices->setDB(&m_db_manager);
   m_logger->setDB(&m_db_manager);
+  m_logsession->setDB(&m_db_manager);
 
   settings_.set("filter.history", "off");
 
@@ -100,6 +103,7 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_user;
   delete m_files;
   delete m_logger;
+  delete m_logsession;
 
   db.Disconnect();
 }
@@ -141,6 +145,8 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
       return m_files->_this();
     case ccReg::FT_LOGGER:
       return m_logger->_this();
+    case ccReg::FT_SESSION: 
+      return m_logsession->_this();
     default:
       break;
   }

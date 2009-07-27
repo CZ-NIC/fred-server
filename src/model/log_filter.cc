@@ -1,8 +1,5 @@
 #include "log_filter.h"
-
-namespace Database {
-
-/*
+namespace Database { /*
 std::ostream& operator<<(std::ostream &_os, const RequestServiceType& _v) {
   return _os << _v.value;
 }
@@ -212,7 +209,7 @@ Table &RequestDataImpl::joinRequestDataTable()
 Value<std::string>& RequestDataImpl::addContent()
 {
   Value<std::string>* tmp = new Value<std::string>(Column("content", joinRequestDataTable()));
-  setName("Response");
+  tmp->setName("Content");
   add(tmp);
   return *tmp;
 }
@@ -220,14 +217,68 @@ Value<std::string>& RequestDataImpl::addContent()
 Value<bool>& RequestDataImpl::addResponseFlag()
 {
   Value<bool>* tmp = new Value<bool>(Column("is_response", joinRequestDataTable()));
-  setName("RequestFlag");
+  tmp->setName("ResponseFlag");
   add(tmp);
   return *tmp;
 }
 
+SessionImpl::SessionImpl(bool set_active) {
+  setName("SessionImpl");
+  active = set_active;
+}
+
+Session *Session::create() 
+{
+  return new SessionImpl(true);
+}
+
+Table &SessionImpl::joinSessionTable()
+{
+  return joinTable("session");
+}
+
+Value<Database::ID>& SessionImpl::addId()
+{
+  Value<Database::ID>* tmp = new Value<Database::ID>(Column("id", joinSessionTable()));
+  tmp->setName("Id");
+  add(tmp);
+  return *tmp;
+}
+
+Value<std::string>& SessionImpl::addName()
+{
+  Value<std::string>* tmp  = new Value<std::string>(Column("name", joinSessionTable())); 
+  tmp->setName("Name");
+  add(tmp);
+  return *tmp;
+}
+
+Interval<Database::DateTimeInterval>& SessionImpl::addLoginDate()
+{
+  Interval<Database::DateTimeInterval>* tmp  = new Interval<Database::DateTimeInterval>(Column("login_date", joinSessionTable()));
+  tmp->setName("LoginDate");
+  add(tmp);
+  return *tmp;
+}
+
+Interval<Database::DateTimeInterval>& SessionImpl::addLogoutDate()
+{
+  Interval<Database::DateTimeInterval>* tmp  = new Interval<Database::DateTimeInterval>(Column("logout_date", joinSessionTable()));
+  tmp->setName("LogoutDate");
+  add(tmp);
+  return *tmp;
+}
+
+Value<std::string>& SessionImpl::addLang()
+{
+  Value<std::string>* tmp  = new Value<std::string>(Column("lang", joinSessionTable())); 
+  tmp->setName("Lang");
+  add(tmp);
+  return *tmp;
 }
 
 
+}
 }
 
 

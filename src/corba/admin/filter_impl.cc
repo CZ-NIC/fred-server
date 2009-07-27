@@ -492,6 +492,14 @@ COMPOUND_CLASS(RequestData, RequestData, Compound,
     FILTER_ADD(Bool, addResponseFlag);
 );
 
+COMPOUND_CLASS(Session, Session, Compound,
+    FILTER_ADD(Id, addId);
+    FILTER_ADD(Str, addName);
+    FILTER_ADD(DateTime, addLoginDate);
+    FILTER_ADD(DateTime, addLogoutDate);
+    FILTER_ADD(Str, addLang);
+);
+
 FilterIteratorImpl::FilterIteratorImpl() :
   i(flist.end()) {
   TRACE("[CALL] FilterIteratorImpl::FilterIteratorImpl()");
@@ -570,6 +578,7 @@ ITERATOR_ADD_E_METHOD_IMPL(RequestProperty,RequestProperty);
 ITERATOR_ADD_E_METHOD_IMPL(RequestPropertyValue,RequestPropertyValue);
 ITERATOR_ADD_E_METHOD_IMPL(RequestData,RequestData);
 ITERATOR_ADD_E_METHOD_IMPL(Request,Request);
+ITERATOR_ADD_E_METHOD_IMPL(Session,Session);
 
 #define ITERATOR_ADD_FILTER_METHOD_IMPL(ct,dt) \
   { Database::Filters::dt *rf = dynamic_cast<Database::Filters::dt *>(f); \
@@ -602,6 +611,7 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestProperty,RequestProperty);
   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestData,RequestData);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Request,Request);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(Session,Session);
   ITERATOR_ADD_FILTER_METHOD_IMPL(IntInterval,Interval<int>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestServiceType,Value<Database::RequestServiceType>);
 //   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestActionType,Value<Database::RequestActionType>);

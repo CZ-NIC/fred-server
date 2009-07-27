@@ -22,7 +22,8 @@ enum FilterType {
   FT_PUBLICREQUEST,
   FT_MAIL,
   FT_FILE,
-  FT_LOGGER
+  FT_LOGGER,
+  FT_SESSION
 };
 
 class Filter : virtual public Register::CommonObject {

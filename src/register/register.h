@@ -13,6 +13,7 @@
 #include "file.h"
 #include "filter.h"
 #include "request.h"
+#include "session.h"
 
 /// forward declared parameter type
 class DB;

@@ -268,6 +268,48 @@ public:
 
 };
 
+class Session : virtual public Compound {
+public:
+  virtual ~Session() {
+  };
+ 
+  virtual Table& joinSessionTable() = 0;
+  virtual Value<Database::ID>& addId() = 0;
+  virtual Value<std::string>& addName() = 0;
+  virtual Interval<Database::DateTimeInterval>& addLoginDate() = 0;
+  virtual Interval<Database::DateTimeInterval>& addLogoutDate() = 0;
+  virtual Value<std::string>& addLang() = 0;
+
+  friend class boost::serialization::access;
+  template<class Archive> void serialize(Archive& _ar,
+      const unsigned int _version) {
+    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Request);
+  }
+
+  static Session* create();
+};
+  
+
+class SessionImpl : virtual public Session {
+public:
+  SessionImpl(bool set_action = false);
+  virtual ~SessionImpl() {
+  }
+
+  virtual Table& joinSessionTable();
+  virtual Value<Database::ID>& addId();
+  virtual Value<std::string>& addName();
+  virtual Interval<Database::DateTimeInterval>& addLoginDate();
+  virtual Interval<Database::DateTimeInterval>& addLogoutDate();
+  virtual Value<std::string>& addLang();
+ 
+  friend class boost::serialization::access;
+  template<class Archive> void serialize(Archive& _ar,
+      const unsigned int _version) {
+    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Request);
+  }
+
+};
 
 }
 

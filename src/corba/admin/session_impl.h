@@ -23,6 +23,7 @@
 #include "pagetable_filters.h"
 #include "pagetable_files.h"
 #include "pagetable_logger.h"
+#include "pagetable_logsession.h"
 
 #include "user_impl.h"
 #include "corba/mailer_manager.h"
@@ -59,6 +60,7 @@ private:
   ccReg_User_i* m_user;
   ccReg_Files_i* m_files;
   ccReg_Logger_i* m_logger;
+  ccReg_LogSession_i* m_logsession;
 
   Database::Manager m_db_manager;
   std::auto_ptr<Register::Manager> m_register_manager;
@@ -68,6 +70,7 @@ private:
   std::auto_ptr<Register::Mail::Manager> mail_manager_;
   std::auto_ptr<Register::File::Manager> file_manager_;
   std::auto_ptr<Register::Logger::Manager> m_logger_manager;
+  std::auto_ptr<Register::Session::Manager> m_logsession_manager;
   MailerManager m_mailer_manager;
 
   /**
@@ -92,9 +95,6 @@ private:
   Registry::Invoicing::Detail* getInvoiceDetail(ccReg::TID _id);
 
   Registry::Request::Detail*  getRequestDetail(ccReg::TID _id);
-
-
-
 
   /*
    * TODO:
