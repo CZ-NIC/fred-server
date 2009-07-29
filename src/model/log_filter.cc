@@ -87,22 +87,6 @@ Value<Database::RequestActionType>& RequestImpl::addActionType()
 }
 */
 
-Value<Database::ID>& RequestImpl::addRequestDataId()
-{
-  Value<Database::ID> *tmp = new Value<Database::ID>(Column("entry_id", joinTable("request_data")));
-  tmp->setName("RequestDataId");
-  add(tmp);
-  return *tmp;
-}
-
-Value<Database::ID>& RequestImpl::addRequestPropertyValueId()
-{
-  Value<Database::ID> *tmp = new Value<Database::ID>(Column("entry_id", joinTable("request_property_value")));
-  tmp->setName("RequestPropertyValueId");
-  add(tmp);
-  return *tmp;
-}
-
 RequestPropertyValue& RequestImpl::addRequestPropertyValue()
 {
   RequestPropertyValue *tmp = new RequestPropertyValueImpl(true);

@@ -227,8 +227,6 @@ public:
   virtual Value<std::string>& addSourceIp() = 0;
   virtual Value<Database::RequestServiceType>& addService() = 0;
   // virtual Value<Database::RequestActionType>&  addActionType() = 0;
-  virtual Value<Database::ID>& addRequestDataId()  = 0;
-  virtual Value<Database::ID>& addRequestPropertyValueId() = 0;
   virtual RequestData& addRequestData() = 0;
   virtual RequestPropertyValue&   addRequestPropertyValue() = 0;
 
@@ -254,8 +252,6 @@ public:
   virtual Value<std::string>& addSourceIp();
   virtual Value<Database::RequestServiceType>& addService();
   // virtual Value<Database::RequestActionType>& addActionType();
-  virtual Value<Database::ID>& addRequestDataId();
-  virtual Value<Database::ID>& addRequestPropertyValueId();
   virtual RequestData& addRequestData();
   virtual RequestPropertyValue& addRequestPropertyValue();
 
