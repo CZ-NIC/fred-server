@@ -135,7 +135,7 @@ void ccReg_Mails_i::saveFilter(const char* _name) {
   TRACE(boost::format("[CALL] ccReg_Mails_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create(dbm));
+      tmp_filter_manager(Register::Filter::Manager::create());
   tmp_filter_manager->save(Register::Filter::FT_MAIL, _name, uf);
 }
 

@@ -25,7 +25,6 @@
 #include "sql.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/util.h"
-#include "db_settings.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
 
@@ -381,7 +380,7 @@ public:
     db->FreeSelect();
     ObjectListImpl::reload(useTempTable ? NULL : handle.c_str(),2);
   }
-  virtual void reload(Database::Filters::Union &uf, Database::Manager* dbm) {
+  virtual void reload(Database::Filters::Union &uf) {
     TRACE("[CALL] NSSet::ListImpl::reload()");
     clear();
     uf.clearQueries();
@@ -430,15 +429,14 @@ public:
     object_info_query.order_by() << "tmp.id";
 
     try {
-      std::auto_ptr<Database::Connection> conn(dbm->getConnection());
-
       Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
-      conn->exec(create_tmp_table);
-      conn->exec(tmp_table_query);
+      Database::Connection conn = Database::Manager::acquire();
+      conn.exec(create_tmp_table);
+      conn.exec(tmp_table_query);
 
       // TEMP: should be cached somewhere
       Database::Query registrars_query("SELECT id, handle FROM registrar");
-      Database::Result r_registrars = conn->exec(registrars_query);
+      Database::Result r_registrars = conn.exec(registrars_query);
       Database::Result::Iterator it = r_registrars.begin();
       for (; it != r_registrars.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
@@ -448,7 +446,7 @@ public:
         registrars_table[id] = handle;
       }
 
-      Database::Result r_info = conn->exec(object_info_query);
+      Database::Result r_info = conn.exec(object_info_query);
       for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
@@ -505,7 +503,7 @@ public:
                             << "JOIN object_registry t_2 ON (t_1.contactid = t_2.id)";
       contacts_query.order_by() << "t_1.nssetid, tmp.id ";
       
-      Database::Result r_contacts = conn->exec(contacts_query);
+      Database::Result r_contacts = conn.exec(contacts_query);
       for (Database::Result::Iterator it = r_contacts.begin(); it != r_contacts.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
@@ -530,7 +528,7 @@ public:
                          << "LEFT JOIN host_ipaddr_map_history t_2 ON (t_1.historyid = t_2.historyid AND t_1.id = t_2.hostid)";
       hosts_query.order_by() << "t_1.nssetid, tmp.id, t_1.fqdn, t_2.ipaddr";
       
-      Database::Result r_hosts = conn->exec(hosts_query);
+      Database::Result r_hosts = conn.exec(hosts_query);
       for (Database::Result::Iterator it = r_hosts.begin(); it != r_hosts.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
@@ -552,7 +550,7 @@ public:
       }
 
       /// load object state
-      ObjectListImpl::reload(conn.get(), history);
+      ObjectListImpl::reload(history);
       /* checks if row number result load limit is active and set flag */ 
       CommonListImpl::reload();
     }

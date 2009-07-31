@@ -39,12 +39,10 @@ public:
   typedef std::map<std::string, std::pair<std::string, std::string> >  ChangesMap;
 
 
-  MessageUpdateChanges(Database::Manager *_dbm,
-                       Register::Manager *_rm, 
+  MessageUpdateChanges(Register::Manager *_rm, 
                        const unsigned long long &_object_id,
                        const short &_enum_action)
-                     : dbm_(_dbm),
-                       rm_(_rm),
+                     : rm_(_rm),
                        object_id_(_object_id),
                        enum_action_(_enum_action)
   {
@@ -60,7 +58,6 @@ public:
 
 
 private:
-  Database::Manager   *dbm_;
   Register::Manager   *rm_;
   unsigned long long   object_id_;
   short                enum_action_;

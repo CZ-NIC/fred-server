@@ -50,7 +50,7 @@ MailClient::list()
 {
     callHelp(m_conf, list_help);
     std::auto_ptr<Register::Mail::Manager> mailMan(
-            Register::Mail::Manager::create(m_dbman));
+            Register::Mail::Manager::create());
     std::auto_ptr<Register::Mail::List> mailList(
             mailMan->createList());
 

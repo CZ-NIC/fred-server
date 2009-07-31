@@ -106,7 +106,7 @@ ContactClient::list()
     unionFilter->addFilter(conFilter);
     apply_LIMIT(conList);
 
-    conList->reload(*unionFilter, m_dbman);
+    conList->reload(*unionFilter);
 
     std::cout << "<objects>\n";
     for (unsigned int i = 0; i < conList->getCount(); i++) {

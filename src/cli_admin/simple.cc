@@ -24,8 +24,8 @@
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include "log/logger.h"
 #include "register/register.h"
-#include "corba/admin/admin_impl.h"
-#include "corba/mailer_manager.h"
+// #include "corba/admin/admin_impl.h"
+// #include "corba/mailer_manager.h"
 
 #include "simple.h"
 #include "commonclient.h"
@@ -296,6 +296,8 @@ main(int argc, char **argv)
         }
         exit(0);
     }
+
+    Database::Manager::init(new Database::ConnectionFactory(connstring.str(), 1, 5));
 
     if (conf.hasOpt(CLI_MOO_NAME)) {
         print_moo();

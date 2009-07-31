@@ -14,7 +14,7 @@ ccReg_Registrars_i::reload() {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] void ccReg_Registrars_i::reload()");
-  rl->reload(uf,dbm);
+  rl->reload(uf);
 }
 
 ccReg::Filters::Compound_ptr 
@@ -168,7 +168,7 @@ ccReg_Registrars_i::saveFilter(const char* _name) {
   TRACE(boost::format("[CALL] ccReg_Registrars_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create(dbm));
+      tmp_filter_manager(Register::Filter::Manager::create());
   tmp_filter_manager->save(Register::Filter::FT_REGISTRAR, _name, uf);
 }
 

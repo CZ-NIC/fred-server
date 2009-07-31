@@ -299,7 +299,7 @@ void Register::ObjectListImpl::reload(const char *handle, int type)
   db->FreeSelect();
 }
 
-void Register::ObjectListImpl::reload(Database::Connection* _conn, bool _history) {
+void Register::ObjectListImpl::reload(bool _history) {
 //  Database::SelectQuery states_query;
 //  states_query.select() << "tmp.id, t_1.object_id, t_1.state_id, t_1.valid_from";
 //  states_query.from() << getTempTableName() << " tmp "
@@ -329,7 +329,8 @@ void Register::ObjectListImpl::reload(Database::Connection* _conn, bool _history
     /* load object states */
     resetHistoryIDSequence();
     
-    Database::Result r_states = _conn->exec(states_query);
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result r_states = conn.exec(states_query);
     for (Database::Result::Iterator it = r_states.begin(); it != r_states.end(); ++it) {
       Database::Row::Iterator col = (*it).begin();
 
@@ -349,7 +350,7 @@ void Register::ObjectListImpl::reload(Database::Connection* _conn, bool _history
 
     /* load object history actions */
     resetHistoryIDSequence();
-    Database::Result r_actions = _conn->exec(actions_query);
+    Database::Result r_actions = conn.exec(actions_query);
     for (Database::Result::Iterator it = r_actions.begin(); it != r_actions.end(); ++it) {
       Database::Row::Iterator col = (*it).begin();
 

@@ -37,10 +37,11 @@ formatTime(ptime p,bool date)
 }
 
 std::string
-formatMoney(Register::Invoicing::Money m)
+formatMoney(Database::Money m)
 {
   std::stringstream buf;
-  buf << m / 100 << "." << std::setw(2) << std::setfill('0') << m % 100;
+  buf << m;
+  // buf << m / 100 << "." << std::setw(2) << std::setfill('0') << m % 100;
   return buf.str();
 }
 

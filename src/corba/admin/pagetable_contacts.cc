@@ -110,7 +110,7 @@ void ccReg_Contacts_i::reload() {
   Logging::Context ctx(base_context_);
 
 //  cl->makeRealCount();
-  cl->reload(uf, dbm);
+  cl->reload(uf);
   cl->deleteDuplicatesId();
 }
 
@@ -152,7 +152,7 @@ void ccReg_Contacts_i::saveFilter(const char* _name) {
   TRACE(boost::format("[CALL] ccReg_Contacts_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
-  tmp_filter_manager(Register::Filter::Manager::create(dbm));
+  tmp_filter_manager(Register::Filter::Manager::create());
   tmp_filter_manager->save(Register::Filter::FT_CONTACT, _name, uf);
 }
 

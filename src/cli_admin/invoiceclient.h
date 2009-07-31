@@ -122,6 +122,12 @@
 #define INVOICE_PREFIX_PREFIX_NAME      "prefix"
 #define INVOICE_PREFIX_PREFIX_NAME_DESC "prefix"
 
+#define INVOICE_CREATE_INVOICE_NAME     "create_invoice"
+#define INVOICE_CREATE_INVOICE_NAME_DESC "create invoice for given payment"
+
+#define INVOICE_PAYMENT_ID_NAME         "payment_id"
+#define INVOICE_PAYMENT_ID_NAME_DESC    "payment id"
+
 namespace Admin {
 
 class InvoiceClient : public BaseClient {
@@ -166,6 +172,7 @@ public:
     void credit();
     void factoring();
     void pair_invoices();
+    void create_invoice();
 
     void list_help();
     void archive_help();
@@ -173,6 +180,7 @@ public:
     void factoring_help();
     void pair_invoices_help();
     void add_invoice_prefix_help();
+    void create_invoice_help();
 }; // class InvoiceClient
 
 } // namespace Admin;

@@ -95,7 +95,7 @@ public:
   }
   
   virtual void init(Database::Row::Iterator& _it) = 0; 
-  virtual void save(Database::Connection *_conn) = 0;
+  virtual void save() = 0;
   
   virtual Register::PublicRequest::Type getType() const = 0;
   virtual void setType(Register::PublicRequest::Type _type) = 0;
@@ -161,8 +161,7 @@ public:
   virtual ~Manager() {
   }
   
-  static Manager* create(Database::Manager  *_db_manager,
-                         Domain::Manager    *_domain_manager,
+  static Manager* create(Domain::Manager    *_domain_manager,
                          Contact::Manager   *_contact_manager,
                          NSSet::Manager     *_nsset_manager,
                          KeySet::Manager    *_keyset_manager,
@@ -176,8 +175,7 @@ public:
                       std::ostream& _output) const 
     throw (NOT_FOUND, SQL_ERROR, Document::Generator::ERROR) = 0;
   
-  virtual PublicRequest* createRequest(Type _type,
-                                       Database::Connection* _conn) const
+  virtual PublicRequest* createRequest(Type _type) const
     throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) = 0;
 
   virtual void processRequest(Database::ID _id, 

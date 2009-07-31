@@ -29,7 +29,6 @@
 #include "old_utils/dbsql.h"
 #include "old_utils/log.h"
 
-#include "db_settings.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
 
@@ -561,7 +560,7 @@ public:
     }
     db->FreeSelect();
   }
-  virtual void reload(Database::Filters::Union &uf, Database::Manager *dbm) {
+  virtual void reload(Database::Filters::Union &uf) {
     TRACE("[CALL] RegistrarListImpl::reload()");
     clear();
     uf.clearQueries();
@@ -592,8 +591,8 @@ public:
     uf.serialize(info_query);
     std::string info_query_str = str(boost::format("%1% ORDER BY id LIMIT %2%") % info_query.str() % load_limit_);
     try {
-      std::auto_ptr<Database::Connection> conn(dbm->getConnection());
-      Database::Result r_info = conn->exec(info_query_str);
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Result r_info = conn.exec(info_query_str);
       for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
@@ -654,7 +653,7 @@ public:
       credit_query.order_by() << "registrarid";
 
       resetIDSequence();
-      Database::Result r_credit = conn->exec(credit_query);
+      Database::Result r_credit = conn.exec(credit_query);
       for (Database::Result::Iterator it = r_credit.begin(); it != r_credit.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
@@ -674,7 +673,7 @@ public:
       acl_query.from() << "registraracl";
       acl_query.order_by() << "registrarid";
       
-      Database::Result r_acl = conn->exec(acl_query);
+      Database::Result r_acl = conn.exec(acl_query);
       for (Database::Result::Iterator it = r_acl.begin(); it != r_acl.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
@@ -1044,7 +1043,7 @@ public:
     result = EARF_ALL;
     partialLoad = false;
   }
-  virtual void reload(Database::Filters::Union &uf, Database::Manager *dbm) {
+  virtual void reload(Database::Filters::Union &uf) {
     TRACE("[CALL] EPPActionListImpl::reload()");
     clear();
     uf.clearQueries();
@@ -1107,15 +1106,15 @@ public:
     }
 
     try {
-      std::auto_ptr<Database::Connection> conn(dbm->getConnection());
+      Database::Connection conn = Database::Manager::acquire();
 
       Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string("tmp_eppaction_filter_result") + "')");
-      conn->exec(create_tmp_table);
-      conn->exec(tmp_table_query);
+      conn.exec(create_tmp_table);
+      conn.exec(tmp_table_query);
 
       // TEMP: should be cached somewhere
       Database::Query registrars_query("SELECT id, handle FROM registrar");
-      Database::Result r_registrars = conn->exec(registrars_query);
+      Database::Result r_registrars = conn.exec(registrars_query);
       Database::Result::Iterator it = r_registrars.begin();
       for (; it != r_registrars.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
@@ -1125,7 +1124,7 @@ public:
         registrars_table[id] = handle;
       }
 
-      Database::Result r_info = conn->exec(object_info_query);
+      Database::Result r_info = conn.exec(object_info_query);
       for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 

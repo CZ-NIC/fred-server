@@ -28,7 +28,6 @@
 #include "register/mailer.h"
 #include "notifier_changes.h"
 
-#include "db/manager_old_db.h"
 
 
 #define MAX_SQLSTRING 512
@@ -118,9 +117,8 @@ void EPPNotifier::constructMessages() {
               enum_action == EPP_NSsetUpdate   ||
               enum_action == EPP_KeySetUpdate)) {
     try {
-      Database::OldDBManager dbm(db);
 
-      MessageUpdateChanges changes(&dbm, rm_, objectID, enum_action);
+      MessageUpdateChanges changes(rm_, objectID, enum_action);
       MessageUpdateChanges::ChangesMap values = changes.compose();
 
       params["changes"] = values.size() > 0 ? "1" : "0";

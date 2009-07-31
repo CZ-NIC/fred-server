@@ -1,0 +1,139 @@
+#ifndef _BANK_COMMON_H_
+#define _BANK_COMMON_H_
+
+#include <istream>
+#include <libxml/xmlwriter.h>
+#include <libxml/parser.h>
+#include <libxml/xmlmemory.h>
+#include <libxml/tree.h>
+#include <libxml/encoding.h>
+
+#include "types/data_types.h"
+
+namespace Register {
+namespace Banking {
+
+#define XML_NODE_NONE
+#define XML_NODE_ELEMENT
+#define XML_NODE_ATTRIBUTE
+#define XML_NODE_TEXT
+#define XML_NODE_CDATA
+#define XML_NODE_ENTITY_REFERENCE
+#define XML_NODE_ENTITY
+#define XML_NODE_PROCESSING_INSTRUCTION
+#define XML_NODE_COMMENT
+#define XML_NODE_DOCUMENT
+#define XML_NODE_DOCUMENT_TYPE
+#define XML_NODE_DOCUMENT_FRAGMENT
+#define XML_NODE_NOTATION
+#define XML_NODE_WHITESPACE
+#define XML_NODE_SIGNIFICANT_WHITESPACE
+#define XML_NODE_END_ELEMENT
+#define XML_NODE_END_ENTITY
+#define XML_NODE_XML_DECLARATION
+
+#define STATEMENTS_ROOT             "statements"
+#define STATEMENT_STATEMENT         "statement"
+#define STATEMENT_ACCOUNT_NUMBER    "account_number"
+#define STATEMENT_NUMBER            "number"
+#define STATEMENT_DATE              "date"
+#define STATEMENT_BALANCE           "balance"
+#define STATEMENT_OLD_DATE          "old_date"
+#define STATEMENT_OLD_BALANCE       "oldBalance"
+#define STATEMENT_CREDIT            "credit"
+#define STATEMENT_DEBET             "debet"
+#define STATEMENT_ITEMS             "items"
+#define ITEM_ITEM                   "item"
+#define ITEM_IDENT                  "ident"
+#define ITEM_ACCOUNT_NUMBER         "account_number"
+#define ITEM_ACCOUNT_BANK_CODE      "account_bank_code"
+#define ITEM_CONST_SYMBOL           "const_symbol"
+#define ITEM_VAR_SYMBOL             "var_symbol"
+#define ITEM_SPEC_SYMBOL            "spec_symbol"
+#define ITEM_PRICE                  "price"
+#define ITEM_TYPE                   "type"
+#define ITEM_CODE                   "code"
+#define ITEM_MEMO                   "memo"
+#define ITEM_DATE                   "date"
+#define ITEM_CRTIME                 "crtime"
+#define ITEM_NAME                   "name"
+
+#define TEST_NODE_PRESENCE(parent, name)                                \
+    if (!parent.hasChild(name)) {                                       \
+        LOGGER(PACKAGE).error(boost::format("``%1%'' node not found")   \
+                % name);                                                \
+        return false;                                                   \
+    }
+
+std::string loadInStream(std::istream &in);
+
+class XMLcreator {
+private:
+    xmlBuffer       *m_buffer;
+    xmlTextWriter   *m_writer;
+    bool            m_writeXmlHeader;
+public:
+    XMLcreator(): m_buffer(NULL), m_writer(NULL)
+    { }
+    ~XMLcreator();
+    bool init(bool writeXmlHeader = false);
+    void start(const std::string &name);
+    void start(const char *name);
+    void end();
+    void text(const std::string &name, const std::string &value);
+    void text(const std::string &name, const char *value);
+    void text(const std::string &name, int value);
+    void text(const std::string &name, unsigned long long value);
+    void text(const std::string &name, double value);
+    void text(const std::string &name, Database::ID value);
+    void text(const std::string &name, Database::Date value);
+    void text(const std::string &name, Database::DateTime value);
+    void text(const std::string &name, Database::Money value);
+    std::string finalize();
+}; // class XMLcreator;
+
+class XMLnode {
+private:
+    std::string             m_name;
+    std::string             m_value;
+    std::vector<XMLnode>    m_children;
+public:
+    XMLnode()
+    { }
+    XMLnode(const XMLnode &sec);
+    ~XMLnode()
+    { }
+    XMLnode operator=(const XMLnode &sec);
+    void setName(const std::string &name);
+    void setValue(const std::string &value);
+    void addChild(XMLnode node);
+    /* return true if node value (as string) length is zero characters */
+    bool isEmpty() const;
+    std::string getName() const;
+    std::string getValue() const;
+    int getChildrenSize() const;
+    int getChildrenSize(const std::string &name) const;
+    XMLnode getChild(int i) const;
+    bool hasChild(const std::string &name) const;
+    XMLnode getChild(const std::string &name) const;
+}; // class XMLnode;
+
+class XMLparser {
+private:
+    xmlDoc      *m_doc;
+    xmlNode     *m_root;
+    XMLnode     m_rootNode;
+    XMLnode parseNode(xmlNode *node);
+public:
+    XMLparser(): m_doc(NULL), m_root(NULL)
+    { }
+    ~XMLparser()
+    { }
+    bool parse(const std::string &xml);
+    XMLnode getRootNode() const;
+}; // class XMLparse;
+
+} // namespace Banking
+} // namespace Register
+
+#endif // _BANK_COMMON_H_

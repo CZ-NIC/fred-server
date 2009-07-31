@@ -75,7 +75,6 @@ class ccReg_PageTable_i : virtual public POA_Registry::PageTable {
 protected:
   Database::Filters::Union uf;
   FilterIteratorImpl it;
-  Database::Manager* dbm;
   ccReg::FilterType filterType;
   int sorted_by_;
   bool sorted_dir_;
@@ -89,7 +88,7 @@ protected:
 public:
   ccReg_PageTable_i();
   virtual ~ccReg_PageTable_i();
-  void setDB(Database::Manager* dbm);
+  void setDB();
   CORBA::Short pageSize();
   void pageSize(CORBA::Short _v);
   CORBA::Short page();

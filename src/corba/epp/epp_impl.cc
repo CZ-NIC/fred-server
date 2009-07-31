@@ -68,7 +68,6 @@
 #include "log/logger.h"
 #include "log/context.h"
 
-#include "db/manager_old_db.h"
 
 #define FLAG_serverDeleteProhibited 1
 #define FLAG_serverRenewProhibited 2
@@ -5348,13 +5347,11 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                                 }
 
                             }
-                            std::auto_ptr<Database::OldDBManager> dbMan(
-                                    new Database::OldDBManager(action.getDB()));
                             std::auto_ptr<Register::Invoicing::Manager> invMan(
-                                    Register::Invoicing::Manager::create(dbMan.get()));
+                                    Register::Invoicing::Manager::create());
                             std::auto_ptr<Register::Invoicing::Invoice> invoice(
                                     invMan->createInvoice(Register::Invoicing::IT_NONE));
-                            if (invoice->domainBilling(zone, action.getRegistrar(),
+                            if (invoice->domainBilling(action.getDB(), zone, action.getRegistrar(),
                                         id, Database::Date(std::string(exDate)), period_count)) {
                                 if (action.getDB()->SaveDomainHistory(id)) {
                                     if (action.getDB()->SaveObjectCreate(id)) {
@@ -5660,8 +5657,8 @@ ccReg_EPP_i::KeySetInfo(
     keyFilter->addHandle().setValue(std::string(handle));
     keyFilter->addDeleteTime().setNULL();
     unionFilter.addFilter(keyFilter);
-    Database::Manager dbman(new Database::ConnectionFactory(database));
-    klist->reload(unionFilter, &dbman);
+
+    klist->reload(unionFilter);
 
 
     //klist->setHandleFilter(handle);
@@ -7284,9 +7281,9 @@ ccReg_EPP_i::ObjectSendAuthInfo(
 
     EPPAction action(this, clientID, act, clTRID, XML, &paction);
 
-    Database::Manager db(new Database::ConnectionFactory(database));
-    std::auto_ptr<Database::Connection> conn;
-    try { conn.reset(db.getConnection()); } catch (...) {}
+    // Database::Manager db(new Database::ConnectionFactory(database));
+    // std::auto_ptr<Database::Connection> conn;
+    // try { conn.reset(db.getConnection()); } catch (...) {}
 
     LOG( NOTICE_LOG , "ObjectSendAuthInfo type %d  object [%s]  clientID -> %d clTRID [%s] " , act , name , (int ) clientID , clTRID );
 
@@ -7349,7 +7346,6 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                 );
         std::auto_ptr<Register::PublicRequest::Manager> request_manager(
                 Register::PublicRequest::Manager::create(
-                    &db,
                     regMan->getDomainManager(),
                     regMan->getContactManager(),
                     regMan->getNSSetManager(),
@@ -7364,8 +7360,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                     id,action.getDB()->GetActionID()
                );
             std::auto_ptr<Register::PublicRequest::PublicRequest> new_request(request_manager->createRequest(
-                        Register::PublicRequest::PRT_AUTHINFO_AUTO_RIF,
-                        conn.get()));
+                        Register::PublicRequest::PRT_AUTHINFO_AUTO_RIF));
+                        
 
             new_request->setEppActionId(action.getDB()->GetActionID());
             new_request->addObject(Register::PublicRequest::OID(id));
@@ -7374,7 +7370,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                 code = COMMAND_STATUS_PROHIBITS_OPERATION;
             } else {
                 code=COMMAND_OK;
-                new_request->save(conn.get());
+                new_request->save();
             }
         } catch (...) {
             LOG( WARNING_LOG, "cannot create and process request");

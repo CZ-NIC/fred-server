@@ -104,7 +104,7 @@ RegistrarClient::list()
     unionFilter->addFilter(regFilter);
     //regMan->getList()->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
 
-    regMan->getList()->reload(*unionFilter, m_dbman);
+    regMan->getList()->reload(*unionFilter);
 
     std::cout << "<object>\n";
     for (unsigned int i = 0; i < regMan->getList()->getCount(); i++) {
@@ -290,7 +290,6 @@ RegistrarClient::price_add()
     callHelp(m_conf, price_add_help);
     std::auto_ptr<Register::Zone::Manager> zoneMan(
             Register::Zone::Manager::create(&m_db));
-    std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
     Database::DateTime validFrom(Database::NOW_UTC);
     if (m_conf.hasOpt(REGISTRAR_VALID_FROM_NAME)) {
         validFrom.from_string(m_conf.get<std::string>(REGISTRAR_VALID_FROM_NAME));
@@ -304,13 +303,33 @@ RegistrarClient::price_add()
     if (m_conf.hasOpt(REGISTRAR_PERIOD_NAME)) {
         period = m_conf.get<int>(REGISTRAR_PERIOD_NAME);
     }
+    if (!(m_conf.hasOpt(REGISTRAR_ZONE_FQDN_NAME) ||
+            m_conf.hasOpt(REGISTRAR_ZONE_ID_NAME))) {
+        std::cerr << "You have to specity either ``--" << REGISTRAR_ZONE_FQDN_NAME
+            << "'' or ``--" << REGISTRAR_ZONE_ID_NAME << "''." << std::endl;
+        return;
+    }
     if (m_conf.hasOpt(REGISTRAR_CREATE_OPERATION_NAME)) {
-        zoneMan->addPrice(zone, Register::Zone::CREATE, validFrom,
-                validTo, price, period);
+        if (m_conf.hasOpt(REGISTRAR_ZONE_FQDN_NAME)) {
+            std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
+            zoneMan->addPrice(zone, Register::Zone::CREATE, validFrom,
+                    validTo, price, period);
+        } else {
+            unsigned int zoneId = m_conf.get<unsigned int>(REGISTRAR_ZONE_ID_NAME);
+            zoneMan->addPrice(zoneId, Register::Zone::CREATE, validFrom,
+                    validTo, price, period);
+        }
     }
     if (m_conf.hasOpt(REGISTRAR_RENEW_OPERATION_NAME)) {
-        zoneMan->addPrice(zone, Register::Zone::RENEW, validFrom,
-                validTo, price, period);
+        if (m_conf.hasOpt(REGISTRAR_ZONE_FQDN_NAME)) {
+            std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
+            zoneMan->addPrice(zone, Register::Zone::RENEW, validFrom,
+                    validTo, price, period);
+        } else {
+            unsigned int zoneId = m_conf.get<unsigned int>(REGISTRAR_ZONE_ID_NAME);
+            zoneMan->addPrice(zoneId, Register::Zone::RENEW, validFrom,
+                    validTo, price, period);
+        }
     }
 }
 
@@ -404,7 +423,8 @@ RegistrarClient::price_add_help()
         "  $ " << g_prog_name << " --" << REGISTRAR_PRICE_ADD_NAME << " \\\n"
         "    --" << REGISTRAR_CREATE_OPERATION_NAME << " | \\\n"
         "    --" << REGISTRAR_RENEW_OPERATION_NAME << " \\\n"
-        "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> \\\n"
+        "    --" << REGISTRAR_ZONE_FQDN_NAME << "=<zone_fqdn> | \\\n"
+        "    --" << REGISTRAR_ZONE_ID_NAME << "=<zone_id> \\\n"
         "    [--" << REGISTRAR_VALID_FROM_NAME << "=<valid_from_timestamp>] \\\n"
         "    [--" << REGISTRAR_VALID_TO_NAME << "=<valid_to_timestamp>] \\\n"
         "    --" << REGISTRAR_PRICE_NAME << "=<price> \\\n"
@@ -435,6 +455,7 @@ RegistrarClient::m_opts[] = {
     add_EMAIL,
     add_COUNTRY,
     ADDOPT(REGISTRAR_ZONE_FQDN_NAME, TYPE_STRING, false, false),
+    ADDOPT(REGISTRAR_ZONE_ID_NAME, TYPE_UINT, false, false),
     ADDOPT(REGISTRAR_ADD_HANDLE_NAME, TYPE_STRING, false, false),
 
 

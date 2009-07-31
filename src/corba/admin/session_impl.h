@@ -62,7 +62,6 @@ private:
   ccReg_Logger_i* m_logger;
   ccReg_LogSession_i* m_logsession;
 
-  Database::Manager m_db_manager;
   std::auto_ptr<Register::Manager> m_register_manager;
   std::auto_ptr<Register::PublicRequest::Manager> m_publicrequest_manager;
   std::auto_ptr<Register::Document::Manager> m_document_manager;

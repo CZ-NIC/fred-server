@@ -32,7 +32,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
-sbin_PROGRAMS = fred-banking$(EXEEXT) fred-admin$(EXEEXT)
+sbin_PROGRAMS = fred-admin$(EXEEXT)
 subdir = src/cli_admin
 DIST_COMMON = $(dist_sbin_SCRIPTS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/banking.sh.in
@@ -78,24 +78,6 @@ fred_admin_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/util/conf/libconf.a \
 	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
-am_fred_banking_OBJECTS = gpc.$(OBJEXT) banking.$(OBJEXT) \
-	csv.$(OBJEXT)
-fred_banking_OBJECTS = $(am_fred_banking_OBJECTS)
-fred_banking_LDADD = $(LDADD)
-fred_banking_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(top_builddir)/src/register/libfred.a \
-	$(top_builddir)/src/model/libmodel.a \
-	$(top_builddir)/util/db/libdb.a \
-	$(top_builddir)/util/types/libtypes.a \
-	$(top_builddir)/src/corba/libcorba.a \
-	$(top_builddir)/src/old_utils/liboldutils.a \
-	$(top_builddir)/util/log/liblog.a \
-	$(top_builddir)/util/conf/libconf.a \
-	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
 dist_sbinSCRIPT_INSTALL = $(INSTALL_SCRIPT)
 SCRIPTS = $(dist_sbin_SCRIPTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -110,8 +92,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(fred_admin_SOURCES) $(fred_banking_SOURCES)
-DIST_SOURCES = $(fred_admin_SOURCES) $(fred_banking_SOURCES)
+SOURCES = $(fred_admin_SOURCES)
+DIST_SOURCES = $(fred_admin_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -272,27 +254,33 @@ top_srcdir = @top_srcdir@
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
 AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) \
 			  $(XML2_CFLAGS) \
-			  -I$(top_srcdir)/util -I$(top_srcdir)/src -I$(top_builddir)/src \
-			  -I$(top_srcdir)
+			  -I$(top_srcdir)/util \
+			  -I$(top_srcdir)/src \
+			  -I$(top_builddir)/src \
+			  -I$(top_srcdir) \
+			  -I$(top_srcdir)/util/db/model
 
-LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
-        $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
+LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+        $(BOOST_REGEX_LIB) \
+		$(OMNIORB4_LIBS) \
 		$(XML2_LIBS) \
-	$(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
+		$(LIBIDN_CFLAGS) \
+		$(LIBIDN_LIBS) \
         $(top_builddir)/src/register/libfred.a \
-	$(top_builddir)/src/model/libmodel.a \
-	$(top_builddir)/util/db/libdb.a \
-	$(top_builddir)/util/types/libtypes.a \
-	$(top_builddir)/src/corba/libcorba.a \
-	$(top_builddir)/src/old_utils/liboldutils.a \
-	$(top_builddir)/util/log/liblog.a \
-	$(top_builddir)/util/conf/libconf.a \
-	$(top_builddir)/util/libutil.a \
-	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB)
+		$(top_builddir)/src/model/libmodel.a \
+		$(top_builddir)/util/db/libdb.a \
+		$(top_builddir)/util/types/libtypes.a \
+		$(top_builddir)/src/corba/libcorba.a \
+		$(top_builddir)/src/old_utils/liboldutils.a \
+		$(top_builddir)/util/log/liblog.a \
+		$(top_builddir)/util/conf/libconf.a \
+		$(top_builddir)/util/libutil.a \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB)
 
 CLEANFILES = banking.sh
 dist_sbin_SCRIPTS = banking.sh fred-csob-payments.py
-fred_banking_SOURCES = gpc.cc banking.cc csv.cc gpc.h csv.h
 fred_admin_SOURCES = simple.cc            \
                      simple.h             \
                      commonclient.cc      \
@@ -388,9 +376,6 @@ clean-sbinPROGRAMS:
 fred-admin$(EXEEXT): $(fred_admin_OBJECTS) $(fred_admin_DEPENDENCIES) 
 	@rm -f fred-admin$(EXEEXT)
 	$(CXXLINK) $(fred_admin_OBJECTS) $(fred_admin_LDADD) $(LIBS)
-fred-banking$(EXEEXT): $(fred_banking_OBJECTS) $(fred_banking_DEPENDENCIES) 
-	@rm -f fred-banking$(EXEEXT)
-	$(CXXLINK) $(fred_banking_OBJECTS) $(fred_banking_LDADD) $(LIBS)
 install-dist_sbinSCRIPTS: $(dist_sbin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	test -z "$(sbindir)" || $(MKDIR_P) "$(DESTDIR)$(sbindir)"
@@ -418,13 +403,10 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bankclient.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/banking.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commonclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/contactclient.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/csv.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/domainclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileclient.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gpc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/infobuffclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/invoiceclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keysetclient.Po@am__quote@

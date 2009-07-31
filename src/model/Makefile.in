@@ -63,9 +63,10 @@ am_libmodel_a_OBJECTS = object_registry_filter.$(OBJEXT) \
 	object_state_filter.$(OBJEXT) invoice_filter.$(OBJEXT) \
 	public_request_filter.$(OBJEXT) mail_filter.$(OBJEXT) \
 	file_filter.$(OBJEXT) keyset_filter.$(OBJEXT) \
-	statement_filter.$(OBJEXT) online_statement_filter.$(OBJEXT) \
-	log_filter.$(OBJEXT) union_filter.$(OBJEXT) \
-	zone_filter.$(OBJEXT)
+	statement_filter.$(OBJEXT) statement_item_filter.$(OBJEXT) \
+	statement_head_filter.$(OBJEXT) \
+	online_statement_filter.$(OBJEXT) log_filter.$(OBJEXT) \
+	union_filter.$(OBJEXT) zone_filter.$(OBJEXT)
 libmodel_a_OBJECTS = $(am_libmodel_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
 am_test_model_OBJECTS = test-model.$(OBJEXT)
@@ -253,21 +254,51 @@ noinst_LIBRARIES = libmodel.a
 AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(AM_CFLAGS) \
               -I$(top_srcdir)/util -I$(top_srcdir) -I$(top_srcdir)/src
 
-libmodel_a_SOURCES = object_registry_filter.cc object_filter.cc domain_filter.cc \
-                     contact_filter.cc nsset_filter.cc registrar_filter.cc \
-                     epp_action_filter.cc epp_session_filter.cc filter_filter.cc \
-                     object_state_filter.cc invoice_filter.cc public_request_filter.cc \
-                     mail_filter.cc file_filter.cc keyset_filter.cc statement_filter.cc \
-					 online_statement_filter.cc log_filter.cc union_filter.cc \
-					 zone_filter.cc \
-                     contact_filter.h epp_action_filter.h nsset_filter.h \
-                     object_registry_filter.h registrar_filter.h domain_filter.h \
-                     epp_session_filter.h model_filters.h object_filter.h \
-                     object_state_filter.h filter_filter.h invoice_filter.h \
-                     public_request_filter.h mail_filter.h file_filter.h \
-                     keyset_filter.h union_filter.h log_filter.h statement_filter.h \
-					 online_statement_filter.h	\
-					 zone_filter.h
+libmodel_a_SOURCES = object_registry_filter.cc 			\
+                     object_registry_filter.h 			\
+					 object_filter.cc 					\
+					 object_filter.h 					\
+					 domain_filter.cc 					\
+					 domain_filter.h 					\
+                     contact_filter.cc 					\
+                     contact_filter.h 					\
+					 nsset_filter.cc 					\
+					 nsset_filter.h 					\
+					 registrar_filter.cc 				\
+					 registrar_filter.h 				\
+                     epp_action_filter.cc 				\
+					 epp_action_filter.h 				\
+					 epp_session_filter.cc 				\
+                     epp_session_filter.h 				\
+					 filter_filter.cc 					\
+					 filter_filter.h 					\
+                     object_state_filter.cc 			\
+                     object_state_filter.h 				\
+					 invoice_filter.cc 					\
+					 invoice_filter.h 					\
+					 public_request_filter.cc 			\
+                     public_request_filter.h 			\
+                     mail_filter.cc 					\
+					 mail_filter.h 						\
+					 file_filter.cc 					\
+					 file_filter.h 						\
+					 keyset_filter.cc 					\
+                     keyset_filter.h 					\
+					 statement_filter.cc 				\
+					 statement_filter.h 				\
+					 statement_item_filter.cc			\
+					 statement_item_filter.h			\
+					 statement_head_filter.cc			\
+					 statement_head_filter.h			\
+					 online_statement_filter.cc 		\
+					 online_statement_filter.h			\
+					 log_filter.cc 						\
+					 union_filter.cc 					\
+					 union_filter.h 					\
+					 zone_filter.cc 					\
+					 zone_filter.h						\
+					 log_filter.h 						\
+					 model_filters.h
 
 test_model_SOURCES = test-model.cc
 test_model_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
@@ -349,6 +380,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/public_request_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registrar_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/statement_filter.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/statement_head_filter.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/statement_item_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-model.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/union_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zone_filter.Po@am__quote@

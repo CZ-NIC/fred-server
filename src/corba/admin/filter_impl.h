@@ -49,6 +49,7 @@ public:
   ccReg::Filters::Session_ptr addE(Database::Filters::Session* f);
   ccReg::Filters::RequestServiceType_ptr addE(Database::Filters::Value<Database::RequestServiceType> *f);
 //  ccReg::Filters::RequestActionType_ptr addE(Database::Filters::Value<Database::RequestActionType> *f);
+  ccReg::Filters::StatementItem_ptr addE(Database::Filters::StatementItem *f);
 
   void addFilter(Database::Filters::Filter* f);
 

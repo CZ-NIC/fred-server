@@ -1,7 +1,16 @@
 noinst_LIBRARIES = libepp_impl.a
 
-AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(AM_CFLAGS) -I$(top_srcdir)/util \
-              -I$(top_srcdir)/src -I$(top_builddir)/src -I$(top_srcdir)
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) 				\
+			  $(BOOST_CPPFLAGS) 				\
+			  $(AM_CFLAGS) 						\
+			  $(XML2_CFLAGS)					\
+			  -I$(top_srcdir)/util 				\
+              -I$(top_srcdir)/src 				\
+			  -I$(top_builddir)/src 			\
+			  -I$(top_srcdir) 					\
+			  -I$(top_srcdir)/util/db			\
+			  -I$(top_srcdir)/util/types 		\
+			  -I$(top_srcdir)/util/db/model
 
 libepp_impl_a_SOURCES = epp_impl.cc           \
                         epp_impl.h            \

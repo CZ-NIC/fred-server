@@ -20,7 +20,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  NameService *ns,
                                  Config::Conf& cfg,
                                  ccReg_User_i* _user) :
-  session_id_(_session_id), cfg_(cfg), m_user(_user), m_db_manager(new ConnectionFactory(database)), m_mailer_manager(ns), m_last_activity(second_clock::local_time()) {
+  session_id_(_session_id), cfg_(cfg), m_user(_user), m_mailer_manager(ns), m_last_activity(second_clock::local_time()) {
 
   base_context_ = Logging::Context::get() + "/" + session_id_;
   Logging::Context ctx(session_id_);
@@ -29,31 +29,27 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_register_manager.reset(Register::Manager::create(&db,
                                                      cfg.get<bool>("registry.restricted_handles")));
 
-  m_logger_manager.reset(Register::Logger::Manager::create(&m_db_manager));
-  m_logsession_manager.reset(Register::Session::Manager::create(&m_db_manager));
+  m_logger_manager.reset(Register::Logger::Manager::create());
+  m_logsession_manager.reset(Register::Session::Manager::create());
 
-  m_register_manager->dbManagerInit(&m_db_manager);
+  m_register_manager->dbManagerInit();
   m_register_manager->initStates();
 
   m_document_manager.reset(Register::Document::Manager::create(cfg.get<std::string>("registry.docgen_path"),
                                                                cfg.get<std::string>("registry.docgen_template_path"),
                                                                cfg.get<std::string>("registry.fileclient_path"),
                                                                ns->getHostName()));
-  m_publicrequest_manager.reset(Register::PublicRequest::Manager::create(&m_db_manager,
-                                                                         m_register_manager->getDomainManager(),
+  m_publicrequest_manager.reset(Register::PublicRequest::Manager::create(m_register_manager->getDomainManager(),
                                                                          m_register_manager->getContactManager(),
                                                                          m_register_manager->getNSSetManager(),
                                                                          m_register_manager->getKeySetManager(),
                                                                          &m_mailer_manager,
                                                                          m_document_manager.get()));
-  std::auto_ptr<Database::Manager> dbman(new Database::Manager(
-              new Database::ConnectionFactory(database)));
-  m_invoicing_manager.reset(Register::Invoicing::Manager::create(dbman.get(),
-                                                                 m_document_manager.get(),
+  m_invoicing_manager.reset(Register::Invoicing::Manager::create(m_document_manager.get(),
                                                                  &m_mailer_manager));
 
-  mail_manager_.reset(Register::Mail::Manager::create(&m_db_manager));
-  file_manager_.reset(Register::File::Manager::create(&m_db_manager));
+  mail_manager_.reset(Register::Mail::Manager::create());
+  file_manager_.reset(Register::File::Manager::create());
 
   m_domains = new ccReg_Domains_i(m_register_manager->getDomainManager()->createList(), &settings_);
   m_contacts = new ccReg_Contacts_i(m_register_manager->getContactManager()->createList(), &settings_);
@@ -69,16 +65,16 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_logger = new ccReg_Logger_i(m_logger_manager->createList());
   m_logsession = new ccReg_LogSession_i(m_logsession_manager->createList());
 
-  m_eppactions->setDB(&m_db_manager);
-  m_registrars->setDB(&m_db_manager);
-  m_contacts->setDB(&m_db_manager);
-  m_domains->setDB(&m_db_manager);
-  m_nssets->setDB(&m_db_manager);
-  m_keysets->setDB(&m_db_manager);
-  m_publicrequests->setDB(&m_db_manager);
-  m_invoices->setDB(&m_db_manager);
-  m_logger->setDB(&m_db_manager);
-  m_logsession->setDB(&m_db_manager);
+  m_eppactions->setDB();
+  m_registrars->setDB();
+  m_contacts->setDB();
+  m_domains->setDB();
+  m_nssets->setDB();
+  m_keysets->setDB();
+  m_publicrequests->setDB();
+  m_invoices->setDB();
+  m_logger->setDB();
+  m_logsession->setDB();
 
   settings_.set("filter.history", "off");
 
@@ -259,7 +255,7 @@ Registry::Domain::Detail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
     filter->addId().setValue(Database::ID(_id));
     uf.addFilter(filter);
 
-    tmp_domain_list->reload(uf, &m_db_manager);
+    tmp_domain_list->reload(uf);
     unsigned filter_count = tmp_domain_list->getCount();
     if (filter_count > 0) {
       return createHistoryDomainDetail(tmp_domain_list.get());
@@ -290,7 +286,7 @@ Registry::Contact::Detail* ccReg_Session_i::getContactDetail(ccReg::TID _id) {
     filter->addId().setValue(Database::ID(_id));
     uf.addFilter(filter);
 
-    tmp_contact_list->reload(uf, &m_db_manager);
+    tmp_contact_list->reload(uf);
 
     unsigned filter_count = tmp_contact_list->getCount();
     if (filter_count > 0) {
@@ -322,7 +318,7 @@ Registry::NSSet::Detail* ccReg_Session_i::getNSSetDetail(ccReg::TID _id) {
     filter->addId().setValue(Database::ID(_id));
     uf.addFilter(filter);
 
-    tmp_nsset_list->reload(uf, &m_db_manager);
+    tmp_nsset_list->reload(uf);
 
     unsigned filter_count = tmp_nsset_list->getCount();
     if (filter_count > 0) {
@@ -355,7 +351,7 @@ ccReg_Session_i::getKeySetDetail(ccReg::TID _id)
         filter->addId().setValue(Database::ID(_id));
         uf.addFilter(filter);
 
-        tmp_keyset_list->reload(uf, &m_db_manager);
+        tmp_keyset_list->reload(uf);
 
         unsigned filter_count = tmp_keyset_list->getCount();
         if (filter_count > 0) {
@@ -386,7 +382,7 @@ Registry::Registrar::Detail* ccReg_Session_i::getRegistrarDetail(ccReg::TID _id)
     filter->addId().setValue(Database::ID(_id));
     uf.addFilter(filter);
 
-    tmp_registrar_list->reload(uf, &m_db_manager);
+    tmp_registrar_list->reload(uf);
 
     if (tmp_registrar_list->size() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -440,9 +436,9 @@ Registry::Invoicing::Detail* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
     filter->addId().setValue(Database::ID(_id));
     union_filter.addFilter(filter);
 
-    tmp_invoice_list->reload(union_filter, &m_db_manager);
+    tmp_invoice_list->reload(union_filter);
 
-    if (tmp_invoice_list->size() != 1) {
+    if (tmp_invoice_list->getSize() != 1) {
       throw ccReg::Admin::ObjectNotFound();
     }
     return createInvoiceDetail(tmp_invoice_list->get(0));
@@ -494,7 +490,7 @@ Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id)
     filter->addId().setValue(Database::ID(_id));
     union_filter.addFilter(filter);
 
-    tmp_action_list->reload(union_filter, &m_db_manager);
+    tmp_action_list->reload(union_filter);
 
     if (tmp_action_list->size() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -1306,7 +1302,7 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar) {
     filter->addId().setValue(Database::ID(_registrar.id));
     uf.addFilter(filter);
 
-    tmp_registrar_list->reload(uf, &m_db_manager);
+    tmp_registrar_list->reload(uf);
 
     if (tmp_registrar_list->size() != 1) {
       throw ccReg::Admin::ObjectNotFound();
@@ -1455,31 +1451,32 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
   Registry::Invoicing::Detail *detail = new Registry::Invoicing::Detail();
 
   detail->id = _invoice->getId();
-  detail->zone = _invoice->getZone();
-  detail->createTime = DUPSTRDATE(_invoice->getCrTime);
+  detail->zone = _invoice->getZoneId();
+  detail->createTime = DUPSTRDATE(_invoice->getCrDate);
   detail->taxDate = DUPSTRDATED(_invoice->getTaxDate);
   detail->fromDate = DUPSTRDATED(_invoice->getAccountPeriod().begin);
   detail->toDate = DUPSTRDATED(_invoice->getAccountPeriod().end);
   detail->type = (_invoice->getType() == Register::Invoicing::IT_DEPOSIT ? Registry::Invoicing::IT_ADVANCE
                                                                          : Registry::Invoicing::IT_ACCOUNT);
-  detail->number = DUPSTRC(stringify(_invoice->getNumber()));
+  detail->number = DUPSTRC(stringify(_invoice->getPrefix()));
   detail->credit = DUPSTRC(formatMoney(_invoice->getCredit()));
   detail->price = DUPSTRC(formatMoney(_invoice->getPrice()));
-  detail->vatRate = _invoice->getVatRate();
+  detail->vatRate = _invoice->getVat();
   detail->total = DUPSTRC(formatMoney(_invoice->getTotal()));
-  detail->totalVAT = DUPSTRC(formatMoney(_invoice->getTotalVAT()));
+  detail->totalVAT = DUPSTRC(formatMoney(_invoice->getTotalVat()));
   detail->varSymbol = DUPSTRC(_invoice->getVarSymbol());
 
-  detail->registrar.id     = _invoice->getRegistrar();
+  detail->registrar.id     = _invoice->getRegistrarId();
   detail->registrar.handle = DUPSTRC(_invoice->getClient()->getHandle());
   detail->registrar.type   = ccReg::FT_REGISTRAR;
 
-  detail->filePDF.id     = _invoice->getFilePDF();
-  detail->filePDF.handle = _invoice->getFileNamePDF().c_str();
+  detail->filePDF.id     = _invoice->getFileId();
+  // detail->filePDF.handle = _invoice->getFileNamePDF().c_str(); 
+  detail->filePDF.handle = _invoice->getFile()->getName().c_str(); 
   detail->filePDF.type   = ccReg::FT_FILE;
 
-  detail->fileXML.id     = _invoice->getFileXML();
-  detail->fileXML.handle = _invoice->getFileNameXML().c_str();
+  detail->fileXML.id     = _invoice->getFileXmlId();
+  detail->fileXML.handle = _invoice->getFileXml()->getName().c_str();
   detail->fileXML.type   = ccReg::FT_FILE;
 
   detail->payments.length(_invoice->getSourceCount());

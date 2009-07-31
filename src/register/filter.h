@@ -23,7 +23,8 @@ enum FilterType {
   FT_MAIL,
   FT_FILE,
   FT_LOGGER,
-  FT_SESSION
+  FT_SESSION,
+  FT_STATEMENT_ITEM
 };
 
 class Filter : virtual public Register::CommonObject {
@@ -38,7 +39,7 @@ public:
   virtual void setUserId(Database::ID _id) = 0;
   virtual Database::ID getGroupId() const = 0;
   virtual void setGroupId(Database::ID _id) = 0;
-  virtual void save(Database::Connection *_conn) const = 0;
+  virtual void save() const = 0;
 };
 
 class List : virtual public Register::CommonList {
@@ -61,7 +62,7 @@ public:
   virtual List& getList() = 0;
   virtual void load(Database::ID _id, Database::Filters::Union& _uf) const = 0;
   virtual void save(FilterType _type, const std::string& _name, Database::Filters::Union& _uf) = 0;
-  static Manager *create(Database::Manager* _db_manager);
+  static Manager *create();
 };
 
 }

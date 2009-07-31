@@ -116,7 +116,7 @@ ccReg_NSSets_i::reload()
 
   TRACE("[CALL] ccReg_NSSets_i::reload()");
 //  nl->makeRealCount();  
-  nl->reload(uf, dbm);
+  nl->reload(uf);
   nl->deleteDuplicatesId();
 }
 
@@ -165,7 +165,7 @@ ccReg_NSSets_i::saveFilter(const char* _name) {
   TRACE(boost::format("[CALL] ccReg_NSSets_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create(dbm));
+      tmp_filter_manager(Register::Filter::Manager::create());
   tmp_filter_manager->save(Register::Filter::FT_NSSET, _name, uf);
 }
 

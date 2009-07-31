@@ -28,7 +28,6 @@
 #include "common_object.h"
 #include "object.h"
 #include "filter.h"
-#include "db_settings.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
 
@@ -79,7 +78,7 @@ public:
   virtual void setGroupId(Database::ID _id) {
     m_group_id = _id;
   }
-  virtual void save(Database::Connection *_conn) const {
+  virtual void save() const {
     Database::Query insert;
     if (m_data.empty()) {
       LOGGER(PACKAGE).error("can't save filter; reason: data empty");
@@ -95,7 +94,8 @@ public:
 
     try {
       //TRACE(boost::format("[IN] Register::FilterImpl::save(): going to inserting data SQL = %1%") % insert.str());
-      Database::Result result = _conn->exec(insert_filter);
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Result result = conn.exec(insert_filter);
       LOGGER(PACKAGE).info(boost::format("filter '%1%' saved successfully")
           % m_name);
     }
@@ -119,12 +119,11 @@ private:
 class ListImpl : public Register::CommonListImpl,
                  virtual public List {
 public:
-  ListImpl(Database::Connection* _conn) :
-    CommonListImpl(_conn) {
+  ListImpl() :
+    CommonListImpl() {
   }
 
   virtual ~ListImpl() {
-    boost::checked_delete<Database::Connection>(conn_);
   }
   
   virtual void reload(Database::Filters::Union &uf) {
@@ -147,7 +146,8 @@ public:
     uf.serialize(object_info_query);
 
     try {
-      Database::Result r_info = conn_->exec(object_info_query);
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Result r_info = conn.exec(object_info_query);
       for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
@@ -206,9 +206,8 @@ public:
 
 class ManagerImpl : virtual public Manager {
 public:
-  ManagerImpl(Database::Manager* _db_manager) : 
-    m_db_manager(_db_manager), 
-	  m_filter_list(m_db_manager->getConnection()) {
+  ManagerImpl() : 
+	  m_filter_list() {
   }
   virtual List& getList() {
     return m_filter_list;
@@ -223,9 +222,9 @@ public:
     data_filter->serialize(data_query);
     
     try {
-      std::auto_ptr<Database::Connection> conn(m_db_manager->getConnection());
+      Database::Connection conn = Database::Manager::acquire();
       
-      Database::Result r_data = conn->exec(data_query);
+      Database::Result r_data = conn.exec(data_query);
       std::stringstream xml_data((*r_data.begin())[0]);
       
       boost::archive::xml_iarchive load(xml_data);
@@ -254,10 +253,10 @@ public:
         boost::archive::xml_oarchive save(xml_data);
         save << BOOST_SERIALIZATION_NVP(_uf);
       }
-      std::auto_ptr<Database::Connection> conn(m_db_manager->getConnection());
+      Database::Connection conn = Database::Manager::acquire();
 
       Register::Filter::FilterImpl new_filter(_type, _name, 1, 1, xml_data.str());
-      new_filter.save(conn.get());
+      new_filter.save();
     }
     catch (std::exception& ex) {
       LOGGER(PACKAGE).error(boost::format("can't save filter (reason: %1%)") % ex.what());
@@ -265,13 +264,12 @@ public:
   }
 	
 private:
-	Database::Manager* m_db_manager;
 	ListImpl		m_filter_list;
 };
 
-Manager* Manager::create(Database::Manager* _db_manager) {
+Manager* Manager::create() {
 	TRACE("[CALL] Register::Filter::Manager::create()");
-	return new ManagerImpl(_db_manager);
+	return new ManagerImpl();
 }
 
 }

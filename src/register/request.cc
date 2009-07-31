@@ -90,7 +90,7 @@ private:
   bool partialLoad;
 
 public:
-  ListImpl(Database::Connection *_conn, Manager *_manager) : CommonListImpl(_conn), manager_(_manager), partialLoad(false) {
+  ListImpl(Manager *_manager) : CommonListImpl(), manager_(_manager), partialLoad(false) {
   }
 
   virtual Request* get(unsigned _idx) const {
@@ -158,14 +158,15 @@ public:
 	    query.order_by() << "t_1.time_begin desc";
     }
 
+    Database::Connection conn = Database::Manager::acquire();
     try {
 
 	// run all the queries
     	Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
-        conn_->exec(create_tmp_table);
-        conn_->exec(tmp_table_query);
+        conn.exec(create_tmp_table);
+        conn.exec(tmp_table_query);
 
-    	Database::Result res = conn_->exec(query);
+    	Database::Result res = conn.exec(query);
 
     	for(Database::Result::Iterator it = res.begin(); it != res.end(); ++it) {
     		Database::Row::Iterator col = (*it).begin();
@@ -232,7 +233,8 @@ public:
 	query.from()   << "request_property_value t_1 join request_property t_2 on t_1.name_id=t_2.id";
 	query.where()  << "and t_1.entry_id = " << id;
 
- 	Database::Result res = conn_->exec(query);
+    Database::Connection conn = Database::Manager::acquire();
+ 	Database::Result res = conn.exec(query);
 
     for(Database::Result::Iterator it = res.begin(); it != res.end(); ++it) {
     	Database::Row::Iterator col = (*it).begin();
@@ -278,8 +280,9 @@ public:
 
 	    }
 
+        Database::Connection conn = Database::Manager::acquire();
 	    try {
-			Database::Result res = conn_->exec(query);
+            Database::Result res = conn.exec(query);
 
 			for(Database::Result::Iterator it = res.begin(); it != res.end(); ++it) {
 				Database::Row::Iterator col = (*it).begin();
@@ -332,26 +335,20 @@ public:
 };
 
 class ManagerImpl : virtual public Manager {
-private:
-  Database::Manager *db_manager_;
-  Database::Connection *conn_;
-
 public:
-  ManagerImpl(Database::Manager *_db_manager) : db_manager_(_db_manager),
-	conn_(db_manager_->getConnection()) {
+  ManagerImpl(){
   }
   virtual ~ManagerImpl() {
-    boost::checked_delete<Database::Connection>(conn_);
   }
 
   virtual List* createList() const  {
-	return new ListImpl(conn_, (Manager *)this);
+	return new ListImpl((Manager *)this);
   }
 };
 
-Manager* Manager::create(Database::Manager *_db_manager) {
+Manager* Manager::create() {
   TRACE("[CALL] Register::Logger::Manager::create()");
-  return new ManagerImpl(_db_manager);
+  return new ManagerImpl();
 }
 
 }

@@ -98,9 +98,8 @@ ccReg_PageTable_i::getIterator()
 }
 
 void 
-ccReg_PageTable_i::setDB(Database::Manager* _dbm)
+ccReg_PageTable_i::setDB()
 {
-  dbm = _dbm;
 }
 
 void
@@ -117,7 +116,7 @@ ccReg_PageTable_i::loadFilter(ccReg::TID _id) {
   it.clearF();
 
   std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create(dbm));
+      tmp_filter_manager(Register::Filter::Manager::create());
   tmp_filter_manager->load(_id, uf);
 }
 

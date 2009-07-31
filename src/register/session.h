@@ -52,7 +52,7 @@ public:
   }
 
   virtual List* createList() const = 0;
-  static Manager* create(Database::Manager *_db_manager);
+  static Manager* create();
 };
 
 

@@ -50,7 +50,7 @@ FileClient::list()
 {
     callHelp(m_conf, list_help);
     std::auto_ptr<Register::File::Manager> fileMan(
-            Register::File::Manager::create(m_dbman));
+            Register::File::Manager::create());
     std::auto_ptr<Register::File::List> fileList(
             fileMan->createList());
 
@@ -83,7 +83,7 @@ FileClient::list()
     fileList->reload(*unionFilter);
 
     std::cout << "<object>\n";
-    for (unsigned int i = 0; i < fileList->getCount(); i++) {
+    for (unsigned int i = 0; i < fileList->getSize(); i++) {
         Register::File::File *file = fileList->get(i);
         std::cout
             << "\t<file>\n"
@@ -91,10 +91,10 @@ FileClient::list()
             << "\t\t<name>" << file->getName() << "</name>\n"
             << "\t\t<path>" << file->getPath() << "</path>\n"
             << "\t\t<mime>" << file->getMimeType() << "</mime>\n"
-            << "\t\t<type>" << file->getType() << "</type>\n"
-            << "\t\t<type_desc>" << file->getTypeDesc() << "</type_desc>\n"
-            << "\t\t<crdate>" << file->getCreateTime() << "</crdate>\n"
-            << "\t\t<size>" << file->getSize() << "</size>\n"
+            << "\t\t<type>" << file->getFileTypeId() << "</type>\n"
+            << "\t\t<type_desc>" << file->getFileType()->getName() << "</type_desc>\n"
+            << "\t\t<crdate>" << file->getCrDate() << "</crdate>\n"
+            << "\t\t<size>" << file->getFilesize() << "</size>\n"
             << "\t</file>\n";
     }
     std::cout << "</object>" << std::endl;

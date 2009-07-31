@@ -46,6 +46,9 @@
 #define REGISTRAR_ZONE_FQDN_NAME        "zone_fqdn"
 #define REGISTRAR_ZONE_FQDN_NAME_DESC   "fqdn of new zone"
 
+#define REGISTRAR_ZONE_ID_NAME          "zone_id"
+#define REGISTRAR_ZONE_ID_NAME_DESC     "zone id"
+
 #define REGISTRAR_ICO_NAME              "ico"
 #define REGISTRAR_ICO_NAME_DESC         "organization identifier number"
 #define REGISTRAR_DIC_NAME              "dic"

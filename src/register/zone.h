@@ -89,6 +89,14 @@ namespace Register
               const std::string &addr="")
           throw (SQL_ERROR) = 0;
       virtual void addPrice(
+              int zone,
+              Operation operation,
+              const Database::DateTime &validFrom,
+              const Database::DateTime &validTo,
+              const Database::Money &price,
+              int period)
+          throw (SQL_ERROR) = 0;
+      virtual void addPrice(
               const std::string &zone,
               Operation operation,
               const Database::DateTime &validFrom,

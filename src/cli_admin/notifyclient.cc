@@ -19,7 +19,6 @@
 #include "simple.h"
 #include "commonclient.h"
 #include "notifyclient.h"
-#include "register/bank.h"
 #include "register/info_buffer.h"
 
 namespace Admin {

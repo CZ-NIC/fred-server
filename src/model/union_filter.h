@@ -103,6 +103,8 @@ public:
     _ar.register_type(static_cast<ObjectStateImpl *>(NULL));
     _ar.register_type(static_cast<StatementImpl *>(NULL));
     _ar.register_type(static_cast<OnlineStatementImpl *>(NULL));
+    _ar.register_type(static_cast<StatementItemImpl *>(NULL));
+    _ar.register_type(static_cast<StatementHeadImpl *>(NULL));
     /*
      * TODO
     _ar.register_type(static_cast<::Database::Filters::RequestImpl *>(NULL));

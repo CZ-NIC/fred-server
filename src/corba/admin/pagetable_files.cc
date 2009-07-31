@@ -40,9 +40,9 @@ Registry::TableRow* ccReg_Files_i::getRow(CORBA::Short _row)
   Registry::TableRow *tr = new Registry::TableRow;
   tr->length(4);
   (*tr)[0] <<= C_STR(file->getName());
-  (*tr)[1] <<= C_STR(file->getCreateTime());
-  (*tr)[2] <<= C_STR(file->getTypeDesc());
-  (*tr)[3] <<= C_STR(file->getSize());
+  (*tr)[1] <<= C_STR(file->getCrDate());
+  (*tr)[2] <<= C_STR(const_cast<Register::File::File *>(file)->getFileType()->getName());
+  (*tr)[3] <<= C_STR(file->getFilesize());
   return tr;
 }
 
@@ -86,7 +86,7 @@ char* ccReg_Files_i::outputCSV() {
 CORBA::Short ccReg_Files_i::numRows() {
   Logging::Context ctx(base_context_);
 
-  return file_list_->getCount();
+  return file_list_->getSize();
 }
 
 CORBA::Short ccReg_Files_i::numColumns() {
@@ -139,7 +139,7 @@ void ccReg_Files_i::saveFilter(const char* _name) {
   TRACE(boost::format("[CALL] ccReg_Files_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create(dbm));
+      tmp_filter_manager(Register::Filter::Manager::create());
   tmp_filter_manager->save(Register::Filter::FT_FILE, _name, uf);
 }
 

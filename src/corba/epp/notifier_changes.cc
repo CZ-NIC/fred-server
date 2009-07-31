@@ -183,7 +183,7 @@ void MessageUpdateChanges::_collectContactChanges(ChangesMap &_changes) const
   filter->addId().setValue(Database::ID(object_id_));
   uf.addFilter(filter);
   
-  data->reload(uf, dbm_);
+  data->reload(uf);
 
   if (data->size() < 2)
     throw NoChangesFound();
@@ -208,7 +208,7 @@ void MessageUpdateChanges::_collectDomainChanges(ChangesMap &_changes) const
   filter->addId().setValue(Database::ID(object_id_));
   uf.addFilter(filter);
   
-  data->reload(uf, dbm_);
+  data->reload(uf);
 
   if (data->size() < 2)
     throw NoChangesFound();
@@ -233,7 +233,7 @@ void MessageUpdateChanges::_collectNSSetChanges(ChangesMap &_changes) const
   filter->addId().setValue(Database::ID(object_id_));
   uf.addFilter(filter);
   
-  data->reload(uf, dbm_);
+  data->reload(uf);
 
   if (data->size() < 2)
     throw NoChangesFound();
@@ -258,7 +258,7 @@ void MessageUpdateChanges::_collectKeySetChanges(ChangesMap &_changes) const
   filter->addId().setValue(Database::ID(object_id_));
   uf.addFilter(filter);
   
-  data->reload(uf, dbm_);
+  data->reload(uf);
 
   if (data->size() < 2)
     throw NoChangesFound();

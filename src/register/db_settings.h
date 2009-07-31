@@ -34,14 +34,23 @@
 
 namespace Database {
 
-  typedef Factory::Simple<PSQLConnection>         ConnectionFactory;
-  typedef Manager_<ConnectionFactory>             Manager;
+  typedef Factory::ConnectionPool<PSQLConnection> ConnectionFactory;
+  typedef TSSManager_<ConnectionFactory>          Manager;
 
   typedef Manager::connection_type                Connection;
   typedef Manager::transaction_type               Transaction;
   typedef Manager::result_type                    Result;
   typedef Manager::sequence_type                  Sequence;
   typedef Manager::row_type                       Row;
+  
+  // typedef Factory::Simple<PSQLConnection>         SimpleConnectionFactory;
+  // typedef Manager_<SimpleConnectionFactory>       SimpleManager;
+// 
+  // typedef SimpleManager::connection_type                SimpleConnection;
+  // typedef SimpleManager::transaction_type               SimpleTransaction;
+  // typedef SimpleManager::result_type                    SimpleResult;
+  // typedef SimpleManager::sequence_type                  SimpleSequence;
+  // typedef SimpleManager::row_type                       SimpleRow;
 
 }
 

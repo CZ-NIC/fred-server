@@ -63,7 +63,8 @@ am_libadmin_impl_a_OBJECTS = admin_impl.$(OBJEXT) \
 	pagetable_nssets.$(OBJEXT) pagetable_registrars.$(OBJEXT) \
 	pagetable_files.$(OBJEXT) pagetable_keysets.$(OBJEXT) \
 	pagetable_logger.$(OBJEXT) pagetable_logsession.$(OBJEXT) \
-	common.$(OBJEXT)
+	pagetable_statement_items.$(OBJEXT) common.$(OBJEXT) \
+	bankinginvoicing_impl.$(OBJEXT)
 libadmin_impl_a_OBJECTS = $(am_libadmin_impl_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -237,8 +238,15 @@ target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LIBRARIES = libadmin_impl.a
-AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(AM_CFLAGS) -I$(top_srcdir)/util \
-              -I$(top_srcdir)/src -I$(top_builddir)/src -I$(top_srcdir)
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) 	\
+			  $(BOOST_CPPFLAGS) 	\
+			  $(AM_CFLAGS) 			\
+			  $(XML2_CFLAGS) 		\
+			  -I$(top_srcdir)/util 	\
+              -I$(top_srcdir)/src 	\
+			  -I$(top_builddir)/src \
+			  -I$(top_srcdir)		\
+			  -I$(top_srcdir)/util/db/model
 
 libadmin_impl_a_SOURCES = admin_impl.cc                 \
                           admin_impl.h                  \
@@ -272,14 +280,18 @@ libadmin_impl_a_SOURCES = admin_impl.cc                 \
                           pagetable_files.h             \
                           pagetable_keysets.cc          \
                           pagetable_keysets.h           \
-			  pagetable_logger.cc		\
-			  pagetable_logger.h		\
-			  pagetable_logsession.cc	\
-			  pagetable_logsession.h	\
+			  			  pagetable_logger.cc			\
+			  			  pagetable_logger.h			\
+						  pagetable_logsession.cc		\
+						  pagetable_logsession.h		\
+						  pagetable_statement_items.cc	\
+						  pagetable_statement_items.h	\
                           str_corbaout.h                \
-			  usertype_conv.h		\
+						  usertype_conv.h				\
                           common.cc                     \
-                          common.h 
+                          common.h 						\
+						  bankinginvoicing_impl.cc		\
+						  bankinginvoicing_impl.h
 
 all: all-am
 
@@ -329,6 +341,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/admin_impl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bankinginvoicing_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filter_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_contacts.Po@am__quote@
@@ -345,6 +358,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_nssets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_publicrequests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_registrars.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_statement_items.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/session_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/user_impl.Po@am__quote@
 

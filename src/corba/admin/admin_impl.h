@@ -30,7 +30,6 @@ private:
   Config::Conf& cfg;
   DB db;
   std::auto_ptr<Register::Manager> register_manager_;
-  Database::Manager m_db_manager;
 
   typedef std::map<std::string, ccReg_Session_i*> SessionListType;
   SessionListType m_session_list;

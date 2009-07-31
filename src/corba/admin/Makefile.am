@@ -1,7 +1,14 @@
 noinst_LIBRARIES = libadmin_impl.a
 
-AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(AM_CFLAGS) -I$(top_srcdir)/util \
-              -I$(top_srcdir)/src -I$(top_builddir)/src -I$(top_srcdir)
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) 	\
+			  $(BOOST_CPPFLAGS) 	\
+			  $(AM_CFLAGS) 			\
+			  $(XML2_CFLAGS) 		\
+			  -I$(top_srcdir)/util 	\
+              -I$(top_srcdir)/src 	\
+			  -I$(top_builddir)/src \
+			  -I$(top_srcdir)		\
+			  -I$(top_srcdir)/util/db/model
 
 libadmin_impl_a_SOURCES = admin_impl.cc                 \
                           admin_impl.h                  \
@@ -35,12 +42,16 @@ libadmin_impl_a_SOURCES = admin_impl.cc                 \
                           pagetable_files.h             \
                           pagetable_keysets.cc          \
                           pagetable_keysets.h           \
-			  pagetable_logger.cc		\
-			  pagetable_logger.h		\
-			  pagetable_logsession.cc	\
-			  pagetable_logsession.h	\
+			  			  pagetable_logger.cc			\
+			  			  pagetable_logger.h			\
+						  pagetable_logsession.cc		\
+						  pagetable_logsession.h		\
+						  pagetable_statement_items.cc	\
+						  pagetable_statement_items.h	\
                           str_corbaout.h                \
-			  usertype_conv.h		\
+						  usertype_conv.h				\
                           common.cc                     \
-                          common.h 
+                          common.h 						\
+						  bankinginvoicing_impl.cc		\
+						  bankinginvoicing_impl.h
 

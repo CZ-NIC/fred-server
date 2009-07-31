@@ -97,7 +97,7 @@ NssetClient::list()
     unionFilter->addFilter(nssFilter);
     nssList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
 
-    nssList->reload(*unionFilter, m_dbman);
+    nssList->reload(*unionFilter);
 
     std::cout << "<objects>\n";
     for (unsigned int i = 0; i < nssList->getCount(); i++) {

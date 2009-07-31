@@ -14,132 +14,189 @@
  *  You should have received a copy of the GNU General Public License
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include <boost/thread/thread.hpp>
 #include <memory>
 #include <iostream>
+#include <fstream>
 #include <string>
-#include "register.h"
-#include "old_utils/dbsql.h"
+#include "db_settings.h"
+#include "file.h"
+#include "invoice_manager.h"
+#include "bank_manager.h"
+// #include "bank.h"
+#include "mail.h"
+
+// #define CONNECTION_STRING       "host=localhost dbname=fred user=fred port=6655"
+#define CONNECTION_STRING       "host=localhost dbname=onebank2 user=fred port=22345"
 
 
-int main()
+void
+bank_item()
 {
-  DB db;
-  //  db.OpenDatabase("host=localhost dbname=ccreg user=postgres");
-  db.OpenDatabase("host=curlew dbname=ccreg user=ccreg");
-  std::auto_ptr<Register::Manager> m(Register::Manager::create(&db, true));
-  Register::Registrar::Manager *rm = m->getRegistrarManager();
-/*
-  Register::Registrar::RegistrarList *rl2 = rm->getList();
-  //  rl2->setIdFilter(2);
-  rl2->reload();
-  for (unsigned i=0; i<rl2->size(); i++)
-    std::cout << "R:" << rl2->get(i)->getHandle() 
-              << " C:" << rl2->get(i)->getCredit()
-              << std::endl;
-  */
-  /*
-  Register::Registrar::Registrar *r = rl2->get(0);
-  r->setName("Name2");
-  r->setURL("URL");
-  r->save();
-  /// -=-=-=-=-=-
-  /// DOMAINS
-  /// -=-=-=-=-=-
-  //Register::Domain::List *dl = dm->getList();
-  ///dl->reload();
-  //for (unsigned i=0; i<dl->getCount(); i++)
-///    std::cout << dl->get(i)->getFQDN() << std::endl;
-  /// -=-=-=-=-=-
-  /// ACTIONS
-  /// -=-=-=-=-=-
-  Register::Registrar::EPPActionList *eal = rm->getEPPActionList();
-  eal->setRegistrarHandleFilter("REG");
-  eal->setTimePeriodFilter(
-    time_period(
-      ptime(date(2006,1,1),time_duration(0,0,0)),
-      ptime(date(2006,1,1),time_duration(24,0,0))
-    )
-  );
-  eal->setReturnCodeFilter(1000);
-  eal->setHandleFilter("d");
-  eal->setTextTypeFilter("c");
-  eal->setClTRIDFilter("b");
-  eal->setSvTRIDFilter("a");      
-  eal->reload();
-  for (unsigned i=0; i<eal->size(); i++) {
-    const Register::Registrar::EPPAction *a = eal->get(i);
-    std::cout << "id:" << a->getType() 
-              << " handle: " << a->getRegistrarHandle() << std::endl;
-  }
-  /// -=-=-=-=-=-
-  /// REGISTARS
-  /// -=-=-=-=-=-
-  Register::Registrar::RegistrarList *rl = rm->getList();
-  std::string filtr;
-//  std::cout << "Registrar filter: ";
-//  std::cin >> filtr;
-  rl->setNameFilter(filtr);
-  rl->reload();
-  for (unsigned i=0; i<rl->size(); i++) {
-    const Register::Registrar::Registrar *r = rl->get(i);
-    std::cout << "id:" << r->getId() 
-              << " handle: " << r->getHandle() << std::endl;
-    for (unsigned j=0; j<r->getACLSize(); j++)
-      std::cout << "  cert:" << r->getACL(j)->getCertificateMD5()
-                << " pass:" << r->getACL(j)->getPassword()
-                << std::endl;
-  }
-  /// -=-=-=-=-=-
-  /// DOMAINS
-  /// -=-=-=-=-=-
-  Register::Domain::List *dl = dm->getList();
-  dl->setRegistrarHandleFilter("REG");
-  dl->setRegistrantHandleFilter("CID");
-  dl->setCrDateIntervalFilter(
-    time_period(
-      ptime(date(2006,1,1),time_duration(0,0,0)),
-      ptime(date(2006,1,1),time_duration(24,0,0))
-    )
-  );
-  dl->setFQDNFilter("dom");
-  dl->setAdminHandleFilter("a");
-  dl->setNSSetHandleFilter("n");
-  dl->reload();
-  */
-  // im->archiveInvoices();
-  while (1) {
-    std::string input;
-    std::cout << "Handle: ";
-    std::cin >> input;
-    Register::CheckHandleList chl;
-    m->checkHandle(input,chl);
-    if (chl.size() < 1) return -1;
-    std::map<Register::CheckHandleClass,std::string> chcMap;
-    chcMap[Register::CH_UNREGISTRABLE] = "CH_UNREGISTRABLE";
-    chcMap[Register::CH_UNREGISTRABLE_LONG] = "CH_UNREGISTRABLE_LONG";
-    chcMap[Register::CH_REGISTRED] = "CH_REGISTRED";
-    chcMap[Register::CH_REGISTRED_PARENT] = "CH_REGISTRED_PARENT";
-    chcMap[Register::CH_REGISTRED_CHILD] = "CH_REGISTRED_CHILD";
-    chcMap[Register::CH_PROTECTED] = "CH_PROTECTED";
-    chcMap[Register::CH_FREE] = "CH_FREE";
-    
-    std::map<Register::HandleType,std::string> htMap;
-    htMap[Register::HT_ENUM_NUMBER] = "HT_ENUM_NUMBER";
-    htMap[Register::HT_ENUM_DOMAIN] = "HT_ENUM_DOMAIN";
-    htMap[Register::HT_DOMAIN] = "HT_DOMAIN";
-    htMap[Register::HT_CONTACT] = "HT_CONTACT";
-    htMap[Register::HT_NSSET] = "HT_NSSET";
-    htMap[Register::HT_REGISTRAR] = "HT_REGISTRAR";
-    htMap[Register::HT_OTHER] = "HT_OTHER";
-      
-    std::cout << "Result of checkHandle: \n";
-    for (unsigned i=0; i< chl.size(); i++) {
-      std::cout << i+1 << ".\n" 
-                << " Type: " << htMap[chl[i].type] << std::endl
-                << " Class: " << chcMap[chl[i].handleClass] << std::endl
-                << " NewHandle: " << chl[i].newHandle << std::endl
-                << " Conflict: " << chl[i].conflictHandle << std::endl;
-    }
-  }
+    std::auto_ptr<Register::Banking::Manager> bankMan(
+            Register::Banking::Manager::create());
+
+    std::auto_ptr<Register::Banking::ItemList> itemList(
+            bankMan->createItemList());
+
+    Database::Filters::StatementItem *itemFilter;
+    itemFilter = new Database::Filters::StatementItemImpl();
+    itemFilter->addConstSymb().setValue("0308");
+
+    Database::Filters::Union *unionFilter;
+    unionFilter = new Database::Filters::Union();
+    unionFilter->addFilter(itemFilter);
+    itemList->reload(*unionFilter);
+    std::cout << itemList->getSize() << std::endl;
 }
+
+void
+file_2()
+{
+    std::auto_ptr<Register::File::Manager> fileMan(
+            Register::File::Manager::create());
+    std::auto_ptr<Register::File::List> fileList(fileMan->createList());
+
+    Database::Filters::File *filFilter;
+    filFilter = new Database::Filters::FileImpl(true);
+
+    Database::Filters::Union *unionFilter;
+    unionFilter = new Database::Filters::Union();
+    unionFilter->addFilter(filFilter);
+    fileList->reload(*unionFilter);
+    std::cout << fileList->getSize() << std::endl;
+    for (int i = 0; i < (int)fileList->getSize(); i++) {
+        Register::File::File *file = fileList->get(i);
+        std::cout << file->getName() << ", " << file->getPath() << std::endl;
+    }
+}
+
+void
+invoice()
+{
+    std::auto_ptr<Register::Invoicing::Manager> invMan(
+            Register::Invoicing::Manager::create());
+    std::auto_ptr<Register::Invoicing::List> invList(invMan->createList());
+
+    Database::Filters::Invoice *invFilter = new Database::Filters::InvoiceImpl();
+    Database::Filters::Union *unionFilter = new Database::Filters::Union();
+
+    unionFilter->addFilter(invFilter);
+    invList->reload(*unionFilter);
+    std::cout << invList->getSize() << std::endl;
+    for (int i = 0; i < (int)invList->getSize(); i++) {
+        Register::Invoicing::Invoice *invoice = invList->get(i);
+        std::cout << invoice->getZone()->getFqdn() << ", "
+            << invoice->getCrDate() << ", " << invoice->getRegistrarId() << ": "
+            << invoice->getRegistrar()->getHandle() << std::endl;
+    }
+
+}
+
+void
+deposit_invoice()
+{
+    std::auto_ptr<Register::Invoicing::Manager> invMan(
+            Register::Invoicing::Manager::create());
+    std::auto_ptr<Register::Invoicing::Invoice> invoice(
+            invMan->createDepositInvoice());
+
+    // ModelZone *zone = new ModelZone();
+    // zone->setId(3);
+    // zone->setFqdn("cz");
+    // invoice->setZone(zone);
+    // invoice->setZone(zone);
+    invoice->setZoneId(3);
+    invoice->setRegistrarId(1);
+    invoice->setPrice(Database::Money("14000"));
+    // invoice->setTaxDate(Database::Date(Database::NOW));
+    invoice->save();
+}
+
+void
+load_xml(bool create_deposit_invoice)
+{
+    std::auto_ptr<Register::Banking::Manager> bankMan(
+            Register::Banking::Manager::create());
+
+    std::ifstream input;
+    input.open("/dev/stdin", std::ios::in);
+
+    bankMan->importStatementXml(input, create_deposit_invoice);
+}
+
+#if 0
+void
+pair_invoices()
+{
+    std::auto_ptr<Register::Invoicing::Manager> invMan(
+            Register::Invoicing::Manager::create());
+    invMan->pairInvoices();
+}
+
+#endif
+
+void
+factoring(unsigned long long id)
+{
+    std::auto_ptr<Register::Invoicing::Manager> invMan(
+            Register::Invoicing::Manager::create());
+    std::auto_ptr<Register::Invoicing::Invoice>
+        invoice(invMan->createAccountInvoice());
+    invoice->setRegistrarId(id);
+    // invoice->setZoneName("cz");
+    invoice->setZoneId(3);
+    invoice->setToDate("2009-04-20");
+    invoice->setTaxDate("2009-04-20");
+    invoice->save();
+}
+
+int main(int argc, char **argv)
+{
+    boost::any param;
+    param = (unsigned int)1;
+
+    // LT_FILE, LT_SYSLOG, LT_CONSOLE
+    Logging::Manager::instance_ref().get("tracer").addHandler(Logging::Log::LT_CONSOLE, param);
+    Logging::Manager::instance_ref().get("tracer").setLevel(Logging::Log::LL_TRACE);
+    Logging::Manager::instance_ref().get("db").addHandler(Logging::Log::LT_CONSOLE, param);
+    Logging::Manager::instance_ref().get("db").setLevel(Logging::Log::LL_TRACE);
+    Logging::Manager::instance_ref().get("register").addHandler(Logging::Log::LT_CONSOLE, param);
+    Logging::Manager::instance_ref().get("register").setLevel(Logging::Log::LL_TRACE);
+    Logging::Manager::instance_ref().get("corba").addHandler(Logging::Log::LT_CONSOLE, param);
+    Logging::Manager::instance_ref().get("corba").setLevel(Logging::Log::LL_TRACE);
+    Logging::Manager::instance_ref().get("mailer").addHandler(Logging::Log::LT_CONSOLE, param);
+    Logging::Manager::instance_ref().get("mailer").setLevel(Logging::Log::LL_TRACE);
+    Logging::Manager::instance_ref().get("old_log").addHandler(Logging::Log::LT_CONSOLE, param);
+    Logging::Manager::instance_ref().get("old_log").setLevel(Logging::Log::LL_TRACE);
+    Logging::Manager::instance_ref().get("fred-server").addHandler(Logging::Log::LT_CONSOLE, param);
+    Logging::Manager::instance_ref().get("fred-server").setLevel(Logging::Log::LL_TRACE);
+
+    Database::Manager::init(new Database::ConnectionFactory(CONNECTION_STRING, 1, 10));
+    boost::thread thdr1(boost::bind(&deposit_invoice));
+    thdr1.join();
+
+    // boost::thread_group threads;
+    // threads.create_thread(&deposit_invoice);
+    // threads.create_thread(&deposit_invoice);
+    // threads.create_thread(&deposit_invoice);
+    // threads.create_thread(&deposit_invoice);
+    // threads.join_all();
+    // deposit_invoice();
+    // invoice();
+    // file_2();
+    // deposit_invoice();
+    // load_xml(false);
+    // bank_item();
+    // pair_invoices();
+    // factoring(1);
+    // factoring(2);
+    // factoring(3);
+    // factoring(4);
+    
+    // insert_mail();
+    // get_mail();
+    // list_mail();
+    return 0;
+}
+

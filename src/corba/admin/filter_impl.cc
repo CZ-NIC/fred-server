@@ -500,6 +500,22 @@ COMPOUND_CLASS(Session, Session, Compound,
     FILTER_ADD(Str, addLang);
 );
 
+COMPOUND_CLASS(StatementItem, StatementItem, Compound,
+    FILTER_ADD(Id, addId);
+    FILTER_ADD(Str, addAccountNumber);
+    FILTER_ADD(Str, addBankCode);
+    FILTER_ADD(Int, addCode);
+    FILTER_ADD(Int, addType);
+    FILTER_ADD(Str, addConstSymb);
+    FILTER_ADD(Str, addVarSymb);
+    FILTER_ADD(Str, addSpecSymb);
+    FILTER_ADD(Str, addAccountEvid);
+    FILTER_ADD(Date, addAccountDate);
+    FILTER_ADD(Id, addInvoiceId);
+    FILTER_ADD(Str, addAccountName);
+    FILTER_ADD(DateTime, addCrTime);
+);
+
 FilterIteratorImpl::FilterIteratorImpl() :
   i(flist.end()) {
   TRACE("[CALL] FilterIteratorImpl::FilterIteratorImpl()");
@@ -579,6 +595,7 @@ ITERATOR_ADD_E_METHOD_IMPL(RequestPropertyValue,RequestPropertyValue);
 ITERATOR_ADD_E_METHOD_IMPL(RequestData,RequestData);
 ITERATOR_ADD_E_METHOD_IMPL(Request,Request);
 ITERATOR_ADD_E_METHOD_IMPL(Session,Session);
+ITERATOR_ADD_E_METHOD_IMPL(StatementItem, StatementItem);
 
 #define ITERATOR_ADD_FILTER_METHOD_IMPL(ct,dt) \
   { Database::Filters::dt *rf = dynamic_cast<Database::Filters::dt *>(f); \
@@ -615,5 +632,6 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(IntInterval,Interval<int>);
   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestServiceType,Value<Database::RequestServiceType>);
 //   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestActionType,Value<Database::RequestActionType>);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(StatementItem, StatementItem);
 }
 

@@ -2,14 +2,23 @@ SUBDIRS = admin epp log
 CLEANFILES=ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh
 
 AM_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS)
-AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(OMNIORB4_CFLAGS) -I$(top_srcdir)/util -I$(top_srcdir)/src -I$(top_builddir)/src -I$(top_srcdir) -I$(top_srcdir)/util/db/model
+AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) 		\
+			  $(BOOST_CPPFLAGS) 		\
+			  $(OMNIORB4_CFLAGS) 		\
+			  $(XML2_CFLAGS)			\
+			  -I$(top_srcdir)/util 		\
+			  -I$(top_srcdir)/src 		\
+			  -I$(top_builddir)/src 	\
+			  -I$(top_srcdir)			\
+			  -I$(top_srcdir)/util/db/model
 
 LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
 	$(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
-	admin/libadmin_impl.a epp/libepp_impl.a \
+	admin/libadmin_impl.a \
+	epp/libepp_impl.a \
 	log/liblog_impl.a libcorba.a \
-        $(top_builddir)/src/register/libfred.a \
+	$(top_builddir)/src/register/libfred.a \
 	$(top_builddir)/src/model/libmodel.a \
 	$(top_builddir)/util/db/libdb.a \
 	$(top_builddir)/util/types/libtypes.a \
@@ -26,6 +35,12 @@ IDLFILE = $(IDLDIR)/ccReg.idl
 sbin_PROGRAMS = fred-rifd fred-adifd fred-pifd fred-logd
 
 noinst_LIBRARIES   = libcorba.a
+
+noinst_PROGRAMS = test
+
+test_SOURCES = test-admin.cc
+test_LDADD = $(XML2_LIBS) $(LDADD)
+
 BUILT_SOURCES      = ccRegSK.cc ccRegDynSK.cc ccReg.hh
 libcorba_a_SOURCES = nameservice.cc mailer_manager.cc nameservice.h mailer_manager.h 
 #		     epp/epp_impl.cc epp/messages.cc epp/notifier.cc epp/tech_check.cc epp/countrycode.cc \

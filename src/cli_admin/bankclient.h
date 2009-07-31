@@ -24,8 +24,6 @@
 #define BANK_SHOW_OPTS_NAME_DESC        "show all banking options"
 #define BANK_STATEMENT_LIST_NAME        "bank_statement_list"
 #define BANK_STATEMENT_LIST_NAME_DESC   "list of payments (filterable)"
-#define BANK_ONLINE_LIST_NAME           "bank_online_list"
-#define BANK_ONLINE_LIST_NAME_DESC      "list of online payments (filterable)"
 #define BANK_DATE_NAME                  "bank_date"
 #define BANK_DATE_NAME_DESC             "bank create date"
 #define BANK_ID_NAME                    "bank_id"
@@ -56,18 +54,14 @@
 #define BANK_XML_FILE_NAME              "bank_xml"
 #define BANK_XML_FILE_NAME_DESC         "xml file name"
 
-#define BANK_ONLINE_NAME                "online"
-#define BANK_ONLINE_NAME_DESC           "if imported bank statement is online"
 
 #define BANK_STATEMENT_LIST_HELP_NAME       "bank_statement_list_help"
 #define BANK_STATEMENT_LIST_HELP_NAME_DESC  "bank statement list help"
-#define BANK_ONLINE_LIST_HELP_NAME          "bank_online_list_help"
-#define BANK_ONLINE_LIST_HELP_NAME_DESC     "bank_online_list_help"
 
 #define BANK_CREDIT_NAME                "bank_credit"
 #define BANK_CREDIT_NAME_DESC           "bank credit"
 
-#define BANK_CREATE_CREDIT_INVOICE_NAME     "create_credit_invoice"
+#define BANK_CREATE_CREDIT_INVOICE_NAME     "cr_credit_invoice"
 #define BANK_CREATE_CREDIT_INVOICE_NAME_DESC "create also credit invoice if appliable"
 
 #define BANK_ADD_ACCOUNT_NAME           "bank_add_account"
@@ -78,6 +72,19 @@
 #define BANK_ZONE_NAME_NAME_DESC        "zone name"
 #define BANK_ACCOUNT_NAME_NAME          "account_name"
 #define BANK_ACCOUNT_NAME_NAME_DESC     "account name"
+
+#define BANK_XML_FILE_ID_NAME           "xml_file_id"
+#define BANK_XML_FILE_ID_NAME_DESC      "id of the xml file"
+
+#define BANK_MOVE_STATEMENT_NAME        "move_statement_item"
+#define BANK_MOVE_STATEMENT_NAME_DESC   "set head to statement item"
+#define BANK_FORCE_NAME                 "force"
+#define BANK_FORCE_NAME_DESC            "force"
+#define BANK_ITEM_ID_NAME               "item_id"
+#define BANK_ITEM_ID_NAME_DESC          "item id"
+#define BANK_HEAD_ID_NAME               "head_id"
+#define BANK_HEAD_ID_NAME_DESC          "head id"
+
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -119,14 +126,14 @@ public:
 
     void show_opts();
     void statement_list();
-    void online_list();
     void import_xml();
     void import_xml_help();
     void add_bank_account();
+    void move_statement();
 
-    void online_list_help();
     void statement_list_help();
     void add_bank_account_help();
+    void move_statement_help();
 }; // class BankClient
 
 } // namespace Admin;

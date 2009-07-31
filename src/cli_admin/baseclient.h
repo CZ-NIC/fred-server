@@ -32,24 +32,19 @@ class BaseClient {
 protected:
   std::string        m_connstring;
   std::string        m_nsAddr;
-  Database::Manager *m_dbman;
 
 public:
-  BaseClient() : m_dbman(0) {
+  BaseClient() {
   }
 
 
   BaseClient(const std::string &_conn_string,
              const std::string &_nsaddr)
            : m_connstring(_conn_string),
-             m_nsAddr(_nsaddr),
-             m_dbman(new Database::Manager(new ConnectionFactory(_conn_string))) {
+             m_nsAddr(_nsaddr) {
   }
 
   virtual ~BaseClient() {
-    if (m_dbman) {
-      delete m_dbman;
-    }
   }
 
 
@@ -57,7 +52,6 @@ public:
             const std::string &_nsaddr) {
     m_connstring = _conn_string;
     m_nsAddr     = _nsaddr;
-    m_dbman      = new Database::Manager(new ConnectionFactory(m_connstring));
   }
   void no_help()
   {

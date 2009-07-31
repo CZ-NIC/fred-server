@@ -120,7 +120,7 @@ void ccReg_Logger_i::reload() {
 
   TRACE("[CALL] ccReg_Logger_i::reload()");
   m_lel->setPartialLoad(true);
-//  m_lel->reload(uf, dbm);
+//  m_lel->reload(uf);
   m_lel->reload(uf);
 }
 
@@ -161,7 +161,7 @@ void ccReg_Logger_i::saveFilter(const char* _name) {
   TRACE(boost::format("[CALL] ccReg_Logger_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create(dbm));
+      tmp_filter_manager(Register::Filter::Manager::create());
   tmp_filter_manager->save(Register::Filter::FT_LOGGER, _name, uf);
 }
 

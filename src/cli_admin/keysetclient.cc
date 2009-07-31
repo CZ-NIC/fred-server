@@ -103,7 +103,7 @@ KeysetClient::list()
     unionFilter->addFilter(keyFilter);
     apply_LIMIT(keyList);
 
-    keyList->reload(*unionFilter, m_dbman);
+    keyList->reload(*unionFilter);
 
     std::cout << "<object>\n";
     for (unsigned int i = 0; i < keyList->getCount(); i++) {

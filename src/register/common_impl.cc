@@ -49,12 +49,12 @@ void CommonObjectImpl::setId(TID id) {
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 CommonListImpl::CommonListImpl(DB *_db) :
-  db(_db), conn_(0), load_limit_(1000), real_size_(0), real_size_initialized_(false),
+  db(_db), load_limit_(1000), real_size_(0), real_size_initialized_(false),
   ptr_idx_(-1), add(false), wcheck(true), idFilter(0) {
 }
 
-CommonListImpl::CommonListImpl(Database::Connection *_conn) :
-  conn_(_conn), load_limit_(1000), real_size_(0), real_size_initialized_(false),
+CommonListImpl::CommonListImpl() :
+  load_limit_(1000), real_size_(0), real_size_initialized_(false),
   ptr_idx_(-1), add(false), wcheck(true), idFilter(0) {
 }
 
@@ -174,10 +174,11 @@ void CommonListImpl::makeRealCount(Database::Filters::Union &_filter) {
 
   Database::SelectQuery count_query;
   _filter.serialize(count_query);
+
+  Database::Connection conn = Database::Manager::acquire();
  
-  if (conn_) {
     try {
-      Database::Result r_count = conn_->exec(count_query);
+      Database::Result r_count = conn.exec(count_query);
       real_size_ = (*(r_count.begin()))[0];
       real_size_initialized_ = true;
     }
@@ -187,16 +188,6 @@ void CommonListImpl::makeRealCount(Database::Filters::Union &_filter) {
     catch (std::exception& ex) {
       LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
-  }
-  else {
-    if (!db->ExecSelect(count_query.c_str())) {
-      LOGGER(PACKAGE).error("filter data count failed - old database library connection used");
-    }
-    else {
-      real_size_ = atoll(db->GetFieldValue(0, 0));
-      real_size_initialized_ = true;
-    }
-  }
 }
 
 void CommonListImpl::makeRealCount() throw (SQL_ERROR) {
@@ -215,11 +206,12 @@ void CommonListImpl::makeRealCount() throw (SQL_ERROR) {
 void CommonListImpl::fillTempTable(Database::InsertQuery& _query) {
   try {
     Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
-    conn_->exec(create_tmp_table);
-    conn_->exec(_query);
+    Database::Connection conn = Database::Manager::acquire();
+    conn.exec(create_tmp_table);
+    conn.exec(_query);
     
     Database::Query analyze("ANALYZE " + std::string(getTempTableName()));
-    conn_->exec(analyze);
+    conn.exec(analyze);
   }
   catch (Database::Exception& ex) {
     LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());

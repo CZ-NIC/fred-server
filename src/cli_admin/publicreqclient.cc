@@ -88,7 +88,6 @@ PublicRequestClient::list()
 
     std::auto_ptr<Register::PublicRequest::Manager> prMan(
             Register::PublicRequest::Manager::create(
-                m_dbman,
                 domMan.get(),
                 conMan.get(),
                 nssMan.get(),

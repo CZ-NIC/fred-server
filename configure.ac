@@ -243,13 +243,14 @@ AC_CONFIG_FILES([Makefile
                  src/corba/Makefile
                  src/corba/admin/Makefile
                  src/corba/epp/Makefile
-                 src/corba/log/Makefile                 
-                 tools/logd_migration/Makefile
-                 tools/Makefile
+                 src/corba/log/Makefile
                  src/cli_admin/Makefile
+                 tools/Makefile
+                 tools/logd_migration/Makefile
                  fred-server.spec
                  config/server.conf
                  init-scripts/fred-server
-                 src/cli_admin/banking.sh])
+                 src/cli_admin/banking.sh
+                 ])
 AC_OUTPUT
 

@@ -1,10 +1,10 @@
-#ifndef FILE_H_
-#define FILE_H_
+#ifndef _FILE_H_
+#define _FILE_H_
 
-#include "common_object.h"
-#include "object.h"
+#include "common_impl_new.h"
 #include "db_settings.h"
 #include "model/model_filters.h"
+#include "model_files.h"
 
 namespace Register {
 namespace File {
@@ -16,42 +16,41 @@ enum MemberType {
   MT_SIZE
 };
 
-
-class File : virtual public Register::CommonObject {
+class File:
+    public ModelFiles,
+    virtual public Register::CommonObjectImplNew {
+private:
+    std::string m_typeDesc;
 public:
-  virtual const std::string& getName() const = 0;
-  virtual const std::string& getPath() const = 0;
-  virtual const std::string& getMimeType() const = 0;
-  virtual const unsigned getType() const = 0;
-  virtual const std::string& getTypeDesc() const = 0;
-  virtual const Database::DateTime& getCreateTime() const = 0;
-  virtual const unsigned long getSize() const = 0;  
+    File():
+        CommonObjectImplNew(),
+        ModelFiles()
+    { }
+    bool save();
+    void setFileTypeDesc(const std::string &desc);
+    const std::string &getFileTypeDesc() const;
 };
 
-
-class List : virtual public Register::CommonList {
+class List: 
+    virtual public Register::CommonListImplNew {
 public:
-  virtual File* get(unsigned _idx) const = 0;
-  virtual void reload(Database::Filters::Union& _filter) = 0;
-  virtual void sort(MemberType _member, bool _asc) = 0;
-
-  /// from CommonList; propably will be removed in future
-  virtual const char* getTempTableName() const = 0;
-  virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
-  virtual void reload() = 0;
+    void reload(Database::Filters::Union &filter);
+    File *get(unsigned int index) const throw (std::exception);
+    const char* getTempTableName() const;
+    void sort(MemberType member, bool asc);
 };
-
 
 class Manager {
 public:
-  virtual ~Manager() {
-  }
-  
-  virtual List* createList() const = 0;
-  static Manager* create(Database::Manager *_db_manager);
+    virtual ~Manager() {
+    }
+
+    virtual File *createFile() const = 0;
+    virtual List *createList() const = 0;
+    static Manager *create();
 };
 
 }
 }
 
-#endif /*FILE_H_*/
+#endif // _FILE_H_

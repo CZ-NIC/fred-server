@@ -27,7 +27,6 @@
 #include "object_impl.h"
 #include "sql.h"
 #include "old_utils/dbsql.h"
-#include "db_settings.h"
 #include "model/model_filters.h"
 #include "log/logger.h"
 
@@ -480,7 +479,7 @@ public:
     sql << from.rdbuf();
     sql << where.rdbuf();
   }
-  virtual void reload(Database::Filters::Union &uf, Database::Manager* dbm) {
+  virtual void reload(Database::Filters::Union &uf) {
     TRACE("[CALL] Domain::ListImpl::reload()");
     clear();
     uf.clearQueries();
@@ -538,18 +537,18 @@ public:
     object_info_query.order_by() << "tmp.id";
 
     try {
-      std::auto_ptr<Database::Connection> conn(dbm->getConnection());
+        Database::Connection conn = Database::Manager::acquire();  
       
       Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
-      conn->exec(create_tmp_table);
-      conn->exec(tmp_table_query);
+      conn.exec(create_tmp_table);
+      conn.exec(tmp_table_query);
       
       // TODO: use this and rewrite conn to conn_ specified in CommonListImpl
       // fillTempTable(tmp_table_query);
 
       // TEMP: should be cached somewhere
       Database::Query registrars_query("SELECT id, handle FROM registrar");
-      Database::Result r_registrars = conn->exec(registrars_query);
+      Database::Result r_registrars = conn.exec(registrars_query);
       for (Database::Result::Iterator it = r_registrars.begin(); it != r_registrars.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
@@ -558,7 +557,7 @@ public:
         registrars_table[id] = handle;
       }
 
-      Database::Result r_info = conn->exec(object_info_query);
+      Database::Result r_info = conn.exec(object_info_query);
       for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
@@ -656,7 +655,7 @@ public:
                           << "JOIN object_registry t_1 ON (t_2.contactid = t_1.id)";
       admins_query.order_by() << "tmp.id";
 
-      Database::Result r_admins = conn->exec(admins_query);
+      Database::Result r_admins = conn.exec(admins_query);
       for (Database::Result::Iterator it = r_admins.begin(); it != r_admins.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
@@ -684,7 +683,7 @@ public:
       << "JOIN object_registry t_1 ON (t_1.id = t_2.nsset)";
       nssets_query.order_by() << "tmp.id";
 
-      Database::Result r_nssets = conn->exec(nssets_query);
+      Database::Result r_nssets = conn.exec(nssets_query);
       for (Database::Result::Iterator it = r_nssets.begin(); it != r_nssets.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
@@ -708,7 +707,7 @@ public:
           << "JOIN object_registry t_1 ON (t_1.id = t_2.keyset)";
       keysets_query.order_by() << "tmp.id";
 
-      Database::Result r_keysets = conn->exec(keysets_query);
+      Database::Result r_keysets = conn.exec(keysets_query);
       for (Database::Result::Iterator it = r_keysets.begin(); it != r_keysets.end(); ++it) {
           Database::Row::Iterator col = (*it).begin();
 
@@ -729,7 +728,7 @@ public:
                               << "JOIN enumval_history t_1 ON (tmp.id = t_1.historyid)";
       validation_query.order_by() << "tmp.id";
         
-      Database::Result r_validation = conn->exec(validation_query);
+      Database::Result r_validation = conn.exec(validation_query);
       Database::Result::Iterator it = r_validation.begin();
       for (; it != r_validation.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
@@ -749,7 +748,7 @@ public:
       }
 
       /// load object state
-      ObjectListImpl::reload(conn.get(), history);
+      ObjectListImpl::reload(history);
       /* checks if row number result load limit is active and set flag */ 
       CommonListImpl::reload();
     }

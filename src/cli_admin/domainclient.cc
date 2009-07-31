@@ -109,7 +109,7 @@ DomainClient::domain_list()
     unionFilter->addFilter(domFilter);
 
     apply_LIMIT(domList);
-    domList->reload(*unionFilter, m_dbman);
+    domList->reload(*unionFilter);
 
     std::cout << "<objects>\n";
     for (unsigned int i = 0; i < domList->getCount(); i++) {

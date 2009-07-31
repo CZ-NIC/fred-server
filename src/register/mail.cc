@@ -93,7 +93,7 @@ private:
   Manager *manager_;
   
 public:
-  ListImpl(Database::Connection *_conn, Manager *_manager) : CommonListImpl(_conn),
+  ListImpl(Manager *_manager) : CommonListImpl(),
                                                           manager_(_manager) {
   }
   
@@ -151,7 +151,8 @@ public:
     try {
       fillTempTable(tmp_table_query);
       
-      Database::Result r_info = conn_->exec(object_info_query);
+      Database::Connection conn = Database::Manager::acquire();
+      Database::Result r_info = conn.exec(object_info_query);
       for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
@@ -189,7 +190,7 @@ public:
                            << "JOIN mail_handles t_1 ON (tmp.id = t_1.mailid)";
       handles_query.order_by() << "tmp.id";
       
-      Database::Result r_handles = conn_->exec(handles_query);
+      Database::Result r_handles = conn.exec(handles_query);
       for (Database::Result::Iterator it = r_handles.begin(); it != r_handles.end(); ++it) {
         Database::ID mail_id = (*it)[0];
         std::string  handle  = (*it)[1];
@@ -211,7 +212,7 @@ public:
                          << "JOIN files t_2 ON (t_1.attachid = t_2.id)";
       files_query.order_by() << "tmp.id";
       
-      Database::Result r_files = conn_->exec(files_query);
+      Database::Result r_files = conn.exec(files_query);
       for (Database::Result::Iterator it = r_files.begin(); it != r_files.end(); ++it) {
         Database::ID mail_id   = (*it)[0];
         Database::ID file_id   = (*it)[1];
@@ -261,28 +262,22 @@ public:
 };
 
 class ManagerImpl : virtual public Manager {
-private:
-  Database::Manager *db_manager_;
-  Database::Connection *conn_;
-  
 public:
-  ManagerImpl(Database::Manager *_db_manager) : db_manager_(_db_manager),
-                                             conn_(db_manager_->getConnection()) {
+  ManagerImpl() {
   }
   
   virtual ~ManagerImpl() {
-    boost::checked_delete<Database::Connection>(conn_);
   }  
   
   List* createList() const {
-    return new ListImpl(conn_, (Manager *)this);
+    return new ListImpl((Manager *)this);
   }
   
 };
 
-Manager* Manager::create(Database::Manager *_db_manager) {
+Manager* Manager::create() {
     TRACE("[CALL] Register::Mail::Manager::create()");
-    return new ManagerImpl(_db_manager);
+    return new ManagerImpl();
 }
 
 

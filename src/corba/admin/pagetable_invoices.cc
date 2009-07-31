@@ -50,17 +50,17 @@ Registry::TableRow* ccReg_Invoices_i::getRow(CORBA::Short row)
   std::string itype  = (invoice_type == Register::Invoicing::IT_DEPOSIT ? "DEPOSIT" : "ACCOUNT");
 
   MAKE_OID(oid_registrar, inv->getClient()->getId(), C_STR(inv->getClient()->getHandle()), FT_REGISTRAR)
-  MAKE_OID(oid_pdf, inv->getFilePDF(), "", FT_FILE)
-  MAKE_OID(oid_xml, inv->getFileXML(), "", FT_FILE)
+  MAKE_OID(oid_pdf, inv->getFileId(), "", FT_FILE)
+  MAKE_OID(oid_xml, inv->getFileXmlId(), "", FT_FILE)
 
 
-  (*tr)[0] <<= C_STR(inv->getCrTime());
-  (*tr)[1] <<= C_STR(inv->getNumber());
+  (*tr)[0] <<= C_STR(inv->getCrDate());
+  (*tr)[1] <<= C_STR(inv->getPrefix());
   (*tr)[2] <<= oid_registrar;
   (*tr)[3] <<= formatMoney(inv->getPrice()).c_str();
   (*tr)[4] <<= C_STR(credit);
   (*tr)[5] <<= C_STR(itype);
-  (*tr)[6] <<= C_STR(inv->getZoneName());
+  (*tr)[6] <<= C_STR(const_cast<Register::Invoicing::Invoice *>(inv)->getZone()->getFqdn());
   (*tr)[7] <<= oid_pdf;
   (*tr)[8] <<= oid_xml;
   return tr;
@@ -115,7 +115,7 @@ char* ccReg_Invoices_i::outputCSV() {
 CORBA::Short ccReg_Invoices_i::numRows() {
   Logging::Context ctx(base_context_);
 
-  return invoice_list_->getCount();
+  return invoice_list_->getSize();
 }
 
 CORBA::Short ccReg_Invoices_i::numColumns() {
@@ -168,7 +168,7 @@ void ccReg_Invoices_i::saveFilter(const char* _name) {
   TRACE(boost::format("[CALL] ccReg_PublicRequests_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create(dbm));
+      tmp_filter_manager(Register::Filter::Manager::create());
   tmp_filter_manager->save(Register::Filter::FT_INVOICE, _name, uf);
 }
 

@@ -305,7 +305,7 @@ public:
     }
     void makeQuery(bool, bool, std::stringstream &) const;
     void reload() throw (SQL_ERROR);
-    virtual void reload(Database::Filters::Union &uf, Database::Manager *dbm);
+    virtual void reload(Database::Filters::Union &uf);
     void clearFilter();
     virtual const char *getTempTableName() const;
     virtual void sort(MemberType, bool);
@@ -516,11 +516,9 @@ ListImpl::reload() throw (SQL_ERROR)
 }
 
 void
-ListImpl::reload(
-        Database::Filters::Union &uf,
-        Database::Manager *dbm)
+ListImpl::reload(Database::Filters::Union &uf)
 {
-    TRACE("[CALL] KeySet::ListImpl::reload(Database::Filters::Union &, Database::Manager *)");
+    TRACE("[CALL] KeySet::ListImpl::reload(Database::Filters::Union &)");
     clear();
     uf.clearQueries();
 
@@ -576,16 +574,16 @@ ListImpl::reload(
         << "tmp.id";
 
     try {
-        std::auto_ptr<Database::Connection> conn(dbm->getConnection());
+        Database::Connection conn = Database::Manager::acquire();
 
         Database::Query create_tmp_table("SELECT create_tmp_table('"
                 + std::string(getTempTableName()) + "')");
-        conn->exec(create_tmp_table);
-        conn->exec(tmp_table_query);
+        conn.exec(create_tmp_table);
+        conn.exec(tmp_table_query);
 
         // TEMP: should by cached somewhere
         Database::Query registrars_query("SELECT id, handle FROM registrar");
-        Database::Result r_registrars = conn->exec(registrars_query);
+        Database::Result r_registrars = conn.exec(registrars_query);
         Database::Result::Iterator it = r_registrars.begin();
         for (; it != r_registrars.end(); ++it) {
             Database::Row::Iterator col = (*it).begin();
@@ -595,7 +593,7 @@ ListImpl::reload(
             registrars_table[id]    = handle;
         }
 
-        Database::Result r_info = conn->exec(object_info_query);
+        Database::Result r_info = conn.exec(object_info_query);
         for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
             Database::Row::Iterator col = (*it).begin();
 
@@ -651,7 +649,7 @@ ListImpl::reload(
             << "t_1.keysetid, tmp.id ";
 
 
-        Database::Result r_contacts = conn->exec(contacts_query);
+        Database::Result r_contacts = conn.exec(contacts_query);
         for (Database::Result::Iterator it = r_contacts.begin(); it != r_contacts.end(); ++it) {
             Database::Row::Iterator col = (*it).begin();
 
@@ -676,7 +674,7 @@ ListImpl::reload(
         dsrecord_query.order_by()
             << "t_1.keysetid, tmp.id, t_1.id";
 
-        Database::Result r_dsrecords = conn->exec(dsrecord_query);
+        Database::Result r_dsrecords = conn.exec(dsrecord_query);
         for (Database::Result::Iterator it = r_dsrecords.begin(); it != r_dsrecords.end(); ++it) {
             Database::Row::Iterator col = (*it).begin();
 
@@ -714,7 +712,7 @@ ListImpl::reload(
         dnskey_query.order_by()
             << "t_1.keysetid, tmp.id, t_1.id";
 
-        Database::Result r_dnskeys = conn->exec(dnskey_query);
+        Database::Result r_dnskeys = conn.exec(dnskey_query);
         for (Database::Result::Iterator it = r_dnskeys.begin(); it != r_dnskeys.end(); ++it) {
             Database::Row::Iterator col = (*it).begin();
 
@@ -745,7 +743,7 @@ ListImpl::reload(
         }
 
         /// load object state
-        ObjectListImpl::reload(conn.get(), history);
+        ObjectListImpl::reload(history);
         // check if row number result load limit is active and flag is set
         CommonListImpl::reload();
     }

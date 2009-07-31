@@ -166,7 +166,7 @@ public:
   /// Reload actual list of registrars
   virtual void reload() throw (SQL_ERROR) = 0;
   /// testing new reload function
-  virtual void reload(Database::Filters::Union &uf, Database::Manager* dbm) = 0;
+  virtual void reload(Database::Filters::Union &uf) = 0;
   /// Get registrar detail object by list index
 //  virtual const Registrar* get(unsigned idx) const = 0;
   /// Get registrar detail object by list index for update
@@ -279,7 +279,7 @@ public:
   /// Reload list according actual filter settings
   virtual void reload() = 0;
   /// testing new reload function
-  virtual void reload(Database::Filters::Union &uf, Database::Manager* dbm) = 0;
+  virtual void reload(Database::Filters::Union &uf) = 0;
   /// Return deatil of action by index in list
   virtual EPPAction* get(unsigned idx) const = 0;
   /// clear filter data

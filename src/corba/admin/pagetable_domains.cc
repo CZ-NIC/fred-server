@@ -21,7 +21,7 @@ void ccReg_Domains_i::reload() {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_Domains_i::reload()");
-  dl->reload(uf, dbm);
+  dl->reload(uf);
   dl->deleteDuplicatesId();
 }
 
@@ -181,7 +181,7 @@ void ccReg_Domains_i::saveFilter(const char* _name) {
   TRACE(boost::format("[CALL] ccReg_Domains_i::saveFilter('%1%')") % _name);
 
   std::auto_ptr<Register::Filter::Manager>
-      tmp_filter_manager(Register::Filter::Manager::create(dbm));
+      tmp_filter_manager(Register::Filter::Manager::create());
   tmp_filter_manager->save(Register::Filter::FT_DOMAIN, _name, uf);
 }
 

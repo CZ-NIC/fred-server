@@ -19,7 +19,7 @@
 #include "simple.h"
 #include "bankclient.h"
 #include "commonclient.h"
-#include "register/bank.h"
+#include "register/bank_manager.h"
 #include "register/register.h"
 
 #include <iostream>
@@ -45,12 +45,12 @@ BankClient::runMethod()
         show_opts();
     } else if (m_conf.hasOpt(BANK_STATEMENT_LIST_NAME)) {
         statement_list();
-    } else if (m_conf.hasOpt(BANK_ONLINE_LIST_NAME)) {
-        online_list();
     } else if (m_conf.hasOpt(BANK_IMPORT_XML_NAME)) {
         import_xml();
     } else if (m_conf.hasOpt(BANK_ADD_ACCOUNT_NAME)) {
         add_bank_account();
+    } else if (m_conf.hasOpt(BANK_MOVE_STATEMENT_NAME)) {
+        move_statement();
     }
 }
 
@@ -59,45 +59,6 @@ BankClient::show_opts()
 {
     callHelp(m_conf, no_help);
     print_options("Bank", getOpts(), getOptsCount());
-}
-
-void
-BankClient::online_list()
-{
-    callHelp(m_conf, online_list_help);
-    std::ofstream output;
-    if (m_conf.hasOpt(OUTPUT_NAME)) {
-        output.open(m_conf.get<std::string>(OUTPUT_NAME).c_str(), std::ios::out);
-    } else {
-        output.open("/dev/stdout", std::ios::out);
-    }
-    std::auto_ptr<Register::Banking::Manager> bankMan(
-            Register::Banking::Manager::create(m_dbman));
-    std::auto_ptr<Register::Banking::OnlineList> bankList(
-            bankMan->createOnlineList());
-
-    Database::Filters::OnlineStatement *statementFilter =
-        new Database::Filters::OnlineStatementImpl();
-    Database::Filters::Union *unionFilter = 
-        new Database::Filters::Union();
-
-    apply_ID(statementFilter);
-    apply_DATETIME(statementFilter, BANK_DATE_NAME, Create);
-    get_Str(statementFilter, AccountNumber, BANK_ACCOUNT_NUMBER_NAME);
-    get_Str(statementFilter, BankCode, BANK_BANK_CODE_NAME);
-    get_Str(statementFilter, ConstSymbol, BANK_CONST_SYMBOL_NAME);
-    if (m_conf.hasOpt(BANK_INVOICE_ID_NAME)) {
-        if (m_conf.get<unsigned int>(BANK_INVOICE_ID_NAME) == 0) {
-            statementFilter->addInvoiceId().setNULL();
-        } else {
-            get_DID(statementFilter, InvoiceId, BANK_INVOICE_ID_NAME);
-        }
-    }
-
-    unionFilter->addFilter(statementFilter);
-    bankList->reload(*unionFilter);
-
-    bankList->exportXML(output);
 }
 
 void
@@ -111,14 +72,13 @@ BankClient::statement_list()
         output.open("/dev/stdout", std::ios::out);
     }
     std::auto_ptr<Register::Banking::Manager> bankMan(
-            Register::Banking::Manager::create(m_dbman));
+            Register::Banking::Manager::create());
     std::auto_ptr<Register::Banking::List> bankList(
             bankMan->createList());
 
     Database::Filters::Statement *statementFilter =
         new Database::Filters::StatementImpl();
-    Database::Filters::Union *unionFilter = 
-        new Database::Filters::Union();
+    Database::Filters::Union unionFilter;
 
     apply_ID(statementFilter);
     apply_DATE(statementFilter, BANK_DATE_NAME, Create);
@@ -135,8 +95,8 @@ BankClient::statement_list()
         }
     }
 
-    unionFilter->addFilter(statementFilter);
-    bankList->reload(*unionFilter);
+    unionFilter.addFilter(statementFilter);
+    bankList->reload(unionFilter);
 
     bankList->exportXML(output);
 }
@@ -147,17 +107,17 @@ BankClient::import_xml()
     callHelp(m_conf, import_xml_help);
     std::string fileName;
     bool fromFile = false;
-    bool isOnline = false;
     bool createCredit = false;
     if (m_conf.hasOpt(BANK_XML_FILE_NAME)) {
         fromFile = true;
         fileName = m_conf.get<std::string>(BANK_XML_FILE_NAME);
     }
-    if (m_conf.hasOpt(BANK_ONLINE_NAME)) {
-        isOnline = true;
-    }
     if (m_conf.hasOpt(BANK_CREATE_CREDIT_INVOICE_NAME)) {
         createCredit = true;
+    }
+    unsigned long long xml_id = 0;
+    if (m_conf.hasOpt(BANK_XML_FILE_ID_NAME)) {
+        xml_id = m_conf.get<unsigned long long>(BANK_XML_FILE_ID_NAME);
     }
 
     std::ifstream input;
@@ -167,13 +127,9 @@ BankClient::import_xml()
         input.open("/dev/stdin", std::ios::in);
     }
     std::auto_ptr<Register::Banking::Manager>
-        bankMan(Register::Banking::Manager::create(m_dbman));
+        bankMan(Register::Banking::Manager::create());
     bool retval;
-    if (isOnline) {
-        retval = bankMan->importOnlineStatementXml(input, createCredit);
-    } else {
-        retval = bankMan->importStatementXml(input, createCredit);
-    }
+    retval = bankMan->importStatementXml(input, xml_id, createCredit);
     if (!retval) {
         std::cout << "Error occured!" << std::endl;
     }
@@ -190,7 +146,7 @@ BankClient::add_bank_account()
     }
     std::string bank_code = m_conf.get<std::string>(BANK_BANK_CODE_NAME);
     std::auto_ptr<Register::Banking::Manager>
-        bankMan(Register::Banking::Manager::create(m_dbman));
+        bankMan(Register::Banking::Manager::create());
     bool retval = true;
     if (m_conf.hasOpt(BANK_ZONE_ID_NAME)) {
         Database::ID zoneId = m_conf.get<unsigned int>(BANK_ZONE_ID_NAME);
@@ -205,18 +161,18 @@ BankClient::add_bank_account()
 }
 
 void
-BankClient::online_list_help()
+BankClient::move_statement()
 {
-    std::cout <<
-        "** Online statemetn list **\n\n"
-        "  $ " << g_prog_name << " --" << BANK_ONLINE_LIST_NAME << " \\\n"
-        "    [--" << ID_NAME << "=<statement_id>] \\\n"
-        "    [--" << BANK_DATE_NAME << "=<date>] \\\n"
-        "    [--" << BANK_ACCOUNT_NUMBER_NAME << "=<account_number>] \\\n"
-        "    [--" << BANK_BANK_CODE_NAME << "=<bank_code>] \\\n"
-        "    [--" << BANK_CONST_SYMBOL_NAME << "=<const_symbol>] \\\n"
-        "    [--" << BANK_INVOICE_ID_NAME << "=<invoice_id>]\n"
-        << std::endl;
+    callHelp(m_conf, move_statement_help);
+    Database::ID itemId = m_conf.get<unsigned int>(BANK_ITEM_ID_NAME);
+    Database::ID headId = m_conf.get<unsigned int>(BANK_HEAD_ID_NAME);
+    bool force = false;
+    if (m_conf.hasOpt(BANK_FORCE_NAME)) {
+        force = true;
+    }
+    std::auto_ptr<Register::Banking::Manager>
+        bankMan(Register::Banking::Manager::create());
+    bankMan->moveItemToPayment(itemId, headId, force);
 }
 
 void
@@ -241,12 +197,10 @@ BankClient::import_xml_help()
         "** Import xml **\n\n"
         "  $ " << g_prog_name << " --" << BANK_IMPORT_XML_NAME << " \\\n"
         "    [--" << BANK_XML_FILE_NAME << "=<file_name>] \\\n"
-        "    [--" << BANK_CREATE_CREDIT_INVOICE_NAME << "] \\\n"
-        "    [--" << BANK_ONLINE_NAME << "] \n" 
+        "    [--" << BANK_XML_FILE_ID_NAME << "=<xml_file_id>] \\\n"
+        "    [--" << BANK_CREATE_CREDIT_INVOICE_NAME << "]\n"
         << std::endl;
     std::cout << "If no xml file name is provided, program reads from stdin."
-        << std::endl
-        << "``--" << BANK_ONLINE_NAME << "'' specified if statement is normal or online."
         << std::endl;
 }
 
@@ -264,16 +218,31 @@ BankClient::add_bank_account_help()
         << std::endl;
 }
 
+void
+BankClient::move_statement_help()
+{
+    std::cout << 
+        "** Add new bank account **\n\n"
+        "  $ " << g_prog_name << " --" << BANK_MOVE_STATEMENT_NAME << " \\\n"
+        "   --" << BANK_ITEM_ID_NAME << "=<item_id> \\\n"
+        "   --" << BANK_HEAD_ID_NAME << "=<new_head_id> \\\n"
+        "   [--" << BANK_FORCE_NAME << "]\n"
+        << std::endl;
+    std::cout << "If ``head_id'' is zero, that set ``NULL'' as head id"
+        << std::endl;
+}
+
+
 #define ADDOPT(name, type, callable, visible) \
     {CLIENT_BANK, name, name##_DESC, type, callable, visible}
 
 const struct options
 BankClient::m_opts[] = {
     ADDOPT(BANK_STATEMENT_LIST_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(BANK_ONLINE_LIST_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(BANK_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(BANK_IMPORT_XML_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(BANK_ADD_ACCOUNT_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(BANK_MOVE_STATEMENT_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(BANK_DATE_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_ID_NAME, TYPE_UINT, false, false),
     ADDOPT(BANK_ACCOUNT_ID_NAME, TYPE_UINT, false, false),
@@ -283,13 +252,16 @@ BankClient::m_opts[] = {
     ADDOPT(BANK_CONST_SYMBOL_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_INVOICE_ID_NAME, TYPE_UINT, false, false),
     ADDOPT(BANK_XML_FILE_NAME, TYPE_STRING, false, false),
-    ADDOPT(BANK_ONLINE_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(OUTPUT_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_CREDIT_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(BANK_CREATE_CREDIT_INVOICE_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(BANK_ZONE_ID_NAME, TYPE_UINT, false, false),
     ADDOPT(BANK_ZONE_NAME_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_ACCOUNT_NAME_NAME, TYPE_STRING, false, false),
+    ADDOPT(BANK_XML_FILE_ID_NAME, TYPE_ULONGLONG, false, false),
+    ADDOPT(BANK_FORCE_NAME, TYPE_NOTYPE, false, false),
+    ADDOPT(BANK_ITEM_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(BANK_HEAD_ID_NAME, TYPE_UINT, false, false),
 };
 
 #undef ADDOPT

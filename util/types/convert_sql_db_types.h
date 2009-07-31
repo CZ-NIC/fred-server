@@ -88,10 +88,7 @@ struct SqlConvert<Database::Money> {
 
   static std::string to(const Database::Money &_in) {
     try {
-      Database::Money::value_type value = static_cast<Database::Money::value_type>(_in);
-      std::stringstream stream;
-      stream << value / 100 << "." << std::setfill('0') << std::setw(2) << value % 100;
-      return stream.str();
+        return _in.to_string();
     }
     catch (...) {
       throw ConversionError("to sql", "SqlConvert<Database::Money>");

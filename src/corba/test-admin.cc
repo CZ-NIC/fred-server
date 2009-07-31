@@ -6,6 +6,7 @@
 #include "log/logger.h"
 
 #include "conf/manager.h"
+#include "admin/bankinginvoicing_impl.h"
 
 const char *corbaOpts[][2] = {
     {"nativeCharCodeSet", "UTF-8"},
@@ -19,7 +20,7 @@ public:
     CorbaClient(int argc, char **argv, const std::string &nshost)
     {
         orb = CORBA::ORB_init(argc, argv, "", corbaOpts);
-        ns.reset(new NameService(orb, nshost));
+        ns.reset(new NameService(orb, nshost, "fred"));
     }
     ~CorbaClient()
     {
@@ -40,47 +41,98 @@ main(int argc, char *argv[])
     database << "dbname=fred user=fred host=localhost port=22345";
     CorbaClient cc(argc, argv, nsAddr.str());
     CORBA::Object_var o = cc.getNS()->resolve("EPP");
-    Config::Conf cfg;
-    ccReg_Admin_i *adminImpl = new ccReg_Admin_i(database.str(), cc.getNS(), cfg);
-    ccReg::DomainDetails *ddets;
-    ccReg::DomainDetail *ddet;
-    ccReg::KeySetDetails *kdets;
-    ccReg::KeySetDetail *kdet;
 
-    ddet = adminImpl->getDomainByFQDN("pokus.cz");
-    std::cout << ddet->fqdn << std::endl;
-    std::cout << ddet->roid << std::endl;
-    std::cout << ddet->nssetHandle << std::endl;
-    std::cout << ddet->keysetHandle << std::endl;
-    kdet = NULL;
-    kdet = adminImpl->getKeySetByHandle(ddet->keysetHandle);
-    if (kdet != NULL) {
-        std::cout << "KeySet: " << std::endl;
-        std::cout << kdet->handle << std::endl;
-        for (int i = 0; i < kdet->dsrecords.length(); i++) {
-            std::cout << kdet->dsrecords[i].keyTag << std::endl;
-            std::cout << kdet->dsrecords[i].digest << std::endl;
-        }
+    po::options_description cmd_opts;
+    cmd_opts.add_options()
+      ("view-config", "View actual configuration");
+
+    po::options_description database_opts("Database");
+    database_opts.add_options()
+      ("database.host",     po::value<std::string>()->default_value(""),     "Database hostname")
+      ("database.port",     po::value<unsigned>()->default_value(5432),      "Database port")
+      ("database.name",     po::value<std::string>()->default_value("fred"), "Database name")
+      ("database.user",     po::value<std::string>()->default_value("fred"), "Database username")
+      ("database.password", po::value<std::string>()->default_value(""),     "Database password")
+      ("database.timeout",  po::value<unsigned>()->default_value(0),         "Database connection timeout")
+      ("banking.host",     po::value<std::string>()->default_value(""),     "Database hostname (obsolete)")
+      ("banking.port",     po::value<unsigned>()->default_value(5432),      "Database port (obsolete)")
+      ("banking.dbname",   po::value<std::string>()->default_value("fred"), "Database name (obsolete)")
+      ("banking.log_level",  po::value<unsigned>()->default_value(7),         "Old logging level (obsolete)")
+      ("banking.log_local",  po::value<unsigned>()->default_value(1),         "Old logging facility (obsolete)");
+
+    po::options_description nameservice_opts("CORBA Nameservice");
+    nameservice_opts.add_options()
+      ("nameservice.host",    po::value<std::string>()->default_value("localhost"), "CORBA nameservice hostname")
+      ("nameservice.port",    po::value<unsigned>()->default_value(2809),           "CORBA nameservice port")
+      ("nameservice.context", po::value<std::string>()->default_value("fred"),      "CORBA nameservice context");
+    po::options_description log_opts("Logging");
+    log_opts.add_options()
+      ("log.type",            po::value<unsigned>()->default_value(1),             "Log type")
+      ("log.level",           po::value<unsigned>()->default_value(8),             "Log level")
+      ("log.file",            po::value<std::string>()->default_value("fred.log"), "Log file path (for log.type = 1)")
+      ("log.syslog_facility", po::value<unsigned>()->default_value(1),             "Syslog facility (for log.type = 2)");
+    po::options_description registry_opts("Registry");
+    registry_opts.add_options()
+      ("registry.restricted_handles",   po::value<bool>()->default_value(false), "To force using restricted handles for NSSETs, KEYSETs and CONTACTs")
+      ("registry.disable_epp_notifier", po::value<bool>()->default_value(false), "Disable EPP notifier subsystem")
+      ("registry.lock_epp_commands",    po::value<bool>()->default_value(true),  "Database locking of multiple update epp commands on one object")
+      ("registry.nsset_level",          po::value<unsigned>()->default_value(3), "Default report level of new NSSET")
+      ("registry.docgen_path",          po::value<std::string>()->default_value("/usr/local/bin/fred-doc2pdf"),       "PDF generator path")
+      ("registry.docgen_template_path", po::value<std::string>()->default_value("/usr/local/share/fred-doc2pdf/"),    "PDF generator template path")
+      ("registry.fileclient_path",      po::value<std::string>()->default_value("/usr/local/bin/filemanager_client"), "File manager client path");
+    po::options_description rifd_opts("RIFD specific");
+    rifd_opts.add_options()
+      ("rifd.session_max",           po::value<unsigned>()->default_value(200), "RIFD maximum number of sessions")
+      ("rifd.session_timeout",       po::value<unsigned>()->default_value(300), "RIFD session timeout")
+      ("rifd.session_registrar_max", po::value<unsigned>()->default_value(5), "RIFD maximum munber active sessions per registrar");
+    po::options_description adifd_opts("ADIFD specific");
+    adifd_opts.add_options()
+      ("adifd.session_max",     po::value<unsigned>()->default_value(0),    "ADIFD maximum number of sessions (0 mean not limited)")
+      ("adifd.session_timeout", po::value<unsigned>()->default_value(3600), "ADIFD session timeout")
+      ("adifd.session_garbage", po::value<unsigned>()->default_value(150),  "ADIFD session garbage interval");
+    po::options_description logd_opts("LOGD specific");
+	logd_opts.add_options()
+	  ("logd.monitoring_hosts_file", po::value<std::string>()->default_value("/usr/local/etc/fred/monitoring_hosts.conf"), "File containing list of monitoring machines");
+
+    po::options_description file_opts;
+    file_opts.add(database_opts).add(nameservice_opts).add(log_opts).add(registry_opts).add(rifd_opts).add(adifd_opts).add(logd_opts);
+
+    Config::Manager cfm = Config::ConfigManager::instance_ref();
+    try {
+      cfm.init(argc, argv);
+      cfm.setCmdLineOptions(cmd_opts);
+      cfm.setCfgFileOptions(file_opts, CONFIG_FILE, true);
+      cfm.parse();
     }
-    //kdet = adminImpl->getKeySetByHandle("KEY::001");
-    // kdet = adminImpl->getKeySetById(11);
-    // std::cout << kdet->id << std::endl;
-    // std::cout << kdet->handle << std::endl;
-    // std::cout << kdet->createDate << std::endl;
-    // std::cout << kdet->authInfo << std::endl;
-    //ddets = adminImpl->getDomainsByKeySetHandle("KEY::001");
-    //ddets = adminImpl->getDomainsByKeySetId(28, 1000);
-    //ddet = adminImpl->getDomainByKeySetHandle("KEY::001");
+    catch (Config::Manager::ConfigParseError &_err) {
+      std::cerr << "config parse error: " << _err.what() << std::endl;
+      exit(-20);
+    }
 
-    // kdets = adminImpl->getKeySetsByContactId(6, 90);
-// 
-    // for (int i = 0; i < kdets->length(); i++)
-        // std::cout << (*kdets)[i].id << " - " << (*kdets)[i].handle << std::endl;
+    Config::Conf cfg = cfm.get();
 
-    // for (int i = 0; i < ddets->length(); i++)
-        // std::cout << (*ddets)[i].fqdn << std::endl;
-    
-    // std::cout << ddet->fqdn << std::endl;
-    // std::cout << ddet->keysetHandle << std::endl;
+    std::string dbhost = cfg.get<std::string>("database.host");
+    dbhost = (dbhost.empty() ? "" : "host=" + dbhost + " ");
+    std::string dbpass = cfg.get<std::string>("database.password");
+    dbpass = (dbpass.empty() ? "" : "password=" + dbpass + " ");
+    std::string dbname = cfg.get<std::string>("database.name");
+    std::string dbuser = cfg.get<std::string>("database.user");
+    unsigned    dbport = cfg.get<unsigned>("database.port");
+    unsigned    dbtime = cfg.get<unsigned>("database.timeout");
+    std::string conn_info = str(boost::format("%1%port=%2% dbname=%3% user=%4% %5%connect_timeout=%6%")
+                                              % dbhost
+                                              % dbport
+                                              % dbname
+                                              % dbuser
+                                              % dbpass
+                                              % dbtime);
+
+    Database::Manager::init(new Database::ConnectionFactory(conn_info, 1, 10));
+
+    ccReg_BankingInvoicing_i *bla = new ccReg_BankingInvoicing_i();
+    bla->pairInvoices();
+
+    delete bla;
+
     return 0;
 }

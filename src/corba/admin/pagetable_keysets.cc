@@ -125,7 +125,7 @@ ccReg_KeySets_i::reload()
   Logging::Context ctx(base_context_);
 
     TRACE("[CALL] ccReg_KeySets_i::reload()");
-    m_kl->reload(uf, dbm);
+    m_kl->reload(uf);
     m_kl->deleteDuplicatesId();
 }
 
@@ -177,7 +177,7 @@ ccReg_KeySets_i::saveFilter(const char *name)
     TRACE(boost::format("[CALL] ccReg_KeySets_i::saveFilter('%1%')") % name);
     
     std::auto_ptr<Register::Filter::Manager> tmp_filter_manager(
-            Register::Filter::Manager::create(dbm));
+            Register::Filter::Manager::create());
     tmp_filter_manager->save(Register::Filter::FT_KEYSET, name, uf);
 }
 
