@@ -279,22 +279,22 @@ int main(int argc, char *argv[]) {
     DateTimeInterval di(DateTime("2008-10-23 13:16:30"), DateTime("2009-11-23 13:20:13"));
     le->addTimeBegin().setValue(di);
 
- //   le->addComponent().setValue(LC_UNIX_WHOIS);
+//  le->addComponent().setValue(LC_UNIX_WHOIS);
 
     RequestPropertyValue &pv = le->addRequestPropertyValue();
+
+    pv.addName().setValue("registrarId");
+    pv.addValue().setValue("REG-FRED_B");
+
+    uf.addFilter(le);
+    sq1 = new SelectQuery();
 
 /*
     pv.addRequestProperty().addName().setValue("search axis");
     pv.addValue().setValue("registrant");
 */
 
-    pv.addRequestProperty().addName().setValue("registrarId");
-    pv.addValue().setValue("REG-FRED_B");
 
-    RequestProperty &pn = pv.addRequestProperty();
-
-    uf.addFilter(le);
-    sq1 = new SelectQuery();
 
 /*
     le->addJoin (new Join( Column("id", le->joinTable("request")),
@@ -307,10 +307,10 @@ int main(int argc, char *argv[]) {
 			));
 */
 
+    sq1->addSelect("name", pv.joinRequestPropertyTable());
     sq1->addSelect("value", pv.joinRequestPropertyValueTable());
-    sq1->addSelect("name", pn.joinRequestPropertyTable());
+
     sq1->addSelect("time_begin source_ip is_monitoring service", le->joinRequestTable());
-    // sq1->addSelect("name", le->joinTable("property"));
 
     uf.addQuery(sq1);
 
