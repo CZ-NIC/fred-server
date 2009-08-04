@@ -305,7 +305,12 @@ Invoice::getPrice2(
         Database::Money money = priceResult[0]["price"];
         if (period > 0) {
             int pper = priceResult[0]["period"];
-            return period * money / pper;
+            if (pper > 0) {
+                return period * money / pper;
+            }
+            else {
+                return 0;
+            }
         } else {
             return money;
         }
@@ -562,10 +567,13 @@ Invoice::domainBilling(Database::PSQLConnection *conn)
     /* get price for desired operation */
     Database::Money price = getPrice2(
             conn, getAction(0)->getAction(), getAction(0)->getUnitsCount());
+    /**
+     * zero price should be possible
     if (price == Database::Money(0)) {
         ERROR("cannot retrieve price");
         return false;
     }
+     */
     std::vector<Database::ID> vec_invoiceId;
     std::vector<Database::Money> vec_money;
     if (!getCreditInvoicesId(conn, vec_invoiceId, vec_money, 10)) {
