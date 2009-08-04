@@ -97,16 +97,6 @@ RequestPropertyValue& RequestImpl::addRequestPropertyValue()
   return *tmp;
 }
 
-RequestProperty& RequestPropertyValueImpl::addRequestProperty()
-{
-  RequestProperty *tmp = new RequestPropertyImpl(true);
-  tmp->setName("RequestProperty");
-
-  tmp->joinOn(new Join(Column("name_id", joinRequestPropertyValueTable()), SQL_OP_EQ,  Column("id", tmp->joinRequestPropertyTable())));
-  add(tmp);
-  return *tmp;
-}
-
 RequestData& RequestImpl::addRequestData()
 {
 	RequestData *tmp = new RequestDataImpl(true);
@@ -140,14 +130,6 @@ Value<std::string> &RequestPropertyValueImpl::addValue()
   return *tmp;
 }
 
-Value<Database::ID>& RequestPropertyValueImpl::addRequestPropertyId()
-{
-  Value<Database::ID> *tmp = new Value<Database::ID>(Column("name_id", joinRequestPropertyValueTable()));
-  tmp->setName("NameId");
-  add(tmp);
-  return *tmp;
-}
-
 Value<bool>& RequestPropertyValueImpl::addOutputFlag()
 {
   Value<bool> *tmp = new Value<bool>(Column("output", joinRequestPropertyValueTable()));
@@ -156,24 +138,18 @@ Value<bool>& RequestPropertyValueImpl::addOutputFlag()
   return *tmp;
 }
 
-RequestPropertyImpl::RequestPropertyImpl(bool set_active)
-{
-	setName("RequestProperty");
-	active = set_active;
-}
-
-RequestProperty *RequestProperty::create()
-{
-  return new RequestPropertyImpl(true);
-}
-
-Table &RequestPropertyImpl::joinRequestPropertyTable()
+Table &RequestPropertyValueImpl::joinRequestPropertyTable()
 {
 	return joinTable("request_property");
 }
 
-Value<std::string>& RequestPropertyImpl::addName()
+Value<std::string>& RequestPropertyValueImpl::addName()
 {
+  addJoin(new Join(
+	Column("name_id", joinRequestPropertyValueTable()),
+	SQL_OP_EQ,
+	Column("id", joinRequestPropertyTable())
+  ));
   Value<std::string> *tmp = new Value<std::string>(Column("name", joinRequestPropertyTable()));
   tmp->setName("Name");
   add(tmp);

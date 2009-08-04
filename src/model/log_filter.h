@@ -96,27 +96,7 @@ private:
 };
 */
 
-
-
-
 namespace Filters {
-
-class RequestProperty : virtual public Compound
-{
-public:
-	virtual ~RequestProperty() {
-	}
-
-	virtual Table& joinRequestPropertyTable() = 0;
-	virtual Value<std::string>& addName() = 0;
-
-	friend class boost::serialization::access;
-	  template<class Archive> void serialize(Archive& _ar, const unsigned int _version) {
-	    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
-	  }
-
-	  static RequestProperty* create();
-};
 
 class RequestPropertyValue : virtual public Compound
 {
@@ -125,10 +105,10 @@ class RequestPropertyValue : virtual public Compound
 	}
 
   virtual Table& joinRequestPropertyValueTable() = 0;
+  virtual Table& joinRequestPropertyTable() = 0;
+  virtual Value<std::string>& addName() =  0;
   virtual Value<std::string>& addValue() = 0;
-  virtual Value<Database::ID>& addRequestPropertyId() = 0;
     virtual Value<bool>& addOutputFlag()	= 0;
-    virtual RequestProperty& addRequestProperty()  = 0;
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive& _ar,
@@ -139,23 +119,6 @@ class RequestPropertyValue : virtual public Compound
     static RequestPropertyValue *create();
 };
 
-class RequestPropertyImpl : virtual public RequestProperty
-{
-public:
-	RequestPropertyImpl(bool set_active);
-	virtual ~RequestPropertyImpl() {
-	}
-
-	virtual Table& joinRequestPropertyTable();
-	virtual Value<std::string>& addName();
-
-	friend class boost::serialization::access;
-	template<class Archive> void serialize(Archive& _ar,
-		const unsigned int _version) {
-	  _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(RequestProperty);
-	}
-};
-
 class RequestPropertyValueImpl : virtual public RequestPropertyValue
 {
 public:
@@ -164,11 +127,10 @@ public:
 	}
 
 	virtual Table& joinRequestPropertyValueTable();
+	virtual Table& joinRequestPropertyTable();
+  	virtual Value<std::string>& addName();
 	virtual Value<std::string>& addValue();
-	// virtual Value<Database::ID>& addNameId();
 	virtual Value<bool>& addOutputFlag();
-	virtual RequestProperty&  addRequestProperty();
-	virtual Value<Database::ID>& addRequestPropertyId();
 
 	friend class boost::serialization::access;
 	template<class Archive> void serialize(Archive& _ar,

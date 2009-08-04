@@ -465,14 +465,9 @@ COMPOUND_CLASS(Mail, Mail, Compound,
     FILTER_ADD(File, addAttachment);
 );
 
-COMPOUND_CLASS(RequestProperty, RequestProperty, Compound,
-    FILTER_ADD(Str, addName);
-);
-
 COMPOUND_CLASS(RequestPropertyValue, RequestPropertyValue, Compound,
+    FILTER_ADD(Str, addName);
     FILTER_ADD(Str, addValue);
-    FILTER_ADD(Id, addRequestPropertyId);
-    FILTER_ADD(RequestProperty, addRequestProperty);
     FILTER_ADD(Bool, addOutputFlag);
 );    
 
@@ -590,7 +585,6 @@ ITERATOR_ADD_E_METHOD_IMPL(File,File);
 ITERATOR_ADD_E_METHOD_IMPL(Invoice,Invoice);
 ITERATOR_ADD_E_METHOD_IMPL(Mail,Mail);
 ITERATOR_ADD_E_METHOD_IMPL(ObjectState,ObjectState);
-ITERATOR_ADD_E_METHOD_IMPL(RequestProperty,RequestProperty);
 ITERATOR_ADD_E_METHOD_IMPL(RequestPropertyValue,RequestPropertyValue);
 ITERATOR_ADD_E_METHOD_IMPL(RequestData,RequestData);
 ITERATOR_ADD_E_METHOD_IMPL(Request,Request);
@@ -625,7 +619,6 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(ObjectState,ObjectState);
   ITERATOR_ADD_FILTER_METHOD_IMPL(ObjectState,ObjectState);
   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestPropertyValue,RequestPropertyValue);
-  ITERATOR_ADD_FILTER_METHOD_IMPL(RequestProperty,RequestProperty);
   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestData,RequestData);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Request,Request);
   ITERATOR_ADD_FILTER_METHOD_IMPL(Session,Session);
