@@ -55,8 +55,11 @@ void SelectQuery::finalize() {
 
 void SelectQuery::make(escape_function_type _esc_func) {
   TRACE("[CALL] SelectQuery::make()");
-  if (m_initialized)
-  return;
+  if (m_initialized) {
+    LOGGER(PACKAGE).debug(boost::format("buffer-generated select SQL = %1%") % sql_buffer.str());
+    return;
+  }
+
   Query::clear();
   if (!select_v.empty()) {
     select_s.clear();
