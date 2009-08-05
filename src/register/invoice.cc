@@ -299,8 +299,11 @@ Invoice::getPrice2(
     try {
         Database::Result priceResult = conn->exec(priceQuery);
         if (priceResult.size() == 0) {
-            ERROR("Cannot get price from database");
-            return Database::Money();
+            LOGGER(PACKAGE).warning(boost::format("price for zone id=%1% and "
+                        "operation id=%2% not set in database => price = 0")
+                        % PaymentActionType2SqlType(operation)
+                        % getZoneId());
+            return 0;
         }
         Database::Money money = priceResult[0]["price"];
         if (period > 0) {
@@ -567,13 +570,17 @@ Invoice::domainBilling(Database::PSQLConnection *conn)
     /* get price for desired operation */
     Database::Money price = getPrice2(
             conn, getAction(0)->getAction(), getAction(0)->getUnitsCount());
-    /**
-     * zero price should be possible
+
+    /* zero price should be possible */
     if (price == Database::Money(0)) {
-        ERROR("cannot retrieve price");
-        return false;
+        LOGGER(PACKAGE).info("operation has zero price; billing of operation stopped");
+        return true;
     }
-     */
+    else {
+        LOGGER(PACKAGE).info(boost::format("operation price=%1%; proceeding "
+                    "with invoice") % price);
+    }
+
     std::vector<Database::ID> vec_invoiceId;
     std::vector<Database::Money> vec_money;
     if (!getCreditInvoicesId(conn, vec_invoiceId, vec_money, 10)) {
