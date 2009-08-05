@@ -286,20 +286,18 @@ Manager::archiveInvoices(bool send) const
         // archive unarchived invoices
         ExporterArchiver exporter(m_docMan);
         List list((Manager *)this);
-        Database::Filters::Invoice *invoiceFilter =
+        Database::Filters::Union filter;
+        Database::Filters::Invoice *invoice_filter = 
             new Database::Filters::InvoiceImpl();
-        Database::Filters::Union *unionFilter =
-            new Database::Filters::Union();
-        invoiceFilter->addFilePDF().setNULL();
-        unionFilter->addFilter(invoiceFilter);
-        list.reload(*unionFilter);
+        invoice_filter->addFilePDF().setNULL();
+        filter.addFilter(invoice_filter);
+        list.reload(filter);
         list.doExport(&exporter);
         if (send) {
             Mails mail(m_mailMan);
             mail.load();
             mail.send();
         }
-        delete unionFilter;
     }
     catch (...) {
         LOGGER(PACKAGE).error("Register::Manager::archiveInvoices(bool) error");
