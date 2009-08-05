@@ -363,17 +363,17 @@ Invoice::countPayments(
             "std::vector<Database::Money>, std::vector<Database::Money>)");
     std::vector<Database::Money> payments;
     Database::Money remainder;
-    Database::Money p_price;
+    Database::Money p_price = price;
     for (int i = 0; i < (int)credit.size(); i++) {
-        if (price > credit[i]) {
-            p_price = price - credit[i];
+        if (p_price > credit[i]) {
+            p_price = p_price - credit[i];
             payments.push_back(credit[i]);
         } else {
-            payments.push_back(price);
+            payments.push_back(p_price);
             return payments;
         }
     }
-    if (price != Database::Money(0)) {
+    if (p_price != Database::Money(0)) {
         ERROR("Registrar has insufficient credit");
         payments.clear();
     }
