@@ -211,7 +211,7 @@ BankClient::add_bank_account_help()
         "** Add new bank account **\n\n"
         "  $ " << g_prog_name << " --" << BANK_ADD_ACCOUNT_NAME << " \\\n"
         "    --" << BANK_ZONE_ID_NAME << "=<zone_id> | \\\n"
-        "    --" << BANK_ZONE_NAME_NAME << "=<zone_name> \\\n"
+        "    --" << BANK_ZONE_NAME_NAME << "=<zone_fqdn> \\\n"
         "    --" << BANK_ACCOUNT_NUMBER_NAME << "=<account_number> \\\n"
         "    --" << BANK_BANK_CODE_NAME << "=<bank_code> \\\n"
         "    [--" << BANK_ACCOUNT_NAME_NAME << "=<account_name>]\n"

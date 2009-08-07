@@ -502,8 +502,8 @@ InvoiceClient::factoring()
         taxDate = first_this;
     }
     if (!zoneFilled) {
-        std::cerr << "Zone is not set, use ``--zone_id'' or "
-            << "``--zone_name'' to set it" << std::endl;
+        std::cerr << "Zone is not set, use ``"<< INVOICE_ZONE_ID_NAME << "'' or "
+            << "``" << INVOICE_ZONE_NAME_NAME << "'' to set it" << std::endl;
         return;
     }
     if (!regFilled) {
@@ -635,7 +635,7 @@ InvoiceClient::credit_help()
         "** Invoice credit **\n\n"
         "  $ " << g_prog_name << " --" << INVOICE_CREDIT_NAME << " \\\n"
         "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
-        "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_name> \\\n"
+        "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_fqdn> \\\n"
         "    --" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
         "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle> \\\n"
         "    --" << INVOICE_PRICE_NAME << "=<price> \\\n"
@@ -654,7 +654,7 @@ InvoiceClient::factoring_help()
         "** Invoice factoring **\n\n"
         "  $ " << g_prog_name << " --" << INVOICE_FACTORING_NAME << " \\\n"
         "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
-        "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_name> \\\n"
+        "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_fqdn> \\\n"
         "    [--" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
         "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
         "    [--" << INVOICE_TODATE_NAME << "=<to_date>] \\\n"

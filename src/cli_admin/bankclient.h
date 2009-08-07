@@ -68,8 +68,8 @@
 #define BANK_ADD_ACCOUNT_NAME_DESC      "add bank account"
 #define BANK_ZONE_ID_NAME               "zone_id"
 #define BANK_ZONE_ID_NAME_DESC          "zone id"
-#define BANK_ZONE_NAME_NAME             "zone_name"
-#define BANK_ZONE_NAME_NAME_DESC        "zone name"
+#define BANK_ZONE_NAME_NAME             "zone_fqdn"
+#define BANK_ZONE_NAME_NAME_DESC        "zone fully qualified domain name"
 #define BANK_ACCOUNT_NAME_NAME          "account_name"
 #define BANK_ACCOUNT_NAME_NAME_DESC     "account name"
 

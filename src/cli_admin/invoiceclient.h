@@ -87,8 +87,8 @@
 #define INVOICE_ZONE_ID_NAME            "zone_id"
 #define INVOICE_ZONE_ID_NAME_DESC       "zone identifier number"
 
-#define INVOICE_ZONE_NAME_NAME          "zone_name"
-#define INVOICE_ZONE_NAME_NAME_DESC     "zone name (e.g. cz, com)"
+#define INVOICE_ZONE_NAME_NAME          "zone_fqdn"
+#define INVOICE_ZONE_NAME_NAME_DESC     "zone fully qualified domain name  (e.g. cz, com)"
 
 #define INVOICE_REGISTRAR_ID_NAME       "registrar_id"
 #define INVOICE_REGISTRAR_ID_NAME_DESC  "registrar identifier number"
