@@ -551,7 +551,7 @@ InvoiceClient::add_invoice_prefix()
     callHelp(m_conf, add_invoice_prefix_help);
     std::auto_ptr<Register::Invoicing::Manager>
         invMan(Register::Invoicing::Manager::create());
-    unsigned int zoneId = m_conf.get<unsigned int>(INVOICE_ZONE_ID_NAME);
+
     unsigned int type = m_conf.get<unsigned int>(INVOICE_PREFIX_TYPE_NAME);
     if (type > 1) {
         std::cerr << "Type can be either 0 or 1." << std::endl;
@@ -565,7 +565,13 @@ InvoiceClient::add_invoice_prefix()
         year = now.get().year();
     }
     unsigned long long prefix = m_conf.get<unsigned long long>(INVOICE_PREFIX_PREFIX_NAME);
-    invMan->insertInvoicePrefix(zoneId, type, year, prefix);
+    if (m_conf.hasOpt(INVOICE_ZONE_ID_NAME)) {
+        unsigned int zoneId = m_conf.get<unsigned int>(INVOICE_ZONE_ID_NAME);
+        invMan->insertInvoicePrefix(zoneId, type, year, prefix);
+    } else if (m_conf.hasOpt(INVOICE_ZONE_NAME_NAME)) {
+        std::string zoneName = m_conf.get<std::string>(INVOICE_ZONE_NAME_NAME);
+        invMan->insertInvoicePrefix(zoneName, type, year, prefix);
+    }
 }
 
 void
