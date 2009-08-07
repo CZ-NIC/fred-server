@@ -129,7 +129,7 @@ RegistrarClient::list()
             << "\t\t<credit>" << reg(i)->getCredit() << "</credit>\n";
         for (unsigned int j = 0; j < reg(i)->getACLSize(); j++) {
             std::cout
-                << "\t\t<ACL>"
+                << "\t\t<ACL>\n"
                 << "\t\t\t<cert_md5>" << reg(i)->getACL(j)->getCertificateMD5() << "</cert_md5>\n"
                 << "\t\t\t<pass>" << reg(i)->getACL(j)->getPassword() << "</pass>\n"
                 << "\t\t</ACL>\n";
