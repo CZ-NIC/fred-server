@@ -133,7 +133,7 @@ public:
                  unsigned _init_conn = 0,
                  unsigned _max_conn = 1) 
                : conn_info_(_conn_info),
-                 init_conn_(_init_conn),
+                 init_conn_((_init_conn < _max_conn) ? _init_conn : _max_conn),
                  max_conn_(_max_conn) {
 #ifdef HAVE_LOGGER
     TRACE("Database::Factory::ConnectionPool::ConnectionPool()");
@@ -342,8 +342,8 @@ private:
     }
 
     return str(boost::format("connection pool summary: "
-                             "total=%1% (used=%2% free=%3%)")
-                             % total % used % free);
+                             "total=%1% (used=%2% free=%3% max=%4%)")
+                             % total % used % free % max_conn_);
   }
 
 #ifdef HAVE_LOGGER
