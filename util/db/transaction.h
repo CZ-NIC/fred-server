@@ -60,7 +60,7 @@ public:
   
   Transaction_(connection_type &_conn) : conn_(_conn),
                                          ptransaction_(0),
-                                         success_(false) {
+                                         exited_(false) {
     if (!conn_.inTransaction()) {
 #ifdef HAVE_LOGGER
       LOGGER(PACKAGE).debug(boost::format("(%1%) start transaction request -- begin") % this);
@@ -80,7 +80,12 @@ public:
 
 
   virtual ~Transaction_() {
-    if (!success_) {
+    rollback();
+  }
+
+
+  virtual void rollback() {
+    if (!exited_) {
       if (!ptransaction_) {
 #ifdef HAVE_LOGGER
         LOGGER(PACKAGE).debug(boost::format("(%1%) rollback transaction request -- rollback") % this);
@@ -95,33 +100,36 @@ public:
         conn_.setTransaction(ptransaction_);
         exec(transaction_.rollback() + " TO SAVEPOINT " + savepoints_.front());
       }
+    exited_ = true;
     }
   }
 
 
   virtual void commit() {
-    if (ptransaction_) {
+    if (!exited_) {
+      if (ptransaction_) {
 #ifdef HAVE_LOGGER
-      LOGGER(PACKAGE).debug(boost::format("(%1%) commit transaction request -- release savepoint") % this);
+        LOGGER(PACKAGE).debug(boost::format("(%1%) commit transaction request -- release savepoint") % this);
 #endif
-      conn_.exec("RELEASE SAVEPOINT " + savepoints_.front());
-      conn_.setTransaction(ptransaction_);
-    }
-    else {
-      if (conn_.getTransaction() == this) {
-#ifdef HAVE_LOGGER
-        LOGGER(PACKAGE).debug(boost::format("(%1%) commit transaction request -- commit ok") % this);
-#endif
-        exec(transaction_.commit());
-        conn_.unsetTransaction();
+        conn_.exec("RELEASE SAVEPOINT " + savepoints_.front());
+        conn_.setTransaction(ptransaction_);
       }
       else {
-#ifdef HAVE_LOGGER      
-        LOGGER(PACKAGE).error(boost::format("(%1%) commit transaction request -- child active!") % this);
+        if (conn_.getTransaction() == this) {
+#ifdef HAVE_LOGGER
+          LOGGER(PACKAGE).debug(boost::format("(%1%) commit transaction request -- commit ok") % this);
 #endif
+          exec(transaction_.commit());
+          conn_.unsetTransaction();
+        }
+        else {
+#ifdef HAVE_LOGGER      
+          LOGGER(PACKAGE).error(boost::format("(%1%) commit transaction request -- child active!") % this);
+#endif
+        }
       }
+      exited_ = true;
     }
-    success_ = true;
   }
 
   
@@ -185,9 +193,8 @@ private:
   connection_type                              &conn_;
   Transaction_<transaction_type, manager_type> *ptransaction_;
   transaction_type                              transaction_;
-  bool                                          success_;
+  bool                                          exited_;
   savepoint_list                                savepoints_;
-
 };
 
 
