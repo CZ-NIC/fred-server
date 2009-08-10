@@ -743,6 +743,7 @@ Invoice::createNewYearInInvoicePrefix(const int &newYear)
     ModelInvoicePrefix mip3;
     ModelInvoicePrefix mip4;
     unsigned long long year = (newYear - 2000) * 100000;
+
     mip1.setZoneId(1);
     mip1.setType(0);
     mip1.setYear(newYear);
@@ -836,10 +837,8 @@ Invoice::createNewYearInInvoicePrefix(const int &newYear, const int &oldYear)
 bool 
 Invoice::getInvoicePrefix()
 {
-    TRACE("[CALL] Register::Invoicing::InvoiceImpl::"
-            "getInvoicePrefix()");
-    long invoicePrefix;
-    Database::ID id;
+    TRACE("[CALL] Register::Invoicing::InvoiceImpl::getInvoicePrefix()");
+
     Database::SelectQuery invoicePrefixQuery;
     invoicePrefixQuery.buffer()
         << "SELECT id, prefix FROM invoice_prefix WHERE zone";
@@ -852,34 +851,50 @@ Invoice::getInvoicePrefix()
     }
     invoicePrefixQuery.buffer()
         << " AND typ = " << Database::Value(getType())
-        << " AND year = " << Database::Value(getTaxDate().get().year());
+        << " AND year = " << Database::Value(getTaxDate().get().year())
+        << " FOR UPDATE";
+
     Database::Connection conn = Database::Manager::acquire();
+    /* need savepoint here for rolling back lock on table when requested
+     * prefix not found in table (simulate savepoint with 
+     * transaction object) */
+    Database::Transaction tx(conn);
     Database::Result invoicePrefixRes = conn.exec(invoicePrefixQuery);
     if (invoicePrefixRes.size() == 0) {
-        if (getZoneId() == Database::ID()) {
-            // invoice without zone - no auto create (see if below)
-            ERROR("there is no invoice prefix with empty zone");
-            return false;
-        }
-        // try to create new prefix number(s) according rows from last year
-        if (!createNewYearInInvoicePrefix(
-                getTaxDate().get().year(), 
-                getTaxDate().get().year() - 1)) {
-            return false;
-        }
-        Database::Result invoicePrefixRes = conn.exec(invoicePrefixQuery);
+        tx.rollback();
+        /* have to access invoice_prefix table exclusively because when no
+         * suitable prefix found for year generation of new prefix take place.
+         * there shouldn't be more then one transaction inserting new rows */
+        Database::Query lock("LOCK TABLE invoice_prefix IN ACCESS EXCLUSIVE MODE");
+        conn.exec(lock);
+
+        /* at this point invoice_prefix table can be filled with prefix by another
+         * concurent process so we check it */
+        invoicePrefixRes = conn.exec(invoicePrefixQuery);
         if (invoicePrefixRes.size() == 0) {
-            return false;
-        } else {
-            Database::Row::Iterator col = (*invoicePrefixRes.begin()).begin();
-            id = *col;
-            invoicePrefix = *(++col);
+            if (getZoneId() == Database::ID()) {
+                // invoice without zone - no auto create (see if below)
+                ERROR("there is no invoice prefix with empty zone");
+                return false;
+            }
+            /* no prefix in table - try to create new prefix number(s) 
+             * according rows from last year */
+            if (!createNewYearInInvoicePrefix(
+                    getTaxDate().get().year(), 
+                    getTaxDate().get().year() - 1)) {
+                return false;
+            }
+            invoicePrefixRes = conn.exec(invoicePrefixQuery);
+            if (invoicePrefixRes.size() == 0) {
+                return false;
+            } 
         }
-    } else {
-        Database::Row::Iterator col = (*invoicePrefixRes.begin()).begin();
-        id = *col;
-        invoicePrefix = *(++col);
     }
+    tx.commit();
+
+    Database::Row::Iterator col = (*invoicePrefixRes.begin()).begin();
+    Database::ID id = *col;
+    long invoicePrefix = *(++col);
 
     Database::UpdateQuery uquery("invoice_prefix");
     uquery.add("prefix", invoicePrefix + 1);
