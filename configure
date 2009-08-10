@@ -779,6 +779,7 @@ NSCONTEXT
 RIFDPORT
 PIFDPORT
 ADIFDPORT
+LOGDPORT
 BINDIR
 DATAROOTDIR
 SBINDIR
@@ -1446,6 +1447,7 @@ Optional Packages:
   --with-rifdport         CORBA fred-rifd port [2222]
   --with-pifdport         CORBA fred-pifd port [2223]
   --with-adifdport        CORBA fred-adifd port [2224]
+  --with-logdport         CORBA fred-logd port [2225]
   --with-idldir           location of idl directory containing IDL interfaces
                           [DATAROOTDIR/idl/fred/]
   --with-libidn=DIR       Support IDN (needs GNU Libidn)
@@ -11206,7 +11208,7 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-# cirba rifd port
+# corba rifd port
 
 # Check whether --with-rifdport was given.
 if test "${with_rifdport+set}" = set; then
@@ -11239,11 +11241,23 @@ else
 
 fi
 
+#logd port
+
+# Check whether --with-logdport was given.
+if test "${with_logdport+set}" = set; then
+  withval=$with_logdport; LOGDPORT=$withval
+
+else
+  LOGDPORT=2225
+
+fi
+
+
 
 
  { echo "$as_me:$LINENO: checking whether CORBA ports are unique" >&5
 echo $ECHO_N "checking whether CORBA ports are unique... $ECHO_C" >&6; }
- if test $PIFDPORT -eq $RIFDPORT -o $PIFDPORT -eq $ADIFDPORT -o $RIFDPORT -eq $ADIFDPORT; then
+ if test $PIFDPORT -eq $RIFDPORT -o $PIFDPORT -eq $ADIFDPORT -o $RIFDPORT -eq $ADIFDPORT -o $LOGDPORT -eq $PIFDPORT -o $LOGDPORT -eq $RIFDPORT -o $LOGDPORT -eq $ADIFDPORT; then
 	 { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
 	 { { echo "$as_me:$LINENO: error: each of CORBA port must be unique" >&5
@@ -12847,6 +12861,7 @@ NSCONTEXT!$NSCONTEXT$ac_delim
 RIFDPORT!$RIFDPORT$ac_delim
 PIFDPORT!$PIFDPORT$ac_delim
 ADIFDPORT!$ADIFDPORT$ac_delim
+LOGDPORT!$LOGDPORT$ac_delim
 BINDIR!$BINDIR$ac_delim
 DATAROOTDIR!$DATAROOTDIR$ac_delim
 SBINDIR!$SBINDIR$ac_delim
@@ -12859,7 +12874,7 @@ LIBIDN_LIBS!$LIBIDN_LIBS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 77; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 78; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

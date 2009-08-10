@@ -24,7 +24,7 @@ m4_pattern_allow([^AC_MSG_])
 AC_DEFUN([AS_AC_TEST_CORBA_PORTS],
 [
  AC_MSG_CHECKING([whether CORBA ports are unique])
- if test $PIFDPORT -eq $RIFDPORT -o $PIFDPORT -eq $ADIFDPORT -o $RIFDPORT -eq $ADIFDPORT; then
+ if test $PIFDPORT -eq $RIFDPORT -o $PIFDPORT -eq $ADIFDPORT -o $RIFDPORT -eq $ADIFDPORT -o $LOGDPORT -eq $PIFDPORT -o $LOGDPORT -eq $RIFDPORT -o $LOGDPORT -eq $ADIFDPORT; then
 	 AC_MSG_RESULT([no])
 	 AC_MSG_ERROR([each of CORBA port must be unique])
  else
@@ -140,7 +140,7 @@ AC_ARG_WITH([nscontext], [AS_HELP_STRING([--with-nscontext],
 #put context name into config.h file
 AC_DEFINE_UNQUOTED([CONTEXT_NAME], [["]$NSCONTEXT["]], [name of CORBA Nameservice context])
 
-# cirba rifd port
+# corba rifd port
 AC_ARG_WITH([rifdport], [AS_HELP_STRING([--with-rifdport],
 			[CORBA fred-rifd port [2222]])],
 			[AC_SUBST([RIFDPORT], [$withval])],
@@ -155,6 +155,12 @@ AC_ARG_WITH([adifdport], [AS_HELP_STRING([--with-adifdport],
 			[CORBA fred-adifd port [2224]])],
 			[AC_SUBST([ADIFDPORT], [$withval])],
 			[AC_SUBST([ADIFDPORT], [2224])])
+#logd port
+AC_ARG_WITH([logdport], [AS_HELP_STRING([--with-logdport],
+			[CORBA fred-logd port [2225]])],
+			[AC_SUBST([LOGDPORT], [$withval])],
+			[AC_SUBST([LOGDPORT], [2225])])
+
 
 AS_AC_TEST_CORBA_PORTS()
 
