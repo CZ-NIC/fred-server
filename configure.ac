@@ -157,9 +157,9 @@ AC_ARG_WITH([adifdport], [AS_HELP_STRING([--with-adifdport],
 			[AC_SUBST([ADIFDPORT], [2224])])
 #logd port
 AC_ARG_WITH([logdport], [AS_HELP_STRING([--with-logdport],
-			[CORBA fred-logd port [2225]])],
+			[CORBA fred-logd port [2226]])],
 			[AC_SUBST([LOGDPORT], [$withval])],
-			[AC_SUBST([LOGDPORT], [2225])])
+			[AC_SUBST([LOGDPORT], [2226])])
 
 
 AS_AC_TEST_CORBA_PORTS()

@@ -1447,7 +1447,7 @@ Optional Packages:
   --with-rifdport         CORBA fred-rifd port [2222]
   --with-pifdport         CORBA fred-pifd port [2223]
   --with-adifdport        CORBA fred-adifd port [2224]
-  --with-logdport         CORBA fred-logd port [2225]
+  --with-logdport         CORBA fred-logd port [2226]
   --with-idldir           location of idl directory containing IDL interfaces
                           [DATAROOTDIR/idl/fred/]
   --with-libidn=DIR       Support IDN (needs GNU Libidn)
@@ -11248,7 +11248,7 @@ if test "${with_logdport+set}" = set; then
   withval=$with_logdport; LOGDPORT=$withval
 
 else
-  LOGDPORT=2225
+  LOGDPORT=2226
 
 fi
 
