@@ -23,6 +23,7 @@ char * wrap_str(const char *str)
 	ret = (char*)malloc(len);
 	if (ret == NULL) return NULL;
 
+	mem_pool->push_back(ret);
 	strcpy(ret, str);
 	return ret;
 }
@@ -410,8 +411,9 @@ Register::Logger::RequestProperties *epp_property_push_dnskey(Register::Logger::
  * @param	c			connection record
  * @param	request		raw content of the request
  * @param 	cdata		command data, parsed content
- * @param   cmdtype 	command type returned by parse_command function
+ * @param   	cmdtype 	command type returned by parse_command function
  * @param 	sessionid   login id for the session
+ * @param	action_type	to be removed - already in request table
  *
  * @return  status
  */
@@ -465,7 +467,6 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 		PUSH_PROPERTY (c_props, "clTRID", cdata->clTRID);
 		PUSH_PROPERTY (c_props, "svTRID", cdata->svTRID);
 
-		// TODO
 		// res = epp_log_new_message(request, c_props, &errmsg);
 		return auto_ptr<Register::Logger::RequestProperties>(c_props);
 	}

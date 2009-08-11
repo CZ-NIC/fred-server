@@ -4,7 +4,7 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(AM_CFLAGS) $(XML2_CFLAGS)
 
 sbin_PROGRAMS = migrate_log
 
-migrate_log_SOURCES = migrate.cc log_if.cc m_epp_parser.cc migrate.h m_epp_parser.h types.h
+migrate_log_SOURCES = migrate.cc log_if.cc m_epp_parser.cc migrate.h m_epp_parser.h
 migrate_log_CPPFLAGS = $(AM_CPPFLAGS)
 migrate_log_LDFLAGS  = $(AM_LDFLAGS)
 migrate_log_LDADD    = $(top_builddir)/src/corba/log/liblog_impl.a  \

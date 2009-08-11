@@ -88,6 +88,11 @@
 /** Namespace + location of enumval xml schema */
 #define LOC_ENUMVAL	NS_ENUMVAL " enumval-1.1.xsd"
 
+
+
+
+
+
 /**
  * Enumaration of statuses returned by validator.
  */
@@ -1065,6 +1070,30 @@ epp_parser_request_cleanup(void *cdata_arg);
 */
 
 std::auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *action_type);
+
+
+typedef	std::list<void*> pool_subst;
+
+class pool_manager {
+private:
+pool_subst * pool;
+
+public:
+	pool_manager(pool_subst *p) {
+		pool = p;
+	}	
+	~pool_manager() {
+		pool_subst::iterator it = pool->begin();	
+
+		for(;it != pool->end();it++) {
+			free (*it); //i know, i know, it shouldn't be delete, but free()'d
+		}
+		
+		pool->clear();	
+	}
+};
+
+extern pool_subst *mem_pool;
 
 void epp_parser_request_cleanup(void *cdata_arg);
 

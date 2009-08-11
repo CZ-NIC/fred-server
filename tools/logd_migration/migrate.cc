@@ -38,6 +38,8 @@ static const int INPUT_ID_LENGTH   = 22;
 static const int INPUT_SERVICE_LENGTH = 2;
 static const std::string LOG_FILENAME = "log_migration_log.txt";
 
+pool_subst *mem_pool;
+
 /** EPP service code; according to service table 
  */
 const int LC_EPP = 3;
@@ -100,18 +102,22 @@ int main()
 	// TODO is this safe?
 	Connection serv_conn = serv.get_connection();	
 
-	// TODO naopak to nejde
 	Transaction serv_transaction(serv_conn);
 
 	//here we're changing the approach:
 	//	accept action table id , | separator and xml like before
 	//	use only the method insert_properties
+	//
+
+	mem_pool = new pool_subst();
 
 	trans_count = 0;
 	while(std::getline(std::cin, line)) {
 		size_t i;
 		std::string id_str, date_str;
+		char *end = NULL;
 		TID entry_id;
+		pool_manager man(mem_pool);
 
 		if (line.empty()) continue;
 	
@@ -124,8 +130,7 @@ int main()
 
 		id_str = line.substr(0, INPUT_ID_LENGTH);
 		line = line.substr(INPUT_ID_LENGTH + 1);
-		// TODO strtol or something better
-		entry_id = atoi(id_str.c_str());
+		entry_id = strtoull(id_str.c_str(), &end, 10);
 
 		if(line[INPUT_DATE_LENGTH] != '|') {
 			logger("Error in input line: Date at the beginning doesn't have proper length");	
@@ -167,7 +172,7 @@ int main()
 		}
 		time2 = clock();
 
-		// we don't care about the action_type
+		// we don't care about the action_type - it's already in the request table
 		epp_action_type action_type = UnknownAction;
 		std::auto_ptr<Register::Logger::RequestProperties> props = log_epp_command(cdata, cmd_type, -1, &action_type);
 
@@ -185,10 +190,8 @@ int main()
 		t_backend += clock() - time3;
 	}
 	
-	// TODO Is multiple commit OK?... 
 	serv_transaction.commit();
 
-	// TODO printf? :)
 	printf(" --------- REPORT: \n"
 		" Parser: 	   %12i \n"
 		" log_epp_command: %12i \n"

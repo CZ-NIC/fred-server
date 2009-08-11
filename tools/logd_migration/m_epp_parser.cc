@@ -36,12 +36,6 @@
 // #include "epp_xmlcommon.h"
 // #include "epp_parser.h"
 
-/* TODO - remove. probably :)
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-*/
-
 /**
  * Size of hash table used for hashing command names. The size is tradeof
  * between size of hash table and lookup speed, it should be less than 255
@@ -79,9 +73,11 @@ int q_add(void *pool, qhead *head, void *data)
 {
         qitem   *item;
 
-        item = new qitem;
+	item = (qitem*)malloc(sizeof(qitem));
         if (item == NULL)
                 return 1;
+
+	mem_pool->push_back(item);
 
         item->next    = NULL;
         item->content = data;
@@ -105,8 +101,12 @@ int q_add(void *pool, qhead *head, void *data)
 void *epp_calloc(void *pool, unsigned size)
 {
 	void *ptr;
-	ptr = new char[size];
+	ptr = malloc(size);
+	if(ptr == NULL) return ptr;
+
 	memset(ptr, 0, size);
+
+	mem_pool->push_back(ptr);
 	return  ptr;
 	// return apr_pcalloc(p, size);
 }
@@ -454,7 +454,7 @@ cmd_hash_insert(const char *key, epp_command_type type)
 	assert(strlen(key) >= 4);
 
 	/* allocate and initialize new item */
-	if ((hi = new cmd_hash_item) == NULL) return 1;
+	if ((hi = (cmd_hash_item*) malloc(sizeof(cmd_hash_item))) == NULL) return 1;
 	hi->val = type;
 	if ((hi->key = strdup(key)) == NULL) {
 		free(hi);
@@ -574,10 +574,15 @@ epp_parser_request_cleanup(void *cdata_arg)
 
 	/* be carefull when freeing - any of pointers might be NULL */
 	if (cdata == NULL) return;
-	if (cdata->xpath_ctx != NULL)
+	if (cdata->xpath_ctx != NULL) {
 		xmlXPathFreeContext((xmlXPathContextPtr) cdata->xpath_ctx);
-	if (cdata->parsed_doc != NULL)
+	}
+	if (cdata->parsed_doc != NULL) {
 		xmlFreeDoc((xmlDocPtr) cdata->parsed_doc);
+	}
+	if (cdata->xml_in != NULL) {
+		free(cdata->xml_in);		
+	}
 }
 
 /**
@@ -593,7 +598,7 @@ new_error_item(void *pool, qhead *errors, epp_errorspec errspec)
 {
 	epp_error	*valerr;
 
-	valerr = new epp_error;
+	valerr = (epp_error*) epp_calloc(NULL, sizeof(epp_error));
 	if (valerr == NULL)
 		return 1;
 
@@ -642,7 +647,6 @@ parse_login(void *pool, xmlXPathContextPtr xpathCtx, epp_command_data *cdata)
 		return;
 	}
 
-	free(str);
 	/* check if EPP version matches */
 	str = xpath_get1(pool, xpathCtx, "epp:options/epp:version", 1, &xerr);
 	CHK_XERR(xerr, error);
@@ -652,7 +656,6 @@ parse_login(void *pool, xmlXPathContextPtr xpathCtx, epp_command_data *cdata)
 		return;
 	}
 
-	free(str);
 	/* ok, checking done. now get input parameters for corba function call */
 	login->clID = xpath_get1(pool, xpathCtx, "epp:clID", 1, &xerr);
 	CHK_XERR(xerr, error);
@@ -1230,6 +1233,7 @@ parse_create_nsset(void *pool,
 
 		/* get data */
 		xpathCtx->node = xmlXPathNodeSetItem(xpathObj->nodesetval, j);
+
 		ns->name = xpath_get1(pool, xpathCtx, "nsset:name", 1, &xerr);
 		CHK_XERR(xerr, err_free);
 		xpath_getn(pool, &ns->addr, xpathCtx, "nsset:addr", &xerr);
@@ -1239,6 +1243,7 @@ parse_create_nsset(void *pool,
 		{
 			goto err_free;
 		}
+
 	}
 	xmlXPathFreeObject(xpathObj);
 
@@ -1391,6 +1396,7 @@ int read_epp_ds(void *pool, xmlXPathContextPtr xpathCtx, epp_ds *ds)
 
 	ds->digest = xpath_get1(pool, xpathCtx, "keyset:digest", 1, &xerr);
 	CHK_XERR(xerr, error);
+
 
 	str = xpath_get1(pool, xpathCtx, "keyset:maxSigLife", 0, &xerr);
 	CHK_XERR(xerr, error);
@@ -3109,7 +3115,7 @@ epp_parse_command(
 	 * we cannot use strdup since it is not sure the request is NULL
 	 * terminated
 	 */
-	cdata->xml_in = new char [dumpLength + 1];
+	cdata->xml_in = (char*) malloc(dumpLength + 1);
 	if (cdata->xml_in == NULL)
 		return PARSER_EINTERNAL;
 	memcpy(cdata->xml_in, dumpedXML, dumpLength);
@@ -3227,6 +3233,8 @@ epp_parse_command(
 			ret = PARSER_NOT_COMMAND;
 			break;
 	}
+
+	
 
 	return ret;
 }
