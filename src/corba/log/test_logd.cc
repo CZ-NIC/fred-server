@@ -22,10 +22,13 @@ namespace TestLogd {
 // TODO this should be taken from the database 
 enum LogServiceType { LC_NO_SERVICE = -1, LC_UNIX_WHOIS=0, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN, LC_INTRANET, LC_MAX_SERVICE };
 
-const int MONTHS_COUNT  = 12;
+const int MONTHS_COUNT  = 2;
 
 // value from database table request_type
 const int UNKNOWN_ACTION = 1000;
+
+//whether to test partitioning on request_property_value table
+const bool PARTITIONS_TEST_PROPERTIES = true;
 
 const std::string DB_CONN_STR("host=localhost port=22345 dbname=fred user=fred password=password connect_timeout=2");
 
@@ -574,7 +577,10 @@ BOOST_AUTO_TEST_CASE( partitions )
 		for(int i=1;i<MONTHS_COUNT;i++) {
 			std::string date = create_date_str(2009, i);
 			try {
+				Database::ID entry_id;
+			
 				insert = boost::format("insert into request (time_begin, service, is_monitoring) values ('%1% 9:%2%:00', %3%, false)") % date % i % service;
+				std::cout << insert << std::endl;		// DEBUG
 				conn.exec(insert.str());
 
 				Result res = conn.exec(Impl_Log::LAST_ENTRY_ID);
@@ -582,6 +588,8 @@ BOOST_AUTO_TEST_CASE( partitions )
 					BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
 				}
 				id = res[0][0];
+				entry_id = id;
+				
 				MyFixture::id_list_entry.push_back(id);
 
 				boost::format test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, false) % id;
@@ -607,6 +615,48 @@ BOOST_AUTO_TEST_CASE( partitions )
 
 				if(res.size() == 0) {
 					BOOST_ERROR(" Record not found in the correct partition ");
+				}
+
+				if(PARTITIONS_TEST_PROPERTIES) {
+					insert = boost::format("insert into request_property_value (entry_time_begin, entry_service, entry_monitoring, entry_id, name_id, value) values ('%1% 9:%2%:00', %3%, false, %4%, 13, 'valuevalue')") % date % i % service % entry_id;
+					conn.exec(insert.str());
+
+
+					std::cout << insert << std::endl;		// DEBUG
+
+					Result res = conn.exec(Impl_Log::LAST_PROPERTY_VALUE_ID);
+					if (res.size() == 0) {
+						BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
+					}
+					id = res[0][0];
+					MyFixture::id_list_entry.push_back(id);
+
+					boost::format test = boost::format("select entry_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, false) % id;
+					res = conn.exec(test.str());
+
+					if(res.size() == 0) {
+						BOOST_ERROR(" Record not found in the correct partition ");
+					}
+
+					/*
+					// ----- now monitoring on
+					insert = boost::format() % date % i % service;
+					conn.exec(insert.str());
+
+					res = conn.exec(Impl_Log::LAST_PROPERTY_VALUE_ID);
+					if (res.size() == 0) {
+						BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
+					}
+					id = res[0][0];
+					MyFixture::id_list_entry.push_back(id);
+
+					test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, true) % id;
+					res = conn.exec(test.str());
+
+					if(res.size() == 0) {
+						BOOST_ERROR(" Record not found in the correct partition ");
+					}
+					*/
 				}
 
 			} catch (Database::Exception &ex) {

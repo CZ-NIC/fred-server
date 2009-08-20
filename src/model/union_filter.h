@@ -106,12 +106,10 @@ public:
     _ar.register_type(static_cast<StatementItemImpl *>(NULL));
     _ar.register_type(static_cast<StatementHeadImpl *>(NULL));
     /*
-     * TODO
-    _ar.register_type(static_cast<::Database::Filters::RequestImpl *>(NULL));
+    _ar.register_type(static_cast<RequestImpl *>(NULL));
     _ar.register_type(static_cast<RequestDataImpl *>(NULL));
-    _ar.register_type(static_cast<RequestPropertyImpl *>(NULL));
     _ar.register_type(static_cast<RequestPropertyValueImpl *>(NULL));
-*/
+     * TODO*/
 
     _ar & BOOST_SERIALIZATION_NVP(filter_list);
   }

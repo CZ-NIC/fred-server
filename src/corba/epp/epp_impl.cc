@@ -107,7 +107,7 @@ static bool testObjectHasState(
 }
 
 
-/* HACK - for disable notification when delete commands called through cli_admin 
+/* HACK - for disable notification when delete commands called through cli_admin
  * Ticket #1622
  */
 static bool disableNotification(DB *db, int _reg_id, const char* _cltrid)
@@ -115,13 +115,13 @@ static bool disableNotification(DB *db, int _reg_id, const char* _cltrid)
   LOGGER(PACKAGE).debug(boost::format("disable delete command notification check (registrator=%1% cltrid=%2%)")
                                       % _reg_id % _cltrid);
 
-  if (std::strcmp(_cltrid, "delete_contact")       != 0 && 
+  if (std::strcmp(_cltrid, "delete_contact")       != 0 &&
       std::strcmp(_cltrid, "delete_nsset")         != 0 &&
       std::strcmp(_cltrid, "delete_keyset")        != 0 &&
       std::strcmp(_cltrid, "delete_unpaid_zone_0") != 0 &&
       std::strcmp(_cltrid, "delete_unpaid_zone_1") != 0 &&
       std::strcmp(_cltrid, "delete_unpaid_zone_2") != 0 &&
-      std::strcmp(_cltrid, "delete_unpaid_zone_3") != 0) 
+      std::strcmp(_cltrid, "delete_unpaid_zone_3") != 0)
     return false;
 
   return db->GetRegistrarSystem(_reg_id);
@@ -1870,7 +1870,7 @@ ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, CORBA::Long clientID,
             zoneID = zones[z];
             // credit of the registrar
             price = action.getDB()->GetRegistrarCredit(action.getRegistrar(), zoneID);
-    
+
             //  return all not depend on            if( price >  0)
             {
                 credit->length(seq+1);
@@ -2096,8 +2096,8 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
  ***********************************************************************/
 
 ccReg::Response *
-ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname, 
-        const ccReg::Check& chck, ccReg::CheckResp_out a, CORBA::Long clientID, 
+ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
+        const ccReg::Check& chck, ccReg::CheckResp_out a, CORBA::Long clientID,
         const char* clTRID, const char* XML)
 {
     unsigned long i, len;
@@ -2726,7 +2726,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
         if ( !TestCountryCode(c.CC) ) {
             LOG(WARNING_LOG, "Reason: unknown country code: %s", (const char *)c.CC);
             code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                    ccReg::contact_cc, 1, 
+                    ccReg::contact_cc, 1,
                     REASON_MSG_COUNTRY_NOTEXIST);
         } else if (action.getDB()->ObjectUpdate(id, action.getRegistrar(), c.AuthInfoPw) ) // update OBJECT table
         {
@@ -3505,7 +3505,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
     if (!code) {
         // create notifier
         bool notify = !disableNotification(action.getDB(), action.getRegistrar(), clTRID);
-        if (notify) 
+        if (notify)
             ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
 
         // test to  table domain if relations to nsset
@@ -3907,7 +3907,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
  ***********************************************************************/
 
 ccReg::Response *
-ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg, 
+ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
         const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem,
         const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem,
         CORBA::Short level, CORBA::Long clientID, const char* clTRID, const char* XML)
@@ -4166,7 +4166,7 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
 
                 // notifier
                 ntf.reset(new EPPNotifier(
-                              conf.get<bool>("registry.disable_epp_notifier"), 
+                              conf.get<bool>("registry.disable_epp_notifier"),
                               mm, action.getDB(), action.getRegistrar(), nssetID, regMan.get()));
 
                 //  add to current tech-c added tech-c
@@ -4817,7 +4817,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
                         ccReg::domain_registrant, 1, REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
             } else if (contactid == 0) {
                 LOG(WARNING_LOG, "domain registrar not exist [%s]", registrant_chg);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR, 
+                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::domain_registrant, 1, REASON_MSG_REGISTRANT_NOTEXIST);
             }
 
@@ -5421,7 +5421,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
 ccReg::Response *
 ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
         const ccReg::Period_str& period, ccReg::timestamp_out exDate,
-        CORBA::Long clientID, const char *clTRID, const char* XML, 
+        CORBA::Long clientID, const char *clTRID, const char* XML,
         const ccReg::ExtensionList & ext)
 {
     Logging::Context::clear();
@@ -5542,7 +5542,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
             if ( !action.getDB()->TestObjectClientID(id, action.getRegistrar()) ) {
                 LOG( WARNING_LOG, "bad autorization not client of domain [%s]", fqdn );
                 code = action.setErrorReason(COMMAND_AUTOR_ERROR,
-                        ccReg::registrar_autor, 0, 
+                        ccReg::registrar_autor, 0,
                         REASON_MSG_REGISTRAR_AUTOR);
             }
             try {
@@ -5917,12 +5917,12 @@ ccReg_EPP_i::KeySetCreate(
                 REASON_MSG_TECH_NOTEXIST);
     } else if (tech.length() > 10) {
         LOG(WARNING_LOG, "KeySetCreate: too many tech contacts (maximum is 10)");
-        code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR, 
+        code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
                 ccReg::keyset_tech, 0, REASON_MSG_TECHADMIN_LIMIT);
     } else if (dsrec.length() < 1 && dnsk.length() < 1) {
         if (dsrec.length() < 1) {
             LOG(WARNING_LOG, "KeySetCreate: not any DS record");
-            code = action.setErrorReason(COMMAND_PARAMETR_MISSING, 
+            code = action.setErrorReason(COMMAND_PARAMETR_MISSING,
                     ccReg::keyset_dsrecord, 0, REASON_MSG_NO_DSRECORD);
         }
         if (dnsk.length() < 1) {
@@ -6018,8 +6018,8 @@ ccReg_EPP_i::KeySetCreate(
                 LOG(WARNING_LOG,
                         "Digest is %d (must be 1)",
                         dsrec[ii].digestType);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR, 
-                        ccReg::keyset_dsrecord, ii, 
+                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
+                        ccReg::keyset_dsrecord, ii,
                         REASON_MSG_DSRECORD_BAD_DIGEST_TYPE);
                 break;
             }
@@ -6034,7 +6034,7 @@ ccReg_EPP_i::KeySetCreate(
                         "Digest length is %d char (must be 40)",
                         strlen(dsrec[ii].digest));
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::keyset_dsrecord, ii, 
+                        ccReg::keyset_dsrecord, ii,
                         REASON_MSG_DSRECORD_BAD_DIGEST_LENGTH);
                 break;
             }
@@ -6067,7 +6067,7 @@ ccReg_EPP_i::KeySetCreate(
                 LOG(WARNING_LOG,
                         "dnskey flag is %d (must be 0, 256 or 257)",
                         dnsk[ii].flags);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR, 
+                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::keyset_dnskey, ii, REASON_MSG_DNSKEY_BAD_FLAGS);
                 break;
             }
@@ -6081,7 +6081,7 @@ ccReg_EPP_i::KeySetCreate(
                 LOG(WARNING_LOG,
                         "dnskey protocol is %d (must be 3)",
                         dnsk[ii].protocol);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR, 
+                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::keyset_dnskey, ii, REASON_MSG_DNSKEY_BAD_PROTOCOL);
                 break;
             }
@@ -6098,7 +6098,7 @@ ccReg_EPP_i::KeySetCreate(
                 LOG(WARNING_LOG,
                         "dnskey algorithm is %d (must be 1,2,3,4,5,6,7,252,253,254 or 255)",
                         dnsk[ii].alg);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR, 
+                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::keyset_dnskey, ii, REASON_MSG_DNSKEY_BAD_ALG);
                 break;
             }
@@ -6111,12 +6111,12 @@ ccReg_EPP_i::KeySetCreate(
             if ((ret1 = isValidBase64((const char *)dnsk[ii].key, &ret2)) != BASE64_OK) {
                 if (ret1 == BASE64_BAD_LENGTH) {
                     LOG(WARNING_LOG, "dnskey key length is wrong (must be dividable by 4)");
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR, 
+                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                             ccReg::keyset_dnskey, ii, REASON_MSG_DNSKEY_BAD_KEY_LEN);
                 } else if (ret1 == BASE64_BAD_CHAR) {
                     LOG(WARNING_LOG, "dnskey key contain invalid character '%c' at position %d",
                             ((const char *)dnsk[ii].key)[ret2], ret2);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR, 
+                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                             ccReg::keyset_dnskey, ii, REASON_MSG_DNSKEY_BAD_KEY_CHAR);
                 } else {
                     LOG(WARNING_LOG, "isValidBase64() return unknown value (%d)",
@@ -6136,7 +6136,7 @@ ccReg_EPP_i::KeySetCreate(
                                 "Found DSNKey duplicity: %d x %d (%d %d %d %s)",
                                 ii, jj, dnsk[ii].flags, dnsk[ii].protocol,
                                 dnsk[ii].alg, (const char *)dnsk[ii].key);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR, 
+                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                                 ccReg::keyset_dnskey, jj, REASON_MSG_DUPLICITY_DNSKEY);
                         break;
                     }
@@ -6793,7 +6793,7 @@ ccReg_EPP_i::KeySetUpdate(
     if (code == 0) {
         if (action.getDB()->ObjectUpdate(keysetId, action.getRegistrar(), authInfo_chg)) {
             ntf.reset(new EPPNotifier(
-                          conf.get<bool>("registry.disable_epp_notifier"), 
+                          conf.get<bool>("registry.disable_epp_notifier"),
                           mm, action.getDB(), action.getRegistrar(), keysetId, regMan.get()));
 
             for (int i = 0; i < (int)tech_add.length(); i++)
@@ -7089,9 +7089,9 @@ isValidBase64(const char *str, int *ret)
 }
 
 // primitive list of objects
-ccReg::Response * 
-ccReg_EPP_i::FullList(short act, const char *table, const char *fname, 
-        ccReg::Lists_out list, CORBA::Long clientID, const char* clTRID, 
+ccReg::Response *
+ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
+        ccReg::Lists_out list, CORBA::Long clientID, const char* clTRID,
         const char* XML)
 {
     int rows =0, i;
@@ -7361,9 +7361,10 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                );
             std::auto_ptr<Register::PublicRequest::PublicRequest> new_request(request_manager->createRequest(
                         Register::PublicRequest::PRT_AUTHINFO_AUTO_RIF));
-                        
 
-            new_request->setEppActionId(action.getDB()->GetActionID());
+	    new_request->setEppActionId(action.getDB()->GetActionID());
+            new_request->setRegistrarId(GetRegistrarID(clientID));
+
             new_request->addObject(Register::PublicRequest::OID(id));
             if (!new_request->check()) {
                 LOG(WARNING_LOG, "authinfo request for %s is prohibited",name);

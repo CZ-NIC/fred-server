@@ -12,7 +12,7 @@ class PublicRequest : virtual public Compound {
 public:
   virtual ~PublicRequest() {
   }
-  
+
   virtual Table& joinRequestTable() = 0;
   virtual Value<Database::ID>& addId() = 0;
 //  virtual Value<Register::Request::Type>& addType() = 0;
@@ -25,15 +25,18 @@ public:
   virtual Value<std::string>& addEmailToAnswer() = 0;
   virtual Value<Database::ID>& addAnswerEmailId() = 0;
   virtual Value<Database::ID>& addEppActionId() = 0;
+  virtual Value<Database::ID>& addRegistrarId() = 0;
   virtual Object& addObject() = 0;
   virtual EppAction& addEppAction() = 0;
-  
+
+  virtual Registrar& addRegistrar() = 0;
+
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
       const unsigned int _version) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
   }
-  
+
   static PublicRequest* create();
 };
 
@@ -42,7 +45,7 @@ class PublicRequestImpl : virtual public PublicRequest {
 public:
   PublicRequestImpl();
   virtual ~PublicRequestImpl();
-  
+
   virtual Table& joinRequestTable();
   virtual Value<Database::ID>& addId();
   virtual Value<int>& addType();
@@ -53,15 +56,17 @@ public:
   virtual Value<std::string>& addEmailToAnswer();
   virtual Value<Database::ID>& addAnswerEmailId();
   virtual Value<Database::ID>& addEppActionId();
+  virtual Value<Database::ID>& addRegistrarId();
   virtual Object& addObject();
   virtual EppAction& addEppAction();
-  
+  virtual Registrar& addRegistrar();
+
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
       const unsigned int _version) {
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(PublicRequest);
   }
-  
+
 };
 
 }

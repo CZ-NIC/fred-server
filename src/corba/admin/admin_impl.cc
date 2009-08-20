@@ -1651,7 +1651,8 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
   
   std::auto_ptr<Register::PublicRequest::PublicRequest> new_request(request_manager->createRequest(request_type));
   new_request->setType(request_type);
-  new_request->setEppActionId(_epp_action_id);
+  new_request->setEppActionId(_epp_action_id); 
+  new_request->setRegistrarId(0);
   new_request->setReason(_reason);
   new_request->setEmailToAnswer(_email_to_answer);
   for (unsigned i=0; i<_object_ids.length(); i++)

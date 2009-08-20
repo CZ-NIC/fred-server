@@ -110,6 +110,7 @@ public:
   virtual const Database::ID getAnswerEmailId() const = 0;
   virtual const Database::ID getEppActionId() const = 0;
   virtual void setEppActionId(const Database::ID& _epp_action_id) = 0;
+  virtual void setRegistrarId(const Database::ID& _registrar_id) = 0;
   
   virtual void addObject(const OID& _oid) = 0;
   virtual const OID& getObject(unsigned _idx) const = 0;
@@ -182,8 +183,7 @@ public:
                               bool _invalidate, bool _check) const 
     throw (NOT_FOUND, SQL_ERROR, Mailer::NOT_SEND, REQUEST_BLOCKED) = 0;
 
-};
-  
+}; 
 }
 }
 

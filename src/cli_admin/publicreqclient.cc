@@ -102,7 +102,7 @@ PublicRequestClient::list()
     if (m_conf.hasOpt(PUBLICREQ_TYPE_NAME))
         prFilter->addType().setValue(
                 m_conf.get<unsigned int>(PUBLICREQ_TYPE_NAME));
-    
+
     if (m_conf.hasOpt(PUBLICREQ_STATUS_NAME))
         prFilter->addType().setValue(
                 m_conf.get<unsigned int>(PUBLICREQ_STATUS_NAME));
@@ -118,24 +118,18 @@ PublicRequestClient::list()
     if (m_conf.hasOpt(PUBLICREQ_REASON_NAME))
         prFilter->addReason().setValue(
                 m_conf.get<std::string>(PUBLICREQ_REASON_NAME));
-    if (m_conf.hasOpt(PUBLICREQ_EPP_ID_NAME))
-        prFilter->addEppAction().addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(PUBLICREQ_EPP_ID_NAME)));
-    if (m_conf.hasOpt(PUBLICREQ_EPP_CLTRID_NAME))
-        prFilter->addEppAction().addClTRID().setValue(
-                m_conf.get<std::string>(PUBLICREQ_EPP_CLTRID_NAME));
-    if (m_conf.hasOpt(PUBLICREQ_EPP_SVTRID_NAME))
-        prFilter->addEppAction().addSvTRID().setValue(
-                m_conf.get<std::string>(PUBLICREQ_EPP_SVTRID_NAME));
-    if (m_conf.hasOpt(PUBLICREQ_EPP_CODE_RESPONSE_NAME))
-        prFilter->addEppAction().addEppCodeResponse().setValue(
-                m_conf.get<unsigned int>(PUBLICREQ_EPP_CODE_RESPONSE_NAME));
-    if (m_conf.hasOpt(PUBLICREQ_EPP_RESPONSE_NAME))
-        prFilter->addEppAction().addResponse().setValue(
-                m_conf.get<unsigned int>(PUBLICREQ_EPP_RESPONSE_NAME));
-    if (m_conf.hasOpt(PUBLICREQ_EPP_TYPE_NAME))
-        prFilter->addEppAction().addType().setValue(
-                m_conf.get<unsigned int>(PUBLICREQ_EPP_TYPE_NAME));
+
+    if (m_conf.hasOpt(PUBLICREQ_REGISTRAR_ID_NAME))
+	    prFilter->addRegistrar().addId().setValue(Database::ID(m_conf.get<unsigned int>(PUBLICREQ_REGISTRAR_ID_NAME)));
+
+    if (m_conf.hasOpt(PUBLICREQ_REGISTRAR_HANDLE_NAME))
+	    prFilter->addRegistrar().addHandle().setValue(m_conf.get<std::string>(PUBLICREQ_REGISTRAR_HANDLE_NAME));
+
+    if (m_conf.hasOpt(PUBLICREQ_REGISTRAR_NAME_NAME))
+	    prFilter->addRegistrar().addName().setValue(m_conf.get<std::string>(PUBLICREQ_REGISTRAR_NAME_NAME));
+
+
+
 
     apply_CRDATE(prFilter);
     apply_DATETIME(prFilter, PUBLICREQ_RESDATE_NAME, Resolve);
@@ -160,7 +154,7 @@ PublicRequestClient::list()
             << "\t\t<reason>" << pr->getReason() << "</reason>\n"
             << "\t\t<answer_email>" << pr->getEmailToAnswer() << "</answer_email>\n"
             << "\t\t<answer_email_id>" << pr->getAnswerEmailId() << "</answer_email_id>\n"
-            << "\t\t<epp_action_id>" << pr->getEppActionId() << "</epp_action_id>\n"
+            << "\t\t<registrar_id>" << pr->getRegistrarId() << "</registrar_id>\n"
             << "\t\t<check>" << pr->check() << "</check>\n";
         for (unsigned int j = 0; j < pr->getObjectSize(); j++) {
             std::cout
@@ -197,12 +191,9 @@ PublicRequestClient::list_help()
         << "    [--" << PUBLICREQ_ANSWER_EMAIL_NAME << "=<answer_email>] \\\n"
         << "    [--" << PUBLICREQ_ANSWER_EMAIL_ID_NAME << "=<answer_email_id>] \\\n"
         << "    [--" << PUBLICREQ_REASON_NAME << "=<public_request_reason>] \\\n"
-        << "    [--" << PUBLICREQ_EPP_ID_NAME << "=<epp_id>] \\\n"
-        << "    [--" << PUBLICREQ_EPP_CLTRID_NAME << "=<epp_client_transaction_id>] \\\n"
-        << "    [--" << PUBLICREQ_EPP_SVTRID_NAME << "=<epp_server_transaction_id>] \\\n"
-        << "    [--" << PUBLICREQ_EPP_CODE_RESPONSE_NAME << "=<epp_response_code>] \\\n"
-        << "    [--" << PUBLICREQ_EPP_RESPONSE_NAME << "=<epp_response>] \\\n"
-        << "    [--" << PUBLICREQ_EPP_TYPE_NAME << "=<epp_type>] \\\n"
+        << "    [--" << PUBLICREQ_REGISTRAR_ID_NAME << "=<registrar_id>] \\\n"
+        << "    [--" << PUBLICREQ_REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
+        << "    [--" << PUBLICREQ_REGISTRAR_NAME_NAME << "=<registrar_name>] \\\n"
         << "    [--" << CRDATE_NAME << "=<create_date>] \\\n"
         << "    [--" << PUBLICREQ_RESDATE_NAME << "=<resolve_date>] \n"
         << std::endl;
@@ -221,19 +212,16 @@ PublicRequestClient::m_opts[] = {
     ADDOPT(PUBLICREQ_STATUS_NAME, TYPE_UINT, false, false),
     ADDOPT(PUBLICREQ_ANSWER_EMAIL_NAME, TYPE_STRING, false, false),
     ADDOPT(PUBLICREQ_ANSWER_EMAIL_ID_NAME, TYPE_UINT, false, false),
-    ADDOPT(PUBLICREQ_EPP_ID_NAME, TYPE_UINT, false, false),
-    ADDOPT(PUBLICREQ_EPP_CLTRID_NAME, TYPE_STRING, false, false),
-    ADDOPT(PUBLICREQ_EPP_SVTRID_NAME, TYPE_STRING, false, false),
-    ADDOPT(PUBLICREQ_EPP_CODE_RESPONSE_NAME, TYPE_UINT, false, false),
-    ADDOPT(PUBLICREQ_EPP_RESPONSE_NAME, TYPE_UINT, false, false),
-    ADDOPT(PUBLICREQ_EPP_TYPE_NAME, TYPE_UINT, false, false),
+    ADDOPT(PUBLICREQ_REGISTRAR_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(PUBLICREQ_REGISTRAR_HANDLE_NAME, TYPE_STRING, false, false),
+    ADDOPT(PUBLICREQ_REGISTRAR_NAME_NAME, TYPE_STRING, false, false),
     add_CRDATE,
     ADDOPT(PUBLICREQ_RESDATE_NAME, TYPE_STRING, false, false),
 };
 
 #undef ADDOPT
 
-int 
+int
 PublicRequestClient::getOptsCount()
 {
     return sizeof(m_opts) / sizeof(options);

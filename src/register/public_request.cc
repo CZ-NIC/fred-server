@@ -259,6 +259,7 @@ public:
       insert_request.add("status", status_);
       insert_request.add("reason", reason_);
       insert_request.add("email_to_answer", email_to_answer_);
+      insert_request.add("registrar_id", registrar_id_);
         
       try {
         Database::Transaction transaction(conn);
@@ -353,6 +354,11 @@ public:
     modified_ = true;
   }
   
+  virtual void setRegistrarId(const Database::ID& _registrar_id) {
+    registrar_id_ = _registrar_id;
+    modified_ = true;
+  }
+
   
   virtual void addObject(const OID& _oid) {
     objects_.push_back(_oid);
