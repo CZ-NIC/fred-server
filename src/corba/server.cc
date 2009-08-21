@@ -53,6 +53,8 @@
 #include "conf/manager.h"
 #include "log/logger.h"
 
+#include "pidfile.h"
+
 /* pointer to ORB which have to be destroyed on signal received */
 static CORBA::ORB_ptr orb_to_shutdown = NULL;
 static PortableServer::POAManager_ptr poa_manager = NULL;
@@ -102,10 +104,42 @@ static void sigterm_handler(int signal) {
 
 int main(int argc, char** argv) {
 
-  // orb must be initialized before options are parsed to eat all omniorb
-  // program options
+  /* program options definition */
+  po::options_description cmd_opts;
+
+  try
+  {  //process pidfile cmdline option
+    cmd_opts.add_options()
+      ("pidfile", po::value<std::string>(), "Process id file location");
+
+    po::parsed_options parsed_cmd
+      = po::command_line_parser(argc,argv).options(cmd_opts).allow_unregistered().run();
+
+    po::variables_map vm;
+    po::store(parsed_cmd, vm);
+    po::notify(vm);
+
+    if(vm.count("pidfile"))
+    {
+      const std::string & pidfilename =  vm["pidfile"].as<std::string>();
+      pidfilens::PidFileS::writePid(getpid(), pidfilename);
+    }
+  }
+  catch (std::exception& e)
+  {
+    std::cerr << "pidfile std::exception: " << e.what() << std::endl;
+    exit (-1);
+  }
+  catch (...)
+  {
+    std::cerr << "pidfile cmdline option processing failed." << std::endl;
+    exit (-1);
+  }
+
+  //initialize orb to eat all omniorb program options
   CORBA::ORB_var orb;
   try {
+
     /* initialize ORB */
     orb = CORBA::ORB_init(argc, argv);
   } catch (...) {
@@ -114,7 +148,6 @@ int main(int argc, char** argv) {
   }
 
     /* program options definition */
-    po::options_description cmd_opts;
     cmd_opts.add_options()
       ("view-config", "View actual configuration");
 
