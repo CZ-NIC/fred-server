@@ -207,25 +207,6 @@ int main(int argc, char** argv) {
       exit(0);
     }
 
-  try
-  {
-    if(cfg.hasOpt("pidfile"))
-    {
-      const std::string & pidfilename =  cfg.get<std::string>("pidfile");
-      PidFileNS::PidFileS::writePid(getpid(), pidfilename);
-    }
-  }
-  catch (std::exception& e)
-  {
-    std::cerr << "pidfile std::exception: " << e.what() << std::endl;
-    exit (-1);
-  }
-  catch (...)
-  {
-    std::cerr << "pidfile cmdline option processing failed." << std::endl;
-    exit (-1);
-  }
-
     /* setting up logger */
     Logging::Log::Level log_level = static_cast<Logging::Log::Level>(cfg.get<unsigned>("log.level"));
     Logging::Log::Type  log_type  = static_cast<Logging::Log::Type>(cfg.get<unsigned>("log.type"));
@@ -391,6 +372,28 @@ int main(int argc, char** argv) {
 
     /* disconnect from terminal */
     setsid();
+
+    //manage pidfile
+    try
+    {
+      if(cfg.hasOpt("pidfile"))
+      {
+        const std::string & pidfilename =  cfg.get<std::string>("pidfile");
+        PidFileNS::PidFileS::writePid(getpid(), pidfilename);
+      }
+    }
+    catch (std::exception& e)
+    {
+      std::cerr << "pidfile std::exception: " << e.what() << std::endl;
+      exit (-1);
+    }
+    catch (...)
+    {
+      std::cerr << "pidfile cmdline option processing failed." << std::endl;
+      exit (-1);
+    }
+
+
     orb->run();
     orb->destroy();
   }
