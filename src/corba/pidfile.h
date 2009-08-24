@@ -1,20 +1,18 @@
 #ifndef PIDFILE_H
 #define PIDFILE_H
 
-#include <iostream>
 #include <fstream>
 #include <string>
 #include <exception>
 
 //Maintenance of the process pidfile
 
-namespace pidfilens
+namespace PidFileNS
 {
   //PID type
 #ifndef pid_t
   typedef unsigned long pid_t;
 #endif
-
 
   //if pid file is not open
   class PidFileExOpenErr: public std::exception
@@ -44,15 +42,11 @@ namespace pidfilens
     PidFileS(); // no default ctor 
     PidFileS(std::string pidFileName)
       : m_pidFile(pidFileName)
-    {
-      std::cout << "PidFileS::PidFileS" 
-        << " filename: " << pidFileName << std::endl;
-    }
+    {}
     PidFileS(PidFileS const&); // no copy ctor
     PidFileS& operator=(PidFileS const&); // no assignment op.
     ~PidFileS() // dtor
     {
-      std::cout << "PidFileS::~PidFileS" << std::endl;
       remove (m_pidFile.c_str());
     }
 
@@ -72,12 +66,9 @@ namespace pidfilens
       {
         throw PidFileExOpenErr();
       }
-      else
-      {
-        ofstrFile << pid << std::endl;
-        ofstrFile.close();
-      }
 
+      ofstrFile << pid << std::endl;
+      ofstrFile.close();
       static PidFileS instance(pidFileName);
       pidfile_created = true;
     }

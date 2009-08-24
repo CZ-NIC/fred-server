@@ -104,39 +104,7 @@ static void sigterm_handler(int signal) {
 
 int main(int argc, char** argv) {
 
-  /* program options definition */
-  po::options_description cmd_opts;
-
-  try
-  {  //process pidfile cmdline option
-    cmd_opts.add_options()
-      ("pidfile", po::value<std::string>(), "Process id file location");
-
-    po::parsed_options parsed_cmd
-      = po::command_line_parser(argc,argv).options(cmd_opts).allow_unregistered().run();
-
-    po::variables_map vm;
-    po::store(parsed_cmd, vm);
-    po::notify(vm);
-
-    if(vm.count("pidfile"))
-    {
-      const std::string & pidfilename =  vm["pidfile"].as<std::string>();
-      pidfilens::PidFileS::writePid(getpid(), pidfilename);
-    }
-  }
-  catch (std::exception& e)
-  {
-    std::cerr << "pidfile std::exception: " << e.what() << std::endl;
-    exit (-1);
-  }
-  catch (...)
-  {
-    std::cerr << "pidfile cmdline option processing failed." << std::endl;
-    exit (-1);
-  }
-
-  //initialize orb to eat all omniorb program options
+  /* initialize orb, eat all omniorb program options */
   CORBA::ORB_var orb;
   try {
 
@@ -148,7 +116,10 @@ int main(int argc, char** argv) {
   }
 
     /* program options definition */
+    po::options_description cmd_opts;
+
     cmd_opts.add_options()
+      ("pidfile", po::value<std::string>(), "Process id file location")
       ("view-config", "View actual configuration");
 
     po::options_description database_opts("Database");
@@ -235,6 +206,25 @@ int main(int argc, char** argv) {
       cfg.print(std::cout);
       exit(0);
     }
+
+  try
+  {
+    if(cfg.hasOpt("pidfile"))
+    {
+      const std::string & pidfilename =  cfg.get<std::string>("pidfile");
+      PidFileNS::PidFileS::writePid(getpid(), pidfilename);
+    }
+  }
+  catch (std::exception& e)
+  {
+    std::cerr << "pidfile std::exception: " << e.what() << std::endl;
+    exit (-1);
+  }
+  catch (...)
+  {
+    std::cerr << "pidfile cmdline option processing failed." << std::endl;
+    exit (-1);
+  }
 
     /* setting up logger */
     Logging::Log::Level log_level = static_cast<Logging::Log::Level>(cfg.get<unsigned>("log.level"));
