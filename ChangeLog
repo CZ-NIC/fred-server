@@ -1,3 +1,15 @@
+2009-08-12 Jiri Sadek, Ales Dolezal
+
+  * Minor code fixes (coverity)
+
+  * Fixed not-thread-safe zone loading/handling in epp interface
+
+  * CSOB payments script added to package
+
+  * fred-admin options update; minor bug fixes
+
+  * Adding of DS record to Keyset is prohibited, removal is still possible
+
 2009-07-01 Jiri Sadek, Ales Dolezal, Jaroslav Benkovsky (2.1.13)
 
   * list of dnskey algorithms expanded to satisfy RFC 5155.
