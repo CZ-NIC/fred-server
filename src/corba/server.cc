@@ -54,6 +54,7 @@
 #include "log/logger.h"
 
 #include "pidfile.h"
+#include "daemonize.h"
 
 /* pointer to ORB which have to be destroyed on signal received */
 static CORBA::ORB_ptr orb_to_shutdown = NULL;
@@ -120,6 +121,7 @@ int main(int argc, char** argv) {
 
     cmd_opts.add_options()
       ("pidfile", po::value<std::string>(), "Process id file location")
+      ("daemonize", "Turn foreground process into daemon")
       ("view-config", "View actual configuration");
 
     po::options_description database_opts("Database");
@@ -370,12 +372,19 @@ int main(int argc, char** argv) {
     pman->activate();
     LOGGER(PACKAGE).notice(boost::format("starting server %1%") % argv[0]);
 
-    /* disconnect from terminal */
-    setsid();
-
-    //manage pidfile
     try
     {
+  	  if (cfg.hasOpt("daemonize"))
+	  {
+	    daemonize();
+	  }
+	  else
+	  {
+        /* disconnect from terminal */
+        setsid();
+	  }
+
+      /* manage pidfile */
       if(cfg.hasOpt("pidfile"))
       {
         const std::string & pidfilename =  cfg.get<std::string>("pidfile");
@@ -384,15 +393,14 @@ int main(int argc, char** argv) {
     }
     catch (std::exception& e)
     {
-      std::cerr << "pidfile std::exception: " << e.what() << std::endl;
+      std::cerr << "std::exception: " << e.what() << std::endl;
       exit (-1);
     }
     catch (...)
     {
-      std::cerr << "pidfile cmdline option processing failed." << std::endl;
+      std::cerr << "nonstd exception." << std::endl;
       exit (-1);
     }
-
 
     orb->run();
     orb->destroy();
