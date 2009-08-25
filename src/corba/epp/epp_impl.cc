@@ -5919,19 +5919,12 @@ ccReg_EPP_i::KeySetCreate(
         LOG(WARNING_LOG, "KeySetCreate: too many tech contacts (maximum is 10)");
         code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
                 ccReg::keyset_tech, 0, REASON_MSG_TECHADMIN_LIMIT);
-    } else if (dsrec.length() < 1 && dnsk.length() < 1) {
-        if (dsrec.length() < 1) {
-            LOG(WARNING_LOG, "KeySetCreate: not any DS record");
-            code = action.setErrorReason(COMMAND_PARAMETR_MISSING,
-                    ccReg::keyset_dsrecord, 0, REASON_MSG_NO_DSRECORD);
-        }
-        if (dnsk.length() < 1) {
+    } else if (dnsk.length() < 1) {
             LOG(WARNING_LOG, "KeySetCreate: not any DNSKey record");
             code = action.setErrorReason(COMMAND_PARAMETR_MISSING,
                     ccReg::keyset_dnskey, 0, REASON_MSG_NO_DNSKEY);
-        }
-    } else if (dsrec.length() > 10) {
-        LOG(WARNING_LOG, "KeySetCreate: too many ds-records (maximum is 10)");
+    } else if (dsrec.length() > 0) {
+        LOG(WARNING_LOG, "KeySetCreate: too many ds-records (maximum is 0)");
         code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
                 ccReg::keyset_dsrecord, 0, REASON_MSG_DSRECORD_LIMIT);
     } else if (dnsk.length() > 10) {
@@ -6347,6 +6340,11 @@ ccReg_EPP_i::KeySetUpdate(
         code = action.setErrorReason(COMMAND_AUTOR_ERROR,
                 ccReg::registrar_autor, 0,
                 REASON_MSG_REGISTRAR_AUTOR);
+    }
+    if (dsrec_add.length() > 0) {
+       LOG(WARNING_LOG, "KeySetCreate: too many ds-records (maximum is 0)");
+       code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
+               ccReg::keyset_dsrecord, 0, REASON_MSG_DSRECORD_LIMIT);
     }
     try {
         if (!code && testObjectHasState(action.getDB(), keysetId, FLAG_serverUpdateProhibited)) {
