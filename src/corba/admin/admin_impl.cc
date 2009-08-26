@@ -1591,6 +1591,9 @@ ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
     return true;
 }
 
+// TODO _epp_action_id is not used because so far this method is only used in web interface 
+// (so epp_action_id is not filled)
+// if it's going to be used, registrar_id should be filled as well
 ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
                                               ccReg::TID _epp_action_id,
                                               const char *_reason,
