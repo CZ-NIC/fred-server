@@ -106,18 +106,6 @@ Object& PublicRequestImpl::addObject() {
   return *tmp;
 }
 
-EppAction& PublicRequestImpl::addEppAction() {
-  EppAction *tmp = EppAction::create();
-  tmp->joinOn(new Join(
-                       Column("epp_action_id", joinRequestTable()),
-                       SQL_OP_EQ,
-                       Column("id", tmp->joinActionTable())
-                       ));
-  tmp->setName("EppAction");
-  add(tmp);
-  return *tmp;
-}
-
 Registrar& PublicRequestImpl::addRegistrar() { 
   Registrar *tmp = new RegistrarImpl();
   tmp->joinOn(new Join(

@@ -27,7 +27,6 @@ public:
   virtual Value<Database::ID>& addEppActionId() = 0;
   virtual Value<Database::ID>& addRegistrarId() = 0;
   virtual Object& addObject() = 0;
-  virtual EppAction& addEppAction() = 0;
 
   virtual Registrar& addRegistrar() = 0;
 
@@ -58,7 +57,6 @@ public:
   virtual Value<Database::ID>& addEppActionId();
   virtual Value<Database::ID>& addRegistrarId();
   virtual Object& addObject();
-  virtual EppAction& addEppAction();
   virtual Registrar& addRegistrar();
 
   friend class boost::serialization::access;

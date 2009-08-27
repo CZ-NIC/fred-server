@@ -429,7 +429,6 @@ COMPOUND_CLASS(PublicRequest, PublicRequest, Compound,
     FILTER_ADD(Str, addReason);
     FILTER_ADD(Str, addEmailToAnswer);
     FILTER_ADD(Obj, addObject);
-    FILTER_ADD(Action, addEppAction);
     FILTER_ADD(Registrar, addRegistrar);
 );
 
