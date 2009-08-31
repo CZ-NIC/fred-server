@@ -74,7 +74,7 @@ public:
    * @param _query object representing query statement
    * @return       result
    */
-  virtual inline result_type exec(Statement& _stmt) throw (ResultFailed) {
+  virtual inline result_type exec(Statement& _stmt) /*throw (ResultFailed)*/ {
     return this->exec(_stmt.toSql(boost::bind(&ConnectionBase_<connection_driver, manager_type>::escape, this, _1)));
   }
 
