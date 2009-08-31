@@ -63,6 +63,12 @@ protected:
 
 class Column {
 public:
+
+	Column()
+		: name_()
+		, table_()
+	{}
+
   Column(const std::string &_name,
          const Table *_table) : name_(_name),
                                 table_(_table) { }
@@ -106,6 +112,10 @@ class Condition_ {
 public:
   typedef std::string operator_t;
 
+  Condition_()
+	  : left_()
+	  , op_()
+  {}
 
   Condition_(const Column &_l,
              const operator_t &_op) : left_(_l),
@@ -167,6 +177,9 @@ class ValueCondition : public Condition_ {
 public:
   typedef Database::Value value_type;
 
+  ValueCondition()
+	  : value_()
+  {}
 
   ValueCondition(const Column &_l,
                  const operator_t &_op,
