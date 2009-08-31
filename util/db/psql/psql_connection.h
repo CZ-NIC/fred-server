@@ -57,7 +57,7 @@ public:
   }
 
 
-  PSQLConnection(const std::string& _conn_info) throw (ConnectionFailed)
+  PSQLConnection(const std::string& _conn_info) /* throw (ConnectionFailed) */
                : conn_info_(_conn_info), psql_conn_(0), psql_conn_finish_(true) {
     open(_conn_info);
   }
@@ -77,7 +77,7 @@ public:
    * Implementation of coresponding methods called by Connection_ template
    */
 
-  virtual void open(const std::string& _conn_info) throw (ConnectionFailed) {
+  virtual void open(const std::string& _conn_info) /* throw (ConnectionFailed) */{
     conn_info_ = _conn_info;
     close();
     psql_conn_ = PQconnectdb(_conn_info.c_str());
@@ -96,12 +96,12 @@ public:
   }
 
 
-  virtual inline result_type exec(Statement& _query) throw (ResultFailed) {
+  virtual inline result_type exec(Statement& _query) /*throw (ResultFailed) */{
     return exec(_query.toSql(boost::bind(&PSQLConnection::escape, this, _1)));
   }
 
 
-  virtual inline result_type exec(const std::string& _query) throw (ResultFailed) {
+  virtual inline result_type exec(const std::string& _query) /*throw (ResultFailed)*/ {
     PGresult *tmp = PQexec(psql_conn_, _query.c_str());
 
     ExecStatusType status = PQresultStatus(tmp);
