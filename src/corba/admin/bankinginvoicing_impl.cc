@@ -30,8 +30,8 @@ ccReg_BankingInvoicing_i::archiveInvoices(
 
 bool
 ccReg_BankingInvoicing_i::createInvoiceForPayment(
-        unsigned long long paymentId,
-        unsigned long long registrarId)
+        CORBA::ULongLong paymentId,
+        CORBA::ULongLong registrarId)
 {
     std::auto_ptr<Register::Invoicing::Manager> 
         invMan(Register::Invoicing::Manager::create());
@@ -40,9 +40,9 @@ ccReg_BankingInvoicing_i::createInvoiceForPayment(
 bool
 ccReg_BankingInvoicing_i::addPrefix(
         const char *zoneName,
-        long type,
-        long year,
-        unsigned long long prefix)
+        CORBA::Long type,
+        CORBA::Long year,
+        ccReg::TID prefix)
 {
     std::auto_ptr<Register::Invoicing::Manager> 
         invMan(Register::Invoicing::Manager::create());
@@ -59,8 +59,8 @@ ccReg_BankingInvoicing_i::pairInvoices()
 
 bool
 ccReg_BankingInvoicing_i::createCreditInvoice(
-        unsigned long long zone,
-        unsigned long long registrar,
+        ccReg::TID zone,
+        ccReg::TID registrar,
         const char *price,
         const char *taxdate,
         const char *crdate)
@@ -84,8 +84,8 @@ ccReg_BankingInvoicing_i::createCreditInvoice(
 bool
 ccReg_BankingInvoicing_i::factoringOne(
         Register::Invoicing::Manager *manager,
-        unsigned long long zone,
-        unsigned long long registrar,
+        ccReg::TID zone,
+        ccReg::TID registrar,
         const Database::Date &todate,
         const Database::Date &taxdate)
 {
@@ -100,8 +100,8 @@ ccReg_BankingInvoicing_i::factoringOne(
 
 bool
 ccReg_BankingInvoicing_i::factoring(
-        unsigned long long zone,
-        unsigned long long registrar,
+        ccReg::TID zone,
+        ccReg::TID registrar,
         const char *todate,
         const char *taxdate)
 {
@@ -156,12 +156,12 @@ ccReg_BankingInvoicing_i::factoring(
     return true;
 }
 bool ccReg_BankingInvoicing_i::addPrice(
-        unsigned long long zone,
+        ccReg::TID zone,
         ccReg::BankingInvoicing::OperationType operation,
         const char *validfrom,
         const char *validto,
         const char *price,
-        long period)
+        CORBA::Long period)
 {
     DB db;
     db.OpenDatabase(m_connection_string.c_str());

@@ -11,8 +11,8 @@ private:
     std::string m_connection_string;
     bool factoringOne(
             Register::Invoicing::Manager *manager,
-            unsigned long long zone,
-            unsigned long long registrar,
+            ccReg::TID zone,
+            ccReg::TID registrar,
             const Database::Date &todate,
             const Database::Date &taxdate);
 public:
@@ -28,32 +28,32 @@ public:
     void archiveInvoices(
             bool send);
     bool createInvoiceForPayment(
-            unsigned long long paymentId,
-            unsigned long long registrarId);
+            CORBA::ULongLong paymentId,
+            CORBA::ULongLong registrarId);
     bool addPrefix(
             const char *zoneName,
-            long type,
-            long year,
-            unsigned long long prefix);
+            CORBA::Long type,
+            CORBA::Long year,
+            ccReg::TID prefix);
     bool pairInvoices();
     bool createCreditInvoice(
-            unsigned long long zone,
-            unsigned long long registrar,
+            ccReg::TID zone,
+            ccReg::TID registrar,
             const char *price,
             const char *taxdate,
             const char *crdate);
     bool factoring(
-            unsigned long long zone,
-            unsigned long long registrar,
+            ccReg::TID zone,
+            ccReg::TID registrar,
             const char *todate,
             const char *taxdate);
     bool addPrice(
-            unsigned long long zone,
+            ccReg::TID zone,
             ccReg::BankingInvoicing::OperationType operation,
             const char *validfrom,
             const char *validto,
             const char *price,
-            long period);
+            CORBA::Long period);
 
 };
 
