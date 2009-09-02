@@ -528,16 +528,15 @@ KeysetClient::info()
     xml = "<handle>" + name + "</handle>";
     cltrid = "info_keyset";
 
-    ccReg::KeySet *k = new ccReg::KeySet;
-
     CLIENT_LOGIN;
+    ccReg::KeySet *k = new ccReg::KeySet;
     epp->KeySetInfo(name.c_str(), k, clientId, cltrid.c_str(), xml.c_str());
     CLIENT_LOGOUT;
 
     std::cout << k->handle << std::endl;
     std::cout << k->AuthInfoPw << std::endl;
     std::cout << k->ROID << std::endl;
-    std::cout << k->dsrec[0].digest << std::endl;
+    // std::cout << k->dsrec[0].digest << std::endl;
     std::cout << k->tech[0] << std::endl;
 
     delete k;

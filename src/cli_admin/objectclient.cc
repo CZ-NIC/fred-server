@@ -317,7 +317,7 @@ ObjectClient::regular_procedure()
 {
     callHelp(m_conf, no_help);
     int i;
-    CorbaClient *cc = NULL;
+    std::auto_ptr<CorbaClient> cc;
     try {
         std::auto_ptr<Register::Document::Manager> docMan(
                 Register::Document::Manager::create(
@@ -328,8 +328,8 @@ ObjectClient::regular_procedure()
                 );
         for (i = 0; i < RESOLVE_TRY; i++) {
             try {
-                cc = new CorbaClient(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
-                if (cc != NULL) {
+                cc.reset(new CorbaClient(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME)));
+                if (cc.get() != NULL) {
                     break;
                 }
             } catch (NameService::NOT_RUNNING) {
@@ -396,7 +396,7 @@ ObjectClient::regular_procedure()
         if (m_conf.hasOpt(OBJECT_DELETE_TYPES_NAME)) {
             deleteTypes = m_conf.get<std::string>(OBJECT_DELETE_TYPES_NAME);
         }
-        if ((i = deleteObjects(deleteTypes, *cc)) != 0) {
+        if ((i = deleteObjects(deleteTypes, *(cc.get()))) != 0) {
             LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): Error has occured in deleteObject: %d", i);
             return;
         }
@@ -421,11 +421,6 @@ ObjectClient::regular_procedure()
         LOG(ERROR_LOG, "Admin::ObjectClient::regular_procedure(): unknown exception catched");
     }
 
-    try {
-        delete cc;
-    } catch (CORBA::Exception &e) {
-        ;
-    }
     return;
 } // ObjectClient::regular_procedure
 
