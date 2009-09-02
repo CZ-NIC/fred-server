@@ -15,7 +15,6 @@ LDADD = $(BOOST_DATE_TIME_LIB) $(BOOST_THREAD_LIB) \
 
 
 liblog_impl_a_SOURCES = log_impl_wrap.h log_impl_wrap.cc log_impl.h log_impl.cc model_request_type.cc model_request.cc model_request_property.cc model_request_property_value.cc model_request_data.cc model_session.cc model_service.cc model_request_type.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h model_service.h 
-liblog_impl_a_LDFLAGS = $(AM_LDFLAGS) 
 
 sbin_PROGRAMS = test_logd
 
