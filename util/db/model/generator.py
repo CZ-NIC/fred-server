@@ -117,9 +117,11 @@ def guess_type(type, pkey, fkey):
     elif type == 'serial':
         return 'unsigned long long'
     elif type == 'inet':
-	return 'std::string'
+        return 'std::string'
     elif type == 'boolean':
-	return 'bool'	
+        return 'bool'
+    elif type == 'ARRAY':
+        return 'std::string'
     else:
         print "Unknown type: %s" % (type)
         sys.exit(1)
