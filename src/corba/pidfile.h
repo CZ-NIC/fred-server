@@ -14,25 +14,6 @@ namespace PidFileNS
   typedef unsigned long pid_t;
 #endif
 
-  //if pid file is not open
-  class PidFileExOpenErr: public std::exception
-  {
-    virtual const char* what() const throw()
-    {
-      return "pidfile open error";
-    }
-  };//class PidFileExOpenErr
-
-  //if pid file already created
-  class PidFileExCreatedErr: public std::exception
-  {
-    virtual const char* what() const throw()
-    {
-      return "pidfile already created error";
-    }
-  };//class PidFileExCreatedErr
-
-
   //creating and removing pidfile
   class PidFileS
   {
@@ -57,14 +38,14 @@ namespace PidFileNS
     {
       if (pidfile_created)
       {
-        throw PidFileExCreatedErr();
+        throw std::runtime_error("pidfile already created error");
       }
       std::ofstream ofstrFile;
       ofstrFile.open(pidFileName.c_str()
         ,std::ios_base::out | std::ios_base::trunc);
       if(!ofstrFile)
       {
-        throw PidFileExOpenErr();
+        throw std::runtime_error("pidfile open error");
       }
 
       ofstrFile << pid << std::endl;
