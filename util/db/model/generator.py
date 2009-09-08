@@ -22,6 +22,7 @@ var_prefix = ''
 var_suffix = ''
 file_prefix = ''
 bracket = False
+foreign_table_prefix = ''
 
 def get_table_info(pg_settings, table_name):
     conn = pgdb.connect(host=pg_settings['host'], user=pg_settings['user'],
@@ -145,8 +146,8 @@ def write_getter(out, val):
             prefix, val['foreign_model'],
             create_getter(val['name'])))
         out.write('\n' + ' ' * indent + '{\n') if bracket else out.write(' {\n')
-        out.write(' ' * 2 * indent + 'return %s.getRelated(this);\n' %
-                val['name'])
+        out.write(' ' * 2 * indent + 'return %s%s.getRelated(this);\n' % (
+                foreign_table_prefix, val['name']))
         out.write(' ' * indent + '}\n')
     else:
         out.write(' ' * indent + 'const %s &%s() const' % (
@@ -171,8 +172,8 @@ def write_setter(out, val):
             create_setter(val['name']), prefix,
             val['foreign_model']))
         out.write('\n' + ' ' * indent + '{\n') if bracket else out.write(' {\n')
-        out.write(' ' * 2 * indent + '%s.setRelated(this, foreign_value);\n' % (
-            val['name']))
+        out.write(' ' * 2 * indent + '%s%s.setRelated(this, foreign_value);\n' % (
+            foreign_table_prefix, val['name']))
         out.write(' ' * indent + '}\n')
 
     else:
@@ -212,17 +213,17 @@ def write_field_lazy(out, val):
     if val['foreign'] == False:
         return 
     # Field::Lazy::Field<ModelZone *>          m_zone;
-    out.write(' ' * indent + 'Field::Lazy::Field<%s%s *> %s%s%s;\n' % (
-        prefix, val['foreign_model'], var_prefix, val['name'], var_suffix))
+    out.write(' ' * indent + 'Field::Lazy::Field<%s%s *> %s%s%s%s;\n' % (
+        prefix, val['foreign_model'], var_prefix, foreign_table_prefix, val['name'], var_suffix))
 
 # write Model::Field::Related
 def write_related_one_to_one(out, val, cap_name):
     if val['foreign'] == False:
         return
     # static Model::Field::Related::OneToOne<ModelInvoice, unsigned long long, ModelZone>       zone;
-    out.write(' ' * indent + 'static Model::Field::Related::OneToOne<%s%s, %s, %s%s> %s;\n' % (
+    out.write(' ' * indent + 'static Model::Field::Related::OneToOne<%s%s, %s, %s%s> %s%s;\n' % (
         prefix, cap_name, val['data_type'], prefix,
-        val['foreign_model'], val['name']))
+        val['foreign_model'], foreign_table_prefix, val['name']))
 
 def write_includes(out, val):
     if val['foreign'] == False:
@@ -366,9 +367,9 @@ def write_one_to_one(out, val, cap_name):
     if val['foreign'] != True:
         return
     #DEFINE_ONE_TO_ONE(ModelInvoice, ModelZone, zone, m_zone, unsigned long long , zoneId, m_zoneId)
-    out.write('DEFINE_ONE_TO_ONE(%s%s, %s%s, %s, %s%s%s, %s, %sId, %s%sId%s)\n' % (
-        prefix, cap_name, prefix, val['foreign_model'], val['name'],
-        var_prefix, val['name'], var_suffix,
+    out.write('DEFINE_ONE_TO_ONE(%s%s, %s%s, %s%s, %s%s%s%s, %s, %sId, %s%sId%s)\n' % (
+        prefix, cap_name, prefix, val['foreign_model'], foreign_table_prefix, val['name'],
+        var_prefix, foreign_table_prefix, val['name'], var_suffix,
         val['data_type'], val['name'], var_prefix, val['name'], var_suffix))
 
 
@@ -467,6 +468,9 @@ if __name__ == '__main__':
             help='output filename prefix [%default]')
     parser.add_option('-b', '--bracket', dest='bracket', action='store_true',
             help='opening curly bracket will be on the new line')
+    parser.add_option('', '--foreign-table-prefix', dest='foreign_table_prefix', default='ftab_',
+            help='output filename prefix [%default]')
+
 
     (options, args) = parser.parse_args()
 
@@ -477,6 +481,7 @@ if __name__ == '__main__':
     var_suffix = options.var_suffix
     file_prefix = options.file_prefix
     bracket = options.bracket
+    foreign_table_prefix = options.foreign_table_prefix
 
     if len(args) >= 2:
         print 'There can be only one extra parameter (table name)'
