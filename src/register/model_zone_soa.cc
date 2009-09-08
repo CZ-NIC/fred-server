@@ -13,7 +13,7 @@ DEFINE_BASIC_FIELD(ModelZoneSoa, int, expiry, m_expiry, table_name, "expiry", .s
 DEFINE_BASIC_FIELD(ModelZoneSoa, int, minimum, m_minimum, table_name, "minimum", .setNotNull())
 DEFINE_BASIC_FIELD(ModelZoneSoa, std::string, nsFqdn, m_nsFqdn, table_name, "ns_fqdn", .setNotNull())
 
-DEFINE_ONE_TO_ONE(ModelZoneSoa, ModelZone, zone_zone, m_zone_zone, unsigned long long, zoneId, m_zoneId)
+DEFINE_ONE_TO_ONE(ModelZoneSoa, ModelZone, ftab_zone, m_ftab_zone, unsigned long long, zoneId, m_zoneId)
 
 ModelZoneSoa::field_list ModelZoneSoa::fields = list_of<ModelZoneSoa::field_list::value_type>
     (&ModelZoneSoa::zone)

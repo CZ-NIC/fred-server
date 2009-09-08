@@ -23,7 +23,7 @@ public:
     }
     ModelZone *getZone()
     {
-        return zone_zone.getRelated(this);
+        return ftab_zone.getRelated(this);
     }
     const int &getTtl() const
     {
@@ -67,7 +67,7 @@ public:
     }
     void setZone(ModelZone *foreign_value)
     {
-        zone_zone.setRelated(this, foreign_value);
+        ftab_zone.setRelated(this, foreign_value);
     }
     void setTtl(const int &ttl)
     {
@@ -156,7 +156,7 @@ protected:
     Field::Field<int> m_minimum;
     Field::Field<std::string> m_nsFqdn;
 
-    Field::Lazy::Field<ModelZone *> m_zone_zone;
+    Field::Lazy::Field<ModelZone *> m_ftab_zone;
 
 public:
     static Model::Field::PrimaryKey<ModelZoneSoa, unsigned long long> zone;
@@ -170,7 +170,7 @@ public:
     static Model::Field::Basic<ModelZoneSoa, int> minimum;
     static Model::Field::Basic<ModelZoneSoa, std::string> nsFqdn;
 
-    static Model::Field::Related::OneToOne<ModelZoneSoa, unsigned long long, ModelZone> zone_zone;
+    static Model::Field::Related::OneToOne<ModelZoneSoa, unsigned long long, ModelZone> ftab_zone;
 
 private:
     static std::string table_name;  /** < model table name */
