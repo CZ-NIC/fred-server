@@ -6,10 +6,12 @@
 #include "model_zone.h"
 
 
-class ModelZoneSoa:
-    public Model::Base {
+class ModelZoneSoa
+	: ModelZone { //public Model::Base
+
 public:
-    ModelZoneSoa()
+    ModelZoneSoa(const ModelZone& mzn)
+    :ModelZone(mzn)
     { }
     virtual ~ModelZoneSoa()
     { }
@@ -21,10 +23,12 @@ public:
     {
         return m_zoneId.get();
     }
+    /*
     ModelZone *getZone()
     {
         return ftab_zone.getRelated(this);
     }
+    */
     const int &getTtl() const
     {
         return m_ttl.get();
@@ -65,10 +69,12 @@ public:
     {
         m_zoneId = zoneId;
     }
+    /*
     void setZone(ModelZone *foreign_value)
     {
         ftab_zone.setRelated(this, foreign_value);
     }
+    */
     void setTtl(const int &ttl)
     {
         m_ttl = ttl;
@@ -106,6 +112,7 @@ public:
 
     void insert()
     {
+    	this->setZone(this->getId());
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
         Model::Base::insert(this);
@@ -114,6 +121,7 @@ public:
 
     void update()
     {
+    	this->setZone(this->getId());
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
         Model::Base::update(this);
@@ -156,11 +164,12 @@ protected:
     Field::Field<int> m_minimum;
     Field::Field<std::string> m_nsFqdn;
 
-    Field::Lazy::Field<ModelZone *> m_ftab_zone;
+    //Field::Lazy::Field<ModelZone*> m_ftab_zone;//ModelZone by ptr
+
 
 public:
     static Model::Field::PrimaryKey<ModelZoneSoa, unsigned long long> zone;
-    static Model::Field::ForeignKey<ModelZoneSoa, unsigned long long, ModelZone> zoneId;
+    //static Model::Field::ForeignKey<ModelZoneSoa, unsigned long long, ModelZone> zoneId;
     static Model::Field::Basic<ModelZoneSoa, int> ttl;
     static Model::Field::Basic<ModelZoneSoa, std::string> hostmaster;
     static Model::Field::Basic<ModelZoneSoa, int> serial;
@@ -170,7 +179,7 @@ public:
     static Model::Field::Basic<ModelZoneSoa, int> minimum;
     static Model::Field::Basic<ModelZoneSoa, std::string> nsFqdn;
 
-    static Model::Field::Related::OneToOne<ModelZoneSoa, unsigned long long, ModelZone> ftab_zone;
+    //static Model::Field::Related::OneToOne<ModelZoneSoa, unsigned long long, ModelZone> ftab_zone;
 
 private:
     static std::string table_name;  /** < model table name */
