@@ -12,11 +12,11 @@ public:
     { }
     virtual ~ModelEnumTlds()
     { }
-    const unsigned long long &getTld() const
+    std::string getTld() const
     {
-        return m_tld.get();
+        return m_tld;
     }
-    void setTld(const unsigned long long &tld)
+    void setTld(const std::string &tld)
     {
         m_tld = tld;
     }
@@ -64,11 +64,11 @@ public:
     }
 
 protected:
-    Field::Field<unsigned long long> m_tld;
+    Field::Field<std::string> m_tld;
 
 
 public:
-    static Model::Field::PrimaryKey<ModelEnumTlds, unsigned long long> tld;
+    static Model::Field::PrimaryKey<ModelEnumTlds, std::string> tld;
 
 
 private:
