@@ -99,7 +99,7 @@ public:
   /// return status desctription by index
   virtual const StatusDesc* getStatusDescByIdx(unsigned idx) const = 0;
   /// globaly update all states of all objects
-  virtual void updateObjectStates() const throw (SQL_ERROR) = 0;
+  virtual void updateObjectStates(unsigned long long _id = 0) const throw (SQL_ERROR) = 0;
   /// temporary for new database manager init
   virtual void dbManagerInit() = 0;
   /// factory method

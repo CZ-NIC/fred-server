@@ -126,7 +126,11 @@ ObjectClient::update_states()
                 &m_db,
                 m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME))
             );
-    regMan->updateObjectStates();
+    unsigned long long id = 0;
+    if (m_conf.hasOpt(OBJECT_ID_NAME)) {
+        id = m_conf.get<unsigned long long>(OBJECT_ID_NAME);
+    }
+    regMan->updateObjectStates(id);
     return;
 }
 
@@ -435,7 +439,7 @@ ObjectClient::m_opts[] = {
     ADDOPT(OBJECT_UPDATE_STATES_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(OBJECT_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(OBJECT_DEBUG_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(OBJECT_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(OBJECT_ID_NAME, TYPE_ULONGLONG, false, false),
     ADDOPT(OBJECT_NAME_NAME, TYPE_STRING, false, false),
     ADDOPT(OBJECT_DELETE_TYPES_NAME, TYPE_STRING, false, false),
     ADDOPT(OBJECT_NOTIFY_EXCEPT_TYPES_NAME, TYPE_STRING, false, false),

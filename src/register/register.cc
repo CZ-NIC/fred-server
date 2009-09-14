@@ -381,9 +381,11 @@ public:
     return &statusList[idx];
   }
 
-  virtual void updateObjectStates() const throw (SQL_ERROR) {
+  virtual void updateObjectStates(unsigned long long _id) const throw (SQL_ERROR) {
     TRACE("[CALL] Register::Manager::updateObjectStates()");
-    if (!db->ExecSelect("SELECT update_object_states(0)")) {
+    std::stringstream sql;
+    sql << "SELECT update_object_states(" << _id << ")";
+    if (!db->ExecSelect(sql.str().c_str())) {
       LOGGER(PACKAGE).error("updateObjectStates(): throwing SQL_ERROR");
       throw SQL_ERROR();
     }
