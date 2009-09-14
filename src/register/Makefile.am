@@ -24,6 +24,8 @@ libfred_a_SOURCES = register.cc          \
 					model_enumoperation.h			\
 					model_enumbankcode.cc			\
 					model_enumbankcode.h			\
+					model_enum_tlds.cc			\
+					model_enum_tlds.h			\
 					model_invoiceobjectregistry.cc	\
 					model_invoiceobjectregistry.h	\
 					model_invoiceobjectregistrypricemap.cc	\
@@ -52,6 +54,8 @@ libfred_a_SOURCES = register.cc          \
 					model_object_registry.h		\
 					model_registrar_acl.cc		\
 					model_registrar_acl.h		\
+					model_registrarinvoice.cc		\
+					model_registrarinvoice.h		\
 					model_registrar.cc			\
 					model_registrar.h			\
 					model_zone.cc				\
@@ -148,6 +152,23 @@ test_LDADD   = libfred.a \
                         $(BOOST_REGEX_LIB) \
                         $(BOOST_THREAD_LIB) \
                         $(XML2_LIBS)
+
+#noinst_PROGRAMS = testregzon
+#testregzon_SOURCES = test_regzon.cc
+#testregzon_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) -lboost_unit_test_framework
+#testregzon_LDADD   = libfred.a \
+#                        $(top_builddir)/src/model/libmodel.a \
+#                        $(top_builddir)/util/libutil.a \
+#                        $(top_builddir)/util/db/libdb.a \
+#                        $(top_builddir)/util/log/liblog.a \
+#                        $(top_builddir)/util/conf/libconf.a \
+#                        $(top_builddir)/util/types/libtypes.a \
+#                        $(top_builddir)/src/old_utils/liboldutils.a \
+#                        $(BOOST_DATE_TIME_LIB) \
+#                        $(BOOST_REGEX_LIB) \
+#                        $(BOOST_THREAD_LIB) \
+#                        $(XML2_LIBS)
+
 
 # noinst_PROGRAMS = test-register
 # test_register_SOURCES = test.cc

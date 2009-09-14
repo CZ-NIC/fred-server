@@ -58,7 +58,7 @@ libfred_a_LIBADD =
 am_libfred_a_OBJECTS = register.$(OBJEXT) common_impl.$(OBJEXT) \
 	object_impl.$(OBJEXT) common_impl_new.$(OBJEXT) \
 	model_enumfiletype.$(OBJEXT) model_enumoperation.$(OBJEXT) \
-	model_enumbankcode.$(OBJEXT) \
+	model_enumbankcode.$(OBJEXT) model_enum_tlds.$(OBJEXT) \
 	model_invoiceobjectregistry.$(OBJEXT) \
 	model_invoiceobjectregistrypricemap.$(OBJEXT) \
 	model_invoicecreditpaymentmap.$(OBJEXT) \
@@ -67,22 +67,23 @@ am_libfred_a_OBJECTS = register.$(OBJEXT) common_impl.$(OBJEXT) \
 	model_bankaccount.$(OBJEXT) model_bankstatementhead.$(OBJEXT) \
 	model_bankstatementitem.$(OBJEXT) model_enumbankcode.$(OBJEXT) \
 	model_object.$(OBJEXT) model_object_registry.$(OBJEXT) \
-	model_registrar_acl.$(OBJEXT) model_registrar.$(OBJEXT) \
-	model_zone.$(OBJEXT) model_zone_ns.$(OBJEXT) \
-	model_zone_soa.$(OBJEXT) model_mailtype.$(OBJEXT) \
-	model_mailarchive.$(OBJEXT) model_mailattachments.$(OBJEXT) \
-	model_mailhandles.$(OBJEXT) domain.$(OBJEXT) contact.$(OBJEXT) \
-	nsset.$(OBJEXT) keyset.$(OBJEXT) registrar.$(OBJEXT) \
-	public_request.$(OBJEXT) invoice_common.$(OBJEXT) \
-	invoice.$(OBJEXT) invoice_list.$(OBJEXT) \
-	invoice_manager.$(OBJEXT) invoice_mails.$(OBJEXT) \
-	invoice_exporter.$(OBJEXT) zone.$(OBJEXT) blacklist.$(OBJEXT) \
-	documents.$(OBJEXT) info_buffer.$(OBJEXT) \
-	bank_common.$(OBJEXT) bank_item.$(OBJEXT) bank_head.$(OBJEXT) \
-	bank_list.$(OBJEXT) bank_item_list.$(OBJEXT) \
-	bank_manager.$(OBJEXT) bank_exporter.$(OBJEXT) mail.$(OBJEXT) \
-	notify.$(OBJEXT) poll.$(OBJEXT) file.$(OBJEXT) \
-	filter.$(OBJEXT) request.$(OBJEXT) session.$(OBJEXT)
+	model_registrar_acl.$(OBJEXT) model_registrarinvoice.$(OBJEXT) \
+	model_registrar.$(OBJEXT) model_zone.$(OBJEXT) \
+	model_zone_ns.$(OBJEXT) model_zone_soa.$(OBJEXT) \
+	model_mailtype.$(OBJEXT) model_mailarchive.$(OBJEXT) \
+	model_mailattachments.$(OBJEXT) model_mailhandles.$(OBJEXT) \
+	domain.$(OBJEXT) contact.$(OBJEXT) nsset.$(OBJEXT) \
+	keyset.$(OBJEXT) registrar.$(OBJEXT) public_request.$(OBJEXT) \
+	invoice_common.$(OBJEXT) invoice.$(OBJEXT) \
+	invoice_list.$(OBJEXT) invoice_manager.$(OBJEXT) \
+	invoice_mails.$(OBJEXT) invoice_exporter.$(OBJEXT) \
+	zone.$(OBJEXT) blacklist.$(OBJEXT) documents.$(OBJEXT) \
+	info_buffer.$(OBJEXT) bank_common.$(OBJEXT) \
+	bank_item.$(OBJEXT) bank_head.$(OBJEXT) bank_list.$(OBJEXT) \
+	bank_item_list.$(OBJEXT) bank_manager.$(OBJEXT) \
+	bank_exporter.$(OBJEXT) mail.$(OBJEXT) notify.$(OBJEXT) \
+	poll.$(OBJEXT) file.$(OBJEXT) filter.$(OBJEXT) \
+	request.$(OBJEXT) session.$(OBJEXT)
 libfred_a_OBJECTS = $(am_libfred_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
 am_test_OBJECTS = test.$(OBJEXT)
@@ -296,6 +297,8 @@ libfred_a_SOURCES = register.cc          \
 					model_enumoperation.h			\
 					model_enumbankcode.cc			\
 					model_enumbankcode.h			\
+					model_enum_tlds.cc			\
+					model_enum_tlds.h			\
 					model_invoiceobjectregistry.cc	\
 					model_invoiceobjectregistry.h	\
 					model_invoiceobjectregistrypricemap.cc	\
@@ -324,6 +327,8 @@ libfred_a_SOURCES = register.cc          \
 					model_object_registry.h		\
 					model_registrar_acl.cc		\
 					model_registrar_acl.h		\
+					model_registrarinvoice.cc		\
+					model_registrarinvoice.h		\
 					model_registrar.cc			\
 					model_registrar.h			\
 					model_zone.cc				\
@@ -500,6 +505,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_bankaccount.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_bankstatementhead.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_bankstatementitem.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_enum_tlds.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_enumbankcode.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_enumfiletype.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_enumoperation.Po@am__quote@
@@ -518,6 +524,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_object_registry.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrar_acl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrarinvoice.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_zone.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_zone_ns.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_zone_soa.Po@am__quote@
@@ -721,6 +728,22 @@ uninstall-am:
 	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
 	uninstall-am
 
+
+#noinst_PROGRAMS = testregzon
+#testregzon_SOURCES = test_regzon.cc
+#testregzon_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) -lboost_unit_test_framework
+#testregzon_LDADD   = libfred.a \
+#                        $(top_builddir)/src/model/libmodel.a \
+#                        $(top_builddir)/util/libutil.a \
+#                        $(top_builddir)/util/db/libdb.a \
+#                        $(top_builddir)/util/log/liblog.a \
+#                        $(top_builddir)/util/conf/libconf.a \
+#                        $(top_builddir)/util/types/libtypes.a \
+#                        $(top_builddir)/src/old_utils/liboldutils.a \
+#                        $(BOOST_DATE_TIME_LIB) \
+#                        $(BOOST_REGEX_LIB) \
+#                        $(BOOST_THREAD_LIB) \
+#                        $(XML2_LIBS)
 
 # noinst_PROGRAMS = test-register
 # test_register_SOURCES = test.cc
