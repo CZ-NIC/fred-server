@@ -1327,19 +1327,14 @@ int ccReg_EPP_i::getZoneMax(
         LOGGER(PACKAGE).error("getZoneMax: result size is zero");
         return 0;
     }
-    int len = strlen(fqdn);
+    std::string domain(fqdn);
     for (int i = 0; i < db->GetSelectRows(); i++) {
-        int slen = strlen(db->GetFieldValue(i, 0));
-        int l = len - slen;
-        if (l > 0) {
-            if (fqdn[l - 1] == '.') {
-                return l - 1;
+        std::string zone(db->GetFieldValue(i, 0));
+        int from = domain.length() - zone.length();
+        if (from > 1) {
+            if (size_t idx = domain.find(zone, from) != std::string::npos) {
+                return from - 1;
             }
-        }
-    }
-    for (int l = len - 1; l > 0; l--) {
-        if (fqdn[l] == '.') {
-            return l;
         }
     }
     return 0;

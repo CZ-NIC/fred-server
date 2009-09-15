@@ -272,8 +272,8 @@ namespace Register
         db->FreeSelect();
         if (exists) throw ALREADY_EXISTS();
         unsigned dots = 1;
-        for (unsigned i=0; i<fqdn.size(); i++)
-          if (fqdn[i] == '.') dots++;
+        // for (unsigned i=0; i<fqdn.size(); i++)
+        //   if (fqdn[i] == '.') dots++;
         bool enumZone = checkEnumDomainSuffix(fqdn);
         if (enumZone) dots = 9;
         sql.str("");
