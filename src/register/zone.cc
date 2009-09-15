@@ -26,6 +26,10 @@
 #include "types.h"
 #include <ctype.h>
 #include <idna.h>
+#include "model_zone.h"
+#include "model_zone_ns.h"
+#include "model_zone_soa.h"
+#include "model_price_list.h"
 
 #define RANGE(x) x.begin(),x.end()
 #define IS_NUMBER(x) (x >= '0' && x <= '9')
