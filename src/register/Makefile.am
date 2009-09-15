@@ -64,6 +64,8 @@ libfred_a_SOURCES = register.cc          \
 					model_zone_ns.h				\
 					model_zone_soa.cc			\
 					model_zone_soa.h			\
+					model_price_list.cc			\
+					model_price_list.h			\
 					model_mailtype.cc			\
 					model_mailtype.h			\
 					model_mailarchive.cc		\

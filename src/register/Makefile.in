@@ -70,20 +70,20 @@ am_libfred_a_OBJECTS = register.$(OBJEXT) common_impl.$(OBJEXT) \
 	model_registrar_acl.$(OBJEXT) model_registrarinvoice.$(OBJEXT) \
 	model_registrar.$(OBJEXT) model_zone.$(OBJEXT) \
 	model_zone_ns.$(OBJEXT) model_zone_soa.$(OBJEXT) \
-	model_mailtype.$(OBJEXT) model_mailarchive.$(OBJEXT) \
-	model_mailattachments.$(OBJEXT) model_mailhandles.$(OBJEXT) \
-	domain.$(OBJEXT) contact.$(OBJEXT) nsset.$(OBJEXT) \
-	keyset.$(OBJEXT) registrar.$(OBJEXT) public_request.$(OBJEXT) \
-	invoice_common.$(OBJEXT) invoice.$(OBJEXT) \
-	invoice_list.$(OBJEXT) invoice_manager.$(OBJEXT) \
-	invoice_mails.$(OBJEXT) invoice_exporter.$(OBJEXT) \
-	zone.$(OBJEXT) blacklist.$(OBJEXT) documents.$(OBJEXT) \
-	info_buffer.$(OBJEXT) bank_common.$(OBJEXT) \
-	bank_item.$(OBJEXT) bank_head.$(OBJEXT) bank_list.$(OBJEXT) \
-	bank_item_list.$(OBJEXT) bank_manager.$(OBJEXT) \
-	bank_exporter.$(OBJEXT) mail.$(OBJEXT) notify.$(OBJEXT) \
-	poll.$(OBJEXT) file.$(OBJEXT) filter.$(OBJEXT) \
-	request.$(OBJEXT) session.$(OBJEXT)
+	model_price_list.$(OBJEXT) model_mailtype.$(OBJEXT) \
+	model_mailarchive.$(OBJEXT) model_mailattachments.$(OBJEXT) \
+	model_mailhandles.$(OBJEXT) domain.$(OBJEXT) contact.$(OBJEXT) \
+	nsset.$(OBJEXT) keyset.$(OBJEXT) registrar.$(OBJEXT) \
+	public_request.$(OBJEXT) invoice_common.$(OBJEXT) \
+	invoice.$(OBJEXT) invoice_list.$(OBJEXT) \
+	invoice_manager.$(OBJEXT) invoice_mails.$(OBJEXT) \
+	invoice_exporter.$(OBJEXT) zone.$(OBJEXT) blacklist.$(OBJEXT) \
+	documents.$(OBJEXT) info_buffer.$(OBJEXT) \
+	bank_common.$(OBJEXT) bank_item.$(OBJEXT) bank_head.$(OBJEXT) \
+	bank_list.$(OBJEXT) bank_item_list.$(OBJEXT) \
+	bank_manager.$(OBJEXT) bank_exporter.$(OBJEXT) mail.$(OBJEXT) \
+	notify.$(OBJEXT) poll.$(OBJEXT) file.$(OBJEXT) \
+	filter.$(OBJEXT) request.$(OBJEXT) session.$(OBJEXT)
 libfred_a_OBJECTS = $(am_libfred_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
 am_test_OBJECTS = test.$(OBJEXT)
@@ -337,6 +337,8 @@ libfred_a_SOURCES = register.cc          \
 					model_zone_ns.h				\
 					model_zone_soa.cc			\
 					model_zone_soa.h			\
+					model_price_list.cc			\
+					model_price_list.h			\
 					model_mailtype.cc			\
 					model_mailtype.h			\
 					model_mailarchive.cc		\
@@ -522,6 +524,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_mailtype.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_object.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_object_registry.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_price_list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrar_acl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrarinvoice.Po@am__quote@
