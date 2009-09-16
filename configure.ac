@@ -60,6 +60,9 @@ AX_BOOST_THREAD
 # For filter serialization to xml
 AX_BOOST_SERIALIZATION
 
+# For unittests
+AX_BOOST_TEST
+
 
 # Checks for PostgreSQL headers and libs
 AX_LIB_POSTGRESQL(8.0)

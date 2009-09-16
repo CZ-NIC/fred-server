@@ -6420,7 +6420,7 @@ _ACEOF
 fi
 
 
-# Check for omniORB
+# Check for omniORB (note that 4.1.1 is bugged for us)
 
 pkg_failed=no
 { echo "$as_me:$LINENO: checking for OMNIORB4" >&5
@@ -6431,12 +6431,12 @@ if test -n "$PKG_CONFIG"; then
         pkg_cv_OMNIORB4_CFLAGS="$OMNIORB4_CFLAGS"
     else
         if test -n "$PKG_CONFIG" && \
-    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"omniORB4 >= 4.1.1, omniDynamic4, omnithread3\"") >&5
-  ($PKG_CONFIG --exists --print-errors "omniORB4 >= 4.1.1, omniDynamic4, omnithread3") 2>&5
+    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"omniORB4 > 4.1.1, omniDynamic4, omnithread3\"") >&5
+  ($PKG_CONFIG --exists --print-errors "omniORB4 > 4.1.1, omniDynamic4, omnithread3") 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
-  pkg_cv_OMNIORB4_CFLAGS=`$PKG_CONFIG --cflags "omniORB4 >= 4.1.1, omniDynamic4, omnithread3" 2>/dev/null`
+  pkg_cv_OMNIORB4_CFLAGS=`$PKG_CONFIG --cflags "omniORB4 > 4.1.1, omniDynamic4, omnithread3" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -6449,12 +6449,12 @@ if test -n "$PKG_CONFIG"; then
         pkg_cv_OMNIORB4_LIBS="$OMNIORB4_LIBS"
     else
         if test -n "$PKG_CONFIG" && \
-    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"omniORB4 >= 4.1.1, omniDynamic4, omnithread3\"") >&5
-  ($PKG_CONFIG --exists --print-errors "omniORB4 >= 4.1.1, omniDynamic4, omnithread3") 2>&5
+    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"omniORB4 > 4.1.1, omniDynamic4, omnithread3\"") >&5
+  ($PKG_CONFIG --exists --print-errors "omniORB4 > 4.1.1, omniDynamic4, omnithread3") 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
-  pkg_cv_OMNIORB4_LIBS=`$PKG_CONFIG --libs "omniORB4 >= 4.1.1, omniDynamic4, omnithread3" 2>/dev/null`
+  pkg_cv_OMNIORB4_LIBS=`$PKG_CONFIG --libs "omniORB4 > 4.1.1, omniDynamic4, omnithread3" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -6473,14 +6473,14 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "omniORB4 >= 4.1.1, omniDynamic4, omnithread3"`
+	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "omniORB4 > 4.1.1, omniDynamic4, omnithread3"`
         else
-	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "omniORB4 >= 4.1.1, omniDynamic4, omnithread3"`
+	        OMNIORB4_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "omniORB4 > 4.1.1, omniDynamic4, omnithread3"`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$OMNIORB4_PKG_ERRORS" >&5
 
-	{ { echo "$as_me:$LINENO: error: Package requirements (omniORB4 >= 4.1.1, omniDynamic4, omnithread3) were not met:
+	{ { echo "$as_me:$LINENO: error: Package requirements (omniORB4 > 4.1.1, omniDynamic4, omnithread3) were not met:
 
 $OMNIORB4_PKG_ERRORS
 
@@ -6491,7 +6491,7 @@ Alternatively, you may set the environment variables OMNIORB4_CFLAGS
 and OMNIORB4_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 " >&5
-echo "$as_me: error: Package requirements (omniORB4 >= 4.1.1, omniDynamic4, omnithread3) were not met:
+echo "$as_me: error: Package requirements (omniORB4 > 4.1.1, omniDynamic4, omnithread3) were not met:
 
 $OMNIORB4_PKG_ERRORS
 
@@ -8284,6 +8284,9 @@ echo "$as_me: error: Boost::Serialization not found!" >&2;}
     	LDFLAGS="$LDFLAGS_SAVED"
 	fi
 
+
+# For unittests
+AX_BOOST_TEST
 
 
 # Checks for PostgreSQL headers and libs
