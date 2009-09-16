@@ -139,8 +139,6 @@ Impl_Log::Impl_Log(const std::string database, const std::string &monitoring_hos
 	logd_auto_conn conn;
 
 	logger_notice(boost::format("successfully  connect to DATABASE %1%") % database.c_str());
-	logger_notice("YYYYYYYY");
-	logger_error("XXXXXXXXX");
 
 	if (!monitoring_hosts_file.empty()) {
 		try {
@@ -183,7 +181,6 @@ Impl_Log::Impl_Log(const std::string database, const std::string &monitoring_hos
 }
 
 Impl_Log::~Impl_Log() {
-  // db.Disconnect();
   log_ctx_init();
 
   logger_notice("Impl_Log destructor");
@@ -395,7 +392,6 @@ ID Impl_Log::i_CreateRequest(const char *sourceIP, RequestServiceType service, c
 		logger_error(ex.what());
 	}
 
-	// t.commit();
 	return entry_id;
 }
 
@@ -410,14 +406,12 @@ bool Impl_Log::i_UpdateRequest(ID id, const Register::Logger::RequestProperties 
 		// perform check
 		if (!record_check(id, conn)) return false;
 
-		// TODO this is temporary workaround for partitioing
-		//  - we need the time_begin of the entry in question in order for request_property_value to find the right partition
-		//  or do it in some other way
+		// TODO think about some other way - i don't like this
 		boost::format query = boost::format("select time_begin, service, is_monitoring from request where id = %1%") % id;
 		Result res = conn.exec(query.str());
 
 		if(res.size() == 0) {
-			logger_error("Impossible has just happened... ");
+			logger_error("Record in request table not found.");
 		}
 		// end of TODO
 
@@ -445,7 +439,7 @@ bool Impl_Log::close_request_worker(Connection &conn, ID id, const char *content
 		// first perform checks:
 		if (!record_check(id, conn)) return false;
 
-		// TODO this is temporary workaround for partitioing
+		// TODO the same case as before
 		boost::format select = boost::format("select time_begin, service, is_monitoring from request where id = %1%") % id;
 		Result res = conn.exec(select.str());
 		DateTime entry_time = res[0][0].operator ptime();
@@ -453,7 +447,7 @@ bool Impl_Log::close_request_worker(Connection &conn, ID id, const char *content
 		monitoring = (bool)res[0][2];
 
 		if(res.size() == 0) {
-			logger_error("Impossible has just happened... ");
+			logger_error("Record in request table not found.");
 		}
 		// end of TODO
 

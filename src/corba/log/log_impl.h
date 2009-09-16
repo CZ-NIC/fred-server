@@ -11,10 +11,6 @@
 
 using namespace Database;
 
-// some CORBA types redefined here
-// to get rid of dependence on CORBA
-// .... NO we can use database types instead
-
 // Mapping of CORBA type
 enum Languages { EN, CS /*, __max_Languages=0xffffffff */ };
 
@@ -36,10 +32,6 @@ private:
   std::map<std::string, Database::ID, strCmp> property_names;
   std::list<std::string> monitoring_ips;
 
-
-// TODO just a test
-  Register::Logger::RequestProperties ppp;
-
 public:
 
   struct DB_CONNECT_FAILED { };
@@ -48,10 +40,11 @@ public:
 
   virtual ~Impl_Log();
 
-  /** Used only in migration  - return a connection used by the connection manager */
+  /** Used only in migration  - return a connection used by the connection manager 
+ 	it's meant to be used only in single-threaded environment
+  */
   Connection get_connection() {
 	return Manager::acquire();
-	// TODO is this safe?
   }
 
   Database::ID i_CreateRequest(const char *sourceIP, Database::RequestServiceType service, const  char *content_in, const Register::Logger::RequestProperties& props, Database::RequestActionType action_type, Database::ID session_id);
@@ -71,7 +64,6 @@ public:
 private:
   bool close_request_worker(Connection &conn, ID id, const char *content_out, const Register::Logger::RequestProperties &props);
   void insert_props(DateTime entry_time, Database::RequestServiceType service, bool monitoring, ID entry_id, const Register::Logger::RequestProperties& props, Connection conn);
-  // TODO former version    void insert_props(DateTime entry_time, Database::ID entry_id, const Register::Logger::RequestProperties& props, Connection &conn);
   bool record_check(Database::ID id, Connection &conn);
   Database::ID find_property_name_id(const std::string &name, Connection &conn);
   inline Database::ID find_last_property_value_id(Connection &conn);
