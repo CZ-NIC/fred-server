@@ -114,18 +114,18 @@ public:
     {
     	this->setZone(this->getId());
         Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction tx(conn);
+        //Database::Transaction tx(conn);
         Model::Base::insert(this);
-        tx.commit();
+        //tx.commit();
     }
 
     void update()
     {
     	this->setZone(this->getId());
         Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction tx(conn);
+        //Database::Transaction tx(conn);
         Model::Base::update(this);
-        tx.commit();
+        //tx.commit();
     }
 
     void reload()
