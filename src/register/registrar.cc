@@ -31,6 +31,13 @@
 
 #include "model/model_filters.h"
 #include "log/logger.h"
+#include "log/context.h"
+
+#include "model_registrar_acl.h"
+#include "model_registrar.h"
+#include "model_registrarinvoice.h"
+#include "model_enum_tlds.h"
+
 
 #define SET(a,b) { a = b; changed = true; }
 
@@ -1206,87 +1213,151 @@ public:
 
 };
 
-class ManagerImpl : virtual public Manager {
+class ManagerImpl : virtual public Manager
+{
   DB *db; ///< connection do db
   RegistrarListImpl rl;
   EPPActionListImpl eal;
   std::vector<EPPActionType> actionTypes;
 public:
-  ManagerImpl(DB *_db) :
-    db(_db), rl(_db), eal(db) {
-    
-    if (!db->ExecSelect("SELECT * FROM enum_action")) {
-      throw SQL_ERROR();
-    }
-    
-    actionTypes.clear();
-    for (unsigned i = 0; i < (unsigned)db->GetSelectRows(); i++) {
-      EPPActionType action;
-      action.id = STR_TO_ID(db->GetFieldValue(i, 0));
-      action.name = db->GetFieldValue(i, 1);
-      actionTypes.push_back(action);
-    }
-    db->FreeSelect();    
+  ManagerImpl(DB *_db)
+  :db(_db),rl(_db), eal(db)
+  {
+      try
+      {
+    	Database::Connection conn = Database::Manager::acquire();
+
+		Database::Result res = conn.exec("SELECT * FROM enum_action");
+
+		unsigned rows = res.size();
+
+		if((rows > 0)&&(res[0].size() > 0))
+		{
+		    actionTypes.clear();
+		    for (unsigned i = 0; i < (unsigned)rows; ++i)
+		    {
+		      EPPActionType action;
+		      action.id = res[i][0];
+		      action.name = std::string(res[i][1]);
+		      actionTypes.push_back(action);
+		    }
+		}
+		else
+			throw SQL_ERROR();
+      }//try
+      catch (...)
+      {
+          LOGGER(PACKAGE).error("ManagerImpl: an error has occured");
+          throw SQL_ERROR();
+      }//catch (...)
   }
-  virtual RegistrarList *getList() {
+
+  virtual RegistrarList *getList()
+  {
     return &rl;
   }
-  virtual EPPActionList *getEPPActionList() {
+  virtual EPPActionList *getEPPActionList()
+  {
     return &eal;
   }
-  virtual EPPActionList *createEPPActionList() {
+  virtual EPPActionList *createEPPActionList()
+  {
     return new EPPActionListImpl(db);
   }
   
-  virtual unsigned getEPPActionTypeCount() {
+  virtual unsigned getEPPActionTypeCount()
+  {
     return actionTypes.size();
   }
+
   virtual const EPPActionType& getEPPActionTypeByIdx(unsigned idx) const
-      throw (NOT_FOUND) {
+      throw (NOT_FOUND)
+  {
     if (idx >= actionTypes.size())
       throw NOT_FOUND();
     return actionTypes[idx];
   }
-  virtual bool checkHandle(const std::string handle) const throw (SQL_ERROR) {
-    if (!boost::regex_match(handle, boost::regex("[rR][eE][gG]-.*")))
-      return false;
-    std::stringstream sql;
-    sql << "SELECT COUNT(*) FROM registrar " << "WHERE UPPER(handle)=UPPER('"
-        << handle << "')";
-    if (!db->ExecSelect(sql.str().c_str()))
-      throw SQL_ERROR();
-    bool result = atoi(db->GetFieldValue(0, 0));
-    db->FreeSelect();
-    return result;
+
+  virtual bool checkHandle(const std::string handle) const
+	  throw (SQL_ERROR)
+  {
+      try
+      {
+    	Database::Connection conn = Database::Manager::acquire();
+
+		if (!boost::regex_match(handle, boost::regex("[rR][eE][gG]-.*")))
+		  return false;
+		std::stringstream sql;
+		sql << "SELECT COUNT(*) FROM registrar " << "WHERE UPPER(handle)=UPPER('"
+			<< handle << "')";
+
+		Database::Result res = conn.exec(sql.str());
+		if((res.size() > 0)&&(res[0].size() > 0))
+		{
+			unsigned count = res[0][0];
+			bool ret = count;
+			return ret;
+		}
+		else
+			throw SQL_ERROR();
+      }//try
+      catch (...)
+      {
+          LOGGER(PACKAGE).error("checkHandle: an error has occured");
+          throw SQL_ERROR();
+      }//catch (...)
   }
+
   virtual void addRegistrar(const std::string& registrarHandle)
-      throw (SQL_ERROR) {
-    RegistrarListImpl rlist(db);
-    rlist.setHandleFilter("REG-FRED_A");
-    rlist.reload();
-    if (rlist.size() < 1)
-      return;
-    RegistrarImpl *r = dynamic_cast<RegistrarImpl *>(rlist.get(0));
-    if (!r)
-      return;
-    r->resetId();
-    r->setHandle(registrarHandle);
-    r->save();
-  }
+      throw (SQL_ERROR)
+  {
+      try
+      {
+		RegistrarListImpl rlist(db);
+		rlist.setHandleFilter("REG-FRED_A");
+		rlist.reload();
+		if (rlist.size() < 1)
+		  return;
+		RegistrarImpl *r = dynamic_cast<RegistrarImpl *>(rlist.get(0));
+		if (!r)
+		  return;
+		r->resetId();
+		r->setHandle(registrarHandle);
+		r->save();
+      }//try
+      catch (...)
+      {
+          LOGGER(PACKAGE).error("addRegistrar: an error has occured");
+          throw SQL_ERROR();
+      }//catch (...)
+  }//addRegistrar
+
   virtual void addRegistrarAcl(
           const std::string &registrarHandle,
           const std::string &cert,
           const std::string &pass)
       throw (SQL_ERROR)
   {
-      std::stringstream sql;
-      sql << "INSERT INTO registraracl (registrarid, cert, password) "
-          << "SELECT r.id, '" << cert << "','" << pass << "' FROM registrar r "
-          << "WHERE r.handle='" << registrarHandle << "'";
-      if (!db->ExecSQL(sql.str().c_str())) {
+      try
+      {
+    	  Database::Connection conn = Database::Manager::acquire();
+
+    	  std::stringstream sql;
+		  sql << "INSERT INTO registraracl (registrarid, cert, password) "
+			  << "SELECT r.id, '" << cert << "','" << pass << "' FROM registrar r "
+			  << "WHERE r.handle='" << registrarHandle << "'";
+
+		  Database::Transaction tx(conn);
+		  conn.exec(sql.str());
+		  tx.commit();
+      }//try
+      catch (...)
+      {
+          LOGGER(PACKAGE).error("addRegistrarAcl: an error has occured");
           throw SQL_ERROR();
-      }
-  }
+      }//catch (...)
+  }//addRegistrarAcl
+
   virtual Registrar *createRegistrar()
   {
       return dynamic_cast<RegistrarImpl *>(new RegistrarImpl(db));
@@ -1296,33 +1367,53 @@ public:
           const std::string& registrarHandle,
           const std::string zone,
           const Database::Date &fromDate,
-          const Database::Date &toDate) throw (SQL_ERROR) {
-    std::string fromStr;
-    std::string toStr;
+          const Database::Date &toDate) throw (SQL_ERROR)
+  {
+      try
+      {
+      	Database::Connection conn = Database::Manager::acquire();
 
-    if (fromDate != Database::Date()) {
-        fromStr = "'" + fromDate.to_string() + "'";
-    } else {
-        fromStr = "CURRENT_DATE";
-    }
-    if (toDate != Database::Date()) {
-        toStr = "'" + toDate.to_string() + "'";
-    } else {
-        toStr = "NULL";
-    }
-    std::stringstream sql;
-    sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate,lastdate) "
-        << "SELECT r.id,z.id," << fromStr << "," << toStr << " FROM ("
-        << "SELECT id FROM registrar WHERE handle='" << registrarHandle
-        << "') r " << "JOIN (SELECT id FROM zone WHERE fqdn='" << zone
-        << "') z ON (1=1) " << "LEFT JOIN registrarinvoice ri ON "
-        << "(ri.registrarid=r.id AND ri.zone=z.id) " << "WHERE ri.id ISNULL";
-    if (!db->ExecSQL(sql.str().c_str()))
-      throw SQL_ERROR();
-  }
+		std::string fromStr;
+		std::string toStr;
+
+		if (fromDate != Database::Date())
+		{
+			fromStr = "'" + fromDate.to_string() + "'";
+		}
+		else
+		{
+			fromStr = "CURRENT_DATE";
+		}
+		if (toDate != Database::Date())
+		{
+			toStr = "'" + toDate.to_string() + "'";
+		}
+		else
+		{
+			toStr = "NULL";
+		}
+		std::stringstream sql;
+		sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate,lastdate) "
+			<< "SELECT r.id,z.id," << fromStr << "," << toStr << " FROM ("
+			<< "SELECT id FROM registrar WHERE handle='" << registrarHandle
+			<< "') r " << "JOIN (SELECT id FROM zone WHERE fqdn='" << zone
+			<< "') z ON (1=1) " << "LEFT JOIN registrarinvoice ri ON "
+			<< "(ri.registrarid=r.id AND ri.zone=z.id) " << "WHERE ri.id ISNULL";
+
+		Database::Transaction tx(conn);
+		conn.exec(sql.str());
+		tx.commit();
+      }//try
+      catch (...)
+      {
+          LOGGER(PACKAGE).error("addRegistrarZone: an error has occured");
+          throw SQL_ERROR();
+      }//catch (...)
+  }//addRegistrarZone
 }; // class ManagerImpl
 
-Manager *Manager::create(DB *db) {
+Manager *Manager::create(DB *db)
+{
   TRACE("[CALL] Register::Registrar::Manager::create()");
   return new ManagerImpl(db);
 }
