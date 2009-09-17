@@ -89,7 +89,7 @@ void
 ObjectClient::new_state_request()
 {
     callHelp(m_conf, no_help);
-    Register::TID id = m_conf.get<unsigned int>(OBJECT_ID_NAME);
+    Register::TID id = m_conf.get<unsigned long long>(OBJECT_ID_NAME);
     unsigned int state = m_conf.get<unsigned int>(OBJECT_NEW_STATE_REQUEST_NAME);
     int res = createObjectStateRequest(
             id, state
