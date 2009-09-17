@@ -20,16 +20,19 @@
 #include <algorithm>
 #include <functional>
 #include "zone.h"
-#include "old_utils/dbsql.h"
 #include <iostream>
 #include <sstream>
 #include "types.h"
 #include <ctype.h>
 #include <idna.h>
+
 #include "model_zone.h"
 #include "model_zone_ns.h"
 #include "model_zone_soa.h"
 #include "model_price_list.h"
+
+#include "log/logger.h"
+#include "log/context.h"
 
 #define RANGE(x) x.begin(),x.end()
 #define IS_NUMBER(x) (x >= '0' && x <= '9')
@@ -86,14 +89,12 @@ namespace Register
     class ManagerImpl : virtual public Manager
     {
       ZoneList zoneList;
-      DB *db;
       std::string defaultEnumSuffix;
       std::string enumZoneString;
       std::string defaultDomainSuffix;
       bool loaded;
      public:
-      ManagerImpl(DB *_db) :
-       db(_db),
+      ManagerImpl() :
        defaultEnumSuffix("0.2.4"),
        enumZoneString("e164.arpa"),
        defaultDomainSuffix("cz"),
@@ -102,22 +103,29 @@ namespace Register
       }
       void load()
       {
-        if (!db->ExecSelect(
-          "SELECT id, fqdn, enum_zone, "
-          "ARRAY_UPPER(STRING_TO_ARRAY(fqdn,'.'),1) + dots_max "
-          "FROM zone ORDER BY LENGTH(fqdn) DESC"
-        )) return;
-        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-          zoneList.push_back(ZoneImpl(
-           STR_TO_ID(db->GetFieldValue(i,0)),
-           db->GetFieldValue(i,1),
-           *db->GetFieldValue(i,2) == 't' ? true : false,
-           atoi(db->GetFieldValue(i,3))
-           ));
-        }
-        db->FreeSelect();
+          	Database::Connection conn = Database::Manager::acquire();
+
+  			Database::Result res = conn.exec(
+  		          "SELECT id, fqdn, enum_zone, "
+  		          "ARRAY_UPPER(STRING_TO_ARRAY(fqdn,'.'),1) + dots_max "
+  		          "FROM zone ORDER BY LENGTH(fqdn) DESC"
+				);
+  			unsigned rows = res.size();
+  			for (unsigned i = 0 ; i < rows; ++i)
+  			{
+  				long long tmp = res[i][0];
+
+  	          zoneList.push_back(ZoneImpl(
+				res[i][0]
+  	            ,res[i][1]
+  	            ,res[i][2]
+  	        	,res[i][3]
+  	           ));
+  			}//for
+
         loaded = true;
-      }
+      }//load()
+
       /// interface method implementation
       void parseDomainName(
         const std::string& fqdn, DomainName& domain, bool allowIDN
@@ -238,18 +246,37 @@ namespace Register
         if (i!=zoneList.end()) return &(*i);
         else return NULL;
       }
+
       virtual bool checkTLD(const DomainName& domain) const
       {
-        if (domain.size() < 1) return false;
-        std::stringstream sql;
-        sql << "SELECT COUNT(*) FROM enum_tlds "
-            << "WHERE LOWER(tld)=LOWER('" << *domain.rbegin() << "')";
-        if (!db->ExecSelect(sql.str().c_str())) return false;
-        if (!db->GetSelectRows()) return false;
-        bool ret = atoi(db->GetFieldValue(0,0)) > 0;
-        db->FreeSelect();
-        return ret;
-      }
+          try
+          {
+          	Database::Connection conn = Database::Manager::acquire();
+
+            if (domain.size() < 1) return false;
+            std::stringstream sql;
+            sql << "SELECT COUNT(*) FROM enum_tlds "
+                << "WHERE LOWER(tld)=LOWER('" << *domain.rbegin() << "')";
+
+  			Database::Result res = conn.exec(sql.str());
+  			if((res.size() > 0)&&(res[0].size() > 0))
+  			{
+  				unsigned count = res[0][0];
+  				bool ret = count > 0;
+  				return ret;
+  			}
+  			else
+  			{
+  				return false;
+  			}
+          }//try
+          catch (...)
+          {
+              LOGGER(PACKAGE).error("checkTLD: an error has occured");
+              return false;
+          }//catch (...)
+      }//checkTLD
+
       virtual void addZone(
               const std::string& fqdn,
               int ex_period_min,
@@ -261,58 +288,91 @@ namespace Register
               int expiry,
               int minimum,
               const std::string &ns_fqdn)
-        throw (SQL_ERROR, ALREADY_EXISTS)
+		throw (SQL_ERROR, ALREADY_EXISTS)
       {
-        std::stringstream sql;
-        sql << "SELECT COUNT(*) FROM zone WHERE fqdn='" << fqdn << "'";
-        bool exists = false;
-        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        if (!db->GetSelectRows()) throw SQL_ERROR();
-        exists = atoi(db->GetFieldValue(0,0)) > 0;
-        db->FreeSelect();
-        if (exists) throw ALREADY_EXISTS();
-        unsigned dots = 1;
-        // for (unsigned i=0; i<fqdn.size(); i++)
-        //   if (fqdn[i] == '.') dots++;
-        bool enumZone = checkEnumDomainSuffix(fqdn);
-        if (enumZone) dots = 9;
-        sql.str("");
-        sql << "INSERT INTO zone ("
-            << "  fqdn,ex_period_min,ex_period_max,val_period,"
-            << "  dots_max,enum_zone"
-            << ") VALUES ('"
-            << fqdn << "'," << ex_period_min << "," << ex_period_max
-            << "," << (enumZone ? "6," : "0,")
-            << dots << "," << (enumZone ? "'t'" : "'f'")
-            << ")";
-        if (!db->ExecSQL(sql.str().c_str()))
-          throw SQL_ERROR();
-        sql.str("");
-        sql << "INSERT INTO zone_soa ("
-            << " zone,ttl,hostmaster,serial,refresh,update_retr,expiry,"
-            << " minimum,ns_fqdn "
-            << ") VALUES ( "
-            << "currval('zone_id_seq')," << ttl << ",'" << hostmaster << "',NULL,"
-            << refresh << "," << update_retr << "," << expiry << ","
-            << minimum << ",'" << ns_fqdn << "'"
-            << ")";
-        if (!db->ExecSQL(sql.str().c_str()))
-          throw SQL_ERROR();
-      }
+        try
+        {
+        	Database::Connection conn = Database::Manager::acquire();
+
+        	std::stringstream sql;
+			sql << "SELECT COUNT(*) FROM zone WHERE fqdn='" << fqdn << "'";
+
+			Database::Result res = conn.exec(sql.str());
+
+			unsigned count = res[0][0];
+
+			if (count != 0)
+			{
+				LOGGER(PACKAGE).error("Zone already exists.");
+				throw ALREADY_EXISTS();
+			}
+
+			unsigned dots = 1;
+			//for (unsigned i=0; i<fqdn.size(); i++)
+			//  if (fqdn[i] == '.') dots++;
+			bool enumZone = checkEnumDomainSuffix(fqdn);
+			if (enumZone) dots = 9;
+
+			Database::Transaction tx(conn);
+
+			ModelZone zn;
+			zn.setFqdn(fqdn);
+			zn.setExPeriodMax(ex_period_max);
+			zn.setExPeriodMin(ex_period_min);
+			zn.setValPeriod(enumZone ? 6 : 0);
+			zn.setDotsMax(static_cast<int>(dots));
+			zn.setEnumZone(enumZone);
+			zn.insert();
+
+			ModelZoneSoa zsa(zn);
+			zsa.setTtl(ttl);
+			zsa.setHostmaster(hostmaster);
+			//zsa.setSerial() is null
+			zsa.setRefresh(refresh);
+			zsa.setUpdateRetr(update_retr);
+			zsa.setExpiry(expiry);
+			zsa.setMinimum(minimum);
+			zsa.setNsFqdn(ns_fqdn);
+			zsa.insert();
+
+			tx.commit();
+
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("addZone: an error has occured");
+            throw SQL_ERROR();
+        }//catch (...)
+      }//addZone
+
       virtual void addZoneNs(
               const std::string &zone,
               const std::string &fqdn,
               const std::string &addr)
           throw (SQL_ERROR)
       {
-          std::stringstream sql;
-          sql << "INSERT INTO zone_ns (zone, fqdn, addrs) "
-              << "SELECT z.id, '" << fqdn << "','{" << addr << "}' "
-              << "FROM ZONE z WHERE z.fqdn='" << zone << "'";
-          if (!db->ExecSQL(sql.str().c_str())) {
+          try
+          {
+        	  Database::Connection conn = Database::Manager::acquire();
+
+			  std::stringstream sql;
+			  sql << "INSERT INTO zone_ns (zone, fqdn, addrs) "
+				  << "SELECT z.id, '" << fqdn << "','{" << addr << "}' "
+				  << "FROM ZONE z WHERE z.fqdn='" << zone << "'";
+
+			  Database::Transaction tx(conn);
+			  conn.exec(sql.str());
+			  tx.commit();
+
+          }//try
+          catch (...)
+          {
+              LOGGER(PACKAGE).error("addZoneNs: an error has occured");
               throw SQL_ERROR();
-          }
-      }
+          }//catch (...)
+
+      }//addZoneNs
+
       virtual void addPrice(
               int zoneId,
               Operation operation,
@@ -322,26 +382,26 @@ namespace Register
               int period)
           throw (SQL_ERROR)
       {
-          std::stringstream sql;
-          std::string validFromStr = "'" + validFrom.to_string() + "'";
-          std::string validToStr;
-          if (validTo != Database::DateTime()) {
-              validToStr = "'" + validTo.to_string() + "'";
-          } else {
-              validToStr = "NULL";
-          }
-          sql << "INSERT INTO price_list (zone, operation, valid_from, "
-              << "valid_to, price, period) VALUES ("
-              << zoneId << ", "
-              << ((operation == CREATE) ? 1 : 2) << ", "
-              << validFromStr << ", "
-              << validToStr << ", "
-              << price << ", "
-              << period << ");";
-          if (!db->ExecSQL(sql.str().c_str())) {
-              throw SQL_ERROR();
-          }
-      }
+            try
+            {
+            	ModelPriceList pl;
+            	pl.setZoneId(zoneId);
+            	pl.setOperationId((operation == CREATE) ? 1 : 2);
+            	pl.setValidFrom(validFrom);
+            	pl.setValidTo(validTo);
+            	pl.setPrice(price);
+            	pl.setPeriod(period);
+            	pl.insert();
+
+            }//try
+            catch (...)
+            {
+                LOGGER(PACKAGE).error("addPrice: an error has occured");
+                throw SQL_ERROR();
+            }//catch (...)
+
+      }//addPrice
+
       virtual void addPrice(
               const std::string &zone,
               Operation operation,
@@ -351,9 +411,25 @@ namespace Register
               int period)
           throw (SQL_ERROR)
       {
-          int zoneId = db->GetNumericFromTable("zone", "id", "fqdn", zone.c_str());
-          addPrice(zoneId, operation, validFrom, validTo, price, period);
-      }
+          try
+          {
+          	Database::Connection conn = Database::Manager::acquire();
+
+          	std::stringstream sql;
+  			sql << "SELECT id FROM zone WHERE fqdn='" << zone.c_str() << "'";
+
+  			Database::Result res = conn.exec(sql.str());
+  			int zoneId = res[0][0];
+
+  			addPrice(zoneId, operation, validFrom, validTo, price, period);
+          }//try
+          catch (...)
+          {
+              LOGGER(PACKAGE).error("addPrice: getting zoneId an error has occured");
+              throw SQL_ERROR();
+          }//catch (...)
+      }//addPrice
+
       virtual std::string encodeIDN(const std::string& fqdn) const
       {
         std::string result;
@@ -363,6 +439,7 @@ namespace Register
         if (p) free(p);
         return result;
       }
+
       virtual std::string decodeIDN(const std::string& fqdn) const
       {
         std::string result;
@@ -373,9 +450,10 @@ namespace Register
         return result;
       }
     };
+
     Manager* Manager::create(DB *db)
     {
-      return new ManagerImpl(db);
+      return new ManagerImpl;
     }
   };
 };
