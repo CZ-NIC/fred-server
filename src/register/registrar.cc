@@ -359,92 +359,73 @@ public:
     clear();
   }
   
-  virtual void save() throw (SQL_ERROR) {
-    if (changed) {
+  virtual void save() throw (SQL_ERROR)
+  {
       // save registrar data
-      /*
-       * SQL_SAVE(sql,"registrar",id);
-       * SQL_SAVE_ADD(sql,"name",name);
-       * SQL_SAVE_ADD(sql,"handle",handle);
-       * SQL_SAVE_ADD(sql,"url",url);
-       * SQL_SAVE_DOIT(sql,db);
-       */
-      
-      /*
-       * TODO: Folowing SQLs should be propably done in transaction
-       */ 
-      std::ostringstream sql;
-      if (id_) {
-        sql << "UPDATE registrar SET " 
-            << "ico = '" << getIco() << "', "
-            << "dic = '" << getDic() << "', " 
-            << "varsymb = '" << getVarSymb() << "', "
-            << "vat = " << (getVat() ? "true" : "false") << ", "
-            << "name = '" << getName() << "', "
-            << "handle = '" << getHandle() << "', " 
-            << "url = '" << getURL() << "', " 
-            << "organization = '" << getOrganization() << "', "
-            << "street1 = '" << getStreet1() << "', " 
-            << "street2 = '" << getStreet2() << "', " 
-            << "street3 = '" << getStreet3() << "', "
-            << "city = '" << getCity() << "', " 
-            << "stateorprovince = '" << getProvince() << "', " 
-            << "postalcode = '" << getPostalCode() << "', " 
-            << "country = '" << getCountry() << "', " 
-            << "telephone = '" << getTelephone() << "', " 
-            << "fax = '" << getFax() << "', "
-            << "email = '" << getEmail() << "', "
-            << "system = " << (getSystem() ? "true" : "false") << " "
-            << "WHERE id = " << id_;
-      } else {
-        id_ = db->GetSequenceID("registrar");
-        sql << "INSERT INTO registrar "
-            << "(id, ico, dic, varsymb, vat, name, handle, url, organization, street1, street2, "
-            << "street3, city, stateorprovince, postalcode, country, "
-            << "telephone, fax, email, system) " 
-            << "VALUES " << "(" 
-            // << "DEFAULT" << ", "
-            << id_ << ", "
-            << "'" << getIco() << "', "
-            << "'" << getDic() << "', "
-            << "'" << getVarSymb() << "', "
-            << "" << (getVat() ? "true" : "false") << ", "
-            << "'" << getName() << "', " 
-            << "'" << getHandle() << "', " 
-            << "'" << getURL() << "', " 
-            << "'" << getOrganization() << "', "
-            << "'" << getStreet1() << "', " 
-            << "'" << getStreet2() << "', "
-            << "'" << getStreet3() << "', " 
-            << "'" << getCity() << "', " 
-            << "'" << getProvince() << "', " 
-            << "'" << getPostalCode() << "', " 
-            << "'" << getCountry() << "', " 
-            << "'" << getTelephone() << "', " 
-            << "'" << getFax() << "', " 
-            << "'" << getEmail() << "', "
-            << "" << (getSystem() ? "true" : "false") << ""
-            << ")";
-      }
-      if (!db->ExecSQL(sql.str().c_str()))
-        throw SQL_ERROR();
-    }
-    ACLList::const_iterator i = find_if(acl.begin(),
-                                        acl.end(),
-                                        std::mem_fun(&ACLImpl::hasChanged) );
-    {
-      std::ostringstream sql;
-      sql << "DELETE FROM registraracl WHERE registrarid=" << id_;
-      if (!db->ExecSQL(sql.str().c_str()))
-        throw SQL_ERROR();
-      for (unsigned j = 0; j < acl.size(); j++) {
-        sql.str("");
-        sql << acl[j]->makeSQL(id_);
-        if (!db->ExecSQL(sql.str().c_str()))
-          throw SQL_ERROR();
-      }
-    }
-  }
+	try
+	{
+		Database::Connection conn = Database::Manager::acquire();
+
+		Database::Transaction tx(conn);
+
+		if (changed)
+		{
+    		ModelRegistrar registrar;
+    		registrar.setIco(getIco());
+    		registrar.setDic(getDic());
+    		registrar.setVarsymb(getVarSymb());
+    		registrar.setVat(getVat());
+    		registrar.setName(getName());
+    		registrar.setHandle(getHandle());
+    		registrar.setUrl(getURL());
+    		registrar.setOrganization(getOrganization());
+    		registrar.setStreet1(getStreet1());
+    		registrar.setStreet2(getStreet2());
+    		registrar.setStreet3(getStreet3());
+    		registrar.setCity(getCity());
+    		registrar.setStateorprovince(getProvince());
+    		registrar.setPostalcode(getPostalCode());
+    		registrar.setCountry(getCountry());
+    		registrar.setTelephone(getTelephone());
+    		registrar.setFax(getFax());
+    		registrar.setEmail(getEmail());
+    		registrar.setSystem(getSystem());
+
+    		if (id_)
+    		{
+				registrar.setId(id_);
+				registrar.update();
+    		}
+    		else
+    		{
+				registrar.insert();
+				id_=registrar.getId();
+    		}
+		}//if changed
+
+		ACLList::const_iterator i = find_if(acl.begin(),
+											acl.end(),
+											std::mem_fun(&ACLImpl::hasChanged) );
+
+		std::ostringstream sql;
+		sql << "DELETE FROM registraracl WHERE registrarid=" << id_;
+		conn.exec(sql.str());
+		for (unsigned j = 0; j < acl.size(); j++)
+		{
+			sql.str("");
+			sql << acl[j]->makeSQL(id_);
+			conn.exec(sql.str());
+		}
+
+		tx.commit();
+
+	}//try
+	catch (...)
+	{
+	 LOGGER(PACKAGE).error("save: an error has occured");
+	 throw SQL_ERROR();
+	}//catch (...)
+  }//save
   
   void putACL(unsigned id,
               const std::string& certificateMD5,
@@ -498,75 +479,102 @@ public:
   virtual void setZoneFilter(const std::string& _zone) {
     zoneFilter = _zone;
   }
-  virtual void reload() throw (SQL_ERROR) {
-    clear();
-    std::ostringstream sql;
-    sql << "SELECT r.id,r.handle,r.name,r.url,r.organization,"
-        << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
-        << "r.postalcode,r.country,r.telephone,r.fax,r.email,r.system,"
-        << "COALESCE(SUM(i.credit),0) " << "FROM registrar r "
-        << "LEFT JOIN invoice i ON (r.id=i.registrarid AND "
-        << "NOT(i.credit ISNULL)) ";
-    if (!zoneFilter.empty())
-      sql << "LEFT JOIN (SELECT z.fqdn, ri.registrarid "
-          << "FROM zone z, registrarinvoice ri "
-          << "WHERE z.id=ri.zone AND ri.fromdate<=CURRENT_DATE) t "
-          << "ON (t.registrarid=r.id AND t.fqdn='" << zoneFilter << "') ";
-    sql << "WHERE 1=1 ";
-    if (!zoneFilter.empty())
-      sql << "AND NOT(t.fqdn ISNULL) ";
-    SQL_ID_FILTER(sql, "r.id", idFilter);
-    SQL_HANDLE_FILTER(sql, "r.name", name);
-    SQL_HANDLE_WILDCHECK_FILTER(sql, "r.handle", handle, false, false);
-    sql << "GROUP BY r.id,r.handle,r.name,r.url,r.organization,"
-        << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
-        << "r.postalcode,r.country,r.telephone,r.fax,r.email,r.system ";
-    sql << "ORDER BY r.id ";
-    if (!db->ExecSelect(sql.str().c_str()))
-      throw SQL_ERROR();
-    for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-      data_.push_back(new RegistrarImpl(
-          db,
-          STR_TO_ID(db->GetFieldValue(i,0)),
-          "",
-          "",
-          "",
-          true,
-          db->GetFieldValue(i,1),
-          db->GetFieldValue(i,2),
-          db->GetFieldValue(i,3),
-          db->GetFieldValue(i,4),
-          db->GetFieldValue(i,5),
-          db->GetFieldValue(i,6),
-          db->GetFieldValue(i,7),
-          db->GetFieldValue(i,8),
-          db->GetFieldValue(i,9),
-          db->GetFieldValue(i,10),
-          db->GetFieldValue(i,11),
-          db->GetFieldValue(i,12),
-          db->GetFieldValue(i,13),
-          db->GetFieldValue(i,14),
-          (*db->GetFieldValue(i,15) == 't'),
-          atol(db->GetFieldValue(i,16))  
-      ));
-    }
-    db->FreeSelect();
-    sql.str("");
-    sql << "SELECT registrarid,cert,password " << "FROM registraracl ORDER BY registrarid";
-    if (!db->ExecSelect(sql.str().c_str()))
-      throw SQL_ERROR();
+  virtual void reload() throw (SQL_ERROR)
+  {
+	try
+	{
+		Database::Connection conn = Database::Manager::acquire();
+		clear();
+		std::ostringstream sql;
+		sql << "SELECT r.id,r.handle,r.name,r.url,r.organization,"
+		 << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
+		 << "r.postalcode,r.country,r.telephone,r.fax,r.email,r.system,"
+		 << "COALESCE(SUM(i.credit),0) " << "FROM registrar r "
+		 << "LEFT JOIN invoice i ON (r.id=i.registrarid AND "
+		 << "NOT(i.credit ISNULL)) ";
+		if (!zoneFilter.empty())
+		sql << "LEFT JOIN (SELECT z.fqdn, ri.registrarid "
+		   << "FROM zone z, registrarinvoice ri "
+		   << "WHERE z.id=ri.zone AND ri.fromdate<=CURRENT_DATE) t "
+		   << "ON (t.registrarid=r.id AND t.fqdn='" << zoneFilter << "') ";
+		sql << "WHERE 1=1 ";
+		if (!zoneFilter.empty())
+		sql << "AND NOT(t.fqdn ISNULL) ";
+		if (idFilter) sql << "AND " << "r.id" << "=" << idFilter << " ";
+		if (!name.empty())
+			sql << "AND " << "r.name" << " ILIKE TRANSLATE('"
+				<< conn.escape(name) << "','*?','%_') ";
+		if (!handle.empty())
+		{
+		    if (handle.find('?') != std::string::npos)
+		      sql << "AND " << "r.handle"
+		      << " ILIKE TRANSLATE('" << conn.escape(handle) << "','*?','%_') ";
+		    else
+		    	sql << "AND " << "r.handle" << "="
+		           << "'" << conn.escape(handle) << "'" << " ";
+		}
+		sql << "GROUP BY r.id,r.handle,r.name,r.url,r.organization,"
+		 << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
+		 << "r.postalcode,r.country,r.telephone,r.fax,r.email,r.system ";
+		sql << "ORDER BY r.id ";
 
-    resetIDSequence();
-    for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-      // find associated registrar
-      unsigned registrarId = STR_TO_ID(db->GetFieldValue(i, 0));
-      RegistrarImpl *r = dynamic_cast<RegistrarImpl* >(findIDSequence(registrarId));
-      if (r) {
-        r->putACL(0, db->GetFieldValue(i, 1), db->GetFieldValue(i, 2));
-      }
-    }
-    db->FreeSelect();
-  }
+		Database::Result res = conn.exec(sql.str());
+
+		for (unsigned i=0; i < static_cast<unsigned>(res.size()); i++)
+		{
+			data_.push_back(new RegistrarImpl
+							(
+							  db
+							  ,res[i][0]
+							  ,""
+							  ,""
+							  ,""
+							  ,true
+							  ,res[i][1]
+							  ,res[i][2]
+							  ,res[i][3]
+							  ,res[i][4]
+							  ,res[i][5]
+							  ,res[i][6]
+							  ,res[i][7]
+							  ,res[i][8]
+							  ,res[i][9]
+							  ,res[i][10]
+							  ,res[i][11]
+							  ,res[i][12]
+							  ,res[i][13]
+							  ,res[i][14]
+							  ,res[i][15]
+							  ,res[i][16]
+							)//new
+						   );//push_back
+		}//for
+
+		sql.str("");
+		sql << "SELECT registrarid,cert,password " << "FROM registraracl ORDER BY registrarid";
+
+		Database::Result res2 = conn.exec(sql.str());
+
+		resetIDSequence();
+		for (unsigned i=0; i < static_cast<unsigned>(res2.size()); i++)
+		{
+		  // find associated registrar
+		  unsigned registrarId = res2[i][0];
+		  RegistrarImpl *r = dynamic_cast<RegistrarImpl* >(findIDSequence(registrarId));
+		  if (r)
+		  {
+			r->putACL(0, res2[i][1], res2[i][2]);
+		  }
+		}//for
+
+	}//try
+	catch (...)
+	{
+	 LOGGER(PACKAGE).error("reload: an error has occured");
+	 throw SQL_ERROR();
+	}//catch (...)
+  }//reload
+
   virtual void reload(Database::Filters::Union &uf) {
     TRACE("[CALL] RegistrarListImpl::reload()");
     clear();
