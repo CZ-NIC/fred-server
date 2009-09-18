@@ -45,7 +45,6 @@ ccReg::RequestActionList *ccReg_Log_i::GetServiceActions(ccReg::RequestServiceTy
 	ccReg::RequestActionList *ret = new ccReg::RequestActionList(size);
 
 	for (int i = 0; i< size; i++) {
-		(*ret)[i].service= (ccReg::RequestServiceType)res[i][0];
 		(*ret)[i].id 	 = (ccReg::RequestActionType)res[i][1];
 		(*ret)[i].status = ((std::string)res[i][2]).c_str();
 	}
