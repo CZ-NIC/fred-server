@@ -169,6 +169,7 @@ NotifyClient::m_opts[] = {
     ADDOPT(NOTIFY_DEBUG_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(NOTIFY_EXCEPT_TYPES_NAME, TYPE_STRING, false, false),
     ADDOPT(NOTIFY_LIMIT_NAME, TYPE_UINT, false, false),
+    ADDOPT(NOTIFY_USE_HISTORY_TABLES_NAME, TYPE_BOOL, false, false)
 };
 
 #undef ADDOPT

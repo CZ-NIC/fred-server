@@ -63,6 +63,7 @@ findRequestExecutor(Config::Conf &conf, METHODS &methods)
 #define ADDOPT_INT(name, desc)   (name, boost::program_options::value<int>(), desc)
 #define ADDOPT_UINT(name, desc)   (name, boost::program_options::value<unsigned int>(), desc)
 #define ADDOPT_ULONGLONG(name, desc)    (name, boost::program_options::value<unsigned long long>(), desc)
+#define ADDOPT_BOOL(name, desc)  (name, boost::program_options::value<bool>(), desc)
 
 void
 appendOptions(
@@ -113,6 +114,13 @@ appendOptions(
                     visible.add_options()
                         ADDOPT_ULONGLONG(opts[i].name, opts[i].description);
                 }
+            case TYPE_BOOL:
+                all.add_options()
+                    ADDOPT_BOOL(opts[i].name, opts[i].description);
+                if (opts[i].visible) {
+                    visible.add_options()
+                        ADDOPT_BOOL(opts[i].name, opts[i].description);
+                }
                 break;
             default:
                 std::cerr << "Unknown type" << std::endl;
@@ -128,6 +136,7 @@ appendOptions(
 #undef ADDOPT_STRING
 #undef ADDOPT_INT
 #undef ADDOPT_UINT
+#undef ADDOPT_BOOL
 
 int
 main(int argc, char **argv)
