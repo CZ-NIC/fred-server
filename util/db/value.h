@@ -209,6 +209,41 @@ public:
   }
 
 
+  /**
+   * DateTime need special handling
+   */
+  Value(const DateTime &_value) {
+    __init_date_time(_value);
+  }
+
+
+  CAST_OPERATOR(DateTime, DateTime())
+
+
+  Value& operator =(const DateTime &_value) {
+    __init_date_time(_value);
+    return *this;
+  }
+
+
+  /**
+   * Date need special handling
+   */
+  Value(const Date &_value) {
+    __init_date_time(_value);
+  }
+
+
+  CAST_OPERATOR(Date, Date())
+
+
+  Value& operator =(const Date &_value) {
+    __init_date_time(_value);
+    return *this;
+  }
+
+
+
   HANDLE_TYPE(short,              0,          false, false)
   HANDLE_TYPE(int,                0,          false, false)
   HANDLE_TYPE(long,               0,          false, false)
@@ -217,9 +252,10 @@ public:
   HANDLE_TYPE(unsigned long,      0,          false, false)
   HANDLE_TYPE(unsigned long long, 0,          false, false)
   HANDLE_TYPE(bool,               0,          true,  false)
-  HANDLE_TYPE(DateTime,           DateTime(), true,  false)
-  HANDLE_TYPE(Date,               Date(),     true,  false)
   HANDLE_TYPE(Money,              Money(),    true,  false)
+//  HANDLE_TYPE(DateTime,           DateTime(), true,  false)
+//  HANDLE_TYPE(Date,               Date(),     true,  false)
+
 
 
   /* assigment */
