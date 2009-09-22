@@ -516,9 +516,12 @@ bool Impl_Log::i_CloseRequestLogin(ID id, const char *content_out, const Registe
 			return false;
 		}
 
-		if(!res[0][0].isnull() && (ID)res[0][0] != (ID)0 ) {
-			logger_error(boost::format("record with ID %1% already has session_id filled") % id);
-			return false;
+		if(!res[0][0].isnull()) {
+			ID filled = res[0][0]; 
+			if(filled != 0) {
+				logger_error(boost::format("record with ID %1% already has session_id filled") % id);
+				return false;
+			}
 		}
 
 		query = boost::format("update request set session_id = %1% where id=%2%") % session_id % id;
