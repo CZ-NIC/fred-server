@@ -516,7 +516,7 @@ bool Impl_Log::i_CloseRequestLogin(ID id, const char *content_out, const Registe
 			return false;
 		}
 
-		if(!res[0][0].isnull()) {
+		if(!res[0][0].isnull() && (ID)res[0][0] != (ID)0 ) {
 			logger_error(boost::format("record with ID %1% already has session_id filled") % id);
 			return false;
 		}
