@@ -20,7 +20,8 @@ using namespace Database;
 namespace TestLogd {
 
 // TODO this should be taken from the database 
-enum LogServiceType { LC_NO_SERVICE = -1, LC_UNIX_WHOIS=0, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN, LC_INTRANET, LC_MAX_SERVICE };
+// this type is different from Database::RequestServiceType
+enum RequestServiceType { LC_NO_SERVICE = -1, LC_UNIX_WHOIS=0, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN, LC_INTRANET, LC_MAX_SERVICE };
 
 const int MONTHS_COUNT  = 2;
 

@@ -1,25 +1,5 @@
 #include "log_filter.h"
-namespace Database { /*
-std::ostream& operator<<(std::ostream &_os, const RequestServiceType& _v) {
-  return _os << _v.value;
-}
-
-
-std::istream& operator>>(std::istream &_is, RequestServiceType& _v) {
-  return _is >> _v.value;
-}
-
-
-
-std::ostream& operator<<(std::ostream &_os, const RequestActionType& _v) {
-  return _os << _v.value;
-}
-
-
-std::istream& operator>>(std::istream &_is, RequestActionType& _v) {
-  return _is >> _v.value;
-}
-*/
+namespace Database { 
 
 namespace Filters {
 
@@ -69,23 +49,21 @@ Value<std::string>& RequestImpl::addSourceIp()
   return *tmp;
 }
 
-Value<Database::RequestServiceType>& RequestImpl::addService()
+RequestServiceType& RequestImpl::addService()
 {
-  Value<Database::RequestServiceType> *tmp = new Value<Database::RequestServiceType>(Column("service", joinRequestTable()));
+  RequestServiceType *tmp = new RequestServiceType(Column("service", joinRequestTable()));
   tmp->setName("ServiceType");
   add(tmp);
   return *tmp;
 }
 
-/*
-Value<Database::RequestActionType>& RequestImpl::addActionType()
+RequestActionType& RequestImpl::addActionType()
 {
-  Value<Database::RequestActionType> *tmp = new Value<Database::RequestActionType> (Column("action_type", joinRequestTable()));
+  RequestActionType *tmp = new RequestActionType (Column("action_type", joinRequestTable()));
   tmp->setName("ActionType");
   add(tmp);
   return *tmp;
 }
-*/
 
 RequestPropertyValue& RequestImpl::addRequestPropertyValue()
 {
@@ -235,6 +213,49 @@ Value<std::string>& SessionImpl::addLang()
   tmp->setName("Lang");
   add(tmp);
   return *tmp;
+}
+
+std::ostream& operator<<(std::ostream &_os, const RequestServiceType& _v) {
+  return _os << _v.getValue().getValue();
+}
+
+std::istream& operator>>(std::istream &_is, RequestServiceType& _v) {
+  long int tmp;
+  _is >> tmp;
+  _v.setValue(Database::Null<long>(tmp));
+  return _is;
+}
+
+std::ostream& operator<<(std::ostream &_os, const RequestActionType& _v) {
+  return _os << _v.getValue().getValue();
+}
+
+std::istream& operator>>(std::istream &_is, RequestActionType& _v) {
+  long int tmp;
+  _is >> tmp;
+  _v.setValue(Database::Null<long>(tmp));
+  return _is;
+
+}
+
+bool operator<(const RequestServiceType &_left, const RequestServiceType &_right) 
+{
+	return _left.getValue().getValue() < _right.getValue().getValue();
+}
+
+bool operator>(const RequestServiceType &_left, const RequestServiceType &_right)
+{
+	return _left.getValue().getValue() > _right.getValue().getValue();
+}
+
+bool operator<(const RequestActionType &_left, const RequestActionType &_right) 
+{
+	return _left.getValue().getValue() < _right.getValue().getValue();
+}
+
+bool operator>(const RequestActionType &_left, const RequestActionType &_right)
+{
+	return _left.getValue().getValue() > _right.getValue().getValue();
 }
 
 

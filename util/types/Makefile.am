@@ -29,7 +29,7 @@ libtypes_a_SOURCES = date.cc                       \
                      convert_sql_boost_datetime.h  \
                      convert_sql_db_types.h        \
                      stringify.h                   \
-										 sqlize.h
+ 		     sqlize.h
 
 test_money_SOURCES = test_money.cc
 test_money_LDADD = libtypes.a

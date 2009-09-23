@@ -13,8 +13,7 @@
 */
 
 #include "db/query/base_filters.h"
-#include "types/convert_sql_base.h"
-
+#include "types/convert_sql_base.h" 
 /*
 #include "model_filters.h"
 
@@ -26,77 +25,55 @@
 #include "types/conversions.h"
 */
 
+
 namespace Database {
 
-typedef long RequestServiceType;
-typedef long RequestActionType;
-
+namespace Filters {
 
 /*
-class RequestServiceType {
-public:
-  typedef long int value_type;
-
-  RequestServiceType() : value(0) {
-  }
- 
-  RequestServiceType(value_type _value) : value(_value) {
-  }
-
-  // output operator 
-  friend std::ostream& operator<<(std::ostream &_os, const RequestServiceType& _v);
-  friend std::istream& operator>>(std::istream &_is, RequestServiceType& _v);
-
-  operator value_type() const {
-    return value;
-  }
-
-#ifdef HAVE_BOOST_SERIALIZATION
-  // boost serialization 
-  friend class boost::serialization::access;
-  template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
-    _ar & BOOST_SERIALIZATION_NVP(value);
-  }
-#endif
-
-private:
-  value_type value;
-};
-
-class RequestActionType {
-public:
-  typedef long int value_type;
-
-  RequestActionType() : value(0) {
-  }
- 
-  RequestActionType(value_type _value) : value(_value) {
-  }
-
-  // output operator 
-  friend std::ostream& operator<<(std::ostream &_os, const RequestActionType& _v);
-  friend std::istream& operator>>(std::istream &_is, RequestActionType& _v);
-
-  operator value_type() const {
-    return value;
-  }
-
-#ifdef HAVE_BOOST_SERIALIZATION
-  // boost serialization 
-  friend class boost::serialization::access;
-  template<class Archive> void serialize(Archive& _ar,
-      const unsigned int _version) {
-    _ar & BOOST_SERIALIZATION_NVP(value);
-  }
-#endif
-
-private:
-  value_type value;
-};
+typedef long RequestServiceType;
+typedef long RequestActionType;
 */
 
-namespace Filters {
+class RequestServiceType : public Database::Filters::Value<long> {
+public:
+	RequestServiceType(const long val) : Value<long>() {
+		setValue(val);
+	}	
+	RequestServiceType(const Column &col) : Database::Filters::Value<long>(col) {
+	}
+/*
+	void setValue(RequestServiceType &val) {
+		// use Null<long> to exchange value
+		setValue( val.getValue());
+	}
+*/
+	
+	friend std::ostream& operator<<(std::ostream &_os, const RequestServiceType& _v);
+	friend std::istream& operator>>(std::istream &_is, RequestServiceType& _v);
+	friend bool operator<(const RequestServiceType &_left, const RequestServiceType &_right);
+	friend bool operator>(const RequestServiceType &_left, const RequestServiceType &_right);
+
+	operator long() const {
+		return getValue().getValue();
+	}
+};
+
+class RequestActionType : public Database::Filters::Value<long> {
+public:
+	RequestActionType(const long val) : Value<long>() {
+		setValue(val);
+	}	
+	RequestActionType(const Column &col) : Database::Filters::Value<long>(col) {
+	}
+	friend std::ostream& operator<<(std::ostream &_os, const RequestActionType& _v); 
+	friend std::istream& operator>>(std::istream &_is, RequestActionType& _v);
+	friend bool operator<(const RequestActionType &_left, const RequestActionType &_right);
+	friend bool operator>(const RequestActionType &_left, const RequestActionType &_right);
+	operator long() const {
+		return getValue().getValue();
+	}
+};
 
 class RequestPropertyValue : virtual public Compound
 {
@@ -108,7 +85,7 @@ class RequestPropertyValue : virtual public Compound
   virtual Table& joinRequestPropertyTable() = 0;
   virtual Value<std::string>& addName() =  0;
   virtual Value<std::string>& addValue() = 0;
-    virtual Value<bool>& addOutputFlag()	= 0;
+    virtual Value<bool>& addOutputFlag() = 0;
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive& _ar,
@@ -128,7 +105,7 @@ public:
 
 	virtual Table& joinRequestPropertyValueTable();
 	virtual Table& joinRequestPropertyTable();
-  	virtual Value<std::string>& addName();
+	virtual Value<std::string>& addName();
 	virtual Value<std::string>& addValue();
 	virtual Value<bool>& addOutputFlag();
 
@@ -187,8 +164,8 @@ public:
   virtual Interval<Database::DateTimeInterval>& addTimeBegin() = 0;
   virtual Interval<Database::DateTimeInterval>& addTimeEnd() = 0;
   virtual Value<std::string>& addSourceIp() = 0;
-  virtual Value<Database::RequestServiceType>& addService() = 0;
-  // virtual Value<Database::RequestActionType>&  addActionType() = 0;
+  virtual RequestServiceType& addService() = 0;
+  virtual RequestActionType&  addActionType() = 0;
   virtual RequestData& addRequestData() = 0;
   virtual RequestPropertyValue&   addRequestPropertyValue() = 0;
 
@@ -212,8 +189,8 @@ public:
   virtual Interval<Database::DateTimeInterval>& addTimeBegin();
   virtual Interval<Database::DateTimeInterval>& addTimeEnd();
   virtual Value<std::string>& addSourceIp();
-  virtual Value<Database::RequestServiceType>& addService();
-  // virtual Value<Database::RequestActionType>& addActionType();
+  virtual RequestServiceType& addService();
+  virtual RequestActionType& addActionType();
   virtual RequestData& addRequestData();
   virtual RequestPropertyValue& addRequestPropertyValue();
 
@@ -272,6 +249,5 @@ public:
 }
 
 }
-
 
 #endif

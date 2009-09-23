@@ -430,7 +430,7 @@ bool Impl_Log::i_UpdateRequest(ID id, const Register::Logger::RequestProperties 
 bool Impl_Log::close_request_worker(Connection &conn, ID id, const char *content_out, const Register::Logger::RequestProperties &props)
 {
 	std::string s_content, time;
-	RequestServiceType service;
+	long int service;
 	bool monitoring;
 
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
@@ -443,7 +443,7 @@ bool Impl_Log::close_request_worker(Connection &conn, ID id, const char *content
 		boost::format select = boost::format("select time_begin, service, is_monitoring from request where id = %1%") % id;
 		Result res = conn.exec(select.str());
 		DateTime entry_time = res[0][0].operator ptime();
-		service = (RequestServiceType)(int) res[0][1];
+		service = (long int) res[0][1];
 		monitoring = (bool)res[0][2];
 
 		if(res.size() == 0) {

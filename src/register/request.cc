@@ -17,8 +17,8 @@ private:
   Database::DateTime time_begin;
   Database::DateTime time_end;
   std::string source_ip;
-  Database::RequestServiceType serv_type;
-  Database::RequestActionType action_type;
+  Database::Filters::RequestServiceType serv_type;
+  Database::Filters::RequestActionType action_type;
   Database::ID session_id;
   bool is_monitoring;
   std::string raw_request;
@@ -26,7 +26,7 @@ private:
   std::auto_ptr<RequestProperties> props;
 
 public:
-  RequestImpl(Database::ID &_id, Database::DateTime &_time_begin, Database::DateTime &_time_end, Database::RequestServiceType &_serv_type, std::string &_source_ip,  Database::RequestActionType &_action_type, Database::ID &_session_id, bool &_is_monitoring, std::string & _raw_request, std::string & _raw_response, std::auto_ptr<RequestProperties>  _props) :
+  RequestImpl(Database::ID &_id, Database::DateTime &_time_begin, Database::DateTime &_time_end, Database::Filters::RequestServiceType &_serv_type, std::string &_source_ip,  Database::Filters::RequestActionType &_action_type, Database::ID &_session_id, bool &_is_monitoring, std::string & _raw_request, std::string & _raw_response, std::auto_ptr<RequestProperties>  _props) :
 	CommonObjectImpl(_id),
 	time_begin(_time_begin),
 	time_end(_time_end),
@@ -46,13 +46,13 @@ public:
   virtual const ptime  getTimeEnd() const {
 	return time_end;
   }
-  virtual const Database::RequestServiceType& getServiceType() const {
+  virtual const Database::Filters::RequestServiceType& getServiceType() const {
 	return serv_type;
   }
   virtual const std::string& getSourceIp() const {
 	return source_ip;
   }
-  virtual const Database::RequestActionType& getActionType() const {
+  virtual const Database::Filters::RequestActionType& getActionType() const {
 	return action_type;
   }
   virtual const Database::ID& getSessionId() const {
@@ -174,34 +174,34 @@ public:
     		Database::ID 		id 		= *col;
     		Database::DateTime 	time_begin  	= *(++col);
     		Database::DateTime 	time_end  	= *(++col);
-    		Database::RequestServiceType serv_type  	= (Database::RequestServiceType) *(++col);
+    		Database::Filters::RequestServiceType serv_type  	= (Database::Filters::RequestServiceType) (long)*(++col);
     		std::string 		source_ip  	= *(++col);
-    		Database::RequestActionType  action_type = *(++col);
-			Database::ID		session_id	= *(++col);
-			bool				is_monitoring	= *(++col);
-			// fields dependent on partialLoad
-			std::string			request;
-			std::string			response;
+    		Database::Filters::RequestActionType  action_type = (Database::Filters::RequestActionType)(long)*(++col);
+		Database::ID		session_id	= *(++col);
+		bool				is_monitoring	= *(++col);
+		// fields dependent on partialLoad
+		std::string			request;
+		std::string			response;
 
-			std::auto_ptr<RequestProperties> props;
+		std::auto_ptr<RequestProperties> props;
 
-			if(!partialLoad) {
-				request		= (std::string)*(++col);
-				response	= (std::string)*(++col);
-				props 		= getPropsForId(id);
-			}
+		if(!partialLoad) {
+			request		= (std::string)*(++col);
+			response	= (std::string)*(++col);
+			props 		= getPropsForId(id);
+		}
 
-			data_.push_back(new RequestImpl(id,
-					time_begin,
-					time_end,
-					serv_type,
-					source_ip,
-					action_type,
-					session_id,
-					is_monitoring,
-					request,
-					response,
-					props));
+		data_.push_back(new RequestImpl(id,
+				time_begin,
+				time_end,
+				serv_type,
+				source_ip,
+				action_type,
+				session_id,
+				is_monitoring,
+				request,
+				response,
+				props));
 
     	}
 
@@ -290,9 +290,9 @@ public:
 				Database::ID 		id 		= *col;
 				Database::DateTime 	time_begin  	= *(++col);
 				Database::DateTime 	time_end  	= *(++col);
-				Database::RequestServiceType serv_type  = (Database::RequestServiceType) ((int)*(++col));
+				Database::Filters::RequestServiceType serv_type  = (Database::Filters::RequestServiceType) (long)*(++col);
 				std::string 		source_ip  	= *(++col);
-				Database::RequestActionType  action_type = *(++col);
+				Database::Filters::RequestActionType  action_type = (Database::Filters::RequestActionType) (long) *(++col);
 				Database::ID		session_id	= *(++col);
 				bool			is_monitoring	= *(++col);
 				std::string		request;

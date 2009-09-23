@@ -14,6 +14,9 @@ using namespace Database;
 // Mapping of CORBA type
 enum Languages { EN, CS /*, __max_Languages=0xffffffff */ };
 
+typedef long int RequestServiceType;
+typedef long int RequestActionType;
+
 class Impl_Log {
 private:
     struct strCmp {
@@ -47,23 +50,24 @@ public:
 	return Manager::acquire();
   }
 
-  Database::ID i_CreateRequest(const char *sourceIP, Database::RequestServiceType service, const  char *content_in, const Register::Logger::RequestProperties& props, Database::RequestActionType action_type, Database::ID session_id);
+  Database::ID i_CreateRequest(const char *sourceIP, RequestServiceType service, const  char *content_in, const Register::Logger::RequestProperties& props, RequestActionType action_type, Database::ID session_id);
   bool i_UpdateRequest(Database::ID id, const Register::Logger::RequestProperties &props);
   bool i_CloseRequest(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props);
   bool i_CloseRequestLogin(Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props, Database::ID session_id);
   Database::ID i_CreateSession(Languages lang, const char *name);
   bool i_CloseSession(Database::ID id);
-  Database::Result i_GetServiceActions(Database::RequestServiceType service);
+  Database::Result i_GetServiceActions(RequestServiceType service);
 
  // for migration tool (util/logd_migration)
-  void insert_props_pub(DateTime entry_time, Database::RequestServiceType entry_service, bool monitoring, Database::ID entry_id, const Register::Logger::RequestProperties& props) {
+  void insert_props_pub(DateTime entry_time, RequestServiceType entry_service, bool monitoring, Database::ID entry_id, const Register::Logger::RequestProperties& props) {
 
 	insert_props(entry_time, entry_service, monitoring, entry_id, props, get_connection());
   }
 
 private:
   bool close_request_worker(Connection &conn, ID id, const char *content_out, const Register::Logger::RequestProperties &props);
-  void insert_props(DateTime entry_time, Database::RequestServiceType service, bool monitoring, ID entry_id, const Register::Logger::RequestProperties& props, Connection conn);
+  void insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID entry_id, const Register::Logger::RequestProperties& props, Connection conn);
+
   bool record_check(Database::ID id, Connection &conn);
   Database::ID find_property_name_id(const std::string &name, Connection &conn);
   inline Database::ID find_last_property_value_id(Connection &conn);

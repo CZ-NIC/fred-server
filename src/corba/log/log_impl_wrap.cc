@@ -6,7 +6,7 @@
 ccReg::TID ccReg_Log_i::CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long action_type, ccReg::TID session_id)
 {
 	std::auto_ptr<Register::Logger::RequestProperties> p (convert_properties(props));
-	return i_CreateRequest(sourceIP, (RequestServiceType)service, content_in, *(p.get()), action_type, session_id);
+	return i_CreateRequest(sourceIP, (Database::Filters::RequestServiceType)service, content_in, *(p.get()), action_type, session_id);
 }
 
 CORBA::Boolean ccReg_Log_i::UpdateRequest(ccReg::TID id, const ccReg::RequestProperties &props)
@@ -39,13 +39,13 @@ CORBA::Boolean ccReg_Log_i::CloseSession(ccReg::TID id)
 
 ccReg::RequestActionList *ccReg_Log_i::GetServiceActions(ccReg::RequestServiceType service)
 {
-	Result res = i_GetServiceActions((RequestServiceType)service);
+	Result res = i_GetServiceActions((Database::Filters::RequestServiceType)service);
 
 	int size  = res.size();
 	ccReg::RequestActionList *ret = new ccReg::RequestActionList(size);
 
 	for (int i = 0; i< size; i++) {
-		(*ret)[i].id 	 = (ccReg::RequestActionType)res[i][1];
+	(*ret)[i].id 	 = (ccReg::RequestActionType)res[i][1];
 		(*ret)[i].status = ((std::string)res[i][2]).c_str();
 	}
 
