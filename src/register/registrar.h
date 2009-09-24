@@ -11,6 +11,12 @@
 #include "db_settings.h"
 #include "model/model_filters.h"
 
+#include "model_registrar_acl.h"
+#include "model_registrar.h"
+#include "model_registrarinvoice.h"
+#include "model_enum_tlds.h"
+
+
 using namespace boost::posix_time;
 
 /// forward declared parameter type 
@@ -52,6 +58,7 @@ public:
   /// Public destructor, user is responsible for object delete
   virtual ~Registrar() {
   }
+
   ///
   virtual const std::string& getIco() const = 0;
   ///
@@ -146,6 +153,7 @@ public:
   virtual void clearACLList() = 0;
   /// Save changes to database
   virtual void save() throw (SQL_ERROR) = 0;
+
 };
 
 /// List of registrar object
@@ -328,6 +336,26 @@ public:
   virtual bool checkHandle(const std::string) const throw (SQL_ERROR) = 0;
   virtual void addRegistrar(const std::string& registrarHandle)
       throw (SQL_ERROR) = 0;
+  virtual void addRegistrar(
+          const std::string& ico,
+          const std::string& dic,
+          const std::string& var_symb,
+          bool vat,
+          const std::string& handle,
+          const std::string& name,
+          const std::string& url,
+          const std::string& organization,
+          const std::string& street1,
+          const std::string& street2,
+          const std::string& street3,
+          const std::string& city,
+          const std::string& province,
+          const std::string& postalCode,
+          const std::string& country,
+          const std::string& telephone,
+          const std::string& fax,
+          const std::string& email,
+          bool system) =0;
   virtual Registrar *createRegistrar() = 0;
   virtual void addRegistrarAcl(
           const std::string &registrarHandle,

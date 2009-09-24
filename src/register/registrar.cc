@@ -1340,6 +1340,60 @@ public:
       }//catch (...)
   }//addRegistrar
 
+  virtual void addRegistrar(
+          const std::string& ico,
+          const std::string& dic,
+          const std::string& var_symb,
+          bool vat,
+          const std::string& handle,
+          const std::string& name,
+          const std::string& url,
+          const std::string& organization,
+          const std::string& street1,
+          const std::string& street2,
+          const std::string& street3,
+          const std::string& city,
+          const std::string& province,
+          const std::string& postalCode,
+          const std::string& country,
+          const std::string& telephone,
+          const std::string& fax,
+          const std::string& email,
+          bool system)
+  {
+      try
+      {
+	    std::auto_ptr<Register::Registrar::Registrar>
+			registrar(createRegistrar());
+	    registrar->setHandle(handle);
+	    registrar->setCountry(country);
+	    if (ico.length()!=0)registrar->setIco(ico);
+	    if (dic.length()!=0)registrar->setDic(dic);
+	    if (var_symb.length()!=0)registrar->setVarSymb(var_symb);
+	    if (name.length()!=0)registrar->setName(name);
+	    if (organization.length()!=0)registrar->setOrganization(organization);
+	    if (street1.length()!=0)registrar->setStreet1(street1);
+	    if (street2.length()!=0)registrar->setStreet1(street2);
+	    if (street3.length()!=0)registrar->setStreet1(street3);
+	    if (city.length()!=0)registrar->setCity(city);
+	    if (province.length()!=0)registrar->setProvince(province);
+	    if (postalCode.length()!=0)registrar->setPostalCode(postalCode);
+	    if (telephone.length()!=0)registrar->setTelephone(telephone);
+	    if (fax.length()!=0)registrar->setFax(fax);
+	    if (email.length()!=0)registrar->setEmail(email);
+	    if (url.length()!=0)registrar->setURL(url);
+	    registrar->setSystem(system);
+        registrar->setVat(vat);
+
+        registrar->save();
+      }//try
+      catch (...)
+      {
+          LOGGER(PACKAGE).error("addRegistrar 2: an error has occured");
+          throw;
+      }//catch (...)
+  }//addRegistrar
+
   virtual void addRegistrarAcl(
           const std::string &registrarHandle,
           const std::string &cert,
