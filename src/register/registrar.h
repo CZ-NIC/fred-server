@@ -4,6 +4,7 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_period.hpp>
 
+#include "common_impl_new.h"
 #include "common_object.h"
 #include "object.h"
 #include "types.h"
@@ -51,6 +52,7 @@ public:
   /// Set password for EPP login command
   virtual void setPassword(const std::string& newPassword) = 0;
 };
+
 
 /// Registrar detail access
 class Registrar : virtual public Register::CommonObject {
@@ -253,7 +255,7 @@ public:
 
 
 /// List of EPPAction objects
-class EPPActionList : virtual public Register::CommonList { 
+class EPPActionList : virtual public Register::CommonList {
 public:
   /// Public destructor, user is responsible for destruction
   virtual ~EPPActionList() {

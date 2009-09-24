@@ -969,65 +969,139 @@ public:
   (db->IsNotNull(i,j)) ? atoi(db->GetFieldValue(i,j)) : 0
 #define DB_NULL_STR(i,j) \
   (db->IsNotNull(i,j)) ? db->GetFieldValue(i,j) : ""
-  virtual void reload() {
-    clear();
-    std::ostringstream sql;
-    sql << "SELECT a.id,a.clientid,a.action,ea.status,a.startdate,"
-        << "a.servertrid,a.clienttrid, a.response,r.id,r.handle,MIN(al.value) ";
-    if (partialLoad)
-      sql << ",'','' ";
-    else
-      sql << ",ax.xml,ax.xml_out ";
-    sql << "FROM action a "
-        << "JOIN enum_action ea ON (a.action=ea.id) "
-        << "JOIN enum_error er ON (a.response=er.id) "
-        << "JOIN login l ON (l.id=a.clientid) "
-        << "JOIN registrar r ON (r.id=l.registrarid) "
-        << "LEFT JOIN action_elements al ON (a.id=al.actionid) ";
-    if (!partialLoad)
-      sql << "LEFT JOIN action_xml ax ON (a.id=ax.actionid) ";
-    sql << "WHERE 1=1 ";
-    SQL_ID_FILTER(sql, "a.id", id);
-    SQL_ID_FILTER(sql, "r.id", registrarId);
-    SQL_HANDLE_WILDCHECK_FILTER(sql, "r.handle", registrarHandle, 1, 0);
-    SQL_TIME_FILTER(sql, "a.startdate", period)
-    ;
-    SQL_HANDLE_WILDCHECK_FILTER(sql, "ea.status", type, 1, 0);
-    SQL_ID_FILTER(sql, "a.response", returnCodeId);
-    SQL_HANDLE_WILDCHECK_FILTER(sql, "a.clienttrid", clTRID, 1, 0);
-    SQL_HANDLE_WILDCHECK_FILTER(sql, "a.servertrid", svTRID, 1, 0);
-    /// TODO - handle has to have special data column
-    SQL_HANDLE_WILDCHECK_FILTER(sql, "al.value", handle, 1, 0);
-    if (result != EARF_ALL)
-      sql << "AND (a.response "
-          << (result == EARF_OK ? "<" : " IS NULL OR a.response >=")
-          << " 2000) ";
-    sql << "GROUP BY a.id,a.clientid,a.action,ea.status,a.startdate,"
-        << "a.servertrid,a.clienttrid,a.response,r.handle ";
-    if (!partialLoad)
-      sql << ",ax.xml,ax.xml_out ";
-    sql << "LIMIT 1000";
-    if (!db->ExecSelect(sql.str().c_str()))
-      throw SQL_ERROR();
-    for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-      data_.push_back(new EPPActionImpl(
-          STR_TO_ID(db->GetFieldValue(i,0)),
-          DB_NULL_INT(i,1),
-          atoi(db->GetFieldValue(i,2)),
-          db->GetFieldValue(i,3),
-          ptime(time_from_string(db->GetFieldValue(i,4))),
-          db->GetFieldValue(i,5),
-          db->GetFieldValue(i,6),
-          DB_NULL_INT(i,7),
-          STR_TO_ID(db->GetFieldValue(i,8)),
-          DB_NULL_STR(i,9),
-          DB_NULL_STR(i,10),
-          DB_NULL_STR(i,11),
-          DB_NULL_STR(i,12)
-      ));
-    }
-    db->FreeSelect();
-  }
+  virtual void reload()
+  {
+	try
+	{
+		Database::Connection conn = Database::Manager::acquire();
+
+		clear();
+		std::ostringstream sql;
+		sql << "SELECT a.id,a.clientid,a.action,ea.status,a.startdate,"
+			<< "a.servertrid,a.clienttrid, a.response,r.id,r.handle,MIN(al.value) ";
+		if (partialLoad)
+		  sql << ",'','' ";
+		else
+		  sql << ",ax.xml,ax.xml_out ";
+		sql << "FROM action a "
+			<< "JOIN enum_action ea ON (a.action=ea.id) "
+			<< "JOIN enum_error er ON (a.response=er.id) "
+			<< "JOIN login l ON (l.id=a.clientid) "
+			<< "JOIN registrar r ON (r.id=l.registrarid) "
+			<< "LEFT JOIN action_elements al ON (a.id=al.actionid) ";
+		if (!partialLoad)
+		  sql << "LEFT JOIN action_xml ax ON (a.id=ax.actionid) ";
+		sql << "WHERE 1=1 ";
+		if (id) sql << "AND " << "a.id" << "=" << id << " ";
+		if (registrarId) sql << "AND " << "r.id" << "=" << registrarId << " ";
+
+		if (!registrarHandle.empty())
+		{
+		    if ((registrarHandle.find('*') != std::string::npos ||
+		              registrarHandle.find('?') != std::string::npos))
+		      sql << "AND "
+		       << "r.handle" << " ILIKE TRANSLATE('" << conn.escape(registrarHandle) << "','*?','%_') ";
+		    else sql << "AND " << (0?"UPPER(":"") << "r.handle" << (0?")":"")
+		           << "=" << (0?"UPPER(":"")
+		           << "'" << conn.escape(registrarHandle) << "'" <<  (0?")":"") << " ";
+		}
+
+		if (!period.begin().is_special())
+		     sql << "AND " << "a.startdate" << ">='"
+		       <<  to_iso_extended_string(period.begin())
+		       << "' ";
+		  if (!period.end().is_special())
+		     sql << "AND " << "a.startdate" << "<='"
+		       <<  to_iso_extended_string(period.end())
+		       << "' ";
+
+		  if (!type.empty())
+		  {
+		      if ((type.find('*') != std::string::npos ||
+		                type.find('?') != std::string::npos))
+		        sql << "AND "
+		         << "ea.status" << " ILIKE TRANSLATE('" << conn.escape(type) << "','*?','%_') ";
+		      else sql << "AND " << (0?"UPPER(":"") << "ea.status" << (0?")":"")
+		             << "=" << (0?"UPPER(":"")
+		             << "'" << conn.escape(type) << "'" <<  (0?")":"") << " ";
+		  }
+
+		  if (returnCodeId) sql << "AND " << "a.response" << "=" << returnCodeId << " ";
+
+		  if (!clTRID.empty())
+		  {
+		      if ((clTRID.find('*') != std::string::npos ||
+		                clTRID.find('?') != std::string::npos))
+		        sql << "AND "
+		         << "a.clienttrid" << " ILIKE TRANSLATE('" << conn.escape(clTRID) << "','*?','%_') ";
+		      else sql << "AND " << (0?"UPPER(":"") << "a.clienttrid" << (0?")":"")
+		             << "=" << (0?"UPPER(":"")
+		             << "'" << conn.escape(clTRID) << "'" <<  (0?")":"") << " ";
+		  }
+
+		  if (!svTRID.empty())
+		  {
+		      if ((svTRID.find('*') != std::string::npos ||
+		                svTRID.find('?') != std::string::npos))
+		        sql << "AND "
+		         << "a.servertrid" << " ILIKE TRANSLATE('" << conn.escape(svTRID) << "','*?','%_') ";
+		      else sql << "AND " << (0?"UPPER(":"") << "a.servertrid" << (0?")":"")
+		             << "=" << (0?"UPPER(":"")
+		             << "'" << conn.escape(svTRID) << "'" <<  (0?")":"") << " ";
+		  }
+
+		  /// TODO - handle has to have special data column
+
+		  if (!handle.empty())
+		  {
+		      if ((handle.find('*') != std::string::npos ||
+		                handle.find('?') != std::string::npos))
+		        sql << "AND "
+		         << "al.value" << " ILIKE TRANSLATE('" << conn.escape(handle) << "','*?','%_') ";
+		      else sql << "AND " << (0?"UPPER(":"") << "al.value" << (0?")":"")
+		             << "=" << (0?"UPPER(":"")
+		             << "'" << conn.escape(handle) << "'" <<  (0?")":"") << " ";
+		  }
+
+		if (result != EARF_ALL)
+		  sql << "AND (a.response "
+			  << (result == EARF_OK ? "<" : " IS NULL OR a.response >=")
+			  << " 2000) ";
+		sql << "GROUP BY a.id,a.clientid,a.action,ea.status,a.startdate,"
+			<< "a.servertrid,a.clienttrid,a.response,r.handle ";
+		if (!partialLoad)
+		  sql << ",ax.xml,ax.xml_out ";
+		sql << "LIMIT 1000";
+
+		Database::Result res = conn.exec(sql.str());
+
+		for (unsigned i=0; i < static_cast<unsigned>(res.size()); i++)
+		{
+		  data_.push_back(new EPPActionImpl(
+			res[i][0]
+			,res[i][1]
+			,res[i][2]
+			,res[i][3]
+			,res[i][4]
+			,res[i][5]
+			,res[i][6]
+			,res[i][7]
+			,res[i][8]
+			,res[i][9]
+			,res[i][10]
+			,res[i][11]
+			,res[i][12]
+
+		  ));
+		}
+
+	}//try
+	catch (...)
+	{
+	 LOGGER(PACKAGE).error("reload: an error has occured");
+	 throw SQL_ERROR();
+	}//catch (...)
+  }//reload
 
   virtual EPPAction* get(unsigned _idx) const {
     try {
