@@ -204,49 +204,90 @@ RegistrarClient::zone_ns_add()
     }
 }
 
-#define SET_IF_PRESENT(setter, name)                        \
-    if (m_conf.hasOpt(name)) {                              \
-        registrar->setter(m_conf.get<std::string>(name));   \
-    }
 void
 RegistrarClient::registrar_add()
 {
-    callHelp(m_conf, registrar_add_help);
-    std::auto_ptr<Register::Registrar::Manager> regMan(
-            Register::Registrar::Manager::create(&m_db));
-    std::auto_ptr<Register::Registrar::Registrar> registrar(
-            regMan->createRegistrar());
-    registrar->setHandle(m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME));
-    registrar->setCountry(m_conf.get<std::string>(REGISTRAR_COUNTRY_NAME));
-    SET_IF_PRESENT(setIco, REGISTRAR_ICO_NAME);
-    SET_IF_PRESENT(setDic, REGISTRAR_DIC_NAME);
-    SET_IF_PRESENT(setVarSymb, REGISTRAR_VAR_SYMB_NAME);
-    SET_IF_PRESENT(setName, REGISTRAR_ADD_NAME_NAME);
-    SET_IF_PRESENT(setOrganization, REGISTRAR_ORGANIZATION_NAME);
-    SET_IF_PRESENT(setStreet1, REGISTRAR_STREET1_NAME);
-    SET_IF_PRESENT(setStreet2, REGISTRAR_STREET2_NAME);
-    SET_IF_PRESENT(setStreet3, REGISTRAR_STREET3_NAME);
-    SET_IF_PRESENT(setCity, REGISTRAR_CITY_NAME);
-    SET_IF_PRESENT(setProvince, REGISTRAR_STATEORPROVINCE_NAME);
-    SET_IF_PRESENT(setPostalCode, REGISTRAR_POSTALCODE_NAME);
-    SET_IF_PRESENT(setTelephone, REGISTRAR_TELEPHONE_NAME);
-    SET_IF_PRESENT(setFax, REGISTRAR_FAX_NAME);
-    SET_IF_PRESENT(setEmail, REGISTRAR_EMAIL_NAME);
-    SET_IF_PRESENT(setURL, REGISTRAR_URL_NAME);
-    if (m_conf.hasOpt(REGISTRAR_SYSTEM_NAME)) {
-        registrar->setSystem(true);
-    } else {
-        registrar->setSystem(false);
-    }
-    if (m_conf.hasOpt(REGISTRAR_NO_VAT_NAME)) {
-        registrar->setVat(false);
-    } else {
-        registrar->setVat(true);
-    }
-    registrar->save();
+	try
+	{
+		callHelp(m_conf, registrar_add_help);
+		std::auto_ptr<Register::Registrar::Manager>
+		regMan(Register::Registrar::Manager::create(&m_db));
+
+		std::string ico;
+		std::string dic;
+		std::string var_symb;
+		std::string name;
+		std::string organization;
+		std::string street1;
+		std::string street2;
+		std::string street3;
+		bool vat;
+		std::string handle;
+		std::string url;
+		std::string city;
+		std::string province;
+		std::string postalCode;
+		std::string country;
+		std::string telephone;
+		std::string fax;
+		std::string email;
+		bool system;
+		unsigned long credit;
+
+		handle = m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME);
+		country = m_conf.get<std::string>(REGISTRAR_COUNTRY_NAME);
+
+		if (m_conf.hasOpt(REGISTRAR_ICO_NAME))
+			ico = m_conf.get<std::string>(REGISTRAR_ICO_NAME);
+		if (m_conf.hasOpt(REGISTRAR_DIC_NAME))
+			dic = m_conf.get<std::string>(REGISTRAR_DIC_NAME);
+		if (m_conf.hasOpt(REGISTRAR_VAR_SYMB_NAME))
+			var_symb = m_conf.get<std::string>(REGISTRAR_VAR_SYMB_NAME);
+		if (m_conf.hasOpt(REGISTRAR_ADD_NAME_NAME))
+			name = m_conf.get<std::string>(REGISTRAR_ADD_NAME_NAME);
+		if (m_conf.hasOpt(REGISTRAR_ORGANIZATION_NAME))
+			organization = m_conf.get<std::string>(REGISTRAR_ORGANIZATION_NAME);
+		if (m_conf.hasOpt(REGISTRAR_STREET1_NAME))
+			street1 = m_conf.get<std::string>(REGISTRAR_STREET1_NAME);
+		if (m_conf.hasOpt(REGISTRAR_STREET2_NAME))
+			street2 = m_conf.get<std::string>(REGISTRAR_STREET2_NAME);
+		if (m_conf.hasOpt(REGISTRAR_STREET3_NAME))
+			street3 = m_conf.get<std::string>(REGISTRAR_STREET3_NAME);
+		if (m_conf.hasOpt(REGISTRAR_CITY_NAME))
+			city = m_conf.get<std::string>(REGISTRAR_CITY_NAME);
+		if (m_conf.hasOpt(REGISTRAR_STATEORPROVINCE_NAME))
+			province = m_conf.get<std::string>(REGISTRAR_STATEORPROVINCE_NAME);
+		if (m_conf.hasOpt(REGISTRAR_POSTALCODE_NAME))
+			postalCode = m_conf.get<std::string>(REGISTRAR_POSTALCODE_NAME);
+		if (m_conf.hasOpt(REGISTRAR_TELEPHONE_NAME))
+			telephone = m_conf.get<std::string>(REGISTRAR_TELEPHONE_NAME);
+		if (m_conf.hasOpt(REGISTRAR_FAX_NAME))
+			fax = m_conf.get<std::string>(REGISTRAR_FAX_NAME);
+		if (m_conf.hasOpt(REGISTRAR_EMAIL_NAME))
+			email = m_conf.get<std::string>(REGISTRAR_EMAIL_NAME);
+		if (m_conf.hasOpt(REGISTRAR_URL_NAME))
+			url = m_conf.get<std::string>(REGISTRAR_URL_NAME);
+
+		if (m_conf.hasOpt(REGISTRAR_SYSTEM_NAME))
+			system = true;
+		else
+			system = false;
+
+		if (m_conf.hasOpt(REGISTRAR_NO_VAT_NAME))
+			vat = false;
+		else
+			vat = true;
+
+		regMan->addRegistrar(ico,dic,var_symb,vat,handle,name,url,organization
+				,street1,street2,street3,city,province,postalCode,country
+				,telephone,fax,email,system);
+	}//try
+	catch (...)
+	{
+		std::cerr << "An error has occured" << std::endl;
+	}
 }
 
-#undef SET_IF_PRESENT
 
 void
 RegistrarClient::registrar_acl_add()
