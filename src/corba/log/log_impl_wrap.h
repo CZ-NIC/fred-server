@@ -3,23 +3,26 @@
 
 #include <corba/ccReg.hh>
 
-#include "log_impl.h"
+// #include "request.h"
+// even better:
+#include "register/request.h"
 #include "src/corba/admin/usertype_conv.h"
 
+
+using namespace Register::Logger;
 
 std::auto_ptr<Register::Logger::RequestProperties> convert_properties(const ccReg::RequestProperties &p);
 
 class ccReg_Log_i : public POA_ccReg::Logger,
-  public PortableServer::RefCountServantBase,
-  private Impl_Log
+  public PortableServer::RefCountServantBase
 {
 
 public:
 
-  ccReg_Log_i(const std::string database, const std::string &monitoring_hosts_file = std::string()) : Impl_Log(database, monitoring_hosts_file) {};
+  ccReg_Log_i(const std::string database, const std::string &monitoring_hosts_file = std::string()); 
 
-  // ccReg_Log_i(const std::string database) throw (Impl_Log::DB_CONNECT_FAILED): Impl_Log(database) {};
-  virtual ~ccReg_Log_i() {};
+  // ccReg_Log_i(const std::string database) throw (Impl_Log_If::DB_CONNECT_FAILED): Impl_Log_If(database) {};
+  virtual ~ccReg_Log_i();
 
   ccReg::TID CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long action_type, ccReg::TID session_id);
 
@@ -31,8 +34,11 @@ public:
   CORBA::Boolean CloseSession(ccReg::TID id);
   ccReg::RequestActionList *GetServiceActions(ccReg::RequestServiceType service);
 
+private:
+  std::auto_ptr<Register::Logger::Manager> back;
+
 public:
-  Impl_Log::DB_CONNECT_FAILED;
+  typedef Register::Logger::Manager::DB_CONNECT_FAILED DB_CONNECT_FAILED ;
 };
 
 #endif

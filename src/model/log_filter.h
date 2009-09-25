@@ -30,11 +30,6 @@ namespace Database {
 
 namespace Filters {
 
-/*
-typedef long RequestServiceType;
-typedef long RequestActionType;
-*/
-
 class RequestServiceType : public Database::Filters::Value<long> {
 public:
 	RequestServiceType(const long val) : Value<long>() {

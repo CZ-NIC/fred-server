@@ -32,7 +32,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
-noinst_PROGRAMS = test$(EXEEXT)
+noinst_PROGRAMS = test$(EXEEXT) test_logd$(EXEEXT)
 subdir = src/register
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -72,7 +72,11 @@ am_libfred_a_OBJECTS = register.$(OBJEXT) common_impl.$(OBJEXT) \
 	model_zone_ns.$(OBJEXT) model_zone_soa.$(OBJEXT) \
 	model_price_list.$(OBJEXT) model_mailtype.$(OBJEXT) \
 	model_mailarchive.$(OBJEXT) model_mailattachments.$(OBJEXT) \
-	model_mailhandles.$(OBJEXT) domain.$(OBJEXT) contact.$(OBJEXT) \
+	model_mailhandles.$(OBJEXT) model_request.$(OBJEXT) \
+	model_request_data.$(OBJEXT) model_request_property.$(OBJEXT) \
+	model_request_property_value.$(OBJEXT) \
+	model_request_type.$(OBJEXT) model_service.$(OBJEXT) \
+	model_session.$(OBJEXT) domain.$(OBJEXT) contact.$(OBJEXT) \
 	nsset.$(OBJEXT) keyset.$(OBJEXT) registrar.$(OBJEXT) \
 	public_request.$(OBJEXT) invoice_common.$(OBJEXT) \
 	invoice.$(OBJEXT) invoice_list.$(OBJEXT) \
@@ -99,6 +103,17 @@ test_DEPENDENCIES = libfred.a $(top_builddir)/src/model/libmodel.a \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 test_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(test_LDFLAGS) \
 	$(LDFLAGS) -o $@
+am_test_logd_OBJECTS = test_logd.$(OBJEXT)
+test_logd_OBJECTS = $(am_test_logd_OBJECTS)
+test_logd_DEPENDENCIES = libfred.a \
+	$(top_builddir)/src/model/libmodel.a \
+	$(top_builddir)/util/db/libdb.a \
+	$(top_builddir)/util/types/libtypes.a \
+	$(top_builddir)/util/log/liblog.a \
+	$(top_builddir)/src/old_utils/liboldutils.a \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+test_logd_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(test_logd_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -111,8 +126,9 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libfred_a_SOURCES) $(test_SOURCES)
-DIST_SOURCES = $(libfred_a_SOURCES) $(test_SOURCES)
+SOURCES = $(libfred_a_SOURCES) $(test_SOURCES) $(test_logd_SOURCES)
+DIST_SOURCES = $(libfred_a_SOURCES) $(test_SOURCES) \
+	$(test_logd_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -341,11 +357,25 @@ libfred_a_SOURCES = register.cc          \
 					model_mailtype.cc			\
 					model_mailtype.h			\
 					model_mailarchive.cc		\
-					model_mailarchive.h			\
+					model_mailarchive.h		\
 					model_mailattachments.cc	\
 					model_mailattachments.h		\
 					model_mailhandles.cc		\
-					model_mailhandles.h			\
+					model_mailhandles.h		\
+					model_request.cc		\
+					model_request_data.cc		\
+					model_request_data.h		\
+					model_request.h			\
+					model_request_property.cc	\
+					model_request_property.h	\
+					model_request_property_value.cc	\
+					model_request_property_value.h	\
+					model_request_type.cc		\
+					model_request_type.h		\
+					model_service.cc		\
+					model_service.h			\
+					model_session.cc		\
+					model_session.h			\
 					domain.cc            \
 					domain.h             \
 					contact.cc           \
@@ -426,6 +456,24 @@ test_LDADD = libfred.a \
                         $(BOOST_THREAD_LIB) \
                         $(XML2_LIBS)
 
+
+# first possibility
+#
+#test_logd_SOURCES = test_logd.cc request.h request.cc model_request_type.cc model_request.cc model_request_property.cc model_request_property_value.cc model_request_data.cc model_session.cc model_service.cc model_request_type.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h model_service.h														
+# second possibility
+test_logd_SOURCES = test_logd.cc request.h model_request_type.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h model_service.h														
+# test_logd_CPPFLAGS = $(AM_CPPFLAGS)
+# test_logd_LDFLAGS = $(AM_LDFLAGS) -lboost_unit_test_framework liblog_impl.a
+test_logd_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) -lboost_unit_test_framework 
+test_logd_LDADD = libfred.a \
+                        $(top_builddir)/src/model/libmodel.a \
+                        $(top_builddir)/util/db/libdb.a \
+                        $(top_builddir)/util/types/libtypes.a \
+                        $(top_builddir)/util/log/liblog.a \
+                        $(top_builddir)/src/old_utils/liboldutils.a \
+                        $(BOOST_DATE_TIME_LIB) \
+                        $(BOOST_THREAD_LIB) 
+
 all: all-am
 
 .SUFFIXES:
@@ -472,6 +520,9 @@ clean-noinstPROGRAMS:
 test$(EXEEXT): $(test_OBJECTS) $(test_DEPENDENCIES) 
 	@rm -f test$(EXEEXT)
 	$(test_LINK) $(test_OBJECTS) $(test_LDADD) $(LIBS)
+test_logd$(EXEEXT): $(test_logd_OBJECTS) $(test_logd_DEPENDENCIES) 
+	@rm -f test_logd$(EXEEXT)
+	$(test_logd_LINK) $(test_logd_OBJECTS) $(test_logd_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -527,6 +578,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrar_acl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrarinvoice.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_data.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_property.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_property_value.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_type.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_service.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_session.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_zone.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_zone_ns.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_zone_soa.Po@am__quote@
@@ -540,6 +598,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/request.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/session.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zone.Po@am__quote@
 
 .cc.o:

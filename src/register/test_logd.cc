@@ -13,15 +13,15 @@
 #include <boost/test/included/unit_test.hpp>
 #include <stdio.h>
 
-#include "log_impl.h"
+#include "request_impl.h"
 
 using namespace Database;
+using namespace Register::Logger;
 
 namespace TestLogd {
 
 // TODO this should be taken from the database 
-// this type is different from Database::RequestServiceType
-enum RequestServiceType { LC_NO_SERVICE = -1, LC_UNIX_WHOIS=0, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN, LC_INTRANET, LC_MAX_SERVICE };
+enum LogServiceType { LC_NO_SERVICE = -1, LC_UNIX_WHOIS=0, LC_WEB_WHOIS, LC_PUBLIC_REQUEST, LC_EPP, LC_WEBADMIN, LC_INTRANET, LC_MAX_SERVICE };
 
 const int MONTHS_COUNT  = 2;
 
@@ -48,13 +48,13 @@ struct MyFixture {
 		LOGGER(PACKAGE).info("Logging initialized");
 
 		// initialize database connection manager
-		Manager::init(new ConnectionFactory(DB_CONN_STR));
+		Database::Manager::init(new ConnectionFactory(DB_CONN_STR));
 	}
 
 	~MyFixture() {
 		try {
 			std::list<ID>::iterator it = id_list_entry.begin();
-			Connection conn = Manager::acquire();
+			Connection conn = Database::Manager::acquire();
 
 			std::cout << "Deleting database records from request and related. " << std::endl;
 			while(it != id_list_entry.end()) {
@@ -82,16 +82,16 @@ BOOST_GLOBAL_FIXTURE( MyFixture );
 
 
 class TestImplLog {
-	Impl_Log logd;
+	// TODO this should follow the common ways with create(...) 
+	Register::Logger::Manager *logd;
 	Connection conn;
 
 
 public:
-	TestImplLog (const std::string connection_string) : logd(connection_string), conn(Manager::acquire()) {
+	TestImplLog (const std::string connection_string) : logd(Register::Logger::Manager::create(connection_string)), conn(Database::Manager::acquire()) {
 	};
 
-	TestImplLog (const std::string connection_string, const std::string monitoring_file) : logd(connection_string, monitoring_file),
-			conn(Manager::acquire()) {
+	TestImplLog (const std::string connection_string, const std::string monitoring_file) : logd(Register::Logger::Manager::create(connection_string, monitoring_file)), conn(Database::Manager::acquire()) {
 	};
 
 	Connection &get_conn() {
@@ -194,7 +194,7 @@ Register::Logger::RequestProperties TestImplLog::no_props;
 
 Database::ID TestImplLog::CreateSession(Languages lang, const char *name)
 {
-	Database::ID ret = logd.i_CreateSession(lang, name);
+	Database::ID ret = logd->i_CreateSession(lang, name);
 
 	if(ret == 0) return 0;
 
@@ -233,7 +233,7 @@ Database::ID TestImplLog::CreateSession(Languages lang, const char *name)
 
 bool TestImplLog::CloseSession(Database::ID id)
 {
-	bool ret = logd.i_CloseSession(id);
+	bool ret = logd->i_CloseSession(id);
 
 	if (!ret) return ret;
 
@@ -260,7 +260,7 @@ Database::ID TestImplLog::CreateRequest(const char *ip_addr, const RequestServic
 	}
 
 	// TODO generic session_id 99  - change
-	Database::ID ret = logd.i_CreateRequest(ip_addr, serv, content_in, props, UNKNOWN_ACTION, 99);
+	Database::ID ret = logd->i_CreateRequest(ip_addr, serv, content_in, props, UNKNOWN_ACTION, 99);
 	boost::format query;
 
 	if(ret == 0) return 0;
@@ -308,7 +308,7 @@ Database::ID TestImplLog::CreateRequest(const char *ip_addr, const RequestServic
 
 bool TestImplLog::UpdateRequest(const Database::ID id, const Register::Logger::RequestProperties &props)
 {
-	bool result = logd.i_UpdateRequest(id, props);
+	bool result = logd->i_UpdateRequest(id, props);
 
 	if (!result) return result;
 
@@ -319,7 +319,7 @@ bool TestImplLog::UpdateRequest(const Database::ID id, const Register::Logger::R
 
 bool TestImplLog::CloseRequest(const Database::ID id, const char *content_out, const Register::Logger::RequestProperties &props)
 {
-	bool result = logd.i_CloseRequest(id, content_out, props);
+	bool result = logd->i_CloseRequest(id, content_out, props);
 
 	if(!result) return result;
 
@@ -372,7 +372,7 @@ std::auto_ptr<Register::Logger::RequestProperties> TestImplLog::create_generic_p
 bool TestImplLog::property_match(const Row r, const Register::Logger::RequestProperty &p)
 {
 
-	if ( (std::string)r[0] != p.name.substr(0, Impl_Log::MAX_NAME_LENGTH))  return false;
+	if ( (std::string)r[0] != p.name.substr(0, Register::Logger::ManagerImpl::MAX_NAME_LENGTH))  return false;
 	if ( (std::string)r[1] != p.value) return false;
 	if ( (bool)r[3] != p.output) return false;
 
@@ -440,7 +440,7 @@ static int global_call_count = 0;
 
 void test_monitoring_ip(const std::string &ip, TestImplLog &t, bool result)
 {
-	Connection conn = Manager::acquire();
+	Connection conn = Database::Manager::acquire();
 	Database::ID id;
 
 	id = t.CreateRequest(ip.c_str(), LC_EPP, "AAA", TestImplLog::no_props, result);
@@ -569,7 +569,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 	TestImplLog test(DB_CONN_STR);
 
 	// this gets the very same connection which is used by test object above since this program is single-threaded
-	Connection conn = Manager::acquire();
+	Connection conn = Database::Manager::acquire();
 	boost::format insert;
 	int service;
 
@@ -584,7 +584,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 				std::cout << insert << std::endl;		// DEBUG
 				conn.exec(insert.str());
 
-				Result res = conn.exec(Impl_Log::LAST_ENTRY_ID);
+				Result res = conn.exec(Register::Logger::ManagerImpl::LAST_ENTRY_ID);
 				if (res.size() == 0) {
 					BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
 				}
@@ -604,7 +604,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 				insert = boost::format("insert into request (time_begin, service, is_monitoring) values ('%1% 9:%2%:00', %3%, true)") % date % i % service;
 				conn.exec(insert.str());
 
-				res = conn.exec(Impl_Log::LAST_ENTRY_ID);
+				res = conn.exec(Register::Logger::ManagerImpl::LAST_ENTRY_ID);
 				if (res.size() == 0) {
 					BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
 				}
@@ -625,7 +625,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 
 					std::cout << insert << std::endl;		// DEBUG
 
-					Result res = conn.exec(Impl_Log::LAST_PROPERTY_VALUE_ID);
+					Result res = conn.exec(Register::Logger::ManagerImpl::LAST_PROPERTY_VALUE_ID);
 					if (res.size() == 0) {
 						BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
 					}
@@ -644,7 +644,7 @@ BOOST_AUTO_TEST_CASE( partitions )
 					insert = boost::format() % date % i % service;
 					conn.exec(insert.str());
 
-					res = conn.exec(Impl_Log::LAST_PROPERTY_VALUE_ID);
+					res = conn.exec(Register::Logger::ManagerImpl::LAST_PROPERTY_VALUE_ID);
 					if (res.size() == 0) {
 						BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
 					}

@@ -7,7 +7,8 @@
 
 
 #include "db/transaction.h"
-#include "log_impl.h"
+
+#include "src/register/request_impl.h"
 
 #include "util/types/id.h"
 
@@ -17,10 +18,11 @@
 #define ALLOC_STEP 4
 
 using namespace Database;
+using namespace Register::Logger;
 
 typedef unsigned long long TID;
 
-typedef Impl_Log Backend;
+typedef ManagerImpl Backend;
 
 
 

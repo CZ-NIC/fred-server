@@ -69,11 +69,25 @@ libfred_a_SOURCES = register.cc          \
 					model_mailtype.cc			\
 					model_mailtype.h			\
 					model_mailarchive.cc		\
-					model_mailarchive.h			\
+					model_mailarchive.h		\
 					model_mailattachments.cc	\
 					model_mailattachments.h		\
 					model_mailhandles.cc		\
-					model_mailhandles.h			\
+					model_mailhandles.h		\
+					model_request.cc		\
+					model_request_data.cc		\
+					model_request_data.h		\
+					model_request.h			\
+					model_request_property.cc	\
+					model_request_property.h	\
+					model_request_property_value.cc	\
+					model_request_property_value.h	\
+					model_request_type.cc		\
+					model_request_type.h		\
+					model_service.cc		\
+					model_service.h			\
+					model_session.cc		\
+					model_session.h			\
 					domain.cc            \
 					domain.h             \
 					contact.cc           \
@@ -139,9 +153,10 @@ libfred_a_SOURCES = register.cc          \
 					exceptions.h         \
 					types.h
 
-noinst_PROGRAMS = test
+noinst_PROGRAMS = test test_logd
 test_SOURCES = test.cc
 test_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+
 test_LDADD   = libfred.a \
                         $(top_builddir)/src/model/libmodel.a \
                         $(top_builddir)/util/libutil.a \
@@ -154,6 +169,23 @@ test_LDADD   = libfred.a \
                         $(BOOST_REGEX_LIB) \
                         $(BOOST_THREAD_LIB) \
                         $(XML2_LIBS)
+
+# first possibility
+#
+#test_logd_SOURCES = test_logd.cc request.h request.cc model_request_type.cc model_request.cc model_request_property.cc model_request_property_value.cc model_request_data.cc model_session.cc model_service.cc model_request_type.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h model_service.h														
+# second possibility
+test_logd_SOURCES = test_logd.cc request.h model_request_type.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h model_service.h														
+# test_logd_CPPFLAGS = $(AM_CPPFLAGS)
+# test_logd_LDFLAGS = $(AM_LDFLAGS) -lboost_unit_test_framework liblog_impl.a
+test_logd_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) -lboost_unit_test_framework 
+test_logd_LDADD =	libfred.a \
+                        $(top_builddir)/src/model/libmodel.a \
+                        $(top_builddir)/util/db/libdb.a \
+                        $(top_builddir)/util/types/libtypes.a \
+                        $(top_builddir)/util/log/liblog.a \
+                        $(top_builddir)/src/old_utils/liboldutils.a \
+                        $(BOOST_DATE_TIME_LIB) \
+                        $(BOOST_THREAD_LIB) 
 
 #noinst_PROGRAMS = testregzon
 #testregzon_SOURCES = test_regzon.cc

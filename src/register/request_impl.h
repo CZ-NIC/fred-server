@@ -1,23 +1,11 @@
-#ifndef _LOG_IMPL_H_
-#define _LOG_IMPL_H_
+#ifndef _REQUEST_IMPL_H_
+#define _REQUEST_IMPL_H_
+#include "request.h"
 
-// database model -- should be one file for the whole server
-#include "src/corba/log/db_settings.h"
+namespace Register {
+namespace Logger {
 
-#include <map>
-#include "types/data_types.h"
-#include "model/log_filter.h"
-#include "register/request.h"
-
-using namespace Database;
-
-// Mapping of CORBA type
-enum Languages { EN, CS /*, __max_Languages=0xffffffff */ };
-
-typedef long int RequestServiceType;
-typedef long int RequestActionType;
-
-class Impl_Log {
+class ManagerImpl : public Manager {
 private:
     struct strCmp {
 		bool operator()(const std::string &s1, const std::string &s2) const {
@@ -37,17 +25,16 @@ private:
 
 public:
 
-  struct DB_CONNECT_FAILED { };
+  ManagerImpl();
+  ManagerImpl(const std::string conn_db, const std::string &monitoring_hosts_file = std::string()) throw(DB_CONNECT_FAILED);
 
-  Impl_Log(const std::string conn_db, const std::string &monitoring_hosts_file = std::string()) throw(DB_CONNECT_FAILED);
-
-  virtual ~Impl_Log();
+  virtual ~ManagerImpl();
 
   /** Used only in migration  - return a connection used by the connection manager 
  	it's meant to be used only in single-threaded environment
   */
   Connection get_connection() {
-	return Manager::acquire();
+	return Database::Manager::acquire();
   }
 
   Database::ID i_CreateRequest(const char *sourceIP, RequestServiceType service, const  char *content_in, const Register::Logger::RequestProperties& props, RequestActionType action_type, Database::ID session_id);
@@ -64,10 +51,11 @@ public:
 	insert_props(entry_time, entry_service, monitoring, entry_id, props, get_connection());
   }
 
+  List* createList() const;
+
 private:
   bool close_request_worker(Connection &conn, ID id, const char *content_out, const Register::Logger::RequestProperties &props);
   void insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID entry_id, const Register::Logger::RequestProperties& props, Connection conn);
-
   bool record_check(Database::ID id, Connection &conn);
   Database::ID find_property_name_id(const std::string &name, Connection &conn);
   inline Database::ID find_last_property_value_id(Connection &conn);
@@ -82,5 +70,8 @@ public:
 
 };
 
-#endif
+}
+}
+
+#endif // _REQUEST_IMPL_H_
 
