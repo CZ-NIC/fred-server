@@ -283,7 +283,7 @@ static long int getIdOfNSSet(
 {
   if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
   std::auto_ptr<Register::Zone::Manager>
-      zman(Register::Zone::Manager::create(db) );
+      zman(Register::Zone::Manager::create() );
   std::auto_ptr<Register::NSSet::Manager> man(Register::NSSet::Manager::create(
       db, zman.get(), c.get<bool>("registry.restricted_handles")) );
   Register::NSSet::Manager::CheckAvailType caType;
@@ -324,7 +324,7 @@ static long int getIdOfDomain(
 {
   if (lock && !c.get<bool>("registry.lock_epp_commands")) lock = false;
   std::auto_ptr<Register::Zone::Manager> zm(
-    Register::Zone::Manager::create(db)
+    Register::Zone::Manager::create()
   );
   std::auto_ptr<Register::Domain::Manager> dman(
     Register::Domain::Manager::create(db,zm.get())
@@ -2221,7 +2221,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
             case EPP_NSsetCheck:
 
                 try {
-                    std::auto_ptr<Register::Zone::Manager> zman( Register::Zone::Manager::create(action.getDB()) );
+                    std::auto_ptr<Register::Zone::Manager> zman( Register::Zone::Manager::create() );
                     std::auto_ptr<Register::NSSet::Manager> nman( Register::NSSet::Manager::create(action.getDB(),zman.get(),conf.get<bool>("registry.restricted_handles")) );
 
                     LOG( NOTICE_LOG , "nsset checkAvail handle [%s]" , (const char * ) chck[i] );
@@ -2266,7 +2266,7 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
             case EPP_DomainCheck:
 
                 try {
-                    std::auto_ptr<Register::Zone::Manager> zm( Register::Zone::Manager::create(action.getDB()) );
+                    std::auto_ptr<Register::Zone::Manager> zm( Register::Zone::Manager::create() );
                     std::auto_ptr<Register::Domain::Manager> dman( Register::Domain::Manager::create(action.getDB(),zm.get()) );
 
                     LOG( NOTICE_LOG , "domain checkAvail fqdn [%s]" , (const char * ) chck[i] );
@@ -3363,7 +3363,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
   EPPAction a(this, clientID, EPP_NSsetInfo, clTRID, XML, &paction);
   // initialize managers for nsset manipulation
   std::auto_ptr<Register::Zone::Manager>
-      zman(Register::Zone::Manager::create(a.getDB()) );
+      zman(Register::Zone::Manager::create() );
   std::auto_ptr<Register::NSSet::Manager>
       nman(Register::NSSet::Manager::create(a.getDB(), zman.get(),
           conf.get<bool>("registry.restricted_handles") ) );
@@ -3578,7 +3578,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
     EPPAction action(this, clientID, EPP_NSsetCreate, clTRID, XML, &paction);
 
     std::auto_ptr<Register::Zone::Manager> zman(
-            Register::Zone::Manager::create(action.getDB()));
+            Register::Zone::Manager::create());
     std::auto_ptr<Register::NSSet::Manager> nman(
             Register::NSSet::Manager::create(action.getDB(),zman.get(),conf.get<bool>("registry.restricted_handles")));
 
@@ -3937,7 +3937,7 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
     LOG( NOTICE_LOG, "NSSetUpdate: tech check level %d" , (int) level );
 
     std::auto_ptr<Register::Zone::Manager> zman(
-            Register::Zone::Manager::create(action.getDB()));
+            Register::Zone::Manager::create());
     std::auto_ptr<Register::NSSet::Manager> nman(
             Register::NSSet::Manager::create(action.getDB(),zman.get(),conf.get<bool>("registry.restricted_handles")));
 
@@ -4372,7 +4372,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
   EPPAction a(this, clientID, EPP_DomainInfo, clTRID, XML, &paction);
   // initialize managers for domain manipulation
   std::auto_ptr<Register::Zone::Manager>
-      zman(Register::Zone::Manager::create(a.getDB()) );
+      zman(Register::Zone::Manager::create() );
   std::auto_ptr<Register::Domain::Manager>
       dman(Register::Domain::Manager::create(a.getDB(), zman.get()) );
   // first check handle for proper format
@@ -5076,7 +5076,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     GetValExpDateFromExtension(valexpiryDate, ext);
 
     try {
-        std::auto_ptr<Register::Zone::Manager> zm( Register::Zone::Manager::create(action.getDB()) );
+        std::auto_ptr<Register::Zone::Manager> zm( Register::Zone::Manager::create() );
         std::auto_ptr<Register::Domain::Manager> dman( Register::Domain::Manager::create(action.getDB(),zm.get()) );
 
         LOG( NOTICE_LOG , "Domain::checkAvail  fqdn [%s]" , (const char * ) fqdn );
@@ -7444,7 +7444,7 @@ ccReg::Response* ccReg_EPP_i::info(
   EPPAction a(this, clientID, EPP_Info, clTRID, XML);
   try {
     std::auto_ptr<Register::Zone::Manager> zoneMan(
-        Register::Zone::Manager::create(a.getDB())
+        Register::Zone::Manager::create()
     );
     std::auto_ptr<Register::Domain::Manager> domMan(
         Register::Domain::Manager::create(a.getDB(), zoneMan.get())
@@ -7515,7 +7515,7 @@ ccReg::Response* ccReg_EPP_i::getInfoResults(
   EPPAction a(this, clientID, EPP_GetInfoResults, clTRID, XML);
   try {
     std::auto_ptr<Register::Zone::Manager> zoneMan(
-        Register::Zone::Manager::create(a.getDB())
+        Register::Zone::Manager::create()
     );
     std::auto_ptr<Register::Domain::Manager> domMan(
         Register::Domain::Manager::create(a.getDB(), zoneMan.get())
