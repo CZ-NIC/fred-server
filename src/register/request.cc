@@ -838,8 +838,12 @@ bool ManagerImpl::i_CloseRequestLogin(ID id, const char *content_out, const Regi
 		}
 
 		if(!res[0][0].isnull()) {
-			logger_error(boost::format("record with ID %1% already has session_id filled") % id);
-			return false;
+		        ID filled = res[0][0];
+                        if(filled != 0) {
+                                logger_error(boost::format("record with ID %1% already has session_id filled") % id);
+                                return false;
+                        }
+
 		}
 
 		query = boost::format("update request set session_id = %1% where id=%2%") % session_id % id;
