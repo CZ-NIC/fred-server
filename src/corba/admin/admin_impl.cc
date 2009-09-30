@@ -1511,7 +1511,7 @@ void ccReg_Admin_i::generateLetters() {
                                             cfg.get<std::string>("registry.fileclient_path"), 
                                             ns->getHostName()));
     std::auto_ptr<Register::Zone::Manager> zoneMan(
-        Register::Zone::Manager::create(&ldb));
+        Register::Zone::Manager::create());
     std::auto_ptr<Register::Domain::Manager> domMan(
         Register::Domain::Manager::create(&ldb,
                                           zoneMan.get()));

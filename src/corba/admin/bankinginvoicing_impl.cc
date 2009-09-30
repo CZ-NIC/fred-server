@@ -166,7 +166,7 @@ bool ccReg_BankingInvoicing_i::addPrice(
     DB db;
     db.OpenDatabase(m_connection_string.c_str());
     std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create(&db));
+            Register::Zone::Manager::create());
     Database::DateTime validFrom(Database::NOW_UTC);
     if (strlen(validfrom) != 0) {
         validFrom = Database::DateTime(validfrom);
