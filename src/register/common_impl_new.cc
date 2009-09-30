@@ -42,6 +42,13 @@ CommonListImplNew::getSize() const
     return m_data.size();
 }
 
+unsigned int
+CommonListImplNew::size() const
+{
+    return getSize();
+}
+
+
 void 
 CommonListImplNew::clear()
 {
@@ -60,7 +67,7 @@ CommonListImplNew::isEmpty()
 }
 
 void
-CommonListImplNew::appendToList(CommonObjectNew *object)
+CommonListImplNew::appendToList(CommonObjectNew * object)
 {
     m_data.push_back(object);
 }
@@ -140,6 +147,7 @@ CommonListImplNew::makeRealCount(Database::Filters::Union &filter)
         LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
 }
+
 unsigned long long 
 CommonListImplNew::getRealCount(Database::Filters::Union &filter)
 {

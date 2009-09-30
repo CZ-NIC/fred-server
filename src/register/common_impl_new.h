@@ -34,7 +34,7 @@ public:                                                                     \
     }                                                                       \
 private:                                                                    \
   bool asc_;                                                                \
-};                                                                   
+};
 
 class CommonListImplNew:
     virtual public CommonListNew {
@@ -48,18 +48,20 @@ protected:
 public:
     CommonListImplNew();
     ~CommonListImplNew();
-    CommonObjectNew *get(unsigned int index) const;
+    CommonObjectNew * get(unsigned int index) const;
     unsigned int getSize() const;
+    unsigned int size() const;
     void clear();
     bool isEmpty();
-    void appendToList(CommonObjectNew *object);
+    void appendToList(CommonObjectNew * object);
     void setLimit(unsigned int limit);
     unsigned int getLimit() const;
     void fillTempTable(Database::InsertQuery &query);
     unsigned long long getRealCount(Database::Filters::Union &filter);
-    CommonObjectNew *findId(Database::ID id) const throw (Register::NOT_FOUND);
+    CommonObjectNew * findId(Database::ID id) const throw (Register::NOT_FOUND);
     void reload();
     bool isLimited() const;
+
 };
 
 } // namespace Register

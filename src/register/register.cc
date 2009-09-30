@@ -108,7 +108,7 @@ public:
   ManagerImpl(DB *_db, bool _restrictedHandles) :
     db(_db), m_restricted_handles(_restrictedHandles) {
 
-    m_zone_manager.reset(Zone::Manager::create(db));
+    m_zone_manager.reset(Zone::Manager::create());
     m_domain_manager.reset(Domain::Manager::create(db, m_zone_manager.get()));
     m_registrar_manager.reset(Registrar::Manager::create(db));
     m_contact_manager.reset(Contact::Manager::create(db, m_restricted_handles));
@@ -136,7 +136,7 @@ public:
     m_restricted_handles(_restricted_handles) {
     /// initialize all other managers
     /// TODO: db -> change to db_manager; needs other constructor update
-    m_zone_manager.reset(Zone::Manager::create(db));
+    m_zone_manager.reset(Zone::Manager::create());
     m_domain_manager.reset(Domain::Manager::create(db, m_zone_manager.get()));
     m_registrar_manager.reset(Registrar::Manager::create(db));
     m_contact_manager.reset(Contact::Manager::create(db, m_restricted_handles));

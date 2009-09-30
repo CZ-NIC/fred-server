@@ -105,7 +105,7 @@ namespace Register
               int period)
           throw (SQL_ERROR) = 0;
       /// create manager object
-      static Manager *create(DB *db);
+      static Manager *create();
     };
   };
 };

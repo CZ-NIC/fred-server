@@ -55,7 +55,10 @@ public:
 
 
 /// Registrar detail access
-class Registrar : virtual public Register::CommonObject {
+class Registrar
+	: public ModelRegistrar
+	, virtual public Register::CommonObjectNew
+{
 public:
   /// Public destructor, user is responsible for object delete
   virtual ~Registrar() {
@@ -159,7 +162,9 @@ public:
 };
 
 /// List of registrar object
-class RegistrarList : virtual public Register::CommonList {
+class RegistrarList : //public Register::CommonListImplNew
+					 virtual public Register::CommonListNew
+{
 protected:
   /// Protected destructor, object is manager by Manager
   virtual ~RegistrarList() {
@@ -338,27 +343,7 @@ public:
   virtual bool checkHandle(const std::string) const throw (SQL_ERROR) = 0;
   virtual void addRegistrar(const std::string& registrarHandle)
       throw (SQL_ERROR) = 0;
-  virtual void addRegistrar(
-          const std::string& ico,
-          const std::string& dic,
-          const std::string& var_symb,
-          bool vat,
-          const std::string& handle,
-          const std::string& name,
-          const std::string& url,
-          const std::string& organization,
-          const std::string& street1,
-          const std::string& street2,
-          const std::string& street3,
-          const std::string& city,
-          const std::string& province,
-          const std::string& postalCode,
-          const std::string& country,
-          const std::string& telephone,
-          const std::string& fax,
-          const std::string& email,
-          bool system) =0;
-  virtual Registrar *createRegistrar() = 0;
+   virtual Registrar *createRegistrar() = 0;
   virtual void addRegistrarAcl(
           const std::string &registrarHandle,
           const std::string &cert,
@@ -370,7 +355,7 @@ public:
           const Database::Date &fromDate,
           const Database::Date &toDate) throw (SQL_ERROR) = 0;
   /// Factory method
-  static Manager *create(DB *db);
+  static Manager *create(DB* db);
 };
 
 }

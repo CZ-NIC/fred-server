@@ -451,7 +451,7 @@ namespace Register
       }
     };
 
-    Manager* Manager::create(DB *db)
+    Manager* Manager::create()
     {
       return new ManagerImpl;
     }
