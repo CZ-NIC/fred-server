@@ -50,7 +50,7 @@ NssetClient::list()
 {
     callHelp(m_conf, list_help);
     std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create(&m_db));
+            Register::Zone::Manager::create());
     std::auto_ptr<Register::NSSet::Manager> nssMan(
             Register::NSSet::Manager::create(
                 &m_db,

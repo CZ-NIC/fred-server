@@ -62,7 +62,7 @@ DomainClient::domain_list()
 {
     callHelp(m_conf, list_help);
     std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create(&m_db));
+            Register::Zone::Manager::create());
 
     std::auto_ptr<Register::Domain::Manager> domMan(
             Register::Domain::Manager::create(&m_db, zoneMan.get()));

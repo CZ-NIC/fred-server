@@ -345,7 +345,7 @@ ObjectClient::regular_procedure()
         MailerManager mailMan(cc->getNS());
 
         std::auto_ptr<Register::Zone::Manager> zoneMan(
-                Register::Zone::Manager::create(&m_db));
+                Register::Zone::Manager::create());
         std::auto_ptr<Register::Domain::Manager> domMan(
                 Register::Domain::Manager::create(&m_db, zoneMan.get()));
 

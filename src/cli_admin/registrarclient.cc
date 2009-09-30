@@ -107,7 +107,7 @@ RegistrarClient::list()
     regMan->getList()->reload(*unionFilter);
 
     std::cout << "<object>\n";
-    for (unsigned int i = 0; i < regMan->getList()->getCount(); i++) {
+    for (unsigned int i = 0; i < regMan->getList()->getSize(); i++) {
         std::cout
             << "\t<registrar>\n"
             << "\t\t<id>" << regMan->getList()->get(i)->getId() << "</id>\n"
@@ -152,7 +152,7 @@ RegistrarClient::zone_add()
 {
     callHelp(m_conf, zone_add_help);
     std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create(&m_db));
+            Register::Zone::Manager::create());
     std::string fqdn = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
     int exPeriodMin = 12;
     int exPeriodMax = 120;
@@ -188,7 +188,7 @@ RegistrarClient::zone_ns_add()
 {
     callHelp(m_conf, zone_ns_add_help);
     std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create(&m_db));
+            Register::Zone::Manager::create());
     std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
     std::string fqdn = m_conf.get<std::string>(REGISTRAR_NS_FQDN_NAME);
     std::string addr;
@@ -289,7 +289,7 @@ RegistrarClient::price_add()
 {
     callHelp(m_conf, price_add_help);
     std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create(&m_db));
+            Register::Zone::Manager::create());
     Database::DateTime validFrom(Database::NOW_UTC);
     if (m_conf.hasOpt(REGISTRAR_VALID_FROM_NAME)) {
         validFrom.from_string(m_conf.get<std::string>(REGISTRAR_VALID_FROM_NAME));

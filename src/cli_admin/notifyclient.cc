@@ -63,7 +63,7 @@ NotifyClient::state_changes()
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
     std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create(&m_db));
+            Register::Zone::Manager::create());
     std::auto_ptr<Register::Domain::Manager> domMan(
             Register::Domain::Manager::create(&m_db, zoneMan.get()));
     std::auto_ptr<Register::Contact::Manager> conMan(
@@ -123,7 +123,7 @@ NotifyClient::letters_create()
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
     std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create(&m_db));
+            Register::Zone::Manager::create());
     std::auto_ptr<Register::Domain::Manager> domMan(
             Register::Domain::Manager::create(&m_db, zoneMan.get()));
     std::auto_ptr<Register::Contact::Manager> conMan(
