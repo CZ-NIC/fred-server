@@ -38,6 +38,8 @@ public:
     File *get(unsigned int index) const throw (std::exception);
     const char* getTempTableName() const;
     void sort(MemberType member, bool asc);
+    Register::File::File* findId(Database::ID _id);
+
 };
 
 class Manager {

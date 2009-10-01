@@ -158,6 +158,24 @@ List::sort(MemberType member, bool asc)
     }    
 }
 
+Register::File::File* List::findId(Database::ID _id)
+{
+	  std::vector<Register::CommonObjectNew*>::const_iterator it = std::find_if(m_data.begin(),
+	  m_data.end(),
+	  CheckIdNew<Register::File::File>(_id));
+
+	  if (it != m_data.end())
+	  {
+		  LOGGER(PACKAGE).debug(boost::format("object list hit! object id=%1% found")
+		  % _id);
+		  return dynamic_cast<Register::File::File*>(*it);
+	  }
+	  LOGGER(PACKAGE).debug(boost::format("object list miss! object id=%1% not found")
+	  % _id);
+	  throw Register::NOT_FOUND();
+}
+
+
 class ManagerImpl:
     virtual public Manager {
 public:

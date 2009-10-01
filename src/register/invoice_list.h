@@ -50,6 +50,7 @@ public:
     void setPartialLoad(bool partialLoad);
     void exportXML(std::ostream &out);
     void doExport(Exporter *exp);
+    Register::Invoicing::Invoice* findId(Database::ID _id);
 }; // class List
 
 } // namespace Invoicing

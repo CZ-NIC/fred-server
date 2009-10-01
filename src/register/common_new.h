@@ -11,6 +11,18 @@ public:
     { }
 };
 
+template <typename T> struct CheckIdNew
+{
+	unsigned long long find_id_;
+    CheckIdNew(unsigned long long _id)
+		  :find_id_(_id)
+	{}
+    bool operator()(Register::CommonObjectNew* _object)
+    {
+      return (dynamic_cast<T*>(_object))->getId() == find_id_;
+    }
+};
+
 class CommonListNew {
 public:
     virtual ~CommonListNew()
@@ -23,9 +35,10 @@ public:
     virtual void appendToList(CommonObjectNew *object) = 0;
     virtual const char *getTempTableName() const = 0;
     virtual unsigned long long getRealCount(Database::Filters::Union &filter) = 0;
-    virtual CommonObjectNew * findId(Database::ID id) const  = 0;
     virtual bool isLimited() const = 0;
 };
+
+
 
 } // namespace Register
 

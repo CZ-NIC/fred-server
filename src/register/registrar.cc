@@ -760,6 +760,23 @@ public:
       throw std::exception();
     } 
   }
+
+  virtual Register::Registrar::Registrar* findId(Database::ID id) const
+  {
+	  std::vector<Register::CommonObjectNew*>::const_iterator it = std::find_if(m_data.begin(),
+	  m_data.end(),
+	  CheckIdNew<Register::Registrar::Registrar>(id));
+
+	  if (it != m_data.end())
+	  {
+		  LOGGER(PACKAGE).debug(boost::format("object list hit! object id=%1% found")
+		  % id);
+		  return dynamic_cast<Register::Registrar::Registrar*>(*it);
+	  }
+	  LOGGER(PACKAGE).debug(boost::format("object list miss! object id=%1% not found")
+	  % id);
+	  throw Register::NOT_FOUND();
+  }
   
 //  Registrar* findId(Database::ID _id) const throw (Register::NOT_FOUND) {
 //    RegistrarListType::const_iterator it = std::find_if(data_.begin(),

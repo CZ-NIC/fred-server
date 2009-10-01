@@ -58,9 +58,9 @@ public:
     unsigned int getLimit() const;
     void fillTempTable(Database::InsertQuery &query);
     unsigned long long getRealCount(Database::Filters::Union &filter);
-    CommonObjectNew * findId(Database::ID id) const throw (Register::NOT_FOUND);
     void reload();
     bool isLimited() const;
+
 
 };
 

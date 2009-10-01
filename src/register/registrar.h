@@ -195,6 +195,8 @@ public:
   
   virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
   virtual const char* getTempTableName() const = 0;
+
+  virtual Register::Registrar::Registrar* findId(Database::ID id) const =0;
 };
 
 

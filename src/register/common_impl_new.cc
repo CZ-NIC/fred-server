@@ -30,12 +30,6 @@ CommonListImplNew::get(unsigned int index) const
     return m_data.at(index);
 }
 
-CommonObjectNew *
-CommonListImplNew::findId(Database::ID id) const throw (Register::NOT_FOUND)
-{
-    return NULL;
-}
-
 unsigned int
 CommonListImplNew::getSize() const
 {
