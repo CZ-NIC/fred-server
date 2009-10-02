@@ -100,6 +100,7 @@ class RegistrarImpl : public Register::CommonObjectImplNew,
   
   typedef std::vector<ACLImpl *> ACLList;
   typedef ACLList::iterator ACLListIter;
+  TID id; ///< DB: registrar.id
   std::string ico; ///< DB: registrar.ico
   std::string dic; ///< DB: registrar.dic
   std::string var_symb; ///< DB: registrar.varsymb
@@ -127,7 +128,8 @@ class RegistrarImpl : public Register::CommonObjectImplNew,
 
 public:
   RegistrarImpl()
-  : CommonObjectImplNew()
+  : //public ModelRegistrar,
+	  CommonObjectImplNew()
   ,  changed(true)
   {}
   RegistrarImpl(TID _id,
@@ -152,7 +154,7 @@ public:
                 bool _system,
                 unsigned long _credit) :
         CommonObjectImplNew(),
-        ico(_ico), dic(_dic), var_symb(_var_symb), vat(_vat),
+        id(_id),ico(_ico), dic(_dic), var_symb(_var_symb), vat(_vat),
         handle(_handle), name(_name), url(_url), organization(_organization),
         street1(_street1), street2(_street2), street3(_street3), city(_city),
         province(_province), postalCode(_postalCode), country(_country),
@@ -167,6 +169,16 @@ public:
   ~RegistrarImpl() {
     clear();
   }
+
+  virtual const TID& getId() const {
+      return id;
+    }
+
+
+  virtual void setId(const unsigned long long &_id) {
+      id = _id;
+    }
+
 
   virtual const std::string& getIco() const {
     return ico;
@@ -390,15 +402,15 @@ public:
     		registrar.setEmail(getEmail());
     		registrar.setSystem(getSystem());
 
-    		if (id_)
+    		if (id)
     		{
-				registrar.setId(id_);
+				registrar.setId(id);
 				registrar.update();
     		}
     		else
     		{
 				registrar.insert();
-				id_=registrar.getId();
+				id=registrar.getId();
     		}
 		}//if changed
 
@@ -407,12 +419,12 @@ public:
 											std::mem_fun(&ACLImpl::hasChanged) );
 
 		std::ostringstream sql;
-		sql << "DELETE FROM registraracl WHERE registrarid=" << id_;
+		sql << "DELETE FROM registraracl WHERE registrarid=" << id;
 		conn.exec(sql.str());
 		for (unsigned j = 0; j < acl.size(); j++)
 		{
 			sql.str("");
-			sql << acl[j]->makeSQL(id_);
+			sql << acl[j]->makeSQL(id);
 			conn.exec(sql.str());
 		}
 
@@ -426,16 +438,16 @@ public:
 	}//catch (...)
   }//save
   
-  void putACL(unsigned id,
+  void putACL(unsigned _id,
               const std::string& certificateMD5,
               const std::string& password) {
-    acl.push_back(new ACLImpl(id,certificateMD5,password));
+    acl.push_back(new ACLImpl(_id,certificateMD5,password));
   }
   bool hasId(unsigned _id) const {
-    return id_ == _id;
+    return id == _id;
   }
   void resetId() {
-    id_ = 0;
+    id = 0;
     changed = true;
     for (unsigned i = 0; i < acl.size(); i++)
       acl[i]->resetId();

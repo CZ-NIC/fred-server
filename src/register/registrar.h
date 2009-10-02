@@ -56,13 +56,16 @@ public:
 
 /// Registrar detail access
 class Registrar
-	: public ModelRegistrar
-	, virtual public Register::CommonObjectNew
+	: //public ModelRegistrar,
+	 virtual public Register::CommonObjectNew
 {
 public:
   /// Public destructor, user is responsible for object delete
   virtual ~Registrar() {
   }
+
+  virtual const TID& getId() const =0;
+  virtual void setId(const unsigned long long &_id) =0;
 
   ///
   virtual const std::string& getIco() const = 0;
