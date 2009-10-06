@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <functional>
 
+
 #include "registrar.h"
 #include "common_impl.h"
 #include "sql.h"
@@ -39,98 +40,103 @@
 #include "model_enum_tlds.h"
 
 
-#define SET(a,b) { a = b; changed = true; }
-
 namespace Register {
 namespace Registrar {
 
 class RegistrarImpl;
 
 
-class ACLImpl : virtual public ACL {
-  unsigned id;
-  std::string certificateMD5;
-  std::string password;
-  bool changed;
-  friend class RegistrarImpl;
+class ACLImpl : virtual public ACL,
+				private ModelRegistrarAcl {
 
 public:
-  ACLImpl() :
-    id(0), changed(true) {
+  ACLImpl()
+	  : ModelRegistrarAcl()
+  {
+	  ModelRegistrarAcl::setId(0);
   }
-  ACLImpl(unsigned _id,
-          const std::string _certificateMD5,
-          const std::string _password) :
-    id(_id), certificateMD5(_certificateMD5), password(_password),
-        changed(false) {
+  ACLImpl(TID _id,
+          const std::string& _certificateMD5,
+          const std::string& _password)
+	  : ModelRegistrarAcl()
+  {
+	  ModelRegistrarAcl::setId(_id);
+	  ModelRegistrarAcl::setCert(_certificateMD5);
+	  ModelRegistrarAcl::setPassword(_password);
   }
-  virtual const std::string& getCertificateMD5() const {
-    return certificateMD5;
+  virtual const TID& getId() const
+  {
+      return ModelRegistrarAcl::getId();
   }
-  virtual void setCertificateMD5(const std::string& newCertificateMD5) {
-    SET(certificateMD5,newCertificateMD5);
+  virtual void setId(const TID &_id)
+  {
+	  ModelRegistrarAcl::setId(_id);
   }
-  virtual const std::string& getPassword() const {
-    return password;
+  const TID& getRegistarId() const
+  {
+      return ModelRegistrarAcl::getRegistarId();
   }
-  virtual void setPassword(const std::string& newPassword) {
-    SET(password,newPassword);
+  void setRegistrarId(const TID &_registrar_id)
+  {
+    	ModelRegistrarAcl::setRegistrarId(_registrar_id);
   }
-  bool operator==(unsigned _id) {
-    return id == _id;
+  virtual const std::string& getCertificateMD5() const
+  {
+    return ModelRegistrarAcl::getCert();
   }
-  bool hasChanged() const {
-    return changed;
+  virtual void setCertificateMD5(const std::string& _certificateMD5)
+  {
+	  ModelRegistrarAcl::setCert(_certificateMD5);
   }
-  std::string makeSQL(unsigned registrarId) {
-    std::ostringstream sql;
-    sql << "INSERT INTO registraracl (registrarid,cert,password) VALUES "
-        << "(" << registrarId << ",'" << certificateMD5 << "','" << password
-        << "');";
-    return sql.str();
+  virtual const std::string& getPassword() const
+  {
+    return ModelRegistrarAcl::getPassword();
   }
-  void resetId() {
-    changed = true;
+  virtual void setPassword(const std::string& _password)
+  {
+	  ModelRegistrarAcl::setPassword(_password);
   }
-};
+  bool operator==(const TID _id) const
+  {
+    return getId() == _id;
+  }
+  virtual void save() throw (SQL_ERROR)
+  {
+	try
+	{
+		Database::Connection conn = Database::Manager::acquire();
+		TID id = getId();
+
+		if (id)
+			ModelRegistrarAcl::update();
+		else
+			ModelRegistrarAcl::insert();
+	}//try
+	catch (...)
+	{
+	 LOGGER(PACKAGE).error("save: an error has occured");
+	 throw SQL_ERROR();
+	}//catch (...)
+  }//save
+};//class ACLImpl
 
 
 class RegistrarImpl : public Register::CommonObjectImplNew,
-                      virtual public Registrar {
-  
-  typedef std::vector<ACLImpl *> ACLList;
+                      virtual public Registrar,
+                      private ModelRegistrar
+{
+  typedef std::vector<boost::shared_ptr<ACLImpl> > ACLList;
   typedef ACLList::iterator ACLListIter;
-  TID id; ///< DB: registrar.id
-  std::string ico; ///< DB: registrar.ico
-  std::string dic; ///< DB: registrar.dic
-  std::string var_symb; ///< DB: registrar.varsymb
-  bool vat; ///< DB: registrar.vat
-  std::string handle; ///< DB: registrar.handle
-  std::string name; ///< DB: registrar.name
-  std::string url; ///< DB: registrar.name
-  std::string password; ///< DB: registraracl.passwd
-  std::string organization; ///< DB: registrar.organization
-  std::string street1; ///< DB: registrar.street1
-  std::string street2; ///< DB: registrar.street2
-  std::string street3; ///< DB: registrar.street3
-  std::string city; ///< DB: registrar.city
-  std::string province; ///< DB: registrar.stateorprovince
-  std::string postalCode; ///< DB: registrar.postalcode
-  std::string country; ///< DB: registrar.country
-  std::string telephone; ///< DB: registrar.telephone
-  std::string fax; ///< DB: registrar.fax
-  std::string email; ///< DB: registrar.email
-  bool system; ///< DB: registrar.system
+
   unsigned long credit; ///< DB: registrar.credit
-  bool changed; ///< object was changed, need sync to database
+
   ACLList acl; ///< access control
   std::map<Database::ID, unsigned long> zone_credit_map;
 
 public:
   RegistrarImpl()
-  : //public ModelRegistrar,
-	  CommonObjectImplNew()
-  ,  changed(true)
+  : CommonObjectImplNew()
+  , ModelRegistrar()
   {}
   RegistrarImpl(TID _id,
                 const std::string& _ico,
@@ -154,184 +160,196 @@ public:
                 bool _system,
                 unsigned long _credit) :
         CommonObjectImplNew(),
-        id(_id),ico(_ico), dic(_dic), var_symb(_var_symb), vat(_vat),
-        handle(_handle), name(_name), url(_url), organization(_organization),
-        street1(_street1), street2(_street2), street3(_street3), city(_city),
-        province(_province), postalCode(_postalCode), country(_country),
-        telephone(_telephone), fax(_fax), email(_email), system(_system), 
-        credit(_credit) {
+        ModelRegistrar(),
+        credit(_credit)
+  {
+	ModelRegistrar::setId(_id);
+	ModelRegistrar::setIco(_ico);
+	ModelRegistrar::setDic(_dic);
+	ModelRegistrar::setVarsymb(_var_symb);
+	ModelRegistrar::setVat(_vat);
+	ModelRegistrar::setHandle(_handle);
+	ModelRegistrar::setName(_name);
+	ModelRegistrar::setOrganization(_organization);
+	ModelRegistrar::setStreet1(_street1);
+	ModelRegistrar::setStreet2(_street2);
+	ModelRegistrar::setStreet3(_street3);
+	ModelRegistrar::setCity(_city);
+	ModelRegistrar::setStateorprovince(_province);
+	ModelRegistrar::setPostalcode(_postalCode);
+	ModelRegistrar::setCountry(_country);
+	ModelRegistrar::setTelephone(_telephone);
+	ModelRegistrar::setFax(_fax);
+	ModelRegistrar::setEmail(_email);
+	ModelRegistrar::setUrl(_url);
+	ModelRegistrar::setSystem(_system);
   }
   void clear() {
-    for (unsigned i=0; i<acl.size(); i++)
-      delete acl[i];
     acl.clear();
   }
-  ~RegistrarImpl() {
-    clear();
+  ~RegistrarImpl() {}
+
+  virtual const TID& getId() const
+  {
+     return ModelRegistrar::getId();
+  }
+  virtual void setId(const TID &_id)
+  {
+	ModelRegistrar::setId(_id);
+  }
+  virtual const std::string& getIco() const
+  {
+    return ModelRegistrar::getIco();
+  }
+  virtual void setIco(const std::string& _ico)
+  {
+	ModelRegistrar::setIco(_ico);
+  }
+  virtual const std::string& getDic() const
+  {
+    return ModelRegistrar::getDic();
+  }
+  virtual void setDic(const std::string& _dic)
+  {
+	ModelRegistrar::setDic(_dic);
+  }
+  virtual const std::string& getVarSymb() const
+  {
+    return ModelRegistrar::getVarsymb();
+  }
+  virtual void setVarSymb(const std::string& _var_symb)
+  {
+	ModelRegistrar::setVarsymb(_var_symb);
+  }
+  virtual bool getVat() const
+  {
+    return ModelRegistrar::getVat();
+  }
+  virtual void setVat(bool _vat)
+  {
+	ModelRegistrar::setVat(_vat);
+  }
+  virtual const std::string& getHandle() const
+  {
+    return ModelRegistrar::getHandle();
+  }
+  virtual void setHandle(const std::string& _handle)
+  {
+	ModelRegistrar::setHandle(_handle);
+  }
+  virtual const std::string& getName() const
+  {
+    return ModelRegistrar::getName();
+  }
+  virtual void setName(const std::string& _name)
+  {
+	ModelRegistrar::setName(_name);
+  }
+  virtual const std::string& getURL() const
+  {
+    return ModelRegistrar::getUrl();
+  }
+  virtual void setURL(const std::string& _url)
+  {
+	ModelRegistrar::setUrl(_url);
+  }
+  virtual const std::string& getOrganization() const
+  {
+    return ModelRegistrar::getOrganization();
+  }
+  virtual void setOrganization(const std::string& _organization)
+  {
+	ModelRegistrar::setOrganization(_organization);
+  }
+  virtual const std::string& getStreet1() const
+  {
+    return ModelRegistrar::getStreet1();
+  }
+  virtual void setStreet1(const std::string& _street1)
+  {
+	ModelRegistrar::setStreet1(_street1);
+  }
+  virtual const std::string& getStreet2() const
+  {
+    return ModelRegistrar::getStreet2();
+  }
+  virtual void setStreet2(const std::string& _street2)
+  {
+	ModelRegistrar::setStreet2(_street2);
+  }
+  virtual const std::string& getStreet3() const
+  {
+    return ModelRegistrar::getStreet3();
+  }
+  virtual void setStreet3(const std::string& _street3)
+  {
+	ModelRegistrar::setStreet3(_street3);
+  }
+  virtual const std::string& getCity() const
+  {
+	return ModelRegistrar::getCity();
+  }
+  virtual void setCity(const std::string& _city)
+  {
+	ModelRegistrar::setCity(_city);
+  }
+  virtual const std::string& getProvince() const
+  {
+    return ModelRegistrar::getStateorprovince();
+  }
+  virtual void setProvince(const std::string& _province)
+  {
+	ModelRegistrar::setStateorprovince(_province);
+  }
+  virtual const std::string& getPostalCode() const
+  {
+    return ModelRegistrar::getPostalcode();
+  }
+  virtual void setPostalCode(const std::string& _postalCode)
+  {
+	ModelRegistrar::setPostalcode(_postalCode);
+  }
+  virtual const std::string& getCountry() const
+  {
+    return ModelRegistrar::getCountry();
+  }
+  virtual void setCountry(const std::string& _country)
+  {
+	ModelRegistrar::setCountry(_country);
+  }
+  virtual const std::string& getTelephone() const
+  {
+    return ModelRegistrar::getTelephone();
+  }
+  virtual void setTelephone(const std::string& _telephone)
+  {
+	ModelRegistrar::setTelephone(_telephone);
+  }
+  virtual const std::string& getFax() const
+  {
+    return ModelRegistrar::getFax();
+  }
+  virtual void setFax(const std::string& _fax)
+  {
+	ModelRegistrar::setFax(_fax);
+  }
+  virtual const std::string& getEmail() const
+  {
+    return ModelRegistrar::getEmail();
+  }
+  virtual void setEmail(const std::string& _email)
+  {
+	ModelRegistrar::setEmail(_email);
+  }
+  virtual bool getSystem() const
+  {
+    return ModelRegistrar::getSystem();
+  }
+  virtual void setSystem(bool _system)
+  {
+	ModelRegistrar::setSystem(_system);
   }
 
-  virtual const TID& getId() const {
-      return id;
-    }
-
-
-  virtual void setId(const unsigned long long &_id) {
-      id = _id;
-    }
-
-
-  virtual const std::string& getIco() const {
-    return ico;
-  }
-    
-  virtual void setIco(const std::string& _ico) {
-    SET(ico, _ico);
-  }
-  
-  virtual const std::string& getDic() const {
-    return dic;
-  }
-  
-  virtual void setDic(const std::string& _dic) {
-    SET(dic, _dic);
-  }
-  
-  virtual const std::string& getVarSymb() const {
-    return var_symb;
-  }
-  
-  virtual void setVarSymb(const std::string& _var_symb) {
-    SET(var_symb, _var_symb);
-  }
-  
-  virtual bool getVat() const {
-    return vat;
-  }
-  
-  virtual void setVat(bool _vat) {
-    SET(vat, _vat);
-  }
-    
-  virtual const std::string& getHandle() const {
-    return handle;
-  }
-  
-  virtual void setHandle(const std::string& newHandle) {
-    SET(handle,newHandle);
-  }
-  
-  virtual const std::string& getName() const {
-    return name;
-  }
-  
-  virtual void setName(const std::string& newName) {
-    SET(name,newName);
-  }
-  
-  virtual const std::string& getURL() const {
-    return url;
-  }
-  
-  virtual void setURL(const std::string& newURL) {
-    SET(url,newURL);
-  }
-  
-  virtual const std::string& getOrganization() const {
-    return organization;
-  }
-  
-  virtual void setOrganization(const std::string& _organization) {
-    SET(organization,_organization);
-  }
-  
-  virtual const std::string& getStreet1() const {
-    return street1;
-  }
-  
-  virtual void setStreet1(const std::string& _street1) {
-    SET(street1,_street1);
-  }
-  
-  virtual const std::string& getStreet2() const {
-    return street2;
-  }
-  
-  virtual void setStreet2(const std::string& _street2) {
-    SET(street2,_street2);
-  }
-  
-  virtual const std::string& getStreet3() const {
-    return street3;
-  }
-  
-  virtual void setStreet3(const std::string& _street3) {
-    SET(street3,_street3);
-  }
-  
-  virtual const std::string& getCity() const {
-    return city;
-  }
-  
-  virtual void setCity(const std::string& _city) {
-    SET(city,_city);
-  }
-  
-  virtual const std::string& getProvince() const {
-    return province;
-  }
-  
-  virtual void setProvince(const std::string& _province) {
-    SET(province,_province);
-  }
-  
-  virtual const std::string& getPostalCode() const {
-    return postalCode;
-  }
-  
-  virtual void setPostalCode(const std::string& _postalCode) {
-    SET(postalCode,_postalCode);
-  }
-  
-  virtual const std::string& getCountry() const {
-    return country;
-  }
-  
-  virtual void setCountry(const std::string& _country) {
-    SET(country,_country);
-  }
-  
-  virtual const std::string& getTelephone() const {
-    return telephone;
-  }
-  
-  virtual void setTelephone(const std::string& _telephone) {
-    SET(telephone,_telephone);
-  }
-  
-  virtual const std::string& getFax() const {
-    return fax;
-  }
-  
-  virtual void setFax(const std::string& _fax) {
-    SET(fax,_fax);
-  }
-  
-  virtual const std::string& getEmail() const {
-    return email;
-  }
-  
-  virtual void setEmail(const std::string& _email) {
-    SET(email,_email);
-  }
-  
-  virtual bool getSystem() const {
-    return system;
-  }
-  
-  virtual void setSystem(bool _system) {
-    SET(system, _system);
-  }
-  
   virtual unsigned long getCredit() const {
     return credit;
   }
@@ -349,87 +367,47 @@ public:
     return acl.size();
   }
   
-  virtual ACL* getACL(unsigned idx) const {
-    return idx < acl.size() ? acl[idx] : NULL;
+  virtual ACL* getACL(unsigned idx) const
+  {
+    return idx < acl.size() ? acl[idx].get() : NULL;
   }
-  
-  virtual ACL* newACL() {
-    ACLImpl* newACL = new ACLImpl();
+  virtual ACL* newACL()
+  {
+    boost::shared_ptr<ACLImpl> newACL ( new ACLImpl());
     acl.push_back(newACL);
-    return newACL;
+    return newACL.get();
   }
-  
-  virtual void deleteACL(unsigned idx) {
+  virtual void deleteACL(unsigned idx)
+  {
     if (idx < acl.size()) {
-      delete acl[idx];
       acl.erase(acl.begin()+idx);
     }
   }
-  
-  virtual void clearACLList() {
+  virtual void clearACLList()
+  {
     clear();
   }
-  
   virtual void save() throw (SQL_ERROR)
   {
       // save registrar data
 	try
 	{
 		Database::Connection conn = Database::Manager::acquire();
-
 		Database::Transaction tx(conn);
-
-		if (changed)
-		{
-    		ModelRegistrar registrar;
-    		registrar.setIco(getIco());
-    		registrar.setDic(getDic());
-    		registrar.setVarsymb(getVarSymb());
-    		registrar.setVat(getVat());
-    		registrar.setName(getName());
-    		registrar.setHandle(getHandle());
-    		registrar.setUrl(getURL());
-    		registrar.setOrganization(getOrganization());
-    		registrar.setStreet1(getStreet1());
-    		registrar.setStreet2(getStreet2());
-    		registrar.setStreet3(getStreet3());
-    		registrar.setCity(getCity());
-    		registrar.setStateorprovince(getProvince());
-    		registrar.setPostalcode(getPostalCode());
-    		registrar.setCountry(getCountry());
-    		registrar.setTelephone(getTelephone());
-    		registrar.setFax(getFax());
-    		registrar.setEmail(getEmail());
-    		registrar.setSystem(getSystem());
-
-    		if (id)
-    		{
-				registrar.setId(id);
-				registrar.update();
-    		}
-    		else
-    		{
-				registrar.insert();
-				id=registrar.getId();
-    		}
-		}//if changed
-
-		ACLList::const_iterator i = find_if(acl.begin(),
-											acl.end(),
-											std::mem_fun(&ACLImpl::hasChanged) );
-
-		std::ostringstream sql;
+		TID id = getId();
+		if (id)
+			ModelRegistrar::update();
+		else
+			ModelRegistrar::insert();
+    	std::ostringstream sql;
 		sql << "DELETE FROM registraracl WHERE registrarid=" << id;
 		conn.exec(sql.str());
 		for (unsigned j = 0; j < acl.size(); j++)
 		{
-			sql.str("");
-			sql << acl[j]->makeSQL(id);
-			conn.exec(sql.str());
+			acl[j]->setRegistrarId(id);
+			acl[j]->save();
 		}
-
 		tx.commit();
-
 	}//try
 	catch (...)
 	{
@@ -438,19 +416,21 @@ public:
 	}//catch (...)
   }//save
   
-  void putACL(unsigned _id,
+  void putACL(TID _id,
               const std::string& certificateMD5,
-              const std::string& password) {
-    acl.push_back(new ACLImpl(_id,certificateMD5,password));
+              const std::string& password)
+  {
+    acl.push_back(boost::shared_ptr<ACLImpl>(new ACLImpl(_id,certificateMD5,password)));
   }
-  bool hasId(unsigned _id) const {
-    return id == _id;
+  bool hasId(TID _id) const
+  {
+    return getId() == _id;
   }
-  void resetId() {
-    id = 0;
-    changed = true;
-    for (unsigned i = 0; i < acl.size(); i++)
-      acl[i]->resetId();
+  void resetId()
+  {
+    setId(0);
+    for (TID i = 0; i < acl.size(); i++)
+      acl[i]->setId(0);
   }
 };
 
@@ -491,15 +471,10 @@ public:
   virtual void setZoneFilter(const std::string& _zone) {
     zoneFilter = _zone;
   }
-
-  //virtual unsigned long long getRealCount(Database::Filters::Union &filter) = 0;
-
-  //from CommonListImpl
   void resetIDSequence()
   {
     ptr_idx_ = -1;
   }
-  //CommonObjectNew* findIDSequence(TID _id) {
   RegistrarImpl* findIDSequence(TID _id)
   {
     // must be sorted by ID to make sence
@@ -521,7 +496,6 @@ public:
     }//if
     return ret_ptr;
   }//findIDSequence
-
 
   virtual void reload() throw (SQL_ERROR)
   {
@@ -597,10 +571,6 @@ public:
 		sql << "SELECT registrarid,cert,password " << "FROM registraracl ORDER BY registrarid";
 
 		Database::Result res2 = conn.exec(sql.str());
-
-		//resetIDSequence();
-		//std::vector<int>::iterator
-		//::iterator
 		for (unsigned i=0; i < static_cast<unsigned>(res2.size()); i++)
 		{
 		  // find associated registrar
@@ -754,11 +724,6 @@ public:
       LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
   }
-//  virtual const Registrar* get(unsigned idx) const {
-//    if (idx> size())
-//      return NULL;
-//    return data_[idx];
-//  }
   
   virtual Registrar* get(unsigned _idx) const {
     try {
@@ -790,19 +755,6 @@ public:
 	  throw Register::NOT_FOUND();
   }
   
-//  Registrar* findId(Database::ID _id) const throw (Register::NOT_FOUND) {
-//    RegistrarListType::const_iterator it = std::find_if(data_.begin(),
-//                                                        data_.end(),
-//                                                        CheckId(_id));
-//    if (it != data_.end()) {
-//      LOGGER(PACKAGE).debug(boost::format("object list hit! object id=%1% found")
-//          % _id);
-//      return *it;
-//    }
-//    LOGGER(PACKAGE).debug(boost::format("object list miss! object id=%1% not found")
-//        % _id);
-//    throw Register::NOT_FOUND();
-//  }
   virtual Registrar* create()
   {
     return new RegistrarImpl();
@@ -1476,61 +1428,7 @@ public:
           throw SQL_ERROR();
       }//catch (...)
   }//addRegistrar
-/*
-  virtual void addRegistrar(
-          const std::string& ico,
-          const std::string& dic,
-          const std::string& var_symb,
-          bool vat,
-          const std::string& handle,
-          const std::string& name,
-          const std::string& url,
-          const std::string& organization,
-          const std::string& street1,
-          const std::string& street2,
-          const std::string& street3,
-          const std::string& city,
-          const std::string& province,
-          const std::string& postalCode,
-          const std::string& country,
-          const std::string& telephone,
-          const std::string& fax,
-          const std::string& email,
-          bool system)
-  {
-      try
-      {
-	    std::auto_ptr<Register::Registrar::Registrar>
-			registrar(createRegistrar());
-	    registrar->setHandle(handle);
-	    registrar->setCountry(country);
-	    if (ico.length()!=0)registrar->setIco(ico);
-	    if (dic.length()!=0)registrar->setDic(dic);
-	    if (var_symb.length()!=0)registrar->setVarSymb(var_symb);
-	    if (name.length()!=0)registrar->setName(name);
-	    if (organization.length()!=0)registrar->setOrganization(organization);
-	    if (street1.length()!=0)registrar->setStreet1(street1);
-	    if (street2.length()!=0)registrar->setStreet1(street2);
-	    if (street3.length()!=0)registrar->setStreet1(street3);
-	    if (city.length()!=0)registrar->setCity(city);
-	    if (province.length()!=0)registrar->setProvince(province);
-	    if (postalCode.length()!=0)registrar->setPostalCode(postalCode);
-	    if (telephone.length()!=0)registrar->setTelephone(telephone);
-	    if (fax.length()!=0)registrar->setFax(fax);
-	    if (email.length()!=0)registrar->setEmail(email);
-	    if (url.length()!=0)registrar->setURL(url);
-	    registrar->setSystem(system);
-        registrar->setVat(vat);
 
-        registrar->save();
-      }//try
-      catch (...)
-      {
-          LOGGER(PACKAGE).error("addRegistrar 2: an error has occured");
-          throw;
-      }//catch (...)
-  }//addRegistrar
-*/
   virtual void addRegistrarAcl(
           const std::string &registrarHandle,
           const std::string &cert,
