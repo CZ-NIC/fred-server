@@ -52,17 +52,17 @@ ccReg::RequestActionList *ccReg_Log_i::GetServiceActions(ccReg::RequestServiceTy
 	Database::Result res = back->i_GetServiceActions((Database::Filters::RequestServiceType)service);
 
 	int size  = res.size();
-	ccReg::RequestActionList *ret = new ccReg::RequestActionList();
+	ccReg::RequestActionList_var ret = new ccReg::RequestActionList();
 
 	ret->length(size);
 
 	for (int i = 0; i< size; i++) {
 		
-		(*ret)[i].id 	 = (ccReg::RequestActionType)res[i][0];
-		(*ret)[i].status = CORBA::string_dup(((std::string)res[i][1]).c_str());
+		ret[i].id 	 = (ccReg::RequestActionType)res[i][0];
+		ret[i].status = CORBA::string_dup(((std::string)res[i][1]).c_str());
 	}
 
-	return ret;
+	return ret._retn();
 }
 
 

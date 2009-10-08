@@ -32,6 +32,7 @@
 #endif
 
 #ifdef LOGD
+#include "admin/admin_impl.h"
 #include "log/log_impl_wrap.h"
 #endif
 
@@ -361,6 +362,15 @@ int main(int argc, char** argv) {
     CORBA::Object_var loggerObj = myccReg_Log_i->_this();
     myccReg_Log_i->_remove_ref();
     ns.bind("Logger",loggerObj);
+
+
+
+    PortableServer::ObjectId_var lfilterObjectId = PortableServer::string_to_ObjectId("LoggerFilter");
+    ccReg_Admin_i* myccReg_LFilter_i = new ccReg_Admin_i(conn_info, &ns, cfg);
+    poa->activate_object_with_id(lfilterObjectId, myccReg_LFilter_i);
+    CORBA::Object_var lfilterObj = myccReg_LFilter_i->_this();
+    myccReg_LFilter_i->_remove_ref();
+    ns.bind("LoggerFilter", lfilterObj);
 #endif
 
     // Obtain a POAManager, and tell the POA to start accepting

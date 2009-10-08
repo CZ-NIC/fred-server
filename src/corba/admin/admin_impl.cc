@@ -42,6 +42,9 @@
 
 #include "rand_string.h"
 
+#ifdef ADIF
+#endif
+
 ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
                              NameService *_ns,
                              Config::Conf& _cfg,
@@ -221,8 +224,16 @@ char* ccReg_Admin_i::createSession(const char* username)
   
   ccReg_Session_i *session = new ccReg_Session_i(session_id, m_connection_string, ns, cfg, user_info);
   m_session_list[session_id] = session; 
+
+#ifdef ADIF
   LOGGER(PACKAGE).notice(boost::format("admin session '%1%' created -- total number of sessions is '%2%'")
       % session_id % m_session_list.size());
+#endif
+
+#ifdef LOGD
+  LOGGER(PACKAGE).notice(boost::format("admin session '%1%' created -- total number of sessions is '%2%'")
+      % session_id % m_session_list.size());
+#endif
 
   return CORBA::string_dup(session_id.c_str());
 }
