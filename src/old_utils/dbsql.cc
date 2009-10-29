@@ -781,9 +781,11 @@ DB::GetDNSKeyId(
         << " AND alg=" << alg
         << " AND key='" << key << "'";
     if (ExecSelect(query.str().c_str())) {
-        id = atoi(GetFieldValue(0, 0));
-        if (id != 0) {
-            LOG(SQL_LOG, "Found dnskey id(%d) with same values", id);
+        if (GetSelectRows() > 0) {
+            id = atoi(GetFieldValue(0, 0));
+            if (id != 0) {
+                LOG(SQL_LOG, "Found dnskey id(%d) with same values", id);
+            }
         }
         FreeSelect();
     }
