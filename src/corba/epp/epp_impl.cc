@@ -1318,7 +1318,7 @@ int ccReg_EPP_i::getZoneMax(
   DB *db,
   const char *fqdn)
 {
-    std::string query("SELECT fqdn FROM zone;");
+    std::string query("SELECT fqdn FROM zone ORDER BY length(fqdn) DESC");
     if (!db->ExecSelect(query.c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve list of fqdn from the database");
         return 0;
