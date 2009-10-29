@@ -1298,7 +1298,7 @@ int ccReg_EPP_i::getZone(
     std::string domain_fqdn(fqdn);
     int pos = getZoneMax(db, fqdn);
     if (pos == 0) {
-        LOGGER(PACKAGE).error("getZone: dot position is zero");
+        LOGGER(PACKAGE).debug("getZone: dot position is zero");
         return 0;
     }
     zoneQuery
