@@ -81,7 +81,7 @@ AC_DEFUN([AX_BOOST_SERIALIZATION],
 			AC_DEFINE(HAVE_BOOST_SERIALIZATION,,[define if the Boost::Serialization library is available])
 			BN=boost_serialization
             if test "x$ax_boost_user_serialization_lib" = "x"; then
-			    for ax_lib in $BN $BN-$CC $BN-$CC-mt $BN-$CC-mt-s $BN-$CC-s \
+			    for ax_lib in $BN $BN-mt $BN-$CC $BN-$CC-mt $BN-$CC-mt-s $BN-$CC-s \
 			    $BN-mgw $BN-mgw $BN-mgw-mt $BN-mgw-mt-s $BN-mgw-s ; do
 			    AC_CHECK_LIB($ax_lib, main, [BOOST_SERIALIZATION_LIB="-l$ax_lib"; AC_SUBST(BOOST_SERIALIZATION_LIB) link_serialization="yes"; break], [link_serialization="no"])
   			done

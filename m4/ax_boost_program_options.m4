@@ -75,7 +75,7 @@ AC_DEFUN([AX_BOOST_PROGRAM_OPTIONS],
 				AC_DEFINE(HAVE_BOOST_PROGRAM_OPTIONS,,[define if the Boost::PROGRAM_OPTIONS library is available])
 				  BN=boost_program_options
                 if test "x$ax_boost_user_program_options_lib" = "x"; then
-				  for ax_lib in $BN $BN-$CC $BN-$CC-mt $BN-$CC-mt-s $BN-$CC-s \
+				  for ax_lib in $BN $BN-mt $BN-$CC $BN-$CC-mt $BN-$CC-mt-s $BN-$CC-s \
                                 lib$BN lib$BN-$CC lib$BN-$CC-mt lib$BN-$CC-mt-s lib$BN-$CC-s \
                                 $BN-mgw $BN-mgw $BN-mgw-mt $BN-mgw-mt-s $BN-mgw-s ; do
 				      AC_CHECK_LIB($ax_lib, main,
