@@ -1564,7 +1564,9 @@ ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
     Database::Query query;
     query.buffer()
         << "SELECT id FROM object_state_request WHERE object_id="
-        << Database::Value(domainId) << " AND state_id=6;";
+        << Database::Value(domainId) << " AND state_id=6 "
+        << "AND (canceled ISNULL OR canceled > CURRENT_TIMESTAMP) "
+        << "AND (valid_to ISNULL OR valid_to > CURRENT_TIMESTAMP)";
     // Database::Connection *conn = m_db_manager.acquire();
     Database::Connection conn = Database::Manager::acquire();
     try {

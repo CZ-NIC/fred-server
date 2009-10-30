@@ -64,25 +64,25 @@ ObjectClient::createObjectStateRequest(
         Register::TID object,
         unsigned state)
 {
-    std::stringstream sql;
-    sql << "SELECT COUNT(*) FROM object_state_request "
-        << "WHERE object_id=" << object << " AND state_id=" << state
-        << " AND canceled ISNULL "
-        << " AND (valid_to ISNULL OR valid_to>CURRENT_TIMESTAMP) ";
-    if (!m_db.ExecSelect(sql.str().c_str()))
-        return -1;
-    if (atoi(m_db.GetFieldValue(0,0)))
-        return -2;
-    m_db.FreeSelect();
-    sql.str("");
-    sql << "INSERT INTO object_state_request "
-        << "(object_id,state_id,crdate, valid_from,valid_to) VALUES "
-        << "(" << object << "," << state
-        << ",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "
-        << "CURRENT_TIMESTAMP + INTERVAL '7 days');";
-    if (!m_db.ExecSQL(sql.str().c_str()))
-        return -1;
-    return 0;
+      std::stringstream sql;
+      sql << "SELECT COUNT(*) FROM object_state_request "
+          << "WHERE object_id=" << object << " AND state_id=" << state
+          << " AND (canceled ISNULL OR canceled > CURRENT_TIMESTAMP) "
+          << " AND (valid_to ISNULL OR valid_to > CURRENT_TIMESTAMP) ";
+      if (!m_db.ExecSelect(sql.str().c_str()))
+          return -1;
+      if (atoi(m_db.GetFieldValue(0,0)))
+          return -2;
+      m_db.FreeSelect();
+      sql.str("");
+      sql << "INSERT INTO object_state_request "
+          << "(object_id,state_id,crdate, valid_from,valid_to) VALUES "
+          << "(" << object << "," << state
+          << ",CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, "
+          << "CURRENT_TIMESTAMP + INTERVAL '7 days');";
+      if (!m_db.ExecSQL(sql.str().c_str()))
+          return -1;
+      return 0;
 }
 
 void
