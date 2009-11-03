@@ -16,7 +16,7 @@ using namespace boost::posix_time;
 using namespace boost::gregorian;
 
 std::string formatDate(date d);
-std::string formatTime(ptime p, bool date);
+std::string formatTime(ptime p, bool date, bool _to_local = false);
 std::string formatMoney(Database::Money m);
 ptime makeBoostTime(const ccReg::DateTimeType& t);
 date makeBoostDate(const ccReg::DateType& t);
@@ -29,9 +29,10 @@ void clearPeriod(ccReg::DateTimeInterval& _v);
 #define DUPSTR(s) CORBA::string_dup(s)
 #define DUPSTRC(s) CORBA::string_dup(s.c_str())
 #define DUPSTRFUN(f) DUPSTRC(f())
-#define DUPSTRDATE(f) DUPSTRC(formatTime(f(),true))
+#define DUPSTRDATE(f) DUPSTRC(formatTime(f(),true,true))
+#define DUPSTRDATE_NOLTCONVERT(f) DUPSTRC(formatTime(f(),true,false))
 #define DUPSTRDATED(f) DUPSTRC(formatDate(f()))
-#define DUPSTRDATESHORT(f) DUPSTRC(formatTime(f(),false))
+#define DUPSTRDATESHORT(f) DUPSTRC(formatTime(f(),false,true))
 #define COLHEAD(x,i,title,tp) \
   (*x)[i].name = DUPSTR(title); \
   (*x)[i].type = Registry::Table::tp 

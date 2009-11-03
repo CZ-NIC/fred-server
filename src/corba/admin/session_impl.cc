@@ -1452,7 +1452,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
 
   detail->id = _invoice->getId();
   detail->zone = _invoice->getZoneId();
-  detail->createTime = DUPSTRDATE(_invoice->getCrDate);
+  detail->createTime = DUPSTRDATE_NOLTCONVERT(_invoice->getCrDate);
   detail->taxDate = DUPSTRDATED(_invoice->getTaxDate);
   detail->fromDate = DUPSTRDATED(_invoice->getAccountPeriod().begin);
   detail->toDate = DUPSTRDATED(_invoice->getAccountPeriod().end);
@@ -1495,7 +1495,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
     detail->paymentActions[n].paidObject.handle = DUPSTRFUN(pa->getObjectName);
     detail->paymentActions[n].paidObject.type   = ccReg::FT_DOMAIN;
 
-    detail->paymentActions[n].actionTime = DUPSTRDATE(pa->getActionTime);
+    detail->paymentActions[n].actionTime = DUPSTRDATE_NOLTCONVERT(pa->getActionTime);
     detail->paymentActions[n].expirationDate = DUPSTRDATED(pa->getExDate);
     detail->paymentActions[n].actionType = pa->getAction();
     detail->paymentActions[n].unitsCount = pa->getUnitsCount();

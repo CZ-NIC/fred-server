@@ -14,25 +14,27 @@ formatDate(date d)
 }
 
 std::string 
-formatTime(ptime p,bool date)
+formatTime(ptime p, bool date, bool _to_local)
 {
   if (p.is_special()) return "";
-  ptime lt = boost::date_time::c_local_adjustor<ptime>::utc_to_local(p);
+  if (_to_local) {
+    p = boost::date_time::c_local_adjustor<ptime>::utc_to_local(p);
+  }
   std::ostringstream stime;
   stime << std::setfill('0') << std::setw(2)
-        << lt.date().day() << "." 
+        << p.date().day() << "." 
         << std::setw(2)
-        << (int)lt.date().month() << "." 
+        << (int)p.date().month() << "." 
         << std::setw(2)
-        << lt.date().year();
+        << p.date().year();
   if (date) 
    stime << " "
          << std::setw(2)
-         << lt.time_of_day().hours() << ":"
+         << p.time_of_day().hours() << ":"
          << std::setw(2)
-         << lt.time_of_day().minutes() << ":"
+         << p.time_of_day().minutes() << ":"
          << std::setw(2)
-         << lt.time_of_day().seconds();
+         << p.time_of_day().seconds();
   return stime.str();
 }
 

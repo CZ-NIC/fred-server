@@ -119,8 +119,9 @@ List::reload(Database::Filters::Union &filter)
 
     Database::SelectQuery object_info_query;
     object_info_query.select()
-        << "t_1.id, t_1.zone, t_2.fqdn, t_1.crdate, t_1.taxdate, "
-        << "t_5.fromdate, t_5.todate, t_4.typ, t_1.prefix, "
+        << "t_1.id, t_1.zone, t_2.fqdn, "
+        << "t_1.crdate::timestamptz AT TIME ZONE 'Europe/Prague', "
+        << "t_1.taxdate, t_5.fromdate, t_5.todate, t_4.typ, t_1.prefix, "
         << "t_1.prefix_type, "
         << "t_1.registrarid, t_1.credit, t_1.price, "
         << "t_1.vat, t_1.total, t_1.totalvat, "
@@ -261,7 +262,8 @@ List::reload(Database::Filters::Union &filter)
             Database::SelectQuery actionQuery;
             actionQuery.select()
                 << "tmp.id, SUM(ipm.price), i.vat, o.name, "
-                << "ior.crdate, ior.exdate, ior.operation, ior.period, "
+                << "ior.crdate::timestamptz AT TIME ZONE 'Europe/Prague', "
+                << "ior.exdate, ior.operation, ior.period, "
                 << "CASE "
                 << "  WHEN ior.period = 0 THEN 0 "
                 << "  ELSE SUM(ipm.price) * 12 / ior.period END, "
