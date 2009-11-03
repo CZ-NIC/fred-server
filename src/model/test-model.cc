@@ -9,10 +9,12 @@
 #include <boost/archive/xml_oarchive.hpp>
 
 #include "settings.h"
-#include "keyset_filter.h"
+//#include "keyset_filter.h"
 #include "model_filters.h"
 #include "db/database.h"
 #include "log/logger.h"
+
+#include "registrar_filter.h"
 
 namespace Database {
   typedef Factory::Simple<PSQLConnection> ConnectionFactory;
@@ -38,7 +40,7 @@ Connection* init_connection() {
 
   Connection *conn;
   try {
-  	conn = new Connection("host=localhost dbname=fred user=fred port=22345");
+  	conn = new Connection("host=localhost dbname=fred user=fred port=5432");
   } catch (Database::Exception& ex) {
 	std::cout << "Error while connecting to the database " << ex.what() << std::endl;
 	return NULL;
@@ -49,6 +51,9 @@ Connection* init_connection() {
 
 void exec_and_print(SelectQuery& _q, Union& _f) {
   _f.serialize(_q);
+
+  std::cout << "\n" << "exec_and_print: " << _q.str() << "\n"
+  << std::endl;
 
   std::auto_ptr<Connection> conn(init_connection());
   if(conn.get() == NULL) return;
@@ -71,9 +76,38 @@ int main(int argc, char *argv[]) {
     Logging::Manager::instance_ref().get("db").setLevel(Logging::Log::LL_DEBUG);
     Logging::Manager::instance_ref().get("tracer").addHandler(Logging::Log::LT_CONSOLE);
     Logging::Manager::instance_ref().get("tracer").setLevel(Logging::Log::LL_TRACE);
+    Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_CONSOLE);
+    Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
 
+    //Registrar Test
     SelectQuery sq;
     Union uf;
+
+    Registrar *r = new RegistrarImpl(true);
+    Zone &z = r->addActiveZone();
+    z.addFqdn().setValue("*.arpa");
+
+
+    SelectQuery *sq1 = new SelectQuery;
+    //r->addHandle() = "*";
+
+
+    sq1->addSelect("id name handle url", r->joinRegistrarTable());
+
+    uf.clear();
+    uf.addFilter(r);
+    //uf.addFilter(z);
+    uf.addQuery(sq1);
+
+    //sq.addSelect("id name handle url",r->joinRegistrarTable());
+
+    exec_and_print(sq, uf);
+    return 0;
+
+    //Registrar Test End
+
+    //SelectQuery sq;
+    //Union uf;
     //
     //		EppAction *ef = new EppActionImpl();
     //		Object *of = ef->addObject();
@@ -98,7 +132,7 @@ int main(int argc, char *argv[]) {
     //		sq.clear();
 
 
-    SelectQuery *sq1; //, *sq2;
+    //SelectQuery *sq1; //, *sq2;
     // sq1 = new SelectQuery();
     // sq2 = new SelectQuery();
 
@@ -268,7 +302,7 @@ int main(int argc, char *argv[]) {
 
     return 1;
 */
-
+/*Req1
 // logging
     RequestImpl *le = new RequestImpl(true);
 
@@ -288,7 +322,7 @@ int main(int argc, char *argv[]) {
 
     uf.addFilter(le);
     sq1 = new SelectQuery();
-
+*/
 /*
     pv.addRequestProperty().addName().setValue("search axis");
     pv.addValue().setValue("registrant");
@@ -306,7 +340,7 @@ int main(int argc, char *argv[]) {
 			Column("id", le->joinTable("property"))
 			));
 */
-
+/*Req2
     sq1->addSelect("name", pv.joinRequestPropertyTable());
     sq1->addSelect("value", pv.joinRequestPropertyValueTable());
 
@@ -317,7 +351,7 @@ int main(int argc, char *argv[]) {
     exec_and_print(sq, uf);
 
     return 0;
-
+*/
 
 // ------------- contact
 
@@ -355,6 +389,7 @@ int main(int argc, char *argv[]) {
 
     return 1;
 */
+/*ofstream
 
     std::ofstream ofsd;
     ofsd.open("test-d-filter.xml", std::ios_base::trunc);
@@ -387,9 +422,9 @@ int main(int argc, char *argv[]) {
     exec_and_print(sq, uf2);
 
     return 1;
-
+*/
     /*************************************************************************/
-
+/*Contact
     Contact *c1 = new ContactImpl();
     c1->addName().setValue("Fred");
 
@@ -410,7 +445,7 @@ int main(int argc, char *argv[]) {
     uf.addQuery(sq1);
 
     exec_and_print(sq, uf);
-
+*/
 /*
     boost::archive::xml_iarchive load_c(ifsc);
     load_c >> BOOST_SERIALIZATION_NVP(uf);

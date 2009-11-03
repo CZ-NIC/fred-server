@@ -33,12 +33,28 @@ ccReg_Registrars_i::getColumnHeaders()
   Logging::Context ctx(base_context_);
 
   Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
-  ch->length(5);
+  ch->length(19);
   COLHEAD(ch,0,"Name",CT_OTHER);
   COLHEAD(ch,1,"Handle",CT_OID); 
   COLHEAD(ch,2,"URL",CT_OTHER);
   COLHEAD(ch,3,"Mail",CT_OTHER);
   COLHEAD(ch,4,"Credit",CT_OTHER);
+  COLHEAD(ch,5,"Ico",CT_OTHER);
+  COLHEAD(ch,6,"Dic",CT_OTHER);
+  COLHEAD(ch,7,"VarSymbol",CT_OTHER);
+  COLHEAD(ch,8,"Vat",CT_OTHER);
+  COLHEAD(ch,9,"Organization",CT_OTHER);
+  COLHEAD(ch,10,"Street1",CT_OTHER);
+  COLHEAD(ch,11,"Street2",CT_OTHER);
+  COLHEAD(ch,12,"Street3",CT_OTHER);
+  COLHEAD(ch,13,"City",CT_OTHER);
+  COLHEAD(ch,14,"Province",CT_OTHER);
+  COLHEAD(ch,15,"PostalCode",CT_OTHER);
+  COLHEAD(ch,16,"Country",CT_OTHER);
+  COLHEAD(ch,17,"Telephone",CT_OTHER);
+  COLHEAD(ch,18,"Fax",CT_OTHER);
+
+
   return ch;
 }
 
@@ -51,7 +67,7 @@ ccReg_Registrars_i::getRow(CORBA::Short row)
   const Register::Registrar::Registrar *r = rl->get(row);
   if (!r) throw ccReg::Table::INVALID_ROW();
   Registry::TableRow *tr = new Registry::TableRow;
-  tr->length(5);
+  tr->length(19);
 
   MAKE_OID(oid_handle, r->getId(), C_STR(r->getHandle()), FT_REGISTRAR)
 
@@ -60,6 +76,21 @@ ccReg_Registrars_i::getRow(CORBA::Short row)
   (*tr)[2] <<= C_STR(r->getURL());
   (*tr)[3] <<= C_STR(r->getEmail());
   (*tr)[4] <<= C_STR(r->getCredit());
+  (*tr)[5] <<= C_STR(r->getIco());
+  (*tr)[6] <<= C_STR(r->getDic());
+  (*tr)[7] <<= C_STR(r->getVarSymb());
+  (*tr)[8] <<= C_STR(r->getVat() ? "YES" : "NO" );
+  (*tr)[9] <<= C_STR(r->getOrganization());
+  (*tr)[10] <<= C_STR(r->getStreet1());
+  (*tr)[11] <<= C_STR(r->getStreet2());
+  (*tr)[12] <<= C_STR(r->getStreet3());
+  (*tr)[13] <<= C_STR(r->getCity());
+  (*tr)[14] <<= C_STR(r->getProvince());
+  (*tr)[15] <<= C_STR(r->getPostalCode());
+  (*tr)[16] <<= C_STR(r->getCountry());
+  (*tr)[17] <<= C_STR(r->getTelephone());
+  (*tr)[18] <<= C_STR(r->getFax());
+
   return tr;
 }
 
@@ -86,6 +117,48 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
       break;
     case 4:
       rl->sort(Register::Registrar::MT_CREDIT, dir);
+      break;
+    case 5:
+      rl->sort(Register::Registrar::MT_ICO, dir);
+      break;
+    case 6:
+      rl->sort(Register::Registrar::MT_DIC, dir);
+      break;
+    case 7:
+      rl->sort(Register::Registrar::MT_VARSYMB, dir);
+      break;
+    case 8:
+      rl->sort(Register::Registrar::MT_VAT, dir);
+      break;
+    case 9:
+      rl->sort(Register::Registrar::MT_ORGANIZATION, dir);
+      break;
+    case 10:
+      rl->sort(Register::Registrar::MT_STREET1, dir);
+      break;
+    case 11:
+      rl->sort(Register::Registrar::MT_STREET2, dir);
+      break;
+    case 12:
+      rl->sort(Register::Registrar::MT_STREET3, dir);
+      break;
+    case 13:
+      rl->sort(Register::Registrar::MT_CITY, dir);
+      break;
+    case 14:
+      rl->sort(Register::Registrar::MT_PROVINCE, dir);
+      break;
+    case 15:
+      rl->sort(Register::Registrar::MT_POSTALCODE, dir);
+      break;
+    case 16:
+      rl->sort(Register::Registrar::MT_COUNTRY, dir);
+      break;
+    case 17:
+      rl->sort(Register::Registrar::MT_TELEPHONE, dir);
+      break;
+    case 18:
+      rl->sort(Register::Registrar::MT_FAX, dir);
       break;
   }
 }

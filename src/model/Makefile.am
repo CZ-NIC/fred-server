@@ -46,6 +46,10 @@ libmodel_a_SOURCES = object_registry_filter.cc 			\
 					 union_filter.h 					\
 					 zone_filter.cc 					\
 					 zone_filter.h						\
+					 zone_ns_filter.cc	\
+					 zone_ns_filter.h	\
+					 zone_soa_filter.cc	\
+					 zone_soa_filter.h	\
 					 log_filter.h 						\
 					 model_filters.h
 

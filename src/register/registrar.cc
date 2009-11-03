@@ -121,13 +121,15 @@ public:
 };//class ACLImpl
 
 
+typedef std::map<std::string, Database::ID> ZoneIdMap;
+
 class RegistrarImpl : public Register::CommonObjectImplNew,
                       virtual public Registrar,
                       private ModelRegistrar
 {
   typedef std::vector<boost::shared_ptr<ACLImpl> > ACLList;
   typedef ACLList::iterator ACLListIter;
-
+  //ZoneIdMap * zone_id_map_ptr;
   unsigned long credit; ///< DB: registrar.credit
 
   ACLList acl; ///< access control
@@ -416,6 +418,21 @@ public:
 	}//catch (...)
   }//save
   
+  virtual unsigned long getZonesNumber()
+  {
+		try
+		{
+			Database::Connection conn = Database::Manager::acquire();
+		}//try
+		catch (...)
+		{
+		 LOGGER(PACKAGE).error("getZonesNumber: an error has occured");
+		 throw SQL_ERROR();
+		}//catch (...)
+	  return 0;
+  }//getZonesNumber
+
+
   void putACL(TID _id,
               const std::string& certificateMD5,
               const std::string& password)
@@ -449,6 +466,7 @@ class RegistrarListImpl : public Register::CommonListImplNew,
   TID idFilter;
   std::string zoneFilter;
   long long ptr_idx_;//from CommonListImpl
+  std::map<std::string, Database::ID> zone_id_map;
 public:
   RegistrarListImpl() :
     CommonListImplNew(), idFilter(0) {
@@ -1491,7 +1509,7 @@ public:
 		}
 		std::stringstream sql;
 		sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate,lastdate) "
-			<< "SELECT r.id,z.id," << fromStr << "," << toStr << " FROM ("
+			<< "SELECT r.id,z.id, " << fromStr << "," << toStr << " FROM ("
 			<< "SELECT id FROM registrar WHERE handle='" << registrarHandle
 			<< "') r " << "JOIN (SELECT id FROM zone WHERE fqdn='" << zone
 			<< "') z ON (1=1) " << "LEFT JOIN registrarinvoice ri ON "
@@ -1507,6 +1525,52 @@ public:
           throw SQL_ERROR();
       }//catch (...)
   }//addRegistrarZone
+
+  virtual void updateRegistrarZone(
+          const TID& id,
+          const Database::Date &fromDate,
+          const Database::Date &toDate) throw (SQL_ERROR)
+  {
+      try
+      {
+      	Database::Connection conn = Database::Manager::acquire();
+
+		std::string fromStr;
+		std::string toStr;
+
+		if (fromDate != Database::Date())
+		{
+			fromStr = "'" + fromDate.to_string() + "'";
+		}
+		else
+		{
+			fromStr = "CURRENT_DATE";
+		}
+		if (toDate != Database::Date())
+		{
+			toStr = "'" + toDate.to_string() + "'";
+		}
+		else
+		{
+			toStr = "NULL";
+		}
+		std::stringstream sql;
+
+		sql << "UPDATE registrarinvoice SET fromdate = date " << fromStr
+			<< ",todate =  date " << toStr
+			<< " WHERE id = " << id << ";";
+
+		Database::Transaction tx(conn);
+		conn.exec(sql.str());
+		tx.commit();
+      }//try
+      catch (...)
+      {
+          LOGGER(PACKAGE).error("updateRegistrarZone: an error has occured");
+          throw SQL_ERROR();
+      }//catch (...)
+  }//updateRegistrarZone
+
 }; // class ManagerImpl
 
 Manager *Manager::create(DB * db)

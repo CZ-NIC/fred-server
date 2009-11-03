@@ -3,6 +3,9 @@
 
 #include "db/query/base_filters.h"
 
+#include "zone_ns_filter.h"
+
+
 namespace Database {
 namespace Filters {
 
@@ -20,6 +23,7 @@ public:
     virtual Value<int> &addValPeriod() = 0;
     virtual Value<int> &addDotsMax() = 0;
     virtual Value<bool> &addEnumZone() = 0;
+    virtual ZoneNs& addZoneNs() = 0;
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive& _ar,
@@ -43,6 +47,7 @@ public:
     virtual Value<int> &addValPeriod();
     virtual Value<int> &addDotsMax();
     virtual Value<bool> &addEnumZone();
+    virtual ZoneNs& addZoneNs();
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive& _ar,

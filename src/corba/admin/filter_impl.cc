@@ -341,12 +341,25 @@ public:                                                         \
 
 COMPOUND_CLASS(Registrar, Registrar, Compound,
     FILTER_ADD(Id, addId);
+    FILTER_ADD(Str, addIco);
+    FILTER_ADD(Str, addDic);
+    FILTER_ADD(Str, addVarSymbol);
+    FILTER_ADD(Bool, addVat);
     FILTER_ADD(Str, addHandle);
     FILTER_ADD(Str, addName);
     FILTER_ADD(Str, addOrganization);
+    FILTER_ADD(Str, addStreet);
     FILTER_ADD(Str, addCity);
-    FILTER_ADD(Str, addCountry);
+    FILTER_ADD(Str, addStateOrProvince);
+    FILTER_ADD(Str, addPostalCode);
+    FILTER_ADD(Str, addCountryCode);
+    FILTER_ADD(Str, addTelephone);
+    FILTER_ADD(Str, addFax);
+    FILTER_ADD(Str, addEmail);
+    FILTER_ADD(Str, addUrl);
+    FILTER_ADD(Zone, addActiveZone);
 );
+
 
 COMPOUND_CLASS(ObjectState, ObjectState, Compound,
     FILTER_ADD(Id, addStateId);
@@ -509,7 +522,40 @@ COMPOUND_CLASS(StatementItem, StatementItem, Compound,
     FILTER_ADD(Id, addInvoiceId);
     FILTER_ADD(Str, addAccountName);
     FILTER_ADD(DateTime, addCrTime);
+
 );
+
+
+COMPOUND_CLASS(ZoneNs, ZoneNs , Compound,
+    FILTER_ADD(Id, addId);
+    FILTER_ADD(Id, addZoneId);
+    FILTER_ADD(Str, addFqdn);
+    FILTER_ADD(Str, addAddrs);
+);
+
+COMPOUND_CLASS(Zone, Zone , Compound,
+    FILTER_ADD(Id, addId);
+    FILTER_ADD(Str, addFqdn);
+    FILTER_ADD(Int, addExPeriodMin);
+    FILTER_ADD(Int, addExPeriodMax);
+    FILTER_ADD(Int, addValPeriod);
+    FILTER_ADD(Int, addDotsMax);
+    FILTER_ADD(Bool, addEnumZone);
+    FILTER_ADD(ZoneNs, addZoneNs);
+);
+
+COMPOUND_CLASS(ZoneSoa, ZoneSoa , Zone,
+    FILTER_ADD(Id, addZoneId);
+    FILTER_ADD(Int, addTtl);
+    FILTER_ADD(Str, addHostmaster);
+    FILTER_ADD(Int, addSerial);
+    FILTER_ADD(Int, addRefresh);
+    FILTER_ADD(Int, addUpdateRetr);
+    FILTER_ADD(Int, addExpiry);
+    FILTER_ADD(Int, addMinimum);
+    FILTER_ADD(Str, addNsFqdn);
+);
+
 
 FilterIteratorImpl::FilterIteratorImpl() :
   i(flist.end()) {
@@ -591,6 +637,11 @@ ITERATOR_ADD_E_METHOD_IMPL(Request,Request);
 ITERATOR_ADD_E_METHOD_IMPL(Session,Session);
 ITERATOR_ADD_E_METHOD_IMPL(StatementItem, StatementItem);
 
+ITERATOR_ADD_E_METHOD_IMPL(ZoneSoa, ZoneSoa);
+ITERATOR_ADD_E_METHOD_IMPL(ZoneNs, ZoneNs);
+ITERATOR_ADD_E_METHOD_IMPL(Zone, Zone);
+
+
 #define ITERATOR_ADD_FILTER_METHOD_IMPL(ct,dt) \
   { Database::Filters::dt *rf = dynamic_cast<Database::Filters::dt *>(f); \
     if (rf) { addF(new Filter##ct##Impl(rf)); return; } }
@@ -630,5 +681,12 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestServiceType,RequestServiceType);
   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestActionType,RequestActionType);
   ITERATOR_ADD_FILTER_METHOD_IMPL(StatementItem, StatementItem);
+
+  ITERATOR_ADD_FILTER_METHOD_IMPL(ZoneSoa, ZoneSoa);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(ZoneNs, ZoneNs);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(Zone, Zone);
+
+
+
 }
 

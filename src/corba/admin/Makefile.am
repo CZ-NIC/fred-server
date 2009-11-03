@@ -52,6 +52,8 @@ libadmin_impl_a_SOURCES = admin_impl.cc                 \
 						  usertype_conv.h				\
                           common.cc                     \
                           common.h 						\
+                          zone_impl.cc			\
+                          zone_impl.h			\
 						  bankinginvoicing_impl.cc		\
 						  bankinginvoicing_impl.h
 

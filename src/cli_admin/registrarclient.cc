@@ -88,7 +88,7 @@ RegistrarClient::list()
         regFilter->addEmail().setValue(
                 m_conf.get<std::string>(EMAIL_NAME));
     if (m_conf.hasOpt(COUNTRY_NAME))
-        regFilter->addCountry().setValue(
+        regFilter->addCountryCode().setValue(
                 m_conf.get<std::string>(COUNTRY_NAME));
 
     // apply_ID(regFilter);

@@ -54,6 +54,12 @@ public:
   ccReg::Filters::RequestActionType_ptr addE(Database::Filters::RequestActionType *f);
   ccReg::Filters::StatementItem_ptr addE(Database::Filters::StatementItem *f);
 
+
+  ccReg::Filters::ZoneSoa_ptr addE(Database::Filters::ZoneSoa *f);
+  ccReg::Filters::ZoneNs_ptr addE(Database::Filters::ZoneNs *f);
+  ccReg::Filters::Zone_ptr addE(Database::Filters::Zone *f);
+
+
   void addFilter(Database::Filters::Filter* f);
 
   void clearF();

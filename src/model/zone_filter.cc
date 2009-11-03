@@ -4,8 +4,8 @@ namespace Database {
 namespace Filters {
 
 ZoneImpl::ZoneImpl(bool set_active)
+	: Compound()
 {
-    Compound();
     setName("Zone");
     active = set_active;
 }
@@ -81,6 +81,14 @@ ZoneImpl::addEnumZone()
     tmp->setName("EnumZone");
     return *tmp;
 }
+
+ZoneNs& ZoneImpl::addZoneNs() {
+  ZoneNs *tmp = new ZoneNsImpl();
+  tmp->joinOn(new Join(Column("id", joinZoneTable()), SQL_OP_EQ, Column("zone", tmp->joinZoneNsTable())));
+  add(tmp);
+  return *tmp;
+}
+
 
 } // namespace Filters
 } // namespace Database

@@ -33,6 +33,20 @@ enum MemberType {
   MT_URL, ///< url
   MT_MAIL, ///< email address
   MT_CREDIT, ///< credit
+  MT_ICO, ///< ico
+  MT_DIC, ///< dic
+  MT_VARSYMB, ///< varsymbol
+  MT_VAT, ///< vat
+  MT_ORGANIZATION, ///< organization
+  MT_STREET1, ///< address part
+  MT_STREET2, ///< address part
+  MT_STREET3, ///< address part
+  MT_CITY, ///< city
+  MT_PROVINCE, ///< state or province
+  MT_POSTALCODE, ///< postal code
+  MT_COUNTRY, ///< country code
+  MT_TELEPHONE, ///< telephone
+  MT_FAX, ///< fax
 };
 
 
@@ -161,6 +175,9 @@ public:
   virtual void clearACLList() = 0;
   /// Save changes to database
   virtual void save() throw (SQL_ERROR) = 0;
+
+  /// Zones number for credit by zone
+  virtual unsigned long getZonesNumber() = 0;
 
 };
 
@@ -357,6 +374,10 @@ public:
   virtual void addRegistrarZone(
           const std::string& registrarHandle, 
           const std::string zone,
+          const Database::Date &fromDate,
+          const Database::Date &toDate) throw (SQL_ERROR) = 0;
+  virtual void updateRegistrarZone(
+          const TID& id,
           const Database::Date &fromDate,
           const Database::Date &toDate) throw (SQL_ERROR) = 0;
   /// Factory method

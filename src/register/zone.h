@@ -14,7 +14,7 @@ namespace Register
   namespace Zone
   {
       enum Operation {
-          CREATE, 
+          CREATE,
           RENEW
       };
 
@@ -35,7 +35,7 @@ namespace Register
       /// suffix of domain name for this zone
       virtual const std::string& getFqdn() const = 0;
       ///< is zone for enum domains?
-      virtual bool isEnumZone() const = 0;     
+      virtual bool isEnumZone() const = 0;
       ///< return maximal level of domains in this zone
       virtual unsigned getMaxLevel() const = 0;
     };
@@ -59,7 +59,7 @@ namespace Register
       virtual bool checkEnumDomainSuffix(const std::string& fqdn) const = 0;
       /// translate phone number into domain name
       virtual std::string makeEnumDomain(const std::string& number)
-        const throw (NOT_A_NUMBER) = 0;      
+        const throw (NOT_A_NUMBER) = 0;
       /// return default enum country prefix e.g '0.2.4'
       virtual const std::string& getDefaultEnumSuffix() const = 0;
       /// return default domain suffix e.g. 'cz'

@@ -73,7 +73,25 @@ public:
   ccReg::Registrar* getRegistrarByHandle(const char* handle)
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
   void putRegistrar(const ccReg::Registrar& regData);
-  
+
+  ///add registrar to zone
+
+  void addRegistrarToZone
+	  (
+		  const char* registrar_handle /// registrar handle
+		  , const char* zone_fqdn ///zone name for which has registrar an access
+		  , const char* fromdate ///date when began registrar work in a zone
+		  , const char* todate ///after this date registrar is not allowed to register
+	  );
+
+  ///update registrar access to zone
+  void updateRegistrarAccessToZone
+	  (
+			  ccReg::TID id /// record id
+			  , const char* fromdate ///date when began registrar work in a zone
+			  , const char* todate ///after this date registrar is not allowed to register
+	  );
+
   // contact detail
   void fillContact(ccReg::ContactDetail* cv, Register::Contact::Contact* c);
   ccReg::ContactDetail* getContactByHandle(const char* handle)
