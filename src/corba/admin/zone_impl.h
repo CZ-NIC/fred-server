@@ -30,9 +30,22 @@ public:
     		, CORBA::Long minimum
     		, const char* ns_fqdn
     );
-    bool updateZone
+    bool updateZoneByFqdn
     (
     		const char* fqdn
+    		, CORBA::Long ex_period_min
+    		, CORBA::Long ex_period_max
+    		, CORBA::Long ttl
+    		, const char* hostmaster
+    		, CORBA::Long refresh
+    		, CORBA::Long update_retr
+    		, CORBA::Long expiry
+    		, CORBA::Long minimum
+    		, const char* ns_fqdn
+    );
+    bool updateZoneById
+    (		ccReg::TID id
+    		, const char* fqdn
     		, CORBA::Long ex_period_min
     		, CORBA::Long ex_period_max
     		, CORBA::Long ttl
@@ -56,31 +69,6 @@ public:
     		, const char* fqdn
     		, const char* addr
     );
-    bool createZoneSoa
-    (
-    		const char* zone_fqdn
-    		, CORBA::Long ttl
-    		, const char* hostmaster
-    		, CORBA::Long serial
-    		, CORBA::Long refresh
-    		, CORBA::Long update_retr
-    		, CORBA::Long expiry
-    		, CORBA::Long minimum
-    		, const char* ns_fqdn
-    );
-    bool updateZoneSoa
-    (
-    		const char* zone_fqdn
-    		, CORBA::Long ttl
-    		, const char* hostmaster
-    		, CORBA::Long serial
-    		, CORBA::Long refresh
-    		, CORBA::Long update_retr
-    		, CORBA::Long expiry
-    		, CORBA::Long minimum
-    		, const char* ns_fqdn
-    );
-
 };//class ccReg_ZoneIf_i
 
 #endif //ZONE_IMPL_H_

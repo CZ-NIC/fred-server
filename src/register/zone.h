@@ -70,7 +70,7 @@ namespace Register
       virtual const Zone* findZoneId(const std::string& fqdn) const = 0;
       /// check fqdn agains list of toplevel domain (true=found) 
       virtual bool checkTLD(const DomainName& domain) const = 0;
-      /// add zone
+      /// add zone with zone_soa record
       virtual void addZone(
               const std::string& fqdn,
               int ex_period_min=12,
@@ -83,11 +83,64 @@ namespace Register
               int minimum=7200,
               const std::string &ns_fqdn="localhost")
         throw (SQL_ERROR, ALREADY_EXISTS) = 0;
+      /// add only zone record
+      virtual void addOnlyZoneRecord(
+              const std::string& fqdn,
+              int ex_period_min=12,
+              int ex_period_max=120)
+        throw (SQL_ERROR, ALREADY_EXISTS) = 0;
+      /// add only zone_soa record identified by fqdn
+      virtual void addOnlyZoneSoaRecordByFqdn(
+              const std::string& fqdn,
+              int ttl=18000,
+              const std::string &hostmaster="hostmaster@localhost",
+              int refresh=10600,
+              int update_retr=3600,
+              int expiry=1209600,
+              int minimum=7200,
+              const std::string &ns_fqdn="localhost")
+      throw (SQL_ERROR, ALREADY_EXISTS, NOT_FOUND) = 0;
+      /// update zone and zone_soa record identified by fqdn
+      virtual void updateZoneByFqdn(
+              const std::string& fqdn,
+              int ex_period_min,
+              int ex_period_max,
+              int ttl,
+              const std::string &hostmaster,
+              int refresh,
+              int update_retr,
+              int expiry,
+              int minimum,
+              const std::string &ns_fqdn)
+        throw (SQL_ERROR, NOT_FOUND) = 0;
+      /// update zone and zone_soa record identified by fqdn
+      virtual void updateZoneById(
+    		  const TID id,
+              const std::string& fqdn,
+              int ex_period_min,
+              int ex_period_max,
+              int ttl,
+              const std::string &hostmaster,
+              int refresh,
+              int update_retr,
+              int expiry,
+              int minimum,
+              const std::string &ns_fqdn)
+        throw (SQL_ERROR) = 0;
+
       virtual void addZoneNs(
               const std::string &zone,
               const std::string &fqdn="localhost",
               const std::string &addr="")
-          throw (SQL_ERROR) = 0;
+          throw (SQL_ERROR,NOT_FOUND) = 0;
+
+      virtual void updateZoneNsById(
+    		  const TID id,
+              const std::string &zone,
+              const std::string &fqdn,
+              const std::string &addr)
+          throw (SQL_ERROR,NOT_FOUND) = 0;
+
       virtual void addPrice(
               int zone,
               Operation operation,

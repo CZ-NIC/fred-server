@@ -277,6 +277,7 @@ namespace Register
           }//catch (...)
       }//checkTLD
 
+      /// add zone with zone_soa record
       virtual void addZone(
               const std::string& fqdn,
               int ex_period_min,
@@ -303,13 +304,11 @@ namespace Register
 
 			if (count != 0)
 			{
-				LOGGER(PACKAGE).error("Zone already exists.");
+				LOGGER(PACKAGE).notice("Zone already exists.");
 				throw ALREADY_EXISTS();
 			}
 
 			unsigned dots = 1;
-			//for (unsigned i=0; i<fqdn.size(); i++)
-			//  if (fqdn[i] == '.') dots++;
 			bool enumZone = checkEnumDomainSuffix(fqdn);
 			if (enumZone) dots = 9;
 
@@ -345,24 +344,257 @@ namespace Register
         }//catch (...)
       }//addZone
 
+      /// add only zone record
+      virtual void addOnlyZoneRecord(
+              const std::string& fqdn,
+              int ex_period_min=12,
+              int ex_period_max=120)
+        throw (SQL_ERROR, ALREADY_EXISTS)
+		{
+		try
+		{
+			Database::Connection conn = Database::Manager::acquire();
+
+			std::stringstream sql;
+			sql << "SELECT COUNT(*) FROM zone WHERE fqdn='" << fqdn << "'";
+
+			Database::Result res = conn.exec(sql.str());
+
+			unsigned count = res[0][0];
+
+			if (count != 0)
+			{
+				LOGGER(PACKAGE).notice("Zone already exists.");
+				throw ALREADY_EXISTS();
+			}
+
+			unsigned dots = 1;
+			bool enumZone = checkEnumDomainSuffix(fqdn);
+			if (enumZone) dots = 9;
+
+			Database::Transaction tx(conn);
+
+			ModelZone zn;
+			zn.setFqdn(fqdn);
+			zn.setExPeriodMax(ex_period_max);
+			zn.setExPeriodMin(ex_period_min);
+			zn.setValPeriod(enumZone ? 6 : 0);
+			zn.setDotsMax(static_cast<int>(dots));
+			zn.setEnumZone(enumZone);
+			zn.insert();
+
+			tx.commit();
+
+		}//try
+		catch (...)
+		{
+			LOGGER(PACKAGE).error("addOnlyZoneRecord: an error has occured");
+			throw SQL_ERROR();
+		}//catch (...)
+		}//addOnlyZoneRecord
+
+      /// add only zone_soa record identified by fqdn
+      virtual void addOnlyZoneSoaRecordByFqdn(
+              const std::string& fqdn,
+              int ttl=18000,
+              const std::string &hostmaster="hostmaster@localhost",
+              int refresh=10600,
+              int update_retr=3600,
+              int expiry=1209600,
+              int minimum=7200,
+              const std::string &ns_fqdn="localhost")
+		throw (SQL_ERROR, ALREADY_EXISTS, NOT_FOUND)
+		{
+			try
+			{
+				Database::Connection conn = Database::Manager::acquire();
+
+				std::stringstream sql_zone;
+				sql_zone << "SELECT id FROM zone WHERE fqdn='" << fqdn << "'";
+				Database::Result res_zone = conn.exec(sql_zone.str());
+				if (res_zone.size() < 1)
+				{
+					LOGGER(PACKAGE).notice("Zone not found.");
+					throw NOT_FOUND();//zone not found
+				}
+				const TID id = res_zone[0][0];
+
+				std::stringstream sql_zone_soa;
+				sql_zone_soa << "SELECT COUNT(*) FROM zone_soa WHERE zone = " << id ;
+				Database::Result res_zone_soa = conn.exec(sql_zone_soa.str());
+				unsigned long soa_count=9999;
+				if (res_zone_soa.size() != 1)
+				{
+					LOGGER(PACKAGE).error("addOnlyZoneSoaRecordByFqdn: an error has occured");
+					throw SQL_ERROR();
+				}
+
+				if ((soa_count = res_zone_soa[0][0]) == 1)
+				{
+					LOGGER(PACKAGE).notice("Zone already exists.");
+					throw ALREADY_EXISTS();//zone already exists
+				}
+
+				Database::Transaction tx(conn);
+
+				ModelZone zn;
+				zn.setId(id);
+
+				ModelZoneSoa zsa(zn);
+				zsa.setTtl(ttl);
+				zsa.setHostmaster(hostmaster);
+				//zsa.setSerial() is null
+				zsa.setRefresh(refresh);
+				zsa.setUpdateRetr(update_retr);
+				zsa.setExpiry(expiry);
+				zsa.setMinimum(minimum);
+				zsa.setNsFqdn(ns_fqdn);
+				zsa.insert();
+
+				tx.commit();
+
+			}//try
+			catch (...)
+			{
+				LOGGER(PACKAGE).error("addOnlyZoneSoaRecordByFqdn: an error has occured");
+				throw SQL_ERROR();
+			}//catch (...)
+		}//addOnlyZoneSoaRecordByFqdn
+
+      /// update zone and zone_soa record identified by fqdn
+      virtual void updateZoneByFqdn(
+              const std::string& fqdn,
+              int ex_period_min,
+              int ex_period_max,
+              int ttl,
+              const std::string &hostmaster,
+              int refresh,
+              int update_retr,
+              int expiry,
+              int minimum,
+              const std::string &ns_fqdn)
+		throw (SQL_ERROR, NOT_FOUND)
+      {
+        try
+        {
+        	Database::Connection conn = Database::Manager::acquire();
+
+        	std::stringstream sql_zone;
+			sql_zone << "SELECT id FROM zone WHERE fqdn='" << fqdn << "'";
+			Database::Result res_zone = conn.exec(sql_zone.str());
+			if (res_zone.size() < 1)
+				throw NOT_FOUND();//zone not found
+			const TID id = res_zone[0][0];
+
+        	std::stringstream sql_zone_soa;
+			sql_zone_soa << "SELECT COUNT(*) FROM zone_soa WHERE zone = " << id ;
+			Database::Result res_zone_soa = conn.exec(sql_zone_soa.str());
+			if (res_zone_soa.size() < 1)
+				throw NOT_FOUND();//zone not found
+			const TID soa_count = res_zone_soa[0][0];
+
+			updateZoneById
+			(
+				id,
+				fqdn,
+				ex_period_min,
+				ex_period_max,
+				ttl,
+				hostmaster,
+				refresh,
+				update_retr,
+				expiry,
+				minimum,
+				ns_fqdn
+			);
+
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("updateZoneByFqdn: an error has occured");
+            throw SQL_ERROR();
+        }//catch (...)
+      }//updateZoneByFqdn
+
+      /// update zone and zone_soa record identified by id
+      virtual void updateZoneById(
+    		  const TID id,
+              const std::string& fqdn,
+              int ex_period_min,
+              int ex_period_max,
+              int ttl,
+              const std::string &hostmaster,
+              int refresh,
+              int update_retr,
+              int expiry,
+              int minimum,
+              const std::string &ns_fqdn)
+		throw (SQL_ERROR)
+      {
+        try
+        {
+        	Database::Connection conn = Database::Manager::acquire();
+
+			unsigned dots = 1;
+			bool enumZone = checkEnumDomainSuffix(fqdn);
+			if (enumZone) dots = 9;
+
+			Database::Transaction tx(conn);
+
+			ModelZone zn;
+			zn.setId(id);
+			zn.setFqdn(fqdn);
+			zn.setExPeriodMax(ex_period_max);
+			zn.setExPeriodMin(ex_period_min);
+			zn.setValPeriod(enumZone ? 6 : 0);
+			zn.setDotsMax(static_cast<int>(dots));
+			zn.setEnumZone(enumZone);
+			zn.update();
+
+			ModelZoneSoa zsa(zn);
+			zsa.setTtl(ttl);
+			zsa.setHostmaster(hostmaster);
+			//zsa.setSerial() is null
+			zsa.setRefresh(refresh);
+			zsa.setUpdateRetr(update_retr);
+			zsa.setExpiry(expiry);
+			zsa.setMinimum(minimum);
+			zsa.setNsFqdn(ns_fqdn);
+			zsa.update();
+
+			tx.commit();
+
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("updateZoneById: an error has occured");
+            throw SQL_ERROR();
+        }//catch (...)
+      }//updateZoneById
+
+
       virtual void addZoneNs(
               const std::string &zone,
               const std::string &fqdn,
               const std::string &addr)
-          throw (SQL_ERROR)
+          throw (SQL_ERROR,NOT_FOUND)
       {
           try
           {
-        	  Database::Connection conn = Database::Manager::acquire();
+        	Database::Connection conn = Database::Manager::acquire();
 
-			  std::stringstream sql;
-			  sql << "INSERT INTO zone_ns (zone, fqdn, addrs) "
-				  << "SELECT z.id, '" << fqdn << "','{" << addr << "}' "
-				  << "FROM ZONE z WHERE z.fqdn='" << zone << "'";
+  			std::stringstream sql_zone;
+  			sql_zone << "SELECT id FROM zone WHERE fqdn='" << zone << "'";
+  			Database::Result res_zone = conn.exec(sql_zone.str());
+  			if (res_zone.size() < 1)
+  				throw NOT_FOUND();//zone not found
+  			const TID zone_id = res_zone[0][0];
 
-			  Database::Transaction tx(conn);
-			  conn.exec(sql.str());
-			  tx.commit();
+  			  ModelZoneNs zn;
+  			  zn.setZoneId(zone_id);
+  			  zn.setFqdn(fqdn);
+  			  zn.setAddrs(std::string("{")+addr+"}");
+  			  zn.insert();
 
           }//try
           catch (...)
@@ -372,6 +604,41 @@ namespace Register
           }//catch (...)
 
       }//addZoneNs
+
+      virtual void updateZoneNsById(
+    		  const TID id,
+              const std::string &zone,
+              const std::string &fqdn,
+              const std::string &addr)
+          throw (SQL_ERROR,NOT_FOUND)
+	{
+		try
+		{
+		  Database::Connection conn = Database::Manager::acquire();
+
+			std::stringstream sql_zone;
+			sql_zone << "SELECT id FROM zone WHERE fqdn='" << zone << "'";
+			Database::Result res_zone = conn.exec(sql_zone.str());
+			if (res_zone.size() < 1)
+				throw NOT_FOUND();//zone not found
+			const TID zone_id = res_zone[0][0];
+
+			  ModelZoneNs zn;
+			  zn.setId(id);
+			  zn.setZoneId(zone_id);
+			  zn.setFqdn(fqdn);
+			  zn.setAddrs(std::string("{")+addr+"}");
+			  zn.update();
+
+		}//try
+		catch (...)
+		{
+			LOGGER(PACKAGE).error("updateZoneNsById: an error has occured");
+			throw SQL_ERROR();
+		}//catch (...)
+
+	}//updateZoneNsById
+
 
       virtual void addPrice(
               int zoneId,

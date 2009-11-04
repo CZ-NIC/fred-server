@@ -9,38 +9,122 @@
 
     bool ccReg_ZoneIf_i::createZone
     (
-    		const char* fqdn
-    		, CORBA::Long ex_period_min
-    		, CORBA::Long ex_period_max
-    		, CORBA::Long ttl
-    		, const char* hostmaster
-    		, CORBA::Long refresh
-    		, CORBA::Long update_retr
-    		, CORBA::Long expiry
-    		, CORBA::Long minimum
-    		, const char* ns_fqdn
+		const char* fqdn
+		, CORBA::Long ex_period_min
+		, CORBA::Long ex_period_max
+		, CORBA::Long ttl
+		, const char* hostmaster
+		, CORBA::Long refresh
+		, CORBA::Long update_retr
+		, CORBA::Long expiry
+		, CORBA::Long minimum
+		, const char* ns_fqdn
     )
     {
-        std::auto_ptr<Register::Zone::Manager> zoneMan(
-                Register::Zone::Manager::create());
+    	try
+    	{
+			std::auto_ptr<Register::Zone::Manager> zoneMan(
+					Register::Zone::Manager::create());
 
-    	return false;
+			zoneMan->addZone
+					( fqdn
+					, ex_period_min
+					, ex_period_max
+					, ttl
+					, hostmaster
+					, refresh
+					, update_retr
+					, expiry
+					, minimum
+					, ns_fqdn);
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("createZone: an error has occured");
+            return false;
+        }//catch (...)
+
+        return true;
     }
-    bool ccReg_ZoneIf_i::updateZone
+    bool ccReg_ZoneIf_i::updateZoneByFqdn
     (
-    		const char* fqdn
-    		, CORBA::Long ex_period_min
-    		, CORBA::Long ex_period_max
-    		, CORBA::Long ttl
-    		, const char* hostmaster
-    		, CORBA::Long refresh
-    		, CORBA::Long update_retr
-    		, CORBA::Long expiry
-    		, CORBA::Long minimum
-    		, const char* ns_fqdn
+		const char* fqdn
+		, CORBA::Long ex_period_min
+		, CORBA::Long ex_period_max
+		, CORBA::Long ttl
+		, const char* hostmaster
+		, CORBA::Long refresh
+		, CORBA::Long update_retr
+		, CORBA::Long expiry
+		, CORBA::Long minimum
+		, const char* ns_fqdn
     )
     {
-    	return false;
+    	try
+    	{
+			std::auto_ptr<Register::Zone::Manager> zoneMan(
+					Register::Zone::Manager::create());
+
+			zoneMan->updateZoneByFqdn
+					( fqdn
+					, ex_period_min
+					, ex_period_max
+					, ttl
+					, hostmaster
+					, refresh
+					, update_retr
+					, expiry
+					, minimum
+					, ns_fqdn);
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("updateZoneByFqdn: an error has occured");
+            return false;
+        }//catch (...)
+
+        return true;
+    }
+    bool ccReg_ZoneIf_i::updateZoneById
+    (
+		ccReg::TID id
+		, const char* fqdn
+		, CORBA::Long ex_period_min
+		, CORBA::Long ex_period_max
+		, CORBA::Long ttl
+		, const char* hostmaster
+		, CORBA::Long refresh
+		, CORBA::Long update_retr
+		, CORBA::Long expiry
+		, CORBA::Long minimum
+		, const char* ns_fqdn
+    )
+    {
+		try
+		{
+			std::auto_ptr<Register::Zone::Manager> zoneMan(
+					Register::Zone::Manager::create());
+
+			zoneMan->updateZoneById
+					( id
+					, fqdn
+					, ex_period_min
+					, ex_period_max
+					, ttl
+					, hostmaster
+					, refresh
+					, update_retr
+					, expiry
+					, minimum
+					, ns_fqdn);
+		}//try
+		catch (...)
+		{
+			LOGGER(PACKAGE).error("updateZoneById: an error has occured");
+			return false;
+		}//catch (...)
+
+		return true;
     }
     bool ccReg_ZoneIf_i::createZoneNs
     (
@@ -49,7 +133,20 @@
     		, const char* addr
     )
     {
-    	return false;
+		try
+		{
+			std::auto_ptr<Register::Zone::Manager> zoneMan(
+					Register::Zone::Manager::create());
+
+			zoneMan->addZoneNs(zone_fqdn, fqdn, addr);
+		}//try
+		catch (...)
+		{
+			LOGGER(PACKAGE).error("createZoneNs: an error has occured");
+			return false;
+		}//catch (...)
+
+		return true;
     }
 
     bool ccReg_ZoneIf_i::updateZoneNs
@@ -60,37 +157,18 @@
     		, const char* addr
     )
     {
-    	return false;
+		try
+		{
+			std::auto_ptr<Register::Zone::Manager> zoneMan(
+					Register::Zone::Manager::create());
+			zoneMan->updateZoneNsById(id, zone_fqdn, fqdn, addr);
+		}//try
+		catch (...)
+		{
+			LOGGER(PACKAGE).error("updateZoneNs: an error has occured");
+			return false;
+		}//catch (...)
+
+		return true;
     }
 
-    bool ccReg_ZoneIf_i::createZoneSoa
-    (
-    		const char* zone_fqdn
-    		, CORBA::Long ttl
-    		, const char* hostmaster
-    		, CORBA::Long serial
-    		, CORBA::Long refresh
-    		, CORBA::Long update_retr
-    		, CORBA::Long expiry
-    		, CORBA::Long minimum
-    		, const char* ns_fqdn
-    )
-    {
-    	return false;
-    }
-
-    bool ccReg_ZoneIf_i::updateZoneSoa
-    (
-    		const char* zone_fqdn
-    		, CORBA::Long ttl
-    		, const char* hostmaster
-    		, CORBA::Long serial
-    		, CORBA::Long refresh
-    		, CORBA::Long update_retr
-    		, CORBA::Long expiry
-    		, CORBA::Long minimum
-    		, const char* ns_fqdn
-    )
-    {
-    	return false;
-    }
