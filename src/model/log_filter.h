@@ -159,6 +159,7 @@ public:
   virtual Interval<Database::DateTimeInterval>& addTimeBegin() = 0;
   virtual Interval<Database::DateTimeInterval>& addTimeEnd() = 0;
   virtual Value<std::string>& addSourceIp() = 0;
+  virtual Value<bool>& addIsMonitoring() = 0;
   virtual RequestServiceType& addService() = 0;
   virtual RequestActionType&  addActionType() = 0;
   virtual RequestData& addRequestData() = 0;
@@ -184,6 +185,7 @@ public:
   virtual Interval<Database::DateTimeInterval>& addTimeBegin();
   virtual Interval<Database::DateTimeInterval>& addTimeEnd();
   virtual Value<std::string>& addSourceIp();
+  virtual Value<bool>& addIsMonitoring();
   virtual RequestServiceType& addService();
   virtual RequestActionType& addActionType();
   virtual RequestData& addRequestData();

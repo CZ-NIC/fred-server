@@ -489,6 +489,7 @@ COMPOUND_CLASS(Request, Request, Compound,
     FILTER_ADD(DateTime, addTimeBegin);
     FILTER_ADD(DateTime, addTimeEnd);
     FILTER_ADD(Str, addSourceIp);
+    FILTER_ADD(Bool, addIsMonitoring);
     FILTER_ADD(RequestServiceType, addService);
     FILTER_ADD(RequestActionType, addActionType);
     FILTER_ADD(RequestData, addRequestData);

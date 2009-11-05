@@ -49,6 +49,14 @@ Value<std::string>& RequestImpl::addSourceIp()
   return *tmp;
 }
 
+Value<bool>& RequestImpl::addIsMonitoring()
+{
+  Value<bool> *tmp = new Value<bool>(Column("is_monitoring", joinRequestTable()));
+  tmp->setName("IsMonitoring");
+  add(tmp);
+  return *tmp;
+}
+
 RequestServiceType& RequestImpl::addService()
 {
   RequestServiceType *tmp = new RequestServiceType(Column("service", joinRequestTable()));
