@@ -585,6 +585,7 @@ public:
 						   );//push_back
 		}//for
 
+        resetIDSequence();
 		sql.str("");
 		sql << "SELECT registrarid,cert,password " << "FROM registraracl ORDER BY registrarid";
 
