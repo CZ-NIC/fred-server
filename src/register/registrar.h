@@ -70,8 +70,7 @@ public:
 
 /// Registrar detail access
 class Registrar
-	: //public ModelRegistrar,
-	 virtual public Register::CommonObjectNew
+	: virtual public Register::CommonObjectNew
 {
 public:
   /// Public destructor, user is responsible for object delete
@@ -182,8 +181,7 @@ public:
 };
 
 /// List of registrar object
-class RegistrarList : //public Register::CommonListImplNew
-					 virtual public Register::CommonListNew
+class RegistrarList : virtual public Register::CommonListNew
 {
 protected:
   /// Protected destructor, object is manager by Manager

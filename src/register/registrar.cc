@@ -121,15 +121,13 @@ public:
 };//class ACLImpl
 
 
-typedef std::map<std::string, Database::ID> ZoneIdMap;
-
 class RegistrarImpl : public Register::CommonObjectImplNew,
                       virtual public Registrar,
                       private ModelRegistrar
 {
   typedef std::vector<boost::shared_ptr<ACLImpl> > ACLList;
   typedef ACLList::iterator ACLListIter;
-  //ZoneIdMap * zone_id_map_ptr;
+
   unsigned long credit; ///< DB: registrar.credit
 
   ACLList acl; ///< access control
@@ -466,7 +464,6 @@ class RegistrarListImpl : public Register::CommonListImplNew,
   TID idFilter;
   std::string zoneFilter;
   long long ptr_idx_;//from CommonListImpl
-  std::map<std::string, Database::ID> zone_id_map;
 public:
   RegistrarListImpl() :
     CommonListImplNew(), idFilter(0) {
