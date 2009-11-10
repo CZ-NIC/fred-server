@@ -61,7 +61,7 @@ AX_BOOST_THREAD
 AX_BOOST_SERIALIZATION
 
 # For unittests
-AX_BOOST_TEST
+AX_BOOST_UNIT_TEST_FRAMEWORK
 
 
 # Checks for PostgreSQL headers and libs
