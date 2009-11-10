@@ -88,7 +88,7 @@ am_libfred_a_OBJECTS = register.$(OBJEXT) common_impl.$(OBJEXT) \
 	bank_list.$(OBJEXT) bank_item_list.$(OBJEXT) \
 	bank_manager.$(OBJEXT) bank_exporter.$(OBJEXT) mail.$(OBJEXT) \
 	notify.$(OBJEXT) poll.$(OBJEXT) file.$(OBJEXT) \
-	filter.$(OBJEXT) request.$(OBJEXT)
+	filter.$(OBJEXT) request.$(OBJEXT) session.$(OBJEXT)
 libfred_a_OBJECTS = $(am_libfred_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
 am_test_OBJECTS = test.$(OBJEXT)
@@ -436,7 +436,13 @@ libfred_a_SOURCES = register.cc          \
 					filter.h             \
 		    			request.cc	 		 \
 		    			request.h		 	 \
-					request_impl.h
+					request_impl.h			\
+					session.cc		 \
+					session.h		 \
+					mailer.h             \
+					sql.h                \
+					exceptions.h         \
+					types.h
 
 test_SOURCES = test.cc
 test_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
@@ -593,6 +599,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/register.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registrar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/request.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/session.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_logd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zone.Po@am__quote@
@@ -785,12 +792,6 @@ uninstall-am:
 	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
 	uninstall-am
 
-					session.cc		 \
-					session.h		 \
-					mailer.h             \
-					sql.h                \
-					exceptions.h         \
-					types.h
 
 #noinst_PROGRAMS = testregzon
 #testregzon_SOURCES = test_regzon.cc

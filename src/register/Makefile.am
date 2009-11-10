@@ -146,7 +146,7 @@ libfred_a_SOURCES = register.cc          \
 					filter.h             \
 		    			request.cc	 		 \
 		    			request.h		 	 \
-					request_impl.h
+					request_impl.h			\
 					session.cc		 \
 					session.h		 \
 					mailer.h             \
