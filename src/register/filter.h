@@ -24,7 +24,7 @@ enum FilterType {
   FT_FILE,
   FT_LOGGER,
   FT_SESSION,
-  FT_STATEMENT_ITEM
+  FT_STATEMENTITEM
 };
 
 class Filter : virtual public Register::CommonObject {

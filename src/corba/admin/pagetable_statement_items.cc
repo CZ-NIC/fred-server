@@ -206,7 +206,7 @@ ccReg_StatementItems_i::saveFilter(const char *name)
 
     std::auto_ptr<Register::Filter::Manager> tmp_filter_manager(
             Register::Filter::Manager::create());
-    tmp_filter_manager->save(Register::Filter::FT_STATEMENT_ITEM, name, uf);
+    tmp_filter_manager->save(Register::Filter::FT_STATEMENTITEM, name, uf);
 }
 
 Register::Banking::StatementItem *
