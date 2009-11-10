@@ -94,7 +94,7 @@ class RequestPropertyValue : virtual public Compound
 class RequestPropertyValueImpl : virtual public RequestPropertyValue
 {
 public:
-	RequestPropertyValueImpl(bool set_active);
+	RequestPropertyValueImpl(bool set_active = false);
 	virtual ~RequestPropertyValueImpl() {
 	}
 

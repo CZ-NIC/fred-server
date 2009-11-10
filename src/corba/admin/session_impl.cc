@@ -539,8 +539,8 @@ Registry::Request::Detail *ccReg_Session_i::createRequestDetail(Register::Logger
 	detail->timeBegin 	= DUPSTRDATE(req->getTimeBegin);
 	detail->timeEnd		= DUPSTRDATE(req->getTimeEnd);
 	detail->sourceIp	= DUPSTRFUN(req->getSourceIp);
-	detail->service_type	= req->getServiceType();
-	detail->action_type	= req->getActionType();
+	detail->service_type	= DUPSTRFUN(req->getServiceType);
+	detail->action_type	= DUPSTRFUN(req->getActionType);
 	detail->session_id	= req->getSessionId();
 	detail->is_monitoring	= req->getIsMonitoring(); 
 	detail->raw_request	= DUPSTRFUN(req->getRawRequest);

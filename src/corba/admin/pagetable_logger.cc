@@ -13,7 +13,7 @@ ccReg::Filters::Compound_ptr ccReg_Logger_i::add() {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_Logger_i::add()");
-  Database::Filters::Request *f = new Database::Filters::RequestImpl();
+  Database::Filters::Request *f = new Database::Filters::RequestImpl(true);
   uf.addFilter(f);
   return it.addE(f);
 }

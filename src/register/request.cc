@@ -36,8 +36,9 @@ private:
   Database::DateTime time_begin;
   Database::DateTime time_end;
   std::string source_ip;
-  RequestServiceType serv_type;
-  RequestActionType action_type;
+  // types changed from RequestServiceType and RequestActionType to std::string because pagetable should now return it as strings
+  std::string serv_type;
+  std::string action_type;
   Database::ID session_id;
   bool is_monitoring;
   std::string raw_request;
@@ -45,7 +46,7 @@ private:
   std::auto_ptr<RequestProperties> props;
 
 public:
-  RequestImpl(Database::ID &_id, Database::DateTime &_time_begin, Database::DateTime &_time_end, RequestServiceType &_serv_type, std::string &_source_ip,  RequestActionType &_action_type, Database::ID &_session_id, bool &_is_monitoring, std::string & _raw_request, std::string & _raw_response, std::auto_ptr<RequestProperties>  _props) :
+  RequestImpl(Database::ID &_id, Database::DateTime &_time_begin, Database::DateTime &_time_end, std::string &_serv_type, std::string &_source_ip,  std::string &_action_type, Database::ID &_session_id, bool &_is_monitoring, std::string & _raw_request, std::string & _raw_response, std::auto_ptr<RequestProperties>  _props) :
 	CommonObjectImpl(_id),
 	time_begin(_time_begin),
 	time_end(_time_end),
@@ -65,13 +66,13 @@ public:
   virtual const ptime  getTimeEnd() const {
 	return time_end;
   }
-  virtual const RequestServiceType& getServiceType() const {
+  virtual const std::string& getServiceType() const {
 	return serv_type;
   }
   virtual const std::string& getSourceIp() const {
 	return source_ip;
   }
-  virtual const RequestActionType& getActionType() const {
+  virtual const std::string& getActionType() const {
 	return action_type;
   }
   virtual const Database::ID& getSessionId() const {
@@ -168,15 +169,15 @@ public:
     Database::SelectQuery query;
 
     if(partialLoad) {
-	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip, t_1.action_type, t_1.session_id, t_1.is_monitoring";
-	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id ";
+	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.status, t_1.session_id, t_1.is_monitoring";
+	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id join request_type t_2 on t_2.id=t_1.action_type join service t_3 on t_3.id=t_1.service";
 	    query.order_by() << "t_1.time_begin desc";
     } else {
 // hardcore optimizations have to be done on this statement
-	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip, t_1.action_type, t_1.session_id, t_1.is_monitoring, "
+	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.status, t_1.session_id, t_1.is_monitoring, "
 						" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=tmp.id and is_response=false limit 1) as request, "
 						" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=tmp.id and is_response=true  limit 1) as response ";
-	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id";
+	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id  join request_type t_2 on t_2.id=t_1.action_type join service t_3 on t_3.id=t_1.service";
 	    query.order_by() << "t_1.time_begin desc";
     }
 
@@ -196,11 +197,11 @@ public:
     		Database::ID 		id 		= *col;
     		Database::DateTime 	time_begin  	= *(++col);
     		Database::DateTime 	time_end  	= *(++col);
-    		RequestServiceType serv_type  	= (RequestServiceType) (long)*(++col);
+                std::string             serv_type  	= *(++col);
     		std::string 		source_ip  	= *(++col);
-    		RequestActionType  action_type = (RequestActionType)(long)*(++col);
+                std::string             action_type     = *(++col);
 		Database::ID		session_id	= *(++col);
-		bool				is_monitoring	= *(++col);
+		bool			is_monitoring	= *(++col);
 		// fields dependent on partialLoad
 		std::string			request;
 		std::string			response;
@@ -312,9 +313,9 @@ public:
 				Database::ID 		id 		= *col;
 				Database::DateTime 	time_begin  	= *(++col);
 				Database::DateTime 	time_end  	= *(++col);
-				RequestServiceType serv_type  = (RequestServiceType) (long)*(++col);
+				std::string             serv_type  = *(++col);
 				std::string 		source_ip  	= *(++col);
-				RequestActionType  action_type = (RequestActionType) (long) *(++col);
+				std::string  		action_type = *(++col);
 				Database::ID		session_id	= *(++col);
 				bool			is_monitoring	= *(++col);
 				std::string		request;
@@ -939,7 +940,7 @@ Manager* Manager::create() {
 	return new ManagerImpl();
 }
 
-Manager *Manager::create(const std::string conn_db, const std::string &monitoring_hosts_file) 
+Manager *Manager::create(const std::string conn_db, const std::string &monitoring_hosts_file)
 throw (Manager::DB_CONNECT_FAILED) {
 	TRACE("[CALL] Register::Logger::Manager::create(std::string, std::string)");
 	return new ManagerImpl(conn_db, monitoring_hosts_file);

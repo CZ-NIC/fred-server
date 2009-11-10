@@ -64,9 +64,9 @@ struct RequestProperty {
 	name = n;
 	value = v;
 	output = out;
-	child = ch;	
+	child = ch;
   }
-  
+
   const RequestProperty & operator = (RequestProperty &p) {
 	name = p.name;
 	value = p.value;
@@ -86,11 +86,11 @@ public:
   virtual const boost::posix_time::ptime  getTimeBegin() const = 0;
   virtual const boost::posix_time::ptime  getTimeEnd() const = 0;
   virtual const std::string&		getSourceIp() const = 0;
-  virtual const RequestServiceType& getServiceType() const = 0;
-  virtual const RequestActionType &getActionType() const = 0;
+  virtual const std::string& getServiceType() const = 0;
+  virtual const std::string& getActionType() const = 0;
   virtual const Database::ID& getSessionId() const = 0;
   virtual const bool& getIsMonitoring() const = 0;
- 
+
   virtual const std::string& getRawRequest() const = 0;
   virtual const std::string& getRawResponse() const  = 0;
 
@@ -121,7 +121,7 @@ public:
 
   virtual ~Manager() {};
 
-  /** Used only in migration  - return a connection used by the connection manager 
+  /** Used only in migration  - return a connection used by the connection manager
 	it's meant to be used only in single-threaded environment
   */
 virtual  Database::ID i_CreateRequest(const char *sourceIP, RequestServiceType service, const  char *content_in, const Register::Logger::RequestProperties& props, RequestActionType action_type, Database::ID session_id) = 0;
