@@ -224,7 +224,7 @@ MailerManager::checkEmailList(std::string &_email_list) const
   for (token_list::iterator token = tokens.begin(); token != tokens.end(); ++token) {
     /* validate email address */
     std::string::size_type i = (*token).find("@");
-    if (i != std::string::npos && i != (*token).size() && i != 0) {
+    if (i != std::string::npos && i != (*token).size() - 1 && i != 0) {
       /* add to output set - this removes duplicates */
       valid.insert(*token);
     }
