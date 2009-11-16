@@ -25,9 +25,9 @@ namespace Register
       enum MemberType
       {
          MT_FQDN ///< zone name
-        ,MT_EXPERIODMIN ///< expiration period min
-        ,MT_EXPERIODMAX ///< expiration period max
-        ,MT_VALPERIOD ///< val period
+        ,MT_EXPERIODMIN ///< extension period min
+        ,MT_EXPERIODMAX ///< extension period max
+        ,MT_VALPERIOD ///< revalidation period
         ,MT_DOTSMAX ///< max number of dots in domain name
         ,MT_ENUMZONE ///< is enum domain
         ,MT_TTL ///< time to live
