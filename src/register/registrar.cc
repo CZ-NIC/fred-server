@@ -454,6 +454,20 @@ COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Handle)
 COMPARE_CLASS_IMPL_NEW(RegistrarImpl, URL)
 COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Email)
 COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Credit)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Ico)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Dic)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, VarSymb)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Vat)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Organization)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Street1)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Street2)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Street3)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, City)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Province)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, PostalCode)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Country)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Telephone)
+COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Fax)
 
 class RegistrarListImpl : public Register::CommonListImplNew,
                           public RegistrarList {
@@ -798,16 +812,61 @@ public:
       case MT_CREDIT:
         stable_sort(m_data.begin(), m_data.end(), CompareCredit(_asc));
         break;
+      case MT_ICO:
+        stable_sort(m_data.begin(), m_data.end(), CompareIco(_asc));
+        break;
+      case MT_DIC:
+        stable_sort(m_data.begin(), m_data.end(), CompareDic(_asc));
+        break;
+      case MT_VARSYMB:
+        stable_sort(m_data.begin(), m_data.end(), CompareVarSymb(_asc));
+        break;
+      case MT_VAT:
+        stable_sort(m_data.begin(), m_data.end(), CompareVat(_asc));
+        break;
+      case MT_ORGANIZATION:
+        stable_sort(m_data.begin(), m_data.end(), CompareOrganization(_asc));
+        break;
+      case MT_STREET1:
+        stable_sort(m_data.begin(), m_data.end(), CompareStreet1(_asc));
+        break;
+      case MT_STREET2:
+        stable_sort(m_data.begin(), m_data.end(), CompareStreet2(_asc));
+        break;
+      case MT_STREET3:
+        stable_sort(m_data.begin(), m_data.end(), CompareStreet3(_asc));
+        break;
+      case MT_CITY:
+        stable_sort(m_data.begin(), m_data.end(), CompareCity(_asc));
+        break;
+      case MT_PROVINCE:
+        stable_sort(m_data.begin(), m_data.end(), CompareProvince(_asc));
+        break;
+      case MT_POSTALCODE:
+        stable_sort(m_data.begin(), m_data.end(), ComparePostalCode(_asc));
+        break;
+      case MT_COUNTRY:
+        stable_sort(m_data.begin(), m_data.end(), CompareCountry(_asc));
+        break;
+      case MT_TELEPHONE:
+        stable_sort(m_data.begin(), m_data.end(), CompareTelephone(_asc));
+        break;
+      case MT_FAX:
+        stable_sort(m_data.begin(), m_data.end(), CompareFax(_asc));
+        break;
+
     }
   }
-  
-  virtual void makeQuery(bool, bool, std::stringstream&) const {
-    /* dummy implementation */
+
+  virtual void makeQuery(bool, bool, std::stringstream&) const
+  {
+    // empty implementation
+  }
+  virtual const char* getTempTableName() const
+  {
+    return "";
   }
   
-  virtual const char* getTempTableName() const {
-    return ""; /* dummy implementation */ 
-  }
 };
 
 class EPPActionImpl : public CommonObjectImpl,

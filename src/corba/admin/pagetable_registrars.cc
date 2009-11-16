@@ -1,9 +1,11 @@
 #include "pagetable_registrars.h"
 
-ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::RegistrarList *_rl)
+ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::RegistrarList *_rl
+		//, Register::Zone::ZoneList * _zl
+		)
   : rl(_rl)
-{
-}
+//  , zl(_zl)
+{}
 
 ccReg_Registrars_i::~ccReg_Registrars_i() {
   TRACE("[CALL] ccReg_Registrars_i::~ccReg_Registrars_i()");

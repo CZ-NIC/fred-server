@@ -48,6 +48,8 @@ libadmin_impl_a_SOURCES = admin_impl.cc                 \
 						  pagetable_logsession.h		\
 						  pagetable_statement_items.cc	\
 						  pagetable_statement_items.h	\
+                          pagetable_zones.cc       \
+                          pagetable_zones.h        \
                           str_corbaout.h                \
 						  usertype_conv.h				\
                           common.cc                     \

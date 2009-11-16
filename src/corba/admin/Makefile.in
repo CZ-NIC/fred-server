@@ -41,6 +41,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/acinclude.m4 \
 	$(top_srcdir)/m4/ax_boost_regex.m4 \
 	$(top_srcdir)/m4/ax_boost_serialization.m4 \
 	$(top_srcdir)/m4/ax_boost_thread.m4 \
+	$(top_srcdir)/m4/ax_boost_unit_test_framework.m4 \
 	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
 	$(top_srcdir)/m4/ax_prog_doxygen.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -63,8 +64,9 @@ am_libadmin_impl_a_OBJECTS = admin_impl.$(OBJEXT) \
 	pagetable_nssets.$(OBJEXT) pagetable_registrars.$(OBJEXT) \
 	pagetable_files.$(OBJEXT) pagetable_keysets.$(OBJEXT) \
 	pagetable_logger.$(OBJEXT) pagetable_logsession.$(OBJEXT) \
-	pagetable_statement_items.$(OBJEXT) common.$(OBJEXT) \
-	zone_impl.$(OBJEXT) bankinginvoicing_impl.$(OBJEXT)
+	pagetable_statement_items.$(OBJEXT) pagetable_zones.$(OBJEXT) \
+	common.$(OBJEXT) zone_impl.$(OBJEXT) \
+	bankinginvoicing_impl.$(OBJEXT)
 libadmin_impl_a_OBJECTS = $(am_libadmin_impl_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -98,6 +100,7 @@ BOOST_PROGRAM_OPTIONS_LIB = @BOOST_PROGRAM_OPTIONS_LIB@
 BOOST_REGEX_LIB = @BOOST_REGEX_LIB@
 BOOST_SERIALIZATION_LIB = @BOOST_SERIALIZATION_LIB@
 BOOST_THREAD_LIB = @BOOST_THREAD_LIB@
+BOOST_UNIT_TEST_FRAMEWORK_LIB = @BOOST_UNIT_TEST_FRAMEWORK_LIB@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -288,6 +291,8 @@ libadmin_impl_a_SOURCES = admin_impl.cc                 \
 						  pagetable_logsession.h		\
 						  pagetable_statement_items.cc	\
 						  pagetable_statement_items.h	\
+                          pagetable_zones.cc       \
+                          pagetable_zones.h        \
                           str_corbaout.h                \
 						  usertype_conv.h				\
                           common.cc                     \
@@ -363,6 +368,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_publicrequests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_registrars.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_statement_items.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_zones.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/session_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/user_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zone_impl.Po@am__quote@

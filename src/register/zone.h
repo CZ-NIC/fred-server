@@ -2,6 +2,9 @@
 #define ZONE_H_
 
 #include <string>
+#include "common_impl_new.h"
+#include "common_object.h"
+#include "object.h"
 #include "types/data_types.h"
 #include "types.h" 
 #include "exceptions.h"
@@ -18,27 +21,165 @@ namespace Register
           RENEW
       };
 
+      /// member identification (i.e. for sorting)
+      enum MemberType
+      {
+         MT_FQDN ///< zone name
+        ,MT_EXPERIODMIN ///< expiration period min
+        ,MT_EXPERIODMAX ///< expiration period max
+        ,MT_VALPERIOD ///< val period
+        ,MT_DOTSMAX ///< max number of dots in domain name
+        ,MT_ENUMZONE ///< is enum domain
+        ,MT_TTL ///< time to live
+        ,MT_HOSTMASTER ///< hostmaster
+        ,MT_SERIAL ///< serial
+        ,MT_REFRESH ///< refresh
+        ,MT_UPDATERETR ///< update retry
+        ,MT_EXPIRY ///< expiry
+        ,MT_MINIMUM ///< minimum
+        ,MT_NSFQDN ///< ns name
+      };
+
     /// exception thrown when string is not a domain name
     class INVALID_DOMAIN_NAME {};
     /// exception thrown when string is not a phone number
     class NOT_A_NUMBER {};     
     /// tokenized domain name type
     typedef std::vector<std::string> DomainName;
+
+    ///zone ns records
+    class ZoneNs
+    {
+    protected:
+        /// protected destruktor - object is managed by Manager object
+         virtual ~ZoneNs() {}
+    public:
+         ///get zonens id
+         virtual const TID getId() const = 0;
+         ///set zonens id
+         virtual void setId(const TID id) = 0;
+         ///get zone id
+         virtual const TID getZoneId() const = 0;
+         ///set zone id
+         virtual void setZoneId(const TID id) = 0;
+         ///get zonens name
+         virtual const std::string &getFqdn() const = 0;
+         ///set zonens name
+         virtual void setFqdn(const std::string &fqdn) = 0;
+         ///get zonens addrs
+         virtual const std::string &getAddrs() const = 0;
+         ///set zonens addrs
+         virtual void setAddrs(const std::string &addrs) = 0;
+
+    };
+
     /// zone attributes and specific parameters 
-    class Zone {
+    class Zone
+    {
      protected:
       /// protected destruktor - object is managed by Manager object
       virtual ~Zone() {}
      public:
-      /// id of domain
+      ///get zone id
       virtual const TID getId() const = 0;
-      /// suffix of domain name for this zone
-      virtual const std::string& getFqdn() const = 0;
-      ///< is zone for enum domains?
-      virtual bool isEnumZone() const = 0;
-      ///< return maximal level of domains in this zone
+      ///set zone id
+      virtual void setId(const TID id) = 0;
+      ///get zone name
+      virtual const std::string &getFqdn() const = 0;
+      ///set zone name
+      virtual void setFqdn(const std::string &fqdn) = 0;
+      ///get zone min exp
+      virtual const int getExPeriodMin() const = 0;
+      ///set zone min exp
+      virtual void setExPeriodMin(const int exPeriodMin) = 0;
+      ///get zone max exp
+      virtual const int getExPeriodMax() const = 0;
+      ///set zone max exp
+      virtual void setExPeriodMax(const int exPeriodMax) = 0;
+      ///get zone ValPeriod
+      virtual const int getValPeriod() const = 0;
+      ///set zone ValPeriod
+      virtual void setValPeriod(const int valPeriod) = 0;
+      ///get zone max dots
+      virtual const int getDotsMax() const = 0;
+      ///set zone max dots
+      virtual void setDotsMax(const int dotsMax) = 0;
+      ///get zone is_enum
+      virtual const bool getEnumZone() const = 0;
+      virtual const bool isEnumZone() const = 0;
+      ///set zone is_enum
+      virtual void setEnumZone(const bool enumZone) = 0;
+      ///return maximal level of domains in this zone
       virtual unsigned getMaxLevel() const = 0;
+
+      virtual const int getTtl() const = 0;
+      virtual void setTtl(const int ttl) = 0;
+
+      virtual const std::string &getHostmaster() const = 0;
+      virtual void setHostmaster(const std::string &hostmaster) = 0;
+
+      virtual const int getSerial() const = 0;
+      virtual void setSerial(const int serial) = 0;
+
+      virtual const int getRefresh() const = 0;
+      virtual void setRefresh(const int refresh) = 0;
+
+      virtual const int getUpdateRetr() const = 0;
+      virtual void setUpdateRetr(const int updateRetr) = 0;
+
+      virtual const int getExpiry() const = 0;
+      virtual void setExpiry(const int expiry) = 0;
+
+      virtual const int getMinimum() const = 0;
+      virtual void setMinimum(const int minimum) = 0;
+
+      virtual const std::string &getNsFqdn() const = 0;
+      virtual void setNsFqdn(const std::string &nsFqdn) = 0;
+
+      /// Create new ZoneNs record
+      virtual ZoneNs* newZoneNs() = 0;
+      /// Return ZoneNs list size
+      virtual unsigned getZoneNsSize() const = 0;
+      /// Return ZoneNs list member by index
+      virtual ZoneNs* getZoneNs(unsigned idx) const = 0;
+      /// Delete ZoneNs or do nothing
+      virtual void deleteZoneNs(unsigned idx) = 0;
+      /// Clear ZoneNs list
+      virtual void clearZoneNsList() = 0;
+      /// Save changes to database
+      virtual void save() throw (SQL_ERROR) = 0;
+
+    };//class Zone
+
+    /// List of Zone object
+    class ZoneList : virtual public Register::CommonListNew
+    {
+    public:
+      virtual ~ZoneList() {
+      }
+      /// Filter in id
+      virtual void setIdFilter(TID id) = 0;
+      /// Filter in fqdn
+      virtual void setFqdnFilter(const std::string& handle) = 0;
+      /// reload actual list of zones
+      virtual void reload()  throw (SQL_ERROR)  = 0;
+      /// reload with filter
+      virtual void reload(Database::Filters::Union &uf) = 0;
+      /// Get zone detail object by list index for update
+      //  virtual Zone* get(unsigned idx) const = 0;
+      /// Create new zone in list
+      virtual Zone* create() = 0;
+      /// clear filter data
+      //virtual void clearFilter() = 0;
+      /// sort by column
+      virtual void sort(MemberType _member, bool _asc) = 0;
+
+      virtual const char* getTempTableName() const = 0;
+      virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
+
+      virtual Register::Zone::Zone* findId(Database::ID id) const =0;
     };
+
     /// holder for zones managed by register
     class Manager
     {

@@ -7,9 +7,12 @@
 
 
 class ModelZoneSoa
-	: ModelZone { //public Model::Base
+	: public ModelZone {
 
 public:
+    ModelZoneSoa()
+    : ModelZone()
+    { }
     ModelZoneSoa(const ModelZone& mzn)
     :ModelZone(mzn)
     { }

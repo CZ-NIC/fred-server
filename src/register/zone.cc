@@ -42,21 +42,150 @@ namespace Register
 {
   namespace Zone
   {
-    struct ZoneImpl : public virtual Zone {
-      ZoneImpl(
-        TID _id, const std::string& _fqdn, bool _isEnum,
-        unsigned _maxLevel
-      ) :
-        id(_id), fqdn(_fqdn), isEnum(_isEnum), maxLevel(_maxLevel)
-      {}
-      ~ZoneImpl() {}
-      TID id;
-      std::string fqdn;
-      bool isEnum;
-      unsigned maxLevel; ///< Maximal domain level in this zone
+
+   class ZoneNsImpl
+       : virtual public ZoneNs
+       , private ModelZoneNs
+
+    {
+    public:
+           ZoneNsImpl()
+           : ModelZoneNs()
+           {}
+           ZoneNsImpl(TID id
+                   , TID zoneid
+                   , const std::string& fqdn
+                   , const std::string& addrs)
+           : ModelZoneNs()
+           {
+               ModelZoneNs::setId(id);
+               ModelZoneNs::setZoneId(zoneid);
+               ModelZoneNs::setFqdn(fqdn);
+               ModelZoneNs::setAddrs(addrs);
+           }
+           const TID getId() const
+           {
+               return ModelZoneNs::getId();
+           }
+           const TID getZoneId() const
+           {
+               return ModelZoneNs::getZoneId();
+           }
+           const std::string &getFqdn() const
+           {
+               return ModelZoneNs::getFqdn();
+           }
+           const std::string &getAddrs() const
+           {
+               return ModelZoneNs::getAddrs();
+           }
+           void setId(const TID id)
+           {
+               ModelZoneNs::setId(id);
+           }
+           void setZoneId(const TID zoneId)
+           {
+               ModelZoneNs::setZoneId(zoneId);
+           }
+
+           void setFqdn(const std::string &fqdn)
+           {
+               ModelZoneNs::setFqdn(fqdn);
+           }
+           void setAddrs(const std::string &addrs)
+           {
+               ModelZoneNs::setAddrs(addrs);
+           }
+
+           bool operator==(const TID _id) const
+           {
+             return getId() == _id;
+           }
+
+           virtual void save() throw (SQL_ERROR)
+           {
+             try
+             {
+                 Database::Connection conn = Database::Manager::acquire();
+                 TID id = getId();
+
+                 if (id)
+                     ModelZoneNs::update();
+                 else
+                     ModelZoneNs::insert();
+             }//try
+             catch (...)
+             {
+              LOGGER(PACKAGE).error("save: an error has occured");
+              throw SQL_ERROR();
+             }//catch (...)
+           }//save
+
+    };//class ZoneNsImpl
+
+
+
+
+
+    class ZoneImpl : public Register::CommonObjectImplNew
+                   , virtual public  Zone
+                   , private ModelZoneSoa
+    {
+        typedef std::vector<boost::shared_ptr<ZoneNsImpl> > ZoneNsList;
+        typedef ZoneNsList::iterator ZoneNsListIter;
+        ZoneNsList zone_ns_list; /// zone ns records
+
+    public:
+
+        ZoneImpl()
+            : CommonObjectImplNew()
+            , ModelZoneSoa()
+        {}
+        ZoneImpl(
+                    TID _id,
+                    const std::string& _fqdn,
+                    const int _exPeriodMin,
+                    const int _exPeriodMax,
+                    const int _valPeriod,
+                    const int _dotsMax,
+                    const bool _enumZone,
+                    const int _ttl,
+                    const std::string& _hostmaster,
+                    const int _serial,
+                    const int _refresh,
+                    const int _updateRetr,
+                    const int  _expiry,
+                    const int _minimum,
+                    const std::string& _nsFqdn
+                )
+            : CommonObjectImplNew()
+            , ModelZoneSoa()
+        {
+            ModelZone::setId(_id);
+            ModelZone::setFqdn(_fqdn);
+            ModelZone::setExPeriodMin(_exPeriodMin);
+            ModelZone::setExPeriodMax(_exPeriodMax);
+            ModelZone::setValPeriod(_valPeriod);
+            ModelZone::setDotsMax(_dotsMax);
+            ModelZone::setEnumZone(_enumZone);
+
+            ModelZoneSoa::setTtl(_ttl);
+            ModelZoneSoa::setHostmaster(_hostmaster);
+            ModelZoneSoa::setSerial(_serial);
+            ModelZoneSoa::setRefresh(_refresh);
+            ModelZoneSoa::setUpdateRetr(_updateRetr);
+            ModelZoneSoa::setExpiry(_expiry);
+            ModelZoneSoa::setMinimum(_minimum);
+            ModelZoneSoa::setNsFqdn(_nsFqdn);
+        }
+        ~ZoneImpl()
+        {}
+
+
       /// compare if domain belongs to this zone (according to suffix)
       bool operator==(const std::string& domain) const
       {
+          const std::string& fqdn = ModelZone::getFqdn();
         std::string copy = domain;
         for (unsigned i=0; i<copy.length(); i++)
           copy[i] = tolower(copy[i]);
@@ -64,31 +193,539 @@ namespace Register
         if (copy.length() < l) return false;
         return copy.compare(copy.length()-l,l,fqdn) == 0;
       }
-      /// interface implementation
-      const TID getId() const
-      {
-        return id;
-      }
-      /// interface implementation
-      const std::string& getFqdn() const
-      {
-        return fqdn;
-      }
-      /// interface implementation
-      bool isEnumZone() const
-      {
-        return isEnum;
-      }
-      /// interface implementation
+      /// max. number of labels in fqdn
       virtual unsigned getMaxLevel() const
       {
-        return maxLevel;
+          const std::string& fqdn = ModelZone::getFqdn();
+          int maxlevel = std::count(fqdn.begin(), fqdn.end(), '.')
+          + 1 + ModelZone::getDotsMax();
+          return  maxlevel;
       }
-    };
-    typedef std::vector<ZoneImpl> ZoneList;
+
+      /// Create new ZoneNs record
+      virtual ZoneNs* newZoneNs()
+      {
+          boost::shared_ptr<ZoneNsImpl> new_ZoneNs ( new ZoneNsImpl());
+          zone_ns_list.push_back(new_ZoneNs);
+          return new_ZoneNs.get();
+      }
+      /// Return ZoneNs list size
+      virtual unsigned getZoneNsSize() const
+      {
+          return zone_ns_list.size();
+      }
+      /// Return ZoneNs list member by index
+      virtual ZoneNs* getZoneNs(unsigned idx) const
+      {
+          return idx < zone_ns_list.size() ? zone_ns_list[idx].get() : NULL;
+      }
+      /// Delete ZoneNs or do nothing
+      virtual void deleteZoneNs(unsigned idx)
+      {
+          if (idx < zone_ns_list.size()) {
+              zone_ns_list.erase(zone_ns_list.begin()+idx);
+           }
+      }
+      /// Clear ZoneNs list
+      virtual void clearZoneNsList()
+      {
+          zone_ns_list.clear();
+      }
+      /// Save changes to database
+      virtual void save() throw (SQL_ERROR)
+      {
+          // save zone data
+        try
+        {
+            Database::Connection conn = Database::Manager::acquire();
+            Database::Transaction tx(conn);
+            TID id = getId();
+            if (id)
+                ModelZoneSoa::update();
+            else
+                ModelZoneSoa::insert();
+            std::ostringstream sql;
+            sql << "DELETE FROM zone_ns WHERE zone=" << id;
+            conn.exec(sql.str());
+            for (unsigned j = 0; j < zone_ns_list.size(); j++)
+            {
+                zone_ns_list[j]->setZoneId(id);
+                zone_ns_list[j]->save();
+            }
+            tx.commit();
+        }//try
+        catch (...)
+        {
+         LOGGER(PACKAGE).error("save: an error has occured");
+         throw SQL_ERROR();
+        }//catch (...)
+      }//save
+
+      //ModelZone
+      const TID getId() const
+      {
+          return ModelZone::getId();
+      }
+      void setId(const TID id)
+      {
+          ModelZone::setId(id);
+      }
+      const std::string &getFqdn() const
+      {
+          return ModelZone::getFqdn();
+      }
+      void setFqdn(const std::string &fqdn)
+      {
+          ModelZone::setFqdn(fqdn);
+      }
+      const int getExPeriodMin() const
+      {
+          return ModelZone::getExPeriodMin();
+      }
+      void setExPeriodMin(const int exPeriodMin)
+      {
+          ModelZone::setExPeriodMin(exPeriodMin);
+      }
+      const int getExPeriodMax() const
+      {
+          return ModelZone::getExPeriodMax();
+      }
+      void setExPeriodMax(const int exPeriodMax)
+      {
+          ModelZone::setExPeriodMax(exPeriodMax);
+      }
+      const int getValPeriod() const
+      {
+          return ModelZone::getValPeriod();
+      }
+      void setValPeriod(const int valPeriod)
+      {
+          ModelZone::setValPeriod(valPeriod);
+      }
+      const int getDotsMax() const
+      {
+          return ModelZone::getDotsMax();
+      }
+      void setDotsMax(const int dotsMax)
+      {
+          ModelZone::setDotsMax(dotsMax);
+      }
+      const bool getEnumZone() const
+      {
+          return ModelZone::getEnumZone();
+      }
+      const bool isEnumZone() const
+      {
+          return getEnumZone();
+      }
+      void setEnumZone(const bool enumZone)
+      {
+          ModelZone::setEnumZone(enumZone);
+      }
+      //ModelZoneSoa
+      const int getTtl() const
+      {
+          return ModelZoneSoa::getTtl();
+      }
+      const std::string &getHostmaster() const
+      {
+          return ModelZoneSoa::getHostmaster();
+      }
+      const int getSerial() const
+      {
+          return ModelZoneSoa::getSerial();
+      }
+      const int getRefresh() const
+      {
+          return ModelZoneSoa::getRefresh();
+      }
+      const int getUpdateRetr() const
+      {
+          return ModelZoneSoa::getUpdateRetr();
+      }
+      const int getExpiry() const
+      {
+          return ModelZoneSoa::getExpiry();
+      }
+      const int getMinimum() const
+      {
+          return ModelZoneSoa::getMinimum();
+      }
+      const std::string &getNsFqdn() const
+      {
+          return ModelZoneSoa::getNsFqdn();
+      }
+      void setTtl(const int ttl)
+      {
+          ModelZoneSoa::setTtl(ttl);
+      }
+      void setHostmaster(const std::string &hostmaster)
+      {
+          ModelZoneSoa::setHostmaster(hostmaster);
+      }
+      void setSerial(const int serial)
+      {
+          ModelZoneSoa::setSerial(serial);
+      }
+      void setRefresh(const int refresh)
+      {
+          ModelZoneSoa::setRefresh(refresh);
+      }
+      void setUpdateRetr(const int updateRetr)
+      {
+          ModelZoneSoa::setUpdateRetr(updateRetr);
+      }
+      void setExpiry(const int expiry)
+      {
+          ModelZoneSoa::setExpiry(expiry);
+      }
+      void setMinimum(const int minimum)
+      {
+          ModelZoneSoa::setMinimum(minimum);
+      }
+      void setNsFqdn(const std::string &nsFqdn)
+      {
+          ModelZoneSoa::setNsFqdn(nsFqdn);
+      }
+
+      void putZoneNs(TID _id,
+                      TID _zoneid,
+                  const std::string& fqdn,
+                  const std::string& addrs)
+      {
+        zone_ns_list.push_back(boost::shared_ptr<ZoneNsImpl>(new ZoneNsImpl(_id,_zoneid,fqdn,addrs)));
+      }
+      bool hasId(TID _id) const
+      {
+        return getId() == _id;
+      }
+      void resetId()
+      {
+        setId(0);
+        for (TID i = 0; i < zone_ns_list.size(); i++)
+            zone_ns_list[i]->setId(0);
+      }
+
+    };//class ZoneImpl
+
+
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, Fqdn)
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, ExPeriodMin)
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, ExPeriodMax)
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, ValPeriod)
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, DotsMax)
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, EnumZone)
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, Ttl)
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, Hostmaster)
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, Serial)
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, Refresh)
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, UpdateRetr)
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, Expiry)
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, Minimum)
+    COMPARE_CLASS_IMPL_NEW(ZoneImpl, NsFqdn)
+
+    class ZoneListImpl
+		: public Register::CommonListImplNew
+		, public ZoneList
+	{
+		    long long ptr_idx_;//from CommonListImpl
+			std::string fqdn;
+			TID idFilter;
+	public:
+			ZoneListImpl() :
+			    CommonListImplNew(), idFilter(0) {
+			  }
+			  ~ZoneListImpl() {
+			    clear();
+			  }
+			  virtual void setIdFilter(TID _idFilter) {
+			    idFilter = _idFilter;
+			  }
+			  virtual void setFqdnFilter(const std::string& _fqdn) {
+			    fqdn = _fqdn;
+			  }
+
+			  void resetIDSequence()
+			  {
+			    ptr_idx_ = -1;
+			  }
+			  ZoneImpl* findIDSequence(TID _id)
+			  {
+			    // must be sorted by ID to make sence
+			    if (ptr_idx_ < 0)
+			      ptr_idx_ = 0;
+			    long long m_data_size = m_data.size();
+			    ZoneImpl* ret_ptr=0;
+
+			    for (; ptr_idx_ < m_data_size
+			            && ((dynamic_cast<ZoneImpl* >(m_data[ptr_idx_]))->getId()<_id)
+			            ; ptr_idx_++);
+			    if (ptr_idx_ == m_data_size
+			            || (ret_ptr = dynamic_cast<ZoneImpl* >(m_data[ptr_idx_]))->getId() != _id)
+			    {
+			      LOGGER(PACKAGE).debug(boost::format("find id sequence: not found in result set. (id=%1%, ptr_idx=%2%)")
+			                                          % _id % ptr_idx_);
+			      resetIDSequence();
+			      return NULL;
+			    }//if
+			    return ret_ptr;
+			  }//findIDSequence
+
+			  virtual void reload() throw (SQL_ERROR)
+			  {
+			      try
+			      {
+			          Database::Connection conn = Database::Manager::acquire();
+			          clear();
+			          std::ostringstream sql;
+			          sql << "SELECT z.id, z.fqdn, z.ex_period_min, z.ex_period_max"
+			          ", z.val_period, z.dots_max, z.enum_zone"
+			          ", zs.ttl, zs.hostmaster, zs.serial, zs.refresh, zs.update_retr"
+			          ", zs.expiry, zs.minimum, zs.ns_fqdn"
+			          " FROM zone z JOIN zone_soa zs ON z.id = zs.zone"
+			          " ORDER BY z.id";
+
+			          Database::Result res = conn.exec(sql.str());
+
+			          for (unsigned i=0; i < static_cast<unsigned>(res.size()); i++)
+			          {
+			              appendToList(new ZoneImpl
+			                              (
+			                                res[i][0]
+			                                ,res[i][1]
+			                                ,res[i][2]
+			                                ,res[i][3]
+			                                ,res[i][4]
+			                                ,res[i][5]
+			                                ,res[i][6]
+			                                ,res[i][7]
+			                                ,res[i][8]
+			                                ,res[i][9]
+			                                ,res[i][10]
+			                                ,res[i][11]
+			                                ,res[i][12]
+			                                ,res[i][13]
+			                                ,res[i][14]
+			                              )//new
+			                             );//push_back
+			          }//for
+
+			          resetIDSequence();
+                      sql.str("");
+                      sql << "SELECT id,zone,fqdn,addrs " << "FROM zone_ns ORDER BY zone";
+
+                      Database::Result res2 = conn.exec(sql.str());
+                      for (unsigned i=0; i < static_cast<unsigned>(res2.size()); i++)
+                      {
+                        // find associated zone
+                        unsigned zoneId = res2[i][1];
+                        ZoneImpl *z = dynamic_cast<ZoneImpl* >(findIDSequence(zoneId));
+
+                        if (z)
+                        {
+                          z->putZoneNs(res2[i][0], res2[i][1], res2[i][2], res2[i][3]);
+                        }
+                      }//for
+
+			      }//try
+			      catch (...)
+			      {
+			       LOGGER(PACKAGE).error("reload: an error has occured");
+			       throw SQL_ERROR();
+			      }//catch (...)
+			  }//reload()
+
+		      virtual void reload(Database::Filters::Union &uf)
+		      {
+		          TRACE("[CALL] ZoneListImpl::reload()");
+		          clear();
+		          uf.clearQueries();
+
+		          bool at_least_one = false;
+		          Database::SelectQuery info_query;
+		          std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+		          for (fit->first(); !fit->isDone(); fit->next()) {
+		            Database::Filters::Zone *zf =
+		                dynamic_cast<Database::Filters::Zone*>(fit->get());
+		            if (!zf)
+		              continue;
+
+		            Database::SelectQuery *tmp = new Database::SelectQuery();
+		            tmp->addSelect("id ico dic varsymb vat handle name url organization street1 street2 street3 "
+		                             "city stateorprovince postalcode country telephone fax email system",
+		                           zf->joinZoneTable());
+		            uf.addQuery(tmp);
+		            at_least_one = true;
+		          }
+		          if (!at_least_one) {
+		            LOGGER(PACKAGE).error("wrong filter passed for reload!");
+		            return;
+		          }
+
+		          /* manually add query part to order result by id
+		           * need for findIDSequence() */
+		          uf.serialize(info_query);
+		          std::string info_query_str = str(boost::format("%1% ORDER BY id LIMIT %2%") % info_query.str() % m_limit);
+		          try {
+		            Database::Connection conn = Database::Manager::acquire();
+		            Database::Result z_info = conn.exec(info_query_str);
+
+
+		            for (unsigned i=0; i < static_cast<unsigned>(z_info.size()); i++)
+		            {
+
+		                m_data.push_back(new ZoneImpl(
+		                      z_info[i][0]
+                              ,z_info[i][1]
+                              ,z_info[i][2]
+                              ,z_info[i][3]
+                              ,z_info[i][4]
+                              ,z_info[i][5]
+                              ,z_info[i][6]
+                              ,z_info[i][7]
+                              ,z_info[i][8]
+                              ,z_info[i][9]
+                              ,z_info[i][10]
+                              ,z_info[i][11]
+                              ,z_info[i][12]
+                              ,z_info[i][13]
+                              ,z_info[i][14]
+                                      ));
+		            }//for i
+
+		            if (m_data.empty())
+		              return;
+
+
+		            resetIDSequence();
+		            Database::SelectQuery zns_query;
+		            zns_query.select() << "id, zone, fqdn, addrs ";
+		            zns_query.from() << "zone_ns";
+		            zns_query.order_by() << "zone";
+
+		            Database::Result r_zns = conn.exec(zns_query);
+
+                    for (unsigned i=0; i < static_cast<unsigned>(r_zns.size()); i++)
+                    {
+                      // find associated zone
+                      unsigned zoneId = r_zns[i][1];
+                      ZoneImpl *z = dynamic_cast<ZoneImpl* >(findIDSequence(zoneId));
+
+                      if (z)
+                      {
+                        z->putZoneNs(r_zns[i][0], r_zns[i][1], r_zns[i][2], r_zns[i][3]);
+                      }
+                    }//for
+
+		            /* checks if row number result load limit is active and set flag */
+		            CommonListImplNew::reload();
+		          }
+		          catch (std::exception& ex)
+		          {
+		            LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
+		          }
+		      }//reload(Database::Filters::Union &uf)
+
+		      virtual void sort(MemberType _member, bool _asc)
+		      {
+		        switch (_member)
+		        {
+		          case MT_FQDN:
+		            stable_sort(m_data.begin(), m_data.end(), CompareFqdn(_asc));
+		            break;
+                  case MT_EXPERIODMIN:
+                    stable_sort(m_data.begin(), m_data.end(), CompareExPeriodMin(_asc));
+                    break;
+                  case MT_EXPERIODMAX:
+                    stable_sort(m_data.begin(), m_data.end(), CompareExPeriodMax(_asc));
+                    break;
+                  case MT_VALPERIOD:
+                    stable_sort(m_data.begin(), m_data.end(), CompareValPeriod(_asc));
+                    break;
+                  case MT_DOTSMAX:
+                    stable_sort(m_data.begin(), m_data.end(), CompareDotsMax(_asc));
+                    break;
+                  case MT_ENUMZONE:
+                    stable_sort(m_data.begin(), m_data.end(), CompareEnumZone(_asc));
+                    break;
+                  case MT_TTL:
+                    stable_sort(m_data.begin(), m_data.end(), CompareTtl(_asc));
+                    break;
+                  case MT_HOSTMASTER:
+                    stable_sort(m_data.begin(), m_data.end(), CompareHostmaster(_asc));
+                    break;
+                  case MT_SERIAL:
+                    stable_sort(m_data.begin(), m_data.end(), CompareSerial(_asc));
+                    break;
+                  case MT_REFRESH:
+                    stable_sort(m_data.begin(), m_data.end(), CompareRefresh(_asc));
+                    break;
+                  case MT_UPDATERETR:
+                    stable_sort(m_data.begin(), m_data.end(), CompareUpdateRetr(_asc));
+                    break;
+                  case MT_EXPIRY:
+                    stable_sort(m_data.begin(), m_data.end(), CompareExpiry(_asc));
+                    break;
+                  case MT_MINIMUM:
+                    stable_sort(m_data.begin(), m_data.end(), CompareMinimum(_asc));
+                    break;
+                  case MT_NSFQDN:
+                    stable_sort(m_data.begin(), m_data.end(), CompareNsFqdn(_asc));
+                    break;
+		        }
+		      }//sort
+
+		      virtual void makeQuery(bool, bool, std::stringstream&) const
+		      {
+		        // empty implementation
+		      }
+		      virtual const char* getTempTableName() const
+		      {
+		        return "";
+		      }
+
+		      const Zone* findZoneByFqdn(const std::string& fqdn) const
+		      {
+		          Zone *z=0, *ret = 0;
+		          for ( unsigned i = 0; i < m_data.size(); i++)
+		          {
+		              z = dynamic_cast<Zone*>(m_data[i]);
+		              if(z->getFqdn().compare(fqdn) == 0 )
+		              {
+		                  ret=z;
+		                  break;
+		              }
+		          };
+		          return ret;
+		      }
+
+		      virtual Zone* create()
+		        {
+		          return new ZoneImpl();
+		        }
+
+		      //void clearFilter() {}
+
+		      virtual Register::Zone::Zone* findId(Database::ID id) const
+		      {
+                  Zone *z=0, *ret = 0;
+                  for ( unsigned i = 0; i < m_data.size(); i++)
+                  {
+                      z = dynamic_cast<Zone*>(m_data[i]);
+                      if(z->getId() == id )
+                      {
+                          ret=z;
+                          break;
+                      }
+                  };
+                  return ret;
+		      }
+
+	};//class ZoneListImpl
+
     class ManagerImpl : virtual public Manager
     {
-      ZoneList zoneList;
+      ZoneListImpl zoneList;
       std::string defaultEnumSuffix;
       std::string enumZoneString;
       std::string defaultDomainSuffix;
@@ -103,26 +740,7 @@ namespace Register
       }
       void load()
       {
-          	Database::Connection conn = Database::Manager::acquire();
-
-  			Database::Result res = conn.exec(
-  		          "SELECT id, fqdn, enum_zone, "
-  		          "ARRAY_UPPER(STRING_TO_ARRAY(fqdn,'.'),1) + dots_max "
-  		          "FROM zone ORDER BY LENGTH(fqdn) DESC"
-				);
-  			unsigned rows = res.size();
-  			for (unsigned i = 0 ; i < rows; ++i)
-  			{
-  				long long tmp = res[i][0];
-
-  	          zoneList.push_back(ZoneImpl(
-				res[i][0]
-  	            ,res[i][1]
-  	            ,res[i][2]
-  	        	,res[i][3]
-  	           ));
-  			}//for
-
+ 		zoneList.reload();
         loaded = true;
       }//load()
 
@@ -242,9 +860,7 @@ namespace Register
       {
         // nonconst casting for lazy initialization
         if (!loaded) ((Register::Zone::ManagerImpl *)this)->load();
-        ZoneList::const_iterator i = find(RANGE(zoneList),fqdn);
-        if (i!=zoneList.end()) return &(*i);
-        else return NULL;
+        return zoneList.findZoneByFqdn(fqdn);
       }
 
       virtual bool checkTLD(const DomainName& domain) const
