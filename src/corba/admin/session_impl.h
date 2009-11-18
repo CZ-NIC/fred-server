@@ -20,6 +20,7 @@
 #include "pagetable_publicrequests.h"
 #include "pagetable_mails.h"
 #include "pagetable_invoices.h"
+#include "pagetable_statement_items.h"
 #include "pagetable_filters.h"
 #include "pagetable_files.h"
 #include "pagetable_logger.h"
@@ -58,6 +59,7 @@ private:
   ccReg_PublicRequests_i* m_publicrequests;
   ccReg_Mails_i* m_mails;
   ccReg_Invoices_i* m_invoices;
+  ccReg_StatementItems_i* m_statementitems;
   ccReg_Filters_i* m_filters;
   ccReg_User_i* m_user;
   ccReg_Files_i* m_files;
@@ -72,6 +74,7 @@ private:
   std::auto_ptr<Register::File::Manager> file_manager_;
   std::auto_ptr<Register::Logger::Manager> m_logger_manager;
   std::auto_ptr<Register::Session::Manager> m_logsession_manager;
+  std::auto_ptr<Register::Banking::Manager> m_banking_manager;
   MailerManager m_mailer_manager;
 
   /**

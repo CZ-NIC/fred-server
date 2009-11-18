@@ -17,7 +17,7 @@ StatementItemImpl::~StatementItemImpl()
 Table &
 StatementItemImpl::joinStatementItemTable()
 {
-    return joinTable("bank_statement_item");
+    return joinTable("bank_item");
 }
 
 Value<Database::ID> &

@@ -50,6 +50,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
 
   mail_manager_.reset(Register::Mail::Manager::create());
   file_manager_.reset(Register::File::Manager::create());
+  m_banking_manager.reset(Register::Banking::Manager::create());
 
   m_domains = new ccReg_Domains_i(m_register_manager->getDomainManager()->createList(), &settings_);
   m_contacts = new ccReg_Contacts_i(m_register_manager->getContactManager()->createList(), &settings_);
@@ -60,6 +61,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_invoices = new ccReg_Invoices_i(m_invoicing_manager->createList());
   m_filters = new ccReg_Filters_i(m_register_manager->getFilterManager()->getList());
   m_publicrequests = new ccReg_PublicRequests_i(m_publicrequest_manager->createList());
+  m_statementitems = new ccReg_StatementItems_i(m_banking_manager->createItemList());
   m_mails = new ccReg_Mails_i(mail_manager_->createList(), ns);
   m_files = new ccReg_Files_i(file_manager_->createList());
   m_logger = new ccReg_Logger_i(m_logger_manager->createList());
@@ -76,6 +78,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_invoices->setDB();
   m_logger->setDB();
   m_logsession->setDB();
+  m_statementitems->setDB();
   m_zones->setDB();
 
   settings_.set("filter.history", "off");
@@ -102,6 +105,7 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_files;
   delete m_logger;
   delete m_logsession;
+  delete m_statementitems;
   delete m_zones;
 
   db.Disconnect();
@@ -136,6 +140,8 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
       return m_eppactions->_this();
     case ccReg::FT_INVOICE:
       return m_invoices->_this();
+    case ccReg::FT_STATEMENTITEM:
+      return m_statementitems->_this();
     case ccReg::FT_PUBLICREQUEST:
       return m_publicrequests->_this();
     case ccReg::FT_MAIL:

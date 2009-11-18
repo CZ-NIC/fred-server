@@ -17,7 +17,7 @@ public:
     virtual Value<Database::ID> &addAccountId() = 0;
     virtual Interval<Database::DateInterval> &addCreateDate() = 0;
     virtual Interval<Database::DateInterval> &addBalanceOldDate() = 0;
-    // TODO maybe other items from bank_statement_head and bank_statement_item
+    // TODO maybe other items from bank_head and bank_item
     virtual Value<std::string> &addAccountNumber() = 0;
     virtual Value<std::string> &addBankCode() = 0;
     virtual Value<std::string> &addConstSymbol() = 0;

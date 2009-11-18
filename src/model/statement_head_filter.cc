@@ -17,7 +17,7 @@ StatementHeadImpl::~StatementHeadImpl()
 Table &
 StatementHeadImpl::joinStatementHeadTable()
 {
-    return joinTable("bank_statement_head");
+    return joinTable("bank_head");
 }
 
 Value<Database::ID> &
