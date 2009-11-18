@@ -64,6 +64,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_files = new ccReg_Files_i(file_manager_->createList());
   m_logger = new ccReg_Logger_i(m_logger_manager->createList());
   m_logsession = new ccReg_LogSession_i(m_logsession_manager->createList());
+  m_zones = new ccReg_Zones_i(m_register_manager->getZoneManager()->getList());
 
   m_eppactions->setDB();
   m_registrars->setDB();
@@ -75,6 +76,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_invoices->setDB();
   m_logger->setDB();
   m_logsession->setDB();
+  m_zones->setDB();
 
   settings_.set("filter.history", "off");
 
@@ -100,6 +102,7 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_files;
   delete m_logger;
   delete m_logsession;
+  delete m_zones;
 
   db.Disconnect();
 }
@@ -143,6 +146,9 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
       return m_logger->_this();
     case ccReg::FT_SESSION: 
       return m_logsession->_this();
+    case ccReg::FT_ZONE:
+      return m_zones->_this();
+
     default:
       break;
   }
