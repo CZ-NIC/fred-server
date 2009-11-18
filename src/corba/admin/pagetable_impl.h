@@ -55,8 +55,8 @@ using namespace Database;
 
 #define DECL_PAGETABLE_I \
   Registry::Table::ColumnHeaders* getColumnHeaders(); \
-  Registry::TableRow* getRow(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);\
-  ccReg::TID getRowId(CORBA::Short row) throw (ccReg::Table::INVALID_ROW);\
+  Registry::TableRow* getRow(CORBA::UShort row) throw (ccReg::Table::INVALID_ROW);\
+  ccReg::TID getRowId(CORBA::UShort row) throw (ccReg::Table::INVALID_ROW);\
   char* outputCSV();\
   CORBA::Short numRows();\
   CORBA::Short numColumns();\

@@ -30,7 +30,7 @@ Registry::Table::ColumnHeaders* ccReg_LogSession_i::getColumnHeaders() {
   return ch;
 }
 
-Registry::TableRow* ccReg_LogSession_i::getRow(CORBA::Short row)
+Registry::TableRow* ccReg_LogSession_i::getRow(CORBA::UShort row)
     throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
@@ -74,7 +74,7 @@ void ccReg_LogSession_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
   }
 }
 
-ccReg::TID ccReg_LogSession_i::getRowId(CORBA::Short row)
+ccReg::TID ccReg_LogSession_i::getRowId(CORBA::UShort row)
     throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 

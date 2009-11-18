@@ -40,7 +40,7 @@ ccReg_Filters_i::getColumnHeaders() {
 }
 
 Registry::TableRow* 
-ccReg_Filters_i::getRow(CORBA::Short row) 
+ccReg_Filters_i::getRow(CORBA::UShort row) 
   throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
 
@@ -63,7 +63,7 @@ ccReg_Filters_i::getRow(CORBA::Short row)
 }
 
 ccReg::TID 
-ccReg_Filters_i::getRowId(CORBA::Short row)
+ccReg_Filters_i::getRowId(CORBA::UShort row)
   throw (ccReg::Table::INVALID_ROW) {
   Logging::Context ctx(base_context_);
  
