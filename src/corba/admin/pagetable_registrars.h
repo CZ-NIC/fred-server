@@ -7,11 +7,11 @@ class ccReg_Registrars_i : public ccReg_PageTable_i,
                            public PortableServer::RefCountServantBase {
 private:
   Register::Registrar::RegistrarList *rl;
-  //Register::Zone::ZoneList *zl;
+  Register::Zone::ZoneList *zl;
 
 public:
   ccReg_Registrars_i(Register::Registrar::RegistrarList * _rl
-					  //, Register::Zone::ZoneList * _zl
+					  , Register::Zone::ZoneList * _zl
 					  );
   ~ccReg_Registrars_i();
   DECL_PAGETABLE_I;

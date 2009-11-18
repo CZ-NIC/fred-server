@@ -48,6 +48,7 @@ private:
   std::string session_id_;
   Config::Conf& cfg_;
 
+  ccReg_Zones_i* m_zones;
   ccReg_Registrars_i* m_registrars;
   ccReg_EPPActions_i* m_eppactions;
   ccReg_Domains_i* m_domains;

@@ -1,10 +1,10 @@
 #include "pagetable_registrars.h"
 
 ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::RegistrarList *_rl
-		//, Register::Zone::ZoneList * _zl
+		, Register::Zone::ZoneList * _zl
 		)
   : rl(_rl)
-//  , zl(_zl)
+  , zl(_zl)
 {}
 
 ccReg_Registrars_i::~ccReg_Registrars_i() {
