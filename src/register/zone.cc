@@ -551,9 +551,13 @@ namespace Register
 		              continue;
 
 		            Database::SelectQuery *tmp = new Database::SelectQuery();
-		            tmp->addSelect("id ico dic varsymb vat handle name url organization street1 street2 street3 "
-		                             "city stateorprovince postalcode country telephone fax email system",
-		                           zf->joinZoneTable());
+		            tmp->select() << "z.id, z.fqdn, z.ex_period_min, z.ex_period_max"
+                      ", z.val_period, z.dots_max, z.enum_zone"
+                      ", zs.ttl, zs.hostmaster, zs.serial, zs.refresh, zs.update_retr"
+                      ", zs.expiry, zs.minimum, zs.ns_fqdn";
+		            tmp->from() << "zone z JOIN zone_soa zs ON z.id = zs.zone";
+		            tmp->order_by() << "z.id";
+
 		            uf.addQuery(tmp);
 		            at_least_one = true;
 		          }
@@ -570,10 +574,8 @@ namespace Register
 		            Database::Connection conn = Database::Manager::acquire();
 		            Database::Result z_info = conn.exec(info_query_str);
 
-
 		            for (unsigned i=0; i < static_cast<unsigned>(z_info.size()); i++)
 		            {
-
 		                m_data.push_back(new ZoneImpl(
 		                      z_info[i][0]
                               ,z_info[i][1]
@@ -1332,7 +1334,11 @@ namespace Register
         if (p) free(p);
         return result;
       }
-    };
+      virtual ZoneList *getList()
+      {
+        return &zoneList;
+      }
+    };//class ManagerImpl
 
     Manager* Manager::create()
     {

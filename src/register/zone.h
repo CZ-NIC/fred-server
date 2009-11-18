@@ -298,6 +298,8 @@ namespace Register
               const Database::Money &price,
               int period)
           throw (SQL_ERROR) = 0;
+      /// Return list of zones
+        virtual ZoneList *getList() = 0;
       /// create manager object
       static Manager *create();
     };
