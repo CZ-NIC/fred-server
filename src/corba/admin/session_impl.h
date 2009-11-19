@@ -100,6 +100,7 @@ private:
 
   Registry::Request::Detail*  getRequestDetail(ccReg::TID _id);
 
+  Registry::Zone::Detail* getZoneDetail(ccReg::TID _id);
   /*
    * TODO:
    * this should be rather in separate library - it is only general CORBA-to-Register
@@ -120,6 +121,7 @@ private:
   Registry::Mailing::Detail* createMailDetail(Register::Mail::Mail *_mail);
   Registry::Invoicing::Detail* createInvoiceDetail(Register::Invoicing::Invoice *_invoice);
   Registry::Request::Detail *createRequestDetail(Register::Logger::Request *req);
+  Registry::Zone::Detail* createZoneDetail(Register::Zone::Zone* _registrar);
 
   void _createUpdateRegistrar(const ccReg::Registrar& _registrar);
 

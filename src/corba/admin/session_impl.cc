@@ -542,6 +542,36 @@ Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
 
 }
 
+
+Registry::Zone::Detail* ccReg_Session_i::getZoneDetail(ccReg::TID _id) {
+  // Register::Zone::Zone *zone = m_zones->findId(_id);
+  // if (zone) {
+  //   return createZoneDetail(zone);
+  // } else {
+  /* disable cache */
+  if (0) {
+  }
+  else {
+    LOGGER(PACKAGE).debug(boost::format("constructing zone filter for object id=%1%' detail")
+        % _id);
+    Register::Zone::ZoneList * tmp_zone_list =
+        m_register_manager->getZoneManager()->getList();
+
+    Database::Filters::Union uf;
+    Database::Filters::Zone *filter = new Database::Filters::ZoneImpl();
+    filter->addId().setValue(Database::ID(_id));
+    uf.addFilter(filter);
+
+    tmp_zone_list->reload(uf);
+
+    if (tmp_zone_list->size() != 1) {
+      throw ccReg::Admin::ObjectNotFound();
+    }
+    return createZoneDetail(dynamic_cast<Register::Zone::Zone*>(tmp_zone_list->get(0)));
+  }
+}
+
+
 Registry::Request::Detail *ccReg_Session_i::createRequestDetail(Register::Logger::Request *req) {
 	Registry::Request::Detail *detail = new Registry::Request::Detail();
 
@@ -1568,6 +1598,37 @@ Registry::EPPAction::Detail* ccReg_Session_i::createEppActionDetail(Register::Re
 
   return detail;
 }
+
+Registry::Zone::Detail* ccReg_Session_i::createZoneDetail(Register::Zone::Zone* _zone)
+{
+  TRACE("[CALL] ccReg_Session_i::createZoneDetail()");
+  LOGGER(PACKAGE).debug(boost::format("generating zone detail for object id=%1%")
+      % _zone->getId());
+  Registry::Zone::Detail *detail = new Registry::Zone::Detail();
+
+  detail->id = _zone->getId();
+  detail->fqdn = DUPSTRFUN(_zone->getFqdn);
+  detail->ex_period_min = _zone->getExPeriodMin();
+  detail->ex_period_max = _zone->getExPeriodMax();
+  detail->ttl = _zone->getTtl();
+  detail->hostmaster = DUPSTRFUN(_zone->getHostmaster);
+  detail->refresh = _zone->getRefresh();
+  detail->update_retr = _zone->getUpdateRetr();
+  detail->expiry = _zone->getExpiry();
+  detail->minimum = _zone->getMinimum();
+  detail->ns_fqdn = DUPSTRFUN(_zone->getNsFqdn);
+
+  detail->ns.length(_zone->getZoneNsSize());
+  for (unsigned i = 0; i < _zone->getZoneNsSize(); i++)
+  {
+      detail->ns[i].id = _zone->getZoneNs(i)->getId();
+      detail->ns[i].fqdn = DUPSTRFUN(_zone->getZoneNs(i)->getFqdn);
+      detail->ns[i].addr = DUPSTRFUN(_zone->getZoneNs(i)->getAddrs);
+  }
+
+  return detail;
+}
+
 
 void ccReg_Session_i::setHistory(CORBA::Boolean _flag) {
   Logging::Context ctx(base_context_);
