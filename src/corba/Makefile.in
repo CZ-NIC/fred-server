@@ -81,7 +81,7 @@ fred_adifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/util/log/liblog.a \
 	$(top_builddir)/util/conf/libconf.a \
 	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_fred_logd_OBJECTS = fred_logd-server.$(OBJEXT)
 fred_logd_OBJECTS = $(am_fred_logd_OBJECTS)
 fred_logd_LDADD = $(LDADD)
@@ -97,7 +97,7 @@ fred_logd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/util/log/liblog.a \
 	$(top_builddir)/util/conf/libconf.a \
 	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_fred_pifd_OBJECTS = fred_pifd-server.$(OBJEXT)
 fred_pifd_OBJECTS = $(am_fred_pifd_OBJECTS)
 fred_pifd_LDADD = $(LDADD)
@@ -113,7 +113,7 @@ fred_pifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/util/log/liblog.a \
 	$(top_builddir)/util/conf/libconf.a \
 	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_fred_rifd_OBJECTS = fred_rifd-server.$(OBJEXT)
 fred_rifd_OBJECTS = $(am_fred_rifd_OBJECTS)
 fred_rifd_LDADD = $(LDADD)
@@ -129,7 +129,7 @@ fred_rifd_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/util/log/liblog.a \
 	$(top_builddir)/util/conf/libconf.a \
 	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_test_OBJECTS = test-admin.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -144,7 +144,7 @@ am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/util/log/liblog.a \
 	$(top_builddir)/util/conf/libconf.a \
 	$(top_builddir)/util/libutil.a $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 test_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_2)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -361,7 +361,7 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	$(top_builddir)/util/log/liblog.a \
 	$(top_builddir)/util/conf/libconf.a \
 	$(top_builddir)/util/libutil.a \
-	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB)
+	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS)
 
 IDLFILE = $(IDLDIR)/ccReg.idl
 noinst_LIBRARIES = libcorba.a

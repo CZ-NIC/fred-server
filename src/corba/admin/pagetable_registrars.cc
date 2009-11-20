@@ -34,8 +34,11 @@ ccReg_Registrars_i::getColumnHeaders()
 {
   Logging::Context ctx(base_context_);
 
+  //zone count limited to 10
+  unsigned zone_count = (zl->getSize() > 10 ? 10 : zl->getSize());
+
   Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
-  ch->length(19);
+  ch->length(19 + zone_count);
   COLHEAD(ch,0,"Name",CT_OTHER);
   COLHEAD(ch,1,"Handle",CT_OID); 
   COLHEAD(ch,2,"URL",CT_OTHER);
@@ -56,6 +59,12 @@ ccReg_Registrars_i::getColumnHeaders()
   COLHEAD(ch,17,"Telephone",CT_OTHER);
   COLHEAD(ch,18,"Fax",CT_OTHER);
 
+  for (int i = 0 ; i < zone_count ; i++)
+  {
+      std::string zonefqdn
+          = (dynamic_cast<Register::Zone::Zone*>(zl->get(i)))->getFqdn();
+      COLHEAD(ch,19+i,(zonefqdn + " credit").c_str(),CT_OTHER);
+  }//for zone_count
 
   return ch;
 }
@@ -69,7 +78,11 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
   const Register::Registrar::Registrar *r = rl->get(row);
   if (!r) throw ccReg::Table::INVALID_ROW();
   Registry::TableRow *tr = new Registry::TableRow;
-  tr->length(19);
+
+  //zone count limited to 10
+  unsigned zone_count = (zl->getSize() > 10 ? 10 : zl->getSize());
+
+  tr->length(19 + zone_count);
 
   MAKE_OID(oid_handle, r->getId(), C_STR(r->getHandle()), FT_REGISTRAR)
 
@@ -92,6 +105,13 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
   (*tr)[16] <<= C_STR(r->getCountry());
   (*tr)[17] <<= C_STR(r->getTelephone());
   (*tr)[18] <<= C_STR(r->getFax());
+
+  for (int i = 0 ; i < zone_count ; i++)
+  {
+      unsigned long long zoneid
+          = (dynamic_cast<Register::Zone::Zone*>(zl->get(i)))->getId();
+      (*tr)[19+i] <<= C_STR(r->getCredit(zoneid));
+  }//for zone_count
 
   return tr;
 }
@@ -162,6 +182,38 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
     case 18:
       rl->sort(Register::Registrar::MT_FAX, dir);
       break;
+
+    case 19:
+      rl->sort(Register::Registrar::MT_ZONE01CREDIT, dir);
+      break;
+    case 20:
+      rl->sort(Register::Registrar::MT_ZONE02CREDIT, dir);
+      break;
+    case 21:
+      rl->sort(Register::Registrar::MT_ZONE03CREDIT, dir);
+      break;
+    case 22:
+      rl->sort(Register::Registrar::MT_ZONE04CREDIT, dir);
+      break;
+    case 23:
+      rl->sort(Register::Registrar::MT_ZONE05CREDIT, dir);
+      break;
+    case 24:
+      rl->sort(Register::Registrar::MT_ZONE06CREDIT, dir);
+      break;
+    case 25:
+      rl->sort(Register::Registrar::MT_ZONE07CREDIT, dir);
+      break;
+    case 26:
+      rl->sort(Register::Registrar::MT_ZONE08CREDIT, dir);
+      break;
+    case 27:
+      rl->sort(Register::Registrar::MT_ZONE09CREDIT, dir);
+      break;
+    case 28:
+      rl->sort(Register::Registrar::MT_ZONE10CREDIT, dir);
+      break;
+
   }
 }
 

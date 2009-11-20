@@ -47,6 +47,16 @@ enum MemberType {
   MT_COUNTRY, ///< country code
   MT_TELEPHONE, ///< telephone
   MT_FAX, ///< fax
+  MT_ZONE01CREDIT, ///< zone 1 credit
+  MT_ZONE02CREDIT, ///< zone 2 credit
+  MT_ZONE03CREDIT, ///< zone 3 credit
+  MT_ZONE04CREDIT, ///< zone 4 credit
+  MT_ZONE05CREDIT, ///< zone 5 credit
+  MT_ZONE06CREDIT, ///< zone 6 credit
+  MT_ZONE07CREDIT, ///< zone 7 credit
+  MT_ZONE08CREDIT, ///< zone 8 credit
+  MT_ZONE09CREDIT, ///< zone 9 credit
+  MT_ZONE10CREDIT ///< zone 10 credit
 };
 
 
@@ -159,7 +169,7 @@ public:
   /// Get actual credit 
   virtual unsigned long getCredit() const = 0;
   /// Get credit for specific zone
-  virtual unsigned long getCredit(Database::ID _zone_id) = 0;
+  virtual unsigned long getCredit(Database::ID _zone_id) const = 0;
   /// Set credit for specific zone
   virtual void setCredit(Database::ID _zone_id, unsigned long _credit) = 0;
   /// Create new ACL record

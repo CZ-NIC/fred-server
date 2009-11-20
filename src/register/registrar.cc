@@ -131,7 +131,8 @@ class RegistrarImpl : public Register::CommonObjectImplNew,
   unsigned long credit; ///< DB: registrar.credit
 
   ACLList acl; ///< access control
-  std::map<Database::ID, unsigned long> zone_credit_map;
+  typedef std::map<Database::ID, unsigned long> ZoneCreditMap;
+  ZoneCreditMap zone_credit_map;
 
 public:
   RegistrarImpl()
@@ -354,8 +355,14 @@ public:
     return credit;
   }
   
-  virtual unsigned long getCredit(Database::ID _zone_id) {
-    return zone_credit_map[_zone_id];
+  virtual unsigned long getCredit(Database::ID _zone_id) const
+  {
+      unsigned long ret = 0;
+      ZoneCreditMap::const_iterator it;
+      it = zone_credit_map.find(_zone_id);
+      if(it != zone_credit_map.end())
+          ret = it->second;
+    return ret;
   }
   
   virtual void setCredit(Database::ID _zone_id, unsigned long _credit) {
