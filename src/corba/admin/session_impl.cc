@@ -1320,6 +1320,16 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Register::Re
     detail->access[i].md5Cert = DUPSTRFUN(_registrar->getACL(i)->getCertificateMD5);
     detail->access[i].password = DUPSTRFUN(_registrar->getACL(i)->getPassword);
   }
+  detail->zones.length(_registrar->getAZoneSize());
+  for (unsigned i = 0; i < _registrar->getAZoneSize(); i++)
+  {
+    detail->zones[i].id = _registrar->getAZone(i)->id;
+    detail->zones[i].name = CORBA::string_dup(_registrar->getAZone(i)->name.c_str());
+    detail->zones[i].credit = CORBA::string_dup(stringify(_registrar->getAZone(i)->credit).c_str());//_registrar->getCredit(__registrar->getAZone(i)->id);
+    detail->zones[i].fromDate = CORBA::string_dup(_registrar->getAZone(i)->fromdate.to_string().c_str());
+    detail->zones[i].toDate = CORBA::string_dup(_registrar->getAZone(i)->todate.to_string().c_str());
+  }
+
   detail->hidden = _registrar->getSystem();
 
   return detail;
