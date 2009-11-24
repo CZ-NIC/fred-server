@@ -430,20 +430,32 @@ namespace Register
 	{
 		    long long ptr_idx_;//from CommonListImpl
 			std::string fqdn;
+			std::string registrar_handle;
 			TID idFilter;
 	public:
 			ZoneListImpl() :
-			    CommonListImplNew(), idFilter(0) {
-			  }
-			  ~ZoneListImpl() {
+			    CommonListImplNew()
+			    , ptr_idx_(0)
+			    , fqdn("")
+			    , registrar_handle("")
+			    , idFilter(0)
+			  {}
+			  ~ZoneListImpl()
+			  {
 			    clear();
 			  }
-			  virtual void setIdFilter(TID _idFilter) {
+			  virtual void setIdFilter(TID _idFilter)
+			  {
 			    idFilter = _idFilter;
 			  }
-			  virtual void setFqdnFilter(const std::string& _fqdn) {
+			  virtual void setFqdnFilter(const std::string& _fqdn)
+			  {
 			    fqdn = _fqdn;
 			  }
+              virtual void setRegistrarHandleFilter(const std::string& _registrar_handle)
+              {
+                  registrar_handle = _registrar_handle;
+              }
 
 			  void resetIDSequence()
 			  {
@@ -482,8 +494,19 @@ namespace Register
 			          ", z.val_period, z.dots_max, z.enum_zone"
 			          ", zs.ttl, zs.hostmaster, zs.serial, zs.refresh, zs.update_retr"
 			          ", zs.expiry, zs.minimum, zs.ns_fqdn"
-			          " FROM zone z JOIN zone_soa zs ON z.id = zs.zone"
-			          " ORDER BY z.id";
+			          " FROM zone z LEFT JOIN zone_soa zs ON z.id = zs.zone";
+			          if(!registrar_handle.empty())
+			              sql << "JOIN registrarinvoice ri ON z.id = ri.zone"
+			              "JOIN registrar r ON r.id = ri.registrarid AND ri.fromdate<=CURRENT_DATE"
+			              "AND (ri.todate >=CURRENT_DATE OR ri.todate ISNULL)"
+			              "AND r.handle ILIKE TRANSLATE('" << conn.escape(registrar_handle)
+			              << "','*?','%_')";//if(!registrar_handle.empty())
+			          sql << " WHERE 1=1 ";
+			          if (!fqdn.empty())
+			              sql << "AND " << "z.fqdn" << " ILIKE TRANSLATE('"
+			              << conn.escape(fqdn) << "','*?','%_') ";//if (!fqdn.empty())
+
+			          sql << " ORDER BY z.id";
 
 			          Database::Result res = conn.exec(sql.str());
 
@@ -706,7 +729,11 @@ namespace Register
 		          return new ZoneImpl();
 		        }
 
-		      //void clearFilter() {}
+		      void clearFilter()
+		      {
+		          fqdn = "";
+		          registrar_handle="";
+		      }
 
 		      virtual Register::Zone::Zone* findId(Database::ID id) const
 		      {

@@ -77,6 +77,43 @@ public:
   virtual void setPassword(const std::string& newPassword) = 0;
 };
 
+/// Registrar's active zone structure
+struct AZone
+{
+    TID id; /// registrarinvoice record id
+    std::string name; /// zone name
+    unsigned long credit; /// registrar's credit
+    Database::Date fromdate; /// from day
+    Database::Date todate;/// to day
+    AZone()
+    :id()
+        ,name()
+        ,credit()
+        ,fromdate()
+        ,todate()
+    {}
+    AZone(std::string _name
+            , unsigned long _credit
+            , Database::Date _fromdate
+            , Database::Date _todate)
+    :id()
+    ,name(_name)
+    ,credit(_credit)
+    ,fromdate(_fromdate)
+    ,todate(_todate)
+    {}
+    AZone(TID _id
+            ,std::string _name
+            , unsigned long _credit
+            , Database::Date _fromdate
+            , Database::Date _todate)
+    :id(_id)
+    ,name(_name)
+    ,credit(_credit)
+    ,fromdate(_fromdate)
+    ,todate(_todate)
+    {}
+};//struct AZone
 
 /// Registrar detail access
 class Registrar
@@ -182,11 +219,24 @@ public:
   virtual void deleteACL(unsigned idx) = 0;
   /// Clear ACL list
   virtual void clearACLList() = 0;
+
+  /// Create new AZone record
+  virtual AZone* newAZone() = 0;
+  /// Return AZone list size
+  virtual unsigned getAZoneSize() const = 0;
+  /// Return AZone list member by index
+  virtual AZone* getAZone(unsigned idx) const = 0;
+  /// Delete AZone or do nothing
+  virtual void deleteAZone(unsigned idx) = 0;
+  /// Clear AZone list
+  virtual void clearAZoneList() = 0;
+
+
   /// Save changes to database
   virtual void save() throw (SQL_ERROR) = 0;
 
   /// Zones number for credit by zone
-  virtual unsigned long getZonesNumber() = 0;
+  //virtual unsigned long getZonesNumber() = 0;
 
 };
 

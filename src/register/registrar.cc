@@ -39,6 +39,7 @@
 #include "model_registrarinvoice.h"
 #include "model_enum_tlds.h"
 
+#include "zone.h"
 
 namespace Register {
 namespace Registrar {
@@ -125,7 +126,8 @@ class RegistrarImpl : public Register::CommonObjectImplNew,
                       virtual public Registrar,
                       private ModelRegistrar
 {
-  typedef std::vector<boost::shared_ptr<ACLImpl> > ACLList;
+  typedef boost::shared_ptr<ACLImpl> ACLImplPtr;
+  typedef std::vector<ACLImplPtr> ACLList;
   typedef ACLList::iterator ACLListIter;
 
   unsigned long credit; ///< DB: registrar.credit
@@ -134,10 +136,17 @@ class RegistrarImpl : public Register::CommonObjectImplNew,
   typedef std::map<Database::ID, unsigned long> ZoneCreditMap;
   ZoneCreditMap zone_credit_map;
 
+  typedef  boost::shared_ptr<AZone> AZonePtr;
+  typedef std::vector<AZonePtr> AZoneList;
+  typedef AZoneList::iterator AZoneListIter;
+  AZoneList actzones;
+
+
 public:
   RegistrarImpl()
   : CommonObjectImplNew()
   , ModelRegistrar()
+
   {}
   RegistrarImpl(TID _id,
                 const std::string& _ico,
@@ -187,6 +196,7 @@ public:
   }
   void clear() {
     acl.clear();
+    actzones.clear();
   }
   ~RegistrarImpl() {}
 
@@ -374,26 +384,174 @@ public:
     return acl.size();
   }
   
+  virtual unsigned getAZoneSize() const {
+      return actzones.size();
+    }
+
   virtual ACL* getACL(unsigned idx) const
   {
     return idx < acl.size() ? acl[idx].get() : NULL;
   }
+  virtual AZone* getAZone(unsigned idx) const
+  {
+    return idx < actzones.size() ? actzones[idx].get() : NULL;
+  }
+
   virtual ACL* newACL()
   {
     boost::shared_ptr<ACLImpl> newACL ( new ACLImpl());
     acl.push_back(newACL);
     return newACL.get();
   }
+
+  virtual AZone* newAZone()
+  {
+    boost::shared_ptr<AZone> newAZone ( new AZone());
+    actzones.push_back(newAZone);
+    return newAZone.get();
+  }
+
   virtual void deleteACL(unsigned idx)
   {
     if (idx < acl.size()) {
       acl.erase(acl.begin()+idx);
     }
   }
+
+  virtual void deleteAZone(unsigned idx)
+  {
+    if (idx < actzones.size()) {
+        actzones.erase(actzones.begin()+idx);
+    }
+  }
+
+
   virtual void clearACLList()
   {
-    clear();
+    acl.clear();
   }
+
+  virtual void clearAZoneList()
+  {
+      actzones.clear();
+  }
+
+
+  virtual unsigned long addRegistrarZone(
+          const std::string& registrarHandle,
+          const std::string zone,
+          const Database::Date &fromDate,
+          const Database::Date &toDate) throw (SQL_ERROR)
+  {///expecting external transaction, no transaction inside
+      try
+      {
+        Database::Connection conn = Database::Manager::acquire();
+
+        std::string fromStr;
+        std::string toStr;
+
+        if (fromDate != Database::Date())
+        {
+            fromStr = "'" + fromDate.to_string() + "'";
+        }
+        else
+        {
+            fromStr = "CURRENT_DATE";
+        }
+        if (toDate != Database::Date())
+        {
+            toStr = "'" + toDate.to_string() + "'";
+        }
+        else
+        {
+            toStr = "NULL";
+        }
+        std::stringstream sql;
+        sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate,lastdate) "
+            << "SELECT r.id,z.id, " << fromStr << "," << toStr << " FROM ("
+            << "SELECT id FROM registrar WHERE handle='" << conn.escape(registrarHandle)
+            << "') r " << "JOIN (SELECT id FROM zone WHERE fqdn='" << conn.escape(zone)
+            << "') z ON (1=1) " << "LEFT JOIN registrarinvoice ri ON "
+            << "(ri.registrarid=r.id AND ri.zone=z.id) " << "WHERE ri.id ISNULL";
+
+
+        conn.exec(sql.str());
+
+        std::stringstream sql2;
+        sql2 << "SELECT ri.id"
+         "FROM (SELECT id FROM registrar WHERE handle='" << conn.escape(registrarHandle) << "') r "
+         "JOIN (SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "') z ON (1=1) "
+         "LEFT JOIN registrarinvoice ri ON (ri.registrarid=r.id AND ri.zone=z.id) "
+         "WHERE fromdate = date" << fromStr << " and ";
+        if(toStr.compare("NULL") == 0)
+            sql2 << "todate isnull";
+        else
+            sql2 <<  "todate = date " << toStr;
+
+        Database::Result res = conn.exec(sql2.str());
+
+        if((res.size() == 1) && (res[0].size() == 1))
+        {
+            Database::ID ret = res[0][0];
+            return ret;
+        }
+        else
+        {
+            LOGGER(PACKAGE).error("addRegistrarZone: an error has occured");
+            throw SQL_ERROR();
+        }
+      }//try
+      catch (...)
+      {
+          LOGGER(PACKAGE).error("addRegistrarZone: an error has occured");
+          throw SQL_ERROR();
+      }//catch (...)
+  }//addRegistrarZone
+
+  virtual void updateRegistrarZone(
+          const TID& id,
+          const Database::Date &fromDate,
+          const Database::Date &toDate) throw (SQL_ERROR)
+  {///expecting external transaction, no transaction inside
+      try
+      {
+        Database::Connection conn = Database::Manager::acquire();
+
+        std::string fromStr;
+        std::string toStr;
+
+        if (fromDate != Database::Date())
+        {
+            fromStr = "'" + fromDate.to_string() + "'";
+        }
+        else
+        {
+            fromStr = "CURRENT_DATE";
+        }
+        if (toDate != Database::Date())
+        {
+            toStr = "'" + toDate.to_string() + "'";
+        }
+        else
+        {
+            toStr = "NULL";
+        }
+        std::stringstream sql;
+
+        sql << "UPDATE registrarinvoice SET fromdate = date " << fromStr
+            << ",todate =  date " << toStr
+            << " WHERE id = " << id << ";";
+
+        conn.exec(sql.str());
+
+      }//try
+      catch (...)
+      {
+          LOGGER(PACKAGE).error("updateRegistrarZone: an error has occured");
+          throw SQL_ERROR();
+      }//catch (...)
+  }//updateRegistrarZone
+
   virtual void save() throw (SQL_ERROR)
   {
       // save registrar data
@@ -413,7 +571,23 @@ public:
 		{
 			acl[j]->setRegistrarId(id);
 			acl[j]->save();
-		}
+		}//for acl
+
+		for (unsigned i = 0; i < actzones.size(); i++)
+		{
+		    if(actzones[i]->id)//use addRegistrarZone or updateRegistrarZone
+                this->updateRegistrarZone (actzones[i]->id
+                            ,actzones[i]->fromdate
+                            ,actzones[i]->todate);
+		    else
+		    {
+		        this->addRegistrarZone (getHandle()
+                            ,actzones[i]->name
+                            ,actzones[i]->fromdate
+                            ,actzones[i]->todate);
+		    }//else id
+		}//for actzones
+
 		tx.commit();
 	}//try
 	catch (...)
@@ -421,29 +595,24 @@ public:
 	 LOGGER(PACKAGE).error("save: an error has occured");
 	 throw SQL_ERROR();
 	}//catch (...)
-  }//save
-  
-  virtual unsigned long getZonesNumber()
-  {
-		try
-		{
-			Database::Connection conn = Database::Manager::acquire();
-		}//try
-		catch (...)
-		{
-		 LOGGER(PACKAGE).error("getZonesNumber: an error has occured");
-		 throw SQL_ERROR();
-		}//catch (...)
-	  return 0;
-  }//getZonesNumber
-
+  }//save()
 
   void putACL(TID _id,
               const std::string& certificateMD5,
               const std::string& password)
   {
-    acl.push_back(boost::shared_ptr<ACLImpl>(new ACLImpl(_id,certificateMD5,password)));
+    acl.push_back(ACLImplPtr(new ACLImpl(_id,certificateMD5,password)));
   }
+
+  void putAZone(TID _id
+          , std::string _name
+          , unsigned long _credit
+          , Database::Date _fromdate
+          , Database::Date _todate)
+  {
+      actzones.push_back(AZonePtr(new AZone(_id,_name,_credit,_fromdate,_todate)));
+  }
+
   bool hasId(TID _id) const
   {
     return getId() == _id;
@@ -453,8 +622,10 @@ public:
     setId(0);
     for (TID i = 0; i < acl.size(); i++)
       acl[i]->setId(0);
+    for (TID i = 0; i < actzones.size(); i++)
+        actzones[i]->id=0;
   }
-};
+};//class RegistrarImpl
 
 COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Name)
 COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Handle)
@@ -874,7 +1045,7 @@ public:
     return "";
   }
   
-};
+};//class RegistrarListImpl
 
 class EPPActionImpl : public CommonObjectImpl,
                       virtual public EPPAction {
@@ -1647,3 +1818,4 @@ Manager *Manager::create(DB * db)
 ; // namespace Registrar
 }
 ; // namespace Register
+

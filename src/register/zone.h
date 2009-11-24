@@ -160,7 +160,9 @@ namespace Register
       /// Filter in id
       virtual void setIdFilter(TID id) = 0;
       /// Filter in fqdn
-      virtual void setFqdnFilter(const std::string& handle) = 0;
+      virtual void setFqdnFilter(const std::string& fqdn) = 0;
+      /// Filter in registrar handle
+      virtual void setRegistrarHandleFilter(const std::string& registrar_handle) = 0;
       /// reload actual list of zones
       virtual void reload()  throw (SQL_ERROR)  = 0;
       /// reload with filter
@@ -170,7 +172,7 @@ namespace Register
       /// Create new zone in list
       virtual Zone* create() = 0;
       /// clear filter data
-      //virtual void clearFilter() = 0;
+      virtual void clearFilter() = 0;
       /// sort by column
       virtual void sort(MemberType _member, bool _asc) = 0;
 
