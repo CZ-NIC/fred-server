@@ -1,5 +1,5 @@
-#ifndef _PAGETABLE_STATEMENTS_H_
-#define _PAGETABLE_STATEMENTS_H_
+#ifndef _PAGETABLE_STATEMENT_ITEMS_H_
+#define _PAGETABLE_STATEMENT_ITEMS_H_
 
 #include "pagetable_impl.h"
 #include "register/bank_item_list.h"
@@ -18,4 +18,4 @@ public:
     Register::Banking::StatementItem *findId(ccReg::TID id);
 }; // class ccReg_PageTable_i
 
-#endif // _PAGETABLE_STATEMENTS_H_
+#endif // _PAGETABLE_STATEMENT_ITEMS_H_
