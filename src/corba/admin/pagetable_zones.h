@@ -6,8 +6,8 @@
 class ccReg_Zones_i:
     public ccReg_PageTable_i,
     public PortableServer::RefCountServantBase {
-private:
-    std::auto_ptr<Register::Zone::ZoneList> m_zoneList;
+private:    
+    Register::Zone::ZoneList *m_zoneList;
 public:
     ccReg_Zones_i(Register::Zone::ZoneList *zoneList);
     ~ccReg_Zones_i();
