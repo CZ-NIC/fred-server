@@ -11,12 +11,13 @@ ccReg_Registrars_i::~ccReg_Registrars_i() {
   TRACE("[CALL] ccReg_Registrars_i::~ccReg_Registrars_i()");
 }
 
-void 
+void
 ccReg_Registrars_i::reload() {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] void ccReg_Registrars_i::reload()");
   rl->reload(uf);
+  TRACE("[CALL] void ccReg_Registrars_i::reload() end");
 }
 
 ccReg::Filters::Compound_ptr 
@@ -36,7 +37,7 @@ ccReg_Registrars_i::getColumnHeaders()
 
   //zone count limited to 10
   unsigned zone_count = (zl->getSize() > 10 ? 10 : zl->getSize());
-
+  TRACE(boost::format("[CALL] ccReg_Registrars_i::getColumnHeaders(), zone_count: %1%") % zone_count);
   Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(19 + zone_count);
   COLHEAD(ch,0,"Name",CT_OTHER);
@@ -74,6 +75,7 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
   throw (ccReg::Table::INVALID_ROW)
 {
   Logging::Context ctx(base_context_);
+  TRACE(boost::format("[CALL] ccReg_Registrars_i::getRow(%1%)") % row);
 
   const Register::Registrar::Registrar *r = rl->get(row);
   if (!r) throw ccReg::Table::INVALID_ROW();
@@ -247,7 +249,10 @@ ccReg_Registrars_i::numColumns()
 {
   Logging::Context ctx(base_context_);
 
-  return 5;
+  //zone count limited to 10
+    unsigned zone_count = (zl->getSize() > 10 ? 10 : zl->getSize());
+    TRACE(boost::format("[CALL] ccReg_Registrars_i::numColumns(), zone_count: %1%") % zone_count);
+  return 19 + zone_count;
 }
 
 void
