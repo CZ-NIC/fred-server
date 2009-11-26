@@ -439,7 +439,9 @@ namespace Register
 			    , fqdn("")
 			    , registrar_handle("")
 			    , idFilter(0)
-			  {}
+			  {
+			    reload();
+			  }
 			  ~ZoneListImpl()
 			  {
 			    clear();
@@ -485,6 +487,7 @@ namespace Register
 
 			  virtual void reload() throw (SQL_ERROR)
 			  {
+			      TRACE("[CALL] ZoneListImpl::reload()");
 			      try
 			      {
 			          Database::Connection conn = Database::Manager::acquire();
@@ -509,6 +512,9 @@ namespace Register
 			          sql << " ORDER BY z.id";
 
 			          Database::Result res = conn.exec(sql.str());
+
+			          TRACE(boost::format("[CALL] ZoneListImpl::reload(), registrar_handle.empty(): %1% fqdn: %2% res.size(): %3%")
+                          % registrar_handle.empty() % fqdn % res.size());
 
 			          for (unsigned i=0; i < static_cast<unsigned>(res.size()); i++)
 			          {
@@ -549,7 +555,6 @@ namespace Register
                           z->putZoneNs(res2[i][0], res2[i][1], res2[i][2], res2[i][3]);
                         }
                       }//for
-
 			      }//try
 			      catch (...)
 			      {
@@ -560,7 +565,7 @@ namespace Register
 
 		      virtual void reload(Database::Filters::Union &uf)
 		      {
-		          TRACE("[CALL] ZoneListImpl::reload()");
+		          TRACE("[CALL] ZoneListImpl::reload(uf)");
 		          clear();
 		          uf.clearQueries();
 
@@ -585,7 +590,7 @@ namespace Register
 		            at_least_one = true;
 		          }
 		          if (!at_least_one) {
-		            LOGGER(PACKAGE).error("wrong filter passed for reload!");
+		            LOGGER(PACKAGE).error("wrong filter passed for reload ZoneList!");
 		            return;
 		          }
 

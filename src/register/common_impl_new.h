@@ -6,6 +6,10 @@
 #include "model/model_filters.h"
 #include "exceptions.h"
 
+#include "log/logger.h"
+#include "log/context.h"
+
+
 #include <vector>
 
 namespace Register {

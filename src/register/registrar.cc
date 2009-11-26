@@ -900,7 +900,8 @@ public:
         unsigned long credit       = *(++col);
         
         RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
-        if (registrar_ptr) {
+        if (registrar_ptr)
+        {
           registrar_ptr->setCredit(zone_id, credit);
         }
       }
