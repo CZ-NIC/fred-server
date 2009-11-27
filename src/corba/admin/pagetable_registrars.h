@@ -9,6 +9,8 @@ private:
   Register::Registrar::RegistrarList *rl;
   Register::Zone::ZoneList *zl;
 
+  enum cols {static_cols = 3};///number of static columns in pagetable
+
 public:
   ccReg_Registrars_i(Register::Registrar::RegistrarList * _rl
 					  , Register::Zone::ZoneList * _zl

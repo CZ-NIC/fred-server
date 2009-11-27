@@ -30,43 +30,27 @@ ccReg_Registrars_i::add() {
   return it.addE(f); 
 }
 
-Registry::Table::ColumnHeaders* 
+Registry::Table::ColumnHeaders*
 ccReg_Registrars_i::getColumnHeaders()
-{
+{//all columns are in svn rev 9616
   Logging::Context ctx(base_context_);
 
   //zone count limited to 10
   unsigned zone_count = (zl->getSize() > 10 ? 10 : zl->getSize());
   TRACE(boost::format("[CALL] ccReg_Registrars_i::getColumnHeaders(), zone_count: %1%") % zone_count);
   Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
-  ch->length(19 + zone_count);
-  COLHEAD(ch,0,"Name",CT_OTHER);
-  COLHEAD(ch,1,"Handle",CT_OID); 
-  COLHEAD(ch,2,"URL",CT_OTHER);
-  COLHEAD(ch,3,"Mail",CT_OTHER);
-  COLHEAD(ch,4,"Credit",CT_OTHER);
-  COLHEAD(ch,5,"Ico",CT_OTHER);
-  COLHEAD(ch,6,"Dic",CT_OTHER);
-  COLHEAD(ch,7,"VarSymbol",CT_OTHER);
-  COLHEAD(ch,8,"Vat",CT_OTHER);
-  COLHEAD(ch,9,"Organization",CT_OTHER);
-  COLHEAD(ch,10,"Street1",CT_OTHER);
-  COLHEAD(ch,11,"Street2",CT_OTHER);
-  COLHEAD(ch,12,"Street3",CT_OTHER);
-  COLHEAD(ch,13,"City",CT_OTHER);
-  COLHEAD(ch,14,"Province",CT_OTHER);
-  COLHEAD(ch,15,"PostalCode",CT_OTHER);
-  COLHEAD(ch,16,"Country",CT_OTHER);
-  COLHEAD(ch,17,"Telephone",CT_OTHER);
-  COLHEAD(ch,18,"Fax",CT_OTHER);
+  ch->length(static_cols + zone_count);
+
+  COLHEAD(ch,0,"Handle",CT_OID);
+  COLHEAD(ch,1,"Name",CT_OTHER);
+  COLHEAD(ch,2,"Email",CT_OTHER);
 
   for (int i = 0 ; i < zone_count ; i++)
   {
       std::string zonefqdn
           = (dynamic_cast<Register::Zone::Zone*>(zl->get(i)))->getFqdn();
-      COLHEAD(ch,19+i,(zonefqdn + " credit").c_str(),CT_OTHER);
+      COLHEAD(ch,static_cols+i,(zonefqdn + " credit").c_str(),CT_OTHER);
   }//for zone_count
-
   return ch;
 }
 
@@ -84,36 +68,20 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
   //zone count limited to 10
   unsigned zone_count = (zl->getSize() > 10 ? 10 : zl->getSize());
 
-  tr->length(19 + zone_count);
+  tr->length(static_cols + zone_count);
 
   MAKE_OID(oid_handle, r->getId(), C_STR(r->getHandle()), FT_REGISTRAR)
 
-  (*tr)[0] <<= C_STR(r->getName()); 
-  (*tr)[1] <<= oid_handle;
-  (*tr)[2] <<= C_STR(r->getURL());
-  (*tr)[3] <<= C_STR(r->getEmail());
-  (*tr)[4] <<= C_STR(r->getCredit());
-  (*tr)[5] <<= C_STR(r->getIco());
-  (*tr)[6] <<= C_STR(r->getDic());
-  (*tr)[7] <<= C_STR(r->getVarSymb());
-  (*tr)[8] <<= C_STR(r->getVat() ? "YES" : "NO" );
-  (*tr)[9] <<= C_STR(r->getOrganization());
-  (*tr)[10] <<= C_STR(r->getStreet1());
-  (*tr)[11] <<= C_STR(r->getStreet2());
-  (*tr)[12] <<= C_STR(r->getStreet3());
-  (*tr)[13] <<= C_STR(r->getCity());
-  (*tr)[14] <<= C_STR(r->getProvince());
-  (*tr)[15] <<= C_STR(r->getPostalCode());
-  (*tr)[16] <<= C_STR(r->getCountry());
-  (*tr)[17] <<= C_STR(r->getTelephone());
-  (*tr)[18] <<= C_STR(r->getFax());
-
+  (*tr)[0] <<= oid_handle;
+  (*tr)[1] <<= C_STR(r->getName());
+  (*tr)[2] <<= C_STR(r->getEmail());
   for (int i = 0 ; i < zone_count ; i++)
   {
       unsigned long long zoneid
           = (dynamic_cast<Register::Zone::Zone*>(zl->get(i)))->getId();
-      (*tr)[19+i] <<= C_STR(r->getCredit(zoneid));
+      (*tr)[static_cols+i] <<= C_STR(r->getCredit(zoneid));
   }//for zone_count
+
 
   return tr;
 }
@@ -186,36 +154,35 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
       break;
 
     case 19:
-      rl->sort(Register::Registrar::MT_ZONE01CREDIT, dir);
+      rl->sort(Register::Registrar::MT_ZONE01CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(0)))->getId() );
       break;
     case 20:
-      rl->sort(Register::Registrar::MT_ZONE02CREDIT, dir);
+      rl->sort(Register::Registrar::MT_ZONE02CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(1)))->getId() );
       break;
     case 21:
-      rl->sort(Register::Registrar::MT_ZONE03CREDIT, dir);
+      rl->sort(Register::Registrar::MT_ZONE03CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(2)))->getId() );
       break;
     case 22:
-      rl->sort(Register::Registrar::MT_ZONE04CREDIT, dir);
+      rl->sort(Register::Registrar::MT_ZONE04CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(3)))->getId() );
       break;
     case 23:
-      rl->sort(Register::Registrar::MT_ZONE05CREDIT, dir);
+      rl->sort(Register::Registrar::MT_ZONE05CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(4)))->getId() );
       break;
     case 24:
-      rl->sort(Register::Registrar::MT_ZONE06CREDIT, dir);
+      rl->sort(Register::Registrar::MT_ZONE06CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(5)))->getId() );
       break;
     case 25:
-      rl->sort(Register::Registrar::MT_ZONE07CREDIT, dir);
+      rl->sort(Register::Registrar::MT_ZONE07CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(6)))->getId() );
       break;
     case 26:
-      rl->sort(Register::Registrar::MT_ZONE08CREDIT, dir);
+      rl->sort(Register::Registrar::MT_ZONE08CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(7)))->getId() );
       break;
     case 27:
-      rl->sort(Register::Registrar::MT_ZONE09CREDIT, dir);
+      rl->sort(Register::Registrar::MT_ZONE09CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(8)))->getId() );
       break;
     case 28:
-      rl->sort(Register::Registrar::MT_ZONE10CREDIT, dir);
+      rl->sort(Register::Registrar::MT_ZONE10CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(9)))->getId() );
       break;
-
   }
 }
 
@@ -252,7 +219,7 @@ ccReg_Registrars_i::numColumns()
   //zone count limited to 10
     unsigned zone_count = (zl->getSize() > 10 ? 10 : zl->getSize());
     TRACE(boost::format("[CALL] ccReg_Registrars_i::numColumns(), zone_count: %1%") % zone_count);
-  return 19 + zone_count;
+  return static_cols + zone_count;
 }
 
 void
