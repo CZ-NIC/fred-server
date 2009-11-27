@@ -269,7 +269,7 @@ public:
   /// clear filter data
   virtual void clearFilter() = 0;
   /// sort by column
-  virtual void sort(MemberType _member, bool _asc) = 0;
+  virtual void sort(MemberType _member, bool _asc, unsigned _zone_id = 0) = 0;
   
   virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
   virtual const char* getTempTableName() const = 0;

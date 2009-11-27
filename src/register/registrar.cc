@@ -647,6 +647,31 @@ COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Country)
 COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Telephone)
 COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Fax)
 
+//COMPARE_CLASS_IMPL_NEW(RegistrarImpl, Credit)
+
+class CompareCreditByZone
+{
+    bool asc_;
+    unsigned zone_id_;
+public:
+  CompareCreditByZone(bool _asc, unsigned _zone_id) : asc_(_asc), zone_id_(_zone_id) { }
+  bool operator()(CommonObjectNew *_left, CommonObjectNew *_right) const
+  {
+    RegistrarImpl *l_casted = dynamic_cast<RegistrarImpl *>(_left);
+    RegistrarImpl *r_casted = dynamic_cast<RegistrarImpl *>(_right);
+    if (l_casted == 0 || r_casted == 0)
+    {
+      /* this should never happen */
+      throw std::bad_cast();
+    }
+
+    return (asc_ ? l_casted->getCredit(zone_id_) < r_casted->getCredit(zone_id_)
+                 : l_casted->getCredit(zone_id_) > r_casted->getCredit(zone_id_));
+  }
+};//class CompareCreditByZone
+
+
+
 class RegistrarListImpl : public Register::CommonListImplNew,
                           public RegistrarList {
   
@@ -974,7 +999,7 @@ public:
     zoneFilter = "";
   }
   
-  virtual void sort(MemberType _member, bool _asc) {
+  virtual void sort(MemberType _member, bool _asc, unsigned _zone_id) {
     switch (_member) {
       case MT_NAME:
         stable_sort(m_data.begin(), m_data.end(), CompareName(_asc));
@@ -1033,7 +1058,18 @@ public:
       case MT_FAX:
         stable_sort(m_data.begin(), m_data.end(), CompareFax(_asc));
         break;
-
+      case MT_ZONE01CREDIT:
+      case MT_ZONE02CREDIT:
+      case MT_ZONE03CREDIT:
+      case MT_ZONE04CREDIT:
+      case MT_ZONE05CREDIT:
+      case MT_ZONE06CREDIT:
+      case MT_ZONE07CREDIT:
+      case MT_ZONE08CREDIT:
+      case MT_ZONE09CREDIT:
+      case MT_ZONE10CREDIT:
+        stable_sort(m_data.begin(), m_data.end(), CompareCreditByZone(_asc , _zone_id));
+        break;
     }
   }
 
