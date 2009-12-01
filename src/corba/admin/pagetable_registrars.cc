@@ -79,7 +79,11 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
   {
       unsigned long long zoneid
           = (dynamic_cast<Register::Zone::Zone*>(zl->get(i)))->getId();
-      (*tr)[static_cols+i] <<= C_STR(r->getCredit(zoneid));
+
+      if(r->isInZone(zoneid))
+          (*tr)[static_cols+i] <<= C_STR(r->getCredit(zoneid));
+      else
+          (*tr)[static_cols+i] <<= C_STR("-");//if currently not in zone
   }//for zone_count
 
 
