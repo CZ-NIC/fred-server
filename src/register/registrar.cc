@@ -552,6 +552,87 @@ public:
       }//catch (...)
   }//updateRegistrarZone
 
+  /// Look if registrar have access to zone by zone id
+  virtual bool isInZone(unsigned id) const
+  {
+      bool ret = false;
+      try
+      {
+        Database::Connection conn = Database::Manager::acquire();
+        std::stringstream sql;
+
+        sql << "select count(*) from registrarinvoice ri "
+               "where fromdate <= CURRENT_DATE and (todate >= CURRENT_DATE or todate is null) "
+               "and ri.registrarid = " << getId() << " and ri.zone = " << id << " ;";
+
+        Database::Result res = conn.exec(sql.str());
+
+        if((res.size() != 1) && (res[0].size() != 1))
+        {
+            LOGGER(PACKAGE).error("isInZone by id: an error has occured");
+            throw SQL_ERROR();
+        }
+
+        unsigned count = res[0][0];
+        if (count > 1 )
+        {
+            LOGGER(PACKAGE).error("isInZone by id: bad data in table registrarinvoice");
+            throw SQL_ERROR();
+        }
+
+        if (count == 1 ) ret = true;
+
+      }//try
+      catch (...)
+      {
+          LOGGER(PACKAGE).error("isInZone by id: an error has occured");
+          throw SQL_ERROR();
+      }//catch (...)
+
+      return ret;
+  }//isInZone by id
+
+  /// Look if registrar have access to zone by zone fqdn
+  virtual bool isInZone(std::string zone_fqdn) const
+  {
+      bool ret = false;
+      try
+      {
+        Database::Connection conn = Database::Manager::acquire();
+        std::stringstream sql;
+
+        sql << "select count(*) from registrarinvoice ri join zone z on ri.zone = z.id "
+               "where fromdate <= CURRENT_DATE and (todate >= CURRENT_DATE or todate is null) "
+               "and ri.registrarid = " << getId() << " and z.fqdn = " << conn.escape(zone_fqdn) << " ;";
+
+        Database::Result res = conn.exec(sql.str());
+
+        if((res.size() != 1) && (res[0].size() != 1))
+        {
+            LOGGER(PACKAGE).error("isInZone by fqdn: an error has occured");
+            throw SQL_ERROR();
+        }
+
+        unsigned count = res[0][0];
+        if (count > 1 )
+        {
+            LOGGER(PACKAGE).error("isInZone by fqdn: bad data in table registrarinvoice");
+            throw SQL_ERROR();
+        }
+
+        if (count == 1 ) ret = true;
+
+      }//try
+      catch (...)
+      {
+          LOGGER(PACKAGE).error("isInZone by fqdn: an error has occured");
+          throw SQL_ERROR();
+      }//catch (...)
+
+      return ret;
+  }//isInZone by fqdn
+
+
   virtual void save() throw (SQL_ERROR)
   {
       // save registrar data

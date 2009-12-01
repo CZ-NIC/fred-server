@@ -230,7 +230,10 @@ public:
   virtual void deleteAZone(unsigned idx) = 0;
   /// Clear AZone list
   virtual void clearAZoneList() = 0;
-
+  /// Look if registrar have currently access to zone by zone id
+  virtual bool isInZone(unsigned id) const = 0;
+  /// Look if registrar have currently access to zone by zone fqdn
+  virtual bool isInZone(std::string zone_fqdn) const = 0;
 
   /// Save changes to database
   virtual void save() throw (SQL_ERROR) = 0;
