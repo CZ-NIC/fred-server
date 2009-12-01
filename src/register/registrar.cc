@@ -950,10 +950,55 @@ public:
         if (registrar_ptr) {
           registrar_ptr->putACL(acl_id, cert_md5, password);
         }
-      }
+      }//for acl_query
+
+      resetIDSequence();
+      Database::SelectQuery azone_query;
+      azone_query.select() <<   "ri.id as id, ri.registrarid as registrarid ,z.fqdn as name, "
+                                "case when ri.todate = mtd.max_todate "
+                                    "then cr.credit "
+                                    "else null end as credit "
+                                ", ri.fromdate as fromdate , ri.todate as todate ";
+      azone_query.from() <<   "registrarinvoice ri "
+                              "join zone z on ri.zone = z.id "
+                              "left join (select i.zone, i.registrarid "
+                                  ", COALESCE(SUM(credit), 0) as credit "
+                                  "from invoice i "
+                                  "group by i.registrarid, i.zone "
+                                  ") as cr on cr.zone = ri.zone "
+                                  "and ri.registrarid = cr.registrarid "
+                              "join (select ri.registrarid as rid, ri.zone as zid "
+                                  ",max(todate) as max_todate "
+                                  "from registrarinvoice ri "
+                                  "join zone z on ri.zone = z.id "
+                                  "group by ri.registrarid, ri.zone ) as mtd "
+                                  "on mtd.rid = ri.registrarid "
+                                  "and mtd.zid = ri.zone ";
+      azone_query.order_by() << "ri.registrarid,ri.zone,ri.todate desc ";
+
+      Database::Result r_azone = conn.exec(azone_query);
+      for (Database::Result::Iterator it = r_azone.begin(); it != r_azone.end(); ++it)
+      {
+        Database::Row::Iterator col = (*it).begin();
+
+        Database::ID azone_id = *col;
+        Database::ID registrar_id = *(++col);
+        std::string zone_name = *(++col);
+        unsigned long credit = *(++col);
+        Database::Date fromdate = *(++col);
+        Database::Date todate = *(++col);
+
+        RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
+        if (registrar_ptr)
+        {
+          registrar_ptr->putAZone(azone_id, zone_name, credit, fromdate, todate);
+        }
+
+      }//for r_azone
+
       /* checks if row number result load limit is active and set flag */ 
       CommonListImplNew::reload();
-    }
+    }//try
     catch (Database::Exception& ex) {
       LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
     }
