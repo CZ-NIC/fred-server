@@ -137,6 +137,20 @@ Value<std::string>& RegistrarImpl::addUrl() {
   return *tmp;
 }
 
+Value<std::string>& RegistrarImpl::addZoneFqdn() {
+    addJoin(new Join(
+      Column("zone", joinTable("registrarinvoice")),
+      SQL_OP_EQ,
+      Column("id", joinTable("zone"))
+    ));
+    Value<std::string> *tmp = new Value<std::string>(Column("fqdn", joinTable("zone")));
+    tmp->setName("ZoneFqdn");
+    add(tmp);
+    return *tmp;
+
+}
+
+
 Zone& RegistrarImpl::_addRIFilter()
 {
  Zone *tmp = new ZoneImpl();
