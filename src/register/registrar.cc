@@ -1821,30 +1821,6 @@ public:
       }//catch (...)
   }
 
-  virtual void addRegistrar(const std::string& registrarHandle)
-      throw (SQL_ERROR)
-  {
-      try
-      {
-		RegistrarListImpl rlist;
-		rlist.setHandleFilter("REG-FRED_A");
-		rlist.reload();
-		if (rlist.getSize() < 1)
-		  return;
-		RegistrarImpl *r = dynamic_cast<RegistrarImpl *>(rlist.get(0));
-		if (!r)
-		  return;
-		r->resetId();
-		r->setHandle(registrarHandle);
-		r->save();
-      }//try
-      catch (...)
-      {
-          LOGGER(PACKAGE).error("addRegistrar: an error has occured");
-          throw SQL_ERROR();
-      }//catch (...)
-  }//addRegistrar
-
   virtual void addRegistrarAcl(
           const std::string &registrarHandle,
           const std::string &cert,
@@ -1857,8 +1833,9 @@ public:
 
     	  std::stringstream sql;
 		  sql << "INSERT INTO registraracl (registrarid, cert, password) "
-			  << "SELECT r.id, '" << cert << "','" << pass << "' FROM registrar r "
-			  << "WHERE r.handle='" << registrarHandle << "'";
+			  << "SELECT r.id, '" << conn.escape(cert) << "','"
+			  << conn.escape(pass) << "' FROM registrar r "
+			  << "WHERE r.handle='" << conn.escape(registrarHandle) << "'";
 
 		  Database::Transaction tx(conn);
 		  conn.exec(sql.str());
