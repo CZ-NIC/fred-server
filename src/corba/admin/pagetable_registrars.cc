@@ -37,8 +37,7 @@ ccReg_Registrars_i::getColumnHeaders()
 {//all columns are in svn rev 9616
   Logging::Context ctx(base_context_);
 
-  //zone count limited to 10
-  unsigned zone_count = (zl->getSize() > 10 ? 10 : zl->getSize());
+  unsigned zone_count = zl->getSize();
   TRACE(boost::format("[CALL] ccReg_Registrars_i::getColumnHeaders(), zone_count: %1%") % zone_count);
   Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
   ch->length(static_cols + zone_count);
@@ -67,8 +66,7 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
   if (!r) throw ccReg::Table::INVALID_ROW();
   Registry::TableRow *tr = new Registry::TableRow;
 
-  //zone count limited to 10
-  unsigned zone_count = (zl->getSize() > 10 ? 10 : zl->getSize());
+  unsigned zone_count = zl->getSize();
 
   tr->length(static_cols + zone_count);
 
@@ -110,37 +108,13 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
     case 2:
       rl->sort(Register::Registrar::MT_MAIL, dir);
       break;
-    case 3:
-      rl->sort(Register::Registrar::MT_ZONE01CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(0)))->getId() );
-      break;
-    case 4:
-      rl->sort(Register::Registrar::MT_ZONE02CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(1)))->getId() );
-      break;
-    case 5:
-      rl->sort(Register::Registrar::MT_ZONE03CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(2)))->getId() );
-      break;
-    case 6:
-      rl->sort(Register::Registrar::MT_ZONE04CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(3)))->getId() );
-      break;
-    case 7:
-      rl->sort(Register::Registrar::MT_ZONE05CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(4)))->getId() );
-      break;
-    case 8:
-      rl->sort(Register::Registrar::MT_ZONE06CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(5)))->getId() );
-      break;
-    case 9:
-      rl->sort(Register::Registrar::MT_ZONE07CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(6)))->getId() );
-      break;
-    case 10:
-      rl->sort(Register::Registrar::MT_ZONE08CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(7)))->getId() );
-      break;
-    case 11:
-      rl->sort(Register::Registrar::MT_ZONE09CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(8)))->getId() );
-      break;
-    case 12:
-      rl->sort(Register::Registrar::MT_ZONE10CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(9)))->getId() );
-      break;
   }
+  if((column > (static_cols-1)) && (column < zl->size()+static_cols))
+  {
+      rl->sort(Register::Registrar::MT_ZONE, dir
+              , (dynamic_cast<Register::Zone::Zone*>(zl->get(column-static_cols)))->getId());
+  }//if zone column
+
 }
 
 ccReg::TID 
@@ -173,8 +147,7 @@ ccReg_Registrars_i::numColumns()
 {
   Logging::Context ctx(base_context_);
 
-  //zone count limited to 10
-    unsigned zone_count = (zl->getSize() > 10 ? 10 : zl->getSize());
+    unsigned zone_count = zl->getSize();
     TRACE(boost::format("[CALL] ccReg_Registrars_i::numColumns(), zone_count: %1%") % zone_count);
   return static_cols + zone_count;
 }
