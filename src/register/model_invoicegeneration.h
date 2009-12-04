@@ -3,9 +3,6 @@
 
 #include "db_settings.h"
 #include "model.h"
-//#include "model_zone.h"
-//#include "model_invoice.h"
-//#include "model_registrar.h"
 
 class ModelInvoiceGeneration:
     public Model::Base {

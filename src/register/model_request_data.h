@@ -3,8 +3,6 @@
 
 #include "db_settings.h"
 #include "model.h"
-//#include "model_request.h"
-
 
 class ModelRequestData:
     public Model::Base {

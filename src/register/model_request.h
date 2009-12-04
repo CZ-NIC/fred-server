@@ -3,10 +3,6 @@
 
 #include "db_settings.h"
 #include "model.h"
-//#include "model_service.h"
-//#include "model_request_type.h"
-//#include "model_session.h"
-
 
 class ModelRequest:
     public Model::Base {

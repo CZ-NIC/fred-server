@@ -3,8 +3,7 @@
 
 #include "db_settings.h"
 #include "model.h"
-//#include "model_bankaccount.h"
-//#include "model_files.h"
+
 
 
 class ModelBankStatementHead:

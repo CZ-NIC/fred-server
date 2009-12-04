@@ -3,8 +3,6 @@
 
 #include "db_settings.h"
 #include "model.h"
-//#include "model_enumfiletype.h"
-
 
 class ModelFiles:
     public Model::Base {

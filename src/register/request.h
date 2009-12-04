@@ -7,10 +7,6 @@
 #include <vector>
 
 #include "object.h"
-/*
-#include "model/model_filters.h"
-#include "model/log_filter.h"
-*/
 
 #include "model/log_filter.h"
 #include "db_settings.h"
@@ -19,8 +15,6 @@
 #include "model_request.h"
 #include "model_request_property.h"
 #include "model_request_property_value.h"
-//#include "model_request_type.h"
-//#include "model_service.h"
 #include "model_session.h"
 
 

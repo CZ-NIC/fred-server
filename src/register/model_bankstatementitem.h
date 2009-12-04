@@ -3,10 +3,6 @@
 
 #include "db_settings.h"
 #include "model.h"
-//#include "model_bankstatementhead.h"
-//#include "model_enumbankcode.h"
-//#include "model_invoice.h"
-
 
 class ModelBankStatementItem:
     public Model::Base {

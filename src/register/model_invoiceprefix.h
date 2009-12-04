@@ -2,7 +2,6 @@
 #define _MODEL_INVOICEPREFIX_H_
 
 #include "db_settings.h"
-//#include "model_zone.h"
 #include "model.h"
 
 class ModelInvoicePrefix:

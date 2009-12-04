@@ -3,8 +3,6 @@
 
 #include "db_settings.h"
 #include "model.h"
-//#include "model_request_property_value.h"
-
 
 class ModelRequestPropertyValue:
     public Model::Base {

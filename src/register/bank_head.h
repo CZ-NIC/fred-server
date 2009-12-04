@@ -6,7 +6,6 @@
 #include "common_impl_new.h"
 #include "db_settings.h"
 #include "model_bankstatementhead.h"
-//#include "model_bankaccount.h"
 #include "bank_item.h"
 #include "bank_common.h"
 #include "bank_exporter.h"
