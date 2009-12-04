@@ -246,9 +246,9 @@ protected:
 
 public:
     static Model::Field::PrimaryKey<ModelBankStatementItem, unsigned long long> id;
-    //static Model::Field::ForeignKey<ModelBankStatementItem, unsigned long long, ModelBankStatementHead> statementId;
+    static Model::Field::Basic<ModelBankStatementItem, unsigned long long> statementId;
     static Model::Field::Basic<ModelBankStatementItem, std::string> accountNumber;
-    //static Model::Field::ForeignKey<ModelBankStatementItem, std::string, ModelEnumBankCode> bankCodeId;
+    static Model::Field::Basic<ModelBankStatementItem, std::string> bankCodeId;
     static Model::Field::Basic<ModelBankStatementItem, int> code;
     static Model::Field::Basic<ModelBankStatementItem, int> type;
     static Model::Field::Basic<ModelBankStatementItem, std::string> konstSym;
@@ -258,7 +258,7 @@ public:
     static Model::Field::Basic<ModelBankStatementItem, std::string> accountEvid;
     static Model::Field::Basic<ModelBankStatementItem, Database::Date> accountDate;
     static Model::Field::Basic<ModelBankStatementItem, std::string> accountMemo;
-    //static Model::Field::ForeignKey<ModelBankStatementItem, unsigned long long, ModelInvoice> invoiceId;
+    static Model::Field::Basic<ModelBankStatementItem, unsigned long long> invoiceId;
     static Model::Field::Basic<ModelBankStatementItem, std::string> accountName;
     static Model::Field::Basic<ModelBankStatementItem, Database::DateTime> crTime;
 

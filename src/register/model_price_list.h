@@ -151,8 +151,8 @@ protected:
 
 public:
     static Model::Field::PrimaryKey<ModelPriceList, unsigned long long> id;
-    //static Model::Field::ForeignKey<ModelPriceList, unsigned long long, ModelZone> zoneId;
-    //static Model::Field::ForeignKey<ModelPriceList, unsigned long long, ModelEnumOperation> operationId;
+    static Model::Field::Basic<ModelPriceList, unsigned long long> zoneId;
+    static Model::Field::Basic<ModelPriceList, unsigned long long> operationId;
     static Model::Field::Basic<ModelPriceList, Database::DateTime> validFrom;
     static Model::Field::Basic<ModelPriceList, Database::DateTime> validTo;
     static Model::Field::Basic<ModelPriceList, Database::Money> price;

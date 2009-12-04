@@ -149,9 +149,9 @@ public:
     static Model::Field::Basic<ModelRequest, Database::DateTime> timeBegin;
     static Model::Field::Basic<ModelRequest, Database::DateTime> timeEnd;
     static Model::Field::Basic<ModelRequest, std::string> sourceIp;
-    //static Model::Field::ForeignKey<ModelRequest, unsigned long long, ModelService> serviceId;
-    //static Model::Field::ForeignKey<ModelRequest, unsigned long long, ModelRequestType> actionTypeId;
-    //static Model::Field::ForeignKey<ModelRequest, unsigned long long, ModelSession> sessionId;
+    static Model::Field::Basic<ModelRequest, unsigned long long> serviceId;
+    static Model::Field::Basic<ModelRequest, unsigned long long> actionTypeId;
+    static Model::Field::Basic<ModelRequest, unsigned long long> sessionId;
     static Model::Field::Basic<ModelRequest, bool> isMonitoring;
 
     //static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelService> service;

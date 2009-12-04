@@ -135,7 +135,7 @@ public:
     static Model::Field::Basic<ModelRequestPropertyValue, int> name;
     static Model::Field::Basic<ModelRequestPropertyValue, std::string> value;
     static Model::Field::Basic<ModelRequestPropertyValue, bool> output;
-    //static Model::Field::ForeignKey<ModelRequestPropertyValue, unsigned long long, ModelRequestPropertyValue> parentId;
+    static Model::Field::Basic<ModelRequestPropertyValue, unsigned long long> parentId;
 
     //static Model::Field::Related::OneToOne<ModelRequestPropertyValue, unsigned long long, ModelRequestPropertyValue> parent;
 

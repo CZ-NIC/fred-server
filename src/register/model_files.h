@@ -136,7 +136,7 @@ public:
     static Model::Field::Basic<ModelFiles, std::string> mimeType;
     static Model::Field::Basic<ModelFiles, Database::DateTime> crDate;
     static Model::Field::Basic<ModelFiles, int> filesize;
-    //static Model::Field::ForeignKey<ModelFiles, unsigned long long, ModelEnumFileType> fileTypeId;
+    static Model::Field::Basic<ModelFiles, unsigned long long> fileTypeId;
 
     //static Model::Field::Related::OneToOne<ModelFiles, unsigned long long, ModelEnumFileType> fileType;
 

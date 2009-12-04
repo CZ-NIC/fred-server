@@ -3,7 +3,7 @@
 std::string ModelZoneSoa::table_name = "zone_soa";
 
 DEFINE_PRIMARY_KEY(ModelZoneSoa, unsigned long long, zone, m_zone, table_name, "zone", )
-//DEFINE_FOREIGN_KEY(ModelZoneSoa, ModelZone, unsigned long long, zoneId, m_zoneId, table_name, "zone", id, .setNotNull())
+DEFINE_BASIC_FIELD(ModelZoneSoa, unsigned long long, zoneId, m_zoneId, table_name, "zone", .setNotNull().setForeignKey())
 DEFINE_BASIC_FIELD(ModelZoneSoa, int, ttl, m_ttl, table_name, "ttl", .setNotNull())
 DEFINE_BASIC_FIELD(ModelZoneSoa, std::string, hostmaster, m_hostmaster, table_name, "hostmaster", .setNotNull())
 DEFINE_BASIC_FIELD(ModelZoneSoa, int, serial, m_serial, table_name, "serial", )
@@ -17,7 +17,7 @@ DEFINE_BASIC_FIELD(ModelZoneSoa, std::string, nsFqdn, m_nsFqdn, table_name, "ns_
 
 ModelZoneSoa::field_list ModelZoneSoa::fields = list_of<ModelZoneSoa::field_list::value_type>
     (&ModelZoneSoa::zone)
-    //(&ModelZoneSoa::zoneId)
+    (&ModelZoneSoa::zoneId)
     (&ModelZoneSoa::ttl)
     (&ModelZoneSoa::hostmaster)
     (&ModelZoneSoa::serial)

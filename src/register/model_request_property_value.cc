@@ -10,7 +10,7 @@ DEFINE_BASIC_FIELD(ModelRequestPropertyValue, int, entry, m_entry, table_name, "
 DEFINE_BASIC_FIELD(ModelRequestPropertyValue, int, name, m_name, table_name, "name_id", .setNotNull())
 DEFINE_BASIC_FIELD(ModelRequestPropertyValue, std::string, value, m_value, table_name, "value", .setNotNull())
 DEFINE_BASIC_FIELD(ModelRequestPropertyValue, bool, output, m_output, table_name, "output", .setDefault())
-//DEFINE_FOREIGN_KEY(ModelRequestPropertyValue, ModelRequestPropertyValue, unsigned long long, parentId, m_parentId, table_name, "parent_id", id, )
+DEFINE_BASIC_FIELD(ModelRequestPropertyValue, unsigned long long, parentId, m_parentId, table_name, "parent_id",.setForeignKey() )
 
 //DEFINE_ONE_TO_ONE(ModelRequestPropertyValue, ModelRequestPropertyValue, parent, m_parent, unsigned long long, parentId, m_parentId)
 
@@ -23,6 +23,6 @@ ModelRequestPropertyValue::field_list ModelRequestPropertyValue::fields = list_o
     (&ModelRequestPropertyValue::name)
     (&ModelRequestPropertyValue::value)
     (&ModelRequestPropertyValue::output)
-    //(&ModelRequestPropertyValue::parentId)
+    (&ModelRequestPropertyValue::parentId)
 ;
 

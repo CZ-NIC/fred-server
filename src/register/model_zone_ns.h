@@ -110,7 +110,7 @@ protected:
 
 public:
     static Model::Field::PrimaryKey<ModelZoneNs, unsigned long long> id;
-    //static Model::Field::ForeignKey<ModelZoneNs, unsigned long long, ModelZone> zoneId;
+    static Model::Field::Basic<ModelZoneNs, unsigned long long> zoneId;
     static Model::Field::Basic<ModelZoneNs, std::string> fqdn;
     static Model::Field::Basic<ModelZoneNs, std::string> addrs;
 

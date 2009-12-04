@@ -2,9 +2,10 @@
 #define _MODEL_INVOICEGENERATION_H_
 
 #include "db_settings.h"
-#include "model_zone.h"
-#include "model_invoice.h"
-#include "model_registrar.h"
+#include "model.h"
+//#include "model_zone.h"
+//#include "model_invoice.h"
+//#include "model_registrar.h"
 
 class ModelInvoiceGeneration:
     public Model::Base {
@@ -128,9 +129,9 @@ public:
     static Model::Field::PrimaryKey<ModelInvoiceGeneration, unsigned long long>   id;
     static Model::Field::Basic<ModelInvoiceGeneration, Database::Date>      fromDate;
     static Model::Field::Basic<ModelInvoiceGeneration, Database::Date>      toDate;
-    static Model::Field::ForeignKey<ModelInvoiceGeneration, unsigned long long, ModelRegistrar> registrarId;
-    static Model::Field::ForeignKey<ModelInvoiceGeneration, unsigned long long, ModelZone>      zoneId;
-    static Model::Field::ForeignKey<ModelInvoiceGeneration, unsigned long long, ModelInvoice>   invoiceId;
+    static Model::Field::Basic<ModelInvoiceGeneration, unsigned long long> registrarId;
+    static Model::Field::Basic<ModelInvoiceGeneration, unsigned long long>      zoneId;
+    static Model::Field::Basic<ModelInvoiceGeneration, unsigned long long>   invoiceId;
 
     //static Model::Field::Related::OneToOne<ModelInvoiceGeneration, unsigned long long, ModelRegistrar>    registrar;
     //static Model::Field::Related::OneToOne<ModelInvoiceGeneration, unsigned long long, ModelZone>         zone;

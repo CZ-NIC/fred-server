@@ -110,7 +110,7 @@ public:
     static Model::Field::Basic<ModelRequestData, Database::DateTime> entryTimeBegin;
     static Model::Field::Basic<ModelRequestData, int> entryService;
     static Model::Field::Basic<ModelRequestData, bool> entryMonitoring;
-    //static Model::Field::ForeignKey<ModelRequestData, unsigned long long, ModelRequest> entryId;
+    static Model::Field::Basic<ModelRequestData, unsigned long long> entryId;
     static Model::Field::Basic<ModelRequestData, std::string> content;
     static Model::Field::Basic<ModelRequestData, bool> isResponse;
 

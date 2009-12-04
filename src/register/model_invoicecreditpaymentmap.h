@@ -1,7 +1,8 @@
 #ifndef _MODEL_INVOICECREDITPAYMENTMAP_H_
 #define _MODEL_INVOICECREDITPAYMENTMAP_H_
 
-#include "model_invoice.h"
+#include "db_settings.h"
+#include "model.h"
 
 class ModelInvoiceCreditPaymentMap:
     public Model::Base {
@@ -80,13 +81,13 @@ protected:
     Field::Field<Database::Money>   m_credit;
     Field::Field<Database::Money>   m_balance;
 
-    Field::Lazy::Field<ModelInvoice *>  m_advanceInvoice;
+    //Field::Lazy::Field<ModelInvoice *>  m_advanceInvoice;
 
     typedef Model::Field::List<ModelInvoiceCreditPaymentMap> field_list;
 
 public:
     static Model::Field::PrimaryKey<ModelInvoiceCreditPaymentMap, unsigned long long> invoiceId;
-    static Model::Field::ForeignKey<ModelInvoiceCreditPaymentMap, unsigned long long, ModelInvoice>   advanceInvoiceId;
+    static Model::Field::Basic<ModelInvoiceCreditPaymentMap, unsigned long long>   advanceInvoiceId;
     static Model::Field::Basic<ModelInvoiceCreditPaymentMap, Database::Money>   credit;
     static Model::Field::Basic<ModelInvoiceCreditPaymentMap, Database::Money>   balance;
 

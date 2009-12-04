@@ -177,7 +177,7 @@ protected:
 
 public:
     static Model::Field::PrimaryKey<ModelBankStatementHead, unsigned long long> id;
-    //static Model::Field::ForeignKey<ModelBankStatementHead, unsigned long long, ModelBankAccount> accountId;
+    static Model::Field::Basic<ModelBankStatementHead, unsigned long long> accountId;
     static Model::Field::Basic<ModelBankStatementHead, int> num;
     static Model::Field::Basic<ModelBankStatementHead, Database::Date> createDate;
     static Model::Field::Basic<ModelBankStatementHead, Database::Date> balanceOldDate;
@@ -185,7 +185,7 @@ public:
     static Model::Field::Basic<ModelBankStatementHead, Database::Money> balanceNew;
     static Model::Field::Basic<ModelBankStatementHead, Database::Money> balanceCredit;
     static Model::Field::Basic<ModelBankStatementHead, Database::Money> balanceDebet;
-    //static Model::Field::ForeignKey<ModelBankStatementHead, unsigned long long, ModelFiles> fileId;
+    static Model::Field::Basic<ModelBankStatementHead, unsigned long long> fileId;
 
     //static Model::Field::Related::OneToOne<ModelBankStatementHead, unsigned long long, ModelBankAccount> account;
     //static Model::Field::Related::OneToOne<ModelBankStatementHead, unsigned long long, ModelFiles> file;

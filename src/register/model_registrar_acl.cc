@@ -4,7 +4,7 @@
 std::string ModelRegistrarAcl::table_name = "ModelRegistrarAcl";
 
 DEFINE_PRIMARY_KEY(ModelRegistrarAcl, unsigned long long, id, id_, table_name, "id", .setDefault())
-//DEFINE_FOREIGN_KEY(ModelRegistrarAcl, ModelRegistrar, unsigned long long, registrar_id, registrar_id_, table_name, "registrarid", id, .setNotNull())
+DEFINE_BASIC_FIELD(ModelRegistrarAcl, unsigned long long, registrar_id, registrar_id_, table_name, "registrarid", .setNotNull().setForeignKey())
 DEFINE_BASIC_FIELD(ModelRegistrarAcl, std::string, cert, cert_, table_name, "cert", .setNotNull())
 DEFINE_BASIC_FIELD(ModelRegistrarAcl, std::string, password, password_, table_name, "password", .setNotNull())
 

@@ -5,9 +5,9 @@ std::string ModelInvoiceGeneration::table_name = "invoice_generation";
 DEFINE_PRIMARY_KEY(ModelInvoiceGeneration, unsigned long long , id, m_id, table_name, "id", .setDefault())
 DEFINE_BASIC_FIELD(ModelInvoiceGeneration, Database::Date, fromDate, m_fromDate, table_name, "fromdate", .setNotNull())
 DEFINE_BASIC_FIELD(ModelInvoiceGeneration, Database::Date, toDate, m_toDate, table_name, "todate", .setNotNull())
-DEFINE_FOREIGN_KEY(ModelInvoiceGeneration, ModelRegistrar, unsigned long long , registrarId, m_registrarId, table_name, "registrarid", id, .setNotNull())
-DEFINE_FOREIGN_KEY(ModelInvoiceGeneration, ModelZone, unsigned long long , zoneId, m_zoneId, table_name, "zone", id, )
-DEFINE_FOREIGN_KEY(ModelInvoiceGeneration, ModelInvoice, unsigned long long , invoiceId, m_invoiceId, table_name, "invoiceid", id, )
+DEFINE_BASIC_FIELD(ModelInvoiceGeneration, unsigned long long , registrarId, m_registrarId, table_name, "registrarid", .setNotNull().setForeignKey())
+DEFINE_BASIC_FIELD(ModelInvoiceGeneration, unsigned long long , zoneId, m_zoneId, table_name, "zone", .setForeignKey() )
+DEFINE_BASIC_FIELD(ModelInvoiceGeneration, unsigned long long , invoiceId, m_invoiceId, table_name, "invoiceid", .setForeignKey() )
 
 //DEFINE_ONE_TO_ONE(ModelInvoiceGeneration, ModelRegistrar, registrar, m_registrar, unsigned long long , registrarId, m_registrarId)
 //DEFINE_ONE_TO_ONE(ModelInvoiceGeneration, ModelZone, zone, m_zone, unsigned long long , zoneId, m_zoneId)

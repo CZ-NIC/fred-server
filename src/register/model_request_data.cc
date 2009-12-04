@@ -5,7 +5,7 @@ std::string ModelRequestData::table_name = "request_data";
 DEFINE_BASIC_FIELD(ModelRequestData, Database::DateTime, entryTimeBegin, m_entryTimeBegin, table_name, "entry_time_begin", .setNotNull())
 DEFINE_BASIC_FIELD(ModelRequestData, int, entryService, m_entryService, table_name, "entry_service", .setNotNull())
 DEFINE_BASIC_FIELD(ModelRequestData, bool, entryMonitoring, m_entryMonitoring, table_name, "entry_monitoring", .setNotNull())
-//DEFINE_FOREIGN_KEY(ModelRequestData, ModelRequest, unsigned long long, entryId, m_entryId, table_name, "entry_id", id, .setNotNull())
+DEFINE_BASIC_FIELD(ModelRequestData, unsigned long long, entryId, m_entryId, table_name, "entry_id", .setNotNull().setForeignKey())
 DEFINE_BASIC_FIELD(ModelRequestData, std::string, content, m_content, table_name, "content", .setNotNull())
 DEFINE_BASIC_FIELD(ModelRequestData, bool, isResponse, m_isResponse, table_name, "is_response", .setDefault())
 
@@ -15,7 +15,7 @@ ModelRequestData::field_list ModelRequestData::fields = list_of<ModelRequestData
     (&ModelRequestData::entryTimeBegin)
     (&ModelRequestData::entryService)
     (&ModelRequestData::entryMonitoring)
-    //(&ModelRequestData::entryId)
+    (&ModelRequestData::entryId)
     (&ModelRequestData::content)
     (&ModelRequestData::isResponse)
 ;

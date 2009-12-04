@@ -3,9 +3,9 @@
 std::string ModelBankStatementItem::table_name = "bank_item";
 
 DEFINE_PRIMARY_KEY(ModelBankStatementItem, unsigned long long, id, m_id, table_name, "id", .setDefault())
-//DEFINE_FOREIGN_KEY(ModelBankStatementItem, ModelBankStatementHead, unsigned long long, statementId, m_statementId, table_name, "statement_id", id, )
+DEFINE_BASIC_FIELD(ModelBankStatementItem, unsigned long long, statementId, m_statementId, table_name, "statement_id",.setForeignKey() )
 DEFINE_BASIC_FIELD(ModelBankStatementItem, std::string, accountNumber, m_accountNumber, table_name, "account_number", .setNotNull())
-//DEFINE_FOREIGN_KEY(ModelBankStatementItem, ModelEnumBankCode, std::string, bankCodeId, m_bankCodeId, table_name, "bank_code", code, )
+DEFINE_BASIC_FIELD(ModelBankStatementItem, std::string, bankCodeId, m_bankCodeId, table_name, "bank_code", .setForeignKey())
 DEFINE_BASIC_FIELD(ModelBankStatementItem, int, code, m_code, table_name, "code", )
 DEFINE_BASIC_FIELD(ModelBankStatementItem, int, type, m_type, table_name, "type", )
 DEFINE_BASIC_FIELD(ModelBankStatementItem, std::string, konstSym, m_konstSym, table_name, "konstsym", )
@@ -15,7 +15,7 @@ DEFINE_BASIC_FIELD(ModelBankStatementItem, Database::Money, price, m_price, tabl
 DEFINE_BASIC_FIELD(ModelBankStatementItem, std::string, accountEvid, m_accountEvid, table_name, "account_evid", )
 DEFINE_BASIC_FIELD(ModelBankStatementItem, Database::Date, accountDate, m_accountDate, table_name, "account_date", .setNotNull())
 DEFINE_BASIC_FIELD(ModelBankStatementItem, std::string, accountMemo, m_accountMemo, table_name, "account_memo", )
-//DEFINE_FOREIGN_KEY(ModelBankStatementItem, ModelInvoice, unsigned long long, invoiceId, m_invoiceId, table_name, "invoice_id", id, )
+DEFINE_BASIC_FIELD(ModelBankStatementItem, unsigned long long, invoiceId, m_invoiceId, table_name, "invoice_id",.setForeignKey() )
 DEFINE_BASIC_FIELD(ModelBankStatementItem, std::string, accountName, m_accountName, table_name, "account_name", )
 DEFINE_BASIC_FIELD(ModelBankStatementItem, Database::DateTime, crTime, m_crTime, table_name, "crtime", .setDefault().setNotNull())
 

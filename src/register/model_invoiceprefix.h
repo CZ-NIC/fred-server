@@ -96,7 +96,7 @@ protected:
     typedef Model::Field::List<ModelInvoicePrefix>   field_list;
 public:
     static Model::Field::PrimaryKey<ModelInvoicePrefix, unsigned long long>  id;
-    //static Model::Field::ForeignKey<ModelInvoicePrefix, unsigned long long, ModelZone> zoneId;
+    static Model::Field::Basic<ModelInvoicePrefix, unsigned long long> zoneId;
     static Model::Field::Basic<ModelInvoicePrefix, int>                      type;
     static Model::Field::Basic<ModelInvoicePrefix, int>                      year;
     static Model::Field::Basic<ModelInvoicePrefix, unsigned long long>       prefix;
