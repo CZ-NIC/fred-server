@@ -5,7 +5,9 @@ ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::RegistrarList *_rl
 		)
   : rl(_rl)
   , zl(_zl)
-{}
+{
+
+}
 
 ccReg_Registrars_i::~ccReg_Registrars_i() {
   TRACE("[CALL] ccReg_Registrars_i::~ccReg_Registrars_i()");
@@ -83,7 +85,7 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
       if(r->isInZone(zoneid))
           (*tr)[static_cols+i] <<= C_STR(r->getCredit(zoneid));
       else
-          (*tr)[static_cols+i] <<= C_STR("-");//if currently not in zone
+          (*tr)[static_cols+i] <<= C_STR("");//if currently not in zone
   }//for zone_count
 
 
@@ -100,91 +102,42 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 
   switch (column) {
     case 0:
-      rl->sort(Register::Registrar::MT_NAME, dir);
-      break;
-    case 1:
       rl->sort(Register::Registrar::MT_HANDLE, dir);
       break;
-    case 2:
-      rl->sort(Register::Registrar::MT_URL, dir);
+    case 1:
+      rl->sort(Register::Registrar::MT_NAME, dir);
       break;
-    case 3:
+    case 2:
       rl->sort(Register::Registrar::MT_MAIL, dir);
       break;
-    case 4:
-      rl->sort(Register::Registrar::MT_CREDIT, dir);
-      break;
-    case 5:
-      rl->sort(Register::Registrar::MT_ICO, dir);
-      break;
-    case 6:
-      rl->sort(Register::Registrar::MT_DIC, dir);
-      break;
-    case 7:
-      rl->sort(Register::Registrar::MT_VARSYMB, dir);
-      break;
-    case 8:
-      rl->sort(Register::Registrar::MT_VAT, dir);
-      break;
-    case 9:
-      rl->sort(Register::Registrar::MT_ORGANIZATION, dir);
-      break;
-    case 10:
-      rl->sort(Register::Registrar::MT_STREET1, dir);
-      break;
-    case 11:
-      rl->sort(Register::Registrar::MT_STREET2, dir);
-      break;
-    case 12:
-      rl->sort(Register::Registrar::MT_STREET3, dir);
-      break;
-    case 13:
-      rl->sort(Register::Registrar::MT_CITY, dir);
-      break;
-    case 14:
-      rl->sort(Register::Registrar::MT_PROVINCE, dir);
-      break;
-    case 15:
-      rl->sort(Register::Registrar::MT_POSTALCODE, dir);
-      break;
-    case 16:
-      rl->sort(Register::Registrar::MT_COUNTRY, dir);
-      break;
-    case 17:
-      rl->sort(Register::Registrar::MT_TELEPHONE, dir);
-      break;
-    case 18:
-      rl->sort(Register::Registrar::MT_FAX, dir);
-      break;
-
-    case 19:
+    case 3:
       rl->sort(Register::Registrar::MT_ZONE01CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(0)))->getId() );
       break;
-    case 20:
+    case 4:
       rl->sort(Register::Registrar::MT_ZONE02CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(1)))->getId() );
       break;
-    case 21:
+    case 5:
       rl->sort(Register::Registrar::MT_ZONE03CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(2)))->getId() );
       break;
-    case 22:
+    case 6:
       rl->sort(Register::Registrar::MT_ZONE04CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(3)))->getId() );
       break;
-    case 23:
+    case 7:
       rl->sort(Register::Registrar::MT_ZONE05CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(4)))->getId() );
       break;
-    case 24:
+    case 8:
       rl->sort(Register::Registrar::MT_ZONE06CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(5)))->getId() );
       break;
-    case 25:
+    case 9:
       rl->sort(Register::Registrar::MT_ZONE07CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(6)))->getId() );
       break;
-    case 26:
+    case 10:
       rl->sort(Register::Registrar::MT_ZONE08CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(7)))->getId() );
       break;
-    case 27:
+    case 11:
       rl->sort(Register::Registrar::MT_ZONE09CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(8)))->getId() );
       break;
-    case 28:
+    case 12:
       rl->sort(Register::Registrar::MT_ZONE10CREDIT, dir, (dynamic_cast<Register::Zone::Zone*>(zl->get(9)))->getId() );
       break;
   }
