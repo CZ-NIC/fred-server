@@ -92,7 +92,7 @@ FileClient::list()
             << "\t\t<path>" << file->getPath() << "</path>\n"
             << "\t\t<mime>" << file->getMimeType() << "</mime>\n"
             << "\t\t<type>" << file->getFileTypeId() << "</type>\n"
-            << "\t\t<type_desc>" << file->getFileType()->getName() << "</type_desc>\n"
+            << "\t\t<type_desc>" << file->getFileTypeDesc() << "</type_desc>\n"
             << "\t\t<crdate>" << file->getCrDate() << "</crdate>\n"
             << "\t\t<size>" << file->getFilesize() << "</size>\n"
             << "\t</file>\n";
