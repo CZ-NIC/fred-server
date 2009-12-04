@@ -2,7 +2,7 @@
 #define _MODEL_INVOICEPREFIX_H_
 
 #include "db_settings.h"
-#include "model_zone.h"
+//#include "model_zone.h"
 #include "model.h"
 
 class ModelInvoicePrefix:
@@ -20,6 +20,7 @@ public:
     {
         m_id = id;
     }
+
     const unsigned long long &getZoneId() const
     {
         return m_zoneId.get();
@@ -28,6 +29,7 @@ public:
     {
         m_zoneId = id;
     }
+/*
     ModelZone *getZone()
     {
         return zone.getRelated(this);
@@ -36,6 +38,7 @@ public:
     {
         zone.setRelated(this, zon);
     }
+    */
     const int &getType() const
     {
         return m_type.get();
@@ -88,17 +91,17 @@ protected:
     Field::Field<int>                   m_year;
     Field::Field<unsigned long long>    m_prefix;
 
-    Field::Lazy::Field<ModelZone *>          m_zone;
+    //Field::Lazy::Field<ModelZone *>          m_zone;
 
     typedef Model::Field::List<ModelInvoicePrefix>   field_list;
 public:
     static Model::Field::PrimaryKey<ModelInvoicePrefix, unsigned long long>  id;
-    static Model::Field::ForeignKey<ModelInvoicePrefix, unsigned long long, ModelZone> zoneId;
+    //static Model::Field::ForeignKey<ModelInvoicePrefix, unsigned long long, ModelZone> zoneId;
     static Model::Field::Basic<ModelInvoicePrefix, int>                      type;
     static Model::Field::Basic<ModelInvoicePrefix, int>                      year;
     static Model::Field::Basic<ModelInvoicePrefix, unsigned long long>       prefix;
 
-    static Model::Field::Related::OneToOne<ModelInvoicePrefix, unsigned long long, ModelZone> zone;
+    //static Model::Field::Related::OneToOne<ModelInvoicePrefix, unsigned long long, ModelZone> zone;
 
 
     static const field_list &getFields()

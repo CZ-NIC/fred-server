@@ -3,8 +3,8 @@
 
 #include "db_settings.h"
 #include "model.h"
-#include "model_bankaccount.h"
-#include "model_files.h"
+//#include "model_bankaccount.h"
+//#include "model_files.h"
 
 
 class ModelBankStatementHead:
@@ -22,10 +22,12 @@ public:
     {
         return m_accountId.get();
     }
+    /*
     ModelBankAccount *getAccount()
     {
         return account.getRelated(this);
     }
+    */
     const int &getNum() const
     {
         return m_num.get();
@@ -58,10 +60,12 @@ public:
     {
         return m_fileId.get();
     }
+    /*
     ModelFiles *getFile()
     {
         return file.getRelated(this);
     }
+    */
     void setId(const unsigned long long &id)
     {
         m_id = id;
@@ -70,10 +74,12 @@ public:
     {
         m_accountId = accountId;
     }
+    /*
     void setAccount(ModelBankAccount *foreign_value)
     {
         account.setRelated(this, foreign_value);
     }
+    */
     void setNum(const int &num)
     {
         m_num = num;
@@ -106,11 +112,12 @@ public:
     {
         m_fileId = fileId;
     }
+    /*
     void setFile(ModelFiles *foreign_value)
     {
         file.setRelated(this, foreign_value);
     }
-
+     */
     friend class Model::Base;
 
     void insert()
@@ -165,12 +172,12 @@ protected:
     Field::Field<Database::Money> m_balanceDebet;
     Field::Field<unsigned long long> m_fileId;
 
-    Field::Lazy::Field<ModelBankAccount *> m_account;
-    Field::Lazy::Field<ModelFiles *> m_file;
+    //Field::Lazy::Field<ModelBankAccount *> m_account;
+    //Field::Lazy::Field<ModelFiles *> m_file;
 
 public:
     static Model::Field::PrimaryKey<ModelBankStatementHead, unsigned long long> id;
-    static Model::Field::ForeignKey<ModelBankStatementHead, unsigned long long, ModelBankAccount> accountId;
+    //static Model::Field::ForeignKey<ModelBankStatementHead, unsigned long long, ModelBankAccount> accountId;
     static Model::Field::Basic<ModelBankStatementHead, int> num;
     static Model::Field::Basic<ModelBankStatementHead, Database::Date> createDate;
     static Model::Field::Basic<ModelBankStatementHead, Database::Date> balanceOldDate;
@@ -178,10 +185,10 @@ public:
     static Model::Field::Basic<ModelBankStatementHead, Database::Money> balanceNew;
     static Model::Field::Basic<ModelBankStatementHead, Database::Money> balanceCredit;
     static Model::Field::Basic<ModelBankStatementHead, Database::Money> balanceDebet;
-    static Model::Field::ForeignKey<ModelBankStatementHead, unsigned long long, ModelFiles> fileId;
+    //static Model::Field::ForeignKey<ModelBankStatementHead, unsigned long long, ModelFiles> fileId;
 
-    static Model::Field::Related::OneToOne<ModelBankStatementHead, unsigned long long, ModelBankAccount> account;
-    static Model::Field::Related::OneToOne<ModelBankStatementHead, unsigned long long, ModelFiles> file;
+    //static Model::Field::Related::OneToOne<ModelBankStatementHead, unsigned long long, ModelBankAccount> account;
+    //static Model::Field::Related::OneToOne<ModelBankStatementHead, unsigned long long, ModelFiles> file;
 
 private:
     static std::string table_name;  /** < model table name */

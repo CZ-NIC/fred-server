@@ -3,7 +3,7 @@
 
 #include "db_settings.h"
 #include "model.h"
-#include "model_zone.h"
+//#include "model_zone.h"
 
 
 class ModelZoneNs:
@@ -21,10 +21,12 @@ public:
     {
         return m_zoneId.get();
     }
+    /*
     ModelZone *getZone()
     {
         return zone.getRelated(this);
     }
+    */
     const std::string &getFqdn() const
     {
         return m_fqdn.get();
@@ -41,10 +43,12 @@ public:
     {
         m_zoneId = zoneId;
     }
+    /*
     void setZone(ModelZone *foreign_value)
     {
         zone.setRelated(this, foreign_value);
     }
+    */
     void setFqdn(const std::string &fqdn)
     {
         m_fqdn = fqdn;
@@ -102,15 +106,15 @@ protected:
     Field::Field<std::string> m_fqdn;
     Field::Field<std::string> m_addrs;
 
-    Field::Lazy::Field<ModelZone *> m_zone;
+    //Field::Lazy::Field<ModelZone *> m_zone;
 
 public:
     static Model::Field::PrimaryKey<ModelZoneNs, unsigned long long> id;
-    static Model::Field::ForeignKey<ModelZoneNs, unsigned long long, ModelZone> zoneId;
+    //static Model::Field::ForeignKey<ModelZoneNs, unsigned long long, ModelZone> zoneId;
     static Model::Field::Basic<ModelZoneNs, std::string> fqdn;
     static Model::Field::Basic<ModelZoneNs, std::string> addrs;
 
-    static Model::Field::Related::OneToOne<ModelZoneNs, unsigned long long, ModelZone> zone;
+    //static Model::Field::Related::OneToOne<ModelZoneNs, unsigned long long, ModelZone> zone;
 
 private:
     static std::string table_name;  /** < model table name */

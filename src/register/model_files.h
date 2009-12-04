@@ -3,7 +3,7 @@
 
 #include "db_settings.h"
 #include "model.h"
-#include "model_enumfiletype.h"
+//#include "model_enumfiletype.h"
 
 
 class ModelFiles:
@@ -41,10 +41,12 @@ public:
     {
         return m_fileTypeId.get();
     }
+    /*
     ModelEnumFileType *getFileType()
     {
         return fileType.getRelated(this);
     }
+    */
     void setId(const unsigned long long &id)
     {
         m_id = id;
@@ -73,11 +75,12 @@ public:
     {
         m_fileTypeId = fileTypeId;
     }
+    /*
     void setFileType(ModelEnumFileType *foreign_value)
     {
         fileType.setRelated(this, foreign_value);
     }
-
+     */
     friend class Model::Base;
 
     void insert()
@@ -124,7 +127,7 @@ protected:
     Field::Field<int> m_filesize;
     Field::Field<unsigned long long> m_fileTypeId;
 
-    Field::Lazy::Field<ModelEnumFileType *> m_fileType;
+    //Field::Lazy::Field<ModelEnumFileType *> m_fileType;
 
 public:
     static Model::Field::PrimaryKey<ModelFiles, unsigned long long> id;
@@ -133,9 +136,9 @@ public:
     static Model::Field::Basic<ModelFiles, std::string> mimeType;
     static Model::Field::Basic<ModelFiles, Database::DateTime> crDate;
     static Model::Field::Basic<ModelFiles, int> filesize;
-    static Model::Field::ForeignKey<ModelFiles, unsigned long long, ModelEnumFileType> fileTypeId;
+    //static Model::Field::ForeignKey<ModelFiles, unsigned long long, ModelEnumFileType> fileTypeId;
 
-    static Model::Field::Related::OneToOne<ModelFiles, unsigned long long, ModelEnumFileType> fileType;
+    //static Model::Field::Related::OneToOne<ModelFiles, unsigned long long, ModelEnumFileType> fileType;
 
 private:
     static std::string table_name;  /** < model table name */

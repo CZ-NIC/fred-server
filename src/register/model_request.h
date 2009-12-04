@@ -3,9 +3,9 @@
 
 #include "db_settings.h"
 #include "model.h"
-#include "model_service.h"
-#include "model_request_type.h"
-#include "model_session.h"
+//#include "model_service.h"
+//#include "model_request_type.h"
+//#include "model_session.h"
 
 
 class ModelRequest:
@@ -30,21 +30,27 @@ public:
     const unsigned long long &getServiceId() const {
         return m_serviceId.get();
     }
+    /*
     ModelService *getService() {
         return service.getRelated(this);
     }
+    */
     const unsigned long long &getActionTypeId() const {
         return m_actionTypeId.get();
     }
+    /*
     ModelRequestType *getActionType() {
         return actionType.getRelated(this);
     }
+    */
     const unsigned long long &getSessionId() const {
         return m_sessionId.get();
     }
+    /*
     ModelSession *getSession() {
         return session.getRelated(this);
     }
+    */
     const bool &getIsMonitoring() const {
         return m_isMonitoring.get();
     }
@@ -63,21 +69,27 @@ public:
     void setServiceId(const unsigned long long &serviceId) {
         m_serviceId = serviceId;
     }
+    /*
     void setService(ModelService *foreign_value) {
         service.setRelated(this, foreign_value);
     }
+    */
     void setActionTypeId(const unsigned long long &actionTypeId) {
         m_actionTypeId = actionTypeId;
     }
+    /*
     void setActionType(ModelRequestType *foreign_value) {
         actionType.setRelated(this, foreign_value);
     }
+    */
     void setSessionId(const unsigned long long &sessionId) {
         m_sessionId = sessionId;
     }
+    /*
     void setSession(ModelSession *foreign_value) {
         session.setRelated(this, foreign_value);
     }
+    */
     void setIsMonitoring(const bool &isMonitoring) {
         m_isMonitoring = isMonitoring;
     }
@@ -128,23 +140,23 @@ protected:
     Field::Field<unsigned long long> m_sessionId;
     Field::Field<bool> m_isMonitoring;
 
-    Field::Lazy::Field<ModelService *> m_service;
-    Field::Lazy::Field<ModelRequestType *> m_actionType;
-    Field::Lazy::Field<ModelSession *> m_session;
+    //Field::Lazy::Field<ModelService *> m_service;
+    //Field::Lazy::Field<ModelRequestType *> m_actionType;
+    //Field::Lazy::Field<ModelSession *> m_session;
 
 public:
     static Model::Field::PrimaryKey<ModelRequest, unsigned long long> id;
     static Model::Field::Basic<ModelRequest, Database::DateTime> timeBegin;
     static Model::Field::Basic<ModelRequest, Database::DateTime> timeEnd;
     static Model::Field::Basic<ModelRequest, std::string> sourceIp;
-    static Model::Field::ForeignKey<ModelRequest, unsigned long long, ModelService> serviceId;
-    static Model::Field::ForeignKey<ModelRequest, unsigned long long, ModelRequestType> actionTypeId;
-    static Model::Field::ForeignKey<ModelRequest, unsigned long long, ModelSession> sessionId;
+    //static Model::Field::ForeignKey<ModelRequest, unsigned long long, ModelService> serviceId;
+    //static Model::Field::ForeignKey<ModelRequest, unsigned long long, ModelRequestType> actionTypeId;
+    //static Model::Field::ForeignKey<ModelRequest, unsigned long long, ModelSession> sessionId;
     static Model::Field::Basic<ModelRequest, bool> isMonitoring;
 
-    static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelService> service;
-    static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelRequestType> actionType;
-    static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelSession> session;
+    //static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelService> service;
+    //static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelRequestType> actionType;
+    //static Model::Field::Related::OneToOne<ModelRequest, unsigned long long, ModelSession> session;
 
 private:
     static std::string table_name;  /** < model table name */

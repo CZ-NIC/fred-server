@@ -290,11 +290,13 @@ StatementHead::fromXML(
     return true;
 } // StatementHead::fromXML(XMLnode)
 
+/*
 const std::string &
 StatementHead::getZoneFqdn()
 {
     return getAccount()->getZone()->getFqdn();
 }
+
 const std::string &
 StatementHead::getAccountNumber()
 {
@@ -305,6 +307,6 @@ StatementHead::getBankCode()
 {
     return getAccount()->getBankCode();
 }
-
+*/
 } // namespace Banking
 } // namespace Register

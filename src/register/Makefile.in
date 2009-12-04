@@ -58,37 +58,29 @@ libfred_a_AR = $(AR) $(ARFLAGS)
 libfred_a_LIBADD =
 am_libfred_a_OBJECTS = register.$(OBJEXT) common_impl.$(OBJEXT) \
 	object_impl.$(OBJEXT) common_impl_new.$(OBJEXT) \
-	model_enumfiletype.$(OBJEXT) model_enumoperation.$(OBJEXT) \
-	model_enumbankcode.$(OBJEXT) model_enum_tlds.$(OBJEXT) \
-	model_invoiceobjectregistry.$(OBJEXT) \
-	model_invoiceobjectregistrypricemap.$(OBJEXT) \
 	model_invoicecreditpaymentmap.$(OBJEXT) \
 	model_invoicegeneration.$(OBJEXT) model_files.$(OBJEXT) \
 	model_invoiceprefix.$(OBJEXT) model_invoice.$(OBJEXT) \
-	model_bankaccount.$(OBJEXT) model_bankstatementhead.$(OBJEXT) \
-	model_bankstatementitem.$(OBJEXT) model_enumbankcode.$(OBJEXT) \
-	model_object.$(OBJEXT) model_object_registry.$(OBJEXT) \
-	model_registrar_acl.$(OBJEXT) model_registrarinvoice.$(OBJEXT) \
-	model_registrar.$(OBJEXT) model_zone.$(OBJEXT) \
-	model_zone_ns.$(OBJEXT) model_zone_soa.$(OBJEXT) \
-	model_price_list.$(OBJEXT) model_mailtype.$(OBJEXT) \
-	model_mailarchive.$(OBJEXT) model_mailattachments.$(OBJEXT) \
-	model_mailhandles.$(OBJEXT) model_request.$(OBJEXT) \
-	model_request_data.$(OBJEXT) model_request_property.$(OBJEXT) \
-	model_request_property_value.$(OBJEXT) \
-	model_request_type.$(OBJEXT) model_service.$(OBJEXT) \
-	model_session.$(OBJEXT) domain.$(OBJEXT) contact.$(OBJEXT) \
-	nsset.$(OBJEXT) keyset.$(OBJEXT) registrar.$(OBJEXT) \
-	public_request.$(OBJEXT) invoice_common.$(OBJEXT) \
-	invoice.$(OBJEXT) invoice_list.$(OBJEXT) \
-	invoice_manager.$(OBJEXT) invoice_mails.$(OBJEXT) \
-	invoice_exporter.$(OBJEXT) zone.$(OBJEXT) blacklist.$(OBJEXT) \
-	documents.$(OBJEXT) info_buffer.$(OBJEXT) \
-	bank_common.$(OBJEXT) bank_item.$(OBJEXT) bank_head.$(OBJEXT) \
-	bank_list.$(OBJEXT) bank_item_list.$(OBJEXT) \
-	bank_manager.$(OBJEXT) bank_exporter.$(OBJEXT) mail.$(OBJEXT) \
-	notify.$(OBJEXT) poll.$(OBJEXT) file.$(OBJEXT) \
-	filter.$(OBJEXT) request.$(OBJEXT) session.$(OBJEXT)
+	model_bankstatementhead.$(OBJEXT) \
+	model_bankstatementitem.$(OBJEXT) \
+	model_registrar_acl.$(OBJEXT) model_registrar.$(OBJEXT) \
+	model_zone.$(OBJEXT) model_zone_ns.$(OBJEXT) \
+	model_zone_soa.$(OBJEXT) model_price_list.$(OBJEXT) \
+	model_request.$(OBJEXT) model_request_data.$(OBJEXT) \
+	model_request_property.$(OBJEXT) \
+	model_request_property_value.$(OBJEXT) model_session.$(OBJEXT) \
+	domain.$(OBJEXT) contact.$(OBJEXT) nsset.$(OBJEXT) \
+	keyset.$(OBJEXT) registrar.$(OBJEXT) public_request.$(OBJEXT) \
+	invoice_common.$(OBJEXT) invoice.$(OBJEXT) \
+	invoice_list.$(OBJEXT) invoice_manager.$(OBJEXT) \
+	invoice_mails.$(OBJEXT) invoice_exporter.$(OBJEXT) \
+	zone.$(OBJEXT) blacklist.$(OBJEXT) documents.$(OBJEXT) \
+	info_buffer.$(OBJEXT) bank_common.$(OBJEXT) \
+	bank_item.$(OBJEXT) bank_head.$(OBJEXT) bank_list.$(OBJEXT) \
+	bank_item_list.$(OBJEXT) bank_manager.$(OBJEXT) \
+	bank_exporter.$(OBJEXT) mail.$(OBJEXT) notify.$(OBJEXT) \
+	poll.$(OBJEXT) file.$(OBJEXT) filter.$(OBJEXT) \
+	request.$(OBJEXT) session.$(OBJEXT)
 libfred_a_OBJECTS = $(am_libfred_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
 am_test_OBJECTS = test.$(OBJEXT)
@@ -309,18 +301,6 @@ libfred_a_SOURCES = register.cc          \
 					common_impl_new.cc       \
 					common_impl_new.h        \
 					object_new.h             \
-					model_enumfiletype.cc			\
-					model_enumfiletype.h			\
-					model_enumoperation.cc			\
-					model_enumoperation.h			\
-					model_enumbankcode.cc			\
-					model_enumbankcode.h			\
-					model_enum_tlds.cc			\
-					model_enum_tlds.h			\
-					model_invoiceobjectregistry.cc	\
-					model_invoiceobjectregistry.h	\
-					model_invoiceobjectregistrypricemap.cc	\
-					model_invoiceobjectregistrypricemap.h	\
 					model_invoicecreditpaymentmap.cc	\
 					model_invoicecreditpaymentmap.h		\
 					model_invoicegeneration.cc			\
@@ -331,22 +311,12 @@ libfred_a_SOURCES = register.cc          \
 					model_invoiceprefix.h		\
 					model_invoice.cc			\
 					model_invoice.h				\
-					model_bankaccount.cc		\
-					model_bankaccount.h			\
 					model_bankstatementhead.cc	\
 					model_bankstatementhead.h	\
 					model_bankstatementitem.cc	\
 					model_bankstatementitem.h	\
-					model_enumbankcode.cc		\
-					model_enumbankcode.h		\
-					model_object.cc				\
-					model_object.h				\
-					model_object_registry.cc	\
-					model_object_registry.h		\
 					model_registrar_acl.cc		\
 					model_registrar_acl.h		\
-					model_registrarinvoice.cc		\
-					model_registrarinvoice.h		\
 					model_registrar.cc			\
 					model_registrar.h			\
 					model_zone.cc				\
@@ -357,14 +327,6 @@ libfred_a_SOURCES = register.cc          \
 					model_zone_soa.h			\
 					model_price_list.cc			\
 					model_price_list.h			\
-					model_mailtype.cc			\
-					model_mailtype.h			\
-					model_mailarchive.cc		\
-					model_mailarchive.h		\
-					model_mailattachments.cc	\
-					model_mailattachments.h		\
-					model_mailhandles.cc		\
-					model_mailhandles.h		\
 					model_request.cc		\
 					model_request_data.cc		\
 					model_request_data.h		\
@@ -373,10 +335,6 @@ libfred_a_SOURCES = register.cc          \
 					model_request_property.h	\
 					model_request_property_value.cc	\
 					model_request_property_value.h	\
-					model_request_type.cc		\
-					model_request_type.h		\
-					model_service.cc		\
-					model_service.h			\
 					model_session.cc		\
 					model_session.h			\
 					domain.cc            \
@@ -558,36 +516,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/invoice_manager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keyset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mail.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_bankaccount.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_bankstatementhead.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_bankstatementitem.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_enum_tlds.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_enumbankcode.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_enumfiletype.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_enumoperation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_files.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_invoice.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_invoicecreditpaymentmap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_invoicegeneration.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_invoiceobjectregistry.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_invoiceobjectregistrypricemap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_invoiceprefix.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_mailarchive.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_mailattachments.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_mailhandles.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_mailtype.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_object.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_object_registry.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_price_list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrar_acl.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrarinvoice.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_data.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_property.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_property_value.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_type.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_service.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_session.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_zone.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_zone_ns.Po@am__quote@

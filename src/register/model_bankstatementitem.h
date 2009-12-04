@@ -3,9 +3,9 @@
 
 #include "db_settings.h"
 #include "model.h"
-#include "model_bankstatementhead.h"
-#include "model_enumbankcode.h"
-#include "model_invoice.h"
+//#include "model_bankstatementhead.h"
+//#include "model_enumbankcode.h"
+//#include "model_invoice.h"
 
 
 class ModelBankStatementItem:
@@ -23,10 +23,12 @@ public:
     {
         return m_statementId.get();
     }
+    /*
     ModelBankStatementHead *getStatement()
     {
         return statement.getRelated(this);
     }
+    */
     const std::string &getAccountNumber() const
     {
         return m_accountNumber.get();
@@ -35,10 +37,12 @@ public:
     {
         return m_bankCodeId.get();
     }
+    /*
     ModelEnumBankCode *getBankCode()
     {
         return bankCode.getRelated(this);
     }
+    */
     const int &getCode() const
     {
         return m_code.get();
@@ -79,10 +83,12 @@ public:
     {
         return m_invoiceId.get();
     }
+    /*
     ModelInvoice *getInvoice()
     {
         return invoice.getRelated(this);
     }
+    */
     const std::string &getAccountName() const
     {
         return m_accountName.get();
@@ -99,10 +105,12 @@ public:
     {
         m_statementId = statementId;
     }
+    /*
     void setStatement(ModelBankStatementHead *foreign_value)
     {
         statement.setRelated(this, foreign_value);
     }
+    */
     void setAccountNumber(const std::string &accountNumber)
     {
         m_accountNumber = accountNumber;
@@ -111,10 +119,12 @@ public:
     {
         m_bankCodeId = bankCodeId;
     }
+    /*
     void setBankCode(ModelEnumBankCode *foreign_value)
     {
         bankCode.setRelated(this, foreign_value);
     }
+    */
     void setCode(const int &code)
     {
         m_code = code;
@@ -155,10 +165,12 @@ public:
     {
         m_invoiceId = invoiceId;
     }
+    /*
     void setInvoice(ModelInvoice *foreign_value)
     {
         invoice.setRelated(this, foreign_value);
     }
+    */
     void setAccountName(const std::string &accountName)
     {
         m_accountName = accountName;
@@ -228,15 +240,15 @@ protected:
     Field::Field<std::string> m_accountName;
     Field::Field<Database::DateTime> m_crTime;
 
-    Field::Lazy::Field<ModelBankStatementHead *> m_statement;
-    Field::Lazy::Field<ModelEnumBankCode *> m_bankCode;
-    Field::Lazy::Field<ModelInvoice *> m_invoice;
+    //Field::Lazy::Field<ModelBankStatementHead *> m_statement;
+    //Field::Lazy::Field<ModelEnumBankCode *> m_bankCode;
+    //Field::Lazy::Field<ModelInvoice *> m_invoice;
 
 public:
     static Model::Field::PrimaryKey<ModelBankStatementItem, unsigned long long> id;
-    static Model::Field::ForeignKey<ModelBankStatementItem, unsigned long long, ModelBankStatementHead> statementId;
+    //static Model::Field::ForeignKey<ModelBankStatementItem, unsigned long long, ModelBankStatementHead> statementId;
     static Model::Field::Basic<ModelBankStatementItem, std::string> accountNumber;
-    static Model::Field::ForeignKey<ModelBankStatementItem, std::string, ModelEnumBankCode> bankCodeId;
+    //static Model::Field::ForeignKey<ModelBankStatementItem, std::string, ModelEnumBankCode> bankCodeId;
     static Model::Field::Basic<ModelBankStatementItem, int> code;
     static Model::Field::Basic<ModelBankStatementItem, int> type;
     static Model::Field::Basic<ModelBankStatementItem, std::string> konstSym;
@@ -246,13 +258,13 @@ public:
     static Model::Field::Basic<ModelBankStatementItem, std::string> accountEvid;
     static Model::Field::Basic<ModelBankStatementItem, Database::Date> accountDate;
     static Model::Field::Basic<ModelBankStatementItem, std::string> accountMemo;
-    static Model::Field::ForeignKey<ModelBankStatementItem, unsigned long long, ModelInvoice> invoiceId;
+    //static Model::Field::ForeignKey<ModelBankStatementItem, unsigned long long, ModelInvoice> invoiceId;
     static Model::Field::Basic<ModelBankStatementItem, std::string> accountName;
     static Model::Field::Basic<ModelBankStatementItem, Database::DateTime> crTime;
 
-    static Model::Field::Related::OneToOne<ModelBankStatementItem, unsigned long long, ModelBankStatementHead> statement;
-    static Model::Field::Related::OneToOne<ModelBankStatementItem, std::string, ModelEnumBankCode> bankCode;
-    static Model::Field::Related::OneToOne<ModelBankStatementItem, unsigned long long, ModelInvoice> invoice;
+    //static Model::Field::Related::OneToOne<ModelBankStatementItem, unsigned long long, ModelBankStatementHead> statement;
+    //static Model::Field::Related::OneToOne<ModelBankStatementItem, std::string, ModelEnumBankCode> bankCode;
+    //static Model::Field::Related::OneToOne<ModelBankStatementItem, unsigned long long, ModelInvoice> invoice;
 
 private:
     static std::string table_name;  /** < model table name */

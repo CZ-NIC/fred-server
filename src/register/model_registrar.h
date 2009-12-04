@@ -4,8 +4,8 @@
 #include "db_settings.h"
 #include "model.h"
 
-class ModelRegistrarAcl;
-class ModelObject;
+//class ModelRegistrarAcl;
+//class ModelObject;
 
 class ModelRegistrar : public Model::Base {
 public:
@@ -211,11 +211,11 @@ public:
     system_ = _system;
   }
 
-
+/*
   void addAcl(ModelRegistrarAcl* _acl) {
     acls.addRelated(this, _acl);
   }
-
+*/
 
 #if 0
   const Field::Lazy::List<ModelRegistrarAcl>& getAcls() const {
@@ -268,8 +268,8 @@ protected:
   Field::Field<std::string>         url_;
   Field::Field<bool>                system_;
 
-  Field::Lazy::List<ModelObject>         cl_objects_;
-  Field::Lazy::List<ModelRegistrarAcl>   acls_;
+  //Field::Lazy::List<ModelObject>         cl_objects_;
+  //Field::Lazy::List<ModelRegistrarAcl>   acls_;
  
 
   
@@ -298,8 +298,8 @@ public:
   static Model::Field::Basic<ModelRegistrar, std::string>              url;
   static Model::Field::Basic<ModelRegistrar, bool>                     system;
 
-  static Model::Field::Related::OneToMany<ModelRegistrar, unsigned long long, ModelObject>   cl_objects;
-  static Model::Field::Related::OneToMany<ModelRegistrar, unsigned long long, ModelRegistrarAcl>   acls;
+  //static Model::Field::Related::OneToMany<ModelRegistrar, unsigned long long, ModelObject>   cl_objects;
+  //static Model::Field::Related::OneToMany<ModelRegistrar, unsigned long long, ModelRegistrarAcl>   acls;
 
 
     static const field_list &getFields()

@@ -18,18 +18,6 @@ libfred_a_SOURCES = register.cc          \
 					common_impl_new.cc       \
 					common_impl_new.h        \
 					object_new.h             \
-					model_enumfiletype.cc			\
-					model_enumfiletype.h			\
-					model_enumoperation.cc			\
-					model_enumoperation.h			\
-					model_enumbankcode.cc			\
-					model_enumbankcode.h			\
-					model_enum_tlds.cc			\
-					model_enum_tlds.h			\
-					model_invoiceobjectregistry.cc	\
-					model_invoiceobjectregistry.h	\
-					model_invoiceobjectregistrypricemap.cc	\
-					model_invoiceobjectregistrypricemap.h	\
 					model_invoicecreditpaymentmap.cc	\
 					model_invoicecreditpaymentmap.h		\
 					model_invoicegeneration.cc			\
@@ -40,22 +28,12 @@ libfred_a_SOURCES = register.cc          \
 					model_invoiceprefix.h		\
 					model_invoice.cc			\
 					model_invoice.h				\
-					model_bankaccount.cc		\
-					model_bankaccount.h			\
 					model_bankstatementhead.cc	\
 					model_bankstatementhead.h	\
 					model_bankstatementitem.cc	\
 					model_bankstatementitem.h	\
-					model_enumbankcode.cc		\
-					model_enumbankcode.h		\
-					model_object.cc				\
-					model_object.h				\
-					model_object_registry.cc	\
-					model_object_registry.h		\
 					model_registrar_acl.cc		\
 					model_registrar_acl.h		\
-					model_registrarinvoice.cc		\
-					model_registrarinvoice.h		\
 					model_registrar.cc			\
 					model_registrar.h			\
 					model_zone.cc				\
@@ -66,14 +44,6 @@ libfred_a_SOURCES = register.cc          \
 					model_zone_soa.h			\
 					model_price_list.cc			\
 					model_price_list.h			\
-					model_mailtype.cc			\
-					model_mailtype.h			\
-					model_mailarchive.cc		\
-					model_mailarchive.h		\
-					model_mailattachments.cc	\
-					model_mailattachments.h		\
-					model_mailhandles.cc		\
-					model_mailhandles.h		\
 					model_request.cc		\
 					model_request_data.cc		\
 					model_request_data.h		\
@@ -82,10 +52,6 @@ libfred_a_SOURCES = register.cc          \
 					model_request_property.h	\
 					model_request_property_value.cc	\
 					model_request_property_value.h	\
-					model_request_type.cc		\
-					model_request_type.h		\
-					model_service.cc		\
-					model_service.h			\
 					model_session.cc		\
 					model_session.h			\
 					domain.cc            \
@@ -153,6 +119,7 @@ libfred_a_SOURCES = register.cc          \
 					sql.h                \
 					exceptions.h         \
 					types.h
+
 
 noinst_PROGRAMS = test test_logd
 test_SOURCES = test.cc

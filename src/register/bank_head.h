@@ -6,7 +6,7 @@
 #include "common_impl_new.h"
 #include "db_settings.h"
 #include "model_bankstatementhead.h"
-#include "model_bankaccount.h"
+//#include "model_bankaccount.h"
 #include "bank_item.h"
 #include "bank_common.h"
 #include "bank_exporter.h"
@@ -41,9 +41,9 @@ public:
     const StatementItem *getStatementItemByIdx(const unsigned int &idx) const;
     StatementItem *newStatementItem();
     StatementItem *addStatementItem(const StatementItem &statementItem);
-    const std::string &getZoneFqdn();
-    const std::string &getAccountNumber();
-    const std::string &getBankCode();
+    //const std::string &getZoneFqdn();
+    //const std::string &getAccountNumber();
+    //const std::string &getBankCode();
 };
 
 COMPARE_CLASS_IMPL_NEW(StatementHead, CreateDate);
@@ -52,7 +52,7 @@ COMPARE_CLASS_IMPL_NEW(StatementHead, BalanceOld);
 COMPARE_CLASS_IMPL_NEW(StatementHead, BalanceNew);
 COMPARE_CLASS_IMPL_NEW(StatementHead, BalanceCredit);
 COMPARE_CLASS_IMPL_NEW(StatementHead, BalanceDebet);
-COMPARE_CLASS_IMPL_NEW(StatementHead, ZoneFqdn);
+// COMPARE_CLASS_IMPL_NEW(StatementHead, ZoneFqdn);
 // COMPARE_CLASS_IMPL_NEW(StatementHead, AccountNumber);
 // COMPARE_CLASS_IMPL_NEW(StatementHead, BankCode);
 

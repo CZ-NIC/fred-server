@@ -14,8 +14,8 @@
 
 #include "model_registrar_acl.h"
 #include "model_registrar.h"
-#include "model_registrarinvoice.h"
-#include "model_enum_tlds.h"
+//#include "model_registrarinvoice.h"
+//#include "model_enum_tlds.h"
 
 
 using namespace boost::posix_time;

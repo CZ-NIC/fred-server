@@ -16,7 +16,7 @@ enum MemberType {
     MT_BALANCE_NEW,
     MT_BALANCE_CREDIT,
     MT_BALANCE_DEBET,
-    MT_ZONE_FQDN,
+    // MT_ZONE_FQDN,
     // MT_ACCOUNT_NUMBER,
     // MT_BANK_CODE,
 };

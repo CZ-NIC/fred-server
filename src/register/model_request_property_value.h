@@ -3,7 +3,7 @@
 
 #include "db_settings.h"
 #include "model.h"
-#include "model_request_property_value.h"
+//#include "model_request_property_value.h"
 
 
 class ModelRequestPropertyValue:
@@ -40,9 +40,11 @@ public:
     const unsigned long long &getParentId() const {
         return m_parentId.get();
     }
+    /*
     ModelRequestPropertyValue *getParent() {
         return parent.getRelated(this);
     }
+    */
     void setEntryTimeBegin(const Database::DateTime &entryTimeBegin) {
         m_entryTimeBegin = entryTimeBegin;
     }
@@ -70,10 +72,11 @@ public:
     void setParentId(const unsigned long long &parentId) {
         m_parentId = parentId;
     }
+    /*
     void setParent(ModelRequestPropertyValue *foreign_value) {
         parent.setRelated(this, foreign_value);
     }
-
+     */
     friend class Model::Base;
 
     void insert() {
@@ -121,7 +124,7 @@ protected:
     Field::Field<bool> m_output;
     Field::Field<unsigned long long> m_parentId;
 
-    Field::Lazy::Field<ModelRequestPropertyValue *> m_parent;
+    //Field::Lazy::Field<ModelRequestPropertyValue *> m_parent;
 
 public:
     static Model::Field::Basic<ModelRequestPropertyValue, Database::DateTime> entryTimeBegin;
@@ -132,9 +135,9 @@ public:
     static Model::Field::Basic<ModelRequestPropertyValue, int> name;
     static Model::Field::Basic<ModelRequestPropertyValue, std::string> value;
     static Model::Field::Basic<ModelRequestPropertyValue, bool> output;
-    static Model::Field::ForeignKey<ModelRequestPropertyValue, unsigned long long, ModelRequestPropertyValue> parentId;
+    //static Model::Field::ForeignKey<ModelRequestPropertyValue, unsigned long long, ModelRequestPropertyValue> parentId;
 
-    static Model::Field::Related::OneToOne<ModelRequestPropertyValue, unsigned long long, ModelRequestPropertyValue> parent;
+    //static Model::Field::Related::OneToOne<ModelRequestPropertyValue, unsigned long long, ModelRequestPropertyValue> parent;
 
 private:
     static std::string table_name;  /** < model table name */

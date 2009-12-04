@@ -9,9 +9,9 @@ DEFINE_FOREIGN_KEY(ModelInvoiceGeneration, ModelRegistrar, unsigned long long , 
 DEFINE_FOREIGN_KEY(ModelInvoiceGeneration, ModelZone, unsigned long long , zoneId, m_zoneId, table_name, "zone", id, )
 DEFINE_FOREIGN_KEY(ModelInvoiceGeneration, ModelInvoice, unsigned long long , invoiceId, m_invoiceId, table_name, "invoiceid", id, )
 
-DEFINE_ONE_TO_ONE(ModelInvoiceGeneration, ModelRegistrar, registrar, m_registrar, unsigned long long , registrarId, m_registrarId)
-DEFINE_ONE_TO_ONE(ModelInvoiceGeneration, ModelZone, zone, m_zone, unsigned long long , zoneId, m_zoneId)
-DEFINE_ONE_TO_ONE(ModelInvoiceGeneration, ModelInvoice, invoice, m_invoice, unsigned long long , invoiceId, m_invoiceId)
+//DEFINE_ONE_TO_ONE(ModelInvoiceGeneration, ModelRegistrar, registrar, m_registrar, unsigned long long , registrarId, m_registrarId)
+//DEFINE_ONE_TO_ONE(ModelInvoiceGeneration, ModelZone, zone, m_zone, unsigned long long , zoneId, m_zoneId)
+//DEFINE_ONE_TO_ONE(ModelInvoiceGeneration, ModelInvoice, invoice, m_invoice, unsigned long long , invoiceId, m_invoiceId)
 
 ModelInvoiceGeneration::field_list ModelInvoiceGeneration::fields = list_of<ModelInvoiceGeneration::field_list::value_type>
     (&ModelInvoiceGeneration::id)

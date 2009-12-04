@@ -1,6 +1,6 @@
 #include "model_registrar.h"
-#include "model_registrar_acl.h"
-#include "model_object.h"
+//#include "model_registrar_acl.h"
+//#include "model_object.h"
 
 
 ModelRegistrar::ModelRegistrar() {
@@ -34,8 +34,8 @@ DEFINE_BASIC_FIELD(ModelRegistrar, std::string, email, email_, table_name, "emai
 DEFINE_BASIC_FIELD(ModelRegistrar, std::string, url, url_, table_name, "url",)
 DEFINE_BASIC_FIELD(ModelRegistrar, bool, system, system_, table_name, "system", .setDefault())
 
-DEFINE_ONE_TO_MANY(ModelRegistrar, cl_objects, unsigned long long, cl_objects_, ModelObject, clid)
-DEFINE_ONE_TO_MANY(ModelRegistrar, acls, unsigned long long, acls_, ModelRegistrarAcl, registrar_id)
+//DEFINE_ONE_TO_MANY(ModelRegistrar, cl_objects, unsigned long long, cl_objects_, ModelObject, clid)
+//DEFINE_ONE_TO_MANY(ModelRegistrar, acls, unsigned long long, acls_, ModelRegistrarAcl, registrar_id)
 
 
 ModelRegistrar::field_list ModelRegistrar::fields = list_of<ModelRegistrar::field_list::value_type>(&ModelRegistrar::id)

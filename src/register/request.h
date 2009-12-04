@@ -19,8 +19,8 @@
 #include "model_request.h"
 #include "model_request_property.h"
 #include "model_request_property_value.h"
-#include "model_request_type.h"
-#include "model_service.h"
+//#include "model_request_type.h"
+//#include "model_service.h"
 #include "model_session.h"
 
 

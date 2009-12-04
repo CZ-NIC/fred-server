@@ -3,7 +3,7 @@
 
 #include "db_settings.h"
 #include "model.h"
-#include "model_registrar.h"
+//#include "model_registrar.h"
 
 
 class ModelRegistrarAcl : public Model::Base {
@@ -85,7 +85,7 @@ protected:
 
 public:
   static Model::Field::PrimaryKey<ModelRegistrarAcl, unsigned long long>            id;
-  static Model::Field::ForeignKey<ModelRegistrarAcl, unsigned long long, ModelRegistrar> registrar_id;
+  //static Model::Field::ForeignKey<ModelRegistrarAcl, unsigned long long, ModelRegistrar> registrar_id;
   static Model::Field::Basic<ModelRegistrarAcl, std::string>                        cert;
   static Model::Field::Basic<ModelRegistrarAcl, std::string>                        password;
 

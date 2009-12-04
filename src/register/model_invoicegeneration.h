@@ -45,6 +45,7 @@ public:
     {
         m_registrarId = registrarId;
     }
+    /*
     ModelRegistrar *getRegistrar()
     {
         return registrar.getRelated(this);
@@ -53,6 +54,7 @@ public:
     {
         registrar.setRelated(this, reg);
     }
+    */
     const unsigned long long &getZoneId() const
     {
         return m_zoneId.get();
@@ -61,6 +63,7 @@ public:
     {
         m_zoneId = zoneId;
     }
+    /*
     ModelZone *getZone()
     {
         return zone.getRelated(this);
@@ -69,6 +72,7 @@ public:
     {
         zone.setRelated(this, zon);
     }
+    */
     const unsigned long long &getInvoiceId() const
     {
         return m_invoiceId.get();
@@ -77,6 +81,7 @@ public:
     {
         m_invoiceId = invoiceId;
     }
+    /*
     ModelInvoice *getInvoice()
     {
         return invoice.getRelated(this);
@@ -85,7 +90,7 @@ public:
     {
         invoice.setRelated(this, inv);
     }
-
+     */
     friend class Model::Base;
 
     void insert()
@@ -114,9 +119,9 @@ protected:
     Field::Field<unsigned long long>      m_zoneId;
     Field::Field<unsigned long long>      m_invoiceId;
 
-    Field::Lazy::Field<ModelRegistrar *>    m_registrar;
-    Field::Lazy::Field<ModelZone *>         m_zone;
-    Field::Lazy::Field<ModelInvoice *>      m_invoice;
+    //Field::Lazy::Field<ModelRegistrar *>    m_registrar;
+    //Field::Lazy::Field<ModelZone *>         m_zone;
+    //Field::Lazy::Field<ModelInvoice *>      m_invoice;
 
     typedef Model::Field::List<ModelInvoiceGeneration> field_list;
 public:
@@ -127,9 +132,9 @@ public:
     static Model::Field::ForeignKey<ModelInvoiceGeneration, unsigned long long, ModelZone>      zoneId;
     static Model::Field::ForeignKey<ModelInvoiceGeneration, unsigned long long, ModelInvoice>   invoiceId;
 
-    static Model::Field::Related::OneToOne<ModelInvoiceGeneration, unsigned long long, ModelRegistrar>    registrar;
-    static Model::Field::Related::OneToOne<ModelInvoiceGeneration, unsigned long long, ModelZone>         zone;
-    static Model::Field::Related::OneToOne<ModelInvoiceGeneration, unsigned long long, ModelInvoice>      invoice;
+    //static Model::Field::Related::OneToOne<ModelInvoiceGeneration, unsigned long long, ModelRegistrar>    registrar;
+    //static Model::Field::Related::OneToOne<ModelInvoiceGeneration, unsigned long long, ModelZone>         zone;
+    //static Model::Field::Related::OneToOne<ModelInvoiceGeneration, unsigned long long, ModelInvoice>      invoice;
 
 
     static const field_list &getFields()

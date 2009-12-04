@@ -26,14 +26,17 @@ public:
     {
         m_advanceInvoiceId = advanceInvoiceId;
     }
+    /*
     ModelInvoice *getAdvanceInvoice()
     {
         return advanceInvoice.getRelated(this);
     }
+
     void setAdvanceInvoice(ModelInvoice *advInv)
     {
         advanceInvoice.setRelated(this, advInv);
     }
+    */
     const Database::Money &getCredit() const
     {
         return m_credit.get();
@@ -87,7 +90,7 @@ public:
     static Model::Field::Basic<ModelInvoiceCreditPaymentMap, Database::Money>   credit;
     static Model::Field::Basic<ModelInvoiceCreditPaymentMap, Database::Money>   balance;
 
-    static Model::Field::Related::OneToOne<ModelInvoiceCreditPaymentMap, unsigned long long, ModelInvoice>    advanceInvoice;
+    //static Model::Field::Related::OneToOne<ModelInvoiceCreditPaymentMap, unsigned long long, ModelInvoice>    advanceInvoice;
 
 
     static const field_list &getFields()

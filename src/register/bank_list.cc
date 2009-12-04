@@ -196,10 +196,10 @@ List::sort(MemberType member, bool asc)
         case MT_BALANCE_DEBET:
             stable_sort(m_data.begin(), m_data.end(), CompareBalanceDebet(asc));
             break;
+#if 0
         case MT_ZONE_FQDN:
             stable_sort(m_data.begin(), m_data.end(), CompareZoneFqdn(asc));
             break;
-#if 0
         case MT_ACCOUNT_NUMBER:
             stable_sort(m_data.begin(), m_data.end(), CompareAccountNumber(asc));
             break;

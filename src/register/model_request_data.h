@@ -3,7 +3,7 @@
 
 #include "db_settings.h"
 #include "model.h"
-#include "model_request.h"
+//#include "model_request.h"
 
 
 class ModelRequestData:
@@ -25,9 +25,11 @@ public:
     const unsigned long long &getEntryId() const {
         return m_entryId.get();
     }
+/*
     ModelRequest *getEntry() {
         return entry.getRelated(this);
     }
+    */
     const std::string &getContent() const {
         return m_content.get();
     }
@@ -46,9 +48,11 @@ public:
     void setEntryId(const unsigned long long &entryId) {
         m_entryId = entryId;
     }
+    /*
     void setEntry(ModelRequest *foreign_value) {
         entry.setRelated(this, foreign_value);
     }
+    */
     void setContent(const std::string &content) {
         m_content = content;
     }
@@ -100,17 +104,17 @@ protected:
     Field::Field<std::string> m_content;
     Field::Field<bool> m_isResponse;
 
-    Field::Lazy::Field<ModelRequest *> m_entry;
+    //Field::Lazy::Field<ModelRequest *> m_entry;
 
 public:
     static Model::Field::Basic<ModelRequestData, Database::DateTime> entryTimeBegin;
     static Model::Field::Basic<ModelRequestData, int> entryService;
     static Model::Field::Basic<ModelRequestData, bool> entryMonitoring;
-    static Model::Field::ForeignKey<ModelRequestData, unsigned long long, ModelRequest> entryId;
+    //static Model::Field::ForeignKey<ModelRequestData, unsigned long long, ModelRequest> entryId;
     static Model::Field::Basic<ModelRequestData, std::string> content;
     static Model::Field::Basic<ModelRequestData, bool> isResponse;
 
-    static Model::Field::Related::OneToOne<ModelRequestData, unsigned long long, ModelRequest> entry;
+    //static Model::Field::Related::OneToOne<ModelRequestData, unsigned long long, ModelRequest> entry;
 
 private:
     static std::string table_name;  /** < model table name */
