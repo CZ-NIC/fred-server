@@ -1182,16 +1182,7 @@ public:
       case MT_FAX:
         stable_sort(m_data.begin(), m_data.end(), CompareFax(_asc));
         break;
-      case MT_ZONE01CREDIT:
-      case MT_ZONE02CREDIT:
-      case MT_ZONE03CREDIT:
-      case MT_ZONE04CREDIT:
-      case MT_ZONE05CREDIT:
-      case MT_ZONE06CREDIT:
-      case MT_ZONE07CREDIT:
-      case MT_ZONE08CREDIT:
-      case MT_ZONE09CREDIT:
-      case MT_ZONE10CREDIT:
+      case MT_ZONE:
         stable_sort(m_data.begin(), m_data.end(), CompareCreditByZone(_asc , _zone_id));
         break;
     }

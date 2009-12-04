@@ -44,16 +44,7 @@ enum MemberType {
   MT_COUNTRY, ///< country code
   MT_TELEPHONE, ///< telephone
   MT_FAX, ///< fax
-  MT_ZONE01CREDIT, ///< zone 1 credit
-  MT_ZONE02CREDIT, ///< zone 2 credit
-  MT_ZONE03CREDIT, ///< zone 3 credit
-  MT_ZONE04CREDIT, ///< zone 4 credit
-  MT_ZONE05CREDIT, ///< zone 5 credit
-  MT_ZONE06CREDIT, ///< zone 6 credit
-  MT_ZONE07CREDIT, ///< zone 7 credit
-  MT_ZONE08CREDIT, ///< zone 8 credit
-  MT_ZONE09CREDIT, ///< zone 9 credit
-  MT_ZONE10CREDIT ///< zone 10 credit
+  MT_ZONE ///< zone
 };
 
 
