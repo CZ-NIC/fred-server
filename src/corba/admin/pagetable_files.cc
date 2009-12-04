@@ -41,7 +41,7 @@ Registry::TableRow* ccReg_Files_i::getRow(CORBA::UShort _row)
   tr->length(4);
   (*tr)[0] <<= C_STR(file->getName());
   (*tr)[1] <<= C_STR(file->getCrDate());
-  (*tr)[2] <<= C_STR(const_cast<Register::File::File *>(file)->getFileType()->getName());
+  (*tr)[2] <<= C_STR(file->getFileTypeDesc());//C_STR(const_cast<Register::File::File *>(file)->getFileType()->getName());
   (*tr)[3] <<= C_STR(file->getFilesize());
   return tr;
 }
