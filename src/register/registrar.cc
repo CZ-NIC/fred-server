@@ -1754,12 +1754,12 @@ public:
       }//catch (...)
   }
 
-
+/*
   virtual RegistrarList *getList()
   {
     return &rl;
   }
-
+*/
   virtual EPPActionList *getEPPActionList()
   {
     return &eal;

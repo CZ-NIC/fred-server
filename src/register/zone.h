@@ -306,7 +306,7 @@ namespace Register
               int period)
           throw (SQL_ERROR) = 0;
       /// Return list of zones
-        virtual ZoneList *getList() = 0;
+        //virtual ZoneList *getList() = 0;
         ///list factory
         typedef std::auto_ptr<ZoneList> ZoneListPtr;
         virtual ZoneListPtr createList() =0;

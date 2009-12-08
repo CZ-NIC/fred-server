@@ -572,7 +572,8 @@ namespace Register
 		          bool at_least_one = false;
 		          Database::SelectQuery info_query;
 		          std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
-		          for (fit->first(); !fit->isDone(); fit->next()) {
+		          for (fit->first(); !fit->isDone(); fit->next())
+		          {
 		            Database::Filters::Zone *zf =
 		                dynamic_cast<Database::Filters::Zone*>(fit->get());
 		            if (!zf)
@@ -588,7 +589,7 @@ namespace Register
 
 		            uf.addQuery(tmp);
 		            at_least_one = true;
-		          }
+		          }//for fit
 		          if (!at_least_one) {
 		            LOGGER(PACKAGE).error("wrong filter passed for reload ZoneList!");
 		            return;
@@ -1382,11 +1383,12 @@ namespace Register
         if (p) free(p);
         return result;
       }
+/*
       virtual ZoneList *getList()
       {
         return &zoneList;
       }
-
+*/
       ///list factory
         virtual ZoneListPtr createList()
         {

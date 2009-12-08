@@ -405,7 +405,7 @@ public:
   virtual ~Manager() {
   }
   /// Return list of registrars
-  virtual RegistrarList *getList() = 0;
+  //virtual RegistrarList *getList() = 0;
   /// Return list of EPP actions
   virtual EPPActionList *getEPPActionList() = 0;
   /// Return new empty list of EPP actions
