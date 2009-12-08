@@ -60,14 +60,15 @@ RegistrarClient::show_opts()
     print_options("Registrar", getOpts(), getOptsCount());
 }
 
-#define reg(i)  regMan->getList()->get(i)
-
 void
 RegistrarClient::list()
 {
     callHelp(m_conf, no_help);
     std::auto_ptr<Register::Registrar::Manager> regMan(
             Register::Registrar::Manager::create(&m_db));
+
+    Register::Registrar::Manager
+        ::RegistrarListPtr reg_list(regMan->createList());
 
     Database::Filters::Registrar *regFilter;
     regFilter = new Database::Filters::RegistrarImpl(true);
@@ -91,47 +92,39 @@ RegistrarClient::list()
         regFilter->addCountryCode().setValue(
                 m_conf.get<std::string>(COUNTRY_NAME));
 
-    // apply_ID(regFilter);
-    // apply_HANDLE(regFilter);
-    // apply_NAME(regFilter);
-    // apply_CITY(regFilter);
-    // apply_EMAIL(regFilter);
-    // apply_COUNTRY(regFilter);
-
     Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
 
     unionFilter->addFilter(regFilter);
-    //regMan->getList()->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
 
-    regMan->getList()->reload(*unionFilter);
+    reg_list->reload(*unionFilter);
 
     std::cout << "<object>\n";
-    for (unsigned int i = 0; i < regMan->getList()->getSize(); i++) {
+    for (unsigned int i = 0; i < reg_list->getSize(); i++) {
         std::cout
             << "\t<registrar>\n"
-            << "\t\t<id>" << regMan->getList()->get(i)->getId() << "</id>\n"
-            << "\t\t<handle>" << reg(i)->getHandle() << "</handle>\n"
-            << "\t\t<name>" << reg(i)->getName() << "</name>\n"
-            << "\t\t<url>" << reg(i)->getURL() << "</url>\n"
-            << "\t\t<organization>" << reg(i)->getOrganization() << "</organization>\n"
-            << "\t\t<street1>" << reg(i)->getStreet1() << "</street1>\n"
-            << "\t\t<street2>" << reg(i)->getStreet2() << "</street2>\n"
-            << "\t\t<street3>" << reg(i)->getStreet3() << "</street3>\n"
-            << "\t\t<city>" << reg(i)->getCity() << "</city>\n"
-            << "\t\t<province>" << reg(i)->getProvince() << "</province>\n"
-            << "\t\t<postal_code>" << reg(i)->getPostalCode() << "</postal_code>\n"
-            << "\t\t<country>" << reg(i)->getCountry() << "</country>\n"
-            << "\t\t<telephone>" << reg(i)->getTelephone() << "</telephone>\n"
-            << "\t\t<fax>" << reg(i)->getFax() << "</fax>\n"
-            << "\t\t<email>" << reg(i)->getEmail() << "</email>\n"
-            << "\t\t<system>" << reg(i)->getSystem() << "</system>\n"
-            << "\t\t<credit>" << reg(i)->getCredit() << "</credit>\n";
-        for (unsigned int j = 0; j < reg(i)->getACLSize(); j++) {
+            << "\t\t<id>" << reg_list->get(i)->getId() << "</id>\n"
+            << "\t\t<handle>" << reg_list->get(i)->getHandle() << "</handle>\n"
+            << "\t\t<name>" << reg_list->get(i)->getName() << "</name>\n"
+            << "\t\t<url>" << reg_list->get(i)->getURL() << "</url>\n"
+            << "\t\t<organization>" << reg_list->get(i)->getOrganization() << "</organization>\n"
+            << "\t\t<street1>" << reg_list->get(i)->getStreet1() << "</street1>\n"
+            << "\t\t<street2>" << reg_list->get(i)->getStreet2() << "</street2>\n"
+            << "\t\t<street3>" << reg_list->get(i)->getStreet3() << "</street3>\n"
+            << "\t\t<city>" << reg_list->get(i)->getCity() << "</city>\n"
+            << "\t\t<province>" << reg_list->get(i)->getProvince() << "</province>\n"
+            << "\t\t<postal_code>" << reg_list->get(i)->getPostalCode() << "</postal_code>\n"
+            << "\t\t<country>" << reg_list->get(i)->getCountry() << "</country>\n"
+            << "\t\t<telephone>" << reg_list->get(i)->getTelephone() << "</telephone>\n"
+            << "\t\t<fax>" << reg_list->get(i)->getFax() << "</fax>\n"
+            << "\t\t<email>" << reg_list->get(i)->getEmail() << "</email>\n"
+            << "\t\t<system>" << reg_list->get(i)->getSystem() << "</system>\n"
+            << "\t\t<credit>" << reg_list->get(i)->getCredit() << "</credit>\n";
+        for (unsigned int j = 0; j < reg_list->get(i)->getACLSize(); j++) {
             std::cout
                 << "\t\t<ACL>\n"
-                << "\t\t\t<cert_md5>" << reg(i)->getACL(j)->getCertificateMD5() << "</cert_md5>\n"
-                << "\t\t\t<pass>" << reg(i)->getACL(j)->getPassword() << "</pass>\n"
+                << "\t\t\t<cert_md5>" << reg_list->get(i)->getACL(j)->getCertificateMD5() << "</cert_md5>\n"
+                << "\t\t\t<pass>" << reg_list->get(i)->getACL(j)->getPassword() << "</pass>\n"
                 << "\t\t</ACL>\n";
         }
         std::cout
