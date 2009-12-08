@@ -7,9 +7,9 @@ class ccReg_Zones_i:
     public ccReg_PageTable_i,
     public PortableServer::RefCountServantBase {
 private:    
-    Register::Zone::ZoneList *m_zoneList;
+    Register::Zone::Manager::ZoneListPtr m_zoneList;
 public:
-    ccReg_Zones_i(Register::Zone::ZoneList *zoneList);
+    ccReg_Zones_i(Register::Zone::Manager::ZoneListPtr zoneList);
     ~ccReg_Zones_i();
     DECL_PAGETABLE_I;
 

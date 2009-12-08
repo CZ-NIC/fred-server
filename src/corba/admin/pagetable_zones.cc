@@ -4,7 +4,7 @@
 #include <sstream>
 
 ccReg_Zones_i::ccReg_Zones_i(
-	Register::Zone::ZoneList *zoneList)
+        Register::Zone::Manager::ZoneListPtr zoneList)
 	: m_zoneList(zoneList)
 {
 }

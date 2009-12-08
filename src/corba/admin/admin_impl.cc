@@ -315,7 +315,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
         Register::Manager::create(&ldb, cfg.get<bool>("registry.restricted_handles"))
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
-    Register::Registrar::RegistrarList *rl = rm->getList();
+    Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
     rl->reload();
     LOG( NOTICE_LOG, "getRegistrars: num -> %d", rl->size() );
     ccReg::RegistrarList* reglist = new ccReg::RegistrarList;
@@ -344,7 +344,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
         Register::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles"))
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
-    Register::Registrar::RegistrarList *rl = rm->getList();
+    Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
     rl->setZoneFilter(zone);
     rl->reload();
     LOG( NOTICE_LOG, "getRegistrars: num -> %d", rl->size() );
@@ -376,7 +376,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
         Register::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles"))
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
-    Register::Registrar::RegistrarList *rl = rm->getList();
+    Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
     rl->setIdFilter(id);
     rl->reload();
     if (rl->size() < 1) {
@@ -409,7 +409,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
         Register::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles"))
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
-    Register::Registrar::RegistrarList *rl = rm->getList();
+    Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
     rl->setHandleFilter(handle);
     rl->reload();
     if (rl->size() < 1) {
@@ -434,7 +434,7 @@ void ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData) {
   db.OpenDatabase(m_connection_string.c_str());
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
   Register::Registrar::Manager *rm = r->getRegistrarManager();
-  Register::Registrar::RegistrarList *rl = rm->getList();
+  Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
   Register::Registrar::Registrar *reg; // registrar to be created or updated
   if (!regData.id)
     reg = rl->create();

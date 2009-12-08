@@ -1,7 +1,7 @@
 #include "pagetable_registrars.h"
 
-ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::RegistrarList *_rl
-		, Register::Zone::ZoneList * _zl
+ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::Manager::RegistrarListPtr _rl
+        , Register::Zone::Manager::ZoneListPtr _zl
 		)
   : rl(_rl)
   , zl(_zl)
@@ -19,6 +19,21 @@ ccReg_Registrars_i::reload() {
 
   TRACE("[CALL] void ccReg_Registrars_i::reload()");
   rl->reload(uf);
+
+  //TODO: guards
+  Database::Filters::Zone *zoneFilter;
+    zoneFilter = new Database::Filters::ZoneImpl(true);
+  Database::Filters::Union *unionFilter;
+  unionFilter = new Database::Filters::Union();
+  unionFilter->addFilter(zoneFilter);
+  zl->reload(*unionFilter);
+
+  //au
+  if(zl->size() == 0) zl->reload();
+
+  unionFilter->clear();
+  delete unionFilter;
+
   TRACE("[CALL] void ccReg_Registrars_i::reload() end");
 }
 

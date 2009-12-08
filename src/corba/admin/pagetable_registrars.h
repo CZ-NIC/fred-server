@@ -6,14 +6,14 @@
 class ccReg_Registrars_i : public ccReg_PageTable_i,
                            public PortableServer::RefCountServantBase {
 private:
-  Register::Registrar::RegistrarList *rl;
-  Register::Zone::ZoneList *zl;
+  Register::Registrar::Manager::RegistrarListPtr rl;
+  Register::Zone::Manager::ZoneListPtr zl;
 
   enum cols {static_cols = 3};///number of static columns in pagetable
 
 public:
-  ccReg_Registrars_i(Register::Registrar::RegistrarList * _rl
-					  , Register::Zone::ZoneList * _zl
+  ccReg_Registrars_i(Register::Registrar::Manager::RegistrarListPtr _rl
+					  , Register::Zone::Manager::ZoneListPtr _zl
 					  );
   ~ccReg_Registrars_i();
   DECL_PAGETABLE_I;

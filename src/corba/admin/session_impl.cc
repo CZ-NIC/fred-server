@@ -56,7 +56,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_contacts = new ccReg_Contacts_i(m_register_manager->getContactManager()->createList(), &settings_);
   m_nssets = new ccReg_NSSets_i(m_register_manager->getNSSetManager()->createList(), &settings_);
   m_keysets = new ccReg_KeySets_i(m_register_manager->getKeySetManager()->createList(), &settings_);
-  m_registrars = new ccReg_Registrars_i(m_register_manager->getRegistrarManager()->getList(),m_register_manager->getZoneManager()->getList());
+  m_registrars = new ccReg_Registrars_i(m_register_manager->getRegistrarManager()->createList(),m_register_manager->getZoneManager()->createList());
   m_eppactions = new ccReg_EPPActions_i(m_register_manager->getRegistrarManager()->getEPPActionList());
   m_invoices = new ccReg_Invoices_i(m_invoicing_manager->createList());
   m_filters = new ccReg_Filters_i(m_register_manager->getFilterManager()->getList());
@@ -67,7 +67,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_files = new ccReg_Files_i(file_manager_->createList());
   m_logger = new ccReg_Logger_i(m_logger_manager->createList());
   m_logsession = new ccReg_LogSession_i(m_logsession_manager->createList());
-  m_zones = new ccReg_Zones_i(m_register_manager->getZoneManager()->getList());
+  m_zones = new ccReg_Zones_i(m_register_manager->getZoneManager()->createList());
 
   m_eppactions->setDB();
   m_registrars->setDB();
@@ -399,8 +399,8 @@ Registry::Registrar::Detail* ccReg_Session_i::getRegistrarDetail(ccReg::TID _id)
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing registrar filter for object id=%1%' detail")
         % _id);
-    Register::Registrar::RegistrarList * tmp_registrar_list =
-        m_register_manager->getRegistrarManager()->getList();
+    Register::Registrar::Manager::RegistrarListPtr tmp_registrar_list =
+        m_register_manager->getRegistrarManager()->createList();
 
     Database::Filters::Union uf;
     Database::Filters::Registrar *filter = new Database::Filters::RegistrarImpl();
@@ -617,8 +617,8 @@ Registry::Zone::Detail* ccReg_Session_i::getZoneDetail(ccReg::TID _id) {
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing zone filter for object id=%1%' detail")
         % _id);
-    Register::Zone::ZoneList * tmp_zone_list =
-        m_register_manager->getZoneManager()->getList();
+    Register::Zone::Manager::ZoneListPtr tmp_zone_list =
+        m_register_manager->getZoneManager()->createList();
 
     Database::Filters::Union uf;
     Database::Filters::Zone *filter = new Database::Filters::ZoneImpl();
@@ -1454,8 +1454,8 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar) {
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
-  Register::Registrar::RegistrarList *tmp_registrar_list =
-      m_register_manager->getRegistrarManager()->getList();
+  Register::Registrar::Manager::RegistrarListPtr tmp_registrar_list =
+      m_register_manager->getRegistrarManager()->createList();
   Register::Registrar::Registrar *update_registrar; // registrar to be created or updated
   if (!_registrar.id) {
     LOGGER(PACKAGE).debug("no registrar id specified; creating new registrar...");
