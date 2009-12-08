@@ -62,6 +62,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_filters = new ccReg_Filters_i(m_register_manager->getFilterManager()->getList());
   m_publicrequests = new ccReg_PublicRequests_i(m_publicrequest_manager->createList());
   m_statementitems = new ccReg_StatementItems_i(m_banking_manager->createItemList());
+  m_statementheads = new ccReg_StatementHeads_i(m_banking_manager->createList());
   m_mails = new ccReg_Mails_i(mail_manager_->createList(), ns);
   m_files = new ccReg_Files_i(file_manager_->createList());
   m_logger = new ccReg_Logger_i(m_logger_manager->createList());
@@ -79,6 +80,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_logger->setDB();
   m_logsession->setDB();
   m_statementitems->setDB();
+  m_statementheads->setDB();
   m_zones->setDB();
 
   settings_.set("filter.history", "off");
@@ -106,6 +108,7 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_logger;
   delete m_logsession;
   delete m_statementitems;
+  delete m_statementheads;
   delete m_zones;
 
   db.Disconnect();
@@ -142,6 +145,8 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
       return m_invoices->_this();
     case ccReg::FT_STATEMENTITEM:
       return m_statementitems->_this();
+    case ccReg::FT_STATEMENTHEAD:
+      return m_statementheads->_this();
     case ccReg::FT_PUBLICREQUEST:
       return m_publicrequests->_this();
     case ccReg::FT_MAIL:
@@ -209,6 +214,14 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
 
     case ccReg::FT_LOGGER:
       *result <<= getRequestDetail(_id);
+      break;
+
+    case ccReg::FT_STATEMENTHEAD:
+      *result <<= getStatementHeadDetail(_id);
+      break;
+
+    case ccReg::FT_STATEMENTITEM:
+      *result <<= getStatementItemDetail(_id);
       break;
 
     case ccReg::FT_FILTER:
@@ -542,6 +555,56 @@ Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
 
 }
 
+Registry::Banking::BankItem::Detail *ccReg_Session_i::getStatementItemDetail(ccReg::TID _id) {
+	LOGGER(PACKAGE).debug(boost::format("constructing bank item filter for object id=%1% detail") % _id);
+
+	std::auto_ptr<Register::Banking::ItemList> item_list(m_banking_manager->createItemList());
+
+	Database::Filters::Union union_filter;
+	// where is it deleted? TODO
+	Database::Filters::StatementItem *filter = new Database::Filters::StatementItemImpl();
+
+	filter->addId().setValue(Database::ID(_id));
+	union_filter.addFilter(filter);
+
+        // TODO
+	// item_list->setPartialLoad(false);
+	// TODO make sure the db_manager is OK
+	//
+	// item_list->reload(union_filter, &m_db_manager);
+	item_list->reload(union_filter);
+	
+	if(item_list->size() != 1) {
+		throw ccReg::Admin::ObjectNotFound();
+	}
+	return createBankItemDetail(item_list->get(0));
+
+}
+
+Registry::Banking::BankHead::Detail *ccReg_Session_i::getStatementHeadDetail(ccReg::TID _id) {
+	LOGGER(PACKAGE).debug(boost::format("constructing bank item filter for object id=%1% detail") % _id);
+
+	std::auto_ptr<Register::Banking::HeadList> head_list(m_banking_manager->createList());
+
+	Database::Filters::Union union_filter;
+	// where is it deleted? TODO
+	Database::Filters::StatementHead *filter = new Database::Filters::StatementHeadImpl();
+
+	filter->addId().setValue(Database::ID(_id));
+	union_filter.addFilter(filter);
+
+	head_list->setPartialLoad(false);
+	// TODO make sure the db_manager is OK
+	//
+	// head_list->reload(union_filter, &m_db_manager);
+	head_list->reload(union_filter);
+	
+	if(head_list->size() != 1) {
+		throw ccReg::Admin::ObjectNotFound();
+	}
+	return createBankHeadDetail(head_list->get(0));
+    
+}
 
 Registry::Zone::Detail* ccReg_Session_i::getZoneDetail(ccReg::TID _id) {
   // Register::Zone::Zone *zone = m_zones->findId(_id);
@@ -588,7 +651,59 @@ Registry::Request::Detail *ccReg_Session_i::createRequestDetail(Register::Logger
 	detail->raw_request	= DUPSTRFUN(req->getRawRequest);
 	detail->raw_response	= DUPSTRFUN(req->getRawResponse);
 
+        // TODO refactor - this convert function could be moved here (or sw else)
 	detail->props		= convert_properties_d2c(req->getProperties());
+
+	return detail;
+}
+
+void fillBankItemDetail(Registry::Banking::BankItem::Detail &d, const Register::Banking::StatementItem *it) 
+{
+        d.id              = it->getId();
+        d.statementId     = it->getStatementId();
+        d.accountNumber   = DUPSTRFUN(it->getAccountNumber);
+        d.bankCodeId      = DUPSTRFUN(it->getBankCodeId);
+        d.code            = it->getCode();
+        d.type            = it->getType();
+        d.konstSym        = DUPSTRFUN(it->getKonstSym);
+        d.varSymb         = DUPSTRFUN(it->getVarSymb);
+        d.specSymb        = DUPSTRFUN(it->getSpecSymb);
+        d.price           = DUPSTRC(formatMoney(it->getPrice()));
+        d.accountEvid     = DUPSTRFUN(it->getAccountEvid);
+        d.accountDate     = DUPSTRDATED(it->getAccountDate);
+        d.accountMemo     = DUPSTRFUN(it->getAccountMemo);
+        d.invoiceId       = it->getInvoiceId();
+        d.accountName     = DUPSTRFUN(it->getAccountName);
+        d.crTime          = DUPSTRDATE(it->getCrTime);
+}
+
+Registry::Banking::BankItem::Detail *ccReg_Session_i::createBankItemDetail(Register::Banking::StatementItem *item) {
+        Registry::Banking::BankItem::Detail *detail = new Registry::Banking::BankItem::Detail();
+
+        fillBankItemDetail(*detail, item);
+	return detail;
+}
+
+Registry::Banking::BankHead::Detail *ccReg_Session_i::createBankHeadDetail(Register::Banking::StatementHead *head) {
+        Registry::Banking::BankHead::Detail *detail = new Registry::Banking::BankHead::Detail();
+
+        detail->id              = head->getId();
+        detail->accountId       = head->getAccountId();
+        detail->num             = head->getNum();
+        detail->createDate      = DUPSTRDATED(head->getCreateDate);
+        detail->balanceOldDate  = DUPSTRDATED(head->getBalanceOldDate);
+        detail->balanceOld      = DUPSTRC(formatMoney(head->getBalanceOld()));
+        detail->balanceNew      = DUPSTRC(formatMoney(head->getBalanceNew()));
+        detail->balanceCredit   = DUPSTRC(formatMoney(head->getBalanceCredit()));
+        detail->balanceDebet    = DUPSTRC(formatMoney(head->getBalanceDebet()));        
+        detail->fileId          = head->getFileId();
+
+        int count = head->getStatementItemCount();
+        detail->bankItems.length(count);
+
+        for(int i=0;i<count;i++) {
+            fillBankItemDetail(detail->bankItems[i], head->getStatementItemByIdx(i));
+        }
 
 	return detail;
 }
@@ -1501,7 +1616,7 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Regi
 
 Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invoicing::Invoice *_invoice) {
   Registry::Invoicing::Detail *detail = new Registry::Invoicing::Detail();
-
+  
   detail->id = _invoice->getId();
   detail->zone = _invoice->getZoneId();
   detail->createTime = DUPSTRDATE_NOLTCONVERT(_invoice->getCrDate);
@@ -1523,12 +1638,21 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
   detail->registrar.type   = ccReg::FT_REGISTRAR;
 
   detail->filePDF.id     = _invoice->getFileId();
-  // detail->filePDF.handle = _invoice->getFileNamePDF().c_str(); 
-  detail->filePDF.handle = _invoice->getFile()->getName().c_str(); 
+  // detail->filePDF.handle = _invoice->getFileNamePDF().c_str();
+
+  // TODO this treatment for everything similar
+  ModelFiles *file = _invoice->getFile();
+  if(file != NULL) {
+    detail->filePDF.handle = file->getName().c_str();
+  }
   detail->filePDF.type   = ccReg::FT_FILE;
 
   detail->fileXML.id     = _invoice->getFileXmlId();
-  detail->fileXML.handle = _invoice->getFileXml()->getName().c_str();
+  ModelFiles *filexml = _invoice->getFileXml();
+  if(filexml != NULL) {
+    detail->fileXML.handle = filexml->getName().c_str();
+  }
+  
   detail->fileXML.type   = ccReg::FT_FILE;
 
   detail->payments.length(_invoice->getSourceCount());
@@ -1539,7 +1663,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
     detail->payments[n].balance = DUPSTRC(formatMoney(ps->getCredit()));
     detail->payments[n].number = DUPSTRC(stringify(ps->getNumber()));
   }
-
+  
   detail->paymentActions.length(_invoice->getActionCount());
   for (unsigned n = 0; n < _invoice->getActionCount(); ++n) {
     const Register::Invoicing::PaymentAction *pa = _invoice->getAction(n);

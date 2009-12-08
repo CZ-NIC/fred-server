@@ -527,6 +527,18 @@ COMPOUND_CLASS(StatementItem, StatementItem, Compound,
 
 );
 
+COMPOUND_CLASS(StatementHead, StatementHead, Compound,
+    FILTER_ADD(Id, addId);
+    FILTER_ADD(Id, addAccountId);
+    FILTER_ADD(Date, addCreateDate);
+    FILTER_ADD(Date, addBalanceOldDate);
+    FILTER_ADD(Str, addAccountNumber);
+    FILTER_ADD(Str, addBankCode);
+    FILTER_ADD(Str, addConstSymbol);
+    FILTER_ADD(Str, addVarSymbol);
+    FILTER_ADD(Str, addSpecSymbol);
+    FILTER_ADD(Id, addInvoiceId);
+);
 
 COMPOUND_CLASS(ZoneNs, ZoneNs , Compound,
     FILTER_ADD(Id, addId);
@@ -638,6 +650,7 @@ ITERATOR_ADD_E_METHOD_IMPL(RequestData,RequestData);
 ITERATOR_ADD_E_METHOD_IMPL(Request,Request);
 ITERATOR_ADD_E_METHOD_IMPL(Session,Session);
 ITERATOR_ADD_E_METHOD_IMPL(StatementItem, StatementItem);
+ITERATOR_ADD_E_METHOD_IMPL(StatementHead, StatementHead);
 
 ITERATOR_ADD_E_METHOD_IMPL(ZoneSoa, ZoneSoa);
 ITERATOR_ADD_E_METHOD_IMPL(ZoneNs, ZoneNs);
@@ -683,6 +696,7 @@ void FilterIteratorImpl::addFilter(Database::Filters::Filter *f) {
   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestServiceType,RequestServiceType);
   ITERATOR_ADD_FILTER_METHOD_IMPL(RequestActionType,RequestActionType);
   ITERATOR_ADD_FILTER_METHOD_IMPL(StatementItem, StatementItem);
+  ITERATOR_ADD_FILTER_METHOD_IMPL(StatementHead, StatementHead);
 
   ITERATOR_ADD_FILTER_METHOD_IMPL(ZoneSoa, ZoneSoa);
   ITERATOR_ADD_FILTER_METHOD_IMPL(ZoneNs, ZoneNs);

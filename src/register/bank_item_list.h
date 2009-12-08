@@ -17,8 +17,13 @@ enum ItemMemberType {
     IMT_CONSTSYMB,
     IMT_VARSYMB,
     IMT_SPECSYMB,
-    IMT_EVID,
-    IMT_DATE,
+    IMT_PRICE,
+    IMT_ACCOUNT_EVID,
+    IMT_ACCOUNT_DATE,
+    IMT_ACCOUNT_MEMO,
+    IMT_INVOICE,
+    IMT_ACCOUNT_NAME,
+    IMT_CREATE_TIME
 };
 
 class ItemList:

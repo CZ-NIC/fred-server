@@ -53,6 +53,7 @@ public:
   ccReg::Filters::RequestServiceType_ptr addE(Database::Filters::RequestServiceType *f);
   ccReg::Filters::RequestActionType_ptr addE(Database::Filters::RequestActionType *f);
   ccReg::Filters::StatementItem_ptr addE(Database::Filters::StatementItem *f);
+  ccReg::Filters::StatementHead_ptr addE(Database::Filters::StatementHead *f);
 
 
   ccReg::Filters::ZoneSoa_ptr addE(Database::Filters::ZoneSoa *f);

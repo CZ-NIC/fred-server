@@ -6,12 +6,12 @@
 namespace Database {
 namespace Filters {
 
-class Statement: virtual public Compound {
+class StatementHead: virtual public Compound {
 public:
-    virtual ~Statement() 
+    virtual ~StatementHead()
     { }
 
-    virtual Table &joinStatementTable() = 0;
+    virtual Table &joinStatementHeadTable() = 0;
     virtual Table &joinStatementItemTable() = 0;
     virtual Value<Database::ID> &addId() = 0;
     virtual Value<Database::ID> &addAccountId() = 0;
@@ -31,14 +31,14 @@ public:
     {
         _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
     }
-}; // class Statement
+}; // class StatementHead
 
-class StatementImpl: virtual public Statement {
+class StatementHeadImpl: virtual public StatementHead {
 public:
-    StatementImpl();
-    virtual ~StatementImpl();
+    StatementHeadImpl();
+    virtual ~StatementHeadImpl();
 
-    virtual Table &joinStatementTable();
+    virtual Table &joinStatementHeadTable();
     virtual Table &joinStatementItemTable();
     virtual Value<Database::ID> &addId();
     virtual Value<Database::ID> &addAccountId();
@@ -55,7 +55,7 @@ public:
     template<class Archive> void serialize(
             Archive &_ar, const unsigned int _version)
     {
-        _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Statement);
+        _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StatementHead);
     }
 }; // class StatementImpl
 

@@ -25,7 +25,7 @@ Registry::Table::ColumnHeaders *
 ccReg_StatementItems_i::getColumnHeaders()
 {
     Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
-    ch->length(12);
+    ch->length(15);
     COLHEAD(ch, 0, "Statement Head", CT_OID);
     COLHEAD(ch, 1, "Account Number", CT_OTHER);
     COLHEAD(ch, 2, "Bank Code", CT_OTHER);
@@ -35,9 +35,19 @@ ccReg_StatementItems_i::getColumnHeaders()
     COLHEAD(ch, 6, "Var. Symbol", CT_OTHER);
     COLHEAD(ch, 7, "Spec. Symbol", CT_OTHER);
     COLHEAD(ch, 8, "Price", CT_OTHER);
+    COLHEAD(ch, 9, "Account Evid", CT_OTHER);
+    COLHEAD(ch, 10, "Date", CT_OTHER);
+    COLHEAD(ch, 11, "Memo", CT_OTHER);
+    COLHEAD(ch, 12, "Invoice", CT_OID);
+    COLHEAD(ch, 13, "Account Name", CT_OID);
+    COLHEAD(ch, 14, "Create Time", CT_OID);
+
+    /*
     COLHEAD(ch, 9, "Date", CT_OTHER);
     COLHEAD(ch, 10, "Memo", CT_OTHER);
     COLHEAD(ch, 11, "Invoice", CT_OID);
+     */
+
     return ch;
 }
 
@@ -53,7 +63,7 @@ ccReg_StatementItems_i::getRow(CORBA::UShort row)
     }
     Registry::TableRow *tr = new Registry::TableRow;
 
-    tr->length(12);
+    tr->length(15);
     (*tr)[0] <<= C_STR(item->getStatementId());
     (*tr)[1] <<= C_STR(item->getAccountNumber());
     (*tr)[2] <<= C_STR(item->getBankCodeId());
@@ -63,9 +73,12 @@ ccReg_StatementItems_i::getRow(CORBA::UShort row)
     (*tr)[6] <<= C_STR(item->getVarSymb());
     (*tr)[7] <<= C_STR(item->getSpecSymb());
     (*tr)[8] <<= formatMoney(item->getPrice()).c_str();
-    (*tr)[9] <<= C_STR(item->getAccountDate());
-    (*tr)[10] <<= C_STR(item->getAccountMemo());
-    (*tr)[11] <<= C_STR(item->getInvoiceId());
+    (*tr)[9] <<= C_STR(item->getAccountEvid());
+    (*tr)[10] <<= C_STR(item->getAccountDate());
+    (*tr)[11] <<= C_STR(item->getAccountMemo());
+    (*tr)[12] <<= C_STR(item->getInvoiceId());
+    (*tr)[13] <<= C_STR(item->getAccountName());
+    (*tr)[14] <<= C_STR(item->getCrTime());
 
     return tr;
 }
@@ -106,10 +119,22 @@ ccReg_StatementItems_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
             m_statementItemList->sort(Register::Banking::IMT_SPECSYMB, dir);
             break;
         case 8:
-            m_statementItemList->sort(Register::Banking::IMT_EVID, dir);
+            m_statementItemList->sort(Register::Banking::IMT_PRICE, dir);
             break;
         case 9:
-            m_statementItemList->sort(Register::Banking::IMT_DATE, dir);
+            m_statementItemList->sort(Register::Banking::IMT_ACCOUNT_EVID, dir);
+            break;
+        case 10:
+            m_statementItemList->sort(Register::Banking::IMT_ACCOUNT_DATE, dir);
+            break;
+        case 11:
+            m_statementItemList->sort(Register::Banking::IMT_ACCOUNT_MEMO, dir);
+            break;
+        case 13:
+            m_statementItemList->sort(Register::Banking::IMT_ACCOUNT_NAME, dir);
+            break;
+        case 14:
+            m_statementItemList->sort(Register::Banking::IMT_CREATE_TIME, dir);
             break;
     }
 }

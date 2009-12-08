@@ -73,11 +73,11 @@ BankClient::statement_list()
     }
     std::auto_ptr<Register::Banking::Manager> bankMan(
             Register::Banking::Manager::create());
-    std::auto_ptr<Register::Banking::List> bankList(
+    std::auto_ptr<Register::Banking::HeadList> bankList(
             bankMan->createList());
 
-    Database::Filters::Statement *statementFilter =
-        new Database::Filters::StatementImpl();
+    Database::Filters::StatementHead *statementFilter =
+        new Database::Filters::StatementHeadImpl();
     Database::Filters::Union unionFilter;
 
     apply_ID(statementFilter);

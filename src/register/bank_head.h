@@ -45,6 +45,8 @@ public:
     //const std::string &getBankCode();
 };
 
+COMPARE_CLASS_IMPL_NEW(StatementHead, AccountId);
+COMPARE_CLASS_IMPL_NEW(StatementHead, Num);
 COMPARE_CLASS_IMPL_NEW(StatementHead, CreateDate);
 COMPARE_CLASS_IMPL_NEW(StatementHead, BalanceOldDate);
 COMPARE_CLASS_IMPL_NEW(StatementHead, BalanceOld);
@@ -52,6 +54,7 @@ COMPARE_CLASS_IMPL_NEW(StatementHead, BalanceNew);
 COMPARE_CLASS_IMPL_NEW(StatementHead, BalanceCredit);
 COMPARE_CLASS_IMPL_NEW(StatementHead, BalanceDebet);
 // COMPARE_CLASS_IMPL_NEW(StatementHead, ZoneFqdn);
+COMPARE_CLASS_IMPL_NEW(StatementHead, FileId);
 // COMPARE_CLASS_IMPL_NEW(StatementHead, AccountNumber);
 // COMPARE_CLASS_IMPL_NEW(StatementHead, BankCode);
 

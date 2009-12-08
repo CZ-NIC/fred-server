@@ -206,7 +206,7 @@ StatementHead::fromXML(
         const XMLnode &node, 
         const unsigned long long &fileId)
 {
-    TRACE("[CALL] Register::Banking::Statement::fromXML()");
+    TRACE("[CALL] Register::Banking::StatementHead::fromXML()");
     TEST_NODE_PRESENCE(node, STATEMENT_ACCOUNT_NUMBER);
     setAccountId(getBankNumberId(
                 node.getChild(STATEMENT_ACCOUNT_NUMBER).getValue()));

@@ -12,7 +12,7 @@ namespace Banking {
 class Manager {
 private:
 public:
-    List *createList() const;
+    HeadList *createList() const;
     ItemList *createItemList() const;
     static Manager *create();
     StatementHead *createStatement() const;

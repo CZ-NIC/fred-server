@@ -29,8 +29,13 @@ COMPARE_CLASS_IMPL_NEW(StatementItem, Code);
 COMPARE_CLASS_IMPL_NEW(StatementItem, KonstSym);
 COMPARE_CLASS_IMPL_NEW(StatementItem, VarSymb);
 COMPARE_CLASS_IMPL_NEW(StatementItem, SpecSymb);
+COMPARE_CLASS_IMPL_NEW(StatementItem, Price);
 COMPARE_CLASS_IMPL_NEW(StatementItem, AccountEvid);
 COMPARE_CLASS_IMPL_NEW(StatementItem, AccountDate);
+COMPARE_CLASS_IMPL_NEW(StatementItem, AccountMemo);
+COMPARE_CLASS_IMPL_NEW(StatementItem, InvoiceId);
+COMPARE_CLASS_IMPL_NEW(StatementItem, AccountName);
+COMPARE_CLASS_IMPL_NEW(StatementItem, CrTime);
 
 } // namespace Banking
 } // namespace Register;

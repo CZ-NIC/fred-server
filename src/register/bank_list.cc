@@ -6,7 +6,7 @@ namespace Register {
 namespace Banking {
 
 StatementHead *
-List::get(const unsigned int &index) const throw (std::exception)
+HeadList::get(const unsigned int &index) const throw (std::exception)
 {
     try {
         StatementHead *stat =
@@ -22,7 +22,7 @@ List::get(const unsigned int &index) const throw (std::exception)
 }
 
 StatementHead *
-List::getById(const unsigned long long &id) const
+HeadList::getById(const unsigned long long &id) const
 {
     for (unsigned int i = 0; i < getSize(); i++) {
         if (get(i)->getId() == id) {
@@ -33,7 +33,7 @@ List::getById(const unsigned long long &id) const
 }
 
 void 
-List::reload(Database::Filters::Union &filter)
+HeadList::reload(Database::Filters::Union &filter)
 {
     TRACE("[CALL] Register::Banking::StatementListImpl::reload(Database::Filters::Union &)");
     clear();
@@ -43,14 +43,14 @@ List::reload(Database::Filters::Union &filter)
     Database::SelectQuery id_query;
     Database::Filters::Compound::iterator sit = filter.begin();
     for (; sit != filter.end(); ++sit) {
-        Database::Filters::Statement *sf =
-            dynamic_cast<Database::Filters::Statement *>(*sit);
+        Database::Filters::StatementHead *sf =
+            dynamic_cast<Database::Filters::StatementHead *>(*sit);
         if (!sf) {
             continue;
         }
         Database::SelectQuery *tmp = new Database::SelectQuery();
         tmp->addSelect(new Database::Column(
-                    "id", sf->joinStatementTable(), "DISTINCT"));
+                    "id", sf->joinStatementHeadTable(), "DISTINCT"));
         filter.addQuery(tmp);
         at_least_one = true;
     }
@@ -73,6 +73,9 @@ List::reload(Database::Filters::Union &filter)
         << "t_1.balance_old_date, t_1.balance_old, "
         << "t_1.balance_new, t_1.balance_credit, "
         << "t_1.balance_debet";
+    if(!partialLoad) {
+        object_info_query.select() << ", t_1.file_id";
+    }
     object_info_query.from()
         << getTempTableName() << " tmp "
         << "JOIN bank_head t_1 ON (tmp.id = t_1.id)";
@@ -96,74 +99,76 @@ List::reload(Database::Filters::Union &filter)
             Database::Money oldBalance  = *(++col);
             Database::Money credit      = *(++col);
             Database::Money debet       = *(++col);
-            unsigned long long fileId   = *(++col);
+            if(!partialLoad) {
+                unsigned long long fileId   = *(++col);
+            }
 
             StatementHead *stat = new StatementHead();
             stat->setId(id);
-            stat->setAccountId(accountId);
-            stat->setNum(number);
-            stat->setCreateDate(crDate);
-            stat->setBalanceOldDate(oldDate);
-            stat->setBalanceNew(balance);
-            stat->setBalanceOld(balance);
-            stat->setBalanceCredit(credit);
-            stat->setBalanceDebet(credit);
-            stat->setFileId(fileId);
+            stat->reload();
             appendToList(stat);
         }
         if (isEmpty()) {
             return;
         }
-        Database::SelectQuery StatementItemQuery;
-        StatementItemQuery.select()
-            << "t_1.id, t_1.statement_id, t_1.account_number, t_1.bank_code, "
-            << "t_1.type, t_1.code, t_1.konstSym, t_1.varSymb, t_1.specsymb, t_1.price, "
-            << "t_1.account_evid, t_1.account_date, t_1.account_memo, "
-            << "t_1.invoice_id";
-        StatementItemQuery.from()
-            << getTempTableName() << " tmp "
-            << "JOIN bank_item t_1 ON (tmp.id = t_1.statement_id)";
-        StatementItemQuery.order_by()
-            << "tmp.id";
-        Database::Result r_stat = conn.exec(StatementItemQuery);
-        Database::Result::Iterator statIt = r_stat.begin();
-        for (; statIt != r_stat.end(); ++statIt) {
-            Database::Row::Iterator col = (*statIt).begin();
-            Database::ID id             = *col;
-            Database::ID statementId    = *(++col);
-            std::string accountNumber   = *(++col);
-            std::string bankCode        = *(++col);
-            int type                    = *(++col);
-            int code                    = *(++col);
-            std::string constSymb       = *(++col);
-            std::string varSymb         = *(++col);
-            std::string specSymb        = *(++col);
-            Database::Money price       = *(++col);
-            std::string accountEvid     = *(++col);
-            Database::Date accountDate  = *(++col);
-            std::string accountMemo     = *(++col);
-            Database::ID invoiceId      = *(++col);
 
-            StatementHead *head = getById(statementId);
-            if (head) {
-                StatementItem *item = head->newStatementItem();
-                item->setId(id);
-                item->setStatementId(statementId);
-                item->setAccountNumber(accountNumber);
-                item->setBankCodeId(bankCode);
-                item->setType(type);
-                item->setCode(code);
-                item->setKonstSym(constSymb);
-                item->setVarSymb(varSymb);
-                item->setSpecSymb(specSymb);
-                item->setPrice(price);
-                item->setAccountEvid(accountEvid);
-                item->setAccountDate(accountDate);
-                item->setAccountMemo(accountMemo);
-                item->setInvoiceId(invoiceId);
+        if(!partialLoad) {
+            Database::SelectQuery StatementItemQuery;
+            StatementItemQuery.select()
+                << "t_1.id, t_1.statement_id, t_1.account_number, t_1.bank_code, "
+                << "t_1.type, t_1.code, t_1.konstSym, t_1.varSymb, t_1.specsymb, t_1.price, "
+                << "t_1.account_evid, t_1.account_date, t_1.account_memo, "
+                << "t_1.invoice_id, t_1.account_name, t_1.crtime";
+
+            StatementItemQuery.from()
+                << getTempTableName() << " tmp "
+                << "JOIN bank_item t_1 ON (tmp.id = t_1.statement_id)";
+            StatementItemQuery.order_by()
+                << "tmp.id";
+            Database::Result r_stat = conn.exec(StatementItemQuery);
+            Database::Result::Iterator statIt = r_stat.begin();
+            for (; statIt != r_stat.end(); ++statIt) {
+                Database::Row::Iterator col = (*statIt).begin();
+                Database::ID id             = *col;
+                Database::ID statementId    = *(++col);
+                std::string accountNumber   = *(++col);
+                std::string bankCode        = *(++col);
+                int type                    = *(++col);
+                int code                    = *(++col);
+                std::string constSymb       = *(++col);
+                std::string varSymb         = *(++col);
+                std::string specSymb        = *(++col);
+                Database::Money price       = *(++col);
+                std::string accountEvid     = *(++col);
+                Database::Date accountDate  = *(++col);
+                std::string accountMemo     = *(++col);
+                Database::ID invoiceId      = *(++col);
+                std::string accountName     = *(++col);
+                Database::Date crTime       = *(++col);
+
+                StatementHead *head = getById(statementId);
+                if (head) {
+                    StatementItem *item = head->newStatementItem();
+                    item->setId(id);
+                    item->setStatementId(statementId);
+                    item->setAccountNumber(accountNumber);
+                    item->setBankCodeId(bankCode);
+                    item->setType(type);
+                    item->setCode(code);
+                    item->setKonstSym(constSymb);
+                    item->setVarSymb(varSymb);
+                    item->setSpecSymb(specSymb);
+                    item->setPrice(price);
+                    item->setAccountEvid(accountEvid);
+                    item->setAccountDate(accountDate);
+                    item->setAccountMemo(accountMemo);
+                    item->setInvoiceId(invoiceId);
+                    item->setAccountName(accountName);
+                    item->setCrTime(crTime);
+                }
             }
+            CommonListImplNew::reload();
         }
-        CommonListImplNew::reload();
     } catch (Database::Exception &ex) {
         LOGGER(PACKAGE).error(boost::format("%1%") % ex.what());
         clear();
@@ -175,9 +180,15 @@ List::reload(Database::Filters::Union &filter)
 
 
 void
-List::sort(MemberType member, bool asc)
+HeadList::sort(MemberType member, bool asc)
 {
     switch (member) {
+        case MT_ACCOUNT_ID:
+            stable_sort(m_data.begin(), m_data.end(), CompareCreateDate(asc));
+            break;
+        case MT_NUM:
+            stable_sort(m_data.begin(), m_data.end(), CompareCreateDate(asc));
+            break;
         case MT_CREATE_DATE:
             stable_sort(m_data.begin(), m_data.end(), CompareCreateDate(asc));
             break;
@@ -200,6 +211,9 @@ List::sort(MemberType member, bool asc)
         case MT_ZONE_FQDN:
             stable_sort(m_data.begin(), m_data.end(), CompareZoneFqdn(asc));
             break;
+        case MT_FILE_ID:
+            stable_sort(m_data.begin(), m_data.end(), CompareFileId(asc));
+            break;
         case MT_ACCOUNT_NUMBER:
             stable_sort(m_data.begin(), m_data.end(), CompareAccountNumber(asc));
             break;
@@ -211,13 +225,13 @@ List::sort(MemberType member, bool asc)
 }
 
 const char *
-List::getTempTableName() const 
+HeadList::getTempTableName() const
 {
     return "tmp_statement_filter_result";
 }
 
 void
-List::doExport(Exporter *exp)
+HeadList::doExport(Exporter *exp)
 {
     TRACE("[CALL] Register::Invoicing::List::doExport(Exporter *)");
     for (int i = 0; i < (int)m_data.size(); i++) {
@@ -229,7 +243,7 @@ List::doExport(Exporter *exp)
 }
 
 bool 
-List::exportXML(std::ostream &out)
+HeadList::exportXML(std::ostream &out)
 {
     TRACE("Register::Banking::StatementImpl::exportXML(std::ostrem &)");
     ExporterXML xml(out);

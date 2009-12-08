@@ -2,7 +2,6 @@
 #define MODEL_FILTERS_H_
 
 #include "statement_item_filter.h"
-#include "statement_head_filter.h"
 #include "object_registry_filter.h"
 #include "object_filter.h"
 #include "domain_filter.h"

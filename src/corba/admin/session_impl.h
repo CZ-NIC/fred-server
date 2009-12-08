@@ -21,6 +21,7 @@
 #include "pagetable_mails.h"
 #include "pagetable_invoices.h"
 #include "pagetable_statement_items.h"
+#include "pagetable_statement_heads.h"
 #include "pagetable_filters.h"
 #include "pagetable_files.h"
 #include "pagetable_logger.h"
@@ -60,6 +61,7 @@ private:
   ccReg_Mails_i* m_mails;
   ccReg_Invoices_i* m_invoices;
   ccReg_StatementItems_i* m_statementitems;
+  ccReg_StatementHeads_i* m_statementheads;
   ccReg_Filters_i* m_filters;
   ccReg_User_i* m_user;
   ccReg_Files_i* m_files;
@@ -101,6 +103,10 @@ private:
   Registry::Request::Detail*  getRequestDetail(ccReg::TID _id);
 
   Registry::Zone::Detail* getZoneDetail(ccReg::TID _id);
+
+  Registry::Banking::BankHead::Detail * getStatementHeadDetail(ccReg::TID _id);
+  Registry::Banking::BankItem::Detail * getStatementItemDetail(ccReg::TID _id);
+
   /*
    * TODO:
    * this should be rather in separate library - it is only general CORBA-to-Register
@@ -122,7 +128,11 @@ private:
   Registry::Invoicing::Detail* createInvoiceDetail(Register::Invoicing::Invoice *_invoice);
   Registry::Request::Detail *createRequestDetail(Register::Logger::Request *req);
   Registry::Zone::Detail* createZoneDetail(Register::Zone::Zone* _registrar);
+  Registry::Banking::BankItem::Detail *createBankItemDetail(Register::Banking::StatementItem *item);
+  Registry::Banking::BankHead::Detail *createBankHeadDetail(Register::Banking::StatementHead *head);
 
+
+ 
   void _createUpdateRegistrar(const ccReg::Registrar& _registrar);
 
 public:
@@ -150,6 +160,7 @@ public:
   void setHistory(CORBA::Boolean _flag);
 };
 
+void fillBankItemDetail(Registry::Banking::BankItem::Detail &d, const Register::Banking::StatementItem *it);
 
 class CompareSessionsByLastActivity {
 public:

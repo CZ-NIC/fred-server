@@ -8,11 +8,11 @@
 namespace Register {
 namespace Banking {
 
-List *
+HeadList *
 Manager::createList() const
 {
     TRACE("[CALL] Register::Banking::Manager::createList()");
-    return new List();
+    return new HeadList();
 }
 
 ItemList *

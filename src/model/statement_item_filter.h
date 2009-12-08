@@ -2,7 +2,7 @@
 #define _STATEMENT_ITEM_FILTER_H_
 
 #include "db/query/base_filters.h"
-#include "statement_head_filter.h"
+#include "statement_filter.h"
 
 namespace Database {
 namespace Filters {
