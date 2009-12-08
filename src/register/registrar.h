@@ -4,6 +4,11 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_period.hpp>
 
+#include <memory>
+#include <string>
+#include <map>
+#include <vector>
+
 #include "common_impl_new.h"
 #include "common_object.h"
 #include "object.h"
@@ -234,11 +239,10 @@ public:
 /// List of registrar object
 class RegistrarList : virtual public Register::CommonListNew
 {
-protected:
-  /// Protected destructor, object is manager by Manager
-  virtual ~RegistrarList() {
-  }
 public:
+  /// public virtual destructor
+  virtual ~RegistrarList()
+  {}
   /// Filter in id
   virtual void setIdFilter(TID id) = 0;
   /// Filter in handle
@@ -430,6 +434,13 @@ public:
           const TID& id,
           const Database::Date &fromDate,
           const Database::Date &toDate) throw (SQL_ERROR) = 0;
+  ///list factory
+  typedef std::auto_ptr<RegistrarList> RegistrarListPtr;
+  virtual RegistrarListPtr createList() =0;
+  ///registrar instance factory
+  typedef std::auto_ptr<Registrar> RegistrarPtr;
+  virtual RegistrarPtr getRegistrarByHandle(const std::string& handle) =0;
+
   /// Factory method
   static Manager *create(DB* db);
 };

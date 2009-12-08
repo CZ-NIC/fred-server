@@ -135,6 +135,7 @@ namespace Register
         typedef ZoneNsList::iterator ZoneNsListIter;
         ZoneNsList zone_ns_list; /// zone ns records
 
+        void operator==(const ZoneImpl&){};
     public:
 
         ZoneImpl()
@@ -183,7 +184,7 @@ namespace Register
 
 
       /// compare if domain belongs to this zone (according to suffix)
-      bool operator==(const std::string& domain) const
+      bool isDomainApplicable(const std::string& domain) const
       {
           const std::string& fqdn = ModelZone::getFqdn();
         std::string copy = domain;
@@ -193,6 +194,7 @@ namespace Register
         if (copy.length() < l) return false;
         return copy.compare(copy.length()-l,l,fqdn) == 0;
       }
+
       /// max. number of labels in fqdn
       virtual unsigned getMaxLevel() const
       {
@@ -439,9 +441,7 @@ namespace Register
 			    , fqdn("")
 			    , registrar_handle("")
 			    , idFilter(0)
-			  {
-			    reload();
-			  }
+			  {}
 			  ~ZoneListImpl()
 			  {
 			    clear();
@@ -714,6 +714,22 @@ namespace Register
 		        return "";
 		      }
 
+              const Zone* findApplicableZoneByDomainFqdn(const std::string& domain_fqdn) const
+              {
+                  Zone *z=0, *ret = 0;
+                  for ( unsigned i = 0; i < m_data.size(); i++)
+                  {
+                      z = dynamic_cast<Zone*>(m_data[i]);
+                      if(z->isDomainApplicable(domain_fqdn))
+                      {
+                          ret=z;
+                          break;
+                      }
+                  };
+                  return ret;
+              }
+
+
 		      const Zone* findZoneByFqdn(const std::string& fqdn) const
 		      {
 		          Zone *z=0, *ret = 0;
@@ -890,11 +906,11 @@ namespace Register
       {
         return enumZoneString;
       }
-      const Zone* findZoneId(const std::string& fqdn) const
+      const Zone* findApplicableZone(const std::string& domain_fqdn) const
       {
         // nonconst casting for lazy initialization
         if (!loaded) ((Register::Zone::ManagerImpl *)this)->load();
-        return zoneList.findZoneByFqdn(fqdn);
+        return zoneList.findApplicableZoneByDomainFqdn(domain_fqdn);
       }
 
       virtual bool checkTLD(const DomainName& domain) const
@@ -1370,6 +1386,13 @@ namespace Register
       {
         return &zoneList;
       }
+
+      ///list factory
+        virtual ZoneListPtr createList()
+        {
+            return ZoneListPtr(new ZoneListImpl());
+        }
+
     };//class ManagerImpl
 
     Manager* Manager::create()

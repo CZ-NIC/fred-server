@@ -1,14 +1,18 @@
 #ifndef ZONE_H_
 #define ZONE_H_
 
+#include <memory>
 #include <string>
+#include <map>
+#include <vector>
+
 #include "common_impl_new.h"
 #include "common_object.h"
 #include "object.h"
 #include "types/data_types.h"
 #include "types.h" 
 #include "exceptions.h"
-
+#include <boost/shared_ptr.hpp>
 /// forward declaration for database connection
 class DB;
 
@@ -76,10 +80,9 @@ namespace Register
     /// zone attributes and specific parameters 
     class Zone
     {
-     protected:
-      /// protected destruktor - object is managed by Manager object
+    public:
+     /// public virtual destructor
       virtual ~Zone() {}
-     public:
       ///get zone id
       virtual const TID getId() const = 0;
       ///set zone id
@@ -148,6 +151,8 @@ namespace Register
       virtual void clearZoneNsList() = 0;
       /// Save changes to database
       virtual void save() throw (SQL_ERROR) = 0;
+      /// Check if zone is applicable for given domain
+      virtual bool isDomainApplicable(const std::string& domain) const =0;
 
     };//class Zone
 
@@ -210,7 +215,7 @@ namespace Register
       /// return enum zone string 'e164.arpa'
       virtual const std::string& getEnumZoneString() const = 0;
       /// find zone from domain fqdn
-      virtual const Zone* findZoneId(const std::string& fqdn) const = 0;
+      virtual const Zone* findApplicableZone(const std::string& domain_fqdn) const = 0;
       /// check fqdn agains list of toplevel domain (true=found) 
       virtual bool checkTLD(const DomainName& domain) const = 0;
       /// add zone with zone_soa record
@@ -302,6 +307,9 @@ namespace Register
           throw (SQL_ERROR) = 0;
       /// Return list of zones
         virtual ZoneList *getList() = 0;
+        ///list factory
+        typedef std::auto_ptr<ZoneList> ZoneListPtr;
+        virtual ZoneListPtr createList() =0;
       /// create manager object
       static Manager *create();
     };

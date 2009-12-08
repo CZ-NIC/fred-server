@@ -1754,10 +1754,12 @@ public:
       }//catch (...)
   }
 
+
   virtual RegistrarList *getList()
   {
     return &rl;
   }
+
   virtual EPPActionList *getEPPActionList()
   {
     return &eal;
@@ -1934,6 +1936,26 @@ public:
           throw SQL_ERROR();
       }//catch (...)
   }//updateRegistrarZone
+
+  ///list factory
+    virtual RegistrarListPtr createList()
+    {
+        return RegistrarListPtr(new RegistrarListImpl());
+    }
+
+    ///registrar instance factory
+    virtual RegistrarPtr getRegistrarByHandle(const std::string& handle)
+    {
+        RegistrarListPtr registrarlist ( createList());
+        registrarlist->clearFilter();
+        registrarlist->setHandleFilter(handle);
+        registrarlist->reload();
+        if (registrarlist->size() != 1)
+        {
+            return RegistrarPtr(0);
+        }
+        return RegistrarPtr(registrarlist->get(0));
+    }//getRegistrarByHandle
 
 }; // class ManagerImpl
 

@@ -1016,7 +1016,7 @@ public:
     Zone::DomainName domain; // parsed domain name
     try { zm->parseDomainName(fqdn,domain,allowIDN); }
     catch (Zone::INVALID_DOMAIN_NAME) {return CA_INVALID_HANDLE;}
-    const Zone::Zone *z = zm->findZoneId(fqdn);
+    const Zone::Zone *z = zm->findApplicableZone(fqdn);
     // TLD domain allowed only if zone.fqdn='' is in zone list 
     if (!z && domain.size() == 1)
       return CA_INVALID_HANDLE;
@@ -1041,7 +1041,7 @@ public:
     std::stringstream sql;
     // domain can be subdomain or parent domain of registred domain
     // there could be a lot of subdomains therefor LIMIT 1
-    if (zm->findZoneId(fqdn)->isEnumZone())
+    if (zm->findApplicableZone(fqdn)->isEnumZone())
       sql << "SELECT o.name, o.id FROM object_registry o "
           << "WHERE o.type=3 AND o.erdate ISNULL AND " << "(('" << fqdn
           << "' LIKE '%.'|| o.name) OR " << "(o.name LIKE '%.'||'" << fqdn

@@ -190,52 +190,61 @@ namespace Register
         Register::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
-        std::stringstream sql;
-        sql << "SELECT dom.name, cor.name, nor.name, r.handle, "
-            << "eh.exdate, dh.exdate "
-            << "FROM object_registry dom, object_history doh, "
-            << "registrar r, object_registry cor, domain_history dh "
-            << "LEFT JOIN object_registry nor ON (nor.id=dh.nsset) "
-            << "LEFT JOIN enumval_history eh ON (eh.historyid=dh.historyid) "
-            << "WHERE dom.historyid=doh.historyid AND doh.clid=r.id "
-            << "AND dom.historyid=dh.historyid AND dh.registrant=cor.id "
-            << "AND dom.id=" << domain;
-        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-        params["checkdate"] = to_iso_extended_string(
-          date(day_clock::local_day())
-        );
-        params["domain"] = db->GetFieldValue(0,0);
-        params["owner"] = db->GetFieldValue(0,1);
-        params["nsset"] = db->GetFieldValue(0,2);
-        date val(MAKE_DATE(0,4));
-        if (!val.is_special())
-          params["valdate"] = to_iso_extended_string(val);
-        date ex(MAKE_DATE(0,5));
-        params["exdate"] = to_iso_extended_string(ex);
-        params["dnsdate"] = to_iso_extended_string(
-          ex + date_duration(30)
-        );
-        params["exregdate"] = to_iso_extended_string(
-          ex + date_duration(45)
-        );
-        params["statechangedate"] = to_iso_extended_string(stamp.date());
-        std::string regHandle = db->GetFieldValue(0,3);
-        db->FreeSelect();
-        // fill information about registrar, query must be closed
-        rm->getList()->clearFilter();
-        rm->getList()->setHandleFilter(regHandle);
-        rm->getList()->reload();
-        std::stringstream reg;
-        if (rm->getList()->size() != 1)
-          // fallback to handle instead of error
-          reg << db->GetFieldValue(0,3);
-        else {
-          reg << rm->getList()->get(0)->getName();
-          if (!rm->getList()->get(0)->getURL().empty())
-            reg << " (" << rm->getList()->get(0)->getURL() << ")";
-        }
-        params["registrar"] = reg.str();
-      }
+          try
+          {
+            std::stringstream sql;
+            sql << "SELECT dom.name, cor.name, nor.name, r.handle, "
+                << "eh.exdate, dh.exdate "
+                << "FROM object_registry dom, object_history doh, "
+                << "registrar r, object_registry cor, domain_history dh "
+                << "LEFT JOIN object_registry nor ON (nor.id=dh.nsset) "
+                << "LEFT JOIN enumval_history eh ON (eh.historyid=dh.historyid) "
+                << "WHERE dom.historyid=doh.historyid AND doh.clid=r.id "
+                << "AND dom.historyid=dh.historyid AND dh.registrant=cor.id "
+                << "AND dom.id=" << domain;
+            if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+            params["checkdate"] = to_iso_extended_string(
+              date(day_clock::local_day())
+            );
+            params["domain"] = db->GetFieldValue(0,0);
+            params["owner"] = db->GetFieldValue(0,1);
+            params["nsset"] = db->GetFieldValue(0,2);
+            date val(MAKE_DATE(0,4));
+            if (!val.is_special())
+              params["valdate"] = to_iso_extended_string(val);
+            date ex(MAKE_DATE(0,5));
+            params["exdate"] = to_iso_extended_string(ex);
+            params["dnsdate"] = to_iso_extended_string(
+              ex + date_duration(30)
+            );
+            params["exregdate"] = to_iso_extended_string(
+              ex + date_duration(45)
+            );
+            params["statechangedate"] = to_iso_extended_string(stamp.date());
+            std::string regHandle = db->GetFieldValue(0,3);
+            db->FreeSelect();
+            // fill information about registrar, query must be closed
+
+            Registrar::Manager::RegistrarPtr regbyhandle ( rm->getRegistrarByHandle(regHandle));
+
+            std::stringstream reg;
+            if (regbyhandle.get() == 0)
+              // fallback to handle instead of error
+              reg << db->GetFieldValue(0,3);
+            else {
+              reg << regbyhandle->getName();
+              if (!regbyhandle->getURL().empty())
+                reg << " (" << regbyhandle->getURL() << ")";
+            }
+            params["registrar"] = reg.str();
+          }//try
+          catch(...)
+          {
+              LOGGER(PACKAGE).error("fillDomainParamsHistory: an error has occured");
+              throw SQL_ERROR();
+          }//catch(...)
+      }//fillDomainParamsHistory
+
       void fillDomainParams(
         TID domain, ptime stamp,
         Register::Mailer::Parameters& params
@@ -264,17 +273,16 @@ namespace Register
         );
         params["statechangedate"] = to_iso_extended_string(stamp.date());
         // fill information about registrar
-        rm->getList()->clearFilter();
-        rm->getList()->setHandleFilter(d->getRegistrarHandle());
-        rm->getList()->reload();
+        Registrar::Manager::RegistrarPtr regbyhandle ( rm->getRegistrarByHandle(d->getRegistrarHandle()));
+
         std::stringstream reg;
-        if (rm->getList()->size() != 1)
+        if (regbyhandle.get() == 0)
           // fallback to handle instead of error
           reg << db->GetFieldValue(0,3);
         else {
-          reg << rm->getList()->get(0)->getName();
-          if (!rm->getList()->get(0)->getURL().empty())
-            reg << " (" << rm->getList()->get(0)->getURL() << ")";
+          reg << regbyhandle->getName();
+          if (!regbyhandle->getURL().empty())
+            reg << " (" << regbyhandle->getURL() << ")";
         }
         params["registrar"] = reg.str();
       }
