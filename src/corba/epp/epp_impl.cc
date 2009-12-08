@@ -350,7 +350,7 @@ static long int getIdOfDomain(
         ret = 0;
         break;
     }
-    const Register::Zone::Zone *z = zm->findZoneId(handle);
+    const Register::Zone::Zone *z = zm->findApplicableZone(handle);
     if (zone && z) *zone = z->getId();
   } catch (...) {}
   return ret;
@@ -4436,7 +4436,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
   // registrant and contacts are disabled for other registrars
   // in case of enum domain
   bool disabled = a.getRegistrar() != (int)dom->getRegistrarId()
-      && zman->findZoneId(fqdn)->isEnumZone();
+      && zman->findApplicableZone(fqdn)->isEnumZone();
   // registrant
   d->Registrant = CORBA::string_dup(disabled ? "" : dom->getRegistrantHandle().c_str() );
   // admin
