@@ -2,7 +2,7 @@
 #define _BANK_MANAGER_H_
 
 #include "bank_head.h"
-#include "bank_list.h"
+#include "bank_head_list.h"
 #include "bank_item_list.h"
 #include "db_settings.h"
 

@@ -33,8 +33,8 @@ libmodel_a_SOURCES = object_registry_filter.cc 			\
 					 file_filter.h 						\
 					 keyset_filter.cc 					\
                      keyset_filter.h 					\
-					 statement_filter.cc 				\
-					 statement_filter.h 				\
+					 statement_head_filter.cc 			\
+					 statement_head_filter.h 			\
 					 statement_item_filter.cc			\
 					 statement_item_filter.h			\
 					 online_statement_filter.cc 		\

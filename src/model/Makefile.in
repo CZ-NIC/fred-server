@@ -64,7 +64,8 @@ am_libmodel_a_OBJECTS = object_registry_filter.$(OBJEXT) \
 	object_state_filter.$(OBJEXT) invoice_filter.$(OBJEXT) \
 	public_request_filter.$(OBJEXT) mail_filter.$(OBJEXT) \
 	file_filter.$(OBJEXT) keyset_filter.$(OBJEXT) \
-	statement_filter.$(OBJEXT) statement_item_filter.$(OBJEXT) \
+	statement_head_filter.$(OBJEXT) \
+	statement_item_filter.$(OBJEXT) \
 	online_statement_filter.$(OBJEXT) log_filter.$(OBJEXT) \
 	union_filter.$(OBJEXT) zone_filter.$(OBJEXT) \
 	zone_ns_filter.$(OBJEXT) zone_soa_filter.$(OBJEXT)
@@ -287,8 +288,8 @@ libmodel_a_SOURCES = object_registry_filter.cc 			\
 					 file_filter.h 						\
 					 keyset_filter.cc 					\
                      keyset_filter.h 					\
-					 statement_filter.cc 				\
-					 statement_filter.h 				\
+					 statement_head_filter.cc 			\
+					 statement_head_filter.h 			\
 					 statement_item_filter.cc			\
 					 statement_item_filter.h			\
 					 online_statement_filter.cc 		\
@@ -384,7 +385,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online_statement_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/public_request_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registrar_filter.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/statement_filter.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/statement_head_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/statement_item_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-model.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/union_filter.Po@am__quote@

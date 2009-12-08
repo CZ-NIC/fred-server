@@ -92,8 +92,8 @@ libfred_a_SOURCES = register.cc          \
 					bank_item.h	\
 					bank_head.cc	\
 					bank_head.h	\
-					bank_list.cc			\
-					bank_list.h				\
+					bank_head_list.cc		\
+					bank_head_list.h		\
 					bank_item_list.cc		\
 					bank_item_list.h		\
 					bank_manager.cc			\
