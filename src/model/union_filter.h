@@ -16,6 +16,8 @@
 
 #include "log/logger.h"
 
+#include <boost/shared_ptr.hpp>
+
 namespace Database {
 namespace Filters {
 
@@ -128,7 +130,44 @@ protected:
   std::vector<Database::SelectQuery*> query_list;
 
   const Settings *settings_ptr_;
+};//class Union
+
+
+typedef boost::shared_ptr<Union> UnionPtr;
+template < typename DELETER >
+class CreateUnionPtrT
+{
+protected:
+    UnionPtr m_ptr;
+public:
+    CreateUnionPtrT()
+    : m_ptr(new Union(),DELETER())
+    {
+        TRACE(boost::format("[CALL] CreateUnionPtrT::CreateUnionPtrT Union* m_ptr: '%1% ") % m_ptr.get());
+    }
+
+    operator UnionPtr() const
+    {
+        return m_ptr;
+    }
+
 };
+///deleter functor for Union
+struct ClearDeleteUnion
+{
+    void operator()(Union* u)
+    {
+        TRACE(boost::format("[CALL] ClearDeleteUnion::operator(Union* u: '%1%' )") % u);
+        try
+        {
+            if(u) u->clear();
+        }
+        catch(...){}
+        delete u;
+    }
+};
+///UnionPtr factory
+typedef CreateUnionPtrT<ClearDeleteUnion> CreateClearedUnionPtr;
 
 }
 }
