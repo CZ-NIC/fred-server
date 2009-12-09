@@ -6,19 +6,9 @@ ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::Manager::RegistrarLi
   : rl(_rl)
   , zl(_zl)
 {
-
-    //TODO: guards
-    Database::Filters::Zone *zoneFilter;
-      zoneFilter = new Database::Filters::ZoneSoaImpl(true);
-    Database::Filters::Union *unionFilter;
-    unionFilter = new Database::Filters::Union();
-    unionFilter->addFilter(zoneFilter);
-    zl->reload(*unionFilter);
-
-    unionFilter->clear();
-    delete unionFilter;
-
-
+    Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
+    unionFilter->addFilter(new Database::Filters::ZoneSoaImpl(true));
+    zl->reload(*(unionFilter).get());
 }
 
 ccReg_Registrars_i::~ccReg_Registrars_i() {
@@ -32,16 +22,9 @@ ccReg_Registrars_i::reload() {
   TRACE("[CALL] void ccReg_Registrars_i::reload()");
   rl->reload(uf);
 
-  //TODO: guards
-  Database::Filters::Zone *zoneFilter;
-    zoneFilter = new Database::Filters::ZoneSoaImpl(true);
-  Database::Filters::Union *unionFilter;
-  unionFilter = new Database::Filters::Union();
-  unionFilter->addFilter(zoneFilter);
-  zl->reload(*unionFilter);
-
-  unionFilter->clear();
-  delete unionFilter;
+  Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
+  unionFilter->addFilter(new Database::Filters::ZoneSoaImpl(true));
+  zl->reload(*(unionFilter).get());
 
   LOGGER(PACKAGE).debug(boost::format("ccReg_Registrars_i::reload() rl-size(): %1%") % rl->size());
   LOGGER(PACKAGE).debug(boost::format("ccReg_Registrars_i::reload() zl-size(): %1%") % zl->size());
@@ -75,8 +58,16 @@ ccReg_Registrars_i::getColumnHeaders()
 
   for (int i = 0 ; i < zone_count ; i++)
   {
-      std::string zonefqdn
-          = (dynamic_cast<Register::Zone::Zone*>(zl->get(i)))->getFqdn();
+      Register::Zone::Zone* zp = dynamic_cast<Register::Zone::Zone*>(zl->get(i));
+      std::string zonefqdn;
+      if(zp)
+      {
+          zonefqdn = zp->getFqdn();
+      }
+      else
+      {
+          throw std::bad_cast();
+      }
       COLHEAD(ch,static_cols+i,(zonefqdn + " credit").c_str(),CT_OTHER);
   }//for zone_count
   return ch;
@@ -104,13 +95,26 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
   (*tr)[2] <<= C_STR(r->getEmail());
   for (int i = 0 ; i < zone_count ; i++)
   {
-      unsigned long long zoneid
-          = (dynamic_cast<Register::Zone::Zone*>(zl->get(i)))->getId();
+
+      Register::Zone::Zone* zp = dynamic_cast<Register::Zone::Zone*>(zl->get(i));
+      unsigned long long zoneid = std::numeric_limits<unsigned long long>::max();
+      if(zp)
+      {
+          zoneid = zp->getId();
+      }
+      else
+      {
+          throw std::bad_cast();
+      }
 
       if(r->isInZone(zoneid))
+      {
           (*tr)[static_cols+i] <<= C_STR(r->getCredit(zoneid));
+      }
       else
+      {
           (*tr)[static_cols+i] <<= C_STR("");//if currently not in zone
+      }
   }//for zone_count
 
 
@@ -138,8 +142,19 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
   }
   if((column > (static_cols-1)) && (column < zl->size()+static_cols))
   {
-      rl->sort(Register::Registrar::MT_ZONE, dir
-              , (dynamic_cast<Register::Zone::Zone*>(zl->get(column-static_cols)))->getId());
+
+      Register::Zone::Zone* zp = dynamic_cast<Register::Zone::Zone*>(zl->get(column-static_cols));
+      unsigned long long zoneid = std::numeric_limits<unsigned long long>::max();
+      if(zp)
+      {
+          zoneid = zp->getId();
+      }
+      else
+      {
+          throw std::bad_cast();
+      }
+
+      rl->sort(Register::Registrar::MT_ZONE, dir, zoneid);
   }//if zone column
 
 }
@@ -210,9 +225,14 @@ ccReg_Registrars_i::loadFilter(ccReg::TID _id) {
   Database::Filters::Union::iterator uit = uf.begin();
   for (; uit != uf.end(); ++uit) {
     Database::Filters::Registrar *tmp = dynamic_cast<Database::Filters::Registrar* >(*uit);
+
     if (tmp) {
       it.addE(tmp);
       TRACE(boost::format("[IN] ccReg_Registrars_i::loadFilter(%1%): loaded filter content = %2%") % _id % tmp->getContent());
+    }
+    else
+    {
+        throw std::bad_cast();
     }
   }
 }
@@ -232,12 +252,8 @@ Register::Registrar::Registrar* ccReg_Registrars_i::findId(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
 
   try {
-    Register::Registrar::Registrar *registrar = dynamic_cast<Register::Registrar::Registrar* >(rl->findId(_id));
-    if (registrar) {
-      return registrar;
+    return dynamic_cast<Register::Registrar::Registrar* >(rl->findId(_id));
     }
-    return 0;
-  }
   catch (Register::NOT_FOUND) {
     return 0;
   }

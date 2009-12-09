@@ -5,6 +5,9 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <exception>
+#include <limits>
+
 
 #include "common.h"
 #include "str_corbaout.h"
