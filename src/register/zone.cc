@@ -34,6 +34,7 @@
 #include "log/logger.h"
 #include "log/context.h"
 
+
 #define RANGE(x) x.begin(),x.end()
 #define IS_NUMBER(x) (x >= '0' && x <= '9')
 #define IS_LETTER(x) ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z'))
@@ -598,7 +599,8 @@ namespace Register
 		          /* manually add query part to order result by id
 		           * need for findIDSequence() */
 		          uf.serialize(info_query);
-		          std::string info_query_str = str(boost::format("%1% ORDER BY id LIMIT %2%") % info_query.str() % m_limit);
+		          std::string info_query_str = str(boost::format("%1% LIMIT %2%") % info_query.str() % m_limit);
+		          LOGGER(PACKAGE).debug(boost::format("reload(uf) ZoneList query: %1%") % info_query_str);
 		          try {
 		            Database::Connection conn = Database::Manager::acquire();
 		            Database::Result z_info = conn.exec(info_query_str);
