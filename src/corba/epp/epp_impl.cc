@@ -1042,6 +1042,29 @@ char* ccReg_EPP_i::version(
   return CORBA::string_dup("DSDng");
 }
 
+void ccReg_EPP_i::extractEnumDomainExtension(std::string &valexdate, ccReg::Disclose &publish,
+        const ccReg::ExtensionList &ext)
+{
+    const ccReg::ENUMValidationExtension *enum_ext;
+    unsigned int len = ext.length();
+
+    for (unsigned int i = 0; i < len; ++i) {
+        if (ext[i] >>= enum_ext) {
+            /* extract validation exdate */
+            valexdate = enum_ext->valExDate;
+            /* extract enum publish flag */
+            publish = enum_ext->publish;
+            LOGGER(PACKAGE).debug(boost::format("valexdate=%1% publish=%2%")
+                    % valexdate % publish);
+        }
+        else {
+            LOGGER(PACKAGE).debug(boost::format("unknown extension found when"
+                    " extracting domain enum extension (list idx=%1%)") % i);
+            break;
+        }
+    }
+}
+
 // parse extension fom domain.ValExDate
 void ccReg_EPP_i::GetValExpDateFromExtension(
   char *valexpDate, const ccReg::ExtensionList& ext)
@@ -4454,6 +4477,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
     ccReg::ENUMValidationExtension *enumVal =
         new ccReg::ENUMValidationExtension();
     enumVal->valExDate = CORBA::string_dup(to_iso_extended_string(dom->getValExDate()).c_str() );
+    enumVal->publish = dom->getPublish() ? ccReg::DISCL_DISPLAY : ccReg::DISCL_HIDE;
     d->ext.length(1);
     d->ext[0] <<= enumVal;
   }
@@ -4577,7 +4601,8 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
     Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
 
     std::auto_ptr<EPPNotifier> ntf;
-    char valexpiryDate[MAX_DATE+1];
+    std::string valexdate;
+    ccReg::Disclose publish;
     int id, nssetid, contactid, adminid, keysetid;
     int seq, zone;
     std::vector<int> ac_add, ac_rem, tc_rem;
@@ -4599,7 +4624,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
     tc_rem.resize(tmpcontact_rem.length());
 
     // parse enum.Exdate extension
-    GetValExpDateFromExtension(valexpiryDate, ext);
+    extractEnumDomainExtension(valexdate, publish, ext);
 
     if ( (id = getIdOfDomain(action.getDB(), fqdn, conf, true, &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
@@ -4817,20 +4842,20 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
             }
 
         }
-        if (strlen(valexpiryDate) ) {
+        if (valexdate.length() > 0) {
             // Test for  enum domain
             if (GetZoneEnum(action.getDB(), zone) ) {
-                if (action.getDB()->TestValExDate(valexpiryDate, GetZoneValPeriod(action.getDB(), zone) ,
+                if (action.getDB()->TestValExDate(valexdate.c_str(), 
+                            GetZoneValPeriod(action.getDB(), zone),
                             DefaultValExpInterval() , id) == false) // test validace expirace
                 {
-                    LOG( WARNING_LOG, "DomainUpdate:  validity exp date is not valid %s" , valexpiryDate );
+                    LOG(WARNING_LOG, "DomainUpdate: validity exp date is not valid %s", valexdate.c_str());
                     code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
                             ccReg::domain_ext_valDate, 1, REASON_MSG_VALEXPDATE_NOT_VALID);
                 }
 
             } else {
-
-                LOG( WARNING_LOG, "DomainUpdate: can not  validity exp date %s" , valexpiryDate );
+                LOG(WARNING_LOG, "DomainUpdate: can not validity exp date %s", valexdate.c_str());
                 code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
                         ccReg::domain_ext_valDate, 1, REASON_MSG_VALEXPDATE_NOT_USED);
 
@@ -4907,10 +4932,16 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
                 if (code == 0) {
 
                     // change validity exdate  extension
-                    if (GetZoneEnum(action.getDB(), zone) && strlen(valexpiryDate) > 0) {
-                        LOG( NOTICE_LOG, "change valExpDate %s ", valexpiryDate );
+                    if (GetZoneEnum(action.getDB(), zone) && valexdate.length() > 0) {
+                        LOG(NOTICE_LOG, "change valExpDate %s", valexdate.c_str());
                         action.getDB()->UPDATE("enumval");
-                        action.getDB()->SET("ExDate", valexpiryDate);
+                        action.getDB()->SET("ExDate", valexdate.c_str());
+                        if (publish == ccReg::DISCL_DISPLAY) {
+                            action.getDB()->SET("publish", true);
+                        }
+                        if (publish == ccReg::DISCL_HIDE) {
+                            action.getDB()->SET("publish", false);
+                        }
                         action.getDB()->WHERE("domainID", id);
 
                         if ( !action.getDB()->EXEC() )
@@ -5027,7 +5058,8 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
 
     std::auto_ptr<EPPNotifier> ntf;
-    char valexpiryDate[MAX_DATE+1];
+    std::string valexdate;
+    ccReg::Disclose publish;
     char FQDN[164];
     int contactid, nssetid, adminid, id, keysetid;
     int zone =0;
@@ -5073,7 +5105,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
             period.count , period.unit , period_count , periodStr);
 
     // parse enum.exdate extension for validitydate
-    GetValExpDateFromExtension(valexpiryDate, ext);
+    extractEnumDomainExtension(valexdate, publish, ext);
 
     try {
         std::auto_ptr<Register::Zone::Manager> zm( Register::Zone::Manager::create() );
@@ -5189,7 +5221,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                 }
 
                 // test  validy date for enum domain
-                if (strlen(valexpiryDate) == 0) {
+                if (valexdate.length() == 0) {
                     // for enum domain must set validity date
                     if (GetZoneEnum(action.getDB(), zone) ) {
                         LOG( WARNING_LOG, "DomainCreate: validity exp date MISSING" );
@@ -5201,16 +5233,16 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                     // Test for enum domain
                     if (GetZoneEnum(action.getDB(), zone) ) {
                         // test
-                        if (action.getDB()->TestValExDate(valexpiryDate,
+                        if (action.getDB()->TestValExDate(valexdate.c_str(),
                                     GetZoneValPeriod(action.getDB(), zone) , DefaultValExpInterval() , 0)
                                 == false) {
-                            LOG( WARNING_LOG, "Validity exp date is not valid %s" , valexpiryDate );
+                            LOG(WARNING_LOG, "Validity exp date is not valid %s", valexdate.c_str());
                             code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
                                     ccReg::domain_ext_valDate, 1,
                                     REASON_MSG_VALEXPDATE_NOT_VALID);
                         }
                     } else {
-                        LOG( WARNING_LOG, "Validity exp date %s not user" , valexpiryDate );
+                        LOG(WARNING_LOG, "Validity exp date %s not used", valexdate.c_str());
                         code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
                                 ccReg::domain_ext_valDate, 1,
                                 REASON_MSG_VALEXPDATE_NOT_USED);
@@ -5325,10 +5357,17 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                             exDate = CORBA::string_dup(action.getDB()->GetDomainExDate(id) );
 
                             // save  enum domain   extension validity date
-                            if (GetZoneEnum(action.getDB(), zone) && strlen(valexpiryDate) > 0) {
+                            if (GetZoneEnum(action.getDB(), zone) && valexdate.length() > 0) {
                                 action.getDB()->INSERT("enumval");
                                 action.getDB()->VALUE(id);
-                                action.getDB()->VALUE(valexpiryDate);
+                                action.getDB()->VALUE(valexdate.c_str());
+                                if (publish == ccReg::DISCL_DISPLAY) {
+                                    action.getDB()->VALUE(true);
+                                }
+                                if (publish == ccReg::DISCL_HIDE) {
+                                    action.getDB()->VALUE(false);
+                                }
+
                                 if (action.getDB()->EXEC() == false)
                                     code = COMMAND_FAILED;
                             }
@@ -5424,7 +5463,8 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
 
     std::auto_ptr<EPPNotifier> ntf;
-    char valexpiryDate[MAX_DATE+1];
+    std::string valexdate;
+    ccReg::Disclose publish;
     int id, zone;
     int period_count;
     char periodStr[10];
@@ -5454,7 +5494,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     LOG( NOTICE_LOG, "DomainRenew: period count %d unit %d period_count %d string [%s]" , period.count , period.unit , period_count , periodStr);
 
     // parse enum.ExDate extension
-    GetValExpDateFromExtension(valexpiryDate, ext);
+    extractEnumDomainExtension(valexdate, publish, ext);
 
     if ((id = getIdOfDomain(action.getDB(), fqdn, conf, true, &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
@@ -5509,13 +5549,13 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
         }
 
         // test validity Date for enum domain
-        if (strlen(valexpiryDate) ) {
+        if (valexdate.length() > 0) {
             // Test for enum domain only
             if (GetZoneEnum(action.getDB(), zone) ) {
-                if (action.getDB()->TestValExDate(valexpiryDate,
+                if (action.getDB()->TestValExDate(valexdate.c_str(),
                             GetZoneValPeriod(action.getDB(), zone) , DefaultValExpInterval() , id)
                         == false) {
-                    LOG( WARNING_LOG, "Validity exp date is not valid %s" , valexpiryDate );
+                    LOG(WARNING_LOG, "Validity exp date is not valid %s", valexdate.c_str());
                     code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
                             ccReg::domain_ext_valDate, 1,
                             REASON_MSG_VALEXPDATE_NOT_VALID);
@@ -5523,7 +5563,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
 
             } else {
 
-                LOG( WARNING_LOG, "Can not  validity exp date %s" , valexpiryDate );
+                LOG(WARNING_LOG, "Can not validity exp date %s", valexdate.c_str());
                 code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
                         ccReg::domain_ext_valDate, 1,
                         REASON_MSG_VALEXPDATE_NOT_USED);
@@ -5558,11 +5598,17 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
 
                 // change validity date for enum domain
                 if (GetZoneEnum(action.getDB(), zone) ) {
-                    if (strlen(valexpiryDate) > 0) {
-                        LOG( NOTICE_LOG, "change valExpDate %s ", valexpiryDate );
+                    if (valexdate.length() > 0) {
+                        LOG(NOTICE_LOG, "change valExpDate %s", valexdate.c_str());
 
                         action.getDB()->UPDATE("enumval");
-                        action.getDB()->SET("ExDate", valexpiryDate);
+                        action.getDB()->SET("ExDate", valexdate.c_str());
+                        if (publish == ccReg::DISCL_DISPLAY) {
+                            action.getDB()->SET("publish", true);
+                        }
+                        if (publish == ccReg::DISCL_HIDE) {
+                            action.getDB()->SET("publish", false);
+                        }
                         action.getDB()->WHERE("domainID", id);
 
                         if (action.getDB()->EXEC() == false)
@@ -7358,6 +7404,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
 	    new_request->setEppActionId(action.getDB()->GetActionID());
             new_request->setRegistrarId(GetRegistrarID(clientID));
 
+            new_request->setRegistrarId(GetRegistrarID(clientID));
             new_request->addObject(Register::PublicRequest::OID(id));
             if (!new_request->check()) {
                 LOG(WARNING_LOG, "authinfo request for %s is prohibited",name);

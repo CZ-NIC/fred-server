@@ -78,6 +78,7 @@ public:
     _ar.register_type(static_cast<Value<unsigned> *>(NULL));
     _ar.register_type(static_cast<Value<std::string> *>(NULL));
     _ar.register_type(static_cast<Value<Database::ID> *>(NULL));
+    _ar.register_type(static_cast<Value<bool> *>(NULL));
     _ar.register_type(static_cast<_BaseDTInterval<Database::DateTimeInterval> *>(NULL));
     _ar.register_type(static_cast<_BaseDTInterval<Database::DateInterval> *>(NULL));
     _ar.register_type(static_cast<Interval<Database::DateTimeInterval> *>(NULL));

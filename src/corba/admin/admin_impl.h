@@ -174,7 +174,6 @@ public:
   bool setInZoneStatus(ccReg::TID domainId);
 
   ccReg::TID createPublicRequest(ccReg::PublicRequest::Type _type,
-                                 ccReg::TID _epp_action_id,
                                  const char *_reason,
                                  const char *_email_to_answer,
                                  const ccReg::Admin::ObjectIdList& _object_ids)
@@ -187,6 +186,13 @@ public:
     ccReg::Admin::MAILER_ERROR, ccReg::Admin::REQUEST_BLOCKED
   );
   ccReg::Admin::Buffer* getPublicRequestPDF(ccReg::TID id, const char *lang);
+
+  ::CORBA::ULongLong countEnumDomainsByRegistrant(const char* name, ::CORBA::Boolean by_person, ::CORBA::Boolean by_org);
+  ccReg::EnumDictList* getEnumDomainsByRegistrant(const char* name, ::CORBA::Boolean by_person, ::CORBA::Boolean by_org, ::CORBA::Long offset, ::CORBA::Long limit);
+  ccReg::EnumDictList* getEnumDomainsRecentEntries(::CORBA::Long count);
+
+private:
+  std::string _createQueryForEnumDomainsByRegistrant(const std::string &select_part, const std::string &name, bool by_person, bool by_org);
 
 };
 

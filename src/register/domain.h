@@ -104,6 +104,8 @@ public:
   virtual date getExpirationDate() const = 0;
   /// return date of validation expiration
   virtual date getValExDate() const = 0;
+  /// return wheather has to be enum domain published in dictionary or not
+  virtual bool getPublish() const = 0;
   /// return time of last change in zone generation status
   virtual ptime getZoneStatusTime() const = 0;
   /// return date when domain will not be generated in zone (= expiration date + 30 days) or erdate (see reload())

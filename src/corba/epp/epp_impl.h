@@ -35,6 +35,11 @@ private:
   Config::Conf& conf;
   DB db;
   std::auto_ptr<Register::Manager> regMan;
+
+
+  void extractEnumDomainExtension(std::string&, ccReg::Disclose &publish, 
+          const ccReg::ExtensionList&);
+
 public:
   struct DB_CONNECT_FAILED
   {
@@ -421,6 +426,7 @@ public:
     CORBA::Long clientID, const char* clTRID, const char* XML);
 
   const std::string& getDatabaseString();
+
 private:
   Session *session;
   int numSession; // number of active session

@@ -132,6 +132,7 @@ ObjectClient::update_states()
     }
     regMan->updateObjectStates(id);
     return;
+
 }
 
 /// delete objects with status deleteCandidate

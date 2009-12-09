@@ -1,4 +1,13 @@
-2009-08-12 Jiri Sadek, Ales Dolezal
+2009-11-09 Jiri Sadek, Juraj Vicenik (2.2.0)
+
+  * Functionality for enum dictionary project
+
+  * action - public request relationship removal
+    (idl interface change/fix)
+
+  * DS records functionality completely removed
+
+2009-08-12 Jiri Sadek, Ales Dolezal (2.1.14)
 
   * Minor code fixes (coverity)
 

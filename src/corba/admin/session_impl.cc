@@ -727,6 +727,7 @@ ccReg::DomainDetail* ccReg_Session_i::createDomainDetail(Register::Domain::Domai
   detail->registrantHandle = DUPSTRFUN(_domain->getRegistrantHandle);
   detail->expirationDate = DUPSTRDATED(_domain->getExpirationDate);
   detail->valExDate = DUPSTRDATED(_domain->getValExDate);
+  detail->publish = _domain->getPublish();
   detail->nssetHandle = DUPSTRFUN(_domain->getNSSetHandle);
   detail->keysetHandle = DUPSTRFUN(_domain->getKeySetHandle);
   detail->admins.length(_domain->getAdminCount(1));
@@ -814,10 +815,10 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Register::D
     }
 
     /* domain specific follows */
-
     MAP_HISTORY_OID(registrant, getRegistrantId, getRegistrantHandle, ccReg::FT_CONTACT)
     MAP_HISTORY_DATE(expirationDate, getExpirationDate)
     MAP_HISTORY_DATE(valExDate, getValExDate)
+    MAP_HISTORY_BOOL(publish, getPublish)
     MAP_HISTORY_OID(nsset, getNSSetId, getNSSetHandle, ccReg::FT_NSSET)
     MAP_HISTORY_OID(keyset, getKeySetId, getKeySetHandle, ccReg::FT_KEYSET)
 

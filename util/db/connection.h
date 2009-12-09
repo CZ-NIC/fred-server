@@ -225,6 +225,13 @@ public:
     return super::exec(_stmt);
   }
 
+  virtual inline std::string escape(const std::string &_in) {
+    if (!this->conn_) {
+      open(conn_info_);
+    }
+    return super::escape(_in);
+  }
+
 
   template<class _transaction_type, class _manager_type>
   friend class Transaction_;

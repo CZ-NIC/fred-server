@@ -3,6 +3,54 @@
 namespace Database {
 namespace Filters {
 
+/** 
+ * Table which joins the enumval (or enumval_history) table to domain
+ * (domain_history) 
+ * Doing this in a direct way wouldn't yield the correct table order or 
+ * it would cause duplicity in joins. A class inheriting from Compound had to be used
+ */
+class EnumVal : public Compound {
+
+public:
+	EnumVal(bool h) {
+		enable_history = h;
+		publish = new Value<bool>(Column("publish", joinEnumValTable()));
+		publish->setName("Publish");
+		add(publish);
+		if(!enable_history) {
+			setName("EnumVal");
+		} else {
+			setName("EnumValHistory");
+		}
+	}
+	
+	~EnumVal() {
+	}
+
+	Table& joinEnumValTable()
+	{
+		if(!enable_history) {
+			return joinTable("enumval");
+		} else {
+			return joinTable("enumval_history");
+		}
+	}
+
+	Value<bool> &getPublish() {
+		return *publish;
+	}
+
+	friend class boost::serialization::access;
+	  template<class Archive> void serialize(Archive& _ar,
+	      const unsigned int _version) {
+	    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
+	  }
+
+	private:
+	Value<bool> *publish;
+	bool enable_history;
+};
+
 Domain* Domain::create() {
   return new DomainHistoryImpl();
 }
@@ -51,6 +99,18 @@ Value<Database::ID>& DomainImpl::addKeySetId() {
   tmp->setName("KeySetId");
   add(tmp);
   return *tmp;
+}
+
+Value<bool>& DomainImpl::addPublish() {
+
+  EnumVal *tmp = new EnumVal(false);
+  tmp->joinOn(new Join(Column("id", joinDomainTable()),
+		SQL_OP_EQ,
+		Column("domainid", tmp->joinEnumValTable())
+	));
+  add(tmp);
+  return tmp->getPublish();
+
 }
 
 Value<Database::ID>& DomainImpl::addRegistrantId() {
@@ -199,6 +259,18 @@ Value<Database::ID>& DomainHistoryImpl::addKeySetId() {
   tmp->setName("KeySetId");
   add(tmp);
   return *tmp;
+}
+
+Value<bool>& DomainHistoryImpl::addPublish() {
+
+  EnumVal *tmp = new EnumVal(true);
+  tmp->joinOn(new Join(Column("historyid", joinDomainTable()),
+		SQL_OP_EQ,
+		Column("historyid", tmp->joinEnumValTable())
+	));
+  add(tmp);
+  return tmp->getPublish();
+
 }
 
 Value<Database::ID>& DomainHistoryImpl::addRegistrantId() {

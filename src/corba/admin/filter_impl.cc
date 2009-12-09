@@ -402,6 +402,7 @@ COMPOUND_CLASS(Domain, Domain, Obj,
     FILTER_ADD(Contact, addTempContact);
     FILTER_ADD(NSSet, addNSSet);
     FILTER_ADD(KeySet, addKeySet);
+    FILTER_ADD(Bool, addPublish)
 );
 
 COMPOUND_CLASS(NSSet, NSSet, Obj,

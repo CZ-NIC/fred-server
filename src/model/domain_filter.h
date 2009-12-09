@@ -33,6 +33,7 @@ public:
   virtual Contact& addTempContact() = 0;
   virtual NSSet& addNSSet() = 0;
   virtual KeySet& addKeySet() = 0;
+  virtual Value<bool>& addPublish() = 0;
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -70,6 +71,7 @@ public:
   virtual Contact& addTempContact();
   virtual NSSet& addNSSet();
   virtual KeySet& addKeySet();
+  virtual Value<bool>& addPublish();
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
@@ -108,6 +110,7 @@ public:
   virtual Contact& addTempContact();
   virtual NSSet& addNSSet();
   virtual KeySet &addKeySet();
+  virtual Value<bool>& addPublish();
 
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
