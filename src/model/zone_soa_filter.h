@@ -34,7 +34,7 @@ public:
 
 class ZoneSoaImpl
 	: public ZoneSoa
-    , virtual public Zone
+    , virtual public ZoneImpl
 {
 public:
     ZoneSoaImpl(bool set_active = false);
