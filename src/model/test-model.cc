@@ -9,7 +9,6 @@
 #include <boost/archive/xml_oarchive.hpp>
 
 #include "settings.h"
-//#include "keyset_filter.h"
 #include "model_filters.h"
 #include "db/database.h"
 #include "log/logger.h"
@@ -52,12 +51,14 @@ Connection* init_connection() {
 void exec_and_print(SelectQuery& _q, Union& _f) {
   _f.serialize(_q);
 
-  std::cout << "\n" << "exec_and_print: " << _q.str() << "\n"
+  std::string info_query_str = str(boost::format("%1% LIMIT %2%") % _q.str() % 1000);
+
+  std::cout << "\n" << "exec_and_print: " << info_query_str << "\n"
   << std::endl;
 
   std::auto_ptr<Connection> conn(init_connection());
   if(conn.get() == NULL) return;
-  Result result = conn->exec(_q);
+  Result result = conn->exec(info_query_str);
 
   for (Result::Iterator it = result.begin(); it != result.end(); ++it) {
     Row row = *it;
@@ -79,6 +80,53 @@ int main(int argc, char *argv[]) {
     Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_CONSOLE);
     Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_TRACE);
 
+    //Zone Test
+
+    bool at_least_one = false;
+    Database::Filters::Zone *zoneFilter;
+        zoneFilter = new Database::Filters::ZoneSoaImpl(true);
+      Database::Filters::Union *uf;
+      uf = new Database::Filters::Union();
+      uf->addFilter(zoneFilter);
+
+      Database::SelectQuery info_query;
+                        std::auto_ptr<Database::Filters::Iterator> fit(uf->createIterator());
+                        for (fit->first(); !fit->isDone(); fit->next())
+                        {
+                          Database::Filters::Zone *zf =
+                              dynamic_cast<Database::Filters::Zone*>(fit->get());
+                          if (!zf)
+                            continue;
+
+                          Database::SelectQuery *tmp = new Database::SelectQuery();
+                          tmp->select() << "z.id, z.fqdn, z.ex_period_min, z.ex_period_max"
+                            ", z.val_period, z.dots_max, z.enum_zone"
+                            ", zs.ttl, zs.hostmaster, zs.serial, zs.refresh, zs.update_retr"
+                            ", zs.expiry, zs.minimum, zs.ns_fqdn";
+                          tmp->from() << "zone z JOIN zone_soa zs ON z.id = zs.zone";
+                          tmp->order_by() << "z.id";
+
+                          uf->addQuery(tmp);
+                          at_least_one = true;
+                        }//for fit
+
+                        if (!at_least_one) {
+                          LOGGER(PACKAGE).error("wrong filter passed for reload ZoneList!");
+                          return 0;//return;
+                        }
+
+                        /* manually add query part to order result by id
+                         * need for findIDSequence() */
+                        //uf.serialize(info_query);
+                        //std::string info_query_str = str(boost::format("%1% ORDER BY id LIMIT %2%") % info_query.str() % m_limit);
+
+                        exec_and_print(info_query, *uf);
+                            return 0;
+
+
+
+      //Zone Test End
+    /*
     //Registrar Test
     SelectQuery sq;
     Union uf;
@@ -105,6 +153,8 @@ int main(int argc, char *argv[]) {
     return 0;
 
     //Registrar Test End
+
+    */
 
     //SelectQuery sq;
     //Union uf;
