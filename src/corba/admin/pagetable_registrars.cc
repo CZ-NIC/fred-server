@@ -7,6 +7,18 @@ ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::Manager::RegistrarLi
   , zl(_zl)
 {
 
+    //TODO: guards
+    Database::Filters::Zone *zoneFilter;
+      zoneFilter = new Database::Filters::ZoneSoaImpl(true);
+    Database::Filters::Union *unionFilter;
+    unionFilter = new Database::Filters::Union();
+    unionFilter->addFilter(zoneFilter);
+    zl->reload(*unionFilter);
+
+    unionFilter->clear();
+    delete unionFilter;
+
+
 }
 
 ccReg_Registrars_i::~ccReg_Registrars_i() {
@@ -31,6 +43,7 @@ ccReg_Registrars_i::reload() {
   unionFilter->clear();
   delete unionFilter;
 
+  LOGGER(PACKAGE).debug(boost::format("ccReg_Registrars_i::reload() rl-size(): %1%") % rl->size());
   LOGGER(PACKAGE).debug(boost::format("ccReg_Registrars_i::reload() zl-size(): %1%") % zl->size());
 
   TRACE("[CALL] void ccReg_Registrars_i::reload() end");
