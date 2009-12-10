@@ -36,6 +36,7 @@ static const std::string CONNECTION_STRING = "host=localhost port=22345 dbname=f
 static const int INPUT_DATE_LENGTH = 26;
 static const int INPUT_ID_LENGTH   = 22;
 static const int INPUT_SERVICE_LENGTH = 2;
+static const int INPUT_MON_LENGTH = 1;
 static const std::string LOG_FILENAME = "log_migration_log.txt";
 
 pool_subst *mem_pool;
@@ -114,9 +115,7 @@ int main()
 	trans_count = 0;
 	while(std::getline(std::cin, line)) {
 		size_t i;
-		std::string id_str, date_str;
 		char *end = NULL;
-		TID entry_id;
 		pool_manager man(mem_pool);
 
 		if (line.empty()) continue;
@@ -128,9 +127,9 @@ int main()
 			continue;
 		}
 
-		id_str = line.substr(0, INPUT_ID_LENGTH);
+                std::string id_str = line.substr(0, INPUT_ID_LENGTH);
 		line = line.substr(INPUT_ID_LENGTH + 1);
-		entry_id = strtoull(id_str.c_str(), &end, 10);
+		TID entry_id = strtoull(id_str.c_str(), &end, 10);
 
 		if(line[INPUT_DATE_LENGTH] != '|') {
 			logger("Error in input line: Date at the beginning doesn't have proper length");	
@@ -138,8 +137,13 @@ int main()
 			continue;
 		}
 
-		date_str = line.substr(0, INPUT_DATE_LENGTH);
+                std::string date_str = line.substr(0, INPUT_DATE_LENGTH);
 		line = line.substr(INPUT_DATE_LENGTH + 1);
+
+                std::string monitoring_str = line.substr(0, INPUT_MON_LENGTH);
+                line = line.substr(INPUT_MON_LENGTH + 1);
+                
+                bool mon_flag = (monitoring_str.at(0) == 't');
 
 		// OK, both values found
 		
@@ -180,7 +184,7 @@ int main()
 		t_logcomm += time3 - time2;
 		epp_parser_request_cleanup(cdata);	
 
-		serv.insert_props_pub(date_str, LC_EPP, false, entry_id, *props);
+		serv.insert_props_pub(date_str, LC_EPP, mon_flag, entry_id, *props);
 		trans_count++;
 
 		if((trans_count % COMMIT_INTERVAL) == 0) {

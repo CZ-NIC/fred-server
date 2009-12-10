@@ -1,11 +1,11 @@
 #!/bin/sh
 
-COLNAME="value_xml"
 DBNAME="fred"
 DBPORT=22345
-DATE_LOW="2009-08-28 11:56:01.260715"
-# DATE_HIGH="2008-10-08 15:00:10.493836"		# 50
-DATE_HIGH="2009-09-02 11:56:03.439406"		# 50000
+
+DATE_LOW="2009-11-06 21:34:02.550372"
+# DATE_HIGH="2009-12-09 10:35:33.628458"
+DATE_HIGH="2009-12-10 10:27:54.105179"
 
 echo "timestamp0 - beginning: ";  date
 
@@ -34,7 +34,11 @@ echo "timestamp1 - finished direct table transfers ";  date
 
 # only using insert_props, otherwise database functions
 
-psql -U $DBNAME -p $DBPORT -c "select to_char(actionid, '99999999999999999999') || '|' || to_char(startdate, 'YYYY-MM-DD HH24:MI:SS.US') || '|' || replace(xml, E'\n', '') as $COLNAME from action_xml ax join action on id=ax.actionid where startdate >= '$DATE_LOW' and startdate < '$DATE_HIGH' order by startdate" | grep -v "^\-\+$\|^\s*$COLNAME\s*$\|([0-9]\+ rows)\|^\s*$"    |  ./migrate_log
+psql -P tuples_only=on -U $DBNAME -p $DBPORT -c "select to_char(actionid, '99999999999999999999') || '|' || to_char(time_begin, 'YYYY-MM-DD HH24:MI:SS.US') || '|' || is_monitoring::char || '|' || replace(xml, E'\n', '') from action_xml ax join request on id=ax.actionid where time_begin >= '$DATE_LOW' and time_begin <= '$DATE_HIGH' order by time_begin" |  ./migrate_log
+
+# COLNAME="valuexxx"
+# psql -U $DBNAME -p $DBPORT -c "select to_char(actionid, '99999999999999999999') || '|' || to_char(startdate, 'YYYY-MM-DD HH24:MI:SS.US') || '|' || is_monitoring::char || '|' || replace(xml, E'\n', '') as $COLNAME from action_xml ax join action on id=ax.actionid where startdate >= '$DATE_LOW' and startdate <= '$DATE_HIGH' order by startdate" | grep -v "^\-\+$\|^\s*$COLNAME\s*$\|([0-9]\+ rows)\|^\s*$"    |  ./migrate_log
+
 
 echo "timestamp2 - finished ";  date
 

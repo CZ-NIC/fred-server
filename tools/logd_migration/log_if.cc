@@ -437,9 +437,8 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 		throw bad_alloc();	\
 	}
 
-	int res;								/* response from corba call wrapper */
-	const char *cmd_name = NULL;					/* command name to be used
-												one of the basic properties */
+	int res;								/* response from corba call wrapper */	
+												
 	char errmsg[MAX_ERROR_MSG_LEN];			/* error message returned from corba call */
 	Register::Logger::RequestProperties *c_props = NULL;	/* properties to be sent to the log */
 	/* data structures for every command */
@@ -475,7 +474,6 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 		case EPP_RED_LOGIN:
 			if (cdata->type == EPP_LOGIN){
 				*action_type = ClientLogin;
-				cmd_name = "login";
 
 				el = static_cast<epps_login*>(cdata->data);
 
@@ -496,19 +494,19 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 				switch(cdata->type) {
 					case EPP_SENDAUTHINFO_CONTACT:
 						*action_type = ContactSendAuthInfo;
-						cmd_name = "sendAuthInfoContact";
+
 						break;
 					case EPP_SENDAUTHINFO_DOMAIN:
 						*action_type = DomainSendAuthInfo;
-						cmd_name = "sendAuthInfoContact";
+
 						break;
 					case EPP_SENDAUTHINFO_NSSET:
 						*action_type = NSSetSendAuthInfo;
-						cmd_name = "sendAuthInfoContact";
+
 						break;
 					case EPP_SENDAUTHINFO_KEYSET:
 						*action_type = KeySetSendAuthInfo;
-						cmd_name = "sendAuthInfoContact";
+
 						break;
 					default:
 						break;
@@ -522,7 +520,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 
 		case EPP_RED_LOGOUT:
 			*action_type = ClientLogout;
-			cmd_name = "logout";
+
 			break;
 
 		case EPP_RED_CHECK:
@@ -540,7 +538,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 					*action_type = KeysetCheck;
 					break;
 			}
-			cmd_name = "check";
+
 			ec = static_cast<epps_check*>(cdata->data);
 			PUSH_QHEAD(c_props, &ec->ids, "checkId");
 			break;
@@ -550,26 +548,26 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 			switch(cdata->type) {
 				case EPP_LIST_CONTACT:
 					*action_type = ListContact;
-					cmd_name = "listContact";
+
 					break;
 				case EPP_LIST_KEYSET:
 					*action_type = ListKeySet;
-					cmd_name = "listKeyset";
+
 					break;
 				case EPP_LIST_NSSET:
 					*action_type = ListNSset;
-					cmd_name = "listNsset";
+
 					break;
 				case EPP_LIST_DOMAIN:
 					*action_type = ListDomain;
-					cmd_name = "listDomain";
+
 					break;
 				case EPP_INFO_CONTACT: {
 					epps_info_contact *i = static_cast<epps_info_contact*>(cdata->data);
 
 					PUSH_PROPERTY(c_props, "id", i->id)
 					*action_type = ContactInfo;
-					cmd_name = "infoContact";
+
 					break;
 				}
 				case EPP_INFO_KEYSET: {
@@ -577,7 +575,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 
 					PUSH_PROPERTY(c_props, "id", i->id)
 					*action_type = KeysetInfo;
-					cmd_name = "infoKeyset";
+
 					break;
 				}
 				case EPP_INFO_NSSET: {
@@ -585,7 +583,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 
 					PUSH_PROPERTY(c_props, "id", i->id)
 					*action_type = NSsetInfo;
-					cmd_name = "infoNsset";
+
 					break;
 				}
 				case EPP_INFO_DOMAIN: {
@@ -593,7 +591,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 
 					PUSH_PROPERTY(c_props, "name", i->name)
 					*action_type = DomainInfo;
-					cmd_name = "infoDomain";
+
 					break;
 				}
 				default:
@@ -602,7 +600,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 			break;
 
 		case EPP_RED_POLL:
-			cmd_name = "poll";
+
 			if(cdata->type == EPP_POLL_ACK) {
 				*action_type = PollAcknowledgement;
 				epps_poll_ack *pa = static_cast<epps_poll_ack*>(cdata->data);
@@ -616,7 +614,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 			switch(cdata->type) {
 				case EPP_CREATE_CONTACT:
 					*action_type = ContactCreate;
-					cmd_name = "createContact";
+
 					cc = static_cast<epps_create_contact*>(cdata->data);
 
 					PUSH_PROPERTY(c_props, "id", cc->id);
@@ -653,7 +651,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 
 				case EPP_CREATE_DOMAIN:
 					*action_type = DomainCreate;
-					cmd_name = "createDomain";
+
 					cd = static_cast<epps_create_domain*>(cdata->data);
 
 					PUSH_PROPERTY(c_props, "name", cd->name);
@@ -676,7 +674,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 
 				case EPP_CREATE_NSSET:
 					*action_type = NSsetCreate;
-					cmd_name = "createNsset";
+
 					cn = static_cast<epps_create_nsset*>(cdata->data);
 
 					PUSH_PROPERTY(c_props, "id", cn->id);
@@ -692,7 +690,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 					break;
 				case EPP_CREATE_KEYSET:
 					*action_type = KeysetCreate;
-					cmd_name = "createKeyset";
+
 					ck = static_cast<epps_create_keyset*>(cdata->data);
 
 					PUSH_PROPERTY(c_props, "id", ck->id);
@@ -733,7 +731,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 					*action_type = (epp_action_type)999902;
 					break;
 			}
-			cmd_name = "delete";
+
 			ed = static_cast<epps_delete*>(cdata->data);
 
 			PUSH_PROPERTY(c_props, "id", ed->id);
@@ -741,7 +739,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 
 		case EPP_RED_RENEW:
 			*action_type = DomainRenew;
-			cmd_name = "renew";
+
 			er = static_cast<epps_renew*>(cdata->data);
 
 			PUSH_PROPERTY(c_props, "name", er->name);
@@ -761,7 +759,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 			switch(cdata->type) {
 				case EPP_UPDATE_CONTACT:
 					*action_type = ContactUpdate;
-					cmd_name = "updateContact";
+
 
 					uc = static_cast<epps_update_contact*>(cdata->data);
 
@@ -798,7 +796,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 
 				case EPP_UPDATE_DOMAIN:
 					*action_type = DomainUpdate;
-					cmd_name = "updateDomain";
+
 
 					ud = static_cast<epps_update_domain*>(cdata->data);
 
@@ -818,7 +816,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 
 				case EPP_UPDATE_NSSET:
 					*action_type = NSsetUpdate;
-					cmd_name = "updateNsset";
+
 					un = static_cast<epps_update_nsset*>(cdata->data);
 
 					PUSH_PROPERTY(c_props, "id", un->id);
@@ -837,7 +835,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 
 				case EPP_UPDATE_KEYSET:
 					*action_type = KeysetUpdate;
-					cmd_name = "updateKeyset";
+
 					uk = static_cast<epps_update_keyset*>(cdata->data);
 
 					PUSH_PROPERTY(c_props, "id", uk->id);
@@ -886,17 +884,72 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 					*action_type = (epp_action_type)999904;
 			}
 
-			cmd_name = "transfer";
+
 			et = static_cast<epps_transfer*>(cdata->data);
 
 			PUSH_PROPERTY(c_props, "id", et->id);
 			break;
 
-		default:
-			break;
+                case EPP_RED_EXTCMD:
+                default:
+                    switch (cdata->type) {
+                        case EPP_TEST_NSSET:
+                            *action_type = nssetTest;
+                            break;
+                        case EPP_SENDAUTHINFO_CONTACT:
+                            *action_type = ContactSendAuthInfo;
+                            break;
+                        case EPP_SENDAUTHINFO_DOMAIN:
+                            *action_type = DomainSendAuthInfo;
+                            break;
+                        case EPP_SENDAUTHINFO_NSSET:
+                            *action_type = NSSetSendAuthInfo;
+                            break;
+                        case EPP_SENDAUTHINFO_KEYSET:
+                            *action_type = KeySetSendAuthInfo;
+                            break;
+                        case EPP_CREDITINFO:
+                            *action_type = ClientCredit;
+                            break;
+                        case EPP_INFO_LIST_DOMAINS:
+                            *action_type = InfoListDomains;
+                            break;
+                        case EPP_INFO_LIST_CONTACTS:
+                            *action_type = InfoListContacts;
+                            break;
+                        case EPP_INFO_LIST_KEYSETS:
+                            *action_type = InfoListKeysets;
+                            break;
+                        case EPP_INFO_LIST_NSSETS:
+                            *action_type = InfoListNssets;
+                            break;
+                        case EPP_INFO_DOMAINS_BY_NSSET:
+                            *action_type = InfoDomainsByNsset;
+                            break;
+                        case EPP_INFO_DOMAINS_BY_KEYSET:
+                            *action_type = InfoDomainsByKeyset;
+                            break;
+                        case EPP_INFO_DOMAINS_BY_CONTACT:
+                            *action_type = InfoDomainsByContact;
+                            break;
+                        case EPP_INFO_NSSETS_BY_NS:
+                            *action_type = InfoNssetsByNs;
+                            break;
+                        case EPP_INFO_NSSETS_BY_CONTACT:
+                            *action_type = InfoNssetsByContact;
+                            break;
+                        case EPP_INFO_GET_RESULTS:
+                            *action_type = InfoGetResults;
+                            break;
+                        case EPP_INFO_KEYSETS_BY_CONTACT:
+                            *action_type = InfoKeysetsByContact;
+                            break;
+                    }
+                    break;		
 	}
 
-	PUSH_PROPERTY (c_props, "command", cmd_name);
+        // TODO cmd_name unused
+	// PUSH_PROPERTY (c_props, "command", cmd_name);
   	PUSH_PROPERTY (c_props, "clTRID", cdata->clTRID);
 	PUSH_PROPERTY (c_props, "svTRID", cdata->svTRID);
 

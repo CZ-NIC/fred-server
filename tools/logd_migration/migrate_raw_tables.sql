@@ -99,8 +99,6 @@ begin
 end;
 $fill_part$ language plpgsql;
 
-
--- TODO add session ID
 create or replace function fill_part_request(tbegin timestamp without time zone, tend timestamp without time zone, service integer) returns void as $fill_part_request$
 declare 
 	table_name varchar(30);
@@ -108,6 +106,8 @@ declare
 	table_count integer;
 	
 BEGIN
+       
+        
 	table_name := 'request_' || partition_postfix(tbegin, service, false);
 
 	select count(*) into table_count from pg_tables where tablename=table_name;
@@ -115,9 +115,21 @@ BEGIN
 		perform create_tbl_request(tbegin, service, false);
 	end if;
 
-	stmt := 'insert into ' || table_name || ' (id, time_begin, time_end, source_ip, service, action_type, session_id, is_monitoring) select id, startdate, enddate, null, 3, action, clientid, false from action where startdate >= ''' || tbegin || ''' and startdate < ''' || tend || '''';
+	stmt := 'insert into ' || table_name || ' (id, time_begin, time_end, source_ip, service, action_type, session_id, is_monitoring) select id, startdate, enddate, null, 3, action, clientid, false from action where startdate >= ''' || tbegin || ''' and startdate <= ''' || tend || ''' and clienttrid != ''monitoring''';
 
 	execute stmt;
+
+        table_name := 'request_' || partition_postfix(tbegin, service, true);
+
+	select count(*) into table_count from pg_tables where tablename=table_name;
+	if (table_count = 0) then
+		perform create_tbl_request(tbegin, service, true);
+	end if;
+
+	stmt := 'insert into ' || table_name || ' (id, time_begin, time_end, source_ip, service, action_type, session_id, is_monitoring) select id, startdate, enddate, null, 3, action, clientid, true from action where startdate >= ''' || tbegin || ''' and startdate <= ''' || tend || ''' and clienttrid = ''monitoring''';
+
+	execute stmt;
+
 END;
 $fill_part_request$ language plpgsql;
 
@@ -137,7 +149,17 @@ BEGIN
 		perform create_tbl_request_data(tbegin, service, false);
 	end if;
 
-	stmt := 'insert into ' || table_name || ' (entry_time_begin, entry_service, entry_monitoring, entry_id , content, is_response) select a.startdate, 3, false, actionid, xml, false from action_xml join action a on a.id=actionid where a.startdate >= ''' || tbegin || ''' and a.startdate < ''' || tend || ''' and xml is not null';
+	stmt := 'insert into ' || table_name || ' (entry_time_begin, entry_service, entry_monitoring, entry_id , content, is_response) select a.time_begin, 3, a.is_monitoring, actionid, xml, false from action_xml join request a on a.id=actionid where a.time_begin >= ''' || tbegin || ''' and a.time_begin <= ''' || tend || ''' and xml is not null and a.is_monitoring=false';
+	execute stmt;
+
+	table_name := 'request_data_' || partition_postfix(tbegin, service, true);
+
+	select count(*) into table_count from pg_tables where tablename=table_name;
+	if (table_count = 0) then
+		perform create_tbl_request_data(tbegin, service, true);
+	end if;
+
+	stmt := 'insert into ' || table_name || ' (entry_time_begin, entry_service, entry_monitoring, entry_id , content, is_response) select a.time_begin, 3, a.is_monitoring, actionid, xml, false from action_xml join request a on a.id=actionid where a.time_begin >= ''' || tbegin || ''' and a.time_begin <= ''' || tend || ''' and xml is not null and a.is_monitoring=true';
 	execute stmt;
 
 END;
@@ -156,7 +178,7 @@ begin
 		perform create_tbl_session(tbegin);
 	end if;
 	
-	stmt := 'insert into ' || table_name || ' (id, name, login_date, logout_date, lang) select id, registrarid, logindate, logoutdate, lang from login where logindate >= ''' || tbegin || ''' and logindate < ''' || tend || ''' ';
+	stmt := 'insert into ' || table_name || ' (id, name, login_date, logout_date, lang) select id, registrarid, logindate, logoutdate, lang from login where logindate >= ''' || tbegin || ''' and logindate <= ''' || tend || ''' ';
 	execute stmt;
 
 end;
