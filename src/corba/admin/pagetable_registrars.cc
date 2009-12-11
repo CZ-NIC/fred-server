@@ -5,10 +5,12 @@ ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::Manager::RegistrarLi
 		)
   : rl(_rl)
   , zl(_zl)
+  , rza()
 {
     Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
     unionFilter->addFilter(new Database::Filters::ZoneSoaImpl(true));
     zl->reload(*(unionFilter).get());
+    rza.reload();
 }
 
 ccReg_Registrars_i::~ccReg_Registrars_i() {
@@ -25,6 +27,8 @@ ccReg_Registrars_i::reload() {
   Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
   unionFilter->addFilter(new Database::Filters::ZoneSoaImpl(true));
   zl->reload(*(unionFilter).get());
+
+  rza.reload();
 
   LOGGER(PACKAGE).debug(boost::format("ccReg_Registrars_i::reload() rl-size(): %1%") % rl->size());
   LOGGER(PACKAGE).debug(boost::format("ccReg_Registrars_i::reload() zl-size(): %1%") % zl->size());
@@ -107,7 +111,7 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
           throw std::bad_cast();
       }
 
-      if(r->isInZone(zoneid))
+      if(rza.isInZone(r->getId(), zoneid))
       {
           (*tr)[static_cols+i] <<= C_STR(r->getCredit(zoneid));
       }

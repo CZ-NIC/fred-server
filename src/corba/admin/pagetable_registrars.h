@@ -8,13 +8,13 @@ class ccReg_Registrars_i : public ccReg_PageTable_i,
 private:
   Register::Registrar::Manager::RegistrarListPtr rl;
   Register::Zone::Manager::ZoneListPtr zl;
+  Register::Registrar::Manager::RegistrarZoneAccess rza;
 
   enum cols {static_cols = 3};///number of static columns in pagetable
 
 public:
   ccReg_Registrars_i(Register::Registrar::Manager::RegistrarListPtr _rl
-					  , Register::Zone::Manager::ZoneListPtr _zl
-					  );
+					  , Register::Zone::Manager::ZoneListPtr _zl);
   ~ccReg_Registrars_i();
   DECL_PAGETABLE_I;
   

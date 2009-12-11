@@ -56,7 +56,8 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_contacts = new ccReg_Contacts_i(m_register_manager->getContactManager()->createList(), &settings_);
   m_nssets = new ccReg_NSSets_i(m_register_manager->getNSSetManager()->createList(), &settings_);
   m_keysets = new ccReg_KeySets_i(m_register_manager->getKeySetManager()->createList(), &settings_);
-  m_registrars = new ccReg_Registrars_i(m_register_manager->getRegistrarManager()->createList(),m_register_manager->getZoneManager()->createList());
+  m_registrars = new ccReg_Registrars_i(m_register_manager->getRegistrarManager()->createList()
+          ,m_register_manager->getZoneManager()->createList());
   m_eppactions = new ccReg_EPPActions_i(m_register_manager->getRegistrarManager()->getEPPActionList());
   m_invoices = new ccReg_Invoices_i(m_invoicing_manager->createList());
   m_filters = new ccReg_Filters_i(m_register_manager->getFilterManager()->getList());
