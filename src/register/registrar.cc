@@ -1956,10 +1956,88 @@ public:
         }
         return RegistrarPtr(registrarlist->get(0));
     }//getRegistrarByHandle
-
 }; // class ManagerImpl
 
-Manager *Manager::create(DB * db)
+unsigned long long Manager::RegistrarZoneAccess::max_id(ColIndex idx, Database::Result& result)
+{
+    TRACE("[CALL] Manager::RegistrarZoneAccess::max_id");
+    unsigned long long ret =0;
+    for (unsigned i = 0; i < result.size() ; ++i)
+        if((result[i].size() > idx)
+                && (static_cast<unsigned>(result[i][idx]) > ret))
+            ret = result[i][idx];
+    LOGGER(PACKAGE).debug(boost::format
+            ("[CALL] Manager::RegistrarZoneAccess::max_id: %1%  result.size(): %2%")
+                % ret % result.size());
+    return ret;
+}//max_id
+
+/// Look if registrar have currently access to zone by id
+ bool Manager::RegistrarZoneAccess::isInZone(unsigned long long registrar_id,unsigned long long zone_id)
+ {
+     bool ret = false;
+     if((registrar_id <= max_registrar_id)
+             && (zone_id <= max_zone_id))
+                ret = flag.at(registrar_id).at(zone_id);
+    return ret;
+ }//isInZone
+
+void Manager::RegistrarZoneAccess::reload()
+{
+    try
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        std::stringstream sql;
+        sql <<  "select registrarid, zoneid, isinzone"
+                " from (select r.id as registrarid, z.id as zoneid"
+                " , (select count(*) from registrarinvoice ri"
+                " where fromdate <= CURRENT_DATE"
+                " and (todate >= CURRENT_DATE or todate is null)"
+                " and ri.registrarid = r.id and ri.zone = z.id) as isinzone"
+                " from registrar as r , zone as z) as rii where isinzone = 1";
+        Database::Result res = conn.exec(sql.str());
+        max_registrar_id = max_id(RegistrarCol, res);
+        max_zone_id = max_id(ZoneCol, res);
+        LOGGER(PACKAGE).debug(boost::format("Manager::RegistrarZoneAccess::reload "
+                "res.size: %1% rza.max_registrar_id: %2% max_zone_id: %3% ")
+                % res.size()
+                % max_registrar_id
+                % max_zone_id
+                );
+        flag = RegistrarZoneAccess::RegistrarZoneAccessArray (max_registrar_id + 1
+                ,RegistrarZoneAccess::RegistrarZoneAccessRow(max_zone_id + 1,false));
+        for (unsigned i = 0; i < res.size() ; ++i)
+        {
+            LOGGER(PACKAGE).debug(boost::format
+                    ("[CALL] Manager::RegistrarZoneAccess::reload() for i: %1% ") % i );
+             if(res[i].size() > IsInZone)
+             {
+                 LOGGER(PACKAGE).debug
+                 (boost::format
+                     ("[CALL] Manager::RegistrarZoneAccess::reload()"
+                         " if size reg_id: %1% zone_id: %2% flag: %3% "
+                     )
+                     % static_cast<unsigned long long>(res[i][RegistrarCol])
+                     % static_cast<unsigned long long>(res[i][ZoneCol])
+                     % static_cast<bool>(res[i][IsInZone])
+                 );
+                 std::size_t regid = static_cast<std::size_t>(res[i][RegistrarCol]);
+                 std::size_t zonid = static_cast<std::size_t>(res[i][ZoneCol]);
+                 flag.at(regid).at(zonid) = static_cast<bool>(res[i][IsInZone]);
+             }//if size
+        }//for i
+    }//try
+    catch(const std::exception& ex)
+    {
+        LOGGER(PACKAGE).error(boost::format("Manager::RegistrarZoneAccess::reload exception: %1%") % ex.what());
+    }
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("Manager::RegistrarZoneAccess::reload error");
+    }
+}//Manager::RegistrarZoneAccess::reload
+
+Manager* Manager::create(DB * db)
 {
   TRACE("[CALL] Register::Registrar::Manager::create()");
   return new ManagerImpl(db);

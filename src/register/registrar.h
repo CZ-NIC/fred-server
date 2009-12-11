@@ -441,9 +441,26 @@ public:
   typedef std::auto_ptr<Registrar> RegistrarPtr;
   virtual RegistrarPtr getRegistrarByHandle(const std::string& handle) =0;
 
+  ///storage for flag of registrar's access to zone, used in registrar pagetable
+  class RegistrarZoneAccess
+  {
+      enum ColIndex {RegistrarCol, ZoneCol, IsInZone};///order of query columns
+      unsigned long long max_registrar_id;///maximal registrar id with access to zone in database
+      unsigned long long max_zone_id;///maximal zone id accessed by some registrar in database
+      typedef std::vector<bool> RegistrarZoneAccessRow;///registrar's zones flags
+      typedef std::vector<RegistrarZoneAccessRow> RegistrarZoneAccessArray;///container of registrars rows
+      RegistrarZoneAccessArray flag; ///zone access flag array
+      unsigned long long max_id(ColIndex idx, Database::Result& result);///for size of flag array
+  public:
+      void reload();///load from database
+      bool isInZone(unsigned long long registrar_id,unsigned long long zone_id);///look if registrar currently have access to zone by id
+  };
+
   /// Factory method
   static Manager *create(DB* db);
 };
+
+
 
 }
 ;
