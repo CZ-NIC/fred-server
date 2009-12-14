@@ -543,7 +543,7 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
 		name_id = iter->second;
 	} else {
 		// if the name isn't cached in the memory, try to find it in the database
-		std::string s_name = Util::escape(name_trunc);
+		std::string s_name = conn.escape(name_trunc);
 
 		boost::format query = boost::format("select id from request_property where name='%1%'") % s_name;
 		Result res = conn.exec(query.str());
