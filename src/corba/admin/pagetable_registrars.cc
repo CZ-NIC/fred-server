@@ -158,7 +158,7 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
           throw std::bad_cast();
       }
 
-      rl->sort(Register::Registrar::MT_ZONE, dir, zoneid);
+      rl->sort(Register::Registrar::MT_ZONE, dir, zoneid, &rza);
   }//if zone column
 
 }
