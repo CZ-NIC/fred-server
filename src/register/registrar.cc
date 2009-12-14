@@ -139,7 +139,6 @@ class RegistrarImpl : public Register::CommonObjectImplNew,
   typedef AZoneList::iterator AZoneListIter;
   AZoneList actzones;
 
-
 public:
   RegistrarImpl()
   : CommonObjectImplNew()
@@ -732,8 +731,11 @@ class CompareCreditByZone
 {
     bool asc_;
     unsigned zone_id_;
+    RZAPtr rzaptr_;
 public:
-  CompareCreditByZone(bool _asc, unsigned _zone_id) : asc_(_asc), zone_id_(_zone_id) { }
+  CompareCreditByZone(bool _asc, unsigned _zone_id
+          , RZAPtr _rzaptr)
+      : asc_(_asc), zone_id_(_zone_id), rzaptr_(_rzaptr) { }
   bool operator()(CommonObjectNew *_left, CommonObjectNew *_right) const
   {
     RegistrarImpl *l_casted = dynamic_cast<RegistrarImpl *>(_left);
@@ -744,8 +746,21 @@ public:
       throw std::bad_cast();
     }
 
-    return (asc_ ? l_casted->getCredit(zone_id_) < r_casted->getCredit(zone_id_)
-                 : l_casted->getCredit(zone_id_) > r_casted->getCredit(zone_id_));
+
+    long long lvalue = l_casted->getCredit(zone_id_);
+
+    long long rvalue = r_casted->getCredit(zone_id_);
+
+     if (rzaptr_)
+     {
+         Register::Registrar::Manager::RegistrarZoneAccess* rzaptr =0;
+         rzaptr = static_cast<Register::Registrar::Manager::RegistrarZoneAccess*>(rzaptr_);
+
+         if(rzaptr->isInZone(l_casted->getId(),zone_id_) == false) lvalue = -1;
+         if(rzaptr->isInZone(r_casted->getId(),zone_id_) == false) rvalue = -1;
+     }
+
+    return (asc_ ? (lvalue < rvalue) : (lvalue > rvalue));
   }
 };//class CompareCreditByZone
 
@@ -1123,7 +1138,8 @@ public:
     zoneFilter = "";
   }
   
-  virtual void sort(MemberType _member, bool _asc, unsigned _zone_id) {
+  virtual void sort(MemberType _member, bool _asc, unsigned _zone_id
+          , RZAPtr rzaptr) {
     switch (_member) {
       case MT_NAME:
         stable_sort(m_data.begin(), m_data.end(), CompareName(_asc));
@@ -1183,7 +1199,8 @@ public:
         stable_sort(m_data.begin(), m_data.end(), CompareFax(_asc));
         break;
       case MT_ZONE:
-        stable_sort(m_data.begin(), m_data.end(), CompareCreditByZone(_asc , _zone_id));
+        stable_sort(m_data.begin(), m_data.end()
+                , CompareCreditByZone(_asc , _zone_id, rzaptr));
         break;
     }
   }
@@ -1718,12 +1735,13 @@ public:
 
 class ManagerImpl : virtual public Manager
 { DB * db_;
-  RegistrarListImpl rl;
+  //RegistrarListImpl rl;
   EPPActionListImpl eal;
   std::vector<EPPActionType> actionTypes;
 public:
   ManagerImpl(DB* db)
-  :db_(db),rl(), eal(db)
+  :db_(db)//,rl()
+  , eal(db)
   {
       try
       {

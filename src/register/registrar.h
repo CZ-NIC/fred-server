@@ -25,8 +25,12 @@ using namespace boost::posix_time;
 /// forward declared parameter type 
 class DB;
 
+
 namespace Register {
 namespace Registrar {
+
+///work around unable to forward declare member class Register::Registrar::Manager::RegistrarZoneAccess*
+typedef void* RZAPtr;
 
 /// member identification (i.e. for sorting)
 enum MemberType {
@@ -236,6 +240,8 @@ public:
 
 };
 
+
+
 /// List of registrar object
 class RegistrarList : virtual public Register::CommonListNew
 {
@@ -264,8 +270,8 @@ public:
   /// clear filter data
   virtual void clearFilter() = 0;
   /// sort by column
-  virtual void sort(MemberType _member, bool _asc, unsigned _zone_id = 0) = 0;
-  
+  virtual void sort(MemberType _member, bool _asc, unsigned _zone_id = 0
+          , RZAPtr rzaptr =0 ) = 0;
   virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
   virtual const char* getTempTableName() const = 0;
 
