@@ -1,7 +1,7 @@
 #include "model_registrar_acl.h"
 
 
-std::string ModelRegistrarAcl::table_name = "ModelRegistrarAcl";
+std::string ModelRegistrarAcl::table_name = "registraracl";
 
 DEFINE_PRIMARY_KEY(ModelRegistrarAcl, unsigned long long, id, id_, table_name, "id", .setDefault())
 DEFINE_BASIC_FIELD(ModelRegistrarAcl, unsigned long long, registrar_id, registrar_id_, table_name, "registrarid", .setNotNull().setForeignKey())
