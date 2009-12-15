@@ -249,6 +249,25 @@ public:
   }
 };
 
+/* Ticket #3197 - wrap/overload for function
+ * testObjectHasState(DB *db, Register::TID object_id, unsigned state_id)
+ * to test system registrar (should have no restriction)
+ */
+static bool testObjectHasState(EPPAction &action, Register::TID object_id,
+        unsigned state_id)
+{
+    DB *db = action.getDB();
+    if (!db) {
+        throw Register::SQL_ERROR();
+    }
+    if (db->GetRegistrarSystem(action.getRegistrar())) {
+        return 0;
+    }
+    else {
+        return testObjectHasState(db, object_id, state_id);
+    }
+}
+
 /// timestamp formatting function
 static std::string formatTime(
   boost::posix_time::ptime tm)
@@ -2622,8 +2641,8 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
     }
     try {
         if (!code && (
-                    testObjectHasState(action.getDB(),id,FLAG_serverDeleteProhibited) ||
-                    testObjectHasState(action.getDB(),id,FLAG_serverUpdateProhibited)
+                    testObjectHasState(action,id,FLAG_serverDeleteProhibited) ||
+                    testObjectHasState(action,id,FLAG_serverUpdateProhibited)
                     ))
         {
             LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
@@ -2732,7 +2751,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                 ccReg::registrar_autor, 0, REASON_MSG_REGISTRAR_AUTOR);
     }
     try {
-        if (!code && testObjectHasState(action.getDB(),id,FLAG_serverUpdateProhibited))
+        if (!code && testObjectHasState(action,id,FLAG_serverUpdateProhibited))
         {
             LOG( WARNING_LOG, "update of object %s is prohibited" , handle );
             code = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -3164,7 +3183,7 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
         }
 
         try {
-            if (!code && testObjectHasState(action.getDB(),id,FLAG_serverTransferProhibited)) {
+            if (!code && testObjectHasState(action,id,FLAG_serverTransferProhibited)) {
                 LOG( WARNING_LOG, "transfer of object %s is prohibited" , name );
                 code = COMMAND_STATUS_PROHIBITS_OPERATION;
             }
@@ -3510,8 +3529,8 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
     }
     try {
         if (!code && (
-                    testObjectHasState(action.getDB(),id,FLAG_serverDeleteProhibited) ||
-                    testObjectHasState(action.getDB(),id,FLAG_serverUpdateProhibited)
+                    testObjectHasState(action,id,FLAG_serverDeleteProhibited) ||
+                    testObjectHasState(action,id,FLAG_serverUpdateProhibited)
                     ))
         {
             LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
@@ -3978,7 +3997,7 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
                 REASON_MSG_REGISTRAR_AUTOR);
     }
     try {
-        if (!code && testObjectHasState(action.getDB(),nssetID,FLAG_serverUpdateProhibited))
+        if (!code && testObjectHasState(action,nssetID,FLAG_serverUpdateProhibited))
         {
             LOG( WARNING_LOG, "update of object %s is prohibited" , handle );
             code = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -4531,8 +4550,8 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
     }
     try {
         if (!code && (
-                    testObjectHasState(action.getDB(),id,FLAG_serverDeleteProhibited) ||
-                    testObjectHasState(action.getDB(),id,FLAG_serverUpdateProhibited)
+                    testObjectHasState(action,id,FLAG_serverDeleteProhibited) ||
+                    testObjectHasState(action,id,FLAG_serverUpdateProhibited)
                     ))
         {
             LOG( WARNING_LOG, "delete of object %s is prohibited" , fqdn );
@@ -4645,7 +4664,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
 
     if (!code) {
         try {
-            if (!code && testObjectHasState(action.getDB(),id,FLAG_serverUpdateProhibited)) {
+            if (!code && testObjectHasState(action,id,FLAG_serverUpdateProhibited)) {
                 LOG( WARNING_LOG, "update of object %s is prohibited" , fqdn );
                 code = COMMAND_STATUS_PROHIBITS_OPERATION;
             }
@@ -4863,7 +4882,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
         }
         if (strlen(registrant_chg) != 0) {
             try {
-                if (!code && testObjectHasState(action.getDB(),id,FLAG_serverRegistrantChangeProhibited))
+                if (!code && testObjectHasState(action,id,FLAG_serverRegistrantChangeProhibited))
                 {
                     LOG( WARNING_LOG, "registrant change %s is prohibited" , fqdn );
                     code = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -5582,8 +5601,8 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
             }
             try {
                 if (!code && (
-                            testObjectHasState(action.getDB(),id,FLAG_serverRenewProhibited) ||
-                            testObjectHasState(action.getDB(),id,FLAG_deleteCandidate)
+                            testObjectHasState(action,id,FLAG_serverRenewProhibited) ||
+                            testObjectHasState(action,id,FLAG_deleteCandidate)
                             )
                    )
                 {
@@ -5831,8 +5850,8 @@ ccReg_EPP_i::KeySetDelete(
     }
     try {
         if (!code && (
-                    testObjectHasState(action.getDB(), id, FLAG_serverDeleteProhibited) ||
-                    testObjectHasState(action.getDB(), id, FLAG_serverUpdateProhibited)
+                    testObjectHasState(action, id, FLAG_serverDeleteProhibited) ||
+                    testObjectHasState(action, id, FLAG_serverUpdateProhibited)
                     )) {
             LOG(WARNING_LOG, "delete of object %s is prohibited", handle);
             code = COMMAND_STATUS_PROHIBITS_OPERATION;
@@ -6388,7 +6407,7 @@ ccReg_EPP_i::KeySetUpdate(
                ccReg::keyset_dsrecord, 0, REASON_MSG_DSRECORD_LIMIT);
     }
     try {
-        if (!code && testObjectHasState(action.getDB(), keysetId, FLAG_serverUpdateProhibited)) {
+        if (!code && testObjectHasState(action, keysetId, FLAG_serverUpdateProhibited)) {
             LOG(WARNING_LOG, "update of object %s is prohibited", handle);
             code = COMMAND_STATUS_PROHIBITS_OPERATION;
         }
