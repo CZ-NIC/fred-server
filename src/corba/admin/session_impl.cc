@@ -1501,6 +1501,11 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar) {
   update_registrar->clearACLList();
   for (unsigned i = 0; i < _registrar.access.length(); i++) {
     Register::Registrar::ACL *registrar_acl = update_registrar->newACL();
+
+    LOGGER(PACKAGE).debug(boost::format
+            ("ccReg_Session_i::updateRegistrar : i: %1% setRegistrarId: %2%")
+                % i % update_registrar->getId());
+    registrar_acl->setRegistrarId(update_registrar->getId());//set id
     registrar_acl->setCertificateMD5((const char *)_registrar.access[i].md5Cert);
     registrar_acl->setPassword((const char *)_registrar.access[i].password);
   }
