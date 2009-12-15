@@ -25,9 +25,9 @@ DEFINE_BASIC_FIELD(ModelBankStatementItem, Database::DateTime, crTime, m_crTime,
 
 ModelBankStatementItem::field_list ModelBankStatementItem::fields = list_of<ModelBankStatementItem::field_list::value_type>
     (&ModelBankStatementItem::id)
-    //(&ModelBankStatementItem::statementId)
+    (&ModelBankStatementItem::statementId)
     (&ModelBankStatementItem::accountNumber)
-    //(&ModelBankStatementItem::bankCodeId)
+    (&ModelBankStatementItem::bankCodeId)
     (&ModelBankStatementItem::code)
     (&ModelBankStatementItem::type)
     (&ModelBankStatementItem::konstSym)
@@ -37,7 +37,7 @@ ModelBankStatementItem::field_list ModelBankStatementItem::fields = list_of<Mode
     (&ModelBankStatementItem::accountEvid)
     (&ModelBankStatementItem::accountDate)
     (&ModelBankStatementItem::accountMemo)
-    //(&ModelBankStatementItem::invoiceId)
+    (&ModelBankStatementItem::invoiceId)
     (&ModelBankStatementItem::accountName)
     (&ModelBankStatementItem::crTime)
 ;
