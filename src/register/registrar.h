@@ -72,6 +72,7 @@ public:
   virtual const std::string& getPassword() const = 0;
   /// Set password for EPP login command
   virtual void setPassword(const std::string& newPassword) = 0;
+  virtual void setRegistrarId(const TID &_registrar_id) = 0;
 };
 
 /// Registrar's active zone structure

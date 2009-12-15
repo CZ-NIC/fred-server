@@ -9,7 +9,7 @@ DEFINE_BASIC_FIELD(ModelRegistrarAcl, std::string, cert, cert_, table_name, "cer
 DEFINE_BASIC_FIELD(ModelRegistrarAcl, std::string, password, password_, table_name, "password", .setNotNull())
 
 ModelRegistrarAcl::field_list ModelRegistrarAcl::fields = list_of<ModelRegistrarAcl::field_list::value_type>(&ModelRegistrarAcl::id)
-                                                                                             //(&ModelRegistrarAcl::registrar_id)
+                                                                                             (&ModelRegistrarAcl::registrar_id)
                                                                                              (&ModelRegistrarAcl::cert)
                                                                                              (&ModelRegistrarAcl::password);
 

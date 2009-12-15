@@ -52,7 +52,7 @@ public:
   ACLImpl()
 	  : ModelRegistrarAcl()
   {
-	  ModelRegistrarAcl::setId(0);
+	  //ModelRegistrarAcl::setId(0);
   }
   ACLImpl(TID _id,
           const std::string& _certificateMD5,
@@ -101,11 +101,13 @@ public:
   }
   virtual void save() throw (SQL_ERROR)
   {
+      TRACE("[CALL] ACLImpl::save()");
 	try
 	{
 		Database::Connection conn = Database::Manager::acquire();
 		TID id = getId();
-
+		LOGGER(PACKAGE).debug(boost::format("ACLImpl::save id: %1% RegistrarId: %2%")
+		% id % getRegistarId());
 		if (id)
 			ModelRegistrarAcl::update();
 		else
@@ -632,12 +634,17 @@ public:
 
   virtual void save() throw (SQL_ERROR)
   {
+    TRACE("[CALL] RegistrarImpl::save()");
       // save registrar data
 	try
 	{
 		Database::Connection conn = Database::Manager::acquire();
 		Database::Transaction tx(conn);
 		TID id = getId();
+	    LOGGER(PACKAGE).debug(boost::format
+	            ("RegistrarImpl::save : id: %1%")
+	                % id);
+
 		if (id)
 			ModelRegistrar::update();
 		else
