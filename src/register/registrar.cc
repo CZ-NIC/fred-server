@@ -648,7 +648,16 @@ public:
 		if (id)
 			ModelRegistrar::update();
 		else
+		{
 			ModelRegistrar::insert();
+			ModelRegistrar::reload();
+			id = getId();
+	        LOGGER(PACKAGE).debug(boost::format
+	                ("RegistrarImpl::save after reload: id: %1%")
+	                    % id);
+		}
+
+
     	std::ostringstream sql;
 		sql << "DELETE FROM registraracl WHERE registrarid=" << id;
 		conn.exec(sql.str());

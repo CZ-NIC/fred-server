@@ -441,6 +441,7 @@ public:
           const TID& id,
           const Database::Date &fromDate,
           const Database::Date &toDate) throw (SQL_ERROR) = 0;
+
   ///list factory
   typedef std::auto_ptr<RegistrarList> RegistrarListPtr;
   virtual RegistrarListPtr createList() =0;
