@@ -1452,18 +1452,21 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Register::Re
   return detail;
 }
 
-void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar) {
+void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
+{
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
   Register::Registrar::Manager::RegistrarListPtr tmp_registrar_list =
       m_register_manager->getRegistrarManager()->createList();
   Register::Registrar::Registrar *update_registrar; // registrar to be created or updated
-  if (!_registrar.id) {
+  if (!_registrar.id)
+  {
     LOGGER(PACKAGE).debug("no registrar id specified; creating new registrar...");
     update_registrar = tmp_registrar_list->create();
   }
-  else {
+  else
+  {
     LOGGER(PACKAGE).debug(boost::format("registrar '%1%' id=%2% specified; updating registrar...")
       % _registrar.handle % _registrar.id);
     Database::Filters::Union uf;
@@ -1498,17 +1501,19 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar) {
   update_registrar->setEmail((const char *)_registrar.email);
   update_registrar->setSystem((bool)_registrar.hidden);
 
+
   update_registrar->clearACLList();
-  for (unsigned i = 0; i < _registrar.access.length(); i++) {
+  for (unsigned i = 0; i < _registrar.access.length(); i++)
+  {
     Register::Registrar::ACL *registrar_acl = update_registrar->newACL();
 
     LOGGER(PACKAGE).debug(boost::format
             ("ccReg_Session_i::updateRegistrar : i: %1% setRegistrarId: %2%")
                 % i % update_registrar->getId());
-    registrar_acl->setRegistrarId(update_registrar->getId());//set id
+    if (_registrar.id)  registrar_acl->setRegistrarId(update_registrar->getId());//set id
     registrar_acl->setCertificateMD5((const char *)_registrar.access[i].md5Cert);
     registrar_acl->setPassword((const char *)_registrar.access[i].password);
-  }
+  }//for i
   try {
     update_registrar->save();
   } catch (...) {
