@@ -1514,6 +1514,23 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
     registrar_acl->setCertificateMD5((const char *)_registrar.access[i].md5Cert);
     registrar_acl->setPassword((const char *)_registrar.access[i].password);
   }//for i
+
+  update_registrar->clearAZoneList();
+  for (unsigned i = 0; i < _registrar.zones.length();i++)
+    {
+      Register::Registrar::AZone *registrar_azone = update_registrar->newAZone();
+
+      LOGGER(PACKAGE).debug(boost::format
+              ("ccReg_Session_i::updateRegistrar azone : i: %1% ")
+                  % i );
+
+      registrar_azone->id = _registrar.zones[i].id;
+      registrar_azone->name = _registrar.zones[i].name;
+      registrar_azone->fromdate.from_string(std::string(_registrar.zones[i].fromDate));
+      registrar_azone->todate.from_string(std::string( _registrar.zones[i].toDate));
+
+    }//for i
+
   try {
     update_registrar->save();
   } catch (...) {
