@@ -136,10 +136,10 @@ class RegistrarImpl : public Register::CommonObjectImplNew,
   typedef std::map<Database::ID, unsigned long> ZoneCreditMap;
   ZoneCreditMap zone_credit_map;
 
-  typedef  boost::shared_ptr<AZone> AZonePtr;
-  typedef std::vector<AZonePtr> AZoneList;
-  typedef AZoneList::iterator AZoneListIter;
-  AZoneList actzones;
+  typedef  boost::shared_ptr<ZoneAccess> ZoneAccessPtr;
+  typedef std::vector<ZoneAccessPtr> ZoneAccessList;
+  typedef ZoneAccessList::iterator ZoneAccessListIter;
+  ZoneAccessList actzones;
 
 public:
   RegistrarImpl()
@@ -383,7 +383,7 @@ public:
     return acl.size();
   }
   
-  virtual unsigned getAZoneSize() const {
+  virtual unsigned getZoneAccessSize() const {
       return actzones.size();
     }
 
@@ -391,7 +391,7 @@ public:
   {
     return idx < acl.size() ? acl[idx].get() : NULL;
   }
-  virtual AZone* getAZone(unsigned idx) const
+  virtual ZoneAccess* getZoneAccess(unsigned idx) const
   {
     return idx < actzones.size() ? actzones[idx].get() : NULL;
   }
@@ -403,11 +403,11 @@ public:
     return newACL.get();
   }
 
-  virtual AZone* newAZone()
+  virtual ZoneAccess* newZoneAccess()
   {
-    boost::shared_ptr<AZone> newAZone ( new AZone());
-    actzones.push_back(newAZone);
-    return newAZone.get();
+    boost::shared_ptr<ZoneAccess> newZoneAccess ( new ZoneAccess());
+    actzones.push_back(newZoneAccess);
+    return newZoneAccess.get();
   }
 
   virtual void deleteACL(unsigned idx)
@@ -417,7 +417,7 @@ public:
     }
   }
 
-  virtual void deleteAZone(unsigned idx)
+  virtual void deleteZoneAccess(unsigned idx)
   {
     if (idx < actzones.size()) {
         actzones.erase(actzones.begin()+idx);
@@ -430,7 +430,7 @@ public:
     acl.clear();
   }
 
-  virtual void clearAZoneList()
+  virtual void clearZoneAccessList()
   {
       actzones.clear();
   }
@@ -698,13 +698,13 @@ public:
     acl.push_back(ACLImplPtr(new ACLImpl(_id,certificateMD5,password)));
   }
 
-  void putAZone(TID _id
+  void putZoneAccess(TID _id
           , std::string _name
           , unsigned long _credit
           , Database::Date _fromdate
           , Database::Date _todate)
   {
-      actzones.push_back(AZonePtr(new AZone(_id,_name,_credit,_fromdate,_todate)));
+      actzones.push_back(ZoneAccessPtr(new ZoneAccess(_id,_name,_credit,_fromdate,_todate)));
   }
 
   bool hasId(TID _id) const
@@ -1101,7 +1101,7 @@ public:
         RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
         if (registrar_ptr)
         {
-          registrar_ptr->putAZone(azone_id, zone_name, credit, fromdate, todate);
+          registrar_ptr->putZoneAccess(azone_id, zone_name, credit, fromdate, todate);
         }
 
       }//for r_azone
