@@ -576,7 +576,7 @@ public:
         if (count > 1 )
         {
             LOGGER(PACKAGE).error("isInZone by id: bad data in table registrarinvoice");
-            throw SQL_ERROR();
+            ret = true;
         }
 
         if (count == 1 ) ret = true;
@@ -616,7 +616,7 @@ public:
         if (count > 1 )
         {
             LOGGER(PACKAGE).error("isInZone by fqdn: bad data in table registrarinvoice");
-            throw SQL_ERROR();
+            ret = true;
         }
 
         if (count == 1 ) ret = true;
@@ -2028,7 +2028,7 @@ void Manager::RegistrarZoneAccess::reload()
                 " where fromdate <= CURRENT_DATE"
                 " and (todate >= CURRENT_DATE or todate is null)"
                 " and ri.registrarid = r.id and ri.zone = z.id) as isinzone"
-                " from registrar as r , zone as z) as rii where isinzone = 1";
+                " from registrar as r , zone as z) as rii where isinzone > 0";
         Database::Result res = conn.exec(sql.str());
         max_registrar_id = max_id(RegistrarCol, res);
         max_zone_id = max_id(ZoneCol, res);
