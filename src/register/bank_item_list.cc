@@ -140,6 +140,9 @@ void
 ItemList::sort(ItemMemberType member, bool asc)
 {
     switch (member) {
+        case IMT_ID:
+            stable_sort(m_data.begin(), m_data.end(), CompareId(asc));
+            break;
         case IMT_STATEMENT_ID:
             stable_sort(m_data.begin(), m_data.end(), CompareStatementId(asc));
             break;

@@ -25,22 +25,23 @@ Registry::Table::ColumnHeaders *
 ccReg_StatementItems_i::getColumnHeaders()
 {
     Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
-    ch->length(15);
-    COLHEAD(ch, 0, "Statement Head", CT_OID);
-    COLHEAD(ch, 1, "Account Number", CT_OTHER);
-    COLHEAD(ch, 2, "Bank Code", CT_OTHER);
-    COLHEAD(ch, 3, "Code", CT_OTHER);
-    COLHEAD(ch, 4, "Type", CT_OTHER);
-    COLHEAD(ch, 5, "Const. Symbol", CT_OTHER);
-    COLHEAD(ch, 6, "Var. Symbol", CT_OTHER);
-    COLHEAD(ch, 7, "Spec. Symbol", CT_OTHER);
-    COLHEAD(ch, 8, "Price", CT_OTHER);
-    COLHEAD(ch, 9, "Account Evid", CT_OTHER);
-    COLHEAD(ch, 10, "Date", CT_OTHER);
-    COLHEAD(ch, 11, "Memo", CT_OTHER);
-    COLHEAD(ch, 12, "Invoice", CT_OID);
-    COLHEAD(ch, 13, "Account Name", CT_OID);
-    COLHEAD(ch, 14, "Create Time", CT_OID);
+    ch->length(16);
+    COLHEAD(ch, 0, "Id", CT_OID);
+    COLHEAD(ch, 1, "Statement Head", CT_OID);
+    COLHEAD(ch, 2, "Account Number", CT_OTHER);
+    COLHEAD(ch, 3, "Bank Code", CT_OTHER);
+    COLHEAD(ch, 4, "Code", CT_OTHER);
+    COLHEAD(ch, 5, "Type", CT_OTHER);
+    COLHEAD(ch, 6, "Const. Symbol", CT_OTHER);
+    COLHEAD(ch, 7, "Var. Symbol", CT_OTHER);
+    COLHEAD(ch, 8, "Spec. Symbol", CT_OTHER);
+    COLHEAD(ch, 9, "Price", CT_OTHER);
+    COLHEAD(ch, 10, "Account Evid", CT_OTHER);
+    COLHEAD(ch, 11, "Date", CT_OTHER);
+    COLHEAD(ch, 12, "Memo", CT_OTHER);
+    COLHEAD(ch, 13, "Invoice", CT_OID);
+    COLHEAD(ch, 14, "Account Name", CT_OTHER);
+    COLHEAD(ch, 15, "Create Time", CT_OTHER);
 
     /*
     COLHEAD(ch, 9, "Date", CT_OTHER);
@@ -63,22 +64,28 @@ ccReg_StatementItems_i::getRow(CORBA::UShort row)
     }
     Registry::TableRow *tr = new Registry::TableRow;
 
-    tr->length(15);
-    (*tr)[0] <<= C_STR(item->getStatementId());
-    (*tr)[1] <<= C_STR(item->getAccountNumber());
-    (*tr)[2] <<= C_STR(item->getBankCodeId());
-    (*tr)[3] <<= C_STR(item->getCode());
-    (*tr)[4] <<= C_STR(item->getType());
-    (*tr)[5] <<= C_STR(item->getKonstSym());
-    (*tr)[6] <<= C_STR(item->getVarSymb());
-    (*tr)[7] <<= C_STR(item->getSpecSymb());
-    (*tr)[8] <<= formatMoney(item->getPrice()).c_str();
-    (*tr)[9] <<= C_STR(item->getAccountEvid());
-    (*tr)[10] <<= C_STR(item->getAccountDate());
-    (*tr)[11] <<= C_STR(item->getAccountMemo());
-    (*tr)[12] <<= C_STR(item->getInvoiceId());
-    (*tr)[13] <<= C_STR(item->getAccountName());
-    (*tr)[14] <<= C_STR(item->getCrTime());
+    tr->length(16);
+
+    MAKE_OID(oid_id, item->getId(), "", FT_STATEMENTITEM);
+    MAKE_OID(oid_statement_id, item->getStatementId(), "", FT_STATEMENTHEAD);
+    MAKE_OID(oid_invoice_id, item->getInvoiceId(), "", FT_INVOICE);
+
+    (*tr)[0] <<= oid_id;
+    (*tr)[1] <<= oid_statement_id;
+    (*tr)[2] <<= C_STR(item->getAccountNumber());
+    (*tr)[3] <<= C_STR(item->getBankCodeId());
+    (*tr)[4] <<= C_STR(item->getCode());
+    (*tr)[5] <<= C_STR(item->getType());
+    (*tr)[6] <<= C_STR(item->getKonstSym());
+    (*tr)[7] <<= C_STR(item->getVarSymb());
+    (*tr)[8] <<= C_STR(item->getSpecSymb());
+    (*tr)[9] <<= formatMoney(item->getPrice()).c_str();
+    (*tr)[10] <<= C_STR(item->getAccountEvid());
+    (*tr)[11] <<= C_STR(item->getAccountDate());
+    (*tr)[12] <<= C_STR(item->getAccountMemo());
+    (*tr)[13] <<= oid_invoice_id;
+    (*tr)[14] <<= C_STR(item->getAccountName());
+    (*tr)[15] <<= C_STR(item->getCrTime());
 
     return tr;
 }
@@ -95,45 +102,48 @@ ccReg_StatementItems_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
 
     switch (column) {
         case 0:
-            m_statementItemList->sort(Register::Banking::IMT_STATEMENT_ID, dir);
+            m_statementItemList->sort(Register::Banking::IMT_ID, dir);
             break;
         case 1:
-            m_statementItemList->sort(Register::Banking::IMT_ACCOUNT_NUMBER, dir);
+            m_statementItemList->sort(Register::Banking::IMT_STATEMENT_ID, dir);
             break;
         case 2:
-            m_statementItemList->sort(Register::Banking::IMT_BANK_CODE, dir);
+            m_statementItemList->sort(Register::Banking::IMT_ACCOUNT_NUMBER, dir);
             break;
         case 3:
-            m_statementItemList->sort(Register::Banking::IMT_TYPE, dir);
+            m_statementItemList->sort(Register::Banking::IMT_BANK_CODE, dir);
             break;
         case 4:
-            m_statementItemList->sort(Register::Banking::IMT_CODE, dir);
+            m_statementItemList->sort(Register::Banking::IMT_TYPE, dir);
             break;
         case 5:
-            m_statementItemList->sort(Register::Banking::IMT_CONSTSYMB, dir);
+            m_statementItemList->sort(Register::Banking::IMT_CODE, dir);
             break;
         case 6:
-            m_statementItemList->sort(Register::Banking::IMT_VARSYMB, dir);
+            m_statementItemList->sort(Register::Banking::IMT_CONSTSYMB, dir);
             break;
         case 7:
-            m_statementItemList->sort(Register::Banking::IMT_SPECSYMB, dir);
+            m_statementItemList->sort(Register::Banking::IMT_VARSYMB, dir);
             break;
         case 8:
-            m_statementItemList->sort(Register::Banking::IMT_PRICE, dir);
+            m_statementItemList->sort(Register::Banking::IMT_SPECSYMB, dir);
             break;
         case 9:
-            m_statementItemList->sort(Register::Banking::IMT_ACCOUNT_EVID, dir);
+            m_statementItemList->sort(Register::Banking::IMT_PRICE, dir);
             break;
         case 10:
-            m_statementItemList->sort(Register::Banking::IMT_ACCOUNT_DATE, dir);
+            m_statementItemList->sort(Register::Banking::IMT_ACCOUNT_EVID, dir);
             break;
         case 11:
+            m_statementItemList->sort(Register::Banking::IMT_ACCOUNT_DATE, dir);
+            break;
+        case 12:
             m_statementItemList->sort(Register::Banking::IMT_ACCOUNT_MEMO, dir);
             break;
-        case 13:
+        case 14:
             m_statementItemList->sort(Register::Banking::IMT_ACCOUNT_NAME, dir);
             break;
-        case 14:
+        case 15:
             m_statementItemList->sort(Register::Banking::IMT_CREATE_TIME, dir);
             break;
     }
@@ -170,7 +180,7 @@ ccReg_StatementItems_i::numRows()
 CORBA::Short
 ccReg_StatementItems_i::numColumns()
 {
-    return 12;
+    return 16;
 }
 
 void

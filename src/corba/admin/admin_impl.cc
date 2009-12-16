@@ -49,7 +49,7 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
                              NameService *_ns,
                              Config::Conf& _cfg,
                              bool _session_garbage) throw (DB_CONNECT_FAILED) :
-  m_connection_string(_database), ns(_ns), cfg(_cfg) {
+  m_connection_string(_database), ns(_ns), cfg(_cfg), bankingInvoicing() {
 
   /* HACK: to recognize ADIFD and PIFD until separation of objects */
   if (_session_garbage) {
@@ -222,7 +222,7 @@ char* ccReg_Admin_i::createSession(const char* username)
   std::string session_id = "sessid#" + RandStringGenerator::generate(5) + "-" + username;
 
   
-  ccReg_Session_i *session = new ccReg_Session_i(session_id, m_connection_string, ns, cfg, user_info);
+  ccReg_Session_i *session = new ccReg_Session_i(session_id, m_connection_string, ns, cfg, bankingInvoicing._this(), user_info);
   m_session_list[session_id] = session; 
 
 #ifdef ADIF

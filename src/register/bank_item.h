@@ -21,6 +21,7 @@ public:
     bool save();
 };
 
+COMPARE_CLASS_IMPL_NEW(StatementItem, Id);
 COMPARE_CLASS_IMPL_NEW(StatementItem, StatementId);
 COMPARE_CLASS_IMPL_NEW(StatementItem, AccountNumber);
 COMPARE_CLASS_IMPL_NEW(StatementItem, BankCodeId);

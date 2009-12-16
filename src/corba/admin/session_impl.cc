@@ -19,8 +19,9 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  const std::string& database,
                                  NameService *ns,
                                  Config::Conf& cfg,
+                                 ccReg::BankingInvoicing_ptr _banking,
                                  ccReg_User_i* _user) :
-  session_id_(_session_id), cfg_(cfg), m_user(_user), m_mailer_manager(ns), m_last_activity(second_clock::local_time()) {
+  session_id_(_session_id), cfg_(cfg), m_user(_user), m_mailer_manager(ns), m_banking_invoicing(_banking), m_last_activity(second_clock::local_time()) {
 
   base_context_ = Logging::Context::get() + "/" + session_id_;
   Logging::Context ctx(session_id_);
@@ -239,6 +240,10 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
 
 const std::string& ccReg_Session_i::getId() const {
   return session_id_;
+}
+
+ccReg::BankingInvoicing_ptr ccReg_Session_i::getBankingInvoicing() {
+    return m_banking_invoicing;
 }
 
 void ccReg_Session_i::updateActivity() {

@@ -29,7 +29,7 @@ ccReg_BankingInvoicing_i::archiveInvoices(
 }
 
 bool
-ccReg_BankingInvoicing_i::createInvoiceForPayment(
+ccReg_BankingInvoicing_i::pairPaymentRegistrarId(
         CORBA::ULongLong paymentId,
         CORBA::ULongLong registrarId)
 {
@@ -37,6 +37,16 @@ ccReg_BankingInvoicing_i::createInvoiceForPayment(
         invMan(Register::Invoicing::Manager::create());
     return invMan->manualCreateInvoice(paymentId, registrarId);
 }
+
+bool ccReg_BankingInvoicing_i::pairPaymentRegistrarHandle(
+        CORBA::ULongLong paymentId,
+        const char *registrarHandle)
+{
+    std::auto_ptr<Register::Invoicing::Manager> 
+        invMan(Register::Invoicing::Manager::create());
+    return invMan->manualCreateInvoice(paymentId, registrarHandle);
+}
+
 bool
 ccReg_BankingInvoicing_i::addPrefix(
         const char *zoneName,

@@ -27,9 +27,12 @@ public:
             const char *bankCode);
     void archiveInvoices(
             bool send);
-    bool createInvoiceForPayment(
+    bool pairPaymentRegistrarId(
             CORBA::ULongLong paymentId,
             CORBA::ULongLong registrarId);
+    bool pairPaymentRegistrarHandle( 
+            CORBA::ULongLong paymentId,
+            const char *registrarHandle);
     bool addPrefix(
             const char *zoneName,
             CORBA::Long type,

@@ -50,6 +50,8 @@ private:
   std::string session_id_;
   Config::Conf& cfg_;
 
+  ccReg::BankingInvoicing_ptr m_banking_invoicing;
+
   ccReg_Zones_i* m_zones;
   ccReg_Registrars_i* m_registrars;
   ccReg_EPPActions_i* m_eppactions;
@@ -140,10 +142,12 @@ public:
                   const std::string& database,
                   NameService *ns,
                   Config::Conf& cfg,
+                  ccReg::BankingInvoicing_ptr _banking,
                   ccReg_User_i* _user);
   ~ccReg_Session_i();
 
   const std::string& getId() const;
+  ccReg::BankingInvoicing_ptr getBankingInvoicing();
 
   void updateActivity();
   bool isTimeouted() const;

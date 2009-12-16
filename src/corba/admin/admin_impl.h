@@ -17,6 +17,7 @@
 #include "old_utils/dbsql.h"
 #include "old_utils/conf.h"
 #include "model/model_filters.h"
+#include "bankinginvoicing_impl.h"
 
 #include "conf/manager.h"
 
@@ -28,6 +29,7 @@ private:
   std::string m_connection_string;
   NameService *ns;
   Config::Conf& cfg;
+  ccReg_BankingInvoicing_i bankingInvoicing;
   DB db;
   std::auto_ptr<Register::Manager> register_manager_;
 

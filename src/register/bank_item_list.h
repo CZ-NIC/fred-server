@@ -9,6 +9,7 @@ namespace Register {
 namespace Banking {
 
 enum ItemMemberType {
+    IMT_ID,
     IMT_STATEMENT_ID,
     IMT_ACCOUNT_NUMBER,
     IMT_BANK_CODE,
