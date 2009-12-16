@@ -72,19 +72,25 @@ public:
 
     void insert()
     {
+        Database::Connection c = Database::Manager::acquire();
+        Database::Transaction tx(c);
         Model::Base::insert(this);
+        tx.commit();
     }
     void update()
     {
+        Database::Connection c = Database::Manager::acquire();
+        Database::Transaction tx(c);
         Model::Base::update(this);
+        tx.commit();
     }
 
     void reload()
     {
         Database::Connection c = Database::Manager::acquire();
-        Database::Transaction transaction(c);
+        Database::Transaction tx(c);
         Model::Base::reload(this);
-        transaction.commit();
+        tx.commit();
     }
 
 protected:

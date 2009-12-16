@@ -22,9 +22,9 @@ public:
     {
         return m_zone.get();
     }
-    const unsigned long long &getZoneId() const
+    void setZone(const unsigned long long &zone)
     {
-        return m_zoneId.get();
+        m_zone = zone;
     }
     /*
     ModelZone *getZone()
@@ -63,14 +63,6 @@ public:
     const std::string &getNsFqdn() const
     {
         return m_nsFqdn.get();
-    }
-    void setZone(const unsigned long long &zone)
-    {
-        m_zone = zone;
-    }
-    void setZoneId(const unsigned long long &zoneId)
-    {
-        m_zoneId = zoneId;
     }
     /*
     void setZone(ModelZone *foreign_value)
@@ -115,26 +107,29 @@ public:
 
     void insert()
     {
-    	this->setZone(this->getId());
         Database::Connection conn = Database::Manager::acquire();
-        //Database::Transaction tx(conn);
+        Database::Transaction tx(conn);
+        ModelZone::insert();
+        this->setZone(this->getId());
         Model::Base::insert(this);
-        //tx.commit();
+        tx.commit();
     }
 
     void update()
     {
-    	this->setZone(this->getId());
         Database::Connection conn = Database::Manager::acquire();
-        //Database::Transaction tx(conn);
+        Database::Transaction tx(conn);
+        ModelZone::update();
+        this->setZone(this->getId());
         Model::Base::update(this);
-        //tx.commit();
+        tx.commit();
     }
 
     void reload()
     {
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
+        ModelZone::reload();
         Model::Base::reload(this);
         tx.commit();
     }
@@ -157,7 +152,6 @@ public:
 
 protected:
     Field::Field<unsigned long long> m_zone;
-    Field::Field<unsigned long long> m_zoneId;
     Field::Field<int> m_ttl;
     Field::Field<std::string> m_hostmaster;
     Field::Field<int> m_serial;
@@ -172,7 +166,6 @@ protected:
 
 public:
     static Model::Field::PrimaryKey<ModelZoneSoa, unsigned long long> zone;
-    static Model::Field::Basic<ModelZoneSoa, unsigned long long> zoneId;
     static Model::Field::Basic<ModelZoneSoa, int> ttl;
     static Model::Field::Basic<ModelZoneSoa, std::string> hostmaster;
     static Model::Field::Basic<ModelZoneSoa, int> serial;

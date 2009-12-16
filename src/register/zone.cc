@@ -983,25 +983,22 @@ namespace Register
 
 			Database::Transaction tx(conn);
 
-			ModelZone zn;
+			ModelZoneSoa zn;
 			zn.setFqdn(fqdn);
 			zn.setExPeriodMax(ex_period_max);
 			zn.setExPeriodMin(ex_period_min);
 			zn.setValPeriod(enumZone ? 6 : 0);
 			zn.setDotsMax(static_cast<int>(dots));
 			zn.setEnumZone(enumZone);
+			zn.setTtl(ttl);
+			// zn.setSerial() is null
+			zn.setHostmaster(hostmaster);
+			zn.setRefresh(refresh);
+			zn.setUpdateRetr(update_retr);
+			zn.setExpiry(expiry);
+			zn.setMinimum(minimum);
+			zn.setNsFqdn(ns_fqdn);
 			zn.insert();
-
-			ModelZoneSoa zsa(zn);
-			zsa.setTtl(ttl);
-			zsa.setHostmaster(hostmaster);
-			//zsa.setSerial() is null
-			zsa.setRefresh(refresh);
-			zsa.setUpdateRetr(update_retr);
-			zsa.setExpiry(expiry);
-			zsa.setMinimum(minimum);
-			zsa.setNsFqdn(ns_fqdn);
-			zsa.insert();
 
 			tx.commit();
 
@@ -1210,7 +1207,7 @@ namespace Register
 
 			Database::Transaction tx(conn);
 
-			ModelZone zn;
+			ModelZoneSoa zn;
 			zn.setId(id);
 			zn.setFqdn(fqdn);
 			zn.setExPeriodMax(ex_period_max);
@@ -1218,18 +1215,15 @@ namespace Register
 			zn.setValPeriod(enumZone ? 6 : 0);
 			zn.setDotsMax(static_cast<int>(dots));
 			zn.setEnumZone(enumZone);
+			zn.setTtl(ttl);
+			zn.setHostmaster(hostmaster);
+			zn.setRefresh(refresh);
+			zn.setUpdateRetr(update_retr);
+			zn.setExpiry(expiry);
+			zn.setMinimum(minimum);
+			zn.setNsFqdn(ns_fqdn);
+			//zn.setSerial() is null
 			zn.update();
-
-			ModelZoneSoa zsa(zn);
-			zsa.setTtl(ttl);
-			zsa.setHostmaster(hostmaster);
-			//zsa.setSerial() is null
-			zsa.setRefresh(refresh);
-			zsa.setUpdateRetr(update_retr);
-			zsa.setExpiry(expiry);
-			zsa.setMinimum(minimum);
-			zsa.setNsFqdn(ns_fqdn);
-			zsa.update();
 
 			tx.commit();
 
