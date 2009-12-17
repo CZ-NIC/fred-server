@@ -138,6 +138,15 @@ Value<std::string>& RegistrarImpl::addUrl() {
 }
 
 Value<std::string>& RegistrarImpl::addZoneFqdn() {
+    joinRegistrarTable();
+    this->active = true;
+
+    addJoin(new Join(
+      Column("id", joinTable("registrar")),
+      SQL_OP_EQ,
+      Column("registrarid", joinTable("registrarinvoice"))
+    ));
+
     addJoin(new Join(
       Column("zone", joinTable("registrarinvoice")),
       SQL_OP_EQ,
