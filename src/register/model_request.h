@@ -23,6 +23,9 @@ public:
     const std::string &getSourceIp() const {
         return m_sourceIp.get();
     }
+    const std::string &getUserName() const {
+        return m_userName.get();
+    }
     const unsigned long long &getServiceId() const {
         return m_serviceId.get();
     }
@@ -62,6 +65,9 @@ public:
     void setSourceIp(const std::string &sourceIp) {
         m_sourceIp = sourceIp;
     }
+    void setUserName(const std::string &userName) {
+        m_userName = userName;
+    }
     void setServiceId(const unsigned long long &serviceId) {
         m_serviceId = serviceId;
     }
@@ -81,6 +87,7 @@ public:
     void setSessionId(const unsigned long long &sessionId) {
         m_sessionId = sessionId;
     }
+    
     /*
     void setSession(ModelSession *foreign_value) {
         session.setRelated(this, foreign_value);
@@ -131,6 +138,7 @@ protected:
     Field::Field<Database::DateTime> m_timeBegin;
     Field::Field<Database::DateTime> m_timeEnd;
     Field::Field<std::string> m_sourceIp;
+    Field::Field<std::string> m_userName;
     Field::Field<unsigned long long> m_serviceId;
     Field::Field<unsigned long long> m_actionTypeId;
     Field::Field<unsigned long long> m_sessionId;
@@ -145,6 +153,7 @@ public:
     static Model::Field::Basic<ModelRequest, Database::DateTime> timeBegin;
     static Model::Field::Basic<ModelRequest, Database::DateTime> timeEnd;
     static Model::Field::Basic<ModelRequest, std::string> sourceIp;
+    static Model::Field::Basic<ModelRequest, std::string> userName;
     static Model::Field::Basic<ModelRequest, unsigned long long> serviceId;
     static Model::Field::Basic<ModelRequest, unsigned long long> actionTypeId;
     static Model::Field::Basic<ModelRequest, unsigned long long> sessionId;

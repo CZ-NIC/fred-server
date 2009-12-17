@@ -49,6 +49,14 @@ Value<std::string>& RequestImpl::addSourceIp()
   return *tmp;
 }
 
+Value<std::string>& RequestImpl::addUserName()
+{  
+  Value<std::string> *tmp = new Value<std::string>(Column("user_name", joinRequestTable()));
+  tmp->setName("UserName");
+  add(tmp);
+  return *tmp;
+}
+
 Value<bool>& RequestImpl::addIsMonitoring()
 {
   Value<bool> *tmp = new Value<bool>(Column("is_monitoring", joinRequestTable()));
@@ -64,6 +72,7 @@ RequestServiceType& RequestImpl::addService()
   add(tmp);
   return *tmp;
 }
+
 
 RequestActionType& RequestImpl::addActionType()
 {

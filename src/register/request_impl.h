@@ -60,6 +60,7 @@ private:
   Database::ID find_property_name_id(const std::string &name, Connection &conn);
   inline Database::ID find_last_property_value_id(Connection &conn);
   inline Database::ID find_last_request_id(Connection &conn);
+  inline std::string getSessionUserName(Connection &conn, Database::ID session_id);
 
 public:
   static const std::string LAST_PROPERTY_VALUE_ID;

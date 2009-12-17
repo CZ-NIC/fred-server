@@ -40,13 +40,14 @@ private:
   std::string serv_type;
   std::string action_type;
   Database::ID session_id;
+  std::string user_name;
   bool is_monitoring;
   std::string raw_request;
   std::string raw_response;
   std::auto_ptr<RequestProperties> props;
 
 public:
-  RequestImpl(Database::ID &_id, Database::DateTime &_time_begin, Database::DateTime &_time_end, std::string &_serv_type, std::string &_source_ip,  std::string &_action_type, Database::ID &_session_id, bool &_is_monitoring, std::string & _raw_request, std::string & _raw_response, std::auto_ptr<RequestProperties>  _props) :
+  RequestImpl(Database::ID &_id, Database::DateTime &_time_begin, Database::DateTime &_time_end, std::string &_serv_type, std::string &_source_ip,  std::string &_action_type, Database::ID &_session_id, std::string &_user_name, bool &_is_monitoring, std::string & _raw_request, std::string & _raw_response, std::auto_ptr<RequestProperties>  _props) :
 	CommonObjectImpl(_id),
 	time_begin(_time_begin),
 	time_end(_time_end),
@@ -54,6 +55,7 @@ public:
 	serv_type(_serv_type),
 	action_type(_action_type),
 	session_id(_session_id),
+        user_name(_user_name),
 	is_monitoring(_is_monitoring),
 	raw_request(_raw_request),
 	raw_response(_raw_response),
@@ -71,6 +73,9 @@ public:
   }
   virtual const std::string& getSourceIp() const {
 	return source_ip;
+  }
+  virtual const std::string& getUserName() const {
+        return user_name;
   }
   virtual const std::string& getActionType() const {
 	return action_type;
@@ -98,6 +103,7 @@ COMPARE_CLASS_IMPL(RequestImpl, SourceIp)
 COMPARE_CLASS_IMPL(RequestImpl, ServiceType)
 COMPARE_CLASS_IMPL(RequestImpl, ActionType)
 COMPARE_CLASS_IMPL(RequestImpl, SessionId)
+COMPARE_CLASS_IMPL(RequestImpl, UserName)
 COMPARE_CLASS_IMPL(RequestImpl, IsMonitoring)
 COMPARE_CLASS_IMPL(RequestImpl, RawRequest);
 COMPARE_CLASS_IMPL(RequestImpl, RawResponse);
@@ -169,12 +175,12 @@ public:
     Database::SelectQuery query;
 
     if(partialLoad) {
-	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.status, t_1.session_id, t_1.is_monitoring";
+	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.status, t_1.session_id, t_1.user_name, t_1.is_monitoring";
 	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id join request_type t_2 on t_2.id=t_1.action_type join service t_3 on t_3.id=t_1.service";
 	    query.order_by() << "t_1.time_begin desc";
     } else {
 // hardcore optimizations have to be done on this statement
-	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.status, t_1.session_id, t_1.is_monitoring, "
+	    query.select() << "tmp.id, t_1.time_begin, t_1.time_end, t_3.name, t_1.source_ip, t_2.status, t_1.session_id, t_1.user_name, t_1.is_monitoring, "
 						" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=tmp.id and is_response=false limit 1) as request, "
 						" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=tmp.id and is_response=true  limit 1) as response ";
 	    query.from() << getTempTableName() << " tmp join request t_1 on tmp.id=t_1.id  join request_type t_2 on t_2.id=t_1.action_type join service t_3 on t_3.id=t_1.service";
@@ -201,6 +207,7 @@ public:
     		std::string 		source_ip  	= *(++col);
                 std::string             action_type     = *(++col);
 		Database::ID		session_id	= *(++col);
+                std::string             user_name       = *(++col);
 		bool			is_monitoring	= *(++col);
 		// fields dependent on partialLoad
 		std::string			request;
@@ -221,6 +228,7 @@ public:
 				source_ip,
 				action_type,
 				session_id,
+                                user_name,
 				is_monitoring,
 				request,
 				response,
@@ -295,7 +303,7 @@ public:
 		    query.from() << "request t_1";
 		    query.order_by() << "t_1.time_begin desc";
 	    } else {
-	    	   query.select() << "t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip, t_1.action_type, t_1.session_id, t_1.is_monitoring, "
+	    	   query.select() << "t_1.time_begin, t_1.time_end, t_1.service, t_1.source_ip, t_1.user_name, t_1.action_type, t_1.session_id, t_1.is_monitoring, "
 	    							" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=t_1.id and is_response=false limit 1) as request, "
 	    							" (select content from request_data where entry_time_begin=t_1.time_begin and entry_id=t_1.id and is_response=true  limit 1) as response ";
 	    		    query.from() << getTempTableName() << "request t_1";
@@ -315,6 +323,7 @@ public:
 				Database::DateTime 	time_end  	= *(++col);
 				std::string             serv_type  = *(++col);
 				std::string 		source_ip  	= *(++col);
+                                std::string             user_name       = *(++col);
 				std::string  		action_type = *(++col);
 				Database::ID		session_id	= *(++col);
 				bool			is_monitoring	= *(++col);
@@ -336,6 +345,7 @@ public:
 							source_ip,
 							action_type,
 							session_id,
+                                                        user_name,
 							is_monitoring,
 							request,
 							response,
@@ -671,9 +681,17 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 	// watch out, these 2 values are passed by reference
 	req.setServiceId(service);
 	req.setActionTypeId(action_type);
-	if (session_id != 0) {
-		req.setSessionId(session_id);
-	}
+
+
+
+        if (session_id != 0){
+                req.setSessionId(session_id);
+                
+                std::string user_name = getSessionUserName(conn, session_id);
+                if(user_name != std::string()) {
+                    req.setUserName(user_name);
+                }
+        }
 
 	try {
 		if(sourceIP != NULL && sourceIP[0] != '\0') {
@@ -715,6 +733,21 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 	}
 
 	return entry_id;
+}
+
+std::string ManagerImpl::getSessionUserName(Connection &conn, Database::ID session_id) 
+{
+	if (session_id != 0) {
+                boost::format query = boost::format("select name from session where id = %1%") % session_id;
+		Result res = conn.exec(query.str());
+
+		if(res.size() == 0) {
+			logger_error(boost::format("Session with ID %1% does not exist.") % session_id);
+		}
+
+                if(res[0][0].isnull()) return std::string(); 
+                else return (std::string)res[0][0];
+	}
 }
 
 // update existing log record with given ID
@@ -800,9 +833,6 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
 	return true;
 }
 
-
-
-
 // close the record with given ID (end time is filled thus no further modification is possible after this call )
 bool ManagerImpl::i_CloseRequest(ID id, const char *content_out, const Register::Logger::RequestProperties &props)
 {
@@ -844,17 +874,21 @@ bool ManagerImpl::i_CloseRequestLogin(ID id, const char *content_out, const Regi
                                 logger_error(boost::format("record with ID %1% already has session_id filled") % id);
                                 return false;
                         }
-
 		}
 
-		query = boost::format("update request set session_id = %1% where id=%2%") % session_id % id;
+                std::string user_name = getSessionUserName(conn, session_id);
+
+                if(user_name != std::string()) {
+                    query = boost::format("update request set session_id = %1%, user_name='%2%' where id=%3%") % session_id % user_name % id;
+                } else {
+                    query = boost::format("update request set session_id = %1% where id=%2%") % session_id % id;
+                }
 		conn.exec(query.str());
 
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
 		return false;
 	}
-
 }
 
 ID ManagerImpl::i_CreateSession(Languages lang, const char *name)

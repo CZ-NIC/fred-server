@@ -144,7 +144,7 @@ StatementItem::fromXML(const XMLnode &item)
     }
     bool retval = save();
     if (retval == false) {
-        LOGGER(PACKAGE).error("Failed to insert Stamenet item");
+        LOGGER(PACKAGE).error("Failed to insert Statement item");
     }
     return retval;
 }
