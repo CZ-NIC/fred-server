@@ -1088,14 +1088,13 @@ namespace Register
 				std::stringstream sql_zone_soa;
 				sql_zone_soa << "SELECT COUNT(*) FROM zone_soa WHERE zone = " << id ;
 				Database::Result res_zone_soa = conn.exec(sql_zone_soa.str());
-				unsigned long soa_count=9999;
 				if (res_zone_soa.size() != 1)
 				{
 					LOGGER(PACKAGE).error("addOnlyZoneSoaRecordByFqdn: an error has occured");
 					throw SQL_ERROR();
 				}
 
-				if ((soa_count = res_zone_soa[0][0]) == 1)
+				if (static_cast<unsigned int>(res_zone_soa[0][0]) == 1)
 				{
 					LOGGER(PACKAGE).notice("Zone already exists.");
 					throw ALREADY_EXISTS();//zone already exists
@@ -1103,10 +1102,11 @@ namespace Register
 
 				Database::Transaction tx(conn);
 
-				ModelZone zn;
-				zn.setId(id);
+				//ModelZone zn;
+				//zn.setId(id);
 
-				ModelZoneSoa zsa(zn);
+				ModelZoneSoa zsa;
+                zsa.setId(id);
 				zsa.setTtl(ttl);
 				zsa.setHostmaster(hostmaster);
 				//zsa.setSerial() is null
@@ -1157,7 +1157,6 @@ namespace Register
 			Database::Result res_zone_soa = conn.exec(sql_zone_soa.str());
 			if (res_zone_soa.size() < 1)
 				throw NOT_FOUND();//zone not found
-			const TID soa_count = res_zone_soa[0][0];
 
 			updateZoneById
 			(
