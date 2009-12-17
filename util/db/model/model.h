@@ -67,6 +67,18 @@ public:
 #ifdef HAVE_LOGGER
     try {
 #endif
+      /* handle inherited models when is needed to insert only child for
+       * existing parent - (test primary key is set and has attribute
+       * default (works only for sequences) */
+      typename _class::field_list list = _object->getFields();
+      Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
+      if (pk && pk->getAttrs().isDefault() && pk->getField(_object).isSet()) {
+#ifdef HAVE_LOGGER
+          LOGGER(PACKAGE).debug("PK is set; data was already inserted (insert aborted)");
+#endif
+          return;
+      }
+
       JobQueue jobs;
       Database::InsertQuery *iquery = new Database::InsertQuery(_class::table_name);
 
