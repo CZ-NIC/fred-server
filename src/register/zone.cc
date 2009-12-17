@@ -925,7 +925,7 @@ namespace Register
             if (domain.size() < 1) return false;
             std::stringstream sql;
             sql << "SELECT COUNT(*) FROM enum_tlds "
-                << "WHERE LOWER(tld)=LOWER('" << *domain.rbegin() << "')";
+                << "WHERE LOWER(tld)=LOWER('" << conn.escape(*domain.rbegin()) << "')";
 
   			Database::Result res = conn.exec(sql.str());
   			if((res.size() > 0)&&(res[0].size() > 0))
@@ -965,7 +965,7 @@ namespace Register
         	Database::Connection conn = Database::Manager::acquire();
 
         	std::stringstream sql;
-			sql << "SELECT COUNT(*) FROM zone WHERE fqdn='" << fqdn << "'";
+			sql << "SELECT COUNT(*) FROM zone WHERE fqdn='" << conn.escape(fqdn) << "'";
 
 			Database::Result res = conn.exec(sql.str());
 
@@ -1022,7 +1022,7 @@ namespace Register
 			Database::Connection conn = Database::Manager::acquire();
 
 			std::stringstream sql;
-			sql << "SELECT COUNT(*) FROM zone WHERE fqdn='" << fqdn << "'";
+			sql << "SELECT COUNT(*) FROM zone WHERE fqdn='" << conn.escape(fqdn) << "'";
 
 			Database::Result res = conn.exec(sql.str());
 
@@ -1076,7 +1076,7 @@ namespace Register
 				Database::Connection conn = Database::Manager::acquire();
 
 				std::stringstream sql_zone;
-				sql_zone << "SELECT id FROM zone WHERE fqdn='" << fqdn << "'";
+				sql_zone << "SELECT id FROM zone WHERE fqdn='" << conn.escape(fqdn) << "'";
 				Database::Result res_zone = conn.exec(sql_zone.str());
 				if (res_zone.size() < 1)
 				{
@@ -1146,7 +1146,7 @@ namespace Register
         	Database::Connection conn = Database::Manager::acquire();
 
         	std::stringstream sql_zone;
-			sql_zone << "SELECT id FROM zone WHERE fqdn='" << fqdn << "'";
+			sql_zone << "SELECT id FROM zone WHERE fqdn='" << conn.escape(fqdn) << "'";
 			Database::Result res_zone = conn.exec(sql_zone.str());
 			if (res_zone.size() < 1)
 				throw NOT_FOUND();//zone not found
@@ -1246,7 +1246,7 @@ namespace Register
         	Database::Connection conn = Database::Manager::acquire();
 
   			std::stringstream sql_zone;
-  			sql_zone << "SELECT id FROM zone WHERE fqdn='" << zone << "'";
+  			sql_zone << "SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "'";
   			Database::Result res_zone = conn.exec(sql_zone.str());
   			if (res_zone.size() < 1)
   				throw NOT_FOUND();//zone not found
@@ -1279,7 +1279,7 @@ namespace Register
 		  Database::Connection conn = Database::Manager::acquire();
 
 			std::stringstream sql_zone;
-			sql_zone << "SELECT id FROM zone WHERE fqdn='" << zone << "'";
+			sql_zone << "SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "'";
 			Database::Result res_zone = conn.exec(sql_zone.str());
 			if (res_zone.size() < 1)
 				throw NOT_FOUND();//zone not found
@@ -1345,7 +1345,7 @@ namespace Register
           	Database::Connection conn = Database::Manager::acquire();
 
           	std::stringstream sql;
-  			sql << "SELECT id FROM zone WHERE fqdn='" << zone.c_str() << "'";
+  			sql << "SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "'";
 
   			Database::Result res = conn.exec(sql.str());
   			int zoneId = res[0][0];
