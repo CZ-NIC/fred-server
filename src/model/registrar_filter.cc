@@ -141,22 +141,29 @@ Value<std::string>& RegistrarImpl::addZoneFqdn() {
     joinRegistrarTable();
     this->active = true;
 
+    const char* subselect_reginzone = "(select ri.registrarid as rid, z.id as zid "
+            "from registrarinvoice ri join zone z on ri.zone = z.id "
+            "where fromdate <= CURRENT_DATE "
+            "and (todate >= CURRENT_DATE or todate is null) )";
+
+    const char* subselect_zone = "(select id , fqdn from zone)";
+
     addJoin(new Join(
       Column("id", joinTable("registrar")),
       SQL_OP_EQ,
-      Column("registrarid", joinTable("registrarinvoice"))
+      Column("rid", joinTable(subselect_reginzone))
     ));
 
     addJoin(new Join(
-      Column("zone", joinTable("registrarinvoice")),
+      Column("zid", joinTable(subselect_reginzone)),
       SQL_OP_EQ,
-      Column("id", joinTable("zone"))
+      Column("id", joinTable(subselect_zone))
     ));
-    Value<std::string> *tmp = new Value<std::string>(Column("fqdn", joinTable("zone")));
+
+    Value<std::string> *tmp = new Value<std::string>(Column("fqdn", joinTable(subselect_zone)));
     tmp->setName("ZoneFqdn");
     add(tmp);
     return *tmp;
-
 }
 
 
