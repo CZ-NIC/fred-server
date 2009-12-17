@@ -34,7 +34,6 @@ public:
   virtual Value<std::string>& addFax() = 0;
   virtual Value<std::string>& addEmail() = 0;
   virtual Value<std::string>& addUrl() = 0;
-  virtual Zone& addActiveZone() = 0;
   virtual Value<std::string>& addZoneFqdn() = 0;
 
 
@@ -69,7 +68,6 @@ public:
   virtual Value<std::string>& addFax();
   virtual Value<std::string>& addEmail();
   virtual Value<std::string>& addUrl();
-  virtual Zone& addActiveZone();
   virtual Value<std::string>& addZoneFqdn();
 
   friend class boost::serialization::access;
@@ -78,8 +76,6 @@ public:
     _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Registrar);
   }
 
-private:
-  Zone& _addRIFilter();
 
 };
 

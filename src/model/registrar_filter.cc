@@ -167,33 +167,5 @@ Value<std::string>& RegistrarImpl::addZoneFqdn() {
 }
 
 
-Zone& RegistrarImpl::_addRIFilter()
-{
- Zone *tmp = new ZoneImpl();
- //enabled registrars only filter
-
-  add(tmp);
-  tmp->addJoin(new Join(
-	  Column("zone", joinTable("registrarinvoice")),
-	  SQL_OP_EQ,
-	  Column("id", tmp->joinZoneTable())));
-  tmp->joinOn(new Join(
-	  Column("id", joinRegistrarTable()),
-	  SQL_OP_EQ,
-	  Column("registrarid", joinTable("registrarinvoice"))));
-  Value<Database::DateTime> *tmp2 = new Value<Database::DateTime>(Column("todate", joinTable("registrarinvoice")));
-  tmp2->setNULL();
-  tmp->add(tmp2);
-  return *tmp;
-}
-
-Zone& RegistrarImpl::addActiveZone()
-{
-	  Zone &tmp = _addRIFilter();
-	  tmp.setName("RegistrarZone");
-	  return tmp;
-}
-
-
 }
 }
