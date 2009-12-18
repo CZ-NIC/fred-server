@@ -11,6 +11,9 @@ public:
     { }
     virtual ~ModelRequestData()
     { }
+    const unsigned long long &getId() const {
+        return m_id.get();
+    }
     const Database::DateTime &getEntryTimeBegin() const {
         return m_entryTimeBegin.get();
     }
@@ -33,6 +36,9 @@ public:
     }
     const bool &getIsResponse() const {
         return m_isResponse.get();
+    }
+    void setId(const unsigned long long &id) {
+        m_id = id;
     }
     void setEntryTimeBegin(const Database::DateTime &entryTimeBegin) {
         m_entryTimeBegin = entryTimeBegin;
@@ -95,6 +101,7 @@ public:
     }
 
 protected:
+    Field::Field<unsigned long long> m_id;
     Field::Field<Database::DateTime> m_entryTimeBegin;
     Field::Field<int> m_entryService;
     Field::Field<bool> m_entryMonitoring;
@@ -105,6 +112,7 @@ protected:
     //Field::Lazy::Field<ModelRequest *> m_entry;
 
 public:
+    static Model::Field::PrimaryKey<ModelRequestData, unsigned long long> id;
     static Model::Field::Basic<ModelRequestData, Database::DateTime> entryTimeBegin;
     static Model::Field::Basic<ModelRequestData, int> entryService;
     static Model::Field::Basic<ModelRequestData, bool> entryMonitoring;
