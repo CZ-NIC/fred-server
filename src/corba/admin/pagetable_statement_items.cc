@@ -66,9 +66,9 @@ ccReg_StatementItems_i::getRow(CORBA::UShort row)
 
     tr->length(16);
 
-    MAKE_OID(oid_id, item->getId(), "", FT_STATEMENTITEM);
-    MAKE_OID(oid_statement_id, item->getStatementId(), "", FT_STATEMENTHEAD);
-    MAKE_OID(oid_invoice_id, item->getInvoiceId(), "", FT_INVOICE);
+    MAKE_OID(oid_id, item->getId(), C_STR(item->getId()), FT_STATEMENTITEM);
+    MAKE_OID(oid_statement_id, item->getStatementId(), C_STR(item->getStatementId()), FT_STATEMENTHEAD);
+    MAKE_OID(oid_invoice_id, item->getInvoiceId(), C_STR(item->getInvoiceId()), FT_INVOICE);
 
     (*tr)[0] <<= oid_id;
     (*tr)[1] <<= oid_statement_id;
