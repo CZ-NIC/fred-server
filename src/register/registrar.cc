@@ -1127,6 +1127,23 @@ public:
     } 
   }
 
+  /* XXX Better if we have list of shared pointers than this */
+  virtual Registrar* getAndRelease(unsigned int _idx) {
+    try {
+      Registrar *registrar = dynamic_cast<Registrar* >(m_data.at(_idx));
+      if (registrar) {
+        m_data.erase(m_data.begin() + _idx);
+        return registrar;
+      }
+      else {
+        throw std::exception();
+      }
+    }
+    catch (...) {
+      throw std::exception();
+    }
+  }
+
   virtual Register::Registrar::Registrar* findId(Database::ID id) const
   {
 	  std::vector<Register::CommonObjectNew*>::const_iterator it = std::find_if(m_data.begin(),
@@ -1988,7 +2005,7 @@ public:
         {
             return RegistrarPtr(0);
         }
-        return RegistrarPtr(registrarlist->get(0));
+        return RegistrarPtr(registrarlist->getAndRelease(0));
     }//getRegistrarByHandle
 }; // class ManagerImpl
 

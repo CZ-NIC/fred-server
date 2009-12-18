@@ -266,6 +266,8 @@ public:
 //  virtual const Registrar* get(unsigned idx) const = 0;
   /// Get registrar detail object by list index for update
   virtual Registrar* get(unsigned idx) const = 0;
+  /// XXX get method with releaseing ownership functionality 
+  virtual Registrar* getAndRelease(unsigned idx) = 0;
   /// Create new registrar in list
   virtual Registrar* create() = 0;
   /// clear filter data
