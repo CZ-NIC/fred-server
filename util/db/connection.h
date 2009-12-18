@@ -110,7 +110,7 @@ public:
   /**
    * String escape method by specific connection_driver
    */
-  virtual inline std::string escape(const std::string &_in) const {
+  virtual inline std::string escape(const std::string &_in) {
     return conn_->escape(_in);
   }
 
