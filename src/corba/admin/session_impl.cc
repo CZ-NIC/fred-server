@@ -243,7 +243,7 @@ const std::string& ccReg_Session_i::getId() const {
 }
 
 ccReg::BankingInvoicing_ptr ccReg_Session_i::getBankingInvoicing() {
-    return m_banking_invoicing;
+    return ccReg::BankingInvoicing::_duplicate(m_banking_invoicing);
 }
 
 void ccReg_Session_i::updateActivity() {
