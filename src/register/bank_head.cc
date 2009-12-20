@@ -268,6 +268,7 @@ StatementHead::fromXML(
         if (getId() != Database::ID(0)) {
             item->setStatementId(getId());
         }
+        item->setAccountId(getAccountId());
         Database::Transaction trans_item(conn);
         if (!item->fromXML(items.getChild(i))) {
             continue;

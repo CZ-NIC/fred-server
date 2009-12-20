@@ -4,6 +4,7 @@ std::string ModelBankStatementItem::table_name = "bank_item";
 
 DEFINE_PRIMARY_KEY(ModelBankStatementItem, unsigned long long, id, m_id, table_name, "id", .setDefault())
 DEFINE_BASIC_FIELD(ModelBankStatementItem, unsigned long long, statementId, m_statementId, table_name, "statement_id",.setForeignKey() )
+DEFINE_BASIC_FIELD(ModelBankStatementItem, unsigned long long, accountId, m_accountId, table_name, "account_id",.setForeignKey() )
 DEFINE_BASIC_FIELD(ModelBankStatementItem, std::string, accountNumber, m_accountNumber, table_name, "account_number", .setNotNull())
 DEFINE_BASIC_FIELD(ModelBankStatementItem, std::string, bankCodeId, m_bankCodeId, table_name, "bank_code", .setForeignKey())
 DEFINE_BASIC_FIELD(ModelBankStatementItem, int, code, m_code, table_name, "code", )
@@ -26,6 +27,7 @@ DEFINE_BASIC_FIELD(ModelBankStatementItem, Database::DateTime, crTime, m_crTime,
 ModelBankStatementItem::field_list ModelBankStatementItem::fields = list_of<ModelBankStatementItem::field_list::value_type>
     (&ModelBankStatementItem::id)
     (&ModelBankStatementItem::statementId)
+    (&ModelBankStatementItem::accountId)
     (&ModelBankStatementItem::accountNumber)
     (&ModelBankStatementItem::bankCodeId)
     (&ModelBankStatementItem::code)

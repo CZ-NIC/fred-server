@@ -98,8 +98,8 @@ Manager::manualCreateInvoice(
     query.buffer()
         << "SELECT ba.zone, bi.price, bi.account_date"
         << " FROM bank_item bi"
-        << " JOIN bank_head bh ON bi.statement_id=bh.id"
-        << " JOIN bank_account ba ON bh.account_id=ba.id"
+//        << " JOIN bank_head bh ON bi.statement_id=bh.id"
+        << " JOIN bank_account ba ON bi.account_id=ba.id"
         << " WHERE bi.id="
         << Database::ID(paymentId);
     Database::ID zoneId;
@@ -167,8 +167,8 @@ Manager::pairCreditInvoices(bool report)
     query.buffer()
         << "SELECT bi.id, ba.zone, rr.id, bi.price, bi.account_date"
         << " FROM bank_item bi"
-        << " JOIN bank_head bh ON bi.statement_id=bh.id"
-        << " JOIN bank_account ba ON bh.account_id=ba.id"
+//        << " JOIN bank_head bh ON bi.statement_id=bh.id"
+        << " JOIN bank_account ba ON bi.account_id=ba.id"
         << " JOIN registrar rr ON bi.varsymb=rr.varsymb"
         << " OR (length(trim(rr.regex)) > 0 and bi.account_memo ~* trim(rr.regex))"
         << " WHERE bi.invoice_id IS NULL AND bi.code=2 AND bi.type=1;";

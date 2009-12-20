@@ -19,6 +19,10 @@ public:
     {
         return m_statementId.get();
     }
+    const unsigned long long &getAccountId() const
+    {
+        return m_accountId.get();
+    }
     /*
     ModelBankStatementHead *getStatement()
     {
@@ -100,6 +104,10 @@ public:
     void setStatementId(const unsigned long long &statementId)
     {
         m_statementId = statementId;
+    }
+    void setAccountId(const unsigned long long &accountId)
+    {
+        m_accountId = accountId;
     }
     /*
     void setStatement(ModelBankStatementHead *foreign_value)
@@ -221,6 +229,7 @@ public:
 protected:
     Field::Field<unsigned long long> m_id;
     Field::Field<unsigned long long> m_statementId;
+    Field::Field<unsigned long long> m_accountId;
     Field::Field<std::string> m_accountNumber;
     Field::Field<std::string> m_bankCodeId;
     Field::Field<int> m_code;
@@ -243,6 +252,7 @@ protected:
 public:
     static Model::Field::PrimaryKey<ModelBankStatementItem, unsigned long long> id;
     static Model::Field::Basic<ModelBankStatementItem, unsigned long long> statementId;
+    static Model::Field::Basic<ModelBankStatementItem, unsigned long long> accountId;
     static Model::Field::Basic<ModelBankStatementItem, std::string> accountNumber;
     static Model::Field::Basic<ModelBankStatementItem, std::string> bankCodeId;
     static Model::Field::Basic<ModelBankStatementItem, int> code;
