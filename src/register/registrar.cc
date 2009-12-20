@@ -477,7 +477,7 @@ public:
         conn.exec(sql.str());
 
         std::stringstream sql2;
-        sql2 << "SELECT ri.id"
+        sql2 << "SELECT ri.id "
          "FROM (SELECT id FROM registrar WHERE handle='" << conn.escape(registrarHandle) << "') r "
          "JOIN (SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "') z ON (1=1) "
          "LEFT JOIN registrarinvoice ri ON (ri.registrarid=r.id AND ri.zone=z.id) "
@@ -537,9 +537,9 @@ public:
         }
         std::stringstream sql;
 
-        sql << "UPDATE registrarinvoice SET fromdate = date " << fromStr
-            << ",todate =  date " << toStr
-            << " WHERE id = " << id << ";";
+        sql << "UPDATE registrarinvoice SET fromdate = date (" << fromStr
+            << "),todate =  date (" << toStr
+            << ") WHERE id = " << id << ";";
 
         conn.exec(sql.str());
 
@@ -1973,9 +1973,9 @@ public:
 		}
 		std::stringstream sql;
 
-		sql << "UPDATE registrarinvoice SET fromdate = date " << fromStr
-			<< ",todate =  date " << toStr
-			<< " WHERE id = " << id << ";";
+		sql << "UPDATE registrarinvoice SET fromdate = date (" << fromStr
+			<< "),todate =  date (" << toStr
+			<< ") WHERE id = " << id << ";";
 
 		Database::Transaction tx(conn);
 		conn.exec(sql.str());
