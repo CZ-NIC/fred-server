@@ -1279,7 +1279,7 @@ public:
                 const std::string& _handle,
                 const std::string& _message = std::string(),
                 const std::string& _message_out = std::string()) :
-    CommonObjectImpl(), sessionId(_sessionId), type(_type), typeName(_typeName),
+    CommonObjectImpl(_id), sessionId(_sessionId), type(_type), typeName(_typeName),
         startTime(_startTime), serverTransactionId(_serverTransactionId),
         clientTransactionId(_clientTransactionId), result(_result), registrarId(_registrarId),
         registrarHandle(_registrarHandle), handle(_handle), 
