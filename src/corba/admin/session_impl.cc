@@ -10,6 +10,7 @@
 #include "register/register.h"
 #include "register/notify.h"
 #include "usertype_conv.h"
+#include "common.h"
 
 #include "log/logger.h"
 #include "log/context.h"
@@ -1447,9 +1448,9 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Register::Re
   {
     detail->zones[i].id = _registrar->getZoneAccess(i)->id;
     detail->zones[i].name = CORBA::string_dup(_registrar->getZoneAccess(i)->name.c_str());
-    detail->zones[i].credit = CORBA::string_dup(stringify(_registrar->getZoneAccess(i)->credit).c_str());//_registrar->getCredit(__registrar->getAZone(i)->id);
-    detail->zones[i].fromDate = CORBA::string_dup(_registrar->getZoneAccess(i)->fromdate.to_string().c_str());
-    detail->zones[i].toDate = CORBA::string_dup(_registrar->getZoneAccess(i)->todate.to_string().c_str());
+    detail->zones[i].credit = CORBA::string_dup(C_STR(_registrar->getZoneAccess(i)->credit));//_registrar->getCredit(__registrar->getAZone(i)->id);
+    detail->zones[i].fromDate = CORBA::string_dup(C_STR(_registrar->getZoneAccess(i)->fromdate));//CORBA::string_dup(_registrar->getZoneAccess(i)->fromdate.to_string().c_str());
+    detail->zones[i].toDate = CORBA::string_dup(C_STR(_registrar->getZoneAccess(i)->todate));
   }
 
   detail->hidden = _registrar->getSystem();

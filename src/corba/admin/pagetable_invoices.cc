@@ -54,7 +54,7 @@ Registry::TableRow* ccReg_Invoices_i::getRow(CORBA::UShort row)
   MAKE_OID(oid_xml, inv->getFileXmlId(), "", FT_FILE)
 
 
-  (*tr)[0] <<= stringify(inv->getCrDate()).c_str();
+  (*tr)[0] <<= stringify(formatTime(inv->getCrDate(), true,false).c_str()).c_str();
   (*tr)[1] <<= C_STR(inv->getPrefix());
   (*tr)[2] <<= oid_registrar;
   (*tr)[3] <<= formatMoney(inv->getPrice()).c_str();
