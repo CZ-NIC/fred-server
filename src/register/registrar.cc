@@ -481,11 +481,11 @@ public:
          "FROM (SELECT id FROM registrar WHERE handle='" << conn.escape(registrarHandle) << "') r "
          "JOIN (SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "') z ON (1=1) "
          "LEFT JOIN registrarinvoice ri ON (ri.registrarid=r.id AND ri.zone=z.id) "
-         "WHERE fromdate = date" << fromStr << " and ";
+         "WHERE fromdate = date(" << fromStr << ") and ";
         if(toStr.compare("NULL") == 0)
             sql2 << "todate isnull";
         else
-            sql2 <<  "todate = date " << toStr;
+            sql2 <<  "todate = date(" << toStr << ")";
 
         Database::Result res = conn.exec(sql2.str());
 
