@@ -95,7 +95,7 @@ makeCorbaTime(ptime p, bool _to_local)
 }
 
 ccReg::DateType 
-makeCorbaDate(date p) {
+makeCorbaDate(const date& p) {
   ccReg::DateType d;
   if (p.is_special()) {
     d.day = 0;
