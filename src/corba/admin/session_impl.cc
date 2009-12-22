@@ -1449,8 +1449,8 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Register::Re
     detail->zones[i].id = _registrar->getZoneAccess(i)->id;
     detail->zones[i].name = CORBA::string_dup(_registrar->getZoneAccess(i)->name.c_str());
     detail->zones[i].credit = CORBA::string_dup(C_STR(_registrar->getZoneAccess(i)->credit));//_registrar->getCredit(__registrar->getAZone(i)->id);
-    detail->zones[i].fromDate = makeCorbaDate(static_cast<date>(_registrar->getZoneAccess(i)->fromdate));//CORBA::string_dup(_registrar->getZoneAccess(i)->fromdate.to_string().c_str());
-    detail->zones[i].toDate = makeCorbaDate(static_cast<date>(_registrar->getZoneAccess(i)->todate));
+    detail->zones[i].fromDate = makeCorbaDate(_registrar->getZoneAccess(i)->fromdate);//CORBA::string_dup(_registrar->getZoneAccess(i)->fromdate.to_string().c_str());
+    detail->zones[i].toDate = makeCorbaDate(_registrar->getZoneAccess(i)->todate);
   }
 
   detail->hidden = _registrar->getSystem();
