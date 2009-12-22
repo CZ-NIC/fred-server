@@ -13,10 +13,21 @@ class StatementItem:
     public ModelBankStatementItem,
     virtual public Register::CommonObjectImplNew {
 private:
+    unsigned long long iprefix_;
+
     bool moveItem(const Database::ID &paymentId);
     void testBankCode();
     Database::ID getExisting();
 public:
+    void setInvoicePrefix(unsigned long long &_iprefix)
+    {
+        iprefix_ = _iprefix;
+    }
+    unsigned long long getInvoicePrefix() const
+    {
+        return iprefix_;
+    }
+
     bool fromXML(const XMLnode &item);
     bool save();
 };

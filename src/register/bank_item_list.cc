@@ -76,10 +76,12 @@ ItemList::reload(Database::Filters::Union &filter)
             << "t_1.id, t_1.statement_id, t_1.account_number, t_1.bank_code, "
             << "t_1.type, t_1.code, t_1.konstSym, t_1.varSymb, t_1.specsymb, t_1.price, "
             << "t_1.account_evid, t_1.account_date, t_1.account_memo, "
-            << "t_1.invoice_id, t_1.account_name, t_1.crtime";          
+            << "t_1.invoice_id, t_1.account_name, t_1.crtime, "
+            << "t_2.prefix";
         object_info_query.from()
             << getTempTableName() << " tmp "
-            << "JOIN bank_item t_1 ON (tmp.id = t_1.id)";
+            << "JOIN bank_item t_1 ON (tmp.id = t_1.id) "
+            << "LEFT JOIN invoice t_2 ON (t_1.invoice_id = t_2.id)";
         object_info_query.order_by()
             << "tmp.id";
 
@@ -97,15 +99,13 @@ ItemList::reload(Database::Filters::Union &filter)
             std::string varSymb         = *(++col);
             std::string specSymb        = *(++col);
             Database::Money price       = *(++col);
-
             std::string accountEvid     = *(++col);
-
             Database::Date accountDate  = *(++col);
             std::string accountMemo     = *(++col);
             Database::ID invoiceId      = *(++col);
-            
             std::string accountName     = *(++col);
             Database::Date crTime       = *(++col);
+            unsigned long long iprefix  = *(++col);
 
             StatementItem *item = new StatementItem();                
             item->setId(id);
@@ -124,6 +124,7 @@ ItemList::reload(Database::Filters::Union &filter)
             item->setInvoiceId(invoiceId);
             item->setAccountName(accountName);
             item->setCrTime(crTime);                
+            item->setInvoicePrefix(iprefix);
             appendToList(item);
         }
         CommonListImplNew::reload();
