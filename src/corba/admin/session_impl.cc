@@ -1532,8 +1532,8 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
 
       registrar_azone->id = _registrar.zones[i].id;
       registrar_azone->name = _registrar.zones[i].name;
-      registrar_azone->fromdate.from_string(std::string(_registrar.zones[i].fromDate));
-      registrar_azone->todate.from_string(std::string( _registrar.zones[i].toDate));
+      registrar_azone->fromdate = makeBoostDate( _registrar.zones[i].fromDate);
+      registrar_azone->todate = makeBoostDate( _registrar.zones[i].toDate);
 
     }//for i
 
