@@ -1065,9 +1065,7 @@ public:
       resetIDSequence();
       Database::SelectQuery azone_query;
       azone_query.select() <<   "ri.id as id, ri.registrarid as registrarid ,z.fqdn as name, "
-                                "case when ri.todate = mtd.max_todate "
-                                    "then cr.credit "
-                                    "else null end as credit "
+                                "case when ri.fromdate = mtd.max_fromdate then cr.credit else null end as credit  "
                                 ", ri.fromdate as fromdate , ri.todate as todate ";
       azone_query.from() <<   "registrarinvoice ri "
                               "join zone z on ri.zone = z.id "
@@ -1078,13 +1076,13 @@ public:
                                   ") as cr on cr.zone = ri.zone "
                                   "and ri.registrarid = cr.registrarid "
                               "join (select ri.registrarid as rid, ri.zone as zid "
-                                  ",max(todate) as max_todate "
+                                  ",max(fromdate) as max_fromdate "
                                   "from registrarinvoice ri "
                                   "join zone z on ri.zone = z.id "
                                   "group by ri.registrarid, ri.zone ) as mtd "
                                   "on mtd.rid = ri.registrarid "
                                   "and mtd.zid = ri.zone ";
-      azone_query.order_by() << "ri.registrarid,ri.zone,ri.todate desc ";
+      azone_query.order_by() << "ri.registrarid,ri.zone,ri.fromdate desc,ri.todate desc ";
 
       Database::Result r_azone = conn.exec(azone_query);
       for (Database::Result::Iterator it = r_azone.begin(); it != r_azone.end(); ++it)
