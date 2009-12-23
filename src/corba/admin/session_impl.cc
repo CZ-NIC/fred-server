@@ -1437,6 +1437,7 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Register::Re
   detail->fax = DUPSTRFUN(_registrar->getFax);
   detail->email = DUPSTRFUN(_registrar->getEmail);
   detail->credit = DUPSTRC(formatMoney(_registrar->getCredit()*100));
+  detail->unspec_credit = DUPSTRC(formatMoney(_registrar->getCredit(0)*100));
 
   detail->access.length(_registrar->getACLSize());
   for (unsigned i = 0; i < _registrar->getACLSize(); i++) {
