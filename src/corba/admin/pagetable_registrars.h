@@ -10,7 +10,7 @@ private:
   Register::Zone::Manager::ZoneListPtr zl;
   Register::Registrar::Manager::RegistrarZoneAccess rza;
 
-  enum cols {static_cols = 3};///number of static columns in pagetable
+  enum cols {static_cols = 4};///number of static columns in pagetable
 
 public:
   ccReg_Registrars_i(Register::Registrar::Manager::RegistrarListPtr _rl

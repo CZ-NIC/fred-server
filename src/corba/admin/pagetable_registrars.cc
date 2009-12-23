@@ -59,6 +59,7 @@ ccReg_Registrars_i::getColumnHeaders()
   COLHEAD(ch,0,"Handle",CT_OID);
   COLHEAD(ch,1,"Name",CT_OTHER);
   COLHEAD(ch,2,"Email",CT_OTHER);
+  COLHEAD(ch,3,"Unspecified credit",CT_OTHER);
 
   for (int i = 0 ; i < zone_count ; i++)
   {
@@ -97,6 +98,7 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
   (*tr)[0] <<= oid_handle;
   (*tr)[1] <<= C_STR(r->getName());
   (*tr)[2] <<= C_STR(r->getEmail());
+  (*tr)[3] <<= C_STR(r->getCredit(0));
   for (int i = 0 ; i < zone_count ; i++)
   {
 
@@ -142,6 +144,9 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
       break;
     case 2:
       rl->sort(Register::Registrar::MT_MAIL, dir);
+      break;
+    case 3:
+      rl->sort(Register::Registrar::MT_CREDIT, dir);
       break;
   }
   if((column > (static_cols-1)) && (column < zl->size()+static_cols))
