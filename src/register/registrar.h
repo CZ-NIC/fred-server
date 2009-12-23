@@ -201,9 +201,9 @@ public:
   virtual bool getSystem() const = 0;
   /// Set hidden flag for system registrar
   virtual void setSystem(bool _system) = 0;
-  /// Get actual credit 
+  /// Get total credit
   virtual unsigned long getCredit() const = 0;
-  /// Get credit for specific zone
+  /// Get credit for specific zone, id = 0 is unspecified zone (converted from null in database table invoice)
   virtual unsigned long getCredit(Database::ID _zone_id) const = 0;
   /// Set credit for specific zone
   virtual void setCredit(Database::ID _zone_id, unsigned long _credit) = 0;
