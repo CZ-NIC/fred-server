@@ -158,7 +158,7 @@ public:
   Registry::PageTable_ptr getPageTable(ccReg::FilterType _type);
   CORBA::Any* getDetail(ccReg::FilterType _type, ccReg::TID _id);
 
-  void updateRegistrar(const ccReg::Registrar& _registrar);
+  ccReg::TID updateRegistrar(const ccReg::Registrar& _registrar);
   void createRegistrar(const ccReg::Registrar& _registrar);
 
   void setHistory(CORBA::Boolean _flag);

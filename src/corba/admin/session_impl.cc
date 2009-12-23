@@ -1458,7 +1458,7 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Register::Re
   return detail;
 }
 
-void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
+ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
 {
   Logging::Context ctx(base_context_);
 
@@ -1542,8 +1542,14 @@ void ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
   } catch (...) {
     throw ccReg::Admin::UpdateFailed();
   }
+
+  ccReg::TID rid = update_registrar->getId();
+
   LOGGER(PACKAGE).debug(boost::format("registrar with id=%1% saved")
-      % update_registrar->getId());
+      % rid);
+
+  return rid;
+
 }
 
 Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Register::PublicRequest::PublicRequest* _request) {
