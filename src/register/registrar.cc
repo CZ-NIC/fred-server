@@ -449,7 +449,7 @@ public:
         std::string fromStr;
         std::string toStr;
 
-        if (fromDate != Database::Date())
+        if (fromDate != Database::Date(0,0,0))
         {
             fromStr = "'" + fromDate.to_string() + "'";
         }
@@ -457,7 +457,7 @@ public:
         {
             fromStr = "CURRENT_DATE";
         }
-        if (toDate != Database::Date())
+        if (toDate != Database::Date(0,0,0))
         {
             toStr = "'" + toDate.to_string() + "'";
         }
@@ -519,7 +519,7 @@ public:
         std::string fromStr;
         std::string toStr;
 
-        if (fromDate != Database::Date())
+        if (fromDate != Database::Date(0,0,0))
         {
             fromStr = "'" + fromDate.to_string() + "'";
         }
@@ -527,7 +527,7 @@ public:
         {
             fromStr = "CURRENT_DATE";
         }
-        if (toDate != Database::Date())
+        if (toDate != Database::Date(0,0,0))
         {
             toStr = "'" + toDate.to_string() + "'";
         }
