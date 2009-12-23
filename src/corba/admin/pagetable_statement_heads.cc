@@ -145,6 +145,7 @@ void
 ccReg_StatementHeads_i::reload()
 {
     Logging::Context ctx(base_context_);
+    ConnectionReleaser releaser;
 
     m_statementList->reload(uf);
 }
@@ -162,6 +163,7 @@ CORBA::ULongLong
 ccReg_StatementHeads_i::resultSize()
 {
     Logging::Context ctx(base_context_);
+    ConnectionReleaser releaser;
 
     TRACE("[CALL] ccReg_StatementHeads_i::resultSize()");
     return m_statementList->getRealCount(uf);
@@ -171,6 +173,7 @@ void
 ccReg_StatementHeads_i::loadFilter(ccReg::TID id)
 {
     Logging::Context ctx(base_context_);
+    ConnectionReleaser releaser;
 
     TRACE(boost::format("[CALL] ccReg_StatementHeads_i::loadFilter(%1%)") % id);
 
@@ -193,6 +196,7 @@ void
 ccReg_StatementHeads_i::saveFilter(const char *name)
 {
     Logging::Context ctx(base_context_);
+    ConnectionReleaser releaser;
 
     TRACE(boost::format("[CALL] ccReg_StatementHeads_i::saveFilter(%1%)")
             % name);

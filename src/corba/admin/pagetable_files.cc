@@ -97,6 +97,7 @@ CORBA::Short ccReg_Files_i::numColumns() {
 
 void ccReg_Files_i::reload() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_Files_i::reload()");
   file_list_->reload(uf);
@@ -112,6 +113,7 @@ void ccReg_Files_i::clear() {
 
 CORBA::ULongLong ccReg_Files_i::resultSize() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("ccReg_Files_i::resultSize()");
   return file_list_->getRealCount(uf);
@@ -119,6 +121,7 @@ CORBA::ULongLong ccReg_Files_i::resultSize() {
 
 void ccReg_Files_i::loadFilter(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Files_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
@@ -135,6 +138,7 @@ void ccReg_Files_i::loadFilter(ccReg::TID _id) {
 
 void ccReg_Files_i::saveFilter(const char* _name) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Files_i::saveFilter('%1%')") % _name);
 

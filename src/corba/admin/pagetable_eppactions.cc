@@ -118,6 +118,7 @@ CORBA::Short ccReg_EPPActions_i::numColumns() {
 
 void ccReg_EPPActions_i::reload() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_EPPActions_i::reload()");
   eal->setPartialLoad(true);
@@ -134,6 +135,7 @@ void ccReg_EPPActions_i::clear() {
 
 CORBA::ULongLong ccReg_EPPActions_i::resultSize() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("ccReg_EPPActions_i::resultSize()");
   return eal->getRealCount(uf);
@@ -141,6 +143,7 @@ CORBA::ULongLong ccReg_EPPActions_i::resultSize() {
 
 void ccReg_EPPActions_i::loadFilter(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_EPPActions_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
@@ -157,6 +160,7 @@ void ccReg_EPPActions_i::loadFilter(ccReg::TID _id) {
 
 void ccReg_EPPActions_i::saveFilter(const char* _name) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_EPPActions_i::saveFilter('%1%')") % _name);
 

@@ -7,6 +7,7 @@ ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::Manager::RegistrarLi
   , zl(_zl)
   , rza()
 {
+    ConnectionReleaser releaser;
     Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
     unionFilter->addFilter(new Database::Filters::ZoneSoaImpl(true));
     zl->reload(*(unionFilter).get());
@@ -20,6 +21,7 @@ ccReg_Registrars_i::~ccReg_Registrars_i() {
 void
 ccReg_Registrars_i::reload() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("[CALL] void ccReg_Registrars_i::reload()");
   rl->reload(uf);
@@ -219,6 +221,7 @@ CORBA::ULongLong
 ccReg_Registrars_i::resultSize()
 {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("ccReg_Registrars_i::resultSize()");
   return rl->getRealCount(uf);
@@ -227,6 +230,7 @@ ccReg_Registrars_i::resultSize()
 void
 ccReg_Registrars_i::loadFilter(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Registrars_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
@@ -249,6 +253,7 @@ ccReg_Registrars_i::loadFilter(ccReg::TID _id) {
 void
 ccReg_Registrars_i::saveFilter(const char* _name) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Registrars_i::saveFilter('%1%')") % _name);
 

@@ -123,6 +123,7 @@ void
 ccReg_KeySets_i::reload()
 {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
     TRACE("[CALL] ccReg_KeySets_i::reload()");
     m_kl->reload(uf);
@@ -145,6 +146,7 @@ CORBA::ULongLong
 ccReg_KeySets_i::resultSize()
 {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
     TRACE("[CALL] ccReg_KeySets_i::resultSize()");
     return m_kl->getRealCount(uf);
@@ -154,6 +156,7 @@ void
 ccReg_KeySets_i::loadFilter(ccReg::TID id)
 {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
     TRACE(boost::format("[CALL] ccReg_KeySets_i::loadFilter(%1%)") % id);
 
@@ -173,6 +176,7 @@ void
 ccReg_KeySets_i::saveFilter(const char *name)
 {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
     TRACE(boost::format("[CALL] ccReg_KeySets_i::saveFilter('%1%')") % name);
     

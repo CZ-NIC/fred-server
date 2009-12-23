@@ -108,6 +108,7 @@ CORBA::Short ccReg_Contacts_i::numColumns() {
 
 void ccReg_Contacts_i::reload() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
 //  cl->makeRealCount();
   cl->reload(uf);
@@ -125,6 +126,7 @@ void ccReg_Contacts_i::clear() {
 
 CORBA::ULongLong ccReg_Contacts_i::resultSize() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_Contacts_i::resultSize()");
   return cl->getRealCount(uf);
@@ -132,6 +134,7 @@ CORBA::ULongLong ccReg_Contacts_i::resultSize() {
 
 void ccReg_Contacts_i::loadFilter(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Contacts_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
@@ -148,6 +151,7 @@ void ccReg_Contacts_i::loadFilter(ccReg::TID _id) {
 
 void ccReg_Contacts_i::saveFilter(const char* _name) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Contacts_i::saveFilter('%1%')") % _name);
 

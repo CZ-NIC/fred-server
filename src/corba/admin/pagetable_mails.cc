@@ -93,6 +93,7 @@ CORBA::Short ccReg_Mails_i::numColumns() {
 
 void ccReg_Mails_i::reload() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_Mails_i::reload()");
   mail_list_->reload(uf);
@@ -108,6 +109,7 @@ void ccReg_Mails_i::clear() {
 
 CORBA::ULongLong ccReg_Mails_i::resultSize() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("ccReg_Mails_i::resultSize()");
   return mail_list_->getRealCount(uf);
@@ -115,6 +117,7 @@ CORBA::ULongLong ccReg_Mails_i::resultSize() {
 
 void ccReg_Mails_i::loadFilter(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Mails_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
@@ -131,6 +134,7 @@ void ccReg_Mails_i::loadFilter(ccReg::TID _id) {
 
 void ccReg_Mails_i::saveFilter(const char* _name) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Mails_i::saveFilter('%1%')") % _name);
 

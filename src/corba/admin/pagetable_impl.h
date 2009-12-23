@@ -30,6 +30,8 @@
 
 #include "model/model_filters.h"
 
+#include "corba/connection_releaser.h"
+
 using namespace Database;
 
 #define DECL_ATTRIBUTE(name,type,settype,gettype) \

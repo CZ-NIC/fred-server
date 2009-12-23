@@ -7,6 +7,8 @@
 #include "log/context.h"
 #include "register/bank_manager.h"
 
+#include "corba/connection_releaser.h"
+
 bool
 ccReg_BankingInvoicing_i::addBankAccount(
         const char *zoneName,
@@ -14,6 +16,7 @@ ccReg_BankingInvoicing_i::addBankAccount(
         const char *accountName,
         const char *bankCode)
 {
+    ConnectionReleaser releaser;
     std::auto_ptr<Register::Banking::Manager>
         bankMan(Register::Banking::Manager::create());
     return bankMan->insertBankAccount(zoneName, accountNumber, accountName, bankCode);
@@ -23,6 +26,7 @@ void
 ccReg_BankingInvoicing_i::archiveInvoices(
         bool send)
 {
+    ConnectionReleaser releaser;
     std::auto_ptr<Register::Invoicing::Manager> 
         invMan(Register::Invoicing::Manager::create());
     return invMan->archiveInvoices(send);
@@ -33,6 +37,7 @@ ccReg_BankingInvoicing_i::pairPaymentRegistrarId(
         CORBA::ULongLong paymentId,
         CORBA::ULongLong registrarId)
 {
+    ConnectionReleaser releaser;
     std::auto_ptr<Register::Invoicing::Manager> 
         invMan(Register::Invoicing::Manager::create());
     return invMan->manualCreateInvoice(paymentId, registrarId);
@@ -42,6 +47,7 @@ bool ccReg_BankingInvoicing_i::pairPaymentRegistrarHandle(
         CORBA::ULongLong paymentId,
         const char *registrarHandle)
 {
+    ConnectionReleaser releaser;
     std::auto_ptr<Register::Invoicing::Manager> 
         invMan(Register::Invoicing::Manager::create());
     return invMan->manualCreateInvoice(paymentId, registrarHandle);
@@ -54,6 +60,7 @@ ccReg_BankingInvoicing_i::addPrefix(
         CORBA::Long year,
         ccReg::TID prefix)
 {
+    ConnectionReleaser releaser;
     std::auto_ptr<Register::Invoicing::Manager> 
         invMan(Register::Invoicing::Manager::create());
     return invMan->insertInvoicePrefix(zoneName, type, year, prefix);
@@ -62,6 +69,7 @@ ccReg_BankingInvoicing_i::addPrefix(
 bool
 ccReg_BankingInvoicing_i::pairInvoices()
 {
+    ConnectionReleaser releaser;
     std::auto_ptr<Register::Invoicing::Manager> 
         invMan(Register::Invoicing::Manager::create());
     return invMan->pairInvoices(false);
@@ -75,6 +83,7 @@ ccReg_BankingInvoicing_i::createCreditInvoice(
         const char *taxdate,
         const char *crdate)
 {
+    ConnectionReleaser releaser;
     std::auto_ptr<Register::Invoicing::Manager>
         invMan(Register::Invoicing::Manager::create());
     std::auto_ptr<Register::Invoicing::Invoice>
@@ -115,6 +124,7 @@ ccReg_BankingInvoicing_i::factoring(
         const char *todate,
         const char *taxdate)
 {
+    ConnectionReleaser releaser;
     std::auto_ptr<Register::Invoicing::Manager>
         invMan(Register::Invoicing::Manager::create());
     Database::Date now(Database::NOW);
@@ -173,6 +183,7 @@ bool ccReg_BankingInvoicing_i::addPrice(
         const char *price,
         CORBA::Long period)
 {
+    ConnectionReleaser releaser;
     DB db;
     db.OpenDatabase(m_connection_string.c_str());
     std::auto_ptr<Register::Zone::Manager> zoneMan(

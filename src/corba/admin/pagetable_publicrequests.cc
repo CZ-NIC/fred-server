@@ -19,6 +19,7 @@ ccReg::Filters::Compound_ptr ccReg_PublicRequests_i::add() {
 
 void ccReg_PublicRequests_i::reload() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_PublicRequests_i::reload()");
   request_list_->reload(uf);
@@ -112,6 +113,7 @@ void ccReg_PublicRequests_i::clear() {
 
 CORBA::ULongLong ccReg_PublicRequests_i::resultSize() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("ccReg_PublicRequests_i::resultSize()");
   return request_list_->getRealCount(uf);
@@ -119,6 +121,7 @@ CORBA::ULongLong ccReg_PublicRequests_i::resultSize() {
 
 void ccReg_PublicRequests_i::loadFilter(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_PublicRequests_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
@@ -135,6 +138,7 @@ void ccReg_PublicRequests_i::loadFilter(ccReg::TID _id) {
 
 void ccReg_PublicRequests_i::saveFilter(const char* _name) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_PublicRequests_i::saveFilter('%1%')") % _name);
 

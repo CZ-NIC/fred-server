@@ -113,6 +113,7 @@ void
 ccReg_NSSets_i::reload()
 {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_NSSets_i::reload()");
 //  nl->makeRealCount();  
@@ -136,6 +137,7 @@ CORBA::ULongLong
 ccReg_NSSets_i::resultSize()
 {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_NSSets_i::resultSize()");
   return nl->getRealCount(uf);
@@ -144,6 +146,7 @@ ccReg_NSSets_i::resultSize()
 void
 ccReg_NSSets_i::loadFilter(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_NSSets_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
@@ -161,6 +164,7 @@ ccReg_NSSets_i::loadFilter(ccReg::TID _id) {
 void
 ccReg_NSSets_i::saveFilter(const char* _name) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_NSSets_i::saveFilter('%1%')") % _name);
 

@@ -19,6 +19,7 @@ ccReg::Filters::Compound_ptr ccReg_Domains_i::add() {
 
 void ccReg_Domains_i::reload() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_Domains_i::reload()");
   dl->reload(uf);
@@ -154,6 +155,7 @@ void ccReg_Domains_i::clear() {
 
 CORBA::ULongLong ccReg_Domains_i::resultSize() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_Domains_i::resultSize()");
   return dl->getRealCount(uf);
@@ -161,6 +163,7 @@ CORBA::ULongLong ccReg_Domains_i::resultSize() {
 
 void ccReg_Domains_i::loadFilter(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Domains_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
@@ -177,6 +180,7 @@ void ccReg_Domains_i::loadFilter(ccReg::TID _id) {
 
 void ccReg_Domains_i::saveFilter(const char* _name) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Domains_i::saveFilter('%1%')") % _name);
 

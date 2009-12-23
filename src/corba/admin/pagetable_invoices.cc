@@ -126,6 +126,7 @@ CORBA::Short ccReg_Invoices_i::numColumns() {
 
 void ccReg_Invoices_i::reload() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   invoice_list_->setPartialLoad(true);
   invoice_list_->reload(uf);
@@ -141,6 +142,7 @@ void ccReg_Invoices_i::clear() {
 
 CORBA::ULongLong ccReg_Invoices_i::resultSize() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("ccReg_Invoices_i::resultSize()");
   return invoice_list_->getRealCount(uf);
@@ -148,6 +150,7 @@ CORBA::ULongLong ccReg_Invoices_i::resultSize() {
 
 void ccReg_Invoices_i::loadFilter(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Invoices_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
@@ -164,6 +167,7 @@ void ccReg_Invoices_i::loadFilter(ccReg::TID _id) {
 
 void ccReg_Invoices_i::saveFilter(const char* _name) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_PublicRequests_i::saveFilter('%1%')") % _name);
 

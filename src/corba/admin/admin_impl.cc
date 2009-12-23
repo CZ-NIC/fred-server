@@ -42,6 +42,8 @@
 
 #include "rand_string.h"
 
+#include "corba/connection_releaser.h"
+
 #ifdef ADIF
 #endif
 
@@ -105,6 +107,7 @@ ccReg_Admin_i::~ccReg_Admin_i() {
 void ccReg_Admin_i::checkHandle(const char* handle,
                                 ccReg::CheckHandleTypeSeq_out chso) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   DB ldb;
   ldb.OpenDatabase(m_connection_string.c_str());
@@ -180,6 +183,7 @@ void ccReg_Admin_i::authenticateUser(const char* _username,
                                      const char* _password)
     throw (ccReg::Admin::AuthFailed) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::authenticateUser('%1%', '******')")
       % _username);
@@ -191,6 +195,7 @@ void ccReg_Admin_i::authenticateUser(const char* _username,
 char* ccReg_Admin_i::createSession(const char* username)
     throw (ccReg::Admin::AuthFailed) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::createSession('%1%')") % username);
 
@@ -240,6 +245,7 @@ char* ccReg_Admin_i::createSession(const char* username)
 
 void ccReg_Admin_i::destroySession(const char* _session_id) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::destroySession('%1%')") % _session_id);
   
@@ -258,6 +264,7 @@ void ccReg_Admin_i::destroySession(const char* _session_id) {
 ccReg::Session_ptr ccReg_Admin_i::getSession(const char* _session_id)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getSession('%1%')") % _session_id);
 
@@ -305,6 +312,7 @@ void ccReg_Admin_i::fillRegistrar(ccReg::Registrar& creg,
 ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
     throw (ccReg::Admin::SQL_ERROR) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   DB ldb;
   if (!ldb.OpenDatabase(m_connection_string.c_str())) {
@@ -334,6 +342,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
 ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
     throw (ccReg::Admin::SQL_ERROR) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   DB ldb;
   if (!ldb.OpenDatabase(m_connection_string.c_str())) {
@@ -364,6 +373,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
 ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   LOG( NOTICE_LOG, "getRegistarByHandle: id -> %lld", (unsigned long long)id );
   if (!id) throw ccReg::Admin::ObjectNotFound();
@@ -397,6 +407,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
 ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   LOG( NOTICE_LOG, "getRegistarByHandle: handle -> %s", handle );
   if (!handle || !*handle) throw ccReg::Admin::ObjectNotFound();
@@ -429,6 +440,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
 
 void ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   DB db;
   db.OpenDatabase(m_connection_string.c_str());
@@ -487,6 +499,7 @@ void ccReg_Admin_i::addRegistrarToZone
   try
   {
 	Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
 	DB db;
 	db.OpenDatabase(m_connection_string.c_str());
 	std::auto_ptr<Register::Manager> r(Register::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
@@ -511,6 +524,7 @@ void ccReg_Admin_i::updateRegistrarAccessToZone
   try
   {
 	Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
 	DB db;
 	db.OpenDatabase(m_connection_string.c_str());
 	std::auto_ptr<Register::Manager> r(Register::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
@@ -578,6 +592,7 @@ void ccReg_Admin_i::fillContact(ccReg::ContactDetail* cc,
 ccReg::ContactDetail* ccReg_Admin_i::getContactByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getContactByHandle('%1%')") % handle);
 
@@ -604,6 +619,7 @@ ccReg::ContactDetail* ccReg_Admin_i::getContactByHandle(const char* handle)
 ccReg::ContactDetail* ccReg_Admin_i::getContactById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getContactById(%1%)") % id);
   DB db;
@@ -676,6 +692,7 @@ void ccReg_Admin_i::fillNSSet(ccReg::NSSetDetail* cn, Register::NSSet::NSSet* n)
 ccReg::NSSetDetail* ccReg_Admin_i::getNSSetByHandle(const char* handle)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getNSSetByHandle('%1%')") % handle);
 
@@ -702,6 +719,7 @@ ccReg::NSSetDetail* ccReg_Admin_i::getNSSetByHandle(const char* handle)
 ccReg::NSSetDetail* ccReg_Admin_i::getNSSetById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getNSSetById('%1%')") % id);
   DB db;
@@ -786,6 +804,7 @@ ccReg_Admin_i::getKeySetByHandle(const char *handle)
     throw (ccReg::Admin::ObjectNotFound)
 {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
     TRACE(boost::format(
                 "[CALL] ccReg_Admin_i::getKeySetByHandle('%1%')") % handle);
@@ -819,6 +838,7 @@ ccReg_Admin_i::getKeySetById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound)
 {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
     TRACE(boost::format(
                 "[CALL] ccReg_Admin_i::getKeySetById('%1%')") % id);
@@ -884,6 +904,7 @@ void ccReg_Admin_i::fillEPPAction(ccReg::EPPAction* cea,
 ccReg::EPPAction* ccReg_Admin_i::getEPPActionBySvTRID(const char* svTRID)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   DB db;
   if (!svTRID || !*svTRID)
@@ -908,6 +929,7 @@ ccReg::EPPAction* ccReg_Admin_i::getEPPActionBySvTRID(const char* svTRID)
 ccReg::EPPAction* ccReg_Admin_i::getEPPActionById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getEPPActionById(%1%)") % id);
   if (!id)
@@ -984,6 +1006,7 @@ void ccReg_Admin_i::fillDomain(ccReg::DomainDetail* cd,
 ccReg::DomainDetail* ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainByFQDN('%1%')") % fqdn);
 
@@ -1010,6 +1033,7 @@ ccReg::DomainDetail* ccReg_Admin_i::getDomainByFQDN(const char* fqdn)
 ccReg::DomainDetail* ccReg_Admin_i::getDomainById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainById('%1%')") % id);
   DB db;
@@ -1045,6 +1069,7 @@ ccReg_Admin_i::getDomainsByKeySetId(ccReg::TID id, CORBA::Long limit)
     throw (ccReg::Admin::ObjectNotFound)
 {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
     DB db;
     if (!id)
@@ -1077,6 +1102,7 @@ ccReg_Admin_i::getDomainsByKeySetHandle(const char *handle, CORBA::Long limit)
     throw (ccReg::Admin::ObjectNotFound)
 {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
     TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainsByKeySetHandle('%1%')")
                 % handle);
@@ -1114,6 +1140,7 @@ ccReg::DomainDetails* ccReg_Admin_i::getDomainsByInverseKey(const char* key,
                                                             ccReg::DomainInvKeyType type,
                                                             CORBA::Long limit) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getDomainsByInverseKey('%1%', %2%, %3%)")
       % key % type % limit);
@@ -1154,6 +1181,7 @@ ccReg::NSSetDetails* ccReg_Admin_i::getNSSetsByInverseKey(const char* key,
                                                           ccReg::NSSetInvKeyType type,
                                                           CORBA::Long limit) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   DB db;
   db.OpenDatabase(m_connection_string.c_str());
@@ -1182,6 +1210,7 @@ ccReg_Admin_i::getKeySetsByInverseKey(
         CORBA::Long limit)
 {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
     DB db;
     db.OpenDatabase(m_connection_string.c_str());
@@ -1209,6 +1238,7 @@ ccReg_Admin_i::getKeySetsByContactId(ccReg::TID id, CORBA::Long limit)
   throw (ccReg::Admin::ObjectNotFound)
 {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
     DB db;
     if (!id)
@@ -1241,6 +1271,7 @@ ccReg_Admin_i::getKeySetsByContactHandle(const char *handle, CORBA::Long limit)
   throw (ccReg::Admin::ObjectNotFound)
 {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
     DB db;
     if (!handle || !*handle)
@@ -1271,6 +1302,7 @@ ccReg_Admin_i::getKeySetsByContactHandle(const char *handle, CORBA::Long limit)
 ccReg::Mailing::Detail* ccReg_Admin_i::getEmailById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   if (!id)
     throw ccReg::Admin::ObjectNotFound();
@@ -1349,6 +1381,7 @@ void ccReg_Admin_i::fillInvoice(ccReg::Invoicing::Invoice *ci,
 ccReg::Invoicing::Invoice* ccReg_Admin_i::getInvoiceById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   if (!id)
     throw ccReg::Admin::ObjectNotFound();
@@ -1377,6 +1410,7 @@ ccReg::Invoicing::Invoice* ccReg_Admin_i::getInvoiceById(ccReg::TID id)
 
 CORBA::Long ccReg_Admin_i::getDomainCount(const char *zone) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   DB db;
   db.OpenDatabase(m_connection_string.c_str());
@@ -1389,6 +1423,7 @@ CORBA::Long ccReg_Admin_i::getDomainCount(const char *zone) {
 
 CORBA::Long ccReg_Admin_i::getEnumNumberCount() {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   DB db;
   db.OpenDatabase(m_connection_string.c_str());
@@ -1401,6 +1436,7 @@ CORBA::Long ccReg_Admin_i::getEnumNumberCount() {
 
 ccReg::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   DB db;
   db.OpenDatabase(m_connection_string.c_str());
@@ -1420,6 +1456,7 @@ ccReg::EPPActionTypeSeq* ccReg_Admin_i::getEPPActionTypeList() {
 
 ccReg::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   DB db;
   db.OpenDatabase(m_connection_string.c_str());
@@ -1443,12 +1480,14 @@ ccReg::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
 
 char* ccReg_Admin_i::getDefaultCountry() {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   return CORBA::string_dup("CZ");
 }
 
 ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getDomainStatusDescList(const char *lang) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   ccReg::ObjectStatusDescSeq* o = new ccReg::ObjectStatusDescSeq;
   for (unsigned i=0; i<register_manager_->getStatusDescCount(); i++) {
@@ -1470,6 +1509,7 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getDomainStatusDescList(const char *l
 
 ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getContactStatusDescList(const char *lang) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   ccReg::ObjectStatusDescSeq* o = new ccReg::ObjectStatusDescSeq;
   for (unsigned i=0; i<register_manager_->getStatusDescCount(); i++) {
@@ -1491,6 +1531,7 @@ ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getContactStatusDescList(const char *
 
 ccReg::ObjectStatusDescSeq* ccReg_Admin_i::getNSSetStatusDescList(const char *lang) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   ccReg::ObjectStatusDescSeq* o = new ccReg::ObjectStatusDescSeq;
   for (unsigned i=0; i<register_manager_->getStatusDescCount(); i++) {
@@ -1514,6 +1555,7 @@ ccReg::ObjectStatusDescSeq *
 ccReg_Admin_i::getKeySetStatusDescList(const char *lang)
 {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
     ccReg::ObjectStatusDescSeq *o = new ccReg::ObjectStatusDescSeq;
     for (unsigned int i = 0; i < register_manager_->getStatusDescCount(); i++) {
@@ -1536,6 +1578,7 @@ ccReg_Admin_i::getKeySetStatusDescList(const char *lang)
 
 ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *lang) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   ccReg::ObjectStatusDescSeq *o = new ccReg::ObjectStatusDescSeq;
   unsigned states_count = register_manager_->getStatusDescCount();
@@ -1551,6 +1594,8 @@ ccReg::ObjectStatusDescSeq *ccReg_Admin_i::getObjectStatusDescList(const char *l
 
 char* ccReg_Admin_i::getCreditByZone(const char*registrarHandle, ccReg::TID zone) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
+
   std::auto_ptr<Register::Invoicing::Manager>
       invman(Register::Invoicing::Manager::create());
   char *ret = DUPSTRC(formatMoney(invman->getCreditByZone(registrarHandle, zone)));
@@ -1559,6 +1604,7 @@ char* ccReg_Admin_i::getCreditByZone(const char*registrarHandle, ccReg::TID zone
 
 void ccReg_Admin_i::generateLetters() {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   DB ldb;
   try {
@@ -1608,6 +1654,9 @@ void ccReg_Admin_i::generateLetters() {
 bool
 ccReg_Admin_i::setInZoneStatus(ccReg::TID domainId)
 {
+    Logging::Context ctx(server_name_);
+    ConnectionReleaser releaser;
+
     TRACE(boost::format("[CALL] ccReg_Admin_i::setInZoneStatus(%1%)")
             % domainId);
     Database::Query query;
@@ -1666,6 +1715,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(ccReg::PublicRequest::Type _type,
     ccReg::Admin::INVALID_INPUT, ccReg::Admin::REQUEST_BLOCKED
   ) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::createPublicRequest(%1%, '%2%', '%3%, %4%)") % 
         _type %  _reason % _email_to_answer % &_object_ids);
@@ -1739,6 +1789,7 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
     ccReg::Admin::MAILER_ERROR, ccReg::Admin::REQUEST_BLOCKED
   ) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::processPublicRequest(%1%, %2%)") %
   	id % invalid);
@@ -1780,6 +1831,7 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
 ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
                                                          const char *lang) {
   Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::getPublicRequestPDF(%1%, '%2%')") %
         id % lang);
@@ -1874,6 +1926,9 @@ std::string ccReg_Admin_i::_createQueryForEnumDomainsByRegistrant(const std::str
 ::CORBA::ULongLong ccReg_Admin_i::countEnumDomainsByRegistrant(const char* name,
         ::CORBA::Boolean by_person, ::CORBA::Boolean by_org)
 {
+  Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
+
   try {
     if (!by_person && !by_org) {
         return 0;
@@ -1909,6 +1964,9 @@ ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsByRegistrant(const char* name,
         ::CORBA::Boolean by_person, ::CORBA::Boolean by_org,
         ::CORBA::Long offset, ::CORBA::Long limit)
 {
+  Logging::Context(server_name_);
+  ConnectionReleaser releaser;
+
   try {
     ccReg::EnumDictList_var data = new ccReg::EnumDictList();
     if (!by_person && !by_org) {
@@ -1966,6 +2024,9 @@ ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsByRegistrant(const char* name,
 /* IDL method */
 ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsRecentEntries(::CORBA::Long count)
 {
+  Logging::Context ctx(server_name_);
+  ConnectionReleaser releaser;
+
   try {
     boost::format data_query;
     data_query = boost::format("SELECT COALESCE(c.organization, c.name) AS holder, " \

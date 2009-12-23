@@ -11,6 +11,7 @@ ccReg_Filters_i::~ccReg_Filters_i() {
 void 
 ccReg_Filters_i::reload() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_Filters_i::reload()");
   m_filter_list.reload(uf);

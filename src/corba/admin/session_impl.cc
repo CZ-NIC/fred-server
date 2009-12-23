@@ -16,6 +16,9 @@
 #include "log/context.h"
 #include "util.h"
 
+#include "corba/connection_releaser.h"
+
+
 ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  const std::string& database,
                                  NameService *ns,
@@ -119,12 +122,14 @@ ccReg_Session_i::~ccReg_Session_i() {
 
 ccReg::User_ptr ccReg_Session_i::getUser() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   return m_user->_this();
 }
 
 Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Session_i::getPageTable(%1%)") % _type);
   switch (_type) {
@@ -173,6 +178,7 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
 
 CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Session_i::getDetail(%1%, %2%)") % _type
       % _id);
@@ -1462,6 +1468,7 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Register::Re
 ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
 {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
   Register::Registrar::Manager::RegistrarListPtr tmp_registrar_list =
@@ -1808,6 +1815,7 @@ Registry::Zone::Detail* ccReg_Session_i::createZoneDetail(Register::Zone::Zone* 
 
 void ccReg_Session_i::setHistory(CORBA::Boolean _flag) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   if (_flag) {
     settings_.set("filter.history", "on");

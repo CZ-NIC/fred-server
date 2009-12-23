@@ -7,6 +7,8 @@
 #include "log/context.h"
 #include "register/zone.h"
 
+#include "corba/connection_releaser.h"
+
     bool ccReg_ZoneIf_i::createZone
     (
 		const char* fqdn
@@ -21,6 +23,7 @@
 		, const char* ns_fqdn
     )
     {
+        ConnectionReleaser releaser;
     	try
     	{
 			std::auto_ptr<Register::Zone::Manager> zoneMan(
@@ -60,6 +63,7 @@
 		, const char* ns_fqdn
     )
     {
+        ConnectionReleaser releaser;
     	try
     	{
 			std::auto_ptr<Register::Zone::Manager> zoneMan(
@@ -100,6 +104,7 @@
 		, const char* ns_fqdn
     )
     {
+        ConnectionReleaser releaser;
 		try
 		{
 			std::auto_ptr<Register::Zone::Manager> zoneMan(
@@ -133,6 +138,7 @@
     		, const char* addr
     )
     {
+        ConnectionReleaser releaser;
 		try
 		{
 			std::auto_ptr<Register::Zone::Manager> zoneMan(
@@ -157,6 +163,7 @@
     		, const char* addr
     )
     {
+        ConnectionReleaser releaser;
 		try
 		{
 			std::auto_ptr<Register::Zone::Manager> zoneMan(

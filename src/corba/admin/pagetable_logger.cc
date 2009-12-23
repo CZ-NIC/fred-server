@@ -123,6 +123,7 @@ CORBA::Short ccReg_Logger_i::numColumns() {
 
 void ccReg_Logger_i::reload() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_Logger_i::reload()");
   m_lel->setPartialLoad(true);
@@ -140,6 +141,7 @@ void ccReg_Logger_i::clear() {
 
 CORBA::ULongLong ccReg_Logger_i::resultSize() {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE("ccReg_Logger_i::resultSize()");
   return m_lel->getRealCount(uf);
@@ -147,6 +149,7 @@ CORBA::ULongLong ccReg_Logger_i::resultSize() {
 
 void ccReg_Logger_i::loadFilter(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Logger_i::loadFilter(%1%)") % _id);
   ccReg_PageTable_i::loadFilter(_id);
@@ -163,6 +166,7 @@ void ccReg_Logger_i::loadFilter(ccReg::TID _id) {
 
 void ccReg_Logger_i::saveFilter(const char* _name) {
   Logging::Context ctx(base_context_);
+  ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Logger_i::saveFilter('%1%')") % _name);
 
