@@ -25,10 +25,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <boost/spirit/core.hpp>
-#include <boost/spirit/utility/confix.hpp>
-#include <boost/spirit/utility/lists.hpp>
-#include <boost/spirit/utility/escape_char.hpp>
 
 namespace Admin {
 
