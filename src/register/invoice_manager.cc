@@ -49,6 +49,12 @@ Manager::hasStatementAnInvoice(const Database::ID &statementId)
     Database::Connection conn = Database::Manager::acquire();
     try {
         Database::Result res = conn.exec(query);
+        if(res.size() == 0) {
+                LOGGER(PACKAGE).error(boost::format(
+                    "Payment (id: %1%) not found in database")
+                        % statementId);
+                return true;        
+        }
         Database::ID invoiceId = res[0][0];
         if (invoiceId != Database::ID()) {
             LOGGER(PACKAGE).error(boost::format(
@@ -76,6 +82,12 @@ Manager::manualCreateInvoice(
     Database::ID registrarId;
     try {
         Database::Result res = conn.exec(query);
+        if(res.size() == 0) {
+                LOGGER(PACKAGE).error(boost::format(
+                "Registrar with handle '%1%' not found in database.") % 
+                        registrarHandle);
+                return false;
+        }
         registrarId = res[0][0];
     } catch (...) {
         LOGGER(PACKAGE).error("An error has occured");
@@ -320,6 +332,12 @@ Manager::countVat(
     Database::Connection conn = Database::Manager::acquire();
     try {
         Database::Result res = conn.exec(query);
+        if(res.size() == 0) {
+            LOGGER(PACKAGE).error(boost::format(
+                 "Record in price_vat table with vat=%1% not found. ")
+                    % vatRate);
+            return Database::Money();
+        }
         koef = res[0][0];
     } catch (...) {
         LOGGER(PACKAGE).error("countVat: error");

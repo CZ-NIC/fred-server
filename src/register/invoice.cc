@@ -406,6 +406,10 @@ Invoice::newInvoiceObjectRegistry(Database::PSQLConnection *conn)
         << "SELECT currval('invoice_object_registry_id_seq')";
     try {
         Database::Result res = conn->exec(selQuery);
+        if(res.size() == 0) {
+            ERROR("Error while obtaining last invoice_object_registry id sequence number. ");
+            return Database::ID();
+        }
         Database::ID id = res[0][0];
         TRACE(boost::format("invoice_object_registry id: %1%") % id);
         return id;
