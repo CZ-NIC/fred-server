@@ -90,7 +90,7 @@ public:
   virtual const std::string& getRawRequest() const = 0;
   virtual const std::string& getRawResponse() const  = 0;
 
-  virtual	std::auto_ptr<RequestProperties> getProperties() = 0;
+  virtual	boost::shared_ptr<RequestProperties> getProperties() = 0;
 
 };
 

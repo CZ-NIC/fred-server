@@ -44,7 +44,7 @@ private:
   bool is_monitoring;
   std::string raw_request;
   std::string raw_response;
-  std::auto_ptr<RequestProperties> props;
+  boost::shared_ptr<RequestProperties> props;
 
 public:
   RequestImpl(Database::ID &_id, Database::DateTime &_time_begin, Database::DateTime &_time_end, std::string &_serv_type, std::string &_source_ip,  std::string &_action_type, Database::ID &_session_id, std::string &_user_name, bool &_is_monitoring, std::string & _raw_request, std::string & _raw_response, std::auto_ptr<RequestProperties>  _props) :
@@ -92,7 +92,7 @@ public:
   virtual const std::string& getRawResponse() const {
 	return raw_response;
   }
-  virtual       std::auto_ptr<RequestProperties> getProperties() {
+  virtual       boost::shared_ptr<RequestProperties> getProperties() {
 	return props;
   }
 };

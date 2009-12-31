@@ -22,7 +22,7 @@ inline std::auto_ptr<Register::Logger::RequestProperties> convert_properties(con
 	return ret_ptr;
 }
 
-inline ccReg::RequestProperties convert_properties_d2c(std::auto_ptr<Register::Logger::RequestProperties> props) 
+inline ccReg::RequestProperties convert_properties_d2c(boost::shared_ptr<Register::Logger::RequestProperties> props) 
 {
 	
 	ccReg::RequestProperties res;
