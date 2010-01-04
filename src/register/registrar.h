@@ -241,6 +241,9 @@ public:
 
 };
 
+///Registrar smart pointer
+typedef std::auto_ptr<Registrar> RegistrarPtr;
+
 
 
 /// List of registrar object
@@ -426,7 +429,7 @@ public:
       throw (NOT_FOUND) = 0;
   virtual bool checkHandle(const std::string) const throw (SQL_ERROR) = 0;
 
-  virtual Registrar *createRegistrar() = 0;
+  virtual RegistrarPtr createRegistrar() = 0;
 
   virtual void addRegistrarAcl(
           const std::string &registrarHandle,
@@ -448,7 +451,6 @@ public:
   typedef std::auto_ptr<RegistrarList> RegistrarListPtr;
   virtual RegistrarListPtr createList() =0;
   ///registrar instance factory
-  typedef std::auto_ptr<Registrar> RegistrarPtr;
   virtual RegistrarPtr getRegistrarByHandle(const std::string& handle) =0;
 
   ///storage for flag of registrar's access to zone, used in registrar pagetable

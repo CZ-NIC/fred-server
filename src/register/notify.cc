@@ -225,7 +225,7 @@ namespace Register
             db->FreeSelect();
             // fill information about registrar, query must be closed
 
-            Registrar::Manager::RegistrarPtr regbyhandle ( rm->getRegistrarByHandle(regHandle));
+            Registrar::RegistrarPtr regbyhandle ( rm->getRegistrarByHandle(regHandle));
 
             std::stringstream reg;
             if (regbyhandle.get() == 0)
@@ -273,7 +273,7 @@ namespace Register
         );
         params["statechangedate"] = to_iso_extended_string(stamp.date());
         // fill information about registrar
-        Registrar::Manager::RegistrarPtr regbyhandle ( rm->getRegistrarByHandle(d->getRegistrarHandle()));
+        Registrar::RegistrarPtr regbyhandle ( rm->getRegistrarByHandle(d->getRegistrarHandle()));
 
         std::stringstream reg;
         if (regbyhandle.get() == 0)

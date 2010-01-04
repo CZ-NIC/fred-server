@@ -444,6 +444,10 @@ public:
   {///expecting external transaction, no transaction inside
       try
       {
+
+          LOGGER(PACKAGE).debug(boost::format("RegistrarImpl::addRegistrarZone registrarHandle: %1% zone: %2% fromDate: %3% toDate: %4%")
+          % registrarHandle % zone % fromDate.to_string() % toDate.to_string() );
+
         Database::Connection conn = Database::Manager::acquire();
 
         std::string fromStr;
@@ -457,6 +461,7 @@ public:
         {
             fromStr = "CURRENT_DATE";
         }
+
         if (!toDate.is_special())
         {
             toStr = "'" + toDate.to_string() + "'";
@@ -472,6 +477,9 @@ public:
             << "') r " << "JOIN (SELECT id FROM zone WHERE fqdn='" << conn.escape(zone)
             << "') z ON (1=1) " << "LEFT JOIN registrarinvoice ri ON "
             << "(ri.registrarid=r.id AND ri.zone=z.id) " << "WHERE ri.id ISNULL";
+
+        LOGGER(PACKAGE).debug(boost::format("RegistrarImpl::addRegistrarZone Q: %1%")
+        % sql.str() );
 
 
         conn.exec(sql.str());
@@ -514,6 +522,9 @@ public:
   {///expecting external transaction, no transaction inside
       try
       {
+          LOGGER(PACKAGE).debug(boost::format("RegistrarImpl::updateRegistrarZone id: %1% fromDate: %2% toDate: %3%")
+          % id % fromDate.to_string() % toDate.to_string() );
+
         Database::Connection conn = Database::Manager::acquire();
 
         std::string fromStr;
@@ -527,6 +538,7 @@ public:
         {
             fromStr = "CURRENT_DATE";
         }
+
         if (!toDate.is_special())
         {
             toStr = "'" + toDate.to_string() + "'";
@@ -540,6 +552,10 @@ public:
         sql << "UPDATE registrarinvoice SET fromdate = date (" << fromStr
             << "),todate =  date (" << toStr
             << ") WHERE id = " << id << ";";
+
+        LOGGER(PACKAGE).debug(boost::format("RegistrarImpl::updateRegistrarZone Q: %1%")
+        % sql.str() );
+
 
         conn.exec(sql.str());
 
@@ -1888,9 +1904,9 @@ public:
       }//catch (...)
   }//addRegistrarAcl
 
-  virtual Registrar *createRegistrar()
+  virtual RegistrarPtr createRegistrar()
   {
-      return dynamic_cast<RegistrarImpl *>(new RegistrarImpl);
+      return RegistrarPtr(dynamic_cast<RegistrarImpl *>(new RegistrarImpl));
   }
 
   virtual void addRegistrarZone(
