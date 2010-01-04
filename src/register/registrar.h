@@ -29,7 +29,7 @@ class DB;
 namespace Register {
 namespace Registrar {
 
-///work around unable to forward declare member class Register::Registrar::Manager::RegistrarZoneAccess*
+///work around inability to forward declare member class Register::Registrar::Manager::RegistrarZoneAccess*
 typedef void* RZAPtr;
 
 /// member identification (i.e. for sorting)
