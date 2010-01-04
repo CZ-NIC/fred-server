@@ -1690,14 +1690,14 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
   // detail->filePDF.handle = _invoice->getFileNamePDF().c_str();
 
   // TODO this treatment for everything similar
-  ModelFiles *file = _invoice->getFile();
+  ModelFiles *file = 0;// _invoice->getFile(); //removed from model
   if(file != NULL) {
     detail->filePDF.handle = file->getName().c_str();
   }
   detail->filePDF.type   = ccReg::FT_FILE;
 
   detail->fileXML.id     = _invoice->getFileXmlId();
-  ModelFiles *filexml = _invoice->getFileXml();
+  ModelFiles *filexml = 0;// _invoice->getFileXml(); //removed from model
   if(filexml != NULL) {
     detail->fileXML.handle = filexml->getName().c_str();
   }

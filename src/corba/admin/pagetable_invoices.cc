@@ -60,7 +60,7 @@ Registry::TableRow* ccReg_Invoices_i::getRow(CORBA::UShort row)
   (*tr)[3] <<= formatMoney(inv->getPrice()).c_str();
   (*tr)[4] <<= C_STR(credit);
   (*tr)[5] <<= C_STR(itype);
-  (*tr)[6] <<= C_STR(const_cast<Register::Invoicing::Invoice *>(inv)->getZone()->getFqdn());
+  (*tr)[6] <<= C_STR("removed from model");//const_cast<Register::Invoicing::Invoice *>(inv)->getZone()->getFqdn());//removed from model
   (*tr)[7] <<= oid_pdf;
   (*tr)[8] <<= oid_xml;
   return tr;

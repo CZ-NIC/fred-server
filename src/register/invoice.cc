@@ -2,6 +2,12 @@
 #include "invoice_manager.h"
 #include "model_invoicecreditpaymentmap.h"
 #include "model_invoicegeneration.h"
+//#include "model_zone.h"
+//#include "model_registrar.h"
+#include "model_invoiceprefix.h"
+//#include "model_files.h"
+//#include "model_files.h"
+
 #include "db/psql/psql_connection.h"
 
 namespace Register {
@@ -1110,43 +1116,18 @@ Invoice::testRegistrar()
 {
     TRACE("[CALL] Register::Invoicing::InvoiceImpl::testRegistrar()");
     Database::Connection conn = Database::Manager::acquire();
-    if (getRegistrarId() == Database::ID() && getRegistrar()->getHandle().empty()) {
-        ERROR("Registrar not set");
-        return false;
-    } else if (getRegistrarId() == Database::ID()) {
-        Database::SelectQuery regQuery;
-        regQuery.buffer()
-            << "select id from registrar where handle = "
-            << Database::Value(getRegistrar()->getHandle());
-        Database::Result res = conn.exec(regQuery);
-        if (res.size() == 0) {
-            ERROR("registrar do not exists");
-            return false;
-        } else {
-            setRegistrarId(*(*res.begin()).begin());
-        }
-    } else if (getRegistrar()->getHandle().empty()) {
+
         Database::SelectQuery query;
         query.buffer()
             << "select id from registrar where id = "
             << Database::Value(getRegistrarId());
         Database::Result res = conn.exec(query);
-        if (res.size() == 0) {
+        if (res.size() == 0)
+        {
             ERROR("registrar do not exists");
             return false;
         }
-    } else {
-        Database::SelectQuery query;
-        query.buffer()
-            << "select id from registrar where"
-            << " handle = " << Database::Value(getRegistrar()->getHandle())
-            << " and id = " << Database::Value(getRegistrarId());
-        Database::Result res = conn.exec(query);
-        if (res.size() == 0) {
-            ERROR("clash between registrar id and handle");
-            return false;
-        }
-    }
+
     return true;
 } // InvoiceImpl::testRegistrar()
 
@@ -1181,56 +1162,24 @@ Invoice::testZone()
 {
     TRACE("[CALL] Register::Invoicing::InvoiceImpl::testZone()");
     Database::Connection conn = Database::Manager::acquire();
-    if (getZoneId() == 0 && getZone()->getFqdn().empty()) {
-        ERROR("Zone not set");
-        return false;
-    } else if (getZoneId() == 0) {
-        Database::SelectQuery zoneQuery;
-        zoneQuery.buffer()
-            << "select zz.id from zone zz "
-            << "join registrarinvoice rr on (rr.zone = zz.id)"
-            << " where zz.fqdn = " << Database::Value(getZone()->getFqdn())
-            << " and rr.registrarid = " << Database::Value(getRegistrarId())
-            << " and rr.fromdate <= date(now())"
-            << " limit 1";
-        Database::Result res = conn.exec(zoneQuery);
-        if (res.size() == 0) {
-            ERROR(boost::format("registrar (id:%1%) do not belong to zone")
-                    % getRegistrarId());
-            return false;
-        } else {
-            setZoneId(*(*res.begin()).begin());
-        }
-    } else if (getZone()->getFqdn().empty()) {
+
+
         Database::SelectQuery zoneQuery;
         zoneQuery.buffer()
             << "select zz.id from zone zz"
             << " join registrarinvoice rr on (rr.zone = zz.id)"
             << " where zz.id = " << Database::Value(getZoneId())
             << " and rr.registrarid = " << Database::Value(getRegistrarId())
-            << " and rr.fromdate <= date(now()) "
+            << " and rr.fromdate <= CURRENT_DATE and (rr.todate >= CURRENT_DATE or rr.todate is null)"
             << " limit 1";
         Database::Result res = conn.exec(zoneQuery);
-        if (res.size() == 0) {
+        if (res.size() == 0)
+        {
             ERROR(boost::format("registrar (id:%1%) do not belong to zone")
                     % getRegistrarId());
             return false;
         }
-    } else {
-        Database::SelectQuery zoneQuery;
-        zoneQuery.buffer()
-            << "select zz.id from zone zz"
-            << " join registrarinvoice rr on (rr.zone = zz.id)"
-            << " where zz.id = " << Database::Value(getZoneId())
-            << " and zz.fqdn = " << Database::Value(getZone()->getFqdn())
-            << " and rr.registrarid = " << Database::Value(getRegistrarId())
-            << " and rr.fromdate < date(now()) limit 1";
-        Database::Result res = conn.exec(zoneQuery);
-        if (res.size() == 0) {
-            ERROR("zone name does not correspond to zone id");
-            return false;
-        }
-    }
+
     return true;
 } // InvoiceImpl::testZone()
 
@@ -1290,8 +1239,8 @@ Invoice::insertAccount()
         return false;
     }
     if (recordsCount == 0) {
-        LOGGER(PACKAGE).warning(boost::format("%1%: no records to invoice")
-                % getRegistrar()->getHandle());
+        LOGGER(PACKAGE).warning(boost::format("RegistrarId %1%: no records to invoice")
+                % getRegistrarId());
         return true;
     }
     if (!getRecordsPrice()) {
@@ -1341,9 +1290,12 @@ Invoice::insertDeposit()
         return false;
     }
     // XXX this allow insert deposit invoice without zone
-    if (getZoneId() != 0 || getZone() != NULL) {
-        if (!getZone()->getFqdn().empty()) {
-            if (!testZone()) {
+    if (getZoneId() != 0 )//|| getZone() != NULL)
+    {
+        //if (!getZone()->getFqdn().empty())
+        {
+            if (!testZone())
+            {
                 return false;
             }
         }

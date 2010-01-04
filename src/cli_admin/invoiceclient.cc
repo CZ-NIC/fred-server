@@ -20,7 +20,7 @@
 #include "commonclient.h"
 #include "invoiceclient.h"
 #include "register/invoice_manager.h"
-
+#include "../register/model_zone.h"
 namespace Admin {
 
 const struct options *
@@ -222,7 +222,7 @@ InvoiceClient::list_filters()
             << "\t\t<account_period>" << inv->getAccountPeriod() << "</account_period>\n"
             << "\t\t<type>" << Register::Invoicing::Type2Str(inv->getType()) << "</type>\n"
             << "\t\t<number>" << inv->getPrefix() << "</number>\n"
-            << "\t\t<registrar_id>" << inv->getRegistrar() << "</registrar_id>\n"
+            << "\t\t<registrar_id>" << inv->getRegistrarId() << "</registrar_id>\n"
             << "\t\t<credit>" << inv->getCredit() << "</credit>\n"
             << "\t\t<price>" << inv->getPrice() << "</price>\n"
             // << "\t\t<vat_rate>" << inv->getVatRate() << "</vat_rate>\n"
@@ -360,7 +360,7 @@ InvoiceClient::credit()
     if (m_conf.hasOpt(INVOICE_ZONE_NAME_NAME)) {
         ModelZone *zone = new ModelZone();
         zone->setFqdn(m_conf.get<std::string>(INVOICE_ZONE_NAME_NAME));
-        invoice->setZone(zone);
+        invoice->setZoneId(zone->getId());
     }
     if (m_conf.hasOpt(INVOICE_ZONE_ID_NAME)) {
         invoice->setZoneId(Database::ID(
@@ -374,7 +374,7 @@ InvoiceClient::credit()
     if (m_conf.hasOpt(INVOICE_REGISTRAR_HANDLE_NAME)) {
         ModelRegistrar *registrar = new ModelRegistrar();
         registrar->setHandle(m_conf.get<std::string>(INVOICE_REGISTRAR_HANDLE_NAME));
-        invoice->setRegistrar(registrar);
+        invoice->setRegistrarId(registrar->getId());
         regFilled = true;
     }
     if (m_conf.hasOpt(INVOICE_PRICE_NAME)) {
@@ -425,7 +425,7 @@ InvoiceClient::factoring(Register::Invoicing::Manager *man,
     if (!zoneName.empty()) {
         ModelZone *zone = new ModelZone();
         zone->setFqdn(zoneName);
-        invoice->setZone(zone);
+        invoice->setZoneId(zone->getId());
     }
     if (regId != Database::ID()) {
         invoice->setRegistrarId(regId);
@@ -433,7 +433,7 @@ InvoiceClient::factoring(Register::Invoicing::Manager *man,
     if (!regName.empty()) {
         ModelRegistrar *registrar = new ModelRegistrar();
         registrar->setHandle(regName);
-        invoice->setRegistrar(registrar);
+        invoice->setRegistrarId(registrar->getId());
     }
     invoice->setToDate(toDate);
     invoice->setTaxDate(taxDate);

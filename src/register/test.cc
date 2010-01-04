@@ -86,9 +86,10 @@ invoice()
     std::cout << invList->getSize() << std::endl;
     for (int i = 0; i < (int)invList->getSize(); i++) {
         Register::Invoicing::Invoice *invoice = invList->get(i);
-        std::cout << invoice->getZone()->getFqdn() << ", "
+        std::cout //<< invoice->getZone()->getFqdn() << ", "
             << invoice->getCrDate() << ", " << invoice->getRegistrarId() << ": "
-            << invoice->getRegistrar()->getHandle() << std::endl;
+            //<< invoice->getRegistrar()->getHandle()
+            << std::endl;
     }
 
 }

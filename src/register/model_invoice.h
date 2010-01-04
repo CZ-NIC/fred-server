@@ -3,11 +3,11 @@
 
 #include "db_settings.h"
 #include "model.h"
-#include "model_zone.h"
-#include "model_registrar.h"
-#include "model_invoiceprefix.h"
-#include "model_files.h"
-#include "model_files.h"
+//#include "model_zone.h"
+//#include "model_registrar.h"
+//#include "model_invoiceprefix.h"
+//#include "model_files.h"
+//#include "model_files.h"
 
 
 class ModelInvoice:
@@ -25,10 +25,12 @@ public:
     {
         return m_zoneId.get();
     }
+    /*
     ModelZone *getZone()
     {
         return zone.getRelated(this);
     }
+    */
     const Database::DateTime &getCrDate() const
     {
         return m_crDate.get();
@@ -45,10 +47,13 @@ public:
     {
         return m_registrarId.get();
     }
+
+    /*
     ModelRegistrar *getRegistrar()
     {
         return registrar.getRelated(this);
     }
+     */
     const Database::Money &getCredit() const
     {
         return m_credit.get();
@@ -73,26 +78,32 @@ public:
     {
         return m_prefixTypeId.get();
     }
+    /*
     ModelInvoicePrefix *getPrefixType()
     {
         return prefixType.getRelated(this);
     }
+     */
     const unsigned long long &getFileId() const
     {
         return m_fileId.get();
     }
+    /*
     ModelFiles *getFile()
     {
         return file.getRelated(this);
     }
+    */
     const unsigned long long &getFileXmlId() const
     {
         return m_fileXmlId.get();
     }
+    /*
     ModelFiles *getFileXml()
     {
         return fileXml.getRelated(this);
     }
+    */
     void setId(const unsigned long long &id)
     {
         m_id = id;
@@ -101,10 +112,12 @@ public:
     {
         m_zoneId = zoneId;
     }
+    /*
     void setZone(ModelZone *foreign_value)
     {
         zone.setRelated(this, foreign_value);
     }
+    */
     void setCrDate(const Database::DateTime &crDate)
     {
         m_crDate = crDate;
@@ -121,10 +134,12 @@ public:
     {
         m_registrarId = registrarId;
     }
+    /*
     void setRegistrar(ModelRegistrar *foreign_value)
     {
         registrar.setRelated(this, foreign_value);
     }
+    */
     void setCredit(const Database::Money &credit)
     {
         m_credit = credit;
@@ -149,27 +164,32 @@ public:
     {
         m_prefixTypeId = prefixTypeId;
     }
+    /*
     void setPrefixType(ModelInvoicePrefix *foreign_value)
     {
         prefixType.setRelated(this, foreign_value);
     }
+    */
     void setFileId(const unsigned long long &fileId)
     {
         m_fileId = fileId;
     }
+    /*
     void setFile(ModelFiles *foreign_value)
     {
         file.setRelated(this, foreign_value);
     }
+    */
     void setFileXmlId(const unsigned long long &fileXmlId)
     {
         m_fileXmlId = fileXmlId;
     }
+    /*
     void setFileXml(ModelFiles *foreign_value)
     {
         fileXml.setRelated(this, foreign_value);
     }
-
+     */
     friend class Model::Base;
 
     void insert()
@@ -223,33 +243,33 @@ protected:
     Field::Field<unsigned long long> m_fileId;
     Field::Field<unsigned long long> m_fileXmlId;
 
-    Field::Lazy::Field<ModelZone *> m_zone;
-    Field::Lazy::Field<ModelRegistrar *> m_registrar;
-    Field::Lazy::Field<ModelInvoicePrefix *> m_prefixType;
-    Field::Lazy::Field<ModelFiles *> m_file;
-    Field::Lazy::Field<ModelFiles *> m_fileXml;
+    //Field::Lazy::Field<ModelZone *> m_zone;
+    //Field::Lazy::Field<ModelRegistrar *> m_registrar;
+    //Field::Lazy::Field<ModelInvoicePrefix *> m_prefixType;
+    //Field::Lazy::Field<ModelFiles *> m_file;
+    //Field::Lazy::Field<ModelFiles *> m_fileXml;
 
 public:
     static Model::Field::PrimaryKey<ModelInvoice, unsigned long long> id;
-    static Model::Field::ForeignKey<ModelInvoice, unsigned long long, ModelZone> zoneId;
+    static Model::Field::Basic<ModelInvoice, unsigned long long> zoneId;
     static Model::Field::Basic<ModelInvoice, Database::DateTime> crDate;
     static Model::Field::Basic<ModelInvoice, Database::Date> taxDate;
     static Model::Field::Basic<ModelInvoice, unsigned long long> prefix;
-    static Model::Field::ForeignKey<ModelInvoice, unsigned long long, ModelRegistrar> registrarId;
+    static Model::Field::Basic<ModelInvoice, unsigned long long> registrarId;
     static Model::Field::Basic<ModelInvoice, Database::Money> credit;
     static Model::Field::Basic<ModelInvoice, Database::Money> price;
     static Model::Field::Basic<ModelInvoice, int> vat;
     static Model::Field::Basic<ModelInvoice, Database::Money> total;
     static Model::Field::Basic<ModelInvoice, Database::Money> totalVat;
-    static Model::Field::ForeignKey<ModelInvoice, unsigned long long, ModelInvoicePrefix> prefixTypeId;
-    static Model::Field::ForeignKey<ModelInvoice, unsigned long long, ModelFiles> fileId;
-    static Model::Field::ForeignKey<ModelInvoice, unsigned long long, ModelFiles> fileXmlId;
+    static Model::Field::Basic<ModelInvoice, unsigned long long> prefixTypeId;
+    static Model::Field::Basic<ModelInvoice, unsigned long long> fileId;
+    static Model::Field::Basic<ModelInvoice, unsigned long long> fileXmlId;
 
-    static Model::Field::Related::OneToOne<ModelInvoice, unsigned long long, ModelZone> zone;
-    static Model::Field::Related::OneToOne<ModelInvoice, unsigned long long, ModelRegistrar> registrar;
-    static Model::Field::Related::OneToOne<ModelInvoice, unsigned long long, ModelInvoicePrefix> prefixType;
-    static Model::Field::Related::OneToOne<ModelInvoice, unsigned long long, ModelFiles> file;
-    static Model::Field::Related::OneToOne<ModelInvoice, unsigned long long, ModelFiles> fileXml;
+    //static Model::Field::Related::OneToOne<ModelInvoice, unsigned long long, ModelZone> zone;
+    //static Model::Field::Related::OneToOne<ModelInvoice, unsigned long long, ModelRegistrar> registrar;
+    //static Model::Field::Related::OneToOne<ModelInvoice, unsigned long long, ModelInvoicePrefix> prefixType;
+    //static Model::Field::Related::OneToOne<ModelInvoice, unsigned long long, ModelFiles> file;
+    //static Model::Field::Related::OneToOne<ModelInvoice, unsigned long long, ModelFiles> fileXml;
 
 private:
     static std::string table_name;  /** < model table name */
