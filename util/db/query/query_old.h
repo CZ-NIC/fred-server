@@ -46,13 +46,6 @@ public:
 	}
 
 
-	const char* c_str() {
-		char *tmp = new char[sql_buffer.str().size() + 1];
-		strcpy(tmp, sql_buffer.str().c_str());
-		return tmp;
-	}
-
-
 	std::stringstream& buffer() {
 		m_initialized = true;
 		return sql_buffer;
