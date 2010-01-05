@@ -3963,12 +3963,16 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
     short int code = 0;
 
     int *tch_add = new int[ tech_add.length() ];
-    if (tech_add.length() > 0)
-      memset((void *)tch_add, 0, sizeof(tch_add));
+    if (tech_add.length() > 0) {
+        for (unsigned int i = 0; i < tech_add.length(); ++i)
+            tch_add[i] = 0;
+    }
 
     int *tch_rem = new int[ tech_rem.length() ];
-    if (tech_rem.length() > 0)
-      memset((void *)tch_rem, 0, sizeof(tch_rem));
+    if (tech_rem.length() > 0) {
+        for (unsigned int i = 0; i < tech_rem.length(); ++i)
+            tch_rem[i] = 0;
+    }
 
     ParsedAction paction;
     paction.add(1,(const char*)handle);
