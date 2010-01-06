@@ -471,29 +471,36 @@ public:
             toStr = "NULL";
         }
         std::stringstream sql;
-        sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate,lastdate) "
-            << "SELECT r.id,z.id, " << fromStr << "," << toStr << " FROM ("
-            << "SELECT id FROM registrar WHERE handle='" << conn.escape(registrarHandle)
-            << "') r " << "JOIN (SELECT id FROM zone WHERE fqdn='" << conn.escape(zone)
-            << "') z ON (1=1) " << "LEFT JOIN registrarinvoice ri ON "
-            << "(ri.registrarid=r.id AND ri.zone=z.id) " << "WHERE ri.id ISNULL";
+        sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate,todate) "
+               "SELECT (SELECT id FROM registrar WHERE handle='" << conn.escape(registrarHandle) << "' LIMIT 1) "
+               ",(SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "' LIMIT 1) "
+               ", " << fromStr << "," << toStr;
 
-        LOGGER(PACKAGE).debug(boost::format("RegistrarImpl::addRegistrarZone Q: %1%")
+        LOGGER(PACKAGE).debug(boost::format("RegistrarImpl::addRegistrarZone Q1: %1%")
         % sql.str() );
 
 
         conn.exec(sql.str());
 
         std::stringstream sql2;
-        sql2 << "SELECT ri.id "
-         "FROM (SELECT id FROM registrar WHERE handle='" << conn.escape(registrarHandle) << "') r "
-         "JOIN (SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "') z ON (1=1) "
-         "LEFT JOIN registrarinvoice ri ON (ri.registrarid=r.id AND ri.zone=z.id) "
-         "WHERE fromdate = date(" << fromStr << ") and ";
+
+        sql2 << "SELECT ri.id FROM registrarinvoice ri "
+            "WHERE ri.registrarid = (SELECT id FROM registrar WHERE handle='"
+                << conn.escape(registrarHandle) << "' LIMIT 1) "
+            "and ri.zone = (SELECT id FROM zone WHERE fqdn='"
+                << conn.escape(zone) << "' LIMIT 1) "
+            "and ri.fromdate = date (" << fromStr << ") ";
+
         if(toStr.compare("NULL") == 0)
-            sql2 << "todate isnull";
+            sql2 << "and ri.todate isnull ";
         else
-            sql2 <<  "todate = date(" << toStr << ")";
+            sql2 <<  "and ri.todate = date(" << toStr << ") ";
+
+        sql2 <<  "LIMIT 1 ";
+
+        LOGGER(PACKAGE).debug(boost::format("RegistrarImpl::addRegistrarZone Q2: %1%")
+        % sql2.str() );
+
 
         Database::Result res = conn.exec(sql2.str());
 
