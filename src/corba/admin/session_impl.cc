@@ -1535,13 +1535,63 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
       Register::Registrar::ZoneAccess *registrar_azone = update_registrar->newZoneAccess();
 
       LOGGER(PACKAGE).debug(boost::format
-              ("ccReg_Session_i::updateRegistrar azone : i: %1% ")
-                  % i );
+              ("ccReg_Session_i::updateRegistrar azone : i: %1% "
+              "id: %2% name: %3% "
+              "fromdate: %4% - %5% - %6% "
+              "todate %7% - %8% - %9% "
+              )
+                  % i
+                  % _registrar.zones[i].id
+                  % _registrar.zones[i].name //3
+
+                  % _registrar.zones[i].fromDate.year
+                  % _registrar.zones[i].fromDate.month
+                  % _registrar.zones[i].fromDate.day
+
+                  % _registrar.zones[i].toDate.year //7
+                  % _registrar.zones[i].toDate.month
+                  % _registrar.zones[i].toDate.day
+
+      );
 
       registrar_azone->id = _registrar.zones[i].id;
       registrar_azone->name = _registrar.zones[i].name;
-      registrar_azone->fromdate = makeBoostDate( _registrar.zones[i].fromDate);
-      registrar_azone->todate = makeBoostDate( _registrar.zones[i].toDate);
+      try
+      {
+          date fdate = makeBoostDate( _registrar.zones[i].fromDate);
+          registrar_azone->fromdate = fdate;
+      }
+      catch(...)
+      {//no date is NOT ok, webadmin should check this
+          LOGGER(PACKAGE).error(boost::format
+                  ("ccReg_Session_i::updateRegistrar Invalid fromDate "
+                  "in azone: i: %1% "
+                  "id: %2% name: %3% "
+                  "fromdate: %4% - %5% - %6% "
+                  "todate %7% - %8% - %9% "
+                  )
+                      % i
+                      % _registrar.zones[i].id
+                      % _registrar.zones[i].name //3
+
+                      % _registrar.zones[i].fromDate.year
+                      % _registrar.zones[i].fromDate.month
+                      % _registrar.zones[i].fromDate.day
+
+                      % _registrar.zones[i].toDate.year //7
+                      % _registrar.zones[i].toDate.month
+                      % _registrar.zones[i].toDate.day
+          );
+
+          throw;
+      }//catch all fromdate
+
+      try
+      {
+          date tdate = makeBoostDate( _registrar.zones[i].toDate);
+          registrar_azone->todate = tdate;
+      }
+      catch(...){}//no date is ok
 
     }//for i
 
