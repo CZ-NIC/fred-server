@@ -1055,7 +1055,7 @@ public:
 
         Database::ID  zone_id      = *col;
         Database::ID  registrar_id = *(++col);
-        unsigned long credit       = *(++col);
+        long credit                = *(++col);
         
         RegistrarImpl *registrar_ptr = dynamic_cast<RegistrarImpl* >(findIDSequence(registrar_id));
         if (registrar_ptr)
