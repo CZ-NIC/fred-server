@@ -165,6 +165,7 @@ public:
     }
 
 	// make an id query according to the filters
+    id_query.order_by() << "id";
     id_query.limit(load_limit_);
     _filter.serialize(id_query);
 
@@ -252,7 +253,35 @@ public:
 
   virtual void sort(MemberType _member, bool _asc) {
 
-	// TODO
+      switch(_member) {
+          case  MT_TIME_BEGIN:
+              stable_sort(data_.begin(), data_.end(), CompareTimeBegin(_asc));
+              break;
+          case MT_TIME_END:
+              stable_sort(data_.begin(), data_.end(), CompareTimeEnd(_asc));
+              break;
+          case MT_SOURCE_IP:
+              stable_sort(data_.begin(), data_.end(), CompareSourceIp(_asc));
+              break;
+          case MT_SERVICE:
+              stable_sort(data_.begin(), data_.end(), CompareServiceType(_asc));
+              break;
+          case MT_ACTION: 
+              stable_sort(data_.begin(), data_.end(), CompareActionType(_asc));
+              break;
+          case MT_SESSION_ID:
+              stable_sort(data_.begin(), data_.end(), CompareSessionId(_asc));
+              break;
+          case MT_USER_NAME:
+              stable_sort(data_.begin(), data_.end(), CompareUserName(_asc));
+              break;
+          case MT_MONITORING:
+              stable_sort(data_.begin(), data_.end(), CompareIsMonitoring(_asc));
+              break;              
+          default:
+              break;
+      }
+
   }
 
   virtual std::auto_ptr<RequestProperties> getPropsForId(Database::ID id) {
