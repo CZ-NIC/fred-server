@@ -37,7 +37,7 @@ ccReg_StatementItems_i::getColumnHeaders()
 //    COLHEAD(ch, 3, "Spec. Symbol", CT_OTHER);
     COLHEAD(ch, 3, "Price", CT_OTHER);
 //    COLHEAD(ch, 10, "Account Evid", CT_OTHER);
-    COLHEAD(ch, 4, "Date", CT_OTHER);
+    COLHEAD(ch, 4, "Account Date", CT_OTHER);
     COLHEAD(ch, 5, "Memo", CT_OTHER);
     COLHEAD(ch, 6, "Invoice", CT_OID);
     COLHEAD(ch, 7, "Account Name", CT_OTHER);
