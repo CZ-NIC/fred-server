@@ -99,6 +99,17 @@ Invoice::setVarSymbol(const std::string &varSymbol)
 {
     m_varSymbol = varSymbol;
 }
+
+const std::string &Invoice::getZoneFqdn() const
+{
+    return m_zoneFqdn;
+}
+
+void Invoice::setZoneFqdn(std::string &zoneFqdn)
+{
+    m_zoneFqdn = zoneFqdn;
+}
+
 const Database::DateInterval &
 Invoice::getAccountPeriod() const
 {
@@ -271,6 +282,30 @@ Invoice::setFile(const Database::ID &filePDF, const Database::ID &fileXML)
             "const Database::ID &, const Database::ID &");
     setFileId(filePDF);
     setFileXmlId(fileXML);
+}
+
+const std::string &
+Invoice::getFileHandle() const
+{
+    return m_fileHandle;
+}
+
+const std::string &
+Invoice::getFileXmlHandle() const
+{
+    return m_fileXmlHandle;
+}
+
+
+void Invoice::setFileHandle(std::string &fileHandle)
+{
+    m_fileHandle = fileHandle;
+}
+
+
+void Invoice::setFileXmlHandle(std::string &fileXmlHandle)
+{
+    m_fileXmlHandle = fileXmlHandle;
 }
 
 void

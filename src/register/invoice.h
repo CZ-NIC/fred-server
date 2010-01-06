@@ -38,6 +38,9 @@ private:
     Subject     m_client;
     static Subject     m_supplier;
     std::string m_varSymbol;
+    std::string m_zoneFqdn;
+    std::string m_fileHandle;
+    std::string m_fileXmlHandle;
 
     AnnualPartitioning              m_annualPartitioning;
     std::vector<PaymentSource *>    m_sources;
@@ -143,6 +146,8 @@ public:
     void setAccountPeriod(const Database::DateInterval &period);
     void setVarSymbol(const std::string &varSymbol);
     const std::string &getVarSymbol() const;
+    const std::string &getZoneFqdn() const;
+    void setZoneFqdn(std::string &zoneFqdn);
     const Subject *getClient() const;
     void setClient(Subject &client);
     const Subject *getSupplier() const;
@@ -155,6 +160,10 @@ public:
     unsigned int getActionCount() const;
     const PaymentAction *getAction(const unsigned int &index) const;
     AnnualPartitioning *getAnnualPartitioning();
+    const std::string &getFileHandle() const;
+    const std::string &getFileXmlHandle() const;
+    void setFileHandle(std::string &fileHandle);
+    void setFileXmlHandle(std::string &fileXmlHandle);
 
     void doExport(Exporter *exp);
     std::string getLastError() const;

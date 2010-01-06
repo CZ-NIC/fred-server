@@ -1,3 +1,6 @@
+
+#include "invoice.h"
+
 #include "invoice_list.h"
 #include "invoice_manager.h"
 #include "common_impl_new.h"
@@ -189,6 +192,7 @@ List::reload(Database::Filters::Union &filter)
             Invoice *invoice = new Invoice(m_manager);
             invoice->setId(id);
             invoice->setZoneId(zone);
+            invoice->setZoneFqdn(zoneName);
             invoice->setCrDate(create_time);
             invoice->setTaxDate(tax_date);
             invoice->setAccountPeriod(account_period);
@@ -203,6 +207,8 @@ List::reload(Database::Filters::Union &filter)
             invoice->setVarSymbol(c_var_symb);
             invoice->setClient(client);
             invoice->setPrefixTypeId(prefix_type);
+            invoice->setFileHandle(filepdf_name);
+            invoice->setFileXmlHandle(filexml_name);
             appendToList(invoice);
             LOGGER(PACKAGE).debug(boost::format(
                         "list of invoices size: %1%")
