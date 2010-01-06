@@ -525,8 +525,8 @@ Invoice::domainBilling(
             "Database::ID, Database::Date, int)");
 
     PGconn *pg_conn = db->__getPGconn();
-    Database::PSQLConnection *psql_conn = new Database::PSQLConnection(pg_conn);
-    return domainBilling(psql_conn, zone, registrar, objectId, exDate, units_count);
+    std::auto_ptr<Database::PSQLConnection> psql_conn(new Database::PSQLConnection(pg_conn));
+    return domainBilling(psql_conn.get(), zone, registrar, objectId, exDate, units_count);
 }
 
 bool 
