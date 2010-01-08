@@ -211,8 +211,6 @@ ccReg_Registrars_i::clear()
   Logging::Context ctx(base_context_);
 
   TRACE("[CALL] ccReg_Registrars_i::clear()");
-  rl->clearFilter();
-  
   ccReg_PageTable_i::clear();
   rl->clear();
 }

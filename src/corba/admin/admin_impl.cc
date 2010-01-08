@@ -324,7 +324,11 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
     Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
-    rl->reload();
+
+    Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
+    unionFilter->addFilter( new Database::Filters::RegistrarImpl(true) );
+    rl->reload(*(unionFilter).get());
+
     LOG( NOTICE_LOG, "getRegistrars: num -> %d", rl->size() );
     ccReg::RegistrarList* reglist = new ccReg::RegistrarList;
     reglist->length(rl->size());
@@ -354,8 +358,13 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
     Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
-    rl->setZoneFilter(zone);
-    rl->reload();
+
+    Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
+    std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
+    r->addZoneFqdn().setValue(zone);
+    unionFilter->addFilter( r.release() );
+    rl->reload(*(unionFilter).get());
+
     LOG( NOTICE_LOG, "getRegistrars: num -> %d", rl->size() );
     ccReg::RegistrarList* reglist = new ccReg::RegistrarList;
     reglist->length(rl->size());
@@ -387,8 +396,13 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
     Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
-    rl->setIdFilter(id);
-    rl->reload();
+
+    Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
+    std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
+    r->addId().setValue(Database::ID(id));
+    unionFilter->addFilter( r.release() );
+    rl->reload(*(unionFilter).get());
+
     if (rl->size() < 1) {
       ldb.Disconnect();
       throw ccReg::Admin::ObjectNotFound();
@@ -421,8 +435,12 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
     Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
-    rl->setHandleFilter(handle);
-    rl->reload();
+    Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
+    std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
+    r->addHandle().setValue(handle);
+    unionFilter->addFilter( r.release() );
+    rl->reload(*(unionFilter).get());
+
     if (rl->size() < 1) {
       ldb.Disconnect();
       throw ccReg::Admin::ObjectNotFound();
@@ -451,8 +469,12 @@ void ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData) {
   if (!regData.id)
     reg = rl->create();
   else {
-    rl->setIdFilter(regData.id);
-    rl->reload();
+      Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
+      std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
+      r->addId().setValue(Database::ID(regData.id));
+      unionFilter->addFilter( r.release() );
+      rl->reload(*(unionFilter).get());
+
     if (rl->size() != 1) {
       db.Disconnect();
       throw ccReg::Admin::UpdateFailed();
