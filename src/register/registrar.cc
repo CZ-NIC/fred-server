@@ -52,7 +52,6 @@ public:
   ACLImpl()
 	  : ModelRegistrarAcl()
   {
-	  //ModelRegistrarAcl::setId(0);
   }
   ACLImpl(TID _id,
           const std::string& _certificateMD5,
@@ -821,21 +820,7 @@ public:
   ~RegistrarListImpl() {
     clear();
   }
-  virtual void setIdFilter(TID _idFilter) {
-    idFilter = _idFilter;
-  }
-  virtual void setHandleFilter(const std::string& _handle) {
-    handle = _handle;
-  }
-  virtual void setXMLFilter(const std::string& _xml) {
-    xml = _xml;
-  }
-  virtual void setNameFilter(const std::string& _name) {
-    name = _name;
-  }
-  virtual void setZoneFilter(const std::string& _zone) {
-    zoneFilter = _zone;
-  }
+
   void resetIDSequence()
   {
     ptr_idx_ = -1;
@@ -848,9 +833,9 @@ public:
     long long m_data_size = m_data.size();
     RegistrarImpl* ret_ptr=0;
 
-    for (; ptr_idx_ < m_data_size
+    for ( ; ptr_idx_ < m_data_size
 			&& ((dynamic_cast<RegistrarImpl* >(m_data[ptr_idx_]))->getId()<_id)
-			; ptr_idx_++);
+			; ptr_idx_++) ;
     if (ptr_idx_ == m_data_size
     		|| (ret_ptr = dynamic_cast<RegistrarImpl* >(m_data[ptr_idx_]))->getId() != _id)
     {
@@ -862,100 +847,6 @@ public:
     return ret_ptr;
   }//findIDSequence
 
-  virtual void reload() throw (SQL_ERROR)
-  {
-	try
-	{
-		Database::Connection conn = Database::Manager::acquire();
-		clear();
-		std::ostringstream sql;
-		sql << "SELECT r.id,r.handle,r.name,r.url,r.organization,"
-		 << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
-		 << "r.postalcode,r.country,r.telephone,r.fax,r.email,r.system,"
-		 << "COALESCE(SUM(i.credit),0) " << "FROM registrar r "
-		 << "LEFT JOIN invoice i ON (r.id=i.registrarid AND "
-		 << "NOT(i.credit ISNULL)) ";
-		if (!zoneFilter.empty())
-		sql << "LEFT JOIN (SELECT z.fqdn, ri.registrarid "
-		   << "FROM zone z, registrarinvoice ri "
-		   << "WHERE z.id=ri.zone AND ri.fromdate<=CURRENT_DATE) t "
-		   << "ON (t.registrarid=r.id AND t.fqdn='" << zoneFilter << "') ";
-		sql << "WHERE 1=1 ";
-		if (!zoneFilter.empty())
-		sql << "AND NOT(t.fqdn ISNULL) ";
-		if (idFilter) sql << "AND " << "r.id" << "=" << idFilter << " ";
-		if (!name.empty())
-			sql << "AND " << "r.name" << " ILIKE TRANSLATE('"
-				<< conn.escape(name) << "','*?','%_') ";
-		if (!handle.empty())
-		{
-		    if (handle.find('?') != std::string::npos)
-		      sql << "AND " << "r.handle"
-		      << " ILIKE TRANSLATE('" << conn.escape(handle) << "','*?','%_') ";
-		    else
-		    	sql << "AND " << "r.handle" << "="
-		           << "'" << conn.escape(handle) << "'" << " ";
-		}
-		sql << "GROUP BY r.id,r.handle,r.name,r.url,r.organization,"
-		 << "r.street1,r.street2,r.street3,r.city,r.stateorprovince,"
-		 << "r.postalcode,r.country,r.telephone,r.fax,r.email,r.system ";
-		sql << "ORDER BY r.id ";
-
-		Database::Result res = conn.exec(sql.str());
-
-		for (unsigned i=0; i < static_cast<unsigned>(res.size()); i++)
-		{
-			appendToList(new RegistrarImpl
-							(
-							  res[i][0]
-							  ,""
-							  ,""
-							  ,""
-							  ,true
-							  ,res[i][1]
-							  ,res[i][2]
-							  ,res[i][3]
-							  ,res[i][4]
-							  ,res[i][5]
-							  ,res[i][6]
-							  ,res[i][7]
-							  ,res[i][8]
-							  ,res[i][9]
-							  ,res[i][10]
-							  ,res[i][11]
-							  ,res[i][12]
-							  ,res[i][13]
-							  ,res[i][14]
-							  ,res[i][15]
-							  ,res[i][16]
-							)//new
-						   );//push_back
-		}//for
-
-        resetIDSequence();
-		sql.str("");
-		sql << "SELECT registrarid,cert,password " << "FROM registraracl ORDER BY registrarid";
-
-		Database::Result res2 = conn.exec(sql.str());
-		for (unsigned i=0; i < static_cast<unsigned>(res2.size()); i++)
-		{
-		  // find associated registrar
-		  unsigned registrarId = res2[i][0];
-		  RegistrarImpl *r = dynamic_cast<RegistrarImpl* >(findIDSequence(registrarId));
-
-		  if (r)
-		  {
-			r->putACL(0, res2[i][1], res2[i][2]);
-		  }
-		}//for
-
-	}//try
-	catch (...)
-	{
-	 LOGGER(PACKAGE).error("reload: an error has occured");
-	 throw SQL_ERROR();
-	}//catch (...)
-  }//reload
 
   virtual void reload(Database::Filters::Union &uf) {
     TRACE("[CALL] RegistrarListImpl::reload()");
@@ -1181,17 +1072,12 @@ public:
 	  % id);
 	  throw Register::NOT_FOUND();
   }
-  
+
   virtual Registrar* create()
   {
     return new RegistrarImpl();
   }
-  void clearFilter() {
-    name = "";
-    handle = "";
-    zoneFilter = "";
-  }
-  
+
   virtual void sort(MemberType _member, bool _asc, unsigned _zone_id
           , RZAPtr rzaptr) {
     switch (_member) {
@@ -1259,10 +1145,6 @@ public:
     }
   }
 
-  virtual void makeQuery(bool, bool, std::stringstream&) const
-  {
-    // empty implementation
-  }
   virtual const char* getTempTableName() const
   {
     return "";
@@ -2019,9 +1901,13 @@ public:
     virtual RegistrarPtr getRegistrarByHandle(const std::string& handle)
     {
         RegistrarListPtr registrarlist ( createList());
-        registrarlist->clearFilter();
-        registrarlist->setHandleFilter(handle);
-        registrarlist->reload();
+
+        Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
+        std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
+        r->addHandle().setValue(handle);
+        unionFilter->addFilter( r.release() );
+        registrarlist->reload(*(unionFilter).get());
+
         if (registrarlist->size() != 1)
         {
             return RegistrarPtr(0);
