@@ -465,9 +465,13 @@ void ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData) {
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
   Register::Registrar::Manager *rm = r->getRegistrarManager();
   Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
+  Register::Registrar::RegistrarPtr  reg_guard;//delete at the end
   Register::Registrar::Registrar *reg; // registrar to be created or updated
   if (!regData.id)
-    reg = rl->create();
+  {
+      reg_guard = rm->createRegistrar();
+      reg = reg_guard.get();
+  }
   else {
       Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
       std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));

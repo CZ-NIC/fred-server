@@ -9,6 +9,7 @@
 #include "old_utils/dbsql.h"
 #include "register/register.h"
 #include "register/notify.h"
+#include "register/registrar.h"
 #include "usertype_conv.h"
 #include "common.h"
 
@@ -1473,11 +1474,14 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
   TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
   Register::Registrar::Manager::RegistrarListPtr tmp_registrar_list =
       m_register_manager->getRegistrarManager()->createList();
-  Register::Registrar::Registrar *update_registrar; // registrar to be created or updated
+  Register::Registrar::RegistrarPtr  update_registrar_guard;//delete at the end
+  Register::Registrar::Registrar* update_registrar; // registrar to be created or updated
+
   if (!_registrar.id)
   {
     LOGGER(PACKAGE).debug("no registrar id specified; creating new registrar...");
-    update_registrar = tmp_registrar_list->create();
+    update_registrar_guard = m_register_manager->getRegistrarManager()->createRegistrar();
+    update_registrar = update_registrar_guard.get();
   }
   else
   {
