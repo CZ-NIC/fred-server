@@ -1073,11 +1073,6 @@ public:
 	  throw Register::NOT_FOUND();
   }
 
-  virtual Registrar* create()
-  {
-    return new RegistrarImpl();
-  }
-
   virtual void sort(MemberType _member, bool _asc, unsigned _zone_id
           , RZAPtr rzaptr) {
     switch (_member) {

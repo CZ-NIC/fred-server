@@ -259,8 +259,6 @@ public:
   virtual Registrar* get(unsigned idx) const = 0;
   /// XXX get method with releaseing ownership functionality 
   virtual Registrar* getAndRelease(unsigned idx) = 0;
-  /// Create new registrar in list
-  virtual Registrar* create() = 0;
   /// sort by column
   virtual void sort(MemberType _member, bool _asc, unsigned _zone_id = 0
           , RZAPtr rzaptr =0 ) = 0;
