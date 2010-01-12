@@ -31,18 +31,28 @@ Registry::Table::ColumnHeaders* ccReg_Domains_i::getColumnHeaders() {
 
   TRACE("[CALL] ccReg_Domains_i::getColumnHeaders()");
   Registry::Table::ColumnHeaders *ch = new Registry::Table::ColumnHeaders();
-  ch->length(11);
+  ch->length(21);
   COLHEAD(ch, 0, "FQDN",            CT_OID);
   COLHEAD(ch, 1, "Registrant",      CT_OID);
   COLHEAD(ch, 2, "Registrant name", CT_OTHER);
   COLHEAD(ch, 3, "Registrant organization", CT_OTHER);
-  COLHEAD(ch, 4, "Registrar",       CT_OID);
-  COLHEAD(ch, 5, "In zone",         CT_OTHER);
-  COLHEAD(ch, 6, "Create date",     CT_OTHER);
-  COLHEAD(ch, 7, "Expiration date", CT_OTHER);
-  COLHEAD(ch, 8, "Out Zone date",   CT_OTHER);
-  COLHEAD(ch, 9, "Delete date",     CT_OTHER);
-  COLHEAD(ch, 10, "Validation",     CT_OTHER);
+  COLHEAD(ch, 4, "Registrant phone", CT_OTHER);//
+  COLHEAD(ch, 5, "Registrar",       CT_OID);
+  COLHEAD(ch, 6, "In zone",         CT_OTHER);
+  COLHEAD(ch, 7, "Create date",     CT_OTHER);
+  COLHEAD(ch, 8, "Expiration date", CT_OTHER);
+  COLHEAD(ch, 9, "Out Zone date",   CT_OTHER);
+  COLHEAD(ch, 10, "Delete date",     CT_OTHER);
+  COLHEAD(ch, 11, "Validation",     CT_OTHER);
+  COLHEAD(ch, 12, "1. admin name",     CT_OTHER);
+  COLHEAD(ch, 13, "1. admin organization",     CT_OTHER);
+  COLHEAD(ch, 14, "1. admin phone",     CT_OTHER);
+  COLHEAD(ch, 15, "2. admin name",     CT_OTHER);
+  COLHEAD(ch, 16, "2. admin organization",     CT_OTHER);
+  COLHEAD(ch, 17, "2. admin phone",     CT_OTHER);
+  COLHEAD(ch, 18, "3. admin name",     CT_OTHER);
+  COLHEAD(ch, 19, "3. admin organization",     CT_OTHER);
+  COLHEAD(ch, 20, "3. admin phone",     CT_OTHER);
   return ch;
 }
 
@@ -54,7 +64,7 @@ Registry::TableRow* ccReg_Domains_i::getRow(CORBA::UShort row)
   if (!d)
     throw ccReg::Table::INVALID_ROW();
   Registry::TableRow *tr = new Registry::TableRow;
-  tr->length(11);
+  tr->length(21);
   
   MAKE_OID(oid_fqdn, d->getId(), C_STR(d->getFQDN()), FT_DOMAIN)
   MAKE_OID(oid_registrant, d->getRegistrantId(), C_STR(d->getRegistrantHandle()), FT_CONTACT)
@@ -64,13 +74,24 @@ Registry::TableRow* ccReg_Domains_i::getRow(CORBA::UShort row)
   (*tr)[1]  <<= oid_registrant;                                 // registrant handle
   (*tr)[2]  <<= C_STR(d->getRegistrantName());                  // registrant name
   (*tr)[3]  <<= C_STR(d->getRegistrantOrganization());          // registrant organization
-  (*tr)[4]  <<= oid_registrar;                                  // registrar handle 
-  (*tr)[5]  <<= C_STR(d->getZoneStatus() == 1 ? "IN" : "OUT");  // zone generation 
-  (*tr)[6]  <<= C_STR(d->getCreateDate());                      // crdate
-  (*tr)[7]  <<= C_STR(d->getExpirationDate());                  // expiration date
-  (*tr)[8]  <<= C_STR(d->getOutZoneDate());                     // out from zone file
-  (*tr)[9]  <<= C_STR(d->getCancelDate());                      // delete from register
-  (*tr)[10] <<= C_STR(d->getValExDate());                       // validation
+  (*tr)[4]  <<= C_STR(d->getRegistrantPhone());                 // registrant phone
+  (*tr)[5]  <<= oid_registrar;                                  // registrar handle
+  (*tr)[6]  <<= C_STR(d->getZoneStatus() == 1 ? "IN" : "OUT");  // zone generation
+  (*tr)[7]  <<= C_STR(d->getCreateDate());                      // crdate
+  (*tr)[8]  <<= C_STR(d->getExpirationDate());                  // expiration date
+  (*tr)[9]  <<= C_STR(d->getOutZoneDate());                     // out from zone file
+  (*tr)[10]  <<= C_STR(d->getCancelDate());                     // delete from register
+  (*tr)[11] <<= C_STR(d->getValExDate());                       // validation
+  (*tr)[12] <<= C_STR(d->getAdminNameByIdx(0));                 // 1. admin name
+  (*tr)[13] <<= C_STR(d->getAdminOrganizationByIdx(0));         // 1. admin organization
+  (*tr)[14] <<= C_STR(d->getAdminPhoneByIdx(0));                // 1. admin phone
+  (*tr)[15] <<= C_STR(d->getAdminNameByIdx(1));                 // 2. admin name
+  (*tr)[16] <<= C_STR(d->getAdminOrganizationByIdx(1));         // 2. admin organization
+  (*tr)[17] <<= C_STR(d->getAdminPhoneByIdx(1));                // 2. admin phone
+  (*tr)[18] <<= C_STR(d->getAdminNameByIdx(2));                 // 3. admin name
+  (*tr)[19] <<= C_STR(d->getAdminOrganizationByIdx(2));         // 3. admin organization
+  (*tr)[20] <<= C_STR(d->getAdminPhoneByIdx(2));                // 3. admin phone
+
   return tr;
 }
 
@@ -95,24 +116,54 @@ void ccReg_Domains_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
     dl->sort(Register::Domain::MT_REGISTRANT_ORG, dir);
     break;
   case 4:
-    dl->sort(Register::Domain::MT_REGISTRAR_HANDLE, dir);
+    dl->sort(Register::Domain::MT_REGISTRANT_PHONE, dir);
     break;
   case 5:
-    dl->sort(Register::Domain::MT_ZONE_STATUS, dir);
+    dl->sort(Register::Domain::MT_REGISTRAR_HANDLE, dir);
     break;
   case 6:
-    dl->sort(Register::Domain::MT_CRDATE, dir);
+    dl->sort(Register::Domain::MT_ZONE_STATUS, dir);
     break;
   case 7:
-    dl->sort(Register::Domain::MT_EXDATE, dir);
+    dl->sort(Register::Domain::MT_CRDATE, dir);
     break;
   case 8:
-    dl->sort(Register::Domain::MT_OUTZONEDATE, dir);
+    dl->sort(Register::Domain::MT_EXDATE, dir);
     break;
   case 9:
+    dl->sort(Register::Domain::MT_OUTZONEDATE, dir);
+    break;
+  case 10:
     dl->sort(Register::Domain::MT_CANCELDATE, dir);
     // dl->sort(Register::Domain::MT_CANCELDATE, dir);
     // dl->sort(Register::Domain::MT_ERDATE, dir);
+    break;
+  case 12:
+    dl->sort(Register::Domain::MT_1ADMIN_NAME, dir);
+    break;
+  case 13:
+    dl->sort(Register::Domain::MT_1ADMIN_ORG, dir);
+    break;
+  case 14:
+    dl->sort(Register::Domain::MT_1ADMIN_PHONE, dir);
+    break;
+  case 15:
+    dl->sort(Register::Domain::MT_2ADMIN_NAME, dir);
+    break;
+  case 16:
+    dl->sort(Register::Domain::MT_2ADMIN_ORG, dir);
+    break;
+  case 17:
+    dl->sort(Register::Domain::MT_2ADMIN_PHONE, dir);
+    break;
+  case 18:
+    dl->sort(Register::Domain::MT_2ADMIN_NAME, dir);
+    break;
+  case 19:
+    dl->sort(Register::Domain::MT_2ADMIN_ORG, dir);
+    break;
+  case 20:
+    dl->sort(Register::Domain::MT_2ADMIN_PHONE, dir);
     break;
   }
 }
@@ -140,7 +191,7 @@ CORBA::Short ccReg_Domains_i::numRows() {
 CORBA::Short ccReg_Domains_i::numColumns() {
   Logging::Context ctx(base_context_);
 
-  return 11;
+  return 21;
 }
 
 void ccReg_Domains_i::clear() {
