@@ -35,7 +35,16 @@ enum MemberType {
   MT_ZONE_STATUS, ///< in/out zone flag
   MT_EXDATE, ///< expiration date
   MT_OUTZONEDATE, ///< out zone date
-  MT_CANCELDATE ///< cancel date
+  MT_CANCELDATE, ///< cancel date
+  MT_1ADMIN_NAME,///< 1. admin name
+  MT_1ADMIN_ORG,///< 1. admin organization
+  MT_1ADMIN_PHONE,///< 1. admin phone
+  MT_2ADMIN_NAME,///< 2. admin name
+  MT_2ADMIN_ORG,///< 2. admin organization
+  MT_2ADMIN_PHONE,///< 2. admin phone
+  MT_3ADMIN_NAME,///< 3. admin name
+  MT_3ADMIN_ORG,///< 3. admin organization
+  MT_3ADMIN_PHONE///< 3. admin phone
 };
 
 
