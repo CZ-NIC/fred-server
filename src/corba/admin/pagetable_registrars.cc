@@ -84,49 +84,57 @@ Registry::TableRow*
 ccReg_Registrars_i::getRow(CORBA::UShort row)
   throw (ccReg::Table::INVALID_ROW)
 {
-  Logging::Context ctx(base_context_);
-  TRACE(boost::format("[CALL] ccReg_Registrars_i::getRow(%1%)") % row);
-
-  const Register::Registrar::Registrar *r = rl->get(row);
-  if (!r) throw ccReg::Table::INVALID_ROW();
-  Registry::TableRow *tr = new Registry::TableRow;
-
-  unsigned zone_count = zl->getSize();
-
-  tr->length(static_cols + zone_count);
-
-  MAKE_OID(oid_handle, r->getId(), C_STR(r->getHandle()), FT_REGISTRAR)
-
-  (*tr)[0] <<= oid_handle;
-  (*tr)[1] <<= C_STR(r->getName());
-  (*tr)[2] <<= C_STR(r->getEmail());
-  (*tr)[3] <<= C_STR(r->getCredit(0));
-  for (int i = 0 ; i < zone_count ; i++)
+    Logging::Context ctx(base_context_);
+  try
   {
+      TRACE(boost::format("[CALL] ccReg_Registrars_i::getRow(%1%)") % row);
 
-      Register::Zone::Zone* zp = dynamic_cast<Register::Zone::Zone*>(zl->get(i));
-      unsigned long long zoneid = std::numeric_limits<unsigned long long>::max();
-      if(zp)
-      {
-          zoneid = zp->getId();
-      }
-      else
-      {
-          throw std::bad_cast();
-      }
+      const Register::Registrar::Registrar *r = rl->get(row);
+      if (!r) throw ccReg::Table::INVALID_ROW();
+      Registry::TableRow *tr = new Registry::TableRow;
 
-      if(rza.isInZone(r->getId(), zoneid))
+      unsigned zone_count = zl->getSize();
+
+      tr->length(static_cols + zone_count);
+
+      MAKE_OID(oid_handle, r->getId(), C_STR(r->getHandle()), FT_REGISTRAR)
+
+      (*tr)[0] <<= oid_handle;
+      (*tr)[1] <<= C_STR(r->getName());
+      (*tr)[2] <<= C_STR(r->getEmail());
+      (*tr)[3] <<= C_STR(r->getCredit(0));
+      for (int i = 0 ; i < zone_count ; i++)
       {
-          (*tr)[static_cols+i] <<= C_STR(r->getCredit(zoneid));
-      }
-      else
-      {
-          (*tr)[static_cols+i] <<= C_STR("");//if currently not in zone
-      }
-  }//for zone_count
+
+          Register::Zone::Zone* zp = dynamic_cast<Register::Zone::Zone*>(zl->get(i));
+          unsigned long long zoneid = std::numeric_limits<unsigned long long>::max();
+          if(zp)
+          {
+              zoneid = zp->getId();
+          }
+          else
+          {
+              throw std::bad_cast();
+          }
+
+          if(rza.isInZone(r->getId(), zoneid))
+          {
+              (*tr)[static_cols+i] <<= C_STR(r->getCredit(zoneid));
+          }
+          else
+          {
+              (*tr)[static_cols+i] <<= C_STR("");//if currently not in zone
+          }
+      }//for zone_count
 
 
-  return tr;
+      return tr;
+  }//try
+  catch(...)
+  {
+      LOGGER(PACKAGE).error("ccReg_Registrars_i::getRow error");
+      throw ccReg::Table::INVALID_ROW();
+  }
 }
 
 void 
@@ -174,11 +182,20 @@ ccReg::TID
 ccReg_Registrars_i::getRowId(CORBA::UShort row) 
   throw (ccReg::Table::INVALID_ROW)
 {
-  Logging::Context ctx(base_context_);
+    Logging::Context ctx(base_context_);
+    try
+    {
 
-  const Register::Registrar::Registrar *r = rl->get(row);
-  if (!r) throw ccReg::Table::INVALID_ROW();
-  return r->getId();  
+
+      const Register::Registrar::Registrar *r = rl->get(row);
+      if (!r) throw ccReg::Table::INVALID_ROW();
+      return r->getId();
+    }//try
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("ccReg_Registrars_i::getRowId error");
+        throw ccReg::Table::INVALID_ROW();
+    }
 }
 
 char* 

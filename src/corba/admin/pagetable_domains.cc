@@ -57,42 +57,50 @@ Registry::Table::ColumnHeaders* ccReg_Domains_i::getColumnHeaders() {
 }
 
 Registry::TableRow* ccReg_Domains_i::getRow(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW) {
-  Logging::Context ctx(base_context_);
+    throw (ccReg::Table::INVALID_ROW)
+{
+    Logging::Context ctx(base_context_);
+    try
+    {
+      const Register::Domain::Domain *d = dl->getDomain(row);
+      if (!d)
+        throw ccReg::Table::INVALID_ROW();
+      Registry::TableRow *tr = new Registry::TableRow;
+      tr->length(21);
 
-  const Register::Domain::Domain *d = dl->getDomain(row);
-  if (!d)
-    throw ccReg::Table::INVALID_ROW();
-  Registry::TableRow *tr = new Registry::TableRow;
-  tr->length(21);
-  
-  MAKE_OID(oid_fqdn, d->getId(), C_STR(d->getFQDN()), FT_DOMAIN)
-  MAKE_OID(oid_registrant, d->getRegistrantId(), C_STR(d->getRegistrantHandle()), FT_CONTACT)
-  MAKE_OID(oid_registrar, d->getRegistrarId(), C_STR(d->getRegistrarHandle()), FT_REGISTRAR)
+      MAKE_OID(oid_fqdn, d->getId(), C_STR(d->getFQDN()), FT_DOMAIN)
+      MAKE_OID(oid_registrant, d->getRegistrantId(), C_STR(d->getRegistrantHandle()), FT_CONTACT)
+      MAKE_OID(oid_registrar, d->getRegistrarId(), C_STR(d->getRegistrarHandle()), FT_REGISTRAR)
 
-  (*tr)[0]  <<= oid_fqdn;                                       // fqdn
-  (*tr)[1]  <<= oid_registrant;                                 // registrant handle
-  (*tr)[2]  <<= C_STR(d->getRegistrantName());                  // registrant name
-  (*tr)[3]  <<= C_STR(d->getRegistrantOrganization());          // registrant organization
-  (*tr)[4]  <<= C_STR(d->getRegistrantPhone());                 // registrant phone
-  (*tr)[5]  <<= oid_registrar;                                  // registrar handle
-  (*tr)[6]  <<= C_STR(d->getZoneStatus() == 1 ? "IN" : "OUT");  // zone generation
-  (*tr)[7]  <<= C_STR(d->getCreateDate());                      // crdate
-  (*tr)[8]  <<= C_STR(d->getExpirationDate());                  // expiration date
-  (*tr)[9]  <<= C_STR(d->getOutZoneDate());                     // out from zone file
-  (*tr)[10]  <<= C_STR(d->getCancelDate());                     // delete from register
-  (*tr)[11] <<= C_STR(d->getValExDate());                       // validation
-  (*tr)[12] <<= C_STR(d->getAdminNameByIdx(0));                 // 1. admin name
-  (*tr)[13] <<= C_STR(d->getAdminOrganizationByIdx(0));         // 1. admin organization
-  (*tr)[14] <<= C_STR(d->getAdminPhoneByIdx(0));                // 1. admin phone
-  (*tr)[15] <<= C_STR(d->getAdminNameByIdx(1));                 // 2. admin name
-  (*tr)[16] <<= C_STR(d->getAdminOrganizationByIdx(1));         // 2. admin organization
-  (*tr)[17] <<= C_STR(d->getAdminPhoneByIdx(1));                // 2. admin phone
-  (*tr)[18] <<= C_STR(d->getAdminNameByIdx(2));                 // 3. admin name
-  (*tr)[19] <<= C_STR(d->getAdminOrganizationByIdx(2));         // 3. admin organization
-  (*tr)[20] <<= C_STR(d->getAdminPhoneByIdx(2));                // 3. admin phone
+      (*tr)[0]  <<= oid_fqdn;                                       // fqdn
+      (*tr)[1]  <<= oid_registrant;                                 // registrant handle
+      (*tr)[2]  <<= C_STR(d->getRegistrantName());                  // registrant name
+      (*tr)[3]  <<= C_STR(d->getRegistrantOrganization());          // registrant organization
+      (*tr)[4]  <<= C_STR(d->getRegistrantPhone());                 // registrant phone
+      (*tr)[5]  <<= oid_registrar;                                  // registrar handle
+      (*tr)[6]  <<= C_STR(d->getZoneStatus() == 1 ? "IN" : "OUT");  // zone generation
+      (*tr)[7]  <<= C_STR(d->getCreateDate());                      // crdate
+      (*tr)[8]  <<= C_STR(d->getExpirationDate());                  // expiration date
+      (*tr)[9]  <<= C_STR(d->getOutZoneDate());                     // out from zone file
+      (*tr)[10]  <<= C_STR(d->getCancelDate());                     // delete from register
+      (*tr)[11] <<= C_STR(d->getValExDate());                       // validation
+      (*tr)[12] <<= C_STR(d->getAdminNameByIdx(0));                 // 1. admin name
+      (*tr)[13] <<= C_STR(d->getAdminOrganizationByIdx(0));         // 1. admin organization
+      (*tr)[14] <<= C_STR(d->getAdminPhoneByIdx(0));                // 1. admin phone
+      (*tr)[15] <<= C_STR(d->getAdminNameByIdx(1));                 // 2. admin name
+      (*tr)[16] <<= C_STR(d->getAdminOrganizationByIdx(1));         // 2. admin organization
+      (*tr)[17] <<= C_STR(d->getAdminPhoneByIdx(1));                // 2. admin phone
+      (*tr)[18] <<= C_STR(d->getAdminNameByIdx(2));                 // 3. admin name
+      (*tr)[19] <<= C_STR(d->getAdminOrganizationByIdx(2));         // 3. admin organization
+      (*tr)[20] <<= C_STR(d->getAdminPhoneByIdx(2));                // 3. admin phone
 
-  return tr;
+      return tr;
+    }//try
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("ccReg_Domains_i::getRow error");
+        throw ccReg::Table::INVALID_ROW();
+    }//catch(...)
 }
 
 void ccReg_Domains_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
@@ -169,13 +177,21 @@ void ccReg_Domains_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 }
 
 ccReg::TID ccReg_Domains_i::getRowId(CORBA::UShort row)
-    throw (ccReg::Table::INVALID_ROW) {
+    throw (ccReg::Table::INVALID_ROW)
+{
   Logging::Context ctx(base_context_);
-
-  const Register::Domain::Domain *d = dl->getDomain(row);
-  if (!d)
-    throw ccReg::Table::INVALID_ROW();
-  return d->getId();
+    try
+    {
+      const Register::Domain::Domain *d = dl->getDomain(row);
+      if (!d)
+        throw ccReg::Table::INVALID_ROW();
+      return d->getId();
+    }//try
+    catch(...)
+    {
+        LOGGER(PACKAGE).error("ccReg_Domains_i::getRowId error");
+        throw ccReg::Table::INVALID_ROW();
+    }//catch(...)
 }
 
 char* ccReg_Domains_i::outputCSV() {
