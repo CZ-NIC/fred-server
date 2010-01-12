@@ -30,6 +30,7 @@ enum MemberType {
   MT_REGISTRANT_HANDLE, ///< registrant
   MT_REGISTRANT_NAME, ///< registratn name
   MT_REGISTRANT_ORG, ///< registrant organization
+  MT_REGISTRANT_PHONE, ///< registrant phone
   MT_REGISTRAR_HANDLE, ///< registrar handle
   MT_ZONE_STATUS, ///< in/out zone flag
   MT_EXDATE, ///< expiration date
@@ -83,6 +84,8 @@ public:
   virtual const std::string& getRegistrantName() const = 0;
   /// return registrant organization
   virtual const std::string& getRegistrantOrganization() const = 0;
+  /// return registrant phone
+  virtual const std::string& getRegistrantPhone() const = 0;
   /// return id of registrant
   virtual TID getRegistrantId() const = 0;
   /// set registrant 
@@ -100,6 +103,15 @@ public:
   virtual void removeAdminId(TID id) = 0;
   /// insert contact into admin contact list
   virtual void insertAdminId(TID id) = 0;
+  /// return name of admin
+  virtual const std::string& getAdminNameByIdx(unsigned idx, unsigned role=1) const
+      throw (NOT_FOUND) = 0;
+  /// return Admin organization
+  virtual const std::string& getAdminOrganizationByIdx(unsigned idx, unsigned role=1) const
+      throw (NOT_FOUND) = 0;
+  /// return Admin phone
+  virtual const std::string& getAdminPhoneByIdx(unsigned idx, unsigned role=1) const
+      throw (NOT_FOUND) = 0;
   /// return date of registration expiration
   virtual date getExpirationDate() const = 0;
   /// return date of validation expiration
