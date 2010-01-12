@@ -1101,7 +1101,7 @@ bool DB::TestRegistrarZone(
   int regID, int zone)
 {
   bool ret = false;
-  char sqlString[128];
+  char sqlString[256];
 
   // system registrar has rigths to all zone
   if (GetRegistrarSystem(regID) == true)
