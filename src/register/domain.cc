@@ -190,42 +190,113 @@ public:
   virtual ptime getCancelDate() const {
     return cancelDate;
   }
-  virtual unsigned getAdminCount(unsigned role) const {
+  virtual unsigned getAdminCount(unsigned role) const
+  {
+      TRACE(boost::format
+          ("[CALL] DomainImpl::getAdminCount role: %1% ")
+          % role );
     return role == 1 ? adminList.size() : tempList.size();
-  }
+  }//getAdminCount
   virtual TID getAdminIdByIdx(unsigned idx, unsigned role=1) const
-      throw (NOT_FOUND) {
-    if (idx >= getAdminCount(role))
-      throw NOT_FOUND();
-    return role == 1 ? adminList[idx].id : tempList[idx].id;
-  }
+      throw (NOT_FOUND)
+  {
+    TRACE(boost::format
+        ("[CALL] DomainImpl::getAdminIdByIdx idx: %1% role: %2% ")
+        % idx % role );
+      try
+      {
+        if (idx >= getAdminCount(role))
+          throw NOT_FOUND();
+        return role == 1 ? adminList[idx].id : tempList[idx].id;
+      }//try
+      catch(...)
+      {
+          LOGGER(PACKAGE).error(boost::format
+                  ("DomainImpl::getAdminIdByIdx error idx: %1% role: %2% ")
+                          % idx % role );
+          throw NOT_FOUND();
+      }//catch(...)
+  }//getAdminIdByIdx
   virtual const std::string& getAdminHandleByIdx(unsigned idx, unsigned role=1) const
-      throw (NOT_FOUND) {
-    if (idx >= getAdminCount(role))
-      throw NOT_FOUND();
-    return role == 1 ? adminList[idx].handle : tempList[idx].handle;
-  }
+      throw (NOT_FOUND)
+  {
+      TRACE(boost::format
+          ("[CALL] DomainImpl::getAdminHandleByIdx idx: %1% role: %2% ")
+          % idx % role );
+        try
+        {
+            if (idx >= getAdminCount(role))
+              throw NOT_FOUND();
+            return role == 1 ? adminList[idx].handle : tempList[idx].handle;
+        }//try
+        catch(...)
+        {
+            LOGGER(PACKAGE).error(boost::format
+                    ("DomainImpl::getAdminHandleByIdx error idx: %1% role: %2% ")
+                            % idx % role );
+            throw NOT_FOUND();
+        }//catch(...)
+  }//getAdminHandleByIdx
   virtual const std::string& getAdminNameByIdx(unsigned idx, unsigned role=1) const
       throw (NOT_FOUND)
   {
-      if (idx >= getAdminCount(role))
-          throw NOT_FOUND();
-      return role == 1 ? adminList[idx].name : tempList[idx].name;
-  }
+      TRACE(boost::format
+          ("[CALL] DomainImpl::getAdminNameByIdx idx: %1% role: %2% ")
+          % idx % role );
+        try
+        {
+          if (idx >= getAdminCount(role))
+              throw NOT_FOUND();
+          return role == 1 ? adminList[idx].name : tempList[idx].name;
+        }//try
+        catch(...)
+        {
+            LOGGER(PACKAGE).error(boost::format
+                    ("DomainImpl::getAdminNameByIdx error idx: %1% role: %2% ")
+                            % idx % role );
+            throw NOT_FOUND();
+        }//catch(...)
+  }//getAdminNameByIdx
   virtual const std::string& getAdminOrganizationByIdx(unsigned idx, unsigned role=1) const
       throw (NOT_FOUND)
   {
-      if (idx >= getAdminCount(role))
-          throw NOT_FOUND();
-      return role == 1 ? adminList[idx].organization : tempList[idx].organization;
-  }
+      TRACE(boost::format
+          ("[CALL] DomainImpl::getAdminOrganizationByIdx idx: %1% role: %2% ")
+          % idx % role );
+        try
+        {
+          if (idx >= getAdminCount(role))
+              throw NOT_FOUND();
+          return role == 1 ? adminList[idx].organization : tempList[idx].organization;
+        }//try
+        catch(...)
+        {
+            LOGGER(PACKAGE).error(boost::format
+                    ("DomainImpl::getAdminOrganizationByIdx error idx: %1% role: %2% ")
+                            % idx % role );
+            throw NOT_FOUND();
+        }//catch(...)
+  }//getAdminOrganizationByIdx
   virtual const std::string& getAdminPhoneByIdx(unsigned idx, unsigned role=1) const
       throw (NOT_FOUND)
   {
-      if (idx >= getAdminCount(role))
-          throw NOT_FOUND();
-      return role == 1 ? adminList[idx].phone : tempList[idx].phone;
-  }
+      TRACE(boost::format
+          ("[CALL] DomainImpl::getAdminPhoneByIdx idx: %1% role: %2% ")
+          % idx % role );
+        try
+        {
+          if (idx >= getAdminCount(role))
+              throw NOT_FOUND();
+          return role == 1 ? adminList[idx].phone : tempList[idx].phone;
+        }//try
+        catch(...)
+        {
+            LOGGER(PACKAGE).error(boost::format
+                    ("DomainImpl::getAdminPhoneByIdx error idx: %1% role: %2% ")
+                            % idx % role );
+            throw NOT_FOUND();
+        }//catch(...)
+  }//getAdminPhoneByIdx
   virtual void removeAdminId(TID id) {
     // find id in list and delete
   }
