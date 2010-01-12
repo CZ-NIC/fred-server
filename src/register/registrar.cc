@@ -597,7 +597,7 @@ public:
         unsigned count = res[0][0];
         if (count > 1 )
         {
-            LOGGER(PACKAGE).error("isInZone by id: bad data in table registrarinvoice");
+            LOGGER(PACKAGE).warning("isInZone by id: bad data in table registrarinvoice");
             ret = true;
         }
 
@@ -1916,7 +1916,7 @@ unsigned long long Manager::RegistrarZoneAccess::max_id(ColIndex idx, Database::
     TRACE("[CALL] Manager::RegistrarZoneAccess::max_id");
     unsigned long long ret =0;
     for (unsigned i = 0; i < result.size() ; ++i)
-        if((result[i].size() > idx)
+        if((result[i].size() > static_cast<unsigned long long>(idx))
                 && (static_cast<unsigned>(result[i][idx]) > ret))
             ret = result[i][idx];
     LOGGER(PACKAGE).debug(boost::format

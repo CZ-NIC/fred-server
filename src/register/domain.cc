@@ -193,33 +193,33 @@ public:
   virtual unsigned getAdminCount(unsigned role) const {
     return role == 1 ? adminList.size() : tempList.size();
   }
-  virtual TID getAdminIdByIdx(unsigned idx, unsigned role) const
+  virtual TID getAdminIdByIdx(unsigned idx, unsigned role=1) const
       throw (NOT_FOUND) {
     if (idx >= getAdminCount(role))
       throw NOT_FOUND();
     return role == 1 ? adminList[idx].id : tempList[idx].id;
   }
-  virtual const std::string& getAdminHandleByIdx(unsigned idx, unsigned role) const
+  virtual const std::string& getAdminHandleByIdx(unsigned idx, unsigned role=1) const
       throw (NOT_FOUND) {
     if (idx >= getAdminCount(role))
       throw NOT_FOUND();
     return role == 1 ? adminList[idx].handle : tempList[idx].handle;
   }
-  virtual const std::string& getAdminNameByIdx(unsigned idx, unsigned role) const
+  virtual const std::string& getAdminNameByIdx(unsigned idx, unsigned role=1) const
       throw (NOT_FOUND)
   {
       if (idx >= getAdminCount(role))
           throw NOT_FOUND();
       return role == 1 ? adminList[idx].name : tempList[idx].name;
   }
-  virtual const std::string& getAdminOrganizationByIdx(unsigned idx, unsigned role) const
+  virtual const std::string& getAdminOrganizationByIdx(unsigned idx, unsigned role=1) const
       throw (NOT_FOUND)
   {
       if (idx >= getAdminCount(role))
           throw NOT_FOUND();
       return role == 1 ? adminList[idx].organization : tempList[idx].organization;
   }
-  virtual const std::string& getAdminPhoneByIdx(unsigned idx, unsigned role) const
+  virtual const std::string& getAdminPhoneByIdx(unsigned idx, unsigned role=1) const
       throw (NOT_FOUND)
   {
       if (idx >= getAdminCount(role))
@@ -288,6 +288,67 @@ COMPARE_CLASS_IMPL(DomainImpl, ZoneStatus)
 COMPARE_CLASS_IMPL(DomainImpl, ExpirationDate)
 COMPARE_CLASS_IMPL(DomainImpl, OutZoneDate)
 COMPARE_CLASS_IMPL(DomainImpl, CancelDate)
+
+
+class CompareAdminNameByIdx
+{
+    bool asc_;
+    unsigned idx_;
+public:
+  CompareAdminNameByIdx(bool _asc, unsigned _idx) : asc_(_asc), idx_(_idx) { }
+  bool operator()(CommonObject *_left, CommonObject *_right) const {
+      DomainImpl *l_casted = dynamic_cast<DomainImpl *>(_left);
+      DomainImpl *r_casted = dynamic_cast<DomainImpl *>(_right);
+    if (l_casted == 0 || r_casted == 0) {
+      /* this should never happen */
+      throw std::bad_cast();
+    }
+
+    return (asc_ ? l_casted->getAdminNameByIdx(idx_) < r_casted->getAdminNameByIdx(idx_)
+                 : l_casted->getAdminNameByIdx(idx_) > r_casted->getAdminNameByIdx(idx_));
+    }
+
+};//class CompareAdminNameByIdx
+
+class CompareAdminOrganizationByIdx
+{
+    bool asc_;
+    unsigned idx_;
+public:
+  CompareAdminOrganizationByIdx(bool _asc, unsigned _idx) : asc_(_asc), idx_(_idx) { }
+  bool operator()(CommonObject *_left, CommonObject *_right) const {
+      DomainImpl *l_casted = dynamic_cast<DomainImpl *>(_left);
+      DomainImpl *r_casted = dynamic_cast<DomainImpl *>(_right);
+    if (l_casted == 0 || r_casted == 0) {
+      /* this should never happen */
+      throw std::bad_cast();
+    }
+
+    return (asc_ ? l_casted->getAdminOrganizationByIdx(idx_) < r_casted->getAdminOrganizationByIdx(idx_)
+                 : l_casted->getAdminOrganizationByIdx(idx_) > r_casted->getAdminOrganizationByIdx(idx_));
+    }
+
+};//class CompareAdminOrganizationByIdx
+
+class CompareAdminPhoneByIdx
+{
+    bool asc_;
+    unsigned idx_;
+public:
+  CompareAdminPhoneByIdx(bool _asc, unsigned _idx) : asc_(_asc), idx_(_idx) { }
+  bool operator()(CommonObject *_left, CommonObject *_right) const {
+      DomainImpl *l_casted = dynamic_cast<DomainImpl *>(_left);
+      DomainImpl *r_casted = dynamic_cast<DomainImpl *>(_right);
+    if (l_casted == 0 || r_casted == 0) {
+      /* this should never happen */
+      throw std::bad_cast();
+    }
+
+    return (asc_ ? l_casted->getAdminPhoneByIdx(idx_) < r_casted->getAdminPhoneByIdx(idx_)
+                 : l_casted->getAdminPhoneByIdx(idx_) > r_casted->getAdminPhoneByIdx(idx_));
+    }
+
+};//class CompareAdminPhoneByIdx
 
 
 class ListImpl : virtual public List, public ObjectListImpl {
@@ -1054,6 +1115,9 @@ public:
       case MT_REGISTRANT_ORG:
         stable_sort(data_.begin(), data_.end(), CompareRegistrantOrganization(asc));
         break;
+      case MT_REGISTRANT_PHONE:
+        stable_sort(data_.begin(), data_.end(), CompareRegistrantPhone(asc));
+        break;
       case MT_REGISTRAR_HANDLE:
         stable_sort(data_.begin(), data_.end(), CompareRegistrarHandle(asc));
         break;
@@ -1069,6 +1133,33 @@ public:
       case MT_CANCELDATE:
         stable_sort(data_.begin(), data_.end(), CompareCancelDate(asc));
         break;
+      case MT_1ADMIN_NAME:
+          stable_sort(data_.begin(), data_.end(), CompareAdminNameByIdx(asc,0));
+          break;
+      case MT_1ADMIN_ORG:
+          stable_sort(data_.begin(), data_.end(), CompareAdminOrganizationByIdx(asc,0));
+          break;
+      case MT_1ADMIN_PHONE:
+          stable_sort(data_.begin(), data_.end(), CompareAdminPhoneByIdx(asc,0));
+          break;
+      case MT_2ADMIN_NAME:
+          stable_sort(data_.begin(), data_.end(), CompareAdminNameByIdx(asc,1));
+          break;
+      case MT_2ADMIN_ORG:
+          stable_sort(data_.begin(), data_.end(), CompareAdminOrganizationByIdx(asc,1));
+          break;
+      case MT_2ADMIN_PHONE:
+          stable_sort(data_.begin(), data_.end(), CompareAdminPhoneByIdx(asc,1));
+          break;
+      case MT_3ADMIN_NAME:
+          stable_sort(data_.begin(), data_.end(), CompareAdminNameByIdx(asc,2));
+          break;
+      case MT_3ADMIN_ORG:
+          stable_sort(data_.begin(), data_.end(), CompareAdminOrganizationByIdx(asc,2));
+          break;
+      case MT_3ADMIN_PHONE:
+          stable_sort(data_.begin(), data_.end(), CompareAdminPhoneByIdx(asc,2));
+          break;
     }
   }
   virtual const char *getTempTableName() const {
