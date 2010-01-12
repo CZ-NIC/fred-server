@@ -1109,11 +1109,11 @@ bool DB::TestRegistrarZone(
 
   sprintf(
       sqlString,
-      "SELECT  id  FROM  registrarinvoice  WHERE registrarid=%d and zone=%d and  current_timestamp > fromdate;",
+      "SELECT  id  FROM  registrarinvoice  WHERE registrarid=%d and zone=%d and fromdate <= CURRENT_DATE and (todate >= CURRENT_DATE or todate is null);",
       regID, zone);
 
   if (ExecSelect(sqlString) ) {
-    if (GetSelectRows() == 1) {
+    if (GetSelectRows() > 0) {
       ret=true;
     }
     FreeSelect();
