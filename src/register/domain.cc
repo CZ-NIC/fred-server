@@ -839,14 +839,14 @@ public:
       /// load admin contacts info
       resetHistoryIDSequence();
       Database::SelectQuery admins_query;
-      admins_query.select() << "tmp.id, t_2.domainid, t_1.id, t_1.name, t_3.name, t_3.organization, t3.telephone, t_2.role";
+      admins_query.select() << "tmp.id, t_2.domainid, t_1.id, t_1.name, t_3.name, t_3.organization, t_3.telephone, t_2.role";
       // admins_query.from() << getTempTableName() << " tmp "
       //                     << "JOIN domain_contact_map t_2 ON (tmp.id = t_2.domainid) "
       //                     << "JOIN object_registry t_1 ON (t_2.contactid = t_1.id)";
       admins_query.from() << getTempTableName() << " tmp "
                              "JOIN domain_contact_map_history t_2 ON (tmp.id = t_2.historyid) "
                              "JOIN object_registry t_1 ON (t_2.contactid = t_1.id) "
-                             "JOIN contact_history t_3 ON (t_2.historyid = t_3.historyid) "
+                             "JOIN contact_history t_3 ON (t_2.contactid = t_3.historyid) "
                               ;
       admins_query.order_by() << "tmp.id";
 
