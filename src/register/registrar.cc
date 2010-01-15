@@ -1520,6 +1520,7 @@ public:
 
       Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect("id", eaf->joinActionTable());
+      tmp->order_by() << eaf->joinActionTable().getAlias() + ".id DESC";
       uf.addQuery(tmp);
       at_least_one = true;
     }
