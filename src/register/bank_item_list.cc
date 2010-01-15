@@ -51,6 +51,7 @@ ItemList::reload(Database::Filters::Union &filter)
         Database::SelectQuery *tmp = new Database::SelectQuery();
         tmp->addSelect(new Database::Column(
                     "id", sif->joinStatementItemTable(), "DISTINCT"));
+        tmp->order_by() << sif->joinStatementItemTable().getAlias() + ".id DESC";
         filter.addQuery(tmp);
         at_least_one = true;
     }

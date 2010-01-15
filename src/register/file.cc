@@ -66,6 +66,7 @@ List::reload(Database::Filters::Union &filter)
             continue;
         Database::SelectQuery *tmp = new Database::SelectQuery();
         tmp->addSelect(new Database::Column("id", ff->joinFileTable()));
+        tmp->order_by() << ff->joinFileTable().getAlias() + ".id DESC";
         filter.addQuery(tmp);
     }
     id_query.limit(getLimit());

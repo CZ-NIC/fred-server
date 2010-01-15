@@ -51,6 +51,7 @@ HeadList::reload(Database::Filters::Union &filter)
         Database::SelectQuery *tmp = new Database::SelectQuery();
         tmp->addSelect(new Database::Column(
                     "id", sf->joinStatementHeadTable(), "DISTINCT"));
+        tmp->order_by() << sf->joinStatementHeadTable().getAlias() + ".id DESC";
         filter.addQuery(tmp);
         at_least_one = true;
     }
