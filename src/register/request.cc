@@ -156,6 +156,7 @@ public:
 
       Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect(new Database::Column("id", mf->joinRequestTable(), "DISTINCT"));
+      tmp->order_by() << mf->joinRequestTable().getAlias() + ".id DESC";
       _filter.addQuery(tmp);
       at_least_one = true;
     }

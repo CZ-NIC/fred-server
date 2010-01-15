@@ -95,6 +95,7 @@ public:
 
 	  Database::SelectQuery *tmp = new Database::SelectQuery();
 	  tmp->addSelect(new Database::Column("id", mf->joinSessionTable(), "DISTINCT"));
+	  tmp->order_by() << mf->joinSessionTable().getAlias() + ".id DESC";
 	  _filter.addQuery(tmp);
 	  at_least_one = true;
 	}

@@ -105,6 +105,7 @@ List::reload(Database::Filters::Union &filter)
         Database::SelectQuery *tmp = new Database::SelectQuery();
         tmp->addSelect(new Database::Column(
                     "id", invFilter->joinInvoiceTable(), "DISTINCT"));
+        tmp->order_by() << invFilter->joinInvoiceTable().getAlias() + ".id DESC";
         filter.addQuery(tmp);
         at_least_one = true;
     }
