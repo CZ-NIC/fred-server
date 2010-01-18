@@ -237,8 +237,7 @@ public:
             throw NOT_FOUND();
         }//catch(...)
   }//getAdminHandleByIdx
-  virtual const std::string& getAdminNameByIdx(unsigned idx, unsigned role=1) const
-      throw (NOT_FOUND)
+  virtual const std::string getAdminNameByIdx(unsigned idx, unsigned role=1) const
   {
       TRACE(boost::format
           ("[CALL] DomainImpl::getAdminNameByIdx idx: %1% role: %2% ")
@@ -254,11 +253,10 @@ public:
             LOGGER(PACKAGE).error(boost::format
                     ("DomainImpl::getAdminNameByIdx error idx: %1% role: %2% ")
                             % idx % role );
-            throw NOT_FOUND();
+            return std::string("");
         }//catch(...)
   }//getAdminNameByIdx
-  virtual const std::string& getAdminOrganizationByIdx(unsigned idx, unsigned role=1) const
-      throw (NOT_FOUND)
+  virtual const std::string getAdminOrganizationByIdx(unsigned idx, unsigned role=1) const
   {
       TRACE(boost::format
           ("[CALL] DomainImpl::getAdminOrganizationByIdx idx: %1% role: %2% ")
@@ -274,11 +272,10 @@ public:
             LOGGER(PACKAGE).error(boost::format
                     ("DomainImpl::getAdminOrganizationByIdx error idx: %1% role: %2% ")
                             % idx % role );
-            throw NOT_FOUND();
+            return std::string("");
         }//catch(...)
   }//getAdminOrganizationByIdx
-  virtual const std::string& getAdminPhoneByIdx(unsigned idx, unsigned role=1) const
-      throw (NOT_FOUND)
+  virtual const std::string getAdminPhoneByIdx(unsigned idx, unsigned role=1) const
   {
       TRACE(boost::format
           ("[CALL] DomainImpl::getAdminPhoneByIdx idx: %1% role: %2% ")
@@ -294,7 +291,7 @@ public:
             LOGGER(PACKAGE).error(boost::format
                     ("DomainImpl::getAdminPhoneByIdx error idx: %1% role: %2% ")
                             % idx % role );
-            throw NOT_FOUND();
+            return std::string("");
         }//catch(...)
   }//getAdminPhoneByIdx
   virtual void removeAdminId(TID id) {

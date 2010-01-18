@@ -113,14 +113,11 @@ public:
   /// insert contact into admin contact list
   virtual void insertAdminId(TID id) = 0;
   /// return name of admin
-  virtual const std::string& getAdminNameByIdx(unsigned idx, unsigned role=1) const
-      throw (NOT_FOUND) = 0;
+  virtual const std::string getAdminNameByIdx(unsigned idx, unsigned role=1) const = 0;
   /// return Admin organization
-  virtual const std::string& getAdminOrganizationByIdx(unsigned idx, unsigned role=1) const
-      throw (NOT_FOUND) = 0;
+  virtual const std::string getAdminOrganizationByIdx(unsigned idx, unsigned role=1) const = 0;
   /// return Admin phone
-  virtual const std::string& getAdminPhoneByIdx(unsigned idx, unsigned role=1) const
-      throw (NOT_FOUND) = 0;
+  virtual const std::string getAdminPhoneByIdx(unsigned idx, unsigned role=1) const = 0;
   /// return date of registration expiration
   virtual date getExpirationDate() const = 0;
   /// return date of validation expiration
