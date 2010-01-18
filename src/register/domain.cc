@@ -843,7 +843,7 @@ public:
       admins_query.from() << getTempTableName() << " tmp "
                              "JOIN domain_contact_map_history t_2 ON (tmp.id = t_2.historyid) "
                              "JOIN object_registry t_1 ON (t_2.contactid = t_1.id) "
-                             "JOIN contact_history t_3 ON (t_1.id = t_3.id) "
+                             "JOIN contact_history t_3 ON (t_1.historyid = t_3.historyid) "
                               ;
       admins_query.order_by() << "tmp.id";
 
