@@ -225,8 +225,8 @@ main(int argc, char **argv)
         exit(1);
     }
 
-    if (argc == 1 || (argc == 2 && confMan.isHelp())) {
-        std::cout << "Usage: " << argv[0] << " [options]" << std::endl << std::endl;;
+    if (argc == 1 || (argc >= 2 && confMan.isHelp())) {
+        std::cout << "Usage: " << argv[0] << " [options]" << std::endl << std::endl;
         std::cout << generalOpts << std::endl;
         std::cout << configurationOpts << std::endl;
         std::cout << commonOpts << std::endl;
