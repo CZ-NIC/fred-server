@@ -38,8 +38,10 @@ StatementItem::getExisting()
         << "WHERE si.account_number = " << Database::Value(getAccountNumber())
         << " AND si.bank_code = " << Database::Value(getBankCodeId())
         << " AND si.price = " << Database::Value(getPrice())
-        << " AND si.account_date = " << Database::Value(getAccountDate())
-        << " AND statement_id IS NULL";
+        << " AND si.account_date = " << Database::Value(getAccountDate());
+
+        // << " AND statement_id IS NULL";          also search for duplicities with  statement_id
+    // TODO: is the duplicity check complete if we search only for records with statement_id = NULL?
     Database::Connection conn = Database::Manager::acquire();
     Database::ID retval;
     try {
@@ -129,9 +131,11 @@ StatementItem::fromXML(const XMLnode &item)
     money.format(item.getChild(ITEM_PRICE).getValue());
     setPrice(money);
     if (item.hasChild(ITEM_TYPE)) {
+        // TODO - safety
         setType(atoi(item.getChild(ITEM_TYPE).getValue().c_str()));
     }
     if (item.hasChild(ITEM_CODE)) {
+        // TODO - safety
         setCode(atoi(item.getChild(ITEM_CODE).getValue().c_str()));
     }
     SET_IF_PRESENT(item, ITEM_MEMO, setAccountMemo);
