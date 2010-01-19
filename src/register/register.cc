@@ -92,7 +92,7 @@ class ManagerImpl : virtual public Manager {
   DB *db;
   bool m_restricted_handles;
 
-  std::auto_ptr<Zone::Manager> m_zone_manager;
+  Zone::Manager::ZoneManagerPtr m_zone_manager;
   std::auto_ptr<Domain::Manager> m_domain_manager;
   Registrar::Manager::RegistrarManagerPtr m_registrar_manager;
   std::auto_ptr<Contact::Manager> m_contact_manager;
@@ -105,15 +105,13 @@ class ManagerImpl : virtual public Manager {
   std::vector<StatusDescImpl> statusList;
 
 public:
-  ManagerImpl(DB *_db, bool _restrictedHandles) :
-    db(_db)
+  ManagerImpl(DB *_db, bool _restrictedHandles)
+    : db(_db)
     , m_restricted_handles(_restrictedHandles)
+    , m_zone_manager(Zone::Manager::create())
     , m_registrar_manager(Registrar::Manager::create(db))
-    {
-
-    m_zone_manager.reset(Zone::Manager::create());
+  {
     m_domain_manager.reset(Domain::Manager::create(db, m_zone_manager.get()));
-
     m_contact_manager.reset(Contact::Manager::create(db, m_restricted_handles));
     m_nsset_manager.reset(NSSet::Manager::create(db,
                                                  m_zone_manager.get(),
@@ -390,4 +388,4 @@ Manager *Manager::create(DB *db, bool _restrictedHandles) {
   return new ManagerImpl(db, _restrictedHandles);
 }
 
-}
+}//namespace Register

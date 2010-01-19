@@ -70,8 +70,8 @@ RegistrarClient::list()
     Register::Registrar::Manager
         ::RegistrarListPtr reg_list(regMan->createList());
 
-    Database::Filters::Registrar *regFilter;
-    regFilter = new Database::Filters::RegistrarImpl(true);
+    std::auto_ptr<Database::Filters::Registrar>
+        regFilter ( new Database::Filters::RegistrarImpl(true));
 
     if (m_conf.hasOpt(ID_NAME))
         regFilter->addId().setValue(
@@ -92,12 +92,11 @@ RegistrarClient::list()
         regFilter->addCountryCode().setValue(
                 m_conf.get<std::string>(COUNTRY_NAME));
 
-    Database::Filters::Union *unionFilter;
-    unionFilter = new Database::Filters::Union();
+    Database::Filters::UnionPtr unionFilter
+        = Database::Filters::CreateClearedUnionPtr();
+    unionFilter->addFilter(regFilter.release());
 
-    unionFilter->addFilter(regFilter);
-
-    reg_list->reload(*unionFilter);
+    reg_list->reload(*unionFilter.get());
 
     std::cout << "<object>\n";
     for (unsigned int i = 0; i < reg_list->getSize(); i++) {
@@ -131,9 +130,6 @@ RegistrarClient::list()
             << "\t</registrar>\n";
     }
     std::cout << "</object>" << std::endl;
-
-    unionFilter->clear();
-    delete unionFilter;
 }
 
 #define SET_IF_PRESENT(var, type, name)                     \
@@ -144,8 +140,8 @@ void
 RegistrarClient::zone_add()
 {
     callHelp(m_conf, zone_add_help);
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create());
+    Register::Zone::Manager::ZoneManagerPtr zoneMan
+        = Register::Zone::Manager::create();
     std::string fqdn = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
     int exPeriodMin = 12;
     int exPeriodMax = 120;
@@ -180,8 +176,8 @@ void
 RegistrarClient::zone_ns_add()
 {
     callHelp(m_conf, zone_ns_add_help);
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create());
+    Register::Zone::Manager::ZoneManagerPtr zoneMan
+        = Register::Zone::Manager::create();
     std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
     std::string fqdn = m_conf.get<std::string>(REGISTRAR_NS_FQDN_NAME);
     std::string addr;
@@ -280,8 +276,8 @@ void
 RegistrarClient::price_add()
 {
     callHelp(m_conf, price_add_help);
-    std::auto_ptr<Register::Zone::Manager> zoneMan(
-            Register::Zone::Manager::create());
+    Register::Zone::Manager::ZoneManagerPtr zoneMan
+        = Register::Zone::Manager::create();
     Database::DateTime validFrom(Database::NOW_UTC);
     if (m_conf.hasOpt(REGISTRAR_VALID_FROM_NAME)) {
         validFrom.from_string(m_conf.get<std::string>(REGISTRAR_VALID_FROM_NAME));

@@ -1392,9 +1392,10 @@ namespace Register
 
     };//class ManagerImpl
 
-    Manager* Manager::create()
+    Manager::ZoneManagerPtr Manager::create()
     {
-      return new ManagerImpl;
+      TRACE("[CALL] Register::Zone::Manager::create()");
+      return Manager::ZoneManagerPtr(new ManagerImpl);
     }
   };
 };

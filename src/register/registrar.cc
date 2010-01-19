@@ -1902,7 +1902,7 @@ public:
         std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
         r->addHandle().setValue(handle);
         unionFilter->addFilter( r.release() );
-        registrarlist->reload(*(unionFilter).get());
+        registrarlist->reload(*unionFilter.get());
 
         if (registrarlist->size() != 1)
         {

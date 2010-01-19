@@ -10,7 +10,7 @@ ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::Manager::RegistrarLi
     ConnectionReleaser releaser;
     Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
     unionFilter->addFilter(new Database::Filters::ZoneSoaImpl(true));
-    zl->reload(*(unionFilter).get());
+    zl->reload(*unionFilter.get());
     rza.reload();
 }
 
@@ -28,7 +28,7 @@ ccReg_Registrars_i::reload() {
 
   Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
   unionFilter->addFilter(new Database::Filters::ZoneSoaImpl(true));
-  zl->reload(*(unionFilter).get());
+  zl->reload(*unionFilter.get());
 
   rza.reload();
 

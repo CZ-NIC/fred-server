@@ -310,11 +310,13 @@ namespace Register
         ///list factory
         typedef std::auto_ptr<ZoneList> ZoneListPtr;
         virtual ZoneListPtr createList() =0;
+
+        typedef std::auto_ptr<Register::Zone::Manager> ZoneManagerPtr;
       /// create manager object
-      static Manager *create();
-    };
-  };
-};
+      static ZoneManagerPtr create();
+    };//class Manager
+  };//namespace Zone
+};//namespace Register
 
 #endif /*ZONE_H_*/
 

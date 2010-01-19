@@ -327,7 +327,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
 
     Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
     unionFilter->addFilter( new Database::Filters::RegistrarImpl(true) );
-    rl->reload(*(unionFilter).get());
+    rl->reload(*unionFilter.get());
 
     LOG( NOTICE_LOG, "getRegistrars: num -> %d", rl->size() );
     ccReg::RegistrarList* reglist = new ccReg::RegistrarList;
@@ -363,7 +363,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
     std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
     r->addZoneFqdn().setValue(zone);
     unionFilter->addFilter( r.release() );
-    rl->reload(*(unionFilter).get());
+    rl->reload(*unionFilter.get());
 
     LOG( NOTICE_LOG, "getRegistrars: num -> %d", rl->size() );
     ccReg::RegistrarList* reglist = new ccReg::RegistrarList;
@@ -401,7 +401,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
     std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
     r->addId().setValue(Database::ID(id));
     unionFilter->addFilter( r.release() );
-    rl->reload(*(unionFilter).get());
+    rl->reload(*unionFilter.get());
 
     if (rl->size() < 1) {
       ldb.Disconnect();
@@ -439,7 +439,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
     std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
     r->addHandle().setValue(handle);
     unionFilter->addFilter( r.release() );
-    rl->reload(*(unionFilter).get());
+    rl->reload(*unionFilter.get());
 
     if (rl->size() < 1) {
       ldb.Disconnect();
@@ -477,7 +477,7 @@ void ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData) {
       std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
       r->addId().setValue(Database::ID(regData.id));
       unionFilter->addFilter( r.release() );
-      rl->reload(*(unionFilter).get());
+      rl->reload(*unionFilter.get());
 
     if (rl->size() != 1) {
       db.Disconnect();
