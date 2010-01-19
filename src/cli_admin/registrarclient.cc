@@ -64,8 +64,8 @@ void
 RegistrarClient::list()
 {
     callHelp(m_conf, no_help);
-    std::auto_ptr<Register::Registrar::Manager> regMan(
-            Register::Registrar::Manager::create(&m_db));
+    Register::Registrar::Manager::RegistrarManagerPtr regMan
+             = Register::Registrar::Manager::create(&m_db);
 
     Register::Registrar::Manager
         ::RegistrarListPtr reg_list(regMan->createList());
@@ -205,10 +205,9 @@ void
 RegistrarClient::registrar_add()
 {
     callHelp(m_conf, registrar_add_help);
-    std::auto_ptr<Register::Registrar::Manager> regMan(
-            Register::Registrar::Manager::create(&m_db));
-    std::auto_ptr<Register::Registrar::Registrar> registrar(
-            regMan->createRegistrar());
+    Register::Registrar::Manager::RegistrarManagerPtr regMan
+             = Register::Registrar::Manager::create(&m_db);
+    Register::Registrar::RegistrarPtr registrar = regMan->createRegistrar();
     registrar->setHandle(m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME));
     registrar->setCountry(m_conf.get<std::string>(REGISTRAR_COUNTRY_NAME));
     SET_IF_PRESENT(setIco, REGISTRAR_ICO_NAME);
@@ -245,8 +244,8 @@ void
 RegistrarClient::registrar_acl_add()
 {
     callHelp(m_conf, registrar_acl_add_help);
-    std::auto_ptr<Register::Registrar::Manager> regMan(
-            Register::Registrar::Manager::create(&m_db));
+    Register::Registrar::Manager::RegistrarManagerPtr regMan
+        = Register::Registrar::Manager::create(&m_db);
     std::string handle = m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME);
     std::string cert = m_conf.get<std::string>(REGISTRAR_CERT_NAME);
     std::string pass = m_conf.get<std::string>(REGISTRAR_PASSWORD_NAME);
@@ -261,8 +260,8 @@ void
 RegistrarClient::registrar_add_zone()
 {
     callHelp(m_conf, registrar_add_zone_help);
-    std::auto_ptr<Register::Registrar::Manager> regMan(
-            Register::Registrar::Manager::create(&m_db));
+    Register::Registrar::Manager::RegistrarManagerPtr regMan
+        = Register::Registrar::Manager::create(&m_db);
     std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
     std::string registrar = m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME);
     Database::Date fromDate;

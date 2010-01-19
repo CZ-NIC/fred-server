@@ -398,8 +398,7 @@ public:
 class Manager {
 public:
   /// Public destructor, user is responsible for delete
-  virtual ~Manager() {
-  }
+  virtual ~Manager() {}
   /// Return list of EPP actions
   virtual EPPActionList *getEPPActionList() = 0;
   /// Return new empty list of EPP actions
@@ -450,8 +449,10 @@ public:
       bool isInZone(unsigned long long registrar_id,unsigned long long zone_id);///look if registrar currently have access to zone by id
   };
 
+  typedef std::auto_ptr<Register::Registrar::Manager> RegistrarManagerPtr;
+
   /// Factory method
-  static Manager *create(DB* db);
+  static RegistrarManagerPtr create(DB* db);
 };
 
 

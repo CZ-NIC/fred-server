@@ -94,7 +94,7 @@ class ManagerImpl : virtual public Manager {
 
   std::auto_ptr<Zone::Manager> m_zone_manager;
   std::auto_ptr<Domain::Manager> m_domain_manager;
-  std::auto_ptr<Registrar::Manager> m_registrar_manager;
+  Registrar::Manager::RegistrarManagerPtr m_registrar_manager;
   std::auto_ptr<Contact::Manager> m_contact_manager;
   std::auto_ptr<NSSet::Manager> m_nsset_manager;
   std::auto_ptr<KeySet::Manager> m_keyset_manager;
@@ -106,11 +106,14 @@ class ManagerImpl : virtual public Manager {
 
 public:
   ManagerImpl(DB *_db, bool _restrictedHandles) :
-    db(_db), m_restricted_handles(_restrictedHandles) {
+    db(_db)
+    , m_restricted_handles(_restrictedHandles)
+    , m_registrar_manager(Registrar::Manager::create(db))
+    {
 
     m_zone_manager.reset(Zone::Manager::create());
     m_domain_manager.reset(Domain::Manager::create(db, m_zone_manager.get()));
-    m_registrar_manager.reset(Registrar::Manager::create(db));
+
     m_contact_manager.reset(Contact::Manager::create(db, m_restricted_handles));
     m_nsset_manager.reset(NSSet::Manager::create(db,
                                                  m_zone_manager.get(),
@@ -130,26 +133,7 @@ public:
     cd.cc = "SK";
     cd.name = "Slovak Republic";
     m_countries.push_back(cd);
-  }
-  /// upper constructor replacement
-  ManagerImpl(bool _restricted_handles) :
-    m_restricted_handles(_restricted_handles) {
-    /// initialize all other managers
-    /// TODO: db -> change to db_manager; needs other constructor update
-    m_zone_manager.reset(Zone::Manager::create());
-    m_domain_manager.reset(Domain::Manager::create(db, m_zone_manager.get()));
-    m_registrar_manager.reset(Registrar::Manager::create(db));
-    m_contact_manager.reset(Contact::Manager::create(db, m_restricted_handles));
-    m_nsset_manager.reset(NSSet::Manager::create(db,
-                                                 m_zone_manager.get(),
-                                                 m_restricted_handles));
-    m_keyset_manager.reset(KeySet::Manager::create(db, m_restricted_handles));
-    m_filter_manager.reset(Filter::Manager::create());
-    m_request_manager.reset(Logger::Manager::create());
-
-    /// load country codes descrition from database
-    loadCountryDesc();
-  }
+  }//ManagerImpl
 
   Zone::Manager *getZoneManager() const {
     return m_zone_manager.get();
@@ -404,13 +388,6 @@ public:
 Manager *Manager::create(DB *db, bool _restrictedHandles) {
   TRACE("[CALL] Register::Manager::create()");
   return new ManagerImpl(db, _restrictedHandles);
-}
-
-/// upper create factory method replacement
-Manager *Manager::create(bool _restricted_handles) {
-  TRACE(boost::format("[CALL] Register::Manager::create(%1%)")
-      % _restricted_handles);
-  return new ManagerImpl(_restricted_handles);
 }
 
 }
