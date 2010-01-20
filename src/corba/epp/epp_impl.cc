@@ -1374,7 +1374,7 @@ int ccReg_EPP_i::getZoneMax(
         std::string zone(db->GetFieldValue(i, 0));
         int from = domain.length() - zone.length();
         if (from > 1) {
-            if (size_t idx = domain.find(zone, from) != std::string::npos) {
+            if (domain.find(zone, from) != std::string::npos) {
                 return from - 1;
             }
         }
@@ -7043,8 +7043,14 @@ ccReg_EPP_i::KeySetUpdate(
     return action.getRet()._retn();
 }
 
-#define isbase64char(c)     ((c) >= 'a' && (c) <= 'z' || (c) >= 'A' && (c) <= 'Z' \
-        || (c) >= '0' && (c) <= '9' || (c) == '+' || (c) == '/')
+bool isbase64char (unsigned char c)
+{
+    return (c >= 'a' && c <= 'z')
+        || (c >= 'A' && c <= 'Z')
+        || (c >= '0' && c <= '9')
+        || c == '+'
+        || c == '/';
+}
 
 int
 countTailPads(const char *key)
