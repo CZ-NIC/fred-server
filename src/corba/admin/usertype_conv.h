@@ -12,7 +12,7 @@ inline std::auto_ptr<Register::Logger::RequestProperties> convert_properties(con
 	std::auto_ptr<Register::Logger::RequestProperties> ret_ptr(new Register::Logger::RequestProperties(p.length()));
 	Register::Logger::RequestProperties &ret = *(ret_ptr.get());
 
-	for(int i=0;i<p.length();i++) {
+	for(unsigned i=0;i<p.length();i++) {
 		ret[i].name.assign(p[i].name);
 		ret[i].value.assign(p[i].value);
 		ret[i].child  = p[i].child;
@@ -29,7 +29,7 @@ inline ccReg::RequestProperties convert_properties_d2c(boost::shared_ptr<Registe
 	
 	res.length(props->size());
 
-	for(int i=0;i<props->size();i++) {
+	for(unsigned i=0;i<props->size();i++) {
 		res[i].name = CORBA::string_dup(props->at(i).name.c_str());
 		res[i].value = CORBA::string_dup(props->at(i).value.c_str());
 		res[i].child = props->at(i).child;
