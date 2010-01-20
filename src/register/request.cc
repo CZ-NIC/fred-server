@@ -471,11 +471,8 @@ Result ManagerImpl::i_GetServiceActions(RequestServiceType service)
 
 	boost::format query = boost::format("select id, status from request_type where service = %1%") % service;
 
-	try {
-		return conn.exec(query.str());
-	} catch (Database::Exception &ex) {
-		logger_error(ex.what());
-	}
+        return conn.exec(query.str());
+	
 }
 
 ManagerImpl::ManagerImpl()
@@ -777,6 +774,8 @@ std::string ManagerImpl::getSessionUserName(Connection &conn, Database::ID sessi
                 if(res[0][0].isnull()) return std::string(); 
                 else return (std::string)res[0][0];
 	}
+
+        return std::string();
 }
 
 // update existing log record with given ID
@@ -918,6 +917,8 @@ bool ManagerImpl::i_CloseRequestLogin(ID id, const char *content_out, const Regi
 		logger_error(ex.what());
 		return false;
 	}
+
+        return true;
 }
 
 ID ManagerImpl::i_CreateSession(Languages lang, const char *name)
