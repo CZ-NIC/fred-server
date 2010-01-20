@@ -93,15 +93,19 @@ HeadList::reload(Database::Filters::Union &filter)
 
             unsigned long long id       = *col;
             unsigned long long accountId = *(++col);
+            (void)accountId;//unused warning suppression
             int number                  = *(++col);
+            (void)number; //unused warning suppression
             Database::Date crDate       = *(++col);
             Database::Date oldDate      = *(++col);
             Database::Money balance     = *(++col);
             Database::Money oldBalance  = *(++col);
             Database::Money credit      = *(++col);
             Database::Money debet       = *(++col);
+
             if(!partialLoad) {
                 unsigned long long fileId   = *(++col);
+                (void)fileId;//unused warning suppression
             }
 
             StatementHead *stat = new StatementHead();
@@ -222,6 +226,8 @@ HeadList::sort(MemberType member, bool asc)
             stable_sort(m_data.begin(), m_data.end(), CompareBankCode(asc));
             break;
 #endif
+        default:
+            break;
     }
 }
 
