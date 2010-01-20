@@ -184,7 +184,8 @@ ItemList::sort(ItemMemberType member, bool asc)
         case IMT_CREATE_TIME:
             stable_sort(m_data.begin(), m_data.end(), CompareCrTime(asc));
             break;
-
+        default:
+            break;
     }
 }
 
