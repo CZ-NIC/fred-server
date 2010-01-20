@@ -114,7 +114,7 @@ int main()
 
 	trans_count = 0;
 	while(std::getline(std::cin, line)) {
-		size_t i;
+		//size_t i;
 		char *end = NULL;
 		pool_manager man(mem_pool);
 
