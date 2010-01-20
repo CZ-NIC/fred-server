@@ -26,7 +26,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  Config::Conf& cfg,
                                  ccReg::BankingInvoicing_ptr _banking,
                                  ccReg_User_i* _user) :
-  session_id_(_session_id), cfg_(cfg), m_user(_user), m_mailer_manager(ns), m_banking_invoicing(_banking), m_last_activity(second_clock::local_time()) {
+  session_id_(_session_id), cfg_(cfg), m_banking_invoicing(_banking) , m_user(_user), m_mailer_manager(ns), m_last_activity(second_clock::local_time()) {
 
   base_context_ = Logging::Context::get() + "/" + session_id_;
   Logging::Context ctx(session_id_);
