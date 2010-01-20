@@ -63,7 +63,7 @@ ccReg_Registrars_i::getColumnHeaders()
   COLHEAD(ch,2,"Email",CT_OTHER);
   COLHEAD(ch,3,"Unspecified credit",CT_OTHER);
 
-  for (int i = 0 ; i < zone_count ; i++)
+  for (unsigned i = 0 ; i < zone_count ; i++)
   {
       Register::Zone::Zone* zp = dynamic_cast<Register::Zone::Zone*>(zl->get(i));
       std::string zonefqdn;
@@ -103,7 +103,7 @@ ccReg_Registrars_i::getRow(CORBA::UShort row)
       (*tr)[1] <<= C_STR(r->getName());
       (*tr)[2] <<= C_STR(r->getEmail());
       (*tr)[3] <<= C_STR(r->getCredit(0));
-      for (int i = 0 ; i < zone_count ; i++)
+      for (unsigned i = 0 ; i < zone_count ; i++)
       {
 
           Register::Zone::Zone* zp = dynamic_cast<Register::Zone::Zone*>(zl->get(i));
@@ -159,7 +159,7 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
       rl->sort(Register::Registrar::MT_CREDIT, dir);
       break;
   }
-  if((column > (static_cols-1)) && (column < zl->size()+static_cols))
+  if((static_cast<unsigned>(column) > (static_cols-1)) && (static_cast<unsigned>(column) < zl->size()+static_cols))
   {
 
       Register::Zone::Zone* zp = dynamic_cast<Register::Zone::Zone*>(zl->get(column-static_cols));
