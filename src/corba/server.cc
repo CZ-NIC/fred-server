@@ -73,6 +73,7 @@ static void sigint_handler(int signal) {
  * server config reload in case of SIGHUP signal
  * TESTING NOT USE ON PRODUCTION (check that sighup signal is not connected to this function)
  */
+/*
 static void sighup_handler(int signal) {
   assert(signal == SIGHUP);
   try {
@@ -88,6 +89,7 @@ static void sighup_handler(int signal) {
   }
 
 }
+*/
 
 // this handler was added because gcov needs the program to call exit
 // in order to generate graph files (*.gcda)
