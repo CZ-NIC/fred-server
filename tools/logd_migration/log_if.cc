@@ -437,7 +437,7 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 		throw bad_alloc();	\
 	}
 
-	int res;								/* response from corba call wrapper */	
+	//int res;								/* response from corba call wrapper */
 												
 	char errmsg[MAX_ERROR_MSG_LEN];			/* error message returned from corba call */
 	Register::Logger::RequestProperties *c_props = NULL;	/* properties to be sent to the log */
@@ -537,6 +537,8 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
 				case EPP_CHECK_KEYSET:
 					*action_type = KeysetCheck;
 					break;
+                default:
+                    break;
 			}
 
 			ec = static_cast<epps_check*>(cdata->data);
@@ -943,6 +945,8 @@ auto_ptr<Register::Logger::RequestProperties> log_epp_command(epp_command_data *
                             break;
                         case EPP_INFO_KEYSETS_BY_CONTACT:
                             *action_type = InfoKeysetsByContact;
+                            break;
+                        default:
                             break;
                     }
                     break;		
