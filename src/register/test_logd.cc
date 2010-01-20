@@ -394,9 +394,9 @@ void TestImplLog::check_db_properties_subset(ID rec_id, const Register::Logger::
 	Result res = conn.exec(query.str());
 
 	// this is expected for a *_subset function...
-	int pind = 0;
+	unsigned pind = 0;
 	if(res.size() > props.size()) {
-		for(int i=0; i<res.size(); i++) {
+		for(unsigned i=0; i<res.size(); i++) {
 			if(property_match(res[i], props[pind])) {
 				// property pind found in the sql result, proceed to another item in the list
 				pind++;
@@ -431,7 +431,7 @@ void TestImplLog::check_db_properties(ID rec_id, const Register::Logger::Request
 		BOOST_ERROR(" Not all properties have been loaded into the database");
 	}
 
-	for(int i=0; i<res.size(); i++) {
+	for(unsigned i=0; i<res.size(); i++) {
 		BOOST_CHECK( property_match(res[i], props[i]));
 	}
 }
