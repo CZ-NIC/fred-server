@@ -2071,7 +2071,7 @@ ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsRecentEntries(::CORBA::Long co
 
 	unsigned int size = data_result.size();
 	data->length(size);
-	for(int i=0; i<size; i++) {
+	for(unsigned i=0; i<size; i++) {
       ccReg::TAddress addr;
       addr.street1    = CORBA::string_dup(static_cast<std::string>(data_result[i][1]).c_str());
       addr.street2    = CORBA::string_dup(static_cast<std::string>(data_result[i][2]).c_str());
