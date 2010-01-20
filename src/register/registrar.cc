@@ -120,6 +120,92 @@ public:
   }//save
 };//class ACLImpl
 
+unsigned long addRegistrarZone(
+          const std::string& registrarHandle,
+          const std::string zone,
+          const Database::Date &fromDate,
+          const Database::Date &toDate) throw (SQL_ERROR)
+  {///expecting external transaction, no transaction inside
+      try
+      {
+
+          LOGGER(PACKAGE).debug(boost::format("addRegistrarZone registrarHandle: %1% zone: %2% fromDate: %3% toDate: %4%")
+          % registrarHandle % zone % fromDate.to_string() % toDate.to_string() );
+
+        Database::Connection conn = Database::Manager::acquire();
+
+        std::string fromStr;
+        std::string toStr;
+
+        if (!fromDate.is_special())
+        {
+            fromStr = "'" + fromDate.to_string() + "'";
+        }
+        else
+        {
+            fromStr = "CURRENT_DATE";
+        }
+
+        if (!toDate.is_special())
+        {
+            toStr = "'" + toDate.to_string() + "'";
+        }
+        else
+        {
+            toStr = "NULL";
+        }
+        std::stringstream sql;
+        sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate,todate) "
+               "SELECT (SELECT id FROM registrar WHERE handle='" << conn.escape(registrarHandle) << "' LIMIT 1) "
+               ",(SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "' LIMIT 1) "
+               ", " << fromStr << "," << toStr;
+
+        LOGGER(PACKAGE).debug(boost::format("addRegistrarZone Q1: %1%")
+        % sql.str() );
+
+
+        conn.exec(sql.str());
+
+        std::stringstream sql2;
+
+        sql2 << "SELECT ri.id FROM registrarinvoice ri "
+            "WHERE ri.registrarid = (SELECT id FROM registrar WHERE handle='"
+                << conn.escape(registrarHandle) << "' LIMIT 1) "
+            "and ri.zone = (SELECT id FROM zone WHERE fqdn='"
+                << conn.escape(zone) << "' LIMIT 1) "
+            "and ri.fromdate = date (" << fromStr << ") ";
+
+        if(toStr.compare("NULL") == 0)
+            sql2 << "and ri.todate isnull ";
+        else
+            sql2 <<  "and ri.todate = date(" << toStr << ") ";
+
+        sql2 <<  "LIMIT 1 ";
+
+        LOGGER(PACKAGE).debug(boost::format("addRegistrarZone Q2: %1%")
+        % sql2.str() );
+
+
+        Database::Result res = conn.exec(sql2.str());
+
+        if((res.size() == 1) && (res[0].size() == 1))
+        {
+            Database::ID ret = res[0][0];
+            return ret;
+        }
+        else
+        {
+            LOGGER(PACKAGE).error("addRegistrarZone: an error has occured");
+            throw SQL_ERROR();
+        }
+      }//try
+      catch (...)
+      {
+          LOGGER(PACKAGE).error("addRegistrarZone: an error has occured");
+          throw SQL_ERROR();
+      }//catch (...)
+  }//addRegistrarZone
+
 
 class RegistrarImpl : public Register::CommonObjectImplNew,
                       virtual public Registrar,
@@ -423,7 +509,6 @@ public:
     }
   }
 
-
   virtual void clearACLList()
   {
     acl.clear();
@@ -433,93 +518,6 @@ public:
   {
       actzones.clear();
   }
-
-
-  virtual unsigned long addRegistrarZone(
-          const std::string& registrarHandle,
-          const std::string zone,
-          const Database::Date &fromDate,
-          const Database::Date &toDate) throw (SQL_ERROR)
-  {///expecting external transaction, no transaction inside
-      try
-      {
-
-          LOGGER(PACKAGE).debug(boost::format("RegistrarImpl::addRegistrarZone registrarHandle: %1% zone: %2% fromDate: %3% toDate: %4%")
-          % registrarHandle % zone % fromDate.to_string() % toDate.to_string() );
-
-        Database::Connection conn = Database::Manager::acquire();
-
-        std::string fromStr;
-        std::string toStr;
-
-        if (!fromDate.is_special())
-        {
-            fromStr = "'" + fromDate.to_string() + "'";
-        }
-        else
-        {
-            fromStr = "CURRENT_DATE";
-        }
-
-        if (!toDate.is_special())
-        {
-            toStr = "'" + toDate.to_string() + "'";
-        }
-        else
-        {
-            toStr = "NULL";
-        }
-        std::stringstream sql;
-        sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate,todate) "
-               "SELECT (SELECT id FROM registrar WHERE handle='" << conn.escape(registrarHandle) << "' LIMIT 1) "
-               ",(SELECT id FROM zone WHERE fqdn='" << conn.escape(zone) << "' LIMIT 1) "
-               ", " << fromStr << "," << toStr;
-
-        LOGGER(PACKAGE).debug(boost::format("RegistrarImpl::addRegistrarZone Q1: %1%")
-        % sql.str() );
-
-
-        conn.exec(sql.str());
-
-        std::stringstream sql2;
-
-        sql2 << "SELECT ri.id FROM registrarinvoice ri "
-            "WHERE ri.registrarid = (SELECT id FROM registrar WHERE handle='"
-                << conn.escape(registrarHandle) << "' LIMIT 1) "
-            "and ri.zone = (SELECT id FROM zone WHERE fqdn='"
-                << conn.escape(zone) << "' LIMIT 1) "
-            "and ri.fromdate = date (" << fromStr << ") ";
-
-        if(toStr.compare("NULL") == 0)
-            sql2 << "and ri.todate isnull ";
-        else
-            sql2 <<  "and ri.todate = date(" << toStr << ") ";
-
-        sql2 <<  "LIMIT 1 ";
-
-        LOGGER(PACKAGE).debug(boost::format("RegistrarImpl::addRegistrarZone Q2: %1%")
-        % sql2.str() );
-
-
-        Database::Result res = conn.exec(sql2.str());
-
-        if((res.size() == 1) && (res[0].size() == 1))
-        {
-            Database::ID ret = res[0][0];
-            return ret;
-        }
-        else
-        {
-            LOGGER(PACKAGE).error("addRegistrarZone: an error has occured");
-            throw SQL_ERROR();
-        }
-      }//try
-      catch (...)
-      {
-          LOGGER(PACKAGE).error("addRegistrarZone: an error has occured");
-          throw SQL_ERROR();
-      }//catch (...)
-  }//addRegistrarZone
 
   virtual void updateRegistrarZone(
           const TID& id,
@@ -697,7 +695,7 @@ public:
                             ,actzones[i]->todate);
 		    else
 		    {
-		        this->addRegistrarZone (getHandle()
+		        addRegistrarZone (getHandle()
                             ,actzones[i]->name
                             ,actzones[i]->fromdate
                             ,actzones[i]->todate);
@@ -1794,54 +1792,6 @@ public:
       return RegistrarPtr(dynamic_cast<RegistrarImpl *>(new RegistrarImpl));
   }
 
-  virtual void addRegistrarZone(
-          const std::string& registrarHandle,
-          const std::string zone,
-          const Database::Date &fromDate,
-          const Database::Date &toDate) throw (SQL_ERROR)
-  {
-      try
-      {
-      	Database::Connection conn = Database::Manager::acquire();
-
-		std::string fromStr;
-		std::string toStr;
-
-		if (fromDate != Database::Date())
-		{
-			fromStr = "'" + fromDate.to_string() + "'";
-		}
-		else
-		{
-			fromStr = "CURRENT_DATE";
-		}
-		if (toDate != Database::Date())
-		{
-			toStr = "'" + toDate.to_string() + "'";
-		}
-		else
-		{
-			toStr = "NULL";
-		}
-		std::stringstream sql;
-		sql << "INSERT INTO registrarinvoice (registrarid,zone,fromdate,lastdate) "
-			<< "SELECT r.id,z.id, " << fromStr << "," << toStr << " FROM ("
-			<< "SELECT id FROM registrar WHERE handle='" << registrarHandle
-			<< "') r " << "JOIN (SELECT id FROM zone WHERE fqdn='" << zone
-			<< "') z ON (1=1) " << "LEFT JOIN registrarinvoice ri ON "
-			<< "(ri.registrarid=r.id AND ri.zone=z.id) " << "WHERE ri.id ISNULL";
-
-		Database::Transaction tx(conn);
-		conn.exec(sql.str());
-		tx.commit();
-      }//try
-      catch (...)
-      {
-          LOGGER(PACKAGE).error("addRegistrarZone: an error has occured");
-          throw SQL_ERROR();
-      }//catch (...)
-  }//addRegistrarZone
-
   virtual void updateRegistrarZone(
           const TID& id,
           const Database::Date &fromDate,
@@ -1933,6 +1883,9 @@ unsigned long long Manager::RegistrarZoneAccess::max_id(ColIndex idx, Database::
      if((registrar_id <= max_registrar_id)
              && (zone_id <= max_zone_id))
                 ret = flag.at(registrar_id).at(zone_id);
+     LOGGER(PACKAGE).debug(boost::format
+             ("[CALL] Manager::RegistrarZoneAccess::isInZone() registrar_id: %1% zone_id: %2% ret: %3%")
+                 % registrar_id % zone_id % ret);
     return ret;
  }//isInZone
 
@@ -1973,11 +1926,11 @@ void Manager::RegistrarZoneAccess::reload()
                      )
                      % static_cast<unsigned long long>(res[i][RegistrarCol])
                      % static_cast<unsigned long long>(res[i][ZoneCol])
-                     % static_cast<bool>(res[i][IsInZone])
+                     % (static_cast<unsigned long long>(res[i][IsInZone]) > 0)
                  );
                  std::size_t regid = static_cast<std::size_t>(res[i][RegistrarCol]);
                  std::size_t zonid = static_cast<std::size_t>(res[i][ZoneCol]);
-                 flag.at(regid).at(zonid) = static_cast<bool>(res[i][IsInZone]);
+                 flag.at(regid).at(zonid) = (static_cast<unsigned long long>(res[i][IsInZone]) > 0);
              }//if size
         }//for i
     }//try

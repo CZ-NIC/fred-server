@@ -256,8 +256,6 @@ void
 RegistrarClient::registrar_add_zone()
 {
     callHelp(m_conf, registrar_add_zone_help);
-    Register::Registrar::Manager::RegistrarManagerPtr regMan
-        = Register::Registrar::Manager::create(&m_db);
     std::string zone = m_conf.get<std::string>(REGISTRAR_ZONE_FQDN_NAME);
     std::string registrar = m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME);
     Database::Date fromDate;
@@ -268,7 +266,7 @@ RegistrarClient::registrar_add_zone()
     if (m_conf.hasOpt(REGISTRAR_TO_DATE_NAME)) {
         toDate.from_string(m_conf.get<std::string>(REGISTRAR_TO_DATE_NAME));
     }
-    regMan->addRegistrarZone(registrar, zone, fromDate, toDate);
+    Register::Registrar::addRegistrarZone(registrar, zone, fromDate, toDate);
     return;
 }
 

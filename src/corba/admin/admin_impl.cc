@@ -526,16 +526,11 @@ void ccReg_Admin_i::addRegistrarToZone
   {
 	Logging::Context ctx(server_name_);
     ConnectionReleaser releaser;
-	DB db;
-	db.OpenDatabase(m_connection_string.c_str());
-	std::auto_ptr<Register::Manager> r(Register::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
-	Register::Registrar::Manager *rm = r->getRegistrarManager();
 	Database::Date f_date(fromdate);
 	Database::Date t_date(todate);
-	rm->addRegistrarZone(registrar_handle, zone_fqdn, f_date, t_date);
-	db.Disconnect();
-  } catch (...) {
-	db.Disconnect();
+	Register::Registrar::addRegistrarZone(registrar_handle, zone_fqdn, f_date, t_date);
+  } catch (...)
+  {
 	throw ccReg::Admin::UpdateFailed();
   }
 }

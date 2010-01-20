@@ -267,6 +267,12 @@ public:
 
   virtual Register::Registrar::Registrar* findId(Database::ID id) const =0;
 };
+//Add access to zone for registrar
+unsigned long addRegistrarZone(
+          const std::string& registrarHandle,
+          const std::string zone,
+          const Database::Date &fromDate,
+          const Database::Date &toDate) throw (SQL_ERROR);
 
 
 /// member identification (i.e. for sorting)
@@ -418,11 +424,6 @@ public:
           const std::string &pass)
       throw (SQL_ERROR) = 0;
 
-  virtual void addRegistrarZone(
-          const std::string& registrarHandle, 
-          const std::string zone,
-          const Database::Date &fromDate,
-          const Database::Date &toDate) throw (SQL_ERROR) = 0;
   virtual void updateRegistrarZone(
           const TID& id,
           const Database::Date &fromDate,
