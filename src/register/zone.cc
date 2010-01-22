@@ -1316,8 +1316,10 @@ namespace Register
             	ModelPriceList pl;
             	pl.setZoneId(zoneId);
             	pl.setOperationId((operation == CREATE) ? 1 : 2);
-            	pl.setValidFrom(validFrom);
-            	pl.setValidTo(validTo);
+            	if(!validFrom.get().is_not_a_date_time())
+            	    pl.setValidFrom(validFrom);
+            	if(!validTo.get().is_not_a_date_time())
+            	    pl.setValidTo(validTo);
             	pl.setPrice(price);
             	pl.setPeriod(period);
             	pl.insert();
