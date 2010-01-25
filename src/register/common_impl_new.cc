@@ -33,7 +33,6 @@ CommonListImplNew::get(unsigned int index) const
 unsigned int
 CommonListImplNew::getSize() const
 {
-    TRACE(boost::format("[CALL] CommonListImplNew::getSize(), m_data.size(): %1%") % m_data.size());
     return m_data.size();
 }
 
