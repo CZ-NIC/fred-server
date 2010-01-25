@@ -840,12 +840,10 @@ public:
     object_info_query.select() << "t_1.request_type, t_1.id, t_1.epp_action_id, "
                                << "t_1.create_time, t_1.status, t_1.resolve_time, "
                                << "t_1.reason, t_1.email_to_answer, t_1.answer_email_id, "
-                               << "t_2.servertrid, t_4.id, t_4.handle, t_4.name, t_4.url";
+                               << "'ccReg-' || to_char(t_1.epp_action_id, 'FM0999999999'), t_4.id, t_4.handle, t_4.name, t_4.url";
     object_info_query.from() << getTempTableName() << " tmp " 
                              << "JOIN public_request t_1 ON (t_1.id = tmp.id) "
-                             << "LEFT JOIN action t_2 ON (t_1.epp_action_id = t_2.id) "
-                             << "LEFT JOIN login t_3 ON (t_2.clientid = t_3.id) "
-                             << "LEFT JOIN registrar t_4 ON (t_3.registrarid = t_4.id) ";
+                             << "LEFT JOIN registrar t_4 ON (t_1.registrar_id = t_4.id) ";
     object_info_query.order_by() << "t_1.id";
     
     Database::Connection conn = Database::Manager::acquire();
