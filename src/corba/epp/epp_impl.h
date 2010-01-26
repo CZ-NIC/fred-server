@@ -64,7 +64,7 @@ public:
   int getZone(DB *db, const char *fqdn);
   int getZoneMax(DB *db, const char *fqdn);
   int getFQDN(DB *db, char *FQDN, const char *fqdn);
-  bool testFQDN(DB *db, const char *fqdn);
+
 
   // parse extension for domain enum.exdate
   void GetValExpDateFromExtension(char *valexpDate,
