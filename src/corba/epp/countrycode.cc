@@ -50,7 +50,7 @@ bool CountryCode::AddCode(
 
 CountryCode::~CountryCode()
 {
-  delete CC;
+  delete[] CC;
 }
 
 bool CountryCode::TestCountryCode(
