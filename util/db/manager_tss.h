@@ -84,7 +84,10 @@ public:
     }
   }
 
-
+  static const std::string& getConnectionString() {
+    return conn_factory_->getConnectionString();
+  }   
+  
   /**
    * Explicit release database connection for actual thread
    * back to pool

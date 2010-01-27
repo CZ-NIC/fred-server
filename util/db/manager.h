@@ -81,6 +81,9 @@ public:
     return acquire();
   }
 
+  virtual const std::string& getConnectionString() {
+    return conn_factory_->getConnectionString();
+  }   
   
   virtual connection_type* acquire() {
     /* get the connection string from configured factory to support
