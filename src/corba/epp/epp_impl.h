@@ -49,9 +49,6 @@ public:
         Config::Conf& _conf) throw (DB_CONNECT_FAILED);
   virtual ~ccReg_EPP_i();
 
-  // test connection 
-  bool TestDatabaseConnect(const std::string& db);
-
   // get zones parametrs
   int GetZoneExPeriodMin(DB *db, int id);
   int GetZoneExPeriodMax(DB *db, int id);
@@ -156,7 +153,6 @@ public:
   // reason handle
   short SetErrorReason(ccReg::Errors_var& errors, short errCode,
     ccReg::ParamError paramCode, short position, int reasonMsg, int lang);
-  short SetReasonUnknowCC(ccReg::Errors_var& err, const char *value, int lang);
 
   short SetReasonContactHandle(ccReg::Errors_var& err, const char *handle,
     int lang);
@@ -166,63 +162,6 @@ public:
     int lang);
   short int SetReasonKeySetHandle(ccReg::Errors_var &err, const char *handle,
           int lang);
-
-  short SetReasonProtectedPeriod(ccReg::Errors_var& err, const char *value,
-    int lang, ccReg::ParamError paramCode=ccReg::contact_handle);
-
-  short SetReasonContactMap(ccReg::Errors_var& err,
-    ccReg::ParamError paramCode, const char *handle, int id, int lang,
-    short position, bool tech_or_admin);
-
-  short SetReasonNSSetTech(ccReg::Errors_var& err, const char * handle,
-    int techID, int lang, short position);
-  short SetReasonNSSetTechADD(ccReg::Errors_var& err, const char * handle,
-    int techID, int lang, short position);
-  short SetReasonNSSetTechREM(ccReg::Errors_var& err, const char * handle,
-    int techID, int lang, short position);
-  short SetReasonDomainAdmin(ccReg::Errors_var& err, const char * handle,
-    int adminID, int lang, short position);
-  short SetReasonDomainAdminADD(ccReg::Errors_var& err, const char * handle,
-    int adminID, int lang, short position);
-  short SetReasonDomainAdminREM(ccReg::Errors_var& err, const char * handle,
-    int adminID, int lang, short position);
-  short SetReasonDomainTempCREM(ccReg::Errors_var& err, const char * handle,
-    int adminID, int lang, short position);
-  short int SetReasonDomainKeySet(ccReg::Errors_var &err, const char *keyset_handle,
-          int keysetid, int lang);
-
-  short int SetReasonKeySetTech(ccReg::Errors_var &err, const char *handle,
-          int techID, int lang, short int position);
-  short int SetReasonKeySetTechADD(ccReg::Errors_var &err, const char *handle,
-          int techID, int lang, short int position);
-  short int SetReasonKeySetTechREM(ccReg::Errors_var &err, const char *handle,
-          int techID, int lang, short int position);
-
-  short SetReasonNSSetTechExistMap(ccReg::Errors_var& err, const char * handle,
-    int lang, short position);
-  short SetReasonNSSetTechNotExistMap(ccReg::Errors_var& err,
-    const char * handle, int lang, short position);
-  short int SetReasonKeySetTechExistMap(ccReg::Errors_var &err, const char *handle,
-          int lang, short int position);
-  short int SetReasonKeySetTechNotExistMap(ccReg::Errors_var &err, const char *handle,
-          int lang, short int position);
-
-  short SetReasonDomainAdminExistMap(ccReg::Errors_var& err,
-    const char * handle, int lang, short position);
-  short SetReasonDomainAdminNotExistMap(ccReg::Errors_var& err,
-    const char * handle, int lang, short position);
-  short SetReasonDomainTempCNotExistMap(ccReg::Errors_var& err,
-    const char * handle, int lang, short position);
-
-  short SetReasonDomainNSSet(ccReg::Errors_var& err, const char * nsset_handle,
-    int nssetid, int lang);
-  short SetReasonDomainRegistrant(ccReg::Errors_var& err,
-    const char * contact_handle, int contactid, int lang);
-
-  short SetReasonContactDuplicity(ccReg::Errors_var& err, const char * handle,
-    int lang, short position, ccReg::ParamError paramCode);
-
-  short SetReasonWrongRegistrar(ccReg::Errors_var &err, int registrarId, int lang);
 
   // general list function
   ccReg::Response* FullList(short act, const char *table, const char *fname,
@@ -434,7 +373,7 @@ private:
   long long maxWaitClient; //  connection timeout 
   Mesg *ErrorMsg;
   Mesg *ReasonMsg;
-  CountryCode *CC;
+  std::auto_ptr<CountryCode> CC;
   int max_zone;
   bool testInfo; // TODO: remove 
 };

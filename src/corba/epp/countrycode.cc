@@ -16,52 +16,55 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
+
 
 #include "countrycode.h"
-#include "old_utils/log.h"
+#include <algorithm>
+#include "register/db_settings.h"
+#include "log/logger.h"
 
-CountryCode::CountryCode(
-  int num)
-{
-  add=0;
-  num_country = num;
-  CC = new char[num][MAX_CC+1];
-}
+CountryCode::CountryCode()
+    : cc_(0)
+{}
 
-bool CountryCode::AddCode(
-  const char *code)
+CountryCode::CountryCode(int num)
+    : cc_(num)
+{}
+
+bool CountryCode::AddCode(const char *code)
 {
-  if (add < num_country) {
-    //    if( !TestCountryCode( code ) ) // do not test duplicity
+    std::string code_str(code);
+    if (code_str.length() == MAX_CC)
     {
-
-      CC[add][0] = code[0];
-      CC[add][1] = code[1];
-      CC[add][2] = 0;
-      add++;
-      return true;
+        cc_.push_back(code_str);
+        return true;
     }
-
-  }
 
   return false;
 }
 
 CountryCode::~CountryCode()
+{}
+
+bool CountryCode::TestCountryCode(const char *cc)
 {
-  delete[] CC;
+    const std::string code_str (cc);
+    if(code_str.length() != 2) return false;
+    return ( std::find(cc_.begin(),cc_.end(), code_str) != cc_.end());
 }
 
-bool CountryCode::TestCountryCode(
-  const char *cc)
+void CountryCode::load()
 {
-  int i;
+    std::string query("SELECT id FROM enum_country order by id");
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Result res  = conn.exec(query);
+    std::size_t res_size = res.size();
+    if(cc_.capacity() < res_size)
+        cc_.reserve(res_size);
 
-  for (i = 0; i < num_country; i ++) {
-    if (CC[i][0] == cc[0] && CC[i][1] == cc[1])
-      return true;
-  }
-
-  return false;
+    for (unsigned i=0; i < res_size; i++)
+    {
+        std::string code_str = res[i][0];
+        cc_.push_back(code_str);
+    }//for i
 }

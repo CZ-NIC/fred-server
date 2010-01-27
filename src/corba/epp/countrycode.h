@@ -1,26 +1,30 @@
+#ifndef COUNTRYCODE_H
+#define COUNTRYCODE_H
+
+#include <string>
+#include <vector>
+
 #define MAX_CC 2
 
 class CountryCode
 {
+    typedef std::vector<std::string> CountryCodeT;
 public:
-  CountryCode(
-    int num);
-  ~CountryCode();
+    CountryCode();
+    CountryCode(int num);
+    ~CountryCode();
 
-  bool AddCode(
-    const char *code);
-  bool TestCountryCode(
-    const char *cc);
+    bool AddCode(const char *code);
+    bool TestCountryCode(const char *cc);
 
-  int GetNum()
-  {
-    return num_country;
-  } // return number of countries
+    void load();
 
+    int GetNum()
+    {
+    return cc_.size();
+    } // return number of countries
 
 private:
-  char (*CC)[MAX_CC+1]; // country allocated field
-  int num_country; // 
-  int add;
-};
-
+    CountryCodeT cc_;
+};//class CountryCode
+#endif //COUNTRYCODE_H

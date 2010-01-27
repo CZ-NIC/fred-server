@@ -406,7 +406,6 @@ ccReg_EPP_i::~ccReg_EPP_i()
   Logging::Context::clear();
   Logging::Context ctx("rifd");
 
-  delete CC;
   delete ReasonMsg;
   delete ErrorMsg;
   delete [] session;
@@ -460,6 +459,7 @@ void ccReg_EPP_i::CreateSession(
   }
 
 }
+
 // session manager
 bool ccReg_EPP_i::LoginSession(
   long loginID, int registrarID, int language)
@@ -587,26 +587,6 @@ int ccReg_EPP_i::GetRegistrarLang(
   return 0;
 }
 
-// test connection to database when server starting
-bool ccReg_EPP_i::TestDatabaseConnect(
-  const std::string& db)
-{
-  DB DBsql;
-
-  // connection info
-  database = db;
-
-  if (DBsql.OpenDatabase(database) ) {
-    LOG( NOTICE_LOG , "successfully  connect to DATABASE" );
-    DBsql.Disconnect();
-    return true;
-  } else {
-    LOG( ALERT_LOG , "can not connect to DATABASE" );
-    return false;
-  }
-
-}
-
 // Load table to memory for speed
 
 int ccReg_EPP_i::LoadReasonMessages()
@@ -696,14 +676,6 @@ short ccReg_EPP_i::SetErrorReason(
   return errCode;
 }
 
-short ccReg_EPP_i::SetReasonUnknowCC(
-  ccReg::Errors_var& err, const char *value, int lang)
-{
-  LOG( WARNING_LOG, "Reason: unknown country code: %s" , value );
-  return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::contact_cc, 1,
-  REASON_MSG_COUNTRY_NOTEXIST, lang);
-}
-
 short ccReg_EPP_i::SetReasonContactHandle(
   ccReg::Errors_var& err, const char *handle, int lang)
 {
@@ -749,298 +721,30 @@ short ccReg_EPP_i::SetReasonDomainFQDN(
   return 0;
 }
 
-short ccReg_EPP_i::SetReasonDomainNSSet(
-  ccReg::Errors_var& err, const char * nsset_handle, int nssetid, int lang)
-{
-
-  if (nssetid < 0) {
-    LOG( WARNING_LOG, "bad format of domain nsset  [%s]" , nsset_handle );
-    return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::domain_nsset, 1,
-    REASON_MSG_BAD_FORMAT_NSSET_HANDLE, lang);
-  } else if (nssetid == 0) {
-    LOG( WARNING_LOG, " domain nsset not exist [%s]" , nsset_handle );
-    return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::domain_nsset, 1,
-    REASON_MSG_NSSET_NOTEXIST, lang);
-  }
-
-  return 0;
-}
-
-short int
-ccReg_EPP_i::SetReasonDomainKeySet(
-        ccReg::Errors_var &err,
-        const char *keyset_handle,
-        int keysetid,
-        int lang)
-{
-    if (keysetid < 0) {
-        LOG(WARNING_LOG, "bad format of domain keyset [%s]", keyset_handle);
-        return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::domain_keyset,
-                1, REASON_MSG_BAD_FORMAT_KEYSET_HANDLE, lang);
-    } else if (keysetid == 0) {
-        LOG(WARNING_LOG, "domain keyset not exist [%s]", keyset_handle);
-        return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::domain_keyset,
-                1, REASON_MSG_KEYSET_NOTEXIST, lang);
-    }
-    return 0;
-}
-
-short ccReg_EPP_i::SetReasonDomainRegistrant(
-  ccReg::Errors_var& err, const char * contact_handle, int contactid, int lang)
-{
-
-  if (contactid < 0) {
-    LOG( WARNING_LOG, "bad format of registrant  [%s]" , contact_handle );
-    return SetErrorReason(err, COMMAND_PARAMETR_ERROR,
-        ccReg::domain_registrant, 1, REASON_MSG_BAD_FORMAT_CONTACT_HANDLE, lang);
-  } else if (contactid == 0) {
-    LOG( WARNING_LOG, " domain registrant not exist [%s]" , contact_handle );
-    return SetErrorReason(err, COMMAND_PARAMETR_ERROR,
-        ccReg::domain_registrant, 1, REASON_MSG_REGISTRANT_NOTEXIST, lang);
-  }
-
-  return 0;
-}
-
-short ccReg_EPP_i::SetReasonProtectedPeriod(
-  ccReg::Errors_var& err, const char *value, int lang, ccReg::ParamError param)
-{
-  LOG( WARNING_LOG, "object [%s] in history period" , value );
-  return SetErrorReason(err, COMMAND_PARAMETR_ERROR, param, 1,
-  REASON_MSG_PROTECTED_PERIOD, lang);
-}
-
-short ccReg_EPP_i::SetReasonContactMap(
-  ccReg::Errors_var& err, ccReg::ParamError paramCode, const char *handle,
-  int id, int lang, short position, bool tech_or_admin)
-{
-
-  if (id < 0) {
-    LOG( WARNING_LOG, "bad format of Contact %s" , (const char *) handle );
-    return SetErrorReason(err, COMMAND_PARAMETR_ERROR, paramCode, position +1,
-    REASON_MSG_BAD_FORMAT_CONTACT_HANDLE, lang);
-  } else if (id == 0) {
-    LOG( WARNING_LOG, "Contact %s not exist" , (const char *) handle );
-    if (tech_or_admin)
-      return SetErrorReason(err, COMMAND_PARAMETR_ERROR, paramCode, position,
-      REASON_MSG_TECH_NOTEXIST, lang);
-    else
-      return SetErrorReason(err, COMMAND_PARAMETR_ERROR, paramCode, position+1,
-      REASON_MSG_ADMIN_NOTEXIST, lang);
-  }
-
-  return 0;
-}
-
-short ccReg_EPP_i::SetReasonContactDuplicity(
-  ccReg::Errors_var& err, const char * handle, int lang, short position,
-  ccReg::ParamError paramCode)
-{
-  LOG( WARNING_LOG, "Contact [%s] duplicity " , (const char *) handle );
-  return SetErrorReason(err, COMMAND_PARAMETR_ERROR, paramCode, position,
-  REASON_MSG_DUPLICITY_CONTACT, lang);
-}
-
-short ccReg_EPP_i::SetReasonNSSetTech(
-  ccReg::Errors_var& err, const char * handle, int techID, int lang,
-  short position)
-{
-  return SetReasonContactMap(err, ccReg::nsset_tech, handle, techID, lang,
-      position, true);
-}
-
-short ccReg_EPP_i::SetReasonNSSetTechADD(
-  ccReg::Errors_var& err, const char * handle, int techID, int lang,
-  short position)
-{
-  return SetReasonContactMap(err, ccReg::nsset_tech_add, handle, techID, lang,
-      position, true);
-}
-
-short ccReg_EPP_i::SetReasonNSSetTechREM(
-  ccReg::Errors_var& err, const char * handle, int techID, int lang,
-  short position)
-{
-  return SetReasonContactMap(err, ccReg::nsset_tech_rem, handle, techID, lang,
-      position, true);
-}
-
-short int
-ccReg_EPP_i::SetReasonKeySetTech( ccReg::Errors_var &err, const char *handle, int techID, int lang, short int position)
-{
-    return SetReasonContactMap(err, ccReg::keyset_tech, handle, techID, lang, position, true);
-}
-
-short int
-ccReg_EPP_i::SetReasonKeySetTechADD( ccReg::Errors_var &err, const char *handle, int techID,
-        int lang, short int position)
-{
-    return SetReasonContactMap(err, ccReg::keyset_tech_add, handle, techID, lang, position, true);
-}
-
-short int
-ccReg_EPP_i::SetReasonKeySetTechREM( ccReg::Errors_var &err, const char *handle, int techID,
-        int lang, short int position)
-{
-    return SetReasonContactMap(err, ccReg::keyset_tech_rem, handle, techID, lang, position, true);
-}
-
-short ccReg_EPP_i::SetReasonDomainAdmin(
-  ccReg::Errors_var& err, const char * handle, int adminID, int lang,
-  short position)
-{
-  return SetReasonContactMap(err, ccReg::domain_admin, handle, adminID, lang,
-      position, false);
-}
-
-short ccReg_EPP_i::SetReasonDomainAdminADD(
-  ccReg::Errors_var& err, const char * handle, int adminID, int lang,
-  short position)
-{
-  return SetReasonContactMap(err, ccReg::domain_admin_add, handle, adminID,
-      lang, position, false);
-}
-
-short ccReg_EPP_i::SetReasonDomainAdminREM(
-  ccReg::Errors_var& err, const char * handle, int adminID, int lang,
-  short position)
-{
-  return SetReasonContactMap(err, ccReg::domain_admin_rem, handle, adminID,
-      lang, position, false);
-}
-
-short ccReg_EPP_i::SetReasonDomainTempCREM(
-  ccReg::Errors_var& err, const char * handle, int adminID, int lang,
-  short position)
-{
-  return SetReasonContactMap(err, ccReg::domain_tmpcontact, handle, adminID,
-      lang, position, false);
-}
-
-short ccReg_EPP_i::SetReasonNSSetTechExistMap(
-  ccReg::Errors_var& err, const char * handle, int lang, short position)
-{
-  LOG( WARNING_LOG, "Tech Contact [%s] exist in contact map table" , (const char *) handle );
-  return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::nsset_tech_add,
-      position +1, REASON_MSG_TECH_EXIST, lang);
-}
-
-short ccReg_EPP_i::SetReasonNSSetTechNotExistMap(
-  ccReg::Errors_var& err, const char * handle, int lang, short position)
-{
-  LOG( WARNING_LOG, "Tech Contact [%s] notexist in contact map table" , (const char *) handle );
-  return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::nsset_tech_rem,
-      position+1, REASON_MSG_TECH_NOTEXIST, lang);
-}
-
-short int
-ccReg_EPP_i::SetReasonKeySetTechExistMap(
-        ccReg::Errors_var &err,
-        const char *handle,
-        int lang,
-        short int position)
-{
-    LOG(WARNING_LOG, "Tech contact [%s] exist in contact map table",
-            (const char *)handle);
-    return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::keyset_tech_add,
-            position+1, REASON_MSG_TECH_EXIST, lang);
-}
-
-short int
-ccReg_EPP_i::SetReasonKeySetTechNotExistMap(
-        ccReg::Errors_var &err,
-        const char *handle,
-        int lang,
-        short int position)
-{
-    LOG(WARNING_LOG, "Tech contact [%s] does not exist in contact map table",
-            (const char *)handle);
-    return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::keyset_tech_rem,
-            position+1, REASON_MSG_TECH_NOTEXIST, lang);
-}
-
-short ccReg_EPP_i::SetReasonDomainAdminExistMap(
-  ccReg::Errors_var& err, const char * handle, int lang, short position)
-{
-  LOG( WARNING_LOG, "Admin Contact [%s] exist in contact map table" , (const char *) handle );
-  return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::domain_admin_add,
-      position+1, REASON_MSG_ADMIN_EXIST, lang);
-}
-
-short ccReg_EPP_i::SetReasonDomainAdminNotExistMap(
-  ccReg::Errors_var& err, const char * handle, int lang, short position)
-{
-  LOG( WARNING_LOG, "Admin Contact [%s] notexist in contact map table" , (const char *) handle );
-  return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::domain_admin_rem,
-      position+1, REASON_MSG_ADMIN_NOTEXIST, lang);
-}
-
-short ccReg_EPP_i::SetReasonDomainTempCNotExistMap(
-  ccReg::Errors_var& err, const char * handle, int lang, short position)
-{
-  LOG( WARNING_LOG, "Temp Contact [%s] notexist in contact map table" , (const char *) handle );
-  return SetErrorReason(err, COMMAND_PARAMETR_ERROR, ccReg::domain_tmpcontact,
-      position+1, REASON_MSG_ADMIN_NOTEXIST, lang);
-}
-
-short
-ccReg_EPP_i::SetReasonWrongRegistrar(
-        ccReg::Errors_var &err,
-        int registrarId,
-        int lang)
-{
-    return SetErrorReason(
-            err,
-            COMMAND_AUTOR_ERROR,
-            ccReg::registrar_autor,
-            0,
-            REASON_MSG_REGISTRAR_AUTOR,
-            lang);
-}
-
 // load country code table  enum_country from database
 int ccReg_EPP_i::LoadCountryCode()
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
+  ConnectionReleaser releaser;
 
-  DB DBsql;
-  int i, rows;
-
-  if (DBsql.OpenDatabase(database) ) {
-    rows=0;
-    if (DBsql.ExecSelect("SELECT id FROM enum_country order by id;") ) {
-      rows = DBsql.GetSelectRows();
-      CC = new CountryCode( rows );
-      for (i = 0; i < rows; i ++)
-        CC->AddCode(DBsql.GetFieldValue(i, 0) );
-      DBsql.FreeSelect();
-    }
-
-    DBsql.Disconnect();
-  } else
-    return -1;
-
-  return rows;
+  try
+  {
+      CC.reset(new CountryCode);
+      CC->load();
+      return CC->GetNum();
+  }
+  catch(...)
+  {
+      return -1;
+  }
 }
 
 bool ccReg_EPP_i::TestCountryCode(
   const char *cc)
 {
-  LOG( NOTICE_LOG , "CCREG:: TestCountryCode  [%s]" , cc );
-
-  // if not country code
-  if (strlen(cc) == 0)
-    return true;
-  else {
-    if (strlen(cc) == 2) // must by two counry code
-    {
-      LOG( NOTICE_LOG , "TestCountryCode [%s]" , cc);
-      return CC->TestCountryCode(cc);
-    } else
-      return false;
-  }
-
+    LOG( NOTICE_LOG , "CCREG:: TestCountryCode  [%s]" , cc );
+    return CC->TestCountryCode(cc);
 }
 
 // get version of the server and actual time
