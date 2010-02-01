@@ -131,7 +131,7 @@ void EPPNotifier::constructMessages() {
       }
     }
     catch (MessageUpdateChanges::NoChangesFound &ex) {
-      LOGGER(PACKAGE).error(boost::format("EPPNotifier: update changes - no history found (object_id=%1%)") % objectID);
+      LOGGER(PACKAGE).info(boost::format("EPPNotifier: update changes - no history found (object_id=%1%)") % objectID);
     }
     catch (Database::Exception &ex) {
       LOGGER(PACKAGE).error(boost::format("EPPNotifier: update changes - database error => %1%") % ex.what());
