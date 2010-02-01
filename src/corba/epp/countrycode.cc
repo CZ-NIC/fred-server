@@ -49,6 +49,7 @@ CountryCode::~CountryCode()
 bool CountryCode::TestCountryCode(const char *cc)
 {
     const std::string code_str (cc);
+    if(code_str.length() == 0) return true;// if no country code
     if(code_str.length() != MAX_CC) return false;
     return ( std::find(cc_.begin(),cc_.end(), code_str) != cc_.end());
 }
