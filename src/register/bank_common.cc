@@ -68,7 +68,7 @@ void
 XMLcreator::text(const std::string &name, const std::string &value)
 {
     if (xmlTextWriterWriteFormatElement(
-                m_writer, (const xmlChar *)name.c_str(), value.c_str()) < 0) {
+                m_writer, (const xmlChar *)name.c_str(), "%s", value.c_str()) < 0) {
         throw std::exception();
     }
 }
@@ -76,7 +76,7 @@ void
 XMLcreator::text(const std::string &name, const char *value)
 {
     if (xmlTextWriterWriteFormatElement(
-                m_writer, (const xmlChar *)name.c_str(), value) < 0) {
+                m_writer, (const xmlChar *)name.c_str(), "%s", value) < 0) {
         throw std::exception();
     }
 }
