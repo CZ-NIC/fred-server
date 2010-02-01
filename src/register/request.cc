@@ -487,12 +487,6 @@ ManagerImpl::ManagerImpl(const std::string database, const std::string &monitori
 
   	log_ctx_init();
 
-	try {
-		// TODO move this to server.cc
-		Database::Manager::init(new ConnectionFactory(database, 4, 20));
-	} catch (Database::Exception &ex) {
-		logger_error(boost::format("cannot connect to database %1% : %2%") % database.c_str() % ex.what());
-	}
 
 	logd_auto_conn conn;
 
