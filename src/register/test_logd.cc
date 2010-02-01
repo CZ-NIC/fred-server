@@ -5,12 +5,12 @@
 
 #include <iostream>
 #define BOOST_TEST_MODULE Test fred-logd
+/*
+ * for non-header library version:
+ * #include <boost/test/unit_test.hpp>
+ * */
 
- //for non-header library version:
- #include <boost/test/unit_test.hpp>
- //else
-//#include <boost/test/included/unit_test.hpp>
-
+#include <boost/test/included/unit_test.hpp>
 #include <stdio.h>
 
 #include "request_impl.h"

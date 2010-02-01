@@ -283,10 +283,8 @@ int main(int argc, char** argv) {
     NameService ns(orb, nameservice, cfg.get<std::string>("nameservice.context"));
 
     /* register specific object at nameservice */
-
-    Database::Manager::init(new Database::ConnectionFactory(conn_info, 1, 100));
-
-    #ifdef ADIF
+#ifdef ADIF
+    Database::Manager::init(new Database::ConnectionFactory(conn_info, 1, 10));
     PortableServer::ObjectId_var adminObjectId = PortableServer::string_to_ObjectId("Admin");
     ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(conn_info, &ns, cfg);
     poa->activate_object_with_id(adminObjectId, myccReg_Admin_i);
@@ -296,6 +294,7 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef PIFD
+    Database::Manager::init(new Database::ConnectionFactory(conn_info, 1, 10));
     PortableServer::ObjectId_var webWhoisObjectId = PortableServer::string_to_ObjectId("WebWhois");
     ccReg_Admin_i* myccReg_Admin_i = new ccReg_Admin_i(conn_info, &ns, cfg, false);
     poa->activate_object_with_id(webWhoisObjectId, myccReg_Admin_i);
@@ -305,6 +304,7 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef RIFD
+    Database::Manager::init(new Database::ConnectionFactory(conn_info, 1, 10));
     MailerManager mm(&ns);
     ccReg_EPP_i* myccReg_EPP_i = new ccReg_EPP_i(conn_info, &mm, &ns, cfg);
 
@@ -349,6 +349,7 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef LOGD
+    // Database::Manager::init(new Database::ConnectionFactory(conn_info, 1, 10));
     PortableServer::ObjectId_var loggerObjectId =
     PortableServer::string_to_ObjectId("Logger");
     ccReg_Log_i* myccReg_Log_i;
