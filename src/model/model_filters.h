@@ -1,7 +1,7 @@
 #ifndef MODEL_FILTERS_H_
 #define MODEL_FILTERS_H_
 
-#include "statement_item_filter.h"
+#include "bank_payment_filter.h"
 #include "object_registry_filter.h"
 #include "object_filter.h"
 #include "domain_filter.h"
@@ -17,7 +17,7 @@
 #include "mail_filter.h"
 #include "file_filter.h"
 #include "keyset_filter.h"
-#include "statement_head_filter.h"
+// #include "statement_head_filter.h"
 #include "online_statement_filter.h"
 #include "union_filter.h"
 #include "log_filter.h"

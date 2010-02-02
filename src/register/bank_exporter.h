@@ -7,14 +7,14 @@
 namespace Register {
 namespace Banking {
 
-class StatementHead;
-class StatementItem;
+class Statement;
+class Payment;
 
 class Exporter {
 public:
     virtual ~Exporter()
     { }
-    virtual void doExport(StatementHead *) = 0;
+    virtual void doExport(Statement *_data) = 0;
 };
 
 class ExporterXML:
@@ -22,7 +22,7 @@ class ExporterXML:
 private:
     XMLcreator          m_xml;
     std::ostream        &m_out;
-    void doExport(const StatementItem *item);
+    void doExport(const Payment *_data);
     void finalize();
 public:
     ExporterXML(std::ostream &out):
@@ -33,7 +33,7 @@ public:
         m_xml.start(STATEMENTS_ROOT);
     }
     ~ExporterXML();
-    void doExport(StatementHead *);
+    void doExport(Statement *_data);
 };
 
 } // namespace Banking

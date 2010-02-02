@@ -52,6 +52,7 @@ Model::Field::ForeignKey<_class1, _type, _class2>                               
                                                                     Model::Field::Attributes()_param5);
 
 
+/*
 #define DEFINE_ONE_TO_ONE(_class, _type1, _name, _field1name, _type2, _fk_name, _field2name)     \
 Model::Field::Related::OneToOne<_class, _type2, _type1>                                          \
   _class::_name = Model::Field::Related::OneToOne<_class, _type2, _type1>(_class::_fk_name,      \
@@ -74,6 +75,6 @@ Model::Field::Related::ManyToMany<_class, _type1, _class2, _type2>              
                                                                                      _left,                                      \
                                                                                      _right,                                     \
                                                                                      &_class::_datafield);
-
+*/
 #endif /*MODEL_FIELD_MACROS_H_*/
 

@@ -104,10 +104,9 @@ public:
     _ar.register_type(static_cast<KeySetImpl *>(NULL));
     _ar.register_type(static_cast<KeySetHistoryImpl *>(NULL));
     _ar.register_type(static_cast<ObjectStateImpl *>(NULL));
-    _ar.register_type(static_cast<StatementHeadImpl *>(NULL));
     _ar.register_type(static_cast<OnlineStatementImpl *>(NULL));
-    _ar.register_type(static_cast<StatementItemImpl *>(NULL));
-    _ar.register_type(static_cast<StatementHeadImpl *>(NULL));
+    _ar.register_type(static_cast<BankPaymentImpl *>(NULL));
+    // _ar.register_type(static_cast<StatementHeadImpl *>(NULL));
     /*
     _ar.register_type(static_cast<RequestImpl *>(NULL));
     _ar.register_type(static_cast<RequestDataImpl *>(NULL));

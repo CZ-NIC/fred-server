@@ -21,6 +21,15 @@ libdb_a_SOURCES = query/query_old.cc             \
                   query/sql_operators.h          \
                   psql/psql_connection.h         \
                   psql/psql_result.h             \
+				  model/field.h                  \
+				  model/job_queue.h              \
+				  model/mem_ptr.h                \
+				  model/model_exception.h        \
+				  model/model_field_attrs.h      \
+				  model/model_field.h            \
+				  model/model_field_list.h       \
+				  model/model_field_macros.h     \
+				  model/model.h                  \
                   connection_factory.h           \
                   transaction.h                  \
                   connection.h                   \

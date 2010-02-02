@@ -9,6 +9,8 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(LIBIDN_CFLAGS) \
 
 libfred_a_SOURCES = register.cc          \
 					register.h           \
+					db_settings.h        \
+					common_new.h         \
 					common_object.h      \
 					common_impl.cc       \
 					common_impl.h        \
@@ -17,7 +19,6 @@ libfred_a_SOURCES = register.cc          \
 					object_impl.h        \
 					common_impl_new.cc       \
 					common_impl_new.h        \
-					object_new.h             \
 					model_invoicecreditpaymentmap.cc	\
 					model_invoicecreditpaymentmap.h		\
 					model_invoicegeneration.cc			\
@@ -28,10 +29,10 @@ libfred_a_SOURCES = register.cc          \
 					model_invoiceprefix.h		\
 					model_invoice.cc			\
 					model_invoice.h				\
-					model_bankstatementhead.cc	\
-					model_bankstatementhead.h	\
-					model_bankstatementitem.cc	\
-					model_bankstatementitem.h	\
+					model_bank_statement.cc	\
+					model_bank_statement.h	\
+					model_bank_payment.cc	\
+					model_bank_payment.h	\
 					model_registrar_acl.cc		\
 					model_registrar_acl.h		\
 					model_registrar.cc			\
@@ -88,14 +89,10 @@ libfred_a_SOURCES = register.cc          \
 					info_buffer.h        \
 					bank_common.cc		\
 					bank_common.h		\
-					bank_item.cc  \
-					bank_item.h	\
-					bank_head.cc	\
-					bank_head.h	\
-					bank_head_list.cc		\
-					bank_head_list.h		\
-					bank_item_list.cc		\
-					bank_item_list.h		\
+					bank_payment.h	\
+					bank_payment_impl.h \
+					bank_payment_list.h		\
+					bank_payment_list_impl.h		\
 					bank_manager.cc			\
 					bank_manager.h			\
 					bank_exporter.cc		\
@@ -110,8 +107,8 @@ libfred_a_SOURCES = register.cc          \
 					file.h               \
 					filter.cc            \
 					filter.h             \
-		    			request.cc	 		 \
-		    			request.h		 	 \
+					request.cc			 \
+					request.h			 \
 					request_impl.h			\
 					session.cc		 \
 					session.h		 \
@@ -142,7 +139,7 @@ test_LDADD   = libfred.a \
 #
 #test_logd_SOURCES = test_logd.cc request.h request.cc model_request_type.cc model_request.cc model_request_property.cc model_request_property_value.cc model_request_data.cc model_session.cc model_service.cc model_request_type.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h model_service.h														
 # second possibility
-test_logd_SOURCES = test_logd.cc request.h model_request_type.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h model_service.h														
+test_logd_SOURCES = test_logd.cc request.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h 
 # test_logd_CPPFLAGS = $(AM_CPPFLAGS)
 # test_logd_LDFLAGS = $(AM_LDFLAGS) -lboost_unit_test_framework liblog_impl.a
 test_logd_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) -lboost_unit_test_framework 

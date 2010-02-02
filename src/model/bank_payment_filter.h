@@ -2,18 +2,18 @@
 #define _STATEMENT_ITEM_FILTER_H_
 
 #include "db/query/base_filters.h"
-#include "statement_head_filter.h"
+#include "bank_statement_filter.h"
 
 namespace Database {
 namespace Filters {
 
-class StatementItem:
+class BankPayment:
     virtual public Compound {
 public:
-    virtual ~StatementItem()
+    virtual ~BankPayment()
     { }
 
-    virtual Table &joinStatementItemTable() = 0;
+    virtual Table &joinBankPaymentTable() = 0;
     virtual Value<Database::ID> &addId() = 0;
     virtual Value<std::string> &addAccountNumber() = 0;
     virtual Value<std::string> &addBankCode() = 0;
@@ -27,7 +27,7 @@ public:
     virtual Value<Database::ID> &addInvoiceId() = 0;
     virtual Value<std::string> &addAccountName() = 0;
     virtual Interval<Database::DateTimeInterval> &addCrTime() = 0;
-    virtual StatementHead &addStatementHead() = 0;
+    virtual BankStatement &addBankStatement() = 0;
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(
@@ -35,15 +35,15 @@ public:
     {
         _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
     }
-}; // class StatementItem;
+}; // class BankPayment;
 
-class StatementItemImpl:
-    virtual public StatementItem {
+class BankPaymentImpl:
+    virtual public BankPayment {
 public:
-    StatementItemImpl();
-    virtual ~StatementItemImpl();
+    BankPaymentImpl();
+    virtual ~BankPaymentImpl();
 
-    virtual Table &joinStatementItemTable();
+    virtual Table &joinBankPaymentTable();
     virtual Value<Database::ID> &addId();
     virtual Value<std::string> &addAccountNumber();
     virtual Value<std::string> &addBankCode();
@@ -57,15 +57,15 @@ public:
     virtual Value<Database::ID> &addInvoiceId();
     virtual Value<std::string> &addAccountName();
     virtual Interval<Database::DateTimeInterval> &addCrTime();
-    virtual StatementHead &addStatementHead();
+    virtual BankStatement &addBankStatement();
 
     friend class boost::serialization::access;
     template<class Archive> void serialize(
             Archive &_ar, const unsigned int _version)
     {
-        _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StatementItem);
+        _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(BankPayment);
     }
-}; // class StatementItemImpl
+}; // class BankPaymentImpl
 
 } // namespace Filters
 } // namespace Database

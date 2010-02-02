@@ -61,8 +61,7 @@ am_libfred_a_OBJECTS = register.$(OBJEXT) common_impl.$(OBJEXT) \
 	model_invoicecreditpaymentmap.$(OBJEXT) \
 	model_invoicegeneration.$(OBJEXT) model_files.$(OBJEXT) \
 	model_invoiceprefix.$(OBJEXT) model_invoice.$(OBJEXT) \
-	model_bankstatementhead.$(OBJEXT) \
-	model_bankstatementitem.$(OBJEXT) \
+	model_bank_statement.$(OBJEXT) model_bank_payment.$(OBJEXT) \
 	model_registrar_acl.$(OBJEXT) model_registrar.$(OBJEXT) \
 	model_zone.$(OBJEXT) model_zone_ns.$(OBJEXT) \
 	model_zone_soa.$(OBJEXT) model_price_list.$(OBJEXT) \
@@ -76,8 +75,6 @@ am_libfred_a_OBJECTS = register.$(OBJEXT) common_impl.$(OBJEXT) \
 	invoice_mails.$(OBJEXT) invoice_exporter.$(OBJEXT) \
 	zone.$(OBJEXT) blacklist.$(OBJEXT) documents.$(OBJEXT) \
 	info_buffer.$(OBJEXT) bank_common.$(OBJEXT) \
-	bank_item.$(OBJEXT) bank_head.$(OBJEXT) \
-	bank_head_list.$(OBJEXT) bank_item_list.$(OBJEXT) \
 	bank_manager.$(OBJEXT) bank_exporter.$(OBJEXT) mail.$(OBJEXT) \
 	notify.$(OBJEXT) poll.$(OBJEXT) file.$(OBJEXT) \
 	filter.$(OBJEXT) request.$(OBJEXT) session.$(OBJEXT)
@@ -216,6 +213,7 @@ PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
+PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PG_CONFIG = @PG_CONFIG@
@@ -292,6 +290,8 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(LIBIDN_CFLAGS) \
 
 libfred_a_SOURCES = register.cc          \
 					register.h           \
+					db_settings.h        \
+					common_new.h         \
 					common_object.h      \
 					common_impl.cc       \
 					common_impl.h        \
@@ -300,7 +300,6 @@ libfred_a_SOURCES = register.cc          \
 					object_impl.h        \
 					common_impl_new.cc       \
 					common_impl_new.h        \
-					object_new.h             \
 					model_invoicecreditpaymentmap.cc	\
 					model_invoicecreditpaymentmap.h		\
 					model_invoicegeneration.cc			\
@@ -311,10 +310,10 @@ libfred_a_SOURCES = register.cc          \
 					model_invoiceprefix.h		\
 					model_invoice.cc			\
 					model_invoice.h				\
-					model_bankstatementhead.cc	\
-					model_bankstatementhead.h	\
-					model_bankstatementitem.cc	\
-					model_bankstatementitem.h	\
+					model_bank_statement.cc	\
+					model_bank_statement.h	\
+					model_bank_payment.cc	\
+					model_bank_payment.h	\
 					model_registrar_acl.cc		\
 					model_registrar_acl.h		\
 					model_registrar.cc			\
@@ -371,14 +370,10 @@ libfred_a_SOURCES = register.cc          \
 					info_buffer.h        \
 					bank_common.cc		\
 					bank_common.h		\
-					bank_item.cc  \
-					bank_item.h	\
-					bank_head.cc	\
-					bank_head.h	\
-					bank_head_list.cc		\
-					bank_head_list.h		\
-					bank_item_list.cc		\
-					bank_item_list.h		\
+					bank_payment.h	\
+					bank_payment_impl.h \
+					bank_payment_list.h		\
+					bank_payment_list_impl.h		\
 					bank_manager.cc			\
 					bank_manager.h			\
 					bank_exporter.cc		\
@@ -393,8 +388,8 @@ libfred_a_SOURCES = register.cc          \
 					file.h               \
 					filter.cc            \
 					filter.h             \
-		    			request.cc	 		 \
-		    			request.h		 	 \
+					request.cc			 \
+					request.h			 \
 					request_impl.h			\
 					session.cc		 \
 					session.h		 \
@@ -423,7 +418,7 @@ test_LDADD = libfred.a \
 #
 #test_logd_SOURCES = test_logd.cc request.h request.cc model_request_type.cc model_request.cc model_request_property.cc model_request_property_value.cc model_request_data.cc model_session.cc model_service.cc model_request_type.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h model_service.h														
 # second possibility
-test_logd_SOURCES = test_logd.cc request.h model_request_type.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h model_service.h														
+test_logd_SOURCES = test_logd.cc request.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h 
 # test_logd_CPPFLAGS = $(AM_CPPFLAGS)
 # test_logd_LDFLAGS = $(AM_LDFLAGS) -lboost_unit_test_framework liblog_impl.a
 test_logd_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) -lboost_unit_test_framework 
@@ -494,10 +489,6 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bank_common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bank_exporter.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bank_head.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bank_head_list.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bank_item.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bank_item_list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bank_manager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/blacklist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common_impl.Po@am__quote@
@@ -516,8 +507,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/invoice_manager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keyset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mail.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_bankstatementhead.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_bankstatementitem.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_bank_payment.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_bank_statement.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_files.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_invoice.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_invoicecreditpaymentmap.Po@am__quote@

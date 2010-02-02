@@ -40,7 +40,7 @@ BankClient::runMethod()
     if (m_conf.hasOpt(BANK_SHOW_OPTS_NAME)) {
         show_opts();
     } else if (m_conf.hasOpt(BANK_STATEMENT_LIST_NAME)) {
-        statement_list();
+        // statement_list();
     } else if (m_conf.hasOpt(BANK_IMPORT_XML_NAME)) {
         import_xml();
     } else if (m_conf.hasOpt(BANK_ADD_ACCOUNT_NAME)) {
@@ -57,6 +57,7 @@ BankClient::show_opts()
     print_options("Bank", getOpts(), getOptsCount());
 }
 
+/*
 void
 BankClient::statement_list()
 {
@@ -96,6 +97,7 @@ BankClient::statement_list()
 
     bankList->exportXML(output);
 }
+*/
 
 void
 BankClient::import_xml()
@@ -122,10 +124,11 @@ BankClient::import_xml()
     } else {
         input.open("/dev/stdin", std::ios::in);
     }
-    std::auto_ptr<Register::Banking::Manager>
-        bankMan(Register::Banking::Manager::create());
+
+    Register::Banking::ManagerPtr mbank(Register::Banking::Manager::create());
     bool retval;
-    retval = bankMan->importStatementXml(input, xml_id, createCredit);
+    // TODO changed parameter (path to file)
+    retval = mbank->importStatementXml(input, "", createCredit);
     if (!retval) {
         std::cout << "Error occured!" << std::endl;
     }

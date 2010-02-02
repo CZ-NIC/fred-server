@@ -64,8 +64,7 @@ am_libmodel_a_OBJECTS = object_registry_filter.$(OBJEXT) \
 	object_state_filter.$(OBJEXT) invoice_filter.$(OBJEXT) \
 	public_request_filter.$(OBJEXT) mail_filter.$(OBJEXT) \
 	file_filter.$(OBJEXT) keyset_filter.$(OBJEXT) \
-	statement_head_filter.$(OBJEXT) \
-	statement_item_filter.$(OBJEXT) \
+	bank_statement_filter.$(OBJEXT) bank_payment_filter.$(OBJEXT) \
 	online_statement_filter.$(OBJEXT) log_filter.$(OBJEXT) \
 	union_filter.$(OBJEXT) zone_filter.$(OBJEXT) \
 	zone_ns_filter.$(OBJEXT) zone_soa_filter.$(OBJEXT)
@@ -189,6 +188,7 @@ PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
+PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PG_CONFIG = @PG_CONFIG@
@@ -289,10 +289,10 @@ libmodel_a_SOURCES = object_registry_filter.cc 			\
 					 file_filter.h 						\
 					 keyset_filter.cc 					\
                      keyset_filter.h 					\
-					 statement_head_filter.cc 			\
-					 statement_head_filter.h 			\
-					 statement_item_filter.cc			\
-					 statement_item_filter.h			\
+					 bank_statement_filter.cc           \
+					 bank_statement_filter.h            \
+					 bank_payment_filter.cc             \
+					 bank_payment_filter.h              \
 					 online_statement_filter.cc 		\
 					 online_statement_filter.h			\
 					 log_filter.cc 						\
@@ -369,6 +369,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bank_payment_filter.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bank_statement_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/contact_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/domain_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/epp_action_filter.Po@am__quote@
@@ -386,8 +388,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/online_statement_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/public_request_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registrar_filter.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/statement_head_filter.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/statement_item_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-model.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/union_filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zone_filter.Po@am__quote@

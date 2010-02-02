@@ -25,30 +25,69 @@
 #include "bank_manager.h"
 // #include "bank.h"
 #include "mail.h"
+#include "model/model_filters.h"
 
 // #define CONNECTION_STRING       "host=localhost dbname=fred user=fred port=6655"
-#define CONNECTION_STRING       "host=localhost dbname=onebank2 user=fred port=22345"
+#define CONNECTION_STRING       "host=localhost dbname=fred user=fred"
 
 
 void
-bank_item()
+bank_import_xml(const std::string &_xmlfile)
 {
-    std::auto_ptr<Register::Banking::Manager> bankMan(
-            Register::Banking::Manager::create());
+    using namespace Register::Banking;
+    ManagerPtr bmanager(Manager::create());
 
-    std::auto_ptr<Register::Banking::ItemList> itemList(
-            bankMan->createItemList());
-
-    Database::Filters::StatementItem *itemFilter;
-    itemFilter = new Database::Filters::StatementItemImpl();
-    itemFilter->addConstSymb().setValue("0308");
-
-    Database::Filters::Union *unionFilter;
-    unionFilter = new Database::Filters::Union();
-    unionFilter->addFilter(itemFilter);
-    itemList->reload(*unionFilter);
-    std::cout << itemList->getSize() << std::endl;
+    std::ifstream file(_xmlfile.c_str(), std::ios::in);
+    if (file.is_open())
+        bmanager->importStatementXml(file, "");
 }
+
+void
+bank_pair_payment_with_statement()
+{
+    using namespace Register::Banking;
+    ManagerPtr bmanager(Manager::create());
+    bmanager->pairPaymentWithStatement(8690, 0, true);
+}
+
+void
+bank_payment()
+{
+    using namespace Register::Banking;
+    ManagerPtr bmanager(Manager::create());
+    PaymentListPtr plist(bmanager->createPaymentList());
+
+    Database::Filters::BankPayment *pf = new Database::Filters::BankPaymentImpl();
+    pf->addConstSymb().setValue("0308");
+
+    Database::Filters::Union uf;
+    uf.addFilter(pf);
+    plist->reload(uf);
+    std::cout << plist->getSize() << std::endl;
+    if (plist->size()) {
+        std::cout << plist->get(0)->toString() << std::endl;
+    }
+}
+
+/*
+void
+bank_statement()
+{
+    using namespace Register::Banking;
+    ManagerPtr bmanager(Manager::create());
+    StatementListPtr slist(bmanager->createStatementList());
+
+    Database::Filters::StatementHead *sf = new Database::Filters::StatementHeadImpl();
+
+    Database::Filters::Union uf;
+    uf.addFilter(sf);
+    slist->reload(uf);
+    std::cout << slist->getSize() << std::endl;
+    if (slist->size()) {
+        std::cout << slist->get(0)->toString() << std::endl;
+    }
+}
+*/
 
 void
 file_2()
@@ -114,18 +153,6 @@ deposit_invoice()
     invoice->save();
 }
 
-void
-load_xml(bool create_deposit_invoice)
-{
-    std::auto_ptr<Register::Banking::Manager> bankMan(
-            Register::Banking::Manager::create());
-
-    std::ifstream input;
-    input.open("/dev/stdin", std::ios::in);
-
-    bankMan->importStatementXml(input, create_deposit_invoice);
-}
-
 #if 0
 void
 pair_invoices()
@@ -155,27 +182,25 @@ factoring(unsigned long long id)
 int main(int argc, char **argv)
 {
     boost::any param;
-    param = (unsigned int)1;
+    param = static_cast<unsigned int>(1);
 
     // LT_FILE, LT_SYSLOG, LT_CONSOLE
-    Logging::Manager::instance_ref().get("tracer").addHandler(Logging::Log::LT_CONSOLE, param);
-    Logging::Manager::instance_ref().get("tracer").setLevel(Logging::Log::LL_TRACE);
-    Logging::Manager::instance_ref().get("db").addHandler(Logging::Log::LT_CONSOLE, param);
-    Logging::Manager::instance_ref().get("db").setLevel(Logging::Log::LL_TRACE);
-    Logging::Manager::instance_ref().get("register").addHandler(Logging::Log::LT_CONSOLE, param);
-    Logging::Manager::instance_ref().get("register").setLevel(Logging::Log::LL_TRACE);
-    Logging::Manager::instance_ref().get("corba").addHandler(Logging::Log::LT_CONSOLE, param);
-    Logging::Manager::instance_ref().get("corba").setLevel(Logging::Log::LL_TRACE);
-    Logging::Manager::instance_ref().get("mailer").addHandler(Logging::Log::LT_CONSOLE, param);
-    Logging::Manager::instance_ref().get("mailer").setLevel(Logging::Log::LL_TRACE);
-    Logging::Manager::instance_ref().get("old_log").addHandler(Logging::Log::LT_CONSOLE, param);
-    Logging::Manager::instance_ref().get("old_log").setLevel(Logging::Log::LL_TRACE);
-    Logging::Manager::instance_ref().get("fred-server").addHandler(Logging::Log::LT_CONSOLE, param);
-    Logging::Manager::instance_ref().get("fred-server").setLevel(Logging::Log::LL_TRACE);
+    Logging::Manager::instance_ref().get(PACKAGE).addHandler(Logging::Log::LT_CONSOLE, param);
+    Logging::Manager::instance_ref().get(PACKAGE).setLevel(Logging::Log::LL_DEBUG);
 
     Database::Manager::init(new Database::ConnectionFactory(CONNECTION_STRING, 1, 10));
-    boost::thread thdr1(boost::bind(&deposit_invoice));
-    thdr1.join();
+
+    std::string file;
+    if (argc == 2) {
+        file = argv[1];
+    }
+    else {
+        return 1;
+    }
+    bank_import_xml(file);
+    // bank_pair_payment_with_statement();
+    // bank_payment();
+    // bank_statement();
 
     // boost::thread_group threads;
     // threads.create_thread(&deposit_invoice);
@@ -183,21 +208,6 @@ int main(int argc, char **argv)
     // threads.create_thread(&deposit_invoice);
     // threads.create_thread(&deposit_invoice);
     // threads.join_all();
-    // deposit_invoice();
-    // invoice();
-    // file_2();
-    // deposit_invoice();
-    // load_xml(false);
-    // bank_item();
-    // pair_invoices();
-    // factoring(1);
-    // factoring(2);
-    // factoring(3);
-    // factoring(4);
-    
-    // insert_mail();
-    // get_mail();
-    // list_mail();
     return 0;
 }
 

@@ -1,17 +1,17 @@
-#ifndef _MODEL_BANKSTATEMENTHEAD_H_
-#define _MODEL_BANKSTATEMENTHEAD_H_
+#ifndef _MODEL_BANK_STATEMENT_H_
+#define _MODEL_BANK_STATEMENT_H_
 
 #include "db_settings.h"
 #include "model.h"
 
 
 
-class ModelBankStatementHead:
+class ModelBankStatement:
     public Model::Base {
 public:
-    ModelBankStatementHead()
+    ModelBankStatement()
     { }
-    virtual ~ModelBankStatementHead()
+    virtual ~ModelBankStatement()
     { }
     const unsigned long long &getId() const
     {
@@ -153,7 +153,7 @@ public:
         return Model::Base::toString(this);
     }
 
-    typedef Model::Field::List<ModelBankStatementHead>  field_list;
+    typedef Model::Field::List<ModelBankStatement>  field_list;
     static const field_list& getFields()
     {
         return fields;
@@ -175,24 +175,24 @@ protected:
     //Field::Lazy::Field<ModelFiles *> m_file;
 
 public:
-    static Model::Field::PrimaryKey<ModelBankStatementHead, unsigned long long> id;
-    static Model::Field::Basic<ModelBankStatementHead, unsigned long long> accountId;
-    static Model::Field::Basic<ModelBankStatementHead, int> num;
-    static Model::Field::Basic<ModelBankStatementHead, Database::Date> createDate;
-    static Model::Field::Basic<ModelBankStatementHead, Database::Date> balanceOldDate;
-    static Model::Field::Basic<ModelBankStatementHead, Database::Money> balanceOld;
-    static Model::Field::Basic<ModelBankStatementHead, Database::Money> balanceNew;
-    static Model::Field::Basic<ModelBankStatementHead, Database::Money> balanceCredit;
-    static Model::Field::Basic<ModelBankStatementHead, Database::Money> balanceDebet;
-    static Model::Field::Basic<ModelBankStatementHead, unsigned long long> fileId;
+    static Model::Field::PrimaryKey<ModelBankStatement, unsigned long long> id;
+    static Model::Field::Basic<ModelBankStatement, unsigned long long> accountId;
+    static Model::Field::Basic<ModelBankStatement, int> num;
+    static Model::Field::Basic<ModelBankStatement, Database::Date> createDate;
+    static Model::Field::Basic<ModelBankStatement, Database::Date> balanceOldDate;
+    static Model::Field::Basic<ModelBankStatement, Database::Money> balanceOld;
+    static Model::Field::Basic<ModelBankStatement, Database::Money> balanceNew;
+    static Model::Field::Basic<ModelBankStatement, Database::Money> balanceCredit;
+    static Model::Field::Basic<ModelBankStatement, Database::Money> balanceDebet;
+    static Model::Field::Basic<ModelBankStatement, unsigned long long> fileId;
 
-    //static Model::Field::Related::OneToOne<ModelBankStatementHead, unsigned long long, ModelBankAccount> account;
-    //static Model::Field::Related::OneToOne<ModelBankStatementHead, unsigned long long, ModelFiles> file;
+    //static Model::Field::Related::OneToOne<ModelBankStatement, unsigned long long, ModelBankAccount> account;
+    //static Model::Field::Related::OneToOne<ModelBankStatement, unsigned long long, ModelFiles> file;
 
 private:
     static std::string table_name;  /** < model table name */
     static field_list  fields;      /** < list of all model fields */
-}; // class ModelBankStatementHead
+}; // class ModelBankStatement
 
-#endif // _MODEL_BANKSTATEMENTHEAD_H_
+#endif // _MODEL_BANK_STATEMENT_H_
 

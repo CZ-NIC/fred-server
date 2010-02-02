@@ -64,8 +64,8 @@ am_libadmin_impl_a_OBJECTS = admin_impl.$(OBJEXT) \
 	pagetable_nssets.$(OBJEXT) pagetable_registrars.$(OBJEXT) \
 	pagetable_files.$(OBJEXT) pagetable_keysets.$(OBJEXT) \
 	pagetable_logger.$(OBJEXT) pagetable_logsession.$(OBJEXT) \
-	pagetable_statement_items.$(OBJEXT) \
-	pagetable_statement_heads.$(OBJEXT) pagetable_zones.$(OBJEXT) \
+	pagetable_bank_payments.$(OBJEXT) \
+	pagetable_bank_statements.$(OBJEXT) pagetable_zones.$(OBJEXT) \
 	common.$(OBJEXT) zone_impl.$(OBJEXT) \
 	bankinginvoicing_impl.$(OBJEXT)
 libadmin_impl_a_OBJECTS = $(am_libadmin_impl_a_OBJECTS)
@@ -177,6 +177,7 @@ PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
+PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PG_CONFIG = @PG_CONFIG@
@@ -290,18 +291,18 @@ libadmin_impl_a_SOURCES = admin_impl.cc                 \
 			  			  pagetable_logger.h			\
 						  pagetable_logsession.cc		\
 						  pagetable_logsession.h		\
-						  pagetable_statement_items.cc	\
-						  pagetable_statement_items.h	\
-                          pagetable_statement_heads.cc  \
-						  pagetable_statement_heads.h   \
-                          pagetable_zones.cc       \
-                          pagetable_zones.h        \
+						  pagetable_bank_payments.cc    \
+						  pagetable_bank_payments.h     \
+						  pagetable_bank_statements.cc  \
+						  pagetable_bank_statements.h   \
+                          pagetable_zones.cc            \
+                          pagetable_zones.h             \
                           str_corbaout.h                \
 						  usertype_conv.h				\
                           common.cc                     \
                           common.h 						\
-                          zone_impl.cc			\
-                          zone_impl.h			\
+                          zone_impl.cc			        \
+                          zone_impl.h			        \
 						  bankinginvoicing_impl.cc		\
 						  bankinginvoicing_impl.h
 
@@ -356,6 +357,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bankinginvoicing_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filter_impl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_bank_payments.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_bank_statements.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_contacts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_domains.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_eppactions.Po@am__quote@
@@ -370,8 +373,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_nssets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_publicrequests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_registrars.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_statement_heads.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_statement_items.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_zones.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/session_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/user_impl.Po@am__quote@

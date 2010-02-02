@@ -1,170 +1,172 @@
-#include "statement_item_filter.h"
+#include "bank_payment_filter.h"
 
 namespace Database {
 namespace Filters {
 
-StatementItemImpl::StatementItemImpl():
+BankPaymentImpl::BankPaymentImpl():
     Compound()
 {
-    setName("StatementItem");
+    setName("BankPayment");
     active = true;
 }
 
-StatementItemImpl::~StatementItemImpl()
+BankPaymentImpl::~BankPaymentImpl()
 {
 }
 
 Table &
-StatementItemImpl::joinStatementItemTable()
+BankPaymentImpl::joinBankPaymentTable()
 {
     return joinTable("bank_item");
 }
 
 Value<Database::ID> &
-StatementItemImpl::addId()
+BankPaymentImpl::addId()
 {
     Value<Database::ID> *tmp = new Value<Database::ID>(
-            Column("id", joinStatementItemTable()));
+            Column("id", joinBankPaymentTable()));
     add(tmp);
     tmp->setName("Id");
     return *tmp;
 }
 
 Value<std::string> &
-StatementItemImpl::addAccountNumber()
+BankPaymentImpl::addAccountNumber()
 {
     Value<std::string> *tmp = new Value<std::string>(
-            Column("account_number", joinStatementItemTable()));
+            Column("account_number", joinBankPaymentTable()));
     add(tmp);
     tmp->setName("AccountNumber");
     return *tmp;
 }
 
 Value<std::string> &
-StatementItemImpl::addBankCode()
+BankPaymentImpl::addBankCode()
 {
     Value<std::string> *tmp = new Value<std::string>(
-            Column("bank_code", joinStatementItemTable()));
+            Column("bank_code", joinBankPaymentTable()));
     add(tmp);
     tmp->setName("BankCode");
     return *tmp;
 }
 
 Value<int> &
-StatementItemImpl::addCode()
+BankPaymentImpl::addCode()
 {
     Value<int> *tmp = new Value<int>(
-            Column("code", joinStatementItemTable()));
+            Column("code", joinBankPaymentTable()));
     add(tmp);
     tmp->setName("Code");
     return *tmp;
 }
 
 Value<int> &
-StatementItemImpl::addType()
+BankPaymentImpl::addType()
 {
     Value<int> *tmp = new Value<int>(
-            Column("code", joinStatementItemTable()));
+            Column("code", joinBankPaymentTable()));
     add(tmp);
     tmp->setName("Code");
     return *tmp;
 }
 
 Value<std::string> &
-StatementItemImpl::addConstSymb()
+BankPaymentImpl::addConstSymb()
 {
     Value<std::string> *tmp = new Value<std::string>(
-            Column("konstsym", joinStatementItemTable()));
+            Column("konstsym", joinBankPaymentTable()));
     add(tmp);
     tmp->setName("ConstSymb");
     return *tmp;
 }
 
 Value<std::string> &
-StatementItemImpl::addVarSymb()
+BankPaymentImpl::addVarSymb()
 {
     Value<std::string> *tmp = new Value<std::string>(
-            Column("varsymb", joinStatementItemTable()));
+            Column("varsymb", joinBankPaymentTable()));
     add(tmp);
     tmp->setName("VarSymb");
     return *tmp;
 }
 
 Value<std::string> &
-StatementItemImpl::addSpecSymb()
+BankPaymentImpl::addSpecSymb()
 {
     Value<std::string> *tmp = new Value<std::string>(
-            Column("specsymb", joinStatementItemTable()));
+            Column("specsymb", joinBankPaymentTable()));
     add(tmp);
     tmp->setName("SpecSymb");
     return *tmp;
 }
 
 Value<std::string> &
-StatementItemImpl::addAccountEvid()
+BankPaymentImpl::addAccountEvid()
 {
     Value<std::string> *tmp = new Value<std::string>(
-            Column("account_evid", joinStatementItemTable()));
+            Column("account_evid", joinBankPaymentTable()));
     add(tmp);
     tmp->setName("AccountEvid");
     return *tmp;
 }
 
 Interval<Database::DateInterval> &
-StatementItemImpl::addAccountDate()
+BankPaymentImpl::addAccountDate()
 {
     Interval<Database::DateInterval> *tmp =
         new Interval<Database::DateInterval>(
-            Column("account_date", joinStatementItemTable()));
+            Column("account_date", joinBankPaymentTable()));
     add(tmp);
     tmp->setName("AccountDate");
     return *tmp;
 }
 
 Value<Database::ID> &
-StatementItemImpl::addInvoiceId()
+BankPaymentImpl::addInvoiceId()
 {
     Value<Database::ID> *tmp = new Value<Database::ID>(
-            Column("invoice_id", joinStatementItemTable()));
+            Column("invoice_id", joinBankPaymentTable()));
     add(tmp);
     tmp->setName("InvoiceId");
     return *tmp;
 }
 
 Value<std::string> &
-StatementItemImpl::addAccountName()
+BankPaymentImpl::addAccountName()
 {
     Value<std::string> *tmp = new Value<std::string>(
-            Column("account_name", joinStatementItemTable()));
+            Column("account_name", joinBankPaymentTable()));
     add(tmp);
     tmp->setName("AccountName");
     return *tmp;
 }
 
 Interval<Database::DateTimeInterval> &
-StatementItemImpl::addCrTime()
+BankPaymentImpl::addCrTime()
 {
     Interval<Database::DateTimeInterval> *tmp = 
         new Interval<Database::DateTimeInterval>(
-            Column("crtime", joinStatementItemTable()));
+            Column("crtime", joinBankPaymentTable()));
     add(tmp);
     tmp->setName("CrTime");
     return *tmp;
 }
 
-StatementHead &
-StatementItemImpl::addStatementHead()
+
+BankStatement &
+BankPaymentImpl::addBankStatement()
 {
-    StatementHead *tmp = new StatementHeadImpl();
+    BankStatement *tmp = new BankStatementImpl();
     tmp->joinOn(new Join(
-                Column("statement_id", joinStatementItemTable()),
+                Column("statement_id", joinBankPaymentTable()),
                 SQL_OP_EQ,
-                Column("id", tmp->joinStatementHeadTable())
+                Column("id", tmp->joinBankStatementTable())
                 ));
     add(tmp);
-    tmp->setName("StatementHead");
+    tmp->setName("BankStatement");
     return *tmp;
 }
+
 
 } // namespace Filters
 } // namespace Database

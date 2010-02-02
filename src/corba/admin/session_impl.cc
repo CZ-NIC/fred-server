@@ -68,8 +68,8 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_invoices = new ccReg_Invoices_i(m_invoicing_manager->createList());
   m_filters = new ccReg_Filters_i(m_register_manager->getFilterManager()->getList());
   m_publicrequests = new ccReg_PublicRequests_i(m_publicrequest_manager->createList());
-  m_statementitems = new ccReg_StatementItems_i(m_banking_manager->createItemList());
-  m_statementheads = new ccReg_StatementHeads_i(m_banking_manager->createList());
+  m_payments = new ccReg_Payments_i(m_banking_manager->createPaymentList());
+  // m_statementheads = new ccReg_StatementHeads_i(m_banking_manager->createList());
   m_mails = new ccReg_Mails_i(mail_manager_->createList(), ns);
   m_files = new ccReg_Files_i(file_manager_->createList());
   m_logger = new ccReg_Logger_i(m_logger_manager->createList());
@@ -86,8 +86,8 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_invoices->setDB();
   m_logger->setDB();
   m_logsession->setDB();
-  m_statementitems->setDB();
-  m_statementheads->setDB();
+  m_payments->setDB();
+  // m_statementheads->setDB();
   m_zones->setDB();
 
   settings_.set("filter.history", "off");
@@ -114,8 +114,8 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_files;
   delete m_logger;
   delete m_logsession;
-  delete m_statementitems;
-  delete m_statementheads;
+  delete m_payments;
+  // delete m_statementheads;
   delete m_zones;
 
   db.Disconnect();
@@ -153,9 +153,9 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
     case ccReg::FT_INVOICE:
       return m_invoices->_this();
     case ccReg::FT_STATEMENTITEM:
-      return m_statementitems->_this();
-    case ccReg::FT_STATEMENTHEAD:
-      return m_statementheads->_this();
+      return m_payments->_this();
+    // case ccReg::FT_STATEMENTHEAD:
+    //   return m_statementheads->_this();
     case ccReg::FT_PUBLICREQUEST:
       return m_publicrequests->_this();
     case ccReg::FT_MAIL:
@@ -226,12 +226,12 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
       *result <<= getRequestDetail(_id);
       break;
 
-    case ccReg::FT_STATEMENTHEAD:
-      *result <<= getStatementHeadDetail(_id);
-      break;
+    // case ccReg::FT_STATEMENTHEAD:
+    //   *result <<= getStatementDetail(_id);
+    //   break;
 
     case ccReg::FT_STATEMENTITEM:
-      *result <<= getStatementItemDetail(_id);
+      *result <<= getPaymentDetail(_id);
       break;
 
     case ccReg::FT_FILTER:
@@ -569,14 +569,14 @@ Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
 
 }
 
-Registry::Banking::BankItem::Detail *ccReg_Session_i::getStatementItemDetail(ccReg::TID _id) {
+Registry::Banking::BankItem::Detail *ccReg_Session_i::getPaymentDetail(ccReg::TID _id) {
 	LOGGER(PACKAGE).debug(boost::format("constructing bank item filter for object id=%1% detail") % _id);
 
-	std::auto_ptr<Register::Banking::ItemList> item_list(m_banking_manager->createItemList());
+	std::auto_ptr<Register::Banking::PaymentList> item_list(m_banking_manager->createPaymentList());
 
 	Database::Filters::Union union_filter;
 	// where is it deleted? TODO
-	Database::Filters::StatementItem *filter = new Database::Filters::StatementItemImpl();
+	Database::Filters::BankPayment *filter = new Database::Filters::BankPaymentImpl();
 
 	filter->addId().setValue(Database::ID(_id));
 	union_filter.addFilter(filter);
@@ -591,34 +591,32 @@ Registry::Banking::BankItem::Detail *ccReg_Session_i::getStatementItemDetail(ccR
 	if(item_list->size() != 1) {
 		throw ccReg::Admin::ObjectNotFound();
 	}
-	return createBankItemDetail(item_list->get(0));
+	return createPaymentDetail(item_list->get(0));
 
 }
 
-Registry::Banking::BankHead::Detail *ccReg_Session_i::getStatementHeadDetail(ccReg::TID _id) {
+/*
+Registry::Banking::BankHead::Detail *ccReg_Session_i::getStatementDetail(ccReg::TID _id) {
 	LOGGER(PACKAGE).debug(boost::format("constructing bank item filter for object id=%1% detail") % _id);
 
-	std::auto_ptr<Register::Banking::HeadList> head_list(m_banking_manager->createList());
+	std::auto_ptr<Register::Banking::StatementList> list(m_banking_manager->createStatementList());
 
 	Database::Filters::Union union_filter;
-	// where is it deleted? TODO
-	Database::Filters::StatementHead *filter = new Database::Filters::StatementHeadImpl();
+	Database::Filters::BankStatement *filter = new Database::Filters::BankStatementImpl();
 
 	filter->addId().setValue(Database::ID(_id));
 	union_filter.addFilter(filter);
 
-	head_list->setPartialLoad(false);
-	// TODO make sure the db_manager is OK
-	//
-	// head_list->reload(union_filter, &m_db_manager);
-	head_list->reload(union_filter);
+	list->setPartialLoad(false);
+	list->reload(union_filter);
 	
-	if(head_list->size() != 1) {
+	if (list->size() != 1) {
 		throw ccReg::Admin::ObjectNotFound();
 	}
-	return createBankHeadDetail(head_list->get(0));
+	return createStatementDetail(head_list->get(0));
     
 }
+*/
 
 Registry::Zone::Detail* ccReg_Session_i::getZoneDetail(ccReg::TID _id) {
   // Register::Zone::Zone *zone = m_zones->findId(_id);
@@ -671,56 +669,58 @@ Registry::Request::Detail *ccReg_Session_i::createRequestDetail(Register::Logger
 	return detail;
 }
 
-void fillBankItemDetail(Registry::Banking::BankItem::Detail &d, const Register::Banking::StatementItem *it) 
+void fillPaymentDetail(Registry::Banking::BankItem::Detail &d, const Register::Banking::Payment *_payment) 
 {
-        d.id              = it->getId();
-        d.statementId     = it->getStatementId();
-        d.accountNumber   = DUPSTRFUN(it->getAccountNumber);
-        d.bankCodeId      = DUPSTRFUN(it->getBankCodeId);
-        d.code            = it->getCode();
-        d.type            = it->getType();
-        d.konstSym        = DUPSTRFUN(it->getKonstSym);
-        d.varSymb         = DUPSTRFUN(it->getVarSymb);
-        d.specSymb        = DUPSTRFUN(it->getSpecSymb);
-        d.price           = DUPSTRC(formatMoney(it->getPrice()));
-        d.accountEvid     = DUPSTRFUN(it->getAccountEvid);
-        d.accountDate     = DUPSTRDATED(it->getAccountDate);
-        d.accountMemo     = DUPSTRFUN(it->getAccountMemo);
-        d.invoiceId       = it->getInvoiceId();
-        d.accountName     = DUPSTRFUN(it->getAccountName);
-        d.crTime          = DUPSTRDATE(it->getCrTime);
+        d.id              = _payment->getId();
+        d.statementId     = _payment->getStatementId();
+        d.accountNumber   = DUPSTRFUN(_payment->getAccountNumber);
+        d.bankCodeId      = DUPSTRFUN(_payment->getBankCode);
+        d.code            = _payment->getCode();
+        d.type            = _payment->getType();
+        d.konstSym        = DUPSTRFUN(_payment->getKonstSym);
+        d.varSymb         = DUPSTRFUN(_payment->getVarSymb);
+        d.specSymb        = DUPSTRFUN(_payment->getSpecSymb);
+        d.price           = DUPSTRC(formatMoney(_payment->getPrice()));
+        d.accountEvid     = DUPSTRFUN(_payment->getAccountEvid);
+        d.accountDate     = DUPSTRDATED(_payment->getAccountDate);
+        d.accountMemo     = DUPSTRFUN(_payment->getAccountMemo);
+        d.invoiceId       = _payment->getInvoiceId();
+        d.accountName     = DUPSTRFUN(_payment->getAccountName);
+        d.crTime          = DUPSTRDATE(_payment->getCrTime);
 }
 
-Registry::Banking::BankItem::Detail *ccReg_Session_i::createBankItemDetail(Register::Banking::StatementItem *item) {
+Registry::Banking::BankItem::Detail *ccReg_Session_i::createPaymentDetail(Register::Banking::Payment *_payment) {
         Registry::Banking::BankItem::Detail *detail = new Registry::Banking::BankItem::Detail();
 
-        fillBankItemDetail(*detail, item);
+        fillPaymentDetail(*detail, _payment);
 	return detail;
 }
 
-Registry::Banking::BankHead::Detail *ccReg_Session_i::createBankHeadDetail(Register::Banking::StatementHead *head) {
+/*
+Registry::Banking::BankHead::Detail *ccReg_Session_i::createStatementDetail(Register::Banking::Statement *_statement) {
         Registry::Banking::BankHead::Detail *detail = new Registry::Banking::BankHead::Detail();
 
-        detail->id              = head->getId();
-        detail->accountId       = head->getAccountId();
-        detail->num             = head->getNum();
-        detail->createDate      = DUPSTRDATED(head->getCreateDate);
-        detail->balanceOldDate  = DUPSTRDATED(head->getBalanceOldDate);
-        detail->balanceOld      = DUPSTRC(formatMoney(head->getBalanceOld()));
-        detail->balanceNew      = DUPSTRC(formatMoney(head->getBalanceNew()));
-        detail->balanceCredit   = DUPSTRC(formatMoney(head->getBalanceCredit()));
-        detail->balanceDebet    = DUPSTRC(formatMoney(head->getBalanceDebet()));        
-        detail->fileId          = head->getFileId();
+        detail->id              = _statement->getId();
+        detail->accountId       = _statement->getAccountId();
+        detail->num             = _statement->getNum();
+        detail->createDate      = DUPSTRDATED(_statement->getCreateDate);
+        detail->balanceOldDate  = DUPSTRDATED(_statement->getBalanceOldDate);
+        detail->balanceOld      = DUPSTRC(formatMoney(_statement->getBalanceOld()));
+        detail->balanceNew      = DUPSTRC(formatMoney(_statement->getBalanceNew()));
+        detail->balanceCredit   = DUPSTRC(formatMoney(_statement->getBalanceCredit()));
+        detail->balanceDebet    = DUPSTRC(formatMoney(_statement->getBalanceDebet()));        
+        detail->fileId          = _statement->getFileId();
 
-        int count = head->getStatementItemCount();
+        int count = _statement->getPaymentCount();
         detail->bankItems.length(count);
 
         for(int i=0;i<count;i++) {
-            fillBankItemDetail(detail->bankItems[i], head->getStatementItemByIdx(i));
+            fillPaymentDetail(detail->bankItems[i], _statement->getPaymentByIdx(i));
         }
 
 	return detail;
 }
+*/
 
 ccReg::DomainDetail* ccReg_Session_i::createDomainDetail(Register::Domain::Domain* _domain) {
   TRACE("[CALL] ccReg_Session_i::createDomainDetail()");

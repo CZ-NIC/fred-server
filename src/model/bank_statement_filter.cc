@@ -1,78 +1,78 @@
-#include "statement_head_filter.h"
+#include "bank_statement_filter.h"
 
 namespace Database {
 namespace Filters {
 
-StatementHeadImpl::StatementHeadImpl():
+BankStatementImpl::BankStatementImpl():
     Compound()
 {
     setName("Statement");
     active = true;
 }
 
-StatementHeadImpl::~StatementHeadImpl()
+BankStatementImpl::~BankStatementImpl()
 {
 }
 
 Table &
-StatementHeadImpl::joinStatementHeadTable()
+BankStatementImpl::joinBankStatementTable()
 {
     return joinTable("bank_head");
 }
 
 Table &
-StatementHeadImpl::joinStatementItemTable()
+BankStatementImpl::joinStatementItemTable()
 {
     return joinTable("bank_item");
 }
 
 Value<Database::ID> &
-StatementHeadImpl::addId()
+BankStatementImpl::addId()
 {
     Value<Database::ID> *tmp = new Value<Database::ID>(
-            Column("id", joinStatementHeadTable()));
+            Column("id", joinBankStatementTable()));
     add(tmp);
     tmp->setName("Id");
     return *tmp;
 }
 
 Value<Database::ID> &
-StatementHeadImpl::addAccountId()
+BankStatementImpl::addAccountId()
 {
     Value<Database::ID> *tmp = new Value<Database::ID>(
-            Column("account_id", joinStatementHeadTable()));
+            Column("account_id", joinBankStatementTable()));
     add(tmp);
     tmp->setName("AccountId");
     return *tmp;
 }
 
 Interval<Database::DateInterval> &
-StatementHeadImpl::addCreateDate()
+BankStatementImpl::addCreateDate()
 {
     Interval<Database::DateInterval> *tmp =
         new Interval<Database::DateInterval>(
-                Column("create_date", joinStatementHeadTable()));
+                Column("create_date", joinBankStatementTable()));
     add(tmp);
     tmp->setName("CreateDate");
     return *tmp;
 }
 
 Interval<Database::DateInterval> &
-StatementHeadImpl::addBalanceOldDate()
+BankStatementImpl::addBalanceOldDate()
 {
     Interval<Database::DateInterval> *tmp =
         new Interval<Database::DateInterval>(
-                Column("balance_old_date", joinStatementHeadTable()));
+                Column("balance_old_date", joinBankStatementTable()));
     add(tmp);
     tmp->setName("BalanceOldDate");
     return *tmp;
 }
 
 Value<std::string> &
-StatementHeadImpl::addAccountNumber()
+BankStatementImpl::addAccountNumber()
 {
     joins.push_back(new Join(
-                Column("id", joinStatementHeadTable()),
+                Column("id", joinBankStatementTable()),
                 SQL_OP_EQ,
                 Column("statement_id", joinStatementItemTable())));
     Value<std::string> *tmp = new Value<std::string>(
@@ -83,10 +83,10 @@ StatementHeadImpl::addAccountNumber()
 }
 
 Value<std::string> &
-StatementHeadImpl::addBankCode()
+BankStatementImpl::addBankCode()
 {
     joins.push_back(new Join(
-                Column("id", joinStatementHeadTable()),
+                Column("id", joinBankStatementTable()),
                 SQL_OP_EQ,
                 Column("statement_id", joinStatementItemTable())));
     Value<std::string> *tmp = new Value<std::string>(
@@ -97,10 +97,10 @@ StatementHeadImpl::addBankCode()
 }
 
 Value<std::string> &
-StatementHeadImpl::addConstSymbol()
+BankStatementImpl::addConstSymbol()
 {
     joins.push_back(new Join(
-                Column("id", joinStatementHeadTable()),
+                Column("id", joinBankStatementTable()),
                 SQL_OP_EQ,
                 Column("statement_id", joinStatementItemTable())));
     Value<std::string> *tmp = new Value<std::string>(
@@ -111,10 +111,10 @@ StatementHeadImpl::addConstSymbol()
 }
 
 Value<std::string> &
-StatementHeadImpl::addVarSymbol()
+BankStatementImpl::addVarSymbol()
 {
     joins.push_back(new Join(
-                Column("id", joinStatementHeadTable()),
+                Column("id", joinBankStatementTable()),
                 SQL_OP_EQ,
                 Column("statement_id", joinStatementItemTable())));
     Value<std::string> *tmp = new Value<std::string>(
@@ -125,10 +125,10 @@ StatementHeadImpl::addVarSymbol()
 }
 
 Value<std::string> &
-StatementHeadImpl::addSpecSymbol()
+BankStatementImpl::addSpecSymbol()
 {
     joins.push_back(new Join(
-                Column("id", joinStatementHeadTable()),
+                Column("id", joinBankStatementTable()),
                 SQL_OP_EQ,
                 Column("statement_id", joinStatementItemTable())));
     Value<std::string> *tmp = new Value<std::string>(
@@ -139,10 +139,10 @@ StatementHeadImpl::addSpecSymbol()
 }
 
 Value<Database::ID> &
-StatementHeadImpl::addInvoiceId()
+BankStatementImpl::addInvoiceId()
 {
     joins.push_back(new Join(
-                Column("id", joinStatementHeadTable()),
+                Column("id", joinBankStatementTable()),
                 SQL_OP_EQ,
                 Column("statement_id", joinStatementItemTable())));
     Value<Database::ID> *tmp = new Value<Database::ID>(

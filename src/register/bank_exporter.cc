@@ -1,6 +1,6 @@
 #include "bank_exporter.h"
-#include "bank_head.h"
-#include "bank_item.h"
+#include "bank_statement.h"
+#include "bank_payment.h"
 
 namespace Register {
 namespace Banking {
@@ -12,21 +12,21 @@ ExporterXML::~ExporterXML()
 }
 
 void
-ExporterXML::doExport(StatementHead *head)
+ExporterXML::doExport(Statement *_data)
 {
-    TRACE("[CALL] Register::Banking::ExporterXML::writeStatementHead()");
+    TRACE("[CALL] Register::Banking::ExporterXML::doExport(Statement)");
     m_xml.start(STATEMENT_STATEMENT);
-    m_xml.text(STATEMENT_ACCOUNT_NUMBER, head->getAccountId());
-    m_xml.text(STATEMENT_NUMBER, head->getNum());
-    m_xml.text(STATEMENT_DATE, head->getCreateDate());
-    m_xml.text(STATEMENT_BALANCE, head->getBalanceNew());
-    m_xml.text(STATEMENT_OLD_DATE, head->getBalanceOldDate());
-    m_xml.text(STATEMENT_OLD_BALANCE, head->getBalanceOld());
-    m_xml.text(STATEMENT_CREDIT, head->getBalanceCredit());
-    m_xml.text(STATEMENT_DEBET, head->getBalanceDebet());
+    m_xml.text(STATEMENT_ACCOUNT_NUMBER, _data->getAccountId());
+    m_xml.text(STATEMENT_NUMBER, _data->getNum());
+    m_xml.text(STATEMENT_DATE, _data->getCreateDate());
+    m_xml.text(STATEMENT_BALANCE, _data->getBalanceNew());
+    m_xml.text(STATEMENT_OLD_DATE, _data->getBalanceOldDate());
+    m_xml.text(STATEMENT_OLD_BALANCE, _data->getBalanceOld());
+    m_xml.text(STATEMENT_CREDIT, _data->getBalanceCredit());
+    m_xml.text(STATEMENT_DEBET, _data->getBalanceDebet());
     m_xml.start(STATEMENT_ITEMS);
-    for (int i = 0; i < (int)head->getStatementItemCount(); i++) {
-        doExport(head->getStatementItemByIdx(i));
+    for (int i = 0; i < (int)_data->getPaymentCount(); i++) {
+        doExport(_data->getPaymentByIdx(i));
     }
     m_xml.end();
     m_xml.end();
@@ -39,22 +39,22 @@ ExporterXML::finalize()
 }
 
 void
-ExporterXML::doExport(const StatementItem *item)
+ExporterXML::doExport(const Payment *_data)
 {
     TRACE("[CALL] Register::Banking::ExporterXML::writeStatementItem()");
     m_xml.start(ITEM_ITEM);
-    m_xml.text(ITEM_IDENT, item->getAccountEvid());
-    m_xml.text(ITEM_ACCOUNT_NUMBER, item->getAccountNumber());
-    m_xml.text(ITEM_ACCOUNT_BANK_CODE, item->getBankCodeId());
-    m_xml.text(ITEM_CONST_SYMBOL, item->getKonstSym());
-    m_xml.text(ITEM_VAR_SYMBOL, item->getVarSymb());
-    m_xml.text(ITEM_SPEC_SYMBOL, item->getSpecSymb());
-    m_xml.text(ITEM_PRICE, item->getPrice());
-    m_xml.text(ITEM_TYPE, item->getType());
-    m_xml.text(ITEM_CODE, item->getCode());
-    m_xml.text(ITEM_MEMO, item->getAccountMemo());
-    m_xml.text(ITEM_DATE, item->getAccountDate());
-    m_xml.text(ITEM_CRTIME, item->getCrTime());
+    m_xml.text(ITEM_IDENT, _data->getAccountEvid());
+    m_xml.text(ITEM_ACCOUNT_NUMBER, _data->getAccountNumber());
+    m_xml.text(ITEM_ACCOUNT_BANK_CODE, _data->getBankCode());
+    m_xml.text(ITEM_CONST_SYMBOL, _data->getKonstSym());
+    m_xml.text(ITEM_VAR_SYMBOL, _data->getVarSymb());
+    m_xml.text(ITEM_SPEC_SYMBOL, _data->getSpecSymb());
+    m_xml.text(ITEM_PRICE, _data->getPrice());
+    m_xml.text(ITEM_TYPE, _data->getType());
+    m_xml.text(ITEM_CODE, _data->getCode());
+    m_xml.text(ITEM_MEMO, _data->getAccountMemo());
+    m_xml.text(ITEM_DATE, _data->getAccountDate());
+    m_xml.text(ITEM_CRTIME, _data->getCrTime());
     m_xml.text(ITEM_NAME, "");
     m_xml.end();
 }

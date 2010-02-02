@@ -20,8 +20,8 @@
 #include "pagetable_publicrequests.h"
 #include "pagetable_mails.h"
 #include "pagetable_invoices.h"
-#include "pagetable_statement_items.h"
-#include "pagetable_statement_heads.h"
+#include "pagetable_bank_payments.h"
+//#include "pagetable_bank_statements.h"
 #include "pagetable_filters.h"
 #include "pagetable_files.h"
 #include "pagetable_logger.h"
@@ -62,8 +62,8 @@ private:
   ccReg_PublicRequests_i* m_publicrequests;
   ccReg_Mails_i* m_mails;
   ccReg_Invoices_i* m_invoices;
-  ccReg_StatementItems_i* m_statementitems;
-  ccReg_StatementHeads_i* m_statementheads;
+  ccReg_Payments_i* m_payments;
+  // ccReg_Statement_i* m_statements;
   ccReg_Filters_i* m_filters;
   ccReg_User_i* m_user;
   ccReg_Files_i* m_files;
@@ -101,13 +101,11 @@ private:
   Registry::PublicRequest::Detail* getPublicRequestDetail(ccReg::TID _id);
   Registry::Mailing::Detail* getMailDetail(ccReg::TID _id);
   Registry::Invoicing::Detail* getInvoiceDetail(ccReg::TID _id);
-
   Registry::Request::Detail*  getRequestDetail(ccReg::TID _id);
-
   Registry::Zone::Detail* getZoneDetail(ccReg::TID _id);
+  Registry::Banking::BankItem::Detail * getPaymentDetail(ccReg::TID _id);
+  //Registry::Banking::BankHead::Detail * getStatementDetail(ccReg::TID _id);
 
-  Registry::Banking::BankHead::Detail * getStatementHeadDetail(ccReg::TID _id);
-  Registry::Banking::BankItem::Detail * getStatementItemDetail(ccReg::TID _id);
 
   /*
    * TODO:
@@ -118,7 +116,6 @@ private:
   ccReg::ContactDetail* createContactDetail(Register::Contact::Contact* _contact);
   ccReg::NSSetDetail* createNSSetDetail(Register::NSSet::NSSet* _contact);
   ccReg::KeySetDetail *createKeySetDetail(Register::KeySet::KeySet *_contact);
-
   Registry::Domain::Detail* createHistoryDomainDetail(Register::Domain::List* _list);
   Registry::Contact::Detail* createHistoryContactDetail(Register::Contact::List* _list);
   Registry::NSSet::Detail* createHistoryNSSetDetail(Register::NSSet::List* _list);
@@ -130,8 +127,8 @@ private:
   Registry::Invoicing::Detail* createInvoiceDetail(Register::Invoicing::Invoice *_invoice);
   Registry::Request::Detail *createRequestDetail(Register::Logger::Request *req);
   Registry::Zone::Detail* createZoneDetail(Register::Zone::Zone* _registrar);
-  Registry::Banking::BankItem::Detail *createBankItemDetail(Register::Banking::StatementItem *item);
-  Registry::Banking::BankHead::Detail *createBankHeadDetail(Register::Banking::StatementHead *head);
+  Registry::Banking::BankItem::Detail *createPaymentDetail(Register::Banking::Payment *_payment);
+  //Registry::Banking::BankHead::Detail *createStatementDetail(Register::Banking::Statement *_statement);
 
 
  
@@ -164,7 +161,7 @@ public:
   void setHistory(CORBA::Boolean _flag);
 };
 
-void fillBankItemDetail(Registry::Banking::BankItem::Detail &d, const Register::Banking::StatementItem *it);
+void fillPaymentDetail(Registry::Banking::BankItem::Detail &d, const Register::Banking::Payment *_payment);
 
 class CompareSessionsByLastActivity {
 public:

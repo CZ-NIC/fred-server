@@ -1,15 +1,15 @@
-#ifndef _MODEL_BANKSTATEMENTITEM_H_
-#define _MODEL_BANKSTATEMENTITEM_H_
+#ifndef _MODEL_BANK_PAYMENT_H_
+#define _MODEL_BANK_PAYMENT_H_
 
 #include "db_settings.h"
 #include "model.h"
 
-class ModelBankStatementItem:
+class ModelBankPayment:
     public Model::Base {
 public:
-    ModelBankStatementItem()
+    ModelBankPayment()
     { }
-    virtual ~ModelBankStatementItem()
+    virtual ~ModelBankPayment()
     { }
     const unsigned long long &getId() const
     {
@@ -220,7 +220,7 @@ public:
         return Model::Base::toString(this);
     }
 
-    typedef Model::Field::List<ModelBankStatementItem>  field_list;
+    typedef Model::Field::List<ModelBankPayment>  field_list;
     static const field_list& getFields()
     {
         return fields;
@@ -250,32 +250,32 @@ protected:
     //Field::Lazy::Field<ModelInvoice *> m_invoice;
 
 public:
-    static Model::Field::PrimaryKey<ModelBankStatementItem, unsigned long long> id;
-    static Model::Field::Basic<ModelBankStatementItem, unsigned long long> statementId;
-    static Model::Field::Basic<ModelBankStatementItem, unsigned long long> accountId;
-    static Model::Field::Basic<ModelBankStatementItem, std::string> accountNumber;
-    static Model::Field::Basic<ModelBankStatementItem, std::string> bankCodeId;
-    static Model::Field::Basic<ModelBankStatementItem, int> code;
-    static Model::Field::Basic<ModelBankStatementItem, int> type;
-    static Model::Field::Basic<ModelBankStatementItem, std::string> konstSym;
-    static Model::Field::Basic<ModelBankStatementItem, std::string> varSymb;
-    static Model::Field::Basic<ModelBankStatementItem, std::string> specSymb;
-    static Model::Field::Basic<ModelBankStatementItem, Database::Money> price;
-    static Model::Field::Basic<ModelBankStatementItem, std::string> accountEvid;
-    static Model::Field::Basic<ModelBankStatementItem, Database::Date> accountDate;
-    static Model::Field::Basic<ModelBankStatementItem, std::string> accountMemo;
-    static Model::Field::Basic<ModelBankStatementItem, unsigned long long> invoiceId;
-    static Model::Field::Basic<ModelBankStatementItem, std::string> accountName;
-    static Model::Field::Basic<ModelBankStatementItem, Database::DateTime> crTime;
+    static Model::Field::PrimaryKey<ModelBankPayment, unsigned long long> id;
+    static Model::Field::Basic<ModelBankPayment, unsigned long long> statementId;
+    static Model::Field::Basic<ModelBankPayment, unsigned long long> accountId;
+    static Model::Field::Basic<ModelBankPayment, std::string> accountNumber;
+    static Model::Field::Basic<ModelBankPayment, std::string> bankCodeId;
+    static Model::Field::Basic<ModelBankPayment, int> code;
+    static Model::Field::Basic<ModelBankPayment, int> type;
+    static Model::Field::Basic<ModelBankPayment, std::string> konstSym;
+    static Model::Field::Basic<ModelBankPayment, std::string> varSymb;
+    static Model::Field::Basic<ModelBankPayment, std::string> specSymb;
+    static Model::Field::Basic<ModelBankPayment, Database::Money> price;
+    static Model::Field::Basic<ModelBankPayment, std::string> accountEvid;
+    static Model::Field::Basic<ModelBankPayment, Database::Date> accountDate;
+    static Model::Field::Basic<ModelBankPayment, std::string> accountMemo;
+    static Model::Field::Basic<ModelBankPayment, unsigned long long> invoiceId;
+    static Model::Field::Basic<ModelBankPayment, std::string> accountName;
+    static Model::Field::Basic<ModelBankPayment, Database::DateTime> crTime;
 
-    //static Model::Field::Related::OneToOne<ModelBankStatementItem, unsigned long long, ModelBankStatementHead> statement;
-    //static Model::Field::Related::OneToOne<ModelBankStatementItem, std::string, ModelEnumBankCode> bankCode;
-    //static Model::Field::Related::OneToOne<ModelBankStatementItem, unsigned long long, ModelInvoice> invoice;
+    //static Model::Field::Related::OneToOne<ModelBankPayment, unsigned long long, ModelBankStatementHead> statement;
+    //static Model::Field::Related::OneToOne<ModelBankPayment, std::string, ModelEnumBankCode> bankCode;
+    //static Model::Field::Related::OneToOne<ModelBankPayment, unsigned long long, ModelInvoice> invoice;
 
 private:
     static std::string table_name;  /** < model table name */
     static field_list  fields;      /** < list of all model fields */
-}; // class ModelBankStatementItem
+}; // class ModelBankPayment
 
-#endif // _MODEL_BANKSTATEMENTITEM_H_
+#endif // _MODEL_BANK_PAYMENT_H_
 
