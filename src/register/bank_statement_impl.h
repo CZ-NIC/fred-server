@@ -112,9 +112,11 @@ public:
     // TODO
     unsigned int getPaymentCount() const
     {
+    	return 0;
     }
     Payment* getPaymentByIdx(const unsigned long long _id) const
     {
+    	return 0;
     }
 
 

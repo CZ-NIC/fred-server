@@ -198,6 +198,9 @@ public:
             case IMT_CREATE_TIME:
                 stable_sort(m_data.begin(), m_data.end(), CompareCrTime(asc));
                 break;
+            default:
+            	throw std::runtime_error("unimplemented sort");
+            	break;
         }
     }
 
