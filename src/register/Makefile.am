@@ -142,7 +142,7 @@ test_LDADD   = libfred.a \
 test_logd_SOURCES = test_logd.cc request.h model_request.h model_request_property.h model_request_property_value.h model_request_data.h model_session.h 
 # test_logd_CPPFLAGS = $(AM_CPPFLAGS)
 # test_logd_LDFLAGS = $(AM_LDFLAGS) -lboost_unit_test_framework liblog_impl.a
-test_logd_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) -lboost_unit_test_framework 
+test_logd_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) 
 test_logd_LDADD =	libfred.a \
                         $(top_builddir)/src/model/libmodel.a \
                         $(top_builddir)/util/db/libdb.a \
