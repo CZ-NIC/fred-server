@@ -42,6 +42,8 @@
 using namespace boost::gregorian;
 using namespace boost::posix_time;
 
+class SQL_ERROR;
+
 #ifdef MAKE_TIME_DEF
 #undef MAKE_TIME_DEF
 #endif
@@ -98,12 +100,7 @@ public:
 };
 
 
-// #define STR_TO_MONEY(x) atol(x)
-inline long STR_TO_MONEY(Database::Value val)
-{
-    return (long)val;
-}
-
+#define STR_TO_MONEY(x) atol(x)
 
 namespace Register {
 namespace Invoicing {
@@ -174,8 +171,7 @@ public:
   virtual List* createList() const;
   /// return credit for registrar by zone
   virtual Money
-      getCreditByZone(const std::string& registrarHandle, TID zone) 
-          throw (SQL_ERROR);
+      getCreditByZone(const std::string& registrarHandle, TID zone);
   virtual bool insertInvoicePrefix(unsigned long long zoneId,
           int type, int year, unsigned long long prefix);
   virtual bool insertInvoicePrefix(const std::string &zoneName,
@@ -1010,7 +1006,7 @@ public:
     autoDB dbc;
     if(!dbc.OpenDatabase(Database::Manager::getConnectionString())) {
         LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
-        // throw SQL_ERROR
+        throw SQL_ERROR();
     }
 
     if (storeFileFlag && filePDF) {
@@ -1755,7 +1751,7 @@ public:
         std::auto_ptr<autoDB> db(new autoDB());
         if (!db->OpenDatabase(Database::Manager::getConnectionString())) {
             LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
-            // throw SQL_ERROR;
+            throw SQL_ERROR();
         }
 
         clearList();
@@ -2050,7 +2046,7 @@ public:
         std::auto_ptr<autoDB> db(new autoDB());
         if(!db->OpenDatabase(Database::Manager::getConnectionString())) {
             LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
-            //throw SQL_ERROR;
+            throw SQL_ERROR();
         }
 
       std::stringstream sql;
@@ -2097,7 +2093,7 @@ public:
     std::auto_ptr<autoDB> db(new autoDB());
     if(!db->OpenDatabase(Database::Manager::getConnectionString())) {
         LOGGER(PACKAGE).error(" autoDB: Failed to open the database-> ");
-       // throw SQL_ERROR;
+       throw SQL_ERROR();
     }
 
     if (vatList.empty()) {
@@ -2168,7 +2164,7 @@ public:
     // return new ListImpl(conn_, (ManagerImpl *)this);
   }
   
-  Money ManagerImpl::getCreditByZone(const std::string& registrarHandle, TID zone) throw (SQL_ERROR) {
+  Money ManagerImpl::getCreditByZone(const std::string& registrarHandle, TID zone) {
       // TODO remove throw and catch database exception
       Database::Connection conn = Database::Manager::acquire();
     std::stringstream sql;
@@ -2179,7 +2175,8 @@ public:
 
     Database::Result res = conn.exec(sql.str());
     // TODO conversion
-    Money result = STR_TO_MONEY(res[0][0]);
+    // Money result = STR_TO_MONEY(res[0][0]);
+    Money result = (long)res[0][0];
     return result;
     
   }
