@@ -1717,9 +1717,10 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Regi
   return detail;
 }
 
+
 Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invoicing::Invoice *_invoice) {
   Registry::Invoicing::Detail *detail = new Registry::Invoicing::Detail();
-  
+
   detail->id = _invoice->getId();
   detail->zone = _invoice->getZoneId();
   detail->createTime = DUPSTRDATE_NOLTCONVERT(_invoice->getCrDate);
@@ -1776,6 +1777,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Register::Invo
   }
 
   return detail;
+
 }
 
 Registry::Mailing::Detail* ccReg_Session_i::createMailDetail(Register::Mail::Mail *_mail) {

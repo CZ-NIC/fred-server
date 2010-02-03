@@ -94,7 +94,7 @@ void get_priceStr(
 
 // convert local date  to  UTC timestamp for SQL
 time_t get_utctime_from_localdate(
-  char *dateStr);
+  const char *dateStr);
 
 // convert dateg from SQL result to  date
 void convert_rfc3339_date(

@@ -5126,9 +5126,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                             }
                             std::auto_ptr<Register::Invoicing::Manager> invMan(
                                     Register::Invoicing::Manager::create());
-                            std::auto_ptr<Register::Invoicing::Invoice> invoice(
-                                    invMan->createInvoice(Register::Invoicing::IT_NONE));
-                            if (invoice->domainBilling(action.getDB(), zone, action.getRegistrar(),
+                            if (invMan->domainBilling(action.getDB(), zone, action.getRegistrar(),
                                         id, Database::Date(std::string(exDate)), period_count)) {
                                 if (action.getDB()->SaveDomainHistory(id)) {
                                     if (action.getDB()->SaveObjectCreate(id)) {

@@ -20,6 +20,7 @@ public:
     { }
     ~ccReg_BankingInvoicing_i()
     { }
+    /*
     bool addBankAccount(
             const char *zoneName,
             const char *accountNumber,
@@ -27,12 +28,14 @@ public:
             const char *bankCode);
     void archiveInvoices(
             bool send);
+            */
     bool pairPaymentRegistrarId(
             CORBA::ULongLong paymentId,
             CORBA::ULongLong registrarId);
     bool pairPaymentRegistrarHandle( 
             CORBA::ULongLong paymentId,
             const char *registrarHandle);
+    /*
     bool addPrefix(
             const char *zoneName,
             CORBA::Long type,
@@ -57,6 +60,7 @@ public:
             const char *validto,
             const char *price,
             CORBA::Long period);
+            */
 
 };
 

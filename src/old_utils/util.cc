@@ -494,7 +494,7 @@ time_t get_time_t(
 //  convert local date  to  UTC timestamp for SQL
 // involve  dayling saving time  for using time zone
 time_t get_utctime_from_localdate(
-  char *dateStr)
+  const char *dateStr)
 {
   struct tm dt;
   time_t t;

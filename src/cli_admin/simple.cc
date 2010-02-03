@@ -381,6 +381,8 @@ main(int argc, char **argv)
         }
     } catch (CORBA::Exception &e) {
         std::cerr << "CORBA error" << std::endl;
+    } catch (Database::Exception &e) {
+        std::cerr << "Database error: " << e.what() << std::endl;
     } catch (std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;;
         std::exit(2);

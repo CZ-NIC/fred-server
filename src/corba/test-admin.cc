@@ -129,10 +129,10 @@ main(int argc, char *argv[])
 
     Database::Manager::init(new Database::ConnectionFactory(conn_info, 1, 10));
 
-    ccReg_BankingInvoicing_i *bla = new ccReg_BankingInvoicing_i();
-    bla->pairInvoices();
-
-    delete bla;
+    // TODO this should be enabled after pairInvoices is moved to bank_manager and corba interface is restored 
+    // ccReg_BankingInvoicing_i *bla = new ccReg_BankingInvoicing_i();
+    // bla->pairInvoices();
+    // delete bla;
 
     return 0;
 }

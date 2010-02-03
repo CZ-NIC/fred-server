@@ -1,196 +1,333 @@
-#ifndef _INVOICE2_H_
-#define _INVOICE2_H_
+#ifndef INVOICE_H_
+#define INVOICE_H_
 
-#include "common_impl_new.h"
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/time_period.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+
+/*
+#include "common_object.h"
+*/
+#include "common_object.h"
+#include "object.h"
+#include "types.h"
+#include "exceptions.h"
+#include "documents.h"
+#include "mailer.h"
 #include "db_settings.h"
-#include "model_invoice.h"
-#include "invoice_common.h"
-#include "invoice_exporter.h"
-#include "old_utils/dbsql.h"
+#include "model/model_filters.h"
+#include "old_utils/dbsql.h" 
+
+class DB;
 
 namespace Register {
 namespace Invoicing {
 
+/// Member identification (i.e. for sorting) 
+enum MemberType {
+  MT_CRTIME,
+  MT_CRDATE,
+  MT_NUMBER,
+  MT_REGISTRAR,
+  MT_TOTAL,
+  MT_CREDIT,
+  MT_TYPE,
+  MT_ZONE,
+  MT_PRICE
+};
+
+/// money type
+typedef long long Money;
+/// invoice type
+// duplicity from ccReg.h
 enum Type {
   IT_DEPOSIT, ///< depositing invoice
   IT_ACCOUNT, ///< accounting invoice
   IT_NONE
-
 };
-std::string Type2Str(Type type);
-int Type2SqlType(Type type);
+std::string Type2Str(Type _type);
 
-class Manager;
-
-//-----------------------------------------------------------------------------
-//
-// Invoice
-//
-//-----------------------------------------------------------------------------
-class Invoice:
-    public ModelInvoice,
-    virtual public Register::CommonObjectImplNew {
-private:
-    Manager     *m_manager;
-    Type        m_type;
-    int         m_vatRate;
-    bool        m_storeFileFlag;
-    Subject     m_client;
-    static Subject     m_supplier;
-    std::string m_varSymbol;
-    std::string m_zoneFqdn;
-    std::string m_fileHandle;
-    std::string m_fileXmlHandle;
-
-    AnnualPartitioning              m_annualPartitioning;
-    std::vector<PaymentSource *>    m_sources;
-    std::vector<PaymentAction *>    m_actions;
-    std::vector<Payment>            m_paid;
-    std::vector<std::string>        m_errors;
-
-    Database::Date  m_fromDate;
-    Database::Date  m_toDate;
-    Database::DateInterval  m_accountPeriod;
-
-    void addError(const std::string &str);
-    void addError(const boost::format &frmt);
-    void clearActions();
-    Database::Money getPrice2(
-            Database::PSQLConnection *conn,
-            PaymentActionType operation,
-            const int &period);
-    bool isRegistrarSystem(
-            Database::PSQLConnection *conn,
-            const Database::ID &registrar);
-    std::vector<Database::Money> countPayments( 
-            const std::vector<Database::Money> &credit, 
-            const Database::Money &price);
-    Database::ID newInvoiceObjectRegistry(Database::PSQLConnection *conn);
-    bool newInvoiceObjectRegistryPriceMap(
-            Database::PSQLConnection *conn,
-            const Database::ID &invObjRegId,
-            const Database::ID &invoiceId,
-            const Database::Money &price);
-    bool updateInvoiceCredit(
-            Database::PSQLConnection *conn, 
-            const Database::ID &invoiceId,
-            const Database::Money &price);
-    bool getCreditInvoicesId(
-            Database::PSQLConnection *conn,
-            std::vector<Database::ID> &vec_id,
-            std::vector<Database::Money> &vec_money,
-            const int &limit = 2);
-    bool domainBilling(Database::PSQLConnection *conn);
-    Database::Date getFromDateFromDB();
-    int getRecordsCount();
-    bool getRecordsPrice();
-    int getSystemVAT();
-    bool isYearInInvoicePrefix(const int &year);
-    bool createNewYearInInvoicePrefix(const int &newYear);
-    bool createNewYearInInvoicePrefix(const int &newYear, const int &oldYear);
-    bool getInvoicePrefix();
-    bool createNewInvoice();
-    bool updateInvoiceObjectRegistry();
-    bool updateRegistrarInvoice();
-    std::vector<int> getAccountInvoicesNumbers();
-    Database::Money getInvoiceSumPrice(const int &accountInvoiceId);
-    Database::Money getInvoiceBalance(
-            const int &accountInvoiceId,
-            const Database::Money &invoiceSumPrice);
-    bool updateInvoiceCreditPaymentMap(const std::vector<int> &idNumbers);
-    bool testRegistrar();
-    bool testRegistrarPrivileges();
-    bool testZone();
-    bool insertAccount();
-    bool insertDeposit();
-    bool updateAccount();
-    bool updateDeposit();
-    // bool update();
+/// subject of invoicing (supplier or client)
+class Subject {
+protected:
+  virtual ~Subject() {
+  }
 public:
-    Invoice(
-            Manager *manager):
-        CommonObjectImplNew(),
-        ModelInvoice(),
-        m_manager(manager),
-        m_type(IT_NONE),
-        m_vatRate(-1),
-        m_storeFileFlag(false)
-    { }
-    ~Invoice();
-    bool domainBilling(
+  virtual TID getId() const = 0;
+  virtual const std::string& getHandle() const = 0;
+  virtual const std::string& getName() const = 0;
+  virtual const std::string& getFullname() const = 0;
+  virtual const std::string& getStreet() const = 0;
+  virtual const std::string& getCity() const = 0;
+  virtual const std::string& getZip() const = 0;
+  virtual const std::string& getCountry() const = 0;
+  virtual const std::string& getICO() const = 0;
+  virtual const std::string& getVatNumber() const = 0;
+  virtual bool getVatApply() const = 0;
+  virtual const std::string& getRegistration() const = 0;
+  virtual const std::string& getReclamation() const = 0;
+  virtual const std::string& getEmail() const = 0;
+  virtual const std::string& getURL() const = 0;
+  virtual const std::string& getPhone() const = 0;
+  virtual const std::string& getFax() const = 0;
+};
+/// description of any payment transfer with vat
+class Payment {
+protected:
+  virtual ~Payment() {
+  }
+public:
+  // base tax money amount  
+  virtual Money getPrice() const = 0;
+  // vat rate in percents
+  virtual unsigned getVatRate() const = 0;
+  // counted vat (approximatly price * vatRate / 100)
+  virtual Money getVat() const = 0;
+  // sum of price and vat
+  virtual Money getPriceWithVat() const = 0;
+};
+class PaymentSource : virtual public Payment {
+protected:
+  virtual ~PaymentSource() {
+  }
+public:
+  virtual TID getId() const = 0;
+  /// number of source advance invoice 
+  virtual unsigned long long getNumber() const = 0;
+  /// remaining credit on source invoice
+  virtual Money getCredit() const = 0;
+  /// total price withput vat of source invoice
+  virtual Money getTotalPrice() const = 0;
+  /// total vat of source invoice
+  virtual Money getTotalVat() const = 0;
+  /// total price with vat of source invoice
+  virtual Money getTotalPriceWithVat() const = 0;
+  /// creation time of source invoice
+  virtual boost::posix_time::ptime getCrTime() const = 0;
+};
+
+enum PaymentActionType {
+  PAT_CREATE_DOMAIN,
+  PAT_RENEW_DOMAIN
+};
+std::string PaymentActionType2Str(PaymentActionType type);
+
+class PaymentAction : virtual public Payment {
+protected:
+  virtual ~PaymentAction() {
+  }
+public:
+  /// id of object on which action was performed
+  virtual TID getObjectId() const = 0;
+  /// name of object on which action was performed
+  virtual const std::string& getObjectName() const = 0;
+  /// time of action 
+  virtual boost::posix_time::ptime getActionTime() const = 0;
+  /// exdate when operation was renew otherwise (not-a-date)
+  virtual boost::gregorian::date getExDate() const = 0;
+  /// type of action (creation or registration extension)
+  virtual PaymentActionType getAction() const = 0;
+  /// number of month for extenstion otherwise 0
+  virtual unsigned getUnitsCount() const = 0;
+  /// price (without vat) per unit
+  virtual Money getPricePerUnit() const = 0;
+
+  //// new interface - implement
+  virtual std::string getActionStr() const = 0;
+};
+/// iterator over list of total price partitioned by years
+class AnnualPartitioning : virtual public Payment {
+protected:
+  virtual ~AnnualPartitioning() {
+  }
+public:
+  /// reset iterator to first record
+  virtual void resetIterator(unsigned vatRate) = 0;
+  /// test whether there are any records left 
+  virtual bool end() const = 0;
+  /// pass to next record
+  virtual void next() = 0;
+  /// access method for year at current record 
+  virtual unsigned getYear() const = 0;
+};
+
+class Invoice : virtual public Register::CommonObject {
+public:
+  virtual ~Invoice() {
+  }
+  virtual const Subject* getSupplier() const = 0;
+  virtual const Subject* getClient() const = 0;
+  virtual TID getZone() const = 0;
+  virtual const std::string& getZoneName() const = 0;
+  virtual boost::posix_time::ptime getCrTime() const = 0;
+  virtual boost::gregorian::date getTaxDate() const = 0;
+  virtual boost::gregorian::date_period getAccountPeriod() const = 0;
+  virtual Type getType() const = 0;
+  virtual unsigned long long getNumber() const = 0;
+  virtual TID getRegistrar() const = 0;
+  virtual Money getCredit() const = 0;
+  virtual Money getPrice() const = 0;
+  virtual short getVatRate() const = 0;
+  virtual Money getTotal() const = 0;
+  virtual Money getTotalVAT() const = 0;
+  virtual const std::string& getVarSymbol() const = 0;
+  virtual TID getFilePDF() const = 0;
+  virtual TID getFileXML() const = 0;
+  virtual std::string getFileNamePDF() const = 0;
+  virtual std::string getFileNameXML() const = 0;
+  virtual unsigned getSourceCount() const = 0;
+  virtual const PaymentSource *getSource(unsigned idx) const = 0;
+  virtual unsigned getActionCount() const = 0;
+  virtual const PaymentAction *getAction(unsigned idx) const = 0;
+  virtual AnnualPartitioning *getAnnualPartitioning() = 0;
+  virtual unsigned getPaymentCount() const = 0;
+  virtual const Payment *getPaymentByIdx(unsigned idx) const = 0;
+
+    // //////////////////// new interface (partially from model_invoices)
+    
+  
+    virtual TID getZoneId() const = 0;
+    virtual boost::posix_time::ptime getCrDate() const = 0;
+    // const Database::DateTime getCrDate() const = 0;
+    // const Database::Date getTaxDate() const = 0;
+    virtual TID getPrefix() const = 0;
+    virtual TID getRegistrarId() const = 0;
+    virtual const int getVat() const = 0;
+    virtual const Database::Money getTotalVat() const = 0;
+    // const TID getPrefixTypeId() const = 0;
+    virtual TID getFileId() const = 0;
+    virtual std::string getFileHandle() const = 0;
+    virtual TID getFileXmlId() const = 0;
+    virtual std::string getFileXmlHandle() const = 0;
+    virtual std::string getZoneFqdn() const = 0;
+
+    virtual const Payment *getPayment(const unsigned int &index) const = 0;
+};
+
+class List : virtual public Register::CommonList {
+public:
+  /// publice destructor
+  virtual ~List() {
+  }
+  ;
+  /// type for setting archive filter
+  enum ArchiveFilter
+  {
+    AF_IGNORE, ///< ignore this filter (NULL-value)
+    AF_SET, ///< invoice is archived
+    AF_UNSET ///< invoice is still unarchived
+  };
+  
+  virtual const char* getTempTableName() const = 0;
+  /// reload invoices with selected filter
+  virtual void reload() = 0;
+  /// new reload method
+  virtual void reload(Database::Filters::Union& _uf) = 0;
+  /// subsequential reload will not load any action 
+  virtual void setPartialLoad(bool partialLoad) = 0;
+  /// return invoice by index
+  virtual Invoice *get(unsigned _idx) const = 0;
+  /// clear filter settings
+  virtual void clearFilter() = 0;
+  /// xml output of all invoices in list
+  virtual void exportXML(std::ostream& out) = 0;
+  /// sort by column
+  virtual void sort(MemberType _member, bool _asc) = 0;
+
+  /// filter for invoice id
+  virtual void setIdFilter(TID id) = 0;
+  /// filter for registrar recieving invoice
+  virtual void setRegistrarFilter(TID registrar) = 0;
+  /// filter for registrar recieving invoice by handle
+  virtual void setRegistrarHandleFilter(const std::string& handle) = 0;
+  /// filter for id of associated zone 
+  virtual void setZoneFilter(TID zone) = 0;
+  /// filter for invoice type (advance=1 or normal=2)
+  virtual void setTypeFilter(unsigned type) = 0;
+  /// filter for variable symbol of payment
+  virtual void setVarSymbolFilter(const std::string& varSymbol) = 0;
+  /// filter for invoice number
+  virtual void setNumberFilter(const std::string& number) = 0;
+  /// filter for crDate
+  virtual void
+      setCrDateFilter(const boost::posix_time::time_period& crDatePeriod) = 0;
+  /// filter for taxDate
+  virtual void
+      setTaxDateFilter(const boost::posix_time::time_period& taxDatePeriod) = 0;
+  /// filter for existance of archived file
+  virtual void setArchivedFilter(ArchiveFilter archive) = 0;
+  /// filter for object attached to invoice by id
+  virtual void setObjectIdFilter(TID objectId) = 0;
+  /// filter for object attached to invoice by name
+  virtual void setObjectNameFilter(const std::string& objectName) = 0;
+  /// filter for account invoices with selected advance invoice source
+  virtual void setAdvanceNumberFilter(const std::string& number) = 0;
+  
+  /// from CommonList; propably will be removed in future
+  virtual void makeQuery(bool, bool, std::stringstream&) const = 0;  
+
+  virtual unsigned int getSize() const = 0;
+
+  };
+
+/// facade of invoicing subsystem
+class Manager {
+public:
+  /// public destructor - client is responsible for destroying manager
+  virtual ~Manager() {
+  }
+  /// find unarchived invoices and archive then in PDF format
+  virtual void archiveInvoices(bool send) const = 0;
+  /// create empty list of invoices
+  virtual List* createList() const = 0;
+  /// return credit for registrar by zone
+  virtual Money getCreditByZone(const std::string& registrarHandle, 
+                                TID zone) = 0;
+  /// factory method
+  /*
+  static Manager *create(DB *db,
+                         Document::Manager *docman,
+                         Mailer::Manager *mailman);
+   */
+  
+  static Manager *create(
+                         Document::Manager *_doc_manager,
+                         Mailer::Manager *_mail_manager);
+
+  static Manager *create();
+
+  virtual bool insertInvoicePrefix(unsigned long long zoneId,
+          int type, int year, unsigned long long prefix) = 0;
+  virtual bool insertInvoicePrefix(const std::string &zoneName,
+          int type, int year, unsigned long long prefix) = 0;
+
+  // added methods
+  virtual bool pairInvoices() = 0;
+
+  virtual bool pairInvoices(bool report) = 0;
+
+  virtual  int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price) = 0; 
+  // nnnn
+  virtual bool manualCreateInvoice(
+            const Database::ID &paymentId,
+            const Database::ID &registrar) = 0;
+
+  virtual bool manualCreateInvoice(
+            const Database::ID &paymentId,
+            const std::string &registrarHandle) = 0;
+
+  virtual bool domainBilling(
             DB *db, 
             const Database::ID &zone,
             const Database::ID &registrar,
             const Database::ID &objectId,
             const Database::Date &exDate,
-            const int &units_count);
-    bool domainBilling(
-            Database::PSQLConnection *conn,
-            const Database::ID &zone,
-            const Database::ID &registrar,
-            const Database::ID &objectId,
-            const Database::Date &exDate,
-            const int &units_count);
-    bool save();
-    void setType(Type type);
-    Type getType() const;
-    void setFromDate(const Database::Date &fromDate);
-    void setFromDate(const std::string &fromDate);
-    void setToDate(const Database::Date &toDate);
-    void setToDate(const std::string &toDate);
-    void setTaxDate(const Database::Date &taxDate);
-    void setTaxDate(const std::string &taxDate);
-    Database::Date getFromDate() const;
-    Database::Date getToDate() const;
-    const Database::DateInterval &getAccountPeriod() const;
-    void setAccountPeriod(const Database::DateInterval &period);
-    void setVarSymbol(const std::string &varSymbol);
-    const std::string &getVarSymbol() const;
-    const std::string &getZoneFqdn() const;
-    void setZoneFqdn(std::string &zoneFqdn);
-    const Subject *getClient() const;
-    void setClient(Subject &client);
-    const Subject *getSupplier() const;
-    void addSource(PaymentSource *source);
-    void addAction(PaymentAction *action);
-    unsigned int getPaymentCount() const;
-    const Payment *getPayment(const unsigned int &index) const;
-    unsigned int getSourceCount() const;
-    const PaymentSource *getSource(const unsigned int &index) const;
-    unsigned int getActionCount() const;
-    const PaymentAction *getAction(const unsigned int &index) const;
-    AnnualPartitioning *getAnnualPartitioning();
-    const std::string &getFileHandle() const;
-    const std::string &getFileXmlHandle() const;
-    void setFileHandle(std::string &fileHandle);
-    void setFileXmlHandle(std::string &fileXmlHandle);
+            const int &units_count) = 0;
 
-    void doExport(Exporter *exp);
-    std::string getLastError() const;
-    std::vector<std::string> getErrors() const;
-    void setFile(const Database::ID &filePDF, const Database::ID &fileXML);
-}; // class Invoice
+}; // Manager
+}
+; // Invoicing
+}
+; // Register
 
-COMPARE_CLASS_IMPL_NEW(Invoice, ZoneId);
-COMPARE_CLASS_IMPL_NEW(Invoice, CrDate);
-COMPARE_CLASS_IMPL_NEW(Invoice, TaxDate);
-COMPARE_CLASS_IMPL_NEW(Invoice, ToDate);
-COMPARE_CLASS_IMPL_NEW(Invoice, FromDate);
-COMPARE_CLASS_IMPL_NEW(Invoice, Prefix);
-COMPARE_CLASS_IMPL_NEW(Invoice, RegistrarId);
-COMPARE_CLASS_IMPL_NEW(Invoice, Credit);
-COMPARE_CLASS_IMPL_NEW(Invoice, Price);
-COMPARE_CLASS_IMPL_NEW(Invoice, VarSymbol);
-// COMPARE_CLASS_IMPL(Invoice, FilePDF);
-// COMPARE_CLASS_IMPL(Invoice, FileXML);
-COMPARE_CLASS_IMPL_NEW(Invoice, FileId);
-COMPARE_CLASS_IMPL_NEW(Invoice, FileXmlId);
-COMPARE_CLASS_IMPL_NEW(Invoice, Total);
-COMPARE_CLASS_IMPL_NEW(Invoice, Type);
-
-
-
-} // namespace Invoicing
-} // namespace Register
-
-#endif // _INVOICE2_H_
+#endif // INVOICE_H_

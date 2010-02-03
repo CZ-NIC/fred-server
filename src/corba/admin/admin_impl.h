@@ -167,10 +167,15 @@ public:
   /// testovaci fce na typ objektu
   void checkHandle(const char* handle, ccReg::CheckHandleTypeSeq_out ch);
 
+  /* disabled in FRED 2.3
   void fillInvoice(ccReg::Invoicing::Invoice *ci,
                    Register::Invoicing::Invoice *i);
+  
+   
   ccReg::Invoicing::Invoice* getInvoiceById(ccReg::TID id)
       throw (ccReg::Admin::ObjectNotFound);
+   **/
+  
   char* getCreditByZone(const char*registrarHandle, ccReg::TID zone);
   void generateLetters();
   bool setInZoneStatus(ccReg::TID domainId);

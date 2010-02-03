@@ -23,6 +23,118 @@
 #include "../register/model_zone.h"
 namespace Admin {
 
+
+
+bool InvoiceClient::factoring_all(const char *database, const char *zone_fqdn,
+  const char *taxdateStr, const char *todateStr)
+{
+  DB db;
+  int *regID = 0;
+  int i, num =-1;
+  char timestampStr[32];
+  int invoiceID = 0;
+  int zone;
+  int ret = 0;
+
+  if (db.OpenDatabase(database) ) {
+
+    LOG( LOG_DEBUG , "successfully  connect to DATABASE %s" , database);
+
+    if (db.BeginTransaction() ) {
+      get_timestamp(timestampStr, get_utctime_from_localdate(todateStr) );
+
+      if ( (zone = db.GetNumericFromTable("zone", "id", "fqdn", zone_fqdn) )) {
+        std::stringstream sql;
+        sql
+            << "SELECT r.id FROM registrar r, registrarinvoice i WHERE r.id=i.registrarid "
+            << "AND r.system=false AND i.zone=" << zone
+            << " AND i.fromdate<=CURRENT_DATE";
+        if (db.ExecSelect(sql.str().c_str()) && db.GetSelectRows() > 0) {
+          num = db.GetSelectRows();
+          regID= new int[num];
+          for (i = 0; i < num; i ++) {
+            regID[i] = atoi(db.GetFieldValue(i, 0) );
+          }
+          db.FreeSelect();
+
+          if (num > 0) {
+            for (i = 0; i < num; i ++) {
+              invoiceID = db.MakeFactoring(regID[i], zone, timestampStr,
+                taxdateStr);
+              LOG( NOTICE_LOG , "Vygenerovana fa %d pro regID %d" , invoiceID , regID[i] );
+
+              if (invoiceID >=0)
+                ret = CMD_OK;
+              else {
+                ret = 0;
+                break;
+              }
+
+            }
+          }
+          delete[] regID;
+        }
+      } else
+        LOG( LOG_ERR , "unkown zone %s\n" , zone_fqdn );
+
+      db.QuitTransaction(ret);
+    }
+
+    db.Disconnect();
+  }
+
+  if (ret)
+    return invoiceID;
+  else
+    return -1; // err
+}
+
+// close invoice to registar handle for zone make taxDate to the todateStr
+int InvoiceClient::factoring(const char *database, const char *registrarHandle,
+  const char *zone_fqdn, const char *taxdateStr, const char *todateStr)
+{
+  DB db;
+  int regID;
+  char timestampStr[32];
+  int invoiceID = -1;
+  int zone;
+  int ret = 0;
+
+  if (db.OpenDatabase(database) ) {
+
+    LOG( LOG_DEBUG , "successfully connected to DATABASE %s" , database);
+
+    if (db.BeginTransaction() ) {
+
+      if ( (regID = db.GetRegistrarID(  registrarHandle ) )) {
+        if ( (zone = db.GetNumericFromTable("zone", "id", "fqdn", zone_fqdn) )) {
+
+          get_timestamp(timestampStr, get_utctime_from_localdate(todateStr) );
+          // make invoice
+          invoiceID = db.MakeFactoring(regID, zone, timestampStr, taxdateStr);
+
+        } else
+          LOG( LOG_ERR , "unknown zone %s\n" , zone_fqdn );
+      } else
+        LOG( LOG_ERR , "unknown registrarHandle %s" , registrarHandle );
+
+      if (invoiceID >=0)
+        ret = CMD_OK; // OK succesfully invocing
+
+      db.QuitTransaction(ret);
+    }
+
+    db.Disconnect();
+  }
+
+  if (ret)
+    return invoiceID;
+  else
+    return -1; // err
+}
+
+
+
 const struct options *
 InvoiceClient::getOpts()
 {
@@ -352,46 +464,59 @@ InvoiceClient::credit()
     callHelp(m_conf, credit_help);
     std::auto_ptr<Register::Invoicing::Manager>
         invMan(Register::Invoicing::Manager::create());
-    std::auto_ptr<Register::Invoicing::Invoice>
-        invoice(invMan->createDepositInvoice());
+
+    // std::auto_ptr<Register::Invoicing::Invoice>
+        // invoice(invMan->createDepositInvoice());
+    std::string taxDate;
+    long price;
+    int zoneId, regId;
     bool regFilled = false;
     bool priceFilled = false;
+    bool zoneFilled = false;
 
+    /* not supported
     if (m_conf.hasOpt(INVOICE_ZONE_NAME_NAME)) {
-        ModelZone *zone = new ModelZone();
-        zone->setFqdn(m_conf.get<std::string>(INVOICE_ZONE_NAME_NAME));
-        invoice->setZoneId(zone->getId());
+        zone = m_conf.get<std::string>(INVOICE_ZONE_NAME_NAME);
     }
+    */
     if (m_conf.hasOpt(INVOICE_ZONE_ID_NAME)) {
-        invoice->setZoneId(Database::ID(
-                    m_conf.get<unsigned int>(INVOICE_ZONE_ID_NAME)));
+        zoneId = m_conf.get<int>(INVOICE_ZONE_ID_NAME);
+        zoneFilled = true;
     }
+
     if (m_conf.hasOpt(INVOICE_REGISTRAR_ID_NAME)) {
-        invoice->setRegistrarId(Database::ID(m_conf.get<unsigned int>(
-                    INVOICE_REGISTRAR_ID_NAME)));
+        regId = m_conf.get<int>(
+                    INVOICE_REGISTRAR_ID_NAME);
         regFilled = true;
     }
+    /*
     if (m_conf.hasOpt(INVOICE_REGISTRAR_HANDLE_NAME)) {
-        ModelRegistrar *registrar = new ModelRegistrar();
-        registrar->setHandle(m_conf.get<std::string>(INVOICE_REGISTRAR_HANDLE_NAME));
-        invoice->setRegistrarId(registrar->getId());
+                registrar = m_conf.get<std::string>(INVOICE_REGISTRAR_HANDLE_NAME);
         regFilled = true;
     }
+    */
     if (m_conf.hasOpt(INVOICE_PRICE_NAME)) {
-        invoice->setPrice(Database::Money(
-                    100 * m_conf.get<unsigned int>(INVOICE_PRICE_NAME)));
+        // invoice->setPrice(Database::Money(
+        price = 100 * m_conf.get<long>(INVOICE_PRICE_NAME);
         priceFilled = true;
     }
+
     if (m_conf.hasOpt(INVOICE_TAXDATE_NAME)) {
-        invoice->setTaxDate(Database::Date(
-                    m_conf.get<std::string>(INVOICE_TAXDATE_NAME)));
+        // invoice->setTaxDate(Database::Date(
+        taxDate = m_conf.get<std::string>(INVOICE_TAXDATE_NAME);
     } else {
-        invoice->setTaxDate(Database::Date(Database::NOW));
+        Database::Date now(Database::NOW);
+        taxDate = now.to_string();
     }
+
+    /* not supported
     if (m_conf.hasOpt(CRDATE_NAME)) {
         invoice->setCrDate(Database::DateTime(
                     m_conf.get<std::string>(CRDATE_NAME)));
     }
+    */
+
+    // TODO error messages are not precise for version2.3
     if (!regFilled) {
         std::cerr << "Registrar is not set, use ``--registrar_id'' or "
             << "``--registrar_name'' to set it" << std::endl;
@@ -401,6 +526,14 @@ InvoiceClient::credit()
         std::cerr << "Price is not set, use ``--price'' to set it" << std::endl;
         return;
     }
+    if (!zoneFilled) {
+        std::cerr << "Zone id is not set " << std::endl;
+        return;
+    }
+
+    (void) invMan->createDepositInvoice(taxDate, zoneId, regId, price); 
+
+    /*
     if (invoice->save() == false) {
         std::cerr << "Error has occured:" << std::endl;
         std::vector<std::string> errors = invoice->getErrors();
@@ -408,9 +541,12 @@ InvoiceClient::credit()
             std::cerr << errors[i] << std::endl;
         }
     }
-
+    */
 }
 
+
+/* 
+ * this new crap shouldn't be used
 void
 InvoiceClient::factoring(Register::Invoicing::Manager *man,
         Database::ID zoneId, std::string zoneName,
@@ -448,6 +584,7 @@ InvoiceClient::factoring(Register::Invoicing::Manager *man,
         }
     }
 }
+*/
 
 void
 InvoiceClient::factoring()
@@ -471,6 +608,7 @@ InvoiceClient::factoring()
         zoneName = m_conf.get<std::string>(INVOICE_ZONE_NAME_NAME);
         zoneFilled = true;
     }
+    /* this is not supported currently
     if (m_conf.hasOpt(INVOICE_ZONE_ID_NAME)) {
         zoneId = Database::ID(
                     m_conf.get<unsigned int>(INVOICE_ZONE_ID_NAME));
@@ -481,6 +619,7 @@ InvoiceClient::factoring()
                     m_conf.get<unsigned int>(INVOICE_REGISTRAR_ID_NAME));
         regFilled = true;
     }
+    */
     if (m_conf.hasOpt(INVOICE_REGISTRAR_HANDLE_NAME)) {
         registrarName = m_conf.get<std::string>(INVOICE_REGISTRAR_HANDLE_NAME);
         regFilled = true;
@@ -506,6 +645,17 @@ InvoiceClient::factoring()
             << "``" << INVOICE_ZONE_NAME_NAME << "'' to set it" << std::endl;
         return;
     }
+
+    std::string toDate_str(toDate.to_string());
+    std::string taxDate_str(taxDate.to_string());
+
+    if (!regFilled) {
+        factoring_all( Manager::getConnectionString().c_str(), zoneName.c_str(), taxDate_str.c_str(), toDate_str.c_str());
+    } else {
+        factoring( Manager::getConnectionString().c_str(), registrarName.c_str(), zoneName.c_str(), taxDate_str.c_str(), toDate_str.c_str());
+    }
+
+    /*
     if (!regFilled) {
         Database::Filters::Registrar *regFilter;
         regFilter = new Database::Filters::RegistrarImpl(true);
@@ -530,6 +680,7 @@ InvoiceClient::factoring()
         factoring(invMan.get(), zoneId, zoneName, registrarId, registrarName,
                 toDate, taxDate);
     }
+    */
 }
 
 void
@@ -631,20 +782,22 @@ InvoiceClient::archive_help()
 void
 InvoiceClient::credit_help()
 {
+    // TODO features not supported in 2.3 are commented out
     std::cout <<
         "** Invoice credit **\n\n"
         "  $ " << g_prog_name << " --" << INVOICE_CREDIT_NAME << " \\\n"
         "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
-        "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_fqdn> \\\n"
+        // "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_fqdn> \\\n"
         "    --" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
-        "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle> \\\n"
+        // "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle> \\\n"
         "    --" << INVOICE_PRICE_NAME << "=<price> \\\n"
-        "    [--" << CRDATE_NAME << "=<create_time_stamp>] \\\n"
+        // "    [--" << CRDATE_NAME << "=<create_time_stamp>] \\\n"
         "    [--" << INVOICE_TAXDATE_NAME << "=<tax_date>]\n"
         << std::endl;
-    std::cout << "Default value for ``--" << CRDATE_NAME << "'' is current timestamp "
-        << "and today for ``--" << INVOICE_TAXDATE_NAME << "''."
-        << std::endl;
+    // std::cout << "Default value for ``--" << CRDATE_NAME << "'' is current timestamp "
+     //   << "and today for ``--" << INVOICE_TAXDATE_NAME << "''."
+     //   << std::endl;
+    std::cout << "Default value for ``--" << INVOICE_TAXDATE_NAME << "'' is today's timestamp. " << std::endl;
 }
 
 void
@@ -653,9 +806,9 @@ InvoiceClient::factoring_help()
     std::cout <<
         "** Invoice factoring **\n\n"
         "  $ " << g_prog_name << " --" << INVOICE_FACTORING_NAME << " \\\n"
-        "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
+        // not supported "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
         "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_fqdn> \\\n"
-        "    [--" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
+        // not supported "    [--" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
         "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle>] \\\n"
         "    [--" << INVOICE_TODATE_NAME << "=<to_date>] \\\n"
         "    [--" << INVOICE_TAXDATE_NAME << "=<tax_date>]\n"

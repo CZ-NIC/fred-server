@@ -138,10 +138,12 @@ private:
     Config::Conf m_conf;
 
     Database::ID getRegistrarId(std::string handle);
+    /*
     void factoring(Register::Invoicing::Manager *man, 
             Database::ID zoneId, std::string zoneName, 
             Database::ID regId, std::string regName, 
             Database::Date toDate, Database::Date taxDate);
+            */
 
     static const struct options m_opts[];
 public:
@@ -181,6 +183,14 @@ public:
     void pair_invoices_help();
     void add_invoice_prefix_help();
     void create_invoice_help();
+
+    // added in order to make it work with old invoicing
+private:
+    bool factoring_all(const char *database, const char *zone_fqdn,
+      const char *taxdateStr, const char *todateStr);
+    int factoring(const char *database, const char *registrarHandle,
+      const char *zone_fqdn, const char *taxdateStr, const char *todateStr);
+
 }; // class InvoiceClient
 
 } // namespace Admin;

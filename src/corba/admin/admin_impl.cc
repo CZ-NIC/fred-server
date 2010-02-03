@@ -1351,6 +1351,8 @@ ccReg::Mailing::Detail* ccReg_Admin_i::getEmailById(ccReg::TID id)
   return md;
 }
 
+/*
+ *disabled in 2.3
 void ccReg_Admin_i::fillInvoice(ccReg::Invoicing::Invoice *ci,
                                 Register::Invoicing::Invoice *i) {
   std::stringstream buf;
@@ -1399,6 +1401,7 @@ void ccReg_Admin_i::fillInvoice(ccReg::Invoicing::Invoice *ci,
   }
 }
 
+
 ccReg::Invoicing::Invoice* ccReg_Admin_i::getInvoiceById(ccReg::TID id)
     throw (ccReg::Admin::ObjectNotFound) {
   Logging::Context ctx(server_name_);
@@ -1428,6 +1431,7 @@ ccReg::Invoicing::Invoice* ccReg_Admin_i::getInvoiceById(ccReg::TID id)
   fillInvoice(inv, invl->get(0));
   return inv;
 }
+ */
 
 CORBA::Long ccReg_Admin_i::getDomainCount(const char *zone) {
   Logging::Context ctx(server_name_);

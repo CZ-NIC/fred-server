@@ -9,6 +9,7 @@
 
 #include "corba/connection_releaser.h"
 
+/*
 bool
 ccReg_BankingInvoicing_i::addBankAccount(
         const char *zoneName,
@@ -31,6 +32,7 @@ ccReg_BankingInvoicing_i::archiveInvoices(
         invMan(Register::Invoicing::Manager::create());
     return invMan->archiveInvoices(send);
 }
+*/
 
 bool
 ccReg_BankingInvoicing_i::pairPaymentRegistrarId(
@@ -53,6 +55,7 @@ bool ccReg_BankingInvoicing_i::pairPaymentRegistrarHandle(
     return invMan->manualCreateInvoice(paymentId, registrarHandle);
 }
 
+/*
 bool
 ccReg_BankingInvoicing_i::addPrefix(
         const char *zoneName,
@@ -205,3 +208,5 @@ bool ccReg_BankingInvoicing_i::addPrice(
             p_price, period);
     return true;
 }
+*/
+

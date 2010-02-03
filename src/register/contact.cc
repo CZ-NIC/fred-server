@@ -323,6 +323,14 @@ public:
         << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
         << "contact c, object_registry obr, object o "
         << "WHERE tmp.id=c.id AND c.id=o.id AND o.id=obr.id ";
+
+
+
+
+
+
+
+
     if (!useTempTable) {
       sql << "AND tmp.name=UPPER('" << db->Escape2(handle) << "') "
           << "AND tmp.erdate ISNULL AND tmp.type=1 "; 

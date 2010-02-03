@@ -2120,6 +2120,9 @@ int DB::GetPrefixType(
     if (GetSelectRows() == 1) {
       id = atoi(GetFieldValue( 0, 0) );
       LOG( LOG_DEBUG ,"invoice_id type-> %d" , id );
+    } else {
+      LOG( ERROR_LOG , "Multiple rows selected from invoice_prefix. Using ID of the first record." );
+      id = atoi(GetFieldValue( 0, 0));
     }
     FreeSelect();
   }

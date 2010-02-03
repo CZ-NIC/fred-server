@@ -7,6 +7,9 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) $(BOOST_CPPFLAGS) $(LIBIDN_CFLAGS) \
 			  -I$(top_srcdir) 			\
 			  -I$(top_srcdir)/util/db/model
 
+libfred_a_LIBADD = $(top_builddir)/src/old_utils/liboldutils.a
+
+
 libfred_a_SOURCES = register.cc          \
 					register.h           \
 					db_settings.h        \
@@ -19,16 +22,8 @@ libfred_a_SOURCES = register.cc          \
 					object_impl.h        \
 					common_impl_new.cc       \
 					common_impl_new.h        \
-					model_invoicecreditpaymentmap.cc	\
-					model_invoicecreditpaymentmap.h		\
-					model_invoicegeneration.cc			\
-					model_invoicegeneration.h			\
 					model_files.cc				\
 					model_files.h				\
-					model_invoiceprefix.cc		\
-					model_invoiceprefix.h		\
-					model_invoice.cc			\
-					model_invoice.h				\
 					model_bank_statement.cc	\
 					model_bank_statement.h	\
 					model_bank_payment.cc	\
@@ -67,18 +62,10 @@ libfred_a_SOURCES = register.cc          \
 					registrar.h          \
 					public_request.cc    \
 					public_request.h     \
-					invoice_common.cc	\
-					invoice_common.h	\
 					invoice.cc           \
 					invoice.h            \
-					invoice_list.cc		\
-					invoice_list.h		\
-					invoice_manager.cc	\
-					invoice_manager.h	\
-					invoice_mails.cc	\
-					invoice_mails.h		\
-					invoice_exporter.cc	\
-					invoice_exporter.h	\
+					invoice_manager.h    \
+					invoice_list.h	     \
 					zone.cc              \
 					zone.h               \
 					blacklist.cc         \
@@ -97,6 +84,10 @@ libfred_a_SOURCES = register.cc          \
 					bank_manager.h			\
 					bank_exporter.cc		\
 					bank_exporter.h			\
+					bank_statement.h		\
+					bank_statement_impl.h		\
+					bank_statement_list.h		\
+					bank_statement_list_impl.h		\
 					mail.cc              \
 					mail.h               \
 					notify.h             \
@@ -118,22 +109,27 @@ libfred_a_SOURCES = register.cc          \
 					types.h
 
 
-noinst_PROGRAMS = test test_logd
-test_SOURCES = test.cc
-test_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+noinst_PROGRAMS = test_logd
 
-test_LDADD   = libfred.a \
-                        $(top_builddir)/src/model/libmodel.a \
-                        $(top_builddir)/util/libutil.a \
-                        $(top_builddir)/util/db/libdb.a \
-                        $(top_builddir)/util/log/liblog.a \
-                        $(top_builddir)/util/conf/libconf.a \
-                        $(top_builddir)/util/types/libtypes.a \
-                        $(top_builddir)/src/old_utils/liboldutils.a \
-                        $(BOOST_DATE_TIME_LIB) \
-                        $(BOOST_REGEX_LIB) \
-                        $(BOOST_THREAD_LIB) \
-                        $(XML2_LIBS)
+#noinst_PROGRAMS = test test_logd
+#test_SOURCES = test.cc
+#test_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+#
+#test_LDADD   = libfred.a \
+#                        $(top_builddir)/src/model/libmodel.a \
+#                        $(top_builddir)/util/libutil.a \
+#                        $(top_builddir)/util/db/libdb.a \
+#                        $(top_builddir)/util/log/liblog.a \
+#                        $(top_builddir)/util/conf/libconf.a \
+#                        $(top_builddir)/util/types/libtypes.a \
+#                        $(top_builddir)/src/old_utils/liboldutils.a \
+#                        $(BOOST_DATE_TIME_LIB) \
+#                        $(BOOST_REGEX_LIB) \
+#                        $(BOOST_THREAD_LIB) \
+#                        $(XML2_LIBS)
+#
+
+
 
 # first possibility
 #
