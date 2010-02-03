@@ -64,8 +64,8 @@ libfred_a_SOURCES = register.cc          \
 					public_request.h     \
 					invoice.cc           \
 					invoice.h            \
-					invoice_manager.h    \
 					invoice_list.h	     \
+					invoice_manager.h    \
 					zone.cc              \
 					zone.h               \
 					blacklist.cc         \
