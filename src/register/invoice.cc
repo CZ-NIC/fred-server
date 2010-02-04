@@ -188,13 +188,8 @@ public:
             const int &units_count) {
       TRACE("[CALL] Register::Invoicing::Manager::domainBilling()");
 
-      if(exDate == Database::Date()) {
-          return db->BillingCreateDomain(registrar, zone, objectId);
-      } else {
-          return db->BillingCreateDomain(registrar, zone, objectId);
-          // TODO conversions
-          // return db->BillingRenewDomain(registrar, zone, objectId, units_count, exDate);
-      }
+      // if(exDate == Database::Date()) 
+      return db->BillingCreateDomain(registrar, zone, objectId);
   };
 
     /**
@@ -977,12 +972,6 @@ public:
     virtual const Payment *getPayment(const unsigned int &index) const {
         return (const Payment*)getAction(index); 
     };
-    /*
-    virtual std::vector<std::string> getErrors() const {
-        // TODO what to do
-        return std::vector<std::string>();
-    };
-*/
 
   virtual bool save() {
         return true;
@@ -1422,8 +1411,6 @@ public:
         conn.exec(create_tmp_table);
         conn.exec(tmp_table_query);
 
-        // TODO: use this and rewrite conn to conn_ specified in CommonListImpl
-        // fillTempTable(tmp_table_query);
 
         Database::Result r_info = conn.exec(object_info_query);
         for (Database::Result::Iterator it = r_info.begin(); it != r_info.end(); ++it) {
@@ -1711,7 +1698,9 @@ public:
         InvoiceImpl *inv = dynamic_cast<InvoiceImpl*>(findId(STR_TO_ID(db->GetFieldValue(i,0))));
         if (inv) inv->addSource(db.get(),i);
         else {
-          // TODO: log error - some database problem 
+          // TODO: log error - more specific
+            LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
+            throw SQL_ERROR();
         }
       }
       db->FreeSelect();
@@ -1860,6 +1849,8 @@ public:
         );
         if (!it->mail) {
           // TODO: LOG ERROR 
+            LOGGER(PACKAGE).error(" Error while send mail in Mails class. ");
+            throw SQL_ERROR();
         }
         store(i);
       }
@@ -1997,8 +1988,6 @@ public:
     << registrarHandle << "'";
 
     Database::Result res = conn.exec(sql.str());
-    // TODO conversion
-    // Money result = STR_TO_MONEY(res[0][0]);
     Money result = (long)res[0][0];
     return result;
     
