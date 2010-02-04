@@ -197,111 +197,10 @@ public:
       }
   };
 
-  // TODO this should really be in Banking module
-bool setInvoiceToStatementItem(
-        Database::ID statementId,
-        Database::ID invoiceId)
-{
-    TRACE("[CALL] Register::Invoicing::Manager::setInvoiceToStatementItem()");
-    Database::Query update;
-    update.buffer()
-        << "UPDATE bank_item SET invoice_id="
-        << Database::Value(invoiceId)
-        << " WHERE id=" << Database::Value(statementId);
-    Database::Connection conn = Database::Manager::acquire();
-    try {
-        conn.exec(update);
-    } catch (...) {
-        return false;
-    }
-    return true;
-}
-
-  /// Methods added in order to comply with interface introduced in invoice_manager.cc:
-  // TODO this should be in Banking module
-  bool pairInvoices() {
-      return pairInvoices(false);
-  }
-
-  bool pairInvoices(bool report) {
-
-    TRACE("[CALL] Register::Invoicing::Manager::pairInvoices()");
-
-    Database::Query query;
-    query.buffer()
-        << "SELECT bi.id, ba.zone, rr.id, bi.price, bi.account_date"
-        << " FROM bank_item bi"
-//        << " JOIN bank_head bh ON bi.statement_id=bh.id"
-        << " JOIN bank_account ba ON bi.account_id=ba.id"
-        << " JOIN registrar rr ON bi.varsymb=rr.varsymb"
-        << " OR (length(trim(rr.regex)) > 0 and bi.account_memo ~* trim(rr.regex))"
-        << " WHERE bi.invoice_id IS NULL AND bi.code=2 AND bi.type=1;";
-    Database::Connection conn = Database::Manager::acquire();
-    // Database::Transaction transaction(conn);
-    Database::Result res = conn.exec(query);
-    Database::Result::Iterator it = res.begin();
-    for (; it != res.end(); ++it) {
-
-         
-        Database::Row::Iterator col = (*it).begin();
-
-        Database::ID statementId = *(col);
-        int zoneId = *(++col);
-        int registrarId = *(++col);
-        long price = *(++col);
-        Database::Date date = *(++col);
-                
-        int invoiceId = createDepositInvoice(date, (int)zoneId, (int)registrarId, (long)price);
-        if (invoiceId == 0) {
-            LOGGER(PACKAGE).warning("Failed to save credit invoice");
-            continue;
-        }        
-        int retval = setInvoiceToStatementItem(statementId, invoiceId);
-        if (!retval) {
-            LOGGER(PACKAGE).error("Unable to update bank_item table");
-            return false;
-        }
-    }
-
-
-  } 
-
-    bool
-    hasStatementAnInvoice(const Database::ID &statementId)
-    {
-        TRACE("[CALL] Register::Invoicing::Manager::hasStatementAnInvoice()");
-        Database::Query query;
-        query.buffer()
-            << "SELECT invoice_id FROM bank_item WHERE id="
-            << Database::Value(statementId);
-        Database::Connection conn = Database::Manager::acquire();
-        try {
-            Database::Result res = conn.exec(query);
-            if(res.size() == 0) {
-                    LOGGER(PACKAGE).error(boost::format(
-                        "Payment (id: %1%) not found in database")
-                            % statementId);
-                    return true;        
-            }
-            Database::ID invoiceId = res[0][0];
-            if (invoiceId != Database::ID()) {
-                LOGGER(PACKAGE).error(boost::format(
-                            "This payment (id: %1%) already has invoice (id: %2%)")
-                        % statementId % invoiceId);
-                return true;
-            }
-        } catch (...) {
-            LOGGER(PACKAGE).error("An error has occured");
-            return true;
-        }
-        return false;
-    }
-
     /**
      *returns 0 in case of failure, id of invoice otherwise
      * type is int just because MakeNewInoviceAdvance returns it.
      */
-
 int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price) {
 
     autoDB db;
@@ -332,83 +231,7 @@ int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long 
     }
   }
 
-  // creates its own DB connection, so it shouldn't be called inside of a transaction
-  // manual creation of deposit (advance) invoice
-  virtual bool manualCreateInvoice(
-            const Database::ID &paymentId,
-            const Database::ID &registrar) {    
-      
-    TRACE("[CALL] Register::Invoicing::Manager::manualCreateInvoice(Database::ID, Database::ID)");
-
-    if (hasStatementAnInvoice(paymentId)) {
-        LOGGER(PACKAGE).error(boost::format("Payment with ID %1% already has an invoice assigned.") % paymentId);
-        return false;
-    }
-
-    Database::Query query;
-    query.buffer()
-        << "SELECT ba.zone, bi.price, bi.account_date"
-        << " FROM bank_item bi"
-//        << " JOIN bank_head bh ON bi.statement_id=bh.id"
-        << " JOIN bank_account ba ON bi.account_id=ba.id"
-        << " WHERE bi.id="
-        << Database::ID(paymentId);
-    Database::ID zoneId;
-    Database::Money price;
-    Database::Date date;
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction transaction(conn);
-    try {
-        Database::Result res = transaction.exec(query);
-        if (res.size() == 0) {
-            LOGGER(PACKAGE).error("No result");
-            return false;
-        }
-        zoneId = res[0][0];
-        price = res[0][1];
-        date = res[0][2];
-    } catch (...) {
-        LOGGER(PACKAGE).error("An error has occured");
-        return false;
-    }
-
-    autoDB db;
-    if(!db.OpenDatabase(Database::Manager::getConnectionString())) {
-        LOGGER(PACKAGE).error(" DB: Failed to open the database. ");
-    }
-
-    // if the call failed, it logged an error message
-    (void) createDepositInvoice(date, (int)zoneId, (int)registrar, (long)price); 
-  };
-
-  virtual bool manualCreateInvoice(
-            const Database::ID &paymentId,
-            const std::string &registrarHandle) {
-      
-    TRACE("[CALL] Register::Invoicing::Manager::manualCreateInvoice(Database::ID, std::string)");
-    Database::Query query;
-    query.buffer()
-        << "SELECT id FROM registrar WHERE handle="
-        << Database::Value(registrarHandle);
-    Database::Connection conn = Database::Manager::acquire();
-    Database::ID registrarId;
-    try {
-        Database::Result res = conn.exec(query);
-        if(res.size() == 0) {
-                LOGGER(PACKAGE).error(boost::format(
-                "Registrar with handle '%1%' not found in database.") % 
-                        registrarHandle);
-                return false;
-        }
-        registrarId = res[0][0];
-    } catch (...) {
-        LOGGER(PACKAGE).error("An error has occured");
-        return false;
-    }
-    return manualCreateInvoice(paymentId, registrarId);
-
-  };
-
+ 
 
 }; // ManagerImpl
 
@@ -1376,7 +1199,8 @@ public:
         ii->setFile(filePDF,fileXML);
       }
       catch (...) {
-        // TODO: LOG ERROR
+          // TODO log something more specific
+        LOGGER(PACKAGE).error("Exception in ExporterArchiver::doExport.");
       }
     }
   };
@@ -1747,7 +1571,7 @@ public:
     }    
     virtual void reload() {
 
-        // TODO auto_ptr just to avoid changing -> into . in 1000 places :)
+        // auto_ptr just to avoid changing -> into . in 1000 places :)
         std::auto_ptr<autoDB> db(new autoDB());
         if (!db->OpenDatabase(Database::Manager::getConnectionString())) {
             LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
@@ -2165,7 +1989,6 @@ public:
   }
   
   Money ManagerImpl::getCreditByZone(const std::string& registrarHandle, TID zone) {
-      // TODO remove throw and catch database exception
       Database::Connection conn = Database::Manager::acquire();
     std::stringstream sql;
     sql << "SELECT SUM(credit)*100 "

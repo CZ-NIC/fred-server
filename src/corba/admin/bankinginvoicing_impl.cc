@@ -40,9 +40,9 @@ ccReg_BankingInvoicing_i::pairPaymentRegistrarId(
         CORBA::ULongLong registrarId)
 {
     ConnectionReleaser releaser;
-    std::auto_ptr<Register::Invoicing::Manager> 
-        invMan(Register::Invoicing::Manager::create());
-    return invMan->manualCreateInvoice(paymentId, registrarId);
+    std::auto_ptr<Register::Banking::Manager> 
+        bankMan(Register::Banking::Manager::create());
+    return bankMan->manualCreateInvoice(paymentId, registrarId);
 }
 
 bool ccReg_BankingInvoicing_i::pairPaymentRegistrarHandle(
@@ -50,9 +50,9 @@ bool ccReg_BankingInvoicing_i::pairPaymentRegistrarHandle(
         const char *registrarHandle)
 {
     ConnectionReleaser releaser;
-    std::auto_ptr<Register::Invoicing::Manager> 
-        invMan(Register::Invoicing::Manager::create());
-    return invMan->manualCreateInvoice(paymentId, registrarHandle);
+    std::auto_ptr<Register::Banking::Manager> 
+        bankMan(Register::Banking::Manager::create());
+    return bankMan->manualCreateInvoice(paymentId, registrarHandle);
 }
 
 /*

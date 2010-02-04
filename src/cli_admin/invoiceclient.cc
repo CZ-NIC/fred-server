@@ -687,13 +687,13 @@ void
 InvoiceClient::pair_invoices()
 {
     callHelp(m_conf, pair_invoices_help);
-    std::auto_ptr<Register::Invoicing::Manager>
-        invMan(Register::Invoicing::Manager::create());
+    std::auto_ptr<Register::Banking::Manager>
+        bankMan(Register::Banking::Manager::create());
     bool report = true;
     if (m_conf.hasOpt(INVOICE_NO_REPORT_NAME)) {
         report = false;
     }
-    invMan->pairInvoices(report);
+    bankMan->processPayments(report);
 }
 
 void
@@ -729,14 +729,14 @@ void
 InvoiceClient::create_invoice()
 {
     callHelp(m_conf, create_invoice_help);
-    std::auto_ptr<Register::Invoicing::Manager>
-        invMan(Register::Invoicing::Manager::create());
+    std::auto_ptr<Register::Banking::Manager>
+        bankMan(Register::Banking::Manager::create());
     Database::ID paymentId = m_conf.get<unsigned int>(INVOICE_PAYMENT_ID_NAME);
     if (m_conf.hasOpt(REGISTRAR_ID_NAME)) {
-        invMan->manualCreateInvoice(paymentId,
+        bankMan->manualCreateInvoice(paymentId,
                 m_conf.get<unsigned int>(REGISTRAR_ID_NAME));
     } else if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME)) {
-        invMan->manualCreateInvoice(paymentId,
+        bankMan->manualCreateInvoice(paymentId,
                 m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
     } else {
         std::cerr << "You have to specify ``--" << REGISTRAR_ID_NAME

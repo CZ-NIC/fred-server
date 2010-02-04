@@ -302,20 +302,8 @@ public:
           int type, int year, unsigned long long prefix) = 0;
 
   // added methods
-  virtual bool pairInvoices() = 0;
-
-  virtual bool pairInvoices(bool report) = 0;
-
   virtual  int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price) = 0; 
   // nnnn
-  virtual bool manualCreateInvoice(
-            const Database::ID &paymentId,
-            const Database::ID &registrar) = 0;
-
-  virtual bool manualCreateInvoice(
-            const Database::ID &paymentId,
-            const std::string &registrarHandle) = 0;
-
   virtual bool domainBilling(
             DB *db, 
             const Database::ID &zone,
