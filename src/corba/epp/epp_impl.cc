@@ -5127,7 +5127,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                             std::auto_ptr<Register::Invoicing::Manager> invMan(
                                     Register::Invoicing::Manager::create());
                             if (invMan->domainBilling(action.getDB(), zone, action.getRegistrar(),
-                                        id, Database::Date(std::string(exDate)), period_count)) {
+                                        id, Database::Date(std::string(exDate)), period_count, false)) {
                                 if (action.getDB()->SaveDomainHistory(id)) {
                                     if (action.getDB()->SaveObjectCreate(id)) {
                                         code = COMMAND_OK;
@@ -5367,12 +5367,15 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
                         CORBA::string_free(exDate);
                         exDate = CORBA::string_dup(action.getDB()->GetDomainExDate(id) );
 
-                        // billing credit operation domain-renew
-                        if (action.getDB()->BillingRenewDomain(action.getRegistrar(), zone, id,
-                                    period_count, exDate) == false)
+
+
+                        std::auto_ptr<Register::Invoicing::Manager> invMan(Register::Invoicing::Manager::create());
+                        if (invMan->domainBilling(action.getDB(), zone, action.getRegistrar(),
+                                    id, Database::Date(std::string(exDate)), period_count, true) == false ) {
                             code = COMMAND_BILLING_FAILURE;
-                        else if (action.getDB()->SaveDomainHistory(id) )
+                        } else if (action.getDB()->SaveDomainHistory(id) ) {
                             code = COMMAND_OK;
+                        }
 
                     } else
                         code = COMMAND_FAILED;

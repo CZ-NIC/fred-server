@@ -310,7 +310,11 @@ public:
             const Database::ID &registrar,
             const Database::ID &objectId,
             const Database::Date &exDate,
-            const int &units_count) = 0;
+            const int &units_count,
+            bool renew) = 0;
+
+  virtual bool factoring_all(const char *database, const char *zone_fqdn, const char *taxdateStr, const char *todateStr) = 0;
+  virtual int factoring(const char *database, const char *registrarHandle, const char *zone_fqdn, const char *taxdateStr, const char *todateStr) = 0;
 
 }; // Manager
 }

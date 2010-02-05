@@ -185,11 +185,15 @@ public:
             const Database::ID &registrar,
             const Database::ID &objectId,
             const Database::Date &exDate,
-            const int &units_count) {
+            const int &units_count,
+            bool renew) {
       TRACE("[CALL] Register::Invoicing::Manager::domainBilling()");
 
-      // if(exDate == Database::Date()) 
-      return db->BillingCreateDomain(registrar, zone, objectId);
+      if(!renew) {
+          return db->BillingCreateDomain(registrar, zone, objectId);
+      } else {
+          return db->BillingRenewDomain(registrar, zone, objectId, units_count, exDate.to_string().c_str());
+      }
   };
 
     /**
@@ -226,7 +230,115 @@ int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long 
     }
   }
 
- 
+
+bool factoring_all(const char *database, const char *zone_fqdn, const char *taxdateStr, const char *todateStr)
+{
+  autoDB db;
+  int *regID = 0;
+  int i, num =-1;
+  char timestampStr[32];
+  int invoiceID = 0;
+  int zone;
+  int ret = 0;
+
+  if (db.OpenDatabase(database) ) {
+
+      LOGGER(PACKAGE).debug ( boost::format("successfully  connect to DATABASE %1%") % database);
+
+    if (db.BeginTransaction() ) {
+      get_timestamp(timestampStr, get_utctime_from_localdate(todateStr) );
+
+      if ( (zone = db.GetNumericFromTable("zone", "id", "fqdn", zone_fqdn) )) {
+        std::stringstream sql;
+        sql
+            << "SELECT r.id FROM registrar r, registrarinvoice i WHERE r.id=i.registrarid "
+            << "AND r.system=false AND i.zone=" << zone
+            << " AND i.fromdate<=CURRENT_DATE";
+        if (db.ExecSelect(sql.str().c_str()) && db.GetSelectRows() > 0) {
+          num = db.GetSelectRows();
+          regID= new int[num];
+          for (i = 0; i < num; i ++) {
+            regID[i] = atoi(db.GetFieldValue(i, 0) );
+          }
+          db.FreeSelect();
+
+          if (num > 0) {
+            for (i = 0; i < num; i ++) {
+              invoiceID = db.MakeFactoring(regID[i], zone, timestampStr,
+                taxdateStr);
+              LOGGER(PACKAGE).notice(boost::format("Vygenerovana fa %1% pro regID %2% ") % invoiceID % regID[i] );
+
+              if (invoiceID >=0)
+                ret = CMD_OK;
+              else {
+                ret = 0;
+                break;
+              }
+
+            }
+          }
+          delete[] regID;
+        }
+      } else {
+        LOGGER(PACKAGE).error( boost::format("unkown zone %1% \n") % zone_fqdn );
+      }
+
+      db.QuitTransaction(ret);
+    }
+
+    // db.Disconnect(); not needed anymore
+  }
+
+  if (ret)
+    return invoiceID;
+  else
+    return -1; // err
+}
+
+// close invoice to registar handle for zone make taxDate to the todateStr
+int factoring(const char *database, const char *registrarHandle, const char *zone_fqdn, const char *taxdateStr, const char *todateStr)
+{
+  autoDB db;
+  int regID;
+  char timestampStr[32];
+  int invoiceID = -1;
+  int zone;
+  int ret = 0;
+
+  if (db.OpenDatabase(database) ) {
+
+    LOGGER(PACKAGE).debug ( boost::format("successfully  connect to DATABASE %1%") % database);
+
+    if (db.BeginTransaction() ) {
+
+      if ( (regID = db.GetRegistrarID(  registrarHandle ) )) {
+        if ( (zone = db.GetNumericFromTable("zone", "id", "fqdn", zone_fqdn) )) {
+
+          get_timestamp(timestampStr, get_utctime_from_localdate(todateStr) );
+          // make invoice
+          invoiceID = db.MakeFactoring(regID, zone, timestampStr, taxdateStr);
+
+        } else {
+          LOGGER(PACKAGE).error( boost::format("unknown zone %1% \n") % zone_fqdn );
+        }
+      } else {
+        LOGGER(PACKAGE).error( boost::format("unknown registrarHandle %1% ") % registrarHandle );
+      }
+
+      if (invoiceID >=0)
+        ret = CMD_OK; // OK succesfully invocing
+
+      db.QuitTransaction(ret);
+    }
+
+    // db.Disconnect(); not needed anymore
+  }
+
+  if (ret)
+    return invoiceID;
+  else
+    return -1; // err
+}
 
 }; // ManagerImpl
 
@@ -1269,6 +1381,9 @@ public:
         case MT_PRICE:
           stable_sort(data_.begin(), data_.end(), ComparePrice(_asc));
           break;
+        case MT_CRTIME:
+          stable_sort(data_.begin(), data_.end(), CompareCrTime(_asc));
+          break;
       }
     }
 
@@ -1672,6 +1787,9 @@ public:
                 " it.id, o.name, ior.crdate, ior.exdate, ior.operation, "
                 " ior.period, o.id, i.vat "
             )) throw SQL_ERROR();
+
+        LOGGER(PACKAGE).debug( boost::format(" AAA 1st item of data_ - ID: %1% ") % data_[0]->getId());
+
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           InvoiceImpl *inv = dynamic_cast<InvoiceImpl*>(findId(STR_TO_ID(db->GetFieldValue(i,0))));
 

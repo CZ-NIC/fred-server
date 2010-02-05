@@ -24,117 +24,6 @@
 namespace Admin {
 
 
-
-bool InvoiceClient::factoring_all(const char *database, const char *zone_fqdn,
-  const char *taxdateStr, const char *todateStr)
-{
-  DB db;
-  int *regID = 0;
-  int i, num =-1;
-  char timestampStr[32];
-  int invoiceID = 0;
-  int zone;
-  int ret = 0;
-
-  if (db.OpenDatabase(database) ) {
-
-    LOG( LOG_DEBUG , "successfully  connect to DATABASE %s" , database);
-
-    if (db.BeginTransaction() ) {
-      get_timestamp(timestampStr, get_utctime_from_localdate(todateStr) );
-
-      if ( (zone = db.GetNumericFromTable("zone", "id", "fqdn", zone_fqdn) )) {
-        std::stringstream sql;
-        sql
-            << "SELECT r.id FROM registrar r, registrarinvoice i WHERE r.id=i.registrarid "
-            << "AND r.system=false AND i.zone=" << zone
-            << " AND i.fromdate<=CURRENT_DATE";
-        if (db.ExecSelect(sql.str().c_str()) && db.GetSelectRows() > 0) {
-          num = db.GetSelectRows();
-          regID= new int[num];
-          for (i = 0; i < num; i ++) {
-            regID[i] = atoi(db.GetFieldValue(i, 0) );
-          }
-          db.FreeSelect();
-
-          if (num > 0) {
-            for (i = 0; i < num; i ++) {
-              invoiceID = db.MakeFactoring(regID[i], zone, timestampStr,
-                taxdateStr);
-              LOG( NOTICE_LOG , "Vygenerovana fa %d pro regID %d" , invoiceID , regID[i] );
-
-              if (invoiceID >=0)
-                ret = CMD_OK;
-              else {
-                ret = 0;
-                break;
-              }
-
-            }
-          }
-          delete[] regID;
-        }
-      } else
-        LOG( LOG_ERR , "unkown zone %s\n" , zone_fqdn );
-
-      db.QuitTransaction(ret);
-    }
-
-    db.Disconnect();
-  }
-
-  if (ret)
-    return invoiceID;
-  else
-    return -1; // err
-}
-
-// close invoice to registar handle for zone make taxDate to the todateStr
-int InvoiceClient::factoring(const char *database, const char *registrarHandle,
-  const char *zone_fqdn, const char *taxdateStr, const char *todateStr)
-{
-  DB db;
-  int regID;
-  char timestampStr[32];
-  int invoiceID = -1;
-  int zone;
-  int ret = 0;
-
-  if (db.OpenDatabase(database) ) {
-
-    LOG( LOG_DEBUG , "successfully connected to DATABASE %s" , database);
-
-    if (db.BeginTransaction() ) {
-
-      if ( (regID = db.GetRegistrarID(  registrarHandle ) )) {
-        if ( (zone = db.GetNumericFromTable("zone", "id", "fqdn", zone_fqdn) )) {
-
-          get_timestamp(timestampStr, get_utctime_from_localdate(todateStr) );
-          // make invoice
-          invoiceID = db.MakeFactoring(regID, zone, timestampStr, taxdateStr);
-
-        } else
-          LOG( LOG_ERR , "unknown zone %s\n" , zone_fqdn );
-      } else
-        LOG( LOG_ERR , "unknown registrarHandle %s" , registrarHandle );
-
-      if (invoiceID >=0)
-        ret = CMD_OK; // OK succesfully invocing
-
-      db.QuitTransaction(ret);
-    }
-
-    db.Disconnect();
-  }
-
-  if (ret)
-    return invoiceID;
-  else
-    return -1; // err
-}
-
-
-
 const struct options *
 InvoiceClient::getOpts()
 {
@@ -650,9 +539,9 @@ InvoiceClient::factoring()
     std::string taxDate_str(taxDate.to_string());
 
     if (!regFilled) {
-        factoring_all( Manager::getConnectionString().c_str(), zoneName.c_str(), taxDate_str.c_str(), toDate_str.c_str());
+        invMan->factoring_all( Manager::getConnectionString().c_str(), zoneName.c_str(), taxDate_str.c_str(), toDate_str.c_str());
     } else {
-        factoring( Manager::getConnectionString().c_str(), registrarName.c_str(), zoneName.c_str(), taxDate_str.c_str(), toDate_str.c_str());
+        invMan->factoring( Manager::getConnectionString().c_str(), registrarName.c_str(), zoneName.c_str(), taxDate_str.c_str(), toDate_str.c_str());
     }
 
     /*
