@@ -461,12 +461,12 @@ bool DB::UpdateInvoiceCredit(
           invoiceID=invID[1];
           LOG( DEBUG_LOG , "UpdateInvoiceCredit: price  credit0 %ld credit1 %ld price %ld second price %ld" , cr[0] , cr[1] , price1 , price2 );
 
-          if (cr[1] - credit > 0) {
+          if (cr[1] - price2 >= 0) { 
             // second invoice 
-            return InvoiceCountCredit(price - cr[0], invID[1]);
+            return InvoiceCountCredit(price2, invID[1]);
 
           } else
-            LOG( WARNING_LOG , "UpdateInvoiceCredit: on the next invoice  id %d not price  %ld credit %ld" , invoiceID , price , cr[1] );
+            LOG( WARNING_LOG , "UpdateInvoiceCredit: not enough credit on second invoice id %d: price left after charging previous invoice: %ld, credit on this invoice: %ld", invoiceID, price, cr[1]);
 
         }
 
