@@ -377,6 +377,7 @@ public:
             }
         }
 
+        return true;
     }
 
     bool
@@ -454,7 +455,7 @@ public:
     }
 
     // if the call failed, it logged an error message
-    (void) invMan->createDepositInvoice(date, (int)zoneId, (int)registrar, (long)price); 
+    return (0 != invMan->createDepositInvoice(date, (int)zoneId, (int)registrar, (long)price)); 
   };
 
   virtual bool manualCreateInvoice(
