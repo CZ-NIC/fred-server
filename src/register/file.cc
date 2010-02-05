@@ -177,14 +177,21 @@ Register::File::File* List::findId(Database::ID _id)
 }
 
 
-class ManagerImpl:
-    virtual public Manager {
+class ManagerImpl: virtual public Manager
+{
+private:
+    Transferer *transferer_;
+
+
 public:
-    ManagerImpl()
-    { }
+    ManagerImpl(Transferer *_transferer)
+              : transferer_(_transferer)
+    {
+    }
 
     virtual ~ManagerImpl()
-    { }  
+    {
+    }
 
     File *createFile() const
     {
@@ -192,17 +199,31 @@ public:
         File *file = new File();
         return file;
     }
+
     List* createList() const 
     {
         return new List();
     }
+
+    unsigned long long upload(const std::string &_name,
+                              const std::string &_mime_type,
+                              const unsigned int &_file_type)
+    {
+        return transferer_->upload(_name, _mime_type, _file_type);
+    }
+
+    void download(const unsigned long long _id,
+                  const std::string &_path)
+    {
+        transferer_->download(_id, _path);
+    }
+
 };
 
-Manager * 
-Manager::create()
+Manager* Manager::create(Transferer *_transferer)
 {
     TRACE("[CALL] Register::File::Manager::create()");
-    return new ManagerImpl();
+    return new ManagerImpl(_transferer);
 };
 
 }

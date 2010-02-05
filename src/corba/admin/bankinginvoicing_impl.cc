@@ -7,6 +7,7 @@
 #include "log/context.h"
 #include "register/bank_manager.h"
 
+#include "corba/file_manager_client.h"
 #include "corba/connection_releaser.h"
 
 /*
@@ -18,9 +19,13 @@ ccReg_BankingInvoicing_i::addBankAccount(
         const char *bankCode)
 {
     ConnectionReleaser releaser;
-    std::auto_ptr<Register::Banking::Manager>
-        bankMan(Register::Banking::Manager::create());
-    return bankMan->insertBankAccount(zoneName, accountNumber, accountName, bankCode);
+
+    using namespace Register;
+    FileManagerClient fm_client(ns_);
+    File::ManagerPtr file_manager(File::Manager::create(&fm_client));
+    Banking::ManagerPtr bank_manager(Banking::Manager::create(file_manager.get()));
+
+    return bank_manager->insertBankAccount(zoneName, accountNumber, accountName, bankCode);
 }
 
 void 

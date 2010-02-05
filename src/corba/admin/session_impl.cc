@@ -25,8 +25,15 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  NameService *ns,
                                  Config::Conf& cfg,
                                  ccReg::BankingInvoicing_ptr _banking,
-                                 ccReg_User_i* _user) :
-  session_id_(_session_id), cfg_(cfg), m_banking_invoicing(_banking) , m_user(_user), m_mailer_manager(ns), m_last_activity(second_clock::local_time()) {
+                                 ccReg_User_i* _user)
+                               : session_id_(_session_id),
+                                 cfg_(cfg),
+                                 m_banking_invoicing(_banking),
+                                 m_user(_user),
+                                 m_mailer_manager(ns),
+                                 m_fm_client(ns),
+                                 m_last_activity(second_clock::local_time())
+{
 
   base_context_ = Logging::Context::get() + "/" + session_id_;
   Logging::Context ctx(session_id_);
@@ -55,8 +62,8 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                                                  &m_mailer_manager));
 
   mail_manager_.reset(Register::Mail::Manager::create());
-  file_manager_.reset(Register::File::Manager::create());
-  m_banking_manager.reset(Register::Banking::Manager::create());
+  file_manager_.reset(Register::File::Manager::create(&m_fm_client));
+  m_banking_manager.reset(Register::Banking::Manager::create(file_manager_.get()));
 
   m_domains = new ccReg_Domains_i(m_register_manager->getDomainManager()->createList(), &settings_);
   m_contacts = new ccReg_Contacts_i(m_register_manager->getContactManager()->createList(), &settings_);

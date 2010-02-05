@@ -1,12 +1,26 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <magic.h>
 
 #include "bank_payment_list_impl.h"
 #include "bank_statement_list_impl.h"
 #include "bank_manager.h"
 #include "bank_common.h"
 #include "invoice_manager.h"
+
+
+std::string magic_string_to_mime_type(const std::string &_magic_str)
+{
+    std::string::size_type l = _magic_str.length();
+    std::string::size_type scolon = _magic_str.find_first_of(";");
+    if (scolon >= l) {
+        return _magic_str;
+    }
+    else {
+        return std::string(_magic_str, 0, scolon);
+    }
+}
 
 namespace Register {
 namespace Banking {
@@ -15,6 +29,9 @@ namespace Banking {
 class ManagerImpl : virtual public Manager
 {
 private:
+    File::Manager *file_manager_;
+
+
     /**
      *  core method for pairing payment and statement - no error checking
      *  just statement update
@@ -46,6 +63,11 @@ private:
 
 
 public:
+    ManagerImpl(File::Manager *_file_manager)
+              : file_manager_(_file_manager)
+    {
+    }
+
     StatementList* createStatementList() const
     {
         return new StatementListImpl();
@@ -56,16 +78,16 @@ public:
         return new PaymentListImpl();
     }
 
-    bool importStatementXml(std::istream &in,
-                            const std::string &path,
-                            const bool &createCreditInvoice = false)
+    bool importStatementXml(std::istream &_in,
+                            const std::string &_path,
+                            const bool &_generate_invoices = false)
     {
         TRACE("[CALL] Register::Banking::Manager::importStatementXml(...)");
         try {
             /* load stream to string */
-            in.seekg(0, std::ios::beg);
+            _in.seekg(0, std::ios::beg);
             std::ostringstream stream;
-            stream << in.rdbuf();
+            stream << _in.rdbuf();
             std::string xml = stream.str();
 
             /* parse */
@@ -91,13 +113,12 @@ public:
                 StatementImplPtr statement(parse_xml_statement_part(snode));
 
                 /* check if statement is valid or was processed in past */
-                bool statement_conflict;
+                bool statement_conflict = false;
                 bool statement_valid = statement->isValid();
                 if (statement_valid) {
                     Database::ID conflict_sid(0);
                     if ((conflict_sid = statement->getConflictId()) == 0) {
                         statement_conflict = false;
-                        /* XXX don't processs statements so far
                         statement->save();
                         LOGGER(PACKAGE).info(boost::format(
                                 "Bank statement XML import: "
@@ -106,7 +127,6 @@ public:
                                 % statement->getId()
                                 % statement->getAccountId()
                                 % statement->getNum());
-                        */
                     }
                     else {
                         statement_conflict = true;
@@ -175,15 +195,25 @@ public:
                         */
                     }
                 }
+
+                /* upload file via file manager and update statement */
+                if (file_manager_ && statement_valid && !statement_conflict) {
+                    /* get mime type */
+                    magic_t magic = magic_open(MAGIC_MIME);
+                    magic_load(magic, 0);
+                    std::string magic_str = magic_file(magic, _path.c_str());
+                    std::string mime_type = magic_string_to_mime_type(magic_str);
+
+                    unsigned long long id = file_manager_->upload(_path, mime_type, 4);
+                    statement->setFileId(id);
+                    statement->save();
+                    LOGGER(PACKAGE).info(boost::format("Bank statement XML import: "
+                                         "statement file succesfully uploaded to "
+                                         "server (id=%1%)") % id);
+                }
+
             }
 
-            /* upload file via file manager and update statement */
-
-            // if (createCreditInvoice) {
-            //     std::auto_ptr<Invoicing::Manager>
-            //         invMan(Invoicing::Manager::create());
-            //     return invMan->pairInvoices();
-            // }
 
             tx.commit();
             return true;
@@ -487,9 +517,9 @@ public:
 
 };
 
-Manager* Manager::create()
+Manager* Manager::create(File::Manager *_file_manager)
 {
-    return new ManagerImpl();
+    return new ManagerImpl(_file_manager);
 }
 
 } // namespace Banking

@@ -94,6 +94,7 @@ libfred_a_SOURCES = register.cc          \
 					notify.cc            \
 					poll.cc              \
 					poll.h               \
+					file_transferer.h    \
 					file.cc              \
 					file.h               \
 					filter.cc            \

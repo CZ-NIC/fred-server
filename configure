@@ -9999,6 +9999,66 @@ if test "$libidn" == "no"; then
   as_fn_error "Libidn not found" "$LINENO" 5
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for magic_open in -lmagic" >&5
+$as_echo_n "checking for magic_open in -lmagic... " >&6; }
+if test "${ac_cv_lib_magic_magic_open+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lmagic  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char magic_open ();
+int
+main ()
+{
+return magic_open ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_magic_magic_open=yes
+else
+  ac_cv_lib_magic_magic_open=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_magic_magic_open" >&5
+$as_echo "$ac_cv_lib_magic_magic_open" >&6; }
+if test "x$ac_cv_lib_magic_magic_open" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBMAGIC 1
+_ACEOF
+
+  LIBS="-lmagic $LIBS"
+
+fi
+
+for ac_header in magic.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "magic.h" "ac_cv_header_magic_h" "$ac_includes_default"
+if test "x$ac_cv_header_magic_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MAGIC_H 1
+_ACEOF
+
+else
+  as_fn_error "magic.h not found" "$LINENO" 5
+fi
+
+done
+
+
 ac_config_files="$ac_config_files Makefile util/Makefile util/types/Makefile util/db/Makefile util/log/Makefile util/conf/Makefile src/Makefile src/old_utils/Makefile src/model/Makefile src/register/Makefile src/corba/Makefile src/corba/admin/Makefile src/corba/epp/Makefile src/corba/log/Makefile src/cli_admin/Makefile tools/Makefile tools/logd_migration/Makefile fred-server.spec config/server.conf init-scripts/fred-server src/cli_admin/banking.sh"
 
 cat >confcache <<\_ACEOF

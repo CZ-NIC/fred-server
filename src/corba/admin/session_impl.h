@@ -30,6 +30,7 @@
 
 #include "user_impl.h"
 #include "corba/mailer_manager.h"
+#include "corba/file_manager_client.h"
 #include "register/register.h"
 #include "old_utils/dbsql.h"
 #include "old_utils/conf.h"
@@ -80,6 +81,7 @@ private:
   std::auto_ptr<Register::Session::Manager> m_logsession_manager;
   std::auto_ptr<Register::Banking::Manager> m_banking_manager;
   MailerManager m_mailer_manager;
+  FileManagerClient m_fm_client;
 
   /**
    * context with session object was created - need for futher call on object

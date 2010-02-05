@@ -35,7 +35,7 @@ void
 bank_import_xml(const std::string &_xmlfile)
 {
     using namespace Register::Banking;
-    ManagerPtr bmanager(Manager::create());
+    ManagerPtr bmanager(Manager::create(0));
 
     std::ifstream file(_xmlfile.c_str(), std::ios::in);
     if (file.is_open())
@@ -46,7 +46,7 @@ void
 bank_pair_payment_with_statement()
 {
     using namespace Register::Banking;
-    ManagerPtr bmanager(Manager::create());
+    ManagerPtr bmanager(Manager::create(0));
     bmanager->pairPaymentWithStatement(8690, 0, true);
 }
 
@@ -54,7 +54,7 @@ void
 bank_payment()
 {
     using namespace Register::Banking;
-    ManagerPtr bmanager(Manager::create());
+    ManagerPtr bmanager(Manager::create(0));
     PaymentListPtr plist(bmanager->createPaymentList());
 
     Database::Filters::BankPayment *pf = new Database::Filters::BankPaymentImpl();
@@ -89,95 +89,6 @@ bank_statement()
 }
 */
 
-void
-file_2()
-{
-    std::auto_ptr<Register::File::Manager> fileMan(
-            Register::File::Manager::create());
-    std::auto_ptr<Register::File::List> fileList(fileMan->createList());
-
-    Database::Filters::File *filFilter;
-    filFilter = new Database::Filters::FileImpl(true);
-
-    Database::Filters::Union *unionFilter;
-    unionFilter = new Database::Filters::Union();
-    unionFilter->addFilter(filFilter);
-    fileList->reload(*unionFilter);
-    std::cout << fileList->getSize() << std::endl;
-    for (int i = 0; i < (int)fileList->getSize(); i++) {
-        Register::File::File *file = fileList->get(i);
-        std::cout << file->getName() << ", " << file->getPath() << std::endl;
-    }
-}
-
-void
-invoice()
-{
-    std::auto_ptr<Register::Invoicing::Manager> invMan(
-            Register::Invoicing::Manager::create());
-    std::auto_ptr<Register::Invoicing::List> invList(invMan->createList());
-
-    Database::Filters::Invoice *invFilter = new Database::Filters::InvoiceImpl();
-    Database::Filters::Union *unionFilter = new Database::Filters::Union();
-
-    unionFilter->addFilter(invFilter);
-    invList->reload(*unionFilter);
-    std::cout << invList->getSize() << std::endl;
-    for (int i = 0; i < (int)invList->getSize(); i++) {
-        Register::Invoicing::Invoice *invoice = invList->get(i);
-        std::cout //<< invoice->getZone()->getFqdn() << ", "
-            << invoice->getCrDate() << ", " << invoice->getRegistrarId() << ": "
-            //<< invoice->getRegistrar()->getHandle()
-            << std::endl;
-    }
-
-}
-
-void
-deposit_invoice()
-{
-    std::auto_ptr<Register::Invoicing::Manager> invMan(
-            Register::Invoicing::Manager::create());
-    std::auto_ptr<Register::Invoicing::Invoice> invoice(
-            invMan->createDepositInvoice());
-
-    // ModelZone *zone = new ModelZone();
-    // zone->setId(3);
-    // zone->setFqdn("cz");
-    // invoice->setZone(zone);
-    // invoice->setZone(zone);
-    invoice->setZoneId(3);
-    invoice->setRegistrarId(1);
-    invoice->setPrice(Database::Money("14000"));
-    // invoice->setTaxDate(Database::Date(Database::NOW));
-    invoice->save();
-}
-
-#if 0
-void
-pair_invoices()
-{
-    std::auto_ptr<Register::Invoicing::Manager> invMan(
-            Register::Invoicing::Manager::create());
-    invMan->pairInvoices();
-}
-
-#endif
-
-void
-factoring(unsigned long long id)
-{
-    std::auto_ptr<Register::Invoicing::Manager> invMan(
-            Register::Invoicing::Manager::create());
-    std::auto_ptr<Register::Invoicing::Invoice>
-        invoice(invMan->createAccountInvoice());
-    invoice->setRegistrarId(id);
-    // invoice->setZoneName("cz");
-    invoice->setZoneId(3);
-    invoice->setToDate("2009-04-20");
-    invoice->setTaxDate("2009-04-20");
-    invoice->save();
-}
 
 int main(int argc, char **argv)
 {
@@ -203,10 +114,10 @@ int main(int argc, char **argv)
     // bank_statement();
 
     // boost::thread_group threads;
-    // threads.create_thread(&deposit_invoice);
-    // threads.create_thread(&deposit_invoice);
-    // threads.create_thread(&deposit_invoice);
-    // threads.create_thread(&deposit_invoice);
+    // threads.create_thread(&);
+    // threads.create_thread(&);
+    // threads.create_thread(&);
+    // threads.create_thread(&);
     // threads.join_all();
     return 0;
 }

@@ -49,10 +49,13 @@ void
 FileClient::list()
 {
     callHelp(m_conf, list_help);
-    std::auto_ptr<Register::File::Manager> fileMan(
-            Register::File::Manager::create());
-    std::auto_ptr<Register::File::List> fileList(
-            fileMan->createList());
+
+    /* init file manager */
+    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    FileManagerClient fm_client(corba_client.getNS());
+    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+
+    std::auto_ptr<Register::File::List> fileList(file_manager->createList());
 
     Database::Filters::File *fileFilter;
     fileFilter = new Database::Filters::FileImpl(true);

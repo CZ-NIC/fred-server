@@ -5,6 +5,7 @@
 #include "bank_payment_list.h"
 #include "bank_statement.h"
 #include "bank_statement_list.h"
+#include "file.h"
 #include "db_settings.h"
 
 namespace Register {
@@ -15,12 +16,12 @@ class Manager {
 public:
     virtual StatementList *createStatementList() const = 0;
     virtual PaymentList *createPaymentList() const = 0;
-    static Manager *create();
+    static Manager *create(File::Manager *_file_manager);
 
     virtual bool importStatementXml(
-            std::istream &in,
-            const std::string &path,
-            const bool &createCreditInvoice = false) = 0;
+            std::istream &_in,
+            const std::string &_path,
+            const bool &_generate_invoices = false) = 0;
 
     virtual bool insertBankAccount(
             const std::string &zone,

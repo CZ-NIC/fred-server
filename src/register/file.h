@@ -3,6 +3,7 @@
 
 #include "common_impl_new.h"
 #include "db_settings.h"
+#include "file_transferer.h"
 #include "model/model_filters.h"
 #include "model_files.h"
 
@@ -48,9 +49,20 @@ public:
     }
 
     virtual File *createFile() const = 0;
+
     virtual List *createList() const = 0;
-    static Manager *create();
+
+    virtual unsigned long long upload(const std::string &_name,
+                                      const std::string &_mime_type,
+                                      const unsigned int &_file_type) = 0;
+
+    virtual void download(const unsigned long long _id,
+                          const std::string &_path) = 0;
+
+    static Manager* create(Transferer *_transferer);
 };
+
+typedef std::auto_ptr<Manager> ManagerPtr;
 
 }
 }

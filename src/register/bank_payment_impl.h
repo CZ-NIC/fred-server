@@ -294,12 +294,14 @@ PaymentImplPtr parse_xml_payment_part(const XMLnode &_node)
         throw std::runtime_error("not valid payment xml");
     }
     PaymentImplPtr payment(new PaymentImpl());
-    // if (!_node.getChild(ITEM_IDENT).isEmpty()) {
-    {
+    if (!_node.getChild(ITEM_IDENT).isEmpty()) {
         std::string value = _node.getChild(ITEM_IDENT).getValue();
         payment->setAccountEvid(value);
     }
-    // }
+    else {
+        throw std::runtime_error("no valid payment xml; "
+                "cannot identify payment with no accountevid");
+    }
     // if (!_node.getChild(ITEM_ACCOUNT_NUMBER).isEmpty()) {
     {
         std::string value = _node.getChild(ITEM_ACCOUNT_NUMBER).getValue();

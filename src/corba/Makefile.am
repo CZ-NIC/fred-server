@@ -42,7 +42,15 @@ test_SOURCES = test-admin.cc
 test_LDADD = $(XML2_LIBS) $(LDADD)
 
 BUILT_SOURCES      = ccRegSK.cc ccRegDynSK.cc ccReg.hh
-libcorba_a_SOURCES = nameservice.cc mailer_manager.cc nameservice.h mailer_manager.h connection_releaser.h pidfile.h daemonize.h
+libcorba_a_SOURCES = nameservice.cc         \
+					 mailer_manager.cc      \
+					 nameservice.h          \
+					 mailer_manager.h       \
+					 connection_releaser.h  \
+					 pidfile.h              \
+					 daemonize.h            \
+					 file_manager_client.cc \
+					 file_manager_client.h
 #		     epp/epp_impl.cc epp/messages.cc epp/notifier.cc epp/tech_check.cc epp/countrycode.cc \
 #		     epp/epp_impl.h epp/messages.h epp/notifier.h epp/tech_check.h epp/countrycode.h epp/action.h epp/reason.h epp/response.h 
 nodist_libcorba_a_SOURCES = ccRegSK.cc ccRegDynSK.cc

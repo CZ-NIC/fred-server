@@ -257,29 +257,16 @@ main(int argc, char **argv)
         log_type = static_cast<Logging::Log::Type>(Logging::Log::LT_FILE);
     }
 
-    boost::any param;          
+    boost::any param;
     if (log_type == Logging::Log::LT_FILE) {
         param = conf.get<std::string>(LOG_FILE_NAME);
     }
     if (log_type == Logging::Log::LT_SYSLOG) {
         param = conf.get<unsigned>(LOG_SYSLOG_NAME);
     }
-   
-    Logging::Manager::instance_ref().get("tracer").addHandler(log_type, param);
-    Logging::Manager::instance_ref().get("tracer").setLevel(log_level);
-    Logging::Manager::instance_ref().get("db").addHandler(log_type, param);
-    Logging::Manager::instance_ref().get("db").setLevel(log_level);
-    Logging::Manager::instance_ref().get("register").addHandler(log_type, param);
-    Logging::Manager::instance_ref().get("register").setLevel(log_level);
-    Logging::Manager::instance_ref().get("corba").addHandler(log_type, param);
-    Logging::Manager::instance_ref().get("corba").setLevel(log_level);
-    Logging::Manager::instance_ref().get("mailer").addHandler(log_type, param);
-    Logging::Manager::instance_ref().get("mailer").setLevel(log_level);
-    Logging::Manager::instance_ref().get("old_log").addHandler(log_type, param);
-    Logging::Manager::instance_ref().get("old_log").setLevel(log_level);
-    Logging::Manager::instance_ref().get("fred-server").addHandler(log_type, param);
-    Logging::Manager::instance_ref().get("fred-server").setLevel(log_level);
-    
+
+    Logging::Manager::instance_ref().get(PACKAGE).addHandler(log_type, param);
+    Logging::Manager::instance_ref().get(PACKAGE).setLevel(log_level);
 
     std::stringstream connstring;
     std::stringstream nsAddr;
@@ -288,7 +275,7 @@ main(int argc, char **argv)
     if (conf.hasOpt(NS_PORT_NAME))
         nsAddr << ":" << conf.get<unsigned int>(NS_PORT_NAME);
 
-    connstring << "dbname=" << conf.get<std::string>(DB_NAME_NAME) 
+    connstring << "dbname=" << conf.get<std::string>(DB_NAME_NAME)
                << " user=" << conf.get<std::string>(DB_USER_NAME);
     if (conf.hasOpt(DB_HOST_NAME))
         connstring << " host=" << conf.get<std::string>(DB_HOST_NAME);
@@ -385,12 +372,12 @@ main(int argc, char **argv)
         std::cerr << "Database error: " << e.what() << std::endl;
     } catch (std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;;
-        std::exit(2);
+        return 2;
     } catch (Register::SQL_ERROR) {
         std::cerr << "SQL ERROR" << std::endl;
-        std::exit(1);
+        return 1;
     }
 
-    std::exit(0);
+    return 0;
 }
 

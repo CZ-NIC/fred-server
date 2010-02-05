@@ -73,8 +73,8 @@
 #define BANK_ACCOUNT_NAME_NAME          "account_name"
 #define BANK_ACCOUNT_NAME_NAME_DESC     "account name"
 
-#define BANK_XML_FILE_ID_NAME           "xml_file_id"
-#define BANK_XML_FILE_ID_NAME_DESC      "id of the xml file"
+#define BANK_XML_FILE_STATEMENT_NAME           "xml_file_statement"
+#define BANK_XML_FILE_STATEMENT_NAME_DESC      "path to original statement file"
 
 #define BANK_MOVE_STATEMENT_NAME        "move_statement_item"
 #define BANK_MOVE_STATEMENT_NAME_DESC   "set head to statement item"

@@ -3,11 +3,14 @@
 
 #include <string>
 #include "register/invoice_manager.h"
+#include "corba/nameservice.h"
 
 class ccReg_BankingInvoicing_i:
     public POA_ccReg::BankingInvoicing,
     public PortableServer::RefCountServantBase {
 private:
+    NameService *ns_;
+
     std::string m_connection_string;
     bool factoringOne(
             Register::Invoicing::Manager *manager,
@@ -16,7 +19,7 @@ private:
             const Database::Date &todate,
             const Database::Date &taxdate);
 public:
-    ccReg_BankingInvoicing_i()
+    ccReg_BankingInvoicing_i(NameService *_ns) : ns_(_ns)
     { }
     ~ccReg_BankingInvoicing_i()
     { }

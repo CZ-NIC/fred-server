@@ -21,6 +21,7 @@
 #include "commonclient.h"
 #include "register/bank_manager.h"
 #include "register/register.h"
+#include "corba/file_manager_client.h"
 
 #include <iostream>
 #include <fstream>
@@ -103,33 +104,41 @@ void
 BankClient::import_xml()
 {
     callHelp(m_conf, import_xml_help);
-    std::string fileName;
-    bool fromFile = false;
-    bool createCredit = false;
+
+    bool from_file = false;
+    std::string file_name;
     if (m_conf.hasOpt(BANK_XML_FILE_NAME)) {
-        fromFile = true;
-        fileName = m_conf.get<std::string>(BANK_XML_FILE_NAME);
+        from_file = true;
+        file_name = m_conf.get<std::string>(BANK_XML_FILE_NAME);
     }
+
+    bool generate_invoice = false;
     if (m_conf.hasOpt(BANK_CREATE_CREDIT_INVOICE_NAME)) {
-        createCredit = true;
+        generate_invoice = true;
     }
-    unsigned long long xml_id = 0;
-    if (m_conf.hasOpt(BANK_XML_FILE_ID_NAME)) {
-        xml_id = m_conf.get<unsigned long long>(BANK_XML_FILE_ID_NAME);
+
+    /* paht to original statement file */
+    std::string statement_file;
+    if (m_conf.hasOpt(BANK_XML_FILE_STATEMENT_NAME)) {
+        statement_file = m_conf.get<std::string>(BANK_XML_FILE_STATEMENT_NAME);
     }
 
     std::ifstream input;
-    if (fromFile) {
-        input.open(fileName.c_str(), std::ios::in);
+    if (from_file) {
+        input.open(file_name.c_str(), std::ios::in);
     } else {
         input.open("/dev/stdin", std::ios::in);
     }
 
-    Register::Banking::ManagerPtr mbank(Register::Banking::Manager::create());
-    bool retval;
-    // TODO changed parameter (path to file)
-    retval = mbank->importStatementXml(input, "", createCredit);
-    if (!retval) {
+    /* init file manager */
+    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    FileManagerClient fm_client(corba_client.getNS());
+    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+
+    /* bank manager */
+    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
+    bool status = bank_manager->importStatementXml(input, statement_file, generate_invoice);
+    if (!status) {
         std::cout << "Error occured!" << std::endl;
     }
 }
@@ -144,17 +153,24 @@ BankClient::add_bank_account()
         account_name = m_conf.get<std::string>(BANK_ACCOUNT_NAME_NAME);
     }
     std::string bank_code = m_conf.get<std::string>(BANK_BANK_CODE_NAME);
-    std::auto_ptr<Register::Banking::Manager>
-        bankMan(Register::Banking::Manager::create());
-    bool retval = true;
+
+    /* init file manager */
+    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    FileManagerClient fm_client(corba_client.getNS());
+    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+
+    /* bank manager */
+    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
+
+    bool status = true;
     if (m_conf.hasOpt(BANK_ZONE_ID_NAME)) {
         Database::ID zoneId = m_conf.get<unsigned int>(BANK_ZONE_ID_NAME);
-        retval = bankMan->insertBankAccount(zoneId, account_number, account_name, bank_code);
+        status = bank_manager->insertBankAccount(zoneId, account_number, account_name, bank_code);
     } else if (m_conf.hasOpt(BANK_ZONE_NAME_NAME)) {
         std::string zoneName = m_conf.get<std::string>(BANK_ZONE_NAME_NAME);
-        retval = bankMan->insertBankAccount(zoneName, account_number, account_name, bank_code);
+        status = bank_manager->insertBankAccount(zoneName, account_number, account_name, bank_code);
     }
-    if (!retval) {
+    if (!status) {
         std::cout << "Error occured!" << std::endl;
     }
 }
@@ -169,9 +185,15 @@ BankClient::move_statement()
     if (m_conf.hasOpt(BANK_FORCE_NAME)) {
         force = true;
     }
-    std::auto_ptr<Register::Banking::Manager>
-        bankMan(Register::Banking::Manager::create());
-    bankMan->moveItemToPayment(itemId, headId, force);
+
+    /* init file manager */
+    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    FileManagerClient fm_client(corba_client.getNS());
+    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+
+    /* bank manager */
+    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
+    bank_manager->moveItemToPayment(itemId, headId, force);
 }
 
 void
@@ -195,8 +217,8 @@ BankClient::import_xml_help()
     std::cout <<
         "** Import xml **\n\n"
         "  $ " << g_prog_name << " --" << BANK_IMPORT_XML_NAME << " \\\n"
-        "    [--" << BANK_XML_FILE_NAME << "=<file_name>] \\\n"
-        "    [--" << BANK_XML_FILE_ID_NAME << "=<xml_file_id>] \\\n"
+        "    [--" << BANK_XML_FILE_NAME << "=<xml_file_name>] \\\n"
+        "    [--" << BANK_XML_FILE_STATEMENT_NAME << "=<path_to_statement_file>] \\\n"
         "    [--" << BANK_CREATE_CREDIT_INVOICE_NAME << "]\n"
         << std::endl;
     std::cout << "If no xml file name is provided, program reads from stdin."
@@ -257,7 +279,7 @@ BankClient::m_opts[] = {
     ADDOPT(BANK_ZONE_ID_NAME, TYPE_UINT, false, false),
     ADDOPT(BANK_ZONE_NAME_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_ACCOUNT_NAME_NAME, TYPE_STRING, false, false),
-    ADDOPT(BANK_XML_FILE_ID_NAME, TYPE_ULONGLONG, false, false),
+    ADDOPT(BANK_XML_FILE_STATEMENT_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_FORCE_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(BANK_ITEM_ID_NAME, TYPE_UINT, false, false),
     ADDOPT(BANK_HEAD_ID_NAME, TYPE_UINT, false, false),
