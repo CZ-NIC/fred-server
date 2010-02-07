@@ -576,13 +576,20 @@ void
 InvoiceClient::pair_invoices()
 {
     callHelp(m_conf, pair_invoices_help);
-    std::auto_ptr<Register::Banking::Manager>
-        bankMan(Register::Banking::Manager::create());
+
+    /* init file manager */
+    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    FileManagerClient fm_client(corba_client.getNS());
+    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+
+    /* bank manager */
+    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
+
     bool report = true;
     if (m_conf.hasOpt(INVOICE_NO_REPORT_NAME)) {
         report = false;
     }
-    bankMan->processPayments(report);
+    bank_manager->processPayments(report);
 }
 
 void
@@ -618,14 +625,21 @@ void
 InvoiceClient::create_invoice()
 {
     callHelp(m_conf, create_invoice_help);
-    std::auto_ptr<Register::Banking::Manager>
-        bankMan(Register::Banking::Manager::create());
+
+    /* init file manager */
+    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    FileManagerClient fm_client(corba_client.getNS());
+    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+
+    /* bank manager */
+    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
+
     Database::ID paymentId = m_conf.get<unsigned int>(INVOICE_PAYMENT_ID_NAME);
     if (m_conf.hasOpt(REGISTRAR_ID_NAME)) {
-        bankMan->manualCreateInvoice(paymentId,
+        bank_manager->manualCreateInvoice(paymentId,
                 m_conf.get<unsigned int>(REGISTRAR_ID_NAME));
     } else if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME)) {
-        bankMan->manualCreateInvoice(paymentId,
+        bank_manager->manualCreateInvoice(paymentId,
                 m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
     } else {
         std::cerr << "You have to specify ``--" << REGISTRAR_ID_NAME
