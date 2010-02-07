@@ -8,6 +8,7 @@
 #include "bank_manager.h"
 #include "bank_common.h"
 #include "invoice_manager.h"
+#include "types/stringify.h"
 
 
 std::string magic_string_to_mime_type(const std::string &_magic_str)
@@ -59,6 +60,61 @@ private:
         LOGGER(PACKAGE).info(
                 boost::format("Pair payment id=%1% with statement id=%2%: "
                               "success!") % payment % statement);
+    }
+
+
+    void processPayment(PaymentImpl *_payment)
+    {
+        if (_payment->getId() == Database::ID(0)) {
+            throw std::runtime_error("cannot process payment which was is "
+                    "saved");
+        }
+
+        try {
+            Database::Query query;
+            query.buffer()
+                << "SELECT bi.id, ba.zone, rr.id, rr.handle, bi.price, bi.account_date"
+                << " FROM bank_item bi"
+                << " JOIN bank_account ba ON bi.account_id=ba.id"
+                << " JOIN registrar rr ON bi.varsymb=rr.varsymb"
+                << " OR (length(trim(rr.regex)) > 0 and bi.account_memo ~* trim(rr.regex))"
+                << " WHERE bi.invoice_id IS NULL AND bi.code=2 AND bi.type=1"
+                << " AND bi.id = " << Database::Value(_payment->getId());
+
+            Database::Connection conn = Database::Manager::acquire();
+            Database::Result result = conn.exec(query);
+            if (result.size() != 1) {
+                /* already processed of not suitable registrar found
+                 * or more than one registrar found */
+                return;
+            }
+
+            unsigned long long zone_id = result[0][1];
+            unsigned long long registrar_id = result[0][2];
+            std::string registrar_handle = result[0][3];
+            Database::Money price;
+            price.format(result[0][4]);
+            Database::Date account_date = result[0][5];
+
+            std::auto_ptr<Register::Invoicing::Manager>
+                    invoice_manager(Register::Invoicing::Manager::create());
+
+            int invoice_id = invoice_manager->createDepositInvoice(
+                    account_date, (int)zone_id, (int)registrar_id, (long)price);
+            if (invoice_id > 0) {
+                _payment->setInvoiceId(invoice_id);
+                _payment->save();
+                LOGGER(PACKAGE).info(boost::format(
+                            "Bank payment paired with registrar %1% (id=%2%) "
+                            "created deposit invoice (id=%3% price=%4%)")
+                            % registrar_handle % registrar_id
+                            % invoice_id % stringify(price));
+            }
+        }
+        catch (std::exception &ex) {
+            throw std::runtime_error(str(boost::format(
+                            "processing payment failed: %1%") % ex.what()));
+        }
     }
 
 
@@ -170,6 +226,9 @@ public:
                                 % payment->getAccountNumber()
                                 % payment->getBankCode()
                                 % payment->getAccountEvid());
+
+                        /* payment processing */
+                        processPayment(payment.get());
                     }
                     else {
                         payment->setId(conflict_pid);
