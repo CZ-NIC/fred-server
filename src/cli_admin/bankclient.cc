@@ -117,10 +117,26 @@ BankClient::import_xml()
         generate_invoice = true;
     }
 
-    /* paht to original statement file */
+    /* path to original statement file */
     std::string statement_file;
     if (m_conf.hasOpt(BANK_XML_FILE_STATEMENT_NAME)) {
         statement_file = m_conf.get<std::string>(BANK_XML_FILE_STATEMENT_NAME);
+    }
+    else {
+        std::cerr << "Error: `" << BANK_XML_FILE_STATEMENT_NAME << "'"
+                  << " manadatory parameter";
+        return;
+    }
+
+    /* mime type of original statement file */
+    std::string statement_mime;
+    if (m_conf.hasOpt(BANK_XML_FILE_STATEMENT_MIME_NAME)) {
+        statement_mime = m_conf.get<std::string>(BANK_XML_FILE_STATEMENT_MIME_NAME);
+    }
+    else {
+        std::cerr << "Error: `" << BANK_XML_FILE_STATEMENT_MIME_NAME << "'"
+                  << " manadatory parameter";
+        return;
     }
 
     std::ifstream input;
@@ -137,7 +153,7 @@ BankClient::import_xml()
 
     /* bank manager */
     Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
-    bool status = bank_manager->importStatementXml(input, statement_file, generate_invoice);
+    bool status = bank_manager->importStatementXml(input, statement_file, statement_mime, generate_invoice);
     if (!status) {
         std::cout << "Error occured!" << std::endl;
     }
@@ -219,6 +235,7 @@ BankClient::import_xml_help()
         "  $ " << g_prog_name << " --" << BANK_IMPORT_XML_NAME << " \\\n"
         "    [--" << BANK_XML_FILE_NAME << "=<xml_file_name>] \\\n"
         "    [--" << BANK_XML_FILE_STATEMENT_NAME << "=<path_to_statement_file>] \\\n"
+        "    [--" << BANK_XML_FILE_STATEMENT_MIME_NAME << "=<mime_type_of_statement_file>] \\\n"
         "    [--" << BANK_CREATE_CREDIT_INVOICE_NAME << "]\n"
         << std::endl;
     std::cout << "If no xml file name is provided, program reads from stdin."
@@ -280,6 +297,7 @@ BankClient::m_opts[] = {
     ADDOPT(BANK_ZONE_NAME_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_ACCOUNT_NAME_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_XML_FILE_STATEMENT_NAME, TYPE_STRING, false, false),
+    ADDOPT(BANK_XML_FILE_STATEMENT_MIME_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_FORCE_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(BANK_ITEM_ID_NAME, TYPE_UINT, false, false),
     ADDOPT(BANK_HEAD_ID_NAME, TYPE_UINT, false, false),

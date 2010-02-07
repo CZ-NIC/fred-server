@@ -20,7 +20,8 @@ public:
 
     virtual bool importStatementXml(
             std::istream &_in,
-            const std::string &_path,
+            const std::string &_file_path,
+            const std::string &_file_mime,
             const bool &_generate_invoices = false) = 0;
 
     virtual bool insertBankAccount(

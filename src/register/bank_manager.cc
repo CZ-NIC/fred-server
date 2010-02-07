@@ -1,7 +1,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
-#include <magic.h>
+// #include <magic.h>
 
 #include "bank_payment_list_impl.h"
 #include "bank_statement_list_impl.h"
@@ -79,7 +79,8 @@ public:
     }
 
     bool importStatementXml(std::istream &_in,
-                            const std::string &_path,
+                            const std::string &_file_path,
+                            const std::string &_file_mime,
                             const bool &_generate_invoices = false)
     {
         TRACE("[CALL] Register::Banking::Manager::importStatementXml(...)");
@@ -198,13 +199,14 @@ public:
 
                 /* upload file via file manager and update statement */
                 if (file_manager_ && statement_valid && !statement_conflict) {
-                    /* get mime type */
+                    /* get mime type 
                     magic_t magic = magic_open(MAGIC_MIME);
                     magic_load(magic, 0);
-                    std::string magic_str = magic_file(magic, _path.c_str());
+                    std::string magic_str = magic_file(magic, _file_path.c_str());
                     std::string mime_type = magic_string_to_mime_type(magic_str);
+                    */
 
-                    unsigned long long id = file_manager_->upload(_path, mime_type, 4);
+                    unsigned long long id = file_manager_->upload(_file_path, _file_mime, 4);
                     statement->setFileId(id);
                     statement->save();
                     LOGGER(PACKAGE).info(boost::format("Bank statement XML import: "

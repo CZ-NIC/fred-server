@@ -75,6 +75,8 @@
 
 #define BANK_XML_FILE_STATEMENT_NAME           "xml_file_statement"
 #define BANK_XML_FILE_STATEMENT_NAME_DESC      "path to original statement file"
+#define BANK_XML_FILE_STATEMENT_MIME_NAME           "xml_file_statement_mime"
+#define BANK_XML_FILE_STATEMENT_MIME_NAME_DESC      "mime type of original statement file"
 
 #define BANK_MOVE_STATEMENT_NAME        "move_statement_item"
 #define BANK_MOVE_STATEMENT_NAME_DESC   "set head to statement item"

@@ -239,8 +239,9 @@ if test "$libidn" == "no"; then
   AC_MSG_ERROR([Libidn not found])
 fi
 
-AC_CHECK_LIB(magic, magic_open)
-AC_CHECK_HEADERS(magic.h,,[AC_MSG_ERROR([magic.h not found])])
+# libmagic
+# AC_CHECK_LIB(magic, magic_open)
+# AC_CHECK_HEADERS(magic.h,,[AC_MSG_ERROR([magic.h not found])])
 
 AC_CONFIG_FILES([Makefile
                  util/Makefile
