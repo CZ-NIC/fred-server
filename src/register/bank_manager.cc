@@ -11,17 +11,17 @@
 #include "types/stringify.h"
 
 
-std::string magic_string_to_mime_type(const std::string &_magic_str)
-{
-    std::string::size_type l = _magic_str.length();
-    std::string::size_type scolon = _magic_str.find_first_of(";");
-    if (scolon >= l) {
-        return _magic_str;
-    }
-    else {
-        return std::string(_magic_str, 0, scolon);
-    }
-}
+// std::string magic_string_to_mime_type(const std::string &_magic_str)
+// {
+//     std::string::size_type l = _magic_str.length();
+//     std::string::size_type scolon = _magic_str.find_first_of(";");
+//     if (scolon >= l) {
+//         return _magic_str;
+//     }
+//     else {
+//         return std::string(_magic_str, 0, scolon);
+//     }
+// }
 
 namespace Register {
 namespace Banking {
@@ -265,12 +265,11 @@ public:
 
                 /* upload file via file manager and update statement */
                 if (file_manager_ && statement_valid && !statement_conflict) {
-                    /* get mime type 
-                    magic_t magic = magic_open(MAGIC_MIME);
-                    magic_load(magic, 0);
-                    std::string magic_str = magic_file(magic, _file_path.c_str());
-                    std::string mime_type = magic_string_to_mime_type(magic_str);
-                    */
+                    // /* get mime type */
+                    // magic_t magic = magic_open(MAGIC_MIME);
+                    // magic_load(magic, 0);
+                    // std::string magic_str = magic_file(magic, _file_path.c_str());
+                    // std::string mime_type = magic_string_to_mime_type(magic_str);
 
                     unsigned long long id = file_manager_->upload(_file_path, _file_mime, 4);
                     statement->setFileId(id);
