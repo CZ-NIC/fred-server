@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <fstream>
+#include <vector>
 
 #include "file_manager_client.h"
 
