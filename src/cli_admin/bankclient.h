@@ -73,9 +73,9 @@
 #define BANK_ACCOUNT_NAME_NAME          "account_name"
 #define BANK_ACCOUNT_NAME_NAME_DESC     "account name"
 
-#define BANK_XML_FILE_STATEMENT_NAME           "xml_file_statement"
+#define BANK_XML_FILE_STATEMENT_NAME           "bank_statement_file"
 #define BANK_XML_FILE_STATEMENT_NAME_DESC      "path to original statement file"
-#define BANK_XML_FILE_STATEMENT_MIME_NAME           "xml_file_statement_mime"
+#define BANK_XML_FILE_STATEMENT_MIME_NAME           "bank_statement_file_mimetype"
 #define BANK_XML_FILE_STATEMENT_MIME_NAME_DESC      "mime type of original statement file"
 
 #define BANK_MOVE_STATEMENT_NAME        "move_statement_item"
