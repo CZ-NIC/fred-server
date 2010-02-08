@@ -173,6 +173,13 @@ public:
                 bool statement_conflict = false;
                 bool statement_valid = statement->isValid();
                 if (statement_valid) {
+                    /* error when have valid statement and no original file */
+                    if (_file_path.empty() || _file_mime.empty()) {
+                        throw std::runtime_error("Bank statement XML import: "
+                                "importing statement without original file path "
+                                "and file mime type set");
+                    }
+
                     Database::ID conflict_sid(0);
                     if ((conflict_sid = statement->getConflictId()) == 0) {
                         statement_conflict = false;

@@ -122,20 +122,18 @@ BankClient::import_xml()
     if (m_conf.hasOpt(BANK_XML_FILE_STATEMENT_NAME)) {
         statement_file = m_conf.get<std::string>(BANK_XML_FILE_STATEMENT_NAME);
     }
-    else {
-        std::cerr << "Error: `" << BANK_XML_FILE_STATEMENT_NAME << "'"
-                  << " manadatory parameter";
-        return;
-    }
 
     /* mime type of original statement file */
     std::string statement_mime;
     if (m_conf.hasOpt(BANK_XML_FILE_STATEMENT_MIME_NAME)) {
         statement_mime = m_conf.get<std::string>(BANK_XML_FILE_STATEMENT_MIME_NAME);
     }
-    else {
-        std::cerr << "Error: `" << BANK_XML_FILE_STATEMENT_MIME_NAME << "'"
-                  << " manadatory parameter";
+
+    if (!statement_file.empty() && statement_mime.empty() 
+            || statement_file.empty() && !statement_mime.empty()) {
+        std::cerr << "Error: `" << BANK_XML_FILE_STATEMENT_MIME_NAME << "' "
+                  << "and `" << BANK_XML_FILE_STATEMENT_NAME << "' parameters "
+                  "should be used together";
         return;
     }
 
