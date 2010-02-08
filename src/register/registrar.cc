@@ -1789,7 +1789,7 @@ public:
 
   virtual RegistrarPtr createRegistrar()
   {
-      return RegistrarPtr(dynamic_cast<RegistrarImpl *>(new RegistrarImpl));
+      return RegistrarPtr(static_cast<Registrar *>(new RegistrarImpl));
   }
 
   virtual void updateRegistrarZone(
