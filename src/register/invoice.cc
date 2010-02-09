@@ -757,7 +757,8 @@ public:
     
   InvoiceImpl(DB *db, ManagerImpl *_man, unsigned l) :
       CommonObjectImpl(STR_TO_ID(db->GetFieldValue(l,0))),
-      dbc(db),  
+      // this class should not store pointer to DB
+      dbc(NULL),  
       zone(STR_TO_ID(db->GetFieldValue(l,1))), 
       zoneName(db->GetFieldValue(l, 26)), 
       crTime(MAKE_TIME(l,2)), 
@@ -829,10 +830,6 @@ public:
                                        id(_id) {
   }
 
-  virtual TID getId() const {
-      return id;
-  }
-  
   ~InvoiceImpl() {
     clearLists();
   }
