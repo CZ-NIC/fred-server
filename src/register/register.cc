@@ -94,7 +94,7 @@ class ManagerImpl : virtual public Manager {
 
   Zone::Manager::ZoneManagerPtr m_zone_manager;
   std::auto_ptr<Domain::Manager> m_domain_manager;
-  Registrar::Manager::RegistrarManagerPtr m_registrar_manager;
+  Registrar::Manager::AutoPtr m_registrar_manager;
   std::auto_ptr<Contact::Manager> m_contact_manager;
   std::auto_ptr<NSSet::Manager> m_nsset_manager;
   std::auto_ptr<KeySet::Manager> m_keyset_manager;

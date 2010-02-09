@@ -1944,10 +1944,10 @@ void Manager::RegistrarZoneAccess::reload()
     }
 }//Manager::RegistrarZoneAccess::reload
 
-Manager::RegistrarManagerPtr Manager::create(DB * db)
+Manager::AutoPtr Manager::create(DB * db)
 {
   TRACE("[CALL] Register::Registrar::Manager::create(db)");
-  return Manager::RegistrarManagerPtr(new ManagerImpl(db));
+  return Manager::AutoPtr(new ManagerImpl(db));
 }
 
 }

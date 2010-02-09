@@ -452,10 +452,10 @@ public:
       bool isInZone(unsigned long long registrar_id,unsigned long long zone_id);///look if registrar currently have access to zone by id
   };
 
-  typedef std::auto_ptr<Register::Registrar::Manager> RegistrarManagerPtr;
+  typedef std::auto_ptr<Register::Registrar::Manager> AutoPtr;
 
   /// Factory method
-  static RegistrarManagerPtr create(DB* db);
+  static AutoPtr create(DB* db);
 };
 
 

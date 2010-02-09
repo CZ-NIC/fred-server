@@ -64,7 +64,7 @@ void
 RegistrarClient::list()
 {
     callHelp(m_conf, no_help);
-    Register::Registrar::Manager::RegistrarManagerPtr regMan
+    Register::Registrar::Manager::AutoPtr regMan
              = Register::Registrar::Manager::create(&m_db);
 
     Register::Registrar
@@ -201,7 +201,7 @@ void
 RegistrarClient::registrar_add()
 {
     callHelp(m_conf, registrar_add_help);
-    Register::Registrar::Manager::RegistrarManagerPtr regMan
+    Register::Registrar::Manager::AutoPtr regMan
              = Register::Registrar::Manager::create(&m_db);
     Register::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
     registrar->setHandle(m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME));
@@ -240,7 +240,7 @@ void
 RegistrarClient::registrar_acl_add()
 {
     callHelp(m_conf, registrar_acl_add_help);
-    Register::Registrar::Manager::RegistrarManagerPtr regMan
+    Register::Registrar::Manager::AutoPtr regMan
         = Register::Registrar::Manager::create(&m_db);
     std::string handle = m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME);
     std::string cert = m_conf.get<std::string>(REGISTRAR_CERT_NAME);
