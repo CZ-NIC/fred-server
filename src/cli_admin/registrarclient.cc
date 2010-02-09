@@ -203,7 +203,7 @@ RegistrarClient::registrar_add()
     callHelp(m_conf, registrar_add_help);
     Register::Registrar::Manager::RegistrarManagerPtr regMan
              = Register::Registrar::Manager::create(&m_db);
-    Register::Registrar::RegistrarPtr registrar = regMan->createRegistrar();
+    Register::Registrar::Registrar::AutoPtr registrar = regMan->createRegistrar();
     registrar->setHandle(m_conf.get<std::string>(REGISTRAR_ADD_HANDLE_NAME));
     registrar->setCountry(m_conf.get<std::string>(REGISTRAR_COUNTRY_NAME));
     SET_IF_PRESENT(setIco, REGISTRAR_ICO_NAME);

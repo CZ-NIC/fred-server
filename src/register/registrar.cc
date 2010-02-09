@@ -1787,9 +1787,9 @@ public:
       }//catch (...)
   }//addRegistrarAcl
 
-  virtual RegistrarPtr createRegistrar()
+  virtual Registrar::AutoPtr createRegistrar()
   {
-      return RegistrarPtr(static_cast<Registrar *>(new RegistrarImpl));
+      return Registrar::AutoPtr(static_cast<Registrar *>(new RegistrarImpl));
   }
 
   virtual void updateRegistrarZone(
@@ -1844,7 +1844,7 @@ public:
     }
 
     ///registrar instance factory
-    virtual RegistrarPtr getRegistrarByHandle(const std::string& handle)
+    virtual Registrar::AutoPtr getRegistrarByHandle(const std::string& handle)
     {
         RegistrarListPtr registrarlist ( createList());
 
@@ -1856,9 +1856,9 @@ public:
 
         if (registrarlist->size() != 1)
         {
-            return RegistrarPtr(0);
+            return Registrar::AutoPtr(0);
         }
-        return RegistrarPtr(registrarlist->getAndRelease(0));
+        return Registrar::AutoPtr(registrarlist->getAndRelease(0));
     }//getRegistrarByHandle
 }; // class ManagerImpl
 

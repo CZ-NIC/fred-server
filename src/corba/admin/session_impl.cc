@@ -1481,7 +1481,7 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
   TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
   Register::Registrar::Manager::RegistrarListPtr tmp_registrar_list =
       m_register_manager->getRegistrarManager()->createList();
-  Register::Registrar::RegistrarPtr  update_registrar_guard;//delete at the end
+  Register::Registrar::Registrar::AutoPtr  update_registrar_guard;//delete at the end
   Register::Registrar::Registrar* update_registrar; // registrar to be created or updated
 
   if (!_registrar.id)
