@@ -2131,10 +2131,10 @@ public:
           int type, int year, unsigned long long prefix) 
   {
       TRACE("Invoicing::Manager::insertInvoicePrefix(...)");
+
       Database::Connection conn = Database::Manager::acquire();
-
-      boost::format query = boost::format("select id from zone where fqdn = %1%") % zoneName;
-
+      boost::format query = boost::format("select id from zone where fqdn = %1%")
+                                          % Database::Value(zoneName);
       Database::Result res = conn.exec(query.str());
 
       return insertInvoicePrefix((unsigned long long)res[0][0], type, year, prefix);
