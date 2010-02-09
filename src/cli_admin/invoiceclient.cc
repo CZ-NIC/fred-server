@@ -369,12 +369,12 @@ InvoiceClient::credit()
     }
     */
     if (m_conf.hasOpt(INVOICE_ZONE_ID_NAME)) {
-        zoneId = m_conf.get<int>(INVOICE_ZONE_ID_NAME);
+        zoneId = m_conf.get<unsigned int>(INVOICE_ZONE_ID_NAME);
         zoneFilled = true;
     }
 
     if (m_conf.hasOpt(INVOICE_REGISTRAR_ID_NAME)) {
-        regId = m_conf.get<int>(
+        regId = m_conf.get<unsigned int>(
                     INVOICE_REGISTRAR_ID_NAME);
         regFilled = true;
     }
