@@ -386,7 +386,7 @@ InvoiceClient::credit()
     */
     if (m_conf.hasOpt(INVOICE_PRICE_NAME)) {
         // invoice->setPrice(Database::Money(
-        price = 100 * m_conf.get<long>(INVOICE_PRICE_NAME);
+        price = 100 * m_conf.get<unsigned int>(INVOICE_PRICE_NAME);
         priceFilled = true;
     }
 
