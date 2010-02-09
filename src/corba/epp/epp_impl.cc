@@ -101,10 +101,10 @@ static bool testObjectHasState(
   std::stringstream sql;
   sql << "SELECT COUNT(*) FROM object_state " << "WHERE object_id="
       << object_id << " AND state_id=" << state_id << " AND valid_to ISNULL";
+  DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
   if (!db->ExecSelect(sql.str().c_str()))
     throw Register::SQL_ERROR();
   returnState = atoi(db->GetFieldValue(0, 0));
-  db->FreeSelect();
   return returnState;
 }
 
@@ -942,6 +942,7 @@ ccReg_EPP_i::GetAllZonesIDs(
 {
     std::vector<int> ret;
     std::string query("SELECT id FROM zone;");
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
     if (!db->ExecSelect(query.c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve zones ids from the database");
         return ret;
@@ -964,6 +965,7 @@ int ccReg_EPP_i::GetZoneExPeriodMin(
 {
     std::stringstream query;
     query << "SELECT ex_period_min FROM zone WHERE id=" << id << ";";
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
     if (!db->ExecSelect(query.str().c_str())) {
         LOGGER(PACKAGE).error("Cannot retrieve ``ex_period_min'' from the database");
         return 0;
@@ -977,6 +979,7 @@ int ccReg_EPP_i::GetZoneExPeriodMax(
 {
     std::stringstream query;
     query << "SELECT ex_period_max FROM zone WHERE id=" << id << ";";
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
     if (!db->ExecSelect(query.str().c_str())) {
         LOGGER(PACKAGE).error("Cannot retrieve ``ex_period_max'' from the database");
         return 0;
@@ -990,6 +993,7 @@ int ccReg_EPP_i::GetZoneValPeriod(
 {
     std::stringstream query;
     query << "SELECT val_period FROM zone WHERE id=" << id << ";";
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
     if (!db->ExecSelect(query.str().c_str())) {
         LOGGER(PACKAGE).error("Cannot retrieve ``val_period'' from the database");
         return 0;
@@ -1003,6 +1007,7 @@ bool ccReg_EPP_i::GetZoneEnum(
 {
     std::stringstream query;
     query << "SELECT enum_zone FROM zone WHERE id=" << id << ";";
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
     if (!db->ExecSelect(query.str().c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve ``enum_zone'' from the database");
         return false;
@@ -1019,6 +1024,7 @@ int ccReg_EPP_i::GetZoneDotsMax(
 {
     std::stringstream query;
     query << "SELECT dots_max FROM zone WHERE id=" << id << ";";
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
     if (!db->ExecSelect(query.str().c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve ``dots_max'' from the database");
         return 0;
@@ -1032,6 +1038,7 @@ const char * ccReg_EPP_i::GetZoneFQDN(
 {
     std::stringstream query;
     query << "SELECT fqdn FROM zone WHERE id=" << id << ";";
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
     if (!db->ExecSelect(query.str().c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve ``fqdn'' from the database");
         return "";
@@ -1054,6 +1061,7 @@ int ccReg_EPP_i::getZone(
         << "SELECT id FROM zone WHERE lower(fqdn)=lower('"
         << domain_fqdn.substr(pos + 1, std::string::npos)
         << "');";
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
     if (!db->ExecSelect(zoneQuery.str().c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve zone id from the database");
         return 0;
@@ -1068,6 +1076,7 @@ int ccReg_EPP_i::getZoneMax(
   const char *fqdn)
 {
     std::string query("SELECT fqdn FROM zone ORDER BY length(fqdn) DESC");
+    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
     if (!db->ExecSelect(query.c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve list of fqdn from the database");
         return 0;

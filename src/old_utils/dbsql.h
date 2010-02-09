@@ -7,6 +7,7 @@
 #include "register/types.h"
 #include <map>
 #include <cstdlib>
+#include <boost/shared_ptr.hpp>
 
 #define LANG_EN 0
 #define LANG_CS 1
@@ -546,6 +547,44 @@ private:
   int historyID; // id from history table
   int loginID; // id of the client action.clientID
   short enum_action; // ID of the EPP operation from enum_action
+};//class DB
+
+
+//to be able to do something, when DB* goes out of scope
+typedef boost::shared_ptr<DB> DBSharedPtr;
+template < typename DELETER >
+class DBPtrT
+{
+protected:
+    DBSharedPtr m_ptr;
+public:
+    DBPtrT(DB* db)
+        : m_ptr(db,DELETER())
+    {}
+
+    DBPtrT()
+        : m_ptr(0,DELETER())
+    {}
+
+    operator DBSharedPtr() const
+    {
+        return m_ptr;
+    }
+
 };
+///deleter functor for DB calling FreeSelect only
+struct DBFreeSelect
+{
+    void operator()(DB* db)
+    {
+        try
+        {
+            if(db) db->FreeSelect();
+        }
+        catch(...){}
+    }
+};
+///DBSharedPtr factory
+typedef DBPtrT<DBFreeSelect> DBFreeSelectPtr;
 
 #endif

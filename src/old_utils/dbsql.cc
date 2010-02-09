@@ -2990,6 +2990,7 @@ bool DB::EXEC()
 bool DB::SELECT()
 {
   bool ret;
+
   // run SQL query
   ret = ExecSelect(sqlBuffer);
 
