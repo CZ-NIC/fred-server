@@ -420,7 +420,7 @@ Registry::Registrar::Detail* ccReg_Session_i::getRegistrarDetail(ccReg::TID _id)
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing registrar filter for object id=%1%' detail")
         % _id);
-    Register::Registrar::Manager::RegistrarListPtr tmp_registrar_list =
+    Register::Registrar::RegistrarList::AutoPtr tmp_registrar_list =
         m_register_manager->getRegistrarManager()->createList();
 
     Database::Filters::Union uf;
@@ -1479,7 +1479,7 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::Registrar& _registrar)
   ConnectionReleaser releaser;
 
   TRACE("[CALL] ccReg_Session_i::updateRegistrar()");
-  Register::Registrar::Manager::RegistrarListPtr tmp_registrar_list =
+  Register::Registrar::RegistrarList::AutoPtr tmp_registrar_list =
       m_register_manager->getRegistrarManager()->createList();
   Register::Registrar::Registrar::AutoPtr  update_registrar_guard;//delete at the end
   Register::Registrar::Registrar* update_registrar; // registrar to be created or updated

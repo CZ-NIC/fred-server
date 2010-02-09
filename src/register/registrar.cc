@@ -1838,15 +1838,15 @@ public:
   }//updateRegistrarZone
 
   ///list factory
-    virtual RegistrarListPtr createList()
+    virtual RegistrarList::AutoPtr createList()
     {
-        return RegistrarListPtr(new RegistrarListImpl());
+        return RegistrarList::AutoPtr(new RegistrarListImpl());
     }
 
     ///registrar instance factory
     virtual Registrar::AutoPtr getRegistrarByHandle(const std::string& handle)
     {
-        RegistrarListPtr registrarlist ( createList());
+        RegistrarList::AutoPtr registrarlist ( createList());
 
         Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
         std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));

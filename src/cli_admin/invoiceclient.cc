@@ -551,7 +551,7 @@ InvoiceClient::factoring()
         Database::Filters::Union *unionFilter;
         unionFilter = new Database::Filters::Union();
         unionFilter->addFilter(regFilter);
-        Register::Registrar::Manager::RegistrarListPtr list( regMan->createList());
+        Register::Registrar::RegistrarList::AutoPtr list( regMan->createList());
         list->reload(*unionFilter);
         int i = 0;
         Register::Registrar::Registrar *reg;

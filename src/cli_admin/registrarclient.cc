@@ -67,8 +67,8 @@ RegistrarClient::list()
     Register::Registrar::Manager::RegistrarManagerPtr regMan
              = Register::Registrar::Manager::create(&m_db);
 
-    Register::Registrar::Manager
-        ::RegistrarListPtr reg_list(regMan->createList());
+    Register::Registrar
+        ::RegistrarList::AutoPtr reg_list(regMan->createList());
 
     std::auto_ptr<Database::Filters::Registrar>
         regFilter ( new Database::Filters::RegistrarImpl(true));

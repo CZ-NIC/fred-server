@@ -323,7 +323,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
         Register::Manager::create(&ldb, cfg.get<bool>("registry.restricted_handles"))
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
-    Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
+    Register::Registrar::RegistrarList::AutoPtr rl = rm->createList();
 
     Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
     unionFilter->addFilter( new Database::Filters::RegistrarImpl(true) );
@@ -357,7 +357,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrarsByZone(const char *zone)
         Register::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles"))
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
-    Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
+    Register::Registrar::RegistrarList::AutoPtr rl = rm->createList();
 
     Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
     std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
@@ -395,7 +395,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
         Register::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles"))
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
-    Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
+    Register::Registrar::RegistrarList::AutoPtr rl = rm->createList();
 
     Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
     std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
@@ -434,7 +434,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
         Register::Manager::create(&ldb,cfg.get<bool>("registry.restricted_handles"))
     );
     Register::Registrar::Manager *rm = regm->getRegistrarManager();
-    Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
+    Register::Registrar::RegistrarList::AutoPtr rl = rm->createList();
     Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
     std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
     r->addHandle().setValue(handle);
@@ -464,7 +464,7 @@ void ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData) {
   db.OpenDatabase(m_connection_string.c_str());
   std::auto_ptr<Register::Manager> r(Register::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
   Register::Registrar::Manager *rm = r->getRegistrarManager();
-  Register::Registrar::Manager::RegistrarListPtr rl = rm->createList();
+  Register::Registrar::RegistrarList::AutoPtr rl = rm->createList();
   Register::Registrar::Registrar::AutoPtr  reg_guard;//delete at the end
   Register::Registrar::Registrar *reg; // registrar to be created or updated
   if (!regData.id)

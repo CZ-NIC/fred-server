@@ -1,6 +1,6 @@
 #include "pagetable_registrars.h"
 
-ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::Manager::RegistrarListPtr _rl
+ccReg_Registrars_i::ccReg_Registrars_i(Register::Registrar::RegistrarList::AutoPtr _rl
         , Register::Zone::Manager::ZoneListPtr _zl
 		)
   : rl(_rl)

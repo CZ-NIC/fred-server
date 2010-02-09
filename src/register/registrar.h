@@ -254,6 +254,8 @@ public:
   /// public virtual destructor
   virtual ~RegistrarList()
   {}
+  ///RegistrarList smart pointer
+  typedef std::auto_ptr<RegistrarList> AutoPtr;
   /// testing new reload function
   virtual void reload(Database::Filters::Union &uf) = 0;
   /// Get registrar detail object by list index for update
@@ -431,8 +433,7 @@ public:
           const Database::Date &toDate) throw (SQL_ERROR) = 0;
 
   ///list factory
-  typedef std::auto_ptr<RegistrarList> RegistrarListPtr;
-  virtual RegistrarListPtr createList() =0;
+  virtual RegistrarList::AutoPtr createList() =0;
   ///registrar instance factory
   virtual Registrar::AutoPtr getRegistrarByHandle(const std::string& handle) =0;
 
