@@ -52,6 +52,10 @@ public:
     {
         return ModelBankPayment::getType();
     }
+    const int &getStatus() const
+    {
+        return ModelBankPayment::getStatus();
+    }
     const std::string &getKonstSym() const
     {
         return ModelBankPayment::getKonstSym();
@@ -119,6 +123,10 @@ public:
     void setType(const int &type)
     {
         ModelBankPayment::setType(type);
+    }
+    void setStatus(const int &status)
+    {
+        ModelBankPayment::setStatus(status);
     }
     void setKonstSym(const std::string &konstSym)
     {
@@ -360,6 +368,10 @@ PaymentImplPtr parse_xml_payment_part(const XMLnode &_node)
     if (!_node.getChild(ITEM_CODE).isEmpty()) {
         int value = atoi(_node.getChild(ITEM_CODE).getValue().c_str());
         payment->setCode(value);
+    }
+    if (!_node.getChild(ITEM_STATUS).isEmpty()) {
+        int value = atoi(_node.getChild(ITEM_STATUS).getValue().c_str());
+        payment->setStatus(value);
     }
 
     return payment;

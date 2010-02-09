@@ -112,11 +112,11 @@ public:
     // TODO
     unsigned int getPaymentCount() const
     {
-    	return 0;
+        return 0;
     }
     Payment* getPaymentByIdx(const unsigned long long _id) const
     {
-    	return 0;
+        return 0;
     }
 
 
@@ -207,6 +207,7 @@ StatementImplPtr parse_xml_statement_part(const XMLnode &_node)
 
     /* manual xml validation */
     if (!_node.hasChild(STATEMENT_ACCOUNT_NUMBER)
+            || !_node.hasChild(STATEMENT_ACCOUNT_NUMBER)
             || !_node.hasChild(STATEMENT_DATE)
             || !_node.hasChild(STATEMENT_OLD_DATE)
             || !_node.hasChild(STATEMENT_BALANCE)
@@ -219,29 +220,25 @@ StatementImplPtr parse_xml_statement_part(const XMLnode &_node)
 
     /* get bank account id */
     std::string account_number = _node.getChild(STATEMENT_ACCOUNT_NUMBER).getValue();
-    std::string::size_type slash = account_number.find("/");
-    std::string account, bank_code;
-    if (slash != std::string::npos) {
-        account   = account_number.substr(0, slash);
-        bank_code = account_number.substr(slash + 1, std::string::npos);
-    }
-    if (account.empty() || bank_code.empty()) {
-        throw std::runtime_error(str(boost::format("could not parse valid "
-                    "account and bank_code from account number (%1%)")
-                    % account_number));
+    std::string account_bank_code = _node.getChild(STATEMENT_ACCOUNT_BANK_CODE).getValue();
+
+    if (account_number.empty() || account_bank_code.empty()) {
+        throw std::runtime_error(str(boost::format("could not get valid "
+                    "account_number and account_bank_code (%1%/%2%)")
+                    % account_number % account_bank_code));
     }
 
     Database::Query query;
     query.buffer() << "SELECT id FROM bank_account WHERE "
                    << "trim(leading '0' from account_number) = "
-                   << "trim(leading '0' from " << Database::Value(account) << ") "
-                   << "AND bank_code = " << Database::Value(bank_code);
+                   << "trim(leading '0' from " << Database::Value(account_number) << ") "
+                   << "AND bank_code = " << Database::Value(account_bank_code);
     Database::Connection conn = Database::Manager::acquire();
     Database::Result result = conn.exec(query);
     if (result.size() == 0) {
         throw std::runtime_error(str(boost::format("not valid record found "
                     "in database for account=%1% bankcode=%2%")
-                    % account % bank_code));
+                    % account_number % account_bank_code));
     }
     unsigned long long account_id = result[0][0];
 

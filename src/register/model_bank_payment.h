@@ -51,6 +51,10 @@ public:
     {
         return m_type.get();
     }
+    const int &getStatus() const
+    {
+        return m_status.get();
+    }
     const std::string &getKonstSym() const
     {
         return m_konstSym.get();
@@ -136,6 +140,10 @@ public:
     void setType(const int &type)
     {
         m_type = type;
+    }
+    void setStatus(const int &status)
+    {
+        m_status = status;
     }
     void setKonstSym(const std::string &konstSym)
     {
@@ -234,6 +242,7 @@ protected:
     Field::Field<std::string> m_bankCodeId;
     Field::Field<int> m_code;
     Field::Field<int> m_type;
+    Field::Field<int> m_status;
     Field::Field<std::string> m_konstSym;
     Field::Field<std::string> m_varSymb;
     Field::Field<std::string> m_specSymb;
@@ -257,6 +266,7 @@ public:
     static Model::Field::Basic<ModelBankPayment, std::string> bankCodeId;
     static Model::Field::Basic<ModelBankPayment, int> code;
     static Model::Field::Basic<ModelBankPayment, int> type;
+    static Model::Field::Basic<ModelBankPayment, int> status;
     static Model::Field::Basic<ModelBankPayment, std::string> konstSym;
     static Model::Field::Basic<ModelBankPayment, std::string> varSymb;
     static Model::Field::Basic<ModelBankPayment, std::string> specSymb;

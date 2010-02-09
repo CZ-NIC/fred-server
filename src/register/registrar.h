@@ -437,6 +437,9 @@ public:
   ///registrar instance factory
   virtual Registrar::AutoPtr getRegistrarByHandle(const std::string& handle) =0;
 
+  virtual unsigned long long getRegistrarByPayment(const std::string &varsymb,
+                                                   const std::string &memo) = 0;
+
   ///storage for flag of registrar's access to zone, used in registrar pagetable
   class RegistrarZoneAccess
   {

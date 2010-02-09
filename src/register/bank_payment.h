@@ -45,6 +45,7 @@ public:
     virtual const std::string &getBankCode() const = 0;
     virtual const int &getCode() const = 0;
     virtual const int &getType() const = 0;
+    virtual const int &getStatus() const = 0;
     virtual const std::string &getKonstSym() const = 0;
     virtual const std::string &getVarSymb() const = 0;
     virtual const std::string &getSpecSymb() const = 0;
@@ -62,6 +63,7 @@ public:
     virtual void setBankCode(const std::string &bankCodeId) = 0;
     virtual void setCode(const int &code) = 0;
     virtual void setType(const int &type) = 0;
+    virtual void setStatus(const int &status) = 0;
     virtual void setKonstSym(const std::string &konstSym) = 0;
     virtual void setVarSymb(const std::string &varSymb) = 0;
     virtual void setSpecSymb(const std::string &specSymb) = 0;

@@ -1860,6 +1860,23 @@ public:
         }
         return Registrar::AutoPtr(registrarlist->getAndRelease(0));
     }//getRegistrarByHandle
+
+    virtual unsigned long long getRegistrarByPayment(const std::string &varsymb,
+                                                     const std::string &memo)
+    {
+        Database::Query query;
+        query.buffer() << "SELECT id FROM registrar WHERE varsymb = "
+                       << Database::Value(varsymb)
+                       << " OR (length(trim(regex)) > 0 AND "
+                       << Database::Value(memo) << " ~* trim(regex))";
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result result = conn.exec(query);
+        if (result.size() == 1) {
+            return static_cast<unsigned long long>(result[0][0]);
+        }
+        return 0;
+    }
 }; // class ManagerImpl
 
 unsigned long long Manager::RegistrarZoneAccess::max_id(ColIndex idx, Database::Result& result)

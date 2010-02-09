@@ -18,11 +18,11 @@ public:
     virtual PaymentList *createPaymentList() const = 0;
     static Manager *create(File::Manager *_file_manager);
 
-    virtual bool importStatementXml(
+    virtual void importStatementXml(
             std::istream &_in,
             const std::string &_file_path,
             const std::string &_file_mime,
-            const bool &_generate_invoices = false) = 0;
+            const bool &_generate_invoices = false) throw (std::runtime_error) = 0;
 
     virtual bool insertBankAccount(
             const std::string &zone,

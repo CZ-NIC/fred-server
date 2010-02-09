@@ -39,31 +39,33 @@ namespace Banking {
 #define XML_NODE_XML_DECLARATION
 
 
-const std::string STATEMENTS_ROOT          =  "statements";
-const std::string STATEMENT_STATEMENT      =  "statement";
-const std::string STATEMENT_ACCOUNT_NUMBER =  "account_number";
-const std::string STATEMENT_NUMBER         =  "number";
-const std::string STATEMENT_DATE           =  "date";
-const std::string STATEMENT_BALANCE        =  "balance";
-const std::string STATEMENT_OLD_DATE       =  "old_date";
-const std::string STATEMENT_OLD_BALANCE    =  "old_balance";
-const std::string STATEMENT_CREDIT         =  "credit";
-const std::string STATEMENT_DEBET          =  "debet";
-const std::string STATEMENT_ITEMS          =  "items";
-const std::string ITEM_ITEM                =  "item";
-const std::string ITEM_IDENT               =  "ident";
-const std::string ITEM_ACCOUNT_NUMBER      =  "account_number";
-const std::string ITEM_ACCOUNT_BANK_CODE   =  "account_bank_code";
-const std::string ITEM_CONST_SYMBOL        =  "const_symbol";
-const std::string ITEM_VAR_SYMBOL          =  "var_symbol";
-const std::string ITEM_SPEC_SYMBOL         =  "spec_symbol";
-const std::string ITEM_PRICE               =  "price";
-const std::string ITEM_TYPE                =  "type";
-const std::string ITEM_CODE                =  "code";
-const std::string ITEM_MEMO                =  "memo";
-const std::string ITEM_DATE                =  "date";
-const std::string ITEM_CRTIME              =  "crtime";
-const std::string ITEM_NAME                =  "name";
+const std::string STATEMENTS_ROOT               =  "statements";
+const std::string STATEMENT_STATEMENT           =  "statement";
+const std::string STATEMENT_ACCOUNT_NUMBER      =  "account_number";
+const std::string STATEMENT_ACCOUNT_BANK_CODE   =  "account_bank_code";
+const std::string STATEMENT_NUMBER              =  "number";
+const std::string STATEMENT_DATE                =  "date";
+const std::string STATEMENT_BALANCE             =  "balance";
+const std::string STATEMENT_OLD_DATE            =  "old_date";
+const std::string STATEMENT_OLD_BALANCE         =  "old_balance";
+const std::string STATEMENT_CREDIT              =  "credit";
+const std::string STATEMENT_DEBET               =  "debet";
+const std::string STATEMENT_ITEMS               =  "items";
+const std::string ITEM_ITEM                     =  "item";
+const std::string ITEM_IDENT                    =  "ident";
+const std::string ITEM_ACCOUNT_NUMBER           =  "account_number";
+const std::string ITEM_ACCOUNT_BANK_CODE        =  "account_bank_code";
+const std::string ITEM_CONST_SYMBOL             =  "const_symbol";
+const std::string ITEM_VAR_SYMBOL               =  "var_symbol";
+const std::string ITEM_SPEC_SYMBOL              =  "spec_symbol";
+const std::string ITEM_PRICE                    =  "price";
+const std::string ITEM_TYPE                     =  "type";
+const std::string ITEM_CODE                     =  "code";
+const std::string ITEM_STATUS                   =  "status";
+const std::string ITEM_MEMO                     =  "memo";
+const std::string ITEM_DATE                     =  "date";
+const std::string ITEM_CRTIME                   =  "crtime";
+const std::string ITEM_NAME                     =  "name";
 
 /*
 #define STATEMENTS_ROOT             "statements"

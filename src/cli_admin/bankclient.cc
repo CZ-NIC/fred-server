@@ -133,7 +133,7 @@ BankClient::import_xml()
             || statement_file.empty() && !statement_mime.empty()) {
         std::cerr << "Error: `" << BANK_XML_FILE_STATEMENT_MIME_NAME << "' "
                   << "and `" << BANK_XML_FILE_STATEMENT_NAME << "' parameters "
-                  "should be used together";
+                  << "should be used together";
         return;
     }
 
@@ -151,10 +151,7 @@ BankClient::import_xml()
 
     /* bank manager */
     Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
-    bool status = bank_manager->importStatementXml(input, statement_file, statement_mime, generate_invoice);
-    if (!status) {
-        std::cout << "Error occured!" << std::endl;
-    }
+    bank_manager->importStatementXml(input, statement_file, statement_mime, generate_invoice);
 }
 
 void

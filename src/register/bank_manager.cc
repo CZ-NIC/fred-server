@@ -5,9 +5,10 @@
 
 #include "bank_payment_list_impl.h"
 #include "bank_statement_list_impl.h"
-#include "bank_manager.h"
 #include "bank_common.h"
+#include "bank_manager.h"
 #include "invoice_manager.h"
+#include "registrar.h"
 #include "types/stringify.h"
 
 
@@ -62,52 +63,71 @@ private:
                               "success!") % payment % statement);
     }
 
+    unsigned long long getZoneByAccountId(const unsigned long long &_account_id) {
+        Database::Query query;
+        query.buffer() << "SELECT zone FROM bank_account WHERE "
+                       << "id = " << Database::Value(_account_id);
 
-    void processPayment(PaymentImpl *_payment)
-    {
-        if (_payment->getId() == Database::ID(0)) {
-            throw std::runtime_error("cannot process payment which was is "
-                    "saved");
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Result result = conn.exec(query);
+
+        if (result.size() != 0) {
+            return static_cast<unsigned long long>(result[0][0]);
         }
+        else {
+            return 0;
+        }
+    }
 
+    void processPayment(PaymentImpl *_payment,
+                        unsigned long long _registrar_id = 0)
+    {
         try {
-            Database::Query query;
-            query.buffer()
-                << "SELECT bi.id, ba.zone, rr.id, rr.handle, bi.price, bi.account_date"
-                << " FROM bank_item bi"
-                << " JOIN bank_account ba ON bi.account_id=ba.id"
-                << " JOIN registrar rr ON bi.varsymb=rr.varsymb"
-                << " OR (length(trim(rr.regex)) > 0 and bi.account_memo ~* trim(rr.regex))"
-                << " WHERE bi.invoice_id IS NULL AND bi.code=2 AND bi.type=1"
-                << " AND bi.id = " << Database::Value(_payment->getId());
+            /* is payment in db? */
+            if (_payment->getId() == Database::ID(0)) {
+                throw std::runtime_error("cannot process payment which was is "
+                        "saved");
+            }
 
-            Database::Connection conn = Database::Manager::acquire();
-            Database::Result result = conn.exec(query);
-            if (result.size() != 1) {
-                /* already processed of not suitable registrar found
-                 * or more than one registrar found */
+            /* we process only payment with code = 1 */
+            if (!(_payment->getCode() == 1)) {
+                LOGGER(PACKAGE).info(boost::format("Bank payment processing: "
+                            "payment id=%1% not eligible -- code: %1% != 1 "
+                            "=> processing canceled")
+                            % _payment->getId() % _payment->getCode());
                 return;
             }
 
-            unsigned long long zone_id = result[0][1];
-            unsigned long long registrar_id = result[0][2];
-            std::string registrar_handle = result[0][3];
-            Database::Money price;
-            price.format(result[0][4]);
-            Database::Date account_date = result[0][5];
+            /* automatic pair payment with registrar */
+            if (_registrar_id == 0) {
+                Register::Registrar::Manager::AutoPtr rmanager(Register::Registrar::Manager::create(0));
+                _registrar_id = rmanager->getRegistrarByPayment(_payment->getVarSymb(),
+                                                                _payment->getAccountMemo());
+                /* did we find suitable registrar? */
+                if (_registrar_id == 0) {
+                    LOGGER(PACKAGE).warning(boost::format("Bank payment processing: "
+                                "couldn't find suitable registrar for payment id=%1% "
+                                "=> processing canceled") % _payment->getId());
+                    return;
+                }
+            }
+
+            Database::Money price = _payment->getPrice();
+            Database::Date account_date = _payment->getAccountDate();
+            unsigned long long zone_id = getZoneByAccountId(_payment->getAccountId());
 
             std::auto_ptr<Register::Invoicing::Manager>
                     invoice_manager(Register::Invoicing::Manager::create());
 
             int invoice_id = invoice_manager->createDepositInvoice(
-                    account_date, (int)zone_id, (int)registrar_id, (long)price);
+                    account_date, (int)zone_id, (int)_registrar_id, (long)price);
             if (invoice_id > 0) {
                 _payment->setInvoiceId(invoice_id);
                 _payment->save();
-                LOGGER(PACKAGE).info(boost::format(
-                            "Bank payment paired with registrar %1% (id=%2%) "
-                            "created deposit invoice (id=%3% price=%4%)")
-                            % registrar_handle % registrar_id
+                LOGGER(PACKAGE).info(boost::format("Bank payment processing: "
+                            "payment paired with registrar (id=%1%) "
+                            "=> deposit invoice created (id=%2% price=%3%)")
+                            % _registrar_id
                             % invoice_id % stringify(price));
             }
         }
@@ -134,10 +154,11 @@ public:
         return new PaymentListImpl();
     }
 
-    bool importStatementXml(std::istream &_in,
+    void importStatementXml(std::istream &_in,
                             const std::string &_file_path,
                             const std::string &_file_mime,
                             const bool &_generate_invoices = false)
+         throw (std::runtime_error)
     {
         TRACE("[CALL] Register::Banking::Manager::importStatementXml(...)");
         try {
@@ -175,9 +196,8 @@ public:
                 if (statement_valid) {
                     /* error when have valid statement and no original file */
                     if (_file_path.empty() || _file_mime.empty()) {
-                        throw std::runtime_error("Bank statement XML import: "
-                                "importing statement without original file path "
-                                "and file mime type set");
+                        throw std::runtime_error("importing statement "
+                                "without original file path and file mime type set");
                     }
 
                     Database::ID conflict_sid(0);
@@ -283,16 +303,13 @@ public:
 
 
             tx.commit();
-            return true;
         }
         catch (std::exception &ex) {
-            LOGGER(PACKAGE).error(boost::format("Bank statement XML import: %1%")
-                                    % ex.what());
-            return false;
+            throw std::runtime_error(str(boost::format(
+                            "Bank statement XML import: %1%") % ex.what()));
         }
         catch (...) {
-            LOGGER(PACKAGE).error("Bank statement XML import: an error occured");
-            return false;
+            throw std::runtime_error("Bank statement XML import: an error occured");
         }
     }
 
