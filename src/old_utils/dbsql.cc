@@ -466,7 +466,7 @@ bool DB::UpdateInvoiceCredit(
             return InvoiceCountCredit(price2, invID[1]);
 
           } else
-            LOG( WARNING_LOG , "UpdateInvoiceCredit: not enough credit on second invoice id %d: price left after charging previous invoice: %ld, credit on this invoice: %ld", invoiceID, price, cr[1]);
+            LOG( WARNING_LOG , "UpdateInvoiceCredit: not enough credit on second invoice id %d: price left after charging previous invoice: %ld, credit on this invoice: %ld", invoiceID, price2, cr[1]);
 
         }
 
