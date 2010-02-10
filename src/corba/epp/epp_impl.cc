@@ -1032,7 +1032,7 @@ int ccReg_EPP_i::GetZoneDotsMax(
     return atoi(db->GetFieldValue(0, 0));
 }
 
-const char * ccReg_EPP_i::GetZoneFQDN(
+std::string ccReg_EPP_i::GetZoneFQDN(
   DB *db,
   int id)
 {
@@ -1041,9 +1041,9 @@ const char * ccReg_EPP_i::GetZoneFQDN(
     DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db);
     if (!db->ExecSelect(query.str().c_str())) {
         LOGGER(PACKAGE).error("cannot retrieve ``fqdn'' from the database");
-        return "";
+        return std::string("");
     }
-    return db->GetFieldValue(0, 0);
+    return std::string(db->GetFieldValue(0, 0));
 }
 
 int ccReg_EPP_i::getZone(
@@ -1619,7 +1619,7 @@ ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, CORBA::Long clientID,
             {
                 credit->length(seq+1);
                 credit[seq].price = price;
-                credit[seq].zone_fqdn = CORBA::string_dup(GetZoneFQDN(action.getDB(), zoneID) );
+                credit[seq].zone_fqdn = CORBA::string_dup(GetZoneFQDN(action.getDB(), zoneID).c_str() );
                 seq++;
             }
         }

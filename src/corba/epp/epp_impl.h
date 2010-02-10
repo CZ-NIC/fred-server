@@ -55,7 +55,7 @@ public:
   int GetZoneValPeriod(DB *db, int id);
   int GetZoneDotsMax(DB *db, int id);
   bool GetZoneEnum(DB *db, int id);
-  const char * GetZoneFQDN(DB *db, int id);
+  std::string GetZoneFQDN(DB *db, int id);
   std::vector<int> GetAllZonesIDs(DB *db);
 
   int getZone(DB *db, const char *fqdn);
