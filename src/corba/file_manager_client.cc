@@ -3,6 +3,8 @@
 #include <vector>
 
 #include "file_manager_client.h"
+#include "log/logger.h"
+
 
 std::string get_basename(const std::string &_path)
 {
@@ -50,7 +52,7 @@ unsigned long long FileManagerClient::upload(const std::string &_name,
                 std::streamsize read_size = input.gcount();
 
                 CORBA::Octet *buffer = ccReg::BinaryData::allocbuf(read_size);
-                for (unsigned int i = 0; i < read_size; ++i) {
+                for (int i = 0; i < read_size; ++i) {
                     buffer[i] = chunk[i];
                 }
                 ccReg::BinaryData data(read_size, read_size, buffer, 1);
@@ -59,8 +61,17 @@ unsigned long long FileManagerClient::upload(const std::string &_name,
             input.close();
             return uploader->finalize_upload();
         }
+
+        throw std::runtime_error(str(boost::format("File upload failed: "
+                        "cannot open file '%1%' (mimetype=%2% filetype=%3%)")
+                        % _name % _mime_type % _file_type));
     }
     catch (std::exception &ex) {
+        throw std::runtime_error(str(boost::format("File upload failed: %1%")
+                                     % ex.what()));
+    }
+    catch (...) {
+        throw std::runtime_error("File upload failed: unknown error");
     }
 }
 
