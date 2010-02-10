@@ -213,17 +213,17 @@ int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long 
 
     switch(ret)  {
         case -1:
-                LOGGER(PACKAGE).error(" Insert into table invoice has failed. ");
-                return 0;
+                throw std::runtime_error(" Insert into table invoice has failed. ");
+                break;
         case -2: 
-                LOGGER(PACKAGE).error(" Couldn't find invoice prefix. ");
-                return 0;
+                throw std::runtime_error(" Couldn't find invoice prefix. ");
+                break;
         case -3:
-                LOGGER(PACKAGE).error(" Select from registrar table failed. ");
-                return 0;
+                throw std::runtime_error(" Select from registrar table failed. ");
+                break;
         case -4:
-                LOGGER(PACKAGE).error(" Number of selected rows is not 1 as it should be.");
-                return 0;
+                throw std::runtime_error(" Number of selected rows is not 1 as it should be.");
+                break;
         default:
                 // now the return value is invoice ID
                 return ret;
