@@ -1463,6 +1463,7 @@ int DB::GetBankAccountZone(
       zone = atoi(GetFieldValue( 0, 0) );
       LOG( LOG_DEBUG ,"get zone %d" , zone );
     }
+    FreeSelect();
   }
 
   return zone;
