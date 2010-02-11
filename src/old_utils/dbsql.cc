@@ -2121,10 +2121,15 @@ int DB::GetPrefixType(
     if (GetSelectRows() == 1) {
       id = atoi(GetFieldValue( 0, 0) );
       LOG( LOG_DEBUG ,"invoice_id type-> %d" , id );
-    } else {
+    } else if (GetSelectRows() > 1) {
       LOG( ERROR_LOG , "Multiple rows selected from invoice_prefix. Using ID of the first record." );
       id = atoi(GetFieldValue( 0, 0));
+    } else {
+      LOG( ERROR_LOG , "Correct invoice prefix not found.");
+      FreeSelect();
+      return -3;
     }
+
     FreeSelect();
   }
 
@@ -2156,8 +2161,10 @@ long DB::GetInvoicePrefix(
       id = atol(GetFieldValueName("id", 0) );
       prefix = atol(GetFieldValueName("prefix", 0) );
       LOG( LOG_DEBUG ,"invoice_prefix id %d -> %ld" , id , prefix );
-    } else
+    } else {
+      LOG( ERROR_LOG ,"Requested invoice_prefix not found " );
       return -3; // error
+    }
 
     FreeSelect();
 
