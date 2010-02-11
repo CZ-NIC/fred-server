@@ -356,24 +356,37 @@ main(int argc, char **argv)
     }
 #undef INIT_AND_RUN
 
-    } catch (ccReg::EPP::EppError &e) {
-        std::cerr << "EppError code: " << e.errCode << ", message: " 
+    }
+    catch (ccReg::EPP::EppError &e) {
+        std::stringstream message;
+        message << "EppError code: " << e.errCode << ", message: "
             << e.errMsg << std::endl;
         for (int ii = 0; ii < (int)e.errorList.length(); ii++) {
-            std::cerr
-                << "Reason code: " << e.errorList[ii].code
-                << ", message: " 
-                << e.errorList[ii].reason
-                << ", Position: " << e.errorList[ii].position << std::endl;
+            message << "Reason code: " << e.errorList[ii].code
+                    << ", message: "
+                    << e.errorList[ii].reason
+                    << ", Position: " << e.errorList[ii].position;
         }
-    } catch (CORBA::Exception &e) {
-        std::cerr << "CORBA error" << std::endl;
-    } catch (Database::Exception &e) {
-        std::cerr << "Database error: " << e.what() << std::endl;
-    } catch (std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;;
+
+        LOGGER(PACKAGE).error(message.str());
+        std::cerr << message.str();
+    }
+    catch (CORBA::Exception &e) {
+        std::stringstream message("CORBA::Exception");
+
+        LOGGER(PACKAGE).error(message.str());
+        std::cerr << message.str() << std::endl;
+        return 3;
+    }
+    catch (std::exception &e) {
+        std::stringstream message("Error: ");
+        message << e.what();
+
+        LOGGER(PACKAGE).error(message.str());
+        std::cerr << message.str() << std::endl;
         return 2;
-    } catch (Register::SQL_ERROR) {
+    }
+    catch (Register::SQL_ERROR) {
         std::cerr << "SQL ERROR" << std::endl;
         return 1;
     }

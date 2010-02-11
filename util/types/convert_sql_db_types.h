@@ -77,7 +77,12 @@ struct SqlConvert<Database::Money> {
         tmp << std::setw(2) << std::left << std::setfill('0') << _in.substr(i + 1, (i + 2 < std::string::npos ? 2 : std::string::npos));
         Database::Money::value_type first = SqlConvert<Database::Money::value_type>::from(_in.substr(0, i)) * 100;
         Database::Money::value_type last  = SqlConvert<Database::Money::value_type>::from(tmp.str());
-        return Database::Money(first + last);
+        if (first < 0) {
+            return Database::Money(first - last);
+        }
+        else {
+            return Database::Money(first + last);
+        }
       }
     }
     catch (...) {

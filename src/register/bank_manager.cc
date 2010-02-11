@@ -59,7 +59,7 @@ private:
         Database::Result uresult = conn.exec(uquery);
 
         LOGGER(PACKAGE).info(
-                boost::format("Pair payment id=%1% with statement id=%2%: "
+                boost::format("pair payment id=%1% with statement id=%2%: "
                               "success!") % payment % statement);
     }
 
@@ -82,6 +82,7 @@ private:
     void processPayment(PaymentImpl *_payment,
                         unsigned long long _registrar_id = 0)
     {
+        Logging::Context ctx("payment processing");
         try {
             /* is payment in db? */
             if (_payment->getId() == Database::ID(0)) {
@@ -89,12 +90,20 @@ private:
                         "saved");
             }
 
-            /* we process only payment with code = 1 */
-            if (!(_payment->getCode() == 1)) {
-                LOGGER(PACKAGE).info(boost::format("Bank payment processing: "
-                            "payment id=%1% not eligible -- code: %1% != 1 "
-                            "=> processing canceled")
-                            % _payment->getId() % _payment->getCode());
+            _payment->reload();
+            if (_payment->getInvoiceId() != Database::ID(0)) {
+                return;
+            }
+
+            /* we process only payment with code = 1 (normal transaction)
+             * and status = 1 (realized transfer) */
+            if (!(_payment->getStatus() == 1) && _payment->getCode() == 1) {
+                LOGGER(PACKAGE).info(boost::format(
+                            "payment id=%1% not eligible -- status: %2% != 1 "
+                            "code=%3% != 1 => processing canceled")
+                            % _payment->getId()
+                            % _payment->getStatus()
+                            % _payment->getCode());
                 return;
             }
 
@@ -105,7 +114,7 @@ private:
                                                                 _payment->getAccountMemo());
                 /* did we find suitable registrar? */
                 if (_registrar_id == 0) {
-                    LOGGER(PACKAGE).warning(boost::format("Bank payment processing: "
+                    LOGGER(PACKAGE).warning(boost::format(
                                 "couldn't find suitable registrar for payment id=%1% "
                                 "=> processing canceled") % _payment->getId());
                     return;
@@ -123,8 +132,9 @@ private:
                     account_date, (int)zone_id, (int)_registrar_id, (long)price);
             if (invoice_id > 0) {
                 _payment->setInvoiceId(invoice_id);
+                _payment->setType(1);
                 _payment->save();
-                LOGGER(PACKAGE).info(boost::format("Bank payment processing: "
+                LOGGER(PACKAGE).info(boost::format(
                             "payment paired with registrar (id=%1%) "
                             "=> deposit invoice created (id=%2% price=%3%)")
                             % _registrar_id
@@ -161,6 +171,7 @@ public:
          throw (std::runtime_error)
     {
         TRACE("[CALL] Register::Banking::Manager::importStatementXml(...)");
+        Logging::Context ctx("bank xml import");
         try {
             /* load stream to string */
             _in.seekg(0, std::ios::beg);
@@ -177,7 +188,7 @@ public:
             XMLnode root = parser.getRootNode();
             if (root.getName().compare(STATEMENTS_ROOT) != 0) {
                 throw std::runtime_error(str(boost::format(
-                            "root element name is not `<%1%>'")
+                            "root xml element name is not `<%1%>'")
                             % STATEMENTS_ROOT));
             }
 
@@ -205,7 +216,6 @@ public:
                         statement_conflict = false;
                         statement->save();
                         LOGGER(PACKAGE).info(boost::format(
-                                "Bank statement XML import: "
                                 "new statement imported (id=%1% account_id=%2% "
                                 "number=%3%)")
                                 % statement->getId()
@@ -216,7 +226,6 @@ public:
                         statement_conflict = true;
                         statement->setId(conflict_sid);
                         LOGGER(PACKAGE).info(boost::format(
-                                "Bank statement XML import: "
                                 "conflict statement found (id=%1% account_id=%2% "
                                 "number=%3%) -- checking payments")
                                 % statement->getId()
@@ -226,8 +235,7 @@ public:
                 }
                 else {
                     statement->setId(0);
-                    LOGGER(PACKAGE).info("Bank statement XML import: "
-                            "no statement -- importing only payments");
+                    LOGGER(PACKAGE).info("no statement -- importing only payments");
 
                 }
                 unsigned long long sid = statement->getId();
@@ -246,27 +254,67 @@ public:
                     if ((conflict_pid = payment->getConflictId()) == 0) {
                         payment->save();
                         LOGGER(PACKAGE).info(boost::format(
-                                "Bank statement XML import: "
                                 "payment imported (id=%1% account=%2%/%3% "
-                                "evid=%4%)")
+                                "evid=%4% price=%5%)")
                                 % payment->getId()
                                 % payment->getAccountNumber()
                                 % payment->getBankCode()
-                                % payment->getAccountEvid());
+                                % payment->getAccountEvid()
+                                % payment->getPrice());
 
                         /* payment processing */
                         processPayment(payment.get());
                     }
                     else {
-                        payment->setId(conflict_pid);
+                        /* load conflict payment */
+                        PaymentImplPtr cpayment(new PaymentImpl());
+                        cpayment->setId(conflict_pid);
+                        cpayment->reload();
+                        /* compare major attributes which should never change */
+                        if (payment->getStatementId() != cpayment->getStatementId()
+                                || payment->getAccountDate() != cpayment->getAccountDate()
+                                || payment->getAccountNumber() != cpayment->getAccountNumber()
+                                || payment->getBankCode() != cpayment->getBankCode()
+                                || payment->getCode() != cpayment->getCode()
+                                || payment->getKonstSym() != cpayment->getKonstSym()
+                                || payment->getVarSymb() != cpayment->getVarSymb()
+                                || payment->getSpecSymb() != cpayment->getSpecSymb()
+                                || payment->getPrice() != cpayment->getPrice()
+                                || payment->getAccountDate() != cpayment->getAccountDate()
+                                || payment->getAccountMemo() != cpayment->getAccountMemo()) {
+
+                            LOGGER(PACKAGE).debug(boost::format("imported payment: %1%")
+                                                                % payment->toString());
+                            LOGGER(PACKAGE).debug(boost::format("conflict payment: %1%")
+                                                                % cpayment->toString());
+
+                            throw std::runtime_error(str(boost::format(
+                                            "oops! found conflict poyment with "
+                                            "INCONSISTENT DATA (id=%1% account_evid=%2%) "
+                                            "importing file=%3%")
+                                            % cpayment->getId()
+                                            % cpayment->getAccountEvid()
+                                            % _file_path));
+                        }
+                        /* compare changable attributes for futher processing */
+                        else if (payment->getStatus() != cpayment->getStatus()) {
+                            LOGGER(PACKAGE).info(boost::format(
+                                    "already imported payment -- status changed "
+                                    "%1% => %2%")
+                                    % cpayment->getStatus()
+                                    % payment->getStatus());
+
+                            processPayment(payment.get());
+                        }
+                        /* there we should have already imported payment */
                         LOGGER(PACKAGE).info(boost::format(
-                                "Bank statement XML import: "
                                 "conflict payment found "
                                 "(id=%1% account=%2%/%3% evid=%4%)")
-                                % payment->getId()
-                                % payment->getAccountNumber()
-                                % payment->getBankCode()
-                                % payment->getAccountEvid());
+                                % cpayment->getId()
+                                % cpayment->getAccountNumber()
+                                % cpayment->getBankCode()
+                                % cpayment->getAccountEvid());
+
                         /* XXX don't process statements so far
                         if (statement_valid) {
                             if (!statement_conflict) {
@@ -294,9 +342,8 @@ public:
                     unsigned long long id = file_manager_->upload(_file_path, _file_mime, 4);
                     statement->setFileId(id);
                     statement->save();
-                    LOGGER(PACKAGE).info(boost::format("Bank statement XML import: "
-                                         "statement file succesfully uploaded to "
-                                         "server (id=%1%)") % id);
+                    LOGGER(PACKAGE).info(boost::format(
+                                "statement file (id=%1%) succesfully uploaded") % id);
                 }
 
             }
@@ -306,10 +353,10 @@ public:
         }
         catch (std::exception &ex) {
             throw std::runtime_error(str(boost::format(
-                            "Bank statement XML import: %1%") % ex.what()));
+                            "bank xml import: %1%") % ex.what()));
         }
         catch (...) {
-            throw std::runtime_error("Bank statement XML import: an error occured");
+            throw std::runtime_error("bank xml import: an error occured");
         }
     }
 
@@ -326,13 +373,13 @@ public:
             Database::Connection conn = Database::Manager::acquire();
             Database::Result res = conn.exec(query);
             if (res.size() == 0) {
-                LOGGER(PACKAGE).error(boost::format("Unknown zone (%1%)") % zone);
+                LOGGER(PACKAGE).error(boost::format("unknown zone (%1%)") % zone);
                 return false;
             }
             Database::ID zoneId = res[0][0];
             return insertBankAccount(zoneId, account_number, account_name, bank_code);
         } catch (...) {
-            LOGGER(PACKAGE).error("An exception was catched");
+            LOGGER(PACKAGE).error("an exception was catched");
             return false;
         }
         return false;
@@ -353,7 +400,7 @@ public:
         try {
             conn.exec(insertAccount);
         } catch (...) {
-            LOGGER(PACKAGE).error("Cannot insert new account into the ``bank_account'' table");
+            LOGGER(PACKAGE).error("cannot insert new account into the ``bank_account'' table");
             return false;
         }
         return true;

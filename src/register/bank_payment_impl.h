@@ -207,6 +207,16 @@ public:
         }
     }
 
+    void reload() throw (SQL_ERROR)
+    {
+        try {
+            ModelBankPayment::reload();
+        }
+        catch (...) {
+            throw SQL_ERROR();
+        }
+    }
+
     Database::ID getConflictId()
     {
         if (getAccountDate().is_special() || getAccountId() == 0)
@@ -219,25 +229,11 @@ public:
         else {
             where_crtime << " IS NULL";
         }
-        // std::stringstream where_accountno("account_number",
-        //                                   std::ios::out | std::ios::app);
-        // if (!getAccountNumber().empty()) {
-        //     where_accountno << " = " << Database::Value(getAccountNumber());
-        // }
-        // else {
-        //     where_accountno << " IS NULL";
-        // }
 
         Database::Query query;
         query.buffer()
             << "SELECT id FROM bank_item "
-            << "WHERE bank_code = " << Database::Value(getBankCode())
-            << " AND price = " << Database::Value(getPrice())
-            << " AND account_date = " << Database::Value(getAccountDate())
-            << " AND " << where_crtime.str()
-            << " AND account_number = " << Database::Value(getAccountNumber())
-            /* XXX this can't be on when using both - raifaisen bank payments list
-             * from http and statement list */
+            << "WHERE account_id = " << Database::Value(getAccountId())
             << " AND account_evid = " << Database::Value(getAccountEvid());
 
         Database::Connection conn = Database::Manager::acquire();
@@ -251,13 +247,12 @@ public:
             return result[0][0];
         }
         else {
-            /* found multiple - strange */
+            /* found multiple - should not happended */
             throw std::runtime_error(str(boost::format(
                         "ooops! found multiple conflict payments for "
                         "payment: %1%") % toString()));
         }
     }
-
 };
 
 typedef std::auto_ptr<PaymentImpl> PaymentImplPtr;
