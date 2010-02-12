@@ -124,6 +124,12 @@ public:
   }
 
 
+  /* HACK! HACK! HACK! (use with construct with old DB connection) */
+  typename driver_type::__conn_type__ __getConn__() const {
+    return conn_->__getConn__();
+  }
+
+
 protected:
   connection_driver       *conn_;    /**< connection_driver instance */
 };

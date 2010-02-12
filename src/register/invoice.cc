@@ -202,11 +202,13 @@ public:
      */
 int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long price) {
 
-    autoDB db;
-    if(!db.OpenDatabase(Database::Manager::getConnectionString())) {
-        LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
-        return 0;
-    }
+    /* HACK! we need to use same transaction */
+    Database::Connection conn = Database::Manager::acquire();
+    DB db(conn);
+    // if(!db.OpenDatabase(Database::Manager::getConnectionString())) {
+    //     LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
+    //     return 0;
+    // }
 
     // TODO conversion with loss of precision
     int ret = db.MakeNewInvoiceAdvance(date.to_string().c_str(), zoneId, registrarId, price);
@@ -225,9 +227,9 @@ int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long 
                 throw std::runtime_error(" Number of selected rows is not 1 as it should be.");
                 break;
         default:
-                // now the return value is invoice ID
-                return ret;
+                break;
     }
+    return ret;
   }
 
 

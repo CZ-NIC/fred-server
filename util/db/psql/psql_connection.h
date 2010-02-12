@@ -144,6 +144,14 @@ public:
     PGTransactionStatusType ts = PQtransactionStatus(psql_conn_);
     return ts == PQTRANS_INTRANS || ts == PQTRANS_INERROR;
   }
+
+
+
+  /* HACK! HACK! HACK! */
+  typedef PGconn* __conn_type__;
+  __conn_type__ __getConn__() const {
+      return psql_conn_;
+  }
 };
 
 

@@ -2061,7 +2061,7 @@ int DB::MakeNewInvoiceAdvance(
 
   prefix = GetInvoicePrefix(taxDateStr, INVOICE_ZAL, zone);
 
-  LOG( LOG_DEBUG ,"MakeNewInvoiceAdvance taxdate[%s]   zone %d regID %d , price %ld dph %d credit %ld\n" , taxDateStr , zone , regID , price , dph , credit );
+  LOG( LOG_DEBUG ,"MakeNewInvoiceAdvance taxdate[%s]   zone %d regID %d , price %ld dph %d credit %ld" , taxDateStr , zone , regID , price , dph , credit );
 
   if (prefix > 0) {
     invoiceID = GetSequenceID("invoice");

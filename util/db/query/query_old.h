@@ -11,7 +11,7 @@
 #include <boost/utility.hpp>
 #include <boost/format.hpp>
 
-#include "util.h"
+#include "util/util.h"
 #include "sql_helper_objects.h"
 #include "../statement.h"
 #include "../value.h"

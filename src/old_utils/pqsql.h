@@ -11,6 +11,10 @@ public:
   PQ();
   ~PQ();
 
+  PQ(PGconn *_conn) : connection(_conn), result(NULL)
+  {
+  }
+
   //  connect to database whith  conninfo string
   bool OpenDatabase(
     const char *conninfo);

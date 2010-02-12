@@ -1,13 +1,15 @@
 #ifndef __DBSQL_H__
 #define __DBSQL_H__
 
-#include "pqsql.h"
-#include "util.h"
+#include "register/db_settings.h"
 
+#include "util.h"
+#include "pqsql.h"
 #include "register/types.h"
 #include <map>
 #include <cstdlib>
 #include <boost/shared_ptr.hpp>
+
 
 #define LANG_EN 0
 #define LANG_CS 1
@@ -32,6 +34,16 @@ public:
   // constructor and destructor
   DB();
   ~DB();
+
+  /* HACK! HACK! HACK! */
+  DB(Database::Connection &_conn) : PQ(_conn.__getConn__())
+  {
+      svrTRID = NULL;
+      memHandle=NULL;
+      actionID = 0;
+      enum_action=0;
+      loginID = 0;
+  }
 
   // transaction function
   bool BeginTransaction()
