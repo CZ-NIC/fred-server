@@ -227,10 +227,11 @@ int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long 
                 throw std::runtime_error(" Number of selected rows is not 1 as it should be.");
                 break;
         default:
+                // this shouldn't happen
                 break;
     }
     return ret;
-  }
+}
 
 
 bool factoring_all(const char *database, const char *zone_fqdn, const char *taxdateStr, const char *todateStr)

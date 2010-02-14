@@ -90,6 +90,9 @@ private:
                         "saved");
             }
 
+            Database::Connection conn = Database::Manager::acquire();
+            Database::Transaction transaction(conn);
+
             _payment->reload();
             if (_payment->getInvoiceId() != Database::ID(0)) {
                 return;
@@ -140,6 +143,8 @@ private:
                             % _registrar_id
                             % invoice_id % stringify(price));
             }
+
+            transaction.commit();
         }
         catch (std::exception &ex) {
             throw std::runtime_error(str(boost::format(
@@ -514,7 +519,7 @@ public:
             << " OR (length(trim(rr.regex)) > 0 and bi.account_memo ~* trim(rr.regex))"
             << " WHERE bi.invoice_id IS NULL AND bi.code=2 AND bi.type=1;";
         Database::Connection conn = Database::Manager::acquire();
-        // Database::Transaction transaction(conn);
+        Database::Transaction transaction(conn);
         Database::Result res = conn.exec(query);
         Database::Result::Iterator it = res.begin();
         for (; it != res.end(); ++it) {
@@ -537,6 +542,8 @@ public:
                 return false;
             }
         }
+
+        transaction.commit();
 
         return true;
     }
@@ -615,8 +622,17 @@ public:
         return false;
     }
 
-    // if the call failed, it logged an error message
-    return (0 != invMan->createDepositInvoice(date, (int)zoneId, (int)registrar, (long)price)); 
+    // if the call failed, it logged an error message and throwed an exception
+    Database::ID invoiceId = invMan->createDepositInvoice(date, (int)zoneId, (int)registrar, (long)price); 
+
+    if(!setInvoiceToStatementItem(paymentId, invoiceId)) {
+        LOGGER(PACKAGE).error( boost::format("Failed to set invoice id %1% to payment %2%, invoice discarded. ") % invoiceId % paymentId);
+        return false;
+    }
+
+    transaction.commit();
+    return true;
+
   };
 
   virtual bool manualCreateInvoice(
