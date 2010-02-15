@@ -159,11 +159,16 @@ BankClient::add_bank_account()
 {
     callHelp(m_conf, add_bank_account_help);
     std::string account_number = m_conf.get<std::string>(BANK_ACCOUNT_NUMBER_NAME);
+    std::string bank_code = m_conf.get<std::string>(BANK_BANK_CODE_NAME);
+
     std::string account_name;
     if (m_conf.hasOpt(BANK_ACCOUNT_NAME_NAME)) {
         account_name = m_conf.get<std::string>(BANK_ACCOUNT_NAME_NAME);
     }
-    std::string bank_code = m_conf.get<std::string>(BANK_BANK_CODE_NAME);
+    std::string zone_fqdn;
+    if (m_conf.hasOpt(BANK_ZONE_NAME_NAME)) {
+        zone_fqdn = m_conf.get<std::string>(BANK_ZONE_NAME_NAME);
+    }
 
     /* init file manager */
     CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
@@ -172,18 +177,7 @@ BankClient::add_bank_account()
 
     /* bank manager */
     Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
-
-    bool status = true;
-    if (m_conf.hasOpt(BANK_ZONE_ID_NAME)) {
-        Database::ID zoneId = m_conf.get<unsigned int>(BANK_ZONE_ID_NAME);
-        status = bank_manager->insertBankAccount(zoneId, account_number, account_name, bank_code);
-    } else if (m_conf.hasOpt(BANK_ZONE_NAME_NAME)) {
-        std::string zoneName = m_conf.get<std::string>(BANK_ZONE_NAME_NAME);
-        status = bank_manager->insertBankAccount(zoneName, account_number, account_name, bank_code);
-    }
-    if (!status) {
-        std::cout << "Error occured!" << std::endl;
-    }
+    bank_manager->addBankAccount(account_number, bank_code, zone_fqdn, account_name);
 }
 
 void

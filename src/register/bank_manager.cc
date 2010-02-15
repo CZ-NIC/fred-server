@@ -365,50 +365,62 @@ public:
         }
     }
 
-    bool insertBankAccount(const std::string &zone,
-                           const std::string &account_number,
-                           const std::string &account_name,
-                           const std::string &bank_code)
+    void addBankAccount(const std::string &_account_number,
+                            const std::string &_bank_code,
+                            const std::string &_zone,
+                            const std::string &_account_name)
+        throw (std::runtime_error)
     {
         TRACE("[CALL] Register::Banking::Manager::insertBankAccount(zone_fqdn, ...)");
-        Database::Query query;
-        query.buffer()
-            << "SELECT id FROM zone WHERE fqdn=" << Database::Value(zone);
+
         try {
             Database::Connection conn = Database::Manager::acquire();
-            Database::Result res = conn.exec(query);
-            if (res.size() == 0) {
-                LOGGER(PACKAGE).error(boost::format("unknown zone (%1%)") % zone);
-                return false;
-            }
-            Database::ID zoneId = res[0][0];
-            return insertBankAccount(zoneId, account_number, account_name, bank_code);
-        } catch (...) {
-            LOGGER(PACKAGE).error("an exception was catched");
-            return false;
-        }
-        return false;
-    }
 
-    bool insertBankAccount(const Database::ID &zone,
-                           const std::string &account_number,
-                           const std::string &account_name,
-                           const std::string &bank_code)
-    {
-        TRACE("[CALL] Register::Banking::Manager::insertBankAccount(zone_id, ...)");
-        Database::InsertQuery insertAccount("bank_account");
-        insertAccount.add("zone", zone);
-        insertAccount.add("account_number", account_number);
-        insertAccount.add("account_name", account_name);
-        insertAccount.add("bank_code", bank_code);
-        Database::Connection conn = Database::Manager::acquire();
-        try {
-            conn.exec(insertAccount);
-        } catch (...) {
-            LOGGER(PACKAGE).error("cannot insert new account into the ``bank_account'' table");
-            return false;
+            Database::ID zone_id = 0;
+            if (!_zone.empty()) {
+                Database::Query query;
+                query.buffer() << "SELECT id FROM zone WHERE fqdn=" << Database::Value(_zone);
+
+                Database::Result result = conn.exec(query);
+                if (result.size() == 0) {
+                    throw std::runtime_error(str(boost::format(
+                                        "zone '%1%' not found")
+                                        % _zone));
+                }
+                 zone_id = result[0][0];
+            }
+
+            if (!_account_number.empty() && !_bank_code.empty()) {
+                Database::Query query;
+                query.buffer() << "SELECT id FROM bank_account WHERE "
+                               << "account_number = " << Database::Value(_account_number)
+                               << "AND bank_code = " << Database::Value(_bank_code);
+                Database::Result result = conn.exec(query);
+                if (result.size() != 0) {
+                    throw std::runtime_error(str(boost::format(
+                                    "account '%1%/%2%' already exist")
+                                    % _account_number % _bank_code));
+                }
+                /* insert new account */
+                Database::InsertQuery iquery("bank_account");
+                iquery.add("zone", zone_id);
+                iquery.add("account_number", _account_number);
+                iquery.add("account_name", _account_name);
+                iquery.add("bank_code", _bank_code);
+                conn.exec(iquery);
+            }
+            else {
+                throw std::runtime_error("account number and bank_code "
+                        "not given");
+            }
         }
-        return true;
+        catch (std::exception &ex) {
+            throw std::runtime_error(str(boost::format(
+                            "add bank account: %1%") % ex.what()));
+        }
+        catch (...) {
+            throw std::runtime_error("add bank account: an error occured");
+        }
     }
 
     bool moveItemToPayment(
