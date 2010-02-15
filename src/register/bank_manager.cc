@@ -535,15 +535,16 @@ virtual bool pairPaymentWithRegistrar(
                 return false;
         }
         registrarId = res[0][0];
-    } catch (...) {
-        LOGGER(PACKAGE).error("An error has occured");
+
+        PaymentImpl pi;
+        pi.setId(paymentId);
+        pi.reload();
+        processPayment(&pi, registrarId);
+
+    } catch (std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("An error has occured: %1% ") % e.what());
         return false;
     }
-
-    PaymentImpl pi;
-    pi.setId(paymentId);
-    pi.reload();
-    processPayment(&pi, registrarId);
 
     return true;
 }

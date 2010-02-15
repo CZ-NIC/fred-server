@@ -472,16 +472,29 @@ InvoiceClient::factoring()
 
     if (m_conf.hasOpt(INVOICE_TODATE_NAME)) {
         toDate = Database::Date(createDateTime(m_conf.get<std::string>(INVOICE_TODATE_NAME)));
-    } else {
-        // set to last day of previous month
+    } 
+
+    if(toDate == Database::Date() || toDate.is_special()) {
+
+        if(toDate.is_special()) {
+            std::cerr << "Invalid date given for ``" <<  INVOICE_TODATE_NAME << "'' " << std::endl;
+        }
         toDate = last_prev;
     }
+
     if (m_conf.hasOpt(INVOICE_TAXDATE_NAME)) {
         taxDate = Database::Date(m_conf.get<std::string>(INVOICE_TAXDATE_NAME));
-    } else {
+    } 
+
+    if(taxDate == Database::Date() || taxDate.is_special()) {
         // set to first day of this month (day after last day of previous month)
+        if(taxDate.is_special()) {
+            std::cerr << "Invalid date given for ``" <<  INVOICE_TAXDATE_NAME << "'' " << std::endl;
+        }
+
         taxDate = first_this;
     }
+
     if (!zoneFilled) {
         std::cerr << "Zone is not set, use ``"<< INVOICE_ZONE_ID_NAME << "'' or "
             << "``" << INVOICE_ZONE_NAME_NAME << "'' to set it" << std::endl;
