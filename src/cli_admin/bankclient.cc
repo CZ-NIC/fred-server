@@ -129,8 +129,8 @@ BankClient::import_xml()
         statement_mime = m_conf.get<std::string>(BANK_XML_FILE_STATEMENT_MIME_NAME);
     }
 
-    if (!statement_file.empty() && statement_mime.empty() 
-            || statement_file.empty() && !statement_mime.empty()) {
+    if ((!statement_file.empty() && statement_mime.empty())
+            || (statement_file.empty() && !statement_mime.empty())) {
         std::cerr << "Error: `" << BANK_XML_FILE_STATEMENT_MIME_NAME << "' "
                   << "and `" << BANK_XML_FILE_STATEMENT_NAME << "' parameters "
                   << "should be used together";
