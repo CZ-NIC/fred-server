@@ -515,51 +515,6 @@ public:
         return true;
     }
 
-    bool processPayments(bool report) {
-        TRACE("[CALL] Register::Invoicing::Manager::pairInvoices()");
-
-        std::auto_ptr<Register::Invoicing::Manager>
-        invMan(Register::Invoicing::Manager::create());
-
-        Database::Query query;
-        query.buffer()
-            << "SELECT bi.id, ba.zone, rr.id, bi.price, bi.account_date"
-            << " FROM bank_item bi"
-    //        << " JOIN bank_head bh ON bi.statement_id=bh.id"
-            << " JOIN bank_account ba ON bi.account_id=ba.id"
-            << " JOIN registrar rr ON bi.varsymb=rr.varsymb"
-            << " OR (length(trim(rr.regex)) > 0 and bi.account_memo ~* trim(rr.regex))"
-            << " WHERE bi.invoice_id IS NULL AND bi.code=2 AND bi.type=1;";
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction transaction(conn);
-        Database::Result res = conn.exec(query);
-        Database::Result::Iterator it = res.begin();
-        for (; it != res.end(); ++it) {
-            Database::Row::Iterator col = (*it).begin();
-
-            Database::ID statementId = *(col);
-            int zoneId = *(++col);
-            int registrarId = *(++col);
-            long price = *(++col);
-            Database::Date date = *(++col);
-                    
-            int invoiceId = invMan->createDepositInvoice(date, (int)zoneId, (int)registrarId, (long)price);
-            if (invoiceId == 0) {
-                LOGGER(PACKAGE).warning("Failed to save credit invoice");
-                continue;
-            }
-            int retval = setInvoiceToStatementItem(statementId, invoiceId);
-            if (!retval) {
-                LOGGER(PACKAGE).error("Unable to update bank_item table");
-                return false;
-            }
-        }
-
-        transaction.commit();
-
-        return true;
-    }
-    
 virtual bool pairPaymentWithRegistrar(
             const Database::ID &paymentId,
             const std::string &registrarHandle) {

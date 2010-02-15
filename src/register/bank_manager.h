@@ -40,9 +40,6 @@ public:
             const Database::ID &statement,
             bool force = false) = 0;
 
-    virtual bool processPayments(
-            bool report = false) = 0;
-
     virtual bool pairPaymentWithRegistrar(
             const Database::ID &paymentId,
             const std::string &registrarHandle) = 0;
