@@ -635,11 +635,8 @@ InvoiceClient::create_invoice()
     Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
 
     Database::ID paymentId = m_conf.get<unsigned int>(INVOICE_PAYMENT_ID_NAME);
-    if (m_conf.hasOpt(REGISTRAR_ID_NAME)) {
-        bank_manager->manualCreateInvoice(paymentId,
-                m_conf.get<unsigned int>(REGISTRAR_ID_NAME));
-    } else if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME)) {
-        bank_manager->manualCreateInvoice(paymentId,
+    if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME)) {
+        bank_manager->pairPaymentWithRegistrar(paymentId,
                 m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
     } else {
         std::cerr << "You have to specify ``--" << REGISTRAR_ID_NAME
@@ -756,7 +753,6 @@ InvoiceClient::create_invoice_help()
         "** Manually create invoice for payment **\n\n"
         "  $ " << g_prog_name << " --" << INVOICE_CREATE_INVOICE_NAME << " \\\n"
         "    --" << INVOICE_PAYMENT_ID_NAME << "=<payment_id> \\\n"
-        "    --" << REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
         "    --" << REGISTRAR_HANDLE_NAME << "=<registrar_handle>\n"
         << std::endl;
 }

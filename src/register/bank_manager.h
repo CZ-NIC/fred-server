@@ -49,11 +49,7 @@ public:
     virtual bool processPayments(
             bool report = false) = 0;
 
-    virtual bool manualCreateInvoice(
-            const Database::ID &paymentId,
-            const Database::ID &registrar) = 0;
-
-    virtual bool manualCreateInvoice(
+    virtual bool pairPaymentWithRegistrar(
             const Database::ID &paymentId,
             const std::string &registrarHandle) = 0;
 
