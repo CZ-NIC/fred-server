@@ -514,52 +514,6 @@ void ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData) {
   }
 }
 
-void ccReg_Admin_i::addRegistrarToZone
-	(
-	  const char* registrar_handle /// registrar handle
-	  , const char* zone_fqdn ///zone name for which has registrar an access
-	  , const char* fromdate ///date when began registrar work in a zone
-	  , const char* todate ///after this date registrar is not allowed to register
-	)
-{
-  try
-  {
-	Logging::Context ctx(server_name_);
-    ConnectionReleaser releaser;
-	Database::Date f_date(fromdate);
-	Database::Date t_date(todate);
-	Register::Registrar::addRegistrarZone(registrar_handle, zone_fqdn, f_date, t_date);
-  } catch (...)
-  {
-	throw ccReg::Admin::UpdateFailed();
-  }
-}
-
-void ccReg_Admin_i::updateRegistrarAccessToZone
-	(
-			ccReg::TID id /// record id
-		  , const char* fromdate ///date when began registrar work in a zone
-		  , const char* todate ///after this date registrar is not allowed to register
-	)
-{
-  try
-  {
-	Logging::Context ctx(server_name_);
-    ConnectionReleaser releaser;
-	DB db;
-	db.OpenDatabase(m_connection_string.c_str());
-	std::auto_ptr<Register::Manager> r(Register::Manager::create(&db, cfg.get<bool>("registry.restricted_handles")));
-	Register::Registrar::Manager *rm = r->getRegistrarManager();
-	Database::Date f_date(fromdate);
-	Database::Date t_date(todate);
-	rm->updateRegistrarZone(id, f_date, t_date);
-	db.Disconnect();
-  } catch (...) {
-	db.Disconnect();
-	throw ccReg::Admin::UpdateFailed();
-  }
-}
-
 void ccReg_Admin_i::fillContact(ccReg::ContactDetail* cc,
                                 Register::Contact::Contact* c) {
 
