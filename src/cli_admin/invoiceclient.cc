@@ -61,77 +61,8 @@ InvoiceClient::show_opts()
     print_options("Invoice", getOpts(), getOptsCount());
 }
 
-void
-InvoiceClient::list()
+std::auto_ptr<Register::Invoicing::List> InvoiceClient::filter_reload_invoices()
 {
-    callHelp(m_conf, list_help);
-    std::auto_ptr<Register::Document::Manager> docMan(
-            Register::Document::Manager::create(
-                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
-                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
-                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
-                m_nsAddr)
-            );
-
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
-    MailerManager mailMan(cc.getNS());
-
-    std::auto_ptr<Register::Invoicing::Manager> invMan(
-            Register::Invoicing::Manager::create(
-                docMan.get(),
-                &mailMan));
-
-    std::auto_ptr<Register::Invoicing::List> invList(
-            invMan->createList());
-
-    Database::Filters::Invoice *invFilter;
-    invFilter = new Database::Filters::InvoiceImpl();
-
-    if (m_conf.hasOpt(ID_NAME))
-        invFilter->addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(ID_NAME)));
-
-    if (m_conf.hasOpt(ZONE_ID_NAME))
-        invFilter->addZoneId().setValue(
-                Database::ID(m_conf.get<unsigned int>(ZONE_ID_NAME)));
-    if (m_conf.hasOpt(ZONE_FQDN_NAME)) {
-        invFilter->addZone().addFqdn().setValue(
-                m_conf.get<std::string>(ZONE_FQDN_NAME));
-    }
-    if (m_conf.hasOpt(INVOICE_TYPE_NAME))
-        invFilter->addType().setValue(
-                m_conf.get<unsigned int>(INVOICE_TYPE_NAME));
-    if (m_conf.hasOpt(INVOICE_NUMBER_NAME))
-        invFilter->addNumber().setValue(
-                m_conf.get<std::string>(INVOICE_NUMBER_NAME));
-
-    apply_CRDATE(invFilter);
-    apply_DATE(invFilter, INVOICE_TAXDATE_NAME, Tax);
-
-    if (m_conf.hasOpt(REGISTRAR_ID_NAME))
-        invFilter->addRegistrar().addId().setValue(
-                Database::ID(m_conf.get<unsigned int>(REGISTRAR_ID_NAME)));
-    if (m_conf.hasOpt(REGISTRAR_HANDLE_NAME))
-        invFilter->addRegistrar().addHandle().setValue(
-                m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
-
-    Database::Filters::Union *unionFilter;
-    unionFilter = new Database::Filters::Union();
-    unionFilter->addFilter(invFilter);
-
-    invList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
-    invList->reload(*unionFilter);
-
-    invList->exportXML(std::cout);
-
-    unionFilter->clear();
-    delete unionFilter;
-}
-
-void
-InvoiceClient::list_filters()
-{
-    callHelp(m_conf, list_help);
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
                 m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
@@ -201,12 +132,36 @@ InvoiceClient::list_filters()
         invFilter->addFile().addName().setValue(
                 m_conf.get<std::string>(INVOICE_FILE_NAME_NAME));
 
-    Database::Filters::Union *unionFilter;
+
+   Database::Filters::Union *unionFilter;
     unionFilter = new Database::Filters::Union();
     unionFilter->addFilter(invFilter);
 
     invList->setLimit(m_conf.get<unsigned int>(LIMIT_NAME));
     invList->reload(*unionFilter);
+
+    unionFilter->clear();
+    delete unionFilter;
+
+    return invList;
+}
+
+void
+InvoiceClient::list()
+{
+    callHelp(m_conf, list_help);
+    std::auto_ptr<Register::Invoicing::List> invList(filter_reload_invoices());
+    invList->exportXML(std::cout);
+
+}
+
+
+void
+InvoiceClient::list_filters()
+{
+    callHelp(m_conf, list_help);
+
+    std::auto_ptr<Register::Invoicing::List> invList(filter_reload_invoices());
 
     std::cout << "<objects>\n";
     for (unsigned int i = 0; i < invList->getSize(); i++) {
@@ -322,8 +277,6 @@ InvoiceClient::list_filters()
     }
     std::cout << "</objects>" << std::endl;
 
-    unionFilter->clear();
-    delete unionFilter;
 }
 void
 InvoiceClient::archive()
