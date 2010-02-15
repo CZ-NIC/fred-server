@@ -420,7 +420,7 @@ public:
   virtual bool checkHandle(const std::string) const throw (SQL_ERROR) = 0;
 
   virtual Registrar::AutoPtr createRegistrar() = 0;
-
+  ///add Registrar acl record  used by fred-admin option registrar_acl_add
   virtual void addRegistrarAcl(
           const std::string &registrarHandle,
           const std::string &cert,
