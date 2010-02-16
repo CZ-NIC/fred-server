@@ -105,9 +105,6 @@
 #define INVOICE_FACTORING_HELP_NAME     "invoice_factoring_help"
 #define INVOICE_FACTORING_HELP_NAME_DESC "invoice factoring help"
 
-#define INVOICE_NO_REPORT_NAME          "no_report"
-#define INVOICE_NO_REPORT_NAME_DESC     "do not print list of payments without deposit invoice after pairing procedure"
-
 #define INVOICE_ADD_PREFIX_NAME         "invoice_add_prefix"
 #define INVOICE_ADD_PREFIX_NAME_DESC    "add row into the ``invoice_prefix'' table"
 #define INVOICE_ADD_PREFIX_HELP_NAME        "invoice_add_prefix_help"

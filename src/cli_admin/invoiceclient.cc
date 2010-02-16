@@ -583,8 +583,10 @@ InvoiceClient::create_invoice()
         bank_manager->pairPaymentWithRegistrar(paymentId,
                 m_conf.get<std::string>(REGISTRAR_HANDLE_NAME));
     } else {
-        std::cerr << "You have to specify ``--" << REGISTRAR_ID_NAME
-            << "'' or ``--" << REGISTRAR_HANDLE_NAME << "''" << std::endl;
+        std::cerr << "You have to specify ``--"<< REGISTRAR_HANDLE_NAME << "''" << std::endl;
+
+        // std::cerr << "You have to specify ``--" << REGISTRAR_ID_NAME
+          //  << "'' or ``--" << REGISTRAR_HANDLE_NAME << "''" << std::endl;
     }
 }
 
@@ -595,20 +597,17 @@ InvoiceClient::list_help()
         "** List invoices **\n\n"
         "  $ " << g_prog_name << " --" << INVOICE_LIST_NAME << " \\\n"
         "    [--" << ID_NAME << "=<id_number>] \\\n"
-        "    [--" << REGISTRANT_ID_NAME << "=<id_number>] \\\n"
         "    [--" << ZONE_ID_NAME << "=<id_number>] \\\n"
         "    [--" << ZONE_FQDN_NAME << "=<zone_fqdn>] \\\n"
         "    [--" << INVOICE_TYPE_NAME << "=<invoice_type>] \\\n"
-        "    [--" << INVOICE_VAR_SYMBOL_NAME << "=<invoice_var_symbol>] \\\n"
         "    [--" << INVOICE_NUMBER_NAME << "=<invoice_number>] \\\n"
         "    [--" << CRDATE_NAME << "=<invoice_create_date>] \\\n"
         "    [--" << INVOICE_TAXDATE_NAME << "=<invoice_taxdate>] \\\n"
-        "    [--" << INVOICE_ARCHIVED_NAME << "=<invoice_archive_flag(0=not archived,1=archived,other=ignore>] \\\n"
-        "    [--" << INVOICE_OBJECT_ID_NAME << "=<invoice_object_id_number>] \\\n"
-        "    [--" << INVOICE_OBJECT_NAME_NAME << "=<invoice_object_name>] \\\n"
-        "    [--" << INVOICE_ADV_NUMBER_NAME << "=<invoice_advance_number>] \\\n"
-        "    [--" << INVOICE_FILE_ID_NAME << "=<file_id>] \\\n"
+        "    [--" << REGISTRAR_ID_NAME <<    "=<registrar_id>] \\\n"
+        "    [--" << REGISTRAR_HANDLE_NAME <<    "=<registrar_handle>] \\\n"
         "    [--" << INVOICE_FILE_NAME_NAME << "=<file_name>] \n"
+        "    [--" << INVOICE_FILE_XML_NAME << "=<xml file_name>] \n"
+        "    [--" << INVOICE_FILE_PDF_NAME << "=<pdf file_name>] \n"
         << std::endl;
 }
 
@@ -619,7 +618,6 @@ InvoiceClient::archive_help()
         "** Invoice archive **\n\n"
         "  $ " << g_prog_name << " --" << INVOICE_ARCHIVE_NAME << " \\\n"
         "    --" << INVOICE_DONT_SEND_NAME << " \\\n"
-        "    [--" << INVOICE_NO_REPORT_NAME << "]\n"
         << std::endl;
 }
 
@@ -630,10 +628,11 @@ InvoiceClient::credit_help()
     std::cout <<
         "** Invoice credit **\n\n"
         "  $ " << g_prog_name << " --" << INVOICE_CREDIT_NAME << " \\\n"
-        "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
-        // "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_fqdn> \\\n"
-        "    --" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
-        // "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle> \\\n"
+        // "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
+        "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_fqdn> \\\n"
+        // "    --" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
+        "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle> \\\n"
+        "    [--" << INVOICE_TODATE_NAME << "=<to_date>]\\\n"
         "    --" << INVOICE_PRICE_NAME << "=<price> \\\n"
         // "    [--" << CRDATE_NAME << "=<create_time_stamp>] \\\n"
         "    [--" << INVOICE_TAXDATE_NAME << "=<tax_date>]\n"
@@ -641,7 +640,7 @@ InvoiceClient::credit_help()
     // std::cout << "Default value for ``--" << CRDATE_NAME << "'' is current timestamp "
      //   << "and today for ``--" << INVOICE_TAXDATE_NAME << "''."
      //   << std::endl;
-    std::cout << "Default value for ``--" << INVOICE_TAXDATE_NAME << "'' is today's timestamp. " << std::endl;
+    std::cout << "Default value for ``--" << INVOICE_TAXDATE_NAME << "'' is today's timestamp. For ``--" << INVOICE_TODATE_NAME << "'' it's last day of previous month.  " << std::endl;
 }
 
 void
@@ -726,7 +725,6 @@ InvoiceClient::m_opts[] = {
     ADDOPT(INVOICE_REGISTRAR_HANDLE_NAME, TYPE_STRING, false, false),
     ADDOPT(INVOICE_PRICE_NAME, TYPE_UINT, false, false),
     ADDOPT(INVOICE_TODATE_NAME, TYPE_STRING, false, false),
-    ADDOPT(INVOICE_NO_REPORT_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(INVOICE_DONT_SEND_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(INVOICE_PREFIX_TYPE_NAME, TYPE_UINT, false, false),
     ADDOPT(INVOICE_PREFIX_YEAR_NAME, TYPE_UINT, false, false),
