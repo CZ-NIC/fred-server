@@ -43,6 +43,7 @@
 #include "fileclient.h"
 #include "mailclient.h"
 #include "publicreqclient.h"
+#include "enumparamclient.h"
 
 using namespace boost::posix_time;
 
@@ -212,6 +213,7 @@ main(int argc, char **argv)
     APPENDOPTIONS(FileClient);
     APPENDOPTIONS(MailClient);
     APPENDOPTIONS(PublicRequestClient);
+    APPENDOPTIONS(EnumParamClient);
 #undef APPENDOPTIONS
 
     Config::Manager confMan = Config::ConfigManager::instance_ref();
@@ -340,6 +342,9 @@ main(int argc, char **argv)
             break;
         case CLIENT_PUBLICREQUEST:
             INIT_AND_RUN(PublicRequestClient);
+            break;
+        case CLIENT_ENUMPARAM:
+            INIT_AND_RUN(EnumParamClient);
             break;
         default:
             if (confMan.isHelp()) {

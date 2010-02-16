@@ -41,6 +41,7 @@ typedef std::map<std::string, int>::iterator METHODS_IT;
 #define CLIENT_FILE             13
 #define CLIENT_MAIL             14
 #define CLIENT_PUBLICREQUEST    15
+#define CLIENT_ENUMPARAM        16
 
 #define TYPE_NOTYPE     0
 #define TYPE_STRING     1

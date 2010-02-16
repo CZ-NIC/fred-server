@@ -63,5 +63,7 @@ fred_admin_SOURCES = simple.cc            \
                      mailclient.h         \
                      publicreqclient.cc   \
                      publicreqclient.h    \
+                     enumparamclient.cc   \
+                     enumparamclient.h    \
                      baseclient.h
 
