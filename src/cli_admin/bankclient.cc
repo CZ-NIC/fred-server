@@ -198,7 +198,7 @@ BankClient::move_statement()
 
     /* bank manager */
     Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
-    bank_manager->moveItemToPayment(itemId, headId, force);
+    bank_manager->pairPaymentWithStatement(itemId, headId, force);
 }
 
 void

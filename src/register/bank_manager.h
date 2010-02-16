@@ -30,11 +30,6 @@ public:
             const std::string &_file_mime,
             const bool &_generate_invoices = false) throw (std::runtime_error) = 0;
 
-    virtual bool moveItemToPayment(
-            const Database::ID &payment,
-            const Database::ID &statement,
-            bool force = false) = 0;
-
     virtual bool pairPaymentWithStatement(
             const Database::ID &payment,
             const Database::ID &statement,

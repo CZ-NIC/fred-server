@@ -423,14 +423,6 @@ public:
         }
     }
 
-    bool moveItemToPayment(
-        const Database::ID &payment,
-        const Database::ID &statement,
-        bool force = false)
-    {
-        return pairPaymentWithStatement(payment, statement, force);
-    }
-
     bool pairPaymentWithStatement(const Database::ID &payment,
                                   const Database::ID &statement,
                                   bool force = false)
