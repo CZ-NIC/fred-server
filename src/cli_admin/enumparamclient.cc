@@ -54,23 +54,36 @@ EnumParamClient::enum_parameter_change()
 {
     callHelp(m_conf, enum_parameter_change_help);
 
-    try
-    {
-        std::string name = m_conf.get<std::string>(ENUMPARAM_NAME);
-        std::string value = m_conf.get<std::string>(ENUMPARAM_VALUE);
+    std::string name = m_conf.get<std::string>(ENUMPARAM_NAME);
+    std::string value = m_conf.get<std::string>(ENUMPARAM_VALUE);
 
+    try {
         Database::Connection conn = Database::Manager::acquire();
+
+        std::stringstream squery;
+        squery << "select id from enum_parameters where name = "
+               << Database::Value(name);
+        Database::Result exist = conn.exec(squery.str());
+        if (exist.size() == 0) {
+            throw std::runtime_error(str(boost::format(
+                            "parameter '%1%' not found")
+                            % name));
+        }
+
         std::stringstream query;
         query << "update enum_parameters set val = '" << conn.escape(value) << "'"
               << " where name = '" << conn.escape(name) << "'";
-        Database::Transaction tx(conn);
         conn.exec(query.str());
-        tx.commit();
     }
-    catch (...)
-    {
-        std::cerr << "An error has occured" << std::endl;
+    catch (std::exception &ex) {
+        throw std::runtime_error(str(boost::format(
+                        "enum parameter change: %1%")
+                        % ex.what()));
     }
+    catch (...) {
+        throw std::runtime_error("enum parameter change: unknown error");
+    }
+
 }
 void
 EnumParamClient::enum_parameter_change_help()
