@@ -45,8 +45,6 @@ InvoiceClient::runMethod()
         credit();
     } else if (m_conf.hasOpt(INVOICE_FACTORING_NAME)) {
         factoring();
-    } else if (m_conf.hasOpt(INVOICE_MAKE_PAIRS_NAME)) {
-        pair_invoices();
     } else if (m_conf.hasOpt(INVOICE_ADD_PREFIX_NAME)) {
         add_invoice_prefix();
     } else if (m_conf.hasOpt(INVOICE_CREATE_INVOICE_NAME)) {
@@ -539,26 +537,6 @@ InvoiceClient::factoring()
 }
 
 void
-InvoiceClient::pair_invoices()
-{
-    callHelp(m_conf, pair_invoices_help);
-
-    /* init file manager */
-    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
-    FileManagerClient fm_client(corba_client.getNS());
-    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
-
-    /* bank manager */
-    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
-
-    bool report = true;
-    if (m_conf.hasOpt(INVOICE_NO_REPORT_NAME)) {
-        report = false;
-    }
-    bank_manager->processPayments(report);
-}
-
-void
 InvoiceClient::add_invoice_prefix()
 {
     callHelp(m_conf, add_invoice_prefix_help);
@@ -685,17 +663,6 @@ InvoiceClient::factoring_help()
 }
 
 void
-InvoiceClient::pair_invoices_help()
-{
-    std::cout <<
-        "** Pair invoices **\n\n"
-        "Create new credit invoice for statements (normal and online) without existing invoice\n"
-        "  $ " << g_prog_name << " --" << INVOICE_MAKE_PAIRS_NAME << " \\\n"
-        "    [--" << INVOICE_NO_REPORT_NAME << "]\n"
-        << std::endl;
-}
-
-void
 InvoiceClient::add_invoice_prefix_help()
 {
     std::cout <<
@@ -734,7 +701,6 @@ InvoiceClient::m_opts[] = {
     ADDOPT(INVOICE_ARCHIVE_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(INVOICE_CREDIT_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(INVOICE_FACTORING_NAME, TYPE_NOTYPE, true, true),
-    ADDOPT(INVOICE_MAKE_PAIRS_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(INVOICE_ADD_PREFIX_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(INVOICE_CREATE_INVOICE_NAME, TYPE_NOTYPE, true, true),
     add_ID,
