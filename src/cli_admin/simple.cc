@@ -225,15 +225,6 @@ main(int argc, char **argv)
         exit(1);
     }
 
-    if (argc == 1 || (argc >= 2 && confMan.isHelp())) {
-        std::cout << "Usage: " << argv[0] << " [options]" << std::endl << std::endl;
-        std::cout << generalOpts << std::endl;
-        std::cout << configurationOpts << std::endl;
-        std::cout << commonOpts << std::endl;
-        std::cout << programOpts << std::endl;
-        exit(0);
-    }
-
     if (confMan.isVersion()) {
         print_version();
         exit(0);
@@ -351,7 +342,15 @@ main(int argc, char **argv)
             INIT_AND_RUN(PublicRequestClient);
             break;
         default:
-            std::cout << "Unknown client" << std::endl;
+            if (confMan.isHelp()) {
+                std::cout << "Usage: " << argv[0]  << " [options]" << std::endl << std::endl;
+                std::cout << generalOpts << std::endl;
+                std::cout << configurationOpts << std::endl;
+                std::cout << commonOpts << std::endl;
+                std::cout << programOpts << std::endl;
+            } else {
+                std::cout << "Unknown client" << std::endl;
+            }
             break;
     }
 #undef INIT_AND_RUN

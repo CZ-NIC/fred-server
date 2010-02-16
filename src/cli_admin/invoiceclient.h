@@ -170,7 +170,6 @@ public:
 
     void credit();
     void factoring();
-    void pair_invoices();
     void create_invoice();
 
     void list_help();
