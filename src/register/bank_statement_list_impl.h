@@ -96,7 +96,7 @@ public:
             << "t_1.file_id";
         object_info_query.from()
             << getTempTableName() << " tmp "
-            << "JOIN bank_head t_1 ON (tmp.id = t_1.id)";
+            << "JOIN bank_statement t_1 ON (tmp.id = t_1.id)";
         object_info_query.order_by()
             << "tmp.id";
         Database::Connection conn = Database::Manager::acquire();
@@ -146,7 +146,7 @@ public:
 
                 StatementItemQuery.from()
                     << getTempTableName() << " tmp "
-                    << "JOIN bank_item t_1 ON (tmp.id = t_1.statement_id)";
+                    << "JOIN bank_payment t_1 ON (tmp.id = t_1.statement_id)";
                 StatementItemQuery.order_by()
                     << "tmp.id";
                 Database::Result r_stat = conn.exec(StatementItemQuery);

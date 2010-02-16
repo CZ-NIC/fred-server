@@ -82,10 +82,10 @@
 #define BANK_MOVE_STATEMENT_NAME_DESC   "set head to statement item"
 #define BANK_FORCE_NAME                 "force"
 #define BANK_FORCE_NAME_DESC            "force"
-#define BANK_ITEM_ID_NAME               "item_id"
-#define BANK_ITEM_ID_NAME_DESC          "item id"
-#define BANK_HEAD_ID_NAME               "head_id"
-#define BANK_HEAD_ID_NAME_DESC          "head id"
+#define BANK_PAYMENT_ID_NAME               "item_id"
+#define BANK_PAYMENT_ID_NAME_DESC          "item id"
+#define BANK_STATEMENT_ID_NAME               "head_id"
+#define BANK_STATEMENT_ID_NAME_DESC          "head id"
 
 
 #include <boost/program_options.hpp>

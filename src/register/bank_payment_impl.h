@@ -232,7 +232,7 @@ public:
 
         Database::Query query;
         query.buffer()
-            << "SELECT id FROM bank_item "
+            << "SELECT id FROM bank_payment "
             << "WHERE account_id = " << Database::Value(getAccountId())
             << " AND account_evid = " << Database::Value(getAccountEvid());
 

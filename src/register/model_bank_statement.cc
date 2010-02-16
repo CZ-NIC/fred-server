@@ -1,6 +1,6 @@
 #include "model_bank_statement.h"
 
-std::string ModelBankStatement::table_name = "bank_head";
+std::string ModelBankStatement::table_name = "bank_statement";
 
 DEFINE_PRIMARY_KEY(ModelBankStatement, unsigned long long, id, m_id, table_name, "id", .setDefault())
 DEFINE_BASIC_FIELD(ModelBankStatement, unsigned long long, accountId, m_accountId, table_name, "account_id", .setForeignKey())

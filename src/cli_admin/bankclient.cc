@@ -184,8 +184,8 @@ void
 BankClient::move_statement()
 {
     callHelp(m_conf, move_statement_help);
-    Database::ID itemId = m_conf.get<unsigned int>(BANK_ITEM_ID_NAME);
-    Database::ID headId = m_conf.get<unsigned int>(BANK_HEAD_ID_NAME);
+    Database::ID itemId = m_conf.get<unsigned int>(BANK_PAYMENT_ID_NAME);
+    Database::ID headId = m_conf.get<unsigned int>(BANK_STATEMENT_ID_NAME);
     bool force = false;
     if (m_conf.hasOpt(BANK_FORCE_NAME)) {
         force = true;
@@ -251,8 +251,8 @@ BankClient::move_statement_help()
     std::cout << 
         "** Add new bank account **\n\n"
         "  $ " << g_prog_name << " --" << BANK_MOVE_STATEMENT_NAME << " \\\n"
-        "   --" << BANK_ITEM_ID_NAME << "=<item_id> \\\n"
-        "   --" << BANK_HEAD_ID_NAME << "=<new_head_id> \\\n"
+        "   --" << BANK_PAYMENT_ID_NAME << "=<item_id> \\\n"
+        "   --" << BANK_STATEMENT_ID_NAME << "=<new_head_id> \\\n"
         "   [--" << BANK_FORCE_NAME << "]\n"
         << std::endl;
     std::cout << "If ``head_id'' is zero, that set ``NULL'' as head id"
@@ -288,8 +288,8 @@ BankClient::m_opts[] = {
     ADDOPT(BANK_XML_FILE_STATEMENT_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_XML_FILE_STATEMENT_MIME_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_FORCE_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(BANK_ITEM_ID_NAME, TYPE_UINT, false, false),
-    ADDOPT(BANK_HEAD_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(BANK_PAYMENT_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(BANK_STATEMENT_ID_NAME, TYPE_UINT, false, false),
 };
 
 #undef ADDOPT

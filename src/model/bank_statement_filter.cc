@@ -17,13 +17,13 @@ BankStatementImpl::~BankStatementImpl()
 Table &
 BankStatementImpl::joinBankStatementTable()
 {
-    return joinTable("bank_head");
+    return joinTable("bank_statement");
 }
 
 Table &
 BankStatementImpl::joinStatementItemTable()
 {
-    return joinTable("bank_item");
+    return joinTable("bank_payment");
 }
 
 Value<Database::ID> &

@@ -46,7 +46,7 @@ private:
         }
 
         Database::Query uquery;
-        uquery.buffer() << "UPDATE bank_item SET statement_id = ";
+        uquery.buffer() << "UPDATE bank_payment SET statement_id = ";
         if (statement == 0) {
             uquery.buffer() << "NULL";
         }
@@ -435,7 +435,7 @@ public:
         Database::Connection conn = Database::Manager::acquire();
         try {
             Database::Query pquery;
-            pquery.buffer() << "SELECT id, statement_id FROM bank_item WHERE id = "
+            pquery.buffer() << "SELECT id, statement_id FROM bank_payment WHERE id = "
                             << Database::Value(payment);
 
             Database::Result presult = conn.exec(pquery);
@@ -445,7 +445,7 @@ public:
 
             if (statement > 0) {
                 Database::Query squery;
-                squery.buffer() << "SELECT id FROM bank_head WHERE id = "
+                squery.buffer() << "SELECT id FROM bank_statement WHERE id = "
                                 << Database::Value(statement);
 
                 Database::Result sresult = conn.exec(squery);
@@ -495,7 +495,7 @@ public:
         TRACE("[CALL] Register::Invoicing::Manager::setInvoiceToStatementItem()");
         Database::Query update;
         update.buffer()
-            << "UPDATE bank_item SET invoice_id="
+            << "UPDATE bank_payment SET invoice_id="
             << Database::Value(invoiceId)
             << " WHERE id=" << Database::Value(statementId);
         Database::Connection conn = Database::Manager::acquire();

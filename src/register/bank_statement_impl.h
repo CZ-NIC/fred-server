@@ -167,12 +167,12 @@ public:
         Database::Query query;
         if (!isValid()) {
             query.buffer()
-                << "SELECT id FROM bank_head WHERE num ISNULL"
+                << "SELECT id FROM bank_statement WHERE num ISNULL"
                 << " AND account_id= " << Database::Value(getAccountId())
                 << " AND create_date ISNULL";
         } else {
             query.buffer()
-                << "SELECT id FROM bank_head"
+                << "SELECT id FROM bank_statement"
                 << " WHERE num = " << Database::Value(getNum())
                 << " AND account_id = " << Database::Value(getAccountId())
                 << " AND create_date = " << Database::Value(getCreateDate());

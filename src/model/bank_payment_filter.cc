@@ -17,7 +17,7 @@ BankPaymentImpl::~BankPaymentImpl()
 Table &
 BankPaymentImpl::joinBankPaymentTable()
 {
-    return joinTable("bank_item");
+    return joinTable("bank_payment");
 }
 
 Value<Database::ID> &

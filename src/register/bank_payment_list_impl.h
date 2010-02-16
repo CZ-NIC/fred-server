@@ -1,5 +1,5 @@
-#ifndef BANK_ITEM_LIST_IMPL_H_
-#define BANK_ITEM_LIST_IMPL_H_
+#ifndef BANK_PAYMENT_LIST_IMPL_H_
+#define BANK_PAYMENT_LIST_IMPL_H_
 
 
 #include "bank_payment_impl.h"
@@ -96,7 +96,7 @@ public:
                 << "t_2.prefix";
             object_info_query.from()
                 << getTempTableName() << " tmp "
-                << "JOIN bank_item t_1 ON (tmp.id = t_1.id) "
+                << "JOIN bank_payment t_1 ON (tmp.id = t_1.id) "
                 << "LEFT JOIN invoice t_2 ON (t_1.invoice_id = t_2.id)";
             object_info_query.order_by()
                 << "tmp.id";
@@ -217,5 +217,5 @@ public:
 }
 
 
-#endif /*BANK_ITEM_LIST_IMPL_H_*/
+#endif /*BANK_PAYMENT_LIST_IMPL_H_*/
 
