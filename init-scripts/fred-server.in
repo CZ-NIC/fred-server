@@ -263,6 +263,12 @@ init_cz()
     $ADMCMD --registrar_add_zone \
         --zone_fqdn=cz --handle=REG-FRED_B \
         --from_date="2007-01-01"
+    $ADMCMD --enum_parameter_change \
+        --parameter_name=handle_registration_protection_period \
+        --parameter_value=2
+    $ADMCMD --enum_parameter_change \
+        --parameter_name=roid_suffix \
+        --parameter_value=CZ
     exit 0
 }
 
