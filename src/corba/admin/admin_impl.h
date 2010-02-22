@@ -135,6 +135,7 @@ public:
       throw (ccReg::Admin::ObjectNotFound);
   // statistics
   CORBA::Long getDomainCount(const char *zone);
+  CORBA::Long getSignedDomainCount(const char *_fqdn);
   CORBA::Long getEnumNumberCount();
   // counters
   ccReg::EPPActionTypeSeq* getEPPActionTypeList();

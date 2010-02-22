@@ -209,6 +209,8 @@ public:
                                     bool allowIDN = false) const throw (SQL_ERROR) = 0;
   /// return current count of domains by zone
   virtual unsigned long getDomainCount(const std::string& zone) const = 0;
+  /// return current count of signed domains by zone
+  virtual unsigned long getSignedDomainCount(const std::string & _fqdn) const = 0;
   /// return current count of enum numbers
   virtual unsigned long getEnumNumberCount() const = 0;
   /// create list of domains

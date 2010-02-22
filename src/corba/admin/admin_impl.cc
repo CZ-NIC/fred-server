@@ -1400,6 +1400,19 @@ CORBA::Long ccReg_Admin_i::getDomainCount(const char *zone) {
   return ret;
 }
 
+CORBA::Long ccReg_Admin_i::getSignedDomainCount(const char *_fqdn)
+{
+  Logging::Context ctx(server_name_);
+
+  DB db;
+  db.OpenDatabase(m_connection_string.c_str());
+  std::auto_ptr<Register::Manager> r(Register::Manager::create(&db,cfg.get<bool>("registry.restricted_handles")));
+  Register::Domain::Manager *dm = r->getDomainManager();
+  CORBA::Long ret = dm->getSignedDomainCount(_fqdn);
+  db.Disconnect();
+  return ret;
+}
+
 CORBA::Long ccReg_Admin_i::getEnumNumberCount() {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;

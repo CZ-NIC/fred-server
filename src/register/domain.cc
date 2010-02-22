@@ -1318,6 +1318,19 @@ public:
     return ret;
   }
   /// interface method implementation
+  unsigned long getSignedDomainCount(const std::string & _fqdn) const
+  {
+	std::stringstream sql;
+	unsigned long ret = 0;
+	sql << "SELECT count(*) FROM domain d "
+			"JOIN zone z ON (d.zone = z.id) AND z.fqdn = LOWER('" << db->Escape2(_fqdn) << "') "
+		<< "WHERE d.keyset IS NOT NULL";
+	if (db->ExecSelect(sql.str().c_str()) && db->GetSelectRows() == 1)
+	  ret = atol(db->GetFieldValue( 0, 0));
+	db->FreeSelect();
+	return ret;
+  }
+  /// interface method implementation
   unsigned long getEnumNumberCount() const {
     std::stringstream sql;
     unsigned long ret = 0;
