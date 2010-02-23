@@ -1788,8 +1788,6 @@ public:
                 " ior.period, o.id, i.vat "
             )) throw SQL_ERROR();
 
-        LOGGER(PACKAGE).debug( boost::format(" AAA 1st item of data_ - ID: %1% ") % data_[0]->getId());
-
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
           InvoiceImpl *inv = dynamic_cast<InvoiceImpl*>(findId(STR_TO_ID(db->GetFieldValue(i,0))));
 
@@ -2025,7 +2023,7 @@ public:
 
     std::auto_ptr<autoDB> db(new autoDB());
     if(!db->OpenDatabase(Database::Manager::getConnectionString())) {
-        LOGGER(PACKAGE).error(" autoDB: Failed to open the database-> ");
+        LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
        throw SQL_ERROR();
     }
 
