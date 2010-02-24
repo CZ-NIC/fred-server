@@ -81,11 +81,14 @@ int main()
 	epp_command_data *cdata; /* command data structure */
 	parser_status pstat;
 	std::string line, rawline;
-	Backend serv(CONNECTION_STRING);
-	void *schema;
+        void *schema;
+        clock_t time1, time2, time3, t_parser=0, t_logcomm=0, t_backend=0;
 
-	clock_t time1, time2, time3, t_parser=0, t_logcomm=0, t_backend=0;
 
+        Database::Manager::init(new Database::ConnectionFactory(CONNECTION_STRING, 1, 100));
+
+	Register::Logger::ManagerImpl serv;
+		
 	cdata = NULL;
 
 	// TODO -  check if the file EPP_SCHEMA exists (or better, create some config file for this thing with all the variables which are used
@@ -101,7 +104,9 @@ int main()
 	LOGGER(PACKAGE).info("Logging initialized for migration");
 
 	// TODO is this safe?
-	Connection serv_conn = serv.get_connection();	
+	Connection serv_conn = serv.get_connection();
+
+        serv.createList();
 
 	Transaction serv_transaction(serv_conn);
 
@@ -199,7 +204,7 @@ int main()
 	printf(" --------- REPORT: \n"
 		" Parser: 	   %12i \n"
 		" log_epp_command: %12i \n"
-		" Backend: 	   %12i \n",
+		" Register::Logger::ManagerImpl: 	   %12i \n",
 		(int)t_parser,
 		(int)t_logcomm,
 		(int)t_backend);

@@ -25,8 +25,8 @@ private:
 
 public:
 
-  ManagerImpl();
-  ManagerImpl(const std::string conn_db, const std::string &monitoring_hosts_file = std::string()) throw(DB_CONNECT_FAILED);
+  
+  ManagerImpl(const std::string &monitoring_hosts_file = std::string()) throw(DB_CONNECT_FAILED);
 
   virtual ~ManagerImpl();
 
@@ -50,7 +50,7 @@ public:
 
 	insert_props(entry_time, entry_service, monitoring, entry_id, props, get_connection());
   }
-
+  
   List* createList() const;
 
 private:

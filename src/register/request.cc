@@ -475,12 +475,8 @@ Result ManagerImpl::i_GetServiceActions(RequestServiceType service)
 	
 }
 
-ManagerImpl::ManagerImpl()
-{
-}
-
 // ManagerImpl ctor: connect to the database and fill property_names map
-ManagerImpl::ManagerImpl(const std::string database, const std::string &monitoring_hosts_file)
+ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
       throw (DB_CONNECT_FAILED)
 {
     	std::ifstream file;
@@ -490,7 +486,7 @@ ManagerImpl::ManagerImpl(const std::string database, const std::string &monitori
 
 	logd_auto_conn conn;
 
-	logger_notice(boost::format("successfully  connect to DATABASE %1%") % database.c_str());
+	logger_notice("successfully  connect to DATABASE ") ;
 
 	if (!monitoring_hosts_file.empty()) {
 		try {
@@ -1001,7 +997,7 @@ Manager* Manager::create() {
 Manager *Manager::create(const std::string conn_db, const std::string &monitoring_hosts_file)
 throw (Manager::DB_CONNECT_FAILED) {
 	TRACE("[CALL] Register::Logger::Manager::create(std::string, std::string)");
-	return new ManagerImpl(conn_db, monitoring_hosts_file);
+	return new ManagerImpl(monitoring_hosts_file);
 }
 
 

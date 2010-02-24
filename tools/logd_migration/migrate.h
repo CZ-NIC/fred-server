@@ -22,9 +22,6 @@ using namespace Register::Logger;
 
 typedef unsigned long long TID;
 
-typedef ManagerImpl Backend;
-
-
 
 #endif
 
