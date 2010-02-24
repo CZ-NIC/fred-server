@@ -358,16 +358,18 @@ InvoiceClient::credit()
 
     // TODO error messages are not precise for version2.3
     if (!regFilled) {
-        std::cerr << "Registrar is not set, use ``--registrar_id'' or "
-            << "``--registrar_name'' to set it" << std::endl;
+        //std::cerr << "Registrar is not set, use ``--registrar_id'' or "
+//            << "``--registrar_name'' to set it" << std::endl;
+
+        std::cerr << "Registrar is not set, use ``--" << INVOICE_REGISTRAR_ID_NAME << "'' to set it" << std::endl;
         return;
     }
     if (!priceFilled) {
-        std::cerr << "Price is not set, use ``--price'' to set it" << std::endl;
+        std::cerr << "Price is not set, use ``--" << INVOICE_PRICE_NAME << "'' to set it" << std::endl;
         return;
     }
     if (!zoneFilled) {
-        std::cerr << "Zone id is not set " << std::endl;
+        std::cerr << "Zone id is not set, use --" << INVOICE_ZONE_ID_NAME << " to set it " << std::endl;
         return;
     }
 
@@ -470,29 +472,26 @@ InvoiceClient::factoring()
 
     if (m_conf.hasOpt(INVOICE_TODATE_NAME)) {
         toDate = Database::Date(createDateTime(m_conf.get<std::string>(INVOICE_TODATE_NAME)));
-    } 
-
-    if(toDate == Database::Date() || toDate.is_special()) {
 
         if(toDate.is_special()) {
             std::cerr << "Invalid date given for ``" <<  INVOICE_TODATE_NAME << "'' " << std::endl;
+            toDate = last_prev;
         }
+    } else {
         toDate = last_prev;
     }
-
+    
     if (m_conf.hasOpt(INVOICE_TAXDATE_NAME)) {
         taxDate = Database::Date(m_conf.get<std::string>(INVOICE_TAXDATE_NAME));
-    } 
 
-    if(taxDate == Database::Date() || taxDate.is_special()) {
-        // set to first day of this month (day after last day of previous month)
         if(taxDate.is_special()) {
             std::cerr << "Invalid date given for ``" <<  INVOICE_TAXDATE_NAME << "'' " << std::endl;
+            taxDate = first_this;
         }
-
+    } else {
         taxDate = first_this;
     }
-
+    
     if (!zoneFilled) {
         std::cerr << "Zone is not set, use ``"<< INVOICE_ZONE_ID_NAME << "'' or "
             << "``" << INVOICE_ZONE_NAME_NAME << "'' to set it" << std::endl;
@@ -617,7 +616,7 @@ InvoiceClient::archive_help()
     std::cout <<
         "** Invoice archive **\n\n"
         "  $ " << g_prog_name << " --" << INVOICE_ARCHIVE_NAME << " \\\n"
-        "    --" << INVOICE_DONT_SEND_NAME << " \\\n"
+        "    [--" << INVOICE_DONT_SEND_NAME << "] \\\n"
         << std::endl;
 }
 
@@ -628,11 +627,10 @@ InvoiceClient::credit_help()
     std::cout <<
         "** Invoice credit **\n\n"
         "  $ " << g_prog_name << " --" << INVOICE_CREDIT_NAME << " \\\n"
-        // "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
-        "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_fqdn> \\\n"
-        // "    --" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
-        "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle> \\\n"
-        "    [--" << INVOICE_TODATE_NAME << "=<to_date>]\\\n"
+        "    --" << INVOICE_ZONE_ID_NAME << "=<zone_id> | \\\n"
+        // "    --" << INVOICE_ZONE_NAME_NAME << "=<zone_fqdn> \\\n"
+        "    --" << INVOICE_REGISTRAR_ID_NAME << "=<registrar_id> | \\\n"
+        // "    --" << INVOICE_REGISTRAR_HANDLE_NAME << "=<registrar_handle> \\\n"
         "    --" << INVOICE_PRICE_NAME << "=<price> \\\n"
         // "    [--" << CRDATE_NAME << "=<create_time_stamp>] \\\n"
         "    [--" << INVOICE_TAXDATE_NAME << "=<tax_date>]\n"
@@ -640,7 +638,8 @@ InvoiceClient::credit_help()
     // std::cout << "Default value for ``--" << CRDATE_NAME << "'' is current timestamp "
      //   << "and today for ``--" << INVOICE_TAXDATE_NAME << "''."
      //   << std::endl;
-    std::cout << "Default value for ``--" << INVOICE_TAXDATE_NAME << "'' is today's timestamp. For ``--" << INVOICE_TODATE_NAME << "'' it's last day of previous month.  " << std::endl;
+//    std::cout << "Default value for ``--" << INVOICE_TAXDATE_NAME << "'' is today's timestamp. For ``--" << INVOICE_TODATE_NAME << "'' it's last day of previous month.  " << std::endl;
+    std::cout << "Default value for ``--" << INVOICE_TAXDATE_NAME << "'' is today's timestamp. " << std::endl;
 }
 
 void
