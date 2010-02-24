@@ -729,6 +729,7 @@ InvoiceClient::m_opts[] = {
     ADDOPT(INVOICE_PREFIX_YEAR_NAME, TYPE_UINT, false, false),
     ADDOPT(INVOICE_PREFIX_PREFIX_NAME, TYPE_ULONGLONG, false, false),
     ADDOPT(INVOICE_PAYMENT_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(INVOICE_NUMBER_NAME, TYPE_STRING, false, false),
 };
 
 #undef ADDOPT
