@@ -105,9 +105,7 @@ int main()
 
 	// TODO is this safe?
 	Connection serv_conn = serv.get_connection();
-
-        serv.createList();
-
+        
 	Transaction serv_transaction(serv_conn);
 
 	//here we're changing the approach:
