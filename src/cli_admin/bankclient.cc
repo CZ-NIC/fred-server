@@ -144,6 +144,12 @@ BankClient::import_xml()
         input.open("/dev/stdin", std::ios::in);
     }
 
+    if (!input.is_open()) {
+        throw std::runtime_error(str(boost::format(
+                        "bank client: import statement xml: "
+                        "file '%1% not found") % file_name));
+    }
+
     /* init file manager */
     CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     FileManagerClient fm_client(corba_client.getNS());
