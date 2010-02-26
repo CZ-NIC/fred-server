@@ -203,9 +203,9 @@ int main()
 		" Parser: 	   %12i \n"
 		" log_epp_command: %12i \n"
 		" Register::Logger::ManagerImpl: 	   %12i \n",
-		(int)t_parser,
-		(int)t_logcomm,
-		(int)t_backend);
+		(int)(t_parser/ 1000),
+		(int)(t_logcomm / 1000),
+		(int)(t_backend / 1000));
 
 	free(schema);
 

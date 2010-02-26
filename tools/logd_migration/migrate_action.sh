@@ -3,9 +3,10 @@
 DBNAME="fred"
 DBPORT=22345
 
-DATE_LOW="2009-11-06 21:34:02.550372"
-# DATE_HIGH="2009-12-09 10:35:33.628458"
-DATE_HIGH="2009-12-10 10:27:54.105179"
+# dates only apply to action & action_xml, not to login
+# login is ALWAYS migrated completely
+DATE_LOW="2006-07-23 15:44:19.755027"
+DATE_HIGH="2011-04-02 15:40:41.666799"
 
 echo "timestamp0 - beginning: ";  date
 
@@ -28,7 +29,9 @@ done
 
 psql -U $DBNAME -p $DBPORT -f migrate_raw_tables.sql 
 
-psql -U $DBNAME -p $DBPORT -c "select migrate_raw_data('$DATE_LOW'::timestamp without time zone, '$DATE_HIGH'::timestamp without time zone)"
+echo "--- initialised transfer: "; date
+
+time psql -U $DBNAME -p $DBPORT -c "select migrate_raw_data('$DATE_LOW'::timestamp without time zone, '$DATE_HIGH'::timestamp without time zone)"
 
 echo "timestamp1 - finished direct table transfers ";  date
 
