@@ -64,6 +64,7 @@ findRequestExecutor(Config::Conf &conf, METHODS &methods)
 #define ADDOPT_INT(name, desc)   (name, boost::program_options::value<int>(), desc)
 #define ADDOPT_UINT(name, desc)   (name, boost::program_options::value<unsigned int>(), desc)
 #define ADDOPT_ULONGLONG(name, desc)    (name, boost::program_options::value<unsigned long long>(), desc)
+#define ADDOPT_DOUBLE(name, desc)   (name, boost::program_options::value<double>(), desc)
 #define ADDOPT_BOOL(name, desc)  (name, boost::program_options::value<bool>(), desc)
 
 void
@@ -121,6 +122,14 @@ appendOptions(
                 if (opts[i].visible) {
                     visible.add_options()
                         ADDOPT_BOOL(opts[i].name, opts[i].description);
+                }
+                break;
+            case TYPE_DOUBLE:
+                all.add_options()
+                    ADDOPT_DOUBLE(opts[i].name, opts[i].description);
+                if (opts[i].visible) {
+                    visible.add_options()
+                        ADDOPT_DOUBLE(opts[i].name, opts[i].description);
                 }
                 break;
             default:

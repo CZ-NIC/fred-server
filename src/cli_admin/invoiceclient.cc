@@ -337,7 +337,7 @@ InvoiceClient::credit()
     */
     if (m_conf.hasOpt(INVOICE_PRICE_NAME)) {
         // invoice->setPrice(Database::Money(
-        price = 100 * m_conf.get<unsigned int>(INVOICE_PRICE_NAME);
+        price = 100 * m_conf.get<double>(INVOICE_PRICE_NAME);
         priceFilled = true;
     }
 
@@ -722,7 +722,7 @@ InvoiceClient::m_opts[] = {
     ADDOPT(INVOICE_ZONE_NAME_NAME, TYPE_STRING, false, false),
     ADDOPT(INVOICE_REGISTRAR_ID_NAME, TYPE_UINT, false, false),
     ADDOPT(INVOICE_REGISTRAR_HANDLE_NAME, TYPE_STRING, false, false),
-    ADDOPT(INVOICE_PRICE_NAME, TYPE_UINT, false, false),
+    ADDOPT(INVOICE_PRICE_NAME, TYPE_DOUBLE, false, false),
     ADDOPT(INVOICE_TODATE_NAME, TYPE_STRING, false, false),
     ADDOPT(INVOICE_DONT_SEND_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(INVOICE_PREFIX_TYPE_NAME, TYPE_UINT, false, false),
