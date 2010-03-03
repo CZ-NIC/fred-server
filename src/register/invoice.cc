@@ -1605,9 +1605,9 @@ public:
          */
         resetIDSequence();
         Database::SelectQuery source_query;
-        source_query.select() << "tmp.id, ipm.credit * 100, sri.vat, sri.prefix, "
-                              << "ipm.balance * 100, sri.id, sri.total * 100, "
-                              << "sri.totalvat * 100, sri.crdate";
+        source_query.select() << "tmp.id, ipm.credit, sri.vat, sri.prefix, "
+                              << "ipm.balance, sri.id, sri.total, "
+                              << "sri.totalvat, sri.crdate";
         source_query.from() << "tmp_invoice_filter_result tmp "
                             << "JOIN invoice_credit_payment_map ipm ON (tmp.id = ipm.invoiceid) "
                             << "JOIN invoice sri ON (ipm.ainvoiceid = sri.id) ";
@@ -1631,12 +1631,12 @@ public:
          */
         if (!partialLoad) {
           Database::SelectQuery action_query;
-          action_query.select() << "tmp.id, SUM(ipm.price) * 100, i.vat, o.name, "
+          action_query.select() << "tmp.id, SUM(ipm.price), i.vat, o.name, "
                                 << "ior.crdate::timestamptz AT TIME ZONE 'Europe/Prague', "
                                 << "ior.exdate, ior.operation, ior.period, "
                                 << "CASE "
                                 << "  WHEN ior.period = 0 THEN 0 "
-                                << "  ELSE 100 * SUM(ipm.price) * 12 / ior.period END, "
+                                << "  ELSE SUM(ipm.price) * 12 / ior.period END, "
                                 << "o.id";
           action_query.from() << "tmp_invoice_filter_result tmp "
                               << "JOIN invoice_object_registry ior ON (tmp.id = ior.invoiceid) "
@@ -2098,7 +2098,7 @@ public:
   Money ManagerImpl::getCreditByZone(const std::string& registrarHandle, TID zone) {
       Database::Connection conn = Database::Manager::acquire();
     std::stringstream sql;
-    sql << "SELECT SUM(credit)*100 "
+    sql << "SELECT SUM(credit) "
     << "FROM invoice i JOIN registrar r ON (i.registrarid=r.id) "
     << "WHERE i.zone=" << zone << " AND r.handle='"
     << registrarHandle << "'";
