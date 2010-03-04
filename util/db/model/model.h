@@ -191,6 +191,10 @@ public:
     try {
       this->reloadByPrimaryKey_(_object);
     }
+    catch (Database::NoDataFound &_err) {
+      LOGGER(PACKAGE).info(_err.what());
+      throw;
+    }
     catch (Database::Exception &_err) {
       LOGGER(PACKAGE).error(_err.what());
       throw;
@@ -342,17 +346,14 @@ private:
    */
   template<class _class>
   void reload__(_class *_object, const std::string &_query, const typename _class::field_list &_fields) {
-    try {
       Database::Connection conn = Database::Manager::acquire();
       Database::Result data = conn.exec(_query);
-      
-      if (data.size() == 1) {
-        load__(_object, *(data.begin()), _fields);
+
+      if (data.size() != 1) {
+         throw Database::NoDataFound(_query);
       }
-    }
-    catch (::Exception &_err) {
-      throw;
-    }
+
+      load__(_object, *(data.begin()), _fields);
   }
 
 

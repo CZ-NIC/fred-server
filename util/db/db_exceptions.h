@@ -42,6 +42,12 @@ public:
   NoSuchField(const std::string& _name) : Exception("No such field name: '" + _name + "'") { }
 };
 
+
+class NoDataFound : public Database::Exception {
+public:
+  NoDataFound(const std::string& _reason) : Exception("No data found: " + _reason ) { }
+};
+
 }
 
 #endif
