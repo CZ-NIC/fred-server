@@ -207,10 +207,13 @@ public:
         }
     }
 
-    void reload() throw (SQL_ERROR)
+    void reload() throw (SQL_ERROR, NOT_FOUND)
     {
         try {
             ModelBankPayment::reload();
+        }
+        catch (Database::NoDataFound &ex) {
+            throw NOT_FOUND();
         }
         catch (...) {
             throw SQL_ERROR();

@@ -39,6 +39,10 @@ public:
             const Database::ID &paymentId,
             const std::string &registrarHandle) = 0;
 
+    virtual void setPaymentType(
+            const Database::ID &payment,
+            const int &type) = 0;
+
 }; // class Manager
 
 

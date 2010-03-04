@@ -87,6 +87,13 @@
 #define BANK_STATEMENT_ID_NAME               "head_id"
 #define BANK_STATEMENT_ID_NAME_DESC          "head id"
 
+#define BANK_SET_PAYMENT_TYPE_NAME           "bank_set_payment_type"
+#define BANK_SET_PAYMENT_TYPE_NAME_DESC      "change type of payment"
+#define BANK_SET_PAYMENT_TYPE_PID_NAME       "bank_payment_id"
+#define BANK_SET_PAYMENT_TYPE_PID_NAME_DESC  "payment id"
+#define BANK_SET_PAYMENT_TYPE_TYPE_NAME      "bank_payment_type"
+#define BANK_SET_PAYMENT_TYPE_TYPE_NAME_DESC "payment type"
+
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -132,10 +139,12 @@ public:
     void import_xml_help();
     void add_bank_account();
     void move_statement();
+    void set_payment_type();
 
     void statement_list_help();
     void add_bank_account_help();
     void move_statement_help();
+    void set_payment_type_help();
 }; // class BankClient
 
 } // namespace Admin;

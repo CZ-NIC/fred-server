@@ -48,6 +48,8 @@ BankClient::runMethod()
         add_bank_account();
     } else if (m_conf.hasOpt(BANK_MOVE_STATEMENT_NAME)) {
         move_statement();
+    } else if (m_conf.hasOpt(BANK_SET_PAYMENT_TYPE_NAME)) {
+        set_payment_type();
     }
 }
 
@@ -208,6 +210,24 @@ BankClient::move_statement()
 }
 
 void
+BankClient::set_payment_type()
+{
+    callHelp(m_conf, set_payment_type_help);
+
+    Database::ID payment_id = m_conf.get<unsigned long long>(BANK_SET_PAYMENT_TYPE_PID_NAME);
+    int type = m_conf.get<int>(BANK_SET_PAYMENT_TYPE_TYPE_NAME);
+
+     /* init file manager */
+    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    FileManagerClient fm_client(corba_client.getNS());
+    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+
+    /* bank manager */
+    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
+    bank_manager->setPaymentType(payment_id, type);
+}
+
+void
 BankClient::statement_list_help()
 {
     std::cout <<
@@ -265,6 +285,18 @@ BankClient::move_statement_help()
         << std::endl;
 }
 
+void
+BankClient::set_payment_type_help()
+{
+    std::cout <<
+        "** Change type of given payment **\n\n"
+        "  $ " << g_prog_name << " --" << BANK_SET_PAYMENT_TYPE_NAME << " \\\n"
+        "   --" << BANK_SET_PAYMENT_TYPE_PID_NAME << "=<" << BANK_SET_PAYMENT_TYPE_PID_NAME_DESC << "> \\\n"
+        "   --" << BANK_SET_PAYMENT_TYPE_TYPE_NAME << "=<" << BANK_SET_PAYMENT_TYPE_TYPE_NAME_DESC << "> \\\n"
+        << std::endl;
+    std::cout << "Where '" << BANK_SET_PAYMENT_TYPE_TYPE_NAME << "' is from interval <0, 5>" << std::endl;
+}
+
 
 #define ADDOPT(name, type, callable, visible) \
     {CLIENT_BANK, name, name##_DESC, type, callable, visible}
@@ -276,6 +308,7 @@ BankClient::m_opts[] = {
     ADDOPT(BANK_IMPORT_XML_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(BANK_ADD_ACCOUNT_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(BANK_MOVE_STATEMENT_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(BANK_SET_PAYMENT_TYPE_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(BANK_DATE_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_ID_NAME, TYPE_UINT, false, false),
     ADDOPT(BANK_ACCOUNT_ID_NAME, TYPE_UINT, false, false),
@@ -296,6 +329,8 @@ BankClient::m_opts[] = {
     ADDOPT(BANK_FORCE_NAME, TYPE_NOTYPE, false, false),
     ADDOPT(BANK_PAYMENT_ID_NAME, TYPE_UINT, false, false),
     ADDOPT(BANK_STATEMENT_ID_NAME, TYPE_UINT, false, false),
+    ADDOPT(BANK_SET_PAYMENT_TYPE_PID_NAME, TYPE_ULONGLONG, false, false),
+    ADDOPT(BANK_SET_PAYMENT_TYPE_TYPE_NAME, TYPE_INT, false, false)
 };
 
 #undef ADDOPT

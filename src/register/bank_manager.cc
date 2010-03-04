@@ -540,6 +540,48 @@ public:
 
         return true;
     }
+
+    virtual void setPaymentType(
+            const Database::ID &payment_id,
+            const int &type)
+    {
+        Logging::Context ctx("set payment type");
+        try {
+            if (type < 0 || type > 5) {
+                throw std::runtime_error("parameter error "
+                        "(type should be in interval <0,5>)");
+            }
+
+            if (payment_id == 0) {
+                throw std::runtime_error("parameter error "
+                        "invalid payment id");
+            }
+
+            PaymentImpl payment;
+            payment.setId(payment_id);
+            payment.reload();
+
+            int old_type = payment.getType();
+
+            payment.setType(type);
+            payment.save();
+
+            LOGGER(PACKAGE).info(boost::format(
+                        "successfully changed payment id=%1% type "
+                        "%2% => %3%") % payment_id % old_type % type);
+        }
+        catch (std::exception &ex) {
+            throw std::runtime_error(str(boost::format(
+                            "set payment type: %1%") % ex.what()));
+        }
+        catch (NOT_FOUND) {
+            throw std::runtime_error(str(boost::format("set payment type: "
+                            "payment id=%1% not found") % payment_id));
+        }
+        catch (...) {
+            throw std::runtime_error("set payment type: unknown error occured");
+        }
+    }
 };
 
 Manager* Manager::create(File::Manager *_file_manager)

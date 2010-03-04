@@ -80,7 +80,7 @@ public:
 
     virtual std::string toString() const = 0;
     virtual void save() throw (SQL_ERROR) = 0;
-    virtual void reload() throw (SQL_ERROR) = 0;
+    virtual void reload() throw (SQL_ERROR, NOT_FOUND) = 0;
 };
 
 // smart pointer
