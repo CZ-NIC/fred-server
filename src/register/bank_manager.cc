@@ -507,39 +507,39 @@ public:
         return true;
     }
 
-virtual bool pairPaymentWithRegistrar(
-            const Database::ID &paymentId,
-            const std::string &registrarHandle) {
-      
-    TRACE("[CALL] Register::Invoicing::Manager::manualCreateInvoice(Database::ID, std::string)");
-    Database::Query query;
-    query.buffer()
-        << "SELECT id FROM registrar WHERE handle="
-        << Database::Value(registrarHandle);
-    Database::Connection conn = Database::Manager::acquire();
-    Database::ID registrarId;
-    try {
-        Database::Result res = conn.exec(query);
-        if(res.size() == 0) {
-                LOGGER(PACKAGE).error(boost::format(
-                "Registrar with handle '%1%' not found in database.") % 
-                        registrarHandle);
-                return false;
+    virtual bool pairPaymentWithRegistrar(
+                const Database::ID &paymentId,
+                const std::string &registrarHandle) {
+
+        TRACE("[CALL] Register::Invoicing::Manager::manualCreateInvoice(Database::ID, std::string)");
+        Database::Query query;
+        query.buffer()
+            << "SELECT id FROM registrar WHERE handle="
+            << Database::Value(registrarHandle);
+        Database::Connection conn = Database::Manager::acquire();
+        Database::ID registrarId;
+        try {
+            Database::Result res = conn.exec(query);
+            if(res.size() == 0) {
+                    LOGGER(PACKAGE).error(boost::format(
+                    "Registrar with handle '%1%' not found in database.") %
+                            registrarHandle);
+                    return false;
+            }
+            registrarId = res[0][0];
+
+            PaymentImpl pi;
+            pi.setId(paymentId);
+            pi.reload();
+            processPayment(&pi, registrarId);
+
+        } catch (std::exception &e) {
+            LOGGER(PACKAGE).error(boost::format("An error has occured: %1% ") % e.what());
+            return false;
         }
-        registrarId = res[0][0];
 
-        PaymentImpl pi;
-        pi.setId(paymentId);
-        pi.reload();
-        processPayment(&pi, registrarId);
-
-    } catch (std::exception &e) {
-        LOGGER(PACKAGE).error(boost::format("An error has occured: %1% ") % e.what());
-        return false;
+        return true;
     }
-
-    return true;
-}
 };
 
 Manager* Manager::create(File::Manager *_file_manager)
