@@ -42,6 +42,8 @@ BankClient::runMethod()
         show_opts();
     } else if (m_conf.hasOpt(BANK_STATEMENT_LIST_NAME)) {
         // statement_list();
+    } else if (m_conf.hasOpt(BANK_PAYMENT_LIST_NAME)) {
+        payment_list();
     } else if (m_conf.hasOpt(BANK_IMPORT_XML_NAME)) {
         import_xml();
     } else if (m_conf.hasOpt(BANK_ADD_ACCOUNT_NAME)) {
@@ -101,6 +103,43 @@ BankClient::statement_list()
     bankList->exportXML(output);
 }
 */
+
+void
+BankClient::payment_list()
+{
+    callHelp(m_conf, payment_list_help);
+
+    /* init file manager */
+    CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    FileManagerClient fm_client(corba_client.getNS());
+    Register::File::ManagerPtr file_manager(Register::File::Manager::create(&fm_client));
+
+    /* bank manager */
+    Register::Banking::ManagerPtr bank_manager(Register::Banking::Manager::create(file_manager.get()));
+    Register::Banking::PaymentListPtr list(bank_manager->createPaymentList());
+
+    Database::Filters::BankPayment *payment_filter = new Database::Filters::BankPaymentImpl();
+    if (m_conf.hasOpt(BANK_PAYMENT_TYPE_NAME)) {
+        int type = m_conf.get<int>(BANK_PAYMENT_TYPE_NAME);
+        if (type == 0) {
+            payment_filter->addType().setNULL();
+        }
+        else {
+            payment_filter->addType().setValue(type);
+        }
+    }
+
+    Database::Filters::Union filter;
+    filter.addFilter(payment_filter);
+    list->reload(filter);
+
+    for (unsigned int i = 0; i < list->size(); ++i) {
+        Register::Banking::Payment *payment = list->get(i);
+        if (payment) {
+            std::cout << payment->getId() << std::endl;
+        }
+    }
+}
 
 void
 BankClient::import_xml()
@@ -192,7 +231,7 @@ void
 BankClient::move_statement()
 {
     callHelp(m_conf, move_statement_help);
-    Database::ID itemId = m_conf.get<unsigned int>(BANK_PAYMENT_ID_NAME);
+    Database::ID itemId = m_conf.get<unsigned long long>(BANK_PAYMENT_ID_NAME);
     Database::ID headId = m_conf.get<unsigned int>(BANK_STATEMENT_ID_NAME);
     bool force = false;
     if (m_conf.hasOpt(BANK_FORCE_NAME)) {
@@ -214,8 +253,8 @@ BankClient::set_payment_type()
 {
     callHelp(m_conf, set_payment_type_help);
 
-    Database::ID payment_id = m_conf.get<unsigned long long>(BANK_SET_PAYMENT_TYPE_PID_NAME);
-    int type = m_conf.get<int>(BANK_SET_PAYMENT_TYPE_TYPE_NAME);
+    Database::ID payment_id = m_conf.get<unsigned long long>(BANK_PAYMENT_ID_NAME);
+    int type = m_conf.get<int>(BANK_PAYMENT_TYPE_NAME);
 
      /* init file manager */
     CorbaClient corba_client(0, 0, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
@@ -240,6 +279,18 @@ BankClient::statement_list_help()
         "    [--" << BANK_CONST_SYMBOL_NAME << "=<const_symbol>] \\\n"
         "    [--" << BANK_INVOICE_ID_NAME << "=<invoice_id>]\n"
         << std::endl;
+}
+
+void
+BankClient::payment_list_help()
+{
+    std::cout <<
+        "** Payment list **\n\n"
+        "  $ " << g_prog_name << " --" << BANK_PAYMENT_LIST_NAME << " \\\n"
+        "    [--" << BANK_PAYMENT_TYPE_NAME << "=[0,1,2,3,4,5]\n"
+        << std::endl;
+
+    std::cout << "--" << BANK_PAYMENT_TYPE_NAME << "=0 means that type is not set in payment" << std::endl;
 }
 
 void
@@ -277,11 +328,11 @@ BankClient::move_statement_help()
     std::cout << 
         "** Add new bank account **\n\n"
         "  $ " << g_prog_name << " --" << BANK_MOVE_STATEMENT_NAME << " \\\n"
-        "   --" << BANK_PAYMENT_ID_NAME << "=<item_id> \\\n"
-        "   --" << BANK_STATEMENT_ID_NAME << "=<new_head_id> \\\n"
+        "   --" << BANK_PAYMENT_ID_NAME << "=<payment_id> \\\n"
+        "   --" << BANK_STATEMENT_ID_NAME << "=<statement_id> \\\n"
         "   [--" << BANK_FORCE_NAME << "]\n"
         << std::endl;
-    std::cout << "If ``head_id'' is zero, that set ``NULL'' as head id"
+    std::cout << "If ``statement_id'' is zero, that set ``NULL'' as statement id"
         << std::endl;
 }
 
@@ -291,10 +342,10 @@ BankClient::set_payment_type_help()
     std::cout <<
         "** Change type of given payment **\n\n"
         "  $ " << g_prog_name << " --" << BANK_SET_PAYMENT_TYPE_NAME << " \\\n"
-        "   --" << BANK_SET_PAYMENT_TYPE_PID_NAME << "=<" << BANK_SET_PAYMENT_TYPE_PID_NAME_DESC << "> \\\n"
-        "   --" << BANK_SET_PAYMENT_TYPE_TYPE_NAME << "=<" << BANK_SET_PAYMENT_TYPE_TYPE_NAME_DESC << "> \\\n"
+        "   --" << BANK_PAYMENT_ID_NAME << "=<" << BANK_PAYMENT_ID_NAME_DESC << "> \\\n"
+        "   --" << BANK_PAYMENT_TYPE_NAME << "=<" << BANK_PAYMENT_TYPE_NAME_DESC << "> \\\n"
         << std::endl;
-    std::cout << "Where '" << BANK_SET_PAYMENT_TYPE_TYPE_NAME << "' is from interval <0, 5>" << std::endl;
+    std::cout << "Where '" << BANK_PAYMENT_TYPE_NAME << "' is from interval <0, 5>" << std::endl;
 }
 
 
@@ -304,6 +355,7 @@ BankClient::set_payment_type_help()
 const struct options
 BankClient::m_opts[] = {
     ADDOPT(BANK_STATEMENT_LIST_NAME, TYPE_NOTYPE, true, true),
+    ADDOPT(BANK_PAYMENT_LIST_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(BANK_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(BANK_IMPORT_XML_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(BANK_ADD_ACCOUNT_NAME, TYPE_NOTYPE, true, true),
@@ -327,10 +379,9 @@ BankClient::m_opts[] = {
     ADDOPT(BANK_XML_FILE_STATEMENT_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_XML_FILE_STATEMENT_MIME_NAME, TYPE_STRING, false, false),
     ADDOPT(BANK_FORCE_NAME, TYPE_NOTYPE, false, false),
-    ADDOPT(BANK_PAYMENT_ID_NAME, TYPE_UINT, false, false),
     ADDOPT(BANK_STATEMENT_ID_NAME, TYPE_UINT, false, false),
-    ADDOPT(BANK_SET_PAYMENT_TYPE_PID_NAME, TYPE_ULONGLONG, false, false),
-    ADDOPT(BANK_SET_PAYMENT_TYPE_TYPE_NAME, TYPE_INT, false, false)
+    ADDOPT(BANK_PAYMENT_ID_NAME, TYPE_ULONGLONG, false, false),
+    ADDOPT(BANK_PAYMENT_TYPE_NAME, TYPE_INT, false, false)
 };
 
 #undef ADDOPT

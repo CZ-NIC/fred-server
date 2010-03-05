@@ -23,7 +23,7 @@
 #define BANK_SHOW_OPTS_NAME             "bank_show_opts"
 #define BANK_SHOW_OPTS_NAME_DESC        "show all banking options"
 #define BANK_STATEMENT_LIST_NAME        "bank_statement_list"
-#define BANK_STATEMENT_LIST_NAME_DESC   "list of payments (filterable)"
+#define BANK_STATEMENT_LIST_NAME_DESC   "list of statements (filterable)"
 #define BANK_DATE_NAME                  "bank_date"
 #define BANK_DATE_NAME_DESC             "bank create date"
 #define BANK_ID_NAME                    "bank_id"
@@ -54,7 +54,6 @@
 #define BANK_XML_FILE_NAME              "bank_xml"
 #define BANK_XML_FILE_NAME_DESC         "xml file name"
 
-
 #define BANK_STATEMENT_LIST_HELP_NAME       "bank_statement_list_help"
 #define BANK_STATEMENT_LIST_HELP_NAME_DESC  "bank statement list help"
 
@@ -78,21 +77,24 @@
 #define BANK_XML_FILE_STATEMENT_MIME_NAME           "bank_statement_file_mimetype"
 #define BANK_XML_FILE_STATEMENT_MIME_NAME_DESC      "mime type of original statement file"
 
-#define BANK_MOVE_STATEMENT_NAME        "move_statement_item"
-#define BANK_MOVE_STATEMENT_NAME_DESC   "set head to statement item"
-#define BANK_FORCE_NAME                 "force"
-#define BANK_FORCE_NAME_DESC            "force"
-#define BANK_PAYMENT_ID_NAME               "item_id"
-#define BANK_PAYMENT_ID_NAME_DESC          "item id"
-#define BANK_STATEMENT_ID_NAME               "head_id"
-#define BANK_STATEMENT_ID_NAME_DESC          "head id"
+#define BANK_MOVE_STATEMENT_NAME             "move_statement_item"
+#define BANK_MOVE_STATEMENT_NAME_DESC        "set head to statement item"
 
 #define BANK_SET_PAYMENT_TYPE_NAME           "bank_set_payment_type"
 #define BANK_SET_PAYMENT_TYPE_NAME_DESC      "change type of payment"
-#define BANK_SET_PAYMENT_TYPE_PID_NAME       "bank_payment_id"
-#define BANK_SET_PAYMENT_TYPE_PID_NAME_DESC  "payment id"
-#define BANK_SET_PAYMENT_TYPE_TYPE_NAME      "bank_payment_type"
-#define BANK_SET_PAYMENT_TYPE_TYPE_NAME_DESC "payment type"
+
+#define BANK_PAYMENT_LIST_NAME               "bank_payment_list"
+#define BANK_PAYMENT_LIST_NAME_DESC          "list of payments (filterable)"
+
+#define BANK_STATEMENT_ID_NAME               "bank_statement_id"
+#define BANK_STATEMENT_ID_NAME_DESC          "statement id"
+#define BANK_PAYMENT_ID_NAME                 "bank_payment_id"
+#define BANK_PAYMENT_ID_NAME_DESC            "payment id"
+#define BANK_PAYMENT_TYPE_NAME               "bank_payment_type"
+#define BANK_PAYMENT_TYPE_NAME_DESC          "payment type"
+#define BANK_FORCE_NAME                      "force"
+#define BANK_FORCE_NAME_DESC                 "force"
+
 
 
 #include <boost/program_options.hpp>
@@ -135,6 +137,7 @@ public:
 
     void show_opts();
     void statement_list();
+    void payment_list();
     void import_xml();
     void import_xml_help();
     void add_bank_account();
@@ -142,6 +145,7 @@ public:
     void set_payment_type();
 
     void statement_list_help();
+    void payment_list_help();
     void add_bank_account_help();
     void move_statement_help();
     void set_payment_type_help();
