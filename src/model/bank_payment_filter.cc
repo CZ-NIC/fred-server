@@ -64,9 +64,9 @@ Value<int> &
 BankPaymentImpl::addType()
 {
     Value<int> *tmp = new Value<int>(
-            Column("code", joinBankPaymentTable()));
+            Column("type", joinBankPaymentTable()));
     add(tmp);
-    tmp->setName("Code");
+    tmp->setName("Type");
     return *tmp;
 }
 
