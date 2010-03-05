@@ -26,6 +26,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <limits>
 
 #include "base_exception.h"
 

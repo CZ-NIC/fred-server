@@ -1,6 +1,8 @@
 #include "money.h"
 #include <iomanip>
 #include <sstream>
+#include "convert_sql_base.h"
+#include "convert_sql_db_types.h"
 
 namespace Database {
 
@@ -32,19 +34,11 @@ Money::format() const
 void
 Money::format(std::string str)
 {
-    if (str.find('.') != std::string::npos) {
-        value_ = ABS(atoll(str.substr(0, str.find('.')).c_str())) * 100;
-        if (str.substr(str.find('.') + 1, std::string::npos).length() == 1) {
-            value_ += 10 * ABS(atoll(str.substr(str.find('.') + 1, 1).c_str()));
-        } else {
-            value_ += ABS(atoll(str.substr(str.find('.') + 1, 2).c_str()));
-        }
-        if (str.find('-') != std::string::npos) {
-            value_ = -value_;
-        }
-    } else {
-        value_ = atoll(str.c_str()) * 100;
-    }
+
+    
+    Money conv(SqlConvert<Money>::from(str));
+
+    *this = conv;   
 }
 
 /*
