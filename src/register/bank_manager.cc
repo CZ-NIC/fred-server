@@ -294,7 +294,7 @@ public:
                                                                 % cpayment->toString());
 
                             throw std::runtime_error(str(boost::format(
-                                            "oops! found conflict poyment with "
+                                            "oops! found conflict payment with "
                                             "INCONSISTENT DATA (id=%1% account_evid=%2%) "
                                             "importing file=%3%")
                                             % cpayment->getId()
