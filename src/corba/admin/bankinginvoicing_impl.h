@@ -32,12 +32,19 @@ public:
     void archiveInvoices(
             bool send);
             */
+
     bool pairPaymentRegistrarId(
             CORBA::ULongLong paymentId,
             CORBA::ULongLong registrarId);
-    bool pairPaymentRegistrarHandle( 
+
+    bool pairPaymentRegistrarHandle(
             CORBA::ULongLong paymentId,
             const char *registrarHandle);
+
+    bool setPaymentType(
+            CORBA::ULongLong payment_id,
+            CORBA::Short payment_type);
+
     /*
     bool addPrefix(
             const char *zoneName,

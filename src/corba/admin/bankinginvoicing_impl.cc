@@ -71,6 +71,26 @@ bool ccReg_BankingInvoicing_i::pairPaymentRegistrarHandle(
     return bank_manager->pairPaymentWithRegistrar(paymentId, registrarHandle);
 }
 
+bool ccReg_BankingInvoicing_i::setPaymentType(
+        CORBA::ULongLong payment_id,
+        CORBA::Short payment_type)
+{
+    ConnectionReleaser releaser;
+
+    try {
+        using namespace Register;
+        FileManagerClient fm_client(ns_);
+        File::ManagerPtr file_manager(File::Manager::create(&fm_client));
+
+        Banking::ManagerPtr bank_manager(Banking::Manager::create(file_manager.get()));
+        bank_manager->setPaymentType(payment_id, payment_type);
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+
 /*
 bool
 ccReg_BankingInvoicing_i::addPrefix(
