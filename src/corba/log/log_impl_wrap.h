@@ -7,6 +7,9 @@
 // even better:
 #include "register/request.h"
 #include "src/corba/admin/usertype_conv.h"
+#include "src/corba/admin/pagetable_logger.h"
+#include "src/corba/admin/common.h"
+
 
 
 using namespace Register::Logger;
@@ -33,8 +36,16 @@ public:
   // ccReg::TID new_dummy(const char *name, const char *clTRID);
   CORBA::Boolean CloseSession(ccReg::TID id);
   ccReg::RequestActionList *GetServiceActions(ccReg::RequestServiceType service);
+  Registry::PageTable_ptr getPageTable(const char *session_id);
+  void deletePageTable(const char *session_id);
+
+  Registry::Request::Detail* getDetail(ccReg::TID _id);
+  Registry::Request::Detail* createRequestDetail(Register::Logger::Request *req);
 
 private:
+    typedef std::map<std::string, Registry::PageTable_ptr> pagetables_list;
+
+    pagetables_list pagetables;
   std::auto_ptr<Register::Logger::Manager> back;
 
 public:

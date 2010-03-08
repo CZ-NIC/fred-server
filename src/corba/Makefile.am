@@ -15,9 +15,10 @@ AM_CPPFLAGS = $(POSTGRESQL_CFLAGS) 		\
 LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
         $(BOOST_REGEX_LIB) $(OMNIORB4_LIBS) \
 	$(LIBIDN_CFLAGS) $(LIBIDN_LIBS) \
-	admin/libadmin_impl.a \
 	epp/libepp_impl.a \
-	log/liblog_impl.a libcorba.a \
+	log/liblog_impl.a \
+	admin/libadmin_impl.a \
+	libcorba.a \
 	$(top_builddir)/src/register/libfred.a \
 	$(top_builddir)/src/model/libmodel.a \
 	$(top_builddir)/util/db/libdb.a \

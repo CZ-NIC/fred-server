@@ -50,6 +50,7 @@ class ccReg_Session_i: public POA_ccReg::Session,
 private:
   std::string session_id_;
   Config::Conf& cfg_;
+  NameService* m_ns;
 
   ccReg::BankingInvoicing_ptr m_banking_invoicing;
 
@@ -67,8 +68,7 @@ private:
   // ccReg_Statement_i* m_statements;
   ccReg_Filters_i* m_filters;
   ccReg_User_i* m_user;
-  ccReg_Files_i* m_files;
-  ccReg_Logger_i* m_logger;
+  ccReg_Files_i* m_files;  
   ccReg_LogSession_i* m_logsession;
 
   std::auto_ptr<Register::Manager> m_register_manager;
@@ -93,6 +93,8 @@ private:
   DB db;
 
   Settings settings_;
+
+  Registry::PageTable_ptr getLoggerPageTable();
 
   Registry::Domain::Detail* getDomainDetail(ccReg::TID _id);
   Registry::Contact::Detail* getContactDetail(ccReg::TID _id);

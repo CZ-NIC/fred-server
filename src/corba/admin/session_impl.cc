@@ -28,6 +28,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                  ccReg_User_i* _user)
                                : session_id_(_session_id),
                                  cfg_(cfg),
+                                 m_ns (ns),
                                  m_banking_invoicing(_banking),
                                  m_user(_user),
                                  m_mailer_manager(ns),
@@ -41,8 +42,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   db.OpenDatabase(database.c_str());
   m_register_manager.reset(Register::Manager::create(&db,
                                                      cfg.get<bool>("registry.restricted_handles")));
-
-  m_logger_manager.reset(Register::Logger::Manager::create());
+  
   m_logsession_manager.reset(Register::Session::Manager::create());
 
   m_register_manager->dbManagerInit();
@@ -78,8 +78,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_payments = new ccReg_Payments_i(m_banking_manager->createPaymentList());
   // m_statementheads = new ccReg_StatementHeads_i(m_banking_manager->createList());
   m_mails = new ccReg_Mails_i(mail_manager_->createList(), ns);
-  m_files = new ccReg_Files_i(file_manager_->createList());
-  m_logger = new ccReg_Logger_i(m_logger_manager->createList());
+  m_files = new ccReg_Files_i(file_manager_->createList());  
   m_logsession = new ccReg_LogSession_i(m_logsession_manager->createList());
   m_zones = new ccReg_Zones_i(m_register_manager->getZoneManager()->createList());
 
@@ -90,8 +89,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_nssets->setDB();
   m_keysets->setDB();
   m_publicrequests->setDB();
-  m_invoices->setDB();
-  m_logger->setDB();
+  m_invoices->setDB();  
   m_logsession->setDB();
   m_payments->setDB();
   // m_statementheads->setDB();
@@ -118,12 +116,14 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_invoices;
   delete m_filters;
   delete m_user;
-  delete m_files;
-  delete m_logger;
+  delete m_files;  
   delete m_logsession;
   delete m_payments;
   // delete m_statementheads;
   delete m_zones;
+
+  ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
+  logger->deletePageTable(session_id_.c_str());
 
   db.Disconnect();
 }
@@ -133,6 +133,17 @@ ccReg::User_ptr ccReg_Session_i::getUser() {
   ConnectionReleaser releaser;
 
   return m_user->_this();
+}
+
+
+Registry::PageTable_ptr ccReg_Session_i::getLoggerPageTable()
+{
+    //TODO use some const
+    ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
+
+    Registry::PageTable_ptr pagetable = logger->getPageTable(session_id_.c_str());
+
+    return pagetable;
 }
 
 Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
@@ -170,7 +181,7 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
     case ccReg::FT_FILE:
       return m_files->_this();
     case ccReg::FT_LOGGER:
-      return m_logger->_this();
+      return getLoggerPageTable();
     case ccReg::FT_SESSION: 
       return m_logsession->_this();
     case ccReg::FT_ZONE:
@@ -545,6 +556,8 @@ Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id)
   }
 }
 
+
+
 // Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
 Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
 	// Register::Logger::Request *request = m_logger->findId(_id);
@@ -554,6 +567,12 @@ Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
 
 	LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
 
+        ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
+
+        return logger->getDetail(_id);
+
+        // TODO remove
+        /*
 	std::auto_ptr<Register::Logger::List> request_list(m_logger_manager->createList());
 
 	Database::Filters::Union union_filter;
@@ -573,6 +592,7 @@ Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
 		throw ccReg::Admin::ObjectNotFound();
 	}
 	return createRequestDetail(request_list->get(0));
+         * */
 
 }
 
@@ -653,7 +673,7 @@ Registry::Zone::Detail* ccReg_Session_i::getZoneDetail(ccReg::TID _id) {
   }
 }
 
-
+// TODO remove 
 Registry::Request::Detail *ccReg_Session_i::createRequestDetail(Register::Logger::Request *req) {
 	Registry::Request::Detail *detail = new Registry::Request::Detail();
 
