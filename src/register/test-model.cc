@@ -102,80 +102,94 @@ unsigned model_reload_test()
 
 unsigned model_update_test()
 {
-/*
- * to log queries:
- *  in /etc/postgresql/8.4/main/postgresql.conf set:
- *
- *  log_min_duration_statement = 0
- *  log_duration = off
- *  log_statement = 'none'
- *
- * postgres restart
- *
- * */
-unsigned ret=0;
+    /*
+     * to log queries:
+     *  in /etc/postgresql/8.4/main/postgresql.conf set:
+     *
+     *  log_min_duration_statement = 0
+     *  log_duration = off
+     *  log_statement = 'none'
+     *
+     * postgres restart
+     *
+     * */
+    unsigned ret=0;
 
-mf1.setFilesize(80000);
-mf1.update();
+    mf1.setFilesize(80000);
+    mf1.update();
 
-mf1.reload();
+    mf1.reload();
 
-//compare mf1 and mf2, it should be same,  ret=0 is OK
+    //compare mf1 and mf2, it should be same,  ret=0 is OK
 
-if(mf1.getId() != mf2.getId()) ret+=1;
-if(mf1.getName() != mf2.getName())
-{
-    std::cout << mf1.getName() << std::endl;
-    std::cout << mf2.getName() << std::endl;
-    ret+=2;
+    if(mf1.getId() != mf2.getId()) ret+=1;
+    if(mf1.getName() != mf2.getName())
+    {
+        std::cerr << mf1.getName() << std::endl;
+        std::cerr << mf2.getName() << std::endl;
+        ret+=2;
+    }
+
+    if(mf1.getPath() != mf2.getPath())
+    {
+        std::cerr << mf1.getPath() << std::endl;
+        std::cerr << mf2.getPath() << std::endl;
+
+        ret+=4;
+    }
+
+    if(mf1.getMimeType() != mf2.getMimeType()) ret+=8;
+    if(mf1.getCrDate() != mf2.getCrDate())
+    {
+        std::cerr << mf1.getCrDate() << std::endl;
+        std::cerr << mf2.getCrDate() << std::endl;
+        ret+=16;
+    }
+
+    if(mf1.getFilesize() != mf2.getFilesize()) ret+=32;
+    if(mf1.getFileTypeId() != mf2.getFileTypeId())
+    {
+        std::cerr << mf1.getFileTypeId() << std::endl;
+        std::cerr << mf2.getFileTypeId() << std::endl;
+
+        ret+=64;
+    }
+
+
+    if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
+
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
+    std::string query = str(boost::format("DELETE FROM files WHERE id = %1%") % mf1.getId() );
+    conn.exec( query );
+    tx.commit();
+
+    return ret;
+
 }
 
-if(mf1.getPath() != mf2.getPath())
+unsigned model_nodatareload_test()
 {
-    std::cout << mf1.getPath() << std::endl;
-    std::cout << mf2.getPath() << std::endl;
-
-    ret+=4;
-}
-
-if(mf1.getMimeType() != mf2.getMimeType()) ret+=8;
-if(mf1.getCrDate() != mf2.getCrDate())
-{
-    std::cout << mf1.getCrDate() << std::endl;
-    std::cout << mf2.getCrDate() << std::endl;
-    ret+=16;
-}
-
-if(mf1.getFilesize() != mf2.getFilesize()) ret+=32;
-if(mf1.getFileTypeId() != mf2.getFileTypeId())
-{
-    std::cout << mf1.getFileTypeId() << std::endl;
-    std::cout << mf2.getFileTypeId() << std::endl;
-
-    ret+=64;
+    unsigned ret=0;
+    mf2.reload();
+    return ret;
 }
 
 
-if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
-
-Database::Connection conn = Database::Manager::acquire();
-Database::Transaction tx(conn);
-std::string query = str(boost::format("DELETE FROM files WHERE id = %1%") % mf1.getId() );
-conn.exec( query );
-tx.commit();
-
-
-
-return ret;
-
+bool check_std_exception_nodatafound(std::exception const & ex)
+{
+    std::string ex_msg(ex.what());
+    return (ex_msg.find(std::string("No data found")) != std::string::npos);
 }
 
 BOOST_AUTO_TEST_CASE( test_model )
 {
     Database::Manager::init(new Database::ConnectionFactory(CONNECTION_STRING, 1, 10));
 
-    BOOST_REQUIRE(model_insert_test() == 0);
-    BOOST_REQUIRE(model_reload_test() == 0);
-    BOOST_REQUIRE(model_update_test() == 0);
+    BOOST_REQUIRE_EQUAL(model_insert_test() , 0);
+    BOOST_REQUIRE_EQUAL(model_reload_test() , 0);
+    BOOST_REQUIRE_EQUAL(model_update_test() , 0);
+    BOOST_REQUIRE_EXCEPTION( model_nodatareload_test()
+            , std::exception , check_std_exception_nodatafound);
 }
 
