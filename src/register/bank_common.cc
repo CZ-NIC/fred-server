@@ -5,6 +5,31 @@
 namespace Register {
 namespace Banking {
 
+static std::string ltrim(const std::string &_input)
+{
+    std::string output(_input);
+    std::string::size_type i = 0;
+    i = output.find_first_not_of(" ", i);
+    output.erase(0, i);
+    return output;
+}
+
+static std::string rtrim(const std::string &_input)
+{
+    std::string output(_input);
+    std::string::size_type i = output.npos;
+    i = output.find_last_not_of(" ", i);
+    output.erase(i + 1, output.size());
+    return output;
+}
+
+static std::string trim(const std::string &_input)
+{
+    return ltrim(rtrim(_input));
+}
+
+
+
 std::string
 loadInStream(std::istream &in)
 {
@@ -158,7 +183,7 @@ XMLnode::setName(const std::string &name)
 void 
 XMLnode::setValue(const std::string &value)
 {
-    m_value = value;
+    m_value = trim(value);
 }
 void 
 XMLnode::addChild(XMLnode node)
