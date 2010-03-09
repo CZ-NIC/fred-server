@@ -17,12 +17,15 @@
 
 #include <memory>
 #include <iostream>
+
+#define BOOST_TEST_MODULE Test model
+
 #include <string>
 #include <boost/format.hpp>
 #include "db_settings.h"
 #include "log/logger.h"
 #include "log/context.h"
-
+#include <boost/test/included/unit_test.hpp>
 
 
 #include "model_files.h"
@@ -55,7 +58,9 @@ unsigned model_insert_test()
         if(mf1.getName().compare(res[0][1])) ret+=2;
         if(mf1.getPath().compare(res[0][2])) ret+=4;
         if(std::string("application/octet-stream").compare(res[0][3])) ret+=8;
-        if(mf1.getCrDate().to_string().compare(Database::DateTime(std::string(res[0][4])).to_string())) ret+=16;
+        if(mf1.getCrDate().to_string()
+            .compare(Database::DateTime(std::string(res[0][4])).to_string()))
+                ret+=16;
         if(static_cast<int>(res[0][5]) != mf1.getFilesize()) ret+=32;
         if(static_cast<unsigned long long>(res[0][6]) != mf1.getFileTypeId()) ret+=64;
 
@@ -153,20 +158,24 @@ if(mf1.getFileTypeId() != mf2.getFileTypeId())
 
 if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
 
+Database::Connection conn = Database::Manager::acquire();
+Database::Transaction tx(conn);
+std::string query = str(boost::format("DELETE FROM files WHERE id = %1%") % mf1.getId() );
+conn.exec( query );
+tx.commit();
+
+
+
 return ret;
 
 }
 
-int main(int argc, char **argv)
+BOOST_AUTO_TEST_CASE( test_model )
 {
-    int ret=0;
     Database::Manager::init(new Database::ConnectionFactory(CONNECTION_STRING, 1, 10));
 
-    //assignment as condition should be in parentheses
-    if((ret = model_insert_test())) return ret;
-    if((ret = model_reload_test())) return ret;
-    if((ret = model_update_test())) return ret;
-
-    return ret;
+    BOOST_REQUIRE(model_insert_test() == 0);
+    BOOST_REQUIRE(model_reload_test() == 0);
+    BOOST_REQUIRE(model_update_test() == 0);
 }
 
