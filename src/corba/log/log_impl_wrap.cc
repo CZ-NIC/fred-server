@@ -121,7 +121,7 @@ Registry::Request::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id) {
 	// request_list->reload(union_filter, &m_db_manager);
 	request_list->reload(union_filter);
 
-	if(request_list->size() != 1) {
+	if(request_list->size() != 1) {            
 		throw ccReg::Admin::ObjectNotFound();
 	}
 	return createRequestDetail(request_list->get(0));

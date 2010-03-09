@@ -123,7 +123,13 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_zones;
 
   ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
-  logger->deletePageTable(session_id_.c_str());
+
+  if( logger != NULL ) {
+    LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: deleting logger pagetable."));
+    logger->deletePageTable(session_id_.c_str());
+  } else {
+    LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't runnig."));
+  }
 
   db.Disconnect();
 }
@@ -141,6 +147,10 @@ Registry::PageTable_ptr ccReg_Session_i::getLoggerPageTable()
     //TODO use some const
     ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
 
+    if(logger == NULL) {
+        throw ccReg::Admin::ServiceUnavailable();
+    }
+    
     Registry::PageTable_ptr pagetable = logger->getPageTable(session_id_.c_str());
 
     return pagetable;
@@ -182,8 +192,10 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
       return m_files->_this();
     case ccReg::FT_LOGGER:
       return getLoggerPageTable();
-    case ccReg::FT_SESSION: 
-      return m_logsession->_this();
+
+      // implement this in similar wayy to getLoggerPageTable:
+    // case ccReg::FT_SESSION:
+    //   return m_logsession->_this();
     case ccReg::FT_ZONE:
       return m_zones->_this();
 
@@ -241,7 +253,7 @@ CORBA::Any* ccReg_Session_i::getDetail(ccReg::FilterType _type, ccReg::TID _id) 
       break;
 
     case ccReg::FT_LOGGER:
-      *result <<= getRequestDetail(_id);
+      *result <<= getLoggerDetail(_id);
       break;
 
     // case ccReg::FT_STATEMENTHEAD:
@@ -559,7 +571,7 @@ Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id)
 
 
 // Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
-Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
+Registry::Request::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
 	// Register::Logger::Request *request = m_logger->findId(_id);
 	// if (request) {
 	//		return createRequestDetail(request);
@@ -569,8 +581,10 @@ Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
 
         ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
 
-        return logger->getDetail(_id);
+        if (logger == NULL) throw ccReg::Admin::ServiceUnavailable();
 
+        return logger->getDetail(_id);
+                
         // TODO remove
         /*
 	std::auto_ptr<Register::Logger::List> request_list(m_logger_manager->createList());
