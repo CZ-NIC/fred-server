@@ -72,7 +72,7 @@ public:
        * default (works only for sequences) */
       typename _class::field_list list = _object->getFields();
       Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
-      if (pk && pk->getAttrs().isDefault() && pk->getField(_object).isSet()) {
+      if (pk && pk->getAttrs().isDefault() && pk->getField(_object).isChanged()) {
 #ifdef HAVE_LOGGER
           LOGGER(PACKAGE).debug("PK is set; data was already inserted (insert aborted)");
 #endif
@@ -91,6 +91,10 @@ public:
       if (!iquery->empty()) {
         jobs.execute();
         this->reloadPrimaryKey_(_object);
+
+        BOOST_FOREACH(typename Field::List<_class>::value_type _field, _object->getFields()) {
+          _field->markSerialized(_object);
+        }
       }
 #ifdef HAVE_LOGGER 
     }
@@ -132,6 +136,10 @@ public:
 
       if (!uquery->empty()) {
         jobs.execute();
+
+        BOOST_FOREACH(typename Field::List<_class>::value_type _field, _object->getFields()) {
+          _field->markSerialized(_object);
+        }
       }
 #ifdef HAVE_LOGGER
     }
@@ -275,7 +283,7 @@ private:
     typename _class::field_list list = _class::getFields();
     Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
 
-    if (!pk->getField(_object).isSet() && pk->getAttrs().isDefault()) {
+    if (!pk->getField(_object).isChanged() && pk->getAttrs().isDefault()) {
       std::string pk_table = pk->getTableName();
       std::string pk_field = pk->getName();
 
@@ -300,7 +308,7 @@ private:
     typename _class::field_list list = _class::getFields();
     Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
 
-    if (!pk->getField(_object).isSet() && pk->getAttrs().isDefault()) {
+    if (!pk->getField(_object).isChanged() && pk->getAttrs().isDefault()) {
       std::string pk_table = pk->getTableName();
       std::string pk_field = pk->getName();
 
@@ -323,7 +331,7 @@ private:
     typename _class::field_list list = _class::getFields();
     Field::PrimaryKey<_class, sequence_type> *pk = list.template getPrimaryKey<sequence_type>();
 
-    if (pk->getField(_object).isSet() || !pk->getAttrs().isDefault()) {
+    if (pk->getField(_object).isChanged() || !pk->getAttrs().isDefault()) {
       std::string pk_table = pk->getTableName();
       std::string pk_field = pk->getName();
 

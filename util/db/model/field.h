@@ -59,23 +59,24 @@ public:
 
 
   Field<value_type>& operator =(const Database::Value &_value) {
-    this->setValue(_value);
-    return *this;
-  }
-
-
-  void setValue(const Database::Value &_value, bool _is_set = true) {
     if (!_value.isnull()) {
       value_ = _value;
-      is_set_ = _is_set;
+      is_set_ = true;
     }
     else {
       is_set_ = false;
     }
+
+    return *this;
   }
 
 
-  bool isSet() const {
+  void changed(bool _flag) {
+    is_set_ = _flag;
+  }
+
+
+  bool isChanged() const {
     return is_set_;
   }
 
@@ -134,23 +135,24 @@ public:
 
 
   Field<value_type>& operator =(const Database::Value &_value) {
-    this->setValue(_value);
-    return *this;
-  }
-
-
-  void setValue(const Database::Value &_value, bool _is_set = true) {
     if (!_value.isnull()) {
       value_ = static_cast<std::string>(_value);
-      is_set_ = _is_set;
+      is_set_ = true;
     }
     else {
       is_set_ = false;
     }
+
+    return *this;
   }
 
 
-  bool isSet() const {
+  void changed(bool _flag) {
+    is_set_ = _flag;
+  }
+
+
+  bool isChanged() const {
     return is_set_;
   }
 

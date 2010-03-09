@@ -88,13 +88,22 @@ public:
   virtual void serialize(std::ostream &_os, const class_name *_object) = 0;
 
 
-  virtual void serialize(::Model::JobQueue &_jobs, Database::InsertQuery &_query, class_name *_object) = 0; 
+  virtual void serialize(::Model::JobQueue &_jobs,
+                         Database::InsertQuery &_query,
+                         class_name *_object) = 0;
 
 
-  virtual void serialize(::Model::JobQueue &_jobs, Database::UpdateQuery &_query, class_name *_object) = 0; 
+  virtual void serialize(::Model::JobQueue &_jobs,
+                         Database::UpdateQuery &_query,
+                         class_name *_object) = 0;
 
 
-  virtual void setValue(class_name *_object, const Database::Value &_value, bool _is_set = true) = 0;
+  virtual void setValue(class_name *_object,
+                        const Database::Value &_value,
+                        bool _is_set = true) = 0;
+
+
+  virtual void markSerialized(class_name *_object) = 0;
 
 
 protected:
@@ -136,11 +145,12 @@ public:
 
 
   void serialize(::Model::JobQueue &_jobs, Database::InsertQuery &_query, class_name *_object) {
-    if (!value_(*_object).isSet()) {
+    if (!value_(*_object).isChanged()) {
       if (this->attrs_.isNotNull() && !this->attrs_.isDefault()) {
-        throw SerializationError("INSERT", this->getTableName(), this->getName(), "attrs { isNotNull, !isDefault } && value { !isSet }");
+        throw SerializationError("INSERT", this->getTableName(), this->getName(),
+                                 "attrs { isNotNull, !isDefault } && value { !isChanged }");
       }
-      
+
       if (this->attrs_.isDefault()) {
         return;
       }
@@ -154,14 +164,22 @@ public:
 
 
   void serialize(::Model::JobQueue &_jobs, Database::UpdateQuery &_query, class_name *_object) {
-    if (value_(*_object).isSet()) {
+    if (value_(*_object).isChanged()) {
       _query.add(this->getName(), Database::Value(value_(*_object)));
     }
   }
 
 
+  void markSerialized(class_name *_object) {
+      if (value_(*_object).isChanged()) {
+          value_(*_object).changed(false);
+      }
+  }
+
+
   void setValue(class_name *_object, const Database::Value &_value, bool _is_set) {
-    value_(*_object).setValue(_value, _is_set);
+    value_(*_object) = _value;
+    value_(*_object).changed(_is_set);
   }
 
 
@@ -208,9 +226,9 @@ public:
 
 
   void serialize(::Model::JobQueue &_jobs, Database::InsertQuery &_query, class_name *_object) {
-    if (!this->value_(*_object).isSet()) {
+    if (!this->value_(*_object).isChanged()) {
       if (!this->attrs_.isDefault()) {
-        throw SerializationError("INSERT", this->getTableName(), this->getName(), "attrs { !isDefault } && value { !isSet }");
+        throw SerializationError("INSERT", this->getTableName(), this->getName(), "attrs { !isDefault } && value { !isChanged }");
       }
       else {
         return;
@@ -222,11 +240,16 @@ public:
 
 
   void serialize(::Model::JobQueue &_jobs, Database::UpdateQuery &_query, class_name *_object) {
-    if (!this->value_(*_object).isSet()) {
-      throw SerializationError("UPDATE", this->getTableName(), this->getName(), "value { !isSet }");
+    if (!this->value_(*_object).isChanged()) {
+      throw SerializationError("UPDATE", this->getTableName(), this->getName(), "value { !isChanged }");
     }
 
     _query.where().add(this->getName(), "=", Database::Value(this->value_(*_object)), "AND");
+  }
+
+
+  void markSerialized(class_name *_object) {
+      value_(*_object).changed(true);
   }
 
 

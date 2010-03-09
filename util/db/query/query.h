@@ -284,6 +284,10 @@ public:
     buffer << "UPDATE " << table_.toSql(_esc_func) << " SET " << tmp_set
            << (where_.empty() ? "" : " WHERE 1=1 " + where_.toSql(_esc_func));
 
+    if (where_.empty()) {
+        throw std::runtime_error("update query with empty WHERE clause: "
+                "(" + buffer.str() + ") NOT executed");
+    }
 
     return buffer.str();
   }
