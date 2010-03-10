@@ -30,6 +30,7 @@
 #include <string>
 #include <iterator>
 #include <boost/shared_ptr.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "../row.h"
 #include "../value.h"
@@ -89,6 +90,17 @@ public:
 
   size_type size() const {
     return PQntuples(psql_result_.get());
+  }
+
+  /**
+   * Number of rows affected by non-select query
+   */
+
+  size_type rows_affected() const
+  {
+    std::string number_in_string(PQcmdTuples(psql_result_.get()));
+    size_type ret = boost::lexical_cast<size_type>(number_in_string);
+    return ret;
   }
 
   /**

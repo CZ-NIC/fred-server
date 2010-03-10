@@ -25,6 +25,8 @@
 #define JOB_QUEUE_H_
 
 #include <queue>
+#include <string>
+#include <boost/format.hpp>
 
 #include "../database.h"
 #include "log/logger.h"
@@ -48,7 +50,11 @@ public:
     while (!empty()) {
       Database::Statement *q = front();
       Database::Connection c = Database::Manager::acquire();
-      c.exec(*q);
+      Database::Result res = c.exec(*q);
+      if(res.rows_affected() < 1)
+      {
+          throw Database::NoDataFound(str(boost::format("executing: %1%") % q->str()));
+      }
       pop();
       delete q;
     }

@@ -78,6 +78,14 @@ public:
     return result_.size();
   }
 
+  /**
+   * @number of rows affected by non-select query
+   */
+  size_type rows_affected() const
+  {
+    return result_.rows_affected();
+  }
+
 
   /**
    * @return Iterator pointing at first row
