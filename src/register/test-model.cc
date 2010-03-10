@@ -200,8 +200,6 @@ BOOST_AUTO_TEST_CASE( test_model )
     BOOST_REQUIRE_EQUAL(model_update_test() , 0);
     BOOST_REQUIRE_EXCEPTION( model_nodatareload_test()
             , std::exception , check_std_exception_nodatafound);
-    BOOST_REQUIRE_EXCEPTION( model_nodataupdate_test()
-            , std::exception , check_std_exception_nodatafound);
-
+    BOOST_REQUIRE_EQUAL(model_nodataupdate_test() , 0);
 }
 

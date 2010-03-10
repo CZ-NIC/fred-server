@@ -50,11 +50,7 @@ public:
     while (!empty()) {
       Database::Statement *q = front();
       Database::Connection c = Database::Manager::acquire();
-      Database::Result res = c.exec(*q);
-      if(res.rows_affected() < 1)
-      {
-          throw Database::NoDataFound(str(boost::format("executing: %1%") % q->str()));
-      }
+      c.exec(*q);
       pop();
       delete q;
     }
