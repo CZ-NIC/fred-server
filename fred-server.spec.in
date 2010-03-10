@@ -38,9 +38,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_sbindir}/fred-rifd
 %{_sbindir}/fred-adifd
 %{_sbindir}/fred-pifd
+%{_sbindir}/fred-logd
 %{_sbindir}/fred-admin
-%{_sbindir}/fred-banking
-%{_sbindir}/banking.sh
+%{_sbindir}/migrate_log
 
 %changelog
 * Mon Sep 07 2008 Jaromir Talir <jaromir.talir@nic.cz>

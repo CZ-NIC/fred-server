@@ -29,7 +29,6 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) \
 CLEANFILES=banking.sh
 
 sbin_PROGRAMS = fred-admin
-dist_sbin_SCRIPTS = banking.sh fred-csob-payments.py
 
 fred_admin_SOURCES = simple.cc            \
                      simple.h             \
