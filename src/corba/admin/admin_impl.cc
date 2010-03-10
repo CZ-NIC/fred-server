@@ -192,8 +192,7 @@ void ccReg_Admin_i::authenticateUser(const char* _username,
 
 }
 
-char* ccReg_Admin_i::createSession(const char* username)
-    throw (ccReg::Admin::AuthFailed) {
+char* ccReg_Admin_i::createSession(const char* username) {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 

@@ -60,8 +60,7 @@ public:
       throw (ccReg::Admin::AuthFailed);
   
   // session management
-  virtual char* createSession(const char* username)
-      throw (ccReg::Admin::AuthFailed);
+  virtual char* createSession(const char* username);
   virtual void destroySession(const char* _session_id);
   virtual ccReg::Session_ptr getSession(const char* sessionID)
       throw (ccReg::Admin::ObjectNotFound);
