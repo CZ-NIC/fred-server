@@ -24,7 +24,8 @@
 //#include "pagetable_bank_statements.h"
 #include "pagetable_filters.h"
 #include "pagetable_files.h"
-#include "pagetable_logger.h"
+// we don't need this at the momment, ccReg_Logger_i is not referenced directly, only through Pagetable_ptr
+// #include "pagetable_logger.h"
 #include "pagetable_logsession.h"
 #include "pagetable_zones.h"
 
@@ -70,6 +71,7 @@ private:
   ccReg_User_i* m_user;
   ccReg_Files_i* m_files;  
   ccReg_LogSession_i* m_logsession;
+  Registry::PageTable_ptr m_requests;
 
   std::auto_ptr<Register::Manager> m_register_manager;
   std::auto_ptr<Register::PublicRequest::Manager> m_publicrequest_manager;

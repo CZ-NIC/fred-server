@@ -81,7 +81,8 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_files = new ccReg_Files_i(file_manager_->createList());  
   m_logsession = new ccReg_LogSession_i(m_logsession_manager->createList());
   m_zones = new ccReg_Zones_i(m_register_manager->getZoneManager()->createList());
-
+  m_requests = getLoggerPageTable();
+   
   m_eppactions->setDB();
   m_registrars->setDB();
   m_contacts->setDB();
@@ -121,16 +122,21 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_payments;
   // delete m_statementheads;
   delete m_zones;
+  
+  // TODO this call should probably be used  
+  try {
+        ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
 
-  ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
-
-  if( logger != NULL ) {
-    LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: deleting logger pagetable."));
-    logger->deletePageTable(session_id_.c_str());
-  } else {
-    LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't runnig."));
-  }
-
+        if (logger != NULL) {
+            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: deleting logger pagetable."));
+            logger->deletePageTable(session_id_.c_str());
+        } else {
+            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running."));
+        }
+    } catch (...) {
+        LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running."));
+    }
+     
   db.Disconnect();
 }
 
@@ -144,8 +150,13 @@ ccReg::User_ptr ccReg_Session_i::getUser() {
 
 Registry::PageTable_ptr ccReg_Session_i::getLoggerPageTable()
 {
-    //TODO use some const
-    ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
+    ccReg::Logger_ptr logger;
+    //TODO substitute "Logger"
+    try {
+        logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
+    } catch (...) {
+        throw ccReg::Admin::ServiceUnavailable();
+    }
 
     if(logger == NULL) {
         throw ccReg::Admin::ServiceUnavailable();
@@ -191,7 +202,8 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
     case ccReg::FT_FILE:
       return m_files->_this();
     case ccReg::FT_LOGGER:
-      return getLoggerPageTable();
+        return Registry::PageTable::_duplicate (m_requests);
+      //return getLoggerPageTable();
 
       // implement this in similar wayy to getLoggerPageTable:
     // case ccReg::FT_SESSION:
@@ -576,10 +588,15 @@ Registry::Request::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
 	// if (request) {
 	//		return createRequestDetail(request);
 	// } else {
+        ccReg::Logger_ptr logger;
 
 	LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
 
-        ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
+        try {
+            logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
+        } catch (...) {
+            throw ccReg::Admin::ServiceUnavailable();
+        }
 
         if (logger == NULL) throw ccReg::Admin::ServiceUnavailable();
 

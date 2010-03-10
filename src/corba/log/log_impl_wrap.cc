@@ -4,7 +4,7 @@
 #include <corba/ccReg.hh>
 
 
-ccReg_Log_i::ccReg_Log_i(const std::string database, const std::string &monitoring_hosts_file) 
+ccReg_Log_i::ccReg_Log_i(const std::string database, const std::string &monitoring_hosts_file) : pagetables()
 {
 	back.reset(Register::Logger::Manager::create(database, monitoring_hosts_file));
 }
@@ -68,14 +68,32 @@ ccReg::RequestActionList *ccReg_Log_i::GetServiceActions(ccReg::RequestServiceTy
 
 Registry::PageTable_ptr ccReg_Log_i::getPageTable(const char *session_id)
 {
+    pagetables_list::iterator it;
+
+    Registry::PageTable_ptr ret;
+    it = pagetables.find(session_id);
+
+    if (it != pagetables.end()) {
+        LOGGER("PACKAGE").debug(boost::format("ccReg_Log_i: Client (session %1%) asking for another pagetable, deleting the old one.") % session_id);
+
+        // this yields an error but works TODO
+        delete it->second;
+        // not the proper way how to do it.
+        // CORBA::release(*it->second);
+        pagetables.erase(it);
+    }
+    
     std::auto_ptr<Register::Logger::Manager> logger_manager;
 
     logger_manager.reset(Register::Logger::Manager::create());
     Register::Logger::List *list = logger_manager->createList();
     ccReg_Logger_i * ret_ptr = new ccReg_Logger_i(list);
-    Registry::PageTable_ptr ret = ret_ptr->_this();
-    
-    pagetables[session_id] = ret;
+    ret = ret_ptr->_this();
+
+    pagetables[session_id] = ret_ptr;
+    // pagetables[session_id] = boost::shared_ptr<Registry::PageTable_ptr>(ret);
+
+    LOGGER("PACKAGE").debug(boost::format("ccReg_Log_i: Returning a pagetable object (%1%) to a client (session %2%).") % ret % session_id);
 
     return ret;
 }
@@ -88,10 +106,15 @@ void ccReg_Log_i::deletePageTable(const char* session_id)
     it = pagetables.find(session_id);
 
     if (it == pagetables.end()) {
-        LOGGER("fred-server").error(boost::format(" Logger pagetable for session %1% should be deleted but it was not found") % session_id);
+        LOGGER("PACKAGE").debug(boost::format("ccReg_Log_i: No pagetable found for session %1%, no action. ") % session_id);
     } else {
-        CORBA::release(it->second);
-        // ccReg::Logger_Helper::release
+        LOGGER("PACKAGE").debug(boost::format("ccReg_Log_i: A pagetable found for session %1%, deleting. ") % session_id);
+        // TODO bullshit
+
+        // this yields an error but works TODO
+        delete it->second;
+        //CORBA::release(*it->second);
+        
         pagetables.erase(it);
     }
 }
