@@ -127,7 +127,7 @@ ccReg_Session_i::~ccReg_Session_i() {
   try {
         ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
 
-        if (logger != NULL) {
+        if (CORBA::is_nil(logger)) {
             LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: deleting logger pagetable."));
             logger->deletePageTable(session_id_.c_str());
         } else {
@@ -155,11 +155,11 @@ Registry::PageTable_ptr ccReg_Session_i::getLoggerPageTable()
     try {
         logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
     } catch (...) {
-        throw ccReg::Admin::ServiceUnavailable();
+        return Registry::PageTable::_nil();
     }
 
-    if(logger == NULL) {
-        throw ccReg::Admin::ServiceUnavailable();
+    if(CORBA::is_nil(logger)) {
+        return Registry::PageTable::_nil();
     }
     
     Registry::PageTable_ptr pagetable = logger->getPageTable(session_id_.c_str());
@@ -202,6 +202,9 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
     case ccReg::FT_FILE:
       return m_files->_this();
     case ccReg::FT_LOGGER:
+        if (CORBA::is_nil(m_requests)) {
+            throw ccReg::Admin::ServiceUnavailable();
+        }
         return Registry::PageTable::_duplicate (m_requests);
       //return getLoggerPageTable();
 
@@ -598,7 +601,7 @@ Registry::Request::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
             throw ccReg::Admin::ServiceUnavailable();
         }
 
-        if (logger == NULL) throw ccReg::Admin::ServiceUnavailable();
+        if (CORBA::is_nil(logger)) throw ccReg::Admin::ServiceUnavailable();
 
         return logger->getDetail(_id);
                 
