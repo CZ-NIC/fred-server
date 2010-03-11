@@ -36,17 +36,19 @@ public:
   // ccReg::TID new_dummy(const char *name, const char *clTRID);
   CORBA::Boolean CloseSession(ccReg::TID id);
   ccReg::RequestActionList *GetServiceActions(ccReg::RequestServiceType service);
-  Registry::PageTable_ptr getPageTable(const char *session_id);
+  Registry::PageTable_ptr createPageTable(const char *session_id);
   void deletePageTable(const char *session_id);
 
   Registry::Request::Detail* getDetail(ccReg::TID _id);
   Registry::Request::Detail* createRequestDetail(Register::Logger::Request *req);
 
 private:
-  typedef std::map<std::string, ccReg_Logger_i *> pagetables_list;
+  typedef std::map<std::string, std::list<ccReg_Logger_i*>* > pagetables_list;
 
   pagetables_list pagetables;
   std::auto_ptr<Register::Logger::Manager> back;
+
+  boost::mutex lmutex;
 
 public:
   typedef Register::Logger::Manager::DB_CONNECT_FAILED DB_CONNECT_FAILED ;

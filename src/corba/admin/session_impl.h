@@ -130,8 +130,7 @@ private:
   Registry::EPPAction::Detail* createEppActionDetail(Register::Registrar::EPPAction *_action);
   Registry::PublicRequest::Detail* createPublicRequestDetail(Register::PublicRequest::PublicRequest* _request);
   Registry::Mailing::Detail* createMailDetail(Register::Mail::Mail *_mail);
-  Registry::Invoicing::Detail* createInvoiceDetail(Register::Invoicing::Invoice *_invoice);
-  Registry::Request::Detail *createRequestDetail(Register::Logger::Request *req);
+  Registry::Invoicing::Detail* createInvoiceDetail(Register::Invoicing::Invoice *_invoice);  
   Registry::Zone::Detail* createZoneDetail(Register::Zone::Zone* _registrar);
   Registry::Banking::BankItem::Detail *createPaymentDetail(Register::Banking::Payment *_payment);
   //Registry::Banking::BankHead::Detail *createStatementDetail(Register::Banking::Statement *_statement);

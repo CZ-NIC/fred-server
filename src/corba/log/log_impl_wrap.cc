@@ -12,86 +12,107 @@ ccReg_Log_i::ccReg_Log_i(const std::string database, const std::string &monitori
   // ccReg_Log_i(const std::string database) throw (Register::Logger::Manager::DB_CONNECT_FAILED): Register::Logger::Manager(database) {};
 ccReg_Log_i::~ccReg_Log_i() 
 {
+    for (pagetables_list::iterator mit = pagetables.begin(); mit != pagetables.end(); mit++) {
+
+        std::list<ccReg_Logger_i*> *ptlist = mit->second;
+        for (std::list<ccReg_Logger_i*>::iterator lit = ptlist->begin(); lit != ptlist->end(); lit++) {
+            try {
+                PortableServer::POA_ptr poa = this->_default_POA();
+                poa->deactivate_object(*(poa->servant_to_id(*lit)));
+            } catch (...) {
+
+            }
+        }
+
+        delete ptlist;
+    }
 }
 
-ccReg::TID ccReg_Log_i::CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long action_type, ccReg::TID session_id)
-{
-	std::auto_ptr<Register::Logger::RequestProperties> p (convert_properties(props));
-	return back->i_CreateRequest(sourceIP, (Database::Filters::RequestServiceType)service, content_in, *(p.get()), action_type, session_id);
+ccReg::TID ccReg_Log_i::CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long action_type, ccReg::TID session_id) {
+    boost::mutex::scoped_lock(lmutex);
+
+    std::auto_ptr<Register::Logger::RequestProperties> p(convert_properties(props));
+    return back->i_CreateRequest(sourceIP, (Database::Filters::RequestServiceType)service, content_in, *(p.get()), action_type, session_id);
 }
 
-CORBA::Boolean ccReg_Log_i::UpdateRequest(ccReg::TID id, const ccReg::RequestProperties &props)
-{
-	std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
-	return back->i_UpdateRequest(id, *(p.get()));
+CORBA::Boolean ccReg_Log_i::UpdateRequest(ccReg::TID id, const ccReg::RequestProperties &props) {
+    boost::mutex::scoped_lock(lmutex);
+
+    std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
+    return back->i_UpdateRequest(id, *(p.get()));
 }
 
-CORBA::Boolean ccReg_Log_i::CloseRequest(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props)
-{
-	std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
-	return back->i_CloseRequest(id, content_out, *(p.get()));
+CORBA::Boolean ccReg_Log_i::CloseRequest(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props) {
+    boost::mutex::scoped_lock(lmutex);
+
+    std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
+    return back->i_CloseRequest(id, content_out, *(p.get()));
 }
 
-CORBA::Boolean ccReg_Log_i::CloseRequestLogin(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, ccReg::TID session_id)
-{
-	std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
-	return back->i_CloseRequestLogin(id, content_out, *(p.get()), session_id);
+CORBA::Boolean ccReg_Log_i::CloseRequestLogin(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, ccReg::TID session_id) {
+    boost::mutex::scoped_lock(lmutex);
+
+    std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
+    return back->i_CloseRequestLogin(id, content_out, *(p.get()), session_id);
 }
 
-ccReg::TID ccReg_Log_i::CreateSession(ccReg::Languages lang, const char *name)
-{
-	return back->i_CreateSession((Languages)lang, name);
+ccReg::TID ccReg_Log_i::CreateSession(ccReg::Languages lang, const char *name) {
+    boost::mutex::scoped_lock(lmutex);
+
+    return back->i_CreateSession((Languages) lang, name);
 }
 
-CORBA::Boolean ccReg_Log_i::CloseSession(ccReg::TID id)
-{
-	return back->i_CloseSession(id);
+CORBA::Boolean ccReg_Log_i::CloseSession(ccReg::TID id) {
+    boost::mutex::scoped_lock(lmutex);
+
+    return back->i_CloseSession(id);
 }
 
-ccReg::RequestActionList *ccReg_Log_i::GetServiceActions(ccReg::RequestServiceType service)
-{
-	Database::Result res = back->i_GetServiceActions((Database::Filters::RequestServiceType)service);
+ccReg::RequestActionList *ccReg_Log_i::GetServiceActions(ccReg::RequestServiceType service) {
+    boost::mutex::scoped_lock(lmutex);
+    
+    Database::Result res = back->i_GetServiceActions((Database::Filters::RequestServiceType)service);
 
-	int size  = res.size();
-	ccReg::RequestActionList_var ret = new ccReg::RequestActionList();
+    int size = res.size();
+    ccReg::RequestActionList_var ret = new ccReg::RequestActionList();
 
-	ret->length(size);
+    ret->length(size);
 
-	for (int i = 0; i< size; i++) {
-		
-		ret[i].id 	 = (ccReg::RequestActionType)res[i][0];
-		ret[i].status = CORBA::string_dup(((std::string)res[i][1]).c_str());
-	}
+    for (int i = 0; i < size; i++) {
+        ret[i].id = (ccReg::RequestActionType)res[i][0];
+        ret[i].status = CORBA::string_dup(((std::string)res[i][1]).c_str());
+    }
 
-	return ret._retn();
+    return ret._retn();
 }
 
-Registry::PageTable_ptr ccReg_Log_i::getPageTable(const char *session_id)
-{
+Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
+{    
+    Registry::PageTable_ptr ret;
     pagetables_list::iterator it;
 
-    Registry::PageTable_ptr ret;
-    it = pagetables.find(session_id);
-
-    if (it != pagetables.end()) {
-        LOGGER("PACKAGE").debug(boost::format("ccReg_Log_i: Client (session %1%) asking for another pagetable, deleting the old one.") % session_id);
-
-        // this yields an error but works TODO
-        delete it->second;
-        // not the proper way how to do it.
-        // CORBA::release(*it->second);
-        pagetables.erase(it);
-    }
-    
     std::auto_ptr<Register::Logger::Manager> logger_manager;
 
     logger_manager.reset(Register::Logger::Manager::create());
     Register::Logger::List *list = logger_manager->createList();
     ccReg_Logger_i * ret_ptr = new ccReg_Logger_i(list);
     ret = ret_ptr->_this();
+ 
+    boost::mutex::scoped_lock(lmutex);
 
-    pagetables[session_id] = ret_ptr;
-    // pagetables[session_id] = boost::shared_ptr<Registry::PageTable_ptr>(ret);
+    it = pagetables.find(session_id);
+
+    if (it != pagetables.end()) {
+        
+        it->second->push_back(ret_ptr);
+                        
+        LOGGER("PACKAGE").debug(boost::format("ccReg_Log_i: added another pagetable for client (session_id %1%) ") % session_id);        
+    } else {
+        std::list<ccReg_Logger_i*> *ptlist = new std::list<ccReg_Logger_i*>();        
+        
+        ptlist->push_back(ret_ptr);
+        pagetables[session_id] = ptlist;
+    }
 
     LOGGER("PACKAGE").debug(boost::format("ccReg_Log_i: Returning a pagetable object (%1%) to a client (session %2%).") % ret % session_id);
 
@@ -103,32 +124,40 @@ void ccReg_Log_i::deletePageTable(const char* session_id)
 {
     pagetables_list::iterator it;
 
+    boost::mutex::scoped_lock(lmutex);
+
     it = pagetables.find(session_id);
 
     if (it == pagetables.end()) {
         LOGGER("PACKAGE").debug(boost::format("ccReg_Log_i: No pagetable found for session %1%, no action. ") % session_id);
     } else {
         LOGGER("PACKAGE").debug(boost::format("ccReg_Log_i: A pagetable found for session %1%, deleting. ") % session_id);
-        // TODO bullshit
 
-        // this yields an error but works TODO
+        for (std::list<ccReg_Logger_i*>::iterator l = it->second->begin();
+                l != it->second->end();
+                l++) {
+
+            try {
+                PortableServer::POA_ptr poa = this->_default_POA();
+                poa->deactivate_object(*(poa->servant_to_id(*l)));
+            } catch (...) {
+                delete it->second;
+                throw;
+            }
+
+        }
+              
         delete it->second;
-        //CORBA::release(*it->second);
         
         pagetables.erase(it);
     }
 }
 
 Registry::Request::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id) {
-	// Register::Logger::Request *request = m_logger->findId(_id);
-	// if (request) {
-	//		return createRequestDetail(request);
-	// } else {
-
-
-
+	
 	LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
 
+        boost::mutex::scoped_lock(lmutex);
 	std::auto_ptr<Register::Logger::List> request_list(back->createList());
 
 	Database::Filters::Union union_filter;

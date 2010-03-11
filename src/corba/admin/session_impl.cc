@@ -122,19 +122,27 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_payments;
   // delete m_statementheads;
   delete m_zones;
-  
-  // TODO this call should probably be used  
-  try {
-        ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
 
-        if (CORBA::is_nil(logger)) {
-            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: deleting logger pagetable."));
-            logger->deletePageTable(session_id_.c_str());
-        } else {
-            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running."));
+    if (!CORBA::is_nil(m_requests)) {
+        try {
+            ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
+
+            if (CORBA::is_nil(logger)) {
+                LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running."));
+            } else {
+                LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: deleting logger pagetable."));
+                logger->deletePageTable(session_id_.c_str());
+                
+            }
+        } catch(CORBA::COMM_FAILURE&) {
+            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running. CORBA exception caught."));
+        } catch(CORBA::TRANSIENT&) {
+            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running. CORBA exception caught."));
+        } catch(CORBA::SystemException&) {
+            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running. CORBA exception caught."));
+        } catch (...) {
+            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: Exception caught."));
         }
-    } catch (...) {
-        LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running."));
     }
      
   db.Disconnect();
@@ -161,8 +169,14 @@ Registry::PageTable_ptr ccReg_Session_i::getLoggerPageTable()
     if(CORBA::is_nil(logger)) {
         return Registry::PageTable::_nil();
     }
-    
-    Registry::PageTable_ptr pagetable = logger->getPageTable(session_id_.c_str());
+
+    Registry::PageTable_ptr pagetable;
+
+    try {
+        pagetable = logger->createPageTable(session_id_.c_str());
+    } catch(...) {
+        return Registry::PageTable::_nil();
+    }
 
     return pagetable;
 }
@@ -587,10 +601,7 @@ Registry::EPPAction::Detail* ccReg_Session_i::getEppActionDetail(ccReg::TID _id)
 
 // Registry::Request::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
 Registry::Request::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
-	// Register::Logger::Request *request = m_logger->findId(_id);
-	// if (request) {
-	//		return createRequestDetail(request);
-	// } else {
+	
         ccReg::Logger_ptr logger;
 
 	LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
@@ -605,29 +616,6 @@ Registry::Request::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
 
         return logger->getDetail(_id);
                 
-        // TODO remove
-        /*
-	std::auto_ptr<Register::Logger::List> request_list(m_logger_manager->createList());
-
-	Database::Filters::Union union_filter;
-	// where is it deleted? TODO
-	Database::Filters::Request *filter = new Database::Filters::RequestImpl();
-
-	filter->addId().setValue(Database::ID(_id));
-	union_filter.addFilter(filter);
-
-	request_list->setPartialLoad(false);
-	// TODO make sure the db_manager is OK
-	//
-	// request_list->reload(union_filter, &m_db_manager);
-	request_list->reload(union_filter);
-	
-	if(request_list->size() != 1) {
-		throw ccReg::Admin::ObjectNotFound();
-	}
-	return createRequestDetail(request_list->get(0));
-         * */
-
 }
 
 Registry::Banking::BankItem::Detail *ccReg_Session_i::getPaymentDetail(ccReg::TID _id) {
@@ -635,18 +623,14 @@ Registry::Banking::BankItem::Detail *ccReg_Session_i::getPaymentDetail(ccReg::TI
 
 	std::auto_ptr<Register::Banking::PaymentList> item_list(m_banking_manager->createPaymentList());
 
-	Database::Filters::Union union_filter;
-	// where is it deleted? TODO
+	Database::Filters::Union union_filter;	
 	Database::Filters::BankPayment *filter = new Database::Filters::BankPaymentImpl();
 
 	filter->addId().setValue(Database::ID(_id));
 	union_filter.addFilter(filter);
 
         // TODO
-	// item_list->setPartialLoad(false);
-	// TODO make sure the db_manager is OK
-	//
-	// item_list->reload(union_filter, &m_db_manager);
+	// item_list->setPartialLoad(false);	
 	item_list->reload(union_filter);
 	
 	if(item_list->size() != 1) {
@@ -705,29 +689,6 @@ Registry::Zone::Detail* ccReg_Session_i::getZoneDetail(ccReg::TID _id) {
     }
     return createZoneDetail(dynamic_cast<Register::Zone::Zone*>(tmp_zone_list->get(0)));
   }
-}
-
-// TODO remove 
-Registry::Request::Detail *ccReg_Session_i::createRequestDetail(Register::Logger::Request *req) {
-	Registry::Request::Detail *detail = new Registry::Request::Detail();
-
-	// TODO should it contain ID?
-	// detail->id		= req->id;
-
-	detail->timeBegin 	= DUPSTRDATE(req->getTimeBegin);
-	detail->timeEnd		= DUPSTRDATE(req->getTimeEnd);
-	detail->sourceIp	= DUPSTRFUN(req->getSourceIp);
-	detail->service_type	= DUPSTRFUN(req->getServiceType);
-	detail->action_type	= DUPSTRFUN(req->getActionType);
-	detail->session_id	= req->getSessionId();
-	detail->is_monitoring	= req->getIsMonitoring(); 
-	detail->raw_request	= DUPSTRFUN(req->getRawRequest);
-	detail->raw_response	= DUPSTRFUN(req->getRawResponse);
-
-        // TODO refactor - this convert function could be moved here (or sw else)
-	detail->props		= convert_properties_d2c(req->getProperties());
-
-	return detail;
 }
 
 void fillPaymentDetail(Registry::Banking::BankItem::Detail &d, const Register::Banking::Payment *_payment) 
