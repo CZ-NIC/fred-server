@@ -19,6 +19,7 @@
 #include <iostream>
 
 #define BOOST_TEST_MODULE Test model
+#define BOOST_TEST_NO_MAIN
 
 #include <string>
 #include <boost/format.hpp>
@@ -26,6 +27,8 @@
 #include "log/logger.h"
 #include "log/context.h"
 #include <boost/test/included/unit_test.hpp>
+#include <boost/program_options.hpp>
+#include <boost/lexical_cast.hpp>
 
 
 #include "model_files.h"
@@ -193,13 +196,149 @@ bool check_std_exception_nodatafound(std::exception const & ex)
 
 BOOST_AUTO_TEST_CASE( test_model )
 {
-    Database::Manager::init(new Database::ConnectionFactory(CONNECTION_STRING, 1, 10));
-
     BOOST_REQUIRE_EQUAL(model_insert_test() , 0);
     BOOST_REQUIRE_EQUAL(model_reload_test() , 0);
     BOOST_REQUIRE_EQUAL(model_update_test() , 0);
     BOOST_REQUIRE_EXCEPTION( model_nodatareload_test()
             , std::exception , check_std_exception_nodatafound);
     BOOST_REQUIRE_EQUAL(model_nodataupdate_test() , 0);
+}
+
+
+
+struct faked_args //faked args structure
+{
+    typedef std::vector<char> char_vector_t;//type for argv buffer
+    typedef std::vector<char_vector_t> argv_buffers_t;//buffers vector type
+    typedef std::vector<char*> argv_t;//pointers vector type
+
+    argv_buffers_t argv_buffers;//owning vector of buffers
+    argv_t argv;//new argv - nonowning
+    int argc;//new number of args
+};//struct faked_args
+
+//removing our config from boost test cmdline
+faked_args po_config( int argc, char* argv[] )
+{
+    faked_args fa;
+    namespace po = boost::program_options;
+    po::options_description
+        dbconfig (std::string("Database connection configuration"));
+    dbconfig.add_options()
+        ("help", "print help message")
+        ("dbname", po::value<std::string>()->default_value(std::string("fred"))
+                , "database name")
+        ("dbuser", po::value<std::string>()->default_value(std::string("fred"))
+                , "database user name")
+        ("dbpassword", po::value<std::string>(), "database password")
+        ("dbhost", po::value<std::string>()->default_value(std::string("localhost"))
+                , "database hostname")
+        ("dbport", po::value<unsigned int>(), "database port number")
+        ("dbtimeout", po::value<unsigned int>(), "database timeout")
+        ;
+    po::variables_map vm;
+    po::parsed_options parsed = po::command_line_parser(argc, argv).
+                            options(dbconfig).allow_unregistered().run();
+    po::store(parsed, vm);
+    std::vector<std::string> to_pass_further
+        = po::collect_unrecognized(parsed.options, po::include_positional);
+    po::notify(vm);
+
+     //faked args
+     fa.argc = to_pass_further.size() + 1;//new number of args + first
+
+     //vector prealocation
+     fa.argv_buffers.reserve(fa.argc);
+     fa.argv.reserve(fa.argc);
+
+     //program name copy
+     fa.argv_buffers.push_back(faked_args::char_vector_t());//added buffer
+     std::size_t strsize = strlen(argv[0]);
+
+     //preallocation of buffer for first ending with 0
+     fa.argv_buffers[0].reserve(strsize+1);
+
+     //actual program name copy
+     for(unsigned i = 0; i < strsize;  ++i )
+     {
+         fa.argv_buffers[0].push_back(argv[0][i]);
+     }//for i
+
+     fa.argv_buffers[0].push_back(0);//zero terminated string
+     fa.argv.push_back(&fa.argv_buffers[0][0]);//added char*
+
+     //copying new arg vector with char pointers to data in
+     //to_pass_further strings except first
+     for(int i = 0; i < fa.argc-1; ++i)
+     {
+         std::size_t string_len = to_pass_further[i].length();//string len
+         fa.argv_buffers.push_back(faked_args::char_vector_t());//added vector
+         fa.argv.push_back(0);//added char* 0
+         fa.argv_buffers[i+1].reserve(string_len+1);//preallocation of buffer ending with 0
+         for(std::string::const_iterator si = to_pass_further[i].begin()
+                 ; si != to_pass_further[i].end();  ++si )
+         {
+             fa.argv_buffers[i+1].push_back(*si);
+         }//for si
+         fa.argv_buffers[i+1].push_back(0);//zero terminated string
+         fa.argv[i+1] = &fa.argv_buffers[i+1][0];
+     }//for i
+
+     if (vm.count("help"))
+     {
+         std::cout << dbconfig << std::endl;
+         throw std::runtime_error("exiting after help");
+     }
+
+     /* construct connection string */
+     std::string dbhost = (vm.count("dbhost") == 0 ? ""
+             : "host=" + vm["dbhost"].as<std::string>() + " ");
+     std::string dbpass = (vm.count("dbpassword") == 0 ? ""
+             : "password=" + vm["dbpassword"].as<std::string>() + " ");
+     std::string dbname = (vm.count("dbname") == 0 ? ""
+             : "dbname=" + vm["dbname"].as<std::string>() + " ");
+     std::string dbuser = (vm.count("dbuser") == 0 ? ""
+             : "user=" + vm["dbuser"].as<std::string>() + " ");
+     std::string dbport = (vm.count("dbport") == 0 ? ""
+             : "port=" + boost::lexical_cast<std::string>(vm["dbport"].as<unsigned>()) + " ");
+     std::string dbtime = (vm.count("dbtimeout") == 0 ? ""
+             : "connect_timeout=" + boost::lexical_cast<std::string>(vm["dbtimeout"].as<unsigned>()) + " ");
+
+     std::string conn_info = str(boost::format("%1% %2% %3% %4% %5% %6%")
+                                               % dbhost
+                                               % dbport
+                                               % dbname
+                                               % dbuser
+                                               % dbpass
+                                               % dbtime);
+
+     //std::cout << "database connection set to: " << conn_info << std::endl;
+     LOGGER(PACKAGE).info(boost::format("database connection set to: `%1%'")
+                                         % conn_info);
+
+     Database::Manager::init(new Database::ConnectionFactory(conn_info, 1, 10));
+
+     return fa;
+}
+
+
+int main( int argc, char* argv[] )
+{
+    //processing of additional program options
+    //producing faked args with unrecognized ones
+    faked_args fa = po_config( argc, argv);
+
+    // prototype for user's unit test init function
+#ifdef BOOST_TEST_ALTERNATIVE_INIT_API
+    extern bool init_unit_test();
+
+    boost::unit_test::init_unit_test_func init_func = &init_unit_test;
+#else
+    extern ::boost::unit_test::test_suite* init_unit_test_suite( int argc, char* argv[] );
+
+    boost::unit_test::init_unit_test_func init_func = &init_unit_test_suite;
+#endif
+
+    return ::boost::unit_test::unit_test_main( init_func, fa.argc, &fa.argv[0] );//using fake args
 }
 
