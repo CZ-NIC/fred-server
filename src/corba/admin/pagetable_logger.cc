@@ -72,10 +72,10 @@ void ccReg_Logger_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
       m_lel->sort(Register::Logger::MT_TIME_END, dir);
       break;
     case 2:
-      m_lel->sort(Register::Logger::MT_SOURCE_IP, dir);
+      m_lel->sort(Register::Logger::MT_SERVICE, dir);
       break;
     case 3:
-      m_lel->sort(Register::Logger::MT_SERVICE, dir);
+      m_lel->sort(Register::Logger::MT_SOURCE_IP, dir);
       break;
     case 4:
       m_lel->sort(Register::Logger::MT_ACTION, dir);
