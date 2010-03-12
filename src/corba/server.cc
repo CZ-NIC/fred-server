@@ -284,7 +284,7 @@ int main(int argc, char** argv) {
 
     /* register specific object at nameservice */
 
-    Database::Manager::init(new Database::ConnectionFactory(conn_info, 1, 100));
+    Database::Manager::init(new Database::ConnectionFactory(conn_info));
 
 #ifdef ADIF
     PortableServer::ObjectId_var adminObjectId = PortableServer::string_to_ObjectId("Admin");

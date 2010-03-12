@@ -34,7 +34,7 @@
 
 namespace Database {
 
-  typedef Factory::ConnectionPool<PSQLConnection> ConnectionFactory;
+  typedef Factory::Simple<PSQLConnection> ConnectionFactory;
   typedef TSSManager_<ConnectionFactory>          Manager;
 
   typedef Manager::connection_type                Connection;

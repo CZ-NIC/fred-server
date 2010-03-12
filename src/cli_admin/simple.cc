@@ -295,7 +295,7 @@ main(int argc, char **argv)
         exit(0);
     }
 
-    Database::Manager::init(new Database::ConnectionFactory(connstring.str(), 1, 5));
+    Database::Manager::init(new Database::ConnectionFactory(connstring.str()));
 
     if (conf.hasOpt(CLI_MOO_NAME)) {
         print_moo();

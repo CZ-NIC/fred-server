@@ -85,7 +85,7 @@ int main()
         clock_t time1, time2, time3, t_parser=0, t_logcomm=0, t_backend=0;
 
 
-        Database::Manager::init(new Database::ConnectionFactory(CONNECTION_STRING, 1, 100));
+        Database::Manager::init(new Database::ConnectionFactory(CONNECTION_STRING));
 
 	Register::Logger::ManagerImpl serv;
 		

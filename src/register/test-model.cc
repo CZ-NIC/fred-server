@@ -316,7 +316,7 @@ faked_args po_config( int argc, char* argv[] )
      LOGGER(PACKAGE).info(boost::format("database connection set to: `%1%'")
                                          % conn_info);
 
-     Database::Manager::init(new Database::ConnectionFactory(conn_info, 1, 10));
+     Database::Manager::init(new Database::ConnectionFactory(conn_info));
 
      return fa;
 }
