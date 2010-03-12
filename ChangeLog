@@ -2,6 +2,8 @@
 
   * Logger filtering moved from adifd to logger itself
 
+  * adifd calls logd using CORBA to access audit log
+
   * New tests added
 
   * Bugfixes
