@@ -1,3 +1,11 @@
+2010-03-12 Jiri Sadek, Juraj Vicenik, Jan Zima (2.3.2)
+
+  * Logger filtering moved from adifd to logger itself
+
+  * New tests added
+
+  * Bugfixes
+
 2010-02-16 Jiri Sadek, Juraj Vicenik, Jan Zima (2.3.1)
 
   * Bugfix release (fred-admin mainly)
