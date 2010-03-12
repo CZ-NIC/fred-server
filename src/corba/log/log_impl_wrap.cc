@@ -106,7 +106,7 @@ Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
         
         it->second->push_back(ret_ptr);
                         
-        LOGGER("PACKAGE").debug(boost::format("ccReg_Log_i: added another pagetable for client (session_id %1%) ") % session_id);        
+        LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: added another pagetable for client (session_id %1%) ") % session_id);
     } else {
         std::list<ccReg_Logger_i*> *ptlist = new std::list<ccReg_Logger_i*>();        
         
@@ -114,7 +114,7 @@ Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
         pagetables[session_id] = ptlist;
     }
 
-    LOGGER("PACKAGE").debug(boost::format("ccReg_Log_i: Returning a pagetable object (%1%) to a client (session %2%).") % ret % session_id);
+    LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: Returning a pagetable object (%1%) to a client (session %2%).") % ret % session_id);
 
     return ret;
 }
@@ -129,17 +129,20 @@ void ccReg_Log_i::deletePageTable(const char* session_id)
     it = pagetables.find(session_id);
 
     if (it == pagetables.end()) {
-        LOGGER("PACKAGE").debug(boost::format("ccReg_Log_i: No pagetable found for session %1%, no action. ") % session_id);
+        LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: No pagetable found for session %1%, no action. ") % session_id);
     } else {
-        LOGGER("PACKAGE").debug(boost::format("ccReg_Log_i: A pagetable found for session %1%, deleting. ") % session_id);
+        LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: A pagetable found for session %1%, deleting. ") % session_id);
 
         for (std::list<ccReg_Logger_i*>::iterator l = it->second->begin();
                 l != it->second->end();
                 l++) {
 
-            try {
+            try {                
                 PortableServer::POA_ptr poa = this->_default_POA();
                 poa->deactivate_object(*(poa->servant_to_id(*l)));
+
+                // this should decrease reference count to 0 thus releasing the servant
+                (*l)->_remove_ref();
             } catch (...) {
                 delete it->second;
                 throw;
