@@ -184,7 +184,8 @@ test_logd_LDADD =	libfred.a \
 
 #noinst_PROGRAMS = test-model
 test_model_SOURCES = test-model.cc
-test_model_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS)
+test_model_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) \
+                     $(BOOST_PROGRAM_OPTIONS_LIB)
 test_model_LDADD   = libfred.a \
                          $(top_builddir)/src/model/libmodel.a \
                          $(top_builddir)/util/libutil.a \
