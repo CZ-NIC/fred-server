@@ -1,3 +1,7 @@
+2010-02-16 Jiri Sadek, Juraj Vicenik, Jan Zima (2.3.1)
+
+  * Bugfix release (fred-admin mainly)
+
 2010-02-16 Jiri Sadek, Juraj Vicenik, Jan Zima (2.3.0)
 
   * New audit component - daemon for logging all external
