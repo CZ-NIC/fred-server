@@ -15,96 +15,36 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <memory>
-#include <iostream>
-
 #define BOOST_TEST_MODULE Test model
+//not using UTF defined main
 #define BOOST_TEST_NO_MAIN
 
-#include <string>
-#include <boost/format.hpp>
-#include "db_settings.h"
-#include "log/logger.h"
-#include "log/context.h"
-#include <boost/test/included/unit_test.hpp>
-#include <boost/program_options.hpp>
-#include <boost/lexical_cast.hpp>
+
+#include <fstream>
+#include <ctime>            // std::time
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/linear_congruential.hpp>
+#include <boost/random/uniform_int.hpp>
+#include <boost/random/uniform_real.hpp>
+#include <boost/random/variate_generator.hpp>
 
 
-#include "model_files.h"
+// Sun CC doesn't handle boost::iterator_adaptor yet
+#if !defined(__SUNPRO_CC) || (__SUNPRO_CC > 0x530)
+#include <boost/generator_iterator.hpp>
+#endif
 
-// #define CONNECTION_STRING       "host=localhost dbname=fred user=fred port=6655"
-#define CONNECTION_STRING       "host=localhost dbname=fred user=fred"
-
-ModelFiles mf1, mf2;
-
-unsigned model_insert_test()
+#ifdef BOOST_NO_STDC_NAMESPACE
+namespace std
 {
-    unsigned ret=0;
-    //insert data
-    mf1.setName("dummy_test_name");
-    mf1.setPath("~/log");
-    //mf1.setMimeType("application/octet-stream");//default
-    mf1.setCrDate(Database::DateTime("2010-03-10 12:00:01"));
-    mf1.setFilesize(50000);
-    mf1.setFileTypeId(2);//invoice xml
-    mf1.insert();
-
-    Database::Connection conn = Database::Manager::acquire();
-    std::string query = str(boost::format(
-            "select id, name, path, mimetype, crdate, filesize, filetype "
-            "from files WHERE id = %1%") % mf1.getId() );
-    Database::Result res = conn.exec( query );
-    if ((res.size() > 0) && (res[0].size() == 7))
-    {    //check data inserted by model
-        if(static_cast<unsigned long long>(res[0][0]) != mf1.getId()) ret+=1;
-        if(mf1.getName().compare(res[0][1])) ret+=2;
-        if(mf1.getPath().compare(res[0][2])) ret+=4;
-        if(std::string("application/octet-stream").compare(res[0][3])) ret+=8;
-        if(mf1.getCrDate().to_string()
-            .compare(Database::DateTime(std::string(res[0][4])).to_string()))
-                ret+=16;
-        if(static_cast<int>(res[0][5]) != mf1.getFilesize()) ret+=32;
-        if(static_cast<unsigned long long>(res[0][6]) != mf1.getFileTypeId()) ret+=64;
-
-    }//if res size
-    else ret+=128;
-
-    if (ret != 0 ) std::cerr << "model_insert_test ret: "<< ret << std::endl;
-
-    return ret;
+  using ::time;
 }
-
-unsigned model_reload_test()
-{
-    unsigned ret=0;
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction tx(conn);
-    std::string query = str(boost::format("UPDATE files SET name = E'', path = E'', mimetype = E'',"
-            " crdate = '2000-01-01 00:00:01', filesize = 80000, fileType = 1 WHERE id = %1%") % mf1.getId() );
-    conn.exec( query );
-    tx.commit();
-
-    mf2.setId(mf1.getId());
-    mf2.reload();
-
-    //check data from UPDATE query after reload
-    if(mf2.getId() != mf1.getId()) ret+=1;
-    if(mf2.getName().compare("")) ret+=2;
-    if(mf2.getPath().compare("")) ret+=4;
-    if(mf2.getMimeType().compare("")) ret+=8;
-    if(Database::DateTime(mf2.getCrDate()).to_string().compare(
-        Database::DateTime("2000-01-01 00:00:01").to_string() ))    ret+=16;
-    if(mf2.getFilesize() != 80000 ) ret+=32;
-    if(mf2.getFileTypeId() != 1 ) ret+=64;
-
-    if (ret != 0 ) std::cerr << "model_reload_test ret: "<< ret << std::endl;
-    return ret;
-}
+#endif
 
 
-unsigned model_update_test()
-{
+
+#include "test-model.h"
+
     /*
      * to log queries:
      *  in /etc/postgresql/8.4/main/postgresql.conf set:
@@ -116,85 +56,121 @@ unsigned model_update_test()
      * postgres restart
      *
      * */
-    unsigned ret=0;
 
-    mf1.setFilesize(80000);
-    mf1.update();
-
-    mf1.reload();
-
-    //compare mf1 and mf2, it should be same,  ret=0 is OK
-
-    if(mf1.getId() != mf2.getId()) ret+=1;
-    if(mf1.getName() != mf2.getName())
-    {
-        std::cerr << mf1.getName() << std::endl;
-        std::cerr << mf2.getName() << std::endl;
-        ret+=2;
-    }
-
-    if(mf1.getPath() != mf2.getPath())
-    {
-        std::cerr << mf1.getPath() << std::endl;
-        std::cerr << mf2.getPath() << std::endl;
-
-        ret+=4;
-    }
-
-    if(mf1.getMimeType() != mf2.getMimeType()) ret+=8;
-    if(mf1.getCrDate() != mf2.getCrDate())
-    {
-        std::cerr << mf1.getCrDate() << std::endl;
-        std::cerr << mf2.getCrDate() << std::endl;
-        ret+=16;
-    }
-
-    if(mf1.getFilesize() != mf2.getFilesize()) ret+=32;
-    if(mf1.getFileTypeId() != mf2.getFileTypeId())
-    {
-        std::cerr << mf1.getFileTypeId() << std::endl;
-        std::cerr << mf2.getFileTypeId() << std::endl;
-
-        ret+=64;
-    }
-
-
-    if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
-
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction tx(conn);
-    std::string query = str(boost::format("DELETE FROM files WHERE id = %1%") % mf1.getId() );
-    conn.exec( query );
-    tx.commit();
-
-    return ret;
-
-}
-
-unsigned model_nodatareload_test()
+class RandomDataGenerator //data generator is actually pseudo-random
 {
-    unsigned ret=0;
-    mf2.reload();
-    return ret;
-}
+    //typedef for a random number generator
+    //boost::mt19937, boost::ecuyer1988, boost::minstd_rand
+    typedef boost::mt19937 base_generator_t;
 
-unsigned model_nodataupdate_test()
+    //uniform random number distribution of integer values in given range
+    typedef boost::uniform_int<> distribution_t;
+
+    base_generator_t rng;
+    distribution_t gen_letter52;//both case letters
+    distribution_t gen_int;//signed integer
+    distribution_t gen_uint;//unsigned integer
+    boost::variate_generator<base_generator_t, distribution_t > letter52;
+    //boost::variate_generator<base_generator_t, distribution_t > gint;
+    //boost::variate_generator<base_generator_t, distribution_t > guint;
+
+public:
+    //ctor
+    RandomDataGenerator(unsigned seed)
+        : rng(seed)
+          //ranges definitions
+        , gen_letter52(0,51)
+        //, gen_int(std::numeric_limits<int>::min(), std::numeric_limits<int>::max())
+        //, gen_uint(std::numeric_limits<unsigned>::min(), std::numeric_limits<unsigned>::max())
+
+          //generator instances
+        , letter52(rng, gen_letter52)
+        //, gint(rng, gen_int)
+        //, guint(rng, gen_uint)
+    {
+        std::cout << "RandomDataGenerator using seed: " << seed << std::endl;
+    }
+
+    //generate some letter A-Z a-z
+    char xletter()
+    {
+        unsigned rnumber = letter52();
+        char ret = rnumber < 26
+                ? static_cast<char>(rnumber + 65) //A-Z
+                : static_cast<char>(rnumber + 71) ; //a-z
+        return ret;
+    }
+
+    //generate some string of given length
+    std::string xstring(std::size_t length)
+    {
+        std::string ret;
+        ret.reserve(length);//allocation
+        for(std::size_t i = 0; i < length; ++i)
+            ret.push_back(xletter());
+        return ret;
+    }
+
+    //generate some signed integer
+    int xint()
+    {
+        return 0;//gint();
+    }
+
+    //generate some unsigned integer
+    unsigned xuint()
+    {
+        return 0;//guint();
+    }
+
+
+};
+
+
+//synchronization using barriers
+struct sync_barriers
 {
-    unsigned ret=0;
-    mf2.setName("x");
-    mf2.update();
-    return ret;
-}
+    boost::barrier insert_barrier;
+    sync_barriers(std::size_t thread_number)
+        : insert_barrier(thread_number)
+    {}
+};
 
-
-
-bool check_std_exception_nodatafound(std::exception const & ex)
+//thread functor
+class ModelBankPaymentThreadWorker
 {
-    std::string ex_msg(ex.what());
-    return (ex_msg.find(std::string("No data found")) != std::string::npos);
-}
+public:
 
-BOOST_AUTO_TEST_CASE( test_model )
+    ModelBankPaymentThreadWorker(unsigned number,unsigned sleep_time, sync_barriers* sb_ptr, unsigned seed)
+            : number_(number)
+            , sleep_time_(sleep_time)
+            , sb_ptr_(sb_ptr)
+            , rdg(seed)
+    {}
+
+    void operator()()
+    {
+        std::cout << "waiting: " << number_ << " xstring: " << rdg.xstring(10) << std::endl;
+        sb_ptr_->insert_barrier.wait();//wait for other threads
+        std::cout << "start: " << number_ << std::endl;
+
+
+        boost::posix_time::seconds workTime(sleep_time_);// Pretend to do something useful...
+
+        boost::this_thread::sleep(workTime);
+        std::cout << "end: " << number_ << std::endl;
+    }
+
+private:
+
+    ModelBankPayment mbp;
+    unsigned    number_;//thred identification
+    unsigned    sleep_time_;//[s]
+    sync_barriers* sb_ptr_;
+    RandomDataGenerator rdg;
+};
+
+BOOST_AUTO_TEST_CASE( test_model_files )
 {
     BOOST_REQUIRE_EQUAL(model_insert_test() , 0);
     BOOST_REQUIRE_EQUAL(model_reload_test() , 0);
@@ -204,6 +180,29 @@ BOOST_AUTO_TEST_CASE( test_model )
     BOOST_REQUIRE_EQUAL(model_nodataupdate_test() , 0);
 }
 
+BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
+{
+    std::size_t const thread_number = 10;//number of threads in test
+
+    //vector of thread functors
+    std::vector<ModelBankPaymentThreadWorker> tw_vector;
+    tw_vector.reserve(thread_number);
+
+    //synchronization barriers instance
+    sync_barriers sb(thread_number);
+
+    //thread container
+    boost::thread_group threads;
+    for (unsigned i = 0; i < thread_number; ++i)
+    {
+        tw_vector.push_back(ModelBankPaymentThreadWorker(i,3,&sb, static_cast<unsigned>(std::time(0))));
+        threads.create_thread(tw_vector.at(i));
+    }
+
+    threads.join_all();
+
+    BOOST_CHECK( 1 + 1 == 2);
+}
 
 
 struct faked_args //faked args structure
@@ -275,11 +274,13 @@ faked_args po_config( int argc, char* argv[] )
          fa.argv_buffers.push_back(faked_args::char_vector_t());//added vector
          fa.argv.push_back(0);//added char* 0
          fa.argv_buffers[i+1].reserve(string_len+1);//preallocation of buffer ending with 0
+
          for(std::string::const_iterator si = to_pass_further[i].begin()
                  ; si != to_pass_further[i].end();  ++si )
          {
              fa.argv_buffers[i+1].push_back(*si);
          }//for si
+
          fa.argv_buffers[i+1].push_back(0);//zero terminated string
          fa.argv[i+1] = &fa.argv_buffers[i+1][0];
      }//for i

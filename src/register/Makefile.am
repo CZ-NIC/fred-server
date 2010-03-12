@@ -183,7 +183,7 @@ test_logd_LDADD =	libfred.a \
 #                         $(XML2_LIBS)
 
 #noinst_PROGRAMS = test-model
-test_model_SOURCES = test-model.cc
+test_model_SOURCES = test-model.cc test-model.h
 test_model_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) \
                      $(BOOST_PROGRAM_OPTIONS_LIB)
 test_model_LDADD   = libfred.a \
