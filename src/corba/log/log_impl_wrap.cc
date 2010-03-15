@@ -2,6 +2,7 @@
 #include "register/request.h"
 
 #include <corba/ccReg.hh>
+#include <boost/thread.hpp>
 
 
 ccReg_Log_i::ccReg_Log_i(const std::string database, const std::string &monitoring_hosts_file) : pagetables()
