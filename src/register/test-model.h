@@ -33,6 +33,7 @@
 #include <boost/program_options.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/barrier.hpp>
 #include <boost/date_time.hpp>
 #include "model_files.h"
 #include "model_bank_payment.h"

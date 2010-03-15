@@ -21,12 +21,15 @@
 
 
 #include <fstream>
-#include <ctime>            // std::time
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
+
+#include <sys/time.h>
+#include <time.h>
+
 
 
 // Sun CC doesn't handle boost::iterator_adaptor yet
@@ -63,32 +66,36 @@ class RandomDataGenerator //data generator is actually pseudo-random
     //boost::mt19937, boost::ecuyer1988, boost::minstd_rand
     typedef boost::mt19937 base_generator_t;
 
-    //uniform random number distribution of integer values in given range
-    typedef boost::uniform_int<> distribution_t;
+    //uniform random number distribution of values in given range
+    typedef boost::uniform_int<> int_distribution_t;
+    typedef boost::uniform_real<> real_distribution_t;
 
+    unsigned seed_;
     base_generator_t rng;
-    distribution_t gen_letter52;//both case letters
-    distribution_t gen_int;//signed integer
-    distribution_t gen_uint;//unsigned integer
-    boost::variate_generator<base_generator_t, distribution_t > letter52;
-    //boost::variate_generator<base_generator_t, distribution_t > gint;
-    //boost::variate_generator<base_generator_t, distribution_t > guint;
+    int_distribution_t gen_letter52;//both case letters
+    int_distribution_t gen_int;//signed integer
+    real_distribution_t gen_real;//signed double
+    boost::variate_generator<base_generator_t, int_distribution_t > letter52;
+    boost::variate_generator<base_generator_t, int_distribution_t > gint;
+    boost::variate_generator<base_generator_t, real_distribution_t > greal;
 
 public:
     //ctor
-    RandomDataGenerator(unsigned seed)
-        : rng(seed)
+    RandomDataGenerator(unsigned seed = 0)
+        : seed_(seed ? seed : msseed())
+          , rng(seed_)
+
           //ranges definitions
         , gen_letter52(0,51)
-        //, gen_int(std::numeric_limits<int>::min(), std::numeric_limits<int>::max())
-        //, gen_uint(std::numeric_limits<unsigned>::min(), std::numeric_limits<unsigned>::max())
+        , gen_int(std::numeric_limits<int>::min(), std::numeric_limits<int>::max())
+        , gen_real(std::numeric_limits<double>::min(), std::numeric_limits<double>::max())
 
           //generator instances
         , letter52(rng, gen_letter52)
-        //, gint(rng, gen_int)
-        //, guint(rng, gen_uint)
+        , gint(rng, gen_int)
+        , greal(rng, gen_real)
     {
-        std::cout << "RandomDataGenerator using seed: " << seed << std::endl;
+        std::cout << "RandomDataGenerator using seed: " << seed_ << std::endl;
     }
 
     //generate some letter A-Z a-z
@@ -114,14 +121,26 @@ public:
     //generate some signed integer
     int xint()
     {
-        return 0;//gint();
+        return gint();
     }
 
     //generate some unsigned integer
     unsigned xuint()
     {
-        return 0;//guint();
+        return static_cast<unsigned>(- std::numeric_limits<int>::min()) + gint();
     }
+
+   unsigned long msseed()
+    {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        return tv.tv_usec;
+    }
+
+   double xreal()
+   {
+       return greal();
+   }
 
 
 };
@@ -141,7 +160,7 @@ class ModelBankPaymentThreadWorker
 {
 public:
 
-    ModelBankPaymentThreadWorker(unsigned number,unsigned sleep_time, sync_barriers* sb_ptr, unsigned seed)
+    ModelBankPaymentThreadWorker(unsigned number,unsigned sleep_time, sync_barriers* sb_ptr, unsigned seed = 0)
             : number_(number)
             , sleep_time_(sleep_time)
             , sb_ptr_(sb_ptr)
@@ -150,14 +169,17 @@ public:
 
     void operator()()
     {
-        std::cout << "waiting: " << number_ << " xstring: " << rdg.xstring(10) << std::endl;
+        std::cout << "waiting: " << number_ << " xstring: " << rdg.xstring(10)
+                << "int limit test: "  << " xint: " << rdg.xint()
+                << " xuint: " << rdg.xuint() << " xreal: " << rdg.xreal()
+                << std::endl;
         sb_ptr_->insert_barrier.wait();//wait for other threads
         std::cout << "start: " << number_ << std::endl;
 
 
         boost::posix_time::seconds workTime(sleep_time_);// Pretend to do something useful...
 
-        boost::this_thread::sleep(workTime);
+        //boost::this_thread::sleep(workTime);
         std::cout << "end: " << number_ << std::endl;
     }
 
@@ -195,7 +217,7 @@ BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
     boost::thread_group threads;
     for (unsigned i = 0; i < thread_number; ++i)
     {
-        tw_vector.push_back(ModelBankPaymentThreadWorker(i,3,&sb, static_cast<unsigned>(std::time(0))));
+        tw_vector.push_back(ModelBankPaymentThreadWorker(i,3,&sb));
         threads.create_thread(tw_vector.at(i));
     }
 
