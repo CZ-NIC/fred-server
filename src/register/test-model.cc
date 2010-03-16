@@ -351,7 +351,8 @@ int main( int argc, char* argv[] )
     //producing faked args with unrecognized ones
     faked_args fa = po_config( argc, argv);
 
-#if ( BOOST_VERSION == 103800 )
+//fn init_unit_test_suite added in 1.35.0
+#if ( BOOST_VERSION > 103401 )
 
     // prototype for user's unit test init function
 #ifdef BOOST_TEST_ALTERNATIVE_INIT_API
@@ -366,12 +367,7 @@ int main( int argc, char* argv[] )
 
     return ::boost::unit_test::unit_test_main( init_func, fa.argc, &fa.argv[0] );//using fake args
 #else
-#if ( BOOST_VERSION == 103401 )
     return ::boost::unit_test::unit_test_main(  fa.argc, &fa.argv[0] );//using fake args
-#else
-#warning "unsuported boost version"
-    return ::boost::unit_test::unit_test_main(  fa.argc, &fa.argv[0] );//using fake args
-#endif //if 1_34_1
 #endif //if 1_38
 
 }
