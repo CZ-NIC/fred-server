@@ -46,6 +46,9 @@ SelectQuery::~SelectQuery() {
 
 
 void SelectQuery::finalize() {
+  if (!order_by_s.str().empty()) {
+    sql_buffer << " ORDER BY " << order_by_s.str();
+  }
   if (limit_r> 0) {
     sql_buffer << " LIMIT " << limit_r;
   }
@@ -90,9 +93,7 @@ void SelectQuery::make(escape_function_type _esc_func) {
   if (!where_s.str().empty())
   sql_buffer << " WHERE 1=1 " << where_s.str();
   if (!group_by_s.str().empty())
-  sql_buffer << " GROUP BY " << group_by_s.str();
-  if (!order_by_s.str().empty())
-  sql_buffer << " ORDER BY " << order_by_s.str();
+  sql_buffer << " GROUP BY " << group_by_s.str(); 
   finalize();
   LOGGER(PACKAGE).debug(boost::format("generated select SQL = %1%") % sql_buffer.str());
 }

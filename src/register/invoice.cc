@@ -1488,6 +1488,7 @@ public:
         return;
       }
 
+      id_query.order_by() << "id DESC";
       id_query.limit(load_limit_);
       _uf.serialize(id_query);
 

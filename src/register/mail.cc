@@ -125,7 +125,6 @@ public:
 
       Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect(new Database::Column("id", mf->joinMailTable(), "DISTINCT"));
-      tmp->order_by() << mf->joinMailTable().getAlias() + ".id DESC";
       _filter.addQuery(tmp);
       at_least_one = true;
     }
@@ -134,6 +133,7 @@ public:
       return;
     }
 
+    id_query.order_by() << "id DESC";
     id_query.limit(load_limit_);
     _filter.serialize(id_query);
     

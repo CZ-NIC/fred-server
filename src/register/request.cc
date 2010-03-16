@@ -155,8 +155,7 @@ public:
         continue;
 
       Database::SelectQuery *tmp = new Database::SelectQuery();
-      tmp->addSelect(new Database::Column("id", mf->joinRequestTable(), "DISTINCT"));
-      tmp->order_by() << mf->joinRequestTable().getAlias() + ".id DESC";
+      tmp->addSelect(new Database::Column("id", mf->joinRequestTable(), "DISTINCT"));      
       _filter.addQuery(tmp);
       at_least_one = true;
     }
@@ -165,7 +164,8 @@ public:
       return;
     }
 
-	// make an id query according to the filters    
+	// make an id query according to the filters
+    id_query.order_by() << "id DESC";
     id_query.limit(load_limit_);
     _filter.serialize(id_query);
 

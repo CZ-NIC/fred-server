@@ -66,7 +66,6 @@ public:
             Database::SelectQuery *tmp = new Database::SelectQuery();
             tmp->addSelect(new Database::Column(
                         "id", sif->joinBankPaymentTable(), "DISTINCT"));
-            tmp->order_by() << sif->joinBankPaymentTable().getAlias() + ".id DESC";
             filter.addQuery(tmp);
             at_least_one = true;
         }
@@ -74,6 +73,8 @@ public:
             LOGGER(PACKAGE).error("wrong filter passed for reload!");
             return;
         }
+
+        id_query.order_by() << "id DESC";
         id_query.limit(getLimit());
         filter.serialize(id_query);
         Database::InsertQuery tmp_table_query =

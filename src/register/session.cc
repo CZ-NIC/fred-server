@@ -95,7 +95,6 @@ public:
 
 	  Database::SelectQuery *tmp = new Database::SelectQuery();
 	  tmp->addSelect(new Database::Column("id", mf->joinSessionTable(), "DISTINCT"));
-	  tmp->order_by() << mf->joinSessionTable().getAlias() + ".id DESC";
 	  _filter.addQuery(tmp);
 	  at_least_one = true;
 	}
@@ -105,6 +104,7 @@ public:
 	}
 
 	// make an id query according to the filters
+        id_query.order_by() << "id DESC";
 	id_query.limit(load_limit_);
 	_filter.serialize(id_query);
 
