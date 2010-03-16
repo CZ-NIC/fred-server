@@ -134,7 +134,7 @@ public:
     {
         struct timeval tv;
         gettimeofday(&tv, NULL);
-        return tv.tv_usec;
+        return tv.tv_usec + tv.tv_sec;
     }
 
    double xreal()
@@ -170,7 +170,7 @@ public:
     void operator()()
     {
         std::cout << "waiting: " << number_ << " xstring: " << rdg.xstring(10)
-                << "int limit test: "  << " xint: " << rdg.xint()
+                << " int limit test: "  << " xint: " << rdg.xint()
                 << " xuint: " << rdg.xuint() << " xreal: " << rdg.xreal()
                 << std::endl;
         sb_ptr_->insert_barrier.wait();//wait for other threads
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
 }
 
 
-struct faked_args //faked args structure
+class FakedArgs //faked args
 {
     typedef std::vector<char> char_vector_t;//type for argv buffer
     typedef std::vector<char_vector_t> argv_buffers_t;//buffers vector type
@@ -235,13 +235,84 @@ struct faked_args //faked args structure
 
     argv_buffers_t argv_buffers;//owning vector of buffers
     argv_t argv;//new argv - nonowning
-    int argc;//new number of args
-};//struct faked_args
+
+public:
+    void clear()
+    {
+        argv_buffers.clear();
+        argv.clear();
+    }
+    //optional memory prealocation for expected argc
+    //actual argc is not affected
+    void prealocate_for_argc(int expected_argc)
+    {
+        //vector prealocation
+        argv_buffers.reserve(expected_argc);
+        argv.reserve(expected_argc);
+    }//prealocate_for_argc
+
+    int get_argc() const //argc getter
+    {
+        return static_cast<int>(argv_buffers.size());
+    }
+
+    char** get_argv() //argv getter
+    {
+        return &argv[0];
+    }
+
+    void add_argv(char* asciiz)//add zero terminated C-style string of chars
+    {
+        argv_buffers.push_back(FakedArgs::char_vector_t());//added buffer
+        std::size_t strsize = strlen(asciiz);
+        //argv size
+        std::size_t argv_size = argv_buffers.size();
+        std::size_t argv_idx = argv_size - 1;
+        //preallocation of buffer for first ending with 0
+        argv_buffers[argv_idx].reserve(strsize+1);
+
+        //actual char copy
+        for(unsigned i = 0; i < strsize;  ++i )
+        {
+            argv_buffers[argv_idx].push_back(asciiz[i]);
+        }//for i
+
+        argv_buffers[argv_idx].push_back(0);//zero terminated string
+        argv.push_back(&argv_buffers[argv_idx][0]);//added char*
+        std::cout << "add_argv char* : " << std::string(asciiz)
+            << " " << std::string(&argv_buffers[argv_idx][0]) << std::endl;
+    }
+
+    void add_argv(std::string str)//add std::string
+    {
+        std::cout << "add_argv str : " << str <<  std::endl;
+        argv_buffers.push_back(FakedArgs::char_vector_t());//added buffer
+        std::size_t strsize = str.length();
+        //argv size
+        std::size_t argv_size = argv_buffers.size();
+        std::size_t argv_idx = argv_size - 1;
+        //preallocation of buffer for first ending with 0
+        argv_buffers[argv_idx].reserve(strsize+1);
+
+        //actual string copy
+        for(std::string::const_iterator si = str.begin()
+                ; si != str.end();  ++si )
+        {
+            argv_buffers[argv_idx].push_back(*si);
+        }//for si
+        argv_buffers[argv_idx].push_back(0);//zero terminated string
+        argv.push_back(&argv_buffers[argv_idx][0]);//added char*
+        std::cout << "add_argv str : " << str <<  std::endl;
+    }
+
+};//class FakedArgs
 
 //removing our config from boost test cmdline
-faked_args po_config( int argc, char* argv[] )
+//return value:
+//  true - do not continue with tests and return after po_config
+//  false - continue with tests
+bool po_config( int argc, char* argv[] , FakedArgs& fa )
 {
-    faked_args fa;
     namespace po = boost::program_options;
     po::options_description
         dbconfig (std::string("Database connection configuration"));
@@ -261,56 +332,32 @@ faked_args po_config( int argc, char* argv[] )
     po::parsed_options parsed = po::command_line_parser(argc, argv).
                             options(dbconfig).allow_unregistered().run();
     po::store(parsed, vm);
-    std::vector<std::string> to_pass_further
+    typedef std::vector<std::string> string_vector_t;
+    string_vector_t to_pass_further
         = po::collect_unrecognized(parsed.options, po::include_positional);
     po::notify(vm);
 
-     //faked args
-     fa.argc = to_pass_further.size() + 1;//new number of args + first
+    //faked args
+    fa.clear();//to be sure that fa is empty
 
-     //vector prealocation
-     fa.argv_buffers.reserve(fa.argc);
-     fa.argv.reserve(fa.argc);
+    //preallocate for new number of args + first programm name
+    fa.prealocate_for_argc(to_pass_further.size() + 1);
 
-     //program name copy
-     fa.argv_buffers.push_back(faked_args::char_vector_t());//added buffer
-     std::size_t strsize = strlen(argv[0]);
+    //program name copy
+    fa.add_argv(argv[0]);
 
-     //preallocation of buffer for first ending with 0
-     fa.argv_buffers[0].reserve(strsize+1);
-
-     //actual program name copy
-     for(unsigned i = 0; i < strsize;  ++i )
-     {
-         fa.argv_buffers[0].push_back(argv[0][i]);
-     }//for i
-
-     fa.argv_buffers[0].push_back(0);//zero terminated string
-     fa.argv.push_back(&fa.argv_buffers[0][0]);//added char*
-
-     //copying new arg vector with char pointers to data in
-     //to_pass_further strings except first
-     for(int i = 0; i < fa.argc-1; ++i)
-     {
-         std::size_t string_len = to_pass_further[i].length();//string len
-         fa.argv_buffers.push_back(faked_args::char_vector_t());//added vector
-         fa.argv.push_back(0);//added char* 0
-         fa.argv_buffers[i+1].reserve(string_len+1);//preallocation of buffer ending with 0
-
-         for(std::string::const_iterator si = to_pass_further[i].begin()
-                 ; si != to_pass_further[i].end();  ++si )
-         {
-             fa.argv_buffers[i+1].push_back(*si);
-         }//for si
-
-         fa.argv_buffers[i+1].push_back(0);//zero terminated string
-         fa.argv[i+1] = &fa.argv_buffers[i+1][0];
-     }//for i
+    //copying a new arg vector
+    for(string_vector_t::const_iterator i = to_pass_further.begin()
+            ; i != to_pass_further.end()
+            ; ++i)
+    {
+        fa.add_argv(*i);//string
+    }//for i
 
      if (vm.count("help"))
      {
          std::cout << dbconfig << std::endl;
-         throw std::runtime_error("exiting after help");
+         return true;//do not continue with tests and return
      }
 
      /* construct connection string */
@@ -341,7 +388,7 @@ faked_args po_config( int argc, char* argv[] )
 
      Database::Manager::init(new Database::ConnectionFactory(conn_info));
 
-     return fa;
+     return false;
 }
 
 
@@ -349,7 +396,8 @@ int main( int argc, char* argv[] )
 {
     //processing of additional program options
     //producing faked args with unrecognized ones
-    faked_args fa = po_config( argc, argv);
+    FakedArgs fa;
+    if(po_config( argc, argv, fa)) return 0;
 
 //fn init_unit_test_suite added in 1.35.0
 #if ( BOOST_VERSION > 103401 )
@@ -365,9 +413,9 @@ int main( int argc, char* argv[] )
     boost::unit_test::init_unit_test_func init_func = &init_unit_test_suite;
 #endif
 
-    return ::boost::unit_test::unit_test_main( init_func, fa.argc, &fa.argv[0] );//using fake args
-#else
-    return ::boost::unit_test::unit_test_main(  fa.argc, &fa.argv[0] );//using fake args
+    return ::boost::unit_test::unit_test_main( init_func, fa.get_argc(), fa.get_argv() );//using fake args
+#else //1.34.1 and older
+    return ::boost::unit_test::unit_test_main(  fa.get_argc(), fa.get_argv() );//using fake args
 #endif //if 1_38
 
 }
