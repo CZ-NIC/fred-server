@@ -43,7 +43,7 @@ public:
   Registry::Request::Detail* createRequestDetail(Register::Logger::Request *req);
 
 private:
-  typedef std::map<std::string, std::list<ccReg_Logger_i*>* > pagetables_list;
+  typedef std::map<std::string, ccReg_Logger_i*> pagetables_list;
 
   pagetables_list pagetables;
   std::auto_ptr<Register::Logger::Manager> back;

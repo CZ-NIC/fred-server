@@ -13,19 +13,16 @@ ccReg_Log_i::ccReg_Log_i(const std::string database, const std::string &monitori
   // ccReg_Log_i(const std::string database) throw (Register::Logger::Manager::DB_CONNECT_FAILED): Register::Logger::Manager(database) {};
 ccReg_Log_i::~ccReg_Log_i() 
 {
+    PortableServer::POA_ptr poa = this->_default_POA();
+
     for (pagetables_list::iterator mit = pagetables.begin(); mit != pagetables.end(); mit++) {
 
-        std::list<ccReg_Logger_i*> *ptlist = mit->second;
-        for (std::list<ccReg_Logger_i*>::iterator lit = ptlist->begin(); lit != ptlist->end(); lit++) {
-            try {
-                PortableServer::POA_ptr poa = this->_default_POA();
-                poa->deactivate_object(*(poa->servant_to_id(*lit)));
-            } catch (...) {
+        try {
 
-            }
+            poa->deactivate_object(*(poa->servant_to_id(mit->second)));
+        } catch (...) {
+
         }
-
-        delete ptlist;
     }
 }
 
@@ -91,28 +88,24 @@ Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
 {    
     Registry::PageTable_ptr ret;
     pagetables_list::iterator it;
-
-    std::auto_ptr<Register::Logger::Manager> logger_manager;
-
-    logger_manager.reset(Register::Logger::Manager::create());
-    Register::Logger::List *list = logger_manager->createList();
-    ccReg_Logger_i * ret_ptr = new ccReg_Logger_i(list);
-    ret = ret_ptr->_this();
- 
+    
     boost::mutex::scoped_lock slm (lmutex);
 
     it = pagetables.find(session_id);
 
     if (it != pagetables.end()) {
-        
-        it->second->push_back(ret_ptr);
-                        
-        LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: added another pagetable for client (session_id %1%) ") % session_id);
+        LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: returning existing pagetable for client (session_id %1%) ") % session_id);
+        return it->second->_this();
+
     } else {
-        std::list<ccReg_Logger_i*> *ptlist = new std::list<ccReg_Logger_i*>();        
-        
-        ptlist->push_back(ret_ptr);
-        pagetables[session_id] = ptlist;
+        std::auto_ptr<Register::Logger::Manager> logger_manager;
+
+        logger_manager.reset(Register::Logger::Manager::create());
+        Register::Logger::List *list = logger_manager->createList();
+        ccReg_Logger_i * ret_ptr = new ccReg_Logger_i(list);
+        ret = ret_ptr->_this();
+
+        pagetables[session_id] = ret_ptr;
     }
 
     LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: Returning a pagetable object (%1%) to a client (session %2%).") % ret % session_id);
@@ -129,30 +122,17 @@ void ccReg_Log_i::deletePageTable(const char* session_id)
 
     it = pagetables.find(session_id);
 
+    PortableServer::POA_ptr poa = this->_default_POA();
+
     if (it == pagetables.end()) {
         LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: No pagetable found for session %1%, no action. ") % session_id);
     } else {
         LOGGER(PACKAGE).debug(boost::format("ccReg_Log_i: A pagetable found for session %1%, deleting. ") % session_id);
 
-        for (std::list<ccReg_Logger_i*>::iterator l = it->second->begin();
-                l != it->second->end();
-                l++) {
+        poa->deactivate_object(*(poa->servant_to_id(it->second)));
 
-            try {                
-                PortableServer::POA_ptr poa = this->_default_POA();
-                poa->deactivate_object(*(poa->servant_to_id(*l)));
+        it->second->_remove_ref();
 
-                // this should decrease reference count to 0 thus releasing the servant
-                (*l)->_remove_ref();
-            } catch (...) {
-                delete it->second;
-                throw;
-            }
-
-        }
-              
-        delete it->second;
-        
         pagetables.erase(it);
     }
 }

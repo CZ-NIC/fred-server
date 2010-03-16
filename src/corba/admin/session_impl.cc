@@ -80,8 +80,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_mails = new ccReg_Mails_i(mail_manager_->createList(), ns);
   m_files = new ccReg_Files_i(file_manager_->createList());  
   m_logsession = new ccReg_LogSession_i(m_logsession_manager->createList());
-  m_zones = new ccReg_Zones_i(m_register_manager->getZoneManager()->createList());
-  m_requests = getLoggerPageTable();
+  m_zones = new ccReg_Zones_i(m_register_manager->getZoneManager()->createList());  
    
   m_eppactions->setDB();
   m_registrars->setDB();
@@ -117,35 +116,34 @@ ccReg_Session_i::~ccReg_Session_i() {
   delete m_invoices;
   delete m_filters;
   delete m_user;
-  delete m_files;  
+  delete m_files;
   delete m_logsession;
   delete m_payments;
-  // delete m_statementheads;
+    // delete m_statementheads;
   delete m_zones;
 
-    if (!CORBA::is_nil(m_requests)) {
-        try {
-            ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
+    try {
+        ccReg::Logger_ptr logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
 
-            if (CORBA::is_nil(logger)) {
-                LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running."));
-            } else {
-                LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: deleting logger pagetable."));
-                logger->deletePageTable(session_id_.c_str());
-                
-            }
-        } catch(CORBA::COMM_FAILURE&) {
-            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running. CORBA exception caught."));
-        } catch(CORBA::TRANSIENT&) {
-            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running. CORBA exception caught."));
-        } catch(CORBA::SystemException&) {
-            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running. CORBA exception caught."));
-        } catch (...) {
-            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: Exception caught."));
+        if (CORBA::is_nil(logger)) {
+            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running."));
+        } else {
+            LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: deleting logger pagetable."));
+            logger->deletePageTable(session_id_.c_str());
+
         }
+    } catch (CORBA::COMM_FAILURE&) {
+        LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running. CORBA exception caught."));
+    } catch (CORBA::TRANSIENT&) {
+        LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running. CORBA exception caught."));
+    } catch (CORBA::SystemException&) {
+        LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: logd isn't running. CORBA exception caught."));
+    } catch (...) {
+        LOGGER(PACKAGE).debug(boost::format("ccReg_Session_i::~ccReg_Session_i: Exception caught."));
     }
-     
-  db.Disconnect();
+
+
+    db.Disconnect();
 }
 
 ccReg::User_ptr ccReg_Session_i::getUser() {
@@ -163,11 +161,11 @@ Registry::PageTable_ptr ccReg_Session_i::getLoggerPageTable()
     try {
         logger = ccReg::Logger::_narrow(m_ns->resolve("Logger"));
     } catch (...) {
-        return Registry::PageTable::_nil();
+        throw ccReg::Admin::ServiceUnavailable();
     }
 
     if(CORBA::is_nil(logger)) {
-        return Registry::PageTable::_nil();
+        throw ccReg::Admin::ServiceUnavailable();
     }
 
     Registry::PageTable_ptr pagetable;
@@ -175,10 +173,10 @@ Registry::PageTable_ptr ccReg_Session_i::getLoggerPageTable()
     try {
         pagetable = logger->createPageTable(session_id_.c_str());
     } catch(...) {
-        return Registry::PageTable::_nil();
+        throw ccReg::Admin::ServiceUnavailable();
     }
 
-    return pagetable;
+    return Registry::PageTable::_duplicate(pagetable);
 }
 
 Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
@@ -216,15 +214,7 @@ Registry::PageTable_ptr ccReg_Session_i::getPageTable(ccReg::FilterType _type) {
     case ccReg::FT_FILE:
       return m_files->_this();
     case ccReg::FT_LOGGER:
-        if (CORBA::is_nil(m_requests)) {
-            throw ccReg::Admin::ServiceUnavailable();
-        }
-        return Registry::PageTable::_duplicate (m_requests);
-      //return getLoggerPageTable();
-
-      // implement this in similar wayy to getLoggerPageTable:
-    // case ccReg::FT_SESSION:
-    //   return m_logsession->_this();
+      return getLoggerPageTable();
     case ccReg::FT_ZONE:
       return m_zones->_this();
 

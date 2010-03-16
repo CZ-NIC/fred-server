@@ -70,8 +70,7 @@ private:
   ccReg_Filters_i* m_filters;
   ccReg_User_i* m_user;
   ccReg_Files_i* m_files;  
-  ccReg_LogSession_i* m_logsession;
-  Registry::PageTable_ptr m_requests;
+  ccReg_LogSession_i* m_logsession;  
 
   std::auto_ptr<Register::Manager> m_register_manager;
   std::auto_ptr<Register::PublicRequest::Manager> m_publicrequest_manager;
