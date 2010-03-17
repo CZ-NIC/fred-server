@@ -26,6 +26,8 @@
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 
 #include <sys/time.h>
 #include <time.h>
@@ -73,11 +75,19 @@ class RandomDataGenerator //data generator is actually pseudo-random
     unsigned seed_;
     base_generator_t rng;
     int_distribution_t gen_letter52;//both case letters
+    int_distribution_t gen_numletter10;//any number
+    int_distribution_t gen_num1_5;//number 1-5
+    int_distribution_t gen_num1_6;//number 1-6
     int_distribution_t gen_int;//signed integer
     real_distribution_t gen_real;//signed double
+    int_distribution_t gen_time;//from 1.1.1990 to the end of unix time (19.01.2038 04:14:07 (CET))
     boost::variate_generator<base_generator_t, int_distribution_t > letter52;
+    boost::variate_generator<base_generator_t, int_distribution_t > numletter10;
+    boost::variate_generator<base_generator_t, int_distribution_t > num1_5;
+    boost::variate_generator<base_generator_t, int_distribution_t > num1_6;
     boost::variate_generator<base_generator_t, int_distribution_t > gint;
     boost::variate_generator<base_generator_t, real_distribution_t > greal;
+    boost::variate_generator<base_generator_t, int_distribution_t > gtime;
 
 public:
     //ctor
@@ -87,13 +97,22 @@ public:
 
           //ranges definitions
         , gen_letter52(0,51)
+        , gen_numletter10(0,9)
+        , gen_num1_5(1,5)
+        , gen_num1_6(1,6)
         , gen_int(std::numeric_limits<int>::min(), std::numeric_limits<int>::max())
         , gen_real(std::numeric_limits<double>::min(), std::numeric_limits<double>::max())
+        , gen_time(631148400, 2147483647)
+
 
           //generator instances
         , letter52(rng, gen_letter52)
+        , numletter10(rng, gen_numletter10)
+        , num1_5(rng, gen_num1_5)
+        , num1_6(rng, gen_num1_6)
         , gint(rng, gen_int)
         , greal(rng, gen_real)
+        , gtime(rng, gen_time)
     {
         std::cout << "RandomDataGenerator using seed: " << seed_ << std::endl;
     }
@@ -108,6 +127,13 @@ public:
         return ret;
     }
 
+    //generate some letter 0-9
+    char xnumletter()
+    {
+        return static_cast<char>(numletter10() + 48);
+    }
+
+
     //generate some string of given length
     std::string xstring(std::size_t length)
     {
@@ -116,6 +142,28 @@ public:
         for(std::size_t i = 0; i < length; ++i)
             ret.push_back(xletter());
         return ret;
+    }
+
+    //generate some string of given length
+    std::string xnumstring(std::size_t length)
+    {
+        std::string ret;
+        ret.reserve(length);//allocation
+        for(std::size_t i = 0; i < length; ++i)
+            ret.push_back(xnumletter());
+        return ret;
+    }
+
+    //generate signed integer 1-5
+    int xnum1_5()
+    {
+        return num1_5();
+    }
+
+    //generate signed integer 1-6
+    int xnum1_6()
+    {
+        return num1_6();
     }
 
     //generate some signed integer
@@ -136,12 +184,27 @@ public:
         gettimeofday(&tv, NULL);
         return tv.tv_usec + tv.tv_sec;
     }
-
+   //generate some signed real number
    double xreal()
    {
        return greal();
    }
+   //generate some unix time from 1.1.1990 to the end of unix time (19.01.2038 04:14:07 (CET))
+   time_t xtime()
+   {
+       return gtime();
+   }
+   //generate some posix time from 1.1.1990 to the end of unix time (19.01.2038 04:14:07 (CET))
+   boost::posix_time::ptime xptime()
+   {
+       return boost::posix_time::from_time_t(gtime());
+   }
 
+   //generate some gregorian date from 1.1.1990 to the end of unix time (19.01.2038)
+   boost::gregorian::date xdate()
+   {
+       return xptime().date();
+   }
 
 };
 
@@ -169,13 +232,63 @@ public:
 
     void operator()()
     {
-        std::cout << "waiting: " << number_ << " xstring: " << rdg.xstring(10)
-                << " int limit test: "  << " xint: " << rdg.xint()
-                << " xuint: " << rdg.xuint() << " xreal: " << rdg.xreal()
-                << std::endl;
-        sb_ptr_->insert_barrier.wait();//wait for other threads
+        ModelBankPayment mbp1, mbp2;
+
+
+        if(number_%2)//if odd number
+        {
+            std::cout << "waiting: " << number_ << std::endl;
+            /*
+                    << " xstring: " << rdg.xstring(10)
+                    << " int limit test: "  << " xint: " << rdg.xint()
+                    << " xuint: " << rdg.xuint() << " xreal: " << rdg.xreal()
+                    << " xnumletter: " << rdg.xnumletter()
+                    << " xtime: " << rdg.xtime()
+                    << " xptime: " << rdg.xptime()
+                    << " Date xptime: " << Database::Date(rdg.xptime().date())
+                    << std::endl;
+                    */
+
+            sb_ptr_->insert_barrier.wait();//wait for other odd threads
+        }
+        else
+        {//even threads don't wait
+            std::cout << "NOwaiting: " << number_ << std::endl;
+            /*
+                        << " xstring: " << rdg.xstring(10)
+                        << " int limit test: "  << " xint: " << rdg.xint()
+                        << " xuint: " << rdg.xuint() << " xreal: " << rdg.xreal()
+                        << " xnumletter: " << rdg.xnumletter() << std::endl;
+                        */
+        }
+
         std::cout << "start: " << number_ << std::endl;
 
+
+        mbp_insert_data insert_data;
+
+        insert_data.statement_id=0;//fk bank_statement (id) - none
+        insert_data.account_id=rdg.xnum1_6(); //fk bank_account (id) - num 1-6
+        insert_data.invoice_id=0; //fk invoice (id) - none
+        insert_data.account_number=rdg.xnumstring(17);//17 numletters
+        insert_data.bank_code=rdg.xnumstring(4);//4 numletters
+        insert_data.operation_code=rdg.xnum1_5(); // num 1-5
+        insert_data.transfer_type=rdg.xnum1_5(); // num 1-5
+        insert_data.payment_status=rdg.xnum1_6();// num 1-6
+        insert_data.konstsym=rdg.xnumstring(10);// 10 numletters
+        insert_data.varsymb=rdg.xnumstring(10);// 10 numletters
+        insert_data.specsymb=rdg.xnumstring(10);// 10 numletters
+        insert_data.price=rdg.xint();//int
+        insert_data.account_evid=rdg.xnumstring(20);//20 numletters
+        insert_data.account_date=rdg.xdate(); //some date
+        insert_data.account_memo=rdg.xstring(64); //64 chars
+        insert_data.account_name=rdg.xstring(64); //64 chars
+        insert_data.crtime=rdg.xptime();//timestamp
+
+
+        BOOST_REQUIRE_EQUAL(
+                mbp_insert_test(mbp1, insert_data)
+                , 0);
 
         boost::posix_time::seconds workTime(sleep_time_);// Pretend to do something useful...
 
@@ -204,14 +317,14 @@ BOOST_AUTO_TEST_CASE( test_model_files )
 
 BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
 {
-    std::size_t const thread_number = 10;//number of threads in test
+    std::size_t const thread_number = 300;//number of threads in test
 
     //vector of thread functors
     std::vector<ModelBankPaymentThreadWorker> tw_vector;
     tw_vector.reserve(thread_number);
 
     //synchronization barriers instance
-    sync_barriers sb(thread_number);
+    sync_barriers sb(thread_number/2);
 
     //thread container
     boost::thread_group threads;
@@ -223,7 +336,7 @@ BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
 
     threads.join_all();
 
-    BOOST_CHECK( 1 + 1 == 2);
+    BOOST_CHECK( 1 + 1 == 2 );
 }
 
 
@@ -263,24 +376,7 @@ public:
 
     void add_argv(char* asciiz)//add zero terminated C-style string of chars
     {
-        argv_buffers.push_back(FakedArgs::char_vector_t());//added buffer
-        std::size_t strsize = strlen(asciiz);
-        //argv size
-        std::size_t argv_size = argv_buffers.size();
-        std::size_t argv_idx = argv_size - 1;
-        //preallocation of buffer for first ending with 0
-        argv_buffers[argv_idx].reserve(strsize+1);
-
-        //actual char copy
-        for(unsigned i = 0; i < strsize;  ++i )
-        {
-            argv_buffers[argv_idx].push_back(asciiz[i]);
-        }//for i
-
-        argv_buffers[argv_idx].push_back(0);//zero terminated string
-        argv.push_back(&argv_buffers[argv_idx][0]);//added char*
-        std::cout << "add_argv char* : " << std::string(asciiz)
-            << " " << std::string(&argv_buffers[argv_idx][0]) << std::endl;
+        add_argv(std::string(asciiz));
     }
 
     void add_argv(std::string str)//add std::string
@@ -306,6 +402,7 @@ public:
     }
 
 };//class FakedArgs
+
 
 //removing our config from boost test cmdline
 //return value:
@@ -416,7 +513,7 @@ int main( int argc, char* argv[] )
     return ::boost::unit_test::unit_test_main( init_func, fa.get_argc(), fa.get_argv() );//using fake args
 #else //1.34.1 and older
     return ::boost::unit_test::unit_test_main(  fa.get_argc(), fa.get_argv() );//using fake args
-#endif //if 1_38
+#endif //1.35.0 and newer
 
 }
 

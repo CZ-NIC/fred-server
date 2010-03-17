@@ -178,6 +178,202 @@ unsigned model_nodataupdate_test()
     return ret;
 }
 
+///////////mbp
+
+struct mbp_insert_data
+{
+    unsigned long long id; //filled by model
+    unsigned statement_id;//fk bank_statement (id) - none
+    unsigned account_id; //fk bank_account (id) - num 1-6
+    unsigned invoice_id; //fk invoice (id) - none
+    std::string account_number;//17 numletters
+    std::string bank_code;//4 numletters
+    int operation_code; // num 1-5
+    int transfer_type; // num 1-5
+    int payment_status;// num 1-6
+    std::string konstsym;// 10 numletters
+    std::string varsymb;// 10 numletters
+    std::string specsymb;// 10 numletters
+    int price;//int
+    std::string account_evid;//20 numletters
+    Database::Date account_date; //some date
+    std::string account_memo; //64 chars
+    std::string account_name; //64 chars
+    Database::DateTime crtime;//timestamp
+};
+
+unsigned mbp_insert_test(ModelBankPayment& mbp1, mbp_insert_data& insert_data)
+{
+    unsigned ret=0;
+    //insert data
+    mbp1.setAccountId(insert_data.account_id);
+    mbp1.setAccountNumber(insert_data.account_number);
+    mbp1.setBankCodeId(insert_data.bank_code);
+    mbp1.setCode(insert_data.operation_code);
+    mbp1.setType(insert_data.transfer_type);
+    mbp1.setStatus(insert_data.payment_status);
+    mbp1.setKonstSym(insert_data.konstsym);
+    mbp1.setVarSymb(insert_data.varsymb);
+    mbp1.setSpecSymb(insert_data.specsymb);
+    mbp1.setPrice(insert_data.price);
+    mbp1.setAccountEvid(insert_data.account_evid);
+    mbp1.setAccountDate(insert_data.account_date);
+    mbp1.setAccountMemo(insert_data.account_memo);
+    mbp1.setAccountName(insert_data.account_name);
+    mbp1.setCrTime(insert_data.crtime);
+    mbp1.insert();
+
+    Database::Connection conn = Database::Manager::acquire();
+    std::string query = str(boost::format(
+            "select id, statement_id, account_id, account_number, bank_code " //0-4
+            ", code, \"type\" ,status, konstsym, varsymb, specsymb, price " //5-11
+            ", account_evid, account_date, account_memo, invoice_id " //12-15
+            ", account_name, crtime " //16-17
+            " from bank_payment WHERE id = %1%") % mbp1.getId() );
+
+    //save id - this should not change
+    insert_data.id = mbp1.getId();
+    insert_data.statement_id = 0;
+    insert_data.account_id = 0;
+    insert_data.invoice_id = 0;
+
+    Database::Result res = conn.exec( query );
+    if ((res.size() > 0) && (res[0].size() == 18))
+    {    //check data inserted by model
+        if(insert_data.id != static_cast<unsigned long long>(res[0][0]) ) ret+=1;
+        if(insert_data.statement_id != static_cast<unsigned long long>(res[0][1])) ret+=2;
+        if(insert_data.account_id != static_cast<unsigned long long>(res[0][2])) ret+=4;
+        if(insert_data.account_number.compare(res[0][3])) ret+=8;
+        if(insert_data.bank_code.compare(res[0][4])) ret+=16;
+        if(insert_data.operation_code != static_cast<int>(res[0][5])) ret+=32;
+        if(insert_data.transfer_type != static_cast<int>(res[0][6])) ret+=64;
+        if(insert_data.payment_status != static_cast<int>(res[0][7])) ret+=128;
+        if(insert_data.konstsym.compare(res[0][8])) ret+=256;
+        if(insert_data.varsymb.compare(res[0][9])) ret+=512;
+        if(insert_data.specsymb.compare(res[0][10])) ret+=1024;
+        if(insert_data.price != static_cast<int>(res[0][11])) ret+=2048;
+        if(insert_data.account_evid.compare(res[0][12])) ret+=4096;
+        if(insert_data.account_date.to_string()
+            .compare(Database::Date(std::string(res[0][13])).to_string()))
+                ret+=8192;
+        if(insert_data.account_memo.compare(res[0][14])) ret+=16384;
+        if(insert_data.invoice_id != static_cast<unsigned long long>(res[0][15])) ret+=32768;
+        if(insert_data.account_name.compare(res[0][16])) ret+=65536;
+        if(insert_data.crtime.to_string()
+            .compare(Database::DateTime(std::string(res[0][17])).to_string()))
+                ret+=131072;
+    }//if res size
+    else ret+=262144;
+
+    if (ret != 0 ) std::cerr << "mbp_insert_test ret: "<< ret << std::endl;
+
+    return ret;
+}
+
+unsigned mbp_reload_test()
+{
+    unsigned ret=0;
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
+    std::string query = str(boost::format("UPDATE files SET name = E'', path = E'', mimetype = E'',"
+            " crdate = '2000-01-01 00:00:01', filesize = 80000, fileType = 1 WHERE id = %1%") % mf1.getId() );
+    conn.exec( query );
+    tx.commit();
+
+    mf2.setId(mf1.getId());
+    mf2.reload();
+
+    //check data from UPDATE query after reload
+    if(mf2.getId() != mf1.getId()) ret+=1;
+    if(mf2.getName().compare("")) ret+=2;
+    if(mf2.getPath().compare("")) ret+=4;
+    if(mf2.getMimeType().compare("")) ret+=8;
+    if(Database::DateTime(mf2.getCrDate()).to_string().compare(
+        Database::DateTime("2000-01-01 00:00:01").to_string() ))    ret+=16;
+    if(mf2.getFilesize() != 80000 ) ret+=32;
+    if(mf2.getFileTypeId() != 1 ) ret+=64;
+
+    if (ret != 0 ) std::cerr << "model_reload_test ret: "<< ret << std::endl;
+    return ret;
+}
+
+
+unsigned mbp_update_test()
+{
+    unsigned ret=0;
+
+    mf1.setFilesize(80000);
+    mf1.update();
+
+    mf1.reload();
+
+    //compare mf1 and mf2, it should be same,  ret=0 is OK
+
+    if(mf1.getId() != mf2.getId()) ret+=1;
+    if(mf1.getName() != mf2.getName())
+    {
+        std::cerr << mf1.getName() << std::endl;
+        std::cerr << mf2.getName() << std::endl;
+        ret+=2;
+    }
+
+    if(mf1.getPath() != mf2.getPath())
+    {
+        std::cerr << mf1.getPath() << std::endl;
+        std::cerr << mf2.getPath() << std::endl;
+
+        ret+=4;
+    }
+
+    if(mf1.getMimeType() != mf2.getMimeType()) ret+=8;
+    if(mf1.getCrDate() != mf2.getCrDate())
+    {
+        std::cerr << mf1.getCrDate() << std::endl;
+        std::cerr << mf2.getCrDate() << std::endl;
+        ret+=16;
+    }
+
+    if(mf1.getFilesize() != mf2.getFilesize()) ret+=32;
+    if(mf1.getFileTypeId() != mf2.getFileTypeId())
+    {
+        std::cerr << mf1.getFileTypeId() << std::endl;
+        std::cerr << mf2.getFileTypeId() << std::endl;
+
+        ret+=64;
+    }
+
+
+    if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
+
+    Database::Connection conn = Database::Manager::acquire();
+    Database::Transaction tx(conn);
+    std::string query = str(boost::format("DELETE FROM files WHERE id = %1%") % mf1.getId() );
+    conn.exec( query );
+    tx.commit();
+
+    return ret;
+
+}
+
+unsigned mbp_nodatareload_test()
+{
+    unsigned ret=0;
+    mf2.reload();
+    return ret;
+}
+
+unsigned mbp_nodataupdate_test()
+{
+    unsigned ret=0;
+    mf2.setName("x");
+    mf2.update();
+    return ret;
+}
+
+
+////////////mbp
+
+
 
 
 bool check_std_exception_nodatafound(std::exception const & ex)
