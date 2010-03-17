@@ -5137,6 +5137,12 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
                                     Register::Invoicing::Manager::create());
                             if (invMan->domainBilling(action.getDB(), zone, action.getRegistrar(),
                                         id, Database::Date(std::string(exDate)), period_count, false)) {
+
+                                if(!invMan->domainBilling(action.getDB(), zone, action.getRegistrar(),
+                                        id, Database::Date(std::string(exDate)), period_count, true)) {
+                                    code = COMMAND_BILLING_FAILURE;
+                                }
+
                                 if (action.getDB()->SaveDomainHistory(id)) {
                                     if (action.getDB()->SaveObjectCreate(id)) {
                                         code = COMMAND_OK;
