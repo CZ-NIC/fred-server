@@ -234,7 +234,6 @@ unsigned mbp_insert_test(ModelBankPayment& mbp1, mbp_insert_data& insert_data)
     //save id - this should not change
     insert_data.id = mbp1.getId();
     insert_data.statement_id = 0;
-    insert_data.account_id = 0;
     insert_data.invoice_id = 0;
 
     Database::Result res = conn.exec( query );
@@ -251,7 +250,7 @@ unsigned mbp_insert_test(ModelBankPayment& mbp1, mbp_insert_data& insert_data)
         if(insert_data.konstsym.compare(res[0][8])) ret+=256;
         if(insert_data.varsymb.compare(res[0][9])) ret+=512;
         if(insert_data.specsymb.compare(res[0][10])) ret+=1024;
-        if(insert_data.price != static_cast<int>(res[0][11])) ret+=2048;
+        if(Database::Money(insert_data.price) != Database::Money(static_cast<std::string>(res[0][11]))) ret+=2048;
         if(insert_data.account_evid.compare(res[0][12])) ret+=4096;
         if(insert_data.account_date.to_string()
             .compare(Database::Date(std::string(res[0][13])).to_string()))
