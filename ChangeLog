@@ -1,3 +1,13 @@
+2010-03-18 Jiri Sadek, Juraj Vicenik, Jan Zima (2.3.5)
+
+  * fred-admin importing bank xml fixes
+
+  * Logger pagetable hadling fixes
+
+  * create_domain billing fixes
+
+  * Generated sql with order by clause fixes
+
 2010-03-13 Jaromir Talir, Jiri Sadek (2.3.3, 2.3.4)
 
   * Compiling fixes:
