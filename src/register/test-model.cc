@@ -294,12 +294,15 @@ public:
                 mbp_reload_test(mbp1, mbp2)
                 , 0);
 
+        BOOST_REQUIRE_EQUAL(
+                mbp_update_test(mbp1, mbp2)
+                , 0);
+
+
         std::cout << "end: " << number_ << std::endl;
     }
 
 private:
-
-    ModelBankPayment mbp;
     unsigned    number_;//thred identification
     unsigned    sleep_time_;//[s]
     sync_barriers* sb_ptr_;
