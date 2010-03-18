@@ -276,8 +276,7 @@ public:
                         cpayment->setId(conflict_pid);
                         cpayment->reload();
                         /* compare major attributes which should never change */
-                        if (payment->getStatementId() != cpayment->getStatementId()
-                                || payment->getAccountDate() != cpayment->getAccountDate()
+                        if (payment->getAccountDate() != cpayment->getAccountDate()
                                 || payment->getAccountNumber() != cpayment->getAccountNumber()
                                 || payment->getBankCode() != cpayment->getBankCode()
                                 || payment->getCode() != cpayment->getCode()
@@ -311,6 +310,7 @@ public:
 
                             processPayment(payment.get());
                         }
+
                         /* there we should have already imported payment */
                         LOGGER(PACKAGE).info(boost::format(
                                 "conflict payment found "
@@ -320,19 +320,18 @@ public:
                                 % cpayment->getBankCode()
                                 % cpayment->getAccountEvid());
 
-                        /* XXX don't process statements so far
-                        if (statement_valid) {
-                            if (!statement_conflict) {
-                                // payment exists and statement was saved
-                                // need to pair payment with statement
-                                _pairPaymentWithStatement(payment->getId(), statement->getId());
-                            }
-                            else {
-                                // payment exists and statement was existing also
-                                // is it paired already?
+                        if (payment->getStatementId() != cpayment->getStatementId()
+                                && cpayment->getStatementId() == 0) {
+
+                            if (statement_valid && !statement_conflict) {
+                                LOGGER(PACKAGE).info(boost::format(
+                                            "conflict payment should be paired with imported "
+                                            "statement (payment=%1% statement=%2%)")
+                                            % cpayment->getId()
+                                            % statement->getId());
+                                _pairPaymentWithStatement(cpayment->getId(), statement->getId());
                             }
                         }
-                        */
                     }
                 }
 
