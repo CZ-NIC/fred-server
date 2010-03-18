@@ -290,9 +290,10 @@ public:
                 mbp_insert_test(mbp1, insert_data)
                 , 0);
 
-        boost::posix_time::seconds workTime(sleep_time_);// Pretend to do something useful...
+        BOOST_REQUIRE_EQUAL(
+                mbp_reload_test(mbp1, mbp2)
+                , 0);
 
-        //boost::this_thread::sleep(workTime);
         std::cout << "end: " << number_ << std::endl;
     }
 
