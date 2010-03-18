@@ -1,3 +1,9 @@
+2010-03-13 Jaromir Talir, Jiri Sadek (2.3.3, 2.3.4)
+
+  * Compiling fixes:
+    - Removed build of test-model due to boost version (non)compatibility
+    - Fixed logger (scoped_lock)
+
 2010-03-12 Jiri Sadek, Juraj Vicenik, Jan Zima (2.3.2)
 
   * Logger filtering moved from adifd to logger itself
