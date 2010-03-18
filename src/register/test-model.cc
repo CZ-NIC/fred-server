@@ -58,6 +58,9 @@ namespace std
      *  log_duration = off
      *  log_statement = 'none'
      *
+     *  lower shared_buffers
+     *  set max_connections > 300
+     *
      * postgres restart
      *
      * */
@@ -213,8 +216,12 @@ public:
 struct sync_barriers
 {
     boost::barrier insert_barrier;
+    boost::barrier reload_barrier;
+    boost::barrier update_barrier;
     sync_barriers(std::size_t thread_number)
         : insert_barrier(thread_number)
+        , reload_barrier(thread_number)
+        , update_barrier(thread_number)
     {}
 };
 
@@ -234,32 +241,14 @@ public:
     {
         ModelBankPayment mbp1, mbp2;
 
-
         if(number_%2)//if odd number
         {
             std::cout << "waiting: " << number_ << std::endl;
-            /*
-                    << " xstring: " << rdg.xstring(10)
-                    << " int limit test: "  << " xint: " << rdg.xint()
-                    << " xuint: " << rdg.xuint() << " xreal: " << rdg.xreal()
-                    << " xnumletter: " << rdg.xnumletter()
-                    << " xtime: " << rdg.xtime()
-                    << " xptime: " << rdg.xptime()
-                    << " Date xptime: " << Database::Date(rdg.xptime().date())
-                    << std::endl;
-                    */
-
             sb_ptr_->insert_barrier.wait();//wait for other odd threads
         }
         else
         {//even threads don't wait
             std::cout << "NOwaiting: " << number_ << std::endl;
-            /*
-                        << " xstring: " << rdg.xstring(10)
-                        << " int limit test: "  << " xint: " << rdg.xint()
-                        << " xuint: " << rdg.xuint() << " xreal: " << rdg.xreal()
-                        << " xnumletter: " << rdg.xnumletter() << std::endl;
-                        */
         }
 
         std::cout << "start: " << number_ << std::endl;
@@ -290,9 +279,13 @@ public:
                 mbp_insert_test(mbp1, insert_data)
                 , 0);
 
+        if(number_%2) sb_ptr_->reload_barrier.wait();//wait for other odd threads
+
         BOOST_REQUIRE_EQUAL(
                 mbp_reload_test(mbp1, mbp2)
                 , 0);
+
+        if(number_%2) sb_ptr_->update_barrier.wait();//wait for other odd threads
 
         BOOST_REQUIRE_EQUAL(
                 mbp_update_test(mbp1, mbp2)
