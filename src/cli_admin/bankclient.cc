@@ -325,7 +325,7 @@ void
 BankClient::move_statement_help()
 {
     std::cout << 
-        "** Add new bank account **\n\n"
+        "** Add payment to statement **\n\n"
         "  $ " << g_prog_name << " --" << BANK_MOVE_STATEMENT_NAME << " \\\n"
         "   --" << BANK_PAYMENT_ID_NAME << "=<payment_id> \\\n"
         "   --" << BANK_STATEMENT_ID_NAME << "=<statement_id> \\\n"

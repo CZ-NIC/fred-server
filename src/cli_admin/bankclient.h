@@ -77,8 +77,8 @@
 #define BANK_XML_FILE_STATEMENT_MIME_NAME           "bank_statement_file_mimetype"
 #define BANK_XML_FILE_STATEMENT_MIME_NAME_DESC      "mime type of original statement file"
 
-#define BANK_MOVE_STATEMENT_NAME             "move_statement_item"
-#define BANK_MOVE_STATEMENT_NAME_DESC        "set head to statement item"
+#define BANK_MOVE_STATEMENT_NAME             "add_payment_to_statement"
+#define BANK_MOVE_STATEMENT_NAME_DESC        "add payment to statement"
 
 #define BANK_SET_PAYMENT_TYPE_NAME           "bank_set_payment_type"
 #define BANK_SET_PAYMENT_TYPE_NAME_DESC      "change type of payment"
