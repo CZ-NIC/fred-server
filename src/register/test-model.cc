@@ -28,6 +28,8 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/algorithm/string.hpp>
+
 
 #include <sys/time.h>
 #include <time.h>
@@ -477,6 +479,40 @@ public:
 
 };//class FakedArgs
 
+void parse_config_file_to_faked_args(std::string fname, FakedArgs& fa )
+{//options without values are ignored
+    std::ifstream cfg_file(fname.c_str());
+    if (cfg_file.fail())
+      throw std::runtime_error("config file '" + fname + "' not found");
+
+    std::string line, opt_prefix;
+    while (std::getline(cfg_file, line))
+    {
+      boost::algorithm::trim(line);// strip whitespace
+      if (!line.empty() && line[0] != '#')// ignore empty line and comments
+      {
+        if (line[0] == '[' && line[line.size() - 1] == ']')
+        {// this is option prefix
+          opt_prefix = line;
+          boost::algorithm::erase_first(opt_prefix, "[");
+          boost::algorithm::erase_last(opt_prefix,  "]");
+        }//if [opt_prefix]
+        else
+        {// this is normal option
+          std::string::size_type sep = line.find("=");
+          if (sep != std::string::npos)
+          {// get name and value couple without any whitespace
+            std::string name  = boost::algorithm::trim_copy(line.substr(0, sep));
+            std::string value = boost::algorithm::trim_copy(line.substr(sep + 1, line.size() - 1));
+            if (!value.empty())
+            {// push appropriate commnad-line string
+                fa.add_argv("--" + opt_prefix + "." + name + "=" + value);
+            }//if value not empty
+          }// if '=' found
+        }//else - option
+      }//if not empty line
+    }//while getline
+}//parse_config_file_to_faked_args
 
 //removing our config from boost test cmdline
 //return value:
@@ -485,81 +521,129 @@ public:
 bool po_config( int argc, char* argv[] , FakedArgs& fa )
 {
     namespace po = boost::program_options;
+
+    po::options_description
+            genconfig (std::string("General configuration"));
+    genconfig.add_options()
+        ("help", "print this help message");
+
     po::options_description
         dbconfig (std::string("Database connection configuration"));
     dbconfig.add_options()
-        ("help", "print help message")
-        ("dbname", po::value<std::string>()->default_value(std::string("fred"))
+        ("database.name", po::value<std::string>()->default_value(std::string("fred"))
                 , "database name")
-        ("dbuser", po::value<std::string>()->default_value(std::string("fred"))
+        ("database.user", po::value<std::string>()->default_value(std::string("fred"))
                 , "database user name")
-        ("dbpassword", po::value<std::string>(), "database password")
-        ("dbhost", po::value<std::string>()->default_value(std::string("localhost"))
+        ("database.password", po::value<std::string>(), "database password")
+        ("database.host", po::value<std::string>()->default_value(std::string("localhost"))
                 , "database hostname")
-        ("dbport", po::value<unsigned int>(), "database port number")
-        ("dbtimeout", po::value<unsigned int>(), "database timeout")
-        ;
-    po::variables_map vm;
-    po::parsed_options parsed = po::command_line_parser(argc, argv).
-                            options(dbconfig).allow_unregistered().run();
-    po::store(parsed, vm);
+        ("database.port", po::value<unsigned int>(), "database port number")
+        ("database.timeout", po::value<unsigned int>(), "database timeout");
+
+    std::string default_config;
+
+#ifdef CONFIG_FILE
+        std::cout << "CONFIG_FILE: "<< CONFIG_FILE << std::endl;
+        default_config = std::string(CONFIG_FILE);
+#else
+        default_config = std::string("");
+#endif
+
+    if(default_config.length() != 0)
+    {
+        genconfig.add_options()
+                ("config,C", po::value<std::string>()->default_value(default_config)
+                , "path to configuration file");
+    }
+    else
+    {
+        genconfig.add_options()
+                ("config,C", po::value<std::string>(), "path to configuration file");
+    }
+
     typedef std::vector<std::string> string_vector_t;
-    string_vector_t to_pass_further
-        = po::collect_unrecognized(parsed.options, po::include_positional);
-    po::notify(vm);
+    string_vector_t to_pass_further;//args
 
-    //faked args
-    fa.clear();//to be sure that fa is empty
+    po::variables_map gen_vm;
+    po::parsed_options gen_parsed = po::command_line_parser(argc, argv).
+                            options(genconfig).allow_unregistered().run();
+    po::store(gen_parsed, gen_vm);
 
-    //preallocate for new number of args + first programm name
-    fa.prealocate_for_argc(to_pass_further.size() + 1);
+    to_pass_further
+        = po::collect_unrecognized(gen_parsed.options, po::include_positional);
+    po::notify(gen_vm);
 
-    //program name copy
-    fa.add_argv(argv[0]);
+    //general config actions
+    if (gen_vm.count("help"))
+    {
+        std::cout << "\n" << genconfig << "\n" << dbconfig << std::endl;
+        return true;//do not continue with tests and return
+    }
 
-    //copying a new arg vector
+    FakedArgs dbfa;//faked args for db config
+    dbfa.clear();//to be sure that fa is empty
+    dbfa.prealocate_for_argc(to_pass_further.size() + 1);//new number of args + first program name
+    dbfa.add_argv(argv[0]);//program name copy
     for(string_vector_t::const_iterator i = to_pass_further.begin()
             ; i != to_pass_further.end()
             ; ++i)
+    {//copying a new arg vector
+        dbfa.add_argv(*i);//string
+    }//for i
+
+    //read config file if configured and append content to dbfa
+    if (gen_vm.count("config,C"))
     {
+        std::string fname = gen_vm["config,C"].as<std::string>();
+        if(fname.length())
+            parse_config_file_to_faked_args(fname, dbfa );
+    }
+
+    po::variables_map vm;
+    po::parsed_options parsed = po::command_line_parser(dbfa.get_argc(),dbfa.get_argv()).
+                            options(dbconfig).allow_unregistered().run();
+    po::store(parsed, vm);
+
+    to_pass_further
+        = po::collect_unrecognized(parsed.options, po::include_positional);
+    po::notify(vm);
+
+    //faked args for unittest framework returned by reference in params
+    fa.clear();//to be sure that fa is empty
+    fa.prealocate_for_argc(to_pass_further.size() + 1);//new number of args + first program name
+    fa.add_argv(argv[0]);//program name copy
+    for(string_vector_t::const_iterator i = to_pass_further.begin()
+            ; i != to_pass_further.end()
+            ; ++i)
+    {//copying a new arg vector
         fa.add_argv(*i);//string
     }//for i
 
-     if (vm.count("help"))
-     {
-         std::cout << dbconfig << std::endl;
-         return true;//do not continue with tests and return
-     }
+    /* construct connection string */
+    std::string dbhost = (vm.count("database.host") == 0 ? ""
+            : "host=" + vm["database.host"].as<std::string>() + " ");
+    std::string dbpass = (vm.count("database.password") == 0 ? ""
+            : "password=" + vm["database.password"].as<std::string>() + " ");
+    std::string dbname = (vm.count("database.name") == 0 ? ""
+            : "dbname=" + vm["database.name"].as<std::string>() + " ");
+    std::string dbuser = (vm.count("database.user") == 0 ? ""
+            : "user=" + vm["database.user"].as<std::string>() + " ");
+    std::string dbport = (vm.count("database.port") == 0 ? ""
+            : "port=" + boost::lexical_cast<std::string>(vm["database.port"].as<unsigned>()) + " ");
+    std::string dbtime = (vm.count("database.timeout") == 0 ? ""
+            : "connect_timeout=" + boost::lexical_cast<std::string>(vm["database.timeout"].as<unsigned>()) + " ");
+    std::string conn_info = str(boost::format("%1% %2% %3% %4% %5% %6%")
+                                              % dbhost
+                                              % dbport
+                                              % dbname
+                                              % dbuser
+                                              % dbpass
+                                              % dbtime);
+    std::cout << "database connection set to: " << conn_info << std::endl;
 
-     /* construct connection string */
-     std::string dbhost = (vm.count("dbhost") == 0 ? ""
-             : "host=" + vm["dbhost"].as<std::string>() + " ");
-     std::string dbpass = (vm.count("dbpassword") == 0 ? ""
-             : "password=" + vm["dbpassword"].as<std::string>() + " ");
-     std::string dbname = (vm.count("dbname") == 0 ? ""
-             : "dbname=" + vm["dbname"].as<std::string>() + " ");
-     std::string dbuser = (vm.count("dbuser") == 0 ? ""
-             : "user=" + vm["dbuser"].as<std::string>() + " ");
-     std::string dbport = (vm.count("dbport") == 0 ? ""
-             : "port=" + boost::lexical_cast<std::string>(vm["dbport"].as<unsigned>()) + " ");
-     std::string dbtime = (vm.count("dbtimeout") == 0 ? ""
-             : "connect_timeout=" + boost::lexical_cast<std::string>(vm["dbtimeout"].as<unsigned>()) + " ");
+    Database::Manager::init(new Database::ConnectionFactory(conn_info));
 
-     std::string conn_info = str(boost::format("%1% %2% %3% %4% %5% %6%")
-                                               % dbhost
-                                               % dbport
-                                               % dbname
-                                               % dbuser
-                                               % dbpass
-                                               % dbtime);
-
-     //std::cout << "database connection set to: " << conn_info << std::endl;
-     LOGGER(PACKAGE).info(boost::format("database connection set to: `%1%'")
-                                         % conn_info);
-
-     Database::Manager::init(new Database::ConnectionFactory(conn_info));
-
-     return false;
+    return false;
 }
 
 
