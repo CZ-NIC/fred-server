@@ -363,8 +363,9 @@ BOOST_AUTO_TEST_CASE( test_model_files )
 BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
 {
     std::size_t const thread_number = 300;// 300;//number of threads in test
-    // int(thread_number - 1- thread_number / thread_group_divisor) is number of synced threads
-    std::size_t const thread_group_divisor = 7;
+    std::size_t const thread_group_divisor = 10;
+    // int(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
+    // - thread_number / thread_group_divisor) is number of synced threads
 
     ResultQueue result_queue;
 
@@ -373,11 +374,13 @@ BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
     tw_vector.reserve(thread_number);
 
     std::cout << "thread barriers:: "
-            <<  (thread_number - (thread_number % thread_group_divisor ? 1 : 0) - thread_number/thread_group_divisor)
+            <<  (thread_number - (thread_number % thread_group_divisor ? 1 : 0)
+                    - thread_number/thread_group_divisor)
             << std::endl;
 
     //synchronization barriers instance
-    sync_barriers sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0) - thread_number/thread_group_divisor);
+    sync_barriers sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
+            - thread_number/thread_group_divisor);
 
     //thread container
     boost::thread_group threads;
