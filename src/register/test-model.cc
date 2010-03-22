@@ -236,6 +236,11 @@ struct Result
     unsigned number;//thread number
     unsigned ret;//return code
     std::string desc;//some closer description
+    Result()
+    : number(0)
+      , ret(std::numeric_limits<unsigned>::max())
+      , desc("empty result")
+      {}
 };
 
 typedef concurrent_queue<Result> ResultQueue;
@@ -256,75 +261,83 @@ public:
 
     void operator()()
     {
-        ModelBankPayment mbp1, mbp2;
-
-        if(number_%tgd_)//if synchronized thread
+        try
         {
-            std::cout << "waiting: " << number_ << std::endl;
-            if(sb_ptr_)
-                sb_ptr_->insert_barrier.wait();//wait for other synced threads
-        }
-        else
-        {//non-synchronized thread
-            std::cout << "NOwaiting: " << number_ << std::endl;
-        }
 
-        std::cout << "start: " << number_ << std::endl;
-        mbp_insert_data insert_data;//mostly randomly generated data
-        insert_data.statement_id=0;//fk bank_statement (id) - none
-        insert_data.account_id=rdg_.xnum1_6(); //fk bank_account (id) - num 1-6
-        insert_data.invoice_id=0; //fk invoice (id) - none
-        insert_data.account_number=rdg_.xnumstring(17);//17 numletters
-        insert_data.bank_code=rdg_.xnumstring(4);//4 numletters
-        insert_data.operation_code=rdg_.xnum1_5(); // num 1-5
-        insert_data.transfer_type=rdg_.xnum1_5(); // num 1-5
-        insert_data.payment_status=rdg_.xnum1_6();// num 1-6
-        insert_data.konstsym=rdg_.xnumstring(10);// 10 numletters
-        insert_data.varsymb=rdg_.xnumstring(10);// 10 numletters
-        insert_data.specsymb=rdg_.xnumstring(10);// 10 numletters
-        insert_data.price=rdg_.xint();//int
-        insert_data.account_evid=rdg_.xnumstring(20);//20 numletters
-        insert_data.account_date=rdg_.xdate(); //some date
-        insert_data.account_memo=rdg_.xstring(64); //64 chars
-        insert_data.account_name=rdg_.xstring(64); //64 chars
-        insert_data.crtime=rdg_.xptime();//timestamp
+            ModelBankPayment mbp1, mbp2;
 
-        Result res;
-        res.ret = 0;
-        res.number = number_;
+            if(number_%tgd_)//if synchronized thread
+            {
+                std::cout << "waiting: " << number_ << std::endl;
+                if(sb_ptr_)
+                    sb_ptr_->insert_barrier.wait();//wait for other synced threads
+            }
+            else
+            {//non-synchronized thread
+                std::cout << "NOwaiting: " << number_ << std::endl;
+            }
 
-        if((res.ret = mbp_insert_test(mbp1, insert_data))!=0)
-        {
-            res.desc = std::string("error in: mbp_insert_test using seed: ")
-                + boost::lexical_cast<std::string>(rdg_.get_seed());
+            //std::cout << "start: " << number_ << std::endl;
+            mbp_insert_data insert_data;//mostly randomly generated data
+            insert_data.statement_id=0;//fk bank_statement (id) - none
+            insert_data.account_id=rdg_.xnum1_6(); //fk bank_account (id) - num 1-6
+            insert_data.invoice_id=0; //fk invoice (id) - none
+            insert_data.account_number=rdg_.xnumstring(17);//17 numletters
+            insert_data.bank_code=rdg_.xnumstring(4);//4 numletters
+            insert_data.operation_code=rdg_.xnum1_5(); // num 1-5
+            insert_data.transfer_type=rdg_.xnum1_5(); // num 1-5
+            insert_data.payment_status=rdg_.xnum1_6();// num 1-6
+            insert_data.konstsym=rdg_.xnumstring(10);// 10 numletters
+            insert_data.varsymb=rdg_.xnumstring(10);// 10 numletters
+            insert_data.specsymb=rdg_.xnumstring(10);// 10 numletters
+            insert_data.price=rdg_.xint();//int
+            insert_data.account_evid=rdg_.xnumstring(20);//20 numletters
+            insert_data.account_date=rdg_.xdate(); //some date
+            insert_data.account_memo=rdg_.xstring(64); //64 chars
+            insert_data.account_name=rdg_.xstring(64); //64 chars
+            insert_data.crtime=rdg_.xptime();//timestamp
+
+            Result res;
+            res.ret = 0;
+            res.number = number_;
+
+            if((res.ret = mbp_insert_test(mbp1, insert_data))!=0)
+            {
+                res.desc = std::string("error in: mbp_insert_test using seed: ")
+                    + boost::lexical_cast<std::string>(rdg_.get_seed());
+                if(rsq_ptr) rsq_ptr->push(res);
+                return;
+            }
+
+            if(number_%tgd_)
+                if(sb_ptr_)
+                    sb_ptr_->reload_barrier.wait();//wait for other synced threads
+            if((res.ret = mbp_reload_test(mbp1, mbp2))!=0)
+            {
+                res.desc = std::string("error in: mbp_reload_test using seed: ")
+                    + boost::lexical_cast<std::string>(rdg_.get_seed());
+                if(rsq_ptr) rsq_ptr->push(res);
+                return;
+            }
+
+            if(number_%tgd_)
+                if(sb_ptr_)
+                    sb_ptr_->update_barrier.wait();//wait for other synced threads
+            if((res.ret = mbp_update_test(mbp1, mbp2))!=0)
+            {
+                res.desc = std::string("error in: mbp_update_test using seed: ")
+                    + boost::lexical_cast<std::string>(rdg_.get_seed());
+                if(rsq_ptr) rsq_ptr->push(res);
+                return;
+            }
+            res.desc = std::string("ok");
             if(rsq_ptr) rsq_ptr->push(res);
-            return;
+           // std::cout << "end: " << number_ << std::endl;
         }
-
-        if(number_%tgd_)
-            if(sb_ptr_)
-                sb_ptr_->reload_barrier.wait();//wait for other synced threads
-        if((res.ret = mbp_reload_test(mbp1, mbp2))!=0)
+        catch(...)
         {
-            res.desc = std::string("error in: mbp_reload_test using seed: ")
-                + boost::lexical_cast<std::string>(rdg_.get_seed());
-            if(rsq_ptr) rsq_ptr->push(res);
-            return;
+            std::cout << "exception in operator() thread number: " << number_ << std::endl;
         }
-
-        if(number_%tgd_)
-            if(sb_ptr_)
-                sb_ptr_->update_barrier.wait();//wait for other synced threads
-        if((res.ret = mbp_update_test(mbp1, mbp2))!=0)
-        {
-            res.desc = std::string("error in: mbp_update_test using seed: ")
-                + boost::lexical_cast<std::string>(rdg_.get_seed());
-            if(rsq_ptr) rsq_ptr->push(res);
-            return;
-        }
-        res.desc = std::string("ok");
-        if(rsq_ptr) rsq_ptr->push(res);
-        std::cout << "end: " << number_ << std::endl;
     }
 
 private:
@@ -349,9 +362,9 @@ BOOST_AUTO_TEST_CASE( test_model_files )
 
 BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
 {
-    std::size_t const thread_number = 300;//number of threads in test
-    // int(thread_number - thread_number / thread_group_divisor) is number of synced threads
-    std::size_t const thread_group_divisor = 4;
+    std::size_t const thread_number = 300;// 300;//number of threads in test
+    // int(thread_number - 1- thread_number / thread_group_divisor) is number of synced threads
+    std::size_t const thread_group_divisor = 7;
 
     ResultQueue result_queue;
 
@@ -359,8 +372,12 @@ BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
     std::vector<ModelBankPaymentThreadWorker> tw_vector;
     tw_vector.reserve(thread_number);
 
+    std::cout << "thread barriers:: "
+            <<  (thread_number - (thread_number % thread_group_divisor ? 1 : 0) - thread_number/thread_group_divisor)
+            << std::endl;
+
     //synchronization barriers instance
-    sync_barriers sb(thread_number-thread_number/thread_group_divisor);
+    sync_barriers sb(thread_number - (thread_number % thread_group_divisor ? 1 : 0) - thread_number/thread_group_divisor);
 
     //thread container
     boost::thread_group threads;
@@ -371,6 +388,9 @@ BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
     }
 
     threads.join_all();
+
+    std::cout << "threads end result_queue.size(): " << result_queue.size() << std::endl;
+
     for(unsigned i = 0; i < thread_number; ++i)
     {
         Result thread_result;
