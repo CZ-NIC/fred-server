@@ -1,3 +1,9 @@
+2010-03-22 Jiri Sadek (2.3.6)
+
+  * bank payment type column default value set
+
+  * bank payment import/processing fixes
+
 2010-03-18 Jiri Sadek, Juraj Vicenik, Jan Zima (2.3.5)
 
   * fred-admin importing bank xml fixes

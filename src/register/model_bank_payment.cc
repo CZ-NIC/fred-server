@@ -8,7 +8,7 @@ DEFINE_BASIC_FIELD(ModelBankPayment, unsigned long long, accountId, m_accountId,
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, accountNumber, m_accountNumber, table_name, "account_number", .setNotNull())
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, bankCodeId, m_bankCodeId, table_name, "bank_code", .setForeignKey())
 DEFINE_BASIC_FIELD(ModelBankPayment, int, code, m_code, table_name, "code", )
-DEFINE_BASIC_FIELD(ModelBankPayment, int, type, m_type, table_name, "type", )
+DEFINE_BASIC_FIELD(ModelBankPayment, int, type, m_type, table_name, "type", .setDefault())
 DEFINE_BASIC_FIELD(ModelBankPayment, int, status, m_status, table_name, "status", )
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, konstSym, m_konstSym, table_name, "konstsym", )
 DEFINE_BASIC_FIELD(ModelBankPayment, std::string, varSymb, m_varSymb, table_name, "varsymb", )

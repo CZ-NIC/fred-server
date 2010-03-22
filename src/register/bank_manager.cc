@@ -86,7 +86,7 @@ private:
         try {
             /* is payment in db? */
             if (_payment->getId() == Database::ID(0)) {
-                throw std::runtime_error("cannot process payment which was is "
+                throw std::runtime_error("cannot process payment which was not"
                         "saved");
             }
 
@@ -99,14 +99,16 @@ private:
             }
 
             /* we process only payment with code = 1 (normal transaction)
-             * and status = 1 (realized transfer) */
-            if (!(_payment->getStatus() == 1) && _payment->getCode() == 1) {
+             * and status = 1 (realized transfer) and type = 1 (not assigned) */
+            if (_payment->getStatus() != 1 || _payment->getCode() != 1
+                    || _payment->getType() != 1) {
                 LOGGER(PACKAGE).info(boost::format(
                             "payment id=%1% not eligible -- status: %2% != 1 "
-                            "code=%3% != 1 => processing canceled")
+                            "code: %3% != 1 type: %4% != 1 => processing canceled")
                             % _payment->getId()
                             % _payment->getStatus()
-                            % _payment->getCode());
+                            % _payment->getCode()
+                            % _payment->getType());
                 return;
             }
 
@@ -135,7 +137,7 @@ private:
                     account_date, (int)zone_id, (int)_registrar_id, (long)price);
             if (invoice_id > 0) {
                 _payment->setInvoiceId(invoice_id);
-                _payment->setType(1);
+                _payment->setType(2);
                 _payment->save();
                 LOGGER(PACKAGE).info(boost::format(
                             "payment paired with registrar (id=%1%) "
@@ -308,7 +310,11 @@ public:
                                     % cpayment->getStatus()
                                     % payment->getStatus());
 
-                            processPayment(payment.get());
+                            // payment->setId(conflict_pid);
+                            // payment->save();
+                            cpayment->setStatus(payment->getStatus());
+                            cpayment->save();
+                            processPayment(cpayment.get());
                         }
 
                         /* there we should have already imported payment */
@@ -331,7 +337,14 @@ public:
                                             % statement->getId());
                                 _pairPaymentWithStatement(cpayment->getId(), statement->getId());
                             }
-                        }
+                       }
+                       else {
+                           LOGGER(PACKAGE).info(boost::format(
+                                       "conflict payment is already paired with this "
+                                       "statement (payment=%1% statement=%2%)")
+                                       % cpayment->getId()
+                                       % statement->getId());
+                       }
                     }
                 }
 
@@ -546,9 +559,9 @@ public:
     {
         Logging::Context ctx("set payment type");
         try {
-            if (type < 0 || type > 5) {
+            if (type < 1 || type > 6) {
                 throw std::runtime_error("parameter error "
-                        "(type should be in interval <0,5>)");
+                        "(type should be in interval <1, 6>)");
             }
 
             if (payment_id == 0) {

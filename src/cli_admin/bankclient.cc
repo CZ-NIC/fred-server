@@ -121,11 +121,12 @@ BankClient::payment_list()
     Database::Filters::BankPayment *payment_filter = new Database::Filters::BankPaymentImpl();
     if (m_conf.hasOpt(BANK_PAYMENT_TYPE_NAME)) {
         int type = m_conf.get<int>(BANK_PAYMENT_TYPE_NAME);
-        if (type == 0) {
-            payment_filter->addType().setNULL();
+        if (type >= 1 && type <= 6) {
+            payment_filter->addType().setValue(type);
         }
         else {
-            payment_filter->addType().setValue(type);
+            throw std::runtime_error("payment list: parameter error: bank "
+                                     "payment type should be from interval <1, 6>");
         }
     }
 
@@ -287,10 +288,8 @@ BankClient::payment_list_help()
     std::cout <<
         "** Payment list **\n\n"
         "  $ " << g_prog_name << " --" << BANK_PAYMENT_LIST_NAME << " \\\n"
-        "    [--" << BANK_PAYMENT_TYPE_NAME << "=[0,1,2,3,4,5]\n"
+        "    [--" << BANK_PAYMENT_TYPE_NAME << "=[1,2,3,4,5,6]\n"
         << std::endl;
-
-    std::cout << "--" << BANK_PAYMENT_TYPE_NAME << "=0 means that type is not set in payment" << std::endl;
 }
 
 void
@@ -344,7 +343,7 @@ BankClient::set_payment_type_help()
         "   --" << BANK_PAYMENT_ID_NAME << "=<" << BANK_PAYMENT_ID_NAME_DESC << "> \\\n"
         "   --" << BANK_PAYMENT_TYPE_NAME << "=<" << BANK_PAYMENT_TYPE_NAME_DESC << "> \\\n"
         << std::endl;
-    std::cout << "Where '" << BANK_PAYMENT_TYPE_NAME << "' is from interval <0, 5>" << std::endl;
+    std::cout << "Where '" << BANK_PAYMENT_TYPE_NAME << "' is from interval <1, 6>" << std::endl;
 }
 
 
