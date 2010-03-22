@@ -394,15 +394,16 @@ BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
     for(unsigned i = 0; i < thread_number; ++i)
     {
         Result thread_result;
-        result_queue.wait_and_pop(thread_result);
+        result_queue.try_pop(thread_result);
 
         BOOST_REQUIRE_EQUAL(thread_result.ret , 0);
 
         if(thread_result.ret)
         {
-            std::cerr << thread_result.desc
+            std::cout << thread_result.desc
                     << " thread number: " << thread_result.number
                     << " return code: " << thread_result.ret
+                    << " decription: " << thread_result.desc
                     << std::endl;
         }
     }//for i
