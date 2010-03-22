@@ -209,150 +209,201 @@ struct mbp_insert_data
 unsigned mbp_insert_test(ModelBankPayment& mbp1, mbp_insert_data& insert_data)
 {
     unsigned ret=0;
-    //insert data
-    mbp1.setAccountId(insert_data.account_id);
-    mbp1.setAccountNumber(insert_data.account_number);
-    mbp1.setBankCodeId(insert_data.bank_code);
-    mbp1.setCode(insert_data.operation_code);
-    mbp1.setType(insert_data.transfer_type);
-    mbp1.setStatus(insert_data.payment_status);
-    mbp1.setKonstSym(insert_data.konstsym);
-    mbp1.setVarSymb(insert_data.varsymb);
-    mbp1.setSpecSymb(insert_data.specsymb);
-    mbp1.setPrice(insert_data.price);
-    mbp1.setAccountEvid(insert_data.account_evid);
-    mbp1.setAccountDate(insert_data.account_date);
-    mbp1.setAccountMemo(insert_data.account_memo);
-    mbp1.setAccountName(insert_data.account_name);
-    mbp1.setCrTime(insert_data.crtime);
-    mbp1.insert();
+    try
+    {
 
-    Database::Connection conn = Database::Manager::acquire();
-    std::string query = str(boost::format(
-            "select id, statement_id, account_id, account_number, bank_code " //0-4
-            ", code, \"type\" ,status, konstsym, varsymb, specsymb, price " //5-11
-            ", account_evid, account_date, account_memo, invoice_id " //12-15
-            ", account_name, crtime " //16-17
-            " from bank_payment WHERE id = %1%") % mbp1.getId() );
-    //save id - this should not change
-    insert_data.id = mbp1.getId();
-    insert_data.statement_id = 0;
-    insert_data.invoice_id = 0;
-    Database::Result res = conn.exec( query );
-    if ((res.size() > 0) && (res[0].size() == 18))
-    {    //check data inserted by model
-        if(insert_data.id != static_cast<unsigned long long>(res[0][0]) ) ret+=1;
-        if(insert_data.statement_id
-                != static_cast<unsigned long long>(res[0][1])) ret+=2;
-        if(insert_data.account_id
-                != static_cast<unsigned long long>(res[0][2])) ret+=4;
-        if(insert_data.account_number.compare(res[0][3])) ret+=8;
-        if(insert_data.bank_code.compare(res[0][4])) ret+=16;
-        if(insert_data.operation_code != static_cast<int>(res[0][5])) ret+=32;
-        if(insert_data.transfer_type != static_cast<int>(res[0][6])) ret+=64;
-        if(insert_data.payment_status != static_cast<int>(res[0][7])) ret+=128;
-        if(insert_data.konstsym.compare(res[0][8])) ret+=256;
-        if(insert_data.varsymb.compare(res[0][9])) ret+=512;
-        if(insert_data.specsymb.compare(res[0][10])) ret+=1024;
-        if(Database::Money(insert_data.price)
-            != Database::Money(static_cast<std::string>(res[0][11]))) ret+=2048;
-        if(insert_data.account_evid.compare(res[0][12])) ret+=4096;
-        if(insert_data.account_date.to_string()
-            .compare(Database::Date(std::string(res[0][13])).to_string()))
-                ret+=8192;
-        if(insert_data.account_memo.compare(res[0][14])) ret+=16384;
-        if(insert_data.invoice_id
-                != static_cast<unsigned long long>(res[0][15])) ret+=32768;
-        if(insert_data.account_name.compare(res[0][16])) ret+=65536;
-        if(insert_data.crtime.to_string()
-            .compare(Database::DateTime(std::string(res[0][17])).to_string()))
-                ret+=131072;
-    }//if res size
-    else ret+=262144;
-    if (ret != 0 ) std::cerr << "mbp_insert_test ret: "<< ret << std::endl;
+        //insert data
+        mbp1.setAccountId(insert_data.account_id);
+        mbp1.setAccountNumber(insert_data.account_number);
+        mbp1.setBankCodeId(insert_data.bank_code);
+        mbp1.setCode(insert_data.operation_code);
+        mbp1.setType(insert_data.transfer_type);
+        mbp1.setStatus(insert_data.payment_status);
+        mbp1.setKonstSym(insert_data.konstsym);
+        mbp1.setVarSymb(insert_data.varsymb);
+        mbp1.setSpecSymb(insert_data.specsymb);
+        mbp1.setPrice(insert_data.price);
+        mbp1.setAccountEvid(insert_data.account_evid);
+        mbp1.setAccountDate(insert_data.account_date);
+        mbp1.setAccountMemo(insert_data.account_memo);
+        mbp1.setAccountName(insert_data.account_name);
+        mbp1.setCrTime(insert_data.crtime);
+        mbp1.insert();
+
+        Database::Connection conn = Database::Manager::acquire();
+        std::string query = str(boost::format(
+                "select id, statement_id, account_id, account_number, bank_code " //0-4
+                ", code, \"type\" ,status, konstsym, varsymb, specsymb, price " //5-11
+                ", account_evid, account_date, account_memo, invoice_id " //12-15
+                ", account_name, crtime " //16-17
+                " from bank_payment WHERE id = %1%") % mbp1.getId() );
+        //save id - this should not change
+        insert_data.id = mbp1.getId();
+        insert_data.statement_id = 0;
+        insert_data.invoice_id = 0;
+        Database::Result res = conn.exec( query );
+        if ((res.size() > 0) && (res[0].size() == 18))
+        {    //check data inserted by model
+            if(insert_data.id != static_cast<unsigned long long>(res[0][0]) ) ret+=1;
+            if(insert_data.statement_id
+                    != static_cast<unsigned long long>(res[0][1])) ret+=2;
+            if(insert_data.account_id
+                    != static_cast<unsigned long long>(res[0][2])) ret+=4;
+            if(insert_data.account_number.compare(res[0][3])) ret+=8;
+            if(insert_data.bank_code.compare(res[0][4])) ret+=16;
+            if(insert_data.operation_code != static_cast<int>(res[0][5])) ret+=32;
+            if(insert_data.transfer_type != static_cast<int>(res[0][6])) ret+=64;
+            if(insert_data.payment_status != static_cast<int>(res[0][7])) ret+=128;
+            if(insert_data.konstsym.compare(res[0][8])) ret+=256;
+            if(insert_data.varsymb.compare(res[0][9])) ret+=512;
+            if(insert_data.specsymb.compare(res[0][10])) ret+=1024;
+            if(Database::Money(insert_data.price)
+                != Database::Money(static_cast<std::string>(res[0][11]))) ret+=2048;
+            if(insert_data.account_evid.compare(res[0][12])) ret+=4096;
+            if(insert_data.account_date.to_string()
+                .compare(Database::Date(std::string(res[0][13])).to_string()))
+                    ret+=8192;
+            if(insert_data.account_memo.compare(res[0][14])) ret+=16384;
+            if(insert_data.invoice_id
+                    != static_cast<unsigned long long>(res[0][15])) ret+=32768;
+            if(insert_data.account_name.compare(res[0][16])) ret+=65536;
+            if(insert_data.crtime.to_string()
+                .compare(Database::DateTime(std::string(res[0][17])).to_string()))
+                    ret+=131072;
+        }//if res size
+        else ret+=262144;
+        if (ret != 0 ) std::cerr << "mbp_insert_test ret: "<< ret << std::endl;
+
+    }
+    catch(std::exception& ex)
+    {
+        std::cerr << "mbp_insert_test exception reason: "<< ex.what() << std::endl;
+        ret+=524288;
+        throw;
+    }
+    catch(...)
+    {
+        std::cerr << "mbp_insert_test exception returning"<< std::endl;
+        ret+=1048576;
+        if (ret != 0 ) std::cerr << "mbp_insert_test ret: "<< ret << std::endl;
+    }
+
     return ret;
 }
 
 unsigned mbp_reload_test(ModelBankPayment& mbp1, ModelBankPayment& mbp2)
 {
     unsigned ret=0;
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction tx(conn);
-    std::string query = str(boost::format("UPDATE bank_payment SET"
-        " statement_id=null, account_id=null, account_number=E'', bank_code=E''"
-        ", code=0, \"type\"=0, status=2, konstsym=E'', varsymb=E'', specsymb=E''"
-        ", price='12345.00', account_evid=E'', account_date='2000-01-01', account_memo=E''"
-        ", invoice_id=null, account_name=E'', crtime='2000-01-01 00:00:01'"
-        " WHERE id = %1%") % mbp1.getId() );
-    conn.exec( query );
-    tx.commit();
+    try
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+        std::string query = str(boost::format("UPDATE bank_payment SET"
+            " statement_id=null, account_id=null, account_number=E'', bank_code=E''"
+            ", code=0, \"type\"=0, status=2, konstsym=E'', varsymb=E'', specsymb=E''"
+            ", price='12345.00', account_evid=E'', account_date='2000-01-01', account_memo=E''"
+            ", invoice_id=null, account_name=E'', crtime='2000-01-01 00:00:01'"
+            " WHERE id = %1%") % mbp1.getId() );
+        conn.exec( query );
+        tx.commit();
 
-    mbp2.setId(mbp1.getId());
-    mbp2.reload();
+        mbp2.setId(mbp1.getId());
+        mbp2.reload();
 
-    //check data from UPDATE query after reload
-    if(mbp2.getId() != mbp1.getId()) ret+=1;
-    if(mbp2.getStatementId() != 0) ret+=2;
-    if(mbp2.getAccountId() != 0) ret+=4;
-    if(mbp2.getAccountNumber().compare("")) ret+=8;
-    if(mbp2.getBankCodeId().compare("")) ret+=16;
-    if(mbp2.getCode() != 0) ret+=32;
-    if(mbp2.getType() != 0) ret+=64;
-    if(mbp2.getStatus() != 2) ret+=128;
-    if(mbp2.getKonstSym().compare("")) ret+=256;
-    if(mbp2.getVarSymb().compare("")) ret+=512;
-    if(mbp2.getSpecSymb().compare("")) ret+=1024;
-    if(mbp2.getPrice() != Database::Money("12345.00")) ret+=2048;
-    if(mbp2.getAccountEvid().compare("")) ret+=4096;
-    if(mbp2.getAccountDate() != Database::Date("2000-01-01")) ret+=8192;
-    if(mbp2.getAccountMemo().compare("")) ret+=16384;
-    if(mbp2.getInvoiceId() != 0) ret+=32768;
-    if(mbp2.getAccountName().compare("")) ret+=65536;
-    if(Database::DateTime(mbp2.getCrTime()).to_string().compare(
-            Database::DateTime("2000-01-01 00:00:01").to_string() )) ret+=131072;
+        //check data from UPDATE query after reload
+        if(mbp2.getId() != mbp1.getId()) ret+=1;
+        if(mbp2.getStatementId() != 0) ret+=2;
+        if(mbp2.getAccountId() != 0) ret+=4;
+        if(mbp2.getAccountNumber().compare("")) ret+=8;
+        if(mbp2.getBankCodeId().compare("")) ret+=16;
+        if(mbp2.getCode() != 0) ret+=32;
+        if(mbp2.getType() != 0) ret+=64;
+        if(mbp2.getStatus() != 2) ret+=128;
+        if(mbp2.getKonstSym().compare("")) ret+=256;
+        if(mbp2.getVarSymb().compare("")) ret+=512;
+        if(mbp2.getSpecSymb().compare("")) ret+=1024;
+        if(mbp2.getPrice() != Database::Money("12345.00")) ret+=2048;
+        if(mbp2.getAccountEvid().compare("")) ret+=4096;
+        if(mbp2.getAccountDate() != Database::Date("2000-01-01")) ret+=8192;
+        if(mbp2.getAccountMemo().compare("")) ret+=16384;
+        if(mbp2.getInvoiceId() != 0) ret+=32768;
+        if(mbp2.getAccountName().compare("")) ret+=65536;
+        if(Database::DateTime(mbp2.getCrTime()).to_string().compare(
+                Database::DateTime("2000-01-01 00:00:01").to_string() )) ret+=131072;
 
-    if (ret != 0 ) std::cerr << "model_reload_test ret: "<< ret << std::endl;
+        if (ret != 0 ) std::cerr << "model_reload_test ret: "<< ret << std::endl;
+
+    }
+    catch(std::exception& ex)
+    {
+        std::cerr << "model_reload_test exception reason: "<< ex.what() << std::endl;
+        ret+=262144;
+        throw;
+    }
+    catch(...)
+    {
+        std::cerr << "model_reload_test exception returning"<< std::endl;
+        ret+=524288;
+        if (ret != 0 ) std::cerr << "model_reload_test ret: "<< ret << std::endl;
+    }
+
     return ret;
+
+
 }
 
 unsigned mbp_update_test(ModelBankPayment& mbp1, ModelBankPayment& mbp2)
 {
     unsigned ret=0;
+    try
+    {
+        //mbp1.setAccountId(mbp2.getAccountId());
+        mbp1.setStatus(mbp2.getStatus());
+        mbp1.setPrice(Database::Money("12345.00"));
+        mbp1.update();
+        mbp1.reload();
 
-    //mbp1.setAccountId(mbp2.getAccountId());
-    mbp1.setStatus(mbp2.getStatus());
-    mbp1.setPrice(Database::Money("12345.00"));
-    mbp1.update();
-    mbp1.reload();
+        //compare mbp1 and mbp2, it should be same,  ret=0 is OK
+        if(mbp2.getId() != mbp1.getId()) ret+=1;
+        if(mbp2.getStatementId() != mbp1.getStatementId()) ret+=2;
+        //if(0 != mbp1.getAccountId()) ret+=4; //unable to work with null
+        if(mbp2.getAccountNumber().compare(mbp1.getAccountNumber())) ret+=8;
+        if(mbp2.getBankCodeId().compare(mbp1.getBankCodeId())) ret+=16;
+        if(mbp2.getCode() != mbp1.getCode()) ret+=32;
+        if(mbp2.getType() != mbp1.getType()) ret+=64;
+        if(mbp2.getStatus() != mbp1.getStatus()) ret+=128;
+        if(mbp2.getKonstSym().compare(mbp1.getKonstSym())) ret+=256;
+        if(mbp2.getVarSymb().compare(mbp1.getVarSymb())) ret+=512;
+        if(mbp2.getSpecSymb().compare(mbp1.getSpecSymb())) ret+=1024;
+        if(mbp2.getPrice() != mbp1.getPrice()) ret+=2048;
+        if(mbp2.getAccountEvid().compare(mbp1.getAccountEvid())) ret+=4096;
+        if(mbp2.getAccountDate() != mbp1.getAccountDate()) ret+=8192;
+        if(mbp2.getAccountMemo().compare(mbp1.getAccountMemo())) ret+=16384;
+        if(mbp2.getInvoiceId() != mbp1.getInvoiceId()) ret+=32768;
+        if(mbp2.getAccountName().compare(mbp1.getAccountName())) ret+=65536;
+        if(Database::DateTime(mbp2.getCrTime()).to_string().compare(
+                Database::DateTime(mbp1.getCrTime()).to_string() )) ret+=131072;
 
-    //compare mbp1 and mbp2, it should be same,  ret=0 is OK
-    if(mbp2.getId() != mbp1.getId()) ret+=1;
-    if(mbp2.getStatementId() != mbp1.getStatementId()) ret+=2;
-    //if(0 != mbp1.getAccountId()) ret+=4; //unable to work with null
-    if(mbp2.getAccountNumber().compare(mbp1.getAccountNumber())) ret+=8;
-    if(mbp2.getBankCodeId().compare(mbp1.getBankCodeId())) ret+=16;
-    if(mbp2.getCode() != mbp1.getCode()) ret+=32;
-    if(mbp2.getType() != mbp1.getType()) ret+=64;
-    if(mbp2.getStatus() != mbp1.getStatus()) ret+=128;
-    if(mbp2.getKonstSym().compare(mbp1.getKonstSym())) ret+=256;
-    if(mbp2.getVarSymb().compare(mbp1.getVarSymb())) ret+=512;
-    if(mbp2.getSpecSymb().compare(mbp1.getSpecSymb())) ret+=1024;
-    if(mbp2.getPrice() != mbp1.getPrice()) ret+=2048;
-    if(mbp2.getAccountEvid().compare(mbp1.getAccountEvid())) ret+=4096;
-    if(mbp2.getAccountDate() != mbp1.getAccountDate()) ret+=8192;
-    if(mbp2.getAccountMemo().compare(mbp1.getAccountMemo())) ret+=16384;
-    if(mbp2.getInvoiceId() != mbp1.getInvoiceId()) ret+=32768;
-    if(mbp2.getAccountName().compare(mbp1.getAccountName())) ret+=65536;
-    if(Database::DateTime(mbp2.getCrTime()).to_string().compare(
-            Database::DateTime(mbp1.getCrTime()).to_string() )) ret+=131072;
+        if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
 
-    if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
-
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction tx(conn);
-    std::string query = str(boost::format("DELETE FROM bank_payment WHERE id = %1%") % mbp1.getId() );
-    conn.exec( query );
-    tx.commit();
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+        std::string query = str(boost::format("DELETE FROM bank_payment WHERE id = %1%") % mbp1.getId() );
+        conn.exec( query );
+        tx.commit();
+    }
+    catch(std::exception& ex)
+    {
+        std::cerr << "model_update_test exception reason: "<< ex.what() << std::endl;
+        ret+=262144;
+        throw;
+    }
+    catch(...)
+    {
+        std::cerr << "model_update_test exception returning"<< std::endl;
+        ret+=524288;
+        if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
+    }
 
     return ret;
 }
@@ -407,6 +458,16 @@ public:
         the_condition_variable.notify_one();
     }
 
+    std::size_t size()
+    {
+        boost::mutex::scoped_lock lock(the_mutex);
+        std::size_t ret = the_queue.size();
+        lock.unlock();
+        the_condition_variable.notify_one();
+        return ret;
+    }
+
+
     bool empty() const
     {
         boost::mutex::scoped_lock lock(the_mutex);
@@ -437,7 +498,6 @@ public:
         popped_value=the_queue.front();
         the_queue.pop();
     }
-
 };
 
 
