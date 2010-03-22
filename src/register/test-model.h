@@ -44,36 +44,51 @@ ModelFiles mf1, mf2;
 unsigned model_insert_test()
 {
     unsigned ret=0;
-    //insert data
-    mf1.setName("dummy_test_name");
-    mf1.setPath("~/log");
-    //mf1.setMimeType("application/octet-stream");//default
-    mf1.setCrDate(Database::DateTime("2010-03-10 12:00:01"));
-    mf1.setFilesize(50000);
-    mf1.setFileTypeId(2);//invoice xml
-    mf1.insert();
+    try
+    {
+        //insert data
+        mf1.setName("dummy_test_name");
+        mf1.setPath("~/log");
+        //mf1.setMimeType("application/octet-stream");//default
+        mf1.setCrDate(Database::DateTime("2010-03-10 12:00:01"));
+        mf1.setFilesize(50000);
+        mf1.setFileTypeId(2);//invoice xml
+        mf1.insert();
 
-    Database::Connection conn = Database::Manager::acquire();
-    std::string query = str(boost::format(
-            "select id, name, path, mimetype, crdate, filesize, filetype "
-            "from files WHERE id = %1%") % mf1.getId() );
-    Database::Result res = conn.exec( query );
-    if ((res.size() > 0) && (res[0].size() == 7))
-    {    //check data inserted by model
-        if(static_cast<unsigned long long>(res[0][0]) != mf1.getId()) ret+=1;
-        if(mf1.getName().compare(res[0][1])) ret+=2;
-        if(mf1.getPath().compare(res[0][2])) ret+=4;
-        if(std::string("application/octet-stream").compare(res[0][3])) ret+=8;
-        if(mf1.getCrDate().to_string()
-            .compare(Database::DateTime(std::string(res[0][4])).to_string()))
-                ret+=16;
-        if(static_cast<int>(res[0][5]) != mf1.getFilesize()) ret+=32;
-        if(static_cast<unsigned long long>(res[0][6]) != mf1.getFileTypeId())
-            ret+=64;
-    }//if res size
-    else ret+=128;
+        Database::Connection conn = Database::Manager::acquire();
+        std::string query = str(boost::format(
+                "select id, name, path, mimetype, crdate, filesize, filetype "
+                "from files WHERE id = %1%") % mf1.getId() );
+        Database::Result res = conn.exec( query );
+        if ((res.size() > 0) && (res[0].size() == 7))
+        {    //check data inserted by model
+            if(static_cast<unsigned long long>(res[0][0]) != mf1.getId()) ret+=1;
+            if(mf1.getName().compare(res[0][1])) ret+=2;
+            if(mf1.getPath().compare(res[0][2])) ret+=4;
+            if(std::string("application/octet-stream").compare(res[0][3])) ret+=8;
+            if(mf1.getCrDate().to_string()
+                .compare(Database::DateTime(std::string(res[0][4])).to_string()))
+                    ret+=16;
+            if(static_cast<int>(res[0][5]) != mf1.getFilesize()) ret+=32;
+            if(static_cast<unsigned long long>(res[0][6]) != mf1.getFileTypeId())
+                ret+=64;
+        }//if res size
+        else ret+=128;
 
-    if (ret != 0 ) std::cerr << "model_insert_test ret: "<< ret << std::endl;
+        if (ret != 0 ) std::cerr << "model_insert_test ret: "<< ret << std::endl;
+    }
+    catch(std::exception& ex)
+    {
+        std::cerr << "model_insert_test exception reason: "<< ex.what() << std::endl;
+        ret+=256;
+        throw;
+    }
+    catch(...)
+    {
+        std::cerr << "model_insert_test exception returning"<< std::endl;
+        ret+=512;
+        if (ret != 0 ) std::cerr << "model_insert_test ret: "<< ret << std::endl;
+    }
 
     return ret;
 }
@@ -81,29 +96,45 @@ unsigned model_insert_test()
 unsigned model_reload_test()
 {
     unsigned ret=0;
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction tx(conn);
-    std::string query
-        = str(boost::format("UPDATE files SET name = E'', path = E'', mimetype = E'',"
-        " crdate = '2000-01-01 00:00:01', filesize = 80000, fileType = 1 WHERE id = %1%")
-        % mf1.getId() );
-    conn.exec( query );
-    tx.commit();
+    try
+    {
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+        std::string query
+            = str(boost::format("UPDATE files SET name = E'', path = E'', mimetype = E'',"
+            " crdate = '2000-01-01 00:00:01', filesize = 80000, fileType = 1 WHERE id = %1%")
+            % mf1.getId() );
+        conn.exec( query );
+        tx.commit();
 
-    mf2.setId(mf1.getId());
-    mf2.reload();
+        mf2.setId(mf1.getId());
+        mf2.reload();
 
-    //check data from UPDATE query after reload
-    if(mf2.getId() != mf1.getId()) ret+=1;
-    if(mf2.getName().compare("")) ret+=2;
-    if(mf2.getPath().compare("")) ret+=4;
-    if(mf2.getMimeType().compare("")) ret+=8;
-    if(Database::DateTime(mf2.getCrDate()).to_string().compare(
-        Database::DateTime("2000-01-01 00:00:01").to_string() ))    ret+=16;
-    if(mf2.getFilesize() != 80000 ) ret+=32;
-    if(mf2.getFileTypeId() != 1 ) ret+=64;
+        //check data from UPDATE query after reload
+        if(mf2.getId() != mf1.getId()) ret+=1;
+        if(mf2.getName().compare("")) ret+=2;
+        if(mf2.getPath().compare("")) ret+=4;
+        if(mf2.getMimeType().compare("")) ret+=8;
+        if(Database::DateTime(mf2.getCrDate()).to_string().compare(
+            Database::DateTime("2000-01-01 00:00:01").to_string() ))    ret+=16;
+        if(mf2.getFilesize() != 80000 ) ret+=32;
+        if(mf2.getFileTypeId() != 1 ) ret+=64;
 
-    if (ret != 0 ) std::cerr << "model_reload_test ret: "<< ret << std::endl;
+        if (ret != 0 ) std::cerr << "model_reload_test ret: "<< ret << std::endl;
+    }
+    catch(std::exception& ex)
+    {
+        std::cerr << "model_reload_test exception reason: "<< ex.what() << std::endl;
+        ret+=128;
+        throw;
+    }
+    catch(...)
+    {
+        std::cerr << "model_reload_test exception returning"<< std::endl;
+        ret+=256;
+        if (ret != 0 ) std::cerr << "model_reload_test ret: "<< ret << std::endl;
+    }
+
     return ret;
 }
 
@@ -111,60 +142,72 @@ unsigned model_reload_test()
 unsigned model_update_test()
 {
     unsigned ret=0;
-
-    mf1.setFilesize(80000);
-    mf1.update();
-
-    mf1.reload();
-
-    //compare mf1 and mf2, it should be same,  ret=0 is OK
-
-    if(mf1.getId() != mf2.getId()) ret+=1;
-    if(mf1.getName() != mf2.getName())
+    try
     {
-        std::cerr << mf1.getName() << std::endl;
-        std::cerr << mf2.getName() << std::endl;
-        ret+=2;
-    }
+        mf1.setFilesize(80000);
+        mf1.update();
 
-    if(mf1.getPath() != mf2.getPath())
+        mf1.reload();
+
+        //compare mf1 and mf2, it should be same,  ret=0 is OK
+
+        if(mf1.getId() != mf2.getId()) ret+=1;
+        if(mf1.getName() != mf2.getName())
+        {
+            std::cerr << mf1.getName() << std::endl;
+            std::cerr << mf2.getName() << std::endl;
+            ret+=2;
+        }
+
+        if(mf1.getPath() != mf2.getPath())
+        {
+            std::cerr << mf1.getPath() << std::endl;
+            std::cerr << mf2.getPath() << std::endl;
+
+            ret+=4;
+        }
+
+        if(mf1.getMimeType() != mf2.getMimeType()) ret+=8;
+        if(mf1.getCrDate() != mf2.getCrDate())
+        {
+            std::cerr << mf1.getCrDate() << std::endl;
+            std::cerr << mf2.getCrDate() << std::endl;
+            ret+=16;
+        }
+
+        if(mf1.getFilesize() != mf2.getFilesize()) ret+=32;
+        if(mf1.getFileTypeId() != mf2.getFileTypeId())
+        {
+            std::cerr << mf1.getFileTypeId() << std::endl;
+            std::cerr << mf2.getFileTypeId() << std::endl;
+
+            ret+=64;
+        }
+
+        if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
+
+        Database::Connection conn = Database::Manager::acquire();
+        Database::Transaction tx(conn);
+        std::string query
+            = str(boost::format("DELETE FROM files WHERE id = %1%")
+            % mf1.getId() );
+        conn.exec( query );
+        tx.commit();
+    }
+    catch(std::exception& ex)
     {
-        std::cerr << mf1.getPath() << std::endl;
-        std::cerr << mf2.getPath() << std::endl;
-
-        ret+=4;
+        std::cerr << "model_update_test exception reason: "<< ex.what() << std::endl;
+        ret+=128;
+        throw;
     }
-
-    if(mf1.getMimeType() != mf2.getMimeType()) ret+=8;
-    if(mf1.getCrDate() != mf2.getCrDate())
+    catch(...)
     {
-        std::cerr << mf1.getCrDate() << std::endl;
-        std::cerr << mf2.getCrDate() << std::endl;
-        ret+=16;
+        std::cerr << "model_update_test exception returning"<< std::endl;
+        ret+=256;
+        if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
     }
-
-    if(mf1.getFilesize() != mf2.getFilesize()) ret+=32;
-    if(mf1.getFileTypeId() != mf2.getFileTypeId())
-    {
-        std::cerr << mf1.getFileTypeId() << std::endl;
-        std::cerr << mf2.getFileTypeId() << std::endl;
-
-        ret+=64;
-    }
-
-
-    if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
-
-    Database::Connection conn = Database::Manager::acquire();
-    Database::Transaction tx(conn);
-    std::string query
-        = str(boost::format("DELETE FROM files WHERE id = %1%")
-        % mf1.getId() );
-    conn.exec( query );
-    tx.commit();
 
     return ret;
-
 }
 
 unsigned model_nodatareload_test()
@@ -211,7 +254,6 @@ unsigned mbp_insert_test(ModelBankPayment& mbp1, mbp_insert_data& insert_data)
     unsigned ret=0;
     try
     {
-
         //insert data
         mbp1.setAccountId(insert_data.account_id);
         mbp1.setAccountNumber(insert_data.account_number);
@@ -336,15 +378,15 @@ unsigned mbp_reload_test(ModelBankPayment& mbp1, ModelBankPayment& mbp2)
     }
     catch(std::exception& ex)
     {
-        std::cerr << "model_reload_test exception reason: "<< ex.what() << std::endl;
+        std::cerr << "mpb_reload_test exception reason: "<< ex.what() << std::endl;
         ret+=262144;
         throw;
     }
     catch(...)
     {
-        std::cerr << "model_reload_test exception returning"<< std::endl;
+        std::cerr << "mpb_reload_test exception returning"<< std::endl;
         ret+=524288;
-        if (ret != 0 ) std::cerr << "model_reload_test ret: "<< ret << std::endl;
+        if (ret != 0 ) std::cerr << "mpb_reload_test ret: "<< ret << std::endl;
     }
 
     return ret;
@@ -394,15 +436,15 @@ unsigned mbp_update_test(ModelBankPayment& mbp1, ModelBankPayment& mbp2)
     }
     catch(std::exception& ex)
     {
-        std::cerr << "model_update_test exception reason: "<< ex.what() << std::endl;
+        std::cerr << "mpb_update_test exception reason: "<< ex.what() << std::endl;
         ret+=262144;
         throw;
     }
     catch(...)
     {
-        std::cerr << "model_update_test exception returning"<< std::endl;
+        std::cerr << "mpb_update_test exception returning"<< std::endl;
         ret+=524288;
-        if(ret !=0 ) std::cerr << "model_update_test ret: "<< ret << std::endl;
+        if(ret !=0 ) std::cerr << "mpb_update_test ret: "<< ret << std::endl;
     }
 
     return ret;
