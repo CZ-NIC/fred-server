@@ -1937,7 +1937,7 @@ public:
     Mails(Mailer::Manager *_mm) : mm(_mm), conn(Database::Manager::acquire()) {
     }
     /// send all mails and store information about sending
-    void send() throw (SQL_ERROR) {
+    void send() { //throw (SQL_ERROR) {
       for (unsigned i=0; i<items.size(); i++) {
         Item *it = &items[i];
         Mailer::Parameters params;
