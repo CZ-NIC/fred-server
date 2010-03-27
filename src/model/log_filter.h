@@ -32,7 +32,7 @@ namespace Filters {
 
 class RequestServiceType : public Database::Filters::Value<long> {
 public:
-	RequestServiceType(const long val) : Value<long>() {
+	RequestServiceType(const long val = 0) : Value<long>() {
 		setValue(val);
 	}	
 	RequestServiceType(const Column &col) : Database::Filters::Value<long>(col) {
@@ -52,11 +52,20 @@ public:
 	operator long() const {
 		return getValue().getValue();
 	}
+
+    friend class boost::serialization::access;
+    template<class Archive> void serialize(Archive& _ar,
+            const unsigned int _version)
+    {
+        _ar & BOOST_SERIALIZATION_BASE_TEMPLATE(
+                "Value_long_ServiceType",
+                Database::Filters::Value<long>);
+    }
 };
 
 class RequestActionType : public Database::Filters::Value<long> {
 public:
-	RequestActionType(const long val) : Value<long>() {
+	RequestActionType(const long val = 0) : Value<long>() {
 		setValue(val);
 	}	
 	RequestActionType(const Column &col) : Database::Filters::Value<long>(col) {
@@ -68,6 +77,15 @@ public:
 	operator long() const {
 		return getValue().getValue();
 	}
+
+    friend class boost::serialization::access;
+    template<class Archive> void serialize(Archive& _ar,
+            const unsigned int _version)
+    {
+        _ar & BOOST_SERIALIZATION_BASE_TEMPLATE(
+                "Value_long_ActionType",
+                Database::Filters::Value<long>);
+    }
 };
 
 class RequestPropertyValue : virtual public Compound
@@ -217,7 +235,7 @@ public:
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
       const unsigned int _version) {
-    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Request);
+    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Compound);
   }
 
   static Session* create();
@@ -240,7 +258,7 @@ public:
   friend class boost::serialization::access;
   template<class Archive> void serialize(Archive& _ar,
       const unsigned int _version) {
-    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Request);
+    _ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Session);
   }
 
 };

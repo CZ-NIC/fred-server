@@ -107,11 +107,12 @@ public:
     _ar.register_type(static_cast<OnlineStatementImpl *>(NULL));
     _ar.register_type(static_cast<BankPaymentImpl *>(NULL));
     // _ar.register_type(static_cast<StatementHeadImpl *>(NULL));
-    /*
+
     _ar.register_type(static_cast<RequestImpl *>(NULL));
     _ar.register_type(static_cast<RequestDataImpl *>(NULL));
     _ar.register_type(static_cast<RequestPropertyValueImpl *>(NULL));
-     * TODO*/
+    _ar.register_type(static_cast<RequestServiceType *>(NULL));
+    _ar.register_type(static_cast<RequestActionType *>(NULL));
 
     _ar & BOOST_SERIALIZATION_NVP(filter_list);
   }

@@ -98,6 +98,36 @@ private:
                 return;
             }
 
+            /* process only payemts from specific accounts
+             * XXX: this should be in database not hardcoded */
+            std::vector<std::string> allowed;
+            allowed.push_back("188208275/0300");
+            allowed.push_back("756/2400");
+            allowed.push_back("210345314/0300");
+            allowed.push_back("617/2400");
+            allowed.push_back("756/5500");
+            allowed.push_back("617/5500");
+
+            std::stringstream account_query;
+            account_query << "SELECT account_number || '/' || bank_code FROM "
+                          << "bank_account WHERE id = "
+                          << Database::Value(_payment->getAccountId());
+            Database::Result result = conn.exec(account_query.str());
+            if (result.size() != 1) {
+                throw std::runtime_error("oops! payment has no record in "
+                        "bank_account table");
+            }
+            std::string test = result[0][0];
+
+            std::vector<std::string>::const_iterator it = std::find(allowed.begin(), allowed.end(), test);
+            if (it == allowed.end()) {
+                LOGGER(PACKAGE).debug(boost::format(
+                            "account %1% is excluded from processing "
+                            "-> processing canceled")
+                            % test);
+                return;
+            }
+
             /* we process only payment with code = 1 (normal transaction)
              * and status = 1 (realized transfer) and type = 1 (not assigned) */
             if (_payment->getStatus() != 1 || _payment->getCode() != 1
@@ -224,10 +254,11 @@ public:
                         statement->save();
                         LOGGER(PACKAGE).info(boost::format(
                                 "new statement imported (id=%1% account_id=%2% "
-                                "number=%3%)")
+                                "number=%3% date=%4%)")
                                 % statement->getId()
                                 % statement->getAccountId()
-                                % statement->getNum());
+                                % statement->getNum()
+                                % statement->getCreateDate());
                     }
                     else {
                         statement_conflict = true;
@@ -262,12 +293,14 @@ public:
                         payment->save();
                         LOGGER(PACKAGE).info(boost::format(
                                 "payment imported (id=%1% account=%2%/%3% "
-                                "evid=%4% price=%5%)")
+                                "evid=%4% price=%5% account_date=%6%) account_id=%7%")
                                 % payment->getId()
                                 % payment->getAccountNumber()
                                 % payment->getBankCode()
                                 % payment->getAccountEvid()
-                                % payment->getPrice());
+                                % payment->getPrice()
+                                % payment->getAccountDate()
+                                % payment->getAccountId());
 
                         /* payment processing */
                         processPayment(payment.get());

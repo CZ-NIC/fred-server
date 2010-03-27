@@ -642,8 +642,8 @@ void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, 
 	pv_first.setOutput(props[0].output);
 
 	pv_first.insert();
-
-	last_id = find_last_property_value_id(conn);
+    last_id = pv_first.getId();
+	// last_id = find_last_property_value_id(conn);
 
 	// process the rest of the sequence
 	for (unsigned i = 1; i < props.size(); i++) {
@@ -665,7 +665,8 @@ void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, 
 			pv.insert();
 		} else {
 			pv.insert();
-			last_id = find_last_property_value_id(conn);
+            last_id = pv.getId();
+			// last_id = find_last_property_value_id(conn);
 		}
 	}
 }

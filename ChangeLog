@@ -1,3 +1,13 @@
+2010-03-28 Jiri Sadek, Juraj Vicenik, Jan Zima (2.3.7)
+
+  * bank payment processing only payments from registrars fix
+
+  * filter serialization fixes
+
+  * unexpected exception from mailer fix
+
+  * Logger - queries reduction
+
 2010-03-22 Jiri Sadek (2.3.6)
 
   * bank payment type column default value set
