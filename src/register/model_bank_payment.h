@@ -171,7 +171,12 @@ public:
     }
     void setAccountMemo(const std::string &accountMemo)
     {
-        m_accountMemo = accountMemo;
+        if (accountMemo.size() >= 64) {
+            m_accountMemo = accountMemo.substr(0, 63);
+        }
+        else {
+            m_accountMemo = accountMemo;
+        }
     }
     void setInvoiceId(const unsigned long long &invoiceId)
     {
@@ -185,7 +190,12 @@ public:
     */
     void setAccountName(const std::string &accountName)
     {
-        m_accountName = accountName;
+        if (accountName.size() >= 64) {
+            m_accountName = accountName.substr(0, 63);
+        }
+        else {
+            m_accountName = accountName;
+        }
     }
     void setCrTime(const Database::DateTime &crTime)
     {
