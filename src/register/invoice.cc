@@ -2105,7 +2105,7 @@ public:
     << registrarHandle << "'";
 
     Database::Result res = conn.exec(sql.str());
-    Money result = (long)res[0][0];
+    Database::Money result = res[0][0];
     return result;
     
   }

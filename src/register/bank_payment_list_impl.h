@@ -100,7 +100,7 @@ public:
                 << "JOIN bank_payment t_1 ON (tmp.id = t_1.id) "
                 << "LEFT JOIN invoice t_2 ON (t_1.invoice_id = t_2.id)";
             object_info_query.order_by()
-                << "tmp.id";
+                << "tmp.id DESC";
 
             Database::Result r_stat = conn.exec(object_info_query);
             Database::Result::Iterator statIt = r_stat.begin();

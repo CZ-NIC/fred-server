@@ -1,3 +1,9 @@
+2010-03-31 Jiri Sadek, Juraj Vicenik, Jan Zima (2.3.8)
+
+  * fix getCreditByZone(...) in invoice manager (bad cast - bad money format) 
+
+  * fix bank payment default sort in pagetable
+
 2010-03-28 Jiri Sadek, Juraj Vicenik, Jan Zima (2.3.7)
 
   * bank payment processing only payments from registrars fix
