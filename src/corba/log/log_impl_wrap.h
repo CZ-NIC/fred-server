@@ -48,7 +48,7 @@ private:
   pagetables_list pagetables;
   std::auto_ptr<Register::Logger::Manager> back;
 
-  boost::mutex lmutex;
+  boost::mutex pagetables_mutex;
 
 public:
   typedef Register::Logger::Manager::DB_CONNECT_FAILED DB_CONNECT_FAILED ;

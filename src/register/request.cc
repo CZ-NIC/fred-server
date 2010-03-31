@@ -449,6 +449,7 @@ public:
 		// set constraint exclusion (needed for faster queries on partitioned tables)
 		try {
 			exec("set constraint_exclusion=on");
+                        tx = new Database::Transaction(*this);
 		} catch (Database::Exception &ex) {
 			logger_error(boost::format("couldn't set constraint exclusion : %2%") % ex.what());
 		}
@@ -456,8 +457,13 @@ public:
 	};
 
 	~logd_auto_conn() {
-		Database::Manager::release();
+            tx->commit();
+            delete tx;
+            Database::Manager::release();
 	}
+
+private:
+    Database::Transaction *tx;
 };
 
 List *ManagerImpl::createList() const {
@@ -563,12 +569,15 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
 
 	std::string name_trunc = name.substr(0, MAX_NAME_LENGTH);
 
+        boost::mutex::scoped_lock properties_lock (properties_mutex);
 	iter = property_names.find(name_trunc);
 
 	if(iter != property_names.end()) {
 		name_id = iter->second;
 	} else {
 		// if the name isn't cached in the memory, try to find it in the database
+                properties_lock.unlock();
+
 		std::string s_name = conn.escape(name_trunc);
 
 		boost::format query = boost::format("select id from request_property where name='%1%'") % s_name;
@@ -593,6 +602,7 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
 
 		// now that we know the right database id of the name
 		// we can add it to the map
+                properties_lock.lock();
 		property_names[name_trunc] = name_id;
 	}
 

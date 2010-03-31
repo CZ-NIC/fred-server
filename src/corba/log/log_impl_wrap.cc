@@ -26,49 +26,35 @@ ccReg_Log_i::~ccReg_Log_i()
     }
 }
 
-ccReg::TID ccReg_Log_i::CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long action_type, ccReg::TID session_id) {
-    boost::mutex::scoped_lock slm (lmutex);
-
+ccReg::TID ccReg_Log_i::CreateRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content_in, const ccReg::RequestProperties& props, CORBA::Long action_type, ccReg::TID session_id) {    
     std::auto_ptr<Register::Logger::RequestProperties> p(convert_properties(props));
     return back->i_CreateRequest(sourceIP, (Database::Filters::RequestServiceType)service, content_in, *(p.get()), action_type, session_id);
 }
 
 CORBA::Boolean ccReg_Log_i::UpdateRequest(ccReg::TID id, const ccReg::RequestProperties &props) {
-    boost::mutex::scoped_lock slm (lmutex);
-
     std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
     return back->i_UpdateRequest(id, *(p.get()));
 }
 
-CORBA::Boolean ccReg_Log_i::CloseRequest(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props) {
-    boost::mutex::scoped_lock slm (lmutex);
-
+CORBA::Boolean ccReg_Log_i::CloseRequest(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props) {    
     std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
     return back->i_CloseRequest(id, content_out, *(p.get()));
 }
 
-CORBA::Boolean ccReg_Log_i::CloseRequestLogin(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, ccReg::TID session_id) {
-    boost::mutex::scoped_lock slm (lmutex);
-
+CORBA::Boolean ccReg_Log_i::CloseRequestLogin(ccReg::TID id, const char *content_out, const ccReg::RequestProperties &props, ccReg::TID session_id) {    
     std::auto_ptr<Register::Logger::RequestProperties> p = convert_properties(props);
     return back->i_CloseRequestLogin(id, content_out, *(p.get()), session_id);
 }
 
-ccReg::TID ccReg_Log_i::CreateSession(ccReg::Languages lang, const char *name) {
-    boost::mutex::scoped_lock slm (lmutex);
-
+ccReg::TID ccReg_Log_i::CreateSession(ccReg::Languages lang, const char *name) {    
     return back->i_CreateSession((Languages) lang, name);
 }
 
-CORBA::Boolean ccReg_Log_i::CloseSession(ccReg::TID id) {
-    boost::mutex::scoped_lock slm (lmutex);
-
+CORBA::Boolean ccReg_Log_i::CloseSession(ccReg::TID id) {    
     return back->i_CloseSession(id);
 }
 
-ccReg::RequestActionList *ccReg_Log_i::GetServiceActions(ccReg::RequestServiceType service) {
-    boost::mutex::scoped_lock slm (lmutex);
-    
+ccReg::RequestActionList *ccReg_Log_i::GetServiceActions(ccReg::RequestServiceType service) {    
     Database::Result res = back->i_GetServiceActions((Database::Filters::RequestServiceType)service);
 
     int size = res.size();
@@ -89,7 +75,7 @@ Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
     Registry::PageTable_ptr ret;
     pagetables_list::iterator it;
     
-    boost::mutex::scoped_lock slm (lmutex);
+    boost::mutex::scoped_lock slm (pagetables_mutex);
 
     it = pagetables.find(session_id);
 
@@ -118,7 +104,7 @@ void ccReg_Log_i::deletePageTable(const char* session_id)
 {
     pagetables_list::iterator it;
 
-    boost::mutex::scoped_lock slm (lmutex);
+    boost::mutex::scoped_lock slm (pagetables_mutex);
 
     it = pagetables.find(session_id);
 
@@ -141,7 +127,7 @@ Registry::Request::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id) {
 	
 	LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
 
-        boost::mutex::scoped_lock slm (lmutex);
+        boost::mutex::scoped_lock slm (pagetables_mutex);
 	std::auto_ptr<Register::Logger::List> request_list(back->createList());
 
 	Database::Filters::Union union_filter;

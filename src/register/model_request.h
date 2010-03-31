@@ -101,23 +101,17 @@ public:
 
     void insert() {
         Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction tx(conn);
         Model::Base::insert(this);
-        tx.commit();
     }
 
     void update() {
         Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction tx(conn);
         Model::Base::update(this);
-        tx.commit();
     }
 
     void reload() {
         Database::Connection conn = Database::Manager::acquire();
-        Database::Transaction tx(conn);
         Model::Base::reload(this);
-        tx.commit();
     }
 
     void load(const Database::Row &_data) {

@@ -7,6 +7,8 @@ namespace Logger {
 
 class ManagerImpl : public Manager {
 private:
+    boost::mutex properties_mutex;
+
     struct strCmp {
 		bool operator()(const std::string &s1, const std::string &s2) const {
 			return s1 < s2;
