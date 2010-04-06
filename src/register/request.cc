@@ -5,6 +5,9 @@
 #include <fstream>
 #include <iostream>
 
+#include <stdlib.h>
+
+#include "config.h"
 // logger
 #include "old_utils/log.h"
 //config
@@ -12,16 +15,12 @@
 // util (for escape)
 #include "util.h"
 
+#include "common_impl.h"
+#include "request_impl.h"
 
 // FRED logging
 #include "log/logger.h"
 #include "log/context.h"
-
-#include <stdlib.h>
-
-#include "common_impl.h"
-#include "request_impl.h"
-#include "log/logger.h"
 
 using namespace boost::posix_time;
 using namespace boost::gregorian;
@@ -141,7 +140,7 @@ public:
 
   // TODO properties should be displayed only in detailed view
   virtual void reload(Database::Filters::Union& _filter) {
-    TRACE("[CALL] Register::Request::ListImpl::reload()");
+    TRACE("[CALL] Register::Logger::ListImpl::reload()");
     clear();
     _filter.clearQueries();
 
@@ -321,7 +320,7 @@ public:
   }
 
   virtual void reload() {
-	 TRACE("[CALL] Register::Request::ListImpl::reload()");
+	 TRACE("[CALL] Register::Logger::ListImpl::reload()");
 	    clear();
 
 	// here we go
@@ -396,16 +395,25 @@ public:
   }
 };
 
-// ------ new home for Impl_Log
 
-inline void log_ctx_init()
-{
 #ifdef HAVE_LOGGER
+class logd_ctx_init {
+public:
+
+    inline logd_ctx_init() {
 	Logging::Context::clear();
-	Logging::Context ctx("logd");
+        ctx.reset(new Logging::Context("logd"));
+    }
+
+private:
+    std::auto_ptr<Logging::Context> ctx;
+};
+
+#else
+
+class logd_ctx_init { };
 
 #endif
-}
 
 inline void logger_notice(const char *str);
 inline void logger_error(const char *str);
@@ -472,8 +480,10 @@ List *ManagerImpl::createList() const {
 
 Result ManagerImpl::i_GetServiceActions(RequestServiceType service)
 {
+        logd_ctx_init ctx;
+    
 	logd_auto_conn conn;
-	log_ctx_init();
+	TRACE("[CALL] Register::Logger::ManagerImpl::i_GetServiceActions");
 
 	boost::format query = boost::format("select id, status from request_type where service = %1%") % service;
 
@@ -487,7 +497,7 @@ ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
 {
     	std::ifstream file;
 
-  	log_ctx_init();
+  	logd_ctx_init ctx;
 
 
 	logd_auto_conn conn;
@@ -535,7 +545,7 @@ ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
 }
 
 ManagerImpl::~ManagerImpl() {
-  log_ctx_init();
+  logd_ctx_init ctx;
 
   logger_notice("Logging destructor");
 }
@@ -543,6 +553,8 @@ ManagerImpl::~ManagerImpl() {
 // check if a log record with the specified ID exists and if it can be modified (time_end isn't set yet)
 bool ManagerImpl::record_check(ID id, Connection &conn)
 {
+    TRACE("[CALL] Register::Logger::ManagerImpl::record_check");
+    
 	boost::format query = boost::format("select time_end from request where id=%1%") % id;
 	Result res = conn.exec(query.str());
 
@@ -564,6 +576,7 @@ bool ManagerImpl::record_check(ID id, Connection &conn)
 // if the name is tool long, it's truncated to the maximal length allowed by the database
 ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
 {
+    TRACE("[CALL] Register::Logger::ManagerImpl::find_property_name_id");
 	ID name_id;
 	std::map<std::string, ID>::iterator iter;
 
@@ -613,7 +626,7 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
  * Find last ID used in request_property_value table
  */
 inline ID ManagerImpl::find_last_property_value_id(Connection &conn)
-{
+{    
 	Result res = conn.exec(LAST_PROPERTY_VALUE_ID);
 	return res[0][0];
 }
@@ -627,7 +640,7 @@ inline ID ManagerImpl::find_last_request_id(Connection &conn)
 // insert properties for the given request record
 void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID entry_id,  const Register::Logger::RequestProperties& props, Connection conn)
 {
-	std::string s_val;
+    TRACE("[CALL] Register::Logger::ManagerImpl::insert_props");
 	ID name_id, last_id = 0;
 
 	if(props.size() == 0) {
@@ -652,7 +665,7 @@ void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, 
 	pv_first.setOutput(props[0].output);
 
 	pv_first.insert();
-    last_id = pv_first.getId();
+        last_id = pv_first.getId();
 	// last_id = find_last_property_value_id(conn);
 
 	// process the rest of the sequence
@@ -679,13 +692,23 @@ void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, 
 			// last_id = find_last_property_value_id(conn);
 		}
 	}
+        
+        logger_notice(boost::format("Inserted %1% properties") % props.size());
+
 }
 
 // log a new event, return the database ID of the record
 ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service, const char *content_in, const Register::Logger::RequestProperties& props, RequestActionType action_type, ID session_id)
 {
-	logd_auto_conn conn;
-  	log_ctx_init();
+     	logd_ctx_init ctx;        
+#ifdef HAVE_LOGGER
+        boost::format sess_fmt = boost::format("session-%1%") % session_id;
+        Logging::Context ctx_sess(sess_fmt.str());
+#endif
+        TRACE("[CALL] Register::Logger::ManagerImpl::i_CreateRequest");
+        std::auto_ptr<Logging::Context> ctx_entry;
+
+        logd_auto_conn conn;
 
 	ID entry_id;
 
@@ -729,6 +752,11 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 		req.insert();
 		entry_id = find_last_request_id(conn);
 
+#ifdef HAVE_LOGGER
+                boost::format entry_fmt = boost::format("entry-%1%") % entry_id;
+                ctx_entry.reset(new Logging::Context(entry_fmt.str()));
+                
+#endif
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
 		return 0;
@@ -764,6 +792,8 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 
 std::string ManagerImpl::getSessionUserName(Connection &conn, Database::ID session_id) 
 {
+    TRACE("[CALL] Register::Logger::ManagerImpl::getSessionUserName");
+    
 	if (session_id != 0) {
                 boost::format query = boost::format("select name from session where id = %1%") % session_id;
 		Result res = conn.exec(query.str());
@@ -781,10 +811,16 @@ std::string ManagerImpl::getSessionUserName(Connection &conn, Database::ID sessi
 
 // update existing log record with given ID
 bool ManagerImpl::i_UpdateRequest(ID id, const Register::Logger::RequestProperties &props)
-{
-	logd_auto_conn conn;
+{	
+  	logd_ctx_init ctx;        
+#ifdef HAVE_LOGGER        
+        boost::format entry_fmt = boost::format("entry-%1%") % id;
+        Logging::Context ctx_entry(entry_fmt.str());
+#endif
+        
+        TRACE("[CALL] Register::Logger::ManagerImpl::i_UpdateRequest");
 
-  	log_ctx_init();
+        logd_auto_conn conn;
 
 	try {
 		// perform check
@@ -813,7 +849,8 @@ bool ManagerImpl::i_UpdateRequest(ID id, const Register::Logger::RequestProperti
 
 bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *content_out, const Register::Logger::RequestProperties &props)
 {
-	std::string s_content, time;
+    TRACE("[CALL] Register::Logger::ManagerImpl::close_request_worker");
+	std::string time;
 	RequestServiceType service;
 	bool monitoring;
 
@@ -864,22 +901,35 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
 
 // close the record with given ID (end time is filled thus no further modification is possible after this call )
 bool ManagerImpl::i_CloseRequest(ID id, const char *content_out, const Register::Logger::RequestProperties &props)
-{
-	logd_auto_conn conn;
+{	
+	logd_ctx_init ctx;
+#ifdef HAVE_LOGGER       
+        boost::format entry_fmt = boost::format("entry-%1%") % id;
+        Logging::Context ctx_entry(entry_fmt.str());
+#endif        
+        TRACE("[CALL] Register::Logger::ManagerImpl::i_CloseRequest");
 
-	log_ctx_init();
+        logd_auto_conn conn;
 
 	return close_request_worker(conn, id, content_out, props);
 }
 
 
 bool ManagerImpl::i_CloseRequestLogin(ID id, const char *content_out, const Register::Logger::RequestProperties &props, ID session_id)
-{
-	bool ret;
+{	
+	logd_ctx_init ctx;
+#ifdef HAVE_LOGGER
+        boost::format sess_fmt = boost::format("session-%1%") % session_id;
+        Logging::Context ctx_sess(sess_fmt.str());
+        boost::format entry_fmt = boost::format("entry-%1%") % id;
+        Logging::Context ctx_entry(entry_fmt.str());
+#endif
+        
+        TRACE("[CALL] Register::Logger::ManagerImpl::i_CloseRequestLogin");
+
+        bool ret;
 
 	logd_auto_conn conn;
-
-	log_ctx_init();
 
 	ret = close_request_worker(conn, id, content_out, props);
 	if (!ret) return false;
@@ -923,9 +973,13 @@ bool ManagerImpl::i_CloseRequestLogin(ID id, const char *content_out, const Regi
 }
 
 ID ManagerImpl::i_CreateSession(Languages lang, const char *name)
-{
-	logd_auto_conn conn;
-	log_ctx_init();
+{	
+	logd_ctx_init ctx;
+        TRACE("[CALL] Register::Logger::ManagerImpl::i_CreateSession");
+
+        std::auto_ptr<Logging::Context> ctx_sess;
+
+        logd_auto_conn conn;
 
 	std::string time;
 	ID id;
@@ -944,29 +998,40 @@ ID ManagerImpl::i_CreateSession(Languages lang, const char *name)
 	}
 
 	try {
-		ns.insert();
+                ns.insert();
 
-		Result res = conn.exec(LAST_SESSION_ID);
+                Result res = conn.exec(LAST_SESSION_ID);
 
-		id = res[0][0];
+                id = res[0][0];
 
-		if (lang == CS) {
-			boost::format query = boost::format("update session set lang = 'cs' where id=%1%") % id;
-			conn.exec(query.str());
-		}
+#ifdef HAVE_LOGGER
+                boost::format sess_fmt = boost::format("session-%1%") % id;
+                ctx_sess.reset(new Logging::Context(sess_fmt.str()));
+#endif
 
-	} catch (Database::Exception &ex) {
-		logger_error(ex.what());
-		return 0;
+                if (lang == CS) {
+                    boost::format query = boost::format("update session set lang = 'cs' where id=%1%") % id;
+                    conn.exec(query.str());
+                }
+
+        } catch (Database::Exception &ex) {
+                logger_error(ex.what());
+                return 0;
 	}
 	return id;
 }
 
 bool ManagerImpl::i_CloseSession(ID id)
-{
-	logd_auto_conn conn;
+{	        
+	logd_ctx_init ctx;
+#ifdef HAVE_LOGGER
+        boost::format sess_fmt = boost::format("session-%1%") % id;
+        Logging::Context ctx_sess(sess_fmt.str());       
+#endif
 
-	log_ctx_init();
+        TRACE("[CALL] Register::Logger::ManagerImpl::i_CloseSession");
+
+        logd_auto_conn conn;
 	std::string  time;
 
 	logger_notice(boost::format("CloseSession: session_id -> [%1%] ") % id );
