@@ -92,11 +92,27 @@ class SQL_ERROR;
 
 class autoDB : public DB {
 public:
-    autoDB() : DB() {};
+    autoDB(const char *conn_string) : DB(), succ(false) {
+        succ = OpenDatabase(conn_string);
+    }
+
+    autoDB(const std::string &conn_string) : DB(), succ(false) {
+        succ = OpenDatabase(conn_string);
+    }
     
     ~autoDB() {
-        Disconnect();
+        if(succ) {
+            Disconnect();
+        }
     }
+    
+    bool success() {
+        return succ;
+    }
+
+private:
+    /// was the database opened successfully?
+    bool succ;
 };
 
 
@@ -236,7 +252,7 @@ int createDepositInvoice(Database::Date date, int zoneId, int registrarId, long 
 
 bool factoring_all(const char *database, const char *zone_fqdn, const char *taxdateStr, const char *todateStr)
 {
-  autoDB db;
+  autoDB db(database);
   int *regID = 0;
   int i, num =-1;
   char timestampStr[32];
@@ -244,7 +260,7 @@ bool factoring_all(const char *database, const char *zone_fqdn, const char *taxd
   int zone;
   int ret = 0;
 
-  if (db.OpenDatabase(database) ) {
+  if (db.success() ) {
 
       LOGGER(PACKAGE).debug ( boost::format("successfully  connect to DATABASE %1%") % database);
 
@@ -301,14 +317,14 @@ bool factoring_all(const char *database, const char *zone_fqdn, const char *taxd
 // close invoice to registar handle for zone make taxDate to the todateStr
 int factoring(const char *database, const char *registrarHandle, const char *zone_fqdn, const char *taxdateStr, const char *todateStr)
 {
-  autoDB db;
+  autoDB db(database);
   int regID;
   char timestampStr[32];
   int invoiceID = -1;
   int zone;
   int ret = 0;
 
-  if (db.OpenDatabase(database) ) {
+  if (db.success() ) {
 
     LOGGER(PACKAGE).debug ( boost::format("successfully  connect to DATABASE %1%") % database);
 
@@ -933,8 +949,8 @@ public:
   void storeFile()  {
     // cannot rollback generated files so ignoring if XML file hasn't
     // been generated
-    autoDB dbc;
-    if(!dbc.OpenDatabase(Database::Manager::getConnectionString())) {
+    autoDB dbc(Database::Manager::getConnectionString());
+    if(!dbc.success()) {
         LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
         throw SQL_ERROR();
     }
@@ -1675,8 +1691,8 @@ public:
     virtual void reload() {
 
         // auto_ptr just to avoid changing -> into . in 1000 places :)
-        std::auto_ptr<autoDB> db(new autoDB());
-        if (!db->OpenDatabase(Database::Manager::getConnectionString())) {
+        std::auto_ptr<autoDB> db(new autoDB(Database::Manager::getConnectionString()));
+        if (!db->success()) {
             LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
             throw SQL_ERROR();
         }
@@ -1975,8 +1991,8 @@ public:
  
     void load() throw (SQL_ERROR) {
 
-        std::auto_ptr<autoDB> db(new autoDB());
-        if(!db->OpenDatabase(Database::Manager::getConnectionString())) {
+        std::auto_ptr<autoDB> db(new autoDB(Database::Manager::getConnectionString()));
+        if(!db->success()) {
             LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
             throw SQL_ERROR();
         }
@@ -2022,8 +2038,8 @@ public:
 
   void ManagerImpl::initVATList()  {
 
-    std::auto_ptr<autoDB> db(new autoDB());
-    if(!db->OpenDatabase(Database::Manager::getConnectionString())) {
+    std::auto_ptr<autoDB> db(new autoDB(Database::Manager::getConnectionString()));
+    if(!db->success()) {
         LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
        throw SQL_ERROR();
     }
