@@ -452,16 +452,16 @@ inline void logger_error(boost::format fmt)
  */
 class logd_auto_conn : public Connection {
 public:
-	explicit logd_auto_conn() : Connection(Database::Manager::acquire()) {
-
+	explicit logd_auto_conn() : Connection(Database::Manager::acquire()), tx(0)
+    {
 		// set constraint exclusion (needed for faster queries on partitioned tables)
 		try {
 			exec("set constraint_exclusion=on");
-                        tx = new Database::Transaction(*this);
-		} catch (Database::Exception &ex) {
+        }
+        catch (Database::Exception &ex) {
 			logger_error(boost::format("couldn't set constraint exclusion : %2%") % ex.what());
 		}
-
+        tx = new Database::Transaction(*this);
 	};
 
 	~logd_auto_conn() {
