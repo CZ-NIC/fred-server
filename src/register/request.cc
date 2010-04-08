@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "config.h"
+#include <pthread.h>
 // logger
 #include "old_utils/log.h"
 //config
@@ -401,8 +402,10 @@ class logd_ctx_init {
 public:
 
     inline logd_ctx_init() {
-	Logging::Context::clear();        
-        ctx.reset(new Logging::Context("logd"));
+	Logging::Context::clear();
+        pthread_t tid = pthread_self();
+        boost::format fmt = boost::format("logd-%1%") % tid;
+        ctx.reset(new Logging::Context(fmt.str()));
     }
 
 private:
