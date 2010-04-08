@@ -84,6 +84,9 @@ bool EPPNotifier::Send()
     mm->sendEmail("", emails, "", getTemplate(), params, handles, attach);
   }
   catch (...) {
+    LOGGER(PACKAGE).error(boost::format("EPPNotifier: notification for '%1%' failed! "
+                "(object_id=%2% action=%3% registrar_id=%4%)")
+                % emails % objectID % enum_action % registrarID);
     return false;
   }
 

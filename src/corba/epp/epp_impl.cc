@@ -140,6 +140,7 @@ class EPPAction
   int regID;
   int clientID;
   int code; ///< needed for destructor where Response is invalidated
+  EPPNotifier *notifier;
 public:
   struct ACTION_START_ERROR
   {
@@ -149,7 +150,8 @@ public:
     const char *xml, ParsedAction *paction = NULL
   ) throw (ccReg::EPP::EppError) :
     ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
-    regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID)
+    regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
+    notifier(0)
   {
     Logging::Context::push(str(boost::format("action-%1%") % action));
 
@@ -181,6 +183,9 @@ public:
   {
     db.QuitTransaction(code);
     db.EndAction(code);
+    if (notifier) {
+        notifier->Send();
+    }
     db.Disconnect();
 
     Logging::Context::pop();
@@ -248,6 +253,10 @@ public:
     int _code)
   {
     code = ret->code = _code;
+  }
+  void setNotifier(EPPNotifier *_notifier)
+  {
+      notifier = _notifier;
   }
 };
 
@@ -2580,7 +2589,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
                       conf.get<bool>("registry.disable_epp_notifier"),
                       mm, action.getDB(), action.getRegistrar(), id, regMan.get()));
         ntf->addExtraEmails(oldNotifyEmail);
-        ntf->Send(); // send messages with objectID
+        action.setNotifier(ntf.get()); // schedule message send
     }
 
     // EPP exception
@@ -4088,7 +4097,7 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
 
 
                 if (code == COMMAND_OK)
-                    ntf->Send(); // send messages if is OK
+                    action.setNotifier(ntf.get()); // schedule message send
 
 
             }
@@ -4747,7 +4756,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
 
             // notifier send messages
             if (code == COMMAND_OK)
-                ntf->Send();
+                action.setNotifier(ntf.get()); // schedule message send
 
         }
 
@@ -6766,7 +6775,7 @@ ccReg_EPP_i::KeySetUpdate(
                     code = COMMAND_OK;
             }
             if (code == COMMAND_OK)
-                ntf->Send();
+                action.setNotifier(ntf.get()); // schedule message send
         }
     }
 
