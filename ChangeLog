@@ -1,3 +1,11 @@
+2010-04-08 Jiri Sadek, Juraj Vicenik  (2.3.9)
+
+  * fix content of notification emails
+
+  * fix performance issues in logd
+
+  * fix several small bugs in invoicing
+
 2010-03-31 Jiri Sadek, Juraj Vicenik, Jan Zima (2.3.8)
 
   * fix getCreditByZone(...) in invoice manager (bad cast - bad money format) 
