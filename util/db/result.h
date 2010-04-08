@@ -66,9 +66,6 @@ public:
 
   virtual ~Result_() {
     result_.clear();
-#ifdef HAVE_LOGGER
-    TRACE("<CALL> Database::~Result_()");
-#endif
   }
 
   /**
