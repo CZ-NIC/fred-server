@@ -447,38 +447,40 @@ inline void logger_error(boost::format fmt)
 #endif
 }
 
-
 /**
- *  Connection class designed for use in fred-logd with partitioned tables
- *  It ensures that the connection will have constraint_exclusion enabled
- *  and all queries will be performed in one transaction which is
- *  always commited at the end. (behavior desirable in logger)
- *  It acquires database connection from the Database::Manager and explicitly
- *  releases in destructor.
- *  DEPENDENCIES:
- *   - It assumes that the system error logger is initialized (use of logger_error() function
- *   - there's only one connection per thread, so the DB framework receives
- *     the connection encapsulated here
- */
-class logd_auto_conn : public Connection {
+         *  Database access class designed for use in fred-logd with partitioned tables
+         *  It ensures that the connection will have constraint_exclusion enabled
+         *  and all queries will be performed in one transaction which
+         *  retains the features of Database::Transaction - it has to be commited
+         *  explicitly by the client, otherwise it's rollbacked.
+         *  The class acquires database connection from the Database::Manager and explicitly
+         *  releases in destructor.
+         *  DEPENDENCIES:
+         *   - It assumes that the system error logger is initialized (use of logger_error() function
+         *   - there's only one connection per thread, so the DB framework receives
+         *     the connection encapsulated here
+         */
+class logd_auto_db : public Connection {
 public:
-	explicit logd_auto_conn() : Connection(Database::Manager::acquire()), tx(0)
-    {
-		// set constraint exclusion (needed for faster queries on partitioned tables)
-		try {
-			exec("set constraint_exclusion=on");
-        }
-        catch (Database::Exception &ex) {
-			logger_error(boost::format("couldn't set constraint exclusion : %2%") % ex.what());
-		}
-        tx = new Database::Transaction(*this);
-	}
 
-	~logd_auto_conn() {
-            tx->commit();
-            delete tx;
-            Database::Manager::release();
-	}
+    explicit logd_auto_db() : Connection(Database::Manager::acquire()), tx(0) {
+        // set constraint exclusion (needed for faster queries on partitioned tables)
+        try {
+            exec("set constraint_exclusion=on");
+        } catch (Database::Exception &ex) {
+            logger_error(boost::format("couldn't set constraint exclusion : %2%") % ex.what());
+        }
+        tx = new Database::Transaction(*this);
+    }
+
+    ~logd_auto_db() {
+        delete tx;
+        Database::Manager::release();
+    }
+
+    void commit() {
+        tx->commit();
+    }
 
 private:
     Database::Transaction *tx;
@@ -491,8 +493,9 @@ List *ManagerImpl::createList() const {
 Result ManagerImpl::i_GetServiceActions(RequestServiceType service)
 {
         logd_ctx_init ctx;
-    
-	logd_auto_conn conn;
+
+        Connection conn = Database::Manager::acquire();
+	
 	TRACE("[CALL] Register::Logger::ManagerImpl::i_GetServiceActions");
 
 	boost::format query = boost::format("select id, status from request_type where service = %1%") % service;
@@ -509,8 +512,7 @@ ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
 
   	logd_ctx_init ctx;
 
-
-	logd_auto_conn conn;
+        Connection conn = Database::Manager::acquire();
 
 	logger_notice("successfully  connect to DATABASE ");
 
@@ -639,7 +641,7 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
 // insert properties for the given request record
 void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID entry_id,  const Register::Logger::RequestProperties& props, Connection conn)
 {
-    TRACE("[CALL] Register::Logger::ManagerImpl::insert_props");
+        TRACE("[CALL] Register::Logger::ManagerImpl::insert_props");
 	ID name_id, last_id = 0;
 
 	if(props.size() == 0) {
@@ -705,7 +707,7 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
         TRACE("[CALL] Register::Logger::ManagerImpl::i_CreateRequest");
         std::auto_ptr<Logging::Context> ctx_entry;
 
-        logd_auto_conn conn;
+        logd_auto_db db;
 
 	ID entry_id;
 
@@ -732,7 +734,7 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
         if (session_id != 0){
                 req.setSessionId(session_id);
                 
-                std::string user_name = getSessionUserName(conn, session_id);
+                std::string user_name = getSessionUserName(db, session_id);
                 if(user_name != std::string()) {
                     req.setUserName(user_name);
                 }
@@ -776,12 +778,13 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 		}
 
 		// inserting properties
-		insert_props(time, service, monitoring, entry_id, props, conn);
+		insert_props(time, service, monitoring, entry_id, props, db);
 
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
 	}
 
+        db.commit();
 	return entry_id;
 }
 
@@ -816,18 +819,18 @@ bool ManagerImpl::i_UpdateRequest(ID id, const Register::Logger::RequestProperti
         
         TRACE("[CALL] Register::Logger::ManagerImpl::i_UpdateRequest");
 
-        logd_auto_conn conn;
+        logd_auto_db db;
 
 	try {
 		// perform check
 #ifdef DEBUG_LOGD
-		if (!record_check(id, conn)) return false;
+		if (!record_check(id, db)) return false;
 #endif
 
 		// TODO think about some other way - i don't like this
                 // optimization
 		boost::format query = boost::format("select time_begin, service, is_monitoring from request where id = %1%") % id;
-		Result res = conn.exec(query.str());
+		Result res = db.exec(query.str());
 
 		if(res.size() == 0) {
 			logger_error("Record in request table not found.");
@@ -837,11 +840,13 @@ bool ManagerImpl::i_UpdateRequest(ID id, const Register::Logger::RequestProperti
 		DateTime time = res[0][0].operator ptime();
 		RequestServiceType service = (RequestServiceType)(int)res[0][1];
 		bool monitoring        = (bool)res[0][2];
-		insert_props(time, service, monitoring, id, props, conn);
+		insert_props(time, service, monitoring, id, props, db);
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
 		return false;
 	}
+
+        db.commit();
 	return true;
 
 }
@@ -914,9 +919,14 @@ bool ManagerImpl::i_CloseRequest(ID id, const char *content_out, const Register:
 #endif        
         TRACE("[CALL] Register::Logger::ManagerImpl::i_CloseRequest");
 
-        logd_auto_conn conn;
+        logd_auto_db db;
 
-	return close_request_worker(conn, id, content_out, props);
+        if (close_request_worker(db, id, content_out, props)) {
+            db.commit();
+            return true;
+        } else {
+            return false;
+        }
 }
 
 
@@ -934,9 +944,9 @@ bool ManagerImpl::i_CloseRequestLogin(ID id, const char *content_out, const Regi
 
         bool ret;
 
-	logd_auto_conn conn;
+	logd_auto_db db;
 
-	ret = close_request_worker(conn, id, content_out, props);
+	ret = close_request_worker(db, id, content_out, props);
 	if (!ret) return false;
 
 	// fill in the session ID
@@ -948,7 +958,7 @@ bool ManagerImpl::i_CloseRequestLogin(ID id, const char *content_out, const Regi
 
 	try {
 #ifdef DEBUG_LOGD
-		Result res = conn.exec(query.str());
+		Result res = db.exec(query.str());
 
 		// if there is no record with specified ID
 		if(res.size() == 0) {
@@ -965,20 +975,21 @@ bool ManagerImpl::i_CloseRequestLogin(ID id, const char *content_out, const Regi
 		}
 #endif // DEBUG_LOGD
 
-                std::string user_name = getSessionUserName(conn, session_id);
+                std::string user_name = getSessionUserName(db, session_id);
 
                 if(user_name != std::string()) {
                     query = boost::format("update request set session_id = %1%, user_name='%2%' where id=%3%") % session_id % user_name % id;
                 } else {
                     query = boost::format("update request set session_id = %1% where id=%2%") % session_id % id;
                 }
-		conn.exec(query.str());
+		db.exec(query.str());
 
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
 		return false;
 	}
 
+        db.commit();
         return true;
 }
 
@@ -988,9 +999,7 @@ ID ManagerImpl::i_CreateSession(Languages lang, const char *name)
         TRACE("[CALL] Register::Logger::ManagerImpl::i_CreateSession");
 
         std::auto_ptr<Logging::Context> ctx_sess;
-
-        logd_auto_conn conn;
-
+       
 	std::string time;
 	ID id;
 
@@ -998,23 +1007,23 @@ ID ManagerImpl::i_CreateSession(Languages lang, const char *name)
 
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
 
-	ModelSession ns;
+	ModelSession sess;
 
 	if (name != NULL && *name != '\0') {
-		ns.setName(name);
+		sess.setName(name);
 	} else {
 		logger_error("CreateSession: name is empty!");
 		return 0;
 	}
 
         if(lang == CS) {
-                ns.setLang("cs");
+                sess.setLang("cs");
         }
 
 	try {
-                ns.insert();
+                sess.insert();
 
-                id = ns.getId();
+                id = sess.getId();
 
 #ifdef HAVE_LOGGER
                 boost::format sess_fmt = boost::format("session-%1%") % id;
@@ -1038,7 +1047,7 @@ bool ManagerImpl::i_CloseSession(ID id)
 
         TRACE("[CALL] Register::Logger::ManagerImpl::i_CloseSession");
 
-        logd_auto_conn conn;
+        logd_auto_db db;
 	std::string  time;
 
 	logger_notice(boost::format("CloseSession: session_id -> [%1%] ") % id );
@@ -1050,7 +1059,7 @@ bool ManagerImpl::i_CloseSession(ID id)
 	try {
 
 #ifdef DEBUG_LOGD
-		Result res = conn.exec(query.str());
+		Result res = db.exec(query.str());
 
 		if(res.size() == 0) {
 			logger_error(boost::format("record in session with ID %1% doesn't exist") % id);
@@ -1068,12 +1077,13 @@ bool ManagerImpl::i_CloseSession(ID id)
 
 		update = boost::format("update session set logout_date = '%1%' where id=%2%") % time % id;
 
-		conn.exec(update.str());
+		db.exec(update.str());
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
 		return false;
 	}
 
+        db.commit();
 	return true;
 }
 
