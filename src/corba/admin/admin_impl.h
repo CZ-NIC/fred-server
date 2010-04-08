@@ -73,7 +73,7 @@ public:
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
   ccReg::Registrar* getRegistrarByHandle(const char* handle)
       throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
-  void putRegistrar(const ccReg::Registrar& regData);
+  //void putRegistrar(const ccReg::Registrar& regData);
 
   // contact detail
   void fillContact(ccReg::ContactDetail* cv, Register::Contact::Contact* c);

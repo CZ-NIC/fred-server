@@ -281,6 +281,7 @@ ccReg::Session_ptr ccReg_Admin_i::getSession(const char* _session_id)
   return it->second->_this();
 }
 
+
 void ccReg_Admin_i::fillRegistrar(ccReg::Registrar& creg,
                                   Register::Registrar::Registrar *reg) {
 
@@ -454,7 +455,7 @@ ccReg::Registrar* ccReg_Admin_i::getRegistrarByHandle(const char* handle)
     throw ccReg::Admin::SQL_ERROR();
   }
 }
-
+/*
 void ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData) {
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
@@ -512,7 +513,7 @@ void ccReg_Admin_i::putRegistrar(const ccReg::Registrar& regData) {
     throw ccReg::Admin::UpdateFailed();
   }
 }
-
+*/
 void ccReg_Admin_i::fillContact(ccReg::ContactDetail* cc,
                                 Register::Contact::Contact* c) {
 
