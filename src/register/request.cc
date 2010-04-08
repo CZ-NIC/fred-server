@@ -401,7 +401,7 @@ class logd_ctx_init {
 public:
 
     inline logd_ctx_init() {
-	Logging::Context::clear();
+	Logging::Context::clear();        
         ctx.reset(new Logging::Context("logd"));
     }
 
@@ -447,8 +447,15 @@ inline void logger_error(boost::format fmt)
 
 /**
  *  Connection class designed for use in fred-logd with partitioned tables
- *  Class used to acquire database connection from the Database::Manager, set constraint_exclusion parameter and explicitly release the connection in dtor
- *  It assumes that the system error logger is initialized (use of logger_error() function
+ *  It ensures that the connection will have constraint_exclusion enabled
+ *  and all queries will be performed in one transaction which is
+ *  always commited at the end. (behavior desirable in logger)
+ *  It acquires database connection from the Database::Manager and explicitly
+ *  releases in destructor.
+ *  DEPENDENCIES:
+ *   - It assumes that the system error logger is initialized (use of logger_error() function
+ *   - there's only one connection per thread, so the DB framework receives
+ *     the connection encapsulated here
  */
 class logd_auto_conn : public Connection {
 public:
@@ -462,7 +469,7 @@ public:
 			logger_error(boost::format("couldn't set constraint exclusion : %2%") % ex.what());
 		}
         tx = new Database::Transaction(*this);
-	};
+	}
 
 	~logd_auto_conn() {
             tx->commit();
@@ -502,7 +509,7 @@ ManagerImpl::ManagerImpl(const std::string &monitoring_hosts_file)
 
 	logd_auto_conn conn;
 
-	logger_notice("successfully  connect to DATABASE ") ;
+	logger_notice("successfully  connect to DATABASE ");
 
 	if (!monitoring_hosts_file.empty()) {
 		try {
@@ -551,6 +558,9 @@ ManagerImpl::~ManagerImpl() {
 }
 
 // check if a log record with the specified ID exists and if it can be modified (time_end isn't set yet)
+
+#ifdef DEBUG_LOGD
+// optimization
 bool ManagerImpl::record_check(ID id, Connection &conn)
 {
     TRACE("[CALL] Register::Logger::ManagerImpl::record_check");
@@ -571,6 +581,7 @@ bool ManagerImpl::record_check(ID id, Connection &conn)
 
 	return true;
 }
+#endif //DEBUG_LOGD
 
 // find ID for the given name of a property
 // if the name is tool long, it's truncated to the maximal length allowed by the database
@@ -582,6 +593,7 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
 
 	std::string name_trunc = name.substr(0, MAX_NAME_LENGTH);
 
+        // lock optimization
         boost::mutex::scoped_lock properties_lock (properties_mutex);
 	iter = property_names.find(name_trunc);
 
@@ -606,8 +618,7 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
 
 			try {
 				pn.insert();
-				res = conn.exec(LAST_PROPERTY_NAME_ID);
-				name_id = res[0][0];
+                                name_id = pn.getId();
 			} catch (Database::Exception &ex) {
 				logger_error(ex.what());
 			}
@@ -620,21 +631,6 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
 	}
 
 	return name_id;
-}
-
-/**
- * Find last ID used in request_property_value table
- */
-inline ID ManagerImpl::find_last_property_value_id(Connection &conn)
-{    
-	Result res = conn.exec(LAST_PROPERTY_VALUE_ID);
-	return res[0][0];
-}
-
-inline ID ManagerImpl::find_last_request_id(Connection &conn)
-{
-	Result res = conn.exec(LAST_ENTRY_ID);
-	return res[0][0];
 }
 
 // insert properties for the given request record
@@ -665,8 +661,7 @@ void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, 
 	pv_first.setOutput(props[0].output);
 
 	pv_first.insert();
-        last_id = pv_first.getId();
-	// last_id = find_last_property_value_id(conn);
+        last_id = pv_first.getId();	
 
 	// process the rest of the sequence
 	for (unsigned i = 1; i < props.size(); i++) {
@@ -688,8 +683,7 @@ void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, 
 			pv.insert();
 		} else {
 			pv.insert();
-            last_id = pv.getId();
-			// last_id = find_last_property_value_id(conn);
+                        last_id = pv.getId();
 		}
 	}
         
@@ -732,8 +726,6 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 	req.setServiceId(service);
 	req.setActionTypeId(action_type);
 
-
-
         if (session_id != 0){
                 req.setSessionId(session_id);
                 
@@ -750,7 +742,7 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 		}
 
 		req.insert();
-		entry_id = find_last_request_id(conn);
+                entry_id = req.getId();
 
 #ifdef HAVE_LOGGER
                 boost::format entry_fmt = boost::format("entry-%1%") % entry_id;
@@ -790,6 +782,7 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 	return entry_id;
 }
 
+// optimization
 std::string ManagerImpl::getSessionUserName(Connection &conn, Database::ID session_id) 
 {
     TRACE("[CALL] Register::Logger::ManagerImpl::getSessionUserName");
@@ -824,9 +817,12 @@ bool ManagerImpl::i_UpdateRequest(ID id, const Register::Logger::RequestProperti
 
 	try {
 		// perform check
+#ifdef DEBUG_LOGD
 		if (!record_check(id, conn)) return false;
+#endif
 
 		// TODO think about some other way - i don't like this
+                // optimization
 		boost::format query = boost::format("select time_begin, service, is_monitoring from request where id = %1%") % id;
 		Result res = conn.exec(query.str());
 
@@ -858,39 +854,45 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
 
 	try {
 		// first perform checks:
+#ifdef DEBUG_LOGD
 		if (!record_check(id, conn)) return false;
+#endif
 
-		// TODO the same case as before
-		boost::format select = boost::format("select time_begin, service, is_monitoring from request where id = %1%") % id;
-		Result res = conn.exec(select.str());
-		DateTime entry_time = res[0][0].operator ptime();
-		service = (RequestServiceType)(int) res[0][1];
-		monitoring = (bool)res[0][2];
-
-		if(res.size() == 0) {
-			logger_error("Record in request table not found.");
-		}
-		// end of TODO
-
-		boost::format update = boost::format("update request set time_end=E'%1%' where id=%2%") % time % id;
+                boost::format update = boost::format("update request set time_end=E'%1%' where id=%2%") % time % id;
 		conn.exec(update.str());
+                
+                bool has_content = content_out != NULL && content_out[0] != '\0';
+                
+                if (has_content || props.size() > 1) {
+                    // optimization
+                    boost::format select = boost::format("select time_begin, service, is_monitoring from request where id = %1%") % id;
+                    Result res = conn.exec(select.str());
+                    DateTime entry_time = res[0][0].operator ptime();
+                    service = (RequestServiceType)(int) res[0][1];
+                    monitoring = (bool)res[0][2];
 
-		if(content_out != NULL && content_out[0] != '\0') {
-			ModelRequestData data;
+                    if(res.size() == 0) {
+                            logger_error("Record in request table not found.");
+                    }
 
-			// insert into request_data
-			data.setEntryTimeBegin(entry_time);
-			data.setEntryService(service);
-			data.setEntryMonitoring(monitoring);
-			data.setEntryId(id);
-			data.setContent(content_out);
-			data.setIsResponse(true);
+                    if(has_content) {
+                            ModelRequestData data;
 
-			data.insert();
-		}
+                            // insert into request_data
+                            data.setEntryTimeBegin(entry_time);
+                            data.setEntryService(service);
+                            data.setEntryMonitoring(monitoring);
+                            data.setEntryId(id);
+                            data.setContent(content_out);
+                            data.setIsResponse(true);
 
-		// inserting properties
-		insert_props(res[0][0].operator ptime(), service, monitoring, id, props, conn);
+                            data.insert();
+                    }
+
+                    // inserting properties
+                    insert_props(res[0][0].operator ptime(), service, monitoring, id, props, conn);
+
+                }
 
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
@@ -936,9 +938,13 @@ bool ManagerImpl::i_CloseRequestLogin(ID id, const char *content_out, const Regi
 
 	// fill in the session ID
 
-	boost::format query = boost::format("select session_id from request where id=%1%") % id;
+        boost::format query;
+#ifdef DEUBG_LOGD
+	query = boost::format("select session_id from request where id=%1%") % id;
+#endif
 
 	try {
+#ifdef DEBUG_LOGD
 		Result res = conn.exec(query.str());
 
 		// if there is no record with specified ID
@@ -954,6 +960,7 @@ bool ManagerImpl::i_CloseRequestLogin(ID id, const char *content_out, const Regi
                                 return false;
                         }
 		}
+#endif // DEBUG_LOGD
 
                 std::string user_name = getSessionUserName(conn, session_id);
 
@@ -997,23 +1004,20 @@ ID ManagerImpl::i_CreateSession(Languages lang, const char *name)
 		return 0;
 	}
 
+        if(lang == CS) {
+                ns.setLang("cs");
+        }
+
 	try {
                 ns.insert();
 
-                Result res = conn.exec(LAST_SESSION_ID);
-
-                id = res[0][0];
+                id = ns.getId();
 
 #ifdef HAVE_LOGGER
                 boost::format sess_fmt = boost::format("session-%1%") % id;
                 ctx_sess.reset(new Logging::Context(sess_fmt.str()));
 #endif
-
-                if (lang == CS) {
-                    boost::format query = boost::format("update session set lang = 'cs' where id=%1%") % id;
-                    conn.exec(query.str());
-                }
-
+                
         } catch (Database::Exception &ex) {
                 logger_error(ex.what());
                 return 0;
@@ -1036,9 +1040,13 @@ bool ManagerImpl::i_CloseSession(ID id)
 
 	logger_notice(boost::format("CloseSession: session_id -> [%1%] ") % id );
 
+#ifdef DEBUG_LOGD
 	boost::format query = boost::format("select logout_date from session where id=%1%") % id;
+#endif
 
 	try {
+
+#ifdef DEBUG_LOGD
 		Result res = conn.exec(query.str());
 
 		if(res.size() == 0) {
@@ -1050,6 +1058,7 @@ bool ManagerImpl::i_CloseSession(ID id)
 			logger_error(boost::format("record in session with ID %1% already closed") % id);
 			return false;
 		}
+#endif //DEBUG_LOGD
 
 		boost::format update;
 		time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
@@ -1076,11 +1085,6 @@ throw (Manager::DB_CONNECT_FAILED) {
 	return new ManagerImpl(monitoring_hosts_file);
 }
 
-
-const std::string ManagerImpl::LAST_PROPERTY_VALUE_ID = "select currval('request_property_value_id_seq'::regclass)";
-const std::string ManagerImpl::LAST_PROPERTY_NAME_ID = "select currval('request_property_id_seq'::regclass)";
-const std::string ManagerImpl::LAST_ENTRY_ID = "select currval('request_id_seq'::regclass)";
-const std::string ManagerImpl::LAST_SESSION_ID = "select currval('session_id_seq'::regclass)";
 const int ManagerImpl::MAX_NAME_LENGTH = 30;
 
 

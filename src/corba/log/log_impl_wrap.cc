@@ -14,7 +14,7 @@ ccReg_Log_i::ccReg_Log_i(const std::string database, const std::string &monitori
 ccReg_Log_i::~ccReg_Log_i() 
 {
     PortableServer::POA_ptr poa = this->_default_POA();
-
+    
     for (pagetables_list::iterator mit = pagetables.begin(); mit != pagetables.end(); mit++) {
 
         try {

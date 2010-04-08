@@ -578,37 +578,39 @@ BOOST_AUTO_TEST_CASE( partitions )
 		for(int i=1;i<MONTHS_COUNT;i++) {
 			std::string date = create_date_str(2009, i);
 			try {
-				Database::ID entry_id;
-			
-				insert = boost::format("insert into request (time_begin, service, is_monitoring) values ('%1% 9:%2%:00', %3%, false)") % date % i % service;
-				std::cout << insert << std::endl;		// DEBUG
-				conn.exec(insert.str());
+                                Database::ID entry_id;                                
 
-				Result res = conn.exec(Register::Logger::ManagerImpl::LAST_ENTRY_ID);
-				if (res.size() == 0) {
-					BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
-				}
-				id = res[0][0];
-				entry_id = id;
-				
-				MyFixture::id_list_entry.push_back(id);
+                                boost::format fmt = boost::format("%1% 9:%2%:00") % date % i;
 
-				boost::format test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, false) % id;
-				res = conn.exec(test.str());
+                                ModelRequest req1;
+                                req1.setTimeBegin(Database::DateTime(fmt.str()));
+                                req1.setServiceId(service);
+                                req1.setIsMonitoring(false);
+                                req1.insert();
+                                id = req1.getId();
+                                entry_id = id;
 
-				if(res.size() == 0) {
-					BOOST_ERROR(" Record not found in the correct partition ");
-				}
+                                MyFixture::id_list_entry.push_back(id);
+
+                                boost::format test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType) service, false) % id;
+                                Database::Result res = conn.exec(test.str());
+
+                                if (res.size() == 0) {
+                                    BOOST_ERROR(" Record not found in the correct partition ");
+                                }
 
 				// ----- now monitoring on
-				insert = boost::format("insert into request (time_begin, service, is_monitoring) values ('%1% 9:%2%:00', %3%, true)") % date % i % service;
-				conn.exec(insert.str());
 
-				res = conn.exec(Register::Logger::ManagerImpl::LAST_ENTRY_ID);
-				if (res.size() == 0) {
-					BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
-				}
-				id = res[0][0];
+                                fmt = boost::format("%1% 9:%2%:00") % date % i;
+
+                                ModelRequest req;
+                                req.setTimeBegin(Database::DateTime(fmt.str()));
+                                req.setServiceId(service);
+                                req.setIsMonitoring(true);
+                                req.insert();
+                                id = req.getId();
+                                entry_id = id;
+
 				MyFixture::id_list_entry.push_back(id);
 
 				test = boost::format("select time_begin from request_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, true) % id;
@@ -619,17 +621,19 @@ BOOST_AUTO_TEST_CASE( partitions )
 				}
 
 				if(PARTITIONS_TEST_PROPERTIES) {
-					insert = boost::format("insert into request_property_value (entry_time_begin, entry_service, entry_monitoring, entry_id, name_id, value) values ('%1% 9:%2%:00', %3%, false, %4%, 13, 'valuevalue')") % date % i % service % entry_id;
-					conn.exec(insert.str());
 
+                                        fmt = boost::format("%1% 9:%2%:00") % date % i;
 
-					std::cout << insert << std::endl;		// DEBUG
+                                        ModelRequestPropertyValue pv;
+                                        pv.setEntryTimeBegin(fmt.str());
+                                        pv.setEntryService(service);
+                                        pv.setEntryMonitoring(false);
+                                        pv.setEntry(entry_id);
+                                        pv.setName(13);
+                                        pv.setValue ("valuevalue");
+                                        pv.insert();
+                                        id = pv.getId();
 
-					Result res = conn.exec(Register::Logger::ManagerImpl::LAST_PROPERTY_VALUE_ID);
-					if (res.size() == 0) {
-						BOOST_FAIL(" Couldn't obtain ID of the last insert. ");
-					}
-					id = res[0][0];
 					MyFixture::id_list_entry.push_back(id);
 
 					boost::format test = boost::format("select entry_time_begin from request_property_value_%1% where id = %2%") % get_table_postfix(2009, i, (RequestServiceType)service, false) % id;
