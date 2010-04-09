@@ -26,12 +26,22 @@
 #define PSQL_CONNECTION_H_
 
 #include <libpq-fe.h>
+#include <algorithm>
 #include "psql_result.h"
 #include "../statement.h"
 #include "../db_exceptions.h"
 
 namespace Database {
 
+#ifdef HAVE_LOGGER
+static void logger_notice_processor(void *arg, const char *message)
+{
+    // replace new line symbols
+    std::string msg(message);
+    std::replace(msg.begin(), msg.end(), '\n', ' ');
+    LOGGER(PACKAGE).debug(msg);
+}
+#endif
 
 class PSQLTransaction;
 
@@ -85,6 +95,10 @@ public:
       PQfinish(psql_conn_);
       throw ConnectionFailed(_conn_info);
     }
+#ifdef HAVE_LOGGER
+    // set notice processor
+    PQsetNoticeProcessor(psql_conn_, logger_notice_processor, NULL);
+#endif
   }
 
 
