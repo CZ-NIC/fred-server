@@ -440,6 +440,10 @@ public:
   virtual unsigned long long getRegistrarByPayment(const std::string &varsymb,
                                                    const std::string &memo) = 0;
 
+  ///add registrar group
+  virtual void addRegistrarGroup(const std::string &group_name) =0;
+
+
   typedef std::auto_ptr<Register::Registrar::Manager> AutoPtr;
 
   /// Factory method

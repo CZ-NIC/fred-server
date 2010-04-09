@@ -1874,6 +1874,29 @@ public:
         }
         return 0;
     }
+
+    ///add registrar group
+    virtual void addRegistrarGroup(const std::string &group_name)
+    {
+        try
+        {
+            Database::Connection conn = Database::Manager::acquire();
+
+            std::stringstream sql;
+            sql << "INSERT INTO registrar_group (short_name) VALUES('"
+                << conn.escape(group_name) << "')";
+
+            Database::Transaction tx(conn);
+            conn.exec(sql.str());
+            tx.commit();
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("addRegistrarGroup: an error has occured");
+            throw;
+        }//catch (...)
+    }
+
 }; // class ManagerImpl
 
 unsigned long long RegistrarZoneAccess::max_id(ColIndex idx, Database::Result& result)
