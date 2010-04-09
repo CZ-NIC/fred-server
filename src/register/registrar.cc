@@ -2001,6 +2001,102 @@ public:
         }//catch (...)
     }
 
+    ///create membership of registrar in group
+    virtual void createRegistrarGroupMembership( const TID& registrar_id
+        , const TID& registrar_group_id
+        , const Database::Date &member_from
+        , const Database::Date &member_until)
+    {
+        try
+        {
+            std::string fromStr;
+            std::string untilStr;
+
+            if (member_from != Database::Date())
+            {
+                fromStr = "'" + member_from.to_string() + "'";
+            }
+            else
+            {
+                throw std::runtime_error("createRegistrarGroupMembership: empty member_from");
+            }
+
+            if (member_until != Database::Date())
+            {
+                untilStr = "'" + member_until.to_string() + "'";
+            }
+            else
+            {
+                throw std::runtime_error("createRegistrarGroupMembership: empty member_until");
+            }
+
+            Database::Connection conn = Database::Manager::acquire();
+
+            std::stringstream sql;
+            sql << "INSERT INTO registrar_group_map (registrar_id, registrar_group_id, member_from, member_until) VALUES( "
+                << registrar_id
+                << " , " << registrar_group_id
+                << " , " << fromStr
+                << " , " << untilStr
+                << " )";
+
+            conn.exec(sql.str());
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("createRegistrarGroupMembership: an error has occured");
+            throw;
+        }//catch (...)
+    }
+
+    ///update membership of registrar in group
+    virtual void updateRegistrarGroupMembership( const TID& mebership_id
+        , const TID& registrar_id
+        , const TID& registrar_group_id
+        , const Database::Date &member_from
+        , const Database::Date &member_until)
+    {
+        try
+        {
+            std::string fromStr;
+            std::string untilStr;
+
+            if (member_from != Database::Date())
+            {
+                fromStr = "'" + member_from.to_string() + "'";
+            }
+            else
+            {
+                throw std::runtime_error("updateRegistrarGroupMembership: empty member_from");
+            }
+
+            if (member_until != Database::Date())
+            {
+                untilStr = "'" + member_until.to_string() + "'";
+            }
+            else
+            {
+                throw std::runtime_error("updateRegistrarGroupMembership: empty member_until");
+            }
+
+            Database::Connection conn = Database::Manager::acquire();
+
+            std::stringstream sql;
+            sql << "UPDATE registrar_group_map SET "
+                << " registrar_id = " << registrar_id
+                << " registrar_group_id = " << registrar_group_id
+                << " , member_from = date( " << fromStr << " ) "
+                << " , member_until = date( " << untilStr << " ) "
+                << " WHERE id = " <<  mebership_id ;
+
+            conn.exec(sql.str());
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("updateRegistrarGroupMembership: an error has occured");
+            throw;
+        }//catch (...)
+    }
 
 
 }; // class ManagerImpl

@@ -457,6 +457,18 @@ public:
       , const Database::Date &valid_until
       , const RegCertClass classification
       , const TID& eval_file_id) =0;
+  ///create membership of registrar in group
+  virtual void createRegistrarGroupMembership( const TID& registrar_id
+      , const TID& registrar_group_id
+      , const Database::Date &member_from
+      , const Database::Date &member_until) =0;
+  ///update membership of registrar in group
+  virtual void updateRegistrarGroupMembership( const TID& mebership_id
+      , const TID& registrar_id
+      , const TID& registrar_group_id
+      , const Database::Date &member_from
+      , const Database::Date &member_until) =0;
+
 
   typedef std::auto_ptr<Register::Registrar::Manager> AutoPtr;
 
