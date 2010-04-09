@@ -1876,8 +1876,8 @@ public:
         return 0;
     }
 
-    ///add registrar group
-    virtual void addRegistrarGroup(const std::string &group_name)
+    ///create registrar group
+    virtual void createRegistrarGroup(const std::string &group_name)
     {
         try
         {
@@ -1895,13 +1895,13 @@ public:
         }//try
         catch (...)
         {
-            LOGGER(PACKAGE).error("addRegistrarGroup: an error has occured");
+            LOGGER(PACKAGE).error("createRegistrarGroup: an error has occured");
             throw;
         }//catch (...)
     }
 
-    ///add registrar certification
-    virtual void addRegistrarCertification( const TID& registrar_id
+    ///create registrar certification
+    virtual void createRegistrarCertification( const TID& registrar_id
         , const Database::Date &valid_from
         , const Database::Date &valid_until
         , const RegCertClass classification
@@ -1918,7 +1918,7 @@ public:
             }
             else
             {
-                throw std::runtime_error("addRegistrarCertification: empty valid_from");
+                throw std::runtime_error("createRegistrarCertification: empty valid_from");
             }
 
             if (valid_until != Database::Date())
@@ -1927,7 +1927,7 @@ public:
             }
             else
             {
-                throw std::runtime_error("addRegistrarCertification: empty valid_until");
+                throw std::runtime_error("createRegistrarCertification: empty valid_until");
             }
 
             Database::Connection conn = Database::Manager::acquire();
@@ -1945,7 +1945,7 @@ public:
         }//try
         catch (...)
         {
-            LOGGER(PACKAGE).error("addRegistrarCertification: an error has occured");
+            LOGGER(PACKAGE).error("createRegistrarCertification: an error has occured");
             throw;
         }//catch (...)
     }

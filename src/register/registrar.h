@@ -440,12 +440,12 @@ public:
   virtual unsigned long long getRegistrarByPayment(const std::string &varsymb,
                                                    const std::string &memo) = 0;
 
-  ///add registrar group
-  virtual void addRegistrarGroup(const std::string &group_name) =0;
+  ///create registrar group
+  virtual void createRegistrarGroup(const std::string &group_name) =0;
 
   enum RegCertClass{c0,c1,c2,c3,c4,c5};///classification for registrar certification
-  ///add registrar certification
-  virtual void addRegistrarCertification( const TID& registrar_id
+  ///create registrar certification
+  virtual void createRegistrarCertification( const TID& registrar_id
       , const Database::Date &valid_from
       , const Database::Date &valid_until
       , const RegCertClass classification
