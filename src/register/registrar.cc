@@ -1950,6 +1950,57 @@ public:
         }//catch (...)
     }
 
+    ///update registrar certification
+    virtual void updateRegistrarCertification( const TID& certification_id
+        , const TID& registrar_id
+        , const Database::Date &valid_from
+        , const Database::Date &valid_until
+        , const RegCertClass classification
+        , const TID& eval_file_id)
+    {
+        try
+        {
+            std::string fromStr;
+            std::string untilStr;
+
+            if (valid_from != Database::Date())
+            {
+                fromStr = "'" + valid_from.to_string() + "'";
+            }
+            else
+            {
+                throw std::runtime_error("updateRegistrarCertification: empty valid_from");
+            }
+
+            if (valid_until != Database::Date())
+            {
+                untilStr = "'" + valid_until.to_string() + "'";
+            }
+            else
+            {
+                throw std::runtime_error("updateRegistrarCertification: empty valid_until");
+            }
+
+            Database::Connection conn = Database::Manager::acquire();
+
+            std::stringstream sql;
+            sql << "UPDATE registrar_certification SET "
+                << " registrar_id = " << registrar_id
+                << " , valid_from = date( " << fromStr << " ) "
+                << " , valid_until = date( " << untilStr << " ) "
+                << " , classification = " << classification
+                << " , eval_file_id = " << (eval_file_id ? boost::lexical_cast<std::string>(eval_file_id) : std::string(" NULL "))
+                << " WHERE id = " <<  certification_id ;
+
+            conn.exec(sql.str());
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("updateRegistrarCertification: an error has occured");
+            throw;
+        }//catch (...)
+    }
+
 
 
 }; // class ManagerImpl

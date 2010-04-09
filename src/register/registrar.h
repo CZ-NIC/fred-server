@@ -450,6 +450,13 @@ public:
       , const Database::Date &valid_until
       , const RegCertClass classification
       , const TID& eval_file_id) =0;
+  ///update registrar certification
+  virtual void updateRegistrarCertification( const TID& certification_id
+      , const TID& registrar_id
+      , const Database::Date &valid_from
+      , const Database::Date &valid_until
+      , const RegCertClass classification
+      , const TID& eval_file_id) =0;
 
   typedef std::auto_ptr<Register::Registrar::Manager> AutoPtr;
 
