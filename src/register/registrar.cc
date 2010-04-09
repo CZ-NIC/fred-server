@@ -767,10 +767,10 @@ class CompareCreditByZone
 {
     bool asc_;
     unsigned zone_id_;
-    RZAPtr rzaptr_;
+    RegistrarZoneAccess* rzaptr_;
 public:
   CompareCreditByZone(bool _asc, unsigned _zone_id
-          , RZAPtr _rzaptr)
+          , RegistrarZoneAccess* _rzaptr)
       : asc_(_asc), zone_id_(_zone_id), rzaptr_(_rzaptr) { }
   bool operator()(CommonObjectNew *_left, CommonObjectNew *_right) const
   {
@@ -789,11 +789,8 @@ public:
 
      if (rzaptr_)
      {
-         Register::Registrar::Manager::RegistrarZoneAccess* rzaptr =0;
-         rzaptr = static_cast<Register::Registrar::Manager::RegistrarZoneAccess*>(rzaptr_);
-
-         if(rzaptr->isInZone(l_casted->getId(),zone_id_) == false) lvalue = -1;
-         if(rzaptr->isInZone(r_casted->getId(),zone_id_) == false) rvalue = -1;
+         if(rzaptr_->isInZone(l_casted->getId(),zone_id_) == false) lvalue = -1;
+         if(rzaptr_->isInZone(r_casted->getId(),zone_id_) == false) rvalue = -1;
      }
 
     return (asc_ ? (lvalue < rvalue) : (lvalue > rvalue));
@@ -1072,7 +1069,7 @@ public:
   }
 
   virtual void sort(MemberType _member, bool _asc, unsigned _zone_id
-          , RZAPtr rzaptr) {
+          , RegistrarZoneAccess* rzaptr) {
     switch (_member) {
       case MT_NAME:
         stable_sort(m_data.begin(), m_data.end(), CompareName(_asc));
@@ -1879,34 +1876,34 @@ public:
     }
 }; // class ManagerImpl
 
-unsigned long long Manager::RegistrarZoneAccess::max_id(ColIndex idx, Database::Result& result)
+unsigned long long RegistrarZoneAccess::max_id(ColIndex idx, Database::Result& result)
 {
-    TRACE("[CALL] Manager::RegistrarZoneAccess::max_id");
+    TRACE("[CALL] RegistrarZoneAccess::max_id");
     unsigned long long ret =0;
     for (unsigned i = 0; i < result.size() ; ++i)
         if((result[i].size() > static_cast<unsigned long long>(idx))
                 && (static_cast<unsigned>(result[i][idx]) > ret))
             ret = result[i][idx];
     LOGGER(PACKAGE).debug(boost::format
-            ("[CALL] Manager::RegistrarZoneAccess::max_id: %1%  result.size(): %2%")
+            ("[CALL] RegistrarZoneAccess::max_id: %1%  result.size(): %2%")
                 % ret % result.size());
     return ret;
 }//max_id
 
 /// Look if registrar have currently access to zone by id
- bool Manager::RegistrarZoneAccess::isInZone(unsigned long long registrar_id,unsigned long long zone_id)
+ bool RegistrarZoneAccess::isInZone(unsigned long long registrar_id,unsigned long long zone_id)
  {
      bool ret = false;
      if((registrar_id <= max_registrar_id)
              && (zone_id <= max_zone_id))
                 ret = flag.at(registrar_id).at(zone_id);
      LOGGER(PACKAGE).debug(boost::format
-             ("[CALL] Manager::RegistrarZoneAccess::isInZone() registrar_id: %1% zone_id: %2% ret: %3%")
+             ("[CALL] RegistrarZoneAccess::isInZone() registrar_id: %1% zone_id: %2% ret: %3%")
                  % registrar_id % zone_id % ret);
     return ret;
  }//isInZone
 
-void Manager::RegistrarZoneAccess::reload()
+void RegistrarZoneAccess::reload()
 {
     try
     {
@@ -1922,7 +1919,7 @@ void Manager::RegistrarZoneAccess::reload()
         Database::Result res = conn.exec(sql.str());
         max_registrar_id = max_id(RegistrarCol, res);
         max_zone_id = max_id(ZoneCol, res);
-        LOGGER(PACKAGE).debug(boost::format("Manager::RegistrarZoneAccess::reload "
+        LOGGER(PACKAGE).debug(boost::format("RegistrarZoneAccess::reload "
                 "res.size: %1% rza.max_registrar_id: %2% max_zone_id: %3% ")
                 % res.size()
                 % max_registrar_id
@@ -1933,12 +1930,12 @@ void Manager::RegistrarZoneAccess::reload()
         for (unsigned i = 0; i < res.size() ; ++i)
         {
             LOGGER(PACKAGE).debug(boost::format
-                    ("[CALL] Manager::RegistrarZoneAccess::reload() for i: %1% ") % i );
+                    ("[CALL] RegistrarZoneAccess::reload() for i: %1% ") % i );
              if(res[i].size() > IsInZone)
              {
                  LOGGER(PACKAGE).debug
                  (boost::format
-                     ("[CALL] Manager::RegistrarZoneAccess::reload()"
+                     ("[CALL] RegistrarZoneAccess::reload()"
                          " if size reg_id: %1% zone_id: %2% flag: %3% "
                      )
                      % static_cast<unsigned long long>(res[i][RegistrarCol])
@@ -1953,13 +1950,13 @@ void Manager::RegistrarZoneAccess::reload()
     }//try
     catch(const std::exception& ex)
     {
-        LOGGER(PACKAGE).error(boost::format("Manager::RegistrarZoneAccess::reload exception: %1%") % ex.what());
+        LOGGER(PACKAGE).error(boost::format("RegistrarZoneAccess::reload exception: %1%") % ex.what());
     }
     catch(...)
     {
-        LOGGER(PACKAGE).error("Manager::RegistrarZoneAccess::reload error");
+        LOGGER(PACKAGE).error("RegistrarZoneAccess::reload error");
     }
-}//Manager::RegistrarZoneAccess::reload
+}//RegistrarZoneAccess::reload
 
 Manager::AutoPtr Manager::create(DB * db)
 {

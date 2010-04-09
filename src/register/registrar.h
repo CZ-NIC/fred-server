@@ -29,8 +29,8 @@ class DB;
 namespace Register {
 namespace Registrar {
 
-///work around inability to forward declare member class Register::Registrar::Manager::RegistrarZoneAccess*
-typedef void* RZAPtr;
+class RegistrarZoneAccess;
+
 
 /// member identification (i.e. for sorting)
 enum MemberType {
@@ -264,7 +264,7 @@ public:
   virtual Registrar* getAndRelease(unsigned idx) = 0;
   /// sort by column
   virtual void sort(MemberType _member, bool _asc, unsigned _zone_id = 0
-          , RZAPtr rzaptr =0 ) = 0;
+          , RegistrarZoneAccess* rzaptr =0 ) = 0;
   //virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
   virtual const char* getTempTableName() const = 0;
 
@@ -440,33 +440,28 @@ public:
   virtual unsigned long long getRegistrarByPayment(const std::string &varsymb,
                                                    const std::string &memo) = 0;
 
-  ///storage for flag of registrar's access to zone, used in registrar pagetable
-  class RegistrarZoneAccess
-  {
-      enum ColIndex {RegistrarCol, ZoneCol, IsInZone};///order of query columns
-      unsigned long long max_registrar_id;///maximal registrar id with access to zone in database
-      unsigned long long max_zone_id;///maximal zone id accessed by some registrar in database
-      typedef std::vector<bool> RegistrarZoneAccessRow;///registrar's zones flags
-      typedef std::vector<RegistrarZoneAccessRow> RegistrarZoneAccessArray;///container of registrars rows
-      RegistrarZoneAccessArray flag; ///zone access flag array
-      unsigned long long max_id(ColIndex idx, Database::Result& result);///for size of flag array
-  public:
-      void reload();///load from database
-      bool isInZone(unsigned long long registrar_id,unsigned long long zone_id);///look if registrar currently have access to zone by id
-  };
-
   typedef std::auto_ptr<Register::Registrar::Manager> AutoPtr;
 
   /// Factory method
   static AutoPtr create(DB* db);
-};
+};//class Manager
 
+///storage for flag of registrar's access to zone, used in registrar pagetable
+class RegistrarZoneAccess
+{
+    enum ColIndex {RegistrarCol, ZoneCol, IsInZone};///order of query columns
+    unsigned long long max_registrar_id;///maximal registrar id with access to zone in database
+    unsigned long long max_zone_id;///maximal zone id accessed by some registrar in database
+    typedef std::vector<bool> RegistrarZoneAccessRow;///registrar's zones flags
+    typedef std::vector<RegistrarZoneAccessRow> RegistrarZoneAccessArray;///container of registrars rows
+    RegistrarZoneAccessArray flag; ///zone access flag array
+    unsigned long long max_id(ColIndex idx, Database::Result& result);///for size of flag array
+public:
+    void reload();///load from database
+    bool isInZone(unsigned long long registrar_id,unsigned long long zone_id);///look if registrar currently have access to zone by id
+};//class RegistrarZoneAccess
 
-
-}
-;
-
-}
-;
+};//namespace Registrar
+};//namespace Register
 
 #endif /*REGISTRAR_H_*/
