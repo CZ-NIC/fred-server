@@ -443,6 +443,13 @@ public:
   ///add registrar group
   virtual void addRegistrarGroup(const std::string &group_name) =0;
 
+  enum RegCertClass{c0,c1,c2,c3,c4,c5};///classification for registrar certification
+  ///add registrar certification
+  virtual void addRegistrarCertification( const TID& registrar_id
+      , const Database::Date &valid_from
+      , const Database::Date &valid_until
+      , const RegCertClass classification
+      , const TID& eval_file_id) =0;
 
   typedef std::auto_ptr<Register::Registrar::Manager> AutoPtr;
 

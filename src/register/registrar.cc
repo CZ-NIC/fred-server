@@ -19,6 +19,7 @@
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/regex.hpp>
+#include <boost/lexical_cast.hpp>
 #include <vector>
 #include <algorithm>
 #include <functional>
@@ -1885,10 +1886,12 @@ public:
             std::stringstream sql;
             sql << "INSERT INTO registrar_group (short_name) VALUES('"
                 << conn.escape(group_name) << "')";
-
-            Database::Transaction tx(conn);
             conn.exec(sql.str());
-            tx.commit();
+
+            //id
+            //std::string currval_query ("SELECT currval('registrar_group_id_seq') AS id");
+            //Database::Result result = conn.exec(query);
+            //if (result.size() == 1) return static_cast<unsigned long long>(result[0][0]);
         }//try
         catch (...)
         {
@@ -1896,6 +1899,58 @@ public:
             throw;
         }//catch (...)
     }
+
+    ///add registrar certification
+    virtual void addRegistrarCertification( const TID& registrar_id
+        , const Database::Date &valid_from
+        , const Database::Date &valid_until
+        , const RegCertClass classification
+        , const TID& eval_file_id)
+    {
+        try
+        {
+            std::string fromStr;
+            std::string untilStr;
+
+            if (valid_from != Database::Date())
+            {
+                fromStr = "'" + valid_from.to_string() + "'";
+            }
+            else
+            {
+                throw std::runtime_error("addRegistrarCertification: empty valid_from");
+            }
+
+            if (valid_until != Database::Date())
+            {
+                untilStr = "'" + valid_until.to_string() + "'";
+            }
+            else
+            {
+                throw std::runtime_error("addRegistrarCertification: empty valid_until");
+            }
+
+            Database::Connection conn = Database::Manager::acquire();
+
+            std::stringstream sql;
+            sql << "INSERT INTO registrar_certification (registrar_id, valid_from, valid_until, classification, eval_file_id) VALUES( "
+                << registrar_id
+                << " , " << fromStr
+                << " , " << untilStr
+                << " , " << classification
+                << " , " << (eval_file_id ? boost::lexical_cast<std::string>(eval_file_id) : std::string(" NULL "))
+                << " )";
+
+            conn.exec(sql.str());
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("addRegistrarCertification: an error has occured");
+            throw;
+        }//catch (...)
+    }
+
+
 
 }; // class ManagerImpl
 
