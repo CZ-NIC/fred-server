@@ -42,7 +42,7 @@ noinst_PROGRAMS = test
 test_SOURCES = test-admin.cc
 test_LDADD = $(XML2_LIBS) $(LDADD)
 
-BUILT_SOURCES      = ccRegSK.cc ccRegDynSK.cc ccReg.hh
+BUILT_SOURCES      = ccRegSK.cc
 libcorba_a_SOURCES = nameservice.cc         \
 					 mailer_manager.cc      \
 					 nameservice.h          \
@@ -68,7 +68,11 @@ fred_pifd_CPPFLAGS  = $(AM_CPPFLAGS) -DPIFD
 fred_logd_SOURCES   = server.cc
 fred_logd_CPPFLAGS  = $(AM_CPPFLAGS) -DLOGD
 
-ccRegSK.cc ccRegDynSK.cc ccRegSK.h ccReg.hh:
+ccRegSK.cc: $(IDLDIR)/Admin.idl $(IDLDIR)/ccReg.idl $(IDLDIR)/EPP.idl $(IDLDIR)/FileManager.idl \
+ $(IDLDIR)/Filters.idl $(IDLDIR)/_Logger.idl $(IDLDIR)/_Mailer.idl $(IDLDIR)/TechCheck.idl $(IDLDIR)/Whois.idl \
+ $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_zone.idl $(IDLDIR)/_Admin.idl $(IDLDIR)/_dataTypes.idl $(IDLDIR)/_EPP.idl \
+ $(IDLDIR)/_FileManager.idl $(IDLDIR)/Logger.idl $(IDLDIR)/Mailer.idl $(IDLDIR)/_Registry.idl \
+ $(IDLDIR)/_TechCheck.idl $(IDLDIR)/_Whois.idl $(IDLDIR)/_ZoneGenerator.idl
 	omniidl -bcxx -Wba -Wbinline $(IDLFILE)
 
 
