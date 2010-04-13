@@ -590,56 +590,67 @@ bool ManagerImpl::record_check(ID id, Connection &conn)
 
 // find ID for the given name of a property
 // if the name is tool long, it's truncated to the maximal length allowed by the database
-ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn)
+ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn, boost::mutex::scoped_lock& prop_add2db)
 {
-    TRACE("[CALL] Register::Logger::ManagerImpl::find_property_name_id");
+        TRACE("[CALL] Register::Logger::ManagerImpl::find_property_name_id");
 	ID name_id;
 	std::map<std::string, ID>::iterator iter;
 
 	std::string name_trunc = name.substr(0, MAX_NAME_LENGTH);
+       
+        prop_add2db.lock();
 
-        // lock optimization
-        boost::mutex::scoped_lock properties_lock (properties_mutex);
+        bool db_insert = false;
+
 	iter = property_names.find(name_trunc);
 
 	if(iter != property_names.end()) {
 		name_id = iter->second;
-	} else {
-		// if the name isn't cached in the memory, try to find it in the database
-                properties_lock.unlock();
 
-		std::string s_name = conn.escape(name_trunc);
+                prop_add2db.unlock();
+                // unlock
+        } else {
+            // if the name isn't cached in the memory, try to find it in the database
 
-		boost::format query = boost::format("select id from request_property where name='%1%'") % s_name;
-		Result res = conn.exec(query.str());
+            std::string s_name = conn.escape(name_trunc);
 
-		if (res.size() > 0) {
-			// okay, it was found in the database
-			name_id = res[0][0];
-		} else if (res.size() == 0) {
-			// if not, add it to the database
-			ModelRequestProperty pn;
-			pn.setName(name_trunc);
+            boost::format query = boost::format("select id from request_property where name='%1%'") % s_name;
+            Result res = conn.exec(query.str());
+           
+            if (res.size() > 0) {
+                // okay, it was found in the database
+                name_id = res[0][0];
+            } else {
+                // not found, we're under lock, so we can add it now
+                // and let the lock release after commiting the transaction
+                ModelRequestProperty pn;
+                pn.setName(name_trunc);
 
-			try {
-				pn.insert();
-                                name_id = pn.getId();
-			} catch (Database::Exception &ex) {
-				logger_error(ex.what());
-			}
-		}
-
-		// now that we know the right database id of the name
-		// we can add it to the map
-                properties_lock.lock();
-		property_names[name_trunc] = name_id;
+                try {
+                    pn.insert();
+                    name_id = pn.getId();
+                } catch (Database::Exception &ex) {
+                    logger_error(ex.what());
+                    prop_add2db.unlock();
+                    return 0;
+                }
+                db_insert = true;
+            }
+        
+            // now that we know the right database id of the name
+            // we can add it to the map
+            property_names[name_trunc] = name_id;
+            
+            // if the name was inserted into database, we have to keep it locked
+            // until commit
+            if (!db_insert) prop_add2db.unlock();
 	}
-
+        
 	return name_id;
 }
 
 // insert properties for the given request record
-void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID entry_id,  const Register::Logger::RequestProperties& props, Connection conn)
+void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID entry_id,  const Register::Logger::RequestProperties& props, Connection conn, boost::mutex::scoped_lock &prop_lock)
 {
         TRACE("[CALL] Register::Logger::ManagerImpl::insert_props");
 	ID name_id, last_id = 0;
@@ -649,7 +660,7 @@ void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, 
 	}
 
 	// process the first record
-	name_id = find_property_name_id(props[0].name, conn);
+	name_id = find_property_name_id(props[0].name, conn, prop_lock);
 
 	if (props[0].child) {
 		// the first property is set to child - this is an error
@@ -670,7 +681,7 @@ void ManagerImpl::insert_props(DateTime entry_time, RequestServiceType service, 
 
 	// process the rest of the sequence
 	for (unsigned i = 1; i < props.size(); i++) {
-		name_id = find_property_name_id(props[i].name, conn);
+		name_id = find_property_name_id(props[i].name, conn, prop_lock);
 
 		// create a new object for each iteration
 		// because ParentId must alternate between NULL and some value
@@ -708,6 +719,9 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
         std::auto_ptr<Logging::Context> ctx_entry;
 
         logd_auto_db db;
+
+        boost::mutex::scoped_lock prop_lock(properties_mutex);
+        prop_lock.unlock();
 
 	ID entry_id;
 
@@ -759,7 +773,7 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 		return 0;
 	} catch (ConversionError &ex) {
 		std::cout << "Exception text: " << ex.what() << std::endl;
-		std::cout << "Here it is. Time: "  << std::endl;
+                return 0;
 	}
 
 	try {
@@ -778,10 +792,11 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
 		}
 
 		// inserting properties
-		insert_props(time, service, monitoring, entry_id, props, db);
+		insert_props(time, service, monitoring, entry_id, props, db, prop_lock);
 
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
+                return 0;
 	}
 
         db.commit();
@@ -821,6 +836,9 @@ bool ManagerImpl::i_UpdateRequest(ID id, const Register::Logger::RequestProperti
 
         logd_auto_db db;
 
+        boost::mutex::scoped_lock prop_lock(properties_mutex);
+        prop_lock.unlock();
+
 	try {
 		// perform check
 #ifdef DEBUG_LOGD
@@ -840,7 +858,7 @@ bool ManagerImpl::i_UpdateRequest(ID id, const Register::Logger::RequestProperti
 		DateTime time = res[0][0].operator ptime();
 		RequestServiceType service = (RequestServiceType)(int)res[0][1];
 		bool monitoring        = (bool)res[0][2];
-		insert_props(time, service, monitoring, id, props, db);
+		insert_props(time, service, monitoring, id, props, db, prop_lock);
 	} catch (Database::Exception &ex) {
 		logger_error(ex.what());
 		return false;
@@ -859,6 +877,9 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
 	bool monitoring;
 
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
+
+        boost::mutex::scoped_lock prop_lock(properties_mutex);
+        prop_lock.unlock();
 
 	try {
 		// first perform checks:
@@ -898,7 +919,7 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
                     }
 
                     // inserting properties
-                    insert_props(res[0][0].operator ptime(), service, monitoring, id, props, conn);
+                    insert_props(res[0][0].operator ptime(), service, monitoring, id, props, conn, prop_lock);
 
                 }
 

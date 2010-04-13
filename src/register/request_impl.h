@@ -49,17 +49,18 @@ public:
 
  // for migration tool (util/logd_migration)
   void insert_props_pub(DateTime entry_time, RequestServiceType entry_service, bool monitoring, Database::ID entry_id, const Register::Logger::RequestProperties& props) {
-
-	insert_props(entry_time, entry_service, monitoring, entry_id, props, get_connection());
+        boost::mutex::scoped_lock props_lock(properties_mutex);
+	insert_props(entry_time, entry_service, monitoring, entry_id, props, get_connection(), props_lock);
   }
   
   List* createList() const;
 
 private:
   bool close_request_worker(Connection &conn, ID id, const char *content_out, const Register::Logger::RequestProperties &props);
-  void insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID entry_id, const Register::Logger::RequestProperties& props, Connection conn);
+  
+  void insert_props(DateTime entry_time, RequestServiceType service, bool monitoring, ID entry_id, const Register::Logger::RequestProperties& props, Connection conn, boost::mutex::scoped_lock &prop_lock);
   bool record_check(Database::ID id, Connection &conn);
-  Database::ID find_property_name_id(const std::string &name, Connection &conn);
+  Database::ID find_property_name_id(const std::string &name, Connection &conn, boost::mutex::scoped_lock& prop_add2db);
   inline Database::ID find_last_property_value_id(Connection &conn);
   inline Database::ID find_last_request_id(Connection &conn);
   inline std::string getSessionUserName(Connection &conn, Database::ID session_id);
