@@ -50,6 +50,12 @@ libfred_a_SOURCES = register.cc          \
 					model_request_property_value.h	\
 					model_session.cc		\
 					model_session.h			\
+					model_registrar_certification.h \
+					model_registrar_certification.cc \
+					model_registrar_group.h \
+					model_registrar_group.cc \
+					model_registrar_group_map.h \
+					model_registrar_group_map.cc \
 					domain.cc            \
 					domain.h             \
 					contact.cc           \

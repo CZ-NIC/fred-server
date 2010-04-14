@@ -37,6 +37,8 @@
 
 #include "model_registrar_acl.h"
 #include "model_registrar.h"
+#include "model_registrar_certification.h"
+#include "model_registrar_group.h"
 
 #include "zone.h"
 
