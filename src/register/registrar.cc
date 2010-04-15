@@ -2002,7 +2002,7 @@ public:
             mrgm.setMemberFrom(member_from);
             if (member_until != Database::Date())
                 mrgm.setMemberUntil(member_until);
-            mrgm.insert();
+            mrgm.update();
         }//try
         catch (...)
         {
