@@ -39,6 +39,7 @@
 #include "model_registrar.h"
 #include "model_registrar_certification.h"
 #include "model_registrar_group.h"
+#include "model_registrar_group_map.h"
 
 #include "zone.h"
 
@@ -1883,21 +1884,31 @@ public:
     {
         try
         {
-            Database::Connection conn = Database::Manager::acquire();
-
-            std::stringstream sql;
-            sql << "INSERT INTO registrar_group (short_name) VALUES('"
-                << conn.escape(group_name) << "')";
-            conn.exec(sql.str());
-
-            //id
-            //std::string currval_query ("SELECT currval('registrar_group_id_seq') AS id");
-            //Database::Result result = conn.exec(query);
-            //if (result.size() == 1) return static_cast<unsigned long long>(result[0][0]);
+            ModelRegistrarGroup mrg;
+            mrg.setShortName(group_name);
+            mrg.insert();
         }//try
         catch (...)
         {
             LOGGER(PACKAGE).error("createRegistrarGroup: an error has occured");
+            throw;
+        }//catch (...)
+    }
+    ///cancel registrar group
+    virtual void cancelRegistrarGroup(const TID& group_id)
+    {
+        try
+        {
+            ModelRegistrarGroup mrg;
+            mrg.setId(group_id);
+            Database::DateTime now(
+                    boost::posix_time::microsec_clock::universal_time());
+            mrg.setCancelled(now);
+            mrg.update();
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("cancelRegistrarGroup: an error has occured");
             throw;
         }//catch (...)
     }
@@ -1911,39 +1922,13 @@ public:
     {
         try
         {
-            std::string fromStr;
-            std::string untilStr;
-
-            if (valid_from != Database::Date())
-            {
-                fromStr = "'" + valid_from.to_string() + "'";
-            }
-            else
-            {
-                throw std::runtime_error("createRegistrarCertification: empty valid_from");
-            }
-
-            if (valid_until != Database::Date())
-            {
-                untilStr = "'" + valid_until.to_string() + "'";
-            }
-            else
-            {
-                throw std::runtime_error("createRegistrarCertification: empty valid_until");
-            }
-
-            Database::Connection conn = Database::Manager::acquire();
-
-            std::stringstream sql;
-            sql << "INSERT INTO registrar_certification (registrar_id, valid_from, valid_until, classification, eval_file_id) VALUES( "
-                << registrar_id
-                << " , " << fromStr
-                << " , " << untilStr
-                << " , " << classification
-                << " , " << (eval_file_id ? boost::lexical_cast<std::string>(eval_file_id) : std::string(" NULL "))
-                << " )";
-
-            conn.exec(sql.str());
+            ModelRegistrarCertification mrc;
+            mrc.setRegistrarId(registrar_id);
+            mrc.setValidFrom(valid_from);
+            mrc.setValidUntil(valid_until);
+            mrc.setClassification(classification);
+            if (eval_file_id != 0) mrc.setEvalFileId(eval_file_id);
+            mrc.insert();
         }//try
         catch (...)
         {
@@ -1962,39 +1947,14 @@ public:
     {
         try
         {
-            std::string fromStr;
-            std::string untilStr;
-
-            if (valid_from != Database::Date())
-            {
-                fromStr = "'" + valid_from.to_string() + "'";
-            }
-            else
-            {
-                throw std::runtime_error("updateRegistrarCertification: empty valid_from");
-            }
-
-            if (valid_until != Database::Date())
-            {
-                untilStr = "'" + valid_until.to_string() + "'";
-            }
-            else
-            {
-                throw std::runtime_error("updateRegistrarCertification: empty valid_until");
-            }
-
-            Database::Connection conn = Database::Manager::acquire();
-
-            std::stringstream sql;
-            sql << "UPDATE registrar_certification SET "
-                << " registrar_id = " << registrar_id
-                << " , valid_from = date( " << fromStr << " ) "
-                << " , valid_until = date( " << untilStr << " ) "
-                << " , classification = " << classification
-                << " , eval_file_id = " << (eval_file_id ? boost::lexical_cast<std::string>(eval_file_id) : std::string(" NULL "))
-                << " WHERE id = " <<  certification_id ;
-
-            conn.exec(sql.str());
+            ModelRegistrarCertification mrc;
+            mrc.setId(certification_id);
+            mrc.setRegistrarId(registrar_id);
+            mrc.setValidFrom(valid_from);
+            mrc.setValidUntil(valid_until);
+            mrc.setClassification(classification);
+            if (eval_file_id != 0) mrc.setEvalFileId(eval_file_id);
+            mrc.update();
         }//try
         catch (...)
         {
@@ -2011,38 +1971,13 @@ public:
     {
         try
         {
-            std::string fromStr;
-            std::string untilStr;
-
-            if (member_from != Database::Date())
-            {
-                fromStr = "'" + member_from.to_string() + "'";
-            }
-            else
-            {
-                throw std::runtime_error("createRegistrarGroupMembership: empty member_from");
-            }
-
+            ModelRegistrarGroupMap mrgm;
+            mrgm.setRegistrarId(registrar_id);
+            mrgm.setRegistrarGroupId(registrar_group_id);
+            mrgm.setMemberFrom(member_from);
             if (member_until != Database::Date())
-            {
-                untilStr = "'" + member_until.to_string() + "'";
-            }
-            else
-            {
-                throw std::runtime_error("createRegistrarGroupMembership: empty member_until");
-            }
-
-            Database::Connection conn = Database::Manager::acquire();
-
-            std::stringstream sql;
-            sql << "INSERT INTO registrar_group_map (registrar_id, registrar_group_id, member_from, member_until) VALUES( "
-                << registrar_id
-                << " , " << registrar_group_id
-                << " , " << fromStr
-                << " , " << untilStr
-                << " )";
-
-            conn.exec(sql.str());
+                mrgm.setMemberUntil(member_until);
+            mrgm.insert();
         }//try
         catch (...)
         {
@@ -2060,38 +1995,14 @@ public:
     {
         try
         {
-            std::string fromStr;
-            std::string untilStr;
-
-            if (member_from != Database::Date())
-            {
-                fromStr = "'" + member_from.to_string() + "'";
-            }
-            else
-            {
-                throw std::runtime_error("updateRegistrarGroupMembership: empty member_from");
-            }
-
+            ModelRegistrarGroupMap mrgm;
+            mrgm.setId(mebership_id);
+            mrgm.setRegistrarId(registrar_id);
+            mrgm.setRegistrarGroupId(registrar_group_id);
+            mrgm.setMemberFrom(member_from);
             if (member_until != Database::Date())
-            {
-                untilStr = "'" + member_until.to_string() + "'";
-            }
-            else
-            {
-                throw std::runtime_error("updateRegistrarGroupMembership: empty member_until");
-            }
-
-            Database::Connection conn = Database::Manager::acquire();
-
-            std::stringstream sql;
-            sql << "UPDATE registrar_group_map SET "
-                << " registrar_id = " << registrar_id
-                << " registrar_group_id = " << registrar_group_id
-                << " , member_from = date( " << fromStr << " ) "
-                << " , member_until = date( " << untilStr << " ) "
-                << " WHERE id = " <<  mebership_id ;
-
-            conn.exec(sql.str());
+                mrgm.setMemberUntil(member_until);
+            mrgm.insert();
         }//try
         catch (...)
         {
@@ -2099,7 +2010,6 @@ public:
             throw;
         }//catch (...)
     }
-
 
 }; // class ManagerImpl
 

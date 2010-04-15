@@ -442,6 +442,8 @@ public:
 
   ///create registrar group
   virtual void createRegistrarGroup(const std::string &group_name) =0;
+  ///cancel registrar group
+  virtual void cancelRegistrarGroup(const TID& group_id) =0;
 
   enum RegCertClass{c0,c1,c2,c3,c4,c5};///classification for registrar certification
   ///create registrar certification
