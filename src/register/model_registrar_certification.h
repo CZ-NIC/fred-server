@@ -65,6 +65,8 @@ public:
     {
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
+        //serialization of constraint check in trigger function
+        conn.exec("LOCK TABLE registrar_certification IN ACCESS EXCLUSIVE MODE");
         Model::Base::insert(this);
         tx.commit();
     }
@@ -73,6 +75,8 @@ public:
     {
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
+        //serialization of constraint check in trigger function
+        conn.exec("LOCK TABLE registrar_certification IN ACCESS EXCLUSIVE MODE");
         Model::Base::update(this);
         tx.commit();
     }
