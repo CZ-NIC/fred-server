@@ -60,19 +60,7 @@ InvoiceClient::show_opts()
 }
 
 void InvoiceClient::filter_reload_invoices(Register::Invoicing::Manager *invMan, Register::Invoicing::List *invList)
-{
-    std::auto_ptr<Register::Document::Manager> docMan(
-            Register::Document::Manager::create(
-                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
-                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
-                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
-                m_nsAddr)
-            );
-
-    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
-    MailerManager mailMan(cc.getNS());
-
-   
+{     
     Database::Filters::Invoice *invFilter;
     invFilter = new Database::Filters::InvoiceImpl();
 
@@ -140,7 +128,18 @@ InvoiceClient::list()
 {
     callHelp(m_conf, list_help);
 
-     std::auto_ptr<Register::Invoicing::Manager> invMan(
+    std::auto_ptr<Register::Document::Manager> docMan(
+            Register::Document::Manager::create(
+                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
+                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
+                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
+                m_nsAddr)
+            );
+
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    MailerManager mailMan(cc.getNS());
+
+    std::auto_ptr<Register::Invoicing::Manager> invMan(
             Register::Invoicing::Manager::create(
                 docMan.get(),
                 &mailMan));
@@ -159,7 +158,18 @@ InvoiceClient::list_filters()
 {
     callHelp(m_conf, list_help);
 
-     std::auto_ptr<Register::Invoicing::Manager> invMan(
+    std::auto_ptr<Register::Document::Manager> docMan(
+            Register::Document::Manager::create(
+                m_conf.get<std::string>(REG_DOCGEN_PATH_NAME),
+                m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME),
+                m_conf.get<std::string>(REG_FILECLIENT_PATH_NAME),
+                m_nsAddr)
+            );
+
+    CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
+    MailerManager mailMan(cc.getNS());
+
+    std::auto_ptr<Register::Invoicing::Manager> invMan(
             Register::Invoicing::Manager::create(
                 docMan.get(),
                 &mailMan));
