@@ -59,7 +59,7 @@ InvoiceClient::show_opts()
     print_options("Invoice", getOpts(), getOptsCount());
 }
 
-std::auto_ptr<Register::Invoicing::List> InvoiceClient::filter_reload_invoices()
+void InvoiceClient::filter_reload_invoices(Register::Invoicing::Manager *invMan, Register::Invoicing::List *invList)
 {
     std::auto_ptr<Register::Document::Manager> docMan(
             Register::Document::Manager::create(
@@ -72,14 +72,7 @@ std::auto_ptr<Register::Invoicing::List> InvoiceClient::filter_reload_invoices()
     CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
     MailerManager mailMan(cc.getNS());
 
-    std::auto_ptr<Register::Invoicing::Manager> invMan(
-            Register::Invoicing::Manager::create(
-                docMan.get(),
-                &mailMan));
-
-    std::auto_ptr<Register::Invoicing::List> invList(
-            invMan->createList());
-
+   
     Database::Filters::Invoice *invFilter;
     invFilter = new Database::Filters::InvoiceImpl();
 
@@ -139,16 +132,23 @@ std::auto_ptr<Register::Invoicing::List> InvoiceClient::filter_reload_invoices()
     invList->reload(*unionFilter);
 
     unionFilter->clear();
-    delete unionFilter;
-
-    return invList;
+    delete unionFilter;   
 }
 
 void
 InvoiceClient::list()
 {
     callHelp(m_conf, list_help);
-    std::auto_ptr<Register::Invoicing::List> invList(filter_reload_invoices());
+
+     std::auto_ptr<Register::Invoicing::Manager> invMan(
+            Register::Invoicing::Manager::create(
+                docMan.get(),
+                &mailMan));
+
+    std::auto_ptr<Register::Invoicing::List> invList(
+            invMan->createList());
+
+    filter_reload_invoices(invMan.get(), invList.get());
     invList->exportXML(std::cout);
 
 }
@@ -159,7 +159,15 @@ InvoiceClient::list_filters()
 {
     callHelp(m_conf, list_help);
 
-    std::auto_ptr<Register::Invoicing::List> invList(filter_reload_invoices());
+     std::auto_ptr<Register::Invoicing::Manager> invMan(
+            Register::Invoicing::Manager::create(
+                docMan.get(),
+                &mailMan));
+
+    std::auto_ptr<Register::Invoicing::List> invList(
+            invMan->createList());
+
+    filter_reload_invoices(invMan.get(), invList.get());
 
     std::cout << "<objects>\n";
     for (unsigned int i = 0; i < invList->getSize(); i++) {

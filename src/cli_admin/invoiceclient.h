@@ -183,7 +183,7 @@ private:
       const char *taxdateStr, const char *todateStr);
     int factoring(const char *database, const char *registrarHandle,
       const char *zone_fqdn, const char *taxdateStr, const char *todateStr);
-    std::auto_ptr<Register::Invoicing::List> filter_reload_invoices();
+    void filter_reload_invoices(Register::Invoicing::Manager *invMan, Register::Invoicing::List *invList);
 
 }; // class InvoiceClient
 
