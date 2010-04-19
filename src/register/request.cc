@@ -598,7 +598,9 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn,
 
 	std::string name_trunc = name.substr(0, MAX_NAME_LENGTH);
        
-        prop_add2db.lock();
+        if(!prop_add2db.owns_lock()) {
+            prop_add2db.lock();
+        }
 
         bool db_insert = false;
 
@@ -718,10 +720,11 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
         TRACE("[CALL] Register::Logger::ManagerImpl::i_CreateRequest");
         std::auto_ptr<Logging::Context> ctx_entry;
 
-        logd_auto_db db;
 
         boost::mutex::scoped_lock prop_lock(properties_mutex);
         prop_lock.unlock();
+
+        logd_auto_db db;
 
 	ID entry_id;
 
