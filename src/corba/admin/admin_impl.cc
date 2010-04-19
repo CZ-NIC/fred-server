@@ -2080,26 +2080,6 @@ Registry::RegistrarGroup_ptr ccReg_Admin_i::getRegistrarGroup(){
   //#warning "Code missing in function <Registry::RegistrarGroup_ptr ccReg_Admin_i::getRegistrarGroup()>"
 }
 
-
-/*
-ccReg::TID ccReg_Admin_i::createRegistrarCertification(ccReg::TID reg_id, const ccReg::DateType& from
-        , const ccReg::DateType& to, CORBA::Short classification, ccReg::TID eval_file_id)
-{
-    return 0;
-}
-void ccReg_Admin_i::shortenRegistrarCertification(ccReg::TID cert_id, const ccReg::DateType& to){}
-ccReg::TID ccReg_Admin_i::createRegistrarGroup(const char* name)
-{
-    return 0;
-}
-void ccReg_Admin_i::deleteRegistrarGroup(ccReg::TID group_id){}
-void ccReg_Admin_i::updateRegistrarGroup(ccReg::TID group_id, const char* name){}
-void ccReg_Admin_i::addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id){}
-void ccReg_Admin_i::removeRegistrarFromGroup(ccReg::TID, ccReg::TID){}
-*/
-//ccReg_RegistrarCertification_i
-//ccReg_RegistrarGroup_i
-
 Registry_RegistrarCertification_i::Registry_RegistrarCertification_i(){
   // add extra constructor code here
 }

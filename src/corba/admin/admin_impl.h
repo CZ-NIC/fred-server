@@ -184,16 +184,6 @@ public:
   Registry::RegistrarCertification_ptr getRegistrarCertification();
   Registry::RegistrarGroup_ptr getRegistrarGroup();
 
-  /*
-  ccReg::TID createRegistrarCertification(ccReg::TID reg_id, const ccReg::DateType& from
-          , const ccReg::DateType& to, CORBA::Short classification, ccReg::TID eval_file_id);
-  void shortenRegistrarCertification(ccReg::TID cert_id, const ccReg::DateType& to);
-  ccReg::TID createRegistrarGroup(const char* name);
-  void deleteRegistrarGroup(ccReg::TID group_id);
-  void updateRegistrarGroup(ccReg::TID group_id, const char* name);
-  void addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id);
-  void removeRegistrarFromGroup(ccReg::TID, ccReg::TID);
-*/
 private:
   std::string _createQueryForEnumDomainsByRegistrant(const std::string &select_part, const std::string &name, bool by_person, bool by_org);
 
