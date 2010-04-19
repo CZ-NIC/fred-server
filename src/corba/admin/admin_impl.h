@@ -180,9 +180,61 @@ public:
   ccReg::EnumDictList* getEnumDomainsByRegistrant(const char* name, ::CORBA::Boolean by_person, ::CORBA::Boolean by_org, ::CORBA::Long offset, ::CORBA::Long limit);
   ccReg::EnumDictList* getEnumDomainsRecentEntries(::CORBA::Long count);
 
+
+  Registry::RegistrarCertification_ptr getRegistrarCertification();
+  Registry::RegistrarGroup_ptr getRegistrarGroup();
+
+  /*
+  ccReg::TID createRegistrarCertification(ccReg::TID reg_id, const ccReg::DateType& from
+          , const ccReg::DateType& to, CORBA::Short classification, ccReg::TID eval_file_id);
+  void shortenRegistrarCertification(ccReg::TID cert_id, const ccReg::DateType& to);
+  ccReg::TID createRegistrarGroup(const char* name);
+  void deleteRegistrarGroup(ccReg::TID group_id);
+  void updateRegistrarGroup(ccReg::TID group_id, const char* name);
+  void addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id);
+  void removeRegistrarFromGroup(ccReg::TID, ccReg::TID);
+*/
 private:
   std::string _createQueryForEnumDomainsByRegistrant(const std::string &select_part, const std::string &name, bool by_person, bool by_org);
 
 };
+
+class Registry_RegistrarCertification_i: public POA_Registry::RegistrarCertification {
+private:
+  // Make sure all instances are built on the heap by making the
+  // destructor non-public
+  //virtual ~Registry_RegistrarCertification_i();
+public:
+  // standard constructor
+  Registry_RegistrarCertification_i();
+  virtual ~Registry_RegistrarCertification_i();
+
+  // methods corresponding to defined IDL attributes and operations
+  ccReg::TID createRegistrarCertification(ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to, ::CORBA::Short classification, ccReg::TID eval_file_id);
+  void shortenRegistrarCertification(ccReg::TID cert_id, const ccReg::DateType& to);
+};
+
+class Registry_RegistrarGroup_i: public POA_Registry::RegistrarGroup {
+private:
+  // Make sure all instances are built on the heap by making the
+  // destructor non-public
+  //virtual ~Registry_RegistrarGroup_i();
+public:
+  // standard constructor
+  Registry_RegistrarGroup_i();
+  virtual ~Registry_RegistrarGroup_i();
+
+  // methods corresponding to defined IDL attributes and operations
+  ccReg::TID createRegistrarGroup(const char* name);
+  void deleteRegistrarGroup(ccReg::TID group_id);
+  void updateRegistrarGroup(ccReg::TID group_id, const char* name);
+  void addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id);
+  void removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id);
+  Registry::RegistrarGroup::GroupList* getRegistarGroups();
+  Registry::RegistrarGroup::GroupMembershipList* getRegistarMemberships(ccReg::TID registrar_id);
+  Registry::RegistrarGroup::GroupMembershipList* getGroupMemberships(ccReg::TID group_id);
+
+};
+
 
 #endif /*ADMIN_IMPL_H*/

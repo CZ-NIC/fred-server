@@ -2069,3 +2069,102 @@ ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsRecentEntries(::CORBA::Long co
   }
 }
 
+
+Registry::RegistrarCertification_ptr ccReg_Admin_i::getRegistrarCertification(){
+  // insert code here and remove the warning
+  //#warning "Code missing in function <Registry::RegistrarCertification_ptr ccReg_Admin_i::getRegistrarCertification()>"
+}
+
+Registry::RegistrarGroup_ptr ccReg_Admin_i::getRegistrarGroup(){
+  // insert code here and remove the warning
+  //#warning "Code missing in function <Registry::RegistrarGroup_ptr ccReg_Admin_i::getRegistrarGroup()>"
+}
+
+
+/*
+ccReg::TID ccReg_Admin_i::createRegistrarCertification(ccReg::TID reg_id, const ccReg::DateType& from
+        , const ccReg::DateType& to, CORBA::Short classification, ccReg::TID eval_file_id)
+{
+    return 0;
+}
+void ccReg_Admin_i::shortenRegistrarCertification(ccReg::TID cert_id, const ccReg::DateType& to){}
+ccReg::TID ccReg_Admin_i::createRegistrarGroup(const char* name)
+{
+    return 0;
+}
+void ccReg_Admin_i::deleteRegistrarGroup(ccReg::TID group_id){}
+void ccReg_Admin_i::updateRegistrarGroup(ccReg::TID group_id, const char* name){}
+void ccReg_Admin_i::addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id){}
+void ccReg_Admin_i::removeRegistrarFromGroup(ccReg::TID, ccReg::TID){}
+*/
+//ccReg_RegistrarCertification_i
+//ccReg_RegistrarGroup_i
+
+Registry_RegistrarCertification_i::Registry_RegistrarCertification_i(){
+  // add extra constructor code here
+}
+Registry_RegistrarCertification_i::~Registry_RegistrarCertification_i(){
+  // add extra destructor code here
+}
+//   Methods corresponding to IDL attributes and operations
+ccReg::TID Registry_RegistrarCertification_i::createRegistrarCertification(
+        ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to
+        , ::CORBA::Short classification, ccReg::TID eval_file_id){
+  // insert code here and remove the warning
+  //#warning "Code missing in function <ccReg::TID Registry_RegistrarCertification_i::createRegistrarCertification(ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to, ::CORBA::Short classification, ccReg::TID eval_file_id)>"
+}
+
+void Registry_RegistrarCertification_i::shortenRegistrarCertification(ccReg::TID cert_id, const ccReg::DateType& to){
+  // insert code here and remove the warning
+  //#warning "Code missing in function <void Registry_RegistrarCertification_i::shortenRegistrarCertification(ccReg::TID cert_id, const ccReg::DateType& to)>"
+}
+
+Registry_RegistrarGroup_i::Registry_RegistrarGroup_i(){
+  // add extra constructor code here
+}
+Registry_RegistrarGroup_i::~Registry_RegistrarGroup_i(){
+  // add extra destructor code here
+}
+//   Methods corresponding to IDL attributes and operations
+ccReg::TID Registry_RegistrarGroup_i::createRegistrarGroup(const char* name){
+  // insert code here and remove the warning
+  //#warning "Code missing in function <ccReg::TID Registry_RegistrarGroup_i::createRegistrarGroup(const char* name)>"
+}
+
+void Registry_RegistrarGroup_i::deleteRegistrarGroup(ccReg::TID group_id){
+  // insert code here and remove the warning
+  //#warning "Code missing in function <void Registry_RegistrarGroup_i::deleteRegistrarGroup(ccReg::TID group_id)>"
+}
+
+void Registry_RegistrarGroup_i::updateRegistrarGroup(ccReg::TID group_id, const char* name){
+  // insert code here and remove the warning
+  //#warning "Code missing in function <void Registry_RegistrarGroup_i::updateRegistrarGroup(ccReg::TID group_id, const char* name)>"
+}
+
+void Registry_RegistrarGroup_i::addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id){
+  // insert code here and remove the warning
+  //#warning "Code missing in function <void Registry_RegistrarGroup_i::addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id)>"
+}
+
+void Registry_RegistrarGroup_i::removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id){
+  // insert code here and remove the warning
+  //#warning "Code missing in function <void Registry_RegistrarGroup_i::removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id)>"
+}
+
+Registry::RegistrarGroup::GroupList* Registry_RegistrarGroup_i::getRegistarGroups(){
+  // insert code here and remove the warning
+  //#warning "Code missing in function <Registry::RegistrarGroup::GroupList* Registry_RegistrarGroup_i::getRegistarGroups()>"
+}
+
+Registry::RegistrarGroup::GroupMembershipList*
+Registry_RegistrarGroup_i::getRegistarMemberships(ccReg::TID registrar_id){
+  // insert code here and remove the warning
+  //#warning "Code missing in function <Registry::RegistrarGroup::GroupMembershipList* Registry_RegistrarGroup_i::getRegistarMemberships(ccReg::TID registrar_id)>"
+}
+
+Registry::RegistrarGroup::GroupMembershipList*
+Registry_RegistrarGroup_i::getGroupMemberships(ccReg::TID group_id){
+  // insert code here and remove the warning
+  //#warning "Code missing in function <Registry::RegistrarGroup::GroupMembershipList* Registry_RegistrarGroup_i::getGroupMemberships(ccReg::TID group_id)>"
+}
+
