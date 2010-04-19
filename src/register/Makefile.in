@@ -65,14 +65,16 @@ am_libfred_a_OBJECTS = register.$(OBJEXT) common_impl.$(OBJEXT) \
 	model_price_list.$(OBJEXT) model_request.$(OBJEXT) \
 	model_request_data.$(OBJEXT) model_request_property.$(OBJEXT) \
 	model_request_property_value.$(OBJEXT) model_session.$(OBJEXT) \
-	domain.$(OBJEXT) contact.$(OBJEXT) nsset.$(OBJEXT) \
-	keyset.$(OBJEXT) registrar.$(OBJEXT) public_request.$(OBJEXT) \
-	invoice.$(OBJEXT) zone.$(OBJEXT) blacklist.$(OBJEXT) \
-	documents.$(OBJEXT) info_buffer.$(OBJEXT) \
-	bank_common.$(OBJEXT) bank_manager.$(OBJEXT) \
-	bank_exporter.$(OBJEXT) mail.$(OBJEXT) notify.$(OBJEXT) \
-	poll.$(OBJEXT) file.$(OBJEXT) filter.$(OBJEXT) \
-	request.$(OBJEXT) session.$(OBJEXT)
+	model_registrar_certification.$(OBJEXT) \
+	model_registrar_group.$(OBJEXT) \
+	model_registrar_group_map.$(OBJEXT) domain.$(OBJEXT) \
+	contact.$(OBJEXT) nsset.$(OBJEXT) keyset.$(OBJEXT) \
+	registrar.$(OBJEXT) public_request.$(OBJEXT) invoice.$(OBJEXT) \
+	zone.$(OBJEXT) blacklist.$(OBJEXT) documents.$(OBJEXT) \
+	info_buffer.$(OBJEXT) bank_common.$(OBJEXT) \
+	bank_manager.$(OBJEXT) bank_exporter.$(OBJEXT) mail.$(OBJEXT) \
+	notify.$(OBJEXT) poll.$(OBJEXT) file.$(OBJEXT) \
+	filter.$(OBJEXT) request.$(OBJEXT) session.$(OBJEXT)
 libfred_a_OBJECTS = $(am_libfred_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
 am_test_model_OBJECTS = test-model.$(OBJEXT)
@@ -324,6 +326,12 @@ libfred_a_SOURCES = register.cc          \
 					model_request_property_value.h	\
 					model_session.cc		\
 					model_session.h			\
+					model_registrar_certification.h \
+					model_registrar_certification.cc \
+					model_registrar_group.h \
+					model_registrar_group.cc \
+					model_registrar_group_map.h \
+					model_registrar_group_map.cc \
 					domain.cc            \
 					domain.h             \
 					contact.cc           \
@@ -547,6 +555,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_price_list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrar_acl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrar_certification.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrar_group.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_registrar_group_map.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_data.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model_request_property.Po@am__quote@
