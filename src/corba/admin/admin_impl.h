@@ -45,6 +45,10 @@ private:
 
   std::string server_name_;
   
+  Registry::RegistrarCertification_ptr reg_cert_ref_;
+  Registry::RegistrarGroup_ptr reg_grp_ref_;
+
+
   void fillRegistrar(ccReg::Registrar& creg,
                      Register::Registrar::Registrar *reg);
   void garbageSession();
@@ -193,11 +197,11 @@ class Registry_RegistrarCertification_i: public POA_Registry::RegistrarCertifica
 private:
   // Make sure all instances are built on the heap by making the
   // destructor non-public
-  //virtual ~Registry_RegistrarCertification_i();
+  virtual ~Registry_RegistrarCertification_i();
 public:
   // standard constructor
   Registry_RegistrarCertification_i();
-  virtual ~Registry_RegistrarCertification_i();
+
 
   // methods corresponding to defined IDL attributes and operations
   ccReg::TID createRegistrarCertification(ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to, ::CORBA::Short classification, ccReg::TID eval_file_id);
@@ -208,11 +212,10 @@ class Registry_RegistrarGroup_i: public POA_Registry::RegistrarGroup {
 private:
   // Make sure all instances are built on the heap by making the
   // destructor non-public
-  //virtual ~Registry_RegistrarGroup_i();
+  virtual ~Registry_RegistrarGroup_i();
 public:
   // standard constructor
   Registry_RegistrarGroup_i();
-  virtual ~Registry_RegistrarGroup_i();
 
   // methods corresponding to defined IDL attributes and operations
   ccReg::TID createRegistrarGroup(const char* name);

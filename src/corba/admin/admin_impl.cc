@@ -47,6 +47,9 @@
 #ifdef ADIF
 #endif
 
+class Registry_RegistrarCertification_i;
+class Registry_RegistrarGroup_i;
+
 ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
                              NameService *_ns,
                              Config::Conf& _cfg,
@@ -60,6 +63,15 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
   else {
     server_name_ = ("pifd");
   }
+
+  //instances held until deactivation
+  Registry_RegistrarCertification_i * reg_cert_i = new Registry_RegistrarCertification_i();
+  reg_cert_ref_ = reg_cert_i->_this();
+  reg_cert_i->_remove_ref();
+  Registry_RegistrarGroup_i * reg_grp_i = new Registry_RegistrarGroup_i();
+  reg_grp_ref_ = reg_grp_i->_this();
+  reg_grp_i->_remove_ref();
+
   Logging::Context ctx(server_name_);
 
   // these object are shared between threads (CAUTION)
@@ -2070,14 +2082,14 @@ ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsRecentEntries(::CORBA::Long co
 }
 
 
-Registry::RegistrarCertification_ptr ccReg_Admin_i::getRegistrarCertification(){
-  // insert code here and remove the warning
-  //#warning "Code missing in function <Registry::RegistrarCertification_ptr ccReg_Admin_i::getRegistrarCertification()>"
+Registry::RegistrarCertification_ptr ccReg_Admin_i::getRegistrarCertification()
+{
+    return Registry::RegistrarCertification::_duplicate(reg_cert_ref_);
 }
 
-Registry::RegistrarGroup_ptr ccReg_Admin_i::getRegistrarGroup(){
-  // insert code here and remove the warning
-  //#warning "Code missing in function <Registry::RegistrarGroup_ptr ccReg_Admin_i::getRegistrarGroup()>"
+Registry::RegistrarGroup_ptr ccReg_Admin_i::getRegistrarGroup()
+{
+    return Registry::RegistrarGroup::_duplicate(reg_grp_ref_);
 }
 
 Registry_RegistrarCertification_i::Registry_RegistrarCertification_i(){
@@ -2091,12 +2103,12 @@ ccReg::TID Registry_RegistrarCertification_i::createRegistrarCertification(
         ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to
         , ::CORBA::Short classification, ccReg::TID eval_file_id){
   // insert code here and remove the warning
-  //#warning "Code missing in function <ccReg::TID Registry_RegistrarCertification_i::createRegistrarCertification(ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to, ::CORBA::Short classification, ccReg::TID eval_file_id)>"
+  #warning "Code missing in function <ccReg::TID Registry_RegistrarCertification_i::createRegistrarCertification(ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to, ::CORBA::Short classification, ccReg::TID eval_file_id)>"
 }
 
 void Registry_RegistrarCertification_i::shortenRegistrarCertification(ccReg::TID cert_id, const ccReg::DateType& to){
   // insert code here and remove the warning
-  //#warning "Code missing in function <void Registry_RegistrarCertification_i::shortenRegistrarCertification(ccReg::TID cert_id, const ccReg::DateType& to)>"
+  #warning "Code missing in function <void Registry_RegistrarCertification_i::shortenRegistrarCertification(ccReg::TID cert_id, const ccReg::DateType& to)>"
 }
 
 Registry_RegistrarGroup_i::Registry_RegistrarGroup_i(){
@@ -2108,43 +2120,43 @@ Registry_RegistrarGroup_i::~Registry_RegistrarGroup_i(){
 //   Methods corresponding to IDL attributes and operations
 ccReg::TID Registry_RegistrarGroup_i::createRegistrarGroup(const char* name){
   // insert code here and remove the warning
-  //#warning "Code missing in function <ccReg::TID Registry_RegistrarGroup_i::createRegistrarGroup(const char* name)>"
+  #warning "Code missing in function <ccReg::TID Registry_RegistrarGroup_i::createRegistrarGroup(const char* name)>"
 }
 
 void Registry_RegistrarGroup_i::deleteRegistrarGroup(ccReg::TID group_id){
   // insert code here and remove the warning
-  //#warning "Code missing in function <void Registry_RegistrarGroup_i::deleteRegistrarGroup(ccReg::TID group_id)>"
+  #warning "Code missing in function <void Registry_RegistrarGroup_i::deleteRegistrarGroup(ccReg::TID group_id)>"
 }
 
 void Registry_RegistrarGroup_i::updateRegistrarGroup(ccReg::TID group_id, const char* name){
   // insert code here and remove the warning
-  //#warning "Code missing in function <void Registry_RegistrarGroup_i::updateRegistrarGroup(ccReg::TID group_id, const char* name)>"
+  #warning "Code missing in function <void Registry_RegistrarGroup_i::updateRegistrarGroup(ccReg::TID group_id, const char* name)>"
 }
 
 void Registry_RegistrarGroup_i::addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id){
   // insert code here and remove the warning
-  //#warning "Code missing in function <void Registry_RegistrarGroup_i::addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id)>"
+  #warning "Code missing in function <void Registry_RegistrarGroup_i::addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id)>"
 }
 
 void Registry_RegistrarGroup_i::removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id){
   // insert code here and remove the warning
-  //#warning "Code missing in function <void Registry_RegistrarGroup_i::removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id)>"
+  #warning "Code missing in function <void Registry_RegistrarGroup_i::removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id)>"
 }
 
 Registry::RegistrarGroup::GroupList* Registry_RegistrarGroup_i::getRegistarGroups(){
   // insert code here and remove the warning
-  //#warning "Code missing in function <Registry::RegistrarGroup::GroupList* Registry_RegistrarGroup_i::getRegistarGroups()>"
+  #warning "Code missing in function <Registry::RegistrarGroup::GroupList* Registry_RegistrarGroup_i::getRegistarGroups()>"
 }
 
 Registry::RegistrarGroup::GroupMembershipList*
 Registry_RegistrarGroup_i::getRegistarMemberships(ccReg::TID registrar_id){
   // insert code here and remove the warning
-  //#warning "Code missing in function <Registry::RegistrarGroup::GroupMembershipList* Registry_RegistrarGroup_i::getRegistarMemberships(ccReg::TID registrar_id)>"
+  #warning "Code missing in function <Registry::RegistrarGroup::GroupMembershipList* Registry_RegistrarGroup_i::getRegistarMemberships(ccReg::TID registrar_id)>"
 }
 
 Registry::RegistrarGroup::GroupMembershipList*
 Registry_RegistrarGroup_i::getGroupMemberships(ccReg::TID group_id){
   // insert code here and remove the warning
-  //#warning "Code missing in function <Registry::RegistrarGroup::GroupMembershipList* Registry_RegistrarGroup_i::getGroupMemberships(ccReg::TID group_id)>"
+  #warning "Code missing in function <Registry::RegistrarGroup::GroupMembershipList* Registry_RegistrarGroup_i::getGroupMemberships(ccReg::TID group_id)>"
 }
 
