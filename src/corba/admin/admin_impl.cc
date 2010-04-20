@@ -66,11 +66,11 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
 
   //instances held until deactivation
   Registry_RegistrarCertification_i * reg_cert_i = new Registry_RegistrarCertification_i();
-  reg_cert_ref_ = reg_cert_i->_this();
-  reg_cert_i->_remove_ref();
+  //reg_cert_ref_ = reg_cert_i->_this();
+  //reg_cert_i->_remove_ref();
   Registry_RegistrarGroup_i * reg_grp_i = new Registry_RegistrarGroup_i();
-  reg_grp_ref_ = reg_grp_i->_this();
-  reg_grp_i->_remove_ref();
+  //reg_grp_ref_ = reg_grp_i->_this();
+  //reg_grp_i->_remove_ref();
 
   Logging::Context ctx(server_name_);
 
