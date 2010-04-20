@@ -45,9 +45,8 @@ private:
 
   std::string server_name_;
   
-  Registry::RegistrarCertification_ptr reg_cert_ref_;
-  Registry::RegistrarGroup_ptr reg_grp_ref_;
-
+  Registry::Registrar::Certification::Manager_ptr reg_cert_mgr_ref_;
+  Registry::Registrar::Group::Manager_ptr reg_grp_mgr_ref_;
 
   void fillRegistrar(ccReg::Registrar& creg,
                      Register::Registrar::Registrar *reg);
@@ -184,48 +183,46 @@ public:
   ccReg::EnumDictList* getEnumDomainsByRegistrant(const char* name, ::CORBA::Boolean by_person, ::CORBA::Boolean by_org, ::CORBA::Long offset, ::CORBA::Long limit);
   ccReg::EnumDictList* getEnumDomainsRecentEntries(::CORBA::Long count);
 
-
-  Registry::RegistrarCertification_ptr getRegistrarCertification();
-  Registry::RegistrarGroup_ptr getRegistrarGroup();
+  Registry::Registrar::Certification::Manager_ptr getCertificationManager();
+  Registry::Registrar::Group::Manager_ptr getGroupManager();
 
 private:
   std::string _createQueryForEnumDomainsByRegistrant(const std::string &select_part, const std::string &name, bool by_person, bool by_org);
 
 };
 
-class Registry_RegistrarCertification_i: public POA_Registry::RegistrarCertification {
+class Registry_Registrar_Certification_Manager_i: public POA_Registry::Registrar::Certification::Manager {
 private:
   // Make sure all instances are built on the heap by making the
   // destructor non-public
-  virtual ~Registry_RegistrarCertification_i();
+  virtual ~Registry_Registrar_Certification_Manager_i();
 public:
   // standard constructor
-  Registry_RegistrarCertification_i();
-
+  Registry_Registrar_Certification_Manager_i();
 
   // methods corresponding to defined IDL attributes and operations
-  ccReg::TID createRegistrarCertification(ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to, ::CORBA::Short classification, ccReg::TID eval_file_id);
-  void shortenRegistrarCertification(ccReg::TID cert_id, const ccReg::DateType& to);
+  ccReg::TID createCertification(ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to, ::CORBA::Short score, ccReg::TID evaluation_file_id);
+  void shortenCertification(ccReg::TID cert_id, const ccReg::DateType& to);
+
 };
 
-class Registry_RegistrarGroup_i: public POA_Registry::RegistrarGroup {
+class Registry_Registrar_Group_Manager_i: public POA_Registry::Registrar::Group::Manager {
 private:
   // Make sure all instances are built on the heap by making the
   // destructor non-public
-  virtual ~Registry_RegistrarGroup_i();
+  virtual ~Registry_Registrar_Group_Manager_i();
 public:
   // standard constructor
-  Registry_RegistrarGroup_i();
+  Registry_Registrar_Group_Manager_i();
 
   // methods corresponding to defined IDL attributes and operations
-  ccReg::TID createRegistrarGroup(const char* name);
-  void deleteRegistrarGroup(ccReg::TID group_id);
-  void updateRegistrarGroup(ccReg::TID group_id, const char* name);
+  ccReg::TID createGroup(const char* name);
+  void deleteGroup(ccReg::TID group_id);
+  void updateGroup(ccReg::TID group_id, const char* name);
   void addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id);
   void removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id);
-  Registry::RegistrarGroup::GroupList* getRegistarGroups();
-  Registry::RegistrarGroup::GroupMembershipList* getRegistarMemberships(ccReg::TID registrar_id);
-  Registry::RegistrarGroup::GroupMembershipList* getGroupMemberships(ccReg::TID group_id);
+  Registry::Registrar::Group::GroupList* getGroups();
+  Registry::Registrar::Group::MembershipList* getMembershipsByRegistar(ccReg::TID registrar_id);
 
 };
 

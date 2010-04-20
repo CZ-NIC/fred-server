@@ -65,12 +65,14 @@ ccReg_Admin_i::ccReg_Admin_i(const std::string _database,
   }
 
   //instances held until deactivation
-  Registry_RegistrarCertification_i * reg_cert_i = new Registry_RegistrarCertification_i();
-  //reg_cert_ref_ = reg_cert_i->_this();
-  //reg_cert_i->_remove_ref();
-  Registry_RegistrarGroup_i * reg_grp_i = new Registry_RegistrarGroup_i();
-  //reg_grp_ref_ = reg_grp_i->_this();
-  //reg_grp_i->_remove_ref();
+  Registry_Registrar_Certification_Manager_i * reg_cert_mgr_i
+      = new Registry_Registrar_Certification_Manager_i();
+  reg_cert_mgr_ref_ = reg_cert_mgr_i->_this();
+  reg_cert_mgr_i->_remove_ref();
+  Registry_Registrar_Group_Manager_i * reg_grp_mgr_i
+      = new Registry_Registrar_Group_Manager_i();
+  reg_grp_mgr_ref_ = reg_grp_mgr_i->_this();
+  reg_grp_mgr_i->_remove_ref();
 
   Logging::Context ctx(server_name_);
 
@@ -2081,82 +2083,70 @@ ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsRecentEntries(::CORBA::Long co
   }
 }
 
-
-Registry::RegistrarCertification_ptr ccReg_Admin_i::getRegistrarCertification()
+Registry::Registrar::Certification::Manager_ptr ccReg_Admin_i::getCertificationManager()
 {
-    return Registry::RegistrarCertification::_duplicate(reg_cert_ref_);
+    return Registry::Registrar::Certification::Manager::_duplicate(reg_cert_mgr_ref_);
+}
+Registry::Registrar::Group::Manager_ptr ccReg_Admin_i::getGroupManager()
+{
+    return  Registry::Registrar::Group::Manager::_duplicate(reg_grp_mgr_ref_);
 }
 
-Registry::RegistrarGroup_ptr ccReg_Admin_i::getRegistrarGroup()
-{
-    return Registry::RegistrarGroup::_duplicate(reg_grp_ref_);
-}
-
-Registry_RegistrarCertification_i::Registry_RegistrarCertification_i(){
+Registry_Registrar_Certification_Manager_i::Registry_Registrar_Certification_Manager_i(){
   // add extra constructor code here
 }
-Registry_RegistrarCertification_i::~Registry_RegistrarCertification_i(){
+Registry_Registrar_Certification_Manager_i::~Registry_Registrar_Certification_Manager_i(){
   // add extra destructor code here
 }
 //   Methods corresponding to IDL attributes and operations
-ccReg::TID Registry_RegistrarCertification_i::createRegistrarCertification(
-        ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to
-        , ::CORBA::Short classification, ccReg::TID eval_file_id){
+ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to, ::CORBA::Short score, ccReg::TID evaluation_file_id){
   // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::TID Registry_RegistrarCertification_i::createRegistrarCertification(ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to, ::CORBA::Short classification, ccReg::TID eval_file_id)>"
+  #warning "Code missing in function <ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to, ::CORBA::Short score, ccReg::TID evaluation_file_id)>"
 }
 
-void Registry_RegistrarCertification_i::shortenRegistrarCertification(ccReg::TID cert_id, const ccReg::DateType& to){
+void Registry_Registrar_Certification_Manager_i::shortenCertification(ccReg::TID cert_id, const ccReg::DateType& to){
   // insert code here and remove the warning
-  #warning "Code missing in function <void Registry_RegistrarCertification_i::shortenRegistrarCertification(ccReg::TID cert_id, const ccReg::DateType& to)>"
+  #warning "Code missing in function <void Registry_Registrar_Certification_Manager_i::shortenCertification(ccReg::TID cert_id, const ccReg::DateType& to)>"
 }
-
-Registry_RegistrarGroup_i::Registry_RegistrarGroup_i(){
+Registry_Registrar_Group_Manager_i::Registry_Registrar_Group_Manager_i(){
   // add extra constructor code here
 }
-Registry_RegistrarGroup_i::~Registry_RegistrarGroup_i(){
+Registry_Registrar_Group_Manager_i::~Registry_Registrar_Group_Manager_i(){
   // add extra destructor code here
 }
 //   Methods corresponding to IDL attributes and operations
-ccReg::TID Registry_RegistrarGroup_i::createRegistrarGroup(const char* name){
+ccReg::TID Registry_Registrar_Group_Manager_i::createGroup(const char* name){
   // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::TID Registry_RegistrarGroup_i::createRegistrarGroup(const char* name)>"
+  #warning "Code missing in function <ccReg::TID Registry_Registrar_Group_Manager_i::createGroup(const char* name)>"
 }
 
-void Registry_RegistrarGroup_i::deleteRegistrarGroup(ccReg::TID group_id){
+void Registry_Registrar_Group_Manager_i::deleteGroup(ccReg::TID group_id){
   // insert code here and remove the warning
-  #warning "Code missing in function <void Registry_RegistrarGroup_i::deleteRegistrarGroup(ccReg::TID group_id)>"
+  #warning "Code missing in function <void Registry_Registrar_Group_Manager_i::deleteGroup(ccReg::TID group_id)>"
 }
 
-void Registry_RegistrarGroup_i::updateRegistrarGroup(ccReg::TID group_id, const char* name){
+void Registry_Registrar_Group_Manager_i::updateGroup(ccReg::TID group_id, const char* name){
   // insert code here and remove the warning
-  #warning "Code missing in function <void Registry_RegistrarGroup_i::updateRegistrarGroup(ccReg::TID group_id, const char* name)>"
+  #warning "Code missing in function <void Registry_Registrar_Group_Manager_i::updateGroup(ccReg::TID group_id, const char* name)>"
 }
 
-void Registry_RegistrarGroup_i::addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id){
+void Registry_Registrar_Group_Manager_i::addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id){
   // insert code here and remove the warning
-  #warning "Code missing in function <void Registry_RegistrarGroup_i::addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id)>"
+  #warning "Code missing in function <void Registry_Registrar_Group_Manager_i::addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id)>"
 }
 
-void Registry_RegistrarGroup_i::removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id){
+void Registry_Registrar_Group_Manager_i::removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id){
   // insert code here and remove the warning
-  #warning "Code missing in function <void Registry_RegistrarGroup_i::removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id)>"
+  #warning "Code missing in function <void Registry_Registrar_Group_Manager_i::removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id)>"
 }
 
-Registry::RegistrarGroup::GroupList* Registry_RegistrarGroup_i::getRegistarGroups(){
+Registry::Registrar::Group::GroupList* Registry_Registrar_Group_Manager_i::getGroups(){
   // insert code here and remove the warning
-  #warning "Code missing in function <Registry::RegistrarGroup::GroupList* Registry_RegistrarGroup_i::getRegistarGroups()>"
+  #warning "Code missing in function <Registry::Registrar::Group::GroupList* Registry_Registrar_Group_Manager_i::getGroups()>"
 }
 
-Registry::RegistrarGroup::GroupMembershipList*
-Registry_RegistrarGroup_i::getRegistarMemberships(ccReg::TID registrar_id){
+Registry::Registrar::Group::MembershipList* Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(ccReg::TID registrar_id){
   // insert code here and remove the warning
-  #warning "Code missing in function <Registry::RegistrarGroup::GroupMembershipList* Registry_RegistrarGroup_i::getRegistarMemberships(ccReg::TID registrar_id)>"
-}
-
-Registry::RegistrarGroup::GroupMembershipList*
-Registry_RegistrarGroup_i::getGroupMemberships(ccReg::TID group_id){
-  // insert code here and remove the warning
-  #warning "Code missing in function <Registry::RegistrarGroup::GroupMembershipList* Registry_RegistrarGroup_i::getGroupMemberships(ccReg::TID group_id)>"
+  #warning "Code missing in function <Registry::Registrar::Group::MembershipList* Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(ccReg::TID registrar_id)>"
 }
 
