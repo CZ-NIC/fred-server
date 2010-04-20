@@ -140,9 +140,9 @@ public:
         continue;
       Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect("id type name userid groupid", ff->joinFilterTable());
-      tmp->order_by() << ff->joinFilterTable().getAlias() + ".id DESC";
       uf.addQuery(tmp);
     }
+    object_info_query.order_by() << "id DESC";
     object_info_query.limit(load_limit_);
     uf.serialize(object_info_query);
 

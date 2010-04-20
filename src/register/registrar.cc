@@ -1519,7 +1519,6 @@ public:
 
       Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect("id", eaf->joinActionTable());
-      tmp->order_by() << eaf->joinActionTable().getAlias() + ".id DESC";
       uf.addQuery(tmp);
       at_least_one = true;
     }
@@ -1528,6 +1527,7 @@ public:
       return;
     }
 
+    id_query.order_by() << "id DESC";
     id_query.limit(load_limit_);
     uf.serialize(id_query);
 
