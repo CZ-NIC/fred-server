@@ -2109,6 +2109,11 @@ void Registry_Registrar_Certification_Manager_i::shortenCertification(ccReg::TID
   #warning "Code missing in function <void Registry_Registrar_Certification_Manager_i::shortenCertification(ccReg::TID cert_id, const ccReg::DateType& to)>"
 }
 
+Registry::Registrar::Certification::CertificationList* Registry_Registrar_Certification_Manager_i::getCertificationsByRegistrar(ccReg::TID registrar_id){
+  // insert code here and remove the warning
+  #warning "Code missing in function <Registry::Registrar::Certification::CertificationList* Registry_Registrar_Certification_Manager_i::getCertificationsByRegistrar(ccReg::TID registrar_id)>"
+}
+
 Registry_Registrar_Group_Manager_i::Registry_Registrar_Group_Manager_i(){
   // add extra constructor code here
 }
