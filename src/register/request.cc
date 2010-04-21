@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <boost/utility.hpp>
+#include <boost/version.hpp>
 
 // TODO probably to remove (only for debugging pritouts
 #include <fstream>
@@ -598,7 +599,12 @@ ID ManagerImpl::find_property_name_id(const std::string &name, Connection &conn,
 
 	std::string name_trunc = name.substr(0, MAX_NAME_LENGTH);
        
-        if(!prop_add2db.owns_lock()) {
+#if ( BOOST_VERSION < 103500 ) 
+        if(!prop_add2db.locked()) 
+#else 
+        if(!prop_add2db.owns_lock()) 
+#endif
+        {
             prop_add2db.lock();
         }
 
@@ -721,8 +727,11 @@ ID ManagerImpl::i_CreateRequest(const char *sourceIP, RequestServiceType service
         std::auto_ptr<Logging::Context> ctx_entry;
 
 
-        boost::mutex::scoped_lock prop_lock(properties_mutex);
-        prop_lock.unlock();
+#if ( BOOST_VERSION < 103500 ) 
+        boost::mutex::scoped_lock prop_lock(properties_mutex, false);
+#else 
+        boost::mutex::scoped_lock prop_lock(properties_mutex, boost::defer_lock);
+#endif
 
         logd_auto_db db;
 
@@ -839,8 +848,13 @@ bool ManagerImpl::i_UpdateRequest(ID id, const Register::Logger::RequestProperti
 
         logd_auto_db db;
 
-        boost::mutex::scoped_lock prop_lock(properties_mutex);
-        prop_lock.unlock();
+#if ( BOOST_VERSION < 103500 ) 
+        boost::mutex::scoped_lock prop_lock(properties_mutex, false);
+#else 
+        boost::mutex::scoped_lock prop_lock(properties_mutex, boost::defer_lock);
+#endif
+
+
 
 	try {
 		// perform check
@@ -881,8 +895,13 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
 
 	time = boost::posix_time::to_iso_string(microsec_clock::universal_time());
 
-        boost::mutex::scoped_lock prop_lock(properties_mutex);
-        prop_lock.unlock();
+#if ( BOOST_VERSION < 103500 ) 
+        boost::mutex::scoped_lock prop_lock(properties_mutex, false);
+#else 
+        boost::mutex::scoped_lock prop_lock(properties_mutex, boost::defer_lock);
+#endif
+
+
 
 	try {
 		// first perform checks:
