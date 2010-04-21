@@ -2108,6 +2108,7 @@ void Registry_Registrar_Certification_Manager_i::shortenCertification(ccReg::TID
   // insert code here and remove the warning
   #warning "Code missing in function <void Registry_Registrar_Certification_Manager_i::shortenCertification(ccReg::TID cert_id, const ccReg::DateType& to)>"
 }
+
 Registry_Registrar_Group_Manager_i::Registry_Registrar_Group_Manager_i(){
   // add extra constructor code here
 }
@@ -2145,8 +2146,14 @@ Registry::Registrar::Group::GroupList* Registry_Registrar_Group_Manager_i::getGr
   #warning "Code missing in function <Registry::Registrar::Group::GroupList* Registry_Registrar_Group_Manager_i::getGroups()>"
 }
 
-Registry::Registrar::Group::MembershipList* Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(ccReg::TID registrar_id){
+Registry::Registrar::Group::MembershipByRegistrarList* Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(ccReg::TID registrar_id){
   // insert code here and remove the warning
-  #warning "Code missing in function <Registry::Registrar::Group::MembershipList* Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(ccReg::TID registrar_id)>"
+  #warning "Code missing in function <Registry::Registrar::Group::MembershipByRegistrarList* Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(ccReg::TID registrar_id)>"
 }
+
+Registry::Registrar::Group::MembershipByGroupList* Registry_Registrar_Group_Manager_i::getMembershipsByGroup(ccReg::TID group_id){
+  // insert code here and remove the warning
+  #warning "Code missing in function <Registry::Registrar::Group::MembershipByGroupList* Registry_Registrar_Group_Manager_i::getMembershipsByGroup(ccReg::TID group_id)>"
+}
+
 

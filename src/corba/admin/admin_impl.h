@@ -210,10 +210,11 @@ class Registry_Registrar_Group_Manager_i: public POA_Registry::Registrar::Group:
 private:
   // Make sure all instances are built on the heap by making the
   // destructor non-public
-  virtual ~Registry_Registrar_Group_Manager_i();
+  //virtual ~Registry_Registrar_Group_Manager_i();
 public:
   // standard constructor
   Registry_Registrar_Group_Manager_i();
+  virtual ~Registry_Registrar_Group_Manager_i();
 
   // methods corresponding to defined IDL attributes and operations
   ccReg::TID createGroup(const char* name);
@@ -222,9 +223,9 @@ public:
   void addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id);
   void removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id);
   Registry::Registrar::Group::GroupList* getGroups();
-  Registry::Registrar::Group::MembershipList* getMembershipsByRegistar(ccReg::TID registrar_id);
+  Registry::Registrar::Group::MembershipByRegistrarList* getMembershipsByRegistar(ccReg::TID registrar_id);
+  Registry::Registrar::Group::MembershipByGroupList* getMembershipsByGroup(ccReg::TID group_id);
 
 };
-
 
 #endif /*ADMIN_IMPL_H*/
