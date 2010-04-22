@@ -868,7 +868,8 @@ bool ManagerImpl::i_UpdateRequest(ID id, const Register::Logger::RequestProperti
 		Result res = db.exec(query.str());
 
 		if(res.size() == 0) {
-			logger_error("Record in request table not found.");
+			logger_error(boost::format("Record with ID %1% in request table not found.") % id);
+                        return false;
 		}
 		// end of TODO
 
@@ -918,13 +919,16 @@ bool ManagerImpl::close_request_worker(Connection &conn, ID id, const char *cont
                     // optimization
                     boost::format select = boost::format("select time_begin, service, is_monitoring from request where id = %1%") % id;
                     Result res = conn.exec(select.str());
+                    if(res.size() == 0) {
+                            logger_error(boost::format("Record  with ID %1% not found in request table.") % id );
+                            return false;
+                    }
+
                     DateTime entry_time = res[0][0].operator ptime();
                     service = (RequestServiceType)(int) res[0][1];
                     monitoring = (bool)res[0][2];
 
-                    if(res.size() == 0) {
-                            logger_error("Record in request table not found.");
-                    }
+                    
 
                     if(has_content) {
                             ModelRequestData data;
