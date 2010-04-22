@@ -203,6 +203,7 @@ public:
   // methods corresponding to defined IDL attributes and operations
   ccReg::TID createCertification(ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to, ::CORBA::Short score, ccReg::TID evaluation_file_id);
   void shortenCertification(ccReg::TID cert_id, const ccReg::DateType& to);
+  void updateCertification(ccReg::TID cert_id, ::CORBA::Short score, ccReg::TID evaluation_file_id);
   Registry::Registrar::Certification::CertificationList* getCertificationsByRegistrar(ccReg::TID registrar_id);
 };
 

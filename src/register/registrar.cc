@@ -1914,7 +1914,7 @@ public:
     }
 
     ///create registrar certification
-    virtual void createRegistrarCertification( const TID& registrar_id
+    virtual unsigned long long createRegistrarCertification( const TID& registrar_id
         , const Database::Date &valid_from
         , const Database::Date &valid_until
         , const RegCertClass classification
@@ -1929,6 +1929,7 @@ public:
             mrc.setClassification(classification);
             if (eval_file_id != 0) mrc.setEvalFileId(eval_file_id);
             mrc.insert();
+            return mrc.getId();
         }//try
         catch (...)
         {
@@ -1937,11 +1938,26 @@ public:
         }//catch (...)
     }
 
+    ///shorten registrar certification
+    virtual void shortenRegistrarCertification( const TID& certification_id
+        , const Database::Date &valid_until)
+    {
+        try
+        {
+            ModelRegistrarCertification mrc;
+            mrc.setId(certification_id);
+            mrc.setValidUntil(valid_until);
+            mrc.update();
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("shortenRegistrarCertification: an error has occured");
+            throw;
+        }//catch (...)
+    }
+
     ///update registrar certification
     virtual void updateRegistrarCertification( const TID& certification_id
-        , const TID& registrar_id
-        , const Database::Date &valid_from
-        , const Database::Date &valid_until
         , const RegCertClass classification
         , const TID& eval_file_id)
     {
@@ -1949,9 +1965,6 @@ public:
         {
             ModelRegistrarCertification mrc;
             mrc.setId(certification_id);
-            mrc.setRegistrarId(registrar_id);
-            mrc.setValidFrom(valid_from);
-            mrc.setValidUntil(valid_until);
             mrc.setClassification(classification);
             if (eval_file_id != 0) mrc.setEvalFileId(eval_file_id);
             mrc.update();

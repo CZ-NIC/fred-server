@@ -447,16 +447,16 @@ public:
 
   enum RegCertClass{c0,c1,c2,c3,c4,c5};///classification for registrar certification
   ///create registrar certification
-  virtual void createRegistrarCertification( const TID& registrar_id
+  virtual unsigned long long createRegistrarCertification( const TID& registrar_id
       , const Database::Date &valid_from
       , const Database::Date &valid_until
       , const RegCertClass classification
       , const TID& eval_file_id) =0;
+  ///shorten registrar certification
+  virtual void shortenRegistrarCertification( const TID& certification_id
+      , const Database::Date &valid_until) =0;
   ///update registrar certification
   virtual void updateRegistrarCertification( const TID& certification_id
-      , const TID& registrar_id
-      , const Database::Date &valid_from
-      , const Database::Date &valid_until
       , const RegCertClass classification
       , const TID& eval_file_id) =0;
   ///create membership of registrar in group

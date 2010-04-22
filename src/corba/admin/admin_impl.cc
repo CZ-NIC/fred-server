@@ -2092,21 +2092,81 @@ Registry::Registrar::Group::Manager_ptr ccReg_Admin_i::getGroupManager()
     return  Registry::Registrar::Group::Manager::_duplicate(reg_grp_mgr_ref_);
 }
 
-Registry_Registrar_Certification_Manager_i::Registry_Registrar_Certification_Manager_i(){
-  // add extra constructor code here
-}
-Registry_Registrar_Certification_Manager_i::~Registry_Registrar_Certification_Manager_i(){
-  // add extra destructor code here
-}
+Registry_Registrar_Certification_Manager_i::Registry_Registrar_Certification_Manager_i()
+{}
+Registry_Registrar_Certification_Manager_i::~Registry_Registrar_Certification_Manager_i()
+{}
+
 //   Methods corresponding to IDL attributes and operations
-ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to, ::CORBA::Short score, ccReg::TID evaluation_file_id){
-  // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(ccReg::TID reg_id, const ccReg::DateType& from, const ccReg::DateType& to, ::CORBA::Short score, ccReg::TID evaluation_file_id)>"
+ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(ccReg::TID reg_id
+        , const ccReg::DateType& from
+        , const ccReg::DateType& to
+        , ::CORBA::Short score
+        , ccReg::TID evaluation_file_id)
+{
+    try
+    {
+    Register::Registrar::Manager::AutoPtr regman(
+            Register::Registrar::Manager::create(0));
+    ///create registrar certification
+    return regman->createRegistrarCertification(
+            reg_id
+            , Database::Date(makeBoostDate(from))
+            , Database::Date(makeBoostDate(to))
+            , static_cast<Register::Registrar::Manager::RegCertClass>(score)
+            , evaluation_file_id);
+    }//try
+    catch(const std::exception & ex)
+    {
+        throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
+    }//catch std ex
+    catch(...)
+    {
+        throw Registry::Registrar::InternalServerError();
+    }//catch all
 }
 
-void Registry_Registrar_Certification_Manager_i::shortenCertification(ccReg::TID cert_id, const ccReg::DateType& to){
-  // insert code here and remove the warning
-  #warning "Code missing in function <void Registry_Registrar_Certification_Manager_i::shortenCertification(ccReg::TID cert_id, const ccReg::DateType& to)>"
+void Registry_Registrar_Certification_Manager_i::shortenCertification(ccReg::TID cert_id, const ccReg::DateType& to)
+{
+    try
+    {
+    Register::Registrar::Manager::AutoPtr regman(
+            Register::Registrar::Manager::create(0));
+    ///shorten registrar certification
+    return regman->shortenRegistrarCertification(
+            cert_id
+            , Database::Date(makeBoostDate(to)));
+    }//try
+    catch(const std::exception & ex)
+    {
+        throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
+    }//catch std ex
+    catch(...)
+    {
+        throw Registry::Registrar::InternalServerError();
+    }//catch all
+}
+
+void Registry_Registrar_Certification_Manager_i::updateCertification(ccReg::TID cert_id, ::CORBA::Short score, ccReg::TID evaluation_file_id)
+{
+    try
+    {
+    Register::Registrar::Manager::AutoPtr regman(
+            Register::Registrar::Manager::create(0));
+    ///update registrar certification
+    return regman->updateRegistrarCertification(
+            cert_id
+            , static_cast<Register::Registrar::Manager::RegCertClass>(score)
+            , evaluation_file_id);
+    }//try
+    catch(const std::exception & ex)
+    {
+        throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
+    }//catch std ex
+    catch(...)
+    {
+        throw Registry::Registrar::InternalServerError();
+    }//catch all
 }
 
 Registry::Registrar::Certification::CertificationList* Registry_Registrar_Certification_Manager_i::getCertificationsByRegistrar(ccReg::TID registrar_id){
