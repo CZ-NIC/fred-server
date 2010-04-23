@@ -221,7 +221,7 @@ public:
   ccReg::TID createGroup(const char* name);
   void deleteGroup(ccReg::TID group_id);
   void updateGroup(ccReg::TID group_id, const char* name);
-  void addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id);
+  ccReg::TID addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id);
   void removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id);
   Registry::Registrar::Group::GroupList* getGroups();
   Registry::Registrar::Group::MembershipByRegistrarList* getMembershipsByRegistar(ccReg::TID registrar_id);

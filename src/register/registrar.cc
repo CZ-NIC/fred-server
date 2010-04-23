@@ -1880,13 +1880,14 @@ public:
     }
 
     ///create registrar group
-    virtual void createRegistrarGroup(const std::string &group_name)
+    virtual unsigned long long createRegistrarGroup(const std::string &group_name)
     {
         try
         {
             ModelRegistrarGroup mrg;
             mrg.setShortName(group_name);
             mrg.insert();
+            return mrg.getId();
         }//try
         catch (...)
         {
@@ -1909,6 +1910,24 @@ public:
         catch (...)
         {
             LOGGER(PACKAGE).error("cancelRegistrarGroup: an error has occured");
+            throw;
+        }//catch (...)
+    }
+
+    ///update registrar group
+    virtual void updateRegistrarGroup(const TID& group_id
+            , const std::string &group_name)
+    {
+        try
+        {
+            ModelRegistrarGroup mrg;
+            mrg.setId(group_id);
+            mrg.setShortName(group_name);
+            mrg.update();
+        }//try
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("updateRegistrarGroup: an error has occured");
             throw;
         }//catch (...)
     }
@@ -1976,8 +1995,38 @@ public:
         }//catch (...)
     }
 
+    ///get registrar certification
+    virtual CertificationSeq getRegistrarCertifications( const TID& registrar_id)
+    {
+        Database::Connection conn = Database::Manager::acquire();
+
+        CertificationSeq ret;//returned
+
+        std::stringstream query;
+        query << "select id, valid_from, valid_until, classification, eval_file_id "
+            << "from registrar_certification where registrar_id='"
+            << conn.escape(boost::lexical_cast<std::string>(registrar_id))
+            << "' order by valid_from desc";
+
+        Database::Result res = conn.exec(query.str());
+        ret.reserve(res.size());//prealloc
+        for (Database::Result::Iterator it = res.begin(); it != res.end(); ++it)
+        {
+          Database::Row::Iterator col = (*it).begin();
+          CertificationData cd;
+          cd.id = *col;
+          cd.valid_from = *(++col);
+          cd.valid_until = *(++col);
+          cd.classification = static_cast<RegCertClass>(static_cast<int>(*(++col)));
+          cd.eval_file_id = *(++col);
+
+          ret.push_back(cd);
+        }//for res
+        return ret;
+    }//getRegistrarCertification
+
     ///create membership of registrar in group
-    virtual void createRegistrarGroupMembership( const TID& registrar_id
+    virtual unsigned long long createRegistrarGroupMembership( const TID& registrar_id
         , const TID& registrar_group_id
         , const Database::Date &member_from
         , const Database::Date &member_until)
@@ -1991,6 +2040,7 @@ public:
             if (member_until != Database::Date())
                 mrgm.setMemberUntil(member_until);
             mrgm.insert();
+            return mrgm.getId();
         }//try
         catch (...)
         {
@@ -2012,7 +2062,8 @@ public:
             mrgm.setId(mebership_id);
             mrgm.setRegistrarId(registrar_id);
             mrgm.setRegistrarGroupId(registrar_group_id);
-            mrgm.setMemberFrom(member_from);
+            if (member_from != Database::Date())
+                mrgm.setMemberFrom(member_from);
             if (member_until != Database::Date())
                 mrgm.setMemberUntil(member_until);
             mrgm.update();
@@ -2023,6 +2074,117 @@ public:
             throw;
         }//catch (...)
     }
+
+    ///end of registrar membership in group
+      virtual void endRegistrarGroupMembership(const TID& registrar_id
+          , const TID& registrar_group_id)
+      {
+          try
+          {
+              Database::Connection conn = Database::Manager::acquire();
+              Database::Transaction tx(conn);
+              std::stringstream query;
+
+              query << "update registrar_group_map set member_until = CURRENT_DATE"
+              << " where id = (select id from registrar_group_map where"
+              << " registrar_id = "
+              << conn.escape(boost::lexical_cast<std::string>(registrar_id))
+              << " and registrar_group_id = "
+              << conn.escape(boost::lexical_cast<std::string>(registrar_group_id))
+              << " order by member_from desc limit 1)"  ;
+
+              conn.exec(query.str());
+              tx.commit();
+          }//try
+          catch (...)
+          {
+              LOGGER(PACKAGE).error("endRegistrarGroupMembership: an error has occured");
+              throw;
+          }//catch (...)
+      }
+
+      virtual GroupSeq getRegistrarGroups()
+      {
+          Database::Connection conn = Database::Manager::acquire();
+
+          GroupSeq ret;//returned
+
+          std::stringstream query;
+          query << "select id, short_name, cancelled from registrar_group "
+                  << "order by cancelled, short_name";
+
+          Database::Result res = conn.exec(query.str());
+          ret.reserve(res.size());//prealloc
+          for (Database::Result::Iterator it = res.begin(); it != res.end(); ++it)
+          {
+            Database::Row::Iterator col = (*it).begin();
+            GroupData gd;
+            gd.id = *col;
+            gd.name = std::string(*(++col));
+            gd.cancelled = *(++col);
+
+            ret.push_back(gd);
+          }//for res
+          return ret;
+      }
+
+      ///get membership by registrar
+      virtual MembershipByRegistrarSeq getMembershipByRegistrar( const TID& registrar_id)
+      {
+          Database::Connection conn = Database::Manager::acquire();
+
+          MembershipByRegistrarSeq ret;//returned
+
+          std::stringstream query;
+          query << "select id, registrar_group_id, member_from, member_until "
+              << "from registrar_group_map where registrar_id='"
+              << conn.escape(boost::lexical_cast<std::string>(registrar_id))
+              << "' order by member_from desc";
+
+          Database::Result res = conn.exec(query.str());
+          ret.reserve(res.size());//prealloc
+          for (Database::Result::Iterator it = res.begin(); it != res.end(); ++it)
+          {
+            Database::Row::Iterator col = (*it).begin();
+            MembershipByRegistrar mbr;
+            mbr.id = *col;
+            mbr.group_id = *(++col);
+            mbr.member_from = *(++col);
+            mbr.member_until = *(++col);
+
+            ret.push_back(mbr);
+          }//for res
+          return ret;
+      }//getMembershipByRegistrar
+
+      ///get membership by groups
+      virtual MembershipByGroupSeq getMembershipByGroup( const TID& group_id)
+      {
+          Database::Connection conn = Database::Manager::acquire();
+
+          MembershipByGroupSeq ret;//returned
+
+          std::stringstream query;
+          query << "select id, registrar_id, member_from, member_until "
+              << "from registrar_group_map where registrar_group_id='"
+              << conn.escape(boost::lexical_cast<std::string>(group_id))
+              << "' order by member_from desc";
+
+          Database::Result res = conn.exec(query.str());
+          ret.reserve(res.size());//prealloc
+          for (Database::Result::Iterator it = res.begin(); it != res.end(); ++it)
+          {
+            Database::Row::Iterator col = (*it).begin();
+            MembershipByGroup mbg;
+            mbg.id = *col;
+            mbg.registrar_id = *(++col);
+            mbg.member_from = *(++col);
+            mbg.member_until = *(++col);
+
+            ret.push_back(mbg);
+          }//for res
+          return ret;
+      }//getMembershipByGroup
 
 }; // class ManagerImpl
 

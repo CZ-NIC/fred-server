@@ -2098,7 +2098,8 @@ Registry_Registrar_Certification_Manager_i::~Registry_Registrar_Certification_Ma
 {}
 
 //   Methods corresponding to IDL attributes and operations
-ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(ccReg::TID reg_id
+ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(
+        ccReg::TID reg_id
         , const ccReg::DateType& from
         , const ccReg::DateType& to
         , ::CORBA::Short score
@@ -2106,15 +2107,17 @@ ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(ccReg
 {
     try
     {
-    Register::Registrar::Manager::AutoPtr regman(
-            Register::Registrar::Manager::create(0));
-    ///create registrar certification
-    return regman->createRegistrarCertification(
-            reg_id
-            , Database::Date(makeBoostDate(from))
-            , Database::Date(makeBoostDate(to))
-            , static_cast<Register::Registrar::Manager::RegCertClass>(score)
-            , evaluation_file_id);
+        if((score < 0) || (score > 5))
+            throw std::runtime_error("Invalid value of score");
+        Register::Registrar::Manager::AutoPtr regman(
+                Register::Registrar::Manager::create(0));
+        ///create registrar certification
+        return regman->createRegistrarCertification(
+                reg_id
+                , Database::Date(makeBoostDate(from))
+                , Database::Date(makeBoostDate(to))
+                , static_cast<Register::Registrar::RegCertClass>(score)
+                , evaluation_file_id);
     }//try
     catch(const std::exception & ex)
     {
@@ -2124,18 +2127,20 @@ ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(ccReg
     {
         throw Registry::Registrar::InternalServerError();
     }//catch all
-}
+}//createCertification
 
-void Registry_Registrar_Certification_Manager_i::shortenCertification(ccReg::TID cert_id, const ccReg::DateType& to)
+void Registry_Registrar_Certification_Manager_i::shortenCertification(
+        ccReg::TID cert_id
+        , const ccReg::DateType& to)
 {
     try
     {
-    Register::Registrar::Manager::AutoPtr regman(
-            Register::Registrar::Manager::create(0));
-    ///shorten registrar certification
-    return regman->shortenRegistrarCertification(
-            cert_id
-            , Database::Date(makeBoostDate(to)));
+        Register::Registrar::Manager::AutoPtr regman(
+                Register::Registrar::Manager::create(0));
+        ///shorten registrar certification
+        return regman->shortenRegistrarCertification(
+                cert_id
+                , Database::Date(makeBoostDate(to)));
     }//try
     catch(const std::exception & ex)
     {
@@ -2145,19 +2150,23 @@ void Registry_Registrar_Certification_Manager_i::shortenCertification(ccReg::TID
     {
         throw Registry::Registrar::InternalServerError();
     }//catch all
-}
+}//shortenCertification
 
-void Registry_Registrar_Certification_Manager_i::updateCertification(ccReg::TID cert_id, ::CORBA::Short score, ccReg::TID evaluation_file_id)
+void Registry_Registrar_Certification_Manager_i::updateCertification(
+        ccReg::TID cert_id
+        , ::CORBA::Short score
+        , ccReg::TID evaluation_file_id)
 {
     try
     {
-    Register::Registrar::Manager::AutoPtr regman(
-            Register::Registrar::Manager::create(0));
-    ///update registrar certification
-    return regman->updateRegistrarCertification(
-            cert_id
-            , static_cast<Register::Registrar::Manager::RegCertClass>(score)
-            , evaluation_file_id);
+        if((score < 0) || (score > 5)) throw std::runtime_error("Invalid value of score");
+        Register::Registrar::Manager::AutoPtr regman(
+                Register::Registrar::Manager::create(0));
+        ///update registrar certification
+        return regman->updateRegistrarCertification(
+                cert_id
+                , static_cast<Register::Registrar::RegCertClass>(score)
+                , evaluation_file_id);
     }//try
     catch(const std::exception & ex)
     {
@@ -2167,58 +2176,261 @@ void Registry_Registrar_Certification_Manager_i::updateCertification(ccReg::TID 
     {
         throw Registry::Registrar::InternalServerError();
     }//catch all
-}
+}//updateCertification
 
-Registry::Registrar::Certification::CertificationList* Registry_Registrar_Certification_Manager_i::getCertificationsByRegistrar(ccReg::TID registrar_id){
-  // insert code here and remove the warning
-  #warning "Code missing in function <Registry::Registrar::Certification::CertificationList* Registry_Registrar_Certification_Manager_i::getCertificationsByRegistrar(ccReg::TID registrar_id)>"
-}
+Registry::Registrar::Certification::CertificationList*
+Registry_Registrar_Certification_Manager_i::getCertificationsByRegistrar(
+        ccReg::TID registrar_id)
+{
+    try
+    {
+        Register::Registrar::Manager::AutoPtr regman(
+                Register::Registrar::Manager::create(0));
+        ///get registrar certification
+        Register::Registrar::CertificationSeq cs
+        = regman->getRegistrarCertifications(registrar_id);
 
-Registry_Registrar_Group_Manager_i::Registry_Registrar_Group_Manager_i(){
-  // add extra constructor code here
-}
-Registry_Registrar_Group_Manager_i::~Registry_Registrar_Group_Manager_i(){
-  // add extra destructor code here
-}
+        std::auto_ptr<Registry::Registrar::Certification::CertificationList> cl
+         (new Registry::Registrar::Certification::CertificationList);
+        cl->length(cs.size());
+
+        for(unsigned i = 0;i < cs.size(); ++i)
+        {
+            (*cl)[i].id = cs[i].id;
+            (*cl)[i].from = makeCorbaDate(cs[i].valid_from);
+            (*cl)[i].to = makeCorbaDate(cs[i].valid_until);
+            (*cl)[i].score = cs[i].classification;
+            (*cl)[i].evaluation_file_id = cs[i].eval_file_id;
+        }
+
+        return cl.release();
+    }//try
+    catch(const std::exception & ex)
+    {
+        throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
+    }//catch std ex
+    catch(...)
+    {
+        throw Registry::Registrar::InternalServerError();
+    }//catch all
+}//getCertificationsByRegistrar
+
+Registry_Registrar_Group_Manager_i::Registry_Registrar_Group_Manager_i()
+{}
+Registry_Registrar_Group_Manager_i::~Registry_Registrar_Group_Manager_i()
+{}
 //   Methods corresponding to IDL attributes and operations
-ccReg::TID Registry_Registrar_Group_Manager_i::createGroup(const char* name){
-  // insert code here and remove the warning
-  #warning "Code missing in function <ccReg::TID Registry_Registrar_Group_Manager_i::createGroup(const char* name)>"
+ccReg::TID Registry_Registrar_Group_Manager_i::createGroup(const char* name)
+{
+    try
+    {
+        Register::Registrar::Manager::AutoPtr regman(
+                Register::Registrar::Manager::create(0));
+        ///create group
+        return regman->createRegistrarGroup(std::string(name));
+    }//try
+    catch(const std::exception & ex)
+    {
+        throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
+    }//catch std ex
+    catch(...)
+    {
+        throw Registry::Registrar::InternalServerError();
+    }//catch all
+}//createGroup
+
+void Registry_Registrar_Group_Manager_i::deleteGroup(ccReg::TID group_id)
+{
+    try
+    {
+        Register::Registrar::Manager::AutoPtr regman(
+                Register::Registrar::Manager::create(0));
+        ///delete group
+        regman->cancelRegistrarGroup(group_id);
+    }//try
+    catch(const std::exception & ex)
+    {
+        throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
+    }//catch std ex
+    catch(...)
+    {
+        throw Registry::Registrar::InternalServerError();
+    }//catch all
+}//deleteGroup
+
+void Registry_Registrar_Group_Manager_i::updateGroup(
+        ccReg::TID group_id
+        , const char* name)
+{
+    try
+    {
+        Register::Registrar::Manager::AutoPtr regman(
+                Register::Registrar::Manager::create(0));
+        ///update group
+        regman->updateRegistrarGroup(group_id, std::string(name));
+    }//try
+    catch(const std::exception & ex)
+    {
+        throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
+    }//catch std ex
+    catch(...)
+    {
+        throw Registry::Registrar::InternalServerError();
+    }//catch all
+}//updateGroup
+
+ccReg::TID Registry_Registrar_Group_Manager_i::addRegistrarToGroup(
+        ccReg::TID reg_id
+        , ccReg::TID group_id)
+{
+    try
+    {
+        Register::Registrar::Manager::AutoPtr regman(
+                Register::Registrar::Manager::create(0));
+        ///create membership of registrar in group
+        return regman->createRegistrarGroupMembership(
+                reg_id
+                , group_id
+                , Database::Date(NOW)
+                , Database::Date(POS_INF));
+    }//try
+    catch(const std::exception & ex)
+    {
+        throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
+    }//catch std ex
+    catch(...)
+    {
+        throw Registry::Registrar::InternalServerError();
+    }//catch all
+}//addRegistrarToGroup
+
+void Registry_Registrar_Group_Manager_i::removeRegistrarFromGroup(
+        ccReg::TID reg_id
+        , ccReg::TID group_id)
+{
+    try
+    {
+        Register::Registrar::Manager::AutoPtr regman(
+                Register::Registrar::Manager::create(0));
+        ///end membership of registrar in group
+        regman->endRegistrarGroupMembership(
+                reg_id
+                , group_id);
+    }//try
+    catch(const std::exception & ex)
+    {
+        throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
+    }//catch std ex
+    catch(...)
+    {
+        throw Registry::Registrar::InternalServerError();
+    }//catch all
 }
 
-void Registry_Registrar_Group_Manager_i::deleteGroup(ccReg::TID group_id){
-  // insert code here and remove the warning
-  #warning "Code missing in function <void Registry_Registrar_Group_Manager_i::deleteGroup(ccReg::TID group_id)>"
-}
+Registry::Registrar::Group::GroupList*
+Registry_Registrar_Group_Manager_i::getGroups()
+{
+    try
+    {
+        Register::Registrar::Manager::AutoPtr regman(
+                Register::Registrar::Manager::create(0));
+        ///get registrar certification
+        Register::Registrar::GroupSeq gs
+        = regman->getRegistrarGroups();
 
-void Registry_Registrar_Group_Manager_i::updateGroup(ccReg::TID group_id, const char* name){
-  // insert code here and remove the warning
-  #warning "Code missing in function <void Registry_Registrar_Group_Manager_i::updateGroup(ccReg::TID group_id, const char* name)>"
-}
+        std::auto_ptr<Registry::Registrar::Group::GroupList> gl
+         (new Registry::Registrar::Group::GroupList);
+        gl->length(gs.size());
 
-void Registry_Registrar_Group_Manager_i::addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id){
-  // insert code here and remove the warning
-  #warning "Code missing in function <void Registry_Registrar_Group_Manager_i::addRegistrarToGroup(ccReg::TID reg_id, ccReg::TID group_id)>"
-}
+        for(unsigned i = 0;i < gs.size(); ++i)
+        {
+            (*gl)[i].id = gs[i].id;
+            (*gl)[i].name = CORBA::string_dup(gs[i].name.c_str());
+            (*gl)[i].cancelled = makeCorbaTime(gs[i].cancelled);
+        }
 
-void Registry_Registrar_Group_Manager_i::removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id){
-  // insert code here and remove the warning
-  #warning "Code missing in function <void Registry_Registrar_Group_Manager_i::removeRegistrarFromGroup(ccReg::TID reg_id, ccReg::TID group_id)>"
-}
+        return gl.release();
+    }//try
+    catch(const std::exception & ex)
+    {
+        throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
+    }//catch std ex
+    catch(...)
+    {
+        throw Registry::Registrar::InternalServerError();
+    }//catch all
+}//getGroups
 
-Registry::Registrar::Group::GroupList* Registry_Registrar_Group_Manager_i::getGroups(){
-  // insert code here and remove the warning
-  #warning "Code missing in function <Registry::Registrar::Group::GroupList* Registry_Registrar_Group_Manager_i::getGroups()>"
-}
 
-Registry::Registrar::Group::MembershipByRegistrarList* Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(ccReg::TID registrar_id){
-  // insert code here and remove the warning
-  #warning "Code missing in function <Registry::Registrar::Group::MembershipByRegistrarList* Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(ccReg::TID registrar_id)>"
-}
+Registry::Registrar::Group::MembershipByRegistrarList*
+Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(
+        ccReg::TID registrar_id)
+{
+    try
+    {
+        Register::Registrar::Manager::AutoPtr regman(
+                Register::Registrar::Manager::create(0));
+        ///get registrar certification
+        Register::Registrar::MembershipByRegistrarSeq mbrs
+        = regman->getMembershipByRegistrar(registrar_id);
 
-Registry::Registrar::Group::MembershipByGroupList* Registry_Registrar_Group_Manager_i::getMembershipsByGroup(ccReg::TID group_id){
-  // insert code here and remove the warning
-  #warning "Code missing in function <Registry::Registrar::Group::MembershipByGroupList* Registry_Registrar_Group_Manager_i::getMembershipsByGroup(ccReg::TID group_id)>"
-}
+        std::auto_ptr<Registry::Registrar::Group::MembershipByRegistrarList> mbrl
+         (new Registry::Registrar::Group::MembershipByRegistrarList);
+        mbrl->length(mbrs.size());
+
+        for(unsigned i = 0;i < mbrs.size(); ++i)
+        {
+            (*mbrl)[i].id = mbrs[i].id;
+            (*mbrl)[i].group_id = mbrs[i].group_id;
+            (*mbrl)[i].from = makeCorbaDate(mbrs[i].member_from);
+            (*mbrl)[i].to = makeCorbaDate(mbrs[i].member_until);
+        }
+
+        return mbrl.release();
+    }//try
+    catch(const std::exception & ex)
+    {
+        throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
+    }//catch std ex
+    catch(...)
+    {
+        throw Registry::Registrar::InternalServerError();
+    }//catch all
+}//getMembershipsByRegistar
+
+Registry::Registrar::Group::MembershipByGroupList*
+Registry_Registrar_Group_Manager_i::getMembershipsByGroup(ccReg::TID group_id)
+{
+    try
+    {
+        Register::Registrar::Manager::AutoPtr regman(
+                Register::Registrar::Manager::create(0));
+        ///get registrar certification
+        Register::Registrar::MembershipByGroupSeq mbgs
+        = regman->getMembershipByGroup(group_id);
+
+        std::auto_ptr<Registry::Registrar::Group::MembershipByGroupList> mbgl
+         (new Registry::Registrar::Group::MembershipByGroupList);
+        mbgl->length(mbgs.size());
+
+        for(unsigned i = 0;i < mbgs.size(); ++i)
+        {
+            (*mbgl)[i].id = mbgs[i].id;
+            (*mbgl)[i].registrar_id = mbgs[i].registrar_id;
+            (*mbgl)[i].from = makeCorbaDate(mbgs[i].member_from);
+            (*mbgl)[i].to = makeCorbaDate(mbgs[i].member_until);
+        }
+
+        return mbgl.release();
+    }//try
+    catch(const std::exception & ex)
+    {
+        throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
+    }//catch std ex
+    catch(...)
+    {
+        throw Registry::Registrar::InternalServerError();
+    }//catch all
+}//getMembershipsByGroup
 
 

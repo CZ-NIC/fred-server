@@ -403,6 +403,50 @@ public:
   virtual const EPPActionList *getSessionActions() const = 0;
 };
 
+enum RegCertClass{c0,c1,c2,c3,c4,c5};///classification for registrar certification
+
+/// Registrar certification structure
+struct CertificationData
+{
+    TID id;
+    Database::Date valid_from;
+    Database::Date valid_until;
+    RegCertClass classification;
+    TID eval_file_id;
+};//struct Certification
+typedef  std::vector<CertificationData> CertificationSeq;
+
+/// Registrar group structure
+struct GroupData
+{
+    TID id;
+    std::string name;
+    Database::DateTime cancelled;
+};
+typedef  std::vector<GroupData> GroupSeq;
+
+
+/// Registrar membership in group by registrar structure
+struct MembershipByRegistrar
+{
+    TID id;
+    TID group_id;
+    Database::Date member_from;
+    Database::Date member_until;
+};
+typedef  std::vector<MembershipByRegistrar> MembershipByRegistrarSeq;
+
+/// Registrar membership in group by group structure
+struct MembershipByGroup
+{
+    TID id;
+    TID registrar_id;
+    Database::Date member_from;
+    Database::Date member_until;
+};
+typedef  std::vector<MembershipByGroup> MembershipByGroupSeq;
+
+
 /// Main entry point for Registrar namespace
 class Manager {
 public:
@@ -441,11 +485,12 @@ public:
                                                    const std::string &memo) = 0;
 
   ///create registrar group
-  virtual void createRegistrarGroup(const std::string &group_name) =0;
+  virtual unsigned long long createRegistrarGroup(const std::string &group_name) =0;
   ///cancel registrar group
   virtual void cancelRegistrarGroup(const TID& group_id) =0;
-
-  enum RegCertClass{c0,c1,c2,c3,c4,c5};///classification for registrar certification
+  ///update registrar group
+  virtual void updateRegistrarGroup(const TID& group_id
+          , const std::string &group_name) =0;
   ///create registrar certification
   virtual unsigned long long createRegistrarCertification( const TID& registrar_id
       , const Database::Date &valid_from
@@ -459,8 +504,11 @@ public:
   virtual void updateRegistrarCertification( const TID& certification_id
       , const RegCertClass classification
       , const TID& eval_file_id) =0;
+  ///get registrar certifications
+  virtual CertificationSeq getRegistrarCertifications( const TID& registrar_id) =0;
+
   ///create membership of registrar in group
-  virtual void createRegistrarGroupMembership( const TID& registrar_id
+  virtual unsigned long long createRegistrarGroupMembership( const TID& registrar_id
       , const TID& registrar_group_id
       , const Database::Date &member_from
       , const Database::Date &member_until) =0;
@@ -470,7 +518,16 @@ public:
       , const TID& registrar_group_id
       , const Database::Date &member_from
       , const Database::Date &member_until) =0;
+  ///end of registrar membership in group
+  virtual void endRegistrarGroupMembership(const TID& registrar_id
+      , const TID& registrar_group_id) =0;
 
+  ///get registrar groups
+  virtual GroupSeq getRegistrarGroups() =0;
+  ///get membership by registrar
+  virtual MembershipByRegistrarSeq getMembershipByRegistrar( const TID& registrar_id) =0;
+  ///get membership by groups
+  virtual MembershipByGroupSeq getMembershipByGroup( const TID& group_id) =0;
 
   typedef std::auto_ptr<Register::Registrar::Manager> AutoPtr;
 
