@@ -28,10 +28,6 @@
 
 #define DOMAIN_SHOW_OPTS_NAME           "domain_show_opts"
 #define DOMAIN_SHOW_OPTS_NAME_DESC      "show all domain command line options"
-#define DOMAIN_CREATE_NAME              "domain_create"
-#define DOMAIN_CREATE_NAME_DESC         "create domain"
-#define DOMAIN_UPDATE_NAME              "domain_update"
-#define DOMAIN_UPDATE_NAME_DESC         "update domain"
 #define DOMAIN_LIST_NAME                "domain_list"
 #define DOMAIN_LIST_NAME_DESC           "list of all domains (via filters)"
 #define DOMAIN_LIST_PLAIN_NAME          "domain_list_plain"
@@ -39,19 +35,6 @@
 #define DOMAIN_INFO_NAME                "domain_info"
 #define DOMAIN_INFO_NAME_DESC           "info on domain"
 
-#define DOMAIN_REGISTRANT_NAME          "registrant"
-#define DOMAIN_REGISTRANT_NAME_DESC     "registrant description"
-#define DOMAIN_NSSET_NAME               "nsset"
-#define DOMAIN_NSSET_NAME_DESC          "nsset description"
-#define DOMAIN_KEYSET_NAME              "keyset"
-#define DOMAIN_KEYSET_NAME_DESC         "keyset description"
-#define DOMAIN_PERIOD_NAME              "period"
-#define DOMAIN_PERIOD_NAME_DESC         "period description"
-
-#define DOMAIN_CREATE_HELP_NAME         "domain_create_help"
-#define DOMAIN_CREATE_HELP_NAME_DESC    "help on domain create"
-#define DOMAIN_UPDATE_HELP_NAME         "domain_update_help"
-#define DOMAIN_UPDATE_HELP_NAME_DESC    "help on domain update"
 #define DOMAIN_LIST_HELP_NAME           "domain_list_help"
 #define DOMAIN_LIST_HELP_NAME_DESC      "help on domain list"
 
@@ -96,13 +79,9 @@ public:
     void show_opts();
     void domain_list();
     void domain_list_plain();
-    void domain_create();
-    void domain_update();
     void domain_info();
 
     void domain_list_help();
-    void domain_update_help();
-    void domain_create_help();
     void list_help();
 }; // class DomainClient
 

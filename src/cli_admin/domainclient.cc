@@ -37,10 +37,6 @@ DomainClient::runMethod()
 {
     if (m_conf.hasOpt(DOMAIN_LIST_PLAIN_NAME)) {
         domain_list_plain();
-    } else if (m_conf.hasOpt(DOMAIN_CREATE_NAME)) {
-        domain_create();
-    } else if (m_conf.hasOpt(DOMAIN_UPDATE_NAME)) {
-        domain_update();
     } else if (m_conf.hasOpt(DOMAIN_INFO_NAME)) {
         domain_info();
     } else if (m_conf.hasOpt(DOMAIN_LIST_NAME)) {
@@ -184,164 +180,6 @@ DomainClient::domain_list()
 }
 
 void
-DomainClient::domain_create()
-{
-    callHelp(m_conf, domain_create_help);
-    std::string fqdn = m_conf.get<std::string>(DOMAIN_CREATE_NAME).c_str();
-    std::string registrant = m_conf.get<std::string>(DOMAIN_REGISTRANT_NAME).c_str();
-    std::string nsset = m_conf.get<std::string>(DOMAIN_NSSET_NAME).c_str();
-    std::string keyset = m_conf.get<std::string>(DOMAIN_KEYSET_NAME).c_str();
-    std::string authInfoPw = m_conf.get<std::string>(AUTH_PW_NAME).c_str();
-    std::string admins = m_conf.get<std::string>(ADMIN_NAME).c_str();
-    unsigned int period = m_conf.get<unsigned int>(DOMAIN_PERIOD_NAME);
-
-    bool empty_param = false;
-    if (registrant.empty()) {
-        std::cerr << "Parameter ``registrant'' is not allowed to be empty!" << std::endl;
-        empty_param = true;
-    }
-    if (period == 0) {
-        std::cerr << "Parameter ``period'' must be number bigger (and not equal) than zero!" << std::endl;
-        empty_param = true;
-    }
-    if (admins.empty()) {
-        std::cerr << "Parameter ``admins'' is not allowed to be empty!" << std::endl;
-        empty_param = true;
-    }
-    if (empty_param)
-        exit(1);
-
-    /* lets get separated admin contact from its list */
-    std::vector<std::string> admins_list;
-    char *tok;
-    char *str;
-    str = (char *)std::malloc(sizeof(char) * (admins.length()));
-    std::strcpy(str, admins.c_str());
-    /* list of admin contact is seperated with spaces */
-    tok = std::strtok(str, " ");
-    while (tok != NULL) {
-        admins_list.push_back(std::string(tok));
-        tok = std::strtok(NULL, " ");
-    }
-    std::free(str);
-
-    ccReg::AdminContact admin;
-    admin.length(admins_list.size());
-    for (int i = 0; i < (int)admins_list.size(); i++)
-        admin[i] = CORBA::string_dup(admins_list[i].c_str());
-
-
-    std::string cltrid;
-    std::string xml;
-    xml = "<fqdn>" + fqdn + "</fqdn>";
-    cltrid = "domain_create";
-
-    ccReg::Period_str period_str;
-    period_str.count = (short int)period;
-    period_str.unit = ccReg::unit_month;
-
-    ccReg::timestamp crDate;
-    ccReg::timestamp exDate;
-
-    ccReg::ExtensionList extList;
-    extList.length(0);
-
-    CLIENT_LOGIN;
-
-    r = epp->DomainCreate(fqdn.c_str(), registrant.c_str(),
-            nsset.c_str(), keyset.c_str(), authInfoPw.c_str(),
-            period_str, admin, crDate, exDate,
-            clientId, cltrid.c_str(), xml.c_str(), extList);
-
-    std::cout << "return code: " << r->code << std::endl;
-
-    CLIENT_LOGOUT;
-    return;
-}
-
-void
-DomainClient::domain_update()
-{
-    callHelp(m_conf, domain_update_help);
-    std::string fqdn = m_conf.get<std::string>(DOMAIN_UPDATE_NAME);
-    std::string registrant = m_conf.get<std::string>(REGISTRANT_HANDLE_NAME);
-    std::string nsset = m_conf.get<std::string>(NSSET_HANDLE_NAME);
-    std::string keyset = m_conf.get<std::string>(KEYSET_HANDLE_NAME);
-    std::string authinfopw = m_conf.get<std::string>(AUTH_PW_NAME);
-    std::string admins_add = m_conf.get<std::string>(ADMIN_ADD_NAME);
-    std::string admins_rem = m_conf.get<std::string>(ADMIN_REM_NAME);
-    std::string admins_rem_temp = m_conf.get<std::string>(ADMIN_REM_TEMP_NAME);
-
-    std::vector<std::string> admins_add_list;
-    std::vector<std::string> admins_rem_list;
-    std::vector<std::string> admins_rem_temp_list;
-    /* lets get separated admin contact from its list */
-    char *tok;
-    char *str;
-    str = (char *)std::malloc(sizeof(char) * (admins_add.length()));
-    std::strcpy(str, admins_add.c_str());
-    /* list of admin contact is seperated with spaces */
-    tok = std::strtok(str, " ");
-    while (tok != NULL) {
-        admins_add_list.push_back(std::string(tok));
-        tok = std::strtok(NULL, " ");
-    }
-    std::free(str);
-
-    str = (char *)std::malloc(sizeof(char) * (admins_rem.length()));
-    std::strcpy(str, admins_rem.c_str());
-    /* list of admin contact is seperated with spaces */
-    tok = std::strtok(str, " ");
-    while (tok != NULL) {
-        admins_rem_list.push_back(std::string(tok));
-        tok = std::strtok(NULL, " ");
-    }
-    std::free(str);
-
-    str = (char *)std::malloc(sizeof(char) * (admins_rem_temp.length()));
-    std::strcpy(str, admins_rem_temp.c_str());
-    /* list of admin contact is seperated with spaces */
-    tok = std::strtok(str, " ");
-    while (tok != NULL) {
-        admins_rem_temp_list.push_back(std::string(tok));
-        tok = std::strtok(NULL, " ");
-    }
-    std::free(str);
-
-    ccReg::AdminContact admin_add;
-    ccReg::AdminContact admin_rem;
-    ccReg::AdminContact admin_rem_temp;
-
-    admin_add.length(admins_add_list.size());
-    for (int i = 0; i < (int)admins_add_list.size(); i++)
-        admin_add[i] = CORBA::string_dup(admins_add_list[i].c_str());
-    admin_rem.length(admins_rem_list.size());
-    for (int i = 0; i < (int)admins_rem_list.size(); i++)
-        admin_rem[i] = CORBA::string_dup(admins_rem_list[i].c_str());
-    admin_rem_temp.length(admins_rem_temp_list.size());
-    for (int i = 0; i < (int)admins_rem_temp_list.size(); i++)
-        admin_rem_temp[i] = CORBA::string_dup(admins_rem_temp_list[i].c_str());
-
-    ccReg::ExtensionList extList;
-    extList.length(0);
-
-    CLIENT_LOGIN;
-
-    std::string cltrid;
-    std::string xml;
-    xml = "<fqdn>" + fqdn + "</fqdn>";
-    cltrid = "domain_update";
-
-    r = epp->DomainUpdate(fqdn.c_str(), registrant.c_str(),
-            authinfopw.c_str(), nsset.c_str(), keyset.c_str(), 
-            admin_add, admin_rem, admin_rem_temp,
-            clientId, cltrid.c_str(), xml.c_str(), extList);
-
-    std::cout << "return code: " << r->code << std::endl;
-    CLIENT_LOGOUT;
-    return;
-}
-void
 DomainClient::domain_info()
 {
     callHelp(m_conf, no_help);
@@ -387,45 +225,6 @@ DomainClient::domain_list_plain()
 }
 
 void
-DomainClient::domain_update_help()
-{
-    std::cout
-        << "** Domain update **\n\n"
-        << "  " << g_prog_name << " --" << DOMAIN_UPDATE_NAME << "=<domain_fqdn> \\\n"
-        << "    [--" << REGISTRAR_HANDLE_NAME << "=<registrant_handle> \\\n"
-        << "    [--" << NSSET_HANDLE_NAME << "=<new_nsset>] \\\n"
-        << "    [--" << KEYSET_HANDLE_NAME << "=<new_keyset>] \\\n"
-        << "    [--" << AUTH_PW_NAME << "=<new_authinfo_password>] \\\n"
-        << "    [--" << ADMIN_ADD_NAME << "=<list_of_admins_to_add>] \\\n"
-        << "    [--" << ADMIN_REM_NAME << "=<list_of_admins_to_rem>] \\\n"
-        << "    [--" << ADMIN_REM_TEMP_NAME << "=<list_of_temp_admins_to_rem>]"
-        << std::endl;
-}
-
-void
-DomainClient::domain_create_help()
-{
-    std::cout
-        << "** Domain create **\n\n"
-        << "  " << g_prog_name << " --" << DOMAIN_CREATE_NAME << "=<domain_fqdn> \\\n"
-        << "    --" << DOMAIN_REGISTRANT_NAME << "=<registrant_handle> \\\n"
-        << "    [--" << NSSET_HANDLE_NAME << "=<nsset_handle>] \\\n"
-        << "    [--" << KEYSET_HANDLE_NAME << "=<keyset_handle>] \\\n"
-        << "    [--" << AUTH_PW_NAME << "=<authinfo_password>] \\\n"
-        << "    --" << ADMIN_NAME_DESC << "=<list_of_admins_contact_handles> \\\n"
-        << "    --" << DOMAIN_PERIOD_NAME << "=<period_in_months>\n\n"
-        << "Domain creation example:\n"
-        << "\t$ " << g_prog_name << " --" << DOMAIN_CREATE_NAME << "=example.cz "
-        << "--" << ADMIN_NAME_DESC << "=\"CON::001 CON::005\" --"
-        << NSSET_HANDLE_NAME << "\"NSS::137\" "
-        << "--" << DOMAIN_PERIOD_NAME << "=24 --" << DOMAIN_REGISTRANT_NAME << "=\"CON::005\"\n"
-        << "will create domain with FQDN ``example.cz'', administrator contacts "
-        << "``CON::001'' and ``CON::005'', with NSSet ``NSS::137'', valid for "
-        << "2 years and without any keyset."
-        << std::endl;
-}
-
-void
 DomainClient::list_help()
 {
     std::cout
@@ -465,8 +264,6 @@ DomainClient::m_opts[] = {
     ADDOPT(DOMAIN_LIST_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(DOMAIN_LIST_PLAIN_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(DOMAIN_INFO_NAME, TYPE_STRING, true, true),
-    ADDOPT(DOMAIN_CREATE_NAME, TYPE_STRING, true, true),
-    ADDOPT(DOMAIN_UPDATE_NAME, TYPE_STRING, true, true),
     ADDOPT(DOMAIN_LIST_PLAIN_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(DOMAIN_SHOW_OPTS_NAME, TYPE_NOTYPE, true, true),
     ADDOPT(DOMAIN_OUT_DATE_NAME, TYPE_STRING, false, false),
