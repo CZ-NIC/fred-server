@@ -2327,11 +2327,11 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::ContactDelete(
-  const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML)
+  const char* handle, const ccReg::EppParams &params)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -2341,9 +2341,9 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
     ParsedAction paction;
     paction.add(1,(const char *)handle);
 
-    EPPAction action(this, clientID, EPP_ContactDelete, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_ContactDelete, params.clTRID, params.XML, &paction);
 
-    LOG( NOTICE_LOG , "ContactDelete: clientID -> %d clTRID [%s] handle [%s] " , (int ) clientID , clTRID , handle );
+    LOGGER(PACKAGE).notice(boost::format("ContactDelete: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.sessionID % (const char*)params.clTRID % handle );
 
     id = getIdOfContact(action.getDB(), handle, conf, true);
 
@@ -2376,7 +2376,7 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
         code = COMMAND_FAILED;
     }
     if (!code) {
-        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), clTRID);
+        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), params.clTRID);
         if (notify) {
             ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id )); // notifier maneger before delete
             ntf->constructMessages(); // need to run all sql queries before delete take place (Ticket #1622)
@@ -2430,12 +2430,12 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
  ***********************************************************************/
 
 ccReg::Response * ccReg_EPP_i::ContactUpdate(
-  const char *handle, const ccReg::ContactChange & c, CORBA::Long clientID,
-  const char *clTRID, const char* XML)
+  const char *handle, const ccReg::ContactChange & c, 
+  const ccReg::EppParams &params)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -2447,11 +2447,11 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     ParsedAction paction;
     paction.add(1,(const char*)handle);
 
-    EPPAction action(this, clientID, EPP_ContactUpdate, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_ContactUpdate, params.clTRID, params.XML, &paction);
 
-    LOG( NOTICE_LOG, "ContactUpdate: clientID -> %d clTRID [%s] handle [%s] ", (int ) clientID, clTRID, handle );
-    LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d Email %d VAT %d Ident %d NotifyEmail %d" , c.DiscloseFlag ,
-            c.DiscloseName , c.DiscloseOrganization , c.DiscloseAddress , c.DiscloseTelephone , c.DiscloseFax , c.DiscloseEmail, c.DiscloseVAT, c.DiscloseIdent, c.DiscloseNotifyEmail );
+    LOGGER(PACKAGE).notice(boost::format("ContactUpdate: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.sessionID % (const char*)params.clTRID % handle );
+    LOGGER(PACKAGE).notice(boost::format("Discloseflag %1%: Disclose Name %2% Org %3% Add %4% Tel %5% Fax %6% Email %7% VAT %8% Ident %9% NotifyEmail %10%") % c.DiscloseFlag % c.DiscloseName % c.DiscloseOrganization % c.DiscloseAddress % c.DiscloseTelephone % c.DiscloseFax % c.DiscloseEmail % c.DiscloseVAT % c.DiscloseIdent % c.DiscloseNotifyEmail );
+            
 
     id = getIdOfContact(action.getDB(), handle, conf, true);
     // for notification to old notify address, this address must be
@@ -2622,31 +2622,40 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
 
 ccReg::Response * ccReg_EPP_i::ContactCreate(
   const char *handle, const ccReg::ContactChange & c,
-  ccReg::timestamp_out crDate, CORBA::Long clientID, const char *clTRID,
-  const char* XML)
+  ccReg::timestamp_out crDate, const ccReg::EppParams & params)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
     ConnectionReleaser releaser;
 
+    LOGGER(PACKAGE).debug(" ##### checkpoint 1 ");
     std::auto_ptr<EPPNotifier> ntf;
 
+    LOGGER(PACKAGE).debug(" ##### checkpoint 2 ");
     int id;
     int s, snum;
     char streetStr[10];
     short int code = 0;
 
+    LOGGER(PACKAGE).debug(" ##### checkpoint 3 ");
     ParsedAction paction;
+    LOGGER(PACKAGE).debug(" ##### checkpoint 4 ");
     paction.add(1,(const char*)handle);
 
+    LOGGER(PACKAGE).debug(" ##### checkpoint 5 ");
     crDate = CORBA::string_dup("");
 
-    EPPAction action(this, clientID, EPP_ContactCreate, clTRID, XML, &paction);
+    LOGGER(PACKAGE).debug(" ##### checkpoint 6 ");
 
-    LOG( NOTICE_LOG, "ContactCreate: clientID -> %d clTRID [%s] handle [%s]", (int ) clientID, clTRID, handle );
-    LOG( NOTICE_LOG, "Discloseflag %d: Disclose Name %d Org %d Add %d Tel %d Fax %d Email %d VAT %d Ident %d NotifyEmail %d" , c.DiscloseFlag ,
-            c.DiscloseName , c.DiscloseOrganization , c.DiscloseAddress , c.DiscloseTelephone , c.DiscloseFax , c.DiscloseEmail, c.DiscloseVAT, c.DiscloseIdent, c.DiscloseNotifyEmail);
+    EPPAction action(this, params.sessionID, EPP_ContactCreate, params.clTRID, params.XML, &paction);
+
+    LOGGER(PACKAGE).debug(" ##### checkpoint 7 ");
+
+    LOGGER(PACKAGE).notice(boost::format("ContactCreate: clientID -> %1% clTRID [%2%] handle [%3%]") % (int ) params.sessionID % (const char*)params.clTRID % handle );
+
+    LOGGER(PACKAGE).notice(boost::format("Discloseflag %1%: Disclose Name %2% Org %3% Add %4% Tel %5% Fax %6% Email %7% VAT %8% Ident %9% NotifyEmail %10%") % c.DiscloseFlag %
+            c.DiscloseName % c.DiscloseOrganization % c.DiscloseAddress % c.DiscloseTelephone % c.DiscloseFax % c.DiscloseEmail % c.DiscloseVAT % c.DiscloseIdent % c.DiscloseNotifyEmail);
 
     Register::Contact::Manager::CheckAvailType caType;
     try {
@@ -2837,8 +2846,8 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
 
 ccReg::Response* ccReg_EPP_i::ObjectTransfer(
   short act, const char*table, const char*fname, const char* name,
-  const char* authInfo, CORBA::Long clientID, const char* clTRID,
-  const char* XML)
+  const char* authInfo, 
+  const ccReg::EppParams &params)
 {
     std::auto_ptr<EPPNotifier> ntf;
     char pass[PASS_LEN+1];
@@ -2850,9 +2859,10 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
     ParsedAction paction;
     paction.add(1,(const char*)name);
 
-    EPPAction action(this, clientID, (int)act, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, (int)act, params.clTRID, params.XML, &paction);
 
-    LOG( NOTICE_LOG , "ObjectContact: act %d  clientID -> %d clTRID [%s] object [%s] authInfo [%s] " , act , (int ) clientID , clTRID , name , authInfo );
+    LOGGER(PACKAGE).notice(boost::format("ObjectContact: act %1%  clientID -> %2% clTRID [%3%] object [%4%] authInfo [%5%] ") % act % (int ) params.sessionID % (const char*)params.clTRID % name % authInfo );
+
     int zone = 0; // for domain zone check
     switch (act) {
         case EPP_ContactTransfer:
@@ -3047,56 +3057,51 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
 }
 
 ccReg::Response* ccReg_EPP_i::ContactTransfer(
-  const char* handle, const char* authInfo, CORBA::Long clientID,
-  const char* clTRID, const char* XML)
+  const char* handle, const char* authInfo, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
   ConnectionReleaser releaser;
 
-  return ObjectTransfer( EPP_ContactTransfer , "CONTACT" , "handle" , handle, authInfo, clientID, clTRID , XML);
+  return ObjectTransfer( EPP_ContactTransfer , "CONTACT" , "handle" , handle, authInfo, params);
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetTransfer(
-  const char* handle, const char* authInfo, CORBA::Long clientID,
-  const char* clTRID, const char* XML)
+  const char* handle, const char* authInfo, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
   ConnectionReleaser releaser;
 
-  return ObjectTransfer( EPP_NSsetTransfer , "NSSET" , "handle" , handle, authInfo, clientID, clTRID , XML);
+  return ObjectTransfer( EPP_NSsetTransfer , "NSSET" , "handle" , handle, authInfo, params);
 }
 
 ccReg::Response* ccReg_EPP_i::DomainTransfer(
-  const char* fqdn, const char* authInfo, CORBA::Long clientID,
-  const char* clTRID, const char* XML)
+  const char* fqdn, const char* authInfo, const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
   ConnectionReleaser releaser;
 
-  return ObjectTransfer( EPP_DomainTransfer , "DOMAIN" , "fqdn" , fqdn, authInfo, clientID, clTRID , XML);
+  return ObjectTransfer( EPP_DomainTransfer , "DOMAIN" , "fqdn" , fqdn, authInfo, params);
 }
 
 ccReg::Response *
 ccReg_EPP_i::KeySetTransfer(
         const char *handle,
         const char *authInfo,
-        CORBA::Long clientID,
-        const char *clTRID,
-        const char *XML)
+        const ccReg::EppParams &params)
 {
   Logging::Context::clear();
   Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+  Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
   ConnectionReleaser releaser;
 
     return ObjectTransfer(EPP_KeySetTransfer, "KEYSET", "handle", handle,
-            authInfo, clientID, clTRID, XML);
+            authInfo, params);
 }
 
 /***********************************************************************
@@ -3224,11 +3229,11 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::NSSetDelete(
-  const char* handle, CORBA::Long clientID, const char* clTRID, const char* XML)
+  const char* handle, const ccReg::EppParams &params)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -3238,9 +3243,9 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
     ParsedAction paction;
     paction.add(1,(const char*)handle);
 
-    EPPAction action(this, clientID, EPP_NSsetDelete, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_NSsetDelete, params.clTRID, params.XML, &paction);
 
-    LOG( NOTICE_LOG , "NSSetDelete: clientID -> %d clTRID [%s] handle [%s] " , (int ) clientID , clTRID , handle );
+    LOGGER(PACKAGE).notice(boost::format("NSSetDelete: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.sessionID % (const char*)params.clTRID % handle );
 
     // lock row
     id = getIdOfNSSet(action.getDB(), handle, conf, true);
@@ -3273,7 +3278,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
     }
     if (!code) {
         // create notifier
-        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), clTRID);
+        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), params.clTRID);
         if (notify)
             ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
 
@@ -3328,11 +3333,11 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
 ccReg::Response * ccReg_EPP_i::NSSetCreate(
   const char *handle, const char *authInfoPw, const ccReg::TechContact & tech,
   const ccReg::DNSHost & dns, CORBA::Short level, ccReg::timestamp_out crDate,
-  CORBA::Long clientID, const char *clTRID, const char* XML)
+  const ccReg::EppParams &params)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -3343,14 +3348,14 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
     int *tch= NULL;
     short int code = 0;
 
-    LOG( NOTICE_LOG, "NSSetCreate: clientID -> %d clTRID [%s] handle [%s]  authInfoPw [%s]", (int ) clientID, clTRID, handle , authInfoPw );
-    LOG( NOTICE_LOG, "NSSetCreate: tech check level %d tech num %d" , (int) level , (int) tech.length() );
+    LOGGER(PACKAGE).notice(boost::format("NSSetCreate: clientID -> %1% clTRID [%2%] handle [%3%]  authInfoPw [%4%]") % (int ) params.sessionID % (const char*)params.clTRID % handle % authInfoPw );
+    LOGGER(PACKAGE).notice(boost::format("NSSetCreate: tech check level %1% tech num %2%") % (int) level % (int) tech.length() );
 
     ParsedAction paction;
     paction.add(1,(const char*)handle);
 
     crDate = CORBA::string_dup("");
-    EPPAction action(this, clientID, EPP_NSsetCreate, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_NSsetCreate, params.clTRID, params.XML, &paction);
 
     std::auto_ptr<Register::Zone::Manager> zman(
             Register::Zone::Manager::create());
@@ -3680,11 +3685,11 @@ ccReg::Response *
 ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
         const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem,
         const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem,
-        CORBA::Short level, CORBA::Long clientID, const char* clTRID, const char* XML)
+        CORBA::Short level, const ccReg::EppParams &params)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -3711,10 +3716,11 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
     ParsedAction paction;
     paction.add(1,(const char*)handle);
 
-    EPPAction action(this, clientID, EPP_NSsetUpdate, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_NSsetUpdate, params.clTRID, params.XML, &paction);
 
-    LOG( NOTICE_LOG , "NSSetUpdate: clientID -> %d clTRID [%s] handle [%s] authInfo_chg  [%s] " , (int ) clientID , clTRID , handle , authInfo_chg);
-    LOG( NOTICE_LOG, "NSSetUpdate: tech check level %d" , (int) level );
+
+    LOGGER(PACKAGE).notice( boost::format("NSSetUpdate: clientID -> %1% clTRID [%2%] handle [%3%] authInfo_chg  [%4%] ") % (int ) params.sessionID % (const char*)params.clTRID % handle % authInfo_chg);
+    LOGGER(PACKAGE).notice( boost::format("NSSetUpdate: tech check level %1%") % (int) level );
 
     std::auto_ptr<Register::Zone::Manager> zman(
             Register::Zone::Manager::create());
@@ -4257,11 +4263,11 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::DomainDelete(
-  const char* fqdn, CORBA::Long clientID, const char* clTRID, const char* XML)
+  const char* fqdn, const ccReg::EppParams &params)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -4271,9 +4277,9 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
     ParsedAction paction;
     paction.add(1,(const char*)fqdn);
 
-    EPPAction action(this, clientID, EPP_DomainDelete, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_DomainDelete, params.clTRID, params.XML, &paction);
 
-    LOG( NOTICE_LOG , "DomainDelete: clientID -> %d clTRID [%s] fqdn  [%s] " , (int ) clientID , clTRID , fqdn );
+    LOGGER(PACKAGE).notice(boost::format("DomainDelete: clientID -> %1% clTRID [%2%] fqdn  [%3%] ") % (int ) params.sessionID % params.clTRID % fqdn );
 
     if ( (id = getIdOfDomain(action.getDB(), fqdn, conf, true, &zone) ) <= 0) {
         LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
@@ -4302,7 +4308,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
     }
     if (!code) {
         // run notifier
-        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), clTRID);
+        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), params.clTRID);
         if (notify)
             ntf.reset(new EPPNotifier(conf.get<bool>("registry.disable_epp_notifier"),mm , action.getDB(), action.getRegistrar() , id ));
 
@@ -4352,12 +4358,12 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
   const char *fqdn, const char *registrant_chg, const char *authInfo_chg,
   const char *nsset_chg, const char *keyset_chg,
   const ccReg::AdminContact & admin_add, const ccReg::AdminContact & admin_rem,
-  const ccReg::AdminContact& tmpcontact_rem, CORBA::Long clientID,
-  const char *clTRID, const char* XML, const ccReg::ExtensionList & ext)
+  const ccReg::AdminContact& tmpcontact_rem, const ccReg::EppParams &params,
+  const ccReg::ExtensionList & ext)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -4374,10 +4380,10 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
     ParsedAction paction;
     paction.add(1,(const char*)fqdn);
 
-    EPPAction action(this, clientID, EPP_DomainUpdate, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_DomainUpdate, params.clTRID, params.XML, &paction);
 
-    LOG( NOTICE_LOG, "DomainUpdate: clientID -> %d clTRID [%s] fqdn  [%s] , registrant_chg  [%s] authInfo_chg [%s]  nsset_chg [%s] keyset_chg[%s] ext.length %ld",
-            (int ) clientID, clTRID, fqdn, registrant_chg, authInfo_chg, nsset_chg , keyset_chg, (long)ext.length() );
+    LOGGER(PACKAGE).notice(boost::format ("DomainUpdate: clientID -> %1% clTRID [%2%] fqdn  [%3%] % registrant_chg  [%4%] authInfo_chg [%5%]  nsset_chg [%6%] keyset_chg[%7%] ext.length %8%") %
+            (int ) params.sessionID % (const char*)params.clTRID % fqdn % registrant_chg % authInfo_chg % nsset_chg % keyset_chg % (long)ext.length() );
 
     ac_add.resize(admin_add.length());
     ac_rem.resize(admin_rem.length());
@@ -4807,15 +4813,13 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
         const ccReg::AdminContact & admin,
         ccReg::timestamp_out crDate,
         ccReg::timestamp_out exDate,
-        CORBA::Long clientID,
-        const char *clTRID,
-        const char* XML,
+        const ccReg::EppParams &params,
         const ccReg::ExtensionList & ext
         )
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -4838,15 +4842,14 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     crDate = CORBA::string_dup("");
     exDate = CORBA::string_dup("");
 
-    EPPAction action(this, clientID, EPP_DomainCreate, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_DomainCreate, params.clTRID, params.XML, &paction);
 
     ad.resize(admin.length());
 
-    LOG( NOTICE_LOG, "DomainCreate: clientID -> %d clTRID [%s] fqdn  [%s] ",
-            (int ) clientID, clTRID, fqdn );
-    LOG( NOTICE_LOG,
-            "DomainCreate:  Registrant  [%s]  nsset [%s]  keyset [%s] AuthInfoPw [%s]",
-            Registrant, nsset, keyset, AuthInfoPw);
+    LOGGER(PACKAGE).notice(boost::format("DomainCreate: clientID -> %1% clTRID [%2%] fqdn  [%3%] ") %
+            (int ) params.sessionID % (const char*)params.clTRID % fqdn );
+    LOGGER(PACKAGE).notice(boost::format("DomainCreate:  Registrant  [%1%]  nsset [%2%]  keyset [%3%] AuthInfoPw [%4%]") %
+            Registrant % nsset % keyset % AuthInfoPw);
 
     //  period transform from structure to month
     // if in year
@@ -5220,12 +5223,11 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
 ccReg::Response *
 ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
         const ccReg::Period_str& period, ccReg::timestamp_out exDate,
-        CORBA::Long clientID, const char *clTRID, const char* XML,
-        const ccReg::ExtensionList & ext)
+        const ccReg::EppParams &params, const ccReg::ExtensionList & ext)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
     ConnectionReleaser releaser;
 
     std::auto_ptr<EPPNotifier> ntf;
@@ -5239,12 +5241,12 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     ParsedAction paction;
     paction.add(1,(const char*)fqdn);
 
-    EPPAction action(this, clientID, EPP_DomainRenew, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_DomainRenew, params.clTRID, params.XML, &paction);
 
     // default
     exDate = CORBA::string_dup("");
 
-    LOG( NOTICE_LOG, "DomainRenew: clientID -> %d clTRID [%s] fqdn  [%s] curExpDate [%s]", (int ) clientID, clTRID, fqdn , (const char *) curExpDate );
+    LOGGER(PACKAGE).notice(boost::format("DomainRenew: clientID -> %1% clTRID [%2%] fqdn  [%3%] curExpDate [%4%]") % (int ) params.sessionID % (const char*)params.clTRID % fqdn % (const char *) curExpDate );
 
     //  period count
     if (period.unit == ccReg::unit_year) {
@@ -5255,7 +5257,6 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
         snprintf(periodStr, sizeof(periodStr), "m%d", period.count);
     } else
         period_count = 0; // use default value
-
 
     LOG( NOTICE_LOG, "DomainRenew: period count %d unit %d period_count %d string [%s]" , period.count , period.unit , period_count , periodStr);
 
@@ -5564,13 +5565,11 @@ ccReg_EPP_i::KeySetInfo(
 ccReg::Response *
 ccReg_EPP_i::KeySetDelete(
         const char *handle,
-        CORBA::Long clientID,
-        const char *clTRID,
-        const char *XML)
+        const ccReg::EppParams &params)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
     ConnectionReleaser releaser;
 
     int                 id;
@@ -5580,10 +5579,10 @@ ccReg_EPP_i::KeySetDelete(
     ParsedAction paction;
     paction.add(1, (const char *)handle);
 
-    EPPAction action(this, clientID, EPP_KeySetDelete, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_KeySetDelete, params.clTRID, params.XML, &paction);
 
-    LOG(NOTICE_LOG, "KeySetDelete: clientID -> %d clTRID [%s] handle [%s]",
-            (int)clientID, clTRID, handle);
+    LOGGER(PACKAGE).notice( boost::format("KeySetDelete: clientID -> %1% clTRID [%2%] handle [%3%]") %
+            (int)params.sessionID % (const char*)params.clTRID % handle);
 
     id = getIdOfKeySet(action.getDB(), handle, conf, true);
     if (id < 0) {
@@ -5613,7 +5612,7 @@ ccReg_EPP_i::KeySetDelete(
     }
     if (!code) {
         //create notifier
-        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), clTRID);
+        bool notify = !disableNotification(action.getDB(), action.getRegistrar(), params.clTRID);
         if (notify)
             ntf.reset(new EPPNotifier(
                       conf.get<bool>("registry.disable_epp_notifier"),
@@ -5691,13 +5690,11 @@ ccReg_EPP_i::KeySetCreate(
         const ccReg::DSRecord &dsrec,
         const ccReg::DNSKey &dnsk,
         ccReg::timestamp_out crDate,
-        CORBA::Long clientID,
-        const char *clTRID,
-        const char *XML)
+        const ccReg::EppParams &params)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % clientID));
+    Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
     ConnectionReleaser releaser;
     std::auto_ptr<EPPNotifier>  ntf;
     int                         id, techid, dsrecID;
@@ -5705,15 +5702,15 @@ ccReg_EPP_i::KeySetCreate(
     int                         *tch = NULL;
     short int                   code = 0;
 
-    LOG(NOTICE_LOG, "KeySetCreate: clientID -> %d clTRID [%s] handle [%s] authInfoPw [%s]",
-            (int)clientID, clTRID, handle, authInfoPw);
+    LOGGER(PACKAGE).notice( boost::format("KeySetCreate: clientID -> %1% clTRID [%2%] handle [%3%] authInfoPw [%4%]") %
+            (int)params.sessionID % (const char*)params.clTRID % handle % authInfoPw);
 
     ParsedAction paction;
     paction.add(1, (const char *)handle);
 
     crDate = CORBA::string_dup("");
 
-    EPPAction action(this, clientID, EPP_KeySetCreate, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_KeySetCreate, params.clTRID, params.XML, &paction);
 
     std::auto_ptr<Register::KeySet::Manager> keyMan(
             Register::KeySet::Manager::create(
@@ -6099,9 +6096,7 @@ ccReg_EPP_i::KeySetUpdate(
         const ccReg::DSRecord &dsrec_rem,
         const ccReg::DNSKey &dnsk_add,
         const ccReg::DNSKey &dnsk_rem,
-        CORBA::Long clientId,
-        const char *clTRID,
-        const char *XML)
+        const ccReg::EppParams &params)
 {
     Logging::Context::clear();
     Logging::Context ctx("rifd");
@@ -6126,14 +6121,14 @@ ccReg_EPP_i::KeySetUpdate(
     ParsedAction paction;
     paction.add(1, (const char *)handle);
 
-    EPPAction action(this, clientId, EPP_KeySetUpdate, clTRID, XML, &paction);
+    EPPAction action(this, params.sessionID, EPP_KeySetUpdate, params.clTRID, params.XML, &paction);
 
-    LOG(NOTICE_LOG, "KeySetUpdate: clientId -> %d clTRID[%s] handle[%s] "
-            "authInfo_chg[%s] tech_add[%d] tech_rem[%d] dsrec_add[%d] "
-            "dsrec_rem[%d] dnskey_add[%d] dnskey_rem[%d]",
-            (int)clientId, clTRID, handle, authInfo_chg, tech_add.length(),
-            tech_rem.length(), dsrec_add.length(), dsrec_rem.length(),
-            dnsk_add.length(), dnsk_rem.length());
+    LOGGER(PACKAGE).notice ( boost::format("KeySetUpdate: clientId -> %1% clTRID[%2%] handle[%3%] "
+            "authInfo_chg[%4%] tech_add[%5%] tech_rem[%6%] dsrec_add[%7%] "
+            "dsrec_rem[%8%] dnskey_add[%9%] dnskey_rem[%10%]") %
+            (int)params.sessionID % (const char*)params.clTRID % handle % authInfo_chg % tech_add.length() %
+            tech_rem.length() % dsrec_add.length() % dsrec_rem.length() %
+            dnsk_add.length() % dnsk_rem.length());
 
     std::auto_ptr<Register::KeySet::Manager> kMan(
             Register::KeySet::Manager::create(

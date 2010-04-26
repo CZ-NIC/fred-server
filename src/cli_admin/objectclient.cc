@@ -18,6 +18,7 @@
 
 #define RESOLVE_TRY 3
 
+#include <omniORB4/CORBA.h>
 #include "simple.h"
 #include "commonclient.h"
 #include "objectclient.h"
@@ -241,27 +242,37 @@ ObjectClient::deleteObjects(
             std::string cltrid;
             std::string xml;
             xml = "<name>" + name + "</name>";
+
+            ccReg::EppParams params;
+            params.sessionID    = clientId;
+            params.requestID    = 0;
+            params.XML          = xml.c_str();
+
             try {
                 switch (atoi(m_db.GetFieldValue(i, 1))) {
                     case 1:
                         cltrid = "delete_contact";
+                        params.clTRID    = cltrid.c_str();
                         r = epp->ContactDelete(
-                                name.c_str(), clientId, cltrid.c_str(), xml.c_str());
+                                name.c_str(), params);
                         break;
                     case 2:
                         cltrid = "delete_nsset";
+                        params.clTRID    = cltrid.c_str();
                         r = epp->NSSetDelete(
-                                name.c_str(), clientId, cltrid.c_str(), xml.c_str());
+                                name.c_str(), params);
                         break;
                     case 3:
                         cltrid = "delete_unpaid_zone_" + std::string(m_db.GetFieldValue(i, 2));
+                        params.clTRID    = cltrid.c_str();
                         r = epp->DomainDelete(
-                                name.c_str(), clientId, cltrid.c_str(), xml.c_str());
+                                name.c_str(), params);
                         break;
                     case 4:
                         cltrid = "delete_keyset";
+                        params.clTRID    = cltrid.c_str();
                         r = epp->KeySetDelete(
-                                name.c_str(), clientId, cltrid.c_str(), xml.c_str());
+                                name.c_str(), params);
                         break;
                 }
                 if (r->code != 1000) {
