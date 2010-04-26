@@ -2083,8 +2083,10 @@ public:
           {
               Database::Connection conn = Database::Manager::acquire();
               Database::Transaction tx(conn);
+              std::string lock_query
+                  ("LOCK TABLE registrar_group_map IN ACCESS EXCLUSIVE MODE");
+              conn.exec(lock_query);
               std::stringstream query;
-
               query << "update registrar_group_map set member_until = CURRENT_DATE"
               << " where id = (select id from registrar_group_map where"
               << " registrar_id = "
