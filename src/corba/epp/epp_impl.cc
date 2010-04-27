@@ -2629,28 +2629,20 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.sessionID));
     ConnectionReleaser releaser;
 
-    LOGGER(PACKAGE).debug(" ##### checkpoint 1 ");
     std::auto_ptr<EPPNotifier> ntf;
 
-    LOGGER(PACKAGE).debug(" ##### checkpoint 2 ");
     int id;
     int s, snum;
     char streetStr[10];
     short int code = 0;
 
-    LOGGER(PACKAGE).debug(" ##### checkpoint 3 ");
     ParsedAction paction;
-    LOGGER(PACKAGE).debug(" ##### checkpoint 4 ");
     paction.add(1,(const char*)handle);
 
-    LOGGER(PACKAGE).debug(" ##### checkpoint 5 ");
     crDate = CORBA::string_dup("");
 
-    LOGGER(PACKAGE).debug(" ##### checkpoint 6 ");
 
     EPPAction action(this, params.sessionID, EPP_ContactCreate, params.clTRID, params.XML, &paction);
-
-    LOGGER(PACKAGE).debug(" ##### checkpoint 7 ");
 
     LOGGER(PACKAGE).notice(boost::format("ContactCreate: clientID -> %1% clTRID [%2%] handle [%3%]") % (int ) params.sessionID % (const char*)params.clTRID % handle );
 
@@ -4382,7 +4374,7 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
 
     EPPAction action(this, params.sessionID, EPP_DomainUpdate, params.clTRID, params.XML, &paction);
 
-    LOGGER(PACKAGE).notice(boost::format ("DomainUpdate: clientID -> %1% clTRID [%2%] fqdn  [%3%] % registrant_chg  [%4%] authInfo_chg [%5%]  nsset_chg [%6%] keyset_chg[%7%] ext.length %8%") %
+    LOGGER(PACKAGE).notice(boost::format ("DomainUpdate: clientID -> %1% clTRID [%2%] fqdn  [%3%] registrant_chg  [%4%] authInfo_chg [%5%]  nsset_chg [%6%] keyset_chg[%7%] ext.length %8%") %
             (int ) params.sessionID % (const char*)params.clTRID % fqdn % registrant_chg % authInfo_chg % nsset_chg % keyset_chg % (long)ext.length() );
 
     ac_add.resize(admin_add.length());
