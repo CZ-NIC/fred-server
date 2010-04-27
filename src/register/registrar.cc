@@ -2086,16 +2086,30 @@ public:
               std::string lock_query
                   ("LOCK TABLE registrar_group_map IN ACCESS EXCLUSIVE MODE");
               conn.exec(lock_query);
-              std::stringstream query;
-              query << "update registrar_group_map set member_until = CURRENT_DATE"
-              << " where id = (select id from registrar_group_map where"
-              << " registrar_id = "
-              << conn.escape(boost::lexical_cast<std::string>(registrar_id))
-              << " and registrar_group_id = "
-              << conn.escape(boost::lexical_cast<std::string>(registrar_group_id))
-              << " order by member_from desc limit 1)"  ;
 
-              conn.exec(query.str());
+              std::string query(
+              "update registrar_group_map set member_until = CURRENT_DATE"
+              " where id = (select id from registrar_group_map where"
+              " registrar_id = $1::serial"
+              " and registrar_group_id = $2::serial"
+              " order by member_from desc limit 1)");
+
+              std::vector< const char * > paramValues;
+              std::vector<int> paramLengths;
+              std::vector<int> paramFormats;
+
+              paramValues.push_back(reinterpret_cast<const char * >(&registrar_id));
+              paramLengths.push_back(sizeof(registrar_id));
+              paramFormats.push_back(1);
+
+              paramValues.push_back(reinterpret_cast<const char * >(&registrar_group_id));
+              paramLengths.push_back(sizeof(registrar_group_id));
+              paramFormats.push_back(1);
+
+              conn.exec_params(query //one command query
+                        , paramValues //pointer to memory with parameters data
+                        , paramLengths //sizes of memory with parameters data
+                        , paramFormats); //1-binary like int or double, 0- text like const char *
               tx.commit();
           }//try
           catch (...)

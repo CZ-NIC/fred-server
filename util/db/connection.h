@@ -97,6 +97,38 @@ public:
       throw ResultFailed(_stmt);
     }
   }
+  /**
+   * @param _stmt string representation of query statement with params
+   * @param paramValues vector of pointers to data
+   * @param paramLengths vector of data lengths
+   * @param paramFormats vector of data formats: 1-binary like int or double, 0- text like const char *
+   * @param resultFormat result format: 1-binary result so far not supported , 0- text result - default
+   * @return result
+   */
+
+  virtual inline result_type exec_params(const std::string& _stmt,//one command query
+          const std::vector< const char * > paramValues, //pointer to memory with parameters data
+          const std::vector<int> paramLengths, //sizes of memory with parameters data
+          const std::vector<int> paramFormats,//1-binary like int or double, 0- text like const char *
+          int resultFormat=0) //1-binary result so far not supported , 0- text result
+  {
+      try {
+  #ifdef HAVE_LOGGER
+        LOGGER(PACKAGE).debug(boost::format("exec query [%1%]") % _stmt);
+  #endif
+        return result_type(conn_->exec_params(_stmt//one command query
+                          , paramValues //pointer to memory with parameters data
+                          , paramLengths //sizes of memory with parameters data
+                          , paramFormats //1-binary like int or double, 0- text like const char *
+                          , resultFormat));
+      }
+      catch (ResultFailed &rf) {
+        throw;
+      }
+      catch (...) {
+        throw ResultFailed(_stmt);
+      }
+    }
 
   
   /**
