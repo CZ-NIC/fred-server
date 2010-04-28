@@ -121,7 +121,7 @@ public:
                 std::string accountMemo     = *(++col);
                 Database::ID invoiceId      = *(++col);
                 std::string accountName     = *(++col);
-                Database::Date crTime       = *(++col);
+                Database::DateTime crTime   = *(++col);
                 unsigned long long iprefix  = *(++col);
 
                 PaymentImpl *payment = new PaymentImpl();
