@@ -611,12 +611,29 @@ public:
 
             int old_type = payment.getType();
 
-            payment.setType(type);
-            payment.save();
+            if (old_type == 2 || old_type == 5) {
+                throw std::runtime_error(str(boost::format(
+                                "payment (id=%1% type=%2%) was already "
+                                "processed => type cannot be changed")
+                                % payment_id
+                                % old_type));
+            }
 
-            LOGGER(PACKAGE).info(boost::format(
-                        "successfully changed payment id=%1% type "
-                        "%2% => %3%") % payment_id % old_type % type);
+            if (type == 2) {
+                throw std::runtime_error(str(boost::format(
+                                "payment (id=%1%) need to be processed "
+                                "to set type=2 (need registrar info) use "
+                                "pairPaymentWithRegistrar(...) instead")
+                                % payment_id));
+            }
+            else {
+                payment.setType(type);
+                payment.save();
+                LOGGER(PACKAGE).info(boost::format(
+                            "successfully changed payment id=%1% type "
+                            "%2% => %3%") % payment_id % old_type % type);
+
+            }
         }
         catch (std::exception &ex) {
             throw std::runtime_error(str(boost::format(
