@@ -26,7 +26,6 @@ LDADD = $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_DATE_TIME_LIB) \
 	$(top_builddir)/src/old_utils/liboldutils.a \
 	$(top_builddir)/util/log/liblog.a \
 	$(top_builddir)/util/conf/libconf.a \
-	$(top_builddir)/util/libutil.a \
 	$(BOOST_THREAD_LIB) $(BOOST_SERIALIZATION_LIB) $(XML2_LIBS)
 	
 	

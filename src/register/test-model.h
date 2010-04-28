@@ -38,6 +38,7 @@
 #include <boost/date_time.hpp>
 #include "model_files.h"
 #include "model_bank_payment.h"
+#include "concurrent_queue.h"
 
 ModelFiles mf1, mf2;
 
@@ -224,8 +225,6 @@ unsigned model_nodataupdate_test()
     mf2.update();
     return ret;
 }
-
-///////////mbp
 
 struct mbp_insert_data
 {
@@ -465,84 +464,10 @@ unsigned mbp_nodataupdate_test()
     return ret;
 }
 
-
-////////////mbp
-
-
-
-
 bool check_std_exception_nodatafound(std::exception const & ex)
 {
     std::string ex_msg(ex.what());
     return (ex_msg.find(std::string("No data found")) != std::string::npos);
 }
-
-//http://www.justsoftwaresolutions.co.uk/threading/implementing-a-thread-safe-queue-using-condition-variables.html
-template<typename Data>
-class concurrent_queue
-{
-private:
-    std::queue<Data> the_queue;
-    mutable boost::mutex the_mutex;
-
-#if ( BOOST_VERSION > 103401 )
-    boost::condition_variable
-#else
-    boost::condition
-#endif
-        the_condition_variable;
-public:
-    void push(Data const& data)
-    {
-        boost::mutex::scoped_lock lock(the_mutex);
-        the_queue.push(data);
-        lock.unlock();
-        the_condition_variable.notify_one();
-    }
-
-    std::size_t size()
-    {
-        boost::mutex::scoped_lock lock(the_mutex);
-        std::size_t ret = the_queue.size();
-        lock.unlock();
-        the_condition_variable.notify_one();
-        return ret;
-    }
-
-
-    bool empty() const
-    {
-        boost::mutex::scoped_lock lock(the_mutex);
-        return the_queue.empty();
-    }
-
-    bool try_pop(Data& popped_value)
-    {
-        boost::mutex::scoped_lock lock(the_mutex);
-        if(the_queue.empty())
-        {
-            return false;
-        }
-
-        popped_value=the_queue.front();
-        the_queue.pop();
-        return true;
-    }
-
-    void wait_and_pop(Data& popped_value)
-    {
-        boost::mutex::scoped_lock lock(the_mutex);
-        while(the_queue.empty())
-        {
-            the_condition_variable.wait(lock);
-        }
-
-        popped_value=the_queue.front();
-        the_queue.pop();
-    }
-};
-
-
-
 
 #endif // TESTMODEL_H_
