@@ -32,10 +32,8 @@
 #include <string>
 #include <queue>
 
-//http://www.justsoftwaresolutions.co.uk/threading/implementing-a-thread-safe-queue-using-condition-variables.html
-
 /**
- * \class Exception
+ * \class concurrent_queue
  * \brief Template queue class with internal locking
  */
 

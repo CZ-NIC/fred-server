@@ -38,7 +38,7 @@
 #include <boost/date_time.hpp>
 #include "model_files.h"
 #include "model_bank_payment.h"
-#include "concurrent_queue.h"
+
 
 ModelFiles mf1, mf2;
 
