@@ -2038,15 +2038,15 @@ public:
 
   void ManagerImpl::initVATList()  {
 
-    std::auto_ptr<autoDB> db(new autoDB(Database::Manager::getConnectionString()));
-    if(!db->success()) {
-        LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
-       throw SQL_ERROR();
-    }
-
     if (vatList.empty()) {
+      std::auto_ptr<autoDB> db(new autoDB(Database::Manager::getConnectionString()));
+      if(!db->success()) {
+         LOGGER(PACKAGE).error(" autoDB: Failed to open the database. ");
+         throw SQL_ERROR();
+      }
+
       if (!db->ExecSelect("SELECT vat, 10000*koef, valid_to FROM price_vat"))
-      throw SQL_ERROR();
+          throw SQL_ERROR();
       for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
         vatList.push_back(
             VAT(
