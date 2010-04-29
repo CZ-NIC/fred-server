@@ -49,10 +49,11 @@ class FakedArgs //faked args
     typedef std::vector<char_vector_t> argv_buffers_t;//buffers vector type
     typedef std::vector<char*> argv_t;//pointers vector type
 
+public:
     argv_buffers_t argv_buffers;//owning vector of buffers
     argv_t argv;//new argv - nonowning
 
-public:
+
     void clear()
     {
         argv_buffers.clear();
@@ -101,7 +102,7 @@ public:
         }//for si
         argv_buffers[argv_idx].push_back(0);//zero terminated string
         argv.push_back(&argv_buffers[argv_idx][0]);//added char*
-        std::cout << "add_argv str : " << str <<  std::endl;
+        //std::cout << "add_argv str : " << str <<  std::endl;
     }
 
 };//class FakedArgs
@@ -232,17 +233,20 @@ public:
         fa.clear();//to be sure that fa is empty
         //new number of args + first program name
         fa.prealocate_for_argc(to_pass_further.size() + 1);
+        std::cout << "HandleGeneralArgs::handle program name copy: " << argv[0] << std::endl;
         fa.add_argv(argv[0]);//program name copy
         for(string_vector_t::const_iterator i = to_pass_further.begin()
                 ; i != to_pass_further.end(); ++i)
         {//copying a new arg vector
+            std::cout << "HandleGeneralArgs::handle args: " << *i << std::endl;
             fa.add_argv(*i);//string
         }//for i
 
         //read config file if configured and append content to fa
-        if (gen_vm.count("config,C"))
+        if (gen_vm.count("config"))
         {
-            std::string fname = gen_vm["config,C"].as<std::string>();
+            std::string fname = gen_vm["config"].as<std::string>();
+            std::cout << "HandleGeneralArgs::handle config file: " << fname << std::endl;
             if(fname.length())
                 parse_config_file_to_faked_args(fname, fa );
         }
@@ -302,10 +306,12 @@ public:
         //faked args for unittest framework returned by reference in params
         fa.clear();//to be sure that fa is empty
         fa.prealocate_for_argc(to_pass_further.size() + 1);//new number of args + first program name
+        std::cout << "HandleDatabaseArgs::handle program name copy: " << argv[0] << std::endl;
         fa.add_argv(argv[0]);//program name copy
         for(string_vector_t::const_iterator i = to_pass_further.begin()
                 ; i != to_pass_further.end(); ++i)
         {//copying a new arg vector
+            std::cout << "HandleDatabaseArgs::handle args: " << *i << std::endl;
             fa.add_argv(*i);//string
         }//for i
 
@@ -379,17 +385,23 @@ public:
         //faked args for unittest framework returned by reference in params
         fa.clear();//to be sure that fa is empty
         fa.prealocate_for_argc(to_pass_further.size() + 1);//new number of args + first program name
+        std::cout << "HandleThreadGroupArgs::handle program name copy: " << argv[0] << std::endl;
         fa.add_argv(argv[0]);//program name copy
         for(string_vector_t::const_iterator i = to_pass_further.begin()
                 ; i != to_pass_further.end(); ++i)
         {//copying a new arg vector
+            std::cout << "HandleThreadGroupArgs::handle args: " << *i << std::endl;
             fa.add_argv(*i);//string
         }//for i
 
         thread_number = (vm.count("thread_number") == 0
                 ? 300 : vm["thread_number"].as<unsigned>());
+        std::cout << "thread_number: " << thread_number
+                << " vm[\"thread_number\"].as<unsigned>(): " << vm["thread_number"].as<unsigned>() << std::endl;
+
         thread_group_divisor = (vm.count("thread_group_divisor") == 0
                 ? 10 : vm["thread_group_divisor"].as<unsigned>());
+        std::cout << "thread_group_divisor: " << thread_group_divisor<< "" << std::endl;
     }//handle
 };
 
