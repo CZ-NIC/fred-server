@@ -60,9 +60,10 @@ public:
             general_args.po_description.push_back((*i)->get_options_description());
     }
 
+    FakedArgs fa;
     FakedArgs handle( int argc, char* argv[])
     {
-        FakedArgs fa;
+
 
         //initial fa
         fa.prealocate_for_argc(argc);
@@ -90,6 +91,56 @@ public:
 
 #include "test-registrar-certification-group.h"
 
+BOOST_AUTO_TEST_CASE( test_corba )
+{
+    try
+    {
+        CorbaSingleton* cs = CorbaSingleton::instance();
+
+        int argc = cmdlinehandlers.fa.get_argc();
+
+        // Initialise the ORB
+
+        cs->cc.orb = CORBA::ORB_init( argc
+                , cmdlinehandlers.fa.get_argv());
+
+      // Obtain a reference to the root POA.
+        cs->cc.root_initial_ref = cs->cc.orb->resolve_initial_references("RootPOA");
+
+        cs->cc.poa = PortableServer::POA::_narrow(cs->cc.root_initial_ref);
+
+      while(cs->cc.orb->work_pending())
+          cs->cc.orb->perform_work();//run();
+
+
+      std::cout << "before orb destroy" << std::endl;
+      cs->cc.orb->destroy();
+      std::cout << "after orb destroy" << std::endl;
+
+    }//try
+    catch(CORBA::TRANSIENT&)
+    {
+      cerr << "Caught system exception TRANSIENT -- unable to contact the "
+           << "server." << endl;
+    }
+    catch(CORBA::SystemException& ex)
+    {
+      cerr << "Caught a CORBA::" << ex._name() << endl;
+    }
+    catch(CORBA::Exception& ex)
+    {
+      cerr << "Caught CORBA::Exception: " << ex._name() << endl;
+    }
+    catch(omniORB::fatalException& fe)
+    {
+      cerr << "Caught omniORB::fatalException:" << endl;
+      cerr << "  file: " << fe.file() << endl;
+      cerr << "  line: " << fe.line() << endl;
+      cerr << "  mesg: " << fe.errmsg() << endl;
+    }
+
+
+}//test_corba
 
 BOOST_AUTO_TEST_CASE( test_registrar_certification )
 {

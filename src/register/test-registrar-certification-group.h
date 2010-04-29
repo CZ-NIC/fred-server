@@ -42,6 +42,44 @@
 #include <boost/thread/barrier.hpp>
 #include <boost/date_time.hpp>
 
+#include <iostream>
+#include <map>
+#include <exception>
+#include <corba/ccReg.hh>
+
+using namespace std;
+
+struct corba_container
+{
+    //here may be useful mutex
+    CORBA::ORB_var orb;
+    CORBA::Object_var root_initial_ref;
+    PortableServer::POA_var poa;
+};//struct corba_container
+
+class CorbaSingleton
+{
+private:
+    static CorbaSingleton* instance_ptr;
+    CorbaSingleton(){}
+    ~CorbaSingleton(){}
+public:
+    static CorbaSingleton* instance();
+    corba_container cc;
+};//class CorbaSingleton
+
+CorbaSingleton* CorbaSingleton::instance_ptr= 0;
+
+CorbaSingleton* CorbaSingleton::instance()
+{//first call from singlethread
+    if(instance_ptr == 0)
+        instance_ptr = new CorbaSingleton();
+    return instance_ptr;
+}
+
+
+
+
 unsigned registrar_certification_test()
 {
 

@@ -205,7 +205,7 @@ test_model_LDADD   = libfred.a \
 test_registrar_certification_group_SOURCES = test-registrar-certification-group.cc \
                      test-registrar-certification-group.h
 test_registrar_certification_group_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) \
-                     $(BOOST_PROGRAM_OPTIONS_LIB)
+                     $(BOOST_PROGRAM_OPTIONS_LIB) $(OMNIORB4_LIBS)
 test_registrar_certification_group_LDADD   = libfred.a \
                          $(top_builddir)/src/model/libmodel.a \
                          $(top_builddir)/util/db/libdb.a \
