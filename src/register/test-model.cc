@@ -82,7 +82,13 @@ public:
         {
             FakedArgs fa_out;
             (*i)->handle( fa.get_argc(), fa.get_argv(), fa_out);
-            fa=fa_out;//chaining output to input
+            //chaining output to input
+            fa.clear();
+            fa.prealocate_for_argc(fa_out.get_argc());
+            for(int i = 0; i < fa_out.get_argc(); ++i)
+            {
+                fa.add_argv( fa_out.get_argv()[i] );
+            }
         }
         return fa;
     }
