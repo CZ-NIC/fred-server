@@ -46,6 +46,48 @@ namespace std
 #endif
 
 
+//compose args processing
+class CmdLineArgHandlers
+{
+    //nonowning container of handlers
+    typedef std::vector<HandleArgs*> HandlerVector;
+    HandlerVector handler;
+public:
+    HandleGeneralArgs general_args;
+    HandleDatabaseArgs database_args;
+    HandleThreadGroupArgs thread_group_args;
+
+    CmdLineArgHandlers()
+    {
+        //order of arguments processing
+        handler.push_back(&general_args);
+        handler.push_back(&database_args);
+        handler.push_back(&thread_group_args);
+
+        //gater options_descriptions for help print
+        for(HandlerVector::iterator i = handler.begin(); i != handler.end(); ++i )
+            general_args.po_description.push_back((*i)->get_options_description());
+    }
+
+    FakedArgs handle( int argc, char* argv[])
+    {
+        FakedArgs fa;
+
+        //initial fa
+        fa.prealocate_for_argc(argc);
+        for (int i = 0; i < argc ; ++i)
+            fa.add_argv(argv[i]);
+
+        for(HandlerVector::iterator i = handler.begin(); i != handler.end(); ++i )
+        {
+            FakedArgs fa_out;
+            (*i)->handle( fa.get_argc(), fa.get_argv(), fa_out);
+            fa=fa_out;//chaining output to input
+        }
+        return fa;
+    }
+
+}cmdlinehandlers;
 
 #include "test-model.h"
 
@@ -208,10 +250,12 @@ BOOST_AUTO_TEST_CASE( test_model_files )
     BOOST_REQUIRE_EQUAL(model_nodataupdate_test() , 0);
 }
 
+
+
 BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
 {
-    std::size_t const thread_number = 300;// 300;//number of threads in test
-    std::size_t const thread_group_divisor = 10;
+    std::size_t const thread_number = cmdlinehandlers.thread_group_args.thread_number;
+    std::size_t const thread_group_divisor = cmdlinehandlers.thread_group_args.thread_group_divisor;
     // int(thread_number - (thread_number % thread_group_divisor ? 1 : 0)
     // - thread_number / thread_group_divisor) is number of synced threads
 
@@ -254,188 +298,25 @@ BOOST_AUTO_TEST_CASE( test_model_bank_payments_threaded )
             std::cout << thread_result.desc
                     << " thread number: " << thread_result.number
                     << " return code: " << thread_result.ret
-                    << " decription: " << thread_result.desc
+                    << " description: " << thread_result.desc
                     << std::endl;
         }
     }//for i
-
 }
-
-
-void parse_config_file_to_faked_args(std::string fname, FakedArgs& fa )
-{//options without values are ignored
-    std::ifstream cfg_file(fname.c_str());
-    if (cfg_file.fail())
-      throw std::runtime_error("config file '" + fname + "' not found");
-
-    std::string line, opt_prefix;
-    while (std::getline(cfg_file, line))
-    {
-      boost::algorithm::trim(line);// strip whitespace
-      if (!line.empty() && line[0] != '#')// ignore empty line and comments
-      {
-        if (line[0] == '[' && line[line.size() - 1] == ']')
-        {// this is option prefix
-          opt_prefix = line;
-          boost::algorithm::erase_first(opt_prefix, "[");
-          boost::algorithm::erase_last(opt_prefix,  "]");
-        }//if [opt_prefix]
-        else
-        {// this is normal option
-          std::string::size_type sep = line.find("=");
-          if (sep != std::string::npos)
-          {// get name and value couple without any whitespace
-            std::string name  = boost::algorithm::trim_copy(line.substr(0, sep));
-            std::string value = boost::algorithm::trim_copy(line.substr(sep + 1, line.size() - 1));
-            if (!value.empty())
-            {// push appropriate commnad-line string
-                fa.add_argv("--" + opt_prefix + "." + name + "=" + value);
-            }//if value not empty
-          }// if '=' found
-        }//else - option
-      }//if not empty line
-    }//while getline
-}//parse_config_file_to_faked_args
-
-//removing our config from boost test cmdline
-//return value:
-//  true - do not continue with tests and return after po_config
-//  false - continue with tests
-bool po_config( int argc, char* argv[] , FakedArgs& fa )
-{
-    namespace po = boost::program_options;
-
-    po::options_description
-            genconfig (std::string("General configuration"));
-    genconfig.add_options()
-        ("help", "print this help message");
-
-    po::options_description
-        dbconfig (std::string("Database connection configuration"));
-    dbconfig.add_options()
-        ("database.name", po::value<std::string>()->default_value(std::string("fred"))
-                , "database name")
-        ("database.user", po::value<std::string>()->default_value(std::string("fred"))
-                , "database user name")
-        ("database.password", po::value<std::string>(), "database password")
-        ("database.host", po::value<std::string>()->default_value(std::string("localhost"))
-                , "database hostname")
-        ("database.port", po::value<unsigned int>(), "database port number")
-        ("database.timeout", po::value<unsigned int>(), "database timeout");
-
-    std::string default_config;
-
-#ifdef CONFIG_FILE
-        std::cout << "CONFIG_FILE: "<< CONFIG_FILE << std::endl;
-        default_config = std::string(CONFIG_FILE);
-#else
-        default_config = std::string("");
-#endif
-
-    if(default_config.length() != 0)
-    {
-        genconfig.add_options()
-                ("config,C", po::value<std::string>()->default_value(default_config)
-                , "path to configuration file");
-    }
-    else
-    {
-        genconfig.add_options()
-                ("config,C", po::value<std::string>(), "path to configuration file");
-    }
-
-    typedef std::vector<std::string> string_vector_t;
-    string_vector_t to_pass_further;//args
-
-    po::variables_map gen_vm;
-    po::parsed_options gen_parsed = po::command_line_parser(argc, argv).
-                            options(genconfig).allow_unregistered().run();
-    po::store(gen_parsed, gen_vm);
-
-    to_pass_further
-        = po::collect_unrecognized(gen_parsed.options, po::include_positional);
-    po::notify(gen_vm);
-
-    //general config actions
-    if (gen_vm.count("help"))
-    {
-        std::cout << "\n" << genconfig << "\n" << dbconfig << std::endl;
-        return true;//do not continue with tests and return
-    }
-
-    FakedArgs dbfa;//faked args for db config
-    dbfa.clear();//to be sure that fa is empty
-    dbfa.prealocate_for_argc(to_pass_further.size() + 1);//new number of args + first program name
-    dbfa.add_argv(argv[0]);//program name copy
-    for(string_vector_t::const_iterator i = to_pass_further.begin()
-            ; i != to_pass_further.end()
-            ; ++i)
-    {//copying a new arg vector
-        dbfa.add_argv(*i);//string
-    }//for i
-
-    //read config file if configured and append content to dbfa
-    if (gen_vm.count("config,C"))
-    {
-        std::string fname = gen_vm["config,C"].as<std::string>();
-        if(fname.length())
-            parse_config_file_to_faked_args(fname, dbfa );
-    }
-
-    po::variables_map vm;
-    po::parsed_options parsed = po::command_line_parser(dbfa.get_argc(),dbfa.get_argv()).
-                            options(dbconfig).allow_unregistered().run();
-    po::store(parsed, vm);
-
-    to_pass_further
-        = po::collect_unrecognized(parsed.options, po::include_positional);
-    po::notify(vm);
-
-    //faked args for unittest framework returned by reference in params
-    fa.clear();//to be sure that fa is empty
-    fa.prealocate_for_argc(to_pass_further.size() + 1);//new number of args + first program name
-    fa.add_argv(argv[0]);//program name copy
-    for(string_vector_t::const_iterator i = to_pass_further.begin()
-            ; i != to_pass_further.end()
-            ; ++i)
-    {//copying a new arg vector
-        fa.add_argv(*i);//string
-    }//for i
-
-    /* construct connection string */
-    std::string dbhost = (vm.count("database.host") == 0 ? ""
-            : "host=" + vm["database.host"].as<std::string>() + " ");
-    std::string dbpass = (vm.count("database.password") == 0 ? ""
-            : "password=" + vm["database.password"].as<std::string>() + " ");
-    std::string dbname = (vm.count("database.name") == 0 ? ""
-            : "dbname=" + vm["database.name"].as<std::string>() + " ");
-    std::string dbuser = (vm.count("database.user") == 0 ? ""
-            : "user=" + vm["database.user"].as<std::string>() + " ");
-    std::string dbport = (vm.count("database.port") == 0 ? ""
-            : "port=" + boost::lexical_cast<std::string>(vm["database.port"].as<unsigned>()) + " ");
-    std::string dbtime = (vm.count("database.timeout") == 0 ? ""
-            : "connect_timeout=" + boost::lexical_cast<std::string>(vm["database.timeout"].as<unsigned>()) + " ");
-    std::string conn_info = str(boost::format("%1% %2% %3% %4% %5% %6%")
-                                              % dbhost
-                                              % dbport
-                                              % dbname
-                                              % dbuser
-                                              % dbpass
-                                              % dbtime);
-    std::cout << "database connection set to: " << conn_info << std::endl;
-
-    Database::Manager::init(new Database::ConnectionFactory(conn_info));
-
-    return false;
-}
-
 
 int main( int argc, char* argv[] )
 {
     //processing of additional program options
     //producing faked args with unrecognized ones
     FakedArgs fa;
-    if(po_config( argc, argv, fa)) return 0;
+    try
+    {
+        fa = cmdlinehandlers.handle(argc, argv);
+    }
+    catch(const ReturnFromMain&)
+    {
+        return 0;
+    }
 
 //fn init_unit_test_suite added in 1.35.0
 #if ( BOOST_VERSION > 103401 )
