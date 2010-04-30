@@ -69,7 +69,7 @@ test_registrar_certification_group_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLA
                          $(BOOST_REGEX_LIB) \
                          $(BOOST_THREAD_LIB) \
                          $(XML2_LIBS)
-test_registrar_certification_group_LDADD   = \ 
+test_registrar_certification_group_LDADD   = \
                          $(top_builddir)/src/register/libfred.a \
                          $(top_builddir)/src/model/libmodel.a \
                          $(top_builddir)/util/db/libdb.a \
