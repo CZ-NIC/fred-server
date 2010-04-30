@@ -150,6 +150,38 @@ public:
 };
 HandleArgs::~HandleArgs(){}
 
+///common parsing using program_options
+void handler_parse_args(
+        boost::shared_ptr<boost::program_options::options_description> opts_descs
+        , boost::program_options::variables_map& vm
+        , int argc, char* argv[],  FakedArgs &fa)
+{
+    boost::program_options::parsed_options parsed
+        = boost::program_options::command_line_parser(argc,argv)
+            .options(*opts_descs).allow_unregistered().run();
+    boost::program_options::store(parsed, vm);
+
+    typedef std::vector<std::string> string_vector_t;
+    string_vector_t to_pass_further;//args
+
+    to_pass_further
+        = boost::program_options::collect_unrecognized(parsed.options
+                , boost::program_options::include_positional);
+    boost::program_options::notify(vm);
+
+    //faked args for unittest framework returned by reference in params
+    fa.clear();//to be sure that fa is empty
+    fa.prealocate_for_argc(to_pass_further.size() + 1);//new number of args + first program name
+    fa.add_argv(argv[0]);//program name copy
+    for(string_vector_t::const_iterator i = to_pass_further.begin()
+            ; i != to_pass_further.end(); ++i)
+    {//copying a new arg vector
+        fa.add_argv(*i);//string
+    }//for i
+
+}//handler_parse_args
+
+
 class HandleGeneralArgs : public HandleArgs
 {
     ///options descriptions reference used to print help for all options
@@ -229,25 +261,11 @@ public:
     }//get_options_description
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
-       boost::shared_ptr<boost::program_options::options_description>
-           gen_opts(get_options_description());
-
-        typedef std::vector<std::string> string_vector_t;
-        string_vector_t to_pass_further;//args
-
-        boost::program_options::variables_map gen_vm;
-        boost::program_options::parsed_options gen_parsed
-            = boost::program_options::command_line_parser(argc, argv)
-            .options(*gen_opts).allow_unregistered().run();
-        boost::program_options::store(gen_parsed, gen_vm);
-
-        to_pass_further
-            = boost::program_options::collect_unrecognized(gen_parsed.options
-                    , boost::program_options::include_positional);
-        boost::program_options::notify(gen_vm);
+        boost::program_options::variables_map vm;
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
 
         //general config actions
-        if (gen_vm.count("help"))
+        if (vm.count("help"))
         {
             std::cout << std::endl;
             for(PoDescs::iterator it = po_description.begin(); it != po_description.end(); ++it)
@@ -257,28 +275,14 @@ public:
             throw ReturnFromMain("help called");
         }
 
-        //return other args
-        fa.clear();//to be sure that fa is empty
-        //new number of args + first program name
-        fa.prealocate_for_argc(to_pass_further.size() + 1);
-        std::cout << "HandleGeneralArgs::handle program name copy: " << argv[0] << std::endl;
-        fa.add_argv(argv[0]);//program name copy
-        for(string_vector_t::const_iterator i = to_pass_further.begin()
-                ; i != to_pass_further.end(); ++i)
-        {//copying a new arg vector
-            std::cout << "HandleGeneralArgs::handle args: " << *i << std::endl;
-            fa.add_argv(*i);//string
-        }//for i
-
         //read config file if configured and append content to fa
-        if (gen_vm.count("config"))
+        if (vm.count("config"))
         {
-            std::string fname = gen_vm["config"].as<std::string>();
+            std::string fname = vm["config"].as<std::string>();
             std::cout << "HandleGeneralArgs::handle config file: " << fname << std::endl;
             if(fname.length())
                 parse_config_file_to_faked_args(fname, fa );
         }
-
     }//handle
 };
 
@@ -314,34 +318,8 @@ public:
 
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
-        boost::shared_ptr<boost::program_options::options_description>
-            db_opts(get_options_description());
-
         boost::program_options::variables_map vm;
-        boost::program_options::parsed_options parsed
-            = boost::program_options::command_line_parser(argc,argv)
-                .options(*db_opts).allow_unregistered().run();
-        boost::program_options::store(parsed, vm);
-
-        typedef std::vector<std::string> string_vector_t;
-        string_vector_t to_pass_further;//args
-
-        to_pass_further
-            = boost::program_options::collect_unrecognized(parsed.options
-                    , boost::program_options::include_positional);
-        boost::program_options::notify(vm);
-
-        //faked args for unittest framework returned by reference in params
-        fa.clear();//to be sure that fa is empty
-        fa.prealocate_for_argc(to_pass_further.size() + 1);//new number of args + first program name
-        std::cout << "HandleDatabaseArgs::handle program name copy: " << argv[0] << std::endl;
-        fa.add_argv(argv[0]);//program name copy
-        for(string_vector_t::const_iterator i = to_pass_further.begin()
-                ; i != to_pass_further.end(); ++i)
-        {//copying a new arg vector
-            std::cout << "HandleDatabaseArgs::handle args: " << *i << std::endl;
-            fa.add_argv(*i);//string
-        }//for i
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
 
         /* construct connection string */
         std::string dbhost = (vm.count("database.host") == 0 ? ""
@@ -393,35 +371,8 @@ public:
     }//get_options_description
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
-        boost::shared_ptr<boost::program_options::options_description>
-        thread_opts(get_options_description());
-
         boost::program_options::variables_map vm;
-        boost::program_options::parsed_options parsed
-            = boost::program_options::command_line_parser(argc,argv)
-                .options(*thread_opts).allow_unregistered().run();
-        boost::program_options::store(parsed, vm);
-
-        typedef std::vector<std::string> string_vector_t;
-        string_vector_t to_pass_further;//args
-
-        to_pass_further
-            = boost::program_options::collect_unrecognized(parsed.options
-                    , boost::program_options::include_positional);
-        boost::program_options::notify(vm);
-
-        //faked args for unittest framework returned by reference in params
-        fa.clear();//to be sure that fa is empty
-        fa.prealocate_for_argc(to_pass_further.size() + 1);//new number of args + first program name
-        std::cout << "HandleThreadGroupArgs::handle program name copy: "
-                << argv[0] << std::endl;
-        fa.add_argv(argv[0]);//program name copy
-        for(string_vector_t::const_iterator i = to_pass_further.begin()
-                ; i != to_pass_further.end(); ++i)
-        {//copying a new arg vector
-            std::cout << "HandleThreadGroupArgs::handle args: " << *i << std::endl;
-            fa.add_argv(*i);//string
-        }//for i
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
 
         thread_number = (vm.count("thread_number") == 0
                 ? 300 : vm["thread_number"].as<unsigned>());
@@ -463,32 +414,8 @@ public:
     }//get_options_description
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
-        boost::shared_ptr<boost::program_options::options_description>
-        thread_opts(get_options_description());
-
         boost::program_options::variables_map vm;
-        boost::program_options::parsed_options parsed
-            = boost::program_options::command_line_parser(argc,argv)
-                .options(*thread_opts).allow_unregistered().run();
-        boost::program_options::store(parsed, vm);
-
-        typedef std::vector<std::string> string_vector_t;
-        string_vector_t to_pass_further;//args
-
-        to_pass_further
-            = boost::program_options::collect_unrecognized(parsed.options
-                    , boost::program_options::include_positional);
-        boost::program_options::notify(vm);
-
-        //faked args for unittest framework returned by reference in params
-        fa.clear();//to be sure that fa is empty
-        fa.prealocate_for_argc(to_pass_further.size() + 1);//new number of args + first program name
-        fa.add_argv(argv[0]);//program name copy
-        for(string_vector_t::const_iterator i = to_pass_further.begin()
-                ; i != to_pass_further.end(); ++i)
-        {//copying a new arg vector
-            fa.add_argv(*i);//string
-        }//for i
+        handler_parse_args(get_options_description(), vm, argc, argv, fa);
 
         nameservice_host = (vm.count("nameservice.host") == 0
                 ? std::string("localhost") : vm["nameservice.host"].as<std::string>());
