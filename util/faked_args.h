@@ -370,8 +370,6 @@ public:
     }//handle
 };
 
-
-
 class HandleThreadGroupArgs : public HandleArgs
 {
 public:
@@ -386,9 +384,11 @@ public:
                         std::string("Thread group configuration")));
         thread_opts->add_options()
                 ("thread_number", boost::program_options
-                            ::value<unsigned int>()->default_value(300), "number of threads in group")
+                            ::value<unsigned int>()->default_value(300)
+                             , "number of threads in group")
                 ("thread_group_divisor", boost::program_options
-                            ::value<unsigned int>()->default_value(10), "designates fraction of non-synchronized threads");
+                            ::value<unsigned int>()->default_value(10)
+                             , "designates fraction of non-synchronized threads");
         return thread_opts;
     }//get_options_description
     void handle( int argc, char* argv[],  FakedArgs &fa)
@@ -413,7 +413,8 @@ public:
         //faked args for unittest framework returned by reference in params
         fa.clear();//to be sure that fa is empty
         fa.prealocate_for_argc(to_pass_further.size() + 1);//new number of args + first program name
-        std::cout << "HandleThreadGroupArgs::handle program name copy: " << argv[0] << std::endl;
+        std::cout << "HandleThreadGroupArgs::handle program name copy: "
+                << argv[0] << std::endl;
         fa.add_argv(argv[0]);//program name copy
         for(string_vector_t::const_iterator i = to_pass_further.begin()
                 ; i != to_pass_further.end(); ++i)
@@ -425,13 +426,79 @@ public:
         thread_number = (vm.count("thread_number") == 0
                 ? 300 : vm["thread_number"].as<unsigned>());
         std::cout << "thread_number: " << thread_number
-                << " vm[\"thread_number\"].as<unsigned>(): " << vm["thread_number"].as<unsigned>() << std::endl;
+                << " vm[\"thread_number\"].as<unsigned>(): "
+                << vm["thread_number"].as<unsigned>() << std::endl;
 
         thread_group_divisor = (vm.count("thread_group_divisor") == 0
                 ? 10 : vm["thread_group_divisor"].as<unsigned>());
         std::cout << "thread_group_divisor: " << thread_group_divisor<< "" << std::endl;
     }//handle
 };
+
+class HandleCorbaNameServiceArgs : public HandleArgs
+{
+public:
+    std::string nameservice_host ;
+    unsigned nameservice_port;
+    std::string nameservice_context;
+
+    boost::shared_ptr<boost::program_options::options_description>
+    get_options_description()
+    {
+        boost::shared_ptr<boost::program_options::options_description> opts_descs(
+                new boost::program_options::options_description(
+                        std::string("CORBA NameService configuration")));
+        opts_descs->add_options()
+                ("nameservice.host", boost::program_options
+                            ::value<std::string>()->default_value(std::string("localhost"))
+                        , "nameservice host name")
+                ("nameservice.port", boost::program_options
+                            ::value<unsigned int>()->default_value(2809)
+                             , "nameservice port number")
+                ("nameservice.context", boost::program_options
+                         ::value<std::string>()->default_value(std::string("fred"))
+                     , "freds context in name service");
+
+        return opts_descs;
+    }//get_options_description
+    void handle( int argc, char* argv[],  FakedArgs &fa)
+    {
+        boost::shared_ptr<boost::program_options::options_description>
+        thread_opts(get_options_description());
+
+        boost::program_options::variables_map vm;
+        boost::program_options::parsed_options parsed
+            = boost::program_options::command_line_parser(argc,argv)
+                .options(*thread_opts).allow_unregistered().run();
+        boost::program_options::store(parsed, vm);
+
+        typedef std::vector<std::string> string_vector_t;
+        string_vector_t to_pass_further;//args
+
+        to_pass_further
+            = boost::program_options::collect_unrecognized(parsed.options
+                    , boost::program_options::include_positional);
+        boost::program_options::notify(vm);
+
+        //faked args for unittest framework returned by reference in params
+        fa.clear();//to be sure that fa is empty
+        fa.prealocate_for_argc(to_pass_further.size() + 1);//new number of args + first program name
+        fa.add_argv(argv[0]);//program name copy
+        for(string_vector_t::const_iterator i = to_pass_further.begin()
+                ; i != to_pass_further.end(); ++i)
+        {//copying a new arg vector
+            fa.add_argv(*i);//string
+        }//for i
+
+        nameservice_host = (vm.count("nameservice.host") == 0
+                ? std::string("localhost") : vm["nameservice.host"].as<std::string>());
+        nameservice_port = (vm.count("nameservice.port") == 0
+                ? 2809 : vm["nameservice.port"].as<unsigned>());
+        nameservice_context = (vm.count("nameservice.context") == 0
+                ? std::string("fred") : vm["nameservice.context"].as<std::string>());
+    }//handle
+};
+
 
 
 

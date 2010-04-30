@@ -47,6 +47,7 @@ public:
     HandleGeneralArgs general_args;
     HandleDatabaseArgs database_args;
     HandleThreadGroupArgs thread_group_args;
+    HandleCorbaNameServiceArgs corba_ns_args;
 
     CmdLineArgHandlers()
     {
@@ -54,6 +55,7 @@ public:
         handler.push_back(&general_args);
         handler.push_back(&database_args);
         handler.push_back(&thread_group_args);
+        handler.push_back(&corba_ns_args);
 
         //gater options_descriptions for help print
         for(HandlerVector::iterator i = handler.begin(); i != handler.end(); ++i )
