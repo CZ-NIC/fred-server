@@ -89,8 +89,9 @@ public:
 
 BOOST_AUTO_TEST_CASE( test_corba )
 {
-    try
-    {
+
+//  try
+//  {
         CorbaSingleton* cs = CorbaSingleton::instance();
 
         int argc = cmdlinehandlers.fa.get_argc();
@@ -118,6 +119,10 @@ BOOST_AUTO_TEST_CASE( test_corba )
                     + cmdlinehandlers.corba_ns_args.nameservice_host).c_str());
         }
 
+        cs->cc.root_nameservice_context
+            = CosNaming::NamingContext::_narrow(cs->cc.nameservice_ref);
+
+        if (CORBA::is_nil(cs->cc.root_nameservice_context)) throw "cs->cc.root_nameservice_context";
 
       while(cs->cc.orb->work_pending())
           cs->cc.orb->perform_work();//run();
@@ -126,7 +131,7 @@ BOOST_AUTO_TEST_CASE( test_corba )
       std::cout << "before orb destroy" << std::endl;
       cs->cc.orb->destroy();
       std::cout << "after orb destroy" << std::endl;
-
+/*
     }//try
     catch(CORBA::TRANSIENT&)
     {
@@ -148,7 +153,7 @@ BOOST_AUTO_TEST_CASE( test_corba )
       cerr << "  line: " << fe.line() << endl;
       cerr << "  mesg: " << fe.errmsg() << endl;
     }
-
+*/
 
 }//test_corba
 
