@@ -58,8 +58,10 @@ public:
         handler.push_back(&corba_ns_args);
 
         //gater options_descriptions for help print
-        for(HandlerVector::iterator i = handler.begin(); i != handler.end(); ++i )
-            general_args.po_description.push_back((*i)->get_options_description());
+        for(HandlerVector::iterator i = handler.begin()
+                ; i != handler.end(); ++i )
+            general_args.po_description.push_back(
+                    (*i)->get_options_description());
     }
 
     FakedArgs fa;
@@ -70,7 +72,8 @@ public:
         for (int i = 0; i < argc ; ++i)
             fa.add_argv(argv[i]);
 
-        for(HandlerVector::iterator i = handler.begin(); i != handler.end(); ++i )
+        for(HandlerVector::iterator i = handler.begin()
+                ; i != handler.end(); ++i )
         {
             FakedArgs fa_out;
             (*i)->handle( fa.get_argc(), fa.get_argv(), fa_out);
@@ -98,9 +101,23 @@ BOOST_AUTO_TEST_CASE( test_corba )
                 , cmdlinehandlers.fa.get_argv());
 
       // Obtain a reference to the root POA.
-        cs->cc.root_initial_ref = cs->cc.orb->resolve_initial_references("RootPOA");
+        cs->cc.root_initial_ref
+            = cs->cc.orb->resolve_initial_references("RootPOA");
 
         cs->cc.poa = PortableServer::POA::_narrow(cs->cc.root_initial_ref);
+
+        if (cmdlinehandlers.corba_ns_args.nameservice_host.empty())
+        {
+            cs->cc.nameservice_ref
+                = cs->cc.orb->resolve_initial_references("NameService");
+        }
+        else
+        {
+            cs->cc.nameservice_ref
+                = cs->cc.orb->string_to_object(("corbaname::"
+                    + cmdlinehandlers.corba_ns_args.nameservice_host).c_str());
+        }
+
 
       while(cs->cc.orb->work_pending())
           cs->cc.orb->perform_work();//run();

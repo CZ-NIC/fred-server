@@ -55,6 +55,8 @@ struct corba_container
     CORBA::ORB_var orb;
     CORBA::Object_var root_initial_ref;
     PortableServer::POA_var poa;
+    CORBA::Object_var nameservice_ref;
+    CosNaming::NamingContext_var root_nameservice_context;
 };//struct corba_container
 
 class CorbaSingleton
@@ -71,7 +73,7 @@ public:
 CorbaSingleton* CorbaSingleton::instance_ptr= 0;
 
 CorbaSingleton* CorbaSingleton::instance()
-{//first call from singlethread
+{//first call from single thread
     if(instance_ptr == 0)
         instance_ptr = new CorbaSingleton();
     return instance_ptr;
