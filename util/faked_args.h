@@ -42,17 +42,42 @@
  * \brief for manipulation with cmdline arguments
  */
 
-
 class FakedArgs //faked args
 {
     typedef std::vector<char> char_vector_t;//type for argv buffer
     typedef std::vector<char_vector_t> argv_buffers_t;//buffers vector type
     typedef std::vector<char*> argv_t;//pointers vector type
 
-public:
     argv_buffers_t argv_buffers;//owning vector of buffers
     argv_t argv;//new argv - nonowning
+public:
+    void copy(const FakedArgs& fa)
+    {
+        std::size_t vects_size = fa.argv_buffers.size();
+        argv_buffers.reserve(vects_size);
+        argv.reserve(vects_size);
+        argv_buffers.clear();
+        argv_buffers=fa.argv_buffers;
+        argv.clear();
+        for(argv_buffers_t::iterator i = argv_buffers.begin()
+                ; i!=argv_buffers.end();++i)
+        {
+            argv.push_back(&(*i)[0]);
+        }
+    }
 
+    FakedArgs(){}
+
+    FakedArgs(const FakedArgs& fa)
+    {
+        copy(fa);
+    }
+
+    FakedArgs& operator=(const FakedArgs& fa)
+    {
+        copy(fa);
+        return *this;
+    }
 
     void clear()
     {
@@ -114,13 +139,16 @@ public:
   }
 };
 
+///interface for command line args handlers
 class HandleArgs
 {
 public:
+    virtual ~HandleArgs()=0;
     virtual boost::shared_ptr<boost::program_options::options_description>
         get_options_description()=0;
     virtual void handle( int argc, char* argv[], FakedArgs &fa ) = 0;
 };
+HandleArgs::~HandleArgs(){}
 
 class HandleGeneralArgs : public HandleArgs
 {

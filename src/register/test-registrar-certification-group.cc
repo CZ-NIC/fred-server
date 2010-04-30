@@ -63,8 +63,6 @@ public:
     FakedArgs fa;
     FakedArgs handle( int argc, char* argv[])
     {
-
-
         //initial fa
         fa.prealocate_for_argc(argc);
         for (int i = 0; i < argc ; ++i)
@@ -74,14 +72,7 @@ public:
         {
             FakedArgs fa_out;
             (*i)->handle( fa.get_argc(), fa.get_argv(), fa_out);
-
-            //chaining output to input
-            fa.clear();
-            fa.prealocate_for_argc(fa_out.get_argc());
-            for(int i = 0; i < fa_out.get_argc(); ++i)
-            {
-                fa.add_argv( fa_out.get_argv()[i] );
-            }
+            fa=fa_out;//last output to next input
         }
         return fa;
     }
