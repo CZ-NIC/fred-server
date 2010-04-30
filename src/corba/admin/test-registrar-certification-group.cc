@@ -135,11 +135,16 @@ BOOST_AUTO_TEST_CASE( test_corba )
         contextName[1].kind = "Object";
 
         cs->cc.root_nameservice_context->resolve(contextName);
-
         cs->cc.admin_ref = ccReg::Admin::_narrow(cs->cc.root_nameservice_context->resolve(contextName));
 
-      while(cs->cc.orb->work_pending())
-          cs->cc.orb->perform_work();//run();
+
+        cs->cc.group_manager= cs->cc.admin_ref->getGroupManager();
+
+        cs->cc.cert_manager = cs->cc.admin_ref->getCertificationManager();
+
+
+        while(cs->cc.orb->work_pending())
+            cs->cc.orb->perform_work();//run();
 
 
       std::cout << "before orb destroy" << std::endl;
