@@ -122,7 +122,21 @@ BOOST_AUTO_TEST_CASE( test_corba )
         cs->cc.root_nameservice_context
             = CosNaming::NamingContext::_narrow(cs->cc.nameservice_ref);
 
-        if (CORBA::is_nil(cs->cc.root_nameservice_context)) throw "cs->cc.root_nameservice_context";
+        if (CORBA::is_nil(cs->cc.root_nameservice_context))
+            throw "cs->cc.root_nameservice_context";
+
+        //Create a name object, containing the name test/context
+        CosNaming::Name contextName;
+        contextName.length(2);
+
+        contextName[0].id   = cmdlinehandlers.corba_ns_args.nameservice_context.c_str();
+        contextName[0].kind = "context";
+        contextName[1].id   = "Admin";
+        contextName[1].kind = "Object";
+
+        cs->cc.root_nameservice_context->resolve(contextName);
+
+        cs->cc.admin_ref = ccReg::Admin::_narrow(cs->cc.root_nameservice_context->resolve(contextName));
 
       while(cs->cc.orb->work_pending())
           cs->cc.orb->perform_work();//run();
