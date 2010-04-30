@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -31,6 +32,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
+noinst_PROGRAMS = test-registrar-certification-group$(EXEEXT)
 subdir = src/corba/admin
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -69,6 +71,22 @@ am_libadmin_impl_a_OBJECTS = admin_impl.$(OBJEXT) \
 	common.$(OBJEXT) zone_impl.$(OBJEXT) \
 	bankinginvoicing_impl.$(OBJEXT)
 libadmin_impl_a_OBJECTS = $(am_libadmin_impl_a_OBJECTS)
+PROGRAMS = $(noinst_PROGRAMS)
+am_test_registrar_certification_group_OBJECTS =  \
+	test-registrar-certification-group.$(OBJEXT)
+test_registrar_certification_group_OBJECTS =  \
+	$(am_test_registrar_certification_group_OBJECTS)
+test_registrar_certification_group_DEPENDENCIES =  \
+	$(top_builddir)/src/register/libfred.a \
+	$(top_builddir)/src/model/libmodel.a \
+	$(top_builddir)/util/db/libdb.a \
+	$(top_builddir)/util/log/liblog.a \
+	$(top_builddir)/util/conf/libconf.a \
+	$(top_builddir)/util/types/libtypes.a \
+	$(top_builddir)/src/old_utils/liboldutils.a
+test_registrar_certification_group_LINK = $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(test_registrar_certification_group_LDFLAGS) \
+	$(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -81,8 +99,10 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libadmin_impl_a_SOURCES)
-DIST_SOURCES = $(libadmin_impl_a_SOURCES)
+SOURCES = $(libadmin_impl_a_SOURCES) \
+	$(test_registrar_certification_group_SOURCES)
+DIST_SOURCES = $(libadmin_impl_a_SOURCES) \
+	$(test_registrar_certification_group_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -304,6 +324,24 @@ libadmin_impl_a_SOURCES = admin_impl.cc                 \
 						  bankinginvoicing_impl.cc		\
 						  bankinginvoicing_impl.h
 
+test_registrar_certification_group_SOURCES = test-registrar-certification-group.cc \
+                     test-registrar-certification-group.h
+
+test_registrar_certification_group_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) \
+                     $(BOOST_PROGRAM_OPTIONS_LIB) $(OMNIORB4_LIBS) $(BOOST_DATE_TIME_LIB) \
+                         $(BOOST_REGEX_LIB) \
+                         $(BOOST_THREAD_LIB) \
+                         $(XML2_LIBS)
+
+test_registrar_certification_group_LDADD = \
+                         $(top_builddir)/src/register/libfred.a \
+                         $(top_builddir)/src/model/libmodel.a \
+                         $(top_builddir)/util/db/libdb.a \
+                         $(top_builddir)/util/log/liblog.a \
+                         $(top_builddir)/util/conf/libconf.a \
+                         $(top_builddir)/util/types/libtypes.a \
+                         $(top_builddir)/src/old_utils/liboldutils.a
+
 all: all-am
 
 .SUFFIXES:
@@ -345,6 +383,12 @@ libadmin_impl.a: $(libadmin_impl_a_OBJECTS) $(libadmin_impl_a_DEPENDENCIES)
 	$(libadmin_impl_a_AR) libadmin_impl.a $(libadmin_impl_a_OBJECTS) $(libadmin_impl_a_LIBADD)
 	$(RANLIB) libadmin_impl.a
 
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+test-registrar-certification-group$(EXEEXT): $(test_registrar_certification_group_OBJECTS) $(test_registrar_certification_group_DEPENDENCIES) 
+	@rm -f test-registrar-certification-group$(EXEEXT)
+	$(test_registrar_certification_group_LINK) $(test_registrar_certification_group_OBJECTS) $(test_registrar_certification_group_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -373,6 +417,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_registrars.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_zones.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/session_impl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-registrar-certification-group.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/user_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zone_impl.Po@am__quote@
 
@@ -465,7 +510,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LIBRARIES)
+all-am: Makefile $(LIBRARIES) $(PROGRAMS)
 installdirs:
 install: install-am
 install-exec: install-exec-am
@@ -493,7 +538,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-noinstLIBRARIES mostlyclean-am
+clean-am: clean-generic clean-noinstLIBRARIES clean-noinstPROGRAMS \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -551,14 +597,14 @@ uninstall-am:
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-noinstLIBRARIES ctags distclean distclean-compile \
-	distclean-generic distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+	clean-noinstLIBRARIES clean-noinstPROGRAMS ctags distclean \
+	distclean-compile distclean-generic distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
 	uninstall-am
