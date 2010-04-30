@@ -74,8 +74,10 @@ libadmin_impl_a_OBJECTS = $(am_libadmin_impl_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
 am_test_registrar_certification_group_OBJECTS =  \
 	test-registrar-certification-group.$(OBJEXT)
+nodist_test_registrar_certification_group_OBJECTS = ccRegSK.$(OBJEXT)
 test_registrar_certification_group_OBJECTS =  \
-	$(am_test_registrar_certification_group_OBJECTS)
+	$(am_test_registrar_certification_group_OBJECTS) \
+	$(nodist_test_registrar_certification_group_OBJECTS)
 test_registrar_certification_group_DEPENDENCIES =  \
 	$(top_builddir)/src/register/libfred.a \
 	$(top_builddir)/src/model/libmodel.a \
@@ -100,7 +102,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(libadmin_impl_a_SOURCES) \
-	$(test_registrar_certification_group_SOURCES)
+	$(test_registrar_certification_group_SOURCES) \
+	$(nodist_test_registrar_certification_group_SOURCES)
 DIST_SOURCES = $(libadmin_impl_a_SOURCES) \
 	$(test_registrar_certification_group_SOURCES)
 ETAGS = etags
@@ -327,6 +330,7 @@ libadmin_impl_a_SOURCES = admin_impl.cc                 \
 test_registrar_certification_group_SOURCES = test-registrar-certification-group.cc \
                      test-registrar-certification-group.h
 
+nodist_test_registrar_certification_group_SOURCES = ../ccRegSK.cc
 test_registrar_certification_group_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) \
                      $(BOOST_PROGRAM_OPTIONS_LIB) $(OMNIORB4_LIBS) $(BOOST_DATE_TIME_LIB) \
                          $(BOOST_REGEX_LIB) \
@@ -397,6 +401,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/admin_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bankinginvoicing_impl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ccRegSK.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filter_impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pagetable_bank_payments.Po@am__quote@
@@ -434,6 +439,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+ccRegSK.o: ../ccRegSK.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ccRegSK.o -MD -MP -MF $(DEPDIR)/ccRegSK.Tpo -c -o ccRegSK.o `test -f '../ccRegSK.cc' || echo '$(srcdir)/'`../ccRegSK.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/ccRegSK.Tpo $(DEPDIR)/ccRegSK.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../ccRegSK.cc' object='ccRegSK.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ccRegSK.o `test -f '../ccRegSK.cc' || echo '$(srcdir)/'`../ccRegSK.cc
+
+ccRegSK.obj: ../ccRegSK.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ccRegSK.obj -MD -MP -MF $(DEPDIR)/ccRegSK.Tpo -c -o ccRegSK.obj `if test -f '../ccRegSK.cc'; then $(CYGPATH_W) '../ccRegSK.cc'; else $(CYGPATH_W) '$(srcdir)/../ccRegSK.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/ccRegSK.Tpo $(DEPDIR)/ccRegSK.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../ccRegSK.cc' object='ccRegSK.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ccRegSK.obj `if test -f '../ccRegSK.cc'; then $(CYGPATH_W) '../ccRegSK.cc'; else $(CYGPATH_W) '$(srcdir)/../ccRegSK.cc'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
