@@ -26,7 +26,7 @@
 #include <functional>
 #include <numeric>
 #include <boost/format.hpp>
-#include "db_settings.h"
+#include "register/db_settings.h"
 #include "log/logger.h"
 #include "log/context.h"
 #include <boost/test/included/unit_test.hpp>

@@ -34,7 +34,7 @@
 #include <boost/program_options.hpp>
 #include <boost/format.hpp>
 
-#include "db_settings.h"
+#include "register/db_settings.h"
 
 
 /**

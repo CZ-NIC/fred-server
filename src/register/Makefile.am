@@ -201,21 +201,4 @@ test_model_LDADD   = libfred.a \
                          $(BOOST_THREAD_LIB) \
                          $(XML2_LIBS)
 
-#noinst_PROGRAMS =  test-registrar-certification-group                     
-#test_registrar_certification_group_SOURCES = test-registrar-certification-group.cc \
-#                     test-registrar-certification-group.h
-#test_registrar_certification_group_LDFLAGS = $(POSTGRESQL_LDFLAGS) $(BOOST_LDFLAGS) $(AM_LDFLAGS) \
-#                     $(BOOST_PROGRAM_OPTIONS_LIB) $(OMNIORB4_LIBS)
-#test_registrar_certification_group_LDADD   = libfred.a \
-#                         $(top_builddir)/src/model/libmodel.a \
-#                         $(top_builddir)/util/db/libdb.a \
-#                         $(top_builddir)/util/log/liblog.a \
-#                         $(top_builddir)/util/conf/libconf.a \
-#                         $(top_builddir)/util/types/libtypes.a \
-#                         $(top_builddir)/src/old_utils/liboldutils.a \
-#                         $(BOOST_DATE_TIME_LIB) \
-#                         $(BOOST_REGEX_LIB) \
-#                         $(BOOST_THREAD_LIB) \
-#                         $(XML2_LIBS)
-
                          
