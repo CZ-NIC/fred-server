@@ -97,31 +97,37 @@ BOOST_AUTO_TEST_CASE( test_corba )
         int argc = cmdlinehandlers.fa.get_argc();
 
         // Initialise the ORB
-
+        std::cout << "ORB_init" << std::endl;
         cs->cc.orb = CORBA::ORB_init( argc
                 , cmdlinehandlers.fa.get_argv());
 
       // Obtain a reference to the root POA.
+        std::cout << "resolve_initial_references RootPOA" << std::endl;
         cs->cc.root_initial_ref
             = cs->cc.orb->resolve_initial_references("RootPOA");
 
+        std::cout << "PortableServer::POA::_narrow" << std::endl;
         cs->cc.poa = PortableServer::POA::_narrow(cs->cc.root_initial_ref);
 
         if (cmdlinehandlers.corba_ns_args.nameservice_host.empty())
         {
+            std::cout << "resolve_initial_references NameService" << std::endl;
             cs->cc.nameservice_ref
                 = cs->cc.orb->resolve_initial_references("NameService");
         }
         else
         {
+            std::cout << "string_to_object corbaname::" << cmdlinehandlers.corba_ns_args.nameservice_host << std::endl;
             cs->cc.nameservice_ref
                 = cs->cc.orb->string_to_object(("corbaname::"
                     + cmdlinehandlers.corba_ns_args.nameservice_host).c_str());
         }
 
+        std::cout << "CosNaming::NamingContext::_narrow" << std::endl;
         cs->cc.root_nameservice_context
-            = CosNaming::NamingContext::_narrow(cs->cc.nameservice_ref);
+            = CosNaming::NamingContext::_narrow(cs->cc.nameservice_ref.in());
 
+        std::cout << "if CORBA::is_nil cs->cc.root_nameservice_context" << std::endl;
         if (CORBA::is_nil(cs->cc.root_nameservice_context))
             throw "cs->cc.root_nameservice_context";
 
@@ -134,17 +140,19 @@ BOOST_AUTO_TEST_CASE( test_corba )
         contextName[1].id   = "Admin";
         contextName[1].kind = "Object";
 
+        std::cout << "root_nameservice_context->resolve contextName" << std::endl;
         cs->cc.root_nameservice_context->resolve(contextName);
+        std::cout << "ccReg::Admin::_narrow" << std::endl;
         cs->cc.admin_ref = ccReg::Admin::_narrow(cs->cc.root_nameservice_context->resolve(contextName));
 
-
+        std::cout << "admin_ref->getGroupManager()" << std::endl;
         cs->cc.group_manager= cs->cc.admin_ref->getGroupManager();
-
+        std::cout << "admin_ref->getCertificationManager()" << std::endl;
         cs->cc.cert_manager = cs->cc.admin_ref->getCertificationManager();
 
 
-        while(cs->cc.orb->work_pending())
-            cs->cc.orb->perform_work();//run();
+       // while(cs->cc.orb->work_pending())
+         //   cs->cc.orb->perform_work();//run();
 
 
       std::cout << "before orb destroy" << std::endl;
