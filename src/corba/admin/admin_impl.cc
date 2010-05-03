@@ -2085,10 +2085,12 @@ ccReg::EnumDictList* ccReg_Admin_i::getEnumDomainsRecentEntries(::CORBA::Long co
 
 Registry::Registrar::Certification::Manager_ptr ccReg_Admin_i::getCertificationManager()
 {
+    Logging::Context ctx(server_name_);
     return Registry::Registrar::Certification::Manager::_duplicate(reg_cert_mgr_ref_);
 }
 Registry::Registrar::Group::Manager_ptr ccReg_Admin_i::getGroupManager()
 {
+    Logging::Context ctx(server_name_);
     return  Registry::Registrar::Group::Manager::_duplicate(reg_grp_mgr_ref_);
 }
 
@@ -2105,6 +2107,9 @@ ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(
         , ::CORBA::Short score
         , ccReg::TID evaluation_file_id)
 {
+    Logging::Context ctx("adifd");
+    ConnectionReleaser releaser;
+
     try
     {
         if((score < 0) || (score > 5))
@@ -2121,10 +2126,12 @@ ccReg::TID Registry_Registrar_Certification_Manager_i::createCertification(
     }//try
     catch(const std::exception & ex)
     {
+        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
+        LOGGER(PACKAGE).debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//createCertification
@@ -2133,6 +2140,9 @@ void Registry_Registrar_Certification_Manager_i::shortenCertification(
         ccReg::TID cert_id
         , const ccReg::DateType& to)
 {
+    Logging::Context ctx("adifd");
+    ConnectionReleaser releaser;
+
     try
     {
         Register::Registrar::Manager::AutoPtr regman(
@@ -2144,10 +2154,12 @@ void Registry_Registrar_Certification_Manager_i::shortenCertification(
     }//try
     catch(const std::exception & ex)
     {
+        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
+        LOGGER(PACKAGE).debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//shortenCertification
@@ -2157,6 +2169,9 @@ void Registry_Registrar_Certification_Manager_i::updateCertification(
         , ::CORBA::Short score
         , ccReg::TID evaluation_file_id)
 {
+    Logging::Context ctx("adifd");
+    ConnectionReleaser releaser;
+
     try
     {
         if((score < 0) || (score > 5)) throw std::runtime_error("Invalid value of score");
@@ -2170,10 +2185,12 @@ void Registry_Registrar_Certification_Manager_i::updateCertification(
     }//try
     catch(const std::exception & ex)
     {
+        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
+        LOGGER(PACKAGE).debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//updateCertification
@@ -2182,6 +2199,9 @@ Registry::Registrar::Certification::CertificationList*
 Registry_Registrar_Certification_Manager_i::getCertificationsByRegistrar(
         ccReg::TID registrar_id)
 {
+    Logging::Context ctx("adifd");
+    ConnectionReleaser releaser;
+
     try
     {
         Register::Registrar::Manager::AutoPtr regman(
@@ -2207,10 +2227,12 @@ Registry_Registrar_Certification_Manager_i::getCertificationsByRegistrar(
     }//try
     catch(const std::exception & ex)
     {
+        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
+        LOGGER(PACKAGE).debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//getCertificationsByRegistrar
@@ -2222,6 +2244,9 @@ Registry_Registrar_Group_Manager_i::~Registry_Registrar_Group_Manager_i()
 //   Methods corresponding to IDL attributes and operations
 ccReg::TID Registry_Registrar_Group_Manager_i::createGroup(const char* name)
 {
+    Logging::Context ctx("adifd");
+    ConnectionReleaser releaser;
+
     try
     {
         Register::Registrar::Manager::AutoPtr regman(
@@ -2231,16 +2256,21 @@ ccReg::TID Registry_Registrar_Group_Manager_i::createGroup(const char* name)
     }//try
     catch(const std::exception & ex)
     {
+        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
+        LOGGER(PACKAGE).debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//createGroup
 
 void Registry_Registrar_Group_Manager_i::deleteGroup(ccReg::TID group_id)
 {
+    Logging::Context ctx("adifd");
+    ConnectionReleaser releaser;
+
     try
     {
         Register::Registrar::Manager::AutoPtr regman(
@@ -2250,10 +2280,12 @@ void Registry_Registrar_Group_Manager_i::deleteGroup(ccReg::TID group_id)
     }//try
     catch(const std::exception & ex)
     {
+        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
+        LOGGER(PACKAGE).debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//deleteGroup
@@ -2262,6 +2294,9 @@ void Registry_Registrar_Group_Manager_i::updateGroup(
         ccReg::TID group_id
         , const char* name)
 {
+    Logging::Context ctx("adifd");
+    ConnectionReleaser releaser;
+
     try
     {
         Register::Registrar::Manager::AutoPtr regman(
@@ -2271,10 +2306,12 @@ void Registry_Registrar_Group_Manager_i::updateGroup(
     }//try
     catch(const std::exception & ex)
     {
+        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
+        LOGGER(PACKAGE).debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//updateGroup
@@ -2283,6 +2320,9 @@ ccReg::TID Registry_Registrar_Group_Manager_i::addRegistrarToGroup(
         ccReg::TID reg_id
         , ccReg::TID group_id)
 {
+    Logging::Context ctx("adifd");
+    ConnectionReleaser releaser;
+
     try
     {
         Register::Registrar::Manager::AutoPtr regman(
@@ -2296,10 +2336,12 @@ ccReg::TID Registry_Registrar_Group_Manager_i::addRegistrarToGroup(
     }//try
     catch(const std::exception & ex)
     {
+        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
+        LOGGER(PACKAGE).debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//addRegistrarToGroup
@@ -2308,6 +2350,9 @@ void Registry_Registrar_Group_Manager_i::removeRegistrarFromGroup(
         ccReg::TID reg_id
         , ccReg::TID group_id)
 {
+    Logging::Context ctx("adifd");
+    ConnectionReleaser releaser;
+
     try
     {
         Register::Registrar::Manager::AutoPtr regman(
@@ -2319,10 +2364,12 @@ void Registry_Registrar_Group_Manager_i::removeRegistrarFromGroup(
     }//try
     catch(const std::exception & ex)
     {
+        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
+        LOGGER(PACKAGE).debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }
@@ -2330,6 +2377,9 @@ void Registry_Registrar_Group_Manager_i::removeRegistrarFromGroup(
 Registry::Registrar::Group::GroupList*
 Registry_Registrar_Group_Manager_i::getGroups()
 {
+    Logging::Context ctx("adifd");
+    ConnectionReleaser releaser;
+
     try
     {
         Register::Registrar::Manager::AutoPtr regman(
@@ -2353,10 +2403,12 @@ Registry_Registrar_Group_Manager_i::getGroups()
     }//try
     catch(const std::exception & ex)
     {
-        throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
+        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
+        throw;// Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
+        LOGGER(PACKAGE).debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//getGroups
@@ -2366,6 +2418,9 @@ Registry::Registrar::Group::MembershipByRegistrarList*
 Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(
         ccReg::TID registrar_id)
 {
+    Logging::Context ctx("adifd");
+    ConnectionReleaser releaser;
+
     try
     {
         Register::Registrar::Manager::AutoPtr regman(
@@ -2390,10 +2445,12 @@ Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(
     }//try
     catch(const std::exception & ex)
     {
+        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
+        LOGGER(PACKAGE).debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//getMembershipsByRegistar
@@ -2401,6 +2458,9 @@ Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(
 Registry::Registrar::Group::MembershipByGroupList*
 Registry_Registrar_Group_Manager_i::getMembershipsByGroup(ccReg::TID group_id)
 {
+    Logging::Context ctx("adifd");
+    ConnectionReleaser releaser;
+
     try
     {
         Register::Registrar::Manager::AutoPtr regman(
@@ -2425,10 +2485,12 @@ Registry_Registrar_Group_Manager_i::getMembershipsByGroup(ccReg::TID group_id)
     }//try
     catch(const std::exception & ex)
     {
+        LOGGER(PACKAGE).debug(boost::format("exception: %1%") % ex.what());
         throw Registry::Registrar::InvalidValue(CORBA::string_dup(ex.what()));
     }//catch std ex
     catch(...)
     {
+        LOGGER(PACKAGE).debug("exception");
         throw Registry::Registrar::InternalServerError();
     }//catch all
 }//getMembershipsByGroup
