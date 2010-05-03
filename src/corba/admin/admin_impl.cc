@@ -2217,8 +2217,8 @@ Registry_Registrar_Certification_Manager_i::getCertificationsByRegistrar(
         for(unsigned i = 0;i < cs.size(); ++i)
         {
             (*cl)[i].id = cs[i].id;
-            (*cl)[i].from = makeCorbaDate(cs[i].valid_from);
-            (*cl)[i].to = makeCorbaDate(cs[i].valid_until);
+            (*cl)[i].fromDate = makeCorbaDate(cs[i].valid_from);
+            (*cl)[i].toDate = makeCorbaDate(cs[i].valid_until);
             (*cl)[i].score = cs[i].classification;
             (*cl)[i].evaluation_file_id = cs[i].eval_file_id;
         }
@@ -2437,8 +2437,8 @@ Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(
         {
             (*mbrl)[i].id = mbrs[i].id;
             (*mbrl)[i].group_id = mbrs[i].group_id;
-            (*mbrl)[i].from = makeCorbaDate(mbrs[i].member_from);
-            (*mbrl)[i].to = makeCorbaDate(mbrs[i].member_until);
+            (*mbrl)[i].fromDate = makeCorbaDate(mbrs[i].member_from);
+            (*mbrl)[i].toDate = makeCorbaDate(mbrs[i].member_until);
         }
 
         return mbrl.release();
@@ -2477,8 +2477,8 @@ Registry_Registrar_Group_Manager_i::getMembershipsByGroup(ccReg::TID group_id)
         {
             (*mbgl)[i].id = mbgs[i].id;
             (*mbgl)[i].registrar_id = mbgs[i].registrar_id;
-            (*mbgl)[i].from = makeCorbaDate(mbgs[i].member_from);
-            (*mbgl)[i].to = makeCorbaDate(mbgs[i].member_until);
+            (*mbgl)[i].fromDate = makeCorbaDate(mbgs[i].member_from);
+            (*mbgl)[i].toDate = makeCorbaDate(mbgs[i].member_until);
         }
 
         return mbgl.release();
