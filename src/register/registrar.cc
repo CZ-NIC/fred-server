@@ -2087,6 +2087,18 @@ public:
                   ("LOCK TABLE registrar_group_map IN ACCESS EXCLUSIVE MODE");
               conn.exec(lock_query);
 
+              std::stringstream query;
+              query << "update registrar_group_map set member_until = CURRENT_DATE"
+              << " where id = (select id from registrar_group_map where"
+              << " registrar_id = "
+              << conn.escape(boost::lexical_cast<std::string>(registrar_id))
+              << " and registrar_group_id = "
+              << conn.escape(boost::lexical_cast<std::string>(registrar_group_id))
+              << " order by member_from desc limit 1)"  ;
+
+              conn.exec(query.str());
+
+              /*not working so far
               std::string query(
               "update registrar_group_map set member_until = CURRENT_DATE"
               " where id = (select id from registrar_group_map where"
@@ -2110,6 +2122,8 @@ public:
                         , paramValues //pointer to memory with parameters data
                         , paramLengths //sizes of memory with parameters data
                         , paramFormats); //1-binary like int or double, 0- text like const char *
+              */
+
               tx.commit();
           }//try
           catch (...)
