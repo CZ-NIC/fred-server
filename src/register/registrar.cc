@@ -2006,7 +2006,7 @@ public:
         query << "select id, valid_from, valid_until, classification, eval_file_id "
             << "from registrar_certification where registrar_id='"
             << conn.escape(boost::lexical_cast<std::string>(registrar_id))
-            << "' order by valid_from desc";
+            << "' order by valid_from desc, id desc";
 
         Database::Result res = conn.exec(query.str());
         ret.reserve(res.size());//prealloc
@@ -2094,7 +2094,7 @@ public:
               << conn.escape(boost::lexical_cast<std::string>(registrar_id))
               << " and registrar_group_id = "
               << conn.escape(boost::lexical_cast<std::string>(registrar_group_id))
-              << " order by member_from desc limit 1)"  ;
+              << " order by member_from desc, id desc limit 1)"  ;
 
               conn.exec(query.str());
 
@@ -2104,7 +2104,7 @@ public:
               " where id = (select id from registrar_group_map where"
               " registrar_id = $1::bigint"
               " and registrar_group_id = $2::bigint"
-              " order by member_from desc limit 1)");
+              " order by member_from desc, id desc limit 1)");
 
               std::vector< const char * > paramValues;
               std::vector<int> paramLengths;
@@ -2169,7 +2169,7 @@ public:
           query << "select id, registrar_group_id, member_from, member_until "
               << "from registrar_group_map where registrar_id='"
               << conn.escape(boost::lexical_cast<std::string>(registrar_id))
-              << "' order by member_from desc";
+              << "' order by member_from desc, id desc";
 
           Database::Result res = conn.exec(query.str());
           ret.reserve(res.size());//prealloc
@@ -2198,7 +2198,7 @@ public:
           query << "select id, registrar_id, member_from, member_until "
               << "from registrar_group_map where registrar_group_id='"
               << conn.escape(boost::lexical_cast<std::string>(group_id))
-              << "' order by member_from desc";
+              << "' order by member_from desc, id desc";
 
           Database::Result res = conn.exec(query.str());
           ret.reserve(res.size());//prealloc
