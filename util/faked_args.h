@@ -18,7 +18,7 @@
 
 /**
  *  @file faked_args.h
- *  manipulation with cmdline arguments
+ *  manipulation with cmdline arguments and common option handlers
  */
 
 
@@ -36,6 +36,7 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/program_options.hpp>
 #include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "register/db_settings.h"
 
