@@ -21,6 +21,7 @@
 #include "old_utils/log.h"
 #include "sql.h"
 #include <sstream>
+#include <boost/assign/list_of.hpp>
 
 namespace Register
 {
@@ -128,6 +129,20 @@ namespace Register
             << "WHERE d.nsset=ncm.nssetid AND ncm.contactid=c.id "
             << "AND d.id=" << domain;
         return getEmailList(sql);
+      }
+      /* ticket #3797 */
+      std::string getDomainGenericEmails(const std::string &_fqdn)
+      {
+          std::string emails = "";
+
+          if (!_fqdn.empty()) {
+              emails += "info@" + _fqdn;
+              emails += ",kontakt@" + _fqdn;
+              emails += ",postmaster@" + _fqdn;
+              emails += "," + _fqdn.substr(0, _fqdn.find(".")) + "@" + _fqdn;
+          }
+
+          return emails;
       }
       std::string getNSSetTechEmailsHistory(TID nsset)
       {
@@ -401,15 +416,32 @@ namespace Register
              case 3: // domain
                if (useHistory) {
                  fillDomainParamsHistory(i->obj_id,i->stamp,params);
-                 emails =
-                   (i->emails == 1 ? getDomainAdminEmailsHistory(i->obj_id) 
-                                   : getDomainTechEmailsHistory(i->obj_id));
+                 switch (i->emails) {
+                   case 1:
+                     emails = getDomainAdminEmailsHistory(i->obj_id);
+                     break;
+                   case 2:
+                     emails = getDomainTechEmailsHistory(i->obj_id);
+                     break;
+                   case 3:
+                     emails = getDomainGenericEmails(params["domain"]);
+                     break;
+                 }
+
                }
                else {
                  fillDomainParams(i->obj_id,i->stamp,params);
-                 emails =
-                   (i->emails == 1 ? getDomainAdminEmails(i->obj_id) 
-                                   : getDomainTechEmails(i->obj_id));
+                 switch (i->emails) {
+                   case 1:
+                     emails = getDomainAdminEmails(i->obj_id);
+                     break;
+                   case 2:
+                     emails = getDomainTechEmails(i->obj_id);
+                     break;
+                   case 3:
+                     emails = getDomainGenericEmails(params["domain"]);
+                     break;
+                 }
                }
                break;
              case 4: // keyset
