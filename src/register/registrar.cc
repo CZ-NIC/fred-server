@@ -2090,8 +2090,8 @@ public:
               std::string query(
               "update registrar_group_map set member_until = CURRENT_DATE"
               " where id = (select id from registrar_group_map where"
-              " registrar_id = $1::serial"
-              " and registrar_group_id = $2::serial"
+              " registrar_id = $1::bigint"
+              " and registrar_group_id = $2::bigint"
               " order by member_from desc limit 1)");
 
               std::vector< const char * > paramValues;
