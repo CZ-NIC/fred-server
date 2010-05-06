@@ -36,6 +36,7 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/program_options.hpp>
 #include <boost/format.hpp>
+#include <boost/utility.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include "register/db_settings.h"
@@ -308,7 +309,7 @@ in UTF main
  fa = CfgArgs::instance(ghpv)->handle(argc, argv);
 */
 
-class CfgArgs
+class CfgArgs : boost::noncopyable
 {
     HandlerPtrVector hpv_;
     HandlerPtrMap hpm_;
@@ -388,16 +389,16 @@ CfgArgs* CfgArgs::instance(const HandlerPtrVector& hpv)
                 ; i != hpv.end(); ++i )
             hga->po_description.push_back((*i)->get_options_description());
     }
-
     instance_ptr = tmp_instance;
-
     return instance_ptr.get();
 }
 
 //getter
 CfgArgs* CfgArgs::instance()
 {
-    return instance_ptr.get();
+    CfgArgs* ret = instance_ptr.get();
+    if (ret == 0) throw std::runtime_error("error: CfgArgs instance not set");
+    return ret;
 }
 
 
